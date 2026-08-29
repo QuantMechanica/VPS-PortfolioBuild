@@ -153,6 +153,17 @@ QM5_41163_SETFILE_REPAIR_AUTHORITY = (
 QM5_41163_SETFILE_REPAIR_EA_LABELS = frozenset({
     "QM5_41163_williams-18ma-outside-bar-entry-d1-opt",
 })
+# Exact continuation authority for the QM5_41194 DL-089 measurement sibling.
+# Its first governed compile produced zero compiler errors/warnings but failed
+# the current raw-series and Q08 MAE-hook build contracts. This permits only an
+# append-only, source-hash-bound COMPILE_EA successor for the repaired label;
+# it grants no backtest, gate, or setfile-unbinding authority.
+QM5_41194_DL089_BUILD_REPAIR_AUTHORITY = (
+    "router_ops_issue:4ea27950-fab1-49ee-a183-bf78967e8447"
+)
+QM5_41194_DL089_BUILD_REPAIR_EA_LABELS = frozenset({
+    "QM5_41194_brent-tom-mom-opt",
+})
 # Exact authority for the two DL-089 measurement siblings whose initial compile
 # receipts preceded the final source normalization commit.  The P0 dispatch
 # repair requires current source-bound binaries before it may enqueue any real
@@ -639,6 +650,10 @@ def _source_repair_authorized(
         or (
             authority == QM5_41163_SETFILE_REPAIR_AUTHORITY
             and ea_label in QM5_41163_SETFILE_REPAIR_EA_LABELS
+        )
+        or (
+            authority == QM5_41194_DL089_BUILD_REPAIR_AUTHORITY
+            and ea_label in QM5_41194_DL089_BUILD_REPAIR_EA_LABELS
         )
         or (
             authority == DL089_MATRIX_DISPATCH_REPAIR_AUTHORITY

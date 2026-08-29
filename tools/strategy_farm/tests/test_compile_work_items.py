@@ -459,6 +459,23 @@ def test_qm5_41163_setfile_repair_authority_is_exact_label_bound() -> None:
     )
 
 
+def test_qm5_41194_dl089_build_repair_authority_is_exact_label_bound() -> None:
+    label = "QM5_41194_brent-tom-mom-opt"
+
+    assert compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_41194_DL089_BUILD_REPAIR_AUTHORITY,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        "QM5_41195_aa-vol-sma10-opt",
+        compile_work_items.QM5_41194_DL089_BUILD_REPAIR_AUTHORITY,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label,
+        "router_ops_issue:wrong-task",
+    )
+
+
 def test_qm5_41201_compile_fail_repair_authority_is_failure_and_hash_bound() -> None:
     label = compile_work_items.QM5_41201_COMPILE_FAIL_REPAIR_EA_LABEL
     predecessor_id = (

@@ -1,0 +1,19 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "4e49db2160aca15269279d38a8358d761669c783505a599d46b44206cb8c0b5e",
+      "ea_id": "QM5_41194",
+      "ea_label": "QM5_41194_brent-tom-mom-opt",
+      "expected_mq5_sha256": "4e49db2160aca15269279d38a8358d761669c783505a599d46b44206cb8c0b5e",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41194_brent-tom-mom-opt\\QM5_41194_brent-tom-mom-opt.mq5",
+      "work_item_id": "a7f59fd5-6bff-434a-bd95-1762c82ead9c"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "a7f59fd5-6bff-434a-bd95-1762c82ead9c"
+}
