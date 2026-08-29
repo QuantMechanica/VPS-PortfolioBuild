@@ -139,3 +139,33 @@ The approved card SHA-256 at decision time is
 `D32571DD2C63F9B22DB4D7CF6C92E4D69F042A9B0E76B874FA6E72AA081FCD9E`.
 Any mechanical change requires a new decision or formally governed successor;
 editorial evidence additions must not alter the execution contract.
+
+## Pre-Q02 Q01 Execution-Contract Amendment
+
+The first governed compile item
+`673f05ea-b106-4de1-8607-3df23d51e2d6` compiled source SHA-256
+`5FB24A43D232FB4BFBA613D02735AD4B8AD7A01A89824847FEF013D3FB3C0F1E`
+with zero compiler errors and warnings, but its build check emitted
+`BUILD_CHECK_DWX_ADVISORY_DWX_SPREAD_FAILCLOSED`: `.DWX` tester history may
+legitimately model `Ask==Bid`, so the original strictly-positive-spread gate
+would make every entry unreachable. Receipt SHA-256:
+`90F8A719F54D41EFE13C2ABD705D44EBC4D36E37C63BBB51C7F1A9A4E90CFF2A`.
+
+Before any Q02 row or result existed, the same OWNER mission therefore
+authorizes exactly one execution-plumbing correction:
+
+- positive finite Bid and Ask remain mandatory;
+- crossed quotes (`Ask<Bid`) remain rejected;
+- exact zero modeled spread (`Ask==Bid`) is permitted for this non-live `.DWX`
+  Q02 identity; and
+- the XAU/XAG 1,500/3,000-point ceilings remain unchanged.
+
+No signal, window, threshold, side, target, risk, stop, hold, notional,
+frequency, or portfolio rule changes. This is a zero-trade reachability repair
+from Q01 static evidence, not a result-dependent rescue. It authorizes the
+source successor SHA-256
+`FFBFC3E4845CCBC87C73ADB6E6DDF6F8A1CD8E4ECEC78B6382C96FD920B8812A`
+and updated card SHA-256
+`CAF01CAB7568DFAAD486E18E8BFDF1B987A2ABDDDDF7FA1FBDF6A38FA6300318`.
+A fresh governed source-repair compile with zero errors, zero warnings, and
+build-check PASS is required before the build may be recorded or Q02 enqueued.

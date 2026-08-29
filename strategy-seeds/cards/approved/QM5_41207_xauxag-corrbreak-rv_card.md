@@ -78,13 +78,13 @@ ml_required: false
 r1_track_record: PASS_WITH_COMPOSITE_STATE_TRANSLATION_AND_CFD_RISK
 r1_reasoning: "Complete peer-reviewed evidence supports daily gold/silver dependence and a state-dependent relationship; governed CME material supports the intermarket carrier. The exact correlation-break fade, thresholds, and CFD execution are untested QM hypotheses, and adverse evidence is binding."
 r2_mechanical: PASS
-r2_reasoning: "Weekly clock, exact synchronized history, disjoint 60/20 blocks, Pearson and Fisher arithmetic, four break boundaries, baseline relative scale, five-session score, sides, attempt/target state, shared risk, atomicity, stops, halfway exit, and time exits are deterministic and locked."
+r2_reasoning: "Weekly clock, exact synchronized history, disjoint 60/20 blocks, Pearson and Fisher arithmetic, four break boundaries, baseline relative scale, five-session score, sides, attempt/target state, nonnegative modeled-spread handling, shared risk, atomicity, stops, halfway exit, and time exits are deterministic and locked."
 r3_data_available: PASS
 r3_qualification: SYNCHRONIZATION_CONTINUOUS_CFD_AND_LEGGING_RISK
 r3_reasoning: "Registered XAUUSD.DWX and XAGUSD.DWX D1 histories and native MT5 state supply every runtime input; label alignment, rolls, financing, spreads, fills, legging, and futures/CFD basis remain explicit Q02 risks."
 r4_ml_forbidden: PASS
 r4_reasoning: "Only dates, completed prices, logarithms, ordinary sums/products, square roots, Fisher transforms, comparisons, ATR risk controls, and execution state; no trained signal, banned signal indicator, or external runtime feed."
-parameters_to_test: "Locked Q02 baseline only: 81 synchronized completed D1 closes; 60 oldest and 20 newest disjoint returns; baseline rho floor 0.50; recent rho ceiling 0.35; raw drop floor 0.25; Fisher z-drop floor 1.645; newest five-return standardized relative-displacement threshold 1.25; exact halfway retracement; ATR(20)*3.5 stops; 15 completed D1 bars/24 calendar days maximum; XAU/XAG spread ceilings 1500/3000 points; equal USD notionals within 20%; one shared RISK_FIXED budget."
+parameters_to_test: "Locked Q02 baseline only: 81 synchronized completed D1 closes; 60 oldest and 20 newest disjoint returns; baseline rho floor 0.50; recent rho ceiling 0.35; raw drop floor 0.25; Fisher z-drop floor 1.645; newest five-return standardized relative-displacement threshold 1.25; exact halfway retracement; ATR(20)*3.5 stops; 15 completed D1 bars/24 calendar days maximum; XAU/XAG spread ceilings 1500/3000 points with zero modeled .DWX spread permitted and crossed quotes rejected; equal USD notionals within 20%; one shared RISK_FIXED budget."
 risk_fixed_backtest: 1000
 risk_percent_backtest: 0
 portfolio_weight_backtest: 1
@@ -98,8 +98,8 @@ force_build: true
 review_focus: "Falsify a weekly XAU/XAG correlation-break relative-value sleeve outside the directional XAU/SP500/NDX/XNG book. Verify synchronized completed endpoints, exact disjoint return blocks, Pearson/Fisher arithmetic, four break gates, standardized five-session displacement, contrarian sides, persisted week/target, aggregate fixed risk, atomic equal-notional opposite legs, stops, halfway exit, and stale repair. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
-hard_rules_at_risk: [exact_symbols_period, first_tradable_broker_week_bar, synchronized_completed_d1_closes, no_current_bar_price, exact_eighty_returns, disjoint_sixty_twenty_blocks, pearson_sample_arithmetic, fisher_transform_clamp_only, four_correlation_break_gates, baseline_relative_sample_scale, exact_newest_five_displacement, contrarian_package_side, weekly_attempt_state, frozen_halfway_target_state, equal_notional_basket, aggregate_fixed_risk, atomic_pair_lifecycle, hard_stops_present, friday_close_disabled, retracement_exit, fifteen_bar_exit, twenty_four_day_repair, cfd_futures_basis, q02_frequency_floor, portfolio_correlation]
-g0_approval_reasoning: "OWNER mission 2026-08-30 and decisions/2026-08-30_qm5_41207_xauxag_correlation_break_reversion_g0.md: R1 passes with complete peer-reviewed dependence/state lineages and governed exchange carrier while retaining adverse evidence; R2 locks exact history, blocks, statistics, boundaries, displacement, sides, persistence, risk, atomicity, stops, and lifecycle; R3 uses registered native XAU/XAG D1 with synchronization/CFD risk; R4 is deterministic native arithmetic only. Canonical dedup found only the expected shared-author gold-lead neighbor; manual mechanic review resolves it and the ratio/residual/return-spread/memory families."
+hard_rules_at_risk: [exact_symbols_period, first_tradable_broker_week_bar, synchronized_completed_d1_closes, no_current_bar_price, exact_eighty_returns, disjoint_sixty_twenty_blocks, pearson_sample_arithmetic, fisher_transform_clamp_only, four_correlation_break_gates, baseline_relative_sample_scale, exact_newest_five_displacement, contrarian_package_side, weekly_attempt_state, frozen_halfway_target_state, nonnegative_modeled_spread_and_crossed_quote_rejection, equal_notional_basket, aggregate_fixed_risk, atomic_pair_lifecycle, hard_stops_present, friday_close_disabled, retracement_exit, fifteen_bar_exit, twenty_four_day_repair, cfd_futures_basis, q02_frequency_floor, portfolio_correlation]
+g0_approval_reasoning: "OWNER mission 2026-08-30 and decisions/2026-08-30_qm5_41207_xauxag_correlation_break_reversion_g0.md, including the pre-Q02 Q01 execution-contract amendment: R1 passes with complete peer-reviewed dependence/state lineages and governed exchange carrier while retaining adverse evidence; R2 locks exact history, blocks, statistics, boundaries, displacement, sides, persistence, nonnegative modeled-spread handling, risk, atomicity, stops, and lifecycle; R3 uses registered native XAU/XAG D1 with synchronization/CFD risk; R4 is deterministic native arithmetic only. Canonical dedup found only the expected shared-author gold-lead neighbor; manual mechanic review resolves it and the ratio/residual/return-spread/memory families."
 ---
 
 # QM5_41207 XAU/XAG Weekly Correlation-Break Relative-Value Fade
@@ -243,8 +243,10 @@ execution contract. There is no result-dependent rescue or implicit fallback.
    and no current forming-bar input.
 5. Compute the exact Formula contract. A failed break, invalid state, or
    `abs(score5)<1.25` consumes the week flat.
-6. Require positive finite Bid/Ask and positive spreads no greater than 1,500
-   XAU points and 3,000 XAG points.
+6. Require positive finite Bid/Ask, reject crossed quotes (`Ask<Bid`), and
+   require nonnegative modeled spreads no greater than 1,500 XAU points and
+   3,000 XAG points. Exact zero spread is permitted because `.DWX` tester
+   history can legitimately model `Ask==Bid`; no live setfile is authorized.
 7. Compute frozen completed-D1 ATR(20) stops per leg. Split the aggregate
    `RISK_FIXED` budget into equal stop-risk halves and size each leg through
    framework risk plumbing. Signal magnitude never changes risk.
@@ -323,7 +325,7 @@ Only the locked Q02 baseline exists:
 | maximum hold | 15 completed D1 bars |
 | stale survivor repair | 24 elapsed days |
 | entry grace | 180 minutes from weekly host D1 open |
-| XAU/XAG spread ceilings | 1500 / 3000 points |
+| XAU/XAG spread ceilings | 1500 / 3000 points; zero modeled spread allowed, crossed quote rejected |
 | maximum notional mismatch | 20% |
 | aggregate fixed risk | 1000, split 50/50 by stop risk |
 
@@ -434,6 +436,7 @@ spread, or gate change may rescue this identity.
 | Version | Date | Change | Authority |
 |---|---|---|---|
 | v1 | 2026-08-30 | Initial XAU/XAG disjoint-correlation-break relative-value card | OWNER commodity/energy portfolio mission |
+| v2 | 2026-08-30 | Pre-Q02 Q01 advisory amendment: allow zero modeled .DWX spread, retain caps, reject crossed quotes | Same OWNER mission; G0 decision amendment |
 
 ## Pipeline Phase Status
 

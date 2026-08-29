@@ -168,6 +168,9 @@ class CorrelationBreakReferenceTest(unittest.TestCase):
         self.assertLess(entry.index("Strategy_RecordAttemptState"), entry.index("Strategy_LoadCorrelationBreak"))
         package = source[source.index("bool Strategy_OpenPair"):source.index("bool Strategy_NoTradeFilter")]
         self.assertLess(package.index("Strategy_PersistPackageState"), package.index("Strategy_OpenLeg"))
+        spread = source[source.index("bool Strategy_SpreadAllowed"):source.index("bool Strategy_SymbolReady")]
+        self.assertIn("ask < bid", spread)
+        self.assertNotIn("ask <= bid", spread)
 
 
 if __name__ == "__main__":

@@ -220,7 +220,7 @@ bool Strategy_SpreadAllowed(const string symbol)
    const double point = SymbolInfoDouble(symbol, SYMBOL_POINT);
    const double ask = SymbolInfoDouble(symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(symbol, SYMBOL_BID);
-   if(point <= 0.0 || ask <= 0.0 || bid <= 0.0 || ask <= bid)
+   if(point <= 0.0 || ask <= 0.0 || bid <= 0.0 || ask < bid)
       return false;
    const double spread_points = (ask - bid) / point;
    if(symbol == g_leg_xau)

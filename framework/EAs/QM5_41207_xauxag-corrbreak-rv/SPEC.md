@@ -40,7 +40,7 @@ hedge coefficient, current-bar price, trained signal, or external feed is used.
 | `strategy_retracement_fraction` | 0.50 |
 | `strategy_atr_period_d1` / multiplier | 20 / 3.5 |
 | maximum hold / stale repair | 15 completed D1 bars / 24 days |
-| XAU / XAG spread ceiling | 1500 / 3000 points |
+| XAU / XAG spread ceiling | 1500 / 3000 points; zero modeled spread allowed |
 | maximum notional mismatch | 20% |
 | entry grace | 180 minutes |
 
@@ -98,6 +98,9 @@ notionals, and post-rounding mismatch above 20% rejects the package.
   15 completed host bars, 24 elapsed days, or immediate malformed/orphan
   repair.
 - Both legs carry frozen `3.5*ATR(20,D1)` hard stops and no broker TP.
+- Positive finite quotes are mandatory; `Ask<Bid` is rejected. Exact
+  `Ask==Bid` is permitted for `.DWX` tester history, while the 1500/3000
+  point caps remain binding.
 - News temporal/compliance/legacy axes and Friday close are locked OFF.
 
 The consumed-week, target, expected side, and decision time use terminal global
