@@ -250,6 +250,25 @@ QM5_41164_41191_COMPILE_FAIL_REPAIR_EA_LABELS = frozenset({
     "QM5_41172_wti-mpettitt-shift-tr",
     "QM5_41191_wti-samecal-srank",
 })
+# Exact append-only authority for the first governed QM5_41201 compile. The
+# predecessor compiled with 0 errors / 0 warnings but failed Q01 only because
+# its 15-element Hodges-Lehmann buffer bound was not mechanically visible to
+# build_gate_hardening. The authority is bound below to that immutable failed
+# row, its rejected source hash, and the one reviewed source-repair hash. It
+# grants no backtest, gate-verdict, or general EX5-overwrite authority.
+QM5_41201_COMPILE_FAIL_REPAIR_PREDECESSOR_ID = (
+    "652a5e63-1a1f-4845-9c78-b729b52870a3"
+)
+QM5_41201_COMPILE_FAIL_REPAIR_AUTHORITY = (
+    "governed_compile_fail:652a5e63-1a1f-4845-9c78-b729b52870a3"
+)
+QM5_41201_COMPILE_FAIL_REPAIR_EA_LABEL = "QM5_41201_wti-samecal-hl5"
+QM5_41201_COMPILE_FAIL_REJECTED_SOURCE_SHA256 = (
+    "b7d4fec61479d0b7c305a325d395f67b603a87e7986d09865c3180fff8c53010"
+)
+QM5_41201_COMPILE_FAIL_REPAIRED_SOURCE_SHA256 = (
+    "fe9bbff92592ceb71f74640bb49cb41d312467b0af9b7faa5615239a1e4065e9"
+)
 COMPILE_PROFILE_STDLIB_FAILURE_CLASS = "COMPILE_PROFILE_STDLIB_MISSING"
 VALID_TIMEFRAMES = (
     # Kept exactly aligned with gen_setfile.ps1's ValidateSet: a candidate
@@ -418,6 +437,53 @@ def _hma_cata_requal_authorized(
     )
 
 
+def _qm5_41201_compile_fail_repair_authorized(
+    ea_label: str,
+    authority: str | None,
+    *,
+    ea_id: str | None,
+    source_sha: str | None,
+    inventory: dict[str, Any] | None,
+) -> bool:
+    """Bind the QM5_41201 repair to one exact failed row and source delta."""
+    if (
+        authority != QM5_41201_COMPILE_FAIL_REPAIR_AUTHORITY
+        or ea_label != QM5_41201_COMPILE_FAIL_REPAIR_EA_LABEL
+        or ea_id != "41201"
+        or str(source_sha or "").lower()
+        != QM5_41201_COMPILE_FAIL_REPAIRED_SOURCE_SHA256
+        or inventory is None
+    ):
+        return False
+    predecessor = next(
+        (
+            row
+            for row in inventory.get("work_rows", {}).get(ea_id, [])
+            if str(row.get("id"))
+            == QM5_41201_COMPILE_FAIL_REPAIR_PREDECESSOR_ID
+        ),
+        None,
+    )
+    if predecessor is None:
+        return False
+    payload = _json_object(predecessor.get("payload_json"))
+    compile_result = payload.get("compile_result")
+    return bool(
+        predecessor.get("phase") == COMPILE_EA_PHASE
+        and predecessor.get("status") == "failed"
+        and predecessor.get("verdict") == "COMPILE_FAIL"
+        and payload.get("ea_label") == ea_label
+        and str(payload.get("mq5_sha256") or "").lower()
+        == QM5_41201_COMPILE_FAIL_REJECTED_SOURCE_SHA256
+        and payload.get("verdict_reason") == "EA_INDICATOR_BUFFER_UNBOUNDED"
+        and isinstance(compile_result, dict)
+        and compile_result.get("compile_result") == "PASS"
+        and compile_result.get("build_check_result") == "FAIL"
+        and compile_result.get("failure_classes")
+        == ["EA_INDICATOR_BUFFER_UNBOUNDED"]
+    )
+
+
 def _source_repair_authorized(
     ea_label: str,
     authority: str | None,
@@ -428,6 +494,14 @@ def _source_repair_authorized(
     inventory: dict[str, Any] | None = None,
     current_work_item_id: str | None = None,
 ) -> bool:
+    if authority == QM5_41201_COMPILE_FAIL_REPAIR_AUTHORITY:
+        return _qm5_41201_compile_fail_repair_authorized(
+            ea_label,
+            authority,
+            ea_id=ea_id,
+            source_sha=source_sha,
+            inventory=inventory,
+        )
     if authority == HMA_CATA_REQUAL_SOURCE_REPAIR_AUTHORITY:
         return _hma_cata_requal_authorized(
             repo_root,

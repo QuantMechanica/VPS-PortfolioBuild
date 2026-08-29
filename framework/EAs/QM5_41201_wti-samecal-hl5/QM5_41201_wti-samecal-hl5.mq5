@@ -523,13 +523,15 @@ bool Strategy_HodgesLehmannSignal(const double &observations[],
         }
      }
 
-   if(pair_count != strategy_required_pair_averages ||
+   const int pair_array_size = ArraySize(pair_averages);
+   if(pair_array_size != strategy_required_pair_averages ||
+      pair_count != strategy_required_pair_averages ||
       pair_count != sample_count * (sample_count + 1) / 2 ||
       (pair_count % 2) != 1)
       return false;
 
    Strategy_SortAscending(pair_averages, pair_count);
-   for(int index = 1; index < pair_count; ++index)
+   for(int index = 1; index < strategy_required_pair_averages; ++index)
      {
       if(pair_averages[index] < pair_averages[index - 1])
          return false;
