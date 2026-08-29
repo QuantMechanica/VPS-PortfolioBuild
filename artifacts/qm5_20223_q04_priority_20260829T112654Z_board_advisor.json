@@ -1,0 +1,259 @@
+{
+  "schema_version": "qm.fx-cointegration-q04-priority-handoff/v1",
+  "generated_at_utc": "2026-08-29T11:27:36Z",
+  "branch": "agents/board-advisor",
+  "git_head_before_runtime_mutation": "412c4e1c5376748439e41bab1087c222f8a01439",
+  "mission_result": "EXISTING_FOREX_FALLBACK_Q04_PRIORITY_APPLIED",
+  "frontier_reconciliation": {
+    "controlling_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "published_pair_count": 66,
+    "relationships_covered": 66,
+    "relationships_uncovered": 0,
+    "sign_aware_coverage_artifact": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "fresh_approved_card_census": {
+      "scope": "strategy-seeds/cards/approved cards containing cointegration or coint",
+      "approved_cards": 119,
+      "matching_ea_directories": 119,
+      "unbuilt_cards": []
+    },
+    "anchor_q02_repair_required": false,
+    "fallback_authorized": true,
+    "published_hard_qualifiers": [
+      {
+        "ea_id": "QM5_12532",
+        "pair": [
+          "AUDUSD.DWX",
+          "NZDUSD.DWX"
+        ],
+        "canonical_q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+        "canonical_frontier": "Q02_PASS_Q04_PASS_Q05_FAIL",
+        "q02_oninit_or_no_history_blocker": false
+      },
+      {
+        "ea_id": "QM5_12533",
+        "pair": [
+          "EURJPY.DWX",
+          "GBPJPY.DWX"
+        ],
+        "canonical_q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+        "canonical_frontier": "Q02_PASS_Q04_FAIL",
+        "q02_oninit_or_no_history_blocker": false
+      }
+    ],
+    "higher_rank_lineage": [
+      {
+        "scan_rank": 40,
+        "ea_id": "QM5_20219",
+        "pair": [
+          "USDJPY.DWX",
+          "NZDUSD.DWX"
+        ],
+        "frontier_at_selection": "Q02_PASS_Q03_PASS_Q04_PENDING_PRIORITY_TRACK",
+        "advanceable_by_this_handoff": false,
+        "reason": "already advanced in place; a transient worker claim returned it pending without removing its priority binding"
+      },
+      {
+        "scan_rank": 41,
+        "ea_id": "QM5_12765",
+        "pair": [
+          "GBPUSD.DWX",
+          "NZDUSD.DWX"
+        ],
+        "frontier_at_selection": "Q02_PASS_Q04_FAIL",
+        "advanceable_by_this_handoff": false,
+        "reason": "terminal economic verdict"
+      },
+      {
+        "scan_rank": 42,
+        "ea_id": "QM5_20220",
+        "pair": [
+          "USDCAD.DWX",
+          "AUDJPY.DWX"
+        ],
+        "frontier_at_selection": "Q02_PASS_Q03_PASS_Q04_FAIL",
+        "advanceable_by_this_handoff": false,
+        "reason": "terminal Q04 verdict after the preceding priority handoff"
+      },
+      {
+        "scan_rank": 43,
+        "ea_id": "QM5_12766",
+        "pair": [
+          "USDJPY.DWX",
+          "USDCHF.DWX"
+        ],
+        "frontier_at_selection": "Q02_PASS_Q04_FAIL",
+        "advanceable_by_this_handoff": false,
+        "reason": "terminal economic verdict"
+      }
+    ]
+  },
+  "selection": {
+    "ea_id": "QM5_20223",
+    "ea_directory": "framework/EAs/QM5_20223_gbpusd-eurgbp",
+    "approved_card": "strategy-seeds/cards/approved/QM5_20223_gbpusd-eurgbp_card.md",
+    "logical_symbol": "QM5_20223_GBPUSD_EURGBP_COINTEGRATION_D1",
+    "traded_symbols": [
+      "GBPUSD.DWX",
+      "EURGBP.DWX"
+    ],
+    "conversion_history_only_symbols": [],
+    "selection_mode": "existing_forex_fallback_no_unbuilt_66_pair_candidate",
+    "selection_reason": "next recorded nonterminal scan relationship after rank 40 was already priority-bound and ranks 41 through 43 had terminal Q04 failures",
+    "scan_relationship_rank": 44,
+    "scan_evidence": {
+      "dev_net_sharpe": -0.078882576442,
+      "oos_net_sharpe": -0.098985257721,
+      "oos_return_percent": -0.844505115263,
+      "oos_state_changes": 17,
+      "dev_beta": -0.399228065368,
+      "half_life_d1_bars": 149.50460461188,
+      "disposition": "one_shot_pipeline_test_no_refit_or_rescue"
+    },
+    "timeframe": "D1"
+  },
+  "source_and_build_binding": {
+    "primary_method_citation": "Chan, Ernest P. (2009), Quantitative Trading, Wiley, examples 3.6, 7.2, 7.3 and 7.5",
+    "owner_ratified_extraction": "strategy-seeds/sources/SRC02/raw/cointegration_pair_family.md",
+    "card_schema_lint": "PASS",
+    "g0_status": "APPROVED",
+    "approved_card_sha256": "cc6b8ac3e6aeef188d7895ffc1e760f4678bac1f3abdd5542787057502f1888b",
+    "mq5_sha256": "2b07affb65a30a82d19ed2afdae8bf6a180dabf383d95e49ae847c129e9d4887",
+    "ex5_sha256": "7c0b1ed6777ed6622af451a7e8658284c7a1100635fad64fd929925b5d2ea751",
+    "basket_manifest": "framework/EAs/QM5_20223_gbpusd-eurgbp/basket_manifest.json",
+    "basket_manifest_sha256": "dc51a81594bd9928aa97297b65a02db38c4d02364152d7cf70930444db765959",
+    "setfile": "framework/EAs/QM5_20223_gbpusd-eurgbp/sets/QM5_20223_gbpusd-eurgbp_QM5_20223_GBPUSD_EURGBP_COINTEGRATION_D1_D1_backtest.set",
+    "setfile_sha256": "ee8fcdc593cd6b75670f4f0ccbb2e1665a3414743f525d7efde6cca3850ffa6d",
+    "q03_execution_identity_stable": true,
+    "ad_hoc_build_check": {
+      "status": "REFUSED_AS_DESIGNED",
+      "failure_class": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+      "retry_attempted": false,
+      "effect": "none; the sealed package was not changed or recompiled"
+    },
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "structural_only": true,
+    "machine_learning": false,
+    "adaptive_refit": false
+  },
+  "sealed_lineage": [
+    {
+      "work_item_id": "696ed8f9-476b-4238-ac17-cf9a0f68e0e8",
+      "phase": "Q02",
+      "status": "done",
+      "verdict": "PASS"
+    },
+    {
+      "work_item_id": "93b27e8e-3da7-4f75-a71f-e1a2e80d83e9",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "deterministic_runs": 2,
+      "trades_per_run": 146,
+      "profit_factor_per_run": 0.8,
+      "drawdown_percent_per_run": 4.59,
+      "net_profit_per_run": -4087.18,
+      "oninit_failure_detected": false,
+      "interpretation": "Q03 reproducibility PASS only; Q04 remains the economic judge"
+    }
+  ],
+  "queue_action": {
+    "work_item_id": "2dec6a14-1816-41df-b0c7-ab440244705d",
+    "phase": "Q04",
+    "mutation": "EXACT_ID_IN_PLACE_PAYLOAD_CAS",
+    "status_after": "pending",
+    "claimed_by_after": null,
+    "attempt_count_after": 0,
+    "verdict_after": null,
+    "updated_at_preserved": "2026-08-05T11:41:10+00:00",
+    "priority_track_before": null,
+    "priority_track_after": true,
+    "priority_reason": "board_advisor_fx_fallback_rank44_q04",
+    "queue_rank_before": 3212,
+    "queue_rank_after": 1928,
+    "queue_rank_improvement": 1284,
+    "pending_rows_before": 5374,
+    "pending_rows_after": 5374,
+    "prior_payload_sha256": "3ccf07abf4d7bc3044c528f1d91064dda8607a51a989227bf4538f5cba8d1a79",
+    "post_payload_sha256": "b903d3b116e7d9a6c60846421be4a6619032d667bf6f8b17aed072899c5e00fb",
+    "audit_event_id": 380381,
+    "audit_event": "priority_track_set",
+    "row_journal": "D:/QM/reports/state/qm5_20223_q04_priority_20260829T112654Z.journal.json",
+    "row_journal_sha256": "fe13b35bdab28d397e2833a84980f884f08532c06e14f7d968e1c0707007b508",
+    "row_journal_state": "COMMITTED",
+    "factory_mutation_lock_wait_seconds_successful_attempt": 0.016,
+    "factory_mutation_lock_release_status": "released",
+    "open_matching_q04_rows_after": 1,
+    "active_holds_after": 0,
+    "supersede_relations_after": 0,
+    "active_quarantine_after": 0,
+    "duplicate_work_items_created": 0,
+    "pipeline_verdict_changed": false,
+    "alpha_changed": false
+  },
+  "capacity": {
+    "initial_preflight": {
+      "samples_percent": [
+        53.520617,
+        38.898509,
+        36.041741,
+        36.66788,
+        32.857224
+      ],
+      "average_percent": 39.597194,
+      "maximum_percent": 53.520617,
+      "cpu_ceiling_hit": false
+    },
+    "first_lock_attempt": {
+      "wait_bound_seconds": 45,
+      "result": "ABORTED_LOCK_BUSY",
+      "database_mutation": false
+    },
+    "apply_sample": {
+      "samples_percent": [
+        68.866897,
+        74.390279,
+        58.301572,
+        71.19452,
+        75.796
+      ],
+      "average_percent": 69.7098536,
+      "maximum_percent": 75.796,
+      "cpu_ceiling_percent": 97,
+      "cpu_ceiling_hit": false
+    },
+    "post_action_sample": {
+      "samples_percent": [
+        66.897996,
+        81.220143,
+        70.709999,
+        55.961645,
+        49.942921
+      ],
+      "average_percent": 64.946541,
+      "maximum_percent": 81.220143,
+      "cpu_ceiling_percent": 97,
+      "cpu_ceiling_hit": false
+    },
+    "active_multisymbol_work_items_at_apply": [],
+    "manual_mt5_dispatch_started": false
+  },
+  "safety": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "new_work_item_created": false,
+    "pipeline_verdict_changed": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "live_manifest_touched": false,
+    "manual_terminal_action": false,
+    "backtest_started": false,
+    "preexisting_worktree_changes_preserved": true
+  }
+}
