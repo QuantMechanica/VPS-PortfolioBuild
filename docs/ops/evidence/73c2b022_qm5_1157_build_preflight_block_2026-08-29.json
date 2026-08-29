@@ -46,6 +46,14 @@
     "line_count": 126,
     "note": "The pre-existing staged mq5-only scaffold was preserved; EA 1157 is not an active identity for this strategy."
   },
+  "router_disposition": {
+    "review_requested": true,
+    "review_allowed": false,
+    "review_gate_code": "D6_BUILD_IDENTITY_MISSING",
+    "review_gate_reason": "strict_build_pass_evidence_missing_review_dispatch_refused",
+    "final_state": "BLOCKED",
+    "final_verdict": "PRECONDITION_HOLD_RETIRED_REUSED_ID; REVIEW refused D6_BUILD_IDENTITY_MISSING"
+  },
   "verdict": "BUILD_NOT_STARTED_RETIRED_AND_REUSED_EA_ID",
   "blocked_reason": "The requested EA 1157 identity for qp-stress-reversal-sp500 is retired. The same number is active for plastun-crude-oil-autumn, while qp-stress-reversal-sp500 is active under EA 12074. Building would violate identity and magic ownership gates.",
   "required_next_action": "OWNER-governed intake must reconcile the duplicate/reused EA identities and route the card only under its single active canonical ID with matching active magic rows.",

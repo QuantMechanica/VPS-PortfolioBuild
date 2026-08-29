@@ -40,6 +40,14 @@
     "line_count": 126,
     "note": "The pre-existing staged mq5-only scaffold was preserved and cannot establish a missing registry identity."
   },
+  "router_disposition": {
+    "review_requested": true,
+    "review_allowed": false,
+    "review_gate_code": "D6_BUILD_IDENTITY_MISSING",
+    "review_gate_reason": "strict_build_pass_evidence_missing_review_dispatch_refused",
+    "final_state": "BLOCKED",
+    "final_verdict": "PRECONDITION_HOLD_EA_ID_REQUIRED; REVIEW refused D6_BUILD_IDENTITY_MISSING"
+  },
   "verdict": "BUILD_NOT_STARTED_EA_IDENTITY_GATE_FAIL",
   "blocked_reason": "ea_id_registry.csv has no row for EA 1643. The requested slug is actively registered under EA 1619, so the mandatory card-slug-folder-registry identity cannot be proven.",
   "required_next_action": "OWNER-governed intake must reconcile the card EA ID with the deterministic registry, ensure a single active identity, allocate all traded-symbol magic rows, and recycle the build task.",

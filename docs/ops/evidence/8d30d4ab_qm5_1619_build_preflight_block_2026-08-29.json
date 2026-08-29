@@ -42,6 +42,14 @@
     "line_count": 126,
     "note": "The pre-existing staged mq5-only scaffold was preserved; compiling it would violate the mandatory identity gate."
   },
+  "router_disposition": {
+    "review_requested": true,
+    "review_allowed": false,
+    "review_gate_code": "D6_BUILD_IDENTITY_MISSING",
+    "review_gate_reason": "strict_build_pass_evidence_missing_review_dispatch_refused",
+    "final_state": "BLOCKED",
+    "final_verdict": "PRECONDITION_HOLD_IDENTITY_MISMATCH; REVIEW refused D6_BUILD_IDENTITY_MISSING"
+  },
   "verdict": "BUILD_NOT_STARTED_SLUG_IDENTITY_GATE_FAIL",
   "blocked_reason": "EA 1619 is actively registered to aa-overnight-mom and all its magic rows carry that slug. The requested ehlers-adaptive-cg-h4 slug has active registry allocation under EA 1624 (and legacy active 12247), not 1619.",
   "required_next_action": "OWNER-governed intake must retire duplicate or stale identities, correct the approved card/router task to the single canonical EA ID, verify matching active magic rows, and recycle the build task.",

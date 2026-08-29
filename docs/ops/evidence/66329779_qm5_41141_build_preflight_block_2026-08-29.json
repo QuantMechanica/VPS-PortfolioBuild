@@ -41,6 +41,14 @@
     "line_count": 126,
     "note": "The pre-existing staged mq5-only scaffold was preserved and does not substitute for governed magic allocation."
   },
+  "router_disposition": {
+    "review_requested": true,
+    "review_allowed": false,
+    "review_gate_code": "D6_BUILD_IDENTITY_MISSING",
+    "review_gate_reason": "strict_build_pass_evidence_missing_review_dispatch_refused",
+    "final_state": "BLOCKED",
+    "final_verdict": "PRECONDITION_HOLD_MAGIC_ROWS_REQUIRED; REVIEW refused D6_BUILD_IDENTITY_MISSING"
+  },
   "verdict": "BUILD_NOT_STARTED_MAGIC_GATE_FAIL",
   "blocked_reason": "The approved card and active EA identity match, but magic_numbers.csv has no row for EA 41141 and its traded GBPUSD.DWX slot. qm-build-ea-from-card forbids Development from allocating the row.",
   "required_next_action": "The governed registry writer must allocate the active slot-0 GBPUSD.DWX magic row, regenerate QM_MagicResolver.mqh, verify zero dropped rows, and recycle the build task.",
