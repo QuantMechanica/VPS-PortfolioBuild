@@ -1,0 +1,98 @@
+{
+  "schema_version": "qm.board-advisor-build-handoff/v1",
+  "recorded_at_utc": "2026-08-29T15:22:18.8090221Z",
+  "branch": "agents/board-advisor",
+  "ea": {
+    "ea_id": "QM5_21508",
+    "ea_label": "QM5_21508_qs-ma-envelope-eur",
+    "symbol": "EURUSD.DWX",
+    "timeframe": "D1",
+    "asset_class": "forex",
+    "strategy_family": "fixed-percent-ma-envelope-mean-reversion",
+    "expected_trades_per_year": 25,
+    "single_symbol_only": true,
+    "g0_status": "APPROVED",
+    "source_commit": "97ff6cbe6"
+  },
+  "risk_contract": {
+    "environment": "backtest",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "portfolio_weight": 1.0
+  },
+  "identity": {
+    "registry_status": "active",
+    "magic_status": "active",
+    "magic_slot": 0,
+    "magic": 215080000
+  },
+  "hashes": {
+    "mq5_sha256": "09090293a60940059da357ad7a3fdec73f11005d5ae9320b596378d4ecc2cdc7",
+    "spec_sha256": "78d61e065c08a4c9e5bf30a722d03b8f7776e51cac9dcd3976d2d3b058d7bd17",
+    "setfile_sha256_before_governed_regeneration": "4d9a0f11051bc305b778306faec19f603281165ae42be2881bb95a1b8a700962"
+  },
+  "validation": {
+    "canonical_prebuild_ok": true,
+    "magic_precheck_ready": true,
+    "archive_admission_ok": true,
+    "spec_validation": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "symbol_scope_violation_count": 0,
+    "prebuild_warnings": [
+      "r_gate_body_rows_missing"
+    ],
+    "legacy_card_linter": {
+      "status": "FORMAT_INCOMPATIBLE_NON_CANONICAL",
+      "missing_legacy_headings": [
+        "hypothesis",
+        "rules",
+        "risk"
+      ]
+    }
+  },
+  "farm_claims": {
+    "prior_blocked_agent_task_id": "6be9b5cf-1bfc-431e-b572-f5950c95eb77",
+    "prior_blocker": "governed magic allocation absent",
+    "prior_blocker_resolved": true,
+    "build_task_id": "e6472d61-e9f6-4a9a-b9a4-44dcc75c0e79",
+    "build_task_status": "pending",
+    "compile_work_item_id": "845bdd8a-c0a3-4a6c-b94e-f1bc8d6114b9",
+    "compile_status": "pending",
+    "compile_attempt_count": 0,
+    "compile_claimed_by": null,
+    "compile_activation_hold_active": false,
+    "compile_hold_released_at": "2026-08-29T15:20:29+00:00",
+    "compile_release_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_compile_wave_20260829T151912Z_dcec9ec2.sqlite",
+    "compile_pending_position": 1941,
+    "pending_work_item_count": 5313
+  },
+  "cpu_gate": {
+    "ceiling_pct": 97.0,
+    "samples_pct": [
+      89.46601727446641,
+      86.53478444410584,
+      75.59556487098892,
+      67.80354368665297,
+      50.391587442362365
+    ],
+    "average_pct": 73.9582995437153,
+    "maximum_pct": 89.46601727446641,
+    "binding": false
+  },
+  "handoff": {
+    "ex5_exists": false,
+    "strict_compile_pass": false,
+    "smoke_ran": false,
+    "q02_enqueued": false,
+    "q02_blocker": "governed compile work item remains pending; EX5 and Q01 PASS absent",
+    "next_action": "Allow the resident fleet to finish compile work item 845bdd8a-c0a3-4a6c-b94e-f1bc8d6114b9, run exactly one EURUSD.DWX D1 smoke after a fresh CPU check, then record build task e6472d61-e9f6-4a9a-b9a4-44dcc75c0e79 for idempotent Q02 enqueue."
+  },
+  "safety": {
+    "manual_terminal_claim": false,
+    "terminal_process_control": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "live_manifest_touched": false
+  }
+}
