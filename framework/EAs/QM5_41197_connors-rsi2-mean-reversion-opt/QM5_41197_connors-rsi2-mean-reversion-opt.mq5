@@ -73,6 +73,7 @@ long                  g_pp_days_evaluated = 0;
 long                  g_pp_fire_count = 0;
 long                  g_pp_legs_suppressed = 0;
 long                  g_pp_invalid_days = 0;
+datetime              g_pp_reference_bar_time = 0;
 
 QM_PermissionResult Pattern_Permission()
   {
@@ -82,7 +83,7 @@ QM_PermissionResult Pattern_Permission()
       perm.allow_buy = true;
       perm.allow_sell = true;
       perm.valid = true;
-      perm.reference_bar_time = iTime(_Symbol, QM_PPC_REFERENCE_TF, QM_PPC_CLOSED_SHIFT);
+      perm.reference_bar_time = g_pp_reference_bar_time;
       perm.reason = "census_control";
       return perm;
      }
@@ -154,18 +155,7 @@ string Strategy_ExpectedSymbolForSlot(const int slot)
   {
    switch(slot)
      {
-      case 0:  return "EURUSD.DWX";
-      case 1:  return "GBPUSD.DWX";
-      case 2:  return "USDJPY.DWX";
-      case 3:  return "USDCAD.DWX";
-      case 4:  return "USDCHF.DWX";
-      case 5:  return "AUDUSD.DWX";
-      case 6:  return "NZDUSD.DWX";
-      case 7:  return "EURJPY.DWX";
-      case 8:  return "GBPJPY.DWX";
-      case 9:  return "NDX.DWX";
-      case 10: return "WS30.DWX";
-      case 11: return "SP500.DWX";
+      case 0: return "GBPUSD.DWX";
       default: return "";
      }
   }
@@ -188,6 +178,7 @@ void Strategy_ResetBarState()
    g_sma_1 = 0.0;
    g_rsi_1 = 0.0;
    g_atr_1 = 0.0;
+   g_pp_reference_bar_time = 0;
   }
 
 void Strategy_AdvanceBarState()
@@ -227,6 +218,7 @@ void Strategy_AdvanceBarState()
    g_sma_1 = sma_value;
    g_rsi_1 = rsi_value;
    g_atr_1 = atr_value;
+   g_pp_reference_bar_time = last_closed.time;
    g_bar_state_valid = true;
   }
 
