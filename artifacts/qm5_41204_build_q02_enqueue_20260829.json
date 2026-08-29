@@ -1,0 +1,139 @@
+{
+  "schema": "qm.new-commodity-sleeve-build-q02/v1",
+  "generated_at_utc": "2026-08-29T19:38:30Z",
+  "branch": "agents/board-advisor",
+  "pre_receipt_head": "a5b72673cd",
+  "mission_outcome": "BUILT_COMPILE_OK_Q02_ENQUEUED",
+  "ea": {
+    "ea_id": "QM5_41204",
+    "slug": "wti-samecal-huber10",
+    "strategy_id": "KELOHARJU-HUBER-WTI-SAMECAL10-2026_S01",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "magic": 412040000
+  },
+  "edge": {
+    "class": "wti_exact_prior_ten_year_same_calendar_fixed_scale_huber_location",
+    "frequency": "monthly",
+    "mechanic": "At the first normalized D1 broker-month transition, require the completed XTI log return for the same calendar month in exact years Y-1 through Y-10; compute the even median and raw even MAD; freeze scale=1.4826*MAD and delta=1.5*scale; run exactly 32 Huber reweighted-location updates; follow the final sign beyond an inclusive 1e-12 flat band until the next month.",
+    "book_difference": "Direct WTI crude-oil exposure absent from the stated directional XAU/SP500/NDX/XNG book. It is structurally distinct from the existing XNG cumulative-RSI pullback. Realized decorrelation is not claimed and remains a Q09 portfolio decision.",
+    "dedup_verdict": "FUZZY_MATCH_RESOLVED_DISTINCT_WTI_EXACT_TEN_YEAR_SAME_CALENDAR_FIXED_SCALE_HUBER_LOCATION_SIGN_MONTHLY_RENEWAL",
+    "dedup_receipt": "artifacts/qm5_wti_samecal_huber10_preallocation_dedup_20260829.json",
+    "dedup_receipt_sha256": "63bd6de74308678c8b23ccc5d9bf0c2f25eabedb348734ac817c64887815db4a",
+    "locked_disagreement": {
+      "huber_location": -0.00031225666666666747,
+      "huber_direction": "SELL",
+      "raw_mean": 0.000020000000000000042,
+      "raw_mean_direction": "BUY",
+      "centered_signed_rank_score": 3,
+      "centered_signed_rank_direction": "BUY"
+    }
+  },
+  "governance": {
+    "source_packet": "strategy-seeds/sources/KELOHARJU-HUBER-WTI-SAMECAL10-2026/source.md",
+    "source_packet_sha256": "3eb1889ce3a5dfcbcf7aac69f8fe1fdf103f70eedbee50d930cbcee770d23531",
+    "source_approval": "decisions/2026-08-29_wti_same_calendar_huber10_source_approval.md",
+    "source_approval_sha256": "dc686e916cc66486d55e6d475810ca60365f66b60cbdaa2fc0e8bc415a6893e8",
+    "g0_decision": "decisions/2026-08-29_qm5_41204_wti_same_calendar_huber10_g0.md",
+    "g0_decision_sha256": "2d7375f165bd76000186cf19c36b60d2c0aeae951a57cdf82f9fed220756ea79",
+    "g0_status": "APPROVED",
+    "approved_card": "strategy-seeds/cards/approved/QM5_41204_wti-samecal-huber10_card.md",
+    "approved_card_sha256": "da2b3e64f3603c4bdfccbfa9b12877ab325ad4390f65e056bfad5f7a5d60c10d",
+    "runtime_card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_41204_wti-samecal-huber10_card.md",
+    "runtime_card_sha256": "a92fa45651c2f940927059136ceec203bff240652e6818b4489b388e1fca578f"
+  },
+  "build": {
+    "implementation_commits": [
+      "d30a3b6a6",
+      "a5b72673c"
+    ],
+    "build_task_id": "1f26f61b-40af-43d2-854b-1772c9af4f27",
+    "build_task_status": "done",
+    "compile_work_item_id": "50540d6c-81b9-42ac-9879-012d8573c133",
+    "compile_work_item_status": "done",
+    "compile_verdict": "COMPILE_OK",
+    "compile_evidence": "D:/QM/reports/work_items/50540d6c-81b9-42ac-9879-012d8573c133/QM5_41204/COMPILE_EA/compile_evidence.json",
+    "compile_evidence_sha256": "9fc045a0023f406647f63fe3750523fa8a908749616c8d485ff264ae21d1a921",
+    "mq5_sha256": "42a2c048f584901fa26770657a1229b6ec446dfe4c7eca7ca90c4a05e833bb4b",
+    "ex5_sha256": "5f98d908c660794cd2d84bc9d1ef8f6c8051d94c17e1455750febf38a311c7e8",
+    "setfile_sha256": "2392366f270df778ea90df736ba685cdb5c4a590e3f754bb38ddc0f19b16498e",
+    "spec_sha256": "2a87e1703d1b0b3b0d8f97add0bdeba7b7c5539a64a320584840431328dea2b0",
+    "build_check": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "risk_mode": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    }
+  },
+  "capacity_before_q02": {
+    "sampled_at_utc": "2026-08-29T19:34:02.9307428Z",
+    "hard_ceiling_percent": 97.0,
+    "samples_percent": [
+      52.0430062020767,
+      56.0569214062593,
+      59.1093449575683,
+      63.8989264537545,
+      79.3063352822419
+    ],
+    "average_percent": 62.082906860380135,
+    "maximum_percent": 79.3063352822419,
+    "ceiling_binding": false
+  },
+  "capacity_after_q02_enqueue": {
+    "sampled_at_utc": "2026-08-29T19:37:59.3836279Z",
+    "hard_ceiling_percent": 97.0,
+    "samples_percent": [
+      54.77102886389416,
+      44.429758381544715,
+      47.56425830367738,
+      44.07668057694821,
+      42.74716327514646
+    ],
+    "average_percent": 46.71777788024218,
+    "maximum_percent": 54.77102886389416,
+    "ceiling_binding": false
+  },
+  "q02": {
+    "enqueued": true,
+    "enqueued_by": "record_build_result.auto_q02",
+    "work_item_id": "24f492cd-89e3-4040-b207-d14d3fd4bf46",
+    "status_at_readback": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile": "framework/EAs/QM5_41204_wti-samecal-huber10/sets/QM5_41204_wti-samecal-huber10_XTIUSD.DWX_D1_backtest.set",
+    "priority_track": true,
+    "cohort_size": 1,
+    "custom_history_archive_admission": "ACTIVE",
+    "custom_history_selected_archive_rows": 108
+  },
+  "verification": {
+    "reference_tests": "PASS: 10 tests",
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "execution_contract_lint": "PASS: zero issues for QM5_41204",
+    "spec_validation": "PASS",
+    "static_build_gate": "PASS: zero failures and zero warnings",
+    "strict_compile": "PASS: zero errors and zero warnings",
+    "json_parse": "PASS"
+  },
+  "safety": {
+    "manual_q02_dispatch": false,
+    "manual_tester_launch": false,
+    "autotrading_toggled": false,
+    "t_live_controlled": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "certification_claimed": false,
+    "decorrelation_claimed": false
+  },
+  "mission_commits_before_receipt": [
+    "480eace0a",
+    "68ac7c013",
+    "d30a3b6a6",
+    "a5b72673c"
+  ]
+}

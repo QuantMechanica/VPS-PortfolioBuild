@@ -1,0 +1,50 @@
+{
+  "task_id": "1f26f61b-40af-43d2-854b-1772c9af4f27",
+  "build_generation": 0,
+  "ea_id": "QM5_41204",
+  "slug": "wti-samecal-huber10",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_41204_wti-samecal-huber10",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_41204_wti-samecal-huber10/QM5_41204_wti-samecal-huber10.mq5",
+  "mq5_sha256": "42a2c048f584901fa26770657a1229b6ec446dfe4c7eca7ca90c4a05e833bb4b",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_41204_wti-samecal-huber10/QM5_41204_wti-samecal-huber10.ex5",
+  "ex5_sha256": "5f98d908c660794cd2d84bc9d1ef8f6c8051d94c17e1455750febf38a311c7e8",
+  "magic_base": 412040000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "symbols": [
+    "XTIUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_41204_wti-samecal-huber10/sets/QM5_41204_wti-samecal-huber10_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_sha256": {
+    "QM5_41204_wti-samecal-huber10_XTIUSD.DWX_D1_backtest.set": "2392366f270df778ea90df736ba685cdb5c4a590e3f754bb38ddc0f19b16498e"
+  },
+  "basket_manifest_path": null,
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_41204_wti-samecal-huber10/SPEC.md",
+  "spec_md_sha256": "2a87e1703d1b0b3b0d8f97add0bdeba7b7c5539a64a320584840431328dea2b0",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_work_item_id": "50540d6c-81b9-42ac-9879-012d8573c133",
+  "compile_predecessor_work_item_id": null,
+  "compile_evidence_path": "D:/QM/reports/work_items/50540d6c-81b9-42ac-9879-012d8573c133/QM5_41204/COMPILE_EA/compile_evidence.json",
+  "compile_evidence_sha256": "9fc045a0023f406647f63fe3750523fa8a908749616c8d485ff264ae21d1a921",
+  "compile_verdict": "COMPILE_OK",
+  "build_check_report": "D:/QM/reports/framework/21/build_check_20260829_193445.json",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "blocked_reason": "",
+  "open_questions": [
+    "The build-only lane did not launch a tester; Q02 owns frequency and package-level execution evidence.",
+    "Only Q09 may determine realized portfolio correlation or diversification value."
+  ],
+  "built_at_utc": "2026-08-29T19:36:08Z"
+}
