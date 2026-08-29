@@ -1,0 +1,28 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "a05b9483-e45a-46ed-9fc9-c672723fec02"
+  ],
+  "backup": {
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260829T202042Z_d410cb24.sqlite",
+    "sha256": "5ab9de8ccb9f94ead2cc7ea65922efc7c23fe994ccd86c516309f0d2c27f7662"
+  },
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "df7e2e57aaa974d7936e58d6c236d80b51a22cd5b2130fb6de2c8f2d001e9159",
+      "ea_id": "QM5_41154",
+      "ea_label": "QM5_41154_eurjpy-carry-unwind-crisis-momentum",
+      "expected_mq5_sha256": "df7e2e57aaa974d7936e58d6c236d80b51a22cd5b2130fb6de2c8f2d001e9159",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41154_eurjpy-carry-unwind-crisis-momentum\\QM5_41154_eurjpy-carry-unwind-crisis-momentum.mq5",
+      "work_item_id": "a05b9483-e45a-46ed-9fc9-c672723fec02"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-08-29T20:20:48+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "a05b9483-e45a-46ed-9fc9-c672723fec02"
+}

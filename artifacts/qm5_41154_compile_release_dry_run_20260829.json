@@ -1,0 +1,19 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "df7e2e57aaa974d7936e58d6c236d80b51a22cd5b2130fb6de2c8f2d001e9159",
+      "ea_id": "QM5_41154",
+      "ea_label": "QM5_41154_eurjpy-carry-unwind-crisis-momentum",
+      "expected_mq5_sha256": "df7e2e57aaa974d7936e58d6c236d80b51a22cd5b2130fb6de2c8f2d001e9159",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41154_eurjpy-carry-unwind-crisis-momentum\\QM5_41154_eurjpy-carry-unwind-crisis-momentum.mq5",
+      "work_item_id": "a05b9483-e45a-46ed-9fc9-c672723fec02"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "a05b9483-e45a-46ed-9fc9-c672723fec02"
+}

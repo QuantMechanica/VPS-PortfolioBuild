@@ -1,0 +1,135 @@
+{
+  "schema": "qm.fx-diversity-sleeve-build-q02/v1",
+  "generated_at_utc": "2026-08-29T20:31:30Z",
+  "branch": "agents/board-advisor",
+  "pre_receipt_head": "e906629ef71b40842a907c8cc3c6c3ea2032f52c",
+  "mission_outcome": "BUILT_COMPILE_OK_Q02_ENQUEUED",
+  "selection": {
+    "ea_id": "QM5_41154",
+    "slug": "eurjpy-carry-unwind-crisis-momentum",
+    "family": "carry_funding",
+    "mechanism": "carry_unwind_crisis_momentum",
+    "host_symbol": "EURJPY.DWX",
+    "logical_symbol": "QM5_41154_EURJPY_CARRY_UNWIND_CRISIS_MOMENTUM_D1",
+    "timeframe": "D1",
+    "reason": "Deterministic lower-EA-ID tie-break among the two remaining approved Wave-2 FX carry-unwind cards; adds a forex carrier outside the user-stated Q08 survivor concentration in indices, metals, and energy.",
+    "non_duplicate_coordination": "Continued the sole pre-existing QM5_41154 build task and its SHA-bound compile work item; no second task, EA identity, or Q02 row was opened before record-build."
+  },
+  "edge": {
+    "side": "SHORT_EURJPY_ONLY",
+    "frequency": "low_frequency_daily_crisis_regime",
+    "entry": "Equal-weight five-session return across AUDJPY, NZDJPY, CADJPY, and EURJPY is at or below -1%; EURJPY closes below the prior 20-bar low; and 10-session realized volatility exceeds the median of the prior 60 rolling observations.",
+    "stop": "Frozen 2.0 ATR(14,D1) hard stop.",
+    "exit": "Ten completed D1 bars or a close above the midpoint of the prior 20-bar high/low channel.",
+    "basket_role": "AUDJPY.DWX, NZDJPY.DWX, and CADJPY.DWX are read-only synchronized signal inputs; EURJPY.DWX is the sole traded carrier.",
+    "structural_only": true,
+    "ml_or_banned_indicators": false,
+    "certification_claimed": false,
+    "decorrelation_claimed": false
+  },
+  "governance": {
+    "source_id": "BRUNNERMEIER-NAGEL-PEDERSEN-CARRY-CRASH-2008",
+    "source_tier": "TIER_A",
+    "source_citation": "Markus K. Brunnermeier, Stefan Nagel and Lasse H. Pedersen (2009), Carry Trades and Currency Crashes, NBER Macroeconomics Annual 23, 313-347, DOI 10.1086/593088.",
+    "source_url": "https://www.nber.org/papers/w14473",
+    "runtime_card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_41154_eurjpy-carry-unwind-crisis-momentum.md",
+    "runtime_card_sha256": "8ce741d028be29cfc55f43074c26c154b6a44287038fc49d48b2c8ab98b977e0",
+    "g0_status": "APPROVED"
+  },
+  "build": {
+    "implementation_commit": "e265084b6",
+    "prior_cpu_stop_receipt": "artifacts/qm5_41154_fx_build_compile_cpu_stop_20260829T194208Z_board_advisor.json",
+    "prior_cpu_stop_receipt_sha256": "0f8fbb2c07ba1cbfdacde12ea101c6e62b5e226fb0f4571b6933459a802266d9",
+    "build_task_id": "baf614cf-9fd2-462f-ac4a-f8f56a018916",
+    "build_task_status": "done",
+    "magic": 411540000,
+    "mq5_sha256": "df7e2e57aaa974d7936e58d6c236d80b51a22cd5b2130fb6de2c8f2d001e9159",
+    "ex5_sha256": "cba704f222a88334b190b573c12196bc52ba9048d2113d33c4e41ef423d6bf50",
+    "spec_sha256": "16dbb0286d1ab8b7935ec36b8b44d25ceaa05bd9094f0e8276ba284b5a2e613f",
+    "basket_manifest_sha256": "1b024e38d67da047a5b698d85357a9143380730b7db529195875f2a81ccb991b",
+    "setfile_sha256": {
+      "physical_host": "c129c4263d433e3767fc4e8ce330c240661b8335aa61b2908e71f0318ff8fe07",
+      "logical_basket": "4b3f9f14a66ac221754e059869c4b68cb140be7ec417b0ece55b357ef810488b"
+    },
+    "risk_mode": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    }
+  },
+  "compile": {
+    "work_item_id": "a05b9483-e45a-46ed-9fc9-c672723fec02",
+    "release_dry_run": "artifacts/qm5_41154_compile_release_dry_run_20260829.json",
+    "release_dry_run_sha256": "644a530259c7118befa1ac346890172c762f73b889870177241bac1a953fe5a3",
+    "release_apply": "artifacts/qm5_41154_compile_release_20260829.json",
+    "release_apply_sha256": "9721c217297532719cfd3c0d289f226c4dbff71f5459f2eef30eb465e0bcfa2c",
+    "terminal_claim": "T7",
+    "status": "done",
+    "verdict": "COMPILE_OK",
+    "errors": 0,
+    "warnings": 0,
+    "build_check": "PASS",
+    "build_check_failures": 0,
+    "build_check_advisories": 1,
+    "build_check_advisory_resolution": "The swap advisory is non-blocking: metadata requires a finite retrievable value but never gates on swap sign or magnitude; zero-swap .DWX data therefore passes.",
+    "evidence": "D:/QM/reports/work_items/a05b9483-e45a-46ed-9fc9-c672723fec02/QM5_41154/COMPILE_EA/compile_evidence.json",
+    "evidence_sha256": "99e4936e5dc5fc5b0b5ba7088a66dfc94044d351df658e8a9f5068cb8896dba3"
+  },
+  "capacity": {
+    "sampling_method": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "hard_ceiling_percent": 97.0,
+    "before_compile_release": {
+      "sampled_at_utc": "2026-08-29T20:20:22Z",
+      "samples_percent": [75.795923, 69.513256, 70.240674, 72.583046, 76.369794],
+      "average_percent": 72.900539,
+      "maximum_percent": 76.369794,
+      "ceiling_binding": false
+    },
+    "before_q02": {
+      "sampled_at_utc": "2026-08-29T20:28:51.5574588Z",
+      "samples_percent": [52.66556087375962, 36.602386731282664, 35.74878217494884, 60.47307844984767, 60.25799547806485],
+      "average_percent": 49.14956074158073,
+      "maximum_percent": 60.47307844984767,
+      "ceiling_binding": false
+    },
+    "after_q02_enqueue": {
+      "sampled_at_utc": "2026-08-29T20:30:53.8921350Z",
+      "samples_percent": [62.2109033824033, 60.38479862534187, 59.09035102260201, 59.57892373135285, 61.04478972797924],
+      "average_percent": 60.461953297935864,
+      "maximum_percent": 62.2109033824033,
+      "ceiling_binding": false
+    }
+  },
+  "q02": {
+    "enqueued": true,
+    "enqueued_by": "record_build_result.auto_q02",
+    "work_item_id": "039fc14e-75e5-44a0-89db-494ef110c76f",
+    "status_at_readback": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "symbol": "QM5_41154_EURJPY_CARRY_UNWIND_CRISIS_MOMENTUM_D1",
+    "host_symbol": "EURJPY.DWX",
+    "timeframe": "D1",
+    "setfile": "framework/EAs/QM5_41154_eurjpy-carry-unwind-crisis-momentum/sets/QM5_41154_eurjpy-carry-unwind-crisis-momentum_QM5_41154_EURJPY_CARRY_UNWIND_CRISIS_MOMENTUM_D1_D1_backtest.set",
+    "priority_track": true,
+    "cohort_size": 1,
+    "basket_symbol_count": 4,
+    "custom_history_archive_admission": "ACTIVE",
+    "custom_history_selected_archive_rows": 432
+  },
+  "verification": {
+    "spec_validation": "PASS",
+    "static_build_gate": "PASS_WITH_ONE_REVIEWED_NON_BLOCKING_ADVISORY",
+    "strict_compile": "PASS_ZERO_ERRORS_ZERO_WARNINGS",
+    "json_parse": "PASS"
+  },
+  "safety": {
+    "manual_q02_dispatch": false,
+    "manual_tester_launch": false,
+    "terminal_processes_started_or_stopped": false,
+    "autotrading_toggled": false,
+    "t_live_controlled": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false
+  }
+}
