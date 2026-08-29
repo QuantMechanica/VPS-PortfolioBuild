@@ -4,35 +4,23 @@
 ; ea_slug:      xauxag-samecal-srank
 ; ea_version:   v5.0
 ; set_version:  s20260829-001
-; symbol:       QM5_41203_XAU_XAG_SAMECAL_SR_D1
-; host_symbol:  XAUUSD.DWX
+; symbol:       XAGUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
-; magic_slot:   0
+; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   9d9ebc3ee692f914a5251b4e3174a2df235c7d3ac0b47561830acb41a085a2ff
+; build_hash:   111f0326e4abbb1078f07fa27f1c1c007a65fb73d30d95010e5ae5190fc90aeb
 ; author:       Development
 ; date:         2026-08-29
 ;==========================================================
 qm_ea_id=41203
-qm_magic_slot_offset=0
-qm_rng_seed=42
+qm_magic_slot_offset=1
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; Native completed-price signal; both news axes are intentionally OFF.
-qm_news_temporal=0
-qm_news_compliance=0
-qm_news_stale_max_hours=336
-qm_news_min_impact=high
-qm_news_mode_legacy=0
-; Full broker-month hold; Friday flattening is intentionally disabled.
-qm_friday_close_enabled=false
-qm_friday_close_hour_broker=21
-qm_stress_reject_probability=0.0
-; Locked approved-card defaults; no optimization surface.
-; card_defaults_source=strategy-seeds/cards/approved/QM5_41203_xauxag-samecal-srank_card.md
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
 strategy_xag_symbol=XAGUSD.DWX
 strategy_history_years=10
 strategy_min_observations=5

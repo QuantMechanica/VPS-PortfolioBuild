@@ -1,0 +1,154 @@
+{
+  "schema": "qm.new-commodity-sleeve-build-q02/v1",
+  "generated_at_utc": "2026-08-29T18:39:30Z",
+  "branch": "agents/board-advisor",
+  "pre_receipt_head": "ad381944eb44cd9afdada7c0b727f53e0151edde",
+  "mission_outcome": "BUILT_COMPILE_OK_Q02_ENQUEUED",
+  "ea": {
+    "ea_id": "QM5_41203",
+    "slug": "xauxag-samecal-srank",
+    "strategy_id": "KELOHARJU-WILCOXON-XAUXAG-SAMECAL-SR-2026_S01",
+    "logical_symbol": "QM5_41203_XAU_XAG_SAMECAL_SR_D1",
+    "host_symbol": "XAUUSD.DWX",
+    "companion_symbol": "XAGUSD.DWX",
+    "timeframe": "D1",
+    "magics": [
+      412030000,
+      412030001
+    ]
+  },
+  "edge": {
+    "class": "xau_xag_exact_prior_ten_year_same_calendar_month_centered_signed_rank_relative_value",
+    "frequency": "monthly",
+    "mechanic": "At the first completed D1 boundary of each broker month, reconstruct synchronized XAU-minus-XAG log-return differences for the same calendar month in exact years Y-1 through Y-10, require at least five observations, reject epsilon zeros and absolute ties, form the centered Wilcoxon signed absolute-rank score, and hold one long metal plus one short metal in the score direction until the next month boundary.",
+    "book_difference": "A paired precious-metals relative-value/calendar package rather than another directional XAU, index, or XNG signal. Realized decorrelation is not claimed and remains a Q09 portfolio decision.",
+    "dedup_verdict": "FUZZY_MATCH_RESOLVED_DISTINCT_XAU_XAG_PAIRED_SAME_CALENDAR_CENTERED_SIGNED_RANK_MONTHLY_RENEWAL",
+    "dedup_receipt": "artifacts/qm5_xauxag_samecal_srank_preallocation_dedup_20260829.json",
+    "dedup_receipt_sha256": "c78ff4f0af253b7e7889a0c1989a554f510ddb3d30b11497531b64e830871139"
+  },
+  "governance": {
+    "source_packet": "strategy-seeds/sources/KELOHARJU-WILCOXON-XAUXAG-SAMECAL-SR-2026/source.md",
+    "source_packet_sha256": "a4fb73ebf5ab394f64a6fcb0ba791fd10bd12496732ab7ae661068ac6a28486f",
+    "source_approval": "decisions/2026-08-29_xauxag_same_calendar_signed_rank_source_approval.md",
+    "source_approval_sha256": "8197987da9d62a15ec38990685d9c46bb32879636d75b96e3ef04c4704d21ffb",
+    "g0_decision": "decisions/2026-08-29_qm5_41203_xauxag_same_calendar_signed_rank_g0.md",
+    "g0_decision_sha256": "12dccc592fb57ef15889460547498f60dfd5af7d5506968bcc0261401cdf2325",
+    "g0_status": "APPROVED",
+    "approved_card": "strategy-seeds/cards/approved/QM5_41203_xauxag-samecal-srank_card.md",
+    "approved_card_sha256": "6bd56e050e20d952e62101c07ab50e177803c3a6fd7b76be2ebd673f79defc96",
+    "runtime_card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_41203_xauxag-samecal-srank_card.md",
+    "runtime_card_sha256": "6bd56e050e20d952e62101c07ab50e177803c3a6fd7b76be2ebd673f79defc96",
+    "canonical_and_runtime_cards_byte_identical": true
+  },
+  "build": {
+    "implementation_commits": [
+      "207d256cd",
+      "6c58e0e93",
+      "ad381944e"
+    ],
+    "build_task_id": "69f223e2-8f27-498e-ae6a-1c1a980406f0",
+    "build_task_status": "done",
+    "initial_compile": {
+      "work_item_id": "eb70f232-b874-4816-8243-dd12f4dc145f",
+      "status": "failed",
+      "compile_result": "PASS",
+      "build_check_result": "FAIL",
+      "failure_classes": [
+        "EA_Q08_MAE_HOOK_MISSING",
+        "EA_INDICATOR_BUFFER_UNBOUNDED"
+      ],
+      "evidence_sha256": "04117756a8d596bce5efec5b3935e4c5b4a4a0f9f8956dc09e4c6131c1642426"
+    },
+    "repair_contract": {
+      "authority": "governed_compile_fail:eb70f232-b874-4816-8243-dd12f4dc145f",
+      "rejected_mq5_sha256": "345ef611140ddce556cf85ed5a5dc911f996b92b17442510e4844fbb9e22f1ed",
+      "repaired_mq5_sha256": "aabcac8d22ceebfa75960c877e8078bfd85e657e4c5b37bdca4dbaff540f75ea",
+      "scope": "Append-only successor bound to the exact failed row, EA label, rejected source hash, repaired source hash, and failure vector."
+    },
+    "compile_work_item_id": "f2ed8f35-2dd4-423b-8feb-da31c70eefe9",
+    "compile_work_item_status": "done",
+    "compile_verdict": "COMPILE_OK",
+    "compile_evidence": "D:/QM/reports/work_items/f2ed8f35-2dd4-423b-8feb-da31c70eefe9/QM5_41203/COMPILE_EA/compile_evidence.json",
+    "compile_evidence_sha256": "79e36409dbea2192bdcf7a86baf1962c38d897d68d58bec1d3f90d17fbba8a41",
+    "mq5_sha256": "aabcac8d22ceebfa75960c877e8078bfd85e657e4c5b37bdca4dbaff540f75ea",
+    "ex5_sha256": "fa4eb606915db114e2bc15fa58736df8fbcca7abb4248d6706df532d754380d0",
+    "setfile_sha256": "f460dc9ccdedd34d82bea97194fb14e4392648cfd3e1766263ceca40a91d9b71",
+    "basket_manifest_sha256": "6fe1e9767e4bdf757fcf3a702ece0112cd5beb1a726602428213249f33dfc171",
+    "spec_sha256": "27d590bea74cc03aaac6f42644313737c3871df093d7bead743ba56d2bd02594",
+    "build_check": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "risk_mode": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    }
+  },
+  "capacity_before_q02": {
+    "sampled_at_utc": "2026-08-29T18:38:37.9327183Z",
+    "command": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "hard_ceiling_percent": 97.0,
+    "samples_percent": [
+      75.97901254281938,
+      81.70677464424135,
+      82.24374450406896,
+      84.66956896395705,
+      82.7166409260155
+    ],
+    "average_percent": 81.46314831622044,
+    "maximum_percent": 84.66956896395705,
+    "ceiling_binding": false
+  },
+  "q02": {
+    "enqueued": true,
+    "work_item_id": "b9747d17-e3ff-405a-96e6-3a7e2b8aba5f",
+    "status_at_readback": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "logical_symbol": "QM5_41203_XAU_XAG_SAMECAL_SR_D1",
+    "host_symbol": "XAUUSD.DWX",
+    "host_timeframe": "D1",
+    "traded_symbols": [
+      "XAUUSD.DWX",
+      "XAGUSD.DWX"
+    ],
+    "tester_currency": "USD",
+    "tester_deposit": 100000,
+    "from_date": "2018.07.02",
+    "to_date": "2024.12.31",
+    "priority_track": true,
+    "cohort_size": 1,
+    "skipped_targets": [],
+    "custom_history_archive_admission": "ACTIVE",
+    "custom_history_selected_archive_rows": 216
+  },
+  "verification": {
+    "reference_tests": "PASS: 9 tests",
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "build_skill_guard": "PASS",
+    "spec_validation": "PASS",
+    "build_guardrails": "PASS: MQ5 and logical fixed-risk setfile",
+    "static_build_gate": "PASS: zero failures",
+    "compile_repair_authority_test": "PASS",
+    "ex5_provenance_guard": "PASS for QM5_41203 against COMPILE_EA work item f2ed8f35-2dd4-423b-8feb-da31c70eefe9; the whole-index invocation returned nonzero only for unrelated pre-existing staged EX5 paths",
+    "json_parse": "PASS"
+  },
+  "safety": {
+    "manual_q02_dispatch": false,
+    "manual_tester_launch": false,
+    "autotrading_toggled": false,
+    "t_live_controlled": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "certification_claimed": false,
+    "decorrelation_claimed": false
+  },
+  "mission_commits_before_receipt": [
+    "0ca4b819a",
+    "25a7fa53b",
+    "207d256cd",
+    "6c58e0e93",
+    "ad381944e"
+  ]
+}
