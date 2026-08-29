@@ -69,6 +69,7 @@ long                  g_pp_days_evaluated = 0;
 long                  g_pp_fire_count = 0;
 long                  g_pp_legs_suppressed = 0;
 long                  g_pp_invalid_days = 0;
+datetime              g_pp_reference_bar_time = 0;
 
 QM_PermissionResult Pattern_Permission()
   {
@@ -78,7 +79,7 @@ QM_PermissionResult Pattern_Permission()
       perm.allow_buy = true;
       perm.allow_sell = true;
       perm.valid = true;
-      perm.reference_bar_time = iTime(_Symbol, QM_PPC_REFERENCE_TF, QM_PPC_CLOSED_SHIFT);
+      perm.reference_bar_time = g_pp_reference_bar_time;
       perm.reason = "census_control";
       return perm;
      }
@@ -306,6 +307,7 @@ void Strategy_PrepareDailyBar()
   {
    g_strategy_entry_eligible = false;
    g_strategy_bar_time = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: once per observed D1 transition.
+   g_pp_reference_bar_time = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: cached closed-bar census reference.
    Strategy_LoadDailyGeometry();
 
    if(g_strategy_bar_time <= 0 || g_strategy_arm_key == "")
@@ -523,7 +525,7 @@ int OnInit()
 
    QM_LogEvent(QM_INFO,
                "INIT_OK",
-               "{\"card\":\"QM5_41198\",\"ea\":\"collins-66mom\"}");
+               "{\"card\":\"QM5_41198\",\"ea\":\"collins-66mom-opt\"}");
    return INIT_SUCCEEDED;
   }
 
