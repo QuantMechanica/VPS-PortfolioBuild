@@ -1,0 +1,79 @@
+{
+  "candidate": {
+    "author": "Krzysztof Borowski",
+    "mechanic": "single XTIUSD WTI short from first genuine broker month D1 boundary through first subsequent normalized D1 bar with calendar day at least 16 monthly renewal",
+    "slug": "wti-h1m-short",
+    "strategy_id": "BOROWSKI-WTI-H1M-2026_S01"
+  },
+  "error": null,
+  "exit_code": 3,
+  "generated_at_utc": "2026-08-29T14:40:21+00:00",
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_20017_xng-dom15-long_card.md",
+      "score": 1.0,
+      "slug": "xng-dom15-long",
+      "source": "card",
+      "strategy_id": "BOROWSKI-XNG-DOM15-2016_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_20018_xng-wed-short_card.md",
+      "score": 1.0,
+      "slug": "xng-wed-short",
+      "source": "card",
+      "strategy_id": "BOROWSKI-COMM-DOW-2016_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_20021_wti-h2m-short_card.md",
+      "score": 1.0,
+      "slug": "wti-h2m-short",
+      "source": "card",
+      "strategy_id": "BOROWSKI-WTI-H2M-2016_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_20027_wti-dom26-short_card.md",
+      "score": 1.0,
+      "slug": "wti-dom26-short",
+      "source": "card",
+      "strategy_id": "BOROWSKI-WTI-DOM26-2016_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_20028_wti-dom1-long_card.md",
+      "score": 1.0,
+      "slug": "wti-dom1-long",
+      "source": "card",
+      "strategy_id": "BOROWSKI-WTI-DOM1-2016_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4699,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1345,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "FUZZY_MATCH"
+}

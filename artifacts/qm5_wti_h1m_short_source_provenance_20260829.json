@@ -1,0 +1,20 @@
+{
+  "schema": "qm.local-source-provenance/v1",
+  "candidate_slug": "wti-h1m-short",
+  "recorded_at_utc": "2026-08-29T14:39:54Z",
+  "retrieval_mode": "complete_read_of_governed_repository_packet",
+  "new_public_retrieval": false,
+  "records": [
+    {
+      "path": "strategy-seeds/sources/BOROWSKI-WTI-H2M-2016/source.md",
+      "source_id": "BOROWSKI-WTI-H2M-2016",
+      "sha256": "F2B5D2DED4DA0D3EED799DE5B56F85A32A0A8305565B97B37604700C231524BC",
+      "byte_count": 1587,
+      "line_count": 30,
+      "read_scope": "complete",
+      "status": "approved",
+      "role": "peer_reviewed_complete_paper_record_with_direct_wti_calendar_days_1_to_15_return_sign"
+    }
+  ],
+  "claim_boundary": "No new webpage, blocked content, performance claim, statistical-significance claim, CFD-equivalence claim, decorrelation result, or portfolio-correlation result was inferred or imported."
+}
