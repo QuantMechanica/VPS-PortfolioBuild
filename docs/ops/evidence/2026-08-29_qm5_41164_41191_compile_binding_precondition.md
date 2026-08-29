@@ -52,3 +52,54 @@ task per EA (with matching `card_id`, `payload.ea_id`, `payload.slug`, and
 `payload.ea_dir`), or issue a narrowly scoped reviewed source-repair authority
 for this router task/cohort. Only then can the six append-only compiles run and
 the quarantine copies be removed after EX5 commit-guard PASS.
+
+## Follow-up (Claude, router task `e173b7a8-9702-4ea1-9144-e3d153329db1`, 2026-08-29 06:12-06:42 UTC)
+
+**Root cause confirmed.** For all six EAs, the currently-committed `.mq5`
+SHA-256 differs from the SHA-256 recorded on the terminal `COMPILE_FAIL`
+`COMPILE_EA` row (verified byte-for-byte for all six), and a direct run of
+`build_gate_hardening.check_indicator_buffer_bounds()` against the current
+committed source returns zero findings for all six. The
+`EA_INDICATOR_BUFFER_UNBOUNDED` defect was already fixed by a later commit;
+the remaining blocker was purely the missing governed `build_ea` row plus the
+append-only `WORK_ITEMS_EXIST_AT_APPLY` guard (a terminal `COMPILE_FAIL` row
+already exists for every EA in this cohort, so a bare `--build-task-id` bind
+is necessary but not sufficient — `enqueue_compile_eas` also requires a
+`--source-repair-authority` naming this exact router task).
+
+**Concurrent execution detected.** While diagnosing, I found
+`tools/strategy_farm/compile_work_items.py` already carries (uncommitted, in
+the shared canonical checkout `C:/QM/repo`) a narrowly-scoped named authority
+bound to this exact router task:
+`QM5_41164_41191_COMPILE_FAIL_REPAIR_AUTHORITY =
+"router_ops_issue:e173b7a8-9702-4ea1-9144-e3d153329db1"`, restricted to
+exactly these six EA labels. A concurrent Codex session is actively executing
+the full remediation in that same checkout: restoring proper Strategy Cards to
+`D:/QM/strategy_farm/artifacts/cards_approved/`, creating governed `build_ea`
+tasks through the canonical card path, and enqueuing append-only `COMPILE_EA`
+successors via that authority. As of 06:33 UTC, fresh pending `COMPILE_EA`
+work items had already landed for `QM5_41164`, `QM5_41165`, `QM5_41166`, and
+`QM5_41172` (task ids `059d4860`, `c71f00bd`, `c495527e`, `8fd59f9d`); `41168`
+and `41191` were still pending their turn.
+
+**My own action and correction.** Before discovering the concurrent session, I
+independently backfilled one `build_ea` task per EA using the same pattern the
+codebase already uses for automated rework tasks (`card_id=<ea_id>`,
+payload-matched `ea_id`/`slug`/`ea_dir`, no card required by the binding
+contract). This created a second open `build_ea` row for each of the six EAs
+next to Codex's already-created rows, which would have made
+`_build_task_binding()` return `BUILD_TASK_BINDING_AMBIGUOUS` for any future
+bind attempt (the contract requires exactly one open row per EA). I set my six
+duplicate rows to `status='blocked'` with an explanatory payload note
+(`4337ddb4`, `e26af1ef`, `b3301c0d`, `b7ec404b`, `5c86aaca`, `2a2b454e`),
+restoring the one-open-row invariant and leaving Codex's rows authoritative. I
+made no repo-file edits and did not touch the MQ5 source, the compile
+authority code, or the restored cards.
+
+**State at handoff (06:33 UTC):** compile remediation is in progress under
+Codex's execution, not yet complete. Outstanding: `41168`/`41191` compiles not
+yet enqueued; none of the six have a PASS `COMPILE_EA` verdict or a committed
+EX5 commit-guard receipt yet; the six quarantine binaries under
+`D:/QM/strategy_farm/state/quarantine_ex5_20260828_restart/` must stay in
+place until that PASS lands. Recommend re-checking `compile-status` for this
+cohort on the next cycle before any quarantine deletion.
