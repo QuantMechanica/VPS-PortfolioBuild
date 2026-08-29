@@ -18093,3 +18093,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41196,qs-kama-trend-xau-opt,0,XAUUSD.DWX,411960000,2026-08-29,Codex governed allocator,active
 41197,connors-rsi2-mean-reversion-opt,0,GBPUSD.DWX,411970000,2026-08-29,Codex governed allocator,active
 41198,collins-66mom-opt,0,XTIUSD.DWX,411980000,2026-08-29,Codex governed allocator,active
+41199,wti-samecal-trim5,0,XTIUSD.DWX,411990000,2026-08-29,Codex governed allocator,active
