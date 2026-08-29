@@ -1,0 +1,41 @@
+{
+  "schema": "qm.source-provenance/v1",
+  "generated_at_utc": "2026-08-29T23:23:00Z",
+  "branch": "agents/board-advisor",
+  "candidate": {
+    "source_id": "KELOHARJU-MISHRA-XNG-SEASSURPRISE-2026",
+    "strategy_id": "KELOHARJU-MISHRA-XNG-SEASSURPRISE-2026_S01",
+    "slug": "xng-seas-surprise-rv"
+  },
+  "approval": {
+    "path": "decisions/2026-08-30_xng_seasonal_surprise_reversion_source_approval.md",
+    "commit": "c69176b43659bb5fb6b9f841b9f4ee4c9bb24dde",
+    "sha256": "8cc3954c0c681bff8b63dca2a4bede099788ebdf12f292a523d494dafeaa0bd3"
+  },
+  "complete_read_records": [
+    {
+      "path": "strategy-seeds/sources/KELOHARJU-RETSEAS-2016/source.md",
+      "sha256": "54e6036035d146bb080a0ddf4a16b378c187655a3834df86329f7b2d319875f0",
+      "bytes": 9245,
+      "lines": 174,
+      "role": "peer-reviewed same-calendar commodity expectation with explicit natural-gas membership"
+    },
+    {
+      "path": "strategy-seeds/sources/MISHRA-SMYTH-XNG-PRED-2016/source.md",
+      "sha256": "e06ece030fa2cd96ebfadd8125079162a67851a181ea531df6ba5896757fc220",
+      "bytes": 7250,
+      "lines": 138,
+      "role": "peer-reviewed natural-gas fixed-frequency contrarian evidence and adverse caveats"
+    },
+    {
+      "path": "strategy-seeds/sources/KELOHARJU-SCHWEIKERT-XAUXAG-SEASRV-2026/source.md",
+      "sha256": "56689aadf3f53241b3f0c27b82756117662ffd47b76f5bedc62eef93cc2f41e2",
+      "bytes": 7709,
+      "lines": 159,
+      "role": "governed arithmetic and realized-sample-exclusion precedent only; no metals evidence transfers"
+    }
+  ],
+  "dedup_receipt": "artifacts/qm5_xng_seassurprise_rv_preallocation_dedup_20260830.json",
+  "runtime_data_boundary": "native XNGUSD.DWX D1 OHLC, broker calendar, quotes, symbol metadata, positions, deals, and terminal-global attempt state only",
+  "claim_boundary": "No source or sibling result, profitability, density, CFD equivalence, or portfolio decorrelation transfers."
+}
