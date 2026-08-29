@@ -1,75 +1,129 @@
-# QM5_41192 `xtixng-mdaily-hl-rv`
+# QM5_41192_xtixng-mdaily-hl-rv - Strategy Spec
 
-## Contract
+**EA ID:** QM5_41192
 
-This EA implements only the approved Strategy Card at
-`docs/strategy_card.md`: a monthly XTI/XNG relative-value package that fades
-the exact Hodges-Lehmann-style pseudomedian of synchronized daily oil-minus-
-gas log returns from the immediately completed broker month.
+**Slug:** `xtixng-mdaily-hl-rv`
 
-- Host / slot 0: `XTIUSD.DWX`, D1, magic `411920000`.
-- Companion / slot 1: `XNGUSD.DWX`, D1, magic `411920001`.
-- Logical tester symbol: `QM5_41192_XTI_XNG_MDAILY_HL_RV_D1`.
-- Backtest risk: one aggregate `RISK_FIXED=1000` budget,
-  `RISK_PERCENT=0`, `PORTFOLIO_WEIGHT=1`.
-- News axes and Friday close: OFF.
-- Lifecycle: one consumed attempt per broker month; next-month exit; forty-day
-  stale repair.
+**Source ID:** `VILLAR-HL-XTIXNG-MDAILY-RV-2026`
 
-## Signal
+**Last revised:** 2026-08-29
 
-At the first synchronized D1 bar of a genuine new broker month, within 180
-minutes of the raw host bar open, copy 45 completed D1 bars for both legs.
-Select all exactly synchronized pairs in the immediately completed month and
-one adjacent older boundary pair. Require 17-23 completed-month sessions.
+## 1. Strategy Logic
+
+At the first synchronized D1 bar of each genuine new broker month, within 180
+minutes of the raw host-bar open, the EA copies 45 completed D1 bars for both
+legs. It selects all exactly synchronized XTI/XNG observations in the
+immediately completed month plus one adjacent older boundary observation and
+requires 17 through 23 completed-month sessions.
 
 For chronological log-ratio levels
-`s[j]=ln(XTI_close[j])-ln(XNG_close[j])`, form each adjacent return ending in
-the completed month, `r[j]=s[j+1]-s[j]`. The sum of returns must equal the
+`s[j]=ln(XTI_close[j])-ln(XNG_close[j])`, the EA forms every adjacent return
+ending in the completed month, `r[j]=s[j+1]-s[j]`. Their sum must reproduce the
 older-boundary-to-final displacement within `1e-10`.
 
-Enumerate every inclusive pair `(i,j)` with `i<=j` as
-`w=(r[i]+r[j])/2`. Require exactly `n(n+1)/2` finite values, 153-276, and
-prove each self-pair reproduces its source return. Sort ascending and use the
-single center for an odd count or the arithmetic mean of the two centers for
-an even count.
+It enumerates every inclusive pair `(i,j)` with `i<=j` as
+`w=(r[i]+r[j])/2`, requiring exactly `n(n+1)/2` finite values and a dynamic
+count of 153 through 276. Every self-pair must reproduce its source return.
+After sorting, an odd count uses the single center and an even count uses the
+arithmetic mean of the two centers.
 
-- positive pseudomedian: sell XTI / buy XNG;
-- negative pseudomedian: buy XTI / sell XNG; and
-- zero or invalid state: consume the month flat.
+- A positive pseudomedian opens SELL XTI / BUY XNG.
+- A negative pseudomedian opens BUY XTI / SELL XNG.
+- Exact zero or any invalid synchronized state consumes the month flat.
 
-The raw endpoint and signal magnitude are diagnostic only.
+The raw endpoint displacement and signal magnitude are diagnostic only. Each
+broker month permits one consumed attempt, including a flat or rejected state.
 
-## Risk And Atomicity
+## 2. Parameters
 
-The EA uses completed `ATR(20,D1)` and frozen `3.5*ATR` broker stops on both
-legs. It splits one aggregate fixed-risk budget and reduces only to target
-equal absolute USD notionals. Realized mismatch may not exceed 20%. XTI is
-submitted first and XNG second; a rejected or malformed second leg causes
-immediate flattening with no retry. Entry spread ceilings are 1,500 XTI points
-and 3,000 XNG points.
+| Parameter | Baseline | Meaning |
+|---|---:|---|
+| `history_bars` | 45 | completed D1 bars copied for each leg |
+| `month_sessions_min` | 17 | minimum synchronized completed-month sessions |
+| `month_sessions_max` | 23 | maximum synchronized completed-month sessions |
+| `pair_value_cap` | 276 | maximum inclusive pair count |
+| `numeric_tolerance` | 1e-10 | endpoint and self-pair identity tolerance |
+| `entry_window_minutes` | 180 | maximum delay from the first host D1 bar open |
+| `atr_period` | 20 | completed D1 ATR lookback per leg |
+| `stop_atr_multiple` | 3.5 | frozen hard-stop distance per leg |
+| `notional_mismatch_max` | 0.20 | maximum realized absolute-notional mismatch |
+| `stale_exit_days` | 40 | defensive package age limit |
+| `xti_max_spread_points` | 1500 | XTI entry spread ceiling |
+| `xng_max_spread_points` | 3000 | XNG entry spread ceiling |
 
-## Framework Alignment
+No undeclared optimization, adaptive state, or signal threshold is present.
 
-- `Strategy_NoTradeFilter`: exact identity, host/timeframe, locked inputs,
-  fixed risk, news/Friday contract, and cheap structural guards.
-- `Strategy_EntrySignal`: synchronized completed-month reconstruction,
-  endpoint identity, exact inclusive-pair pseudomedian, fixed-risk sizing, and
-  atomic opposite-leg submission.
-- `Strategy_ManageOpenPosition`: package composition/notional repair,
-  next-month exit, and stale exit before entry gates.
-- `Strategy_ExitSignal`: no additional signal exit; framework hard stops and
-  kill switch remain authoritative.
-- `Strategy_NewsFilterHook`: always false because both approved news axes are
-  OFF.
+## 3. Symbol Universe
 
-## Artifacts And Boundary
+- Host and slot 0: exact `XTIUSD.DWX`, D1, magic `411920000`.
+- Companion and slot 1: exact `XNGUSD.DWX`, D1, magic `411920001`.
+- Logical tester symbol: `QM5_41192_XTI_XNG_MDAILY_HL_RV_D1`.
+- Both symbols are traded as one opposite-sided package; neither component
+  preset is an independent strategy.
+- Cross-series data is read only from exactly synchronized completed D1 bars.
 
-The two per-leg setfiles are non-gating basket-plumbing diagnostics. Only the
-logical-symbol setfile may be enqueued for Q02. The independent Python fixture
-checks pseudomedian arithmetic, pair-count invariants, endpoint identity,
-direction, persistent attempt semantics, card/set/manifest wiring, registry
-rows, and resolver entries.
+The logical basket setfile is the only Q02 gate input. The XTI and XNG physical
+setfiles are non-gating diagnostics for basket plumbing.
 
-This build creates no live/demo/shadow/stress/optimization preset, deploy
-manifest, portfolio-gate change, portfolio admission, or live entitlement.
+## 4. Timeframe
+
+Signal and execution decisions use broker D1 bars. Package construction runs
+once at the first synchronized bar of a new broker month and references only
+the immediately completed month plus the adjacent older boundary observation.
+
+Position integrity and stale-state repair run on every tick. A valid package
+closes at the next broker-month transition or after 40 elapsed days. Framework
+hard stops remain active continuously.
+
+## 5. Expected Behaviour
+
+The card estimates approximately 10 through 12 completed two-leg packages per
+full post-warm-up year. Q02 owns measured trade density, profitability, costs,
+and drawdown. The intended exposure is a relative oil-versus-gas package rather
+than outright commodity beta, but no realized decorrelation claim is made at
+build time; Q09 remains authoritative.
+
+Exact-zero pseudomedians, missing synchronization, invalid arithmetic,
+unacceptable spreads, invalid sizes, or failed atomic execution consume the
+month without retry. A rejected or malformed second leg triggers immediate
+flattening of the first leg.
+
+## 6. Source Citation
+
+Jose A. Villar and Frederick L. Joutz (2006), *The Relationship Between Crude
+Oil and Natural Gas Prices*, U.S. Energy Information Administration; David J.
+Ramberg and John E. Parsons (2012), *The Weak Tie Between Natural Gas and Oil
+Prices*, *The Energy Journal* 33(2), DOI `10.5547/01956574.33.2.2`.
+
+The deterministic pseudomedian arithmetic and basket lifecycle are governed
+QM translation rules documented by source packet
+`VILLAR-HL-XTIXNG-MDAILY-RV-2026`. The sources motivate an unstable but
+economically related oil/gas carrier; they do not establish profitability for
+this exact daily-pseudomedian strategy.
+
+## 7. Risk Model
+
+The package targets equal absolute USD notionals within a 20% realized
+rounding tolerance. One aggregate `RISK_FIXED=1000` budget is split across the
+two legs using frozen `3.5*ATR(20,D1)` broker stops. Backtest presets lock
+`RISK_PERCENT=0` and `PORTFOLIO_WEIGHT=1`.
+
+XTI is submitted first and XNG second through the basket-order helper. If the
+companion leg fails or the final package is malformed, the EA immediately
+flattens owned exposure and does not retry that month. Stops are never widened
+or removed. The framework kill switch and account controls remain
+authoritative. News axes and Friday close are disabled because the approved
+card defines neither as an entry or exit rule.
+
+This is a Q01 build and Q02 research handoff only. It creates no live, demo,
+shadow, optimization, stress, deploy, or portfolio authorization. It does not
+touch AutoTrading, `T_Live`, a deploy manifest, or the portfolio gate. There
+is no ML, banned indicator, averaging, grid, martingale, scale-in, pyramid,
+break-even move, partial exit, or discretionary input.
+
+## Revision history
+
+| Version | Date | Reason |
+|---|---|---|
+| v1 | 2026-08-29 | Initial OWNER-approved basket implementation |
+| v2 | 2026-08-29 | Align Q01 SPEC headings and identity marker with the current validator |
