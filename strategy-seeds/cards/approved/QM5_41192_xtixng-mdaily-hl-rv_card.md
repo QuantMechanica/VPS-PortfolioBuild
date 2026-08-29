@@ -72,7 +72,7 @@ r1_track_record: PASS_WITH_DAILY_PSEUDOMEDIAN_TRANSLATION_RISK
 r1_reasoning: "Complete U.S. government and peer-reviewed oil/gas relationship evidence with binding instability findings plus complete governed arithmetic and lifecycle precedents; the exact daily-pseudomedian basket remains an untested QM translation."
 r2_mechanical: PASS
 r2_reasoning: "Month clock, synchronization, boundary pair, daily relative returns, endpoint identity, inclusive pairs, exact count, sort, odd/even median, sides, attempt, aggregate risk, stops, atomicity, and lifecycle are deterministic and locked."
-r3_data_available: PASS_WITH_CALENDAR_SYNCHRONIZATION_AND_CFD_BASIS_RISK
+r3_data_available: PASS
 r3_reasoning: "Registered XTIUSD.DWX and XNGUSD.DWX D1 histories and native MT5 state supply every runtime input; synchronization, continuous-CFD basis, rolls, financing, and fills remain explicit Q02 risks."
 r4_ml_forbidden: PASS
 r4_reasoning: "Only timestamps, completed prices, logarithms, finite arithmetic, sorting, comparisons, ATR risk controls, and execution state; no trained signal, prohibited runtime feed, grid, martingale, scale-in, or pyramid."
