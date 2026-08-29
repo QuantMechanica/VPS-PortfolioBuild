@@ -1,0 +1,110 @@
+{
+  "schema": "qm.q01-build-q02-ceiling-stop/v1",
+  "generated_at_utc": "2026-08-29T12:40:15.8700149Z",
+  "branch": "agents/board-advisor",
+  "pre_receipt_head": "9bcaeb644194f96cc4d66aaa3cf34c24d22d415c",
+  "ea": {
+    "ea_id": "QM5_41191",
+    "slug": "wti-samecal-srank",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "magic": 411910000
+  },
+  "edge": {
+    "class": "commodity_energy_same_calendar_signed_absolute_rank_seasonality",
+    "frequency": "monthly",
+    "mechanic": "At the first genuine broker-month D1 boundary, collect up to ten completed WTI returns for the same calendar month in prior years, reject epsilon-zero observations and absolute-rank ties, center the positive signed-rank sum, and trade only its strict sign until the next month boundary or 35-day stale exit.",
+    "book_difference": "Direct WTI calendar-seasonality exposure rather than an index, metal, or short-horizon XNG oscillator signal. Realized decorrelation is not claimed; it remains a downstream portfolio-gate question.",
+    "dedup_verdict": "FUZZY_MATCH_RESOLVED_DISTINCT_WTI_SAMECAL_SIGNED_ABSOLUTE_RANK_SUM_MONTHLY_RENEWAL",
+    "dedup_receipt": "artifacts/qm5_wti_samecal_srank_preallocation_dedup_20260828.json",
+    "dedup_receipt_sha256": "26cc216d1ed87b6c16f5ffaa51dd53d4d25bfa76798f6792798e447c28ef7dd1"
+  },
+  "governance": {
+    "source_packet": "strategy-seeds/sources/KELOHARJU-WILCOXON-WTI-SAMECAL-SR-2026/source.md",
+    "source_packet_sha256": "57ff7096210c5e48a7236dad6799a3e6ce706e726bd704416064d5a803d10b98",
+    "source_approval": "decisions/2026-08-28_wti_same_calendar_signed_rank_source_approval.md",
+    "source_approval_sha256": "2663f9c9d1a36a1101f7c0c7780196e0f1e1feb574ad6ca28b269de2e01fb501",
+    "g0_decision": "decisions/2026-08-28_qm5_41191_wti_same_calendar_signed_rank_g0.md",
+    "g0_decision_sha256": "e4c1ac9a149180b45c0816df6e1f4d6344064353d62eaf7dd5df76c40647a3c9",
+    "g0_status": "APPROVED",
+    "approved_card": "strategy-seeds/cards/approved/QM5_41191_wti-samecal-srank_card.md",
+    "runtime_card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41191_wti-samecal-srank_card.md",
+    "approved_runtime_and_ea_card_sha256": "440d615aa02bcd02c5e5952eeccebf829d7fb06d8e4cf66275af3fa1b63e4d86",
+    "cards_byte_identical": true,
+    "card_schema_lint": "PASS",
+    "card_normalization": "R3 is encoded as literal PASS for the deterministic task guard; LONG_WARMUP_AND_CONTINUOUS_CFD_BASIS_RISK remains explicit in r3_qualification, r3_reasoning, source approval, and G0 decision. No executable rule changed."
+  },
+  "build": {
+    "build_task_id": "bdc5f5c7-470f-41a8-a304-973382d9e1d9",
+    "build_task_status_at_stop": "pending",
+    "build_result": "docs/ops/evidence/2026-08-29_qm5_41191_build_result.json",
+    "build_result_sha256": "c29e1f8c13f68b133cdd742df953041c2e60b9505171a726eaad72814f26f178",
+    "compile_work_item_id": "10b93944-98ba-4b4f-9fee-980f5255f815",
+    "compile_status": "done",
+    "compile_verdict": "COMPILE_OK",
+    "compile_evidence": "D:\\QM\\reports\\work_items\\10b93944-98ba-4b4f-9fee-980f5255f815\\QM5_41191\\COMPILE_EA\\compile_evidence.json",
+    "compile_evidence_sha256": "0add628f4834e716f4df8d5292e14c4f70e73db88233d1aa04b4324a02a0d2ee",
+    "build_check": {
+      "status": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:\\QM\\reports\\framework\\21\\build_check_20260829_123202.json",
+      "report_sha256": "8ffc7070a8996f93730f506f163384e06957d78871d908a7afb0bd7b3716589c"
+    },
+    "compile": {
+      "status": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "log": "framework/build/compile/20260829_123205/QM5_41191_wti-samecal-srank.compile.log",
+      "log_sha256": "18d786f38b63c1a36539fd5b3abc4e69e6f7192661045c09d70b57a3d916056d"
+    },
+    "mq5": {
+      "path": "framework/EAs/QM5_41191_wti-samecal-srank/QM5_41191_wti-samecal-srank.mq5",
+      "sha256": "688cc01a792a2a59cace3596b43a558fcbc03ce2ea8e8b10c70a9e75c0081427"
+    },
+    "ex5": {
+      "path": "framework/EAs/QM5_41191_wti-samecal-srank/QM5_41191_wti-samecal-srank.ex5",
+      "sha256": "fcc8c5fabce8c2ceff0a551f322f0ddc3b05a0b0a89a6cb3d3de807f27ee3fec"
+    },
+    "setfile": {
+      "path": "framework/EAs/QM5_41191_wti-samecal-srank/sets/QM5_41191_wti-samecal-srank_XTIUSD.DWX_D1_backtest.set",
+      "sha256": "bb11ece0a57ed6b456a373faba77d7b7c64223a094a297dd7d12424e5b5457f0",
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "portfolio_weight": 1
+    },
+    "reference_tests": "PASS: 16 tests",
+    "spec_validation": "PASS",
+    "smoke": {
+      "result": "framework_error",
+      "reason": "custom_history_gate_refused terminal=T1: active Custom-history isolation requires a worker-bound work item whose archives were privatized before run_smoke",
+      "qm5_41191_tester_process_launched": false,
+      "retry_attempted": false
+    }
+  },
+  "q02": {
+    "enqueued": false,
+    "work_item_count_at_stop": 0,
+    "record_build_completed": false,
+    "stop_reason": "CPU_CEILING",
+    "hard_ceiling_percent": 97.0,
+    "pre_stop_samples_percent": [
+      69.64741900389141,
+      70.67357355805406,
+      93.65300500988299,
+      98.44000628590108,
+      84.67721423665103
+    ],
+    "pre_stop_average_percent": 83.418244,
+    "pre_stop_maximum_percent": 98.440006,
+    "ceiling_binding": true,
+    "required_next_action": "When fleet CPU is below the governed ceiling, record the pending build result once; record-build will convert the setup-only smoke refusal to the worker-bound Q02 path and enqueue exactly one XTIUSD.DWX D1 row."
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "t_live_controlled": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "manual_q02_backtest_launched": false
+  }
+}

@@ -71,7 +71,8 @@ r1_track_record: PASS_WITH_STATISTIC_AND_SINGLE_CFD_TRANSLATION_RISK
 r1_reasoning: "Peer-reviewed same-calendar commodity evidence with explicit crude-oil membership plus complete pinned R Core code/manual for the signed-rank statistic; the exact single-WTI conjunction remains an untested QM hypothesis."
 r2_mechanical: PASS
 r2_reasoning: "Month clock, normalized endpoints, year bounds, sample floor, epsilon, strict absolute ranks, centered integer score, side, consumed attempt, fixed risk, hard stop, and monthly lifecycle are deterministic and locked."
-r3_data_available: PASS_WITH_LONG_WARMUP_AND_CONTINUOUS_CFD_BASIS_RISK
+r3_data_available: PASS
+r3_qualification: LONG_WARMUP_AND_CONTINUOUS_CFD_BASIS_RISK
 r3_reasoning: "Registered XTIUSD.DWX D1 history and native MT5 state supply every runtime input; five-year warm-up, D1 session labels, rolls, and futures/CFD basis remain explicit."
 r4_ml_forbidden: PASS
 r4_reasoning: "Only timestamps, completed prices, logarithms, sorting, comparisons, integer arithmetic, ATR risk controls, and execution state; no trained signal or external runtime feed."
