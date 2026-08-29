@@ -1988,7 +1988,11 @@ def init_db(root: Path) -> None:
     # died here 2026-08-29 02:00-07:40.  Use the same jittered-retry idiom as
     # every other writer; each attempt opens a fresh connection per the
     # retry_sqlite_busy contract.
-    retry_sqlite_busy(lambda: _init_db_once(root))
+    # 20 attempts with growing jittered delays spans ~30-60s of contention;
+    # the default 8 quick attempts all landed inside one long write-hold burst.
+    retry_sqlite_busy(
+        lambda: _init_db_once(root), attempts=20, base_delay_seconds=0.25
+    )
 
 
 def _init_db_once(root: Path) -> None:
