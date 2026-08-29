@@ -85,6 +85,11 @@ def main() -> int:
     if FACTORY_ON_CEREMONY_MARKER.exists():
         return 0  # Factory_ON ceremony in progress; pump no-ops until it completes
     os.environ.setdefault("QM_AGENT_ID", "controller")
+    # Control-plane override: the pump is a singleton whose cycle dies wholesale
+    # on one lost write.  15s busy timeout rides out news-runner write bursts;
+    # worker/claim paths keep the short 750ms doctrine (they don't run through
+    # this wrapper).  See sqlite_busy.BUSY_TIMEOUT_MS.
+    os.environ.setdefault("QM_SQLITE_BUSY_TIMEOUT_MS", "15000")
     LOG_DIR.mkdir(parents=True, exist_ok=True)
     lock_fd = _acquire_lock()
     if lock_fd is None:

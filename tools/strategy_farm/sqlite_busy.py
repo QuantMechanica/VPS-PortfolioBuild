@@ -8,6 +8,7 @@ whole transaction after bounded exponential jitter.
 
 from __future__ import annotations
 
+import os
 import random
 import sqlite3
 import time
@@ -17,7 +18,12 @@ from typing import TypeVar
 
 T = TypeVar("T")
 
-BUSY_TIMEOUT_MS = 750
+# Default stays the deliberate short-timeout doctrine (claim-path contention:
+# short beats long, see XCU 2026-08-16).  The singleton control plane (pump /
+# pump-maintenance wrappers) overrides via env because ONE lost write there
+# kills a whole 5-minute dispatch cycle (2026-08-29 pump starvation: cycles
+# died at ever-deeper raw write sites during news-runner write bursts).
+BUSY_TIMEOUT_MS = int(os.environ.get("QM_SQLITE_BUSY_TIMEOUT_MS", "750"))
 WRITE_ATTEMPTS = 8
 BASE_DELAY_SECONDS = 0.05
 MAX_DELAY_SECONDS = 1.0
