@@ -1,0 +1,30 @@
+{
+  "schema": "qm.local-source-provenance/v1",
+  "candidate_slug": "wti-samecal-trim5",
+  "recorded_at_utc": "2026-08-29T13:39:34Z",
+  "retrieval_mode": "complete_read_of_governed_repository_packets",
+  "new_public_retrieval": false,
+  "records": [
+    {
+      "path": "strategy-seeds/sources/KELOHARJU-RETSEAS-2016/source.md",
+      "source_id": "KELOHARJU-RETSEAS-2016",
+      "sha256": "54E6036035D146BB080A0DDF4A16B378C187655A3834DF86329F7B2D319875F0",
+      "byte_count": 9245,
+      "line_count": 174,
+      "read_scope": "complete",
+      "status": "cards_ready",
+      "role": "peer_reviewed_same_calendar_month_commodity_seasonality_with_explicit_crude_oil_membership"
+    },
+    {
+      "path": "strategy-seeds/sources/MOP-WTI-TRIMMEAN-2026/source.md",
+      "source_id": "MOP-WTI-TRIMMEAN-2026",
+      "sha256": "63F8C5FC06BAE2D90B50673C6B7B966FBAF5962150D70F695DD3DA8DBB221FA8",
+      "byte_count": 6292,
+      "line_count": 137,
+      "read_scope": "complete",
+      "status": "approved_source_complete",
+      "role": "governed_fixed_tail_trim_sort_and_retained_mean_arithmetic_precedent"
+    }
+  ],
+  "claim_boundary": "No new webpage, blocked content, source performance statistic, single-WTI seasonal result, trim-five result, CFD equivalence, decorrelation result, or portfolio-correlation result was inferred or imported."
+}
