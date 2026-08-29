@@ -422,6 +422,9 @@ bool Strategy_LoadSignalState(const int decision_month_key,
       const double relative_return = xau_return - xag_return;
       if(!MathIsValidNumber(relative_return))
          continue;
+      if(g_cache_sample_count < 0 ||
+         g_cache_sample_count >= ArraySize(relative_returns))
+         return false;
       relative_returns[g_cache_sample_count] = relative_return;
       ++g_cache_sample_count;
      }
@@ -848,6 +851,8 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 
