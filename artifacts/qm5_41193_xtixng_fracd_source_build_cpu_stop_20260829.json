@@ -1,0 +1,154 @@
+{
+  "schema": "qm.source-build-cpu-stop/v1",
+  "generated_at_utc": "2026-08-29T06:06:53.4656228Z",
+  "branch": "agents/board-advisor",
+  "pre_receipt_head": "c12e07bef",
+  "outcome": "SOURCE_BUILD_COMMITTED_COMPILE_HELD_CPU_CEILING_BINDING_Q02_NOT_ENQUEUED",
+  "ea": {
+    "ea_id": "QM5_41193",
+    "slug": "xtixng-fracd-rv",
+    "logical_symbol": "QM5_41193_XTI_XNG_FRACD_RV_D1",
+    "host_symbol": "XTIUSD.DWX",
+    "companion_symbol": "XNGUSD.DWX",
+    "timeframe": "D1",
+    "magic_base": 411930000,
+    "magics": [
+      411930000,
+      411930001
+    ]
+  },
+  "edge": {
+    "class": "commodity_energy_relative_value_market_neutral_style",
+    "frequency": "monthly",
+    "mechanic": "Exact 316 synchronized completed D1 log(XTI)-log(XNG) levels; fixed (1-L)^0.40 fractional difference with K=64; first 252 filtered outputs estimate baseline mean/sample standard deviation; latest output is held out; inclusive z thresholds +/-0.50 are faded with opposite equal-target-notional XTI/XNG legs.",
+    "dedup_status": "CLEAN",
+    "dedup_scope": {
+      "registry_rows": 4692,
+      "cards": 1343,
+      "strategy_wiki_nodes": 45
+    },
+    "portfolio_claim": "Different carrier and mechanic from certified index/metal/XNG sleeves; realized decorrelation remains a downstream Q09 decision."
+  },
+  "governance": {
+    "source_approval": "decisions/2026-08-29_xtixng_fractional_difference_reversion_source_approval.md",
+    "g0_decision": "decisions/2026-08-29_qm5_41193_xtixng_fractional_difference_reversion_g0.md",
+    "approved_card": "strategy-seeds/cards/approved/QM5_41193_xtixng-fracd-rv_card.md",
+    "approved_card_sha256": "67626ce338373b9026690b6ccc83da91ed1e5ed7307ae4ee2e453786083efc7f",
+    "ea_local_card": "framework/EAs/QM5_41193_xtixng-fracd-rv/docs/strategy_card.md",
+    "ea_local_card_sha256": "67626ce338373b9026690b6ccc83da91ed1e5ed7307ae4ee2e453786083efc7f",
+    "cards_byte_identical": true,
+    "g0_status": "APPROVED"
+  },
+  "build": {
+    "mq5": {
+      "path": "framework/EAs/QM5_41193_xtixng-fracd-rv/QM5_41193_xtixng-fracd-rv.mq5",
+      "sha256": "8e3fb9d1a459712026bf9afe91ed8ae0a9da32f4a360a6b9dece20c4af40b7eb"
+    },
+    "ex5": {
+      "path": "framework/EAs/QM5_41193_xtixng-fracd-rv/QM5_41193_xtixng-fracd-rv.ex5",
+      "exists": false,
+      "sha256": null
+    },
+    "spec": {
+      "path": "framework/EAs/QM5_41193_xtixng-fracd-rv/SPEC.md",
+      "sha256": "c4481d73fa2227ebfe4c23b9b440e95fc3908a79e9e44136dc656f646e4e4285"
+    },
+    "basket_manifest": {
+      "path": "framework/EAs/QM5_41193_xtixng-fracd-rv/basket_manifest.json",
+      "sha256": "78814335e2283b7b9efaa4fd28d682871978564cc143c0c3aa265009d218fb5df"
+    },
+    "risk": {
+      "mode": "RISK_FIXED",
+      "risk_fixed": 1000,
+      "risk_percent": 0
+    },
+    "setfiles": [
+      {
+        "kind": "logical_basket",
+        "path": "framework/EAs/QM5_41193_xtixng-fracd-rv/sets/QM5_41193_xtixng-fracd-rv_QM5_41193_XTI_XNG_FRACD_RV_D1_D1_backtest.set",
+        "sha256": "afcd5dd70120e12232b43103bf9ae5777812d20082bb7feb349eaa960ab92b04"
+      },
+      {
+        "kind": "physical_diagnostic",
+        "path": "framework/EAs/QM5_41193_xtixng-fracd-rv/sets/QM5_41193_xtixng-fracd-rv_XTIUSD.DWX_D1_backtest.set",
+        "sha256": "f35580eb4392ea28ad1c669472fc5fc4054e9ed336ab44a9abfaf5726c60225d"
+      },
+      {
+        "kind": "physical_diagnostic",
+        "path": "framework/EAs/QM5_41193_xtixng-fracd-rv/sets/QM5_41193_xtixng-fracd-rv_XNGUSD.DWX_D1_backtest.set",
+        "sha256": "bf3af8437ac6eb1e2bc0855290b7307a0ef73bb12333c096392b1d3ad99e9249"
+      }
+    ]
+  },
+  "verification": {
+    "reference_tests": {
+      "status": "PASS",
+      "passed": 8,
+      "failed": 0
+    },
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "prohibited_ml_hits": 0,
+    "strict_compile": "PENDING_GOVERNED_COMPILE"
+  },
+  "compile": {
+    "work_item_id": "37e3b310-7384-48df-8d3a-92eb4f80c0da",
+    "phase": "COMPILE_EA",
+    "status": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "verdict": null,
+    "evidence_path": null,
+    "activation_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "activation_hold_released": false,
+    "source_hash_dry_run_match": true,
+    "expected_mq5_sha256": "8e3fb9d1a459712026bf9afe91ed8ae0a9da32f4a360a6b9dece20c4af40b7eb",
+    "actual_mq5_sha256": "8e3fb9d1a459712026bf9afe91ed8ae0a9da32f4a360a6b9dece20c4af40b7eb"
+  },
+  "cpu_stop": {
+    "sample_window_end_utc": "2026-08-29T06:06:10+00:00",
+    "samples_percent": [
+      100.0,
+      99.807,
+      94.828,
+      96.004,
+      99.416
+    ],
+    "average_percent": 98.011,
+    "maximum_percent": 100.0,
+    "hard_ceiling_percent": 97.0,
+    "binding": true,
+    "active_factory_testers": [
+      "T2",
+      "T3",
+      "T6",
+      "T7",
+      "T8"
+    ],
+    "active_factory_tester_count": 5,
+    "decision": "STOP_WITHOUT_COMPILE_RELEASE_OR_Q02_ENQUEUE"
+  },
+  "q02": {
+    "row_count": 0,
+    "logical_basket_row_count": 0,
+    "physical_leg_row_count": 0,
+    "enqueued": false,
+    "reason": "CPU_CEILING_BINDING_AND_CURRENT_COMPILE_PASS_ABSENT"
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "t_live_controlled": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "manual_backtest_launched": false,
+    "compile_hold_bypassed": false,
+    "terminal_control_performed": false
+  },
+  "mission_commits_before_receipt": [
+    "77d16d8a1",
+    "3d31d9c53",
+    "9c3e27e05",
+    "5a53d0af2",
+    "c12e07bef"
+  ]
+}
