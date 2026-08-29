@@ -6,7 +6,7 @@ Branch: `agents/board-advisor`
 
 Targets: `QM5_12512`, `QM5_10050`, `QM5_12507`
 
-Outcome: **GOVERNED Q01 ROWS APPENDED; TESTER OUTCOMES AND LOGICAL Q02 SEEDS PENDING**
+Outcome: **Q01 COMPLETE: 12512/12507 PASS; 10050 ZERO-TRADE FAIL; PASSING LOGICAL Q02 SEEDS WAITING ON SQLITE WRITER CONTENTION**
 
 ## Admission diagnosis
 
@@ -37,9 +37,9 @@ The exact rows were appended at `2026-08-29T08:37:09Z`:
 
 | EA | Logical symbol | Q01 work item | EX5 SHA-256 | Setfile SHA-256 | Observed state |
 | --- | --- | --- | --- | --- | --- |
-| `QM5_12512` | `QM5_12512_FX_PAIRS_THRESHOLD_H1` | `9ca7d432-68b1-50e7-9de6-1e40710b6634` | `bb31cb2b92679e02916ba8e9b63b749d9c51af0e9b6474057f477604a8b21a1c` | `10697e9af07e0718fd4260a7dbc41f6cf59838e3122ac41badc2cf2aabf9b1d3` | `pending` |
-| `QM5_10050` | `QM5_10050_CORR_TRIAD_H1` | `f1cb6f6e-3375-500a-8fd2-c0ba99358fcf` | `d11c8829932e8077b34a0ecb720b0ba37c9084e18e0afc1e2387beab6a039edf` | `2c36056055a83b66596b42490e8d2b3b6d3db6bf5f4ee627e344e890d6c49817` | `pending` |
-| `QM5_12507` | `QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1` | `7d1a179d-4d25-5d37-a69a-3a52fd78ae63` | `b9baf4b48e02b9ced91b2d86d24b87245b595b506d1763b279e36bb9074ba4aa` | `f8f7da7f72fa60ab37e4e4d1a9e64d1b83e8e122b29ee35c613feb25236bac99` | `pending` |
+| `QM5_12512` | `QM5_12512_FX_PAIRS_THRESHOLD_H1` | `9ca7d432-68b1-50e7-9de6-1e40710b6634` | `bb31cb2b92679e02916ba8e9b63b749d9c51af0e9b6474057f477604a8b21a1c` | `10697e9af07e0718fd4260a7dbc41f6cf59838e3122ac41badc2cf2aabf9b1d3` | `done / PASS` (628 trades) |
+| `QM5_10050` | `QM5_10050_CORR_TRIAD_H1` | `f1cb6f6e-3375-500a-8fd2-c0ba99358fcf` | `d11c8829932e8077b34a0ecb720b0ba37c9084e18e0afc1e2387beab6a039edf` | `2c36056055a83b66596b42490e8d2b3b6d3db6bf5f4ee627e344e890d6c49817` | `done / FAIL` (`Q01_ZERO_TRADES`) |
+| `QM5_12507` | `QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1` | `7d1a179d-4d25-5d37-a69a-3a52fd78ae63` | `b9baf4b48e02b9ced91b2d86d24b87245b595b506d1763b279e36bb9074ba4aa` | `f8f7da7f72fa60ab37e4e4d1a9e64d1b83e8e122b29ee35c613feb25236bac99` | `done / PASS` (632 trades) |
 
 The rows carry the exact contract
 `qm.q01.worker_bound_basket_smoke.v1`, the 2024 window, logical symbol,
@@ -81,14 +81,35 @@ already reviewed binaries, not a mechanics-changing rebuild. The mandatory
 risk/news guardrail validator is clean; the broader static findings are
 preserved here for reviewer visibility.
 
+## Terminal outcomes and authenticated receipts
+
+The resident workers completed all three rows. The bounded finalizer authenticated
+the `run_smoke/v2` summaries against the declared window, physical host,
+timeframe, expert, MQ5/EX5, and setfile identities, then appended immutable build
+receipts:
+
+| EA | Receipt task | Receipt artifact SHA-256 | Result |
+| --- | --- | --- | --- |
+| `QM5_12512` | `500c29f2-dbdc-52cb-b065-043544785d6e` | `A604743038EDBD324C2A1FEC53BCD78595339348183D4A59655E7010F1F7B752` | `passed`, 628 trades |
+| `QM5_10050` | `a72cdad6-48c8-5acd-af8e-77cea985b3f8` | `80B4C079F993CE6955782C25FCEE3F8F61EFA03D28AA732AA3EE93B96DDDA400` | `zero_trades`, 0 trades |
+| `QM5_12507` | `1b0e2710-c876-5add-8898-9e496b348a14` | `C470DB23E9ADFA516D72C2F065EBDAFE19414ADB2F94AE711B7A5F4163EEED1A` | `passed`, 632 trades |
+
+The unchanged Q02 admission gate now has genuine passing smoke evidence for
+`QM5_12512` and `QM5_12507`. Repeated canonical `enqueue-backtest --phase Q02`
+attempts for those two reached the append operation but failed atomically with
+`sqlite3.OperationalError: database is locked` while the scheduled farm pump
+and tick were active. No logical Q02 row was partially created. `QM5_10050`
+correctly remains inadmissible because its real Q01 result is zero trades; that
+is a strategy/runtime outcome, not an infrastructure failure or waiver case.
+
 ## Deterministic continuation
 
-1. Let the normal terminal workers finish the three Q01 rows; do not bypass
-   basket serialization or manually start a terminal.
-2. Run `q01_basket_smoke_recovery.py --finalize`. A real FAIL remains a FAIL;
-   only authenticated PASS evidence creates a passing smoke receipt.
-3. For each passing EA, invoke the existing reviewed Q02 enqueue command. The
-   logical Q02 seed must pass the unchanged preflight naturally.
+1. After the scheduled writer releases the SQLite transaction, invoke the
+   existing reviewed Q02 enqueue command for `QM5_12512` and `QM5_12507`.
+2. Do not enqueue `QM5_10050`; its authenticated Q01 zero-trade result is a
+   legitimate fail-closed verdict and requires separately routed recovery if
+   further work is desired.
 
-At this review boundary there are **zero Q01 tester outcomes and zero logical
-Q02 seeds**. No pipeline verdict is asserted.
+At this review boundary there are **two Q01 PASS outcomes, one legitimate Q01
+zero-trade FAIL, and zero logical Q02 seeds because of durable writer
+contention**. No pipeline verdict is asserted.
