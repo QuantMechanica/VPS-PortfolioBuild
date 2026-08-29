@@ -46,10 +46,43 @@ bereits committet) lädt nur bei Worker-Neustart → Restart war der Fix.
   über den gebundenen Compile-Pfad (BUILD_TASK_BINDING) neu bauen; Standalone-enqueue-compile
   refused korrekt.
 
+## Nachtrag Vormittags-Audit 29.08 (07:45–09:00) — Contention-Klasse
+
+Volles Audit auf OWNER-Anweisung. Befunde (alle gemessen, alle adressiert):
+
+1. **64/65 Pump-Läufe 02:00–07:40 crashten `database is locked`** — Write-Lock-Duty
+   50–60 % (BEGIN-IMMEDIATE-Probe 15/30 bzw. 9/15 Fehlschläge), WAL wuchs auf 45 MB
+   (nach TRUNCATE binnen 15 min wieder 41 MB). Dominanter Schreiber per
+   WriteTransferCount-Delta: **`farmctl pump-maintenance` ea_metrics-Bulk-Rebuild**
+   (21,8 MB/12 s über ≥30 min, stündlich). Interim: Trigger 1h→4h; init_db in
+   retry_sqlite_busy eingehängt + Fenster verbreitert (79a9e384d, 011b25db2).
+   Struktursanierung: Ticket 34858637 (P92).
+2. **OPT_CENSUS-Zell-Runner T3/T5 starben ~02:00** (letzte Zellen 23:20Z/23:57Z, dann
+   0 Zellen/2 h bei ~58 % Kern CPU-Spin der Resident-Worker). Claims blieben aktiv, weil
+   die Claim-PID der lebende Resident-Worker ist, nicht der tote Runner
+   (Worker/Runner-Konflation). Freigabe per gezieltem Worker-Restart (Design-Pfad);
+   beide Zeilen re-claimt. Klasse in Ticket 34858637 (Punkte 3+4).
+3. **`public_snapshot` hielt den FACTORY_MUTATION-Lock 45 min** (08:07–08:52, per
+   psutil-Handle-Scan bewiesen; Owner-JSON pid 36464) — alle Worker-Claims declined,
+   News-Refresh scheiterte (`stale_reap=unreadable`). Prozesse nach Identitätsprüfung
+   beendet, Lock frei. Klasse: Ticket c5ee7b2c (P85, Laufzeit-Bound + Lock-Hygiene +
+   Health-Check auf Langhalter).
+4. **News-Kalender 1 Tag stale** (05:30-Lauf an Punkt 3 gescheitert); Refresh nach
+   Lock-Freigabe erneut fällig.
+5. Reviews 5/5 abgenommen (Fanout-Verifikation): f7a6975d APPROVED (Pump-Dauerfixe
+   geliefert, Purge-Preflight + Worktree-Janitor `QM_StrategyFarm_WorktreeJanitor_6h`
+   live), f775b87f APPROVED (MC-Null-Kacheln: Allowlist-Scope-Bug, Kacheln==DB
+   verifiziert), 57ab1771 APPROVED-as-refusal (+ Folgeauftrag e173b7a8),
+   000bb713 APPROVED (41192-Q02-Receipt), 25d7265a zurück IN_PROGRESS.
+6. Health-Triage kommissioniert: 08f928e7 (17 Q10_NEWS-Sealed-Plan-Holds, P85),
+   e4107fb6 (55 Binding-Drifts nach Sweep, P80), d1a5e5aa (34 Q02-Stranded, P60),
+   d37d9ae4 (6 gebaute EAs ohne Q02, P55).
+
 ## Temporäre Abweichungen (Rollback-Pflicht)
 
 1. Pump-Task ExecutionTimeLimit PT30M→**PT1H** (bis Audit-Caching geliefert).
-2. TesterCachePurge `-LowWaterGB 150→**140**` (bis Teardown-Fix geliefert).
+2. TesterCachePurge `-LowWaterGB 150→**140**` (bis Teardown-Fix geliefert; Preflight-Fix 90fff7bd6 seit 29.08 live).
+2b. PumpMaintenance-Trigger **1h→4h** (bis inkrementeller Metrics-Build, Ticket 34858637).
 3. Quarantäne D:\QM\strategy_farm\state\quarantine_ex5_20260828_restart (Löschen nach
    governed Recompile).
 4. Relokationen unter C:\QM\backups_relocated\ (verlustfrei, rückholbar).
