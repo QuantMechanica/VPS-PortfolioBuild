@@ -95,6 +95,49 @@ def read_tester_drain_active_count(db_path: Path = TESTER_DRAIN_DB) -> int | Non
         return None
 
 
+def reap_blocked_build_processes(db_path: Path = TESTER_DRAIN_DB) -> list[dict[str, object]]:
+    """Terminate only managed Codex trees whose bound build row is blocked.
+
+    The database PID is merely a lookup key. ``terminate_managed_codex_pid``
+    independently requires a live identity-matching farm lease, so stale or
+    reused PIDs fail closed and unrelated Codex sessions remain untouched.
+    """
+    outcomes: list[dict[str, object]] = []
+    try:
+        uri = f"file:{db_path.as_posix()}?mode=ro"
+        conn = sqlite3.connect(uri, uri=True, timeout=5.0)
+        conn.row_factory = sqlite3.Row
+        try:
+            rows = conn.execute(
+                "SELECT id,payload_json FROM tasks "
+                "WHERE kind='build_ea' AND status='blocked'"
+            ).fetchall()
+        finally:
+            conn.close()
+    except Exception as exc:
+        return [{"stopped": False, "reason": f"blocked_build_scan_failed:{exc!r}"}]
+    seen: set[int] = set()
+    for row in rows:
+        try:
+            payload = json.loads(row["payload_json"] or "{}")
+            dispatch = payload.get("build_dispatch") or {}
+            pid = int(dispatch.get("pid") or 0)
+        except (json.JSONDecodeError, TypeError, ValueError):
+            continue
+        if pid <= 0 or pid in seen:
+            continue
+        seen.add(pid)
+        if not is_managed_codex_pid_live(FARM_ROOT, pid):
+            continue
+        try:
+            outcome = dict(terminate_managed_codex_pid(FARM_ROOT, pid))
+        except Exception as exc:
+            outcome = {"pid": pid, "stopped": False, "reason": repr(exc)}
+        outcome["build_task_id"] = str(row["id"])
+        outcomes.append(outcome)
+    return outcomes
+
+
 def tester_drain_saturated(active_count: int | None,
                             *, threshold: int = TESTER_DRAIN_ACTIVE_THRESHOLD) -> bool:
     if active_count is None:
@@ -279,6 +322,8 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(state, indent=2))
         return 0 if args.dry_run or cleanup["managed_remaining"] == 0 else 1
 
+    blocked_build_stops = [] if args.dry_run else reap_blocked_build_processes()
+
     try:
         used, reset = _read_quota()
     except Exception as exc:
@@ -378,6 +423,7 @@ def main(argv: list[str] | None = None) -> int:
         "saturated_max_total_codex_hosts": SATURATED_MAX_TOTAL_CODEX_HOSTS,
         "tester_drain_cap_applied": tester_drain_cap_applied,
         "tester_drain_cap_enabled": tester_drain_cap_enabled(),
+        "blocked_build_stops": blocked_build_stops,
     }
     _write_state(state, dry_run=args.dry_run)
     _log(f"used={used:.1f}% rate={state['rate_pct_per_hr']} target_rate={target_rate:.3f}/hr "

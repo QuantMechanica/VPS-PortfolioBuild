@@ -863,7 +863,7 @@ def chk_pump_task_health() -> dict:
     MNT-003 (2026-08-21): 2147946720 / 0x800710E0 ("the operator or
     administrator has refused the request") is Task Scheduler's own code for
     a trigger that MultipleInstances=IgnoreNew skipped because the prior
-    cycle was still running -- expected on this task's PT30M execution limit
+    cycle was still running -- expected on this task's PT1H execution limit
     against a 5-min cadence, not a pump fault. This is a DIFFERENT cause from
     the same code's use in lsm_health_probe.ps1/chk_lsm_session_health, which
     monitors three tasks with tight MaxLagMinutes-vs-cadence margins where the
@@ -876,11 +876,21 @@ def chk_pump_task_health() -> dict:
     try:
         out = subprocess.run(
             ["powershell.exe", "-NoProfile", "-Command",
-             "(Get-ScheduledTaskInfo -TaskName 'QM_StrategyFarm_Pump_5min').LastTaskResult"],
+             "$i=Get-ScheduledTaskInfo -TaskName 'QM_StrategyFarm_Pump_5min'; "
+             "[pscustomobject]@{result=[int64]$i.LastTaskResult;"
+             "last_run=$i.LastRunTime.ToUniversalTime().ToString('o')} | "
+             "ConvertTo-Json -Compress"],
             capture_output=True, text=True, timeout=15,
             creationflags=_creationflags_no_window(),
         )
-        result = int((out.stdout or "0").strip() or "0")
+        raw = (out.stdout or "0").strip() or "0"
+        if raw.startswith("{"):
+            task_info = json.loads(raw)
+            result = int(task_info.get("result") or 0)
+            last_run = str(task_info.get("last_run") or "")
+        else:  # compatibility with older probes and focused unit-test fakes
+            result = int(raw)
+            last_run = ""
     except Exception as exc:
         return _check("pump_task_lastresult", "WARN", "?", 0,
                       f"could not query task: {exc}",
@@ -889,6 +899,50 @@ def chk_pump_task_health() -> dict:
     # IgnoreNew-skipped trigger while the prior cycle was still active. Both
     # are benign scheduling artefacts on this task, never pump failures.
     benign_busy = result in (267009, 2147946720)
+    history_path = ROOT / "state" / "pump_task_termination_history.json"
+    now = dt.datetime.now(dt.timezone.utc)
+    cutoff = now - dt.timedelta(hours=2)
+    history: list[dict] = []
+    try:
+        existing = json.loads(history_path.read_text(encoding="utf-8"))
+        for item in existing if isinstance(existing, list) else []:
+            observed = dt.datetime.fromisoformat(str(item.get("observed_at") or ""))
+            if observed.tzinfo is None:
+                observed = observed.replace(tzinfo=dt.timezone.utc)
+            if observed >= cutoff:
+                history.append(item)
+    except (OSError, ValueError, TypeError, json.JSONDecodeError):
+        history = []
+    run_key = last_run or f"unknown:{now.isoformat(timespec='minutes')}"
+    if not any(str(item.get("last_run") or "") == run_key for item in history):
+        history.append({
+            "last_run": run_key,
+            "result": result,
+            "observed_at": now.isoformat(timespec="seconds"),
+        })
+    try:
+        history_path.parent.mkdir(parents=True, exist_ok=True)
+        temp_path = history_path.with_name(
+            f".{history_path.name}.{os.getpid()}.tmp"
+        )
+        temp_path.write_text(json.dumps(history, indent=2), encoding="utf-8")
+        temp_path.replace(history_path)
+    except OSError:
+        pass
+    if result == 267014:
+        consecutive = 0
+        for item in reversed(history):
+            if int(item.get("result") or 0) != 267014:
+                break
+            consecutive += 1
+        if consecutive >= 2:
+            return _check(
+                "pump_task_lastresult", "FAIL", result, 0,
+                f"CRITICAL: pump was terminated by Task Scheduler {consecutive} "
+                "consecutive times in 2h (0x00041306)",
+                "Fix the pump runtime/ExecutionTimeLimit cause; repeated scheduler "
+                "termination is an outage, never a busy state",
+            )
     if result != 0 and not benign_busy:
         return _check("pump_task_lastresult", "FAIL", result, 0,
                       f"pump last exit code {result} (non-zero)",

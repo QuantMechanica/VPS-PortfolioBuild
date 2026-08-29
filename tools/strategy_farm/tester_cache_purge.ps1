@@ -28,6 +28,10 @@ param(
     # 2026-07-21 raised 80->150: on a 1TB disk an 80GB floor let ~200GB of regenerable
     # Tester cache accumulate (it purges only below the floor, and D: hovered just above 80).
     [int]$LowWaterGB = 150,
+    # A full factory teardown is expensive and must buy meaningful headroom.
+    # BusyScratch remains available below this threshold without stopping slots.
+    [ValidateRange(0.1, 1024)]
+    [double]$MinimumIdleReclaimGB = 1.0,
     [string]$RepoRoot = "C:\QM\repo",
     [string]$FarmRoot = "D:\QM\strategy_farm",
     [string]$Mt5Root = "D:\QM\mt5",
@@ -239,6 +243,40 @@ print(json.dumps(sorted(set(out))))
     return @($terms)
 }
 
+function Get-IdleCacheCandidatePlan {
+    param(
+        [string]$Root,
+        [hashtable]$ProtectedTerminals,
+        [hashtable]$ProtectedTargets
+    )
+    [long]$candidateBytes = 0
+    $candidateTargets = 0
+    foreach ($n in 1..10) {
+        $terminalName = "T$n"
+        if ($ProtectedTerminals.ContainsKey($terminalName)) { continue }
+        $testerRoot = [IO.Path]::GetFullPath((Join-Path (Join-Path $Root $terminalName) 'Tester'))
+        if (-not (Test-Path -LiteralPath $testerRoot -PathType Container)) { continue }
+        $targets = @(
+            @(Get-ChildItem -LiteralPath (Join-Path $testerRoot 'bases') -ErrorAction SilentlyContinue)
+            @(Get-ChildItem -LiteralPath $testerRoot -Directory -Filter 'Agent-*' -ErrorAction SilentlyContinue)
+        )
+        foreach ($target in $targets) {
+            $targetPath = [IO.Path]::GetFullPath($target.FullName)
+            if (-not $targetPath.StartsWith(
+                    $testerRoot.TrimEnd('\') + '\',
+                    [StringComparison]::OrdinalIgnoreCase)) { continue }
+            if ($ProtectedTargets.ContainsKey($targetPath)) { continue }
+            [long]$bytes = if ($target.PSIsContainer) {
+                [long](Get-ChildItem -LiteralPath $targetPath -File -Recurse -ErrorAction SilentlyContinue |
+                    Measure-Object -Property Length -Sum).Sum
+            } else { [long]$target.Length }
+            $candidateBytes += $bytes
+            $candidateTargets++
+        }
+    }
+    return [pscustomobject]@{ bytes = $candidateBytes; targets = $candidateTargets }
+}
+
 function Get-EvidencePurgePlan {
     if (-not (Test-Path -LiteralPath $EvidenceGuardPath -PathType Leaf)) {
         return [pscustomobject]@{
@@ -327,7 +365,17 @@ Log "TRIGGER: D: free ${free}GB < ${LowWaterGB}GB -> purge tester caches"
 $protectedTerminals = @(Get-ProtectedFactoryTerminals)
 $protectedLookup = @{}
 foreach ($t in $protectedTerminals) { $protectedLookup[$t.ToUpperInvariant()] = $true }
-if ($DryRun) { Log "DRYRUN: would pause new dispatch, protect active/running terminals=[$($protectedTerminals -join ',')], clear only idle T*\Tester caches, restart missing workers"; return }
+$idlePlan = Get-IdleCacheCandidatePlan -Root $Mt5Root `
+    -ProtectedTerminals $protectedLookup -ProtectedTargets $protectedTargetLookup
+[long]$minimumIdleReclaimBytes = [long]($MinimumIdleReclaimGB * 1GB)
+Log ("IDLE_CACHE_PREFLIGHT targets={0} candidate_gb={1:N3} minimum_reclaim_gb={2:N3}" -f `
+    $idlePlan.targets, ($idlePlan.bytes / 1GB), $MinimumIdleReclaimGB)
+if ($idlePlan.bytes -lt $minimumIdleReclaimBytes) {
+    Log ("SKIP: idle cache candidates below teardown threshold ({0:N3}GB < {1:N3}GB); factory left running" -f `
+        ($idlePlan.bytes / 1GB), $MinimumIdleReclaimGB)
+    return
+}
+if ($DryRun) { Log "DRYRUN: would pause new dispatch, protect active/running terminals=[$($protectedTerminals -join ',')], clear $($idlePlan.targets) idle cache target(s), restart missing workers"; return }
 
 # 1. stop factory (caches are read by running agents). Preserve the operator's
 # enable-state: a maintenance purge must never turn a deliberately disabled

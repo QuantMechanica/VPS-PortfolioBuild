@@ -55,3 +55,13 @@ def test_busy_scratch_mode_has_all_three_safety_layers() -> None:
     assert "locked_skips=" in source
     assert "d_free_before_gb=" in source
     assert "d_free_after_gb=" in source
+
+
+def test_idle_purge_sizes_candidates_before_any_factory_teardown() -> None:
+    source = SCRIPT.read_text(encoding="utf-8")
+    preflight = source.index("$idlePlan = Get-IdleCacheCandidatePlan")
+    threshold = source.index("$idlePlan.bytes -lt $minimumIdleReclaimBytes")
+    stop = source.index("Stop-ScheduledTask -TaskName 'QM_StrategyFarm_Pump_5min'")
+    assert "[double]$MinimumIdleReclaimGB = 1.0" in source
+    assert preflight < threshold < stop
+    assert "factory left running" in source[threshold:stop]

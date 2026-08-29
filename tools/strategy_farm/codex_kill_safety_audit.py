@@ -4,15 +4,21 @@ from __future__ import annotations
 
 import argparse
 import ast
+import hashlib
 import json
 import os
 import subprocess
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Iterable
 
 
 CANONICAL_REPO = Path(os.environ.get("QM_CANONICAL_REPO_ROOT", r"C:\QM\repo"))
 WORKTREE_PARENT = Path(os.environ.get("QM_WORKTREE_PARENT", r"C:\QM\worktrees"))
+CACHE_PATH = Path(os.environ.get(
+    "QM_CODEX_KILL_SAFETY_CACHE",
+    r"D:\QM\strategy_farm\state\codex_kill_safety_cache.json",
+))
 EXTRA_RUNTIME_FILES = (
     Path("scripts/aggregator/standalone_aggregator_loop.py"),
     Path("framework/scripts/mt5_worker.py"),
@@ -297,11 +303,97 @@ def _unsafe_scope(source: str, suffix: str) -> str | None:
     return None
 
 
-def audit_repo_roots(repo_roots: Iterable[Path]) -> dict[str, object]:
+def _git_identity(repo_root: Path) -> tuple[str | None, bool]:
+    try:
+        head = subprocess.run(
+            ["git", "-C", str(repo_root), "rev-parse", "HEAD"],
+            capture_output=True, text=True, timeout=15,
+        )
+    except Exception:
+        return None, False
+    sha = head.stdout.strip() if head.returncode == 0 else None
+    return sha, bool(sha)
+
+
+def _runtime_fingerprint(repo_root: Path) -> str:
+    """Cheap invalidator for tracked or untracked runtime-source changes."""
+    farm_dir = repo_root / "tools" / "strategy_farm"
+    candidates = set((*farm_dir.glob("*.py"), *farm_dir.glob("*.ps1")))
+    candidates.update(
+        repo_root / relative
+        for relative in EXTRA_RUNTIME_FILES
+        if (repo_root / relative).is_file()
+    )
+    digest = hashlib.sha256()
+    for path in sorted(candidates):
+        try:
+            stat = path.stat()
+            relative = path.relative_to(repo_root).as_posix()
+            digest.update(f"{relative}\0{stat.st_size}\0{stat.st_mtime_ns}\n".encode())
+        except OSError as exc:
+            digest.update(f"{path}\0ERROR:{exc!r}\n".encode())
+    return digest.hexdigest()
+
+
+def audit_repo_roots(
+    repo_roots: Iterable[Path],
+    *,
+    cache_path: Path | None = None,
+) -> dict[str, object]:
     roots = list(repo_roots)
     unsafe: list[dict[str, str]] = []
     scanned_files = 0
+    cache_hits = 0
+    cache: dict[str, dict[str, object]] = {}
+    if cache_path is not None:
+        try:
+            loaded = json.loads(cache_path.read_text(encoding="utf-8"))
+            if isinstance(loaded, dict):
+                cache = loaded.get("entries", {}) or {}
+        except (OSError, json.JSONDecodeError, TypeError):
+            cache = {}
+    next_cache = dict(cache)
+    identities: dict[str, tuple[str | None, bool]] = {}
+    fingerprints: dict[str, str] = {}
+    if cache_path is not None and roots:
+        # Git identity checks are independent across linked worktrees. Running
+        # them concurrently avoids paying ~one process-start/status round trip
+        # per root serially on the pump path.
+        with ThreadPoolExecutor(max_workers=min(12, len(roots))) as pool:
+            values = pool.map(_git_identity, [root.resolve() for root in roots])
+            identities = {
+                os.path.normcase(str(root.resolve())): value
+                for root, value in zip(roots, values)
+            }
+        with ThreadPoolExecutor(max_workers=min(12, len(roots))) as pool:
+            values = pool.map(_runtime_fingerprint, [root.resolve() for root in roots])
+            fingerprints = {
+                os.path.normcase(str(root.resolve())): value
+                for root, value in zip(roots, values)
+            }
     for repo_root in roots:
+        resolved_root = repo_root.resolve()
+        head_sha, clean = identities.get(
+            os.path.normcase(str(resolved_root)), (None, False)
+        )
+        # Orphaned/unregistered repo copies may have no resolvable HEAD. They
+        # remain in audit scope and are keyed as NO_HEAD; the runtime stat
+        # fingerprint below is the invalidation authority for that class.
+        identity = head_sha if head_sha and clean else "NO_HEAD"
+        cache_key = f"{os.path.normcase(str(resolved_root))}|{identity}"
+        cached = cache.get(cache_key) if cache_key else None
+        runtime_fingerprint = fingerprints.get(os.path.normcase(str(resolved_root)))
+        if (
+            isinstance(cached, dict)
+            and cached.get("runtime_fingerprint") == runtime_fingerprint
+        ):
+            unsafe.extend(cached.get("unsafe", []) or [])
+            scanned_files += int(cached.get("files_scanned") or 0)
+            cache_hits += 1
+            continue
+
+        unsafe_before = len(unsafe)
+        scanned_before = scanned_files
         farm_dir = repo_root / "tools" / "strategy_farm"
         if not farm_dir.is_dir():
             continue
@@ -366,10 +458,31 @@ def audit_repo_roots(repo_roots: Iterable[Path]) -> dict[str, object]:
                         ),
                     }
                 )
+        if cache_key:
+            next_cache[cache_key] = {
+                "repo_root": str(resolved_root),
+                "head_sha": head_sha,
+                "runtime_fingerprint": runtime_fingerprint,
+                "files_scanned": scanned_files - scanned_before,
+                "unsafe": unsafe[unsafe_before:],
+            }
+    if cache_path is not None:
+        try:
+            cache_path.parent.mkdir(parents=True, exist_ok=True)
+            temp = cache_path.with_name(f".{cache_path.name}.{os.getpid()}.tmp")
+            temp.write_text(
+                json.dumps({"schema": "qm.codex-kill-safety-cache.v1", "entries": next_cache},
+                           indent=2, sort_keys=True),
+                encoding="utf-8",
+            )
+            temp.replace(cache_path)
+        except OSError:
+            pass
     return {
         "safe": not unsafe,
         "repo_roots_scanned": len(roots),
         "files_scanned": scanned_files,
+        "cache_hits": cache_hits,
         "unsafe": unsafe,
     }
 
@@ -379,7 +492,7 @@ def main() -> int:
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
     roots = discover_repo_roots()
-    report = audit_repo_roots(roots)
+    report = audit_repo_roots(roots, cache_path=CACHE_PATH)
     if args.json:
         print(json.dumps(report, indent=2, sort_keys=True))
     elif report["safe"]:

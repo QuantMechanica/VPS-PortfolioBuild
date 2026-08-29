@@ -15,6 +15,36 @@ sys.path.insert(0, str(REPO / "tools" / "strategy_farm"))
 import managed_codex  # noqa: E402
 
 
+def test_pacer_reaps_only_live_managed_blocked_build(tmp_path, monkeypatch) -> None:
+    import sqlite3
+    import codex_fleet_pacer as pacer
+
+    db = tmp_path / "farm.sqlite"
+    conn = sqlite3.connect(db)
+    conn.execute("CREATE TABLE tasks(id TEXT, kind TEXT, status TEXT, payload_json TEXT)")
+    conn.execute(
+        "INSERT INTO tasks VALUES(?,?,?,?)",
+        ("blocked-one", "build_ea", "blocked", '{"build_dispatch":{"pid":4242}}'),
+    )
+    conn.execute(
+        "INSERT INTO tasks VALUES(?,?,?,?)",
+        ("pending-one", "build_ea", "pending", '{"build_dispatch":{"pid":4343}}'),
+    )
+    conn.commit()
+    conn.close()
+    monkeypatch.setattr(pacer, "is_managed_codex_pid_live", lambda _root, pid: pid == 4242)
+    stopped = []
+    monkeypatch.setattr(
+        pacer, "terminate_managed_codex_pid",
+        lambda _root, pid: stopped.append(pid) or {"pid": pid, "stopped": True},
+    )
+
+    result = pacer.reap_blocked_build_processes(db)
+
+    assert stopped == [4242]
+    assert result[0]["build_task_id"] == "blocked-one"
+
+
 def _identity(pid: int, key: str = "creation-A", started: float = 100.0) -> dict[str, object]:
     return {
         "pid": pid,

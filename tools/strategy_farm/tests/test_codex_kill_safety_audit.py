@@ -12,7 +12,7 @@ from codex_kill_safety_audit import audit_repo_roots  # noqa: E402
 
 def _farm_file(repo: Path, source: str) -> Path:
     path = repo / "tools" / "strategy_farm" / "farmctl.py"
-    path.parent.mkdir(parents=True)
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(source, encoding="utf-8")
     return path
 
@@ -188,3 +188,38 @@ def _stop_pid(pid):
     report = audit_repo_roots([tmp_path])
 
     assert report["safe"] is False
+
+
+def test_clean_root_head_result_is_reused_from_cache(tmp_path, monkeypatch) -> None:
+    _farm_file(tmp_path, "def safe():\n    return True\n")
+    cache = tmp_path / "cache.json"
+    monkeypatch.setattr(
+        "codex_kill_safety_audit._git_identity",
+        lambda _root: ("a" * 40, True),
+    )
+
+    first = audit_repo_roots([tmp_path], cache_path=cache)
+    second = audit_repo_roots([tmp_path], cache_path=cache)
+
+    assert first["cache_hits"] == 0
+    assert second["cache_hits"] == 1
+    assert second["safe"] is True
+
+
+def test_runtime_file_change_invalidates_same_head_cache(tmp_path, monkeypatch) -> None:
+    _farm_file(tmp_path, "def safe():\n    return True\n")
+    cache = tmp_path / "cache.json"
+    monkeypatch.setattr(
+        "codex_kill_safety_audit._git_identity",
+        lambda _root: ("b" * 40, True),
+    )
+    audit_repo_roots([tmp_path], cache_path=cache)
+    _farm_file(
+        tmp_path,
+        "def unsafe():\n    return \"Get-Process -Name codex.exe | taskkill\"\n",
+    )
+
+    result = audit_repo_roots([tmp_path], cache_path=cache)
+
+    assert result["cache_hits"] == 0
+    assert result["safe"] is False
