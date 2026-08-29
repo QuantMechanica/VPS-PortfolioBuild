@@ -131,6 +131,28 @@ CFD, threshold, fixed risk, ATR stop, spread cap, or current book. No source
 or sibling return, alpha, significance, profit factor, drawdown, trade count,
 cost, CFD equivalence, or portfolio-correlation statistic transfers.
 
+## Source-Defined Rules
+
+- Same-calendar commodity returns are the source information object and the
+  source family renews positions monthly.
+- Natural gas is explicitly inside the commodity evidence universe, while
+  separate peer-reviewed evidence supports fixed-frequency gas contrarian
+  behavior.
+- The cross-source conjunction does not source the exact estimator, band,
+  continuous-CFD translation, ATR stop, spread cap, or execution lifecycle.
+
+## QM Interpretations
+
+- The exact earlier-ten-year scan, missing-year skip, five-sample floor,
+  uniform D1-label convention, and completed CFD endpoints are transparent
+  pre-result translation choices.
+- Arithmetic mean, n-1 sample deviation, strict 0.50 plus 1e-10 band, and
+  contrarian side are the locked conjunction; no candidate result fitted them.
+- Fixed risk, ATR stop, quote/spread gates, durable attempt ledger, and stale
+  repair are execution plumbing rather than sourced alpha.
+- The Darwinex continuous CFD is not presumed equivalent to source futures,
+  and structural distinction is not presumed portfolio decorrelation.
+
 ## Non-Duplicate Decision
 
 The corrected-root canonical receipt
@@ -154,7 +176,7 @@ found no exact or fuzzy identity across 4,707 registry rows, 1,353 cards, and
 Verdict:
 `CLEAN_XNG_STANDARDIZED_SEASONAL_SURPRISE_REVERSION_AFTER_CANONICAL_AND_MANUAL_REVIEW`.
 
-## Markets, Timeframe, And Formula
+## Markets, Timeframe, And Cadence
 
 - Host and traded symbol: exact `XNGUSD.DWX`, D1, slot 0.
 - Magic: `412080000`.
@@ -164,6 +186,10 @@ Verdict:
   earlier years, excluding the realized observation and requiring at least
   five historical returns.
 - Hold: next broker-month boundary; 40 calendar days is stale repair.
+- Expected pre-result cadence: approximately six to nine positions/year after
+  warm-up; Q02 retires below five in any full scored year.
+
+## Formula
 
 At decision month `M`, let `J=M-1` with exact year rollover:
 
@@ -188,7 +214,7 @@ Huber/median/MAD location, or a rolling D1 score is not equivalent.
 The entry, exit, filter, and lifecycle rules below are the complete authorized
 baseline. There is no signal-parameter sweep or fallback estimator.
 
-### Entry Rules
+## 4. Entry Rules
 
 1. Require exact EA ID `41208`, `XNGUSD.DWX` D1 host, slot 0, magic
    `412080000`, fixed-risk inputs, both news axes OFF, and Friday close OFF.
@@ -215,7 +241,7 @@ baseline. There is no signal-parameter sweep or fallback estimator.
 10. Submit one market position with `RISK_FIXED=1000` and a frozen
     `3.5*ATR(20,D1)` hard stop. Use no target or second attempt.
 
-### Exit Rules
+## 5. Exit Rules
 
 1. Close on the first processed D1 bar of the next normalized broker month
    before considering a replacement position.
@@ -230,17 +256,28 @@ baseline. There is no signal-parameter sweep or fallback estimator.
    close, scale-in, grid, martingale, pyramid, stop-and-reverse, or
    discretionary exit.
 
-### Filters And Trade Management
+## 6. Filters (No-Trade Module)
 
 - Wrong host, period, EA ID, slot, locked input, mid-month start, duplicate
   state, invalid history, insufficient sample, invalid scale, interior score,
   quote, spread, ATR, sizing, or order state consumes the persisted month.
 - Both news axes and legacy news are OFF; no external calendar or feed is
   consulted.
+- No trend, oscillator, raw prior-month sign, Huber/median/MAD, selected-month,
+  storage, weather, curve, volume, event, or price-action fallback is allowed.
+- Signal magnitude never changes fixed risk and equality stays flat.
+
+## 7. Trade Management Rules
+
+- Every tick begins with framework MAE tracking before any guard can return.
 - Malformed, cross-month, and stale repair runs before every entry-only gate
   and remains retryable until owned exposure is flat.
+- Own at most one position by exact EA ID, magic, and XNG symbol; never manage
+  another EA's or manual trade.
 - The entry hard stop is never moved. No signal reversal changes an open
   position inside the month.
+- Persist the consumed-month ledger in a terminal global variable so restart
+  cannot generate a second attempt.
 
 ## Parameters To Test
 
@@ -284,6 +321,38 @@ properties, positions, deal history, and terminal-global attempt state only.
 No curve, inventory, storage surprise, weather, volume, open interest, event
 feed, API, CSV, optimizer artifact, trained output, or manual signal input.
 
+## Framework Execution Overrides
+
+- `qm_news_temporal=QM_NEWS_TEMPORAL_OFF`.
+- `qm_news_compliance=QM_NEWS_COMPLIANCE_NONE`.
+- `qm_news_mode_legacy=QM_NEWS_OFF`.
+- `qm_friday_close_enabled=false`.
+- Framework kill switch, fixed-risk sizing, magic resolution, order services,
+  MAE tracking, and exact owned-position isolation remain mandatory.
+
+## Exit Precedence
+
+1. Framework kill switch or close-only instruction.
+2. Malformed, duplicate, invalid-side, stopless, or invalid-metadata repair.
+3. Broker hard stop.
+4. New normalized broker-month exit.
+5. Forty-day stale repair.
+6. New entry only when flat and the current month is not already consumed.
+
+## Runtime Data Dependencies
+
+All signal inputs are deterministic transformations of completed native MT5
+D1 prices and timestamps. ATR is risk plumbing only. No runtime dependency
+updates or fits the signal from realized PnL.
+
+## Reputable-Source Gate Findings
+
+- R1: `PASS_WITH_CROSS_SOURCE_CONJUNCTION_AND_CFD_RISK`.
+- R2: `PASS` for the exact locked mechanical contract.
+- R3: `PASS_WITH_ENERGY_LABEL_AND_CONTINUOUS_CFD_BASIS_RISK`.
+- R4: `PASS`; structural arithmetic only, with no prohibited trained signal
+  or external runtime feed.
+
 ## Framework Alignment
 
 | Card rule | V5 module | Implementation obligation |
@@ -306,6 +375,13 @@ No weak result may be rescued by adopting unconditional one-month reversal,
 forecasting the upcoming calendar month, selecting months, moving the band,
 changing estimator, adding trend, storage, weather, volume, event, curve, or
 price-action filters, changing the carrier, or extending the hold.
+
+## Falsification And Requalification
+
+A failure is evidence against this exact identity. A mechanically different
+sample, estimator, threshold, direction, carrier, stop, spread, or lifecycle
+requires a new card, dedup decision, and identity; it is not a patch to this
+card.
 
 ## Validation Plan
 

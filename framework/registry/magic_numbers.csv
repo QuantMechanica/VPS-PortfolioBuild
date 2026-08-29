@@ -18107,3 +18107,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41155,gbpjpy-carry-unwind-crisis-momentum,0,GBPJPY.DWX,411550000,2026-08-29,Codex governed allocator,active
 41207,xauxag-corrbreak-rv,0,XAUUSD.DWX,412070000,2026-08-29,Codex governed allocator,active
 41207,xauxag-corrbreak-rv,1,XAGUSD.DWX,412070001,2026-08-29,Codex governed allocator,active
+41208,xng-seas-surprise-rv,0,XNGUSD.DWX,412080000,2026-08-29,Codex governed allocator,active
