@@ -40,7 +40,7 @@ def test_synthetic_old_orphan_is_fail(tmp_path: Path) -> None:
     assert "mutation_lock_reaps.jsonl" in result["action_hint"]
 
 
-def test_old_live_holder_is_warn_not_fail(tmp_path: Path) -> None:
+def test_old_live_holder_is_fail_and_names_owner(tmp_path: Path) -> None:
     path = tmp_path / "FACTORY_MUTATION.lock"
     _write_lock(path, age_seconds=900, pid=1234)
     inspection_module = sys.modules[health.inspect_factory_mutation_lock.__module__]
@@ -54,8 +54,9 @@ def test_old_live_holder_is_warn_not_fail(tmp_path: Path) -> None:
     ):
         result = health.chk_factory_mutation_lock()
 
-    assert result["status"] == "WARN"
+    assert result["status"] == "FAIL"
     assert "state=live" in result["detail"]
+    assert "synthetic-health-owner" in result["detail"]
     assert "never reap" in result["action_hint"]
 
 

@@ -116,7 +116,7 @@ def test_wrapper_invokes_incident_guard_before_first_snapshot_writer() -> None:
         encoding="utf-8-sig"
     )
 
-    guard_call = source.index("$guardOutput = @(& $PythonExe $incidentGuardScript")
+    guard_call = source.index("$guardRun = Invoke-BoundedProcess")
     pipeline_writer = source.index("scripts\\build_pipeline_state.py")
     public_writer = source.index("scripts\\export_public_snapshot.ps1")
     assert guard_call < pipeline_writer < public_writer

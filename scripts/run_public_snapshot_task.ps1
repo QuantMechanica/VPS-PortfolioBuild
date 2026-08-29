@@ -5,7 +5,9 @@ param(
     [string]$PythonExe = "C:\Users\Administrator\AppData\Local\Programs\Python\Python311\python.exe",
     [string]$FarmDbPath = "D:\QM\strategy_farm\state\farm_state.sqlite",
     [string]$FactoryOffFlagPath = "D:\QM\strategy_farm\state\FACTORY_OFF.flag",
-    [string]$FactoryMutationLockPath = "D:\QM\strategy_farm\state\FACTORY_MUTATION.lock"
+    [string]$FactoryMutationLockPath = "D:\QM\strategy_farm\state\FACTORY_MUTATION.lock",
+    [ValidateRange(30, 3600)]
+    [int]$TaskTimeoutSeconds = 600
 )
 
 Set-StrictMode -Version Latest
@@ -17,20 +19,159 @@ function Write-TaskLog {
     Add-Content -LiteralPath $LogPath -Value $line -Encoding UTF8
 }
 
-New-Item -ItemType Directory -Path (Split-Path -Parent $LogPath) -Force | Out-Null
+function Get-RemainingTimeoutSeconds {
+    $remaining = [int][math]::Floor(
+        ($script:taskDeadlineUtc - [datetime]::UtcNow).TotalSeconds
+    )
+    if ($remaining -lt 1) {
+        throw "public snapshot task exceeded ${TaskTimeoutSeconds}s deadline"
+    }
+    return $remaining
+}
+
+function Invoke-BoundedProcess {
+    param(
+        [string]$FilePath,
+        [string[]]$ArgumentList,
+        [string]$Label
+    )
+
+    $remainingSeconds = Get-RemainingTimeoutSeconds
+    $token = [guid]::NewGuid().ToString('N')
+    $stdoutPath = Join-Path ([IO.Path]::GetTempPath()) `
+        "qm_snapshot_${token}.stdout.log"
+    $stderrPath = Join-Path ([IO.Path]::GetTempPath()) `
+        "qm_snapshot_${token}.stderr.log"
+    $process = $null
+    try {
+        $process = Start-Process -FilePath $FilePath -ArgumentList $ArgumentList `
+            -PassThru -WindowStyle Hidden -RedirectStandardOutput $stdoutPath `
+            -RedirectStandardError $stderrPath
+        if (-not $process.WaitForExit($remainingSeconds * 1000)) {
+            Write-TaskLog (
+                "public_snapshot_task watchdog_timeout label=$Label " +
+                "pid=$($process.Id) deadline_s=$TaskTimeoutSeconds"
+            )
+            $oldPreference = $ErrorActionPreference
+            $ErrorActionPreference = 'Continue'
+            try {
+                & taskkill.exe /PID $process.Id /T /F 2>&1 |
+                    ForEach-Object { Write-TaskLog $_ }
+            }
+            finally {
+                $ErrorActionPreference = $oldPreference
+            }
+            throw "$Label exceeded the public snapshot ${TaskTimeoutSeconds}s task deadline"
+        }
+        $output = @()
+        if (Test-Path -LiteralPath $stdoutPath) {
+            $output += @(Get-Content -LiteralPath $stdoutPath -ErrorAction SilentlyContinue)
+        }
+        if (Test-Path -LiteralPath $stderrPath) {
+            $output += @(Get-Content -LiteralPath $stderrPath -ErrorAction SilentlyContinue)
+        }
+        return [pscustomobject]@{
+            ExitCode = $process.ExitCode
+            Output = $output
+        }
+    }
+    finally {
+        if ($null -ne $process) { $process.Dispose() }
+        Remove-Item -LiteralPath $stdoutPath -Force -ErrorAction SilentlyContinue
+        Remove-Item -LiteralPath $stderrPath -Force -ErrorAction SilentlyContinue
+    }
+}
+
+New-Item -ItemType Directory -Path (Split-Path -Parent $LogPath) -Force |
+    Out-Null
 Write-TaskLog "public_snapshot_task start"
+$script:taskDeadlineUtc = [datetime]::UtcNow.AddSeconds($TaskTimeoutSeconds)
 
 $mutationLockStream = $null
 $mutationLockBytesBase64 = $null
 $locationPushed = $false
+$snapshotStageDir = $null
 try {
-    # MNT-052: the public exporter writes tracked files.  FACTORY_OFF therefore
-    # gates it even though dashboards and read-only health tasks remain online.
     if (Test-Path -LiteralPath $FactoryOffFlagPath) {
         Write-TaskLog "public_snapshot_task skipped=FACTORY_OFF.flag"
         return
     }
+    if (-not (Test-Path -LiteralPath $PythonExe)) {
+        throw "Python executable not found: $PythonExe"
+    }
 
+    Push-Location $RepoRoot
+    $locationPushed = $true
+
+    $incidentGuardScript = Join-Path $RepoRoot `
+        "tools\strategy_farm\public_snapshot_incident_guard.py"
+    if (-not (Test-Path -LiteralPath $incidentGuardScript -PathType Leaf)) {
+        throw "public snapshot incident guard missing: $incidentGuardScript"
+    }
+    $guardRun = Invoke-BoundedProcess -FilePath $PythonExe `
+        -ArgumentList @($incidentGuardScript, '--db', $FarmDbPath) `
+        -Label 'public_snapshot_incident_guard.py'
+    $guardOutput = @($guardRun.Output)
+    $guardExitCode = $guardRun.ExitCode
+    $guardJsonLine = @($guardOutput | ForEach-Object { [string]$_ } |
+        Where-Object { $_.Trim().StartsWith('{') -and $_.Trim().EndsWith('}') } |
+        Select-Object -Last 1)
+    if ($guardJsonLine.Count -ne 1) {
+        throw ("public snapshot incident guard returned no JSON record " +
+            "(rc=$guardExitCode output=$($guardOutput -join ' | '))")
+    }
+    try {
+        $incidentGuard = [string]$guardJsonLine[0] |
+            ConvertFrom-Json -ErrorAction Stop
+    }
+    catch {
+        throw "public snapshot incident guard returned invalid JSON: $($_.Exception.Message)"
+    }
+    if ([string]$incidentGuard.schema_version -cne `
+            'qm-public-snapshot-incident-guard/v1' -or
+        $incidentGuard.valid -isnot [bool] -or
+        $incidentGuard.publication_allowed -isnot [bool]) {
+        throw 'public snapshot incident guard returned an invalid contract'
+    }
+    if ($guardExitCode -ne 0 -or -not [bool]$incidentGuard.valid -or
+        -not [bool]$incidentGuard.publication_allowed) {
+        $holds = @($incidentGuard.active_incident_holds | ForEach-Object {
+            "{0}:{1}" -f ([string]$_.hold_code),([string]$_.work_item_id)
+        })
+        throw ("public snapshot publication refused by incident guard " +
+            "(rc=$guardExitCode valid=$($incidentGuard.valid) " +
+            "holds=[$($holds -join ',')] error=$($incidentGuard.error))")
+    }
+
+    # Both DB-heavy children run before the tracked-file mutation lock exists.
+    $pipelineRun = Invoke-BoundedProcess -FilePath $PythonExe `
+        -ArgumentList @((Join-Path $RepoRoot 'scripts\build_pipeline_state.py')) `
+        -Label 'build_pipeline_state.py'
+    $pipelineRun.Output | ForEach-Object { Write-TaskLog $_ }
+    if ($pipelineRun.ExitCode -ne 0) {
+        throw "build_pipeline_state.py failed with exit code $($pipelineRun.ExitCode)"
+    }
+
+    $snapshotStageDir = Join-Path ([IO.Path]::GetTempPath()) `
+        ("qm_public_snapshot_stage_{0}" -f [guid]::NewGuid().ToString('N'))
+    New-Item -ItemType Directory -Path $snapshotStageDir | Out-Null
+    $exportRun = Invoke-BoundedProcess -FilePath 'powershell.exe' -ArgumentList @(
+        '-NoProfile', '-ExecutionPolicy', 'Bypass',
+        '-File', (Join-Path $RepoRoot 'scripts\export_public_snapshot.ps1'),
+        '-RepoRoot', $RepoRoot,
+        '-PublicDataDir', (Join-Path $RepoRoot 'public-data'),
+        '-OutputDir', $snapshotStageDir,
+        '-FarmDbPath', $FarmDbPath,
+        '-PythonExe', $PythonExe,
+        '-NoGit'
+    ) -Label 'export_public_snapshot.ps1'
+    $exportRun.Output | ForEach-Object { Write-TaskLog $_ }
+    if ($exportRun.ExitCode -ne 0) {
+        throw "export_public_snapshot.ps1 failed with exit code $($exportRun.ExitCode)"
+    }
+
+    # The global writer lock covers only the short staged-file publication.
+    Get-RemainingTimeoutSeconds | Out-Null
     $mutationLockProtocolPath = Join-Path $RepoRoot `
         'tools\strategy_farm\factory_mutation_lock.ps1'
     if (-not (Test-Path -LiteralPath $mutationLockProtocolPath -PathType Leaf)) {
@@ -50,7 +191,7 @@ try {
             $FactoryMutationLockPath,
             [System.IO.FileMode]::CreateNew,
             [System.IO.FileAccess]::ReadWrite,
-            [System.IO.FileShare]::None
+            [System.IO.FileShare]::Read
         )
         $lockRecord = [ordered]@{
             pid = $PID
@@ -73,71 +214,30 @@ try {
         return
     }
 
-    Push-Location $RepoRoot
-    $locationPushed = $true
-    if (-not (Test-Path -LiteralPath $PythonExe)) {
-        throw "Python executable not found: $PythonExe"
+    $publicDataDir = Join-Path $RepoRoot 'public-data'
+    $published = New-Object System.Collections.Generic.List[string]
+    foreach ($name in @(
+        'public-snapshot.json', 'process-roadmap.json',
+        'strategy-archive.json', 'company-operating-model.json'
+    )) {
+        $source = Join-Path $snapshotStageDir $name
+        if (-not (Test-Path -LiteralPath $source -PathType Leaf)) {
+            throw "staged snapshot file missing: $source"
+        }
+        $destination = Join-Path $publicDataDir $name
+        $sourceHash = (Get-FileHash -LiteralPath $source -Algorithm SHA256).Hash
+        $destinationHash = if (Test-Path -LiteralPath $destination -PathType Leaf) {
+            (Get-FileHash -LiteralPath $destination -Algorithm SHA256).Hash
+        } else {
+            ''
+        }
+        if ($sourceHash -eq $destinationHash) { continue }
+        $publishTemp = "${destination}.tmp.$PID"
+        Copy-Item -LiteralPath $source -Destination $publishTemp -Force
+        Move-Item -LiteralPath $publishTemp -Destination $destination -Force
+        $published.Add($destination)
     }
-
-    # PS 5.1: with ErrorActionPreference=Stop, any native stderr line routed via 2>&1
-    # becomes a terminating NativeCommandError (python's harmless "Could not find
-    # platform independent libraries" warning killed this task hourly). Real failures
-    # are caught via the explicit $LASTEXITCODE checks below.
-    $ErrorActionPreference = "Continue"
-
-    $incidentGuardScript = Join-Path $RepoRoot `
-        "tools\strategy_farm\public_snapshot_incident_guard.py"
-    if (-not (Test-Path -LiteralPath $incidentGuardScript -PathType Leaf)) {
-        throw "public snapshot incident guard missing: $incidentGuardScript"
-    }
-    $guardOutput = @(& $PythonExe $incidentGuardScript --db $FarmDbPath 2>&1)
-    $guardExitCode = $LASTEXITCODE
-    $guardJsonLine = @($guardOutput | ForEach-Object { [string]$_ } |
-        Where-Object { $_.Trim().StartsWith('{') -and $_.Trim().EndsWith('}') } |
-        Select-Object -Last 1)
-    if ($guardJsonLine.Count -ne 1) {
-        throw ("public snapshot incident guard returned no JSON record " +
-            "(rc=$guardExitCode output=$($guardOutput -join ' | '))")
-    }
-    try {
-        $incidentGuard = [string]$guardJsonLine[0] | ConvertFrom-Json -ErrorAction Stop
-    } catch {
-        throw "public snapshot incident guard returned invalid JSON: $($_.Exception.Message)"
-    }
-    if ([string]$incidentGuard.schema_version -cne `
-            'qm-public-snapshot-incident-guard/v1' -or
-        $incidentGuard.valid -isnot [bool] -or
-        $incidentGuard.publication_allowed -isnot [bool]) {
-        throw 'public snapshot incident guard returned an invalid contract'
-    }
-    if ($guardExitCode -ne 0 -or -not [bool]$incidentGuard.valid -or
-        -not [bool]$incidentGuard.publication_allowed) {
-        $holds = @($incidentGuard.active_incident_holds | ForEach-Object {
-            "{0}:{1}" -f ([string]$_.hold_code),([string]$_.work_item_id)
-        })
-        throw ("public snapshot publication refused by incident guard " +
-            "(rc=$guardExitCode valid=$($incidentGuard.valid) " +
-            "holds=[$($holds -join ',')] error=$($incidentGuard.error))")
-    }
-
-    & $PythonExe (Join-Path $RepoRoot "scripts\build_pipeline_state.py") 2>&1 |
-        ForEach-Object { Write-TaskLog $_ }
-    if ($LASTEXITCODE -ne 0) {
-        throw "build_pipeline_state.py failed with exit code $LASTEXITCODE"
-    }
-
-    & powershell.exe -NoProfile -ExecutionPolicy Bypass `
-        -File (Join-Path $RepoRoot "scripts\export_public_snapshot.ps1") `
-        -RepoRoot $RepoRoot `
-        -PublicDataDir (Join-Path $RepoRoot "public-data") `
-        -FarmDbPath $FarmDbPath `
-        -PythonExe $PythonExe `
-        -NoGit 2>&1 |
-        ForEach-Object { Write-TaskLog $_ }
-    if ($LASTEXITCODE -ne 0) {
-        throw "export_public_snapshot.ps1 failed with exit code $LASTEXITCODE"
-    }
-
+    Write-TaskLog "public_snapshot_task publish_count=$($published.Count)"
     Write-TaskLog "public_snapshot_task exit=0"
 }
 catch {
@@ -156,6 +256,20 @@ finally {
         if (-not $releasedExactLock) {
             Write-TaskLog `
                 'public_snapshot_task mutation_lock_release=retained_fail_closed'
+        }
+    }
+    if ($snapshotStageDir -and
+        (Test-Path -LiteralPath $snapshotStageDir -PathType Container)) {
+        $resolvedStage = [IO.Path]::GetFullPath($snapshotStageDir)
+        $resolvedTemp = [IO.Path]::GetFullPath([IO.Path]::GetTempPath())
+        if ($resolvedStage.StartsWith(
+                $resolvedTemp, [StringComparison]::OrdinalIgnoreCase
+            ) -and
+            (Split-Path -Leaf $resolvedStage).StartsWith(
+                'qm_public_snapshot_stage_'
+            )) {
+            Remove-Item -LiteralPath $resolvedStage -Recurse -Force `
+                -ErrorAction SilentlyContinue
         }
     }
 }

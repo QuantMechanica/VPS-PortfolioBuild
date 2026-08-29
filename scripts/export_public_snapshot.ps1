@@ -2,6 +2,7 @@
 param(
     [string]$RepoRoot = "C:\QM\repo",
     [string]$PublicDataDir = "C:\QM\repo\public-data",
+    [string]$OutputDir = "",
     [string]$PipelineStatePath = "D:\QM\reports\state\pipeline_state.json",
     [string]$FarmDbPath = "D:\QM\strategy_farm\state\farm_state.sqlite",
     [string]$FarmRoot = "D:\QM\strategy_farm",
@@ -338,6 +339,12 @@ function Get-StrategyArchiveSnapshot {
 }
 
 Ensure-Directory -Path $PublicDataDir
+$effectiveOutputDir = if ([string]::IsNullOrWhiteSpace($OutputDir)) {
+    $PublicDataDir
+} else {
+    $OutputDir
+}
+Ensure-Directory -Path $effectiveOutputDir
 
 $expenses = Get-ExpenseSummary -ExpensesCsvPath (Join-Path $RepoRoot "expenses\expenses.csv")
 $processRoadmap = Get-ProcessRoadmap -ProcessesDir (Join-Path $RepoRoot "processes")
@@ -444,9 +451,10 @@ Validate-JsonAgainstSchema -Object $companyOperatingModel -SchemaPath $companyMo
 
 $changedFiles = New-Object System.Collections.Generic.List[string]
 
-$publicPath = Join-Path $PublicDataDir "public-snapshot.json"
-$roadmapPath = Join-Path $PublicDataDir "process-roadmap.json"
-$archivePath = Join-Path $PublicDataDir "strategy-archive.json"
+$publicPath = Join-Path $effectiveOutputDir "public-snapshot.json"
+$roadmapPath = Join-Path $effectiveOutputDir "process-roadmap.json"
+$archivePath = Join-Path $effectiveOutputDir "strategy-archive.json"
+$companyModelOutputPath = Join-Path $effectiveOutputDir "company-operating-model.json"
 
 if ($DryRun) {
     Write-Host "[DryRun] Would write public-snapshot:"
@@ -460,7 +468,7 @@ if ($DryRun) {
 if (Write-JsonIfChanged -Path $publicPath -Object $publicSnapshot) { $changedFiles.Add($publicPath) }
 if (Write-JsonIfChanged -Path $roadmapPath -Object $processRoadmap) { $changedFiles.Add($roadmapPath) }
 if (Write-JsonIfChanged -Path $archivePath -Object $strategyArchive) { $changedFiles.Add($archivePath) }
-if (Write-JsonIfChanged -Path $companyModelPath -Object $companyOperatingModel) { $changedFiles.Add($companyModelPath) }
+if (Write-JsonIfChanged -Path $companyModelOutputPath -Object $companyOperatingModel) { $changedFiles.Add($companyModelOutputPath) }
 
 if ($changedFiles.Count -eq 0) {
     Write-Host "No snapshot changes."

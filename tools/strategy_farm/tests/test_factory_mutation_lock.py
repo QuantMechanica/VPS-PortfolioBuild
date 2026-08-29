@@ -235,6 +235,11 @@ def test_all_autonomous_global_lock_writers_use_nonce_bound_protocol() -> None:
     assert "nonce = [guid]::NewGuid().ToString('N')" in snapshot
     assert "Remove-QmFactoryMutationLockIfUnchanged" in snapshot
     assert "Remove-Item -LiteralPath $FactoryMutationLockPath" not in snapshot
+    assert "[System.IO.FileShare]::Read" in snapshot
+    assert snapshot.index("scripts\\export_public_snapshot.ps1") < snapshot.index(
+        "$mutationLockStream = [System.IO.File]::Open("
+    )
+    assert "watchdog_timeout" in snapshot
 
 
 def test_factory_powershell_scripts_share_exact_identity_protocol() -> None:

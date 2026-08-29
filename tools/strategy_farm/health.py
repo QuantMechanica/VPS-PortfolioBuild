@@ -1030,18 +1030,17 @@ def chk_factory_mutation_lock() -> dict:
             "fails closed for invalid content.",
         )
 
-    # A currently held Windows lock is deliberately unreadable because its live
-    # owner denies sharing. Prolonged live/unreadable ownership warns, but is
-    # never reaped or promoted to dead-holder FAIL without positive PID proof.
+    # A readable live holder beyond the runtime SLO is an operational failure:
+    # it blocks every global mutator even though the owner is still alive.  It is
+    # never reaped; the FAIL names the owner/PID so the owning task can be fixed.
+    # Unreadable holders remain fail-closed because their identity is unknown.
     if state in {"live", "unreadable", "unknown"}:
-        severity = (
-            "WARN"
-            if (
-                not age_known
-                or age_seconds >= FACTORY_MUTATION_LOCK_LIVE_WARN_SECONDS
-            )
-            else "OK"
-        )
+        if state == "live" and age_known and age_seconds >= FACTORY_MUTATION_LOCK_LIVE_WARN_SECONDS:
+            severity = "FAIL"
+        elif not age_known or age_seconds >= FACTORY_MUTATION_LOCK_LIVE_WARN_SECONDS:
+            severity = "WARN"
+        else:
+            severity = "OK"
         detail = (
             f"mutation lock state={state}, owner={owner!r}, PID={pid}, "
             f"age={int(age_seconds)}s"
@@ -1057,7 +1056,10 @@ def chk_factory_mutation_lock() -> dict:
             int(FACTORY_MUTATION_LOCK_LIVE_WARN_SECONDS),
             detail,
             (
-                "If the age keeps rising, identify the owning mutator and wait for "
+                "Identify the named owning mutator and stop only that verified task "
+                "if its own watchdog does not fire; never reap a live lock."
+                if severity == "FAIL"
+                else "If the age keeps rising, identify the owning mutator and wait for "
                 "its guarded operation; never reap without a readable record and "
                 "positive dead-PID proof."
                 if severity == "WARN"
