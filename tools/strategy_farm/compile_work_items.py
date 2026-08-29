@@ -155,6 +155,18 @@ DL089_MATRIX_DISPATCH_REPAIR_EA_LABELS = frozenset({
     "QM5_41161_tv-mon-ls-opt",
     "QM5_41162_ohlc-daily-squeeze-reversal-d1-opt",
 })
+# Exact P95 executability authority for the three DL-089 pilot siblings.  It is
+# usable only when a source-matched COMPILE_OK receipt has lost its bound EX5
+# bytes (for example, the 2026-08-27 quarantine of QM5_41163).  A present,
+# hash-matched binary remains a usable compile verdict and cannot be rebuilt.
+DL089_PILOT_BINARY_RECOVERY_AUTHORITY = (
+    "router_ops_issue:ac80262f-97e7-4179-abb9-bc4166ecdcb1"
+)
+DL089_PILOT_BINARY_RECOVERY_EA_LABELS = frozenset({
+    "QM5_41161_tv-mon-ls-opt",
+    "QM5_41162_ohlc-daily-squeeze-reversal-d1-opt",
+    "QM5_41163_williams-18ma-outside-bar-entry-d1-opt",
+})
 # Exact remediation authority for the 2026-08-24 ROT-violation revert
 # (router task b63eaead-7890-4be4-b8e7-0edea3fe6a85). Both EAs had ad-hoc
 # EX5 binaries committed after an explicit LIVE_FACTORY_AD_HOC_COMPILE_REFUSED
@@ -458,6 +470,10 @@ def _source_repair_authorized(
             and ea_label in DL089_MATRIX_DISPATCH_REPAIR_EA_LABELS
         )
         or (
+            authority == DL089_PILOT_BINARY_RECOVERY_AUTHORITY
+            and ea_label in DL089_PILOT_BINARY_RECOVERY_EA_LABELS
+        )
+        or (
             authority == QM5_41164_41191_COMPILE_FAIL_REPAIR_AUTHORITY
             and ea_label in QM5_41164_41191_COMPILE_FAIL_REPAIR_EA_LABELS
         )
@@ -687,8 +703,8 @@ def _inventory(root: Path, repo_root: Path) -> dict[str, Any]:
         open_compile: dict[str, list[dict[str, Any]]] = defaultdict(list)
         rollout_holds: dict[str, list[dict[str, Any]]] = defaultdict(list)
         for row in conn.execute(
-            "SELECT id,ea_id,phase,status,verdict,evidence_path,payload_json "
-            "FROM work_items"
+            "SELECT id,ea_id,phase,status,verdict,evidence_path,payload_json,"
+            "ex5_sha256,mq5_sha256 FROM work_items"
         ):
             ea_id = _numeric_ea_reference(row["ea_id"])
             if not ea_id:
@@ -829,6 +845,8 @@ def classify_candidate(
     ea_dir = repo_root / "framework" / "EAs" / canonical_label
     source = ea_dir / f"{canonical_label}.mq5"
     source_sha = sha256_file(source) if source.is_file() else None
+    ex5 = ea_dir / f"{canonical_label}.ex5"
+    ex5_sha = sha256_file(ex5) if ex5.is_file() else None
     repair_authorized = _source_repair_authorized(
         canonical_label,
         source_repair_authority,
@@ -850,8 +868,11 @@ def classify_candidate(
         if (
             row.get("verdict") == "COMPILE_OK"
             and source_sha
+            and ex5_sha
             and str(prior_payload.get("mq5_sha256") or "").lower()
             == source_sha.lower()
+            and str(row.get("ex5_sha256") or prior_payload.get("ex5_sha256") or "").lower()
+            == ex5_sha.lower()
         ):
             current_compile_ok.append(str(row.get("id")))
     open_rows = [
@@ -875,7 +896,6 @@ def classify_candidate(
             "reason": "OPEN_COMPILE_EA_EXISTS",
             "work_item_ids": [row["id"] for row in open_rows],
         }
-    ex5 = ea_dir / f"{canonical_label}.ex5"
     reasons: list[str] = []
     if repair_requested and not repair_authorized:
         reasons.append("SOURCE_REPAIR_AUTHORITY_INVALID")

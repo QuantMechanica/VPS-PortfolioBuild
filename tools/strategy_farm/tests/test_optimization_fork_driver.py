@@ -275,6 +275,61 @@ def test_v4_legacy_q12_no_search_gets_append_only_declared_successor(
     ).fetchone()[:] == ("done", "NO_FILTER_CHANGE")
 
 
+def test_v4_payload_collision_skips_one_pair_without_rolling_back_fresh_pair(
+    tmp_path: Path,
+) -> None:
+    conn = _db(tmp_path / "farm.sqlite")
+    _seed_incumbent(conn, tmp_path / "first", V4, ea_id="QM5_90001")
+    conn.execute(
+        "UPDATE work_items SET updated_at=? WHERE id='incumbent-pass'",
+        ("2026-08-23T13:00:00+00:00",),
+    )
+    conn.commit()
+    initial = subject.advance_optimization_fork(conn, manifest=V4, apply=True)
+    occupied = next(action for action in initial["actions"] if action["role"] == "PATTERN")
+    occupied_row = conn.execute(
+        "SELECT payload_json FROM work_items WHERE id=?", (occupied["work_item_id"],)
+    ).fetchone()
+    occupied_payload = json.loads(occupied_row[0])
+    occupied_payload["claimed_by_worker_pid"] = 1234
+    conn.execute(
+        "UPDATE work_items SET status='done',verdict='PASS',payload_json=? WHERE id=?",
+        (json.dumps(occupied_payload, sort_keys=True), occupied["work_item_id"]),
+    )
+
+    second_files = _artifacts(tmp_path / "second", "QM5_90002")
+    _insert(
+        conn,
+        wid="second-incumbent-pass",
+        phase=V4.gate_for_role("INCUMBENT"),
+        ea_id="QM5_90002",
+        status="done",
+        verdict="PASS",
+        setfile=second_files["setfile"],
+        evidence=second_files["evidence"],
+        payload={"ea_dir_name": "QM5_90002_fixture"},
+        version="v4",
+        updated_at="2026-08-23T12:00:00+00:00",
+    )
+    conn.commit()
+
+    result = subject.advance_optimization_fork(conn, manifest=V4, apply=True)
+    patterns = [action for action in result["actions"] if action["role"] == "PATTERN"]
+    collision = next(action for action in patterns if action["ea_id"] == "QM5_90001")
+    fresh = next(action for action in patterns if action["ea_id"] == "QM5_90002")
+
+    assert collision["collision_skipped"] is True
+    assert collision["machine_reason"] == "DETERMINISTIC_COLLISION_SKIPPED_APPEND_ONLY"
+    assert fresh["created"] is True
+    assert conn.execute(
+        "SELECT status,verdict,payload_json FROM work_items WHERE id=?",
+        (occupied["work_item_id"],),
+    ).fetchone()[:] == ("done", "PASS", json.dumps(occupied_payload, sort_keys=True))
+    assert conn.execute(
+        "SELECT status,verdict FROM work_items WHERE id=?", (fresh["work_item_id"],)
+    ).fetchone()[:] == ("pending", None)
+
+
 def test_fixture_dry_run_plans_whole_chain_without_writes(tmp_path: Path) -> None:
     conn = _db(tmp_path / "farm.sqlite")
     files = _seed_incumbent(conn, tmp_path, V3)

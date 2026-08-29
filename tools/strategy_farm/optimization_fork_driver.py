@@ -790,13 +790,36 @@ def _append_stage(
     verdict = "INFRA_FAIL" if terminal_fail else None
     existing = conn.execute("SELECT * FROM work_items WHERE id=?", (work_item_id,)).fetchone()
     if existing is not None:
+        expected_payload_json = json.dumps(payload, sort_keys=True)
         if (
-            str(existing["payload_json"]) != json.dumps(payload, sort_keys=True)
+            str(existing["payload_json"]) != expected_payload_json
             or str(existing["phase"]).upper() != phase
         ):
-            raise OptimizationForkError(
-                f"deterministic optimization work-item collision: {work_item_id}"
-            )
+            # Work-item rows are append-only evidence.  A historically claimed
+            # or completed row can retain the deterministic UUID while its
+            # payload gains execution metadata, so it is no longer byte-equal
+            # to today's pristine routing payload.  Never rewrite that row and
+            # never let one occupied identity roll back unrelated pair
+            # admissions in the same transaction.  Surface the collision as a
+            # per-pair skip; an independently governed recovery successor (if
+            # required) must use its own append-only identity.
+            return {
+                "created": False,
+                "idempotent": False,
+                "collision_skipped": True,
+                "work_item_id": work_item_id,
+                "role": role,
+                "phase": phase,
+                "ea_id": parent["ea_id"],
+                "symbol": parent["symbol"],
+                "status": existing["status"],
+                "verdict": existing["verdict"],
+                "machine_reason": "DETERMINISTIC_COLLISION_SKIPPED_APPEND_ONLY",
+                "existing_phase": existing["phase"],
+                "existing_ea_id": existing["ea_id"],
+                "existing_symbol": existing["symbol"],
+                "expected_routing_identity_sha256": payload["routing_identity_sha256"],
+            }
         return {
             "created": False, "idempotent": True, "work_item_id": work_item_id,
             "role": role, "phase": phase, "ea_id": parent["ea_id"],

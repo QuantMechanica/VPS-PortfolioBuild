@@ -37,6 +37,7 @@ try:
     from optimization_fork_driver import (
         HARNESS_GREEN_VERDICTS,
         PARAM_SUCCESS_VERDICTS,
+        PATTERN_DECLARATION_REVISION,
         PATTERN_SUCCESS_VERDICTS,
         SCHEMA as ROUTING_SCHEMA,
     )
@@ -45,6 +46,7 @@ except ModuleNotFoundError:
     from tools.strategy_farm.optimization_fork_driver import (
         HARNESS_GREEN_VERDICTS,
         PARAM_SUCCESS_VERDICTS,
+        PATTERN_DECLARATION_REVISION,
         PATTERN_SUCCESS_VERDICTS,
         SCHEMA as ROUTING_SCHEMA,
     )
@@ -365,6 +367,25 @@ def _nonempty_search_keys(payload: Mapping[str, Any]) -> list[str]:
     return sorted(key for key in _PATTERN_SEARCH_KEYS if payload.get(key) not in (None, {}, []))
 
 
+def _governed_evaluator(payload: Mapping[str, Any], *, contract_version: str) -> str | None:
+    """Return the manifest-native owner for a declared analytic program.
+
+    The no-change service must not reinterpret a sealed DL-089 declaration as
+    an unsupported search.  The canonical pump invokes the matrix service
+    separately; this explicit ownership mapping keeps the row pending while
+    reporting a governed hand-off instead of a generic evaluator failure.
+    """
+
+    if (
+        contract_version == "v4"
+        and str(payload.get("role") or "").upper() == "PATTERN"
+        and payload.get("routing_revision") == PATTERN_DECLARATION_REVISION
+        and isinstance(payload.get("pattern_filter_sweep"), Mapping)
+    ):
+        return "dl089_matrix_service"
+    return None
+
+
 def _pattern_ancestor(
     conn: sqlite3.Connection, param_parent: sqlite3.Row
 ) -> sqlite3.Row:
@@ -566,8 +587,32 @@ def service_pending(
     ).fetchall()
     planned: list[dict[str, Any]] = []
     deferred: list[dict[str, Any]] = []
+    delegated: list[dict[str, Any]] = []
+    contract_version = _contract_version(manifest)
     for row in rows:
         if targets is not None and str(row["id"]) not in targets:
+            continue
+        try:
+            payload = _payload(row)
+        except OptimizationForkServiceError:
+            payload = {}
+        evaluator = _governed_evaluator(payload, contract_version=contract_version)
+        # Ownership delegation never bypasses an operator/rollout hold.  Held
+        # rows continue through the normal fail-closed planner so the hold code
+        # remains visible and no downstream service is implied to own it yet.
+        if evaluator is not None and _active_holds(conn, str(row["id"])):
+            evaluator = None
+        if evaluator is not None:
+            delegated.append(
+                {
+                    "work_item_id": row["id"],
+                    "ea_id": row["ea_id"],
+                    "symbol": row["symbol"],
+                    "phase": row["phase"],
+                    "governed_evaluator": evaluator,
+                    "machine_reason": f"GOVERNED_EVALUATOR_ASSIGNED:{evaluator}",
+                }
+            )
             continue
         try:
             plan = _plan_row(
@@ -643,5 +688,6 @@ def service_pending(
         "limit": limit,
         "planned": planned,
         "completed": completed,
+        "delegated": delegated,
         "deferred": deferred,
     }

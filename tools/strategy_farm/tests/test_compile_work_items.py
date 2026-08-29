@@ -308,9 +308,12 @@ def test_source_repair_refuses_current_compile_ok(
     first = compile_work_items.enqueue_compile_eas(root, repo, [label])
     work_item_id = first["enqueued"][0]["work_item_id"]
     with farmctl.connect(root) as conn:
+        source = repo / "framework" / "EAs" / label / f"{label}.mq5"
+        binary = source.with_suffix(".ex5")
+        binary.write_bytes(b"usable current binary")
         conn.execute(
-            "UPDATE work_items SET status='done',verdict='COMPILE_OK' WHERE id=?",
-            (work_item_id,),
+            "UPDATE work_items SET status='done',verdict='COMPILE_OK',ex5_sha256=? WHERE id=?",
+            (compile_work_items.sha256_file(binary), work_item_id),
         )
         conn.commit()
 
@@ -459,6 +462,63 @@ def test_dl089_matrix_dispatch_repair_authority_is_exact_label_bound() -> None:
         "QM5_41161_tv-mon-ls-opt",
         "router_ops_issue:wrong-task",
     )
+
+
+def test_dl089_pilot_binary_recovery_authority_is_exact_cohort_bound() -> None:
+    allowed = compile_work_items.DL089_PILOT_BINARY_RECOVERY_EA_LABELS
+
+    assert allowed == {
+        "QM5_41161_tv-mon-ls-opt",
+        "QM5_41162_ohlc-daily-squeeze-reversal-d1-opt",
+        "QM5_41163_williams-18ma-outside-bar-entry-d1-opt",
+    }
+    for label in allowed:
+        assert compile_work_items._source_repair_authorized(
+            label,
+            compile_work_items.DL089_PILOT_BINARY_RECOVERY_AUTHORITY,
+        )
+    assert not compile_work_items._source_repair_authorized(
+        "QM5_41164_unrelated",
+        compile_work_items.DL089_PILOT_BINARY_RECOVERY_AUTHORITY,
+    )
+
+
+def test_dl089_pilot_missing_compile_ok_binary_can_append_recovery(
+    tmp_path: Path, monkeypatch,
+) -> None:
+    label = "QM5_1001_williams-18ma-outside-bar-entry-d1-opt"
+    repo, root = _fixture(tmp_path, [label])
+    monkeypatch.setattr(
+        compile_work_items,
+        "DL089_PILOT_BINARY_RECOVERY_EA_LABELS",
+        frozenset({label}),
+    )
+    first = compile_work_items.enqueue_compile_eas(root, repo, [label])
+    first_id = first["enqueued"][0]["work_item_id"]
+    binary = repo / "framework" / "EAs" / label / f"{label}.ex5"
+    binary.write_bytes(b"quarantined binary fixture")
+    binary_sha = compile_work_items.sha256_file(binary)
+    with farmctl.connect(root) as conn:
+        conn.execute(
+            "UPDATE work_items SET status='done',verdict='COMPILE_OK',ex5_sha256=? WHERE id=?",
+            (binary_sha, first_id),
+        )
+        conn.commit()
+    binary.unlink()
+
+    recovery = compile_work_items.enqueue_compile_eas(
+        root,
+        repo,
+        [label],
+        source_repair_authority=(
+            compile_work_items.DL089_PILOT_BINARY_RECOVERY_AUTHORITY
+        ),
+    )
+
+    assert recovery["ok"] is True
+    assert recovery["enqueued_count"] == 1
+    assert recovery["enqueued"][0]["work_item_id"] != first_id
+    assert recovery["refused"] == []
 
 
 def test_qm5_41164_41191_compile_fail_repair_authority_is_exact_label_bound() -> None:

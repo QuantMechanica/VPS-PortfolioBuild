@@ -234,7 +234,7 @@ def test_legacy_v4_no_change_chain_remains_evidence_bound(tmp_path: Path) -> Non
         assert receipt["measured_candidate_adjudicated"] is False
 
 
-def test_declared_pattern_work_is_left_pending(tmp_path: Path) -> None:
+def test_declared_pattern_work_is_delegated_to_dl089_and_left_pending(tmp_path: Path) -> None:
     conn = _db(tmp_path / "farm.sqlite")
     _seed(conn, tmp_path)
     pattern_id = _route_one(conn, "PATTERN")
@@ -258,8 +258,16 @@ def test_declared_pattern_work_is_left_pending(tmp_path: Path) -> None:
     )
 
     assert result["completed"] == []
-    assert "declared pattern work requires governed selection" in result["deferred"][0][
-        "machine_reason"
+    assert result["deferred"] == []
+    assert result["delegated"] == [
+        {
+            "work_item_id": pattern_id,
+            "ea_id": "QM5_90001",
+            "symbol": "EURUSD.DWX",
+            "phase": "Q12",
+            "governed_evaluator": "dl089_matrix_service",
+            "machine_reason": "GOVERNED_EVALUATOR_ASSIGNED:dl089_matrix_service",
+        }
     ]
     assert conn.execute(
         "SELECT status,verdict FROM work_items WHERE id=?", (pattern_id,)
