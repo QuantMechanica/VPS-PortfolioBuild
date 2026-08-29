@@ -1,0 +1,52 @@
+{
+  "task_id": "24c2581c-12b4-45e6-927e-3b1b79f91451",
+  "ea_id": "QM5_41199",
+  "slug": "wti-samecal-trim5",
+  "ea_dir": "framework/EAs/QM5_41199_wti-samecal-trim5",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41199_wti-samecal-trim5\\QM5_41199_wti-samecal-trim5.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41199_wti-samecal-trim5\\QM5_41199_wti-samecal-trim5.ex5",
+  "magic_base": 411990000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "symbols": [
+    "XTIUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41199_wti-samecal-trim5\\sets\\QM5_41199_wti-samecal-trim5_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41199_wti-samecal-trim5\\SPEC.md",
+  "basket_manifest_path": null,
+  "build_check_passed": true,
+  "build_check_report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260829_140528.json",
+  "compile_succeeded": true,
+  "compile_work_item_id": "05cb96e2-a3e5-42cb-9ade-ff4791a8da1f",
+  "compile_evidence_path": "D:\\QM\\reports\\work_items\\05cb96e2-a3e5-42cb-9ade-ff4791a8da1f\\QM5_41199\\COMPILE_EA\\compile_evidence.json",
+  "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260829_140530\\QM5_41199_wti-samecal-trim5.compile.log",
+  "mq5_sha256": "4f2b365531d46245b9c5b1b5992f4957c11ef8e9f96478cd3e61557d5ea07bfb",
+  "ex5_sha256": "a7588ce5ec720ea42d5437c643f42d3dac8f86e681e8ddf9a955c29e6f7255ea",
+  "setfile_sha256": "054f33bd92997c99a14551749f57e23c599b7658dc41a499997d403b1abc15a8",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "blocked_reason": "smoke capacity deferred before launch: whole-host five-sample CPU average 98.738744 percent and maximum 100.0 percent exceeded the 97.0 percent hard ceiling; no run_smoke, terminal64, or metatester64 process was launched for QM5_41199",
+  "smoke_capacity_evidence": {
+    "hard_ceiling_percent": 97.0,
+    "samples_percent": [
+      95.51052658036622,
+      98.18319328948881,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "average_cpu_percent": 98.738744,
+    "maximum_cpu_percent": 100.0,
+    "ceiling_binding": true,
+    "tester_launch_attempted": false
+  },
+  "open_questions": []
+}

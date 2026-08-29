@@ -1,0 +1,145 @@
+{
+  "schema": "qm.q01-build-q02-ceiling-stop/v1",
+  "generated_at_utc": "2026-08-29T14:09:02.0908486Z",
+  "branch": "agents/board-advisor",
+  "pre_receipt_head": "096ff0ce6408b07a34d74bc0674264c3346a98a1",
+  "ea": {
+    "ea_id": "QM5_41199",
+    "slug": "wti-samecal-trim5",
+    "strategy_id": "KELOHARJU-TRIM-WTI-SAMECAL5-2026_S01",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "magic": 411990000
+  },
+  "edge": {
+    "class": "commodity_energy_same_calendar_fixed_tail_trimmed_mean_seasonality",
+    "frequency": "monthly",
+    "mechanic": "At the first genuine normalized broker-month D1 boundary, require the exact five completed WTI returns for that same calendar month in Y-1 through Y-5, sort them, delete one observation from each tail, average the middle three, and trade only the strict sign until the next month boundary or 35-day stale repair.",
+    "book_difference": "Direct WTI calendar-seasonality exposure rather than a directional index, metal, or standalone XNG oscillator signal. Realized decorrelation is not claimed; unchanged Q09 alone owns that verdict.",
+    "dedup_verdict": "FUZZY_MATCH_RESOLVED_DISTINCT_WTI_EXACT_FIVE_YEAR_SAME_CALENDAR_MIDDLE_THREE_TRIMMED_MEAN_SIGN_MONTHLY_RENEWAL",
+    "dedup_receipt": "artifacts/qm5_wti_samecal_trim5_preallocation_dedup_20260829.json",
+    "dedup_receipt_sha256": "b21c3bdeea17950d273f2e9fd9063f3fe46c82c6014648b8d782743ef45ab794"
+  },
+  "governance": {
+    "source_packet": "strategy-seeds/sources/KELOHARJU-TRIM-WTI-SAMECAL5-2026/source.md",
+    "source_packet_sha256": "a63ba6d42d534eafecae8e39c879ee5d41e1938791944525076e680ff05543c8",
+    "source_approval": "decisions/2026-08-29_wti_same_calendar_trimmed_mean_source_approval.md",
+    "g0_decision": "decisions/2026-08-29_qm5_41199_wti_same_calendar_trimmed_mean_g0.md",
+    "g0_status": "APPROVED",
+    "approved_card": "strategy-seeds/cards/approved/QM5_41199_wti-samecal-trim5_card.md",
+    "approved_card_sha256": "621566cc2f6d70fd808032c676ea0ad806aa0b21d8e6d5de197d72d8dd8c641e",
+    "ea_card": "framework/EAs/QM5_41199_wti-samecal-trim5/docs/strategy_card.md",
+    "ea_card_sha256": "621566cc2f6d70fd808032c676ea0ad806aa0b21d8e6d5de197d72d8dd8c641e",
+    "canonical_and_ea_cards_byte_identical": true,
+    "runtime_card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41199_wti-samecal-trim5_card.md",
+    "runtime_card_sha256_after_prebuild_normalization": "b1bb1576318515148d4b88458ef8c7fd9c55ae42c14931343156b21f5bab2eaa",
+    "runtime_card_normalization": "farmctl build-ea changed only r1_track_record to TIER_C and its informational reasoning; the committed source/card mechanic, R2-R4 gates, risk, and execution contract were not changed"
+  },
+  "build": {
+    "build_task_id": "24c2581c-12b4-45e6-927e-3b1b79f91451",
+    "build_task_status_at_stop": "pending",
+    "build_result": "docs/ops/evidence/2026-08-29_qm5_41199_build_result.json",
+    "build_result_sha256": "6b500a3ed3b779cc01fc386cf1a67564ee8c5767d56607391152fe6bdce7ec61",
+    "compile_work_item_id": "05cb96e2-a3e5-42cb-9ade-ff4791a8da1f",
+    "compile_release_receipt": "artifacts/qm5_41199_compile_release_20260829.json",
+    "compile_release_receipt_sha256": "5d8e0e6cbb39bfc8a40f9a4d0ef8ab78f44ca64de0b3bca0b2b64ad8c27aa27e",
+    "compile_status": "done",
+    "compile_verdict": "COMPILE_OK",
+    "compile_evidence": "D:\\QM\\reports\\work_items\\05cb96e2-a3e5-42cb-9ade-ff4791a8da1f\\QM5_41199\\COMPILE_EA\\compile_evidence.json",
+    "compile_evidence_sha256": "0b5beb95acc8763e9f135f8fa09dbbfe752856a64d6cc835e3a7a02d454df30b",
+    "build_check": {
+      "status": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:\\QM\\reports\\framework\\21\\build_check_20260829_140528.json",
+      "report_sha256": "61aae9f7561da637881b8e88cc51dd9858aeb0d72248c8b809185d58164bea25"
+    },
+    "compile": {
+      "status": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "log": "framework/build/compile/20260829_140530/QM5_41199_wti-samecal-trim5.compile.log",
+      "log_sha256": "0cbf0b68f211d2d448c3f2180469b961b53370d1bd83b7b18b86e460c2a0f70a"
+    },
+    "mq5": {
+      "path": "framework/EAs/QM5_41199_wti-samecal-trim5/QM5_41199_wti-samecal-trim5.mq5",
+      "sha256": "4f2b365531d46245b9c5b1b5992f4957c11ef8e9f96478cd3e61557d5ea07bfb"
+    },
+    "ex5": {
+      "path": "framework/EAs/QM5_41199_wti-samecal-trim5/QM5_41199_wti-samecal-trim5.ex5",
+      "sha256": "a7588ce5ec720ea42d5437c643f42d3dac8f86e681e8ddf9a955c29e6f7255ea",
+      "tracked": false
+    },
+    "setfile": {
+      "path": "framework/EAs/QM5_41199_wti-samecal-trim5/sets/QM5_41199_wti-samecal-trim5_XTIUSD.DWX_D1_backtest.set",
+      "sha256": "054f33bd92997c99a14551749f57e23c599b7658dc41a499997d403b1abc15a8",
+      "build_hash": "ff00e4d7e3eab8bf7f87d8d56ee4e94f949ffa70770e344f07c7e9c7b99c4e29",
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "portfolio_weight": 1
+    },
+    "reference_tests": "PASS: 13 tests",
+    "spec_validation": "PASS",
+    "card_schema_lint": "PASS",
+    "build_guardrails": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "smoke": {
+      "result": "deferred_p2_smoke",
+      "reason": "binding whole-host CPU ceiling before launch",
+      "qm5_41199_tester_process_launched": false,
+      "retry_attempted": false
+    }
+  },
+  "capacity": {
+    "hard_ceiling_percent": 97.0,
+    "resume_threshold_percent": 90.0,
+    "below_ceiling_windows": [
+      {
+        "purpose": "initial governed compile preflight",
+        "average_percent": 67.185341,
+        "maximum_percent": 82.343801
+      },
+      {
+        "purpose": "compile enqueue",
+        "average_percent": 77.380187,
+        "maximum_percent": 86.656704
+      },
+      {
+        "purpose": "exact compile hold release",
+        "average_percent": 84.177455,
+        "maximum_percent": 93.556261
+      }
+    ],
+    "binding_stop_samples_percent": [
+      95.51052658036622,
+      98.18319328948881,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "binding_stop_average_percent": 98.738744,
+    "binding_stop_maximum_percent": 100.0,
+    "ceiling_binding": true
+  },
+  "q02": {
+    "enqueued": false,
+    "work_item_count_at_stop": 0,
+    "record_build_completed": false,
+    "stop_reason": "CPU_CEILING",
+    "required_next_action": "After a fresh below-ceiling CPU window, run farmctl record-build once with task 24c2581c-12b4-45e6-927e-3b1b79f91451 and this committed build-result JSON; the idempotent record path will enqueue exactly one XTIUSD.DWX D1 Q02 row."
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "t_live_controlled": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "manual_q02_backtest_launched": false,
+    "smoke_or_tester_launched_for_qm5_41199": false
+  },
+  "mission_commits_before_receipt": [
+    "6c4c38322",
+    "3ef034a57",
+    "01fbb76ad",
+    "096ff0ce6"
+  ]
+}
