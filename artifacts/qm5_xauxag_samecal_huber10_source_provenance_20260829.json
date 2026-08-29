@@ -1,0 +1,40 @@
+{
+  "schema": "qm.local-source-provenance/v1",
+  "candidate_slug": "xauxag-samecal-huber10",
+  "recorded_at_utc": "2026-08-29T21:18:56Z",
+  "retrieval_mode": "complete_read_of_governed_repository_packets",
+  "new_public_retrieval": false,
+  "records": [
+    {
+      "path": "strategy-seeds/sources/KELOHARJU-FMR-XAUXAG-SAMECAL-2026/source.md",
+      "source_id": "KELOHARJU-FMR-XAUXAG-SAMECAL-2026",
+      "sha256": "9266E47C7F3235D900C9432FEAC33A417807AE1E2CC9685FF2FEADAB46DBF75E",
+      "byte_count": 6434,
+      "line_count": 130,
+      "read_scope": "complete",
+      "status": "approved_source_complete",
+      "role": "peer_reviewed_same_calendar_xau_xag_relative_value_carrier_and_synchronized_month_endpoint_contract"
+    },
+    {
+      "path": "strategy-seeds/sources/MOP-WTI-HUBER-2026/source.md",
+      "source_id": "MOP-WTI-HUBER-2026",
+      "sha256": "849EEF9C014DFFC16F42531E38F995767F7C516BEF0824559E7D3A057E59F611",
+      "byte_count": 6949,
+      "line_count": 154,
+      "read_scope": "complete",
+      "status": "approved_source_complete",
+      "role": "governed_peer_reviewed_huber_bounded_location_arithmetic_only_no_wti_carrier_claim_transferred"
+    },
+    {
+      "path": "strategy-seeds/sources/KELOHARJU-RETSEAS-2016/source.md",
+      "source_id": "KELOHARJU-RETSEAS-2016",
+      "sha256": "54E6036035D146BB080A0DDF4A16B378C187655A3834DF86329F7B2D319875F0",
+      "byte_count": 9245,
+      "line_count": 174,
+      "read_scope": "complete",
+      "status": "cards_ready",
+      "role": "underlying_peer_reviewed_same_calendar_commodity_seasonality_and_history_floor"
+    }
+  ],
+  "claim_boundary": "The exact ten-year paired XAU-minus-XAG same-calendar fixed-scale Huber-location basket is a transparent QM mechanization. No source performance, significance, density, cost, hedge, futures-CFD equivalence, decorrelation, or portfolio result is imported."
+}
