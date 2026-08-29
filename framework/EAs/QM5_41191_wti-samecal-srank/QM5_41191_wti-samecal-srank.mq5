@@ -600,6 +600,8 @@ bool Strategy_LoadSignedRankSignal(const datetime decision_bar_time,
                                         label_offset,
                                         sample_return))
          continue;
+      if(sample_count >= ArraySize(observations))
+         return false;
       observations[sample_count] = sample_return;
       ++sample_count;
      }

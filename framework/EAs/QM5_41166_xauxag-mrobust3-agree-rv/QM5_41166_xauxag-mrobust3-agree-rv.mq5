@@ -824,6 +824,8 @@ bool Strategy_LoadMonthlyRobustConsensus(
                                xag_bars[xag_index].close,
                                ratio))
             return false;
+         if(month_count >= ArraySize(newest_first_ratios))
+            return false;
          newest_first_ratios[month_count] = ratio;
          newest_first_times[month_count] = xau_time;
          if(month_count == 0)
@@ -849,6 +851,8 @@ bool Strategy_LoadMonthlyRobustConsensus(
    for(int index = 0; index < strategy_month_end_count; ++index)
      {
       const int reverse_index = strategy_month_end_count - 1 - index;
+      if(reverse_index >= ArraySize(newest_first_ratios))
+         return false;
       chronological_ratios[index] = newest_first_ratios[reverse_index];
       chronological_times[index] = newest_first_times[reverse_index];
       if(!MathIsValidNumber(chronological_ratios[index]) ||
@@ -875,6 +879,10 @@ bool Strategy_LoadMonthlyRobustConsensus(
          const int month_distance = upper - lower;
          if(month_distance <= 0)
             return false;
+         if(upper >= ArraySize(chronological_ratios))
+            return false;
+         if(lower >= ArraySize(chronological_ratios))
+            return false;
          const double slope =
             (chronological_ratios[upper] -
              chronological_ratios[lower]) /
@@ -891,6 +899,8 @@ bool Strategy_LoadMonthlyRobustConsensus(
       return false;
    for(int index = 0; index < pair_slope_count; ++index)
      {
+      if(index >= ArraySize(ordered_pair_slopes))
+         return false;
       if(!MathIsValidNumber(ordered_pair_slopes[index]) ||
          (index > 0 &&
           ordered_pair_slopes[index] < ordered_pair_slopes[index - 1]))
@@ -901,6 +911,10 @@ bool Strategy_LoadMonthlyRobustConsensus(
    const int theilsen_high_index = pair_slope_count / 2;
    if(theilsen_low_index != 38 || theilsen_high_index != 39)
       return false;
+   if(theilsen_low_index >= ArraySize(ordered_pair_slopes))
+      return false;
+   if(theilsen_high_index >= ArraySize(ordered_pair_slopes))
+      return false;
    theilsen =
       ordered_pair_slopes[theilsen_low_index] / 2.0 +
       ordered_pair_slopes[theilsen_high_index] / 2.0;
@@ -910,6 +924,8 @@ bool Strategy_LoadMonthlyRobustConsensus(
    bool have_lad_minimum = false;
    for(int candidate = 0; candidate < pair_slope_count; ++candidate)
      {
+      if(candidate >= ArraySize(pair_slopes))
+         return false;
       const double slope = pair_slopes[candidate];
       double residuals[];
       if(ArrayResize(residuals, strategy_month_end_count) !=
@@ -927,6 +943,8 @@ bool Strategy_LoadMonthlyRobustConsensus(
       const int intercept_index = strategy_month_end_count / 2;
       if(intercept_index != 6)
          return false;
+      if(intercept_index >= ArraySize(residuals))
+         return false;
       const double intercept = residuals[intercept_index];
       if(!MathIsValidNumber(intercept))
          return false;
@@ -943,6 +961,8 @@ bool Strategy_LoadMonthlyRobustConsensus(
          if(!MathIsValidNumber(loss) || loss < 0.0)
             return false;
         }
+      if(candidate >= ArraySize(candidate_losses))
+         return false;
       candidate_losses[candidate] = loss;
       ++lad_candidate_count;
       if(!have_lad_minimum || loss < lad_min_loss)
@@ -982,11 +1002,15 @@ bool Strategy_LoadMonthlyRobustConsensus(
       return false;
    for(int index = 0; index < lad_minimizer_count; ++index)
      {
+      if(index >= ArraySize(lad_minimizers))
+         return false;
       if(!MathIsValidNumber(lad_minimizers[index]) ||
          (index > 0 && lad_minimizers[index] < lad_minimizers[index - 1]))
          return false;
      }
    const int lad_center = lad_minimizer_count / 2;
+   if(lad_center >= ArraySize(lad_minimizers))
+      return false;
    if((lad_minimizer_count % 2) == 1)
       lad_slope = lad_minimizers[lad_center];
    else
@@ -1015,6 +1039,10 @@ bool Strategy_LoadMonthlyRobustConsensus(
          if(month_distance <= 0 || slope_index < 0 ||
             slope_index >= slopes_per_pivot)
             return false;
+         if(upper >= ArraySize(chronological_ratios))
+            return false;
+         if(lower >= ArraySize(chronological_ratios))
+            return false;
          const double slope =
             (chronological_ratios[upper] -
              chronological_ratios[lower]) /
@@ -1038,6 +1066,10 @@ bool Strategy_LoadMonthlyRobustConsensus(
       const int center_high_index = slopes_per_pivot / 2;
       if(center_low_index != 5 || center_high_index != 6)
          return false;
+      if(center_low_index >= ArraySize(pivot_slopes))
+         return false;
+      if(center_high_index >= ArraySize(pivot_slopes))
+         return false;
       const double inner_median =
          pivot_slopes[center_low_index] / 2.0 +
          pivot_slopes[center_high_index] / 2.0;
@@ -1058,6 +1090,8 @@ bool Strategy_LoadMonthlyRobustConsensus(
       return false;
    for(int index = 0; index < pivot_median_count; ++index)
      {
+      if(index >= ArraySize(pivot_medians))
+         return false;
       if(!MathIsValidNumber(pivot_medians[index]) ||
          (index > 0 && pivot_medians[index] < pivot_medians[index - 1]))
          return false;
@@ -1065,6 +1099,8 @@ bool Strategy_LoadMonthlyRobustConsensus(
 
    const int outer_median_index = pivot_median_count / 2;
    if(outer_median_index != 6)
+      return false;
+   if(outer_median_index >= ArraySize(pivot_medians))
       return false;
    repeated_median = pivot_medians[outer_median_index];
    if(!MathIsValidNumber(repeated_median))

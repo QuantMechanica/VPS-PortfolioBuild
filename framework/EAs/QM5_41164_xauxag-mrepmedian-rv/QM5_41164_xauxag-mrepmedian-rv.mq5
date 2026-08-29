@@ -797,6 +797,8 @@ bool Strategy_LoadMonthlyRepeatedMedian(
                                xag_bars[xag_index].close,
                                ratio))
             return false;
+         if(month_count >= ArraySize(newest_first_ratios))
+            return false;
          newest_first_ratios[month_count] = ratio;
          newest_first_times[month_count] = xau_time;
          if(month_count == 0)
@@ -822,6 +824,8 @@ bool Strategy_LoadMonthlyRepeatedMedian(
    for(int index = 0; index < strategy_month_end_count; ++index)
      {
       const int reverse_index = strategy_month_end_count - 1 - index;
+      if(reverse_index >= ArraySize(newest_first_ratios))
+         return false;
       chronological_ratios[index] = newest_first_ratios[reverse_index];
       chronological_times[index] = newest_first_times[reverse_index];
       if(!MathIsValidNumber(chronological_ratios[index]) ||
@@ -856,6 +860,10 @@ bool Strategy_LoadMonthlyRepeatedMedian(
          if(month_distance <= 0 || slope_index < 0 ||
             slope_index >= slopes_per_pivot)
             return false;
+         if(upper >= ArraySize(chronological_ratios))
+            return false;
+         if(lower >= ArraySize(chronological_ratios))
+            return false;
          const double slope =
             (chronological_ratios[upper] -
              chronological_ratios[lower]) /
@@ -879,6 +887,10 @@ bool Strategy_LoadMonthlyRepeatedMedian(
       const int center_high_index = slopes_per_pivot / 2;
       if(center_low_index != 5 || center_high_index != 6)
          return false;
+      if(center_low_index >= ArraySize(pivot_slopes))
+         return false;
+      if(center_high_index >= ArraySize(pivot_slopes))
+         return false;
       const double inner_median =
          pivot_slopes[center_low_index] / 2.0 +
          pivot_slopes[center_high_index] / 2.0;
@@ -899,6 +911,8 @@ bool Strategy_LoadMonthlyRepeatedMedian(
       return false;
    for(int index = 0; index < pivot_median_count; ++index)
      {
+      if(index >= ArraySize(pivot_medians))
+         return false;
       if(!MathIsValidNumber(pivot_medians[index]) ||
          (index > 0 && pivot_medians[index] < pivot_medians[index - 1]))
          return false;
@@ -906,6 +920,8 @@ bool Strategy_LoadMonthlyRepeatedMedian(
 
    const int outer_median_index = pivot_median_count / 2;
    if(outer_median_index != 6)
+      return false;
+   if(outer_median_index >= ArraySize(pivot_medians))
       return false;
    repeated_median = pivot_medians[outer_median_index];
    if(!MathIsValidNumber(repeated_median))

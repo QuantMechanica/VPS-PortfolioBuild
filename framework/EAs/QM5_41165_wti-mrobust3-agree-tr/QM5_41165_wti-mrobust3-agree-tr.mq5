@@ -498,6 +498,10 @@ bool Strategy_LoadMonthlyEndpoints(const int current_month_key,
          else if(Strategy_NextMonthKey(month_key) != last_month_key)
             return false;
 
+         if(endpoint_count >= ArraySize(reverse_closes))
+            return false;
+         if(endpoint_count >= ArraySize(reverse_month_keys))
+            return false;
          reverse_closes[endpoint_count] = bars[index].close;
          reverse_times[endpoint_count] = normalized_label;
          reverse_month_keys[endpoint_count] = month_key;
@@ -527,6 +531,10 @@ bool Strategy_LoadMonthlyEndpoints(const int current_month_key,
    for(int index = 0; index < endpoint_count; ++index)
      {
       const int reverse_index = endpoint_count - 1 - index;
+      if(reverse_index >= ArraySize(reverse_closes))
+         return false;
+      if(reverse_index >= ArraySize(reverse_month_keys))
+         return false;
       closes[index] = reverse_closes[reverse_index];
       endpoint_times[index] = reverse_times[reverse_index];
       chronological_month_keys[index] =
@@ -587,6 +595,8 @@ bool Strategy_RobustConsensusSignal(const double &closes[],
          if(month_distance <= 0 ||
             metrics.pair_slope_count < 0 ||
             metrics.pair_slope_count >= expected_pairs)
+            return false;
+         if(older >= ArraySize(log_prices))
             return false;
          const double slope =
             (log_prices[newer] - log_prices[older]) /
@@ -695,11 +705,15 @@ bool Strategy_RobustConsensusSignal(const double &closes[],
    ArraySort(minimizers);
    for(int index = 0; index < metrics.lad_minimizer_count; ++index)
      {
+      if(index >= ArraySize(minimizers))
+         return false;
       if(!MathIsValidNumber(minimizers[index]) ||
          (index > 0 && minimizers[index] < minimizers[index - 1]))
          return false;
      }
    const int minimizer_center = metrics.lad_minimizer_count / 2;
+   if(minimizer_center >= ArraySize(minimizers))
+      return false;
    if((metrics.lad_minimizer_count % 2) == 1)
       metrics.lad_slope = minimizers[minimizer_center];
    else
@@ -767,6 +781,8 @@ bool Strategy_RobustConsensusSignal(const double &closes[],
          if(month_distance <= 0 || pivot_slope_count < 0 ||
             pivot_slope_count >= point_count - 1)
             return false;
+         if(newer >= ArraySize(log_prices))
+            return false;
          const double slope =
             (log_prices[newer] - log_prices[older]) /
             (double)month_distance;
@@ -781,6 +797,8 @@ bool Strategy_RobustConsensusSignal(const double &closes[],
       ArraySort(pivot_slopes);
       for(int index = 0; index < pivot_slope_count; ++index)
         {
+         if(index >= ArraySize(pivot_slopes))
+            return false;
          if(!MathIsValidNumber(pivot_slopes[index]) ||
             (index > 0 &&
              pivot_slopes[index] < pivot_slopes[index - 1]))

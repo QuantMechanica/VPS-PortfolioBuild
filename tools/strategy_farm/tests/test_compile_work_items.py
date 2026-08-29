@@ -461,6 +461,32 @@ def test_dl089_matrix_dispatch_repair_authority_is_exact_label_bound() -> None:
     )
 
 
+def test_qm5_41164_41191_compile_fail_repair_authority_is_exact_label_bound() -> None:
+    allowed = compile_work_items.QM5_41164_41191_COMPILE_FAIL_REPAIR_EA_LABELS
+
+    assert allowed == {
+        "QM5_41164_xauxag-mrepmedian-rv",
+        "QM5_41165_wti-mrobust3-agree-tr",
+        "QM5_41166_xauxag-mrobust3-agree-rv",
+        "QM5_41168_xauxag-mcoxstuart-rv",
+        "QM5_41172_wti-mpettitt-shift-tr",
+        "QM5_41191_wti-samecal-srank",
+    }
+    for label in allowed:
+        assert compile_work_items._source_repair_authorized(
+            label,
+            compile_work_items.QM5_41164_41191_COMPILE_FAIL_REPAIR_AUTHORITY,
+        )
+    assert not compile_work_items._source_repair_authorized(
+        "QM5_41163_williams-18ma-outside-bar-entry-d1-opt",
+        compile_work_items.QM5_41164_41191_COMPILE_FAIL_REPAIR_AUTHORITY,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        "QM5_41164_xauxag-mrepmedian-rv",
+        "router_ops_issue:wrong-task",
+    )
+
+
 def test_qm5_35005_review_repair_authority_is_exact_label_bound() -> None:
     label = "QM5_35005_sma-crossover-pullback-system"
 

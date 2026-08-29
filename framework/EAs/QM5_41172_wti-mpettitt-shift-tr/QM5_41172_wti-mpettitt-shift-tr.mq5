@@ -619,6 +619,8 @@ bool Strategy_PettittSignal(const double &closes[],
    for(int index = 0; index < strategy_endpoint_count - 1; ++index)
      {
       const int change_index = index + 1;
+      if(index >= ArraySize(ranks))
+         return false;
       cumulative_rank_sum += ranks[index];
       const int signed_u =
          2 * cumulative_rank_sum -

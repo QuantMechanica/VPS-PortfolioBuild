@@ -209,6 +209,25 @@ HMA_CATA_REQUAL_ARTIFACT_SHA256 = {
         "50d47f901236ed0a827fd9e74e82e781f52c7c9a45ff3097630b2e497686bca4"
     ),
 }
+# Exact router authority for the six energy/metals COMPILE_FAIL rework
+# siblings whose EA_INDICATOR_BUFFER_UNBOUNDED failures were source-repaired
+# (explicit ArraySize bounds guards ahead of already-in-bounds dynamic buffer
+# accesses; no strategy logic changed) after the prior refusal
+# 57ab1771-c43a-4fda-b51f-38a25597b08b found no open governed build_ea parent.
+# This one router-task/label-cohort binding permits only append-only,
+# source-hash-bound COMPILE_EA successors; it grants no backtest, gate, or
+# overwrite authority for any other EA.
+QM5_41164_41191_COMPILE_FAIL_REPAIR_AUTHORITY = (
+    "router_ops_issue:e173b7a8-9702-4ea1-9144-e3d153329db1"
+)
+QM5_41164_41191_COMPILE_FAIL_REPAIR_EA_LABELS = frozenset({
+    "QM5_41164_xauxag-mrepmedian-rv",
+    "QM5_41165_wti-mrobust3-agree-tr",
+    "QM5_41166_xauxag-mrobust3-agree-rv",
+    "QM5_41168_xauxag-mcoxstuart-rv",
+    "QM5_41172_wti-mpettitt-shift-tr",
+    "QM5_41191_wti-samecal-srank",
+})
 COMPILE_PROFILE_STDLIB_FAILURE_CLASS = "COMPILE_PROFILE_STDLIB_MISSING"
 VALID_TIMEFRAMES = (
     # Kept exactly aligned with gen_setfile.ps1's ValidateSet: a candidate
@@ -437,6 +456,10 @@ def _source_repair_authorized(
         or (
             authority == DL089_MATRIX_DISPATCH_REPAIR_AUTHORITY
             and ea_label in DL089_MATRIX_DISPATCH_REPAIR_EA_LABELS
+        )
+        or (
+            authority == QM5_41164_41191_COMPILE_FAIL_REPAIR_AUTHORITY
+            and ea_label in QM5_41164_41191_COMPILE_FAIL_REPAIR_EA_LABELS
         )
     )
     if statically_authorized:

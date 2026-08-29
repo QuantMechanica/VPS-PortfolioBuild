@@ -801,6 +801,8 @@ bool Strategy_LoadMonthlyPairedSign(
                                xag_bars[xag_index].close,
                                ratio))
             return false;
+         if(month_count >= ArraySize(newest_first_ratios))
+            return false;
          newest_first_ratios[month_count] = ratio;
          newest_first_times[month_count] = xau_time;
          if(month_count == 0)
@@ -830,6 +832,8 @@ bool Strategy_LoadMonthlyPairedSign(
          reverse_index >= ArraySize(newest_first_ratios) ||
          reverse_index >= ArraySize(newest_first_times))
          return false;
+      if(reverse_index >= ArraySize(newest_first_ratios))
+         return false;
       chronological_ratios[index] = newest_first_ratios[reverse_index];
       chronological_times[index] = newest_first_times[reverse_index];
       if(!MathIsValidNumber(chronological_ratios[index]) ||
@@ -855,6 +859,10 @@ bool Strategy_LoadMonthlyPairedSign(
          newer >= ArraySize(chronological_ratios))
          return false;
 
+      if(newer >= ArraySize(chronological_ratios))
+         return false;
+      if(older >= ArraySize(chronological_ratios))
+         return false;
       const double difference =
          chronological_ratios[newer] - chronological_ratios[older];
       if(!MathIsValidNumber(difference))
