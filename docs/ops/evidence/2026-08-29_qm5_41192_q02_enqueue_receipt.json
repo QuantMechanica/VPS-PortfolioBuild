@@ -1,0 +1,177 @@
+{
+  "schema": "qm.q02-enqueue-receipt/v1",
+  "generated_at_utc": "2026-08-29T00:41:19.808Z",
+  "branch": "agents/board-advisor",
+  "pre_receipt_head": "90fff7bd6",
+  "ea": {
+    "ea_id": "QM5_41192",
+    "slug": "xtixng-mdaily-hl-rv",
+    "logical_symbol": "QM5_41192_XTI_XNG_MDAILY_HL_RV_D1",
+    "host_symbol": "XTIUSD.DWX",
+    "companion_symbol": "XNGUSD.DWX",
+    "timeframe": "D1",
+    "magic_base": 411920000,
+    "magics": [
+      411920000,
+      411920001
+    ]
+  },
+  "edge": {
+    "class": "commodity_energy_relative_value_market_neutral_style",
+    "frequency": "monthly",
+    "mechanic": "At the first synchronized D1 bar of a month, compute every inclusive pairwise average of the immediately completed month's synchronized XTI-minus-XNG daily log returns, take the exact odd/even median, and fade its strict sign with opposite equal-target-notional XTI/XNG legs.",
+    "dedup_result": "No canonical exact duplicate across the registry, approved cards, or governed source index; the nearest WTI Hodges-Lehmann candidate was manually resolved as a different mechanic.",
+    "book_difference": "Paired crude-oil-versus-natural-gas relative value rather than a directional index, metal, or standalone XNG signal. Realized portfolio decorrelation remains a downstream Q09 gate, not a build claim."
+  },
+  "governance": {
+    "source_approval": "decisions/2026-08-29_xtixng_monthly_daily_hodges_lehmann_reversion_source_approval.md",
+    "g0_decision": "decisions/2026-08-29_qm5_41192_xtixng_monthly_daily_hodges_lehmann_reversion_g0.md",
+    "approved_card": "strategy-seeds/cards/approved/QM5_41192_xtixng-mdaily-hl-rv_card.md",
+    "approved_card_sha256": "4a29a6e1bad3d9da53d97b7e762ccdae342354f8b479e357e85a0a37a4a2c4e2",
+    "runtime_card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41192_xtixng-mdaily-hl-rv.md",
+    "runtime_card_sha256": "4a29a6e1bad3d9da53d97b7e762ccdae342354f8b479e357e85a0a37a4a2c4e2",
+    "canonical_runtime_cards_byte_identical": true,
+    "g0_status": "APPROVED"
+  },
+  "build": {
+    "successful_task_id": "905946e6-fad0-456d-920c-64c466e7ba59",
+    "successful_task_status": "done",
+    "build_recorded_at_utc": "2026-08-29T00:37:49+00:00",
+    "build_result": "D:\\QM\\strategy_farm\\artifacts\\builds\\905946e6-fad0-456d-920c-64c466e7ba59.json",
+    "build_result_sha256": "c5a998ad9824018da86d07e8f0b06fae07516bbcad09622f4479c068651e9457",
+    "committed_build_result": "docs/ops/evidence/2026-08-29_qm5_41192_build_result_retry.json",
+    "committed_build_result_sha256": "b205411c615ac1a123669cb7a8e63adb42ed0d22563eef18a675a7a8b1ba829d",
+    "initial_task": {
+      "task_id": "d1c94c8f-0e6a-45aa-9c84-652c4feb44a3",
+      "status": "blocked",
+      "fail_code": "spec_validation_failed",
+      "resolution": "Reformatted SPEC.md to the required seven-section contract with the deterministic EA ID marker, reran strict validation, and created a fresh append-only build task."
+    },
+    "mq5": {
+      "path": "framework/EAs/QM5_41192_xtixng-mdaily-hl-rv/QM5_41192_xtixng-mdaily-hl-rv.mq5",
+      "sha256": "630cf4a9c18a2ec5ff4d86b04df000a48a4ecf793e09d8d028f3d094a7cf238d"
+    },
+    "ex5": {
+      "path": "framework/EAs/QM5_41192_xtixng-mdaily-hl-rv/QM5_41192_xtixng-mdaily-hl-rv.ex5",
+      "sha256": "f96f3bd3366b4154d49a77599d51c74c5ce5f0c0b1a4181e8f0b1045132d8904",
+      "tracked": false
+    },
+    "spec": {
+      "path": "framework/EAs/QM5_41192_xtixng-mdaily-hl-rv/SPEC.md",
+      "sha256": "06a3361970f3522844a0bb462e902948a76b28837717ac4ea4be582e3231ed4a"
+    },
+    "basket_manifest": {
+      "path": "framework/EAs/QM5_41192_xtixng-mdaily-hl-rv/basket_manifest.json",
+      "sha256": "7580f8f49964b7f42b0b6af9bed77573e599a07a78862d9940f1f42e073cd136"
+    },
+    "compile": {
+      "status": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "log": "framework/build/compile/20260829_000146/QM5_41192_xtixng-mdaily-hl-rv.compile.log",
+      "summary": "D:\\QM\\reports\\compile\\20260829_000146\\summary.csv"
+    },
+    "smoke": {
+      "result": "deferred_p2_smoke",
+      "reason": "Active custom-history isolation requires a worker-bound work item whose archives were privatized before run_smoke.",
+      "terminal": "T7",
+      "terminal64_or_metatester64_launched": false
+    }
+  },
+  "q02": {
+    "database": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "work_item_id": "06e46647-e8b6-4148-8d51-586cb8114acd",
+    "kind": "backtest",
+    "phase": "Q02",
+    "status_at_receipt": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "verdict": null,
+    "created_at_utc": "2026-08-29T00:37:49+00:00",
+    "updated_at_utc": "2026-08-29T00:37:49+00:00",
+    "gate_contract_version": "v4",
+    "build_task_id": "905946e6-fad0-456d-920c-64c466e7ba59",
+    "enqueued_by": "record_build_result.auto_q02",
+    "symbol": "QM5_41192_XTI_XNG_MDAILY_HL_RV_D1",
+    "host_symbol": "XTIUSD.DWX",
+    "host_timeframe": "D1",
+    "basket_symbols": [
+      "XTIUSD.DWX",
+      "XNGUSD.DWX"
+    ],
+    "portfolio_scope": "basket",
+    "setfile": "framework/EAs/QM5_41192_xtixng-mdaily-hl-rv/sets/QM5_41192_xtixng-mdaily-hl-rv_QM5_41192_XTI_XNG_MDAILY_HL_RV_D1_D1_backtest.set",
+    "setfile_sha256": "ec71135e05f7de648c3d37b5c36d1baaede967c2580a412a1e409df7ac6569a5",
+    "window": {
+      "from": "2018.07.02",
+      "to": "2024.12.31"
+    },
+    "tester": {
+      "currency": "USD",
+      "deposit": 100000,
+      "timeout_minutes": 450
+    },
+    "risk": {
+      "mode": "RISK_FIXED",
+      "risk_fixed": 1000,
+      "risk_percent": 0
+    },
+    "priority_track": true,
+    "cardinality_audit": {
+      "all_q02_rows": 1,
+      "logical_basket_rows": 1,
+      "physical_leg_rows": 0
+    },
+    "physical_presets_skipped": [
+      {
+        "setfile": "QM5_41192_xtixng-mdaily-hl-rv_XTIUSD.DWX_D1_backtest.set",
+        "reason": "basket_manifest_logical_setfile_preferred"
+      },
+      {
+        "setfile": "QM5_41192_xtixng-mdaily-hl-rv_XNGUSD.DWX_D1_backtest.set",
+        "reason": "basket_manifest_logical_setfile_preferred"
+      }
+    ]
+  },
+  "verification": {
+    "reference_tests": "PASS: 9 passed",
+    "spec_validator": "PASS",
+    "card_linters": "PASS",
+    "strict_build_check": {
+      "status": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:\\QM\\reports\\framework\\21\\build_check_20260829_002445.json"
+    },
+    "carrier_normalized_source_match": true,
+    "cpu_ceiling": {
+      "hard_ceiling_percent": 97.0,
+      "binding": false,
+      "durable_prelaunch_average_percent": 58.463435,
+      "durable_prelaunch_maximum_percent": 65.250075,
+      "durable_admission_average_percent": 69.835,
+      "durable_admission_maximum_percent": 78.899,
+      "final_queue_admission_average_percent": 86.383703,
+      "final_queue_admission_maximum_percent": 92.250757
+    }
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "t_live_controlled": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "manual_backtest_launched": false,
+    "protected_path_matches_in_mission_commits": []
+  },
+  "mission_commits": [
+    "9d0b5563b",
+    "8478733c5",
+    "5e5669755",
+    "c3cee1943",
+    "d93f589f6",
+    "ee6c5664d",
+    "0164c08a7",
+    "cb3cccebf",
+    "b43662d45"
+  ]
+}
