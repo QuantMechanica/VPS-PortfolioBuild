@@ -6,7 +6,7 @@ Branch: `agents/board-advisor`
 
 Targets: `QM5_12512`, `QM5_10050`, `QM5_12507`
 
-Outcome: **Q01 COMPLETE: 12512/12507 PASS; 10050 ZERO-TRADE FAIL; PASSING LOGICAL Q02 SEEDS WAITING ON SQLITE WRITER CONTENTION**
+Outcome: **Q01 COMPLETE: 12512/12507 PASS; 10050 ZERO-TRADE FAIL; PASSING LOGICAL Q02 SEEDS ENQUEUED**
 
 ## Admission diagnosis
 
@@ -102,14 +102,19 @@ and tick were active. No logical Q02 row was partially created. `QM5_10050`
 correctly remains inadmissible because its real Q01 result is zero trades; that
 is a strategy/runtime outcome, not an infrastructure failure or waiver case.
 
-## Deterministic continuation
+## Logical Q02 seeds
 
-1. After the scheduled writer releases the SQLite transaction, invoke the
-   existing reviewed Q02 enqueue command for `QM5_12512` and `QM5_12507`.
-2. Do not enqueue `QM5_10050`; its authenticated Q01 zero-trade result is a
-   legitimate fail-closed verdict and requires separately routed recovery if
-   further work is desired.
+After the scheduled writer released its transaction, the unchanged governed
+Q02 path admitted the two passing receipts and appended exactly one logical
+seed per basket:
 
-At this review boundary there are **two Q01 PASS outcomes, one legitimate Q01
-zero-trade FAIL, and zero logical Q02 seeds because of durable writer
-contention**. No pipeline verdict is asserted.
+| EA | Logical Q02 work item | Parent task | State at handoff |
+| --- | --- | --- | --- |
+| `QM5_12512` | `acbad967-bf94-4565-9e51-db193de01bf9` | `0acc8178-da83-4846-8b33-accb497217c7` | `pending` |
+| `QM5_12507` | `547c4fd3-f3fd-4c59-b9dc-654e96521251` | `47e96b62-0ece-40a2-a22b-13704bd24e46` | `pending` |
+
+`QM5_10050` was not enqueued: its authenticated Q01 zero-trade result remains
+a legitimate fail-closed verdict and requires separately routed recovery if
+further work is desired. At this review boundary there are **two Q01 PASS
+outcomes, one legitimate Q01 zero-trade FAIL, and two pending logical Q02
+seeds**. No Q02 or later pipeline verdict is asserted.
