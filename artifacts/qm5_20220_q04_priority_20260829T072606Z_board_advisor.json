@@ -1,0 +1,197 @@
+{
+  "schema_version": "qm.fx-cointegration-q04-priority-handoff/v1",
+  "generated_at_utc": "2026-08-29T07:26:30Z",
+  "branch": "agents/board-advisor",
+  "git_head_before_runtime_mutation": "c1098a6abf366915691376f0088b8b2ab7ef6442",
+  "mission_result": "EXISTING_FOREX_FALLBACK_Q04_PRIORITY_APPLIED",
+  "frontier_reconciliation": {
+    "controlling_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "published_pair_count": 66,
+    "relationships_covered": 66,
+    "relationships_uncovered": 0,
+    "approved_unbuilt_cointegration_cards": 0,
+    "anchor_q02_repair_required": false,
+    "fallback_authorized": true,
+    "published_hard_qualifiers": [
+      {
+        "ea_id": "QM5_12532",
+        "pair": [
+          "AUDUSD.DWX",
+          "NZDUSD.DWX"
+        ],
+        "canonical_frontier": "Q02_PASS_Q04_PASS_Q05_FAIL"
+      },
+      {
+        "ea_id": "QM5_12533",
+        "pair": [
+          "EURJPY.DWX",
+          "GBPJPY.DWX"
+        ],
+        "canonical_frontier": "Q02_PASS_Q04_FAIL"
+      }
+    ],
+    "higher_rank_lineage": [
+      {
+        "scan_rank": 40,
+        "ea_id": "QM5_20219",
+        "pair": [
+          "USDJPY.DWX",
+          "NZDUSD.DWX"
+        ],
+        "frontier": "Q02_PASS_Q03_PASS_Q04_PENDING_PRIORITY_TRACK",
+        "advanceable_by_this_handoff": false,
+        "reason": "already advanced in place by the earlier exact Q04 priority handoff"
+      },
+      {
+        "scan_rank": 41,
+        "ea_id": "QM5_12765",
+        "pair": [
+          "GBPUSD.DWX",
+          "NZDUSD.DWX"
+        ],
+        "frontier": "Q02_PASS_Q04_FAIL",
+        "advanceable_by_this_handoff": false,
+        "reason": "terminal economic verdict"
+      }
+    ],
+    "sign_aware_coverage_artifact": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json"
+  },
+  "selection": {
+    "ea_id": "QM5_20220",
+    "ea_directory": "framework/EAs/QM5_20220_usdcad-audjpy",
+    "approved_card": "strategy-seeds/cards/approved/QM5_20220_usdcad-audjpy_card.md",
+    "logical_symbol": "QM5_20220_USDCAD_AUDJPY_COINTEGRATION_D1",
+    "traded_symbols": [
+      "USDCAD.DWX",
+      "AUDJPY.DWX"
+    ],
+    "conversion_history_only_symbols": [
+      "AUDUSD.DWX",
+      "USDJPY.DWX"
+    ],
+    "selection_mode": "existing_forex_fallback_no_unbuilt_66_pair_candidate",
+    "selection_reason": "next recorded nonterminal scan relationship after rank 40 was already prioritized and rank 41 had a terminal Q04 failure",
+    "scan_relationship_rank": 42,
+    "scan_evidence": {
+      "dev_net_sharpe": 0.285291,
+      "oos_net_sharpe": -0.060279,
+      "oos_return_percent": -0.374459,
+      "oos_state_changes": 15,
+      "dev_beta": -0.18623267,
+      "half_life_d1_bars": 73.38,
+      "disposition": "one_shot_pipeline_test_no_refit_or_rescue"
+    },
+    "timeframe": "D1"
+  },
+  "build_and_risk_binding": {
+    "card_schema_lint": "PASS",
+    "g0_status": "APPROVED",
+    "approved_card_sha256": "701bb4407149aa8992cf5eeb9bd17754f9162bda3d878f25b9e7bd9dac530ec2",
+    "mq5_sha256": "7f5c593178f99f667b9318dc7afd962ca02613b69aeb9f64177f3a5ab884f67d",
+    "ex5_sha256": "464b198b76c21106a5cc89b61802855c3deae4f3d3d12fa77a8a0efaf83690ca",
+    "basket_manifest": "framework/EAs/QM5_20220_usdcad-audjpy/basket_manifest.json",
+    "basket_manifest_sha256": "f018b19daad14c135618c09d23b4f3186e5ff103c904afa8c15b12976fb65203",
+    "setfile": "framework/EAs/QM5_20220_usdcad-audjpy/sets/QM5_20220_usdcad-audjpy_QM5_20220_USDCAD_AUDJPY_COINTEGRATION_D1_D1_backtest.set",
+    "setfile_sha256": "ebce89cfeb15844170f6b7ac558786e7c0d4312543767a4eb8305c6eac39ec09",
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "structural_only": true,
+    "machine_learning": false,
+    "adaptive_refit": false
+  },
+  "sealed_lineage": [
+    {
+      "work_item_id": "61e7d1af-35a2-48f4-8602-afcf94949118",
+      "phase": "Q02",
+      "status": "done",
+      "verdict": "PASS"
+    },
+    {
+      "work_item_id": "2e797aa8-42ef-479e-875f-da93436ca528",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "deterministic_runs": 2,
+      "trades_per_run": 136,
+      "profit_factor_per_run": 0.7,
+      "drawdown_percent_per_run": 7.2,
+      "net_profit_per_run": -5628.03,
+      "interpretation": "Q03 reproducibility PASS only; Q04 remains the economic judge"
+    }
+  ],
+  "queue_action": {
+    "work_item_id": "0961cfd5-4831-4ef9-bf5b-cab4bfcab089",
+    "phase": "Q04",
+    "mutation": "EXACT_ID_IN_PLACE_PAYLOAD_CAS",
+    "status_after": "pending",
+    "claimed_by_after": null,
+    "attempt_count_after": 0,
+    "verdict_after": null,
+    "updated_at_preserved": "2026-08-05T09:06:38+00:00",
+    "priority_track_before": null,
+    "priority_track_after": true,
+    "priority_reason": "board_advisor_fx_fallback_rank42_q04",
+    "queue_rank_before": 2104,
+    "queue_rank_after": 1932,
+    "queue_rank_improvement": 172,
+    "prior_payload_sha256": "a3a257949760759da5406c8ed60d4c1d47f5fc64af2dc18ff1895b4f257c0864",
+    "post_payload_sha256": "a0634c97bd69e6fc3054dc0c5c16974da6cd0502897ea189b81304174e8b25cd",
+    "audit_event_id": 380358,
+    "audit_event": "priority_track_set",
+    "row_journal": "D:/QM/reports/state/qm5_20220_q04_priority_20260829T072606Z.journal.json",
+    "row_journal_sha256": "6bb2866471f1a85d9cca6a13f8531a760538cc9742e6e683a918ecdd95b9286d",
+    "row_journal_state": "COMMITTED",
+    "open_matching_q04_rows_after": 1,
+    "active_holds_after": 0,
+    "supersede_relations_after": 0,
+    "active_quarantine_after": 0,
+    "duplicate_work_items_created": 0,
+    "pipeline_verdict_changed": false,
+    "alpha_changed": false
+  },
+  "capacity": {
+    "preflight_sampled_at_utc": "2026-08-29T07:22:49.827227+00:00",
+    "preflight_samples_percent": [
+      92.08984375,
+      95.01953125,
+      79.6875,
+      93.65234375,
+      91.015625
+    ],
+    "preflight_average_percent": 90.29296875,
+    "preflight_maximum_percent": 95.01953125,
+    "apply_sampled_at_utc": "2026-08-29T07:26:30.017550+00:00",
+    "apply_samples_percent": [
+      82.82926829268293,
+      93.65234375,
+      81.25,
+      74.0234375,
+      91.40625
+    ],
+    "apply_average_percent": 84.63225990853658,
+    "apply_maximum_percent": 93.65234375,
+    "cpu_ceiling_percent": 97,
+    "cpu_ceiling_hit": false,
+    "factory_mutation_lock_wait_seconds": 18.468,
+    "factory_mutation_lock_release_status": "released",
+    "active_multisymbol_work_items_at_apply": [],
+    "manual_mt5_dispatch_started": false
+  },
+  "safety": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "new_work_item_created": false,
+    "pipeline_verdict_changed": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "live_manifest_touched": false,
+    "manual_terminal_action": false,
+    "backtest_started": false
+  }
+}
