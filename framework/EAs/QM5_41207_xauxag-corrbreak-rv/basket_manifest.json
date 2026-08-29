@@ -1,0 +1,23 @@
+{
+  "logical_symbol": "QM5_41207_XAU_XAG_CORRBREAK_RV_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "q02_from_date": "2018.07.02",
+  "q02_to_date": "2024.12.31",
+  "basket_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "notes": [
+    "One logical two-leg weekly gold/silver correlation-break relative-value package. Q02 evaluates combined package PnL, paired costs, activity, and later Q09 correlation; neither component leg is a standalone strategy.",
+    "The EA requires exactly 81 synchronized completed D1 close pairs, a disjoint 60-to-20 strong-to-weak Pearson/Fisher correlation transition, and an absolute five-return standardized relative displacement of at least 1.25 before fading toward a frozen halfway-ratio target.",
+    "The package splits one RISK_FIXED budget into two equal stop-risk halves, rejects post-rounding absolute-notional mismatch above 20%, and follows the validated QM5_12533 logical-basket host-symbol recipe with USD tester currency and the canonical 100000 deposit."
+  ]
+}
+
