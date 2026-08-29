@@ -108,6 +108,12 @@ CUSTOM_HISTORY_GATE_DEFER_ACTIONS = frozenset(
 )
 FACTORY_ADMISSION_LOCK_TIMEOUT_SECONDS = 5.0
 FACTORY_ADMISSION_LOCK_POLL_SECONDS = 0.01
+# DL-089 claim-boundary pruning may parse and hash multi-gigabyte native
+# reports.  Serialize that backstop on its own lock so one worker performs the
+# expensive check while peers remain free to claim non-census work.  This lock
+# is deliberately distinct from FACTORY_MUTATION.lock.
+CLAIM_PRUNING_LOCK_FILENAME = "DL089_CLAIM_PRUNING.lock"
+CLAIM_PREFLIGHT_MAX_CANDIDATES = 8
 Q09_CELL_SHARDING_FLAG = "Q09_CELL_SHARDING_ENABLED"
 Q09_CELL_SHARDING_MAX_TERMINALS_FLAG = "Q09_CELL_SHARDING_MAX_TERMINALS"
 Q09_CELL_SHARDING_DEFAULT_MAX_TERMINALS = 4
@@ -153,7 +159,10 @@ CPU_GUARD_SLEEP_SECONDS = 20
 # workers, checked atomically against claim_class_ledger inside BEGIN IMMEDIATE.
 # Each new tester's real memory footprint is then visible to the commit/RAM
 # admission gates before the next launch — no post-restart thundering herd.
-CLAIM_SPACING_SECONDS = 60.0
+# OWNER 2026-08-29 ("Aggressive 10 Sekunden"): lowered 60->10 for short-cell
+# throughput; the commit/RAM/CPU/disk admission gates carry the actual crash
+# protection, the stagger stays only as launch-visibility ramp shaping.
+CLAIM_SPACING_SECONDS = 10.0
 # Per-worker resource hysteresis latches (process-local; workers are resident).
 _RESOURCE_LATCH = {"ram_low": False, "cpu_high": False}
 # Free physical RAM did not expose the 2026-07-23 failure mode: Windows still
@@ -283,6 +292,12 @@ LOG_BOMB_JOURNAL_CAP_BYTES = LOG_BOMB_HARD_CEIL_BYTES  # back-compat alias (kill
 LOG_BOMB_CHECK_EVERY_ITERS = 5                # ~every 10s (loop sleeps 2s)
 SQLITE_WRITE_RETRIES = 8
 SQLITE_WRITE_RETRY_SLEEP_SECONDS = 0.05
+# FACTORY_MUTATION.lock must never span the ordinary multi-attempt SQLite
+# backoff. The connection itself has a 750ms busy timeout; one attempt keeps
+# the OFF/claim fence below one second under writer contention and lets the
+# worker retry on its next normal poll.
+CLAIM_LOCK_SQLITE_ATTEMPTS = 1
+CLAIM_LOCK_BUSY_TIMEOUT_MS = 750
 # Claim transactions deliberately keep the short XCU contention budget above.
 # Once a row is claimed, however, losing the worker's pre-spawn record write to
 # a pump burst wastes the claim cycle and forces a daemon respawn.  Give only
@@ -326,6 +341,8 @@ LAUNCH_FAULT_DEFER_SECONDS = 300.0        # host launch storm: defer without bur
 LAUNCH_FAULT_DEFER_MAX_SECONDS = 3600.0   # repeated launch storms should not thrash the queue
 
 _STOP = False
+_CLAIM_DB_INIT_LOCK = threading.Lock()
+_CLAIM_DB_INITIALIZED_ROOTS: set[str] = set()
 
 
 def _handle_stop(_signum: int, _frame: object) -> None:
@@ -386,6 +403,14 @@ def _with_sqlite_retry(fn):
         fn,
         attempts=SQLITE_WRITE_RETRIES,
         base_delay_seconds=SQLITE_WRITE_RETRY_SLEEP_SECONDS,
+    )
+
+
+def _with_claim_lock_sqlite_write(fn):
+    return retry_sqlite_busy(
+        fn,
+        attempts=CLAIM_LOCK_SQLITE_ATTEMPTS,
+        base_delay_seconds=0.0,
     )
 
 
@@ -474,6 +499,21 @@ def _work_item_test_period(item: sqlite3.Row | dict[str, Any], payload: dict[str
 
 def _work_item_test_symbol(item: sqlite3.Row | dict[str, Any], payload: dict[str, Any]) -> str:
     return str(payload.get("host_symbol") or _work_item_value(item, "symbol", "") or "").strip().upper()
+
+
+def _history_preflight_fingerprint(
+    item: sqlite3.Row | dict[str, Any],
+) -> tuple[str, str, str, str, str, str]:
+    """Identity fields consumed by the claim-time history preflight."""
+
+    return (
+        str(_work_item_value(item, "id", "") or ""),
+        str(_work_item_value(item, "phase", "") or ""),
+        str(_work_item_value(item, "ea_id", "") or ""),
+        str(_work_item_value(item, "symbol", "") or ""),
+        str(_work_item_value(item, "setfile_path", "") or ""),
+        str(_work_item_value(item, "payload_json", "{}") or "{}"),
+    )
 
 
 def _unique_symbols(values: list[object]) -> list[str]:
@@ -878,7 +918,10 @@ def _process_private_snapshot() -> tuple[dict[int, list[int]], dict[int, int], s
     return children, private, alive
 
 
-def _measured_subtree_gb(pid: Any) -> float | None:
+def _measured_subtree_gb(
+    pid: Any,
+    process_snapshot: tuple[dict[int, list[int]], dict[int, int], set[int]] | None = None,
+) -> float | None:
     """Private commit (GB) held by ``pid`` and every descendant, or None.
 
     Walks the children map rather than the live parent links: a phase driver's
@@ -891,7 +934,7 @@ def _measured_subtree_gb(pid: Any) -> float | None:
         root_pid = int(pid)
     except (TypeError, ValueError):
         return None
-    children, private, alive = _process_private_snapshot()
+    children, private, alive = process_snapshot or _process_private_snapshot()
     if not alive:
         return None
     total = 0
@@ -929,6 +972,9 @@ def _commit_admission_snapshot(
     conn: sqlite3.Connection,
     now_iso: str,
     multisym_ids: frozenset,
+    *,
+    live_headroom_gb: float | None = None,
+    process_snapshot: tuple[dict[int, list[int]], dict[int, int], set[int]] | None = None,
 ) -> dict[str, Any]:
     """Measure commit headroom minus the *unmaterialized* part of active claims.
 
@@ -948,7 +994,11 @@ def _commit_admission_snapshot(
     fades to zero once the job is at peak, which is what lets the window stay
     open for the whole balloon phase instead of expiring mid-growth.
     """
-    live_headroom = _commit_headroom_gb()
+    live_headroom = (
+        _commit_headroom_gb()
+        if live_headroom_gb is None
+        else float(live_headroom_gb)
+    )
     probe_ok = math.isfinite(live_headroom) or (
         sys.platform != "win32" and math.isinf(live_headroom) and live_headroom > 0
     )
@@ -984,7 +1034,11 @@ def _commit_admission_snapshot(
         # Decay the reservation against what the job has already allocated; the
         # live headroom above already accounts for that part.
         pid = payload.get("pid")
-        measured_gb = _measured_subtree_gb(pid) if pid else None
+        measured_gb = (
+            _measured_subtree_gb(pid, process_snapshot=process_snapshot)
+            if pid
+            else None
+        )
         if measured_gb is None:
             # Not spawned yet, or the probe failed: keep the full peak reserved.
             reservation_gb = expected_peak_gb
@@ -1662,6 +1716,19 @@ def _claim_queue_may_need_mutation(root: Path, terminal: str) -> bool:
         return True
 
 
+def _ensure_claim_db_initialized(root: Path) -> None:
+    """Run idempotent schema setup once per worker process and farm root."""
+
+    key = str(Path(root).resolve()).casefold()
+    if key in _CLAIM_DB_INITIALIZED_ROOTS:
+        return
+    with _CLAIM_DB_INIT_LOCK:
+        if key in _CLAIM_DB_INITIALIZED_ROOTS:
+            return
+        farmctl.init_db(root)
+        _CLAIM_DB_INITIALIZED_ROOTS.add(key)
+
+
 def _governed_analytic_claim_block(
     item: sqlite3.Row | dict[str, Any], payload: dict[str, Any]
 ) -> dict[str, Any] | None:
@@ -1756,20 +1823,97 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
         else set()
     )
 
+    # Every filesystem/process/OS probe completes before the fleet-wide
+    # mutation lock.  The lock below is reserved for the fresh OFF check and
+    # the SQLite claim transaction; a cold registry read, CIM fallback, or
+    # report hash must never convoy peer terminals.
+    _ensure_claim_db_initialized(root)
+    process_snapshot = _process_private_snapshot()
+    commit_headroom_snapshot = _commit_headroom_gb()
+    multisym_free_ram_snapshot = _free_ram_gb()
+    reservation = farmctl.terminal_reservation(root, terminal)
+    watchdog_reset_blocked = _watchdog_reset_admission_blocked(root)
+    longrun_policy_enabled = longrun_scheduling_policy.policy_enabled()
+    history_registry = farmctl._dwx_symbol_history_registry()
+    try:
+        multisym_ids = _multisymbol_ea_ids()
+    except MultisymbolRegistryUnavailable as exc:
+        return {
+            "claimed": False,
+            "reason": "multisymbol_registry_unavailable",
+            "error": str(exc),
+        }
+    active_terminal_preflight = _active_terminal_claim_preflight(root, terminal)
+    if not active_terminal_preflight.get("ready"):
+        return {
+            "claimed": False,
+            "reason": active_terminal_preflight.get(
+                "reason", "active_terminal_preflight_failed"
+            ),
+            "error": active_terminal_preflight.get("error"),
+        }
+
+    pruning_enabled = opt_census_pruning.pruning_enabled()
+    pruning_checked_payloads: dict[str, str] = {}
+    skip_unchecked_pruning = False
+    history_preflight_cache: dict[
+        str,
+        tuple[
+            tuple[str, str, str, str, str, str],
+            bool,
+            dict[str, Any] | None,
+        ],
+    ] = {}
+    skip_unchecked_history = False
+
+    # Prime the most likely candidate before the first global-lock acquisition.
+    # This keeps the common one-row claim path to a single OFF-check/write
+    # transaction while still revalidating the exact identity in `_claim`.
+    try:
+        with farmctl.connect(root) as _preflight_conn:
+            initial_candidate_row = _preflight_conn.execute(
+                _priority_pending_query()
+            ).fetchone()
+    except sqlite3.Error:
+        initial_candidate_row = None
+    if initial_candidate_row is not None and not (
+        pruning_enabled
+        and str(initial_candidate_row["phase"] or "").upper() == "OPT_CENSUS"
+    ):
+        initial_candidate = dict(initial_candidate_row)
+        initial_fingerprint = _history_preflight_fingerprint(initial_candidate)
+        try:
+            initial_history_ok, initial_history = _p2_history_claimable(
+                initial_candidate,
+                terminal,
+                history_registry,
+            )
+        except Exception as exc:
+            initial_history_ok = False
+            initial_history = {
+                "reason": "history_preflight_failed",
+                "error": f"{type(exc).__name__}: {exc}",
+            }
+        history_preflight_cache[str(initial_candidate["id"])] = (
+            initial_fingerprint,
+            initial_history_ok,
+            initial_history,
+        )
+
     def _claim() -> dict[str, Any]:
-        farmctl.init_db(root)
         now = farmctl.utc_now()
         db_path = root / farmctl.DB_REL
-        # Warm the process snapshot BEFORE taking the write lock. The admission
-        # gate needs it, and a cold Toolhelp32+psapi scan costs ~8ms — which is
-        # cheap in itself but must not be paid while holding BEGIN IMMEDIATE with
-        # nine workers contending, least of all when the box is paging
-        # (Codex review 2026-07-26, 33a18bb2e). Inside the transaction the call
-        # is then a ~0.4us cache hit. Fail-open: errors are swallowed there.
-        _process_private_snapshot()
-        with sqlite3.connect(db_path, timeout=BUSY_TIMEOUT_MS / 1000.0) as conn:
+        # Do not inherit the singleton pump's optional long env override here:
+        # this connection runs while FACTORY_MUTATION.lock is held.
+        with sqlite3.connect(
+            db_path,
+            timeout=CLAIM_LOCK_BUSY_TIMEOUT_MS / 1000.0,
+        ) as conn:
             conn.row_factory = sqlite3.Row
-            configure_sqlite_connection(conn)
+            configure_sqlite_connection(
+                conn,
+                busy_timeout_ms=CLAIM_LOCK_BUSY_TIMEOUT_MS,
+            )
             conn.execute("BEGIN IMMEDIATE")
             try:
                 active_terminal = conn.execute(
@@ -1777,11 +1921,25 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                     (terminal,),
                 ).fetchone()
                 if active_terminal:
+                    if (
+                        str(active_terminal["id"])
+                        != str(active_terminal_preflight.get("item_id") or "")
+                        or str(active_terminal["payload_json"] or "{}")
+                        != str(active_terminal_preflight.get("payload_json") or "{}")
+                    ):
+                        conn.commit()
+                        return {
+                            "claimed": False,
+                            "reason": "active_terminal_preflight_stale",
+                            "item_id": active_terminal["id"],
+                        }
                     payload = _json_loads(active_terminal["payload_json"])
                     pid = payload.get("pid")
                     worker_pid = payload.get("claimed_by_worker_pid")
-                    if worker_pid and not farmctl._pid_exists(worker_pid):
-                        if pid and farmctl._pid_tree_exists(pid):
+                    worker_alive = active_terminal_preflight.get("worker_alive")
+                    child_alive = bool(active_terminal_preflight.get("child_alive"))
+                    if worker_pid and worker_alive is False:
+                        if pid and child_alive:
                             payload["prior_failure"] = payload.get("prior_failure") or "worker_process_missing_adopted_active_child"
                             payload["orphan_worker_pid"] = worker_pid
                             payload["orphan_child_adopted_at_iso"] = now
@@ -1799,7 +1957,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                             return {"claimed": True, "item": dict(row), "adopt_existing": True}
 
                         payload["prior_failure"] = payload.get("prior_failure") or "worker_process_missing_released_stale_claim"
-                        terminal_stopped = _stop_terminal_slot_for_release(root, terminal)
+                        terminal_stopped = active_terminal_preflight.get("terminal_stopped")
                         if terminal_stopped is not None:
                             payload["terminal_stopped_on_release"] = terminal_stopped
                         _clear_stale_runtime_payload(payload)
@@ -1811,7 +1969,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                             """,
                             (json.dumps(payload, sort_keys=True), now, active_terminal["id"], terminal),
                         )
-                    elif worker_pid:
+                    elif worker_pid and worker_alive is True:
                         conn.commit()
                         return {
                             "claimed": False,
@@ -1819,12 +1977,12 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                             "item_id": active_terminal["id"],
                             "worker_pid": worker_pid,
                         }
-                    elif pid and farmctl._pid_tree_exists(pid):
+                    elif pid and child_alive:
                         conn.commit()
                         return {"claimed": False, "reason": "terminal_busy", "item_id": active_terminal["id"]}
                     else:
                         payload["prior_failure"] = payload.get("prior_failure") or "worker_loop_released_stale_claim"
-                        terminal_stopped = _stop_terminal_slot_for_release(root, terminal)
+                        terminal_stopped = active_terminal_preflight.get("terminal_stopped")
                         if terminal_stopped is not None:
                             payload["terminal_stopped_on_release"] = terminal_stopped
                         _clear_stale_runtime_payload(payload)
@@ -1852,7 +2010,6 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                     conn.commit()
                     return {"claimed": False, "reason": "terminal_process_busy", "terminal": terminal}
 
-                reservation = farmctl.terminal_reservation(root, terminal)
                 if reservation:
                     decline = {
                         "event": "terminal_reservation_claim_declined",
@@ -1865,7 +2022,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                     conn.commit()
                     return {"claimed": False, **reservation, "reason": "terminal_reserved"}
 
-                if _watchdog_reset_admission_blocked(root):
+                if watchdog_reset_blocked:
                     conn.commit()
                     return {
                         "claimed": False,
@@ -1890,16 +2047,13 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                         "last_claim_at_utc": last_claim_iso,
                     }
 
-                try:
-                    multisym_ids = _multisymbol_ea_ids()
-                except MultisymbolRegistryUnavailable as exc:
-                    conn.commit()
-                    return {
-                        "claimed": False,
-                        "reason": "multisymbol_registry_unavailable",
-                        "error": str(exc),
-                    }
-                admission = _commit_admission_snapshot(conn, now, multisym_ids)
+                admission = _commit_admission_snapshot(
+                    conn,
+                    now,
+                    multisym_ids,
+                    live_headroom_gb=commit_headroom_snapshot,
+                    process_snapshot=process_snapshot,
+                )
                 if not admission["probe_ok"]:
                     conn.commit()
                     return {
@@ -1968,10 +2122,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                 skipped_multisym_commit: list[dict[str, Any]] = []
                 skipped_avoid_terminal: list[dict[str, Any]] = []
                 skipped_longrun_cap: list[dict[str, Any]] = []
-                longrun_policy_enabled = longrun_scheduling_policy.policy_enabled()
                 longrun_active_counts: dict[str, int] | None = None
-                multisym_free_ram: float | None = None
-                history_registry = farmctl._dwx_symbol_history_registry()
                 # NOTE: do NOT refresh the poison-pill table here. Measured cost of
                 # poison_pill_quarantine.refresh_pending() on the live DB is ~413ms
                 # (full scan + one upsert per finding, 371 today), and this point is
@@ -1996,11 +2147,20 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                 recovery_capped = False
                 for item in conn.execute(_priority_pending_query()).fetchall():
                     payload = _json_loads(item["payload_json"])
-                    pruning = opt_census_pruning.prune_candidate_if_excluded(
-                        conn, item, now=now
-                    )
-                    if pruning.get("skipped_current"):
-                        continue
+                    if (
+                        pruning_enabled
+                        and str(item["phase"] or "").upper() == "OPT_CENSUS"
+                        and pruning_checked_payloads.get(str(item["id"]))
+                        != str(item["payload_json"] or "{}")
+                    ):
+                        if skip_unchecked_pruning:
+                            continue
+                        conn.commit()
+                        return {
+                            "claimed": False,
+                            "reason": "opt_census_pruning_required",
+                            "candidate": dict(item),
+                        }
                     if (
                         compile_only_due_to_commit_headroom
                         and str(item["phase"]).upper() != farmctl.COMPILE_EA_PHASE
@@ -2088,17 +2248,33 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                                 "threshold_gb": MULTISYMBOL_COMMIT_MIN_FREE_GB,
                             })
                             continue
-                        if multisym_free_ram is None:
-                            multisym_free_ram = _free_ram_gb()
-                        if multisym_free_ram < MULTISYMBOL_RAM_MIN_FREE_GB:
+                        if multisym_free_ram_snapshot < MULTISYMBOL_RAM_MIN_FREE_GB:
                             skipped_multisym_ram.append({
                                 "item_id": item["id"],
                                 "ea_id": item["ea_id"],
-                                "free_ram_gb": round(multisym_free_ram, 1),
+                                "free_ram_gb": round(multisym_free_ram_snapshot, 1),
                                 "threshold_gb": MULTISYMBOL_RAM_MIN_FREE_GB,
                             })
                             continue
-                    history_ok, history = _p2_history_claimable(item, terminal, history_registry)
+                    history_fingerprint = _history_preflight_fingerprint(item)
+                    history_preflight = history_preflight_cache.get(str(item["id"]))
+                    if (
+                        history_preflight is None
+                        or history_preflight[0] != history_fingerprint
+                    ):
+                        if skip_unchecked_history:
+                            skipped_history.append({
+                                "item_id": item["id"],
+                                "reason": "history_preflight_deferred",
+                            })
+                            continue
+                        conn.commit()
+                        return {
+                            "claimed": False,
+                            "reason": "history_preflight_required",
+                            "candidate": dict(item),
+                        }
+                    _, history_ok, history = history_preflight
                     if not history_ok:
                         skipped_history.append({"item_id": item["id"], **(history or {})})
                         continue
@@ -2169,23 +2345,74 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                 raise
 
     # The shared mutation lock closes the OFF-during-claim race. Factory_OFF
-    # asserts its flag first and then waits for this lock to drain. A claim that
-    # acquired the lock before that assertion is an admitted bounded unit; after
-    # acquisition we re-read the flag so no later claimant can cross the fence.
+    # asserts its flag first and then waits for this lock to drain. Every cold
+    # file/process/report probe above is complete before this helper; while held
+    # we only re-read OFF and execute one bounded SQLite claim attempt.
     mutation_lock_path = path_for_factory_flag(factory_off_flag)
-    admission_deadline = time.monotonic() + FACTORY_ADMISSION_LOCK_TIMEOUT_SECONDS
-    while True:
-        mutation_lock = FactoryMutationLock(
-            mutation_lock_path,
-            owner=f"terminal_worker.claim_atomic:{terminal}",
+
+    def _claim_under_factory_lock() -> dict[str, Any]:
+        admission_deadline = (
+            time.monotonic() + FACTORY_ADMISSION_LOCK_TIMEOUT_SECONDS
         )
+        while True:
+            mutation_lock = FactoryMutationLock(
+                mutation_lock_path,
+                owner=f"terminal_worker.claim_atomic:{terminal}",
+            )
+            try:
+                mutation_lock.__enter__()
+                break
+            except RuntimeError:
+                # Re-probe OFF on every contention retry so an asserted
+                # interlock wins immediately.
+                try:
+                    if factory_off_flag.exists():
+                        return {
+                            "claimed": False,
+                            "reason": "factory_off",
+                            "flag": str(factory_off_flag),
+                        }
+                except OSError as exc:
+                    return {
+                        "claimed": False,
+                        "reason": "factory_admission_interlock_error",
+                        "flag": str(factory_off_flag),
+                        "error": str(exc),
+                    }
+                if time.monotonic() >= admission_deadline:
+                    return {
+                        "claimed": False,
+                        "reason": "factory_mutation_lock_busy",
+                        "lock": str(mutation_lock_path),
+                    }
+                time.sleep(FACTORY_ADMISSION_LOCK_POLL_SECONDS)
+            except OSError as exc:
+                # Windows can surface the short delete-pending handoff between
+                # lock owners as sharing/access-denied instead of FileExists.
+                # Treat only those well-known codes as ordinary contention;
+                # permanent/unknown I/O failures remain explicit interlock
+                # errors.
+                winerror = getattr(exc, "winerror", None)
+                if winerror in {5, 32, 80, 183} or getattr(exc, "errno", None) in {
+                    errno.EACCES,
+                    errno.EEXIST,
+                }:
+                    if time.monotonic() >= admission_deadline:
+                        return {
+                            "claimed": False,
+                            "reason": "factory_mutation_lock_busy",
+                            "lock": str(mutation_lock_path),
+                        }
+                    time.sleep(FACTORY_ADMISSION_LOCK_POLL_SECONDS)
+                    continue
+                return {
+                    "claimed": False,
+                    "reason": "factory_admission_interlock_error",
+                    "lock": str(mutation_lock_path),
+                    "error": str(exc),
+                }
+
         try:
-            mutation_lock.__enter__()
-            break
-        except RuntimeError:
-            # Contending workers serialize here. Re-probe OFF on every retry so
-            # an asserted interlock wins immediately instead of waiting for the
-            # admission timeout.
             try:
                 if factory_off_flag.exists():
                     return {
@@ -2200,48 +2427,86 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                     "flag": str(factory_off_flag),
                     "error": str(exc),
                 }
-            if time.monotonic() >= admission_deadline:
-                return {
-                    "claimed": False,
-                    "reason": "factory_mutation_lock_busy",
-                    "lock": str(mutation_lock_path),
-                }
-            time.sleep(FACTORY_ADMISSION_LOCK_POLL_SECONDS)
-        except OSError as exc:
-            return {
-                "claimed": False,
-                "reason": "factory_admission_interlock_error",
-                "lock": str(mutation_lock_path),
-                "error": str(exc),
-            }
+            try:
+                return _with_claim_lock_sqlite_write(_claim)
+            except sqlite3.OperationalError as exc:
+                if not _is_sqlite_locked(exc):
+                    raise
+                return {"claimed": False, "reason": "sqlite_locked"}
+        finally:
+            mutation_lock.__exit__(None, None, None)
 
-    try:
-        try:
-            if factory_off_flag.exists():
-                return {
-                    "claimed": False,
-                    "reason": "factory_off",
-                    "flag": str(factory_off_flag),
+    claim_result = _claim_under_factory_lock()
+    pruning_preflight: dict[str, Any] | None = None
+    history_preflights: list[dict[str, Any]] = []
+    pruning_attempted = False
+    for _preflight_index in range(CLAIM_PREFLIGHT_MAX_CANDIDATES):
+        reason = claim_result.get("reason")
+        if reason == "opt_census_pruning_required" and not pruning_attempted:
+            pruning_attempted = True
+            pruning_preflight = _prune_candidate_outside_factory_lock(
+                root,
+                terminal,
+                dict(claim_result["candidate"]),
+            )
+            if (
+                pruning_preflight.get("status") == "checked"
+                and pruning_preflight.get("candidate_pending") is True
+            ):
+                candidate = dict(claim_result["candidate"])
+                pruning_checked_payloads[str(candidate["id"])] = str(
+                    candidate.get("payload_json") or "{}"
+                )
+            # Only one potentially multi-GB pruning evaluation per cycle. A
+            # checked survivor remains eligible; other census rows defer.
+            skip_unchecked_pruning = True
+            claim_result = _claim_under_factory_lock()
+            continue
+        if reason == "history_preflight_required":
+            candidate = dict(claim_result["candidate"])
+            fingerprint = _history_preflight_fingerprint(candidate)
+            try:
+                history_ok, history = _p2_history_claimable(
+                    candidate,
+                    terminal,
+                    history_registry,
+                )
+            except Exception as exc:
+                history_ok = False
+                history = {
+                    "reason": "history_preflight_failed",
+                    "error": f"{type(exc).__name__}: {exc}",
                 }
-        except OSError as exc:
-            return {
-                "claimed": False,
-                "reason": "factory_admission_interlock_error",
-                "flag": str(factory_off_flag),
-                "error": str(exc),
-            }
+            history_preflight_cache[str(candidate["id"])] = (
+                fingerprint,
+                history_ok,
+                history,
+            )
+            history_preflights.append({
+                "item_id": candidate["id"],
+                "claimable": history_ok,
+                "detail": history,
+            })
+            claim_result = _claim_under_factory_lock()
+            continue
+        break
+    if claim_result.get("reason") in {
+        "history_preflight_required",
+        "opt_census_pruning_required",
+    }:
+        # Bound pathological queues: after eight exact preflights, defer every
+        # still-unchecked history/census row and let ordinary checked work flow.
+        skip_unchecked_history = True
+        skip_unchecked_pruning = True
+        claim_result = _claim_under_factory_lock()
 
-        try:
-            claim_result = _with_sqlite_retry(_claim)
-            if completed_claim_recovery:
-                claim_result["completed_claim_recovery"] = completed_claim_recovery
-            return claim_result
-        except sqlite3.OperationalError as exc:
-            if not _is_sqlite_locked(exc):
-                raise
-            return {"claimed": False, "reason": "sqlite_locked"}
-    finally:
-        mutation_lock.__exit__(None, None, None)
+    if pruning_preflight is not None:
+        claim_result["dl089_claim_pruning_preflight"] = pruning_preflight
+    if history_preflights:
+        claim_result["history_claim_preflights"] = history_preflights
+    if completed_claim_recovery:
+        claim_result["completed_claim_recovery"] = completed_claim_recovery
+    return claim_result
 
 
 def claim_specific_atomic(root: Path, terminal: str, item_id: str) -> dict[str, Any]:
@@ -4193,6 +4458,159 @@ def _defer_runner_death(
         "reason": "runner_process_died_without_summary",
         "claim_released": released,
     }
+
+
+def _active_terminal_claim_preflight(root: Path, terminal: str) -> dict[str, Any]:
+    """Resolve process/slot state before the global claim mutation lock.
+
+    ``_pid_tree_exists`` may launch a 15-second CIM subprocess and stopping a
+    stale portable slot may also block.  Snapshot both outside
+    ``FACTORY_MUTATION.lock``; the claim transaction compares the exact active
+    row identity/payload before using the result and defers if it changed.
+    """
+
+    def _read_active() -> dict[str, Any] | None:
+        with farmctl.connect(root) as conn:
+            row = conn.execute(
+                "SELECT * FROM work_items "
+                "WHERE status='active' AND claimed_by=? LIMIT 1",
+                (terminal,),
+            ).fetchone()
+            return dict(row) if row is not None else None
+
+    try:
+        row = _with_sqlite_retry(_read_active)
+    except sqlite3.OperationalError as exc:
+        if not _is_sqlite_locked(exc):
+            raise
+        return {
+            "ready": False,
+            "reason": "sqlite_locked_active_terminal_preflight",
+            "error": str(exc),
+        }
+    if row is None:
+        return {"ready": True, "item_id": None}
+
+    payload_raw = str(row.get("payload_json") or "{}")
+    payload = _json_loads(payload_raw)
+    pid = payload.get("pid")
+    worker_pid = payload.get("claimed_by_worker_pid")
+    worker_alive = farmctl._pid_exists(worker_pid) if worker_pid else None
+    child_alive = False
+    if pid and worker_alive is not True:
+        child_alive = farmctl._pid_tree_exists(pid)
+    stale_release = worker_alive is not True and not child_alive
+    terminal_stopped = (
+        _stop_terminal_slot_for_release(root, terminal) if stale_release else None
+    )
+    return {
+        "ready": True,
+        "item_id": str(row["id"]),
+        "payload_json": payload_raw,
+        "worker_pid": worker_pid,
+        "worker_alive": worker_alive,
+        "child_alive": child_alive,
+        "terminal_stopped": terminal_stopped,
+    }
+
+
+def _prune_candidate_outside_factory_lock(
+    root: Path,
+    terminal: str,
+    candidate: dict[str, Any],
+) -> dict[str, Any]:
+    """Run the DL-089 file/hash backstop without the fleet-wide lock.
+
+    A dedicated non-blocking lock prevents every worker from parsing the same
+    native report concurrently.  The database row is re-read and compared with
+    the transaction snapshot before pruning; stale input is never authorized.
+    """
+
+    lock_path = root / "state" / CLAIM_PRUNING_LOCK_FILENAME
+    pruning_lock = FactoryMutationLock(
+        lock_path,
+        owner=f"terminal_worker.dl089_pruning:{terminal}",
+    )
+    try:
+        pruning_lock.__enter__()
+    except (OSError, RuntimeError) as exc:
+        return {
+            "status": "busy",
+            "reason": "dl089_claim_pruning_lock_busy",
+            "lock": str(lock_path),
+            "detail": str(exc),
+        }
+
+    try:
+        expected_id = str(candidate.get("id") or "")
+        expected_payload = str(candidate.get("payload_json") or "{}")
+        if (root / "state" / "FACTORY_OFF.flag").exists():
+            return {
+                "status": "factory_off",
+                "reason": "factory_off",
+                "item_id": expected_id,
+            }
+
+        def _prune() -> dict[str, Any]:
+            with farmctl.connect(root) as conn:
+                row = conn.execute(
+                    "SELECT * FROM work_items WHERE id=?",
+                    (expected_id,),
+                ).fetchone()
+                if (
+                    row is None
+                    or str(row["status"]) != "pending"
+                    or row["claimed_by"] is not None
+                    or str(row["payload_json"] or "{}") != expected_payload
+                ):
+                    return {
+                        "status": "stale",
+                        "reason": "candidate_changed_before_pruning",
+                        "item_id": expected_id,
+                    }
+                pruning = opt_census_pruning.prune_candidate_if_excluded(
+                    conn,
+                    row,
+                    now=farmctl.utc_now(),
+                )
+                conn.commit()
+                current = conn.execute(
+                    "SELECT status,claimed_by,payload_json FROM work_items WHERE id=?",
+                    (expected_id,),
+                ).fetchone()
+                candidate_pending = bool(
+                    current is not None
+                    and str(current["status"]) == "pending"
+                    and current["claimed_by"] is None
+                    and str(current["payload_json"] or "{}") == expected_payload
+                )
+                return {
+                    "status": "checked",
+                    "item_id": expected_id,
+                    "candidate_pending": candidate_pending,
+                    "pruning": pruning,
+                }
+
+        try:
+            return _with_sqlite_retry(_prune)
+        except sqlite3.OperationalError as exc:
+            if not _is_sqlite_locked(exc):
+                raise
+            return {
+                "status": "sqlite_busy",
+                "reason": "dl089_claim_pruning_sqlite_busy",
+                "item_id": expected_id,
+                "error": str(exc),
+            }
+        except Exception as exc:  # fail closed for this census candidate
+            return {
+                "status": "error",
+                "reason": "dl089_claim_pruning_failed",
+                "item_id": expected_id,
+                "error": f"{type(exc).__name__}: {exc}",
+            }
+    finally:
+        pruning_lock.__exit__(None, None, None)
 
 
 def _monitor_timeout_seconds(

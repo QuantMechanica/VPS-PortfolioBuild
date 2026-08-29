@@ -3,6 +3,7 @@ import os
 import sqlite3
 import sys
 import tempfile
+import time
 import unittest
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
@@ -79,6 +80,33 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             )
             conn.commit()
 
+    def _tracking_factory_lock(self):
+        real_lock = terminal_worker.FactoryMutationLock
+        state = {"global_active": False, "global_durations": []}
+
+        class _TrackingFactoryLock:
+            def __init__(self, path, *args, **kwargs):
+                self._inner = real_lock(path, *args, **kwargs)
+                self._is_global = Path(path).name.upper() == "FACTORY_MUTATION.LOCK"
+                self._started = None
+
+            def __enter__(self):
+                self._inner.__enter__()
+                if self._is_global:
+                    self._started = time.perf_counter()
+                    state["global_active"] = True
+                return self
+
+            def __exit__(self, exc_type, exc, traceback):
+                self._inner.__exit__(exc_type, exc, traceback)
+                if self._is_global:
+                    state["global_active"] = False
+                    state["global_durations"].append(
+                        time.perf_counter() - self._started
+                    )
+
+        return state, _TrackingFactoryLock
+
     def test_legacy_worker_starter_honors_disabled_terminal_cap(self) -> None:
         source = LEGACY_WORKER_STARTER.read_text(encoding="utf-8")
         self.assertIn('Join-Path $stateDir "disabled_terminals.txt"', source)
@@ -145,6 +173,159 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             self.assertTrue(result.get("claimed"), result)
             self.assertEqual(result["item"]["id"], "wi-probe-order")
             self.assertEqual(probe_writes, ["write_acquired"])
+
+    def test_heavy_pruning_preflight_holds_global_lock_under_one_second(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "opt-heavy-preflight",
+                "EURUSD.DWX",
+                phase="OPT_CENSUS",
+            )
+            state, tracking_lock = self._tracking_factory_lock()
+            pruning_calls = []
+
+            def slow_pruning(_conn, row, **_kwargs):
+                self.assertFalse(state["global_active"])
+                pruning_calls.append(row["id"])
+                time.sleep(1.1)
+                self.assertFalse(state["global_active"])
+                return {"enabled": True, "skipped_current": False, "skipped": 0}
+
+            started = time.perf_counter()
+            with (
+                patch.object(terminal_worker, "FactoryMutationLock", tracking_lock),
+                patch.object(
+                    terminal_worker.opt_census_pruning,
+                    "pruning_enabled",
+                    return_value=True,
+                ),
+                patch.object(
+                    terminal_worker.opt_census_pruning,
+                    "prune_candidate_if_excluded",
+                    side_effect=slow_pruning,
+                ),
+            ):
+                result = terminal_worker.claim_atomic(root, "T1")
+            elapsed = time.perf_counter() - started
+
+            self.assertTrue(result.get("claimed"), result)
+            self.assertEqual(result["item"]["id"], "opt-heavy-preflight")
+            self.assertEqual(pruning_calls, ["opt-heavy-preflight"])
+            self.assertGreaterEqual(elapsed, 1.0)
+            self.assertTrue(state["global_durations"])
+            self.assertLess(max(state["global_durations"]), 1.0)
+
+    def test_sqlite_writer_contention_keeps_global_claim_lock_under_one_second(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(root, "writer-busy", "EURUSD.DWX", phase="P3")
+            state, tracking_lock = self._tracking_factory_lock()
+            database = root / farmctl.DB_REL
+
+            blocker = sqlite3.connect(database, timeout=0.1)
+            blocker.execute("PRAGMA busy_timeout=100")
+            blocker.execute("BEGIN IMMEDIATE")
+            try:
+                started = time.perf_counter()
+                with (
+                    patch.object(terminal_worker, "FactoryMutationLock", tracking_lock),
+                    patch.object(terminal_worker.farmctl, "init_db", return_value=None),
+                ):
+                    result = terminal_worker.claim_atomic(root, "T1")
+                elapsed = time.perf_counter() - started
+            finally:
+                blocker.rollback()
+                blocker.close()
+
+            self.assertFalse(result.get("claimed"), result)
+            self.assertEqual(result["reason"], "sqlite_locked")
+            self.assertTrue(state["global_durations"])
+            self.assertLess(max(state["global_durations"]), 1.0)
+            self.assertLess(elapsed, 2.0)
+
+    def test_slow_privatization_and_reaudit_run_after_global_claim_lock(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(root, "custom-heavy", "EURUSD.DWX", phase="P3")
+            state, tracking_lock = self._tracking_factory_lock()
+            heavy_elapsed = []
+
+            def slow_privatization(_root, _row, _terminal, _gate):
+                self.assertFalse(state["global_active"])
+                started = time.perf_counter()
+                time.sleep(1.1)
+                heavy_elapsed.append(time.perf_counter() - started)
+                self.assertFalse(state["global_active"])
+                return {"required": True, "status": "PASS_PRIVATIZED"}
+
+            passing_gate = {
+                "required": True,
+                "status": "PASS_ISOLATED",
+                "admission_allowed": True,
+                "audit_sha256": "a" * 64,
+            }
+            with (
+                patch.object(terminal_worker, "FactoryMutationLock", tracking_lock),
+                patch.object(
+                    terminal_worker.farmctl,
+                    "_news_calendar_preflight",
+                    return_value={"ok": True, "status": "VALID"},
+                ),
+                patch.object(
+                    terminal_worker,
+                    "_work_item_preflight_failure",
+                    return_value=None,
+                ),
+                patch.object(
+                    terminal_worker,
+                    "_prepare_staged_ex5",
+                    return_value={
+                        "required_sha256": "b" * 64,
+                        "source_path": "test.ex5",
+                    },
+                ),
+                patch.object(
+                    terminal_worker,
+                    "_custom_history_gate",
+                    return_value=passing_gate,
+                ),
+                patch.object(
+                    terminal_worker,
+                    "_privatize_custom_history_claim",
+                    side_effect=slow_privatization,
+                ),
+                patch.object(
+                    terminal_worker,
+                    "_acquire_launch_slot",
+                    return_value=None,
+                ),
+                patch.object(
+                    terminal_worker.farmctl,
+                    "_spawn_work_item_runner",
+                    return_value={
+                        "spawned": False,
+                        "pending_runner": True,
+                        "reason": "timing_test_complete",
+                        "log_path": str(root / "timing.log"),
+                        "report_root": str(root / "timing-report"),
+                    },
+                ),
+            ):
+                claimed = terminal_worker.claim_atomic(root, "T1")
+                self.assertTrue(claimed.get("claimed"), claimed)
+                result = terminal_worker._run_claimed_item(
+                    root,
+                    claimed["item"],
+                    "T1",
+                    timeout_seconds=30,
+                )
+
+            self.assertEqual(result["action"], "pending_runner")
+            self.assertGreaterEqual(heavy_elapsed[0], 1.0)
+            self.assertTrue(state["global_durations"])
+            self.assertLess(max(state["global_durations"]), 1.0)
 
     def test_generic_worker_skips_declared_dl089_matrix_row(self) -> None:
         with self._root() as tmp:
@@ -263,7 +444,7 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             root = Path(tmp) / "farm"
             self._insert_work_item(root, "wi-pre-admitted", "EURUSD.DWX", phase="P3")
             flag = root / "state" / "FACTORY_OFF.flag"
-            original_retry = terminal_worker._with_sqlite_retry
+            original_retry = terminal_worker._with_claim_lock_sqlite_write
 
             def _assert_off_after_admission(fn):
                 flag.write_text("{}", encoding="ascii")
@@ -271,7 +452,7 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
 
             with patch.object(
                 terminal_worker,
-                "_with_sqlite_retry",
+                "_with_claim_lock_sqlite_write",
                 side_effect=_assert_off_after_admission,
             ):
                 result = terminal_worker.claim_atomic(root, "T1")
