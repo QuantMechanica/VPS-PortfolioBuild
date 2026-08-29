@@ -1,0 +1,175 @@
+{
+  "schema": "qm.new-commodity-sleeve-build-q02/v1",
+  "generated_at_utc": "2026-08-29T20:33:00Z",
+  "branch": "agents/board-advisor",
+  "pre_receipt_head": "e906629ef71b40842a907c8cc3c6c3ea2032f52c",
+  "mission_outcome": "BUILT_COMPILE_OK_Q02_ENQUEUED",
+  "ea": {
+    "ea_id": "QM5_41205",
+    "slug": "xng-samecal-huber10",
+    "strategy_id": "KELOHARJU-HUBER-XNG-SAMECAL10-2026_S01",
+    "symbol": "XNGUSD.DWX",
+    "timeframe": "D1",
+    "magic": 412050000
+  },
+  "edge": {
+    "class": "xng_exact_prior_ten_year_same_calendar_fixed_scale_huber_location",
+    "frequency": "monthly",
+    "mechanic": "At the first normalized D1 broker-month transition, require the completed XNG log return for the same calendar month in exact years Y-1 through Y-10; compute the even median and raw even MAD; freeze scale=1.4826*MAD and delta=1.5*scale; run exactly 32 Huber reweighted-location updates; follow the final sign beyond an inclusive 1e-12 flat band until the next month.",
+    "book_difference": "This uses the user-authorized second-XNG route: historical matching-month returns, a robust bounded-location statistic, symmetric long/short direction, and a one-month hold instead of QM5_12567's trend-filtered cumulative-RSI2 pullback. It is logic-diverse rather than a new carrier; realized decorrelation is not claimed and remains a Q09 decision.",
+    "dedup_verdict": "FUZZY_MATCH_RESOLVED_DISTINCT_XNG_EXACT_TEN_YEAR_SAME_CALENDAR_FIXED_SCALE_HUBER_LOCATION_SIGN_MONTHLY_RENEWAL",
+    "dedup_receipt": "artifacts/qm5_xng_samecal_huber10_preallocation_dedup_20260829.json",
+    "dedup_receipt_sha256": "ede0f8d8dff26c56a51573424b38f6e1b913a757658a4e4608baac258846c7b1",
+    "fuzzy_neighbors": [
+      "QM5_20100 raw-mean XNG same-calendar",
+      "QM5_41204 fixed-scale Huber WTI same-calendar"
+    ],
+    "locked_disagreement": {
+      "huber_location": -0.00031225666666666747,
+      "huber_direction": "SELL",
+      "raw_mean": 0.000020000000000000042,
+      "raw_mean_direction": "BUY",
+      "centered_signed_rank_score": 3,
+      "centered_signed_rank_direction": "BUY"
+    }
+  },
+  "governance": {
+    "source_packet": "strategy-seeds/sources/KELOHARJU-HUBER-XNG-SAMECAL10-2026/source.md",
+    "source_packet_sha256": "4b64219d71fa017b9d71109db3b496470fc026dc7e868e46545719e066089e3a",
+    "source_approval": "decisions/2026-08-29_xng_same_calendar_huber10_source_approval.md",
+    "source_approval_sha256": "0b1e672bdaa48abe0feb9140c7d02733f9d1f785c7c7188c7c73ce3fd95d08a0",
+    "g0_decision": "decisions/2026-08-29_qm5_41205_xng_same_calendar_huber10_g0.md",
+    "g0_decision_sha256": "bcb775197fe3772dd245d57c387460eb62421e562d5a462c00bf1b871c3723cb",
+    "g0_status": "APPROVED",
+    "approved_card": "strategy-seeds/cards/approved/QM5_41205_xng-samecal-huber10_card.md",
+    "approved_card_sha256": "2d98cc7031e38c399777875cc0bd5032f5c9a38eef3102277e2e31627b757271",
+    "runtime_card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_41205_xng-samecal-huber10_card.md",
+    "runtime_card_sha256_after_prebuild_normalization": "cf4c03159eecdac6c996ef3e37b1ab9f9699ff2efdc21ad53a0c22296159431b",
+    "runtime_card_normalization": "The governed farm intake changed only r1_track_record to TIER_C and its informational non-gating reasoning; the committed mechanic, R2-R4 gates, fixed risk, and execution contract were unchanged.",
+    "magic_allocation_receipt": "artifacts/qm5_41205_magic_allocation_20260829.json",
+    "magic_allocation_receipt_sha256": "46e44ee9fcec660f61218a9fa7514a82a60cee07dd1b3f3b7674f3ab06cb648f"
+  },
+  "build": {
+    "implementation_commits": [
+      "e906629ef71b40842a907c8cc3c6c3ea2032f52c"
+    ],
+    "build_task_id": "48050e01-bcee-4a17-b4fc-4613054dbc88",
+    "build_task_status": "done",
+    "build_result": "artifacts/qm5_41205_build_result_20260829.json",
+    "build_result_sha256": "e72997ddc216869ddcad570e7e72b0a9e5bd8d6a564c8800df041c45f2edd765",
+    "compile_work_item_id": "68cf7a68-65fd-42e7-a3d4-f6edaed00f5d",
+    "compile_work_item_status": "done",
+    "compile_verdict": "COMPILE_OK",
+    "compile_release_dry_run": "artifacts/qm5_41205_compile_release_dry_run_20260829.json",
+    "compile_release_dry_run_sha256": "90495525d41467330557f5baf2c4ad6752118ea4a6de41960bdc1d6e9b59ccf5",
+    "compile_release": "artifacts/qm5_41205_compile_release_20260829.json",
+    "compile_release_sha256": "68f6f7acd40c3f3b7631fea28fc3b0565a198379bda522a2cd3b2e749f9b8d8f",
+    "compile_evidence": "D:/QM/reports/work_items/68cf7a68-65fd-42e7-a3d4-f6edaed00f5d/QM5_41205/COMPILE_EA/compile_evidence.json",
+    "compile_evidence_sha256": "5abd3e279bf4057d6a2c5623bac1b07f937e7f7d72eeab632cf7fb66aebfe32d",
+    "build_check_report": "D:/QM/reports/framework/21/build_check_20260829_202843.json",
+    "build_check_report_sha256": "5d533dfdb7f2796e2238c319a3c3139271ee5ae02b3055e3b4607c586ea5148f",
+    "mq5_sha256": "a3ba3a1e53dc3a0a1bbc3e2c44f23cf6d5a3298a89e03a8edc946cd3e85bacb3",
+    "ex5_sha256": "f709aaacc19beb0b0f816cf3db4abf3de4c894bbdff452dee7c9f17461989f50",
+    "setfile_sha256": "663454f4a2edaa76216b7adfd120d8761fc633a5a8549d2bcd36da57c2cea775",
+    "setfile_build_hash": "460829064a5fcd1fe733f575b42b006234fedc0e8f366dc079f672c9d95e1ef9",
+    "spec_sha256": "a67469f2653f47efbf9c746828f82904f807cddea8b72b62c15c4af5d4e9f877",
+    "build_check": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "risk_mode": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    }
+  },
+  "capacity_before_compile_release": {
+    "sampled_at_utc": "2026-08-29T20:21:11.9896740Z",
+    "hard_ceiling_percent": 97.0,
+    "samples_percent": [
+      89.9606604728828,
+      92.6006108241939,
+      91.9015999032844,
+      87.6051290651221,
+      82.3348756030363
+    ],
+    "average_percent": 88.880575,
+    "maximum_percent": 92.600611,
+    "ceiling_binding": false
+  },
+  "capacity_before_q02": {
+    "sampled_at_utc": "2026-08-29T20:30:21.5564607Z",
+    "hard_ceiling_percent": 97.0,
+    "samples_percent": [
+      82.45011128092673,
+      79.25333146088373,
+      79.59260907925248,
+      75.11271427404992,
+      65.25548729147044
+    ],
+    "average_percent": 76.332851,
+    "maximum_percent": 82.450111,
+    "ceiling_binding": false
+  },
+  "capacity_after_q02_enqueue": {
+    "sampled_at_utc": "2026-08-29T20:31:40.9726797Z",
+    "hard_ceiling_percent": 97.0,
+    "samples_percent": [
+      68.65557534129738,
+      72.51888492358465,
+      64.27467163738865,
+      64.57218548552964,
+      59.28153400199779
+    ],
+    "average_percent": 65.86057,
+    "maximum_percent": 72.518885,
+    "ceiling_binding": false
+  },
+  "q02": {
+    "enqueued": true,
+    "enqueued_by": "record_build_result.auto_q02",
+    "work_item_id": "6becdb9f-bcb1-40e1-aace-065c43d10da7",
+    "status_at_readback": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "symbol": "XNGUSD.DWX",
+    "timeframe": "D1",
+    "setfile": "framework/EAs/QM5_41205_xng-samecal-huber10/sets/QM5_41205_xng-samecal-huber10_XNGUSD.DWX_D1_backtest.set",
+    "priority_track": true,
+    "cohort_size": 1,
+    "custom_history_archive_admission": "ACTIVE",
+    "custom_history_selected_archive_rows": 108
+  },
+  "verification": {
+    "reference_tests": "PASS: 10 tests",
+    "normalized_compiled_engine_mismatch_count": 0,
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "execution_contract_lint": "PASS: zero issues across 55 checked contracts with the target card supplied",
+    "spec_validation": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "registry_resolver": "PASS: one active row, one resolver ID, one resolver magic, zero status-aware collisions",
+    "static_build_gate": "PASS: zero failures and zero warnings",
+    "strict_compile": "PASS: zero errors and zero warnings",
+    "json_parse_and_hash_binding": "PASS"
+  },
+  "risks": [
+    "The exact ten-year warm-up and all-ten-observations requirement may produce zero or sub-floor Q02 activity if XNG history or broker-month labels are incomplete.",
+    "This is a second XNG logic sleeve, not a new commodity carrier; Q09 must reject it if realized overlap with QM5_12567 or the certified book is excessive.",
+    "Continuous-CFD session labels, roll construction, and futures-to-CFD basis remain empirical translation risks."
+  ],
+  "safety": {
+    "manual_q02_dispatch": false,
+    "manual_tester_launch": false,
+    "autotrading_toggled": false,
+    "t_live_controlled": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "certification_claimed": false,
+    "decorrelation_claimed": false
+  },
+  "mission_commits_before_receipt": [
+    "288b8685474bad3489305f92ecb07ab7b754cade",
+    "b7a824f75d6c801e2f5eadebc646ca297dd28c64",
+    "e906629ef71b40842a907c8cc3c6c3ea2032f52c"
+  ]
+}
