@@ -16085,6 +16085,18 @@ def _q09_candidate_lineage_key(ea_id: str, symbol: str, q08_work_item_id: str) -
 def _spawn_q09_replacements_for_regenerated_q08(
     root: Path, *, limit: int
 ) -> list[dict[str, str]]:
+    """Jittered-retry wrapper (2026-08-29 pump starvation class): the body's
+    BEGIN IMMEDIATE was a raw single roll and killed the whole pump cycle
+    under fleet write contention.  Each attempt opens a fresh connection per
+    the retry_sqlite_busy contract."""
+    return retry_sqlite_busy(
+        lambda: _spawn_q09_replacements_for_regenerated_q08_once(root, limit=limit)
+    )
+
+
+def _spawn_q09_replacements_for_regenerated_q08_once(
+    root: Path, *, limit: int
+) -> list[dict[str, str]]:
     """Append a Q09 successor when a held row's immutable Q08 edge is stale.
 
     ``work_item_dependencies`` is append-only, so a held Q09 row cannot be
