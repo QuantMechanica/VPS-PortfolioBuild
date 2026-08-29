@@ -923,6 +923,14 @@ def ensure_schema(conn: sqlite3.Connection, *, commit: bool = True) -> None:
     ).fetchone() if _table_exists(conn, "q09_news_schema_meta") else None
     if existing is not None and int(existing[0]) > SCHEMA_VERSION:
         raise SchemaError(f"database Q09 schema {existing[0]} is newer than supported {SCHEMA_VERSION}")
+    if existing is not None and int(existing[0]) == SCHEMA_VERSION and commit:
+        # Steady state: the meta version is committed atomically with the DDL
+        # in one BEGIN IMMEDIATE script, so an equal version proves a complete
+        # install.  Skipping avoids an unconditional write transaction on every
+        # init_db under fleet contention (2026-08-29 pump starvation; the
+        # commit=False migration path still runs the full script so its caller
+        # keeps the open transaction it relies on).
+        return
     installed_at = utc_now().replace("'", "''")
     dependency_migration_before, dependency_migration_after = (
         _dependency_role_migration_scripts(conn)
