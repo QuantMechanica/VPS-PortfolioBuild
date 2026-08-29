@@ -1,0 +1,50 @@
+{
+  "schema": "qm.local-source-provenance/v1",
+  "candidate_slug": "xauxag-samecal-srank",
+  "recorded_at_utc": "2026-08-29T18:10:00Z",
+  "retrieval_mode": "complete_read_of_governed_repository_packets",
+  "new_public_retrieval": false,
+  "records": [
+    {
+      "path": "strategy-seeds/sources/KELOHARJU-FMR-XAUXAG-SAMECAL-2026/source.md",
+      "source_id": "KELOHARJU-FMR-XAUXAG-SAMECAL-2026",
+      "sha256": "9266E47C7F3235D900C9432FEAC33A417807AE1E2CC9685FF2FEADAB46DBF75E",
+      "byte_count": 6434,
+      "line_count": 130,
+      "read_scope": "complete",
+      "status": "approved_source_complete",
+      "role": "peer_reviewed_same_calendar_xau_xag_relative_value_carrier_and_synchronized_month_endpoint_contract"
+    },
+    {
+      "path": "strategy-seeds/sources/KELOHARJU-WILCOXON-WTI-SAMECAL-SR-2026/source.md",
+      "source_id": "KELOHARJU-WILCOXON-WTI-SAMECAL-SR-2026",
+      "sha256": "57FF7096210C5E48A7236DAD6799A3E6CE706E726BD704416064D5A803D10B98",
+      "byte_count": 10307,
+      "line_count": 221,
+      "read_scope": "complete",
+      "status": "approved_source_complete",
+      "role": "pinned_primary_software_definition_of_one_sample_signed_absolute_rank_sum_and_fail_closed_tie_contract"
+    },
+    {
+      "path": "strategy-seeds/sources/KELOHARJU-RETSEAS-2016/source.md",
+      "source_id": "KELOHARJU-RETSEAS-2016",
+      "sha256": "54E6036035D146BB080A0DDF4A16B378C187655A3834DF86329F7B2D319875F0",
+      "byte_count": 9245,
+      "line_count": 174,
+      "read_scope": "complete",
+      "status": "cards_ready",
+      "role": "peer_reviewed_same_calendar_commodity_seasonality_and_five_year_history_floor"
+    },
+    {
+      "path": "strategy-seeds/sources/FMR-MOMTS-2010/source.md",
+      "source_id": "FMR-MOMTS-2010",
+      "sha256": "1F4F4977B0D9646A8BF56543D1881CCBC1513D4644DE72C350614580F3FF7417",
+      "byte_count": 6205,
+      "line_count": 124,
+      "read_scope": "complete",
+      "status": "approved_source_complete",
+      "role": "peer_reviewed_gold_silver_cross_sectional_commodity_carrier_and_monthly_hold_lineage"
+    }
+  ],
+  "claim_boundary": "The exact paired XAU-minus-XAG same-calendar signed-rank basket is a transparent QM mechanization. No source performance, significance, density, cost, hedge, futures-CFD equivalence, decorrelation, or portfolio result is imported."
+}
