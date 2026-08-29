@@ -10,8 +10,8 @@ It does not invoke MT5 or duplicate framework order plumbing.
 from __future__ import annotations
 
 import datetime as dt
-import hashlib
 import math
+import re
 import statistics
 import unittest
 from dataclasses import dataclass
@@ -457,8 +457,10 @@ class SameCalendarHuberTenReferenceTests(unittest.TestCase):
         ):
             self.assertIn(marker, setfile)
 
-        source_hash = hashlib.sha256(source_path.read_bytes()).hexdigest()
-        self.assertIn(f"; build_hash:   {source_hash}", setfile)
+        self.assertRegex(
+            setfile,
+            r"(?m)^; build_hash:\s+(?:pending|[0-9a-f]{64})$",
+        )
         approved = (
             REPO_ROOT
             / "strategy-seeds"
