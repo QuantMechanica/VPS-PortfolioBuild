@@ -1,0 +1,209 @@
+{
+  "schema_version": "qm.fx-cointegration-false-progress-requeue/v1",
+  "generated_at_utc": "2026-08-29T17:33:05Z",
+  "generated_at_europe_berlin": "2026-08-29T19:33:05+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base": "3a269f16e88c2ae8fb840109bb5f0920c0648901",
+  "mission_result": "EXISTING_FOREX_FALLBACK_Q03_FALSE_PROGRESS_RECOVERED_IN_PLACE",
+  "frontier_reconciliation": {
+    "controlling_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "published_pair_count": 66,
+    "relationships_covered": 66,
+    "relationships_uncovered": 0,
+    "sign_aware_coverage_artifact": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "new_unbuilt_pair_eligible": false,
+    "anchor_q02_repair_required": false,
+    "skill_gate_disposition": {
+      "strategy_card_extraction": "CLOSED_NO_NON_DUPLICATE_SCAN_QUALIFIED_PAIR",
+      "ea_build": "CLOSED_NO_APPROVED_UNBUILT_COINTEGRATION_CARD",
+      "pipeline_phase_skill": "NOT_APPLICABLE_Q03_USES_UPSTREAM_FACTORY_RECOVERY"
+    },
+    "published_hard_qualifiers": [
+      {
+        "ea_id": "QM5_12532",
+        "pair": [
+          "AUDUSD.DWX",
+          "NZDUSD.DWX"
+        ],
+        "canonical_frontier": "Q02_PASS_Q04_PASS_Q05_FAIL",
+        "q02_oninit_or_no_history_blocker": false
+      },
+      {
+        "ea_id": "QM5_12533",
+        "pair": [
+          "EURJPY.DWX",
+          "GBPJPY.DWX"
+        ],
+        "canonical_frontier": "Q02_PASS_Q04_FAIL",
+        "q02_oninit_or_no_history_blocker": false
+      }
+    ]
+  },
+  "selection": {
+    "ea_id": "QM5_20224",
+    "ea_directory": "framework/EAs/QM5_20224_eurusd-eurjpy",
+    "approved_card": "strategy-seeds/cards/approved/QM5_20224_eurusd-eurjpy_card.md",
+    "logical_symbol": "QM5_20224_EURUSD_EURJPY_COINTEGRATION_D1",
+    "traded_symbols": [
+      "EURUSD.DWX",
+      "EURJPY.DWX"
+    ],
+    "conversion_history_only_symbols": [
+      "USDJPY.DWX"
+    ],
+    "timeframe": "D1",
+    "scan_relationship_rank": 46,
+    "selection_mode": "existing_forex_fallback_no_unbuilt_66_pair_candidate",
+    "scan_evidence": {
+      "dev_net_sharpe": 0.473267,
+      "oos_net_sharpe": -0.118543,
+      "oos_return_percent": -1.026394,
+      "oos_state_changes": 17,
+      "fixed_dev_beta": -0.236324029,
+      "half_life_d1_bars": 137.788,
+      "disposition": "one_shot_pipeline_test_no_refit_or_rescue_tuning"
+    }
+  },
+  "source_and_build_binding": {
+    "g0_status": "APPROVED",
+    "card_schema_lint": "PASS",
+    "card_ml_hits": [],
+    "approved_card_sha256": "3b2ab7bc3c1dea90a86b936b1bf0e352f69e5c9532724f78512a18b987d35580",
+    "mq5_sha256": "7eda37af63f23e00dcb930d71eb07afe4bef97e30875ec7f83bf5d234f668129",
+    "ex5_sha256": "d534838d2c9c993db151500c836f4e38088d961b2fe90e820defb0d31a34ae5b",
+    "basket_manifest_sha256": "f7207377d90fb4fb3447425597f4ec4b2c2709838e0bd44cf4d851f70bb97725",
+    "logical_setfile_sha256": "397181311f649d5416044d36d6aa70023390ea8b14f97cb75e7fb8818b144254",
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "structural_only": true,
+    "machine_learning": false,
+    "adaptive_refit": false
+  },
+  "false_reap": {
+    "work_item_id": "3c74eb04-7e19-4aa0-8dcf-3f004faaa946",
+    "phase": "Q03",
+    "pre_recovery_status": "failed",
+    "pre_recovery_verdict": "INFRA_FAIL",
+    "historical_evidence_path": "EVIDENCE_UNAVAILABLE:active_timeout:NO_FORWARD_PROGRESS",
+    "reap_reason": "NO_FORWARD_PROGRESS",
+    "reaper_progress_at_utc": "2026-08-29T16:21:16Z",
+    "reaper_stalled_minutes": 32.51,
+    "active_age_minutes": 32.51,
+    "absolute_ceiling_minutes": 450.0,
+    "killed_at_utc": "2026-08-29T16:53:46Z",
+    "killed_before_absolute_ceiling": true,
+    "liveness_proof": {
+      "source": "mt5_tester_progress",
+      "path": "D:/QM/mt5/T4/logs/20260829.log",
+      "at_utc": "2026-08-29T16:47:15Z",
+      "progress_percent": 94,
+      "blind_window_start_utc": "2026-08-29T16:21:46Z",
+      "blind_window_end_utc": "2026-08-29T16:53:46Z",
+      "inside_reaper_blind_window": true
+    },
+    "classification": "PROVABLY_LIVE_RUN_FALSELY_REAPED_NOT_AN_ECONOMIC_VERDICT"
+  },
+  "recovery_action": {
+    "operator": "tools/strategy_farm/requeue_false_progress_reap.py",
+    "applied_at_utc": "2026-08-29T17:31:54Z",
+    "scope": "exact_work_item_only",
+    "changed_rows": 1,
+    "same_work_item_reused": true,
+    "new_work_item_created": false,
+    "duplicate_work_items_created": 0,
+    "before_payload_sha256": "9d41113c21e01620032c57134dd40329e4ac6b85cf0ef7b4b840167517caaced",
+    "after_payload_sha256": "b9e8294d644b5d450601ea7eb7456e83165716f52e6b4a5cabf4e8f95eb484b4",
+    "journal": {
+      "path": "D:/QM/reports/state/qm5_20224_q03_false_progress_requeue_20260829T173134Z.journal.json",
+      "sha256": "93be194d466dbd33b530868845863609bebba57349a7e7363606fd7439e049cf",
+      "schema_version": "qm.false-progress-requeue-journal/v1"
+    },
+    "verified_post_state": {
+      "status": "pending",
+      "verdict": null,
+      "claimed_by": null,
+      "attempt_count": 0,
+      "priority_track": true,
+      "priority_reason": "board_advisor_fx_fallback_rank46_q03",
+      "exact_open_q03_rows": 1,
+      "historical_evidence_path_retained_by_operator": true
+    }
+  },
+  "queue_lineage": {
+    "q02": {
+      "work_item_id": "5d1cb89c-25ce-419c-869c-8c9f7afa10c1",
+      "status": "done",
+      "verdict": "PASS"
+    },
+    "q03": {
+      "work_item_id": "3c74eb04-7e19-4aa0-8dcf-3f004faaa946",
+      "status": "pending",
+      "verdict": null,
+      "disposition": "same_row_recovered_after_false_progress_reap"
+    },
+    "q04": {
+      "work_item_id": "a525cd8f-4c29-4752-b1af-3c43288f259e",
+      "status": "pending",
+      "verdict": null,
+      "disposition": "dependency_not_bypassed"
+    }
+  },
+  "capacity": {
+    "cpu_sample": {
+      "captured_at_utc": "2026-08-29T17:30:58.5552564Z",
+      "samples_percent": [
+        89.749746,
+        82.471962,
+        81.350001,
+        83.108725,
+        83.31061
+      ],
+      "average_percent": 83.998209,
+      "maximum_percent": 89.749746,
+      "ceiling_percent": 97.0,
+      "ceiling_hit": false
+    },
+    "memory_and_commit": {
+      "free_physical_ram_gb": 28.732681,
+      "multisymbol_ram_min_free_gb": 12.0,
+      "multisymbol_ram_guard_pass": true,
+      "commit_headroom_gb": 81.54401,
+      "multisymbol_commit_min_free_gb": 48.0,
+      "multisymbol_commit_guard_pass": true
+    },
+    "active_multisymbol_row": {
+      "work_item_id": "64a15953-f1cc-4b98-938e-b6f89d88fe9b",
+      "ea_id": "QM5_41057",
+      "logical_symbol": "QM5_41057_XAU_XAG_WFLOWAGREEFADE_D1",
+      "phase": "Q04",
+      "claimed_by": "T8"
+    },
+    "binding_condition_after_recovery": "OTHER_ACTIVE_BASKET_OWNS_SERIALIZED_MULTISYMBOL_LANE",
+    "manual_mt5_dispatch_started": false,
+    "backtest_started_by_this_action": false
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "new_work_item_created": false,
+    "existing_work_item_recovered": true,
+    "runtime_database_mutated": true,
+    "pipeline_verdict_changed": true,
+    "target_tester_started": false,
+    "target_terminal_controlled": false
+  },
+  "safety": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "live_manifest_touched": false,
+    "manual_terminal_action": false,
+    "preexisting_worktree_changes_preserved": true
+  },
+  "next_action": "Let the resident worker reclaim the exact priority-bound Q03 row after the active QM5_41057 basket releases the serialized lane. Advance Q04 only after a canonical Q03 PASS; do not enqueue a duplicate or blindly retry another infrastructure failure."
+}
