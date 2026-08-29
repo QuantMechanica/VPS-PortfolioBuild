@@ -1,0 +1,228 @@
+{
+  "artifact_type": "fx_cointegration_frontier_hard_cpu_stop",
+  "schema": "qm.mission-capacity-stop/v1",
+  "generated_at_utc": "2026-08-29T13:03:06Z",
+  "generated_at_europe_berlin": "2026-08-29T15:03:06+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "70a15854621891c1d3b078a89bdbd4b537d0ba30",
+  "mission_outcome": "STOPPED_AT_HARD_CPU_CEILING_WITH_NEXT_EXISTING_FX_SUCCESSOR_IDENTIFIED",
+  "frontier_reconciliation": {
+    "controlling_research": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "durable_coverage_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "relationships_total": 66,
+    "relationships_covered": 66,
+    "relationships_uncovered": 0,
+    "published_threshold_survivors": 2,
+    "approved_cointegration_or_coint_card_files": 119,
+    "unique_approved_card_ea_ids": 119,
+    "matching_ea_directories": 119,
+    "approved_cards_unbuilt": [],
+    "new_unbuilt_pair_eligible": false,
+    "anchors": {
+      "QM5_12532": {
+        "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+        "canonical_q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+        "q02": "PASS",
+        "later_chain": "Q04 PASS; Q05 FAIL",
+        "current_q02_oninit_or_no_history_block": false
+      },
+      "QM5_12533": {
+        "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+        "canonical_q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+        "q02": "PASS",
+        "later_chain": "Q04 FAIL",
+        "current_q02_oninit_or_no_history_block": false
+      }
+    },
+    "skill_gate_disposition": {
+      "strategy_card_extraction": "CLOSED_NO_NON_DUPLICATE_SCAN_QUALIFIED_PAIR",
+      "ea_build": "CLOSED_NO_APPROVED_UNBUILT_COINTEGRATION_CARD"
+    }
+  },
+  "changed_frontier_since_prior_receipts": [
+    {
+      "scan_rank": 40,
+      "ea_id": "QM5_20219",
+      "pair": [
+        "USDJPY.DWX",
+        "NZDUSD.DWX"
+      ],
+      "current_chain": "Q02 PASS; Q03 PASS; Q04 FAIL",
+      "q04_updated_at_utc": "2026-08-29T12:58:20+00:00"
+    },
+    {
+      "scan_rank": 42,
+      "ea_id": "QM5_20220",
+      "pair": [
+        "USDCAD.DWX",
+        "AUDJPY.DWX"
+      ],
+      "current_chain": "Q02 PASS; Q03 PASS; Q04 FAIL",
+      "q04_updated_at_utc": "2026-08-29T10:01:05+00:00"
+    },
+    {
+      "scan_rank": 44,
+      "ea_id": "QM5_20223",
+      "pair": [
+        "GBPUSD.DWX",
+        "EURGBP.DWX"
+      ],
+      "current_chain": "Q02 PASS; Q03 PASS; Q04 FAIL",
+      "q04_updated_at_utc": "2026-08-29T12:04:34+00:00"
+    },
+    {
+      "scan_rank": 64,
+      "ea_id": "QM5_20255",
+      "pair": [
+        "USDCHF.DWX",
+        "EURJPY.DWX"
+      ],
+      "current_chain": "Q02 PASS; Q03 PASS; Q04 FAIL",
+      "q04_updated_at_utc": "2026-08-29T01:12:01+00:00"
+    }
+  ],
+  "next_existing_forex_fallback": {
+    "selection_rule": "highest-ranked nonterminal relationship after ranks 40 through 45 have terminal pipeline verdicts",
+    "scan_rank": 46,
+    "ea_id": "QM5_20224",
+    "ea_directory": "framework/EAs/QM5_20224_eurusd-eurjpy",
+    "approved_card": "strategy-seeds/cards/approved/QM5_20224_eurusd-eurjpy_card.md",
+    "logical_symbol": "QM5_20224_EURUSD_EURJPY_COINTEGRATION_D1",
+    "traded_symbols": [
+      "EURUSD.DWX",
+      "EURJPY.DWX"
+    ],
+    "conversion_history_only_symbols": [
+      "USDJPY.DWX"
+    ],
+    "timeframe": "D1",
+    "scan_evidence": {
+      "dev_net_sharpe": 0.473,
+      "oos_net_sharpe": -0.119,
+      "fixed_beta": -0.236324029,
+      "half_life_d1_bars": 137.788,
+      "disposition": "one_shot_pipeline_test_no_refit_or_rescue"
+    },
+    "source_and_package": {
+      "g0_status": "APPROVED",
+      "primary_method_citation": "Chan, Ernest P. (2009), Quantitative Trading, Wiley, examples 3.6, 7.2, 7.3 and 7.5",
+      "owner_ratified_extraction": "strategy-seeds/sources/SRC02/raw/cointegration_pair_family.md",
+      "approved_card_sha256": "3b2ab7bc3c1dea90a86b936b1bf0e352f69e5c9532724f78512a18b987d35580",
+      "mq5_sha256": "7eda37af63f23e00dcb930d71eb07afe4bef97e30875ec7f83bf5d234f668129",
+      "ex5_sha256": "d534838d2c9c993db151500c836f4e38088d961b2fe90e820defb0d31a34ae5b",
+      "basket_manifest_sha256": "f7207377d90fb4fb3447425597f4ec4b2c2709838e0bd44cf4d851f70bb97725",
+      "logical_setfile_sha256": "397181311f649d5416044d36d6aa70023390ea8b14f97cb75e7fb8818b144254",
+      "risk_mode": "RISK_FIXED",
+      "risk_fixed": 1000.0,
+      "risk_percent": 0.0,
+      "portfolio_weight": 1.0,
+      "structural_only": true,
+      "machine_learning": false,
+      "adaptive_refit": false
+    },
+    "canonical_rows": [
+      {
+        "id": "5d1cb89c-25ce-419c-869c-8c9f7afa10c1",
+        "phase": "Q02",
+        "status": "done",
+        "verdict": "PASS"
+      },
+      {
+        "id": "3c74eb04-7e19-4aa0-8dcf-3f004faaa946",
+        "phase": "Q03",
+        "status": "pending",
+        "claimed_by": null,
+        "attempt_count": 0,
+        "verdict": null,
+        "priority_track": null
+      },
+      {
+        "id": "a525cd8f-4c29-4752-b1af-3c43288f259e",
+        "phase": "Q04",
+        "status": "pending",
+        "claimed_by": null,
+        "attempt_count": 0,
+        "verdict": null,
+        "priority_track": null
+      }
+    ],
+    "next_eligible_action_after_capacity_clears": "advance the existing exact Q03 row in place; do not create or prioritize a duplicate Q02 or bypass Q03 with Q04"
+  },
+  "capacity_sample": {
+    "command": "five individual Get-Counter \\Processor(_Total)\\% Processor Time samples at one-second intervals",
+    "samples_cpu_percent": [
+      97.560092,
+      92.602277,
+      92.393774,
+      98.54086,
+      90.842297
+    ],
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "average_cpu_percent": 94.38786,
+    "maximum_cpu_percent": 98.54086,
+    "hard_ceiling_percent": 97.0,
+    "average_binding": false,
+    "maximum_binding": true,
+    "ceiling_binding": true
+  },
+  "farm_snapshot": {
+    "mt5_slots_scanned_at_utc": "2026-08-29T13:00:42+00:00",
+    "running_factory_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T9"
+    ],
+    "running_factory_terminal_count": 6,
+    "terminal_reservations": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T8",
+      "T9"
+    ],
+    "terminal_worker_daemon_count": 10,
+    "duplicate_terminal_workers": {},
+    "active_work_item_count_initial_read": 9,
+    "active_work_item_count_bounded_followup": 10,
+    "active_multisymbol_or_basket_work_items_bounded_followup": [],
+    "t_live_observed_only": true,
+    "t_live_controlled": false,
+    "external_ftmo_terminal_observed_only": true
+  },
+  "actions_this_run": {
+    "frontier_and_anchor_reconciled": true,
+    "fresh_approved_card_build_census_completed": true,
+    "next_existing_forex_successor_identified": true,
+    "new_card_or_ea_created": false,
+    "existing_forex_row_mutated": false,
+    "q02_or_later_phase_enqueued": false,
+    "queue_priority_claim_status_or_verdict_mutated": false,
+    "dispatch_tick": false,
+    "terminal_or_worker_controlled": false,
+    "compile_smoke_or_backtest_started": false,
+    "capacity_stop_evidence_committed": true
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false,
+    "live_or_deploy_manifest_touched": false,
+    "preexisting_worktree_changes_preserved": true
+  },
+  "non_duplicate_delta": {
+    "preceding_fx_priority_receipt": "artifacts/qm5_20223_q04_priority_20260829T112654Z_board_advisor.json",
+    "changed_state": "The previously advanced rank-44 QM5_20223 row and the older rank-40 QM5_20219 row now both have terminal Q04 FAIL verdicts; rank-46 QM5_20224 is the highest-ranked nonterminal existing FX relationship and its exact Q03 row remains pending without priority binding.",
+    "duplicate_work_items_created": 0
+  },
+  "resume_contract": "After a fresh five-sample CPU window has both average and maximum strictly below 97 percent, re-read QM5_20224 and advance only its existing exact Q03 row if it remains pending, unclaimed, attempt zero, and unprioritized."
+}
