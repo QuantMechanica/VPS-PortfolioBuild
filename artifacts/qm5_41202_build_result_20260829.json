@@ -1,0 +1,47 @@
+{
+  "task_id": "17407e28-3d17-4794-8494-072396ce971c",
+  "build_generation": 0,
+  "ea_id": "QM5_41202",
+  "slug": "wti-samecal-win5",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_41202_wti-samecal-win5",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_41202_wti-samecal-win5/QM5_41202_wti-samecal-win5.mq5",
+  "mq5_sha256": "585b22795ac672b1377cd8525933ef71b56a98ff9c794531bdcac286b325718c",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_41202_wti-samecal-win5/QM5_41202_wti-samecal-win5.ex5",
+  "ex5_sha256": "77a1e21404bb485fc3f9d8c06fe6a485f8b6cddbd26062a9ad9a5eac47ddab70",
+  "magic_base": 412020000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "symbols": [
+    "XTIUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_41202_wti-samecal-win5/sets/QM5_41202_wti-samecal-win5_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_sha256": {
+    "QM5_41202_wti-samecal-win5_XTIUSD.DWX_D1_backtest.set": "c08ba1244bfc86212830891b7b26612221a49e0d5edc086e2756d43262d973bc"
+  },
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_41202_wti-samecal-win5/SPEC.md",
+  "spec_md_sha256": "eea39ca6d6dd825320a9054cccf52bb60ccb2c9641378176b91f78608aed61d6",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_work_item_id": "8f004130-b8a8-498b-ba38-e157722dca78",
+  "compile_evidence_path": "D:/QM/reports/work_items/8f004130-b8a8-498b-ba38-e157722dca78/QM5_41202/COMPILE_EA/compile_evidence.json",
+  "compile_evidence_sha256": "908630e515f66a30ebb644d77271d3df8aa0c780a9eff34ad6ee8854bcf41636",
+  "compile_verdict": "COMPILE_OK",
+  "build_check_report": "D:/QM/reports/framework/21/build_check_20260829_170757.json",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "blocked_reason": "",
+  "open_questions": [
+    "The build-only lane did not launch a tester; Q02 is the first governed tester execution and owns frequency prescreen evidence."
+  ],
+  "built_at_utc": "2026-08-29T17:08:44+00:00"
+}

@@ -1,0 +1,114 @@
+{
+  "schema": "qm.new-commodity-sleeve-build-q02/v1",
+  "generated_at_utc": "2026-08-29T17:15:00Z",
+  "branch": "agents/board-advisor",
+  "pre_receipt_head": "0fddeda5a7334ca064cce945651dd6fd033650f7",
+  "mission_outcome": "BUILT_COMPILE_OK_Q02_ENQUEUED",
+  "ea": {
+    "ea_id": "QM5_41202",
+    "slug": "wti-samecal-win5",
+    "strategy_id": "KELOHARJU-WINSOR-WTI-SAMECAL5-2026_S01",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "magic": 412020000
+  },
+  "edge": {
+    "class": "wti_exact_five_year_same_calendar_month_one_tail_winsorized_mean_sign",
+    "frequency": "monthly",
+    "mechanic": "At each first normalized D1 month boundary, take the exact prior five years' completed same-calendar-month WTI log returns, sort them, replace the minimum with the second value and the maximum with the fourth value, average all five retained terms as (2*s1+s2+2*s3)/5, and trade only its strict sign until the next month boundary.",
+    "book_difference": "Direct crude-oil calendar exposure outside the certified XAU/SP500/NDX/XNG carriers; realized decorrelation is not claimed and remains a Q09 decision.",
+    "dedup_verdict": "FUZZY_MATCH_RESOLVED_DISTINCT_WTI_EXACT_FIVE_YEAR_SAME_CALENDAR_ONE_TAIL_WINSORIZED_MEAN_SIGN_MONTHLY_RENEWAL",
+    "dedup_receipt": "artifacts/qm5_wti_samecal_win5_preallocation_dedup_20260829.json",
+    "dedup_receipt_sha256": "6d713ec4b7a3d231ee05d483c4d706e7b69727ceb3f6f7034945b2052bbf3448"
+  },
+  "governance": {
+    "source_packet": "strategy-seeds/sources/KELOHARJU-WINSOR-WTI-SAMECAL5-2026/source.md",
+    "source_packet_sha256": "90dcee1100a637db2afbdb7d162ca2a284d687e6f3d87352e92633ff19056a9",
+    "source_approval": "decisions/2026-08-29_wti_same_calendar_winsorized5_source_approval.md",
+    "g0_decision": "decisions/2026-08-29_qm5_41202_wti_same_calendar_winsorized5_g0.md",
+    "g0_status": "APPROVED",
+    "approved_card": "strategy-seeds/cards/approved/QM5_41202_wti-samecal-win5_card.md",
+    "approved_card_sha256": "16f426acb7db1936b7c35ffa98a6159b0926f7209cb2713954929c4f652380d6",
+    "runtime_card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_41202_wti-samecal-win5_card.md",
+    "runtime_card_sha256": "16f426acb7db1936b7c35ffa98a6159b0926f7209cb2713954929c4f652380d6",
+    "canonical_and_runtime_cards_byte_identical": true
+  },
+  "build": {
+    "implementation_commit": "0fddeda5a7334ca064cce945651dd6fd033650f7",
+    "build_task_id": "17407e28-3d17-4794-8494-072396ce971c",
+    "build_task_status": "done",
+    "compile_work_item_id": "8f004130-b8a8-498b-ba38-e157722dca78",
+    "compile_work_item_status": "done",
+    "compile_verdict": "COMPILE_OK",
+    "compile_release_receipt": "artifacts/qm5_41202_compile_release_20260829.json",
+    "compile_evidence": "D:/QM/reports/work_items/8f004130-b8a8-498b-ba38-e157722dca78/QM5_41202/COMPILE_EA/compile_evidence.json",
+    "compile_evidence_sha256": "908630e515f66a30ebb644d77271d3df8aa0c780a9eff34ad6ee8854bcf41636",
+    "mq5_sha256": "585b22795ac672b1377cd8525933ef71b56a98ff9c794531bdcac286b325718c",
+    "ex5_sha256": "77a1e21404bb485fc3f9d8c06fe6a485f8b6cddbd26062a9ad9a5eac47ddab70",
+    "setfile_sha256": "c08ba1244bfc86212830891b7b26612221a49e0d5edc086e2756d43262d973bc",
+    "build_check": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "setfile": {
+      "path": "framework/EAs/QM5_41202_wti-samecal-win5/sets/QM5_41202_wti-samecal-win5_XTIUSD.DWX_D1_backtest.set",
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "portfolio_weight": 1
+    }
+  },
+  "capacity_before_q02": {
+    "sampled_at_utc": "2026-08-29T17:13:30.8051925Z",
+    "command": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "hard_ceiling_percent": 97.0,
+    "samples_percent": [
+      74.55268508754607,
+      73.21468609418211,
+      71.7833614306707,
+      72.57144753397509,
+      76.5650403496261
+    ],
+    "average_percent": 73.7374440992,
+    "maximum_percent": 76.5650403496261,
+    "ceiling_binding": false
+  },
+  "q02": {
+    "enqueued": true,
+    "work_item_id": "ef66984a-2402-4fe4-89c7-2f3394891312",
+    "status_at_readback": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "gate_contract_version": "v4",
+    "priority_track": true,
+    "cohort_size": 1,
+    "skipped_targets": [],
+    "custom_history_archive_admission": "ACTIVE",
+    "custom_history_selected_archive_rows": 108
+  },
+  "verification": {
+    "reference_tests": "PASS: 11 tests",
+    "spec_validation": "PASS",
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "build_skill_guard": "PASS",
+    "build_guardrails": "PASS: MQ5 and fixed-risk setfile",
+    "ex5_provenance_guard": "PASS for QM5_41202 against COMPILE_EA work item 8f004130-b8a8-498b-ba38-e157722dca78; the whole-index invocation returned nonzero only for unrelated pre-existing staged EX5 paths",
+    "json_parse": "PASS"
+  },
+  "safety": {
+    "manual_q02_dispatch": false,
+    "manual_tester_launch": false,
+    "autotrading_toggled": false,
+    "t_live_controlled": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "certification_claimed": false,
+    "decorrelation_claimed": false
+  },
+  "mission_commits_before_receipt": [
+    "aecbc325e",
+    "300b520d4",
+    "0fddeda5a"
+  ]
+}
