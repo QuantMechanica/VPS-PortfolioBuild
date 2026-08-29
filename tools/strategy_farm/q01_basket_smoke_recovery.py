@@ -260,79 +260,87 @@ def apply(
 ) -> dict[str, Any]:
     farmctl.init_db(root)
     now = farmctl.utc_now()
-    inserted: list[str] = []
-    existing_ids: list[str] = []
-    with farmctl.connect(root) as conn:
-        conn.execute("BEGIN IMMEDIATE")
-        for target in targets:
-            payload, setfile = _target_payload(conn, repo_root, target)
-            work_item_id = _work_item_id(target)
-            existing = conn.execute("SELECT * FROM work_items WHERE id=?", (work_item_id,)).fetchone()
-            if existing is not None:
-                existing_payload = _json_object(
-                    existing["payload_json"], role=f"work item {work_item_id}"
-                )
-                immutable = {
-                    "kind": existing["kind"],
-                    "phase": existing["phase"],
-                    "ea_id": existing["ea_id"],
-                    "symbol": existing["symbol"],
-                    "setfile_path": str(existing["setfile_path"]),
-                    "contract": existing_payload.get("q01_smoke_contract"),
-                    "router_task_id": existing_payload.get("router_task_id"),
-                    "expected_ex5_sha256": existing_payload.get("expected_ex5_sha256"),
-                    "expected_setfile_sha256": existing_payload.get("expected_setfile_sha256"),
-                }
-                expected = {
-                    "kind": "q01_smoke",
-                    "phase": "Q01",
-                    "ea_id": target.ea_id,
-                    "symbol": target.logical_symbol,
-                    "setfile_path": str(setfile),
-                    "contract": CONTRACT,
-                    "router_task_id": ROUTER_TASK_ID,
-                    "expected_ex5_sha256": payload["expected_ex5_sha256"],
-                    "expected_setfile_sha256": payload["expected_setfile_sha256"],
-                }
-                if immutable != expected:
-                    raise RecoveryError(
-                        f"deterministic work-item collision for {work_item_id}: "
-                        f"observed={immutable} expected={expected}"
+    target_tuple = tuple(targets)
+
+    def _insert_transaction() -> tuple[list[str], list[str]]:
+        inserted: list[str] = []
+        existing_ids: list[str] = []
+        with farmctl.connect(root) as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            for target in target_tuple:
+                payload, setfile = _target_payload(conn, repo_root, target)
+                work_item_id = _work_item_id(target)
+                existing = conn.execute(
+                    "SELECT * FROM work_items WHERE id=?", (work_item_id,)
+                ).fetchone()
+                if existing is not None:
+                    existing_payload = _json_object(
+                        existing["payload_json"], role=f"work item {work_item_id}"
                     )
-                existing_ids.append(work_item_id)
-                continue
-            conn.execute(
-                """
-                INSERT INTO work_items(
-                    id,kind,phase,ea_id,symbol,setfile_path,status,attempt_count,
-                    payload_json,created_at,updated_at,gate_contract_version
-                ) VALUES(?, 'q01_smoke', 'Q01', ?, ?, ?, 'pending', 0, ?, ?, ?, ?)
-                """,
-                (
+                    immutable = {
+                        "kind": existing["kind"],
+                        "phase": existing["phase"],
+                        "ea_id": existing["ea_id"],
+                        "symbol": existing["symbol"],
+                        "setfile_path": str(existing["setfile_path"]),
+                        "contract": existing_payload.get("q01_smoke_contract"),
+                        "router_task_id": existing_payload.get("router_task_id"),
+                        "expected_ex5_sha256": existing_payload.get("expected_ex5_sha256"),
+                        "expected_setfile_sha256": existing_payload.get("expected_setfile_sha256"),
+                    }
+                    expected = {
+                        "kind": "q01_smoke",
+                        "phase": "Q01",
+                        "ea_id": target.ea_id,
+                        "symbol": target.logical_symbol,
+                        "setfile_path": str(setfile),
+                        "contract": CONTRACT,
+                        "router_task_id": ROUTER_TASK_ID,
+                        "expected_ex5_sha256": payload["expected_ex5_sha256"],
+                        "expected_setfile_sha256": payload["expected_setfile_sha256"],
+                    }
+                    if immutable != expected:
+                        raise RecoveryError(
+                            f"deterministic work-item collision for {work_item_id}: "
+                            f"observed={immutable} expected={expected}"
+                        )
+                    existing_ids.append(work_item_id)
+                    continue
+                conn.execute(
+                    """
+                    INSERT INTO work_items(
+                        id,kind,phase,ea_id,symbol,setfile_path,status,attempt_count,
+                        payload_json,created_at,updated_at,gate_contract_version
+                    ) VALUES(?, 'q01_smoke', 'Q01', ?, ?, ?, 'pending', 0, ?, ?, ?, ?)
+                    """,
+                    (
+                        work_item_id,
+                        target.ea_id,
+                        target.logical_symbol,
+                        str(setfile),
+                        json.dumps(payload, sort_keys=True),
+                        now,
+                        now,
+                        farmctl.ACTIVE_GATE_CONTRACT_VERSION,
+                    ),
+                )
+                farmctl.event(
+                    conn,
+                    "work_item",
                     work_item_id,
-                    target.ea_id,
-                    target.logical_symbol,
-                    str(setfile),
-                    json.dumps(payload, sort_keys=True),
-                    now,
-                    now,
-                    farmctl.ACTIVE_GATE_CONTRACT_VERSION,
-                ),
-            )
-            farmctl.event(
-                conn,
-                "work_item",
-                work_item_id,
-                "q01_smoke_recovery_enqueued",
-                {
-                    "contract": CONTRACT,
-                    "ea_id": target.ea_id,
-                    "logical_symbol": target.logical_symbol,
-                    "router_task_id": ROUTER_TASK_ID,
-                },
-            )
-            inserted.append(work_item_id)
-        conn.commit()
+                    "q01_smoke_recovery_enqueued",
+                    {
+                        "contract": CONTRACT,
+                        "ea_id": target.ea_id,
+                        "logical_symbol": target.logical_symbol,
+                        "router_task_id": ROUTER_TASK_ID,
+                    },
+                )
+                inserted.append(work_item_id)
+            conn.commit()
+        return inserted, existing_ids
+
+    inserted, existing_ids = farmctl._with_sqlite_write_retry(_insert_transaction)
     return {
         "applied": True,
         "contract": CONTRACT,
@@ -460,56 +468,64 @@ def finalize(
             "router_task_id": ROUTER_TASK_ID,
         }
         task_status = "done" if smoke_result == "passed" else "failed"
-        with farmctl.connect(root) as conn:
-            conn.execute("BEGIN IMMEDIATE")
-            existing = conn.execute("SELECT * FROM tasks WHERE id=?", (receipt_task_id,)).fetchone()
-            if existing is not None:
-                existing_payload = _json_object(
-                    existing["payload_json"], role=f"receipt task {receipt_task_id}"
-                )
-                prior_receipt = existing_payload.get("q01_recovery_receipt") or {}
-                stable_fields = (
-                    "contract",
-                    "ea_id",
-                    "expert_sha256",
-                    "logical_symbol",
-                    "outcome_reason",
-                    "q01_summary_sha256",
-                    "q01_work_item_id",
-                    "router_task_id",
-                    "setfile_sha256",
-                    "smoke_result",
-                )
-                if any(prior_receipt.get(key) != receipt.get(key) for key in stable_fields):
-                    raise RecoveryError(f"receipt collision for {receipt_task_id}")
-            else:
-                conn.execute(
-                    """
-                    INSERT INTO tasks(
-                        id,kind,status,source_id,card_id,payload_json,created_at,updated_at
-                    ) VALUES(?, 'build_ea', ?, NULL, ?, ?, ?, ?)
-                    """,
-                    (
+        def _append_receipt_transaction() -> None:
+            with farmctl.connect(root) as conn:
+                conn.execute("BEGIN IMMEDIATE")
+                existing = conn.execute(
+                    "SELECT * FROM tasks WHERE id=?", (receipt_task_id,)
+                ).fetchone()
+                if existing is not None:
+                    existing_payload = _json_object(
+                        existing["payload_json"], role=f"receipt task {receipt_task_id}"
+                    )
+                    prior_receipt = existing_payload.get("q01_recovery_receipt") or {}
+                    stable_fields = (
+                        "contract",
+                        "ea_id",
+                        "expert_sha256",
+                        "logical_symbol",
+                        "outcome_reason",
+                        "q01_summary_sha256",
+                        "q01_work_item_id",
+                        "router_task_id",
+                        "setfile_sha256",
+                        "smoke_result",
+                    )
+                    if any(
+                        prior_receipt.get(key) != receipt.get(key)
+                        for key in stable_fields
+                    ):
+                        raise RecoveryError(f"receipt collision for {receipt_task_id}")
+                else:
+                    conn.execute(
+                        """
+                        INSERT INTO tasks(
+                            id,kind,status,source_id,card_id,payload_json,created_at,updated_at
+                        ) VALUES(?, 'build_ea', ?, NULL, ?, ?, ?, ?)
+                        """,
+                        (
+                            receipt_task_id,
+                            task_status,
+                            target.ea_id,
+                            json.dumps(task_payload, sort_keys=True),
+                            now,
+                            now,
+                        ),
+                    )
+                    farmctl.event(
+                        conn,
+                        "task",
                         receipt_task_id,
-                        task_status,
-                        target.ea_id,
-                        json.dumps(task_payload, sort_keys=True),
-                        now,
-                        now,
-                    ),
-                )
-                farmctl.event(
-                    conn,
-                    "task",
-                    receipt_task_id,
-                    "q01_smoke_receipt_appended",
-                    {
-                        "contract": CONTRACT,
-                        "q01_work_item_id": work_item_id,
-                        "smoke_result": smoke_result,
-                    },
-                )
-            conn.commit()
+                        "q01_smoke_receipt_appended",
+                        {
+                            "contract": CONTRACT,
+                            "q01_work_item_id": work_item_id,
+                            "smoke_result": smoke_result,
+                        },
+                    )
+                conn.commit()
+
+        farmctl._with_sqlite_write_retry(_append_receipt_transaction)
         finalized.append(
             {
                 "ea_id": target.ea_id,
