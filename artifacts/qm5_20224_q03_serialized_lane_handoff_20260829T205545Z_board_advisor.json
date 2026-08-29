@@ -1,0 +1,240 @@
+{
+  "artifact_type": "qm5_20224_q03_serialized_lane_handoff",
+  "schema": "qm.paced-fx-handoff/v1",
+  "generated_at_utc": "2026-08-29T20:55:45Z",
+  "generated_at_europe_berlin": "2026-08-29T22:55:45+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "4eceb928d162f042eb39ffaadbab5b66e57b3489",
+  "mission_outcome": "EXISTING_FX_Q03_PRIORITY_INTACT_SERIALIZED_BEHIND_ACTIVE_BASKET",
+  "frontier_reconciliation": {
+    "controlling_research": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "durable_coverage_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "relationships_total": 66,
+    "relationships_covered": 66,
+    "relationships_uncovered": 0,
+    "new_scan_pair_eligible": false,
+    "anchors": {
+      "QM5_12532": {
+        "pair": [
+          "AUDUSD.DWX",
+          "NZDUSD.DWX"
+        ],
+        "q02": "PASS",
+        "later_chain": "Q04 PASS; Q05 FAIL",
+        "current_q02_oninit_or_no_history_block": false
+      },
+      "QM5_12533": {
+        "pair": [
+          "EURJPY.DWX",
+          "GBPJPY.DWX"
+        ],
+        "q02": "PASS",
+        "later_chain": "Q04 FAIL",
+        "current_q02_oninit_or_no_history_block": false
+      }
+    },
+    "skill_gate_disposition": {
+      "strategy_card_extraction": "CLOSED_NO_NON_DUPLICATE_SCAN_RELATIONSHIP",
+      "ea_build": "CLOSED_NO_APPROVED_UNBUILT_SCAN_RELATIONSHIP"
+    }
+  },
+  "selected_existing_forex_sleeve": {
+    "scan_rank": 46,
+    "ea_id": "QM5_20224",
+    "pair": [
+      "EURUSD.DWX",
+      "EURJPY.DWX"
+    ],
+    "conversion_history_only_symbols": [
+      "USDJPY.DWX"
+    ],
+    "logical_symbol": "QM5_20224_EURUSD_EURJPY_COINTEGRATION_D1",
+    "timeframe": "D1",
+    "fixed_beta": -0.236324029,
+    "dev_net_sharpe": 0.473267,
+    "oos_net_sharpe": -0.118543,
+    "disposition": "one_shot_pipeline_falsification_no_refit_filter_or_rescue",
+    "card_lint": {
+      "status": "ok",
+      "ml_hits": [],
+      "missing_sections": []
+    },
+    "risk_contract": {
+      "mode": "RISK_FIXED",
+      "risk_fixed": 1000.0,
+      "risk_percent": 0.0,
+      "portfolio_weight": 1.0
+    },
+    "bindings": {
+      "approved_card_sha256": "3b2ab7bc3c1dea90a86b936b1bf0e352f69e5c9532724f78512a18b987d35580",
+      "mq5_sha256": "7eda37af63f23e00dcb930d71eb07afe4bef97e30875ec7f83bf5d234f668129",
+      "ex5_sha256": "d534838d2c9c993db151500c836f4e38088d961b2fe90e820defb0d31a34ae5b",
+      "basket_manifest_sha256": "f7207377d90fb4fb3447425597f4ec4b2c2709838e0bd44cf4d851f70bb97725",
+      "logical_setfile_sha256": "397181311f649d5416044d36d6aa70023390ea8b14f97cb75e7fb8818b144254"
+    },
+    "registry": {
+      "ea_row_active": true,
+      "magic_slot_0": "EURUSD.DWX",
+      "magic_slot_1": "EURJPY.DWX",
+      "conversion_symbol_has_magic": false
+    }
+  },
+  "canonical_lineage": {
+    "q02": {
+      "id": "5d1cb89c-25ce-419c-869c-8c9f7afa10c1",
+      "status": "done",
+      "verdict": "PASS"
+    },
+    "q03": {
+      "id": "3c74eb04-7e19-4aa0-8dcf-3f004faaa946",
+      "status": "pending",
+      "verdict": null,
+      "claimed_by": null,
+      "attempt_count": 0,
+      "priority_track": true,
+      "priority_reason": "board_advisor_fx_fallback_rank46_q03",
+      "payload_sha256": "b9e8294d644b5d450601ea7eb7456e83165716f52e6b4a5cabf4e8f95eb484b4",
+      "pending_multisymbol_rank": 8
+    },
+    "q04": {
+      "id": "a525cd8f-4c29-4752-b1af-3c43288f259e",
+      "status": "pending",
+      "verdict": null,
+      "advanced_ahead_of_q03": false
+    }
+  },
+  "serialized_lane": {
+    "observed_at_utc": "2026-08-29T20:55:45.704811+00:00",
+    "pending_work_items_total": 6318,
+    "pending_multisymbol_total": 493,
+    "active_multisymbol": {
+      "id": "34176377-51a0-4eea-a97d-86420a022a52",
+      "ea_id": "QM5_41076",
+      "logical_symbol": "QM5_41076_XAU_XAG_WACCEL_RV_D1",
+      "phase": "Q05",
+      "claimed_by": "T3",
+      "started_at_utc": "2026-08-29T20:49:59+00:00",
+      "runner_pid": 6136,
+      "commit_reservation_class": "heavy_or_unknown_multisymbol",
+      "commit_reservation_gb": 44.0,
+      "commit_reservation_until_utc": "2026-08-29T21:48:02+00:00"
+    },
+    "pending_predecessors_before_target": [
+      {
+        "rank": 1,
+        "ea_id": "QM5_41077",
+        "phase": "Q05",
+        "id": "b67f1a88-1bd2-4a7d-b31c-08e1f1d661ba"
+      },
+      {
+        "rank": 2,
+        "ea_id": "QM5_41078",
+        "phase": "Q05",
+        "id": "0aa74af1-c6c4-423e-9ad4-19e0222e024f"
+      },
+      {
+        "rank": 3,
+        "ea_id": "QM5_41079",
+        "phase": "Q04",
+        "id": "ffa3fbf3-7447-4cae-8ad5-f70a0751c2dc"
+      },
+      {
+        "rank": 4,
+        "ea_id": "QM5_41085",
+        "phase": "Q04",
+        "id": "91dde144-610c-4d81-9bf9-b4173955e45f"
+      },
+      {
+        "rank": 5,
+        "ea_id": "QM5_41086",
+        "phase": "Q04",
+        "id": "c2caae0c-9bcb-46ea-9bbf-cd04832a6169"
+      },
+      {
+        "rank": 6,
+        "ea_id": "QM5_20294",
+        "phase": "Q04",
+        "id": "a34ee5cd-39b0-4655-9b02-1bf8e389f440"
+      },
+      {
+        "rank": 7,
+        "ea_id": "QM5_20206",
+        "phase": "Q04",
+        "id": "ddad91a7-f1d1-4a06-a9bf-e82e1ec9558a"
+      }
+    ],
+    "admission_disposition": "DO_NOT_BYPASS_ACTIVE_BASKET_OR_PROMOTE_Q04_AHEAD_OF_Q03"
+  },
+  "capacity_windows": [
+    {
+      "sampled_at_utc": "2026-08-29T20:45:27.7496524Z",
+      "samples_cpu_percent": [
+        94.635012,
+        80.964153,
+        81.856573,
+        69.448527,
+        72.674028
+      ],
+      "average_cpu_percent": 79.915659,
+      "maximum_cpu_percent": 94.635012,
+      "ceiling_binding": false
+    },
+    {
+      "sampled_at_utc": "2026-08-29T20:49:29.7076927Z",
+      "samples_cpu_percent": [
+        63.08993,
+        59.692372,
+        60.844546,
+        65.628527,
+        64.962583
+      ],
+      "average_cpu_percent": 62.843592,
+      "maximum_cpu_percent": 65.628527,
+      "ceiling_binding": false
+    },
+    {
+      "sampled_at_utc": "2026-08-29T20:54:07.6501450Z",
+      "samples_cpu_percent": [
+        79.504598,
+        70.225541,
+        74.828794,
+        82.034895,
+        74.807431
+      ],
+      "average_cpu_percent": 76.280252,
+      "maximum_cpu_percent": 82.034895,
+      "ceiling_binding": false
+    }
+  ],
+  "capacity_contract": {
+    "hard_ceiling_percent": 97.0,
+    "binding_if_average_or_maximum_reaches_ceiling": true,
+    "ceiling_observed_this_run": false
+  },
+  "actions_this_run": {
+    "frontier_and_anchor_reconciled": true,
+    "target_package_hashes_reverified": true,
+    "card_schema_and_ml_lint_passed": true,
+    "exact_q03_priority_and_lineage_reverified": true,
+    "healthy_post_fix_multisymbol_runner_observed": true,
+    "new_card_or_ea_created": false,
+    "duplicate_work_item_created": false,
+    "queue_priority_claim_status_or_verdict_mutated": false,
+    "manual_dispatch_or_terminal_control": false,
+    "backtest_started_by_this_run": false,
+    "paced_handoff_evidence_committed": true
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false,
+    "live_or_deploy_manifest_touched": false,
+    "preexisting_worktree_changes_preserved": true
+  },
+  "non_duplicate_delta": "The prior handoff observed QM5_41077 Q04 active before the post-fix lane generation was fully exercised. The lane has since completed both QM5_41076 and QM5_41077 Q04, generated their Q05 successors, and activated QM5_41076 Q05 on the repaired worker generation. QM5_20224 remains the first pending FX basket and its sealed Q03 identity is unchanged.",
+  "resume_contract": "Let the active basket and seven older pending downstream baskets drain in canonical order. Re-read the exact QM5_20224 Q03 row and the 97 percent CPU ceiling before any action; never enqueue a duplicate, force a second basket, or promote Q04 before Q03 PASS."
+}
