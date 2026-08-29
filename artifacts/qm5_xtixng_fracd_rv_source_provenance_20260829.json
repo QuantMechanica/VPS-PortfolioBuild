@@ -1,0 +1,37 @@
+{
+  "schema": "qm.local-source-provenance/v1",
+  "candidate_slug": "xtixng-fracd-rv",
+  "recorded_at_utc": "2026-08-29T05:51:07Z",
+  "retrieval_mode": "complete_read_of_governed_repository_packets",
+  "new_public_retrieval": false,
+  "records": [
+    {
+      "path": "strategy-seeds/sources/VILLAR-RAMBERG-OILGAS-2026/source.md",
+      "source_id": "VILLAR-RAMBERG-OILGAS-2026",
+      "sha256": "4A03377F4CE8BCA9816DC2D9DBC34131ADC5E50B5ABB9D02AC29CB64E9CC4604",
+      "byte_count": 10031,
+      "line_count": 192,
+      "read_scope": "complete",
+      "status": "approved_source_complete",
+      "role": "government_and_peer_reviewed_oil_gas_relationship_with_adverse_regime_evidence"
+    },
+    {
+      "path": "strategy-seeds/sources/YAYA-CME-XAUXAG-FRACD-RV-2026/source.md",
+      "source_id": "YAYA-CME-XAUXAG-FRACD-RV-2026",
+      "sha256": "CEC08E0FB0C040227A52053A7051F64CF5D530B2D68C67B8DD87851970B7E4DE",
+      "byte_count": 9026,
+      "line_count": 183,
+      "read_scope": "complete",
+      "status": "approved_source_complete",
+      "role": "governed_fixed_fractional_difference_arithmetic_and_atomic_monthly_basket_precedent"
+    }
+  ],
+  "dedup_evidence": {
+    "path": "artifacts/qm5_xtixng_fracd_rv_preallocation_dedup_20260829.json",
+    "sha256": "6706C3E379B9190CBC4918D81173F467D8EFA29CBC5814743583CD4C42B75D71",
+    "verdict": "CLEAN",
+    "registry_count": 4692,
+    "card_count": 1343,
+    "wiki_count": 45
+  }
+}
