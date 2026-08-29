@@ -1,6 +1,6 @@
 # QM5_41203_xauxag-samecal-srank - Strategy Spec
 
-EA ID: `QM5_41203`
+**EA ID:** QM5_41203
 
 Slug: `xauxag-samecal-srank`
 
