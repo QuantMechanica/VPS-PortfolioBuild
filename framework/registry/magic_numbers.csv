@@ -18102,3 +18102,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41204,wti-samecal-huber10,0,XTIUSD.DWX,412040000,2026-08-29,Codex governed allocator,active
 41154,eurjpy-carry-unwind-crisis-momentum,0,EURJPY.DWX,411540000,2026-08-29,Codex governed allocator,active
 41205,xng-samecal-huber10,0,XNGUSD.DWX,412050000,2026-08-29,Codex governed allocator,active
+41206,xauxag-samecal-huber10,0,XAUUSD.DWX,412060000,2026-08-29,Codex governed allocator,active
+41206,xauxag-samecal-huber10,1,XAGUSD.DWX,412060001,2026-08-29,Codex governed allocator,active
