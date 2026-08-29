@@ -74,6 +74,11 @@ _Q04_PHASE = farmctl.SUPPORTED_BACKTEST_PHASES[-1]
 _Q09_NEWS_PHASE = farmctl.ACTIVE_GATE_MANIFEST.storage_phase_for_role("NEWS", "NEWS")
 _Q07_PHASE = "Q07"
 _Q08_PHASE = "Q08"
+NEWS_RUNNER_SPAWN_ABORT_HOLD_CODE = "NEWS_RUNNER_SPAWN_SILENT_ABORT"
+NEWS_RUNNER_SPAWN_ABORT_HOLD_REASON = (
+    "bound news runner disappeared before durable completion; exact process "
+    "identity review required before retry"
+)
 
 
 def _is_early_run_smoke_phase(phase: object) -> bool:
@@ -1955,6 +1960,26 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                             conn.commit()
                             row = conn.execute("SELECT * FROM work_items WHERE id=?", (active_terminal["id"],)).fetchone()
                             return {"claimed": True, "item": dict(row), "adopt_existing": True}
+
+                        child_identity = dict(
+                            active_terminal_preflight.get("child_identity") or {}
+                        )
+                        if _news_runner_abort_eligible(dict(active_terminal), payload):
+                            parked = _park_news_runner_abort(
+                                conn,
+                                dict(active_terminal),
+                                payload,
+                                terminal,
+                                now,
+                                child_identity,
+                            )
+                            conn.commit()
+                            return {
+                                "claimed": False,
+                                "reason": "news_runner_spawn_abort_held",
+                                "item_id": active_terminal["id"],
+                                **parked,
+                            }
 
                         payload["prior_failure"] = payload.get("prior_failure") or "worker_process_missing_released_stale_claim"
                         terminal_stopped = active_terminal_preflight.get("terminal_stopped")
@@ -4460,6 +4485,207 @@ def _defer_runner_death(
     }
 
 
+def _bound_runner_identity(payload: dict[str, Any]) -> dict[str, Any]:
+    """Resolve runner liveness without accepting a reused historical PID.
+
+    New spawns are bound to an immutable creation key.  For those rows a PID
+    occupied by any other process is dead for this work item, even though the
+    generic PID/tree probe reports it alive.  Legacy rows without a creation
+    key retain the old tree probe until they naturally drain.
+    """
+
+    pid = payload.get("pid")
+    if not pid:
+        return {"state": "pid_missing", "alive": False, "pid": None}
+    expected_key = str(payload.get("process_creation_key") or "").strip()
+    if not expected_key:
+        alive = farmctl._pid_tree_exists(pid)
+        return {
+            "state": "legacy_tree_live" if alive else "legacy_tree_dead",
+            "alive": alive,
+            "pid": pid,
+            "expected_creation_key": None,
+        }
+    try:
+        identity = farmctl.get_process_identity(int(pid))
+    except Exception as exc:  # fail closed: identity uncertainty is not ownership
+        return {
+            "state": "identity_probe_error",
+            "alive": False,
+            "pid": pid,
+            "expected_creation_key": expected_key,
+            "error": f"{type(exc).__name__}: {exc}"[:240],
+        }
+    if identity is None:
+        return {
+            "state": "process_missing",
+            "alive": False,
+            "pid": pid,
+            "expected_creation_key": expected_key,
+            "observed_creation_key": None,
+        }
+    observed_key = str(identity.get("creation_key") or "")
+    running = bool(identity.get("is_running", True))
+    matches = running and observed_key == expected_key
+    return {
+        "state": "exact_live" if matches else (
+            "pid_reused" if running and observed_key != expected_key else "exact_exited"
+        ),
+        "alive": matches,
+        "pid": pid,
+        "expected_creation_key": expected_key,
+        "observed_creation_key": observed_key or None,
+        "observed_image_path": identity.get("image_path"),
+        "observed_running": running,
+    }
+
+
+def _news_runner_abort_eligible(item: dict[str, Any], payload: dict[str, Any]) -> bool:
+    return bool(
+        str(item.get("phase") or "").upper() == _Q09_NEWS_PHASE
+        and payload.get("q09_run_plan_path")
+        and payload.get("q09_run_plan_file_sha256")
+    )
+
+
+def _park_news_runner_abort(
+    conn: sqlite3.Connection,
+    item: dict[str, Any],
+    payload: dict[str, Any],
+    terminal: str,
+    now: str,
+    child_identity: dict[str, Any],
+) -> dict[str, Any]:
+    """Park a dead bound news runner and preserve its exact failure boundary."""
+
+    diagnostic = {
+        "reason": "bound_news_runner_process_not_live",
+        "detected_at_iso": now,
+        "terminal": terminal,
+        "claim_stage": payload.get("claim_stage") or "spawned_monitoring",
+        "started_at_iso": payload.get("started_at_iso"),
+        "log_path": payload.get("log_path"),
+        "runner_identity": child_identity,
+    }
+    payload["news_runner_spawn_abort"] = diagnostic
+    payload["verdict_reason"] = NEWS_RUNNER_SPAWN_ABORT_HOLD_CODE
+    payload["verdict_taxonomy"] = "infra"
+    _clear_stale_runtime_payload(payload)
+    cursor = conn.execute(
+        """
+        UPDATE work_items
+        SET status='pending',verdict=NULL,claimed_by=NULL,payload_json=?,updated_at=?
+        WHERE id=? AND status='active' AND claimed_by=?
+        """,
+        (json.dumps(payload, sort_keys=True), now, item["id"], terminal),
+    )
+    if cursor.rowcount != 1:
+        return {
+            "parked": False,
+            "hold_code": NEWS_RUNNER_SPAWN_ABORT_HOLD_CODE,
+            "diagnostic": diagnostic,
+        }
+    conn.execute(
+        """
+        INSERT INTO work_item_holds(
+          work_item_id,hold_code,reason,active,release_on_restart,
+          created_at,updated_at,released_at,release_note
+        ) VALUES(?,?,?,1,0,?,?,NULL,NULL)
+        ON CONFLICT(work_item_id) DO UPDATE SET
+          hold_code=excluded.hold_code,
+          reason=excluded.reason,
+          active=1,
+          release_on_restart=0,
+          updated_at=excluded.updated_at,
+          released_at=NULL,
+          release_note=NULL
+        """,
+        (
+            item["id"],
+            NEWS_RUNNER_SPAWN_ABORT_HOLD_CODE,
+            NEWS_RUNNER_SPAWN_ABORT_HOLD_REASON,
+            now,
+            now,
+        ),
+    )
+    event_detail = {
+        "hold_code": NEWS_RUNNER_SPAWN_ABORT_HOLD_CODE,
+        "reason": NEWS_RUNNER_SPAWN_ABORT_HOLD_REASON,
+        "terminal": terminal,
+        "runner_identity": child_identity,
+    }
+    conn.execute(
+        "INSERT INTO events(ts,entity_type,entity_id,event,detail_json) "
+        "VALUES(?,'work_item',?,'news_runner_spawn_abort_held',?)",
+        (now, item["id"], json.dumps(event_detail, sort_keys=True)),
+    )
+    return {
+        "parked": cursor.rowcount == 1,
+        "hold_code": NEWS_RUNNER_SPAWN_ABORT_HOLD_CODE,
+        "diagnostic": diagnostic,
+    }
+
+
+def _park_news_runner_abort_active(
+    root: Path,
+    item: dict[str, Any],
+    payload: dict[str, Any],
+    terminal: str,
+    child_identity: dict[str, Any],
+) -> dict[str, Any]:
+    def _park() -> dict[str, Any]:
+        with farmctl.connect(root) as conn:
+            working_payload = dict(payload)
+            parked = _park_news_runner_abort(
+                conn,
+                item,
+                working_payload,
+                terminal,
+                farmctl.utc_now(),
+                child_identity,
+            )
+            conn.commit()
+            return parked
+
+    return _with_post_claim_sqlite_retry(_park)
+
+
+def _defer_runner_death_or_hold(
+    root: Path,
+    item: dict[str, Any],
+    terminal: str,
+    spawn: dict[str, Any],
+    payload: dict[str, Any],
+    ran_seconds: float,
+) -> dict[str, Any]:
+    if _news_runner_abort_eligible(item, payload):
+        child_identity = _bound_runner_identity(payload)
+        parked = _park_news_runner_abort_active(
+            root,
+            item,
+            payload,
+            terminal,
+            child_identity,
+        )
+        return {
+            "action": "news_runner_spawn_abort_held",
+            "item_id": item["id"],
+            "ran_seconds": round(ran_seconds, 2),
+            **parked,
+        }
+    return {
+        "action": "runner_death_requeued",
+        "item_id": item["id"],
+        **_defer_runner_death(
+            root,
+            item["id"],
+            terminal,
+            spawn,
+            ran_seconds,
+        ),
+    }
+
+
 def _active_terminal_claim_preflight(root: Path, terminal: str) -> dict[str, Any]:
     """Resolve process/slot state before the global claim mutation lock.
 
@@ -4497,8 +4723,10 @@ def _active_terminal_claim_preflight(root: Path, terminal: str) -> dict[str, Any
     worker_pid = payload.get("claimed_by_worker_pid")
     worker_alive = farmctl._pid_exists(worker_pid) if worker_pid else None
     child_alive = False
+    child_identity: dict[str, Any] = {"state": "not_checked", "alive": False}
     if pid and worker_alive is not True:
-        child_alive = farmctl._pid_tree_exists(pid)
+        child_identity = _bound_runner_identity(payload)
+        child_alive = bool(child_identity.get("alive"))
     stale_release = worker_alive is not True and not child_alive
     terminal_stopped = (
         _stop_terminal_slot_for_release(root, terminal) if stale_release else None
@@ -4510,6 +4738,7 @@ def _active_terminal_claim_preflight(root: Path, terminal: str) -> dict[str, Any
         "worker_pid": worker_pid,
         "worker_alive": worker_alive,
         "child_alive": child_alive,
+        "child_identity": child_identity,
         "terminal_stopped": terminal_stopped,
     }
 
@@ -4664,6 +4893,8 @@ def _monitor_spawned_work_item(
     adopted: bool = False,
 ) -> dict[str, Any]:
     pid = spawn["pid"]
+    identity_payload = dict(spawn)
+    identity_payload.update(payload)
     spawn_started = time.monotonic()
     deadline = _monitor_deadline_monotonic(
         payload,
@@ -4681,7 +4912,7 @@ def _monitor_spawned_work_item(
     terminal_alive_after_child_exit = False
     runner_dead_observed_at: float | None = None
     while time.monotonic() < deadline:
-        child_alive = farmctl._pid_tree_exists(pid)
+        child_alive = bool(_bound_runner_identity(identity_payload).get("alive"))
         terminal_alive_after_child_exit = (not child_alive) and _terminal_slot_running(root, terminal)
         if not child_alive and not terminal_alive_after_child_exit:
             break
@@ -4693,17 +4924,14 @@ def _monitor_spawned_work_item(
                 and not _work_item_has_summary_data(root, item["id"])
             ):
                 _stop_terminal_slot_for_release(root, terminal)
-                return {
-                    "action": "runner_death_requeued",
-                    "item_id": item["id"],
-                    **_defer_runner_death(
-                        root,
-                        item["id"],
-                        terminal,
-                        spawn,
-                        time.monotonic() - spawn_started,
-                    ),
-                }
+                return _defer_runner_death_or_hold(
+                    root,
+                    item,
+                    terminal,
+                    spawn,
+                    identity_payload,
+                    time.monotonic() - spawn_started,
+                )
         else:
             runner_dead_observed_at = None
         if _STOP:
@@ -4830,7 +5058,7 @@ def _monitor_spawned_work_item(
                 "evidence_path": str(evidence_path) if evidence_path is not None else None,
                 "terminal_stopped": terminal_stopped}
     ran_seconds = time.monotonic() - spawn_started
-    child_alive = farmctl._pid_tree_exists(pid)
+    child_alive = bool(_bound_runner_identity(identity_payload).get("alive"))
     terminal_alive_after_child_exit = (not child_alive) and _terminal_slot_running(root, terminal)
     if (
         not child_alive
@@ -4838,13 +5066,14 @@ def _monitor_spawned_work_item(
         and ran_seconds >= LAUNCH_FAULT_MIN_SECONDS
         and not _work_item_has_summary_data(root, item["id"])
     ):
-        return {
-            "action": "runner_death_requeued",
-            "item_id": item["id"],
-            **_defer_runner_death(
-                root, item["id"], terminal, spawn, ran_seconds
-            ),
-        }
+        return _defer_runner_death_or_hold(
+            root,
+            item,
+            terminal,
+            spawn,
+            identity_payload,
+            ran_seconds,
+        )
     if post_exit_watchdog is not None:
         # The wrapper was explicitly killed by this worker; its real return code
         # is unknown and must never be rewritten as success.
@@ -5036,7 +5265,8 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
         row = refreshed
         existing_payload = _json_loads(row["payload_json"])
     existing_pid = existing_payload.get("pid")
-    if existing_pid and farmctl._pid_tree_exists(existing_pid):
+    existing_identity = _bound_runner_identity(existing_payload)
+    if existing_pid and existing_identity.get("alive"):
         existing_payload["adopted_active_child_at_iso"] = farmctl.utc_now()
         existing_payload["claimed_by_worker_pid"] = os.getpid()
 
@@ -5071,6 +5301,19 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
             max(timeout_seconds, existing_inner_budget_seconds),
             adopted=True,
         )
+    if existing_pid and _news_runner_abort_eligible(dict(row), existing_payload):
+        parked = _park_news_runner_abort_active(
+            root,
+            dict(row),
+            existing_payload,
+            terminal,
+            existing_identity,
+        )
+        return {
+            "action": "news_runner_spawn_abort_held",
+            "item_id": item["id"],
+            **parked,
+        }
     # This early read avoids staging against a known-bad bundle and may reuse the
     # stat-bound claim cache. The shared spawn boundary below always re-reads
     # uncached immediately before subprocess creation.

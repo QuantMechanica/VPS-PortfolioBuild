@@ -1830,6 +1830,85 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             )
             self.assertNotEqual(payload.get("claimed_by_worker_pid"), 424242)
 
+    def test_dead_bound_news_runner_is_held_instead_of_pid_reuse_adoption(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "news-runner-abort-1",
+                "XAUUSD.DWX",
+                phase=terminal_worker._Q09_NEWS_PHASE,
+                status="active",
+                claimed_by="T6",
+                payload={
+                    "pid": 9696,
+                    "process_creation_key": "windows-filetime:original",
+                    "process_image_path": r"C:\Python311\python.exe",
+                    "started_at_iso": "2026-08-29T09:07:00+00:00",
+                    "claimed_at_iso": "2026-08-29T09:03:11+00:00",
+                    "claimed_by_worker_pid": 17644,
+                    "q09_run_plan_path": r"D:\reports\run_plan.json",
+                    "q09_run_plan_file_sha256": "a" * 64,
+                    "log_path": r"D:\logs\work_item.log",
+                },
+            )
+
+            with (
+                patch.object(farmctl, "_pid_exists", return_value=False),
+                patch.object(
+                    farmctl,
+                    "get_process_identity",
+                    return_value={
+                        "pid": 9696,
+                        "creation_key": "windows-filetime:reused",
+                        "image_path": r"C:\Windows\System32\other.exe",
+                        "is_running": True,
+                    },
+                ),
+                patch.object(
+                    terminal_worker,
+                    "_stop_terminal_slot_for_release",
+                    return_value=False,
+                ),
+            ):
+                result = terminal_worker.claim_atomic(root, "T6")
+
+            self.assertFalse(result.get("claimed"), result)
+            self.assertEqual(result["reason"], "news_runner_spawn_abort_held")
+            self.assertEqual(
+                result["hold_code"],
+                terminal_worker.NEWS_RUNNER_SPAWN_ABORT_HOLD_CODE,
+            )
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute(
+                    "SELECT status,claimed_by,payload_json FROM work_items WHERE id=?",
+                    ("news-runner-abort-1",),
+                ).fetchone()
+                hold = conn.execute(
+                    "SELECT hold_code,active,release_on_restart FROM work_item_holds WHERE work_item_id=?",
+                    ("news-runner-abort-1",),
+                ).fetchone()
+                event = conn.execute(
+                    "SELECT event,detail_json FROM events WHERE entity_id=? ORDER BY rowid DESC LIMIT 1",
+                    ("news-runner-abort-1",),
+                ).fetchone()
+            self.assertEqual(row[0:2], ("pending", None))
+            payload = json.loads(row[2])
+            self.assertNotIn("pid", payload)
+            self.assertEqual(
+                payload["news_runner_spawn_abort"]["runner_identity"]["state"],
+                "pid_reused",
+            )
+            self.assertEqual(
+                hold,
+                (terminal_worker.NEWS_RUNNER_SPAWN_ABORT_HOLD_CODE, 1, 0),
+            )
+            self.assertEqual(event[0], "news_runner_spawn_abort_held")
+            self.assertEqual(
+                json.loads(event[1])["runner_identity"]["observed_creation_key"],
+                "windows-filetime:reused",
+            )
+
     def test_stale_runtime_cleanup_removes_commit_reservation_fields(self) -> None:
         payload = {
             "commit_reservation_gb": terminal_worker.ORDINARY_COMMIT_RESERVATION_GB,
