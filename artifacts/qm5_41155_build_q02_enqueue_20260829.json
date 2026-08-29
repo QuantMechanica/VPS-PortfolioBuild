@@ -1,0 +1,141 @@
+{
+  "schema": "qm.fx-diversity-sleeve-build-q02/v1",
+  "generated_at_utc": "2026-08-29T22:52:00Z",
+  "branch": "agents/board-advisor",
+  "pre_receipt_head": "269219c676cfc37f0d7cf2a9bc762f2ca6c4510c",
+  "mission_outcome": "COMPILE_OK_Q02_ENQUEUED",
+  "selection": {
+    "ea_id": "QM5_41155",
+    "slug": "gbpjpy-carry-unwind-crisis-momentum",
+    "family": "carry_funding",
+    "mechanism": "carry_unwind_crisis_momentum",
+    "host_symbol": "GBPJPY.DWX",
+    "logical_symbol": "QM5_41155_GBPJPY_CARRY_UNWIND_CRISIS_MOMENTUM_D1",
+    "timeframe": "D1",
+    "reason": "Resume the already claimed highest-diversity GBPJPY carry-unwind package that had stopped only because the prior wake observed the hard CPU ceiling. It adds a forex carrier outside the user-stated Q08 survivor concentration in indices, metals, and energy.",
+    "non_duplicate_coordination": "Continued the sole existing QM5_41155 build task and its exact SHA-bound compile work item. No second task, EA identity, compile row, or Q02 row existed before record-build; record-build created one basket-aware Q02 item."
+  },
+  "edge": {
+    "side": "SHORT_GBPJPY_ONLY",
+    "frequency": "low_frequency_daily_crisis_regime",
+    "entry": "Equal-weight five-session return across AUDJPY, NZDJPY, CADJPY, and EURJPY is at or below -1%; GBPJPY closes below the prior 20-bar low; and 10-session realized volatility exceeds the median of the prior 60 rolling observations.",
+    "stop": "Frozen 2.0 ATR(14,D1) hard stop.",
+    "exit": "Ten completed D1 bars or a close above the midpoint of the prior 20-bar high/low channel.",
+    "basket_role": "AUDJPY.DWX, NZDJPY.DWX, CADJPY.DWX, and EURJPY.DWX are read-only synchronized signal inputs; GBPJPY.DWX is the sole traded carrier.",
+    "structural_only": true,
+    "ml_or_banned_indicators": false,
+    "certification_claimed": false,
+    "decorrelation_claimed": false
+  },
+  "governance": {
+    "source_id": "BRUNNERMEIER-NAGEL-PEDERSEN-CARRY-CRASH-2008",
+    "source_tier": "TIER_A",
+    "source_citation": "Markus K. Brunnermeier, Stefan Nagel and Lasse H. Pedersen (2009), Carry Trades and Currency Crashes, NBER Macroeconomics Annual 23, 313-347, DOI 10.1086/593088.",
+    "source_url": "https://www.nber.org/papers/w14473",
+    "runtime_card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_41155_gbpjpy-carry-unwind-crisis-momentum.md",
+    "runtime_card_sha256": "b5d41a26fe3f787d6fcd600553cd7b3f9fc2234805bd4b1439822cfa95b3e67c",
+    "g0_status": "APPROVED"
+  },
+  "build": {
+    "implementation_commit": "c4344813a8460ac72cbe7ce62d5b21a5c8d79129",
+    "prior_cpu_stop_receipt": "artifacts/qm5_41155_fx_build_compile_cpu_stop_20260829T214342Z_board_advisor.json",
+    "prior_cpu_stop_receipt_sha256": "e7bd8ab348aee3728c5fcc50e3225305f8535e9a500c4dd55cf7e5140905d106",
+    "build_task_id": "e8e61fe1-2589-4f97-adb7-7de16892f9e4",
+    "build_task_status": "done",
+    "coordination_task_id": "c5982a1f-f28d-4cee-9f58-5b60fc4a9e38",
+    "coordination_task_pre_receipt_state": "BLOCKED_CPU_CEILING",
+    "coordination_task_post_commit_target": "REVIEW",
+    "magic": 411550000,
+    "mq5_sha256": "355bf656e92b93298878dbd24822db76b17bc6db4c9eb5e124a37796682ed0a6",
+    "ex5_sha256": "cb934fa03c537c4160aa5b7a501b4beae2b5b2fc8bd3bfd69695a3eaa2c0cbea",
+    "spec_sha256": "cd5fc299ef303ffd4f101ef27abdb3417a4ffd8783c3fc849e5472c5ddca9114",
+    "basket_manifest_sha256": "4d7c08f8be16c6d5327588dcb7af0b086db7cd4101d3e90bc2d81a73a2e0ac43",
+    "build_result": "artifacts/qm5_41155_build_result_20260829.json",
+    "build_result_sha256": "2698e140eb2026b59d06a50500cb9070f50cc94add307a15bc3854ef3464e4f4",
+    "setfile_sha256": {
+      "physical_host": "f850fc1b9965584dad9ef7440d91c3182105120a08f29627b590e88161660756",
+      "logical_basket": "287ee2acea9ead357b9d029b218c93d7b8f3b2e9a8bf78976261efae8b3ffea2"
+    },
+    "risk_mode": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    }
+  },
+  "compile": {
+    "work_item_id": "7ea94446-82a8-4cf2-a9ee-51d5dc8e1ac1",
+    "release_dry_run": "artifacts/qm5_41155_compile_release_dry_run_20260829.json",
+    "release_dry_run_sha256": "f1589b28a00c3b376ae533b514238c8a9e3ec7d4153e9ea3a0b92c63fdb61039",
+    "release_apply": "artifacts/qm5_41155_compile_release_20260829.json",
+    "release_apply_sha256": "6da22e4fbba01d97051fab5caeb2b4e98a42ac74e1c866e309d943d87eccd90b",
+    "terminal_claim": "T3",
+    "status": "done",
+    "verdict": "COMPILE_OK",
+    "errors": 0,
+    "warnings": 0,
+    "build_check": "PASS",
+    "build_check_failures": 0,
+    "build_check_advisories": 1,
+    "build_check_advisory_resolution": "The swap advisory is non-blocking: execution metadata requires a finite retrievable value but never gates on swap sign or magnitude; zero-swap .DWX data therefore remains eligible.",
+    "evidence": "D:/QM/reports/work_items/7ea94446-82a8-4cf2-a9ee-51d5dc8e1ac1/QM5_41155/COMPILE_EA/compile_evidence.json",
+    "evidence_sha256": "73b3a5aaaa3d1532d3528788230e6d62e7acb4b68f0dcf74db936b1f9a64aec8"
+  },
+  "capacity": {
+    "sampling_method": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "hard_ceiling_percent": 97.0,
+    "before_compile_release": {
+      "sampled_at_utc": "2026-08-29T22:38:37.5435770Z",
+      "samples_percent": [89.952541, 81.399221, 73.548132, 79.103656, 80.773358],
+      "average_percent": 80.955382,
+      "maximum_percent": 89.952541,
+      "ceiling_binding": false
+    },
+    "before_q02": {
+      "sampled_at_utc": "2026-08-29T22:46:49.7088319Z",
+      "samples_percent": [84.472992, 88.123168, 86.534697, 80.276107, 83.89813],
+      "average_percent": 84.661019,
+      "maximum_percent": 88.123168,
+      "ceiling_binding": false
+    },
+    "after_q02_enqueue": {
+      "sampled_at_utc": "2026-08-29T22:48:35.6322585Z",
+      "samples_percent": [65.259386, 65.746043, 73.166338, 73.951201, 69.831717],
+      "average_percent": 69.590937,
+      "maximum_percent": 73.951201,
+      "ceiling_binding": false
+    }
+  },
+  "q02": {
+    "enqueued": true,
+    "enqueued_by": "record_build_result.auto_q02",
+    "work_item_id": "93f959d9-41a7-4e6c-9e95-ca183cb973de",
+    "status_at_readback": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "symbol": "QM5_41155_GBPJPY_CARRY_UNWIND_CRISIS_MOMENTUM_D1",
+    "host_symbol": "GBPJPY.DWX",
+    "timeframe": "D1",
+    "setfile": "framework/EAs/QM5_41155_gbpjpy-carry-unwind-crisis-momentum/sets/QM5_41155_gbpjpy-carry-unwind-crisis-momentum_QM5_41155_GBPJPY_CARRY_UNWIND_CRISIS_MOMENTUM_D1_D1_backtest.set",
+    "priority_track": true,
+    "cohort_size": 1,
+    "basket_symbol_count": 4,
+    "custom_history_archive_admission": "ACTIVE",
+    "custom_history_selected_archive_rows": 540
+  },
+  "verification": {
+    "spec_validation": "PASS",
+    "strategy_entry_validation": "PASS",
+    "static_build_gate": "PASS_WITH_ONE_REVIEWED_NON_BLOCKING_ADVISORY",
+    "strict_compile": "PASS_ZERO_ERRORS_ZERO_WARNINGS",
+    "json_parse": "PASS"
+  },
+  "safety": {
+    "manual_q02_dispatch": false,
+    "manual_tester_launch": false,
+    "terminal_processes_started_or_stopped": false,
+    "autotrading_toggled": false,
+    "t_live_controlled": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "task_id": "e8e61fe1-2589-4f97-adb7-7de16892f9e4",
+  "build_generation": 0,
+  "ea_id": "QM5_41155",
+  "slug": "gbpjpy-carry-unwind-crisis-momentum",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_41155_gbpjpy-carry-unwind-crisis-momentum",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_41155_gbpjpy-carry-unwind-crisis-momentum/QM5_41155_gbpjpy-carry-unwind-crisis-momentum.mq5",
+  "mq5_sha256": "355bf656e92b93298878dbd24822db76b17bc6db4c9eb5e124a37796682ed0a6",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_41155_gbpjpy-carry-unwind-crisis-momentum/QM5_41155_gbpjpy-carry-unwind-crisis-momentum.ex5",
+  "ex5_sha256": "cb934fa03c537c4160aa5b7a501b4beae2b5b2fc8bd3bfd69695a3eaa2c0cbea",
+  "magic_base": 411550000,
+  "symbols_registered": [
+    "GBPJPY.DWX"
+  ],
+  "symbols": [
+    "GBPJPY.DWX"
+  ],
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_41155_gbpjpy-carry-unwind-crisis-momentum/sets/QM5_41155_gbpjpy-carry-unwind-crisis-momentum_GBPJPY.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_41155_gbpjpy-carry-unwind-crisis-momentum/sets/QM5_41155_gbpjpy-carry-unwind-crisis-momentum_QM5_41155_GBPJPY_CARRY_UNWIND_CRISIS_MOMENTUM_D1_D1_backtest.set"
+  ],
+  "setfile_sha256": {
+    "QM5_41155_gbpjpy-carry-unwind-crisis-momentum_GBPJPY.DWX_D1_backtest.set": "f850fc1b9965584dad9ef7440d91c3182105120a08f29627b590e88161660756",
+    "QM5_41155_gbpjpy-carry-unwind-crisis-momentum_QM5_41155_GBPJPY_CARRY_UNWIND_CRISIS_MOMENTUM_D1_D1_backtest.set": "287ee2acea9ead357b9d029b218c93d7b8f3b2e9a8bf78976261efae8b3ffea2"
+  },
+  "basket_manifest_path": "C:/QM/repo/framework/EAs/QM5_41155_gbpjpy-carry-unwind-crisis-momentum/basket_manifest.json",
+  "basket_manifest_sha256": "4d7c08f8be16c6d5327588dcb7af0b086db7cd4101d3e90bc2d81a73a2e0ac43",
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_41155_gbpjpy-carry-unwind-crisis-momentum/SPEC.md",
+  "spec_md_sha256": "cd5fc299ef303ffd4f101ef27abdb3417a4ffd8783c3fc849e5472c5ddca9114",
+  "build_check_passed": true,
+  "build_check_warnings": 1,
+  "build_check_warning_classes": [
+    "BUILD_CHECK_DWX_ADVISORY_DWX_SWAP_USAGE_REVIEW"
+  ],
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_work_item_id": "7ea94446-82a8-4cf2-a9ee-51d5dc8e1ac1",
+  "compile_predecessor_work_item_id": null,
+  "compile_evidence_path": "D:/QM/reports/work_items/7ea94446-82a8-4cf2-a9ee-51d5dc8e1ac1/QM5_41155/COMPILE_EA/compile_evidence.json",
+  "compile_evidence_sha256": "73b3a5aaaa3d1532d3528788230e6d62e7acb4b68f0dcf74db936b1f9a64aec8",
+  "compile_verdict": "COMPILE_OK",
+  "build_check_report": "D:/QM/reports/framework/21/build_check_20260829_224258.json",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "blocked_reason": "",
+  "open_questions": [
+    "The governed build-only compile lane did not launch a tester; Q02 owns full-history trade-frequency evidence.",
+    "The static swap advisory is non-blocking: execution metadata validates availability and finiteness only; it never gates on swap sign or magnitude, so zero-swap .DWX tests remain eligible.",
+    "Only Q09 may determine realized portfolio correlation or diversification value."
+  ],
+  "built_at_utc": "2026-08-29T22:46:50Z"
+}
