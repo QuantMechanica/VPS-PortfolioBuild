@@ -101,6 +101,51 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             self.assertEqual(rows[0][0], "active")
             self.assertIn(rows[0][1], {"T1", "T2"})
 
+    def test_running_terminal_probe_precedes_claim_write_transaction(self) -> None:
+        """A slow process census must not own the SQLite writer lock."""
+
+        with self._root() as tmp:
+            root = (Path(tmp) / "farm").resolve()
+            self._insert_work_item(root, "wi-probe-order", "EURUSD.DWX", phase="P3")
+            probe_writes: list[str] = []
+
+            def probe_running_terminals() -> set[str]:
+                # Reproduce the incident shape in one process: the process probe
+                # opens a second connection and writes while claim_atomic is in
+                # flight.  Before the fix, claim_atomic had already executed
+                # BEGIN IMMEDIATE, so this exact second write raised
+                # "database is locked" and the later defer write failed too.
+                with sqlite3.connect(root / farmctl.DB_REL, timeout=0.01) as contender:
+                    contender.execute("PRAGMA busy_timeout=1")
+                    contender.execute("BEGIN IMMEDIATE")
+                    contender.execute(
+                        "UPDATE work_items SET updated_at=updated_at WHERE id=?",
+                        ("wi-probe-order",),
+                    )
+                    probe_writes.append("write_acquired")
+                    contender.rollback()
+                return set()
+
+            with (
+                patch.object(farmctl, "DEFAULT_ROOT", root),
+                patch.object(
+                    farmctl,
+                    "_news_calendar_preflight",
+                    return_value={"ok": True, "status": "VALID"},
+                ),
+                patch.object(
+                    farmctl,
+                    "_running_mt5_terminals",
+                    side_effect=probe_running_terminals,
+                ),
+                patch.object(terminal_worker, "SQLITE_WRITE_RETRIES", 1),
+            ):
+                result = terminal_worker.claim_atomic(root, "T1")
+
+            self.assertTrue(result.get("claimed"), result)
+            self.assertEqual(result["item"]["id"], "wi-probe-order")
+            self.assertEqual(probe_writes, ["write_acquired"])
+
     def test_generic_worker_skips_declared_dl089_matrix_row(self) -> None:
         with self._root() as tmp:
             root = Path(tmp) / "farm"

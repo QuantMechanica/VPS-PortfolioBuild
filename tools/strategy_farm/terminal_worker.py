@@ -295,6 +295,11 @@ SMOKE_TERMINAL_EXIT_GRACE_SECONDS = 300.0
 # Keep the short grace for true no-report exits, but give an explicit report latch
 # enough bounded time to finish evidence publication.
 SMOKE_VALID_REPORT_POSTPROCESS_GRACE_SECONDS = 1200.0
+# A runner process that disappears without a summary must not leave its parent
+# claim pinned merely because the portable terminal process is still resident.
+# Allow the normal report-publish window, then stop that slot and append a
+# retryable pending disposition rather than manufacturing a gate verdict.
+RUNNER_DEATH_REQUEUE_GRACE_SECONDS = 300.0
 DETACHED_TERMINAL_POLL_SECONDS = 2.0
 SQLITE_LOCK_BACKOFF_SECONDS = 10.0
 STALLDUMP_REQUEST_PATH = Path("D:/QM/reports/state/STALLDUMP_REQUEST")
@@ -1724,6 +1729,19 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
             "completed_claim_recovery": completed_claim_recovery,
         }
 
+    # Never run the PowerShell/CIM terminal census while BEGIN IMMEDIATE is
+    # open.  On 2026-08-29 that subprocess stalled inside the claim transaction;
+    # the same worker's pre-spawn write and every peer writer then exhausted
+    # their busy retries.  The census was already a fallible cached snapshot,
+    # so taking it immediately before the serialized claim preserves its
+    # fail-open contract without holding a SQLite writer lock across a process
+    # launch.
+    running_mt5_terminals = (
+        set(farmctl._running_mt5_terminals())
+        if root.resolve() == farmctl.DEFAULT_ROOT.resolve()
+        else set()
+    )
+
     def _claim() -> dict[str, Any]:
         farmctl.init_db(root)
         now = farmctl.utc_now()
@@ -1816,7 +1834,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                         "news_calendar_preflight": calendar_preflight,
                     }
 
-                if root.resolve() == farmctl.DEFAULT_ROOT.resolve() and terminal in farmctl._running_mt5_terminals():
+                if terminal in running_mt5_terminals:
                     conn.commit()
                     return {"claimed": False, "reason": "terminal_process_busy", "terminal": terminal}
 
@@ -2240,6 +2258,14 @@ def claim_specific_atomic(root: Path, terminal: str, item_id: str) -> dict[str, 
             "news_calendar_preflight": calendar_preflight,
         }
 
+    # See claim_atomic(): this census may spawn a slow CIM subprocess and must
+    # complete before the claim's BEGIN IMMEDIATE transaction is opened.
+    running_mt5_terminals = (
+        set(farmctl._running_mt5_terminals())
+        if root.resolve() == farmctl.DEFAULT_ROOT.resolve()
+        else set()
+    )
+
     def _claim() -> dict[str, Any]:
         farmctl.init_db(root)
         now = farmctl.utc_now()
@@ -2268,7 +2294,7 @@ def claim_specific_atomic(root: Path, terminal: str, item_id: str) -> dict[str, 
                         "item_id": active_terminal["id"],
                     }
 
-                if root.resolve() == farmctl.DEFAULT_ROOT.resolve() and terminal in farmctl._running_mt5_terminals():
+                if terminal in running_mt5_terminals:
                     conn.commit()
                     return {"claimed": False, "reason": "terminal_process_busy", "terminal": terminal}
 
@@ -4100,6 +4126,61 @@ def _defer_launch_fault(root: Path, item_id: str, terminal: str, spawn: dict[str
     }
 
 
+def _defer_runner_death(
+    root: Path,
+    item_id: str,
+    terminal: str,
+    spawn: dict[str, Any],
+    ran_seconds: float,
+) -> dict[str, Any]:
+    """Release a dead runner's claim without inventing pipeline evidence."""
+
+    now = farmctl.utc_now()
+
+    def _update() -> int:
+        with farmctl.connect(root) as conn:
+            row = conn.execute(
+                "SELECT payload_json FROM work_items "
+                "WHERE id=? AND status='active' AND claimed_by=?",
+                (item_id, terminal),
+            ).fetchone()
+            if row is None:
+                return 0
+            payload = _json_loads(row["payload_json"])
+            payload["prior_failure"] = "runner_process_died_without_summary"
+            payload["runner_death_at_iso"] = now
+            payload["runner_death_pid"] = spawn.get("pid")
+            payload["runner_death_seconds"] = round(ran_seconds, 2)
+            try:
+                prior_runner_deaths = max(
+                    0, int(payload.get("runner_death_count") or 0)
+                )
+            except (TypeError, ValueError):
+                prior_runner_deaths = 0
+            payload["runner_death_count"] = prior_runner_deaths + 1
+            _clear_stale_runtime_payload(payload)
+            cursor = conn.execute(
+                """
+                UPDATE work_items
+                SET status='pending',verdict=NULL,claimed_by=NULL,
+                    payload_json=?,updated_at=?
+                WHERE id=? AND status='active' AND claimed_by=?
+                """,
+                (json.dumps(payload, sort_keys=True), now, item_id, terminal),
+            )
+            conn.commit()
+            return cursor.rowcount
+
+    released = bool(_with_sqlite_retry(_update))
+    return {
+        "finished": True,
+        "status": "pending" if released else "unknown",
+        "verdict": None,
+        "reason": "runner_process_died_without_summary",
+        "claim_released": released,
+    }
+
+
 def _monitor_timeout_seconds(
     payload: dict[str, Any],
     default_timeout_seconds: int,
@@ -4166,11 +4247,33 @@ def _monitor_spawned_work_item(
     post_exit_watchdog: dict[str, Any] | None = None
     child_alive = True
     terminal_alive_after_child_exit = False
+    runner_dead_observed_at: float | None = None
     while time.monotonic() < deadline:
         child_alive = farmctl._pid_tree_exists(pid)
         terminal_alive_after_child_exit = (not child_alive) and _terminal_slot_running(root, terminal)
         if not child_alive and not terminal_alive_after_child_exit:
             break
+        if not child_alive and terminal_alive_after_child_exit:
+            runner_dead_observed_at = runner_dead_observed_at or time.monotonic()
+            if (
+                time.monotonic() - runner_dead_observed_at
+                >= RUNNER_DEATH_REQUEUE_GRACE_SECONDS
+                and not _work_item_has_summary_data(root, item["id"])
+            ):
+                _stop_terminal_slot_for_release(root, terminal)
+                return {
+                    "action": "runner_death_requeued",
+                    "item_id": item["id"],
+                    **_defer_runner_death(
+                        root,
+                        item["id"],
+                        terminal,
+                        spawn,
+                        time.monotonic() - spawn_started,
+                    ),
+                }
+        else:
+            runner_dead_observed_at = None
         if _STOP:
             return {"action": "shutdown_waiting_for_child", "item_id": item["id"], "pid": pid}
         ownership = _work_item_ownership(root, item["id"], terminal)
@@ -4297,6 +4400,19 @@ def _monitor_spawned_work_item(
     ran_seconds = time.monotonic() - spawn_started
     child_alive = farmctl._pid_tree_exists(pid)
     terminal_alive_after_child_exit = (not child_alive) and _terminal_slot_running(root, terminal)
+    if (
+        not child_alive
+        and not terminal_alive_after_child_exit
+        and ran_seconds >= LAUNCH_FAULT_MIN_SECONDS
+        and not _work_item_has_summary_data(root, item["id"])
+    ):
+        return {
+            "action": "runner_death_requeued",
+            "item_id": item["id"],
+            **_defer_runner_death(
+                root, item["id"], terminal, spawn, ran_seconds
+            ),
+        }
     if post_exit_watchdog is not None:
         # The wrapper was explicitly killed by this worker; its real return code
         # is unknown and must never be rewritten as success.
