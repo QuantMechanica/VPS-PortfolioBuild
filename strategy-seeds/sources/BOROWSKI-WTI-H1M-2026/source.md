@@ -7,6 +7,7 @@ status: approved_source_complete
 approved_by: OWNER commodity/energy portfolio mission
 approved_at: 2026-08-29
 source_approval: decisions/2026-08-29_wti_first_half_month_short_source_approval.md
+source_approval_amendment: decisions/2026-08-29_wti_first_half_month_short_source_approval_amendment_1.md
 primary_source_packet: strategy-seeds/sources/BOROWSKI-WTI-H2M-2016/source.md
 strategy_ids: [BOROWSKI-WTI-H1M-2026_S01]
 ---
@@ -49,7 +50,8 @@ WTI observation survives on the registered continuous-CFD carrier:
 - risk: `RISK_FIXED=1000`, `RISK_PERCENT=0`, `PORTFOLIO_WEIGHT=1`, one frozen
   `2.75*ATR(20,D1)` broker hard stop, no target;
 - safety: one position, positive-spread cap 2,500 points, both news axes OFF,
-  and framework Friday close enabled at broker hour 21.
+  and framework Friday close OFF so the approved half-month lifecycle is not
+  truncated by an unrelated weekly flatten.
 
 The first genuine month boundary may be dated 1, 2, or later after a weekend
 or market closure. Entry may not occur after normalized day 5; a late attach
