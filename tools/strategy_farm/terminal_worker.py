@@ -283,6 +283,12 @@ LOG_BOMB_JOURNAL_CAP_BYTES = LOG_BOMB_HARD_CEIL_BYTES  # back-compat alias (kill
 LOG_BOMB_CHECK_EVERY_ITERS = 5                # ~every 10s (loop sleeps 2s)
 SQLITE_WRITE_RETRIES = 8
 SQLITE_WRITE_RETRY_SLEEP_SECONDS = 0.05
+# Claim transactions deliberately keep the short XCU contention budget above.
+# Once a row is claimed, however, losing the worker's pre-spawn record write to
+# a pump burst wastes the claim cycle and forces a daemon respawn.  Give only
+# those post-claim writes a longer, still-bounded retry envelope.
+POST_CLAIM_SQLITE_WRITE_RETRIES = 20
+POST_CLAIM_SQLITE_WRITE_RETRY_SLEEP_SECONDS = 0.5
 # run_smoke can spend up to 240 seconds publishing a report after terminal_exit.
 # The outer worker therefore waits through that complete contract plus 60 seconds
 # of margin before treating the wrapper as stalled. A 60-second ceiling destroyed
@@ -380,6 +386,14 @@ def _with_sqlite_retry(fn):
         fn,
         attempts=SQLITE_WRITE_RETRIES,
         base_delay_seconds=SQLITE_WRITE_RETRY_SLEEP_SECONDS,
+    )
+
+
+def _with_post_claim_sqlite_retry(fn):
+    return retry_sqlite_busy(
+        fn,
+        attempts=POST_CLAIM_SQLITE_WRITE_RETRIES,
+        base_delay_seconds=POST_CLAIM_SQLITE_WRITE_RETRY_SLEEP_SECONDS,
     )
 
 
@@ -4522,7 +4536,7 @@ def _record_active_payload(
             conn.commit()
             return cursor.rowcount == 1
 
-    return bool(_with_sqlite_retry(_write))
+    return bool(_with_post_claim_sqlite_retry(_write))
 
 
 def _record_unspawned_terminal_state(
@@ -4547,7 +4561,7 @@ def _record_unspawned_terminal_state(
             conn.commit()
             return cursor.rowcount == 1
 
-    return bool(_with_sqlite_retry(_write))
+    return bool(_with_post_claim_sqlite_retry(_write))
 
 
 def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_seconds: int) -> dict[str, Any]:
@@ -4598,7 +4612,7 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
                 conn.commit()
                 return conn.execute("SELECT * FROM work_items WHERE id=?", (item["id"],)).fetchone()
 
-        refreshed = _with_sqlite_retry(_record_stale_preflight_clear)
+        refreshed = _with_post_claim_sqlite_retry(_record_stale_preflight_clear)
         if not refreshed:
             return {"action": "missing_item", "item_id": item["id"]}
         row = refreshed
@@ -4616,7 +4630,7 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
                 )
                 conn.commit()
 
-        _with_sqlite_retry(_record_adoption)
+        _with_post_claim_sqlite_retry(_record_adoption)
         existing_spawn = {
             "pid": existing_pid,
             "log_path": existing_payload.get("log_path"),
@@ -4884,7 +4898,7 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
             conn.commit()
 
     try:
-        _with_sqlite_retry(_record_spawn)
+        _with_post_claim_sqlite_retry(_record_spawn)
     except sqlite3.OperationalError as exc:
         if not _is_sqlite_locked(exc):
             raise
@@ -5164,7 +5178,7 @@ def _defer_item_after_sqlite_busy(
             return cursor.rowcount == 1
 
     try:
-        return bool(retry_sqlite_busy(_defer, attempts=12))
+        return bool(_with_post_claim_sqlite_retry(_defer))
     except sqlite3.OperationalError as defer_exc:
         if not _is_sqlite_locked(defer_exc):
             raise
