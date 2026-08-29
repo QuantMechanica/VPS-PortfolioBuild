@@ -76,6 +76,28 @@ def test_gate_contract_migration_is_idempotent_and_append_only() -> None:
         raise AssertionError("an existing gate contract stamp was mutable")
 
 
+def test_gate_contract_schema_steady_state_performs_no_write_or_ddl() -> None:
+    conn = _legacy_connection()
+    first = farmctl.ensure_work_item_gate_contract_schema(conn)
+    assert first == {"column_added": 1, "rows_backfilled": 0}
+    conn.commit()
+    denied = {
+        sqlite3.SQLITE_INSERT,
+        sqlite3.SQLITE_UPDATE,
+        sqlite3.SQLITE_DELETE,
+        sqlite3.SQLITE_ALTER_TABLE,
+        sqlite3.SQLITE_CREATE_TRIGGER,
+        sqlite3.SQLITE_DROP_TRIGGER,
+    }
+
+    def authorizer(action, _arg1, _arg2, _database, _source):
+        return sqlite3.SQLITE_DENY if action in denied else sqlite3.SQLITE_OK
+
+    conn.set_authorizer(authorizer)
+    second = farmctl.ensure_work_item_gate_contract_schema(conn)
+    assert second == {"column_added": 0, "rows_backfilled": 0}
+
+
 def test_backfill_honours_a_real_pipeline_version_column() -> None:
     conn = _legacy_connection(with_pipeline_version=True)
     conn.execute(

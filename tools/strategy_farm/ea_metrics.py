@@ -34,6 +34,10 @@ import json
 import os
 import re
 import sqlite3
+try:
+    from tools.strategy_farm.sqlite_busy import retry_sqlite_busy
+except ModuleNotFoundError:  # pragma: no cover - direct script execution
+    from sqlite_busy import retry_sqlite_busy  # type: ignore
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -471,7 +475,32 @@ def _mtime(path: str | None) -> float | None:
         return None
 
 
-def build(con: sqlite3.Connection, *, full: bool = False, ea: str | None = None) -> dict:
+_UPSERT_SQL = """INSERT INTO ea_metrics
+     (work_item_id, ea_id, phase, symbol, verdict, status,
+      is_ablation, parent_work_item_id,
+      net_profit, profit_factor, trades, drawdown_money, drawdown_pct,
+      sharpe, detail_json, source, evidence_path, evidence_mtime, extracted_at)
+   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+   ON CONFLICT(work_item_id) DO UPDATE SET
+     ea_id=excluded.ea_id, phase=excluded.phase, symbol=excluded.symbol,
+     verdict=excluded.verdict, status=excluded.status,
+     is_ablation=excluded.is_ablation,
+     parent_work_item_id=excluded.parent_work_item_id,
+     net_profit=excluded.net_profit, profit_factor=excluded.profit_factor,
+     trades=excluded.trades, drawdown_money=excluded.drawdown_money,
+     drawdown_pct=excluded.drawdown_pct, sharpe=excluded.sharpe,
+     detail_json=excluded.detail_json, source=excluded.source,
+     evidence_path=excluded.evidence_path, evidence_mtime=excluded.evidence_mtime,
+     extracted_at=excluded.extracted_at"""
+
+
+def build(
+    con: sqlite3.Connection,
+    *,
+    full: bool = False,
+    ea: str | None = None,
+    batch_size: int = 100,
+) -> dict:
     ensure_schema(con)
     con.row_factory = sqlite3.Row
     where = ["evidence_path IS NOT NULL"]
@@ -483,24 +512,52 @@ def build(con: sqlite3.Connection, *, full: bool = False, ea: str | None = None)
          f"FROM work_items WHERE {' AND '.join(where)}")
     rows = con.execute(q, params).fetchall()
 
-    existing: dict[str, float | None] = {}
+    existing: dict[str, tuple[Any, ...]] = {}
     if not full:
         emap = con.execute(
-            "SELECT work_item_id, evidence_mtime FROM ea_metrics"
+            "SELECT work_item_id,evidence_mtime,verdict,status,evidence_path,"
+            "ea_id,phase,symbol FROM ea_metrics"
             + (" WHERE ea_id = ?" if ea else ""),
             ([ea] if ea else []),
         ).fetchall()
-        existing = {r["work_item_id"]: r["evidence_mtime"] for r in emap}
+        existing = {
+            r["work_item_id"]: (
+                r["evidence_mtime"], r["verdict"], r["status"],
+                r["evidence_path"], r["ea_id"], r["phase"], r["symbol"],
+            )
+            for r in emap
+        }
 
     upserts = 0
     skipped = 0
     by_source: dict[str, int] = {}
     now = _utcnow()
+    batch_size = max(1, int(batch_size))
+    pending_upserts: list[tuple[Any, ...]] = []
+
+    def flush() -> None:
+        if not pending_upserts:
+            return
+        def _write_batch() -> None:
+            try:
+                con.executemany(_UPSERT_SQL, pending_upserts)
+                con.commit()
+            except Exception:
+                con.rollback()
+                raise
+
+        retry_sqlite_busy(_write_batch, attempts=12)
+        pending_upserts.clear()
+
     for r in rows:
         wid = r["id"]
         ev = r["evidence_path"]
         mt = _mtime(ev)
-        if (not full) and wid in existing and existing[wid] == mt and mt is not None:
+        row_watermark = (
+            mt, r["verdict"], r["status"], ev,
+            r["ea_id"], r["phase"], r["symbol"],
+        )
+        if (not full) and existing.get(wid) == row_watermark:
             skipped += 1
             continue
         head, detail, source = extract_one(r["phase"], ev)
@@ -512,33 +569,18 @@ def build(con: sqlite3.Connection, *, full: bool = False, ea: str | None = None)
             parent = pl.get("parent_work_item_id")
         except Exception:
             pass
-        con.execute(
-            """INSERT INTO ea_metrics
-                 (work_item_id, ea_id, phase, symbol, verdict, status,
-                  is_ablation, parent_work_item_id,
-                  net_profit, profit_factor, trades, drawdown_money, drawdown_pct,
-                  sharpe, detail_json, source, evidence_path, evidence_mtime, extracted_at)
-               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-               ON CONFLICT(work_item_id) DO UPDATE SET
-                 ea_id=excluded.ea_id, phase=excluded.phase, symbol=excluded.symbol,
-                 verdict=excluded.verdict, status=excluded.status,
-                 is_ablation=excluded.is_ablation,
-                 parent_work_item_id=excluded.parent_work_item_id,
-                 net_profit=excluded.net_profit, profit_factor=excluded.profit_factor,
-                 trades=excluded.trades, drawdown_money=excluded.drawdown_money,
-                 drawdown_pct=excluded.drawdown_pct, sharpe=excluded.sharpe,
-                 detail_json=excluded.detail_json, source=excluded.source,
-                 evidence_path=excluded.evidence_path, evidence_mtime=excluded.evidence_mtime,
-                 extracted_at=excluded.extracted_at""",
+        pending_upserts.append(
             (wid, r["ea_id"], r["phase"], r["symbol"], r["verdict"], r["status"],
              is_abl, parent,
              head.get("net_profit"), head.get("profit_factor"), head.get("trades"),
              head.get("drawdown_money"), head.get("drawdown_pct"), head.get("sharpe"),
              json.dumps(detail, ensure_ascii=False) if detail else None,
-             source, ev, mt, now),
+             source, ev, mt, now)
         )
         upserts += 1
-    con.commit()
+        if len(pending_upserts) >= batch_size:
+            flush()
+    flush()
     return {"scanned": len(rows), "upserts": upserts, "skipped": skipped,
             "by_source": by_source}
 

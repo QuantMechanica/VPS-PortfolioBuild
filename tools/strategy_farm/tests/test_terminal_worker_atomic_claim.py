@@ -2714,6 +2714,64 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             finally:
                 terminal_worker.farmctl.REPO_ROOT = old_repo_root
 
+    def test_dead_runner_without_summary_requeues_live_claim(self) -> None:
+        with self._root() as tmp:
+            root = (Path(tmp) / "farm").resolve()
+            self._insert_work_item(
+                root,
+                "wi-dead-runner",
+                "USDJPY.DWX",
+                phase="OPT_CENSUS",
+                status="active",
+                claimed_by="T3",
+                payload={"pid": 424242, "claimed_by_worker_pid": 999},
+            )
+            ticks = iter((0.0, 1.0, 2.0, 400.0, 401.0))
+            stopped = []
+            old_pid_tree_exists = terminal_worker.farmctl._pid_tree_exists
+            old_terminal_slot_running = terminal_worker._terminal_slot_running
+            old_summary = terminal_worker._work_item_has_summary_data
+            old_stop_slot = terminal_worker._stop_terminal_slot_for_release
+            old_monotonic = terminal_worker.time.monotonic
+            try:
+                terminal_worker.farmctl._pid_tree_exists = lambda _pid: False
+                terminal_worker._terminal_slot_running = lambda *_: True
+                terminal_worker._work_item_has_summary_data = lambda *_: False
+                terminal_worker._stop_terminal_slot_for_release = (
+                    lambda _root, terminal: stopped.append(terminal) or True
+                )
+                terminal_worker.time.monotonic = lambda: next(ticks)
+                result = terminal_worker._monitor_spawned_work_item(
+                    root,
+                    {"id": "wi-dead-runner", "phase": "OPT_CENSUS"},
+                    "T3",
+                    {"pid": 424242, "report_root": str(root / "reports")},
+                    {"pid": 424242, "claimed_by_worker_pid": 999},
+                    timeout_seconds=1000,
+                )
+            finally:
+                terminal_worker.farmctl._pid_tree_exists = old_pid_tree_exists
+                terminal_worker._terminal_slot_running = old_terminal_slot_running
+                terminal_worker._work_item_has_summary_data = old_summary
+                terminal_worker._stop_terminal_slot_for_release = old_stop_slot
+                terminal_worker.time.monotonic = old_monotonic
+
+            self.assertEqual(result["action"], "runner_death_requeued")
+            self.assertTrue(result["claim_released"])
+            self.assertEqual(stopped, ["T3"])
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute(
+                    "SELECT status,verdict,claimed_by,payload_json "
+                    "FROM work_items WHERE id='wi-dead-runner'"
+                ).fetchone()
+            self.assertEqual(row[:3], ("pending", None, None))
+            payload = json.loads(row[3])
+            self.assertEqual(
+                payload["prior_failure"],
+                "runner_process_died_without_summary",
+            )
+            self.assertNotIn("pid", payload)
+
 
 if __name__ == "__main__":
     unittest.main()

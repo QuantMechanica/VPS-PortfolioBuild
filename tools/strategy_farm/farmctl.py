@@ -1815,60 +1815,34 @@ def ensure_work_item_gate_contract_schema(conn: sqlite3.Connection) -> dict[str,
         "('v2','qm.gate-manifest/v2','v5-q00-q16-opt-2026-08-12')"
         for source in version_sources
     )
-    before = conn.total_changes
-    conn.execute(
-        f"""
-        UPDATE work_items
-        SET gate_contract_version = CASE
-            WHEN julianday(created_at) >= julianday(?) THEN 'v3'
-            WHEN {v2_predicate} THEN 'v2'
-            ELSE 'legacy'
-        END
-        WHERE gate_contract_version IS NULL
-           OR trim(gate_contract_version) = ''
-        """,
-        (GATE_CONTRACT_V3_BACKFILL_CUTOFF,),
+    needs_backfill = bool(
+        conn.execute(
+            "SELECT EXISTS(SELECT 1 FROM work_items "
+            "WHERE gate_contract_version IS NULL "
+            "OR trim(gate_contract_version)='' LIMIT 1)"
+        ).fetchone()[0]
     )
-    rows_backfilled = conn.total_changes - before
+    rows_backfilled = 0
+    if needs_backfill:
+        before = conn.total_changes
+        conn.execute(
+            f"""
+            UPDATE work_items
+            SET gate_contract_version = CASE
+                WHEN julianday(created_at) >= julianday(?) THEN 'v3'
+                WHEN {v2_predicate} THEN 'v2'
+                ELSE 'legacy'
+            END
+            WHERE gate_contract_version IS NULL
+               OR trim(gate_contract_version) = ''
+            """,
+            (GATE_CONTRACT_V3_BACKFILL_CUTOFF,),
+        )
+        rows_backfilled = conn.total_changes - before
 
     # A fallback at the storage boundary covers infrequent enqueue utilities
     # outside farmctl as well. Named farmctl paths also stamp explicitly.
     stamp = ACTIVE_GATE_CONTRACT_VERSION.replace("'", "''")
-    conn.execute(f"DROP TRIGGER IF EXISTS {_WORK_ITEM_GATE_CONTRACT_TRIGGER}")
-    conn.execute(
-        f"DROP TRIGGER IF EXISTS {_WORK_ITEM_GATE_CONTRACT_IMMUTABLE_TRIGGER}"
-    )
-    conn.execute(f"DROP TRIGGER IF EXISTS {_WORK_ITEM_PHASE_IMMUTABLE_TRIGGER}")
-    conn.execute(
-        f"DROP TRIGGER IF EXISTS {_WORK_ITEM_PAYLOAD_PROVENANCE_INSERT_TRIGGER}"
-    )
-    conn.execute(
-        f"DROP TRIGGER IF EXISTS {_WORK_ITEM_PAYLOAD_PROVENANCE_UPDATE_TRIGGER}"
-    )
-    conn.execute(
-        f"""
-        CREATE TRIGGER {_WORK_ITEM_GATE_CONTRACT_IMMUTABLE_TRIGGER}
-        BEFORE UPDATE OF gate_contract_version ON work_items
-        WHEN OLD.gate_contract_version IS NOT NULL
-         AND trim(OLD.gate_contract_version) <> ''
-         AND NEW.gate_contract_version IS NOT OLD.gate_contract_version
-        BEGIN
-            SELECT RAISE(ABORT, 'work_item gate_contract_version is append-only');
-        END
-        """
-    )
-    conn.execute(
-        f"""
-        CREATE TRIGGER {_WORK_ITEM_PHASE_IMMUTABLE_TRIGGER}
-        BEFORE UPDATE OF phase ON work_items
-        WHEN OLD.phase IS NOT NULL
-         AND trim(OLD.phase) <> ''
-         AND NEW.phase IS NOT OLD.phase
-        BEGIN
-            SELECT RAISE(ABORT, 'work_item phase is append-only; append a successor');
-        END
-        """
-    )
     # A payload which names its own phase or gate contract is provenance, not
     # mutable routing metadata.  Keep the storage columns and that embedded
     # provenance inseparable.  Rows without either optional payload field are
@@ -1893,6 +1867,39 @@ def ensure_work_item_gate_contract_schema(conn: sqlite3.Connection) -> dict[str,
         AND lower(trim(CAST(json_extract(NEW.payload_json, '$.gate_contract_version') AS TEXT)))
             <> 'qm.gate-manifest/' || lower(trim(NEW.gate_contract_version))
     """
+    trigger_statements = {
+        _WORK_ITEM_GATE_CONTRACT_IMMUTABLE_TRIGGER: f"""
+            CREATE TRIGGER {_WORK_ITEM_GATE_CONTRACT_IMMUTABLE_TRIGGER}
+            BEFORE UPDATE OF gate_contract_version ON work_items
+            WHEN OLD.gate_contract_version IS NOT NULL
+             AND trim(OLD.gate_contract_version) <> ''
+             AND NEW.gate_contract_version IS NOT OLD.gate_contract_version
+            BEGIN
+                SELECT RAISE(ABORT, 'work_item gate_contract_version is append-only');
+            END
+        """,
+        _WORK_ITEM_PHASE_IMMUTABLE_TRIGGER: f"""
+            CREATE TRIGGER {_WORK_ITEM_PHASE_IMMUTABLE_TRIGGER}
+            BEFORE UPDATE OF phase ON work_items
+            WHEN OLD.phase IS NOT NULL
+             AND trim(OLD.phase) <> ''
+             AND NEW.phase IS NOT OLD.phase
+            BEGIN
+                SELECT RAISE(ABORT, 'work_item phase is append-only; append a successor');
+            END
+        """,
+        _WORK_ITEM_GATE_CONTRACT_TRIGGER: f"""
+            CREATE TRIGGER {_WORK_ITEM_GATE_CONTRACT_TRIGGER}
+            AFTER INSERT ON work_items
+            WHEN NEW.gate_contract_version IS NULL
+              OR trim(NEW.gate_contract_version) = ''
+            BEGIN
+                UPDATE work_items
+                SET gate_contract_version = '{stamp}'
+                WHERE id = NEW.id;
+            END
+        """,
+    }
     for trigger_name, event in (
         (_WORK_ITEM_PAYLOAD_PROVENANCE_INSERT_TRIGGER, "INSERT"),
         (
@@ -1900,29 +1907,31 @@ def ensure_work_item_gate_contract_schema(conn: sqlite3.Connection) -> dict[str,
             "UPDATE OF phase, gate_contract_version, payload_json",
         ),
     ):
-        conn.execute(
-            f"""
+        trigger_statements[trigger_name] = f"""
             CREATE TRIGGER {trigger_name}
             BEFORE {event} ON work_items
             WHEN ({payload_phase_mismatch}) OR ({payload_version_mismatch})
             BEGIN
                 SELECT RAISE(ABORT, 'work_item columns contradict bound payload provenance');
             END
-            """
-        )
-    conn.execute(
-        f"""
-        CREATE TRIGGER {_WORK_ITEM_GATE_CONTRACT_TRIGGER}
-        AFTER INSERT ON work_items
-        WHEN NEW.gate_contract_version IS NULL
-          OR trim(NEW.gate_contract_version) = ''
-        BEGIN
-            UPDATE work_items
-            SET gate_contract_version = '{stamp}'
-            WHERE id = NEW.id;
-        END
         """
-    )
+
+    def _normalise_trigger_sql(value: str | None) -> str:
+        return re.sub(r"\s+", " ", str(value or "")).strip().lower()
+
+    existing_triggers = {
+        str(row[0]): str(row[1] or "")
+        for row in conn.execute(
+            "SELECT name,sql FROM sqlite_master WHERE type='trigger' "
+            "AND name IN (?,?,?,?,?)",
+            tuple(trigger_statements),
+        ).fetchall()
+    }
+    for trigger_name, statement in trigger_statements.items():
+        if _normalise_trigger_sql(existing_triggers.get(trigger_name)) == _normalise_trigger_sql(statement):
+            continue
+        conn.execute(f"DROP TRIGGER IF EXISTS {trigger_name}")
+        conn.execute(statement)
     return {"column_added": column_added, "rows_backfilled": rows_backfilled}
 
 
@@ -8919,22 +8928,41 @@ def _pid_exists(pid: Any) -> bool:
         pid_int = int(pid)
     except (TypeError, ValueError):
         return False
+    if pid_int <= 0:
+        return False
+    if sys.platform == "win32":
+        # This is a hot path: every resident worker checks its runner every two
+        # seconds. Spawning PowerShell/Get-Process here burned ~58% of one core
+        # per worker. Query the kernel directly without creating a child process.
+        try:
+            import ctypes
+
+            PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+            STILL_ACTIVE = 259
+            kernel32 = ctypes.windll.kernel32
+            handle = kernel32.OpenProcess(
+                PROCESS_QUERY_LIMITED_INFORMATION, False, pid_int
+            )
+            if not handle:
+                # Access denied proves an extant protected process; other errors
+                # mean the PID cannot be opened and is treated as absent.
+                return int(kernel32.GetLastError()) == 5
+            try:
+                exit_code = ctypes.c_ulong()
+                if not kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)):
+                    return True  # fail closed on an indeterminate live handle
+                return int(exit_code.value) == STILL_ACTIVE
+            finally:
+                kernel32.CloseHandle(handle)
+        except Exception:
+            return True  # can't tell — assume alive, defer to timeout path
     try:
-        _ps = subprocess.run(
-            [
-                "powershell.exe",
-                "-NoProfile",
-                "-Command",
-                f"if (Get-Process -Id {pid_int} -ErrorAction SilentlyContinue) {{'alive'}}",
-            ],
-            capture_output=True,
-            text=True,
-            creationflags=(subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0),
-            timeout=8,
-        )
-        return "alive" in (_ps.stdout or "")
-    except Exception:
-        return True  # can't tell — assume alive, defer to timeout path
+        os.kill(pid_int, 0)
+        return True
+    except ProcessLookupError:
+        return False
+    except (PermissionError, OSError):
+        return True
 
 
 def _pid_tree_exists(pid: Any) -> bool:

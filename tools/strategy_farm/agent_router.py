@@ -53,6 +53,11 @@ except ModuleNotFoundError:  # pragma: no cover - direct script execution
     import build_gate_hardening  # type: ignore
 
 try:
+    from tools.strategy_farm.sqlite_busy import retry_sqlite_busy
+except ModuleNotFoundError:  # pragma: no cover - direct script execution
+    from sqlite_busy import retry_sqlite_busy  # type: ignore
+
+try:
     from tools.strategy_farm import book_build_guard
 except ModuleNotFoundError:  # pragma: no cover - direct script execution
     import book_build_guard  # type: ignore
@@ -1875,7 +1880,7 @@ def _build_review_dispatch_gate(artifact_path: str | None) -> dict[str, Any]:
     }
 
 
-def update_task(
+def _update_task_once(
     root: Path,
     task_id: str,
     *,
@@ -2062,6 +2067,28 @@ def update_task(
     }
 
 
+def update_task(
+    root: Path,
+    task_id: str,
+    *,
+    state: str,
+    artifact_path: str | None = None,
+    verdict: str | None = None,
+) -> dict[str, Any]:
+    """Update one task through the shared reopen-and-retry busy policy."""
+
+    return retry_sqlite_busy(
+        lambda: _update_task_once(
+            root,
+            task_id,
+            state=state,
+            artifact_path=artifact_path,
+            verdict=verdict,
+        ),
+        attempts=40,
+    )
+
+
 def _task_artifact_paths(root: Path, row: sqlite3.Row, artifact_path: str | None) -> list[Path]:
     """Every artifact a task cites, as absolute paths.
 
@@ -2104,7 +2131,7 @@ except ImportError:  # imported as a package (tools.strategy_farm.agent_router)
     from tools.strategy_farm.validate_build_guardrails import validate_path as _validate_build_guardrails
 
 
-def close_review_task(
+def _close_review_task_once(
     root: Path,
     task_id: str,
     *,
@@ -2215,6 +2242,30 @@ def close_review_task(
         "verdict": verdict,
         "artifact_path": str(evidence) if evidence else artifact_path,
     }
+
+
+def close_review_task(
+    root: Path,
+    task_id: str,
+    *,
+    close_state: str,
+    verdict: str,
+    artifact_path: str | None = None,
+    note: str | None = None,
+) -> dict[str, Any]:
+    """Close one review through the shared reopen-and-retry busy policy."""
+
+    return retry_sqlite_busy(
+        lambda: _close_review_task_once(
+            root,
+            task_id,
+            close_state=close_state,
+            verdict=verdict,
+            artifact_path=artifact_path,
+            note=note,
+        ),
+        attempts=40,
+    )
 
 
 def _task_ea_id(payload: dict[str, Any]) -> str | None:
