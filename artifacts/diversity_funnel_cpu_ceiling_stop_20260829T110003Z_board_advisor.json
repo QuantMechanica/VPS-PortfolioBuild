@@ -1,0 +1,186 @@
+{
+  "artifact_type": "diversity_funnel_capacity_stop",
+  "schema": "qm.mission-capacity-stop/v1",
+  "generated_at_utc": "2026-08-29T11:01:47.0301689Z",
+  "generated_at_europe_berlin": "2026-08-29T13:01:47.0373410+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "378a86eab29f736145f2f06858d45b74f4c518c2",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING_BEFORE_BACKLOG_CLAIM_OR_MUTATION",
+  "capacity_policy": {
+    "paced_launch_gate": 1,
+    "paced_launch_gate_source": "D:/QM/strategy_farm/state/launch_gate_max.txt",
+    "hard_ceiling_percent": 97.0,
+    "binding_rule": "Stop this paced wake when either a five-sample average or maximum reaches the governed tester-admission ceiling; a later lower sample does not reopen the same wake.",
+    "hard_ceiling_source": "tools/strategy_farm/terminal_worker.py CPU_MAX_LOAD_PERCENT"
+  },
+  "capacity_samples": {
+    "binding_preflight": {
+      "method": "Five Processor(_Total) percent-processor-time samples collected by repeated Get-Counter calls with one-second spacing.",
+      "sample_times_utc": [
+        "2026-08-29T11:00:03.2176968Z",
+        "2026-08-29T11:00:05.5753082Z",
+        "2026-08-29T11:00:07.7067924Z",
+        "2026-08-29T11:00:09.8174815Z",
+        "2026-08-29T11:00:11.9280228Z"
+      ],
+      "samples_cpu_percent": [
+        100.0,
+        100.0,
+        100.0,
+        99.12,
+        95.72
+      ],
+      "sample_count": 5,
+      "average_cpu_percent": 98.968,
+      "maximum_cpu_percent": 100.0,
+      "minimum_cpu_percent": 95.72,
+      "average_binding": true,
+      "maximum_binding": true,
+      "ceiling_binding": true,
+      "triggers": [
+        "average_cpu_percent",
+        "maximum_cpu_percent"
+      ]
+    },
+    "post_stop_confirmation": {
+      "command": "Get-Counter \\\\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+      "window_end_utc": "2026-08-29T11:01:26.5784921Z",
+      "samples_cpu_percent": [
+        70.136836,
+        69.40201,
+        73.167721,
+        67.890452,
+        67.922571
+      ],
+      "sample_count": 5,
+      "sample_interval_seconds": 1,
+      "average_cpu_percent": 69.703918,
+      "maximum_cpu_percent": 73.167721,
+      "minimum_cpu_percent": 67.890452,
+      "ceiling_binding": false,
+      "effect_on_this_wake": "NONE_AFTER_STOP_TRIGGER"
+    }
+  },
+  "farm_db_snapshot": {
+    "command": "python tools/strategy_farm/farmctl.py work-items --status active",
+    "captured_at_utc": "2026-08-29T11:00:43+00:00",
+    "active_work_item_count": 3,
+    "active_phase_counts": {
+      "OPT_CENSUS": 1,
+      "Q10_NEWS": 2
+    },
+    "active_work_items": [
+      {
+        "id": "01c42ad6-168e-4808-bec5-b9b34f365a2f",
+        "ea_id": "QM5_10513",
+        "symbol": "XAUUSD.DWX",
+        "phase": "Q10_NEWS",
+        "claimed_by": "T6",
+        "attempt_count": 0,
+        "visible_factory_process": false
+      },
+      {
+        "id": "e2b29c28-b05a-4195-94c2-cc9d70c616f6",
+        "ea_id": "QM5_21507",
+        "symbol": "XAUUSD.DWX",
+        "phase": "Q10_NEWS",
+        "claimed_by": "T1",
+        "attempt_count": 0,
+        "visible_factory_process": true
+      },
+      {
+        "id": "ea89b0f7-e285-5932-a057-117f7597850a",
+        "ea_id": "QM5_41097",
+        "symbol": "USDJPY.DWX",
+        "phase": "OPT_CENSUS",
+        "claimed_by": "T3",
+        "attempt_count": 0,
+        "visible_factory_process": true
+      }
+    ]
+  },
+  "factory_snapshot": {
+    "command": "python tools/strategy_farm/farmctl.py mt5-slots",
+    "scanned_at_utc": "2026-08-29T11:00:43+00:00",
+    "running_factory_terminals": [
+      "T1",
+      "T3"
+    ],
+    "running_factory_terminal_count": 2,
+    "reserved_factory_terminals": [
+      "T1",
+      "T3"
+    ],
+    "active_terminal_reservation_count": 2,
+    "terminal_worker_daemon_count": 10,
+    "orphaned_factory_terminal_process_count": 0,
+    "duplicate_terminal_workers": {},
+    "visible_running_phase_counts": {
+      "OPT_CENSUS": 1,
+      "Q10_NEWS": 1
+    },
+    "t6_active_row_without_visible_process": true,
+    "t6_observation_disposition": "Point-in-time absence is not proof of staleness; no reclaim, repair, or re-enqueue was attempted.",
+    "t_live_observed_only": true,
+    "t_live_controlled": false,
+    "external_ftmo_terminal_observed_only": true
+  },
+  "selection_decision": {
+    "approved_backlog_ranked": false,
+    "farm_claim_created": false,
+    "ea_selected": null,
+    "reason": "The mission's explicit CPU stop condition bound before diversity ranking or claim. Existing active rows were consulted read-only to avoid collision."
+  },
+  "non_duplicate_delta": {
+    "preceding_immediate_receipt": "artifacts/qm5_41193_xtixng_fracd_source_build_cpu_stop_20260829.json",
+    "preceding_snapshot_utc": "2026-08-29T06:06:10+00:00",
+    "preceding_running_factory_terminals": [
+      "T2",
+      "T3",
+      "T6",
+      "T7",
+      "T8"
+    ],
+    "preceding_running_factory_terminal_count": 5,
+    "preceding_average_cpu_percent": 98.011,
+    "current_running_factory_terminals": [
+      "T1",
+      "T3"
+    ],
+    "current_running_factory_terminal_count": 2,
+    "current_active_work_item_count": 3,
+    "changed_state": "The visible paced tester roster contracted from five terminals to two and changed membership to T1/T3, while two long-running Q10/optimization tests still drove a fresh preflight to 100 percent. CPU then fell below the ceiling within roughly one minute without intervention, so the receipt records a transient but binding admission stop instead of asserting persistent saturation."
+  },
+  "actions_this_run": {
+    "build_skill_preflight_read": true,
+    "fresh_capacity_preflight_completed": true,
+    "farm_coordination_state_consulted_read_only": true,
+    "approved_backlog_claimed": false,
+    "diverse_ea_selected": false,
+    "infra_repair_started": false,
+    "new_edge_mechanized": false,
+    "card_or_g0_created": false,
+    "registry_or_magic_mutated": false,
+    "ea_source_binary_or_setfile_created": false,
+    "compile_build_check_smoke_or_backtest_started": false,
+    "q02_or_later_phase_enqueued": false,
+    "queue_priority_claim_status_or_verdict_mutated": false,
+    "dispatch_tick": false,
+    "terminal_or_worker_controlled": false,
+    "capacity_evidence_committed": true
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false,
+    "preexisting_worktree_changes_preserved": true
+  },
+  "worktree_hygiene": {
+    "preexisting_tracked_or_staged_change_count": 67,
+    "concurrent_unrelated_changes_present": true,
+    "unrelated_paths_staged_or_committed_by_this_run": false
+  },
+  "resume_contract": "A later paced wake must take a new five-sample capacity window. Only if both average and maximum are strictly below 97 percent may it rank and claim exactly one distinct diversity-first unit through the farm DB, follow the approved-card build path before fallbacks, keep backtest setfiles at RISK_FIXED, and enqueue Q02 without dispatching or touching portfolio/live surfaces."
+}
