@@ -103,3 +103,72 @@ EX5 commit-guard receipt yet; the six quarantine binaries under
 `D:/QM/strategy_farm/state/quarantine_ex5_20260828_restart/` must stay in
 place until that PASS lands. Recommend re-checking `compile-status` for this
 cohort on the next cycle before any quarantine deletion.
+
+## Second follow-up (Claude, router task `e173b7a8-9702-4ea1-9144-e3d153329db1`,
+2026-08-29 06:12-06:42 UTC restart, second pass)
+
+The prior handoff above did not reach `update-task --state REVIEW` before this
+headless cycle ended (consistent with the ongoing 08-28/08-29 restart-marathon
+pump instability) — the router still showed this task `IN_PROGRESS` when this
+second pass picked it up. Re-verified from scratch:
+
+- **All six `.mq5` fixes and the `QM5_41164_41191_COMPILE_FAIL_REPAIR_AUTHORITY`
+  addition to `compile_work_items.py` are now committed** at
+  `49dfc94a6` ("fix(build): repair EA_INDICATOR_BUFFER_UNBOUNDED for
+  QM5_41164/65/66/68/72/91, add narrow compile-fail source-repair authority",
+  2026-08-29T08:37:01+02:00 = 06:37:01 UTC) — landed automatically, most likely
+  via the factory's own Factory_ON clean-checkout artifact-autocommit preflight
+  ahead of a pump compile pass, not by any manual `git commit` from this agent.
+- Confirmed via direct DB query (`work_items` table) that **all six EAs now
+  carry a fresh `pending` `COMPILE_EA` work item** bound to the current (fixed)
+  source hash, distinct from their old terminal `COMPILE_FAIL` rows:
+  `QM5_41164→059d4860`, `QM5_41165→c71f00bd`, `QM5_41166→c495527e`,
+  `QM5_41168→a543f9c8`, `QM5_41172→8fd59f9d`, `QM5_41191→10b93944`. As of
+  06:41 UTC none has compiled yet (`status='pending'`, `ex5_sha256=NULL`); the
+  activation hold observed on the ones checked (`QM5_41166`, `QM5_41172`) is
+  `COMPILE_EA_WORKER_ROLLOUT_PENDING`, the normal paced-activation gate
+  (`compile_work_items.COMPILE_ACTIVATION_HOLD_CODE`, released by the farm's
+  own `release_compile_wave.py` cadence) — not a new refusal.
+- Restored the six approved Strategy Cards from the durable git mirror
+  (`strategy-seeds/cards/approved/QM5_4*_card.md`) into the runtime staging
+  copy `D:/QM/strategy_farm/artifacts/cards_approved/` that
+  `prebuild_validate_card()` actually reads (see
+  `feedback_cards_approved_dual_location` operating note: the two locations
+  drift independently). **New finding:** five of the six cards
+  (`41164`, `41165`, `41166`, `41168`, `41191`) carry a qualified
+  `r3_data_available` value (e.g. `PASS_WITH_CALENDAR_SYNCHRONIZATION_AND_CFD_BASIS_RISK`)
+  rather than the bare `PASS` that `R_STRICT_PASS_FIELDS` requires, so
+  `farmctl.py build-ea --card ...` (the ordinary new-task "card path") refuses
+  all five with `r3_data_available_not_PASS`. Only `QM5_41172` has a bare-PASS
+  R3 and cleanly produced a fresh `build_ea` task (`407940c1`) through that
+  path. I did **not** reword any card's R-gate evidence text to force a strict
+  match — that would fabricate evidence. The six EAs' compiles are proceeding
+  regardless because the source-repair authority route (`--source-repair-authority
+  "router_ops_issue:e173b7a8-..."`) authorizes an append-only compile
+  successor independently of a fresh card-bound `build_ea` row (it waives
+  `BUILD_TASK_EXISTS`/`WORK_ITEMS_EXIST`/`BOUND_SETFILE_HASH_EXISTS` the same
+  way the ~10 other named authorities already in `compile_work_items.py` do);
+  this is a real, standing gap between original-build card wording and the
+  strict new-build gate, not something this task needed to resolve, but worth
+  an OWNER/Claude policy note if these five cards are ever resubmitted through
+  the ordinary card path.
+- Found two additional stray duplicate `build_ea` rows for `QM5_41172`
+  (`bd718096`, `5c86aaca`) still `status='pending'` in the canonical DB despite
+  the first follow-up's claim of already having blocked six duplicates
+  including `5c86aaca` — the DB write likely did not survive the same
+  interruption that stopped that pass short of `update-task`. Re-blocked both
+  with the same payload-note convention, leaving `407940c1` as the sole open
+  `build_ea` row for `QM5_41172` (`_build_task_binding()` now returns
+  `AUTHORIZED` for it, confirmed live).
+- Did not run `farmctl.py pump` or any other broad dispatcher myself (out of
+  scope for this headless lane); did not touch the six quarantine binaries
+  under `D:/QM/strategy_farm/state/quarantine_ex5_20260828_restart/` since
+  none of the six has a passing `COMPILE_EA` verdict yet.
+
+**State at this handoff (06:41 UTC):** source defect fixed and committed;
+governed compile-fail source-repair authority committed and verified live;
+all six EAs enqueued as fresh pending `COMPILE_EA` work items awaiting the
+factory's normal paced worker activation. Nothing left blocked on missing
+authority. Next cycle should re-check `compile-status`/`work_items` for this
+cohort, and only delete the quarantine binaries once each EA's fresh
+`COMPILE_EA` row shows `verdict='COMPILE_OK'` with a committed EX5.
