@@ -1,0 +1,77 @@
+{
+  "schema_version": "qm.cpu-ceiling-stop/v1",
+  "recorded_at_utc": "2026-08-29T23:03:27Z",
+  "branch": "agents/board-advisor",
+  "mission": "Build one new low-frequency commodity sleeve and enqueue Q02",
+  "ea_id": "QM5_41207",
+  "ea_label": "QM5_41207_xauxag-corrbreak-rv",
+  "strategy": "weekly XAUUSD.DWX/XAGUSD.DWX correlation-break relative-value fade",
+  "stop_condition": {
+    "metric": "whole_host_cpu_percent",
+    "ceiling_percent": 97.0,
+    "sample_interval_seconds": 1,
+    "sample_count": 5,
+    "samples_percent": [
+      98.1522,
+      95.6296,
+      98.0481,
+      88.5983,
+      91.4071
+    ],
+    "average_percent": 94.3671,
+    "maximum_percent": 98.1522,
+    "triggered": true
+  },
+  "build_state": {
+    "build_task_id": "f9442c68-f3dc-4be2-8793-51b84d25df89",
+    "build_task_status": "pending",
+    "approved_card_sha256": "caf01cab7568dfaad486e18e8bfdf1b987a2abdddf7fa1fbdf6a38fa6300318a",
+    "successor_mq5_sha256": "ffbfc3e4845ccbc87c73adb6e6ddf6f8a1cd8e4ecec78b6382c96fd920b8812a",
+    "stale_predecessor_ex5_sha256": "957f2774a66c4afc501a310b518cf308d80170af03be688855f2ba6c7902493d",
+    "record_build_called": false
+  },
+  "compile_predecessor": {
+    "work_item_id": "673f05ea-b106-4de1-8607-3df23d51e2d6",
+    "status": "done",
+    "verdict": "COMPILE_OK",
+    "mq5_sha256": "5fb24a43d232fb4bfba613d02735ad4b8ad7a01a89824847fef013d3fb3c0f1e",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "build_check_result": "PASS",
+    "build_check_warnings": 1,
+    "advisory": "BUILD_CHECK_DWX_ADVISORY_DWX_SPREAD_FAILCLOSED",
+    "evidence_path": "D:/QM/reports/work_items/673f05ea-b106-4de1-8607-3df23d51e2d6/QM5_41207/COMPILE_EA/compile_evidence.json",
+    "evidence_sha256": "90f8a719f54d41efe13c2abd705d44ebc4d36e37c63bbb51c7f1a9a4e90cff2a"
+  },
+  "compile_successor": {
+    "work_item_id": "7628b4c2-f7de-4532-912f-aed19c367100",
+    "status": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "activation_hold_code": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "activation_hold_active": true,
+    "released_at": null,
+    "append_only_source_repair": true,
+    "source_repair_authority": "governed_compile_advisory:673f05ea-b106-4de1-8607-3df23d51e2d6",
+    "predecessor_work_item_ids": [
+      "673f05ea-b106-4de1-8607-3df23d51e2d6"
+    ]
+  },
+  "pipeline_state": {
+    "q02_enqueued": false,
+    "q02_work_item_id": null,
+    "tester_started": false,
+    "compile_successor_released": false,
+    "live_or_autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  },
+  "resume_condition": "Re-sample whole-host CPU below 97 percent, then release only successor compile work item 7628b4c2-f7de-4532-912f-aed19c367100 through the governed compile-wave ceremony. Record the build and enqueue exactly one logical-basket RISK_FIXED Q02 row only after a fresh zero-error, zero-warning compile and zero-warning build check.",
+  "commits": [
+    "e75f465f1",
+    "77434681d",
+    "4acdc7460",
+    "6d6aae926",
+    "958a743db"
+  ]
+}
