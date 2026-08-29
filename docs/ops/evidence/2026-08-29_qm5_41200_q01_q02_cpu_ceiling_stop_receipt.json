@@ -1,0 +1,107 @@
+{
+  "schema": "qm.q01-build-q02-ceiling-stop/v1",
+  "generated_at_utc": "2026-08-29T15:10:49.9521983Z",
+  "branch": "agents/board-advisor",
+  "pre_receipt_head": "2908051e5ec3f11d978b3a692658ea198e19c158",
+  "ea": {
+    "ea_id": "QM5_41200",
+    "slug": "wti-h1m-short",
+    "strategy_id": "BOROWSKI-WTI-H1M-2026_S01",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "magic": 412000000
+  },
+  "edge": {
+    "class": "commodity_energy_wti_first_half_month_calendar_short",
+    "frequency": "monthly",
+    "mechanic": "At the first genuine native-or-uniform-plus-one-day normalized broker-month D1 boundary, consume the month, sell WTI only when the normalized opening session is day 5 or earlier and attachment is within 180 minutes, then close at the first later normalized D1 session dated day 16 or beyond.",
+    "book_difference": "Direct WTI first-half calendar exposure rather than directional index, metal, or standalone XNG logic. Realized decorrelation is not claimed; Q09 alone owns that verdict.",
+    "dedup_verdict": "FUZZY_MATCH_RESOLVED_DISTINCT_WTI_FIRST_GENUINE_MONTH_BOUNDARY_SHORT_TO_FIRST_DAY_GE_16",
+    "dedup_receipt": "artifacts/qm5_wti_h1m_short_preallocation_dedup_20260829.json",
+    "dedup_receipt_sha256": "0B3DCBD710F229E0F2342D93E4F8205F2809D73F8C9A3451BB8529CE954314B4"
+  },
+  "governance": {
+    "source_packet": "strategy-seeds/sources/BOROWSKI-WTI-H1M-2026/source.md",
+    "source_packet_sha256": "56958E78F5514C2C8E4A42AF8D8995E0234C32512465F597BC40EFE8A99CDCF9",
+    "source_approval": "decisions/2026-08-29_wti_first_half_month_short_source_approval.md",
+    "source_approval_amendment": "decisions/2026-08-29_wti_first_half_month_short_source_approval_amendment_1.md",
+    "g0_decision": "decisions/2026-08-29_qm5_41200_wti_first_half_month_short_g0.md",
+    "g0_status": "APPROVED",
+    "approved_card": "strategy-seeds/cards/approved/QM5_41200_wti-h1m-short_card.md",
+    "approved_card_sha256": "AC75ED311B782CDADBC9A98CABE999950FE26D7404A81F488D51304FB6F62D82",
+    "ea_card": "framework/EAs/QM5_41200_wti-h1m-short/docs/strategy_card.md",
+    "ea_card_sha256": "AC75ED311B782CDADBC9A98CABE999950FE26D7404A81F488D51304FB6F62D82",
+    "canonical_and_ea_cards_byte_identical": true,
+    "runtime_card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41200_wti-h1m-short_card.md",
+    "runtime_card_sha256": "AC2B8785C4C3628C0D6EB7BF3450D372ADFF342808D168F433906831E7D2CACE",
+    "runtime_card_note": "The governed runtime approval refreshed only approval metadata for farm intake; the committed source-of-truth card and executable mechanic were not changed."
+  },
+  "build": {
+    "implemented": true,
+    "implementation_commit": "2908051e5ec3f11d978b3a692658ea198e19c158",
+    "build_task_id": "b88029a0-1032-4d8a-ad5f-159c69f46350",
+    "build_task_status_at_stop": "pending",
+    "compile_work_item_id": "c1daf6d8-9d50-40f3-b474-f33f945930fc",
+    "compile_work_item_status_at_stop": "pending",
+    "compile_activation_hold": null,
+    "compile_release_receipt": "artifacts/qm5_41200_compile_release_20260829.json",
+    "compile_release_receipt_sha256": "2152C291DA3E46791686B8D71698AB7964A2E028AACB1155CDCE43A38B42D624",
+    "compile_release_source_sha256": "8ECA5A97377258414BD891406388476F6795BE688FA720FCB62B2D16C48A0C2C",
+    "mq5": {
+      "path": "framework/EAs/QM5_41200_wti-h1m-short/QM5_41200_wti-h1m-short.mq5",
+      "sha256": "8ECA5A97377258414BD891406388476F6795BE688FA720FCB62B2D16C48A0C2C"
+    },
+    "setfile": {
+      "path": "framework/EAs/QM5_41200_wti-h1m-short/sets/QM5_41200_wti-h1m-short_XTIUSD.DWX_D1_backtest.set",
+      "sha256_at_stop": "C0420998D70DD488E55471EDE081FCD106A232906132650A1EE90E82BAF25FDB",
+      "build_hash": "pending_governed_compile",
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "portfolio_weight": 1
+    },
+    "reference_tests": "PASS: 11 tests",
+    "spec_validation": "PASS",
+    "card_schema_lint": "PASS",
+    "build_skill_guard": "PASS",
+    "raw_mq5_quarantine": "RAW_MQ5_SOURCE_ALLOWED",
+    "strict_build_check": "PENDING_GOVERNED_COMPILE_WORK_ITEM",
+    "compile": "PENDING_GOVERNED_COMPILE_WORK_ITEM",
+    "ex5": null,
+    "tester_launch_attempted": false
+  },
+  "capacity": {
+    "sampled_at_utc_approx": "2026-08-29T15:10:00Z",
+    "hard_ceiling_percent": 97.0,
+    "samples_percent": [
+      92.58329092956392,
+      96.71298808807023,
+      98.35648584011416,
+      98.73187634912881,
+      99.90245797901723
+    ],
+    "average_percent": 97.25741983717887,
+    "maximum_percent": 99.90245797901723,
+    "ceiling_binding": true
+  },
+  "q02": {
+    "enqueued": false,
+    "work_item_count_at_stop": 0,
+    "stop_reason": "CPU_CEILING",
+    "required_next_action": "Allow the already-released source-fresh compile row c1daf6d8-9d50-40f3-b474-f33f945930fc to complete under the resident paced worker. After a fresh below-ceiling window, bind and commit the governed EX5/setfile evidence and record build task b88029a0-1032-4d8a-ad5f-159c69f46350 once; its idempotent record path will enqueue exactly one XTIUSD.DWX D1 Q02 row."
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "t_live_controlled": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "manual_q02_backtest_launched": false,
+    "smoke_or_tester_launched_for_qm5_41200": false,
+    "compile_forced_outside_governed_worker": false
+  },
+  "mission_commits_before_receipt": [
+    "bcea29578",
+    "878a92250",
+    "a131e9622",
+    "2908051e5"
+  ]
+}

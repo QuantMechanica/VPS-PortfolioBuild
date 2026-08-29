@@ -1,0 +1,28 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "c1daf6d8-9d50-40f3-b474-f33f945930fc"
+  ],
+  "backup": {
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260829T150059Z_7f8acb1c.sqlite",
+    "sha256": "f513a7b164d64bcab1a83ba7b7d7318745df38569c9a7763661a8b7e1b14693f"
+  },
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "8eca5a97377258414bd891406388476f6795be688fa720fcb62b2d16c48a0c2c",
+      "ea_id": "QM5_41200",
+      "ea_label": "QM5_41200_wti-h1m-short",
+      "expected_mq5_sha256": "8eca5a97377258414bd891406388476f6795be688fa720fcb62b2d16c48a0c2c",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41200_wti-h1m-short\\QM5_41200_wti-h1m-short.mq5",
+      "work_item_id": "c1daf6d8-9d50-40f3-b474-f33f945930fc"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-08-29T15:05:21+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "c1daf6d8-9d50-40f3-b474-f33f945930fc"
+}
