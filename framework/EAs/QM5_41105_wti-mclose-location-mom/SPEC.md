@@ -10,7 +10,7 @@
 
 **Author:** Codex
 
-**Last revised:** 2026-08-22
+**Last revised:** 2026-08-29
 
 ## 1. Strategy Logic
 
@@ -55,7 +55,15 @@ All baseline values are locked; no parameter sweep is authorized.
 - Magic slot: 0; governed magic `411050000` after allocation.
 - No companion symbol or external runtime dependency.
 
-## 4. Expected Behaviour
+## 4. Timeframe
+
+- Exact D1 host and signal timeframe.
+- Decision cadence is the first tradable normalized D1 bar of each new
+  broker-calendar month, within the locked 180-minute attachment window.
+- Formation and lifecycle use complete broker-calendar months only; no
+  intraday or current-month price enters the signal.
+
+## 5. Expected Behaviour
 
 - Approximately 6-10 completed positions per full post-warm-up year; Q02
   retires below five/year.
@@ -65,7 +73,7 @@ All baseline values are locked; no parameter sweep is authorized.
 - Friday close and both news axes disabled for the monthly native-price
   baseline.
 
-## 5. Source Citation
+## 6. Source Citation
 
 Moskowitz, Ooi, and Pedersen (2012), "Time Series Momentum," *Journal of
 Financial Economics* 104(2), 228-250, DOI
@@ -78,7 +86,7 @@ The complete evidence boundary is
 approved card is
 `strategy-seeds/cards/approved/QM5_41105_wti-mclose-location-mom_card.md`.
 
-## 6. Risk Model
+## 7. Risk Model
 
 Backtests use `RISK_FIXED=1000`, `RISK_PERCENT=0`, and
 `PORTFOLIO_WEIGHT=1`. The EA uses no target, retry, scale-in, grid,
@@ -87,7 +95,7 @@ martingale, pyramid, partial close, or external data.
 No live setfile, live authorization, deploy manifest, `T_Live` change,
 portfolio admission, correlation waiver, or portfolio-gate change exists.
 
-## 7. Framework Alignment
+## 8. Framework Alignment
 
 - No-Trade: exact host/D1/EA/slot/input, label, month, history, spread, quote,
   ATR, fixed-risk, and consumed-month guards.
@@ -97,8 +105,9 @@ portfolio admission, correlation waiver, or portfolio-gate change exists.
   gates.
 - Close: framework close reason, broker stop, and kill switch.
 
-## 8. Revision History
+## 9. Revision History
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-08-22 | Initial scaffold from approved Q00 card | Magic allocation pending |
+| v1 | 2026-08-22 | Initial scaffold from approved Q00 card | Magic `411050000` allocated |
+| v2 | 2026-08-29 | Implemented the approved baseline and deterministic reference checks | Q01 validation pending |
