@@ -3,16 +3,16 @@
 ; ea_id:        41163
 ; ea_slug:      williams-18ma-outside-bar-entry-d1-opt
 ; ea_version:   v5.0
-; set_version:  s20260826-001
+; set_version:  s20260829-001
 ; symbol:       USDCAD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   b1c9d16bdca7eda9f3cb963e2be6af5fdfb23dc4c36b9011d7f1fd0ededa4529
+; build_hash:   08131429863b90c0408629e041594861dfc819598ae44bb124700869090f38d0
 ; author:       Development
-; date:         2026-08-26
+; date:         2026-08-29
 ;==========================================================
 qm_ea_id=41163
 qm_magic_slot_offset=0

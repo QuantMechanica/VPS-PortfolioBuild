@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   c92cf3410776dae12aeefc6f1e46ea0b401b06f3e14fa558ce7b3b0710164f25
 ; author:       Development
 ; date:         2026-08-29
 ;==========================================================
@@ -19,17 +19,6 @@ qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-qm_rng_seed=42
-; Card-exact price signal: both framework news axes are OFF.
-qm_news_temporal=0
-qm_news_compliance=0
-qm_news_stale_max_hours=336
-qm_news_min_impact=high
-qm_news_mode_legacy=0
-; The approved 10-D1-bar exit is authoritative; no Friday override.
-qm_friday_close_enabled=false
-qm_friday_close_hour_broker=21
-qm_stress_reject_probability=0.0
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_41197_connors-rsi2-mean-reversion-opt.md
 strategy_rsi_period=2
@@ -41,11 +30,3 @@ strategy_sma_period=200
 strategy_atr_period=14
 strategy_atr_sl_mult=2.0
 strategy_max_holding_bars=10
-
-; DL-089 pattern measurement surface (neutral control defaults)
-opt_pp_buy1=0
-opt_pp_buy2=0
-opt_pp_buy3=0
-opt_pp_sell1=0
-opt_pp_sell2=0
-opt_pp_sell3=0
