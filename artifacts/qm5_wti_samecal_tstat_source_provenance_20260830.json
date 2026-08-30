@@ -1,0 +1,43 @@
+{
+  "schema": "qm.local-source-provenance/v1",
+  "candidate_slug": "wti-samecal-tstat",
+  "source_id": "KELOHARJU-RCORE-WTI-SAMECAL-TSTAT-2026",
+  "strategy_id": "KELOHARJU-RCORE-WTI-SAMECAL-TSTAT-2026_S01",
+  "recorded_at_utc": "2026-08-30T02:35:29Z",
+  "approval": {
+    "path": "decisions/2026-08-30_wti_same_calendar_tscore_source_approval.md",
+    "commit": "a2be522599b3e48f87a295af3aa9447e9a3d44d6",
+    "sha256": "4482832DB97AA97E35BD01B7184635C9D4213D1042E29937A98C27D40EF425EB",
+    "byte_count": 8524,
+    "line_count": 160
+  },
+  "source_packet": {
+    "path": "strategy-seeds/sources/KELOHARJU-RCORE-WTI-SAMECAL-TSTAT-2026/source.md",
+    "sha256": "B8D1DAEE2336DC0504642AE630137E5603F1BCA1662E7D5F2A0455B3A2AD7846",
+    "byte_count": 8523,
+    "line_count": 170
+  },
+  "complete_read_records": [
+    {
+      "path": "strategy-seeds/sources/KELOHARJU-RETSEAS-2016/source.md",
+      "source_id": "KELOHARJU-RETSEAS-2016",
+      "sha256": "54E6036035D146BB080A0DDF4A16B378C187655A3834DF86329F7B2D319875F0",
+      "byte_count": 9245,
+      "line_count": 174,
+      "role": "peer-reviewed same-calendar commodity information, explicit crude-oil membership, monthly renewal, and five-year floor"
+    },
+    {
+      "url": "https://github.com/wch/r-source/blob/bac583951b728e97b9786804d3b4081f0fe18df5/src/library/stats/R/t.test.R",
+      "repository": "wch/r-source",
+      "commit": "bac583951b728e97b9786804d3b4081f0fe18df5",
+      "blob_sha": "2c1e8d19a3150978e1b56f3ee8985f43a17382f6",
+      "read_scope": "complete",
+      "route_evidence": "artifacts/qm5_wti_samecal_tstat_source_route_20260830.json",
+      "role": "primary-software one-sample mean, n-1 variance, standard-error, and t-score arithmetic only"
+    }
+  ],
+  "dedup_receipt": "artifacts/qm5_wti_samecal_tstat_preallocation_dedup_20260830.json",
+  "retrieval_mode": "complete read of the governed repository packet plus one deterministic GitHub-app primary-software read",
+  "raw_public_text_persisted": false,
+  "claim_boundary": "The exact absolute-WTI same-calendar one-standard-error gate is a transparent QM mechanization. No source performance, significance, density, cost, futures-CFD equivalence, decorrelation, or portfolio result transfers."
+}
