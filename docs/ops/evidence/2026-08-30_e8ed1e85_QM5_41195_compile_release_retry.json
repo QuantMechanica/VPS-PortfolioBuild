@@ -1,0 +1,12 @@
+{
+  "backup_path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260830T083039Z_ec52a138.sqlite",
+  "database_event": {
+    "event": "compile_rollout_hold_released",
+    "event_id": 380706,
+    "release_note": "e8ed1e85 exact QM5_41195 repair successor after stale worker recheck",
+    "ts": "2026-08-30T08:31:19+00:00",
+    "work_item_id": "7b107d43-261d-4cd6-9c91-280e056a9bf9"
+  },
+  "note": "The original release process committed the exact-row hold release and backup, but its stdout receipt was interrupted before it was written. This reconstruction records the durable canonical database event without asserting unobserved fields.",
+  "schema_version": "qm.compile-ea-release-reconstruction/v1"
+}

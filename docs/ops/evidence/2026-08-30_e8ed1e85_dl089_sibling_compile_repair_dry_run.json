@@ -1,0 +1,38 @@
+{
+  "applied": false,
+  "deferred": [
+    {
+      "ea_id": "QM5_1537",
+      "machine_reason": "measurement Q02 is terminal non-PASS: b7b3a702-7619-54a5-a164-b7e897b63ac2 done/INFRA_FAIL",
+      "symbol": "XAGUSD.DWX",
+      "work_item_id": "c41e2606-3af1-5766-9bb7-18de8a763a18"
+    }
+  ],
+  "maintained": [],
+  "materialized": [],
+  "matrix_runner_revision": "dl089-matrix-runner-v1",
+  "pair_mode": "BOUNDED_PROGRAMS",
+  "priority_window_cap": 8,
+  "program_slots": 4,
+  "q02_prerequisites": [
+    {
+      "created": false,
+      "measurement_ea_id": "QM5_41195",
+      "q12_work_item_id": "c41e2606-3af1-5766-9bb7-18de8a763a18",
+      "status": "done",
+      "verdict": "INFRA_FAIL",
+      "work_item_id": "b7b3a702-7619-54a5-a164-b7e897b63ac2"
+    },
+    {
+      "created": false,
+      "measurement_ea_id": "QM5_41196",
+      "q12_work_item_id": "99e7e9db-d9a7-514c-b78d-c14e98ebec5d",
+      "status": "pending",
+      "verdict": null,
+      "work_item_id": "df3a1f1c-4024-556f-88fa-e78821779be8"
+    }
+  ],
+  "recoveries": [],
+  "schema": "qm.dl089-matrix-service/v1",
+  "slot_owners": []
+}

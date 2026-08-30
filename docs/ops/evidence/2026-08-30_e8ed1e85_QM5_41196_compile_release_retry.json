@@ -1,0 +1,28 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "57e3a1e7-f8ab-4a4c-9ddb-7f29fdee0acb"
+  ],
+  "backup": {
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260830T083653Z_3ae44f38.sqlite",
+    "sha256": "dda9a96e2ef2d02e1c0d9043aa2c2093a040a2bf0b11c751c78957c0ab6ec55d"
+  },
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "b56522fa57bc82c84df92488c8ca5f3c0afd52c65524ce0b57ec03db46525df9",
+      "ea_id": "QM5_41196",
+      "ea_label": "QM5_41196_qs-kama-trend-xau-opt",
+      "expected_mq5_sha256": "b56522fa57bc82c84df92488c8ca5f3c0afd52c65524ce0b57ec03db46525df9",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41196_qs-kama-trend-xau-opt\\QM5_41196_qs-kama-trend-xau-opt.mq5",
+      "work_item_id": "57e3a1e7-f8ab-4a4c-9ddb-7f29fdee0acb"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-08-30T08:37:19+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "57e3a1e7-f8ab-4a4c-9ddb-7f29fdee0acb"
+}

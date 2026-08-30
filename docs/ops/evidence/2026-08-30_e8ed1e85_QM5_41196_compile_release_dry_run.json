@@ -1,0 +1,19 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "c115f35932e43360d5cc87cec004fa693699c3d3552f5ec83db523a51a02a604",
+      "ea_id": "QM5_41196",
+      "ea_label": "QM5_41196_qs-kama-trend-xau-opt",
+      "expected_mq5_sha256": "c115f35932e43360d5cc87cec004fa693699c3d3552f5ec83db523a51a02a604",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41196_qs-kama-trend-xau-opt\\QM5_41196_qs-kama-trend-xau-opt.mq5",
+      "work_item_id": "a64d8664-3c86-4fe4-9ece-ba4f0243aab0"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "a64d8664-3c86-4fe4-9ece-ba4f0243aab0"
+}
