@@ -1,0 +1,55 @@
+{
+  "task_id": "1fff4fb6-e5dc-46b6-9a0f-ffd479698b00",
+  "build_generation": 0,
+  "ea_id": "QM5_41213",
+  "slug": "xauxag-samecal-signscore",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_41213_xauxag-samecal-signscore",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_41213_xauxag-samecal-signscore/QM5_41213_xauxag-samecal-signscore.mq5",
+  "mq5_sha256": "14a4a7068a771f1c047edfe59a156c2ae739648d4f820e3747ced74644059dc1",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_41213_xauxag-samecal-signscore/QM5_41213_xauxag-samecal-signscore.ex5",
+  "ex5_sha256": "cedd93aca2559e631435281eea4e5623f846a9e8a05108160181b4d0a17e5903",
+  "magic_base": 412130000,
+  "symbols_registered": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_41213_xauxag-samecal-signscore/sets/QM5_41213_xauxag-samecal-signscore_QM5_41213_XAU_XAG_SAMECAL_SIGNSCORE_D1_D1_backtest.set"
+  ],
+  "setfile_sha256": {
+    "QM5_41213_xauxag-samecal-signscore_QM5_41213_XAU_XAG_SAMECAL_SIGNSCORE_D1_D1_backtest.set": "144f0a34c23b0c9604524da0ba7d75b7923173f24fdc3620c07424bf66fc9fa5"
+  },
+  "basket_manifest_path": "C:/QM/repo/framework/EAs/QM5_41213_xauxag-samecal-signscore/basket_manifest.json",
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_41213_xauxag-samecal-signscore/SPEC.md",
+  "spec_md_sha256": "f94ed57bf598a55a01fd4c4ffcb8dea58ad4d3d8de96bcde0422e4c85584f763",
+  "build_check_passed": true,
+  "build_check_failures": 0,
+  "build_check_warnings": 1,
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_work_item_id": "3926b8df-f21d-4cdf-8992-7d5d557a94fe",
+  "compile_predecessor_work_item_id": null,
+  "compile_evidence_path": "D:/QM/reports/work_items/3926b8df-f21d-4cdf-8992-7d5d557a94fe/QM5_41213/COMPILE_EA/compile_evidence.json",
+  "compile_evidence_sha256": "3f44da5683c17624ae7f0307c9f7fbf9b3364023b372fad26771536b9f7def24",
+  "compile_verdict": "COMPILE_OK",
+  "build_check_report": "D:/QM/reports/framework/21/build_check_20260830_052519.json",
+  "build_check_report_sha256": "5eb9852bd0e42412fcc1fe97fe968a032f5a046b711771d81c2f965d6fa1be6b",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "blocked_reason": "",
+  "open_questions": [
+    "The build-only lane did not launch a tester; Q02 owns frequency and package-level execution evidence.",
+    "Only Q09 may determine realized portfolio correlation or diversification value."
+  ],
+  "built_at_utc": "2026-08-30T05:27:57Z"
+}

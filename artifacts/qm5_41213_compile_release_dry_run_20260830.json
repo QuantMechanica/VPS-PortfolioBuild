@@ -1,0 +1,19 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "14a4a7068a771f1c047edfe59a156c2ae739648d4f820e3747ced74644059dc1",
+      "ea_id": "QM5_41213",
+      "ea_label": "QM5_41213_xauxag-samecal-signscore",
+      "expected_mq5_sha256": "14a4a7068a771f1c047edfe59a156c2ae739648d4f820e3747ced74644059dc1",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41213_xauxag-samecal-signscore\\QM5_41213_xauxag-samecal-signscore.mq5",
+      "work_item_id": "3926b8df-f21d-4cdf-8992-7d5d557a94fe"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "3926b8df-f21d-4cdf-8992-7d5d557a94fe"
+}

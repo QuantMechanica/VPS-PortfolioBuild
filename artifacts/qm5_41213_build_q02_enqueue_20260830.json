@@ -1,0 +1,190 @@
+{
+  "schema": "qm.new-commodity-sleeve-build-q02/v1",
+  "generated_at_utc": "2026-08-30T05:30:00Z",
+  "branch": "agents/board-advisor",
+  "pre_receipt_head": "936127a996d265121408e5dcf9f101827b5b002e",
+  "mission_outcome": "BUILT_COMPILE_OK_Q02_ENQUEUED_CPU_CLEAR",
+  "ea": {
+    "ea_id": "QM5_41213",
+    "slug": "xauxag-samecal-signscore",
+    "strategy_id": "KELOHARJU-PAPAILIAS-RCORE-XAUXAG-SAMECAL-SIGNSCORE-2026_S01",
+    "logical_symbol": "QM5_41213_XAU_XAG_SAMECAL_SIGNSCORE_D1",
+    "host_symbol": "XAUUSD.DWX",
+    "companion_symbol": "XAGUSD.DWX",
+    "timeframe": "D1",
+    "magics": [
+      412130000,
+      412130001
+    ]
+  },
+  "edge": {
+    "class": "xau_xag_up_to_ten_year_same_calendar_relative_bernoulli_sign_score_seasonality",
+    "frequency": "monthly",
+    "mechanic": "At the first normalized host D1 broker-month transition, scan the same calendar month in exact years Y-1 through Y-10, retain at least five synchronized XAU-minus-XAG log-return pairs, map each nonnegative pair to one and each negative pair to zero, compute score=(2*x-n)/sqrt(n), and hold opposite metal legs only when the score is strictly outside plus or minus 1.0 with a 1e-10 tolerance.",
+    "book_difference": "The candidate observes binary relative gold-versus-silver calendar pressure and owns opposite XAU/XAG legs, rather than an outright index, metal, or energy position. Market-neutral-style construction is an objective, not proof of dollar, beta, volatility, factor, market, or portfolio neutrality; Q09 remains the realized-correlation authority.",
+    "dedup_verdict": "FUZZY_MATCH_RESOLVED_DISTINCT_XAUXAG_SAMECAL_RELATIVE_BERNOULLI_SIGN_SCORE_GATE_MONTHLY_BASKET",
+    "dedup_receipt": "artifacts/qm5_xauxag_samecal_signscore_preallocation_dedup_20260830.json",
+    "dedup_receipt_sha256": "4f4932048d4ae37d7e9ed6cc691fbaee9cd418030c71b46c60f4a4a1af765776",
+    "dedup_scan": {
+      "registry_identities": 4712,
+      "cards": 1358,
+      "strategy_wiki_nodes": 45,
+      "exact_matches": 0
+    },
+    "fuzzy_neighbors": [
+      "QM5_20186 raw-mean XAU/XAG same-calendar basket",
+      "QM5_41210 magnitude-and-standard-error XAU/XAG same-calendar basket",
+      "QM5_41212 single-WTI same-calendar sign-score"
+    ],
+    "locked_disagreements": [
+      {
+        "observations": [0.09, -0.01, -0.01, -0.01, -0.01],
+        "raw_mean_direction": "BUY_XAU_SELL_XAG",
+        "sign_score_direction": "SELL_XAU_BUY_XAG",
+        "interpretation": "One positive outlier cannot overturn four negative relative signs."
+      },
+      {
+        "observations": [0.001, 0.001, 0.001, 0.001, -0.1],
+        "sign_score_direction": "BUY_XAU_SELL_XAG",
+        "t_statistic_direction": "FLAT",
+        "interpretation": "Sign imbalance can pass while magnitude dispersion keeps the t-statistic sibling flat."
+      }
+    ]
+  },
+  "governance": {
+    "source_packet": "strategy-seeds/sources/KELOHARJU-PAPAILIAS-RCORE-XAUXAG-SAMECAL-SIGNSCORE-2026/source.md",
+    "source_packet_sha256": "5bc8f9dcf17ba58cb33b1b7e0437ef2e40e6bcb8c61fac1ad243bf4b89e3561b",
+    "source_provenance": "artifacts/qm5_xauxag_samecal_signscore_source_provenance_20260830.json",
+    "source_provenance_sha256": "c4cd49358eb1c1811385f2a1adf187639b8dbcaf6b0cef5e98a5cfd10052caa4",
+    "source_approval": "decisions/2026-08-30_xauxag_same_calendar_sign_score_source_approval.md",
+    "source_approval_sha256": "53a49b6fdbadecb57e561849b4d2c566c3fea2f3d57d7d86a22b62df1426ad43",
+    "g0_decision": "decisions/2026-08-30_qm5_41213_xauxag_same_calendar_sign_score_g0.md",
+    "g0_decision_sha256": "4d160d49c17760a1d4a04af220b8c5be313f71dfc8f7671ec55762a17629c2fc",
+    "g0_status": "APPROVED",
+    "approved_card": "strategy-seeds/cards/approved/QM5_41213_xauxag-samecal-signscore_card.md",
+    "approved_card_sha256": "43271012d2b56cc1409bf488a4957d7fdfd9807cac765c2e44b023f1f7e9cdf4",
+    "runtime_card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_41213_xauxag-samecal-signscore_card.md",
+    "runtime_card_sha256": "fa33c076c0b20cb1ecd7a00c0f7c24186dfd2fdc28715fa0577c80f690f91279",
+    "magic_allocation_receipt": "artifacts/qm5_41213_magic_allocation_20260830.json",
+    "magic_allocation_receipt_sha256": "4d9906b12783377c3d61ac4a9bee7b7c302d373836d66bc7c4d3ece4bd8d5cdb",
+    "source_basis": "Three complete governed peer-reviewed source packets plus complete commit-pinned R Core primary-software provenance; no performance or correlation claim transfers to the exact QM conjunction."
+  },
+  "build": {
+    "implementation_commit": "936127a996d265121408e5dcf9f101827b5b002e",
+    "build_task_id": "1fff4fb6-e5dc-46b6-9a0f-ffd479698b00",
+    "build_task_status": "done",
+    "build_result": "artifacts/qm5_41213_build_result_20260830.json",
+    "build_result_sha256": "db7951bef6605e89d3a7b14a8569e0afdd7f03bd6cb4ac00be0bcad5c3f65ef6",
+    "compile_work_item_id": "3926b8df-f21d-4cdf-8992-7d5d557a94fe",
+    "compile_work_item_status": "done",
+    "compile_verdict": "COMPILE_OK",
+    "compile_release_dry_run": "artifacts/qm5_41213_compile_release_dry_run_20260830.json",
+    "compile_release_dry_run_sha256": "c1863bb52e49e74815d74e481b21659f94ca11b676ce2cc1b7a2d1027298cc86",
+    "compile_release": "artifacts/qm5_41213_compile_release_20260830.json",
+    "compile_release_sha256": "13b55ed4e93ad1b17a62a111e4726fd245cbea13217e951b301ad566d38fac9e",
+    "compile_evidence": "D:/QM/reports/work_items/3926b8df-f21d-4cdf-8992-7d5d557a94fe/QM5_41213/COMPILE_EA/compile_evidence.json",
+    "compile_evidence_sha256": "3f44da5683c17624ae7f0307c9f7fbf9b3364023b372fad26771536b9f7def24",
+    "build_check_report": "D:/QM/reports/framework/21/build_check_20260830_052519.json",
+    "build_check_report_sha256": "5eb9852bd0e42412fcc1fe97fe968a032f5a046b711771d81c2f965d6fa1be6b",
+    "mq5_sha256": "14a4a7068a771f1c047edfe59a156c2ae739648d4f820e3747ced74644059dc1",
+    "ex5_sha256": "cedd93aca2559e631435281eea4e5623f846a9e8a05108160181b4d0a17e5903",
+    "logical_setfile_sha256": "144f0a34c23b0c9604524da0ba7d75b7923173f24fdc3620c07424bf66fc9fa5",
+    "logical_setfile_build_hash": "103e0170e91bd85a30666bf1284c46e7b2a97739b3f92d0cff3ff20b046191e1",
+    "basket_manifest_sha256": "ec8e808546d4967d9eb1d83fc51cd3aa88923ff4baaa149d833bd8db8556813a",
+    "spec_sha256": "f94ed57bf598a55a01fd4c4ffcb8dea58ad4d3d8de96bcde0422e4c85584f763",
+    "build_check": "PASS",
+    "build_check_failures": 0,
+    "build_check_nonfatal_warnings": 1,
+    "build_check_warning_codes": [
+      "EA_PERF_UNGATED_BAR_DATA"
+    ],
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "risk_mode": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    }
+  },
+  "capacity_before_q02": {
+    "sampled_at_utc": "2026-08-30T05:28:43.4990008Z",
+    "hard_ceiling_percent": 97.0,
+    "samples_percent": [
+      70.80377261330713,
+      71.85077163235134,
+      67.28866319757259,
+      68.28089419945643,
+      72.4775883068332
+    ],
+    "average_percent": 70.14033798990414,
+    "maximum_percent": 72.4775883068332,
+    "ceiling_binding": false
+  },
+  "capacity_after_q02_enqueue": {
+    "sampled_at_utc": "2026-08-30T05:29:04.7706241Z",
+    "hard_ceiling_percent": 97.0,
+    "samples_percent": [
+      90.6400479948387,
+      82.98869798591981,
+      80.56840173882178,
+      72.32402630449751,
+      81.35895951925967
+    ],
+    "average_percent": 81.5760267086675,
+    "maximum_percent": 90.6400479948387,
+    "ceiling_binding": false,
+    "response": "MISSION_EXIT_NO_MANUAL_DISPATCH_OR_TESTER_ACTION"
+  },
+  "q02": {
+    "enqueued": true,
+    "enqueued_by": "record_build_result.auto_q02",
+    "work_item_id": "d7bd7a15-0503-4840-b739-e15d40a63189",
+    "status_at_readback": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "symbol": "QM5_41213_XAU_XAG_SAMECAL_SIGNSCORE_D1",
+    "host_symbol": "XAUUSD.DWX",
+    "timeframe": "D1",
+    "setfile": "framework/EAs/QM5_41213_xauxag-samecal-signscore/sets/QM5_41213_xauxag-samecal-signscore_QM5_41213_XAU_XAG_SAMECAL_SIGNSCORE_D1_D1_backtest.set",
+    "portfolio_scope": "basket",
+    "q02_from_date": "2018.07.02",
+    "q02_to_date": "2024.12.31",
+    "logical_items_enqueued": 1,
+    "component_items_enqueued": 0
+  },
+  "verification": {
+    "reference_tests": "PASS: 9 tests",
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "spec_validation": "PASS",
+    "strategy_entry_validation": "PASS",
+    "raw_mq5_quarantine_validation": "PASS",
+    "registry_resolver": "PASS: two active rows and both resolver magics",
+    "static_build_gate": "PASS: zero failures, one nonfatal warning",
+    "strict_compile": "PASS: zero errors and zero compiler warnings",
+    "json_parse_and_hash_binding": "PASS"
+  },
+  "risks": [
+    "At least five synchronized prior-year pairs can still produce zero or sub-floor Q02 activity when either metal history is incomplete.",
+    "Binary signs discard return magnitude, and a small n can make one observation change participation or direction.",
+    "Opposite XAU/XAG legs do not establish dollar, beta, volatility, factor, or portfolio neutrality; Q09 must reject excessive realized overlap.",
+    "Continuous-CFD labels, financing, roll construction, asymmetric stops, legging, and futures-to-CFD basis remain empirical translation risks."
+  ],
+  "safety": {
+    "manual_q02_dispatch": false,
+    "manual_tester_launch": false,
+    "autotrading_toggled": false,
+    "t_live_controlled": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "certification_claimed": false,
+    "decorrelation_claimed": false
+  },
+  "mission_commits_before_receipt": [
+    "3d992f08934f929ddc7883d68beb22b68acc8708",
+    "b2839d5a8af0f06ebb60a242a095f4953acc1f95",
+    "e78203c2cb8877ce221adf9096384b4772e3aa62",
+    "0bd08c947da3642abf93ed6545065cb7d9fb20fa",
+    "936127a996d265121408e5dcf9f101827b5b002e"
+  ]
+}
