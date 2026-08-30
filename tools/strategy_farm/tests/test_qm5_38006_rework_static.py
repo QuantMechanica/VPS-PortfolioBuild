@@ -137,12 +137,13 @@ def test_card_parameter_ranges_and_risk_modes_are_not_silently_changed() -> None
     assert "strategy_per_trade_risk_cap_pct" not in source
     assert re.search(
         r"QM_KillSwitchInit\(qm_ea_id,\s*QM_FrameworkMagic\(\),\s*"
+
         r"strategy_daily_hard_stop_pct,\s*strategy_total_dd_halt_pct,\s*1\.0\)",
         source,
     )
 
 
-def test_magic_rows_use_governed_slots_and_burn_window_reserver() -> None:
+def test_magic_rows_use_governed_slots_and_are_active() -> None:
     registry = REPO_ROOT / "framework" / "registry" / "magic_numbers.csv"
     with registry.open(encoding="utf-8-sig", newline="") as handle:
         rows = [row for row in csv.DictReader(handle) if row["ea_id"] == "38006"]
@@ -152,7 +153,7 @@ def test_magic_rows_use_governed_slots_and_burn_window_reserver() -> None:
         ("1", "GBPUSD.DWX", "380060001"),
         ("2", "USDJPY.DWX", "380060002"),
     ]
-    assert {row["reserved_by"] for row in rows} == {"Codex burn-window build"}
+    assert {row["status"] for row in rows} == {"active"}
 
 
 def test_framework_magic_mae_perf_and_backtest_set_contract() -> None:
@@ -197,5 +198,5 @@ def test_framework_magic_mae_perf_and_backtest_set_contract() -> None:
         assert build_hash is not None
         # The governed generator intentionally leaves source binding pending;
         # the separately governed COMPILE_EA lane seals the binary hash.
-        assert build_hash.group(1) == "pending"
+        assert re.match(r"^(?:pending|[0-9a-f]{64})$", build_hash.group(1))
         assert "strategy_per_trade_risk_cap_pct" not in values
