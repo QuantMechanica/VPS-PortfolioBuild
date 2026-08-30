@@ -1,0 +1,19 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "c4b0f9c09f95848fb30554ff2943f3e3c809f4a64d8fe8683063bb26d5aef026",
+      "ea_id": "QM5_41235",
+      "ea_label": "QM5_41235_wti-samecal-hampel5",
+      "expected_mq5_sha256": "c4b0f9c09f95848fb30554ff2943f3e3c809f4a64d8fe8683063bb26d5aef026",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41235_wti-samecal-hampel5\\QM5_41235_wti-samecal-hampel5.mq5",
+      "work_item_id": "fba19f50-fe2f-4584-9c94-a7c92b03fa7f"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "fba19f50-fe2f-4584-9c94-a7c92b03fa7f"
+}
