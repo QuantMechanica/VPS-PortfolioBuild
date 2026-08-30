@@ -1,0 +1,46 @@
+{
+  "captured_at_utc": "2026-08-30T00:26:40Z",
+  "activation_path": {
+    "matrix_service": "QM_StrategyFarm_Pump_5min",
+    "pump_last_task_result": 0,
+    "worker_path": "resident terminal_worker claim loop",
+    "manual_terminal_start": false,
+    "active_backtest_interrupted": false,
+    "gate_bypass": false
+  },
+  "invariants": {
+    "active_opt_census_cells": 3,
+    "distinct_programs": 3,
+    "duplicate_ea_symbol_pairs": 0,
+    "duplicate_program_owners": 0,
+    "configured_program_slots": 4,
+    "within_program_parallelism": false
+  },
+  "active_cells": [
+    {
+      "cell_key": "DL089_QM5_20266_XTIUSD_DWX_2019_2025:2019:baseline",
+      "ea_id": "QM5_41198",
+      "program_id": "DL089_QM5_20266_XTIUSD_DWX_2019_2025",
+      "symbol": "XTIUSD.DWX",
+      "terminal": "T1",
+      "work_item_id": "d65bf13f-d476-5752-ab1e-b88c737f04bc"
+    },
+    {
+      "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2020:sell_042",
+      "ea_id": "QM5_41097",
+      "program_id": "DL089_QM5_41097_USDJPY_DWX_2019_2025",
+      "symbol": "USDJPY.DWX",
+      "terminal": "T6",
+      "work_item_id": "4149e6e5-17ae-5a49-a627-b7bcf9599574"
+    },
+    {
+      "cell_key": "DL089_QM5_13054_XTIUSD_DWX_2019_2025:2019:baseline",
+      "ea_id": "QM5_41194",
+      "program_id": "DL089_QM5_13054_XTIUSD_DWX_2019_2025",
+      "symbol": "XTIUSD.DWX",
+      "terminal": "T8",
+      "work_item_id": "081b2fd4-56fe-5d5d-9748-e6ee935b8460"
+    }
+  ],
+  "schema": "qm.dl089-live-concurrency-snapshot/v1"
+}

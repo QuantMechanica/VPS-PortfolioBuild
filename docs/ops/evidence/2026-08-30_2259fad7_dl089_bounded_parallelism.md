@@ -3,7 +3,7 @@
 Date: 2026-08-30
 Router task: `2259fad7-3598-4e54-a0ae-dab475499097`
 Branch: `agents/board-advisor`
-Status: implementation verified; staged live observation pending
+Status: implementation and staged live observation complete; REVIEW pending
 
 ## Scope and invariants
 
@@ -83,5 +83,23 @@ selection state, or terminal verdicts.
 
 ## Live observation
 
-Pending after the implementation commit and governed activation. This section
-will record the read-only concurrent-program and duplicate-pair snapshot.
+The scheduled `QM_StrategyFarm_Pump_5min` completed with task result 0 and
+maintained four canonical service owners with independent eight-cell windows.
+Resident workers then claimed through their normal loops; no active worker was
+stopped, no `terminal64.exe` was started manually, and no gate was bypassed.
+
+At `2026-08-30T00:26:40Z`, read-only database evidence showed three concurrent
+`OPT_CENSUS` cells:
+
+| Terminal | Program | Measurement pair |
+|---|---|---|
+| T1 | `DL089_QM5_20266_XTIUSD_DWX_2019_2025` | `QM5_41198 / XTIUSD.DWX` |
+| T6 | `DL089_QM5_41097_USDJPY_DWX_2019_2025` | `QM5_41097 / USDJPY.DWX` |
+| T8 | `DL089_QM5_13054_XTIUSD_DWX_2019_2025` | `QM5_41194 / XTIUSD.DWX` |
+
+Invariant counts were three distinct programs, zero duplicate `(ea_id, symbol)`
+pairs, and zero duplicate program owners. Worker logs independently record the
+ordinary claims at `00:25:33Z`, `00:24:11Z`, and `00:26:39Z`.
+
+Durable snapshot:
+`docs/ops/evidence/2026-08-30_2259fad7_dl089_live_concurrency_snapshot.json`.

@@ -19929,8 +19929,8 @@ def _pump_unlocked(
 
     # Declared DL-089 Q12 rows are control-plane matrix declarations, never
     # one-setfile terminal jobs.  This bounded service seeds the governed _opt
-    # Q02 prerequisite, materializes at most one serial matrix, and maintains
-    # its eight-cell priority window/evidence receipts.
+    # Q02 prerequisite, maintains bounded independent program owners, and keeps
+    # each owner's eight-cell priority window/evidence receipts current.
     def _dl089_matrix_stage() -> dict[str, Any]:
         try:
             return service_dl089_matrix(root, apply=True, receipt_limit=16)
