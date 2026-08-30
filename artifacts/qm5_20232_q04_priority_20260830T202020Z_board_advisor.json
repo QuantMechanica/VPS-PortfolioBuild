@@ -1,0 +1,184 @@
+{
+  "schema_version": "qm.fx-cointegration-q04-priority-handoff/v1",
+  "generated_at_utc": "2026-08-30T20:20:20Z",
+  "branch": "agents/board-advisor",
+  "git_head_before_runtime_mutation": "ab00a4466b2cd947d2f494a51b17214e9a5d47db",
+  "mission_result": "EXISTING_FOREX_FALLBACK_Q04_PRIORITY_APPLIED",
+  "frontier_reconciliation": {
+    "controlling_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "published_pair_count": 66,
+    "published_hard_criterion": "DEV Sharpe > 0; OOS net Sharpe > 0.8; OOS trades >= 4",
+    "published_qualifiers": [
+      {
+        "ea_id": "QM5_12532",
+        "pair": [
+          "AUDUSD.DWX",
+          "NZDUSD.DWX"
+        ],
+        "canonical_frontier": "Q02_PASS_Q04_PASS_Q05_FAIL",
+        "current_q02_oninit_or_no_history_block": false
+      },
+      {
+        "ea_id": "QM5_12533",
+        "pair": [
+          "EURJPY.DWX",
+          "GBPJPY.DWX"
+        ],
+        "canonical_frontier": "Q02_PASS_Q04_FAIL",
+        "current_q02_oninit_or_no_history_block": false
+      }
+    ],
+    "durable_sign_aware_coverage": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "relationships_covered": 66,
+    "relationships_uncovered": 0,
+    "fresh_approved_card_census": {
+      "approved_cointegration_files": 120,
+      "unique_ea_ids": 120,
+      "matching_ea_directories": 120,
+      "unbuilt_ea_ids": []
+    },
+    "fallback_authorized": true,
+    "skill_gate_disposition": {
+      "strategy_card_extraction": "CLOSED_NO_OWNER_APPROVED_NON_DUPLICATE_SCAN_QUALIFIED_PAIR",
+      "ea_build": "CLOSED_NO_APPROVED_UNBUILT_COINTEGRATION_CARD",
+      "pipeline_phase_skill": "NOT_APPLICABLE_TO_Q04_PRIORITY_HANDOFF"
+    }
+  },
+  "selection": {
+    "selection_mode": "existing_forex_fallback_no_unbuilt_66_pair_candidate",
+    "scan_relationship_rank": 55,
+    "ea_id": "QM5_20232",
+    "ea_directory": "framework/EAs/QM5_20232_usdchf-nzdusd",
+    "approved_card": "strategy-seeds/cards/approved/QM5_20232_usdchf-nzdusd_card.md",
+    "approved_card_sha256": "8f95bd82d91957b794949298ebbc4d65f06bf91a71f6e7ebe38331dd7e405001",
+    "logical_symbol": "QM5_20232_USDCHF_NZDUSD_COINTEGRATION_D1",
+    "traded_symbols": [
+      "USDCHF.DWX",
+      "NZDUSD.DWX"
+    ],
+    "timeframe": "D1",
+    "fixed_beta": -0.270458913,
+    "scan_evidence": {
+      "dev_net_sharpe": 0.035539,
+      "oos_net_sharpe": -0.387376,
+      "oos_return_percent": -3.267369,
+      "oos_state_changes": 16,
+      "half_life_d1_bars": 108.268,
+      "disposition": "one-shot pipeline falsification; no refit or rescue filter"
+    }
+  },
+  "build_and_risk_binding": {
+    "mq5_sha256": "c262de17327305ff33f01bab3ff41a09c1d1bd1ca2d0ef9cd3c7200b95d14be0",
+    "ex5_sha256": "1d9378dfc38df19e2f51f6e623c5a3fb3c8511f2b72acc8fd37b8f84a8c9bdbc",
+    "basket_manifest": "framework/EAs/QM5_20232_usdchf-nzdusd/basket_manifest.json",
+    "basket_manifest_sha256": "728679e87475089e5ead200bd2d63fbf462fd3780af753911619f5e4593c0fe0",
+    "setfile": "framework/EAs/QM5_20232_usdchf-nzdusd/sets/QM5_20232_usdchf-nzdusd_QM5_20232_USDCHF_NZDUSD_COINTEGRATION_D1_D1_backtest.set",
+    "setfile_sha256": "5e08262b87977127392e2e0f322233cb0c6de4c343555cc9823d43dd47fd4d46",
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "structural_only": true,
+    "machine_learning": false,
+    "adaptive_refit": false,
+    "card_schema_lint": "PASS",
+    "static_manifest_and_risk_binding": "PASS",
+    "fresh_compile_or_backtest_run": false,
+    "validation_basis": "sealed Q02 and Q03 PASS hashes plus fresh static binding checks"
+  },
+  "sealed_lineage": [
+    {
+      "work_item_id": "ca72ac7d-162c-4c54-b2e4-d7765c15efeb",
+      "phase": "Q02",
+      "status": "done",
+      "verdict": "PASS",
+      "ex5_sha256": "1d9378dfc38df19e2f51f6e623c5a3fb3c8511f2b72acc8fd37b8f84a8c9bdbc",
+      "mq5_sha256": "c262de17327305ff33f01bab3ff41a09c1d1bd1ca2d0ef9cd3c7200b95d14be0",
+      "setfile_sha256": "5e08262b87977127392e2e0f322233cb0c6de4c343555cc9823d43dd47fd4d46"
+    },
+    {
+      "work_item_id": "73d11c4c-0542-4828-9631-1954799a87a5",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "ex5_sha256": "1d9378dfc38df19e2f51f6e623c5a3fb3c8511f2b72acc8fd37b8f84a8c9bdbc",
+      "mq5_sha256": "c262de17327305ff33f01bab3ff41a09c1d1bd1ca2d0ef9cd3c7200b95d14be0",
+      "setfile_sha256": "5e08262b87977127392e2e0f322233cb0c6de4c343555cc9823d43dd47fd4d46"
+    }
+  ],
+  "queue_action": {
+    "work_item_id": "bfad4436-ae19-4b7d-a7cf-1c02a0324d67",
+    "phase": "Q04",
+    "mutation": "EXACT_ID_IN_PLACE_PAYLOAD_CAS",
+    "status_after": "pending",
+    "claimed_by_after": null,
+    "attempt_count_after": 0,
+    "verdict_after": null,
+    "updated_at_preserved": "2026-08-06T00:29:31+00:00",
+    "priority_track_before": null,
+    "priority_track_after": true,
+    "priority_reason": "board_advisor_fx_fallback_rank55_q04_after_q03_pass",
+    "transaction_queue_rank_before": 7502,
+    "transaction_queue_rank_after": 1604,
+    "transaction_queue_rank_improvement": 5898,
+    "post_verification_queue_rank": 1603,
+    "prior_payload_sha256": "2180408573c2962324c33aa415469db14c6d55f3a2e8127d934ee1d310e46bba",
+    "post_payload_sha256": "19d683363105b9b86df75fbbb13cbe4bfe513f93913877c40135cd98eb5a20a3",
+    "audit_event_id": 380865,
+    "audit_event": "priority_track_set",
+    "row_journal": "D:/QM/reports/state/qm5_20232_q04_priority_20260830T202020Z.journal.json",
+    "row_journal_sha256": "c491e0e63c68ef1a2cf062f8447380c4288c53a425f3016947fb282ab8c17140",
+    "row_journal_state": "COMMITTED",
+    "open_matching_q04_rows_after": 1,
+    "active_holds_after": 0,
+    "supersede_relations_after": 0,
+    "active_quarantine_after": 0,
+    "duplicate_work_items_created": 0,
+    "pipeline_verdict_changed": false,
+    "alpha_changed": false
+  },
+  "capacity": {
+    "cpu_samples_percent": [
+      68.9,
+      72.4,
+      73.8,
+      70.5,
+      75.5
+    ],
+    "cpu_average_percent": 72.22,
+    "cpu_maximum_percent": 75.5,
+    "cpu_ceiling_percent": 97.0,
+    "cpu_ceiling_hit": false,
+    "active_serialized_basket": {
+      "work_item_id": "a525cd8f-4c29-4752-b1af-3c43288f259e",
+      "ea_id": "QM5_20224",
+      "symbol": "QM5_20224_EURUSD_EURJPY_COINTEGRATION_D1",
+      "phase": "Q04",
+      "claimed_by": "T4"
+    },
+    "manual_mt5_dispatch_started": false
+  },
+  "actions_this_run": {
+    "frontier_and_anchor_reconciled": true,
+    "fresh_approved_card_to_ea_census_completed": true,
+    "selected_existing_forex_lineage_revalidated": true,
+    "fresh_preflight_and_apply_time_capacity_windows_completed": true,
+    "existing_exact_q04_row_priority_bound": true,
+    "new_card_or_ea_created": false,
+    "new_work_item_created": false,
+    "compile_smoke_or_backtest_started": false,
+    "terminal_or_worker_controlled": false
+  },
+  "safety": {
+    "factory_mutation_lock_released": true,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_touched": false,
+    "live_or_deploy_manifest_touched": false,
+    "preexisting_unrelated_worktree_change_preserved": "framework/EAs/QM5_41229_wti-samecal-trimean5/QM5_41229_wti-samecal-trimean5.mq5"
+  }
+}
