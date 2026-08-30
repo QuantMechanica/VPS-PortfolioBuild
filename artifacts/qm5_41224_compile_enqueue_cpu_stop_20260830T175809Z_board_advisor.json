@@ -1,0 +1,142 @@
+{
+  "schema": "qm.diversity-build-compile-enqueue-cpu-stop/v1",
+  "recorded_at_utc": "2026-08-30T17:58:45.827618+00:00",
+  "recorded_at_europe_berlin": "2026-08-30T19:58:45.827618+02:00",
+  "branch": "agents/board-advisor",
+  "mission": "diversity_funnel_throughput",
+  "outcome": "GOVERNED_COMPILE_ITEM_CREATED_AND_ACTIVATION_HELD_CPU_CEILING_STOP_BEFORE_RELEASE",
+  "selection": {
+    "ea_id": "QM5_41224",
+    "ea_label": "QM5_41224_wti-samecal-regimeshift",
+    "slug": "wti-samecal-regimeshift",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "asset_class": "energy",
+    "strategy_priority_score": 1010.31,
+    "priority_track": true,
+    "structural": true,
+    "low_frequency": true,
+    "ml_required": false,
+    "diversity_reason": "direct WTI carrier beyond the certified index, metal, and XNG concentration",
+    "selection_notes": [
+      "QM5_36006 was not selected because its promotional NNFX indicator stack did not satisfy the mission's structural and reputable-source constraint.",
+      "QM5_41143 was not selected because its otherwise eligible peer-reviewed FX card had no required magic row and therefore failed the build-only skill precondition.",
+      "QM5_41224 was the highest current canonical-priority pending task that was structural, low-frequency, source-complete, registry-complete, and claimable."
+    ]
+  },
+  "governance": {
+    "build_task_id": "ff4d22ef-de6d-49f1-83ac-80d62b4b810b",
+    "g0_status": "APPROVED",
+    "execution_contract_status": "APPROVED",
+    "r2_mechanical": "PASS",
+    "r3_data_available": "PASS",
+    "r4_ml_forbidden": "PASS",
+    "source_commit": "86b5852ee4eea4a84167cd65af2a6242fb8e0ecf",
+    "source_lineage": [
+      "Keloharju, Linnainmaa, and Nyberg (2016), Return Seasonalities, Journal of Finance 71(4), DOI 10.1111/jofi.12398",
+      "Moskowitz, Ooi, and Pedersen (2012), Time Series Momentum, Journal of Financial Economics 104(2), DOI 10.1016/j.jfineco.2011.11.003"
+    ],
+    "card_mirror_note": "The runtime approved card and repo card differ only in the informational r1_track_record/r1_reasoning fields; their mechanical contract is identical.",
+    "runtime_card_sha256": "a3bdbf819f5acd9d22550b2703ad87655fc202280d4498087bd91356b138c9c9",
+    "repo_card_sha256": "6a266965f7cf089e610ef4be6fa4aa34a7fd892bbf8a15699c344555ed72efc4"
+  },
+  "identity": {
+    "ea_registry_active": true,
+    "magic_registry_active": true,
+    "magic_slot": 0,
+    "magic": 412240000,
+    "mq5_sha256": "fede16790ec29627b6c38415f6db95ec0146c9a312789ff5645240014769b2d5",
+    "spec_sha256": "575f674b73486a3e674f8cb0a07371d7412d031fe20fa1a72399c6dcfd2631a4",
+    "setfile_sha256": "d63212d34f8fd376095b1a036932fdb3147711f45101f7ef4a7f1e9c0ed28fc3",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "preflight": {
+    "reference_tests": "PASS: 11 tests",
+    "skill_build_ea_guard": "PASS",
+    "spec_validation": "PASS",
+    "build_guardrails": "PASS: zero findings",
+    "build_gate_hardening": "PASS: zero failures and zero warnings",
+    "source_changed": false
+  },
+  "capacity": {
+    "ceiling_percent": 97.0,
+    "binding_rule": "stop when either five-sample average or maximum reaches 97 percent",
+    "initial_window": {
+      "sample_interval_seconds": 5,
+      "window_end_utc": "2026-08-30T17:46:26.8550827Z",
+      "samples_percent": [86.250102, 86.767157, 81.349103, 71.21484, 68.753128],
+      "average_percent": 78.866866,
+      "maximum_percent": 86.767157,
+      "binding": false
+    },
+    "preclaim_window": {
+      "sample_interval_seconds": 5,
+      "window_end_utc": "2026-08-30T17:53:47.0129126Z",
+      "samples_percent": [89.688859, 92.661446, 90.781764, 86.816714, 86.739691],
+      "average_percent": 89.337695,
+      "maximum_percent": 92.661446,
+      "binding": false
+    },
+    "binding_window": {
+      "sample_interval_seconds": 1,
+      "window_end_utc": "2026-08-30T17:58:09.5502038Z",
+      "samples_percent": [70.818455, 78.268472, 79.699893, 85.555632, 97.461201],
+      "average_percent": 82.360731,
+      "maximum_percent": 97.461201,
+      "binding": true,
+      "trigger": "maximum_above_ceiling"
+    }
+  },
+  "claim": {
+    "claim_key": "build:QM5_41224:ff4d22ef-de6d-49f1-83ac-80d62b4b810b",
+    "claimed_by": "codex:agents/board-advisor",
+    "claimed_at_utc": "2026-08-30T17:56:25.971129+00:00",
+    "released_at_utc": "2026-08-30T17:58:45.827618+00:00",
+    "release_reason": "BACKTEST_CPU_CEILING",
+    "post_release_task_status": "pending",
+    "post_release_active_claim": false,
+    "last_blocked_reason": "BACKTEST_CPU_CEILING:max=97.461201>=97.0;compile_item_created_activation_held_q02_not_enqueued"
+  },
+  "database_backup": {
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_qm5_41224_compile_claim_20260830T175422Z_e8c68d0d.sqlite",
+    "bytes": 734773248,
+    "sha256": "10186d18c890569d632460d5ea9a9ff7a473e4ca49507e58c8320488d9570e13",
+    "integrity_check": "ok"
+  },
+  "compile_handoff": {
+    "enqueue_command": "python tools/strategy_farm/farmctl.py enqueue-compile QM5_41224_wti-samecal-regimeshift --build-task-id ff4d22ef-de6d-49f1-83ac-80d62b4b810b",
+    "work_item_id": "7b947ba4-f327-4eb2-af86-a0333e27de6a",
+    "status": "pending",
+    "claimed_by": null,
+    "attempt_count": 0,
+    "expected_mq5_sha256": "fede16790ec29627b6c38415f6db95ec0146c9a312789ff5645240014769b2d5",
+    "activation_hold_code": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "activation_hold_active": true,
+    "activation_state": "AWAITING_REVIEWED_WORKER_ROLLOUT",
+    "release_attempted": false,
+    "compile_started": false,
+    "ex5_exists": false
+  },
+  "pipeline": {
+    "q02_work_item_count": 0,
+    "q02_enqueued": false,
+    "manual_dispatch": false,
+    "tester_started": false
+  },
+  "non_duplicate_delta": "The two prior QM5_41224 capacity stops ended before compile enqueue. This wake created exactly one task-bound, source-hash-bound COMPILE_EA work item and left its activation hold active when the CPU ceiling bound.",
+  "safety": {
+    "ad_hoc_compile_started": false,
+    "compile_hold_released": false,
+    "backtest_started": false,
+    "terminal_reserved": false,
+    "terminal_started_or_stopped": false,
+    "autotrading_toggled": false,
+    "t_live_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "certification_claimed": false
+  },
+  "resume_condition": "Take a fresh five-sample CPU window. Only when both average and maximum are strictly below 97 percent may a paced worker atomically reclaim build task ff4d22ef-de6d-49f1-83ac-80d62b4b810b, dry-run and apply release_compile_wave.py for exact held item 7b947ba4-f327-4eb2-af86-a0333e27de6a, require source-bound COMPILE_OK, and then record the build to create the sole fixed-risk Q02 row."
+}
