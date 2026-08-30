@@ -1,0 +1,97 @@
+{
+  "artifact_type": "diversity_funnel_capacity_stop",
+  "schema": "qm.mission-capacity-stop/v1",
+  "generated_at_utc": "2026-08-30T20:07:01Z",
+  "generated_at_europe_berlin": "2026-08-30T22:07:01+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "6816a046a8e05c99f004569ebd868da86d4e4039",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING_BEFORE_CLAIM_OR_MUTATION",
+  "capacity_policy": {
+    "hard_ceiling_percent": 97.0,
+    "binding_rule": "Proceed only when both five-sample average and maximum are strictly below 97 percent; stop when either reaches the ceiling.",
+    "source": "tools/strategy_farm/terminal_worker.py CPU_MAX_LOAD_PERCENT"
+  },
+  "capacity_sample": {
+    "samples_cpu_percent": [92.09, 97.37, 88.29, 82.91, 90.93],
+    "sample_count": 5,
+    "sample_interval_seconds": 0.5,
+    "average_cpu_percent": 90.318,
+    "maximum_cpu_percent": 97.37,
+    "minimum_cpu_percent": 82.91,
+    "average_binding": false,
+    "maximum_binding": true,
+    "ceiling_binding": true,
+    "free_physical_memory_gib": 39.1,
+    "total_physical_memory_gib": 63.12
+  },
+  "farm_db_snapshot": {
+    "database": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "captured_read_only": true,
+    "build_task_counts": {
+      "active": 3,
+      "pending": 61
+    },
+    "pending_pipeline_counts": {
+      "backtest_p2": 35,
+      "backtest_q03": 149,
+      "backtest_q04": 68
+    },
+    "active_work_items_during_capacity_check": 9,
+    "active_work_items_at_final_snapshot": 8,
+    "final_active_terminals": ["T1", "T2", "T3", "T5", "T6", "T7", "T8", "T9"]
+  },
+  "selection_audit": {
+    "canonical_priority_scorer_used": true,
+    "farm_claim_created": false,
+    "collision_excluded": {
+      "ea_id": "QM5_36005",
+      "reason": "prior paced recovery owns a pending governed COMPILE_EA item under CPU hold"
+    },
+    "deferred_diverse_handoff": {
+      "ea_id": "QM5_21508",
+      "build_task_id": "e6472d61-e9f6-4a9a-b9a4-44dcc75c0e79",
+      "symbol": "EURUSD.DWX",
+      "timeframe": "D1",
+      "compile_work_item_id": "845bdd8a-c0a3-4a6c-b94e-f1bc8d6114b9",
+      "compile_status": "done",
+      "compile_verdict": "COMPILE_OK",
+      "mq5_sha256": "09090293a60940059da357ad7a3fdec73f11005d5ae9320b596378d4ecc2cdc7",
+      "ex5_sha256": "7c17ac1a3169324966e245170e0425314bad3835a2ae74878ba3b53205b85b4c",
+      "remaining_handoff": "governed Q01 smoke, record-build, and paced Q02 enqueue",
+      "claimed": false
+    },
+    "fallback_candidate_for_fresh_recheck": {
+      "ea_id": "QM5_20178",
+      "work_item_id": "c5fc6f91-f316-4bd1-b75a-643171c7cf90",
+      "phase": "Q03",
+      "symbol": "GBPUSD.DWX",
+      "verdict": "INFRA_FAIL",
+      "reason": "ACTIVE_TIMEOUT",
+      "pending_or_active_work_items_at_observation": 0,
+      "claimed": false
+    }
+  },
+  "validation": {
+    "spec_validation": "PASS",
+    "ad_hoc_build_check": "REFUSED_BEFORE_COMPILE",
+    "ad_hoc_build_check_failure_class": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+    "governed_compile_evidence_preserved": true
+  },
+  "actions_this_run": {
+    "build_skill_and_standard_contract_read": true,
+    "farm_state_and_diversity_backlog_audited_read_only": true,
+    "fresh_capacity_preflight_completed": true,
+    "farm_claim_or_queue_mutation": false,
+    "compile_smoke_or_backtest_started": false,
+    "q02_or_later_phase_enqueued": false,
+    "terminal_or_worker_controlled": false
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "live_or_deploy_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false,
+    "preexisting_worktree_changes_preserved": true
+  }
+}
