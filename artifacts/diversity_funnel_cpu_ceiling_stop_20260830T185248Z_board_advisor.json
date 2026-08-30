@@ -1,0 +1,173 @@
+{
+  "artifact_type": "diversity_funnel_capacity_stop",
+  "schema": "qm.mission-capacity-stop/v1",
+  "generated_at_utc": "2026-08-30T18:54:12Z",
+  "generated_at_europe_berlin": "2026-08-30T20:54:12+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "7bb7012b307aa3750ec6220a6c33b40b27a25713",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING_AFTER_NON_DUPLICATE_AUDIT_BEFORE_CLAIM_OR_MUTATION",
+  "capacity_policy": {
+    "hard_ceiling_percent": 97.0,
+    "binding_rule": "Proceed only when both the five-sample average and maximum are strictly below 97 percent; stop this paced wake as soon as either measure reaches the ceiling.",
+    "hard_ceiling_source": "tools/strategy_farm/terminal_worker.py:159 CPU_MAX_LOAD_PERCENT"
+  },
+  "capacity_sample": {
+    "window_start_utc": "2026-08-30T18:52:40Z",
+    "window_end_utc": "2026-08-30T18:52:48Z",
+    "method": "Five whole-host Processor(_Total) percent-processor-time samples at two-second intervals",
+    "samples_cpu_percent": [
+      98.35,
+      98.42,
+      85.7,
+      86.34,
+      85.33
+    ],
+    "sample_count": 5,
+    "sample_interval_seconds": 2,
+    "average_cpu_percent": 90.828,
+    "maximum_cpu_percent": 98.42,
+    "minimum_cpu_percent": 85.33,
+    "average_binding": false,
+    "maximum_binding": true,
+    "ceiling_binding": true,
+    "trigger": "maximum_cpu_percent",
+    "free_physical_memory_gib": 35.57,
+    "total_physical_memory_gib": 63.12
+  },
+  "farm_db_snapshot": {
+    "database": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "captured_read_only": true,
+    "scanned_at_utc": "2026-08-30T18:54:14Z",
+    "build_task_counts": {
+      "active": 3,
+      "pending": 58
+    },
+    "pending_pipeline_counts": {
+      "legacy_backtest_p2": 35,
+      "backtest_q03": 149,
+      "backtest_q04": 68
+    },
+    "disposition": "No claim, queue row, work item, priority, status, or verdict was altered."
+  },
+  "factory_snapshot": {
+    "pre_window_running_factory_terminals": [
+      "T2",
+      "T4",
+      "T8",
+      "T9",
+      "T10"
+    ],
+    "pre_window_active_work": [
+      {
+        "terminal": "T2",
+        "ea_id": "QM5_20233",
+        "phase": "Q03"
+      },
+      {
+        "terminal": "T4",
+        "ea_id": "QM5_12350",
+        "phase": "Q07"
+      },
+      {
+        "terminal": "T8",
+        "ea_id": "QM5_41195",
+        "phase": "OPT_CENSUS"
+      },
+      {
+        "terminal": "T9",
+        "ea_id": "QM5_10403",
+        "phase": "Q10_NEWS"
+      },
+      {
+        "terminal": "T10",
+        "ea_id": "QM5_10295",
+        "phase": "Q04"
+      }
+    ],
+    "post_window_scanned_at_utc": "2026-08-30T18:54:14Z",
+    "post_window_running_factory_terminals": [
+      "T2",
+      "T4",
+      "T9"
+    ],
+    "terminal_worker_daemon_count": 10,
+    "duplicate_terminal_workers": {},
+    "orphaned_factory_terminal_process_count": 0,
+    "topology_note": "T8 and T10 exited between the capacity preflight and the final read-only snapshot; the binding peak occurred during active tester turnover.",
+    "t_live_observed_only": true,
+    "t_live_controlled": false,
+    "external_ftmo_terminal_observed_only": true
+  },
+  "selection_audit": {
+    "canonical_priority_scorer_used": true,
+    "diversity_weight_percent": 65,
+    "farm_claim_created": false,
+    "nominal_leaders": [
+      {
+        "ea_id": "QM5_36006",
+        "instrument_class": "forex",
+        "timeframe": "D1",
+        "disposition": "existing canonical build inputs plus prior governance-blocked rebuild; duplicate claim rejected"
+      },
+      {
+        "ea_id": "QM5_36005",
+        "instrument_class": "forex_cross",
+        "timeframe": "D1",
+        "disposition": "same-day recovery already created governed compile work under CPU hold; duplicate claim rejected"
+      },
+      {
+        "ea_id": "QM5_41172",
+        "instrument_class": "energy_wti",
+        "timeframe": "MN1",
+        "disposition": "canonical build inputs exist and governed compile work is pending; duplicate claim rejected"
+      },
+      {
+        "ea_id": "QM5_21508",
+        "instrument_class": "forex",
+        "timeframe": "D1",
+        "disposition": "governed compile completed and paths were concurrently staged by another paced worker; collision rejected"
+      }
+    ],
+    "fallback_lane_audited_read_only": "diverse FX Q02-Q03 infrastructure failures",
+    "repair_candidate_claimed": false,
+    "reason": "The explicit CPU ceiling bound before a distinct repair could be atomically claimed."
+  },
+  "non_duplicate_delta": {
+    "preceding_capacity_receipt": "artifacts/diversity_funnel_cpu_ceiling_stop_20260830T030031Z_board_advisor.json",
+    "preceding_window_end_utc": "2026-08-30T03:00:31.9381664Z",
+    "preceding_average_cpu_percent": 79.069796,
+    "preceding_maximum_cpu_percent": 98.711199,
+    "current_average_cpu_percent": 90.828,
+    "current_maximum_cpu_percent": 98.42,
+    "changed_state": "Fifteen hours later, average load was 11.758204 percentage points higher, the active phase mix had changed to Q03/Q04/Q07/OPT_CENSUS/Q10_NEWS, and the approved diversity backlog was audited far enough to exclude four nominal leaders as existing or concurrently owned work. The next permissible lane is now a distinct FX infrastructure repair once capacity reopens."
+  },
+  "actions_this_run": {
+    "build_skill_and_standard_build_prompt_preflight_read": true,
+    "farm_coordination_state_consulted_read_only": true,
+    "canonical_diversity_priority_dry_run_completed": true,
+    "duplicate_and_collision_checks_completed": true,
+    "fresh_capacity_preflight_completed": true,
+    "approved_backlog_claimed": false,
+    "infra_repair_claimed_or_started": false,
+    "new_edge_mechanized": false,
+    "card_or_g0_created": false,
+    "registry_or_magic_mutated": false,
+    "ea_source_binary_or_setfile_created": false,
+    "compile_build_check_smoke_or_backtest_started": false,
+    "q02_or_later_phase_enqueued": false,
+    "queue_priority_claim_status_or_verdict_mutated": false,
+    "dispatch_tick": false,
+    "terminal_or_worker_controlled": false,
+    "capacity_evidence_committed": true
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "t_live_manifest_touched": false,
+    "live_or_deploy_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false,
+    "preexisting_worktree_changes_preserved": true
+  },
+  "resume_contract": "On a later paced wake, take a fresh five-sample capacity window. Proceed only when both average and maximum are strictly below 97 percent; then atomically claim one distinct diverse FX Q02-Q03 infrastructure repair identified by a fresh farm audit, keep every backtest setfile at RISK_FIXED, enqueue only through the governed farm path, and do not dispatch or touch portfolio/live surfaces."
+}
