@@ -75,6 +75,7 @@ long                  g_pp_days_evaluated = 0;
 long                  g_pp_fire_count = 0;
 long                  g_pp_legs_suppressed = 0;
 long                  g_pp_invalid_days = 0;
+datetime              g_pp_reference_bar_time = 0;
 
 QM_PermissionResult Pattern_Permission()
   {
@@ -84,7 +85,7 @@ QM_PermissionResult Pattern_Permission()
       perm.allow_buy = true;
       perm.allow_sell = true;
       perm.valid = true;
-      perm.reference_bar_time = iTime(_Symbol, QM_PPC_REFERENCE_TF, QM_PPC_CLOSED_SHIFT);
+      perm.reference_bar_time = g_pp_reference_bar_time;
       perm.reason = "census_control";
       return perm;
      }
@@ -598,6 +599,12 @@ void OnTick()
 
    if(!QM_IsNewBar())
       return;
+
+   MqlRates last_closed;
+   ZeroMemory(last_closed);
+   if(QM_ReadBar(_Symbol, QM_PPC_REFERENCE_TF,
+                 QM_PPC_CLOSED_SHIFT, last_closed))
+      g_pp_reference_bar_time = last_closed.time;
 
    QM_EquityStreamOnNewBar();
 

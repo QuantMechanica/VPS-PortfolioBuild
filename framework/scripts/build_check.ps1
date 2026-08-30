@@ -437,17 +437,21 @@ function Invoke-SetValidation {
         if ($script:PresetRepairGeneratedPath) {
             $setFiles = @(Get-Item -LiteralPath $script:PresetRepairGeneratedPath -ErrorAction SilentlyContinue)
         } elseif ($SiblingRebindSetfilePath) {
-            $authority = 'router_ops_issue:da2c006e-e5ab-4f85-845f-2925f90dd68d'
+            $authorityDirectories = @{
+                'router_ops_issue:da2c006e-e5ab-4f85-845f-2925f90dd68d' = 'sibling_rebind_da2c006e'
+                'router_ops_issue:e8ed1e85-a8db-4345-9785-2e0ccf1f6997' = 'sibling_rebind_e8ed1e85'
+            }
             $allowedLabels = @(
                 'QM5_41195_aa-vol-sma10-opt',
                 'QM5_41196_qs-kama-trend-xau-opt'
             )
             if (-not $CompileWorkItemId -or -not $ClaimedTerminal -or
-                ${env:QM_SIBLING_REBIND_AUTHORITY} -cne $authority -or
+                -not $authorityDirectories.ContainsKey(${env:QM_SIBLING_REBIND_AUTHORITY}) -or
                 $EALabel -cnotin $allowedLabels) {
                 throw 'BUILD_CHECK_SIBLING_REBIND_AUTHORITY_INVALID'
             }
-            $expectedRoot = [System.IO.Path]::GetFullPath((Join-Path $easRoot "$EALabel\sets\sibling_rebind_da2c006e"))
+            $authorityDirectory = $authorityDirectories[${env:QM_SIBLING_REBIND_AUTHORITY}]
+            $expectedRoot = [System.IO.Path]::GetFullPath((Join-Path $easRoot "$EALabel\sets\$authorityDirectory"))
             $resolvedSetfile = [System.IO.Path]::GetFullPath($SiblingRebindSetfilePath)
             $expectedPrefix = $expectedRoot.TrimEnd('\') + '\'
             if (-not $resolvedSetfile.StartsWith($expectedPrefix, [System.StringComparison]::OrdinalIgnoreCase) -or

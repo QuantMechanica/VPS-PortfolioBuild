@@ -173,12 +173,20 @@ QM5_41194_DL089_BUILD_REPAIR_EA_LABELS = frozenset({
 DL089_SIBLING_REBIND_AUTHORITY = (
     "router_ops_issue:da2c006e-e5ab-4f85-845f-2925f90dd68d"
 )
+# Exact repair continuation after both ceremony compiles failed current Q01
+# source-conformance checks. It retains the same two-label scope but uses a new
+# task-specific unbound setfile directory, so the immutable first-attempt
+# receipts and their now-bound ceremony setfiles remain append-only evidence.
+DL089_SIBLING_REPAIR_AUTHORITY = (
+    "router_ops_issue:e8ed1e85-a8db-4345-9785-2e0ccf1f6997"
+)
 DL089_SIBLING_REBIND_EA_LABELS = frozenset({
     "QM5_41195_aa-vol-sma10-opt",
     "QM5_41196_qs-kama-trend-xau-opt",
 })
 DL089_SIBLING_REBIND_CONTRACT_VERSION = "qm.dl089-sibling-rebind/v1"
 DL089_SIBLING_REBIND_DIRECTORY = "sibling_rebind_da2c006e"
+DL089_SIBLING_REPAIR_DIRECTORY = "sibling_rebind_e8ed1e85"
 # Exact authority for the two DL-089 measurement siblings whose initial compile
 # receipts preceded the final source normalization commit.  The P0 dispatch
 # repair requires current source-bound binaries before it may enqueue any real
@@ -383,9 +391,20 @@ _BOUND_HASH_RE = re.compile(r"^[0-9a-fA-F]{64}$")
 
 def _sibling_rebind_authorized(label: str, authority: str | None) -> bool:
     return bool(
-        authority == DL089_SIBLING_REBIND_AUTHORITY
+        authority in {
+            DL089_SIBLING_REBIND_AUTHORITY,
+            DL089_SIBLING_REPAIR_AUTHORITY,
+        }
         and label in DL089_SIBLING_REBIND_EA_LABELS
     )
+
+
+def _sibling_rebind_directory(authority: str | None) -> str | None:
+    if authority == DL089_SIBLING_REBIND_AUTHORITY:
+        return DL089_SIBLING_REBIND_DIRECTORY
+    if authority == DL089_SIBLING_REPAIR_AUTHORITY:
+        return DL089_SIBLING_REPAIR_DIRECTORY
+    return None
 
 
 def _sibling_rebind_setfile_path(
@@ -393,11 +412,15 @@ def _sibling_rebind_setfile_path(
     label: str,
     symbol: str,
     timeframe: str,
+    authority: str | None,
 ) -> Path:
+    directory = _sibling_rebind_directory(authority)
+    if directory is None:
+        raise ValueError("SIBLING_REBIND_AUTHORITY_INVALID")
     return (
         ea_dir
         / "sets"
-        / DL089_SIBLING_REBIND_DIRECTORY
+        / directory
         / f"{label}_{symbol}_{timeframe}_backtest.set"
     )
 
@@ -1414,6 +1437,7 @@ def classify_candidate(
                 canonical_label,
                 symbols[0],
                 str(timeframe["timeframe"]),
+                source_repair_authority,
             )
             valid, sibling_rebind_findings = _sibling_rebind_setfile_check(
                 sibling_rebind_setfile
@@ -2295,7 +2319,10 @@ def run_compile_work_item(
             and payload.get("sibling_rebind_contract_version")
             == DL089_SIBLING_REBIND_CONTRACT_VERSION
             and payload.get("sibling_rebind_authority")
-            == DL089_SIBLING_REBIND_AUTHORITY
+            == candidate.get("source_repair_authority")
+            and _sibling_rebind_authorized(
+                label, str(payload.get("sibling_rebind_authority") or "")
+            )
             and candidate.get("sibling_rebind_authorized") is True
         )
         if candidate.get("sibling_rebind_authorized") is True and not sibling_rebind:
@@ -2327,7 +2354,9 @@ def run_compile_work_item(
         env["QM_COMPILE_WORK_ITEM_ID"] = work_item_id
         env["QM_COMPILE_CLAIMED_TERMINAL"] = terminal.upper()
         if sibling_rebind:
-            env["QM_SIBLING_REBIND_AUTHORITY"] = DL089_SIBLING_REBIND_AUTHORITY
+            env["QM_SIBLING_REBIND_AUTHORITY"] = str(
+                payload["sibling_rebind_authority"]
+            )
         creationflags = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
         generator = repo_root / "framework" / "scripts" / "gen_setfile.ps1"
         for symbol in symbols:
@@ -2453,7 +2482,7 @@ def run_compile_work_item(
         if sibling_rebind:
             evidence["sibling_rebind"] = {
                 "contract_version": DL089_SIBLING_REBIND_CONTRACT_VERSION,
-                "authority": DL089_SIBLING_REBIND_AUTHORITY,
+                "authority": payload.get("sibling_rebind_authority"),
                 "current_setfile_path": str(sibling_rebind_path),
                 "current_setfile_sha256_after_binding": (
                     sha256_file(sibling_rebind_path)
