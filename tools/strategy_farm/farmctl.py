@@ -10998,7 +10998,26 @@ def aggregate_finished_parent_cas(
             "SELECT * FROM tasks WHERE id=?", (parent_task_id,)
         ).fetchone()
         if parent is None:
-            result = {"closed": False, "reason": "parent_missing", "parent_task_id": parent_task_id}
+            work_item_parent = active_conn.execute(
+                "SELECT id,kind,phase,status,verdict FROM work_items WHERE id=?",
+                (parent_task_id,),
+            ).fetchone()
+            if work_item_parent is not None:
+                result = {
+                    "closed": False,
+                    "reason": "parent_managed_in_work_items",
+                    "parent_task_id": parent_task_id,
+                    "parent_namespace": "work_items",
+                    "parent_kind": str(work_item_parent["kind"] or ""),
+                    "parent_phase": str(work_item_parent["phase"] or ""),
+                    "parent_status": str(work_item_parent["status"] or ""),
+                }
+            else:
+                result = {
+                    "closed": False,
+                    "reason": "parent_missing",
+                    "parent_task_id": parent_task_id,
+                }
         elif str(parent["status"]) == "done":
             result = {
                 "closed": False,

@@ -217,6 +217,104 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             self.assertTrue(state["global_durations"])
             self.assertLess(max(state["global_durations"]), 1.0)
 
+    def test_active_program_is_skipped_before_other_program_pruning(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root, "a-active", "EURUSD.DWX", phase="OPT_CENSUS",
+                status="active", claimed_by="T1", ea_id="QM5_A",
+                payload={"program_id": "program-a"},
+            )
+            self._insert_work_item(
+                root, "a-next", "EURUSD.DWX", phase="OPT_CENSUS",
+                ea_id="QM5_A", payload={"program_id": "program-a"},
+            )
+            self._insert_work_item(
+                root, "b-next", "GBPUSD.DWX", phase="OPT_CENSUS",
+                ea_id="QM5_B", payload={"program_id": "program-b"},
+            )
+            inspected: list[str] = []
+
+            def inspect(_conn, row, **_kwargs):
+                inspected.append(str(row["id"]))
+                return {"enabled": True, "skipped_current": False, "skipped": 0}
+
+            with (
+                patch.dict(os.environ, {"DL089_PROGRAM_SLOTS": "4"}),
+                patch.object(terminal_worker.opt_census_pruning, "pruning_enabled", return_value=True),
+                patch.object(
+                    terminal_worker.opt_census_pruning,
+                    "prune_candidate_if_excluded",
+                    side_effect=inspect,
+                ),
+            ):
+                result = terminal_worker.claim_atomic(root, "T2")
+
+            self.assertTrue(result.get("claimed"), result)
+            self.assertEqual(result["item"]["id"], "b-next")
+            self.assertEqual(inspected, ["b-next"])
+
+    def test_busy_candidate_defers_only_its_program(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root, "a-head", "EURUSD.DWX", phase="OPT_CENSUS",
+                ea_id="QM5_A", payload={"program_id": "program-a"},
+            )
+            self._insert_work_item(
+                root, "b-head", "GBPUSD.DWX", phase="OPT_CENSUS",
+                ea_id="QM5_B", payload={"program_id": "program-b"},
+            )
+            inspected: list[str] = []
+
+            def preflight(_root, _terminal, candidate):
+                inspected.append(str(candidate["id"]))
+                if candidate["id"] == "a-head":
+                    return {"status": "busy", "reason": "fixture_busy"}
+                return {
+                    "status": "checked",
+                    "item_id": candidate["id"],
+                    "candidate_pending": True,
+                    "pruning": {"enabled": True, "skipped_current": False},
+                }
+
+            with (
+                patch.dict(os.environ, {"DL089_PROGRAM_SLOTS": "4"}),
+                patch.object(terminal_worker.opt_census_pruning, "pruning_enabled", return_value=True),
+                patch.object(
+                    terminal_worker,
+                    "_prune_candidate_outside_factory_lock",
+                    side_effect=preflight,
+                ),
+            ):
+                result = terminal_worker.claim_atomic(root, "T2")
+
+            self.assertTrue(result.get("claimed"), result)
+            self.assertEqual(result["item"]["id"], "b-head")
+            self.assertEqual(inspected, ["a-head", "b-head"])
+
+    def test_program_slot_cap_and_k1_rollback_preserve_one_active_per_program(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            for program, symbol in (("program-a", "EURUSD.DWX"), ("program-b", "GBPUSD.DWX")):
+                self._insert_work_item(
+                    root, f"{program}-head", symbol, phase="OPT_CENSUS",
+                    ea_id=f"QM5_{program[-1].upper()}", payload={"program_id": program},
+                )
+
+            with (
+                patch.dict(os.environ, {"DL089_PROGRAM_SLOTS": "1"}),
+                patch.object(terminal_worker.opt_census_pruning, "pruning_enabled", return_value=False),
+            ):
+                first = terminal_worker.claim_atomic(root, "T1")
+                second = terminal_worker.claim_atomic(root, "T2")
+
+            self.assertTrue(first.get("claimed"), first)
+            self.assertFalse(second.get("claimed"), second)
+            self.assertEqual(second.get("reason"), "no_pending_claimable")
+            self.assertEqual(second.get("opt_census_program_slots"), 1)
+            self.assertTrue(second.get("opt_census_slot_deferred"))
+
     def test_sqlite_writer_contention_keeps_global_claim_lock_under_one_second(self) -> None:
         with self._root() as tmp:
             root = Path(tmp) / "farm"

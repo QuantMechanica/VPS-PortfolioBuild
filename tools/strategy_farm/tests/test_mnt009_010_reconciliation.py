@@ -256,6 +256,44 @@ def test_parent_cas_refuses_null_and_noncanonical_children(
         ).fetchone()[0] == "pending"
 
 
+def test_q12_work_item_parent_is_expected_namespace_not_missing(tmp_path: Path) -> None:
+    root, db, _ = _runtime(tmp_path)
+    now = farmctl.utc_now()
+    with sqlite3.connect(db) as conn:
+        conn.execute(
+            """
+            INSERT INTO work_items(
+              id,kind,phase,ea_id,symbol,setfile_path,status,verdict,attempt_count,
+              payload_json,created_at,updated_at
+            ) VALUES('q12-owner','analytic','Q12','QM5_PARENT','EURUSD.DWX','x.set',
+                     'pending',NULL,0,'{}',?,?)
+            """,
+            (now, now),
+        )
+        conn.execute(
+            """
+            INSERT INTO work_items(
+              id,kind,phase,ea_id,symbol,setfile_path,status,verdict,attempt_count,
+              parent_task_id,payload_json,created_at,updated_at
+            ) VALUES('q12-cell','backtest','OPT_CENSUS','QM5_OPT','EURUSD.DWX','x.set',
+                     'done','MEASURED',0,'q12-owner','{}',?,?)
+            """,
+            (now, now),
+        )
+        conn.commit()
+
+    result = farmctl.aggregate_finished_parent_cas(root, "q12-owner", source="test")
+    assert result == {
+        "closed": False,
+        "reason": "parent_managed_in_work_items",
+        "parent_task_id": "q12-owner",
+        "parent_namespace": "work_items",
+        "parent_kind": "analytic",
+        "parent_phase": "Q12",
+        "parent_status": "pending",
+    }
+
+
 def test_factory_off_parent_pass_is_closed_and_progression_durably_deferred(
     tmp_path: Path,
 ) -> None:

@@ -1,0 +1,28 @@
+{
+  "schema": "qm.dl089-program-replay-fixture/v1",
+  "programs": [
+    {
+      "program_id": "DL089_FIXTURE_A",
+      "cells": [
+        {"cell_key": "2019:BASELINE:BUY", "disposition": "MEASURED", "pruning_receipt": null, "selected": false, "evidence": {"trades": 18, "pf": 1.04}},
+        {"cell_key": "2020:PP_BUY1:BUY", "disposition": "SKIPPED_EXCLUDED", "pruning_receipt": {"rule": "negative_prior_year", "arm": "PP_BUY1:BUY", "observed_at": "serial-dependent"}, "selected": false, "evidence": {"source": "2019:PP_BUY1:BUY", "authenticated": true}},
+        {"cell_key": "2021:PP_BUY2:BUY", "disposition": "MEASURED", "pruning_receipt": null, "selected": true, "evidence": {"trades": 24, "pf": 1.19}}
+      ]
+    },
+    {
+      "program_id": "DL089_FIXTURE_B",
+      "cells": [
+        {"cell_key": "2019:BASELINE:SELL", "disposition": "MEASURED", "pruning_receipt": null, "selected": false, "evidence": {"trades": 21, "pf": 1.08}},
+        {"cell_key": "2020:PP_SELL1:SELL", "disposition": "MEASURED", "pruning_receipt": null, "selected": true, "evidence": {"trades": 27, "pf": 1.16}},
+        {"cell_key": "2021:PP_SELL2:SELL", "disposition": "SKIPPED_EXCLUDED", "pruning_receipt": {"rule": "activity_floor", "arm": "PP_SELL2:SELL", "observed_at": "serial-dependent"}, "selected": false, "evidence": {"trades": 3, "floor": 5}}
+      ]
+    },
+    {
+      "program_id": "DL089_FIXTURE_C",
+      "cells": [
+        {"cell_key": "2019:BASELINE:BUY", "disposition": "MEASURED", "pruning_receipt": null, "selected": false, "evidence": {"trades": 31, "pf": 1.11}},
+        {"cell_key": "2020:PP_BUY3:BUY", "disposition": "MEASURED", "pruning_receipt": null, "selected": true, "evidence": {"trades": 29, "pf": 1.22}}
+      ]
+    }
+  ]
+}

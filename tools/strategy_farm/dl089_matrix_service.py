@@ -10,8 +10,8 @@ before any terminal work is claimable.  The service is append-only:
 * each declared cell becomes its own OPT_CENSUS work item/evidence receipt;
 * the approved ``_opt`` sibling supplies executable identity, while cell keys
   and UUIDs remain exactly those sealed against the incumbent declaration;
-* only one EA/symbol matrix is materialized at a time, with an eight-cell
-  rolling priority window;
+* the first bounded set of programs in canonical queue order is maintained,
+  each with its own eight-cell rolling priority window;
 * Q12 is completed only from the sealed matrix/WF evidence, never from a
   generic smoke summary.
 """
@@ -27,6 +27,7 @@ from pathlib import Path
 from typing import Any, Iterable, Mapping
 
 try:
+    import dl089_scheduling as scheduling
     import opt_census as census
     import opt_census_pruning as pruning
     import opt_census_select as selector
@@ -35,6 +36,7 @@ try:
         _pattern_measurement_readiness,
     )
 except ModuleNotFoundError:
+    from tools.strategy_farm import dl089_scheduling as scheduling
     from tools.strategy_farm import opt_census as census
     from tools.strategy_farm import opt_census_pruning as pruning
     from tools.strategy_farm import opt_census_select as selector
@@ -56,6 +58,7 @@ ALLOWED_SERVICE_HOLDS = frozenset({MISMATCH_HOLD_CODE, ROLLOUT_HOLD_CODE})
 RECOVERY_SOURCE_ENCODING = "append_only:dl089-invalid-single-run-successor/v1"
 Q02_FROM_YEAR = 2017
 Q02_TO_YEAR = 2022
+program_slots = scheduling.program_slots
 
 _ROUTING_PAYLOAD_KEYS = (
     "schema",
@@ -429,7 +432,8 @@ def _successor_payload(source_payload: Mapping[str, Any], source_row: sqlite3.Ro
         "recovery_of_work_item_id": str(source_row["id"]),
         "source_receipt_preserved": True,
         "source_verdict_disposition_authority": "OWNER_ONLY",
-        "pair_mode": "SERIAL",
+        "pair_mode": "BOUNDED_PROGRAMS",
+        "program_slots": program_slots(),
         "priority_window_cap": 8,
     }
     payload["queue_order_at"] = str(source_row["created_at"])
@@ -881,7 +885,7 @@ def service_pending(
     window: int = 8,
     receipt_limit: int = 16,
 ) -> dict[str, Any]:
-    """Append recoveries, seed prerequisites, and advance one serial matrix."""
+    """Append recoveries, seed prerequisites, and advance bounded matrices."""
 
     if window != 8:
         raise ValueError("DL-089 scheduling contract requires an eight-cell window")
@@ -982,27 +986,32 @@ def service_pending(
     maintained: list[dict[str, Any]] = []
     materialized: list[dict[str, Any]] = []
 
-    existing_owner: sqlite3.Row | None = None
-    for row, _sibling in candidates:
+    slots = program_slots()
+    governed = candidates[:slots]
+    slot_owners: list[dict[str, Any]] = []
+    for slot, (row, sibling) in enumerate(governed, start=1):
+        declaration = _payload(row)["pattern_filter_sweep"]
+        owner = {
+            "slot": slot,
+            "work_item_id": str(row["id"]),
+            "program_id": str(declaration["program_id"]),
+            "measurement_ea_id": str(sibling["ea_id"]),
+            "symbol": str(row["symbol"]),
+        }
         if _matrix_rows(conn, str(row["id"])):
-            existing_owner = row
-            break
-    if existing_owner is not None:
-        maintained.append(
-            _service_existing_matrix(
+            maintained_row = _service_existing_matrix(
                 conn,
                 db_path=db_path,
-                q12_row=existing_owner,
+                q12_row=row,
                 artifact_root=artifact_root,
                 window=window,
                 receipt_limit=receipt_limit,
                 apply=apply,
             )
-        )
-    elif candidates and apply:
-        row, sibling = candidates[0]
-        materialized.append(
-            _materialize(
+            maintained.append(maintained_row)
+            owner["action"] = "maintained"
+        elif apply:
+            materialized_row = _materialize(
                 db_path=db_path,
                 repo_root=repo_root,
                 artifact_root=artifact_root,
@@ -1010,40 +1019,40 @@ def service_pending(
                 sibling=sibling,
                 window=window,
             )
-        )
-    elif candidates:
-        row, sibling = candidates[0]
-        materialized.append(
-            {
-                "would_materialize": True,
-                "work_item_id": row["id"],
-                "measurement_ea_id": sibling["ea_id"],
-                "program_id": _payload(row)["pattern_filter_sweep"]["program_id"],
-            }
-        )
-
-    serial_owner = None
-    if existing_owner is not None:
-        serial_owner = existing_owner["id"]
-    elif materialized:
-        serial_owner = materialized[0]["work_item_id"]
-    for row, _sibling in candidates:
-        if str(row["id"]) != str(serial_owner):
-            deferred.append(
+            materialized.append(materialized_row)
+            owner["action"] = "materialized"
+        else:
+            materialized.append(
                 {
+                    "would_materialize": True,
                     "work_item_id": row["id"],
-                    "ea_id": row["ea_id"],
-                    "symbol": row["symbol"],
-                    "machine_reason": f"PAIR_SERIALIZATION_WAIT:{serial_owner}",
+                    "measurement_ea_id": sibling["ea_id"],
+                    "program_id": declaration["program_id"],
                 }
             )
+            owner["action"] = "would_materialize"
+        slot_owners.append(owner)
+
+    for row, _sibling in candidates[slots:]:
+        program_id = _payload(row)["pattern_filter_sweep"]["program_id"]
+        deferred.append(
+            {
+                "work_item_id": row["id"],
+                "ea_id": row["ea_id"],
+                "symbol": row["symbol"],
+                "program_id": program_id,
+                "machine_reason": f"PROGRAM_SLOT_WAIT:K={slots}",
+            }
+        )
     if apply:
         conn.commit()
     return {
         "schema": SERVICE_SCHEMA,
         "applied": apply,
         "matrix_runner_revision": RUNNER_REVISION,
-        "pair_mode": "SERIAL",
+        "pair_mode": "BOUNDED_PROGRAMS",
+        "program_slots": slots,
+        "slot_owners": slot_owners,
         "priority_window_cap": window,
         "recoveries": recoveries,
         "q02_prerequisites": q02,

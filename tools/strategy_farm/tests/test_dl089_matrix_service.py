@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import sqlite3
+from unittest.mock import patch
 from pathlib import Path
 
 from tools.strategy_farm import dl089_matrix_service as service
@@ -243,6 +244,17 @@ def test_matrix_service_materializes_declared_cells_with_bounded_window(tmp_path
             "WHERE work_item_id='q12-declared'"
         ).fetchone()
         assert tuple(hold) == (service.ROLLOUT_HOLD_CODE, 1, 1)
+
+
+def test_program_slots_default_override_and_bounds() -> None:
+    with patch.dict("os.environ", {}, clear=True):
+        assert service.program_slots() == 4
+    with patch.dict("os.environ", {"DL089_PROGRAM_SLOTS": "1"}, clear=True):
+        assert service.program_slots() == 1
+    with patch.dict("os.environ", {"DL089_PROGRAM_SLOTS": "999"}, clear=True):
+        assert service.program_slots() == 10
+    with patch.dict("os.environ", {"DL089_PROGRAM_SLOTS": "invalid"}, clear=True):
+        assert service.program_slots() == 4
 
 
 def test_recovery_successor_preserves_declaration_and_not_source_verdict(tmp_path: Path) -> None:

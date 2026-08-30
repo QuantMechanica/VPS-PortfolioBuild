@@ -45,6 +45,7 @@ import custom_history_copy_on_claim
 import custom_history_gate
 import custom_history_lease
 import custom_history_master
+import dl089_scheduling
 import longrun_scheduling_policy
 import opt_census_pruning
 from framework.scripts._phase_utils import cold_cache_summary_signature
@@ -117,7 +118,6 @@ FACTORY_ADMISSION_LOCK_POLL_SECONDS = 0.01
 # reports.  Serialize that backstop on its own lock so one worker performs the
 # expensive check while peers remain free to claim non-census work.  This lock
 # is deliberately distinct from FACTORY_MUTATION.lock.
-CLAIM_PRUNING_LOCK_FILENAME = "DL089_CLAIM_PRUNING.lock"
 CLAIM_PREFLIGHT_MAX_CANDIDATES = 8
 Q09_CELL_SHARDING_FLAG = "Q09_CELL_SHARDING_ENABLED"
 Q09_CELL_SHARDING_MAX_TERMINALS_FLAG = "Q09_CELL_SHARDING_MAX_TERMINALS"
@@ -1860,7 +1860,8 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
 
     pruning_enabled = opt_census_pruning.pruning_enabled()
     pruning_checked_payloads: dict[str, str] = {}
-    skip_unchecked_pruning = False
+    pruning_deferred_candidates: set[tuple[str, str]] = set()
+    pruning_attempted_programs: set[str] = set()
     history_preflight_cache: dict[
         str,
         tuple[
@@ -2126,6 +2127,18 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                         }
 
                 active_symbol_counts, active_ea_symbol_pairs = farmctl._active_symbol_claim_state(conn)
+                active_opt_census_programs = {
+                    dl089_scheduling.program_id(
+                        _json_loads(row["payload_json"]),
+                        ea_id=row["ea_id"],
+                        symbol=row["symbol"],
+                    )
+                    for row in conn.execute(
+                        "SELECT ea_id,symbol,payload_json FROM work_items "
+                        "WHERE status='active' AND upper(phase)='OPT_CENSUS'"
+                    )
+                }
+                opt_census_slots = dl089_scheduling.program_slots()
                 active_q04_eas = {
                     str(row["ea_id"])
                     for row in conn.execute(
@@ -2147,6 +2160,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                 skipped_multisym_commit: list[dict[str, Any]] = []
                 skipped_avoid_terminal: list[dict[str, Any]] = []
                 skipped_longrun_cap: list[dict[str, Any]] = []
+                skipped_opt_census_slots: list[dict[str, Any]] = []
                 longrun_active_counts: dict[str, int] | None = None
                 # NOTE: do NOT refresh the poison-pill table here. Measured cost of
                 # poison_pill_quarantine.refresh_pending() on the live DB is ~413ms
@@ -2172,20 +2186,6 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                 recovery_capped = False
                 for item in conn.execute(_priority_pending_query()).fetchall():
                     payload = _json_loads(item["payload_json"])
-                    if (
-                        pruning_enabled
-                        and str(item["phase"] or "").upper() == "OPT_CENSUS"
-                        and pruning_checked_payloads.get(str(item["id"]))
-                        != str(item["payload_json"] or "{}")
-                    ):
-                        if skip_unchecked_pruning:
-                            continue
-                        conn.commit()
-                        return {
-                            "claimed": False,
-                            "reason": "opt_census_pruning_required",
-                            "candidate": dict(item),
-                        }
                     if (
                         compile_only_due_to_commit_headroom
                         and str(item["phase"]).upper() != farmctl.COMPILE_EA_PHASE
@@ -2281,6 +2281,51 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                                 "threshold_gb": MULTISYMBOL_RAM_MIN_FREE_GB,
                             })
                             continue
+                    item_is_opt_census = str(item["phase"] or "").upper() == "OPT_CENSUS"
+                    opt_program = dl089_scheduling.program_id(
+                        payload,
+                        ea_id=item["ea_id"],
+                        symbol=item["symbol"],
+                    )
+                    if item_is_opt_census:
+                        if opt_program in active_opt_census_programs:
+                            skipped_opt_census_slots.append({
+                                "item_id": item["id"],
+                                "program_id": opt_program,
+                                "reason": "program_already_active",
+                            })
+                            continue
+                        if len(active_opt_census_programs) >= opt_census_slots:
+                            skipped_opt_census_slots.append({
+                                "item_id": item["id"],
+                                "program_id": opt_program,
+                                "reason": "program_slots_full",
+                                "active_programs": sorted(active_opt_census_programs),
+                                "program_slots": opt_census_slots,
+                            })
+                            continue
+                    if (
+                        pruning_enabled
+                        and item_is_opt_census
+                        and pruning_checked_payloads.get(str(item["id"]))
+                        != str(item["payload_json"] or "{}")
+                    ):
+                        candidate_key = (
+                            str(item["id"]),
+                            str(item["payload_json"] or "{}"),
+                        )
+                        if (
+                            candidate_key in pruning_deferred_candidates
+                            or opt_program in pruning_attempted_programs
+                        ):
+                            continue
+                        conn.commit()
+                        return {
+                            "claimed": False,
+                            "reason": "opt_census_pruning_required",
+                            "candidate": dict(item),
+                            "program_id": opt_program,
+                        }
                     history_fingerprint = _history_preflight_fingerprint(item)
                     history_preflight = history_preflight_cache.get(str(item["id"]))
                     if (
@@ -2363,6 +2408,8 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                     "multisymbol_commit_skipped": skipped_multisym_commit,
                     "terminal_avoid_skipped": skipped_avoid_terminal,
                     "longrun_cap_skipped": skipped_longrun_cap,
+                    "opt_census_slot_deferred": skipped_opt_census_slots,
+                    "opt_census_program_slots": opt_census_slots,
                     "recovery_capped": recovery_capped,
                 }
             except Exception:
@@ -2462,29 +2509,38 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
             mutation_lock.__exit__(None, None, None)
 
     claim_result = _claim_under_factory_lock()
-    pruning_preflight: dict[str, Any] | None = None
+    pruning_preflights: list[dict[str, Any]] = []
     history_preflights: list[dict[str, Any]] = []
-    pruning_attempted = False
     for _preflight_index in range(CLAIM_PREFLIGHT_MAX_CANDIDATES):
         reason = claim_result.get("reason")
-        if reason == "opt_census_pruning_required" and not pruning_attempted:
-            pruning_attempted = True
+        if reason == "opt_census_pruning_required":
+            candidate = dict(claim_result["candidate"])
+            program = str(
+                claim_result.get("program_id")
+                or dl089_scheduling.program_id(
+                    _json_loads(candidate.get("payload_json")),
+                    ea_id=candidate.get("ea_id"),
+                    symbol=candidate.get("symbol"),
+                )
+            )
             pruning_preflight = _prune_candidate_outside_factory_lock(
                 root,
                 terminal,
-                dict(claim_result["candidate"]),
+                candidate,
             )
+            pruning_preflights.append({"program_id": program, **pruning_preflight})
+            pruning_attempted_programs.add(program)
             if (
                 pruning_preflight.get("status") == "checked"
                 and pruning_preflight.get("candidate_pending") is True
             ):
-                candidate = dict(claim_result["candidate"])
                 pruning_checked_payloads[str(candidate["id"])] = str(
                     candidate.get("payload_json") or "{}"
                 )
-            # Only one potentially multi-GB pruning evaluation per cycle. A
-            # checked survivor remains eligible; other census rows defer.
-            skip_unchecked_pruning = True
+            else:
+                pruning_deferred_candidates.add(
+                    (str(candidate["id"]), str(candidate.get("payload_json") or "{}"))
+                )
             claim_result = _claim_under_factory_lock()
             continue
         if reason == "history_preflight_required":
@@ -2522,11 +2578,17 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
         # Bound pathological queues: after eight exact preflights, defer every
         # still-unchecked history/census row and let ordinary checked work flow.
         skip_unchecked_history = True
-        skip_unchecked_pruning = True
+        if claim_result.get("reason") == "opt_census_pruning_required":
+            candidate = dict(claim_result["candidate"])
+            pruning_deferred_candidates.add(
+                (str(candidate["id"]), str(candidate.get("payload_json") or "{}"))
+            )
+            pruning_attempted_programs.add(str(claim_result.get("program_id") or ""))
         claim_result = _claim_under_factory_lock()
 
-    if pruning_preflight is not None:
-        claim_result["dl089_claim_pruning_preflight"] = pruning_preflight
+    if pruning_preflights:
+        claim_result["dl089_claim_pruning_preflights"] = pruning_preflights
+        claim_result["dl089_claim_pruning_preflight"] = pruning_preflights[-1]
     if history_preflights:
         claim_result["history_claim_preflights"] = history_preflights
     if completed_claim_recovery:
@@ -4750,12 +4812,19 @@ def _prune_candidate_outside_factory_lock(
 ) -> dict[str, Any]:
     """Run the DL-089 file/hash backstop without the fleet-wide lock.
 
-    A dedicated non-blocking lock prevents every worker from parsing the same
-    native report concurrently.  The database row is re-read and compared with
-    the transaction snapshot before pruning; stale input is never authorized.
+    A per-program non-blocking lock prevents workers from parsing the same
+    program concurrently while independent programs can inspect in parallel.
+    The database row is re-read and compared with the transaction snapshot
+    before pruning; stale input is never authorized.
     """
 
-    lock_path = root / "state" / CLAIM_PRUNING_LOCK_FILENAME
+    payload = _json_loads(candidate.get("payload_json"))
+    program = dl089_scheduling.program_id(
+        payload,
+        ea_id=candidate.get("ea_id"),
+        symbol=candidate.get("symbol"),
+    )
+    lock_path = root / "state" / dl089_scheduling.pruning_lock_filename(program)
     pruning_lock = FactoryMutationLock(
         lock_path,
         owner=f"terminal_worker.dl089_pruning:{terminal}",
@@ -4767,6 +4836,7 @@ def _prune_candidate_outside_factory_lock(
             "status": "busy",
             "reason": "dl089_claim_pruning_lock_busy",
             "lock": str(lock_path),
+            "program_id": program,
             "detail": str(exc),
         }
 
@@ -4778,6 +4848,7 @@ def _prune_candidate_outside_factory_lock(
                 "status": "factory_off",
                 "reason": "factory_off",
                 "item_id": expected_id,
+                "program_id": program,
             }
 
         def _prune() -> dict[str, Any]:
@@ -4796,6 +4867,7 @@ def _prune_candidate_outside_factory_lock(
                         "status": "stale",
                         "reason": "candidate_changed_before_pruning",
                         "item_id": expected_id,
+                        "program_id": program,
                     }
                 pruning = opt_census_pruning.prune_candidate_if_excluded(
                     conn,
@@ -4816,6 +4888,7 @@ def _prune_candidate_outside_factory_lock(
                 return {
                     "status": "checked",
                     "item_id": expected_id,
+                    "program_id": program,
                     "candidate_pending": candidate_pending,
                     "pruning": pruning,
                 }
@@ -4829,6 +4902,7 @@ def _prune_candidate_outside_factory_lock(
                 "status": "sqlite_busy",
                 "reason": "dl089_claim_pruning_sqlite_busy",
                 "item_id": expected_id,
+                "program_id": program,
                 "error": str(exc),
             }
         except Exception as exc:  # fail closed for this census candidate

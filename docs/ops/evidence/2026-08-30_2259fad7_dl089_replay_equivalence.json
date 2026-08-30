@@ -1,0 +1,31 @@
+{
+  "fixture_sha256": "81991eea4466d244d72593c986da6acaf110c73127036966454c52a3bbecda1a",
+  "k4_trace_sha256": "f7b1cd2f0dcef1e6a94477ce69af75a8c2e746e9deab84c07c28cadc67190894",
+  "per_program": {
+    "DL089_FIXTURE_A": {
+      "evidence_sha256": "d903f24db0f2479ac67275fc04fd84d5fd4f86b039fa0b2d9b4b97b4264d8cf8",
+      "pruning_receipts_timestamp_exempt": [
+        {"arm": "PP_BUY1:BUY", "rule": "negative_prior_year"}
+      ],
+      "selected_cells": ["2021:PP_BUY2:BUY"],
+      "terminal_dispositions": ["MEASURED", "SKIPPED_EXCLUDED", "MEASURED"]
+    },
+    "DL089_FIXTURE_B": {
+      "evidence_sha256": "b563d5441799dcc59db2a63e226022d37d38677c8bf9003018af9264542607f7",
+      "pruning_receipts_timestamp_exempt": [
+        {"arm": "PP_SELL2:SELL", "rule": "activity_floor"}
+      ],
+      "selected_cells": ["2020:PP_SELL1:SELL"],
+      "terminal_dispositions": ["MEASURED", "MEASURED", "SKIPPED_EXCLUDED"]
+    },
+    "DL089_FIXTURE_C": {
+      "evidence_sha256": "19c7817c0020af67e07f97c136bbebb4f25d654811c5e5cff1c4bafe0cca4462",
+      "pruning_receipts_timestamp_exempt": [],
+      "selected_cells": ["2020:PP_BUY3:BUY"],
+      "terminal_dispositions": ["MEASURED", "MEASURED"]
+    }
+  },
+  "per_program_byte_equivalent": true,
+  "schema": "qm.dl089-program-replay-result/v1",
+  "serial_trace_sha256": "01a44ed5672742465a01cba1bc13bbfb2b3980cbad65e6878a895096df9bd6cf"
+}
