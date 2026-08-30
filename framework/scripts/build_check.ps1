@@ -20,7 +20,8 @@ param(
     [string]$PresetRepairBuildHash,
     [string]$CompileWorkItemId,
     [ValidatePattern('^T(?:10|[1-9])$')]
-    [string]$ClaimedTerminal
+    [string]$ClaimedTerminal,
+    [string]$SiblingRebindSetfilePath
 )
 
 Set-StrictMode -Version Latest
@@ -435,6 +436,25 @@ function Invoke-SetValidation {
     if (Test-Path -LiteralPath $easRoot) {
         if ($script:PresetRepairGeneratedPath) {
             $setFiles = @(Get-Item -LiteralPath $script:PresetRepairGeneratedPath -ErrorAction SilentlyContinue)
+        } elseif ($SiblingRebindSetfilePath) {
+            $authority = 'router_ops_issue:da2c006e-e5ab-4f85-845f-2925f90dd68d'
+            $allowedLabels = @(
+                'QM5_41195_aa-vol-sma10-opt',
+                'QM5_41196_qs-kama-trend-xau-opt'
+            )
+            if (-not $CompileWorkItemId -or -not $ClaimedTerminal -or
+                ${env:QM_SIBLING_REBIND_AUTHORITY} -cne $authority -or
+                $EALabel -cnotin $allowedLabels) {
+                throw 'BUILD_CHECK_SIBLING_REBIND_AUTHORITY_INVALID'
+            }
+            $expectedRoot = [System.IO.Path]::GetFullPath((Join-Path $easRoot "$EALabel\sets\sibling_rebind_da2c006e"))
+            $resolvedSetfile = [System.IO.Path]::GetFullPath($SiblingRebindSetfilePath)
+            $expectedPrefix = $expectedRoot.TrimEnd('\') + '\'
+            if (-not $resolvedSetfile.StartsWith($expectedPrefix, [System.StringComparison]::OrdinalIgnoreCase) -or
+                [System.IO.Path]::GetExtension($resolvedSetfile) -cne '.set') {
+                throw 'BUILD_CHECK_SIBLING_REBIND_PATH_INVALID'
+            }
+            $setFiles = @(Get-Item -LiteralPath $resolvedSetfile -ErrorAction Stop)
         } elseif ($EALabel) {
             $targetRoot = Join-Path $easRoot $EALabel
             if (Test-Path -LiteralPath $targetRoot) {

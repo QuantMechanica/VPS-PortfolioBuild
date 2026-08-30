@@ -478,6 +478,54 @@ def test_qm5_41194_dl089_build_repair_authority_is_exact_label_bound() -> None:
     )
 
 
+def test_dl089_sibling_rebind_authority_is_exact_task_and_label_bound() -> None:
+    allowed = compile_work_items.DL089_SIBLING_REBIND_EA_LABELS
+    authority = compile_work_items.DL089_SIBLING_REBIND_AUTHORITY
+
+    assert allowed == frozenset({
+        "QM5_41195_aa-vol-sma10-opt",
+        "QM5_41196_qs-kama-trend-xau-opt",
+    })
+    for label in allowed:
+        assert compile_work_items._sibling_rebind_authorized(label, authority)
+        assert compile_work_items._source_repair_authorized(label, authority)
+        assert not compile_work_items._sibling_rebind_authorized(
+            label, "router_ops_issue:28d59a8e-71be-437b-ac8b-0246f37c9ef5"
+        )
+        assert not compile_work_items._sibling_rebind_authorized(
+            label, "router_ops_issue:wrong-task"
+        )
+    assert not compile_work_items._sibling_rebind_authorized(
+        "QM5_41194_brent-tom-mom-opt", authority
+    )
+    assert not compile_work_items._source_repair_authorized(
+        "QM5_41194_brent-tom-mom-opt", authority
+    )
+
+
+def test_dl089_sibling_rebind_setfile_requires_unbound_fixed_risk_neutral_inputs(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "current.set"
+    path.write_text(
+        "; build_hash: pending\n"
+        "RISK_FIXED=1000\nRISK_PERCENT=0\n"
+        "opt_pp_buy1=0\nopt_pp_buy2=0\nopt_pp_buy3=0\n"
+        "opt_pp_sell1=0\nopt_pp_sell2=0\nopt_pp_sell3=0\n",
+        encoding="utf-8",
+    )
+
+    assert compile_work_items._sibling_rebind_setfile_check(path) == (True, [])
+    original = path.read_bytes()
+    path.write_text(path.read_text(encoding="utf-8").replace(
+        "opt_pp_sell3=0", "opt_pp_sell3=1"
+    ), encoding="utf-8")
+    valid, findings = compile_work_items._sibling_rebind_setfile_check(path)
+    assert valid is False
+    assert "SIBLING_REBIND_NEUTRAL_INPUT_INVALID:opt_pp_sell3" in findings
+    assert original != path.read_bytes()
+
+
 def test_qm5_41201_compile_fail_repair_authority_is_failure_and_hash_bound() -> None:
     label = compile_work_items.QM5_41201_COMPILE_FAIL_REPAIR_EA_LABEL
     predecessor_id = (

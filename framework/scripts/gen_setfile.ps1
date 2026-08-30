@@ -12,6 +12,7 @@ param(
     [double]$RiskFixed = 1000,
     [double]$RiskPercent = 0,
     [double]$PortfolioWeight = 1.0,
+    [string]$OutputDirectory,
     [string]$ProvenanceTemplatePath,
     [ValidatePattern('^[0-9a-f]{64}$')]
     [string]$BuildHash
@@ -305,7 +306,9 @@ function Get-EAInputDefaults {
             # Legacy/current EAs are not consistent about input groups.  The
             # live-set invariant below already treats strategy_* as strategy
             # parameters, so collect the same prefix even outside a group.
-            if ($group -eq 'Strategy' -or $name -like 'strategy_*') {
+            if ($group -eq 'Strategy' -or $name -like 'strategy_*' -or
+                $group -eq 'Optimization Pattern Profile' -or
+                $name -like 'opt_pp_*') {
                 $result.strategy[$name] = $value
             }
         }
@@ -597,7 +600,16 @@ if ($ProvenanceTemplatePath) {
 
 $eaInputDefaults = Get-EAInputDefaults -EAFolder $eaFolder
 
-$setsFolder = Join-Path $eaFolder 'sets'
+$defaultSetsFolder = Join-Path $eaFolder 'sets'
+$setsFolder = $defaultSetsFolder
+if (-not [string]::IsNullOrWhiteSpace($OutputDirectory)) {
+    $resolvedDefault = [System.IO.Path]::GetFullPath($defaultSetsFolder).TrimEnd('\') + '\'
+    $resolvedOutput = [System.IO.Path]::GetFullPath($OutputDirectory)
+    if (-not $resolvedOutput.StartsWith($resolvedDefault, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "OUTPUT_DIRECTORY_OUTSIDE_EA_SETS: $resolvedOutput"
+    }
+    $setsFolder = $resolvedOutput
+}
 New-Item -ItemType Directory -Path $setsFolder -Force | Out-Null
 
 $fileName = "${EaSlug}_${Symbol}_${TF}_${Env}.set"

@@ -164,6 +164,21 @@ QM5_41194_DL089_BUILD_REPAIR_AUTHORITY = (
 QM5_41194_DL089_BUILD_REPAIR_EA_LABELS = frozenset({
     "QM5_41194_brent-tom-mom-opt",
 })
+# OWNER-approved, append-only sibling-first-compile ceremony.  Unlike an
+# ordinary source repair this authority permits the two named siblings to keep
+# their immutable parent-era setfiles in ``sets/`` while compiling against one
+# freshly generated setfile in the task-specific nested directory below.  The
+# worker and build checker bind only that fresh file; no other task id or label
+# can select the ceremony path.
+DL089_SIBLING_REBIND_AUTHORITY = (
+    "router_ops_issue:da2c006e-e5ab-4f85-845f-2925f90dd68d"
+)
+DL089_SIBLING_REBIND_EA_LABELS = frozenset({
+    "QM5_41195_aa-vol-sma10-opt",
+    "QM5_41196_qs-kama-trend-xau-opt",
+})
+DL089_SIBLING_REBIND_CONTRACT_VERSION = "qm.dl089-sibling-rebind/v1"
+DL089_SIBLING_REBIND_DIRECTORY = "sibling_rebind_da2c006e"
 # Exact authority for the two DL-089 measurement siblings whose initial compile
 # receipts preceded the final source normalization commit.  The P0 dispatch
 # repair requires current source-bound binaries before it may enqueue any real
@@ -345,6 +360,58 @@ VALID_TIMEFRAMES = (
 _TF_ALTERNATION = "|".join(VALID_TIMEFRAMES)
 _EA_LABEL_RE = re.compile(r"^(QM5_([0-9]+)_([A-Za-z0-9][A-Za-z0-9_-]*))$")
 _BOUND_HASH_RE = re.compile(r"^[0-9a-fA-F]{64}$")
+
+
+def _sibling_rebind_authorized(label: str, authority: str | None) -> bool:
+    return bool(
+        authority == DL089_SIBLING_REBIND_AUTHORITY
+        and label in DL089_SIBLING_REBIND_EA_LABELS
+    )
+
+
+def _sibling_rebind_setfile_path(
+    ea_dir: Path,
+    label: str,
+    symbol: str,
+    timeframe: str,
+) -> Path:
+    return (
+        ea_dir
+        / "sets"
+        / DL089_SIBLING_REBIND_DIRECTORY
+        / f"{label}_{symbol}_{timeframe}_backtest.set"
+    )
+
+
+def _sibling_rebind_setfile_check(path: Path) -> tuple[bool, list[str]]:
+    """Validate the pre-compile sibling set without changing its bytes."""
+
+    findings: list[str] = []
+    try:
+        text = path.read_text(encoding="utf-8-sig")
+    except OSError:
+        return False, ["SIBLING_REBIND_CURRENT_SETFILE_MISSING"]
+    build_match = re.search(
+        r"(?im)^\s*;\s*build_hash\s*:\s*(\S+)\s*$", text
+    )
+    if not build_match or build_match.group(1).lower() != "pending":
+        findings.append("SIBLING_REBIND_CURRENT_SETFILE_NOT_UNBOUND")
+    assignments: dict[str, str] = {}
+    for match in re.finditer(
+        r"(?m)^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*([^\r\n]*)$", text
+    ):
+        assignments[match.group(1)] = match.group(2).strip()
+    if assignments.get("RISK_FIXED") not in {"1000", "1000.0"}:
+        findings.append("SIBLING_REBIND_RISK_FIXED_INVALID")
+    if assignments.get("RISK_PERCENT") not in {"0", "0.0"}:
+        findings.append("SIBLING_REBIND_RISK_PERCENT_INVALID")
+    for name in (
+        "opt_pp_buy1", "opt_pp_buy2", "opt_pp_buy3",
+        "opt_pp_sell1", "opt_pp_sell2", "opt_pp_sell3",
+    ):
+        if assignments.get(name) != "0":
+            findings.append(f"SIBLING_REBIND_NEUTRAL_INPUT_INVALID:{name}")
+    return not findings, findings
 
 # DL-089 Wave 1 live-book requalification: an explicit, named force-rebuild
 # allowlist for the 16 EAs still stuck behind the default "no existing .ex5"
@@ -759,6 +826,7 @@ def _source_repair_authorized(
             authority == QM5_41194_DL089_BUILD_REPAIR_AUTHORITY
             and ea_label in QM5_41194_DL089_BUILD_REPAIR_EA_LABELS
         )
+        or _sibling_rebind_authorized(ea_label, authority)
         or (
             authority == DL089_MATRIX_DISPATCH_REPAIR_AUTHORITY
             and ea_label in DL089_MATRIX_DISPATCH_REPAIR_EA_LABELS
@@ -1255,6 +1323,31 @@ def classify_candidate(
     if source.is_file() and not timeframe.get("timeframe"):
         reasons.append("TIMEFRAME_UNRESOLVED")
 
+    sibling_rebind_authorized = _sibling_rebind_authorized(
+        canonical_label, source_repair_authority
+    )
+    sibling_rebind_setfile: Path | None = None
+    sibling_rebind_setfile_sha: str | None = None
+    sibling_rebind_findings: list[str] = []
+    if sibling_rebind_authorized:
+        if len(symbols) != 1 or not timeframe.get("timeframe"):
+            sibling_rebind_findings.append(
+                "SIBLING_REBIND_IDENTITY_CARDINALITY_INVALID"
+            )
+        else:
+            sibling_rebind_setfile = _sibling_rebind_setfile_path(
+                ea_dir,
+                canonical_label,
+                symbols[0],
+                str(timeframe["timeframe"]),
+            )
+            valid, sibling_rebind_findings = _sibling_rebind_setfile_check(
+                sibling_rebind_setfile
+            )
+            if valid:
+                sibling_rebind_setfile_sha = sha256_file(sibling_rebind_setfile)
+        reasons.extend(sibling_rebind_findings)
+
     force_rebuild_authorized = ea_id in force_rebuild_ea_ids
     force_rebuild_waived_reasons: list[str] = []
     if force_rebuild_authorized:
@@ -1307,6 +1400,17 @@ def classify_candidate(
             and str(_json_object(row.get("payload_json")).get("mq5_sha256") or "").lower()
             != str(source_sha or "").lower()
         ),
+        "sibling_rebind_authorized": sibling_rebind_authorized,
+        "sibling_rebind_contract_version": (
+            DL089_SIBLING_REBIND_CONTRACT_VERSION
+            if sibling_rebind_authorized else None
+        ),
+        "sibling_rebind_current_setfile_path": (
+            str(sibling_rebind_setfile) if sibling_rebind_setfile else None
+        ),
+        "sibling_rebind_current_setfile_sha256": sibling_rebind_setfile_sha,
+        "sibling_rebind_historical_setfiles": bound_hashes,
+        "sibling_rebind_findings": sibling_rebind_findings,
         "source_repair_artifact_bindings": (
             _hma_cata_requal_artifact_bindings()
             if repair_authorized
@@ -1721,6 +1825,23 @@ def enqueue_compile_eas(
                             "source_repair_artifact_bindings", []
                         ),
                     })
+                    if candidate.get("sibling_rebind_authorized"):
+                        payload.update({
+                            "sibling_rebind_contract_version": (
+                                DL089_SIBLING_REBIND_CONTRACT_VERSION
+                            ),
+                            "sibling_rebind_authority": source_repair_authority,
+                            "sibling_rebind_current_setfile_path": candidate.get(
+                                "sibling_rebind_current_setfile_path"
+                            ),
+                            "sibling_rebind_current_setfile_sha256": candidate.get(
+                                "sibling_rebind_current_setfile_sha256"
+                            ),
+                            "sibling_rebind_historical_setfiles": candidate.get(
+                                "sibling_rebind_historical_setfiles", []
+                            ),
+                            "append_only_sibling_rebind": True,
+                        })
                     if (
                         source_repair_authority
                         == HMA_CATA_REQUAL_SOURCE_REPAIR_AUTHORITY
@@ -2095,6 +2216,30 @@ def run_compile_work_item(
             raise RuntimeError("CANDIDATE_RECHECK_REFUSED:" + ";".join(candidate.get("reasons") or [candidate.get("reason")]))
         if candidate.get("mq5_sha256") != payload.get("mq5_sha256"):
             raise RuntimeError("SOURCE_CHANGED_AFTER_ENQUEUE")
+        sibling_rebind = bool(
+            payload.get("append_only_sibling_rebind") is True
+            and payload.get("sibling_rebind_contract_version")
+            == DL089_SIBLING_REBIND_CONTRACT_VERSION
+            and payload.get("sibling_rebind_authority")
+            == DL089_SIBLING_REBIND_AUTHORITY
+            and candidate.get("sibling_rebind_authorized") is True
+        )
+        if candidate.get("sibling_rebind_authorized") is True and not sibling_rebind:
+            raise RuntimeError("SIBLING_REBIND_PAYLOAD_INVALID")
+        sibling_rebind_path: Path | None = None
+        if sibling_rebind:
+            if (
+                candidate.get("sibling_rebind_current_setfile_path")
+                != payload.get("sibling_rebind_current_setfile_path")
+                or candidate.get("sibling_rebind_current_setfile_sha256")
+                != payload.get("sibling_rebind_current_setfile_sha256")
+                or candidate.get("sibling_rebind_historical_setfiles")
+                != payload.get("sibling_rebind_historical_setfiles")
+            ):
+                raise RuntimeError("SIBLING_REBIND_BINDING_CHANGED_AFTER_ENQUEUE")
+            sibling_rebind_path = Path(
+                str(candidate["sibling_rebind_current_setfile_path"])
+            )
         running = running_terminal_names()
         evidence["running_terminals_at_worker_start"] = sorted(running)
         if terminal.upper() in running:
@@ -2107,9 +2252,34 @@ def run_compile_work_item(
         env = os.environ.copy()
         env["QM_COMPILE_WORK_ITEM_ID"] = work_item_id
         env["QM_COMPILE_CLAIMED_TERMINAL"] = terminal.upper()
+        if sibling_rebind:
+            env["QM_SIBLING_REBIND_AUTHORITY"] = DL089_SIBLING_REBIND_AUTHORITY
         creationflags = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
         generator = repo_root / "framework" / "scripts" / "gen_setfile.ps1"
         for symbol in symbols:
+            if sibling_rebind:
+                assert sibling_rebind_path is not None
+                evidence["setfile_generation"].append({
+                    "symbol": symbol,
+                    "mode": "pre_generated_append_only_sibling_rebind",
+                    "exit_code": 0,
+                    "setfile_path": str(sibling_rebind_path),
+                    "setfile_exists": sibling_rebind_path.is_file(),
+                    "setfile_sha256": (
+                        sha256_file(sibling_rebind_path)
+                        if sibling_rebind_path.is_file() else None
+                    ),
+                    "historical_setfiles": payload.get(
+                        "sibling_rebind_historical_setfiles", []
+                    ),
+                })
+                if (
+                    not sibling_rebind_path.is_file()
+                    or sha256_file(sibling_rebind_path)
+                    != payload.get("sibling_rebind_current_setfile_sha256")
+                ):
+                    raise RuntimeError("SIBLING_REBIND_CURRENT_SETFILE_CHANGED")
+                continue
             command = [
                 "powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass",
                 "-File", str(generator),
@@ -2153,6 +2323,11 @@ def run_compile_work_item(
             "-CompileWorkItemId", work_item_id,
             "-ClaimedTerminal", terminal.upper(),
         ]
+        if sibling_rebind:
+            assert sibling_rebind_path is not None
+            build_command.extend([
+                "-SiblingRebindSetfilePath", str(sibling_rebind_path),
+            ])
         checked = subprocess.run(
             build_command,
             cwd=repo_root,
@@ -2193,10 +2368,34 @@ def run_compile_work_item(
             "build_check_output_tail": build_output[-20000:],
         })
         ex5 = ea_dir / f"{label}.ex5"
-        setfiles = sorted((ea_dir / "sets").glob("*.set"))
+        setfiles = (
+            [sibling_rebind_path]
+            if sibling_rebind and sibling_rebind_path is not None
+            else sorted((ea_dir / "sets").glob("*.set"))
+        )
         evidence["ex5_path"] = str(ex5)
         evidence["ex5_sha256"] = sha256_file(ex5) if ex5.is_file() else None
         evidence["setfile_count"] = len(setfiles)
+        if sibling_rebind:
+            evidence["sibling_rebind"] = {
+                "contract_version": DL089_SIBLING_REBIND_CONTRACT_VERSION,
+                "authority": DL089_SIBLING_REBIND_AUTHORITY,
+                "current_setfile_path": str(sibling_rebind_path),
+                "current_setfile_sha256_after_binding": (
+                    sha256_file(sibling_rebind_path)
+                    if sibling_rebind_path and sibling_rebind_path.is_file()
+                    else None
+                ),
+                "historical_setfiles_before": payload.get(
+                    "sibling_rebind_historical_setfiles", []
+                ),
+                "historical_setfiles_after": _bound_setfile_hashes(ea_dir),
+            }
+            if (
+                evidence["sibling_rebind"]["historical_setfiles_before"]
+                != evidence["sibling_rebind"]["historical_setfiles_after"]
+            ):
+                raise RuntimeError("SIBLING_REBIND_HISTORICAL_SETFILE_CHANGED")
         evidence["failure_classes"] = _failure_classes(build_output, checked.returncode)
         evidence["success"] = bool(
             checked.returncode == 0
