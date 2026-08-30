@@ -1,7 +1,7 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-08-27T05:10:26.2664349Z",
-    "total":  3863,
+    "generated_at":  "2026-08-29T05:11:50.2009551Z",
+    "total":  3864,
     "items":  [
                   {
                       "slug":  "ath-breakout-atr-trail",
@@ -20846,6 +20846,12 @@
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-08-24T17:11:37.5177854Z"
+                  },
+                  {
+                      "slug":  "QM5_41192_xtixng-mdaily-hl-rv",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-08-29T01:18:47.3440679Z"
                   },
                   {
                       "slug":  "QM5_5001_legend-unger-breakout",

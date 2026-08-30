@@ -1,6 +1,6 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-08-27T05:10:45.0065772Z",
+    "generated_at":  "2026-08-29T05:12:19.7234236Z",
     "phase":  "Endausbaustufe-Modus - highest EA at Q14",
     "agents":  {
                    "offline":  1,
@@ -8,21 +8,21 @@
                    "blocked":  0
                },
     "pipeline":  {
-                     "eas_built":  4680,
+                     "eas_built":  4692,
                      "by_gate_v4":  {
                                         "gate_contract_version":  "v4",
                                         "Q00":  0,
                                         "Q01":  0,
-                                        "Q02":  1958,
-                                        "Q03":  961,
+                                        "Q02":  1968,
+                                        "Q03":  965,
                                         "Q04":  463,
                                         "Q05":  255,
                                         "Q06":  230,
-                                        "Q07":  175,
+                                        "Q07":  176,
                                         "Q08":  40,
-                                        "Q09":  50,
+                                        "Q09":  60,
                                         "Q10":  32,
-                                        "Q11":  35,
+                                        "Q11":  37,
                                         "Q12":  2,
                                         "Q13":  0,
                                         "Q14":  3,
@@ -34,21 +34,21 @@
                                       "gate_contract_version":  "legacy-p-frozen/v1",
                                       "G0":  0,
                                       "P1":  0,
-                                      "P2":  1958,
-                                      "P3":  961,
+                                      "P2":  1968,
+                                      "P3":  965,
                                       "P3_5":  0,
                                       "P4":  463,
                                       "P5":  255,
                                       "P5b":  0,
                                       "P5c":  0,
                                       "P6":  230,
-                                      "P7":  175,
+                                      "P7":  176,
                                       "P8":  40,
-                                      "P9":  35,
+                                      "P9":  37,
                                       "P9b":  2,
                                       "P10":  0
                                   },
-                     "strategy_cards":  3863
+                     "strategy_cards":  3864
                  },
     "public_archive":  {
                            "gate_contract_version":  "v4",
@@ -3421,7 +3421,7 @@
                                                            "Q06":  "PASS",
                                                            "Q07":  "PASS",
                                                            "Q08":  "PASS",
-                                                           "Q09":  "IN_PROGRESS",
+                                                           "Q09":  "PASS",
                                                            "Q10":  "UNTESTED",
                                                            "Q11":  "UNTESTED",
                                                            "Q12":  "UNTESTED",
@@ -25148,8 +25148,8 @@
                                              "public_id":  "card_559e9747a0b5ed44",
                                              "gates":  {
                                                            "Q00":  "PASS",
-                                                           "Q01":  "UNTESTED",
-                                                           "Q02":  "UNTESTED",
+                                                           "Q01":  "PASS",
+                                                           "Q02":  "IN_PROGRESS",
                                                            "Q03":  "UNTESTED",
                                                            "Q04":  "UNTESTED",
                                                            "Q05":  "UNTESTED",
@@ -29219,7 +29219,7 @@
                                              "public_id":  "card_639716f6d9cda7d4",
                                              "gates":  {
                                                            "Q00":  "PASS",
-                                                           "Q01":  "PASS",
+                                                           "Q01":  "UNTESTED",
                                                            "Q02":  "UNTESTED",
                                                            "Q03":  "UNTESTED",
                                                            "Q04":  "UNTESTED",
@@ -33888,7 +33888,7 @@
                                              "public_id":  "card_71bd31836b9186a7",
                                              "gates":  {
                                                            "Q00":  "PASS",
-                                                           "Q01":  "PASS",
+                                                           "Q01":  "UNTESTED",
                                                            "Q02":  "UNTESTED",
                                                            "Q03":  "UNTESTED",
                                                            "Q04":  "UNTESTED",
@@ -40260,7 +40260,7 @@
                                              "gates":  {
                                                            "Q00":  "PASS",
                                                            "Q01":  "PASS",
-                                                           "Q02":  "UNTESTED",
+                                                           "Q02":  "IN_PROGRESS",
                                                            "Q03":  "UNTESTED",
                                                            "Q04":  "UNTESTED",
                                                            "Q05":  "UNTESTED",
@@ -44077,8 +44077,8 @@
                                              "public_id":  "card_95bab94226a0081a",
                                              "gates":  {
                                                            "Q00":  "PASS",
-                                                           "Q01":  "UNTESTED",
-                                                           "Q02":  "UNTESTED",
+                                                           "Q01":  "PASS",
+                                                           "Q02":  "IN_PROGRESS",
                                                            "Q03":  "UNTESTED",
                                                            "Q04":  "UNTESTED",
                                                            "Q05":  "UNTESTED",
@@ -53021,6 +53021,29 @@
                                                        }
                                          },
                                          {
+                                             "public_id":  "card_b4ce1be6b9fd9caf",
+                                             "gates":  {
+                                                           "Q00":  "PASS",
+                                                           "Q01":  "PASS",
+                                                           "Q02":  "IN_PROGRESS",
+                                                           "Q03":  "UNTESTED",
+                                                           "Q04":  "UNTESTED",
+                                                           "Q05":  "UNTESTED",
+                                                           "Q06":  "UNTESTED",
+                                                           "Q07":  "UNTESTED",
+                                                           "Q08":  "UNTESTED",
+                                                           "Q09":  "UNTESTED",
+                                                           "Q10":  "UNTESTED",
+                                                           "Q11":  "UNTESTED",
+                                                           "Q12":  "UNTESTED",
+                                                           "Q13":  "UNTESTED",
+                                                           "Q14":  "UNTESTED",
+                                                           "Q15":  "UNTESTED",
+                                                           "Q16":  "UNTESTED",
+                                                           "Q17":  "UNTESTED"
+                                                       }
+                                         },
+                                         {
                                              "public_id":  "card_b4dc4f6ec6957493",
                                              "gates":  {
                                                            "Q00":  "PASS",
@@ -59602,7 +59625,7 @@
                                              "public_id":  "card_cb15c23b1ca698b9",
                                              "gates":  {
                                                            "Q00":  "PASS",
-                                                           "Q01":  "PASS",
+                                                           "Q01":  "UNTESTED",
                                                            "Q02":  "UNTESTED",
                                                            "Q03":  "UNTESTED",
                                                            "Q04":  "UNTESTED",
@@ -59680,7 +59703,7 @@
                                                            "Q07":  "PASS",
                                                            "Q08":  "PASS",
                                                            "Q09":  "PASS",
-                                                           "Q10":  "IN_PROGRESS",
+                                                           "Q10":  "UNTESTED",
                                                            "Q11":  "UNTESTED",
                                                            "Q12":  "UNTESTED",
                                                            "Q13":  "UNTESTED",
@@ -60753,7 +60776,7 @@
                                              "gates":  {
                                                            "Q00":  "PASS",
                                                            "Q01":  "PASS",
-                                                           "Q02":  "IN_PROGRESS",
+                                                           "Q02":  "FAIL",
                                                            "Q03":  "UNTESTED",
                                                            "Q04":  "UNTESTED",
                                                            "Q05":  "UNTESTED",
