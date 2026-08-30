@@ -145,6 +145,17 @@ REVIEW_REWORK_SOURCE_REPAIR_AUTHORITIES = {
 REVIEW_REWORK_SOURCE_REPAIR_EA_LABELS = frozenset(
     REVIEW_REWORK_SOURCE_REPAIR_AUTHORITIES
 )
+# Exact ops authority for the post-review QM5_38006 rework compile. The
+# reviewed source contains the required drawdown and fail-closed history fixes,
+# while its existing EX5 is bound to the pre-rework source. This one
+# router-task/label binding permits only an append-only, source-hash-bound
+# COMPILE_EA successor and grants no backtest or gate-verdict authority.
+QM5_38006_REVIEW_REPAIR_AUTHORITY = (
+    "router_ops_issue:81811459-7f67-4799-b906-a3448ec69652"
+)
+QM5_38006_REVIEW_REPAIR_EA_LABELS = frozenset({
+    "QM5_38006_codetrading-doji-hammer-pivot-rejection",
+})
 # Exact router authority for the QM5_41163 Pattern-Permission sibling MAE-hook
 # retrofit. The original governed compile row 16f86fe7 failed only the current
 # Q08 sampler requirement; this one-task/one-label binding permits an append-only
@@ -1061,6 +1072,10 @@ def _source_repair_authorized(
         or (
             authority == QM5_41163_MAE_REPAIR_AUTHORITY
             and ea_label in QM5_41163_MAE_REPAIR_EA_LABELS
+        )
+        or (
+            authority == QM5_38006_REVIEW_REPAIR_AUTHORITY
+            and ea_label in QM5_38006_REVIEW_REPAIR_EA_LABELS
         )
         or (
             authority == QM5_41163_SETFILE_REPAIR_AUTHORITY
