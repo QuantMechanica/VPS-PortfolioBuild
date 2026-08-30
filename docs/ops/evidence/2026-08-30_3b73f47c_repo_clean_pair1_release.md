@@ -22,7 +22,7 @@ The pre-existing canonical changes were separated into coherent, explicit-pathsp
 - `ab4a1317b` `pipeline: preserve evidence baseline and calibration`
 - `291d676e4` `ops: refresh public strategy snapshots`
 
-An unrelated concurrent evidence commit, `23b731ff3`, was preserved. The running pump later added unrelated commit `269010ec6`; neither was rewritten.
+An unrelated concurrent evidence commit, `23b731ff3`, was preserved. The running pump also added unrelated commits `269010ec6` and `8cb0d96dd`; none was rewritten. After the final health check, the still-running pump left one artifact deletion and one stable governed compile pair. They were preserved with explicit pathspecs as `0b55c8494` and `d53e7d95e`; the QM5_41233 MQ5/set guardrail check passed and the EX5 commit hook bound compile receipt `d70d9e5b-3b6e-46bf-bb99-a331c2bb6f9f`.
 
 Four `.ex5` files rejected by the governed build commit guard were removed from the checkout and preserved recoverably at `D:/QM/reports/maintenance/20260830_repo_dirty_build_guard_3b73f47c/` with their binaries and patches:
 
