@@ -1,0 +1,126 @@
+{
+  "artifact_type": "qm5_20224_q03_hard_cpu_stop",
+  "schema": "qm.mission-paced-handoff/v1",
+  "generated_at_utc": "2026-08-30T07:00:58.5467732Z",
+  "generated_at_europe_berlin": "2026-08-30T09:00:58.5467732+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "fd4bc06f9311763dfd7bf4818bacf3c857a82e90",
+  "mission_outcome": "BACKTEST_CPU_CEILING_STOP_NO_QUEUE_MUTATION",
+  "frontier_reconciliation": {
+    "controlling_research": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "durable_coverage_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "relationships_total": 66,
+    "relationships_covered": 66,
+    "relationships_uncovered": 0,
+    "new_unbuilt_pair_eligible": false,
+    "approved_cointegration_cards_unbuilt_at_latest_census": 0,
+    "anchors": {
+      "QM5_12532": {
+        "pair": [
+          "AUDUSD.DWX",
+          "NZDUSD.DWX"
+        ],
+        "q02": "PASS",
+        "later_chain": "Q04 PASS; Q05 FAIL",
+        "current_q02_oninit_or_no_history_block": false
+      },
+      "QM5_12533": {
+        "pair": [
+          "EURJPY.DWX",
+          "GBPJPY.DWX"
+        ],
+        "q02": "PASS",
+        "later_chain": "Q04 FAIL",
+        "current_q02_oninit_or_no_history_block": false
+      }
+    },
+    "skill_gate_disposition": {
+      "strategy_card_extraction": "CLOSED_NO_NON_DUPLICATE_SCAN_QUALIFIED_PAIR",
+      "ea_build": "CLOSED_NO_APPROVED_UNBUILT_COINTEGRATION_CARD",
+      "pipeline_phase_skill": "NOT_APPLICABLE_TO_Q03_OR_Q04"
+    }
+  },
+  "selected_existing_forex_fallback": {
+    "ea_id": "QM5_20224",
+    "ea_directory": "framework/EAs/QM5_20224_eurusd-eurjpy",
+    "approved_card": "strategy-seeds/cards/approved/QM5_20224_eurusd-eurjpy_card.md",
+    "logical_symbol": "QM5_20224_EURUSD_EURJPY_COINTEGRATION_D1",
+    "traded_symbols": [
+      "EURUSD.DWX",
+      "EURJPY.DWX"
+    ],
+    "conversion_history_only_symbols": [
+      "USDJPY.DWX"
+    ],
+    "timeframe": "D1",
+    "fixed_beta": -0.236324029,
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "portfolio_weight": 1.0,
+    "structural_only": true,
+    "machine_learning": false,
+    "adaptive_refit": false,
+    "last_committed_canonical_state": {
+      "source_receipt": "artifacts/qm5_20224_q03_paced_predecessor_handoff_20260830T041912Z_board_advisor.json",
+      "q02": "PASS",
+      "q03_work_item_id": "3c74eb04-7e19-4aa0-8dcf-3f004faaa946",
+      "q03_status": "pending",
+      "q03_priority_track": true,
+      "q04_status": "pending",
+      "active_serialized_predecessor_at_source_receipt": "QM5_20294 Q05"
+    },
+    "fresh_state_query_after_cpu_ceiling": false
+  },
+  "capacity_sample": {
+    "command": "five Get-Counter \\Processor(_Total)\\% Processor Time samples at one-second intervals",
+    "samples_cpu_percent": [
+      93.55534606577051,
+      94.0673815384456,
+      94.82799711370787,
+      87.69781595488999,
+      97.08290746411622
+    ],
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "average_cpu_percent": 93.44628962738604,
+    "maximum_cpu_percent": 97.08290746411622,
+    "hard_ceiling_percent": 97.0,
+    "average_binding": false,
+    "maximum_binding": true,
+    "ceiling_binding": true
+  },
+  "actions_this_run": {
+    "frontier_and_anchor_reconciled": true,
+    "existing_forex_fallback_selected": true,
+    "capacity_rechecked": true,
+    "stopped_immediately_on_capacity_ceiling": true,
+    "new_card_or_ea_created": false,
+    "existing_forex_row_mutated": false,
+    "q02_or_later_phase_enqueued": false,
+    "queue_priority_claim_status_or_verdict_mutated": false,
+    "dispatch_tick": false,
+    "terminal_or_worker_controlled": false,
+    "compile_smoke_or_backtest_started": false,
+    "cpu_stop_evidence_created": true
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false,
+    "live_or_deploy_manifest_touched": false,
+    "preexisting_worktree_changes_preserved": true
+  },
+  "non_duplicate_delta": {
+    "preceding_receipt": "artifacts/qm5_20224_q03_paced_predecessor_handoff_20260830T041912Z_board_advisor.json",
+    "preceding_average_cpu_percent": 77.549412,
+    "preceding_maximum_cpu_percent": 80.388154,
+    "changed_state": "The preceding receipt's non-binding CPU window has reversed: the fresh maximum is 97.082907 percent and now binds the explicit 97 percent stop contract.",
+    "duplicate_work_items_created": 0
+  },
+  "resume_contract": "On the next paced wake, take a new five-sample CPU window before any queue or terminal action. Proceed with the existing exact QM5_20224 Q03 identity only if both average and maximum are strictly below 97 percent and the serialized basket lane is free; never enqueue a duplicate or prioritize Q04 before Q03 PASS."
+}
