@@ -84,9 +84,9 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: Q01
-q01_status: NOT_BUILT
-q02_status: NOT_ENQUEUED_Q01_PENDING
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: NOT_ENQUEUED_CPU_CEILING
 force_build: true
 review_focus: "Falsify a robust XAU/XAG recurring-calendar relative-value sleeve outside the directional XAU/SP500/NDX/XNG book. Verify synchronized normalized endpoints, exact-year bounds, XAU-minus-XAG orientation, ordinary median arithmetic, consumed month, aggregate fixed risk, atomic opposite legs, frozen stops, and next-month exit. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]

@@ -1,0 +1,73 @@
+{
+  "schema": "qm.build-result/v1",
+  "build_generation": 0,
+  "ea_id": "QM5_41226",
+  "slug": "xauxag-medcal",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_41226_xauxag-medcal",
+  "implementation_commit": "43515226f3018710dfa21c2273bab39b6141b955",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_41226_xauxag-medcal/QM5_41226_xauxag-medcal.mq5",
+  "mq5_sha256": "b521d8569b42c3607dab63af8991c783d9de80cd4bbfbeaa7ec0329995cd16bb",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_41226_xauxag-medcal/QM5_41226_xauxag-medcal.ex5",
+  "ex5_sha256": "48a311eebd07ace8cf22d8fc66af6d899493bbe54226671e853fffa5d89d390e",
+  "magic_base": 412260000,
+  "symbols_registered": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "logical_symbol": "QM5_41226_XAU_XAG_MEDCAL_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "timeframe": "D1",
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_41226_xauxag-medcal/sets/QM5_41226_xauxag-medcal_QM5_41226_XAU_XAG_MEDCAL_D1_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_41226_xauxag-medcal/sets/QM5_41226_xauxag-medcal_XAUUSD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_41226_xauxag-medcal/sets/QM5_41226_xauxag-medcal_XAGUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_sha256": {
+    "QM5_41226_xauxag-medcal_QM5_41226_XAU_XAG_MEDCAL_D1_D1_backtest.set": "5b173818cb76e197a8c3920676e096fdf26be6385de8de7ee1fb6d58268594f1",
+    "QM5_41226_xauxag-medcal_XAUUSD.DWX_D1_backtest.set": "79a3f98f87c1c8fe58faac4710a53006ce01803273c08902c5556d074e128189",
+    "QM5_41226_xauxag-medcal_XAGUSD.DWX_D1_backtest.set": "2b7537d088d8a7776f0947a94f18b52ff787ad9df5d72b3124d87bb09ea6bcd3"
+  },
+  "basket_manifest_path": "C:/QM/repo/framework/EAs/QM5_41226_xauxag-medcal/basket_manifest.json",
+  "basket_manifest_sha256": "57881fd228cff66855e51f041d42bcd6c108572c3ab057e88e9f14364a90e1bd",
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_41226_xauxag-medcal/SPEC.md",
+  "spec_md_sha256": "66de99dfe52d766426e730294b7a9fee5c26010d3bf9dbfd3d53f890f522ee69",
+  "reference_test_path": "C:/QM/repo/framework/EAs/QM5_41226_xauxag-medcal/docs/test_same_calendar_median_basket_reference.py",
+  "reference_test_sha256": "6aaa85546f8a1c60006a66ce930c6788a5cf60c5282cda4c673efe91d524eb28",
+  "reference_test_result": "PASS_10_OF_10",
+  "approved_card_sha256": "3e9a0949f5284f96aa3efc2c285c6000b595d48da1576da4cac1f5d0997178cc",
+  "build_check_passed": true,
+  "build_check_failures": 0,
+  "build_check_nonfatal_warnings": 4,
+  "build_check_warning_codes": [
+    "EA_PERF_UNGATED_BAR_DATA",
+    "EA_CARD_LOSS_LIMIT_UNDECIDABLE",
+    "EA_BROKER_TIME_WINDOW_UNDECIDABLE",
+    "EA_CARD_PENDING_ORDER_UNDECIDABLE"
+  ],
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_work_item_id": "d795d22d-1289-4f40-9fcf-585bbedc282d",
+  "compile_evidence_path": "D:/QM/reports/work_items/d795d22d-1289-4f40-9fcf-585bbedc282d/QM5_41226/COMPILE_EA/compile_evidence.json",
+  "compile_evidence_sha256": "2f5a8f87fb15b1abcb3e65b9b2a191e2fccf17ee3f3773838952505f52e2ced6",
+  "compile_verdict": "COMPILE_OK",
+  "build_check_report": "D:/QM/reports/framework/21/build_check_20260830_110501.json",
+  "build_check_report_sha256": "9d3efe2b91be543b655fcc1da7eb74bb40ddb0b6d6c0a06d19f2724fa41039e1",
+  "compile_release_dry_run": "artifacts/qm5_41226_compile_release_dry_run_20260830.json",
+  "compile_release_dry_run_sha256": "0b6aa3299d8404e17b1f42b399e121415adbbedc723bcc1699446e919a7213d3",
+  "compile_release": "artifacts/qm5_41226_compile_release_20260830.json",
+  "compile_release_sha256": "e8c64b56fdb175bd64109782272b925500213c8252204ff407c56f7349ac745d",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "smoke_result": "not_run_cpu_ceiling",
+  "q02_enqueued": false,
+  "blocked_reason": "Q02_NOT_ENQUEUED_CPU_CEILING:max=97.30>=97.0",
+  "open_questions": [
+    "Q02 must establish package-level frequency, fills, cost drag, and baseline economics.",
+    "Only unchanged Q09 may determine realized portfolio correlation or diversification value."
+  ],
+  "built_at_utc": "2026-08-30T11:05:34+00:00"
+}

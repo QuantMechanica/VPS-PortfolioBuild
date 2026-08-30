@@ -1,0 +1,163 @@
+{
+  "schema": "qm.new-commodity-sleeve-build-cpu-stop/v1",
+  "recorded_at_utc": "2026-08-30T11:11:19.6697080Z",
+  "branch": "agents/board-advisor",
+  "mission": "new_structural_commodity_sleeve",
+  "outcome": "BUILT_COMPILE_OK_Q02_NOT_ENQUEUED_CPU_CEILING",
+  "ea": {
+    "ea_id": "QM5_41226",
+    "slug": "xauxag-medcal",
+    "strategy_id": "KELOHARJU-XAUXAG-MEDCAL-2026_S01",
+    "logical_symbol": "QM5_41226_XAU_XAG_MEDCAL_D1",
+    "host_symbol": "XAUUSD.DWX",
+    "companion_symbol": "XAGUSD.DWX",
+    "timeframe": "D1",
+    "magics": [
+      412260000,
+      412260001
+    ]
+  },
+  "edge": {
+    "class": "xau_xag_five_to_ten_year_same_calendar_relative_sample_median_seasonality",
+    "frequency": "monthly",
+    "mechanic": "At the first normalized host D1 broker-month transition, scan the same calendar month in exact years Y-1 through Y-10, retain five to ten synchronized XAU-minus-XAG log-return pairs, compute the ordinary odd/even sample median, and hold opposite XAU/XAG legs through the month only when the median lies strictly outside plus or minus 1e-12.",
+    "book_difference": "The candidate owns an opposite-leg precious-metals relative package rather than the book's outright XAU, SP500, NDX, or XNG direction. Market-neutral-style construction is an objective, not proof of dollar, beta, volatility, factor, market, or portfolio neutrality; unchanged Q09 remains the realized-correlation authority.",
+    "dedup_verdict": "CLEAN_DISTINCT_XAUXAG_SAME_CALENDAR_RELATIVE_ORDINARY_SAMPLE_MEDIAN_MONTHLY_BASKET",
+    "dedup_receipt": "artifacts/qm5_xauxag_medcal_preallocation_dedup_20260830.json",
+    "dedup_receipt_sha256": "3989f7eba257ef1fead63d8a4abce61fde6aa6f6b61bb8dfec9067b5011024eb",
+    "dedup_scan": {
+      "registry_identities": 4725,
+      "cards": 1363,
+      "strategy_wiki_nodes": 45,
+      "exact_matches": 0
+    },
+    "fuzzy_neighbors": [
+      "QM5_20186 raw-mean XAU/XAG same-calendar basket",
+      "QM5_41206 ten-observation iterative Huber-location XAU/XAG same-calendar basket",
+      "QM5_41210 magnitude-and-standard-error t-score XAU/XAG same-calendar basket",
+      "QM5_41213 binary sign-score XAU/XAG same-calendar basket"
+    ],
+    "locked_disagreements": [
+      {
+        "observations": [0.01, 0.01, 0.01, 0.01, -0.2],
+        "raw_mean_direction": "SELL_XAU_BUY_XAG",
+        "median_direction": "BUY_XAU_SELL_XAG",
+        "interpretation": "One negative shock controls the raw mean but not the central order statistic."
+      },
+      {
+        "observations": [0.001, -0.2, -0.2, 0.2, 0.2],
+        "sign_score_direction": "FLAT",
+        "median_direction": "BUY_XAU_SELL_XAG",
+        "interpretation": "A tied binary sign count is flat while the ordered central observation remains positive."
+      }
+    ]
+  },
+  "governance": {
+    "source_packet": "strategy-seeds/sources/KELOHARJU-FMR-XAUXAG-SAMECAL-2026/source.md",
+    "source_packet_sha256": "9266e47c7f3235d900c9432feac33a417807ae1e2cc9685ff2feadab46dbf75e",
+    "source_approval": "decisions/2026-08-30_xauxag_median_same_calendar_source_approval.md",
+    "source_approval_sha256": "4bf301c7583d9d904fc3aa6f3588838b006547d1671e2118923e2b20a08fc1c2",
+    "g0_decision": "decisions/2026-08-30_qm5_41226_xauxag_median_same_calendar_g0.md",
+    "g0_decision_sha256": "9486598807d444ba0af7545e9867bb9850d19ee4ec41b69c59d3a67b33237bbd",
+    "g0_status": "APPROVED",
+    "approved_card": "strategy-seeds/cards/approved/QM5_41226_xauxag-medcal_card.md",
+    "approved_card_sha256": "3e9a0949f5284f96aa3efc2c285c6000b595d48da1576da4cac1f5d0997178cc",
+    "magic_allocation_receipt": "artifacts/qm5_41226_magic_allocation_20260830.json",
+    "magic_allocation_receipt_sha256": "cdacb89396bfc454214047249db57b0870d6dc7397c99948dcff66df23aec8d9",
+    "source_basis": "Complete governed packets for the peer-reviewed same-calendar return-seasonality and commodity cross-sectional lineages; the ordinary median, two-CFD conjunction, epsilon, costs, and lifecycle are disclosed QM translations with no transferred performance claim."
+  },
+  "build": {
+    "implementation_commit": "43515226f3018710dfa21c2273bab39b6141b955",
+    "build_result": "artifacts/qm5_41226_build_result_20260830.json",
+    "build_result_sha256": "8455c9a3b144d044523bdd8e7a787ee1779e16189c082383de9a47410c0e8dc8",
+    "compile_work_item_id": "d795d22d-1289-4f40-9fcf-585bbedc282d",
+    "compile_work_item_status": "done",
+    "compile_verdict": "COMPILE_OK",
+    "compile_evidence": "D:/QM/reports/work_items/d795d22d-1289-4f40-9fcf-585bbedc282d/QM5_41226/COMPILE_EA/compile_evidence.json",
+    "compile_evidence_sha256": "2f5a8f87fb15b1abcb3e65b9b2a191e2fccf17ee3f3773838952505f52e2ced6",
+    "build_check_report": "D:/QM/reports/framework/21/build_check_20260830_110501.json",
+    "build_check_report_sha256": "9d3efe2b91be543b655fcc1da7eb74bb40ddb0b6d6c0a06d19f2724fa41039e1",
+    "mq5_sha256": "b521d8569b42c3607dab63af8991c783d9de80cd4bbfbeaa7ec0329995cd16bb",
+    "ex5_sha256": "48a311eebd07ace8cf22d8fc66af6d899493bbe54226671e853fffa5d89d390e",
+    "logical_setfile_sha256": "5b173818cb76e197a8c3920676e096fdf26be6385de8de7ee1fb6d58268594f1",
+    "logical_setfile_build_hash": "aa0f9ad4efde7b06b408d97df1e1d9bc58e1f28906a84e623adba750407e7226",
+    "basket_manifest_sha256": "57881fd228cff66855e51f041d42bcd6c108572c3ab057e88e9f14364a90e1bd",
+    "spec_sha256": "66de99dfe52d766426e730294b7a9fee5c26010d3bf9dbfd3d53f890f522ee69",
+    "build_check": "PASS",
+    "build_check_failures": 0,
+    "build_check_nonfatal_warnings": 4,
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "risk_mode": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    }
+  },
+  "capacity_before_q02": {
+    "sampled_at_utc_end": "2026-08-30T11:06:24.2093529Z",
+    "hard_ceiling_percent": 97.0,
+    "samples_percent": [
+      97.3,
+      96.29,
+      92.35,
+      88.12,
+      86.27
+    ],
+    "average_percent": 92.07,
+    "maximum_percent": 97.3,
+    "ceiling_binding": true,
+    "trigger": "maximum_at_or_above_ceiling",
+    "active_work_items": 7,
+    "active_phase_counts": {
+      "OPT_CENSUS": 3,
+      "Q03": 1,
+      "Q07": 1,
+      "Q10_NEWS": 2
+    },
+    "path_anchored_running_factory_terminals": [
+      "T6",
+      "T7",
+      "T8",
+      "T9",
+      "T10"
+    ],
+    "path_anchored_running_factory_terminal_count": 5
+  },
+  "q02": {
+    "enqueued": false,
+    "work_item_count": 0,
+    "reason": "BACKTEST_CPU_CEILING:max=97.30>=97.0",
+    "logical_items_enqueued": 0,
+    "component_items_enqueued": 0,
+    "resume_condition": "A fresh governed capacity check must pass; in particular, a fresh five-sample whole-host CPU window must have both average and maximum strictly below 97 percent.",
+    "resume_command": "python tools/strategy_farm/farmctl.py enqueue-backtest --ea QM5_41226_xauxag-medcal --phase Q02"
+  },
+  "verification": {
+    "reference_tests": "PASS: 10 tests",
+    "card_schema_lint": "PASS",
+    "dedup": "CLEAN",
+    "registry_resolver": "PASS: two active rows and magics 412260000/412260001",
+    "static_build_gate": "PASS: zero failures, four nonfatal warnings",
+    "strict_compile": "PASS: zero errors and zero compiler warnings",
+    "queue_readback": "PASS: one completed COMPILE_EA row and zero Q02 rows",
+    "json_parse_and_hash_binding": "PASS"
+  },
+  "safety": {
+    "manual_q02_dispatch": false,
+    "manual_tester_launch": false,
+    "autotrading_toggled": false,
+    "t_live_controlled": false,
+    "t_live_manifest_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "certification_claimed": false,
+    "decorrelation_claimed": false
+  },
+  "mission_commits_before_receipt": [
+    "01dd23e256e501cf0456a650b8a042130a27fb3e",
+    "cfc0f23c699d314385ecdf3897b3ca0e22132498",
+    "40e6e5e098c68041e953ecc2e8e6050d7b88876c",
+    "43515226f3018710dfa21c2273bab39b6141b955"
+  ]
+}

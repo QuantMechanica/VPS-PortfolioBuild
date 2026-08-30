@@ -1,0 +1,28 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "d795d22d-1289-4f40-9fcf-585bbedc282d"
+  ],
+  "backup": {
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260830T110133Z_8872da46.sqlite",
+    "sha256": "a3fe04de1372f7e9f2f0f99a2d3d6d778836a69030ad95ad186c69ded5809817"
+  },
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "b521d8569b42c3607dab63af8991c783d9de80cd4bbfbeaa7ec0329995cd16bb",
+      "ea_id": "QM5_41226",
+      "ea_label": "QM5_41226_xauxag-medcal",
+      "expected_mq5_sha256": "b521d8569b42c3607dab63af8991c783d9de80cd4bbfbeaa7ec0329995cd16bb",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41226_xauxag-medcal\\QM5_41226_xauxag-medcal.mq5",
+      "work_item_id": "d795d22d-1289-4f40-9fcf-585bbedc282d"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-08-30T11:03:07+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "d795d22d-1289-4f40-9fcf-585bbedc282d"
+}
