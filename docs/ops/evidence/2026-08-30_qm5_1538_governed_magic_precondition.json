@@ -1,0 +1,81 @@
+{
+  "schema_version": "qm.governed-magic-precondition-evidence/v1",
+  "generated_at": "2026-08-30T04:36:55.4926110Z",
+  "task_id": "4ab715d1-12bc-45a2-8b59-3b3e23adbc90",
+  "ea_id": "QM5_1538",
+  "slug": "aa-tsmom-1-3-12",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_1538_aa-tsmom-1-3-12.md",
+  "card_sha256": "a6f20b768e06fe6ef475708666e5ec8fdc16528262dc101af2b1dc01ad489807",
+  "canonical_checkout": "C:/QM/repo",
+  "canonical_head_before_artifact": "34046352da0167fb7ada3a973e6874d7923934da",
+  "branch": "agents/board-advisor",
+  "verdict": "CARD_AMENDMENT_REQUIRED_EXISTING_REGISTRY_UNBOUND",
+  "ready": false,
+  "classification": "card_target_symbols_missing_or_invalid",
+  "required_action": "CARD_AMENDMENT_REQUIRED",
+  "card_schema_issues": [
+    "schema_missing_frontmatter:target_symbols"
+  ],
+  "precheck": {
+    "target_symbols": [],
+    "target_symbols_valid": false,
+    "invalid_target_symbols": [],
+    "identity_registry_rows": 1,
+    "active_magic_rows": 13,
+    "retired_magic_rows": 0,
+    "other_status_magic_rows": 0,
+    "total_magic_rows": 13,
+    "ea_directory_exists": true,
+    "ready": false,
+    "classification": "card_target_symbols_missing_or_invalid",
+    "action": "CARD_AMENDMENT_REQUIRED"
+  },
+  "active_identity": {
+    "ea_id": "1538",
+    "slug": "aa-tsmom-1-3-12",
+    "strategy_id": "ede348b4-0fa7-5be1-baa8-09e9089b67b7",
+    "status": "active",
+    "owner": "Research",
+    "created_at": "2026-05-19"
+  },
+  "observed_active_magic_and_resolver_rows": [
+    {"slot": 0, "symbol": "GDAXI.DWX", "magic": 15380000},
+    {"slot": 1, "symbol": "NDX.DWX", "magic": 15380001},
+    {"slot": 2, "symbol": "SP500.DWX", "magic": 15380002},
+    {"slot": 3, "symbol": "UK100.DWX", "magic": 15380003},
+    {"slot": 4, "symbol": "WS30.DWX", "magic": 15380004},
+    {"slot": 5, "symbol": "XAUUSD.DWX", "magic": 15380005},
+    {"slot": 6, "symbol": "EURUSD.DWX", "magic": 15380006},
+    {"slot": 7, "symbol": "GBPUSD.DWX", "magic": 15380007},
+    {"slot": 8, "symbol": "USDJPY.DWX", "magic": 15380008},
+    {"slot": 9, "symbol": "USDCHF.DWX", "magic": 15380009},
+    {"slot": 10, "symbol": "AUDUSD.DWX", "magic": 15380010},
+    {"slot": 11, "symbol": "USDCAD.DWX", "magic": 15380011},
+    {"slot": 12, "symbol": "NZDUSD.DWX", "magic": 15380012}
+  ],
+  "verification": {
+    "identity_exact_active_match": true,
+    "magic_formula_all_rows": true,
+    "magic_slots_contiguous_from_zero": true,
+    "magic_csv_matches_resolver": true,
+    "card_declares_exact_target_symbols": false,
+    "fresh_precheck_ready": false
+  },
+  "decision": {
+    "allocator_run": false,
+    "registry_mutated": false,
+    "resolver_regenerated": false,
+    "approved_card_mutated": false,
+    "reason": "The approved card declares no target_symbols. Existing registry and resolver rows cannot substitute for OWNER/Card Governance approval of the exact universe, and the governed allocator command is intentionally absent for CARD_AMENDMENT_REQUIRED tasks.",
+    "required_handoff": "OWNER/Card Governance must amend the strategy card through review with an explicit canonical .DWX target_symbols list. Then a fresh precheck must prove exact card/identity/magic/resolver tuple equality before the original build can leave its blocked state.",
+    "original_build_must_remain_blocked": true,
+    "pipeline_verdict_claimed": false
+  },
+  "safety": {
+    "terminals_started_or_interrupted": false,
+    "autotrading_changed": false,
+    "t_live_changed": false,
+    "backtests_run": false,
+    "pipeline_phase_run": false
+  }
+}
