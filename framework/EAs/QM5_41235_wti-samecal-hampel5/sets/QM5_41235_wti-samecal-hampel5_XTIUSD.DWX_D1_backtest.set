@@ -1,0 +1,33 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        41231
+; ea_slug:      wti-samecal-bisquare5
+; ea_version:   v5.0
+; set_version:  s20260830-001
+; symbol:       XTIUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   9f945963e2dba3c9847a3cec4c3c580ab23c1bafb4de9c3759c191ef183b62c3
+; author:       Development
+; date:         2026-08-30
+;==========================================================
+qm_ea_id=41231
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
+strategy_history_years=5
+strategy_mad_normalizer=1.4826
+strategy_bisquare_cutoff=4.685
+strategy_bisquare_steps=32
+strategy_signal_epsilon=0.000000000001
+strategy_history_bars_d1=3000
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=3.5
+strategy_max_hold_days=40
+strategy_max_spread_points=1500
