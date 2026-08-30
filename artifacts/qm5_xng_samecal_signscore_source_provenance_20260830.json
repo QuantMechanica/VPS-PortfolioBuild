@@ -1,0 +1,67 @@
+{
+  "schema": "qm.local-source-provenance/v1",
+  "candidate_slug": "xng-samecal-signscore",
+  "source_id": "KELOHARJU-PAPAILIAS-RCORE-XNG-SAMECAL-SIGNSCORE-2026",
+  "strategy_id": "KELOHARJU-PAPAILIAS-RCORE-XNG-SAMECAL-SIGNSCORE-2026_S01",
+  "recorded_at_utc": "2026-08-30T06:08:04Z",
+  "approval": {
+    "path": "decisions/2026-08-30_xng_same_calendar_sign_score_source_approval.md",
+    "commit": "e74d496413d2a9ebaaab9979e85bc8e1806c0df3",
+    "sha256": "0CA0F6BFD59B5BA098D9CB5006FFDC92118EFCC63C2EE83B961A0245298BA670",
+    "byte_count": 9847,
+    "line_count": 180
+  },
+  "source_packet": {
+    "path": "strategy-seeds/sources/KELOHARJU-PAPAILIAS-RCORE-XNG-SAMECAL-SIGNSCORE-2026/source.md",
+    "sha256": "B526454AE66190B5CC3288C709E946F1656ED56DF3B847F04F6C46A02F4617EE",
+    "byte_count": 9636,
+    "line_count": 185
+  },
+  "complete_read_records": [
+    {
+      "path": "strategy-seeds/sources/KELOHARJU-RETSEAS-2016/source.md",
+      "source_id": "KELOHARJU-RETSEAS-2016",
+      "commit": "a1dd9e7751f843db82c0b230a46ed7fe6526accd",
+      "sha256": "54E6036035D146BB080A0DDF4A16B378C187655A3834DF86329F7B2D319875F0",
+      "byte_count": 9245,
+      "line_count": 174,
+      "role": "peer-reviewed same-calendar commodity information, explicit natural-gas membership, monthly renewal, and five-year floor"
+    },
+    {
+      "path": "strategy-seeds/sources/PAPAILIAS-RSM-2021/source.md",
+      "source_id": "PAPAILIAS-RSM-2021",
+      "commit": "9f0348c2298c929d954abaf3755022b2ef4ca93a",
+      "sha256": "5EFDB021EE4D1B00A2D7CE356A5EACA85511896C4FD999A5B069B5F936ABA32F",
+      "byte_count": 4599,
+      "line_count": 94,
+      "role": "peer-reviewed nonnegative return-sign map, equal weighting, explicit natural-gas membership, and monthly lifecycle"
+    },
+    {
+      "path": "strategy-seeds/sources/KELOHARJU-PAPAILIAS-RCORE-WTI-SAMECAL-SIGNSCORE-2026/source.md",
+      "source_id": "KELOHARJU-PAPAILIAS-RCORE-WTI-SAMECAL-SIGNSCORE-2026",
+      "commit": "ac93ee1b9bf11c1bfd6fb1cfb80a83fce28e582b",
+      "sha256": "147874FE17B0531E02E49AD5D97910EA47B0CD6F0FA88E2811EEF52B009E9795",
+      "byte_count": 9612,
+      "line_count": 185,
+      "role": "governed complete sign-score reduction and R Core claim boundary; no WTI carrier claim transfers"
+    },
+    {
+      "url": "https://github.com/wch/r-source/blob/9deb2ebef8d0a2fe5cae965697ee4751af857bd1/src/library/stats/R/prop.test.R",
+      "official_documentation": "https://stat.ethz.ch/R-manual/R-devel/library/stats/html/prop.test.html",
+      "repository": "wch/r-source",
+      "commit": "9deb2ebef8d0a2fe5cae965697ee4751af857bd1",
+      "blob_sha": "fc38bd4be1ba8630dbd224162ab5873ae6ac5261",
+      "raw_sha256": "59fb39522e418d9e1db8bac0626354cd7e87ed996747032ddce5fc406a57d694",
+      "byte_count": 5011,
+      "line_count": 165,
+      "read_scope": "complete",
+      "route_evidence": "artifacts/qm5_wti_samecal_signscore_source_route_20260830.json",
+      "inherited_provenance": "artifacts/qm5_wti_samecal_signscore_source_provenance_20260830.json",
+      "role": "primary-software one-sample proportion null, expected counts, uncorrected Pearson statistic, and signed-score reduction only"
+    }
+  ],
+  "dedup_receipt": "artifacts/qm5_xng_samecal_signscore_preallocation_dedup_20260830.json",
+  "retrieval_mode": "complete reads of two governed peer-reviewed packets plus one governed sign-score packet carrying commit-pinned primary-software provenance",
+  "raw_public_text_persisted": false,
+  "claim_boundary": "The exact absolute-XNG same-calendar Bernoulli sign-score gate is a transparent QM mechanization. No source performance, significance, density, cost, futures-CFD equivalence, decorrelation, or portfolio result transfers."
+}
