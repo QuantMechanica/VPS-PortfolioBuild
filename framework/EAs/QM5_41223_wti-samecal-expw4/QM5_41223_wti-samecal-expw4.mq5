@@ -592,7 +592,11 @@ bool Strategy_LoadExponentialYearWeightSignal(
                                         label_offset,
                                         sample_return))
          continue;
-      if(sample_count < 0 || sample_count >= ArraySize(observations))
+      if(sample_count < 0)
+         return false;
+      if(sample_count >= ArraySize(observations))
+         return false;
+      if(sample_count >= ArraySize(ages))
          return false;
       observations[sample_count] = sample_return;
       ages[sample_count] = offset - 1;
