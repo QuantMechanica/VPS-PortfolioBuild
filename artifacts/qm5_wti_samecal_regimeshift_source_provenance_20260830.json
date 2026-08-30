@@ -1,0 +1,48 @@
+{
+  "schema": "qm.local-source-provenance/v1",
+  "candidate_slug": "wti-samecal-regimeshift",
+  "source_id": "KELOHARJU-MOP-WTI-SAMECAL-REGIMESHIFT-2026",
+  "strategy_id": "KELOHARJU-MOP-WTI-SAMECAL-REGIMESHIFT-2026_S01",
+  "recorded_at_utc": "2026-08-30T08:37:32Z",
+  "approval": {
+    "path": "decisions/2026-08-30_wti_same_calendar_regime_shift_source_approval.md",
+    "commit": "2a0ace4ac513246b2daa273894ca6bc274f2a33c",
+    "sha256": "A875C1FEE95986AD3409D7686D8BD67F2DD940153DCCB9033DEAC2D993535414",
+    "byte_count": 8326,
+    "line_count": 157
+  },
+  "source_packet": {
+    "path": "strategy-seeds/sources/KELOHARJU-MOP-WTI-SAMECAL-REGIMESHIFT-2026/source.md",
+    "sha256": "1B55931E62B815BB686841330932C0D6E36A168CFC6C7ED53BC67CE398983BCE",
+    "byte_count": 8633,
+    "line_count": 159
+  },
+  "complete_read_records": [
+    {
+      "path": "strategy-seeds/sources/KELOHARJU-RETSEAS-2016/source.md",
+      "source_id": "KELOHARJU-RETSEAS-2016",
+      "commit": "a1dd9e7751f843db82c0b230a46ed7fe6526accd",
+      "sha256": "54E6036035D146BB080A0DDF4A16B378C187655A3834DF86329F7B2D319875F0",
+      "byte_count": 9245,
+      "line_count": 174,
+      "role": "peer-reviewed same-calendar commodity information, explicit crude-oil membership, monthly renewal, and five-year floor"
+    },
+    {
+      "path": "strategy-seeds/sources/MOP-TSMOM-2012/source.md",
+      "source_id": "MOP-TSMOM-2012",
+      "commit": "1c312453ad3a61978bc59c3aa0d3f51153daf93c",
+      "sha256": "C8B07ECD62C1D5EF9E3D7975EEE6A3B6C46C1C566D0B20B42237613D9B3A7042",
+      "byte_count": 10170,
+      "line_count": 184,
+      "retrieval_route": "strategy-seeds/sources/MOP-TSMOM-2012/retrieval_route_20260731.json",
+      "retrieval_route_sha256": "ECBCC76CC878F0CC6FBF8C40B23D72084EC6ED03C6375438E3232CC24A33D38F",
+      "published_pdf_sha256": "7682F8E97EB4B77591DC85E36731FF51ED031970CDDE81678108734DB9478379",
+      "role": "peer-reviewed WTI own-return direction, monthly lifecycle, and explicit WTI futures membership"
+    }
+  ],
+  "dedup_receipt": "artifacts/qm5_wti_samecal_regimeshift_preallocation_dedup_20260830.json",
+  "dedup_receipt_sha256": "75457AA3AFF5BF445FCDC11799CA2BC6ABD574DB0486CE6B5BD3E3F1AF3ACF17",
+  "retrieval_mode": "complete reads of two OWNER-approved governed packets carrying peer-reviewed DOI lineages and durable primary-document provenance",
+  "raw_public_text_persisted": false,
+  "claim_boundary": "The exact single-WTI same-calendar recent-five versus older-five opposite-sign trigger and recent-block direction are transparent QM mechanizations. No source performance, significance, density, cost, futures-CFD equivalence, decorrelation, or portfolio result transfers."
+}
