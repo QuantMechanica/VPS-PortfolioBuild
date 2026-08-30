@@ -18130,3 +18130,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41226,xauxag-medcal,0,XAUUSD.DWX,412260000,2026-08-30,Codex governed allocator,active
 41226,xauxag-medcal,1,XAGUSD.DWX,412260001,2026-08-30,Codex governed allocator,active
 41227,wti-samecal-blockmed,0,XTIUSD.DWX,412270000,2026-08-30,Codex governed allocator,active
+41228,wti-samecal-shorth5,0,XTIUSD.DWX,412280000,2026-08-30,Codex governed allocator,active
