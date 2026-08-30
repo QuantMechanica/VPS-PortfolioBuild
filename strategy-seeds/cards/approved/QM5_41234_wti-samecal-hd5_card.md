@@ -82,7 +82,7 @@ r1_track_record: PASS_WITH_QUANTILE_ESTIMATOR_AND_SINGLE_CFD_TRANSLATION_RISK
 r1_reasoning: "Two complete-read peer-reviewed trading papers support recurring same-calendar commodity information, explicit WTI membership, own-return direction, and monthly renewal. A peer-reviewed Biometrika citation plus the originating author's maintained implementation fix the distribution-free quantile estimator. The exact five-sample WTI conjunction is an untested QM translation."
 r2_mechanical: PASS
 r2_reasoning: "Month clock, uniform D1-label normalization, exact Y-5..Y-1 endpoints, five-return requirement, ascending sort, beta(3,3) interval weights, rational and decimal invariant, epsilon side map, consumed attempt, fixed risk, hard stop, spread, and lifecycle are deterministic and locked."
-r3_data_available: PASS_WITH_FIVE_YEAR_WARMUP_AND_CONTINUOUS_FUTURES_CFD_BASIS_RISK
+r3_data_available: PASS
 r3_reasoning: "Registered XTIUSD.DWX D1 history covers the required five-year warm-up and native MT5 state supplies every runtime input. Session labels, rolls, financing, gaps, and futures/CFD basis remain binding."
 r4_ml_forbidden: PASS
 r4_reasoning: "Only timestamps, completed prices, logarithms, finite arithmetic, sorting, fixed weighted sums, comparisons, ATR risk controls, quotes, and execution state; no trained signal, banned signal indicator, or external runtime feed."
@@ -356,8 +356,8 @@ signal input.
 
 - R1: `PASS_WITH_QUANTILE_ESTIMATOR_AND_SINGLE_CFD_TRANSLATION_RISK`.
 - R2: `PASS` for the exact locked mechanical contract.
-- R3:
-  `PASS_WITH_FIVE_YEAR_WARMUP_AND_CONTINUOUS_FUTURES_CFD_BASIS_RISK`.
+- R3: `PASS`; registered native WTI D1 history covers the five-year warm-up,
+  with continuous-CFD and futures-basis risk retained as an explicit caveat.
 - R4: `PASS`; structural arithmetic only, with no prohibited trained signal
   or external runtime feed.
 
