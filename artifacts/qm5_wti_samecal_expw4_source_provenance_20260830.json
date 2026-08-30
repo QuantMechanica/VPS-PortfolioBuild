@@ -1,0 +1,57 @@
+{
+  "schema": "qm.local-source-provenance/v1",
+  "candidate_slug": "wti-samecal-expw4",
+  "source_id": "KELOHARJU-MOP-WTI-SAMECAL-EXPW4-2026",
+  "strategy_id": "KELOHARJU-MOP-WTI-SAMECAL-EXPW4-2026_S01",
+  "recorded_at_utc": "2026-08-30T07:37:18Z",
+  "approval": {
+    "path": "decisions/2026-08-30_wti_same_calendar_exponential_weight_source_approval.md",
+    "commit": "ed236e3e0d324281fa4b1a36559987cbc5c9f22b",
+    "sha256": "3A2E97EC5537771A86C396279E2E662D052C32D11652677F373DBD4DF1838C86",
+    "byte_count": 8947,
+    "line_count": 164
+  },
+  "source_packet": {
+    "path": "strategy-seeds/sources/KELOHARJU-MOP-WTI-SAMECAL-EXPW4-2026/source.md",
+    "sha256": "39E99FD059CE2B6B4EE092A0448C5B2102BFCD9DA9FB527ED4103DD1AC96661F",
+    "byte_count": 9805,
+    "line_count": 191
+  },
+  "complete_read_records": [
+    {
+      "path": "strategy-seeds/sources/KELOHARJU-RETSEAS-2016/source.md",
+      "source_id": "KELOHARJU-RETSEAS-2016",
+      "commit": "a1dd9e7751f843db82c0b230a46ed7fe6526accd",
+      "sha256": "54E6036035D146BB080A0DDF4A16B378C187655A3834DF86329F7B2D319875F0",
+      "byte_count": 9245,
+      "line_count": 174,
+      "role": "peer-reviewed same-calendar commodity information, explicit crude-oil membership, monthly renewal, and five-year floor"
+    },
+    {
+      "path": "strategy-seeds/sources/MOP-TSMOM-2012/source.md",
+      "source_id": "MOP-TSMOM-2012",
+      "commit": "1c312453ad3a61978bc59c3aa0d3f51153daf93c",
+      "sha256": "C8B07ECD62C1D5EF9E3D7975EEE6A3B6C46C1C566D0B20B42237613D9B3A7042",
+      "byte_count": 10170,
+      "line_count": 184,
+      "retrieval_route": "strategy-seeds/sources/MOP-TSMOM-2012/retrieval_route_20260731.json",
+      "retrieval_route_sha256": "ECBCC76CC878F0CC6FBF8C40B23D72084EC6ED03C6375438E3232CC24A33D38F",
+      "published_pdf_sha256": "7682F8E97EB4B77591DC85E36731FF51ED031970CDDE81678108734DB9478379",
+      "role": "peer-reviewed WTI own-return direction, monthly lifecycle, and explicit WTI futures membership"
+    },
+    {
+      "path": "strategy-seeds/sources/MOP-WTI-EXPW-2026/source.md",
+      "source_id": "MOP-WTI-EXPW-2026",
+      "commit": "abda5b96e2d748a5836972e0cea835001d9bf827",
+      "sha256": "144B72109066D6330875406DAE332A7CFE0C7B878351B75B66B0AA7068459D7C",
+      "byte_count": 6611,
+      "line_count": 140,
+      "role": "governed base-two exponential-weight arithmetic and explicit no-source-half-life claim boundary"
+    }
+  ],
+  "dedup_receipt": "artifacts/qm5_wti_samecal_expw4_preallocation_dedup_20260830.json",
+  "dedup_receipt_sha256": "60C966AE7522F051B4FE658923935C253C160CE2D054070D245CC5554FDD760F",
+  "retrieval_mode": "complete reads of three OWNER-approved governed packets carrying two peer-reviewed DOI lineages and durable primary-document provenance",
+  "raw_public_text_persisted": false,
+  "claim_boundary": "The exact absolute-WTI same-calendar four-year exponential-decay sign is a transparent QM mechanization. No source performance, significance, density, cost, futures-CFD equivalence, decorrelation, or portfolio result transfers."
+}
