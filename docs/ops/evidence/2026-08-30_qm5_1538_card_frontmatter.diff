@@ -1,0 +1,10 @@
+--- D:/QM/strategy_farm/artifacts/cards_approved/QM5_1538_aa-tsmom-1-3-12.md.before
++++ D:/QM/strategy_farm/artifacts/cards_approved/QM5_1538_aa-tsmom-1-3-12.md.after
+@@ -4,6 +4,7 @@
+ expected_trades_per_year_per_symbol: 100
+ type: strategy
+ source_id: ede348b4-0fa7-5be1-baa8-09e9089b67b7
++target_symbols: [GDAXI.DWX, NDX.DWX, SP500.DWX, UK100.DWX, WS30.DWX, XAUUSD.DWX, EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, USDCHF.DWX, AUDUSD.DWX, USDCAD.DWX, NZDUSD.DWX]
+ sources:
+   - "[[sources/alpha-architect-blog]]"
+ concepts:
