@@ -188,6 +188,28 @@ DL089_SIBLING_REBIND_CONTRACT_VERSION = "qm.dl089-sibling-rebind/v1"
 DL089_SIBLING_REBIND_DIRECTORY = "sibling_rebind_da2c006e"
 DL089_SIBLING_REPAIR_DIRECTORY = "sibling_rebind_e8ed1e85"
 DL089_SIBLING_REPAIR_41196_RETRY_DIRECTORY = "sibling_rebind_e8ed1e85_r2"
+# Exact append-only first-build repair authority for the eight identities in
+# OWNER-DEC-Q09HOLD-REQUAL-8-20260829.  Each initial compile can expose current
+# mechanical Q01 checks that its faithful parent predates.  The repair compiles
+# bind one fresh task-specific setfile and retain the failed row/setfile bytes.
+Q09_REQUAL8_BUILD_REPAIR_AUTHORITY = (
+    "router_ops_issue:1b57e398-3709-44b3-a53a-21e20fdb5d7b"
+)
+Q09_REQUAL8_BUILD_REPAIR_EA_LABELS = frozenset({
+    "QM5_41215_pre-fomc-drift-ndx-requal8",
+    "QM5_41216_grimes-nested-pb-v2-requal8",
+    "QM5_41217_tv-post-vwap-requal8",
+    "QM5_41218_demark-td-reverse-sequential-h4-requal8",
+    "QM5_41219_cum-rsi2-commodity-requal8",
+    "QM5_41220_grimes-context-pb-requal8",
+    "QM5_41221_ohlc-daily-squeeze-reversal-d1-requal8",
+    "QM5_41222_lien-k-double-bb-trend-h1-requal8",
+})
+Q09_REQUAL8_BUILD_REPAIR_DIRECTORY = "requal8_repair_1b57e398"
+Q09_REQUAL8_41215_RETRY_AUTHORITY = (
+    "governed_compile_fail:b838f751-14e0-452a-b49f-8ba7b904bca4"
+)
+Q09_REQUAL8_41215_RETRY_DIRECTORY = "requal8_repair_1b57e398_r2"
 # Exact authority for the two DL-089 measurement siblings whose initial compile
 # receipts preceded the final source normalization commit.  The P0 dispatch
 # repair requires current source-bound binaries before it may enqueue any real
@@ -392,11 +414,21 @@ _BOUND_HASH_RE = re.compile(r"^[0-9a-fA-F]{64}$")
 
 def _sibling_rebind_authorized(label: str, authority: str | None) -> bool:
     return bool(
-        authority in {
-            DL089_SIBLING_REBIND_AUTHORITY,
-            DL089_SIBLING_REPAIR_AUTHORITY,
-        }
-        and label in DL089_SIBLING_REBIND_EA_LABELS
+        (
+            authority in {
+                DL089_SIBLING_REBIND_AUTHORITY,
+                DL089_SIBLING_REPAIR_AUTHORITY,
+            }
+            and label in DL089_SIBLING_REBIND_EA_LABELS
+        )
+        or (
+            authority == Q09_REQUAL8_BUILD_REPAIR_AUTHORITY
+            and label in Q09_REQUAL8_BUILD_REPAIR_EA_LABELS
+        )
+        or (
+            authority == Q09_REQUAL8_41215_RETRY_AUTHORITY
+            and label == "QM5_41215_pre-fomc-drift-ndx-requal8"
+        )
     )
 
 
@@ -409,6 +441,10 @@ def _sibling_rebind_directory(
         if label == "QM5_41196_qs-kama-trend-xau-opt":
             return DL089_SIBLING_REPAIR_41196_RETRY_DIRECTORY
         return DL089_SIBLING_REPAIR_DIRECTORY
+    if authority == Q09_REQUAL8_BUILD_REPAIR_AUTHORITY:
+        return Q09_REQUAL8_BUILD_REPAIR_DIRECTORY
+    if authority == Q09_REQUAL8_41215_RETRY_AUTHORITY:
+        return Q09_REQUAL8_41215_RETRY_DIRECTORY
     return None
 
 
@@ -430,7 +466,9 @@ def _sibling_rebind_setfile_path(
     )
 
 
-def _sibling_rebind_setfile_check(path: Path) -> tuple[bool, list[str]]:
+def _sibling_rebind_setfile_check(
+    path: Path, authority: str | None = None
+) -> tuple[bool, list[str]]:
     """Validate the pre-compile sibling set without changing its bytes."""
 
     findings: list[str] = []
@@ -452,12 +490,16 @@ def _sibling_rebind_setfile_check(path: Path) -> tuple[bool, list[str]]:
         findings.append("SIBLING_REBIND_RISK_FIXED_INVALID")
     if assignments.get("RISK_PERCENT") not in {"0", "0.0"}:
         findings.append("SIBLING_REBIND_RISK_PERCENT_INVALID")
-    for name in (
-        "opt_pp_buy1", "opt_pp_buy2", "opt_pp_buy3",
-        "opt_pp_sell1", "opt_pp_sell2", "opt_pp_sell3",
-    ):
-        if assignments.get(name) != "0":
-            findings.append(f"SIBLING_REBIND_NEUTRAL_INPUT_INVALID:{name}")
+    if authority not in {
+        Q09_REQUAL8_BUILD_REPAIR_AUTHORITY,
+        Q09_REQUAL8_41215_RETRY_AUTHORITY,
+    }:
+        for name in (
+            "opt_pp_buy1", "opt_pp_buy2", "opt_pp_buy3",
+            "opt_pp_sell1", "opt_pp_sell2", "opt_pp_sell3",
+        ):
+            if assignments.get(name) != "0":
+                findings.append(f"SIBLING_REBIND_NEUTRAL_INPUT_INVALID:{name}")
     return not findings, findings
 
 # DL-089 Wave 1 live-book requalification: an explicit, named force-rebuild
@@ -1445,7 +1487,7 @@ def classify_candidate(
                 source_repair_authority,
             )
             valid, sibling_rebind_findings = _sibling_rebind_setfile_check(
-                sibling_rebind_setfile
+                sibling_rebind_setfile, source_repair_authority
             )
             if valid:
                 sibling_rebind_setfile_sha = sha256_file(sibling_rebind_setfile)

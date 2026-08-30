@@ -2976,6 +2976,48 @@ def _card_r_gate_pass_count(fm: dict[str, Any]) -> int:
     )
 
 
+Q09_REQUAL8_MANIFEST_SHA256 = "0b6845c941314f9c2f754b0897bd66fd1f4daa0220921726f2d51ef0e72a76f2"
+Q09_REQUAL8_MANIFEST_PATH = REPO_ROOT / "docs" / "ops" / "evidence" / "2026-08-30_8709bc0f_q09_requal8_manifest.json"
+Q09_REQUAL8_CARD_BINDINGS = {
+    "QM5_41215": ("pre-fomc-drift-ndx-requal8", "QM5_13128", "NDX.DWX"),
+    "QM5_41216": ("grimes-nested-pb-v2-requal8", "QM5_12989", "XAUUSD.DWX"),
+    "QM5_41217": ("tv-post-vwap-requal8", "QM5_10815", "GDAXI.DWX"),
+    "QM5_41218": ("demark-td-reverse-sequential-h4-requal8", "QM5_1567", "EURUSD.DWX"),
+    "QM5_41219": ("cum-rsi2-commodity-requal8", "QM5_12567", "XAUUSD.DWX"),
+    "QM5_41220": ("grimes-context-pb-requal8", "QM5_10939", "GBPUSD.DWX"),
+    "QM5_41221": ("ohlc-daily-squeeze-reversal-d1-requal8", "QM5_11421", "EURUSD.DWX"),
+    "QM5_41222": ("lien-k-double-bb-trend-h1-requal8", "QM5_11476", "USDJPY.DWX"),
+}
+
+
+def _q09_requal8_card_authority(card_path: Path, fm: dict[str, Any]) -> bool:
+    """Accept only the hash-bound recovery cards commissioned by 1b57e398.
+
+    These reservation cards intentionally inherit their mechanics and R2-R4
+    findings from the named parent.  The OWNER-approved manifest, rather than a
+    duplicate cards_approved copy, is the compile authority.
+    """
+    binding = Q09_REQUAL8_CARD_BINDINGS.get(str(fm.get("ea_id") or "").strip())
+    if binding is None or not Q09_REQUAL8_MANIFEST_PATH.is_file():
+        return False
+    slug, parent_ea, symbol = binding
+    try:
+        expected_dir = (DEFAULT_ROOT / "artifacts" / "cards_review").resolve()
+        resolved = card_path.resolve()
+    except OSError:
+        return False
+    return (
+        expected_dir in resolved.parents
+        and resolved.name == f"{fm['ea_id']}_{slug}.md"
+        and str(fm.get("slug") or "") == slug
+        and str(fm.get("source_id") or "")
+        == f"OWNER-DEC-Q09HOLD-REQUAL-8-20260829:{parent_ea}"
+        and str(fm.get("g0_status") or "") == "APPROVED"
+        and _parse_card_target_symbols(fm.get("target_symbols")) == [symbol]
+        and _sha256_file(Q09_REQUAL8_MANIFEST_PATH) == Q09_REQUAL8_MANIFEST_SHA256
+    )
+
+
 def prebuild_validate_card(root: Path, card_path: Path, fm: dict[str, Any]) -> dict[str, Any]:
     """Hard gate before creating build_ea tasks.
 
@@ -2986,6 +3028,18 @@ def prebuild_validate_card(root: Path, card_path: Path, fm: dict[str, Any]) -> d
     warnings: list[str] = []
     ea_id = str(fm.get("ea_id") or "").strip()
     slug = str(fm.get("slug") or "").strip()
+
+    if _q09_requal8_card_authority(card_path, fm):
+        return {
+            "ok": True,
+            "errors": [],
+            "warnings": ["q09_requal8_hash_bound_manifest_authority:OWNER-DEC-Q09HOLD-REQUAL-8-20260829"],
+            "custom_history_archive_admission": {
+                "ok": True,
+                "required": False,
+                "status": "NOT_APPLICABLE",
+            },
+        }
 
     approved_dir = (root / "artifacts" / "cards_approved").resolve()
     try:
@@ -26268,8 +26322,22 @@ def record_build_result(
     # next dispatch tick. Idempotent — skips if a pending/active Q02 already
     # exists for the same (ea_id, symbol).
     auto_q02 = None
-    if new_status == "done":
+    q09_requal8_review_first = (
+        str(result.get("ea_id") or "") in Q09_REQUAL8_CARD_BINDINGS
+        and str(result.get("q09_requal8_manifest_sha256") or "").lower()
+        == Q09_REQUAL8_MANIFEST_SHA256
+        and _sha256_file(Q09_REQUAL8_MANIFEST_PATH) == Q09_REQUAL8_MANIFEST_SHA256
+    )
+    if new_status == "done" and not q09_requal8_review_first:
         auto_q02 = _auto_enqueue_q02_for_build(root, result)
+        payload_merge["auto_q02_enqueued"] = auto_q02
+    elif new_status == "done" and q09_requal8_review_first:
+        auto_q02 = {
+            "enqueued": [],
+            "skipped": [],
+            "reason": "q09_requal8_review_required_before_q02",
+            "manifest_sha256": Q09_REQUAL8_MANIFEST_SHA256,
+        }
         payload_merge["auto_q02_enqueued"] = auto_q02
 
     payload_merge["build_result_sha256"] = _sha256_file(rp)

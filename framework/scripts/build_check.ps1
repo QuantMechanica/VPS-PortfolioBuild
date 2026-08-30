@@ -440,10 +440,20 @@ function Invoke-SetValidation {
             $authorityDirectories = @{
                 'router_ops_issue:da2c006e-e5ab-4f85-845f-2925f90dd68d' = 'sibling_rebind_da2c006e'
                 'router_ops_issue:e8ed1e85-a8db-4345-9785-2e0ccf1f6997' = 'sibling_rebind_e8ed1e85'
+                'router_ops_issue:1b57e398-3709-44b3-a53a-21e20fdb5d7b' = 'requal8_repair_1b57e398'
+                'governed_compile_fail:b838f751-14e0-452a-b49f-8ba7b904bca4' = 'requal8_repair_1b57e398_r2'
             }
             $allowedLabels = @(
                 'QM5_41195_aa-vol-sma10-opt',
-                'QM5_41196_qs-kama-trend-xau-opt'
+                'QM5_41196_qs-kama-trend-xau-opt',
+                'QM5_41215_pre-fomc-drift-ndx-requal8',
+                'QM5_41216_grimes-nested-pb-v2-requal8',
+                'QM5_41217_tv-post-vwap-requal8',
+                'QM5_41218_demark-td-reverse-sequential-h4-requal8',
+                'QM5_41219_cum-rsi2-commodity-requal8',
+                'QM5_41220_grimes-context-pb-requal8',
+                'QM5_41221_ohlc-daily-squeeze-reversal-d1-requal8',
+                'QM5_41222_lien-k-double-bb-trend-h1-requal8'
             )
             if (-not $CompileWorkItemId -or -not $ClaimedTerminal -or
                 -not $authorityDirectories.ContainsKey(${env:QM_SIBLING_REBIND_AUTHORITY}) -or

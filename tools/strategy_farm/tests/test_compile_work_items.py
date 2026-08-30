@@ -546,6 +546,43 @@ def test_dl089_sibling_rebind_setfile_requires_unbound_fixed_risk_neutral_inputs
     assert original != path.read_bytes()
 
 
+def test_q09_requal8_repair_authority_is_exact_and_does_not_require_pp_inputs(
+    tmp_path: Path,
+) -> None:
+    label = "QM5_41215_pre-fomc-drift-ndx-requal8"
+    authority = compile_work_items.Q09_REQUAL8_BUILD_REPAIR_AUTHORITY
+    retry = compile_work_items.Q09_REQUAL8_41215_RETRY_AUTHORITY
+
+    assert compile_work_items._sibling_rebind_authorized(label, authority)
+    assert compile_work_items._source_repair_authorized(label, authority)
+    assert compile_work_items._sibling_rebind_directory(authority, label) == (
+        compile_work_items.Q09_REQUAL8_BUILD_REPAIR_DIRECTORY
+    )
+    assert compile_work_items._sibling_rebind_authorized(label, retry)
+    assert compile_work_items._source_repair_authorized(label, retry)
+    assert compile_work_items._sibling_rebind_directory(retry, label) == (
+        compile_work_items.Q09_REQUAL8_41215_RETRY_DIRECTORY
+    )
+    assert not compile_work_items._sibling_rebind_authorized(
+        "QM5_41214_wrong", authority
+    )
+    assert not compile_work_items._sibling_rebind_authorized(
+        "QM5_41216_grimes-nested-pb-v2-requal8", retry
+    )
+
+    path = tmp_path / "current.set"
+    path.write_text(
+        "; build_hash: pending\nRISK_FIXED=1000\nRISK_PERCENT=0\n",
+        encoding="utf-8",
+    )
+    assert compile_work_items._sibling_rebind_setfile_check(
+        path, authority
+    ) == (True, [])
+    assert compile_work_items._sibling_rebind_setfile_check(
+        path, retry
+    ) == (True, [])
+
+
 def test_qm5_41201_compile_fail_repair_authority_is_failure_and_hash_bound() -> None:
     label = compile_work_items.QM5_41201_COMPILE_FAIL_REPAIR_EA_LABEL
     predecessor_id = (
