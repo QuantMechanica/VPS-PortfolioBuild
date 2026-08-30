@@ -1,0 +1,61 @@
+{
+  "schema": "qm.legacy-q09-reentry-receipt/v1",
+  "verified_at_utc": "2026-08-30T08:18:48Z",
+  "router_task_id": "f3cacf27-bd47-4e70-bc7d-66506d9a8281",
+  "audit_sha256": "0451794fc1ffa6868bee7ae88fad00a18d718d7b76247ff58b1d7c438e43292b",
+  "canonical_enqueue_path": "farmctl.py enqueue-backtest --phase Q09 --from-work-item-id --append-only-rerun-of --q09-anchor-binding-file",
+  "created_rows": [
+    {
+      "work_item_id": "ee4062b1-3940-45ce-bd66-b463e55afc1e",
+      "ea_id": "QM5_10403",
+      "symbol": "XAUUSD.DWX",
+      "anchor_work_item_id": "7fd4caf6-b599-4833-a431-a132a404b60b",
+      "anchor_evidence_sha256": "bb57935abf1f48a0aeda30a3ac9d124f34108d85369cc1da504bc773d724556e",
+      "append_only_rerun_of": "35436575-96f9-4f38-960a-958b864d2e38",
+      "expected_ex5_sha256": "f927f07f46579bbb9a1bdcfdb7caa9b246e9d7555935fbb878f7fc01afbf7ab3",
+      "expected_setfile_sha256": "9a6fab053d3814077a015eb9f3a864a0c8a703fbe220ae03e74da195960f4c72",
+      "expected_mq5_sha256": "b38cfd471fd31811bb23a5447c430cc1bfcc1f370eb816236c99bb88be55d251",
+      "status_at_verification": "pending",
+      "claimable_at_verification": true
+    },
+    {
+      "work_item_id": "6b4532f2-9de5-4b99-b824-c05ce2848cac",
+      "ea_id": "QM5_10911",
+      "symbol": "GDAXI.DWX",
+      "anchor_work_item_id": "55256268-50f8-4d94-8d9a-83652c64b013",
+      "anchor_evidence_sha256": "df2d728c96af9e853f0eebfb09e371340d8f4a6018f67465baecfff4374ede37",
+      "append_only_rerun_of": "e3267f2a-5788-4d5c-9149-0f2f164dfdbb",
+      "expected_ex5_sha256": "5199e260020b8ada81437401338e641e4f778579e58af147f2bace1c7ef9dce1",
+      "expected_setfile_sha256": "bfc76e20be73d303fab0dbef1c06005b957bb03a103859b01f889a136590abe0",
+      "expected_mq5_sha256": "122d1a4e32480fabf3f0b0363f49d7a8589681c64cd5850da313d1503135f920",
+      "status_at_verification": "pending",
+      "claimable_at_verification": true
+    },
+    {
+      "work_item_id": "c38e2fbf-8fbb-4c79-b66a-b51cbe4378af",
+      "ea_id": "QM5_12969",
+      "symbol": "USDJPY.DWX",
+      "anchor_work_item_id": "f14ad921-721e-413d-a2de-6506ceaf8483",
+      "anchor_evidence_sha256": "f47e8f6ee06c9650343941dacebe7b5b58394532f8f0baf1644241ec00b3cfeb",
+      "append_only_rerun_of": "8cdc3bc9-12dc-47c4-8836-655f78d2470b",
+      "expected_ex5_sha256": "938a35aa6b6dff54ec0e94a4a253a71730e63f9347b91877da786ec395715f06",
+      "expected_setfile_sha256": "abaac898cfee74d3fb1bea28ce21c5015f22e91072718214d78fcd6a90b09ae0",
+      "expected_mq5_sha256": "4e9503fd61e960de689128ebda343d7e078feb24dd42a25605c246f196ddfb86",
+      "status_at_verification": "pending",
+      "claimable_at_verification": true
+    }
+  ],
+  "historical_row_sha256_after": {
+    "7fd4caf6-b599-4833-a431-a132a404b60b": "e491b1c960c172be06749b485205220940e85ea85e6919608c1a9604b5c9b49b",
+    "55256268-50f8-4d94-8d9a-83652c64b013": "f9e585d2bcc285a9f2eab3e5994964762510e6b4787f1e1fb54139d669b4cb2c",
+    "f14ad921-721e-413d-a2de-6506ceaf8483": "dfc67b635de2bfefb55f80eb2834fb89e945dff0a23670f57467d41b1f0c7063",
+    "35436575-96f9-4f38-960a-958b864d2e38": "9197bdf460a77bb38b393eddfa89313fe7335a3cacab29fcdf24f4cca8b32972",
+    "e3267f2a-5788-4d5c-9149-0f2f164dfdbb": "f3ba508ee6718dddbf5b9f7929c7a69afa33324340a98c823de56c1a58514a83",
+    "8cdc3bc9-12dc-47c4-8836-655f78d2470b": "280da8fd1f75f1cfa6dff7f4cf7a463c7417eb3d42842bccb479da18d3f45969"
+  },
+  "historical_work_item_updates": 0,
+  "created_count": 3,
+  "active_hold_count": 0,
+  "setfile_risk_contract": "RISK_FIXED=1000;RISK_PERCENT=0",
+  "quick_check": "ok"
+}

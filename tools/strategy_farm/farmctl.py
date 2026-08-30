@@ -23841,6 +23841,66 @@ def _enqueue_q03_exact_identity(
     }
 
 
+Q09_AUDIT_ANCHOR_BINDING_SCHEMA = "qm.q09-audit-anchor-binding/v1"
+
+
+def _validated_q09_anchor_payload(
+    predecessor: sqlite3.Row,
+    *,
+    phase: str,
+    binding: dict[str, Any],
+) -> dict[str, Any]:
+    """Authenticate a task-scoped Q08 dossier binding for append-only Q09."""
+
+    if phase != _BASELINE_FULL_RUN_PHASE:
+        raise ValueError("anchor binding is valid only for the canonical Q09 baseline gate")
+    required = {
+        "schema", "anchor_work_item_id", "anchor_evidence_path",
+        "anchor_evidence_sha256", "audit_path", "audit_sha256",
+        "router_task_id", "owner_decision_id", "scope",
+    }
+    if set(binding) != required:
+        raise ValueError(
+            f"anchor binding keys mismatch: missing={sorted(required - set(binding))} "
+            f"extra={sorted(set(binding) - required)}"
+        )
+    if binding["schema"] != Q09_AUDIT_ANCHOR_BINDING_SCHEMA:
+        raise ValueError("anchor binding schema mismatch")
+    if binding["scope"] != "EXACT_Q08_TO_Q09_APPEND_ONLY_REENTRY":
+        raise ValueError("anchor binding scope mismatch")
+    if str(binding["anchor_work_item_id"]) != str(predecessor["id"]):
+        raise ValueError("anchor work-item id does not match exact predecessor")
+    evidence_path = Path(str(binding["anchor_evidence_path"])).resolve()
+    predecessor_evidence = Path(str(predecessor["evidence_path"] or "")).resolve()
+    if evidence_path != predecessor_evidence or not evidence_path.is_file():
+        raise ValueError("anchor evidence path is absent or contradicts predecessor")
+    evidence_sha256 = str(binding["anchor_evidence_sha256"] or "").strip().lower()
+    if len(evidence_sha256) != 64 or _sha256_file(evidence_path).lower() != evidence_sha256:
+        raise ValueError("anchor evidence SHA-256 mismatch")
+    audit_path = Path(str(binding["audit_path"])).resolve()
+    audit_sha256 = str(binding["audit_sha256"] or "").strip().lower()
+    if (
+        not audit_path.is_file()
+        or len(audit_sha256) != 64
+        or _sha256_file(audit_path).lower() != audit_sha256
+    ):
+        raise ValueError("anchor audit SHA-256 mismatch")
+    router_task_id = str(binding["router_task_id"] or "").strip()
+    owner_decision_id = str(binding["owner_decision_id"] or "").strip()
+    if not router_task_id or not owner_decision_id:
+        raise ValueError("anchor authority binding is incomplete")
+    return {
+        "legacy_reentry_anchor_contract": binding["scope"],
+        "legacy_reentry_anchor_work_item_id": str(predecessor["id"]),
+        "legacy_reentry_anchor_evidence_path": str(evidence_path),
+        "legacy_reentry_anchor_evidence_sha256": evidence_sha256,
+        "legacy_reentry_audit_path": str(audit_path),
+        "legacy_reentry_audit_sha256": audit_sha256,
+        "legacy_reentry_router_task_id": router_task_id,
+        "legacy_reentry_owner_decision_id": owner_decision_id,
+    }
+
+
 def enqueue_cascade_backtest_for_ea(
     root: Path,
     ea_id: str,
@@ -23850,6 +23910,7 @@ def enqueue_cascade_backtest_for_ea(
     append_only_rerun_of: str | None = None,
     rerun_reason: str | None = None,
     expected_current_ex5_sha256: str | None = None,
+    q09_anchor_binding: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Requeue or create a cascade work_item from the prior PASS phase.
 
@@ -23905,6 +23966,20 @@ def enqueue_cascade_backtest_for_ea(
         return {
             "enqueued": False,
             "reason": "append_only_rerun_requires_reason",
+            "ea_id": ea_id,
+            "phase": phase,
+        }
+    if q09_anchor_binding and (
+        phase_token != _BASELINE_FULL_RUN_PHASE
+        or not predecessor_work_item_id
+        or not append_only_rerun_of
+    ):
+        return {
+            "enqueued": False,
+            "reason": (
+                "q09_anchor_binding_requires_Q09_exact_predecessor_and_"
+                "append_only_rerun_target"
+            ),
             "ea_id": ea_id,
             "phase": phase,
         }
@@ -24010,6 +24085,20 @@ def enqueue_cascade_backtest_for_ea(
                     "requeued_at": now,
                 },
             )
+            if q09_anchor_binding:
+                try:
+                    payload.update(_validated_q09_anchor_payload(
+                        prev,
+                        phase=phase_token,
+                        binding=q09_anchor_binding,
+                    ))
+                except (OSError, ValueError) as exc:
+                    skipped.append({
+                        "id": prev["id"],
+                        "symbol": prev["symbol"],
+                        "reason": f"q09_anchor_binding_rejected:{exc}",
+                    })
+                    continue
             archive_admission = custom_history_archive_admission(
                 root,
                 ea_id=str(ea_id),
@@ -28591,6 +28680,13 @@ def build_parser() -> argparse.ArgumentParser:
         "--owner-decision",
         help="Required OWNER decision id for the universe-expansion path",
     )
+    enqueue_bt.add_argument(
+        "--q09-anchor-binding-file",
+        help=(
+            "Exact hash-bound Q08 dossier binding for a canonical append-only "
+            "Q09 enqueue; requires --from-work-item-id and --append-only-rerun-of"
+        ),
+    )
     harness_pp = sub.add_parser(
         "enqueue-pattern-fixture-harness",
         help=(
@@ -29184,6 +29280,20 @@ def main(argv: list[str] | None = None) -> int:
                     ),
                 ))
         elif args.ea:
+            q09_anchor_binding = None
+            if args.q09_anchor_binding_file:
+                try:
+                    q09_anchor_binding = json.loads(
+                        Path(args.q09_anchor_binding_file).read_text(encoding="utf-8-sig")
+                    )
+                    if not isinstance(q09_anchor_binding, dict):
+                        raise ValueError("Q09 anchor binding must be a JSON object")
+                except (OSError, ValueError, json.JSONDecodeError) as exc:
+                    print_json({
+                        "enqueued": False,
+                        "reason": f"q09_anchor_binding_file_invalid:{exc}",
+                    })
+                    return 2
             print_json(enqueue_cascade_backtest_for_ea(
                 root,
                 args.ea,
@@ -29192,6 +29302,7 @@ def main(argv: list[str] | None = None) -> int:
                 append_only_rerun_of=args.append_only_rerun_of,
                 rerun_reason=args.rerun_reason,
                 expected_current_ex5_sha256=args.expected_current_ex5_sha256,
+                q09_anchor_binding=q09_anchor_binding,
             ))
         elif args.review_task_id:
             print_json(enqueue_backtest(root, args.review_task_id, args.phase))

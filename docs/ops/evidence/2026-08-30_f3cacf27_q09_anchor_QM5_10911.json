@@ -1,0 +1,11 @@
+{
+  "schema": "qm.q09-audit-anchor-binding/v1",
+  "anchor_work_item_id": "55256268-50f8-4d94-8d9a-83652c64b013",
+  "anchor_evidence_path": "D:/QM/reports/work_items/55256268-50f8-4d94-8d9a-83652c64b013/QM5_10911/Q08/GDAXI_DWX/aggregate.json",
+  "anchor_evidence_sha256": "df2d728c96af9e853f0eebfb09e371340d8f4a6018f67465baecfff4374ede37",
+  "audit_path": "C:/QM/repo/docs/ops/evidence/2026-08-30_359988fb_legacy_q12_anchor_audit.md",
+  "audit_sha256": "0451794fc1ffa6868bee7ae88fad00a18d718d7b76247ff58b1d7c438e43292b",
+  "router_task_id": "f3cacf27-bd47-4e70-bc7d-66506d9a8281",
+  "owner_decision_id": "OWNER_CHAT_LEGACY_COHORT_Q09_REENTRY_2026-08-30",
+  "scope": "EXACT_Q08_TO_Q09_APPEND_ONLY_REENTRY"
+}
