@@ -1,0 +1,112 @@
+{
+  "schema": "qm.new-commodity-sleeve-capacity-stop/v1",
+  "generated_at_utc": "2026-08-30T17:53:04.1365390Z",
+  "branch": "agents/board-advisor",
+  "mission_outcome": "BUILT_COMPILE_OK_Q02_NOT_ENQUEUED_CPU_CEILING",
+  "ea": {
+    "ea_id": "QM5_41232",
+    "slug": "wti-samecal-madcap5",
+    "strategy_id": "KELOHARJU-MOP-WTI-SAMECAL-MADCAP5-2026_S01",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "magic": 412320000
+  },
+  "edge": {
+    "class": "wti_exact_five_year_same_calendar_raw_mad_capped_location",
+    "frequency": "monthly",
+    "mechanic": "At a genuine normalized WTI broker-month transition, require the exact completed matching-calendar-month WTI log return in each year Y-5 through Y-1; compute the odd median and raw MAD; freeze bounds at median plus or minus three raw MADs; inclusively clip all five original observations; divide their sum by exactly five; trade the strict sign outside plus or minus 1e-12; renew next month.",
+    "book_difference": "Direct WTI and a recurring calendar-year clock are structurally outside the certified XAU/SP500/NDX/XNG carrier set. This is a diversification objective only; unchanged Q09 alone may establish realized decorrelation.",
+    "dedup_verdict": "SEMANTICALLY_DISTINCT_WTI_EXACT_FIVE_YEAR_SAME_CALENDAR_RAW_MAD_CAPPED_EQUAL_WEIGHT_LOCATION_SIGN_MONTHLY_SLEEVE",
+    "dedup_receipt": "artifacts/qm5_wti_samecal_madcap5_preallocation_dedup_20260830.json",
+    "dedup_receipt_sha256": "8ccfc5cc92a0caae750997fc3de0e1f2c103085666f5cb8115f8069155163f50",
+    "locked_disagreements": [
+      {
+        "observations": [-0.20, -0.05, 0.01, 0.03, 0.19],
+        "candidate_location": 0.002,
+        "candidate_direction": "BUY_WTI",
+        "peer_result": "raw mean, trim, Winsor, midhinge, shortest-three, pseudomedian, and bisquare sell; trimean is flat"
+      },
+      {
+        "observations": [-0.15, -0.03, 0.0, 0.03, 0.04],
+        "candidate_location": -0.01,
+        "candidate_direction": "SELL_WTI",
+        "peer_result": "median, trim, Winsor, trimean, midhinge, and pseudomedian are flat; shortest-three and bisquare buy"
+      }
+    ]
+  },
+  "governance": {
+    "source_packet": "strategy-seeds/sources/KELOHARJU-MOP-WTI-SAMECAL-MADCAP5-2026/source.md",
+    "source_packet_sha256": "38d7164c0183576137e65e6e100cf658e75dbf7c3329c045e3dbf51ddeda14ad",
+    "source_approval": "decisions/2026-08-30_wti_same_calendar_madcap5_source_approval.md",
+    "g0_decision": "decisions/2026-08-30_qm5_41232_wti_same_calendar_madcap5_g0.md",
+    "approved_card": "strategy-seeds/cards/approved/QM5_41232_wti-samecal-madcap5_card.md",
+    "magic_allocation": "artifacts/qm5_41232_magic_allocation_20260830.json",
+    "risk_mode": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    }
+  },
+  "build": {
+    "implementation_commit": "9b977046e",
+    "build_task_commit": "5787054e1",
+    "compile_release_commit": "8930ba1cc",
+    "build_task_id": "a56b2d4a-41ee-4aad-a8e0-61fffceccf53",
+    "build_task_status": "pending_capacity_stop_not_recorded",
+    "compile_work_item_id": "538ed871-29a2-45d9-86df-4f372a0555b4",
+    "compile_status": "done",
+    "compile_terminal": "T4",
+    "compile_verdict": "COMPILE_OK",
+    "compile_evidence": "D:/QM/reports/work_items/538ed871-29a2-45d9-86df-4f372a0555b4/QM5_41232/COMPILE_EA/compile_evidence.json",
+    "compile_evidence_sha256": "56b3b4caee0f21582ce58f1a5d5dfdf57e5253362849ab02e7c629dfa07c63b3",
+    "build_check_report": "D:/QM/reports/framework/21/build_check_20260830_175150.json",
+    "build_check_report_sha256": "fc663772418fa1255bbb55b87689127d3c88bef173f8ac6ece12c70311bf4c17",
+    "build_check": "PASS",
+    "build_check_failures": 0,
+    "build_check_warnings": 0,
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "setfile_count": 1,
+    "mq5_sha256": "999200c2b8c7381189e017a11175dd926c06117b935dd9cae1101a44ac844bcf",
+    "ex5_sha256": "f8317c897377573597a65e47c1a6d5c675d9586ccc0a6e4611d075ad5411101e",
+    "setfile_sha256_after_compile": "e70d649eccfda89c0622903685b7ef958e02b97a55d4362e2b46d5f5c8046429",
+    "setfile_build_hash": "4d0e52f8a52f5b266af4459131b34e14ca20deefc46cba66a234bbfe27aaaaae",
+    "reference_test_result": "PASS_13_OF_13",
+    "reference_test_sha256": "df7aacd1fe709a2bd476f596dc7f40d38adc46401fb4a6444f4d537d17789569",
+    "manual_smoke_or_backtest_launched": false
+  },
+  "capacity_before_q02": {
+    "command": "Get-Counter '\\Processor(_Total)\\% Processor Time' -SampleInterval 1 -MaxSamples 5",
+    "sampled_at_utc": "2026-08-30T17:53:04.1365390Z",
+    "hard_ceiling_percent": 97.0,
+    "samples_percent": [92.017, 90.464, 90.260, 99.220, 96.389],
+    "average_percent": 93.67,
+    "maximum_percent": 99.22,
+    "average_strictly_below_ceiling": true,
+    "maximum_strictly_below_ceiling": false,
+    "ceiling_binding": true,
+    "terminal64_process_count": 8,
+    "metatester64_process_count": 5
+  },
+  "q02": {
+    "enqueued": false,
+    "work_item_id": null,
+    "status": "NOT_ENQUEUED_CPU_CEILING",
+    "reason": "The five-sample maximum reached 99.22%, exceeding the hard 97% ceiling. The OWNER instruction requires an immediate capacity stop.",
+    "manual_dispatch": false
+  },
+  "open_questions": [
+    "A later authorized continuation may re-sample capacity and record the build only when both the average and maximum are strictly below 97%.",
+    "Q02 must establish activity, fills, cost drag, and baseline economics.",
+    "Only unchanged Q09 may determine realized portfolio correlation or diversification value."
+  ],
+  "safety": {
+    "manual_q02_dispatch": false,
+    "manual_tester_launch": false,
+    "autotrading_toggled": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "certification_claimed": false,
+    "decorrelation_claimed": false
+  }
+}

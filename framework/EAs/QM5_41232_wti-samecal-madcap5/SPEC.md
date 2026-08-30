@@ -1,6 +1,6 @@
 # QM5_41232_wti-samecal-madcap5 - Strategy Spec
 
-Status: `G0 APPROVED; IMPLEMENTED; Q01 PENDING`
+Status: `G0 APPROVED; IMPLEMENTED; Q01 PASS; Q02 NOT ENQUEUED - CPU CEILING`
 
 ## Identity
 
@@ -156,7 +156,7 @@ compilation.
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-08-30 | G0-approved WTI same-calendar MAD-cap build | Q01 pending |
+| v1 | 2026-08-30 | G0-approved WTI same-calendar MAD-cap build | Q01 PASS: build check and strict compiler 0 errors/0 warnings; Q02 not enqueued after a 99.22% sample exceeded the 97% CPU ceiling |
 
 ## Safety Boundary
 

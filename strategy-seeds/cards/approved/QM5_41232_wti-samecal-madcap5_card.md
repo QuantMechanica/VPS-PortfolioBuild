@@ -89,8 +89,8 @@ news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
 pipeline_phase: Q02
-q01_status: NOT_STARTED
-q02_status: NOT_ENQUEUED_CAPACITY_CHECK_PENDING
+q01_status: PASS
+q02_status: NOT_ENQUEUED_CPU_CEILING
 force_build: true
 review_focus: "Falsify a direct-WTI recurring-calendar sleeve outside the certified XAU/SP500/NDX/XNG book. Verify normalized completed endpoints, exact five-year membership, odd median/raw MAD, frozen inclusive cap, retention of all five values, divisor, sign, consumed month, fixed risk, frozen stop, and next-month exit. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -371,15 +371,19 @@ Only unchanged Q09 may determine realized correlation or portfolio value.
 | Version | Date | Reason | Status |
 |---|---|---|---|
 | v1 | 2026-08-30 | initial WTI exact-five-year same-calendar MAD-cap card | G0 APPROVED; Q01 pending |
+| v2 | 2026-08-30 | exact V5 build, fixed-risk preset, independent fixtures, and governed strict compile | Q01 PASS; Q02 not enqueued because the five-sample CPU maximum exceeded the 97% ceiling |
 
 ## Approvals
 
 - Source: `APPROVED_SOURCE` under the explicit OWNER mission.
 - G0: `APPROVED` by
   `decisions/2026-08-30_qm5_41232_wti_same_calendar_madcap5_g0.md`.
-- Q01: pending deterministic allocation, implementation, lint, reference tests,
-  build check, and strict compile.
-- Q02: one paced non-live enqueue permitted only below capacity ceilings.
+- Q01: `PASS`; governed compile work item
+  `538ed871-29a2-45d9-86df-4f372a0555b4`, build check PASS, compiler
+  0 errors/0 warnings, one canonical setfile, EX5 SHA-256
+  `f8317c897377573597a65e47c1a6d5c675d9586ccc0a6e4611d075ad5411101e`.
+- Q02: `NOT_ENQUEUED_CPU_CEILING`; the 2026-08-30T17:53:04Z five-sample
+  reading averaged 93.67% and reached 99.22%, above the hard 97% maximum.
 
 ## Safety Boundary
 
