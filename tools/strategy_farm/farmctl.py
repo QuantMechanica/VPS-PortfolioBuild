@@ -3994,7 +3994,8 @@ def _build_task_claim_guard(
             "ea_id": ea_id,
             "card_path": str(card_path),
         }
-    if not _card_r_gate_ready(fm, card_path):
+    q09_requal8_authorized = _q09_requal8_card_authority(card_path, fm)
+    if not q09_requal8_authorized and not _card_r_gate_ready(fm, card_path):
         errors = list(consistency.get("errors") or [])
         if not errors:
             errors = [
@@ -4047,8 +4048,20 @@ def _build_task_claim_guard(
         }
     return {
         "claimable": True,
-        "code": "eligible_q02_exclusion_override" if exclusion_sources else "eligible",
-        "reason": "eligible_q02_exclusion_override" if exclusion_sources else "eligible",
+        "code": (
+            "eligible_q09_requal8_manifest_authority"
+            if q09_requal8_authorized
+            else "eligible_q02_exclusion_override"
+            if exclusion_sources
+            else "eligible"
+        ),
+        "reason": (
+            "eligible_q09_requal8_manifest_authority"
+            if q09_requal8_authorized
+            else "eligible_q02_exclusion_override"
+            if exclusion_sources
+            else "eligible"
+        ),
         "task_id": task_id,
         "ea_id": ea_id,
         "card_path": str(card_path),

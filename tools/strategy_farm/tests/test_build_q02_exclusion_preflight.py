@@ -147,3 +147,44 @@ def test_explicit_override_allows_policy_owner_path(tmp_path: Path) -> None:
     assert guard["claimable"] is True
     assert guard["code"] == "eligible_q02_exclusion_override"
     assert guard["q02_exclusion_sources"] == ["fx_only_expected_trades_gt_100"]
+
+
+def test_q09_requal8_manifest_authority_survives_record_build_claim_guard(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "farm"
+    cards = root / "artifacts" / "cards_review"
+    cards.mkdir(parents=True)
+    card = cards / "QM5_41215_pre-fomc-drift-ndx-requal8.md"
+    card.write_text(
+        """---
+ea_id: QM5_41215
+slug: pre-fomc-drift-ndx-requal8
+source_id: OWNER-DEC-Q09HOLD-REQUAL-8-20260829:QM5_13128
+g0_status: APPROVED
+target_symbols: [NDX.DWX]
+---
+
+# Reservation-only requalification card
+""",
+        encoding="utf-8",
+    )
+
+    ordinary_guard = farmctl._build_task_claim_guard(
+        root,
+        _task_row("QM5_41215", card),
+    )
+    with mock.patch.object(
+        farmctl,
+        "_q09_requal8_card_authority",
+        return_value=True,
+    ):
+        manifest_guard = farmctl._build_task_claim_guard(
+            root,
+            _task_row("QM5_41215", card),
+        )
+
+    assert ordinary_guard["claimable"] is False
+    assert ordinary_guard["code"] == "r_gate_not_ready"
+    assert manifest_guard["claimable"] is True
+    assert manifest_guard["code"] == "eligible_q09_requal8_manifest_authority"
