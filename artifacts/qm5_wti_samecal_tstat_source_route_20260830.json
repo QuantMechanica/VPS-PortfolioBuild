@@ -1,0 +1,22 @@
+{
+  "schema": "qm.trading-source-route/v1",
+  "recorded_at_utc": "2026-08-30T02:35:29Z",
+  "url": "https://github.com/wch/r-source/blob/bac583951b728e97b9786804d3b4081f0fe18df5/src/library/stats/R/t.test.R",
+  "router": {
+    "status": "ROUTE_GITHUB_API",
+    "adapter": "github",
+    "route": "connected GitHub app or public API"
+  },
+  "retrieval": {
+    "provider": "connected GitHub app",
+    "repository": "wch/r-source",
+    "ref": "bac583951b728e97b9786804d3b4081f0fe18df5",
+    "path": "src/library/stats/R/t.test.R",
+    "blob_sha": "2c1e8d19a3150978e1b56f3ee8985f43a17382f6",
+    "read_scope": "complete",
+    "raw_text_persisted": false
+  },
+  "concise_paraphrase": "The pinned R Core one-sample branch computes the arithmetic mean, sample variance, standard error as sqrt(variance divided by n), and the t statistic as (sample mean minus the null mean) divided by that standard error; it rejects fewer than two observations and essentially constant samples.",
+  "role": "Primary-software arithmetic provenance only; no WTI trading efficacy, threshold, or portfolio claim transfers.",
+  "safety": "Public read only; no authentication mutation, code execution, binary download, or source-site write."
+}
