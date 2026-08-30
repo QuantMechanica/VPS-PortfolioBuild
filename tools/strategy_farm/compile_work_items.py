@@ -114,6 +114,18 @@ QM5_35005_REVIEW_REPAIR_AUTHORITY = (
 QM5_35005_REVIEW_REPAIR_EA_LABELS = frozenset({
     "QM5_35005_sma-crossover-pullback-system",
 })
+# Exact review-rework authority for QM5_36005. The accepted source repair is
+# complete, but review task ddb87b6b rejected the package because its three
+# presets declared a transient/non-committed source hash and no governed
+# current-source binary existed. This one task/label binding permits only an
+# append-only, source-hash-bound COMPILE_EA successor; it grants no backtest or
+# gate-verdict authority and cannot authorize another EA.
+QM5_36005_REVIEW_REPAIR_AUTHORITY = (
+    "router_review_ea:ddb87b6b-a6db-4f8d-be8f-337341238a8c"
+)
+QM5_36005_REVIEW_REPAIR_EA_LABELS = frozenset({
+    "QM5_36005_nnfx-coral-trendlord-woodies-harvester",
+})
 # Exact review-rework authorities for review tasks that accepted repaired
 # source while rejecting the stale binary/source package. Each permits one
 # append-only COMPILE_EA successor bound to the repaired source hash; it grants
@@ -1033,6 +1045,10 @@ def _source_repair_authorized(
         or (
             authority == QM5_35005_REVIEW_REPAIR_AUTHORITY
             and ea_label in QM5_35005_REVIEW_REPAIR_EA_LABELS
+        )
+        or (
+            authority == QM5_36005_REVIEW_REPAIR_AUTHORITY
+            and ea_label in QM5_36005_REVIEW_REPAIR_EA_LABELS
         )
         or (
             authority is not None

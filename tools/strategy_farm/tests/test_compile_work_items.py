@@ -1142,6 +1142,23 @@ def test_qm5_35005_review_repair_authority_is_exact_label_bound() -> None:
     )
 
 
+def test_qm5_36005_review_repair_authority_is_exact_label_bound() -> None:
+    label = "QM5_36005_nnfx-coral-trendlord-woodies-harvester"
+
+    assert compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_36005_REVIEW_REPAIR_AUTHORITY,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        "QM5_36004_nnfx-ssl-hma-trend-system",
+        compile_work_items.QM5_36005_REVIEW_REPAIR_AUTHORITY,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label,
+        "router_review_ea:wrong-task",
+    )
+
+
 def test_review_rework_source_repair_authority_is_exact_label_bound() -> None:
     authorities = compile_work_items.REVIEW_REWORK_SOURCE_REPAIR_AUTHORITIES
 

@@ -4,6 +4,8 @@ import csv
 import re
 from pathlib import Path
 
+from tools.strategy_farm.canonical_hash import canonical_blob_sha256
+
 
 REPO = Path(__file__).resolve().parents[3]
 LABEL = "QM5_36005_nnfx-coral-trendlord-woodies-harvester"
@@ -203,6 +205,7 @@ def test_backtest_sets_bind_registered_slots_fixed_risk_and_all_inputs() -> None
         assert f"qm_magic_slot_offset={slot}" in content
         assert "RISK_FIXED=1000" in content
         assert "RISK_PERCENT=0" in content
-        assert re.search(r"^; build_hash:\s+[0-9a-f]{64}$", content, re.MULTILINE)
+        canonical_source_hash = canonical_blob_sha256(EA, repo_root=REPO)
+        assert f"; build_hash:   {canonical_source_hash}" in content
         for input_name in strategy_inputs:
             assert re.search(rf"^{re.escape(input_name)}=", content, re.MULTILINE), input_name
