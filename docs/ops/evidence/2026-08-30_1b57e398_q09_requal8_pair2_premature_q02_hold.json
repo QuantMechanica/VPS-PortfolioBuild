@@ -1,0 +1,43 @@
+{
+  "all_unclaimable": true,
+  "already_held": 0,
+  "backup": {
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_governed_hold_20260830T211116Z.sqlite",
+    "sha256": "8a78cbd47fcc6df32ebafcfe923ee15119a02c11386aa5f34790c1855bbde862"
+  },
+  "hold_code": "MANDATORY_BUILD_REVIEW_PENDING",
+  "inserted": 1,
+  "mode": "apply",
+  "reason": "record-build auto-enqueued this Q02 row before the manifest-required mechanical Codex and independent Claude build reviews",
+  "release_condition": "release only after mechanical Codex review PASS and independent Claude final review APPROVE bind build task 5f5da824-916d-4d37-b12c-0fcb642f5508",
+  "rows": [
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-08-30T21:11:23+00:00",
+        "hold_code": "MANDATORY_BUILD_REVIEW_PENDING",
+        "reason": "record-build auto-enqueued this Q02 row before the manifest-required mechanical Codex and independent Claude build reviews",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-08-30T21:11:23+00:00",
+        "work_item_id": "d27038b7-2110-45e0-8a36-ecf116c697d2"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-30T21:10:30+00:00",
+        "ea_id": "QM5_41216",
+        "id": "d27038b7-2110-45e0-8a36-ecf116c697d2",
+        "kind": "backtest",
+        "phase": "Q02",
+        "status": "pending",
+        "symbol": "XAUUSD.DWX",
+        "updated_at": "2026-08-30T21:10:30+00:00",
+        "verdict": null
+      }
+    }
+  ],
+  "schema": "qm.governed-work-item-hold/v1",
+  "status": "ok"
+}
