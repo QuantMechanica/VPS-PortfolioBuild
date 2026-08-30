@@ -512,11 +512,17 @@ bool Strategy_ShortestHalfMidmeanSignal(const double &observations[],
 
    // Strict replacement makes the lowest starting index win an exact tie.
    int best_index = 0;
+   if(best_index >= ArraySize(spans))
+      return false;
    for(int index = 1; index < strategy_window_count; ++index)
       if(spans[index] < spans[best_index])
          best_index = index;
 
-   if(best_index < 0 ||
+   if(best_index < 0)
+      return false;
+   if(best_index >= ArraySize(sorted_values))
+      return false;
+   if(best_index + strategy_window_size > ArraySize(sorted_values) ||
       best_index + strategy_window_size > sample_count)
       return false;
    location_value =
