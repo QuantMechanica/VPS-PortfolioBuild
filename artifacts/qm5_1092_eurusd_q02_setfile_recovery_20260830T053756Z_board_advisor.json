@@ -1,0 +1,96 @@
+{
+  "schema_version": "qm.paced-fleet-diversity-recovery/v1",
+  "created_at_utc": "2026-08-30T05:40:40Z",
+  "branch": "agents/board-advisor",
+  "repo_head_before_commit": "0ddd22a204798b5dc8ac92a7b0530683b1c203a6",
+  "mission_unit": "repair and re-enqueue one structurally diverse FX EA blocked at Q02 by a missing historical setfile contract",
+  "ea_id": "QM5_1092",
+  "ea_label": "QM5_1092_qp-fx-value-ppp",
+  "instrument_class": "forex",
+  "symbol": "EURUSD.DWX",
+  "timeframe": "H1",
+  "phase": "Q02",
+  "selection": {
+    "priority_1_disposition": "no clean unclaimed diversity build satisfied the qm-build-ea-from-card deterministic preflight; unbuilt approved FX cards lacked registered magic rows, while registry-ready candidates were already built or claimed",
+    "priority_selected": 2,
+    "diversity_reason": "the current certified-survivor set is concentrated in index, metal, and energy sleeves; this candidate is a seven-pair G10 FX value sleeve",
+    "structural_edge": "quarterly cross-sectional purchasing-power-parity deviation rank",
+    "expected_trades_per_year_per_symbol": 12,
+    "ml_or_adaptive_logic": false,
+    "source_provenance": "Quantpedia strategy lineage to Menkhoff, Sarno, Schmeling, and Schrimpf, Currency Value, Review of Financial Studies (2017)",
+    "approved_card_sha256": "67cd6e1bd0b1d34820f3aea62a13556f3d90a812ad9f2ba1ea82a6440737673a"
+  },
+  "farm_claim": {
+    "agent_task_id": "505f1e3d-4099-4ba4-a331-948ed77c4b9e",
+    "task_type": "ops_issue",
+    "priority": 1000,
+    "claimed_by": "codex",
+    "scope": "one_ea_one_symbol",
+    "target_state_after_handoff": "PIPELINE",
+    "target_verdict_after_handoff": "Q02_ENQUEUED"
+  },
+  "diagnosis": {
+    "source_work_item_id": "b1b81564-2458-4b17-8632-b31ff1fa95fc",
+    "source_status": "failed",
+    "source_verdict": "INFRA_FAIL",
+    "source_failure_class": "DETERMINISTIC_NO_SUMMARY",
+    "source_failure_subclass": "input_missing",
+    "source_final_failure": "summary_missing_retries_exhausted",
+    "source_setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1092_qp-fx-value-ppp\\sets\\QM5_1092_qp-fx-value-ppp_EURUSD.DWX_H1_backtest.set",
+    "source_setfile_present_before_repair": false,
+    "scoped_recovery_dry_run_before_repair": "setfile_missing",
+    "root_cause": "the immutable Q02 row referenced an H1 backtest preset that did not exist; the EA source, EX5, registry slot, and newer D1 fixed-risk preset were present"
+  },
+  "repair": {
+    "added_setfile": "framework/EAs/QM5_1092_qp-fx-value-ppp/sets/QM5_1092_qp-fx-value-ppp_EURUSD.DWX_H1_backtest.set",
+    "setfile_sha256": "f74adbb0fdc8c01ca1a818916e6dec6c376d80ab50bf3d7da8f59f48d36c7e78",
+    "magic_slot": 0,
+    "magic": 10920000,
+    "risk_fixed_usd": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "strategy_source_changed": false,
+    "compiled_binary_changed": false,
+    "mq5_sha256": "eb502085b0ebe519e84cd9bc23ad71cf940e1d107a0cdbd0a361e77c130ce8d0",
+    "ex5_sha256": "b7b53b90e9eacaaa48f3aa48a031df6f81d4c496482b99bda2c16834887085a1"
+  },
+  "verification": {
+    "farmctl_q02_fixed_risk_contract": "PASS",
+    "farmctl_build_artifact_failure": null,
+    "scoped_dry_run_command": "python tools/strategy_farm/sweep_enqueue_built_eas.py --ea QM5_1092 --symbols EURUSD.DWX --max-part2-per-run 1",
+    "scoped_dry_run_planned_rows": 1,
+    "scoped_dry_run_other_symbols_enqueued": 0,
+    "cpu_sampled_at_utc": "2026-08-30T05:37:45.9115211Z",
+    "cpu_samples_pct": [
+      63.77660732646056,
+      73.29580574938416,
+      76.79842711328904,
+      66.76242936905781,
+      61.232442819362774
+    ],
+    "cpu_average_pct": 68.37314247551087,
+    "cpu_maximum_pct": 76.79842711328904,
+    "cpu_ceiling_pct": 97,
+    "cpu_ceiling_binding": false,
+    "metatester_count_at_sample": 4,
+    "whole_database_quick_check": "not_run_to_completion_due_live_farm_contention; exact successor row was read back directly"
+  },
+  "q02": {
+    "enqueue_command": "python tools/strategy_farm/sweep_enqueue_built_eas.py --apply --ea QM5_1092 --symbols EURUSD.DWX --max-part2-per-run 1",
+    "enqueued": true,
+    "work_item_id": "82b7a859-3340-41b5-9874-6d4b8d2f1e32",
+    "source_work_item_id": "b1b81564-2458-4b17-8632-b31ff1fa95fc",
+    "status_at_readback": "pending",
+    "claimed_by_at_readback": null,
+    "created_at_utc": "2026-08-30T05:37:56+00:00",
+    "other_rows_created_by_scoped_apply": 0,
+    "dispatch_performed_manually": false
+  },
+  "forbidden_surfaces": {
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "deploy_manifest_touched": false
+  }
+}
