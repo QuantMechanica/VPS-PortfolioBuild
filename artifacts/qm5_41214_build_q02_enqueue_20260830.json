@@ -1,0 +1,191 @@
+{
+  "schema": "qm.new-commodity-sleeve-build-q02/v1",
+  "generated_at_utc": "2026-08-30T06:53:12.4335747Z",
+  "branch": "agents/board-advisor",
+  "pre_receipt_head": "8e1eb581fd571fb4426299e78e68ee803ee566e3",
+  "mission_outcome": "BUILT_COMPILE_OK_Q02_ENQUEUED_CPU_CLEAR",
+  "ea": {
+    "ea_id": "QM5_41214",
+    "slug": "xng-samecal-signscore",
+    "strategy_id": "KELOHARJU-PAPAILIAS-RCORE-XNG-SAMECAL-SIGNSCORE-2026_S01",
+    "symbol": "XNGUSD.DWX",
+    "timeframe": "D1",
+    "magic": 412140000
+  },
+  "edge": {
+    "class": "xng_up_to_ten_year_same_calendar_bernoulli_sign_score_seasonality",
+    "frequency": "monthly",
+    "mechanic": "At the first normalized XNG D1 broker-month transition, scan the same calendar month in exact years Y-1 through Y-10, skip missing years, require at least five completed log returns, map each nonnegative return to one and each negative return to zero, compute the no-continuity-correction Bernoulli null-half score (2*x-n)/sqrt(n), and hold XNG to the next month only when the score is strictly outside plus or minus 1.0 with a 1e-10 tolerance.",
+    "book_difference": "The candidate uses a monthly exact-calendar binary-sign confidence clock with an abstention band, unlike certified QM5_12567's daily cumulative-RSI2 pullback. Structural difference is an objective only; Q09 alone may establish realized decorrelation from the existing XNG, index, and metal book.",
+    "dedup_verdict": "FUZZY_MATCH_RESOLVED_DISTINCT_XNG_SAMECAL_BINARY_SIGN_SCORE_GATE_MONTHLY_DIRECTIONAL_CARRIER",
+    "dedup_receipt": "artifacts/qm5_xng_samecal_signscore_preallocation_dedup_20260830.json",
+    "dedup_receipt_sha256": "f6e5c50549a7a43c7bd047caa44303a699f2ddf139acd599ebd5090cffd80af4",
+    "dedup_scan": {
+      "registry_identities": 4713,
+      "cards": 1359,
+      "strategy_wiki_nodes": 45,
+      "exact_matches": 0
+    },
+    "fuzzy_neighbors": [
+      "QM5_41212 WTI same-calendar sign score",
+      "QM5_20100 XNG same-calendar raw mean",
+      "QM5_41213 XAU/XAG same-calendar relative sign score"
+    ],
+    "locked_disagreements": [
+      {
+        "observations": [0.09, -0.01, -0.01, -0.01, -0.01],
+        "raw_mean_direction": "BUY_XNG",
+        "sign_score_direction": "SELL_XNG",
+        "interpretation": "One positive outlier cannot overturn four negative signs."
+      },
+      {
+        "certified_neighbor": "QM5_12567_cum-rsi2-commodity",
+        "certified_clock": "daily cumulative RSI2 oversold pullback",
+        "candidate_clock": "monthly exact-prior-year binary sign score",
+        "interpretation": "Carrier overlap does not imply signal identity; Q09 still owns realized correlation."
+      }
+    ]
+  },
+  "governance": {
+    "source_packet": "strategy-seeds/sources/KELOHARJU-PAPAILIAS-RCORE-XNG-SAMECAL-SIGNSCORE-2026/source.md",
+    "source_packet_sha256": "b526454ae66190b5cc3288c709e946f1656ed56df3b847f04f6c46a02f4617ee",
+    "source_provenance": "artifacts/qm5_xng_samecal_signscore_source_provenance_20260830.json",
+    "source_provenance_sha256": "4a362e8e52ca3dafb5e396ab85bd793362c9ed5fee5050b68347a57163038425",
+    "source_approval": "decisions/2026-08-30_xng_same_calendar_sign_score_source_approval.md",
+    "source_approval_sha256": "0ca0f6bfd59b5ba098d9cb5006ffdc92118efcc63c2ee83b961a0245298ba670",
+    "g0_decision": "decisions/2026-08-30_qm5_41214_xng_same_calendar_sign_score_g0.md",
+    "g0_decision_sha256": "6674fa3829311661a0a52110f10aaf27f7d3a08ae8721b621750432b2eed564c",
+    "g0_status": "APPROVED",
+    "approved_card": "strategy-seeds/cards/approved/QM5_41214_xng-samecal-signscore_card.md",
+    "approved_card_sha256": "64d838d307378117a3fb76781d4a7f05dca16e02e99e1af15087f65a893dbf8f",
+    "runtime_card_hash_verified_exact_before_build": true,
+    "runtime_card_after_build_sha256": "0f0dd357582118b091432c614834869435ce3373d0824797257b95f91f82badf",
+    "runtime_card_after_build_note": "farmctl normalized the informational R1 runtime fields after the exact pre-build copy; the repository-approved execution card remains unchanged and hash-bound.",
+    "magic_allocation_receipt": "artifacts/qm5_41214_magic_allocation_20260830.json",
+    "magic_allocation_receipt_sha256": "de4c68349a6cad3b12fcf505397ac5091880f4ad6c303b041613bc9c75d1f803",
+    "source_basis": "Complete governed packets for Keloharju, Linnainmaa, and Nyberg (2016), Papailias, Liu, and Thomakos (2021), and commit-pinned R Core primary-software arithmetic; no source performance or correlation claim transfers to the exact QM conjunction."
+  },
+  "build": {
+    "implementation_commits": [
+      "e74d49641",
+      "e0fb5ddb2",
+      "a60ed41d3",
+      "248dabd21",
+      "166b85ecb"
+    ],
+    "build_task_id": "f7e1791b-0da4-4a5e-810a-ed6637f6d9b6",
+    "build_task_status": "done",
+    "build_result": "artifacts/qm5_41214_build_result_20260830.json",
+    "build_result_sha256": "15120fae6b1ee5c806e0795e8044eb4c36622dd6d1d6c6230d7871d103455fbf",
+    "compile_work_item_id": "293839ff-dd85-4bd5-9406-3961564fc0b8",
+    "compile_work_item_status": "done",
+    "compile_terminal": "T8",
+    "compile_verdict": "COMPILE_OK",
+    "compile_release_dry_run": "artifacts/qm5_41214_compile_release_dry_run_20260830.json",
+    "compile_release_dry_run_sha256": "345695405daeb36288f39748a148fc220033c7b883659e8e44901a1dfc7d386e",
+    "compile_release": "artifacts/qm5_41214_compile_release_20260830.json",
+    "compile_release_sha256": "383b56f7f00750adc0a932dfc2bd7170e554ac3009a4a0af8f4241c033bf0a3f",
+    "compile_evidence": "D:/QM/reports/work_items/293839ff-dd85-4bd5-9406-3961564fc0b8/QM5_41214/COMPILE_EA/compile_evidence.json",
+    "compile_evidence_sha256": "9bfc355b9c3e3e3c9d7afd7df437bffe035aa5c806701e6ff9ab050f28da42b3",
+    "build_check_report": "D:/QM/reports/framework/21/build_check_20260830_064852.json",
+    "build_check_report_sha256": "c0b319cf13d287ddba93e6faa45f7f46e68dc78a02b0d5e6b65454a86978e3bc",
+    "mq5_sha256": "af89ed4280cf3704d8a803564e1dbcf1fec3b5a2abf2ac6b322a5246950fcd19",
+    "ex5_sha256": "c028c921680d11cc8f47981f33843e8d305b4ec2200b37b25356934d1d66664d",
+    "setfile_sha256": "98a68c84091b54c9db01cb4891d1b19f6cf7d388742aec9b4bc10f90dc36d5b8",
+    "setfile_build_hash": "b46c2277d036b40d5abed43f41fcbeb883637d4a8efe193a1be8e9532db10ad4",
+    "spec_sha256": "dd6e16676c3b0a19f6f9e120ec60d82bcc52b1699c4726600977f793140cbf8b",
+    "reference_test_sha256": "a4e5ba661cac86acffd09ce4c7de532396378c25861a23069109b83c73de6f6a",
+    "build_check": "PASS",
+    "build_check_failures": 0,
+    "build_check_warnings": 0,
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "risk_mode": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "manual_smoke_or_backtest_launched": false
+  },
+  "capacity_before_q02": {
+    "command": "Get-Counter '\\Processor(_Total)\\% Processor Time' -SampleInterval 1 -MaxSamples 5",
+    "sampled_at_utc": "2026-08-30T06:51:45.6072751Z",
+    "hard_ceiling_percent": 97.0,
+    "samples_percent": [
+      83.51426222874525,
+      83.23852018847406,
+      89.84478887809777,
+      86.1412028875313,
+      80.08029527190395
+    ],
+    "average_percent": 84.56381389095046,
+    "maximum_percent": 89.84478887809777,
+    "ceiling_binding": false
+  },
+  "capacity_after_q02_enqueue": {
+    "sampled_at_utc": "2026-08-30T06:52:14.7789169Z",
+    "hard_ceiling_percent": 97.0,
+    "samples_percent": [
+      90.91890626076452,
+      92.51128083725129,
+      91.32251649327993,
+      93.37667020243654,
+      94.05254243295416
+    ],
+    "average_percent": 92.43638324533728,
+    "maximum_percent": 94.05254243295416,
+    "ceiling_binding": false,
+    "response": "MISSION_EXIT_NO_MANUAL_DISPATCH_OR_TESTER_ACTION"
+  },
+  "q02": {
+    "enqueued": true,
+    "enqueued_by": "record_build_result.auto_q02",
+    "work_item_id": "13545dab-34f6-4147-bef6-cf0f4495a2eb",
+    "status_at_readback": "pending",
+    "attempt_count": 0,
+    "claimed_by_at_readback": null,
+    "priority_track": true,
+    "symbol": "XNGUSD.DWX",
+    "timeframe": "D1",
+    "setfile": "framework/EAs/QM5_41214_xng-samecal-signscore/sets/QM5_41214_xng-samecal-signscore_XNGUSD.DWX_D1_backtest.set",
+    "items_enqueued": 1,
+    "items_skipped": 0,
+    "manual_dispatch": false
+  },
+  "verification": {
+    "reference_tests": "PASS: 11 tests",
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "spec_validation": "PASS",
+    "strategy_entry_validation": "PASS",
+    "raw_mq5_quarantine_validation": "PASS",
+    "registry_resolver": "PASS: one active row, magic 412140000, zero active collisions, resolver binding present",
+    "static_build_guardrails": "PASS: zero findings",
+    "strict_build_gate": "PASS: zero failures and zero warnings",
+    "strict_compile": "PASS: zero compiler errors and zero compiler warnings",
+    "json_parse_and_hash_binding": "PASS"
+  },
+  "risks": [
+    "A five-observation floor can still produce sparse activity and a coarse Bernoulli score.",
+    "Binary signs discard return magnitude, and one observation can change a small-n participation or direction decision.",
+    "Continuous-CFD labels, rolls, financing, gaps, and futures-to-CFD basis remain empirical translation risks.",
+    "The monthly binary calendar clock is structurally different from certified QM5_12567, but Q09 must reject excessive realized overlap with the existing XNG and wider portfolio book."
+  ],
+  "safety": {
+    "manual_q02_dispatch": false,
+    "manual_tester_launch": false,
+    "autotrading_toggled": false,
+    "t_live_controlled": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "certification_claimed": false,
+    "decorrelation_claimed": false
+  },
+  "mission_commits_before_receipt": [
+    "e74d49641",
+    "e0fb5ddb2",
+    "a60ed41d3",
+    "248dabd21",
+    "166b85ecb"
+  ]
+}

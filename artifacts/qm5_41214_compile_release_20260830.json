@@ -1,0 +1,28 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "293839ff-dd85-4bd5-9406-3961564fc0b8"
+  ],
+  "backup": {
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260830T062034Z_f8fa4319.sqlite",
+    "sha256": "c6d79e595153f54753b2784160cff02c2d81851f3fd5d7275b9ab0651e780fa3"
+  },
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "af89ed4280cf3704d8a803564e1dbcf1fec3b5a2abf2ac6b322a5246950fcd19",
+      "ea_id": "QM5_41214",
+      "ea_label": "QM5_41214_xng-samecal-signscore",
+      "expected_mq5_sha256": "af89ed4280cf3704d8a803564e1dbcf1fec3b5a2abf2ac6b322a5246950fcd19",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41214_xng-samecal-signscore\\QM5_41214_xng-samecal-signscore.mq5",
+      "work_item_id": "293839ff-dd85-4bd5-9406-3961564fc0b8"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-08-30T06:20:59+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "293839ff-dd85-4bd5-9406-3961564fc0b8"
+}
