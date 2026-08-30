@@ -1,0 +1,47 @@
+{
+  "schema": "qm.source-provenance/v1",
+  "generated_at_utc": "2026-08-30T00:40:51Z",
+  "branch": "agents/board-advisor",
+  "candidate": {
+    "source_id": "KELOHARJU-MOP-WTI-SEASRESMOM-2026",
+    "strategy_id": "KELOHARJU-MOP-WTI-SEASRESMOM-2026_S01",
+    "slug": "wti-seas-resid-mom"
+  },
+  "approval": {
+    "path": "decisions/2026-08-30_wti_seasonal_residual_momentum_source_approval.md",
+    "commit": "a19955cc03a38b6b9eef08eddb1627d7d85bd23f",
+    "sha256": "e068a39fee2c0874f6da989c6059008423fe23f50e18a85fc7c0944c9942ee3a"
+  },
+  "extraction": {
+    "path": "strategy-seeds/sources/KELOHARJU-MOP-WTI-SEASRESMOM-2026/source.md",
+    "sha256": "a8d8facc8e80381e7e0288c366cabf68432c8a1b9b2f6f053ecd1ed108fcd62f",
+    "bytes": 9933,
+    "lines": 191
+  },
+  "complete_read_records": [
+    {
+      "path": "strategy-seeds/sources/KELOHARJU-RETSEAS-2016/source.md",
+      "sha256": "54e6036035d146bb080a0ddf4a16b378c187655a3834df86329f7b2d319875f0",
+      "bytes": 9245,
+      "lines": 174,
+      "role": "peer-reviewed same-calendar commodity expectation with explicit crude-oil membership"
+    },
+    {
+      "path": "strategy-seeds/sources/MOP-TSMOM-2012/source.md",
+      "sha256": "c8b07ecd62c1d5ef9e3d7975eee6a3b6c46c1c566d0b20b42237613d9b3a7042",
+      "bytes": 10170,
+      "lines": 184,
+      "role": "peer-reviewed own-return continuation with explicit WTI and one-month formation / hold evidence"
+    },
+    {
+      "path": "strategy-seeds/sources/KELOHARJU-MISHRA-XNG-SEASSURPRISE-2026/source.md",
+      "sha256": "daa4c8c70fcfb330f157ac4ac0cbaa3ad13fdc765d184affd80f88c588cf09bc",
+      "bytes": 9901,
+      "lines": 190,
+      "role": "governed arithmetic and realized-sample-exclusion precedent only; no XNG evidence or direction transfers"
+    }
+  ],
+  "dedup_receipt": "artifacts/qm5_wti_seas_resid_mom_preallocation_dedup_20260830.json",
+  "runtime_data_boundary": "native XTIUSD.DWX D1 OHLC, broker calendar, quotes, symbol metadata, positions, deals, and terminal-global attempt state only",
+  "claim_boundary": "No source or sibling result, profitability, density, CFD equivalence, or portfolio decorrelation transfers."
+}
