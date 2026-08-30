@@ -1,0 +1,14 @@
+{
+  "after_payload_sha256": "56c29636d19fcacbb591e09b99312390de269243352ddf9fc08489c161863355",
+  "before_payload_sha256": "c7c8e00fc5f88fbd77b2646333c0ddce1eaeb183d2534104880c3f409090b914",
+  "build_task_id": "cc1b8d53-b4a9-49d6-9acf-27676464eef2",
+  "contract_version": "qm.compile-ea-build-task-binding/v1",
+  "ea_id": "QM5_41212",
+  "ea_label": "QM5_41212_wti-samecal-signscore",
+  "mq5_sha256": "afe7763c99886f9411f81fad417592886155d441e6f28cd10f2d9852804b6ada",
+  "release_backup": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260830T041311Z_a204975c.sqlite",
+  "release_backup_sha256": "3719b1328f16e0e073167a38dea4c7c809814dcae3e34693d81d39e515cee391",
+  "schema_version": "qm.compile-ea-build-task-binding-repair/v1",
+  "status": "BOUND",
+  "work_item_id": "704d6f3a-b311-4ec6-88b9-8261adcdfc4c"
+}
