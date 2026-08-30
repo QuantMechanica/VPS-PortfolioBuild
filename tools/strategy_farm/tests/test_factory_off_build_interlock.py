@@ -202,6 +202,50 @@ def test_rework_invalidates_stale_result_and_preserves_review_history(tmp_path: 
     assert farmctl._materialize_embedded_build_result(root, task_id, updated) is None
 
 
+def test_review_fail_rework_can_target_exact_build(tmp_path: Path, monkeypatch) -> None:
+    root = tmp_path / "farm"
+    now = farmctl.utc_now()
+    for task_id, updated_at in (("target-build", now), ("newer-build", "2099-01-01T00:00:00+00:00")):
+        payload = {
+            "ea_id": f"QM5_{task_id}",
+            "slug": task_id,
+            "blocked_reason": "codex_review_fail",
+            "build_generation": 0,
+        }
+        _insert_build(root, task_id, payload=payload, status="blocked")
+        with farmctl.connect(root) as conn:
+            conn.execute("UPDATE tasks SET updated_at=? WHERE id=?", (updated_at, task_id))
+            conn.execute(
+                """
+                INSERT INTO tasks(id, kind, status, source_id, card_id, payload_json, created_at, updated_at)
+                VALUES (?, 'codex_review', 'done', NULL, ?, ?, ?, ?)
+                """,
+                (
+                    f"review-{task_id}",
+                    f"QM5_{task_id}",
+                    json.dumps({
+                        "build_task_id": task_id,
+                        "build_generation": 0,
+                        "verdict": {"verdict": "FAIL", "findings": ["repair me"]},
+                    }),
+                    now,
+                    updated_at,
+                ),
+            )
+            conn.commit()
+    monkeypatch.setattr(farmctl, "_repo_dirty_status", lambda: {"blocked": False, "entries": []})
+
+    prepared = farmctl._prepare_codex_review_fail_reworks(
+        root,
+        build_task_id="target-build",
+    )
+
+    assert [item["build_task_id"] for item in prepared] == ["target-build"]
+    with farmctl.connect(root) as conn:
+        statuses = dict(conn.execute("SELECT id, status FROM tasks WHERE kind='build_ea'"))
+    assert statuses == {"target-build": "pending", "newer-build": "blocked"}
+
+
 def test_pending_selector_excludes_item_specific_hold(tmp_path: Path) -> None:
     root = tmp_path / "farm"
     farmctl.init_db(root)

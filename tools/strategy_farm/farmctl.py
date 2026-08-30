@@ -13367,22 +13367,31 @@ def _archive_rework_artifacts(root: Path, build_task_id: str, payload: dict[str,
             pass
 
 
-def _prepare_codex_review_fail_reworks(root: Path, limit: int = 1) -> list[dict[str, Any]]:
+def _prepare_codex_review_fail_reworks(
+    root: Path,
+    limit: int = 1,
+    *,
+    build_task_id: str | None = None,
+) -> list[dict[str, Any]]:
     """Turn mechanical Codex review failures into bounded pending rework jobs."""
     prepared: list[dict[str, Any]] = []
     dirty_guard = _repo_dirty_status()
     dirty_entries = dirty_guard.get("entries") or []
     with connect(root) as conn:
+        task_filter = " AND id=?" if build_task_id else ""
+        task_params: tuple[str, ...] = (build_task_id,) if build_task_id else ()
         rows = conn.execute(
-            """
+            f"""
             SELECT * FROM tasks
             WHERE kind='build_ea' AND status IN ('blocked', 'failed')
               AND (
                 payload_json LIKE '%"blocked_reason": "codex_review_fail"%'
                 OR payload_json LIKE '%"codex_review_rework": true%'
               )
+              {task_filter}
             ORDER BY updated_at DESC
-            """
+            """,
+            task_params,
         ).fetchall()
         pending_cards = {
             r[0] for r in conn.execute(
