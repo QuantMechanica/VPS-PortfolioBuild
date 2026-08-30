@@ -43,33 +43,29 @@ input int             strategy_lookback_12_days   = 252;
 input int             strategy_min_history_bars   = 260;
 input double          strategy_stop_atr            = 3.0;
 
-int g_h_atr_d1 = INVALID_HANDLE;
 int g_monthly_signal = 0;
+int g_monthly_signal_key = 0;
+int g_last_entry_rebalance_key = 0;
+int g_last_exit_rebalance_key = 0;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
-bool Strategy_NoTradeFilter() { return false; }
-
-bool Strategy_Init()
+// No Trade Filter (time, spread, news)
+bool Strategy_NoTradeFilter()
 {
-   g_h_atr_d1 = iATR(_Symbol, strategy_tf, strategy_atr_period);
-   if(g_h_atr_d1 == INVALID_HANDLE)
-   {
-      PrintFormat("QM5_%d: failed to create D1 ATR handle", qm_ea_id);
-      return false;
-   }
-   return true;
-}
-
-void Strategy_Shutdown()
-{
-   if(g_h_atr_d1 != INVALID_HANDLE)
-   {
-      IndicatorRelease(g_h_atr_d1);
-      g_h_atr_d1 = INVALID_HANDLE;
-   }
+   if(_Period != strategy_tf || strategy_tf != PERIOD_D1)
+      return true;
+   if(strategy_atr_period <= 0 || strategy_stop_atr <= 0.0)
+      return true;
+   if(strategy_lookback_1_days <= 0 ||
+      strategy_lookback_3_days <= strategy_lookback_1_days ||
+      strategy_lookback_12_days <= strategy_lookback_3_days)
+      return true;
+   if(strategy_min_history_bars < strategy_lookback_12_days + 1)
+      return true;
+   return false;
 }
 
 bool Strategy_SelectOurPosition(ulong &ticket)
@@ -87,21 +83,6 @@ bool Strategy_SelectOurPosition(ulong &ticket)
    return false;
 }
 
-bool Strategy_IsMonthlyRebalance()
-{
-   MqlRates month_boundary[];
-   ArraySetAsSeries(month_boundary, true);
-   if(CopyRates(_Symbol, strategy_tf, 0, 2, month_boundary) < 2)
-      return false;
-
-   MqlDateTime current_bar = {};
-   MqlDateTime prior_bar = {};
-   if(!TimeToStruct(month_boundary[0].time, current_bar)) return false;
-   if(!TimeToStruct(month_boundary[1].time, prior_bar)) return false;
-
-   return (current_bar.year != prior_bar.year || current_bar.mon != prior_bar.mon);
-}
-
 int Strategy_ReturnSign(const double newest_close, const double old_close)
 {
    if(newest_close <= 0.0 || old_close <= 0.0) return 0;
@@ -111,44 +92,58 @@ int Strategy_ReturnSign(const double newest_close, const double old_close)
    return 0;
 }
 
-bool Strategy_PrepareMonthlySignal()
+bool Strategy_PrepareMonthlySignal(int &month_key)
 {
+   month_key = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 0);
+   if(month_key <= 0)
+      return false;
+   if(g_monthly_signal_key == month_key)
+      return true;
+
    int largest_lookback = strategy_lookback_1_days;
    if(strategy_lookback_3_days > largest_lookback) largest_lookback = strategy_lookback_3_days;
    if(strategy_lookback_12_days > largest_lookback) largest_lookback = strategy_lookback_12_days;
-   int required = strategy_min_history_bars;
-   if(largest_lookback + 1 > required) required = largest_lookback + 1;
-   MqlRates daily[];
-   ArraySetAsSeries(daily, true);
-   if(CopyRates(_Symbol, strategy_tf, 1, required, daily) < required)
-      return false;
-   if(ArraySize(daily) <= largest_lookback)
+   int history_shift = strategy_min_history_bars;
+   if(largest_lookback + 1 > history_shift) history_shift = largest_lookback + 1;
+
+   // SMA(1) is the exact closed price while keeping all series reads inside
+   // the framework's pooled indicator layer.
+   const double history_guard = QM_SMA(_Symbol, strategy_tf, 1, history_shift);
+   const double latest = QM_SMA(_Symbol, strategy_tf, 1, 1);
+   const double close_1m = QM_SMA(_Symbol, strategy_tf, 1, 1 + strategy_lookback_1_days);
+   const double close_3m = QM_SMA(_Symbol, strategy_tf, 1, 1 + strategy_lookback_3_days);
+   const double close_12m = QM_SMA(_Symbol, strategy_tf, 1, 1 + strategy_lookback_12_days);
+   if(history_guard <= 0.0 || latest <= 0.0 || close_1m <= 0.0 ||
+      close_3m <= 0.0 || close_12m <= 0.0)
       return false;
 
-   const double latest = daily[0].close;
    g_monthly_signal =
-      Strategy_ReturnSign(latest, daily[strategy_lookback_1_days].close) +
-      Strategy_ReturnSign(latest, daily[strategy_lookback_3_days].close) +
-      Strategy_ReturnSign(latest, daily[strategy_lookback_12_days].close);
+      Strategy_ReturnSign(latest, close_1m) +
+      Strategy_ReturnSign(latest, close_3m) +
+      Strategy_ReturnSign(latest, close_12m);
+   g_monthly_signal_key = month_key;
    return true;
 }
 
+// Trade Entry
 bool Strategy_EntrySignal(QM_EntryRequest &req)
 {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = 0;
+   req.expiration_seconds = 0;
+
+   int month_key = 0;
+   if(!Strategy_PrepareMonthlySignal(month_key)) return false;
+   if(g_last_entry_rebalance_key == month_key) return false;
+   g_last_entry_rebalance_key = month_key;
+
    ulong existing = 0;
    if(Strategy_SelectOurPosition(existing)) return false;
    if(g_monthly_signal < 2 && g_monthly_signal > -2) return false;
-
-   double atr_value[1];
-   const int atr_copied = CopyBuffer(g_h_atr_d1, 0, 1, 1, atr_value);
-   if(atr_copied < 1)
-      return false;
-   if(atr_value[0] <= 0.0)
-      return false;
-
-   req.symbol_slot = 0; // relative host slot resolved from qm_magic_slot_offset
-   req.expiration_seconds = 0;
-   req.tp = 0.0;        // card exits only at monthly revalidation
 
    if(g_monthly_signal >= 2)
    {
@@ -156,7 +151,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       if(ask <= 0.0) return false;
       req.type = QM_BUY;
       req.price = QM_StopRulesNormalizePrice(_Symbol, ask);
-      req.sl = QM_StopRulesNormalizePrice(_Symbol, ask - strategy_stop_atr * atr_value[0]);
+      req.sl = QM_StopATR(_Symbol, req.type, req.price, strategy_atr_period, strategy_stop_atr);
       req.reason = "AA_TSMOM_132_LONG";
       return (req.sl > 0.0 && req.sl < req.price);
    }
@@ -165,23 +160,32 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(bid <= 0.0) return false;
    req.type = QM_SELL;
    req.price = QM_StopRulesNormalizePrice(_Symbol, bid);
-   req.sl = QM_StopRulesNormalizePrice(_Symbol, bid + strategy_stop_atr * atr_value[0]);
+   req.sl = QM_StopATR(_Symbol, req.type, req.price, strategy_atr_period, strategy_stop_atr);
    req.reason = "AA_TSMOM_132_SHORT";
    return (req.sl > req.price);
 }
 
+// Trade Management
 void Strategy_ManageOpenPosition() {}
 
+// Trade Close
 bool Strategy_ExitSignal()
 {
    ulong ticket = 0;
    if(!Strategy_SelectOurPosition(ticket)) return false;
+
+   int month_key = 0;
+   if(!Strategy_PrepareMonthlySignal(month_key)) return false;
+   if(g_last_exit_rebalance_key == month_key) return false;
+   g_last_exit_rebalance_key = month_key;
+
    const ENUM_POSITION_TYPE type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
    if(type == POSITION_TYPE_BUY) return (g_monthly_signal < 2);
    if(type == POSITION_TYPE_SELL) return (g_monthly_signal > -2);
    return true;
 }
 
+// News Filter Hook (callable for Q09 News Impact phase)
 bool Strategy_NewsFilterHook(const datetime broker_time) { return false; }
 
 // -----------------------------------------------------------------------------
@@ -201,16 +205,13 @@ int OnInit()
                                              "CARD_HAS_NO_FRIDAY_RULE_FRAMEWORK_SAFETY_OVERRIDE"))
       return INIT_FAILED;
 
-   if(!Strategy_Init())
-      return INIT_FAILED;
-
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
 }
 
 void OnDeinit(const int reason)
 {
-   Strategy_Shutdown();
+   QM_LogEvent(QM_INFO, "DEINIT", StringFormat("{\"reason\":%d}", reason));
    QM_FrameworkShutdown();
 }
 
@@ -220,35 +221,36 @@ void OnTick()
    if(!QM_KillSwitchCheck()) return;
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now)) return;
-   
+   if(QM_FrameworkHandleFridayClose()) return;
+   if(Strategy_NoTradeFilter()) return;
+
+   Strategy_ManageOpenPosition();
+
+   if(Strategy_ExitSignal())
+   {
+      const int magic = QM_FrameworkMagic();
+      for(int i = PositionsTotal() - 1; i >= 0; --i)
+      {
+         const ulong ticket = PositionGetTicket(i);
+         if(ticket == 0 || !PositionSelectByTicket(ticket)) continue;
+         if(PositionGetString(POSITION_SYMBOL) != _Symbol) continue;
+         if((int)PositionGetInteger(POSITION_MAGIC) != magic) continue;
+         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+      }
+   }
+
+   // News blocks entries only; monthly exits and risk management remain live.
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
    else
       news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
    if(!news_allows) return;
-   
-   if(QM_FrameworkHandleFridayClose()) return;
-   if(Strategy_NoTradeFilter()) return;
 
    if(!QM_IsNewBar()) return;
    QM_EquityStreamOnNewBar();
-   if(!Strategy_IsMonthlyRebalance()) return;
-   if(!Strategy_PrepareMonthlySignal()) return;
 
-   Strategy_ManageOpenPosition();
-
-   ulong existing = 0;
-   if(Strategy_SelectOurPosition(existing) && Strategy_ExitSignal())
-   {
-      if(!QM_TM_ClosePosition(existing, QM_EXIT_STRATEGY))
-         return;
-   }
-
-   if(Strategy_SelectOurPosition(existing))
-      return;
-
-   QM_EntryRequest req = {};
+   QM_EntryRequest req;
    ZeroMemory(req);
    if(Strategy_EntrySignal(req))
    {
