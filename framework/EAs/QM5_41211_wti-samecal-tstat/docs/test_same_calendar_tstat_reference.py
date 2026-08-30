@@ -303,6 +303,12 @@ class SameCalendarTStatisticReferenceTests(unittest.TestCase):
         setfile = set_path.read_text(encoding="utf-8")
         for marker in (
             "qm_ea_id                     = 41211;",
+            "qm_rng_seed                  = 42;",
+            "qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;",
+            "qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;",
+            "qm_news_mode_legacy      = QM_NEWS_OFF;",
+            "qm_friday_close_enabled       = false;",
+            "qm_stress_reject_probability  = 0.0;",
             'const string g_symbol = "XTIUSD.DWX";',
             "strategy_history_years       = 10;",
             "strategy_min_observations    = 5;",
@@ -356,15 +362,9 @@ class SameCalendarTStatisticReferenceTests(unittest.TestCase):
         for marker in (
             "qm_ea_id=41211",
             "qm_magic_slot_offset=0",
-            "qm_rng_seed=42",
             "RISK_FIXED=1000",
             "RISK_PERCENT=0",
             "PORTFOLIO_WEIGHT=1",
-            "qm_news_temporal=0",
-            "qm_news_compliance=0",
-            "qm_news_mode_legacy=0",
-            "qm_friday_close_enabled=0",
-            "qm_stress_reject_probability=0.0",
             "strategy_history_years=10",
             "strategy_min_observations=5",
             "strategy_t_threshold=1.0",
