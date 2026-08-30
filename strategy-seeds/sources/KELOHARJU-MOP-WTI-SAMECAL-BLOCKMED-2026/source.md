@@ -170,7 +170,7 @@ The load-bearing executable distinctions are:
 
 - Chronological returns `[-0.10,-0.10,+0.001,+0.10,+0.001]` produce rolling
   means `[-0.10,-0.0495,+0.0505,+0.0505]`. Their even median is `+0.0005`
-  while the full-sample mean is `-0.0198`, so this candidate buys while
+  while the full-sample mean is `-0.0196`, so this candidate buys while
   `QM5_20099` sells.
 - Chronological returns `[-0.10,-0.10,+0.001,+0.001,+0.001]` produce an even
   rolling-mean median of `-0.02425` and an individual-return median of

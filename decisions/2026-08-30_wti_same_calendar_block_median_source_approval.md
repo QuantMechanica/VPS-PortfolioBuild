@@ -154,7 +154,7 @@ Manual executable review establishes non-equivalence:
   returns and permits five through ten values. For chronological returns
   `[-0.10,-0.10,+0.001,+0.10,+0.001]`, the rolling means are
   `[-0.10,-0.0495,+0.0505,+0.0505]`. This candidate buys from the `+0.0005`
-  even block median while 20099 sells from the `-0.0198` full-sample mean.
+  even block median while 20099 sells from the `-0.0196` full-sample mean.
 - `QM5_41055_wti-medcal` sorts individual annual returns. For chronological
   returns `[-0.10,-0.10,+0.001,+0.001,+0.001]`, that EA buys from the
   `+0.001` individual-return median while this candidate sells from the

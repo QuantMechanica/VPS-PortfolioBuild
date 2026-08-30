@@ -55,7 +55,7 @@ Strategy Wiki nodes. Its one fuzzy result is the expected raw-mean family
 neighbor `QM5_20099_wti-samecal`.
 
 - On `[-0.10,-0.10,+0.001,+0.10,+0.001]`, this card buys from a
-  `+0.0005` rolling-mean median while 20099 sells from a `-0.0198` raw mean.
+  `+0.0005` rolling-mean median while 20099 sells from a `-0.0196` raw mean.
 - On `[-0.10,-0.10,+0.001,+0.001,+0.001]`, this card sells from a
   `-0.02425` rolling-mean median while `QM5_41055_wti-medcal` buys from a
   `+0.001` individual-return median.
