@@ -1,6 +1,6 @@
 # QM5_41230_wti-samecal-midhinge5 - Strategy Spec
 
-Status: `G0 APPROVED; IMPLEMENTED; Q01 PENDING; Q02 NOT_STARTED`
+Status: `G0 APPROVED; IMPLEMENTED; Q01 PASS; Q02 ENQUEUED_PENDING`
 
 ## Identity
 
@@ -142,7 +142,7 @@ zero-warning compilation.
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-08-30 | G0-approved WTI same-calendar midhinge build | Q01 pending |
+| v1 | 2026-08-30 | G0-approved WTI same-calendar midhinge build | Q01 PASS: strict compiler 0 errors/0 warnings; build check PASS; Q02 `7d1d8bce-8dec-4d14-acd9-93fa8bfcfb7a` enqueued |
 
 ## Safety Boundary
 

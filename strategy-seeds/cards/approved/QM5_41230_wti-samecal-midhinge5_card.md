@@ -89,8 +89,8 @@ news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
 pipeline_phase: Q02
-q01_status: NOT_STARTED
-q02_status: NOT_ENQUEUED_CAPACITY_CHECK_PENDING
+q01_status: PASS
+q02_status: ENQUEUED_PENDING
 force_build: true
 review_focus: "Falsify a direct-WTI recurring-calendar sleeve outside the certified XAU/SP500/NDX/XNG book. Verify normalized completed endpoints, exact five-year membership, ascending sort, fixed hinge indexes, exclusion of median and extremes, divisor two, sign, consumed month, fixed risk, frozen stop, and next-month exit. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -370,6 +370,7 @@ alone may test realized overlap with the existing book.
 | Version | Date | Change | Gate | Status |
 |---|---|---|---|---|
 | v1 | 2026-08-30 | initial WTI same-calendar five-sample midhinge card | G0 | APPROVED; build pending |
+| v2 | 2026-08-30 | exact V5 build, fixed-risk preset, strict compile, and paced baseline enqueue | Q01/Q02 | Q01 PASS; Q02 ENQUEUED_PENDING |
 
 ## Approvals
 
@@ -377,8 +378,8 @@ alone may test realized overlap with the existing book.
 |---|---|---|---|
 | Source Approval | 2026-08-30 | APPROVED_SOURCE | `decisions/2026-08-30_wti_same_calendar_midhinge5_source_approval.md` |
 | G0 Research Intake | 2026-08-30 | APPROVED | `decisions/2026-08-30_qm5_41230_wti_same_calendar_midhinge5_g0.md` |
-| Q01 Static / Compile | 2026-08-30 | NOT_STARTED | build pending |
-| Q02 Baseline | 2026-08-30 | NOT_ENQUEUED_CAPACITY_CHECK_PENDING | compile and governed CPU check pending |
+| Q01 Static / Compile | 2026-08-30 | PASS | `D:/QM/reports/work_items/b4168347-7430-4494-8a72-c97485fcd2d1/QM5_41230/COMPILE_EA/compile_evidence.json`; 0 errors, 0 warnings; build check PASS |
+| Q02 Baseline | 2026-08-30 | ENQUEUED_PENDING | work item `7d1d8bce-8dec-4d14-acd9-93fa8bfcfb7a`; five-sample CPU average 77.7984%, maximum 86.72%, below 97% ceiling |
 
 ## Safety Boundary
 
