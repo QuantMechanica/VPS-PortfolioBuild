@@ -74,3 +74,31 @@ OWNER/Claude close-out, not for this task's granted authority.
 Verdict: `PENDING_CODEX_DELIVERY_DUPLICATE_TICKET_FLAGGED`. Zero mutations.
 Recommend the next orchestrator cycle re-check both Codex tickets' delivery
 state and reconcile the duplicate before either reaches COMPILE_OK.
+
+## Final execution record — Orchestrator (interactive session), 2026-08-30 ~15:45
+
+The duplicate flagged above was reconciled at 06:5x: manual twin `28d59a8e`
+closed `SUPERSEDED_DUPLICATE`; decision-native `da2c006e` delivered the
+ceremony (commit `1e4d1aefb`, APPROVED). Subsequent chain:
+
+1. Ceremony implemented and exact-tested; historical setfiles byte-identical
+   (independently re-hashed); recipe corrected to setfile-first-unbound.
+2. First compile attempts failed on framework conformance (same class as
+   QM5_41194); bounded source repair `e8ed1e85` → both `COMPILE_OK`.
+3. QM5_41195 Q02 then failed 3× `ONINIT_FAILED`; diagnosis `6b66b181` found
+   two deterministic config defects: legacy setfile pinned
+   `qm_magic_slot_offset=1` vs registry slot 0
+   (`EA_MAGIC_NOT_REGISTERED: magic=411950001`), and an inherited XAU-first
+   ranking-contract while the sibling is XAG-first
+   (`SLEEVE_CALENDAR_INIT_FAILED: ranking_contract_sha256_mismatch`).
+   Repairs `cf6eb1596`/`f1a6a56e4`/`34bc88f47`; fresh `COMPILE_OK`
+   (EX5 `39251b44…`), fresh **Q02 PASS (60 trades)**.
+4. QM5_41196: `COMPILE_OK` + **Q02 PASS**.
+
+Acceptance state: both siblings COMPILE_OK with source-hash-matched receipts;
+both Q12 measurement prerequisites PASS; matrix materialization for
+1537/XAGUSD and 21507/XAUUSD follows the ordinary DL-089 serial owner
+rotation (exact prerequisite recorded — no cells invented). Guard unchanged
+for all non-ceremony paths; historical bindings preserved throughout.
+
+Decision `OWNER-DEC-SIBLING-REBIND-20260829` (receipt `717497ea`) executed.
