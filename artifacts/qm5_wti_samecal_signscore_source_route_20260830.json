@@ -1,0 +1,30 @@
+{
+  "schema": "qm.trading-source-route/v1",
+  "recorded_at_utc": "2026-08-30T03:50:51Z",
+  "url": "https://github.com/wch/r-source/blob/9deb2ebef8d0a2fe5cae965697ee4751af857bd1/src/library/stats/R/prop.test.R",
+  "router": {
+    "status": "ROUTE_GITHUB_PUBLIC_PRIMARY_SOURCE",
+    "adapter": "github",
+    "route": "public commit-pinned GitHub raw mirror plus official R manual"
+  },
+  "retrieval": {
+    "provider": "public GitHub raw mirror",
+    "repository": "wch/r-source",
+    "ref": "9deb2ebef8d0a2fe5cae965697ee4751af857bd1",
+    "path": "src/library/stats/R/prop.test.R",
+    "blob_sha": "fc38bd4be1ba8630dbd224162ab5873ae6ac5261",
+    "raw_sha256": "59fb39522e418d9e1db8bac0626354cd7e87ed996747032ddce5fc406a57d694",
+    "byte_count": 5011,
+    "line_count": 165,
+    "read_scope": "complete",
+    "raw_text_persisted": false
+  },
+  "official_documentation": {
+    "url": "https://stat.ethz.ch/R-manual/R-devel/library/stats/html/prop.test.html",
+    "read_scope": "complete",
+    "claim_used": "For one sample the null probability defaults to 0.5; the implementation is a proportions score test and exposes the Pearson chi-squared statistic."
+  },
+  "concise_paraphrase": "With one success count x, n trials, null p=0.5, and continuity correction disabled, R Core forms expected counts n/2 and n/2 and sums squared count deviations divided by those expectations. The signed square root reduces algebraically to (2*x-n)/sqrt(n).",
+  "role": "Primary-software score arithmetic only; no WTI trading efficacy, threshold, frequency, or portfolio claim transfers.",
+  "safety": "Public read only; no authentication mutation, code execution, source-site write, or raw-source republication."
+}
