@@ -73,7 +73,7 @@ r1_track_record: PASS_WITH_BLOCK_AGGREGATION_AND_SINGLE_CFD_TRANSLATION_RISK
 r1_reasoning: "Two complete-read peer-reviewed trading papers support recurring same-calendar commodity information, explicit WTI membership, own-return direction, and monthly renewal. The rolling two-year means and even median are disclosed untested QM translations."
 r2_mechanical: PASS
 r2_reasoning: "Month clock, uniform D1-label normalization, exact Y-5..Y-1 endpoints, five-return requirement, four rolling pairs, divisors, even median, epsilon side map, consumed attempt, fixed risk, hard stop, spread, and lifecycle are deterministic and locked."
-r3_data_available: PASS_WITH_FIVE_YEAR_WARMUP_SESSION_LABEL_AND_CONTINUOUS_FUTURES_CFD_BASIS_RISK
+r3_data_available: PASS
 r3_reasoning: "Registered XTIUSD.DWX D1 history covers 2017-2025 and native MT5 state supplies every runtime input. Five-year warm-up, session labels, rolls, financing, gaps, and futures/CFD basis remain binding."
 r4_ml_forbidden: PASS
 r4_reasoning: "Only timestamps, completed prices, logarithms, finite arithmetic, sorting, comparisons, ATR risk controls, quotes, and execution state; no trained signal, banned signal indicator, or external runtime feed."
@@ -117,8 +117,8 @@ overlap.
 The approved bounded packet is
 `strategy-seeds/sources/KELOHARJU-MOP-WTI-SAMECAL-BLOCKMED-2026/source.md`,
 SHA-256
-`5C3F510E0517859E96E55462581DAD2AE4543C3B317FB8A3D3D1909E89A582D4`,
-last committed as `f0d70fd60`. Candidate-specific source approval is
+`5DE379C8E58AC77516445FC68570B129119011A27EF9B399D90E1B169C404E95`,
+last corrected as `f4ac6c9cf`. Candidate-specific source approval is
 `decisions/2026-08-30_wti_same_calendar_block_median_source_approval.md` at
 the same commit.
 
@@ -191,7 +191,7 @@ Strategy Wiki nodes. It returned one expected fuzzy slug-family neighbor,
 
 - With chronological returns
   `[-0.10,-0.10,+0.001,+0.10,+0.001]`, this card's rolling-mean median is
-  `+0.0005` while `QM5_20099`'s full-sample mean is `-0.0198`; the cards take
+  `+0.0005` while `QM5_20099`'s full-sample mean is `-0.0196`; the cards take
   opposite sides.
 - With `[-0.10,-0.10,+0.001,+0.001,+0.001]`, this card sells from
   `-0.02425` while `QM5_41055_wti-medcal` buys from its `+0.001` individual
