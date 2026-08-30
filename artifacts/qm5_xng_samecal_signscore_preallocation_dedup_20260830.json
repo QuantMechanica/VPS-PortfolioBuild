@@ -1,0 +1,63 @@
+{
+  "candidate": {
+    "author": "Keloharju Papailias R Core",
+    "mechanic": "monthly single-XNG exact prior-year same-calendar log-return signs standardized against Bernoulli p=0.5 strict absolute score above 1.0 symmetric abstention band one-month hold fixed risk",
+    "slug": "xng-samecal-signscore",
+    "strategy_id": "KELOHARJU-PAPAILIAS-RCORE-XNG-SAMECAL-SIGNSCORE-2026_S01"
+  },
+  "error": null,
+  "exit_code": 3,
+  "generated_at_utc": "2026-08-30T06:04:07+00:00",
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41212_wti-samecal-signscore_card.md",
+      "score": 1.0,
+      "slug": "wti-samecal-signscore",
+      "source": "card",
+      "strategy_id": "KELOHARJU-PAPAILIAS-RCORE-WTI-SAMECAL-SIGNSCORE-2026_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_20100_xng-samecal_card.md",
+      "score": 0.85,
+      "slug": "xng-samecal",
+      "source": "card",
+      "strategy_id": "KELOHARJU-RETSEAS-2016_XNG_S03"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41213_xauxag-samecal-signscore_card.md",
+      "score": 0.8333333333333334,
+      "slug": "xauxag-samecal-signscore",
+      "source": "card",
+      "strategy_id": "KELOHARJU-PAPAILIAS-RCORE-XAUXAG-SAMECAL-SIGNSCORE-2026_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4713,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1359,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "FUZZY_MATCH"
+}
