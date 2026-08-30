@@ -21,9 +21,13 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
     from tools.strategy_farm.portfolio.portfolio_common import load_streams, to_daily_pnl, DEFAULT_COMMON_DIR
     from tools.strategy_farm.portfolio.commission import load_model
+    from tools.strategy_farm.sqlite_timestamp import normalized_timestamp_sql
 else:
     from .portfolio_common import load_streams, to_daily_pnl, DEFAULT_COMMON_DIR
     from .commission import load_model
+    from ..sqlite_timestamp import normalized_timestamp_sql
+
+UPDATED_AT_SQL = normalized_timestamp_sql("updated_at")
 
 DB = r"D:\QM\strategy_farm\state\farm_state.sqlite"
 LIVE_BOOK = [(1556,"XAUUSD.DWX"),(10403,"XAUUSD.DWX"),(10440,"NDX.DWX"),(10476,"USDCAD.DWX"),
@@ -36,7 +40,7 @@ LIVE_BOOK = [(1556,"XAUUSD.DWX"),(10403,"XAUUSD.DWX"),(10440,"NDX.DWX"),(10476,"
 def q08_survivor_pool(since="2026-07-01"):
     con = sqlite3.connect(DB); con.row_factory = sqlite3.Row
     rows = con.execute("SELECT DISTINCT ea_id,symbol FROM work_items WHERE phase='Q09_PORTFOLIO' "
-                       "AND updated_at>=? AND status='done'", (since,)).fetchall()
+                       f"AND {UPDATED_AT_SQL}>=datetime(?) AND status='done'", (since,)).fetchall()
     out = []
     for r in rows:
         m = r["ea_id"].replace("QM5_", "")

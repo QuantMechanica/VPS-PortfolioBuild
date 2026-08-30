@@ -40,8 +40,12 @@ from pathlib import Path
 
 try:  # package import in tests and module consumers
     from tools.strategy_farm.pipeline_books_dashboard_status import program_status_snapshot
+    from tools.strategy_farm.sqlite_timestamp import normalized_timestamp_sql
 except ModuleNotFoundError:  # direct ``python tools/strategy_farm/render_cockpit.py``
     from pipeline_books_dashboard_status import program_status_snapshot
+    from sqlite_timestamp import normalized_timestamp_sql
+
+UPDATED_AT_SQL = normalized_timestamp_sql("updated_at")
 
 try:  # package import in tests and module consumers
     from tools.strategy_farm.optimization_dashboard_status import (
@@ -1187,9 +1191,9 @@ def frontier_next_book_snapshot(since_iso: str = "2026-07-19T18:00", limit: int 
             SELECT ea_id, symbol, phase, MAX(updated_at) AS updated_at
             FROM work_items_clean
             WHERE verdict='PASS' AND phase IN ('Q08','Q09','Q10','P5c','P6','P7')
-              AND updated_at >= ?
+              AND {UPDATED_AT_SQL} >= datetime(?)
             GROUP BY ea_id, symbol, phase
-            ORDER BY updated_at DESC
+            ORDER BY {UPDATED_AT_SQL} DESC
             """,
             (since_iso,),
         )

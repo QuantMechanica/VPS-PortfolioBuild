@@ -50,6 +50,13 @@ import sys
 import time
 from pathlib import Path
 
+try:
+    from tools.strategy_farm.sqlite_timestamp import normalized_timestamp_sql
+except ModuleNotFoundError:
+    from sqlite_timestamp import normalized_timestamp_sql
+
+UPDATED_AT_SQL = normalized_timestamp_sql("updated_at")
+
 # Re-use the proven sibling modules (same directory; importable when this file
 # is run as a script — sys.path[0] is its own dir). render_cockpit gives the
 # data functions (single source of truth); gmail_alarm gives the send path and
@@ -1005,7 +1012,7 @@ def factory_light() -> dict:
         row = con.execute(
             "SELECT SUM(CASE WHEN verdict='INFRA_FAIL' THEN 1 ELSE 0 END) infra, "
             "COUNT(*) tot FROM work_items "
-            "WHERE updated_at>=? AND verdict IS NOT NULL AND verdict!=''",
+            f"WHERE {UPDATED_AT_SQL}>=datetime(?) AND verdict IS NOT NULL AND verdict!=''",
             (cut,),
         ).fetchone()
         con.close()

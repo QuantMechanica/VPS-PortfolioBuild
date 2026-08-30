@@ -27,8 +27,12 @@ from pathlib import Path
 
 try:  # package import in tests and module consumers
     from tools.strategy_farm.operator_surfaces import build_operator_snapshot
+    from tools.strategy_farm.sqlite_timestamp import normalized_timestamp_sql
 except ModuleNotFoundError:  # direct ``python tools/strategy_farm/heartbeat_snapshot.py``
     from operator_surfaces import build_operator_snapshot
+    from sqlite_timestamp import normalized_timestamp_sql
+
+UPDATED_AT_SQL = normalized_timestamp_sql("updated_at")
 
 REPO = Path(r"C:\QM\repo")
 DB_PATH = Path(r"D:/QM/strategy_farm/state/farm_state.sqlite")
@@ -107,7 +111,7 @@ def probe_factory(out, conn):
     """Throughput and queue depth -- the primary saturation metric."""
     since = _iso(_now() - timedelta(hours=1))
     done_1h = conn.execute(
-        "SELECT COUNT(*) FROM work_items WHERE status='done' AND updated_at >= ?", (since,)
+        f"SELECT COUNT(*) FROM work_items WHERE status='done' AND {UPDATED_AT_SQL} >= datetime(?)", (since,)
     ).fetchone()[0]
     active = conn.execute("SELECT COUNT(*) FROM work_items WHERE status='active'").fetchone()[0]
     pending = conn.execute("SELECT COUNT(*) FROM work_items WHERE status='pending'").fetchone()[0]
@@ -121,7 +125,7 @@ def probe_factory(out, conn):
     # Verdicts in the last hour, so a sudden INFRA wave is visible as it happens.
     rows = conn.execute(
         "SELECT verdict, COUNT(*) FROM work_items WHERE status IN ('done','failed') "
-        "AND updated_at >= ? GROUP BY verdict ORDER BY 2 DESC", (since,)
+        f"AND {UPDATED_AT_SQL} >= datetime(?) GROUP BY verdict ORDER BY 2 DESC", (since,)
     ).fetchall()
     verdicts = {str(v or "NULL"): n for v, n in rows}
     out["verdicts_1h"] = verdicts
@@ -149,7 +153,8 @@ def probe_agent_lane(out, conn):
     cutoff = _iso(_now() - timedelta(hours=STUCK_IN_PROGRESS_H))
     stuck = conn.execute(
         "SELECT id, task_type, assigned_agent, updated_at FROM agent_tasks "
-        "WHERE state='IN_PROGRESS' AND updated_at < ? ORDER BY updated_at LIMIT 8", (cutoff,)
+        f"WHERE state='IN_PROGRESS' AND {UPDATED_AT_SQL} < datetime(?) "
+        f"ORDER BY {UPDATED_AT_SQL} LIMIT 8", (cutoff,)
     ).fetchall()
     if stuck:
         out["stuck_in_progress"] = [

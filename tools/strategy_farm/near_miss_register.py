@@ -25,6 +25,13 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
+try:
+    from tools.strategy_farm.sqlite_timestamp import normalized_timestamp_sql
+except ModuleNotFoundError:
+    from sqlite_timestamp import normalized_timestamp_sql
+
+UPDATED_AT_SQL = normalized_timestamp_sql("updated_at")
+
 REPO = Path(__file__).resolve().parents[2]
 SCRIPTS = REPO / "framework" / "scripts"
 DB = Path(r"D:\QM\strategy_farm\state\farm_state.sqlite")
@@ -108,9 +115,9 @@ def build(window_hours: int, tolerance_pct: float, db: Path) -> dict[str, Any]:
     rows = con.execute(
         f"""SELECT id, ea_id, symbol, phase, verdict, evidence_path, updated_at
             FROM work_items
-            WHERE status IN ('done','failed') AND updated_at >= ?
+            WHERE status IN ('done','failed') AND {UPDATED_AT_SQL} >= datetime(?)
               AND verdict IN ({marks})
-            ORDER BY updated_at DESC""",
+            ORDER BY {UPDATED_AT_SQL} DESC""",
         (cut, *TERMINAL_NON_PASS),
     ).fetchall()
     con.close()

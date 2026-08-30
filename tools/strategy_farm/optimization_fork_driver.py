@@ -34,11 +34,15 @@ from typing import Any, Iterable, Mapping
 try:
     from gate_manifest import GateManifest
     from phase_ids import ACTIVE_GATE_MANIFEST
+    from sqlite_timestamp import normalized_timestamp_sql
     from throughput_telemetry import EXECUTION_VERDICT_EXCLUSION_SQL
 except ModuleNotFoundError:
     from tools.strategy_farm.gate_manifest import GateManifest
     from tools.strategy_farm.phase_ids import ACTIVE_GATE_MANIFEST
+    from tools.strategy_farm.sqlite_timestamp import normalized_timestamp_sql
     from tools.strategy_farm.throughput_telemetry import EXECUTION_VERDICT_EXCLUSION_SQL
+
+UPDATED_AT_SQL = normalized_timestamp_sql("updated_at")
 
 
 SCHEMA = "qm.opt-fork-routing/v1"
@@ -973,7 +977,7 @@ def service_metrics(
                 SELECT count(*) FROM work_items
                 WHERE upper(phase)=? AND lower(status) IN ('done','failed')
                   AND coalesce(gate_contract_version,?) IN ({version_placeholders})
-                  AND updated_at>=?
+                  AND {UPDATED_AT_SQL}>=datetime(?)
                   AND {EXECUTION_VERDICT_EXCLUSION_SQL}
                 """,
                 (

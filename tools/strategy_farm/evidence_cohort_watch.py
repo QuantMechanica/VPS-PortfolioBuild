@@ -41,6 +41,13 @@ import sqlite3
 import sys
 from pathlib import Path
 
+try:
+    from tools.strategy_farm.sqlite_timestamp import normalized_timestamp_sql
+except ModuleNotFoundError:
+    from sqlite_timestamp import normalized_timestamp_sql
+
+UPDATED_AT_SQL = normalized_timestamp_sql("updated_at")
+
 DB = Path(r"D:\QM\strategy_farm\state\farm_state.sqlite")
 BASELINE = Path(r"C:\QM\repo\artifacts\evidence_cohort_baseline.json")
 LOG = Path(r"D:\QM\strategy_farm\logs\evidence_cohort_watch.log")
@@ -99,7 +106,7 @@ def collect_candidates() -> list[dict]:
         "FROM work_items WHERE status IN ('done','failed') "
         f"AND verdict IN ({placeholders}) "
         "AND evidence_path IS NOT NULL AND evidence_path<>'' "
-        "AND updated_at>=? ORDER BY updated_at DESC",
+        f"AND {UPDATED_AT_SQL}>=datetime(?) ORDER BY {UPDATED_AT_SQL} DESC",
         (*PRODUCTIVE,
          (dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=30)).strftime("%Y-%m-%d")),
     ).fetchall()

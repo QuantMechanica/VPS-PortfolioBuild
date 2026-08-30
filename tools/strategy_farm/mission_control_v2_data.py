@@ -42,6 +42,13 @@ import sys
 from pathlib import Path
 from typing import Any
 
+try:
+    from tools.strategy_farm.sqlite_timestamp import normalized_timestamp_sql
+except ModuleNotFoundError:
+    from sqlite_timestamp import normalized_timestamp_sql
+
+UPDATED_AT_SQL = normalized_timestamp_sql("updated_at")
+
 try:  # package import (tests, module consumers)
     from tools.strategy_farm.work_item_clean_view import install_clean_view
     from tools.strategy_farm.phase_ids import (
@@ -558,7 +565,7 @@ def build_progress(con: sqlite3.Connection, *, now: dt.datetime | None = None) -
         FROM work_items_clean
         WHERE status IN ('done','failed')
           AND UPPER(COALESCE(phase,'')) NOT IN ({excluded_placeholders})
-          AND updated_at >= ?
+          AND {UPDATED_AT_SQL} >= datetime(?)
         """,
         excluded_params + (window_cutoff,),
     )

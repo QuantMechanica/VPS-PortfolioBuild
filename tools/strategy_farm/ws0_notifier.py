@@ -13,6 +13,13 @@ import sqlite3
 from pathlib import Path
 from typing import Any, Callable
 
+try:
+    from tools.strategy_farm.sqlite_timestamp import normalized_timestamp_sql
+except ModuleNotFoundError:
+    from sqlite_timestamp import normalized_timestamp_sql
+
+UPDATED_AT_SQL = normalized_timestamp_sql("updated_at")
+
 
 CUTOFF_UTC = "2026-05-22T07:41:37+00:00"
 SENTINEL_REL = Path("state") / "ws0_notified.json"
@@ -42,14 +49,14 @@ def _first_real_ws0_verdict(root: Path, cutoff_utc: str = CUTOFF_UTC) -> dict[st
     con.row_factory = sqlite3.Row
     try:
         row = con.execute(
-            """
+            f"""
             SELECT id, ea_id, symbol, verdict, evidence_path, updated_at
             FROM work_items
             WHERE status='done'
               AND phase IN ('P2', 'Q02')
               AND UPPER(COALESCE(verdict, '')) IN ('PASS', 'FAIL', 'ZERO_TRADES')
-              AND updated_at > ?
-            ORDER BY updated_at ASC
+              AND {UPDATED_AT_SQL} > datetime(?)
+            ORDER BY {UPDATED_AT_SQL} ASC
             LIMIT 1
             """,
             (cutoff_utc,),

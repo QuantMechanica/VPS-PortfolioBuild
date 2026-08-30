@@ -39,6 +39,12 @@ try:
 except ModuleNotFoundError:
     from tools.strategy_farm import farmctl
 try:
+    from sqlite_timestamp import normalized_timestamp_sql
+except ModuleNotFoundError:
+    from tools.strategy_farm.sqlite_timestamp import normalized_timestamp_sql
+
+UPDATED_AT_SQL = normalized_timestamp_sql("updated_at")
+try:
     import agent_router
 except ModuleNotFoundError:
     from tools.strategy_farm import agent_router
@@ -615,7 +621,7 @@ def _is_codex_auth_broken(con) -> bool:
     cutoff_3h = (_utc_now() - dt.timedelta(hours=3)).strftime("%Y-%m-%dT%H:%M:%SZ")
     recent_build_activity = con.execute(
         "SELECT COUNT(*) FROM tasks WHERE kind='build_ea' "
-        "AND status IN ('done','failed') AND updated_at >= ?", (cutoff_3h,)
+        f"AND status IN ('done','failed') AND {UPDATED_AT_SQL} >= datetime(?)", (cutoff_3h,)
     ).fetchone()[0]
     if n_401 >= 2:
         return True
@@ -648,7 +654,7 @@ def chk_codex_review_fail_rate(con) -> dict:
     cutoff = (_utc_now() - dt.timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
     rows = con.execute(
         "SELECT payload_json, updated_at FROM tasks WHERE kind='codex_review' AND status='done' "
-        "AND updated_at >= ?", (cutoff,)
+        f"AND {UPDATED_AT_SQL} >= datetime(?)", (cutoff,)
     ).fetchall()
     n = len(rows)
     n_fail = 0
@@ -735,7 +741,7 @@ def chk_cards_ready_stagnation(con) -> dict:
     cutoff = (_utc_now() - dt.timedelta(hours=4)).strftime("%Y-%m-%dT%H:%M:%SZ")
     rows = con.execute(
         "SELECT id, title, updated_at FROM sources "
-        "WHERE status='cards_ready' AND updated_at < ?", (cutoff,)
+        f"WHERE status='cards_ready' AND {UPDATED_AT_SQL} < datetime(?)", (cutoff,)
     ).fetchall()
     actionable = []
     waiting = 0
@@ -818,14 +824,14 @@ def chk_sqlite_lock_crash_infra_24h(
         observed_at = observed_at.replace(tzinfo=dt.timezone.utc)
     cutoff = (observed_at.astimezone(dt.timezone.utc) - dt.timedelta(hours=24)).isoformat()
     rows = con.execute(
-        """
+        f"""
         SELECT id,ea_id,symbol,phase,updated_at,COUNT(*) OVER() AS crash_count
         FROM work_items
-        WHERE verdict='INFRA_FAIL' AND updated_at>=?
+        WHERE verdict='INFRA_FAIL' AND {UPDATED_AT_SQL}>=datetime(?)
           AND json_valid(payload_json)=1
           AND json_extract(payload_json,'$.verdict_reason')='worker_crashed_handling_item'
           AND lower(payload_json) LIKE '%database is locked%'
-        ORDER BY updated_at DESC
+        ORDER BY {UPDATED_AT_SQL} DESC
         LIMIT 25
         """,
         (cutoff,),
@@ -1755,7 +1761,7 @@ def chk_codex_zero_activity(con) -> dict:
     cutoff_3h = (_utc_now() - dt.timedelta(hours=3)).strftime("%Y-%m-%dT%H:%M:%SZ")
     recent_build_activity = con.execute(
         "SELECT COUNT(*) FROM tasks WHERE kind='build_ea' "
-        "AND status IN ('done','failed') AND updated_at >= ?", (cutoff_3h,)
+        f"AND status IN ('done','failed') AND {UPDATED_AT_SQL} >= datetime(?)", (cutoff_3h,)
     ).fetchone()[0]
     n_pending_builds = con.execute(
         "SELECT COUNT(*) FROM tasks WHERE kind='build_ea' AND status='pending'"
@@ -2112,7 +2118,7 @@ def chk_codex_bridge_heartbeat(con) -> dict:
     _cutoff_3h = (_utc_now() - dt.timedelta(hours=3)).strftime("%Y-%m-%dT%H:%M:%SZ")
     direct_codex_active = con.execute(
         "SELECT COUNT(*) FROM tasks WHERE kind='build_ea' "
-        "AND status IN ('done','failed') AND updated_at >= ?", (_cutoff_3h,)
+        f"AND status IN ('done','failed') AND {UPDATED_AT_SQL} >= datetime(?)", (_cutoff_3h,)
     ).fetchone()[0] > 0
     relic = ""
     if CODEX_BRIDGE_HEARTBEAT.exists():
@@ -2349,7 +2355,7 @@ def chk_p_pass_stagnation(con) -> dict:
         SELECT COUNT(*) FROM work_items
         WHERE phase IN ({placeholders})
           AND verdict='PASS'
-          AND updated_at >= ?
+          AND {UPDATED_AT_SQL} >= datetime(?)
         """,
         (*phases, cutoff_6h),
     ).fetchone()[0]
@@ -2359,7 +2365,7 @@ def chk_p_pass_stagnation(con) -> dict:
             SELECT COUNT(*) FROM work_items
             WHERE phase IN ({placeholders})
               AND verdict='PASS'
-              AND updated_at >= ?
+              AND {UPDATED_AT_SQL} >= datetime(?)
             """,
             (*phases, cutoff_12h),
         ).fetchone()[0]
@@ -2401,13 +2407,13 @@ def chk_phase_infra_graveyard(con) -> dict:
     WINDOW_H = 6
     cutoff = (_utc_now() - dt.timedelta(hours=WINDOW_H)).strftime("%Y-%m-%dT%H:%M:%S")
     rows = con.execute(
-        """
+        f"""
         SELECT phase,
                SUM(CASE WHEN verdict='INFRA_FAIL' THEN 1 ELSE 0 END) AS infra,
                SUM(CASE WHEN verdict='PASS' THEN 1 ELSE 0 END) AS passed,
                COUNT(*) AS total
         FROM work_items
-        WHERE verdict IS NOT NULL AND updated_at >= ?
+        WHERE verdict IS NOT NULL AND {UPDATED_AT_SQL} >= datetime(?)
         GROUP BY phase
         """,
         (cutoff,),
@@ -2532,7 +2538,7 @@ def chk_codex_auth_broken(con) -> dict:
     cutoff_3h = (_utc_now() - dt.timedelta(hours=3)).strftime("%Y-%m-%dT%H:%M:%SZ")
     recent_build_activity = con.execute(
         "SELECT COUNT(*) FROM tasks WHERE kind='build_ea' "
-        "AND status IN ('done','failed') AND updated_at >= ?", (cutoff_3h,)
+        f"AND status IN ('done','failed') AND {UPDATED_AT_SQL} >= datetime(?)", (cutoff_3h,)
     ).fetchone()[0]
     pipeline_silent_on_codex = (recent_build_activity == 0 and n_pending >= 1
                                 and auth_age_h is not None and auth_age_h > 12)
@@ -3775,7 +3781,7 @@ def chk_agent_task_aging_slo(con) -> dict:
         f"""
         SELECT state, COUNT(*) n, MIN(updated_at) oldest
         FROM agent_tasks
-        WHERE state IN ({placeholders}) AND updated_at < ?
+        WHERE state IN ({placeholders}) AND {UPDATED_AT_SQL} < datetime(?)
         GROUP BY state ORDER BY state
         """,
         (*AGENT_TASK_AGING_SLO_STATES, cutoff),
@@ -3829,7 +3835,7 @@ def chk_agent_task_state_stranded(con) -> dict:
     total = sum(by_state.values())
     stale_cutoff = (_utc_now() - dt.timedelta(days=STRANDED_TASK_STALE_DAYS)).strftime("%Y-%m-%dT%H:%M:%SZ")
     stale = con.execute(
-        f"SELECT COUNT(*) FROM agent_tasks WHERE state IN ({placeholders}) AND updated_at < ?",
+        f"SELECT COUNT(*) FROM agent_tasks WHERE state IN ({placeholders}) AND {UPDATED_AT_SQL} < datetime(?)",
         (*STRANDED_LIMBO_STATES, stale_cutoff),
     ).fetchone()[0]
     dir_artifacts = 0
@@ -3934,7 +3940,7 @@ def chk_q02_summary_missing_unclassified(con) -> dict:
     cutoff = (_utc_now() - dt.timedelta(hours=SM_UNCLASSIFIED_WINDOW_H)).strftime("%Y-%m-%dT%H:%M:%SZ")
     rows = con.execute(
         "SELECT payload_json FROM work_items "
-        "WHERE phase='Q02' AND verdict IN ('INFRA_FAIL','INVALID') AND updated_at >= ? "
+        f"WHERE phase='Q02' AND verdict IN ('INFRA_FAIL','INVALID') AND {UPDATED_AT_SQL} >= datetime(?) "
         "AND json_extract(payload_json,'$.final_failure')='summary_missing_retries_exhausted'",
         (cutoff,),
     ).fetchall()

@@ -34,10 +34,14 @@ from typing import Any, Iterable, Iterator, Mapping, Sequence
 
 try:  # direct ``python tools/strategy_farm/<script>.py`` imports
     from phase_ids import phase_qid
+    from sqlite_timestamp import normalized_timestamp_sql
     from throughput_telemetry import is_disposition_only
 except ModuleNotFoundError:  # package imports (tests, module consumers)
     from tools.strategy_farm.phase_ids import phase_qid
+    from tools.strategy_farm.sqlite_timestamp import normalized_timestamp_sql
     from tools.strategy_farm.throughput_telemetry import is_disposition_only
+
+UPDATED_AT_SQL = normalized_timestamp_sql("updated_at")
 
 
 DEFAULT_DB = Path(r"D:\QM\strategy_farm\state\farm_state.sqlite")
@@ -141,12 +145,13 @@ def collect_db_metrics(
     permitted_terminals = {f"T{i}" for i in range(1, configured_slots + 1)}
 
     rows = con.execute(
-        """
+        f"""
         SELECT phase, gate_contract_version, status, verdict, claimed_by,
                payload_json, updated_at
         FROM work_items
         WHERE status='active'
-           OR (status IN ('done','failed') AND updated_at >= ? AND updated_at <= ?)
+           OR (status IN ('done','failed') AND {UPDATED_AT_SQL} >= datetime(?)
+               AND {UPDATED_AT_SQL} <= datetime(?))
         """,
         (_iso(start), _iso(end)),
     ).fetchall()

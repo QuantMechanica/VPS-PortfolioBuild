@@ -20,6 +20,11 @@ from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any, Iterable
 
+try:
+    from tools.strategy_farm.sqlite_timestamp import parse_timestamp
+except ModuleNotFoundError:
+    from sqlite_timestamp import parse_timestamp
+
 
 DEFAULT_FARM_ROOT = Path(r"D:\QM\strategy_farm")
 DEFAULT_REPO_ROOT = Path(r"C:\QM\repo")
@@ -158,7 +163,10 @@ def inventory(
         later_done = [
             item
             for item in ea_work
-            if item["status"] == "done" and item["updated_at"] > blocked_at
+            if item["status"] == "done"
+            and parse_timestamp(item["updated_at"]) is not None
+            and parse_timestamp(blocked_at) is not None
+            and parse_timestamp(item["updated_at"]) > parse_timestamp(blocked_at)
         ]
         open_items = [item for item in ea_work if item["status"] in {"pending", "running"}]
         registry_rows = registry.get(ea_id, [])

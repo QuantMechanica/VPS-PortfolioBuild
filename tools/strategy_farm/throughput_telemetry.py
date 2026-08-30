@@ -37,9 +37,14 @@ from typing import Any, Iterable, Mapping, Optional, Sequence
 try:  # direct ``python tools/strategy_farm/<script>.py`` imports
     import q10_long_cell_breaker
     from phase_ids import phase_qid
+    from sqlite_timestamp import normalized_timestamp_sql
 except ModuleNotFoundError:  # package imports (tests, module consumers)
     from tools.strategy_farm import q10_long_cell_breaker
     from tools.strategy_farm.phase_ids import phase_qid
+    from tools.strategy_farm.sqlite_timestamp import normalized_timestamp_sql
+
+
+UPDATED_AT_SQL = normalized_timestamp_sql("updated_at")
 
 
 # Canonical SQL predicate for "this terminal row is a real execution verdict, not
@@ -143,11 +148,11 @@ def execution_vs_raw_by_phase(
     """
     cutoff = _cutoff_iso(now, window_hours)
     rows = con.execute(
-        """
+        f"""
         SELECT phase, gate_contract_version AS gcv, payload_json
         FROM work_items
         WHERE status IN ('done','failed') AND verdict IS NOT NULL
-          AND updated_at >= ?
+          AND {UPDATED_AT_SQL} >= datetime(?)
         """,
         (cutoff,),
     ).fetchall()
@@ -253,11 +258,11 @@ def claim_to_complete_latency(
     """
     cutoff = _cutoff_iso(now, window_hours)
     rows = con.execute(
-        """
+        f"""
         SELECT payload_json, updated_at
         FROM work_items
         WHERE status IN ('done','failed') AND verdict IS NOT NULL
-          AND updated_at >= ?
+          AND {UPDATED_AT_SQL} >= datetime(?)
         """,
         (cutoff,),
     ).fetchall()

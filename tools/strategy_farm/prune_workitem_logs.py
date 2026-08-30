@@ -27,6 +27,13 @@ import datetime as dt
 import sqlite3
 from pathlib import Path
 
+try:
+    from tools.strategy_farm.sqlite_timestamp import normalized_timestamp_sql
+except ModuleNotFoundError:
+    from sqlite_timestamp import normalized_timestamp_sql
+
+UPDATED_AT_SQL = normalized_timestamp_sql("updated_at")
+
 
 FARM_ROOT = Path(r"D:\QM\strategy_farm")
 REPORTS_PARENT = Path(r"D:\QM\reports")
@@ -151,12 +158,12 @@ def prune(
     con = sqlite3.connect(DB_PATH)
     con.row_factory = sqlite3.Row
     rows = con.execute(
-        """
+        f"""
         SELECT id, ea_id, symbol, phase, status, verdict, updated_at
         FROM work_items
         WHERE status IN ('done','failed')
-          AND updated_at < ?
-        ORDER BY updated_at ASC
+          AND {UPDATED_AT_SQL} < datetime(?)
+        ORDER BY {UPDATED_AT_SQL} ASC
         """,
         (cutoff,),
     ).fetchall()
