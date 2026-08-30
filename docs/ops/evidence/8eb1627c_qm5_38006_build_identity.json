@@ -1,0 +1,16 @@
+{
+  "task_id": "8eb1627c-03bb-4f59-ab0a-b6c46c8a63ab",
+  "ea_id": "QM5_38006",
+  "ea_label": "QM5_38006_codetrading-doji-hammer-pivot-rejection",
+  "build_check_passed": true,
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_38006_codetrading-doji-hammer-pivot-rejection/QM5_38006_codetrading-doji-hammer-pivot-rejection.mq5",
+  "mq5_sha256": "7031db1a2fef63e99394dc224e96c234676d33b8130f3cddcd1c79402b8d5831",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_38006_codetrading-doji-hammer-pivot-rejection/QM5_38006_codetrading-doji-hammer-pivot-rejection.ex5",
+  "ex5_sha256": "dc90fac248aa873859bb374979d336c60e7c9474b99a3570ac3e3d7f6300624b",
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_38006_codetrading-doji-hammer-pivot-rejection/sets/QM5_38006_codetrading-doji-hammer-pivot-rejection_EURUSD.DWX_H1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_38006_codetrading-doji-hammer-pivot-rejection/sets/QM5_38006_codetrading-doji-hammer-pivot-rejection_GBPUSD.DWX_H1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_38006_codetrading-doji-hammer-pivot-rejection/sets/QM5_38006_codetrading-doji-hammer-pivot-rejection_USDJPY.DWX_H1_backtest.set"
+  ],
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_38006_codetrading-doji-hammer-pivot-rejection/SPEC.md"
+}
