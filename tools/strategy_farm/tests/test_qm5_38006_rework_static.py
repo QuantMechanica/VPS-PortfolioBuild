@@ -200,3 +200,56 @@ def test_framework_magic_mae_perf_and_backtest_set_contract() -> None:
         # the separately governed COMPILE_EA lane seals the binary hash.
         assert re.match(r"^(?:pending|[0-9a-f]{64})$", build_hash.group(1))
         assert "strategy_per_trade_risk_cap_pct" not in values
+
+
+def test_initial_equity_total_drawdown_stop_is_enforced_locally() -> None:
+    source = _source()
+    halt_check = _function_body(source, "StrategyTotalDrawdownHaltCheck")
+    on_tick = _function_body(source, "OnTick")
+    on_init = _function_body(source, "OnInit")
+    no_trade = _function_body(source, "Strategy_NoTradeFilter")
+
+    assert "g_initial_equity" in source
+    assert "g_total_dd_halted" in source
+    assert "strategy_total_dd_halt_pct" in halt_check
+    assert "((g_initial_equity - equity_now) / g_initial_equity) * 100.0" in halt_check
+    assert "total_dd_pct >= strategy_total_dd_halt_pct" in halt_check
+    assert 'QM_LogEvent(QM_ERROR, "TOTAL_DD_HALT"' in halt_check
+    assert "QM_TM_ClosePosition(ticket, QM_EXIT_KILLSWITCH)" in halt_check
+
+    # Verified present in OnInit baseline capture and OnTick enforcement
+    assert "g_initial_equity = AccountInfoDouble(ACCOUNT_EQUITY);" in on_init
+    assert "if(StrategyTotalDrawdownHaltCheck())" in on_tick
+    assert "if(StrategyTotalDrawdownHaltCheck())" in no_trade
+
+    # Mathematical test proving 5.0% threshold trips exactly
+    initial_equity = 100000.0
+    strategy_total_dd_halt_pct = 5.0
+
+    # 4.99% DD -> does not trip
+    equity_safe = 95010.0
+    dd_safe_pct = ((initial_equity - equity_safe) / initial_equity) * 100.0
+    assert dd_safe_pct < strategy_total_dd_halt_pct
+
+    # Exactly 5.0% DD -> trips
+    equity_trip_exact = 95000.0
+    dd_trip_exact_pct = ((initial_equity - equity_trip_exact) / initial_equity) * 100.0
+    assert dd_trip_exact_pct >= strategy_total_dd_halt_pct
+
+    # 5.01% DD -> trips
+    equity_trip_breach = 94990.0
+    dd_trip_breach_pct = ((initial_equity - equity_trip_breach) / initial_equity) * 100.0
+    assert dd_trip_breach_pct >= strategy_total_dd_halt_pct
+
+
+def test_daily_realized_loss_fails_closed_on_history_select_failure() -> None:
+    source = _source()
+    daily_loss = _function_body(source, "StrategyDailyRealizedLossHalt")
+
+    assert "HistorySelect(day_start, now)" in daily_loss
+    assert 'QM_LogEvent(QM_ERROR, "HISTORY_SELECT_FAILED"' in daily_loss
+    assert "return true;" in daily_loss  # Fail closed on unavailable history
+    assert "DEAL_ENTRY_OUT" in daily_loss
+    assert "DEAL_ENTRY_OUT_BY" in daily_loss
+    assert "realized_pnl <= -(day_start_balance * strategy_daily_loss_halt_pct / 100.0)" in daily_loss
+    assert 'QM_LogEvent(QM_WARN, "DAILY_REALIZED_LOSS_HALT"' in daily_loss

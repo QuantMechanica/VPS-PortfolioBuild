@@ -54,11 +54,13 @@ input double          strategy_total_dd_halt_pct   = 5.0;
 // -----------------------------------------------------------------------------
 // State Cache & Indicators
 // -----------------------------------------------------------------------------
-double g_ema50          = 0.0;
-double g_last_atr       = 0.0;
-double g_last_low1      = 0.0;
-double g_last_high1     = 0.0;
-int    g_last_signal    = 0;
+double g_ema50           = 0.0;
+double g_last_atr        = 0.0;
+double g_last_low1       = 0.0;
+double g_last_high1      = 0.0;
+int    g_last_signal     = 0;
+double g_initial_equity  = 0.0;
+bool   g_total_dd_halted = false;
 
 int StrategyHhmm(const datetime t)
 {
@@ -167,15 +169,111 @@ void AdvanceState_OnNewBar()
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
+bool StrategyTotalDrawdownHaltCheck()
+{
+   if(strategy_total_dd_halt_pct <= 0.0)
+      return false;
+
+   if(g_initial_equity <= 0.0)
+   {
+      g_initial_equity = AccountInfoDouble(ACCOUNT_EQUITY);
+      if(g_initial_equity <= 0.0)
+         g_initial_equity = AccountInfoDouble(ACCOUNT_BALANCE);
+   }
+
+   const double equity_now = AccountInfoDouble(ACCOUNT_EQUITY);
+   if(g_initial_equity > 0.0 && equity_now > 0.0)
+   {
+      const double total_dd_pct = ((g_initial_equity - equity_now) / g_initial_equity) * 100.0;
+      if(total_dd_pct >= strategy_total_dd_halt_pct)
+      {
+         if(!g_total_dd_halted)
+         {
+            g_total_dd_halted = true;
+            QM_LogEvent(QM_ERROR, "TOTAL_DD_HALT",
+                        StringFormat("{\"initial_equity\":%.2f,\"equity_now\":%.2f,\"total_dd_pct\":%.6f,\"halt_pct\":%.6f}",
+                                     g_initial_equity, equity_now, total_dd_pct, strategy_total_dd_halt_pct));
+         }
+      }
+   }
+
+   if(g_total_dd_halted)
+   {
+      const int magic = QM_FrameworkMagic();
+      for(int i = PositionsTotal() - 1; i >= 0; --i)
+      {
+         const ulong ticket = PositionGetTicket(i);
+         if(ticket == 0 || !PositionSelectByTicket(ticket))
+            continue;
+         if(magic > 0 && PositionGetInteger(POSITION_MAGIC) != magic)
+            continue;
+         QM_TM_ClosePosition(ticket, QM_EXIT_KILLSWITCH);
+      }
+      return true;
+   }
+
+   return false;
+}
+
 bool StrategyDailyRealizedLossHalt()
 {
+   MqlDateTime ts;
+   TimeToStruct(TimeCurrent(), ts);
+   ts.hour = 0;
+   ts.min = 0;
+   ts.sec = 0;
+   const datetime day_start = StructToTime(ts);
+   const datetime now = TimeCurrent();
+
+   if(!HistorySelect(day_start, now))
+   {
+      QM_LogEvent(QM_ERROR, "HISTORY_SELECT_FAILED",
+                  StringFormat("{\"day_start\":%I64d,\"now\":%I64d,\"action\":\"fail_closed_entry_halt\"}",
+                               (long)day_start, (long)now));
+      return true;
+   }
+
+   double realized_pnl = 0.0;
    int closed_trades = 0;
-   const double realized_pnl = QM_ChartUITodayPnL(0, closed_trades);
+   const int total = HistoryDealsTotal();
+   for(int i = 0; i < total; ++i)
+   {
+      const ulong deal = HistoryDealGetTicket(i);
+      if(deal == 0)
+         continue;
+
+      const long entry = (long)HistoryDealGetInteger(deal, DEAL_ENTRY);
+      if(entry != DEAL_ENTRY_OUT && entry != DEAL_ENTRY_OUT_BY)
+         continue;
+
+      realized_pnl += HistoryDealGetDouble(deal, DEAL_PROFIT);
+      realized_pnl += HistoryDealGetDouble(deal, DEAL_SWAP);
+      realized_pnl += HistoryDealGetDouble(deal, DEAL_COMMISSION);
+      ++closed_trades;
+   }
+
    const double balance_now = AccountInfoDouble(ACCOUNT_BALANCE);
    const double day_start_balance = balance_now - realized_pnl;
    if(balance_now <= 0.0 || day_start_balance <= 0.0)
+   {
+      QM_LogEvent(QM_WARN, "INVALID_BALANCE_BASELINE",
+                  StringFormat("{\"balance_now\":%.2f,\"day_start_balance\":%.2f,\"realized_pnl\":%.2f}",
+                               balance_now, day_start_balance, realized_pnl));
       return true;
-   return (realized_pnl <= -(day_start_balance * strategy_daily_loss_halt_pct / 100.0));
+   }
+
+   if(realized_pnl <= -(day_start_balance * strategy_daily_loss_halt_pct / 100.0))
+   {
+      QM_LogEvent(QM_WARN, "DAILY_REALIZED_LOSS_HALT",
+                  StringFormat("{\"realized_pnl\":%.2f,\"day_start_balance\":%.2f,\"loss_pct\":%.4f,\"limit_pct\":%.4f,\"closed_trades\":%d}",
+                               realized_pnl, day_start_balance,
+                               (-realized_pnl / day_start_balance) * 100.0,
+                               strategy_daily_loss_halt_pct,
+                               closed_trades));
+      return true;
+   }
+
+   return false;
 }
 
 bool StrategyCurrentSpreadAllowsEntry()
@@ -190,6 +288,9 @@ bool StrategyCurrentSpreadAllowsEntry()
 
 bool Strategy_NoTradeFilter()
 {
+   if(StrategyTotalDrawdownHaltCheck())
+      return true;
+
    if(StrategyInRolloverWindow(QM_BrokerToUTC(TimeCurrent())))
       return true;
 
@@ -361,6 +462,11 @@ int OnInit()
                          1.0)) // Framework cap: preserves canonical $1,000 risk on $100k backtests.
       return INIT_FAILED;
 
+   g_initial_equity = AccountInfoDouble(ACCOUNT_EQUITY);
+   if(g_initial_equity <= 0.0)
+      g_initial_equity = AccountInfoDouble(ACCOUNT_BALANCE);
+   g_total_dd_halted = false;
+
    AdvanceState_OnNewBar();
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
@@ -377,6 +483,8 @@ void OnTick()
 {
    QM_FrameworkTrackOpenPositionMae();
    if(!QM_KillSwitchCheck())
+      return;
+   if(StrategyTotalDrawdownHaltCheck())
       return;
 
    const datetime broker_now = TimeCurrent();
