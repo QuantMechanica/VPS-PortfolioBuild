@@ -18111,3 +18111,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41209,wti-seas-resid-mom,0,XTIUSD.DWX,412090000,2026-08-30,Codex governed allocator,active
 41210,xauxag-samecal-tstat,0,XAUUSD.DWX,412100000,2026-08-30,Codex governed allocator,active
 41210,xauxag-samecal-tstat,1,XAGUSD.DWX,412100001,2026-08-30,Codex governed allocator,active
+41211,wti-samecal-tstat,0,XTIUSD.DWX,412110000,2026-08-30,Codex governed allocator,active
