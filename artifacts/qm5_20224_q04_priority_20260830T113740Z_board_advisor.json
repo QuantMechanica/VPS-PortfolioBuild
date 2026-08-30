@@ -1,0 +1,230 @@
+{
+  "artifact_type": "qm5_20224_q04_priority_handoff",
+  "schema": "qm.mission-priority-handoff/v1",
+  "generated_at_utc": "2026-08-30T11:37:41Z",
+  "generated_at_europe_berlin": "2026-08-30T13:37:41+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "719ba582b49e6081cc06fbd33032f97af87b969f",
+  "mission_outcome": "EXISTING_FX_Q03_PASS_Q04_PRIORITY_BOUND_IN_PLACE",
+  "frontier_reconciliation": {
+    "controlling_research": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "relationships_scanned": 66,
+    "published_survivor_criterion": "DEV Sharpe > 0; OOS net Sharpe > 0.8; OOS trades >= 4",
+    "published_qualifiers": 2,
+    "anchors": {
+      "QM5_12532": {
+        "pair": [
+          "AUDUSD.DWX",
+          "NZDUSD.DWX"
+        ],
+        "q02": "PASS",
+        "later_chain": "Q04 PASS; Q05 FAIL",
+        "current_q02_oninit_or_no_history_block": false
+      },
+      "QM5_12533": {
+        "pair": [
+          "EURJPY.DWX",
+          "GBPJPY.DWX"
+        ],
+        "q02": "PASS",
+        "later_chain": "Q04 FAIL",
+        "current_q02_oninit_or_no_history_block": false
+      }
+    },
+    "approved_card_census": {
+      "method": "case-insensitive cointegration-or-coint text match in strategy-seeds/cards/approved, unique QM5 ID reconciliation against framework/EAs",
+      "matching_card_files": 120,
+      "unique_ea_ids": 120,
+      "unbuilt_unique_ea_ids": 0
+    },
+    "new_unbuilt_pair_eligible": false,
+    "durable_coverage_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "skill_gate_disposition": {
+      "strategy_card_extraction": "CLOSED_NO_OWNER_APPROVED_NON_DUPLICATE_SCAN_QUALIFIED_PAIR",
+      "ea_build": "CLOSED_NO_APPROVED_UNBUILT_COINTEGRATION_CARD",
+      "pipeline_phase_skill": "NOT_APPLICABLE_TO_Q03_OR_Q04"
+    }
+  },
+  "selected_existing_forex_fallback": {
+    "selection_rule": "highest-ranked nonterminal existing FX relationship after the governed scan frontier was fully mechanized",
+    "scan_rank": 46,
+    "ea_id": "QM5_20224",
+    "ea_directory": "framework/EAs/QM5_20224_eurusd-eurjpy",
+    "approved_card": "strategy-seeds/cards/approved/QM5_20224_eurusd-eurjpy_card.md",
+    "logical_symbol": "QM5_20224_EURUSD_EURJPY_COINTEGRATION_D1",
+    "traded_symbols": [
+      "EURUSD.DWX",
+      "EURJPY.DWX"
+    ],
+    "conversion_history_only_symbols": [
+      "USDJPY.DWX"
+    ],
+    "timeframe": "D1",
+    "fixed_beta": -0.236324029,
+    "structural_only": true,
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "portfolio_weight": 1.0,
+    "machine_learning": false,
+    "adaptive_refit": false,
+    "card_lint": {
+      "status": "ok",
+      "ml_hits": [],
+      "missing_sections": []
+    },
+    "adverse_source_evidence_preserved": {
+      "dev_net_sharpe": 0.473267,
+      "oos_net_sharpe": -0.118543,
+      "oos_return_percent": -1.026394,
+      "oos_state_changes": 17,
+      "half_life_d1_bars": 137.788,
+      "interpretation": "one-shot pipeline falsification only; no refit or parameter rescue authorized"
+    }
+  },
+  "canonical_lineage": [
+    {
+      "id": "5d1cb89c-25ce-419c-869c-8c9f7afa10c1",
+      "phase": "Q02",
+      "status": "done",
+      "verdict": "PASS",
+      "evidence_path": "D:/QM/reports/work_items/5d1cb89c-25ce-419c-869c-8c9f7afa10c1/QM5_20224/20260805_144438/summary.json"
+    },
+    {
+      "id": "3c74eb04-7e19-4aa0-8dcf-3f004faaa946",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at_utc": "2026-08-30T11:18:44+00:00",
+      "evidence_path": "D:/QM/reports/work_items/3c74eb04-7e19-4aa0-8dcf-3f004faaa946/QM5_20224/20260830_101044/summary.json",
+      "evidence_sha256": "7701a7582c415b9993fd1733b0ff9ede3bf6757eac244c7eba985664a3cb2b49",
+      "deterministic": true,
+      "attempted_runs": 2,
+      "identical_run_metrics": {
+        "total_trades": 116,
+        "profit_factor": 1.26,
+        "net_profit": 2967.29,
+        "drawdown": 2920.99,
+        "drawdown_percent": 2.83
+      },
+      "oninit_failure_detected": false,
+      "reason_classes": [
+        "OK"
+      ]
+    },
+    {
+      "id": "a525cd8f-4c29-4752-b1af-3c43288f259e",
+      "phase": "Q04",
+      "status": "pending",
+      "verdict": null,
+      "claimed_by": null,
+      "attempt_count": 0,
+      "priority_track": true,
+      "priority_reason": "board_advisor_fx_fallback_rank46_q04_after_q03_pass"
+    }
+  ],
+  "guarded_queue_mutation": {
+    "mode": "EXACT_EXISTING_ROW_PAYLOAD_CAS",
+    "work_item_id": "a525cd8f-4c29-4752-b1af-3c43288f259e",
+    "row_created": false,
+    "phase_changed": false,
+    "status_changed": false,
+    "claim_changed": false,
+    "verdict_changed": false,
+    "attempt_count_changed": false,
+    "updated_at_preserved": "2026-08-05T15:32:11+00:00",
+    "pre_payload_sha256": "a750cc94bf2865ba808576502d8e85406f8eb1b0bf7b4583f9addbf747e705f8",
+    "post_payload_sha256": "799a3b1d3f73e34349ec2b89eb5e24532dee8d54cd76c4cc219e369a2eb197ec",
+    "pending_rows_before": 7936,
+    "pending_rows_after": 7936,
+    "canonical_queue_rank_before": 5763,
+    "canonical_queue_rank_after": 1707,
+    "canonical_queue_rank_improvement": 4056,
+    "open_exact_q04_rows_after": 1,
+    "guards_at_apply": {
+      "active_holds": 0,
+      "active_quarantine": 0,
+      "supersede_relations": 0
+    },
+    "event_id": 380754,
+    "event_name": "fx_cointegration_q04_priority_handoff",
+    "journal_path": "D:/QM/reports/state/qm5_20224_q04_priority_20260830T113740Z.journal.json",
+    "journal_sha256": "2e198b8885e9e08f89f29af7eb09da0594b73fa84df0a9ac73b3bb58a0e3fea5",
+    "journal_state": "COMMITTED",
+    "factory_mutation_lock_release_status": "released"
+  },
+  "serialized_basket_lane": {
+    "active_at_apply": {
+      "id": "f9ccf272-d66e-4a68-b332-76133baab427",
+      "ea_id": "QM5_20233",
+      "phase": "Q03",
+      "symbol": "QM5_20233_XAU_XAG_SKEW_RANK_D1",
+      "claimed_by": "T2",
+      "updated_at_utc": "2026-08-30T11:37:12+00:00"
+    },
+    "target_dispatched": false,
+    "terminal_started": false,
+    "concurrent_basket_lane_respected": true,
+    "pacing_decision": "leave the priority-bound target pending for the resident worker after the active basket reaches a canonical terminal state"
+  },
+  "capacity_sample": {
+    "command": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "sampled_at_utc": "2026-08-30T11:37:40.2009104Z",
+    "samples_cpu_percent": [
+      68.558105,
+      82.860665,
+      85.938937,
+      84.692555,
+      79.787238
+    ],
+    "average_cpu_percent": 80.3675,
+    "maximum_cpu_percent": 85.938937,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_binding": false
+  },
+  "source_and_build_binding": {
+    "approved_card": {
+      "sha256": "3b2ab7bc3c1dea90a86b936b1bf0e352f69e5c9532724f78512a18b987d35580",
+      "bytes": 13746
+    },
+    "mq5": {
+      "sha256": "7eda37af63f23e00dcb930d71eb07afe4bef97e30875ec7f83bf5d234f668129",
+      "bytes": 18460
+    },
+    "ex5": {
+      "sha256": "d534838d2c9c993db151500c836f4e38088d961b2fe90e820defb0d31a34ae5b",
+      "bytes": 383434
+    },
+    "basket_manifest": {
+      "sha256": "f7207377d90fb4fb3447425597f4ec4b2c2709838e0bd44cf4d851f70bb97725",
+      "bytes": 771
+    },
+    "logical_backtest_setfile": {
+      "sha256": "397181311f649d5416044d36d6aa70023390ea8b14f97cb75e7fb8818b144254",
+      "bytes": 1087
+    }
+  },
+  "actions_this_run": {
+    "frontier_and_anchor_reconciled": true,
+    "approved_card_build_census_refreshed": true,
+    "selected_existing_forex_lineage_verified": true,
+    "q03_pass_evidence_verified": true,
+    "capacity_rechecked": true,
+    "existing_q04_row_priority_bound": true,
+    "new_card_or_ea_created": false,
+    "new_work_item_created": false,
+    "manual_dispatch_or_backtest_started": false
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false,
+    "live_or_deploy_manifest_touched": false,
+    "preexisting_worktree_changes_preserved": true
+  },
+  "resume_contract": "Allow the resident paced worker to claim the exact priority-bound Q04 row only after the active serialized basket lane clears. Do not enqueue a duplicate, manually dispatch a terminal, refit the strategy, or advance beyond a terminal Q04 verdict."
+}
