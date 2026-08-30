@@ -1,0 +1,216 @@
+{
+  "schema": "qm.new-commodity-sleeve-build-q02/v1",
+  "generated_at_utc": "2026-08-30T08:20:09.4547849Z",
+  "branch": "agents/board-advisor",
+  "pre_receipt_head": "0786e03c4e16edd8f3b740c46b091e8f7be1cf41",
+  "mission_outcome": "BUILT_COMPILE_OK_Q02_ENQUEUED_CPU_CLEAR",
+  "ea": {
+    "ea_id": "QM5_41223",
+    "slug": "wti-samecal-expw4",
+    "strategy_id": "KELOHARJU-MOP-WTI-SAMECAL-EXPW4-2026_S01",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "magic": 412230000
+  },
+  "edge": {
+    "class": "wti_up_to_ten_year_same_calendar_four_year_exponential_weight_seasonality",
+    "frequency": "monthly",
+    "mechanic": "At the first normalized WTI D1 broker-month transition, scan the same calendar month in exact years Y-1 through Y-10, skip missing years without replacement or age compression, require at least five completed log returns, assign exact calendar-year age k-1 and weight 2^(-(k-1)/4.0), normalize the weighted mean, buy strictly above +1e-12, sell strictly below -1e-12, and hold to the next month.",
+    "book_difference": "The candidate introduces direct WTI exposure, outside the certified XAU/SP500/NDX/XNG carrier set, and uses a monthly exact-calendar year-decay clock. This is a structural diversification objective only; Q09 alone may establish realized decorrelation and portfolio value.",
+    "dedup_verdict": "FUZZY_MATCH_RESOLVED_DISTINCT_WTI_SAMECAL_EXPONENTIAL_YEAR_DECAY_DIRECTION",
+    "dedup_receipt": "artifacts/qm5_wti_samecal_expw4_preallocation_dedup_20260830.json",
+    "dedup_receipt_sha256": "60c966ae7522f051b4fe658923935c253c160ce2d054070d245cc5554fdd760f",
+    "dedup_scan": {
+      "registry_identities": 4722,
+      "cards": 1360,
+      "strategy_wiki_nodes": 45,
+      "exact_matches": 0
+    },
+    "fuzzy_neighbors": [
+      "QM5_20099 WTI equal-weight same-calendar mean",
+      "QM5_20279 WTI contiguous-month three-month-half-life exponential trend",
+      "QM5_41204 WTI same-calendar Huber location",
+      "QM5_41211 WTI same-calendar t-score",
+      "QM5_41212 WTI same-calendar Bernoulli sign score"
+    ],
+    "locked_disagreements": [
+      {
+        "observations_recent_to_old": [-0.04, -0.04, -0.04, 0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.03],
+        "equal_weight_mean": 0.009,
+        "equal_weight_direction": "BUY_WTI",
+        "four_year_exponential_weight_direction": "SELL_WTI",
+        "interpretation": "Calendar-year decay gives the three recent negative observations enough influence to reverse the equal-weight direction."
+      },
+      {
+        "neighbor": "QM5_20279",
+        "neighbor_clock": "twelve contiguous recent monthly returns with a three-month half-life",
+        "candidate_clock": "exact same calendar month across up to ten prior years with a four-year half-life",
+        "interpretation": "The information set and calendar age are different, not a parameter rename."
+      }
+    ]
+  },
+  "governance": {
+    "source_packet": "strategy-seeds/sources/KELOHARJU-MOP-WTI-SAMECAL-EXPW4-2026/source.md",
+    "source_packet_sha256": "39e99fd059ce2b6b4ee092a0448c5b2102bfcd9da9fb527ed4103dd1ac96661f",
+    "source_provenance": "artifacts/qm5_wti_samecal_expw4_source_provenance_20260830.json",
+    "source_provenance_sha256": "1e9265f5e11a3a63c9ac3ef7dc8e4bcb285db98114a651d2d2ec784b51aed77a",
+    "source_approval": "decisions/2026-08-30_wti_same_calendar_exponential_weight_source_approval.md",
+    "source_approval_sha256": "3a2e97ec5537771a86c396279e2e662d052c32d11652677f373dbd4df1838c86",
+    "g0_decision": "decisions/2026-08-30_qm5_41223_wti_same_calendar_exponential_weight_g0.md",
+    "g0_decision_sha256": "8c97b98977891873d95de9514fd71b008ac0f6000e346e6fc6fb348272cfcba5",
+    "g0_status": "APPROVED",
+    "approved_card": "strategy-seeds/cards/approved/QM5_41223_wti-samecal-expw4_card.md",
+    "approved_card_sha256": "c68b6516616e55a37949dcd459445a5b38ddaf36107c56171cf7f0259e8a733f",
+    "runtime_card_hash_verified_exact_before_build": true,
+    "runtime_card_after_build_sha256": "2dc043a8860a705e1ea5dcc66647d95afb38bd967b63021f30e301a198f8e79d",
+    "runtime_card_after_build_note": "farmctl normalized informational R1 runtime fields after the exact pre-build copy; the repository-approved execution card remains unchanged and hash-bound.",
+    "magic_allocation_receipt": "artifacts/qm5_41223_magic_allocation_20260830.json",
+    "magic_allocation_receipt_sha256": "685c4fbb7eeafdbced5d33b93b1924a7447d1f63c353451a7229e3bbd13350b3",
+    "source_basis": "Complete governed packets for Keloharju, Linnainmaa, and Nyberg (2016), Journal of Finance, and Moskowitz, Ooi, and Pedersen (2012), Journal of Financial Economics, plus governed fixed base-two decay arithmetic; no source performance, significance, CFD-equivalence, or correlation claim transfers to the exact QM conjunction."
+  },
+  "build": {
+    "implementation_commits": [
+      "ed236e3e0d",
+      "a970a1b61",
+      "31726a3cb",
+      "f54518175",
+      "e19347c3b",
+      "0442f3199",
+      "0786e03c4"
+    ],
+    "build_task_id": "ca498dcb-0f31-4d64-8ff6-4de3d4e459e7",
+    "build_task_status": "done",
+    "build_result": "artifacts/qm5_41223_build_result_20260830.json",
+    "build_result_sha256": "d2d7c6c8cdecc17d964d7d3785d31d7193e12a118cf26ae43eaa346172209eb0",
+    "initial_compile": {
+      "work_item_id": "ebbd3a51-2660-43df-b669-bdf0adfb0275",
+      "status": "failed",
+      "verdict": "COMPILE_FAIL",
+      "compiler_result": "PASS",
+      "compiler_errors": 0,
+      "compiler_warnings": 0,
+      "build_check_result": "FAIL",
+      "failure_classes": [
+        "EA_INDICATOR_BUFFER_UNBOUNDED"
+      ],
+      "rejected_mq5_sha256": "010a74f922d6796b522c655733c7d98b50f840d7abab4a5c6b3ef6866f051fd3",
+      "evidence": "D:/QM/reports/work_items/ebbd3a51-2660-43df-b669-bdf0adfb0275/QM5_41223/COMPILE_EA/compile_evidence.json",
+      "evidence_sha256": "084a198522532789b64dd80f508b2e3456d9a6e9e7739ad9fe2f4baf478a9975",
+      "build_check_report": "D:/QM/reports/framework/21/build_check_20260830_080827.json",
+      "build_check_report_sha256": "ec79fca23db07ef856bb8faaf667b009ed2da831729ae9bfb68d0b576f58002e",
+      "immutable_row_preserved": true
+    },
+    "compile_repair": {
+      "authority": "governed_compile_fail:ebbd3a51-2660-43df-b669-bdf0adfb0275",
+      "repair_scope": "explicit ArraySize guards for the fixed-capacity observations and ages writes; no strategy-mechanic change",
+      "repaired_mq5_sha256": "b3b25a8179ffc8f2f35562d3494e529cff530758625fd951acb752ee88131081",
+      "successor_work_item_id": "add7713e-dff9-4a69-bd1f-0d81f2ed540b",
+      "append_only_successor": true
+    },
+    "compile_work_item_id": "add7713e-dff9-4a69-bd1f-0d81f2ed540b",
+    "compile_work_item_status": "done",
+    "compile_terminal": "T8",
+    "compile_verdict": "COMPILE_OK",
+    "initial_compile_release_dry_run": "artifacts/qm5_41223_compile_release_dry_run_20260830.json",
+    "initial_compile_release_dry_run_sha256": "3d9e379a56e85aae9b88d8be58d335bd979ae20fb187ac9e99218f8cbf89404d",
+    "initial_compile_release": "artifacts/qm5_41223_compile_release_20260830.json",
+    "initial_compile_release_sha256": "ccbad050aa3209922b3b3b5ff7df07732044308c105ff99dd1e5393ebbba5590",
+    "repair_compile_release_dry_run": "artifacts/qm5_41223_compile_repair_release_dry_run_20260830.json",
+    "repair_compile_release_dry_run_sha256": "8c10b1b855b25937ae5cdcd9f83fa195bad3bd8252c6199ce11e839ef55553a8",
+    "repair_compile_release": "artifacts/qm5_41223_compile_repair_release_20260830.json",
+    "repair_compile_release_sha256": "1cc745352b01e49415e2c15a9a594af148ab37fbe673d9b6613f880a95afafb9",
+    "compile_evidence": "D:/QM/reports/work_items/add7713e-dff9-4a69-bd1f-0d81f2ed540b/QM5_41223/COMPILE_EA/compile_evidence.json",
+    "compile_evidence_sha256": "c54fd2fe1d0023e5eb90c2d0bfcad51a1f831a3193b5bc86995ce68f4e2ffea3",
+    "build_check_report": "D:/QM/reports/framework/21/build_check_20260830_081619.json",
+    "build_check_report_sha256": "07ded737f5f8cfff7973ac4d2303138fcaef4a386c29db741ac07cfed0068b48",
+    "mq5_sha256": "b3b25a8179ffc8f2f35562d3494e529cff530758625fd951acb752ee88131081",
+    "ex5_sha256": "00e348a47c1ad80865edcf7704d1395209d2ddbb7ac7ae015cd913454a06d361",
+    "setfile_sha256": "dec5040a209c949333da66a54a9519a512506e428bdf146450f00df45de0e398",
+    "setfile_build_hash": "30a6b83f0ed40135a12fdbe0a32aa09961f9a458cd8bb508889899148fa60a19",
+    "spec_sha256": "27284f61f627a58b7c231c648c7916eb6c68ba4c088b4a5cdcb690fb77b92f6f",
+    "reference_test_sha256": "a407840c5fd1d80685f8ae9b48529953b847fc7f359c2f9a275449922f49a42e",
+    "build_check": "PASS",
+    "build_check_failures": 0,
+    "build_check_warnings": 0,
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "risk_mode": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "manual_smoke_or_backtest_launched": false
+  },
+  "capacity_before_q02": {
+    "command": "Get-Counter '\\Processor(_Total)\\% Processor Time' -SampleInterval 1 -MaxSamples 5",
+    "sampled_at_utc": "2026-08-30T08:17:45.6040000Z",
+    "hard_ceiling_percent": 97.0,
+    "samples_percent": [79.72, 73.399, 76.771, 79.017, 79.69],
+    "average_percent": 77.7194,
+    "maximum_percent": 79.72,
+    "ceiling_binding": false
+  },
+  "capacity_after_q02_enqueue": {
+    "sampled_at_utc": "2026-08-30T08:19:21.6410000Z",
+    "hard_ceiling_percent": 97.0,
+    "samples_percent": [75.698, 73.896, 89.557, 92.481, 84.279],
+    "average_percent": 83.1822,
+    "maximum_percent": 92.481,
+    "ceiling_binding": false,
+    "response": "MISSION_EXIT_NO_MANUAL_DISPATCH_OR_TESTER_ACTION"
+  },
+  "q02": {
+    "enqueued": true,
+    "enqueued_by": "record_build_result.auto_q02",
+    "work_item_id": "6e56c36c-135d-4abc-a3d1-aa3f61c74f2c",
+    "status_at_readback": "pending",
+    "attempt_count": 0,
+    "claimed_by_at_readback": null,
+    "priority_track": true,
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile": "framework/EAs/QM5_41223_wti-samecal-expw4/sets/QM5_41223_wti-samecal-expw4_XTIUSD.DWX_D1_backtest.set",
+    "items_enqueued": 1,
+    "items_skipped": 0,
+    "manual_dispatch": false
+  },
+  "verification": {
+    "reference_tests": "PASS: 11 tests",
+    "compile_repair_authority_tests": "PASS: 40 tests",
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "spec_validation": "PASS",
+    "strategy_entry_validation": "PASS",
+    "raw_mq5_quarantine_validation": "PASS",
+    "registry_resolver": "PASS: one active row, magic 412230000, zero active collisions, resolver binding present",
+    "static_build_guardrails": "PASS: zero findings",
+    "strict_build_gate": "PASS: zero failures and zero warnings",
+    "strict_compile": "PASS: zero compiler errors and zero compiler warnings",
+    "json_parse_and_hash_binding": "PASS"
+  },
+  "risks": [
+    "The five-observation floor and exact-year missing-data rule can produce sparse or zero Q02 activity.",
+    "The four-year half-life is an untested QM translation choice and can make a few recent calendar years dominate direction.",
+    "Continuous-CFD labels, rolls, financing, gaps, and futures-to-CFD basis remain empirical translation risks.",
+    "Direct WTI and the monthly year-decay clock are structurally outside the certified book, but Q09 must reject excessive realized overlap with XNG, metals, and indices."
+  ],
+  "safety": {
+    "manual_q02_dispatch": false,
+    "manual_tester_launch": false,
+    "autotrading_toggled": false,
+    "t_live_controlled": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "certification_claimed": false,
+    "decorrelation_claimed": false
+  },
+  "mission_commits_before_receipt": [
+    "ed236e3e0d",
+    "a970a1b61",
+    "31726a3cb",
+    "f54518175",
+    "e19347c3b",
+    "0442f3199",
+    "0786e03c4"
+  ]
+}

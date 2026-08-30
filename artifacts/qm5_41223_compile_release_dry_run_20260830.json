@@ -1,0 +1,19 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "010a74f922d6796b522c655733c7d98b50f840d7abab4a5c6b3ef6866f051fd3",
+      "ea_id": "QM5_41223",
+      "ea_label": "QM5_41223_wti-samecal-expw4",
+      "expected_mq5_sha256": "010a74f922d6796b522c655733c7d98b50f840d7abab4a5c6b3ef6866f051fd3",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41223_wti-samecal-expw4\\QM5_41223_wti-samecal-expw4.mq5",
+      "work_item_id": "ebbd3a51-2660-43df-b669-bdf0adfb0275"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "ebbd3a51-2660-43df-b669-bdf0adfb0275"
+}
