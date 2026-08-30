@@ -1,0 +1,20 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "7ebb0fffd26b1af482d839acab936752ff3ad6965cdbe2766f8c7ad4c0b39d42",
+      "ea_id": "QM5_41210",
+      "ea_label": "QM5_41210_xauxag-samecal-tstat",
+      "expected_mq5_sha256": "7ebb0fffd26b1af482d839acab936752ff3ad6965cdbe2766f8c7ad4c0b39d42",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41210_xauxag-samecal-tstat\\QM5_41210_xauxag-samecal-tstat.mq5",
+      "work_item_id": "2818aa9d-830f-4db2-964c-4cd479edca3d"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "2818aa9d-830f-4db2-964c-4cd479edca3d"
+}
+

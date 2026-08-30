@@ -1,0 +1,52 @@
+{
+  "task_id": "e093739d-227e-4116-966c-c7ef4f375536",
+  "build_generation": 0,
+  "ea_id": "QM5_41210",
+  "slug": "xauxag-samecal-tstat",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_41210_xauxag-samecal-tstat",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_41210_xauxag-samecal-tstat/QM5_41210_xauxag-samecal-tstat.mq5",
+  "mq5_sha256": "7ebb0fffd26b1af482d839acab936752ff3ad6965cdbe2766f8c7ad4c0b39d42",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_41210_xauxag-samecal-tstat/QM5_41210_xauxag-samecal-tstat.ex5",
+  "ex5_sha256": "54a9e9ed77de7f9c5051f3a13cd2b5229486c522f52986a88529a2f0972a0e1b",
+  "magic_base": 412100000,
+  "symbols_registered": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_41210_xauxag-samecal-tstat/sets/QM5_41210_xauxag-samecal-tstat_QM5_41210_XAU_XAG_SAMECAL_TSTAT_D1_D1_backtest.set"
+  ],
+  "setfile_sha256": {
+    "QM5_41210_xauxag-samecal-tstat_QM5_41210_XAU_XAG_SAMECAL_TSTAT_D1_D1_backtest.set": "3a3efb9bf1de8675c666f29dae74ef8e5cad5928a00c3ce769ce975aadc75067"
+  },
+  "basket_manifest_path": "C:/QM/repo/framework/EAs/QM5_41210_xauxag-samecal-tstat/basket_manifest.json",
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_41210_xauxag-samecal-tstat/SPEC.md",
+  "spec_md_sha256": "d18e5230eb83457677609155bf963e231094ae85b46c13006f36df74151daa21",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_work_item_id": "2818aa9d-830f-4db2-964c-4cd479edca3d",
+  "compile_predecessor_work_item_id": null,
+  "compile_evidence_path": "D:/QM/reports/work_items/2818aa9d-830f-4db2-964c-4cd479edca3d/QM5_41210/COMPILE_EA/compile_evidence.json",
+  "compile_evidence_sha256": "87a721edbbe350a44f747bad8e32fa1d333634bf5875e9ee7eb5ee3a99745514",
+  "compile_verdict": "COMPILE_OK",
+  "build_check_report": "D:/QM/reports/framework/21/build_check_20260830_015733.json",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "blocked_reason": "",
+  "open_questions": [
+    "The build-only lane did not launch a tester; Q02 owns frequency and package-level execution evidence.",
+    "Only Q09 may determine realized portfolio correlation or diversification value."
+  ],
+  "built_at_utc": "2026-08-30T02:03:00Z"
+}

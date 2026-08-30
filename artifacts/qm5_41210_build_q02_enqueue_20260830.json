@@ -1,0 +1,183 @@
+{
+  "schema": "qm.new-commodity-sleeve-build-q02/v1",
+  "generated_at_utc": "2026-08-30T02:09:00Z",
+  "branch": "agents/board-advisor",
+  "pre_receipt_head": "73d716c36b4f02fd7ce4ab2310e90dd68b248a17",
+  "mission_outcome": "BUILT_COMPILE_OK_Q02_ENQUEUED_CPU_CLEAR",
+  "ea": {
+    "ea_id": "QM5_41210",
+    "slug": "xauxag-samecal-tstat",
+    "strategy_id": "KELOHARJU-RCORE-XAUXAG-SAMECAL-TSTAT-2026_S01",
+    "logical_symbol": "QM5_41210_XAU_XAG_SAMECAL_TSTAT_D1",
+    "host_symbol": "XAUUSD.DWX",
+    "companion_symbol": "XAGUSD.DWX",
+    "timeframe": "D1",
+    "magics": [
+      412100000,
+      412100001
+    ]
+  },
+  "edge": {
+    "class": "xau_xag_up_to_ten_year_same_calendar_one_sample_t_statistic_relative_seasonality",
+    "frequency": "monthly",
+    "mechanic": "At the first normalized host D1 broker-month transition, scan the same calendar month in exact years Y-1 through Y-10, retain at least five synchronized XAU-minus-XAG log-return pairs, compute arithmetic mean, n-1 sample variance, standard error sqrt(variance/n), and t=mean/se, then hold opposite metal legs only when t is strictly outside plus or minus 1.0 with a 1e-10 tolerance.",
+    "book_difference": "The candidate targets relative gold-versus-silver calendar pressure with opposite XAU/XAG legs instead of an outright index, metal, or energy direction. This is a structural objective only; realized decorrelation is not claimed and remains a Q09 decision.",
+    "dedup_verdict": "FUZZY_MATCH_RESOLVED_DISTINCT_XAUXAG_SAMECAL_RELATIVE_MEAN_STANDARD_ERROR_GATE_MONTHLY_BASKET",
+    "dedup_receipt": "artifacts/qm5_xauxag_samecal_tstat_preallocation_dedup_20260830.json",
+    "dedup_receipt_sha256": "d53cd7b7f36d978f85f4552de095c3d357a09b9783e74d4ba3c60e60ce74ab80",
+    "fuzzy_neighbors": [
+      "QM5_20186 raw-mean XAU/XAG same-calendar",
+      "QM5_41203 signed-rank XAU/XAG same-calendar",
+      "QM5_41206 fixed-scale Huber XAU/XAG same-calendar",
+      "QM5_21517 just-completed seasonal-surprise contrarian basket"
+    ],
+    "locked_disagreement": {
+      "observations": [
+        0.02,
+        0.015,
+        0.01,
+        0.005,
+        0.001,
+        -0.04
+      ],
+      "raw_mean_direction": "BUY_XAU_SELL_XAG",
+      "signed_rank_direction": "BUY_XAU_SELL_XAG",
+      "huber_direction": "BUY_XAU_SELL_XAG",
+      "t_statistic_direction": "FLAT",
+      "interpretation": "Dispersion and the one-standard-error abstention gate are load-bearing."
+    }
+  },
+  "governance": {
+    "source_packet": "strategy-seeds/sources/KELOHARJU-RCORE-XAUXAG-SAMECAL-TSTAT-2026/source.md",
+    "source_packet_sha256": "1e9a4e5353ead5900a0b449276d180df95c4d104d9347e31e0ba8c0126176929",
+    "source_approval": "decisions/2026-08-30_xauxag_same_calendar_tscore_source_approval.md",
+    "source_approval_sha256": "14d57b63ccb53a7aef8a1e28be674eba24052adf9a29f6a7743ee2bd88f72abc",
+    "g0_decision": "decisions/2026-08-30_qm5_41210_xauxag_same_calendar_tscore_g0.md",
+    "g0_decision_sha256": "e4aaabb83dcb3c572341f6c2d124475d7d559486fc100ea66205f5ffc5d98069",
+    "g0_status": "APPROVED",
+    "approved_card": "strategy-seeds/cards/approved/QM5_41210_xauxag-samecal-tstat_card.md",
+    "approved_card_sha256_at_g0": "0e3f7d4a928858ac50798fe2027087483872c18eb8f1dbcca02c04c2645ef7d1",
+    "approved_card_sha256_after_heading_alignment": "79ae4556b12625539edc7618806a8cb88fcd5a6e84b43fe536e93225301f98a2",
+    "card_heading_alignment_commit": "73d716c36b4f02fd7ce4ab2310e90dd68b248a17",
+    "card_heading_alignment_scope": "Card-v2 structural headings and standard component-preset fixture only; formula, threshold, side, risk, source claims, EA source, binary, logical setfile, and Q02 payload unchanged.",
+    "runtime_card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_41210_xauxag-samecal-tstat_card.md",
+    "runtime_card_sha256": "79ae4556b12625539edc7618806a8cb88fcd5a6e84b43fe536e93225301f98a2",
+    "magic_allocation_receipt": "artifacts/qm5_41210_magic_allocation_20260830.json",
+    "magic_allocation_receipt_sha256": "cb17f791bcd5b087628ff908d025963bdd1eca83fcc2ae464e2042b24a56298a"
+  },
+  "build": {
+    "implementation_commits": [
+      "2213944c5c83b34f8b719b7bb9277dd632bd6a8c",
+      "73d716c36b4f02fd7ce4ab2310e90dd68b248a17"
+    ],
+    "build_task_id": "e093739d-227e-4116-966c-c7ef4f375536",
+    "build_task_status": "done",
+    "build_result": "artifacts/qm5_41210_build_result_20260830.json",
+    "build_result_sha256": "3543346275e3f34fbb186ceef4889754fa8dfd0167e1c1d63c53a4281758e0e7",
+    "compile_work_item_id": "2818aa9d-830f-4db2-964c-4cd479edca3d",
+    "compile_work_item_status": "done",
+    "compile_verdict": "COMPILE_OK",
+    "compile_release_dry_run": "artifacts/qm5_41210_compile_release_dry_run_20260830.json",
+    "compile_release_dry_run_sha256": "932a5d02067afc5e90ab25ac0f4e5a99dd4f1d0559423a730d3edcb2bf1c21e0",
+    "compile_release": "artifacts/qm5_41210_compile_release_20260830.json",
+    "compile_release_sha256": "377899983fcc81172bc138dee8c154283ef0989c8e1d324beea072319c02d3d6",
+    "compile_evidence": "D:/QM/reports/work_items/2818aa9d-830f-4db2-964c-4cd479edca3d/QM5_41210/COMPILE_EA/compile_evidence.json",
+    "compile_evidence_sha256": "87a721edbbe350a44f747bad8e32fa1d333634bf5875e9ee7eb5ee3a99745514",
+    "build_check_report": "D:/QM/reports/framework/21/build_check_20260830_015733.json",
+    "build_check_report_sha256": "5fd6d7bff5b1325b101dba8c9bd72b743f75a5df8d201652dffe24805a265c82",
+    "mq5_sha256": "7ebb0fffd26b1af482d839acab936752ff3ad6965cdbe2766f8c7ad4c0b39d42",
+    "ex5_sha256": "54a9e9ed77de7f9c5051f3a13cd2b5229486c522f52986a88529a2f0972a0e1b",
+    "logical_setfile_sha256": "3a3efb9bf1de8675c666f29dae74ef8e5cad5928a00c3ce769ce975aadc75067",
+    "logical_setfile_build_hash": "669a8b1b70fa1ad92bb56f09291f331c02d30658ea89912eebd20d9aecc5a0c9",
+    "basket_manifest_sha256": "9364d8f406127f86fb5bbbd7e1534de8f8cf0ae8eaefeb16d5f28ff8d33fa68b",
+    "spec_sha256": "d18e5230eb83457677609155bf963e231094ae85b46c13006f36df74151daa21",
+    "build_check": "PASS",
+    "build_check_failures": 0,
+    "build_check_nonfatal_warnings": 4,
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "risk_mode": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    }
+  },
+  "capacity_before_q02": {
+    "sampled_at_utc": "2026-08-30T02:02:41.3639247Z",
+    "hard_ceiling_percent": 97.0,
+    "samples_percent": [
+      67.19088590057505,
+      65.51975928479625,
+      58.62153150374838,
+      59.217780592926204,
+      57.231016528077774
+    ],
+    "average_percent": 61.55619476202473,
+    "maximum_percent": 67.19088590057505,
+    "ceiling_binding": false
+  },
+  "capacity_after_q02_enqueue": {
+    "sampled_at_utc": "2026-08-30T02:03:39.7230591Z",
+    "hard_ceiling_percent": 97.0,
+    "samples_percent": [
+      79.32322461790203,
+      79.85036221291523,
+      81.26580978312403,
+      81.7446638910373,
+      83.5955085614822
+    ],
+    "average_percent": 81.15591381329216,
+    "maximum_percent": 83.5955085614822,
+    "ceiling_binding": false,
+    "response": "MISSION_EXIT_NO_MANUAL_DISPATCH_OR_TESTER_ACTION"
+  },
+  "q02": {
+    "enqueued": true,
+    "enqueued_by": "record_build_result.auto_q02",
+    "work_item_id": "ae2b6391-f985-4906-9f6a-0a79eb31c463",
+    "status_at_readback": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "symbol": "QM5_41210_XAU_XAG_SAMECAL_TSTAT_D1",
+    "host_symbol": "XAUUSD.DWX",
+    "timeframe": "D1",
+    "setfile": "framework/EAs/QM5_41210_xauxag-samecal-tstat/sets/QM5_41210_xauxag-samecal-tstat_QM5_41210_XAU_XAG_SAMECAL_TSTAT_D1_D1_backtest.set",
+    "logical_items_enqueued": 1,
+    "component_items_enqueued": 0
+  },
+  "verification": {
+    "reference_tests": "PASS: 9 tests",
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS after structural heading alignment",
+    "execution_contract_sections": "PASS: canonical Card-v2 sections present; no promotion contract is registered or required at Q02",
+    "spec_validation": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "registry_resolver": "PASS: two active rows and both resolver magics",
+    "static_build_gate": "PASS: zero failures, four nonfatal warnings",
+    "strict_compile": "PASS: zero errors and zero compiler warnings",
+    "json_parse_and_hash_binding": "PASS"
+  },
+  "risks": [
+    "At least five synchronized prior-year pairs can still produce zero or sub-floor activity when either metal history is incomplete.",
+    "Small samples and unstable standard error can move months between a package and abstention.",
+    "Opposite XAU/XAG legs do not establish dollar, beta, volatility, factor, or portfolio neutrality; Q09 must reject excessive realized overlap.",
+    "Continuous-CFD labels, financing, roll construction, asymmetric stops, legging, and futures-to-CFD basis remain empirical translation risks."
+  ],
+  "safety": {
+    "manual_q02_dispatch": false,
+    "manual_tester_launch": false,
+    "autotrading_toggled": false,
+    "t_live_controlled": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "certification_claimed": false,
+    "decorrelation_claimed": false
+  },
+  "mission_commits_before_receipt": [
+    "ba45caf7cae7c6501ece24a2967bd37133ca6c1e",
+    "1b49943969e40847316c6dabc9502130fa285893",
+    "e4eaf7858893e3a7af55ca3302dd4a53c8633b70",
+    "2213944c5c83b34f8b719b7bb9277dd632bd6a8c",
+    "73d716c36b4f02fd7ce4ab2310e90dd68b248a17"
+  ]
+}
