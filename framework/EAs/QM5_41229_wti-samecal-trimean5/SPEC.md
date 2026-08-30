@@ -1,6 +1,6 @@
 # QM5_41229_wti-samecal-trimean5 - Strategy Spec
 
-Status: `G0 APPROVED; IMPLEMENTED; Q01 PENDING; Q02 NOT_STARTED`
+Status: `G0 APPROVED; IMPLEMENTED; Q01 PASS; Q02 ENQUEUED_PENDING`
 
 ## Identity
 
@@ -141,7 +141,7 @@ zero-warning compilation.
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-08-30 | G0-approved WTI same-calendar trimean build | Q01 pending |
+| v1 | 2026-08-30 | G0-approved WTI same-calendar trimean build | Q01 PASS: strict compiler 0 errors/0 warnings; build check PASS; Q02 enqueued |
 
 ## Safety Boundary
 

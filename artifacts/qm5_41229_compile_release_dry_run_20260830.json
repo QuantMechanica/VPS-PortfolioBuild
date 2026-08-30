@@ -1,0 +1,19 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "9585e0889f617dbfc436a5645ed22588d19808905cfc35a8f946040c33410d9c",
+      "ea_id": "QM5_41229",
+      "ea_label": "QM5_41229_wti-samecal-trimean5",
+      "expected_mq5_sha256": "9585e0889f617dbfc436a5645ed22588d19808905cfc35a8f946040c33410d9c",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41229_wti-samecal-trimean5\\QM5_41229_wti-samecal-trimean5.mq5",
+      "work_item_id": "6786955f-ce22-4324-b57e-5b71e5fbb4ae"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "6786955f-ce22-4324-b57e-5b71e5fbb4ae"
+}

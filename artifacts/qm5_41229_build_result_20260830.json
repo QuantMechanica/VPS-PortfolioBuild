@@ -1,0 +1,99 @@
+{
+  "schema": "qm.build-result/v1",
+  "task_id": "e2c648cc-791b-4677-89fe-02af6cad2504",
+  "build_generation": 0,
+  "ea_id": "QM5_41229",
+  "slug": "wti-samecal-trimean5",
+  "strategy_id": "KELOHARJU-MOP-WTI-SAMECAL-TRIMEAN5-2026_S01",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_41229_wti-samecal-trimean5",
+  "implementation_commit": "272a1930814a12240f0a4a3c708a2a4adffab969",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_41229_wti-samecal-trimean5/QM5_41229_wti-samecal-trimean5.mq5",
+  "mq5_sha256": "9585e0889f617dbfc436a5645ed22588d19808905cfc35a8f946040c33410d9c",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_41229_wti-samecal-trimean5/QM5_41229_wti-samecal-trimean5.ex5",
+  "ex5_sha256": "8ed16319d12b5d3ac1227733106f188164b489a7ff8d1286673ba8ddf57f783f",
+  "magic_base": 412290000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "host_symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_41229_wti-samecal-trimean5/sets/QM5_41229_wti-samecal-trimean5_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_sha256": {
+    "QM5_41229_wti-samecal-trimean5_XTIUSD.DWX_D1_backtest.set": "a924b296c502ca67f731e32205b2bc55666b7fb05e86916037aa8304d984d3dc"
+  },
+  "setfile_build_hash": "95ce9df41fe1402d024158641a93c79e35b96306b1089163615d34eb4fb8b043",
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_41229_wti-samecal-trimean5/SPEC.md",
+  "spec_md_sha256": "670c55bcfd31f8749b8a4b48075f3fe2c9ac56189dd414b53795324a96db35e1",
+  "spec_md_final_sha256": "8902d1d857843aa90fc742510e85654424632bf79e7d62d64ef152ff425d2df4",
+  "reference_test_path": "C:/QM/repo/framework/EAs/QM5_41229_wti-samecal-trimean5/docs/test_same_calendar_trimean5_reference.py",
+  "reference_test_sha256": "2636a40a3af9787ae05c4d72fa74e05dee3e85f05dea8335fa909e2c562db9c1",
+  "reference_test_result": "PASS_11_OF_11",
+  "approved_card_path": "C:/QM/repo/strategy-seeds/cards/approved/QM5_41229_wti-samecal-trimean5_card.md",
+  "approved_card_sha256": "634f85e8f5d30aea8cbe4c92993b7164ecdeb12aff18857b32872b1eda95980d",
+  "approved_card_final_sha256": "e4990cbdd692f724294859094f848a870a6773c3dfc2bd83b349bee226edf5dc",
+  "farm_card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_41229_wti-samecal-trimean5_card.md",
+  "farm_card_sha256": "2394171a16ca0bc71b9b3cb9ead97c49be6b05c5dc9b602b3bfc4128c97e673b",
+  "build_check_passed": true,
+  "build_check_failures": 0,
+  "build_check_nonfatal_warnings": 3,
+  "build_check_warning_codes": [
+    "EA_CARD_LOSS_LIMIT_UNDECIDABLE",
+    "EA_BROKER_TIME_WINDOW_UNDECIDABLE",
+    "EA_CARD_PENDING_ORDER_UNDECIDABLE"
+  ],
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_work_item_id": "6786955f-ce22-4324-b57e-5b71e5fbb4ae",
+  "compile_terminal": "T7",
+  "compile_evidence_path": "D:/QM/reports/work_items/6786955f-ce22-4324-b57e-5b71e5fbb4ae/QM5_41229/COMPILE_EA/compile_evidence.json",
+  "compile_evidence_sha256": "f44ff4e169a1627554123a08c00ec8778eb77fb48a4be79e77f4bd4ca3b8ecbd",
+  "compile_verdict": "COMPILE_OK",
+  "build_check_report": "D:/QM/reports/framework/21/build_check_20260830_142232.json",
+  "build_check_report_sha256": "29d020abaa7a7678ef1fc1fb775e3d9addc2fc16acb6c072f5f3507120e83d66",
+  "compile_release_dry_run": "artifacts/qm5_41229_compile_release_dry_run_20260830.json",
+  "compile_release_dry_run_sha256": "d698b45c30bf56ee39f1bb578ed29896d1c60bd5879410257b903b6b4d3292f1",
+  "compile_release_readback": "artifacts/qm5_41229_compile_release_20260830.json",
+  "compile_release_readback_sha256": "246b5c26c92634dc7ea38c264c057a0efeb80e81c556ef955b9cf413ac1707c1",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "capacity_before_q02": {
+    "command": "Get-Counter '\\\\Processor(_Total)\\\\% Processor Time' -SampleInterval 1 -MaxSamples 5",
+    "sampled_at_utc": "2026-08-30T14:25:43.8375904Z",
+    "hard_ceiling_percent": 97.0,
+    "samples_percent": [89.359, 90.756, 89.454, 94.73, 91.215],
+    "average_percent": 91.1028,
+    "maximum_percent": 94.73,
+    "average_strictly_below_ceiling": true,
+    "maximum_strictly_below_ceiling": true,
+    "ceiling_binding": false,
+    "terminal64_process_count": 9,
+    "metatester64_process_count": 6
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "build-only lane launched no manual tester; Q02 owns full-history execution",
+  "q02_enqueued": true,
+  "q02_status": "ENQUEUED_PENDING",
+  "q02_work_item_id": "a2d52206-0033-4ef5-854b-a76e282da753",
+  "q02_enqueued_at_utc": "2026-08-30T14:28:35Z",
+  "blocked_reason": null,
+  "open_questions": [
+    "Q02 must establish frequency, fills, cost drag, and baseline economics.",
+    "Only unchanged Q09 may determine realized portfolio correlation or diversification value."
+  ],
+  "safety": {
+    "manual_tester_launched": false,
+    "autotrading_toggled": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "certification_claimed": false,
+    "decorrelation_claimed": false
+  },
+  "built_at_utc": "2026-08-30T14:23:06Z"
+}

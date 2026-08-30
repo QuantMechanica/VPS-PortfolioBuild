@@ -1,0 +1,150 @@
+{
+  "schema": "qm.new-commodity-sleeve-build-q02/v1",
+  "generated_at_utc": "2026-08-30T14:30:00Z",
+  "branch": "agents/board-advisor",
+  "mission_outcome": "BUILT_COMPILE_OK_Q02_ENQUEUED_CPU_CLEAR",
+  "ea": {
+    "ea_id": "QM5_41229",
+    "slug": "wti-samecal-trimean5",
+    "strategy_id": "KELOHARJU-MOP-WTI-SAMECAL-TRIMEAN5-2026_S01",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "magic": 412290000
+  },
+  "edge": {
+    "class": "wti_exact_five_year_same_calendar_tukey_trimean",
+    "frequency": "monthly",
+    "mechanic": "At a genuine normalized WTI broker-month transition, load the exact completed matching-calendar-month WTI log returns in Y-5 through Y-1, require all five, sort ascending, compute (x[1] + 2*x[2] + x[3]) / 4, buy strictly above +1e-12, sell strictly below -1e-12, and renew next month.",
+    "book_difference": "Direct WTI and a recurring calendar-year clock are structurally outside the certified XAU/SP500/NDX/XNG carrier set. This is a diversification objective only; unchanged Q09 alone may establish realized decorrelation or portfolio value.",
+    "dedup_verdict": "SEMANTICALLY_DISTINCT_WTI_EXACT_FIVE_YEAR_SAME_CALENDAR_TUKEY_TRIMEAN_SIGN_MONTHLY_SLEEVE",
+    "dedup_receipt": "artifacts/qm5_wti_samecal_trimean5_preallocation_dedup_20260830.json",
+    "dedup_receipt_sha256": "02f188a6f704419035b5370577fd65f248a9e1c5e7e2904b76de2930111046a9",
+    "dedup_scan": {
+      "registry_identities": 4728,
+      "cards": 1366,
+      "strategy_wiki_nodes": 45,
+      "exact_matches": 0,
+      "fuzzy_neighbors": [
+        "QM5_20099_wti-samecal"
+      ]
+    },
+    "locked_disagreements": [
+      {
+        "observations": [-2.0, -1.0, 0.375, 0.5, 2.0],
+        "candidate_location": 0.0625,
+        "candidate_direction": "BUY_WTI",
+        "raw_mean_direction": "SELL_WTI",
+        "middle_trim_direction": "SELL_WTI",
+        "winsor_direction": "SELL_WTI"
+      },
+      {
+        "observations": [-8.0, -4.0, 0.5, 1.0, 12.0],
+        "candidate_location": -0.5,
+        "candidate_direction": "SELL_WTI",
+        "raw_mean_direction": "BUY_WTI",
+        "median_direction": "BUY_WTI"
+      }
+    ]
+  },
+  "governance": {
+    "source_packet": "strategy-seeds/sources/KELOHARJU-MOP-WTI-SAMECAL-TRIMEAN5-2026/source.md",
+    "source_packet_sha256": "6e929863b309d9b221c107c80af2fcecad212d33b86e8c6e9161af40265d06fc",
+    "source_approval": "decisions/2026-08-30_wti_same_calendar_trimean5_source_approval.md",
+    "source_approval_sha256": "fc3bfe1ca57b6cf84400383ba8d23e7e7010f9d96ac86ba59f83e8a26f903b85",
+    "g0_decision": "decisions/2026-08-30_qm5_41229_wti_same_calendar_trimean5_g0.md",
+    "g0_decision_sha256": "2bdca4be7d04e240b7472718f2ee2903a9eb74384f54278ae08f64f37aa00ae8",
+    "approved_card": "strategy-seeds/cards/approved/QM5_41229_wti-samecal-trimean5_card.md",
+    "approved_card_final_sha256": "e4990cbdd692f724294859094f848a870a6773c3dfc2bd83b349bee226edf5dc",
+    "magic_allocation": "artifacts/qm5_41229_magic_allocation_20260830.json",
+    "magic_allocation_sha256": "0aa61b9b596a386021353afff06572312c5f8f03730473a71aff2c145af997d0",
+    "source_basis": "Complete governed packets for Keloharju, Linnainmaa, and Nyberg (2016), Journal of Finance, and Moskowitz, Ooi, and Pedersen (2012), Journal of Financial Economics, support recurring same-calendar commodity information, explicit WTI membership, own-return direction, monthly renewal, and a five-year floor. The approved governed trimean packet fixes the arithmetic and limitation boundary. The exact WTI conjunction, continuous CFD, and execution contract remain disclosed untested QM translations."
+  },
+  "build": {
+    "implementation_commits": [
+      "42fba624e",
+      "74ba70df6",
+      "d99efce95",
+      "13a744ec8",
+      "272a19308"
+    ],
+    "build_task_id": "e2c648cc-791b-4677-89fe-02af6cad2504",
+    "build_task_status": "done",
+    "build_result": "artifacts/qm5_41229_build_result_20260830.json",
+    "build_result_final_sha256": "04120ac1efb48b42db109d0c0535e6896008de66826e2cbed4464494ac129389",
+    "compile_work_item_id": "6786955f-ce22-4324-b57e-5b71e5fbb4ae",
+    "compile_status": "done",
+    "compile_terminal": "T7",
+    "compile_verdict": "COMPILE_OK",
+    "compile_evidence": "D:/QM/reports/work_items/6786955f-ce22-4324-b57e-5b71e5fbb4ae/QM5_41229/COMPILE_EA/compile_evidence.json",
+    "compile_evidence_sha256": "f44ff4e169a1627554123a08c00ec8778eb77fb48a4be79e77f4bd4ca3b8ecbd",
+    "mq5_sha256": "9585e0889f617dbfc436a5645ed22588d19808905cfc35a8f946040c33410d9c",
+    "ex5_sha256": "8ed16319d12b5d3ac1227733106f188164b489a7ff8d1286673ba8ddf57f783f",
+    "setfile_sha256": "a924b296c502ca67f731e32205b2bc55666b7fb05e86916037aa8304d984d3dc",
+    "setfile_build_hash": "95ce9df41fe1402d024158641a93c79e35b96306b1089163615d34eb4fb8b043",
+    "spec_final_sha256": "8902d1d857843aa90fc742510e85654424632bf79e7d62d64ef152ff425d2df4",
+    "reference_test_sha256": "2636a40a3af9787ae05c4d72fa74e05dee3e85f05dea8335fa909e2c562db9c1",
+    "build_check": "PASS",
+    "build_check_failures": 0,
+    "build_check_nonfatal_warnings": 3,
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "risk_mode": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "manual_smoke_or_backtest_launched": false
+  },
+  "capacity_before_q02": {
+    "command": "Get-Counter '\\\\Processor(_Total)\\\\% Processor Time' -SampleInterval 1 -MaxSamples 5",
+    "sampled_at_utc": "2026-08-30T14:25:43.8375904Z",
+    "hard_ceiling_percent": 97.0,
+    "samples_percent": [89.359, 90.756, 89.454, 94.73, 91.215],
+    "average_percent": 91.1028,
+    "maximum_percent": 94.73,
+    "average_strictly_below_ceiling": true,
+    "maximum_strictly_below_ceiling": true,
+    "ceiling_binding": false,
+    "terminal64_process_count": 9,
+    "metatester64_process_count": 6
+  },
+  "q02": {
+    "enqueued": true,
+    "enqueued_by": "record_build_result.auto_q02",
+    "enqueued_at_utc": "2026-08-30T14:28:35Z",
+    "work_item_id": "a2d52206-0033-4ef5-854b-a76e282da753",
+    "status_at_readback": "pending",
+    "attempt_count": 0,
+    "claimed_by_at_readback": null,
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile": "framework/EAs/QM5_41229_wti-samecal-trimean5/sets/QM5_41229_wti-samecal-trimean5_XTIUSD.DWX_D1_backtest.set",
+    "items_enqueued": 1,
+    "items_skipped": 0,
+    "manual_dispatch": false
+  },
+  "verification": {
+    "reference_tests": "PASS: 11 tests",
+    "spec_validation": "PASS",
+    "build_check": "PASS",
+    "strict_compile": "PASS: zero compiler errors and zero compiler warnings",
+    "registry_resolver": "PASS: one active row, magic 412290000, resolver binding present",
+    "json_and_hash_binding": "PASS"
+  },
+  "risks": [
+    "Five exact matching-calendar years can make early history months invalid and Q02 activity sparse.",
+    "The Tukey trimean is an untested QM robustness translation, not a paper-tested optimum.",
+    "Continuous-CFD labels, rolls, financing, gaps, and futures-to-CFD basis remain empirical translation risks.",
+    "Direct WTI and the recurring calendar clock are structurally outside the current book, but Q09 must reject excessive realized overlap with XNG, metals, or indices."
+  ],
+  "safety": {
+    "manual_q02_dispatch": false,
+    "manual_tester_launch": false,
+    "autotrading_toggled": false,
+    "t_live_controlled": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "certification_claimed": false,
+    "decorrelation_claimed": false
+  }
+}
