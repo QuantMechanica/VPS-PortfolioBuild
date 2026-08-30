@@ -1,25 +1,25 @@
-# QM5_41231_wti-samecal-bisquare5 - Strategy Spec
+# QM5_41235_wti-samecal-hampel5 - Strategy Spec
 
 Status: `G0 APPROVED; IMPLEMENTED; Q01 PENDING`
 
 ## Identity
 
-**EA ID:** QM5_41231
+**EA ID:** QM5_41235
 
-- EA ID: `QM5_41231`
-- slug: `wti-samecal-bisquare5`
-- strategy ID: `KELOHARJU-MOP-WTI-SAMECAL-BISQUARE5-2026_S01`
-- source ID: `KELOHARJU-MOP-WTI-SAMECAL-BISQUARE5-2026`
+- EA ID: `QM5_41235`
+- slug: `wti-samecal-hampel5`
+- strategy ID: `KELOHARJU-HAMPEL-MASS-WTI-SAMECAL-HAMPEL5-2026_S01`
+- source ID: `KELOHARJU-HAMPEL-MASS-WTI-SAMECAL-HAMPEL5-2026`
 - source packet:
-  `strategy-seeds/sources/KELOHARJU-MOP-WTI-SAMECAL-BISQUARE5-2026/source.md`
+  `strategy-seeds/sources/KELOHARJU-HAMPEL-MASS-WTI-SAMECAL-HAMPEL5-2026/source.md`
 - source approval:
-  `decisions/2026-08-30_wti_same_calendar_bisquare5_source_approval.md`
+  `decisions/2026-08-30_wti_same_calendar_hampel5_source_approval.md`
 - approved card:
-  `strategy-seeds/cards/approved/QM5_41231_wti-samecal-bisquare5_card.md`
+  `strategy-seeds/cards/approved/QM5_41235_wti-samecal-hampel5_card.md`
 - G0 decision:
-  `decisions/2026-08-30_qm5_41231_wti_same_calendar_bisquare5_g0.md`
+  `decisions/2026-08-30_qm5_41235_wti_same_calendar_hampel5_g0.md`
 - host and traded symbol: exact `XTIUSD.DWX`, D1, slot 0
-- deterministic magic: `412310000`
+- deterministic magic: `412350000`
 
 ## 1. Strategy Logic
 
@@ -39,12 +39,13 @@ d[i]   = abs(r[i] - median)
 a      = sort_ascending(copy(d))
 MAD    = a[2]
 scale  = 1.4826 * MAD
-cutoff = 4.685 * scale
-
 mu[0] = median
 for j = 0..31:
-  u[i] = (r[i] - mu[j]) / cutoff
-  w[i] = (1 - u[i]^2)^2 if abs(u[i]) < 1 else 0
+  u[i] = abs((r[i] - mu[j]) / scale)
+  w[i] = 1                              if u[i] <= 2
+       = 2 / u[i]                       if 2 < u[i] <= 4
+       = 2 * (8 - u[i]) / (4 * u[i])   if 4 < u[i] < 8
+       = 0                              if u[i] >= 8
   mu[j+1] = sum(w[i] * r[i]) / sum(w[i])
 ```
 
@@ -60,8 +61,10 @@ frozen hard stop, subject to malformed-state and 40-day repair.
 |---|---:|---|
 | `strategy_history_years` | 5 | exact prior matching-calendar years |
 | `strategy_mad_normalizer` | 1.4826 | frozen raw-MAD scale |
-| `strategy_bisquare_cutoff` | 4.685 | normalized strict support cutoff |
-| `strategy_bisquare_steps` | 32 | exact re-centering count |
+| `strategy_hampel_a` | 2 | full-weight boundary |
+| `strategy_hampel_b` | 4 | inverse-weight/redescending boundary |
+| `strategy_hampel_c` | 8 | zero-weight support boundary |
+| `strategy_hampel_steps` | 32 | exact re-centering count |
 | `strategy_signal_epsilon` | 1e-12 | inclusive flat band |
 | `strategy_history_bars_d1` | 3000 | bounded endpoint scan |
 | `strategy_atr_period_d1` | 20 | completed-bar risk range |
@@ -74,7 +77,7 @@ Q02 has one locked baseline and no optimization surface.
 ## 3. Symbol Universe
 
 - Host and traded symbol: exact `XTIUSD.DWX` only.
-- Slot 0, deterministic magic `412310000`.
+- Slot 0, deterministic magic `412350000`.
 - Direct WTI is outside the certified XAU/SP500/NDX/XNG carrier set; only
   unchanged Q09 may establish realized decorrelation.
 - No proxy, basket, external feed, or second traded symbol.
@@ -95,13 +98,11 @@ positions in a full scored year, or nonpositive governed economics. It does
 not tune any rule.
 
 The canonical receipt found no exact identity. Sorted returns
-`[-6,-1,-0.5,+0.5,+2]` make this statistic buy at approximately
-`+0.124940938`, while raw mean, median, middle-three trim, endpoint-Winsor
-mean, trimean, midhinge, shortest-three mean, and inclusive-pair pseudomedian
-are zero or negative. Sign reflection reverses the mapping. The ten-year
-same-calendar Huber neighbor retains positive finite tail weights, and the
-existing bisquare EA reads twelve adjacent months rather than five exact
-same-calendar years.
+`[-0.050,-0.005,+0.002,+0.005,+0.080]` make the locked Hampel statistic sell
+at approximately `-0.00580512`, while the raw mean, median, bisquare,
+Harrell-Davis, and Gastwirth peers buy and the midhinge is flat. Sign
+reflection reverses the mapping. This is therefore a committed signal-level
+divergence, not merely a renamed same-calendar estimator.
 
 ## 6. Source Citation
 
@@ -111,10 +112,10 @@ commodity information, explicit crude-oil membership, monthly renewal, and a
 five-year floor. Moskowitz, Ooi, and Pedersen (2012), *Time Series Momentum*,
 *Journal of Financial Economics* 104(2), DOI
 `10.1016/j.jfineco.2011.11.003`, support explicit WTI membership, own-return
-direction, and monthly renewal. The governed
-`MOP-WTI-BISQUARE-2026` packet fixes the raw-MAD normalization, strict
-redescending support, squared weights, frozen cutoff, and exact update
-convention.
+direction, and monthly renewal. The CRAN `MASS` manual and its published
+`psi.hampel` implementation fix the a=2, b=4, c=8 piecewise redescending
+weights used by the governed source packet. QM fixes the raw-MAD normalizer,
+median start, frozen scale, and exact 32-update convention before testing.
 
 No source tests this exact five-sample trading conjunction, continuous WTI
 CFD, stop, spread, or portfolio. Those are disclosed pre-result QM choices;
@@ -137,7 +138,7 @@ stop-and-reverse, or signal-magnitude sizing.
 |---|---|
 | exact identity, host, risk, modes, and inputs | `Strategy_NoTradeFilter` |
 | normalized month and completed endpoints | calendar and endpoint helpers |
-| exact sample, median/MAD, fixed-step bisquare | `Strategy_LoadBisquareSignal` and `Strategy_BisquareSignal` |
+| exact sample, median/MAD, fixed-step Hampel | `Strategy_LoadHampelSignal` and `Strategy_HampelSignal` |
 | durable attempt before fallible gates | `Strategy_PrepareDecisionSignal` |
 | side, spread, quote, ATR, frozen stop | `Strategy_EntrySignal` |
 | malformed, next-month, stale repair | `Strategy_CloseExpiredPositions` |
@@ -145,8 +146,8 @@ stop-and-reverse, or signal-magnitude sizing.
 | sizing, execution, kill switch, telemetry | V5 framework wiring |
 
 Q01 must independently verify label normalization, endpoint completion,
-exact years, median/MAD indexes, frozen scale/cutoff, strict support, squared
-weights, exact update count, epsilon, disagreement fixtures, durable attempts,
+exact years, median/MAD indexes, frozen scale, a/b/c boundary weights,
+exact update count, epsilon, disagreement fixtures, durable attempts,
 spread boundaries, lifecycle, registry resolution, card identity, sole
 setfile, static guardrails, and strict zero-error/zero-warning compilation.
 
@@ -154,7 +155,7 @@ setfile, static guardrails, and strict zero-error/zero-warning compilation.
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-08-30 | G0-approved WTI same-calendar bisquare build | Q01 pending |
+| v1 | 2026-08-30 | G0-approved WTI same-calendar Hampel build | Q01 pending |
 
 ## Safety Boundary
 
