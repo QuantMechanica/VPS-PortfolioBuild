@@ -22,6 +22,87 @@
   ],
   "decisions": [
     {
+      "id": "OWNER-DEC-Q09HOLD-RETIRE-2-20260829",
+      "todo_id": "QM-TODO-20260830-702",
+      "priority": 84,
+      "choices": {
+        "YES": {
+          "mode": "APPLY_AND_VERIFY",
+          "objective": "Retire exactly QM5_10847/GDAXI and QM5_13301/GDAXI append-only (measured ECONOMIC-FAIL lineage) and close their two news holds; no further compute for either pair.",
+          "allowed_actions": [
+            "Apply the append-only retired disposition for exactly these two (EA, symbol) pairs via canonical disposition tooling - all historical verdicts and evidence remain untouched",
+            "Close holds 49a059da and 84c6e9e9 with a release note binding this decision",
+            "Update dashboards/boards that surface the news-hold list and record durable evidence"
+          ],
+          "acceptance": [
+            "No verdict, trade stream or evidence row is deleted or edited",
+            "Both pairs show retired disposition and closed holds; the news-hold count drops by exactly 2",
+            "No other pair is touched"
+          ]
+        },
+        "NO": {
+          "mode": "PREPARE_FOLLOWUP_ONLY",
+          "objective": "Keep both holds standing.",
+          "allowed_actions": ["Document the standing holds"],
+          "acceptance": ["No mutation"]
+        }
+      }
+    },
+    {
+      "id": "OWNER-DEC-Q09HOLD-REQUAL-8-20260829",
+      "todo_id": "QM-TODO-20260830-703",
+      "priority": 89,
+      "choices": {
+        "YES": {
+          "mode": "APPLY_AND_VERIFY",
+          "objective": "Put exactly the eight named Q10_NEWS hold pairs (13128/NDX, 12989/XAUUSD, 10815/GDAXI, 1567/EURUSD, 12567/XAUUSD, 10939/GBPUSD, 11421/EURUSD, 11476/USDJPY) on the append-only requalification track: rebuild from the last authentic gate, new EX5 = new identity from Q02 where needed, close the eight holds.",
+          "allowed_actions": [
+            "Commission exactly one scope-bound Codex router ticket implementing one append-only requalification chain per pair from its last authentic gate per the sealed 08f928e7 hold analysis",
+            "Close the eight corresponding holds with decision-bound release notes once each chain is seeded",
+            "Verify every chain is append-only (no historical row edited) and record durable evidence"
+          ],
+          "acceptance": [
+            "Exactly eight requalification chains exist, one per named pair, each anchored at the pair's last authentic gate",
+            "Rebuilt EX5s receive new identities from Q02 where the source/setfile lineage broke; no verdict or evidence is deleted or overwritten",
+            "The eight holds are closed; no other hold or pair is touched"
+          ]
+        },
+        "NO": {
+          "mode": "PREPARE_FOLLOWUP_ONLY",
+          "objective": "Keep the eight holds standing.",
+          "allowed_actions": ["Document the standing holds"],
+          "acceptance": ["No mutation"]
+        }
+      }
+    },
+    {
+      "id": "OWNER-DEC-Q02-EVIDENCELOSS-34-20260829",
+      "todo_id": "QM-TODO-20260830-704",
+      "priority": 82,
+      "choices": {
+        "YES": {
+          "mode": "APPLY_AND_VERIFY",
+          "objective": "Execute the sealed mixed disposition for the 34 evidence-loss Q02 pairs: append-only restart authority only for the 14 transient-infra pairs (staged in batches of 5), retire track for the 20 structural pairs, exactly as classified in commit b82d814a9.",
+          "allowed_actions": [
+            "Commission exactly one scope-bound Codex router ticket that implements the sealed b82d814a9 classification verbatim: 14 append-only Q02 restarts staged in 5er batches, 20 append-only retire dispositions",
+            "Verify batch staging respects factory capacity and that every restart uses the canonical append-only path",
+            "Record durable evidence; any deviation from the sealed list requires a new OWNER decision"
+          ],
+          "acceptance": [
+            "The 14/20 split matches commit b82d814a9 exactly; no pair is reclassified",
+            "Restarts are append-only reruns; retire dispositions leave all verdicts and evidence untouched",
+            "Batches of at most 5 restarts are in flight at once"
+          ]
+        },
+        "NO": {
+          "mode": "PREPARE_FOLLOWUP_ONLY",
+          "objective": "All 34 pairs go to the retire track; no repair.",
+          "allowed_actions": ["Prepare the full retire disposition for separate execution"],
+          "acceptance": ["No restart is seeded"]
+        }
+      }
+    },
+    {
       "id": "OWNER-DEC-SIBLING-REBIND-20260829",
       "todo_id": "QM-TODO-20260830-701",
       "priority": 91,
