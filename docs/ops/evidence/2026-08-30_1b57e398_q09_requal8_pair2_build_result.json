@@ -1,0 +1,21 @@
+{
+  "task_id": "5f5da824-916d-4d37-b12c-0fcb642f5508",
+  "ea_id": "QM5_41216",
+  "ea_dir": "framework/EAs/QM5_41216_grimes-nested-pb-v2-requal8",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41216_grimes-nested-pb-v2-requal8\\QM5_41216_grimes-nested-pb-v2-requal8.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41216_grimes-nested-pb-v2-requal8\\QM5_41216_grimes-nested-pb-v2-requal8.ex5",
+  "magic_base": 412160000,
+  "symbols_registered": [
+    "XAUUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41216_grimes-nested-pb-v2-requal8\\sets\\requal8_repair_1b57e398\\QM5_41216_grimes-nested-pb-v2-requal8_XAUUSD.DWX_H4_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41216_grimes-nested-pb-v2-requal8\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "blocked_reason": "2026-08-30T21:07Z run_smoke -Terminal any refused before launch with resolver status=no_capacity; immediate farmctl mt5-slots census at 2026-08-30T21:07:20Z found terminal64_running_count=5, active tester-owned T1/T4/T5, and terminal workers alive T1-T10; durable receipt C:/QM/repo/docs/ops/evidence/2026-08-30_1b57e398_q09_requal8_pair2_build_review_handoff.md",
+  "open_questions": []
+}
