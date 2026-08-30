@@ -1,0 +1,107 @@
+{
+  "schema": "qm.diversity-build-cpu-stop/v1",
+  "recorded_at_utc": "2026-08-30T10:12:52.936399+00:00",
+  "branch": "agents/board-advisor",
+  "mission": "diversity_funnel_throughput",
+  "outcome": "CPU_CEILING_STOP_BEFORE_COMPILE_ENQUEUE",
+  "selection": {
+    "ea_id": "QM5_41224",
+    "ea_label": "QM5_41224_wti-samecal-regimeshift",
+    "slug": "wti-samecal-regimeshift",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "asset_class": "energy",
+    "strategy_priority_score": 1010.39,
+    "priority_track": true,
+    "claim_guard": "eligible",
+    "in_flight_before_claim": false,
+    "diversity_reason": "direct WTI carrier beyond certified index/metal/XNG concentration",
+    "structural": true,
+    "low_frequency": true,
+    "ml_required": false
+  },
+  "governance": {
+    "g0_status": "APPROVED",
+    "execution_contract_status": "APPROVED",
+    "r1_track_record": "TIER_C",
+    "r2_mechanical": "PASS",
+    "r3_data_available": "PASS",
+    "r4_ml_forbidden": "PASS",
+    "build_task_id": "ff4d22ef-de6d-49f1-83ac-80d62b4b810b",
+    "source_commit": "86b5852ee4eea4a84167cd65af2a6242fb8e0ecf"
+  },
+  "claim": {
+    "claim_key": "build:QM5_41224:ff4d22ef-de6d-49f1-83ac-80d62b4b810b",
+    "claimed_by": "codex:agents/board-advisor",
+    "attempt_started_at_utc": "2026-08-30T10:09:25.162363+00:00",
+    "claim_event_committed_at_utc": "2026-08-30T10:11:53+00:00",
+    "released_at_utc": "2026-08-30T10:12:52.936399+00:00",
+    "release_reason": "BACKTEST_CPU_CEILING",
+    "post_release_task_status": "pending",
+    "post_release_claimable": true,
+    "post_release_in_flight": false,
+    "post_release_work_item_count": 0,
+    "last_blocked_reason": "BACKTEST_CPU_CEILING:max=97.29>=97.0;compile_and_q02_not_enqueued"
+  },
+  "database_backup": {
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_qm5_41224_compile_claim_20260830T100925Z_ddd5b0f7.sqlite",
+    "sha256": "a0bcfcef41d73237e5fdbc79539aa4f3956a783cf861328d4a602be2971b0997",
+    "integrity_check": "ok"
+  },
+  "cpu": {
+    "initial_windows": [
+      {
+        "sampled_at_utc_end": "2026-08-30T10:02:00.9901018Z",
+        "samples_pct": [81.36, 75.54, 70.22, 68.66, 72.76],
+        "average_pct": 73.71,
+        "maximum_pct": 81.36
+      },
+      {
+        "sampled_at_utc_end": "2026-08-30T10:08:27.9841972Z",
+        "samples_pct": [87.52, 89.45, 87.13, 84.47, 87.41],
+        "average_pct": 87.2,
+        "maximum_pct": 89.45
+      }
+    ],
+    "binding_window": {
+      "sampled_at_utc_end": "2026-08-30T10:12:08.3402809Z",
+      "samples_pct": [82.06, 84.12, 93.27, 97.29, 94.15],
+      "average_pct": 90.18,
+      "maximum_pct": 97.29,
+      "ceiling_pct": 97.0,
+      "trigger": "maximum_above_ceiling"
+    }
+  },
+  "identity": {
+    "magic": 412240000,
+    "magic_slot": 0,
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "card_sha256": "a3bdbf819f5acd9d22550b2703ad87655fc202280d4498087bd91356b138c9c9",
+    "mq5_sha256": "fede16790ec29627b6c38415f6db95ec0146c9a312789ff5645240014769b2d5",
+    "spec_sha256": "575f674b73486a3e674f8cb0a07371d7412d031fe20fa1a72399c6dcfd2631a4",
+    "setfile_sha256": "d63212d34f8fd376095b1a036932fdb3147711f45101f7ef4a7f1e9c0ed28fc3"
+  },
+  "pipeline": {
+    "ex5_exists": false,
+    "compile_status": "NOT_ENQUEUED",
+    "compile_work_items": 0,
+    "q02_work_items": 0
+  },
+  "safety": {
+    "source_changed": false,
+    "ad_hoc_compile_started": false,
+    "governed_compile_enqueued": false,
+    "tester_started": false,
+    "dispatcher_called": false,
+    "terminal_reserved": false,
+    "terminal_started_or_stopped": false,
+    "autotrading_toggled": false,
+    "t_live_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "resume_condition": "fresh five-sample host CPU window has both average and maximum below 97 percent",
+  "resume_command": "python tools/strategy_farm/farmctl.py enqueue-compile QM5_41224_wti-samecal-regimeshift --build-task-id ff4d22ef-de6d-49f1-83ac-80d62b4b810b"
+}
