@@ -84,9 +84,9 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: Q01
-q01_status: NOT_BUILT
-q02_status: NOT_ENQUEUED_Q01_PENDING
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: NOT_ENQUEUED_CAPACITY_CHECK_PENDING
 force_build: true
 review_focus: "Falsify a direct-WTI recurring-calendar sleeve outside the certified XAU/SP500/NDX/XNG book. Verify normalized completed endpoints, exact five-year membership, four overlapping chronological two-year means, even median, sign, consumed month, fixed risk, frozen stop, and next-month exit. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -361,8 +361,8 @@ API, CSV, optimizer artifact, trained output, or manual signal input.
 - R1:
   `PASS_WITH_BLOCK_AGGREGATION_AND_SINGLE_CFD_TRANSLATION_RISK`.
 - R2: `PASS` for the exact locked mechanical contract.
-- R3:
-  `PASS_WITH_FIVE_YEAR_WARMUP_SESSION_LABEL_AND_CONTINUOUS_FUTURES_CFD_BASIS_RISK`.
+- R3: `PASS`; five-year warm-up, session-label, and continuous-futures/CFD
+  basis risks remain binding Q02 falsification items.
 - R4: `PASS`; structural native arithmetic only.
 
 ## Falsification And Requalification
@@ -380,6 +380,7 @@ direction, risk, stop, hold, spread, retry policy, or adding a filter.
 | Version | Date | Change | Gate | Status |
 |---|---|---|---|---|
 | v1 | 2026-08-30 | initial WTI same-calendar rolling block-median card | G0 | APPROVED; build pending |
+| v2 | 2026-08-30 | exact card build, fixtures, fixed-risk preset, strict compile | Q01 | PASS; Q02 capacity check pending |
 
 ## Pipeline Phase Status
 
@@ -387,8 +388,8 @@ direction, risk, stop, hold, spread, retry policy, or adding a filter.
 |---|---|---|---|
 | Source Approval | 2026-08-30 | APPROVED_SOURCE | `decisions/2026-08-30_wti_same_calendar_block_median_source_approval.md` |
 | G0 Research Intake | 2026-08-30 | APPROVED | `decisions/2026-08-30_qm5_41227_wti_same_calendar_block_median_g0.md` |
-| Q01 Build Validation | 2026-08-30 | NOT_BUILT | pending |
-| Q02 Baseline Screening | 2026-08-30 | NOT_ENQUEUED_Q01_PENDING | pending |
+| Q01 Build Validation | 2026-08-30 | PASS | `D:/QM/reports/work_items/eba18271-585c-46c9-9071-1163b3ab65d5/QM5_41227/COMPILE_EA/compile_evidence.json` |
+| Q02 Baseline Screening | 2026-08-30 | NOT_ENQUEUED_CAPACITY_CHECK_PENDING | governed five-sample whole-host CPU check pending |
 
 ## Safety Boundary
 

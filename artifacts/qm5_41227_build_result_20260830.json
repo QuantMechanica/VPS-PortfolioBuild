@@ -1,0 +1,74 @@
+{
+  "schema": "qm.build-result/v1",
+  "build_generation": 0,
+  "ea_id": "QM5_41227",
+  "slug": "wti-samecal-blockmed",
+  "strategy_id": "KELOHARJU-MOP-WTI-SAMECAL-BLOCKMED-2026_S01",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_41227_wti-samecal-blockmed",
+  "implementation_commit": "df3b5d8be84dba0eef023e8e7d0d98133807f6c5",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_41227_wti-samecal-blockmed/QM5_41227_wti-samecal-blockmed.mq5",
+  "mq5_sha256": "5abb78f9ce25c60bf65093c1049a3b441404fa2a52dc13a61877ec828cd8c0b9",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_41227_wti-samecal-blockmed/QM5_41227_wti-samecal-blockmed.ex5",
+  "ex5_sha256": "a04317c348e4ead5dfd571b724cafb7c98a14804a5ebb0514604203dcfc1dc74",
+  "magic_base": 412270000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "host_symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_41227_wti-samecal-blockmed/sets/QM5_41227_wti-samecal-blockmed_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_sha256": {
+    "QM5_41227_wti-samecal-blockmed_XTIUSD.DWX_D1_backtest.set": "24028150f93e317f6bdc709d650db4b919bd105f28a8c676daf8940416b71818"
+  },
+  "setfile_build_hash": "30807fbb20d30f2ae78522feddc60e1636fc89f327d5986fe0d10efa3413d41f",
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_41227_wti-samecal-blockmed/SPEC.md",
+  "spec_md_sha256": "405ef9907b4477ada5df337b0f89a7f1305888556085e7787d1e91ba6b14fb70",
+  "reference_test_path": "C:/QM/repo/framework/EAs/QM5_41227_wti-samecal-blockmed/docs/test_same_calendar_blockmed_reference.py",
+  "reference_test_sha256": "3bb93dc972fba85869ec6c6ecf00acd6f98993d772040c7b193c9f6afaa639eb",
+  "reference_test_result": "PASS_11_OF_11",
+  "approved_card_sha256": "01a091ef6b88f61d0e5c50d0c3357f49996531c82116f0246245e2c29d3a6859",
+  "build_check_passed": true,
+  "build_check_failures": 0,
+  "build_check_nonfatal_warnings": 3,
+  "build_check_warning_codes": [
+    "EA_CARD_LOSS_LIMIT_UNDECIDABLE",
+    "EA_BROKER_TIME_WINDOW_UNDECIDABLE",
+    "EA_CARD_PENDING_ORDER_UNDECIDABLE"
+  ],
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_work_item_id": "eba18271-585c-46c9-9071-1163b3ab65d5",
+  "compile_terminal": "T10",
+  "compile_evidence_path": "D:/QM/reports/work_items/eba18271-585c-46c9-9071-1163b3ab65d5/QM5_41227/COMPILE_EA/compile_evidence.json",
+  "compile_evidence_sha256": "cc1b8c091f106ef13b34e75b5ce840bf42003d94646e8b6270ec86fe2f64713f",
+  "compile_verdict": "COMPILE_OK",
+  "build_check_report": "D:/QM/reports/framework/21/build_check_20260830_121924.json",
+  "build_check_report_sha256": "6917af6208f370890230d47e13aa32e516077acc847b027cb859551b1564442b",
+  "compile_release_dry_run": "artifacts/qm5_41227_compile_release_dry_run_20260830.json",
+  "compile_release_readback": "artifacts/qm5_41227_compile_release_20260830.json",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "smoke_result": "deferred_q02_no_manual_tester_launch",
+  "q02_enqueued": false,
+  "q02_status": "NOT_ENQUEUED_CAPACITY_CHECK_PENDING",
+  "blocked_reason": null,
+  "open_questions": [
+    "Q02 must establish frequency, fills, cost drag, and baseline economics.",
+    "Only unchanged Q09 may determine realized portfolio correlation or diversification value."
+  ],
+  "safety": {
+    "manual_tester_launched": false,
+    "autotrading_toggled": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "certification_claimed": false,
+    "decorrelation_claimed": false
+  },
+  "built_at_utc": "2026-08-30T12:22:19.9852096Z"
+}

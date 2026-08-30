@@ -1,6 +1,6 @@
 # QM5_41227_wti-samecal-blockmed - Strategy Spec
 
-Status: `G0 APPROVED; IMPLEMENTED; Q01 VALIDATION PENDING`
+Status: `G0 APPROVED; IMPLEMENTED; Q01 PASS; Q02 CAPACITY CHECK PENDING`
 
 ## Identity
 
@@ -138,7 +138,7 @@ static guardrails, and strict zero-error/zero-warning compilation.
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-08-30 | G0-approved WTI same-calendar rolling block-median build | Q01 pending |
+| v1 | 2026-08-30 | G0-approved WTI same-calendar rolling block-median build | Q01 PASS: strict compiler 0 errors/0 warnings; build check PASS |
 
 ## Safety Boundary
 

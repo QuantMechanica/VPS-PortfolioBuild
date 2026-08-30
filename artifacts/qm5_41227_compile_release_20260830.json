@@ -1,0 +1,38 @@
+{
+  "schema_version": "qm.compile-ea-release-readback/v1",
+  "generated_at_utc": "2026-08-30T12:22:19.9852096Z",
+  "work_item_id": "eba18271-585c-46c9-9071-1163b3ab65d5",
+  "ea_id": "QM5_41227",
+  "ea_label": "QM5_41227_wti-samecal-blockmed",
+  "dry_run": {
+    "artifact": "artifacts/qm5_41227_compile_release_dry_run_20260830.json",
+    "artifact_sha256": "4430a6c5acbf20839b31fcae5a72585589dc601d9ffae6a1baa63c1add805a2d",
+    "release_count": 1,
+    "expected_mq5_sha256": "5abb78f9ce25c60bf65093c1049a3b441404fa2a52dc13a61877ec828cd8c0b9",
+    "actual_mq5_sha256": "5abb78f9ce25c60bf65093c1049a3b441404fa2a52dc13a61877ec828cd8c0b9"
+  },
+  "release_ledger_readback": {
+    "hold_code": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "active": false,
+    "released_at_utc": "2026-08-30T12:18:55+00:00",
+    "release_note": "QM5_41227 exact-source paced compile after governed build preflight",
+    "transition_action": "release_hold",
+    "transition_run_id": "compile_ea_rollout",
+    "max_items": 1
+  },
+  "idempotent_apply_readback": {
+    "applied": 0,
+    "held_pending_count": 0,
+    "release_count": 0,
+    "interpretation": "The first apply committed the release before its requested output file was observed; the immediate second apply was an expected no-op. The durable transition ledger and completed worker row are authoritative."
+  },
+  "worker_readback": {
+    "status": "done",
+    "verdict": "COMPILE_OK",
+    "claimed_terminal": "T10",
+    "updated_at_utc": "2026-08-30T12:19:55+00:00",
+    "compile_evidence": "D:/QM/reports/work_items/eba18271-585c-46c9-9071-1163b3ab65d5/QM5_41227/COMPILE_EA/compile_evidence.json",
+    "compile_evidence_sha256": "cc1b8c091f106ef13b34e75b5ce840bf42003d94646e8b6270ec86fe2f64713f",
+    "ex5_sha256": "a04317c348e4ead5dfd571b724cafb7c98a14804a5ebb0514604203dcfc1dc74"
+  }
+}

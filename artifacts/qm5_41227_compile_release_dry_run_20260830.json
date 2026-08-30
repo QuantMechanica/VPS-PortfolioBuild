@@ -1,0 +1,19 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "5abb78f9ce25c60bf65093c1049a3b441404fa2a52dc13a61877ec828cd8c0b9",
+      "ea_id": "QM5_41227",
+      "ea_label": "QM5_41227_wti-samecal-blockmed",
+      "expected_mq5_sha256": "5abb78f9ce25c60bf65093c1049a3b441404fa2a52dc13a61877ec828cd8c0b9",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41227_wti-samecal-blockmed\\QM5_41227_wti-samecal-blockmed.mq5",
+      "work_item_id": "eba18271-585c-46c9-9071-1163b3ab65d5"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "eba18271-585c-46c9-9071-1163b3ab65d5"
+}
