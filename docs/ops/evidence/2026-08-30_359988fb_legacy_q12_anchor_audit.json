@@ -1,0 +1,1740 @@
+{
+  "anchor_counts": {
+    "Q02_NEW_IDENTITY": 13,
+    "Q09": 3,
+    "RETIRE_CANDIDATE": 6
+  },
+  "audited_count": 22,
+  "cohort_count": 30,
+  "contract_equivalence": {
+    "Q00": "Q00",
+    "Q01": "Q01",
+    "Q02": "Q02",
+    "Q03": "Q03",
+    "Q04": "Q04",
+    "Q05": "Q05",
+    "Q06": "Q06",
+    "Q07": "Q07",
+    "Q08": "Q08",
+    "Q09": "Q10",
+    "Q09_NEWS": "Q10_NEWS",
+    "Q09_PORTFOLIO": "Q10_PORTFOLIO",
+    "Q10": "Q11",
+    "Q10A": "Q09",
+    "Q11": "Q15",
+    "Q11_DXZ": "Q15_DXZ",
+    "Q11_FTMO": "Q15_FTMO",
+    "Q12": "Q16",
+    "Q13": "Q17",
+    "Q14": "Q12",
+    "Q15": "Q13",
+    "Q16": "Q14"
+  },
+  "db_path": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+  "db_quick_check": "ok",
+  "excluded_pair_count": 8,
+  "generated_at": "2026-08-30T06:53:22+00:00",
+  "manifest_path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\gate_manifest.v4.json",
+  "manifest_sha256": "f71c1ea63f1e847b3670904a6de25bcb4b337df9e0a7cff8ee6405d9c3aa2c83",
+  "read_only": true,
+  "results": [
+    {
+      "anchor_reason": "current binary/setfile is missing, mismatched, or rebuilt after unbound legacy evidence",
+      "current_ex5": {
+        "exists": true,
+        "mtime_utc": "2026-08-22T13:00:16+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1556_aa-zak-mom12\\QM5_1556_aa-zak-mom12.ex5",
+        "sha256": "0962ca65776fd05e76f7ab5f27e838a72cb79a7359a029e2f47ef61a9ae7c88e"
+      },
+      "current_mq5": {
+        "exists": true,
+        "mtime_utc": "2026-08-05T16:30:01+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1556_aa-zak-mom12\\QM5_1556_aa-zak-mom12.mq5",
+        "sha256": "3b44aa66f7ff4665d15b3e580dc42ea73add6548448b83258d2b510f151769ac"
+      },
+      "current_setfile": {
+        "exists": true,
+        "mtime_utc": "2026-08-22T12:49:16+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1556_aa-zak-mom12\\sets\\QM5_1556_aa-zak-mom12_XAUUSD.DWX_D1_backtest.set",
+        "sha256": "01163a9b4bf3e98ae9fb2c6b8172ab46e3aa2e2084605d1bb8bda7b32a4879d2"
+      },
+      "data_window_end": null,
+      "data_window_start": null,
+      "ea_id": "QM5_1556",
+      "ex5_match": "MATCH",
+      "excluded": [],
+      "expected_ex5_sha256": "0962ca65776fd05e76f7ab5f27e838a72cb79a7359a029e2f47ef61a9ae7c88e",
+      "expected_mq5_sha256": "3b44aa66f7ff4665d15b3e580dc42ea73add6548448b83258d2b510f151769ac",
+      "expected_news_calendar_sha256": null,
+      "expected_setfile_sha256": "9c308ef8e30acdd89b46863b70647dd574c47d9ed470d7557ab5aca24018bfa2",
+      "mq5_match": "MATCH",
+      "news_compatibility": "PRE_NEWS_Q09_NO_CALENDAR; Q10_REUSE_REFUSED_WITHOUT_BOUND_CURRENT_CALENDAR_AND_WINDOW",
+      "portfolio_evidence": {
+        "exists": false,
+        "mtime_utc": null,
+        "path": "D:\\QM\\reports\\work_items\\e241bacd-5681-4172-a785-a475fd25140b\\QM5_1556\\Q09_PORTFOLIO\\XAUUSD_DWX\\aggregate.json",
+        "sha256": null
+      },
+      "portfolio_phase": "Q09_PORTFOLIO",
+      "portfolio_v4_equivalent": "Q10_PORTFOLIO",
+      "portfolio_work_item_id": "e241bacd-5681-4172-a785-a475fd25140b",
+      "proposed_anchor": "Q02_NEW_IDENTITY",
+      "q08_evidence": {
+        "exists": true,
+        "mtime_utc": "2026-08-18T05:12:05+00:00",
+        "path": "D:\\QM\\reports\\work_items\\36d46f72-a638-4e59-be41-4bbecbe3e495\\QM5_1556\\Q08\\XAUUSD_DWX\\aggregate.json",
+        "sha256": "32c40c1428d3fb6add071a114e1de9ee868a27ac0b9752cce6f36ab55224f64f"
+      },
+      "q08_gate_contract_version": "legacy",
+      "q08_status": "done",
+      "q08_verdict": "FAIL_SOFT",
+      "q08_work_item_id": "36d46f72-a638-4e59-be41-4bbecbe3e495",
+      "rebuilt_after_legacy_evidence": true,
+      "setfile_match": "MISMATCH",
+      "symbol": "XAUUSD.DWX",
+      "window_bound": false
+    },
+    {
+      "anchor_reason": "REQUAL8",
+      "current_ex5": {
+        "exists": true,
+        "mtime_utc": "2026-08-25T21:30:18+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1567_demark-td-reverse-sequential-h4\\QM5_1567_demark-td-reverse-sequential-h4.ex5",
+        "sha256": "aee0eb60798ef7ada09e49df6e9a339dd8199f810de56dab8a25957cb26fba31"
+      },
+      "current_mq5": {
+        "exists": true,
+        "mtime_utc": "2026-08-23T10:20:03+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1567_demark-td-reverse-sequential-h4\\QM5_1567_demark-td-reverse-sequential-h4.mq5",
+        "sha256": "a9531d333dbbe067270811e696e235483d12d2604e86c974feea411066649f8c"
+      },
+      "current_setfile": {
+        "exists": true,
+        "mtime_utc": "2026-08-25T21:15:50+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1567_demark-td-reverse-sequential-h4\\sets\\QM5_1567_demark-td-reverse-sequential-h4_EURUSD.DWX_H4_backtest.set",
+        "sha256": "2e9347a132ed89218a293d03e1b6eb10abce2a74bec50190aa4c6039754fba58"
+      },
+      "data_window_end": null,
+      "data_window_start": null,
+      "ea_id": "QM5_1567",
+      "ex5_match": "MATCH",
+      "excluded": [
+        "REQUAL8"
+      ],
+      "expected_ex5_sha256": "aee0eb60798ef7ada09e49df6e9a339dd8199f810de56dab8a25957cb26fba31",
+      "expected_mq5_sha256": "685af902fd614945f15df604810f52b561d6dd3c0d155166b09dde9126da0f27",
+      "expected_news_calendar_sha256": null,
+      "expected_setfile_sha256": "1282e2adba701ee17f39184da9bf6ed5d6e3c48f6a401ca768eb085ada9c9e64",
+      "mq5_match": "MISMATCH",
+      "news_compatibility": "PRE_NEWS_Q09_NO_CALENDAR; Q10_REUSE_REFUSED_WITHOUT_BOUND_CURRENT_CALENDAR_AND_WINDOW",
+      "portfolio_evidence": {
+        "exists": false,
+        "mtime_utc": null,
+        "path": "D:\\QM\\reports\\work_items\\89acf6eb-581b-411b-9aaf-2f19c12c68c5\\QM5_1567\\Q09_PORTFOLIO\\EURUSD_DWX\\aggregate.json",
+        "sha256": null
+      },
+      "portfolio_phase": "Q09_PORTFOLIO",
+      "portfolio_v4_equivalent": "Q10_PORTFOLIO",
+      "portfolio_work_item_id": "89acf6eb-581b-411b-9aaf-2f19c12c68c5",
+      "proposed_anchor": "EXCLUDED_ACTIVE_TRACK",
+      "q08_evidence": {
+        "exists": true,
+        "mtime_utc": "2026-08-18T10:02:36+00:00",
+        "path": "D:\\QM\\reports\\work_items\\e8c1e63a-e06c-4988-9ae7-54771bc1fe8c\\QM5_1567\\Q08\\EURUSD_DWX\\aggregate.json",
+        "sha256": "248346ccb524ad7927c931a71136c9ab55fe22089e5efb5de9dcd6aeef012bc6"
+      },
+      "q08_gate_contract_version": "legacy",
+      "q08_status": "done",
+      "q08_verdict": "FAIL_SOFT",
+      "q08_work_item_id": "e8c1e63a-e06c-4988-9ae7-54771bc1fe8c",
+      "rebuilt_after_legacy_evidence": true,
+      "setfile_match": "MISMATCH",
+      "symbol": "EURUSD.DWX",
+      "window_bound": false
+    },
+    {
+      "anchor_reason": "last authentic Q08 row has strategy-taxonomy FAIL_HARD; OWNER disposition still required",
+      "current_ex5": {
+        "exists": true,
+        "mtime_utc": "2026-08-25T21:30:18+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1567_demark-td-reverse-sequential-h4\\QM5_1567_demark-td-reverse-sequential-h4.ex5",
+        "sha256": "aee0eb60798ef7ada09e49df6e9a339dd8199f810de56dab8a25957cb26fba31"
+      },
+      "current_mq5": {
+        "exists": true,
+        "mtime_utc": "2026-08-23T10:20:03+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1567_demark-td-reverse-sequential-h4\\QM5_1567_demark-td-reverse-sequential-h4.mq5",
+        "sha256": "a9531d333dbbe067270811e696e235483d12d2604e86c974feea411066649f8c"
+      },
+      "current_setfile": {
+        "exists": true,
+        "mtime_utc": "2026-08-25T21:15:50+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1567_demark-td-reverse-sequential-h4\\sets\\QM5_1567_demark-td-reverse-sequential-h4_XAGUSD.DWX_H4_backtest.set",
+        "sha256": "caaaa3f63c4580b890ed356e59559684665acd634f4bc8643369dfef23e5aae5"
+      },
+      "data_window_end": null,
+      "data_window_start": null,
+      "ea_id": "QM5_1567",
+      "ex5_match": "UNBOUND",
+      "excluded": [],
+      "expected_ex5_sha256": null,
+      "expected_mq5_sha256": null,
+      "expected_news_calendar_sha256": null,
+      "expected_setfile_sha256": null,
+      "mq5_match": "UNBOUND",
+      "news_compatibility": "PRE_NEWS_Q09_NO_CALENDAR; Q10_REUSE_REFUSED_WITHOUT_BOUND_CURRENT_CALENDAR_AND_WINDOW",
+      "portfolio_evidence": {
+        "exists": false,
+        "mtime_utc": null,
+        "path": "D:\\QM\\reports\\work_items\\acee11e2-7a30-417c-ba86-40b05b2076b5\\QM5_1567\\Q09_PORTFOLIO\\XAGUSD_DWX\\aggregate.json",
+        "sha256": null
+      },
+      "portfolio_phase": "Q09_PORTFOLIO",
+      "portfolio_v4_equivalent": "Q10_PORTFOLIO",
+      "portfolio_work_item_id": "acee11e2-7a30-417c-ba86-40b05b2076b5",
+      "proposed_anchor": "RETIRE_CANDIDATE",
+      "q08_evidence": {
+        "exists": false,
+        "mtime_utc": null,
+        "path": "D:\\QM\\reports\\work_items\\78849592-dffe-4344-8edc-fdf9d1c8fc64\\QM5_1567\\Q08\\XAGUSD_DWX\\aggregate.json",
+        "sha256": null
+      },
+      "q08_gate_contract_version": "legacy",
+      "q08_status": "done",
+      "q08_verdict": "FAIL_HARD",
+      "q08_work_item_id": "78849592-dffe-4344-8edc-fdf9d1c8fc64",
+      "rebuilt_after_legacy_evidence": true,
+      "setfile_match": "UNBOUND",
+      "symbol": "XAGUSD.DWX",
+      "window_bound": false
+    },
+    {
+      "anchor_reason": "hash-bound Q08 reusable; v4 Q09 pre-news full-history baseline must be current",
+      "current_ex5": {
+        "exists": true,
+        "mtime_utc": "2026-08-21T12:08:30+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10403_et-turtle20x\\QM5_10403_et-turtle20x.ex5",
+        "sha256": "f927f07f46579bbb9a1bdcfdb7caa9b246e9d7555935fbb878f7fc01afbf7ab3"
+      },
+      "current_mq5": {
+        "exists": true,
+        "mtime_utc": "2026-08-05T18:18:17+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10403_et-turtle20x\\QM5_10403_et-turtle20x.mq5",
+        "sha256": "b38cfd471fd31811bb23a5447c430cc1bfcc1f370eb816236c99bb88be55d251"
+      },
+      "current_setfile": {
+        "exists": true,
+        "mtime_utc": "2026-08-21T12:20:07+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10403_et-turtle20x\\sets\\QM5_10403_et-turtle20x_XAUUSD.DWX_D1_backtest.set",
+        "sha256": "9a6fab053d3814077a015eb9f3a864a0c8a703fbe220ae03e74da195960f4c72"
+      },
+      "data_window_end": null,
+      "data_window_start": null,
+      "ea_id": "QM5_10403",
+      "ex5_match": "MATCH",
+      "excluded": [],
+      "expected_ex5_sha256": "f927f07f46579bbb9a1bdcfdb7caa9b246e9d7555935fbb878f7fc01afbf7ab3",
+      "expected_mq5_sha256": "b38cfd471fd31811bb23a5447c430cc1bfcc1f370eb816236c99bb88be55d251",
+      "expected_news_calendar_sha256": null,
+      "expected_setfile_sha256": "9a6fab053d3814077a015eb9f3a864a0c8a703fbe220ae03e74da195960f4c72",
+      "mq5_match": "MATCH",
+      "news_compatibility": "PRE_NEWS_Q09_NO_CALENDAR; Q10_REUSE_REFUSED_WITHOUT_BOUND_CURRENT_CALENDAR_AND_WINDOW",
+      "portfolio_evidence": {
+        "exists": false,
+        "mtime_utc": null,
+        "path": "D:\\QM\\reports\\work_items\\e12845b9-04fe-4d97-af43-93d37268f2f4\\QM5_10403\\Q09_PORTFOLIO\\XAUUSD_DWX\\aggregate.json",
+        "sha256": null
+      },
+      "portfolio_phase": "Q09_PORTFOLIO",
+      "portfolio_v4_equivalent": "Q10_PORTFOLIO",
+      "portfolio_work_item_id": "e12845b9-04fe-4d97-af43-93d37268f2f4",
+      "proposed_anchor": "Q09",
+      "q08_evidence": {
+        "exists": true,
+        "mtime_utc": "2026-08-26T02:07:09+00:00",
+        "path": "D:\\QM\\reports\\work_items\\7fd4caf6-b599-4833-a431-a132a404b60b\\QM5_10403\\Q08\\XAUUSD_DWX\\aggregate.json",
+        "sha256": "bb57935abf1f48a0aeda30a3ac9d124f34108d85369cc1da504bc773d724556e"
+      },
+      "q08_gate_contract_version": "v4",
+      "q08_status": "done",
+      "q08_verdict": "FAIL_SOFT",
+      "q08_work_item_id": "7fd4caf6-b599-4833-a431-a132a404b60b",
+      "rebuilt_after_legacy_evidence": false,
+      "setfile_match": "MATCH",
+      "symbol": "XAUUSD.DWX",
+      "window_bound": false
+    },
+    {
+      "anchor_reason": "last authentic Q08 row has strategy-taxonomy FAIL_HARD; OWNER disposition still required",
+      "current_ex5": {
+        "exists": true,
+        "mtime_utc": "2026-07-13T04:46:31+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10476_mql5-pamxa\\QM5_10476_mql5-pamxa.ex5",
+        "sha256": "8d5fbb91a3ae9e961cddd77c1ce3f59c228a4e019ed49b2eb2559b317e5d034d"
+      },
+      "current_mq5": {
+        "exists": true,
+        "mtime_utc": "2026-07-15T21:10:49+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10476_mql5-pamxa\\QM5_10476_mql5-pamxa.mq5",
+        "sha256": "487abdbecfab4c9289b45de49c44a2228df825b1e0e0648cd8d006e08db65711"
+      },
+      "current_setfile": {
+        "exists": true,
+        "mtime_utc": "2026-08-13T14:30:06+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10476_mql5-pamxa\\sets\\QM5_10476_mql5-pamxa_USDCAD.DWX_H1_backtest.set",
+        "sha256": "2b416995ba0996c84a247142b2acb52f50998a14e5835531576721a7c4d4796a"
+      },
+      "data_window_end": null,
+      "data_window_start": null,
+      "ea_id": "QM5_10476",
+      "ex5_match": "UNBOUND",
+      "excluded": [],
+      "expected_ex5_sha256": null,
+      "expected_mq5_sha256": null,
+      "expected_news_calendar_sha256": null,
+      "expected_setfile_sha256": null,
+      "mq5_match": "UNBOUND",
+      "news_compatibility": "PRE_NEWS_Q09_NO_CALENDAR; Q10_REUSE_REFUSED_WITHOUT_BOUND_CURRENT_CALENDAR_AND_WINDOW",
+      "portfolio_evidence": {
+        "exists": false,
+        "mtime_utc": null,
+        "path": "D:\\QM\\reports\\work_items\\6e9bc500-5280-490f-9704-afd15259ce90\\QM5_10476\\Q09_PORTFOLIO\\USDCAD_DWX\\aggregate.json",
+        "sha256": null
+      },
+      "portfolio_phase": "Q09_PORTFOLIO",
+      "portfolio_v4_equivalent": "Q10_PORTFOLIO",
+      "portfolio_work_item_id": "6e9bc500-5280-490f-9704-afd15259ce90",
+      "proposed_anchor": "RETIRE_CANDIDATE",
+      "q08_evidence": {
+        "exists": false,
+        "mtime_utc": null,
+        "path": "D:\\QM\\reports\\work_items\\f7f379d3-841d-455a-a64f-ea69ea3fc5ef\\QM5_10476\\Q08\\USDCAD_DWX\\aggregate.json",
+        "sha256": null
+      },
+      "q08_gate_contract_version": "legacy",
+      "q08_status": "done",
+      "q08_verdict": "FAIL_HARD",
+      "q08_work_item_id": "f7f379d3-841d-455a-a64f-ea69ea3fc5ef",
+      "rebuilt_after_legacy_evidence": false,
+      "setfile_match": "UNBOUND",
+      "symbol": "USDCAD.DWX",
+      "window_bound": false
+    },
+    {
+      "anchor_reason": "ACTIVE_NEWS_MATRIX",
+      "current_ex5": {
+        "exists": true,
+        "mtime_utc": "2026-08-21T12:09:47+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10513_mql5-ichimoku\\QM5_10513_mql5-ichimoku.ex5",
+        "sha256": "3c7f46a1da2dd8f931eef7d0e96fa1214fdbbd5e06d467ed9e840307d9545087"
+      },
+      "current_mq5": {
+        "exists": true,
+        "mtime_utc": "2026-08-05T18:18:17+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10513_mql5-ichimoku\\QM5_10513_mql5-ichimoku.mq5",
+        "sha256": "dfccacd6fe901831eed363d296201e64a853bc5d5e3fc6dc30b9f235d8e8ee14"
+      },
+      "current_setfile": {
+        "exists": true,
+        "mtime_utc": "2026-08-21T12:11:57+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10513_mql5-ichimoku\\sets\\QM5_10513_mql5-ichimoku_XAUUSD.DWX_D1_backtest_grid_006.set",
+        "sha256": "34b99247931457dd856f44a73c5e5c20082e671bb3b2d57386ea1371055ed835"
+      },
+      "data_window_end": null,
+      "data_window_start": null,
+      "ea_id": "QM5_10513",
+      "ex5_match": "MATCH",
+      "excluded": [
+        "ACTIVE_NEWS_MATRIX"
+      ],
+      "expected_ex5_sha256": "3c7f46a1da2dd8f931eef7d0e96fa1214fdbbd5e06d467ed9e840307d9545087",
+      "expected_mq5_sha256": "dfccacd6fe901831eed363d296201e64a853bc5d5e3fc6dc30b9f235d8e8ee14",
+      "expected_news_calendar_sha256": null,
+      "expected_setfile_sha256": "4810a3486b6d6cd82931e6ba030d54b7406156a3f4b3d88540867c386edf7ac7",
+      "mq5_match": "MATCH",
+      "news_compatibility": "PRE_NEWS_Q09_NO_CALENDAR; Q10_REUSE_REFUSED_WITHOUT_BOUND_CURRENT_CALENDAR_AND_WINDOW",
+      "portfolio_evidence": {
+        "exists": true,
+        "mtime_utc": "2026-06-27T11:30:38+00:00",
+        "path": "D:\\QM\\reports\\portfolio\\recert_20260627T113037+0000\\summary.json",
+        "sha256": "49670bb3bb7c7e7106113bbe5ec14b651d0bf9daf329c33073a05918e26206e7"
+      },
+      "portfolio_phase": "Q09_PORTFOLIO",
+      "portfolio_v4_equivalent": "Q10_PORTFOLIO",
+      "portfolio_work_item_id": "dd06ad11-3e9e-4d2b-b850-308253539768",
+      "proposed_anchor": "EXCLUDED_ACTIVE_TRACK",
+      "q08_evidence": {
+        "exists": true,
+        "mtime_utc": "2026-08-26T05:28:22+00:00",
+        "path": "D:\\QM\\reports\\work_items\\da5dc579-3d0a-4591-80e8-dc64eb52d81e\\QM5_10513\\Q08\\XAUUSD_DWX\\aggregate.json",
+        "sha256": "950338ecd652f27f2e15f0a44d1ba638c1ffcfe6142bed6bedd1ce1a73f8bedd"
+      },
+      "q08_gate_contract_version": "v4",
+      "q08_status": "done",
+      "q08_verdict": "PASS",
+      "q08_work_item_id": "da5dc579-3d0a-4591-80e8-dc64eb52d81e",
+      "rebuilt_after_legacy_evidence": false,
+      "setfile_match": "MISMATCH",
+      "symbol": "XAUUSD.DWX",
+      "window_bound": false
+    },
+    {
+      "anchor_reason": "legacy Q08 chain is missing or lacks exact EX5+setfile bindings",
+      "current_ex5": {
+        "exists": true,
+        "mtime_utc": "2026-07-24T21:24:35+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10700_tv-liq-break\\QM5_10700_tv-liq-break.ex5",
+        "sha256": "0126116d7ffa2b4a952a4962c8035973e11c57bdd423076ee6080458d6c438d8"
+      },
+      "current_mq5": {
+        "exists": true,
+        "mtime_utc": "2026-07-12T18:36:51+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10700_tv-liq-break\\QM5_10700_tv-liq-break.mq5",
+        "sha256": "26bfd4db75876aed3ccadc5d1d3dad0477b794e057721d230181b1ac730378b5"
+      },
+      "current_setfile": {
+        "exists": true,
+        "mtime_utc": "2026-08-13T14:30:08+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10700_tv-liq-break\\sets\\QM5_10700_tv-liq-break_XAUUSD.DWX_H1_backtest.set",
+        "sha256": "c66b07bd369b6847b88859aacd1ae2f8484c9b8ee9445480494c897fbeb56bb6"
+      },
+      "data_window_end": null,
+      "data_window_start": null,
+      "ea_id": "QM5_10700",
+      "ex5_match": "UNBOUND",
+      "excluded": [],
+      "expected_ex5_sha256": null,
+      "expected_mq5_sha256": null,
+      "expected_news_calendar_sha256": null,
+      "expected_setfile_sha256": null,
+      "mq5_match": "UNBOUND",
+      "news_compatibility": "PRE_NEWS_Q09_NO_CALENDAR; Q10_REUSE_REFUSED_WITHOUT_BOUND_CURRENT_CALENDAR_AND_WINDOW",
+      "portfolio_evidence": {
+        "exists": false,
+        "mtime_utc": null,
+        "path": "D:\\QM\\reports\\work_items\\55af03d6-12d2-485e-a154-e890cb02790a\\QM5_10700\\Q09_PORTFOLIO\\XAUUSD_DWX\\aggregate.json",
+        "sha256": null
+      },
+      "portfolio_phase": "Q09_PORTFOLIO",
+      "portfolio_v4_equivalent": "Q10_PORTFOLIO",
+      "portfolio_work_item_id": "55af03d6-12d2-485e-a154-e890cb02790a",
+      "proposed_anchor": "Q02_NEW_IDENTITY",
+      "q08_evidence": {
+        "exists": false,
+        "mtime_utc": null,
+        "path": "D:\\QM\\reports\\work_items\\fb35a79a-1541-4a35-90a4-056f3e5363db\\QM5_10700\\Q08\\XAUUSD_DWX\\aggregate.json",
+        "sha256": null
+      },
+      "q08_gate_contract_version": "legacy",
+      "q08_status": "done",
+      "q08_verdict": "FAIL_SOFT",
+      "q08_work_item_id": "fb35a79a-1541-4a35-90a4-056f3e5363db",
+      "rebuilt_after_legacy_evidence": false,
+      "setfile_match": "UNBOUND",
+      "symbol": "XAUUSD.DWX",
+      "window_bound": false
+    },
+    {
+      "anchor_reason": "ACTIVE_OPT_FORK",
+      "current_ex5": {
+        "exists": true,
+        "mtime_utc": "2026-08-21T12:10:23+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\QM5_10706_tv-mon-ls.ex5",
+        "sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb"
+      },
+      "current_mq5": {
+        "exists": true,
+        "mtime_utc": "2026-08-16T22:04:20+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\QM5_10706_tv-mon-ls.mq5",
+        "sha256": "909327914d7fd65301751c38421c5dec3cddf8e96864d45c26f4db7a1f8fe27c"
+      },
+      "current_setfile": {
+        "exists": true,
+        "mtime_utc": "2026-08-21T12:20:07+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\sets\\QM5_10706_tv-mon-ls_GBPUSD.DWX_H1_backtest.set",
+        "sha256": "e39ea2ffa324177f347bc20ec84acaf1846e61def5c0ac2c6d89a27980270118"
+      },
+      "data_window_end": "2022",
+      "data_window_start": "2020",
+      "ea_id": "QM5_10706",
+      "ex5_match": "MATCH",
+      "excluded": [
+        "ACTIVE_OPT_FORK"
+      ],
+      "expected_ex5_sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb",
+      "expected_mq5_sha256": "909327914d7fd65301751c38421c5dec3cddf8e96864d45c26f4db7a1f8fe27c",
+      "expected_news_calendar_sha256": null,
+      "expected_setfile_sha256": "056f2c12c1be81119e6ff86e7d2e3521905cacf938cffea19ff910e79752fb49",
+      "mq5_match": "MATCH",
+      "news_compatibility": "PRE_NEWS_Q09_NO_CALENDAR; Q10_REUSE_REFUSED_WITHOUT_BOUND_CURRENT_CALENDAR_AND_WINDOW",
+      "portfolio_evidence": {
+        "exists": false,
+        "mtime_utc": null,
+        "path": "D:\\QM\\reports\\work_items\\22fca5c5-4480-4c49-95ef-0194086e5de3\\QM5_10706\\Q09_PORTFOLIO\\GBPUSD_DWX\\aggregate.json",
+        "sha256": null
+      },
+      "portfolio_phase": "Q09_PORTFOLIO",
+      "portfolio_v4_equivalent": "Q10_PORTFOLIO",
+      "portfolio_work_item_id": "22fca5c5-4480-4c49-95ef-0194086e5de3",
+      "proposed_anchor": "EXCLUDED_ACTIVE_TRACK",
+      "q08_evidence": {
+        "exists": true,
+        "mtime_utc": "2026-08-26T03:06:19+00:00",
+        "path": "D:\\QM\\reports\\work_items\\7855588a-9ff8-4896-8d8d-16e1fdc25f72\\QM5_10706\\Q08\\GBPUSD_DWX\\aggregate.json",
+        "sha256": "acd4b422ccfd41c7a20b234782afdd35acd4ea34c48874ff2e71a5840c2ef83d"
+      },
+      "q08_gate_contract_version": "v4",
+      "q08_status": "done",
+      "q08_verdict": "PASS",
+      "q08_work_item_id": "7855588a-9ff8-4896-8d8d-16e1fdc25f72",
+      "rebuilt_after_legacy_evidence": false,
+      "setfile_match": "MISMATCH",
+      "symbol": "GBPUSD.DWX",
+      "window_bound": true
+    },
+    {
+      "anchor_reason": "current binary/setfile is missing, mismatched, or rebuilt after unbound legacy evidence",
+      "current_ex5": {
+        "exists": true,
+        "mtime_utc": "2026-07-26T05:56:05+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10815_tv-post-vwap\\QM5_10815_tv-post-vwap.ex5",
+        "sha256": "af1b535b3cd6e8f8ff6c0a5d54933e58e2f391fa007b6811b897d76ba9631bba"
+      },
+      "current_mq5": {
+        "exists": true,
+        "mtime_utc": "2026-06-05T20:41:22+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10815_tv-post-vwap\\QM5_10815_tv-post-vwap.mq5",
+        "sha256": "cdbf22e77035d7ef3e30deb05d171c4c265d14cd3aec9e78c3d817d078c345dd"
+      },
+      "current_setfile": {
+        "exists": true,
+        "mtime_utc": "2026-08-13T14:30:09+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10815_tv-post-vwap\\sets\\QM5_10815_tv-post-vwap_EURUSD.DWX_H1_backtest_ablation_01.set",
+        "sha256": "4a22648d750fddaade2824b34c213e8887b67735b781649f12e74f449bd8566a"
+      },
+      "data_window_end": null,
+      "data_window_start": null,
+      "ea_id": "QM5_10815",
+      "ex5_match": "UNBOUND",
+      "excluded": [],
+      "expected_ex5_sha256": null,
+      "expected_mq5_sha256": null,
+      "expected_news_calendar_sha256": null,
+      "expected_setfile_sha256": null,
+      "mq5_match": "UNBOUND",
+      "news_compatibility": "PRE_NEWS_Q09_NO_CALENDAR; Q10_REUSE_REFUSED_WITHOUT_BOUND_CURRENT_CALENDAR_AND_WINDOW",
+      "portfolio_evidence": {
+        "exists": false,
+        "mtime_utc": null,
+        "path": "D:\\QM\\reports\\work_items\\a7398b69-db24-4d47-99d7-ee7bf1584583\\QM5_10815\\Q09_PORTFOLIO\\EURUSD_DWX\\aggregate.json",
+        "sha256": null
+      },
+      "portfolio_phase": "Q09_PORTFOLIO",
+      "portfolio_v4_equivalent": "Q10_PORTFOLIO",
+      "portfolio_work_item_id": "a7398b69-db24-4d47-99d7-ee7bf1584583",
+      "proposed_anchor": "Q02_NEW_IDENTITY",
+      "q08_evidence": {
+        "exists": false,
+        "mtime_utc": null,
+        "path": "D:\\QM\\reports\\work_items\\a4efdfd3-e2a1-4f15-a40f-871a5bde9a2d\\QM5_10815\\Q08\\EURUSD_DWX\\aggregate.json",
+        "sha256": null
+      },
+      "q08_gate_contract_version": "legacy",
+      "q08_status": "done",
+      "q08_verdict": "FAIL_SOFT",
+      "q08_work_item_id": "a4efdfd3-e2a1-4f15-a40f-871a5bde9a2d",
+      "rebuilt_after_legacy_evidence": true,
+      "setfile_match": "UNBOUND",
+      "symbol": "EURUSD.DWX",
+      "window_bound": false
+    },
+    {
+      "anchor_reason": "REQUAL8",
+      "current_ex5": {
+        "exists": true,
+        "mtime_utc": "2026-07-26T05:56:05+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10815_tv-post-vwap\\QM5_10815_tv-post-vwap.ex5",
+        "sha256": "af1b535b3cd6e8f8ff6c0a5d54933e58e2f391fa007b6811b897d76ba9631bba"
+      },
+      "current_mq5": {
+        "exists": true,
+        "mtime_utc": "2026-06-05T20:41:22+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10815_tv-post-vwap\\QM5_10815_tv-post-vwap.mq5",
+        "sha256": "cdbf22e77035d7ef3e30deb05d171c4c265d14cd3aec9e78c3d817d078c345dd"
+      },
+      "current_setfile": {
+        "exists": true,
+        "mtime_utc": "2026-08-13T14:30:09+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10815_tv-post-vwap\\sets\\QM5_10815_tv-post-vwap_GDAXI.DWX_H1_backtest.set",
+        "sha256": "01a4f1dc97a83cfdbfbb0d6e73f21af95f28e6a5776d4caeda7f62a2b6c3a024"
+      },
+      "data_window_end": null,
+      "data_window_start": null,
+      "ea_id": "QM5_10815",
+      "ex5_match": "UNBOUND",
+      "excluded": [
+        "REQUAL8"
+      ],
+      "expected_ex5_sha256": null,
+      "expected_mq5_sha256": null,
+      "expected_news_calendar_sha256": null,
+      "expected_setfile_sha256": null,
+      "mq5_match": "UNBOUND",
+      "news_compatibility": "PRE_NEWS_Q09_NO_CALENDAR; Q10_REUSE_REFUSED_WITHOUT_BOUND_CURRENT_CALENDAR_AND_WINDOW",
+      "portfolio_evidence": {
+        "exists": false,
+        "mtime_utc": null,
+        "path": "D:\\QM\\reports\\work_items\\ae828ece-f1ab-4670-9f87-214b0400dc5a\\QM5_10815\\Q09_PORTFOLIO\\GDAXI_DWX\\aggregate.json",
+        "sha256": null
+      },
+      "portfolio_phase": "Q09_PORTFOLIO",
+      "portfolio_v4_equivalent": "Q10_PORTFOLIO",
+      "portfolio_work_item_id": "ae828ece-f1ab-4670-9f87-214b0400dc5a",
+      "proposed_anchor": "EXCLUDED_ACTIVE_TRACK",
+      "q08_evidence": {
+        "exists": false,
+        "mtime_utc": null,
+        "path": "D:\\QM\\reports\\work_items\\e1112871-12a0-4ee9-a565-9f9f19ff54aa\\QM5_10815\\Q08\\GDAXI_DWX\\aggregate.json",
+        "sha256": null
+      },
+      "q08_gate_contract_version": "legacy",
+      "q08_status": "done",
+      "q08_verdict": "FAIL_SOFT",
+      "q08_work_item_id": "e1112871-12a0-4ee9-a565-9f9f19ff54aa",
+      "rebuilt_after_legacy_evidence": true,
+      "setfile_match": "UNBOUND",
+      "symbol": "GDAXI.DWX",
+      "window_bound": false
+    },
+    {
+      "anchor_reason": "hash-bound Q08 reusable; v4 Q09 pre-news full-history baseline must be current",
+      "current_ex5": {
+        "exists": true,
+        "mtime_utc": "2026-08-21T12:10:56+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10911_grimes-complex-pb\\QM5_10911_grimes-complex-pb.ex5",
+        "sha256": "5199e260020b8ada81437401338e641e4f778579e58af147f2bace1c7ef9dce1"
+      },
+      "current_mq5": {
+        "exists": true,
+        "mtime_utc": "2026-08-05T16:30:01+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10911_grimes-complex-pb\\QM5_10911_grimes-complex-pb.mq5",
+        "sha256": "122d1a4e32480fabf3f0b0363f49d7a8589681c64cd5850da313d1503135f920"
+      },
+      "current_setfile": {
+        "exists": true,
+        "mtime_utc": "2026-08-21T12:20:07+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10911_grimes-complex-pb\\sets\\QM5_10911_grimes-complex-pb_GDAXI.DWX_H1_backtest.set",
+        "sha256": "bfc76e20be73d303fab0dbef1c06005b957bb03a103859b01f889a136590abe0"
+      },
+      "data_window_end": null,
+      "data_window_start": null,
+      "ea_id": "QM5_10911",
+      "ex5_match": "MATCH",
+      "excluded": [],
+      "expected_ex5_sha256": "5199e260020b8ada81437401338e641e4f778579e58af147f2bace1c7ef9dce1",
+      "expected_mq5_sha256": "122d1a4e32480fabf3f0b0363f49d7a8589681c64cd5850da313d1503135f920",
+      "expected_news_calendar_sha256": null,
+      "expected_setfile_sha256": "bfc76e20be73d303fab0dbef1c06005b957bb03a103859b01f889a136590abe0",
+      "mq5_match": "MATCH",
+      "news_compatibility": "PRE_NEWS_Q09_NO_CALENDAR; Q10_REUSE_REFUSED_WITHOUT_BOUND_CURRENT_CALENDAR_AND_WINDOW",
+      "portfolio_evidence": {
+        "exists": false,
+        "mtime_utc": null,
+        "path": "D:\\QM\\reports\\work_items\\545758f3-e272-447c-985b-6976fe06c6ac\\QM5_10911\\Q08\\GDAXI_DWX\\aggregate.json",
+        "sha256": null
+      },
+      "portfolio_phase": "Q08",
+      "portfolio_v4_equivalent": "Q08",
+      "portfolio_work_item_id": "545758f3-e272-447c-985b-6976fe06c6ac",
+      "proposed_anchor": "Q09",
+      "q08_evidence": {
+        "exists": true,
+        "mtime_utc": "2026-08-25T23:50:41+00:00",
+        "path": "D:\\QM\\reports\\work_items\\55256268-50f8-4d94-8d9a-83652c64b013\\QM5_10911\\Q08\\GDAXI_DWX\\aggregate.json",
+        "sha256": "df2d728c96af9e853f0eebfb09e371340d8f4a6018f67465baecfff4374ede37"
+      },
+      "q08_gate_contract_version": "v4",
+      "q08_status": "done",
+      "q08_verdict": "FAIL_SOFT",
+      "q08_work_item_id": "55256268-50f8-4d94-8d9a-83652c64b013",
+      "rebuilt_after_legacy_evidence": false,
+      "setfile_match": "MATCH",
+      "symbol": "GDAXI.DWX",
+      "window_bound": false
+    },
+    {
+      "anchor_reason": "last authentic Q08 row has strategy-taxonomy FAIL_HARD; OWNER disposition still required",
+      "current_ex5": {
+        "exists": true,
+        "mtime_utc": "2026-08-22T13:30:12+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10919_grimes-overshoot\\QM5_10919_grimes-overshoot.ex5",
+        "sha256": "bff488fabe6416a0c70719538aa4ee21336eab389f32e1a86eb75cf6fffa6e65"
+      },
+      "current_mq5": {
+        "exists": true,
+        "mtime_utc": "2026-08-05T16:30:01+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10919_grimes-overshoot\\QM5_10919_grimes-overshoot.mq5",
+        "sha256": "b8440e637c3c6114e45ccc3f0a3c4922cdff4e2d0dc2102aacfdd32d20dcb158"
+      },
+      "current_setfile": {
+        "exists": true,
+        "mtime_utc": "2026-08-22T13:02:56+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10919_grimes-overshoot\\sets\\QM5_10919_grimes-overshoot_XTIUSD.DWX_H4_backtest.set",
+        "sha256": "a83e0fbe8169af6e33e857b6f6c587d04669342e98e931334d167c2a085b1d82"
+      },
+      "data_window_end": null,
+      "data_window_start": null,
+      "ea_id": "QM5_10919",
+      "ex5_match": "MATCH",
+      "excluded": [],
+      "expected_ex5_sha256": "bff488fabe6416a0c70719538aa4ee21336eab389f32e1a86eb75cf6fffa6e65",
+      "expected_mq5_sha256": "b8440e637c3c6114e45ccc3f0a3c4922cdff4e2d0dc2102aacfdd32d20dcb158",
+      "expected_news_calendar_sha256": null,
+      "expected_setfile_sha256": "fdb812391fe434f0bc14819a935114449893b0f49b9091da5e846bd457f2737c",
+      "mq5_match": "MATCH",
+      "news_compatibility": "PRE_NEWS_Q09_NO_CALENDAR; Q10_REUSE_REFUSED_WITHOUT_BOUND_CURRENT_CALENDAR_AND_WINDOW",
+      "portfolio_evidence": {
+        "exists": false,
+        "mtime_utc": null,
+        "path": "D:\\QM\\reports\\work_items\\c59d8929-2b8a-41d3-be00-753ffb69e33c\\QM5_10919\\Q09_PORTFOLIO\\XTIUSD_DWX\\aggregate.json",
+        "sha256": null
+      },
+      "portfolio_phase": "Q09_PORTFOLIO",
+      "portfolio_v4_equivalent": "Q10_PORTFOLIO",
+      "portfolio_work_item_id": "c59d8929-2b8a-41d3-be00-753ffb69e33c",
+      "proposed_anchor": "RETIRE_CANDIDATE",
+      "q08_evidence": {
+        "exists": true,
+        "mtime_utc": "2026-08-18T05:24:22+00:00",
+        "path": "D:\\QM\\reports\\work_items\\cac0d840-73e9-4601-95dd-d37533b32f29\\QM5_10919\\Q08\\XTIUSD_DWX\\aggregate.json",
+        "sha256": "11c1722752a280bc855db3ca61af6a716191e83c5cc308013cb43f69692ae10e"
+      },
+      "q08_gate_contract_version": "legacy",
+      "q08_status": "done",
+      "q08_verdict": "FAIL_HARD",
+      "q08_work_item_id": "cac0d840-73e9-4601-95dd-d37533b32f29",
+      "rebuilt_after_legacy_evidence": true,
+      "setfile_match": "MISMATCH",
+      "symbol": "XTIUSD.DWX",
+      "window_bound": false
+    },
+    {
+      "anchor_reason": "REQUAL8",
+      "current_ex5": {
+        "exists": true,
+        "mtime_utc": "2026-08-22T13:30:12+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10939_grimes-context-pb\\QM5_10939_grimes-context-pb.ex5",
+        "sha256": "812fc52a90f0dba0282aa2fecb3a0b3640c18386ac3e2ab7e3b80765a3970278"
+      },
+      "current_mq5": {
+        "exists": true,
+        "mtime_utc": "2026-08-05T16:30:01+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10939_grimes-context-pb\\QM5_10939_grimes-context-pb.mq5",
+        "sha256": "619331975f50ef4a4c0a97b7feaa091d9d37a311502390387ea3a90441fdead9"
+      },
+      "current_setfile": {
+        "exists": true,
+        "mtime_utc": "2026-08-22T13:16:41+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10939_grimes-context-pb\\sets\\QM5_10939_grimes-context-pb_GBPUSD.DWX_H4_backtest.set",
+        "sha256": "dc7c216b85598642b35cff10f52cd84dedb3ac069dc3a41695176e9362a9acba"
+      },
+      "data_window_end": null,
+      "data_window_start": null,
+      "ea_id": "QM5_10939",
+      "ex5_match": "MATCH",
+      "excluded": [
+        "REQUAL8"
+      ],
+      "expected_ex5_sha256": "812fc52a90f0dba0282aa2fecb3a0b3640c18386ac3e2ab7e3b80765a3970278",
+      "expected_mq5_sha256": "619331975f50ef4a4c0a97b7feaa091d9d37a311502390387ea3a90441fdead9",
+      "expected_news_calendar_sha256": null,
+      "expected_setfile_sha256": "dc7c216b85598642b35cff10f52cd84dedb3ac069dc3a41695176e9362a9acba",
+      "mq5_match": "MATCH",
+      "news_compatibility": "PRE_NEWS_Q09_NO_CALENDAR; Q10_REUSE_REFUSED_WITHOUT_BOUND_CURRENT_CALENDAR_AND_WINDOW",
+      "portfolio_evidence": {
+        "exists": false,
+        "mtime_utc": null,
+        "path": "D:\\QM\\reports\\work_items\\dfeb6afb-61e6-4deb-9e61-d8873271eb70\\QM5_10939\\Q09_PORTFOLIO\\GBPUSD_DWX\\aggregate.json",
+        "sha256": null
+      },
+      "portfolio_phase": "Q09_PORTFOLIO",
+      "portfolio_v4_equivalent": "Q10_PORTFOLIO",
+      "portfolio_work_item_id": "dfeb6afb-61e6-4deb-9e61-d8873271eb70",
+      "proposed_anchor": "EXCLUDED_ACTIVE_TRACK",
+      "q08_evidence": {
+        "exists": true,
+        "mtime_utc": "2026-08-24T09:22:44+00:00",
+        "path": "D:\\QM\\reports\\work_items\\8234812d-b9ff-4652-b4a3-48bcdc41c2b5\\QM5_10939\\Q08\\GBPUSD_DWX\\aggregate.json",
+        "sha256": "460099aed83e2834c5f35ad63e09def42ec8a0dc2ebb4416cb33e5fe04021ad3"
+      },
+      "q08_gate_contract_version": "v4",
+      "q08_status": "done",
+      "q08_verdict": "INFRA_FAIL",
+      "q08_work_item_id": "8234812d-b9ff-4652-b4a3-48bcdc41c2b5",
+      "rebuilt_after_legacy_evidence": false,
+      "setfile_match": "MATCH",
+      "symbol": "GBPUSD.DWX",
+      "window_bound": false
+    },
+    {
+      "anchor_reason": "current binary/setfile is missing, mismatched, or rebuilt after unbound legacy evidence",
+      "current_ex5": {
+        "exists": true,
+        "mtime_utc": "2026-07-12T09:30:03+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10940_grimes-nested-pb\\QM5_10940_grimes-nested-pb.ex5",
+        "sha256": "cb0ff3098e4084bfa28330795c0f4b78378fe66b28d0bd265c394a1edc5f1151"
+      },
+      "current_mq5": {
+        "exists": true,
+        "mtime_utc": "2026-06-06T15:06:20+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10940_grimes-nested-pb\\QM5_10940_grimes-nested-pb.mq5",
+        "sha256": "1104f8e76c55d204b482ba2260cfac639044eb4a29adaa490361b86fabe4eb4e"
+      },
+      "current_setfile": {
+        "exists": true,
+        "mtime_utc": "2026-08-13T14:30:10+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10940_grimes-nested-pb\\sets\\QM5_10940_grimes-nested-pb_XAUUSD.DWX_H4_backtest.set",
+        "sha256": "0aa3751aa5ea301ba7847b491597cbeb2100423d3993507118ba40f90c2a1c5c"
+      },
+      "data_window_end": null,
+      "data_window_start": null,
+      "ea_id": "QM5_10940",
+      "ex5_match": "UNBOUND",
+      "excluded": [],
+      "expected_ex5_sha256": null,
+      "expected_mq5_sha256": null,
+      "expected_news_calendar_sha256": null,
+      "expected_setfile_sha256": null,
+      "mq5_match": "UNBOUND",
+      "news_compatibility": "PRE_NEWS_Q09_NO_CALENDAR; Q10_REUSE_REFUSED_WITHOUT_BOUND_CURRENT_CALENDAR_AND_WINDOW",
+      "portfolio_evidence": {
+        "exists": true,
+        "mtime_utc": "2026-06-27T11:30:38+00:00",
+        "path": "D:\\QM\\reports\\portfolio\\recert_20260627T113037+0000\\summary.json",
+        "sha256": "49670bb3bb7c7e7106113bbe5ec14b651d0bf9daf329c33073a05918e26206e7"
+      },
+      "portfolio_phase": "Q09_PORTFOLIO",
+      "portfolio_v4_equivalent": "Q10_PORTFOLIO",
+      "portfolio_work_item_id": "e25da444-2e84-402c-9ff1-a4f7493731a6",
+      "proposed_anchor": "Q02_NEW_IDENTITY",
+      "q08_evidence": {
+        "exists": false,
+        "mtime_utc": null,
+        "path": "D:\\QM\\reports\\work_items\\0c185c6d-f25c-4e5c-bf71-0932f9e61cee\\QM5_10940\\Q08\\XAUUSD_DWX\\aggregate.json",
+        "sha256": null
+      },
+      "q08_gate_contract_version": "legacy",
+      "q08_status": "done",
+      "q08_verdict": "FAIL_SOFT",
+      "q08_work_item_id": "0c185c6d-f25c-4e5c-bf71-0932f9e61cee",
+      "rebuilt_after_legacy_evidence": true,
+      "setfile_match": "UNBOUND",
+      "symbol": "XAUUSD.DWX",
+      "window_bound": false
+    },
+    {
+      "anchor_reason": "current binary/setfile is missing, mismatched, or rebuilt after unbound legacy evidence",
+      "current_ex5": {
+        "exists": true,
+        "mtime_utc": "2026-08-22T13:30:12+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11132_tm-cum-rsi2\\QM5_11132_tm-cum-rsi2.ex5",
+        "sha256": "e3dea054cce04aba5aec82ceb9a8a0a530acc43c6b4d3783ee5f70d89064a66e"
+      },
+      "current_mq5": {
+        "exists": true,
+        "mtime_utc": "2026-08-05T16:30:01+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11132_tm-cum-rsi2\\QM5_11132_tm-cum-rsi2.mq5",
+        "sha256": "5839af64779d2640f6290d4c1e02033327e4027d4e42fa6a8532e8f33b0b9d6c"
+      },
+      "current_setfile": {
+        "exists": true,
+        "mtime_utc": "2026-08-22T13:05:19+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11132_tm-cum-rsi2\\sets\\QM5_11132_tm-cum-rsi2_SP500.DWX_D1_backtest.set",
+        "sha256": "d404e79c605e15cd569a2a4f0bf788fd3f808e4b3215cfcfdec4af337f8bc0ce"
+      },
+      "data_window_end": null,
+      "data_window_start": null,
+      "ea_id": "QM5_11132",
+      "ex5_match": "MATCH",
+      "excluded": [],
+      "expected_ex5_sha256": "e3dea054cce04aba5aec82ceb9a8a0a530acc43c6b4d3783ee5f70d89064a66e",
+      "expected_mq5_sha256": "5839af64779d2640f6290d4c1e02033327e4027d4e42fa6a8532e8f33b0b9d6c",
+      "expected_news_calendar_sha256": null,
+      "expected_setfile_sha256": "8610f1e0d1d0c0d2c64cfdb4e5f9e14e7c5d51d0bcbb7d1f324ab6b800a37534",
+      "mq5_match": "MATCH",
+      "news_compatibility": "PRE_NEWS_Q09_NO_CALENDAR; Q10_REUSE_REFUSED_WITHOUT_BOUND_CURRENT_CALENDAR_AND_WINDOW",
+      "portfolio_evidence": {
+        "exists": true,
+        "mtime_utc": "2026-06-27T11:30:38+00:00",
+        "path": "D:\\QM\\reports\\portfolio\\recert_20260627T113037+0000\\summary.json",
+        "sha256": "49670bb3bb7c7e7106113bbe5ec14b651d0bf9daf329c33073a05918e26206e7"
+      },
+      "portfolio_phase": "Q09_PORTFOLIO",
+      "portfolio_v4_equivalent": "Q10_PORTFOLIO",
+      "portfolio_work_item_id": "1ea996fd-ef55-48ce-93d8-2b0a13c4f19a",
+      "proposed_anchor": "Q02_NEW_IDENTITY",
+      "q08_evidence": {
+        "exists": true,
+        "mtime_utc": "2026-08-18T00:49:39+00:00",
+        "path": "D:\\QM\\reports\\work_items\\1759533d-7600-40d1-ad1c-914d7c47c534\\QM5_11132\\Q08\\SP500_DWX\\aggregate.json",
+        "sha256": "ca357ca15c83d5cfedc5c8682786b113764e99bff9cf570dccd05f310b26f645"
+      },
+      "q08_gate_contract_version": "legacy",
+      "q08_status": "done",
+      "q08_verdict": "INFRA_FAIL",
+      "q08_work_item_id": "1759533d-7600-40d1-ad1c-914d7c47c534",
+      "rebuilt_after_legacy_evidence": true,
+      "setfile_match": "MISMATCH",
+      "symbol": "SP500.DWX",
+      "window_bound": false
+    },
+    {
+      "anchor_reason": "current binary/setfile is missing, mismatched, or rebuilt after unbound legacy evidence",
+      "current_ex5": {
+        "exists": true,
+        "mtime_utc": "2026-08-22T13:30:12+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11165_weiss-rsi-ma\\QM5_11165_weiss-rsi-ma.ex5",
+        "sha256": "b109a902f98f305b7436b9ec1c02105a57b497c67db297ffb6232372f5088281"
+      },
+      "current_mq5": {
+        "exists": true,
+        "mtime_utc": "2026-08-05T16:30:01+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11165_weiss-rsi-ma\\QM5_11165_weiss-rsi-ma.mq5",
+        "sha256": "e79d176ddf3b0ffd832d1a564a922642d595e885693dc26d289b29d42d737260"
+      },
+      "current_setfile": {
+        "exists": true,
+        "mtime_utc": "2026-08-22T13:06:42+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11165_weiss-rsi-ma\\sets\\QM5_11165_weiss-rsi-ma_AUDCAD.DWX_H1_backtest_ablation_00.set",
+        "sha256": "ca58fdbf50a2a2027bc25fe0a83d652ffa25cd124fbbddfb7ab4c8cc855dc192"
+      },
+      "data_window_end": null,
+      "data_window_start": null,
+      "ea_id": "QM5_11165",
+      "ex5_match": "MATCH",
+      "excluded": [],
+      "expected_ex5_sha256": "b109a902f98f305b7436b9ec1c02105a57b497c67db297ffb6232372f5088281",
+      "expected_mq5_sha256": "e79d176ddf3b0ffd832d1a564a922642d595e885693dc26d289b29d42d737260",
+      "expected_news_calendar_sha256": null,
+      "expected_setfile_sha256": "5e8a0752c1cc08449707efcc9374ea377993f2a488bf300b4643f87e83d52482",
+      "mq5_match": "MATCH",
+      "news_compatibility": "PRE_NEWS_Q09_NO_CALENDAR; Q10_REUSE_REFUSED_WITHOUT_BOUND_CURRENT_CALENDAR_AND_WINDOW",
+      "portfolio_evidence": {
+        "exists": false,
+        "mtime_utc": null,
+        "path": "D:\\QM\\reports\\work_items\\7a8c7433-07d2-451d-a96d-4570d7fc5c17\\QM5_11165\\Q09_PORTFOLIO\\AUDCAD_DWX\\aggregate.json",
+        "sha256": null
+      },
+      "portfolio_phase": "Q09_PORTFOLIO",
+      "portfolio_v4_equivalent": "Q10_PORTFOLIO",
+      "portfolio_work_item_id": "7a8c7433-07d2-451d-a96d-4570d7fc5c17",
+      "proposed_anchor": "Q02_NEW_IDENTITY",
+      "q08_evidence": {
+        "exists": true,
+        "mtime_utc": "2026-08-18T08:19:36+00:00",
+        "path": "D:\\QM\\reports\\work_items\\565b76a0-a74c-40b2-ba4a-e5f29c334b96\\QM5_11165\\Q08\\AUDCAD_DWX\\aggregate.json",
+        "sha256": "db5daed6cd6b00d96b0240c4776e16caa35645cb5986bac8cdf7fbb27304aac8"
+      },
+      "q08_gate_contract_version": "legacy",
+      "q08_status": "done",
+      "q08_verdict": "INFRA_FAIL",
+      "q08_work_item_id": "565b76a0-a74c-40b2-ba4a-e5f29c334b96",
+      "rebuilt_after_legacy_evidence": true,
+      "setfile_match": "MISMATCH",
+      "symbol": "AUDCAD.DWX",
+      "window_bound": false
+    },
+    {
+      "anchor_reason": "current binary/setfile is missing, mismatched, or rebuilt after unbound legacy evidence",
+      "current_ex5": {
+        "exists": true,
+        "mtime_utc": "2026-08-22T13:30:12+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11165_weiss-rsi-ma\\QM5_11165_weiss-rsi-ma.ex5",
+        "sha256": "b109a902f98f305b7436b9ec1c02105a57b497c67db297ffb6232372f5088281"
+      },
+      "current_mq5": {
+        "exists": true,
+        "mtime_utc": "2026-08-05T16:30:01+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11165_weiss-rsi-ma\\QM5_11165_weiss-rsi-ma.mq5",
+        "sha256": "e79d176ddf3b0ffd832d1a564a922642d595e885693dc26d289b29d42d737260"
+      },
+      "current_setfile": {
+        "exists": true,
+        "mtime_utc": "2026-08-22T13:06:42+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11165_weiss-rsi-ma\\sets\\QM5_11165_weiss-rsi-ma_EURUSD.DWX_H1_backtest.set",
+        "sha256": "2ad91fe5768555dec7c9ff1e98a748ffd7818ecd2d0dbf86bd24d3880b958763"
+      },
+      "data_window_end": null,
+      "data_window_start": null,
+      "ea_id": "QM5_11165",
+      "ex5_match": "MATCH",
+      "excluded": [],
+      "expected_ex5_sha256": "b109a902f98f305b7436b9ec1c02105a57b497c67db297ffb6232372f5088281",
+      "expected_mq5_sha256": "e79d176ddf3b0ffd832d1a564a922642d595e885693dc26d289b29d42d737260",
+      "expected_news_calendar_sha256": null,
+      "expected_setfile_sha256": "8277892cf2f7862017277444f23dffff20d28d1ff079617320aca42015669f53",
+      "mq5_match": "MATCH",
+      "news_compatibility": "PRE_NEWS_Q09_NO_CALENDAR; Q10_REUSE_REFUSED_WITHOUT_BOUND_CURRENT_CALENDAR_AND_WINDOW",
+      "portfolio_evidence": {
+        "exists": false,
+        "mtime_utc": null,
+        "path": "D:\\QM\\reports\\work_items\\80bcdc1b-74ae-40f4-82be-b0b87771d4ea\\QM5_11165\\Q09_PORTFOLIO\\EURUSD_DWX\\aggregate.json",
+        "sha256": null
+      },
+      "portfolio_phase": "Q09_PORTFOLIO",
+      "portfolio_v4_equivalent": "Q10_PORTFOLIO",
+      "portfolio_work_item_id": "80bcdc1b-74ae-40f4-82be-b0b87771d4ea",
+      "proposed_anchor": "Q02_NEW_IDENTITY",
+      "q08_evidence": {
+        "exists": true,
+        "mtime_utc": "2026-08-18T07:47:20+00:00",
+        "path": "D:\\QM\\reports\\work_items\\d528948d-222a-4279-bbe8-dee17f70f3d4\\QM5_11165\\Q08\\EURUSD_DWX\\aggregate.json",
+        "sha256": "b2637f9c37768e896556483957e2a5e6f6c3cab5b0a5779a21cd462010b50444"
+      },
+      "q08_gate_contract_version": "legacy",
+      "q08_status": "done",
+      "q08_verdict": "INFRA_FAIL",
+      "q08_work_item_id": "d528948d-222a-4279-bbe8-dee17f70f3d4",
+      "rebuilt_after_legacy_evidence": true,
+      "setfile_match": "MISMATCH",
+      "symbol": "EURUSD.DWX",
+      "window_bound": false
+    },
+    {
+      "anchor_reason": "last authentic Q08 row has strategy-taxonomy FAIL_HARD; OWNER disposition still required",
+      "current_ex5": {
+        "exists": true,
+        "mtime_utc": "2026-08-22T13:30:12+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\QM5_11421_ohlc-daily-squeeze-reversal-d1.ex5",
+        "sha256": "9dd7facd1da7e2c6564929b92a2e4a62e65bc40b99a03edd729030f72d18924b"
+      },
+      "current_mq5": {
+        "exists": true,
+        "mtime_utc": "2026-08-05T16:30:01+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\QM5_11421_ohlc-daily-squeeze-reversal-d1.mq5",
+        "sha256": "b5dfd159b46281cdb30dae3ae12a12fd67cdf810941b82a4a5f7e11a9dce6a15"
+      },
+      "current_setfile": {
+        "exists": true,
+        "mtime_utc": "2026-08-22T13:18:09+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\sets\\QM5_11421_ohlc-daily-squeeze-reversal-d1_AUDUSD.DWX_D1_backtest.set",
+        "sha256": "e531c1a7ce4c5dcb6203d4a964c9b1218ac89b601d37f77c20a75b870e1a8522"
+      },
+      "data_window_end": null,
+      "data_window_start": null,
+      "ea_id": "QM5_11421",
+      "ex5_match": "MATCH",
+      "excluded": [],
+      "expected_ex5_sha256": "9dd7facd1da7e2c6564929b92a2e4a62e65bc40b99a03edd729030f72d18924b",
+      "expected_mq5_sha256": "b5dfd159b46281cdb30dae3ae12a12fd67cdf810941b82a4a5f7e11a9dce6a15",
+      "expected_news_calendar_sha256": null,
+      "expected_setfile_sha256": "58992ea53577860ce08a1d2216ca009448b945d9035738a2de1aa717c1fad809",
+      "mq5_match": "MATCH",
+      "news_compatibility": "PRE_NEWS_Q09_NO_CALENDAR; Q10_REUSE_REFUSED_WITHOUT_BOUND_CURRENT_CALENDAR_AND_WINDOW",
+      "portfolio_evidence": {
+        "exists": false,
+        "mtime_utc": null,
+        "path": "D:\\QM\\reports\\work_items\\2e1111b9-0cb9-4fd2-8e89-3ac2960b58fd\\QM5_11421\\Q09_PORTFOLIO\\AUDUSD_DWX\\aggregate.json",
+        "sha256": null
+      },
+      "portfolio_phase": "Q09_PORTFOLIO",
+      "portfolio_v4_equivalent": "Q10_PORTFOLIO",
+      "portfolio_work_item_id": "2e1111b9-0cb9-4fd2-8e89-3ac2960b58fd",
+      "proposed_anchor": "RETIRE_CANDIDATE",
+      "q08_evidence": {
+        "exists": true,
+        "mtime_utc": "2026-08-18T10:14:57+00:00",
+        "path": "D:\\QM\\reports\\work_items\\a472a5f9-c614-4c7d-9ff0-8542085e9a02\\QM5_11421\\Q08\\AUDUSD_DWX\\aggregate.json",
+        "sha256": "76df7ae6b76e194efb197c08abcc13703bab08e086809bd466cfc643138fbfa6"
+      },
+      "q08_gate_contract_version": "legacy",
+      "q08_status": "done",
+      "q08_verdict": "FAIL_HARD",
+      "q08_work_item_id": "a472a5f9-c614-4c7d-9ff0-8542085e9a02",
+      "rebuilt_after_legacy_evidence": true,
+      "setfile_match": "MISMATCH",
+      "symbol": "AUDUSD.DWX",
+      "window_bound": false
+    },
+    {
+      "anchor_reason": "REQUAL8+ACTIVE_OPT_FORK",
+      "current_ex5": {
+        "exists": true,
+        "mtime_utc": "2026-08-22T13:30:12+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\QM5_11421_ohlc-daily-squeeze-reversal-d1.ex5",
+        "sha256": "9dd7facd1da7e2c6564929b92a2e4a62e65bc40b99a03edd729030f72d18924b"
+      },
+      "current_mq5": {
+        "exists": true,
+        "mtime_utc": "2026-08-05T16:30:01+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\QM5_11421_ohlc-daily-squeeze-reversal-d1.mq5",
+        "sha256": "b5dfd159b46281cdb30dae3ae12a12fd67cdf810941b82a4a5f7e11a9dce6a15"
+      },
+      "current_setfile": {
+        "exists": true,
+        "mtime_utc": "2026-08-22T13:18:10+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\sets\\QM5_11421_ohlc-daily-squeeze-reversal-d1_EURUSD.DWX_D1_backtest.set",
+        "sha256": "7b87dbf2a4a6b6e6d8cea39e9123ebf9e06f61e53e2215eed24afde7923d74cf"
+      },
+      "data_window_end": null,
+      "data_window_start": null,
+      "ea_id": "QM5_11421",
+      "ex5_match": "MATCH",
+      "excluded": [
+        "REQUAL8",
+        "ACTIVE_OPT_FORK"
+      ],
+      "expected_ex5_sha256": "9dd7facd1da7e2c6564929b92a2e4a62e65bc40b99a03edd729030f72d18924b",
+      "expected_mq5_sha256": "b5dfd159b46281cdb30dae3ae12a12fd67cdf810941b82a4a5f7e11a9dce6a15",
+      "expected_news_calendar_sha256": null,
+      "expected_setfile_sha256": "7b87dbf2a4a6b6e6d8cea39e9123ebf9e06f61e53e2215eed24afde7923d74cf",
+      "mq5_match": "MATCH",
+      "news_compatibility": "PRE_NEWS_Q09_NO_CALENDAR; Q10_REUSE_REFUSED_WITHOUT_BOUND_CURRENT_CALENDAR_AND_WINDOW",
+      "portfolio_evidence": {
+        "exists": false,
+        "mtime_utc": null,
+        "path": "D:\\QM\\reports\\work_items\\6c25bcc5-2050-44a4-ab52-bbbb4bffb5d6\\QM5_11421\\Q09_PORTFOLIO\\EURUSD_DWX\\aggregate.json",
+        "sha256": null
+      },
+      "portfolio_phase": "Q09_PORTFOLIO",
+      "portfolio_v4_equivalent": "Q10_PORTFOLIO",
+      "portfolio_work_item_id": "6c25bcc5-2050-44a4-ab52-bbbb4bffb5d6",
+      "proposed_anchor": "EXCLUDED_ACTIVE_TRACK",
+      "q08_evidence": {
+        "exists": true,
+        "mtime_utc": "2026-08-24T10:28:55+00:00",
+        "path": "D:\\QM\\reports\\work_items\\9d183609-3721-4a11-94d0-b0987ae43a30\\QM5_11421\\Q08\\EURUSD_DWX\\aggregate.json",
+        "sha256": "2f3fbd7b6fb9eaea294b1b9570742a717f24e14189d5f2148e39d57e602196cb"
+      },
+      "q08_gate_contract_version": "v4",
+      "q08_status": "done",
+      "q08_verdict": "INFRA_FAIL",
+      "q08_work_item_id": "9d183609-3721-4a11-94d0-b0987ae43a30",
+      "rebuilt_after_legacy_evidence": false,
+      "setfile_match": "MATCH",
+      "symbol": "EURUSD.DWX",
+      "window_bound": false
+    },
+    {
+      "anchor_reason": "ACTIVE_OPT_FORK",
+      "current_ex5": {
+        "exists": true,
+        "mtime_utc": "2026-08-02T22:27:53+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11422_williams-18ma-outside-bar-entry-d1\\QM5_11422_williams-18ma-outside-bar-entry-d1.ex5",
+        "sha256": "2b98e9e902313148be78d88513fcbda2476150b1a7605eb15a50b2cca6b32d66"
+      },
+      "current_mq5": {
+        "exists": true,
+        "mtime_utc": "2026-07-03T19:21:52+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11422_williams-18ma-outside-bar-entry-d1\\QM5_11422_williams-18ma-outside-bar-entry-d1.mq5",
+        "sha256": "a68b9f02372edd490f2af9ea32efa6606df7c2d8b40e30f3ddac2e2d56cab84e"
+      },
+      "current_setfile": {
+        "exists": true,
+        "mtime_utc": "2026-07-03T19:22:56+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11422_williams-18ma-outside-bar-entry-d1\\sets\\QM5_11422_williams-18ma-outside-bar-entry-d1_USDCAD.DWX_D1_backtest.set",
+        "sha256": "715bce2fb8762cef12dcdff86eb6c144069b6d5a487d5e39fcaa1de71248a5ff"
+      },
+      "data_window_end": null,
+      "data_window_start": null,
+      "ea_id": "QM5_11422",
+      "ex5_match": "MATCH",
+      "excluded": [
+        "ACTIVE_OPT_FORK"
+      ],
+      "expected_ex5_sha256": "2b98e9e902313148be78d88513fcbda2476150b1a7605eb15a50b2cca6b32d66",
+      "expected_mq5_sha256": "a68b9f02372edd490f2af9ea32efa6606df7c2d8b40e30f3ddac2e2d56cab84e",
+      "expected_news_calendar_sha256": null,
+      "expected_setfile_sha256": "715bce2fb8762cef12dcdff86eb6c144069b6d5a487d5e39fcaa1de71248a5ff",
+      "mq5_match": "MATCH",
+      "news_compatibility": "PRE_NEWS_Q09_NO_CALENDAR; Q10_REUSE_REFUSED_WITHOUT_BOUND_CURRENT_CALENDAR_AND_WINDOW",
+      "portfolio_evidence": {
+        "exists": false,
+        "mtime_utc": null,
+        "path": "D:\\QM\\reports\\work_items\\99ab79c9-1c13-40ff-8b71-0b72fd05db91\\QM5_11422\\Q09_PORTFOLIO\\USDCAD_DWX\\aggregate.json",
+        "sha256": null
+      },
+      "portfolio_phase": "Q09_PORTFOLIO",
+      "portfolio_v4_equivalent": "Q10_PORTFOLIO",
+      "portfolio_work_item_id": "99ab79c9-1c13-40ff-8b71-0b72fd05db91",
+      "proposed_anchor": "EXCLUDED_ACTIVE_TRACK",
+      "q08_evidence": {
+        "exists": true,
+        "mtime_utc": "2026-08-18T05:40:19+00:00",
+        "path": "D:\\QM\\reports\\work_items\\d3907c1a-dc69-4498-be2f-80b064a2c02f\\QM5_11422\\Q08\\USDCAD_DWX\\aggregate.json",
+        "sha256": "be78ca200e8fc4186a0311b0850eaa8de07e5d2d1aea4a03b95550a46ce92b9a"
+      },
+      "q08_gate_contract_version": "legacy",
+      "q08_status": "done",
+      "q08_verdict": "PASS",
+      "q08_work_item_id": "d3907c1a-dc69-4498-be2f-80b064a2c02f",
+      "rebuilt_after_legacy_evidence": false,
+      "setfile_match": "MATCH",
+      "symbol": "USDCAD.DWX",
+      "window_bound": false
+    },
+    {
+      "anchor_reason": "current binary/setfile is missing, mismatched, or rebuilt after unbound legacy evidence",
+      "current_ex5": {
+        "exists": true,
+        "mtime_utc": "2026-08-22T12:30:09+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11708_anon-market-squeeze-d1\\QM5_11708_anon-market-squeeze-d1.ex5",
+        "sha256": "baff181fe3c9b5abf404231603f8117f4d2cf9d792c69de7014732a3b6e96d25"
+      },
+      "current_mq5": {
+        "exists": true,
+        "mtime_utc": "2026-08-05T16:30:01+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11708_anon-market-squeeze-d1\\QM5_11708_anon-market-squeeze-d1.mq5",
+        "sha256": "9b4c843be029d1e151322d1beb2465fb45d3bd6f5f1e3ab30a3eb78de4469043"
+      },
+      "current_setfile": {
+        "exists": true,
+        "mtime_utc": "2026-08-22T12:19:35+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11708_anon-market-squeeze-d1\\sets\\QM5_11708_anon-market-squeeze-d1_EURUSD.DWX_D1_backtest.set",
+        "sha256": "75fa2768b4400fc0d84f12dda422d3b5625088fb9ae976f036f390ab14c4bc8d"
+      },
+      "data_window_end": null,
+      "data_window_start": null,
+      "ea_id": "QM5_11708",
+      "ex5_match": "MATCH",
+      "excluded": [],
+      "expected_ex5_sha256": "baff181fe3c9b5abf404231603f8117f4d2cf9d792c69de7014732a3b6e96d25",
+      "expected_mq5_sha256": "9b4c843be029d1e151322d1beb2465fb45d3bd6f5f1e3ab30a3eb78de4469043",
+      "expected_news_calendar_sha256": null,
+      "expected_setfile_sha256": "18ed53b26d63a2d8c4acec3bd012c754b1a415eb97148471339df93e79ad2973",
+      "mq5_match": "MATCH",
+      "news_compatibility": "PRE_NEWS_Q09_NO_CALENDAR; Q10_REUSE_REFUSED_WITHOUT_BOUND_CURRENT_CALENDAR_AND_WINDOW",
+      "portfolio_evidence": {
+        "exists": false,
+        "mtime_utc": null,
+        "path": "D:\\QM\\reports\\work_items\\790edb77-fe2d-4ba8-8127-0c8e5cfb5d33\\QM5_11708\\Q09_PORTFOLIO\\EURUSD_DWX\\aggregate.json",
+        "sha256": null
+      },
+      "portfolio_phase": "Q09_PORTFOLIO",
+      "portfolio_v4_equivalent": "Q10_PORTFOLIO",
+      "portfolio_work_item_id": "790edb77-fe2d-4ba8-8127-0c8e5cfb5d33",
+      "proposed_anchor": "Q02_NEW_IDENTITY",
+      "q08_evidence": {
+        "exists": true,
+        "mtime_utc": "2026-08-18T10:26:15+00:00",
+        "path": "D:\\QM\\reports\\work_items\\106b5827-acda-4294-9d06-9e215333819a\\QM5_11708\\Q08\\EURUSD_DWX\\aggregate.json",
+        "sha256": "5780808f5a31dfef089cb4930bee192b72bd98be91233e8629f4ac0d37517c0e"
+      },
+      "q08_gate_contract_version": "legacy",
+      "q08_status": "done",
+      "q08_verdict": "FAIL_SOFT",
+      "q08_work_item_id": "106b5827-acda-4294-9d06-9e215333819a",
+      "rebuilt_after_legacy_evidence": true,
+      "setfile_match": "MISMATCH",
+      "symbol": "EURUSD.DWX",
+      "window_bound": false
+    },
+    {
+      "anchor_reason": "legacy Q08 chain is missing or lacks exact EX5+setfile bindings",
+      "current_ex5": {
+        "exists": true,
+        "mtime_utc": "2026-07-24T21:26:34+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11910_larry-williams-18ma-2outside-bars-d1\\QM5_11910_larry-williams-18ma-2outside-bars-d1.ex5",
+        "sha256": "40fc2b902178fce9f2e65f25a8a1922f5a155094e15e8faffa175cb9b41a0b8a"
+      },
+      "current_mq5": {
+        "exists": true,
+        "mtime_utc": "2026-07-08T17:52:35+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11910_larry-williams-18ma-2outside-bars-d1\\QM5_11910_larry-williams-18ma-2outside-bars-d1.mq5",
+        "sha256": "b1c7e241ad273370d4f584b8446e445762d468f36dcc21c47dc02e0f988a987f"
+      },
+      "current_setfile": {
+        "exists": true,
+        "mtime_utc": "2026-07-08T17:57:33+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11910_larry-williams-18ma-2outside-bars-d1\\sets\\QM5_11910_larry-williams-18ma-2outside-bars-d1_NZDUSD.DWX_D1_backtest.set",
+        "sha256": "262faae61afa3fa8db2f019b5ea590743053cb2b6816b40e83842e2347f6b198"
+      },
+      "data_window_end": null,
+      "data_window_start": null,
+      "ea_id": "QM5_11910",
+      "ex5_match": "UNBOUND",
+      "excluded": [],
+      "expected_ex5_sha256": null,
+      "expected_mq5_sha256": null,
+      "expected_news_calendar_sha256": null,
+      "expected_setfile_sha256": null,
+      "mq5_match": "UNBOUND",
+      "news_compatibility": "PRE_NEWS_Q09_NO_CALENDAR; Q10_REUSE_REFUSED_WITHOUT_BOUND_CURRENT_CALENDAR_AND_WINDOW",
+      "portfolio_evidence": {
+        "exists": false,
+        "mtime_utc": null,
+        "path": "D:\\QM\\reports\\work_items\\8b849344-89e4-42a4-b697-026e81ff6a65\\QM5_11910\\Q09_PORTFOLIO\\NZDUSD_DWX\\aggregate.json",
+        "sha256": null
+      },
+      "portfolio_phase": "Q09_PORTFOLIO",
+      "portfolio_v4_equivalent": "Q10_PORTFOLIO",
+      "portfolio_work_item_id": "8b849344-89e4-42a4-b697-026e81ff6a65",
+      "proposed_anchor": "Q02_NEW_IDENTITY",
+      "q08_evidence": {
+        "exists": false,
+        "mtime_utc": null,
+        "path": "D:\\QM\\reports\\work_items\\0cb83f40-5301-4f40-a99a-4d3f63874678\\QM5_11910\\Q08\\NZDUSD_DWX\\aggregate.json",
+        "sha256": null
+      },
+      "q08_gate_contract_version": "legacy",
+      "q08_status": "done",
+      "q08_verdict": "FAIL_SOFT",
+      "q08_work_item_id": "0cb83f40-5301-4f40-a99a-4d3f63874678",
+      "rebuilt_after_legacy_evidence": false,
+      "setfile_match": "UNBOUND",
+      "symbol": "NZDUSD.DWX",
+      "window_bound": false
+    },
+    {
+      "anchor_reason": "REQUAL8",
+      "current_ex5": {
+        "exists": true,
+        "mtime_utc": "2026-08-22T13:30:12+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12567_cum-rsi2-commodity\\QM5_12567_cum-rsi2-commodity.ex5",
+        "sha256": "8d901924fe7dd2cd00c61dac6db78871fdfe34f73e0f003393196992d5143e04"
+      },
+      "current_mq5": {
+        "exists": true,
+        "mtime_utc": "2026-08-05T16:30:01+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12567_cum-rsi2-commodity\\QM5_12567_cum-rsi2-commodity.mq5",
+        "sha256": "8a5dc80942f867936ab18f6b98243437761aba55330024b18e5a050757ad60fc"
+      },
+      "current_setfile": {
+        "exists": true,
+        "mtime_utc": "2026-08-22T13:07:50+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12567_cum-rsi2-commodity\\sets\\QM5_12567_cum-rsi2-commodity_XAUUSD.DWX_D1_backtest.set",
+        "sha256": "12c1dfe5d4e743cda2fd102a5b3baa9e5691781ea2f65e433a4273e9d8fef943"
+      },
+      "data_window_end": null,
+      "data_window_start": null,
+      "ea_id": "QM5_12567",
+      "ex5_match": "MATCH",
+      "excluded": [
+        "REQUAL8"
+      ],
+      "expected_ex5_sha256": "8d901924fe7dd2cd00c61dac6db78871fdfe34f73e0f003393196992d5143e04",
+      "expected_mq5_sha256": "8a5dc80942f867936ab18f6b98243437761aba55330024b18e5a050757ad60fc",
+      "expected_news_calendar_sha256": null,
+      "expected_setfile_sha256": "12c1dfe5d4e743cda2fd102a5b3baa9e5691781ea2f65e433a4273e9d8fef943",
+      "mq5_match": "MATCH",
+      "news_compatibility": "PRE_NEWS_Q09_NO_CALENDAR; Q10_REUSE_REFUSED_WITHOUT_BOUND_CURRENT_CALENDAR_AND_WINDOW",
+      "portfolio_evidence": {
+        "exists": false,
+        "mtime_utc": null,
+        "path": "D:\\QM\\reports\\work_items\\d0dae336-db27-4b85-b6ea-c91f6717b5ef\\QM5_12567\\Q09_PORTFOLIO\\XAUUSD_DWX\\aggregate.json",
+        "sha256": null
+      },
+      "portfolio_phase": "Q09_PORTFOLIO",
+      "portfolio_v4_equivalent": "Q10_PORTFOLIO",
+      "portfolio_work_item_id": "d0dae336-db27-4b85-b6ea-c91f6717b5ef",
+      "proposed_anchor": "EXCLUDED_ACTIVE_TRACK",
+      "q08_evidence": {
+        "exists": true,
+        "mtime_utc": "2026-08-24T09:24:38+00:00",
+        "path": "D:\\QM\\reports\\work_items\\c089a98d-2879-4151-8bb4-fbe722cb1b46\\QM5_12567\\Q08\\XAUUSD_DWX\\aggregate.json",
+        "sha256": "3653803ad4210c69384d1399991531d17f5778814e6dc690a2838cc4fc9da817"
+      },
+      "q08_gate_contract_version": "v4",
+      "q08_status": "done",
+      "q08_verdict": "INFRA_FAIL",
+      "q08_work_item_id": "c089a98d-2879-4151-8bb4-fbe722cb1b46",
+      "rebuilt_after_legacy_evidence": false,
+      "setfile_match": "MATCH",
+      "symbol": "XAUUSD.DWX",
+      "window_bound": false
+    },
+    {
+      "anchor_reason": "last authentic Q08 row has strategy-taxonomy FAIL_HARD; OWNER disposition still required",
+      "current_ex5": {
+        "exists": true,
+        "mtime_utc": "2026-08-22T13:30:12+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12567_cum-rsi2-commodity\\QM5_12567_cum-rsi2-commodity.ex5",
+        "sha256": "8d901924fe7dd2cd00c61dac6db78871fdfe34f73e0f003393196992d5143e04"
+      },
+      "current_mq5": {
+        "exists": true,
+        "mtime_utc": "2026-08-05T16:30:01+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12567_cum-rsi2-commodity\\QM5_12567_cum-rsi2-commodity.mq5",
+        "sha256": "8a5dc80942f867936ab18f6b98243437761aba55330024b18e5a050757ad60fc"
+      },
+      "current_setfile": {
+        "exists": true,
+        "mtime_utc": "2026-08-22T13:07:50+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12567_cum-rsi2-commodity\\sets\\QM5_12567_cum-rsi2-commodity_XNGUSD.DWX_D1_backtest.set",
+        "sha256": "1032d5d4c8c4a6964cdefd50503253e0f9fc3c06005674d95188214951da27de"
+      },
+      "data_window_end": null,
+      "data_window_start": null,
+      "ea_id": "QM5_12567",
+      "ex5_match": "UNBOUND",
+      "excluded": [],
+      "expected_ex5_sha256": null,
+      "expected_mq5_sha256": null,
+      "expected_news_calendar_sha256": null,
+      "expected_setfile_sha256": null,
+      "mq5_match": "UNBOUND",
+      "news_compatibility": "PRE_NEWS_Q09_NO_CALENDAR; Q10_REUSE_REFUSED_WITHOUT_BOUND_CURRENT_CALENDAR_AND_WINDOW",
+      "portfolio_evidence": {
+        "exists": true,
+        "mtime_utc": "2026-06-27T11:30:38+00:00",
+        "path": "D:\\QM\\reports\\portfolio\\recert_20260627T113037+0000\\summary.json",
+        "sha256": "49670bb3bb7c7e7106113bbe5ec14b651d0bf9daf329c33073a05918e26206e7"
+      },
+      "portfolio_phase": "Q09_PORTFOLIO",
+      "portfolio_v4_equivalent": "Q10_PORTFOLIO",
+      "portfolio_work_item_id": "q09-rescue-12567-xng-619205deb800",
+      "proposed_anchor": "RETIRE_CANDIDATE",
+      "q08_evidence": {
+        "exists": false,
+        "mtime_utc": null,
+        "path": "D:\\QM\\reports\\work_items\\084a05e0-99cf-435e-bce3-d464d97081e0\\QM5_12567\\Q08\\XNGUSD_DWX\\aggregate.json",
+        "sha256": null
+      },
+      "q08_gate_contract_version": "legacy",
+      "q08_status": "done",
+      "q08_verdict": "FAIL_HARD",
+      "q08_work_item_id": "084a05e0-99cf-435e-bce3-d464d97081e0",
+      "rebuilt_after_legacy_evidence": true,
+      "setfile_match": "UNBOUND",
+      "symbol": "XNGUSD.DWX",
+      "window_bound": false
+    },
+    {
+      "anchor_reason": "legacy Q08 chain is missing or lacks exact EX5+setfile bindings",
+      "current_ex5": {
+        "exists": true,
+        "mtime_utc": "2026-07-14T21:17:24+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12580_fx-usd-exhaustion-reversal\\QM5_12580_fx-usd-exhaustion-reversal.ex5",
+        "sha256": "1494d2ef979bc49ef6a21bd7a5fd4239d6ee851b95b014b82aa18ed93c2696f7"
+      },
+      "current_mq5": {
+        "exists": true,
+        "mtime_utc": "2026-06-27T13:47:31+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12580_fx-usd-exhaustion-reversal\\QM5_12580_fx-usd-exhaustion-reversal.mq5",
+        "sha256": "d3183e40c54066a8ebef7aae48efe990e28d9fd2055a297b49b0bb54a9953cf6"
+      },
+      "current_setfile": {
+        "exists": true,
+        "mtime_utc": "2026-07-19T16:54:20+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12580_fx-usd-exhaustion-reversal\\sets\\QM5_12580_fx-usd-exhaustion-reversal_AUDUSD.DWX_D1_backtest.set",
+        "sha256": "eed48aabeb4cd6bbf13775865c0277df592df589f2a40b074cab3fe2084799bf"
+      },
+      "data_window_end": null,
+      "data_window_start": null,
+      "ea_id": "QM5_12580",
+      "ex5_match": "UNBOUND",
+      "excluded": [],
+      "expected_ex5_sha256": null,
+      "expected_mq5_sha256": null,
+      "expected_news_calendar_sha256": null,
+      "expected_setfile_sha256": null,
+      "mq5_match": "UNBOUND",
+      "news_compatibility": "PRE_NEWS_Q09_NO_CALENDAR; Q10_REUSE_REFUSED_WITHOUT_BOUND_CURRENT_CALENDAR_AND_WINDOW",
+      "portfolio_evidence": {
+        "exists": false,
+        "mtime_utc": null,
+        "path": "D:\\QM\\reports\\work_items\\cb8e8ece-98ef-4a25-9eac-2f25656ab594\\QM5_12580\\Q09_PORTFOLIO\\AUDUSD_DWX\\aggregate.json",
+        "sha256": null
+      },
+      "portfolio_phase": "Q09_PORTFOLIO",
+      "portfolio_v4_equivalent": "Q10_PORTFOLIO",
+      "portfolio_work_item_id": "cb8e8ece-98ef-4a25-9eac-2f25656ab594",
+      "proposed_anchor": "Q02_NEW_IDENTITY",
+      "q08_evidence": {
+        "exists": false,
+        "mtime_utc": null,
+        "path": "D:\\QM\\reports\\work_items\\92e319b4-b40d-4db1-961c-e212c3f93d67\\QM5_12580\\Q08\\AUDUSD_DWX\\aggregate.json",
+        "sha256": null
+      },
+      "q08_gate_contract_version": "legacy",
+      "q08_status": "done",
+      "q08_verdict": "FAIL_SOFT",
+      "q08_work_item_id": "92e319b4-b40d-4db1-961c-e212c3f93d67",
+      "rebuilt_after_legacy_evidence": false,
+      "setfile_match": "UNBOUND",
+      "symbol": "AUDUSD.DWX",
+      "window_bound": false
+    },
+    {
+      "anchor_reason": "legacy Q08 chain is missing or lacks exact EX5+setfile bindings",
+      "current_ex5": {
+        "exists": true,
+        "mtime_utc": "2026-07-24T20:43:51+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12710_commodity-tsmom-12m-atr\\QM5_12710_commodity-tsmom-12m-atr.ex5",
+        "sha256": "14b319183494afcb58b23fe8e7b6db46f9708b9a898addaade9be657ed704213"
+      },
+      "current_mq5": {
+        "exists": true,
+        "mtime_utc": "2026-06-29T05:06:20+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12710_commodity-tsmom-12m-atr\\QM5_12710_commodity-tsmom-12m-atr.mq5",
+        "sha256": "c146523dae18a0bcfd15564c084158b31c4ae47c117929fba8e99718cf98887b"
+      },
+      "current_setfile": {
+        "exists": true,
+        "mtime_utc": "2026-07-24T20:44:04+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12710_commodity-tsmom-12m-atr\\sets\\QM5_12710_commodity-tsmom-12m-atr_XTIUSD.DWX_D1_backtest.set",
+        "sha256": "702b1d39992025a8fc1cc2824caa477c109c76b7c98965d423abfc7cd3691cb5"
+      },
+      "data_window_end": null,
+      "data_window_start": null,
+      "ea_id": "QM5_12710",
+      "ex5_match": "UNBOUND",
+      "excluded": [],
+      "expected_ex5_sha256": null,
+      "expected_mq5_sha256": null,
+      "expected_news_calendar_sha256": null,
+      "expected_setfile_sha256": null,
+      "mq5_match": "UNBOUND",
+      "news_compatibility": "PRE_NEWS_Q09_NO_CALENDAR; Q10_REUSE_REFUSED_WITHOUT_BOUND_CURRENT_CALENDAR_AND_WINDOW",
+      "portfolio_evidence": {
+        "exists": false,
+        "mtime_utc": null,
+        "path": "D:\\QM\\reports\\work_items\\c60924a7-3fd4-49d9-a39a-7b9e67a9dd62\\QM5_12710\\Q09_PORTFOLIO\\XTIUSD_DWX\\aggregate.json",
+        "sha256": null
+      },
+      "portfolio_phase": "Q09_PORTFOLIO",
+      "portfolio_v4_equivalent": "Q10_PORTFOLIO",
+      "portfolio_work_item_id": "c60924a7-3fd4-49d9-a39a-7b9e67a9dd62",
+      "proposed_anchor": "Q02_NEW_IDENTITY",
+      "q08_evidence": {
+        "exists": false,
+        "mtime_utc": null,
+        "path": "D:\\QM\\reports\\work_items\\95a0e11a-d8f0-45bb-89e2-3e5cc16642ca\\QM5_12710\\Q08\\XTIUSD_DWX\\aggregate.json",
+        "sha256": null
+      },
+      "q08_gate_contract_version": "legacy",
+      "q08_status": "done",
+      "q08_verdict": "FAIL_SOFT",
+      "q08_work_item_id": "95a0e11a-d8f0-45bb-89e2-3e5cc16642ca",
+      "rebuilt_after_legacy_evidence": false,
+      "setfile_match": "UNBOUND",
+      "symbol": "XTIUSD.DWX",
+      "window_bound": false
+    },
+    {
+      "anchor_reason": "current binary/setfile is missing, mismatched, or rebuilt after unbound legacy evidence",
+      "current_ex5": {
+        "exists": true,
+        "mtime_utc": "2026-08-27T18:30:12+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12778_edgelab-audusd-eurjpy-cointegration\\QM5_12778_edgelab-audusd-eurjpy-cointegration.ex5",
+        "sha256": "2a105cfbb364142c96c552136bb450162c142845665ce3366d0c045248c17a01"
+      },
+      "current_mq5": {
+        "exists": true,
+        "mtime_utc": "2026-08-26T14:53:23+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12778_edgelab-audusd-eurjpy-cointegration\\QM5_12778_edgelab-audusd-eurjpy-cointegration.mq5",
+        "sha256": "132a501d94685f013cc62a8b3c2de111d0a8b1e616a8656d2c61b061a754c146"
+      },
+      "current_setfile": {
+        "exists": true,
+        "mtime_utc": "2026-08-27T18:24:38+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12778_edgelab-audusd-eurjpy-cointegration\\sets\\QM5_12778_edgelab-audusd-eurjpy-cointegration_QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1_D1_backtest.set",
+        "sha256": "0e7949276927c8c5355c413c631e7b67f684e757892de59fa2cff5521836c8e9"
+      },
+      "data_window_end": null,
+      "data_window_start": null,
+      "ea_id": "QM5_12778",
+      "ex5_match": "UNBOUND",
+      "excluded": [],
+      "expected_ex5_sha256": null,
+      "expected_mq5_sha256": null,
+      "expected_news_calendar_sha256": null,
+      "expected_setfile_sha256": null,
+      "mq5_match": "UNBOUND",
+      "news_compatibility": "PRE_NEWS_Q09_NO_CALENDAR; Q10_REUSE_REFUSED_WITHOUT_BOUND_CURRENT_CALENDAR_AND_WINDOW",
+      "portfolio_evidence": {
+        "exists": false,
+        "mtime_utc": null,
+        "path": "D:\\QM\\reports\\work_items\\0b1fddba-6c4e-47ec-b9b3-6b54273e5832\\QM5_12778\\Q09_PORTFOLIO\\QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1\\aggregate.json",
+        "sha256": null
+      },
+      "portfolio_phase": "Q09_PORTFOLIO",
+      "portfolio_v4_equivalent": "Q10_PORTFOLIO",
+      "portfolio_work_item_id": "0b1fddba-6c4e-47ec-b9b3-6b54273e5832",
+      "proposed_anchor": "Q02_NEW_IDENTITY",
+      "q08_evidence": {
+        "exists": false,
+        "mtime_utc": null,
+        "path": "D:\\QM\\reports\\work_items\\8637b758-4763-4a1c-a88e-f2001a1da7b4\\QM5_12778\\Q08\\QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1\\aggregate.json",
+        "sha256": null
+      },
+      "q08_gate_contract_version": "legacy",
+      "q08_status": "done",
+      "q08_verdict": "FAIL_SOFT",
+      "q08_work_item_id": "8637b758-4763-4a1c-a88e-f2001a1da7b4",
+      "rebuilt_after_legacy_evidence": true,
+      "setfile_match": "UNBOUND",
+      "symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+      "window_bound": false
+    },
+    {
+      "anchor_reason": "legacy Q08 chain is missing or lacks exact EX5+setfile bindings",
+      "current_ex5": {
+        "exists": true,
+        "mtime_utc": "2026-07-03T23:12:13+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12966_gdaxi-weekly-oversold-swing\\QM5_12966_gdaxi-weekly-oversold-swing.ex5",
+        "sha256": "ad317e73663ce60c5c2436b6da02e86604f193a8ccec4c5a28629988f5e758d4"
+      },
+      "current_mq5": {
+        "exists": true,
+        "mtime_utc": "2026-07-03T23:11:38+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12966_gdaxi-weekly-oversold-swing\\QM5_12966_gdaxi-weekly-oversold-swing.mq5",
+        "sha256": "7e39f7732739e05ea3ef983a0988dc35507a783360e1237e3fbe52d0c3b6f4dc"
+      },
+      "current_setfile": {
+        "exists": true,
+        "mtime_utc": "2026-07-03T23:12:38+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12966_gdaxi-weekly-oversold-swing\\sets\\QM5_12966_gdaxi-weekly-oversold-swing_GDAXI.DWX_D1_backtest.set",
+        "sha256": "0d760a0e70487a30f453c004543421bc58bf3f71d904363c903ecab453a5827f"
+      },
+      "data_window_end": null,
+      "data_window_start": null,
+      "ea_id": "QM5_12966",
+      "ex5_match": "UNBOUND",
+      "excluded": [],
+      "expected_ex5_sha256": null,
+      "expected_mq5_sha256": null,
+      "expected_news_calendar_sha256": null,
+      "expected_setfile_sha256": null,
+      "mq5_match": "UNBOUND",
+      "news_compatibility": "PRE_NEWS_Q09_NO_CALENDAR; Q10_REUSE_REFUSED_WITHOUT_BOUND_CURRENT_CALENDAR_AND_WINDOW",
+      "portfolio_evidence": {
+        "exists": false,
+        "mtime_utc": null,
+        "path": "D:\\QM\\reports\\work_items\\f260dabb-deb6-4117-8174-5046678cfd3a\\QM5_12966\\Q09_PORTFOLIO\\GDAXI_DWX\\aggregate.json",
+        "sha256": null
+      },
+      "portfolio_phase": "Q09_PORTFOLIO",
+      "portfolio_v4_equivalent": "Q10_PORTFOLIO",
+      "portfolio_work_item_id": "f260dabb-deb6-4117-8174-5046678cfd3a",
+      "proposed_anchor": "Q02_NEW_IDENTITY",
+      "q08_evidence": {
+        "exists": false,
+        "mtime_utc": null,
+        "path": "D:\\QM\\reports\\work_items\\9c11e621-8558-4677-b7ee-d4fc13e9e67e\\QM5_12966\\Q08\\GDAXI_DWX\\aggregate.json",
+        "sha256": null
+      },
+      "q08_gate_contract_version": "legacy",
+      "q08_status": "done",
+      "q08_verdict": "FAIL_SOFT",
+      "q08_work_item_id": "9c11e621-8558-4677-b7ee-d4fc13e9e67e",
+      "rebuilt_after_legacy_evidence": false,
+      "setfile_match": "UNBOUND",
+      "symbol": "GDAXI.DWX",
+      "window_bound": false
+    },
+    {
+      "anchor_reason": "hash-bound Q08 reusable; v4 Q09 pre-news full-history baseline must be current",
+      "current_ex5": {
+        "exists": true,
+        "mtime_utc": "2026-08-22T12:30:09+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12969_usdjpy-gotobi-nakane-fix\\QM5_12969_usdjpy-gotobi-nakane-fix.ex5",
+        "sha256": "938a35aa6b6dff54ec0e94a4a253a71730e63f9347b91877da786ec395715f06"
+      },
+      "current_mq5": {
+        "exists": true,
+        "mtime_utc": "2026-07-15T21:10:49+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12969_usdjpy-gotobi-nakane-fix\\QM5_12969_usdjpy-gotobi-nakane-fix.mq5",
+        "sha256": "4e9503fd61e960de689128ebda343d7e078feb24dd42a25605c246f196ddfb86"
+      },
+      "current_setfile": {
+        "exists": true,
+        "mtime_utc": "2026-08-22T12:24:34+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12969_usdjpy-gotobi-nakane-fix\\sets\\QM5_12969_usdjpy-gotobi-nakane-fix_USDJPY.DWX_M30_backtest.set",
+        "sha256": "abaac898cfee74d3fb1bea28ce21c5015f22e91072718214d78fcd6a90b09ae0"
+      },
+      "data_window_end": null,
+      "data_window_start": null,
+      "ea_id": "QM5_12969",
+      "ex5_match": "MATCH",
+      "excluded": [],
+      "expected_ex5_sha256": "938a35aa6b6dff54ec0e94a4a253a71730e63f9347b91877da786ec395715f06",
+      "expected_mq5_sha256": "4e9503fd61e960de689128ebda343d7e078feb24dd42a25605c246f196ddfb86",
+      "expected_news_calendar_sha256": null,
+      "expected_setfile_sha256": "abaac898cfee74d3fb1bea28ce21c5015f22e91072718214d78fcd6a90b09ae0",
+      "mq5_match": "MATCH",
+      "news_compatibility": "PRE_NEWS_Q09_NO_CALENDAR; Q10_REUSE_REFUSED_WITHOUT_BOUND_CURRENT_CALENDAR_AND_WINDOW",
+      "portfolio_evidence": {
+        "exists": false,
+        "mtime_utc": null,
+        "path": "D:\\QM\\reports\\work_items\\de65a075-6bd9-49c9-a775-624a32fc4214\\QM5_12969\\Q09_PORTFOLIO\\USDJPY_DWX\\aggregate.json",
+        "sha256": null
+      },
+      "portfolio_phase": "Q09_PORTFOLIO",
+      "portfolio_v4_equivalent": "Q10_PORTFOLIO",
+      "portfolio_work_item_id": "de65a075-6bd9-49c9-a775-624a32fc4214",
+      "proposed_anchor": "Q09",
+      "q08_evidence": {
+        "exists": true,
+        "mtime_utc": "2026-08-26T02:50:00+00:00",
+        "path": "D:\\QM\\reports\\work_items\\f14ad921-721e-413d-a2de-6506ceaf8483\\QM5_12969\\Q08\\USDJPY_DWX\\aggregate.json",
+        "sha256": "f47e8f6ee06c9650343941dacebe7b5b58394532f8f0baf1644241ec00b3cfeb"
+      },
+      "q08_gate_contract_version": "v4",
+      "q08_status": "done",
+      "q08_verdict": "FAIL_SOFT",
+      "q08_work_item_id": "f14ad921-721e-413d-a2de-6506ceaf8483",
+      "rebuilt_after_legacy_evidence": false,
+      "setfile_match": "MATCH",
+      "symbol": "USDJPY.DWX",
+      "window_bound": false
+    },
+    {
+      "anchor_reason": "last authentic Q08 row has strategy-taxonomy FAIL_HARD; OWNER disposition still required",
+      "current_ex5": {
+        "exists": true,
+        "mtime_utc": "2026-08-22T13:30:12+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13117_eurgbp-audjpy\\QM5_13117_eurgbp-audjpy.ex5",
+        "sha256": "7ce7613ac7c95cb767fe5f169184e8aeff83f6b4603eb0d37db54e6582a91512"
+      },
+      "current_mq5": {
+        "exists": true,
+        "mtime_utc": "2026-07-11T02:04:20+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13117_eurgbp-audjpy\\QM5_13117_eurgbp-audjpy.mq5",
+        "sha256": "14ddccb7ac7fe8b1c1e9cec4c6a59c7045481de99f15e1728fb38a76cfe6bcd1"
+      },
+      "current_setfile": {
+        "exists": true,
+        "mtime_utc": "2026-08-22T13:29:17+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13117_eurgbp-audjpy\\sets\\QM5_13117_eurgbp-audjpy_QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1_D1_backtest.set",
+        "sha256": "37453c7efbfd77e0bd89e3d865386d21de749190eb10ca9dcd67d5526591388e"
+      },
+      "data_window_end": null,
+      "data_window_start": null,
+      "ea_id": "QM5_13117",
+      "ex5_match": "UNBOUND",
+      "excluded": [],
+      "expected_ex5_sha256": null,
+      "expected_mq5_sha256": null,
+      "expected_news_calendar_sha256": null,
+      "expected_setfile_sha256": null,
+      "mq5_match": "UNBOUND",
+      "news_compatibility": "PRE_NEWS_Q09_NO_CALENDAR; Q10_REUSE_REFUSED_WITHOUT_BOUND_CURRENT_CALENDAR_AND_WINDOW",
+      "portfolio_evidence": {
+        "exists": false,
+        "mtime_utc": null,
+        "path": "D:\\QM\\reports\\work_items\\1d32c07e-126f-4763-9a7f-de73c5328e36\\QM5_13117\\Q09_PORTFOLIO\\QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1\\aggregate.json",
+        "sha256": null
+      },
+      "portfolio_phase": "Q09_PORTFOLIO",
+      "portfolio_v4_equivalent": "Q10_PORTFOLIO",
+      "portfolio_work_item_id": "1d32c07e-126f-4763-9a7f-de73c5328e36",
+      "proposed_anchor": "RETIRE_CANDIDATE",
+      "q08_evidence": {
+        "exists": false,
+        "mtime_utc": null,
+        "path": "D:\\QM\\reports\\work_items\\d9f360d4-6fa3-47ab-bddb-6a33a616f540\\QM5_13117\\Q08\\QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1\\aggregate.json",
+        "sha256": null
+      },
+      "q08_gate_contract_version": "legacy",
+      "q08_status": "done",
+      "q08_verdict": "FAIL_HARD",
+      "q08_work_item_id": "d9f360d4-6fa3-47ab-bddb-6a33a616f540",
+      "rebuilt_after_legacy_evidence": true,
+      "setfile_match": "UNBOUND",
+      "symbol": "QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1",
+      "window_bound": false
+    }
+  ],
+  "schema": "qm.legacy-q12-anchor-audit/v1"
+}
