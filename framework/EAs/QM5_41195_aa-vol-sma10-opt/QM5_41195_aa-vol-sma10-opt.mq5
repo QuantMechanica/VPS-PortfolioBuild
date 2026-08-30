@@ -52,10 +52,10 @@ input double strategy_atr_sl_mult         = 2.5;
 input bool   strategy_enable_short        = false;
 input int    strategy_max_spread_points   = 0;
 input string strategy_sleeve_calendar_schema = "qm1537.monthly_sleeve.v1";
-input string strategy_sleeve_calendar_file = "QM5_41195_monthly_sleeves_v1.csv";
-input string strategy_sleeve_calendar_sha256 = "401E0D91E2428DAB4ABFF17C1DF651F1C7BC716B7160B71A06D1A3ECA9B5288B";
-input string strategy_sleeve_contract_sha256 = "314634871498688C3784984B8EA3DF35716996ACBEDC63623396FBC31D188007";
-input string strategy_sleeve_input_bundle_sha256 = "B177F13D49B91B2235D9B2C1013AE46F9F2BD9798D2CBA00922AACD760E41862";
+input string strategy_sleeve_calendar_file = "QM5_41195_monthly_sleeves_xag_slot0_v1.csv";
+input string strategy_sleeve_calendar_sha256 = "80AA661E7C3389AEE83CE8CFB2B851F4DDB60323FBDF5466F4CD6EF2403C31F9";
+input string strategy_sleeve_contract_sha256 = "034223AA0965B4EFF0B72FB9519482D80F91BE3629D590538D595AFC8746082C";
+input string strategy_sleeve_input_bundle_sha256 = "D571E684D9E3AE77A2360773D48E8736FF62874760AC21C3614A95B49108CC32";
 
 
 // DL-089 pattern measurement surface. Zero disables a slot.

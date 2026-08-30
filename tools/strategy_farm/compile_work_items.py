@@ -180,6 +180,9 @@ DL089_SIBLING_REBIND_AUTHORITY = (
 DL089_SIBLING_REPAIR_AUTHORITY = (
     "router_ops_issue:e8ed1e85-a8db-4345-9785-2e0ccf1f6997"
 )
+DL089_SIBLING_Q02_REPAIR_AUTHORITY = (
+    "router_ops_issue:6b66b181-2031-4f7f-ab4a-51e91f0dda3b"
+)
 DL089_SIBLING_REBIND_EA_LABELS = frozenset({
     "QM5_41195_aa-vol-sma10-opt",
     "QM5_41196_qs-kama-trend-xau-opt",
@@ -188,6 +191,7 @@ DL089_SIBLING_REBIND_CONTRACT_VERSION = "qm.dl089-sibling-rebind/v1"
 DL089_SIBLING_REBIND_DIRECTORY = "sibling_rebind_da2c006e"
 DL089_SIBLING_REPAIR_DIRECTORY = "sibling_rebind_e8ed1e85"
 DL089_SIBLING_REPAIR_41196_RETRY_DIRECTORY = "sibling_rebind_e8ed1e85_r2"
+DL089_SIBLING_Q02_REPAIR_DIRECTORY = "sibling_rebind_6b66b181"
 # Exact append-only first-build repair authority for the eight identities in
 # OWNER-DEC-Q09HOLD-REQUAL-8-20260829.  Each initial compile can expose current
 # mechanical Q01 checks that its faithful parent predates.  The repair compiles
@@ -422,6 +426,10 @@ def _sibling_rebind_authorized(label: str, authority: str | None) -> bool:
             and label in DL089_SIBLING_REBIND_EA_LABELS
         )
         or (
+            authority == DL089_SIBLING_Q02_REPAIR_AUTHORITY
+            and label == "QM5_41195_aa-vol-sma10-opt"
+        )
+        or (
             authority == Q09_REQUAL8_BUILD_REPAIR_AUTHORITY
             and label in Q09_REQUAL8_BUILD_REPAIR_EA_LABELS
         )
@@ -441,6 +449,8 @@ def _sibling_rebind_directory(
         if label == "QM5_41196_qs-kama-trend-xau-opt":
             return DL089_SIBLING_REPAIR_41196_RETRY_DIRECTORY
         return DL089_SIBLING_REPAIR_DIRECTORY
+    if authority == DL089_SIBLING_Q02_REPAIR_AUTHORITY:
+        return DL089_SIBLING_Q02_REPAIR_DIRECTORY
     if authority == Q09_REQUAL8_BUILD_REPAIR_AUTHORITY:
         return Q09_REQUAL8_BUILD_REPAIR_DIRECTORY
     if authority == Q09_REQUAL8_41215_RETRY_AUTHORITY:

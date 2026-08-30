@@ -518,6 +518,18 @@ def test_dl089_sibling_rebind_authority_is_exact_task_and_label_bound() -> None:
         compile_work_items.DL089_SIBLING_REPAIR_AUTHORITY,
         "QM5_41196_qs-kama-trend-xau-opt",
     ) == compile_work_items.DL089_SIBLING_REPAIR_41196_RETRY_DIRECTORY
+    assert compile_work_items._sibling_rebind_authorized(
+        "QM5_41195_aa-vol-sma10-opt",
+        compile_work_items.DL089_SIBLING_Q02_REPAIR_AUTHORITY,
+    )
+    assert not compile_work_items._sibling_rebind_authorized(
+        "QM5_41196_qs-kama-trend-xau-opt",
+        compile_work_items.DL089_SIBLING_Q02_REPAIR_AUTHORITY,
+    )
+    assert compile_work_items._sibling_rebind_directory(
+        compile_work_items.DL089_SIBLING_Q02_REPAIR_AUTHORITY,
+        "QM5_41195_aa-vol-sma10-opt",
+    ) == compile_work_items.DL089_SIBLING_Q02_REPAIR_DIRECTORY
     assert compile_work_items._sibling_rebind_directory(
         "router_ops_issue:wrong-task", "QM5_41195_aa-vol-sma10-opt"
     ) is None

@@ -3,6 +3,7 @@ param(
     [string]$SourcePath,
     [string]$ManifestPath,
     [string]$CommonFilesRoot = 'C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\Common\Files',
+    [string]$DestinationFileName = 'QM5_1537_monthly_sleeves_v1.csv',
     [switch]$VerifyOnly
 )
 
@@ -21,7 +22,11 @@ $source = (Resolve-Path -LiteralPath $SourcePath).Path
 $manifestFile = (Resolve-Path -LiteralPath $ManifestPath).Path
 $root = [System.IO.Path]::GetFullPath($CommonFilesRoot).TrimEnd('\')
 $destinationDir = $root
-$destination = [System.IO.Path]::GetFullPath((Join-Path $destinationDir 'QM5_1537_monthly_sleeves_v1.csv'))
+$destinationLeaf = [System.IO.Path]::GetFileName($DestinationFileName)
+if ($destinationLeaf -cne $DestinationFileName -or -not $destinationLeaf.EndsWith('.csv')) {
+    throw "DestinationFileName must be one CSV leaf name: $DestinationFileName"
+}
+$destination = [System.IO.Path]::GetFullPath((Join-Path $destinationDir $destinationLeaf))
 if (-not $destination.StartsWith($root + '\', [System.StringComparison]::OrdinalIgnoreCase)) {
     throw "Destination escapes governed FILE_COMMON root: $destination"
 }
@@ -35,7 +40,7 @@ if ($sourceHash -cne $expected) {
 
 if (-not $VerifyOnly.IsPresent) {
     New-Item -ItemType Directory -Path $destinationDir -Force | Out-Null
-    $temporary = Join-Path $destinationDir ('.QM5_1537_monthly_sleeves_v1.csv.' + $PID + '.tmp')
+    $temporary = Join-Path $destinationDir ('.' + $destinationLeaf + '.' + $PID + '.tmp')
     Copy-Item -LiteralPath $source -Destination $temporary -Force
     $temporaryHash = (Get-FileHash -LiteralPath $temporary -Algorithm SHA256).Hash.ToUpperInvariant()
     if ($temporaryHash -cne $expected) {

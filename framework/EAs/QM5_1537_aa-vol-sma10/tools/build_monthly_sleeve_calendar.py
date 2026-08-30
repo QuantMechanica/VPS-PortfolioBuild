@@ -57,7 +57,7 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest().upper()
 
 
-def ranking_contract_payload() -> str:
+def ranking_contract_payload(universe: tuple[str, ...] = UNIVERSE) -> str:
     return (
         f"schema={SCHEMA_VERSION}"
         f"|min_daily_bars={MIN_DAILY_BARS}"
@@ -66,7 +66,7 @@ def ranking_contract_payload() -> str:
         f"|top_n={TOP_N}"
         f"|tie_break={TIE_BREAK}"
         f"|evaluation={EVALUATION}"
-        f"|universe={','.join(UNIVERSE)}"
+        f"|universe={','.join(universe)}"
     )
 
 
@@ -169,9 +169,11 @@ def realized_volatility(series: DailySeries, asof_epoch: int) -> float | None:
     return math.sqrt(variance) * math.sqrt(ANNUALIZATION_DAYS) * 100.0
 
 
-def load_universe(history_root: Path) -> dict[str, DailySeries]:
+def load_universe(
+    history_root: Path, universe: tuple[str, ...] = UNIVERSE
+) -> dict[str, DailySeries]:
     result: dict[str, DailySeries] = {}
-    for symbol in UNIVERSE:
+    for symbol in universe:
         path = history_root / symbol / "cache" / "Daily.hc"
         if not path.is_file():
             raise FileNotFoundError(f"missing governed D1 cache: {path}")
@@ -179,9 +181,11 @@ def load_universe(history_root: Path) -> dict[str, DailySeries]:
     return result
 
 
-def input_manifest_rows(series_by_symbol: dict[str, DailySeries]) -> list[dict[str, object]]:
+def input_manifest_rows(
+    series_by_symbol: dict[str, DailySeries], universe: tuple[str, ...] = UNIVERSE
+) -> list[dict[str, object]]:
     rows: list[dict[str, object]] = []
-    for slot, symbol in enumerate(UNIVERSE):
+    for slot, symbol in enumerate(universe):
         series = series_by_symbol[symbol]
         rows.append(
             {
@@ -207,15 +211,17 @@ def iter_calendar_rows(
     bundle_sha256: str,
     from_month: int,
     to_month: int,
+    universe: tuple[str, ...] = UNIVERSE,
+    contract_sha256: str = CONTRACT_SHA256,
 ) -> Iterable[dict[str, object]]:
-    slot_by_symbol = {symbol: slot for slot, symbol in enumerate(UNIVERSE)}
-    for host_symbol in UNIVERSE:
+    slot_by_symbol = {symbol: slot for slot, symbol in enumerate(universe)}
+    for host_symbol in universe:
         host_months = first_host_bar_by_month(series_by_symbol[host_symbol])
         for current_month, asof_epoch in sorted(host_months.items()):
             if current_month < from_month or current_month > to_month:
                 continue
             values: list[tuple[str, float]] = []
-            for candidate in UNIVERSE:
+            for candidate in universe:
                 value = realized_volatility(series_by_symbol[candidate], asof_epoch)
                 if value is not None:
                     values.append((candidate, value))
@@ -227,7 +233,7 @@ def iter_calendar_rows(
             padded = selected + [""] * (TOP_N - len(selected))
             yield {
                 "schema_version": SCHEMA_VERSION,
-                "contract_sha256": CONTRACT_SHA256,
+                "contract_sha256": contract_sha256,
                 "input_bundle_sha256": bundle_sha256,
                 "month_key": current_month,
                 "host_symbol": host_symbol,
@@ -246,10 +252,24 @@ def build(args: argparse.Namespace) -> dict[str, object]:
     history_root = args.history_root.resolve()
     output = args.output.resolve()
     manifest_output = args.manifest_output.resolve()
-    series = load_universe(history_root)
-    inputs = input_manifest_rows(series)
+    universe = tuple(args.universe.split(",")) if args.universe else UNIVERSE
+    if len(universe) != len(UNIVERSE) or set(universe) != set(UNIVERSE):
+        raise ValueError("--universe must be an exact permutation of the governed universe")
+    contract_payload = ranking_contract_payload(universe)
+    contract_sha = sha256_bytes(contract_payload.encode("utf-8"))
+    series = load_universe(history_root, universe)
+    inputs = input_manifest_rows(series, universe)
     bundle_sha = input_bundle_sha256(inputs)
-    rows = list(iter_calendar_rows(series, bundle_sha, args.from_month, args.to_month))
+    rows = list(
+        iter_calendar_rows(
+            series,
+            bundle_sha,
+            args.from_month,
+            args.to_month,
+            universe,
+            contract_sha,
+        )
+    )
     if not rows:
         raise ValueError("calendar generation produced zero rows")
 
@@ -266,8 +286,8 @@ def build(args: argparse.Namespace) -> dict[str, object]:
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "generator": str(Path(__file__).resolve()),
         "history_root": str(history_root),
-        "ranking_contract_payload": ranking_contract_payload(),
-        "ranking_contract_sha256": CONTRACT_SHA256,
+        "ranking_contract_payload": contract_payload,
+        "ranking_contract_sha256": contract_sha,
         "input_bundle_sha256": bundle_sha,
         "calendar_path": str(output),
         "calendar_sha256": calendar_sha,
@@ -302,6 +322,10 @@ def parser() -> argparse.ArgumentParser:
     )
     result.add_argument("--from-month", type=int, default=201710)
     result.add_argument("--to-month", type=int, default=202612)
+    result.add_argument(
+        "--universe",
+        help="Comma-separated exact permutation of the governed universe (default: canonical order).",
+    )
     return result
 
 
