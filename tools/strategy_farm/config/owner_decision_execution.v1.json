@@ -22,6 +22,40 @@
   ],
   "decisions": [
     {
+      "id": "OWNER-DEC-SIBLING-REBIND-20260829",
+      "todo_id": "QM-TODO-20260830-701",
+      "priority": 91,
+      "choices": {
+        "YES": {
+          "mode": "APPLY_AND_VERIFY",
+          "objective": "Introduce the bounded append-only sibling-setfile rebuild ceremony and apply it to exactly QM5_41195 (1537/XAGUSD, incl. slot/host alignment to XAGUSD slot 0) and QM5_41196 (21507/XAUUSD) so both measurement siblings reach COMPILE_OK and their DL-089 matrices can materialize.",
+          "allowed_actions": [
+            "Commission exactly one scope-bound Codex implementation ticket for the ceremony (task/label-exact authority, tests included) and drive it to delivery",
+            "Ceremony semantics: historical bound setfiles remain unchanged as evidence; fresh unbound sibling setfiles are generated via gen_setfile.ps1 with RISK_FIXED=1000 RISK_PERCENT=0 and bound only at sibling compile",
+            "For QM5_41195 additionally align source host mapping, card/setfile parameters and active magic row consistently to XAGUSD slot 0",
+            "Correct the sibling recipe documentation to setfile-first-unbound for future siblings",
+            "Verify both COMPILE_OK receipts source-hash-matched and record the fresh matrix/prerequisite state per pair"
+          ],
+          "acceptance": [
+            "No existing setfile binding is deleted, overwritten, moved or bypassed; the enrollment guard itself is unchanged for non-ceremony paths",
+            "QM5_41195 and QM5_41196 reach source-hash-matched zero-error zero-warning COMPILE_OK receipts through the canonical enrollment and exact-row release path",
+            "The 1537/XAGUSD and 21507/XAUUSD Q12 declarations show cells>0 or the exact next fail-closed prerequisite is recorded",
+            "DL-089 selection rules, declared_trial_count, activity floor and cell definitions remain byte-identical"
+          ]
+        },
+        "NO": {
+          "mode": "DOCUMENT_AND_VERIFY",
+          "objective": "Record that both pairs leave the current optimization wave; guard and bindings remain unchanged.",
+          "allowed_actions": [
+            "Document the retirement of 1537/XAGUSD and 21507/XAUUSD from the current wave in the evidence trail and ToDo boards"
+          ],
+          "acceptance": [
+            "No code, registry, setfile or queue mutation"
+          ]
+        }
+      }
+    },
+    {
       "id": "OWNER-DEC-A1-COUNT-UNIT",
       "todo_id": "QM-TODO-20260824-520",
       "priority": 88,
