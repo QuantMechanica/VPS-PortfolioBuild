@@ -1,0 +1,28 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "673f05ea-b106-4de1-8607-3df23d51e2d6"
+  ],
+  "backup": {
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260829T224950Z_be158d53.sqlite",
+    "sha256": "d136f1a899fdc88dac9686abeddfb653cb07c2bab5c1fa832d7094486106c1bc"
+  },
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "5fb24a43d232fb4bfba613d02735ad4b8ad7a01a89824847fef013d3fb3c0f1e",
+      "ea_id": "QM5_41207",
+      "ea_label": "QM5_41207_xauxag-corrbreak-rv",
+      "expected_mq5_sha256": "5fb24a43d232fb4bfba613d02735ad4b8ad7a01a89824847fef013d3fb3c0f1e",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41207_xauxag-corrbreak-rv\\QM5_41207_xauxag-corrbreak-rv.mq5",
+      "work_item_id": "673f05ea-b106-4de1-8607-3df23d51e2d6"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-08-29T22:50:33+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "673f05ea-b106-4de1-8607-3df23d51e2d6"
+}
