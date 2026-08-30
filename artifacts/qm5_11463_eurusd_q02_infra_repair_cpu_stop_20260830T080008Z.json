@@ -1,0 +1,120 @@
+{
+  "schema": "qm.paced-fleet.q02-infra-cpu-stop/v1",
+  "recorded_at_utc": "2026-08-30T08:00:08.6949140Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "196cbfebe18e6f4dca4959cfc43c932b5690c288",
+  "mission_priority": 2,
+  "ea_id": "QM5_11463",
+  "ea_label": "QM5_11463_goodwin-j-session-high-breakout-usdjpy",
+  "approved_card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_11463_goodwin-j-session-high-breakout-usdjpy.md",
+  "claim": {
+    "task_id": "7217df8a-1b0a-45ad-863f-b39f97dc79c4",
+    "task_type": "ops_issue",
+    "assigned_agent": "codex:agents/board-advisor",
+    "claim_key": "manual:codex:agents/board-advisor:QM5_11463:q02-eurusd-history-sync-recovery:20260830T075852Z",
+    "backup_path": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_11463_eurusd_history_sync_claim_20260830T075627Z.sqlite",
+    "backup_bytes": 734773248
+  },
+  "lineage": {
+    "source_work_item_id": "b0c9b4f2-64e1-4043-8c97-c2e767c0f991",
+    "source_status": "failed",
+    "source_verdict": "INFRA_FAIL",
+    "symbol": "EURUSD.DWX",
+    "period": "H1",
+    "from_date": "2018.07.02",
+    "to_date": "2022.12.31",
+    "evidence_path": "D:/QM/reports/work_items/b0c9b4f2-64e1-4043-8c97-c2e767c0f991/QM5_11463/20260807_193006/summary.json",
+    "append_only_successor_exists": false
+  },
+  "diagnosis": {
+    "classification": "TERMINAL_LOCAL_NO_HISTORY",
+    "terminal": "T3",
+    "attempted_runs": 3,
+    "reason_classes": [
+      "NO_HISTORY",
+      "INCOMPLETE_RUNS"
+    ],
+    "oninit_failure_detected": false,
+    "invalid_report_reasons_each_run": [
+      "EMPTY_EXPERT",
+      "EMPTY_SYMBOL",
+      "M0_1970_PERIOD",
+      "BARS_ZERO",
+      "NO_HISTORY_LOG",
+      "HISTORY_CONTEXT_INVALID"
+    ],
+    "same_binary_control": {
+      "work_item_id": "c994bed4-35e7-4926-9ba4-845ccd5a72da",
+      "symbol": "GBPUSD.DWX",
+      "period": "H1",
+      "terminal": "T8",
+      "verdict": "PASS",
+      "valid_runs": 1,
+      "total_trades": 841
+    }
+  },
+  "artifact_binding": {
+    "mq5_sha256": "e747f80b8b1b6d940f0b2c8c21dcc4f251bdfc6e8f6f78808c66226df0993c10",
+    "ex5_sha256": "07a308a50e00283b2f11dced99a4b840024c7a3d6fbdcbea3816140e0a53f834",
+    "setfile_sha256": "511b98cd2e1fdcc14755c2e3ffc913959bcc0bcccb890da1ab1aa76223079a9a",
+    "matches_predecessor": true,
+    "risk_fixed": 1000,
+    "risk_percent": 0
+  },
+  "validation": {
+    "spec_validation": "PASS_1_OF_1",
+    "build_check": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+    "build_check_retry_attempted": false,
+    "rebuild_required": false
+  },
+  "capacity": {
+    "sample_start_utc": "2026-08-30T07:59:56.4976025Z",
+    "sample_end_utc": "2026-08-30T08:00:08.6949140Z",
+    "samples_percent": [
+      94.0,
+      96.0,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "average_percent": 98.0,
+    "maximum_percent": 100.0,
+    "stop_wall_percent": 97.0,
+    "resume_threshold_percent": 90.0,
+    "binding": true,
+    "active_research_terminals": [
+      "T6",
+      "T7",
+      "T9",
+      "T10"
+    ],
+    "active_research_terminal_count": 4,
+    "terminal_count_ceiling": 7
+  },
+  "outcome": {
+    "diagnosis_complete": true,
+    "q02_enqueued": false,
+    "new_work_item_id": null,
+    "dispatch_invoked": false,
+    "tester_launched": false,
+    "reason": "BACKTEST_CPU_CEILING"
+  },
+  "continuation": {
+    "reclaim_required": true,
+    "repeat_duplicate_and_capacity_checks": true,
+    "producer": "farmctl.append_only_exact_row_rerun",
+    "predecessor_work_item_id": "b0c9b4f2-64e1-4043-8c97-c2e767c0f991",
+    "terminal_steering_required": [
+      "T3"
+    ],
+    "steering_note": "The append-only stable payload intentionally excludes runtime avoid_terminals; use a governed atomic pending-row steering repair rather than assuming inheritance."
+  },
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "live_manifest_touched": false,
+    "ea_artifacts_changed": false,
+    "historical_work_item_changed": false
+  }
+}
