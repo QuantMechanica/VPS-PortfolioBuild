@@ -1,0 +1,179 @@
+{
+  "artifact_type": "fx_cointegration_fleet_hard_cpu_stop",
+  "schema": "qm.mission-cpu-stop/v1",
+  "generated_at_utc": "2026-08-30T09:16:30.0142976Z",
+  "generated_at_europe_berlin": "2026-08-30T11:16:30.0142976+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "13d39b4703fc2a37e10ede1251a86d40de9b1621",
+  "mission_outcome": "STOPPED_CPU_MAXIMUM_AT_OR_ABOVE_97_PERCENT",
+  "frontier_reconciliation": {
+    "controlling_research": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "durable_coverage_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "relationships_total": 66,
+    "relationships_covered": 66,
+    "relationships_uncovered": 0,
+    "new_unbuilt_pair_eligible": false,
+    "approved_cointegration_cards_unbuilt_at_latest_committed_census": 0,
+    "published_survivor_criterion": "DEV Sharpe > 0; OOS net Sharpe > 0.8; OOS trades >= 4",
+    "anchors": {
+      "QM5_12532": {
+        "pair": [
+          "AUDUSD.DWX",
+          "NZDUSD.DWX"
+        ],
+        "q02": "PASS",
+        "later_chain": "Q04 PASS; Q05 FAIL",
+        "current_q02_oninit_or_no_history_block": false
+      },
+      "QM5_12533": {
+        "pair": [
+          "EURJPY.DWX",
+          "GBPJPY.DWX"
+        ],
+        "q02": "PASS",
+        "later_chain": "Q04 FAIL",
+        "current_q02_oninit_or_no_history_block": false
+      }
+    },
+    "skill_gate_disposition": {
+      "strategy_card_extraction": "CLOSED_NO_OWNER_APPROVED_NON_DUPLICATE_SCAN_QUALIFIED_PAIR",
+      "ea_build": "CLOSED_NO_APPROVED_UNBUILT_COINTEGRATION_CARD",
+      "pipeline_phase_skill": "NOT_APPLICABLE_TO_Q03_OR_Q04"
+    }
+  },
+  "selected_existing_forex_fallback": {
+    "selection_rule": "existing dependency-correct FX successor after the governed scan frontier was fully mechanized",
+    "scan_rank": 46,
+    "ea_id": "QM5_20224",
+    "logical_symbol": "QM5_20224_EURUSD_EURJPY_COINTEGRATION_D1",
+    "structural_only": true,
+    "timeframe": "D1",
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "portfolio_weight": 1.0,
+    "machine_learning": false,
+    "adaptive_refit": false,
+    "canonical_lineage": [
+      {
+        "id": "5d1cb89c-25ce-419c-869c-8c9f7afa10c1",
+        "phase": "Q02",
+        "status": "done",
+        "verdict": "PASS"
+      },
+      {
+        "id": "3c74eb04-7e19-4aa0-8dcf-3f004faaa946",
+        "phase": "Q03",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "attempt_count": 0
+      },
+      {
+        "id": "a525cd8f-4c29-4752-b1af-3c43288f259e",
+        "phase": "Q04",
+        "status": "pending",
+        "verdict": null
+      }
+    ],
+    "active_serialized_basket_predecessor": {
+      "id": "c56df942-e7aa-4c7d-b855-402de608352f",
+      "ea_id": "QM5_20294",
+      "phase": "Q05",
+      "status": "active",
+      "claimed_by": "T10",
+      "logical_symbol": "QM5_20294_XAU_XAG_LOWMAX_D1",
+      "governed_terminal_process_present": true
+    }
+  },
+  "capacity_sample": {
+    "command": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "sampled_at_utc": "2026-08-30T09:16:30.0142976Z",
+    "samples_cpu_percent": [
+      99.02354067295663,
+      92.3063529202459,
+      97.9545590100719,
+      92.2023039259965,
+      82.15755674810687
+    ],
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "average_cpu_percent": 92.72886265547555,
+    "maximum_cpu_percent": 99.02354067295663,
+    "hard_ceiling_percent": 97.0,
+    "average_binding": false,
+    "maximum_binding": true,
+    "ceiling_binding": true
+  },
+  "fleet_snapshot": {
+    "sampled_at_utc": "2026-08-30T09:16:25+00:00",
+    "active_farm_work_item_count": 9,
+    "active_phase_counts": {
+      "OPT_CENSUS": 3,
+      "Q02": 2,
+      "Q05": 1,
+      "Q07": 1,
+      "Q10_NEWS": 2
+    },
+    "running_factory_terminals": [
+      "T1",
+      "T2",
+      "T4",
+      "T9",
+      "T10"
+    ],
+    "active_reservation_count": 6,
+    "terminal_worker_count": 10,
+    "duplicate_terminal_workers": {},
+    "orphaned_factory_terminal_count": 0,
+    "t_live_observation_only": true,
+    "unrelated_ftmo_terminal_observation_only": true
+  },
+  "actions_this_run": {
+    "frontier_and_anchor_reconciled": true,
+    "selected_existing_forex_lineage_verified": true,
+    "capacity_rechecked": true,
+    "active_predecessor_verified": true,
+    "new_card_or_ea_created": false,
+    "existing_forex_row_mutated": false,
+    "q02_or_later_phase_enqueued": false,
+    "queue_payload_priority_claim_status_or_verdict_mutated": false,
+    "dispatch_tick": false,
+    "terminal_or_worker_controlled": false,
+    "compile_smoke_or_backtest_started": false,
+    "cpu_stop_evidence_created": true
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false,
+    "live_or_deploy_manifest_touched": false,
+    "preexisting_worktree_changes_preserved": true
+  },
+  "non_duplicate_delta": {
+    "preceding_receipt": "artifacts/qm5_20224_q03_paced_predecessor_handoff_20260830T080303Z_board_advisor.json",
+    "preceding_running_factory_terminals": [
+      "T3",
+      "T6",
+      "T7",
+      "T9",
+      "T10"
+    ],
+    "current_running_factory_terminals": [
+      "T1",
+      "T2",
+      "T4",
+      "T9",
+      "T10"
+    ],
+    "preceding_maximum_cpu_percent": 79.048114,
+    "current_maximum_cpu_percent": 99.02354067295663,
+    "changed_state": "The factory tester roster rotated, two fresh Q02 jobs became active, and the fresh maximum CPU crossed the hard ceiling while the same healthy T10 basket predecessor retained the serialized lane.",
+    "duplicate_work_items_created": 0
+  },
+  "resume_contract": "On a later paced wake, take a fresh five-sample CPU window. Only when both average and maximum are strictly below 97 percent, and after QM5_20294 reaches a canonical terminal state, may the resident paced worker advance the unique existing QM5_20224 Q03 row; never enqueue a duplicate or promote Q04 before Q03 PASS."
+}
