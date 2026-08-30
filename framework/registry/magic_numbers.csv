@@ -18116,3 +18116,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41213,xauxag-samecal-signscore,0,XAUUSD.DWX,412130000,2026-08-30,Codex governed allocator,active
 41213,xauxag-samecal-signscore,1,XAGUSD.DWX,412130001,2026-08-30,Codex governed allocator,active
 41214,xng-samecal-signscore,0,XNGUSD.DWX,412140000,2026-08-30,Codex governed allocator,active
+41215,pre-fomc-drift-ndx-requal8,0,NDX.DWX,412150000,2026-08-30,Codex governed allocator,active
+41216,grimes-nested-pb-v2-requal8,0,XAUUSD.DWX,412160000,2026-08-30,Codex governed allocator,active
+41217,tv-post-vwap-requal8,0,GDAXI.DWX,412170000,2026-08-30,Codex governed allocator,active
+41218,demark-td-reverse-sequential-h4-requal8,0,EURUSD.DWX,412180000,2026-08-30,Codex governed allocator,active
+41219,cum-rsi2-commodity-requal8,0,XAUUSD.DWX,412190000,2026-08-30,Codex governed allocator,active
+41220,grimes-context-pb-requal8,0,GBPUSD.DWX,412200000,2026-08-30,Codex governed allocator,active
+41221,ohlc-daily-squeeze-reversal-d1-requal8,0,EURUSD.DWX,412210000,2026-08-30,Codex governed allocator,active
+41222,lien-k-double-bb-trend-h1-requal8,0,USDJPY.DWX,412220000,2026-08-30,Codex governed allocator,active

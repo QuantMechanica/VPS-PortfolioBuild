@@ -1,0 +1,879 @@
+{
+  "anchor_rule": "newest done work item of the pair whose MQ5/EX5/setfile hashes verify against current or archived bindings and whose gate contract has a v4 equivalence",
+  "classification_rule": "action=NEW_IDENTITY_FROM_Q02 iff current MQ5/setfile/include-closure bytes differ from the evidence-bound vintage of the pair's last authentic gate, or the bound evidence file/vintage is missing; otherwise SAME_IDENTITY_APPEND_ONLY",
+  "control_bindings": {
+    "allocator_receipt": {
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-30_8709bc0f_requal8_allocator_receipt.json",
+      "sha256": "48a14b1d8cf13ca218fac6e40b8ac177733d205e89e7d5092fc9a5867109f253"
+    },
+    "ea_id_registry": {
+      "path": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "sha256": "01f8f91205f31bbb8249fb006695729679fa6114dd286faffe8109ffd359439a"
+    },
+    "gate_manifest": {
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\gate_manifest.v4.json",
+      "sha256": "f71c1ea63f1e847b3670904a6de25bcb4b337df9e0a7cff8ee6405d9c3aa2c83"
+    },
+    "magic_registry": {
+      "path": "C:\\QM\\repo\\framework\\registry\\magic_numbers.csv",
+      "sha256": "bca45f52a585fbec61a30d89b83736a0b56822b5cb1050f968f064825cf98a73"
+    }
+  },
+  "derived_at_utc": "2026-08-30T07:18:43+00:00",
+  "mutation_statement": "Exactly eight identity and eight slot-0 magic reservations were made; no compile, queue seed, hold release, or historical work-item mutation was performed.",
+  "owner_decision": "OWNER-DEC-Q09HOLD-REQUAL-8-20260829",
+  "protected_qm5_41162_opt_census_snapshot": {
+    "row_count": 1085,
+    "rows_sha256": "b848f9cff1ea6eef73414b412dd2e7a66515014edbf6622bd67f592a55221f79"
+  },
+  "result": {
+    "new_identity_count": 8,
+    "row_count": 8,
+    "same_identity_count": 0
+  },
+  "router_task_id": "8709bc0f-e0cf-4117-bb73-a6b399e5e612",
+  "rows": [
+    {
+      "action": "NEW_IDENTITY_FROM_Q02",
+      "canonical_enqueue_command_contract": "python C:/QM/repo/tools/strategy_farm/farmctl.py enqueue-backtest --review-task-id <APPROVED_BUILD_REVIEW_TASK_ID_FOR_QM5_41215> --phase Q02",
+      "classification_reason": [
+        "setfile",
+        "include_closure"
+      ],
+      "comparisons": {
+        "ex5": "MATCH",
+        "include_closure": "UNBOUND_AT_ANCHOR",
+        "mq5": "MATCH",
+        "setfile": "MISMATCH"
+      },
+      "current_artifacts": {
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13128_pre-fomc-drift-ndx\\QM5_13128_pre-fomc-drift-ndx.ex5",
+          "sha256": "59b9d1657fb04a9f33a030d420da76a1cae92c4223f4404842a53feed1848370"
+        },
+        "include_closure": {
+          "member_count": 31,
+          "method": "RECURSIVE_MQL5_INCLUDE_CLOSURE",
+          "sha256": "04e4f3092037df7f33604c0d42c024af977b4b80eef88c747c15e1b75ec1af48",
+          "unresolved_repo_includes": []
+        },
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13128_pre-fomc-drift-ndx\\QM5_13128_pre-fomc-drift-ndx.mq5",
+          "sha256": "e2bd93a2a66700763997af1e8a9713e40ae76e31916b86d941ae08f495e3fb19"
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13128_pre-fomc-drift-ndx\\sets\\QM5_13128_pre-fomc-drift-ndx_NDX.DWX_H1_backtest.set",
+          "sha256": "6bf3e6337c54143ebcb0e727cc9409a7eaf1bc9409f6ef1ec78581e1192ddbaf"
+        }
+      },
+      "decision_bound_hold_release_note": "OWNER-DEC-Q09HOLD-REQUAL-8-20260829; release only after Orchestrator approves manifest SHA-256, QM5_41215 is built and Codex-reviewed, and one append-only Q02 seed for NDX.DWX is verified from anchor 7adc5872-626c-4340-9ed5-1f1682c4e332; preserve historical rows.",
+      "enqueue_preconditions": "governed build complete; .mq5/.ex5/setfile present; Codex build review approved; Orchestrator manifest approval recorded",
+      "held_work_item_id": "aa80274f-fb46-4432-b47e-6fb2bf28c9a2",
+      "hold_state": {
+        "code": "Q09_AWAITING_SEALED_PLAN",
+        "status": "pending"
+      },
+      "last_authentic_anchor": {
+        "equivalent_v4_gate": "Q09",
+        "evidence": {
+          "path": "D:\\QM\\reports\\work_items\\7adc5872-626c-4340-9ed5-1f1682c4e332\\QM5_13128\\Q09\\NDX_DWX\\aggregate.json",
+          "sha256": "d0e25f07d2d98d89fa4aa8fb1a7ef58250892e89fa2410c8867791a4bef63808",
+          "verification": {
+            "ex5_bound_in_evidence": true,
+            "mq5_bound": true,
+            "setfile_bound_in_evidence": true
+          }
+        },
+        "gate_contract_version": "v4",
+        "hashes": {
+          "ex5_sha256": "59b9d1657fb04a9f33a030d420da76a1cae92c4223f4404842a53feed1848370",
+          "include_closure_sha256": null,
+          "mq5_sha256": "e2bd93a2a66700763997af1e8a9713e40ae76e31916b86d941ae08f495e3fb19",
+          "setfile_sha256": "48b1efc4a209217cce2628709361eb59680684af8143d125d71008fc3df682c7"
+        },
+        "stored_gate": "Q09",
+        "updated_at": "2026-08-29T20:08:45+00:00",
+        "verdict": "PASS",
+        "work_item_id": "7adc5872-626c-4340-9ed5-1f1682c4e332"
+      },
+      "pair": {
+        "ea_id": "QM5_13128",
+        "symbol": "NDX.DWX",
+        "timeframe": "H1"
+      },
+      "protected_program_no_touch": null,
+      "reserved_identity": {
+        "canonical_card_copy": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41215_pre-fomc-drift-ndx-requal8\\docs\\strategy_card.md",
+          "sha256": "523a4cc0775e2e4a8c6fdcc526d1d0b59120f4c1205f396fec40580e916f795b"
+        },
+        "ea_id": "QM5_41215",
+        "ea_registry_row": {
+          "created_at": "2026-08-30",
+          "ea_id": "41215",
+          "owner": "Research",
+          "retired_at": "",
+          "retired_evidence": "",
+          "retired_reason": "",
+          "slug": "pre-fomc-drift-ndx-requal8",
+          "status": "active",
+          "strategy_id": "OWNER-DEC-Q09HOLD-REQUAL-8-20260829:QM5_13128"
+        },
+        "magic_registry_row": {
+          "ea_id": "41215",
+          "ea_slug": "pre-fomc-drift-ndx-requal8",
+          "magic": "412150000",
+          "reserved_at": "2026-08-30",
+          "reserved_by": "Codex governed allocator",
+          "status": "active",
+          "symbol": "NDX.DWX",
+          "symbol_slot": "0"
+        },
+        "recovery_card": {
+          "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_41215_pre-fomc-drift-ndx-requal8.md",
+          "sha256": "523a4cc0775e2e4a8c6fdcc526d1d0b59120f4c1205f396fec40580e916f795b"
+        },
+        "reservation_only": true,
+        "slug": "pre-fomc-drift-ndx-requal8"
+      },
+      "successor_phase": "Q02"
+    },
+    {
+      "action": "NEW_IDENTITY_FROM_Q02",
+      "canonical_enqueue_command_contract": "python C:/QM/repo/tools/strategy_farm/farmctl.py enqueue-backtest --review-task-id <APPROVED_BUILD_REVIEW_TASK_ID_FOR_QM5_41216> --phase Q02",
+      "classification_reason": [
+        "setfile",
+        "include_closure"
+      ],
+      "comparisons": {
+        "ex5": "MATCH",
+        "include_closure": "UNBOUND_AT_ANCHOR",
+        "mq5": "MATCH",
+        "setfile": "MISMATCH"
+      },
+      "current_artifacts": {
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12989_grimes-nested-pb-v2\\QM5_12989_grimes-nested-pb-v2.ex5",
+          "sha256": "77d3c5fda5ef2dfd0c138e6520f76d450a04fe812fcefabac07e2673fcd2e425"
+        },
+        "include_closure": {
+          "member_count": 31,
+          "method": "RECURSIVE_MQL5_INCLUDE_CLOSURE",
+          "sha256": "665bcb50887a8739fc6f625121bd4bae719365a2492b624b04e6588f9fba2356",
+          "unresolved_repo_includes": []
+        },
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12989_grimes-nested-pb-v2\\QM5_12989_grimes-nested-pb-v2.mq5",
+          "sha256": "0beecb7626056612c05153549529be73bc7bac37f84b1d54b076cbe326d006f3"
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12989_grimes-nested-pb-v2\\sets\\QM5_12989_grimes-nested-pb-v2_XAUUSD.DWX_H4_backtest.set",
+          "sha256": "d409d8b75d1c3efd7f30fb56ec26c19b142c410cb15b339fab67afc290eba152"
+        }
+      },
+      "decision_bound_hold_release_note": "OWNER-DEC-Q09HOLD-REQUAL-8-20260829; release only after Orchestrator approves manifest SHA-256, QM5_41216 is built and Codex-reviewed, and one append-only Q02 seed for XAUUSD.DWX is verified from anchor 543c693f-867d-40af-b07f-35d501e46485; preserve historical rows.",
+      "enqueue_preconditions": "governed build complete; .mq5/.ex5/setfile present; Codex build review approved; Orchestrator manifest approval recorded",
+      "held_work_item_id": "1cff016c-d25c-4723-a892-6bc53bfafa0b",
+      "hold_state": {
+        "code": "Q09_AWAITING_SEALED_PLAN",
+        "status": "pending"
+      },
+      "last_authentic_anchor": {
+        "equivalent_v4_gate": "Q09",
+        "evidence": {
+          "path": "D:\\QM\\reports\\work_items\\543c693f-867d-40af-b07f-35d501e46485\\QM5_12989\\Q09\\XAUUSD_DWX\\aggregate.json",
+          "sha256": "c3d66763cc791f4c1676520f0687b445cf3991dfc2613f7a62ef1072d641717b",
+          "verification": {
+            "ex5_bound_in_evidence": true,
+            "mq5_bound": true,
+            "setfile_bound_in_evidence": true
+          }
+        },
+        "gate_contract_version": "v4",
+        "hashes": {
+          "ex5_sha256": "77d3c5fda5ef2dfd0c138e6520f76d450a04fe812fcefabac07e2673fcd2e425",
+          "include_closure_sha256": null,
+          "mq5_sha256": "0beecb7626056612c05153549529be73bc7bac37f84b1d54b076cbe326d006f3",
+          "setfile_sha256": "6ae10f3a0f7a29d0ef0f4f7ac7a23c3dda7c9e19ff60796adc8439edd43e4dbc"
+        },
+        "stored_gate": "Q09",
+        "updated_at": "2026-08-30T01:47:51+00:00",
+        "verdict": "PASS",
+        "work_item_id": "543c693f-867d-40af-b07f-35d501e46485"
+      },
+      "pair": {
+        "ea_id": "QM5_12989",
+        "symbol": "XAUUSD.DWX",
+        "timeframe": "H4"
+      },
+      "protected_program_no_touch": null,
+      "reserved_identity": {
+        "canonical_card_copy": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41216_grimes-nested-pb-v2-requal8\\docs\\strategy_card.md",
+          "sha256": "5b24d88f7af51ef583fb6f7e7cc12ce5a1c449c91915bff651e519b5513cafa9"
+        },
+        "ea_id": "QM5_41216",
+        "ea_registry_row": {
+          "created_at": "2026-08-30",
+          "ea_id": "41216",
+          "owner": "Research",
+          "retired_at": "",
+          "retired_evidence": "",
+          "retired_reason": "",
+          "slug": "grimes-nested-pb-v2-requal8",
+          "status": "active",
+          "strategy_id": "OWNER-DEC-Q09HOLD-REQUAL-8-20260829:QM5_12989"
+        },
+        "magic_registry_row": {
+          "ea_id": "41216",
+          "ea_slug": "grimes-nested-pb-v2-requal8",
+          "magic": "412160000",
+          "reserved_at": "2026-08-30",
+          "reserved_by": "Codex governed allocator",
+          "status": "active",
+          "symbol": "XAUUSD.DWX",
+          "symbol_slot": "0"
+        },
+        "recovery_card": {
+          "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_41216_grimes-nested-pb-v2-requal8.md",
+          "sha256": "5b24d88f7af51ef583fb6f7e7cc12ce5a1c449c91915bff651e519b5513cafa9"
+        },
+        "reservation_only": true,
+        "slug": "grimes-nested-pb-v2-requal8"
+      },
+      "successor_phase": "Q02"
+    },
+    {
+      "action": "NEW_IDENTITY_FROM_Q02",
+      "canonical_enqueue_command_contract": "python C:/QM/repo/tools/strategy_farm/farmctl.py enqueue-backtest --review-task-id <APPROVED_BUILD_REVIEW_TASK_ID_FOR_QM5_41217> --phase Q02",
+      "classification_reason": [
+        "setfile",
+        "include_closure"
+      ],
+      "comparisons": {
+        "ex5": "MATCH",
+        "include_closure": "UNBOUND_AT_ANCHOR",
+        "mq5": "MATCH",
+        "setfile": "MISMATCH"
+      },
+      "current_artifacts": {
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10815_tv-post-vwap\\QM5_10815_tv-post-vwap.ex5",
+          "sha256": "af1b535b3cd6e8f8ff6c0a5d54933e58e2f391fa007b6811b897d76ba9631bba"
+        },
+        "include_closure": {
+          "member_count": 31,
+          "method": "RECURSIVE_MQL5_INCLUDE_CLOSURE",
+          "sha256": "5ef7dd7c8fbd94f0633c66e25a313b7357b51c2b17a53b016cb83ae5497cd6f1",
+          "unresolved_repo_includes": []
+        },
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10815_tv-post-vwap\\QM5_10815_tv-post-vwap.mq5",
+          "sha256": "cdbf22e77035d7ef3e30deb05d171c4c265d14cd3aec9e78c3d817d078c345dd"
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10815_tv-post-vwap\\sets\\QM5_10815_tv-post-vwap_GDAXI.DWX_H1_backtest.set",
+          "sha256": "01a4f1dc97a83cfdbfbb0d6e73f21af95f28e6a5776d4caeda7f62a2b6c3a024"
+        }
+      },
+      "decision_bound_hold_release_note": "OWNER-DEC-Q09HOLD-REQUAL-8-20260829; release only after Orchestrator approves manifest SHA-256, QM5_41217 is built and Codex-reviewed, and one append-only Q02 seed for GDAXI.DWX is verified from anchor c7845c62-6c35-49eb-8e9f-056af2c6c14e; preserve historical rows.",
+      "enqueue_preconditions": "governed build complete; .mq5/.ex5/setfile present; Codex build review approved; Orchestrator manifest approval recorded",
+      "held_work_item_id": "57d8bacd-2805-45a6-ac51-156e22bb3a65",
+      "hold_state": {
+        "code": "Q09_AWAITING_SEALED_PLAN",
+        "status": "pending"
+      },
+      "last_authentic_anchor": {
+        "equivalent_v4_gate": "Q09",
+        "evidence": {
+          "path": "D:\\QM\\reports\\work_items\\c7845c62-6c35-49eb-8e9f-056af2c6c14e\\QM5_10815\\Q09\\GDAXI_DWX\\aggregate.json",
+          "sha256": "b0a5eaae0f1455101a2ae1ffeeff729b0c9d619b9b496a914b896fe6cfc5944a",
+          "verification": {
+            "ex5_bound_in_evidence": true,
+            "mq5_bound": true,
+            "setfile_bound_in_evidence": true
+          }
+        },
+        "gate_contract_version": "v4",
+        "hashes": {
+          "ex5_sha256": "af1b535b3cd6e8f8ff6c0a5d54933e58e2f391fa007b6811b897d76ba9631bba",
+          "include_closure_sha256": null,
+          "mq5_sha256": "cdbf22e77035d7ef3e30deb05d171c4c265d14cd3aec9e78c3d817d078c345dd",
+          "setfile_sha256": "11dea3699d9b9af224cd807a21ad39cd3fffb1439a2d854cb0cbfa959cdc5af3"
+        },
+        "stored_gate": "Q09",
+        "updated_at": "2026-08-27T01:53:52+00:00",
+        "verdict": "PASS",
+        "work_item_id": "c7845c62-6c35-49eb-8e9f-056af2c6c14e"
+      },
+      "pair": {
+        "ea_id": "QM5_10815",
+        "symbol": "GDAXI.DWX",
+        "timeframe": "H1"
+      },
+      "protected_program_no_touch": null,
+      "reserved_identity": {
+        "canonical_card_copy": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41217_tv-post-vwap-requal8\\docs\\strategy_card.md",
+          "sha256": "69a221c48e3d43dbe40aa3aede0701a574a7144063290493bf15064a674cf611"
+        },
+        "ea_id": "QM5_41217",
+        "ea_registry_row": {
+          "created_at": "2026-08-30",
+          "ea_id": "41217",
+          "owner": "Research",
+          "retired_at": "",
+          "retired_evidence": "",
+          "retired_reason": "",
+          "slug": "tv-post-vwap-requal8",
+          "status": "active",
+          "strategy_id": "OWNER-DEC-Q09HOLD-REQUAL-8-20260829:QM5_10815"
+        },
+        "magic_registry_row": {
+          "ea_id": "41217",
+          "ea_slug": "tv-post-vwap-requal8",
+          "magic": "412170000",
+          "reserved_at": "2026-08-30",
+          "reserved_by": "Codex governed allocator",
+          "status": "active",
+          "symbol": "GDAXI.DWX",
+          "symbol_slot": "0"
+        },
+        "recovery_card": {
+          "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_41217_tv-post-vwap-requal8.md",
+          "sha256": "69a221c48e3d43dbe40aa3aede0701a574a7144063290493bf15064a674cf611"
+        },
+        "reservation_only": true,
+        "slug": "tv-post-vwap-requal8"
+      },
+      "successor_phase": "Q02"
+    },
+    {
+      "action": "NEW_IDENTITY_FROM_Q02",
+      "canonical_enqueue_command_contract": "python C:/QM/repo/tools/strategy_farm/farmctl.py enqueue-backtest --review-task-id <APPROVED_BUILD_REVIEW_TASK_ID_FOR_QM5_41218> --phase Q02",
+      "classification_reason": [
+        "mq5",
+        "setfile",
+        "include_closure"
+      ],
+      "comparisons": {
+        "ex5": "MATCH",
+        "include_closure": "UNBOUND_AT_ANCHOR",
+        "mq5": "MISMATCH",
+        "setfile": "MISMATCH"
+      },
+      "current_artifacts": {
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1567_demark-td-reverse-sequential-h4\\QM5_1567_demark-td-reverse-sequential-h4.ex5",
+          "sha256": "aee0eb60798ef7ada09e49df6e9a339dd8199f810de56dab8a25957cb26fba31"
+        },
+        "include_closure": {
+          "member_count": 31,
+          "method": "RECURSIVE_MQL5_INCLUDE_CLOSURE",
+          "sha256": "66f3c0cc9736b04c0239e2f39bade3750e5179095f5559d9c3b3d171b793c719",
+          "unresolved_repo_includes": []
+        },
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1567_demark-td-reverse-sequential-h4\\QM5_1567_demark-td-reverse-sequential-h4.mq5",
+          "sha256": "a9531d333dbbe067270811e696e235483d12d2604e86c974feea411066649f8c"
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1567_demark-td-reverse-sequential-h4\\sets\\QM5_1567_demark-td-reverse-sequential-h4_EURUSD.DWX_H4_backtest.set",
+          "sha256": "2e9347a132ed89218a293d03e1b6eb10abce2a74bec50190aa4c6039754fba58"
+        }
+      },
+      "decision_bound_hold_release_note": "OWNER-DEC-Q09HOLD-REQUAL-8-20260829; release only after Orchestrator approves manifest SHA-256, QM5_41218 is built and Codex-reviewed, and one append-only Q02 seed for EURUSD.DWX is verified from anchor e460e02b-e940-49fa-ace0-e2b9c853e7d6; preserve historical rows.",
+      "enqueue_preconditions": "governed build complete; .mq5/.ex5/setfile present; Codex build review approved; Orchestrator manifest approval recorded",
+      "held_work_item_id": "2604a1f0-4f58-4597-89ef-432af9093131",
+      "hold_state": {
+        "code": "Q09_AWAITING_SEALED_PLAN",
+        "status": "pending"
+      },
+      "last_authentic_anchor": {
+        "equivalent_v4_gate": "Q02",
+        "evidence": {
+          "path": "D:\\QM\\reports\\work_items\\e460e02b-e940-49fa-ace0-e2b9c853e7d6\\QM5_1567\\20260805_191338\\summary.json",
+          "sha256": "ca7d6e3f47915e2fe96287703e695132ce96d9cfe941177c0aa85f839b7e80ec",
+          "verification": {
+            "ex5_bound_in_evidence": true,
+            "mq5_bound": true,
+            "setfile_bound_in_evidence": true
+          }
+        },
+        "gate_contract_version": "legacy",
+        "hashes": {
+          "ex5_sha256": "aee0eb60798ef7ada09e49df6e9a339dd8199f810de56dab8a25957cb26fba31",
+          "include_closure_sha256": null,
+          "mq5_sha256": "685af902fd614945f15df604810f52b561d6dd3c0d155166b09dde9126da0f27",
+          "setfile_sha256": "1282e2adba701ee17f39184da9bf6ed5d6e3c48f6a401ca768eb085ada9c9e64"
+        },
+        "stored_gate": "Q02",
+        "updated_at": "2026-08-05T19:25:11+00:00",
+        "verdict": "PASS",
+        "work_item_id": "e460e02b-e940-49fa-ace0-e2b9c853e7d6"
+      },
+      "pair": {
+        "ea_id": "QM5_1567",
+        "symbol": "EURUSD.DWX",
+        "timeframe": "H4"
+      },
+      "protected_program_no_touch": null,
+      "reserved_identity": {
+        "canonical_card_copy": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41218_demark-td-reverse-sequential-h4-requal8\\docs\\strategy_card.md",
+          "sha256": "5d5b5b902e98c8030a0b8432020f4a06e6d7f62bc80bc817b446bdf8b7d666bb"
+        },
+        "ea_id": "QM5_41218",
+        "ea_registry_row": {
+          "created_at": "2026-08-30",
+          "ea_id": "41218",
+          "owner": "Research",
+          "retired_at": "",
+          "retired_evidence": "",
+          "retired_reason": "",
+          "slug": "demark-td-reverse-sequential-h4-requal8",
+          "status": "active",
+          "strategy_id": "OWNER-DEC-Q09HOLD-REQUAL-8-20260829:QM5_1567"
+        },
+        "magic_registry_row": {
+          "ea_id": "41218",
+          "ea_slug": "demark-td-reverse-sequential-h4-requal8",
+          "magic": "412180000",
+          "reserved_at": "2026-08-30",
+          "reserved_by": "Codex governed allocator",
+          "status": "active",
+          "symbol": "EURUSD.DWX",
+          "symbol_slot": "0"
+        },
+        "recovery_card": {
+          "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_41218_demark-td-reverse-sequential-h4-requal8.md",
+          "sha256": "5d5b5b902e98c8030a0b8432020f4a06e6d7f62bc80bc817b446bdf8b7d666bb"
+        },
+        "reservation_only": true,
+        "slug": "demark-td-reverse-sequential-h4-requal8"
+      },
+      "successor_phase": "Q02"
+    },
+    {
+      "action": "NEW_IDENTITY_FROM_Q02",
+      "canonical_enqueue_command_contract": "python C:/QM/repo/tools/strategy_farm/farmctl.py enqueue-backtest --review-task-id <APPROVED_BUILD_REVIEW_TASK_ID_FOR_QM5_41219> --phase Q02",
+      "classification_reason": [
+        "setfile",
+        "include_closure"
+      ],
+      "comparisons": {
+        "ex5": "MATCH",
+        "include_closure": "UNBOUND_AT_ANCHOR",
+        "mq5": "MATCH",
+        "setfile": "MISMATCH"
+      },
+      "current_artifacts": {
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12567_cum-rsi2-commodity\\QM5_12567_cum-rsi2-commodity.ex5",
+          "sha256": "8d901924fe7dd2cd00c61dac6db78871fdfe34f73e0f003393196992d5143e04"
+        },
+        "include_closure": {
+          "member_count": 31,
+          "method": "RECURSIVE_MQL5_INCLUDE_CLOSURE",
+          "sha256": "a824f1e4dbbe900657a186fec4aef71b04ff44813fe84370e04d32566dce4a9d",
+          "unresolved_repo_includes": []
+        },
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12567_cum-rsi2-commodity\\QM5_12567_cum-rsi2-commodity.mq5",
+          "sha256": "8a5dc80942f867936ab18f6b98243437761aba55330024b18e5a050757ad60fc"
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12567_cum-rsi2-commodity\\sets\\QM5_12567_cum-rsi2-commodity_XAUUSD.DWX_D1_backtest.set",
+          "sha256": "12c1dfe5d4e743cda2fd102a5b3baa9e5691781ea2f65e433a4273e9d8fef943"
+        }
+      },
+      "decision_bound_hold_release_note": "OWNER-DEC-Q09HOLD-REQUAL-8-20260829; release only after Orchestrator approves manifest SHA-256, QM5_41219 is built and Codex-reviewed, and one append-only Q02 seed for XAUUSD.DWX is verified from anchor 8f43a2f8-d0be-472f-87ca-c2fd628136e4; preserve historical rows.",
+      "enqueue_preconditions": "governed build complete; .mq5/.ex5/setfile present; Codex build review approved; Orchestrator manifest approval recorded",
+      "held_work_item_id": "7bbeef66-becf-4bd3-aa5c-1d00bde262d8",
+      "hold_state": {
+        "code": "Q09_AWAITING_SEALED_PLAN",
+        "status": "pending"
+      },
+      "last_authentic_anchor": {
+        "equivalent_v4_gate": "Q09",
+        "evidence": {
+          "path": "D:\\QM\\reports\\work_items\\8f43a2f8-d0be-472f-87ca-c2fd628136e4\\QM5_12567\\Q09\\XAUUSD_DWX\\aggregate.json",
+          "sha256": "b08dd4e4cecb1f3cb66b3f1011dc946dc3430989d2ba012471b0aa308d7d1318",
+          "verification": {
+            "ex5_bound_in_evidence": true,
+            "mq5_bound": true,
+            "setfile_bound_in_evidence": true
+          }
+        },
+        "gate_contract_version": "v4",
+        "hashes": {
+          "ex5_sha256": "8d901924fe7dd2cd00c61dac6db78871fdfe34f73e0f003393196992d5143e04",
+          "include_closure_sha256": null,
+          "mq5_sha256": "8a5dc80942f867936ab18f6b98243437761aba55330024b18e5a050757ad60fc",
+          "setfile_sha256": "433d823ff97c1657913c340be17aaf81c5f5c2efbc87efba31bb15fdd2253363"
+        },
+        "stored_gate": "Q09",
+        "updated_at": "2026-08-30T00:57:41+00:00",
+        "verdict": "PASS",
+        "work_item_id": "8f43a2f8-d0be-472f-87ca-c2fd628136e4"
+      },
+      "pair": {
+        "ea_id": "QM5_12567",
+        "symbol": "XAUUSD.DWX",
+        "timeframe": "D1"
+      },
+      "protected_program_no_touch": null,
+      "reserved_identity": {
+        "canonical_card_copy": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41219_cum-rsi2-commodity-requal8\\docs\\strategy_card.md",
+          "sha256": "af36edefbf33f5269da134ebd3c31de238fc0e928a67dbc26ed3ab0a2d126aba"
+        },
+        "ea_id": "QM5_41219",
+        "ea_registry_row": {
+          "created_at": "2026-08-30",
+          "ea_id": "41219",
+          "owner": "Research",
+          "retired_at": "",
+          "retired_evidence": "",
+          "retired_reason": "",
+          "slug": "cum-rsi2-commodity-requal8",
+          "status": "active",
+          "strategy_id": "OWNER-DEC-Q09HOLD-REQUAL-8-20260829:QM5_12567"
+        },
+        "magic_registry_row": {
+          "ea_id": "41219",
+          "ea_slug": "cum-rsi2-commodity-requal8",
+          "magic": "412190000",
+          "reserved_at": "2026-08-30",
+          "reserved_by": "Codex governed allocator",
+          "status": "active",
+          "symbol": "XAUUSD.DWX",
+          "symbol_slot": "0"
+        },
+        "recovery_card": {
+          "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_41219_cum-rsi2-commodity-requal8.md",
+          "sha256": "af36edefbf33f5269da134ebd3c31de238fc0e928a67dbc26ed3ab0a2d126aba"
+        },
+        "reservation_only": true,
+        "slug": "cum-rsi2-commodity-requal8"
+      },
+      "successor_phase": "Q02"
+    },
+    {
+      "action": "NEW_IDENTITY_FROM_Q02",
+      "canonical_enqueue_command_contract": "python C:/QM/repo/tools/strategy_farm/farmctl.py enqueue-backtest --review-task-id <APPROVED_BUILD_REVIEW_TASK_ID_FOR_QM5_41220> --phase Q02",
+      "classification_reason": [
+        "setfile",
+        "include_closure"
+      ],
+      "comparisons": {
+        "ex5": "MATCH",
+        "include_closure": "UNBOUND_AT_ANCHOR",
+        "mq5": "MATCH",
+        "setfile": "MISMATCH"
+      },
+      "current_artifacts": {
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10939_grimes-context-pb\\QM5_10939_grimes-context-pb.ex5",
+          "sha256": "812fc52a90f0dba0282aa2fecb3a0b3640c18386ac3e2ab7e3b80765a3970278"
+        },
+        "include_closure": {
+          "member_count": 31,
+          "method": "RECURSIVE_MQL5_INCLUDE_CLOSURE",
+          "sha256": "9022c92a4d980cd0e5616bcf8749ae38a17b10c98a4041fcb653c27a8743b36a",
+          "unresolved_repo_includes": []
+        },
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10939_grimes-context-pb\\QM5_10939_grimes-context-pb.mq5",
+          "sha256": "619331975f50ef4a4c0a97b7feaa091d9d37a311502390387ea3a90441fdead9"
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10939_grimes-context-pb\\sets\\QM5_10939_grimes-context-pb_GBPUSD.DWX_H4_backtest.set",
+          "sha256": "dc7c216b85598642b35cff10f52cd84dedb3ac069dc3a41695176e9362a9acba"
+        }
+      },
+      "decision_bound_hold_release_note": "OWNER-DEC-Q09HOLD-REQUAL-8-20260829; release only after Orchestrator approves manifest SHA-256, QM5_41220 is built and Codex-reviewed, and one append-only Q02 seed for GBPUSD.DWX is verified from anchor bae5710a-c610-474d-b885-3f9989f0d99a; preserve historical rows.",
+      "enqueue_preconditions": "governed build complete; .mq5/.ex5/setfile present; Codex build review approved; Orchestrator manifest approval recorded",
+      "held_work_item_id": "9639a773-b913-40a2-b12f-128a027aec98",
+      "hold_state": {
+        "code": "Q09_AWAITING_SEALED_PLAN",
+        "status": "pending"
+      },
+      "last_authentic_anchor": {
+        "equivalent_v4_gate": "Q09",
+        "evidence": {
+          "path": "D:\\QM\\reports\\work_items\\bae5710a-c610-474d-b885-3f9989f0d99a\\QM5_10939\\Q09\\GBPUSD_DWX\\aggregate.json",
+          "sha256": "209c66ae55281e95625cfdc10dc76a51db1b38e1ce905ab343d613759556a1e8",
+          "verification": {
+            "ex5_bound_in_evidence": true,
+            "mq5_bound": true,
+            "setfile_bound_in_evidence": true
+          }
+        },
+        "gate_contract_version": "v4",
+        "hashes": {
+          "ex5_sha256": "812fc52a90f0dba0282aa2fecb3a0b3640c18386ac3e2ab7e3b80765a3970278",
+          "include_closure_sha256": null,
+          "mq5_sha256": "619331975f50ef4a4c0a97b7feaa091d9d37a311502390387ea3a90441fdead9",
+          "setfile_sha256": "2ea0ae8c38553be0e12481ea795ebb82c17bf381d3f7cc9839f183678b7b2357"
+        },
+        "stored_gate": "Q09",
+        "updated_at": "2026-08-30T06:11:30+00:00",
+        "verdict": "PASS",
+        "work_item_id": "bae5710a-c610-474d-b885-3f9989f0d99a"
+      },
+      "pair": {
+        "ea_id": "QM5_10939",
+        "symbol": "GBPUSD.DWX",
+        "timeframe": "H4"
+      },
+      "protected_program_no_touch": null,
+      "reserved_identity": {
+        "canonical_card_copy": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41220_grimes-context-pb-requal8\\docs\\strategy_card.md",
+          "sha256": "0019d8c64b6379252606a4cb9109242e0ced53da80546b820287cc32ed479511"
+        },
+        "ea_id": "QM5_41220",
+        "ea_registry_row": {
+          "created_at": "2026-08-30",
+          "ea_id": "41220",
+          "owner": "Research",
+          "retired_at": "",
+          "retired_evidence": "",
+          "retired_reason": "",
+          "slug": "grimes-context-pb-requal8",
+          "status": "active",
+          "strategy_id": "OWNER-DEC-Q09HOLD-REQUAL-8-20260829:QM5_10939"
+        },
+        "magic_registry_row": {
+          "ea_id": "41220",
+          "ea_slug": "grimes-context-pb-requal8",
+          "magic": "412200000",
+          "reserved_at": "2026-08-30",
+          "reserved_by": "Codex governed allocator",
+          "status": "active",
+          "symbol": "GBPUSD.DWX",
+          "symbol_slot": "0"
+        },
+        "recovery_card": {
+          "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_41220_grimes-context-pb-requal8.md",
+          "sha256": "0019d8c64b6379252606a4cb9109242e0ced53da80546b820287cc32ed479511"
+        },
+        "reservation_only": true,
+        "slug": "grimes-context-pb-requal8"
+      },
+      "successor_phase": "Q02"
+    },
+    {
+      "action": "NEW_IDENTITY_FROM_Q02",
+      "canonical_enqueue_command_contract": "python C:/QM/repo/tools/strategy_farm/farmctl.py enqueue-backtest --review-task-id <APPROVED_BUILD_REVIEW_TASK_ID_FOR_QM5_41221> --phase Q02",
+      "classification_reason": [
+        "setfile",
+        "include_closure"
+      ],
+      "comparisons": {
+        "ex5": "MATCH",
+        "include_closure": "UNBOUND_AT_ANCHOR",
+        "mq5": "MATCH",
+        "setfile": "MISMATCH"
+      },
+      "current_artifacts": {
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\QM5_11421_ohlc-daily-squeeze-reversal-d1.ex5",
+          "sha256": "9dd7facd1da7e2c6564929b92a2e4a62e65bc40b99a03edd729030f72d18924b"
+        },
+        "include_closure": {
+          "member_count": 31,
+          "method": "RECURSIVE_MQL5_INCLUDE_CLOSURE",
+          "sha256": "b066b20bc7beff5e5e5daaa0decee9e62b68620d54633cceb3e301bc3bf85332",
+          "unresolved_repo_includes": []
+        },
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\QM5_11421_ohlc-daily-squeeze-reversal-d1.mq5",
+          "sha256": "b5dfd159b46281cdb30dae3ae12a12fd67cdf810941b82a4a5f7e11a9dce6a15"
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\sets\\QM5_11421_ohlc-daily-squeeze-reversal-d1_EURUSD.DWX_D1_backtest.set",
+          "sha256": "7b87dbf2a4a6b6e6d8cea39e9123ebf9e06f61e53e2215eed24afde7923d74cf"
+        }
+      },
+      "decision_bound_hold_release_note": "OWNER-DEC-Q09HOLD-REQUAL-8-20260829; release only after Orchestrator approves manifest SHA-256, QM5_41221 is built and Codex-reviewed, and one append-only Q02 seed for EURUSD.DWX is verified from anchor a2b39c48-4845-4b49-9e84-9e88616a5862; preserve historical rows.",
+      "enqueue_preconditions": "governed build complete; .mq5/.ex5/setfile present; Codex build review approved; Orchestrator manifest approval recorded",
+      "held_work_item_id": "30584122-b7b3-41eb-8e1a-b03517554d4d",
+      "hold_state": {
+        "code": "Q09_AWAITING_SEALED_PLAN",
+        "status": "pending"
+      },
+      "last_authentic_anchor": {
+        "equivalent_v4_gate": "Q09",
+        "evidence": {
+          "path": "D:\\QM\\reports\\work_items\\a2b39c48-4845-4b49-9e84-9e88616a5862\\QM5_11421\\Q09\\EURUSD_DWX\\aggregate.json",
+          "sha256": "607562e8ba682785e820eb811830e88961d10f35080df823c4e65d45dbb00fa7",
+          "verification": {
+            "ex5_bound_in_evidence": true,
+            "mq5_bound": true,
+            "setfile_bound_in_evidence": true
+          }
+        },
+        "gate_contract_version": "v4",
+        "hashes": {
+          "ex5_sha256": "9dd7facd1da7e2c6564929b92a2e4a62e65bc40b99a03edd729030f72d18924b",
+          "include_closure_sha256": null,
+          "mq5_sha256": "b5dfd159b46281cdb30dae3ae12a12fd67cdf810941b82a4a5f7e11a9dce6a15",
+          "setfile_sha256": "839fb74b3320e8ce62710c8765bc230c7f3d05f0f8ed9fdcae31a32e1fab5747"
+        },
+        "stored_gate": "Q09",
+        "updated_at": "2026-08-30T00:56:38+00:00",
+        "verdict": "PASS",
+        "work_item_id": "a2b39c48-4845-4b49-9e84-9e88616a5862"
+      },
+      "pair": {
+        "ea_id": "QM5_11421",
+        "symbol": "EURUSD.DWX",
+        "timeframe": "D1"
+      },
+      "protected_program_no_touch": "This requalification must not mutate, supersede, cancel, reprioritize, reuse, or otherwise touch any QM5_41162 OPT_CENSUS row, artifact, or evidence.",
+      "reserved_identity": {
+        "canonical_card_copy": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41221_ohlc-daily-squeeze-reversal-d1-requal8\\docs\\strategy_card.md",
+          "sha256": "6a7a6bd10ab45b9253d6a52feaa285ed2a3c61d3727a745f1a555c44fe3457e9"
+        },
+        "ea_id": "QM5_41221",
+        "ea_registry_row": {
+          "created_at": "2026-08-30",
+          "ea_id": "41221",
+          "owner": "Research",
+          "retired_at": "",
+          "retired_evidence": "",
+          "retired_reason": "",
+          "slug": "ohlc-daily-squeeze-reversal-d1-requal8",
+          "status": "active",
+          "strategy_id": "OWNER-DEC-Q09HOLD-REQUAL-8-20260829:QM5_11421"
+        },
+        "magic_registry_row": {
+          "ea_id": "41221",
+          "ea_slug": "ohlc-daily-squeeze-reversal-d1-requal8",
+          "magic": "412210000",
+          "reserved_at": "2026-08-30",
+          "reserved_by": "Codex governed allocator",
+          "status": "active",
+          "symbol": "EURUSD.DWX",
+          "symbol_slot": "0"
+        },
+        "recovery_card": {
+          "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_41221_ohlc-daily-squeeze-reversal-d1-requal8.md",
+          "sha256": "6a7a6bd10ab45b9253d6a52feaa285ed2a3c61d3727a745f1a555c44fe3457e9"
+        },
+        "reservation_only": true,
+        "slug": "ohlc-daily-squeeze-reversal-d1-requal8"
+      },
+      "successor_phase": "Q02"
+    },
+    {
+      "action": "NEW_IDENTITY_FROM_Q02",
+      "canonical_enqueue_command_contract": "python C:/QM/repo/tools/strategy_farm/farmctl.py enqueue-backtest --review-task-id <APPROVED_BUILD_REVIEW_TASK_ID_FOR_QM5_41222> --phase Q02",
+      "classification_reason": [
+        "setfile",
+        "include_closure"
+      ],
+      "comparisons": {
+        "ex5": "MATCH",
+        "include_closure": "UNBOUND_AT_ANCHOR",
+        "mq5": "MATCH",
+        "setfile": "MISMATCH"
+      },
+      "current_artifacts": {
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11476_lien-k-double-bb-trend-h1\\QM5_11476_lien-k-double-bb-trend-h1.ex5",
+          "sha256": "034179dc9ef42db4ee1895bcba31edb707d3faac4a284ed08a6eeb944b097b64"
+        },
+        "include_closure": {
+          "member_count": 31,
+          "method": "RECURSIVE_MQL5_INCLUDE_CLOSURE",
+          "sha256": "8245eacfe1ebc8fb4b099f05d4e8fc3cbe59aece60bcf252a180791fe3baf316",
+          "unresolved_repo_includes": []
+        },
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11476_lien-k-double-bb-trend-h1\\QM5_11476_lien-k-double-bb-trend-h1.mq5",
+          "sha256": "2a9ee156652684883db01fafecf38ae142c76aa03d3211373bc74d5ba2692aec"
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11476_lien-k-double-bb-trend-h1\\sets\\QM5_11476_lien-k-double-bb-trend-h1_USDJPY.DWX_H1_backtest.set",
+          "sha256": "110b9a3d24af4d7effb5c665ed5dbbc34b9fe23e3c62b70895625dab734c65b4"
+        }
+      },
+      "decision_bound_hold_release_note": "OWNER-DEC-Q09HOLD-REQUAL-8-20260829; release only after Orchestrator approves manifest SHA-256, QM5_41222 is built and Codex-reviewed, and one append-only Q02 seed for USDJPY.DWX is verified from anchor fae2b8eb-db7b-4f59-86ec-ca917b270d3f; preserve historical rows.",
+      "enqueue_preconditions": "governed build complete; .mq5/.ex5/setfile present; Codex build review approved; Orchestrator manifest approval recorded",
+      "held_work_item_id": "08fe4173-07d9-47e1-97e9-a76b1159ad94",
+      "hold_state": {
+        "code": "Q09_AWAITING_SEALED_PLAN",
+        "status": "pending"
+      },
+      "last_authentic_anchor": {
+        "equivalent_v4_gate": "Q09",
+        "evidence": {
+          "path": "D:\\QM\\reports\\work_items\\fae2b8eb-db7b-4f59-86ec-ca917b270d3f\\QM5_11476\\Q09\\USDJPY_DWX\\aggregate.json",
+          "sha256": "9fcedf14f618fa0b09e3d3e947530f8853f9859555429157a4b25a3cde3280b4",
+          "verification": {
+            "ex5_bound_in_evidence": true,
+            "mq5_bound": true,
+            "setfile_bound_in_evidence": true
+          }
+        },
+        "gate_contract_version": "v4",
+        "hashes": {
+          "ex5_sha256": "034179dc9ef42db4ee1895bcba31edb707d3faac4a284ed08a6eeb944b097b64",
+          "include_closure_sha256": null,
+          "mq5_sha256": "2a9ee156652684883db01fafecf38ae142c76aa03d3211373bc74d5ba2692aec",
+          "setfile_sha256": "25d1f1d1f5fabdfe37e63f0837e053b471f84c1ad2de6cef836cbfc3a72eecb8"
+        },
+        "stored_gate": "Q09",
+        "updated_at": "2026-08-29T22:55:45+00:00",
+        "verdict": "FAIL",
+        "work_item_id": "fae2b8eb-db7b-4f59-86ec-ca917b270d3f"
+      },
+      "pair": {
+        "ea_id": "QM5_11476",
+        "symbol": "USDJPY.DWX",
+        "timeframe": "H1"
+      },
+      "protected_program_no_touch": null,
+      "reserved_identity": {
+        "canonical_card_copy": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41222_lien-k-double-bb-trend-h1-requal8\\docs\\strategy_card.md",
+          "sha256": "b9b3de1e011c05ee98a92ed9ee6532d79b53799bed19109a88005c4d1bbe67ad"
+        },
+        "ea_id": "QM5_41222",
+        "ea_registry_row": {
+          "created_at": "2026-08-30",
+          "ea_id": "41222",
+          "owner": "Research",
+          "retired_at": "",
+          "retired_evidence": "",
+          "retired_reason": "",
+          "slug": "lien-k-double-bb-trend-h1-requal8",
+          "status": "active",
+          "strategy_id": "OWNER-DEC-Q09HOLD-REQUAL-8-20260829:QM5_11476"
+        },
+        "magic_registry_row": {
+          "ea_id": "41222",
+          "ea_slug": "lien-k-double-bb-trend-h1-requal8",
+          "magic": "412220000",
+          "reserved_at": "2026-08-30",
+          "reserved_by": "Codex governed allocator",
+          "status": "active",
+          "symbol": "USDJPY.DWX",
+          "symbol_slot": "0"
+        },
+        "recovery_card": {
+          "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_41222_lien-k-double-bb-trend-h1-requal8.md",
+          "sha256": "b9b3de1e011c05ee98a92ed9ee6532d79b53799bed19109a88005c4d1bbe67ad"
+        },
+        "reservation_only": true,
+        "slug": "lien-k-double-bb-trend-h1-requal8"
+      },
+      "successor_phase": "Q02"
+    }
+  ],
+  "schema": "qm.q09-requalification-manifest/v1"
+}
