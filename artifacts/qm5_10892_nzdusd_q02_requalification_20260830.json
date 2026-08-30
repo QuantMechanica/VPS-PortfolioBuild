@@ -1,0 +1,58 @@
+{
+  "schema": "qm5.q02_requalification_receipt.v1",
+  "recorded_at_utc": "2026-08-30T15:54:23+00:00",
+  "branch": "agents/board-advisor",
+  "mission_priority": 2,
+  "ea_id": "QM5_10892",
+  "ea_label": "QM5_10892_el-d3-t11-month-end-rev",
+  "symbol": "NZDUSD.DWX",
+  "period": "D1",
+  "edge": "month-end institutional portfolio-rebalancing reversion",
+  "source": {
+    "citation": "Etula, Rinne, Suominen and Vaittinen (2020), Dash for Cash: Monthly Market Impact of Institutional Liquidity Needs, Review of Financial Studies 33(1), 75-111",
+    "approved_card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10892_el-d3-t11-month-end-rev.md",
+    "g0_status": "APPROVED",
+    "r1_track_record": "PASS",
+    "r2_mechanical": "PASS",
+    "r3_data_available": "PASS",
+    "r4_ml_forbidden": "PASS"
+  },
+  "diagnosis": {
+    "failure_class": "infra",
+    "failure_reason": "summary_missing_retries_exhausted",
+    "prior_nzdusd_economic_q02_results": 0,
+    "prior_nzdusd_execution_bound_q02_results": 0,
+    "pre_claim_open_nzdusd_q02_rows": 0,
+    "pre_claim_active_agent_tasks": 0,
+    "selected_legacy_work_item_id": "7368f212-3011-4e45-b99a-360a64d15922",
+    "selected_legacy_status": "failed",
+    "selected_legacy_verdict": "INFRA_FAIL",
+    "selected_legacy_evidence_path": null
+  },
+  "repair": {
+    "operation": "farmctl seed-fresh-q02",
+    "append_only": true,
+    "historical_work_item_preserved": true,
+    "new_work_item_id": "350e0304-8972-4bf5-b15c-6ce7bb457bf0",
+    "new_work_item_status_at_receipt": "pending",
+    "gate_contract_version": "v4",
+    "expected_expert": "QM\\QM5_10892_el-d3-t11-month-end-rev",
+    "expected_mq5_sha256": "732b5de2834a3258cca6d1dd9b6e864f80f9c21ac3bbb17925d5f8be43512e46",
+    "expected_ex5_sha256": "c316bd92712c28311941035336938543846fe8e22a3ef1581005d23fc157b065",
+    "expected_setfile_sha256": "d25c39f9271ad3b8153458951175a9ccec0e060fdbed6062404740f3a6b80782",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "custom_history_archive_status": "ACTIVE"
+  },
+  "capacity_and_scope": {
+    "tester_slots_active_before_enqueue": 5,
+    "tester_slot_ceiling": 10,
+    "queue_only": true,
+    "dispatch_invoked": false,
+    "local_backtest_invoked": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
