@@ -18133,3 +18133,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41228,wti-samecal-shorth5,0,XTIUSD.DWX,412280000,2026-08-30,Codex governed allocator,active
 41229,wti-samecal-trimean5,0,XTIUSD.DWX,412290000,2026-08-30,Codex governed allocator,active
 41230,wti-samecal-midhinge5,0,XTIUSD.DWX,412300000,2026-08-30,Codex governed allocator,active
+41231,wti-samecal-bisquare5,0,XTIUSD.DWX,412310000,2026-08-30,Codex governed allocator,active
