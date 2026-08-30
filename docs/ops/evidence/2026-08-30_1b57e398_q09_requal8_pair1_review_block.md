@@ -88,3 +88,25 @@ The scheduled pump continued to refresh pending-hold metadata while attempting i
 ## Required continuation
 
 Do not start pair 2. Resume pair 1 only after the global dirty-build guard permits the bounded review retry. Bind the measured `no_capacity` smoke waiver to the new build generation, obtain mechanical review PASS and independent final review approval, then enqueue exactly one manifest-bound Q02 row and verify it before releasing `aa80274f-fb46-4432-b47e-6fb2bf28c9a2` with the decision-bound note.
+
+## Scheduled continuation check — 2026-08-30T11:06Z
+
+The next single-pass Codex cycle re-ran the one governed pair-1 smoke command
+against the committed `requal8_repair_1b57e398_r2` setfile. The dispatcher again
+refused before an EA launch:
+
+```text
+Terminal resolution returned no terminal. status=no_capacity error_code=none message=No message.
+```
+
+The immediately preceding `farmctl.py mt5-slots` census showed all ten normal
+workers alive and five active tester-owned terminals (`T6` through `T10`). No
+terminal, worker, reservation, or active test was stopped or altered. The
+canonical checkout still contains unrelated operator changes, so the global
+dirty-build guard cannot safely be cleared by this task. Task-local build and
+control-plane paths remain clean.
+
+The mandatory mechanical review therefore remains `FAIL/UNKNOWN` rather than
+PASS. Pair 2 was not started; no Q02 row was appended; no Q09 hold was released;
+and the protected `QM5_41162` program was not touched. This is a transient
+capacity/coordination block, not a pipeline verdict.
