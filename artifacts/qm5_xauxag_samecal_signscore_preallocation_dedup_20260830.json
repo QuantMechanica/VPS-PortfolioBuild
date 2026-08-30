@@ -1,0 +1,55 @@
+{
+  "candidate": {
+    "author": "Keloharju Papailias Fuertes Miffre Rallis R Core",
+    "mechanic": "monthly market-neutral XAU XAG exact prior-year same-calendar relative log-return signs standardized against Bernoulli p=0.5 strict absolute score above 1.0 symmetric confidence band opposite-leg one-month hold equal fixed risk",
+    "slug": "xauxag-samecal-signscore",
+    "strategy_id": "KELOHARJU-PAPAILIAS-RCORE-XAUXAG-SAMECAL-SIGNSCORE-2026_S01"
+  },
+  "error": null,
+  "exit_code": 3,
+  "generated_at_utc": "2026-08-30T04:47:38+00:00",
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_20186_xauxag-samecal_card.md",
+      "score": 0.85,
+      "slug": "xauxag-samecal",
+      "source": "card",
+      "strategy_id": "KELOHARJU-FMR-XAUXAG-SAMECAL-2026_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41212_wti-samecal-signscore_card.md",
+      "score": 0.8333333333333334,
+      "slug": "wti-samecal-signscore",
+      "source": "card",
+      "strategy_id": "KELOHARJU-PAPAILIAS-RCORE-WTI-SAMECAL-SIGNSCORE-2026_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4712,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1358,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "FUZZY_MATCH"
+}
