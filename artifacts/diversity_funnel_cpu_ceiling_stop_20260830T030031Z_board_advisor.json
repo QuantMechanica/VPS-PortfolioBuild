@@ -1,0 +1,198 @@
+{
+  "artifact_type": "diversity_funnel_capacity_stop",
+  "schema": "qm.mission-capacity-stop/v1",
+  "generated_at_utc": "2026-08-30T03:01:08Z",
+  "generated_at_europe_berlin": "2026-08-30T05:01:08+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "fcc265521b7ea0a87abb18da678c79ab0f29ab34",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING_BEFORE_BACKLOG_RANKING_CLAIM_OR_MUTATION",
+  "capacity_policy": {
+    "paced_launch_gate": 1,
+    "paced_launch_gate_source": "D:/QM/strategy_farm/state/launch_gate_max.txt",
+    "hard_ceiling_percent": 97.0,
+    "binding_rule": "Proceed only when both the five-sample average and maximum are strictly below 97 percent; stop this paced wake as soon as either measure reaches the ceiling.",
+    "hard_ceiling_source": "tools/strategy_farm/terminal_worker.py:159 CPU_MAX_LOAD_PERCENT"
+  },
+  "capacity_sample": {
+    "window_end_utc": "2026-08-30T03:00:31.9381664Z",
+    "command": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 5 -MaxSamples 5",
+    "samples_cpu_percent": [
+      98.711199,
+      85.92509,
+      70.842886,
+      65.824059,
+      74.045748
+    ],
+    "sample_count": 5,
+    "sample_interval_seconds": 5,
+    "average_cpu_percent": 79.069796,
+    "maximum_cpu_percent": 98.711199,
+    "minimum_cpu_percent": 65.824059,
+    "average_binding": false,
+    "maximum_binding": true,
+    "ceiling_binding": true,
+    "trigger": "maximum_cpu_percent"
+  },
+  "farm_db_snapshot": {
+    "commands": [
+      "python tools/strategy_farm/farmctl.py status",
+      "python tools/strategy_farm/farmctl.py work-items --status active"
+    ],
+    "captured_read_only": true,
+    "active_work_item_count": 7,
+    "active_phase_counts": {
+      "OPT_CENSUS": 3,
+      "Q04": 1,
+      "Q09": 1,
+      "Q10_NEWS": 2
+    },
+    "active_work_items": [
+      {
+        "id": "389994f0-8b01-4927-a32b-23fd96dc17e2",
+        "ea_id": "QM5_10123",
+        "symbol": "XAUUSD.DWX",
+        "phase": "Q09",
+        "claimed_by": "T7"
+      },
+      {
+        "id": "ed97a84b-7302-44a2-a402-14c5c083c393",
+        "ea_id": "QM5_11294",
+        "symbol": "XAUUSD.DWX",
+        "phase": "Q10_NEWS",
+        "claimed_by": "T9"
+      },
+      {
+        "id": "e4bbc86f-5e16-4a7f-82ef-ac8b53765898",
+        "ea_id": "QM5_20086",
+        "symbol": "NDX.DWX",
+        "phase": "Q10_NEWS",
+        "claimed_by": "T3"
+      },
+      {
+        "id": "ddad91a7-f1d1-4a06-a9bf-e82e1ec9558a",
+        "ea_id": "QM5_20206",
+        "symbol": "QM5_20206_XAU_XAG_MOMIVOL_D1",
+        "phase": "Q04",
+        "claimed_by": "T10"
+      },
+      {
+        "id": "bff52167-0489-5e0e-bed9-65c44c5844ad",
+        "ea_id": "QM5_41097",
+        "symbol": "USDJPY.DWX",
+        "phase": "OPT_CENSUS",
+        "claimed_by": "T8"
+      },
+      {
+        "id": "7be16f13-79a4-5965-9584-c049f360d11f",
+        "ea_id": "QM5_41161",
+        "symbol": "GBPUSD.DWX",
+        "phase": "OPT_CENSUS",
+        "claimed_by": "T6"
+      },
+      {
+        "id": "40c214ee-bf4e-528b-8ae6-8513fcc39d0e",
+        "ea_id": "QM5_41162",
+        "symbol": "EURUSD.DWX",
+        "phase": "OPT_CENSUS",
+        "claimed_by": "T2"
+      }
+    ],
+    "build_task_counts": {
+      "active": 2,
+      "pending": 58
+    },
+    "pending_pipeline_counts": {
+      "legacy_backtest_p2": 35,
+      "backtest_q03": 150,
+      "backtest_q04": 67
+    },
+    "disposition": "No active row was reclaimed or altered. Farm coordination was read-only because the CPU stop bound before selection."
+  },
+  "factory_snapshot": {
+    "commands": [
+      "python tools/strategy_farm/farmctl.py mt5-slots",
+      "python tools/strategy_farm/farmctl.py mt5-slots"
+    ],
+    "pre_window_scanned_at_utc": "2026-08-30T02:59:44+00:00",
+    "pre_window_running_factory_terminals": [
+      "T1",
+      "T4",
+      "T6",
+      "T9",
+      "T10"
+    ],
+    "post_window_scanned_at_utc": "2026-08-30T03:01:08+00:00",
+    "post_window_running_factory_terminals": [
+      "T6",
+      "T9",
+      "T10"
+    ],
+    "post_window_active_terminal_reservations": [
+      "T3",
+      "T6",
+      "T9",
+      "T10"
+    ],
+    "terminal_worker_daemon_count": 10,
+    "duplicate_terminal_workers": {},
+    "orphaned_factory_terminal_process_count": 0,
+    "topology_note": "T1 and T4 exited during the sampling interval while T3 obtained a reservation; the ceiling therefore reflects a transient but observed host-load peak during active farm turnover.",
+    "t_live_observed_only": true,
+    "t_live_controlled": false,
+    "external_ftmo_terminal_observed_only": true
+  },
+  "selection_decision": {
+    "approved_backlog_ranked": false,
+    "farm_claim_created": false,
+    "ea_selected": null,
+    "reason": "The explicit CPU stop condition bound before diversity ranking or claim."
+  },
+  "non_duplicate_delta": {
+    "preceding_capacity_receipt": "artifacts/diversity_funnel_cpu_ceiling_stop_20260830T020053Z_board_advisor.json",
+    "preceding_window_end_utc": "2026-08-30T02:00:53.8893031Z",
+    "preceding_active_work_item_count": 6,
+    "preceding_running_factory_terminal_count": 3,
+    "preceding_average_cpu_percent": 97.069163,
+    "preceding_maximum_cpu_percent": 99.124349,
+    "current_active_work_item_count": 7,
+    "current_pre_window_running_factory_terminal_count": 5,
+    "current_post_window_running_factory_terminal_count": 3,
+    "current_average_cpu_percent": 79.069796,
+    "current_maximum_cpu_percent": 98.711199,
+    "changed_state": "Unlike the preceding stop, average CPU was safely below 97 percent and only the maximum bound. The farm had expanded from six to seven active rows and entered rapid tester turnover: five factory terminals were visible immediately before the window, three remained immediately after, and T3 gained a fresh reservation. This peak-only capacity failure is new evidence rather than a duplicate of the earlier sustained-load stop."
+  },
+  "actions_this_run": {
+    "build_skill_and_standard_build_prompt_preflight_read": true,
+    "fresh_capacity_preflight_completed": true,
+    "farm_coordination_state_consulted_read_only": true,
+    "approved_backlog_ranked": false,
+    "approved_backlog_claimed": false,
+    "diverse_ea_selected": false,
+    "infra_repair_started": false,
+    "new_edge_mechanized": false,
+    "card_or_g0_created": false,
+    "registry_or_magic_mutated": false,
+    "ea_source_binary_or_setfile_created": false,
+    "compile_build_check_smoke_or_backtest_started": false,
+    "q02_or_later_phase_enqueued": false,
+    "queue_priority_claim_status_or_verdict_mutated": false,
+    "dispatch_tick": false,
+    "terminal_or_worker_controlled": false,
+    "capacity_evidence_committed": true
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "t_live_manifest_touched": false,
+    "live_or_deploy_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false,
+    "preexisting_worktree_changes_preserved": true
+  },
+  "worktree_hygiene": {
+    "preexisting_porcelain_entry_count_at_final_read_only_snapshot": 162,
+    "concurrent_unrelated_changes_present": true,
+    "unrelated_paths_staged_or_committed_by_this_run": false
+  },
+  "resume_contract": "A later paced wake must take a fresh five-sample capacity window. Only when both average and maximum are strictly below 97 percent may it rank and atomically claim exactly one distinct diversity-first unit through the farm DB, follow the approved-card build path before fallbacks, keep backtest setfiles at RISK_FIXED, and enqueue Q02 without dispatching or touching portfolio/live surfaces."
+}
