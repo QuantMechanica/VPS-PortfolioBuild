@@ -1,0 +1,28 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "29a4f785-5281-4a42-b03f-d7619833e80d"
+  ],
+  "backup": {
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260830T005826Z_5da4a8ce.sqlite",
+    "sha256": "8a3499b51bb325dbfe361881825672423f4ee3eef23941348e9bcc13b678026b"
+  },
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "0775c586e5fb92c1e9847fa60992f321b06a2dc85733b52b3c832f627cafd224",
+      "ea_id": "QM5_41209",
+      "ea_label": "QM5_41209_wti-seas-resid-mom",
+      "expected_mq5_sha256": "0775c586e5fb92c1e9847fa60992f321b06a2dc85733b52b3c832f627cafd224",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41209_wti-seas-resid-mom\\QM5_41209_wti-seas-resid-mom.mq5",
+      "work_item_id": "29a4f785-5281-4a42-b03f-d7619833e80d"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-08-30T01:00:12+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "29a4f785-5281-4a42-b03f-d7619833e80d"
+}

@@ -1,0 +1,152 @@
+{
+  "schema": "qm.new-energy-sleeve-build-q02/v1",
+  "generated_at_utc": "2026-08-30T01:18:36Z",
+  "branch": "agents/board-advisor",
+  "pre_receipt_head": "932d694c1d2034e5a39ff40f4868239963f61c3a",
+  "mission_outcome": "BUILT_COMPILE_OK_Q02_ENQUEUED",
+  "ea": {
+    "ea_id": "QM5_41209",
+    "slug": "wti-seas-resid-mom",
+    "strategy_id": "KELOHARJU-MOP-WTI-SEASRESMOM-2026_S01",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "magic": 412090000
+  },
+  "edge": {
+    "class": "wti_just_completed_month_standardized_same_calendar_residual_momentum",
+    "frequency": "monthly",
+    "mechanic": "At the first broker-month boundary, subtract the arithmetic mean of five to ten valid returns for the same just-completed calendar month in the exact prior ten years from the realized WTI log return, divide by n-1 sample standard deviation, and follow the residual only beyond abs(z)>0.50+1e-10 until the next month.",
+    "book_difference": "The candidate is a one-leg monthly seasonally adjusted WTI residual-continuation stream, not an index, precious-metal basket, or XNG oscillator/reversion rule. This is a structural distinction only; realized decorrelation is not claimed and remains Q09 authority.",
+    "dedup_verdict": "CLEAN_WTI_STANDARDIZED_SEASONAL_RESIDUAL_MOMENTUM_AFTER_CANONICAL_AND_MANUAL_REVIEW",
+    "dedup_receipt": "artifacts/qm5_wti_seas_resid_mom_preallocation_dedup_20260830.json",
+    "dedup_receipt_sha256": "4944501d083e5940724ac28851921943086d8092dd0fae63390e049894823fbe",
+    "manual_neighbors": [
+      "QM5_20187 raw one-month WTI time-series momentum",
+      "QM5_20099 upcoming-month same-calendar WTI sign",
+      "QM5_20205 upcoming seasonal sign plus raw prior-month agreement",
+      "QM5_20229 fixed physical-season WTI reversal",
+      "QM5_41208 XNG standardized seasonal-residual reversion",
+      "QM5_21517 paired XAU-XAG seasonal-residual reversion"
+    ]
+  },
+  "governance": {
+    "source_packet": "strategy-seeds/sources/KELOHARJU-MOP-WTI-SEASRESMOM-2026/source.md",
+    "source_packet_sha256": "a8d8facc8e80381e7e0288c366cabf68432c8a1b9b2f6f053ecd1ed108fcd62f",
+    "source_approval": "decisions/2026-08-30_wti_seasonal_residual_momentum_source_approval.md",
+    "source_approval_commit": "a19955cc0",
+    "source_extraction_commit": "d5a6cc40c",
+    "g0_decision": "decisions/2026-08-30_qm5_41209_wti_seasonal_residual_momentum_g0.md",
+    "g0_status": "APPROVED",
+    "approved_card": "strategy-seeds/cards/approved/QM5_41209_wti-seas-resid-mom_card.md",
+    "approved_card_sha256": "ba3d54531f7133d2da852d54bba047aaa83aaed20e6507041fc7f2c389755d28",
+    "card_approval_commit": "342cf22ca",
+    "runtime_card_sha256": "05a1e7e14236935d361645c465cb50c62c59757ec905db50cce796420dd8ec5e",
+    "runtime_card_normalization": "Farm approval normalized informational R1 tier and G0 reasoning only; the committed signal, side, risk, stop, spread, and lifecycle contract were unchanged.",
+    "reputable_source_boundary": "Two complete-read peer-reviewed records directly cover recurring same-calendar commodity returns with crude-oil membership and own-return continuation with WTI membership; the exact standardized residual conjunction and CFD translation remain untested.",
+    "magic_allocation_receipt": "artifacts/qm5_41209_magic_allocation_20260830.json",
+    "magic_allocation_receipt_sha256": "a2fb752793fbee7cfa743bfde2316867123303e0632851a57cf855146511e19e"
+  },
+  "build": {
+    "implementation_commit": "932d694c1d2034e5a39ff40f4868239963f61c3a",
+    "build_task_id": "a8ba8b13-1e33-453c-a3f0-d0f9bdfc1e95",
+    "build_task_status": "done",
+    "build_task_prompt": "artifacts/qm5_41209_build_task_20260830.md",
+    "build_task_prompt_sha256": "82f4dad8ccfd973f05b757e03c294418e4127d59d00b63702a0c24a9915e51f8",
+    "build_result": "artifacts/qm5_41209_build_result_20260830.json",
+    "build_result_sha256": "36b5fba3eee8f0ac74130c8f64adc7640216333de60890e331d5de4a41b24df8",
+    "compile_work_item_id": "29a4f785-5281-4a42-b03f-d7619833e80d",
+    "compile_work_item_status": "done",
+    "compile_verdict": "COMPILE_OK",
+    "compile_release_dry_run": "artifacts/qm5_41209_compile_release_dry_run_20260830.json",
+    "compile_release_dry_run_sha256": "419c9d36f74375d9692a5dc3c4165eff5a955ce5b0388e9a0c03227a37a965cd",
+    "compile_release": "artifacts/qm5_41209_compile_release_20260830.json",
+    "compile_release_sha256": "24a7432016a158e664381a811bec966597a09790eb47d658f60304c7c7633cad",
+    "compile_evidence": "D:/QM/reports/work_items/29a4f785-5281-4a42-b03f-d7619833e80d/QM5_41209/COMPILE_EA/compile_evidence.json",
+    "compile_evidence_sha256": "6309e9732ac3c9fb53d490dfcb6e97baee3561fb4117269553dd4e120dd8c2db",
+    "build_check_report": "D:/QM/reports/framework/21/build_check_20260830_011339.json",
+    "build_check_report_sha256": "fe8ee222b573977d2f226d067c96eb068fba23dcb86478d564cfd371f7ae2054",
+    "mq5_sha256": "0775c586e5fb92c1e9847fa60992f321b06a2dc85733b52b3c832f627cafd224",
+    "ex5_sha256": "45a0baa4cf8fb9d162afc18f9a54daf04b3ce2a71a13669f4443acdcb1d42f32",
+    "setfile_sha256": "b1726ffb1cbc61cd470abf262139f41856b1ba2420f9243052f5cc36c5e982e3",
+    "setfile_build_hash": "98625cbea163b9ff98b7803cde79169e9d3453168594da0f03579104782f6ca8",
+    "spec_sha256": "e7fe4f6a035822f5dd88da9fa25b4007d29142679b0c6a5522185f8d455a5825",
+    "build_check": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "risk_mode": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    }
+  },
+  "capacity_before_compile_release": {
+    "sampled_at_utc": "2026-08-30T00:57:59.8418859Z",
+    "hard_ceiling_percent": 97.0,
+    "samples_percent": [65.53086963894897, 62.889820147379375, 66.71936144245502, 66.04420059635805, 62.13460214151354],
+    "average_percent": 64.663770793331,
+    "maximum_percent": 66.71936144245502,
+    "ceiling_binding": false
+  },
+  "capacity_before_q02": {
+    "sampled_at_utc": "2026-08-30T01:17:20.4736333Z",
+    "hard_ceiling_percent": 97.0,
+    "samples_percent": [91.546652, 91.145533, 77.45733, 70.235348, 70.231998],
+    "average_percent": 80.123372,
+    "maximum_percent": 91.546652,
+    "ceiling_binding": false
+  },
+  "capacity_after_q02_enqueue": {
+    "sampled_at_utc": "2026-08-30T01:17:43.6756158Z",
+    "hard_ceiling_percent": 97.0,
+    "samples_percent": [73.749659, 71.190377, 66.532859, 68.874615, 62.3088],
+    "average_percent": 68.531262,
+    "maximum_percent": 73.749659,
+    "ceiling_binding": false
+  },
+  "q02": {
+    "enqueued": true,
+    "enqueued_by": "record_build_result.auto_q02",
+    "work_item_id": "2e986e51-3d24-4346-b03d-d3dc82d6cdb9",
+    "status_at_readback": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile": "framework/EAs/QM5_41209_wti-seas-resid-mom/sets/QM5_41209_wti-seas-resid-mom_XTIUSD.DWX_D1_backtest.set",
+    "items_enqueued": 1
+  },
+  "verification": {
+    "reference_tests": "PASS: 12 tests",
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "execution_contract_lint": "PASS: as-of 2026-08-29, target card supplied, zero issues",
+    "spec_validation": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "registry_resolver": "PASS: one active row, resolver magic present, zero new collision",
+    "static_build_gate": "PASS: zero target failures and warnings",
+    "strict_compile": "PASS: zero errors and zero warnings",
+    "json_parse_and_hash_binding": "PASS"
+  },
+  "risks": [
+    "Long D1 warm-up, missing earlier years, or unstable same-calendar dispersion can produce zero or sub-floor Q02 activity.",
+    "Continuous-CFD labels, financing, roll construction, gaps, and futures-to-CFD basis remain empirical translation risks.",
+    "A mechanically different WTI stream does not establish portfolio diversification; Q09 must reject excessive realized overlap."
+  ],
+  "safety": {
+    "manual_q02_dispatch": false,
+    "manual_tester_launch": false,
+    "autotrading_toggled": false,
+    "t_live_controlled": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "certification_claimed": false,
+    "decorrelation_claimed": false,
+    "cpu_ceiling_hit": false
+  },
+  "mission_commits_before_receipt": [
+    "a19955cc0",
+    "d5a6cc40c",
+    "342cf22ca",
+    "932d694c1d2034e5a39ff40f4868239963f61c3a"
+  ]
+}
