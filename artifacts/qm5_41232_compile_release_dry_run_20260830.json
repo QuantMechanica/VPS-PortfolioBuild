@@ -1,0 +1,19 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "999200c2b8c7381189e017a11175dd926c06117b935dd9cae1101a44ac844bcf",
+      "ea_id": "QM5_41232",
+      "ea_label": "QM5_41232_wti-samecal-madcap5",
+      "expected_mq5_sha256": "999200c2b8c7381189e017a11175dd926c06117b935dd9cae1101a44ac844bcf",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41232_wti-samecal-madcap5\\QM5_41232_wti-samecal-madcap5.mq5",
+      "work_item_id": "538ed871-29a2-45d9-86df-4f372a0555b4"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "538ed871-29a2-45d9-86df-4f372a0555b4"
+}
