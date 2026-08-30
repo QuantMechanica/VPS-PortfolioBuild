@@ -440,6 +440,7 @@ function Invoke-SetValidation {
             $authorityDirectories = @{
                 'router_ops_issue:da2c006e-e5ab-4f85-845f-2925f90dd68d' = 'sibling_rebind_da2c006e'
                 'router_ops_issue:e8ed1e85-a8db-4345-9785-2e0ccf1f6997' = 'sibling_rebind_e8ed1e85'
+                'router_ops_issue:6b66b181-2031-4f7f-ab4a-51e91f0dda3b' = 'sibling_rebind_6b66b181_r2'
                 'router_ops_issue:1b57e398-3709-44b3-a53a-21e20fdb5d7b' = 'requal8_repair_1b57e398'
                 'governed_compile_fail:b838f751-14e0-452a-b49f-8ba7b904bca4' = 'requal8_repair_1b57e398_r2'
             }
@@ -458,6 +459,10 @@ function Invoke-SetValidation {
             if (-not $CompileWorkItemId -or -not $ClaimedTerminal -or
                 -not $authorityDirectories.ContainsKey(${env:QM_SIBLING_REBIND_AUTHORITY}) -or
                 $EALabel -cnotin $allowedLabels) {
+                throw 'BUILD_CHECK_SIBLING_REBIND_AUTHORITY_INVALID'
+            }
+            if (${env:QM_SIBLING_REBIND_AUTHORITY} -ceq 'router_ops_issue:6b66b181-2031-4f7f-ab4a-51e91f0dda3b' -and
+                $EALabel -cne 'QM5_41195_aa-vol-sma10-opt') {
                 throw 'BUILD_CHECK_SIBLING_REBIND_AUTHORITY_INVALID'
             }
             $authorityDirectory = $authorityDirectories[${env:QM_SIBLING_REBIND_AUTHORITY}]

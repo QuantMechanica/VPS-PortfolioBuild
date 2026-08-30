@@ -282,7 +282,7 @@ def test_measurement_source_setfile_uses_exact_sibling_rebind_lineage(
     assert selected == (
         ea_dir
         / "sets"
-        / "sibling_rebind_6b66b181"
+        / "sibling_rebind_6b66b181_r2"
         / "QM5_41195_aa-vol-sma10-opt_XAGUSD.DWX_D1_backtest.set"
     )
 

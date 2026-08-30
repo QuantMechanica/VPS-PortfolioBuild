@@ -66,7 +66,7 @@ program_slots = scheduling.program_slots
 # setfiles. Matrix materialization must follow that compiled setfile lineage;
 # selecting the legacy default silently restores QM5_41195's obsolete slot 1.
 DL089_SIBLING_REBIND_SETFILE_DIRECTORIES = {
-    "QM5_41195_aa-vol-sma10-opt": "sibling_rebind_6b66b181",
+    "QM5_41195_aa-vol-sma10-opt": "sibling_rebind_6b66b181_r2",
     "QM5_41196_qs-kama-trend-xau-opt": "sibling_rebind_e8ed1e85",
 }
 

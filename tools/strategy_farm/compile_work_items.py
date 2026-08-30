@@ -191,7 +191,7 @@ DL089_SIBLING_REBIND_CONTRACT_VERSION = "qm.dl089-sibling-rebind/v1"
 DL089_SIBLING_REBIND_DIRECTORY = "sibling_rebind_da2c006e"
 DL089_SIBLING_REPAIR_DIRECTORY = "sibling_rebind_e8ed1e85"
 DL089_SIBLING_REPAIR_41196_RETRY_DIRECTORY = "sibling_rebind_e8ed1e85_r2"
-DL089_SIBLING_Q02_REPAIR_DIRECTORY = "sibling_rebind_6b66b181"
+DL089_SIBLING_Q02_REPAIR_DIRECTORY = "sibling_rebind_6b66b181_r2"
 # Exact append-only first-build repair authority for the eight identities in
 # OWNER-DEC-Q09HOLD-REQUAL-8-20260829.  Each initial compile can expose current
 # mechanical Q01 checks that its faithful parent predates.  The repair compiles
