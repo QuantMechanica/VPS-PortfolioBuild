@@ -1,0 +1,93 @@
+{
+  "schema": "qm.q02-build-resume/v1",
+  "generated_at_utc": "2026-08-30T06:35:00Z",
+  "branch": "agents/board-advisor",
+  "pre_receipt_head": "97b587fee286d7c10b7e3d32786c79558625a50c",
+  "mission_unit": "Resume the already-compiled diverse WTI build after its governed CPU-ceiling stop and enqueue exactly one Q02 baseline row.",
+  "selection": {
+    "ea_id": "QM5_41191",
+    "slug": "wti-samecal-srank",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "diversity_reason": "Direct WTI calendar seasonality adds energy beyond XNG and is outside the certified index/metal/energy survivor concentration described by the mission.",
+    "mechanic": "Prior-ten-year same-calendar-month WTI returns, strict absolute ranks, centered signed-rank direction, monthly renewal.",
+    "frequency": "10-12 positions/year after warm-up",
+    "duplicate_control": "The approved card records FUZZY_MATCH_RESOLVED_DISTINCT_WTI_SAMECAL_SIGNED_ABSOLUTE_RANK_SUM_MONTHLY_RENEWAL; open market-neutral build candidates were excluded because they already had pending COMPILE_EA work items.",
+    "continuation_of": "docs/ops/evidence/2026-08-29_qm5_41191_q01_build_q02_ceiling_stop_receipt.json"
+  },
+  "claim": {
+    "build_task_id": "bdc5f5c7-470f-41a8-a304-973382d9e1d9",
+    "agent": "codex:agents/board-advisor",
+    "claim_method": "canonical per-EA build_dispatch lock plus live DB dispatch metadata",
+    "claim_guard": "eligible",
+    "claimed_at_utc": "2026-08-30T06:29:03+00:00"
+  },
+  "capacity": {
+    "captured_at_utc": "2026-08-30T06:33:26.7920856Z",
+    "samples_percent": [
+      81.450719,
+      72.084947,
+      77.644781,
+      80.960659,
+      77.846813
+    ],
+    "average_percent": 77.997584,
+    "maximum_percent": 81.450719,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_binding": false,
+    "active_work_item_count": 9
+  },
+  "build_identity": {
+    "source_build_commit": "70a15854621891c1d3b078a89bdbd4b537d0ba30",
+    "mq5_path": "framework/EAs/QM5_41191_wti-samecal-srank/QM5_41191_wti-samecal-srank.mq5",
+    "mq5_sha256": "688cc01a792a2a59cace3596b43a558fcbc03ce2ea8e8b10c70a9e75c0081427",
+    "ex5_path": "framework/EAs/QM5_41191_wti-samecal-srank/QM5_41191_wti-samecal-srank.ex5",
+    "ex5_sha256": "fcc8c5fabce8c2ceff0a551f322f0ddc3b05a0b0a89a6cb3d3de807f27ee3fec",
+    "setfile_path": "framework/EAs/QM5_41191_wti-samecal-srank/sets/QM5_41191_wti-samecal-srank_XTIUSD.DWX_D1_backtest.set",
+    "setfile_sha256": "bb11ece0a57ed6b456a373faba77d7b7c64223a094a297dd7d12424e5b5457f0",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "magic": 411910000
+  },
+  "verification": {
+    "governed_compile_work_item_id": "10b93944-98ba-4b4f-9fee-980f5255f815",
+    "governed_compile_verdict": "COMPILE_OK",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "compile_evidence_sha256": "0add628f4834e716f4df8d5292e14c4f70e73db88233d1aa04b4324a02a0d2ee",
+    "build_check": "PASS: 0 failures, 0 warnings",
+    "build_check_report_sha256": "8ffc7070a8996f93730f506f163384e06957d78871d908a7afb0bd7b3716589c",
+    "spec_validation": "PASS",
+    "reference_tests": "PASS: 16 tests",
+    "build_skill_guard": "PASS",
+    "p2_baseline_guard": "PASS",
+    "banned_or_external_runtime_api_scan": "PASS",
+    "magic_resolver_dry_run": "17979 rows kept, 0 dropped",
+    "ad_hoc_build_check": "EXPECTED_REFUSAL: LIVE_FACTORY_AD_HOC_COMPILE_REFUSED; the exact current hashes are already bound to the governed COMPILE_OK receipt, so no duplicate compile was launched."
+  },
+  "record_build": {
+    "recorded_at_utc": "2026-08-30T06:33:45+00:00",
+    "task_status": "done",
+    "runtime_build_result": "D:/QM/strategy_farm/artifacts/builds/bdc5f5c7-470f-41a8-a304-973382d9e1d9.json",
+    "runtime_build_result_sha256": "a0db944d3ab4571fd6825fa044db842445ed3dbe2fcee5973e497426f29de986",
+    "smoke_result": "deferred_p2_smoke",
+    "smoke_note": "The earlier setup-only smoke was refused before tester launch by the custom-history isolation gate; record-build normalized it to the worker-bound Q02 path.",
+    "q02_work_item_id": "b4177689-eff9-4d4c-8f6d-6daa853f1584",
+    "q02_status_at_receipt": "pending",
+    "q02_symbol": "XTIUSD.DWX",
+    "q02_timeframe": "D1",
+    "q02_gate_contract_version": "v4",
+    "q02_priority_track": true,
+    "q02_rows_enqueued": 1,
+    "q02_rows_skipped": 0
+  },
+  "safety": {
+    "manual_backtest_launched": false,
+    "autotrading_toggled": false,
+    "t_live_controlled": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "unrelated_worktree_changes_touched": false
+  }
+}
