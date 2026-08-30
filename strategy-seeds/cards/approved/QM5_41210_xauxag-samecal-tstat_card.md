@@ -140,6 +140,31 @@ count, cost, hedge, CFD equivalence, or correlation statistic transfers. The
 threshold is a pre-result QM falsification choice, not a conventional
 significance claim; runtime computes no p-value.
 
+## Source-Defined Rules
+
+- Keloharju, Linnainmaa, and Nyberg support looking for recurring
+  same-calendar commodity-return information with at least five prior years.
+- Fuertes, Miffre, and Rallis support a monthly cross-sectional commodity
+  carrier and one-month renewal, but do not specify this two-metal score.
+- Commit-pinned R Core source fixes only the arithmetic mean, sample variance
+  with denominator `n-1`, standard error `sqrt(variance/n)`, and one-sample
+  score.
+- No source defines the exact XAU/XAG CFD pair, the `abs(t)>1` threshold,
+  spread limits, fixed-risk split, ATR stops, or portfolio admission.
+
+## QM Interpretations
+
+- Translate the source lineages into an opposite-leg `XAUUSD.DWX` /
+  `XAGUSD.DWX` basket so the signal targets relative metal performance.
+- Lock exact prior years `Y-1..Y-10`, skip missing synchronized pairs without
+  substitution, and require at least five observations.
+- Treat `1.0+1e-10` as a pre-result confidence gate and abstention rule, not
+  a conventional significance or p-value claim.
+- Use one shared `RISK_FIXED=1000` budget, frozen per-leg ATR stops, atomic
+  package handling, and next-month renewal as governed execution choices.
+- Treat market neutrality and portfolio decorrelation as objectives only;
+  unchanged Q09 remains the sole realized-correlation authority.
+
 ## Formula
 
 At broker-month decision `(Y,M)`, reconstruct calendar-month `M` relative
@@ -211,7 +236,7 @@ Verdict:
 The entry, exit, filter, and lifecycle rules below are the complete authorized
 baseline. There is no signal-parameter sweep or fallback estimator.
 
-### Entry Rules
+## 4. Entry Rules
 
 1. Require exact EA ID `41210`, exact `XAUUSD.DWX` D1 host, slot 0, both
    registered symbols, locked inputs, fixed-risk mode, both news axes OFF,
@@ -242,7 +267,7 @@ baseline. There is no signal-parameter sweep or fallback estimator.
 10. Prepare both orders before opening. If preparation, either submission, or
     final composition fails, immediately flatten every owned leg.
 
-### Exit Rules
+## 5. Exit Rules
 
 1. At the first processed host D1 bar of the next normalized broker month,
    close both old legs before evaluating a replacement.
@@ -258,7 +283,7 @@ baseline. There is no signal-parameter sweep or fallback estimator.
    close, scale-in, grid, martingale, pyramid, stop-and-reverse, or
    discretionary exit.
 
-### Filters (No-Trade Module)
+## 6. Filters (No-Trade Module)
 
 - Wrong host, period, EA ID, slot, locked input, mid-month start, duplicate
   state, invalid label convention, endpoint mismatch, insufficient sample,
@@ -271,7 +296,7 @@ baseline. There is no signal-parameter sweep or fallback estimator.
   trend, oscillator, event, volume, curve, inventory, or current-month
   fallback is allowed.
 
-### Trade Management Rules
+## 7. Trade Management Rules
 
 - Every tick begins with framework MAE tracking before any guard can return.
 - Malformed, cross-month, and stale repair runs before every entry-only gate
@@ -323,7 +348,7 @@ small samples, unstable standard error, rolls, financing, gaps, asymmetric
 stops, legging, and common-metal beta can erase the premise. Q09 alone may
 measure correlation with the current book.
 
-## Data Requirements
+## Runtime Data Dependencies
 
 Native synchronized `XAUUSD.DWX` and `XAGUSD.DWX` D1 OHLC/timestamps, broker
 clock, symbol quotes and properties, positions, deals, and terminal-global
@@ -371,7 +396,7 @@ output, or manual signal input.
 - R4: `PASS`; structural arithmetic only, with no prohibited trained signal
   or external runtime feed.
 
-## Falsification And Safety Boundary
+## Falsification And Requalification
 
 Retire or fail on wrong calendar endpoints, cross-leg desynchronization,
 sample, variance, standard-error, score, threshold, side, same-month retry,
@@ -382,18 +407,12 @@ correlation rejection. No result may be rescued by changing the sample,
 threshold, carrier, direction, risk, hold, spread caps, retry policy, or by
 adding a filter.
 
-This card authorizes one branch-only non-live EA build, exact magic allocation,
-strict compile/Q01 validation, one logical-basket `RISK_FIXED` backtest
-setfile, and one paced Q02 enqueue if capacity permits. It authorizes no
-manual backtest, component-leg Q02 row, live/demo/shadow/stress/optimization
-setfile, terminal control, AutoTrading, `T_Live`, deploy or live manifest,
-portfolio-gate mutation, portfolio admission, or correlation waiver.
-
 ## Card History
 
 | Version | Date | Change | Gate | Status |
 |---|---|---|---|---|
 | v1 | 2026-08-30 | initial XAU/XAG same-calendar one-standard-error card | G0 | APPROVED; build pending |
+| v1.1 | 2026-08-30 | canonical Card-v2 section-heading alignment only; mechanics unchanged | documentation | APPROVED contract retained |
 
 ## Pipeline Phase Status
 
@@ -403,3 +422,14 @@ portfolio-gate mutation, portfolio admission, or correlation waiver.
 | G0 Research Intake | 2026-08-30 | APPROVED | `decisions/2026-08-30_qm5_41210_xauxag_same_calendar_tscore_g0.md` |
 | Q01 Build Validation | 2026-08-30 | NOT_BUILT | pending |
 | Q02 Baseline Screening | 2026-08-30 | NOT_ENQUEUED_Q01_PENDING | pending |
+
+## Safety Boundary
+
+This card authorizes one branch-only non-live EA build, exact magic allocation,
+strict compile/Q01 validation, one logical-basket `RISK_FIXED` backtest
+setfile, and one paced Q02 enqueue if capacity permits.
+
+It authorizes no manual backtest, component-leg Q02 row,
+live/demo/shadow/stress/optimization setfile, terminal control, AutoTrading,
+`T_Live`, deploy or live manifest, portfolio-gate mutation, portfolio
+admission, correlation waiver, or certification claim.

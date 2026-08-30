@@ -401,7 +401,30 @@ class SameCalendarTStatisticReferenceTests(unittest.TestCase):
         self.assertRegex(
             setfile, r"(?m)^; build_hash:\s+(?:pending|[0-9a-f]{64})$"
         )
-        self.assertEqual(len(list((EA_DIR / "sets").glob("*.set"))), 1)
+        set_names = {path.name for path in (EA_DIR / "sets").glob("*.set")}
+        self.assertEqual(
+            set_names,
+            {
+                (
+                    "QM5_41210_xauxag-samecal-tstat_"
+                    "QM5_41210_XAU_XAG_SAMECAL_TSTAT_D1_D1_backtest.set"
+                ),
+                (
+                    "QM5_41210_xauxag-samecal-tstat_"
+                    "XAUUSD.DWX_D1_backtest.set"
+                ),
+                (
+                    "QM5_41210_xauxag-samecal-tstat_"
+                    "XAGUSD.DWX_D1_backtest.set"
+                ),
+            },
+        )
+        for component_name in set_names - {set_path.name}:
+            component = (EA_DIR / "sets" / component_name).read_text(
+                encoding="utf-8"
+            )
+            self.assertIn("RISK_FIXED=1000", component)
+            self.assertIn("RISK_PERCENT=0", component)
 
         approved = (
             REPO_ROOT
@@ -447,4 +470,3 @@ class SameCalendarTStatisticReferenceTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
