@@ -4,6 +4,8 @@ Status: `G0 APPROVED; IMPLEMENTED; Q01 PENDING`
 
 ## Identity
 
+**EA ID:** QM5_41234
+
 - EA ID: `QM5_41234`
 - slug: `wti-samecal-hd5`
 - strategy ID: `KELOHARJU-HARRELL-DAVIS-WTI-SAMECAL-HD5-2026_S01`
@@ -148,4 +150,3 @@ backtest preset and one paced Q02 enqueue only after Q01 and capacity checks.
 It creates no live, demo, shadow, stress, or optimization preset; does not
 change `T_Live`, a deploy manifest, the portfolio gate, admission, or a
 correlation decision; and never toggles AutoTrading.
-
