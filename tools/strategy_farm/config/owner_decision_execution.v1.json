@@ -22,6 +22,35 @@
   ],
   "decisions": [
     {
+      "id": "OWNER-DEC-Q02-SPLIT-FIX-20260830",
+      "todo_id": "QM-TODO-20260830-705",
+      "priority": 83,
+      "choices": {
+        "YES": {
+          "mode": "APPLY_AND_VERIFY",
+          "objective": "Correct the EVIDENCELOSS-34 split to the sealed b82d814a9 classification (20 transient RESTART / 14 structural RETIRE) and continue decision task 700304ca with the exact sha-sealed 34-row manifest.",
+          "allowed_actions": [
+            "Derive the 34-row manifest mechanically from the sealed classification CSV: cause groups ACTIVE_TIMEOUT, TIMEOUT_METATESTER_HUNG, NO_HISTORY_TRANSIENT = RESTART (20 rows); SETFILE_MISSING, ONINIT_FAILED, SUMMARY_MISSING_NO_ROW_BOUND_AGGREGATE, LOG_BOMB = RETIRE (14 rows); seal its SHA-256",
+            "Execute the 20 append-only Q02 restarts staged in batches of max 5 in flight, using the decision-granted bounded exception for missing predecessor source evidence (classification CSV as provenance)",
+            "Execute the 14 append-only retire dispositions with verdicts and evidence untouched",
+            "Record durable per-batch evidence"
+          ],
+          "acceptance": [
+            "Manifest matches the sealed cause-group mapping verbatim; no pair reclassified",
+            "Restarts append-only, max 5 in flight; opt cells keep claim priority",
+            "14 retires with zero historical mutation",
+            "Any deviation stops fail-closed and returns to OWNER"
+          ]
+        },
+        "NO": {
+          "mode": "PREPARE_FOLLOWUP_ONLY",
+          "objective": "Hold at strictly 14 restarts pending an OWNER-named selection rule.",
+          "allowed_actions": ["Document the standstill and request the selection rule"],
+          "acceptance": ["No mutation"]
+        }
+      }
+    },
+    {
       "id": "OWNER-DEC-Q09HOLD-RETIRE-2-20260829",
       "todo_id": "QM-TODO-20260830-702",
       "priority": 84,
