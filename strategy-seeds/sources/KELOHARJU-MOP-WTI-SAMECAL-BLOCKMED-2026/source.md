@@ -1,6 +1,6 @@
 ---
 source_id: KELOHARJU-MOP-WTI-SAMECAL-BLOCKMED-2026
-title: WTI same-calendar two-year block-median seasonality extraction
+title: WTI same-calendar rolling two-year block-median seasonality extraction
 publisher: QuantMechanica governed extraction of peer-reviewed sources
 source_type: peer_reviewed_trading_papers_bounded_composite
 status: approved_source_complete
@@ -19,7 +19,7 @@ cards_extracted:
   - wti-samecal-blockmed
 ---
 
-# WTI Same-Calendar Two-Year Block-Median Source Packet
+# WTI Same-Calendar Rolling Two-Year Block-Median Source Packet
 
 ## Approval And Source Identity
 
@@ -64,48 +64,47 @@ block statistic, a single continuous CFD, or any result for this candidate.
 
 At the first executable D1 tick after a genuine normalized broker-month
 transition `(Y,M)`, reconstruct the completed `XTIUSD.DWX` log return for the
-same named month `M` in each exact year `Y-10..Y-1`. All ten observations are
-mandatory. Order them oldest to newest, partition them into five fixed
-non-overlapping adjacent two-year blocks, compute each block's arithmetic
-mean, sort only the five block means, and select the middle value. Buy when
-that block median is strictly positive, sell when it is strictly negative,
-and consume the month flat inside the locked epsilon band. Renew at the next
-broker-month boundary.
+same named month `M` in each exact year `Y-5..Y-1`. All five observations are
+mandatory. Order them oldest to newest, compute the four overlapping adjacent
+two-year arithmetic means, sort only those four rolling means, and average
+the two central values. Buy when that even block median is strictly positive,
+sell when it is strictly negative, and consume the month flat inside the
+locked epsilon band. Renew at the next broker-month boundary.
 
-The exact ten-year sample is longer than the source's five-year eligibility
-floor but shorter than its broad maximum-history implementation. The block
-construction asks whether the central two-year seasonal regime has a stable
-direction without letting one individual annual shock or one extreme
-two-year block determine the signal.
+The exact five-year sample implements the source's eligibility floor and is
+testable inside the registered 2017-2025 `XTIUSD.DWX` D1 range. The rolling
+block construction asks whether the central smoothed two-year seasonal state
+has a stable direction without letting one individual annual shock determine
+the signal.
 
 ## Exact Statistical Contract
 
-Let `r[0]..r[9]` be the ten finite completed same-calendar-month WTI log
-returns ordered chronologically from `Y-10` through `Y-1`:
+Let `r[0]..r[4]` be the five finite completed same-calendar-month WTI log
+returns ordered chronologically from `Y-5` through `Y-1`:
 
 ```text
-r[k] = ln(month_end_close[Y-10+k,M]
-          / prior_month_end_close[Y-10+k,M])
+r[k] = ln(month_end_close[Y-5+k,M]
+          / prior_month_end_close[Y-5+k,M])
 
 b[0] = (r[0] + r[1]) / 2
-b[1] = (r[2] + r[3]) / 2
-b[2] = (r[4] + r[5]) / 2
-b[3] = (r[6] + r[7]) / 2
-b[4] = (r[8] + r[9]) / 2
+b[1] = (r[1] + r[2]) / 2
+b[2] = (r[2] + r[3]) / 2
+b[3] = (r[3] + r[4]) / 2
 
 s = sort_ascending(b)
-location = s[2]
+location = (s[1] + s[2]) / 2
 
 signal = BUY  when location > +1e-12
          SELL when location < -1e-12
          FLAT otherwise
 ```
 
-Block membership is chronological and immutable. Every annual return appears
-exactly once. Only block means are sorted. No individual-return median,
-full-sample mean, trimming, winsorization, Hodges-Lehmann pseudomedian, Huber
-iteration, sign vote, recency weighting, regime-shift requirement, fallback
-center, or signal-magnitude sizing is permitted.
+Rolling-pair membership is chronological and immutable. Endpoint returns
+appear in exactly the adjacent pairs shown above. Only the four rolling means
+are sorted. No individual-return median, full-sample mean, trimming,
+winsorization, Hodges-Lehmann pseudomedian, Huber iteration, sign vote,
+recency weighting, regime-shift requirement, fallback center, or
+signal-magnitude sizing is permitted.
 
 ## Endpoint And Clock Contract
 
@@ -117,7 +116,7 @@ center, or signal-magnitude sizing is permitted.
   and the final completed close of the named month. A later confirming D1 bar
   must exist. Current-month price, volume, quote, or partial bar may not enter
   the signal.
-- Missing years are not substituted. Fewer than all ten finite synchronized
+- Missing years are not substituted. Fewer than all five finite synchronized
   returns consumes the month flat.
 - Persist broker `yyyymm` before history, signal, news, spread, quote, ATR,
   sizing, or submission. No rejected or stopped attempt retries that month.
@@ -147,7 +146,8 @@ center, or signal-magnitude sizing is permitted.
 
 The trading sources support only recurring same-calendar commodity
 information, explicit WTI membership, own-return direction, and monthly
-renewal. The five two-year blocks, median, ten-of-ten requirement, epsilon,
+renewal. The four rolling two-year means, even median, exact five-year
+requirement, epsilon,
 CFD translation, fixed risk, hard stop, spread ceiling, attempt ledger, and
 lifecycle are pre-result QM choices.
 
@@ -168,24 +168,25 @@ than fixed block means.
 
 The load-bearing executable distinctions are:
 
-- Five block means `[+0.10,+0.10,+0.10,+0.10,-1.00]` produce a `+0.10`
-  block median but a `-0.12` full-sample mean, so this candidate buys while
+- Chronological returns `[-0.10,-0.10,+0.001,+0.10,+0.001]` produce rolling
+  means `[-0.10,-0.0495,+0.0505,+0.0505]`. Their even median is `+0.0005`
+  while the full-sample mean is `-0.0198`, so this candidate buys while
   `QM5_20099` sells.
-- Chronological pairs `[-0.20,+0.01]` repeated three times followed by two
-  `[+0.01,+0.01]` pairs produce a `-0.095` block median and a `+0.01`
-  individual-return median, so this candidate sells while
-  `QM5_41055_wti-medcal` buys.
+- Chronological returns `[-0.10,-0.10,+0.001,+0.001,+0.001]` produce an even
+  rolling-mean median of `-0.02425` and an individual-return median of
+  `+0.001`, so this candidate sells while `QM5_41055_wti-medcal` buys.
 - `QM5_20287_wti-blockmed-mom` groups twelve consecutive recent monthly
-  returns into four three-month blocks. This candidate samples one named
-  month across ten separate years and groups five adjacent two-year seasonal
-  observations. The endpoints, block dimensions, and economic clocks differ.
+  returns into four non-overlapping three-month blocks. This candidate samples
+  one named month across five separate years and forms four overlapping
+  two-year means. The endpoints, overlap, block width, and economic clocks
+  differ.
 - Same-calendar trimmed, winsorized, Hodges-Lehmann, Huber, signed-rank,
   t-score, sign-score, recency-weighted, and regime-shift siblings operate on
   individual annual returns or different participation gates; none selects
-  the central value of these five fixed two-year means.
+  the even median of these four rolling two-year means.
 
 Verdict:
-`SEMANTICALLY_DISTINCT_WTI_EXACT_TEN_YEAR_SAME_CALENDAR_FIVE_BY_TWO_BLOCK_MEDIAN_MONTHLY_SLEEVE`.
+`SEMANTICALLY_DISTINCT_WTI_EXACT_FIVE_YEAR_SAME_CALENDAR_FOUR_ROLLING_TWO_YEAR_MEAN_EVEN_MEDIAN_MONTHLY_SLEEVE`.
 
 ## Reputable-Source Criteria
 
@@ -194,7 +195,7 @@ Verdict:
 - R2: `PASS` for the exact endpoint, block, median, direction, attempt, risk,
   stop, and lifecycle contract.
 - R3:
-  `PASS_WITH_TEN_YEAR_WARMUP_SESSION_LABEL_AND_CONTINUOUS_FUTURES_CFD_BASIS_RISK`.
+  `PASS_WITH_FIVE_YEAR_WARMUP_SESSION_LABEL_AND_CONTINUOUS_FUTURES_CFD_BASIS_RISK`.
 - R4: `PASS`; deterministic native arithmetic and V5 execution state only.
 
 ## Falsification And Safety Boundary

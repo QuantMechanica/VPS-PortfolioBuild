@@ -1,4 +1,4 @@
-# WTI Same-Calendar Two-Year Block-Median Seasonality — Source Approval
+# WTI Same-Calendar Rolling Two-Year Block-Median Seasonality — Source Approval
 
 Date: 2026-08-30
 
@@ -22,8 +22,8 @@ XAU/SP500/NDX/XNG book, requires reputable-source criteria and a
 - host / slot 0: exact `XTIUSD.DWX`, D1
 - decision clock: first executable host D1 tick after a genuine normalized
   broker-month transition
-- state: the median of five fixed chronological two-year block means formed
-  from the exact prior ten matching-calendar-month WTI log returns
+- state: the even median of four rolling chronological two-year means formed
+  from the exact prior five matching-calendar-month WTI log returns
 - lifecycle: follow the block-median sign for one broker month, with one
   consumed attempt and a 40-calendar-day survivor repair
 
@@ -60,8 +60,9 @@ membership, own-return direction, and monthly renewal. The third packet
 records a pre-result QM convention for retaining magnitude inside fixed
 chronological blocks and taking only the central block location.
 
-No paper tests this exact conjunction. The five two-year blocks, their median,
-the ten-of-ten sample requirement, the continuous Darwinex CFD, fixed-dollar
+No paper tests this exact conjunction. The four overlapping two-year means,
+their even median, the exact five-year sample, the continuous Darwinex CFD,
+fixed-dollar
 risk, ATR stop, spread cap, attempt ledger, and operational lifecycle are
 transparent QM falsification choices. No source return, coefficient,
 significance, alpha, Sharpe ratio, drawdown, density, cost, WTI-only result,
@@ -77,20 +78,21 @@ broker-calendar month transition in `(Y,M)`:
    spread, quote, ATR, sizing, or submission; never retry that month.
 2. Under one uniform native or `+1` energy D1-label convention, reconstruct
    the completed WTI log return for calendar month `M` in each exact year
-   `Y-10..Y-1`. Require strict adjacent-month endpoints, a confirming later
-   D1 bar, positive finite closes, and all ten returns. Missing or invalid
+   `Y-5..Y-1`. Require strict adjacent-month endpoints, a confirming later
+   D1 bar, positive finite closes, and all five returns. Missing or invalid
    history consumes the month flat; no substitute year or shorter sample is
    permitted.
-3. Order the ten returns chronologically from `Y-10` through `Y-1`. Form five
-   immutable, non-overlapping two-year arithmetic-mean blocks:
+3. Order the five returns chronologically from `Y-5` through `Y-1`. Form four
+   immutable rolling two-year arithmetic means, sort only those four means,
+   and average the two central values:
 
    ```text
-   b[0] = (r[Y-10] + r[Y-9]) / 2
-   b[1] = (r[Y-8]  + r[Y-7]) / 2
-   b[2] = (r[Y-6]  + r[Y-5]) / 2
-   b[3] = (r[Y-4]  + r[Y-3]) / 2
-   b[4] = (r[Y-2]  + r[Y-1]) / 2
-   location = sort_ascending(b)[2]
+   b[0] = (r[Y-5] + r[Y-4]) / 2
+   b[1] = (r[Y-4] + r[Y-3]) / 2
+   b[2] = (r[Y-3] + r[Y-2]) / 2
+   b[3] = (r[Y-2] + r[Y-1]) / 2
+   s = sort_ascending(b)
+   location = (s[1] + s[2]) / 2
    ```
 
 4. Above `+1e-12`, buy WTI. Below `-1e-12`, sell WTI. Equality inside the
@@ -110,9 +112,10 @@ broker-calendar month transition in `(Y,M)`:
    mean or individual-return median fallback, or add a result-conditioned
    filter.
 
-Exact calendar-year membership, chronological pairing, two-return divisors,
-sorting block means only, odd median index two, sign, consumed attempt, fixed
-risk, hard stop, and monthly lifecycle are load-bearing.
+Exact calendar-year membership, overlapping chronological pairing, two-return
+divisors, sorting only the four rolling means, even-median indexes one and two,
+sign, consumed attempt, fixed risk, hard stop, and monthly lifecycle are
+load-bearing.
 
 ## Reputable-Source Criteria
 
@@ -122,9 +125,10 @@ risk, hard stop, and monthly lifecycle are load-bearing.
   own-return direction, and monthly renewal. The exact block statistic is
   disclosed as untested.
 - R2 `PASS`: month clock, label normalization, exact-year endpoints,
-  ten-of-ten sample, block membership, divisors, median index, side, epsilon,
+  exact five-year sample, rolling-pair membership, divisors, median indexes,
+  side, epsilon,
   attempt state, risk, stop, spread, and exits are deterministic and locked.
-- R3 `PASS_WITH_TEN_YEAR_WARMUP_AND_CONTINUOUS_FUTURES_CFD_BASIS_RISK`:
+- R3 `PASS_WITH_FIVE_YEAR_WARMUP_AND_CONTINUOUS_FUTURES_CFD_BASIS_RISK`:
   registered native `XTIUSD.DWX` D1 history plus MT5-native broker time,
   quotes, symbol metadata, positions, deals, and terminal state supply every
   runtime field. History, label, roll, financing, gap, and CFD-basis risks
@@ -139,7 +143,7 @@ risk, hard stop, and monthly lifecycle are load-bearing.
 The corrected-root canonical receipt
 `artifacts/qm5_wti_samecal_blockmed_preallocation_dedup_20260830.json`,
 SHA-256
-`F881A3A0BF00D7DAFAA69F1F0262AF543A8DCA9BAE9D6B4CE72EB0629F88591A`,
+`25B7F707486998A95E9909EABA1D88DF42587F8439541E43080A1573EBE3C871`,
 scanned 4,726 registry identities, 1,364 cards, and all 45 current Strategy
 Wiki nodes. It found no exact identity and one expected slug-family fuzzy
 neighbor, `QM5_20099_wti-samecal`, for mandatory manual review.
@@ -147,29 +151,32 @@ neighbor, `QM5_20099_wti-samecal`, for mandatory manual review.
 Manual executable review establishes non-equivalence:
 
 - `QM5_20099_wti-samecal` takes the arithmetic mean of all valid historical
-  returns and permits five through ten values. With five chronological block
-  means `[+0.10,+0.10,+0.10,+0.10,-1.00]`, this candidate buys WTI from the
-  `+0.10` block median while 20099 sells from the `-0.12` full-sample mean.
+  returns and permits five through ten values. For chronological returns
+  `[-0.10,-0.10,+0.001,+0.10,+0.001]`, the rolling means are
+  `[-0.10,-0.0495,+0.0505,+0.0505]`. This candidate buys from the `+0.0005`
+  even block median while 20099 sells from the `-0.0198` full-sample mean.
 - `QM5_41055_wti-medcal` sorts individual annual returns. For chronological
-  pairs `[-0.20,+0.01]` repeated three times followed by two
-  `[+0.01,+0.01]` pairs, that EA buys from the `+0.01` individual-return
-  median while this candidate sells from the `-0.095` block median.
-- `QM5_20287_wti-blockmed-mom` forms four three-month blocks from twelve
-  consecutive recent returns. This candidate forms five two-year blocks from
-  ten observations of one named calendar month across separate years. Their
-  endpoint set, block count, block width, sample clock, and seasonal versus
-  contiguous-trend hypotheses differ.
+  returns `[-0.10,-0.10,+0.001,+0.001,+0.001]`, that EA buys from the
+  `+0.001` individual-return median while this candidate sells from the
+  `-0.02425` even median of rolling means
+  `[-0.10,-0.0495,+0.001,+0.001]`.
+- `QM5_20287_wti-blockmed-mom` forms four non-overlapping three-month blocks
+  from twelve consecutive recent returns. This candidate forms four
+  overlapping two-year means from five observations of one named calendar
+  month across separate years. Their endpoint set, overlap, block width,
+  sample clock, and seasonal versus contiguous-trend hypotheses differ.
 - `QM5_41199`, `QM5_41201`, `QM5_41202`, and `QM5_41204` trim, take a
   Hodges-Lehmann pseudomedian, winsorize, or iteratively Huber-weight
-  individual same-calendar returns; none preserves fixed two-year block
-  means and selects their central value.
-- `QM5_41223_wti-samecal-expw4` applies recency weights to four annual
-  returns. `QM5_41224_wti-samecal-regimeshift` trades only when recent and
-  older five-year means oppose. A uniformly positive ten-year sample makes
-  this candidate buy while the regime-shift EA is flat.
+  individual same-calendar returns; none preserves the four rolling two-year
+  means and selects their even median.
+- `QM5_41223_wti-samecal-expw4` applies fixed recency weights to four annual
+  returns. `QM5_41224_wti-samecal-regimeshift` requires ten annual returns
+  and trades only when recent and older five-year means oppose. This candidate
+  uses exactly five returns and has neither recency weights nor a block-sign
+  disagreement gate.
 
 Verdict:
-`FUZZY_FAMILY_MATCH_RESOLVED_AS_SEMANTICALLY_DISTINCT_EXACT_TEN_YEAR_SAME_CALENDAR_FIVE_BY_TWO_BLOCK_MEDIAN_WTI_MONTHLY_SLEEVE`.
+`FUZZY_FAMILY_MATCH_RESOLVED_AS_SEMANTICALLY_DISTINCT_EXACT_FIVE_YEAR_SAME_CALENDAR_FOUR_ROLLING_TWO_YEAR_MEAN_EVEN_MEDIAN_WTI_MONTHLY_SLEEVE`.
 
 ## Kill And Safety Boundary
 

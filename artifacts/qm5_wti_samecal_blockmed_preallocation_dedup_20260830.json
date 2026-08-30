@@ -1,13 +1,13 @@
 {
   "candidate": {
     "author": "Matti Keloharju Juhani Linnainmaa Peter Nyberg Tobias Moskowitz Yao Hua Ooi Lasse Heje Pedersen",
-    "mechanic": "exact prior ten same calendar month WTI completed log returns five chronological two year arithmetic mean blocks median block mean sign monthly renewal",
+    "mechanic": "exact prior five same calendar month WTI completed log returns four overlapping chronological two year rolling means even median sign monthly renewal",
     "slug": "wti-samecal-blockmed",
     "strategy_id": "KELOHARJU-MOP-WTI-SAMECAL-BLOCKMED-2026_S01"
   },
   "error": null,
   "exit_code": 3,
-  "generated_at_utc": "2026-08-30T11:52:35+00:00",
+  "generated_at_utc": "2026-08-30T11:58:10+00:00",
   "matches": [
     {
       "match_type": "fuzzy",
