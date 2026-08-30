@@ -1,0 +1,19 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "fcc3168694aba1e22f0a00a74f999e10f5875de4acb6a71c76286bbf72d31dec",
+      "ea_id": "QM5_41195",
+      "ea_label": "QM5_41195_aa-vol-sma10-opt",
+      "expected_mq5_sha256": "fcc3168694aba1e22f0a00a74f999e10f5875de4acb6a71c76286bbf72d31dec",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41195_aa-vol-sma10-opt\\QM5_41195_aa-vol-sma10-opt.mq5",
+      "work_item_id": "a7b55e40-6fa0-4f75-a7d8-018e5731216b"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "a7b55e40-6fa0-4f75-a7d8-018e5731216b"
+}
