@@ -2,9 +2,9 @@
 
 **EA ID:** QM5_1538
 **Slug:** `aa-tsmom-1-3-12`
-**Source ID:** `ede348b4-0fa7-5be1-baa8-09e9089b67b7`
+**Source:** `ede348b4-0fa7-5be1-baa8-09e9089b67b7`
 **Approved card:** `D:/QM/strategy_farm/artifacts/cards_approved/QM5_1538_aa-tsmom-1-3-12.md`
-**Last revised:** 2026-08-22
+**Last revised:** 2026-08-31
 
 ## 1. Strategy Logic
 
@@ -44,8 +44,10 @@ volatility scaling, dynamic leverage, ML, grid, or martingale logic is used.
 The 13 active magic-registry symbols are `GDAXI.DWX`, `NDX.DWX`,
 `SP500.DWX`, `UK100.DWX`, `WS30.DWX`, `XAUUSD.DWX`, `EURUSD.DWX`,
 `GBPUSD.DWX`, `USDJPY.DWX`, `USDCHF.DWX`, `AUDUSD.DWX`, `USDCAD.DWX`,
-and `NZDUSD.DWX`. SP500 is research/backtest-only until the card's parallel
-NDX/WS30 validation condition is satisfied.
+and `NZDUSD.DWX`. All are present in the current DWX symbol matrix. The card's
+old SP500 routability caveat has been superseded by the current framework
+contract; any deployment remains outside this build and requires the normal
+later gates and OWNER authorization.
 
 ## 4. Timeframe
 
@@ -64,14 +66,22 @@ has two agreeing horizons, and reverses only after a successful close. It
 remains in cash when no two horizons agree. Intramonth price movement cannot
 change the strategy signal; only framework safety controls remain active.
 
+| Metric | Expected behaviour |
+|---|---|
+| Mechanical entry ceiling | 12 monthly decisions/year/symbol |
+| Card frequency metadata | 100 trades/year/symbol; inconsistent with the monthly rule and therefore flagged for reviewer/Q02 adjudication |
+| Typical hold time | One month or longer while at least two horizons retain direction |
+| Drawdown profile | Trend-following whipsaw losses in choppy regimes, bounded per trade by the initial 3 ATR stop |
+| Preferred regime | Persistent directional trends across at least two of the 1/3/12-month horizons |
+
 ### Framework alignment
 
 | Card rule | Implementation surface |
 |---|---|
-| Monthly rebalance | `Strategy_IsMonthlyRebalance` on the D1 new-bar path |
+| Monthly rebalance | `Strategy_PrepareMonthlySignal` using `QM_CalendarPeriodKey(PERIOD_MN1)` |
 | 1/3/12 return votes | `Strategy_PrepareMonthlySignal` |
 | Long/short/cash thresholds | `Strategy_EntrySignal` and `Strategy_ExitSignal` |
-| 3 ATR initial stop | `Strategy_EntrySignal` using the D1 ATR handle |
+| 3 ATR initial stop | `Strategy_EntrySignal` using framework `QM_StopATR` |
 | One position per symbol/magic | `Strategy_SelectOurPosition` plus framework entry checks |
 | Fixed-risk backtest | `RISK_FIXED=1000`, `RISK_PERCENT=0` |
 | News and operational safety | V5 framework news, kill-switch, Friday-close override, and execution contract |
@@ -89,3 +99,10 @@ This build is for compile and non-live testing only. Backtest setfiles use
 `RISK_FIXED=1000` and `RISK_PERCENT=0`. Any live risk setting, portfolio
 division, SP500 substitution, or deployment requires the later governed
 pipeline and OWNER approval. Build success is not a pipeline or live verdict.
+
+## Revision History
+
+| Version | Date | Reason | Task |
+|---|---|---|---|
+| v1 | 2026-08-22 | Initial build from approved card | `32fe6e27-d811-4e58-947b-fe78e0269ee3` |
+| v2 | 2026-08-31 | Replace raw ATR/CopyBuffer wiring with pooled framework readers and restore canonical entry-only news ordering | `b8761494-8807-41d8-b4a0-f1d4141588c4` |
