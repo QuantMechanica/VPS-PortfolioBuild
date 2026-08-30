@@ -1,0 +1,22 @@
+{
+  "logical_symbol": "QM5_41226_XAU_XAG_MEDCAL_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "q02_from_date": "2018.07.02",
+  "q02_to_date": "2024.12.31",
+  "basket_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "notes": [
+    "One logical two-leg monthly gold/silver relative median-seasonality package. Q02 evaluates combined package PnL, paired costs, activity, and later Q09 correlation; neither component leg is a standalone strategy.",
+    "For the upcoming calendar month, the EA scans exact years Y-1 through Y-10, requires at least five synchronized XAU-minus-XAG log returns, computes the ordinary odd/even sample median, and follows its sign only when it lies strictly outside plus or minus 1e-12.",
+    "The package splits one RISK_FIXED budget equally by frozen per-leg ATR stop risk and follows the validated QM5_12533 logical-basket host-symbol recipe with USD tester currency and the canonical 100000 deposit."
+  ]
+}
