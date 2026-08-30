@@ -1,6 +1,6 @@
 # QM5_41233_wti-samecal-gast5 - Strategy Spec
 
-Status: `G0 APPROVED; IMPLEMENTED; Q01 NOT STARTED; Q02 NOT ENQUEUED`
+Status: `G0 APPROVED; IMPLEMENTED; Q01 PASS; Q02 ENQUEUED_PENDING`
 
 ## Identity
 
@@ -149,7 +149,7 @@ sole setfile, static guardrails, and strict zero-error/zero-warning compilation.
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-08-30 | G0-approved WTI same-calendar Gastwirth build | Implementation prepared for Q01 and paced Q02 capacity check |
+| v1 | 2026-08-30 | G0-approved WTI same-calendar Gastwirth build | Q01 PASS: build check and strict compile with 0 errors/0 warnings; Q02 work item `e4d8adc1-5c06-4cdd-81dc-11331d786e86` enqueued pending |
 
 ## Safety Boundary
 

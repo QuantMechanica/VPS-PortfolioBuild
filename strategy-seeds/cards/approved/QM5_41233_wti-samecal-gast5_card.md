@@ -94,8 +94,8 @@ news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
 pipeline_phase: Q02
-q01_status: NOT_STARTED
-q02_status: NOT_ENQUEUED_CAPACITY_CHECK_PENDING
+q01_status: PASS
+q02_status: ENQUEUED_PENDING
 force_build: true
 review_focus: "Falsify a direct-WTI recurring-calendar sleeve outside the certified XAU/SP500/NDX/XNG book. Verify normalized completed endpoints, exact five-year membership, ascending order, GSL quantile interpolation, Gastwirth aggregation and invariant, sign, consumed month, fixed risk, frozen stop, and next-month exit. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -374,6 +374,7 @@ Only unchanged Q09 may determine realized correlation or portfolio value.
 | Version | Date | Reason | Status |
 |---|---|---|---|
 | v1 | 2026-08-30 | initial WTI exact-five-year same-calendar Gastwirth card | G0 APPROVED; Q01 pending |
+| v2 | 2026-08-30 | exact V5 build, fixed-risk preset, strict compile, and paced baseline enqueue | Q01 PASS; Q02 ENQUEUED_PENDING |
 
 ## Approvals
 
@@ -381,9 +382,13 @@ Only unchanged Q09 may determine realized correlation or portfolio value.
   extraction as `04322a80a`.
 - G0: `APPROVED` by
   `decisions/2026-08-30_qm5_41233_wti_same_calendar_gastwirth5_g0.md`.
-- Q01: pending deterministic magic allocation, implementation, lint,
-  independent fixtures, build check, and strict compile.
-- Q02: one paced non-live enqueue permitted only below capacity ceilings.
+- Q01: `PASS`; 13 independent reference tests, schema/spec lint, build check,
+  and strict compile with zero errors and zero warnings. Governed evidence:
+  `D:/QM/reports/work_items/d70d9e5b-3b6e-46bf-bb99-a331c2bb6f9f/QM5_41233/COMPILE_EA/compile_evidence.json`.
+- Q02: `ENQUEUED_PENDING`; exact work item
+  `e4d8adc1-5c06-4cdd-81dc-11331d786e86`, created after a five-sample whole-host
+  CPU guard averaged `47.292716%` with maximum `50.200514%`, both below the
+  binding `97%` ceiling.
 
 ## Safety Boundary
 

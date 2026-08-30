@@ -1,0 +1,91 @@
+{
+  "schema": "qm.build-result/v1",
+  "task_id": "d6f7098e-4b51-4764-91fe-274a04a2ba84",
+  "build_generation": 0,
+  "ea_id": "QM5_41233",
+  "slug": "wti-samecal-gast5",
+  "strategy_id": "KELOHARJU-GASTWIRTH-GSL-WTI-SAMECAL-GAST5-2026_S01",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_41233_wti-samecal-gast5",
+  "implementation_commit": "7bb7012b307aa3750ec6220a6c33b40b27a25713",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_41233_wti-samecal-gast5/QM5_41233_wti-samecal-gast5.mq5",
+  "mq5_sha256": "989b9ea95173f55f1531ddd42e97365f8b3e6d754b5ba2b3a2b2bc67ede78f16",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_41233_wti-samecal-gast5/QM5_41233_wti-samecal-gast5.ex5",
+  "ex5_sha256": "3122f783a0d48855ae493976028ac8b1c30bac467ef781a37ce888f5bc27a195",
+  "magic_base": 412330000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "host_symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_41233_wti-samecal-gast5/sets/QM5_41233_wti-samecal-gast5_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_sha256": {
+    "QM5_41233_wti-samecal-gast5_XTIUSD.DWX_D1_backtest.set": "c1f42b915d493165e93ced527cec034e483075278999ffdb0f71bb9e2659b8cc"
+  },
+  "setfile_build_hash": "e0b1ec107038a19e951f58a69ea6a8e4e3c890771da6ee4012dc02338a333759",
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_41233_wti-samecal-gast5/SPEC.md",
+  "spec_md_sha256": "6a98c371f2d48ad5a89a55b868e95086ff9fbca0fa5a8763d5ac13c32eebed7f",
+  "reference_test_path": "C:/QM/repo/framework/EAs/QM5_41233_wti-samecal-gast5/docs/test_same_calendar_gastwirth5_reference.py",
+  "reference_test_sha256": "c0c952ff415f016bebe31ccd1a46c0d11b4b9b5f1e08a36324b4bbe8421bb4fd",
+  "reference_test_result": "PASS_13_OF_13",
+  "approved_card_path": "C:/QM/repo/strategy-seeds/cards/approved/QM5_41233_wti-samecal-gast5_card.md",
+  "approved_card_sha256": "3d5ec40ac101dd1a4c7354d056558f3048e16158e00160b3feface1b32577098",
+  "farm_card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_41233_wti-samecal-gast5_card.md",
+  "build_check_passed": true,
+  "build_check_failures": 0,
+  "build_check_nonfatal_warnings": 0,
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_work_item_id": "d70d9e5b-3b6e-46bf-bb99-a331c2bb6f9f",
+  "compile_terminal": "T1",
+  "compile_evidence_path": "D:/QM/reports/work_items/d70d9e5b-3b6e-46bf-bb99-a331c2bb6f9f/QM5_41233/COMPILE_EA/compile_evidence.json",
+  "compile_evidence_sha256": "828b7d7f1b70375a8e05d13a1ea3cfdd75fe2ab573fb20bb211f9174dfb7baa8",
+  "compile_verdict": "COMPILE_OK",
+  "build_check_report": "D:/QM/reports/framework/21/build_check_20260830_192900.json",
+  "build_check_report_sha256": "ddf7de6a3363c604f1855019bfe87abd8427bff33570515dc3321ba382a9499e",
+  "compile_release_dry_run": "artifacts/qm5_41233_compile_release_dry_run_20260830.json",
+  "compile_release_readback": "artifacts/qm5_41233_compile_release_20260830.json",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "capacity_before_q02": {
+    "command": "Get-Counter '\\\\Processor(_Total)\\\\% Processor Time' -SampleInterval 1 -MaxSamples 5",
+    "sampled_at_utc": "2026-08-30T19:32:37.4573186Z",
+    "hard_ceiling_percent": 97.0,
+    "samples_percent": [
+      50.200514,
+      48.914933,
+      48.63716,
+      45.247916,
+      43.463057
+    ],
+    "average_percent": 47.292716,
+    "maximum_percent": 50.200514,
+    "average_strictly_below_ceiling": true,
+    "maximum_strictly_below_ceiling": true,
+    "ceiling_binding": false,
+    "terminal64_process_count": 4,
+    "metatester64_process_count": 2
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "governed compile and deterministic reference suite completed; Q02 owns the first tester execution",
+  "blocked_reason": null,
+  "open_questions": [
+    "Q02 must establish activity, fills, cost drag, and baseline economics.",
+    "Only an unchanged Q09 may determine realized portfolio correlation or diversification value."
+  ],
+  "safety": {
+    "manual_tester_launched": false,
+    "autotrading_toggled": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "certification_claimed": false,
+    "decorrelation_claimed": false
+  },
+  "built_at_utc": "2026-08-30T19:32:37Z"
+}
