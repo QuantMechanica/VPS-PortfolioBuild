@@ -18124,3 +18124,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41220,grimes-context-pb-requal8,0,GBPUSD.DWX,412200000,2026-08-30,Codex governed allocator,active
 41221,ohlc-daily-squeeze-reversal-d1-requal8,0,EURUSD.DWX,412210000,2026-08-30,Codex governed allocator,active
 41222,lien-k-double-bb-trend-h1-requal8,0,USDJPY.DWX,412220000,2026-08-30,Codex governed allocator,active
+41223,wti-samecal-expw4,0,XTIUSD.DWX,412230000,2026-08-30,Codex governed allocator,active
