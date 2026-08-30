@@ -22,6 +22,33 @@
   ],
   "decisions": [
     {
+      "id": "OWNER-DEC-LEGACY-COHORT-DISPO-20260830",
+      "todo_id": "QM-TODO-20260830-706",
+      "priority": 85,
+      "choices": {
+        "YES": {
+          "mode": "APPLY_AND_VERIFY",
+          "objective": "Dispose the remaining 19 legacy-cohort pairs per the sealed 359988fb anchor audit: 6 measured-FAIL_HARD pairs retired append-only immediately; 13 Q02-new-identity chains staged in waves starting only after the REQUAL-8 build wave completes.",
+          "allowed_actions": [
+            "Commission one Codex ticket retiring exactly the 6 RETIRE_CANDIDATE pairs from the audit (1567/XAGUSD, 10476/USDCAD, 10919/XTIUSD, 11421/AUDUSD, 12567/XNGUSD, 13117 basket) append-only with verdicts/evidence untouched",
+            "After the REQUAL-8 build wave (ticket 1b57e398) completes: commission one Codex ticket per wave (max 2 waves) for the 13 Q02-new-identity chains (reservation, build, review, Q02 seed) per the audit rows",
+            "Record durable evidence per wave"
+          ],
+          "acceptance": [
+            "Exactly 6 retires, zero historical mutation; the 13 new-identity chains follow the audit rows verbatim and start only after REQUAL-8 builds are through",
+            "Compile queue and review lane are never flooded by parallel waves",
+            "Any pair-level ambiguity stops fail-closed"
+          ]
+        },
+        "NO": {
+          "mode": "PREPARE_FOLLOWUP_ONLY",
+          "objective": "Keep the 19 pairs undisposed in the legacy cohort.",
+          "allowed_actions": ["Document the standstill"],
+          "acceptance": ["No mutation"]
+        }
+      }
+    },
+    {
       "id": "OWNER-DEC-Q02-SPLIT-FIX-20260830",
       "todo_id": "QM-TODO-20260830-705",
       "priority": 83,
