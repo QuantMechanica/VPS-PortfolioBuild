@@ -90,7 +90,7 @@ news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
 pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_ENQUEUED_CAPACITY_CHECK_PENDING
+q02_status: ENQUEUED_PENDING
 force_build: true
 review_focus: "Falsify a direct-WTI recurring-calendar sleeve outside the certified XAU/SP500/NDX/XNG book. Verify normalized completed endpoints, exact five-year membership, sort, spans, earliest tie rule, selected-triplet mean, sign, consumed month, fixed risk, frozen stop, and next-month exit. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -365,6 +365,7 @@ alone may test realized overlap with the existing book.
 |---|---|---|---|---|
 | v1 | 2026-08-30 | initial WTI same-calendar shortest-half-midmean card | G0 | APPROVED; build pending |
 | v2 | 2026-08-30 | exact V5 build, fixed-risk preset, bounded-buffer repair, and strict compile | Q01 | PASS; Q02 capacity check pending |
+| v3 | 2026-08-30 | five-sample host capacity clear and canonical baseline enqueue | Q02 | ENQUEUED_PENDING |
 
 ## Approvals
 
@@ -373,7 +374,7 @@ alone may test realized overlap with the existing book.
 | Source Approval | 2026-08-30 | APPROVED_SOURCE | `decisions/2026-08-30_wti_same_calendar_shorth5_source_approval.md` |
 | G0 Research Intake | 2026-08-30 | APPROVED | `decisions/2026-08-30_qm5_41228_wti_same_calendar_shorth5_g0.md` |
 | Q01 Static / Compile | 2026-08-30 | PASS | `D:/QM/reports/work_items/10c45ef1-5c9c-4be1-ac5e-ffb84e3edd8b/QM5_41228/COMPILE_EA/compile_evidence.json` |
-| Q02 Baseline | 2026-08-30 | NOT_ENQUEUED_CAPACITY_CHECK_PENDING | governed five-sample whole-host CPU check pending |
+| Q02 Baseline | 2026-08-30 | ENQUEUED_PENDING | `artifacts/qm5_41228_build_q02_enqueue_20260830.json` |
 
 ## Safety Boundary
 

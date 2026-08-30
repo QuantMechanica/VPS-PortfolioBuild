@@ -1,0 +1,160 @@
+{
+  "schema": "qm.new-commodity-sleeve-build-q02/v1",
+  "generated_at_utc": "2026-08-30T13:59:30Z",
+  "branch": "agents/board-advisor",
+  "mission_outcome": "BUILT_COMPILE_OK_Q02_ENQUEUED_CPU_CLEAR",
+  "ea": {
+    "ea_id": "QM5_41228",
+    "slug": "wti-samecal-shorth5",
+    "strategy_id": "KELOHARJU-MOP-WTI-SAMECAL-SHORTH5-2026_S01",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "magic": 412280000
+  },
+  "edge": {
+    "class": "wti_exact_five_year_same_calendar_shortest_half_midmean",
+    "frequency": "monthly",
+    "mechanic": "At a genuine normalized WTI broker-month transition, load the exact completed matching-calendar-month WTI log returns in Y-5 through Y-1, require all five, sort ascending, compare all three adjacent three-value full spans, select the earliest minimum-span window, average its three values, buy strictly above +1e-12, sell strictly below -1e-12, and renew next month.",
+    "book_difference": "Direct WTI is outside the certified XAU/SP500/NDX/XNG carrier set and uses a recurring calendar-year clock. This is a structural diversification objective only; unchanged Q09 alone may establish realized decorrelation and portfolio value.",
+    "dedup_verdict": "SEMANTICALLY_DISTINCT_WTI_EXACT_FIVE_YEAR_SAME_CALENDAR_SHORTEST_THREE_MIDMEAN_SIGN_MONTHLY_SLEEVE",
+    "dedup_receipt": "artifacts/qm5_wti_samecal_shorth5_preallocation_dedup_20260830.json",
+    "dedup_receipt_sha256": "1746429debd16310e7e5a7a55311dc447cf751ef8d65ef30a1fdec6a951c4f94",
+    "dedup_scan": {
+      "registry_identities": 4727,
+      "cards": 1365,
+      "strategy_wiki_nodes": 45,
+      "exact_matches": 0,
+      "fuzzy_neighbors": [
+        "QM5_20099_wti-samecal"
+      ]
+    },
+    "locked_disagreements": [
+      {
+        "observations": [-0.2, -0.19, 0.001, 0.2, 0.21],
+        "candidate_location": -0.1296666667,
+        "candidate_direction": "SELL_WTI",
+        "raw_mean_median_trim_and_winsor_direction": "BUY_WTI"
+      },
+      {
+        "observations": [-0.03125, -0.015625, 0.0, 0.015625, 0.03125],
+        "candidate_location": -0.015625,
+        "candidate_direction": "SELL_WTI",
+        "raw_mean_and_median_direction": "FLAT",
+        "tie_rule": "earliest minimum-span window"
+      }
+    ]
+  },
+  "governance": {
+    "source_packet": "strategy-seeds/sources/KELOHARJU-MOP-WTI-SAMECAL-SHORTH5-2026/source.md",
+    "source_packet_sha256": "e91c13e1be77cfe8ad1712ddcd8ecbcfcd6aba1353eac0953752aeb453ae72a8",
+    "source_approval": "decisions/2026-08-30_wti_same_calendar_shorth5_source_approval.md",
+    "source_approval_sha256": "5f6b7aaf19913e0ebb12529d5e4764436031c017cc014d38643b93c4dc3304d8",
+    "g0_decision": "decisions/2026-08-30_qm5_41228_wti_same_calendar_shorth5_g0.md",
+    "g0_decision_sha256": "2b1750452086908a1a72c3a7bf603775e440e52eb5a1eb30ad08dcdc63cdace3",
+    "approved_card": "strategy-seeds/cards/approved/QM5_41228_wti-samecal-shorth5_card.md",
+    "approved_card_final_sha256": "df88cc8f64f36b04df5c420eec72e38ba44ec12f27a3e4fe3331571951daf3f9",
+    "magic_allocation": "artifacts/qm5_41228_magic_allocation_20260830.json",
+    "magic_allocation_sha256": "aaad986d0b75d30fa93ec141b8e2ab9b57c412196fc60a08c2760fc5d8b8d3fd",
+    "source_basis": "Complete governed packets for Keloharju, Linnainmaa, and Nyberg (2016), Journal of Finance, and Moskowitz, Ooi, and Pedersen (2012), Journal of Financial Economics, support recurring same-calendar commodity information, explicit WTI membership, own-return direction, monthly renewal, and a five-year floor. NIST supplies the shortest-half-midmean definition and limitation. The exact trading conjunction, earliest tie rule, continuous CFD, and execution contract are disclosed untested QM translations; no source performance or correlation claim transfers."
+  },
+  "build": {
+    "implementation_commits": [
+      "546b53e9bf7c603ea0077a5457aea8cdc1479210",
+      "e47e02f84a1445082386a844578196def13b4133",
+      "3a767319f895f53e9301e97af19cb1ce76415c2e",
+      "cf7760b61f945d8ac905ae37528b8a28b3f52329",
+      "0650abb3b95b015858671f3bf09d14d2626d9c63",
+      "ba06dc1ad625618c528ec5ff386d3fd567f1362e",
+      "af1d0c1d31d18522404651a9ce8d7b506b08eebb"
+    ],
+    "build_task_id": "329e1c78-db06-4ab4-af54-3ae5c13b1397",
+    "build_task_status": "done",
+    "build_result": "artifacts/qm5_41228_build_result_20260830.json",
+    "build_result_final_sha256": "98ee02f16bbe5921272b6d1dd6d74ceab0d0e7229cb6f42c86c1f519fb8e5ff4",
+    "compile_predecessor_work_item_id": "80f56663-abe7-4ebf-8da9-b37a7ced0a94",
+    "compile_predecessor_verdict": "COMPILE_FAIL_BUILD_CHECK_ONLY",
+    "compile_repair_authority": "governed_compile_fail:80f56663-abe7-4ebf-8da9-b37a7ced0a94",
+    "compile_work_item_id": "10c45ef1-5c9c-4be1-ac5e-ffb84e3edd8b",
+    "compile_status": "done",
+    "compile_terminal": "T3",
+    "compile_verdict": "COMPILE_OK",
+    "compile_evidence": "D:/QM/reports/work_items/10c45ef1-5c9c-4be1-ac5e-ffb84e3edd8b/QM5_41228/COMPILE_EA/compile_evidence.json",
+    "compile_evidence_sha256": "41bbc39c10f7a9d49063e3d6d15ce60c9fdee3658a2751a86f9ff9e1ac105d50",
+    "compile_release_dry_run": "artifacts/qm5_41228_compile_repair_release_dry_run_20260830.json",
+    "compile_release_readback": "artifacts/qm5_41228_compile_repair_release_20260830.json",
+    "mq5_sha256": "5cd3fd3501ce3255f4f047a590b46be34f052a4f16dba145bf172276566540fa",
+    "ex5_sha256": "ad506cb312e273b7b67f064a26cf40386039762ca55c218aaaf446dd46087a54",
+    "setfile_sha256": "3a3d363d00b4a68b4236c7f5d212137b6604fd424a0f5a2c82118a82752bd5ec",
+    "setfile_build_hash": "b84ffaa38ae52db2131a5fc8d8c06f1cecb67b630e7ca75bed45719ecebd1239",
+    "spec_final_sha256": "9e2c563045db3b213c089772911f57b238beb3150a2688786c4524c9364eb9ab",
+    "reference_test_sha256": "b0cdc6d70ae3031342546256b05fd6d59dad8bb5f996ef2a007518b5ce94ef74",
+    "build_check": "PASS",
+    "build_check_failures": 0,
+    "build_check_nonfatal_warnings": 0,
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "risk_mode": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "manual_smoke_or_backtest_launched": false
+  },
+  "capacity_before_q02": {
+    "command": "Get-Counter '\\Processor(_Total)\\% Processor Time' -SampleInterval 1 -MaxSamples 5",
+    "sampled_at_utc": "2026-08-30T13:58:47.5681868Z",
+    "hard_ceiling_percent": 97.0,
+    "samples_percent": [63.108, 63.943, 60.844, 66.817, 65.05],
+    "average_percent": 63.9524,
+    "maximum_percent": 66.817,
+    "average_strictly_below_ceiling": true,
+    "maximum_strictly_below_ceiling": true,
+    "ceiling_binding": false,
+    "terminal64_process_count": 7,
+    "metatester64_process_count": 5
+  },
+  "q02": {
+    "enqueued": true,
+    "enqueued_by": "record_build_result.auto_q02",
+    "enqueued_at_utc": "2026-08-30T13:58:57Z",
+    "work_item_id": "40be5958-ce3c-4d3e-9534-0499da85cad4",
+    "status_at_readback": "pending",
+    "attempt_count": 0,
+    "claimed_by_at_readback": null,
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile": "framework/EAs/QM5_41228_wti-samecal-shorth5/sets/QM5_41228_wti-samecal-shorth5_XTIUSD.DWX_D1_backtest.set",
+    "items_enqueued": 1,
+    "items_skipped": 0,
+    "manual_dispatch": false
+  },
+  "verification": {
+    "reference_tests": "PASS: 11 tests",
+    "card_schema_lint": "PASS",
+    "spec_validation": "PASS",
+    "build_prerequisite_guard": "PASS",
+    "raw_mq5_quarantine_validation": "PASS",
+    "registry_resolver": "PASS: one active row, magic 412280000, resolver binding present",
+    "static_build_guardrails": "PASS: zero findings",
+    "strict_build_gate": "PASS: zero failures and zero warnings",
+    "strict_compile": "PASS: zero compiler errors and zero compiler warnings",
+    "compile_controller_tests": "PASS: 42 tests",
+    "json_and_hash_binding": "PASS"
+  },
+  "risks": [
+    "Five exact matching-calendar years can make early history months invalid and Q02 activity sparse.",
+    "The shortest-half midmean and earliest tie rule are untested QM robustness translations, not paper-tested optima.",
+    "Continuous-CFD labels, rolls, financing, gaps, and futures-to-CFD basis remain empirical translation risks.",
+    "Direct WTI and the recurring calendar clock are structurally outside the current book, but Q09 must reject excessive realized overlap with XNG, metals, or indices."
+  ],
+  "safety": {
+    "manual_q02_dispatch": false,
+    "manual_tester_launch": false,
+    "autotrading_toggled": false,
+    "t_live_controlled": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "certification_claimed": false,
+    "decorrelation_claimed": false
+  }
+}

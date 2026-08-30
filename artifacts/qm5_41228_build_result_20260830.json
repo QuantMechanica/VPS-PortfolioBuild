@@ -61,8 +61,10 @@
   "smoke_result": "deferred_p2_smoke",
   "smoke_report_path": null,
   "smoke_skipped_reason": "build-only lane launched no manual tester; Q02 owns full-history execution",
-  "q02_enqueued": false,
-  "q02_status": "NOT_ENQUEUED_CAPACITY_CHECK_PENDING",
+  "q02_enqueued": true,
+  "q02_status": "ENQUEUED_PENDING",
+  "q02_work_item_id": "40be5958-ce3c-4d3e-9534-0499da85cad4",
+  "q02_enqueued_at_utc": "2026-08-30T13:58:57Z",
   "blocked_reason": null,
   "open_questions": [
     "Q02 must establish frequency, fills, cost drag, and baseline economics.",

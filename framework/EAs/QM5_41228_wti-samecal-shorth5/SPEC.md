@@ -1,6 +1,6 @@
 # QM5_41228_wti-samecal-shorth5 - Strategy Spec
 
-Status: `G0 APPROVED; IMPLEMENTED; Q01 PASS; Q02 CAPACITY CHECK PENDING`
+Status: `G0 APPROVED; IMPLEMENTED; Q01 PASS; Q02 ENQUEUED_PENDING`
 
 ## Identity
 
@@ -143,6 +143,7 @@ strict zero-error/zero-warning compilation.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-30 | G0-approved WTI same-calendar shortest-half build | Q01 PASS: strict compiler 0 errors/0 warnings; build check PASS |
+| v2 | 2026-08-30 | paced baseline handoff | Q02 work item `40be5958-ce3c-4d3e-9534-0499da85cad4` enqueued after CPU-clear sample |
 
 ## Safety Boundary
 
