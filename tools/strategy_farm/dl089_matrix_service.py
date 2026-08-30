@@ -54,11 +54,21 @@ Q02_NAMESPACE = uuid.UUID("d4ee1e63-76ea-4db9-96aa-0927bec724d8")
 DEFAULT_ARTIFACT_ROOT = Path(r"D:\QM\strategy_farm\artifacts\opt_census")
 MISMATCH_HOLD_CODE = "Q12_DL089_RUNNER_MISMATCH_GUARD"
 ROLLOUT_HOLD_CODE = "Q12_DL089_MATRIX_WORKER_ROLLOUT_PENDING"
+SUPERSEDED_Q02_HOLD_CODE = "Q02_DL089_SUPERSEDED_SETFILE_BINDING"
 ALLOWED_SERVICE_HOLDS = frozenset({MISMATCH_HOLD_CODE, ROLLOUT_HOLD_CODE})
 RECOVERY_SOURCE_ENCODING = "append_only:dl089-invalid-single-run-successor/v1"
 Q02_FROM_YEAR = 2017
 Q02_TO_YEAR = 2022
 program_slots = scheduling.program_slots
+
+# OWNER-DEC-SIBLING-REBIND-20260829 preserved the legacy bound setfiles and
+# compiled these two measurement siblings from fresh append-only ceremony
+# setfiles. Matrix materialization must follow that compiled setfile lineage;
+# selecting the legacy default silently restores QM5_41195's obsolete slot 1.
+DL089_SIBLING_REBIND_SETFILE_DIRECTORIES = {
+    "QM5_41195_aa-vol-sma10-opt": "sibling_rebind_e8ed1e85",
+    "QM5_41196_qs-kama-trend-xau-opt": "sibling_rebind_e8ed1e85",
+}
 
 _ROUTING_PAYLOAD_KEYS = (
     "schema",
@@ -86,6 +96,16 @@ _ROUTING_PAYLOAD_KEYS = (
 
 class MatrixServiceError(RuntimeError):
     """A DL-089 row cannot be safely serviced."""
+
+
+def _measurement_source_base_setfile(
+    ea_dir: Path, label: str, symbol: str, timeframe: str
+) -> Path:
+    filename = f"{label}_{symbol}_{timeframe}_backtest.set"
+    rebind_directory = DL089_SIBLING_REBIND_SETFILE_DIRECTORIES.get(label)
+    if rebind_directory is not None:
+        return ea_dir / "sets" / rebind_directory / filename
+    return ea_dir / "sets" / filename
 
 
 def _now() -> str:
@@ -266,7 +286,9 @@ def _measurement_sibling(
         timeframe = str(frontmatter.get("period") or "").upper()
         ea_dir = card.parent.parent
         label = ea_dir.name
-        source_base_setfile = ea_dir / "sets" / f"{label}_{symbol}_{timeframe}_backtest.set"
+        source_base_setfile = _measurement_source_base_setfile(
+            ea_dir, label, symbol, timeframe
+        )
         matches.append(
             {
                 "ea_id": ea_id,
@@ -540,6 +562,67 @@ def _latest_q02(
     ).fetchone()
 
 
+def _q02_matches_measurement_bindings(
+    row: sqlite3.Row, sibling: Mapping[str, Any]
+) -> bool:
+    bindings = sibling["bindings"]
+    if Path(str(row["setfile_path"] or "")).resolve() != Path(
+        sibling["base_setfile"]
+    ).resolve():
+        return False
+    for column, binding in (
+        ("ex5_sha256", bindings["binary"]),
+        ("mq5_sha256", bindings["source"]),
+        ("setfile_sha256", bindings["setfile"]),
+    ):
+        value = str(row[column] or "").lower()
+        if value and value != str(binding["sha256"]).lower():
+            return False
+    return True
+
+
+def _hold_superseded_pending_q02(
+    conn: sqlite3.Connection, row: sqlite3.Row, *, apply: bool
+) -> None:
+    if (
+        str(row["status"]).lower() != "pending"
+        or row["verdict"] is not None
+        or row["claimed_by"] is not None
+    ):
+        raise MatrixServiceError(
+            f"stale-binding Q02 is not safely holdable: {row['id']} "
+            f"{row['status']}/{row['verdict']} claimed_by={row['claimed_by']}"
+        )
+    existing = conn.execute(
+        "SELECT hold_code,active FROM work_item_holds WHERE work_item_id=?",
+        (row["id"],),
+    ).fetchone()
+    if existing is not None:
+        if str(existing["hold_code"]) != SUPERSEDED_Q02_HOLD_CODE or not int(
+            existing["active"] or 0
+        ):
+            raise MatrixServiceError(
+                f"stale-binding Q02 has incompatible hold: {row['id']}"
+            )
+        return
+    if apply:
+        now = _now()
+        conn.execute(
+            """
+            INSERT INTO work_item_holds(
+              work_item_id,hold_code,reason,active,release_on_restart,created_at,updated_at
+            ) VALUES(?,?,?,1,0,?,?)
+            """,
+            (
+                row["id"],
+                SUPERSEDED_Q02_HOLD_CODE,
+                "DL-089 measurement setfile lineage changed; preserve this unclaimed row and use a fresh identity-bound successor",
+                now,
+                now,
+            ),
+        )
+
+
 def _seed_q02(
     conn: sqlite3.Connection,
     *,
@@ -549,13 +632,17 @@ def _seed_q02(
     apply: bool,
 ) -> dict[str, Any]:
     existing = _latest_q02(conn, str(sibling["ea_id"]), str(q12_row["symbol"]))
-    if existing is not None:
+    superseded_work_item_id = None
+    if existing is not None and _q02_matches_measurement_bindings(existing, sibling):
         return {
             "created": False,
             "work_item_id": existing["id"],
             "status": existing["status"],
             "verdict": existing["verdict"],
         }
+    if existing is not None and str(existing["status"]).lower() == "pending":
+        _hold_superseded_pending_q02(conn, existing, apply=apply)
+        superseded_work_item_id = str(existing["id"])
     bindings = sibling["bindings"]
     seed = (
         f"{RUNNER_REVISION}:{sibling['ea_id']}:{q12_row['symbol']}:"
@@ -615,6 +702,7 @@ def _seed_q02(
         "work_item_id": work_item_id,
         "status": "pending",
         "verdict": None,
+        "superseded_work_item_id": superseded_work_item_id,
     }
 
 

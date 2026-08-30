@@ -6,6 +6,8 @@ import sqlite3
 from unittest.mock import patch
 from pathlib import Path
 
+import pytest
+
 from tools.strategy_farm import dl089_matrix_service as service
 from tools.strategy_farm import farmctl
 from tools.strategy_farm import opt_census_pruning as pruning
@@ -77,7 +79,9 @@ target_symbols: [GBPUSD.DWX]
     }
 
 
-def _insert_fixture_rows(db: Path, files: dict[str, Path], tmp_path: Path) -> str:
+def _insert_fixture_rows(
+    db: Path, files: dict[str, Path], tmp_path: Path, artifact_root: Path
+) -> str:
     compile_evidence = tmp_path / "compile_evidence.json"
     compile_evidence.write_text('{"verdict":"COMPILE_OK"}\n', encoding="utf-8")
     q02_evidence = tmp_path / "q02_summary.json"
@@ -103,6 +107,14 @@ def _insert_fixture_rows(db: Path, files: dict[str, Path], tmp_path: Path) -> st
         "machine_reason": "PREREQUISITES_GREEN",
         "pattern_filter_sweep": declaration,
     }
+    neutral_text = service._neutral_matrix_setfile(files["setfile"], "QM5_41161")
+    neutral_sha = hashlib.sha256(neutral_text.encode("utf-8")).hexdigest()
+    q02_setfile = (
+        artifact_root
+        / declaration["program_id"]
+        / "base_setfiles"
+        / f"QM5_41161_tv-mon-ls-opt_GBPUSD.DWX_H1_{neutral_sha[:16]}.set"
+    )
     now = "2026-08-26T10:00:00+00:00"
     with sqlite3.connect(db) as conn:
         conn.execute(
@@ -159,7 +171,7 @@ def _insert_fixture_rows(db: Path, files: dict[str, Path], tmp_path: Path) -> st
                 "Q02",
                 "QM5_41161",
                 "GBPUSD.DWX",
-                str(files["setfile"]),
+                str(q02_setfile),
                 str(q02_evidence),
                 now,
                 now,
@@ -194,8 +206,8 @@ def test_matrix_service_materializes_declared_cells_with_bounded_window(tmp_path
     root = tmp_path / "farm"
     farmctl.init_db(root)
     db = root / farmctl.DB_REL
-    declaration_sha = _insert_fixture_rows(db, files, tmp_path)
     artifact_root = tmp_path / "matrix_artifacts"
+    declaration_sha = _insert_fixture_rows(db, files, tmp_path, artifact_root)
 
     with farmctl.connect(root) as conn:
         result = service.service_pending(
@@ -255,6 +267,78 @@ def test_program_slots_default_override_and_bounds() -> None:
         assert service.program_slots() == 10
     with patch.dict("os.environ", {"DL089_PROGRAM_SLOTS": "invalid"}, clear=True):
         assert service.program_slots() == 4
+
+
+def test_measurement_source_setfile_uses_exact_sibling_rebind_lineage(
+    tmp_path: Path,
+) -> None:
+    ea_dir = tmp_path / "QM5_41195_aa-vol-sma10-opt"
+    selected = service._measurement_source_base_setfile(
+        ea_dir,
+        "QM5_41195_aa-vol-sma10-opt",
+        "XAGUSD.DWX",
+        "D1",
+    )
+    assert selected == (
+        ea_dir
+        / "sets"
+        / "sibling_rebind_e8ed1e85"
+        / "QM5_41195_aa-vol-sma10-opt_XAGUSD.DWX_D1_backtest.set"
+    )
+
+
+def test_measurement_source_setfile_keeps_default_for_unrelated_sibling(
+    tmp_path: Path,
+) -> None:
+    ea_dir = tmp_path / "QM5_41161_tv-mon-ls-opt"
+    selected = service._measurement_source_base_setfile(
+        ea_dir,
+        "QM5_41161_tv-mon-ls-opt",
+        "GBPUSD.DWX",
+        "H1",
+    )
+    assert selected == (
+        ea_dir
+        / "sets"
+        / "QM5_41161_tv-mon-ls-opt_GBPUSD.DWX_H1_backtest.set"
+    )
+
+
+def test_superseded_q02_hold_is_append_only_and_refuses_claimed_rows(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    with farmctl.connect(root) as conn:
+        now = "2026-08-30T12:00:00+00:00"
+        conn.execute(
+            """
+            INSERT INTO work_items(
+              id,kind,phase,ea_id,symbol,setfile_path,status,verdict,attempt_count,
+              payload_json,created_at,updated_at,gate_contract_version
+            ) VALUES('stale-q02','backtest','Q02','QM5_41195','XAGUSD.DWX',
+                     'legacy.set','pending',NULL,0,'{}',?,?,'v4')
+            """,
+            (now, now),
+        )
+        row = conn.execute(
+            "SELECT * FROM work_items WHERE id='stale-q02'"
+        ).fetchone()
+        service._hold_superseded_pending_q02(conn, row, apply=True)
+        hold = conn.execute(
+            "SELECT hold_code,active,release_on_restart FROM work_item_holds "
+            "WHERE work_item_id='stale-q02'"
+        ).fetchone()
+        assert tuple(hold) == (service.SUPERSEDED_Q02_HOLD_CODE, 1, 0)
+
+        conn.execute(
+            "UPDATE work_items SET claimed_by='T1' WHERE id='stale-q02'"
+        )
+        claimed = conn.execute(
+            "SELECT * FROM work_items WHERE id='stale-q02'"
+        ).fetchone()
+        with pytest.raises(service.MatrixServiceError, match="not safely holdable"):
+            service._hold_superseded_pending_q02(conn, claimed, apply=False)
 
 
 def test_recovery_successor_preserves_declaration_and_not_source_verdict(tmp_path: Path) -> None:
