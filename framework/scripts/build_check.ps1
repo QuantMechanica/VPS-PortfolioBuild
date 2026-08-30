@@ -451,6 +451,10 @@ function Invoke-SetValidation {
                 throw 'BUILD_CHECK_SIBLING_REBIND_AUTHORITY_INVALID'
             }
             $authorityDirectory = $authorityDirectories[${env:QM_SIBLING_REBIND_AUTHORITY}]
+            if (${env:QM_SIBLING_REBIND_AUTHORITY} -ceq 'router_ops_issue:e8ed1e85-a8db-4345-9785-2e0ccf1f6997' -and
+                $EALabel -ceq 'QM5_41196_qs-kama-trend-xau-opt') {
+                $authorityDirectory = 'sibling_rebind_e8ed1e85_r2'
+            }
             $expectedRoot = [System.IO.Path]::GetFullPath((Join-Path $easRoot "$EALabel\sets\$authorityDirectory"))
             $resolvedSetfile = [System.IO.Path]::GetFullPath($SiblingRebindSetfilePath)
             $expectedPrefix = $expectedRoot.TrimEnd('\') + '\'

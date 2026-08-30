@@ -481,18 +481,15 @@ def test_qm5_41194_dl089_build_repair_authority_is_exact_label_bound() -> None:
 def test_dl089_sibling_rebind_authority_is_exact_task_and_label_bound() -> None:
     allowed = compile_work_items.DL089_SIBLING_REBIND_EA_LABELS
     authorities = {
-        compile_work_items.DL089_SIBLING_REBIND_AUTHORITY:
-            compile_work_items.DL089_SIBLING_REBIND_DIRECTORY,
-        compile_work_items.DL089_SIBLING_REPAIR_AUTHORITY:
-            compile_work_items.DL089_SIBLING_REPAIR_DIRECTORY,
+        compile_work_items.DL089_SIBLING_REBIND_AUTHORITY,
+        compile_work_items.DL089_SIBLING_REPAIR_AUTHORITY,
     }
 
     assert allowed == frozenset({
         "QM5_41195_aa-vol-sma10-opt",
         "QM5_41196_qs-kama-trend-xau-opt",
     })
-    for authority, directory in authorities.items():
-        assert compile_work_items._sibling_rebind_directory(authority) == directory
+    for authority in authorities:
         for label in allowed:
             assert compile_work_items._sibling_rebind_authorized(label, authority)
             assert compile_work_items._source_repair_authorized(label, authority)
@@ -510,7 +507,19 @@ def test_dl089_sibling_rebind_authority_is_exact_task_and_label_bound() -> None:
             label, "router_ops_issue:wrong-task"
         )
     assert compile_work_items._sibling_rebind_directory(
-        "router_ops_issue:wrong-task"
+        compile_work_items.DL089_SIBLING_REBIND_AUTHORITY,
+        "QM5_41196_qs-kama-trend-xau-opt",
+    ) == compile_work_items.DL089_SIBLING_REBIND_DIRECTORY
+    assert compile_work_items._sibling_rebind_directory(
+        compile_work_items.DL089_SIBLING_REPAIR_AUTHORITY,
+        "QM5_41195_aa-vol-sma10-opt",
+    ) == compile_work_items.DL089_SIBLING_REPAIR_DIRECTORY
+    assert compile_work_items._sibling_rebind_directory(
+        compile_work_items.DL089_SIBLING_REPAIR_AUTHORITY,
+        "QM5_41196_qs-kama-trend-xau-opt",
+    ) == compile_work_items.DL089_SIBLING_REPAIR_41196_RETRY_DIRECTORY
+    assert compile_work_items._sibling_rebind_directory(
+        "router_ops_issue:wrong-task", "QM5_41195_aa-vol-sma10-opt"
     ) is None
 
 

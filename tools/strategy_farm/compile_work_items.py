@@ -187,6 +187,7 @@ DL089_SIBLING_REBIND_EA_LABELS = frozenset({
 DL089_SIBLING_REBIND_CONTRACT_VERSION = "qm.dl089-sibling-rebind/v1"
 DL089_SIBLING_REBIND_DIRECTORY = "sibling_rebind_da2c006e"
 DL089_SIBLING_REPAIR_DIRECTORY = "sibling_rebind_e8ed1e85"
+DL089_SIBLING_REPAIR_41196_RETRY_DIRECTORY = "sibling_rebind_e8ed1e85_r2"
 # Exact authority for the two DL-089 measurement siblings whose initial compile
 # receipts preceded the final source normalization commit.  The P0 dispatch
 # repair requires current source-bound binaries before it may enqueue any real
@@ -399,10 +400,14 @@ def _sibling_rebind_authorized(label: str, authority: str | None) -> bool:
     )
 
 
-def _sibling_rebind_directory(authority: str | None) -> str | None:
+def _sibling_rebind_directory(
+    authority: str | None, label: str
+) -> str | None:
     if authority == DL089_SIBLING_REBIND_AUTHORITY:
         return DL089_SIBLING_REBIND_DIRECTORY
     if authority == DL089_SIBLING_REPAIR_AUTHORITY:
+        if label == "QM5_41196_qs-kama-trend-xau-opt":
+            return DL089_SIBLING_REPAIR_41196_RETRY_DIRECTORY
         return DL089_SIBLING_REPAIR_DIRECTORY
     return None
 
@@ -414,7 +419,7 @@ def _sibling_rebind_setfile_path(
     timeframe: str,
     authority: str | None,
 ) -> Path:
-    directory = _sibling_rebind_directory(authority)
+    directory = _sibling_rebind_directory(authority, label)
     if directory is None:
         raise ValueError("SIBLING_REBIND_AUTHORITY_INVALID")
     return (

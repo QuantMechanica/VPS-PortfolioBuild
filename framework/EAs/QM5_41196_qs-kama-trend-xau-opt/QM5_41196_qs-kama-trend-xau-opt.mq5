@@ -183,6 +183,8 @@ bool Strategy_CalculateKAMA(double &out_kama_1, double &out_kama_2, double &out_
 
    for(int k = start_k; k >= 0; --k)
      {
+      if(k >= ArraySize(closes))
+         return false;
       const double change = MathAbs(closes[k] - closes[k + er_period]);
       double volatility = 0.0;
       for(int i = 0; i < er_period; ++i)
