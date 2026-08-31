@@ -429,8 +429,8 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
   {
-   if(!SymbolSelect("XTIUSD.DWX", true) ||
-      !Strategy_IsHostChart() || !Strategy_InputsValid())
+   if(!Strategy_IsHostChart() ||
+      !SymbolSelect(_Symbol, true) || !Strategy_InputsValid())
       return INIT_PARAMETERS_INCORRECT;
 
    if(!QM_FrameworkInit(qm_ea_id,

@@ -10,26 +10,17 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   7ab776af926d7de57f1af6df07b9c30b01c1688a5561879def4e0e3cc642bce0
 ; author:       Development
 ; date:         2026-08-31
 ;==========================================================
 qm_ea_id=41242
 qm_magic_slot_offset=0
-qm_rng_seed=42
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; The WPSR release is the strategy event; no external calendar dependency.
-qm_news_temporal=0
-qm_news_compliance=0
-qm_news_mode_legacy=0
-qm_news_stale_max_hours=336
-qm_news_min_impact=high
-qm_friday_close_enabled=1
-qm_friday_close_hour_broker=21
-qm_stress_reject_probability=0.0
-; strategy-specific locked baseline from the approved card
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
 strategy_release_hhmm_ny=1030
 strategy_decision_hhmm_ny=1031
 strategy_flat_hhmm_ny=1035
