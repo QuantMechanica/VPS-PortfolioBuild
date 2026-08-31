@@ -96,9 +96,32 @@ invoked. Under this OWNER task, compile is permitted only through the governed
 
 ## Governed compile boundary
 
-Compile work item: `PENDING_ENQUEUE`.
+The first enqueue attempt supplied the ops source-repair authority. It was
+correctly refused with `SIBLING_REBIND_CURRENT_SETFILE_MISSING` because that
+flag selects the append-only repair-sibling contract; the refusal created zero
+work items and changed no artifact. Pair 3 is a first compile, not a source-hash
+repair successor.
+
+The ordinary new-build enqueue, explicitly bound to build task
+`b958b565-e847-49e1-8ec9-6575f67b0d7f`, then created exactly one governed row:
+
+| Field | Value |
+|---|---|
+| Compile work item | `24ab1d53-bff1-493c-a59b-eef83ab732f7` |
+| Utility | `COMPILE_EA` |
+| Status / attempt | `pending` / `0` |
+| Activation hold | `COMPILE_EA_WORKER_ROLLOUT_PENDING` |
+| Compiled / failed | `false` / `false` |
+| Verdict / evidence | `NULL` / `NULL` |
+| Build-task binding | `b958b565-e847-49e1-8ec9-6575f67b0d7f` |
+
+`farmctl.py compile-status QM5_41217_tv-post-vwap-requal8` immediately
+reconfirmed one pending, activation-held row and zero active, compiled, or
+failed rows. Source, SPEC, and setfile hashes were unchanged by enqueue. The
+scheduled pump had already committed those exact bytes in `d127fef4cc`; this
+receipt was committed independently with an explicit evidence-file pathspec.
 
 No EX5, compile verdict, smoke result, build-review verdict, Q02 seed, pair-3
-hold release, or pipeline verdict is claimed by this pre-enqueue checkpoint.
+hold release, or pipeline verdict is claimed by this compile-queue checkpoint.
 Pairs 4-8 remain untouched. The protected `QM5_41162 OPT_CENSUS` program and
 all T1-T10 activity remain untouched.
