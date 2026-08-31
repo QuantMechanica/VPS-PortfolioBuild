@@ -43,4 +43,14 @@ The approved strategy mapping remains:
 
 The governed compile queue already contains pending work item `527e07ee-51ee-404d-acdc-76a01bbd4f51` for this exact EA, created at `2026-08-31T05:46:06Z`. No duplicate compile item was enqueued. Its completion is the authoritative compile gate; this artifact does not claim an EX5, Q02 result, pipeline PASS, promotion, or live authorization.
 
+The required router transition to `REVIEW` was attempted and deterministically
+refused with `D6_BUILD_IDENTITY_MISSING` /
+`build_identity_json_missing_review_dispatch_refused`. D6 requires committed,
+hash-bound MQ5, EX5, and setfile bytes plus strict-build PASS. Because the
+governed work item remained pending through the scheduler window, those facts
+do not yet exist and no build identity was fabricated. The truthful interim
+router disposition is `BLOCKED` on work item
+`527e07ee-51ee-404d-acdc-76a01bbd4f51`; a later orchestration cycle may resume
+only from the compiler's durable result.
+
 Short verdict: `SOURCE_READY_GOVERNED_COMPILE_PENDING: card-faithful calendar hardening and static gates PASS; existing governed compile work item remains pending because active factory terminals correctly refused ad-hoc include mirroring.`
