@@ -1,0 +1,28 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "a864683a-9f08-4904-aba3-782a71d2e5ee"
+  ],
+  "backup": {
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260831T173735Z_73de6fd9.sqlite",
+    "sha256": "1cde9e8bb7073a6716699fa26f0066344ab3119ced11a78bf9210d0fee67cdab"
+  },
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "6da309ab85b209e5b2b3c739ffc75246d8f78447d47bb3eeff70a50f25b8e7de",
+      "ea_id": "QM5_41218",
+      "ea_label": "QM5_41218_demark-td-reverse-sequential-h4-requal8",
+      "expected_mq5_sha256": "6da309ab85b209e5b2b3c739ffc75246d8f78447d47bb3eeff70a50f25b8e7de",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41218_demark-td-reverse-sequential-h4-requal8\\QM5_41218_demark-td-reverse-sequential-h4-requal8.mq5",
+      "work_item_id": "a864683a-9f08-4904-aba3-782a71d2e5ee"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-08-31T17:37:42+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "a864683a-9f08-4904-aba3-782a71d2e5ee"
+}
