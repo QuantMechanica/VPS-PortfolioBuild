@@ -18161,3 +18161,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41253,gbpusd-weekend-tail-fade,0,GBPUSD.DWX,412530000,2026-08-31,Codex governed allocator,active
 41254,wti-chow-break-tr,0,XTIUSD.DWX,412540000,2026-08-31,Codex governed allocator,active
 41255,wti-mcvm-shift-tr,0,XTIUSD.DWX,412550000,2026-08-31,Codex governed allocator,active
+41257,wti-mmedscore524-tr,0,XTIUSD.DWX,412570000,2026-08-31,Codex governed allocator,active
