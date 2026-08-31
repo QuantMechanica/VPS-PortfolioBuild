@@ -5,9 +5,9 @@
     "slug": "xauxag-mturnpoint-rv",
     "strategy_id": "SCHWEIKERT-WALLIS-MOORE-CME-XAUXAG-MTURNPOINT-RV-2026_S01"
   },
-  "error": "MISSING_ROOT:strategy_wiki:G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies\\strategies",
-  "exit_code": 1,
-  "generated_at_utc": "2026-08-31T10:18:14+00:00",
+  "error": null,
+  "exit_code": 0,
+  "generated_at_utc": "2026-08-31T10:18:33+00:00",
   "matches": [],
   "schema": "qm.research-dedup-check.evidence.v2",
   "sources": [
@@ -26,13 +26,13 @@
       "status": "OK"
     },
     {
-      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies\\strategies",
-      "count": null,
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
       "detail": null,
       "label": "strategy_wiki",
-      "status": "MISSING_ROOT"
+      "status": "OK"
     }
   ],
   "tool_version": "2.0.0",
-  "verdict": "INPUT_ERROR_FAIL_CLOSED"
+  "verdict": "CLEAN"
 }
