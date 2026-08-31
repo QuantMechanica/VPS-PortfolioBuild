@@ -320,6 +320,71 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             self.assertEqual(second.get("opt_census_program_slots"), 1)
             self.assertTrue(second.get("opt_census_slot_deferred"))
 
+    def test_inert_default_skips_serialized_governed_rows_before_lane_preflight(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            governed = {
+                "schema": "qm.opt-census.v1",
+                "program_id": "program-a",
+                "cell_key": "program-a:2019:active",
+                "arm": "active-arm",
+                "year": 2019,
+                "ledger_path": "sealed-ledger.json",
+                "q12_work_item_id": "q12-a",
+                "q12_declaration_sha256": "fixture-sha256",
+            }
+            self._insert_work_item(
+                root, "program-a-active", "EURUSD.DWX", phase="OPT_CENSUS",
+                status="active", claimed_by="T1", ea_id="QM5_A", payload=governed,
+            )
+            # More governed rows than CLAIM_PREFLIGHT_MAX_CANDIDATES reproduce
+            # the live decline-loop shape.  Under inert defaults they are all
+            # transaction-locally ineligible while program-a owns its one lane.
+            for index in range(terminal_worker.CLAIM_PREFLIGHT_MAX_CANDIDATES + 2):
+                self._insert_work_item(
+                    root,
+                    f"program-a-pending-{index:02d}",
+                    "EURUSD.DWX",
+                    phase="OPT_CENSUS",
+                    ea_id="QM5_A",
+                    payload={
+                        **governed,
+                        "cell_key": f"program-a:2019:pending-{index:02d}",
+                        "arm": f"pending-arm-{index:02d}",
+                    },
+                )
+            self._insert_work_item(
+                root, "ordinary-fallback", "GBPUSD.DWX", phase="P2", ea_id="QM5_B",
+            )
+
+            with (
+                patch.dict(os.environ, {
+                    "DL089_PROGRAM_SLOTS": "1",
+                    "DL089_LANES_PER_PROGRAM": "1",
+                    "DL089_CELL_SLOTS": "6",
+                    "DL089_SAME_PROGRAM_PARALLEL_ALLOWLIST": "",
+                }),
+                patch.object(
+                    terminal_worker.opt_census_pruning,
+                    "pruning_enabled",
+                    return_value=False,
+                ),
+                patch.object(
+                    terminal_worker.farmctl,
+                    "_news_calendar_preflight",
+                    return_value={"ok": True, "status": "VALID"},
+                ),
+                patch.object(
+                    terminal_worker,
+                    "_opt_census_lane_preflight_outside_factory_lock",
+                ) as lane_preflight,
+            ):
+                result = terminal_worker.claim_atomic(root, "T2")
+
+            self.assertTrue(result.get("claimed"), result)
+            self.assertEqual(result["item"]["id"], "ordinary-fallback")
+            lane_preflight.assert_not_called()
+
     def test_allowlisted_distinct_arm_head_uses_narrow_duplicate_exception(self) -> None:
         with self._root() as tmp:
             root = Path(tmp) / "farm"

@@ -2259,28 +2259,6 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                         opt_l_eff if opt_program in opt_allowlist else min(1, opt_l_eff)
                     )
                     if item_is_opt_census:
-                        if governed_opt_census:
-                            token = opt_census_lane_tokens.get(str(item["id"]))
-                            if not _opt_census_token_matches(
-                                conn, item, payload, token
-                            ):
-                                candidate_key = (
-                                    str(item["id"]),
-                                    str(item["payload_json"] or "{}"),
-                                )
-                                if (
-                                    candidate_key in pruning_deferred_candidates
-                                    or opt_lane in pruning_attempted_lanes
-                                ):
-                                    continue
-                                conn.commit()
-                                return {
-                                    "claimed": False,
-                                    "reason": "opt_census_lane_preflight_required",
-                                    "candidate": dict(item),
-                                    "program_id": opt_program,
-                                    "arm": opt_arm,
-                                }
                         if active_opt_census["total"] >= opt_g_eff:
                             skipped_opt_census_slots.append({
                                 "item_id": item["id"],
@@ -2366,6 +2344,34 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                                 "threshold_gb": MULTISYMBOL_RAM_MIN_FREE_GB,
                             })
                             continue
+                        # Capacity and duplicate checks above are entirely local
+                        # to this transaction.  Run the cold-file lane preflight
+                        # only after they admit the candidate; otherwise the
+                        # default L=1 rollback state can exhaust the bounded
+                        # preflight budget on rows that it must serialize and
+                        # prevent ordinary work later in the queue from flowing.
+                        if governed_opt_census:
+                            token = opt_census_lane_tokens.get(str(item["id"]))
+                            if not _opt_census_token_matches(
+                                conn, item, payload, token
+                            ):
+                                candidate_key = (
+                                    str(item["id"]),
+                                    str(item["payload_json"] or "{}"),
+                                )
+                                if (
+                                    candidate_key in pruning_deferred_candidates
+                                    or opt_lane in pruning_attempted_lanes
+                                ):
+                                    continue
+                                conn.commit()
+                                return {
+                                    "claimed": False,
+                                    "reason": "opt_census_lane_preflight_required",
+                                    "candidate": dict(item),
+                                    "program_id": opt_program,
+                                    "arm": opt_arm,
+                                }
                     if (
                         pruning_enabled
                         and item_is_opt_census
