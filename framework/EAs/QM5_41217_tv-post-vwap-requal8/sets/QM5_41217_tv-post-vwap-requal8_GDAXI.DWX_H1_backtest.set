@@ -1,0 +1,37 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        41217
+; ea_slug:      tv-post-vwap-requal8
+; ea_version:   v5.0
+; set_version:  s20260831-001
+; symbol:       GDAXI.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-08-31
+;==========================================================
+qm_ea_id=41217
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
+strategy_atr_period=14
+strategy_volume_lookback=20
+strategy_vwap_stretch_atr=0.50
+strategy_volume_ratio=1.50
+strategy_wick_share=0.55
+strategy_stop_buffer_atr=0.25
+strategy_max_stop_atr=2.50
+strategy_target_rr=0.0
+strategy_time_stop_m15_bars=24
+strategy_time_stop_h1_bars=12
+strategy_session_filter=true
+strategy_session_start_hour=7
+strategy_session_end_hour=21
+strategy_max_spread_points=0
