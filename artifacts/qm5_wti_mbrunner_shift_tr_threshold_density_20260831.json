@@ -1,0 +1,24 @@
+{
+  "schema": "qm.predata-rank-threshold-density/v1",
+  "generated_at_utc": "2026-08-31T16:54:24Z",
+  "strategy_id": "AI-CODEX-WTI-MBRUNNER-20260831_S01",
+  "sample_contract": {
+    "old_block_size": 10,
+    "recent_block_size": 10,
+    "pooled_distinct_ranks": 20,
+    "fixed_size_label_allocations": 184756,
+    "allocation_formula": "C(20,10)",
+    "market_data_used": false
+  },
+  "score_contract": {
+    "statistic": "lawstat Brunner-Munzel combined-rank/within-rank studentized score",
+    "absolute_threshold": 0.625,
+    "zero_variance_rule": "Two complete-separation allocations use the finite saturated sign score and qualify, matching the directional limit of the source formula."
+  },
+  "result": {
+    "qualifying_allocations": 97078,
+    "qualifying_fraction": 0.5254389573275022,
+    "twelve_month_attempt_prior": 6.305267487930027
+  },
+  "claim_boundary": "This is an exact pre-data combinatorial activity-density calculation under exchangeable distinct ranks. It is not a WTI backtest, p-value, profitability estimate, or realized annual trade count."
+}

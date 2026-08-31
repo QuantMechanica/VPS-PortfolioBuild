@@ -1,0 +1,40 @@
+{
+  "schema": "qm.source-retrieval-evidence/v1",
+  "source_id": "AI-CODEX-WTI-MBRUNNER-20260831",
+  "retrieved_at_utc": "2026-08-31T16:53:16Z",
+  "routes": [
+    {
+      "path": "strategy-seeds/sources/MOP-TSMOM-2012/source.md",
+      "status": "COMPLETE_GOVERNED_PACKET_READ",
+      "sha256": "C8B07ECD62C1D5EF9E3D7975EEE6A3B6C46C1C566D0B20B42237613D9B3A7042",
+      "evidence": "Complete 23-page review record for monthly own-return continuation with explicit NYMEX WTI membership.",
+      "boundary": "No WTI-only result, exact Brunner-Munzel score, CFD equivalence, or QM execution result transfers."
+    },
+    {
+      "url": "https://github.com/cran/lawstat/blob/master/R/brunner.munzel.test.R",
+      "router_status": "ROUTE_GITHUB_API",
+      "route": "public GitHub API",
+      "api_url": "https://api.github.com/repos/cran/lawstat/contents/R/brunner.munzel.test.R",
+      "github_blob_sha": "de99dac14eaec03bada934e1ae2b2bf9714e9ebf",
+      "content_sha256": "51C8E51C84C0460E08CEBB040F14DEAB5A3AC12BEC408ADC4951BF1F60940D0C",
+      "content_length_bytes": 4559,
+      "status": "COMPLETE_SOURCE_FILE_READ",
+      "evidence": "Pinned CRAN-mirror implementation defines combined and within-sample midranks, relative effect, placement variances, studentized statistic, and Welch-style degrees of freedom.",
+      "boundary": "The EA uses the deterministic statistic only; it does not calculate or claim a p-value, confidence interval, or test significance."
+    },
+    {
+      "url": "https://stat.ethz.ch/CRAN/web/packages/lawstat/lawstat.pdf",
+      "status": "COMPLETE_RELEVANT_MANUAL_SECTION_READ",
+      "package": "lawstat 3.6",
+      "evidence": "The CRAN manual identifies the Brunner-Munzel test as a test of stochastic equality, defines the relative effect P(X<Y)+0.5P(X=Y), cites Brunner and Munzel (2000), and notes that the implementation follows the corrected Neubert and Brunner (2007) formulation.",
+      "boundary": "Only the documented statistic and correction lineage transfer."
+    },
+    {
+      "url": "https://doi.org/10.1002/(SICI)1521-4036(200001)42:1%3C17::AID-BIMJ17%3E3.0.CO;2-U",
+      "status": "PUBLISHER_METADATA_AND_ABSTRACT_READ",
+      "citation": "Brunner, E. and Munzel, U. (2000), The Nonparametric Behrens-Fisher Problem: Asymptotic Theory and a Small-Sample Approximation, Biometrical Journal 42(1), 17-25.",
+      "evidence": "The publisher record describes a rank procedure with consistently estimated asymptotic variance, arbitrary ties, heteroskedastic distributions, and a central-t approximation for n1,n2 at least 10.",
+      "boundary": "The article is statistical-method evidence, not WTI trading evidence."
+    }
+  ]
+}
