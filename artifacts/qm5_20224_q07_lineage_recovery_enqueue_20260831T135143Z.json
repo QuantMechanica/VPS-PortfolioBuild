@@ -1,0 +1,87 @@
+{
+  "schema": "qm.fx-q07-lineage-recovery-enqueue/v1",
+  "generated_at_utc": "2026-08-31T13:51:43Z",
+  "branch": "agents/board-advisor",
+  "repair_commit": "b055b1acfd86914f491f47e0e047ca55e5de330c",
+  "selection": {
+    "ea_id": "QM5_20224",
+    "pair": "EURUSD~EURJPY",
+    "logical_symbol": "QM5_20224_EURUSD_EURJPY_COINTEGRATION_D1",
+    "host_symbol": "EURUSD.DWX",
+    "phase": "Q07",
+    "fallback_reason": "The audited 66-pair FX frontier has no unbuilt relationship and QM5_12532/QM5_12533 are not Q02-blocked."
+  },
+  "prior_work_items": {
+    "q06_pass": "d13cf596-44a4-429d-92a7-2de6b1a3e7f0",
+    "q07_zero_outlier_infra": "9ba93eb9-4973-4759-9efa-f7ff224f1494",
+    "q07_missing_summary_infra": "b38e2753-1d57-45d9-8562-3cafc0e105a0"
+  },
+  "diagnosis": {
+    "first_q07_aggregate": {
+      "path": "D:\\QM\\reports\\work_items\\9ba93eb9-4973-4759-9efa-f7ff224f1494\\QM5_20224\\Q07\\QM5_20224_EURUSD_EURJPY_COINTEGRATION_D1\\aggregate.json",
+      "sha256": "7f4b3dc336c823264770aacf796709ea5a4abaeffe996a61a8ff0ceba0d5687c"
+    },
+    "second_q07_aggregate": {
+      "path": "D:\\QM\\reports\\work_items\\b38e2753-1d57-45d9-8562-3cafc0e105a0\\QM5_20224\\Q07\\QM5_20224_EURUSD_EURJPY_COINTEGRATION_D1\\aggregate.json",
+      "sha256": "2b26c1a40c06541b2e27f1a0bd941db2d850474b5a255a3c745104b168b9496f"
+    },
+    "seed_2026_false_zero_summary": {
+      "path": "D:\\QM\\reports\\work_items\\9ba93eb9-4973-4759-9efa-f7ff224f1494\\QM5_20224\\20260831_030521\\summary.json",
+      "sha256": "072295919b6156ff9ea0ee0bdc10abfd8a31ddb97578f8cf8ef111f56319a549",
+      "reported_bars": 1188,
+      "reported_symbols": 0,
+      "reported_trades": 0
+    },
+    "seed_2026_tester_log": {
+      "path": "D:\\QM\\reports\\work_items\\9ba93eb9-4973-4759-9efa-f7ff224f1494\\QM5_20224\\20260831_030521\\raw\\run_01\\20260831.log",
+      "sha256": "5c5f7fd48f95353b7652e1f7569b5c576307bbc85b3ac6a9e2b624cbcfdff03e",
+      "last_observed_deal": 209,
+      "forced_close_observed": true
+    },
+    "authenticated_reusable_seeds": {
+      "42": {"pf": 1.08, "trades": 185, "terminal": "T9"},
+      "17": {"pf": 1.40, "trades": 182, "terminal": "T9"},
+      "99": {"pf": 1.26, "trades": 187, "terminal": "T3"},
+      "7": {"pf": 1.35, "trades": 182, "terminal": "T3"}
+    },
+    "remaining_seed": 2026
+  },
+  "execution_bindings": {
+    "ex5_sha256": "d534838d2c9c993db151500c836f4e38088d961b2fe90e820defb0d31a34ae5b",
+    "mq5_sha256": "7eda37af63f23e00dcb930d71eb07afe4bef97e30875ec7f83bf5d234f668129",
+    "setfile_sha256": "397181311f649d5416044d36d6aa70023390ea8b14f97cb75e7fb8818b144254",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "cpu_preflight": {
+    "sampled_at_utc": "2026-08-31T13:50:56.4672732Z",
+    "samples_pct": [53.0, 44.0, 30.0, 32.0, 40.0],
+    "average_pct": 39.8,
+    "maximum_pct": 53.0,
+    "stop_threshold_pct": 97.0,
+    "d_free_gb": 88.68,
+    "commit_used_gb": 37.46,
+    "commit_total_gb": 122.62
+  },
+  "enqueue": {
+    "new_work_item_id": "adb5e3aa-b942-4830-9478-328522727482",
+    "append_only_rerun_of": "b38e2753-1d57-45d9-8562-3cafc0e105a0",
+    "lineage_work_items": [
+      "b38e2753-1d57-45d9-8562-3cafc0e105a0",
+      "9ba93eb9-4973-4759-9efa-f7ff224f1494"
+    ],
+    "status_immediately_after_enqueue": "pending",
+    "verdict_immediately_after_enqueue": null,
+    "payload_sha256_immediately_after_enqueue": "cbe133b13f7661e111363e04a2a220c754744170aa441c78c974e003da7e8345",
+    "priority_track": true,
+    "created_at_utc": "2026-08-31T13:51:43+00:00"
+  },
+  "safety": {
+    "manual_mt5_launch": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "deploy_manifest_touched": false
+  }
+}
