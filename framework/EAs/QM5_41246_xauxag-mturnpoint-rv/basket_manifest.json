@@ -1,0 +1,22 @@
+{
+  "logical_symbol": "QM5_41246_XAU_XAG_MTURNPOINT_RV_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "q02_from_date": "2018.07.02",
+  "q02_to_date": "2024.12.31",
+  "basket_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "notes": [
+    "One logical two-leg monthly gold/silver turning-point persistence-reversion package. Q02 evaluates combined package PnL, paired costs, activity, and later Q09 correlation; neither component leg is a standalone strategy.",
+    "The EA selects thirteen synchronized completed month-end gold-minus-silver log ratios, rejects any pairwise ratio tie within 1e-12, counts eleven strict local triples, and fades the oldest-to-newest displacement only when the turning-point count is at most seven (equivalently 3*TP < 22).",
+    "The package targets equal absolute USD notionals, caps aggregate frozen-stop risk at one RISK_FIXED budget, and follows the validated QM5_12533 logical-basket host-symbol recipe with USD tester currency and the canonical 100000 deposit."
+  ]
+}
