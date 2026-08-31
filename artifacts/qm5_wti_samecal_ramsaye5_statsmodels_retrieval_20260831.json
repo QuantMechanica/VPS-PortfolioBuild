@@ -1,0 +1,26 @@
+{
+  "schema": "qm.source-retrieval-evidence/v1",
+  "retrieved_at_utc": "2026-08-31T02:53:33.9547514Z",
+  "url": "https://www.statsmodels.org/stable/_modules/statsmodels/robust/norms.html",
+  "publisher": "statsmodels developers",
+  "release_rendered": "0.15.0",
+  "content_type": "text/html",
+  "bytes": 197780,
+  "sha256": "52994832B273BCC5F1F4F890F62E513B815CC46A1E4436367A64547DACBA819D",
+  "complete_read_scope": {
+    "ramsay_e_class_lines": "560-730",
+    "estimate_location_lines": "2327-2377",
+    "reviewed_completely": true
+  },
+  "facts_used": {
+    "name": "Ramsay's Ea for M estimation",
+    "default_a": 0.3,
+    "redescending": "soft",
+    "rho": "a^-2 * (1 - exp(-a*abs(z)) * (1 + a*abs(z)))",
+    "psi": "z * exp(-a*abs(z))",
+    "weights": "exp(-a*abs(z))",
+    "location_initial_default": "median",
+    "location_update": "sum(weights * observations) / sum(weights)"
+  },
+  "boundary": "The official implementation fixes the statistical arithmetic only. It does not test WTI, same-calendar seasonality, five observations, frozen MAD scale, exactly 32 updates, trading direction, execution, or performance."
+}
