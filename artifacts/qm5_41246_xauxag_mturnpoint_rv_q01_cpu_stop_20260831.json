@@ -1,0 +1,101 @@
+{
+  "schema": "qm.new-commodity-sleeve-q01-cpu-stop/v1",
+  "generated_at_utc": "2026-08-31T11:16:22Z",
+  "generated_at_europe_berlin": "2026-08-31T13:16:22+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "776612b2c6dc9284ce1bc6c0799ad1dc931ac394",
+  "mission_outcome": "NEW_XAUXAG_STRUCTURAL_SLEEVE_Q01_PASS_Q02_NOT_ENQUEUED_CPU_CEILING",
+  "ea": {
+    "ea_id": "QM5_41246",
+    "slug": "xauxag-mturnpoint-rv",
+    "strategy_id": "SCHWEIKERT-WALLIS-MOORE-CME-XAUXAG-MTURNPOINT-RV-2026_S01",
+    "logical_symbol": "QM5_41246_XAU_XAG_MTURNPOINT_RV_D1",
+    "host_symbol": "XAUUSD.DWX",
+    "companion_symbol": "XAGUSD.DWX",
+    "timeframe": "D1",
+    "magics": [412460000, 412460001]
+  },
+  "edge": {
+    "class": "xauxag_thirteen_completed_month_strict_turning_point_persistence_reversion",
+    "frequency": "monthly",
+    "mechanic": "Count strict local extrema across eleven interiors of thirteen synchronized completed month-end gold-minus-silver log-ratio endpoints; reject pairwise ties; when TP is at most seven, fade the oldest-to-newest displacement with opposite equal-target-notional XAU/XAG legs.",
+    "dedup_verdict": "CLEAN_XAUXAG_THIRTEEN_MONTH_STRICT_TURNING_POINT_PERSISTENCE_CONTRARIAN_EQUAL_NOTIONAL_REVERSION",
+    "dedup_receipt": "artifacts/qm5_xauxag_mturnpoint_rv_preallocation_dedup_20260831.json",
+    "dedup_receipt_sha256": "B7839F5EC0EC0E9EF188908B0D168F600AB76E183D2D657EC1491AEE93812D18"
+  },
+  "q01": {
+    "verdict": "PASS",
+    "successful_compile_work_item_id": "00b55946-d020-4c76-a9bf-6ac80e9828fc",
+    "compile_evidence": "D:/QM/reports/work_items/00b55946-d020-4c76-a9bf-6ac80e9828fc/QM5_41246/COMPILE_EA/compile_evidence.json",
+    "compile_evidence_sha256": "EB0427BAB184A14D3BAC9571FB5428C4A936F331E285C97159C48993313E245D",
+    "compile_result": "PASS",
+    "build_check_result": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "mq5_sha256": "F44971A52EF6AE725B80515C7A4C1CBF88D06B51C07C229D2EF9DEEDFBF1A85A",
+    "ex5_sha256": "545C7CE1BAF80593A5B77FFE0D542DA0ED568A718EB80052426B5D2A3FE06308",
+    "p1_evidence": "D:/QM/reports/pipeline/QM5_41246/P1/P1_QM5_41246_result.json",
+    "p1_evidence_sha256": "137187791073584F4B11D332B049A66DC379F768FD27FE41FCE6ECFE0E208F7A",
+    "reference_tests": "PASS_7",
+    "card_schema_lint": "PASS",
+    "spec_validation": "PASS",
+    "build_gate_hardening": "PASS",
+    "build_guardrails": "PASS",
+    "raw_mq5_promotion_quarantine": "PASS",
+    "setfile_count": 3,
+    "logical_setfile_sha256": "125588F4111E1ABD46AB8529F3B16CB407763315B244139C48308A0BF82FDEA8",
+    "risk_mode": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    }
+  },
+  "compile_repair_lineage": {
+    "first_work_item_id": "d5dfceea-71f3-4ee2-8ab4-9ec4742dbbd8",
+    "first_outcome": "COMPILE_PASS_BUILD_CHECK_FAIL_EA_INDICATOR_BUFFER_UNBOUNDED",
+    "rejected_mq5_sha256": "65BB2C490A5F18213B03A5824DB13DD1272F2AF1BDD7A85491C5B28ECB69E4E1",
+    "repair_authority": "governed_compile_fail:d5dfceea-71f3-4ee2-8ab4-9ec4742dbbd8",
+    "repair_scope": "Fixed 13-element ratio buffers plus approved historical entry-direction reconstruction for restart package validation; no strategy threshold, risk, or lifecycle expansion."
+  },
+  "capacity_policy": {
+    "hard_ceiling_percent": 97.0,
+    "binding_rule": "Stop when either the five-sample average or maximum reaches the governed tester-admission ceiling.",
+    "hard_ceiling_source": "tools/strategy_farm/terminal_worker.py CPU_MAX_LOAD_PERCENT"
+  },
+  "capacity_sample": {
+    "sampled_at_utc": "2026-08-31T11:16:21.8794731Z",
+    "command": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "samples_percent": [93.4643, 94.4509, 91.8955, 99.1229, 91.81],
+    "average_percent": 94.1487,
+    "maximum_percent": 99.1229,
+    "average_binding": false,
+    "maximum_binding": true,
+    "ceiling_hit": true
+  },
+  "factory_snapshot": {
+    "running_factory_terminals": ["T4", "T5", "T9"],
+    "running_factory_terminal_count": 3,
+    "terminal64_running_count_including_observed_nonfactory_processes": 5,
+    "terminal_or_worker_controlled": false
+  },
+  "q02": {
+    "status": "NOT_ENQUEUED_CPU_CEILING",
+    "work_item_count": 0,
+    "intended_symbol": "QM5_41246_XAU_XAG_MTURNPOINT_RV_D1",
+    "intended_setfile": "framework/EAs/QM5_41246_xauxag-mturnpoint-rv/sets/QM5_41246_xauxag-mturnpoint-rv_QM5_41246_XAU_XAG_MTURNPOINT_RV_D1_D1_backtest.set",
+    "build_task_id": "7b90cb95-86fd-4f3d-a8fb-e2bbbd7c4295",
+    "build_task_status": "pending_unrecorded_to_prevent_auto_q02_enqueue",
+    "build_result_written": false,
+    "record_build_called": false
+  },
+  "protected_surfaces": {
+    "manual_backtest_launched": false,
+    "dispatch_tick_called": false,
+    "autotrading_toggled": false,
+    "t_live_touched": false,
+    "portfolio_gate_touched": false,
+    "live_manifest_touched": false,
+    "unrelated_worktree_changes_preserved": true
+  },
+  "resume_contract": "On a later paced wake, require a fresh five-sample window with both average and maximum strictly below 97 percent. Then write and record the exact successful build result once; the basket-aware recorder must enqueue exactly one logical Q02 item and prefer the manifest setfile over both generated component presets."
+}

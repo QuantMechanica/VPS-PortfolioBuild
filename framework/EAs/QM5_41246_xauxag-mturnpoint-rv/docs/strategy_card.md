@@ -93,9 +93,9 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: Q01
-q01_status: NOT_BUILT
-q02_status: NOT_ENQUEUED_Q01_PENDING
+pipeline_phase: Q02_READY_CPU_BLOCKED
+q01_status: PASS
+q02_status: NOT_ENQUEUED_CPU_CEILING
 force_build: true
 review_focus: "Falsify a thirteen-completed-month strict-turning-point gold/silver ratio reversion basket outside the directional XAU/SP500/NDX/XNG book. Verify synchronization, ratio orientation, tie rejection, eleven local comparisons, TP range and 7/8 boundary, contrarian sides, consumed attempt, aggregate fixed risk, equal-notional tolerance, atomicity, and next-month exit. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -462,3 +462,4 @@ strategy is certified.
 | Version | Date | Reason | Phase | Verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-31 | initial source-bounded XAU/XAG turning-point persistence reversion card | G0 | APPROVED |
+| v2 | 2026-08-31 | source-fresh strict compile and deterministic Q01 validation | Q01 | PASS; Q02 not enqueued because a fresh five-sample window peaked at 99.1229% against the 97% hard ceiling |
