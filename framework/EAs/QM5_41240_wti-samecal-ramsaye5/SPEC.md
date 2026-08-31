@@ -163,4 +163,3 @@ backtest preset and one paced Q02 enqueue only after Q01 and capacity checks.
 It creates no live, demo, shadow, stress, or optimization preset; does not
 change `T_Live`, a deploy manifest, the portfolio gate, admission, or a
 correlation decision; and never toggles AutoTrading.
-
