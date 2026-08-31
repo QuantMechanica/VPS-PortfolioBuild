@@ -12,7 +12,7 @@
 
 **Last revised:** 2026-08-31
 
-## 1. Strategy logic
+## 1. Strategy Logic
 
 On the first executable `XTIUSD.DWX` D1 bar of a normalized broker month,
 reconstruct thirteen consecutive completed broker-month-end closes. Convert
@@ -27,7 +27,7 @@ five, and the unequal-variance standard-error term
 most `-0.75` and the recent mean is below `-1e-12`. All other outcomes
 consume the month flat.
 
-## 2. Locked parameters
+## 2. Parameters
 
 | Parameter | Value | Meaning |
 |---|---:|---|
@@ -46,7 +46,7 @@ consume the month flat.
 
 There is one Q02 baseline and no optimization surface.
 
-## 3. Symbol and runtime
+## 3. Symbol Universe
 
 - Host and traded symbol: exact `XTIUSD.DWX`, D1.
 - Symbol slot: 0; magic: `412490000`.
@@ -54,7 +54,13 @@ There is one Q02 baseline and no optimization surface.
   are the only runtime inputs.
 - There is no companion, conversion, ratio, hedge, external, or signal symbol.
 
-## 4. Formula
+## 4. Timeframe
+
+The host, signal, and execution timeframe is D1. The decision clock fires only
+on the first eligible D1 bar of a new normalized broker month and consumes
+only completed prior-month endpoints; there are no secondary timeframes.
+
+### Formula
 
 ```text
 r[i] = log(C[i+1] / C[i]), i=0..11
@@ -83,7 +89,15 @@ zero recent mean, or arithmetic failure consumes the month flat. There is no
 p-value, degrees-of-freedom calculation, fitted split, pooled variance,
 fallback estimator, or score-scaled risk.
 
-## 5. Entry and risk
+## 5. Expected Behaviour
+
+The pre-result cadence prior is five to nine completed positions per full
+post-warm-up year, with at most one consumed attempt per broker month. A
+qualifying shift is held into the next broker month unless the hard stop or
+forty-day survivor repair closes it first. Both long and short regimes are
+eligible; Q02 must prove at least five positions in every full scored year.
+
+### Entry and risk
 
 Q02 fixes `RISK_FIXED=1000`, `RISK_PERCENT=0`, and
 `PORTFOLIO_WEIGHT=1`. A qualifying month can open at most one market
@@ -94,7 +108,7 @@ and a spread above 1,500 points; a valid modeled zero spread is allowed.
 Both news axes and legacy news are OFF. Friday close is disabled so a position
 can retain the approved monthly holding period.
 
-## 6. Exit and deterministic failure contract
+### Exit and deterministic failure contract
 
 An owned position closes on the first tick in a later normalized broker month
 or after forty calendar days. Duplicate, malformed, wrong-symbol, wrong-side,
@@ -106,7 +120,7 @@ The broker-month attempt is persisted before history, arithmetic, news,
 spread, quote, ATR, sizing, margin, or order gates. A failed gate never causes
 a late retry.
 
-## 7. Evidence and non-duplication
+## 6. Source Citation
 
 The governed source packet is
 `strategy-seeds/sources/AI-CODEX-WTI-MWELCH-20260831/source.md`. It records
@@ -125,7 +139,19 @@ price ranks, fixed ECDF gaps, label runs, a daily median, or an endogenous
 centered CUSUM split. No realized decorrelation claim is made; Q09 alone may
 establish portfolio overlap.
 
-## 8. Expected behavior and kill criteria
+## 7. Risk Model
+
+| Phase | Risk mode | Value |
+|---|---|---|
+| Backtest (Q02 - Q10) | RISK_FIXED | $1,000 per trade (HR4) |
+| Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
+| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% - 0.5%) |
+
+Environment-to-mode validation is enforced by `QM_FrameworkInit`; the Q02
+preset explicitly seals `RISK_FIXED=1000`, `RISK_PERCENT=0`, and
+`PORTFOLIO_WEIGHT=1`. This build does not authorize any live preset.
+
+### Kill criteria and risks
 
 The pre-result cadence prior is five to nine completed positions per full
 post-warm-up year. Q02 retires on zero positions, fewer than five in any full
