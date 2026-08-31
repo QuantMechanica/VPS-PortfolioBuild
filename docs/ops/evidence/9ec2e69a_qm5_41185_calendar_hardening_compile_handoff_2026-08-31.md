@@ -104,6 +104,8 @@ The append-only replacement compile row
 `a99d0b17-f974-4f32-bf4c-e7b66a8c3ce5` completed on governed terminal T6 at
 `2026-08-31T07:18:34Z` with `COMPILE_OK`. Its durable receipt is
 `D:/QM/reports/work_items/a99d0b17-f974-4f32-bf4c-e7b66a8c3ce5/QM5_41185/COMPILE_EA/compile_evidence.json`.
+The router-consumable exact-byte packet is
+`framework/EAs/QM5_41185_xauxag-fracd-rv/build_identity.json`.
 The receipt records compile PASS, strict build-check PASS, zero compiler
 errors, zero compiler warnings, two active magic rows, three backtest
 setfiles, and no failure class. Commit `a041b95c92` binds the emitted EX5 and
