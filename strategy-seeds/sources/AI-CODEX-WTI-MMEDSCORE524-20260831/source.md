@@ -9,7 +9,8 @@ approval_basis: decisions/2026-08-31_wti_monthly_median_score524_trend_source_ap
 created: 2026-08-31
 created_by: Codex
 last_reviewed: 2026-08-31
-cards_extracted: []
+cards_extracted:
+  - QM5_41257_wti-mmedscore524-tr
 ---
 
 # WTI Monthly Exact Non-Neutral Median-Score Continuation
