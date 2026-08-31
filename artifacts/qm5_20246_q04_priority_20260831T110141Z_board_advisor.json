@@ -1,0 +1,249 @@
+{
+  "artifact_type": "qm5_20246_fx_cointegration_q04_priority_handoff",
+  "schema": "qm.fx-cointegration-q04-priority-handoff/v1",
+  "generated_at_utc": "2026-08-31T11:01:41Z",
+  "generated_at_europe_berlin": "2026-08-31T13:01:41+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "0e88dd3f466eb1b5e5527849228d019014207ea8",
+  "mission_outcome": "EXISTING_FOREX_Q04_PRIORITY_BOUND_IN_PLACE_AFTER_Q03_PASS",
+  "frontier_reconciliation": {
+    "controlling_research": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "relationships_scanned": 66,
+    "published_survivor_criterion": "DEV Sharpe > 0; OOS net Sharpe > 0.8; OOS trades >= 4",
+    "anchors": {
+      "QM5_12532": {
+        "pair": [
+          "AUDUSD.DWX",
+          "NZDUSD.DWX"
+        ],
+        "q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+        "q02": "PASS",
+        "later_chain": "Q04 PASS; Q05 FAIL",
+        "current_q02_oninit_or_no_history_block": false
+      },
+      "QM5_12533": {
+        "pair": [
+          "EURJPY.DWX",
+          "GBPJPY.DWX"
+        ],
+        "q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+        "q02": "PASS",
+        "later_chain": "Q04 FAIL",
+        "current_q02_oninit_or_no_history_block": false
+      }
+    },
+    "approved_card_census": {
+      "method": "case-insensitive cointegration-or-coint substring match in strategy-seeds/cards/approved, unique filename EA IDs reconciled to framework/EAs directories",
+      "matching_card_files": 121,
+      "unique_ea_ids": 121,
+      "matching_ea_directories": 121,
+      "unbuilt_ea_ids": []
+    },
+    "new_unbuilt_pair_eligible": false,
+    "skill_gate_disposition": {
+      "qm_strategy_card_extraction": "CLOSED_NO_OWNER_APPROVED_NON_DUPLICATE_SCAN_QUALIFIED_PAIR",
+      "qm_build_ea_from_card": "CLOSED_NO_APPROVED_UNBUILT_COINTEGRATION_CARD",
+      "qm_run_pipeline_phase": "NOT_APPLICABLE_TO_Q04_PRIORITY_HANDOFF"
+    }
+  },
+  "selected_existing_forex_fallback": {
+    "selection_rule": "existing frozen-scan relationship whose unique next gate became dependency-complete during this paced wake",
+    "scan_rank": 60,
+    "ea_id": "QM5_20246",
+    "ea_directory": "framework/EAs/QM5_20246_usdjpy-eurgbp",
+    "approved_card": "strategy-seeds/cards/approved/QM5_20246_usdjpy-eurgbp_card.md",
+    "logical_symbol": "QM5_20246_USDJPY_EURGBP_COINTEGRATION_D1",
+    "traded_symbols": [
+      "USDJPY.DWX",
+      "EURGBP.DWX"
+    ],
+    "conversion_history_only_symbols": [
+      "GBPUSD.DWX",
+      "EURUSD.DWX"
+    ],
+    "timeframe": "D1",
+    "fixed_beta": -1.28177360996,
+    "scan_evidence": {
+      "dev_net_sharpe": 0.25270109885,
+      "oos_net_sharpe": -0.456864966287,
+      "oos_return_percent": -6.371810072221,
+      "oos_state_changes": 13,
+      "half_life_d1_bars": 132.813394758594,
+      "disposition": "one-shot pipeline falsification; no beta refit, rescue filter, or parameter substitution"
+    },
+    "structural_only": true,
+    "low_frequency": true,
+    "machine_learning": false,
+    "adaptive_refit": false,
+    "card_schema_lint": {
+      "status": "ok",
+      "ml_hits": [],
+      "missing_sections": []
+    }
+  },
+  "source_build_and_risk_binding": {
+    "approved_card_sha256": "02dc1de067052e3bf4570f9a8ad65df75c0a0463a18b2bef897fa2149f943e0f",
+    "mq5_sha256": "4ee9db9b746599413e00af5f01583252bd8ec9b8440d0509ca25207ea483ec6a",
+    "ex5_sha256": "f2384173fdd41e914b48b3098467c9b02a7648494f937f5f027f4e8b45aa6eab",
+    "basket_manifest_sha256": "63b4084a8522588bb3c3629b12430b4b27efd133472ea24dc5adafff250a66f5",
+    "backtest_setfile_sha256": "4a4f23b23b969e3b6b189806be924a901f341212167a3500f590a7f81a1c4416",
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "environment": "backtest"
+  },
+  "authenticated_q03_pass": {
+    "work_item_id": "46c97cb3-45f9-475d-8e6b-aa7bdd40df0e",
+    "status": "done",
+    "verdict": "PASS",
+    "evidence_path": "D:/QM/reports/work_items/46c97cb3-45f9-475d-8e6b-aa7bdd40df0e/QM5_20246/20260831_091513/summary.json",
+    "evidence_sha256": "738f0308deba533cec14b8fc5623a9037dc05e511450ae00294ba02f77fbf55f",
+    "deterministic": true,
+    "requested_runs": 2,
+    "attempted_runs": 2,
+    "oninit_failure_detected": false,
+    "runs": [
+      {
+        "run": "run_01",
+        "status": "OK",
+        "profit_factor": 1.11,
+        "trades": 136,
+        "drawdown_percent": 5.43,
+        "net_profit": 1610.27,
+        "report_sha256": "05e23d1b7838711efa22ad97cea6d88de1a736c50f4e6de9df4ff0cb6868ec29"
+      },
+      {
+        "run": "run_02",
+        "status": "OK",
+        "profit_factor": 1.11,
+        "trades": 136,
+        "drawdown_percent": 5.43,
+        "net_profit": 1610.27,
+        "report_sha256": "a65386f290197a793ae59652d15275b162c6a1757544700df7cfb1c2e3de0946"
+      }
+    ]
+  },
+  "canonical_lineage": [
+    {
+      "id": "d8619249-7764-4d80-a714-6b7922b73b4b",
+      "phase": "Q02",
+      "status": "done",
+      "verdict": "PASS"
+    },
+    {
+      "id": "46c97cb3-45f9-475d-8e6b-aa7bdd40df0e",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS"
+    },
+    {
+      "id": "1a269ff4-cbef-429b-afa4-47a3cc692916",
+      "phase": "Q04",
+      "status": "pending",
+      "verdict": null,
+      "claimed_by": null,
+      "attempt_count": 0,
+      "priority_track": true,
+      "priority_reason": "board_advisor_fx_fallback_rank60_q04_after_q03_pass",
+      "updated_at_preserved": "2026-08-07T02:51:54+00:00"
+    }
+  ],
+  "queue_action": {
+    "work_item_id": "1a269ff4-cbef-429b-afa4-47a3cc692916",
+    "phase": "Q04",
+    "mutation": "EXACT_ID_IN_PLACE_PAYLOAD_CAS",
+    "status_after": "pending",
+    "claimed_by_after": null,
+    "attempt_count_after": 0,
+    "verdict_after": null,
+    "updated_at_preserved": "2026-08-07T02:51:54+00:00",
+    "priority_track_before": null,
+    "priority_track_after": true,
+    "priority_reason": "board_advisor_fx_fallback_rank60_q04_after_q03_pass",
+    "payload_sha256_before": "ef80a3827a9f592e6bf2adddc677d70f1babecd39b362368b6ff98bd4ee8ce0b",
+    "payload_sha256_after": "e4cf0bfe9e398f18491fde4341052b60320cc32ba58f3f2a5732b8558302fbaf",
+    "queue_rank_before": 6830,
+    "queue_rank_after_transaction": 1381,
+    "queue_rank_improvement": 5449,
+    "canonical_selector_rows_before": 9012,
+    "canonical_selector_rows_after": 9012,
+    "raw_pending_rows_before": 9223,
+    "raw_pending_rows_after": 9223,
+    "post_commit_observed_rank": 1381,
+    "audit_event_id": 381107,
+    "audit_event": "fx_cointegration_q04_priority_handoff",
+    "row_journal": "D:/QM/reports/state/qm5_20246_q04_priority_20260831T110141Z.journal.json",
+    "row_journal_sha256": "418a5e463084e989ddd2ba3b00919568d604f3d439e122fed8a6da43f8acf9f0",
+    "row_journal_state": "COMMITTED",
+    "factory_mutation_lock_wait_seconds": 0.009989,
+    "factory_mutation_lock_release_status": "released",
+    "open_matching_q04_rows_after": 1,
+    "active_holds_after": 0,
+    "supersede_relations_after": 0,
+    "active_quarantine_after": 0,
+    "duplicate_work_items_created": 0,
+    "pipeline_verdict_changed": false,
+    "alpha_changed": false
+  },
+  "capacity": {
+    "samples_percent": [
+      92.393512,
+      76.467789,
+      84.669589,
+      88.876396,
+      85.56284
+    ],
+    "average_percent": 85.594025,
+    "maximum_percent": 92.393512,
+    "cpu_ceiling_percent": 97.0,
+    "cpu_ceiling_hit": false,
+    "sampled_at_utc": "2026-08-31T11:01:41.4556788Z",
+    "active_multisymbol_work_items_at_apply": [
+      {
+        "id": "b38e2753-1d57-45d9-8562-3cafc0e105a0",
+        "ea_id": "QM5_20224",
+        "phase": "Q07",
+        "symbol": "QM5_20224_EURUSD_EURJPY_COINTEGRATION_D1",
+        "claimed_by": "T9"
+      }
+    ],
+    "serialized_lane_disposition": "priority handoff only; no claim, dispatch, tester, or terminal action while the existing basket remained active"
+  },
+  "failed_closed_preview_attempt": {
+    "occurred": true,
+    "failure": "the generic in-memory claim-order helper omitted the selector's current work_item_supersedes table",
+    "sqlite_error": "no such table: work_item_supersedes",
+    "database_mutation_committed": false,
+    "journal_created": false,
+    "event_created": false,
+    "target_preimage_reverified_before_retry": true,
+    "retry_method": "canonical live selector inside a rolled-back SQLite savepoint preview",
+    "shared_controller_changed": false
+  },
+  "actions_this_run": {
+    "frontier_and_anchor_reconciled": true,
+    "approved_card_build_census_refreshed": true,
+    "selected_existing_forex_lineage_verified": true,
+    "card_manifest_package_and_risk_checked": true,
+    "q03_pass_authenticated": true,
+    "existing_q04_row_priority_bound_in_place": true,
+    "new_card_or_ea_created": false,
+    "new_work_item_created": false,
+    "dispatch_tick": false,
+    "terminal_or_worker_controlled": false,
+    "compile_smoke_or_backtest_started": false
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false,
+    "live_or_deploy_manifest_touched": false,
+    "preexisting_unrelated_worktree_changes_preserved": true
+  },
+  "resume_contract": "Let the resident paced worker claim exact Q04 row 1a269ff4-cbef-429b-afa4-47a3cc692916 only after the serialized multisymbol lane clears. Do not enqueue a duplicate or manually force a second basket. A terminal economic or cadence failure retires the sleeve without refit or rescue."
+}
