@@ -152,6 +152,19 @@ QM5_36005_REVIEW_REPAIR_AUTHORITY = (
 QM5_36005_REVIEW_REPAIR_EA_LABELS = frozenset({
     "QM5_36005_nnfx-coral-trendlord-woodies-harvester",
 })
+# Exact Q01 recycle authority for QM5_12929. Router task 7b431d7a was
+# reviewer-recycled only for source annotations and SPEC completion; its
+# repaired source was then committed and the task closed solely because the
+# live factory/CPU ceiling refused compilation. The existing presets still
+# carry historical build hashes while no EX5 exists. This one task/label
+# binding permits only an append-only, current-source-hash-bound COMPILE_EA
+# successor; it grants no backtest or gate-verdict authority.
+QM5_12929_Q01_RECYCLE_REPAIR_AUTHORITY = (
+    "router_build_ea:7b431d7a-a902-4947-a932-ffa8ef3a54d7"
+)
+QM5_12929_Q01_RECYCLE_REPAIR_EA_LABELS = frozenset({
+    "QM5_12929_brooks-expanded-micro-channel-h1",
+})
 # Exact review-rework authorities for review tasks that accepted repaired
 # source while rejecting the stale binary/source package. Each permits one
 # append-only COMPILE_EA successor bound to the repaired source hash; it grants
@@ -1243,6 +1256,10 @@ def _source_repair_authorized(
         or (
             authority == QM5_36005_REVIEW_REPAIR_AUTHORITY
             and ea_label in QM5_36005_REVIEW_REPAIR_EA_LABELS
+        )
+        or (
+            authority == QM5_12929_Q01_RECYCLE_REPAIR_AUTHORITY
+            and ea_label in QM5_12929_Q01_RECYCLE_REPAIR_EA_LABELS
         )
         or (
             authority is not None

@@ -1294,6 +1294,23 @@ def test_qm5_36005_review_repair_authority_is_exact_label_bound() -> None:
     )
 
 
+def test_qm5_12929_q01_recycle_repair_authority_is_exact_label_bound() -> None:
+    label = "QM5_12929_brooks-expanded-micro-channel-h1"
+
+    assert compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_12929_Q01_RECYCLE_REPAIR_AUTHORITY,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        "QM5_12928_unrelated-h1",
+        compile_work_items.QM5_12929_Q01_RECYCLE_REPAIR_AUTHORITY,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label,
+        "router_build_ea:wrong-task",
+    )
+
+
 def test_review_rework_source_repair_authority_is_exact_label_bound() -> None:
     authorities = compile_work_items.REVIEW_REWORK_SOURCE_REPAIR_AUTHORITIES
 
