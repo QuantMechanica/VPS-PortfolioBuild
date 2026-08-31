@@ -1,0 +1,63 @@
+{
+  "task_id": "0f0b4a3b-f77a-454e-9c59-c43230cece52",
+  "ea_id": "QM5_41255",
+  "ea_label": "QM5_41255_wti-mcvm-shift-tr",
+  "slug": "wti-mcvm-shift-tr",
+  "strategy_id": "AI-CODEX-WTI-MCVM-20260831_S01",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41255_wti-mcvm-shift-tr",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41255_wti-mcvm-shift-tr\\QM5_41255_wti-mcvm-shift-tr.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41255_wti-mcvm-shift-tr\\QM5_41255_wti-mcvm-shift-tr.ex5",
+  "magic_base": 412550000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41255_wti-mcvm-shift-tr\\sets\\QM5_41255_wti-mcvm-shift-tr_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41255_wti-mcvm-shift-tr\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "The qm-build-ea-from-card skill is build-only and forbids manual backtests; the OWNER mission authorizes one governed Q02 enqueue instead.",
+  "blocked_reason": "",
+  "open_questions": [],
+  "compile": {
+    "status": "COMPILE_OK",
+    "work_item_id": "73f89090-0ace-45e1-b050-69735eb77eb0",
+    "terminal": "T3",
+    "evidence_path": "D:\\QM\\reports\\work_items\\73f89090-0ace-45e1-b050-69735eb77eb0\\QM5_41255\\COMPILE_EA\\compile_evidence.json",
+    "evidence_sha256": "6E30D1985EF10DBB9DE73A5B7240929055B045ADDF9AD1FB2B5CC2CE892A9B68",
+    "build_check_result": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "failure_classes": [],
+    "mq5_sha256": "EBF393C3300139728A132AED238661EBC5DC047E9E87325478B4AD06305F0C3A",
+    "ex5_sha256": "9D324AF600A9B36DD4FC60CB7390FDEB7CF6660A0556E7BCFB6DB10FA394CC43",
+    "setfile_build_hash": "924E9B97DB9D0C4C9FB500642B3C87E2D1B3C47BB781D9FE732119FE2536059D",
+    "setfile_sha256": "03F85FCF77FA89ABA8B6F7EB72BE1C90CBBA9E5F646677323A9AC449AB1598DC"
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "validations": {
+    "approved_card_sha256": "7605307D8A2E55601E6B6993FE5C2E02CE9AB3CA3092E9A2604D9F3E65D51F76",
+    "approved_local_card_byte_identical": true,
+    "build_skill_guard": "PASS",
+    "card_schema_lint": "PASS",
+    "reference_tests": "PASS_9",
+    "p1_artifact_validation": "PASS",
+    "spec_sha256": "3B965B8E897027601FFCE44E5C5DF36CF4C8DA4928E405D637C3F00637347B4D",
+    "spec_validation": "PASS",
+    "static_guardrails": "PASS"
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "deploy_manifest_touched": false,
+    "manual_backtest_launched": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false
+  }
+}
