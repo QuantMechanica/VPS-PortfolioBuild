@@ -4,6 +4,8 @@ Status: `G0 APPROVED; IMPLEMENTED; Q01 PENDING`
 
 ## Identity
 
+**EA ID:** QM5_41237
+
 - EA ID: `QM5_41237`
 - slug: `wti-samecal-cauchy5`
 - strategy ID: `KELOHARJU-SCIPY-WTI-SAMECAL-CAUCHY5-2026_S01`
