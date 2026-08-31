@@ -442,8 +442,11 @@ bool Strategy_LoadWeekendGaps(const datetime broker_now,
       if(ratio <= 0.0 || !MathIsValidNumber(ratio))
          return false;
       const double gap = MathLog(ratio);
-      if(!MathIsValidNumber(gap) ||
-         gap_count < 0 || gap_count >= ArraySize(newest_first))
+      if(!MathIsValidNumber(gap))
+         return false;
+      if(gap_count < 0 || gap_count >= strategy_prior_gap_count)
+         return false;
+      if(gap_count >= ArraySize(newest_first))
          return false;
       newest_first[gap_count] = gap;
       if(gap_count == 0)
@@ -461,12 +464,17 @@ bool Strategy_LoadWeekendGaps(const datetime broker_now,
    if(ArrayResize(chronological, gap_count) != gap_count ||
       ArrayResize(sorted, gap_count) != gap_count)
       return false;
-   for(int index = 0; index < ArraySize(chronological); ++index)
+   for(int index = 0; index < gap_count; ++index)
      {
+      if(index < 0 || index >= ArraySize(chronological))
+         return false;
+      if(index >= ArraySize(sorted))
+         return false;
       const int reverse_index = gap_count - 1 - index;
       if(reverse_index < 0 ||
-         reverse_index >= ArraySize(newest_first) ||
-         index < 0 || index >= ArraySize(sorted))
+         reverse_index >= strategy_prior_gap_count)
+         return false;
+      if(reverse_index >= ArraySize(newest_first))
          return false;
       chronological[index] = newest_first[reverse_index];
       sorted[index] = chronological[index];
@@ -483,11 +491,12 @@ bool Strategy_LoadWeekendGaps(const datetime broker_now,
          return false;
      }
 
-   if(strategy_lower_index < 0 ||
-      strategy_lower_index >= ArraySize(sorted) ||
-      strategy_upper_index < 0 ||
-      strategy_upper_index >= ArraySize(sorted) ||
+   if(strategy_lower_index < 0 || strategy_lower_index >= gap_count ||
+      strategy_upper_index < 0 || strategy_upper_index >= gap_count ||
       strategy_lower_index >= strategy_upper_index)
+      return false;
+   if(strategy_lower_index >= ArraySize(sorted) ||
+      strategy_upper_index >= ArraySize(sorted))
       return false;
    lower_gap = sorted[strategy_lower_index];
    upper_gap = sorted[strategy_upper_index];
