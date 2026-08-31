@@ -1,0 +1,94 @@
+{
+  "schema": "qm.new-commodity-sleeve-build-cpu-stop/v1",
+  "generated_at_utc": "2026-08-31T00:10:11.6040536Z",
+  "branch": "agents/board-advisor",
+  "mission_outcome": "SOURCE_BUILD_COMMITTED_STATIC_Q01_PASS_COMPILE_Q02_DEFERRED_CPU_CEILING",
+  "ea": {
+    "ea_id": "QM5_41237",
+    "slug": "wti-samecal-cauchy5",
+    "strategy_id": "KELOHARJU-SCIPY-WTI-SAMECAL-CAUCHY5-2026_S01",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "magic": 412370000
+  },
+  "edge": {
+    "class": "wti_exact_five_year_same_calendar_frozen_scale_cauchy_location",
+    "frequency": "monthly",
+    "mechanic": "At a genuine normalized WTI broker-month transition, load exact completed matching-calendar-month log returns in Y-5 through Y-1, require all five, start at their odd median, freeze scale=1.4826*MAD, execute exactly 32 updates with weight=1/(1+u^2), trade the strict final sign outside 1e-12, and renew next month.",
+    "dedup_verdict": "SEMANTICALLY_DISTINCT_WTI_EXACT_FIVE_YEAR_SAME_CALENDAR_FROZEN_SCALE_CAUCHY_LOCATION_SIGN_MONTHLY_SLEEVE",
+    "dedup_receipt": "artifacts/qm5_wti_samecal_cauchy5_preallocation_dedup_20260831.json",
+    "dedup_receipt_sha256": "5841B4C9F78B39C80BB9E5EE57087EF68222BF22ED6DF7F2AC9F4DE270FF35D9",
+    "locked_fixture": {
+      "observations": [-0.08, -0.05, -0.001, 0.005, 0.01],
+      "cauchy_location": 0.001385877861,
+      "cauchy_direction": "BUY_WTI",
+      "bisquare_location": -0.001228911486,
+      "hampel_location": -0.017078133333,
+      "named_peer_direction": "SELL_WTI"
+    }
+  },
+  "governance": {
+    "source_packet": "strategy-seeds/sources/KELOHARJU-SCIPY-WTI-SAMECAL-CAUCHY5-2026/source.md",
+    "source_approval": "decisions/2026-08-31_wti_same_calendar_cauchy5_source_approval.md",
+    "approved_card": "strategy-seeds/cards/approved/QM5_41237_wti-samecal-cauchy5_card.md",
+    "approved_card_sha256": "68C7506B3443D272A8D84377ED4112C13CF2871F79FDA28FCD63B98D4E34614A",
+    "g0_decision": "decisions/2026-08-31_qm5_41237_wti_same_calendar_cauchy5_g0.md",
+    "magic_allocation": "artifacts/qm5_41237_magic_allocation_20260831.json"
+  },
+  "build": {
+    "commits": [
+      "db875341a",
+      "f2cdeefd3",
+      "2a8ec789d",
+      "5f71420d2",
+      "8918c3027",
+      "e213ccea9",
+      "7e9da1d91"
+    ],
+    "mq5": "framework/EAs/QM5_41237_wti-samecal-cauchy5/QM5_41237_wti-samecal-cauchy5.mq5",
+    "mq5_sha256": "D224C873C63BCEEE510DAA7899AF0931F05BCC00F77E8619229013D198D43201",
+    "setfile": "framework/EAs/QM5_41237_wti-samecal-cauchy5/sets/QM5_41237_wti-samecal-cauchy5_XTIUSD.DWX_D1_backtest.set",
+    "setfile_sha256": "D3234AABFB6F72684CB6CFF482158366FF353080D24ADB6C7ACF5E5C5E159A36",
+    "setfile_build_hash": "pending",
+    "risk_mode": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "reference_tests": "PASS_11",
+    "card_schema_lint": "PASS",
+    "spec_validation": "PASS",
+    "strategy_entry_validation": "PASS",
+    "raw_mq5_quarantine": "PASS",
+    "static_build_guardrails": "PASS_ZERO_FINDINGS",
+    "allocator_tests": "PASS_17",
+    "strict_compile": "NOT_ATTEMPTED_CPU_CEILING",
+    "ex5": null
+  },
+  "capacity_stop": {
+    "sampled_at_utc": "2026-08-31T00:10:11.6040536Z",
+    "command": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "samples_percent": [100.0, 100.0, 99.9028, 99.3178, 99.415],
+    "average_percent": 99.7271,
+    "maximum_percent": 100.0,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_hit": true,
+    "terminal64_process_count": 7,
+    "metatester64_process_count": 5,
+    "required_action": "STOP_AND_SUMMARIZE"
+  },
+  "q02": {
+    "enqueued": false,
+    "reason": "CPU_CEILING_HIT_BEFORE_GOVERNED_COMPILE",
+    "compile_work_item_created": false,
+    "backtest_work_item_created": false
+  },
+  "safety": {
+    "manual_tester_launched": false,
+    "autotrading_toggled": false,
+    "t_live_touched": false,
+    "portfolio_gate_touched": false,
+    "certification_claimed": false,
+    "decorrelation_claimed": false
+  }
+}
