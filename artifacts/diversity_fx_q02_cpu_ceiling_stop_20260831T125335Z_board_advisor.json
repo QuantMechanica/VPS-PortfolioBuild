@@ -1,0 +1,110 @@
+{
+  "artifact_type": "diversity_funnel_capacity_stop",
+  "schema": "qm.mission-capacity-stop/v1",
+  "generated_at_utc": "2026-08-31T12:53:35.8430885Z",
+  "generated_at_europe_berlin": "2026-08-31T14:53:35.8430885+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "4c269458d6b762ee1a030264d5fb6c37e96645e9",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING_AFTER_DISTINCT_FX_HANDOFF_SELECTION_BEFORE_CLAIM_SMOKE_OR_Q02_MUTATION",
+  "capacity_policy": {
+    "hard_ceiling_percent": 97.0,
+    "binding_rule": "Proceed only when both the five-sample average and maximum are strictly below 97 percent; stop as soon as either measure reaches the ceiling.",
+    "source": "tools/strategy_farm/terminal_worker.py CPU_MAX_LOAD_PERCENT"
+  },
+  "capacity_windows": [
+    {
+      "stage": "initial_admission",
+      "samples_cpu_percent": [59.30, 58.29, 63.68, 72.37, 71.41],
+      "sample_count": 5,
+      "sample_interval_seconds": 1,
+      "average_cpu_percent": 65.01,
+      "maximum_cpu_percent": 72.37,
+      "ceiling_binding": false
+    },
+    {
+      "stage": "pre_smoke_recheck_after_fleet_reservations_appeared",
+      "samples_cpu_percent": [89.84, 97.69, 96.29, 77.35, 62.82],
+      "sample_count": 5,
+      "sample_interval_seconds": 1,
+      "average_cpu_percent": 84.80,
+      "maximum_cpu_percent": 97.69,
+      "average_binding": false,
+      "maximum_binding": true,
+      "ceiling_binding": true
+    }
+  ],
+  "selection": {
+    "ea_id": "QM5_36005",
+    "slug": "nnfx-coral-trendlord-woodies-harvester",
+    "instrument_class": "forex",
+    "symbols": ["GBPJPY.DWX", "EURJPY.DWX", "AUDNZD.DWX"],
+    "timeframe": "D1",
+    "expected_trades_per_year_per_symbol": 25,
+    "selection_basis": "Highest-diversity unfinished farm handoff: a structural low-frequency FX sleeve outside the certified index/metal/energy concentration; older nominal FX backlog rows were excluded after the live DB showed they had already advanced into later phases.",
+    "build_task_id": "85404c3e-51d0-4a7e-85f3-f4658bc1dea9",
+    "build_task_status": "active",
+    "build_task_claimed_by": "codex:agents/board-advisor",
+    "compile_work_item_id": "59333bce-ff98-4059-9e34-56d306932f90",
+    "compile_status": "done",
+    "compile_verdict": "COMPILE_OK",
+    "compile_evidence": "D:/QM/reports/work_items/59333bce-ff98-4059-9e34-56d306932f90/QM5_36005/COMPILE_EA/compile_evidence.json",
+    "compile_build_check_result": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "ex5_sha256": "e11e8103deacb817642e1de7013b6c153569011d4751dba4c03c9e3d10dad258",
+    "risk_fixed_setfile_count": 3,
+    "q02_work_item_count": 0,
+    "collision_decision": "Resume the exact active build task only; do not create another build task, compile row, or Q02 row manually."
+  },
+  "farm_db_snapshot": {
+    "database": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "captured_read_only": true,
+    "captured_at_utc": "2026-08-31T12:53:35.8430885Z",
+    "build_task_counts": {
+      "active": 5,
+      "blocked": 80,
+      "done": 1817,
+      "failed": 1352,
+      "pending": 66
+    },
+    "active_work_items": [
+      {"id": "603aa7c6-5236-58ab-bb94-83402bad90cf", "ea_id": "QM5_41194", "symbol": "XTIUSD.DWX", "phase": "OPT_CENSUS", "claimed_by": "T1"},
+      {"id": "d58fbebf-4211-50f0-837d-2efd6f6c0389", "ea_id": "QM5_41195", "symbol": "XAGUSD.DWX", "phase": "OPT_CENSUS", "claimed_by": "T2"},
+      {"id": "0c4a80fc-640b-4da8-ad63-ccc1ce5095a5", "ea_id": "QM5_11294", "symbol": "GDAXI.DWX", "phase": "Q10_NEWS", "claimed_by": "T5"},
+      {"id": "9184a487-91d0-5c24-9efb-387893ccb136", "ea_id": "QM5_41097", "symbol": "USDJPY.DWX", "phase": "OPT_CENSUS", "claimed_by": "T6"},
+      {"id": "22da4535-2049-534e-9bc2-2aaaebd7781f", "ea_id": "QM5_41163", "symbol": "USDCAD.DWX", "phase": "OPT_CENSUS", "claimed_by": "T8"},
+      {"id": "6a4b9ee9-8ebb-40ad-a18d-e43d024a3c0d", "ea_id": "QM5_41161", "symbol": "GBPUSD.DWX", "phase": "Q10_NEWS", "claimed_by": "T9"}
+    ]
+  },
+  "fleet_transition": {
+    "mt5_slot_scan_at_utc": "2026-08-31T12:52:30+00:00",
+    "running_factory_terminals_at_scan": ["T7"],
+    "reservations_at_scan": ["T4", "T5", "T6", "T7", "T8"],
+    "active_work_item_terminals_at_db_snapshot": ["T1", "T2", "T5", "T6", "T8", "T9"],
+    "interpretation": "The farm admitted multiple new jobs between the slot scan and the pre-smoke CPU recheck; the changed fleet load, not the selected EA, caused the hard stop."
+  },
+  "actions_this_run": {
+    "qm_build_ea_skill_read": true,
+    "standard_codex_build_handoff_read": true,
+    "farm_db_consulted_read_only": true,
+    "stale_backlog_rows_reconciled_against_work_items": true,
+    "distinct_diverse_ea_selected": true,
+    "farm_claim_or_status_mutation": false,
+    "ea_source_binary_setfile_or_registry_mutation": false,
+    "compile_or_backtest_started": false,
+    "build_result_written_or_recorded": false,
+    "q02_enqueued": false,
+    "dispatch_tick_called": false,
+    "terminal_or_worker_controlled": false
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "t_live_manifest_touched": false,
+    "live_or_deploy_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false,
+    "preexisting_worktree_changes_preserved": true
+  },
+  "resume_contract": "On a later paced wake, take a fresh five-sample CPU window. Only if both average and maximum are strictly below 97 percent, re-read build task 85404c3e and confirm QM5_36005 still has zero Q02 rows and no competing resume claim; then continue the exact standard codex_build_ea handoff with one governed GBPJPY.DWX D1 smoke and canonical record-build/Q02 enqueue. Do not rebuild, create another compile row, dispatch the queue, or touch portfolio/live surfaces."
+}
