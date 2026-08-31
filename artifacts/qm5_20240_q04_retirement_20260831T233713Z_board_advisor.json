@@ -1,0 +1,205 @@
+{
+  "artifact_type": "qm5_20240_fx_cointegration_q04_retirement",
+  "schema": "qm.fx-cointegration-q04-retirement/v1",
+  "generated_at_utc": "2026-08-31T23:37:13Z",
+  "generated_at_europe_berlin": "2026-09-01T01:37:13+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "0413d829a3817b0501c7896b12bd8d62c1541340",
+  "mission_outcome": "EXISTING_FOREX_Q04_TERMINAL_FAIL_RECORDED_FRONTIER_EXHAUSTED",
+  "frontier_reconciliation": {
+    "controlling_research": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "relationships_scanned": 66,
+    "relationships_covered_by_committed_sign_aware_audit": 66,
+    "relationships_uncovered": 0,
+    "approved_cointegration_card_census": {
+      "scope": "strategy-seeds/cards/approved case-insensitive content match for cointegration or coint",
+      "unique_ea_ids": 123,
+      "matching_ea_directories": 123,
+      "unbuilt_ea_ids": []
+    },
+    "anchors": {
+      "QM5_12532": {
+        "pair": ["AUDUSD.DWX", "NZDUSD.DWX"],
+        "q02": "PASS",
+        "later_chain": "Q04 PASS; Q05 FAIL",
+        "current_q02_oninit_or_no_history_block": false
+      },
+      "QM5_12533": {
+        "pair": ["EURJPY.DWX", "GBPJPY.DWX"],
+        "q02": "PASS",
+        "later_chain": "Q04 FAIL",
+        "current_q02_oninit_or_no_history_block": false
+      }
+    },
+    "new_unbuilt_pair_eligible": false,
+    "skill_gate_disposition": {
+      "qm_strategy_card_extraction": "CLOSED_NO_UNCOVERED_APPROVED_SOURCE_RELATIONSHIP",
+      "qm_build_ea_from_card": "CLOSED_NO_APPROVED_UNBUILT_COINTEGRATION_CARD",
+      "qm_run_pipeline_phase": "NOT_USED_Q04_IS_OWNED_BY_CANONICAL_FACTORY"
+    }
+  },
+  "selected_existing_forex_fallback": {
+    "scan_rank": 59,
+    "ea_id": "QM5_20240",
+    "logical_symbol": "QM5_20240_USDCHF_GBPJPY_COINTEGRATION_D1",
+    "traded_symbols": ["USDCHF.DWX", "GBPJPY.DWX"],
+    "conversion_history_only_symbols": ["USDJPY.DWX"],
+    "timeframe": "D1",
+    "structural_only": true,
+    "low_frequency": true,
+    "machine_learning": false,
+    "adaptive_beta_refit": false,
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "portfolio_weight": 1.0,
+    "artifact_sha256": {
+      "approved_card": "1de8b7145dec237966238c331b4d9566d3251237b180f5f53b9ef36d12cd6f5f",
+      "mq5": "14ae487325f04537625eab787361b12587f483f812357c941efca54908624aff",
+      "ex5": "dbf718900fbfdd35558e87fce20415329e8438f9cb7e5d1395734a1d0d7457b0",
+      "basket_manifest": "18d6f9b0c3576f27045143752405accece5faf353213610d3de1b3ead067bcc4",
+      "logical_setfile": "ff1801ce59cb15a2cb0b24fdfb350ddc4539dd456130720307913542a4cde641"
+    },
+    "disposition": "retire exact sleeve after terminal economic failure; no refit, rescue filter, threshold tuning, pair substitution, or rerun"
+  },
+  "canonical_lineage": [
+    {
+      "id": "24154a28-be35-469e-a5be-58881e29733c",
+      "phase": "Q02",
+      "status": "done",
+      "verdict": "PASS"
+    },
+    {
+      "id": "65a8b9cb-2c57-4068-81fb-2158f7b1beb7",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS"
+    },
+    {
+      "id": "85e98029-14f6-4f73-a991-b814d4f3c151",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "FAIL",
+      "updated_at": "2026-08-31T23:24:37+00:00"
+    }
+  ],
+  "q04_result": {
+    "aggregate_path": "D:/QM/reports/pipeline/QM5_20240/Q04/QM5_20240_USDCHF_GBPJPY_COINTEGRATION_D1__85e98029-14f6-4f73-a991-b814d4f3c151/aggregate.json",
+    "aggregate_sha256": "eb0c0f91fe602357e7e7b74a120c06802888c279afd7bf9b75e6c4249ab651ed",
+    "aggregate_generated_at_utc": "2026-08-31T23:24:34+00:00",
+    "verdict": "FAIL",
+    "reason": "F1:pf_net=0.561;F2:pf_net=1.003;F3:pf_net=0.478",
+    "failure_taxonomy": "economic_walk_forward_robustness",
+    "oninit_failure": false,
+    "no_history_failure": false,
+    "zero_trades_failure": false,
+    "folds": [
+      {
+        "id": "F1",
+        "pf_net": 0.5605729794629595,
+        "trades": 38,
+        "status": "OK",
+        "source_summary_sha256": "20fea451cd02242532ea7c6f759a50efaa58864f9e10cfa3dd4aa2c117024a9b"
+      },
+      {
+        "id": "F2",
+        "pf_net": 1.002526160693967,
+        "trades": 40,
+        "status": "OK",
+        "source_summary_sha256": "9240a825f106cf4c41974f473b8fd50a28d90ab407fff471a7bd765ed1bde1ea"
+      },
+      {
+        "id": "F3",
+        "pf_net": 0.47837561131116546,
+        "trades": 16,
+        "status": "OK",
+        "source_summary_sha256": "6ba6b9822ab2828e94812e14db62d031a486e900ea748a72ee7f12966ac34fe6"
+      }
+    ],
+    "q05_successor_count": 0
+  },
+  "lower_rank_continuations": [
+    {
+      "scan_rank": 60,
+      "ea_id": "QM5_20246",
+      "pair": "USDJPY/EURGBP",
+      "terminal_state": "Q04 FAIL"
+    },
+    {
+      "scan_rank": 61,
+      "ea_id": "QM5_20250",
+      "pair": "USDCHF/AUDJPY",
+      "terminal_state": "Q03 FAIL"
+    },
+    {
+      "scan_rank": 58,
+      "ea_id": "QM5_1257",
+      "pair": "GBPUSD/USDJPY",
+      "terminal_state": "Q04 FAIL"
+    },
+    {
+      "scan_rank": 65,
+      "ea_id": "QM5_1156",
+      "pair": "USDCHF/AUDUSD",
+      "terminal_state": "Q02 FAIL"
+    }
+  ],
+  "validation": {
+    "strategy_card_schema_lint": "PASS",
+    "strategy_card_ml_hits": [],
+    "strategy_card_missing_sections": [],
+    "basket_manifest_and_work_item_tests": {
+      "command": "python -m pytest -q tools/strategy_farm/tests/test_fx_basket_manifests.py tools/strategy_farm/tests/test_basket_work_items.py",
+      "passed": 65,
+      "failed": 0,
+      "duration_seconds": 6.52
+    }
+  },
+  "serialized_multisymbol_lane": {
+    "work_item_id": "11cbafc9-5452-45d6-8a11-a81bc33473c1",
+    "ea_id": "QM5_20161",
+    "logical_symbol": "QM5_20161_XAUUSD_XAGUSD_OLS_D1",
+    "phase": "Q03",
+    "status": "active",
+    "claimed_by": "T8",
+    "attempt_count": 2,
+    "observed_updated_at": "2026-08-31T23:37:13+00:00"
+  },
+  "capacity": {
+    "cpu_samples_percent": [48.859188, 42.504121, 43.267921, 49.444590, 49.517197],
+    "cpu_average_percent": 46.718603,
+    "cpu_maximum_percent": 49.517197,
+    "cpu_ceiling_percent": 97.0,
+    "cpu_ceiling_hit": false,
+    "binding_stop_reasons": [
+      "no valid unbuilt scan relationship",
+      "all dependency-correct relationship-level FX continuations are terminal",
+      "serialized multisymbol lane occupied by an unrelated governed basket"
+    ]
+  },
+  "actions_this_run": {
+    "frontier_and_anchor_reconciled": true,
+    "approved_card_to_ea_census_refreshed": true,
+    "existing_q04_terminal_result_authenticated": true,
+    "retirement_evidence_committed": true,
+    "capacity_sampled": true,
+    "new_card_or_ea_created": false,
+    "new_work_item_created": false,
+    "queue_or_payload_mutated": false,
+    "dispatch_tick": false,
+    "terminal_or_worker_controlled": false,
+    "compile_smoke_or_backtest_started": false
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false,
+    "live_or_deploy_manifest_touched": false,
+    "preexisting_unrelated_worktree_changes_preserved": true
+  },
+  "resume_contract": "Do not rerun or rescue QM5_20240. The frozen 66-pair relationship frontier has no unbuilt identity and no dependency-correct nonterminal FX continuation; require new OWNER-approved reputable-source research before creating another sleeve."
+}
