@@ -226,7 +226,7 @@ Q02 has one locked baseline and no optimization surface:
 | `strategy_mean_months` | 6 | source-tested long average |
 | `strategy_band_pct` | 2.5 | source-tested symmetric neutral band |
 | `strategy_history_bars_d1` | 300 | bounded endpoint reconstruction |
-| `strategy_atr_period` | 20 | frozen D1 hard-stop estimate |
+| `strategy_atr_period_d1` | 20 | frozen D1 hard-stop estimate |
 | `strategy_atr_stop_multiple` | 4.0 | hard-stop distance |
 | `strategy_max_hold_days` | 40 | survivor repair only |
 | `strategy_max_spread_points` | 1500 | entry ceiling |
@@ -296,4 +296,3 @@ requires a full new chain.
 | G0 | 2026-08-31 | APPROVED | `decisions/2026-08-31_qm5_41241_wti_ch3_dmac_confirmation_g0.md` |
 | Q01 | 2026-08-31 | NOT_BUILT | compile and registry checks pending |
 | Q02 | 2026-08-31 | NOT_ENQUEUED_Q01_PENDING | one paced enqueue only after Q01 and CPU check |
-
