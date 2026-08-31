@@ -1,0 +1,30 @@
+{
+  "schema": "qm.source-retrieval-evidence/v1",
+  "source_id": "AI-CODEX-GBP-WGAP-TAIL-20260831",
+  "retrieved_at_utc": "2026-08-31T17:54:00Z",
+  "routes": [
+    {
+      "url": "https://irep.ntu.ac.uk/id/eprint/35555/",
+      "route": "public institutional repository metadata page",
+      "status": "COMPLETE_METADATA_READ",
+      "citation": "Dao, T.-M., McGroarty, F., and Urquhart, A. (2016), A calendar effect: weekend overreaction (and subsequent reversal) in spot FX rates, Journal of Multinational Financial Management 37-38, 158-167.",
+      "doi": "10.1016/j.mulfin.2016.11.001",
+      "boundary": "Metadata establishes authorship, venue, DOI, and repository provenance only."
+    },
+    {
+      "url": "https://irep.ntu.ac.uk/id/eprint/35555/1/13113_Dao.pdf",
+      "route": "public institutional repository postprint",
+      "status": "COMPLETE_22_PAGE_POSTPRINT_READ",
+      "content_length_bytes": 710603,
+      "content_sha256": "46AD758FA8341903A4B03203152F8AE05D21B344356467BB3F0B62A1976E8642",
+      "evidence": "Complete paper covers the GBP/USD sample, Friday-close to Monday-open log gap, empirical 5/10/15 percent tails, contrarian entry, one-week horizon, rolling and recursive out-of-sample designs, costs, risk-factor analysis, drawdowns, limitations, and references.",
+      "boundary": "Only the structural weekend-overreaction lineage, carrier membership, contrarian direction, empirical-tail family, and weekly hold transfer. No source outcome transfers."
+    },
+    {
+      "path": "framework/registry/dwx_symbol_history_ranges.csv",
+      "status": "REGISTERED_HISTORY_RANGE_READ",
+      "evidence": "GBPUSD.DWX D1 is registered for 2017-2026 across T1-T10.",
+      "boundary": "Registry coverage does not prove every Friday-Monday pair is complete or that broker D1 boundaries equal the source fixes."
+    }
+  ]
+}
