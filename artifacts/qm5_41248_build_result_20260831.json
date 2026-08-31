@@ -1,0 +1,66 @@
+{
+  "task_id": "a25cb7be-e96a-4291-b78f-6deeca3bf48d",
+  "ea_id": "QM5_41248",
+  "ea_label": "QM5_41248_xauxag-mpettitt-rv",
+  "slug": "xauxag-mpettitt-rv",
+  "strategy_id": "SCHWEIKERT-PETTITT-CME-XAUXAG-MSHIFT-RV-2026_S01",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41248_xauxag-mpettitt-rv",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41248_xauxag-mpettitt-rv\\QM5_41248_xauxag-mpettitt-rv.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41248_xauxag-mpettitt-rv\\QM5_41248_xauxag-mpettitt-rv.ex5",
+  "magic_base": 412480000,
+  "symbols_registered": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41248_xauxag-mpettitt-rv\\sets\\QM5_41248_xauxag-mpettitt-rv_QM5_41248_XAU_XAG_MPETTITT_RV_D1_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41248_xauxag-mpettitt-rv\\sets\\QM5_41248_xauxag-mpettitt-rv_XAUUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41248_xauxag-mpettitt-rv\\sets\\QM5_41248_xauxag-mpettitt-rv_XAGUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41248_xauxag-mpettitt-rv\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "The qm-build-ea-from-card skill is build-only and forbids manual backtests; the OWNER mission authorizes one governed logical-basket Q02 enqueue instead.",
+  "blocked_reason": "",
+  "open_questions": [],
+  "compile": {
+    "status": "COMPILE_OK",
+    "work_item_id": "e17d6ea5-d1f0-4a78-acf3-3a7fe6255cfa",
+    "evidence_path": "D:\\QM\\reports\\work_items\\e17d6ea5-d1f0-4a78-acf3-3a7fe6255cfa\\QM5_41248\\COMPILE_EA\\compile_evidence.json",
+    "evidence_sha256": "76DCE8BC03D25E451BB8DEB9B375C6B1FA0B21FAB780474A44FD582908457CC0",
+    "build_check_result": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "failure_classes": [],
+    "mq5_sha256": "F338EE8456020192B930F772A403EC8C59F71BFA2A28186A21F95F610AF0587B",
+    "ex5_sha256": "7C75EF52288986FC354782FD3C6DE39C2523580CC1C0844D3DD636E12DBAD69F",
+    "setfile_build_hash": "aa38bf08544dfb3c42edbf0f4f818b1937240e781007b89dda8e733cdaf22ad3",
+    "logical_setfile_sha256": "F29CD3C3636C1C5B5F5CBC2B1F027A022F3E29F5F0EF6835E06F8FEFBA2FE47C"
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "validations": {
+    "approved_card_sha256": "503E5A555AB88316DDE4FC50BA9D7462C431A0B3081F19FE1CAC5653ADE59CFC",
+    "approved_local_card_byte_identical": true,
+    "basket_manifest_sha256": "770518E796CA43E68F84D28A1E3F6E86952F7F779F7C4E83BAFFDD3CDC428BA4",
+    "build_skill_guard": "PASS",
+    "card_schema_lint": "PASS",
+    "raw_mq5_quarantine": "PASS",
+    "reference_tests": "PASS_7",
+    "spec_sha256": "9E7656AB994CE71A704113032D2E3BE0605753E0FE9E080EE79B1BB42F6A78A3",
+    "spec_validation": "PASS",
+    "static_guardrails": "PASS"
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "deploy_manifest_touched": false,
+    "manual_backtest_launched": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false
+  }
+}

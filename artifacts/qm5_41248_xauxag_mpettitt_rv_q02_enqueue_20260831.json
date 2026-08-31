@@ -1,0 +1,84 @@
+{
+  "schema_version": "qm.commodity-sleeve-q02-enqueue/v1",
+  "recorded_at_utc": "2026-08-31T13:49:40Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41248",
+  "ea_label": "QM5_41248_xauxag-mpettitt-rv",
+  "strategy_id": "SCHWEIKERT-PETTITT-CME-XAUXAG-MSHIFT-RV-2026_S01",
+  "edge": "thirteen-synchronized-completed-month gold-minus-silver log-ratio strict-rank Pettitt unique-central-change-point contrarian equal-notional basket",
+  "commits": {
+    "source_approval": "f00319dfd0",
+    "identity": "2cf43df24e",
+    "g0_card": "72ae8d18b5",
+    "magic": "4c269458d6",
+    "source_build": "ada75eb489",
+    "q01_artifact": "2fc3dd2a74"
+  },
+  "q01": {
+    "work_item_id": "e17d6ea5-d1f0-4a78-acf3-3a7fe6255cfa",
+    "status": "done",
+    "verdict": "COMPILE_OK",
+    "terminal": "T9",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "build_check": "PASS",
+    "failure_classes": [],
+    "mq5_sha256": "F338EE8456020192B930F772A403EC8C59F71BFA2A28186A21F95F610AF0587B",
+    "ex5_sha256": "7C75EF52288986FC354782FD3C6DE39C2523580CC1C0844D3DD636E12DBAD69F",
+    "compile_evidence_sha256": "76DCE8BC03D25E451BB8DEB9B375C6B1FA0B21FAB780474A44FD582908457CC0",
+    "logical_setfile_sha256": "F29CD3C3636C1C5B5F5CBC2B1F027A022F3E29F5F0EF6835E06F8FEFBA2FE47C",
+    "basket_manifest_sha256": "770518E796CA43E68F84D28A1E3F6E86952F7F779F7C4E83BAFFDD3CDC428BA4",
+    "reference_tests": "PASS_7",
+    "p1_artifact_validation": "PASS"
+  },
+  "pre_enqueue_cpu": {
+    "started_utc": "2026-08-31T13:49:33.6770426Z",
+    "ended_utc": "2026-08-31T13:49:38.9373852Z",
+    "samples_pct": [56.1788, 56.0503, 56.5527, 49.9331, 51.7871],
+    "average_pct": 54.1004,
+    "maximum_pct": 56.5527,
+    "ceiling_pct": 97.0,
+    "pass": true
+  },
+  "build_task": {
+    "id": "a25cb7be-e96a-4291-b78f-6deeca3bf48d",
+    "status": "done",
+    "build_result_sha256": "69F68B1ABE23BD9A3440C2C96E0E11F307D3DB796B09C600BF3C6F290D4DBC4C"
+  },
+  "q02": {
+    "work_item_id": "456f5bc8-86ed-4706-b4e4-c9fcf86373c3",
+    "status_at_readback": "pending",
+    "attempt_count_at_readback": 0,
+    "claimed_by_at_readback": null,
+    "logical_symbol": "QM5_41248_XAU_XAG_MPETTITT_RV_D1",
+    "timeframe": "D1",
+    "host_symbol": "XAUUSD.DWX",
+    "basket_symbols": ["XAUUSD.DWX", "XAGUSD.DWX"],
+    "setfile": "framework/EAs/QM5_41248_xauxag-mpettitt-rv/sets/QM5_41248_xauxag-mpettitt-rv_QM5_41248_XAU_XAG_MPETTITT_RV_D1_D1_backtest.set",
+    "from_date": "2018.07.02",
+    "to_date": "2024.12.31",
+    "tester_currency": "USD",
+    "tester_deposit": 100000,
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "timeout_min": 450,
+    "priority_track": true,
+    "custom_history_archive_admission": "ACTIVE",
+    "custom_history_selected_archive_rows": 216,
+    "component_setfile_dispositions": {
+      "XAUUSD.DWX": "basket_manifest_logical_setfile_preferred",
+      "XAGUSD.DWX": "basket_manifest_logical_setfile_preferred"
+    }
+  },
+  "safety": {
+    "manual_backtest_launched": false,
+    "dispatch_tick_run": false,
+    "autotrading_toggled": false,
+    "t_live_touched": false,
+    "live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_claimed": false,
+    "certification_claimed": false
+  }
+}
