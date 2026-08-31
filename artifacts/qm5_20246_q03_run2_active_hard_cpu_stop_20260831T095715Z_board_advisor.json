@@ -1,0 +1,195 @@
+{
+  "artifact_type": "qm5_20246_fx_cointegration_q03_run2_active_hard_cpu_stop",
+  "schema": "qm.fx-cointegration-q03-run2-active-cpu-stop/v1",
+  "generated_at_utc": "2026-08-31T09:57:15Z",
+  "generated_at_europe_berlin": "2026-08-31T11:57:15+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "6bda905d5deb9e3582b2d1c45767c6c2b4e2fe1c",
+  "mission_outcome": "EXISTING_FOREX_Q03_RUN2_ACTIVE_HARD_CPU_CEILING_STOP",
+  "frontier_reconciliation": {
+    "controlling_research": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "relationships_scanned": 66,
+    "published_survivor_criterion": "DEV Sharpe > 0; OOS net Sharpe > 0.8; OOS trades >= 4",
+    "relationships_covered_by_durable_sign_aware_audit": 66,
+    "relationships_uncovered": 0,
+    "anchors": {
+      "QM5_12532": {
+        "pair": ["AUDUSD.DWX", "NZDUSD.DWX"],
+        "q02": "PASS",
+        "later_chain": "Q04 PASS; Q05 FAIL",
+        "current_q02_oninit_or_no_history_block": false
+      },
+      "QM5_12533": {
+        "pair": ["EURJPY.DWX", "GBPJPY.DWX"],
+        "q02": "PASS",
+        "later_chain": "Q04 FAIL",
+        "current_q02_oninit_or_no_history_block": false
+      }
+    },
+    "approved_card_census": {
+      "method": "case-insensitive cointegration-or-coint content match in strategy-seeds/cards/approved, unique filename EA IDs reconciled to framework/EAs directories",
+      "matching_card_files": 120,
+      "unique_ea_ids": 120,
+      "matching_ea_directories": 120,
+      "unbuilt_ea_ids": []
+    },
+    "new_unbuilt_pair_eligible": false,
+    "skill_gate_disposition": {
+      "qm_strategy_card_extraction": "CLOSED_NO_OWNER_APPROVED_NON_DUPLICATE_SCAN_QUALIFIED_PAIR",
+      "qm_build_ea_from_card": "CLOSED_NO_APPROVED_UNBUILT_COINTEGRATION_CARD",
+      "qm_run_pipeline_phase": "NOT_APPLICABLE_TO_Q03_ACTIVE_CAPACITY_STOP"
+    }
+  },
+  "selected_existing_forex_fallback": {
+    "scan_rank": 60,
+    "ea_id": "QM5_20246",
+    "ea_directory": "framework/EAs/QM5_20246_usdjpy-eurgbp",
+    "approved_card": "strategy-seeds/cards/approved/QM5_20246_usdjpy-eurgbp_card.md",
+    "logical_symbol": "QM5_20246_USDJPY_EURGBP_COINTEGRATION_D1",
+    "traded_symbols": ["USDJPY.DWX", "EURGBP.DWX"],
+    "conversion_history_only_symbols": ["GBPUSD.DWX", "EURUSD.DWX"],
+    "timeframe": "D1",
+    "fixed_beta": -1.28177360996,
+    "structural_only": true,
+    "low_frequency": true,
+    "machine_learning": false,
+    "adaptive_refit": false,
+    "card_schema_lint": {
+      "status": "ok",
+      "ml_hits": [],
+      "missing_sections": []
+    }
+  },
+  "source_build_and_risk_binding": {
+    "approved_card_sha256": "02dc1de067052e3bf4570f9a8ad65df75c0a0463a18b2bef897fa2149f943e0f",
+    "mq5_sha256": "4ee9db9b746599413e00af5f01583252bd8ec9b8440d0509ca25207ea483ec6a",
+    "ex5_sha256": "f2384173fdd41e914b48b3098467c9b02a7648494f937f5f027f4e8b45aa6eab",
+    "basket_manifest_sha256": "63b4084a8522588bb3c3629b12430b4b27efd133472ea24dc5adafff250a66f5",
+    "backtest_setfile_sha256_checkout": "4a4f23b23b969e3b6b189806be924a901f341212167a3500f590a7f81a1c4416",
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "canonical_lineage": [
+    {
+      "id": "d8619249-7764-4d80-a714-6b7922b73b4b",
+      "phase": "Q02",
+      "status": "done",
+      "verdict": "PASS"
+    },
+    {
+      "id": "46c97cb3-45f9-475d-8e6b-aa7bdd40df0e",
+      "phase": "Q03",
+      "status": "active",
+      "verdict": null,
+      "claimed_by": "T6",
+      "attempt_count": 0,
+      "claim_updated_at": "2026-08-31T09:14:04+00:00"
+    },
+    {
+      "id": "1a269ff4-cbef-429b-afa4-47a3cc692916",
+      "phase": "Q04",
+      "status": "pending",
+      "verdict": null,
+      "claimed_by": null,
+      "attempt_count": 0,
+      "disposition": "dependency not bypassed; do not advance before Q03 PASS"
+    }
+  ],
+  "active_q03_evidence": {
+    "runner": "framework/scripts/run_smoke.ps1",
+    "runs": 2,
+    "from_date": "2018-07-02",
+    "to_date": "2022-12-31",
+    "period": "D1",
+    "terminal": "T6",
+    "report_root": "D:/QM/reports/work_items/46c97cb3-45f9-475d-8e6b-aa7bdd40df0e/QM5_20246/20260831_091513",
+    "run_1": {
+      "state": "complete",
+      "report_bytes": 319010,
+      "structured_log_bytes": 615182,
+      "entry_accepted_count": 68,
+      "basket_order_accepted_count": 68,
+      "oninit_or_no_history_marker_count": 0,
+      "final_event": "DEINIT",
+      "final_simulated_time": "2022-12-30T23:54:59"
+    },
+    "run_2": {
+      "state": "active",
+      "checkpoints": [
+        {
+          "sampled_at_utc": "2026-08-31T09:55:40.8005787Z",
+          "simulated_time": "2019-01-29T00:01:01",
+          "event": "EQUITY_SNAPSHOT",
+          "structured_log_bytes": 75763,
+          "metatester_cpu_seconds": 143.859375
+        },
+        {
+          "sampled_at_utc": "2026-08-31T09:56:25.8988257Z",
+          "simulated_time": "2019-05-10T00:04:04",
+          "event": "EQUITY_SNAPSHOT",
+          "structured_log_bytes": 106735,
+          "metatester_cpu_seconds": 185.078125
+        }
+      ],
+      "forward_progress_verified": true,
+      "initialization_or_history_stall": false
+    }
+  },
+  "capacity": {
+    "command": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "sampled_at_utc": "2026-08-31T09:57:15.6344766Z",
+    "samples_percent": [
+      96.87845554970647,
+      97.95354150640094,
+      99.32627608045028,
+      99.4147078014054,
+      99.70823513477582
+    ],
+    "average_percent": 98.65624321454777,
+    "maximum_percent": 99.70823513477582,
+    "cpu_ceiling_percent": 97.0,
+    "cpu_ceiling_hit": true,
+    "free_d_gib": 91.467,
+    "binding_stop": "CPU average and maximum both reached or exceeded the hard ceiling"
+  },
+  "factory_observation": {
+    "mt5_slots_scanned_at_utc": "2026-08-31T09:57:11+00:00",
+    "running_factory_terminals": ["T1", "T10", "T3", "T4", "T6"],
+    "target_terminal": "T6",
+    "duplicate_terminal_workers": {},
+    "orphaned_terminal_processes": [],
+    "terminal_worker_count": 10,
+    "t_live_observed_only_and_excluded": true
+  },
+  "actions_this_run": {
+    "frontier_and_anchor_reconciled": true,
+    "approved_card_build_census_refreshed": true,
+    "selected_existing_forex_lineage_verified": true,
+    "card_manifest_package_and_risk_checked": true,
+    "existing_q03_active_progress_authenticated": true,
+    "run_1_completion_observed": true,
+    "run_2_forward_progress_observed": true,
+    "new_card_or_ea_created": false,
+    "new_work_item_created": false,
+    "queue_or_priority_mutated": false,
+    "q04_advanced_before_q03": false,
+    "dispatch_tick": false,
+    "terminal_or_worker_controlled": false,
+    "compile_smoke_or_backtest_started_by_this_wake": false,
+    "further_action_stopped_at_cpu_ceiling": true
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false,
+    "live_or_deploy_manifest_touched": false,
+    "preexisting_unrelated_worktree_changes_preserved": true
+  },
+  "resume_contract": "Reconcile exact Q03 row 46c97cb3-45f9-475d-8e6b-aa7bdd40df0e first. If PASS, use only the already-existing Q04 row 1a269ff4-cbef-429b-afa4-47a3cc692916; if terminal failure, retire without refit or rescue. If still active, do not start another basket. Any new action requires a fresh five-sample CPU window with average and maximum both strictly below 97%."
+}
