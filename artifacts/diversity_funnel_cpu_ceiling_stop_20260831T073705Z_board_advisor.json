@@ -1,0 +1,65 @@
+{
+  "schema": "qm.paced-fleet-cpu-stop/v1",
+  "captured_at_utc": "2026-08-31T07:37:55.5503084Z",
+  "cpu_sample_completed_at_utc": "2026-08-31T07:37:05.9349067Z",
+  "branch": "agents/board-advisor",
+  "observation_base": "faf6489a17d01b05858e516551e61e10ac4a18bd",
+  "mission": "diversity_funnel_throughput",
+  "status": "STOPPED_CPU_CEILING_BEFORE_CLAIM",
+  "cpu_ceiling_percent": 97.0,
+  "cpu_samples_percent": [95.61, 94.49, 91.90, 99.85, 99.41],
+  "cpu_average_percent": 96.25,
+  "cpu_maximum_percent": 99.85,
+  "binding_dimension": "maximum",
+  "farm_state": {
+    "active_work_items": 7,
+    "pending_work_items": 9334,
+    "active_terminals": ["T1", "T3", "T4", "T5", "T7", "T8", "T10"],
+    "active_phase_classes": ["OPT_CENSUS", "Q07", "Q10_NEWS"],
+    "conflicting_build_task": {
+      "task_id": "9ec2e69a-1163-4e64-9566-1646154bafd6",
+      "ea_id": "QM5_41185",
+      "slug": "xauxag-fracd-rv",
+      "state": "IN_PROGRESS"
+    }
+  },
+  "priority_1_preflight": {
+    "eligible_unbuilt_registry_complete_cards": 0,
+    "representative_blocked_fx_card": "QM5_41141_gbpusd-quarter-end-benchmark-fix-hedge-flow",
+    "blocked_task_id": "66329779-aa43-4905-97da-b9f2c8cc9f8b",
+    "blocked_reason": "active magic row missing; qm-build-ea-from-card allocation gate not bypassed"
+  },
+  "next_distinct_candidate": {
+    "ea_id": "QM5_11463",
+    "ea_label": "QM5_11463_goodwin-j-session-high-breakout-usdjpy",
+    "phase": "Q02",
+    "symbol": "EURUSD.DWX",
+    "timeframe": "H1",
+    "source_work_item_id": "b0c9b4f2-64e1-4043-8c97-c2e767c0f991",
+    "source_failure": ["NO_HISTORY", "INCOMPLETE_RUNS"],
+    "source_terminal": "T3",
+    "mq5_sha256": "e747f80b8b1b6d940f0b2c8c21dcc4f251bdfc6e8f6f78808c66226df0993c10",
+    "ex5_sha256": "07a308a50e00283b2f11dced99a4b840024c7a3d6fbdcbea3816140e0a53f834",
+    "setfile_sha256": "511b98cd2e1fdcc14755c2e3ffc913959bcc0bcccb890da1ab1aa76223079a9a",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "claimed": false,
+    "enqueued": false
+  },
+  "actions": {
+    "farm_claim_created": false,
+    "source_modified": false,
+    "registry_modified": false,
+    "resolver_modified": false,
+    "compile_attempted": false,
+    "smoke_attempted": false,
+    "q02_enqueued": false,
+    "dispatch_requested": false,
+    "terminal_control": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "live_manifest_touched": false
+  },
+  "evidence_markdown": "docs/research/DIVERSITY_FUNNEL_CPU_CEILING_STOP_2026-08-31_073705Z.md"
+}
