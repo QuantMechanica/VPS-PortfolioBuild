@@ -9,7 +9,8 @@ approval_basis: decisions/2026-08-31_wti_monthly_welch_mean_shift_trend_source_a
 created: 2026-08-31
 created_by: Codex
 last_reviewed: 2026-08-31
-cards_extracted: []
+cards_extracted:
+  - QM5_41249_wti-mwelch-shift-tr
 ---
 
 # WTI Monthly Fixed-Block Welch Mean-Shift Continuation
