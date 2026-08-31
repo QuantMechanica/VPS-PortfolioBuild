@@ -9,7 +9,8 @@ approval_basis: decisions/2026-08-31_wti_css_variance_shift_trend_source_approva
 created: 2026-08-31
 created_by: Codex
 last_reviewed: 2026-08-31
-cards_extracted: []
+cards_extracted:
+  - QM5_41252_wti-css-volshift-tr
 ---
 
 # WTI Monthly Centered-Sum-of-Squares Variance-Shift Continuation
