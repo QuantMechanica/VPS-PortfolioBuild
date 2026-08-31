@@ -1,0 +1,90 @@
+{
+  "schema_version": "qm.commodity-sleeve-q02-enqueue/v1",
+  "recorded_at_utc": "2026-08-31T15:26:23Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41249",
+  "ea_label": "QM5_41249_wti-mwelch-shift-tr",
+  "strategy_id": "AI-CODEX-WTI-MWELCH-20260831_S01",
+  "edge": "twelve-completed-month WTI log returns split into fixed six-old and six-recent samples with an unequal-variance standardized mean-shift continuation rule",
+  "commits": {
+    "source_approval": "de569f5f74",
+    "identity": "4a36345998",
+    "g0_card": "9ebf96643a",
+    "magic": "df3b107660",
+    "source_build": "46d5db73d4",
+    "r3_gate_normalization": "74bb3d6e65",
+    "q01_artifact": "d130eedab2",
+    "spec_alignment": "79c4dcfd1d"
+  },
+  "q01": {
+    "work_item_id": "98599793-6a0c-4cd8-b7fd-49e66ed619d0",
+    "status": "done",
+    "verdict": "COMPILE_OK",
+    "terminal": "T7",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "build_check": "PASS",
+    "failure_classes": [],
+    "mq5_sha256": "906A3DB918ED7E1E04F8381EF7B1B943557C7458412FA9B803CFE54091D21F9E",
+    "ex5_sha256": "CA62369B54E1559F3FE658ACFBD9D56ADF7A44FDBF94F9B975B5A3DBB7C22905",
+    "compile_evidence_sha256": "39D0B641C332634F84D35F610717F914772892359DED0C6038562F7C2C8EF64F",
+    "setfile_sha256": "287C95DD5622AA884FCFE35B1C9F01DE6F6081C6AE088D19AB724F42945356F0",
+    "reference_tests": "PASS_10",
+    "p1_artifact_validation": "PASS",
+    "spec_validation": "PASS"
+  },
+  "cpu_admission": {
+    "timing": "immediately after record-build auto-enqueue and before any dispatch",
+    "started_utc": "2026-08-31T15:26:17.0739362Z",
+    "ended_utc": "2026-08-31T15:26:22.3796898Z",
+    "samples_pct": [
+      53.4696,
+      51.0615,
+      52.9818,
+      46.1973,
+      49.9829
+    ],
+    "average_pct": 50.7386,
+    "maximum_pct": 53.4696,
+    "ceiling_pct": 97.0,
+    "pass": true
+  },
+  "build_task": {
+    "id": "c85364f9-8bc8-4055-81bf-2d9dbd8a248e",
+    "status": "done",
+    "build_result_sha256": "6DD2D2934D03BDC0BE78EA1DC8C5911429C20E3348A61FD00E0FE087485AD25E",
+    "auto_q02_enqueued_count": 1
+  },
+  "q02": {
+    "work_item_id": "61aa2e78-4f80-49f3-b4a0-437d013e40d7",
+    "status_at_readback": "pending",
+    "attempt_count_at_readback": 0,
+    "claimed_by_at_readback": null,
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "host_symbol": "XTIUSD.DWX",
+    "host_timeframe": "D1",
+    "setfile": "framework/EAs/QM5_41249_wti-mwelch-shift-tr/sets/QM5_41249_wti-mwelch-shift-tr_XTIUSD.DWX_D1_backtest.set",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "q02_cohort_size": 1,
+    "q02_fanout_policy": "qm-q02-canary-fanout/v1",
+    "priority_track": true,
+    "custom_history_archive_admission": "ACTIVE",
+    "custom_history_selected_archive_rows": 108,
+    "enqueued_by": "record_build_result.auto_q02",
+    "created_at_utc": "2026-08-31T15:25:42+00:00"
+  },
+  "safety": {
+    "manual_backtest_launched": false,
+    "dispatch_tick_run": false,
+    "autotrading_toggled": false,
+    "t_live_touched": false,
+    "live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_claimed": false,
+    "certification_claimed": false,
+    "decorrelation_claimed": false
+  }
+}
