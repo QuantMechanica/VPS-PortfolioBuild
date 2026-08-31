@@ -1,9 +1,13 @@
 # QM5_41218_demark-td-reverse-sequential-h4-requal8 — Strategy Spec
 
-**EA ID:** QM5_41218  
-**Slug:** `demark-td-reverse-sequential-h4-requal8`  
-**Source:** `OWNER-DEC-Q09HOLD-REQUAL-8-20260829:QM5_1567`  
-**Author of this spec:** Codex  
+**EA ID:** QM5_41218
+
+**Slug:** `demark-td-reverse-sequential-h4-requal8`
+
+**Source:** `OWNER-DEC-Q09HOLD-REQUAL-8-20260829:QM5_1567`
+
+**Author of this spec:** Codex
+
 **Last revised:** 2026-08-31
 
 ---
@@ -83,9 +87,11 @@ kill switch resolves it first.
 
 ## 6. Source Citation
 
-**Recovery authority:** `OWNER-DEC-Q09HOLD-REQUAL-8-20260829:QM5_1567`  
+**Recovery authority:** `OWNER-DEC-Q09HOLD-REQUAL-8-20260829:QM5_1567`
+
 **Approved mechanics card:**
-`D:/QM/strategy_farm/artifacts/cards_approved/QM5_1567_demark-td-reverse-sequential-h4.md`  
+`D:/QM/strategy_farm/artifacts/cards_approved/QM5_1567_demark-td-reverse-sequential-h4.md`
+
 **Original source ID:** `6e967762-b26d-59a3-b076-35c17f2e7c36`
 
 The reserved recovery card is
