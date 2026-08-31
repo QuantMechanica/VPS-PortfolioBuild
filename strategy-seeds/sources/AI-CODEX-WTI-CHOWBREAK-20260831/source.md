@@ -9,7 +9,8 @@ approval_basis: decisions/2026-08-31_wti_chow_break_trend_source_approval.md
 created: 2026-08-31
 created_by: Codex
 last_reviewed: 2026-08-31
-cards_extracted: []
+cards_extracted:
+  - QM5_41254_wti-chow-break-tr
 ---
 
 # WTI Monthly Scanned Two-Regression Structural-Break Continuation
