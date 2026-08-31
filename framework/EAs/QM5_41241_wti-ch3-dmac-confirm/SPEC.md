@@ -4,6 +4,8 @@ Status: `G0 APPROVED; IMPLEMENTED; Q01 PENDING`
 
 ## Identity
 
+**EA ID:** QM5_41241
+
 - EA ID: `QM5_41241`
 - slug: `wti-ch3-dmac-confirm`
 - strategy ID: `SZAKMARY-WTI-CH3-DMAC-CONFIRM-2026_S01`
