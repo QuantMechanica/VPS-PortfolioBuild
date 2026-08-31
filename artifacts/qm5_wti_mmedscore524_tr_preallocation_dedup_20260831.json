@@ -1,0 +1,55 @@
+{
+  "candidate": {
+    "author": "OpenAI Codex; George W. Brown; Alexander M. Mood; Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen",
+    "mechanic": "monthly-wti-twelve-completed-log-returns-fixed-six-old-six-recent-pooled-grand-median-score-exact-hypergeometric-nonneutral-four-of-six-location-shift-continuation",
+    "slug": "wti-mmedscore524-tr",
+    "strategy_id": "AI-CODEX-WTI-MMEDSCORE524-20260831_S01"
+  },
+  "error": null,
+  "exit_code": 3,
+  "generated_at_utc": "2026-08-31T21:18:33+00:00",
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41255_wti-mcvm-shift-tr_card.md",
+      "score": 0.55,
+      "slug": "wti-mcvm-shift-tr",
+      "source": "card",
+      "strategy_id": "AI-CODEX-WTI-MCVM-20260831_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41250_wti-mperm-scale-tr_card.md",
+      "score": 0.5294117647058824,
+      "slug": "wti-mperm-scale-tr",
+      "source": "card",
+      "strategy_id": "AI-CODEX-WTI-MPERMSCALE-20260831_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4756,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1393,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "FUZZY_MATCH"
+}
