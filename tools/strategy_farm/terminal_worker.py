@@ -2344,34 +2344,36 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                                 "threshold_gb": MULTISYMBOL_RAM_MIN_FREE_GB,
                             })
                             continue
-                        # Capacity and duplicate checks above are entirely local
-                        # to this transaction.  Run the cold-file lane preflight
-                        # only after they admit the candidate; otherwise the
-                        # default L=1 rollback state can exhaust the bounded
-                        # preflight budget on rows that it must serialize and
-                        # prevent ordinary work later in the queue from flowing.
-                        if governed_opt_census:
-                            token = opt_census_lane_tokens.get(str(item["id"]))
-                            if not _opt_census_token_matches(
-                                conn, item, payload, token
+                    # Capacity, duplicate, and resource checks above are entirely
+                    # local to this transaction. Run the cold-file lane preflight
+                    # only after they admit the candidate; otherwise the default
+                    # L=1 rollback state can exhaust the bounded preflight budget
+                    # on rows that it must serialize and prevent later work from
+                    # flowing. This block must remain outside the multisymbol-only
+                    # resource branch: governed census cells are normally single-
+                    # symbol and may never bypass their authenticated arm frontier.
+                    if governed_opt_census:
+                        token = opt_census_lane_tokens.get(str(item["id"]))
+                        if not _opt_census_token_matches(
+                            conn, item, payload, token
+                        ):
+                            candidate_key = (
+                                str(item["id"]),
+                                str(item["payload_json"] or "{}"),
+                            )
+                            if (
+                                candidate_key in pruning_deferred_candidates
+                                or opt_lane in pruning_attempted_lanes
                             ):
-                                candidate_key = (
-                                    str(item["id"]),
-                                    str(item["payload_json"] or "{}"),
-                                )
-                                if (
-                                    candidate_key in pruning_deferred_candidates
-                                    or opt_lane in pruning_attempted_lanes
-                                ):
-                                    continue
-                                conn.commit()
-                                return {
-                                    "claimed": False,
-                                    "reason": "opt_census_lane_preflight_required",
-                                    "candidate": dict(item),
-                                    "program_id": opt_program,
-                                    "arm": opt_arm,
-                                }
+                                continue
+                            conn.commit()
+                            return {
+                                "claimed": False,
+                                "reason": "opt_census_lane_preflight_required",
+                                "candidate": dict(item),
+                                "program_id": opt_program,
+                                "arm": opt_arm,
+                            }
                     if (
                         pruning_enabled
                         and item_is_opt_census
@@ -2579,6 +2581,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
             mutation_lock.__exit__(None, None, None)
 
     claim_result = _claim_under_factory_lock()
+    lane_preflights: list[dict[str, Any]] = []
     pruning_preflights: list[dict[str, Any]] = []
     history_preflights: list[dict[str, Any]] = []
     for _preflight_index in range(CLAIM_PREFLIGHT_MAX_CANDIDATES):
@@ -2597,7 +2600,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                 candidate,
                 pruning_enabled=pruning_enabled,
             )
-            pruning_preflights.append({
+            lane_preflights.append({
                 "program_id": lane[0],
                 "arm": lane[1],
                 **lane_preflight,
@@ -2710,6 +2713,9 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
             )
         claim_result = _claim_under_factory_lock()
 
+    if lane_preflights:
+        claim_result["dl089_lane_preflights"] = lane_preflights
+        claim_result["dl089_lane_preflight"] = lane_preflights[-1]
     if pruning_preflights:
         claim_result["dl089_claim_pruning_preflights"] = pruning_preflights
         claim_result["dl089_claim_pruning_preflight"] = pruning_preflights[-1]
@@ -6457,6 +6463,7 @@ def run_loop(root: Path, terminal: str, timeout_seconds: int) -> int:
                 _pause_after_unclaimed(claim, terminal)
                 continue
             item = claim["item"]
+            lane_preflight = claim.get("dl089_lane_preflight") or {}
             if lease_handle is not None:
                 lease_handle.bind_work_item(item["id"])
             print(json.dumps({
@@ -6466,6 +6473,9 @@ def run_loop(root: Path, terminal: str, timeout_seconds: int) -> int:
                 "custom_history_gate_audit_sha256": history_gate.get("audit_sha256"),
                 "custom_history_lease_token": lease_handle.token if lease_handle else None,
                 "claim_admission_mode": claim.get("claim_admission_mode"),
+                "dl089_lane_preflight_status": lane_preflight.get("status"),
+                "dl089_lane_preflight_program_id": lane_preflight.get("program_id"),
+                "dl089_lane_preflight_arm": lane_preflight.get("arm"),
                 "at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             }), flush=True)
             try:

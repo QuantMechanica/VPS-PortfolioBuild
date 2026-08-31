@@ -91,6 +91,50 @@ def test_opt_census_ranks_tier6_not_priority(tmp_path: Path) -> None:
     assert opt_term == q04_term  # true interleave, not ahead
 
 
+def test_frontier_marker_breaks_broad_owner_priority_tie(tmp_path: Path) -> None:
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    now = "2026-08-31T00:00:00+00:00"
+    external = {
+        "priority_track": True,
+        "priority_track_reason": "OWNER fixture priority",
+    }
+    frontier = {
+        "priority_track": True,
+        census.FRONTIER_PRIORITY_MARKER: True,
+    }
+    with farmctl.connect(root) as conn:
+        for item_id, payload in (
+            ("external-nonfrontier", external),
+            ("authenticated-frontier", frontier),
+        ):
+            _insert(
+                conn,
+                id=item_id,
+                kind="backtest",
+                phase="OPT_CENSUS",
+                ea_id="QM5_REPLAY",
+                symbol="EURUSD.DWX",
+                setfile_path=f"{item_id}.set",
+                status="pending",
+                attempt_count=0,
+                payload_json=json.dumps(payload),
+                created_at=now,
+                updated_at=now,
+            )
+        conn.commit()
+        ordered = conn.execute(farmctl.pending_claim_order_sql()).fetchall()
+        external_after = json.loads(conn.execute(
+            "SELECT payload_json FROM work_items WHERE id='external-nonfrontier'"
+        ).fetchone()[0])
+
+    assert [row["id"] for row in ordered[:2]] == [
+        "authenticated-frontier",
+        "external-nonfrontier",
+    ]
+    assert external_after == external
+
+
 # ---------------------------------------------------------------------------
 # 2 · RUN PATH — window pass-through
 # ---------------------------------------------------------------------------

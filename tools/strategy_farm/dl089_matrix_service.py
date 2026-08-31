@@ -1120,12 +1120,12 @@ def service_pending(
     for slot, (row, sibling) in enumerate(governed, start=1):
         declaration = _payload(row)["pattern_filter_sweep"]
         program = str(declaration["program_id"])
-        program_active = active_snapshot["program_lane_counts"].get(program, 0)
         program_lane_limit = l_eff if program in allowlist else min(1, l_eff)
-        program_cell_limit = max(
-            0,
-            g_eff - (active_snapshot["total"] - program_active),
-        )
+        # G is the bounded refill-window ceiling for every owner. The atomic
+        # claimant applies the live fleet total; shrinking this value by other
+        # active programmes drained all pending frontier priority at saturation
+        # and made throughput depend on the next pump cadence.
+        program_cell_limit = g_eff
         owner = {
             "slot": slot,
             "work_item_id": str(row["id"]),

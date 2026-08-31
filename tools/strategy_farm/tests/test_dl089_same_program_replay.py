@@ -211,7 +211,9 @@ def test_duplicate_exception_is_exact_program_and_default_off() -> None:
         )
 
 
-def test_frontier_boost_and_rollback_deboost_are_exact(tmp_path: Path) -> None:
+def test_frontier_boost_keeps_g_sized_refill_window_and_rollback_is_exact(
+    tmp_path: Path,
+) -> None:
     ledger, rows = _frontier_fixture()
     ledger_path = tmp_path / "ledger.json"
     db_path = tmp_path / "farm.sqlite"
@@ -222,6 +224,9 @@ def test_frontier_boost_and_rollback_deboost_are_exact(tmp_path: Path) -> None:
             "claimed_by TEXT,setfile_path TEXT,payload_json TEXT,updated_at TEXT)"
         )
         for row in rows:
+            if row["id"] == "buy_001-2019":
+                row["payload"]["priority_track"] = True
+                row["payload"]["priority_track_reason"] = "OWNER fixture priority"
             conn.execute(
                 "INSERT INTO work_items VALUES (?,?,?,?,?,?,?)",
                 (
@@ -237,17 +242,34 @@ def test_frontier_boost_and_rollback_deboost_are_exact(tmp_path: Path) -> None:
         lane_limit=2,
         cell_limit=6,
     )
-    assert first["boosted_now"] == 2
-    assert len(first["boosted_lane_ids"]) == 2
-    rollback = opt_census.boost(
+    assert first["boosted_now"] == 5
+    assert len(first["boosted_lane_ids"]) == 5
+    l_rollback = opt_census.boost(
         ledger_path=ledger_path,
         db_path=db_path,
         window=8,
         lane_limit=1,
         cell_limit=6,
     )
-    assert rollback["deboosted_now"] == 1
+    assert l_rollback["deboosted_now"] == 0
+    assert l_rollback["target_priority_rows"] == 5
+    rollback = opt_census.boost(
+        ledger_path=ledger_path,
+        db_path=db_path,
+        window=8,
+        lane_limit=1,
+        cell_limit=1,
+    )
+    assert rollback["deboosted_now"] == 4
     assert rollback["target_priority_rows"] == 1
+    with sqlite3.connect(db_path) as conn:
+        owner_payload = json.loads(conn.execute(
+            "SELECT payload_json FROM work_items WHERE id='buy_001-2019'"
+        ).fetchone()[0])
+    assert owner_payload["priority_track"] is True
+    assert owner_payload["priority_track_reason"] == "OWNER fixture priority"
+    assert opt_census.FRONTIER_PRIORITY_MARKER not in owner_payload
+    assert "boost_authority" not in owner_payload
 
 
 def test_pruning_lock_identity_serializes_only_one_arm() -> None:

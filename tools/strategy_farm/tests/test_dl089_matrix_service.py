@@ -250,10 +250,10 @@ def test_matrix_service_materializes_declared_cells_with_bounded_window(tmp_path
             assert payload["q12_declaration_sha256"] == declaration_sha
             if payload.get("priority_track") is True:
                 flagged += 1
-        # Default rollback is one executable arm frontier per program. The
-        # historical eight-row rolling window remains available only to direct
-        # legacy boost callers.
-        assert flagged == 1
+        # Default rollback still permits only one executable lane, while a
+        # G-sized authenticated frontier buffer keeps that lane supplied
+        # between matrix-service pump cycles.
+        assert flagged == 6
         hold = conn.execute(
             "SELECT hold_code,active,release_on_restart FROM work_item_holds "
             "WHERE work_item_id='q12-declared'"

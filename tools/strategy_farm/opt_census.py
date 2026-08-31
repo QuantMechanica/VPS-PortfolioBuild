@@ -630,6 +630,9 @@ def cell_report(summary_path: Path) -> dict[str, Any]:
 
 BOOST_AUTHORITY = "opt_census.boost frontier window (queue-priority-only)"
 LEGACY_BOOST_AUTHORITY = "opt_census.boost rolling window (queue-priority-only)"
+FRONTIER_PRIORITY_MARKER = "opt_census_frontier_priority"
+FRONTIER_PRIORITY_AT = "opt_census_frontier_priority_at_utc"
+FRONTIER_PRIORITY_RELEASED_AT = "opt_census_frontier_priority_released_at_utc"
 
 
 def boost(
@@ -647,11 +650,13 @@ def boost(
     stood ahead of the first cell, i.e. the census would not START for ~9 days.
     That is tail-sequencing, not the interleave the rank comment promises.  A
     bounded window keeps the interleave honest in both directions: at most
-    ``window`` cells carry ``priority_track`` at any moment (census can never
-    take more than that many slots), while the funnel keeps every remaining
-    slot.  Priority-tracked downstream rows (Q05–Q10, effective 0–5) still
-    outrank a boosted cell (effective 6).  Queue-priority-only change: pending
-    rows, payload flag; verdicts, active rows and cell windows untouched.
+    ``min(window, cell_limit)`` authenticated arm heads form a refill buffer,
+    while the transaction-local lane limit controls how many can execute.
+    Keeping the refill window independent of ``lane_limit`` is deliberate: an
+    ``L=1`` programme must not become idle between matrix-service pump cycles.
+    Priority-tracked downstream rows (Q05–Q10, effective 0–5) still outrank a
+    boosted cell (effective 6). Queue-priority-only change: pending rows and
+    payload flags; verdicts, active rows and cell windows are untouched.
     """
     if window < 1 or window > 64:
         # 64 covers a full 10-terminal fleet for one ~25-minute orchestrator
@@ -674,6 +679,7 @@ def boost(
         by_id = {row["id"]: row for row in rows}
         active = done = 0
         flagged_ids: list[str] = []
+        frontier_marked_ids: list[str] = []
         for cell in ledger["cells"]:
             row = by_id.get(cell["work_item_id"])
             if row is None:
@@ -684,6 +690,8 @@ def boost(
                 payload = json.loads(row["payload_json"] or "{}")
                 if payload.get("priority_track") is True:
                     flagged_ids.append(row["id"])
+                if payload.get(FRONTIER_PRIORITY_MARKER) is True:
+                    frontier_marked_ids.append(row["id"])
             elif row["status"] == "done":
                 done += 1
 
@@ -713,7 +721,11 @@ def boost(
                 for cell in ledger["cells"]
                 if str(cell["work_item_id"]) in frontier_ids
             ]
-            capacity = min(window, int(cell_limit), int(lane_limit))
+            # G bounds the pending refill window; L bounds concurrent claims in
+            # terminal_worker. Coupling the window to L left only one pending
+            # head at L=1, so a completed cell drained the programme until the
+            # next (sometimes budget-skipped) matrix-service pump.
+            capacity = min(window, int(cell_limit))
             target = max(0, capacity - active)
             desired_ids = set(ordered_frontier_ids[:target])
         else:
@@ -726,8 +738,10 @@ def boost(
             target = window
             desired_ids = set(ordered_frontier_ids[: max(0, target - active)])
 
-        # Rollback may lower L/G. Clear only our own flags on rows that are still
-        # pending; active and terminal evidence is immutable here.
+        # Rollback may lower G. Clear only boost-owned priority flags on rows
+        # that are still pending; an older OWNER priority flag is preserved.
+        # The independent frontier marker is always ours and may be removed
+        # without changing the prior authority's priority decision.
         deboosted: list[str] = []
         now = dt.datetime.now(dt.timezone.utc).isoformat()
         for work_item_id in flagged_ids:
@@ -735,12 +749,22 @@ def boost(
             payload = json.loads(row["payload_json"] or "{}")
             if work_item_id in desired_ids:
                 continue
-            if payload.get("boost_authority") not in {BOOST_AUTHORITY, LEGACY_BOOST_AUTHORITY}:
+            boost_owned = payload.get("boost_authority") in {
+                BOOST_AUTHORITY,
+                LEGACY_BOOST_AUTHORITY,
+            }
+            frontier_marked = payload.get(FRONTIER_PRIORITY_MARKER) is True
+            if not boost_owned and not frontier_marked:
                 continue
-            payload.pop("priority_track", None)
-            payload.pop("boost_authority", None)
-            payload.pop("boosted_at_utc", None)
-            payload["deboosted_at_utc"] = now
+            if frontier_marked:
+                payload.pop(FRONTIER_PRIORITY_MARKER, None)
+                payload.pop(FRONTIER_PRIORITY_AT, None)
+                payload[FRONTIER_PRIORITY_RELEASED_AT] = now
+            if boost_owned:
+                payload.pop("priority_track", None)
+                payload.pop("boost_authority", None)
+                payload.pop("boosted_at_utc", None)
+                payload["deboosted_at_utc"] = now
             conn.execute(
                 "UPDATE work_items SET payload_json=?,updated_at=? "
                 "WHERE id=? AND status='pending'",
@@ -749,16 +773,26 @@ def boost(
             deboosted.append(work_item_id)
 
         current_flagged = set(flagged_ids) & desired_ids
+        current_frontier_marked = set(frontier_marked_ids) & desired_ids
         candidates = [item_id for item_id in ordered_frontier_ids if item_id in desired_ids]
         boosted: list[str] = []
         for work_item_id in candidates:
-            if work_item_id in current_flagged:
+            if frontier_mode and work_item_id in current_frontier_marked:
+                continue
+            if not frontier_mode and work_item_id in current_flagged:
                 continue
             payload = json.loads(by_id[work_item_id]["payload_json"] or "{}")
-            payload["priority_track"] = True
-            payload["boost_authority"] = BOOST_AUTHORITY if frontier_mode else LEGACY_BOOST_AUTHORITY
-            payload["boosted_at_utc"] = now
+            if frontier_mode:
+                payload[FRONTIER_PRIORITY_MARKER] = True
+                payload[FRONTIER_PRIORITY_AT] = now
+            if payload.get("priority_track") is not True:
+                payload["priority_track"] = True
+                payload["boost_authority"] = (
+                    BOOST_AUTHORITY if frontier_mode else LEGACY_BOOST_AUTHORITY
+                )
+                payload["boosted_at_utc"] = now
             payload.pop("deboosted_at_utc", None)
+            payload.pop(FRONTIER_PRIORITY_RELEASED_AT, None)
             conn.execute(
                 "UPDATE work_items SET payload_json=?, updated_at=? "
                 "WHERE id=? AND status='pending'",
@@ -771,9 +805,10 @@ def boost(
             "frontier_mode": frontier_mode,
             "lane_limit": lane_limit,
             "cell_limit": cell_limit,
-            "target_priority_rows": target,
+            "target_priority_rows": len(desired_ids),
+            "requested_priority_rows": target,
             "capacity_including_active": (
-                min(window, int(cell_limit), int(lane_limit))
+                min(window, int(cell_limit))
                 if frontier_mode else window
             ),
             "active": active,

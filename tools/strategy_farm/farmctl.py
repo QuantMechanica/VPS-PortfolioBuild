@@ -1475,6 +1475,7 @@ def pending_claim_order_sql() -> str:
             "_universe_expansion_rank ASC, _recovery_rank ASC, "
             "_priority_track_rank ASC, "
             f"{_topdown_gate_rank_sql()} ASC, "
+            "_opt_census_frontier_rank ASC, "
             "(_phase_rank - _age_weeks) ASC, "
             "_basket_q02_rank ASC, _diagnostic_queue_rank ASC, "
             "_winner_rank ASC, _asset_rank ASC, "
@@ -1484,7 +1485,8 @@ def pending_claim_order_sql() -> str:
         # Cold path: retain the original ordering text and behavior exactly.
         order_by = (
             "_universe_expansion_rank ASC, _recovery_rank ASC, "
-            "(_priority_track_rank * 10 + _phase_rank - _age_weeks) ASC, "
+            "(_priority_track_rank * 10 + _phase_rank - _age_weeks "
+            "+ _opt_census_frontier_rank * 0.1) ASC, "
             "_basket_q02_rank ASC, _diagnostic_queue_rank ASC, "
             "_winner_rank ASC, _asset_rank ASC, "
             "w.updated_at ASC, w.created_at ASC"
@@ -1535,6 +1537,17 @@ def pending_claim_order_sql() -> str:
                 ELSE 1
               END
             ELSE 1 END AS _priority_track_rank,
+          CASE
+            -- DL-089 may inherit a broad OWNER priority flag on every census
+            -- row. The matrix service marks only authenticated arm heads so a
+            -- real frontier is considered before older non-frontier rows,
+            -- without clearing or weakening the OWNER priority decision.
+            WHEN upper(COALESCE(w.phase, ''))='OPT_CENSUS'
+             AND json_valid(w.payload_json)=1
+             AND json_type(
+               w.payload_json, '$.opt_census_frontier_priority'
+             )='true' THEN 0
+            ELSE 1 END AS _opt_census_frontier_rank,
           MAX(0, CAST(COALESCE(julianday('now') - julianday(w.created_at), 0) / 7 AS INTEGER))
             AS _age_weeks,
           CASE w.phase

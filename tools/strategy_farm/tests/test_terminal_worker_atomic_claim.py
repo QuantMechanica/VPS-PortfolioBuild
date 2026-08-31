@@ -385,6 +385,101 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             self.assertEqual(result["item"]["id"], "ordinary-fallback")
             lane_preflight.assert_not_called()
 
+    def test_eligible_governed_tail_completes_preflight_after_serialized_rows(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            governed_a = {
+                "schema": "qm.opt-census.v1",
+                "program_id": "program-a",
+                "cell_key": "program-a:2019:active",
+                "arm": "active-arm",
+                "year": 2019,
+                "ledger_path": "sealed-ledger-a.json",
+                "q12_work_item_id": "q12-a",
+                "q12_declaration_sha256": "fixture-sha256-a",
+            }
+            self._insert_work_item(
+                root, "program-a-active", "EURUSD.DWX", phase="OPT_CENSUS",
+                status="active", claimed_by="T1", ea_id="QM5_A", payload=governed_a,
+            )
+            for index in range(terminal_worker.CLAIM_PREFLIGHT_MAX_CANDIDATES + 2):
+                self._insert_work_item(
+                    root,
+                    f"program-a-pending-{index:02d}",
+                    "EURUSD.DWX",
+                    phase="OPT_CENSUS",
+                    ea_id="QM5_A",
+                    payload={
+                        **governed_a,
+                        "cell_key": f"program-a:2019:pending-{index:02d}",
+                        "arm": f"pending-arm-{index:02d}",
+                    },
+                )
+            governed_b = {
+                **governed_a,
+                "program_id": "program-b",
+                "cell_key": "program-b:2019:head",
+                "arm": "head-arm",
+                "ledger_path": "sealed-ledger-b.json",
+                "q12_work_item_id": "q12-b",
+                "q12_declaration_sha256": "fixture-sha256-b",
+            }
+            self._insert_work_item(
+                root, "program-b-head", "GBPUSD.DWX", phase="OPT_CENSUS",
+                ea_id="QM5_B", payload=governed_b,
+            )
+            token = {
+                "item_id": "program-b-head",
+                "payload_json": json.dumps(governed_b),
+                "lane_id": ["program-b", "head-arm"],
+                "year": 2019,
+                "predecessor_ids": [],
+                "predecessor_status_sha256": "fixture",
+            }
+
+            with (
+                patch.dict(os.environ, {
+                    "DL089_PROGRAM_SLOTS": "2",
+                    "DL089_LANES_PER_PROGRAM": "1",
+                    "DL089_CELL_SLOTS": "2",
+                    "DL089_SAME_PROGRAM_PARALLEL_ALLOWLIST": "",
+                }, clear=True),
+                patch.object(
+                    terminal_worker.opt_census_pruning,
+                    "pruning_enabled",
+                    return_value=False,
+                ),
+                patch.object(
+                    terminal_worker.farmctl,
+                    "_news_calendar_preflight",
+                    return_value={"ok": True, "status": "VALID"},
+                ),
+                patch.object(
+                    terminal_worker,
+                    "_opt_census_lane_preflight_outside_factory_lock",
+                    return_value={
+                        "status": "checked",
+                        "candidate_pending": True,
+                        "token": token,
+                    },
+                ) as lane_preflight,
+                patch.object(
+                    terminal_worker,
+                    "_opt_census_token_matches",
+                    side_effect=lambda _conn, _item, _payload, candidate_token: (
+                        candidate_token is not None
+                    ),
+                ) as token_matches,
+            ):
+                result = terminal_worker.claim_atomic(root, "T2")
+
+            self.assertTrue(result.get("claimed"), result)
+            self.assertEqual(result["item"]["id"], "program-b-head")
+            self.assertEqual(result["dl089_lane_preflight"]["status"], "checked")
+            lane_preflight.assert_called_once()
+            self.assertEqual(lane_preflight.call_args.args[2]["id"], "program-b-head")
+            token_matches.assert_called()
+
     def test_allowlisted_distinct_arm_head_uses_narrow_duplicate_exception(self) -> None:
         with self._root() as tmp:
             root = Path(tmp) / "farm"
