@@ -8,7 +8,7 @@ g0_status: APPROVED
 force_build: true
 created: 2026-08-06
 created_by: Research
-last_updated: 2026-08-06
+last_updated: 2026-08-31
 source_id: claude_cross_asset_discovery_2026-06-09
 source_citations:
   - type: book
@@ -261,6 +261,9 @@ data_requirements: "USDCHF.DWX, GBPJPY.DWX, and USDJPY.DWX D1 histories"
 |---|---|---|---|---|
 | v1 | 2026-08-06 | next-ranked non-duplicate fixed-scan FX basket | G0 | APPROVED |
 | v2 | 2026-08-06 | initial deterministic basket implementation | Q01 | PASS |
+| v3 | 2026-08-07 | logical-basket baseline completed with authenticated real-MT5 evidence | Q02 | PASS `24154a28-be35-469e-a5be-58881e29733c` |
+| v4 | 2026-08-31 | two deterministic real-tick runs matched at 130 trades, PF 0.59, and 10.99% drawdown | Q03 | PASS `65a8b9cb-2c57-4068-81fb-2158f7b1beb7` |
+| v5 | 2026-08-31 | existing Q04 row priority-bound after Q03 PASS; canonical selector confirms basket rank 1 with no duplicate enqueue | Q04 | PENDING `85e98029-14f6-4f73-a991-b814d4f3c151` |
 
 ## 15. Pipeline Phase Status
 
@@ -268,7 +271,9 @@ data_requirements: "USDCHF.DWX, GBPJPY.DWX, and USDJPY.DWX D1 histories"
 |---|---|---|---|
 | G0 Research Intake | 2026-08-06 | APPROVED | `decisions/2026-08-06_usdchf_gbpjpy_cointegration_g0.md` |
 | Q01 Build Validation | 2026-08-06 | PASS | `D:\QM\reports\framework\21\build_check_20260806_050203.json` |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | - |
+| Q02 Baseline Screening | 2026-08-07 | PASS | `D:\QM\reports\work_items\24154a28-be35-469e-a5be-58881e29733c\QM5_20240\20260807_002402\summary.json` |
+| Q03 Determinism | 2026-08-31 | PASS | `D:\QM\reports\work_items\65a8b9cb-2c57-4068-81fb-2158f7b1beb7\QM5_20240\20260831_131605\summary.json` |
+| Q04 Walk-Forward | 2026-08-31 | PENDING | work item `85e98029-14f6-4f73-a991-b814d4f3c151`; priority-bound, unclaimed, attempt 0 |
 
 ## 16. Lessons Captured
 
@@ -282,3 +287,7 @@ data_requirements: "USDCHF.DWX, GBPJPY.DWX, and USDJPY.DWX D1 histories"
 - 2026-08-06: Q01 strict compile and build validation passed with zero errors,
   zero failures, and zero warnings; targeted basket and magic-resolver tests
   also passed.
+- 2026-08-31: Q02 and Q03 are canonical PASS, so neither ONINIT nor NO_HISTORY
+  repair applies. The unique Q04 continuation is basket rank 1 in the shared
+  selector and remains a one-shot economic falsification; do not refit, rescue,
+  duplicate, or manually overlap the serialized multisymbol lane.
