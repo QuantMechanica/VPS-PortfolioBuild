@@ -1,0 +1,19 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "f1e3a407c0a42f94cfaa75788edc2e223787173590defee40dd20fbd41a76398",
+      "ea_id": "QM5_41244",
+      "ea_label": "QM5_41244_xng-tail-mtsm-s2",
+      "expected_mq5_sha256": "f1e3a407c0a42f94cfaa75788edc2e223787173590defee40dd20fbd41a76398",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41244_xng-tail-mtsm-s2\\QM5_41244_xng-tail-mtsm-s2.mq5",
+      "work_item_id": "c1cf84b8-49a0-4517-9386-504bd20419bf"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "c1cf84b8-49a0-4517-9386-504bd20419bf"
+}
