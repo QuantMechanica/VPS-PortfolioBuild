@@ -1,0 +1,38 @@
+{
+  "candidate": {
+    "author": "OpenAI Codex; Gregory C. Chow; Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen",
+    "mechanic": "monthly-wti-252-completed-d1-log-price-pooled-versus-two-segment-ols-chow-f-scan-interior-splits-63-189-latest-max-tie-inclusive-f3-post-break-slope-continuation",
+    "slug": "wti-chow-break-tr",
+    "strategy_id": "AI-CODEX-WTI-CHOWBREAK-20260831_S01"
+  },
+  "error": null,
+  "exit_code": 0,
+  "generated_at_utc": "2026-08-31T19:06:54+00:00",
+  "matches": [],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4753,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1391,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "CLEAN"
+}
