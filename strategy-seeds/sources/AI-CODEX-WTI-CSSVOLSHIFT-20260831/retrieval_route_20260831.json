@@ -1,0 +1,36 @@
+{
+  "schema": "qm.source-retrieval-evidence/v1",
+  "source_id": "AI-CODEX-WTI-CSSVOLSHIFT-20260831",
+  "retrieved_at_utc": "2026-08-31T17:50:52.1771371Z",
+  "routes": [
+    {
+      "url": "https://doi.org/10.1080/01621459.1994.10476824",
+      "publisher": "Taylor & Francis / Journal of the American Statistical Association",
+      "status": "PUBLISHER_METADATA_AND_ABSTRACT_READ",
+      "citation": "Inclan, C. and Tiao, G. C. (1994), Use of Cumulative Sums of Squares for Retrospective Detection of Changes of Variance, JASA 89(427), 913-923.",
+      "boundary": "Statistical variance-change method evidence only; no trading result transfers."
+    },
+    {
+      "url": "https://artefacts-discovery.researcher.life/full_text_files/DA-2/ee/ee345479b3a73078b5e751de833ae1f7/full_text/ZwNe0m1cSDGeWXX%2BUhC8F_uYzG5d7m8AuIMTOHsxvXs%3D.pdf",
+      "status": "COMPLETE_12_PAGE_ARTICLE_READ",
+      "content_type": "application/pdf",
+      "content_length_bytes": 426988,
+      "content_sha256": "6FFBD658B1CE795E1FC37D515D501E6FC58FCF7223985334CD2167A09B23FF83",
+      "evidence": "Complete article read: centered CSS definition, F/LR relation, Brownian-bridge limit and quantiles, ICSS algorithm, stock-return example, simulations, CPU comparison, appendices, and references.",
+      "boundary": "The EA uses a one-pass dominant interior CSS location; it does not claim full iterative ICSS, statistical significance, or source trading performance."
+    },
+    {
+      "path": "strategy-seeds/sources/MOP-TSMOM-2012/source.md",
+      "status": "COMPLETE_GOVERNED_PACKET_READ",
+      "sha256": "C8B07ECD62C1D5EF9E3D7975EEE6A3B6C46C1C566D0B20B42237613D9B3A7042",
+      "evidence": "Complete 23-page review record for one-through-twelve-month own-return continuation with explicit NYMEX WTI membership.",
+      "boundary": "No WTI-only result, CSS gate, continuous-CFD equivalence, or QM execution result transfers."
+    },
+    {
+      "url": "https://www.cmegroup.com/markets/energy/wti-crude-oil-futures.html",
+      "status": "OFFICIAL_CARRIER_PAGE_READ",
+      "evidence": "CME identifies WTI as a global crude-oil benchmark and its futures as direct crude-oil exposure.",
+      "boundary": "Carrier context only; no strategy efficacy or CFD-basis claim transfers."
+    }
+  ]
+}
