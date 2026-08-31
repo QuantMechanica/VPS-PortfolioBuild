@@ -9,7 +9,8 @@ approval_basis: decisions/2026-08-31_wti_mcvm_distribution_shift_trend_source_ap
 created: 2026-08-31
 created_by: Codex
 last_reviewed: 2026-08-31
-cards_extracted: []
+cards_extracted:
+  - QM5_41255_wti-mcvm-shift-tr
 ---
 
 # WTI Monthly Exact-Permutation Integrated-ECDF Distribution-Shift Continuation
