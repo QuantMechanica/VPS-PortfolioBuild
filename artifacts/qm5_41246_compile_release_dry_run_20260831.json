@@ -1,0 +1,19 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "65bb2c490a5f18213b03a5824db13dd1272f2af1bdd7a85491c5b28ecb69e4e1",
+      "ea_id": "QM5_41246",
+      "ea_label": "QM5_41246_xauxag-mturnpoint-rv",
+      "expected_mq5_sha256": "65bb2c490a5f18213b03a5824db13dd1272f2af1bdd7a85491c5b28ecb69e4e1",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41246_xauxag-mturnpoint-rv\\QM5_41246_xauxag-mturnpoint-rv.mq5",
+      "work_item_id": "d5dfceea-71f3-4ee2-8ab4-9ec4742dbbd8"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "d5dfceea-71f3-4ee2-8ab4-9ec4742dbbd8"
+}
