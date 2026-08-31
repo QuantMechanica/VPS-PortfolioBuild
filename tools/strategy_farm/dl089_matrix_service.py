@@ -908,6 +908,154 @@ def _service_existing_matrix(
     }
 
 
+def refill_existing_frontiers(
+    conn: sqlite3.Connection,
+    *,
+    db_path: Path,
+    worker_count: int,
+    apply: bool = False,
+    window: int = 8,
+) -> dict[str, Any]:
+    """Refresh existing DL-089 queue heads without running the full service.
+
+    The full matrix service authenticates siblings, creates Q02 prerequisites,
+    writes receipts, advances selectors, and materializes new owners.  That is
+    intentionally comprehensive, but it can take longer than the pump's late
+    stage budget.  Existing owners only need ``opt_census.boost`` to keep their
+    already-authenticated ledgers supplied.  This early, bounded path discovers
+    only matrices that already have cell rows and never creates a program,
+    verdict, receipt, or terminal job.
+    """
+
+    if window != 8:
+        raise ValueError("DL-089 scheduling contract requires an eight-cell window")
+    conn.row_factory = sqlite3.Row
+    q12_rows = conn.execute(
+        """
+        SELECT id,phase,created_at,payload_json
+        FROM work_items
+        WHERE upper(phase)='Q12' AND lower(status)='pending'
+          AND verdict IS NULL AND claimed_by IS NULL
+        ORDER BY created_at,id
+        """
+    ).fetchall()
+    cell_rows = conn.execute(
+        """
+        SELECT id,status,ea_id,symbol,payload_json
+        FROM work_items
+        WHERE upper(phase)=? AND lower(status) IN ('pending','active')
+        ORDER BY created_at,id
+        """,
+        (census.PHASE,),
+    ).fetchall()
+
+    cells_by_q12: dict[str, list[tuple[sqlite3.Row, dict[str, Any]]]] = {}
+    for row in cell_rows:
+        try:
+            payload = json.loads(row["payload_json"] or "{}")
+        except json.JSONDecodeError:
+            continue
+        if payload.get("schema") != census.SCHEMA:
+            continue
+        q12_id = str(payload.get("q12_work_item_id") or "")
+        if not q12_id:
+            continue
+        cells_by_q12.setdefault(q12_id, []).append((row, payload))
+
+    existing: list[tuple[sqlite3.Row, dict[str, Any], list[tuple[sqlite3.Row, dict[str, Any]]]]] = []
+    for row in q12_rows:
+        try:
+            payload = _payload(row)
+        except MatrixServiceError:
+            continue
+        if not _is_dl089_pattern(row, payload):
+            continue
+        cells = cells_by_q12.get(str(row["id"])) or []
+        if cells:
+            existing.append((row, payload, cells))
+    existing.sort(key=lambda item: _queue_order(item[0], item[1]))
+
+    configured_k = program_slots()
+    configured_l = scheduling.lanes_per_program()
+    configured_g = scheduling.cell_slots()
+    k_eff, l_eff, g_eff = scheduling.effective_limits(worker_count)
+    allowlist = scheduling.same_program_parallel_allowlist()
+    refilled: list[dict[str, Any]] = []
+    deferred: list[dict[str, Any]] = []
+
+    for q12_row, q12_payload, cells in existing[:k_eff]:
+        declaration = q12_payload["pattern_filter_sweep"]
+        program = str(declaration["program_id"])
+        ledger_paths = {
+            str(payload.get("ledger_path") or "").strip()
+            for _row, payload in cells
+            if str(payload.get("ledger_path") or "").strip()
+        }
+        if len(ledger_paths) != 1:
+            deferred.append({
+                "q12_work_item_id": str(q12_row["id"]),
+                "program_id": program,
+                "machine_reason": (
+                    "FRONTIER_REFILL_LEDGER_PATH_MISSING"
+                    if not ledger_paths
+                    else "FRONTIER_REFILL_LEDGER_PATH_CONFLICT"
+                ),
+                "ledger_paths": sorted(ledger_paths),
+            })
+            continue
+        ledger_path = Path(next(iter(ledger_paths)))
+        lane_limit = l_eff if program in allowlist else min(1, l_eff)
+        try:
+            boost = (
+                census.boost(
+                    ledger_path=ledger_path,
+                    db_path=db_path,
+                    window=window,
+                    lane_limit=lane_limit,
+                    cell_limit=g_eff,
+                )
+                if apply
+                else None
+            )
+        except (census.CensusError, OSError, ValueError, json.JSONDecodeError) as exc:
+            deferred.append({
+                "q12_work_item_id": str(q12_row["id"]),
+                "program_id": program,
+                "machine_reason": f"FRONTIER_REFILL_FAILED:{exc}",
+                "ledger_path": str(ledger_path),
+            })
+            continue
+        refilled.append({
+            "q12_work_item_id": str(q12_row["id"]),
+            "program_id": program,
+            "ledger_path": str(ledger_path),
+            "active_cells": sum(
+                1 for row, _payload_row in cells
+                if str(row["status"]).lower() == "active"
+            ),
+            "pending_cells": sum(
+                1 for row, _payload_row in cells
+                if str(row["status"]).lower() == "pending"
+            ),
+            "boost": boost,
+        })
+
+    return {
+        "schema": "qm.dl089-frontier-refill/v1",
+        "applied": bool(apply),
+        "worker_count": int(worker_count),
+        "program_slots_configured": configured_k,
+        "program_slots_effective": k_eff,
+        "lanes_per_program_configured": configured_l,
+        "lanes_per_program_effective": l_eff,
+        "cell_slots_configured": configured_g,
+        "cell_slots_effective": g_eff,
+        "existing_programs": len(existing),
+        "refilled": refilled,
+        "deferred": deferred,
+    }
+
+
 def _materialize(
     *,
     db_path: Path,

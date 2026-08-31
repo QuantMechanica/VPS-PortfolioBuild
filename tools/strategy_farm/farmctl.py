@@ -18192,6 +18192,7 @@ PUMP_DISPATCH_AUTOSEAL_LIMIT = 2
 PUMP_LATE_AUTOSEAL_LIMIT = 4
 PUMP_NEWS_EXPANSION_LIMIT = 2
 PUMP_OPT_FORK_BUDGET_SECONDS = 30.0
+PUMP_DL089_FRONTIER_REFILL_BUDGET_SECONDS = 10.0
 PUMP_DL089_MATRIX_SERVICE_BUDGET_SECONDS = 20.0
 PUMP_OPT_FORK_SERVICE_BUDGET_SECONDS = 15.0
 
@@ -18264,6 +18265,25 @@ def _pump_unlocked(
         "build_records": [],
         "build_retries": [],
     }
+    # Existing DL-089 owners need only a cheap authenticated queue-head refill.
+    # Run that bounded path before build/review stages can exhaust the cycle
+    # budget; the comprehensive late matrix service still owns discovery,
+    # prerequisites, materialization, receipts, and selector advancement.
+    def _dl089_frontier_refill_stage() -> dict[str, Any]:
+        try:
+            return service_dl089_frontier_refill(root, apply=True)
+        except Exception as exc:  # fail closed without stopping unrelated work
+            return {
+                "applied": False,
+                "machine_reason": f"DL089_FRONTIER_REFILL_FAILED:{exc}",
+            }
+
+    result["dl089_frontier_refill"] = cycle_budget.run(
+        "dl089_frontier_refill",
+        _dl089_frontier_refill_stage,
+        budget_seconds=PUMP_DL089_FRONTIER_REFILL_BUDGET_SECONDS,
+        minimum_start_seconds=5.0,
+    )
     # Expansion authoring is a bounded, append-only control-plane step.  Keep it
     # ahead of build dispatch: build process discovery/spawn can overrun the
     # whole pump budget, which previously starved this stage for many cycles and
@@ -27768,6 +27788,40 @@ def service_dl089_matrix(
         conn.row_factory = sqlite3.Row
         conn.execute("PRAGMA query_only=ON")
         return service.service_pending(conn, **kwargs)
+
+
+def service_dl089_frontier_refill(
+    root: Path,
+    *,
+    apply: bool,
+) -> dict[str, Any]:
+    """Refresh existing DL-089 frontier heads without full matrix discovery."""
+
+    try:
+        import dl089_matrix_service as service
+    except ModuleNotFoundError:
+        from tools.strategy_farm import dl089_matrix_service as service
+
+    database = db_path(root).resolve()
+    if not database.is_file():
+        raise ValueError(f"farm database is missing: {database}")
+    kwargs = {
+        "db_path": database,
+        "worker_count": len(worker_policy_terminals()),
+        "apply": apply,
+        "window": 8,
+    }
+    if apply:
+        def _apply_with_fresh_connection() -> dict[str, Any]:
+            with connect(root) as conn:
+                return service.refill_existing_frontiers(conn, **kwargs)
+
+        return _with_sqlite_write_retry(_apply_with_fresh_connection)
+    uri = f"file:{database.as_posix()}?mode=ro"
+    with sqlite3.connect(uri, uri=True, timeout=30) as conn:
+        conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA query_only=ON")
+        return service.refill_existing_frontiers(conn, **kwargs)
 
 
 def print_json(payload: dict[str, Any]) -> None:

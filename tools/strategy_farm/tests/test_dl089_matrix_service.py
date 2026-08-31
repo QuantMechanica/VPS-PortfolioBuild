@@ -260,6 +260,68 @@ def test_matrix_service_materializes_declared_cells_with_bounded_window(tmp_path
         ).fetchone()
         assert tuple(hold) == (service.ROLLOUT_HOLD_CODE, 1, 1)
 
+    # Drain one current marker without changing the Q12 owner.  The early
+    # refill-only path must restore the G-sized frontier without invoking the
+    # comprehensive sibling/Q02/materialization service.
+    with sqlite3.connect(db) as conn:
+        conn.row_factory = sqlite3.Row
+        marked = conn.execute(
+            "SELECT id,payload_json FROM work_items WHERE phase='OPT_CENSUS' "
+            "AND status='pending' ORDER BY created_at,id"
+        ).fetchall()
+        drained = next(
+            row for row in marked
+            if json.loads(row["payload_json"]).get(
+                service.census.FRONTIER_PRIORITY_MARKER
+            ) is True
+        )
+        payload = json.loads(drained["payload_json"])
+        payload.pop(service.census.FRONTIER_PRIORITY_MARKER, None)
+        payload.pop(service.census.FRONTIER_PRIORITY_AT, None)
+        payload.pop("priority_track", None)
+        payload.pop("boost_authority", None)
+        payload.pop("boosted_at_utc", None)
+        conn.execute(
+            "UPDATE work_items SET payload_json=? WHERE id=?",
+            (json.dumps(payload, sort_keys=True), drained["id"]),
+        )
+        conn.commit()
+
+    with farmctl.connect(root) as conn:
+        refill = service.refill_existing_frontiers(
+            conn,
+            db_path=db,
+            worker_count=10,
+            apply=True,
+            window=8,
+        )
+    assert len(refill["refilled"]) == 1
+    assert refill["refilled"][0]["boost"]["boosted_now"] == 1
+    with sqlite3.connect(db) as conn:
+        restored = sum(
+            json.loads(row[0]).get(service.census.FRONTIER_PRIORITY_MARKER) is True
+            for row in conn.execute(
+                "SELECT payload_json FROM work_items "
+                "WHERE phase='OPT_CENSUS' AND status='pending'"
+            )
+        )
+    assert restored == 6
+
+
+def test_pump_refills_existing_frontiers_before_budget_heavy_stages() -> None:
+    source = Path(farmctl.__file__).read_text(encoding="utf-8")
+    pump = source.split("def _pump_unlocked(", 1)[1].split("\ndef pump(", 1)[0]
+    dispatch = pump.index('"dispatch_tick"')
+    refill = pump.index('result["dl089_frontier_refill"] = cycle_budget.run(')
+    queue_maintenance = pump.index("queue_stage_started = time.monotonic()")
+    first_budget_return = pump.index(
+        'result["build_dispatch"] = {"skipped": "cycle_budget_exhausted"}'
+    )
+    late_full_service = pump.index(
+        'result["dl089_matrix_service"] = cycle_budget.run('
+    )
+    assert dispatch < refill < queue_maintenance < first_budget_return < late_full_service
+
 
 def test_program_slots_default_override_and_bounds() -> None:
     with patch.dict("os.environ", {}, clear=True):
