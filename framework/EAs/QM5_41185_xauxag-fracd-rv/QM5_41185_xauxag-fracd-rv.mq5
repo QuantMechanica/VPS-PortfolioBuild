@@ -711,7 +711,7 @@ bool Strategy_LoadFractionalSignal(
    datetime newest_first_times[316];
    double chronological_ratios[316];
    datetime chronological_times[316];
-   double weights[64];
+   double frac_coefficients[64];
    double outputs[253];
    ArraySetAsSeries(xau_bars, true);
    ArraySetAsSeries(xag_bars, true);
@@ -723,7 +723,7 @@ bool Strategy_LoadFractionalSignal(
       ArraySize(newest_first_times) != strategy_pair_count_d1 ||
       ArraySize(chronological_ratios) != strategy_pair_count_d1 ||
       ArraySize(chronological_times) != strategy_pair_count_d1 ||
-      ArraySize(weights) != strategy_frac_lags ||
+      ArraySize(frac_coefficients) != strategy_frac_lags ||
       ArraySize(outputs) != expected_outputs)
       return false;
 
@@ -805,20 +805,20 @@ bool Strategy_LoadFractionalSignal(
          return false;
      }
 
-   weights[0] = 1.0;
+   frac_coefficients[0] = 1.0;
    weight_count = 1;
    for(int lag = 1; lag < strategy_frac_lags; ++lag)
      {
-      weights[lag] =
-         weights[lag - 1] *
+      frac_coefficients[lag] =
+         frac_coefficients[lag - 1] *
          ((double)lag - 1.0 - strategy_frac_order) / (double)lag;
-      if(!MathIsValidNumber(weights[lag]))
+      if(!MathIsValidNumber(frac_coefficients[lag]))
          return false;
       ++weight_count;
      }
    if(weight_count != strategy_frac_lags ||
-      MathAbs(weights[0] - 1.0) > 1.0e-12 ||
-      MathAbs(weights[1] + strategy_frac_order) > 1.0e-12)
+      MathAbs(frac_coefficients[0] - 1.0) > 1.0e-12 ||
+      MathAbs(frac_coefficients[1] + strategy_frac_order) > 1.0e-12)
       return false;
 
    for(int endpoint = strategy_frac_lags - 1;
@@ -832,7 +832,7 @@ bool Strategy_LoadFractionalSignal(
          if(source_index < 0 ||
             source_index >= ArraySize(chronological_ratios))
             return false;
-         filtered += weights[lag] * chronological_ratios[source_index];
+         filtered += frac_coefficients[lag] * chronological_ratios[source_index];
         }
       if(output_count >= expected_outputs)
          return false;

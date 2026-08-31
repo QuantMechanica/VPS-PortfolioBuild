@@ -109,7 +109,7 @@ class FractionalDifferenceReferenceTests(unittest.TestCase):
             "strategy_baseline_outputs        = 252",
             "strategy_frac_order              = 0.40",
             "strategy_entry_abs_z             = 0.50",
-            "weights[lag - 1] *",
+            "frac_coefficients[lag - 1] *",
             "(double)lag - 1.0 - strategy_frac_order",
             "squared_sum / (double)(strategy_baseline_outputs - 1)",
             "baseline_sd <= 1.0e-12",
