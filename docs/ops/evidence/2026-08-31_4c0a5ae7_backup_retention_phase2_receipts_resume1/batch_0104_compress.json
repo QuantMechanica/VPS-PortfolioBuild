@@ -1,0 +1,20 @@
+{
+  "action": "NTFS_COMPRESS",
+  "allocated_after": 72153411,
+  "allocated_before": 264910008,
+  "allocated_saved": 192756597,
+  "authority": "OWNER-DEC-BACKUP-RETENTION-20260830",
+  "batch_id": "batch_0104_compress",
+  "completed_at": "2026-08-31T15:44:28+00:00",
+  "compressed_files": 5000,
+  "exact_paths_canonical_sha256": "9109dc2c626526a9352d6d457e7ec8be6872d0b964df8fd1823396f5d347ad93",
+  "exact_paths_file": "batch_0104_compress_exact_paths.jsonl.gz",
+  "exact_paths_gzip_bytes": 206975,
+  "exact_paths_gzip_sha256": "c3624491b291fb8551199c4db2d66384832e85f52d9fcaf43356bae0f69d0978",
+  "held_files": 0,
+  "manifest_sha256": "0c3385c1bc0d9e5bc4a059eefcedeb5fffd666796223b366c6bc4a41b7b5c032",
+  "requested_bytes": 264910008,
+  "requested_files": 5000,
+  "run_id": "20260831T1506Z_4c0a5ae7_resume1",
+  "schema": "qm.backup-retention.phase2-batch.v1"
+}

@@ -1,0 +1,28 @@
+{
+  "action": "DELETE_VIA_QUARANTINE",
+  "authority": "OWNER-DEC-BACKUP-RETENTION-20260830",
+  "batch_id": "batch_0055_delete",
+  "completed_at": "2026-08-31T15:20:17+00:00",
+  "deleted_files": 20,
+  "deleted_logical_bytes": 461381851,
+  "exact_paths_canonical_sha256": "2dd60c10b3c5de5e7533ef164d9be95e34bbae5490811ba43025887a9e8188f5",
+  "exact_paths_file": "batch_0055_delete_exact_paths.jsonl.gz",
+  "exact_paths_gzip_bytes": 2052,
+  "exact_paths_gzip_sha256": "e84fef49a687ea48bad4f18768a098a986f06ebe9603db099dfc3cb926ae1740",
+  "held_files": 0,
+  "manifest_sha256": "0c3385c1bc0d9e5bc4a059eefcedeb5fffd666796223b366c6bc4a41b7b5c032",
+  "recoverable_quarantine_files": 0,
+  "requested_bytes": 461381851,
+  "requested_files": 20,
+  "run_id": "20260831T1506Z_4c0a5ae7_resume1",
+  "schema": "qm.backup-retention.phase2-batch.v1",
+  "volume_free_after": {
+    "D:": 120990314496
+  },
+  "volume_free_before": {
+    "D:": 120528896000
+  },
+  "volume_free_delta": {
+    "D:": 461418496
+  }
+}

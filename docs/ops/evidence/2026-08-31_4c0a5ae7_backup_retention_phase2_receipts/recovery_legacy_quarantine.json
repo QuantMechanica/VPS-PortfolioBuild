@@ -1,0 +1,19 @@
+{
+  "authority": "OWNER-DEC-BACKUP-RETENTION-20260830",
+  "bytes": 309763936,
+  "bytes_by_status": {
+    "RESTORED": 309763936
+  },
+  "completed_at": "2026-08-31T15:05:42+00:00",
+  "counts": {
+    "RESTORED": 483
+  },
+  "exact_paths_canonical_sha256": "c472785a03aaa0aaec76933ee6d0f79690c9aa4363e7b75280e9296b4bb2f30a",
+  "exact_paths_file": "recovery_legacy_quarantine_exact_paths.jsonl.gz",
+  "exact_paths_gzip_bytes": 40281,
+  "exact_paths_gzip_sha256": "ade06c0afe893980b74b87ea0de445ccf019795922ce820917a7ea9c36779b14",
+  "files": 483,
+  "mode": "APPLY",
+  "run_id": "20260831T1442Z_4c0a5ae7",
+  "schema": "qm.backup-retention.phase2-recovery.v1"
+}
