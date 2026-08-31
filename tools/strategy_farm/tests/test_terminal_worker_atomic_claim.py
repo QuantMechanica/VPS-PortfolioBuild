@@ -538,6 +538,107 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             self.assertTrue(result.get("claimed"), result)
             self.assertEqual(result["item"]["id"], "arm-b-head")
 
+    def test_idle_program_head_claims_before_running_program_second_lane(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            governed = {
+                "schema": "qm.opt-census.v1",
+                "program_id": "program-a",
+                "cell_key": "program-a:2019:buy-001",
+                "arm": "buy-001",
+                "year": 2019,
+                "ledger_path": "sealed-ledger-a.json",
+                "q12_work_item_id": "q12-a",
+                "q12_declaration_sha256": "fixture-sha256-a",
+                "priority_track": True,
+                "opt_census_frontier_priority": True,
+            }
+            self._insert_work_item(
+                root, "program-a-active", "XAUUSD.DWX", phase="OPT_CENSUS",
+                status="active", claimed_by="T1", ea_id="QM5_A", payload=governed,
+            )
+            self._insert_work_item(
+                root, "program-a-second-lane", "XAUUSD.DWX", phase="OPT_CENSUS",
+                ea_id="QM5_A", payload={
+                    **governed,
+                    "cell_key": "program-a:2019:buy-002",
+                    "arm": "buy-002",
+                },
+            )
+            idle = {
+                **governed,
+                "program_id": "program-b",
+                "cell_key": "program-b:2021:baseline",
+                "arm": "baseline",
+                "year": 2021,
+                "ledger_path": "sealed-ledger-b.json",
+                "q12_work_item_id": "q12-b",
+                "q12_declaration_sha256": "fixture-sha256-b",
+            }
+            self._insert_work_item(
+                root, "program-b-head", "EURUSD.DWX", phase="OPT_CENSUS",
+                ea_id="QM5_B", payload=idle,
+            )
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                conn.execute(
+                    "UPDATE work_items SET updated_at='2026-08-31T00:00:00+00:00' "
+                    "WHERE id='program-a-second-lane'"
+                )
+                conn.execute(
+                    "UPDATE work_items SET updated_at='2026-08-31T01:00:00+00:00' "
+                    "WHERE id='program-b-head'"
+                )
+                conn.commit()
+
+            token = {
+                "item_id": "program-b-head",
+                "payload_json": json.dumps(idle),
+                "lane_id": ["program-b", "baseline"],
+                "year": 2021,
+                "predecessor_ids": [],
+                "predecessor_status_sha256": "fixture",
+            }
+            with (
+                patch.dict(os.environ, {
+                    "DL089_PROGRAM_SLOTS": "2",
+                    "DL089_LANES_PER_PROGRAM": "2",
+                    "DL089_CELL_SLOTS": "3",
+                    "DL089_SAME_PROGRAM_PARALLEL_ALLOWLIST": "program-a",
+                }, clear=True),
+                patch.object(
+                    terminal_worker.opt_census_pruning,
+                    "pruning_enabled",
+                    return_value=False,
+                ),
+                patch.object(
+                    terminal_worker.farmctl,
+                    "_news_calendar_preflight",
+                    return_value={"ok": True, "status": "VALID"},
+                ),
+                patch.object(
+                    terminal_worker,
+                    "_opt_census_lane_preflight_outside_factory_lock",
+                    return_value={
+                        "status": "checked",
+                        "candidate_pending": True,
+                        "token": token,
+                    },
+                ) as lane_preflight,
+                patch.object(
+                    terminal_worker,
+                    "_opt_census_token_matches",
+                    side_effect=lambda _conn, _item, _payload, candidate_token: (
+                        candidate_token is not None
+                    ),
+                ),
+            ):
+                result = terminal_worker.claim_atomic(root, "T2")
+
+            self.assertTrue(result.get("claimed"), result)
+            self.assertEqual(result["item"]["id"], "program-b-head")
+            lane_preflight.assert_called_once()
+            self.assertEqual(lane_preflight.call_args.args[2]["id"], "program-b-head")
+
     def test_same_arm_and_empty_allowlist_remain_serialized(self) -> None:
         with self._root() as tmp:
             root = Path(tmp) / "farm"

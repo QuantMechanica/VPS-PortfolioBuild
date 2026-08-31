@@ -1476,6 +1476,7 @@ def pending_claim_order_sql() -> str:
             "_priority_track_rank ASC, "
             f"{_topdown_gate_rank_sql()} ASC, "
             "_opt_census_frontier_rank ASC, "
+            "_opt_census_idle_program_rank ASC, "
             "(_phase_rank - _age_weeks) ASC, "
             "_basket_q02_rank ASC, _diagnostic_queue_rank ASC, "
             "_winner_rank ASC, _asset_rank ASC, "
@@ -1487,6 +1488,7 @@ def pending_claim_order_sql() -> str:
             "_universe_expansion_rank ASC, _recovery_rank ASC, "
             "(_priority_track_rank * 10 + _phase_rank - _age_weeks "
             "+ _opt_census_frontier_rank * 0.1) ASC, "
+            "_opt_census_idle_program_rank ASC, "
             "_basket_q02_rank ASC, _diagnostic_queue_rank ASC, "
             "_winner_rank ASC, _asset_rank ASC, "
             "w.updated_at ASC, w.created_at ASC"
@@ -1548,6 +1550,33 @@ def pending_claim_order_sql() -> str:
                w.payload_json, '$.opt_census_frontier_priority'
              )='true' THEN 0
             ELSE 1 END AS _opt_census_frontier_rank,
+          CASE
+            -- When L>1, an already-running programme's second lane must not
+            -- repeatedly beat the authenticated head of an idle programme.
+            -- Otherwise a short gap between one programme's cells can persist
+            -- indefinitely even while K/G leave capacity free.  This is only a
+            -- tie-break among queue-priority rows; the transaction-local K/L/G,
+            -- symbol, duplicate-pair, and sealed-ledger checks remain final.
+            WHEN upper(COALESCE(w.phase, ''))='OPT_CENSUS'
+             AND json_valid(w.payload_json)=1
+             AND json_type(
+               w.payload_json, '$.opt_census_frontier_priority'
+             )='true'
+             AND length(trim(COALESCE(
+               json_extract(w.payload_json, '$.program_id'), ''
+             ))) > 0
+             AND json_extract(w.payload_json, '$.program_id') NOT IN (
+               SELECT DISTINCT json_extract(
+                 active_program.payload_json, '$.program_id'
+               ) FROM work_items active_program
+               WHERE lower(active_program.status)='active'
+                 AND upper(COALESCE(active_program.phase, ''))='OPT_CENSUS'
+                 AND json_valid(active_program.payload_json)=1
+                 AND length(trim(COALESCE(json_extract(
+                   active_program.payload_json, '$.program_id'
+                 ), ''))) > 0
+             ) THEN 0
+            ELSE 1 END AS _opt_census_idle_program_rank,
           MAX(0, CAST(COALESCE(julianday('now') - julianday(w.created_at), 0) / 7 AS INTEGER))
             AS _age_weeks,
           CASE w.phase

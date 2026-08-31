@@ -135,6 +135,86 @@ def test_frontier_marker_breaks_broad_owner_priority_tie(tmp_path: Path) -> None
     assert external_after == external
 
 
+def test_idle_program_frontier_precedes_second_lane_when_capacity_is_free(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    now = "2026-08-31T00:00:00+00:00"
+    active = {
+        "schema": census.SCHEMA,
+        "program_id": "program-running",
+        "arm": "buy_001",
+        "year": 2019,
+    }
+    running_second_lane = {
+        **active,
+        "arm": "buy_002",
+        "priority_track": True,
+        census.FRONTIER_PRIORITY_MARKER: True,
+    }
+    idle_head = {
+        **active,
+        "program_id": "program-idle",
+        "arm": "baseline",
+        "year": 2021,
+        "priority_track": True,
+        census.FRONTIER_PRIORITY_MARKER: True,
+    }
+    with farmctl.connect(root) as conn:
+        for item_id, status, claimed_by, symbol, payload, updated_at in (
+            (
+                "running-active",
+                "active",
+                "T1",
+                "XAUUSD.DWX",
+                active,
+                "2026-08-31T00:00:00+00:00",
+            ),
+            (
+                "running-second-lane",
+                "pending",
+                None,
+                "XAUUSD.DWX",
+                running_second_lane,
+                "2026-08-31T00:01:00+00:00",
+            ),
+            (
+                "idle-program-head",
+                "pending",
+                None,
+                "EURUSD.DWX",
+                idle_head,
+                "2026-08-31T01:00:00+00:00",
+            ),
+        ):
+            _insert(
+                conn,
+                id=item_id,
+                kind="backtest",
+                phase="OPT_CENSUS",
+                ea_id=f"QM5_{item_id}",
+                symbol=symbol,
+                setfile_path=f"{item_id}.set",
+                status=status,
+                attempt_count=0,
+                claimed_by=claimed_by,
+                payload_json=json.dumps(payload),
+                created_at=now,
+                updated_at=updated_at,
+            )
+        conn.commit()
+        ordered = conn.execute(farmctl.pending_claim_order_sql()).fetchall()
+
+    by_id = {row["id"]: row for row in ordered}
+    assert by_id["idle-program-head"]["_opt_census_idle_program_rank"] == 0
+    assert by_id["running-second-lane"]["_opt_census_idle_program_rank"] == 1
+    assert [row["id"] for row in ordered[:2]] == [
+        "idle-program-head",
+        "running-second-lane",
+    ]
+
+
 # ---------------------------------------------------------------------------
 # 2 · RUN PATH — window pass-through
 # ---------------------------------------------------------------------------
