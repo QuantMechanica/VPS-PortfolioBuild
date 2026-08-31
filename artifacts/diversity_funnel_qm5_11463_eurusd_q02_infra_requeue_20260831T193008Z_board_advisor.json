@@ -1,0 +1,87 @@
+{
+  "schema": "qm.paced-fleet-q02-infra-rerun/v1",
+  "captured_at_utc": "2026-08-31T19:31:15.7759879Z",
+  "enqueued_at_utc": "2026-08-31T19:30:08+00:00",
+  "branch": "agents/board-advisor",
+  "mission": "diversity_funnel_throughput",
+  "status": "Q02_APPEND_ONLY_INFRA_RERUN_PENDING",
+  "capacity_gate": {
+    "captured_at_utc": "2026-08-31T19:29:38.2856913Z",
+    "cpu_ceiling_percent": 97.0,
+    "cpu_samples_percent": [71.682593, 63.997652, 70.818412, 74.512273, 82.912029],
+    "cpu_average_percent": 72.784592,
+    "cpu_maximum_percent": 82.912029,
+    "admitted": true
+  },
+  "priority_1_disposition": {
+    "eligible_collision_free_compilable_build_found": false,
+    "rates_and_lumber_r3_fail": ["QM5_1457", "QM5_1459"],
+    "compile_hold_code": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "compile_hold_bypassed": false
+  },
+  "ea": {
+    "ea_id": "QM5_11463",
+    "ea_label": "QM5_11463_goodwin-j-session-high-breakout-usdjpy",
+    "symbol": "EURUSD.DWX",
+    "timeframe": "H1"
+  },
+  "predecessor": {
+    "work_item_id": "b0c9b4f2-64e1-4043-8c97-c2e767c0f991",
+    "status": "failed",
+    "verdict": "INFRA_FAIL",
+    "terminal": "T3",
+    "reason_classes": ["NO_HISTORY", "INCOMPLETE_RUNS"],
+    "attempt_count": 3,
+    "evidence_path": "D:/QM/reports/work_items/b0c9b4f2-64e1-4043-8c97-c2e767c0f991/QM5_11463/20260807_193006/summary.json",
+    "evidence_sha256": "d1115677bc5b3a781569e8c10a5aa98146bf848a307df9c3c4a7e8613af5c706",
+    "payload_sha256": "6ec7f0346c3ffb403be3d70ae797f8aa181b2eebe9cd4802d8288e2000076624",
+    "preserved": true
+  },
+  "same_identity_control": {
+    "work_item_id": "c994bed4-35e7-4926-9ba4-845ccd5a72da",
+    "symbol": "GBPUSD.DWX",
+    "phase": "Q02",
+    "verdict": "PASS"
+  },
+  "artifact_identity": {
+    "mq5_sha256": "e747f80b8b1b6d940f0b2c8c21dcc4f251bdfc6e8f6f78808c66226df0993c10",
+    "ex5_sha256": "07a308a50e00283b2f11dced99a4b840024c7a3d6fbdcbea3816140e0a53f834",
+    "setfile_sha256": "511b98cd2e1fdcc14755c2e3ffc913959bcc0bcccb890da1ab1aa76223079a9a",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "portfolio_weight": 1.0
+  },
+  "successor": {
+    "work_item_id": "7bf1451c-3743-4f24-a2bb-d260d37ba317",
+    "phase": "Q02",
+    "status_at_verification": "pending",
+    "claimed_by_at_verification": null,
+    "attempt_count": 0,
+    "append_only_rerun": true,
+    "append_only_rerun_of_work_item": "b0c9b4f2-64e1-4043-8c97-c2e767c0f991",
+    "historical_work_item_preserved": true,
+    "gate_contract_version": "v4",
+    "sh3_enforced": true,
+    "avoid_terminals": ["T3"],
+    "avoid_terminals_reason": "predecessor_no_history_on_t3",
+    "enqueue_event_id": 381193,
+    "steering_event_id": 381194
+  },
+  "actions": {
+    "q02_rows_created": 1,
+    "manual_dispatch_requested": false,
+    "manual_backtest_launched": false,
+    "terminal_control": false,
+    "ea_source_modified": false,
+    "binary_modified": false,
+    "setfile_modified": false,
+    "registry_modified": false,
+    "resolver_modified": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "live_manifest_touched": false
+  },
+  "evidence_markdown": "docs/research/DIVERSITY_FUNNEL_QM5_11463_EURUSD_Q02_INFRA_REQUEUE_2026-08-31.md"
+}
