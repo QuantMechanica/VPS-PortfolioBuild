@@ -1,0 +1,19 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "906a3db918ed7e1e04f8381ef7b1b943557c7458412fa9b803cfe54091d21f9e",
+      "ea_id": "QM5_41249",
+      "ea_label": "QM5_41249_wti-mwelch-shift-tr",
+      "expected_mq5_sha256": "906a3db918ed7e1e04f8381ef7b1b943557c7458412fa9b803cfe54091d21f9e",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41249_wti-mwelch-shift-tr\\QM5_41249_wti-mwelch-shift-tr.mq5",
+      "work_item_id": "98599793-6a0c-4cd8-b7fd-49e66ed619d0"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "98599793-6a0c-4cd8-b7fd-49e66ed619d0"
+}
