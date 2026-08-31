@@ -1,0 +1,95 @@
+{
+  "schema": "qm.compile-admission-cpu-stop/v1",
+  "recorded_at_utc": "2026-08-31T05:09:43.0684568Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41185",
+  "ea_label": "QM5_41185_xauxag-fracd-rv",
+  "strategy_id": "YAYA-CME-XAUXAG-FRACD-RV-2026_S01",
+  "logical_symbol": "QM5_41185_XAU_XAG_FRACD_RV_D1",
+  "outcome": "BUILD_INTAKE_READY_COMPILE_NOT_ENQUEUED_Q02_STOPPED_CPU_CEILING",
+  "edge": {
+    "class": "monthly_gold_silver_fixed_fractional_difference_ratio_reversion",
+    "symbols": [
+      "XAUUSD.DWX",
+      "XAGUSD.DWX"
+    ],
+    "mechanic": "Exact-join 316 synchronized completed D1 log ratios, apply fixed d=0.40 K=64 fractional differencing, standardize one held-out output against 252 prior outputs, and fade inclusive abs(z)>=0.50 with opposite equal-target-notional legs.",
+    "nonduplicate_verdict": "CLEAN_XAUXAG_FIXED_D040_K64_HELDOUT252_FRACTIONAL_DIFFERENCE_REVERSION",
+    "dedup_receipt": "artifacts/qm5_xauxag_fracd_rv_preallocation_dedup_20260827.json"
+  },
+  "governance": {
+    "source_approval": "decisions/2026-08-27_xauxag_fractional_difference_reversion_source_approval.md",
+    "g0_decision": "decisions/2026-08-27_qm5_41185_xauxag_fractional_difference_reversion_g0.md",
+    "schema_amendment": "decisions/2026-08-31_qm5_41185_r3_schema_normalization_amendment.md",
+    "approved_card": "strategy-seeds/cards/approved/QM5_41185_xauxag-fracd-rv_card.md",
+    "approved_card_sha256": "E6735BCAFA7FC8A401C1E9038E502BB964FA43316903350FD4721010B4978ADE",
+    "runtime_card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_41185_xauxag-fracd-rv_card.md",
+    "runtime_card_sha256": "E6735BCAFA7FC8A401C1E9038E502BB964FA43316903350FD4721010B4978ADE",
+    "build_task_id": "4e9284dd-56e0-4618-9166-2d51f8caa320",
+    "build_task_status": "pending",
+    "build_task_prompt": "artifacts/qm5_41185_build_task_20260831.md"
+  },
+  "build_state": {
+    "source_build_commit": "8db5a06086f6d05ed6f7b4a351ecd7c4b5e656f1",
+    "schema_normalization_commit": "8fa6f70d1d",
+    "build_task_commit": "93da842e26",
+    "mq5_present": true,
+    "ex5_present": false,
+    "compile_status": "NOT_ENQUEUED",
+    "compile_work_item_count": 0,
+    "q02_work_item_count": 0,
+    "risk_mode": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "setfile_count": 3,
+    "logical_q02_setfile_count": 1,
+    "component_q02_rows_authorized": false
+  },
+  "validation": {
+    "reference_tests": "PASS_8",
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "build_skill_guard": "PASS",
+    "spec_validation": "PASS",
+    "build_guardrails": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "raw_mq5_quarantine": "PASS",
+    "canonical_local_card_byte_identical": true
+  },
+  "capacity": {
+    "sampling_method": "CIM Win32_PerfFormattedData_PerfOS_Processor _Total PercentProcessorTime; five samples at two-second cadence immediately before the intended compile enqueue",
+    "samples_percent": [
+      95.0,
+      78.0,
+      82.0,
+      100.0,
+      93.0
+    ],
+    "average_percent": 89.6,
+    "maximum_percent": 100.0,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_hit": true
+  },
+  "resume_contract": {
+    "first_step": "Resample the same five-point whole-host CPU window and require every sample below 97 percent.",
+    "compile_enqueue": "python tools/strategy_farm/farmctl.py enqueue-compile QM5_41185_xauxag-fracd-rv --build-task-id 4e9284dd-56e0-4618-9166-2d51f8caa320",
+    "after_compile": "Require governed COMPILE_EA Q01 PASS, source-fresh EX5, strict zero-error/zero-warning compilation, seal all three setfile build hashes, record the pending build task, and allow exactly one logical-basket Q02 row.",
+    "forbidden": "Do not enqueue XAU or XAG component-leg Q02 rows."
+  },
+  "safety": {
+    "compile_work_item_created": false,
+    "manual_backtest_launched": false,
+    "q02_enqueued": false,
+    "terminal_control_used": false,
+    "autotrading_toggled": false,
+    "t_live_touched": false,
+    "t_live_manifest_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_claimed": false,
+    "decorrelation_claimed": false,
+    "unrelated_worktree_changes_preserved": true
+  }
+}
