@@ -1,0 +1,28 @@
+{
+  "schema": "qm.source-retrieval-evidence/v1",
+  "source_id": "AI-CODEX-WTI-MCUSUM-20260831",
+  "retrieved_at_utc": "2026-08-31T09:33:13Z",
+  "routes": [
+    {
+      "url": "https://academic.oup.com/biomet/article-abstract/41/1-2/100/456627",
+      "publisher": "Oxford Academic",
+      "status": "BIBLIOGRAPHIC_METADATA_ONLY",
+      "evidence": "Author E. S. Page; title Continuous Inspection Schemes; Biometrika 41(1/2), June 1954, pages 100-115; DOI 10.1093/biomet/41.1-2.100.",
+      "boundary": "Article body redirected to an inaccessible publisher PDF endpoint; no body formula, table, threshold, or claim was used."
+    },
+    {
+      "url": "https://www.itl.nist.gov/div898/handbook/pmc/section3/pmc323.htm",
+      "publisher": "NIST/SEMATECH",
+      "status": "COMPLETE_PUBLIC_PAGE_READ",
+      "evidence": "CUSUM is defined as cumulative deviations from an estimated mean; a mean shift produces directional drift; the page also documents tabular one-sided forms.",
+      "boundary": "Official process-monitoring method only; it does not specify or validate the QM trading translation."
+    },
+    {
+      "path": "strategy-seeds/sources/MOP-TSMOM-2012/source.md",
+      "status": "COMPLETE_GOVERNED_PACKET_READ",
+      "sha256": "C8B07ECD62C1D5EF9E3D7975EEE6A3B6C46C1C566D0B20B42237613D9B3A7042",
+      "evidence": "Complete-paper review record for monthly own-return continuation with explicit NYMEX WTI membership.",
+      "boundary": "No WTI-only performance, centered-CUSUM rule, CFD equivalence, or QM execution result transfers."
+    }
+  ]
+}
