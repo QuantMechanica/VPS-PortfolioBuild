@@ -1,0 +1,28 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "527e07ee-51ee-404d-acdc-76a01bbd4f51"
+  ],
+  "backup": {
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260831T054704Z_0e2566b2.sqlite",
+    "sha256": "fbd100929585cfab619f34eaedf622a3e86f2858df74827aec780becebaa8986"
+  },
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "f72bafe2028ca8020e4837b4f12719fcc84f64379007827ffa1217197129e605",
+      "ea_id": "QM5_41185",
+      "ea_label": "QM5_41185_xauxag-fracd-rv",
+      "expected_mq5_sha256": "f72bafe2028ca8020e4837b4f12719fcc84f64379007827ffa1217197129e605",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41185_xauxag-fracd-rv\\QM5_41185_xauxag-fracd-rv.mq5",
+      "work_item_id": "527e07ee-51ee-404d-acdc-76a01bbd4f51"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-08-31T05:47:09+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "527e07ee-51ee-404d-acdc-76a01bbd4f51"
+}
