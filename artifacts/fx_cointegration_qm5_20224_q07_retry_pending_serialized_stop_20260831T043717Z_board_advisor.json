@@ -1,0 +1,129 @@
+{
+  "schema_version": "qm.fx-cointegration-paced-handoff/v1",
+  "observed_at_utc": "2026-08-31T04:37:17Z",
+  "mission": "grow_certified_v5_portfolio_new_forex_sleeves",
+  "branch": "agents/board-advisor",
+  "observation_base": "bb3d5a3f1eaa349ed9253c0e81773b5d2f9a5a6c",
+  "selection_mode": "existing_forex_fallback_no_unbuilt_66_pair_candidate",
+  "frontier": {
+    "source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "coverage_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "pair_relationship_count": 66,
+    "published_strict_survivors": [
+      "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "QM5_12532_AUDNZD_COINTEGRATION_D1"
+    ],
+    "eligible_unbuilt_pair_found": false,
+    "new_card_created": false,
+    "duplicate_q02_created": false
+  },
+  "preferred_anchors": {
+    "QM5_12532": [
+      "Q02_PASS",
+      "Q04_PASS",
+      "Q05_FAIL"
+    ],
+    "QM5_12533": [
+      "Q02_PASS",
+      "Q04_FAIL"
+    ]
+  },
+  "fallback": {
+    "ea_id": "QM5_20224",
+    "logical_symbol": "QM5_20224_EURUSD_EURJPY_COINTEGRATION_D1",
+    "scan_rank": 46,
+    "pipeline_chain": [
+      "Q02_PASS",
+      "Q03_PASS",
+      "Q04_PASS_SOFT",
+      "Q05_PASS",
+      "Q06_PASS",
+      "Q07_INFRA_FAIL",
+      "Q07_RECOVERY_PENDING"
+    ],
+    "card": "strategy-seeds/cards/approved/QM5_20224_eurusd-eurjpy_card.md",
+    "card_lint": {
+      "status": "ok",
+      "missing_sections": [],
+      "ml_hits": []
+    },
+    "basket_manifest": "framework/EAs/QM5_20224_eurusd-eurjpy/basket_manifest.json",
+    "basket_symbols": [
+      "EURUSD.DWX",
+      "EURJPY.DWX",
+      "USDJPY.DWX"
+    ],
+    "traded_symbols": [
+      "EURUSD.DWX",
+      "EURJPY.DWX"
+    ],
+    "host_symbol": "EURUSD.DWX",
+    "host_timeframe": "D1",
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "hashes_sha256": {
+      "mq5": "7eda37af63f23e00dcb930d71eb07afe4bef97e30875ec7f83bf5d234f668129",
+      "ex5": "d534838d2c9c993db151500c836f4e38088d961b2fe90e820defb0d31a34ae5b",
+      "logical_setfile": "397181311f649d5416044d36d6aa70023390ea8b14f97cb75e7fb8818b144254",
+      "basket_manifest": "f7207377d90fb4fb3447425597f4ec4b2c2709838e0bd44cf4d851f70bb97725"
+    }
+  },
+  "q07_recovery": {
+    "terminal_infra_work_item": "9ba93eb9-4973-4759-9efa-f7ff224f1494",
+    "predecessor_q06_pass_work_item": "d13cf596-44a4-429d-92a7-2de6b1a3e7f0",
+    "pending_work_item": "b38e2753-1d57-45d9-8562-3cafc0e105a0",
+    "status": "pending",
+    "append_only_rerun": true,
+    "historical_work_item_preserved": true,
+    "priority_track": true,
+    "open_recovery_count": 1,
+    "created_by_this_wake": false,
+    "modified_by_this_wake": false,
+    "prior_failure_class": "report_materialized_before_tester_completion"
+  },
+  "serialized_lane": {
+    "occupied": true,
+    "active_work_item": "eb3993b7-e477-4236-9cb6-385c1a8e7392",
+    "ea_id": "QM5_20203",
+    "logical_symbol": "QM5_20203_EURUSD_AUDJPY_COINTEGRATION_D1",
+    "phase": "Q03",
+    "terminal": "T3",
+    "manual_dispatch_started": false
+  },
+  "capacity": {
+    "cpu_ceiling_percent": 97.0,
+    "cpu_samples_percent": [
+      81.256182,
+      90.770029,
+      79.70569,
+      66.713846,
+      73.070229
+    ],
+    "cpu_average_percent": 78.303195,
+    "cpu_maximum_percent": 90.770029,
+    "cpu_ceiling_hit": false,
+    "disk_d_free_gib": 97.824,
+    "binding_stop": "serialized_multisymbol_lane_occupied"
+  },
+  "skill_boundary": {
+    "skill": "qm-run-pipeline-phase",
+    "framework_scripts_modified": false,
+    "reason": "framework/scripts ownership is reserved for framework maintainers"
+  },
+  "scope_guards": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "portfolio_q08_contribution_touched": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "live_manifest_touched": false,
+    "farm_queue_mutated_by_this_wake": false,
+    "ea_or_setfile_mutated": false,
+    "unrelated_worktree_changes_preserved": true
+  },
+  "next_action": "allow the paced worker to claim the unique QM5_20224 Q07 recovery after the serialized basket lane clears; do not enqueue a duplicate"
+}
