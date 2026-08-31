@@ -4,7 +4,11 @@ import json
 from pathlib import Path
 
 from tools.strategy_farm.verify_tlive_preset_repair import (
+    DEFAULT_MANIFEST,
+    DEFAULT_PROVENANCE,
     VerificationError,
+    _git_blob,
+    _load_provenance,
     functional_key_diff,
     parse_setfile_bytes,
     verify_manifest,
@@ -150,3 +154,21 @@ def test_verify_rejects_companion_binary_hash_drift(tmp_path: Path) -> None:
     result = verify_manifest(manifest)
     assert result["status"] == "FAIL"
     assert any("companion binary sha256 mismatch" in item for item in result["findings"])
+
+
+def test_canonical_provenance_overlay_binds_archival_sources_and_receipt() -> None:
+    findings: list[str] = []
+    provenance, receipt_by_label = _load_provenance(
+        DEFAULT_PROVENANCE,
+        manifest_path=DEFAULT_MANIFEST,
+        findings=findings,
+    )
+    manifest = json.loads(DEFAULT_MANIFEST.read_text(encoding="utf-8"))
+    assert findings == []
+    assert len(receipt_by_label) == len(manifest["presets"]) == 10
+    for entry in manifest["presets"]:
+        archival = _git_blob(
+            provenance["source_git_commit"], entry["source_path"]
+        )
+        assert hashlib.sha256(archival).hexdigest() == entry["source_sha256"]
+        assert receipt_by_label[entry["ea_label"]]["sha256"] == entry["source_sha256"]

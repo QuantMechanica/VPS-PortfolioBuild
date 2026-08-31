@@ -1,0 +1,10 @@
+{
+  "schema": "qm.tlive-preset-repair-provenance/v1",
+  "manifest_path": "docs/ops/evidence/2026-08-23_tlive_preset_repair_manifest.json",
+  "manifest_sha256": "6a1024ca31ec76892f0261a5a34e31df645152eed021968be37f720c4380e837",
+  "source_git_commit": "e09749e60b070be2635b322f7aa3971a531aa7ff",
+  "deploy_receipt_path": "docs/ops/evidence/2026-08-23_tlive_preset_repair_deploy_receipt.json",
+  "deploy_receipt_sha256": "7e0b0941fda4e8c51e10846f5e6e47c9bc097b088ab365ad93a87043f7a97eb2",
+  "scope": "all ten entries in the bound repair manifest and deploy receipt",
+  "note": "Current generated live setfiles may evolve. Deployment provenance is the immutable git blob plus deploy receipt plus deployed target and companion binary, not mutable HEAD bytes."
+}

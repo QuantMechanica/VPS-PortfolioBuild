@@ -31,6 +31,9 @@ def _preset_tree(root: Path, *, risk: str = "0.5") -> Path:
         ]),
         encoding="utf-8",
     )
+    binary = root.parent / "Experts" / "Live EAs" / "QM5_100_fixture.ex5"
+    binary.parent.mkdir(parents=True)
+    binary.write_bytes(b"fixture binary")
     return root
 
 
@@ -114,8 +117,25 @@ def test_measure_unreadable_presets_is_a_complete_fail_closed_result(tmp_path: P
         "sleeve_count": 0,
         "total_risk_percent": None,
         "roster_sha256": None,
+        "binary_count": 0,
+        "binary_inventory_sha256": None,
         "sleeves": [],
     }
+
+
+def test_freeze_detects_companion_binary_drift(tmp_path: Path):
+    presets = _preset_tree(tmp_path / "presets")
+    state = _freeze_state(tmp_path / "freeze.json", presets)
+    binary = tmp_path / "Experts" / "Live EAs" / "QM5_100_fixture.ex5"
+    binary.write_bytes(b"drifted binary")
+    result = risk_freeze.diff_against_baseline(
+        state_path=state,
+        presets_dir=presets,
+    )
+    assert result["status"] == "ACTIVE"
+    assert result["held"] is False
+    assert any("binary_sha256" in item for item in result["drift"])
+    assert any("binary inventory sha256 changed" in item for item in result["drift"])
 
 
 def test_stage_risk_apply_guard_negative_and_positive(tmp_path: Path, monkeypatch):

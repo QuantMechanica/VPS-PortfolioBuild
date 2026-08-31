@@ -49,7 +49,7 @@ LIFT_CONDITIONS = [
         "id": "SP-A1/A2-DEPLOY-POINTER",
         "requirement": "live_deployment_pointer.json is signed and its consumers read authenticated instead of UNKNOWN",
         "status": "BLOCKED",
-        "blocked_by": "OWNER-DEC-POINTER-PRESETS -- 10 of 24 deployed presets carry no valid build provenance; signing was held rather than asserting provenance that does not exist. Repair diagnosis: router task 740049db",
+        "blocked_by": "The 10-preset repair provenance is now archive/receipt verified (task 58b96908), but the live deployment pointer and authenticated consumer rollout remain separately unsigned/uncompleted.",
     },
     {
         "id": "NEWS-CONTRACT-V2",
@@ -87,7 +87,10 @@ def sha256_file(path: Path) -> str | None:
         return None
 
 
-def measure(presets_dir: Path | None = None) -> dict:
+def measure(
+    presets_dir: Path | None = None,
+    binaries_dir: Path | None = None,
+) -> dict:
     """Measure the live risk vector from the deployed presets themselves.
 
     The presets on disk are the ground truth: they are what the terminal loads.
@@ -98,6 +101,7 @@ def measure(presets_dir: Path | None = None) -> dict:
     at a known-bad tree cannot be proven to refuse anything.
     """
     presets_dir = presets_dir or PRESETS
+    binaries_dir = binaries_dir or presets_dir.parent / "Experts" / "Live EAs"
     sleeves, problems = [], []
     if not presets_dir.is_dir():
         return {
@@ -106,6 +110,8 @@ def measure(presets_dir: Path | None = None) -> dict:
             "sleeve_count": 0,
             "total_risk_percent": None,
             "roster_sha256": None,
+            "binary_count": 0,
+            "binary_inventory_sha256": None,
             "sleeves": [],
         }
 
@@ -128,6 +134,21 @@ def measure(presets_dir: Path | None = None) -> dict:
             "timeframe": m.group("tf"),
             "preset_sha256": sha256_bytes(raw),
         }
+        marker = preset.stem.find("_QM5_")
+        if marker < 0:
+            problems.append(f"preset_ea_label_unparseable:{preset.name}")
+            ea_label = ""
+        else:
+            ea_label = preset.stem[marker + 1 :]
+        binary = binaries_dir / f"{ea_label}.ex5"
+        binary_sha = sha256_file(binary) if ea_label else None
+        entry.update({
+            "ea_label": ea_label,
+            "binary_path": str(binary),
+            "binary_sha256": binary_sha,
+        })
+        if binary_sha is None:
+            problems.append(f"binary_unreadable:{binary}")
         for key, rx in KEY_RE.items():
             hit = rx.search(text)
             entry[key] = float(hit.group(1)) if hit else None
@@ -136,6 +157,11 @@ def measure(presets_dir: Path | None = None) -> dict:
         sleeves.append(entry)
 
     risks = [s["RISK_PERCENT"] for s in sleeves if s["RISK_PERCENT"] is not None]
+    binary_inventory = sorted({
+        (sleeve["ea_label"], sleeve["binary_sha256"])
+        for sleeve in sleeves
+        if sleeve.get("ea_label") and sleeve.get("binary_sha256")
+    })
     return {
         "ok": not problems,
         "problems": problems,
@@ -143,6 +169,10 @@ def measure(presets_dir: Path | None = None) -> dict:
         "total_risk_percent": round(sum(risks), 4) if risks else None,
         "roster_sha256": sha256_bytes(
             json.dumps(sorted((s["ea_id"], s["symbol"]) for s in sleeves)).encode()
+        ),
+        "binary_count": len(binary_inventory),
+        "binary_inventory_sha256": sha256_bytes(
+            json.dumps(binary_inventory).encode()
         ),
         "sleeves": sleeves,
     }
@@ -283,7 +313,8 @@ def diff_against_baseline(
 
     base = state.get("baseline")
     required_baseline_fields = {
-        "sleeves", "sleeve_count", "total_risk_percent", "roster_sha256"
+        "sleeves", "sleeve_count", "total_risk_percent", "roster_sha256",
+        "binary_count", "binary_inventory_sha256",
     }
     if (
         not isinstance(base, dict)
@@ -305,6 +336,7 @@ def diff_against_baseline(
     required_sleeve_fields = {
         "preset", "RISK_PERCENT", "RISK_FIXED", "PORTFOLIO_WEIGHT",
         "qm_magic_slot_offset", "preset_sha256",
+        "ea_label", "binary_path", "binary_sha256",
     }
     if any(
         not isinstance(sleeve, dict)
@@ -336,6 +368,12 @@ def diff_against_baseline(
         drift.append(
             f"total RISK_PERCENT {base['total_risk_percent']} -> {now['total_risk_percent']}"
         )
+    if now["binary_count"] != base["binary_count"]:
+        drift.append(
+            f"binary roster changed: {base['binary_count']} binaries -> {now['binary_count']}"
+        )
+    if now["binary_inventory_sha256"] != base["binary_inventory_sha256"]:
+        drift.append("binary inventory sha256 changed")
 
     by_name = {s["preset"]: s for s in now["sleeves"]}
     for old in base["sleeves"]:
@@ -344,7 +382,8 @@ def diff_against_baseline(
             drift.append(f"preset removed: {old['preset']}")
             continue
         for key in ("RISK_PERCENT", "RISK_FIXED", "PORTFOLIO_WEIGHT",
-                    "qm_magic_slot_offset", "preset_sha256"):
+                    "qm_magic_slot_offset", "preset_sha256", "ea_label",
+                    "binary_path", "binary_sha256"):
             if cur[key] != old[key]:
                 drift.append(f"{old['preset']}: {key} {old[key]} -> {cur[key]}")
     for name in by_name.keys() - {s["preset"] for s in base["sleeves"]}:
@@ -360,6 +399,10 @@ def diff_against_baseline(
         "current_sleeve_count": now["sleeve_count"],
         "baseline_total_risk_percent": base["total_risk_percent"],
         "current_total_risk_percent": now["total_risk_percent"],
+        "baseline_binary_count": base["binary_count"],
+        "current_binary_count": now["binary_count"],
+        "baseline_binary_inventory_sha256": base["binary_inventory_sha256"],
+        "current_binary_inventory_sha256": now["binary_inventory_sha256"],
         "lift_conditions": state.get("lift_conditions", []),
         "lift_rule": state.get("lift_rule"),
     }

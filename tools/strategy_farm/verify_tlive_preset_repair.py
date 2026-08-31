@@ -8,6 +8,7 @@ import csv
 import hashlib
 import json
 import re
+import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -16,6 +17,7 @@ from typing import Any, Iterable
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_MANIFEST = REPO_ROOT / "docs/ops/evidence/2026-08-23_tlive_preset_repair_manifest.json"
+DEFAULT_PROVENANCE = REPO_ROOT / "docs/ops/evidence/2026-08-31_tlive_preset_repair_provenance_overlay.json"
 HEADER_RE = re.compile(rb"^[ \t]*;[ \t]*(?P<key>[A-Za-z0-9_]+)[ \t]*:[ \t]*(?P<value>[^\r\n]*)$")
 ASSIGNMENT_RE = re.compile(rb"^(?P<key>[A-Za-z_][A-Za-z0-9_]*)=(?P<value>[^\r\n]*)$")
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
@@ -192,10 +194,76 @@ def _required(mapping: dict[str, bytes], keys: Iterable[str], label: str, findin
             findings.append(f"{label}: missing {key}")
 
 
-def verify_manifest(manifest_path: Path, *, require_deployed: bool = False) -> dict[str, Any]:
+def _load_provenance(
+    provenance_path: Path,
+    *,
+    manifest_path: Path,
+    findings: list[str],
+) -> tuple[dict[str, Any], dict[str, dict[str, Any]]]:
+    provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
+    if provenance.get("schema") != "qm.tlive-preset-repair-provenance/v1":
+        raise VerificationError("provenance: unsupported schema")
+    if sha256_path(manifest_path) != provenance.get("manifest_sha256"):
+        raise VerificationError("provenance: manifest sha256 mismatch")
+    receipt_path = _resolve_repo_path(str(provenance["deploy_receipt_path"]))
+    if sha256_path(receipt_path) != provenance.get("deploy_receipt_sha256"):
+        raise VerificationError("provenance: deploy receipt sha256 mismatch")
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    receipt_rows = receipt.get("presets")
+    if not isinstance(receipt_rows, list):
+        raise VerificationError("provenance: deploy receipt presets missing")
+    by_label: dict[str, dict[str, Any]] = {}
+    for row in receipt_rows:
+        label = str(row.get("ea_label") or "")
+        if not label or label in by_label:
+            raise VerificationError("provenance: duplicate/blank receipt label")
+        by_label[label] = row
+    revision = str(provenance.get("source_git_commit") or "")
+    resolved = subprocess.run(
+        ["git", "rev-parse", f"{revision}^{{commit}}"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if resolved.returncode != 0 or resolved.stdout.strip() != revision:
+        raise VerificationError("provenance: source_git_commit is not the exact commit")
+    return provenance, by_label
+
+
+def _git_blob(revision: str, repo_relative_path: str) -> bytes:
+    normalized = repo_relative_path.replace("\\", "/")
+    result = subprocess.run(
+        ["git", "show", f"{revision}:{normalized}"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        raise VerificationError(
+            f"archival source missing at {revision}:{repo_relative_path}"
+        )
+    return result.stdout
+
+
+def verify_manifest(
+    manifest_path: Path,
+    *,
+    require_deployed: bool = False,
+    provenance_path: Path | None = None,
+) -> dict[str, Any]:
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     findings: list[str] = []
     results: list[dict[str, Any]] = []
+    provenance: dict[str, Any] | None = None
+    receipt_by_label: dict[str, dict[str, Any]] = {}
+    if provenance_path is not None:
+        try:
+            provenance, receipt_by_label = _load_provenance(
+                Path(provenance_path), manifest_path=manifest_path, findings=findings
+            )
+        except (OSError, KeyError, ValueError, json.JSONDecodeError) as exc:
+            findings.append(str(exc))
     if manifest.get("schema_version") != "qm.tlive_preset_repair.v1":
         findings.append("manifest: unsupported schema_version")
 
@@ -238,8 +306,16 @@ def verify_manifest(manifest_path: Path, *, require_deployed: bool = False) -> d
             )
         )
         try:
-            source_sha = sha256_path(source)
-            parsed = parse_setfile(source)
+            current_source_sha = sha256_path(source)
+            if provenance is not None:
+                source_raw = _git_blob(
+                    str(provenance["source_git_commit"]), str(entry["source_path"])
+                )
+                source_sha = hashlib.sha256(source_raw).hexdigest()
+                parsed = parse_setfile_bytes(source_raw, label=f"archival:{entry['source_path']}")
+            else:
+                source_sha = current_source_sha
+                parsed = parse_setfile(source)
         except (OSError, VerificationError) as exc:
             item_findings.append(str(exc))
             results.append({"ea_label": label, "status": "FAIL", "findings": item_findings})
@@ -297,12 +373,25 @@ def verify_manifest(manifest_path: Path, *, require_deployed: bool = False) -> d
         if values.get("qm_filter_news_enabled") == b"1" and "qm_filter_news_mode" not in values:
             item_findings.append("news enabled without qm_filter_news_mode")
 
+        receipt_row = receipt_by_label.get(str(label)) if provenance is not None else None
+        if provenance is not None:
+            if receipt_row is None:
+                item_findings.append("deploy receipt entry missing")
+            else:
+                if Path(str(receipt_row.get("target") or "")) != target:
+                    item_findings.append("deploy receipt target mismatch")
+                if receipt_row.get("sha256") != entry.get("source_sha256"):
+                    item_findings.append("deploy receipt/source sha256 mismatch")
+
         if not target.is_file():
             item_findings.append("target T_Live preset missing")
             target_state = "MISSING"
         else:
             target_sha = sha256_path(target)
-            if target_sha == source_sha:
+            deployed_expected_sha = (
+                receipt_row.get("sha256") if receipt_row is not None else source_sha
+            )
+            if target_sha == deployed_expected_sha:
                 target_state = "DEPLOYED_MATCH"
             elif target_sha == entry.get("expected_pre_deploy_sha256"):
                 target_state = "EXPECTED_PREDEPLOY"
@@ -316,6 +405,8 @@ def verify_manifest(manifest_path: Path, *, require_deployed: bool = False) -> d
             {
                 "ea_label": label,
                 "source_sha256": source_sha,
+                "current_source_sha256": current_source_sha,
+                "current_source_drifted_from_deployment": current_source_sha != source_sha,
                 "target_state": target_state,
                 "status": "PASS" if not item_findings else "FAIL",
                 "findings": item_findings,
@@ -327,6 +418,7 @@ def verify_manifest(manifest_path: Path, *, require_deployed: bool = False) -> d
         "status": "PASS" if not findings else "FAIL",
         "mode": "require_deployed" if require_deployed else "pre_or_post_deploy",
         "manifest": str(manifest_path),
+        "provenance": str(provenance_path) if provenance_path is not None else None,
         "presets": results,
         "findings": findings,
     }
@@ -336,6 +428,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
     parser.add_argument("--require-deployed", action="store_true")
+    parser.add_argument("--provenance", type=Path)
     parser.add_argument("--deployed-snapshot-dir", type=Path)
     parser.add_argument("--write-functional-diff", type=Path)
     args = parser.parse_args(argv)
@@ -351,7 +444,11 @@ def main(argv: list[str] | None = None) -> int:
             print(json.dumps({"status": "FAIL", "findings": [str(exc)]}, indent=2))
             return 1
     try:
-        result = verify_manifest(args.manifest, require_deployed=args.require_deployed)
+        result = verify_manifest(
+            args.manifest,
+            require_deployed=args.require_deployed,
+            provenance_path=args.provenance,
+        )
     except (OSError, KeyError, ValueError, json.JSONDecodeError) as exc:
         result = {"status": "FAIL", "findings": [str(exc)]}
     print(json.dumps(result, indent=2, sort_keys=True))
