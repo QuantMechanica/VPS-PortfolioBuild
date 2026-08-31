@@ -1,0 +1,61 @@
+{
+  "schema_version": "qm.q02-enqueue-receipt/v1",
+  "recorded_at_utc": "2026-08-31T21:53:13+00:00",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41257",
+  "ea_label": "QM5_41257_wti-mmedscore524-tr",
+  "strategy_id": "AI-CODEX-WTI-MMEDSCORE524-20260831_S01",
+  "build_task_id": "9d3fd01f-f634-4e79-8e21-c4cc20a7b843",
+  "compile_work_item_id": "84b13521-e942-4415-86cc-794763748b44",
+  "compile_verdict": "COMPILE_OK",
+  "compile_build_check_result": "PASS",
+  "q02": {
+    "work_item_id": "3fa2c2f5-4dcb-4421-a668-2c3bbd417bd8",
+    "phase": "Q02",
+    "status_at_receipt": "pending",
+    "verdict_at_receipt": null,
+    "attempt_count_at_receipt": 0,
+    "claimed_by_at_receipt": null,
+    "enqueued_by": "record_build_result.auto_q02",
+    "enqueued_at_utc": "2026-08-31T21:52:14+00:00",
+    "priority_track": true,
+    "fanout_policy": "qm-q02-canary-fanout/v1",
+    "fanout_canary": false,
+    "cohort_size": 1,
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile": "framework/EAs/QM5_41257_wti-mmedscore524-tr/sets/QM5_41257_wti-mmedscore524-tr_XTIUSD.DWX_D1_backtest.set",
+    "gate_contract_version": "v4",
+    "sh3_enforced": true
+  },
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "artifact_sha256": {
+    "approved_card": "62db9efdbf185d22ab7b6f18c1bef7ade23a3d31ad2c8a3521d13b8fe8714c5f",
+    "mq5": "8b7e5d8e58f795b6807ed0c0e050326eefe0cb9127d8c47d4c255079330caaaf",
+    "ex5": "f6ce095cfaa9507f74af37f7b7ed1264bf16dbed1b49ac512c813420ce1e921e",
+    "setfile": "85ed3697d4369e80f3403c8faae4d9fb1dd1a141c61db2d04960e7f565abdaa8",
+    "compile_evidence": "37fb413405774fb07e506622fa427f920c386081bbdd9813ce28a459b3f5cfbc"
+  },
+  "custom_history_archive_admission": {
+    "status": "ACTIVE",
+    "activation_sha256": "61c8c72ccb0cb8038ae6ece7b89aa68f602b1637d8bc6b6c866f38492139134e",
+    "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+    "selected_archive_rows": 108
+  },
+  "admission": {
+    "queue_accepted": true,
+    "cpu_ceiling_refusal": false,
+    "agent_dispatched_backtest": false,
+    "agent_waited_for_q02_result": false
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "t_live_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false
+  }
+}
