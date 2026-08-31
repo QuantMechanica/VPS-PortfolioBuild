@@ -15,7 +15,8 @@ parent_sha256:
   MOP-WALLIS-MOORE-WTI-MTURNPOINT-TREND-2026: 91C2B08A1CEB8384CCEB8B1264E5CFF69FC590E544D052DB58C0C38CB19A2EBB
 created: 2026-08-31
 created_by: Research+Development
-cards_extracted: []
+cards_extracted:
+  - QM5_41246_xauxag-mturnpoint-rv
 ---
 
 # XAU/XAG Thirteen-Month Turning-Point Persistence Reversion
