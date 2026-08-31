@@ -3,7 +3,7 @@
 ; ea_id:        11294
 ; ea_slug:      cs-ichi-cloud
 ; ea_version:   v5.0
-; set_version:  s20260824-stress-harsh
+; set_version:  s20260831-stress-harsh
 ; symbol:       NDX.DWX
 ; timeframe:    H4
 ; environment:  q06_stress_harsh
@@ -12,7 +12,7 @@
 ; portfolio_weight: 1
 ; build_hash:   23c2c63261db37253449894191c03e461d57e0297a89a02073c9251623025574
 ; author:       Development
-; date:         2026-08-24
+; date:         2026-08-31
 ;==========================================================
 qm_ea_id=11294
 qm_magic_slot_offset=4

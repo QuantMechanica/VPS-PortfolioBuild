@@ -3,31 +3,24 @@
 ; ea_id:        41185
 ; ea_slug:      xauxag-fracd-rv
 ; ea_version:   v5.0
-; set_version:  s20260827-001
+; set_version:  s20260831-001
 ; symbol:       XAUUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   3cab5bed9ba672da6f246b083c7f9f529ad2f2065a97dd5c86befb681165b6ff
 ; author:       Development
-; date:         2026-08-27
+; date:         2026-08-31
 ;==========================================================
 qm_ea_id=41185
 qm_magic_slot_offset=0
-qm_rng_seed=42
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-qm_news_temporal=0
-qm_news_compliance=0
-qm_news_stale_max_hours=336
-qm_news_min_impact=high
-qm_news_mode_legacy=0
-qm_friday_close_enabled=false
-qm_friday_close_hour_broker=21
-qm_stress_reject_probability=0.0
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
 strategy_xag_symbol=XAGUSD.DWX
 strategy_pair_count_d1=316
 strategy_frac_lags=64
