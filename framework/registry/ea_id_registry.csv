@@ -4754,4 +4754,4 @@ QM5_1491,ehlers-sinewave-leadsine-cross-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,
 41253,gbpusd-weekend-tail-fade,AI-CODEX-GBP-WGAP-TAIL-20260831_S01,active,Research+Development (OWNER paced-fleet diversity mission 2026-08-31),2026-08-31,,,
 41254,wti-chow-break-tr,AI-CODEX-WTI-CHOWBREAK-20260831_S01,active,Research+Development (OWNER commodity/energy portfolio mission 2026-08-31),2026-08-31,,,
 41255,wti-mcvm-shift-tr,AI-CODEX-WTI-MCVM-20260831_S01,active,Research+Development (OWNER commodity/energy portfolio mission 2026-08-31),2026-08-31,,,
-41256,wti-mmedscore-shift-tr,AI-CODEX-WTI-MMEDSCORE-20260831_S01,active,Research+Development (OWNER commodity/energy portfolio mission 2026-08-31),2026-08-31,,,
+41256,wti-mmedscore-shift-tr,AI-CODEX-WTI-MMEDSCORE-20260831_S01,retired,Research+Development (OWNER commodity/energy portfolio mission 2026-08-31),2026-08-31,2026-08-31T21:17:49+00:00,REJECTED_FREQUENCY_PRIOR: exact 74/924 median-score state implies 0.961 annual decisions below Q02 floor,docs/ops/evidence/2026-08-31_qm5_41256_frequency_prior_g0_stop.md
