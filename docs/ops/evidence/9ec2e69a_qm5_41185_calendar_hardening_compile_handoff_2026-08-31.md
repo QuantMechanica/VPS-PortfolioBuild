@@ -54,3 +54,44 @@ router disposition is `BLOCKED` on work item
 only from the compiler's durable result.
 
 Short verdict: `SOURCE_READY_GOVERNED_COMPILE_PENDING: card-faithful calendar hardening and static gates PASS; existing governed compile work item remains pending because active factory terminals correctly refused ad-hoc include mirroring.`
+
+## Governed compile-fail repair checkpoint
+
+Recorded: `2026-08-31T07:12Z`
+
+The first governed compile row
+`527e07ee-51ee-404d-acdc-76a01bbd4f51` subsequently completed with zero
+compiler errors and zero compiler warnings, but the strict build gate correctly
+returned `COMPILE_FAIL / EA_ML_FORBIDDEN`. Its conservative scanner matched the
+local deterministic fractional-difference array name `weights[]`; there is no
+ML, fitting, adaptation, or learned state in this EA.
+
+Commit `8588356b30` applies an identifier-only repair: `weights[]` became
+`frac_coefficients[]` with every recurrence and convolution use preserved. The
+same commit binds retry authority to the exact failed predecessor, rejected
+source SHA-256, repaired source SHA-256, verdict class, and successful compiler
+receipt. The focused authority test rejects a changed EA label, authority,
+source hash, or predecessor verdict.
+
+Repaired source SHA-256:
+`371a4e20dfaf6aefb1e9b5e976b5087f28d528538d60e972b176df1847f65eab`.
+
+Focused revalidation against the repaired source:
+
+- fractional-difference reference suite: 8/8 PASS;
+- `validate_spec_doc.py`: 1/1 PASS;
+- `build_gate_hardening.py`: zero failures and zero warnings;
+- `validate_symbol_scope.py --fail-on-leak`: `BASKET_OK`, zero violations;
+- `validate_build_guardrails.py --max-news-stale-hours 336`: PASS, four files and zero findings;
+- `pytest test_compile_work_items.py -k qm5_41185`: 1 PASS.
+
+The append-only replacement compile row is
+`a99d0b17-f974-4f32-bf4c-e7b66a8c3ce5`. At this checkpoint it remains
+`pending`, unclaimed, with no verdict or evidence path. The EX5 emitted by the
+failed predecessor is staged in the shared checkout but is stale against the
+repaired source; it was not accepted, committed, or used to construct a build
+identity. Only a `COMPILE_OK` receipt for the replacement row may satisfy D6.
+
+No Q02 row, pipeline verdict, live artifact, terminal interruption, or manual
+terminal launch was created by this checkpoint. Short verdict:
+`REPAIRED_SOURCE_STATIC_PASS_GOVERNED_RECOMPILE_PENDING`.
