@@ -89,9 +89,9 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: Q01
-q01_status: NOT_BUILT
-q02_status: NOT_ENQUEUED_Q01_PENDING
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: ENQUEUED_PENDING
 force_build: true
 review_focus: "Falsify a direct-WTI recurring-calendar sleeve outside the certified XAU/SP500/NDX/XNG book. Verify normalized completed endpoints, exact five-year membership, median, MAD, frozen scale, square-root weights, 32 updates, consumed month, fixed risk, frozen stop, and next-month exit. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -334,7 +334,7 @@ alone may test realized overlap with the existing book.
 
 | Version | Date | Change | Gate | Status |
 |---|---|---|---|---|
-| v1 | 2026-08-31 | initial WTI same-calendar soft-L1 location card | G0 | APPROVED; build pending |
+| v1 | 2026-08-31 | initial WTI same-calendar soft-L1 location card | G0 | APPROVED; Q01 PASS; Q02 enqueued pending |
 
 ## Approvals
 
@@ -342,8 +342,8 @@ alone may test realized overlap with the existing book.
 |---|---|---|---|
 | Source Approval | 2026-08-31 | APPROVED_SOURCE | `decisions/2026-08-31_wti_same_calendar_soft_l1_5_source_approval.md` |
 | G0 Research Intake | 2026-08-31 | APPROVED | `decisions/2026-08-31_qm5_41239_wti_same_calendar_soft_l1_5_g0.md` |
-| Q01 Static / Compile | 2026-08-31 | NOT_BUILT | deterministic magic allocation and build pending |
-| Q02 Baseline | 2026-08-31 | NOT_ENQUEUED_Q01_PENDING | compile and governed CPU check pending |
+| Q01 Static / Compile | 2026-08-31 | PASS | `e34531d1-f2c4-4444-96b9-eef792928f1a`; zero errors and warnings |
+| Q02 Baseline | 2026-08-31 | ENQUEUED_PENDING | `5ca5cc87-bd67-40fe-9970-0e382ba53155`; CPU ceiling clear |
 
 ## Safety Boundary
 

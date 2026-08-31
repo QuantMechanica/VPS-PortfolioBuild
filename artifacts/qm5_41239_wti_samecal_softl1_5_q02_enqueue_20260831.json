@@ -1,0 +1,147 @@
+{
+  "schema": "qm.new-commodity-sleeve-q02-enqueue/v1",
+  "generated_at_utc": "2026-08-31T02:20:55.3272610Z",
+  "branch": "agents/board-advisor",
+  "mission_outcome": "NEW_STRUCTURAL_WTI_SLEEVE_Q01_PASS_Q02_ENQUEUED",
+  "ea": {
+    "ea_id": "QM5_41239",
+    "slug": "wti-samecal-softl1-5",
+    "strategy_id": "KELOHARJU-SCIPY-WTI-SAMECAL-SOFTL1-2026_S01",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "magic": 412390000
+  },
+  "edge": {
+    "class": "wti_exact_five_year_same_calendar_frozen_scale_soft_l1_location",
+    "frequency": "monthly",
+    "mechanic": "At the first genuine normalized WTI broker-month transition, require the exact completed same-calendar-month log returns from Y-5 through Y-1, initialize at their odd median, freeze scale at 1.4826 times raw MAD, execute exactly 32 updates with weight 1/sqrt(1+u^2), and trade only the strict final sign outside 1e-12.",
+    "dedup_verdict": "SEMANTICALLY_DISTINCT_WTI_EXACT_FIVE_YEAR_SAME_CALENDAR_FROZEN_SCALE_SOFT_L1_LOCATION_SIGN_MONTHLY_SLEEVE",
+    "dedup_receipt": "artifacts/qm5_wti_samecal_softl1_5_preallocation_dedup_20260831.json",
+    "dedup_receipt_sha256": "0ECF970B9E8EB577F9EE375CF8D8E8881BA1DE6141C6E7B8F9667C45C01FD006",
+    "locked_fixture": {
+      "observations": [-0.12, -0.075, -0.02, 0.115, 0.12],
+      "soft_l1_location": 0.001324252685,
+      "soft_l1_direction": "BUY_WTI",
+      "cauchy_location": -0.00410076837,
+      "cauchy_direction": "SELL_WTI",
+      "arctangent_location": -0.00434821912,
+      "arctangent_direction": "SELL_WTI",
+      "raw_median": -0.02
+    },
+    "raw_mean_disagreement_fixture": {
+      "observations": [-0.12, -0.115, -0.11, 0.155, 0.2],
+      "soft_l1_location": -0.100961055448,
+      "soft_l1_direction": "SELL_WTI",
+      "raw_mean": 0.002,
+      "raw_mean_direction": "BUY_WTI"
+    }
+  },
+  "governance": {
+    "source_packet": "strategy-seeds/sources/KELOHARJU-SCIPY-WTI-SAMECAL-SOFTL1-2026/source.md",
+    "source_packet_sha256": "03C593131C02B34366CFDF420AD33DAF2202BC2969F1506A3EC49C056227E157",
+    "source_approval": "decisions/2026-08-31_wti_same_calendar_soft_l1_5_source_approval.md",
+    "source_approval_sha256": "4438BC8C2924ED1B3E97657A0F82D1892A4E5F8871B66C3F79C4047C7779F90F",
+    "approved_card": "strategy-seeds/cards/approved/QM5_41239_wti-samecal-softl1-5_card.md",
+    "approved_card_sha256_after_q02_status_update": "F88C803391BCB42496425D0565C9254EAAF024EAC886EC9D1F50D92715980ADB",
+    "local_card": "framework/EAs/QM5_41239_wti-samecal-softl1-5/docs/strategy_card.md",
+    "local_card_byte_identical_after_q02_status_update": true,
+    "g0_decision": "decisions/2026-08-31_qm5_41239_wti_same_calendar_soft_l1_5_g0.md",
+    "g0_decision_sha256": "484F6DE02C457BED7136E300D75EE034D3741C41C62EB8186466CEB356F31659",
+    "magic_allocation": "artifacts/qm5_41239_magic_allocation_20260831.json",
+    "magic_allocation_sha256": "7E11A94A6F1C8CF8D6C0CC1A961FE39475D0B0EEBC5CBD557EE54D547EC20EC1"
+  },
+  "build": {
+    "task_id": "d800d46e-96c4-4638-91fe-67b8fee1dd3e",
+    "build_result": "artifacts/builds/d800d46e-96c4-4638-91fe-67b8fee1dd3e.json",
+    "build_result_sha256": "573A263A4ABB880A80434AF3357A57E4ADEA00ADD9EAD965A99BDE7502E830FA",
+    "mq5": "framework/EAs/QM5_41239_wti-samecal-softl1-5/QM5_41239_wti-samecal-softl1-5.mq5",
+    "mq5_sha256": "F986A568321E30035390DEF23C5F1A98CB86DD3F4C75ED9979A4569D789C452A",
+    "ex5": "framework/EAs/QM5_41239_wti-samecal-softl1-5/QM5_41239_wti-samecal-softl1-5.ex5",
+    "ex5_sha256": "280BEF266D6E64DB9B064AF2322B4A3112C3E72C3AA18660891F7AD969C61B6B",
+    "setfile": "framework/EAs/QM5_41239_wti-samecal-softl1-5/sets/QM5_41239_wti-samecal-softl1-5_XTIUSD.DWX_D1_backtest.set",
+    "setfile_sha256": "A1F3115BC4E2C4D0523986DF289CB68256A6042DDC49FD769FF695CEEB376E07",
+    "setfile_build_hash": "e4c2be9a7345744ba02f687d99922ebc0f4b0fb0492bb246bb2b52413c45135a",
+    "spec_sha256": "C804C74195E5662722A2A649201FF800E01AEBA70FFF9DFE4351D60C8F516CD1",
+    "risk_mode": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "validations": {
+      "reference_tests": "PASS_12",
+      "card_schema_lint": "PASS",
+      "spec_validation": "PASS",
+      "strategy_entry_validation": "PASS",
+      "raw_mq5_quarantine": "PASS",
+      "static_build_guardrails": "PASS_ZERO_FINDINGS",
+      "allocator_tests": "PASS_17",
+      "resolver_tests": "PASS_7"
+    }
+  },
+  "q01": {
+    "work_item_id": "e34531d1-f2c4-4444-96b9-eef792928f1a",
+    "status": "done",
+    "verdict": "COMPILE_OK",
+    "build_check_result": "PASS",
+    "compile_result": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "failure_classes": [],
+    "setfile_count": 1,
+    "evidence_path": "D:/QM/reports/work_items/e34531d1-f2c4-4444-96b9-eef792928f1a/QM5_41239/COMPILE_EA/compile_evidence.json",
+    "evidence_sha256": "5D637EE9A7539A46CD5B8A0AC2202479CEC9687E400BD2B1D6C7B191A3036737",
+    "compile_release_dry_run": "artifacts/qm5_41239_compile_release_dry_run_20260831.json",
+    "compile_release_dry_run_sha256": "B1FF7579EBDD5AD47B0358E6FC47AD4C2877BA357BBD026371EF51BA38E247BD",
+    "compile_release_apply": "artifacts/qm5_41239_compile_release_apply_20260831.json",
+    "compile_release_apply_sha256": "8904F1FC4848287DB3950838C7F86E1021939A5514C291DB5CFDF822AE9ACEDF"
+  },
+  "capacity": {
+    "pre_q02_sampled_at_utc": "2026-08-31T02:19:42.2785514Z",
+    "samples_percent": [80.6031, 85.2849, 87.5013, 69.925, 66.7091],
+    "average_percent": 78.0047,
+    "maximum_percent": 87.5013,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_hit": false
+  },
+  "q02": {
+    "enqueued": true,
+    "work_item_id": "5ca5cc87-bd67-40fe-9970-0e382ba53155",
+    "phase": "Q02",
+    "status_after_enqueue": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile": "C:/QM/repo/framework/EAs/QM5_41239_wti-samecal-softl1-5/sets/QM5_41239_wti-samecal-softl1-5_XTIUSD.DWX_D1_backtest.set",
+    "enqueued_at_utc": "2026-08-31T02:19:43+00:00",
+    "enqueued_by": "record_build_result.auto_q02",
+    "priority_track": true,
+    "custom_history_archive_admission": "ACTIVE",
+    "selected_archive_rows": 108,
+    "duplicate_or_skipped_rows": 0
+  },
+  "commits": [
+    "4d4c7ad1e",
+    "c1ec6d725",
+    "967f71652",
+    "e34a7e4d4",
+    "cb2f1bcc8",
+    "7ab08e283",
+    "0581c10b3",
+    "bab33fd54",
+    "a7f269657",
+    "4bc875821",
+    "f657cb30b"
+  ],
+  "safety": {
+    "manual_backtest_launched": false,
+    "q02_execution_started_by_this_session": false,
+    "autotrading_toggled": false,
+    "t_live_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "certification_claimed": false,
+    "realized_decorrelation_claimed": false,
+    "q09_remains_required": true
+  }
+}
