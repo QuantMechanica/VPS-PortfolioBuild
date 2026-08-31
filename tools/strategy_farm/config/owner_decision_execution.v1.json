@@ -22,6 +22,63 @@
   ],
   "decisions": [
     {
+      "id": "OWNER-DEC-SAMEPROG-CANARY-20260831",
+      "todo_id": "QM-TODO-20260831-707",
+      "priority": 86,
+      "choices": {
+        "YES": {
+          "mode": "APPLY_AND_VERIFY",
+          "objective": "Activate the stage-2 same-program parallelism canary exactly per the approved recommendation: L=2 for ONLY the EUR program DL089_QM5_11421_EURUSD_DWX_2019_2025, fleet cell cap G<=6, 24h observation with documented abort criteria; env reset = instant serialization.",
+          "allowed_actions": [
+            "Set machine env DL089_LANES_PER_PROGRAM=2 and DL089_SAME_PROGRAM_PARALLEL_ALLOWLIST to exactly the EUR program id; leave DL089_CELL_SLOTS at default 6",
+            "Staggered idle-worker restarts only so workers load the env (never the fleet launcher, never interrupt active backtests)",
+            "Monitor 24h: no duplicate (arm,year) execution, no MT5 process anomaly (instant-exit series, custom-history contention), per-arm year order intact; abort = unset both envs",
+            "Record activation, observations and rollback path in evidence"
+          ],
+          "acceptance": [
+            "Only the EUR program ever runs 2 concurrent cells; every other program stays at 1",
+            "No same-arm year pair ever concurrent; pruning receipts remain append-only and consistent",
+            "Any process anomaly triggers env rollback before further claims",
+            "24h observation summary recorded"
+          ]
+        },
+        "NO": {
+          "mode": "PREPARE_FOLLOWUP_ONLY",
+          "objective": "Stage 2 stays inert.",
+          "allowed_actions": ["Document"],
+          "acceptance": ["No env change"]
+        }
+      }
+    },
+    {
+      "id": "OWNER-DEC-BACKUP-RETENTION-20260830",
+      "todo_id": "QM-TODO-20260831-708",
+      "priority": 80,
+      "choices": {
+        "YES": {
+          "mode": "APPLY_AND_VERIFY",
+          "objective": "Execute the OWNER retention doctrine (chat 2026-08-31, verbatim in receipt notes): pairs on the path to the 25 keep their COMPLETE evidence chain; all other pairs keep ONLY Q02 and Q04 backtest reports (for the future online strategy archive); everything else may be deleted; retained backtest reports may be compressed; logs need not be kept at all; farm_state DB backup rotation per the original card (newest 10 + 14-day window).",
+          "allowed_actions": [
+            "Produce a sealed classification manifest FIRST: every (EA,symbol) pair tagged path-to-25 (any live pipeline/opt/candidate lineage or PASS chain toward v4 counting) vs other; per-pair report inventory with keep/compress/delete disposition and byte counts; manifest SHA recorded and reviewed by the Orchestrator BEFORE any deletion",
+            "After manifest approval: delete in batches with per-batch receipts; NTFS-compress retained reports; delete logs per doctrine; rotate farm_state backups (newest 10 + 14 days, quick_check guard)",
+            "Never touch: live account data, T_Live, verdict rows in farm_state, decision/evidence markdowns in git, Custom_master archives"
+          ],
+          "acceptance": [
+            "Zero deletion before the sealed manifest is Orchestrator-approved",
+            "Path-to-25 pairs demonstrably retain complete chains; others retain Q02+Q04 reports",
+            "farm_state verdicts and git evidence untouched; per-batch deletion receipts with freed bytes",
+            "Any classification ambiguity defaults to KEEP"
+          ]
+        },
+        "NO": {
+          "mode": "PREPARE_FOLLOWUP_ONLY",
+          "objective": "Keep everything; relocation/compression only.",
+          "allowed_actions": ["Document"],
+          "acceptance": ["No deletion"]
+        }
+      }
+    },
+    {
       "id": "OWNER-DEC-LEGACY-COHORT-DISPO-20260830",
       "todo_id": "QM-TODO-20260830-706",
       "priority": 85,
