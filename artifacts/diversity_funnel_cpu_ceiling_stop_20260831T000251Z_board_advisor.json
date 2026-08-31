@@ -1,0 +1,168 @@
+{
+  "artifact_type": "diversity_funnel_capacity_stop",
+  "schema": "qm.mission-capacity-stop/v1",
+  "generated_at_utc": "2026-08-31T00:02:51.1076785Z",
+  "generated_at_europe_berlin": "2026-08-31T02:02:51.1076785+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "8918c3027fc8c213681e23de4a2b28f61dfe4c22",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING_BEFORE_BACKLOG_RANKING_CLAIM_OR_MUTATION",
+  "capacity_policy": {
+    "hard_ceiling_percent": 97.0,
+    "binding_rule": "Proceed only when both the five-sample average and maximum are strictly below 97 percent; stop this paced wake as soon as either measure reaches the ceiling."
+  },
+  "capacity_sample": {
+    "window_end_utc": "2026-08-31T00:02:51.1076785Z",
+    "command": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "samples_cpu_percent": [
+      98.535497,
+      97.278067,
+      98.351502,
+      99.707174,
+      98.927920
+    ],
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "average_cpu_percent": 98.560032,
+    "maximum_cpu_percent": 99.707174,
+    "minimum_cpu_percent": 97.278067,
+    "average_binding": true,
+    "maximum_binding": true,
+    "ceiling_binding": true,
+    "trigger": "average_and_maximum_cpu_percent"
+  },
+  "farm_db_snapshot": {
+    "command": "python tools/strategy_farm/farmctl.py status",
+    "captured_read_only": true,
+    "database": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "build_task_counts": {
+      "active": 3,
+      "pending": 64
+    },
+    "pending_pipeline_counts": {
+      "legacy_backtest_p2": 35,
+      "backtest_q03": 149,
+      "backtest_q04": 68
+    }
+  },
+  "factory_snapshot": {
+    "command": "python tools/strategy_farm/farmctl.py mt5-slots",
+    "scanned_at_utc": "2026-08-31T00:02:51+00:00",
+    "running_factory_terminals": [
+      "T4",
+      "T6",
+      "T7",
+      "T10"
+    ],
+    "running_factory_terminal_count": 4,
+    "active_process_bound_work_items": [
+      {
+        "id": "2356cfd9-dd59-4347-a080-13d2e48a2624",
+        "ea_id": "QM5_10571",
+        "symbol": "XAUUSD.DWX",
+        "phase": "Q07",
+        "claimed_by": "T4"
+      },
+      {
+        "id": "8a6839ef-3266-52e4-89fd-658dfbf87ea3",
+        "ea_id": "QM5_41163",
+        "symbol": "USDCAD.DWX",
+        "phase": "OPT_CENSUS",
+        "claimed_by": "T6"
+      },
+      {
+        "id": "d5311da3-01b0-4902-9347-638506db0ccf",
+        "ea_id": "QM5_20086",
+        "symbol": "EURUSD.DWX",
+        "phase": "Q10_NEWS",
+        "claimed_by": "T7"
+      },
+      {
+        "id": "312966db-c11b-58d5-a6e3-6aeb18a04682",
+        "ea_id": "QM5_41196",
+        "symbol": "XAUUSD.DWX",
+        "phase": "OPT_CENSUS",
+        "claimed_by": "T10"
+      }
+    ],
+    "reserved_factory_terminals": [
+      "T4",
+      "T6",
+      "T7",
+      "T10"
+    ],
+    "active_terminal_reservation_count": 4,
+    "terminal_worker_daemon_count": 10,
+    "duplicate_terminal_workers": {},
+    "orphaned_factory_terminal_process_count": 0,
+    "t_live_observed_only": true,
+    "t_live_controlled": false,
+    "external_ftmo_terminal_observed_only": true
+  },
+  "selection_decision": {
+    "approved_backlog_ranked": false,
+    "farm_claim_created": false,
+    "ea_selected": null,
+    "reason": "The explicit CPU stop condition bound before diversity ranking or claim. Farm state was consulted read-only only to avoid colliding with the paced fleet."
+  },
+  "non_duplicate_delta": {
+    "preceding_capacity_receipt": "artifacts/diversity_funnel_cpu_ceiling_stop_20260830T020053Z_board_advisor.json",
+    "preceding_window_end_utc": "2026-08-30T02:00:53.8893031Z",
+    "preceding_running_factory_terminals": [
+      "T2",
+      "T3",
+      "T10"
+    ],
+    "preceding_build_task_counts": {
+      "active": 2,
+      "pending": 58
+    },
+    "preceding_average_cpu_percent": 97.069163,
+    "preceding_maximum_cpu_percent": 99.124349,
+    "current_running_factory_terminals": [
+      "T4",
+      "T6",
+      "T7",
+      "T10"
+    ],
+    "current_build_task_counts": {
+      "active": 3,
+      "pending": 64
+    },
+    "current_average_cpu_percent": 98.560032,
+    "current_maximum_cpu_percent": 99.707174,
+    "changed_state": "The visible factory roster changed from T2/T3/T10 to T4/T6/T7/T10, the process-bound workload now spans two OPT_CENSUS rows plus Q07 and Q10_NEWS, and pending build_ea tasks rose from 58 to 64. The fresh window remained materially above the hard CPU ceiling."
+  },
+  "actions_this_run": {
+    "build_skill_and_standard_build_prompt_preflight_read": true,
+    "fresh_capacity_preflight_completed": true,
+    "farm_coordination_state_consulted_read_only": true,
+    "approved_backlog_ranked": false,
+    "approved_backlog_claimed": false,
+    "diverse_ea_selected": false,
+    "infra_repair_started": false,
+    "new_edge_mechanized": false,
+    "card_or_g0_created": false,
+    "registry_or_magic_mutated": false,
+    "ea_source_binary_or_setfile_created": false,
+    "compile_build_check_smoke_or_backtest_started": false,
+    "q02_or_later_phase_enqueued": false,
+    "queue_priority_claim_status_or_verdict_mutated": false,
+    "dispatch_tick": false,
+    "terminal_or_worker_controlled": false,
+    "capacity_evidence_committed": true
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "t_live_manifest_touched": false,
+    "live_or_deploy_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false,
+    "preexisting_worktree_changes_preserved": true
+  },
+  "worktree_hygiene": {
+    "concurrent_unrelated_changes_present": true,
+    "unrelated_paths_staged_or_committed_by_this_run": false
+  },
+  "resume_contract": "A later paced wake must take a fresh five-sample capacity window. Only when both average and maximum are strictly below 97 percent may it rank and atomically claim exactly one distinct diversity-first unit through the farm DB, follow the approved-card build path before fallbacks, keep backtest setfiles at RISK_FIXED, and enqueue Q02 without dispatching or touching portfolio/live surfaces."
+}
