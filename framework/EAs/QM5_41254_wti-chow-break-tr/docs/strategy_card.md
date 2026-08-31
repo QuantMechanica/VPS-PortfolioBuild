@@ -84,8 +84,8 @@ news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
 pipeline_phase: Q01
-q01_status: NOT_BUILT
-q02_status: NOT_ENQUEUED_Q01_PENDING
+q01_status: SOURCE_BUILT_COMPILE_PENDING
+q02_status: NOT_ENQUEUED_Q01_PENDING_CPU_CEILING
 force_build: true
 review_focus: "Falsify a direct-WTI monthly structural-break trend sleeve outside the certified XAU/SP500/NDX/XNG carrier set. Verify completed D1 history, log-price orientation, pooled/split OLS and RSS arithmetic, interior scan and latest-tie rule, 3.0 activity boundary, post-break slope side, consumed month, fixed risk, frozen stop, and next-month lifecycle. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -319,11 +319,12 @@ admission; or correlation waiver.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-31 | initial scanned two-regression WTI structural-break card | G0 | APPROVED; build pending |
+| v2 | 2026-08-31 | exact source, fixed-risk set, and reference fixtures committed | Q01 | source built; governed compile released and pending; CPU ceiling stop |
 
 ## Pipeline phase status
 
 | phase | date | verdict | evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-31 | APPROVED; R1-R4 PASS | source approval, corrected-root dedup receipt, and this card |
-| Q01 Build Validation | - | NOT_BUILT | pending magic allocation and exact implementation |
-| Q02 Baseline Screening | - | NOT_ENQUEUED_Q01_PENDING | one paced enqueue only after strict Q01 and CPU admission |
+| Q01 Build Validation | 2026-08-31 | SOURCE_BUILT; COMPILE_EA PENDING | build commit `0f0f61c55b`; compile work item `bebecbbd-d69a-4c5d-97b9-d7aea07ce4d3` released source-fresh |
+| Q02 Baseline Screening | 2026-08-31 | NOT_ENQUEUED_Q01_PENDING_CPU_CEILING | no EX5/Q01 PASS; fresh CPU series reached 99.62% above the 97% ceiling |

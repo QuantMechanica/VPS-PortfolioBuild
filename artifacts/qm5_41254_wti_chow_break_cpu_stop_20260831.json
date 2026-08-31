@@ -1,0 +1,43 @@
+{
+  "schema": "qm.source-build-cpu-stop/v1",
+  "recorded_at_utc": "2026-08-31T19:59:04.2917929Z",
+  "ea_id": "QM5_41254",
+  "ea_label": "QM5_41254_wti-chow-break-tr",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "build_commit": "0f0f61c55b",
+  "magic": 412540000,
+  "reference_tests": {
+    "passed": 12,
+    "failed": 0
+  },
+  "compile": {
+    "work_item_id": "bebecbbd-d69a-4c5d-97b9-d7aea07ce4d3",
+    "activation_hold": null,
+    "status": "pending",
+    "verdict": null,
+    "ex5_present": false,
+    "source_sha256": "d1b70c0f9e53b1385b538f12ecda1de4f7c2750c6d02107f2a81f335cdd1f376",
+    "release_dry_run": "artifacts/qm5_41254_compile_release_dry_run_20260831.json",
+    "release_apply": "artifacts/qm5_41254_compile_release_apply_20260831.json"
+  },
+  "cpu_admission": {
+    "ceiling_percent": 97.0,
+    "samples_percent": [99.41, 94.86, 90.43, 91.26, 99.62],
+    "average_percent": 95.12,
+    "maximum_percent": 99.62,
+    "active_pipeline_terminals": ["T1", "T3", "T8"],
+    "ceiling_hit": true
+  },
+  "q02": {
+    "enqueued": false,
+    "reason": "Q01_COMPILE_PENDING_AND_CPU_CEILING_HIT"
+  },
+  "safety": {
+    "manual_tester_run": false,
+    "autotrading_toggled": false,
+    "t_live_modified": false,
+    "portfolio_gate_modified": false,
+    "t_live_manifest_modified": false
+  }
+}
