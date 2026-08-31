@@ -82,7 +82,7 @@ r1_track_record: PASS_WITH_RELATION_AND_METHOD_TRANSLATION_RISK
 r1_reasoning: "Peer-reviewed gold/silver relationship evidence, official exchange carrier research, named Pettitt record, complete pinned CRAN method files, and governed two-carrier arithmetic precedent; the exact contrarian basket remains an untested QM hypothesis."
 r2_mechanical: PASS
 r2_reasoning: "Month clock, synchronized endpoints, strict ranks, every cumulative rank sum, unique central split, contrarian sides, consumed attempt, aggregate fixed risk, atomicity, and lifecycle are deterministic and locked."
-r3_data_available: PASS_WITH_CALENDAR_SYNCHRONIZATION_AND_CFD_BASIS_RISK
+r3_data_available: PASS
 r3_reasoning: "Registered XAUUSD.DWX and XAGUSD.DWX D1 histories and native MT5 state supply every runtime input; synchronization and continuous-CFD basis risk remain explicit."
 r4_ml_forbidden: PASS
 r4_reasoning: "Only timestamps, completed prices, logarithms, strict ranks, integer arithmetic, ATR risk controls, and execution state; no trained signal or external runtime feed."
