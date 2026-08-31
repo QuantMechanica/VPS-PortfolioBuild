@@ -1,0 +1,18 @@
+{
+  "status": "PERMISSION_REQUIRED",
+  "adapter": "generic",
+  "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.least_squares.html",
+  "retrieved_at": null,
+  "lead_status": "DEFERRED:SOURCE_POLICY",
+  "reason": "generic runtime retrieval is disabled until a cryptographic OWNER authorization verifier exists",
+  "adapter_state": "ROUTER_ONLY",
+  "next_action": "review the source policy and defer the lead",
+  "recorded_at_utc": "2026-08-31T01:48:00Z",
+  "evidence_role": "fresh retrieval classification only; not source-content evidence",
+  "reused_governed_record": {
+    "path": "strategy-seeds/sources/KELOHARJU-SCIPY-WTI-SAMECAL-ARCTAN5-2026/source.md",
+    "complete_page_reviewed_at": "2026-08-31",
+    "retrieved_html_bytes": 93197,
+    "retrieved_html_sha256": "CD8BCEEF256035736DDDE8E0F690C2487EFEFD5AFA773AEB50C822E5AF632435"
+  }
+}
