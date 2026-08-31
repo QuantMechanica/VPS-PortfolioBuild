@@ -1,0 +1,33 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        41253
+; ea_slug:      gbpusd-weekend-tail-fade
+; ea_version:   v5.0
+; set_version:  s20260831-001
+; symbol:       GBPUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   3d4b086781f87345c551f4423013583c8d4bbe45192e5056de7c99ef9a50dfe9
+; author:       Development
+; date:         2026-08-31
+;==========================================================
+qm_ea_id=41253
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
+strategy_prior_gap_count=52
+strategy_lower_index=5
+strategy_upper_index=46
+strategy_history_bars=900
+strategy_entry_grace_minutes=180
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=3.5
+strategy_max_hold_days=7
+strategy_max_spread_points=50
+strategy_deviation_points=20
