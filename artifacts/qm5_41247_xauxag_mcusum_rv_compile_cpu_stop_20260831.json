@@ -1,0 +1,83 @@
+{
+  "schema": "qm.new-commodity-sleeve-compile-cpu-stop/v1",
+  "generated_at_utc": "2026-08-31T12:06:02Z",
+  "generated_at_europe_berlin": "2026-08-31T14:06:02+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "e575277c4dfe50b431387fdd9c30120f67b527d1",
+  "package_commit": "41aaf320df",
+  "mission_outcome": "NEW_XAUXAG_STRUCTURAL_SLEEVE_BUILT_COMPILE_PENDING_Q02_NOT_ENQUEUED_CPU_CEILING",
+  "ea": {
+    "ea_id": "QM5_41247",
+    "slug": "xauxag-mcusum-rv",
+    "strategy_id": "AI-CODEX-XAUXAG-MCUSUM-RV-20260831_S01",
+    "logical_symbol": "QM5_41247_XAU_XAG_MCUSUM_RV_D1",
+    "host_symbol": "XAUUSD.DWX",
+    "companion_symbol": "XAGUSD.DWX",
+    "timeframe": "D1",
+    "magics": [412470000, 412470001]
+  },
+  "edge": {
+    "class": "xauxag_thirteen_month_centered_cusum_relative_return_reversion",
+    "frequency": "monthly",
+    "mechanic": "Use thirteen synchronized completed month-end gold-minus-silver log-ratio endpoints, center the twelve adjacent relative returns, require one unique maximum absolute nonterminal CUSUM at split 4 through 8, then fade the post-split mean with opposite equal-target-notional XAU/XAG legs.",
+    "nearest_fuzzy_neighbor": "QM5_41245_wti-mcusum-shift-tr",
+    "manual_distinction": "The neighbor is single-leg directional WTI continuation; QM5_41247 is an opposite-leg XAU/XAG relative-value basket with contrarian direction, equal-notional topology, atomic pair lifecycle, and next-month exit.",
+    "dedup_receipt": "artifacts/qm5_xauxag_mcusum_rv_preallocation_dedup_20260831.json",
+    "dedup_receipt_sha256": "165C8CC9BCE9C560D2BF889DE1CBF5E3BA9A110147B921EF982D8CD8808D6C95"
+  },
+  "build": {
+    "mq5_sha256": "249DB08872348DC74503E4413158189E6A34EFAC8E9B2098F3E022120FFBD59E",
+    "basket_manifest_sha256": "6CE2FA737398F9356FE1A65A5FBD962C600DDA69C896FD495264C2311A54C7B6",
+    "reference_tests": "PASS_7",
+    "card_schema_lint": "PASS",
+    "execution_contract_lint": "PASS",
+    "build_skill_guard": "PASS",
+    "setfile_count": 3,
+    "risk_mode": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "ex5_present": false,
+    "q01_verdict": null
+  },
+  "compile": {
+    "work_item_id": "d8cd4994-6de9-4854-abec-5185a288a379",
+    "status": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "verdict": null,
+    "evidence_path": null,
+    "source_hash_match_at_release": true,
+    "single_item_release_applied_at_utc": "2026-08-31T11:58:02+00:00",
+    "release_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_compile_wave_20260831T115757Z_07f7b3cb.sqlite",
+    "release_backup_sha256": "8E3755FCB691FCEBB28D9B8C21425CADB852BCEDA323EE47987B9CF6D5732D15"
+  },
+  "capacity_stop": {
+    "terminal": "T7",
+    "event": "cpu_high_pause",
+    "at_utc": "2026-08-31T12:02:43.267643+00:00",
+    "cpu_load_percent": 98.4,
+    "hard_ceiling_percent": 97.0,
+    "hysteresis_latched": true,
+    "source": "D:/QM/strategy_farm/logs/terminal_worker_T7.log",
+    "binding": true
+  },
+  "q02": {
+    "status": "NOT_ENQUEUED_Q01_PENDING_CPU_CEILING",
+    "work_item_count": 0,
+    "intended_symbol": "QM5_41247_XAU_XAG_MCUSUM_RV_D1",
+    "intended_setfile": "framework/EAs/QM5_41247_xauxag-mcusum-rv/sets/QM5_41247_xauxag-mcusum-rv_QM5_41247_XAU_XAG_MCUSUM_RV_D1_D1_backtest.set"
+  },
+  "protected_surfaces": {
+    "manual_backtest_launched": false,
+    "dispatch_tick_called": false,
+    "terminal_started_stopped_or_reserved_by_this_work": false,
+    "autotrading_toggled": false,
+    "t_live_changed": false,
+    "portfolio_gate_changed": false,
+    "live_manifest_changed": false,
+    "unrelated_worktree_changes_preserved": true
+  },
+  "resume_contract": "On a later paced wake, let the existing source-hash-bound compile row run only through the resident worker after CPU and reservation gates clear. Require compile and strict build-check PASS with zero errors and warnings, bind the EX5 hash into all three presets, then take a fresh governed CPU sample before creating exactly one logical-basket Q02 row."
+}

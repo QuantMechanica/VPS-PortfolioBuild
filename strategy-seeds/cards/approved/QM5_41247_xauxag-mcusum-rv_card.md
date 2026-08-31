@@ -93,9 +93,9 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: Q01
-q01_status: NOT_BUILT
-q02_status: NOT_ENQUEUED_Q01_PENDING
+pipeline_phase: Q01_COMPILE_PENDING_CPU_BLOCKED
+q01_status: PENDING_COMPILE_CPU_CEILING
+q02_status: NOT_ENQUEUED_Q01_PENDING_CPU_CEILING
 force_build: true
 review_focus: "Falsify a synchronized gold/silver relative-return regime-shift reversion basket outside the directional XAU/SP500/NDX/XNG book. Verify exact completed endpoints, ratio and return orientation, full-sample centering, every nonterminal CUSUM split, unique central maximum, contrarian post-segment side, consumed month, aggregate fixed risk, equal-notional tolerance, atomicity, and next-month lifecycle. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -138,6 +138,29 @@ continuous CFDs, or fixed-dollar execution contract.
 No source return, alpha, probability, p-value, significance, trade density,
 profit factor, drawdown, transaction cost, hedge ratio, neutrality, CFD
 equivalence, decorrelation, or portfolio-correlation statistic is imported.
+
+## Source-Defined Rules
+
+- Schweikert defines the gold/silver relationship as economically linked but
+  state-dependent; the paper does not authorize unconditional stationarity.
+- CME defines the gold/silver ratio as a legitimate intermarket carrier whose
+  two legs also have distinct monetary and industrial drivers.
+- Page and NIST define cumulative sums of mean-centered deviations as a
+  structural mean-shift diagnostic.
+- No cited source defines this exact thirteen-endpoint sample, central split
+  band, contrarian direction, equal-notional execution, or lifecycle. Those
+  elements are not represented as source results.
+
+## QM Interpretations
+
+- QM translates the bounded CUSUM method into twelve adjacent completed-month
+  gold-minus-silver relative returns and evaluates every nonterminal split.
+- QM requires one unique absolute maximum at split `4..8`; ties, zero paths,
+  stale endpoints, and discontinuous month sequences consume the attempt flat.
+- QM treats the post-split mean as exhaustion and trades the opposite paired
+  direction with equal target notionals and one aggregate fixed-dollar budget.
+- These interpretations are an untested structural hypothesis. Q02 owns trade
+  density and economics; Q09 alone may establish realized diversification.
 
 ## Non-Duplicate Decision
 
@@ -437,4 +460,4 @@ strategy is certified.
 | Version | Date | Reason | Phase | Verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-31 | initial source-bounded XAU/XAG centered-CUSUM reversion card | G0 | APPROVED |
-
+| v2 | 2026-08-31 | committed source-fresh build and governed compile handoff | Q01 | compile pending unclaimed; Q02 not enqueued after worker CPU reached 98.4% against the 97% ceiling |
