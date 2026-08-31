@@ -179,18 +179,26 @@ class MonthlyTurningPointRatioReferenceTests(unittest.TestCase):
         self.assertIn("3 * turning_point_count < 22", source)
         self.assertIn("Strategy_RecordAttemptState(g_signal_month_key)", source)
         self.assertIn("QM_MagicChecked(qm_ea_id, 1, g_leg_xag)", source)
+        self.assertIn("Strategy_RefreshExpectedDirection()", source)
+        self.assertIn("Strategy_PairCompositionValid(direction)", source)
+        self.assertIn("Strategy_PairCompositionValid(g_pair_expected_direction)", source)
         self.assertNotRegex(source, re.compile(r"iRSI|iMACD|iBands|WebRequest"))
         self.assertEqual(
             EA_CARD.read_text(encoding="utf-8-sig"),
             CANONICAL_CARD.read_text(encoding="utf-8-sig"),
         )
 
-    def test_only_one_fixed_risk_logical_backtest_set_exists(self) -> None:
+    def test_only_factory_and_logical_fixed_risk_backtest_sets_exist(self) -> None:
         setfiles = sorted((EA_DIR / "sets").glob("*.set"))
-        self.assertEqual(len(setfiles), 1)
+        self.assertEqual(len(setfiles), 3)
+        self.assertIn(LOGICAL_SET, setfiles)
         self.assertFalse(any("live" in path.name.lower() for path in setfiles))
-        values = parse_setfile(setfiles[0])
-        self.assertEqual((values["RISK_FIXED"], values["RISK_PERCENT"]), ("1000", "0"))
+        for path in setfiles:
+            values = parse_setfile(path)
+            self.assertEqual(
+                (values["RISK_FIXED"], values["RISK_PERCENT"]),
+                ("1000", "0"),
+            )
 
 
 if __name__ == "__main__":

@@ -69,6 +69,8 @@ int      g_signal_month_key = 0;
 bool     g_signal_late = false;
 int      g_last_attempt_month_key = 0;
 string   g_attempt_state_key = "";
+int      g_pair_expected_direction = 0;
+int      g_pair_expected_month_key = 0;
 
 int Strategy_DayKey(const datetime value)
   {
@@ -290,7 +292,7 @@ datetime Strategy_CurrentPairEntryTime()
    return earliest;
   }
 
-bool Strategy_PairCompositionValid()
+bool Strategy_PairCompositionValid(const int expected_direction)
   {
    int owned_count = 0;
    int xau_count = 0;
@@ -326,11 +328,21 @@ bool Strategy_PairCompositionValid()
           xag_type = type;
          }
      }
-   return (owned_count == 2 && xau_count == 1 && xag_count == 1 &&
-           ((xau_type == POSITION_TYPE_BUY &&
-             xag_type == POSITION_TYPE_SELL) ||
-            (xau_type == POSITION_TYPE_SELL &&
-             xag_type == POSITION_TYPE_BUY)));
+   const bool opposite_sides =
+      ((xau_type == POSITION_TYPE_BUY &&
+        xag_type == POSITION_TYPE_SELL) ||
+       (xau_type == POSITION_TYPE_SELL &&
+        xag_type == POSITION_TYPE_BUY));
+   if(owned_count != 2 || xau_count != 1 || xag_count != 1 ||
+      !opposite_sides)
+      return false;
+   if(expected_direction == 0)
+      return true;
+   if(expected_direction > 0)
+      return (xau_type == POSITION_TYPE_BUY &&
+              xag_type == POSITION_TYPE_SELL);
+   return (xau_type == POSITION_TYPE_SELL &&
+           xag_type == POSITION_TYPE_BUY);
   }
 
 bool Strategy_PairNotionalValid()
@@ -385,6 +397,8 @@ void Strategy_CloseAllOwned(const QM_ExitReason reason)
          QM_TM_ClosePosition(ticket, reason);
      }
    g_pair_entry_time = 0;
+   g_pair_expected_direction = 0;
+   g_pair_expected_month_key = 0;
   }
 
 bool Strategy_MaxHoldExceeded()
@@ -658,9 +672,12 @@ bool Strategy_OpenPair(const int direction)
    if(!Strategy_OpenLeg(g_leg_xau, xau_type, xau_lots, xau_stop))
       return false;
    if(Strategy_OpenLeg(g_leg_xag, xag_type, xag_lots, xag_stop) &&
-       Strategy_PairCompositionValid() && Strategy_PairNotionalValid())
+       Strategy_PairCompositionValid(direction) &&
+       Strategy_PairNotionalValid())
      {
       g_pair_entry_time = Strategy_CurrentPairEntryTime();
+      g_pair_expected_direction = direction;
+      g_pair_expected_month_key = Strategy_MonthKey(g_pair_entry_time);
       return (g_pair_entry_time > 0);
      }
    Strategy_CloseAllOwned(QM_EXIT_STRATEGY);
@@ -730,22 +747,12 @@ bool Strategy_LoadMonthlyTurningPointSignal(
 
    MqlRates xau_bars[];
    MqlRates xag_bars[];
-   double newest_first_ratios[];
-   datetime newest_first_times[];
-   double chronological_ratios[];
-   datetime chronological_times[];
+   double newest_first_ratios[13];
+   datetime newest_first_times[13];
+   double chronological_ratios[13];
+   datetime chronological_times[13];
    ArraySetAsSeries(xau_bars, true);
    ArraySetAsSeries(xag_bars, true);
-
-   if(ArrayResize(newest_first_ratios, strategy_endpoint_count) !=
-         strategy_endpoint_count ||
-      ArrayResize(newest_first_times, strategy_endpoint_count) !=
-         strategy_endpoint_count ||
-      ArrayResize(chronological_ratios, strategy_endpoint_count) !=
-         strategy_endpoint_count ||
-      ArrayResize(chronological_times, strategy_endpoint_count) !=
-         strategy_endpoint_count)
-      return false;
 
    const int xau_copied =
       CopyRates(g_leg_xau, // perf-allowed: one bounded thirteen-month scan behind a consumed monthly attempt.
@@ -1015,12 +1022,61 @@ bool Strategy_EntrySignal(QM_EntryRequest &request)
    return false;
   }
 
+bool Strategy_RefreshExpectedDirection()
+  {
+   datetime entry_time = g_pair_entry_time;
+   if(entry_time <= 0)
+      entry_time = Strategy_CurrentPairEntryTime();
+   const int entry_month_key = Strategy_MonthKey(entry_time);
+   const int current_month_key = Strategy_MonthKey(g_current_host_bar);
+   if(entry_month_key <= 0 || current_month_key <= 0 ||
+      entry_month_key != current_month_key)
+      return false;
+   if(g_pair_expected_month_key == entry_month_key &&
+      (g_pair_expected_direction == 1 ||
+       g_pair_expected_direction == -1))
+      return true;
+
+   int month_count = 0;
+   int tie_count = 0;
+   int interior_count = 0;
+   int turning_point_count = 0;
+   int direction = 0;
+   datetime newest_endpoint_time = 0;
+   double endpoint_displacement = 0.0;
+   string ratio_path = "";
+   const bool valid =
+      Strategy_LoadMonthlyTurningPointSignal(
+         entry_month_key,
+         month_count,
+         newest_endpoint_time,
+         endpoint_displacement,
+         tie_count,
+         interior_count,
+         turning_point_count,
+         ratio_path,
+         direction);
+   if(!valid || month_count != strategy_endpoint_count ||
+      tie_count != 0 || interior_count != 11 ||
+      direction == 0)
+      return false;
+
+   g_pair_expected_direction = direction;
+   g_pair_expected_month_key = entry_month_key;
+   return true;
+  }
+
 void Strategy_ManageOpenPosition()
   {
    const int open_positions = Strategy_OpenOwnedPositionCount();
    if(open_positions <= 0)
+     {
+      g_pair_entry_time = 0;
+      g_pair_expected_direction = 0;
+      g_pair_expected_month_key = 0;
       return;
-   if(open_positions != 2 || !Strategy_PairCompositionValid() ||
+     }
+   if(open_positions != 2 || !Strategy_PairCompositionValid(0) ||
       !Strategy_PairNotionalValid())
      {
       Strategy_CloseAllOwned(QM_EXIT_STRATEGY);
@@ -1032,7 +1088,13 @@ void Strategy_ManageOpenPosition()
       return;
      }
    if(Strategy_MaxHoldExceeded())
+     {
       Strategy_CloseAllOwned(QM_EXIT_TIME_STOP);
+      return;
+     }
+   if(!Strategy_RefreshExpectedDirection() ||
+      !Strategy_PairCompositionValid(g_pair_expected_direction))
+      Strategy_CloseAllOwned(QM_EXIT_STRATEGY);
   }
 
 bool Strategy_ExitSignal()
@@ -1228,5 +1290,4 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
-
 
