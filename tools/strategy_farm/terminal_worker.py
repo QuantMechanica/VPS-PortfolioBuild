@@ -27,7 +27,7 @@ import time
 import uuid
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
 
 # ``terminal_worker.py`` is launched by absolute path from the long-running
 # worker starter.  In that execution mode Python adds this file's directory to
@@ -1827,7 +1827,6 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
         if root.resolve() == farmctl.DEFAULT_ROOT.resolve()
         else set()
     )
-
     # Every filesystem/process/OS probe completes before the fleet-wide
     # mutation lock.  The lock below is reserved for the fresh OFF check and
     # the SQLite claim transaction; a cold registry read, CIM fallback, or
@@ -1860,8 +1859,10 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
 
     pruning_enabled = opt_census_pruning.pruning_enabled()
     pruning_checked_payloads: dict[str, str] = {}
+    opt_census_lane_tokens: dict[str, dict[str, Any]] = {}
     pruning_deferred_candidates: set[tuple[str, str]] = set()
-    pruning_attempted_programs: set[str] = set()
+    pruning_attempted_lanes: set[tuple[str, str]] = set()
+    opt_census_worker_count = len(farmctl.worker_policy_terminals())
     history_preflight_cache: dict[
         str,
         tuple[
@@ -2127,18 +2128,20 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                         }
 
                 active_symbol_counts, active_ea_symbol_pairs = farmctl._active_symbol_claim_state(conn)
-                active_opt_census_programs = {
-                    dl089_scheduling.program_id(
-                        _json_loads(row["payload_json"]),
-                        ea_id=row["ea_id"],
-                        symbol=row["symbol"],
-                    )
+                active_opt_census_rows = [
+                    dict(row)
                     for row in conn.execute(
-                        "SELECT ea_id,symbol,payload_json FROM work_items "
+                        "SELECT id,phase,ea_id,symbol,payload_json FROM work_items "
                         "WHERE status='active' AND upper(phase)='OPT_CENSUS'"
                     )
-                }
-                opt_census_slots = dl089_scheduling.program_slots()
+                ]
+                active_opt_census = dl089_scheduling.active_census_snapshot(
+                    active_opt_census_rows
+                )
+                opt_k_eff, opt_l_eff, opt_g_eff = dl089_scheduling.effective_limits(
+                    opt_census_worker_count
+                )
+                opt_allowlist = dl089_scheduling.same_program_parallel_allowlist()
                 active_q04_eas = {
                     str(row["ea_id"])
                     for row in conn.execute(
@@ -2244,22 +2247,104 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                                 "launch_not_before_utc": launch_not_before.isoformat(),
                             })
                             continue
+                    item_is_opt_census = str(item["phase"] or "").upper() == "OPT_CENSUS"
+                    opt_program, opt_arm = dl089_scheduling.lane_id(
+                        payload,
+                        ea_id=item["ea_id"],
+                        symbol=item["symbol"],
+                    )
+                    opt_lane = (opt_program, opt_arm)
+                    governed_opt_census = _is_governed_dl089_census_payload(payload)
+                    candidate_lane_limit = (
+                        opt_l_eff if opt_program in opt_allowlist else min(1, opt_l_eff)
+                    )
+                    if item_is_opt_census:
+                        if governed_opt_census:
+                            token = opt_census_lane_tokens.get(str(item["id"]))
+                            if not _opt_census_token_matches(
+                                conn, item, payload, token
+                            ):
+                                candidate_key = (
+                                    str(item["id"]),
+                                    str(item["payload_json"] or "{}"),
+                                )
+                                if (
+                                    candidate_key in pruning_deferred_candidates
+                                    or opt_lane in pruning_attempted_lanes
+                                ):
+                                    continue
+                                conn.commit()
+                                return {
+                                    "claimed": False,
+                                    "reason": "opt_census_lane_preflight_required",
+                                    "candidate": dict(item),
+                                    "program_id": opt_program,
+                                    "arm": opt_arm,
+                                }
+                        if active_opt_census["total"] >= opt_g_eff:
+                            skipped_opt_census_slots.append({
+                                "item_id": item["id"],
+                                "program_id": opt_program,
+                                "reason": "CELL_SLOT_WAIT",
+                                "cell_slots_effective": opt_g_eff,
+                            })
+                            continue
+                        if (
+                            opt_program not in active_opt_census["programs"]
+                            and len(active_opt_census["programs"]) >= opt_k_eff
+                        ):
+                            skipped_opt_census_slots.append({
+                                "item_id": item["id"],
+                                "program_id": opt_program,
+                                "reason": "PROGRAM_SLOT_WAIT",
+                                "program_slots_effective": opt_k_eff,
+                            })
+                            continue
+                        if active_opt_census["program_lane_counts"].get(opt_program, 0) >= candidate_lane_limit:
+                            skipped_opt_census_slots.append({
+                                "item_id": item["id"],
+                                "program_id": opt_program,
+                                "reason": "PROGRAM_LANE_WAIT",
+                                "lanes_per_program_effective": candidate_lane_limit,
+                            })
+                            continue
+                        if opt_lane in active_opt_census["lanes"]:
+                            skipped_opt_census_slots.append({
+                                "item_id": item["id"],
+                                "program_id": opt_program,
+                                "arm": opt_arm,
+                                "reason": "PROGRAM_LANE_WAIT",
+                            })
+                            continue
+
+                    # Compute this before the duplicate-pair exception: basket
+                    # rows are never eligible for same-program concurrency.
+                    item_is_multisym = _work_item_is_multisymbol(item, payload, multisym_ids)
                     symbol_key = str(item["symbol"] or "").upper()
                     if symbol_key:
-                        # Duplicate (ea_id, symbol) never runs twice concurrently
-                        # (2026-05-18 crash shape); cross-EA same-symbol work is
-                        # capped, not serialized, since Variant-A private Custom
-                        # stores removed the shared-history hazard.
-                        if (str(item["ea_id"]), symbol_key) in active_ea_symbol_pairs:
-                            continue
                         if active_symbol_counts.get(symbol_key, 0) >= farmctl.CLAIM_SYMBOL_ACTIVE_CAP:
                             continue
+                        if (str(item["ea_id"]), symbol_key) in active_ea_symbol_pairs:
+                            duplicates = active_opt_census["pairs"].get(
+                                (str(item["ea_id"]), symbol_key), []
+                            )
+                            if not (
+                                governed_opt_census
+                                and dl089_scheduling.duplicate_pair_exception_allowed(
+                                    candidate=dict(item),
+                                    candidate_payload=payload,
+                                    active_duplicates=duplicates,
+                                    l_eff=candidate_lane_limit,
+                                    candidate_is_multisymbol=item_is_multisym,
+                                    allowlist=opt_allowlist,
+                                )
+                            ):
+                                continue
                     if str(item["phase"]).upper() == _Q04_PHASE and str(item["ea_id"]) in active_q04_eas:
                         continue
                     # Skip a multi-symbol item while another multi-symbol backtest
                     # is already running anywhere in the farm (serialize the heavy
                     # basket loads). Non-multi-symbol items are unaffected.
-                    item_is_multisym = _work_item_is_multisymbol(item, payload, multisym_ids)
                     if multisym_active and item_is_multisym:
                         continue
                     if item_is_multisym:
@@ -2281,29 +2366,6 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                                 "threshold_gb": MULTISYMBOL_RAM_MIN_FREE_GB,
                             })
                             continue
-                    item_is_opt_census = str(item["phase"] or "").upper() == "OPT_CENSUS"
-                    opt_program = dl089_scheduling.program_id(
-                        payload,
-                        ea_id=item["ea_id"],
-                        symbol=item["symbol"],
-                    )
-                    if item_is_opt_census:
-                        if opt_program in active_opt_census_programs:
-                            skipped_opt_census_slots.append({
-                                "item_id": item["id"],
-                                "program_id": opt_program,
-                                "reason": "program_already_active",
-                            })
-                            continue
-                        if len(active_opt_census_programs) >= opt_census_slots:
-                            skipped_opt_census_slots.append({
-                                "item_id": item["id"],
-                                "program_id": opt_program,
-                                "reason": "program_slots_full",
-                                "active_programs": sorted(active_opt_census_programs),
-                                "program_slots": opt_census_slots,
-                            })
-                            continue
                     if (
                         pruning_enabled
                         and item_is_opt_census
@@ -2316,7 +2378,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                         )
                         if (
                             candidate_key in pruning_deferred_candidates
-                            or opt_program in pruning_attempted_programs
+                            or opt_lane in pruning_attempted_lanes
                         ):
                             continue
                         conn.commit()
@@ -2409,7 +2471,9 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                     "terminal_avoid_skipped": skipped_avoid_terminal,
                     "longrun_cap_skipped": skipped_longrun_cap,
                     "opt_census_slot_deferred": skipped_opt_census_slots,
-                    "opt_census_program_slots": opt_census_slots,
+                    "opt_census_program_slots": opt_k_eff,
+                    "opt_census_lanes_per_program": opt_l_eff,
+                    "opt_census_cell_slots": opt_g_eff,
                     "recovery_capped": recovery_capped,
                 }
             except Exception:
@@ -2513,6 +2577,43 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
     history_preflights: list[dict[str, Any]] = []
     for _preflight_index in range(CLAIM_PREFLIGHT_MAX_CANDIDATES):
         reason = claim_result.get("reason")
+        if reason == "opt_census_lane_preflight_required":
+            candidate = dict(claim_result["candidate"])
+            payload = _json_loads(candidate.get("payload_json"))
+            lane = dl089_scheduling.lane_id(
+                payload,
+                ea_id=candidate.get("ea_id"),
+                symbol=candidate.get("symbol"),
+            )
+            lane_preflight = _opt_census_lane_preflight_outside_factory_lock(
+                root,
+                terminal,
+                candidate,
+                pruning_enabled=pruning_enabled,
+            )
+            pruning_preflights.append({
+                "program_id": lane[0],
+                "arm": lane[1],
+                **lane_preflight,
+            })
+            if (
+                lane_preflight.get("status") == "checked"
+                and lane_preflight.get("candidate_pending") is True
+                and lane_preflight.get("token")
+            ):
+                opt_census_lane_tokens[str(candidate["id"])] = dict(
+                    lane_preflight["token"]
+                )
+                pruning_checked_payloads[str(candidate["id"])] = str(
+                    candidate.get("payload_json") or "{}"
+                )
+            else:
+                pruning_attempted_lanes.add(lane)
+                pruning_deferred_candidates.add(
+                    (str(candidate["id"]), str(candidate.get("payload_json") or "{}"))
+                )
+            claim_result = _claim_under_factory_lock()
+            continue
         if reason == "opt_census_pruning_required":
             candidate = dict(claim_result["candidate"])
             program = str(
@@ -2529,7 +2630,13 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                 candidate,
             )
             pruning_preflights.append({"program_id": program, **pruning_preflight})
-            pruning_attempted_programs.add(program)
+            pruning_attempted_lanes.add(
+                dl089_scheduling.lane_id(
+                    _json_loads(candidate.get("payload_json")),
+                    ea_id=candidate.get("ea_id"),
+                    symbol=candidate.get("symbol"),
+                )
+            )
             if (
                 pruning_preflight.get("status") == "checked"
                 and pruning_preflight.get("candidate_pending") is True
@@ -2574,16 +2681,27 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
     if claim_result.get("reason") in {
         "history_preflight_required",
         "opt_census_pruning_required",
+        "opt_census_lane_preflight_required",
     }:
         # Bound pathological queues: after eight exact preflights, defer every
         # still-unchecked history/census row and let ordinary checked work flow.
         skip_unchecked_history = True
-        if claim_result.get("reason") == "opt_census_pruning_required":
+        if claim_result.get("reason") in {
+            "opt_census_pruning_required",
+            "opt_census_lane_preflight_required",
+        }:
             candidate = dict(claim_result["candidate"])
             pruning_deferred_candidates.add(
                 (str(candidate["id"]), str(candidate.get("payload_json") or "{}"))
             )
-            pruning_attempted_programs.add(str(claim_result.get("program_id") or ""))
+            payload = _json_loads(candidate.get("payload_json"))
+            pruning_attempted_lanes.add(
+                dl089_scheduling.lane_id(
+                    payload,
+                    ea_id=candidate.get("ea_id"),
+                    symbol=candidate.get("symbol"),
+                )
+            )
         claim_result = _claim_under_factory_lock()
 
     if pruning_preflights:
@@ -2631,6 +2749,53 @@ def claim_specific_atomic(root: Path, terminal: str, item_id: str) -> dict[str, 
         if root.resolve() == farmctl.DEFAULT_ROOT.resolve()
         else set()
     )
+    try:
+        targeted_multisym_ids = _multisymbol_ea_ids()
+    except MultisymbolRegistryUnavailable as exc:
+        return {
+            "claimed": False,
+            "reason": "multisymbol_registry_unavailable",
+            "item_id": item_id,
+            "error": str(exc),
+        }
+    targeted_worker_count = len(farmctl.worker_policy_terminals())
+    targeted_lane_token: dict[str, Any] | None = None
+    try:
+        with farmctl.connect(root) as preflight_conn:
+            preflight_row = preflight_conn.execute(
+                "SELECT * FROM work_items WHERE id=?", (item_id,)
+            ).fetchone()
+        if preflight_row is not None:
+            preflight_payload = _json_loads(preflight_row["payload_json"])
+            if (
+                str(preflight_row["phase"] or "").upper() == "OPT_CENSUS"
+                and _is_governed_dl089_census_payload(preflight_payload)
+            ):
+                lane_preflight = _opt_census_lane_preflight_outside_factory_lock(
+                    root,
+                    terminal,
+                    dict(preflight_row),
+                    pruning_enabled=opt_census_pruning.pruning_enabled(),
+                    allow_factory_off=True,
+                )
+                if (
+                    lane_preflight.get("status") != "checked"
+                    or not lane_preflight.get("token")
+                ):
+                    return {
+                        "claimed": False,
+                        "reason": "opt_census_lane_preflight_failed",
+                        "item_id": item_id,
+                        "preflight": lane_preflight,
+                    }
+                targeted_lane_token = dict(lane_preflight["token"])
+    except sqlite3.Error as exc:
+        return {
+            "claimed": False,
+            "reason": "opt_census_lane_preflight_sqlite_failed",
+            "item_id": item_id,
+            "error": str(exc),
+        }
 
     def _claim() -> dict[str, Any]:
         farmctl.init_db(root)
@@ -2707,14 +2872,75 @@ def claim_specific_atomic(root: Path, terminal: str, item_id: str) -> dict[str, 
                             "launch_not_before_utc": launch_not_before.isoformat(),
                         }
 
+                item_is_opt_census = str(item["phase"] or "").upper() == "OPT_CENSUS"
+                governed_opt_census = (
+                    item_is_opt_census
+                    and _is_governed_dl089_census_payload(payload)
+                )
+                active_opt_rows = [
+                    dict(row)
+                    for row in conn.execute(
+                        "SELECT id,phase,ea_id,symbol,payload_json FROM work_items "
+                        "WHERE status='active' AND upper(phase)='OPT_CENSUS'"
+                    )
+                ]
+                active_opt = dl089_scheduling.active_census_snapshot(active_opt_rows)
+                k_eff, l_eff, g_eff = dl089_scheduling.effective_limits(
+                    targeted_worker_count
+                )
+                allowlist = dl089_scheduling.same_program_parallel_allowlist()
+                program, arm = dl089_scheduling.lane_id(
+                    payload, ea_id=item["ea_id"], symbol=item["symbol"]
+                )
+                candidate_lane_limit = l_eff if program in allowlist else min(1, l_eff)
+                if item_is_opt_census:
+                    if governed_opt_census and not _opt_census_token_matches(
+                        conn, item, payload, targeted_lane_token
+                    ):
+                        conn.commit()
+                        return {
+                            "claimed": False,
+                            "reason": "opt_census_lane_token_stale",
+                            "item_id": item_id,
+                        }
+                    if active_opt["total"] >= g_eff:
+                        conn.commit()
+                        return {"claimed": False, "reason": "CELL_SLOT_WAIT", "item_id": item_id}
+                    if program not in active_opt["programs"] and len(active_opt["programs"]) >= k_eff:
+                        conn.commit()
+                        return {"claimed": False, "reason": "PROGRAM_SLOT_WAIT", "item_id": item_id}
+                    if active_opt["program_lane_counts"].get(program, 0) >= candidate_lane_limit:
+                        conn.commit()
+                        return {"claimed": False, "reason": "PROGRAM_LANE_WAIT", "item_id": item_id}
+                    if (program, arm) in active_opt["lanes"]:
+                        conn.commit()
+                        return {"claimed": False, "reason": "PROGRAM_LANE_WAIT", "item_id": item_id}
+
+                item_is_multisym = _work_item_is_multisymbol(
+                    item, payload, targeted_multisym_ids
+                )
                 symbol_key = str(item["symbol"] or "").upper()
                 active_symbol_counts, active_ea_symbol_pairs = farmctl._active_symbol_claim_state(conn)
-                if symbol_key and (
-                    (str(item["ea_id"]), symbol_key) in active_ea_symbol_pairs
-                    or active_symbol_counts.get(symbol_key, 0) >= farmctl.CLAIM_SYMBOL_ACTIVE_CAP
-                ):
+                if symbol_key and active_symbol_counts.get(symbol_key, 0) >= farmctl.CLAIM_SYMBOL_ACTIVE_CAP:
                     conn.commit()
                     return {"claimed": False, "reason": "symbol_busy", "item_id": item_id}
+                if symbol_key and (str(item["ea_id"]), symbol_key) in active_ea_symbol_pairs:
+                    duplicates = active_opt["pairs"].get(
+                        (str(item["ea_id"]), symbol_key), []
+                    )
+                    if not (
+                        governed_opt_census
+                        and dl089_scheduling.duplicate_pair_exception_allowed(
+                            candidate=dict(item),
+                            candidate_payload=payload,
+                            active_duplicates=duplicates,
+                            l_eff=candidate_lane_limit,
+                            candidate_is_multisymbol=item_is_multisym,
+                            allowlist=allowlist,
+                        )
+                    ):
+                        conn.commit()
+                        return {"claimed": False, "reason": "symbol_busy", "item_id": item_id}
 
                 if str(item["phase"]).upper() == _Q04_PHASE:
                     active_q04 = conn.execute(
@@ -2734,16 +2960,7 @@ def claim_specific_atomic(root: Path, terminal: str, item_id: str) -> dict[str, 
                         "item_id": item_id,
                     }
 
-                try:
-                    multisym_ids = _multisymbol_ea_ids()
-                except MultisymbolRegistryUnavailable as exc:
-                    conn.commit()
-                    return {
-                        "claimed": False,
-                        "reason": "multisymbol_registry_unavailable",
-                        "item_id": item_id,
-                        "error": str(exc),
-                    }
+                multisym_ids = targeted_multisym_ids
                 admission = _commit_admission_snapshot(conn, now, multisym_ids)
                 if not admission["probe_ok"]:
                     conn.commit()
@@ -2769,7 +2986,6 @@ def claim_specific_atomic(root: Path, terminal: str, item_id: str) -> dict[str, 
                         "threshold_gb": COMMIT_MIN_FREE_GB,
                     }
 
-                item_is_multisym = _work_item_is_multisymbol(item, payload, multisym_ids)
                 if item_is_multisym:
                     multisym_active = any(
                         _work_item_is_multisymbol(row, _json_loads(row["payload_json"]), multisym_ids)
@@ -4805,15 +5021,231 @@ def _active_terminal_claim_preflight(root: Path, terminal: str) -> dict[str, Any
     }
 
 
+def _is_governed_dl089_census_payload(payload: Mapping[str, Any]) -> bool:
+    """Distinguish sealed DL-089 cells from pre-contract legacy census rows."""
+
+    return bool(
+        payload.get("schema") == "qm.opt-census.v1"
+        and str(payload.get("program_id") or "").strip()
+        and str(payload.get("arm") or "").strip()
+        and str(payload.get("cell_key") or "").strip()
+        and str(payload.get("ledger_path") or "").strip()
+        and str(payload.get("q12_work_item_id") or "").strip()
+        and str(payload.get("q12_declaration_sha256") or "").strip()
+    )
+
+
+def _predecessor_status_fingerprint(
+    conn: sqlite3.Connection, predecessor_ids: list[str]
+) -> str:
+    if not predecessor_ids:
+        return hashlib.sha256(b"[]").hexdigest()
+    marks = ",".join("?" for _ in predecessor_ids)
+    rows = conn.execute(
+        f"SELECT id,status,verdict,claimed_by FROM work_items WHERE id IN ({marks})",
+        predecessor_ids,
+    ).fetchall()
+    by_id = {str(row["id"]): row for row in rows}
+    if set(by_id) != set(predecessor_ids):
+        return "MISSING"
+    canonical = [
+        {
+            "id": work_item_id,
+            "status": str(by_id[work_item_id]["status"] or ""),
+            "verdict": str(by_id[work_item_id]["verdict"] or ""),
+            "claimed_by": str(by_id[work_item_id]["claimed_by"] or ""),
+        }
+        for work_item_id in predecessor_ids
+    ]
+    return hashlib.sha256(
+        json.dumps(canonical, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+
+
+def _opt_census_token_matches(
+    conn: sqlite3.Connection,
+    item: Mapping[str, Any],
+    payload: Mapping[str, Any],
+    token: Mapping[str, Any] | None,
+) -> bool:
+    """Revalidate the cold-file lane authorization inside the claim CAS."""
+
+    if not token:
+        return False
+    if str(token.get("item_id") or "") != str(item["id"]):
+        return False
+    if str(token.get("payload_json") or "") != str(item["payload_json"] or "{}"):
+        return False
+    lane = dl089_scheduling.lane_id(
+        payload, ea_id=item["ea_id"], symbol=item["symbol"]
+    )
+    if tuple(token.get("lane_id") or ()) != lane:
+        return False
+    try:
+        year = int(payload.get("year"))
+    except (TypeError, ValueError):
+        return False
+    if int(token.get("year", -1)) != year:
+        return False
+    predecessor_ids = [str(value) for value in token.get("predecessor_ids") or []]
+    return _predecessor_status_fingerprint(conn, predecessor_ids) == str(
+        token.get("predecessor_status_sha256") or ""
+    )
+
+
+def _opt_census_lane_preflight_outside_factory_lock(
+    root: Path,
+    terminal: str,
+    candidate: dict[str, Any],
+    *,
+    pruning_enabled: bool,
+    allow_factory_off: bool = False,
+) -> dict[str, Any]:
+    """Authenticate one exact arm head and return a transaction-bound token."""
+
+    payload = _json_loads(candidate.get("payload_json"))
+    if not _is_governed_dl089_census_payload(payload):
+        return {"status": "legacy", "candidate_pending": True, "token": None}
+    program, arm = dl089_scheduling.lane_id(
+        payload, ea_id=candidate.get("ea_id"), symbol=candidate.get("symbol")
+    )
+    lane_lock_path = root / "state" / dl089_scheduling.pruning_lock_filename(
+        program, arm
+    )
+    lane_lock = FactoryMutationLock(
+        lane_lock_path,
+        owner=f"terminal_worker.dl089_lane_preflight:{terminal}",
+    )
+    try:
+        lane_lock.__enter__()
+    except (OSError, RuntimeError) as exc:
+        return {
+            "status": "busy",
+            "reason": "dl089_claim_pruning_lock_busy",
+            "lock": str(lane_lock_path),
+            "program_id": program,
+            "arm": arm,
+            "detail": str(exc),
+        }
+    if pruning_enabled:
+        pruning = _prune_candidate_outside_factory_lock(
+            root,
+            terminal,
+            candidate,
+            allow_factory_off=allow_factory_off,
+            lane_lock_held=True,
+        )
+        if pruning.get("status") != "checked" or pruning.get("candidate_pending") is not True:
+            lane_lock.__exit__(None, None, None)
+            return pruning
+    else:
+        pruning = {"status": "disabled", "candidate_pending": True}
+
+    try:
+        opt_census_pruning.authenticate_amendment()
+        ledger_path, ledger = opt_census_pruning._load_ledger(payload)
+        ledger_sha256 = _sha256_file(ledger_path)
+        if str(ledger.get("q12_work_item_id") or "") != str(
+            payload.get("q12_work_item_id") or ""
+        ):
+            raise opt_census_pruning.PruningError("payload/ledger Q12 binding mismatch")
+        if str(ledger.get("q12_declaration_sha256") or "") != str(
+            payload.get("q12_declaration_sha256") or ""
+        ):
+            raise opt_census_pruning.PruningError(
+                "payload/ledger declaration hash mismatch"
+            )
+        cells = ledger.get("cells") or []
+        ids = [str(cell.get("work_item_id") or "") for cell in cells]
+        if not ids or any(not value for value in ids):
+            raise opt_census_pruning.PruningError("ledger cell IDs are incomplete")
+
+        def _read() -> dict[str, Any]:
+            with farmctl.connect(root) as conn:
+                row = conn.execute(
+                    "SELECT * FROM work_items WHERE id=?", (str(candidate["id"]),)
+                ).fetchone()
+                if (
+                    row is None
+                    or str(row["status"]).lower() != "pending"
+                    or row["claimed_by"] is not None
+                    or str(row["payload_json"] or "{}")
+                    != str(candidate.get("payload_json") or "{}")
+                ):
+                    return {"status": "stale", "reason": "candidate_changed"}
+                marks = ",".join("?" for _ in ids)
+                matrix_rows = [
+                    dict(value)
+                    for value in conn.execute(
+                        f"SELECT * FROM work_items WHERE id IN ({marks})", ids
+                    ).fetchall()
+                ]
+                frontier = dl089_scheduling.arm_frontier(matrix_rows, ledger)
+                frontier_row = frontier.get((program, arm))
+                if frontier_row is None or str(frontier_row["id"]) != str(candidate["id"]):
+                    return {
+                        "status": "ineligible",
+                        "reason": "candidate_not_arm_frontier",
+                    }
+                declared = next(
+                    cell for cell in cells if str(cell["work_item_id"]) == str(candidate["id"])
+                )
+                opt_census_pruning._validate_declared_identity(declared, payload)
+                year = int(payload["year"])
+                predecessors = [
+                    str(cell["work_item_id"])
+                    for cell in cells
+                    if str(cell.get("arm")) == arm and int(cell.get("year")) < year
+                ]
+                token = {
+                    "schema": "qm.dl089-lane-eligibility-token/v1",
+                    "item_id": str(candidate["id"]),
+                    "payload_json": str(candidate.get("payload_json") or "{}"),
+                    "ledger_sha256": ledger_sha256,
+                    "lane_id": [program, arm],
+                    "year": year,
+                    "cell_key": str(payload["cell_key"]),
+                    "q12_work_item_id": str(payload.get("q12_work_item_id") or ""),
+                    "predecessor_ids": predecessors,
+                    "predecessor_status_sha256": _predecessor_status_fingerprint(
+                        conn, predecessors
+                    ),
+                }
+                return {
+                    "status": "checked",
+                    "candidate_pending": True,
+                    "program_id": program,
+                    "arm": arm,
+                    "token": token,
+                    "pruning": pruning,
+                }
+
+        return _with_sqlite_retry(_read)
+    except Exception as exc:
+        return {
+            "status": "error",
+            "reason": "dl089_lane_preflight_failed",
+            "item_id": str(candidate.get("id") or ""),
+            "program_id": program,
+            "arm": arm,
+            "error": f"{type(exc).__name__}: {exc}",
+        }
+    finally:
+        lane_lock.__exit__(None, None, None)
+
+
 def _prune_candidate_outside_factory_lock(
     root: Path,
     terminal: str,
     candidate: dict[str, Any],
+    *,
+    allow_factory_off: bool = False,
+    lane_lock_held: bool = False,
 ) -> dict[str, Any]:
     """Run the DL-089 file/hash backstop without the fleet-wide lock.
 
-    A per-program non-blocking lock prevents workers from parsing the same
-    program concurrently while independent programs can inspect in parallel.
+    A per-lane non-blocking lock prevents workers from parsing the same arm
+    concurrently while independent arms can inspect in parallel.
     The database row is re-read and compared with the transaction snapshot
     before pruning; stale input is never authorized.
     """
@@ -4824,26 +5256,31 @@ def _prune_candidate_outside_factory_lock(
         ea_id=candidate.get("ea_id"),
         symbol=candidate.get("symbol"),
     )
-    lock_path = root / "state" / dl089_scheduling.pruning_lock_filename(program)
-    pruning_lock = FactoryMutationLock(
-        lock_path,
-        owner=f"terminal_worker.dl089_pruning:{terminal}",
+    _program, arm = dl089_scheduling.lane_id(
+        payload, ea_id=candidate.get("ea_id"), symbol=candidate.get("symbol")
     )
-    try:
-        pruning_lock.__enter__()
-    except (OSError, RuntimeError) as exc:
-        return {
-            "status": "busy",
-            "reason": "dl089_claim_pruning_lock_busy",
-            "lock": str(lock_path),
-            "program_id": program,
-            "detail": str(exc),
-        }
+    lock_path = root / "state" / dl089_scheduling.pruning_lock_filename(program, arm)
+    pruning_lock = None
+    if not lane_lock_held:
+        pruning_lock = FactoryMutationLock(
+            lock_path,
+            owner=f"terminal_worker.dl089_pruning:{terminal}",
+        )
+        try:
+            pruning_lock.__enter__()
+        except (OSError, RuntimeError) as exc:
+            return {
+                "status": "busy",
+                "reason": "dl089_claim_pruning_lock_busy",
+                "lock": str(lock_path),
+                "program_id": program,
+                "detail": str(exc),
+            }
 
     try:
         expected_id = str(candidate.get("id") or "")
         expected_payload = str(candidate.get("payload_json") or "{}")
-        if (root / "state" / "FACTORY_OFF.flag").exists():
+        if not allow_factory_off and (root / "state" / "FACTORY_OFF.flag").exists():
             return {
                 "status": "factory_off",
                 "reason": "factory_off",
@@ -4913,7 +5350,8 @@ def _prune_candidate_outside_factory_lock(
                 "error": f"{type(exc).__name__}: {exc}",
             }
     finally:
-        pruning_lock.__exit__(None, None, None)
+        if pruning_lock is not None:
+            pruning_lock.__exit__(None, None, None)
 
 
 def _monitor_timeout_seconds(

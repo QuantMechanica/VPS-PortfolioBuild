@@ -305,6 +305,11 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             with (
                 patch.dict(os.environ, {"DL089_PROGRAM_SLOTS": "1"}),
                 patch.object(terminal_worker.opt_census_pruning, "pruning_enabled", return_value=False),
+                patch.object(
+                    terminal_worker.farmctl,
+                    "_news_calendar_preflight",
+                    return_value={"ok": True, "status": "VALID"},
+                ),
             ):
                 first = terminal_worker.claim_atomic(root, "T1")
                 second = terminal_worker.claim_atomic(root, "T2")
@@ -314,6 +319,180 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             self.assertEqual(second.get("reason"), "no_pending_claimable")
             self.assertEqual(second.get("opt_census_program_slots"), 1)
             self.assertTrue(second.get("opt_census_slot_deferred"))
+
+    def test_allowlisted_distinct_arm_head_uses_narrow_duplicate_exception(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            governed = {
+                "schema": "qm.opt-census.v1",
+                "program_id": "program-a",
+                "cell_key": "program-a:2019:buy-001",
+                "arm": "buy-001",
+                "year": 2019,
+                "ledger_path": "sealed-ledger.json",
+                "q12_work_item_id": "q12-a",
+                "q12_declaration_sha256": "fixture-sha256",
+            }
+            self._insert_work_item(
+                root, "arm-a-active", "EURUSD.DWX", phase="OPT_CENSUS",
+                status="active", claimed_by="T1", ea_id="QM5_A", payload=governed,
+            )
+            pending = {
+                **governed,
+                "cell_key": "program-a:2019:sell-001",
+                "arm": "sell-001",
+            }
+            self._insert_work_item(
+                root, "arm-b-head", "EURUSD.DWX", phase="OPT_CENSUS",
+                ea_id="QM5_A", payload=pending,
+            )
+            token = {
+                "item_id": "arm-b-head",
+                "payload_json": json.dumps(pending),
+                "lane_id": ["program-a", "sell-001"],
+                "year": 2019,
+                "predecessor_ids": [],
+                "predecessor_status_sha256": "fixture",
+            }
+            with (
+                patch.dict(os.environ, {
+                    "DL089_LANES_PER_PROGRAM": "2",
+                    "DL089_CELL_SLOTS": "6",
+                    "DL089_SAME_PROGRAM_PARALLEL_ALLOWLIST": "program-a",
+                }, clear=True),
+                patch.object(terminal_worker.opt_census_pruning, "pruning_enabled", return_value=False),
+                patch.object(
+                    terminal_worker.farmctl,
+                    "_news_calendar_preflight",
+                    return_value={"ok": True, "status": "VALID"},
+                ),
+                patch.object(
+                    terminal_worker,
+                    "_opt_census_lane_preflight_outside_factory_lock",
+                    return_value={"status": "checked", "candidate_pending": True, "token": token},
+                ),
+                patch.object(terminal_worker, "_opt_census_token_matches", return_value=True),
+            ):
+                result = terminal_worker.claim_atomic(root, "T2")
+
+            self.assertTrue(result.get("claimed"), result)
+            self.assertEqual(result["item"]["id"], "arm-b-head")
+
+    def test_same_arm_and_empty_allowlist_remain_serialized(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            payload = {"program_id": "program-a", "arm": "buy-001"}
+            self._insert_work_item(
+                root, "arm-active", "EURUSD.DWX", phase="OPT_CENSUS",
+                status="active", claimed_by="T1", ea_id="QM5_A", payload=payload,
+            )
+            self._insert_work_item(
+                root, "arm-later", "EURUSD.DWX", phase="OPT_CENSUS",
+                ea_id="QM5_A", payload=payload,
+            )
+            with (
+                patch.dict(os.environ, {
+                    "DL089_LANES_PER_PROGRAM": "2",
+                    "DL089_SAME_PROGRAM_PARALLEL_ALLOWLIST": "",
+                }, clear=True),
+                patch.object(
+                    terminal_worker.farmctl,
+                    "_news_calendar_preflight",
+                    return_value={"ok": True, "status": "VALID"},
+                ),
+            ):
+                result = terminal_worker.claim_atomic(root, "T2")
+            self.assertFalse(result.get("claimed"), result)
+            self.assertEqual(result.get("reason"), "no_pending_claimable")
+            self.assertEqual(
+                result["opt_census_slot_deferred"][0]["reason"],
+                "PROGRAM_LANE_WAIT",
+            )
+
+    def test_targeted_claim_uses_same_allowlisted_lane_policy(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            payload_a = {
+                "schema": "qm.opt-census.v1",
+                "program_id": "program-a",
+                "cell_key": "a",
+                "arm": "buy-001",
+                "year": 2019,
+                "ledger_path": "sealed-ledger.json",
+                "q12_work_item_id": "q12-a",
+                "q12_declaration_sha256": "fixture-sha256",
+            }
+            payload_b = {**payload_a, "cell_key": "b", "arm": "sell-001"}
+            self._insert_work_item(
+                root, "target-active", "EURUSD.DWX", phase="OPT_CENSUS",
+                status="active", claimed_by="T1", ea_id="QM5_A", payload=payload_a,
+            )
+            self._insert_work_item(
+                root, "target-pending", "EURUSD.DWX", phase="OPT_CENSUS",
+                ea_id="QM5_A", payload=payload_b,
+            )
+            (root / "state" / "FACTORY_OFF.flag").write_text("fixture", encoding="utf-8")
+            with (
+                patch.dict(os.environ, {
+                    "DL089_LANES_PER_PROGRAM": "2",
+                    "DL089_SAME_PROGRAM_PARALLEL_ALLOWLIST": "program-a",
+                }, clear=True),
+                patch.object(
+                    terminal_worker.farmctl,
+                    "_news_calendar_preflight",
+                    return_value={"ok": True, "status": "VALID"},
+                ),
+                patch.object(
+                    terminal_worker,
+                    "_opt_census_lane_preflight_outside_factory_lock",
+                    return_value={"status": "checked", "token": {"fixture": True}},
+                ),
+                patch.object(terminal_worker, "_opt_census_token_matches", return_value=True),
+            ):
+                result = terminal_worker.claim_specific_atomic(
+                    root, "T2", "target-pending"
+                )
+            self.assertTrue(result.get("claimed"), result)
+            self.assertTrue(result.get("targeted"), result)
+
+    def test_lane_token_fails_closed_when_predecessor_status_changes(self) -> None:
+        conn = sqlite3.connect(":memory:")
+        conn.row_factory = sqlite3.Row
+        conn.execute(
+            "CREATE TABLE work_items (id TEXT,status TEXT,verdict TEXT,claimed_by TEXT)"
+        )
+        conn.execute(
+            "INSERT INTO work_items VALUES ('pred','done','MEASURED',NULL)"
+        )
+        payload = {"program_id": "program-a", "arm": "buy-001", "year": 2020}
+        raw = json.dumps(payload)
+        item = {
+            "id": "candidate",
+            "ea_id": "QM5_A",
+            "symbol": "EURUSD.DWX",
+            "payload_json": raw,
+        }
+        token = {
+            "item_id": "candidate",
+            "payload_json": raw,
+            "lane_id": ["program-a", "buy-001"],
+            "year": 2020,
+            "predecessor_ids": ["pred"],
+            "predecessor_status_sha256": terminal_worker._predecessor_status_fingerprint(
+                conn, ["pred"]
+            ),
+        }
+        self.assertTrue(
+            terminal_worker._opt_census_token_matches(conn, item, payload, token)
+        )
+        conn.execute(
+            "UPDATE work_items SET status='active',verdict=NULL,claimed_by='T1' "
+            "WHERE id='pred'"
+        )
+        self.assertFalse(
+            terminal_worker._opt_census_token_matches(conn, item, payload, token)
+        )
+        conn.close()
 
     def test_sqlite_writer_contention_keeps_global_claim_lock_under_one_second(self) -> None:
         with self._root() as tmp:

@@ -22,6 +22,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable
 
+try:
+    import dl089_scheduling as scheduling
+except ModuleNotFoundError:
+    from tools.strategy_farm import dl089_scheduling as scheduling
+
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_DB = Path(r"D:\QM\strategy_farm\state\farm_state.sqlite")
@@ -623,7 +628,18 @@ def cell_report(summary_path: Path) -> dict[str, Any]:
     }
 
 
-def boost(*, ledger_path: Path, db_path: Path, window: int) -> dict[str, Any]:
+BOOST_AUTHORITY = "opt_census.boost frontier window (queue-priority-only)"
+LEGACY_BOOST_AUTHORITY = "opt_census.boost rolling window (queue-priority-only)"
+
+
+def boost(
+    *,
+    ledger_path: Path,
+    db_path: Path,
+    window: int,
+    lane_limit: int | None = None,
+    cell_limit: int | None = None,
+) -> dict[str, Any]:
     """Maintain a rolling priority window over this program's pending cells.
 
     Measured 2026-08-22: at the deliberate tier-6 rank a census cell ties with
@@ -652,12 +668,13 @@ def boost(*, ledger_path: Path, db_path: Path, window: int) -> dict[str, Any]:
         conn.execute("BEGIN IMMEDIATE")
         marks = ",".join("?" for _ in ids)
         rows = conn.execute(
-            f"SELECT id, status, payload_json FROM work_items WHERE id IN ({marks})",
+            f"SELECT id,status,verdict,claimed_by,setfile_path,payload_json "
+            f"FROM work_items WHERE id IN ({marks})",
             ids).fetchall()
         by_id = {row["id"]: row for row in rows}
-        active = flagged = done = 0
-        candidates: list[str] = []
-        for cell in ledger["cells"]:  # ledger order: year ASC within arm plan
+        active = done = 0
+        flagged_ids: list[str] = []
+        for cell in ledger["cells"]:
             row = by_id.get(cell["work_item_id"])
             if row is None:
                 continue
@@ -666,19 +683,82 @@ def boost(*, ledger_path: Path, db_path: Path, window: int) -> dict[str, Any]:
             elif row["status"] == "pending":
                 payload = json.loads(row["payload_json"] or "{}")
                 if payload.get("priority_track") is True:
-                    flagged += 1
-                else:
-                    candidates.append(row["id"])
+                    flagged_ids.append(row["id"])
             elif row["status"] == "done":
                 done += 1
-        deficit = max(0, window - active - flagged)
-        boosted: list[str] = []
+
+        # Backward-compatible direct callers retain the original rolling
+        # behavior. The governed matrix service always supplies both limits and
+        # therefore uses the authenticated per-arm frontier.
+        frontier_mode = lane_limit is not None or cell_limit is not None
+        if frontier_mode:
+            if lane_limit is None or cell_limit is None or lane_limit < 1 or cell_limit < 0:
+                raise CensusError(
+                    "frontier boost requires positive lane_limit and nonnegative cell_limit"
+                )
+            try:
+                frontier = scheduling.arm_frontier(
+                    [dict(row) for row in rows],
+                    ledger,
+                )
+            except scheduling.SchedulingError as exc:
+                raise CensusError(f"DL-089 frontier authentication failed: {exc}") from exc
+            frontier_ids = {
+                str(row["id"])
+                for row in frontier.values()
+                if str(row["status"]).lower() == "pending"
+            }
+            ordered_frontier_ids = [
+                str(cell["work_item_id"])
+                for cell in ledger["cells"]
+                if str(cell["work_item_id"]) in frontier_ids
+            ]
+            capacity = min(window, int(cell_limit), int(lane_limit))
+            target = max(0, capacity - active)
+            desired_ids = set(ordered_frontier_ids[:target])
+        else:
+            ordered_frontier_ids = [
+                str(cell["work_item_id"])
+                for cell in ledger["cells"]
+                if by_id.get(cell["work_item_id"]) is not None
+                and by_id[cell["work_item_id"]]["status"] == "pending"
+            ]
+            target = window
+            desired_ids = set(ordered_frontier_ids[: max(0, target - active)])
+
+        # Rollback may lower L/G. Clear only our own flags on rows that are still
+        # pending; active and terminal evidence is immutable here.
+        deboosted: list[str] = []
         now = dt.datetime.now(dt.timezone.utc).isoformat()
-        for work_item_id in candidates[:deficit]:
+        for work_item_id in flagged_ids:
+            row = by_id[work_item_id]
+            payload = json.loads(row["payload_json"] or "{}")
+            if work_item_id in desired_ids:
+                continue
+            if payload.get("boost_authority") not in {BOOST_AUTHORITY, LEGACY_BOOST_AUTHORITY}:
+                continue
+            payload.pop("priority_track", None)
+            payload.pop("boost_authority", None)
+            payload.pop("boosted_at_utc", None)
+            payload["deboosted_at_utc"] = now
+            conn.execute(
+                "UPDATE work_items SET payload_json=?,updated_at=? "
+                "WHERE id=? AND status='pending'",
+                (json.dumps(payload, sort_keys=True), now, work_item_id),
+            )
+            deboosted.append(work_item_id)
+
+        current_flagged = set(flagged_ids) & desired_ids
+        candidates = [item_id for item_id in ordered_frontier_ids if item_id in desired_ids]
+        boosted: list[str] = []
+        for work_item_id in candidates:
+            if work_item_id in current_flagged:
+                continue
             payload = json.loads(by_id[work_item_id]["payload_json"] or "{}")
             payload["priority_track"] = True
-            payload["boost_authority"] = "opt_census.boost rolling window (queue-priority-only)"
+            payload["boost_authority"] = BOOST_AUTHORITY if frontier_mode else LEGACY_BOOST_AUTHORITY
             payload["boosted_at_utc"] = now
+            payload.pop("deboosted_at_utc", None)
             conn.execute(
                 "UPDATE work_items SET payload_json=?, updated_at=? "
                 "WHERE id=? AND status='pending'",
@@ -687,9 +767,31 @@ def boost(*, ledger_path: Path, db_path: Path, window: int) -> dict[str, Any]:
         conn.commit()
         return {
             "schema": "qm.opt-census-boost.v1",
-            "window": window, "active": active, "flagged_before": flagged,
+            "window": window,
+            "frontier_mode": frontier_mode,
+            "lane_limit": lane_limit,
+            "cell_limit": cell_limit,
+            "target_priority_rows": target,
+            "capacity_including_active": (
+                min(window, int(cell_limit), int(lane_limit))
+                if frontier_mode else window
+            ),
+            "active": active,
+            "flagged_before": len(flagged_ids),
             "boosted_now": len(boosted), "boosted_ids": boosted,
-            "done": done, "pending_unflagged": len(candidates) - len(boosted),
+            "deboosted_now": len(deboosted), "deboosted_ids": deboosted,
+            "frontier_ids": ordered_frontier_ids,
+            "boosted_lane_ids": [
+                list(scheduling.lane_id(
+                    json.loads(by_id[work_item_id]["payload_json"] or "{}"),
+                    ea_id="",
+                    symbol="",
+                ))
+                for work_item_id in ordered_frontier_ids
+                if work_item_id in desired_ids
+            ],
+            "done": done,
+            "pending_unflagged": max(0, len(ordered_frontier_ids) - len(desired_ids)),
         }
     finally:
         conn.close()

@@ -1,0 +1,16 @@
+{
+  "schema": "qm.dl089-same-program-replay/v1",
+  "program_id": "program-replay-sealed",
+  "years": [2019, 2020, 2021, 2022, 2023, 2024, 2025],
+  "declared_trial_count": 154,
+  "activity_floor": 20,
+  "amendment_sha256": "2bf0b24a976d02e01e3551c1c715c6c87048a84415289a3bab1f962ea3d376c7",
+  "selection_sha256": "d1b14708fba60572474ccbed893fa9e24961ccbc49d4b22f6385ea0987a88df7",
+  "arms": [
+    {"arm": "baseline", "direction": "NONE", "predicate_id": 0, "trades": [70, 72, 74, 76, 78, 80, 82], "score": 0.0},
+    {"arm": "buy_001", "direction": "BUY", "predicate_id": 1, "trades": [8, 0, 0, 0, 0, 0, 0], "score": 1.2},
+    {"arm": "buy_002", "direction": "BUY", "predicate_id": 2, "trades": [45, 46, 47, 48, 49, 50, 51], "score": 1.5},
+    {"arm": "sell_001", "direction": "SELL", "predicate_id": 1, "trades": [42, 41, 40, 9, 0, 0, 0], "score": 1.4},
+    {"arm": "sell_002", "direction": "SELL", "predicate_id": 2, "trades": [44, 45, 46, 47, 48, 49, 50], "score": 1.5}
+  ]
+}

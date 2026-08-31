@@ -48,7 +48,7 @@ except ModuleNotFoundError:
 
 SERVICE_SCHEMA = "qm.dl089-matrix-service/v1"
 RUNNER_SCHEMA = "qm.dl089-matrix-runner/v1"
-RUNNER_REVISION = "dl089-matrix-runner-v1"
+RUNNER_REVISION = "dl089-matrix-runner-v2"
 RECOVERY_NAMESPACE = uuid.UUID("02796ca2-5be9-4e78-8fa8-53a4048b3e42")
 Q02_NAMESPACE = uuid.UUID("d4ee1e63-76ea-4db9-96aa-0927bec724d8")
 DEFAULT_ARTIFACT_ROOT = Path(r"D:\QM\strategy_farm\artifacts\opt_census")
@@ -858,13 +858,25 @@ def _service_existing_matrix(
     window: int,
     receipt_limit: int,
     apply: bool,
+    lane_limit: int,
+    cell_limit: int,
 ) -> dict[str, Any]:
     declaration = _payload(q12_row)["pattern_filter_sweep"]
     program_dir = artifact_root / str(declaration["program_id"])
     ledger_path = program_dir / "ledger.json"
     if not ledger_path.is_file():
         raise MatrixServiceError(f"matrix rows exist without ledger: {q12_row['id']}")
-    boost = census.boost(ledger_path=ledger_path, db_path=db_path, window=window) if apply else None
+    boost = (
+        census.boost(
+            ledger_path=ledger_path,
+            db_path=db_path,
+            window=window,
+            lane_limit=lane_limit,
+            cell_limit=cell_limit,
+        )
+        if apply
+        else None
+    )
     receipts = _collect_cell_receipts(
         conn,
         q12_row=q12_row,
@@ -904,6 +916,8 @@ def _materialize(
     q12_row: sqlite3.Row,
     sibling: Mapping[str, Any],
     window: int,
+    lane_limit: int,
+    cell_limit: int,
 ) -> dict[str, Any]:
     payload = _payload(q12_row)
     declaration = dict(payload["pattern_filter_sweep"])
@@ -928,7 +942,13 @@ def _materialize(
         declaration_sha256=str(declaration["declaration_sha256"]),
         runner_revision=RUNNER_REVISION,
     )
-    boost = census.boost(ledger_path=ledger_path, db_path=db_path, window=window)
+    boost = census.boost(
+        ledger_path=ledger_path,
+        db_path=db_path,
+        window=window,
+        lane_limit=lane_limit,
+        cell_limit=cell_limit,
+    )
     registration = {
         "schema": "qm.dl089-matrix-registration-receipt/v1",
         "registered_at_utc": _now(),
@@ -1074,11 +1094,38 @@ def service_pending(
     maintained: list[dict[str, Any]] = []
     materialized: list[dict[str, Any]] = []
 
-    slots = program_slots()
+    # Import lazily: farmctl imports this service from its pump path.
+    try:
+        import farmctl
+    except ModuleNotFoundError:
+        from tools.strategy_farm import farmctl
+
+    worker_count = len(farmctl.worker_policy_terminals())
+    configured_k = program_slots()
+    configured_l = scheduling.lanes_per_program()
+    configured_g = scheduling.cell_slots()
+    k_eff, l_eff, g_eff = scheduling.effective_limits(worker_count)
+    slots = k_eff
     governed = candidates[:slots]
+    active_rows = [
+        dict(row)
+        for row in conn.execute(
+            "SELECT id,phase,ea_id,symbol,payload_json FROM work_items "
+            "WHERE lower(status)='active' AND upper(phase)='OPT_CENSUS'"
+        )
+    ]
+    active_snapshot = scheduling.active_census_snapshot(active_rows)
+    allowlist = scheduling.same_program_parallel_allowlist()
     slot_owners: list[dict[str, Any]] = []
     for slot, (row, sibling) in enumerate(governed, start=1):
         declaration = _payload(row)["pattern_filter_sweep"]
+        program = str(declaration["program_id"])
+        program_active = active_snapshot["program_lane_counts"].get(program, 0)
+        program_lane_limit = l_eff if program in allowlist else min(1, l_eff)
+        program_cell_limit = max(
+            0,
+            g_eff - (active_snapshot["total"] - program_active),
+        )
         owner = {
             "slot": slot,
             "work_item_id": str(row["id"]),
@@ -1095,6 +1142,8 @@ def service_pending(
                 window=window,
                 receipt_limit=receipt_limit,
                 apply=apply,
+                lane_limit=program_lane_limit,
+                cell_limit=program_cell_limit,
             )
             maintained.append(maintained_row)
             owner["action"] = "maintained"
@@ -1106,6 +1155,8 @@ def service_pending(
                 q12_row=row,
                 sibling=sibling,
                 window=window,
+                lane_limit=program_lane_limit,
+                cell_limit=program_cell_limit,
             )
             materialized.append(materialized_row)
             owner["action"] = "materialized"
@@ -1120,6 +1171,36 @@ def service_pending(
             )
             owner["action"] = "would_materialize"
         slot_owners.append(owner)
+
+    boosts_by_program = {
+        str(row["program_id"]): row.get("boost") or {}
+        for row in [*maintained, *materialized]
+        if row.get("program_id")
+    }
+    capacity_waits: list[dict[str, Any]] = []
+    for owner in slot_owners:
+        program = str(owner["program_id"])
+        owner["active_lane_ids"] = [
+            list(lane) for lane in sorted(active_snapshot["lanes"])
+            if lane[0] == program
+        ]
+        owner["boosted_lane_ids"] = boosts_by_program.get(program, {}).get(
+            "boosted_lane_ids", []
+        )
+        if active_snapshot["total"] >= g_eff:
+            owner["capacity_reason"] = f"CELL_SLOT_WAIT:G={g_eff}"
+        elif active_snapshot["program_lane_counts"].get(program, 0) >= (
+            l_eff if program in allowlist else min(1, l_eff)
+        ):
+            owner["capacity_reason"] = (
+                "PROGRAM_LANE_WAIT:L="
+                f"{l_eff if program in allowlist else min(1, l_eff)}"
+            )
+        if owner.get("capacity_reason"):
+            capacity_waits.append({
+                "program_id": program,
+                "machine_reason": owner["capacity_reason"],
+            })
 
     for row, _sibling in candidates[slots:]:
         program_id = _payload(row)["pattern_filter_sweep"]["program_id"]
@@ -1140,6 +1221,15 @@ def service_pending(
         "matrix_runner_revision": RUNNER_REVISION,
         "pair_mode": "BOUNDED_PROGRAMS",
         "program_slots": slots,
+        "program_slots_configured": configured_k,
+        "program_slots_effective": k_eff,
+        "lanes_per_program_configured": configured_l,
+        "lanes_per_program_effective": l_eff,
+        "cell_slots_configured": configured_g,
+        "cell_slots_effective": g_eff,
+        "worker_count": worker_count,
+        "active_opt_census_cells": active_snapshot["total"],
+        "capacity_waits": capacity_waits,
         "slot_owners": slot_owners,
         "priority_window_cap": window,
         "recoveries": recoveries,

@@ -250,7 +250,10 @@ def test_matrix_service_materializes_declared_cells_with_bounded_window(tmp_path
             assert payload["q12_declaration_sha256"] == declaration_sha
             if payload.get("priority_track") is True:
                 flagged += 1
-        assert flagged == 8
+        # Default rollback is one executable arm frontier per program. The
+        # historical eight-row rolling window remains available only to direct
+        # legacy boost callers.
+        assert flagged == 1
         hold = conn.execute(
             "SELECT hold_code,active,release_on_restart FROM work_item_holds "
             "WHERE work_item_id='q12-declared'"
@@ -269,6 +272,26 @@ def test_program_slots_default_override_and_bounds() -> None:
         assert service.program_slots() == 4
 
 
+def test_same_program_limits_default_off_and_worker_bounded() -> None:
+    with patch.dict("os.environ", {}, clear=True):
+        assert service.scheduling.lanes_per_program() == 1
+        assert service.scheduling.same_program_parallel_allowlist() == frozenset()
+        assert service.scheduling.effective_limits(3) == (3, 1, 3)
+    with patch.dict(
+        "os.environ",
+        {
+            "DL089_PROGRAM_SLOTS": "4",
+            "DL089_LANES_PER_PROGRAM": "2",
+            "DL089_CELL_SLOTS": "6",
+            "DL089_SAME_PROGRAM_PARALLEL_ALLOWLIST": "program-a, program-b",
+        },
+        clear=True,
+    ):
+        assert service.scheduling.effective_limits(3) == (3, 2, 3)
+        assert service.scheduling.same_program_parallel_allowlist() == {
+            "program-a",
+            "program-b",
+        }
 def test_measurement_source_setfile_uses_exact_sibling_rebind_lineage(
     tmp_path: Path,
 ) -> None:
