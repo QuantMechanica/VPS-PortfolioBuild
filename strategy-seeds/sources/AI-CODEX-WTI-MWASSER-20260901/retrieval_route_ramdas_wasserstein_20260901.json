@@ -1,0 +1,35 @@
+{
+  "schema": "qm.public-paper-retrieval.v1",
+  "retrieved_at_utc": "2026-08-31T23:06:22Z",
+  "route": "public_arxiv",
+  "title": "On Wasserstein Two Sample Testing and Related Families of Nonparametric Tests",
+  "authors": [
+    "Aaditya Ramdas",
+    "Nicolas Garcia",
+    "Marco Cuturi"
+  ],
+  "arxiv_id": "1509.02237",
+  "abstract_url": "https://arxiv.org/abs/1509.02237",
+  "pdf_url": "https://arxiv.org/pdf/1509.02237",
+  "pdf_http_status": 200,
+  "pdf_content_type": "application/pdf",
+  "pdf_size_bytes": 234028,
+  "pdf_sha256": "41F8814BC2FACC26063982BD6D6907711A5641C308C8FAF67E2870D925B5E8A7",
+  "pdf_last_modified": "Fri, 20 Jan 2023 21:07:17 GMT",
+  "bounded_read": {
+    "sections": [
+      "2 Nonparametric Two Sample Testing",
+      "3.1 Wasserstein Distance",
+      "4.3 Wasserstein is a QQ test",
+      "6 Conclusion",
+      "Appendix A proof of the one-dimensional quantile representation"
+    ],
+    "verified_claims": [
+      "Wasserstein distance is a nonparametric two-sample distribution-comparison object",
+      "one-dimensional Wasserstein distance has a quantile-function representation",
+      "equal-size uniform empirical samples reduce to monotone sorted matching",
+      "Wasserstein, energy, and Cramer-von Mises are related but distinct constructions"
+    ]
+  },
+  "claim_boundary": "The paper supplies the statistical object and relationships only. It does not test WTI, this exact permutation boundary, continuation direction, or any trading result."
+}

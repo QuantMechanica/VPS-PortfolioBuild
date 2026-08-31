@@ -1,0 +1,29 @@
+{
+  "schema": "qm.public-method-retrieval.v1",
+  "retrieved_at_utc": "2026-08-31T23:06:22Z",
+  "route": "official_documentation_and_public_github_api",
+  "project": "scipy/scipy",
+  "release": "v1.13.1",
+  "release_ref": "refs/tags/v1.13.1",
+  "annotated_tag_sha": "34a5ce2e0e51fc2005d3c2720bcd8296cd33af94",
+  "commit_sha": "44e4ebaac992fde33f04638b99629d23973cb9b2",
+  "commit_date_utc": "2024-05-22T17:51:53Z",
+  "documentation_url": "https://docs.scipy.org/doc/scipy-1.13.1/reference/generated/scipy.stats.wasserstein_distance.html",
+  "source_api_url": "https://api.github.com/repos/scipy/scipy/contents/scipy/stats/_stats_py.py?ref=v1.13.1",
+  "source_raw_url": "https://raw.githubusercontent.com/scipy/scipy/v1.13.1/scipy/stats/_stats_py.py",
+  "source_blob_sha": "a0bcb13c74b2b1b9bb75dd1ecad59dbab08ac249",
+  "source_size_bytes": 423593,
+  "source_sha256": "ECDCB8F5F0585C9903501E2AE7932E4E6D73E193E36D94E366F71BB54B48AA74",
+  "http_status": 200,
+  "bounded_read": {
+    "wasserstein_distance_definition_line": 10342,
+    "cdf_distance_definition_line": 10520,
+    "verified_claims": [
+      "Wasserstein-1 compares one-dimensional empirical distributions",
+      "the distance equals the integral of the absolute CDF difference",
+      "equal weights are used when weights are omitted",
+      "the implementation delegates p=1 to the shared CDF-distance routine"
+    ]
+  },
+  "policy": "Public official project documentation and source only; no binary or executable artifact was downloaded or run."
+}
