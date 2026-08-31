@@ -9,7 +9,8 @@ approval_basis: decisions/2026-09-01_wti_monthly_wasserstein_shift_trend_source_
 created: 2026-09-01
 created_by: Codex
 last_reviewed: 2026-09-01
-cards_extracted: []
+cards_extracted:
+  - QM5_41259_wti-mwasser-shift-tr
 ---
 
 # WTI Monthly Exact-Permutation Wasserstein-1 Shift Continuation
