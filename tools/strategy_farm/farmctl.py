@@ -1507,6 +1507,22 @@ def pending_claim_order_sql() -> str:
           CASE
             WHEN json_valid(w.payload_json) = 1 THEN
               CASE
+                -- A released, build-task-bound COMPILE_EA row is the Q01
+                -- prerequisite for one already-claimed build.  It must not sit
+                -- behind an unbounded priority-track measurement programme:
+                -- compilation takes seconds, owns no terminal64 process, and
+                -- the compile worker still revalidates the bound source hash
+                -- before producing evidence.  Keep the exception exact so an
+                -- unbound/legacy compile row cannot acquire emergency priority.
+                WHEN lower(COALESCE(w.kind, ''))='{COMPILE_WORK_ITEM_KIND}'
+                 AND w.phase='{COMPILE_EA_PHASE}'
+                 AND COALESCE(json_extract(
+                   w.payload_json, '$.compile_contract_version'
+                 ), '')='qm.compile-ea-work-item/v1'
+                 AND length(trim(COALESCE(json_extract(
+                   w.payload_json, '$.bound_build_task_id'
+                 ), ''))) > 0
+                THEN -1
                 WHEN lower(COALESCE(w.kind, ''))='{Q01_SMOKE_WORK_ITEM_KIND}'
                  AND COALESCE(json_extract(
                    w.payload_json, '$.q01_smoke_contract'

@@ -271,6 +271,43 @@ class TopDownGatePrioritySelectorTests(unittest.TestCase):
         self.assertEqual(order[0], "q01-smoke")
         self.assertLess(order.index("priority-opt"), order.index("untrusted-q01"))
 
+    def test_bound_compile_prerequisite_precedes_priority_optimization(self) -> None:
+        db = _FarmDB()
+        self.addCleanup(db.close)
+        db.insert(
+            "priority-opt",
+            farmctl.OPT_CENSUS_PHASE,
+            "EURUSD.DWX",
+            priority_track=True,
+        )
+        db.insert(
+            "bound-compile",
+            farmctl.COMPILE_EA_PHASE,
+            "",
+            kind=farmctl.COMPILE_WORK_ITEM_KIND,
+            raw_payload_json=json.dumps(
+                {
+                    "bound_build_task_id": "build-task-1",
+                    "compile_contract_version": "qm.compile-ea-work-item/v1",
+                },
+                sort_keys=True,
+            ),
+        )
+        db.insert(
+            "unbound-compile",
+            farmctl.COMPILE_EA_PHASE,
+            "",
+            kind=farmctl.COMPILE_WORK_ITEM_KIND,
+            raw_payload_json=json.dumps(
+                {"compile_contract_version": "qm.compile-ea-work-item/v1"},
+                sort_keys=True,
+            ),
+        )
+        with patch.dict("os.environ", {self.FLAG: "1"}):
+            order = db.order_ids()
+        self.assertEqual(order[0], "bound-compile")
+        self.assertLess(order.index("priority-opt"), order.index("unbound-compile"))
+
     def test_active_hold_falls_through_to_lower_gate(self) -> None:
         db = _FarmDB()
         self.addCleanup(db.close)
