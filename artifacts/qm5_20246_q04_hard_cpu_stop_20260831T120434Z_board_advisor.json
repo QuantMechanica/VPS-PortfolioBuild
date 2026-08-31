@@ -1,0 +1,155 @@
+{
+  "artifact_type": "qm5_20246_fx_cointegration_q04_hard_cpu_stop",
+  "schema": "qm.fx-cointegration-q04-hard-cpu-stop/v1",
+  "generated_at_utc": "2026-08-31T12:04:34Z",
+  "generated_at_europe_berlin": "2026-08-31T14:04:34+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "e575277c4dfe50b431387fdd9c30120f67b527d1",
+  "mission_outcome": "HARD_CPU_CEILING_STOP_EXISTING_FOREX_Q04_REMAINS_PENDING",
+  "frontier_reconciliation": {
+    "controlling_research": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "relationships_scanned": 66,
+    "fully_mechanized": true,
+    "approved_cointegration_card_count": 121,
+    "matching_ea_directory_count": 121,
+    "unbuilt_approved_ea_ids": [],
+    "anchors": {
+      "QM5_12532": {
+        "pair": [
+          "AUDUSD.DWX",
+          "NZDUSD.DWX"
+        ],
+        "q02": "PASS",
+        "later_chain": "Q04 PASS; Q05 FAIL",
+        "current_q02_oninit_or_no_history_block": false
+      },
+      "QM5_12533": {
+        "pair": [
+          "EURJPY.DWX",
+          "GBPJPY.DWX"
+        ],
+        "q02": "PASS",
+        "later_chain": "Q04 FAIL",
+        "current_q02_oninit_or_no_history_block": false
+      }
+    },
+    "new_unbuilt_pair_eligible": false,
+    "skill_gate_disposition": {
+      "qm_strategy_card_extraction": "CLOSED_NO_OWNER_APPROVED_NON_DUPLICATE_SCAN_QUALIFIED_PAIR",
+      "qm_build_ea_from_card": "CLOSED_NO_APPROVED_UNBUILT_COINTEGRATION_CARD",
+      "qm_run_pipeline_phase": "NOT_APPLICABLE_TO_Q04_CAPACITY_OBSERVATION"
+    }
+  },
+  "selected_existing_forex_fallback": {
+    "scan_rank": 60,
+    "ea_id": "QM5_20246",
+    "logical_symbol": "QM5_20246_USDJPY_EURGBP_COINTEGRATION_D1",
+    "pair": [
+      "USDJPY.DWX",
+      "EURGBP.DWX"
+    ],
+    "structural_only": true,
+    "low_frequency": true,
+    "machine_learning": false,
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "lineage": [
+      {
+        "phase": "Q02",
+        "status": "done",
+        "verdict": "PASS"
+      },
+      {
+        "phase": "Q03",
+        "id": "46c97cb3-45f9-475d-8e6b-aa7bdd40df0e",
+        "status": "done",
+        "verdict": "PASS"
+      },
+      {
+        "phase": "Q04",
+        "id": "1a269ff4-cbef-429b-afa4-47a3cc692916",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "attempt_count": 0,
+        "priority_track": true,
+        "priority_reason": "board_advisor_fx_fallback_rank60_q04_after_q03_pass"
+      }
+    ],
+    "duplicate_work_item_created": false,
+    "queue_row_changed": false
+  },
+  "serialized_multisymbol_lane": {
+    "active_count": 1,
+    "work_item": {
+      "id": "b38e2753-1d57-45d9-8562-3cafc0e105a0",
+      "phase": "Q07",
+      "ea_id": "QM5_20224",
+      "logical_symbol": "QM5_20224_EURUSD_EURJPY_COINTEGRATION_D1",
+      "status": "active",
+      "verdict": null,
+      "claimed_by": "T9",
+      "updated_at_utc": "2026-08-31T10:33:21+00:00"
+    },
+    "new_progress_since_preceding_handoff": {
+      "completed_seed": 42,
+      "result": "PASS",
+      "completed_at_utc": "2026-08-31T11:17:28.9461732Z",
+      "trades": 185,
+      "profit_factor": 1.08,
+      "drawdown_amount": 3251.45,
+      "drawdown_percent": 3.12,
+      "net_profit": 1366.29,
+      "oninit_failure_detected": false,
+      "summary_path": "D:/QM/reports/work_items/b38e2753-1d57-45d9-8562-3cafc0e105a0/QM5_20224/20260831_103538/summary.json",
+      "summary_sha256": "a5c21b7c29c0f8ee22828f9cfec17ca89b025ad0246d1b267aeef238d3aa1a1b",
+      "report_sha256": "8d6f86e3384bfa9dac81d844458ab341c58e4eaa26e97a591f7b343595e3f61f",
+      "next_seed_run_directory": "D:/QM/reports/work_items/b38e2753-1d57-45d9-8562-3cafc0e105a0/QM5_20224/20260831_111948",
+      "next_seed_state_at_observation": "started; tester.ini present; no summary yet"
+    }
+  },
+  "capacity": {
+    "sample_command": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "samples_percent": [
+      94.256158,
+      99.22543,
+      93.755925,
+      91.70245,
+      91.811218
+    ],
+    "average_percent": 94.150236,
+    "maximum_percent": 99.22543,
+    "cpu_ceiling_percent": 97.0,
+    "admission_rule": "average and maximum must both be strictly below the ceiling",
+    "cpu_ceiling_hit": true,
+    "binding_measure": "maximum_percent",
+    "disposition": "STOP_NO_PIPELINE_OR_TERMINAL_ACTION"
+  },
+  "actions_this_run": {
+    "frontier_and_anchor_reconciled": true,
+    "selected_existing_forex_lineage_verified": true,
+    "active_multisymbol_lane_verified": true,
+    "q07_seed_progress_authenticated": true,
+    "fresh_cpu_window_sampled": true,
+    "new_card_or_ea_created": false,
+    "new_work_item_created": false,
+    "queue_row_mutated": false,
+    "dispatch_tick": false,
+    "terminal_or_worker_controlled": false,
+    "compile_smoke_or_backtest_started": false
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false,
+    "live_or_deploy_manifest_touched": false,
+    "preexisting_unrelated_worktree_changes_preserved": true
+  },
+  "resume_contract": "On the next paced wake, require terminal state for QM5_20224 Q07 and take a fresh five-sample CPU window. Only when the multisymbol lane is empty and both CPU average and maximum are strictly below 97% may the resident worker claim existing QM5_20246 Q04 work item 1a269ff4-cbef-429b-afa4-47a3cc692916. Do not enqueue a duplicate."
+}
