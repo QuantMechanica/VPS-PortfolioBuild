@@ -1,0 +1,37 @@
+{
+  "schema": "qm.source-retrieval-evidence/v1",
+  "source_id": "AI-CODEX-WTI-MWELCH-20260831",
+  "retrieved_at_utc": "2026-08-31T14:42:04Z",
+  "routes": [
+    {
+      "path": "strategy-seeds/sources/MOP-TSMOM-2012/source.md",
+      "status": "COMPLETE_GOVERNED_PACKET_READ",
+      "sha256": "C8B07ECD62C1D5EF9E3D7975EEE6A3B6C46C1C566D0B20B42237613D9B3A7042",
+      "evidence": "Complete 23-page review record for monthly own-return continuation with explicit NYMEX WTI membership.",
+      "boundary": "No WTI-only performance, fixed-block Welch score, CFD equivalence, or QM execution result transfers."
+    },
+    {
+      "url": "https://academic.oup.com/biomet/article-abstract/29/3-4/350/256577",
+      "publisher": "Oxford Academic",
+      "status": "BIBLIOGRAPHIC_METADATA_ONLY",
+      "evidence": "B. L. Welch; The Significance of the Difference Between Two Means When the Population Variances Are Unequal; Biometrika 29(3-4), February 1938, pages 350-362; DOI 10.1093/biomet/29.3-4.350.",
+      "boundary": "The subscriber-only body was not represented as completely read; no body table, critical value, probability, or result is imported."
+    },
+    {
+      "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_ind.html",
+      "publisher": "SciPy community",
+      "status": "COMPLETE_PUBLIC_METHOD_PAGE_READ",
+      "version": "1.18.0",
+      "evidence": "The official page defines the independent two-sample mean test, states that equal_var=False performs Welch's unequal-variance form, and fixes statistic orientation as mean(a)-mean(b) divided by its standard error.",
+      "boundary": "SciPy documents a statistical method, not a WTI strategy or the fixed 0.75 trading boundary."
+    },
+    {
+      "url": "https://github.com/scipy/scipy/blob/v1.18.0/scipy/stats/_stats_py.py",
+      "publisher": "SciPy community",
+      "status": "TAG_PINNED_PUBLIC_SOURCE_REVIEWED",
+      "version": "v1.18.0",
+      "evidence": "Public tagged implementation lineage for the unequal-variance standard-error calculation used by scipy.stats.ttest_ind.",
+      "boundary": "The EA implements only the disclosed closed-form statistic and no SciPy runtime dependency, p-value, or degrees-of-freedom calculation."
+    }
+  ]
+}
