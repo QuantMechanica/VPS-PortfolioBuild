@@ -8,6 +8,7 @@ created: 2026-07-10
 created_by: Codex
 cards_extracted:
   - xti-mtsm-s2
+  - xng-tail-mtsm-s2
 ---
 
 # Liu, Lu, and Wang Managed Time-Series Momentum Source
@@ -89,4 +90,3 @@ changes close or reverse on the next D1 decision.
   spread, broker calendar, and V5 position state are required.
 - R4 no ML/banned logic: PASS. Deterministic arithmetic and order statistics;
   no learned model, external runtime feed, grid, martingale, or pyramiding.
-
