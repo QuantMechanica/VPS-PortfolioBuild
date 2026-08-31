@@ -1,0 +1,28 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "99cc3cce-1e99-4d47-8a60-a90618cdae7f"
+  ],
+  "backup": {
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260831T224302Z_2edc6f96.sqlite",
+    "sha256": "0fd0d4efd33f60a5a43d0994f9dbb78914b4cc8cb34cc0634ddc4ae3dad9c1d5"
+  },
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "966ea99dfec6cc407eb3ccd825a9428af4321fb8dea399d97b172fc528854213",
+      "ea_id": "QM5_41258",
+      "ea_label": "QM5_41258_wti-menergy-shift-tr",
+      "expected_mq5_sha256": "966ea99dfec6cc407eb3ccd825a9428af4321fb8dea399d97b172fc528854213",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41258_wti-menergy-shift-tr\\QM5_41258_wti-menergy-shift-tr.mq5",
+      "work_item_id": "99cc3cce-1e99-4d47-8a60-a90618cdae7f"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-08-31T22:43:07+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "99cc3cce-1e99-4d47-8a60-a90618cdae7f"
+}
