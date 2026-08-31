@@ -1240,6 +1240,9 @@ def test_review_rework_source_repair_authority_is_exact_label_bound() -> None:
         "QM5_41011_tokyo-london-bank-flow-handover": (
             "router_review_ea:86e63523-90c7-47e7-bd41-b220e70042e7"
         ),
+        "QM5_41229_wti-samecal-trimean5": (
+            "router_review_ea:0c39bc3c-df80-41fd-9ec1-5b7be49129dd"
+        ),
     }
     for label, authority in authorities.items():
         assert compile_work_items._source_repair_authorized(label, authority)

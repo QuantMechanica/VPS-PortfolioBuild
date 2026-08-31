@@ -141,6 +141,9 @@ REVIEW_REWORK_SOURCE_REPAIR_AUTHORITIES = {
     "QM5_41011_tokyo-london-bank-flow-handover": (
         "router_review_ea:86e63523-90c7-47e7-bd41-b220e70042e7"
     ),
+    "QM5_41229_wti-samecal-trimean5": (
+        "router_review_ea:0c39bc3c-df80-41fd-9ec1-5b7be49129dd"
+    ),
 }
 REVIEW_REWORK_SOURCE_REPAIR_EA_LABELS = frozenset(
     REVIEW_REWORK_SOURCE_REPAIR_AUTHORITIES

@@ -343,7 +343,8 @@ class SameCalendarTrimeanReferenceTests(unittest.TestCase):
             "Strategy_TrimeanSignal",
             "Strategy_CompletedMonthReturn",
             "ArraySetAsSeries(rates, false);",
-            "Strategy_NormalizedLabel",
+            "QM_IsNewCalendarPeriod(PERIOD_MN1, g_symbol)",
+            "QM_CalendarPeriodKey(PERIOD_MN1, g_symbol, 0)",
             "Strategy_RecordMonthAttempt(g_decision_month_key)",
             "modeled_spread_points < 0.0",
             "req.tp = 0.0;",
@@ -369,6 +370,12 @@ class SameCalendarTrimeanReferenceTests(unittest.TestCase):
             "entry_grace",
         ):
             self.assertNotIn(banned, source.lower())
+        for removed_hand_roll in (
+            "Strategy_LabelOffsetSeconds",
+            "Strategy_NormalizedLabel",
+            "g_decision_label_offset",
+        ):
+            self.assertNotIn(removed_hand_roll, source)
         self.assertNotIn("SymbolInfoInteger(_Symbol, SYMBOL_SPREAD)", source)
 
         prepare = source[

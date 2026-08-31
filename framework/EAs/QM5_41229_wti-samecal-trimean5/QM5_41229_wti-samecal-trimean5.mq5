@@ -64,7 +64,6 @@ bool     g_strategy_new_d1_bar    = false;
 bool     g_decision_bar           = false;
 datetime g_decision_bar_time      = 0;
 int      g_decision_month_key     = 0;
-int      g_decision_label_offset  = 0;
 bool     g_signal_valid           = false;
 int      g_signal_direction       = 0;
 int      g_signal_sample_count    = 0;
@@ -139,53 +138,11 @@ int Strategy_NextMonthKey(const int month_key)
    return year * 100 + month;
   }
 
-int Strategy_LabelOffsetSeconds(const datetime current_bar_time,
-                                const datetime broker_now)
-  {
-   if(current_bar_time <= 0 || broker_now < current_bar_time)
-      return -1;
-
-   const long elapsed = (long)(broker_now - current_bar_time);
-   if(elapsed < 86400L)
-      return 0;
-   if(elapsed < 172800L)
-      return 86400;
-   return -1;
-  }
-
-datetime Strategy_NormalizedLabel(const datetime raw_label,
-                                  const int label_offset)
-  {
-   if(raw_label <= 0 || (label_offset != 0 && label_offset != 86400))
-      return 0;
-   return raw_label + (datetime)label_offset;
-  }
-
-int Strategy_CurrentNormalizedMonthKey()
-  {
-   MqlRates current_bar;
-   ZeroMemory(current_bar);
-   if(!QM_ReadBar(_Symbol, PERIOD_D1, 0, current_bar))
-      return 0;
-
-   const datetime broker_now = TimeCurrent();
-   const int label_offset =
-      Strategy_LabelOffsetSeconds(current_bar.time, broker_now);
-   const datetime normalized =
-      Strategy_NormalizedLabel(current_bar.time, label_offset);
-   if(label_offset < 0 || normalized <= 0 ||
-      Strategy_DateKeyForTime(normalized) !=
-         Strategy_DateKeyForTime(broker_now))
-      return 0;
-   return Strategy_MonthKeyForTime(normalized);
-  }
-
 void Strategy_ResetDecisionState()
   {
    g_decision_bar = false;
    g_decision_bar_time = 0;
    g_decision_month_key = 0;
-   g_decision_label_offset = 0;
    g_signal_valid = false;
    g_signal_direction = 0;
    g_signal_sample_count = 0;
@@ -193,43 +150,36 @@ void Strategy_ResetDecisionState()
    g_signal_state = "idle";
   }
 
+// Card rule 3 requires "one uniform native or +1 energy D1-label convention,
+// applied the same offset to every historical endpoint". This build adopts
+// the uniform NATIVE convention (offset zero everywhere) and delegates all
+// period-boundary/cadence detection to the tester-robust framework helpers
+// QM_IsNewCalendarPeriod / QM_CalendarPeriodKey (QM_Indicators.mqh) instead
+// of a per-EA iTime/TimeToStruct month-rollover reimplementation.
 void Strategy_DetectDecisionClockOnNewBar()
   {
    Strategy_ResetDecisionState();
 
    MqlRates current_bar;
-   MqlRates previous_bar;
    ZeroMemory(current_bar);
-   ZeroMemory(previous_bar);
-   if(!QM_ReadBar(_Symbol, PERIOD_D1, 0, current_bar) ||
-      !QM_ReadBar(_Symbol, PERIOD_D1, 1, previous_bar))
+   if(!QM_ReadBar(_Symbol, PERIOD_D1, 0, current_bar))
       return;
 
    const datetime broker_now = TimeCurrent();
-   const int label_offset =
-      Strategy_LabelOffsetSeconds(current_bar.time, broker_now);
-   if(label_offset < 0)
-      return;
-
-   const datetime current_session =
-      Strategy_NormalizedLabel(current_bar.time, label_offset);
-   const datetime previous_session =
-      Strategy_NormalizedLabel(previous_bar.time, label_offset);
-   if(current_session <= previous_session ||
-      Strategy_DateKeyForTime(current_session) !=
+   if(Strategy_DateKeyForTime(current_bar.time) !=
          Strategy_DateKeyForTime(broker_now))
       return;
 
-   const int current_month = Strategy_MonthKeyForTime(current_session);
-   const int previous_month = Strategy_MonthKeyForTime(previous_session);
-   if(current_month <= 0 || previous_month <= 0 ||
-      Strategy_NextMonthKey(previous_month) != current_month)
+   if(!QM_IsNewCalendarPeriod(PERIOD_MN1, g_symbol))
+      return;
+
+   const int current_month = QM_CalendarPeriodKey(PERIOD_MN1, g_symbol, 0);
+   if(current_month <= 0)
       return;
 
    g_decision_bar = true;
    g_decision_bar_time = current_bar.time;
    g_decision_month_key = current_month;
-   g_decision_label_offset = label_offset;
   }
 
 // -----------------------------------------------------------------------------
@@ -351,7 +301,7 @@ void Strategy_CloseExpiredPositions()
       return;
 
    const datetime now = TimeCurrent();
-   const int current_month_key = Strategy_CurrentNormalizedMonthKey();
+   const int current_month_key = QM_CalendarPeriodKey(PERIOD_MN1, g_symbol, 0);
    const long hold_seconds =
       (long)MathMax(1, strategy_max_hold_days) * 86400L;
 
@@ -396,21 +346,17 @@ void Strategy_CloseExpiredPositions()
 bool Strategy_CompletedMonthReturn(const MqlRates &rates[],
                                    const int count,
                                    const int target_month_key,
-                                   const int label_offset,
                                    double &month_return)
   {
    month_return = 0.0;
-   if(count < 3 || ArraySize(rates) < count || target_month_key <= 0 ||
-      (label_offset != 0 && label_offset != 86400))
+   if(count < 3 || ArraySize(rates) < count || target_month_key <= 0)
       return false;
 
    int first_index = -1;
    int last_index = -1;
    for(int index = 0; index < count; ++index)
      {
-      const datetime normalized =
-         Strategy_NormalizedLabel(rates[index].time, label_offset);
-      if(Strategy_MonthKeyForTime(normalized) != target_month_key)
+      if(Strategy_MonthKeyForTime(rates[index].time) != target_month_key)
          continue;
       if(first_index < 0)
          first_index = index;
@@ -422,13 +368,9 @@ bool Strategy_CompletedMonthReturn(const MqlRates &rates[],
       return false;
 
    const int previous_month_key =
-      Strategy_MonthKeyForTime(
-         Strategy_NormalizedLabel(rates[first_index - 1].time,
-                                  label_offset));
+      Strategy_MonthKeyForTime(rates[first_index - 1].time);
    const int following_month_key =
-      Strategy_MonthKeyForTime(
-         Strategy_NormalizedLabel(rates[last_index + 1].time,
-                                  label_offset));
+      Strategy_MonthKeyForTime(rates[last_index + 1].time);
    if(previous_month_key != Strategy_PreviousMonthKey(target_month_key) ||
       following_month_key != Strategy_NextMonthKey(target_month_key))
       return false;
@@ -439,9 +381,7 @@ bool Strategy_CompletedMonthReturn(const MqlRates &rates[],
 
    for(int index = first_index; index <= last_index; ++index)
      {
-      if(Strategy_MonthKeyForTime(
-            Strategy_NormalizedLabel(rates[index].time,
-                                     label_offset)) != target_month_key)
+      if(Strategy_MonthKeyForTime(rates[index].time) != target_month_key)
          return false;
       if(index > first_index &&
          rates[index - 1].time >= rates[index].time)
@@ -522,7 +462,6 @@ bool Strategy_TrimeanSignal(const double &observations[],
 bool Strategy_LoadTrimeanSignal(
    const datetime decision_bar_time,
    const int decision_month_key,
-   const int label_offset,
    int &sample_count,
    double &location_value,
    int &direction)
@@ -530,15 +469,12 @@ bool Strategy_LoadTrimeanSignal(
    sample_count = 0;
    location_value = 0.0;
    direction = 0;
-   if(decision_bar_time <= 0 || decision_month_key <= 0 ||
-      (label_offset != 0 && label_offset != 86400))
+   if(decision_bar_time <= 0 || decision_month_key <= 0)
       return false;
 
    MqlDateTime decision_parts;
    ZeroMemory(decision_parts);
-   const datetime normalized_decision =
-      Strategy_NormalizedLabel(decision_bar_time, label_offset);
-   if(!TimeToStruct(normalized_decision, decision_parts) ||
+   if(!TimeToStruct(decision_bar_time, decision_parts) ||
       decision_parts.year - strategy_history_years < 1900 ||
       decision_parts.mon < 1 || decision_parts.mon > 12 ||
       decision_parts.year * 100 + decision_parts.mon != decision_month_key)
@@ -579,7 +515,6 @@ bool Strategy_LoadTrimeanSignal(
       if(!Strategy_CompletedMonthReturn(rates,
                                         copied,
                                         sample_month_key,
-                                        label_offset,
                                         sample_return))
          return false;
       if(sample_count < 0 || sample_count >= ArraySize(observations))
@@ -625,7 +560,6 @@ void Strategy_PrepareDecisionSignal()
           Strategy_LoadTrimeanSignal(
             g_decision_bar_time,
             g_decision_month_key,
-            g_decision_label_offset,
             g_signal_sample_count,
             g_signal_location,
             g_signal_direction);
@@ -641,10 +575,9 @@ void Strategy_PrepareDecisionSignal()
 
    QM_LogEvent(QM_INFO,
                "STRATEGY_STATE",
-               StringFormat("{\"month\":%d,\"decision_bar\":%I64d,\"label_offset_seconds\":%d,\"valid\":%s,\"samples\":%d,\"tukey_trimean\":%.12g,\"direction\":%d,\"state\":\"%s\"}",
+               StringFormat("{\"month\":%d,\"decision_bar\":%I64d,\"valid\":%s,\"samples\":%d,\"tukey_trimean\":%.12g,\"direction\":%d,\"state\":\"%s\"}",
                             g_decision_month_key,
                             (long)g_decision_bar_time,
-                            g_decision_label_offset,
                             g_signal_valid ? "true" : "false",
                             g_signal_sample_count,
                             g_signal_location,
