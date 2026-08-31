@@ -22,6 +22,33 @@
   ],
   "decisions": [
     {
+      "id": "OWNER-DEC-SAMEPROG-FLEET-20260831",
+      "todo_id": "QM-TODO-20260831-709",
+      "priority": 87,
+      "choices": {
+        "YES": {
+          "mode": "APPLY_AND_VERIFY",
+          "objective": "Extend same-program parallelism (L=2) from the EUR canary to all 8 DL-089 programs immediately per OWNER 'Sofort' (shortened observation window explicitly accepted by OWNER; ~8h canary clean).",
+          "allowed_actions": [
+            "Set DL089_SAME_PROGRAM_PARALLEL_ALLOWLIST to exactly the 8 authenticated program IDs; DL089_LANES_PER_PROGRAM stays 2; DL089_CELL_SLOTS may be raised to 8 (<=10)",
+            "Staggered idle-worker reloads only; never interrupt active claims",
+            "Tight observation 24h: no same-arm-year concurrency, no MT5 process anomaly (instant-exit series, custom-history contention), pruning receipts consistent; abort = reset allowlist (instant serialization)"
+          ],
+          "acceptance": [
+            "Only allow-listed programs run 2 cells; never two years of one arm concurrently",
+            "No process anomaly; CPU gate (90pct) remains the self-regulating ceiling",
+            "Any anomaly triggers allowlist reset before further claims; observation summary recorded"
+          ]
+        },
+        "NO": {
+          "mode": "PREPARE_FOLLOWUP_ONLY",
+          "objective": "Stay canary-only.",
+          "allowed_actions": ["Document"],
+          "acceptance": ["No env change"]
+        }
+      }
+    },
+    {
       "id": "OWNER-DEC-SAMEPROG-CANARY-20260831",
       "todo_id": "QM-TODO-20260831-707",
       "priority": 86,
