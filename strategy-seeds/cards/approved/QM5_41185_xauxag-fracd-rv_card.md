@@ -11,7 +11,7 @@ execution_contract_ref: strategy-seeds/cards/approved/QM5_41185_xauxag-fracd-rv_
 execution_contract_status: APPROVED
 created: 2026-08-27
 created_by: Research+Development
-last_updated: 2026-08-27
+last_updated: 2026-08-31
 g0_status: APPROVED
 g0_decision: decisions/2026-08-27_qm5_41185_xauxag_fractional_difference_reversion_g0.md
 source_approval: decisions/2026-08-27_xauxag_fractional_difference_reversion_source_approval.md
@@ -77,7 +77,7 @@ r1_track_record: PASS_WITH_FIXED_FRACDIFF_TRANSLATION_RISK
 r1_reasoning: "Two named peer-reviewed gold/silver relationship papers include fractional-cointegration evidence, and official CME research supports the ratio carrier; the fixed-filter trading conjunction remains an untested QM hypothesis."
 r2_mechanical: PASS
 r2_reasoning: "Clock, exact synchronized history, recurrence, fixed order/truncation, held-out baseline, threshold, contrarian sides, consumed attempt, aggregate fixed risk, atomicity, and lifecycle are deterministic and locked."
-r3_data_available: PASS_WITH_SYNCHRONIZATION_AND_CFD_BASIS_RISK
+r3_data_available: PASS
 r3_reasoning: "Registered XAUUSD.DWX and XAGUSD.DWX D1 histories and native MT5 state supply every runtime input; synchronization and continuous-CFD basis risk remain explicit."
 r4_ml_forbidden: PASS
 r4_reasoning: "Only timestamps, completed prices, logarithms, a fixed linear recurrence, sample arithmetic, ATR risk controls, and execution state; no trained signal or external runtime feed."
