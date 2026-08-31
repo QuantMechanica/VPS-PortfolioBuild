@@ -1,0 +1,28 @@
+{
+  "schema": "qm.source-retrieval-evidence/v1",
+  "source_id": "AI-CODEX-XAUXAG-MCUSUM-RV-20260831",
+  "retrieved_at_utc": "2026-08-31T11:22:36Z",
+  "routes": [
+    {
+      "path": "strategy-seeds/sources/SCHWEIKERT-XAUXAG-RATIO-2026/source.md",
+      "status": "COMPLETE_GOVERNED_PACKET_READ",
+      "sha256": "4C7DC1741F96502ED1D53FDFD5252E61E2632003C43AF30028ACA3F4125E976B",
+      "evidence": "Peer-reviewed state-dependent gold/silver relationship record.",
+      "boundary": "No fixed equilibrium, CUSUM rule, CFD equivalence, or performance transfers."
+    },
+    {
+      "path": "strategy-seeds/sources/CME-GSR-SPREAD-2025/source.md",
+      "status": "COMPLETE_GOVERNED_PACKET_READ",
+      "sha256": "2B5903457BD861771821A81F554BE95CA369AD56C1AA45494E0B81555493AF93",
+      "evidence": "Official-exchange gold/silver intermarket carrier and distinct metal-driver record.",
+      "boundary": "No exact signal, hedge ratio, neutrality, or CFD result transfers."
+    },
+    {
+      "path": "strategy-seeds/sources/AI-CODEX-WTI-MCUSUM-20260831/source.md",
+      "status": "COMPLETE_GOVERNED_PACKET_READ",
+      "sha256": "109CD229E8BAC6A26F56132C8FC9CA2CFA0925BB2FC9C0948C8C3F5F6114E73C",
+      "evidence": "Named Page peer-reviewed record and complete official NIST centered-CUSUM method-page evidence.",
+      "boundary": "The XAU/XAG relative-return translation, split band, contrarian side, and execution contract are new QM choices."
+    }
+  ]
+}
