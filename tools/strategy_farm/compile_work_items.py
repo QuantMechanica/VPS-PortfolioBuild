@@ -43,6 +43,32 @@ R11_INCIDENT_REASON = "ex5_missing"
 COMPILE_RECHECK_RETRY_CONTRACT_VERSION = "qm.compile-ea-candidate-recheck-retry/v1"
 COMPILE_RECHECK_RETRY_AUTHORITY_TASK_ID = "1fb9943f-1b87-4515-b2b4-f5ca3ffb56f8"
 COMPILE_RECHECK_FAILURE_CLASS = "CANDIDATE_RECHECK_REFUSED"
+
+# One exact operator-ordering incident: QM5_41245's initial source-fresh
+# COMPILE_EA row was released after its setfile header had already been bound
+# to the source SHA. Candidate recheck correctly refused it before MetaEditor.
+# The append-only successor contract below sanctions only that immutable row,
+# source hash, evidence hash, EA identity, and failure reason. It does not
+# waive compile/build checks, an EX5, any other work history, or a bound
+# setfile on the successor.
+QM5_41245_SETFILE_UNBIND_RETRY_CONTRACT_VERSION = (
+    "qm.compile-ea-qm5-41245-setfile-unbind-retry/v1"
+)
+QM5_41245_SETFILE_UNBIND_RETRY_AUTHORITY = (
+    "OWNER_COMMODITY_SLEEVE_2026-08-31_QM5_41245_COMPILE_RETRY"
+)
+QM5_41245_SETFILE_UNBIND_RETRY_PREDECESSOR_ID = (
+    "072ded8e-84b9-4ada-b714-b333701e3d71"
+)
+QM5_41245_SETFILE_UNBIND_RETRY_EA_LABEL = (
+    "QM5_41245_wti-mcusum-shift-tr"
+)
+QM5_41245_SETFILE_UNBIND_RETRY_SOURCE_SHA256 = (
+    "e5fc833b3782f03af153ed9737a0f82c94ea508cf094af7c54b42b240c616258"
+)
+QM5_41245_SETFILE_UNBIND_RETRY_EVIDENCE_SHA256 = (
+    "54c3640faea96b567e8722c5b30b90fc825ba15f1b754eea0bcf5b88253d0aba"
+)
 COMPILE_BINDING_RETRY_CONTRACT_VERSION = "qm.compile-ea-build-binding-retry/v1"
 COMPILE_BINDING_FAILURE_CLASS = "BUILD_CHECK_FAILED"
 SOURCE_REPAIR_CONTRACT_VERSION = "qm.compile-ea-source-repair/v1"
@@ -1859,6 +1885,86 @@ def _work_row_by_id(
     )
 
 
+def _qm5_41245_setfile_unbind_predecessor_authorized(
+    payload: dict[str, Any],
+    inventory: dict[str, Any],
+    ea_id: str,
+    seen: frozenset[str],
+) -> str | None:
+    """Validate the exact immutable pre-compile setfile-binding incident."""
+    source_sha = str(payload.get("mq5_sha256") or "").lower()
+    predecessor_id = str(payload.get("retry_of_work_item_id") or "")
+    if not (
+        ea_id == "41245"
+        and payload.get("compile_retry_contract_version")
+        == QM5_41245_SETFILE_UNBIND_RETRY_CONTRACT_VERSION
+        and payload.get("compile_retry_authority")
+        == QM5_41245_SETFILE_UNBIND_RETRY_AUTHORITY
+        and payload.get("append_only_retry") is True
+        and payload.get("ea_label")
+        == QM5_41245_SETFILE_UNBIND_RETRY_EA_LABEL
+        and source_sha == QM5_41245_SETFILE_UNBIND_RETRY_SOURCE_SHA256
+        and predecessor_id
+        == QM5_41245_SETFILE_UNBIND_RETRY_PREDECESSOR_ID
+        and predecessor_id not in seen
+    ):
+        return None
+
+    predecessor = _work_row_by_id(inventory, ea_id, predecessor_id)
+    if not predecessor:
+        return None
+    predecessor_payload = _json_object(predecessor.get("payload_json"))
+    compile_result = predecessor_payload.get("compile_result")
+    failure_classes = (
+        compile_result.get("failure_classes", [])
+        if isinstance(compile_result, dict)
+        else []
+    )
+    evidence_path = Path(str(predecessor.get("evidence_path") or ""))
+    if not (
+        predecessor.get("phase") == COMPILE_EA_PHASE
+        and predecessor.get("status") == "failed"
+        and predecessor.get("verdict") == "COMPILE_FAIL"
+        and predecessor_payload.get("ea_label")
+        == QM5_41245_SETFILE_UNBIND_RETRY_EA_LABEL
+        and str(predecessor_payload.get("mq5_sha256") or "").lower()
+        == source_sha
+        and predecessor_payload.get("verdict_reason")
+        == COMPILE_RECHECK_FAILURE_CLASS
+        and failure_classes == [COMPILE_RECHECK_FAILURE_CLASS]
+        and isinstance(compile_result, dict)
+        and compile_result.get("compile_result") is None
+        and compile_result.get("build_check_result") is None
+        and compile_result.get("ex5_sha256") is None
+        and int(compile_result.get("setfile_count") or 0) == 0
+        and evidence_path.is_file()
+        and sha256_file(evidence_path).lower()
+        == QM5_41245_SETFILE_UNBIND_RETRY_EVIDENCE_SHA256
+    ):
+        return None
+    try:
+        evidence = json.loads(evidence_path.read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    candidate = evidence.get("candidate_recheck")
+    if not (
+        evidence.get("work_item_id") == predecessor_id
+        and evidence.get("ea_id") == "QM5_41245"
+        and evidence.get("ea_label")
+        == QM5_41245_SETFILE_UNBIND_RETRY_EA_LABEL
+        and evidence.get("success") is False
+        and evidence.get("failure_classes")
+        == [COMPILE_RECHECK_FAILURE_CLASS]
+        and isinstance(candidate, dict)
+        and candidate.get("eligible") is False
+        and candidate.get("reason") == "BOUND_SETFILE_HASH_EXISTS"
+        and candidate.get("reasons") == ["BOUND_SETFILE_HASH_EXISTS"]
+        and str(candidate.get("mq5_sha256") or "").lower() == source_sha
+    ):
+        return None
+    return predecessor_id
+
+
 def _sanctioned_compile_predecessor_ids(
     payload: dict[str, Any],
     inventory: dict[str, Any],
@@ -1878,6 +1984,14 @@ def _sanctioned_compile_predecessor_ids(
     source_sha = str(payload.get("mq5_sha256") or "").lower()
     if not _BOUND_HASH_RE.fullmatch(source_sha):
         return set()
+
+    qm5_41245_predecessor = (
+        _qm5_41245_setfile_unbind_predecessor_authorized(
+            payload, inventory, ea_id, seen
+        )
+    )
+    if qm5_41245_predecessor:
+        return {qm5_41245_predecessor}
 
     if (
         payload.get("compile_retry_contract_version")

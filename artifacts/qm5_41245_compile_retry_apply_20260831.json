@@ -1,0 +1,27 @@
+{
+  "after_classification": "held",
+  "applied": 1,
+  "backup": {
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_qm5_41245_compile_retry_20260831T101643Z_a4c02e22.sqlite",
+    "sha256": "3fb5a9f1b57b5902fe6f4237ac6d0fe80274c73e682f83d7ab21fa98c816b287"
+  },
+  "classification": "eligible",
+  "ea_id": "QM5_41245",
+  "ea_label": "QM5_41245_wti-mcusum-shift-tr",
+  "eligible": true,
+  "existing_successor_work_item_id": null,
+  "factory_mutation_lock_release_status": "released",
+  "mode": "apply",
+  "no_gate_verdict": true,
+  "open_compile_work_item_ids": [],
+  "predecessor_evidence_sha256": "54c3640faea96b567e8722c5b30b90fc825ba15f1b754eea0bcf5b88253d0aba",
+  "predecessor_preimage_sha256": "7320148661249bd12ce6d6002f6294f6453e99549a1908b9dfd1ad852092bc15",
+  "predecessor_work_item_id": "072ded8e-84b9-4ada-b714-b333701e3d71",
+  "reasons": [],
+  "schema": "qm.compile-ea-qm5-41245-setfile-unbind-retry/v1",
+  "setfile_build_hash": "PENDING_STRICT_Q01",
+  "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41245_wti-mcusum-shift-tr\\sets\\QM5_41245_wti-mcusum-shift-tr_XTIUSD.DWX_D1_backtest.set",
+  "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41245_wti-mcusum-shift-tr\\QM5_41245_wti-mcusum-shift-tr.mq5",
+  "source_sha256": "e5fc833b3782f03af153ed9737a0f82c94ea508cf094af7c54b42b240c616258",
+  "successor_work_item_id": "5d3c283f-8527-4836-a6e3-c0995a92ead0"
+}

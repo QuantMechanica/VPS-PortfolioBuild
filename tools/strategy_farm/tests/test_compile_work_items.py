@@ -1629,6 +1629,98 @@ def test_candidate_recheck_allows_only_exact_r11_revival_predecessor(
     assert "WORK_ITEMS_EXIST" in refused["reasons"]
 
 
+def test_qm5_41245_setfile_unbind_retry_sanctions_only_bound_incident(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    label = compile_work_items.QM5_41245_SETFILE_UNBIND_RETRY_EA_LABEL
+    repo, root = _fixture(tmp_path, [label])
+    source_sha = compile_work_items.sha256_file(
+        repo / "framework" / "EAs" / label / f"{label}.mq5"
+    )
+    monkeypatch.setattr(
+        compile_work_items,
+        "QM5_41245_SETFILE_UNBIND_RETRY_SOURCE_SHA256",
+        source_sha,
+    )
+    predecessor_id = (
+        compile_work_items.QM5_41245_SETFILE_UNBIND_RETRY_PREDECESSOR_ID
+    )
+    evidence = {
+        "work_item_id": predecessor_id,
+        "ea_id": "QM5_41245",
+        "ea_label": label,
+        "success": False,
+        "failure_classes": [compile_work_items.COMPILE_RECHECK_FAILURE_CLASS],
+        "candidate_recheck": {
+            "eligible": False,
+            "reason": "BOUND_SETFILE_HASH_EXISTS",
+            "reasons": ["BOUND_SETFILE_HASH_EXISTS"],
+            "mq5_sha256": source_sha,
+        },
+    }
+    evidence_path = tmp_path / "compile_evidence.json"
+    evidence_path.write_text(json.dumps(evidence), encoding="utf-8")
+    monkeypatch.setattr(
+        compile_work_items,
+        "QM5_41245_SETFILE_UNBIND_RETRY_EVIDENCE_SHA256",
+        compile_work_items.sha256_file(evidence_path),
+    )
+    predecessor_payload = {
+        "ea_label": label,
+        "mq5_sha256": source_sha,
+        "verdict_reason": compile_work_items.COMPILE_RECHECK_FAILURE_CLASS,
+        "compile_result": {
+            "failure_classes": [compile_work_items.COMPILE_RECHECK_FAILURE_CLASS],
+            "compile_result": None,
+            "build_check_result": None,
+            "ex5_sha256": None,
+            "setfile_count": 0,
+        },
+    }
+    successor_payload = {
+        "ea_label": label,
+        "mq5_sha256": source_sha,
+        "compile_retry_contract_version": (
+            compile_work_items.QM5_41245_SETFILE_UNBIND_RETRY_CONTRACT_VERSION
+        ),
+        "compile_retry_authority": (
+            compile_work_items.QM5_41245_SETFILE_UNBIND_RETRY_AUTHORITY
+        ),
+        "retry_of_work_item_id": predecessor_id,
+        "append_only_retry": True,
+    }
+    now = farmctl.utc_now()
+    with farmctl.connect(root) as conn:
+        conn.execute(
+            "INSERT INTO work_items "
+            "(id,kind,phase,ea_id,symbol,setfile_path,status,verdict,attempt_count,"
+            "evidence_path,payload_json,created_at,updated_at) "
+            "VALUES (?,'compile','COMPILE_EA','QM5_41245','','','failed',"
+            "'COMPILE_FAIL',0,?,?,?,?)",
+            (
+                predecessor_id,
+                str(evidence_path),
+                json.dumps(predecessor_payload),
+                now,
+                now,
+            ),
+        )
+        conn.commit()
+
+    inventory = compile_work_items._inventory(root, repo)
+    sanctioned = compile_work_items._sanctioned_compile_predecessor_ids(
+        successor_payload, inventory, "41245"
+    )
+    assert sanctioned == {predecessor_id}
+
+    evidence_path.write_text("{}", encoding="utf-8")
+    inventory = compile_work_items._inventory(root, repo)
+    assert compile_work_items._sanctioned_compile_predecessor_ids(
+        successor_payload, inventory, "41245"
+    ) == set()
+
+
 def test_candidate_recheck_allows_exact_build_binding_retry_chain(
     tmp_path: Path,
 ) -> None:

@@ -1,0 +1,19 @@
+{
+  "classification": "eligible",
+  "ea_id": "QM5_41245",
+  "ea_label": "QM5_41245_wti-mcusum-shift-tr",
+  "eligible": true,
+  "existing_successor_work_item_id": null,
+  "mode": "dry_run",
+  "no_gate_verdict": true,
+  "open_compile_work_item_ids": [],
+  "predecessor_evidence_sha256": "54c3640faea96b567e8722c5b30b90fc825ba15f1b754eea0bcf5b88253d0aba",
+  "predecessor_preimage_sha256": "7320148661249bd12ce6d6002f6294f6453e99549a1908b9dfd1ad852092bc15",
+  "predecessor_work_item_id": "072ded8e-84b9-4ada-b714-b333701e3d71",
+  "reasons": [],
+  "schema": "qm.compile-ea-qm5-41245-setfile-unbind-retry/v1",
+  "setfile_build_hash": "PENDING_STRICT_Q01",
+  "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41245_wti-mcusum-shift-tr\\sets\\QM5_41245_wti-mcusum-shift-tr_XTIUSD.DWX_D1_backtest.set",
+  "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41245_wti-mcusum-shift-tr\\QM5_41245_wti-mcusum-shift-tr.mq5",
+  "source_sha256": "e5fc833b3782f03af153ed9737a0f82c94ea508cf094af7c54b42b240c616258"
+}
