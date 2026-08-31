@@ -1,0 +1,137 @@
+{
+  "schema": "qm.new-commodity-sleeve-q02-enqueue/v1",
+  "generated_at_utc": "2026-08-31T01:24:01.7521811Z",
+  "branch": "agents/board-advisor",
+  "mission_outcome": "NEW_STRUCTURAL_WTI_SLEEVE_Q01_PASS_Q02_ENQUEUED",
+  "ea": {
+    "ea_id": "QM5_41238",
+    "slug": "wti-samecal-arctan5",
+    "strategy_id": "KELOHARJU-SCIPY-WTI-SAMECAL-ARCTAN5-2026_S01",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "magic": 412380000
+  },
+  "edge": {
+    "class": "wti_exact_five_year_same_calendar_frozen_scale_arctan_location",
+    "frequency": "monthly",
+    "mechanic": "At the first genuine normalized WTI broker-month transition, require the exact completed same-calendar-month log returns from Y-5 through Y-1, initialize at their odd median, freeze scale at 1.4826 times raw MAD, execute exactly 32 updates with weight 1/(1+u^4), and trade only the strict final sign outside 1e-12.",
+    "dedup_verdict": "SEMANTICALLY_DISTINCT_WTI_EXACT_FIVE_YEAR_SAME_CALENDAR_FROZEN_SCALE_ARCTAN_QUARTIC_WEIGHT_SIGN_MONTHLY_SLEEVE",
+    "dedup_receipt": "artifacts/qm5_wti_samecal_arctan5_preallocation_dedup_20260831.json",
+    "dedup_receipt_sha256": "4A050EBE9CC45328B34FFC69CD18485A2A65B45246F1E4E625CEA81057F7232F",
+    "locked_fixture": {
+      "observations": [-0.095, -0.045, -0.005, 0.05, 0.06],
+      "arctan_location": 0.0062809556,
+      "arctan_direction": "BUY_WTI",
+      "cauchy_location": -0.002436516741,
+      "cauchy_direction": "SELL_WTI",
+      "raw_mean": -0.007,
+      "raw_median": -0.005
+    }
+  },
+  "governance": {
+    "source_packet": "strategy-seeds/sources/KELOHARJU-SCIPY-WTI-SAMECAL-ARCTAN5-2026/source.md",
+    "source_packet_sha256": "254196D2A3D82A3354E7E14627323BD3141D19D16AEDB195B47BB58B815471E3",
+    "source_approval": "decisions/2026-08-31_wti_same_calendar_arctan5_source_approval.md",
+    "source_approval_sha256": "9E96A4F4618CC14CA4E7CA6C7AA896C5B2C0E1562954F926C91E083B9B2C776A",
+    "approved_card": "strategy-seeds/cards/approved/QM5_41238_wti-samecal-arctan5_card.md",
+    "approved_card_sha256_after_q02_status_update": "FA918D92A8BFDD17A1D28D47E6E4214F898E6913B01E7F5289CB520BAD8DE31D",
+    "local_card": "framework/EAs/QM5_41238_wti-samecal-arctan5/docs/strategy_card.md",
+    "local_card_byte_identical_after_q02_status_update": true,
+    "g0_decision": "decisions/2026-08-31_qm5_41238_wti_same_calendar_arctan5_g0.md",
+    "g0_decision_sha256": "2C15CD6CA03AF3B11F6551E091AFA1C6495441969C6172CBE5EBEE445647B96B",
+    "magic_allocation": "artifacts/qm5_41238_magic_allocation_20260831.json",
+    "magic_allocation_sha256": "DFA946AD996E1158EBBB87101E9B18761E3386AC8ECA54892DF7C1F378BF9A21"
+  },
+  "build": {
+    "task_id": "1dcf4bb6-7684-4531-b77b-e36c91b6d063",
+    "build_result": "artifacts/builds/1dcf4bb6-7684-4531-b77b-e36c91b6d063.json",
+    "build_result_sha256": "FB8B4BC0EE33B744A7E5CF33CA5AAFDC6C70A2BBB75618D8C06C7870C0EE7964",
+    "mq5": "framework/EAs/QM5_41238_wti-samecal-arctan5/QM5_41238_wti-samecal-arctan5.mq5",
+    "mq5_sha256": "391996435E5B4F99DC0BE92A95E153FC185A3776EACD12C5CDC72A82217447EF",
+    "ex5": "framework/EAs/QM5_41238_wti-samecal-arctan5/QM5_41238_wti-samecal-arctan5.ex5",
+    "ex5_sha256": "102916D14A92333B5AB50B77508C4F0BBF663D3CE85CB236DD5C97E02AF30EEB",
+    "setfile": "framework/EAs/QM5_41238_wti-samecal-arctan5/sets/QM5_41238_wti-samecal-arctan5_XTIUSD.DWX_D1_backtest.set",
+    "setfile_sha256": "B291090E9035712382C38379E0B6B0F45120E69F81E7AFE28F156DB2BEF02A2C",
+    "setfile_build_hash": "37740f308fde24dad9206d6b37691e1edda71a8d9b564300b8e06eb5f3f9a410",
+    "spec_sha256": "14170FB426B678E501B63B0FDA43490CDA734D55450099BA04CD73FC083A1080",
+    "risk_mode": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "validations": {
+      "reference_tests": "PASS_11",
+      "card_schema_lint": "PASS",
+      "spec_validation": "PASS",
+      "strategy_entry_validation": "PASS",
+      "raw_mq5_quarantine": "PASS",
+      "static_build_guardrails": "PASS_ZERO_FINDINGS",
+      "allocator_tests": "PASS_17"
+    }
+  },
+  "q01": {
+    "work_item_id": "96597175-b978-4663-86e0-ab4b448bee4d",
+    "status": "done",
+    "verdict": "COMPILE_OK",
+    "build_check_result": "PASS",
+    "compile_result": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "failure_classes": [],
+    "setfile_count": 1,
+    "evidence_path": "D:/QM/reports/work_items/96597175-b978-4663-86e0-ab4b448bee4d/QM5_41238/COMPILE_EA/compile_evidence.json",
+    "evidence_sha256": "7E875C4C3A8BCA44572006182AF0AE48899D807187B26EF21D48A37B8093D4DD",
+    "compile_release_dry_run": "artifacts/qm5_41238_compile_release_dry_run_20260831.json",
+    "compile_release_dry_run_sha256": "11DB8EFAF6C29FBB13EE577A47F89875CF4C058FBCD45195F124F6207D799679",
+    "compile_release_apply": "artifacts/qm5_41238_compile_release_apply_20260831.json",
+    "compile_release_apply_sha256": "A5441DC43AEE621B528229D725CB4CD0ED32BFFAE11EDFA6CE9B9FCBA7D98E2D"
+  },
+  "capacity": {
+    "pre_q02_sampled_at_utc": "2026-08-31T01:21:50.8197865Z",
+    "samples_percent": [68.5078, 68.8314, 68.3628, 68.2654, 73.8051],
+    "average_percent": 69.5545,
+    "maximum_percent": 73.8051,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_hit": false
+  },
+  "q02": {
+    "enqueued": true,
+    "work_item_id": "313a6f99-9730-4563-88d7-55866782c4f9",
+    "phase": "Q02",
+    "status_after_enqueue": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile": "C:/QM/repo/framework/EAs/QM5_41238_wti-samecal-arctan5/sets/QM5_41238_wti-samecal-arctan5_XTIUSD.DWX_D1_backtest.set",
+    "enqueued_at_utc": "2026-08-31T01:22:02+00:00",
+    "enqueued_by": "record_build_result.auto_q02",
+    "priority_track": true,
+    "custom_history_archive_admission": "ACTIVE",
+    "selected_archive_rows": 108,
+    "duplicate_or_skipped_rows": 0
+  },
+  "commits": [
+    "184a4ebc7",
+    "99c197e13",
+    "91c2823ac",
+    "dd6650493",
+    "86986acbf",
+    "2b94a298c",
+    "f0925f3b6",
+    "f3ca37be6",
+    "497ca6700",
+    "e65bd7617"
+  ],
+  "safety": {
+    "manual_backtest_launched": false,
+    "q02_execution_started_by_this_session": false,
+    "autotrading_toggled": false,
+    "t_live_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "certification_claimed": false,
+    "realized_decorrelation_claimed": false,
+    "q09_remains_required": true
+  }
+}
