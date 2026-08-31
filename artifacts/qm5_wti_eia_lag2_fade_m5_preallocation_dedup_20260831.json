@@ -1,0 +1,79 @@
+{
+  "candidate": {
+    "author": "Shiyu Ye; Berna Karali",
+    "mechanic": "XTIUSD M5 standard-Wednesday EIA 10:30 completed five-minute reaction opposite-side fade from 10:35 through 10:45 New York",
+    "slug": "wti-eia-lag2-fade-m5",
+    "strategy_id": "YE-KARALI-EIA-WTI-LAG2-FADE-M5-2026_S01"
+  },
+  "error": null,
+  "exit_code": 3,
+  "generated_at_utc": "2026-08-31T07:22:10+00:00",
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_12596_wti-mon-fade_card.md",
+      "score": 1.0,
+      "slug": "wti-mon-fade",
+      "source": "card",
+      "strategy_id": ""
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_12610_wti-tue-fade_card.md",
+      "score": 1.0,
+      "slug": "wti-tue-fade",
+      "source": "card",
+      "strategy_id": ""
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_12726_wti-nov-fade_card.md",
+      "score": 1.0,
+      "slug": "wti-nov-fade",
+      "source": "card",
+      "strategy_id": ""
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_12777_wti-dec-fade_card.md",
+      "score": 1.0,
+      "slug": "wti-dec-fade",
+      "source": "card",
+      "strategy_id": ""
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_12819_xng-thu-fade_card.md",
+      "score": 1.0,
+      "slug": "xng-thu-fade",
+      "source": "card",
+      "strategy_id": ""
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4742,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1380,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "FUZZY_MATCH"
+}
