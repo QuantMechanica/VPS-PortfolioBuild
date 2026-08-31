@@ -18156,3 +18156,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41248,xauxag-mpettitt-rv,1,XAGUSD.DWX,412480001,2026-08-31,Codex governed allocator,active
 41249,wti-mwelch-shift-tr,0,XTIUSD.DWX,412490000,2026-08-31,Codex governed allocator,active
 41250,wti-mperm-scale-tr,0,XTIUSD.DWX,412500000,2026-08-31,Codex governed allocator,active
+41251,wti-mbrunner-shift-tr,0,XTIUSD.DWX,412510000,2026-08-31,Codex governed allocator,active
