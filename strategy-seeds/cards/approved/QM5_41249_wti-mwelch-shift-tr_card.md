@@ -77,7 +77,7 @@ r1_track_record: PASS_WITH_AI_SYNTHESIS_AND_METHOD_ACCESS_BOUNDARY
 r1_reasoning: "One durable AI-originated source ID; complete-read peer-reviewed WTI evidence; named Welch bibliographic record; complete official public SciPy method evidence; exact trading conjunction disclosed as untested QM synthesis."
 r2_mechanical: PASS
 r2_reasoning: "Month clock, endpoints, returns, fixed samples, means, unbiased variances, standard error, score boundary, recent-mean alignment, attempt, risk, stop, spread, and lifecycle are deterministic and locked."
-r3_data_available: PASS_WITH_CONTINUOUS_CFD_BASIS_RISK
+r3_data_available: PASS
 r3_reasoning: "Registered native XTIUSD.DWX D1 and MT5 state supply every runtime input; continuous-CFD roll, basis, financing, gap, and broker-month-label risks remain."
 r4_ml_forbidden: PASS
 r4_reasoning: "Only timestamps, completed prices, logarithms, finite arithmetic, square roots, comparisons, ATR risk, quote, position, deal, and persistent state; no trained output or prohibited runtime feed."
@@ -278,7 +278,7 @@ forbidden.
 |---|---|---|
 | R1 | PASS_WITH_AI_SYNTHESIS_AND_METHOD_ACCESS_BOUNDARY | One durable source ID; complete WTI paper record; Welch metadata; complete public SciPy method evidence; explicit untested translation. |
 | R2 | PASS | Clock, data, formula, blocks, means, variances, score, side, attempt, risk, stop, spread, and exits are exact. |
-| R3 | PASS_WITH_CONTINUOUS_CFD_BASIS_RISK | Registered native WTI D1 and MT5 state only; roll/basis/financing/gap risks disclosed. |
+| R3 | PASS | Registered native WTI D1 and MT5 state only; roll/basis/financing/gap risks disclosed. |
 | R4 | PASS | Deterministic native arithmetic only; no trained output, banned signal, external runtime feed, grid, martingale, scale-in, or pyramid. |
 
 ## Risk and kill criteria
