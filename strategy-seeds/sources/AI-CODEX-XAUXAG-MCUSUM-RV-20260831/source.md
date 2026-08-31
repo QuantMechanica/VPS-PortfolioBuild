@@ -16,7 +16,8 @@ parent_sha256:
   AI-CODEX-WTI-MCUSUM-20260831: 109CD229E8BAC6A26F56132C8FC9CA2CFA0925BB2FC9C0948C8C3F5F6114E73C
 created: 2026-08-31
 created_by: Research+Development
-cards_extracted: []
+cards_extracted:
+  - QM5_41247_xauxag-mcusum-rv
 ---
 
 # XAU/XAG Monthly Centered-CUSUM Relative-Return Reversion
@@ -191,4 +192,3 @@ and one paced logical Q02 handoff if CPU capacity permits. It authorizes no
 manual backtest, live/demo/shadow/stress/optimization preset, AutoTrading
 action, `T_Live` change, deploy/live manifest, portfolio-gate edit,
 correlation waiver, or portfolio admission.
-
