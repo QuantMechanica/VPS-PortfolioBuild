@@ -9,7 +9,8 @@ approval_basis: decisions/2026-08-31_wti_monthly_centered_cusum_shift_trend_sour
 created: 2026-08-31
 created_by: Codex
 last_reviewed: 2026-08-31
-cards_extracted: []
+cards_extracted:
+  - QM5_41245_wti-mcusum-shift-tr
 ---
 
 # WTI Monthly Centered-CUSUM Return-Regime Shift Trend
