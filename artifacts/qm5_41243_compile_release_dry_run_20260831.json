@@ -1,0 +1,19 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "9aac2436f185b120fb261fa3a78fc779556f1dfac949cf531a916eca3c6730f1",
+      "ea_id": "QM5_41243",
+      "ea_label": "QM5_41243_wti-eia-lag2-fade-m5",
+      "expected_mq5_sha256": "9aac2436f185b120fb261fa3a78fc779556f1dfac949cf531a916eca3c6730f1",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41243_wti-eia-lag2-fade-m5\\QM5_41243_wti-eia-lag2-fade-m5.mq5",
+      "work_item_id": "5fd6138a-3427-40db-9b4d-6310ba485a62"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "5fd6138a-3427-40db-9b4d-6310ba485a62"
+}
