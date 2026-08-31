@@ -1285,6 +1285,87 @@ class Q05Q07VerdictTests(unittest.TestCase):
         self.assertEqual(recovered[17]["summary_path"], str(summary))
         self.assertEqual(recovered[17]["pf"], 1.03)
 
+    def test_q07_recovers_hash_bound_seed_from_append_only_predecessor_root(self) -> None:
+        expected_ex5 = "a" * 64
+        expected_mq5 = "b" * 64
+        with tempfile.TemporaryDirectory() as tmp:
+            current_root = Path(tmp) / "new-work-item"
+            current_root.mkdir()
+            predecessor_root = Path(tmp) / "prior-work-item"
+            run_dir = predecessor_root / "QM5_12772" / "20260831_000624"
+            raw_dir = run_dir / "raw" / "run_01"
+            raw_dir.mkdir(parents=True)
+            (raw_dir / "tester.ini").write_text(
+                "ExpertParameters=QM5_12772_demo_LOGICAL_D1_q06_stress_harsh_seed99.set\n",
+                encoding="utf-8",
+            )
+            self._write_seed_report(raw_dir / "report.htm", 99)
+            summary = run_dir / "summary.json"
+            summary.write_text(
+                json.dumps({
+                    "result": "PASS",
+                    "ea_id": 12772,
+                    "expert": r"QM\QM5_12772_demo",
+                    "symbol": "EURGBP.DWX",
+                    "period": "D1",
+                    "terminal": "T3",
+                    "execution_identity": {
+                        "stable_during_run": True,
+                        "expert_binary": {
+                            "source_matches_deployed": True,
+                            "stable_during_run": True,
+                            "source": {"sha256": expected_ex5},
+                            "deployed": {"sha256": expected_ex5},
+                        },
+                        "mq5_source": {"sha256": expected_mq5},
+                    },
+                    "runs": [{
+                        "status": "OK",
+                        "report_canonical_path": str(raw_dir / "report.htm"),
+                        "tester_ini_path": str(raw_dir / "tester.ini"),
+                        "profit_factor": 1.26,
+                        "drawdown": 2750.0,
+                        "total_trades": 187,
+                    }],
+                }),
+                encoding="utf-8",
+            )
+
+            recovered = q07._recover_existing_seed_results(
+                current_root,
+                [42, 17, 99, 7, 2026],
+                latest_full_year=None,
+                full_history_from="2018.07.02",
+                ea_id=12772,
+                ea_expert=r"QM\QM5_12772_demo",
+                symbol="EURGBP.DWX",
+                period="D1",
+                terminal="T8",
+                additional_report_roots=[predecessor_root],
+                expected_ex5_sha256=expected_ex5,
+                expected_mq5_sha256=expected_mq5,
+            )
+            rejected = q07._recover_existing_seed_results(
+                current_root,
+                [42, 17, 99, 7, 2026],
+                latest_full_year=None,
+                full_history_from="2018.07.02",
+                ea_id=12772,
+                ea_expert=r"QM\QM5_12772_demo",
+                symbol="EURGBP.DWX",
+                period="D1",
+                terminal="T8",
+                additional_report_roots=[predecessor_root],
+                expected_ex5_sha256="c" * 64,
+                expected_mq5_sha256=expected_mq5,
+            )
+
+        self.assertEqual(sorted(recovered), [99])
+        self.assertEqual(recovered[99]["summary_path"], str(summary))
+        self.assertTrue(recovered[99]["reused_cross_terminal"])
+        self.assertEqual(recovered[99]["evidence_terminal"], "T3")
+        self.assertEqual(rejected, {})
+
     def test_q07_resume_rejects_foreign_or_unproven_seed_summaries(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

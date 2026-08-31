@@ -947,6 +947,12 @@ Universe: EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, XAUUSD, XTIUSD, NDX.DWX, GDAXI
                         "portfolio_scope": "basket",
                         "q04_latest_full_year": 2024,
                         "q07_seed_timeout_sec": 5400,
+                        "append_only_rerun_lineage_work_items": [
+                            "prior-q07",
+                            "older-q07",
+                        ],
+                        "expected_current_ex5_sha256": "a" * 64,
+                        "expected_mq5_sha256": "b" * 64,
                     }),
                 ),
             )
@@ -963,6 +969,20 @@ Universe: EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, XAUUSD, XTIUSD, NDX.DWX, GDAXI
             self.assertEqual(cmd[cmd.index("--latest-full-year") + 1], "2024")
             self.assertIn("--timeout-sec", cmd)
             self.assertEqual(cmd[cmd.index("--timeout-sec") + 1], "5400")
+            reuse_indexes = [
+                i for i, value in enumerate(cmd) if value == "--reuse-report-root"
+            ]
+            self.assertEqual(len(reuse_indexes), 2)
+            self.assertEqual(
+                [Path(cmd[i + 1]).name for i in reuse_indexes],
+                ["prior-q07", "older-q07"],
+            )
+            self.assertEqual(
+                cmd[cmd.index("--expected-ex5-sha256") + 1], "a" * 64
+            )
+            self.assertEqual(
+                cmd[cmd.index("--expected-mq5-sha256") + 1], "b" * 64
+            )
             self.assertIn("--full-history-from", cmd)
             self.assertEqual(
                 cmd[cmd.index("--full-history-from") + 1],
@@ -1321,6 +1341,10 @@ class AppendOnlyCascadeRerunTests(unittest.TestCase):
             self.assertTrue(payload["historical_work_item_preserved"])
             self.assertEqual(
                 payload["append_only_rerun_of_work_item"], "q06-historical"
+            )
+            self.assertEqual(
+                payload["append_only_rerun_lineage_work_items"],
+                ["q06-historical"],
             )
             self.assertEqual(payload["promoted_from_work_item"], "q05-source")
 

@@ -272,18 +272,63 @@ def _effective_seed_from_summary_path(summary_path: Path) -> int | None:
     return _seed_pair_from_summary_path(summary_path)[1]
 
 
+def _summary_artifact_identity_matches(
+        summary: dict, *, expected_ex5_sha256: str,
+        expected_mq5_sha256: str) -> bool:
+    """Bind a reused predecessor seed to the current source/binary generation."""
+    execution = summary.get("execution_identity")
+    if not isinstance(execution, dict) or execution.get("stable_during_run") is not True:
+        return False
+    expert = execution.get("expert_binary")
+    mq5 = execution.get("mq5_source")
+    if not isinstance(expert, dict) or not isinstance(mq5, dict):
+        return False
+    source = expert.get("source")
+    deployed = expert.get("deployed")
+    if not isinstance(source, dict) or not isinstance(deployed, dict):
+        return False
+    expected_ex5 = expected_ex5_sha256.strip().casefold()
+    expected_mq5 = expected_mq5_sha256.strip().casefold()
+    return (
+        expert.get("source_matches_deployed") is True
+        and expert.get("stable_during_run") is True
+        and str(source.get("sha256") or "").strip().casefold() == expected_ex5
+        and str(deployed.get("sha256") or "").strip().casefold() == expected_ex5
+        and str(mq5.get("sha256") or "").strip().casefold() == expected_mq5
+    )
+
+
 def _result_from_existing_seed_summary(*, summary_path: Path, seed: int,
                                        latest_full_year: int | None,
                                        full_history_from: str | None,
                                        ea_id: int, ea_expert: str, symbol: str,
-                                       period: str, terminal: str) -> dict | None:
+                                       period: str, terminal: str,
+                                       allow_different_terminal: bool = False,
+                                       expected_ex5_sha256: str | None = None,
+                                       expected_mq5_sha256: str | None = None) -> dict | None:
     try:
         summary = json.loads(summary_path.read_text(encoding="utf-8-sig"))
     except (OSError, json.JSONDecodeError):
         return None
+    evidence_terminal = str(summary.get("terminal") or "").strip()
+    identity_terminal = terminal
+    if allow_different_terminal:
+        # Terminal selection is an execution carrier, not a strategy parameter.
+        # Cross-GUID reuse is allowed only for canonical factory/dev terminals and
+        # only when both source and binary hashes match the current work item.
+        if not re.fullmatch(r"T(?:[1-9]|10)|DEV[12]", evidence_terminal, re.IGNORECASE):
+            return None
+        if not expected_ex5_sha256 or not expected_mq5_sha256:
+            return None
+        if not _summary_artifact_identity_matches(
+                summary,
+                expected_ex5_sha256=expected_ex5_sha256,
+                expected_mq5_sha256=expected_mq5_sha256):
+            return None
+        identity_terminal = evidence_terminal
     if not _summary_identity_matches(
             summary, ea_id=ea_id, ea_expert=ea_expert, symbol=symbol,
-            period=period, terminal=terminal):
+            period=period, terminal=identity_terminal):
         return None
     # Authenticate on BOTH provenance axes; neither is sufficient alone.
     #  (a) tester.ini must name THIS slot's Q07 HARSH seeded set-file
@@ -328,6 +373,8 @@ def _result_from_existing_seed_summary(*, summary_path: Path, seed: int,
         "full_history_from_override": full_history_from,
         "invalid_reason": None,
         "reused_existing_summary": True,
+        "reused_cross_terminal": allow_different_terminal,
+        "evidence_terminal": evidence_terminal,
     }
 
 
@@ -335,27 +382,52 @@ def _recover_existing_seed_results(report_root: Path, seeds: list[int],
                                    latest_full_year: int | None,
                                    full_history_from: str | None, *,
                                    ea_id: int, ea_expert: str, symbol: str,
-                                   period: str, terminal: str) -> dict[int, dict]:
+                                   period: str, terminal: str,
+                                   additional_report_roots: list[Path] | None = None,
+                                   expected_ex5_sha256: str | None = None,
+                                   expected_mq5_sha256: str | None = None) -> dict[int, dict]:
     root = Path(report_root)
-    search_roots: list[Path] = []
+    search_roots: list[tuple[Path, bool]] = []
     if root.is_dir():
-        search_roots.append(root)
+        search_roots.append((root, False))
     try:
         search_roots.extend(
-            p for p in sorted(root.parent.glob(f"{root.name}.requeued_*"))
+            (p, False) for p in sorted(root.parent.glob(f"{root.name}.requeued_*"))
             if p.is_dir()
         )
     except OSError:
         pass
+    for additional_root in additional_report_roots or []:
+        candidate = Path(additional_root)
+        if candidate.is_dir():
+            search_roots.append((candidate, True))
+        try:
+            search_roots.extend(
+                (p, True)
+                for p in sorted(candidate.parent.glob(f"{candidate.name}.requeued_*"))
+                if p.is_dir()
+            )
+        except OSError:
+            pass
     if not search_roots:
         return {}
     wanted = set(seeds)
     recovered: dict[int, dict] = {}
-    summaries: list[Path] = []
-    for search_root in search_roots:
-        summaries.extend(search_root.rglob("summary.json"))
-    summaries = sorted(summaries, key=lambda p: p.stat().st_mtime, reverse=True)
-    for summary_path in summaries:
+    summaries_by_path: dict[str, tuple[Path, bool]] = {}
+    for search_root, allow_different_terminal in search_roots:
+        for summary_path in search_root.rglob("summary.json"):
+            key = str(summary_path.resolve()).casefold()
+            # Current-root evidence is stricter than explicit predecessor-root
+            # evidence when a path is accidentally listed twice.
+            prior = summaries_by_path.get(key)
+            if prior is None or (prior[1] and not allow_different_terminal):
+                summaries_by_path[key] = (summary_path, allow_different_terminal)
+    summaries = sorted(
+        summaries_by_path.values(),
+        key=lambda item: item[0].stat().st_mtime,
+        reverse=True,
+    )
+    for summary_path, allow_different_terminal in summaries:
         # Authenticate on BOTH provenance axes and require them to AGREE:
         #  - label_seed: the Q07 HARSH seeded set-file named in tester.ini
         #    (`_q06_stress_harsh_seed<N>.set`) — proves phase + stress provenance.
@@ -399,6 +471,9 @@ def _recover_existing_seed_results(report_root: Path, seeds: list[int],
             symbol=symbol,
             period=period,
             terminal=terminal,
+            allow_different_terminal=allow_different_terminal,
+            expected_ex5_sha256=expected_ex5_sha256,
+            expected_mq5_sha256=expected_mq5_sha256,
         )
         if result is not None:
             recovered[seed] = result
@@ -794,6 +869,15 @@ def main() -> int:
                     help="Override full-history start date as YYYY.MM.DD for custom-symbol cohorts")
     ap.add_argument("--logical-symbol",
                     help="Basket evidence symbol to record when --symbol is the MT5 host")
+    ap.add_argument(
+        "--reuse-report-root",
+        action="append",
+        type=Path,
+        default=[],
+        help="Authenticated append-only predecessor report root (repeatable)",
+    )
+    ap.add_argument("--expected-ex5-sha256", help=argparse.SUPPRESS)
+    ap.add_argument("--expected-mq5-sha256", help=argparse.SUPPRESS)
     args = ap.parse_args()
 
     ea_match = re.match(r"QM5_(\d+)_?", args.ea)
@@ -808,6 +892,16 @@ def main() -> int:
         print(f"cannot resolve EA dir for {args.ea}", file=sys.stderr)
         return 2
     period = period_from_setfile(args.baseline_setfile)
+
+    if args.reuse_report_root:
+        expected_hashes = (args.expected_ex5_sha256, args.expected_mq5_sha256)
+        if any(not re.fullmatch(r"[0-9a-fA-F]{64}", str(value or ""))
+               for value in expected_hashes):
+            print(
+                "append-only Q07 seed reuse requires expected EX5 and MQ5 SHA256 bindings",
+                file=sys.stderr,
+            )
+            return 2
 
     # Q07 runs against Q06 HARSH stress per spec — apply HARSH first, then per-seed.
     harsh_set = gen_harsh_setfile_for(args.baseline_setfile)
@@ -825,6 +919,9 @@ def main() -> int:
         symbol=args.symbol,
         period=period,
         terminal=args.terminal,
+        additional_report_roots=args.reuse_report_root,
+        expected_ex5_sha256=args.expected_ex5_sha256,
+        expected_mq5_sha256=args.expected_mq5_sha256,
     )
     seed_results: list[dict] = []
     for seed in seeds:

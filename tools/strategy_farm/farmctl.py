@@ -8553,6 +8553,41 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
             "--baseline-setfile", str(item_row["setfile_path"] or ""),
             "--terminal", terminal or "T1",
         ])
+        lineage_ids = payload.get("append_only_rerun_lineage_work_items")
+        expected_ex5_sha256 = str(
+            payload.get("expected_current_ex5_sha256")
+            or payload.get("expected_ex5_sha256")
+            or ""
+        ).strip().lower()
+        expected_mq5_sha256 = str(
+            payload.get("expected_mq5_sha256") or ""
+        ).strip().lower()
+        reuse_roots: list[Path] = []
+        if (
+            isinstance(lineage_ids, list)
+            and re.fullmatch(r"[0-9a-f]{64}", expected_ex5_sha256)
+            and re.fullmatch(r"[0-9a-f]{64}", expected_mq5_sha256)
+        ):
+            seen_lineage_ids: set[str] = set()
+            for raw_id in lineage_ids:
+                lineage_id = str(raw_id or "").strip()
+                if (
+                    not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}", lineage_id)
+                    or ".." in lineage_id
+                    or lineage_id in seen_lineage_ids
+                ):
+                    continue
+                seen_lineage_ids.add(lineage_id)
+                reuse_roots.append(
+                    Path(r"D:\QM\reports\work_items") / lineage_id
+                )
+        if reuse_roots:
+            for reuse_root in reuse_roots:
+                cmd.extend(["--reuse-report-root", str(reuse_root)])
+            cmd.extend([
+                "--expected-ex5-sha256", expected_ex5_sha256,
+                "--expected-mq5-sha256", expected_mq5_sha256,
+            ])
         q07_seed_timeout_sec = payload.get("q07_seed_timeout_sec")
         if q07_seed_timeout_sec is not None:
             try:
@@ -24026,6 +24061,56 @@ def _validated_q09_anchor_payload(
     }
 
 
+def _append_only_rerun_lineage_work_item_ids(
+    conn: sqlite3.Connection,
+    rerun_target: sqlite3.Row,
+    *,
+    max_depth: int = 32,
+) -> list[str]:
+    """Return the validated target-to-oldest append-only work-item lineage."""
+    expected_identity = (
+        str(rerun_target["ea_id"]),
+        str(rerun_target["phase"]),
+        str(rerun_target["symbol"]),
+        str(rerun_target["setfile_path"]),
+    )
+    lineage: list[str] = []
+    seen: set[str] = set()
+    current: sqlite3.Row | None = rerun_target
+    while current is not None and len(lineage) < max_depth:
+        current_id = str(current["id"] or "").strip()
+        current_identity = (
+            str(current["ea_id"]),
+            str(current["phase"]),
+            str(current["symbol"]),
+            str(current["setfile_path"]),
+        )
+        if (
+            not current_id
+            or current_id in seen
+            or current_identity != expected_identity
+            or str(current["status"] or "") not in {"done", "failed"}
+            or current["verdict"] is None
+        ):
+            break
+        seen.add(current_id)
+        lineage.append(current_id)
+        try:
+            current_payload = json.loads(current["payload_json"] or "{}")
+        except (TypeError, json.JSONDecodeError):
+            break
+        predecessor_id = str(
+            current_payload.get("append_only_rerun_of_work_item") or ""
+        ).strip()
+        if not predecessor_id:
+            break
+        current = conn.execute(
+            "SELECT * FROM work_items WHERE id=?",
+            (predecessor_id,),
+        ).fetchone()
+    return lineage
+
+
 def enqueue_cascade_backtest_for_ea(
     root: Path,
     ea_id: str,
@@ -24368,6 +24453,12 @@ def enqueue_cascade_backtest_for_ea(
                 payload.update({
                     "append_only_rerun": True,
                     "append_only_rerun_of_work_item": str(append_only_rerun_of),
+                    "append_only_rerun_lineage_work_items": (
+                        _append_only_rerun_lineage_work_item_ids(
+                            conn,
+                            rerun_target,
+                        )
+                    ),
                     "rerun_reason": str(rerun_reason).strip(),
                     "historical_work_item_preserved": True,
                 })

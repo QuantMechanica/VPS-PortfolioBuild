@@ -1757,6 +1757,37 @@ function Test-TesterJournalBomb {
     return $null
 }
 
+function Test-TesterReportSafeToLatch {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ReportPath
+    )
+
+    # MT5 can publish a stable, fully shaped report shell while the tester agent
+    # is still running.  The shell contains the requested period and ordinary
+    # metric labels, but Symbols=0 / Total Trades=0.  Treating that shell as a
+    # completed result force-stops the tester mid-window and turns real basket
+    # trades into a false zero-trade report.  A genuine zero-trade run remains
+    # valid evidence after the terminal exits; it simply is not safe for the
+    # early-report latch.
+    if (-not (Test-TesterReportHasCompleteMetrics -ReportPath $ReportPath)) {
+        return $false
+    }
+    try {
+        $html = Get-Content -Raw -LiteralPath $ReportPath -ErrorAction Stop
+        $symbolsRaw = Get-ReportMetricValue -Html $html -Label "Symbols" -AllowMissing
+        $totalTradesRaw = Get-ReportMetricValue -Html $html -Label "Total Trades" -AllowMissing
+        if ($null -eq $symbolsRaw -or $null -eq $totalTradesRaw) {
+            return $false
+        }
+        $symbols = [int](Convert-ReportNumber -Value $symbolsRaw)
+        $totalTrades = [int](Convert-ReportNumber -Value $totalTradesRaw)
+        return ($symbols -gt 0 -and $totalTrades -gt 0)
+    } catch {
+        return $false
+    }
+}
+
 function Remove-TesterJournalBombArtifacts {
     param(
         [Parameter(Mandatory = $true)]
@@ -1907,7 +1938,7 @@ function Start-TesterRun {
             if ($sizeBefore -gt 0) {
                 Start-Sleep -Milliseconds 500
                 $sizeAfter = if (Test-Path -LiteralPath $ReportPath -PathType Leaf) { (Get-Item -LiteralPath $ReportPath).Length } else { 0 }
-                if ($sizeAfter -eq $sizeBefore -and (Test-TesterReportHasCompleteMetrics -ReportPath $ReportPath)) {
+                if ($sizeAfter -eq $sizeBefore -and (Test-TesterReportSafeToLatch -ReportPath $ReportPath)) {
                     $latchedReport = $true
                     Write-Host ("run_smoke.stage=valid_report_latched terminal_pid={0} report='{1}' size={2}" -f $childTerminal.Id, $ReportPath, $sizeAfter)
                     try {
