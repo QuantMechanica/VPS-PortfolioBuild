@@ -1,0 +1,118 @@
+{
+  "schema": "qm.new-commodity-sleeve-capacity-handoff/v1",
+  "generated_at_utc": "2026-08-31T03:18:13.3208918Z",
+  "branch": "agents/board-advisor",
+  "mission_outcome": "STOPPED_AT_CPU_CEILING_Q01_PENDING_Q02_NOT_ENQUEUED",
+  "ea": {
+    "ea_id": "QM5_41240",
+    "slug": "wti-samecal-ramsaye5",
+    "strategy_id": "KELOHARJU-STATSMODELS-WTI-SAMECAL-RAMSAYE5-2026_S01",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "magic": 412400000
+  },
+  "edge": {
+    "class": "wti_exact_five_year_same_calendar_frozen_scale_ramsay_e_location",
+    "frequency": "monthly",
+    "mechanic": "At the first normalized WTI broker-month transition, require exact completed same-calendar-month log returns from Y-5 through Y-1, initialize at their odd median, freeze scale at 1.4826 times raw MAD, execute exactly 32 Ramsay-E updates with a=0.3 and weight exp(-a*abs(u)), and trade only the strict final sign outside 1e-12.",
+    "dedup_verdict": "SEMANTICALLY_DISTINCT_WTI_EXACT_FIVE_YEAR_SAME_CALENDAR_FROZEN_SCALE_RAMSAY_E_EXPONENTIAL_LOCATION_SIGN_MONTHLY_SLEEVE",
+    "dedup_receipt": "artifacts/qm5_wti_samecal_ramsaye5_preallocation_dedup_20260831.json",
+    "dedup_receipt_sha256": "9F3FAEC5AE93C269494C4787DBFD87EF3E6B19D9926C7925DAD302E3CDF2459E",
+    "locked_disagreement_fixture": {
+      "observations": [-0.135, -0.01, -0.005, 0.005, 0.05],
+      "ramsay_e_location": 0.000567268656259,
+      "ramsay_e_direction": "BUY_WTI",
+      "soft_l1_location": -0.003712679327335,
+      "cauchy_location": -0.002607060340566,
+      "arctangent_location": -0.00341727504202,
+      "raw_mean": -0.019,
+      "raw_median": -0.005
+    }
+  },
+  "governance": {
+    "source_packet": "strategy-seeds/sources/KELOHARJU-STATSMODELS-WTI-SAMECAL-RAMSAYE5-2026/source.md",
+    "source_packet_sha256": "AB5C658AA218A5247371586417DA6AD77F2F27CB9386BB35663F620FC0CBD26C",
+    "source_approval": "decisions/2026-08-31_wti_same_calendar_ramsay_e_5_source_approval.md",
+    "source_approval_sha256": "ED03816847F433DA8896E004C2CF9633F1BDE05A554FB88AB1125728ADF2421D",
+    "g0_decision": "decisions/2026-08-31_qm5_41240_wti_same_calendar_ramsay_e_5_g0.md",
+    "g0_decision_sha256": "2E60A25D8595F9EAE6214451936CBC8C775264E776504DEE1A7D80D0E8885FEE",
+    "approved_card": "strategy-seeds/cards/approved/QM5_41240_wti-samecal-ramsaye5_card.md",
+    "approved_card_sha256": "68B8414C5ABF73D91520368ED9D3ADC28ADCAED6A6E3F61F883F6AFD5D5B22BD",
+    "local_card": "framework/EAs/QM5_41240_wti-samecal-ramsaye5/docs/strategy_card.md",
+    "local_card_sha256": "68B8414C5ABF73D91520368ED9D3ADC28ADCAED6A6E3F61F883F6AFD5D5B22BD",
+    "approved_local_card_byte_identical": true,
+    "magic_allocation": "artifacts/qm5_41240_magic_allocation_20260831.json",
+    "magic_allocation_sha256": "196C2C4CEC7D7D051B32739C9F231A429856AC31DEF7A2EE1A384A931DCC9DD1"
+  },
+  "build": {
+    "task_id": "2a064c71-8567-47e2-80a4-b02948aa510f",
+    "mq5": "framework/EAs/QM5_41240_wti-samecal-ramsaye5/QM5_41240_wti-samecal-ramsaye5.mq5",
+    "mq5_sha256": "C9A150BE32DFE9F3D75EECB3FB1C12CD9225B6B9D0CD9209C0134A4F9AED1B4E",
+    "spec": "framework/EAs/QM5_41240_wti-samecal-ramsaye5/SPEC.md",
+    "spec_sha256": "6B08944B4D97A3CF0A196B5A96A27DE045F2FF832B6C2F082714B187E5FC509D",
+    "setfile": "framework/EAs/QM5_41240_wti-samecal-ramsaye5/sets/QM5_41240_wti-samecal-ramsaye5_XTIUSD.DWX_D1_backtest.set",
+    "setfile_sha256": "E3B2FE0679A270A2DEA41694510532150D823875A5DD07ED438C7A4D3D3AE3B4",
+    "risk_mode": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "validations": {
+      "reference_tests": "PASS_12",
+      "card_schema_lint": "PASS",
+      "spec_validation": "PASS",
+      "raw_mq5_quarantine": "PASS",
+      "static_build_guardrails": "PASS_ZERO_FINDINGS",
+      "allocator_tests": "PASS_17",
+      "resolver_tests": "PASS_8"
+    }
+  },
+  "q01": {
+    "work_item_id": "fe8f9fa1-db11-4161-bf47-c89815092f14",
+    "status": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "activation_hold": null,
+    "expected_and_actual_mq5_sha256_match": true,
+    "compile_completed": false,
+    "compile_failed": false,
+    "ex5_present": false
+  },
+  "capacity": {
+    "sampled_at_utc": "2026-08-31T03:17:19.0653003Z",
+    "samples_percent": [97.5601, 99.129, 98.0618, 98.049, 99.2223],
+    "average_percent": 98.4044,
+    "maximum_percent": 99.2223,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_hit": true
+  },
+  "q02": {
+    "enqueued": false,
+    "reason": "STOP_REQUIRED_BY_USER_AT_BACKTEST_CPU_CEILING",
+    "work_item_id": null
+  },
+  "commits": [
+    "261162499f",
+    "903edb7f50",
+    "b3866e2189",
+    "ce2f0390ef",
+    "f34e7bcfe5",
+    "4c18034800",
+    "0279164ce8",
+    "f948a42e1e",
+    "fef8260286",
+    "1ab6a41bd3"
+  ],
+  "safety": {
+    "manual_backtest_launched": false,
+    "q02_execution_started_by_this_session": false,
+    "autotrading_toggled": false,
+    "t_live_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "certification_claimed": false,
+    "realized_decorrelation_claimed": false,
+    "q09_remains_required": true
+  },
+  "resume_condition": "After CPU falls below 97%, allow the governed Q01 work item to complete; only on zero-error/zero-warning Q01 PASS, resample CPU and record the build result so the canonical auto-Q02 path may enqueue one baseline."
+}
