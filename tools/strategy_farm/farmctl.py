@@ -13303,6 +13303,82 @@ def _block_unreviewable_build(root: Path, build_task_row: sqlite3.Row, reason: s
     }
 
 
+def _restore_reviewable_pre_review_block(
+    root: Path,
+    build_task_row: sqlite3.Row,
+) -> dict[str, Any] | None:
+    """Restore a pre-review block when the exact durable result is now valid.
+
+    This is a narrow reconciliation for controller/schema fixes. It does not
+    retry a build, change any build artifact, or consume the bounded build retry
+    budget. The compare-and-swap prevents a concurrent task update from being
+    overwritten.
+    """
+    if build_task_row["status"] != "blocked":
+        return None
+    payload = _task_payload_object(build_task_row["payload_json"])
+    if payload is None:
+        return None
+    blocked_reason = str(payload.get("blocked_reason") or "")
+    if not blocked_reason.startswith("pre_review_not_reviewable:"):
+        return None
+    ready, reason = _pre_review_ready(root, build_task_row)
+    if not ready:
+        return None
+
+    restored_payload = dict(payload)
+    restored_payload.pop("blocked_reason", None)
+    restored_payload.pop("pre_review_not_reviewable_reason", None)
+    restored_payload["pre_review_block_reconciled_at"] = utc_now()
+    restored_payload["pre_review_block_reconciled_from"] = blocked_reason
+    restored_json = json.dumps(restored_payload)
+    now = utc_now()
+    with connect(root) as conn:
+        cursor = conn.execute(
+            """
+            UPDATE tasks
+            SET status='done', payload_json=?, updated_at=?
+            WHERE id=? AND kind='build_ea' AND status='blocked'
+              AND updated_at=? AND payload_json=?
+            """,
+            (
+                restored_json,
+                now,
+                build_task_row["id"],
+                build_task_row["updated_at"],
+                build_task_row["payload_json"],
+            ),
+        )
+        if cursor.rowcount != 1:
+            conn.rollback()
+            return {
+                "restored": False,
+                "build_task_id": build_task_row["id"],
+                "reason": "compare_and_swap_lost",
+            }
+        event(
+            conn,
+            "task",
+            build_task_row["id"],
+            "build_pre_review_block_reconciled",
+            {
+                "from_status": "blocked",
+                "to_status": "done",
+                "from_reason": blocked_reason,
+                "durable_result_ready": True,
+            },
+        )
+        conn.commit()
+    return {
+        "restored": True,
+        "build_task_id": build_task_row["id"],
+        "ea_id": payload.get("ea_id"),
+        "from_reason": blocked_reason,
+        "to_status": "done",
+        "pre_review_ready_reason": reason,
+    }
+
+
 def _latest_codex_review_fail_for_build(
     conn: sqlite3.Connection,
     build_task_id: str,
@@ -18550,6 +18626,13 @@ def _pump_unlocked(
         payload = json.loads(row["payload_json"])
         # Forensic tombstones — never retry.
         if payload.get("superseded_by") or payload.get("duplicate_of_task_id"):
+            continue
+        restored_pre_review = _restore_reviewable_pre_review_block(root, row)
+        if restored_pre_review is not None:
+            result["build_retries"].append({
+                "action": "pre_review_block_reconciled",
+                **restored_pre_review,
+            })
             continue
         blocked_reason = str(
             payload.get("blocked_reason")

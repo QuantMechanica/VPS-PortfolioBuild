@@ -68,6 +68,70 @@ class ZeroTradePreventionTests(unittest.TestCase):
                 (False, "build_result_blocked"),
             )
 
+    def test_reviewable_pre_review_block_is_restored_without_build_retry(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp)
+            ea_dir = root / "ea"
+            ea_dir.mkdir()
+            mq5 = ea_dir / "QM5_999000_demo.mq5"
+            ex5 = ea_dir / "QM5_999000_demo.ex5"
+            mq5.write_text("// source\n", encoding="utf-8")
+            ex5.write_bytes(b"compiled")
+            farmctl.init_db(root)
+            result_path = root / "artifacts" / "builds" / "build-task.json"
+            result_path.parent.mkdir(parents=True, exist_ok=True)
+            result_path.write_text(
+                json.dumps({
+                    "task_id": "build-task",
+                    "ea_id": "QM5_999000",
+                    "mq5_path": str(mq5),
+                    "ex5_path": str(ex5),
+                    "compile_succeeded": True,
+                    "build_check_passed": True,
+                    "smoke_result": "deferred_p2_smoke",
+                    "blocked_reason": "status=no_capacity; 10/10 slots occupied",
+                }),
+                encoding="utf-8",
+            )
+            now = farmctl.utc_now()
+            payload = {
+                "ea_id": "QM5_999000",
+                "build_result_path": str(result_path),
+                "blocked_reason": "pre_review_not_reviewable:build_result_blocked",
+                "pre_review_not_reviewable_reason": "build_result_blocked",
+                "attempt_count": 3,
+            }
+            with farmctl.connect(root) as conn:
+                conn.execute(
+                    """
+                    INSERT INTO tasks
+                      (id, kind, status, source_id, card_id, payload_json, created_at, updated_at)
+                    VALUES
+                      ('build-task', 'build_ea', 'blocked', NULL, 'QM5_999000', ?, ?, ?)
+                    """,
+                    (json.dumps(payload), now, now),
+                )
+                conn.commit()
+                row = conn.execute(
+                    "SELECT * FROM tasks WHERE id='build-task'"
+                ).fetchone()
+
+            restored = farmctl._restore_reviewable_pre_review_block(root, row)
+            self.assertTrue(restored["restored"])
+            with farmctl.connect(root) as conn:
+                stored = conn.execute(
+                    "SELECT status,payload_json FROM tasks WHERE id='build-task'"
+                ).fetchone()
+            stored_payload = json.loads(stored["payload_json"])
+            self.assertEqual(stored["status"], "done")
+            self.assertNotIn("blocked_reason", stored_payload)
+            self.assertNotIn("pre_review_not_reviewable_reason", stored_payload)
+            self.assertEqual(stored_payload["attempt_count"], 3)
+            self.assertEqual(
+                stored_payload["pre_review_block_reconciled_from"],
+                "pre_review_not_reviewable:build_result_blocked",
+            )
+
     def test_q01_smoke_saturation_waiver_requires_durable_capacity_evidence(self) -> None:
         missing = farmctl._q01_smoke_admission(None)
         self.assertFalse(missing["admitted"])
