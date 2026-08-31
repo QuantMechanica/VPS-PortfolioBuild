@@ -1,0 +1,46 @@
+{
+  "schema": "qm.source-retrieval.github-api/v1",
+  "status": "OK",
+  "router": {
+    "status": "ROUTE_GITHUB_API",
+    "adapter": "github",
+    "url": "https://github.com/cran/energy/blob/master/man/eqdist.etest.Rd",
+    "route": "public GitHub API"
+  },
+  "retrieved_at_utc": "2026-08-31T22:10:38Z",
+  "repository": "cran/energy",
+  "resolved_commit": "5c2b2d553b4245ebe2a7fd933d93b8917cea799b",
+  "resolved_commit_date_utc": "2024-08-24T02:47:12Z",
+  "package": {
+    "name": "energy",
+    "version": "1.7-12",
+    "description_path": "DESCRIPTION",
+    "description_sha256": "5A81D182CBA57C152FCE2CF1841BFDC7F5BE7439A3699429E150D27B7FCF36D1"
+  },
+  "complete_read": [
+    {
+      "path": "man/eqdist.etest.Rd",
+      "raw_url": "https://raw.githubusercontent.com/cran/energy/5c2b2d553b4245ebe2a7fd933d93b8917cea799b/man/eqdist.etest.Rd",
+      "sha256": "A726C26C348C9064253121FCFA7713F9DEE581E2D569C76D41C6D1B2D9AAC4C1"
+    },
+    {
+      "path": "R/Eeqdist.R",
+      "blob_sha": "11ff8f7c59b7ce64d0defbd05b34cc96ff56ba89",
+      "raw_url": "https://raw.githubusercontent.com/cran/energy/5c2b2d553b4245ebe2a7fd933d93b8917cea799b/R/Eeqdist.R",
+      "sha256": "D06AA71E4F62DF3496709C7DDA523A23AC8BFFF370A26CCF2D587CD0F708A319"
+    },
+    {
+      "path": "R/edist.R",
+      "blob_sha": "00453960aafe896d70c58bea8476cc46d1e263e2",
+      "raw_url": "https://raw.githubusercontent.com/cran/energy/5c2b2d553b4245ebe2a7fd933d93b8917cea799b/R/edist.R",
+      "sha256": "AC66F6A6AD06AE8BC266EDDBA595648000DD6381E0F7FE1B5EABB7554367B632"
+    }
+  ],
+  "bounded_findings": [
+    "The official CRAN mirror describes a two-sample E-statistic built from cross-sample and within-sample average Euclidean distances.",
+    "For sample sizes n1 and n2 it applies weight n1*n2/(n1+n2) to 2*M12-M11-M22.",
+    "The package documents resampling for the equality-of-distributions test; QM replaces approximate resampling with complete enumeration of all 924 six-of-twelve labels.",
+    "No trading performance, WTI efficacy, threshold, direction, or lifecycle claim is imported."
+  ],
+  "raw_text_committed": false
+}
