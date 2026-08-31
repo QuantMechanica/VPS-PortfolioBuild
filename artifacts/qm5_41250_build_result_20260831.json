@@ -1,0 +1,63 @@
+{
+  "task_id": "a62cfed8-9ae8-4e8a-be08-b2b0d7d65b46",
+  "ea_id": "QM5_41250",
+  "ea_label": "QM5_41250_wti-mperm-scale-tr",
+  "slug": "wti-mperm-scale-tr",
+  "strategy_id": "AI-CODEX-WTI-MPERMSCALE-20260831_S01",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41250_wti-mperm-scale-tr",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41250_wti-mperm-scale-tr\\QM5_41250_wti-mperm-scale-tr.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41250_wti-mperm-scale-tr\\QM5_41250_wti-mperm-scale-tr.ex5",
+  "magic_base": 412500000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41250_wti-mperm-scale-tr\\sets\\QM5_41250_wti-mperm-scale-tr_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41250_wti-mperm-scale-tr\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "The qm-build-ea-from-card skill is build-only and forbids manual backtests; the OWNER mission authorizes one governed Q02 enqueue instead.",
+  "blocked_reason": "",
+  "open_questions": [],
+  "compile": {
+    "status": "COMPILE_OK",
+    "work_item_id": "ee53e419-4162-4149-bf2a-d571d258652f",
+    "terminal": "T3",
+    "evidence_path": "D:\\QM\\reports\\work_items\\ee53e419-4162-4149-bf2a-d571d258652f\\QM5_41250\\COMPILE_EA\\compile_evidence.json",
+    "evidence_sha256": "EAFB855FC7CC00EFBC7DBF41D8D92CCCD9A7CA04E0BEAE4A0D5CB8F78D3CC303",
+    "build_check_result": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "failure_classes": [],
+    "mq5_sha256": "709D92CE816B88CFC57C42F013BC9DC02B8F2FF592EADB4CBE76DFA75CF04313",
+    "ex5_sha256": "E7C7251B847168547F9258064630B3408A90069B8E4C13B92394C8A1902C5511",
+    "setfile_build_hash": "0D410722178029C0A8CE155C2EAFFE09A4D6E99665BDD7C11965C4C784ECBFDD",
+    "setfile_sha256": "56543AB3B9715F80E245B7122E08409FB23A6011FB60788C89B6F679031BF6F3"
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "validations": {
+    "approved_card_sha256": "00370B6320ECAD2FA4F86AE356A04A23C1847F27892AEB1E5399ECBC1C4E2F03",
+    "approved_local_card_byte_identical": true,
+    "build_skill_guard": "PASS",
+    "card_schema_lint": "PASS",
+    "reference_tests": "PASS_11",
+    "p1_artifact_validation": "PASS",
+    "spec_sha256": "40659AAAE4D008AE474B476066FDA26497DB4D0FCA9210FDD411BC61466A247B",
+    "spec_validation": "PASS",
+    "static_guardrails": "PASS"
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "deploy_manifest_touched": false,
+    "manual_backtest_launched": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false
+  }
+}
