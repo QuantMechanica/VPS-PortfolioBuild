@@ -1,0 +1,55 @@
+{
+  "artifact_type": "diversity_funnel_hard_cpu_stop",
+  "schema": "qm.diversity-funnel-hard-cpu-stop/v1",
+  "generated_at_utc": "2026-08-31T22:15:05Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "64014b0591",
+  "mission_outcome": "STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING_BEFORE_CLAIM",
+  "capacity": {
+    "sample_interval_seconds": 2,
+    "cpu_samples_percent": [
+      85.46,
+      81.76,
+      78.46,
+      98.78,
+      99.71
+    ],
+    "cpu_average_percent": 88.83,
+    "cpu_maximum_percent": 99.71,
+    "cpu_ceiling_percent": 97.0,
+    "cpu_ceiling_rule": "stop when average or maximum is greater than or equal to the ceiling",
+    "cpu_ceiling_hit": true,
+    "sample_window_local": {
+      "timezone": "Europe/Berlin",
+      "started_at": "2026-09-01T00:14:57+02:00",
+      "ended_at": "2026-09-01T00:15:05+02:00"
+    }
+  },
+  "selection_disposition": {
+    "priority_1_approved_card_build": "NOT_ENTERED_CPU_CEILING",
+    "priority_2_diverse_infra_repair": "NOT_ENTERED_CPU_CEILING",
+    "priority_3_new_structural_edge": "NOT_ENTERED_CPU_CEILING",
+    "qm_build_ea_from_card": "PREFLIGHT_STOP_BEFORE_CARD_SELECTION_OR_BUILD"
+  },
+  "actions_this_run": {
+    "branch_verified": true,
+    "worktree_preservation_verified": true,
+    "capacity_sampled": true,
+    "farm_db_read": false,
+    "farm_db_mutated": false,
+    "ea_claimed": false,
+    "card_or_ea_created": false,
+    "registry_or_magic_mutated": false,
+    "compile_smoke_or_backtest_started": false,
+    "q02_enqueued": false,
+    "terminal_or_worker_controlled": false
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false,
+    "preexisting_unrelated_worktree_changes_preserved": true
+  },
+  "resume_contract": "On a later paced wake, take a fresh five-sample whole-host CPU window. Continue only if both average and maximum are strictly below 97 percent; then reconcile and claim exactly one distinct highest-diversity approved build candidate through the farm DB."
+}
