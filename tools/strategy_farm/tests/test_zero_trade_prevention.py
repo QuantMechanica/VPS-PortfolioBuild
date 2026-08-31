@@ -11,6 +11,63 @@ from tools.strategy_farm import farmctl
 
 
 class ZeroTradePreventionTests(unittest.TestCase):
+    def test_pre_review_allows_only_durable_saturation_block_reason(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp)
+            ea_dir = root / "ea"
+            ea_dir.mkdir()
+            mq5 = ea_dir / "QM5_999000_demo.mq5"
+            ex5 = ea_dir / "QM5_999000_demo.ex5"
+            mq5.write_text("// source\n", encoding="utf-8")
+            ex5.write_bytes(b"compiled")
+            farmctl.init_db(root)
+            now = farmctl.utc_now()
+
+            result_path = root / "artifacts" / "builds" / "build-task.json"
+            result_path.parent.mkdir(parents=True, exist_ok=True)
+            base_result = {
+                "task_id": "build-task",
+                "ea_id": "QM5_999000",
+                "mq5_path": str(mq5),
+                "ex5_path": str(ex5),
+                "compile_succeeded": True,
+                "build_check_passed": True,
+                "smoke_result": "deferred_p2_smoke",
+            }
+            payload = {
+                "ea_id": "QM5_999000",
+                "build_result_path": str(result_path),
+            }
+            with farmctl.connect(root) as conn:
+                conn.execute(
+                    """
+                    INSERT INTO tasks
+                      (id, kind, status, source_id, card_id, payload_json, created_at, updated_at)
+                    VALUES
+                      ('build-task', 'build_ea', 'done', NULL, 'QM5_999000', ?, ?, ?)
+                    """,
+                    (json.dumps(payload), now, now),
+                )
+                conn.commit()
+                row = conn.execute(
+                    "SELECT * FROM tasks WHERE id='build-task'"
+                ).fetchone()
+
+            saturated = dict(base_result)
+            saturated["blocked_reason"] = (
+                "resolve_backtest_target.py status=no_capacity; 10/10 slots occupied"
+            )
+            result_path.write_text(json.dumps(saturated), encoding="utf-8")
+            self.assertEqual(farmctl._pre_review_ready(root, row), (True, ""))
+
+            generic = dict(base_result)
+            generic["blocked_reason"] = "headless smoke unavailable"
+            result_path.write_text(json.dumps(generic), encoding="utf-8")
+            self.assertEqual(
+                farmctl._pre_review_ready(root, row),
+                (False, "build_result_blocked"),
+            )
+
     def test_q01_smoke_saturation_waiver_requires_durable_capacity_evidence(self) -> None:
         missing = farmctl._q01_smoke_admission(None)
         self.assertFalse(missing["admitted"])

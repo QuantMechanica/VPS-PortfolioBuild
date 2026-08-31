@@ -13069,7 +13069,18 @@ def _pre_review_ready(root: Path, build_task_row: sqlite3.Row) -> tuple[bool, st
     except (OSError, json.JSONDecodeError):
         return False, "invalid_build_result"
     if build_result.get("blocked_reason"):
-        return False, "build_result_blocked"
+        # SCHEMAS.md permits exactly one non-empty blocked_reason at this
+        # boundary: deferred_p2_smoke backed by durable tester-capacity
+        # evidence.  The downstream Codex and Claude review contracts both
+        # treat that case as informational.  Reject every other blocked build,
+        # but do not strand a compiled EA before those reviews can inspect the
+        # same evidence.
+        smoke_admission = _q01_smoke_admission(build_result)
+        if not (
+            smoke_admission.get("admitted") is True
+            and smoke_admission.get("waiver") is True
+        ):
+            return False, "build_result_blocked"
     if build_result.get("compile_succeeded") is not True:
         return False, "compile_not_passed"
     if build_result.get("build_check_passed") is not True:
