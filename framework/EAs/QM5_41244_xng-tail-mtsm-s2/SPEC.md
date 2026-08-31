@@ -68,7 +68,7 @@ a terminal restart. A nonzero decision encountered with existing owned
 exposure is also persisted so same-side retention and any repair/transition
 remain restart-safe.
 
-## 5. Entry And Exit Behaviour
+## 5. Expected Behaviour
 
 Entry requires a positive finite non-crossed quote. A modeled zero spread is
 valid; a positive spread above 1,500 points is rejected. The position receives
@@ -98,7 +98,7 @@ momentum, five-day upper/lower partial moments, separate recursive
 fixed-dollar risk, bounded 252-observation references, ATR stop, spread cap,
 and Friday packaging are explicit QM translations.
 
-## 7. Risk And Falsification
+## 7. Risk Model
 
 The only authorized preset is the backtest setfile with `RISK_FIXED=1000`,
 `RISK_PERCENT=0`, and `PORTFOLIO_WEIGHT=1`. Q02 retires the unchanged baseline
