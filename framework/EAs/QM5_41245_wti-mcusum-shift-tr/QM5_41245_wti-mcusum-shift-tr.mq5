@@ -787,7 +787,7 @@ void Strategy_PrepareDecisionSignal()
         {
          g_signal_metrics.endpoint_count = ArraySize(closes);
          if(ArraySize(endpoint_times) == g_signal_metrics.endpoint_count &&
-            g_signal_metrics.endpoint_count == strategy_endpoint_count)
+            g_signal_metrics.endpoint_count == strategy_month_returns + 1)
            {
             g_oldest_endpoint_time = endpoint_times[0];
             g_newest_endpoint_time =
@@ -799,13 +799,13 @@ void Strategy_PrepareDecisionSignal()
          endpoints_valid &&
          Strategy_CusumSignal(closes, g_signal_metrics);
       if(!g_signal_valid)
-         g_signal_state = "pettitt_rank_validation_failed";
+         g_signal_state = "cusum_arithmetic_validation_failed";
       else if(g_signal_metrics.direction == 0)
-         g_signal_state = "pettitt_not_unique_central_flat";
+         g_signal_state = "cusum_unqualified_or_zero_post_mean_flat";
       else if(g_signal_metrics.direction > 0)
-         g_signal_state = "pettitt_upshift_wti_long";
+         g_signal_state = "cusum_positive_post_mean_wti_long";
       else if(g_signal_metrics.direction < 0)
-         g_signal_state = "pettitt_downshift_wti_short";
+         g_signal_state = "cusum_negative_post_mean_wti_short";
       else
          g_signal_state = "invalid_direction_flat";
 
@@ -816,7 +816,7 @@ void Strategy_PrepareDecisionSignal()
 
    QM_LogEvent(QM_INFO,
                "STRATEGY_STATE",
-               StringFormat("{\"month\":%d,\"decision_bar\":%I64d,\"label_offset_seconds\":%d,\"completed_current_month_bars\":%d,\"late\":%s,\"valid\":%s,\"signal\":%d,\"endpoint_count\":%d,\"rank_sum\":%d,\"ranks\":\"%s\",\"u_star\":%d,\"change_index\":%d,\"signed_u\":%d,\"maxima_count\":%d,\"u_path\":\"%s\",\"oldest_close\":%.10f,\"newest_close\":%.10f,\"oldest_endpoint\":%I64d,\"newest_endpoint\":%I64d,\"state\":\"%s\"}",
+               StringFormat("{\"month\":%d,\"decision_bar\":%I64d,\"label_offset_seconds\":%d,\"completed_current_month_bars\":%d,\"late\":%s,\"valid\":%s,\"signal\":%d,\"endpoint_count\":%d,\"return_count\":%d,\"mean_return\":%.12f,\"max_abs_cusum\":%.12f,\"change_index\":%d,\"selected_cusum\":%.12f,\"maxima_count\":%d,\"post_mean\":%.12f,\"returns\":\"%s\",\"cusums\":\"%s\",\"oldest_close\":%.10f,\"newest_close\":%.10f,\"oldest_endpoint\":%I64d,\"newest_endpoint\":%I64d,\"state\":\"%s\"}",
                             g_decision_month_key,
                             (long)g_decision_bar_time,
                             g_decision_label_offset,
@@ -825,13 +825,15 @@ void Strategy_PrepareDecisionSignal()
                             g_signal_valid ? "true" : "false",
                             g_signal_metrics.direction,
                             g_signal_metrics.endpoint_count,
-                            g_signal_metrics.rank_sum,
-                            g_signal_metrics.rank_path,
-                            g_signal_metrics.u_star,
+                            g_signal_metrics.return_count,
+                            g_signal_metrics.mean_return,
+                            g_signal_metrics.max_abs_cusum,
                             g_signal_metrics.change_index,
-                            g_signal_metrics.signed_u,
+                            g_signal_metrics.selected_cusum,
                             g_signal_metrics.maxima_count,
-                            g_signal_metrics.u_path,
+                            g_signal_metrics.post_mean,
+                            g_signal_metrics.return_path,
+                            g_signal_metrics.cusum_path,
                             g_signal_metrics.oldest_close,
                             g_signal_metrics.newest_close,
                             (long)g_oldest_endpoint_time,
@@ -861,15 +863,17 @@ bool Strategy_NoTradeFilter()
       qm_friday_close_hour_broker != 21 ||
       MathAbs(qm_stress_reject_probability) > 0.000000000001)
       return true;
-   if(strategy_endpoint_count != 13 ||
-      strategy_min_change_index != 4 ||
-      strategy_max_change_index != 9 ||
-      strategy_history_bars_d1 != 900 ||
+   if(strategy_month_returns != 12 ||
+      strategy_min_split != 4 ||
+      strategy_max_split != 8 ||
+      MathAbs(strategy_tie_epsilon - 0.000000000001) >
+         0.000000000000000001 ||
+      strategy_history_bars != 900 ||
       strategy_entry_grace_minutes != 180 ||
       strategy_endpoint_stale_days != 10 ||
-      strategy_atr_period_d1 != 20 ||
+      strategy_atr_period != 20 ||
       MathAbs(strategy_atr_sl_mult - 3.5) > 0.000000000001 ||
-      strategy_max_hold_days != 40 ||
+      strategy_stale_days != 40 ||
       strategy_max_spread_points != 1500)
       return true;
    return false;
@@ -899,7 +903,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const double atr_value =
-      QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period_d1, 1);
+      QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
    if(atr_value <= 0.0 || !MathIsValidNumber(atr_value))
       return false;
 
@@ -980,7 +984,7 @@ void Strategy_ManageOpenPosition()
      }
 
    const long hold_seconds =
-      (long)MathMax(1, strategy_max_hold_days) * 86400;
+      (long)MathMax(1, strategy_stale_days) * 86400;
    if((long)(now - opened) >= hold_seconds)
       Strategy_CloseOwnedPositions(QM_EXIT_TIME_STOP);
   }
@@ -1042,7 +1046,7 @@ int OnInit()
    if(!QM_FrameworkDeclareExecutionContract(
          PERIOD_D1,
          QM_FRIDAY_CLOSE_DISABLED,
-         "Approved WTI centered-CUSUM central change-point trend holds through Fridays until the next broker month"))
+         "Approved WTI centered-return CUSUM shift trend holds through Fridays until the next broker month"))
      {
       QM_FrameworkShutdown();
       return INIT_FAILED;
@@ -1062,7 +1066,7 @@ int OnInit()
    QM_SymbolGuardInit(warmup_symbols);
    QM_BasketWarmupHistory(warmup_symbols,
                           PERIOD_D1,
-                          strategy_history_bars_d1);
+                          strategy_history_bars);
 
    QM_LogEvent(QM_INFO,
                "INIT_OK",
