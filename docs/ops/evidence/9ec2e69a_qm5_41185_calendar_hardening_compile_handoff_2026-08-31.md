@@ -5,8 +5,8 @@
 - EA: `QM5_41185_xauxag-fracd-rv`
 - Branch: `agents/board-advisor`
 - Approved card: `strategy-seeds/cards/approved/QM5_41185_xauxag-fracd-rv_card.md`
-- Source SHA-256: `F72BAFE2028CA8020E4837B4F12719FCC84F64379007827FFA1217197129E605`
-- Outcome: `SOURCE_READY_GOVERNED_COMPILE_PENDING`
+- Initial source SHA-256: `F72BAFE2028CA8020E4837B4F12719FCC84F64379007827FFA1217197129E605`
+- Outcome: `COMPILE_OK_BUILD_HASH_BOUND_REVIEW_READY`
 
 ## Governed pre-flight
 
@@ -95,3 +95,54 @@ identity. Only a `COMPILE_OK` receipt for the replacement row may satisfy D6.
 No Q02 row, pipeline verdict, live artifact, terminal interruption, or manual
 terminal launch was created by this checkpoint. Short verdict:
 `REPAIRED_SOURCE_STATIC_PASS_GOVERNED_RECOMPILE_PENDING`.
+
+## Governed compile completion and Codex review
+
+Recorded: `2026-08-31T07:53Z`
+
+The append-only replacement compile row
+`a99d0b17-f974-4f32-bf4c-e7b66a8c3ce5` completed on governed terminal T6 at
+`2026-08-31T07:18:34Z` with `COMPILE_OK`. Its durable receipt is
+`D:/QM/reports/work_items/a99d0b17-f974-4f32-bf4c-e7b66a8c3ce5/QM5_41185/COMPILE_EA/compile_evidence.json`.
+The receipt records compile PASS, strict build-check PASS, zero compiler
+errors, zero compiler warnings, two active magic rows, three backtest
+setfiles, and no failure class. Commit `a041b95c92` binds the emitted EX5 and
+the logical-basket setfile build hash on `agents/board-advisor`.
+
+Codex independently matched the current committed bytes to that receipt:
+
+- MQ5 SHA-256: `371a4e20dfaf6aefb1e9b5e976b5087f28d528538d60e972b176df1847f65eab`;
+- EX5 SHA-256: `d9b72099fcbebfc8cdcdf82919070a88d683997384e9191ef53549e19eb82920`;
+- logical setfile SHA-256: `5be95b29faea9af9aa4d52ef60e619957b542cc93a35dd8ab12ee05df239d288`;
+- XAU warm-up setfile SHA-256: `3e3c3dd82ccd1fdcd34e5b7c98e158644b887d4e6bd3cca6c8d309c6add01af0`;
+- XAG warm-up setfile SHA-256: `3372c8a61e57ce6e256ada2094c97817796510b029f7e174224e3311724a1809`.
+
+The code review rechecked the approved mapping rather than relying only on
+the compiler. The EA exact-joins 316 completed synchronized D1 pairs, reverses
+the newest-first MT5 series into strict chronology, builds exactly 64 fixed
+`d=0.40` recurrence coefficients, produces 253 outputs, and holds the latest
+out of the 252-output sample mean/sample-SD baseline. Inclusive z boundaries
+map contrarian sides exactly. Monthly attempt state is consumed before all
+fallible gates; both legs share one fixed stop-risk budget, are reduced toward
+equal notional, carry frozen ATR hard stops, and are flattened on incomplete
+or malformed package state. Management executes before entry filters and
+enforces next-month and 40-day exits. No fitted value, ML, external feed,
+martingale, grid, live path, or unauthorized filter is present.
+
+Fresh verification against the committed source:
+
+- fractional-difference reference suite: 8/8 PASS;
+- `validate_spec_doc.py`: 1/1 PASS;
+- `build_gate_hardening.py`: zero failures and zero warnings;
+- `validate_symbol_scope.py --fail-on-leak`: `BASKET_OK`, zero violations;
+- `validate_build_guardrails.py --max-news-stale-hours 336`: PASS, four files,
+  zero findings.
+
+All three presets remain backtest-only with `RISK_FIXED=1000`,
+`RISK_PERCENT=0`, and `PORTFOLIO_WEIGHT=1`. The EA directory is clean after
+the governed compile commit. This is build/review evidence only: no Q02 or
+other pipeline phase was run, no pipeline verdict is claimed, and no T_Live,
+AutoTrading, terminal process, deploy manifest, or portfolio gate was touched.
+
+Final short verdict:
+`COMPILE_OK_REVIEW_READY: governed replacement compile and strict build PASS; committed MQ5/EX5 hashes match receipt; card mapping and focused static tests PASS; Q02 not run.`
