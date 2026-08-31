@@ -1,0 +1,19 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "709d92ce816b88cfc57c42f013bc9dc02b8f2ff592eadb4cbe76dfa75cf04313",
+      "ea_id": "QM5_41250",
+      "ea_label": "QM5_41250_wti-mperm-scale-tr",
+      "expected_mq5_sha256": "709d92ce816b88cfc57c42f013bc9dc02b8f2ff592eadb4cbe76dfa75cf04313",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41250_wti-mperm-scale-tr\\QM5_41250_wti-mperm-scale-tr.mq5",
+      "work_item_id": "ee53e419-4162-4149-bf2a-d571d258652f"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "ee53e419-4162-4149-bf2a-d571d258652f"
+}
