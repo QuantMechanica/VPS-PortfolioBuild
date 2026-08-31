@@ -797,6 +797,73 @@ def test_qm5_41223_compile_fail_repair_authority_is_failure_and_hash_bound() -> 
     )
 
 
+def test_qm5_41246_compile_fail_repair_authority_is_failure_and_hash_bound() -> None:
+    label = compile_work_items.QM5_41246_COMPILE_FAIL_REPAIR_EA_LABEL
+    predecessor_id = (
+        compile_work_items.QM5_41246_COMPILE_FAIL_REPAIR_PREDECESSOR_ID
+    )
+    predecessor_payload = {
+        "ea_label": label,
+        "mq5_sha256": (
+            compile_work_items.QM5_41246_COMPILE_FAIL_REJECTED_SOURCE_SHA256
+        ),
+        "verdict_reason": "EA_INDICATOR_BUFFER_UNBOUNDED",
+        "compile_result": {
+            "compile_result": "PASS",
+            "build_check_result": "FAIL",
+            "failure_classes": ["EA_INDICATOR_BUFFER_UNBOUNDED"],
+        },
+    }
+    inventory = {
+        "work_rows": {
+            "41246": [{
+                "id": predecessor_id,
+                "phase": compile_work_items.COMPILE_EA_PHASE,
+                "status": "failed",
+                "verdict": "COMPILE_FAIL",
+                "payload_json": json.dumps(predecessor_payload),
+            }],
+        },
+    }
+    arguments = {
+        "ea_id": "41246",
+        "source_sha": (
+            compile_work_items.QM5_41246_COMPILE_FAIL_REPAIRED_SOURCE_SHA256
+        ),
+        "inventory": inventory,
+    }
+
+    assert compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_41246_COMPILE_FAIL_REPAIR_AUTHORITY,
+        **arguments,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        "QM5_41245_unrelated",
+        compile_work_items.QM5_41246_COMPILE_FAIL_REPAIR_AUTHORITY,
+        **arguments,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label,
+        "governed_compile_fail:wrong-row",
+        **arguments,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_41246_COMPILE_FAIL_REPAIR_AUTHORITY,
+        **{**arguments, "source_sha": "0" * 64},
+    )
+    changed_inventory = json.loads(json.dumps(inventory))
+    changed_inventory["work_rows"]["41246"][0]["payload_json"] = json.dumps(
+        {**predecessor_payload, "verdict_reason": "OTHER"}
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_41246_COMPILE_FAIL_REPAIR_AUTHORITY,
+        **{**arguments, "inventory": changed_inventory},
+    )
+
+
 def test_qm5_41228_compile_fail_repair_authority_is_failure_and_hash_bound() -> None:
     label = compile_work_items.QM5_41228_COMPILE_FAIL_REPAIR_EA_LABEL
     predecessor_id = (
