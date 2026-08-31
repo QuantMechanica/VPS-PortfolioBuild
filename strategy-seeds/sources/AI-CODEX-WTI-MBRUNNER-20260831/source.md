@@ -9,7 +9,8 @@ approval_basis: decisions/2026-08-31_wti_monthly_brunner_munzel_shift_trend_sour
 created: 2026-08-31
 created_by: Codex
 last_reviewed: 2026-08-31
-cards_extracted: []
+cards_extracted:
+  - QM5_41251_wti-mbrunner-shift-tr
 ---
 
 # WTI Monthly Brunner-Munzel Stochastic-Dominance Continuation
