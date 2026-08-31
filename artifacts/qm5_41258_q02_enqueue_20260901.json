@@ -1,0 +1,61 @@
+{
+  "schema_version": "qm.q02-enqueue-receipt/v1",
+  "recorded_at_utc": "2026-08-31T22:46:41+00:00",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41258",
+  "ea_label": "QM5_41258_wti-menergy-shift-tr",
+  "strategy_id": "AI-CODEX-WTI-MENERGY-20260901_S01",
+  "build_task_id": "25d23d55-db74-49ad-be4b-0ffc351709f3",
+  "compile_work_item_id": "99cc3cce-1e99-4d47-8a60-a90618cdae7f",
+  "compile_verdict": "COMPILE_OK",
+  "compile_build_check_result": "PASS",
+  "q02": {
+    "work_item_id": "968edec1-0842-481b-b223-bb4309c6dc50",
+    "phase": "Q02",
+    "status_at_receipt": "pending",
+    "verdict_at_receipt": null,
+    "attempt_count_at_receipt": 0,
+    "claimed_by_at_receipt": null,
+    "enqueued_by": "record_build_result.auto_q02",
+    "enqueued_at_utc": "2026-08-31T22:46:13+00:00",
+    "priority_track": true,
+    "fanout_policy": "qm-q02-canary-fanout/v1",
+    "fanout_canary": false,
+    "cohort_size": 1,
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile": "framework/EAs/QM5_41258_wti-menergy-shift-tr/sets/QM5_41258_wti-menergy-shift-tr_XTIUSD.DWX_D1_backtest.set",
+    "gate_contract_version": "v4",
+    "sh3_enforced": true
+  },
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "artifact_sha256": {
+    "approved_card": "ec5073a342d75d231a93cf9f8a16bd632f14e26f8c9a7f26e109c77819f962b7",
+    "mq5": "966ea99dfec6cc407eb3ccd825a9428af4321fb8dea399d97b172fc528854213",
+    "ex5": "91cfc67773494b003be8469a7b176d3398752d66912ef3cc3be7258492fe2a95",
+    "setfile": "19523c373b016d4e439df47d1f8da4f14be785e213e678a63c009f1bc05aee89",
+    "compile_evidence": "9deb5b839602212b939a7da18d2ba7edbc964103a88e44fa5b6d1e3556cee903"
+  },
+  "custom_history_archive_admission": {
+    "status": "ACTIVE",
+    "activation_sha256": "61c8c72ccb0cb8038ae6ece7b89aa68f602b1637d8bc6b6c866f38492139134e",
+    "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+    "selected_archive_rows": 108
+  },
+  "admission": {
+    "queue_accepted": true,
+    "cpu_ceiling_refusal": false,
+    "agent_dispatched_backtest": false,
+    "agent_waited_for_q02_result": false
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "t_live_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false
+  }
+}
