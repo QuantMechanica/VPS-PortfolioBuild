@@ -5,12 +5,102 @@ import os
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest import mock
 
 from tools.strategy_farm import farmctl
 
 
 class ZeroTradePreventionTests(unittest.TestCase):
+    def test_review_invalidation_excludes_same_generation_evidence(self) -> None:
+        build_payload = {"build_generation": 0}
+        active = {"build_generation": 0}
+        invalidated = {
+            "build_generation": 0,
+            "review_invalidated_at": "2026-08-31T16:30:00+00:00",
+            "review_invalidated_reason": "artifact_path_resolution_failure",
+        }
+        legacy_generation_zero_superseded = {
+            "build_generation": 0,
+            "superseded_by_build_generation": 0,
+        }
+
+        self.assertTrue(
+            farmctl._review_matches_build_generation(active, build_payload)
+        )
+        self.assertFalse(
+            farmctl._review_matches_build_generation(invalidated, build_payload)
+        )
+        self.assertFalse(
+            farmctl._review_matches_build_generation(
+                legacy_generation_zero_superseded,
+                build_payload,
+            )
+        )
+
+    def test_codex_pre_review_binds_attempt_archived_build_result(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp)
+            farmctl.init_db(root)
+            archived = (
+                root
+                / "artifacts"
+                / "builds"
+                / "build-task.attempt_0.attempt_1.json"
+            )
+            archived.parent.mkdir(parents=True, exist_ok=True)
+            archived.write_text('{"task_id":"build-task"}\n', encoding="utf-8")
+            now = farmctl.utc_now()
+            payload = {
+                "ea_id": "QM5_999000",
+                "card_path": str(root / "card.md"),
+                "build_result_path": str(archived),
+                "codex_result": {
+                    "mq5_path": str(root / "ea.mq5"),
+                    "ex5_path": str(root / "ea.ex5"),
+                },
+            }
+            with farmctl.connect(root) as conn:
+                conn.execute(
+                    """
+                    INSERT INTO tasks
+                      (id, kind, status, source_id, card_id, payload_json, created_at, updated_at)
+                    VALUES
+                      ('build-task', 'build_ea', 'done', NULL, 'QM5_999000', ?, ?, ?)
+                    """,
+                    (json.dumps(payload), now, now),
+                )
+                conn.commit()
+                row = conn.execute(
+                    "SELECT * FROM tasks WHERE id='build-task'"
+                ).fetchone()
+
+            fake_lease = {"lease_id": "lease-1"}
+            with mock.patch.object(
+                farmctl,
+                "_spawn_owned_codex",
+                return_value=(SimpleNamespace(pid=1234), fake_lease),
+            ):
+                spawned = farmctl._spawn_codex_for_pre_review(root, row)
+
+            self.assertTrue(spawned["spawned"])
+            with farmctl.connect(root) as conn:
+                review = conn.execute(
+                    "SELECT payload_json FROM tasks WHERE id=?",
+                    (spawned["codex_review_task_id"],),
+                ).fetchone()
+            review_payload = json.loads(review["payload_json"])
+            self.assertEqual(
+                Path(review_payload["build_result_path"]),
+                archived,
+            )
+            prompt = (
+                root
+                / "queue"
+                / f"codex_review_{spawned['codex_review_task_id']}.md"
+            ).read_text(encoding="utf-8")
+            self.assertIn(str(archived), prompt)
+
     def test_pre_review_allows_only_durable_saturation_block_reason(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)

@@ -12922,6 +12922,16 @@ def _spawn_codex_for_pre_review(root: Path, build_task_row: sqlite3.Row) -> dict
             "codex_review_task_id": existing["id"],
         }
 
+    # Retry reconciliation may archive the canonical result as
+    # <task>.attempt_*.json while retaining that exact artifact in the build
+    # payload.  Pre-review readiness already resolves those archived names;
+    # bind the reviewer to the same resolved file so a valid immutable build
+    # cannot receive a false missing-build-result FAIL.
+    resolved_build_result = _resolve_build_result_file(root, build_task_row)
+    build_result_path = resolved_build_result or (
+        root / "artifacts" / "builds" / f"{build_task_id}.json"
+    )
+
     codex_result = payload_build.get("codex_result") or {}
     mq5_path = codex_result.get("mq5_path") or ""
     ex5_path = codex_result.get("ex5_path") or ""
@@ -12941,7 +12951,7 @@ def _spawn_codex_for_pre_review(root: Path, build_task_row: sqlite3.Row) -> dict
                 "mq5_path": mq5_path,
                 "ex5_path": ex5_path,
                 "smoke_report_path": smoke_report_path,
-                "build_result_path": str(root / "artifacts" / "builds" / f"{build_task_id}.json"),
+                "build_result_path": str(build_result_path),
             },
         )
     verdict_path = root / "artifacts" / "verdicts" / f"codex_review_{review_task_id}.json"
@@ -12963,7 +12973,7 @@ def _spawn_codex_for_pre_review(root: Path, build_task_row: sqlite3.Row) -> dict
         ("mq5_path", mq5_path),
         ("ex5_path", ex5_path),
         ("smoke_report_path", smoke_report_path),
-        ("build_result_path", str(root / "artifacts" / "builds" / f"{build_task_id}.json")),
+        ("build_result_path", str(build_result_path)),
         ("verdict_path", str(verdict_path)),
     ]:
         template = template.replace("{{" + k + "}}", str(v))
@@ -13100,12 +13110,21 @@ def _build_generation(payload: dict[str, Any] | None) -> int:
         return 0
 
 
+def _review_is_inactive(payload: dict[str, Any] | None) -> bool:
+    """Return whether review evidence is superseded or explicitly invalidated."""
+    review_payload = payload or {}
+    return (
+        review_payload.get("superseded_by_build_generation") is not None
+        or bool(review_payload.get("review_invalidated_at"))
+    )
+
+
 def _review_matches_build_generation(
     review_payload: dict[str, Any] | None,
     build_payload: dict[str, Any] | None,
 ) -> bool:
     return (
-        not (review_payload or {}).get("superseded_by_build_generation")
+        not _review_is_inactive(review_payload)
         and _build_generation(review_payload) == _build_generation(build_payload)
     )
 
@@ -13188,7 +13207,7 @@ def _select_ea_review_candidates(
         build_task_id = payload.get("build_task_id")
         if not isinstance(build_task_id, str) or not build_task_id:
             continue
-        if payload.get("superseded_by_build_generation") is not None:
+        if _review_is_inactive(payload):
             continue
         generation_key = (build_task_id, _build_generation(payload))
         if kind == "codex_review":
@@ -13401,7 +13420,7 @@ def _latest_codex_review_fail_for_build(
             continue
         if (
             _build_generation(payload) != build_generation
-            or payload.get("superseded_by_build_generation") is not None
+            or _review_is_inactive(payload)
         ):
             continue
         verdict = payload.get("verdict") if isinstance(payload.get("verdict"), dict) else None
@@ -19269,7 +19288,7 @@ def _pump_unlocked(
                 payload = json.loads(row["payload_json"] or "{}")
             except (TypeError, ValueError):
                 continue
-            if payload.get("superseded_by_build_generation") is not None:
+            if _review_is_inactive(payload):
                 continue
             build_task_id = payload.get("build_task_id")
             if not build_task_id:
