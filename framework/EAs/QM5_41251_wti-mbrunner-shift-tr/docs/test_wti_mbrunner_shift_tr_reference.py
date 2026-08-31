@@ -334,7 +334,7 @@ class WtiMonthlyBrunnerMunzelReferenceTests(unittest.TestCase):
             "strategy_block_size": "10",
             "strategy_score_threshold": "0.625",
             "strategy_denominator_epsilon": "0.000000000001",
-            "strategy_score_cap": "1000000",
+            "strategy_score_cap": "1000000.0",
             "strategy_history_bars": "1200",
             "strategy_entry_grace_minutes": "180",
             "strategy_endpoint_stale_days": "10",

@@ -636,19 +636,12 @@ bool Strategy_BrunnerMunzelSignal(const double &closes[],
          return false;
      }
 
-   double returns[];
-   if(ArrayResize(returns, strategy_month_returns) !=
-         strategy_month_returns)
-      return false;
-
-   double old_values[];
-   double recent_values[];
-   double pooled_values[];
-   if(ArrayResize(old_values, strategy_block_size) != strategy_block_size ||
-      ArrayResize(recent_values, strategy_block_size) != strategy_block_size ||
-      ArrayResize(pooled_values, strategy_month_returns) !=
-         strategy_month_returns)
-      return false;
+   // The card fixes these dimensions. Static buffers make the memory bound
+   // independently provable by Q01 instead of relying on input-lock inference.
+   double returns[20];
+   double old_values[10];
+   double recent_values[10];
+   double pooled_values[20];
 
    for(int index = 0; index < strategy_month_returns; ++index)
      {
@@ -660,9 +653,18 @@ bool Strategy_BrunnerMunzelSignal(const double &closes[],
          return false;
       returns[index] = value;
       if(index < strategy_block_size)
+        {
+         if(index < 0 || index >= 10)
+            return false;
          old_values[index] = value;
+        }
       else
-         recent_values[index - strategy_block_size] = value;
+        {
+         const int recent_index = index - strategy_block_size;
+         if(recent_index < 0 || recent_index >= 10)
+            return false;
+         recent_values[recent_index] = value;
+        }
       pooled_values[index] = value;
       if(StringLen(metrics.return_path) > 0)
          metrics.return_path += ",";
