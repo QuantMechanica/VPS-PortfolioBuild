@@ -1,0 +1,170 @@
+{
+  "artifact_type": "qm5_20240_fx_cointegration_q04_serialized_lane_progress",
+  "schema": "qm.fx-cointegration-q04-serialized-lane-progress/v1",
+  "generated_at_utc": "2026-08-31T22:36:21Z",
+  "generated_at_europe_berlin": "2026-09-01T00:36:21+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "5d008cc4e50c8c1710f8d8e199b1759e0c6703d2",
+  "mission_outcome": "EXISTING_Q04_PRESERVED_EXACTLY_ONCE_SERIALIZED_MULTISYMBOL_LANE_BINDING",
+  "frontier_reconciliation": {
+    "controlling_research": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "relationships_scanned": 66,
+    "relationships_covered_by_committed_sign_aware_audit": 66,
+    "relationships_uncovered": 0,
+    "approved_cointegration_card_ea_census_at_prior_receipt": {
+      "unique_ea_ids": 119,
+      "matching_ea_directories": 119,
+      "unbuilt_ea_ids": []
+    },
+    "relevant_changes_since_prior_receipt": [],
+    "anchors": {
+      "QM5_12532": {
+        "pair": [
+          "AUDUSD.DWX",
+          "NZDUSD.DWX"
+        ],
+        "q02": "PASS",
+        "later_chain": "Q04 PASS; Q05 FAIL",
+        "current_q02_oninit_or_no_history_block": false
+      },
+      "QM5_12533": {
+        "pair": [
+          "EURJPY.DWX",
+          "GBPJPY.DWX"
+        ],
+        "q02": "PASS",
+        "later_chain": "Q04 FAIL",
+        "current_q02_oninit_or_no_history_block": false
+      }
+    },
+    "new_unbuilt_pair_eligible": false,
+    "skill_gate_disposition": {
+      "qm_build_ea_from_card": "CLOSED_NO_APPROVED_UNBUILT_COINTEGRATION_CARD",
+      "qm_run_pipeline_phase": "NOT_USED_Q04_IS_OWNED_BY_CANONICAL_FACTORY"
+    }
+  },
+  "selected_existing_forex_fallback": {
+    "scan_rank": 59,
+    "ea_id": "QM5_20240",
+    "logical_symbol": "QM5_20240_USDCHF_GBPJPY_COINTEGRATION_D1",
+    "traded_symbols": [
+      "USDCHF.DWX",
+      "GBPJPY.DWX"
+    ],
+    "conversion_history_only_symbols": [
+      "USDJPY.DWX"
+    ],
+    "timeframe": "D1",
+    "structural_only": true,
+    "low_frequency": true,
+    "machine_learning": false,
+    "adaptive_beta_refit": false,
+    "source_quality_tier": "A",
+    "primary_source": "Chan, Ernest P. (2009), Quantitative Trading, Wiley, Examples 3.6, 7.2, 7.3, 7.5",
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "portfolio_weight": 1.0,
+    "artifact_sha256": {
+      "approved_card": "1de8b7145dec237966238c331b4d9566d3251237b180f5f53b9ef36d12cd6f5f",
+      "mq5": "14ae487325f04537625eab787361b12587f483f812357c941efca54908624aff",
+      "ex5": "dbf718900fbfdd35558e87fce20415329e8438f9cb7e5d1395734a1d0d7457b0",
+      "basket_manifest": "18d6f9b0c3576f27045143752405accece5faf353213610d3de1b3ead067bcc4",
+      "logical_setfile": "ff1801ce59cb15a2cb0b24fdfb350ddc4539dd456130720307913542a4cde641"
+    },
+    "disposition": "one-shot pipeline falsification; no beta refit, rescue filter, or parameter substitution"
+  },
+  "canonical_lineage": [
+    {
+      "id": "24154a28-be35-469e-a5be-58881e29733c",
+      "phase": "Q02",
+      "status": "done",
+      "verdict": "PASS"
+    },
+    {
+      "id": "65a8b9cb-2c57-4068-81fb-2158f7b1beb7",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS"
+    },
+    {
+      "id": "85e98029-14f6-4f73-a991-b814d4f3c151",
+      "phase": "Q04",
+      "status": "pending",
+      "verdict": null,
+      "claimed_by": null,
+      "attempt_count": 0,
+      "priority_track": true,
+      "priority_reason": "board_advisor_fx_fallback_rank59_q04_after_q03_pass",
+      "updated_at": "2026-08-15T23:46:58+00:00"
+    }
+  ],
+  "serialized_multisymbol_lane": {
+    "work_item_id": "9437109a-799b-4f29-a501-89e6b4a3809c",
+    "ea_id": "QM5_20294",
+    "phase": "Q03",
+    "status": "active",
+    "symbol": "QM5_20294_XAU_XAG_LOWMAX_D1",
+    "claimed_by": "T8",
+    "attempt_count": 2,
+    "tester_pid": 10588,
+    "tester_cpu_seconds": 8568.0625,
+    "tester_working_set_bytes": 258060288,
+    "tester_responding": true,
+    "run_02": {
+      "from_date": "2018-07-02",
+      "to_date": "2022-12-31",
+      "latest_simulated_date": "2020-10-09",
+      "calendar_progress_percent": 50.517,
+      "report_present": false,
+      "logger_path": "D:/QM/mt5/T8/Tester/Agent-127.0.0.1-3002/MQL5/Files/QM/QM5_20294_ea-20294.log",
+      "logger_bytes": 254893,
+      "logger_last_write_utc": "2026-08-31T22:35:26.2269191Z",
+      "latest_event": "EQUITY_SNAPSHOT"
+    },
+    "material_progress_since_prior_receipt": "run 2 advanced from simulated date 2020-05-14 (41.509 percent) to 2020-10-09 (50.517 percent) with a live responding tester",
+    "disposition": "healthy governed basket owns the serialized lane; do not claim or launch a second basket"
+  },
+  "capacity": {
+    "cpu_samples_percent": [
+      74.514450,
+      72.371348,
+      67.023847,
+      70.457595,
+      67.581479
+    ],
+    "cpu_average_percent": 70.389744,
+    "cpu_maximum_percent": 74.514450,
+    "cpu_ceiling_percent": 97.0,
+    "cpu_ceiling_rule": "stop when average or maximum is greater than or equal to the ceiling",
+    "cpu_ceiling_hit": false,
+    "binding_stop_reasons": [
+      "serialized multisymbol lane is occupied by a healthy governed Q03 run"
+    ]
+  },
+  "actions_this_run": {
+    "frontier_and_anchor_reconciled": true,
+    "selected_existing_forex_lineage_reverified": true,
+    "existing_q04_priority_binding_reverified": true,
+    "serialized_lane_forward_progress_authenticated": true,
+    "capacity_sampled": true,
+    "new_card_or_ea_created": false,
+    "new_work_item_created": false,
+    "queue_payload_mutated": false,
+    "dispatch_tick": false,
+    "terminal_or_worker_controlled": false,
+    "compile_smoke_or_backtest_started": false
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false,
+    "live_or_deploy_manifest_touched": false,
+    "preexisting_unrelated_worktree_changes_preserved": true
+  },
+  "resume_contract": "After QM5_20294 Q03 reaches a canonical terminal state, take a fresh five-sample CPU window. Only if both average and maximum remain strictly below 97 percent may the resident paced worker claim exact Q04 row 85e98029-14f6-4f73-a991-b814d4f3c151. Do not enqueue a duplicate or manually force a second basket."
+}
