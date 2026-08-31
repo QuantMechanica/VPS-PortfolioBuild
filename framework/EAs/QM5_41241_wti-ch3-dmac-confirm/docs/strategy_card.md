@@ -80,9 +80,9 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: Q01
-q01_status: NOT_BUILT
-q02_status: NOT_ENQUEUED_Q01_PENDING
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: ENQUEUED_PENDING
 force_build: true
 review_focus: "Falsify a direct-WTI monthly trend-consensus sleeve outside the certified XAU/SP500/NDX/XNG book. Verify six consecutive completed endpoints, strict CH3 state, six-close mean, exact band, AND relation, consumed month, fixed risk, frozen stop, and next-month renewal. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -294,5 +294,5 @@ requires a full new chain.
 |---|---|---|---|
 | Source Approval | 2026-08-31 | APPROVED_SOURCE | `decisions/2026-08-31_wti_ch3_dmac_confirmation_source_approval.md` |
 | G0 | 2026-08-31 | APPROVED | `decisions/2026-08-31_qm5_41241_wti_ch3_dmac_confirmation_g0.md` |
-| Q01 | 2026-08-31 | NOT_BUILT | compile and registry checks pending |
-| Q02 | 2026-08-31 | NOT_ENQUEUED_Q01_PENDING | one paced enqueue only after Q01 and CPU check |
+| Q01 | 2026-08-31 | PASS | `e08c9f5b-6da5-41b9-8de3-85f37691cba0`; strict build check and compiler PASS, zero compiler errors/warnings |
+| Q02 | 2026-08-31 | ENQUEUED_PENDING | `bd5768f5-dbb7-437b-acda-717d071fb5df`; final CPU window below 97% ceiling |

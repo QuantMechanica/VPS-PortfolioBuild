@@ -1,0 +1,160 @@
+{
+  "schema": "qm.new-commodity-sleeve-q02-enqueue/v1",
+  "generated_at_utc": "2026-08-31T04:41:23.6121659Z",
+  "branch": "agents/board-advisor",
+  "mission_outcome": "NEW_STRUCTURAL_WTI_SLEEVE_Q01_PASS_Q02_ENQUEUED",
+  "ea": {
+    "ea_id": "QM5_41241",
+    "slug": "wti-ch3-dmac-confirm",
+    "strategy_id": "SZAKMARY-WTI-CH3-DMAC-CONFIRM-2026_S01",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "magic": 412410000
+  },
+  "edge": {
+    "class": "wti_completed_month_ch3_breakout_and_dmac16_neutral_band_confirmation",
+    "frequency": "monthly",
+    "mechanic": "At the first genuine normalized WTI broker-month transition, reconstruct exactly six consecutive completed month-end closes. Trade only when the latest close is a strict breakout beyond the prior three closes and lies in the same direction outside a symmetric 2.5 percent band around the six-close arithmetic mean.",
+    "dedup_verdict": "SEMANTICALLY_DISTINCT_WTI_MONTHLY_CH3_BREAKOUT_AND_DMAC16_NEUTRAL_BAND_CONFIRMATION_SLEEVE",
+    "dedup_receipt": "artifacts/qm5_wti_ch3_dmac_confirm_preallocation_dedup_20260831.json",
+    "dedup_receipt_sha256": "B61748E06968490A41476ED976043288A5C49046244B04EBFF0394B44364DF40",
+    "locked_fixtures": [
+      {
+        "closes": [103, 100, 99, 98, 120, 120],
+        "channel_state": "BUY",
+        "dmac_state": "SELL",
+        "candidate_state": "FLAT"
+      },
+      {
+        "closes": [110, 111, 109, 108, 80, 80],
+        "channel_state": "FLAT",
+        "dmac_state": "BUY",
+        "candidate_state": "FLAT"
+      },
+      {
+        "closes": [120, 110, 105, 100, 95, 90],
+        "channel_state": "BUY",
+        "dmac_state": "BUY",
+        "candidate_state": "BUY"
+      },
+      {
+        "closes": [80, 90, 95, 100, 105, 110],
+        "channel_state": "SELL",
+        "dmac_state": "SELL",
+        "candidate_state": "SELL"
+      }
+    ]
+  },
+  "governance": {
+    "source_packet": "strategy-seeds/sources/SZAKMARY-WTI-CH3-DMAC-CONFIRM-2026/source.md",
+    "source_packet_sha256": "629C523C9E89D552FDF04CC704AED6C1A601553336B56D6626B2C6C2CC0014C6",
+    "source_approval": "decisions/2026-08-31_wti_ch3_dmac_confirmation_source_approval.md",
+    "source_approval_sha256": "C8A2D95484DB11BD0C2BB79E6F645FF8D0BCF570C7B9B03DC1C710CD6D6709C8",
+    "approved_card": "strategy-seeds/cards/approved/QM5_41241_wti-ch3-dmac-confirm_card.md",
+    "approved_card_sha256_after_q02_status_update": "77A1E615E0D3463986769D068ECAB18C2BD80973F26F4FCF1DAEC974864A0028",
+    "local_card": "framework/EAs/QM5_41241_wti-ch3-dmac-confirm/docs/strategy_card.md",
+    "local_card_byte_identical_after_q02_status_update": true,
+    "g0_decision": "decisions/2026-08-31_qm5_41241_wti_ch3_dmac_confirmation_g0.md",
+    "g0_decision_sha256": "B0306C73B3EF0785BF533BEF6790E8891646AE3F4FADF220B790B192F0E86E06",
+    "magic_allocation": "artifacts/qm5_41241_magic_allocation_20260831.json",
+    "magic_allocation_sha256": "80610C2B587E9236AA529CBE1B687DB34605E260E81CA4552565B26FDE194267"
+  },
+  "build": {
+    "successful_task_id": "a08a3918-9366-4491-8d27-44416a35fce6",
+    "successful_build_result": "artifacts/builds/a08a3918-9366-4491-8d27-44416a35fce6.json",
+    "successful_build_result_sha256": "CF873D43222BF3BB1BF442FE3C93043D7D744E826DB21B3EFF8D44060ED77D10",
+    "first_record_task_id": "8510c690-ce7f-48cc-8951-3707460daf3d",
+    "first_record_result": "artifacts/builds/8510c690-ce7f-48cc-8951-3707460daf3d.json",
+    "first_record_result_sha256": "F94FE459F4EAF237EA99FD3CC1086F09B9FB8942F9065F959046B0DEAB78ECBF",
+    "first_record_outcome": "BLOCKED_SPEC_IDENTITY_LINE_MISSING_NO_Q02_CREATED",
+    "repair_commit": "d7d8b3967d",
+    "mq5": "framework/EAs/QM5_41241_wti-ch3-dmac-confirm/QM5_41241_wti-ch3-dmac-confirm.mq5",
+    "mq5_sha256": "F3361DAE1BF71ED44A0D036E5DC1F11DBE6E3EB2D2B81C31D351110E914B30A6",
+    "ex5": "framework/EAs/QM5_41241_wti-ch3-dmac-confirm/QM5_41241_wti-ch3-dmac-confirm.ex5",
+    "ex5_sha256": "6C5762A51B238C128CB5B5FC03A9ABCE036F1D7B8D66BA5803FD0480BC22E80D",
+    "setfile": "framework/EAs/QM5_41241_wti-ch3-dmac-confirm/sets/QM5_41241_wti-ch3-dmac-confirm_XTIUSD.DWX_D1_backtest.set",
+    "setfile_sha256": "2F0C6B33183A2496E050FCE9822D0CFEBF7C52AB412DEB91642806B5C6029602",
+    "setfile_build_hash": "2eb95ab03c7d9251f408dd6e6e3963f7c32abc3fb4692ced7027f5ad4caccda3",
+    "spec_sha256_after_status_update": "9CDA73C8A2EEF2EAA3F5D810DDBD2618B1F9ED2D0F67C4DC9117EF8E27CB708F",
+    "risk_mode": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "validations": {
+      "reference_tests": "PASS_8",
+      "card_schema_lint": "PASS",
+      "spec_validation": "PASS",
+      "build_skill_guard": "PASS",
+      "raw_mq5_quarantine": "PASS",
+      "strategy_entry_validation": "PASS"
+    }
+  },
+  "q01": {
+    "work_item_id": "e08c9f5b-6da5-41b9-8de3-85f37691cba0",
+    "status": "done",
+    "verdict": "COMPILE_OK",
+    "build_check_result": "PASS",
+    "compile_result": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "failure_classes": [],
+    "setfile_count": 1,
+    "evidence_path": "D:/QM/reports/work_items/e08c9f5b-6da5-41b9-8de3-85f37691cba0/QM5_41241/COMPILE_EA/compile_evidence.json",
+    "evidence_sha256": "96DD45B547158E1C1086ACA0E812FAFFD789CA5006CAF3FE86596A5704FF6417",
+    "compile_release_dry_run": "artifacts/qm5_41241_compile_release_dry_run_20260831.json",
+    "compile_release_dry_run_sha256": "8084FC9AD6C042F9651B303EC474CB97595DCFB99A7EA6E359E6FD7928975A32",
+    "compile_release_apply": "artifacts/qm5_41241_compile_release_apply_20260831.json",
+    "compile_release_apply_sha256": "296AE8452EDD04852C85D621D5A6E7E3FAB1C4C45B68866A9482AF8AFF56CCD1"
+  },
+  "capacity": {
+    "pre_q02_sampled_at_utc": "2026-08-31T04:39:29.1389455Z",
+    "samples_percent": [95.4129, 88.9991, 86.7313, 82.6293, 79.7977],
+    "average_percent": 86.7141,
+    "maximum_percent": 95.4129,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_hit": false
+  },
+  "q02": {
+    "enqueued": true,
+    "work_item_id": "bd5768f5-dbb7-437b-acda-717d071fb5df",
+    "phase": "Q02",
+    "status_after_enqueue": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile": "C:/QM/repo/framework/EAs/QM5_41241_wti-ch3-dmac-confirm/sets/QM5_41241_wti-ch3-dmac-confirm_XTIUSD.DWX_D1_backtest.set",
+    "enqueued_at_utc": "2026-08-31T04:39:30+00:00",
+    "enqueued_by": "record_build_result.auto_q02",
+    "priority_track": true,
+    "custom_history_archive_admission": "ACTIVE",
+    "selected_archive_rows": 108,
+    "duplicate_or_skipped_rows": 0
+  },
+  "commits": [
+    "a3bbf20954",
+    "a44017c5a5",
+    "8b0cc55e64",
+    "4594e6a2b8",
+    "225c710bfa",
+    "b40c68f217",
+    "6b288c0902",
+    "7d4f4afe76",
+    "d8e3eecf14",
+    "07830f5434",
+    "d7d8b3967d",
+    "bb3d5a3f1e"
+  ],
+  "safety": {
+    "manual_backtest_launched": false,
+    "q02_execution_started_by_this_session": false,
+    "autotrading_toggled": false,
+    "t_live_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "certification_claimed": false,
+    "realized_decorrelation_claimed": false,
+    "q09_remains_required": true
+  }
+}

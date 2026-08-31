@@ -1,6 +1,6 @@
 # QM5_41241_wti-ch3-dmac-confirm - Strategy Spec
 
-Status: `G0 APPROVED; IMPLEMENTED; Q01 PENDING`
+Status: `G0 APPROVED; IMPLEMENTED; Q01 PASS; Q02 ENQUEUED_PENDING`
 
 ## Identity
 
@@ -139,7 +139,7 @@ compilation.
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-08-31 | G0-approved WTI CH3/DMAC confirmation build | Q01 pending |
+| v1 | 2026-08-31 | G0-approved WTI CH3/DMAC confirmation build | Q01 PASS; Q02 enqueued pending |
 
 ## Safety Boundary
 

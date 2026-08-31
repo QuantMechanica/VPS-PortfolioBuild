@@ -1,0 +1,60 @@
+{
+  "task_id": "a08a3918-9366-4491-8d27-44416a35fce6",
+  "ea_id": "QM5_41241",
+  "ea_label": "QM5_41241_wti-ch3-dmac-confirm",
+  "slug": "wti-ch3-dmac-confirm",
+  "strategy_id": "SZAKMARY-WTI-CH3-DMAC-CONFIRM-2026_S01",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41241_wti-ch3-dmac-confirm",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41241_wti-ch3-dmac-confirm\\QM5_41241_wti-ch3-dmac-confirm.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41241_wti-ch3-dmac-confirm\\QM5_41241_wti-ch3-dmac-confirm.ex5",
+  "magic_base": 412410000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41241_wti-ch3-dmac-confirm\\sets\\QM5_41241_wti-ch3-dmac-confirm_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41241_wti-ch3-dmac-confirm\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Paced fleet mission requested Q02 enqueue; qm-build-ea-from-card forbids backtests, so no manual MT5 backtest was launched from this session.",
+  "blocked_reason": "",
+  "open_questions": [],
+  "compile": {
+    "work_item_id": "e08c9f5b-6da5-41b9-8de3-85f37691cba0",
+    "status": "COMPILE_OK",
+    "build_check_result": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "failure_classes": [],
+    "evidence_path": "D:\\QM\\reports\\work_items\\e08c9f5b-6da5-41b9-8de3-85f37691cba0\\QM5_41241\\COMPILE_EA\\compile_evidence.json",
+    "evidence_sha256": "96DD45B547158E1C1086ACA0E812FAFFD789CA5006CAF3FE86596A5704FF6417",
+    "mq5_sha256": "F3361DAE1BF71ED44A0D036E5DC1F11DBE6E3EB2D2B81C31D351110E914B30A6",
+    "ex5_sha256": "6C5762A51B238C128CB5B5FC03A9ABCE036F1D7B8D66BA5803FD0480BC22E80D",
+    "setfile_sha256": "2F0C6B33183A2496E050FCE9822D0CFEBF7C52AB412DEB91642806B5C6029602",
+    "setfile_build_hash": "2eb95ab03c7d9251f408dd6e6e3963f7c32abc3fb4692ced7027f5ad4caccda3"
+  },
+  "validations": {
+    "reference_tests": "PASS_8",
+    "card_schema_lint": "PASS",
+    "build_skill_guard": "PASS",
+    "approved_local_card_byte_identical": true,
+    "approved_card_sha256": "C7FBF3E96E6054D52B331A41914EB76EE09DB3B45E0468B0738CC58F74ACF62E",
+    "spec_validation": "PASS",
+    "spec_sha256": "64F79E792BDE2306D5B1DAF375FC66800769522A2F0C06AB5913D29A9B22CA75"
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "safety": {
+    "manual_backtest_launched": false,
+    "autotrading_toggled": false,
+    "t_live_touched": false,
+    "portfolio_gate_touched": false,
+    "deploy_manifest_touched": false
+  }
+}
