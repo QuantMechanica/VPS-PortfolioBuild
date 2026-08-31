@@ -117,6 +117,8 @@ class FractionalDifferenceReferenceTests(unittest.TestCase):
             "z_score <= -strategy_entry_abs_z",
             "Strategy_RecordAttemptState(g_signal_month_key)",
             "Strategy_OpenPair(direction)",
+            "QM_CalendarPeriodKey(PERIOD_MN1, g_leg_xau, 0)",
+            "QM_CalendarPeriodKey(PERIOD_MN1, g_leg_xau, 1)",
         )
         for token in required:
             self.assertIn(token, text)
@@ -126,6 +128,9 @@ class FractionalDifferenceReferenceTests(unittest.TestCase):
             "Strategy_LoadMonthlyPairScore",
             "pair_score",
             "xauxag-mkendall-rv",
+            "Strategy_MonthKey",
+            "Strategy_NextMonthKey",
+            "iTime(",
         ):
             self.assertNotIn(old_token, text)
 

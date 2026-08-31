@@ -71,58 +71,19 @@ bool     g_signal_late = false;
 int      g_last_attempt_month_key = 0;
 string   g_attempt_state_key = "";
 
-int Strategy_DayKey(const datetime value)
+datetime Strategy_MonthStart(const int month_key)
   {
-   MqlDateTime parts;
-   ZeroMemory(parts);
-   if(value <= 0 || !TimeToStruct(value, parts))
-      return 0;
-   return parts.year * 10000 + parts.mon * 100 + parts.day;
-  }
-
-int Strategy_MonthKey(const datetime value)
-  {
-   MqlDateTime parts;
-   ZeroMemory(parts);
-   if(value <= 0 || !TimeToStruct(value, parts))
-      return 0;
-   if(parts.year < 1900 || parts.mon < 1 || parts.mon > 12)
-      return 0;
-   return parts.year * 100 + parts.mon;
-  }
-
-int Strategy_NextMonthKey(const int month_key)
-  {
-   int year = month_key / 100;
-   int month = month_key % 100;
+   const int year = month_key / 100;
+   const int month = month_key % 100;
    if(year < 1900 || month < 1 || month > 12)
       return 0;
 
-   ++month;
-   if(month > 12)
-     {
-      month = 1;
-      ++year;
-     }
-   return year * 100 + month;
-  }
-
-int Strategy_PreviousMonthKey(const int month_key)
-  {
-   int year = month_key / 100;
-   int month = month_key % 100;
-   if(year < 1900 || month < 1 || month > 12)
-      return 0;
-
-   --month;
-   if(month < 1)
-     {
-      month = 12;
-      --year;
-     }
-   if(year < 1900)
-      return 0;
-   return year * 100 + month;
+   MqlDateTime parts;
+   ZeroMemory(parts);
+   parts.year = year;
+   parts.mon = month;
+   parts.day = 1;
+   return StructToTime(parts);
   }
 
 bool Strategy_WithinEntryWindow(const datetime broker_now)
@@ -139,12 +100,12 @@ bool Strategy_WithinEntryWindow(const datetime broker_now)
 bool Strategy_CurrentBarsSynchronized(const datetime broker_now)
   {
    if(broker_now <= 0 || g_current_host_bar <= 0 ||
-      Strategy_DayKey(g_current_host_bar) != Strategy_DayKey(broker_now))
+      broker_now < g_current_host_bar)
       return false;
-   const datetime xag_current =
-      iTime(g_leg_xag, PERIOD_D1, 0); // perf-allowed: monthly entry/lifecycle synchronization gate.
-   return (xag_current == g_current_host_bar &&
-           Strategy_DayKey(xag_current) == Strategy_DayKey(broker_now));
+   MqlRates xag_current;
+   ZeroMemory(xag_current);
+   return (QM_ReadBar(g_leg_xag, PERIOD_D1, 0, xag_current) &&
+           xag_current.time == g_current_host_bar);
   }
 
 int Strategy_SlotForSymbol(const string symbol)
@@ -252,14 +213,16 @@ bool Strategy_D1HistoryReady(const string symbol,
       Bars(symbol, PERIOD_D1) < // perf-allowed: entry-only D1 history gate.
       strategy_history_bars_d1)
       return false;
-   const datetime current_bar =
-      iTime(symbol, PERIOD_D1, 0); // perf-allowed: entry-only basket sync gate.
-   const datetime completed_bar =
-      iTime(symbol, PERIOD_D1, 1); // perf-allowed: entry-only stale-history gate.
-   if(current_bar != expected_bar || completed_bar <= 0 ||
-      current_bar <= completed_bar)
+   MqlRates current_bar;
+   MqlRates completed_bar;
+   ZeroMemory(current_bar);
+   ZeroMemory(completed_bar);
+   if(!QM_ReadBar(symbol, PERIOD_D1, 0, current_bar) ||
+      !QM_ReadBar(symbol, PERIOD_D1, 1, completed_bar) ||
+      current_bar.time != expected_bar || completed_bar.time <= 0 ||
+      current_bar.time <= completed_bar.time)
       return false;
-   return ((long)(current_bar - completed_bar) <=
+   return ((long)(current_bar.time - completed_bar.time) <=
            (long)strategy_max_endpoint_gap_days * 86400L);
   }
 
@@ -410,10 +373,11 @@ bool Strategy_NextMonthReached()
    if(entry_time <= 0 || broker_now <= entry_time ||
       !Strategy_CurrentBarsSynchronized(broker_now))
       return false;
-   const int entry_month = Strategy_MonthKey(entry_time);
-   const int current_month = Strategy_MonthKey(g_current_host_bar);
-   return (entry_month > 0 && current_month > 0 &&
-           current_month != entry_month);
+   const int current_month =
+      QM_CalendarPeriodKey(PERIOD_MN1, g_leg_xau, 0);
+   const datetime current_month_start = Strategy_MonthStart(current_month);
+   return (current_month > 0 && current_month_start > 0 &&
+           entry_time < current_month_start);
   }
 
 string Strategy_AttemptStateKey()
@@ -423,11 +387,12 @@ string Strategy_AttemptStateKey()
                        Strategy_HostMagic());
   }
 
-void Strategy_LoadAttemptState(const datetime reference_time)
+void Strategy_LoadAttemptState()
   {
    g_attempt_state_key = Strategy_AttemptStateKey();
    g_last_attempt_month_key = 0;
-   const int current_month = Strategy_MonthKey(reference_time);
+   const int current_month =
+      QM_CalendarPeriodKey(PERIOD_MN1, g_leg_xau, 0);
    if(current_month <= 0 || !GlobalVariableCheck(g_attempt_state_key))
       return;
    const double stored = GlobalVariableGet(g_attempt_state_key);
@@ -453,7 +418,8 @@ bool Strategy_RecordAttemptState(const int month_key)
 bool Strategy_MonthHasOwnedEntry(const int month_key,
                                  const datetime decision_time)
   {
-   if(month_key <= 0 || decision_time <= 0)
+   const datetime month_start = Strategy_MonthStart(month_key);
+   if(month_key <= 0 || month_start <= 0 || decision_time < month_start)
       return true;
    for(int index = PositionsTotal() - 1; index >= 0; --index)
      {
@@ -461,11 +427,12 @@ bool Strategy_MonthHasOwnedEntry(const int month_key,
       if(ticket == 0 || !PositionSelectByTicket(ticket) ||
          !Strategy_IsOwnedMagic(PositionGetInteger(POSITION_MAGIC)))
          continue;
-      if(Strategy_MonthKey((datetime)PositionGetInteger(POSITION_TIME)) == month_key)
+      const datetime opened =
+         (datetime)PositionGetInteger(POSITION_TIME);
+      if(opened >= month_start && opened <= decision_time)
          return true;
      }
-   const datetime history_start = decision_time - (datetime)(50 * 86400);
-   if(history_start <= 0 || !HistorySelect(history_start, TimeCurrent()))
+   if(!HistorySelect(month_start, decision_time))
       return true;
    for(int index = HistoryDealsTotal() - 1; index >= 0; --index)
      {
@@ -477,9 +444,9 @@ bool Strategy_MonthHasOwnedEntry(const int month_key,
          (ENUM_DEAL_ENTRY)HistoryDealGetInteger(deal_ticket, DEAL_ENTRY);
       if(entry_kind != DEAL_ENTRY_IN && entry_kind != DEAL_ENTRY_INOUT)
          continue;
-      if(Strategy_MonthKey((datetime)HistoryDealGetInteger(deal_ticket,
-                                                           DEAL_TIME)) ==
-          month_key)
+      const datetime deal_time =
+         (datetime)HistoryDealGetInteger(deal_ticket, DEAL_TIME);
+      if(deal_time >= month_start && deal_time <= decision_time)
          return true;
      }
    return false;
@@ -734,7 +701,8 @@ bool Strategy_LoadFractionalSignal(
       strategy_pair_count_d1 !=
          strategy_frac_lags + strategy_baseline_outputs ||
       g_current_host_bar <= 0 ||
-      Strategy_MonthKey(g_current_host_bar) != current_month_key)
+      QM_CalendarPeriodKey(PERIOD_MN1, g_leg_xau, 0) !=
+         current_month_key)
       return false;
 
    MqlRates xau_bars[];
@@ -927,20 +895,18 @@ bool Strategy_DecisionClockReady(int &month_key,
    late = false;
    const datetime broker_now = TimeCurrent();
    if(!g_is_new_bar || g_current_host_bar <= 0 ||
-      broker_now < g_current_host_bar ||
-      Strategy_DayKey(g_current_host_bar) != Strategy_DayKey(broker_now))
+      broker_now < g_current_host_bar)
       return false;
 
-   month_key = Strategy_MonthKey(broker_now);
-   if(month_key <= 0 ||
-      Strategy_MonthKey(g_current_host_bar) != month_key ||
+   month_key = QM_CalendarPeriodKey(PERIOD_MN1, g_leg_xau, 0);
+   const int completed_month =
+      QM_CalendarPeriodKey(PERIOD_MN1, g_leg_xau, 1);
+   if(month_key <= 0 || completed_month <= 0 ||
       month_key == g_last_attempt_month_key)
       return false;
 
-   const datetime newest_completed =
-      iTime(g_leg_xau, PERIOD_D1, 1); // perf-allowed: one monthly decision-clock endpoint.
    late = (!Strategy_WithinEntryWindow(broker_now) ||
-           Strategy_MonthKey(newest_completed) == month_key);
+           completed_month == month_key);
    return true;
   }
 
@@ -956,7 +922,7 @@ bool Strategy_EntryWindowReady(const int month_key,
    if(!Strategy_D1HistoryReady(g_leg_xau, g_current_host_bar) ||
       !Strategy_D1HistoryReady(g_leg_xag, g_current_host_bar))
       return false;
-   if(Strategy_MonthKey(g_current_host_bar) != month_key ||
+   if(QM_CalendarPeriodKey(PERIOD_MN1, g_leg_xau, 0) != month_key ||
       Strategy_MonthHasOwnedEntry(month_key, broker_now))
       return false;
    return true;
@@ -1059,19 +1025,18 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 bool Strategy_PrimeLateSignalAttach()
   {
    const datetime broker_now = TimeCurrent();
-   const int month_key = Strategy_MonthKey(broker_now);
-   if(month_key <= 0 || g_current_host_bar <= 0)
+   const int month_key =
+      QM_CalendarPeriodKey(PERIOD_MN1, g_leg_xau, 0);
+   const int completed_month =
+      QM_CalendarPeriodKey(PERIOD_MN1, g_leg_xau, 1);
+   if(month_key <= 0 || completed_month <= 0 ||
+      g_current_host_bar <= 0)
       return false;
 
-   const datetime newest_completed =
-      iTime(g_leg_xau, PERIOD_D1, 1); // perf-allowed: restart month-boundary classification.
-   const int completed_month = Strategy_MonthKey(newest_completed);
    const bool on_time_boundary =
-      (Strategy_DayKey(g_current_host_bar) == Strategy_DayKey(broker_now) &&
-       Strategy_MonthKey(g_current_host_bar) == month_key &&
+      (Strategy_CurrentBarsSynchronized(broker_now) &&
        Strategy_WithinEntryWindow(broker_now) &&
-       completed_month > 0 &&
-       Strategy_NextMonthKey(completed_month) == month_key);
+       completed_month != month_key);
    if(on_time_boundary)
       return true;
 
@@ -1143,9 +1108,15 @@ int OnInit()
    QM_BasketWarmupHistory(basket_symbols,
                           PERIOD_D1,
                           strategy_history_bars_d1);
-   g_current_host_bar =
-      iTime(g_leg_xau, PERIOD_D1, 0); // perf-allowed: restart state anchor.
-   Strategy_LoadAttemptState(TimeCurrent());
+   MqlRates current_host_bar;
+   ZeroMemory(current_host_bar);
+   if(!QM_ReadBar(g_leg_xau, PERIOD_D1, 0, current_host_bar))
+     {
+      QM_FrameworkShutdown();
+      return INIT_FAILED;
+     }
+   g_current_host_bar = current_host_bar.time;
+   Strategy_LoadAttemptState();
    g_pair_entry_time = Strategy_CurrentPairEntryTime();
    if(!Strategy_PrimeLateSignalAttach())
      {
@@ -1179,8 +1150,12 @@ void OnTick()
    g_signal_late = false;
    if(g_is_new_bar || g_current_host_bar <= 0)
      {
-      g_current_host_bar =
-         iTime(g_leg_xau, PERIOD_D1, 0); // perf-allowed: new-bar lifecycle and entry anchor.
+      MqlRates current_host_bar;
+      ZeroMemory(current_host_bar);
+      if(QM_ReadBar(g_leg_xau, PERIOD_D1, 0, current_host_bar))
+         g_current_host_bar = current_host_bar.time;
+      else
+         g_current_host_bar = 0;
       if(g_is_new_bar)
          QM_EquityStreamOnNewBar();
      }

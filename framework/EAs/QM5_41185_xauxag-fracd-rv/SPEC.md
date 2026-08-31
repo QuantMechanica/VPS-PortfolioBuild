@@ -119,4 +119,5 @@ pyramid, target, trail, break-even move, or partial exit.
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
+| v1 | 2026-08-31 | framework calendar hardening | Centralized current/completed broker-month cadence on `QM_CalendarPeriodKey`; retained exact one-attempt and next-month exit semantics. |
 | v0 | 2026-08-27 | approved source build | G0-approved card; governed magics `411850000`/`411850001`; one logical Q02 preset |
