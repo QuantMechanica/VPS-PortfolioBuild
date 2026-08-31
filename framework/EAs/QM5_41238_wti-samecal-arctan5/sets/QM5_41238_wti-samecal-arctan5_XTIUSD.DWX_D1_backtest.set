@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   37740f308fde24dad9206d6b37691e1edda71a8d9b564300b8e06eb5f3f9a410
 ; author:       Development
 ; date:         2026-08-31
 ;==========================================================
@@ -22,13 +22,11 @@ PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=ea_input_defaults
 strategy_history_years=5
-strategy_history_bars_d1=3000
 strategy_scale_multiplier=1.4826
 strategy_arctan_iterations=32
 strategy_signal_epsilon=0.000000000001
+strategy_history_bars_d1=3000
 strategy_atr_period_d1=20
 strategy_atr_sl_mult=3.5
 strategy_max_hold_days=40
 strategy_max_spread_points=1500
-
-
