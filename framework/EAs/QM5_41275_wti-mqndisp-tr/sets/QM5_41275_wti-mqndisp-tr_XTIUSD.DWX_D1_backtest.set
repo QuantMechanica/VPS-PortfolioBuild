@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   cf99e6404568b5ea7efdf1042d05d98c03d59c1e16e8eaf85f61cbd977a02edb
 ; author:       Development
 ; date:         2026-09-01
 ;==========================================================
@@ -20,7 +20,7 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=strategy-seeds/cards/approved/QM5_41275_wti-mqndisp-tr_card.md
+; card_defaults_source=ea_input_defaults
 strategy_month_sessions_min=17
 strategy_month_sessions_max=23
 strategy_close_count=17
