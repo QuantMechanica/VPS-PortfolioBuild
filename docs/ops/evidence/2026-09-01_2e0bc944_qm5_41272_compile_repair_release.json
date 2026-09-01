@@ -1,0 +1,28 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "85c6de75-0080-45dc-b128-6e6a3910f047"
+  ],
+  "backup": {
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260901T161732Z_68d12c40.sqlite",
+    "sha256": "d42dc32eefbc9a95bc5515ba5a76475ae07efb194c5b766bf92f270359f5f143"
+  },
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "47579844c327c1aee22986fef9c3170a1fcc973926c9908ec0c91d27b5d5d442",
+      "ea_id": "QM5_41272",
+      "ea_label": "QM5_41272_turn-of-month-index-long-restart-r1",
+      "expected_mq5_sha256": "47579844c327c1aee22986fef9c3170a1fcc973926c9908ec0c91d27b5d5d442",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41272_turn-of-month-index-long-restart-r1\\QM5_41272_turn-of-month-index-long-restart-r1.mq5",
+      "work_item_id": "85c6de75-0080-45dc-b128-6e6a3910f047"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-09-01T16:17:58+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "85c6de75-0080-45dc-b128-6e6a3910f047"
+}
