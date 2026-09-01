@@ -633,6 +633,122 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
         self.assertEqual(chopping["status"], "FAIL")
         self.assertFalse(chopping["passed"])
 
+    def test_dl082_ext_option_d_downgrades_only_exact_85_89_hard_cohort(self) -> None:
+        trades = [
+            _trade(dt.datetime(2024, 1, 1), 10.0),
+            _trade(dt.datetime(2024, 1, 2), 8.0),
+            _trade(dt.datetime(2024, 1, 3), -2.0),
+        ]
+
+        def eligible(*hard_gates: str, pbo_soft: bool = False) -> list[dict]:
+            subs = [
+                {"name": "8.2_dsr_mc_fdr", "status": "PASS"},
+                {"name": "8.7_pbo", "status": "PASS"},
+                {"name": "8.8_edge_decay", "status": "PASS"},
+            ]
+            if pbo_soft:
+                subs[1] = {
+                    "name": "8.7_pbo",
+                    "status": "FAIL",
+                    "detail": "PBO=62.86%:max=40%:splits=35:overfit=22",
+                    "evidence": {"config_source": "Q08.5_neighborhood"},
+                }
+            for gate in hard_gates:
+                subs.append({"name": gate, "status": "FAIL", "detail": "computed_breach"})
+            return subs
+
+        for hard_gates, pbo_soft in (
+            (("8.5_neighborhood",), False),
+            (("8.9_runs_test",), False),
+            (("8.5_neighborhood", "8.9_runs_test"), False),
+            (("8.9_runs_test",), True),
+        ):
+            with self.subTest(hard_gates=hard_gates, pbo_soft=pbo_soft):
+                verdict, classification = aggregate._aggregate_verdict(
+                    eligible(*hard_gates, pbo_soft=pbo_soft),
+                    trades=trades,
+                    cost_cushion_tier="PASS",
+                )
+                decision = aggregate._dl082_ext_option_d(classification, "PASS")
+                self.assertEqual(verdict, "FAIL_SOFT")
+                self.assertTrue(decision["applied"])
+                self.assertIn("DL082_EXT_OPTION_D_APPLIED", decision["reason_codes"])
+
+    def test_dl082_ext_option_d_every_failed_precondition_keeps_fail_hard(self) -> None:
+        trades = [
+            _trade(dt.datetime(2024, 1, 1), 10.0),
+            _trade(dt.datetime(2024, 1, 2), 8.0),
+            _trade(dt.datetime(2024, 1, 3), -2.0),
+        ]
+        base = [
+            {"name": "8.2_dsr_mc_fdr", "status": "PASS"},
+            {"name": "8.7_pbo", "status": "PASS"},
+            {"name": "8.8_edge_decay", "status": "PASS"},
+            {"name": "8.9_runs_test", "status": "FAIL", "detail": "computed_breach"},
+        ]
+        cases = {
+            "cost_not_pass": (base, "EDGE_SOFT", "DL082_EXT_COST_CUSHION_NOT_PASS:EDGE_SOFT"),
+            "dsr_invalid": (
+                [{**row} if row["name"] != "8.2_dsr_mc_fdr" else
+                 {"name": "8.2_dsr_mc_fdr", "status": "INVALID", "detail": "unknown"}
+                 for row in base],
+                "PASS",
+                "DL082_EXT_8_2_NOT_PASS:INVALID",
+            ),
+            "edge_decay_soft": (
+                [{**row} if row["name"] != "8.8_edge_decay" else {
+                    "name": "8.8_edge_decay", "status": "FAIL",
+                    "detail": "pf_decline_first=2.000_last=1.200_pct=40.0",
+                    "evidence": {"pf_last": 1.2},
+                } for row in base],
+                "PASS",
+                "DL082_EXT_8_8_NOT_PASS:EDGE_SOFT",
+            ),
+            "pbo_invalid": (
+                [{**row} if row["name"] != "8.7_pbo" else
+                 {"name": "8.7_pbo", "status": "INVALID", "detail": "unknown_pbo_state"}
+                 for row in base],
+                "PASS",
+                "DL082_EXT_8_7_NOT_PASS_OR_EDGE_SOFT:INVALID",
+            ),
+            "pbo_missing": (
+                [row for row in base if row["name"] != "8.7_pbo"],
+                "PASS",
+                "DL082_EXT_8_7_NOT_PASS_OR_EDGE_SOFT:UNKNOWN",
+            ),
+            "other_hard": (
+                [
+                    {**row} if row["name"] != "8.2_dsr_mc_fdr" else
+                    {"name": "8.2_dsr_mc_fdr", "status": "FAIL", "detail": "computed_breach"}
+                    for row in base
+                ],
+                "PASS",
+                "DL082_EXT_NON_TARGET_EDGE_HARD:8.2_dsr_mc_fdr",
+            ),
+        }
+        for name, (subs, cost_tier, expected_reason) in cases.items():
+            with self.subTest(name=name):
+                verdict, classification = aggregate._aggregate_verdict(
+                    subs, trades=trades, cost_cushion_tier=cost_tier,
+                )
+                decision = aggregate._dl082_ext_option_d(classification, cost_tier)
+                self.assertEqual(verdict, "FAIL_HARD")
+                self.assertFalse(decision["applied"])
+                self.assertIn(expected_reason, decision["reason_codes"])
+
+    def test_dl082_ext_option_d_absent_target_is_not_applied(self) -> None:
+        decision = aggregate._dl082_ext_option_d(
+            {
+                "8.2_dsr_mc_fdr": "PASS",
+                "8.7_pbo": "PASS",
+                "8.8_edge_decay": "PASS",
+                "cost_cushion": "PASS",
+            },
+            "PASS",
+        )
+        self.assertFalse(decision["applied"])
+        self.assertIn("DL082_EXT_NO_8_5_OR_8_9_EDGE_HARD", decision["reason_codes"])
+
     def test_dsr_first_entry_empty_cohort_is_trivial_pass(self) -> None:
         # Positive-drift but volatile daily series, no portfolio peers: the DSR
         # deflation is not applicable (no selection bias), so it trivial-passes
@@ -1650,6 +1766,11 @@ class Q08DurableSleeveStreamTests(unittest.TestCase):
 
         self.assertEqual(events, ["persist", "ensure"])
         self.assertEqual(res["portfolio_stream"]["n"], 1)
+        self.assertFalse(res["dl082_ext_option_d"])
+        self.assertIn(
+            "DL082_EXT_OPTION_D_NOT_APPLIED",
+            res["dl082_ext_option_d_reason_codes"],
+        )
 
     def test_run_all_exposes_mc_shuffle_dd_metrics(self) -> None:
         trades = [

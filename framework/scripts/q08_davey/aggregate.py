@@ -1445,6 +1445,86 @@ def _q08_invalid_is_tooling(detail: str) -> bool:
     return any(d.startswith(prefix) for prefix in Q08_TOOLING_INVALID_DETAIL_PREFIXES)
 
 
+DL082_EXT_OPTION_D_HARD_GATES = frozenset({
+    "8.5_neighborhood",
+    "8.9_runs_test",
+})
+DL082_EXT_OPTION_D_PBO_LABELS = frozenset({"PASS", "EDGE_SOFT"})
+
+
+def _dl082_ext_option_d(
+    classification: dict[str, str], cost_cushion_tier: str | None,
+) -> dict[str, object]:
+    """Return the exact OWNER-approved DL-082 extension Option-D decision.
+
+    The exception is intentionally narrow: one or both of the named 8.5/8.9
+    gates must be the *only* EDGE_HARD causes, and every ratified corroborating
+    screen must carry its exact allowed label. Missing, INVALID, unknown, or
+    differently labelled inputs fail closed.
+    """
+
+    hard_causes = sorted(
+        name for name, label in classification.items() if label == "EDGE_HARD"
+    )
+    target_hard_causes = sorted(
+        name for name in hard_causes if name in DL082_EXT_OPTION_D_HARD_GATES
+    )
+    non_target_hard_causes = sorted(
+        name for name in hard_causes if name not in DL082_EXT_OPTION_D_HARD_GATES
+    )
+    cost_label = str(cost_cushion_tier or "UNKNOWN").upper()
+    dsr_label = str(classification.get("8.2_dsr_mc_fdr") or "UNKNOWN").upper()
+    decay_label = str(classification.get("8.8_edge_decay") or "UNKNOWN").upper()
+    pbo_label = str(classification.get("8.7_pbo") or "UNKNOWN").upper()
+
+    failures: list[str] = []
+    if not target_hard_causes:
+        failures.append("DL082_EXT_NO_8_5_OR_8_9_EDGE_HARD")
+    if non_target_hard_causes:
+        failures.extend(
+            f"DL082_EXT_NON_TARGET_EDGE_HARD:{name}"
+            for name in non_target_hard_causes
+        )
+    if cost_label != "PASS":
+        failures.append(f"DL082_EXT_COST_CUSHION_NOT_PASS:{cost_label}")
+    if dsr_label != "PASS":
+        failures.append(f"DL082_EXT_8_2_NOT_PASS:{dsr_label}")
+    if decay_label != "PASS":
+        failures.append(f"DL082_EXT_8_8_NOT_PASS:{decay_label}")
+    if pbo_label not in DL082_EXT_OPTION_D_PBO_LABELS:
+        failures.append(f"DL082_EXT_8_7_NOT_PASS_OR_EDGE_SOFT:{pbo_label}")
+
+    applied = not failures
+    reason_codes = (
+        [
+            "DL082_EXT_OPTION_D_APPLIED",
+            *(
+                f"DL082_EXT_TARGET_EDGE_HARD:{name}"
+                for name in target_hard_causes
+            ),
+            "DL082_EXT_COST_CUSHION_PASS",
+            "DL082_EXT_8_2_PASS",
+            "DL082_EXT_8_8_PASS",
+            f"DL082_EXT_8_7_ALLOWED:{pbo_label}",
+        ]
+        if applied
+        else ["DL082_EXT_OPTION_D_NOT_APPLIED", *failures]
+    )
+    return {
+        "applied": applied,
+        "reason_codes": reason_codes,
+        "hard_causes": hard_causes,
+        "target_hard_causes": target_hard_causes,
+        "non_target_hard_causes": non_target_hard_causes,
+        "inputs": {
+            "cost_cushion_tier": cost_label,
+            "8.2_dsr_mc_fdr": dsr_label,
+            "8.7_pbo": pbo_label,
+            "8.8_edge_decay": decay_label,
+        },
+    }
+
+
 def _aggregate_verdict(sub_results: list[dict], trades: list[dict] | None = None,
                        cost_cushion_tier: str | None = None) -> tuple[str, dict[str, str]]:
     """Combine sub-gate statuses into PASS/FAIL_SOFT/FAIL_HARD/INVALID/INFRA_RECYCLE/INFRA_FAIL.
@@ -1462,6 +1542,9 @@ def _aggregate_verdict(sub_results: list[dict], trades: list[dict] | None = None
         could-not-compute TOOLING state (see _q08_invalid_is_tooling) -> INFRA_FAIL
         (retry-owed infra), never a terminal block. A deterministic build/setgen defect
         or a COMPUTED FAIL still blocks.
+      - DL-082 extension Option D (OWNER 2026-09-01): an 8.5 and/or 8.9 EDGE_HARD
+        becomes aggregate FAIL_SOFT only when it is the sole hard cause and cost
+        cushion, 8.2, 8.8, and 8.7 carry the exact ratified corroborating labels.
     """
     classification: dict[str, str] = {}
     hard = False
@@ -1581,11 +1664,14 @@ def _aggregate_verdict(sub_results: list[dict], trades: list[dict] | None = None
         classification["baseline_trade_count"] = "INVALID"
         return "INVALID", classification
 
-    # HARD dominates everything below (incl. INFRA_RECYCLE): a definitive edge failure
-    # (PBO 88%, net PF < 1.0, real cost fail, 8.5 neighborhood breach) computed from a
-    # VALID main baseline is a real verdict, so the 18 genuine EDGE_HARD breaches keep
-    # failing regardless of a degenerate neighborhood-support run.
+    # HARD dominates everything below (incl. INFRA_RECYCLE), except for the exact
+    # OWNER-approved DL-082 extension Option-D cohort. The helper is fail-closed:
+    # missing/unknown corroborating labels and every non-8.5/8.9 hard cause retain
+    # FAIL_HARD.
     if hard:
+        option_d = _dl082_ext_option_d(classification, cost_cushion_tier)
+        if bool(option_d["applied"]):
+            return "FAIL_SOFT", classification
         return "FAIL_HARD", classification
 
     # DL-082 §3a: with no genuine merit hard-fail, a degenerate neighborhood baseline
@@ -1813,6 +1899,9 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
     # PASS only if all 11 PASS; otherwise split failures into hard/soft/infra.
     overall, verdict_classification = _aggregate_verdict(
         sub_results, trades, commission_info.get("cost_cushion_tier"))
+    dl082_ext_option_d = _dl082_ext_option_d(
+        verdict_classification, commission_info.get("cost_cushion_tier")
+    )
 
     aggregate = {
         "evidence_schema": "q08_aggregate/v2",
@@ -1821,6 +1910,9 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
         "phase": "Q08",
         "verdict": overall,
         "verdict_classification": verdict_classification,
+        "dl082_ext_option_d": bool(dl082_ext_option_d["applied"]),
+        "dl082_ext_option_d_reason_codes": dl082_ext_option_d["reason_codes"],
+        "dl082_ext_option_d_detail": dl082_ext_option_d,
         "verdict_calibration": {
             "N_SEASON": N_SEASON,
             "CHOP_SOFT": CHOP_SOFT,
@@ -1835,6 +1927,14 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
             "DL082_PASS_ALLOWANCE_LABELS": ["PASS", "INFORMATIONAL", "LOW_SAMPLE",
                                             "EDGE_SOFT(8.4/8.6/8.10/8.11)"],
             "DL082_DEGENERATE_BASELINE_OUTCOME": "INFRA_RECYCLE",
+            "DL082_EXT_OPTION_D_HARD_GATES": sorted(DL082_EXT_OPTION_D_HARD_GATES),
+            "DL082_EXT_OPTION_D_REQUIRED": {
+                "cost_cushion_tier": ["PASS"],
+                "8.2_dsr_mc_fdr": ["PASS"],
+                "8.7_pbo": sorted(DL082_EXT_OPTION_D_PBO_LABELS),
+                "8.8_edge_decay": ["PASS"],
+                "non_target_edge_hard": [],
+            },
         },
         "generated_at_utc": dt.datetime.now(dt.UTC).isoformat(),
         "n_trades": len(trades),
