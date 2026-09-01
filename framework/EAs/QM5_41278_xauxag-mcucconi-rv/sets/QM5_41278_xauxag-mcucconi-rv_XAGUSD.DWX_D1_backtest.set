@@ -3,23 +3,23 @@
 ; ea_id:        41278
 ; ea_slug:      xauxag-mcucconi-rv
 ; ea_version:   v5.0
-; set_version:  s20260902-001
+; set_version:  s20260901-001
 ; symbol:       XAGUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   c7fc9a5d931689eb05f16c6edda4a6b125d88c402655de95044469f131ee5618
 ; author:       Development
-; date:         2026-09-02
+; date:         2026-09-01
 ;==========================================================
 qm_ea_id=41278
 qm_magic_slot_offset=1
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; Component validation preset only; Q02 must use the logical basket set.
+; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=ea_input_defaults
 strategy_xag_symbol=XAGUSD.DWX
 strategy_endpoint_count=13
