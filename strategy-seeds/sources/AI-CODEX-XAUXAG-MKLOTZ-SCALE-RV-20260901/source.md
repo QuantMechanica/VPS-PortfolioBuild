@@ -17,7 +17,8 @@ method_records:
   - NIST-KLOTZ-TEST
 created: 2026-09-01
 created_by: Research+Development
-cards_extracted: []
+cards_extracted:
+  - QM5_41269_xauxag-mklotz-scale-rv
 ---
 
 # XAU/XAG Monthly Centered Klotz Scale-State Reversion
