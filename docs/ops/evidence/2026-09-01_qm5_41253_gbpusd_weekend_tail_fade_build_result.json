@@ -1,0 +1,68 @@
+{
+  "schema_version": "qm.router-build-evidence/v1",
+  "recorded_at_utc": "2026-09-01T00:10:00Z",
+  "task_id": "13856e51-aaed-47fd-a8de-6db0934b07d8",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41253",
+  "ea_label": "QM5_41253_gbpusd-weekend-tail-fade",
+  "slug": "gbpusd-weekend-tail-fade",
+  "strategy_id": "AI-CODEX-GBP-WGAP-TAIL-20260831_S01",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41253_gbpusd-weekend-tail-fade",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41253_gbpusd-weekend-tail-fade\\QM5_41253_gbpusd-weekend-tail-fade.mq5",
+  "mq5_sha256": "b25cef9ce1a45c9f130f059cf9f657f6f1193ab97215809ce6f4924a22034f93",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41253_gbpusd-weekend-tail-fade\\QM5_41253_gbpusd-weekend-tail-fade.ex5",
+  "ex5_sha256": "457713872a5d0cad55d56d76fd1e09f93dbf0c17046867c04c94e8287b394f27",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41253_gbpusd-weekend-tail-fade\\sets\\QM5_41253_gbpusd-weekend-tail-fade_GBPUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_sha256": "b21edc272727fb4afe5bdfb3afabc1ffef007f3e6a6bd9dbaaec4b72df3dbb2d",
+  "setfile_build_hash": "7d295a814b0d0879073f78ccf83cc1a73884fc657cc818e01d9fda2e9a5156ca",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41253_gbpusd-weekend-tail-fade\\SPEC.md",
+  "spec_sha256": "170fbfe8f110356525ee82eb44ff150c0afa7d19087b9f9d4554d6f58025336d",
+  "approved_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41253_gbpusd-weekend-tail-fade_card.md",
+  "approved_card_sha256": "04e3427d0f826ae1c5d6afc5b4bd80e19e42f21a386a69b0642fa34ab69c8de6",
+  "magic_base": 412530000,
+  "symbols_registered": [
+    "GBPUSD.DWX"
+  ],
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "compile": {
+    "status": "COMPILE_OK",
+    "work_item_id": "e0a98323-dfb0-43c4-aece-2d94f669901f",
+    "source_repair_authority": "governed_compile_fail:96bc9e68-3359-40d3-b52c-fd1ae1663ac2",
+    "terminal": "T4",
+    "evidence_path": "D:\\QM\\reports\\work_items\\e0a98323-dfb0-43c4-aece-2d94f669901f\\QM5_41253\\COMPILE_EA\\compile_evidence.json",
+    "evidence_sha256": "c35947535947144d7919fddf8c215c9a1182fe38b1db3f0ee9362132724db336",
+    "build_check_result": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "failure_classes": []
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "validations": {
+    "approved_card_g0_status": "APPROVED",
+    "ea_registry_row": "active",
+    "magic_registry_row": "active",
+    "source_repair_hash_binding": "PASS",
+    "strict_build_check": "PASS",
+    "static_guardrails": "PASS",
+    "reference_tests": "PASS_8"
+  },
+  "smoke_result": "deferred_q02",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Build-only skill boundary: no manual backtest or dispatch was run; the task authorizes one governed Q02 enqueue after the committed Q01 identity.",
+  "blocked_reason": "",
+  "open_questions": [],
+  "safety": {
+    "autotrading_toggled": false,
+    "deploy_manifest_touched": false,
+    "manual_backtest_launched": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false
+  }
+}
