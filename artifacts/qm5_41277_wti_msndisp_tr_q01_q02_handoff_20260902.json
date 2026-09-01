@@ -1,0 +1,116 @@
+{
+  "schema": "qm.qm5-41277-q01-q02-handoff/v1",
+  "captured_at_utc": "2026-09-01T22:21:44.4227958Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "f8129069c46055f3ecf751c23316ddf70d19a249",
+  "mission_outcome": "NEW_STRUCTURAL_WTI_SLEEVE_BUILT_Q01_PASS_Q02_ENQUEUED",
+  "ea": {
+    "ea_id": "QM5_41277",
+    "ea_label": "QM5_41277_wti-msndisp-tr",
+    "strategy_id": "AI-CODEX-WTI-MSNDISP-TREND-20260901_S01",
+    "source_id": "AI-CODEX-WTI-MSNDISP-TREND-20260901",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "magic": 412770000,
+    "signal": "final seventeen closes of the immediately completed 17-23-session broker month; sixteen adjacent log returns; sixteen leave-one-out arrays of fifteen absolute distances; raw eighth inner value for each return followed by raw eighth of sixteen sorted inner medians; BUY at net >= 3*sn_core and SELL at net <= -3*sn_core",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "research": {
+    "source_packet_sha256": "A64C6D7FDFFA34CAB48006D52FF9F06E36A3017276C5EC06DAB6E80383AE48D2",
+    "dedup_receipt_sha256": "74C0023E963CD3105658E09BBFE64168DABE211FC00B82934C37D17B42F40CE5",
+    "dedup_verdict": "DISTINCT_WTI_COMPLETED_MONTH_FINAL17_RETURN_RAW_SN_NESTED_MEDIAN_DISPERSION_NORMALIZED_CONTINUATION",
+    "claim_boundary": "Peer-reviewed evidence supports WTI membership, monthly own-return continuation, and the Sn nested-median method only; the exact within-month trading conjunction is disclosed pre-result QM synthesis.",
+    "functional_neighbor_boundary": "Fixture A qualifies raw Sn while the Qn, L1, and RMS neighbors stay flat; fixture B qualifies Qn, L1, and RMS while raw Sn stays flat."
+  },
+  "q01": {
+    "status": "PASS",
+    "compile_work_item_id": "2a681436-4a48-4fb5-a494-cdd87490ce59",
+    "compile_verdict": "COMPILE_OK",
+    "compile_terminal": "T1",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "build_check_result": "PASS",
+    "build_check_warnings": 0,
+    "failure_classes": [],
+    "mq5_sha256": "EC0E087F1A4BF9621762790E0E0422FB0E9AF5325514A7ED8DAFFAB7D339C946",
+    "ex5_sha256": "EC9072860411E1C3ECBFAE34F547F052C9C820F8122B9A3030C1E368C19FC572",
+    "setfile_sha256": "E84F5031297CEA2C45616951DC8E2A6EC0C57F5E9779784ED3F3EEDDEB960486",
+    "setfile_build_hash": "B975A52A750834432B072E64254B80364E717FC39F31F5C96386D598F7860261",
+    "compile_evidence_path": "D:/QM/reports/work_items/2a681436-4a48-4fb5-a494-cdd87490ce59/QM5_41277/COMPILE_EA/compile_evidence.json",
+    "compile_evidence_sha256": "F833C166EF9FFB07C09F2D721A42D130C502B79440A8BF6D16218F277FF7B485",
+    "build_check_report": "D:/QM/reports/framework/21/build_check_20260901_221710.json",
+    "build_check_report_sha256": "58907EB08400B964520420DBE86A58DCB9879138C9146E66F2CA72D320FAC769",
+    "reference_tests": "PASS_9",
+    "reference_test_sha256": "C3CDF9FE1A12ABD4589EFFF6AE0CF0C75767673E09A497965610878C6D7637FD",
+    "spec_validation": "PASS",
+    "spec_sha256": "03629CA3463E9C8F2A520B47959B1BDBC8259960BEAFF6CB69CBF5322B9E119B"
+  },
+  "cards": {
+    "canonical_and_ea_copy_sha256": "835B4754DD5F433B4BA837D2F362666E0FC7D70CA72B2B97B481BF8504C951E9",
+    "canonical_and_ea_copy_byte_identical": true,
+    "runtime_approved_card_sha256": "B592F9E2200E5421FE05F306562664800DBABD6D75F1F3F09664FAA3F4680F7C",
+    "runtime_normalization": "The farm controller normalized informational R1 fields to non-gating TIER_C and retained the pre-build Q01/Q02 status snapshot; executable R2-R4, strategy, symbol, risk, and lifecycle are unchanged."
+  },
+  "build_result": {
+    "task_id": "d3dadcf9-0fd0-4597-a868-403abc50115c",
+    "recorded_runtime_path": "D:/QM/strategy_farm/artifacts/builds/d3dadcf9-0fd0-4597-a868-403abc50115c.json",
+    "recorded_runtime_sha256": "0B9C67774A47546275D6DFA0AAD6F8F0EF56AFDD090BD4AE174EBB00CFEE557A",
+    "corrected_repo_path": "artifacts/qm5_41277_build_result_20260902.json",
+    "corrected_repo_sha256": "F3B48884692AA139FD0EF2D81383B4E4B4C6ECC210D30E30D84D65A341ADED3C",
+    "post_record_correction": "Repository receipt corrects only the runtime-card normalization metadata discovered during the final hash audit; compile, preset, risk, safety, and Q02 bindings are unchanged. The recorded runtime file and task payload retain their original hash."
+  },
+  "capacity_admission": {
+    "sampling_method": "Win32_PerfFormattedData_PerfOS_Processor Name=_Total",
+    "sample_interval_seconds": 2,
+    "sample_window_utc": {
+      "started_at": "2026-09-01T22:19:01.4960465Z",
+      "ended_at": "2026-09-01T22:19:11.1107891Z"
+    },
+    "cpu_samples_percent": [
+      44.0,
+      56.0,
+      73.0,
+      59.0,
+      69.0
+    ],
+    "cpu_average_percent": 60.2,
+    "cpu_maximum_percent": 73.0,
+    "cpu_ceiling_percent": 97.0,
+    "rule": "admit only when average and maximum are strictly below the ceiling",
+    "admitted": true
+  },
+  "q02": {
+    "status": "pending",
+    "work_item_id": "01fbf53a-4349-4d37-aa1f-a94279c730ca",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "attempt_count_at_verification": 0,
+    "claimed_by_at_verification": null,
+    "build_task_id": "d3dadcf9-0fd0-4597-a868-403abc50115c",
+    "build_result_path": "D:/QM/strategy_farm/artifacts/builds/d3dadcf9-0fd0-4597-a868-403abc50115c.json",
+    "build_result_sha256_at_record": "0B9C67774A47546275D6DFA0AAD6F8F0EF56AFDD090BD4AE174EBB00CFEE557A",
+    "auto_enqueue_count": 1,
+    "dispatch_owner": "paced worker fleet"
+  },
+  "commits": [
+    "81f51cc6d1 research: approve WTI Sn-core dispersion trend source",
+    "41e1c7b1ec card(QM5_41277): approve WTI Sn-core dispersion trend",
+    "44fc7fe927 registry(QM5_41277): reserve WTI Sn trend identity",
+    "952263474f build(QM5_41277): implement WTI Sn-core trend",
+    "461432572f build(QM5_41277): mark preset pending compile",
+    "36ea6a928b build(QM5_41277): record governed Q01 binary",
+    "f8129069c4 docs(QM5_41277): bind Q01 and Q02 handoff"
+  ],
+  "safety": {
+    "manual_backtest_launched": false,
+    "manual_dispatch_requested": false,
+    "terminal_control_performed": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "deploy_manifest_touched": false,
+    "live_manifest_touched": false
+  }
+}

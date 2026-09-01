@@ -59,9 +59,9 @@
   "validations": {
     "approved_card_sha256": "6062492E5AE486DAAA52B1FCE56AF750646E9EB4B375048B9E219C1320063970",
     "approved_local_card_byte_identical": true,
-    "farm_runtime_card_sha256": "6062492E5AE486DAAA52B1FCE56AF750646E9EB4B375048B9E219C1320063970",
-    "farm_runtime_card_byte_identical": true,
-    "farm_runtime_card_normalization": "None; the governed runtime card is an exact byte copy of the canonical approved card.",
+    "farm_runtime_card_sha256": "B592F9E2200E5421FE05F306562664800DBABD6D75F1F3F09664FAA3F4680F7C",
+    "farm_runtime_card_byte_identical": false,
+    "farm_runtime_card_normalization": "The farm controller normalized informational R1 fields to its non-gating TIER_C convention; executable R2-R4, strategy, symbol, risk, and lifecycle are unchanged.",
     "build_skill_guard": "PASS",
     "card_schema_lint": "PASS",
     "dedup_artifact_sha256": "74C0023E963CD3105658E09BBFE64168DABE211FC00B82934C37D17B42F40CE5",
