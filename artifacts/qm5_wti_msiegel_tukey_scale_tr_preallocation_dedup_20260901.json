@@ -1,0 +1,47 @@
+{
+  "candidate": {
+    "author": "OpenAI Codex; Sidney Siegel; John W. Tukey; Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen; NIST",
+    "mechanic": "monthly-wti-sixteen-completed-month-log-returns-fixed-eight-old-eight-recent-siegel-tukey-alternating-extremes-rank-sum-exact-12870-label-inclusive-lower-tail6698-recent-eight-month-cumulative-return-continuation",
+    "slug": "wti-msiegel-tukey-scale-tr",
+    "strategy_id": "AI-CODEX-WTI-MSIEGEL-TUKEY-SCALE-20260901_S01"
+  },
+  "error": null,
+  "exit_code": 3,
+  "generated_at_utc": "2026-09-01T15:35:50+00:00",
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41261_wti-mab-scale-tr_card.md",
+      "score": 0.7142857142857143,
+      "slug": "wti-mab-scale-tr",
+      "source": "card",
+      "strategy_id": "AI-CODEX-WTI-MAB-SCALE-20260901_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4770,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1407,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "FUZZY_MATCH"
+}

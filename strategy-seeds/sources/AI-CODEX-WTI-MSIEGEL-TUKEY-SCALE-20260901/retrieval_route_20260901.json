@@ -1,0 +1,63 @@
+{
+  "schema": "qm.public-method-retrieval.v1",
+  "retrieved_at_utc": "2026-09-01T15:35:00Z",
+  "route": "publisher_metadata_boundary_plus_complete_official_nist_method_page",
+  "original_paper": {
+    "title": "A Nonparametric Sum of Ranks Procedure for Relative Spread in Unpaired Samples",
+    "authors": "Sidney Siegel and John W. Tukey",
+    "journal": "Journal of the American Statistical Association",
+    "volume_issue_pages": "55(291), 429-445",
+    "year": 1960,
+    "doi": "10.1080/01621459.1960.10482073",
+    "publisher_url": "https://www.tandfonline.com/doi/abs/10.1080/01621459.1960.10482073",
+    "crossref_url": "https://api.crossref.org/works/10.1080/01621459.1960.10482073",
+    "crossref_http_status": 200,
+    "crossref_utf8_length_bytes": 4657,
+    "crossref_utf8_sha256": "D68B63FFEF804CC63A4A22C4E15A1BBE342960C641B1ED04EC829668F0C2C0A1",
+    "publisher_metadata_and_abstract_read": true,
+    "access_boundary": "Publisher metadata and abstract were read. The publisher body was access-controlled, so no complete original-paper body read, hidden derivation, table value, or paper-file hash is claimed."
+  },
+  "official_method_record": {
+    "organization": "National Institute of Standards and Technology",
+    "project": "Dataplot",
+    "title": "Siegel Tukey Test",
+    "url": "https://www.itl.nist.gov/div898/software/dataplot/refman1/auxillar/siegel.htm",
+    "http_status": 200,
+    "raw_utf8_length_bytes": 20591,
+    "normalized_visible_text_length_bytes": 5945,
+    "normalized_visible_text_sha256": "1E08B7B58AAB8BFCA2638A8BC949B79AFD6C85CECB944BAB4693A86D161468AA",
+    "normalization_note": "Scripts and styles removed, HTML tags stripped, entities decoded, and whitespace collapsed. Raw HTML carries a request-varying email-obfuscation token, so the stable normalized visible-text hash is the reproducible content binding.",
+    "complete_page_read": true,
+    "verified_claims": [
+      "combine the two samples and sort the pooled observations ascending",
+      "assign rank 1 to the smallest, rank 2 to the largest, rank 3 to the next largest, rank 4 to the second smallest, and continue the alternating-extremes pattern",
+      "apply a Mann-Whitney rank-sum test to those assigned ranks",
+      "the command supports lower-, upper-, and two-sided alternatives",
+      "the page identifies the test as a two-sample nonparametric equal-dispersion procedure",
+      "the documented small-sample example uses exact inference"
+    ],
+    "adverse_findings": [
+      "the method record concerns independent samples rather than overlapping WTI formation blocks",
+      "the test is sensitive to relative spread and can also be affected by location differences when samples are not aligned",
+      "the EA uses the arithmetic only as a deterministic tail-occupancy state and makes no inferential claim",
+      "the exact half-support gate is a QM activity choice, not a NIST critical value"
+    ]
+  },
+  "carrier_record": {
+    "source": "strategy-seeds/sources/MOP-TSMOM-2012/source.md",
+    "sha256": "C8B07ECD62C1D5EF9E3D7975EEE6A3B6C46C1C566D0B20B42237613D9B3A7042",
+    "complete_governed_record_read": true,
+    "role": "broad own-return continuation family and explicit NYMEX WTI membership only"
+  },
+  "exact_support_check": {
+    "score_path": [1, 4, 5, 8, 9, 12, 13, 16, 15, 14, 11, 10, 7, 6, 3, 2],
+    "sample_size_each": 8,
+    "assignment_count": 12870,
+    "inclusive_score_boundary": 68,
+    "inclusive_lower_tail_count": 6698,
+    "boundary_mass": 526,
+    "qualification_fraction": 0.5204351204351204,
+    "calculation": "complete deterministic enumeration of all C(16,8) label assignments"
+  },
+  "claim_boundary": "The records support the named alternating-extremes rank construction, original peer-reviewed method lineage, broad own-return continuation family, and WTI carrier membership only. They do not test fixed eight-by-eight monthly-return blocks, the half-support activity gate, one-month continuation, CFDs, fixed risk, activity, profitability, or decorrelation. The EA imports no external source, executable code, optimizer, random output, or trained output."
+}
