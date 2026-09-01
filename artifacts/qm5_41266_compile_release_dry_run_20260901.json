@@ -1,0 +1,19 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "c38d5c79ec359bdb478fb5d2e779ebb293c3c25e33090893aec1d64f8016e881",
+      "ea_id": "QM5_41266",
+      "ea_label": "QM5_41266_wti-mfk-scale-tr",
+      "expected_mq5_sha256": "c38d5c79ec359bdb478fb5d2e779ebb293c3c25e33090893aec1d64f8016e881",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41266_wti-mfk-scale-tr\\QM5_41266_wti-mfk-scale-tr.mq5",
+      "work_item_id": "c50936b8-60ff-44cb-abef-1cea732b8099"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "c50936b8-60ff-44cb-abef-1cea732b8099"
+}
