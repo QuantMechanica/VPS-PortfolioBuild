@@ -100,3 +100,7 @@ tools/strategy_farm/config/gate_manifest.v4.draft.json text eol=lf
 # gate_contract_activations ledger; pin LF so the digest is stable across
 # autocrlf (VPS) and LF (CI) checkouts, exactly like the draft above.
 tools/strategy_farm/config/gate_manifest.v4.json text eol=lf
+
+# Q13 numeric grids are raw-byte sealed into optimization ledgers. Pin the
+# first real pilot grid to LF so its reviewed SHA-256 survives autocrlf checkouts.
+framework/EAs/QM5_41162_ohlc-daily-squeeze-reversal-d1-opt/opt_param_grid.json text eol=lf

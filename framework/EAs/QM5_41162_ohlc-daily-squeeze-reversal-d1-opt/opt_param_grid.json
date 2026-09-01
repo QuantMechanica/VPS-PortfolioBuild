@@ -1,0 +1,132 @@
+{
+  "schema": "qm.opt-param-grid.v1",
+  "ea_id": "QM5_41162",
+  "ea_label": "QM5_41162_ohlc-daily-squeeze-reversal-d1-opt",
+  "parent_ea": "QM5_11421_ohlc-daily-squeeze-reversal-d1",
+  "subject_ea_id": "QM5_11421",
+  "program_id": "DL089_QM5_11421_EURUSD_DWX_2019_2025",
+  "decision": "DL-089",
+  "budget_contract": "OWNER-DEC-Q13-BUDGET-CONTRACT-20260827-OPTION-M",
+  "governing_plan": "docs/research/PATTERN_FILTER_WF_OPT_PLAN_V3_2026-08-21.md",
+  "phase": "Q13",
+  "lever_class": "AI_PARAM",
+  "symbol": "EURUSD.DWX",
+  "timeframe": "D1",
+  "created": "2026-09-01",
+  "author": "Codex",
+  "notes": "Q13 numeric optimization uses only already-wired strategy inputs from the _opt EA. The Q12 pattern-filter selection is frozen at the six-zero no-filter control. This file declares a grid only; it does not mutate the ledger, enqueue cells, advance a phase, or activate the Option M admission flag.",
+  "selection_rule": {
+    "objective": "return_to_maxdd",
+    "baseline": "same-year frozen-Q12-filter configuration with all numeric inputs at parent values",
+    "selection_years": [2019, 2020, 2021, 2022, 2023, 2024, 2025],
+    "consistency": ">= 2/3 of selection years improve, each by >= +5% relative",
+    "walk_forward": "anchored/expanding, minimum window 3 years; test years 2022-2025",
+    "activity_floor": ">= 10 distinct entry-trading days in every scored year, pro-rata for partial years; a breach makes the value inadmissible before return is evaluated",
+    "pick": "plateau median of qualifying values, never the best observed value",
+    "holdout_blind_selection": true
+  },
+  "control_discipline": {
+    "one_parameter_per_cell": true,
+    "full_cross_forbidden": true,
+    "mandatory_control": "Each parameter ladder includes its parent value; every other numeric input remains at its parent value.",
+    "q12_filter_frozen": {
+      "BUY": [],
+      "SELL": [],
+      "inputs": {
+        "opt_pp_buy1": 0,
+        "opt_pp_buy2": 0,
+        "opt_pp_buy3": 0,
+        "opt_pp_sell1": 0,
+        "opt_pp_sell2": 0,
+        "opt_pp_sell3": 0
+      }
+    },
+    "max_parameters": 3,
+    "max_candidates_per_parameter_including_parent": 5
+  },
+  "trial_accounting": {
+    "parameter_count": 3,
+    "candidate_cells_total": 9,
+    "declared_trial_count_before": 154,
+    "declared_trial_increment": 6,
+    "declared_trial_count_effective_after": 160,
+    "q13_lineage_trial_increment_before": 0,
+    "q13_lineage_trial_increment_effective_after": 6,
+    "physical_q13_cells": 72,
+    "physical_cell_formula": "7 * (1 + 9) + 2",
+    "minutes_per_cell": 7.2,
+    "terminal_hours": 8.64,
+    "option_m_caps": {
+      "declared_trial_increment": 12,
+      "physical_q13_cells": 114,
+      "terminal_hours": 13.68
+    }
+  },
+  "parameters": [
+    {
+      "name": "strategy_entry_range_mult",
+      "input_name": "strategy_entry_range_mult",
+      "input_type": "double",
+      "parent_value": 1.0,
+      "candidate_values": [0.5, 1.0, 1.5],
+      "control_cell": 1.0,
+      "technical_bounds": {
+        "min": 0.5,
+        "max": 1.5,
+        "source": "QM5_11421 Strategy Card P3 sweep"
+      },
+      "interaction_constraints": "Vary alone. Keep strategy_sl_range_mult=1.5, strategy_tp_range_mult=1.0, strategy_min_range_pips=30.0, strategy_sl_cap_pips=80.0, and all other numeric inputs at parent values. The resulting pending stop must remain valid relative to current bid/ask.",
+      "hypothesis": "The parent one-range entry offset may sit on a local return-to-drawdown plateau: 0.5 ranges should trigger closer to the squeeze and fill more often but admit weaker reversals, while 1.5 ranges should demand a deeper reversal and reduce fills but may improve trade quality.",
+      "expected_effect": "Entry-trading-day count should be non-increasing as the offset rises. A robust improvement must appear as a qualifying plateau under the sealed yearly consistency rule, not as a single peak.",
+      "refutation_criterion": "Refute parameter change if neither non-parent value is admissible and improves return_to_maxdd by at least 5% in at least two-thirds of the applicable selection years, or if qualifying values do not form a defensible plateau; retain 1.0.",
+      "frequency_check": "For every value and scored year, require at least 10 distinct entry-trading days before performance selection (partial years pro rata). Record the monotone-frequency expectation; any year below the floor makes that value inadmissible.",
+      "source_use_sites": [
+        "framework/EAs/QM5_41162_ohlc-daily-squeeze-reversal-d1-opt/QM5_41162_ohlc-daily-squeeze-reversal-d1-opt.mq5:261",
+        "framework/EAs/QM5_41162_ohlc-daily-squeeze-reversal-d1-opt/QM5_41162_ohlc-daily-squeeze-reversal-d1-opt.mq5:292"
+      ]
+    },
+    {
+      "name": "strategy_sl_range_mult",
+      "input_name": "strategy_sl_range_mult",
+      "input_type": "double",
+      "parent_value": 1.5,
+      "candidate_values": [1.0, 1.5, 2.0],
+      "control_cell": 1.5,
+      "technical_bounds": {
+        "min": 1.0,
+        "max": 2.0,
+        "source": "QM5_11421 Strategy Card P3 sweep"
+      },
+      "interaction_constraints": "Vary alone. Keep strategy_entry_range_mult=1.0, strategy_tp_range_mult=1.0, strategy_min_range_pips=30.0, and strategy_sl_cap_pips=80.0. The 80-pip cap remains binding and may collapse nominally different stop multiples to the same effective stop on wide squeeze bars.",
+      "hypothesis": "The stop multiple trades early stop-outs against longer losing excursions: 1.0 ranges should cut adverse reversals sooner, while 2.0 ranges should tolerate more noise. Because fixed-risk sizing and the 80-pip hard cap constrain exposure, a genuine improvement should be a stable local plateau around the 1.5 parent rather than an extreme-value win.",
+      "expected_effect": "Direct signal frequency is unchanged, but wider stops may lengthen position occupancy and indirectly suppress later eligible entries; the frequency check must therefore be measured rather than assumed invariant.",
+      "refutation_criterion": "Refute parameter change if neither non-parent value is admissible and improves return_to_maxdd by at least 5% in at least two-thirds of the applicable selection years, if cap-binding makes the effective treatments indistinguishable, or if no qualifying plateau exists; retain 1.5.",
+      "frequency_check": "For every value and scored year, require at least 10 distinct entry-trading days before performance selection (partial years pro rata). Compare entry-day counts with the parent to detect occupancy-driven starvation; any floor breach makes the value inadmissible.",
+      "source_use_sites": [
+        "framework/EAs/QM5_41162_ohlc-daily-squeeze-reversal-d1-opt/QM5_41162_ohlc-daily-squeeze-reversal-d1-opt.mq5:262",
+        "framework/EAs/QM5_41162_ohlc-daily-squeeze-reversal-d1-opt/QM5_41162_ohlc-daily-squeeze-reversal-d1-opt.mq5:293"
+      ]
+    },
+    {
+      "name": "strategy_min_range_pips",
+      "input_name": "strategy_min_range_pips",
+      "input_type": "double",
+      "parent_value": 30.0,
+      "candidate_values": [20.0, 30.0, 50.0],
+      "control_cell": 30.0,
+      "technical_bounds": {
+        "min": 20.0,
+        "max": 50.0,
+        "source": "QM5_11421 Strategy Card P3 sweep"
+      },
+      "interaction_constraints": "Vary alone. Keep both range multiples and the 80-pip stop cap at parent values. The threshold must stay positive and is evaluated directly against the closed day-2 range before either direction can form a request.",
+      "hypothesis": "The 30-pip parent may balance sample size and squeeze quality: 20 pips admits narrower, potentially noisier structures and should raise frequency, while 50 pips demands stronger daily compression geometry and should lower frequency but may improve payoff quality.",
+      "expected_effect": "Entry-trading-day count must be non-increasing as the minimum range rises. The 50-pip arm is acceptable only if it preserves the activity floor in every scored year and participates in a qualifying plateau.",
+      "refutation_criterion": "Refute parameter change if neither 20 nor 50 pips is admissible and improves return_to_maxdd by at least 5% in at least two-thirds of the applicable selection years, or if the only apparent winner is an isolated peak rather than a plateau; retain 30 pips.",
+      "frequency_check": "For every value and scored year, require at least 10 distinct entry-trading days before performance selection (partial years pro rata). Verify the expected non-increasing entry-day count from 20 to 30 to 50; any floor breach makes that value inadmissible.",
+      "source_use_sites": [
+        "framework/EAs/QM5_41162_ohlc-daily-squeeze-reversal-d1-opt/QM5_41162_ohlc-daily-squeeze-reversal-d1-opt.mq5:252"
+      ]
+    }
+  ]
+}
