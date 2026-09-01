@@ -1,0 +1,31 @@
+{
+  "schema": "qm.public-paper-retrieval.v1",
+  "retrieved_at_utc": "2026-09-01T05:20:00Z",
+  "route": "doi_metadata_plus_complete_public_page_ocr",
+  "title": "Tests Concerning Random Points on a Circle",
+  "author": "Nicolaas H. Kuiper",
+  "journal": "Indagationes Mathematicae (Proceedings)",
+  "volume_pages": "63, 38-47",
+  "year": 1960,
+  "doi": "10.1016/S1385-7258(60)50006-0",
+  "doi_url": "https://doi.org/10.1016/S1385-7258(60)50006-0",
+  "complete_ocr_url": "https://www.scribd.com/document/745532752/82631793",
+  "fallback_pdf_url": "https://core.ac.uk/download/pdf/82631793.pdf",
+  "fallback_transport_result": "redirected fileserver request timed out; no local PDF or PDF hash claimed",
+  "bounded_read": {
+    "complete_article_pages_read": [38, 39, 40, 41, 42, 43, 44, 45, 46, 47],
+    "sections": [
+      "1 Introduction",
+      "2 One-sample statistic V",
+      "3 Asymptotic distribution",
+      "4 Two-sample statistic V_n,m",
+      "tables and references"
+    ],
+    "verified_claims": [
+      "the Kuiper statistic is the supremum positive empirical-distribution gap plus the magnitude of the infimum negative gap",
+      "the paper gives the two-sample form for comparing two unknown continuous distributions",
+      "the statistic is distribution-free under the null hypothesis"
+    ]
+  },
+  "claim_boundary": "The paper supplies the two-sided ECDF distance only. Its asymptotic and tabulated critical values are not used. It does not test gold, silver, monthly ratio changes, exact 924-label enumeration, the locked activity boundary, contrarian trading, CFDs, or performance."
+}

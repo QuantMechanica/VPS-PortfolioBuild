@@ -1,0 +1,33 @@
+{
+  "schema": "qm.public-method-retrieval.v1",
+  "retrieved_at_utc": "2026-09-01T05:25:00Z",
+  "route": "official_cran_release_and_pinned_public_source",
+  "project": "schuhmacherlab/twosamples",
+  "release": "2.0.1",
+  "commit_sha": "4923388cdb14be4875a7041cddd69629a6bfc735",
+  "commit_date_utc": "2023-06-21T21:04:49Z",
+  "cran_tar_url": "https://cran.r-project.org/src/contrib/twosamples_2.0.1.tar.gz",
+  "cran_tar_size_bytes": 134911,
+  "cran_tar_sha256": "C2560FFB7D7F70A03BF1D402C17238F812A23E3562002105EAF62F1DC4317526",
+  "cran_tar_last_modified": "2023-06-23",
+  "source_url": "https://github.com/schuhmacherlab/twosamples/blob/4923388cdb14be4875a7041cddd69629a6bfc735/src/stat_functions.cpp",
+  "source_path": "src/stat_functions.cpp",
+  "source_blob_sha": "ea80f097ca04f36e1c2dc0bcdd1b3452b0be3b48",
+  "source_size_bytes": 10729,
+  "bounded_read": {
+    "complete_files_read": [
+      "DESCRIPTION",
+      "src/stat_functions.cpp",
+      "R/two_samples.R",
+      "R/misc.R",
+      "R/documentation.R",
+      "man/kuiper_test.Rd"
+    ],
+    "verified_claims": [
+      "the implementation computes the largest positive E-minus-F gap and the magnitude of the largest negative gap",
+      "their sum is the Kuiper power-one statistic",
+      "the package evaluates two-sample statistics through pooled-label permutation sampling"
+    ]
+  },
+  "policy": "Official CRAN release and pinned source only. The EA imports no R or C++ code and replaces random resampling with complete enumeration of all 924 fixed-size labels."
+}
