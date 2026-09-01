@@ -389,6 +389,3 @@ handoff if the governed CPU ceiling permits. It does not authorize a manual
 tester run, optimization, live/demo/shadow/stress setfile, AutoTrading,
 `T_Live`, deploy/live manifest, portfolio-gate mutation, portfolio admission,
 or correlation waiver.
-
-
-

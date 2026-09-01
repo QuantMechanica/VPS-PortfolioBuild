@@ -1544,8 +1544,14 @@ def pending_claim_order_sql() -> str:
           CASE
             -- Once an annual matrix resolves, its WF-combo and numeric
             -- measurements are the bounded critical path to selection. Rank
-            -- only explicitly marked derived rows before annual frontier
-            -- refills; all annual cells retain their prior order and gates.
+            -- only the earliest non-terminal row in each explicitly marked
+            -- derived lane before annual frontier refills. The derived-row
+            -- generator marks every declared year, so treating the marker as
+            -- "this row is the head" lets an older updated_at on year N+1 beat
+            -- year N. Claim preflight then rejects N+1 and suppresses the lane
+            -- for the rest of that cycle. Derive the serial head here from the
+            -- same program/arm/year identity that the claim preflight uses;
+            -- all annual cells retain their prior order and gates.
             WHEN upper(COALESCE(w.phase, ''))='OPT_CENSUS'
              AND json_valid(w.payload_json)=1
              AND upper(COALESCE(json_extract(
@@ -1558,7 +1564,25 @@ def pending_claim_order_sql() -> str:
              AND json_type(w.payload_json, '$.priority_track')='true'
              AND json_type(
                w.payload_json, '$.opt_census_frontier_priority'
-             )='true' THEN 0
+             )='true'
+             AND NOT EXISTS (
+               SELECT 1 FROM work_items earlier_derived
+               WHERE lower(COALESCE(earlier_derived.status, ''))
+                     IN ('pending', 'active')
+                 AND upper(COALESCE(earlier_derived.phase, ''))='OPT_CENSUS'
+                 AND json_valid(earlier_derived.payload_json)=1
+                 AND json_extract(
+                   earlier_derived.payload_json, '$.program_id'
+                 )=json_extract(w.payload_json, '$.program_id')
+                 AND json_extract(
+                   earlier_derived.payload_json, '$.arm'
+                 )=json_extract(w.payload_json, '$.arm')
+                 AND CAST(json_extract(
+                   earlier_derived.payload_json, '$.year'
+                 ) AS INTEGER) < CAST(json_extract(
+                   w.payload_json, '$.year'
+                 ) AS INTEGER)
+             ) THEN 0
             ELSE 1 END AS _opt_census_post_census_rank,
           CASE
             -- DL-089 may inherit a broad OWNER priority flag on every census

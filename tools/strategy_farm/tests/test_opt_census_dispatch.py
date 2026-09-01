@@ -289,6 +289,72 @@ def test_post_census_critical_path_precedes_annual_frontier_without_reordering_a
     ]
 
 
+def test_numeric_baseline_true_head_precedes_later_year_and_cross_program_annual(
+    tmp_path: Path,
+) -> None:
+    """A later baseline year with an older timestamp cannot hide the lane head."""
+
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    annual = {
+        "schema": census.SCHEMA,
+        "program_id": "program-annual-refill",
+        "cell_key": "program-annual-refill:2019:buy_001",
+        "arm": "buy_001",
+        "year": 2019,
+        "priority_track": True,
+        census.FRONTIER_PRIORITY_MARKER: True,
+    }
+    baseline_head = {
+        "schema": census.SCHEMA,
+        "program_id": "program-numeric",
+        "cell_key": "program-numeric:numeric:baseline:2020",
+        "arm": "baseline",
+        "year": 2020,
+        "opt_census_stage": "NUMERIC_BASELINE",
+        "priority_track": True,
+        census.FRONTIER_PRIORITY_MARKER: True,
+    }
+    baseline_later = {
+        **baseline_head,
+        "cell_key": "program-numeric:numeric:baseline:2021",
+        "year": 2021,
+    }
+    with farmctl.connect(root) as conn:
+        for item_id, payload, updated_at in (
+            # Reproduce the live defect: year 2021 is older by updated_at, while
+            # year 2020 was restamped after its predecessor completed.
+            ("baseline-2021", baseline_later, "2026-09-01T05:47:24+00:00"),
+            ("annual-refill", annual, "2026-09-01T06:00:00+00:00"),
+            ("baseline-2020", baseline_head, "2026-09-01T07:50:26+00:00"),
+        ):
+            _insert(
+                conn,
+                id=item_id,
+                kind="backtest",
+                phase="OPT_CENSUS",
+                ea_id=f"QM5_{item_id}",
+                symbol="EURUSD.DWX",
+                setfile_path=f"{item_id}.set",
+                status="pending",
+                attempt_count=0,
+                payload_json=json.dumps(payload),
+                created_at=updated_at,
+                updated_at=updated_at,
+            )
+        conn.commit()
+        ordered = conn.execute(farmctl.pending_claim_order_sql()).fetchall()
+
+    by_id = {row["id"]: row for row in ordered}
+    assert by_id["baseline-2020"]["_opt_census_post_census_rank"] == 0
+    assert by_id["baseline-2021"]["_opt_census_post_census_rank"] == 1
+    assert by_id["annual-refill"]["_opt_census_post_census_rank"] == 1
+    assert ordered[0]["id"] == "baseline-2020"
+    assert [row["id"] for row in ordered].index("baseline-2020") < [
+        row["id"] for row in ordered
+    ].index("annual-refill")
+
+
 # ---------------------------------------------------------------------------
 # 2 · RUN PATH — window pass-through
 # ---------------------------------------------------------------------------
