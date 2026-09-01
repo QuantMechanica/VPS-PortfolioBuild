@@ -9,7 +9,8 @@ approval_basis: decisions/2026-09-01_wti_monthly_yuen20_trimmed_shift_trend_sour
 created: 2026-09-01
 created_by: Codex
 last_reviewed: 2026-09-01
-cards_extracted: []
+cards_extracted:
+  - QM5_41264_wti-myuen20-shift-tr
 ---
 
 # WTI Monthly 20% Yuen Trimmed-Location Shift Continuation
