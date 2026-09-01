@@ -1,0 +1,19 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "2a7c0049be41de05ae761585153a00eb267b8dee530a2b315d7e87e01bd71aae",
+      "ea_id": "QM5_41265",
+      "ea_label": "QM5_41265_xauxag-mbf-scale-rv",
+      "expected_mq5_sha256": "2a7c0049be41de05ae761585153a00eb267b8dee530a2b315d7e87e01bd71aae",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41265_xauxag-mbf-scale-rv\\QM5_41265_xauxag-mbf-scale-rv.mq5",
+      "work_item_id": "f60ef37e-1ff1-4922-9f0f-df0af662a2d8"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "f60ef37e-1ff1-4922-9f0f-df0af662a2d8"
+}
