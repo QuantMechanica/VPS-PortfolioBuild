@@ -1,0 +1,44 @@
+{
+  "activated_at_utc": "2026-08-09T16:47:31.157023+00:00",
+  "activation_sha256": "61c8c72ccb0cb8038ae6ece7b89aa68f602b1637d8bc6b6c866f38492139134e",
+  "auto_reengage_containment": true,
+  "dual_audits": [
+    {
+      "audit_sha256": "0638d5c13b3dd94da2a0ba361de0e784dd7eed7702b517f12da063962c2be12a",
+      "file_sha256": "e20655c0333862a7a62f5be97131b7c96590b88f18e3feee6454265c1f973b1b",
+      "path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_custom_history_variant_a_20260809\\isolation_audit_3.json"
+    },
+    {
+      "audit_sha256": "f008b1f03dfae1bfaff5491e8db6916b19adc605591f5ba2a6b8370d8360721c",
+      "file_sha256": "95933d66a2a672855899e6322d8fb14e08ae7b9a7209a9357d6ca13b7bab6ee2",
+      "path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_custom_history_variant_a_20260809\\isolation_audit_4.json"
+    }
+  ],
+  "enabled": true,
+  "manifest_path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_custom_history_variant_a_20260809\\archive_manifest_owner_approved.json",
+  "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+  "owner_window_receipt_path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_custom_history_variant_a_20260809\\owner_window_receipt.json",
+  "owner_window_receipt_sha256": "abd7fb601b6e80c11610dd39d27d086f15c79f9a3ef6992c0c4529e759a43bf6",
+  "protected_roots": [
+    "C:\\QM\\mt5\\T_Live",
+    "D:\\QM\\mt5\\T_Live",
+    "D:\\QM\\mt5\\FTMO_STREAM1",
+    "D:\\QM\\mt5\\FTMO_STREAM2",
+    "D:\\QM\\mt5\\DEV1",
+    "D:\\QM\\mt5\\DEV2",
+    "D:\\QM\\mt5\\T_Export"
+  ],
+  "runner_terminals": [
+    "T1",
+    "T2",
+    "T3",
+    "T4",
+    "T5",
+    "T6",
+    "T7",
+    "T8",
+    "T9",
+    "T10"
+  ],
+  "schema_version": "qm.custom-history-isolation-activation/v1"
+}
