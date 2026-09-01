@@ -11,7 +11,8 @@ parent_sha256:
   MOP-TSMOM-2012: C8B07ECD62C1D5EF9E3D7975EEE6A3B6C46C1C566D0B20B42237613D9B3A7042
 created: 2026-09-01
 created_by: Research+Development
-cards_extracted: []
+cards_extracted:
+  - QM5_41274_wti-m3block-rank-tr
 ---
 
 # WTI Completed-Month Three-Block Ordinal Close Trend Continuation
