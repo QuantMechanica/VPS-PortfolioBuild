@@ -1,0 +1,151 @@
+{
+  "schema": "qm.paced-fleet-fresh-q02-stale-ex5-recovery/v1",
+  "captured_at_utc": "2026-09-01T18:50:40.9333996Z",
+  "enqueued_at_utc": "2026-09-01T18:46:23+00:00",
+  "observation_base": "3bd3ed99a5f5dd8bfd23968492d9d93257dfc5d0",
+  "branch": "agents/board-advisor",
+  "mission": "diversity_funnel_throughput",
+  "status": "Q02_FRESH_CURRENT_BINARY_SEED_PENDING",
+  "capacity_gate": {
+    "captured_at_utc": "2026-09-01T18:46:08.5018911Z",
+    "cpu_ceiling_percent": 97.0,
+    "cpu_samples_percent": [75.0, 82.0, 89.0, 92.0, 86.0],
+    "cpu_average_percent": 84.8,
+    "cpu_maximum_percent": 92.0,
+    "admitted": true,
+    "active_factory_terminals": ["T4", "T7"]
+  },
+  "priority_1_disposition": {
+    "eligible_collision_free_diversity_build_found": false,
+    "previous_forex_handoff": {
+      "ea_id": "QM5_36005",
+      "q02_verdict": "FAIL",
+      "q02_reason": "MIN_TRADES_NOT_MET"
+    },
+    "unavailable_data_contract_candidates": ["QM5_1457", "QM5_1459"],
+    "remaining_no_ex5_candidates_owned_by_governed_or_concurrent_work": true
+  },
+  "ea": {
+    "ea_id": "QM5_11314",
+    "ea_label": "QM5_11314_tc-m5-7-london-open-box-breakout",
+    "symbol": "GBPJPY.DWX",
+    "timeframe": "M5",
+    "asset_class": "forex",
+    "structural_edge": "previous_hour_session_box_breakout",
+    "maximum_entries_per_session": 1,
+    "expected_trades_per_year_per_symbol": 120,
+    "source_type": "book",
+    "source_pointer": "Thomas Carter, 20 Forex Trading Strategies (5 Minute Time Frame), System 7",
+    "source_r1_r4": "PASS",
+    "machine_learning": false,
+    "banned_indicator": false
+  },
+  "predecessor": {
+    "work_item_id": "f8188bb8-9076-436c-9fc7-4b9d8e651195",
+    "status": "done",
+    "verdict": "INFRA_FAIL",
+    "terminal": "T7",
+    "reason_classes": ["ONINIT_FAILED", "INCOMPLETE_RUNS"],
+    "gate_contract_version": "legacy",
+    "pre_execution_binding": true,
+    "ex5_sha256": null,
+    "setfile_sha256": null,
+    "mq5_sha256": null,
+    "payload_sha256": "087668f8f22d4bdc91d520e44cde6b44414fa7db99d688dcac68322352c50a92",
+    "retained_summary_path": "D:/QM/reports/work_items/f8188bb8-9076-436c-9fc7-4b9d8e651195/QM5_11314/20260710_044817/summary.json",
+    "retained_summary_path_exists_at_capture": false,
+    "preserved": true
+  },
+  "stale_binary_diagnosis": {
+    "predecessor_finished_at_utc": "2026-07-10T04:53:18+00:00",
+    "post_failure_ex5_commit": "f1b1abd677694ebb1bb9f455af52eda8759efafd",
+    "post_failure_ex5_commit_date": "2026-07-14T23:08:03+02:00",
+    "changed_paths": [
+      "framework/EAs/QM5_11314_tc-m5-7-london-open-box-breakout/QM5_11314_tc-m5-7-london-open-box-breakout.ex5"
+    ],
+    "old_ex5_size_bytes": 273388,
+    "new_ex5_size_bytes": 323780,
+    "same_ea_q02_control": {
+      "work_item_id": "cb9e31ab-c496-4a5a-b568-a34f6b117ee1",
+      "symbol": "GBPUSD.DWX",
+      "verdict": "PASS",
+      "updated_at_utc": "2026-07-10T14:24:39+00:00"
+    }
+  },
+  "eligibility": {
+    "same_pair_economic_q02_q03_rows": 0,
+    "same_pair_terminal_governance_rows": 0,
+    "same_pair_later_phase_rows": 0,
+    "same_pair_active_poison_pills": 0,
+    "open_ea_rows_before_enqueue": 0,
+    "predecessor_canonical_supersessions": 0
+  },
+  "history_repair_evidence": {
+    "history_first_year": 2017,
+    "history_last_year": 2025,
+    "custom_history_archive_admission": {
+      "status": "ACTIVE",
+      "selected_symbols": ["GBPJPY.DWX"],
+      "selected_archive_rows": 108,
+      "activation_sha256": "61c8c72ccb0cb8038ae6ece7b89aa68f602b1637d8bc6b6c866f38492139134e",
+      "manifest_path": "D:/QM/strategy_farm/artifacts/ops/custom_history_custom_history_variant_a_20260809/archive_manifest_owner_approved.json",
+      "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06"
+    }
+  },
+  "artifact_identity": {
+    "mq5_sha256": "ab90dac6f341e843aa3c020aa6b0f1a7704883483f9d7f09c97c6de197798761",
+    "ex5_sha256": "1f8a00bed3760ae93fbcc12226165fe09c9ef9d1c957fd969c74af59daf2b05b",
+    "setfile_sha256": "c89cb7ef5060456eb33bf428fdea5695889dfa3dd33208a0eac65f92d1bbca29",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "portfolio_weight": 1.0
+  },
+  "successor": {
+    "work_item_id": "1dcfcaa3-0021-41ae-a646-52b14c853c92",
+    "phase": "Q02",
+    "status_at_verification": "pending",
+    "claimed_by_at_verification": null,
+    "attempt_count": 0,
+    "fresh_q02_seed": true,
+    "historical_work_item_preserved": true,
+    "pre_binding_source_verified": true,
+    "gate_contract_version": "v4",
+    "sh3_enforced": true,
+    "enqueue_event": "fresh_q02_pre_binding_seed_enqueued",
+    "enqueue_event_id": 381670
+  },
+  "provisional_duplicate_correction": {
+    "work_item_id": "10ffa8a2-3e3a-4124-9b76-470f93e59286",
+    "ea_id": "QM5_10953",
+    "symbol": "AUDJPY.DWX",
+    "status": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "superseded_by_economic_work_item_id": "54b1db68-1a77-4688-a174-4de64fa01542",
+    "economic_reason": "MIN_TRADES_NOT_MET",
+    "canonical_supersession_recorded": true,
+    "claim_selector_excludes_superseded_rows": true,
+    "activation_trigger_blocks_superseded_pending_rows": true,
+    "supersession_event_ids": [381660, 381661],
+    "tester_launched": false
+  },
+  "actions": {
+    "eligible_q02_rows_created": 1,
+    "provisional_rows_canonically_superseded_before_claim": 1,
+    "manual_dispatch_requested": false,
+    "manual_backtest_launched": false,
+    "terminal_control": false,
+    "ea_source_modified": false,
+    "binary_modified": false,
+    "setfile_modified": false,
+    "strategy_card_modified": false,
+    "registry_modified": false,
+    "resolver_modified": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "live_manifest_touched": false
+  },
+  "evidence_markdown": "docs/research/DIVERSITY_FUNNEL_QM5_11314_GBPJPY_Q02_STALE_EX5_RECOVERY_2026-09-01.md"
+}
