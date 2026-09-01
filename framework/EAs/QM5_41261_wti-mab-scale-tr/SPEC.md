@@ -25,7 +25,7 @@ Continue the sign of the actual recent six-return cumulative move; consume flat
 inside the `1e-12` direction band. The boundary is an activity setting, not a
 statistical-significance claim.
 
-## 2. Locked Parameters
+## 2. Parameters
 
 | Parameter | Value | Meaning |
 |---|---:|---|
