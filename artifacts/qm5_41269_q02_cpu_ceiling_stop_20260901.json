@@ -1,0 +1,78 @@
+{
+  "schema_version": "qm.q02-cpu-ceiling-stop/v1",
+  "recorded_at_utc": "2026-09-01T13:58:12.6699083Z",
+  "mission_outcome": "Q01_PASS_Q02_NOT_ENQUEUED_CPU_CEILING",
+  "ea_id": "QM5_41269",
+  "ea_label": "QM5_41269_xauxag-mklotz-scale-rv",
+  "logical_symbol": "QM5_41269_XAU_XAG_KLOTZ_SCALE_RV_D1",
+  "branch": "agents/board-advisor",
+  "build_task": {
+    "task_id": "59c3a6dc-b7de-476f-b15e-c05bfa562ca7",
+    "status": "pending",
+    "build_result_file": "artifacts/qm5_41269_build_result_20260901.json",
+    "build_result_sha256": "1E7D1493A65959FB067ED72E346F2F7F7EFE7A98467E7D30737E729CEA725705",
+    "build_result_commit": "156a08a069990d111b567f7099d4d9dda4e63fca"
+  },
+  "compile": {
+    "work_item_id": "746ddf8e-c007-41bd-8214-31de6ed2b9be",
+    "status": "done",
+    "verdict": "COMPILE_OK",
+    "build_check_result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "build_check_warnings": 1,
+    "build_check_warning_codes": [
+      "EA_EVENT_VOCABULARY_UNKNOWN:PACKAGE_PLAN"
+    ],
+    "terminal": "T2",
+    "mq5_sha256": "87B4AC6E784F7A85230B28C235A5BD79AA7F758D00B30BC5FA5B54A933BEE06E",
+    "ex5_sha256": "CC5F54B645E8B2D26E7D03AA50DB95081DE229286840D6B29343FD8CECF1D7BE"
+  },
+  "cpu_admission": {
+    "sampled_at_utc": "2026-09-01T13:57:05.3824350Z",
+    "command": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "samples_percent": [
+      97.26590379918565,
+      96.59611052918497,
+      94.92240553102754,
+      90.52831842470673,
+      90.92454879457881
+    ],
+    "average_percent": 94.04745741573673,
+    "maximum_percent": 97.26590379918565,
+    "hard_ceiling_percent": 97.0,
+    "decision_rule": "STOP when any fresh five-sample whole-host CPU maximum is greater than or equal to 97.0 percent",
+    "verdict": "STOP_CPU_CEILING"
+  },
+  "q02": {
+    "record_build_called": false,
+    "auto_enqueued": false,
+    "work_item_count_at_stop": 0,
+    "logical_work_items_enqueued": 0,
+    "component_work_items_enqueued": 0,
+    "reason": "Fresh whole-host CPU maximum reached the OWNER hard ceiling before the record-build transition."
+  },
+  "resume_contract": {
+    "preconditions": [
+      "Take a new five-sample whole-host CPU window and require every sample to remain below 97.0 percent.",
+      "Confirm build task 59c3a6dc-b7de-476f-b15e-c05bfa562ca7 remains pending and QM5_41269 still has zero Q02 work items.",
+      "Confirm the committed build-result SHA-256 and MQ5 SHA-256 remain unchanged."
+    ],
+    "next_command_if_admitted": "python tools/strategy_farm/farmctl.py record-build --task-id 59c3a6dc-b7de-476f-b15e-c05bfa562ca7 --result-file artifacts/qm5_41269_build_result_20260901.json",
+    "expected_effect": "Record the already-complete Q01 build and auto-enqueue exactly one logical-basket D1 RISK_FIXED Q02 work item; never enqueue either component setfile.",
+    "forbidden_rework": [
+      "Do not create another build task.",
+      "Do not enqueue or release another compile item.",
+      "Do not launch a manual tester run or dispatch the Q02 queue.",
+      "Do not change the source, card, score constants, setfiles, portfolio gate, T_Live manifest, or AutoTrading."
+    ]
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "deploy_manifest_touched": false,
+    "manual_backtest_launched": false,
+    "portfolio_gate_touched": false,
+    "q02_dispatched": false,
+    "t_live_manifest_touched": false
+  }
+}
