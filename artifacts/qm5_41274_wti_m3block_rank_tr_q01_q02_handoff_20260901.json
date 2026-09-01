@@ -1,0 +1,97 @@
+{
+  "schema": "qm.qm5-41274-q01-q02-handoff/v1",
+  "captured_at_utc": "2026-09-01T18:33:25.0505573Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "9317d2e3b510a4230b98852f94a6d3ed0d2c6f10",
+  "mission_outcome": "NEW_STRUCTURAL_WTI_SLEEVE_BUILT_Q01_PASS_Q02_ENQUEUED",
+  "ea": {
+    "ea_id": "QM5_41274",
+    "ea_label": "QM5_41274_wti-m3block-rank-tr",
+    "strategy_id": "AI-CODEX-WTI-M3BLOCK-RANK-TREND-20260901_S01",
+    "source_id": "AI-CODEX-WTI-M3BLOCK-RANK-TREND-20260901",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "magic": 412740000,
+    "signal": "final fifteen closes of the immediately completed 17-23-session broker month; fixed 5/5/5 blocks; all 75 earlier/later-block comparisons; BUY when 2W>75 and SELL when 2W<75",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "research": {
+    "source_packet_sha256": "5ECC29A69555F97FB99AFAF9D472FE346DD550616D967EF96365D19C00A7D6FF",
+    "dedup_receipt_sha256": "2CC07EFAA3F1A5618442E1DA8B17E42A24B14B3E3561C12B985AC740E26D828D",
+    "dedup_verdict": "DISTINCT_WTI_COMPLETED_MONTH_FINAL15_CLOSE_THREE_BLOCK_75_PAIR_ORDINAL_DOMINANCE_CONTINUATION",
+    "claim_boundary": "Peer-reviewed evidence supports WTI membership and monthly own-return continuation only; the exact within-month ordinal score is disclosed QM synthesis."
+  },
+  "q01": {
+    "status": "PASS",
+    "initial_compile_work_item_id": "8fa48f19-98dc-47f5-adba-9c712998b7ce",
+    "initial_compile_disposition": "immutable COMPILE_FAIL after compiler PASS because the static gate could not prove two dynamic-buffer bounds",
+    "repair_authority": "governed_compile_fail:8fa48f19-98dc-47f5-adba-9c712998b7ce",
+    "compile_work_item_id": "d0139a7c-cf33-4145-b9fc-1ca436365606",
+    "compile_verdict": "COMPILE_OK",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "build_check_result": "PASS",
+    "build_check_warnings": 0,
+    "failure_classes": [],
+    "mq5_sha256": "01357E78417024D0719350511A8549C42D42A0FDE315571158777E5291F1EFD4",
+    "ex5_sha256": "99F81811994B7A52204F8483C63304E5949528479ED7F5383546A4705F99A4D6",
+    "setfile_sha256": "36D420CE5976C5249690A29C59B46499CB8382294FBCD2D760347B6DA78A6A51",
+    "setfile_build_hash": "EF893E9F28393F045277007F754CC2E3358DDA139AD2366659521F16CA907075",
+    "compile_evidence_path": "D:/QM/reports/work_items/d0139a7c-cf33-4145-b9fc-1ca436365606/QM5_41274/COMPILE_EA/compile_evidence.json",
+    "compile_evidence_sha256": "0D2DC5C22E8B427AC5DDDE3671017A580E20AAAFEF9AB50C0748C96A70CE7B27",
+    "build_check_report": "D:/QM/reports/framework/21/build_check_20260901_182741.json",
+    "build_check_report_sha256": "D1D41ED539672BDBF14306655CAB89112476AC047C20A2FD202B3722EE00AFD1",
+    "reference_tests": "PASS_10",
+    "compile_repair_tests": "PASS_61",
+    "spec_validation": "PASS"
+  },
+  "capacity_admission": {
+    "sampling_method": "Win32_PerfFormattedData_PerfOS_Processor Name=_Total",
+    "sample_interval_seconds": 2,
+    "sample_window_utc": {
+      "started_at": "2026-09-01T18:31:50.6120728Z",
+      "ended_at": "2026-09-01T18:32:00.2552935Z"
+    },
+    "cpu_samples_percent": [90.0, 85.0, 79.0, 84.0, 83.0],
+    "cpu_average_percent": 84.2,
+    "cpu_maximum_percent": 90.0,
+    "cpu_ceiling_percent": 97.0,
+    "rule": "admit only when average and maximum are strictly below the ceiling",
+    "admitted": true
+  },
+  "q02": {
+    "status": "pending",
+    "work_item_id": "7ecad3f3-c079-4810-967f-46cc101e88a7",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "attempt_count_at_verification": 0,
+    "claimed_by_at_verification": null,
+    "build_task_id": "a217ffbb-a1df-46bc-a8bb-8cb60cd0e9e8",
+    "build_result_path": "D:/QM/strategy_farm/artifacts/builds/a217ffbb-a1df-46bc-a8bb-8cb60cd0e9e8.json",
+    "build_result_sha256_before_record": "9A4090733291BAFD46FE9688EF8A10314C44BC80729B23DD9C5DD8714E9C197B",
+    "auto_enqueue_count": 1,
+    "dispatch_owner": "paced worker fleet"
+  },
+  "commits": [
+    "d8702708a9 research: approve WTI three-block rank trend source",
+    "10041c3d8a card(QM5_41274): approve WTI three-block rank trend",
+    "f32b569844 registry(QM5_41274): reserve WTI rank trend identity",
+    "de3a3ded14 build(QM5_41274): add WTI three-block rank trend EA",
+    "935e94f399 card(QM5_41274): normalize executable data gate",
+    "47fb66490b build(QM5_41274): mark preset pending compile",
+    "2bf6f376b1 build(QM5_41274): bind Q01 bounds-proof repair",
+    "9317d2e3b5 build(QM5_41274): record governed Q01 binary"
+  ],
+  "safety": {
+    "manual_backtest_launched": false,
+    "manual_dispatch_requested": false,
+    "terminal_control_performed": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "deploy_manifest_touched": false,
+    "live_manifest_touched": false
+  }
+}

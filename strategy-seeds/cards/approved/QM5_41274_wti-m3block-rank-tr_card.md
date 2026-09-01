@@ -78,9 +78,9 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: Q01
-q01_status: NOT_BUILT
-q02_status: NOT_ENQUEUED_Q01_PENDING
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: ENQUEUED_PENDING
 force_build: true
 review_focus: "Falsify a direct-WTI completed-month ordinal path sleeve outside the certified XAU/SP500/NDX/XNG book. Verify month/session membership, final fifteen closes, fixed 5/5/5 blocks, half-point tie rule, all 75 comparisons, strict midpoint side, consumed month, fixed risk, frozen stop, and next-month lifecycle. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -295,11 +295,12 @@ admission, deploy/live manifest, `T_Live`, AutoTrading, or terminal control.
 | phase | date | verdict | evidence |
 |---|---|---|---|
 | G0 | 2026-09-01 | APPROVED; R1-R4 PASS | source approval, dedup, card decision |
-| Q01 | - | NOT_BUILT | pending governed allocation and implementation |
-| Q02 | - | NOT_ENQUEUED_Q01_PENDING | enqueue only after strict Q01 and CPU admission |
+| Q01 | 2026-09-01 | PASS | governed `COMPILE_OK`; build check PASS, 0 errors, 0 warnings |
+| Q02 | 2026-09-01 | ENQUEUED_PENDING | `7ecad3f3-c079-4810-967f-46cc101e88a7`; paced worker owns dispatch |
 
 ## Revision History
 
 | version | date | reason | phase | verdict |
 |---|---|---|---|---|
 | v1 | 2026-09-01 | initial WTI three-block ordinal trend card | G0 | APPROVED |
+| v1.1 | 2026-09-01 | governed build and paced handoff | Q01/Q02 | PASS / ENQUEUED_PENDING |
