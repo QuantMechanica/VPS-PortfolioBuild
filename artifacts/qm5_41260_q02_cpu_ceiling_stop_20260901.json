@@ -1,0 +1,52 @@
+{
+  "schema_version": "qm.q02-cpu-stop/v1",
+  "recorded_at_utc": "2026-09-01T00:35:46.4965341Z",
+  "mission_outcome": "Q01_PASS_Q02_NOT_ENQUEUED_HARD_CPU_CEILING",
+  "ea_id": "QM5_41260",
+  "ea_label": "QM5_41260_xauxag-mad2-rv",
+  "logical_symbol": "QM5_41260_XAU_XAG_MAD2_RV_D1",
+  "build_task_id": "1daa7745-fb52-47a4-96e2-b5957f3cc702",
+  "build_result_commit": "d36a3dfa33",
+  "compile": {
+    "work_item_id": "c0fdbeb3-0067-4d1b-afdf-0adfe67d9f32",
+    "status": "done",
+    "verdict": "COMPILE_OK",
+    "build_check_result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "ex5_sha256": "672076A6F7E3CF803147470D5F16F975E0FE1A3205D5E0FFF2C7782E87761229"
+  },
+  "cpu_admission": {
+    "command": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "samples_percent": [
+      94.5319,
+      82.8658,
+      92.5826,
+      98.0481,
+      97.1711
+    ],
+    "average_percent": 93.0399,
+    "maximum_percent": 98.0481,
+    "hard_ceiling_percent": 97.0,
+    "decision_rule": "STOP when any fresh five-sample whole-host CPU maximum is greater than or equal to 97.0 percent",
+    "verdict": "STOP_CPU_CEILING"
+  },
+  "q02": {
+    "record_build_called": false,
+    "logical_work_items_enqueued": 0,
+    "component_work_items_enqueued": 0,
+    "reason": "record-build auto-enqueues Q02; the OWNER stop condition forbids that mutation after the fresh CPU maximum breached 97 percent"
+  },
+  "resume_only_after": {
+    "condition": "a fresh five-sample whole-host CPU maximum is below 97.0 percent",
+    "command": "python tools/strategy_farm/farmctl.py record-build --task-id 1daa7745-fb52-47a4-96e2-b5957f3cc702 --result-file artifacts/qm5_41260_build_result_20260901.json",
+    "expected_effect": "record the clean build and auto-enqueue exactly one logical-basket Q02 row; component validation setfiles remain excluded"
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "manual_backtest_launched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "deploy_manifest_touched": false
+  }
+}
