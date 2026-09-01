@@ -1,0 +1,27 @@
+{
+  "task_id": "2c1531d9-f79f-40c9-865a-d6c1cdf18117",
+  "ea_id": "QM5_37004",
+  "ea_dir": "framework/EAs/QM5_37004_volatility-targeted-momentum-kelly",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_37004_volatility-targeted-momentum-kelly\\QM5_37004_volatility-targeted-momentum-kelly.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_37004_volatility-targeted-momentum-kelly\\QM5_37004_volatility-targeted-momentum-kelly.ex5",
+  "magic_base": 370040000,
+  "symbols_registered": [
+    "SP500.DWX",
+    "NDX.DWX",
+    "XTIUSD.DWX",
+    "XAUUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_37004_volatility-targeted-momentum-kelly\\sets\\QM5_37004_volatility-targeted-momentum-kelly_SP500.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_37004_volatility-targeted-momentum-kelly\\sets\\QM5_37004_volatility-targeted-momentum-kelly_NDX.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_37004_volatility-targeted-momentum-kelly\\sets\\QM5_37004_volatility-targeted-momentum-kelly_XTIUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_37004_volatility-targeted-momentum-kelly\\sets\\QM5_37004_volatility-targeted-momentum-kelly_XAUUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_37004_volatility-targeted-momentum-kelly\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "blocked_reason": "run_smoke.ps1 pre-launch terminal resolver returned status=no_capacity error_code=none message=No message; no tester launched and the single permitted smoke attempt was not retried",
+  "open_questions": []
+}
