@@ -14,7 +14,8 @@ method_records:
   - SCIPY-MOOD-1.18.0
 created: 2026-09-01
 created_by: Research+Development
-cards_extracted: []
+cards_extracted:
+  - QM5_41267_wti-mmood-scale-tr
 ---
 
 # WTI Monthly Mood Squared-Rank Scale Non-Contraction Continuation
@@ -214,4 +215,3 @@ branch build, deterministic reference tests, strict Q01, one D1
 ceiling permits. It does not authorize a manual tester run, optimization,
 live/demo/shadow/stress setfile, AutoTrading, `T_Live`, deploy/live manifest,
 portfolio-gate mutation, portfolio admission, or correlation waiver.
-
