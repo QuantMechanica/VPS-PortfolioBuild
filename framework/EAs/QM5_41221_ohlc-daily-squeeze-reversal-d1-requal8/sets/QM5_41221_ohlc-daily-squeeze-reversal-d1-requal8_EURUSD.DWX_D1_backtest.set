@@ -1,0 +1,31 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        41221
+; ea_slug:      ohlc-daily-squeeze-reversal-d1-requal8
+; ea_version:   v5.0
+; set_version:  s20260901-001
+; symbol:       EURUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   de9296e15ddf7ea090302893a12f2800e3caf6c37eb81cf4bbd0a58958cc35b1
+; author:       Development
+; date:         2026-09-01
+;==========================================================
+qm_ea_id=41221
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
+strategy_entry_range_mult=1.0
+strategy_sl_range_mult=1.5
+strategy_tp_range_mult=1.0
+strategy_min_range_pips=30.0
+strategy_sl_cap_pips=80.0
+strategy_pending_ttl_bars=1
+strategy_spread_cap_pips=25.0
+strategy_enable_long=true
