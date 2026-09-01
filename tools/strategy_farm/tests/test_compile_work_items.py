@@ -447,6 +447,26 @@ def test_qm5_1252_q02_infra_repair_authority_is_exact_label_bound() -> None:
     )
 
 
+def test_qm5_38002_q02_stale_binary_repair_authority_is_exact_label_bound() -> None:
+    label = "QM5_38002_codetrading-macd-ema-trend-pullback"
+
+    assert compile_work_items.QM5_38002_Q02_STALE_BINARY_REPAIR_EA_LABELS == {
+        label
+    }
+    assert compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_38002_Q02_STALE_BINARY_REPAIR_AUTHORITY,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        "QM5_38003_unrelated-h1",
+        compile_work_items.QM5_38002_Q02_STALE_BINARY_REPAIR_AUTHORITY,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label,
+        "router_ops_issue:wrong-task",
+    )
+
+
 def test_qm5_41163_mae_repair_authority_is_exact_label_bound() -> None:
     label = "QM5_41163_williams-18ma-outside-bar-entry-d1-opt"
 

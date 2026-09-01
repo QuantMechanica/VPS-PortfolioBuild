@@ -433,6 +433,8 @@ HARNESS_PP_FIXTURE_SOURCE_DIR = REPO_ROOT / "framework" / "tests"
 # slot but never launches terminal64 and never emits a Q-gate verdict.
 COMPILE_WORK_ITEM_KIND = "compile"
 COMPILE_EA_PHASE = "COMPILE_EA"
+COMPILE_WORK_ITEM_CONTRACT = "qm.compile-ea-work-item/v1"
+COMPILE_SOURCE_REPAIR_CONTRACT = "qm.compile-ea-source-repair/v1"
 # Router-authorized build-smoke recovery is a prerequisite lane, not a pipeline
 # backtest.  Its exact producer contract receives the same bounded emergency
 # scheduling treatment as compile/harness work so a Q01 prerequisite cannot sit
@@ -1513,21 +1515,35 @@ def pending_claim_order_sql() -> str:
           CASE
             WHEN json_valid(w.payload_json) = 1 THEN
               CASE
-                -- A released, build-task-bound COMPILE_EA row is the Q01
-                -- prerequisite for one already-claimed build.  It must not sit
-                -- behind an unbounded priority-track measurement programme:
-                -- compilation takes seconds, owns no terminal64 process, and
-                -- the compile worker still revalidates the bound source hash
+                -- A released COMPILE_EA row is a seconds-cheap prerequisite
+                -- when it is bound either to an open build task or to an
+                -- separately authorized append-only source repair.  Neither
+                -- may sit behind an unbounded priority-track measurement
+                -- programme: the compile worker owns no terminal64 process and
+                -- still revalidates its task/repair authority plus source hash
                 -- before producing evidence.  Keep the exception exact so an
                 -- unbound/legacy compile row cannot acquire emergency priority.
                 WHEN lower(COALESCE(w.kind, ''))='{COMPILE_WORK_ITEM_KIND}'
                  AND w.phase='{COMPILE_EA_PHASE}'
                  AND COALESCE(json_extract(
                    w.payload_json, '$.compile_contract_version'
-                 ), '')='qm.compile-ea-work-item/v1'
-                 AND length(trim(COALESCE(json_extract(
-                   w.payload_json, '$.bound_build_task_id'
-                 ), ''))) > 0
+                 ), '')='{COMPILE_WORK_ITEM_CONTRACT}'
+                 AND (
+                   length(trim(COALESCE(json_extract(
+                     w.payload_json, '$.bound_build_task_id'
+                   ), ''))) > 0
+                   OR (
+                     json_extract(
+                       w.payload_json, '$.append_only_source_repair'
+                     )=1
+                     AND COALESCE(json_extract(
+                       w.payload_json, '$.compile_source_repair_contract_version'
+                     ), '')='{COMPILE_SOURCE_REPAIR_CONTRACT}'
+                     AND length(trim(COALESCE(json_extract(
+                       w.payload_json, '$.compile_source_repair_authority'
+                     ), ''))) > 0
+                   )
+                 )
                 THEN -1
                 WHEN lower(COALESCE(w.kind, ''))='{Q01_SMOKE_WORK_ITEM_KIND}'
                  AND COALESCE(json_extract(

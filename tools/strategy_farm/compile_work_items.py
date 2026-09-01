@@ -142,6 +142,18 @@ QM5_1252_Q02_INFRA_REPAIR_AUTHORITY = (
 QM5_1252_Q02_INFRA_REPAIR_EA_LABELS = frozenset({
     "QM5_1252_carver-handcraft-ens",
 })
+# Exact paced-fleet authority for the post-review QM5_38002 EURUSD Q02
+# recovery.  Its existing binary predates the approved card-faithful source
+# repair, while the only Q02 attempt ended in the farm taxonomy writer before
+# a tester result existed.  This one router-task/label binding permits only an
+# append-only, current-source-hash-bound COMPILE_EA successor; it grants no
+# backtest, gate-verdict, or live authority.
+QM5_38002_Q02_STALE_BINARY_REPAIR_AUTHORITY = (
+    "router_ops_issue:29b52146-a3ec-4967-b2a7-8a834a444fe8"
+)
+QM5_38002_Q02_STALE_BINARY_REPAIR_EA_LABELS = frozenset({
+    "QM5_38002_codetrading-macd-ema-trend-pullback",
+})
 # Exact review-rework authority for QM5_35005. The accepted source remediation
 # changed the MQ5 after the existing EX5 was produced, so the normal immutable
 # build guards correctly refuse an overwrite. This router-task/label pair
@@ -1662,6 +1674,10 @@ def _source_repair_authorized(
         or (
             authority == QM5_1252_Q02_INFRA_REPAIR_AUTHORITY
             and ea_label in QM5_1252_Q02_INFRA_REPAIR_EA_LABELS
+        )
+        or (
+            authority == QM5_38002_Q02_STALE_BINARY_REPAIR_AUTHORITY
+            and ea_label in QM5_38002_Q02_STALE_BINARY_REPAIR_EA_LABELS
         )
         or (
             authority == QM5_35005_REVIEW_REPAIR_AUTHORITY

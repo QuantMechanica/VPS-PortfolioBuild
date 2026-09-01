@@ -91,6 +91,60 @@ def test_opt_census_ranks_tier6_not_priority(tmp_path: Path) -> None:
     assert opt_term == q04_term  # true interleave, not ahead
 
 
+def test_released_source_repair_compile_beats_priority_measurement(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    now = "2026-09-01T00:00:00+00:00"
+    authenticated_repair = {
+        "compile_contract_version": farmctl.COMPILE_WORK_ITEM_CONTRACT,
+        "append_only_source_repair": True,
+        "compile_source_repair_contract_version": (
+            farmctl.COMPILE_SOURCE_REPAIR_CONTRACT
+        ),
+        "compile_source_repair_authority": "router_ops_issue:test-task",
+    }
+    malformed_repair = {
+        **authenticated_repair,
+        "compile_source_repair_authority": "",
+    }
+    with farmctl.connect(root) as conn:
+        for item_id, kind, phase, payload in (
+            (
+                "priority-measurement",
+                "backtest",
+                "OPT_CENSUS",
+                {"priority_track": True},
+            ),
+            ("authenticated-repair", "compile", "COMPILE_EA", authenticated_repair),
+            ("malformed-repair", "compile", "COMPILE_EA", malformed_repair),
+        ):
+            _insert(
+                conn,
+                id=item_id,
+                kind=kind,
+                phase=phase,
+                ea_id=f"QM5_{item_id}",
+                symbol="",
+                setfile_path="",
+                status="pending",
+                attempt_count=0,
+                payload_json=json.dumps(payload),
+                created_at=now,
+                updated_at=now,
+            )
+        conn.commit()
+        ordered = conn.execute(farmctl.pending_claim_order_sql()).fetchall()
+
+    by_id = {row["id"]: row for row in ordered}
+    order = [row["id"] for row in ordered]
+    assert by_id["authenticated-repair"]["_priority_track_rank"] == -1
+    assert by_id["malformed-repair"]["_priority_track_rank"] == 1
+    assert order.index("authenticated-repair") < order.index("priority-measurement")
+    assert order.index("priority-measurement") < order.index("malformed-repair")
+
+
 def test_frontier_marker_breaks_broad_owner_priority_tie(tmp_path: Path) -> None:
     root = tmp_path / "farm"
     farmctl.init_db(root)
