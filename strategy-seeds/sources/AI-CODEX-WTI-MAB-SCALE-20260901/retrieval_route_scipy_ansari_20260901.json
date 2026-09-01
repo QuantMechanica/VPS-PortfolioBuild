@@ -1,0 +1,33 @@
+{
+  "schema_version": "qm.retrieval-evidence/v1",
+  "source_id": "AI-CODEX-WTI-MAB-SCALE-20260901",
+  "document": "SciPy 1.13.1 scipy.stats.ansari documentation and pinned implementation",
+  "retrieved_at_utc": "2026-09-01T02:21:18.5556637Z",
+  "status": "COMPLETE_PUBLIC_OFFICIAL_SOFTWARE_EVIDENCE",
+  "documentation": {
+    "url": "https://docs.scipy.org/doc/scipy-1.13.1/reference/generated/scipy.stats.ansari.html",
+    "http_status": 200,
+    "content_type": "text/html",
+    "bytes_utf8": 36681,
+    "sha256_utf8": "C98796B0C9F223BB95655CBE943D51C54A562084BB2A7DE95D71D420F28C3E7A",
+    "read_scope": "Complete generated ansari API page, including definition, alternatives, exact-route note, references, and examples."
+  },
+  "source": {
+    "repository": "https://github.com/scipy/scipy",
+    "commit": "44e4ebaac992fde33f04638b99629d23973cb9b2",
+    "url": "https://raw.githubusercontent.com/scipy/scipy/44e4ebaac992fde33f04638b99629d23973cb9b2/scipy/stats/_morestats.py",
+    "http_status": 200,
+    "bytes_utf8": 186567,
+    "sha256_utf8": "470227C31AC4B97EEAE06391CB254DE805675CF54B09AA0EDADF91652DDD2BF9",
+    "bounded_function_lines": "2669-2859",
+    "read_scope": "Complete ansari function docstring and implementation."
+  },
+  "bounded_findings": [
+    "The method is a nonparametric comparison of scale parameters.",
+    "The implementation pools and ranks both samples, then assigns symrank=min(rank,N-rank+1).",
+    "The statistic is the symmetric-rank sum for the first sample.",
+    "Smaller statistic values correspond to larger dispersion for the first sample.",
+    "The documented exact route applies when both samples have fewer than 55 observations and there are no ties."
+  ],
+  "translation_boundary": "The EA implements only the fixed N=12, n=m=6 symmetric scores and exhaustive label count. It does not call SciPy, import a p-value, or claim that the trading cutoff is a published significance level."
+}

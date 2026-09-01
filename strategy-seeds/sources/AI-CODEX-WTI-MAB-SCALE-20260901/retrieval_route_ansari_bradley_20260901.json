@@ -1,0 +1,33 @@
+{
+  "schema_version": "qm.retrieval-evidence/v1",
+  "source_id": "AI-CODEX-WTI-MAB-SCALE-20260901",
+  "document": "Ansari, A. R. and Bradley, R. A. (1960), Rank-Sum Tests for Dispersions, The Annals of Mathematical Statistics 31(4), 1174-1189",
+  "doi": "10.1214/aoms/1177705688",
+  "retrieved_at_utc": "2026-09-01T02:21:28.4564345Z",
+  "crossref": {
+    "url": "https://api.crossref.org/works/10.1214/aoms/1177705688",
+    "http_status": 200,
+    "content_type": "application/json",
+    "bytes_utf8": 1846,
+    "sha256_utf8": "6D7D1B36F5340DE81B8D9155DCE0A69BD4CB8916B4A0ABC8F356EC109849EAC1",
+    "publisher": "Institute of Mathematical Statistics",
+    "title": "Rank-Sum Tests for Dispersions",
+    "volume": "31",
+    "issue": "4",
+    "pages": "1174-1189",
+    "published": "1960",
+    "publisher_link": "http://projecteuclid.org/download/pdf_1/euclid.aoms/1177705688"
+  },
+  "publisher_body_route": {
+    "requested_url": "http://projecteuclid.org/download/pdf_1/euclid.aoms/1177705688",
+    "final_url": "https://projecteuclid.org/download/pdf_1/euclid.aoms/1177705688",
+    "http_status": 200,
+    "content_type": "text/html",
+    "bytes_utf8": 1163,
+    "sha256_utf8": "11D93DAF6621F42A25F7F9FA69824ECF5CB32ADE094123F5ED93B8723EFF2674",
+    "status": "ACCESS_BLOCKED_INCAPSULA_NOT_A_PDF",
+    "committed_body": false
+  },
+  "read_scope": "Authoritative bibliographic metadata only; publisher article body was not accessible and no unobserved paper-body content is claimed.",
+  "policy": "No proxy, mirror, credential, cookie, CAPTCHA, or access-control bypass attempted."
+}
