@@ -1,0 +1,60 @@
+{
+  "schema_version": "qm.q02-enqueue-receipt/v1",
+  "recorded_at_utc": "2026-09-01T04:40:12.4736616Z",
+  "mission_outcome": "Q01_PASS_Q02_ENQUEUED",
+  "ea_id": "QM5_41262",
+  "ea_label": "QM5_41262_wti-mdaily-meanloc-tr",
+  "logical_symbol": "XTIUSD.DWX",
+  "build_task_id": "5f62b1e5-9b7e-4f70-8eb9-7ab6d2b99a56",
+  "build_result_commit": "1ea78a6ed646df1ee6c051e61b95559df39b9c8d",
+  "build_result_sha256": "37B77F338811568F3B3308FE43FC5435BCC4B701BF54A11126ABD7C6909DD4A7",
+  "compile": {
+    "work_item_id": "29926b20-fce8-4e5b-9f17-164305193fdb",
+    "status": "done",
+    "verdict": "COMPILE_OK",
+    "build_check_result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "terminal": "T5",
+    "ex5_sha256": "BD2D12A038A2C03EA3776407B59B9F00CCC0D21A43933E1EE0BFD87AF9FF4977"
+  },
+  "cpu_admission": {
+    "command": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "samples_percent": [
+      93.7523,
+      85.9812,
+      75.3954,
+      95.5307,
+      75.5132
+    ],
+    "average_percent": 85.2346,
+    "maximum_percent": 95.5307,
+    "hard_ceiling_percent": 97.0,
+    "decision_rule": "STOP when any fresh five-sample whole-host CPU maximum is greater than or equal to 97.0 percent",
+    "verdict": "ADMIT_Q02"
+  },
+  "q02": {
+    "record_build_called": true,
+    "record_build_status": "done",
+    "auto_enqueued": true,
+    "logical_work_items_enqueued": 1,
+    "work_item_id": "8ddf8854-c563-4d08-a560-a774579dca60",
+    "phase": "Q02",
+    "kind": "backtest",
+    "status_at_receipt": "pending",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile": "framework/EAs/QM5_41262_wti-mdaily-meanloc-tr/sets/QM5_41262_wti-mdaily-meanloc-tr_XTIUSD.DWX_D1_backtest.set",
+    "setfile_sha256": "5BDBB1079286FCB6F954AE6125F5185F80089E51E89686EF53417DEBBCE384FA",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "manual_backtest_launched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "deploy_manifest_touched": false
+  }
+}
