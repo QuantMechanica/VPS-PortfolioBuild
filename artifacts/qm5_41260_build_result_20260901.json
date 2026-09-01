@@ -1,0 +1,80 @@
+{
+  "task_id": "1daa7745-fb52-47a4-96e2-b5957f3cc702",
+  "ea_id": "QM5_41260",
+  "ea_label": "QM5_41260_xauxag-mad2-rv",
+  "slug": "xauxag-mad2-rv",
+  "strategy_id": "AI-CODEX-XAUXAG-MAD2-RV-20260901_S01",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41260_xauxag-mad2-rv",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41260_xauxag-mad2-rv\\QM5_41260_xauxag-mad2-rv.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41260_xauxag-mad2-rv\\QM5_41260_xauxag-mad2-rv.ex5",
+  "magic_base": 412600000,
+  "symbols_registered": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "logical_symbol": "QM5_41260_XAU_XAG_MAD2_RV_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "timeframe": "D1",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41260_xauxag-mad2-rv\\sets\\QM5_41260_xauxag-mad2-rv_QM5_41260_XAU_XAG_MAD2_RV_D1_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41260_xauxag-mad2-rv\\sets\\QM5_41260_xauxag-mad2-rv_XAUUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41260_xauxag-mad2-rv\\sets\\QM5_41260_xauxag-mad2-rv_XAGUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_sha256": {
+    "QM5_41260_xauxag-mad2-rv_QM5_41260_XAU_XAG_MAD2_RV_D1_D1_backtest.set": "411FD6880C38ED04837400F37638471A43F0DB38BC4FF782BE2BD0E979D81F43",
+    "QM5_41260_xauxag-mad2-rv_XAUUSD.DWX_D1_backtest.set": "FD6869B19276E08B5DC3216831B02B14D152EE2DAFE510BC5D101EE8CBF83E53",
+    "QM5_41260_xauxag-mad2-rv_XAGUSD.DWX_D1_backtest.set": "4E1150EBF07D1B0F1C62F4DFE5F287FEDBB0677CB41975A5E9B5A780FCF5A920"
+  },
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41260_xauxag-mad2-rv\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "The qm-build-ea-from-card skill is build-only and forbids manual backtests; the OWNER mission authorizes one governed logical-basket Q02 enqueue instead.",
+  "blocked_reason": "",
+  "open_questions": [
+    "Q02 must establish package-level activity, fills, paired cost drag, and baseline economics.",
+    "Only unchanged Q09 may determine realized portfolio correlation or diversification value."
+  ],
+  "compile": {
+    "status": "COMPILE_OK",
+    "work_item_id": "c0fdbeb3-0067-4d1b-afdf-0adfe67d9f32",
+    "terminal": "T6",
+    "evidence_path": "D:\\QM\\reports\\work_items\\c0fdbeb3-0067-4d1b-afdf-0adfe67d9f32\\QM5_41260\\COMPILE_EA\\compile_evidence.json",
+    "evidence_sha256": "C1867D5127B24776D2699A34F279F51BBF2F8293948FA07CC79D830F04580344",
+    "build_check_result": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "failure_classes": [],
+    "mq5_sha256": "0686C194B36195E3253F9DC35B2801FC8B7321CB3DAEE39CD281EEC7DD678D2F",
+    "ex5_sha256": "672076A6F7E3CF803147470D5F16F975E0FE1A3205D5E0FFF2C7782E87761229",
+    "logical_setfile_build_hash": "DC1056539208FD509C5C8D00CA01800B74DF6E9A5CFE0C996DCC6EB1254E579E",
+    "logical_setfile_sha256": "411FD6880C38ED04837400F37638471A43F0DB38BC4FF782BE2BD0E979D81F43"
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "validations": {
+    "approved_card_sha256": "636A346DBF3C94E7EF5590CE814086BF754DE4DEF3CA5C66FEAC552A3337AEC1",
+    "approved_local_card_byte_identical": true,
+    "basket_manifest_sha256": "F659F064CCF85717EC47F60589E71B23AC410C44A67878A6776D50C20DCFE70E",
+    "build_skill_guard": "PASS",
+    "card_schema_lint": "PASS",
+    "reference_test_sha256": "33B4D5488B2C8501D35407E613A838B932D54C16DEE2B867C255E77A8F44D634",
+    "reference_tests": "PASS_7",
+    "p1_artifact_validation": "PASS",
+    "p1_evidence_sha256": "263CFB99C684648C4F46E5300E5C7FB5F7B9CD6B241727EA41128F126C18B0E2",
+    "spec_sha256": "DBE9A2D7DC2C54145EF62991B461BC05A668F61C7FBDB8B074524E7F819A1BBE",
+    "spec_validation": "PASS",
+    "static_guardrails": "PASS"
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "deploy_manifest_touched": false,
+    "manual_backtest_launched": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false
+  }
+}
