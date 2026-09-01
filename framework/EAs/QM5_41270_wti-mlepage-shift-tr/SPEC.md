@@ -1,6 +1,9 @@
 # QM5_41270 WTI Lepage Location-Scale Shift Trend
 
 **EA ID:** QM5_41270
+**Slug:** wti-mlepage-shift-tr
+**Source:** AI-CODEX-WTI-MLEPAGE-SHIFT-20260901
+**Date:** 2026-09-01
 
 ## 1. Strategy Logic
 
@@ -27,7 +30,63 @@ for at most one broker month.
 This is a direct-WTI structural sleeve. It is not a portfolio-admission,
 correlation, live-preset, or deployment authorization.
 
-## 2. Symbol, Timeframe, And Data Boundary
+## 2. Parameters
+
+The strategy-specific parameters are fixed at 51 closes, 50 adjacent returns,
+two blocks of 25, Wilcoxon moments `637.5/2656.25`, Ansari-Bradley moments
+`325/(32500/49)`, joint gate `1.3862943611198906`, direction epsilon `1e-12`,
+80 D1 history bars, 180-minute entry grace, four-day close staleness,
+`ATR(20)*3.5` stop distance, 40-day stale exit, 1,500-point spread ceiling,
+and 20-point deviation. The complete literal table appears under Detailed
+Locked Inputs and is byte-aligned with the sole backtest setfile.
+
+## 3. Symbol Universe
+
+| symbol | slot | reason |
+|---|---:|---|
+| `XTIUSD.DWX` | 0 | Native registered WTI carrier for direct crude-oil exposure. |
+
+No proxy, futures chain, alternate CFD, or basket is authorized.
+
+## 4. Timeframe
+
+The host, signal, execution, ATR, and lifecycle timeframe is D1. The signal
+uses completed D1 closes only, evaluates once per broker month, and never reads
+the current D1 bar into its return sample. There are no cross-timeframe reads.
+
+## 5. Expected Behaviour
+
+The design prior is approximately six completed positions per full
+post-warm-up year: at most one consumed attempt per month and an asymptotic
+one-half qualifying-state prior before overlap, dependence, ties, neutral
+direction, data, and execution gates. Positions normally hold until the next
+broker month, with a 40-day stale-repair cap. The intended regime is a material
+WTI return-distribution location or scale shift; direction is symmetric and
+comes only from the recent block cumulative return. These are design
+expectations, not measured performance claims.
+
+## 6. Source Citation
+
+Source ID `AI-CODEX-WTI-MLEPAGE-SHIFT-20260901` is recorded at
+`strategy-seeds/sources/AI-CODEX-WTI-MLEPAGE-SHIFT-20260901/source.md`.
+Supporting evidence is Lepage (1971), Moskowitz, Ooi, and Pedersen (2012),
+Hussain and Tsagris (2025), and official CRAN `LePage` 1.0 source. R1 lineage
+and R2-R4 PASS are recorded in the approved card copied byte-identically to the
+factory card-of-record.
+
+## 7. Risk Model
+
+| Phase | Risk mode | Value |
+|---|---|---|
+| Backtest (Q02 - Q10) | RISK_FIXED | $1,000 per trade (HR4) |
+| Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
+| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% - 0.5%) |
+
+ENV-to-mode validation is enforced by `QM_FrameworkInit`
+(`EA_INPUT_RISK_MODE_MISMATCH`). This build supplies only a fixed-risk
+backtest setfile and grants no live authorization.
+
+## Detailed Symbol, Timeframe, And Data Boundary
 
 The universe is only native `XTIUSD.DWX`, slot 0, on D1. No proxy, futures
 chain, alternate CFD, basket, or current-bar price is used in the statistic.
@@ -50,7 +109,7 @@ finite, strictly chronological pre-month closes. At entry, the newest completed
 label may be at most four calendar days old and must belong to the immediately
 preceding broker month.
 
-## 3. Exact Signal Formula
+## Detailed Exact Signal Formula
 
 For chronological closes `C[0..50]`, form:
 
@@ -86,7 +145,7 @@ For a qualifying state:
 
 Statistic magnitude never changes size, stop distance, or holding period.
 
-## 4. Entry And Risk Contract
+## Detailed Entry And Risk Contract
 
 Entry requires the exact symbol, D1 period, EA ID, slot, magic, seed, locked
 inputs, a timely unconsumed month, no owned exposure, no same-magic entry deal,
@@ -107,7 +166,7 @@ take profit, and no expiration. News temporal mode is OFF, compliance is NONE,
 legacy news is OFF, Friday close is disabled, and stress rejection is zero.
 This directory intentionally contains no live setfile.
 
-## 5. Position Management And Exit Precedence
+## Detailed Position Management And Exit Precedence
 
 Every tick handles exits before entry-only gates:
 
@@ -122,7 +181,7 @@ Restart validation reconstructs the frozen pre-month sample and expected side.
 There is no intramonth flip, target, trail, break-even, partial close, Friday
 close, news exit, scale-in, grid, martingale, or pyramid.
 
-## 6. Locked Inputs
+## Detailed Locked Inputs
 
 | input | value |
 |---|---:|
@@ -148,7 +207,7 @@ The sole setfile is
 `sets/QM5_41270_wti-mlepage-shift-tr_XTIUSD.DWX_D1_backtest.set` and is locked
 to `risk_mode: FIXED`.
 
-## 7. Expected Activity And Q02 Rule
+## Detailed Expected Activity And Q02 Rule
 
 The chi-square-two median gate supplies an asymptotic one-half qualifying-state
 prior, or roughly six states per year before serial dependence, neutral
@@ -156,7 +215,7 @@ direction, data, tie, cost, and execution gates. This is a design prior, not a
 measured WTI frequency or performance claim. Q02 must retire the candidate if
 any full post-warm-up calendar year has fewer than five completed positions.
 
-## 8. Source And Non-Duplicate Boundary
+## Detailed Source And Non-Duplicate Boundary
 
 Moskowitz, Ooi, and Pedersen (2012) support broad own-return continuation and
 explicit WTI membership. Lepage (1971), the fully read Hussain-Tsagris author
@@ -174,7 +233,7 @@ location-only and scale-only monthly WTI cards by requiring their joint Lepage
 state. No source return, frequency, cost, significance, or decorrelation result
 is transferred.
 
-## 9. Runtime Evidence
+## Detailed Runtime Evidence
 
 Each monthly decision emits the normalized month, decision clock, consumption
 state, data counts, strict-distinctness flag, `W`, `A`, `zW2`, `zA2`, `L`, gate
@@ -184,3 +243,9 @@ execution evidence.
 
 This build is authorized only for governed backtesting. It does not authorize
 T_Live, AutoTrading, a portfolio gate change, or any live manifest mutation.
+
+## Revision History
+
+| Version | Date | Reason | Notes |
+|---|---|---|---|
+| v1 | 2026-09-01 | Initial build from card | Build task `02371cdd-9931-40db-ad3e-e982705c0a7c` |

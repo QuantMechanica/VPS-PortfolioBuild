@@ -1,0 +1,83 @@
+{
+  "task_id": "02371cdd-9931-40db-ad3e-e982705c0a7c",
+  "build_generation": 0,
+  "ea_id": "QM5_41270",
+  "ea_label": "QM5_41270_wti-mlepage-shift-tr",
+  "slug": "wti-mlepage-shift-tr",
+  "strategy_id": "AI-CODEX-WTI-MLEPAGE-SHIFT-20260901_S01",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41270_wti-mlepage-shift-tr",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41270_wti-mlepage-shift-tr\\QM5_41270_wti-mlepage-shift-tr.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41270_wti-mlepage-shift-tr\\QM5_41270_wti-mlepage-shift-tr.ex5",
+  "magic_base": 412700000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "logical_symbol": "XTIUSD.DWX",
+  "host_symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41270_wti-mlepage-shift-tr\\sets\\QM5_41270_wti-mlepage-shift-tr_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_sha256": {
+    "QM5_41270_wti-mlepage-shift-tr_XTIUSD.DWX_D1_backtest.set": "457AD5C99C59A416CCB7AABBD077C6236DE559F7BBFCA9F35095C6B237FA9793"
+  },
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41270_wti-mlepage-shift-tr\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "The qm-build-ea-from-card skill is build-only and forbids manual backtests; the OWNER mission explicitly authorizes one governed Q02 enqueue instead.",
+  "blocked_reason": "",
+  "open_questions": [
+    "Q02 must establish activity, fills, cost drag, and baseline economics, including at least five completed positions in every full post-warm-up year.",
+    "Only unchanged Q09 may determine realized correlation or diversification value versus the certified index, metal, and XNG book."
+  ],
+  "compile": {
+    "status": "COMPILE_OK",
+    "work_item_id": "7d12d770-154b-4637-9a92-91af17a4d6b4",
+    "terminal": "T2",
+    "evidence_path": "D:\\QM\\reports\\work_items\\7d12d770-154b-4637-9a92-91af17a4d6b4\\QM5_41270\\COMPILE_EA\\compile_evidence.json",
+    "evidence_sha256": "3BFA6F941689D90D859D16D338F648E183D33B6965605C11A72ACE880AFFF77B",
+    "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260901_144957.json",
+    "build_check_report_sha256": "945E73C496D5E318EED4A8283116D9B82A220803741894AAF644A8C659A632CE",
+    "build_check_result": "PASS",
+    "build_check_warnings": 0,
+    "build_check_warning_codes": [],
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "failure_classes": [],
+    "mq5_sha256": "0682A3B650896D2125C968D699D8A25689758B5A80B254E16BD6B980C909588C",
+    "ex5_sha256": "558B928B8EE1221A6E3D35C476563AC878E9D6A9EAA93193BCCDF82ED2A53F59",
+    "setfile_build_hash": "A99F279339753DD00851E922C7303A5A45761A51B45CFFCD302C5BE4EEC74644",
+    "setfile_sha256": "457AD5C99C59A416CCB7AABBD077C6236DE559F7BBFCA9F35095C6B237FA9793"
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "validations": {
+    "approved_card_sha256": "CB3C9D80EB0F0866DC094668CE3DE7352D9DC45BAB1EB36214A4D8F0EF9353B5",
+    "approved_local_card_byte_identical": true,
+    "farm_runtime_card_sha256": "CB3C9D80EB0F0866DC094668CE3DE7352D9DC45BAB1EB36214A4D8F0EF9353B5",
+    "farm_runtime_card_byte_identical": true,
+    "build_skill_guard": "PASS",
+    "card_schema_lint": "PASS",
+    "dedup_artifact_sha256": "FFF74031E1A7636A78816E6EB0AB67B6CA2731467577CA4D656D96A4B52C2A97",
+    "reference_test_sha256": "EC8CF16A7E853C1EDC8125B407C82C29A6B9EF2FF66797AEC6A4B1F3778DA58C",
+    "reference_tests": "PASS_14",
+    "source_packet_sha256": "A9CA6F155D6525D1C8E84475FD776B6DD8E74DCD4761A73AACF211F81FAB6874",
+    "spec_sha256": "641286548510F97CD0D7DFCD3FF2E486EBE750ADCA2A1700A56A91705E3E42FE",
+    "spec_validation": "PASS",
+    "static_guardrails": "PASS_ZERO_WARNINGS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "setfile_validation": "PASS_1_RISK_FIXED"
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "deploy_manifest_touched": false,
+    "manual_backtest_launched": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false
+  }
+}
