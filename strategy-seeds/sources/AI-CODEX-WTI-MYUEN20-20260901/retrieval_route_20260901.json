@@ -1,0 +1,40 @@
+{
+  "schema": "qm.source-retrieval-evidence/v1",
+  "source_id": "AI-CODEX-WTI-MYUEN20-20260901",
+  "retrieved_at_utc": "2026-09-01T06:35:05Z",
+  "routes": [
+    {
+      "path": "strategy-seeds/sources/MOP-TSMOM-2012/source.md",
+      "status": "COMPLETE_GOVERNED_PACKET_READ",
+      "sha256": "C8B07ECD62C1D5EF9E3D7975EEE6A3B6C46C1C566D0B20B42237613D9B3A7042",
+      "evidence": "Complete 23-page review record for monthly own-return continuation with explicit NYMEX WTI membership.",
+      "boundary": "No WTI-only performance, fixed-block Yuen statistic, CFD equivalence, or QM execution result transfers."
+    },
+    {
+      "url": "https://academic.oup.com/biomet/article-abstract/61/1/165/264376",
+      "doi": "10.1093/biomet/61.1.165",
+      "publisher": "Oxford Academic",
+      "status": "BIBLIOGRAPHIC_METADATA_AND_ABSTRACT_READ",
+      "evidence": "Karen K. Yuen; The two-sample trimmed t for unequal population variances; Biometrika 61(1), April 1974, pages 165-170. The publisher abstract states that the statistic is proposed for unequal variances and evaluated under normal and long-tailed distributions.",
+      "boundary": "The subscriber article body was not represented as completely read; no inaccessible derivation, table, probability, or result is imported."
+    },
+    {
+      "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_ind.html",
+      "publisher": "SciPy community",
+      "status": "COMPLETE_PUBLIC_METHOD_PAGE_READ",
+      "version": "1.18.0",
+      "sha256_utf8_response": "9A741FF7024C4F4023B53E081D2F62F233B9CF44382743466EA58C43F9524C8C",
+      "evidence": "The official page defines trim as the fraction removed from each tail, identifies the method as Yuen's extension of Welch, and states that Winsorized variance and trimmed effective sample size enter the statistic.",
+      "boundary": "SciPy documents a statistical method, not a WTI trading rule or the fixed 0.75 activity boundary."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/scipy/scipy/v1.18.0/scipy/stats/_stats_py.py",
+      "publisher": "SciPy community",
+      "status": "TAG_PINNED_PUBLIC_SOURCE_REVIEWED",
+      "version": "v1.18.0",
+      "sha256_utf8_response": "BFD5AB202427EC19AD39A7D985B8FE3A5B283718AE1ADEC0BD8FC42F605E5988",
+      "evidence": "Pinned implementation sorts each sample, uses g=floor(n*trim), computes the trimmed mean, Winsorizes both tails, uses variance degrees of freedom h-1 where h=n-2g, and applies the unequal-variance standard error sqrt(v1/h1+v2/h2).",
+      "boundary": "The EA implements only the disclosed closed-form statistic and has no SciPy runtime dependency, p-value, resampling, or degrees-of-freedom calculation."
+    }
+  ]
+}
