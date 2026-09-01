@@ -1,0 +1,22 @@
+{
+  "logical_symbol": "QM5_41265_XAU_XAG_MBF_SCALE_RV_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "q02_from_date": "2018.07.02",
+  "q02_to_date": "2024.12.31",
+  "basket_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "notes": [
+    "One logical two-leg monthly gold/silver Brown-Forsythe scale-expansion reversion package. Q02 evaluates combined package PnL, paired costs, and activity; neither component leg is a standalone strategy.",
+    "The EA selects thirteen synchronized completed month-end gold-minus-silver log ratios, forms twelve adjacent changes in fixed old/recent blocks of six, centers each block on its even median, and trades only when the recent mean absolute deviation expands and the block medians differ. Brown-Forsythe W is a finite arithmetic diagnostic only; no critical value or p-value gate is used.",
+    "The package targets equal absolute USD notionals, caps aggregate frozen-stop risk at one RISK_FIXED budget, and follows the validated QM5_12533 logical-basket host-symbol recipe with USD tester currency and the canonical 100000 deposit. Q09 alone owns realized portfolio correlation."
+  ]
+}
