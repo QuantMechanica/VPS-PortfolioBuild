@@ -1,0 +1,119 @@
+{
+  "schema_version": "qm.q02-infra-recovery-cpu-stop/v1",
+  "recorded_at_utc": "2026-09-01T12:44:27.8687231Z",
+  "branch": "agents/board-advisor",
+  "observed_head": "b1ccd2c8621c60b21035b712c9db4c274be25339",
+  "mission_priority": 2,
+  "outcome": "STOPPED_CPU_CEILING_NO_ENQUEUE",
+  "selection": {
+    "ea_id": "QM5_12943",
+    "ea_label": "QM5_12943_robopip-hlhb-trend-catcher-h1",
+    "symbol": "EURUSD.DWX",
+    "timeframe": "H1",
+    "market": "forex",
+    "strategy_family": "structural_trend_following",
+    "expected_trades_per_year_per_symbol": 100,
+    "g0_status": "APPROVED",
+    "ml_required": false,
+    "source_lineage": "Babypips Robopip HLHB Trend Catcher with ForexFactory cross-reference",
+    "source_r1_status": "PASS",
+    "approved_card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12943_robopip-hlhb-trend-catcher-h1.md",
+    "approved_card_sha256": "ef72a38ac2cc6ba8ab0c741c6204af46db31dba3f802984eab8205d043b9d406",
+    "diversity_reason": "Forex is absent from the seven Q08 FAIL_SOFT survivors described in the mission, while this H1 sleeve has never received an economic Q02 verdict."
+  },
+  "diagnosis": {
+    "predecessor_work_item_id": "2b04b129-89e8-4489-8653-5dac22f8439a",
+    "phase": "Q02",
+    "status": "failed",
+    "verdict": "INFRA_FAIL",
+    "verdict_taxonomy": "infra",
+    "verdict_reason": "worker_crashed_handling_item",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "created_at": "2026-08-24T08:53:49+00:00",
+    "updated_at": "2026-08-24T20:36:26+00:00",
+    "evidence_path": "EVIDENCE_UNAVAILABLE:worker_crashed_handling_item",
+    "source_payload_sha256": "c52e2760ec952231931bdfa8994e292d25be4b518227d70166e6d812c361f7ef",
+    "traceback_tail_sha256": "da3db5c435f736663f8557d388f1409a65cccd90642f2ed4d1535b4dc4f71fa6",
+    "root_cause": "The pre-spawn refusal writer attempted to set status=failed before persisting the SH3 verdict taxonomy column and hit the work_items CHECK constraint.",
+    "mt5_economic_result_produced": false,
+    "historical_row_preserved": true,
+    "repair_commits": [
+      {
+        "commit": "c1fe07e30fe27d92233ecae64773ca974abf3493",
+        "subject": "fix(farm): classify spawn refusals under SH3",
+        "role": "Repairs the refusal writer by persisting verdict_taxonomy=infra atomically."
+      },
+      {
+        "commit": "b63bf8b6e828b8297396d7ae46c841c5f3565191",
+        "subject": "farm(q02): admit authenticated worker-crash recovery",
+        "role": "Adds fail-closed, append-only admission for this authenticated same-binary crash signature."
+      }
+    ],
+    "recovery_unit_test": {
+      "command": "python -m pytest tools/strategy_farm/tests/test_candidate_repair_enqueue.py -k 'worker_crash_q02' -q",
+      "result": "2 passed, 44 deselected",
+      "duration_seconds": 2.79
+    }
+  },
+  "current_execution_bindings": {
+    "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12943_robopip-hlhb-trend-catcher-h1\\QM5_12943_robopip-hlhb-trend-catcher-h1.mq5",
+    "mq5_sha256": "6ebb42799e23755d3c31c1de56dca0c9c4023e60ccd4519cd9256f34c239161a",
+    "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12943_robopip-hlhb-trend-catcher-h1\\QM5_12943_robopip-hlhb-trend-catcher-h1.ex5",
+    "ex5_sha256": "95ba06400a66dfa39e31dd09855beb3f4c64f8ee4d2573d5f6476c63234155b2",
+    "predecessor_expected_ex5_sha256": "95ba06400a66dfa39e31dd09855beb3f4c64f8ee4d2573d5f6476c63234155b2",
+    "staged_ex5_verified": true,
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12943_robopip-hlhb-trend-catcher-h1\\sets\\QM5_12943_robopip-hlhb-trend-catcher-h1_EURUSD.DWX_H1_backtest.set",
+    "setfile_sha256": "8e1604e168b117a130a92285d3892352151c85a5c49965e71a9345fadd726586",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "history_copy_status": "PASS_PRIVATIZED",
+    "history_selected_file_count": 108,
+    "history_receipt_sha256": "6e11fecfe9a009ab6fd06279cbfc77c1b7bc0fd4f7442f23fac917445d4949f8"
+  },
+  "farm_coordination": {
+    "farm_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "observed_after_cpu_sample": true,
+    "exact_append_only_successor_count": 0,
+    "open_same_ea_symbol_q02_count": 0,
+    "related_work_item_count": 1,
+    "db_mutated_by_this_unit": false
+  },
+  "cpu_admission": {
+    "metric": "Processor(_Total)/% Processor Time",
+    "sample_interval_seconds": 2,
+    "sample_count": 5,
+    "samples_percent": [
+      99.658897,
+      100.0,
+      100.0,
+      99.80488,
+      100.0
+    ],
+    "average_percent": 99.892755,
+    "maximum_percent": 100.0,
+    "ceiling_percent": 97.0,
+    "admitted": false,
+    "stop_rule": "Stop when either the five-sample average or maximum is greater than or equal to 97%."
+  },
+  "next_governed_action": {
+    "executed": false,
+    "precondition": "Take a fresh five-sample CPU reading and proceed only when both average and maximum are below 97%, then re-check that no exact successor or open QM5_12943/EURUSD.DWX Q02 row exists.",
+    "command": "python tools/strategy_farm/farmctl.py enqueue-backtest --ea QM5_12943 --phase Q02 --from-work-item-id 2b04b129-89e8-4489-8653-5dac22f8439a --append-only-rerun-of 2b04b129-89e8-4489-8653-5dac22f8439a --rerun-reason \"retry exact EURUSD H1 identity after SH3 spawn-refusal taxonomy writer repair\" --expected-current-ex5-sha256 95ba06400a66dfa39e31dd09855beb3f4c64f8ee4d2573d5f6476c63234155b2",
+    "expected_guarded_payload_flags": {
+      "append_only_rerun": true,
+      "same_binary_worker_crash_rerun": true,
+      "same_binary_infra_requalification": true,
+      "historical_work_item_preserved": true
+    }
+  },
+  "safety": {
+    "backtest_enqueued": false,
+    "manual_dispatch": false,
+    "mt5_started_or_stopped": false,
+    "autotrading_toggled": false,
+    "t_live_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
