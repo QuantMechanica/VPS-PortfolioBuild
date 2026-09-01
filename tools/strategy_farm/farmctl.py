@@ -23217,6 +23217,179 @@ def _q02_authenticated_q15_freeze_evidence(
     }
 
 
+def _q02_authenticated_worker_crash_payload_evidence(
+    target: sqlite3.Row,
+    source_payload: dict[str, Any],
+) -> dict[str, Any] | None:
+    """Authenticate the one pre-spawn worker crash with no evidence file.
+
+    A worker bookkeeping crash can happen after the current EX5 is staged and
+    verified but before a tester log or report exists.  MNT-009 records that
+    condition with an explicit sentinel.  Admit only the known SH3 taxonomy
+    crash signature and hash the immutable payload as evidence; every other
+    sentinel remains fail closed in the ordinary retained-file path.
+    """
+    sentinel = _evidence_unavailable_sentinel("worker_crashed_handling_item")
+    if str(target["evidence_path"] or "").strip() != sentinel:
+        return None
+
+    traceback_tail = source_payload.get("worker_crash_traceback_tail")
+    staged_ex5 = source_payload.get("staged_ex5")
+    expected_ex5 = str(
+        source_payload.get("expected_ex5_sha256") or ""
+    ).strip().lower()
+    target_ex5 = str(target["ex5_sha256"] or "").strip().lower()
+    traceback_text = (
+        "\n".join(str(line) for line in traceback_tail)
+        if isinstance(traceback_tail, list)
+        else ""
+    )
+    structural_checks = {
+        "work_items.status": str(target["status"] or "") == "failed",
+        "work_items.verdict": str(target["verdict"] or "") == "INFRA_FAIL",
+        "work_items.verdict_taxonomy": (
+            str(target["verdict_taxonomy"] or "").strip().lower() == "infra"
+        ),
+        "payload.verdict_reason": (
+            str(source_payload.get("verdict_reason") or "").strip()
+            == "worker_crashed_handling_item"
+        ),
+        "payload.verdict_taxonomy": (
+            str(source_payload.get("verdict_taxonomy") or "").strip().lower()
+            == "infra"
+        ),
+        "payload.dispatch_ex5_verified_at": bool(
+            str(source_payload.get("dispatch_ex5_verified_at") or "").strip()
+        ),
+        "payload.worker_crash_traceback_tail": bool(traceback_text),
+        "payload.worker_crash_signature": (
+            "sqlite3.IntegrityError: CHECK constraint failed:" in traceback_text
+            and "verdict_taxonomy" in traceback_text
+        ),
+        "payload.expected_ex5_sha256": bool(
+            re.fullmatch(r"[0-9a-f]{64}", expected_ex5)
+        ),
+        "work_items.ex5_sha256": target_ex5 == expected_ex5,
+        "payload.staged_ex5": isinstance(staged_ex5, dict),
+    }
+    for binding, valid in structural_checks.items():
+        if not valid:
+            return {
+                "ok": False,
+                "reason": "q02_worker_crash_payload_evidence_invalid",
+                "binding": binding,
+            }
+
+    assert isinstance(staged_ex5, dict)
+    staged_checks = {
+        "payload.staged_ex5.verified": staged_ex5.get("verified") is True,
+        "payload.staged_ex5.binding_source": (
+            str(staged_ex5.get("binding_source") or "").strip()
+            == "work_item_expected_ex5_sha256"
+        ),
+    }
+    for key in (
+        "required_sha256",
+        "source_sha256",
+        "pre_run_sha256",
+    ):
+        staged_checks[f"payload.staged_ex5.{key}"] = (
+            str(staged_ex5.get(key) or "").strip().lower() == expected_ex5
+        )
+    for binding, valid in staged_checks.items():
+        if not valid:
+            return {
+                "ok": False,
+                "reason": "q02_worker_crash_payload_evidence_invalid",
+                "binding": binding,
+            }
+
+    raw_payload = str(target["payload_json"] or "{}")
+    return {
+        "ok": True,
+        "evidence_binding": "payload.worker_crash_traceback_tail",
+        "evidence_path": sentinel,
+        "evidence_sha256": hashlib.sha256(
+            raw_payload.encode("utf-8")
+        ).hexdigest(),
+        "traceback_tail_sha256": hashlib.sha256(
+            traceback_text.encode("utf-8")
+        ).hexdigest(),
+        "worker_crash_signature": "sqlite_integrity_sh3_missing_verdict_taxonomy",
+    }
+
+
+def _q02_same_binary_worker_crash_source_binding(
+    target: sqlite3.Row,
+    source_payload: dict[str, Any],
+    current_bindings: dict[str, Any],
+    crash_evidence: dict[str, Any],
+) -> tuple[bool, dict[str, Any]]:
+    """Bind a pre-spawn worker crash to the exact current execution identity."""
+    if not crash_evidence.get("ok"):
+        return False, {
+            "reason": "q02_worker_crash_payload_evidence_invalid",
+            "binding": "authenticated_worker_crash_payload",
+        }
+
+    current_ex5 = str(
+        current_bindings["artifact_sha256"]["expected_ex5_sha256"]
+    ).strip().lower()
+    source_ex5 = str(
+        source_payload.get("expected_ex5_sha256") or ""
+    ).strip().lower()
+    if source_ex5 != current_ex5:
+        return False, {
+            "reason": "q02_worker_crash_current_ex5_mismatch",
+            "binding": "expected_ex5_sha256",
+            "expected": current_ex5,
+            "actual": source_ex5,
+        }
+
+    identity_checks = {
+        "host_symbol": current_bindings["expected_symbol"],
+        "host_timeframe": current_bindings["expected_period"],
+    }
+    for key, expected in identity_checks.items():
+        actual = str(source_payload.get(key) or "").strip()
+        if actual != str(expected):
+            return False, {
+                "reason": "q02_worker_crash_execution_identity_mismatch",
+                "binding": key,
+                "expected": expected,
+                "actual": actual,
+            }
+
+    ea_dir = Path(str(current_bindings["ea_dir"]))
+    current_ex5_path = (ea_dir / f"{ea_dir.name}.ex5").resolve()
+    staged_ex5 = source_payload["staged_ex5"]
+    source_paths = {
+        "expected_ex5_path": source_payload.get("expected_ex5_path"),
+        "staged_ex5.source_path": staged_ex5.get("source_path"),
+    }
+    expected_norm = os.path.normcase(str(current_ex5_path))
+    for binding, raw_path in source_paths.items():
+        actual_path = str(raw_path or "").strip()
+        actual_norm = (
+            os.path.normcase(str(Path(actual_path).resolve()))
+            if actual_path
+            else ""
+        )
+        if actual_norm != expected_norm:
+            return False, {
+                "reason": "q02_worker_crash_execution_identity_mismatch",
+                "binding": binding,
+                "expected": str(current_ex5_path),
+                "actual": actual_path,
+            }
+
+    return True, {
+        "source_expected_ex5_sha256": source_ex5,
+        "current_ex5_sha256": current_ex5,
+        "worker_crash_signature": crash_evidence["worker_crash_signature"],
+    }
+
+
 def _enqueue_q02_append_only_exact_row_rerun(
     root: Path,
     ea_id: str,
@@ -23301,6 +23474,7 @@ def _enqueue_q02_append_only_exact_row_rerun(
         evidence_binding = "work_items.evidence_path"
         evidence_sha256: str | None = None
         evidence_metadata: dict[str, Any] = {}
+        worker_crash_evidence: dict[str, Any] | None = None
         evidence_path_raw = str(target["evidence_path"] or "").strip()
         if not evidence_path_raw and target["verdict"] == "INFRA_FAIL":
             # Legacy transient-infrastructure rows can predate MNT-009 evidence
@@ -23353,6 +23527,37 @@ def _enqueue_q02_append_only_exact_row_rerun(
                         q15_evidence["source_q15_work_item_id"]
                     ),
                 }
+        if target["verdict"] == "INFRA_FAIL":
+            worker_crash_evidence = (
+                _q02_authenticated_worker_crash_payload_evidence(
+                    target, source_payload
+                )
+            )
+            if worker_crash_evidence is not None:
+                if not worker_crash_evidence.get("ok"):
+                    return {
+                        "enqueued": False,
+                        "ea_id": ea_id,
+                        "phase": phase,
+                        "source_work_item_id": source_id,
+                        **worker_crash_evidence,
+                    }
+                evidence_path_raw = str(worker_crash_evidence["evidence_path"])
+                evidence_binding = str(
+                    worker_crash_evidence["evidence_binding"]
+                )
+                evidence_sha256 = str(
+                    worker_crash_evidence["evidence_sha256"]
+                )
+                evidence_metadata = {
+                    "rerun_source_worker_crash_payload_authenticated": True,
+                    "rerun_source_worker_crash_signature": str(
+                        worker_crash_evidence["worker_crash_signature"]
+                    ),
+                    "rerun_source_worker_crash_traceback_tail_sha256": str(
+                        worker_crash_evidence["traceback_tail_sha256"]
+                    ),
+                }
         if not evidence_path_raw:
             return {
                 "enqueued": False,
@@ -23364,19 +23569,22 @@ def _enqueue_q02_append_only_exact_row_rerun(
                 "evidence_path": evidence_path_raw,
             }
         evidence_path_requested = Path(evidence_path_raw)
-        evidence_path = _retained_evidence_path(evidence_path_requested)
-        if evidence_path is None:
-            return {
-                "enqueued": False,
-                "ea_id": ea_id,
-                "phase": phase,
-                "reason": "q02_rerun_source_evidence_missing",
-                "source_work_item_id": source_id,
-                "evidence_binding": evidence_binding,
-                "evidence_path": str(evidence_path_requested),
-            }
-        if evidence_sha256 is None:
-            evidence_sha256 = _sha256_file(evidence_path)
+        if worker_crash_evidence is not None:
+            evidence_path = evidence_path_requested
+        else:
+            evidence_path = _retained_evidence_path(evidence_path_requested)
+            if evidence_path is None:
+                return {
+                    "enqueued": False,
+                    "ea_id": ea_id,
+                    "phase": phase,
+                    "reason": "q02_rerun_source_evidence_missing",
+                    "source_work_item_id": source_id,
+                    "evidence_binding": evidence_binding,
+                    "evidence_path": str(evidence_path_requested),
+                }
+            if evidence_sha256 is None:
+                evidence_sha256 = _sha256_file(evidence_path)
 
         risk_ok, risk_detail = _q02_fixed_risk_contract(str(target["setfile_path"]))
         if not risk_ok:
@@ -23392,6 +23600,7 @@ def _enqueue_q02_append_only_exact_row_rerun(
         stale_invalid = str(target["verdict"]) == "INVALID"
         repaired_infra = False
         repaired_draft_defect = False
+        same_binary_worker_crash = False
         source_transition_detail: dict[str, Any] = {}
         if stale_economic or stale_invalid:
             bindings_ok, bindings = _expected_current_execution_bindings(
@@ -23420,16 +23629,30 @@ def _enqueue_q02_append_only_exact_row_rerun(
                     target, expected_current_ex5_sha256
                 )
                 if current_ok:
-                    transition_ok, source_transition_detail = (
-                        _repaired_infra_source_binding(
-                            target, source_payload, current_bindings
+                    if worker_crash_evidence is not None:
+                        transition_ok, source_transition_detail = (
+                            _q02_same_binary_worker_crash_source_binding(
+                                target,
+                                source_payload,
+                                current_bindings,
+                                worker_crash_evidence,
+                            )
                         )
-                    )
+                        if transition_ok:
+                            same_binary_worker_crash = True
+                    else:
+                        transition_ok, source_transition_detail = (
+                            _repaired_infra_source_binding(
+                                target, source_payload, current_bindings
+                            )
+                        )
                     if transition_ok:
                         repaired_infra = str(target["verdict"]) == "INFRA_FAIL"
                         repaired_draft_defect = (
                             str(target["verdict"]) == "DRAFT_DEFECT"
                         )
+                        if same_binary_worker_crash:
+                            repaired_infra = False
                         bindings_ok, bindings = True, current_bindings
                     else:
                         bindings_ok, bindings = False, source_transition_detail
@@ -23623,6 +23846,7 @@ def _enqueue_q02_append_only_exact_row_rerun(
             "stale_invalid_rerun": stale_invalid,
             "repaired_infra_rerun": repaired_infra,
             "repaired_draft_defect_rerun": repaired_draft_defect,
+            "same_binary_worker_crash_rerun": same_binary_worker_crash,
             "risk_fixed": risk_detail["risk_fixed"],
             "risk_percent": risk_detail["risk_percent"],
             **bindings["artifact_sha256"],
@@ -23653,6 +23877,23 @@ def _enqueue_q02_append_only_exact_row_rerun(
                 ]
             if stale_invalid:
                 payload["rerun_source_invalid_disposition_requalified"] = True
+        elif same_binary_worker_crash:
+            payload.update({
+                "expected_current_ex5_sha256": source_transition_detail[
+                    "current_ex5_sha256"
+                ],
+                "rerun_source_expected_ex5_sha256": source_transition_detail[
+                    "source_expected_ex5_sha256"
+                ],
+                "rerun_source_current_ex5_mismatch_verified": False,
+                "same_binary_infra_requalification": True,
+                "same_binary_infra_source_reason": str(
+                    source_payload.get("verdict_reason") or ""
+                ),
+                "same_binary_infra_source_signature": source_transition_detail[
+                    "worker_crash_signature"
+                ],
+            })
         elif repaired_infra or repaired_draft_defect:
             repaired_payload = {
                 "expected_current_ex5_sha256": source_transition_detail[
