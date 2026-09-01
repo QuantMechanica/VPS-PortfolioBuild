@@ -1065,6 +1065,68 @@ def test_qm5_41264_compile_fail_repair_authority_is_failure_and_hash_bound() -> 
     )
 
 
+def test_qm5_41264_second_compile_fail_repair_is_failure_and_hash_bound() -> None:
+    label = compile_work_items.QM5_41264_COMPILE_FAIL_REPAIR_EA_LABEL
+    predecessor_id = (
+        compile_work_items.QM5_41264_COMPILE_FAIL_REPAIR_2_PREDECESSOR_ID
+    )
+    predecessor_payload = {
+        "ea_label": label,
+        "mq5_sha256": (
+            compile_work_items.QM5_41264_COMPILE_FAIL_REPAIR_2_REJECTED_SOURCE_SHA256
+        ),
+        "verdict_reason": "EA_INDICATOR_BUFFER_UNBOUNDED",
+        "compile_result": {
+            "compile_result": "PASS",
+            "build_check_result": "FAIL",
+            "failure_classes": ["EA_INDICATOR_BUFFER_UNBOUNDED"],
+        },
+    }
+    inventory = {
+        "work_rows": {
+            "41264": [{
+                "id": predecessor_id,
+                "phase": compile_work_items.COMPILE_EA_PHASE,
+                "status": "failed",
+                "verdict": "COMPILE_FAIL",
+                "payload_json": json.dumps(predecessor_payload),
+            }],
+        },
+    }
+    arguments = {
+        "ea_id": "41264",
+        "source_sha": (
+            compile_work_items.QM5_41264_COMPILE_FAIL_REPAIR_2_REPAIRED_SOURCE_SHA256
+        ),
+        "inventory": inventory,
+    }
+
+    assert compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_41264_COMPILE_FAIL_REPAIR_2_AUTHORITY,
+        **arguments,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        "QM5_41263_unrelated",
+        compile_work_items.QM5_41264_COMPILE_FAIL_REPAIR_2_AUTHORITY,
+        **arguments,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_41264_COMPILE_FAIL_REPAIR_2_AUTHORITY,
+        **{**arguments, "source_sha": "0" * 64},
+    )
+    changed_inventory = json.loads(json.dumps(inventory))
+    changed_inventory["work_rows"]["41264"][0]["payload_json"] = json.dumps(
+        {**predecessor_payload, "verdict_reason": "OTHER"}
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_41264_COMPILE_FAIL_REPAIR_2_AUTHORITY,
+        **{**arguments, "inventory": changed_inventory},
+    )
+
+
 def test_qm5_41228_compile_fail_repair_authority_is_failure_and_hash_bound() -> None:
     label = compile_work_items.QM5_41228_COMPILE_FAIL_REPAIR_EA_LABEL
     predecessor_id = (
@@ -1493,6 +1555,62 @@ def test_qm5_11465_missing_compile_ok_binary_can_append_recovery(
         [label],
         source_repair_authority=(
             compile_work_items.QM5_11465_Q02_BINARY_RECOVERY_AUTHORITY
+        ),
+    )
+
+    assert recovery["ok"] is True
+    assert recovery["enqueued_count"] == 1
+    assert recovery["enqueued"][0]["work_item_id"] != first_id
+    assert recovery["refused"] == []
+
+
+def test_qm5_36002_q02_binary_recovery_authority_is_exact_label_bound() -> None:
+    label = "QM5_36002_nnfx-kijunsen-absolute-strength-damiani"
+
+    assert compile_work_items.QM5_36002_Q02_BINARY_RECOVERY_EA_LABELS == {label}
+    assert compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_36002_Q02_BINARY_RECOVERY_AUTHORITY,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        "QM5_36003_unrelated-d1",
+        compile_work_items.QM5_36002_Q02_BINARY_RECOVERY_AUTHORITY,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label,
+        "build_task:wrong-task",
+    )
+
+
+def test_qm5_36002_missing_compile_ok_binary_can_append_recovery(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    label = "QM5_1001_nnfx-kijunsen-absolute-strength-damiani-d1"
+    repo, root = _fixture(tmp_path, [label])
+    monkeypatch.setattr(
+        compile_work_items,
+        "QM5_36002_Q02_BINARY_RECOVERY_EA_LABELS",
+        frozenset({label}),
+    )
+    first = compile_work_items.enqueue_compile_eas(root, repo, [label])
+    first_id = first["enqueued"][0]["work_item_id"]
+    binary = repo / "framework" / "EAs" / label / f"{label}.ex5"
+    binary.write_bytes(b"lost multi-fx binary fixture")
+    with farmctl.connect(root) as conn:
+        conn.execute(
+            "UPDATE work_items SET status='done',verdict='COMPILE_OK',ex5_sha256=? WHERE id=?",
+            (compile_work_items.sha256_file(binary), first_id),
+        )
+        conn.commit()
+    binary.unlink()
+
+    recovery = compile_work_items.enqueue_compile_eas(
+        root,
+        repo,
+        [label],
+        source_repair_authority=(
+            compile_work_items.QM5_36002_Q02_BINARY_RECOVERY_AUTHORITY
         ),
     )
 

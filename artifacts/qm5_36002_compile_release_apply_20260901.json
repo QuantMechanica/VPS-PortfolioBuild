@@ -1,0 +1,28 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "db055f7e-1694-4a24-8ec7-d9b59feee0b6"
+  ],
+  "backup": {
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260901T071559Z_511fff12.sqlite",
+    "sha256": "0216a1362319a4ee40072af0b15e8f7babc75064d43aec4ca07437cca397a7a7"
+  },
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "66174bddb6fe5031c60a94025a21e2e1a5cde282617442bcf5a59c0a4907b14a",
+      "ea_id": "QM5_36002",
+      "ea_label": "QM5_36002_nnfx-kijunsen-absolute-strength-damiani",
+      "expected_mq5_sha256": "66174bddb6fe5031c60a94025a21e2e1a5cde282617442bcf5a59c0a4907b14a",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_36002_nnfx-kijunsen-absolute-strength-damiani\\QM5_36002_nnfx-kijunsen-absolute-strength-damiani.mq5",
+      "work_item_id": "db055f7e-1694-4a24-8ec7-d9b59feee0b6"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-09-01T07:16:04+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "db055f7e-1694-4a24-8ec7-d9b59feee0b6"
+}
