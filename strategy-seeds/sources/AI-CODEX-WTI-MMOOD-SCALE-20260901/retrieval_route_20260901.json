@@ -1,0 +1,51 @@
+{
+  "schema": "qm.public-method-retrieval.v1",
+  "retrieved_at_utc": "2026-09-01T11:19:30Z",
+  "route": "publisher_metadata_boundary_plus_complete_official_documentation_and_signed_tag_pinned_source",
+  "paper": {
+    "title": "On the Asymptotic Efficiency of Certain Nonparametric Two-Sample Tests",
+    "author": "A. M. Mood",
+    "journal": "The Annals of Mathematical Statistics",
+    "volume_issue_pages": "25(3), 514-522",
+    "year": 1954,
+    "doi": "10.1214/aoms/1177728719",
+    "doi_url": "https://doi.org/10.1214/aoms/1177728719",
+    "publisher_url": "https://projecteuclid.org/journals/annals-of-mathematical-statistics/volume-25/issue-3/On-the-Asymptotic-Efficiency-of-Certain-Nonparametric-Two-Sample-Tests/10.1214/aoms/1177728719.full",
+    "indexed_metadata_and_abstract_read": true,
+    "direct_pdf_url": "https://projecteuclid.org/download/pdf_1/euclid.aoms/1177728719",
+    "direct_http_status": 200,
+    "direct_content_type": "text/html",
+    "access_boundary": "The indexed publisher record and abstract were read. Direct scripted PDF retrieval returned an Incapsula block page rather than the article; no complete-paper body read, derivation reconstruction, or paper-file hash is claimed."
+  },
+  "official_implementation_record": {
+    "project": "scipy/scipy",
+    "release": "1.18.0",
+    "tag_object_sha": "7adb8c972443f664b9395a0e6e8e0283e9b4faff",
+    "commit_sha": "54ef5423f2e4376230ec3bfda6912a07a50958e3",
+    "tag_signature_verified_by_github": true,
+    "documentation_url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.mood.html",
+    "documentation_http_status": 200,
+    "documentation_utf8_length_bytes": 38297,
+    "documentation_utf8_sha256": "5C349EE83FA6D0C3E894251D4C8ED91B9610EB1CDC21C64D31439D7E3C957B80",
+    "source_url": "https://github.com/scipy/scipy/blob/v1.18.0/scipy/stats/_morestats.py",
+    "raw_source_url": "https://raw.githubusercontent.com/scipy/scipy/v1.18.0/scipy/stats/_morestats.py",
+    "raw_source_http_status": 200,
+    "raw_source_utf8_length_bytes": 194421,
+    "raw_source_utf8_sha256": "8A933E5FEF233ED33E2AEF5CC82403FAA25849C6F157907F82ADD9323767E53F",
+    "bounded_read": {
+      "complete_documentation_read": true,
+      "source_scope_read": "scipy.stats.mood plus _mood_statistic_no_ties and the immediately associated documentation",
+      "verified_claims": [
+        "Mood is a nonparametric two-sample test for equal scale parameters",
+        "the pooled observations receive average ranks",
+        "the first sample score is the sum of squared distances of its ranks from (N+1)/2",
+        "the no-tie expectation is m*(N^2-1)/12",
+        "the no-tie variance is m*n*(N+1)*(N+2)*(N-2)/180",
+        "for x lower-scale than y, the returned standardized statistic is negative",
+        "the source computes a normal-reference p-value after the statistic"
+      ]
+    }
+  },
+  "claim_boundary": "The records support the named squared-rank two-sample scale method and exact no-tie arithmetic only. They do not test WTI, fixed six-by-six monthly blocks, the inclusive non-contraction rule, cumulative-return continuation, CFDs, fixed risk, activity, or performance. The EA imports no SciPy, Python, normal CDF, p-value, or executable source."
+}
+
