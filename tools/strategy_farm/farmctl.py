@@ -3111,6 +3111,31 @@ Q09_REQUAL8_CARD_BINDINGS = {
     "QM5_41222": ("lien-k-double-bb-trend-h1-requal8", "QM5_11476", "USDJPY.DWX"),
 }
 
+# OWNER task 2e0bc944 requires this faithful restart recovery to receive an
+# independent build review before its first Q02 seed. Keep the exception
+# identity- and evidence-bound: a malformed lookalike must stop at record-build,
+# never fall through to the generic auto-Q02 path.
+OWNER_REVIEW_FIRST_BUILD_BINDINGS: dict[str, dict[str, str]] = {
+    "QM5_41272": {
+        "authority_task_id": "2e0bc944-0f47-47e2-b6c2-e7b83db89147",
+        "card_path": str(
+            DEFAULT_ROOT
+            / "artifacts"
+            / "cards_approved"
+            / "QM5_41272_turn-of-month-index-long-restart-r1.md"
+        ),
+        "card_sha256": "f506d65e0d2542244e8130b6be70586cde4e8b84d44addcb921c69629f786952",
+        "card_source_id": "fx_edge_army_A3_2026-07-16_restart_recovery_9a55",
+        "slug": "turn-of-month-index-long-restart-r1",
+        "supersedes_runtime_identity": "QM5_20004",
+        "compile_evidence_path": (
+            r"D:\QM\reports\work_items\85c6de75-0080-45dc-b128-6e6a3910f047"
+            r"\QM5_41272\COMPILE_EA\compile_evidence.json"
+        ),
+        "compile_evidence_sha256": "3210bc7225d8e1b1087418d3d7573014685e1b11fcf3de25f5d75052db6263e9",
+    },
+}
+
 
 def _q09_requal8_card_authority(card_path: Path, fm: dict[str, Any]) -> bool:
     """Accept only the hash-bound recovery cards commissioned by 1b57e398.
@@ -26743,6 +26768,101 @@ def _auto_q02_idempotent_retry_reasons(payload: dict[str, Any]) -> list[str]:
     return sorted(reasons & AUTO_Q02_IDEMPOTENT_RETRY_SKIP_REASONS)
 
 
+def _owner_review_first_q02_decision(
+    result: dict[str, Any], task_payload: dict[str, Any],
+) -> dict[str, Any]:
+    """Authenticate an exact OWNER-bound build that must stop before Q02.
+
+    Unknown EAs are not subject to this exception. A named EA is applicable
+    even when its bindings are malformed so record-build can fail closed rather
+    than silently auto-enqueueing it through the normal clean-build path.
+    """
+
+    ea_id = str(result.get("ea_id") or "").strip()
+    binding = OWNER_REVIEW_FIRST_BUILD_BINDINGS.get(ea_id)
+    if binding is None:
+        return {"applicable": False, "valid": True, "failures": []}
+
+    failures: list[str] = []
+    frontmatter = task_payload.get("frontmatter")
+    if not isinstance(frontmatter, dict):
+        frontmatter = {}
+        failures.append("frontmatter_missing")
+
+    expected_authority = binding["authority_task_id"]
+    expected_card_path = Path(binding["card_path"])
+    actual_card_path = Path(str(task_payload.get("card_path") or ""))
+    expected_compile_path = Path(binding["compile_evidence_path"])
+    actual_compile_path = Path(str(result.get("compile_evidence_path") or ""))
+
+    exact_values = (
+        (
+            "result_authority_task_id",
+            result.get("review_first_authority_task_id"),
+            expected_authority,
+        ),
+        (
+            "result_card_sha256",
+            str(result.get("review_first_card_sha256") or "").lower(),
+            binding["card_sha256"],
+        ),
+        (
+            "result_compile_evidence_sha256",
+            str(result.get("compile_evidence_sha256") or "").lower(),
+            binding["compile_evidence_sha256"],
+        ),
+        ("task_ea_id", task_payload.get("ea_id"), ea_id),
+        ("frontmatter_ea_id", frontmatter.get("ea_id"), ea_id),
+        ("frontmatter_slug", frontmatter.get("slug"), binding["slug"]),
+        (
+            "frontmatter_source_id",
+            frontmatter.get("source_id"),
+            binding["card_source_id"],
+        ),
+        ("frontmatter_g0_status", frontmatter.get("g0_status"), "APPROVED"),
+        (
+            "frontmatter_supersedes_runtime_identity",
+            frontmatter.get("supersedes_runtime_identity"),
+            binding["supersedes_runtime_identity"],
+        ),
+    )
+    for name, actual, expected in exact_values:
+        if actual != expected:
+            failures.append(name)
+    if expected_authority not in str(frontmatter.get("g0_approval_authority") or ""):
+        failures.append("frontmatter_g0_approval_authority")
+
+    try:
+        if actual_card_path.resolve() != expected_card_path.resolve():
+            failures.append("card_path")
+        elif not actual_card_path.is_file():
+            failures.append("card_missing")
+        elif _sha256_file(actual_card_path).lower() != binding["card_sha256"]:
+            failures.append("card_sha256")
+    except OSError:
+        failures.append("card_unreadable")
+
+    try:
+        if actual_compile_path.resolve() != expected_compile_path.resolve():
+            failures.append("compile_evidence_path")
+        elif not actual_compile_path.is_file():
+            failures.append("compile_evidence_missing")
+        elif _sha256_file(actual_compile_path).lower() != binding["compile_evidence_sha256"]:
+            failures.append("compile_evidence_sha256")
+    except OSError:
+        failures.append("compile_evidence_unreadable")
+
+    return {
+        "applicable": True,
+        "valid": not failures,
+        "reason": "owner_recovery_review_required_before_q02",
+        "authority_task_id": expected_authority,
+        "card_sha256": binding["card_sha256"],
+        "compile_evidence_sha256": binding["compile_evidence_sha256"],
+        "failures": failures,
+    }
+
+
 def record_build_result(
     root: Path,
     task_id: str,
@@ -26791,6 +26911,14 @@ def record_build_result(
             "reason": f"Task {task_id} kind={task_row['kind']!r}, expected build_ea",
         }
     task_payload = json.loads(task_row["payload_json"] or "{}")
+    owner_review_first = _owner_review_first_q02_decision(result, task_payload)
+    if owner_review_first["applicable"] and not owner_review_first["valid"]:
+        return {
+            "recorded": False,
+            "reason": "owner_review_first_binding_invalid",
+            "task_id": task_id,
+            "binding": owner_review_first,
+        }
     result_task_id = str(result.get("task_id") or "").strip()
     if result_task_id and result_task_id != str(task_id):
         return {
@@ -26996,7 +27124,11 @@ def record_build_result(
         == Q09_REQUAL8_MANIFEST_SHA256
         and _sha256_file(Q09_REQUAL8_MANIFEST_PATH) == Q09_REQUAL8_MANIFEST_SHA256
     )
-    if new_status == "done" and not q09_requal8_review_first:
+    if (
+        new_status == "done"
+        and not q09_requal8_review_first
+        and not owner_review_first["applicable"]
+    ):
         auto_q02 = _auto_enqueue_q02_for_build(root, result)
         payload_merge["auto_q02_enqueued"] = auto_q02
     elif new_status == "done" and q09_requal8_review_first:
@@ -27007,6 +27139,18 @@ def record_build_result(
             "manifest_sha256": Q09_REQUAL8_MANIFEST_SHA256,
         }
         payload_merge["auto_q02_enqueued"] = auto_q02
+    elif new_status == "done" and owner_review_first["applicable"]:
+        auto_q02 = {
+            "enqueued": [],
+            "skipped": [],
+            **{
+                key: value
+                for key, value in owner_review_first.items()
+                if key != "applicable"
+            },
+        }
+        payload_merge["auto_q02_enqueued"] = auto_q02
+        payload_merge["owner_review_first_q02"] = owner_review_first
 
     payload_merge["build_result_sha256"] = _sha256_file(rp)
     payload_merge["build_recorded_at"] = utc_now()
@@ -27772,6 +27916,12 @@ def render_claude_review_prompt(root: Path, build_task_id: str, out_path: str | 
             "written": False,
             "reason": "Build task has no codex_result. Call record-build first.",
         }
+    build_result_path = Path(str(
+        payload.get("build_result_path")
+        or root / "artifacts" / "builds" / f"{build_task_id}.json"
+    ))
+    if not build_result_path.is_absolute():
+        build_result_path = root / build_result_path
 
     with connect(root) as conn:
         review_task_id = create_task(
@@ -27787,7 +27937,7 @@ def render_claude_review_prompt(root: Path, build_task_id: str, out_path: str | 
                 "mq5_path": codex_result.get("mq5_path"),
                 "ex5_path": codex_result.get("ex5_path"),
                 "smoke_report_path": codex_result.get("smoke_report_path"),
-                "build_result_path": str(root / "artifacts" / "builds" / f"{build_task_id}.json"),
+                "build_result_path": str(build_result_path),
             },
         )
 
@@ -27803,7 +27953,7 @@ def render_claude_review_prompt(root: Path, build_task_id: str, out_path: str | 
         "mq5_path": codex_result.get("mq5_path") or "",
         "ex5_path": codex_result.get("ex5_path") or "",
         "smoke_report_path": codex_result.get("smoke_report_path") or "",
-        "build_result_path": str(root / "artifacts" / "builds" / f"{build_task_id}.json"),
+        "build_result_path": str(build_result_path),
         "verdict_path": str(verdict_path),
     }
     prompt = template

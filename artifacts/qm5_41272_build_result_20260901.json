@@ -1,0 +1,29 @@
+{
+  "blocked_reason": "OWNER-bound compile-only recovery: independent build review is required before the first Q02 seed",
+  "build_check_passed": true,
+  "compile_evidence_path": "D:\\QM\\reports\\work_items\\85c6de75-0080-45dc-b128-6e6a3910f047\\QM5_41272\\COMPILE_EA\\compile_evidence.json",
+  "compile_evidence_sha256": "3210bc7225d8e1b1087418d3d7573014685e1b11fcf3de25f5d75052db6263e9",
+  "compile_succeeded": true,
+  "ea_dir": "framework/EAs/QM5_41272_turn-of-month-index-long-restart-r1",
+  "ea_id": "QM5_41272",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41272_turn-of-month-index-long-restart-r1\\QM5_41272_turn-of-month-index-long-restart-r1.ex5",
+  "ex5_sha256": "2845820d099232713c053266e0b6204ef904e872f5cd6fad2efbcc6441ef4fe9",
+  "magic_base": 412720000,
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41272_turn-of-month-index-long-restart-r1\\QM5_41272_turn-of-month-index-long-restart-r1.mq5",
+  "mq5_sha256": "47579844c327c1aee22986fef9c3170a1fcc973926c9908ec0c91d27b5d5d442",
+  "open_questions": [],
+  "review_first_authority_task_id": "2e0bc944-0f47-47e2-b6c2-e7b83db89147",
+  "review_first_card_sha256": "f506d65e0d2542244e8130b6be70586cde4e8b84d44addcb921c69629f786952",
+  "setfile_sha256": "6474359fd97c4fb7625d159deaf6fcbd186c5bdf14f70fffcabad2d8e40b9e16",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41272_turn-of-month-index-long-restart-r1\\sets\\QM5_41272_turn-of-month-index-long-restart-r1_NDX.DWX_D1_backtest.set"
+  ],
+  "smoke_report_path": null,
+  "smoke_result": "deferred_p2_smoke",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41272_turn-of-month-index-long-restart-r1\\SPEC.md",
+  "spec_md_sha256": "e9a7aff22e202301e283c49a77aa061e702a2662de6fae906e9050c397819038",
+  "symbols_registered": [
+    "NDX.DWX"
+  ],
+  "task_id": "28ba8397-3400-4f5b-a545-0d5ba7278200"
+}
