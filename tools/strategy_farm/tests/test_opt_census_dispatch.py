@@ -215,6 +215,67 @@ def test_idle_program_frontier_precedes_second_lane_when_capacity_is_free(
     ]
 
 
+def test_wf_combo_critical_path_precedes_annual_frontier_without_reordering_annuals(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    now = "2026-09-01T00:00:00+00:00"
+    annual = {
+        "schema": census.SCHEMA,
+        "program_id": "program-annual",
+        "arm": "buy_001",
+        "year": 2019,
+        "priority_track": True,
+        census.FRONTIER_PRIORITY_MARKER: True,
+    }
+    combo = {
+        "schema": census.SCHEMA,
+        "program_id": "program-complete",
+        "cell_key": "program-complete:wf1:combo:2022",
+        "arm": "wf1_combo",
+        "year": 2022,
+        "opt_census_stage": "WF_COMBO",
+        "priority_track": True,
+        census.FRONTIER_PRIORITY_MARKER: True,
+    }
+    with farmctl.connect(root) as conn:
+        for item_id, payload, updated_at in (
+            ("annual-first", annual, "2026-08-31T00:00:00+00:00"),
+            (
+                "annual-second",
+                {**annual, "arm": "buy_002"},
+                "2026-08-31T00:01:00+00:00",
+            ),
+            ("wf-combo", combo, now),
+        ):
+            _insert(
+                conn,
+                id=item_id,
+                kind="backtest",
+                phase="OPT_CENSUS",
+                ea_id=f"QM5_{item_id}",
+                symbol="EURUSD.DWX",
+                setfile_path=f"{item_id}.set",
+                status="pending",
+                attempt_count=0,
+                payload_json=json.dumps(payload),
+                created_at=updated_at,
+                updated_at=updated_at,
+            )
+        conn.commit()
+        ordered = conn.execute(farmctl.pending_claim_order_sql()).fetchall()
+
+    by_id = {row["id"]: row for row in ordered}
+    assert by_id["wf-combo"]["_opt_census_post_census_rank"] == 0
+    assert by_id["annual-first"]["_opt_census_post_census_rank"] == 1
+    assert [row["id"] for row in ordered[:3]] == [
+        "wf-combo",
+        "annual-first",
+        "annual-second",
+    ]
+
+
 # ---------------------------------------------------------------------------
 # 2 · RUN PATH — window pass-through
 # ---------------------------------------------------------------------------

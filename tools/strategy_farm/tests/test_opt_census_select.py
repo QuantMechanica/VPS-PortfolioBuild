@@ -18,6 +18,7 @@ import pytest
 
 from tools.strategy_farm import opt_census as census
 from tools.strategy_farm import opt_census_select as sel
+from tools.strategy_farm import dl089_scheduling as scheduling
 from tools.strategy_farm.opt_census_select import YearCell
 
 
@@ -328,8 +329,27 @@ def test_advance_transitions_once_then_holds(tmp_path: Path) -> None:
                         metric_reader=reader, conn=conn)
     assert first["state"] == sel.STATE_WF_COMBO and first["combo_runs"] == 4
     combo_rows = conn.execute(
-        "SELECT COUNT(*) FROM work_items WHERE phase='OPT_CENSUS'").fetchone()[0]
-    assert combo_rows == 4  # exactly the 4 walk-forward combo runs
+        "SELECT payload_json FROM work_items WHERE phase='OPT_CENSUS' "
+        "ORDER BY created_at, id").fetchall()
+    assert len(combo_rows) == 4  # exactly the 4 walk-forward combo runs
+    combo_payloads = [json.loads(row[0]) for row in combo_rows]
+    assert [payload["arm"] for payload in combo_payloads] == [
+        "wf1_combo", "wf2_combo", "wf3_combo", "wf4_combo"
+    ]
+    assert [payload["year"] for payload in combo_payloads] == [2022, 2023, 2024, 2025]
+    assert all(payload["priority_track"] is True for payload in combo_payloads)
+    assert all(
+        payload[census.FRONTIER_PRIORITY_MARKER] is True
+        for payload in combo_payloads
+    )
+    assert [
+        scheduling.lane_id(payload) for payload in combo_payloads
+    ] == [
+        ("PROG", "wf1_combo"),
+        ("PROG", "wf2_combo"),
+        ("PROG", "wf3_combo"),
+        ("PROG", "wf4_combo"),
+    ]
     led_after_first = ledger_path.read_text()
     assert len(json.loads(led_after_first)["driver"]["transitions"]) == 1
 
@@ -340,6 +360,55 @@ def test_advance_transitions_once_then_holds(tmp_path: Path) -> None:
     assert conn.execute(
         "SELECT COUNT(*) FROM work_items WHERE phase='OPT_CENSUS'").fetchone()[0] == 4
     assert ledger_path.read_text() == led_after_first  # ledger byte-identical -> idempotent
+
+
+def test_advance_backfills_legacy_four_token_wf_combo_lanes(tmp_path: Path) -> None:
+    ledger_path, ids = _mini_ledger(tmp_path)
+    conn = sqlite3.connect(":memory:")
+    conn.execute(WORK_ITEMS_DDL)
+    reader = _reader_for(set(ids))
+    first = sel.advance(
+        ledger_path=ledger_path,
+        db_path=Path(":memory:"),
+        metric_reader=reader,
+        conn=conn,
+    )
+    assert first["state"] == sel.STATE_WF_COMBO
+
+    rows = conn.execute("SELECT id,payload_json FROM work_items").fetchall()
+    for work_item_id, raw_payload in rows:
+        payload = json.loads(raw_payload)
+        for key in (
+            "arm",
+            "year",
+            "priority_track",
+            census.FRONTIER_PRIORITY_MARKER,
+            "post_census_priority_authority",
+        ):
+            payload.pop(key, None)
+        conn.execute(
+            "UPDATE work_items SET payload_json=? WHERE id=?",
+            (json.dumps(payload, sort_keys=True), work_item_id),
+        )
+    conn.commit()
+
+    transitions_before = len(json.loads(ledger_path.read_text())["driver"]["transitions"])
+    second = sel.advance(
+        ledger_path=ledger_path,
+        db_path=Path(":memory:"),
+        metric_reader=reader,
+        conn=conn,
+    )
+    assert second["state"] == sel.STATE_WF_COMBO
+    assert second["waiting"] is True
+    assert second["priority_backfilled"] == 4
+    assert len(json.loads(ledger_path.read_text())["driver"]["transitions"]) == transitions_before
+    repaired = [
+        json.loads(row[0])
+        for row in conn.execute("SELECT payload_json FROM work_items ORDER BY id")
+    ]
+    assert all(payload["priority_track"] is True for payload in repaired)
+    assert all(payload.get("arm", "").startswith("wf") for payload in repaired)
 
 
 def test_advance_dry_run_writes_nothing(tmp_path: Path) -> None:

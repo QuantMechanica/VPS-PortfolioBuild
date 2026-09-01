@@ -60,6 +60,9 @@ GRID_SCHEMA = "qm.opt-param-grid.v1"
 MAX_INFRA_ATTEMPTS = 2
 FULL_WINDOW_FROM = "2019.01.01"
 FULL_WINDOW_TO = "2026.12.31"
+WF_COMBO_PRIORITY_AUTHORITY = (
+    "opt_census_select.wf_combo critical path (queue-priority-only)"
+)
 # The numeric levers are the parent EA's already-wired numeric inputs, named by the
 # sha-sealed opt_param_grid.json — there is deliberately NO hardcoded name
 # whitelist here.  The three invented opt_* placeholder inputs this constant
@@ -492,10 +495,67 @@ def _run_uuid(cell_key: str) -> str:
     return str(uuid.uuid5(census.CELL_NAMESPACE, cell_key))
 
 
+def _wf_combo_lane_fields(cell_key: str, extra: dict[str, Any]) -> dict[str, Any]:
+    """Authenticate ``program:wfN:combo:YEAR`` and derive its scheduling lane."""
+
+    parts = str(cell_key).rsplit(":", 3)
+    if len(parts) != 4 or not parts[0] or parts[2] != "combo":
+        raise CensusError(f"malformed WF combo cell_key: {cell_key}")
+    wf_token = parts[1]
+    try:
+        parsed_step = int(wf_token.removeprefix("wf"))
+        parsed_year = int(parts[3])
+        expected_step = int(extra["wf_step"])
+        expected_year = int(extra["test_year"])
+    except (KeyError, TypeError, ValueError) as exc:
+        raise CensusError(f"malformed WF combo lane identity: {cell_key}") from exc
+    if wf_token != f"wf{parsed_step}" or parsed_step != expected_step:
+        raise CensusError(f"WF combo step mismatch: {cell_key}")
+    if parsed_year != expected_year:
+        raise CensusError(f"WF combo year mismatch: {cell_key}")
+    return {
+        "arm": f"wf{parsed_step}_combo",
+        "year": parsed_year,
+        "priority_track": True,
+        census.FRONTIER_PRIORITY_MARKER: True,
+        "post_census_priority_authority": WF_COMBO_PRIORITY_AUTHORITY,
+    }
+
+
+def _ensure_wf_combo_priority(
+    conn: sqlite3.Connection, run_specs: Iterable[dict[str, Any]]
+) -> int:
+    """Idempotently backfill lane/priority metadata on pending WF combo rows."""
+
+    changed = 0
+    for spec in run_specs:
+        if str(spec.get("stage") or "") != "WF_COMBO":
+            continue
+        work_item_id = str(spec.get("work_item_id") or "")
+        row = conn.execute(
+            "SELECT status,payload_json FROM work_items WHERE id=?", (work_item_id,)
+        ).fetchone()
+        if row is None or str(row[0]).lower() != "pending":
+            continue
+        payload = json.loads(row[1] or "{}")
+        desired = _wf_combo_lane_fields(str(spec.get("cell_key") or ""), spec)
+        if all(payload.get(key) == value for key, value in desired.items()):
+            continue
+        payload.update(desired)
+        conn.execute(
+            "UPDATE work_items SET payload_json=? "
+            "WHERE id=? AND status='pending'",
+            (json.dumps(payload, sort_keys=True), work_item_id),
+        )
+        changed += 1
+    return changed
+
+
 def _insert_run(conn: sqlite3.Connection, ledger: dict[str, Any], *, work_item_id: str,
                 cell_key: str, setfile_path: str, from_date: str, to_date: str,
                 stage: str, extra: dict[str, Any]) -> bool:
     now = _now()
+    lane_fields = _wf_combo_lane_fields(cell_key, extra) if stage == "WF_COMBO" else {}
     payload = {
         "schema": census.SCHEMA, "program_id": ledger["program_id"],
         "cell_key": cell_key, "opt_census_pool": True, "opt_census_stage": stage,
@@ -505,6 +565,7 @@ def _insert_run(conn: sqlite3.Connection, ledger: dict[str, Any], *, work_item_i
         "declared_trial_count": ledger["declared_trial_count"],
         "ledger_path": ledger.get("_ledger_path"),
         **extra,
+        **lane_fields,
     }
     cur = conn.execute(
         """INSERT OR IGNORE INTO work_items
@@ -698,11 +759,13 @@ def _handle_wf_combo(
     pattern_only: bool = False,
 ) -> dict[str, Any]:
     combo_runs = driver["wf"]["combo_runs"]
+    priority_backfilled = _ensure_wf_combo_priority(conn, combo_runs)
     reenq = _maybe_reenqueue_infra(conn, ledger, driver, combo_runs, reader)
     status = _all_measured(reader, driver, combo_runs)
     if status["pending"] or status["infra"]:
-        return {"changed": reenq > 0, "state": driver["state"], "waiting": True, **_counts(status),
-                "reenqueued": reenq}
+        return {"changed": reenq > 0 or priority_backfilled > 0,
+                "state": driver["state"], "waiting": True, **_counts(status),
+                "reenqueued": reenq, "priority_backfilled": priority_backfilled}
 
     combo_test_r2dd: dict[int, Optional[float]] = {}
     for run in combo_runs:

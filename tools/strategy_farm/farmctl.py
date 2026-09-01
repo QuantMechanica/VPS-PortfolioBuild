@@ -1475,6 +1475,7 @@ def pending_claim_order_sql() -> str:
             "_universe_expansion_rank ASC, _recovery_rank ASC, "
             "_priority_track_rank ASC, "
             f"{_topdown_gate_rank_sql()} ASC, "
+            "_opt_census_post_census_rank ASC, "
             "_opt_census_frontier_rank ASC, "
             "_opt_census_idle_program_rank ASC, "
             "(_phase_rank - _age_weeks) ASC, "
@@ -1488,6 +1489,7 @@ def pending_claim_order_sql() -> str:
             "_universe_expansion_rank ASC, _recovery_rank ASC, "
             "(_priority_track_rank * 10 + _phase_rank - _age_weeks "
             "+ _opt_census_frontier_rank * 0.1) ASC, "
+            "_opt_census_post_census_rank ASC, "
             "_opt_census_idle_program_rank ASC, "
             "_basket_q02_rank ASC, _diagnostic_queue_rank ASC, "
             "_winner_rank ASC, _asset_rank ASC, "
@@ -1539,6 +1541,21 @@ def pending_claim_order_sql() -> str:
                 ELSE 1
               END
             ELSE 1 END AS _priority_track_rank,
+          CASE
+            -- Once an annual matrix resolves, its four WF combo measurements
+            -- are the bounded critical path to selection.  Rank only these
+            -- explicitly marked derived rows before annual frontier refills;
+            -- all annual cells retain their prior relative order and gates.
+            WHEN upper(COALESCE(w.phase, ''))='OPT_CENSUS'
+             AND json_valid(w.payload_json)=1
+             AND COALESCE(json_extract(
+               w.payload_json, '$.opt_census_stage'
+             ), '')='WF_COMBO'
+             AND json_type(w.payload_json, '$.priority_track')='true'
+             AND json_type(
+               w.payload_json, '$.opt_census_frontier_priority'
+             )='true' THEN 0
+            ELSE 1 END AS _opt_census_post_census_rank,
           CASE
             -- DL-089 may inherit a broad OWNER priority flag on every census
             -- row. The matrix service marks only authenticated arm heads so a
@@ -1594,7 +1611,7 @@ def pending_claim_order_sql() -> str:
 {_gate_priority_rank_sql()}
             -- OPT_CENSUS (DL-089 §3) shares Q04's tier rank on purpose: the
             -- optimization measurement pool must INTERLEAVE with the funnel, not
-            -- run ahead of it and not starve it. OPT_CENSUS rows are never
+            -- run ahead of it and not starve it. Annual OPT_CENSUS rows are not
             -- priority_track, so their effective term is 10+tier-age = a plain
             -- Q04 row's rank; every downstream funnel phase and every
             -- priority_track row still drains first, while measurement
@@ -1602,7 +1619,9 @@ def pending_claim_order_sql() -> str:
             -- to Q04's rank via the same formula _gate_priority_rank_sql() uses
             -- (not a hardcoded literal) so a future incumbent-phase move (e.g.
             -- 2026-08-23 v4: Q10->Q11 incumbent shifted Q04's tier 6->7) keeps
-            -- this arm in lockstep instead of silently drifting stale.
+            -- this arm in lockstep instead of silently drifting stale. Annual
+            -- matrix rows are ordinarily not priority_track; the bounded
+            -- post-census WF combo exception is ranked separately above.
             WHEN 'OPT_CENSUS' THEN {phase_rank(_INCUMBENT_PHASE) - phase_rank('Q04')}
             -- COMPILE_EA (ordering decision 2026-08-22, Systemanalyse §4.2/§9.3):
             -- a compile takes seconds and unblocks a whole EA's funnel entry,
