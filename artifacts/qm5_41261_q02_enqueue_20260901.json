@@ -1,0 +1,60 @@
+{
+  "schema_version": "qm.q02-enqueue-receipt/v1",
+  "recorded_at_utc": "2026-09-01T02:52:27.2843667Z",
+  "mission_outcome": "Q01_PASS_Q02_ENQUEUED",
+  "ea_id": "QM5_41261",
+  "ea_label": "QM5_41261_wti-mab-scale-tr",
+  "logical_symbol": "XTIUSD.DWX",
+  "build_task_id": "19e9eb6d-a286-4c07-a3c0-c22ffe47cb8a",
+  "build_result_commit": "8e304e81a5343c06e840b58f9ecc4bf31aacf536",
+  "build_result_sha256": "7CCA0AB37F2E81660129A75A80F5F2EB37E01BDE0A4ED75D1F37DA0EE29412BB",
+  "compile": {
+    "work_item_id": "3edc94c3-969a-4f25-ba31-7b8a8735b95d",
+    "status": "done",
+    "verdict": "COMPILE_OK",
+    "build_check_result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "terminal": "T2",
+    "ex5_sha256": "0DA3C457C039C3508955FA17F3D22B948B42AB2E93C8663A8CBDAB9CE391F47C"
+  },
+  "cpu_admission": {
+    "command": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "samples_percent": [
+      82.8402,
+      81.4844,
+      73.8309,
+      82.8143,
+      90.9326
+    ],
+    "average_percent": 82.3805,
+    "maximum_percent": 90.9326,
+    "hard_ceiling_percent": 97.0,
+    "decision_rule": "STOP when any fresh five-sample whole-host CPU maximum is greater than or equal to 97.0 percent",
+    "verdict": "ADMIT_Q02"
+  },
+  "q02": {
+    "record_build_called": true,
+    "record_build_status": "done",
+    "auto_enqueued": true,
+    "logical_work_items_enqueued": 1,
+    "work_item_id": "bd902ed1-c6ad-4584-9f37-4cca9c4cd805",
+    "phase": "Q02",
+    "kind": "backtest",
+    "status_at_receipt": "pending",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile": "framework/EAs/QM5_41261_wti-mab-scale-tr/sets/QM5_41261_wti-mab-scale-tr_XTIUSD.DWX_D1_backtest.set",
+    "setfile_sha256": "49A71652E3F2AAD86FCA07FAAFD757411E0B25F5880C3861A9B2D71401D9E3DA",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "manual_backtest_launched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "deploy_manifest_touched": false
+  }
+}
