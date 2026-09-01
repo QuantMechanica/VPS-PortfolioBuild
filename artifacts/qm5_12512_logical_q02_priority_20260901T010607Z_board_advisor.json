@@ -1,0 +1,164 @@
+{
+  "schema_version": "qm.fx-existing-basket-q02-priority-handoff/v1",
+  "generated_at_utc": "2026-09-01T01:06:14Z",
+  "branch": "agents/board-advisor",
+  "git_head_before_runtime_mutation": "36021dcc81ced65af1e90474cb55a982636f636e",
+  "mission_result": "EXISTING_FOREX_FALLBACK_LOGICAL_Q02_PRIORITY_APPLIED",
+  "frontier_reconciliation": {
+    "controlling_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "published_pair_count": 66,
+    "published_hard_qualifier_count": 2,
+    "published_hard_qualifiers": [
+      {
+        "ea_id": "QM5_12532",
+        "pair": [
+          "AUDUSD.DWX",
+          "NZDUSD.DWX"
+        ],
+        "canonical_frontier": "Q02_PASS_Q04_PASS_Q05_FAIL"
+      },
+      {
+        "ea_id": "QM5_12533",
+        "pair": [
+          "EURJPY.DWX",
+          "GBPJPY.DWX"
+        ],
+        "canonical_frontier": "Q02_PASS_Q04_FAIL"
+      }
+    ],
+    "latest_complete_census": "docs/research/FX_COINTEGRATION_QM5_20240_Q04_RETIREMENT_20260831T233713Z.md",
+    "approved_cointegration_or_coint_identities": 123,
+    "matching_ea_directories": 123,
+    "approved_unbuilt_identities": 0,
+    "relationships_accounted_for": 66,
+    "unbuilt_pair_selected": false,
+    "fallback_authorized": true
+  },
+  "selection": {
+    "ea_id": "QM5_12512",
+    "ea_directory": "framework/EAs/QM5_12512_bt-pairs-thresh",
+    "approved_card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_12512_bt-pairs-thresh.md",
+    "approved_card_sha256": "07799ee345447c2d0fc75e29d3baa1f1387280da1dcd53f149b14180505cc4dc",
+    "logical_symbol": "QM5_12512_FX_PAIRS_THRESHOLD_H1",
+    "configured_pairs": [
+      [
+        "EURUSD.DWX",
+        "GBPUSD.DWX"
+      ],
+      [
+        "EURJPY.DWX",
+        "GBPJPY.DWX"
+      ],
+      [
+        "AUDUSD.DWX",
+        "NZDUSD.DWX"
+      ]
+    ],
+    "selection_mode": "existing_forex_card_fallback_no_unbuilt_66_pair_candidate",
+    "source": "Philippe Morissette, bt examples/pairs_trading.py, commit 2630651f212c025f0cec351d6319ad81d587ad6e",
+    "timeframe": "H1",
+    "expected_trades_per_year_per_pair": "20-60",
+    "fixed_beta": 1.0,
+    "structural_only": true,
+    "machine_learning": false,
+    "adaptive_refit": false,
+    "new_card_created": false,
+    "new_ea_created": false,
+    "novel_scan_relationship_claimed": false
+  },
+  "changed_condition_since_2026_07_24_duplicate_guard": {
+    "prior_record": "docs/research/FX_COINTEGRATION_FRONTIER_DUPLICATE_GUARD_2026-07-24.md",
+    "prior_state": "physical-host fanout only; no terminal logical-basket Q02 identity",
+    "current_state": "worker-bound logical Q01 PASS plus one governed logical Q02 seed",
+    "current_q01_work_item": "9ca7d432-68b1-50e7-9de6-1e40710b6634",
+    "current_q01_verdict": "PASS",
+    "current_q01_trades": 628,
+    "current_q02_work_item": "acbad967-bf94-4565-9e51-db193de01bf9",
+    "scope": "advance the existing card only; do not treat its three pairs as new scan discoveries"
+  },
+  "build_and_risk_binding": {
+    "mq5_sha256": "064032709516804323192a8bfe9cb6d45d68bbf57d2529cab264974e222f38de",
+    "ex5_sha256": "bb31cb2b92679e02916ba8e9b63b749d9c51af0e9b6474057f477604a8b21a1c",
+    "basket_manifest": "framework/EAs/QM5_12512_bt-pairs-thresh/basket_manifest.json",
+    "basket_manifest_sha256": "2fceab6414057c8e25c1813daa9e0afdf2212197d843b0c8b16cfc9bb5e30021",
+    "setfile": "framework/EAs/QM5_12512_bt-pairs-thresh/sets/QM5_12512_bt-pairs-thresh_QM5_12512_FX_PAIRS_THRESHOLD_H1_H1_backtest.set",
+    "setfile_sha256": "10697e9af07e0718fd4260a7dbc41f6cf59838e3122ac41badc2cf2aabf9b1d3",
+    "q01_hashes_match_current_files": true,
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "queue_action": {
+    "work_item_id": "acbad967-bf94-4565-9e51-db193de01bf9",
+    "phase": "Q02",
+    "mutation": "EXACT_ID_IN_PLACE_PAYLOAD_CAS",
+    "status_after": "pending",
+    "claimed_by_after": null,
+    "attempt_count_after": 0,
+    "verdict_after": null,
+    "updated_at_preserved": "2026-08-29T12:08:06+00:00",
+    "priority_track_before": null,
+    "priority_track_after": true,
+    "priority_reason": "board_advisor_fx_existing_card_fallback_logical_q02_after_exhausted_66_pair_frontier",
+    "queue_rank_before": 8469,
+    "queue_rank_after": 1422,
+    "queue_rank_improvement": 7047,
+    "prior_payload_sha256": "b1708e5b52fa3930a19640136620c3876b58f38ec219299b9b8fe13367b3d82b",
+    "post_payload_sha256": "515b2f7a6d07479cd315183b8dd36f3c8c15d29ee75cbb562ee982c07bc9a3b4",
+    "audit_event_id": 381251,
+    "audit_event": "priority_track_set",
+    "row_journal": "D:/QM/reports/state/qm5_12512_logical_q02_priority_20260901T010607Z.journal.json",
+    "row_journal_sha256": "eac3b2931b526a8193a23915917302fe906e9bbf6758318b89ccde8dcafaf63f",
+    "row_journal_state": "COMMITTED",
+    "open_matching_q02_rows_after": 1,
+    "duplicate_work_items_created": 0,
+    "pipeline_verdict_changed": false,
+    "alpha_changed": false
+  },
+  "capacity": {
+    "factory_mutation_lock_wait_seconds": 0.015,
+    "cpu_samples_percent": [
+      92.1,
+      96.2,
+      78.0,
+      89.9,
+      94.5
+    ],
+    "cpu_average_percent": 90.14,
+    "cpu_maximum_percent": 96.2,
+    "cpu_ceiling_percent": 97,
+    "cpu_ceiling_hit": false,
+    "active_multisymbol_work_item": {
+      "work_item_id": "11cbafc9-5452-45d6-8a11-a81bc33473c1",
+      "ea_id": "QM5_20161",
+      "symbol": "QM5_20161_XAUUSD_XAGUSD_OLS_D1",
+      "phase": "Q03",
+      "claimed_by": "T8"
+    },
+    "serialized_basket_lane_respected": true,
+    "manual_mt5_dispatch_started": false
+  },
+  "verification": {
+    "spec_validator": "PASS",
+    "build_guardrails": "PASS_ZERO_FINDINGS",
+    "symbol_scope": "BASKET_OK_ZERO_VIOLATIONS",
+    "basket_test_suite": "65_PASS",
+    "card_ml_hits": [],
+    "legacy_card_schema_note": "The existing approved card predates the current heading names and the modern linter reports missing hypothesis/rules/risk sections; no new card extraction was performed.",
+    "legacy_build_admission_note": "The build skill guard reports no current EA registry row; no rebuild, compile, or build-result mutation was performed.",
+    "ad_hoc_build_check": "REFUSED_BY_LIVE_FACTORY_GUARD_NO_COMPILE_ATTEMPTED"
+  },
+  "safety": {
+    "factory_mutation_lock_released": true,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "live_manifest_touched": false,
+    "manual_terminal_action": false,
+    "unrelated_dirty_worktree_preserved": true
+  }
+}
