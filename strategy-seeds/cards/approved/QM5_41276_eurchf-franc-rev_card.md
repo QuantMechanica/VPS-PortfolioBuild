@@ -73,8 +73,8 @@ expected_pf: 1.01
 expected_dd_pct: 25.0
 risk_class: high
 ml_required: false
-r1_track_record: PASS_WITH_UNTESTED_MECHANIZATION_AND_POST_FLOOR_REGIME_RISK
-r1_reasoning: "Complete durable OWNER research and local official-source packets support the CHF stress carrier and exact research ticket; the trading rule and post-2015 profitability remain untested synthesis."
+r1_track_record: TIER_C
+r1_reasoning: "existing card attribution is canonical source lineage; R1 is informational and non-gating (2026-07-23)."
 r2_mechanical: PASS
 r2_reasoning: "Closed-bar sample membership, population deviation, strict thresholds, range location, reversal, side, ATR stop/target, fixed risk, and exits are deterministic and locked."
 r3_data_available: PASS
@@ -88,9 +88,9 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: true
-pipeline_phase: Q01
-q01_status: PENDING
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: ENQUEUED
 force_build: true
 review_focus: "Falsify an unused EURCHF H4 one-sided extreme-franc-strength reversal. Verify ex-current reference windows, population standard deviation, strict thresholds, lower-decile close range, reversal orientation, long-only side, frozen ATR risk, time/Friday exits, and gap-tail honesty. Q09 alone may establish realized overlap."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -300,11 +300,12 @@ or terminal control.
 | phase | date | verdict | evidence |
 |---|---|---|---|
 | G0 | 2026-09-01 | APPROVED; R1-R4 bounded PASS | source approval, policy receipts, dedup, card decision |
-| Q01 | pending | pending | governed build task |
-| Q02 | pending | not enqueued | paced worker owns dispatch after Q01 |
+| Q01 | 2026-09-01 | PASS; smoke deferred before launch at terminal-capacity ceiling | build task `b80cad71-1ed5-428e-8e29-67d47196b21b`; build-check PASS; compile 0 errors/0 warnings; `status=no_capacity` |
+| Q02 | 2026-09-01 | ENQUEUED; pending | work item `bc763b3f-d15c-47f2-b42f-c6f3309e7592`, exact `EURCHF.DWX` H4 RISK_FIXED set |
 
 ## Revision History
 
 | version | date | reason | phase | verdict |
 |---|---|---|---|---|
 | v1 | 2026-09-01 | initial EURCHF extreme franc-strength reversal card | G0 | APPROVED |
+| v2 | 2026-09-01 | bind clean Q01 build and one canonical Q02 enqueue | Q02 | ENQUEUED |
