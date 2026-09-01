@@ -88,6 +88,14 @@ No completed, failed, active, claimed, or verdict-bearing row was updated.
   `candidate_pending=true`, lane
   `(DL089_QM5_11421_EURUSD_DWX_2019_2025, baseline)`, year 2019, and a valid
   transaction-bound token with an empty predecessor list.
+- After T10's normal staggered idle reload, the same 2019 baseline row was
+  claimed at `2026-09-01T07:33:34+00:00`. The authoritative worker event records
+  `dl089_lane_preflight_status=checked`, the expected program, and arm
+  `baseline`; no terminal was restarted manually.
+- Immediate live database inspection found exactly 70 numeric rows: one active
+  on T10 and 69 pending. The active row had a null verdict, and there were no
+  duplicate active arms for the program, preserving the fleet-wide
+  `(program, arm)` invariant.
 
 ## Safety
 
