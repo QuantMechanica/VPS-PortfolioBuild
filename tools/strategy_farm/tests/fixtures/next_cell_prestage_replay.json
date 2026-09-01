@@ -1,0 +1,29 @@
+{
+  "schema": "qm.next-cell-prestage-replay-fixture/v1",
+  "terminal": "T3",
+  "fixed_now": "2026-09-01T00:00:00+00:00",
+  "items": [
+    {
+      "id": "replay-cell-a",
+      "phase": "Q03",
+      "ea_id": "QM5_99001",
+      "symbol": "EURUSD.DWX",
+      "created_at": "2026-08-31T23:58:00+00:00",
+      "payload": {"host_timeframe": "H1", "from_date": "2022.01.01", "to_date": "2022.12.31"}
+    },
+    {
+      "id": "replay-cell-b",
+      "phase": "Q03",
+      "ea_id": "QM5_99002",
+      "symbol": "GBPUSD.DWX",
+      "created_at": "2026-08-31T23:59:00+00:00",
+      "payload": {"host_timeframe": "H1", "from_date": "2022.01.01", "to_date": "2022.12.31"}
+    }
+  ],
+  "expected_claim_order": ["replay-cell-a", "replay-cell-b"],
+  "authoritative_surfaces": [
+    "claim item IDs",
+    "work_items status/verdict/claimed_by/payload_json",
+    "claim_class_ledger terminal/work_item_id/claim_class"
+  ]
+}

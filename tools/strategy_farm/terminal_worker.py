@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import atexit
+from contextlib import contextmanager
 import errno
 import faulthandler
 import hashlib
@@ -47,6 +48,7 @@ import custom_history_lease
 import custom_history_master
 import dl089_scheduling
 import longrun_scheduling_policy
+import next_cell_prestage
 import opt_census_pruning
 from framework.scripts._phase_utils import cold_cache_summary_signature
 from factory_mutation_lock import FactoryMutationLock, path_for_factory_flag
@@ -1374,6 +1376,7 @@ def _privatize_custom_history_claim(
     row: sqlite3.Row | dict[str, Any],
     terminal: str,
     gate: dict[str, Any],
+    prestage_adoption: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Privatize the host plus declared conversion/basket archive set."""
 
@@ -1409,6 +1412,14 @@ def _privatize_custom_history_claim(
             # DL-085: privatization reads come from the standalone verified
             # master tree, never from the cross-terminal shared family inode.
             farm_root=root,
+            prepared_sources=next_cell_prestage.cached_history_sources(
+                prestage_adoption
+            ),
+            prestage_token_sha256=(
+                str(prestage_adoption.get("token_sha256"))
+                if prestage_adoption
+                else None
+            ),
         )
         return {
             "required": True,
@@ -1421,6 +1432,8 @@ def _privatize_custom_history_claim(
             "selected_file_count": receipt["selected_file_count"],
             "copied_file_count": receipt["copied_file_count"],
             "already_private_file_count": receipt["already_private_file_count"],
+            "prepared_cache_file_count": receipt.get("prepared_cache_file_count", 0),
+            "prestage_token_sha256": receipt.get("prestage_token_sha256"),
             "receipt_sha256": receipt["receipt_sha256"],
             "receipt_path": receipt["receipt_path"],
             "receipt_file_sha256": receipt["receipt_file_sha256"],
@@ -2188,6 +2201,9 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                 recovery_allowed = False
                 recovery_capped = False
                 for item in conn.execute(_priority_pending_query()).fetchall():
+                    preclaim_payload_sha256 = next_cell_prestage.sha256_text(
+                        item["payload_json"] or "{}"
+                    )
                     payload = _json_loads(item["payload_json"])
                     if (
                         compile_only_due_to_commit_headroom
@@ -2467,6 +2483,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                             "item": dict(row),
                             "claim_class": "recovery" if item_is_recovery else "priority",
                             "claim_admission_mode": payload.get("claim_admission_mode"),
+                            "preclaim_payload_sha256": preclaim_payload_sha256,
                         }
                 conn.commit()
                 return {
@@ -3259,20 +3276,16 @@ def _normalized_ex5_sha256(raw: Any, *, role: str) -> str:
     return value
 
 
-def _prepare_staged_ex5(item: sqlite3.Row, terminal: str) -> dict[str, Any]:
-    """Atomically stage and verify the exact EX5 required for this dispatch.
+def _dispatch_ex5_requirement(
+    item: sqlite3.Row | dict[str, Any],
+) -> dict[str, Any]:
+    """Resolve and authenticate the immutable EX5 source without staging it."""
 
-    Manifest-pinned diagnostic binaries retain precedence. Ordinary work items
-    use the registry-resolved canonical EX5 and any enqueue-time hash binding;
-    legacy rows without a binding acquire one from that source at this gate.
-    Every path copies before dispatch so a dormant divergent terminal is
-    repaired only through the same verified gate that authorizes its run.
-    """
-
-    payload = _json_loads(item["payload_json"])
+    payload = _json_loads(_work_item_value(item, "payload_json", "{}"))
     raw_path = payload.get("staged_ex5_path")
     raw_sha = payload.get("staged_ex5_sha256")
-    if "kind" in item.keys() and str(item["kind"]) == farmctl.HARNESS_WORK_ITEM_KIND:
+    item_kind = str(_work_item_value(item, "kind", "") or "")
+    if item_kind == farmctl.HARNESS_WORK_ITEM_KIND:
         # Harness pseudo-EAs live outside framework/EAs with no setfile and no
         # registry row, so the EA-dir resolution below can only fail (row
         # cb5e3cd3 died staged_ex5_ea_dir_unresolved right after the generic
@@ -3286,9 +3299,13 @@ def _prepare_staged_ex5(item: sqlite3.Row, terminal: str) -> dict[str, Any]:
         # framework/tests/<label>.ex5, staged as <label>.ex5 on the terminal).
         ea_dir = canonical_source.parent / farmctl.HARNESS_PP_FIXTURE_EA_LABEL
     else:
-        ea_dir = farmctl._ea_dir_from_setfile_path(Path(str(item["setfile_path"])), str(item["ea_id"]))
+        ea_id = str(_work_item_value(item, "ea_id", "") or "")
+        ea_dir = farmctl._ea_dir_from_setfile_path(
+            Path(str(_work_item_value(item, "setfile_path", "") or "")),
+            ea_id,
+        )
         if ea_dir is None:
-            ea_dir = farmctl._preferred_ea_dir(str(item["ea_id"]))
+            ea_dir = farmctl._preferred_ea_dir(ea_id)
         if ea_dir is None:
             raise ValueError("staged_ex5_ea_dir_unresolved")
         canonical_source = ea_dir / f"{ea_dir.name}.ex5"
@@ -3338,14 +3355,70 @@ def _prepare_staged_ex5(item: sqlite3.Row, terminal: str) -> dict[str, Any]:
         raise ValueError(
             f"dispatch_ex5_source_sha256_mismatch:{source_sha}:expected:{expected}"
         )
+    return {
+        "payload": payload,
+        "ea_dir": ea_dir,
+        "source": source,
+        "source_sha256": source_sha,
+        "expected_sha256": expected,
+        "binding_source": binding_source,
+    }
+
+
+def _prepare_staged_ex5(
+    item: sqlite3.Row | dict[str, Any],
+    terminal: str,
+    prestage_adoption: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Atomically stage and verify the exact EX5 required for this dispatch.
+
+    Manifest-pinned diagnostic binaries retain precedence. Ordinary work items
+    use the registry-resolved canonical EX5 and any enqueue-time hash binding;
+    legacy rows without a binding acquire one from that source at this gate.
+    Every path copies before dispatch so a dormant divergent terminal is
+    repaired only through the same verified gate that authorizes its run.  An
+    adopted pre-stage may supply the copy source, but this authoritative gate
+    still re-hashes the canonical source, copied temporary, and live target.
+    """
+
+    requirement = _dispatch_ex5_requirement(item)
+    ea_dir = requirement["ea_dir"]
+    source = Path(requirement["source"])
+    source_sha = str(requirement["source_sha256"])
+    expected = str(requirement["expected_sha256"])
+    binding_source = str(requirement["binding_source"])
+    copy_source = source
+    prestaged = next_cell_prestage.cached_file(
+        prestage_adoption,
+        role="ex5",
+        logical_name=str(source.resolve(strict=True)),
+    )
+    if prestaged is not None:
+        if (
+            str(prestaged.get("sha256") or "") == expected
+            and os.path.normcase(str(Path(str(prestaged.get("source_path"))).resolve(strict=True)))
+            == os.path.normcase(str(source.resolve(strict=True)))
+        ):
+            candidate = Path(str(prestaged.get("cache_path") or ""))
+            if candidate.is_file():
+                copy_source = candidate
 
     destination = farmctl.MT5_ROOT / terminal / "MQL5" / "Experts" / "QM" / f"{ea_dir.name}.ex5"
     destination.parent.mkdir(parents=True, exist_ok=True)
     preexisting_sha = _sha256_file(destination) if destination.is_file() else None
     temporary = destination.with_suffix(destination.suffix + f".{os.getpid()}.tmp")
+    prestage_cache_fallback = False
     try:
-        shutil.copy2(source, temporary)
+        shutil.copy2(copy_source, temporary)
         copied_sha = _sha256_file(temporary)
+        if copied_sha != expected and copy_source != source:
+            # A detached cache is only an optimization. Corruption or an
+            # interrupted cache write falls back to the canonical source and
+            # can never manufacture a terminal preflight failure.
+            shutil.copy2(source, temporary)
+            copied_sha = _sha256_file(temporary)
+            copy_source = source
+            prestage_cache_fallback = True
         if copied_sha != expected:
             if binding_source == "manifest_pinned_staged_ex5":
                 raise ValueError(f"staged_ex5_copy_sha256_mismatch:{copied_sha}")
@@ -3369,6 +3442,12 @@ def _prepare_staged_ex5(item: sqlite3.Row, terminal: str) -> dict[str, Any]:
         "destination_path": str(destination.resolve()),
         "required_sha256": expected,
         "source_sha256": source_sha,
+        "copy_source_path": str(copy_source.resolve()),
+        "prestage_adopted": copy_source != source,
+        "prestage_cache_fallback": prestage_cache_fallback,
+        "prestage_token_sha256": (
+            prestage_adoption.get("token_sha256") if copy_source != source and prestage_adoption else None
+        ),
         "binding_source": binding_source,
         "preexisting_destination_sha256": preexisting_sha,
         "copied": True,
@@ -3376,6 +3455,473 @@ def _prepare_staged_ex5(item: sqlite3.Row, terminal: str) -> dict[str, Any]:
         "pre_run_sha256": pre_run_sha,
         "verified": True,
     }
+
+
+def _next_cell_prestage_policy_generation() -> str:
+    """Fingerprint selector semantics and flag-gated DL-089 policy inputs."""
+
+    payload = {
+        "schema": next_cell_prestage.POLICY_SCHEMA,
+        "pending_claim_order_sql": _priority_pending_query(),
+        "dl089_pruning_enabled": opt_census_pruning.pruning_enabled(),
+        "dl089_limits": dl089_scheduling.effective_limits(
+            len(farmctl.worker_policy_terminals())
+        ),
+        "dl089_allowlist": sorted(
+            dl089_scheduling.same_program_parallel_allowlist()
+        ),
+    }
+    return hashlib.sha256(
+        json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+
+
+def _next_cell_prestage_cpu_percent() -> float:
+    """Short one-shot CPU sample isolated from claim-loop hysteresis state."""
+
+    if sys.platform != "win32":
+        return 0.0
+    try:
+        import ctypes
+
+        class _FileTime(ctypes.Structure):
+            _fields_ = [("lo", ctypes.c_uint32), ("hi", ctypes.c_uint32)]
+
+        def _sample() -> tuple[int, int]:
+            idle, kernel, user = _FileTime(), _FileTime(), _FileTime()
+            if not ctypes.windll.kernel32.GetSystemTimes(
+                ctypes.byref(idle), ctypes.byref(kernel), ctypes.byref(user)
+            ):
+                raise OSError("GetSystemTimes failed")
+
+            def _ticks(value: "_FileTime") -> int:
+                return (int(value.hi) << 32) | int(value.lo)
+
+            idle_ticks = _ticks(idle)
+            return idle_ticks, (_ticks(kernel) - idle_ticks) + _ticks(user)
+
+        idle_before, busy_before = _sample()
+        time.sleep(0.2)
+        idle_after, busy_after = _sample()
+        delta_idle = idle_after - idle_before
+        delta_busy = busy_after - busy_before
+        total = delta_idle + delta_busy
+        return 100.0 * delta_busy / total if total > 0 else 0.0
+    except Exception:
+        # This is an optional optimization. Ambiguity declines instead of
+        # stealing resources from an active tester.
+        return float("nan")
+
+
+def _next_cell_prestage_resource_probe(
+    root: Path, config: next_cell_prestage.PrestageConfig
+) -> dict[str, Any]:
+    disk_gb = _disk_free_gb(root)
+    free_ram_gb, free_commit_gb = _memory_headroom_gb()
+    cpu_percent = _next_cell_prestage_cpu_percent()
+    metrics = {
+        "disk_free_gb": round(disk_gb, 3),
+        "free_ram_gb": round(free_ram_gb, 3),
+        "free_commit_gb": (
+            round(free_commit_gb, 3) if math.isfinite(free_commit_gb) else None
+        ),
+        "cpu_percent": round(cpu_percent, 3) if math.isfinite(cpu_percent) else None,
+    }
+    if disk_gb < config.min_free_disk_gb:
+        return {"allowed": False, "reason": "disk_headroom_low", **metrics}
+    if free_ram_gb < config.min_free_ram_gb:
+        return {"allowed": False, "reason": "ram_headroom_low", **metrics}
+    if not math.isfinite(free_commit_gb) or free_commit_gb < config.min_free_commit_gb:
+        return {"allowed": False, "reason": "commit_headroom_low", **metrics}
+    if not math.isfinite(cpu_percent) or cpu_percent > config.max_cpu_percent:
+        return {"allowed": False, "reason": "cpu_pressure", **metrics}
+    return {"allowed": True, "reason": "within_budget", **metrics}
+
+
+@contextmanager
+def _next_cell_prestage_readonly_connection(root: Path):
+    db_path = (root / farmctl.DB_REL).resolve(strict=True)
+    connection = sqlite3.connect(
+        f"file:{db_path.as_posix()}?mode=ro",
+        uri=True,
+        timeout=2,
+    )
+    connection.row_factory = sqlite3.Row
+    configure_sqlite_connection(connection)
+    connection.execute("PRAGMA query_only=ON")
+    try:
+        yield connection
+    finally:
+        connection.close()
+
+
+def _next_cell_prestage_dl089_snapshot(
+    conn: sqlite3.Connection,
+    candidate: Mapping[str, Any],
+    payload: Mapping[str, Any],
+) -> tuple[dict[str, Any], list[Path]]:
+    if str(candidate.get("phase") or "").upper() != "OPT_CENSUS":
+        return {}, []
+    dependencies: list[Path] = []
+    metadata: dict[str, Any] = {
+        "program_id": str(payload.get("program_id") or ""),
+        "arm": str(payload.get("arm") or ""),
+        "year": payload.get("year"),
+        "cell_key": str(payload.get("cell_key") or ""),
+        "q12_work_item_id": str(payload.get("q12_work_item_id") or ""),
+        "q12_declaration_sha256": str(
+            payload.get("q12_declaration_sha256") or ""
+        ),
+    }
+    ledger_path_raw = str(payload.get("ledger_path") or "").strip()
+    if ledger_path_raw:
+        dependencies.append(Path(ledger_path_raw).resolve(strict=True))
+    if opt_census_pruning.AMENDMENT_PATH.is_file():
+        dependencies.append(opt_census_pruning.AMENDMENT_PATH.resolve(strict=True))
+    if opt_census_pruning.pruning_enabled():
+        advisory = opt_census_pruning.inspect_candidate_exclusion(conn, candidate)
+        metadata["pruning_advisory"] = advisory
+        for predecessor in advisory.get("inspected_predecessors") or []:
+            evidence_path = Path(str(predecessor.get("evidence_path") or ""))
+            if evidence_path.is_file():
+                dependencies.append(evidence_path.resolve(strict=True))
+        if advisory.get("would_skip_current"):
+            raise next_cell_prestage.PrestageError(
+                "dl089_pruning_advisory_would_skip"
+            )
+    if not _is_governed_dl089_census_payload(payload):
+        metadata["governed"] = False
+        return metadata, dependencies
+    ledger_path, ledger = opt_census_pruning._load_ledger(payload)
+    cells = list(ledger.get("cells") or [])
+    ids = [str(cell.get("work_item_id") or "") for cell in cells]
+    if not ids or any(not value for value in ids):
+        raise next_cell_prestage.PrestageError("dl089_ledger_cell_ids_incomplete")
+    marks = ",".join("?" for _ in ids)
+    matrix_rows = [
+        dict(value)
+        for value in conn.execute(
+            f"SELECT * FROM work_items WHERE id IN ({marks})", ids
+        ).fetchall()
+    ]
+    program, arm = dl089_scheduling.lane_id(
+        payload,
+        ea_id=candidate.get("ea_id"),
+        symbol=candidate.get("symbol"),
+    )
+    frontier = dl089_scheduling.arm_frontier(matrix_rows, ledger).get(
+        (program, arm)
+    )
+    candidate_is_frontier = bool(
+        frontier is not None
+        and str(frontier.get("id") or "") == str(candidate.get("id") or "")
+    )
+    declared = next(
+        (
+            cell
+            for cell in cells
+            if str(cell.get("work_item_id") or "")
+            == str(candidate.get("id") or "")
+        ),
+        None,
+    )
+    if declared is None:
+        raise next_cell_prestage.PrestageError("dl089_candidate_absent_from_ledger")
+    opt_census_pruning._validate_declared_identity(declared, payload)
+    year = int(payload["year"])
+    predecessors = [
+        str(cell["work_item_id"])
+        for cell in cells
+        if str(cell.get("arm")) == arm and int(cell.get("year")) < year
+    ]
+    metadata.update(
+        {
+            "governed": True,
+            "program_id": program,
+            "arm": arm,
+            "candidate_is_frontier": candidate_is_frontier,
+            "ledger_path": str(ledger_path),
+            "ledger_sha256": _sha256_file(ledger_path),
+            "predecessor_ids": predecessors,
+            "predecessor_status_sha256": _predecessor_status_fingerprint(
+                conn, predecessors
+            ),
+        }
+    )
+    return metadata, dependencies
+
+
+def _load_next_cell_prestage_snapshot(
+    root: Path,
+    terminal: str,
+    config: next_cell_prestage.PrestageConfig,
+    worker_generation: str,
+    cancel: threading.Event,
+) -> dict[str, Any]:
+    """Read and hash one likely next row without claiming or mutating it."""
+
+    with _next_cell_prestage_readonly_connection(root) as conn:
+        candidate_row = conn.execute(_priority_pending_query()).fetchone()
+        if candidate_row is None:
+            raise next_cell_prestage.PrestageError("no_pending_candidate")
+        candidate = dict(candidate_row)
+        phase = str(candidate.get("phase") or "").upper()
+        kind = str(candidate.get("kind") or "").lower()
+        if phase == farmctl.COMPILE_EA_PHASE or kind == farmctl.COMPILE_WORK_ITEM_KIND:
+            raise next_cell_prestage.PrestageError("candidate_is_compile_utility")
+        payload_raw = str(candidate.get("payload_json") or "{}")
+        payload = _json_loads(payload_raw)
+        if terminal.upper() in _payload_avoid_terminals(payload):
+            raise next_cell_prestage.PrestageError("candidate_avoids_terminal")
+        setfile = Path(str(candidate.get("setfile_path") or ""))
+        if not setfile.is_absolute() or not setfile.is_file():
+            raise next_cell_prestage.PrestageError("candidate_setfile_unavailable")
+        requirement = _dispatch_ex5_requirement(candidate)
+        ex5_source = Path(requirement["source"])
+
+        activation = custom_history_gate.load_activation(root)
+        history_rows: list[dict[str, Any]] = []
+        history_master_root: Path | None = None
+        dependency_paths: list[Path] = []
+        history_metadata: dict[str, Any] = {"required": activation is not None}
+        if activation is not None:
+            activation_path = custom_history_gate.activation_path(root).resolve(
+                strict=True
+            )
+            manifest_path = Path(str(activation["manifest_path"])).resolve(
+                strict=True
+            )
+            manifest = custom_history_contract.load_manifest(
+                manifest_path, require_owner_approval=True
+            )
+            master_state = custom_history_master.load_master_state(
+                root, manifest=manifest
+            )
+            history_master_root = Path(master_state["master_root"])
+            history_rows, selected_symbols, ignored_symbols = (
+                custom_history_copy_on_claim.select_archive_rows_for_symbols(
+                    manifest,
+                    _work_item_history_symbols(candidate, payload),
+                )
+            )
+            dependency_paths.extend(
+                [
+                    activation_path,
+                    manifest_path,
+                    custom_history_master.master_state_path(root).resolve(strict=True),
+                ]
+            )
+            history_metadata.update(
+                {
+                    "activation_sha256": activation.get("activation_sha256"),
+                    "manifest_sha256": manifest.get("manifest_sha256"),
+                    "selected_symbols": selected_symbols,
+                    "ignored_symbols": ignored_symbols,
+                    "archive_count": len(history_rows),
+                }
+            )
+
+        dl089_metadata, dl089_dependencies = _next_cell_prestage_dl089_snapshot(
+            conn, candidate, payload
+        )
+        dependency_paths.extend(dl089_dependencies)
+
+        planned_copy_bytes = setfile.stat().st_size + ex5_source.stat().st_size
+        planned_copy_bytes += sum(int(value["size"]) for value in history_rows)
+        if planned_copy_bytes > config.max_bytes:
+            raise next_cell_prestage.PrestageError(
+                f"byte_cap_exceeded:{planned_copy_bytes}:cap:{config.max_bytes}"
+            )
+
+        files = [
+            next_cell_prestage.file_spec(
+                setfile.resolve(strict=True),
+                role="setfile",
+                logical_name=str(setfile.resolve(strict=True)),
+                expected_sha256=(
+                    str(payload.get("expected_setfile_sha256"))
+                    if payload.get("expected_setfile_sha256")
+                    else None
+                ),
+                cache=True,
+                cancel=cancel,
+            ),
+            next_cell_prestage.file_spec(
+                ex5_source.resolve(strict=True),
+                role="ex5",
+                logical_name=str(ex5_source.resolve(strict=True)),
+                expected_sha256=str(requirement["expected_sha256"]),
+                cache=True,
+                cancel=cancel,
+            ),
+        ]
+        if history_master_root is not None:
+            for manifest_row in history_rows:
+                relative = str(manifest_row["relative_path"])
+                files.append(
+                    next_cell_prestage.file_spec(
+                        custom_history_master.master_file_path(
+                            history_master_root, relative
+                        ).resolve(strict=True),
+                        role="custom_history_archive",
+                        logical_name=relative,
+                        expected_sha256=str(manifest_row["sha256"]),
+                        cache=True,
+                        cancel=cancel,
+                    )
+                )
+        seen_dependencies: set[str] = set()
+        for dependency in dependency_paths:
+            resolved = dependency.resolve(strict=True)
+            key = os.path.normcase(str(resolved))
+            if key in seen_dependencies:
+                continue
+            seen_dependencies.add(key)
+            files.append(
+                next_cell_prestage.file_spec(
+                    resolved,
+                    role="dependency",
+                    logical_name=str(resolved),
+                    cache=False,
+                    cancel=cancel,
+                )
+            )
+
+        item_identity = {
+            "id": str(candidate["id"]),
+            "phase": phase,
+            "ea_id": str(candidate.get("ea_id") or ""),
+            "symbol": str(candidate.get("symbol") or ""),
+            "period": _work_item_test_period(candidate, payload),
+            "year": payload.get("year"),
+        }
+        return {
+            "terminal": terminal.upper(),
+            "worker_generation": worker_generation,
+            "item": item_identity,
+            "payload_sha256": next_cell_prestage.sha256_text(payload_raw),
+            "policy_generation": _next_cell_prestage_policy_generation(),
+            "files": files,
+            "dependencies": {
+                "dl089": dl089_metadata,
+                "custom_history": history_metadata,
+            },
+            "metadata": {
+                "planned_copy_bytes": planned_copy_bytes,
+                "input_class": phase,
+                "archive_bytes": sum(int(value["size"]) for value in history_rows),
+            },
+        }
+
+
+def _next_cell_prestage_snapshot_sources_current(
+    token: Mapping[str, Any],
+) -> tuple[bool, str]:
+    for spec in token.get("files") or []:
+        source = Path(str(spec.get("source_path") or ""))
+        try:
+            stat = source.stat()
+        except OSError:
+            return False, f"source_missing:{spec.get('role')}"
+        if (
+            stat.st_size != int(spec.get("source_size", -1))
+            or stat.st_mtime_ns != int(spec.get("source_mtime_ns", -1))
+            or int(getattr(stat, "st_ino", 0)) != int(spec.get("source_inode", 0))
+        ):
+            return False, f"source_identity_changed:{spec.get('role')}"
+        if not spec.get("cache") and _sha256_file(source) != str(
+            spec.get("sha256") or ""
+        ):
+            return False, f"dependency_hash_changed:{spec.get('logical_name')}"
+    return True, "match"
+
+
+def _next_cell_prestage_candidate_is_current(
+    root: Path,
+    token: Mapping[str, Any],
+) -> tuple[bool, str]:
+    item_id = str((token.get("item") or {}).get("id") or "")
+    try:
+        with _next_cell_prestage_readonly_connection(root) as conn:
+            row = conn.execute(
+                "SELECT status,claimed_by,payload_json FROM work_items WHERE id=?",
+                (item_id,),
+            ).fetchone()
+            if row is None:
+                return False, "candidate_missing"
+            if str(row["status"]).lower() != "pending" or row["claimed_by"] is not None:
+                return False, "candidate_not_pending"
+            if next_cell_prestage.sha256_text(row["payload_json"] or "{}") != str(
+                token.get("payload_sha256") or ""
+            ):
+                return False, "candidate_payload_changed"
+            dl089 = dict((token.get("dependencies") or {}).get("dl089") or {})
+            predecessors = [str(value) for value in dl089.get("predecessor_ids") or []]
+            if predecessors and _predecessor_status_fingerprint(
+                conn, predecessors
+            ) != str(dl089.get("predecessor_status_sha256") or ""):
+                return False, "dl089_predecessor_changed"
+        if str(token.get("policy_generation") or "") != _next_cell_prestage_policy_generation():
+            return False, "policy_generation_changed"
+        return _next_cell_prestage_snapshot_sources_current(token)
+    except (OSError, sqlite3.Error, ValueError) as exc:
+        return False, f"current_probe_error:{type(exc).__name__}:{exc}"
+
+
+def _next_cell_prestage_dependency_validator(
+    root: Path,
+    terminal: str,
+    plan: Mapping[str, Any],
+) -> tuple[bool, str]:
+    item_id = str((plan.get("item") or {}).get("id") or "")
+    try:
+        with _next_cell_prestage_readonly_connection(root) as conn:
+            row = conn.execute(
+                "SELECT status,claimed_by FROM work_items WHERE id=?", (item_id,)
+            ).fetchone()
+            if (
+                row is None
+                or str(row["status"]).lower() != "active"
+                or str(row["claimed_by"] or "").upper() != terminal.upper()
+            ):
+                return False, "claimed_row_binding_changed"
+            dl089 = dict((plan.get("dependencies") or {}).get("dl089") or {})
+            predecessors = [str(value) for value in dl089.get("predecessor_ids") or []]
+            if predecessors and _predecessor_status_fingerprint(
+                conn, predecessors
+            ) != str(dl089.get("predecessor_status_sha256") or ""):
+                return False, "dl089_predecessor_changed"
+            q12_id = str(dl089.get("q12_work_item_id") or "")
+            if q12_id and conn.execute(
+                "SELECT 1 FROM work_items WHERE id=?", (q12_id,)
+            ).fetchone() is None:
+                return False, "dl089_q12_identity_missing"
+        return True, "match"
+    except (OSError, sqlite3.Error) as exc:
+        return False, f"dependency_probe_error:{type(exc).__name__}:{exc}"
+
+
+def _make_next_cell_prestage_controller(
+    root: Path, terminal: str
+) -> next_cell_prestage.PrestageController:
+    config = next_cell_prestage.PrestageConfig.from_env(root, terminal)
+    return next_cell_prestage.PrestageController(
+        config,
+        snapshot_loader=lambda generation, cancel: _load_next_cell_prestage_snapshot(
+            root, terminal, config, generation, cancel
+        ),
+        candidate_is_current=lambda token: _next_cell_prestage_candidate_is_current(
+            root, token
+        ),
+        resource_probe=lambda: _next_cell_prestage_resource_probe(root, config),
+        policy_generation=_next_cell_prestage_policy_generation,
+        dependency_validator=lambda plan: _next_cell_prestage_dependency_validator(
+            root, terminal, plan
+        ),
+        telemetry=lambda value: print(
+            json.dumps(dict(value), sort_keys=True), flush=True
+        ),
+    )
 
 
 def _verify_and_record_staged_ex5(payload: dict[str, Any]) -> dict[str, Any] | None:
@@ -5735,7 +6281,15 @@ def _record_unspawned_terminal_state(
     return bool(_with_post_claim_sqlite_retry(_write))
 
 
-def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_seconds: int) -> dict[str, Any]:
+def _run_claimed_item(
+    root: Path,
+    item: dict[str, Any],
+    terminal: str,
+    timeout_seconds: int,
+    *,
+    prestage_controller: next_cell_prestage.PrestageController | None = None,
+    prestage_adoption: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
     with farmctl.connect(root) as conn:
         row = conn.execute("SELECT * FROM work_items WHERE id=?", (item["id"],)).fetchone()
     if not row:
@@ -5816,15 +6370,25 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
             existing_inner_budget_seconds = int(existing_payload.get("timeout_seconds") or 0)
         except (TypeError, ValueError):
             existing_inner_budget_seconds = 0
-        return _monitor_spawned_work_item(
-            root,
-            item,
-            terminal,
-            existing_spawn,
-            existing_payload,
-            max(timeout_seconds, existing_inner_budget_seconds),
-            adopted=True,
-        )
+        if prestage_controller is not None:
+            prestage_controller.child_spawned(
+                item_id=str(item["id"]),
+                pid=existing_pid,
+                adopted_existing=True,
+            )
+        try:
+            return _monitor_spawned_work_item(
+                root,
+                item,
+                terminal,
+                existing_spawn,
+                existing_payload,
+                max(timeout_seconds, existing_inner_budget_seconds),
+                adopted=True,
+            )
+        finally:
+            if prestage_controller is not None:
+                prestage_controller.child_finished(item_id=str(item["id"]))
     if existing_pid and _news_runner_abort_eligible(dict(row), existing_payload):
         parked = _park_news_runner_abort_active(
             root,
@@ -5857,7 +6421,14 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
     # launch_fault storm that hits when many terminals launch at once (TTL leaky
     # semaphore, fail-open — see LAUNCH_GATE_* and _acquire_launch_slot).
     try:
-        staging = _prepare_staged_ex5(row, terminal)
+        if prestage_adoption is None:
+            staging = _prepare_staged_ex5(row, terminal)
+        else:
+            staging = _prepare_staged_ex5(
+                row,
+                terminal,
+                prestage_adoption=prestage_adoption,
+            )
     except (OSError, ValueError) as exc:
         return {
             "action": "staged_ex5_preflight_failed",
@@ -5886,7 +6457,18 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
             "item_id": item["id"],
             **_defer_custom_history_gate(root, row, terminal, history_gate),
         }
-    copy_on_claim = _privatize_custom_history_claim(root, row, terminal, history_gate)
+    if prestage_adoption is None:
+        copy_on_claim = _privatize_custom_history_claim(
+            root, row, terminal, history_gate
+        )
+    else:
+        copy_on_claim = _privatize_custom_history_claim(
+            root,
+            row,
+            terminal,
+            history_gate,
+            prestage_adoption=prestage_adoption,
+        )
     if copy_on_claim.get("required") and (
         copy_on_claim.get("status") not in CUSTOM_HISTORY_COPY_PASS_STATUSES
     ):
@@ -6092,6 +6674,12 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
         # the same payload through its own bounded retry transaction.
         payload["spawn_record_deferred_sqlite_busy"] = True
 
+    if prestage_controller is not None:
+        prestage_controller.child_spawned(
+            item_id=str(item["id"]),
+            pid=spawn.get("pid"),
+        )
+
     # The outer watchdog must never fire before the inner budget just computed
     # and handed to run_smoke.ps1 as -TimeoutSeconds — the CLI --timeout-minutes
     # default is a floor, not the effective ceiling. See docs/ops/evidence/
@@ -6101,6 +6689,8 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
             root, item, terminal, spawn, payload, max(timeout_seconds, spawn_timeout_seconds)
         )
     finally:
+        if prestage_controller is not None:
+            prestage_controller.child_finished(item_id=str(item["id"]))
         _release_q09_helper_terminals(root, q09_helper_lease)
 
 
@@ -6386,6 +6976,7 @@ def run_loop(root: Path, terminal: str, timeout_seconds: int) -> int:
         print(json.dumps({"event": "released_stale_claims", "terminal": terminal, "item_ids": released}), flush=True)
     startup_gate = _custom_history_gate(root, terminal)
     print(json.dumps({"event": "custom_history_startup_gate", **startup_gate}, sort_keys=True), flush=True)
+    prestage_controller = _make_next_cell_prestage_controller(root, terminal)
     while not _STOP:
         free_gb = _disk_free_gb(root)
         if free_gb < DISK_MIN_FREE_GB:
@@ -6458,7 +7049,9 @@ def run_loop(root: Path, terminal: str, timeout_seconds: int) -> int:
             continue
         lease_handle = lease_result.handle
         try:
+            prestage_controller.claim_attempt()
             claim = claim_atomic(root, terminal)
+            prestage_adoption = prestage_controller.claim_result(claim)
             if not claim.get("claimed"):
                 _pause_after_unclaimed(claim, terminal)
                 continue
@@ -6479,7 +7072,14 @@ def run_loop(root: Path, terminal: str, timeout_seconds: int) -> int:
                 "at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             }), flush=True)
             try:
-                result = _run_claimed_item(root, item, terminal, timeout_seconds)
+                result = _run_claimed_item(
+                    root,
+                    item,
+                    terminal,
+                    timeout_seconds,
+                    prestage_controller=prestage_controller,
+                    prestage_adoption=prestage_adoption,
+                )
             except sqlite3.OperationalError as exc:
                 if not _is_sqlite_locked(exc):
                     raise
@@ -6546,6 +7146,7 @@ def run_loop(root: Path, terminal: str, timeout_seconds: int) -> int:
                     "lease_token": lease_handle.token,
                     "at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
                 }, sort_keys=True), flush=True)
+    prestage_controller.shutdown()
     return 0
 
 

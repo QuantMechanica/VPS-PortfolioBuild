@@ -190,6 +190,8 @@ def privatize_terminal_archives(
     symbols: Sequence[object],
     receipt_path: Path | str | None = None,
     farm_root: Path | str | None = None,
+    prepared_sources: Mapping[str, Mapping[str, Any]] | None = None,
+    prestage_token_sha256: str | None = None,
 ) -> dict[str, Any]:
     """Copy and atomically privatize one terminal's claimed archive subset.
 
@@ -224,6 +226,11 @@ def privatize_terminal_archives(
     file_results: list[dict[str, Any]] = []
     copied = 0
     already_private = 0
+    prepared_cache_files = 0
+    prepared_by_relative = {
+        normalize_relative_path(str(key)): dict(value)
+        for key, value in (prepared_sources or {}).items()
+    }
     for manifest_row in rows:
         relative = str(manifest_row["relative_path"])
         expected_sha256 = str(manifest_row["sha256"]).casefold()
@@ -250,6 +257,7 @@ def privatize_terminal_archives(
             action = "ALREADY_PRIVATE_VERIFIED"
             already_private += 1
         else:
+            copy_source_mode = "family_inode"
             if master_root is not None:
                 copy_source = custom_history_master.master_file_path(
                     master_root, relative
@@ -258,8 +266,25 @@ def privatize_terminal_archives(
                     raise CustomHistoryCopyOnClaimError(
                         f"master archive file missing for privatization: {copy_source}"
                     )
+                copy_source_mode = "verified_master"
             else:
                 copy_source = target
+            authoritative_copy_source = copy_source
+            prepared = prepared_by_relative.get(normalize_relative_path(relative))
+            if prepared is not None:
+                prepared_path = Path(str(prepared.get("cache_path") or ""))
+                if (
+                    str(prepared.get("sha256") or "").casefold() != expected_sha256
+                    or int(prepared.get("source_size", -1)) != expected_size
+                    or not prepared_path.is_file()
+                    or prepared_path.stat().st_size != expected_size
+                ):
+                    raise CustomHistoryCopyOnClaimError(
+                        f"prepared archive binding mismatch: {relative}"
+                    )
+                copy_source = prepared_path
+                copy_source_mode = "prestage_cache_from_verified_master"
+                prepared_cache_files += 1
             temporary = target.parent / (
                 f".{target.name}.copy-on-claim.{os.getpid()}.{uuid.uuid4().hex}.tmp"
             )
@@ -268,11 +293,33 @@ def privatize_terminal_archives(
                 # new file inherits the terminal-private directory policy.
                 shutil.copyfile(copy_source, temporary)
                 temp_identity = file_identity(temporary)
+                digest = (
+                    sha256_file(temporary)
+                    if int(temp_identity["size"]) == expected_size
+                    else ""
+                )
+                if (
+                    copy_source_mode == "prestage_cache_from_verified_master"
+                    and (
+                        int(temp_identity["size"]) != expected_size
+                        or digest != expected_sha256
+                    )
+                ):
+                    # The detached cache has no authority. A damaged cache falls
+                    # back to the same verified-master copy the cold path would
+                    # have used; it must never engage containment or fail the row.
+                    shutil.copyfile(authoritative_copy_source, temporary)
+                    temp_identity = file_identity(temporary)
+                    digest = (
+                        sha256_file(temporary)
+                        if int(temp_identity["size"]) == expected_size
+                        else ""
+                    )
+                    copy_source_mode = "prestage_cache_invalid_fallback_master"
                 if int(temp_identity["size"]) != expected_size:
                     raise CustomHistoryCopyOnClaimError(
                         f"temporary archive size differs from manifest: {relative}"
                     )
-                digest = sha256_file(temporary)
                 if digest != expected_sha256:
                     raise CustomHistoryCopyOnClaimError(
                         f"temporary archive SHA-256 differs from manifest: {relative}"
@@ -302,6 +349,9 @@ def privatize_terminal_archives(
                 "after_link_count": int(after["link_count"]),
                 "size": int(after["size"]),
                 "sha256": digest,
+                "copy_source_mode": (
+                    copy_source_mode if action == "COPIED_AND_REPLACED" else "already_private"
+                ),
             }
         )
 
@@ -318,6 +368,10 @@ def privatize_terminal_archives(
         "selected_file_count": len(rows),
         "copied_file_count": copied,
         "already_private_file_count": already_private,
+        "prepared_cache_file_count": prepared_cache_files,
+        "prestage_token_sha256": (
+            str(prestage_token_sha256) if prepared_cache_files else None
+        ),
         "files": file_results,
     }
     receipt["receipt_sha256"] = hashlib.sha256(canonical_bytes(receipt)).hexdigest()

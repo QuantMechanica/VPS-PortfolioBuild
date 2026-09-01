@@ -139,3 +139,48 @@ def test_copy_on_claim_refuses_undeclared_custom_symbol(tmp_path: Path) -> None:
             symbols=["XAUUSD.DWX"],
         )
 
+
+@pytest.mark.parametrize("corrupt_cache", [False, True])
+def test_prepared_archive_is_verified_and_corruption_falls_back_to_cold_source(
+    tmp_path: Path, corrupt_cache: bool
+) -> None:
+    source, manifest = _approved_manifest(tmp_path)
+    mt5_root = tmp_path / "mt5"
+    _fan_out(mt5_root, source, manifest)
+    selected = [
+        row for row in manifest["files"] if "EURUSD.DWX" in row["relative_path"]
+    ]
+    prepared_sources = {}
+    for row in selected:
+        relative = str(row["relative_path"])
+        cache = tmp_path / "detached_cache" / Path(relative).name
+        cache.parent.mkdir(parents=True, exist_ok=True)
+        body = source.joinpath(*relative.split("/")).read_bytes()
+        cache.write_bytes((b"x" * len(body)) if corrupt_cache else body)
+        prepared_sources[relative] = {
+            "cache_path": str(cache),
+            "sha256": row["sha256"],
+            "source_size": row["size"],
+        }
+
+    receipt = copy_on_claim.privatize_terminal_archives(
+        manifest=manifest,
+        mt5_root=mt5_root,
+        terminal="T5",
+        symbols=["EURUSD.DWX"],
+        prepared_sources=prepared_sources,
+        prestage_token_sha256="c" * 64,
+    )
+
+    assert receipt["status"] == "PASS_PRIVATIZED"
+    assert receipt["prepared_cache_file_count"] == len(selected)
+    for row in selected:
+        target = mt5_root / "T5" / "Bases" / "Custom" / Path(row["relative_path"])
+        assert contract.sha256_file(target) == row["sha256"]
+    modes = {row["copy_source_mode"] for row in receipt["files"]}
+    assert modes == (
+        {"prestage_cache_invalid_fallback_master"}
+        if corrupt_cache
+        else {"prestage_cache_from_verified_master"}
+    )
+

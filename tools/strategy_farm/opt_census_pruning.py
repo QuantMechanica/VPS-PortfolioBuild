@@ -468,6 +468,82 @@ def prune_after_completed_measurement(
     )
 
 
+def inspect_candidate_exclusion(
+    conn: sqlite3.Connection,
+    candidate_row: Mapping[str, Any],
+    *,
+    env: Optional[Mapping[str, str]] = None,
+    metric_reader: Callable[[Path], Mapping[str, Any]] = _default_metric_reader,
+) -> dict[str, Any]:
+    """Read-only claim-boundary pruning analysis for speculative preparation.
+
+    This deliberately stops before ``_apply_trigger``: it authenticates the same
+    amendment, ledger, candidate identity, earlier measurements, and activity
+    floor as the real claim-boundary backstop, but it creates no receipt and
+    performs no database write.  The ordinary post-finish claimant must still
+    call :func:`prune_candidate_if_excluded` under its existing locks.
+    """
+
+    candidate_id = str(candidate_row["id"])
+    if not pruning_enabled(env):
+        return {"enabled": False, "would_skip_current": False}
+    if candidate_row["phase"] != census.PHASE:
+        return {"enabled": True, "would_skip_current": False}
+    amendment_sha256 = authenticate_amendment()
+    candidate = _payload(candidate_row["payload_json"], work_item_id=candidate_id)
+    if not _is_initial_annual_candidate(candidate):
+        return {"enabled": True, "would_skip_current": False}
+    candidate_year = int(candidate["year"])
+    ledger_path, ledger = _load_ledger(candidate)
+    trigger_rows: list[tuple[int, sqlite3.Row, dict[str, Any]]] = []
+    for row in conn.execute(
+        """
+        SELECT * FROM work_items
+        WHERE phase=? AND status='done' AND verdict='MEASURED'
+        """,
+        (census.PHASE,),
+    ):
+        payload = _payload(row["payload_json"], work_item_id=str(row["id"]))
+        if (
+            payload.get("program_id") == candidate.get("program_id")
+            and payload.get("arm") == candidate.get("arm")
+            and _is_initial_annual_candidate(payload)
+            and int(payload["year"]) < candidate_year
+        ):
+            trigger_rows.append((int(payload["year"]), row, payload))
+    trigger_rows.sort(key=lambda value: (value[0], str(value[1]["id"])))
+    inspected: list[dict[str, Any]] = []
+    trigger: dict[str, Any] | None = None
+    for year, row, _payload_value in trigger_rows:
+        metric = _metric(row["evidence_path"], metric_reader)
+        detail = {
+            "work_item_id": str(row["id"]),
+            "year": year,
+            "evidence_path": str(row["evidence_path"] or ""),
+            "entry_trading_days": int(metric["entry_trading_days"]),
+        }
+        inspected.append(detail)
+        if int(metric["entry_trading_days"]) < census.ACTIVITY_FLOOR:
+            trigger = detail
+            break
+    return {
+        "enabled": True,
+        "would_skip_current": trigger is not None,
+        "candidate_id": candidate_id,
+        "candidate_year": candidate_year,
+        "program_id": str(candidate.get("program_id") or ""),
+        "arm": str(candidate.get("arm") or ""),
+        "amendment_id": AMENDMENT_ID,
+        "amendment_sha256": amendment_sha256,
+        "ledger_path": str(ledger_path),
+        "ledger_sha256": _sha256(ledger_path),
+        "q12_work_item_id": str(ledger.get("q12_work_item_id") or ""),
+        "q12_declaration_sha256": str(ledger.get("q12_declaration_sha256") or ""),
+        "inspected_predecessors": inspected,
+        "trigger": trigger,
+    }
+
+
 def prune_candidate_if_excluded(
     conn: sqlite3.Connection,
     candidate_row: Mapping[str, Any],

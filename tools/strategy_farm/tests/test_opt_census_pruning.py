@@ -282,6 +282,31 @@ def test_claim_boundary_backstop_catches_historical_break(tmp_path: Path) -> Non
     ).fetchone()[0] == pruning.SKIPPED_VERDICT
 
 
+def test_speculative_pruning_inspection_is_read_only(tmp_path: Path) -> None:
+    conn, _ledger_path, _ledger = _fixture(tmp_path)
+    _complete_trigger(conn, tmp_path)
+    candidate = conn.execute(
+        "SELECT * FROM work_items WHERE id='arm50-2022'"
+    ).fetchone()
+    before = conn.execute(
+        "SELECT id,status,verdict,claimed_by,payload_json FROM work_items ORDER BY id"
+    ).fetchall()
+
+    result = pruning.inspect_candidate_exclusion(
+        conn,
+        candidate,
+        env=ENABLED,
+        metric_reader=_metrics(4),
+    )
+
+    after = conn.execute(
+        "SELECT id,status,verdict,claimed_by,payload_json FROM work_items ORDER BY id"
+    ).fetchall()
+    assert result["would_skip_current"] is True
+    assert result["trigger"]["work_item_id"] == "arm50-2020"
+    assert before == after
+
+
 def test_selector_resolves_skip_without_changing_selection_rules(
     tmp_path: Path,
 ) -> None:
