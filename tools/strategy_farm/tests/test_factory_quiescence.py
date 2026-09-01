@@ -167,7 +167,6 @@ def _patch_cleaner_paths(tmp_path: Path, monkeypatch) -> tuple[Path, Path]:
     monkeypatch.setattr(cleaner, "LOG_DIR", log_dir)
     monkeypatch.setattr(cleaner, "LOCK_PATH", log_dir / "cleaner.lock")
     monkeypatch.setattr(cleaner, "FACTORY_OFF_FLAG", flag)
-    monkeypatch.setattr(cleaner, "FACTORY_MUTATION_LOCK", mutation_lock)
     return flag, mutation_lock
 
 
@@ -192,19 +191,19 @@ def test_worktree_cleaner_skips_before_git_when_factory_off(
     )
 
 
-def test_worktree_cleaner_respects_busy_global_writer_lock(
+def test_worktree_cleaner_does_not_occupy_or_wait_for_global_writer_lock(
     tmp_path: Path, monkeypatch
 ) -> None:
     _flag, mutation_lock = _patch_cleaner_paths(tmp_path, monkeypatch)
     mutation_lock.parent.mkdir(parents=True)
     mutation_lock.write_text('{"pid":999,"owner":"other"}', encoding="utf-8")
-    monkeypatch.setattr(
-        cleaner,
-        "_git_status",
-        lambda: pytest.fail("git must not be touched while writer lock is busy"),
-    )
+    status_calls = []
+    monkeypatch.setattr(cleaner, "_git_status", lambda: status_calls.append(1) or [])
+    monkeypatch.setattr(cleaner, "_commit_and_push", lambda _completed: None)
+    monkeypatch.setattr(cleaner, "_cleanup_volatile", lambda: None)
 
     assert cleaner.main() == 0
+    assert len(status_calls) == 2
     assert mutation_lock.exists()
 
 

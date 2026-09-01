@@ -122,7 +122,7 @@ MT5_SATURATION_MIN_WORKERS = 7
 # failure floor, but it must not erase missing design capacity: a complete
 # enabled subset is WARN whenever fewer than all ten installed slots are usable.
 DISABLED_TERMINALS_FILE = ROOT / "state" / "disabled_terminals.txt"
-FACTORY_MUTATION_LOCK_LIVE_WARN_SECONDS = 10 * 60.0
+FACTORY_MUTATION_LOCK_LIVE_WARN_SECONDS = 120.0
 FACTORY_ON_CEREMONY_INCOMPLETE_PATH = (
     ROOT / "state" / "FACTORY_ON_CEREMONY_INCOMPLETE.json"
 )

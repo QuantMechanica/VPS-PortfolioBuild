@@ -13,6 +13,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import time
 import uuid
 
 if os.name == "nt":
@@ -27,7 +28,11 @@ DEFAULT_PATH = Path(r"D:\QM\strategy_farm\state\FACTORY_MUTATION.lock")
 DEFAULT_REAP_EVIDENCE_PATH = Path(
     r"D:\QM\reports\state\mutation_lock_reaps.jsonl"
 )
+DEFAULT_HOLD_TELEMETRY_PATH = Path(
+    r"D:\QM\reports\state\factory_mutation_lock_holds.jsonl"
+)
 DEFAULT_STALE_REAP_SECONDS = 120.0
+DEFAULT_CRITICAL_HOLD_SECONDS = 120.0
 MAX_RECORD_BYTES = 64 * 1024
 FUTURE_CLOCK_TOLERANCE_SECONDS = 5.0
 PID_START_TOLERANCE_SECONDS = 1.0
@@ -146,6 +151,30 @@ def _write_all(descriptor: int, payload: bytes) -> None:
         if written <= 0:
             raise OSError("factory mutation lock write made no progress")
         view = view[written:]
+
+
+def _append_jsonl_best_effort(path: Path, payload: dict) -> str | None:
+    """Append one bounded telemetry record without changing lock semantics."""
+
+    encoded = (
+        json.dumps(payload, sort_keys=True, separators=(",", ":")) + "\n"
+    ).encode("utf-8")
+    flags = os.O_WRONLY | os.O_CREAT | os.O_APPEND
+    flags |= getattr(os, "O_BINARY", 0) | getattr(os, "O_NOINHERIT", 0)
+    descriptor: int | None = None
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        descriptor = os.open(path, flags, 0o600)
+        _write_all(descriptor, encoded)
+        return None
+    except OSError as exc:
+        return f"{type(exc).__name__}: {exc}"
+    finally:
+        if descriptor is not None:
+            try:
+                os.close(descriptor)
+            except OSError:
+                pass
 
 
 def _mark_windows_file_for_delete(descriptor: int) -> bool:
@@ -404,6 +433,8 @@ class FactoryMutationLock:
         owner: str,
         stale_reap_seconds: float = DEFAULT_STALE_REAP_SECONDS,
         reap_evidence_path: Path = DEFAULT_REAP_EVIDENCE_PATH,
+        hold_telemetry_path: Path | None = None,
+        critical_hold_seconds: float = DEFAULT_CRITICAL_HOLD_SECONDS,
     ) -> None:
         self.path = Path(path)
         self.owner = str(owner)
@@ -413,11 +444,24 @@ class FactoryMutationLock:
         if self.stale_reap_seconds < 0:
             raise ValueError("stale_reap_seconds must be non-negative")
         self.reap_evidence_path = Path(reap_evidence_path)
+        self.hold_telemetry_path = Path(
+            hold_telemetry_path
+            if hold_telemetry_path is not None
+            else DEFAULT_HOLD_TELEMETRY_PATH
+            if self.path.parent == DEFAULT_PATH.parent
+            else self.path.with_name(f"{self.path.name}.holds.jsonl")
+        )
+        self.critical_hold_seconds = float(critical_hold_seconds)
+        if self.critical_hold_seconds < 0:
+            raise ValueError("critical_hold_seconds must be non-negative")
         self.nonce = uuid.uuid4().hex
         self._fd: int | None = None
         self._record_bytes: bytes | None = None
+        self._acquired_at: dt.datetime | None = None
+        self._acquired_monotonic: float | None = None
         self.release_status: str | None = None
         self.reap_status: str | None = None
+        self.telemetry_error: str | None = None
 
     @property
     def release_succeeded(self) -> bool:
@@ -459,7 +503,36 @@ class FactoryMutationLock:
             if self.release_status == "delete_pending":
                 self.release_status = "released"
             raise
+        self._acquired_at = _utc_now()
+        self._acquired_monotonic = time.monotonic()
+        self._emit_hold_telemetry("ACQUIRED", hold_seconds=0.0)
         return self
+
+    def _emit_hold_telemetry(self, event: str, *, hold_seconds: float) -> None:
+        severity = (
+            "CRITICAL"
+            if hold_seconds >= self.critical_hold_seconds and event != "ACQUIRED"
+            else "INFO"
+        )
+        payload = {
+            "schema": "qm.factory-mutation-lock-hold/v1",
+            "timestamp_utc": _utc_now().isoformat(),
+            "event": event,
+            "severity": severity,
+            "owner": self.owner,
+            "pid": os.getpid(),
+            "nonce": self.nonce,
+            "lock_path": str(self.path),
+            "hold_seconds": round(max(0.0, hold_seconds), 3),
+            "critical_hold_seconds": self.critical_hold_seconds,
+        }
+        if self._acquired_at is not None:
+            payload["acquired_at_utc"] = self._acquired_at.isoformat()
+        if self.release_status is not None:
+            payload["release_status"] = self.release_status
+        error = _append_jsonl_best_effort(self.hold_telemetry_path, payload)
+        if error is not None:
+            self.telemetry_error = error
 
     def _try_reap_stale_lock(self) -> str:
         """Reap one old, readable, provably orphaned record and audit it."""
@@ -543,6 +616,11 @@ class FactoryMutationLock:
                     )
 
     def __exit__(self, exc_type, exc, traceback) -> None:
+        hold_seconds = (
+            time.monotonic() - self._acquired_monotonic
+            if self._acquired_monotonic is not None
+            else 0.0
+        )
         if self._fd is not None:
             self.release_status = self._release_owned_open_file()
             try:
@@ -554,6 +632,8 @@ class FactoryMutationLock:
                 self.release_status = "released"
         else:
             self.release_status = self._unlink_if_owned()
+
+        self._emit_hold_telemetry("RELEASED", hold_seconds=hold_seconds)
 
         # Never raise a new error after a guarded database transaction may have
         # committed: callers could misread that as a retryable mutation failure

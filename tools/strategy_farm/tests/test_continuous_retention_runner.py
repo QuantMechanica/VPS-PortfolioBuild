@@ -3,9 +3,12 @@ import datetime as dt
 import json
 import os
 import sqlite3
+import threading
 from pathlib import Path
+from types import SimpleNamespace
 
 from tools.strategy_farm import continuous_retention_runner as runner
+from tools.strategy_farm.factory_mutation_lock import FactoryMutationLock
 
 
 def make_db(path: Path) -> None:
@@ -121,3 +124,68 @@ def test_telemetry_keeps_bounded_action_and_byte_counts() -> None:
     assert record["evidence_compression"]["status_counts"] == {"COMPRESSED": 1}
     assert record["log_rotation"]["logical_bytes"] == 40
     assert record["purge_log_pattern"]["retention"] == "current_plus_48h"
+
+
+def test_retention_compression_does_not_block_factory_claim_lock(
+    tmp_path: Path, monkeypatch
+) -> None:
+    candidate = tmp_path / "closed.json"
+    candidate.write_text("{}", encoding="utf-8")
+    compression_started = threading.Event()
+    allow_compression = threading.Event()
+
+    monkeypatch.setattr(
+        runner.shutil,
+        "disk_usage",
+        lambda _path: SimpleNamespace(total=0, used=0, free=0),
+    )
+    monkeypatch.setattr(runner, "quick_check", lambda _path: "ok")
+    monkeypatch.setattr(runner, "open_bindings", lambda _path: (set(), set()))
+    monkeypatch.setattr(runner, "backup_plan", lambda _root, _now: ([], []))
+    monkeypatch.setattr(
+        runner,
+        "iter_evidence_candidates",
+        lambda *_args: iter((candidate,)),
+    )
+    monkeypatch.setattr(runner, "rotate_large_logs", lambda *_args: [])
+    monkeypatch.setattr(runner, "iter_old_files", lambda *_args: [])
+
+    def compress(_path: Path) -> tuple[str, int, int]:
+        compression_started.set()
+        assert allow_compression.wait(timeout=5)
+        return "COMPRESSED", 2, 2
+
+    monkeypatch.setattr(runner, "set_ntfs_compression", compress)
+    args = argparse.Namespace(
+        apply=True,
+        db=tmp_path / "farm.sqlite",
+        backups_root=tmp_path / "backups",
+        work_items_root=tmp_path / "work_items",
+        logs_root=tmp_path / "logs",
+        receipt_root=tmp_path / "receipts",
+        telemetry=tmp_path / "telemetry.jsonl",
+        lock=tmp_path / "retention.lock",
+        drive_root=tmp_path,
+        noop_free_bytes=1,
+        evidence_age_hours=2.0,
+        log_keep_hours=48.0,
+        rotate_bytes=64,
+        max_evidence_files=10,
+    )
+    result: list[dict] = []
+    thread = threading.Thread(target=lambda: result.append(runner.run(args)))
+    thread.start()
+    assert compression_started.wait(timeout=5)
+
+    factory_lock = tmp_path / "FACTORY_MUTATION.lock"
+    with FactoryMutationLock(
+        factory_lock,
+        owner="terminal_worker.claim_atomic:T-test",
+        hold_telemetry_path=tmp_path / "holds.jsonl",
+    ):
+        assert factory_lock.exists()
+
+    allow_compression.set()
+    thread.join(timeout=5)
+    assert not thread.is_alive()
+    assert result[0]["status"] == "PASS"

@@ -34,8 +34,13 @@ def _write_old_lock(path: Path, *, pid: int = 999_999) -> bytes:
 
 def test_python_lock_record_has_nonce_bound_identity(tmp_path: Path) -> None:
     path = tmp_path / "FACTORY_MUTATION.lock"
+    telemetry = tmp_path / "holds.jsonl"
 
-    with FactoryMutationLock(path, owner="pytest-owner") as lock:
+    with FactoryMutationLock(
+        path,
+        owner="pytest-owner",
+        hold_telemetry_path=telemetry,
+    ) as lock:
         # The Windows lock handle deliberately denies all sharing while held;
         # inspect the exact bytes the instance durably wrote.
         assert lock._record_bytes is not None
@@ -52,6 +57,30 @@ def test_python_lock_record_has_nonce_bound_identity(tmp_path: Path) -> None:
     assert not path.exists()
     assert lock.release_succeeded is True
     assert lock.release_status == "released"
+    events = [json.loads(line) for line in telemetry.read_text().splitlines()]
+    assert [row["event"] for row in events] == ["ACQUIRED", "RELEASED"]
+    assert all(row["owner"] == "pytest-owner" for row in events)
+    assert events[1]["hold_seconds"] >= 0
+
+
+def test_long_hold_is_logged_critical(tmp_path: Path, monkeypatch) -> None:
+    path = tmp_path / "FACTORY_MUTATION.lock"
+    telemetry = tmp_path / "holds.jsonl"
+    ticks = iter((10.0, 131.0))
+    monkeypatch.setattr(mutation_lock.time, "monotonic", lambda: next(ticks))
+
+    with FactoryMutationLock(
+        path,
+        owner="pytest-long-holder",
+        hold_telemetry_path=telemetry,
+        critical_hold_seconds=120,
+    ):
+        pass
+
+    released = json.loads(telemetry.read_text().splitlines()[-1])
+    assert released["event"] == "RELEASED"
+    assert released["severity"] == "CRITICAL"
+    assert released["hold_seconds"] == 121.0
 
 
 def test_python_lock_old_owner_cannot_release_replacement(tmp_path: Path) -> None:
@@ -221,13 +250,18 @@ def test_powershell_stale_owner_and_content_identity_contract() -> None:
 def test_all_autonomous_global_lock_writers_use_nonce_bound_protocol() -> None:
     for name in (
         "codex_fleet_pacer.py",
-        "run_worktree_clean_task.py",
         "sweep_enqueue_built_eas.py",
     ):
         source = (STRATEGY_FARM / name).read_text(encoding="utf-8")
         assert "FactoryMutationLock(" in source, name
         assert "FACTORY_MUTATION_LOCK.unlink" not in source, name
         assert "_FACTORY_MUTATION_LOCK.unlink" not in source, name
+
+    cleaner = (STRATEGY_FARM / "run_worktree_clean_task.py").read_text(
+        encoding="utf-8"
+    )
+    assert "FactoryMutationLock" not in cleaner
+    assert "FACTORY_MUTATION.lock" not in cleaner
 
     snapshot = (REPO / "scripts" / "run_public_snapshot_task.ps1").read_text(
         encoding="utf-8-sig"
