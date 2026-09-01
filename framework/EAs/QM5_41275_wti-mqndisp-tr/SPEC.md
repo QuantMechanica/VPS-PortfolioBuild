@@ -54,7 +54,7 @@ There is one Q02 baseline and no optimization surface.
   deals, and terminal-persistent attempt state.
 - There is no companion, hedge, conversion, or external runtime feed.
 
-## 4. Formula
+## 4. Timeframe
 
 ```text
 C = final 17 chronological closes of immediately completed month
@@ -79,7 +79,7 @@ classifier, not a significance test or volatility forecast.
 Wrong history, month membership, chronology, session count, close, return,
 endpoint, distance count, sort, index, core, or side consumes the month flat.
 
-## 5. Lifecycle And Risk
+## 5. Expected Behaviour
 
 The strategy persists the month attempt before history, arithmetic, news,
 spread, quote, ATR, sizing, margin, or order gates. It opens at most one
@@ -95,7 +95,7 @@ pyramid, scale-in, or opposite-signal exit.
 
 Both news axes, legacy news, and Friday close are disabled.
 
-## 6. Source And Non-Duplicate Boundary
+## 6. Source Citation
 
 The governed packet is
 `strategy-seeds/sources/AI-CODEX-WTI-MQNDISP-TREND-20260901/source.md`.
@@ -117,7 +117,7 @@ Direct WTI introduces a physical crude-oil carrier absent from the stated
 certified XAU/SP500/NDX/XNG book. This is not a decorrelation result; Q09
 alone owns realized overlap.
 
-## 7. Kill Criteria
+## 7. Risk Model
 
 Retire on zero positions, fewer than five completed positions in any full
 post-warm-up year, failed deterministic fixtures, nonpositive governed
@@ -142,4 +142,3 @@ correlation waiver.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v0 | 2026-09-01 | approved source build | G0-approved card; governed magic `412750000` |
-
