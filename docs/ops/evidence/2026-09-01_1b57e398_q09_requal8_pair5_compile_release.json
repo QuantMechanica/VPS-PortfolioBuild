@@ -1,0 +1,28 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "ed5f9b8f-8804-4678-8908-621aa97aa985"
+  ],
+  "backup": {
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260901T015855Z_57640266.sqlite",
+    "sha256": "0a0e649d1e827a90b02153b498fa4fb1eec3ab8fd06e5c2d2c009d85270cb499"
+  },
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "cd2a0ac6e3f4a677cbb30197e23eaeb8338f06f69d66341eeedfc45cb68746b3",
+      "ea_id": "QM5_41219",
+      "ea_label": "QM5_41219_cum-rsi2-commodity-requal8",
+      "expected_mq5_sha256": "cd2a0ac6e3f4a677cbb30197e23eaeb8338f06f69d66341eeedfc45cb68746b3",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41219_cum-rsi2-commodity-requal8\\QM5_41219_cum-rsi2-commodity-requal8.mq5",
+      "work_item_id": "ed5f9b8f-8804-4678-8908-621aa97aa985"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-09-01T01:59:03+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "ed5f9b8f-8804-4678-8908-621aa97aa985"
+}
