@@ -14,7 +14,8 @@ method_records:
   - NIST-DATAPLOT-SIEGEL-TUKEY-2023
 created: 2026-09-01
 created_by: Research+Development
-cards_extracted: []
+cards_extracted:
+  - QM5_41271_wti-msiegel-tukey-scale-tr
 ---
 
 # WTI Monthly Siegel-Tukey Alternating-Extremes Scale Continuation
