@@ -1,0 +1,79 @@
+{
+  "task_id": "a684f42c-a0c3-4c8b-9f58-4e635a23a71c",
+  "build_generation": 0,
+  "ea_id": "QM5_41263",
+  "ea_label": "QM5_41263_xauxag-mkuiper-rv",
+  "slug": "xauxag-mkuiper-rv",
+  "strategy_id": "AI-CODEX-XAUXAG-MKUIPER-RV-20260901_S01",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41263_xauxag-mkuiper-rv",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41263_xauxag-mkuiper-rv\\QM5_41263_xauxag-mkuiper-rv.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41263_xauxag-mkuiper-rv\\QM5_41263_xauxag-mkuiper-rv.ex5",
+  "magic_base": 412630000,
+  "symbols_registered": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "logical_symbol": "QM5_41263_XAU_XAG_MKUIPER_RV_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "timeframe": "D1",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41263_xauxag-mkuiper-rv\\sets\\QM5_41263_xauxag-mkuiper-rv_QM5_41263_XAU_XAG_MKUIPER_RV_D1_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41263_xauxag-mkuiper-rv\\sets\\QM5_41263_xauxag-mkuiper-rv_XAUUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41263_xauxag-mkuiper-rv\\sets\\QM5_41263_xauxag-mkuiper-rv_XAGUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_sha256": {
+    "QM5_41263_xauxag-mkuiper-rv_QM5_41263_XAU_XAG_MKUIPER_RV_D1_D1_backtest.set": "E8EF0465A890D430A3EB9E551B5098830D18BFF4D752033C0143679BD13E8EBA",
+    "QM5_41263_xauxag-mkuiper-rv_XAUUSD.DWX_D1_backtest.set": "F28175A74B0B510199AB2A365590426876A1D7D72FC1D0289E6A8F1D0D6DEF22",
+    "QM5_41263_xauxag-mkuiper-rv_XAGUSD.DWX_D1_backtest.set": "A3718631A9AA827DCA261C598BCBECDC6F9CC9FFA4A43D06BC10D522C8368601"
+  },
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41263_xauxag-mkuiper-rv\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "The qm-build-ea-from-card skill is build-only and forbids manual backtests; the OWNER mission authorizes one governed logical-basket Q02 enqueue instead.",
+  "blocked_reason": "",
+  "open_questions": [
+    "Q02 must establish package-level activity, fills, paired cost drag, and baseline economics, including at least five completed packages in every full post-warm-up year.",
+    "Only unchanged Q09 may determine realized portfolio correlation or diversification value."
+  ],
+  "compile": {
+    "status": "COMPILE_OK",
+    "work_item_id": "e4f3047d-de65-48be-b2ba-35097e3df32c",
+    "terminal": "T9",
+    "evidence_path": "D:\\QM\\reports\\work_items\\e4f3047d-de65-48be-b2ba-35097e3df32c\\QM5_41263\\COMPILE_EA\\compile_evidence.json",
+    "evidence_sha256": "06096C7748B7306BCBE50E4DDD40F5C12F98BC924E19615B73528418E7BC6855",
+    "build_check_result": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "failure_classes": [],
+    "mq5_sha256": "565864D8AF938D5B8C6A2CA35E60B1C12AFBEB7B87EC9C9F67C9092505259E1E",
+    "ex5_sha256": "1DF874B5E959410EB36398BFA46D880D667D71122D6CB5D9E8B30BDC12CD1BB6",
+    "logical_setfile_build_hash": "72A8EF79A58032EBCBB5847DA527FB947FB36482086116D516D35ECB604D5D3B",
+    "logical_setfile_sha256": "E8EF0465A890D430A3EB9E551B5098830D18BFF4D752033C0143679BD13E8EBA"
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "validations": {
+    "approved_card_sha256": "24E47468A8645CB8B3A36FB24E4965D9E5A9CB641821BE27EA0BB2A933F35793",
+    "approved_local_card_byte_identical": true,
+    "basket_manifest_sha256": "047E931C49224C1B65148B2F8B81E54B4B4D1A104BD9C26BF48B0A55263A3A01",
+    "build_skill_guard": "PASS",
+    "card_schema_lint": "PASS",
+    "reference_test_sha256": "B9D81883A92FBF4A6DEE1767B702BAACB24EFDF405D0824EC88E978158521CD3",
+    "reference_tests": "PASS_7",
+    "spec_sha256": "EF8C8FDA15CD5849768541ED04029CEB46DDE5EB4EB6F746FFA36120E23EC243",
+    "spec_validation": "PASS",
+    "static_guardrails": "PASS"
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "deploy_manifest_touched": false,
+    "manual_backtest_launched": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false
+  }
+}
