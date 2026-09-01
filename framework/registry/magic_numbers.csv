@@ -18170,3 +18170,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41262,wti-mdaily-meanloc-tr,0,XTIUSD.DWX,412620000,2026-09-01,Codex governed allocator,active
 41263,xauxag-mkuiper-rv,0,XAUUSD.DWX,412630000,2026-09-01,Codex governed allocator,active
 41263,xauxag-mkuiper-rv,1,XAGUSD.DWX,412630001,2026-09-01,Codex governed allocator,active
+41264,wti-myuen20-shift-tr,0,XTIUSD.DWX,412640000,2026-09-01,Codex governed allocator,active
