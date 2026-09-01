@@ -1,0 +1,202 @@
+{
+  "schema_version": "qm.fx-existing-basket-priority-receipt/v1",
+  "generated_at_utc": "2026-09-01T03:21:28Z",
+  "mission": "grow_certified_v5_portfolio_new_forex_sleeves",
+  "branch": "agents/board-advisor",
+  "git_head_before": "06a6baf329c2f4301272ef104d66709e5f0b7972",
+  "selection": {
+    "mode": "existing_forex_card_fallback_no_unbuilt_66_pair_candidate",
+    "new_strategy_card_created": false,
+    "new_ea_created": false,
+    "duplicate_work_item_created": false,
+    "frontier_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "frontier_source_sha256": "e513cc785df2dfc7c74f2d89a03c47a9a90e00dcc9e14902839ee80946c13df7",
+    "latest_frontier_census": "docs/research/FX_COINTEGRATION_QM5_20240_Q04_RETIREMENT_20260831T233713Z.md",
+    "latest_frontier_census_sha256": "ba9853c4b3a9c32afa19f5383dc80f17e6463b656625921f3f9c3bec6c3f0861",
+    "frontier_relationships": 66,
+    "approved_cointegration_identities": 123,
+    "matching_ea_directories": 123,
+    "unbuilt_identities": 0,
+    "anchor_state": [
+      {
+        "ea_id": "QM5_12532",
+        "pair": "AUDUSD.DWX/NZDUSD.DWX",
+        "q02": "PASS",
+        "later_state": "Q04 PASS; Q05 FAIL",
+        "q02_oninit_or_no_history_blocker": false
+      },
+      {
+        "ea_id": "QM5_12533",
+        "pair": "EURJPY.DWX/GBPJPY.DWX",
+        "q02": "PASS",
+        "later_state": "Q04 FAIL",
+        "q02_oninit_or_no_history_blocker": false
+      }
+    ],
+    "selected_existing_ea": "QM5_10025_rw-fx-broad-pairs",
+    "selected_host": "USDJPY.DWX",
+    "selection_reason": "The approved seven-host H4 package is a structural, low-frequency, two-leg FX spread sleeve. Its exact USDJPY Q02 canary already existed but lacked mission priority."
+  },
+  "strategy_contract": {
+    "ea_id": "QM5_10025",
+    "approved_card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_10025_rw-fx-broad-pairs.md",
+    "approved_card_sha256": "abaeeb920387d261d371182a535f6f3be434bf55f6d1fd94e2c3dffb9b34e111",
+    "source": "Robot Wealth, Index of Strategies, FX Broad Pairs Trading",
+    "source_url": "https://robotwealth.com/index-of-strategies/",
+    "g0_status": "APPROVED",
+    "r1_r4": "PASS",
+    "timeframe": "H4",
+    "expected_round_trips_per_host_year": 6,
+    "mechanics": [
+      "monthly pair selection",
+      "252-bar correlation and ADF gates",
+      "monthly-frozen OLS hedge ratio",
+      "120-bar residual z-score entry and exit",
+      "beta-weighted two-leg package risk"
+    ],
+    "structural_only": true,
+    "machine_learning": false,
+    "market_neutral_two_leg_execution": true,
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "portfolio_weight": 1.0,
+    "magic_slot": 6,
+    "magic_base": 100250006,
+    "configured_universe": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX",
+      "AUDUSD.DWX",
+      "NZDUSD.DWX",
+      "USDCHF.DWX",
+      "USDCAD.DWX",
+      "USDJPY.DWX"
+    ]
+  },
+  "artifact_bindings": {
+    "mq5": {
+      "path": "framework/EAs/QM5_10025_rw-fx-broad-pairs/QM5_10025_rw-fx-broad-pairs.mq5",
+      "sha256": "fd0a18d8710dc8bd0d089ab34b9c881de65e971f0916ba540b34c53b2aa120ff"
+    },
+    "ex5": {
+      "path": "framework/EAs/QM5_10025_rw-fx-broad-pairs/QM5_10025_rw-fx-broad-pairs.ex5",
+      "sha256": "9bf2691d4af0a57d553711c37ffceadb513b303e710a25f455c8f2e211eecfcc"
+    },
+    "basket_manifest": {
+      "path": "framework/EAs/QM5_10025_rw-fx-broad-pairs/basket_manifest.json",
+      "sha256": "98237a88f0634810f187a63c6d4585950aac4d5b8f21c157d23f88533691daa0",
+      "shape": "physical-host multi-symbol dependency manifest"
+    },
+    "setfile": {
+      "path": "framework/EAs/QM5_10025_rw-fx-broad-pairs/sets/QM5_10025_rw-fx-broad-pairs_USDJPY.DWX_H4_backtest.set",
+      "sha256": "2d8a1ba1871c229d00b49458dcbd6dbd152d24c170d76404bace39cdea3be53c"
+    }
+  },
+  "zero_trade_recovery": {
+    "workflow": "qm-zero-trades-recovery",
+    "affected_symbol": "USDCHF.DWX",
+    "affected_bound_run": "D:/QM/reports/work_items/1a8e8377-a2f3-4533-9ae2-c4bcfc84aff0/QM5_10025/20260808_123023/summary.json",
+    "actual_window": "2018.07.02/2022.12.31",
+    "period": "H4",
+    "model": 4,
+    "report_status": "OK",
+    "oninit_failure": false,
+    "trades": 0,
+    "classification": "symbol-specific valid zero-trade outcome; no shared setup or implementation defect established",
+    "retained_logger_event_count": 8,
+    "entry_event_count": null,
+    "entry_event_count_note": "The summary records eight logger events, but the referenced logger sample has since been pruned, so entry-only events cannot be reconstructed.",
+    "same_build_trade_capability_run": "D:/QM/reports/work_items/8582efac-cbaf-4336-98af-950e6dd606a0/QM5_10025/20260808_143714/summary.json",
+    "same_build_trade_capability_symbol": "NZDUSD.DWX",
+    "same_build_trade_count": 6,
+    "repair": "none",
+    "strategy_mechanics_changed": false,
+    "status_term": "trade-capable, not Q02 PASS"
+  },
+  "queue_transition": {
+    "database": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "work_item_id": "050dd2ea-e9d0-475f-b5ad-40c2206867ff",
+    "phase": "Q02",
+    "symbol": "USDJPY.DWX",
+    "status_before": "pending",
+    "status_after": "pending",
+    "attempt_count_before": 0,
+    "attempt_count_after": 0,
+    "claimed_by_before": null,
+    "claimed_by_after": null,
+    "priority_track_before": null,
+    "priority_track_after": true,
+    "priority_reason": "board_advisor_fx_existing_market_neutral_q02_after_exhausted_66_pair_frontier",
+    "canonical_rank_before": 8282,
+    "canonical_rank_after": 1423,
+    "payload_sha256_before": "781c19248a1eeeaaa82fe3c9e82849cc564d42bd756a83fd75aeb912b1e8d7bc",
+    "payload_sha256_after": "bca99985bb4989d96c0537c81640333870793f2958843797d5357fb6c319a2f8",
+    "audit_event_id": 381272,
+    "audit_event": "priority_track_set",
+    "updated_at_preserved": "2026-08-05T06:52:58+00:00",
+    "open_exact_rows_before": 1,
+    "open_exact_rows_after": 1,
+    "duplicate_rows_created": 0,
+    "factory_mutation_lock_wait_seconds": 0.016,
+    "factory_mutation_lock_release_status": "released",
+    "backup_path": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_10025_usdjpy_priority_20260901T031756Z.sqlite",
+    "backup_sha256": "fe791d06d4a0c1523039199b090de60fefc7c83853390858b8fc11b5feab7b1f",
+    "journal_path": "D:/QM/reports/state/qm5_10025_usdjpy_q02_priority_20260901T031756Z.journal.json",
+    "journal_sha256": "ef384b8c35f6d3ab3dc443306d216696724387c41e9d0607f79c0c158df008c1"
+  },
+  "capacity": {
+    "slot_sampled_at_utc": "2026-09-01T03:11:32Z",
+    "paced_launch_max": 1,
+    "running_factory_terminals": [
+      "T1",
+      "T4",
+      "T6",
+      "T7",
+      "T8"
+    ],
+    "running_factory_terminal_count": 5,
+    "serialized_multisymbol_lane": {
+      "terminal": "T8",
+      "work_item_id": "f9ccf272-d66e-4a68-b332-76133baab427",
+      "ea_id": "QM5_20233",
+      "phase": "Q03"
+    },
+    "cpu_sampled_at_utc": "2026-09-01T03:11:54.494686+00:00",
+    "cpu_samples_percent": [
+      91.9,
+      92.6,
+      89.4,
+      89.3,
+      82.1
+    ],
+    "cpu_average_percent": 89.06,
+    "cpu_maximum_percent": 92.6,
+    "cpu_hard_ceiling_percent": 97.0,
+    "cpu_hard_ceiling_hit": false,
+    "manual_tester_launch": false
+  },
+  "validation": {
+    "build_preflight": "PASS",
+    "build_guardrails": "PASS (8 files, 0 findings)",
+    "symbol_scope": "BASKET_OK (0 violations)",
+    "spec_validator": "PASS",
+    "basket_manifest_and_work_item_tests": "65 passed",
+    "priority_scheduler_tests": "5 passed, 1 failed",
+    "priority_scheduler_failure": "test_age_credit_eventually_outranks_fresh_priority_q02: current canonical query ranks the fresh priority row ahead of the aged FIFO row",
+    "priority_scheduler_failure_scope": "pre-existing fleet-wide scheduling behavior; not changed in this unit",
+    "legacy_card_schema_lint": "non-gating legacy-format advisory: missing modern Hypothesis/Rules/Risk section names; no ML hits",
+    "strict_compile": "PASS from unchanged 2026-08-07 build binding (0 errors, 0 warnings)"
+  },
+  "safety": {
+    "alpha_change": false,
+    "pipeline_verdict_changed": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_terminal_controlled": false,
+    "autotrading_toggled": false,
+    "live_setfile_touched": false,
+    "manual_mt5_dispatch_started": false
+  }
+}
