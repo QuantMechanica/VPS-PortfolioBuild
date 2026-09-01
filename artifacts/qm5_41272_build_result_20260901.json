@@ -1,10 +1,9 @@
 {
-  "blocked_reason": "OWNER-bound compile-only recovery: independent build review is required before the first Q02 seed",
   "build_check_passed": true,
   "compile_evidence_path": "D:\\QM\\reports\\work_items\\85c6de75-0080-45dc-b128-6e6a3910f047\\QM5_41272\\COMPILE_EA\\compile_evidence.json",
   "compile_evidence_sha256": "3210bc7225d8e1b1087418d3d7573014685e1b11fcf3de25f5d75052db6263e9",
   "compile_succeeded": true,
-  "ea_dir": "framework/EAs/QM5_41272_turn-of-month-index-long-restart-r1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41272_turn-of-month-index-long-restart-r1",
   "ea_id": "QM5_41272",
   "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41272_turn-of-month-index-long-restart-r1\\QM5_41272_turn-of-month-index-long-restart-r1.ex5",
   "ex5_sha256": "2845820d099232713c053266e0b6204ef904e872f5cd6fad2efbcc6441ef4fe9",
@@ -21,9 +20,9 @@
   "smoke_report_path": null,
   "smoke_result": "deferred_p2_smoke",
   "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41272_turn-of-month-index-long-restart-r1\\SPEC.md",
-  "spec_md_sha256": "e9a7aff22e202301e283c49a77aa061e702a2662de6fae906e9050c397819038",
+  "spec_md_sha256": "46a338092b4d6a0a457feb66b95435cd2c26976998d0b8925c9838e04a6eae65",
   "symbols_registered": [
     "NDX.DWX"
   ],
-  "task_id": "28ba8397-3400-4f5b-a545-0d5ba7278200"
+  "task_id": "214e1966-5711-481f-9450-cbe636f7e157"
 }
