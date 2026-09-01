@@ -1,0 +1,33 @@
+{
+  "schema": "qm.public-method-retrieval.v1",
+  "retrieved_at_utc": "2026-09-01T00:04:00Z",
+  "route": "official_documentation_and_pinned_public_source",
+  "project": "scipy/scipy",
+  "release": "v1.13.1",
+  "release_ref": "refs/tags/v1.13.1",
+  "annotated_tag_sha": "34a5ce2e0e51fc2005d3c2720bcd8296cd33af94",
+  "commit_sha": "44e4ebaac992fde33f04638b99629d23973cb9b2",
+  "commit_date_utc": "2024-05-22T17:51:53Z",
+  "documentation_url": "https://docs.scipy.org/doc/scipy-1.13.1/reference/generated/scipy.stats.anderson_ksamp.html",
+  "documentation_http_status": 200,
+  "documentation_size_bytes": 34835,
+  "documentation_sha256": "7B7B2A9CA39C464B809E1C37696CDC2A81BD09BD490DA4F2442EF5C52ADA5A06",
+  "source_raw_url": "https://raw.githubusercontent.com/scipy/scipy/v1.13.1/scipy/stats/_morestats.py",
+  "source_path": "scipy/stats/_morestats.py",
+  "source_blob_sha": "8da9345041842106da5f05164155f65c3142e9b9",
+  "source_size_bytes": 186567,
+  "source_sha256": "470227C31AC4B97EEAE06391CB254DE805675CF54B09AA0EDADF91652DDD2BF9",
+  "http_status": 200,
+  "bounded_read": {
+    "continuous_right_statistic_helper_lines": "2370-2408",
+    "public_function_lines": "2412-2555",
+    "verified_claims": [
+      "anderson_ksamp is a nonparametric k-sample distribution-comparison method",
+      "the no-tie continuous formula uses pooled ranks and the Scholz-Stephens right-side empirical-distribution statistic",
+      "the implementation accumulates weighted squared count discrepancies over every pooled-rank boundary",
+      "the public function supports a greater-tail permutation evaluation",
+      "small-sample permutation evaluation is preferable to relying on capped asymptotic interpolation"
+    ]
+  },
+  "policy": "Public official project documentation and pinned source only; no SciPy binary or runtime dependency enters the EA."
+}

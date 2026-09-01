@@ -1,0 +1,43 @@
+{
+  "schema": "qm.public-paper-retrieval.v1",
+  "retrieved_at_utc": "2026-09-01T00:03:59Z",
+  "route": "author_hosted_complete_journal_article",
+  "title": "K-Sample Anderson-Darling Tests",
+  "authors": [
+    "F. W. Scholz",
+    "M. A. Stephens"
+  ],
+  "journal": "Journal of the American Statistical Association",
+  "volume_issue_pages": "82(399), 918-924",
+  "doi": "10.1080/01621459.1987.10478517",
+  "landing_url": "https://www.tandfonline.com/doi/abs/10.1080/01621459.1987.10478517",
+  "pdf_url": "https://faculty.washington.edu/fscholz/Papers/ADk.pdf",
+  "pdf_http_status": 200,
+  "pdf_content_type": "application/pdf",
+  "pdf_size_bytes": 272653,
+  "pdf_sha256": "0373144A2EE2718035B49BFBEA5A3B886AC75DC7BD34B18528517E83E0598A1E",
+  "pdf_last_modified": "Sun, 07 Apr 2024 04:11:26 GMT",
+  "bounded_read": {
+    "complete_article_pages_read": [918, 919, 920, 921, 922, 923, 924],
+    "sections": [
+      "1 Introduction and Summary",
+      "2 The k-Sample Anderson-Darling Test: Continuous Populations",
+      "3 The Finite Sample Distribution Under H0",
+      "4 Asymptotic Distribution Under H0 and Critical Points",
+      "5 Discrete Parent Population",
+      "6 Monte Carlo Simulation",
+      "7 An Example",
+      "8 Combining Independent Anderson-Darling Tests",
+      "Appendix: Asymptotic Derivations",
+      "References"
+    ],
+    "verified_claims": [
+      "the continuous k-sample statistic is a rank statistic built from a pooled empirical-distribution path",
+      "the computational formula weights squared sample-versus-pooled count differences by j times N-minus-j and therefore emphasizes pooled tails",
+      "the finite continuous null distribution can in principle be obtained by traversing all rank permutations",
+      "permutation match-or-exceed frequency is a supported way to evaluate the observed statistic",
+      "the method is nonparametric and compares sample distributions without specifying their common distribution"
+    ]
+  },
+  "claim_boundary": "The paper supplies the continuous no-tie statistic, tail weighting, and rank-permutation rationale only. It does not test gold, silver, monthly ratio changes, the locked half-tail activity boundary, contrarian trading, CFDs, or any performance result."
+}
