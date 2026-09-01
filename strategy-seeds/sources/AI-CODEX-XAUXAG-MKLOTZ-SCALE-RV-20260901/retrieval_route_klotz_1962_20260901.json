@@ -1,0 +1,32 @@
+{
+  "schema": "qm.source-retrieval-route/v1",
+  "retrieved_at_utc": "2026-09-01T13:28:19Z",
+  "document": "Jerome Klotz (1962), Nonparametric Tests for Scale, The Annals of Mathematical Statistics 33(2), 498-512",
+  "doi": "10.1214/aoms/1177704576",
+  "metadata_route": {
+    "url": "https://api.crossref.org/works/10.1214/aoms/1177704576",
+    "http_status": 200,
+    "utf8_response_sha256": "E93D937B9DC4738BCFF0BB147CC4C94AE586413807048A38631D1F46C9C5C6EE",
+    "observed_fields": {
+      "author": "Jerome Klotz",
+      "title": "Nonparametric Tests for Scale",
+      "container_title": "The Annals of Mathematical Statistics",
+      "publisher": "Institute of Mathematical Statistics",
+      "volume": "33",
+      "issue": "2",
+      "pages": "498-512",
+      "published": "1962-06"
+    },
+    "read_scope": "Complete bounded Crossref JSON response and all deposited bibliographic fields."
+  },
+  "publisher_body_route": {
+    "url": "https://projecteuclid.org/euclid.aoms/1177704576",
+    "http_status": 200,
+    "content_type": "text/html",
+    "response_length": 1166,
+    "utf8_response_sha256": "B1CA7904F0CB6EC44D5BB57E822454AB7A16944FC6836EFF78A8358FE6D7BAF0",
+    "body_class": "INCAPSULA_BLOCK_PAGE",
+    "read_scope": "Complete returned body; it was an access-control block page, not the article.",
+    "claim_boundary": "No full-paper read or unobserved paper-body formula, theorem, result, table, or conclusion is claimed."
+  }
+}

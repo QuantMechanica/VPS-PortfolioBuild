@@ -1,0 +1,54 @@
+{
+  "schema": "qm.source-retrieval-route/v1",
+  "retrieved_at_utc": "2026-09-01T13:27:58Z",
+  "publisher": "NIST/SEMATECH Dataplot",
+  "documents": [
+    {
+      "title": "KLOTZ SCORE",
+      "url": "https://www.itl.nist.gov/div898/software/dataplot/refman2/auxillar/klotzsco.htm",
+      "http_status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "response_length": 12107,
+      "last_modified": "Wed, 29 Jul 2026 19:23:28 GMT",
+      "utf8_response_sha256": "25DBCDAEAB0166CBD429D5CBCAC5CACAFA61F3D489AB59B40794D62A2E64E9A5",
+      "read_scope": "Complete page: purpose, Phi^-1(rank/(n+1)) squared score definition, tie convention, example program, references, and notes."
+    },
+    {
+      "title": "KLOTZ TEST",
+      "url": "https://www.itl.nist.gov/div898/software/dataplot/refman1/auxillar/klotz.htm",
+      "http_status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "response_length": 17986,
+      "last_modified": "Mon, 10 Aug 2026 19:21:25 GMT",
+      "utf8_response_sha256": "5F92C85DC57549AFB02BC77A936EDCB8267F4F256C46D45A19E21A24E677F8E4",
+      "read_scope": "Complete page: within-sample mean centering, pooled squared-normal scores, numerator, denominator, approximate critical-value warning, syntax, example, references, and notes."
+    }
+  ],
+  "frozen_n12_scores": {
+    "formula": "score(rank)=Phi^-1(rank/13)^2",
+    "evaluation": "mpmath 1.3.0, 80 decimal digits; frozen to nearest binary64 literals and mirrored explicitly",
+    "rank_1_to_12": [
+      2.0336952456315065,
+      1.0405555206952889,
+      0.54216113018145117,
+      0.25240799405049096,
+      0.086072547360949524,
+      0.0093235661866525334,
+      0.0093235661866525334,
+      0.086072547360949524,
+      0.25240799405049096,
+      0.54216113018145117,
+      1.0405555206952889,
+      2.0336952456315065
+    ],
+    "sum": 7.928432008212679,
+    "equal_block_expected_sum": 3.9642160041063397,
+    "nist_denominator_n1_6_n2_6": 1.2716448806860048,
+    "all_six_rank_assignments": 924,
+    "inclusive_upper_half_assignments": 494,
+    "central_assignments": 64,
+    "strict_upper_assignments": 430,
+    "strict_lower_assignments": 430
+  },
+  "claim_boundary": "The EA freezes N=12 score constants and performs deterministic label enumeration. It does not call NIST, compute an inverse-normal function at runtime, use NIST's asymptotic critical values, or claim an exact Klotz p-value."
+}
