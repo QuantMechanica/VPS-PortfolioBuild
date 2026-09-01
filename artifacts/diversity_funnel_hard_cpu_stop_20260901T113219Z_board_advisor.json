@@ -1,0 +1,120 @@
+{
+  "artifact_type": "diversity_funnel_hard_cpu_stop",
+  "schema": "qm.diversity-funnel-hard-cpu-stop/v1",
+  "generated_at_utc": "2026-09-01T11:32:19Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "894d02ff4685b4bbaf29a0fadf2b5d64940292a6",
+  "mission_outcome": "STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING_BEFORE_CLAIM",
+  "capacity": {
+    "sampling_method": "Win32_PerfFormattedData_PerfOS_Processor Name=_Total",
+    "sample_interval_seconds": 2,
+    "cpu_samples_percent": [
+      99.0,
+      73.0,
+      73.0,
+      80.0,
+      61.0
+    ],
+    "cpu_average_percent": 77.2,
+    "cpu_maximum_percent": 99.0,
+    "cpu_ceiling_percent": 97.0,
+    "cpu_ceiling_rule": "stop when average or maximum is greater than or equal to the ceiling",
+    "cpu_ceiling_hit": true,
+    "sample_window_utc": {
+      "started_at": "2026-09-01T11:32:09.9379947Z",
+      "ended_at": "2026-09-01T11:32:19.5376853Z"
+    }
+  },
+  "farm_snapshot": {
+    "db_path": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "read_only_inventory_generated_at_utc": "2026-09-01T11:32:00+00:00",
+    "magic_allocation_inventory_finding_count": 1988,
+    "magic_allocation_inventory_classification_counts": {
+      "active_magic_contract_mismatch": 386,
+      "card_target_symbols_missing_or_invalid": 1411,
+      "ea_id_not_registered": 11,
+      "never_allocated": 71,
+      "non_active_magic_history": 109
+    },
+    "mt5_slots_scanned_at_utc": "2026-09-01T11:31:56+00:00",
+    "running_factory_terminals": [
+      "T1",
+      "T4",
+      "T6",
+      "T8",
+      "T9"
+    ],
+    "running_factory_terminal_count": 5,
+    "factory_work_items": [
+      {
+        "terminal": "T1",
+        "work_item_id": "7d3b1187-fba8-51b8-9c4a-3d79ca6fb434",
+        "ea_id": "QM5_41162",
+        "phase": "OPT_CENSUS",
+        "symbol": "EURUSD.DWX"
+      },
+      {
+        "terminal": "T4",
+        "work_item_id": "549242fc-d9e7-567f-885e-20dd1c09bded",
+        "ea_id": "QM5_41196",
+        "phase": "OPT_CENSUS",
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "terminal": "T6",
+        "work_item_id": "d63835ea-9e2f-5d5d-8699-244c20ee7182",
+        "ea_id": "QM5_41163",
+        "phase": "OPT_CENSUS",
+        "symbol": "USDCAD.DWX"
+      },
+      {
+        "terminal": "T8",
+        "work_item_id": "c8edc2dc-43f4-4896-a5b0-9047815b0564",
+        "ea_id": "QM5_20206",
+        "phase": "Q03",
+        "symbol": "QM5_20206_XAU_XAG_MOMIVOL_D1"
+      },
+      {
+        "terminal": "T9",
+        "work_item_id": "e54a1326-191c-586f-84c0-53fcf6034d35",
+        "ea_id": "QM5_41194",
+        "phase": "OPT_CENSUS",
+        "symbol": "XTIUSD.DWX"
+      }
+    ]
+  },
+  "selection_disposition": {
+    "priority_1_approved_card_build": "NOT_ENTERED_CPU_CEILING",
+    "priority_2_diverse_infra_repair": "NOT_ENTERED_CPU_CEILING",
+    "priority_3_new_structural_edge": "NOT_ENTERED_CPU_CEILING",
+    "qm_build_ea_from_card": "PREFLIGHT_STOP_BEFORE_CARD_SELECTION_OR_BUILD"
+  },
+  "non_duplicate_basis": {
+    "previous_receipt": "artifacts/diversity_funnel_hard_cpu_stop_20260901T001514Z_board_advisor.json",
+    "previous_sample_window_ended_at_utc": "2026-09-01T00:15:14Z",
+    "current_sample_window_ended_at_utc": "2026-09-01T11:32:19.5376853Z",
+    "current_factory_roster": "T1,T4,T6,T8,T9",
+    "reason": "fresh capacity window and live farm roster establish a distinct paced wake"
+  },
+  "actions_this_run": {
+    "branch_verified": true,
+    "worktree_preservation_verified": true,
+    "capacity_sampled": true,
+    "farm_db_read": true,
+    "farm_db_mutated": false,
+    "ea_claimed": false,
+    "card_or_ea_created": false,
+    "registry_or_magic_mutated": false,
+    "compile_smoke_or_backtest_started": false,
+    "q02_enqueued": false,
+    "terminal_or_worker_controlled": false
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false,
+    "preexisting_unrelated_worktree_changes_preserved": true
+  },
+  "resume_contract": "On a later paced wake, take a fresh five-sample whole-host CPU window. Continue only if both average and maximum are strictly below 97 percent; then reconcile and claim exactly one distinct highest-diversity approved build candidate through the farm DB."
+}
