@@ -12,7 +12,9 @@ from typing import Any, Mapping, Sequence
 try:
     from custom_history_contract import (
         ACTIVATION_SCHEMA,
+        ACTIVATION_SCHEMA_V2,
         DEFAULT_RUNNER_TERMINALS,
+        PROVISIONED_FACTORY_TERMINALS,
         canonical_bytes,
         load_json_strict,
         load_manifest,
@@ -26,7 +28,9 @@ try:
 except ImportError:  # pragma: no cover - package import path
     from tools.strategy_farm.custom_history_contract import (
         ACTIVATION_SCHEMA,
+        ACTIVATION_SCHEMA_V2,
         DEFAULT_RUNNER_TERMINALS,
+        PROVISIONED_FACTORY_TERMINALS,
         canonical_bytes,
         load_json_strict,
         load_manifest,
@@ -45,6 +49,42 @@ RAMP_SCHEMA = "qm.custom-history-ramp/v1"
 RAMP_LIMITS = frozenset({1, 2, 5, 10})
 ROLLBACK_MODE_RELATIVE_PATH = Path("state/custom_history_isolation_rollback_mode.json")
 ROLLBACK_MODE_SCHEMA = "qm.custom-history-isolation-rollback-mode/v1"
+OWNER_WINDOW_EXTENSION_SCHEMA = "qm.custom-history-owner-window-extension/v1"
+OWNER_T11_T12_AUTHORITY_TASK_ID = "d7919623-bae4-445f-888c-00f2a3e058ca"
+OWNER_T11_T12_DIRECTIVE = (
+    "T11/T12 Canary starten, sobald High-Performance-Effekt gemessen"
+)
+OWNER_T11_T12_DECISION_REGISTER = "Vault OWNER-Entscheidungsregister 2026-09"
+ACTIVATION_V2_EXTENSION_TERMINALS = ("T11", "T12")
+ACTIVATION_V2_PROTECTED_ROOTS = (
+    *mt5_history_isolation.DEFAULT_PROTECTED_ROOTS,
+    Path(r"D:\QM\mt5\T11\Bases"),
+    Path(r"D:\QM\mt5\T12\Bases"),
+)
+
+_ACTIVATION_V1_KEYS = frozenset(
+    {
+        "schema_version",
+        "enabled",
+        "activated_at_utc",
+        "manifest_path",
+        "manifest_sha256",
+        "owner_window_receipt_path",
+        "owner_window_receipt_sha256",
+        "runner_terminals",
+        "protected_roots",
+        "dual_audits",
+        "auto_reengage_containment",
+        "activation_sha256",
+    }
+)
+_ACTIVATION_V2_KEYS = _ACTIVATION_V1_KEYS | frozenset(
+    {
+        "base_activation",
+        "owner_window_authority",
+        "runner_extension_audits",
+    }
+)
 
 
 class CustomHistoryGateError(RuntimeError):
@@ -228,22 +268,281 @@ def activation_sha256(payload: Mapping[str, Any]) -> str:
     ).hexdigest()
 
 
-def validate_activation(payload: Mapping[str, Any]) -> dict[str, Any]:
+def owner_window_extension_sha256(payload: Mapping[str, Any]) -> str:
+    return hashlib.sha256(
+        canonical_bytes(
+            {
+                key: value
+                for key, value in payload.items()
+                if key != "owner_window_sha256"
+            }
+        )
+    ).hexdigest()
+
+
+def _exact_terminal_set(
+    value: Any,
+    *,
+    expected: Sequence[str],
+    field: str,
+) -> tuple[str, ...]:
+    if not isinstance(value, list):
+        raise CustomHistoryGateError(f"{field} must be a list")
+    normalized = tuple(str(item).strip().upper() for item in value)
+    expected_normalized = tuple(str(item).strip().upper() for item in expected)
+    if (
+        any(not item for item in normalized)
+        or len(normalized) != len(expected_normalized)
+        or len(set(normalized)) != len(normalized)
+        or set(normalized) != set(expected_normalized)
+    ):
+        raise CustomHistoryGateError(
+            f"{field} must be exactly {','.join(expected_normalized)}"
+        )
+    return normalized
+
+
+def _normalized_root(value: Any) -> str:
+    return str(Path(str(value)).resolve(strict=False)).casefold().rstrip("\\/")
+
+
+def _validate_exact_protected_roots(
+    value: Any,
+    *,
+    expected: Sequence[Path | str],
+) -> tuple[str, ...]:
+    if not isinstance(value, list):
+        raise CustomHistoryGateError("protected_roots must be a list")
+    roots = tuple(str(item).strip() for item in value)
+    normalized = tuple(_normalized_root(item) for item in roots)
+    expected_normalized = tuple(_normalized_root(item) for item in expected)
+    if (
+        any(not item for item in roots)
+        or len(normalized) != len(expected_normalized)
+        or len(set(normalized)) != len(normalized)
+        or set(normalized) != set(expected_normalized)
+    ):
+        raise CustomHistoryGateError(
+            "protected-root set must exactly match the governed schema set"
+        )
+    return normalized
+
+
+def validate_owner_window_extension(
+    payload: Mapping[str, Any],
+    *,
+    manifest_sha256: str,
+    base_activation_sha256: str,
+) -> dict[str, Any]:
     required = {
         "schema_version",
-        "enabled",
-        "activated_at_utc",
-        "manifest_path",
+        "authority",
+        "authority_task_id",
+        "authority_date",
+        "owner_directive",
+        "decision_register",
+        "measured_condition",
         "manifest_sha256",
-        "owner_window_receipt_path",
-        "owner_window_receipt_sha256",
+        "base_activation_sha256",
         "runner_terminals",
-        "protected_roots",
-        "dual_audits",
-        "auto_reengage_containment",
-        "activation_sha256",
+        "orchestrator_countersign_required",
+        "live_trading_authorized",
+        "owner_window_sha256",
     }
-    if set(payload) != required or payload.get("schema_version") != ACTIVATION_SCHEMA:
+    if (
+        set(payload) != required
+        or payload.get("schema_version") != OWNER_WINDOW_EXTENSION_SCHEMA
+    ):
+        raise CustomHistoryGateError("OWNER window extension schema/key mismatch")
+    if payload.get("authority") != "OWNER":
+        raise CustomHistoryGateError("OWNER window extension authority mismatch")
+    if payload.get("authority_task_id") != OWNER_T11_T12_AUTHORITY_TASK_ID:
+        raise CustomHistoryGateError("OWNER window extension task binding mismatch")
+    if payload.get("authority_date") != "2026-09-01":
+        raise CustomHistoryGateError("OWNER window extension date mismatch")
+    if payload.get("owner_directive") != OWNER_T11_T12_DIRECTIVE:
+        raise CustomHistoryGateError("OWNER window extension directive mismatch")
+    if payload.get("decision_register") != OWNER_T11_T12_DECISION_REGISTER:
+        raise CustomHistoryGateError("OWNER decision-register binding mismatch")
+    if payload.get("measured_condition") != {
+        "metric": "census_throughput_gain_pct",
+        "status": "MEASURED",
+        "value": 7,
+    }:
+        raise CustomHistoryGateError("OWNER activation condition mismatch")
+    if str(payload.get("manifest_sha256") or "").casefold() != str(
+        manifest_sha256
+    ).casefold():
+        raise CustomHistoryGateError("OWNER window extension manifest mismatch")
+    if str(payload.get("base_activation_sha256") or "").casefold() != str(
+        base_activation_sha256
+    ).casefold():
+        raise CustomHistoryGateError("OWNER window extension base activation mismatch")
+    _exact_terminal_set(
+        payload.get("runner_terminals"),
+        expected=PROVISIONED_FACTORY_TERMINALS,
+        field="OWNER window extension runner_terminals",
+    )
+    if payload.get("orchestrator_countersign_required") is not True:
+        raise CustomHistoryGateError("Orchestrator countersign is required")
+    if payload.get("live_trading_authorized") is not False:
+        raise CustomHistoryGateError("OWNER window extension cannot authorize live trading")
+    if str(payload.get("owner_window_sha256") or "").casefold() != (
+        owner_window_extension_sha256(payload)
+    ):
+        raise CustomHistoryGateError("OWNER window extension hash mismatch")
+    return dict(payload)
+
+
+def _load_bound_json(path: Path, *, label: str) -> dict[str, Any]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8-sig"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise CustomHistoryGateError(f"{label} unreadable: {path}: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise CustomHistoryGateError(f"{label} root must be an object: {path}")
+    return payload
+
+
+def _validate_runner_extension_receipt(
+    row: Mapping[str, Any],
+    *,
+    manifest_sha256: str,
+) -> str:
+    if set(row) != {"terminal", "path", "file_sha256", "receipt_sha256"}:
+        raise CustomHistoryGateError("runner extension audit key mismatch")
+    terminal = str(row.get("terminal") or "").strip().upper()
+    path = Path(str(row.get("path") or ""))
+    if sha256_file(path) != str(row.get("file_sha256") or "").casefold():
+        raise CustomHistoryGateError(
+            f"runner extension audit file hash mismatch: {path}"
+        )
+    receipt = _load_bound_json(path, label="runner extension audit")
+    required_receipt_values = {
+        "schema_version": "qm.inert-factory-canary-provision/v1",
+        "status": "PASS_INERT_PROVISIONED",
+        "terminal": terminal,
+        "activation_performed": False,
+        "terminal_started": False,
+        "t_live_touched": False,
+        "disabled_verified": True,
+    }
+    for key, expected in required_receipt_values.items():
+        if receipt.get(key) != expected:
+            raise CustomHistoryGateError(
+                f"runner extension audit {terminal} {key} mismatch"
+            )
+    if terminal not in ACTIVATION_V2_EXTENSION_TERMINALS:
+        raise CustomHistoryGateError("runner extension audit terminal mismatch")
+    custom_history = receipt.get("custom_history")
+    if not isinstance(custom_history, dict) or (
+        custom_history.get("manifest_content_sha256") != manifest_sha256
+        or custom_history.get("verification") != "PASS_FULL_SHA256"
+        or custom_history.get("admission_state")
+        != "FAIL_CLOSED_NOT_IN_ACTIVE_T1_T10_ACTIVATION"
+    ):
+        raise CustomHistoryGateError(
+            f"runner extension audit {terminal} Custom-history binding mismatch"
+        )
+    _exact_terminal_set(
+        custom_history.get("signed_runner_set_preserved"),
+        expected=DEFAULT_RUNNER_TERMINALS,
+        field=f"runner extension audit {terminal} signed_runner_set_preserved",
+    )
+    containment = receipt.get("containment")
+    if not isinstance(containment, dict) or containment.get("enabled") is not False:
+        raise CustomHistoryGateError(
+            f"runner extension audit {terminal} containment state mismatch"
+        )
+    receipt_hash = hashlib.sha256(
+        canonical_bytes(
+            {key: value for key, value in receipt.items() if key != "receipt_sha256"}
+        )
+    ).hexdigest()
+    if (
+        receipt_hash != str(receipt.get("receipt_sha256") or "").casefold()
+        or receipt_hash != str(row.get("receipt_sha256") or "").casefold()
+    ):
+        raise CustomHistoryGateError(
+            f"runner extension audit {terminal} receipt hash mismatch"
+        )
+    return terminal
+
+
+def _validate_activation_v2_extension(
+    payload: Mapping[str, Any],
+    *,
+    manifest_sha256: str,
+) -> None:
+    base_binding = payload.get("base_activation")
+    if not isinstance(base_binding, dict) or set(base_binding) != {
+        "path",
+        "file_sha256",
+        "activation_sha256",
+    }:
+        raise CustomHistoryGateError("v2 base_activation binding mismatch")
+    base_path = Path(str(base_binding.get("path") or ""))
+    if sha256_file(base_path) != str(base_binding.get("file_sha256") or "").casefold():
+        raise CustomHistoryGateError("v2 base activation file hash mismatch")
+    base = _load_bound_json(base_path, label="v2 base activation")
+    if base.get("schema_version") != ACTIVATION_SCHEMA:
+        raise CustomHistoryGateError("v2 base activation must be a v1 receipt")
+    validated_base = validate_activation(base)
+    base_sha256 = str(validated_base["activation_sha256"]).casefold()
+    if base_sha256 != str(base_binding.get("activation_sha256") or "").casefold():
+        raise CustomHistoryGateError("v2 base activation identity mismatch")
+    if validated_base.get("manifest_sha256") != manifest_sha256:
+        raise CustomHistoryGateError("v2 base activation manifest mismatch")
+
+    owner_binding = payload.get("owner_window_authority")
+    if not isinstance(owner_binding, dict) or set(owner_binding) != {
+        "path",
+        "file_sha256",
+        "owner_window_sha256",
+    }:
+        raise CustomHistoryGateError("v2 OWNER window authority binding mismatch")
+    owner_path = Path(str(owner_binding.get("path") or ""))
+    if sha256_file(owner_path) != str(owner_binding.get("file_sha256") or "").casefold():
+        raise CustomHistoryGateError("v2 OWNER window authority file hash mismatch")
+    owner_extension = _load_bound_json(
+        owner_path, label="v2 OWNER window authority"
+    )
+    validated_owner = validate_owner_window_extension(
+        owner_extension,
+        manifest_sha256=manifest_sha256,
+        base_activation_sha256=base_sha256,
+    )
+    if validated_owner["owner_window_sha256"] != str(
+        owner_binding.get("owner_window_sha256") or ""
+    ).casefold():
+        raise CustomHistoryGateError("v2 OWNER window authority identity mismatch")
+
+    extension_rows = payload.get("runner_extension_audits")
+    if not isinstance(extension_rows, list) or len(extension_rows) != 2:
+        raise CustomHistoryGateError("exactly two runner extension audits are required")
+    terminals = tuple(
+        _validate_runner_extension_receipt(row, manifest_sha256=manifest_sha256)
+        if isinstance(row, dict)
+        else ""
+        for row in extension_rows
+    )
+    _exact_terminal_set(
+        list(terminals),
+        expected=ACTIVATION_V2_EXTENSION_TERMINALS,
+        field="runner_extension_audits terminals",
+    )
+
+
+def validate_activation(payload: Mapping[str, Any]) -> dict[str, Any]:
+    schema = payload.get("schema_version")
+    required = (
+        _ACTIVATION_V1_KEYS
+        if schema == ACTIVATION_SCHEMA
+        else _ACTIVATION_V2_KEYS
+        if schema == ACTIVATION_SCHEMA_V2
+        else None
+    )
+    if required is None or set(payload) != required:
         raise CustomHistoryGateError("activation receipt schema/key mismatch")
     if payload.get("enabled") is not True:
         raise CustomHistoryGateError("activation receipt is not enabled")
@@ -252,25 +551,28 @@ def validate_activation(payload: Mapping[str, Any]) -> dict[str, Any]:
     expected = activation_sha256(payload)
     if str(payload.get("activation_sha256") or "").casefold() != expected:
         raise CustomHistoryGateError("activation receipt hash mismatch")
-    terminals = tuple(sorted({str(value).upper() for value in payload["runner_terminals"]}))
-    if terminals != tuple(sorted(DEFAULT_RUNNER_TERMINALS)):
-        raise CustomHistoryGateError("activation runner set must be exactly T1-T10")
-    roots = tuple(str(value).strip() for value in payload["protected_roots"])
-    normalized_roots = tuple(
-        str(Path(value).resolve(strict=False)).casefold().rstrip("\\/") for value in roots
+    expected_terminals = (
+        DEFAULT_RUNNER_TERMINALS
+        if schema == ACTIVATION_SCHEMA
+        else PROVISIONED_FACTORY_TERMINALS
     )
-    expected_roots = tuple(
-        str(Path(value).resolve(strict=False)).casefold().rstrip("\\/")
+    _exact_terminal_set(
+        payload.get("runner_terminals"),
+        expected=expected_terminals,
+        field="activation runner_terminals",
+    )
+    expected_protected_roots = (
+        mt5_history_isolation.DEFAULT_PROTECTED_ROOTS
+        if schema == ACTIVATION_SCHEMA
+        else ACTIVATION_V2_PROTECTED_ROOTS
+    )
+    _validate_exact_protected_roots(
+        payload.get("protected_roots"), expected=expected_protected_roots
+    )
+    base_expected_roots = tuple(
+        _normalized_root(value)
         for value in mt5_history_isolation.DEFAULT_PROTECTED_ROOTS
     )
-    if (
-        any(not value for value in roots)
-        or len(set(normalized_roots)) != len(expected_roots)
-        or set(normalized_roots) != set(expected_roots)
-    ):
-        raise CustomHistoryGateError(
-            "protected-root set must exactly match the governed T_Live/FTMO/DEV/T_Export roots"
-        )
     manifest = load_manifest(Path(payload["manifest_path"]), require_owner_approval=True)
     if str(payload["manifest_sha256"]).casefold() != manifest["manifest_sha256"]:
         raise CustomHistoryGateError("activation manifest hash mismatch")
@@ -318,9 +620,13 @@ def validate_activation(payload: Mapping[str, Any]) -> dict[str, Any]:
         if not isinstance(audit.get("runner_terminals"), list):
             raise CustomHistoryGateError(f"dual audit runner set missing: {audit_path}")
         audit_terminals = tuple(
-            sorted({str(value).upper() for value in audit["runner_terminals"]})
+            str(value).strip().upper() for value in audit["runner_terminals"]
         )
-        if audit_terminals != tuple(sorted(DEFAULT_RUNNER_TERMINALS)):
+        if (
+            len(audit_terminals) != len(DEFAULT_RUNNER_TERMINALS)
+            or len(set(audit_terminals)) != len(audit_terminals)
+            or set(audit_terminals) != set(DEFAULT_RUNNER_TERMINALS)
+        ):
             raise CustomHistoryGateError(f"dual audit runner set mismatch: {audit_path}")
         if not isinstance(audit.get("protected_roots"), list):
             raise CustomHistoryGateError(
@@ -330,8 +636,9 @@ def validate_activation(payload: Mapping[str, Any]) -> dict[str, Any]:
             str(value).casefold().rstrip("\\/") for value in audit["protected_roots"]
         )
         if (
-            len(set(audit_roots)) != len(expected_roots)
-            or set(audit_roots) != set(expected_roots)
+            len(audit_roots) != len(base_expected_roots)
+            or len(set(audit_roots)) != len(audit_roots)
+            or set(audit_roots) != set(base_expected_roots)
         ):
             raise CustomHistoryGateError(f"dual audit protected-root set mismatch: {audit_path}")
         if audit.get("audit_sha256") != row["audit_sha256"]:
@@ -364,6 +671,11 @@ def validate_activation(payload: Mapping[str, Any]) -> dict[str, Any]:
         )
         if verified_acl["file_sha256"] != acl_evidence["file_sha256"]:
             raise CustomHistoryGateError(f"dual audit ACL evidence mismatch: {audit_path}")
+    if schema == ACTIVATION_SCHEMA_V2:
+        _validate_activation_v2_extension(
+            payload,
+            manifest_sha256=manifest["manifest_sha256"],
+        )
     return dict(payload)
 
 
@@ -429,10 +741,94 @@ def build_activation(
     return payload
 
 
+def build_activation_v2(
+    *,
+    base_activation_path: Path,
+    owner_window_authority_path: Path,
+    runner_extension_audit_paths: Sequence[Path],
+) -> dict[str, Any]:
+    if len(runner_extension_audit_paths) != 2:
+        raise CustomHistoryGateError("two runner extension audit paths are required")
+    base_path = Path(base_activation_path)
+    base = _load_bound_json(base_path, label="v2 base activation")
+    validated_base = validate_activation(base)
+    if validated_base.get("schema_version") != ACTIVATION_SCHEMA:
+        raise CustomHistoryGateError("v2 base activation must use the v1 schema")
+
+    authority_path = Path(owner_window_authority_path)
+    authority = _load_bound_json(authority_path, label="v2 OWNER window authority")
+    validated_authority = validate_owner_window_extension(
+        authority,
+        manifest_sha256=validated_base["manifest_sha256"],
+        base_activation_sha256=validated_base["activation_sha256"],
+    )
+
+    extension_rows: list[dict[str, Any]] = []
+    for raw_path in runner_extension_audit_paths:
+        path = Path(raw_path)
+        receipt = _load_bound_json(path, label="runner extension audit")
+        extension_rows.append(
+            {
+                "terminal": str(receipt.get("terminal") or "").strip().upper(),
+                "path": str(path.absolute()),
+                "file_sha256": sha256_file(path),
+                "receipt_sha256": str(receipt.get("receipt_sha256") or "").casefold(),
+            }
+        )
+
+    payload: dict[str, Any] = {
+        "schema_version": ACTIVATION_SCHEMA_V2,
+        "enabled": True,
+        "activated_at_utc": utc_now(),
+        "manifest_path": validated_base["manifest_path"],
+        "manifest_sha256": validated_base["manifest_sha256"],
+        "owner_window_receipt_path": validated_base["owner_window_receipt_path"],
+        "owner_window_receipt_sha256": validated_base[
+            "owner_window_receipt_sha256"
+        ],
+        "runner_terminals": list(PROVISIONED_FACTORY_TERMINALS),
+        "protected_roots": [
+            str(Path(value).absolute()) for value in ACTIVATION_V2_PROTECTED_ROOTS
+        ],
+        "dual_audits": list(validated_base["dual_audits"]),
+        "auto_reengage_containment": True,
+        "base_activation": {
+            "path": str(base_path.absolute()),
+            "file_sha256": sha256_file(base_path),
+            "activation_sha256": validated_base["activation_sha256"],
+        },
+        "owner_window_authority": {
+            "path": str(authority_path.absolute()),
+            "file_sha256": sha256_file(authority_path),
+            "owner_window_sha256": validated_authority["owner_window_sha256"],
+        },
+        "runner_extension_audits": extension_rows,
+    }
+    payload["activation_sha256"] = activation_sha256(payload)
+    validate_activation(payload)
+    return payload
+
+
 def write_activation(root: Path, payload: Mapping[str, Any]) -> dict[str, Any]:
     validated = validate_activation(payload)
     write_json_atomic(activation_path(root), validated)
     return validated
+
+
+def _runtime_protected_roots(activation: Mapping[str, Any]) -> tuple[Path, ...]:
+    """Return foreign roots for overlap checks without self-colliding runners.
+
+    The v2 receipt additionally binds T11/T12 ``Bases`` as protected runner
+    roots.  Those same paths are already inspected as mutable runner components
+    by the pairwise topology evaluator; passing them again as *foreign* roots
+    would compare each path with itself and fail every valid v2 gate.  The
+    long-standing non-runner roots remain the foreign protected set, while the
+    T11/T12 roots retain their receipt binding and pairwise isolation checks.
+    """
+
+    if activation.get("schema_version") == ACTIVATION_SCHEMA_V2:
+        return tuple(Path(value) for value in mt5_history_isolation.DEFAULT_PROTECTED_ROOTS)
+    return tuple(Path(value) for value in activation["protected_roots"])
 
 
 def run_worker_gate(
@@ -531,7 +927,7 @@ def run_worker_gate(
         audit = mt5_history_isolation.audit_history_isolation(
             mt5_root=mt5_root,
             terminals=tuple(activation["runner_terminals"]),
-            protected_roots=tuple(Path(value) for value in activation["protected_roots"]),
+            protected_roots=_runtime_protected_roots(activation),
             manifest_path=Path(activation["manifest_path"]),
             require_owner_approval=True,
             verify_archive_hashes=False,
@@ -648,9 +1044,7 @@ def run_worker_gate(
                 verification = mt5_history_isolation.audit_history_isolation(
                     mt5_root=mt5_root,
                     terminals=tuple(activation["runner_terminals"]),
-                    protected_roots=tuple(
-                        Path(value) for value in activation["protected_roots"]
-                    ),
+                    protected_roots=_runtime_protected_roots(activation),
                     manifest_path=Path(activation["manifest_path"]),
                     require_owner_approval=True,
                     verify_archive_hashes=False,

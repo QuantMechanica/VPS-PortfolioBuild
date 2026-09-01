@@ -25,6 +25,7 @@ MANIFEST_SCHEMA = "qm.custom-history-archive-manifest/v1"
 OWNER_APPROVAL_SCHEMA = "qm.custom-history-owner-approval/v1"
 OWNER_WINDOW_SCHEMA = "qm.custom-history-owner-window/v1"
 ACTIVATION_SCHEMA = "qm.custom-history-isolation-activation/v1"
+ACTIVATION_SCHEMA_V2 = "qm.custom-history-isolation-activation/v2"
 ARCHIVE_EXTENSIONS = frozenset({".hcc", ".tkc"})
 DEFAULT_ARCHIVE_YEARS = tuple(range(2017, 2026))
 DEFAULT_CURRENT_YEAR = 2026
