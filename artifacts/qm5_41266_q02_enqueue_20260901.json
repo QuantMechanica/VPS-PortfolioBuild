@@ -1,0 +1,64 @@
+{
+  "schema_version": "qm.q02-enqueue-receipt/v1",
+  "recorded_at_utc": "2026-09-01T10:32:48.7082705Z",
+  "mission_outcome": "Q01_PASS_Q02_ENQUEUED",
+  "ea_id": "QM5_41266",
+  "ea_label": "QM5_41266_wti-mfk-scale-tr",
+  "build_task_id": "9cc477bf-6b0c-447a-81e9-8137bebec758",
+  "build_result_commit": "fbf86cce827abc555883a598d378aa48d987b0bd",
+  "build_result_sha256": "0E5E96ED09F52697B0CBE76DCB3E7B089FEBB89B0794A4BD894FF0F71C20B489",
+  "compile": {
+    "work_item_id": "c50936b8-60ff-44cb-abef-1cea732b8099",
+    "status": "done",
+    "verdict": "COMPILE_OK",
+    "build_check_result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "build_check_warnings": 0,
+    "terminal": "T2",
+    "mq5_sha256": "C38D5C79EC359BDB478FB5D2E779EBB293C3C25E33090893AEC1D64F8016E881",
+    "ex5_sha256": "9859E6639AD7B174DCA9100A50ADF108E793EFD79B68907D050A843E9C09C333"
+  },
+  "cpu_admission": {
+    "sampled_at_utc": "2026-09-01T10:32:01.8836502Z",
+    "command": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "samples_percent": [
+      80.470758,
+      72.22652,
+      60.278045,
+      81.651778,
+      79.22219
+    ],
+    "average_percent": 74.7698582,
+    "maximum_percent": 81.651778,
+    "hard_ceiling_percent": 97.0,
+    "decision_rule": "STOP when any fresh five-sample whole-host CPU maximum is greater than or equal to 97.0 percent",
+    "verdict": "ADMIT_Q02"
+  },
+  "q02": {
+    "record_build_called": true,
+    "record_build_status": "done",
+    "auto_enqueued": true,
+    "work_items_enqueued": 1,
+    "work_item_id": "2a367105-aaa8-4458-a559-ec0b59eeddd4",
+    "phase": "Q02",
+    "kind": "backtest",
+    "status_at_receipt": "pending",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile": "framework/EAs/QM5_41266_wti-mfk-scale-tr/sets/QM5_41266_wti-mfk-scale-tr_XTIUSD.DWX_D1_backtest.set",
+    "setfile_sha256": "42E1CBB017C295A18529DDC8AB63A91A83C15AC869A5D046C8928891C20B19E8",
+    "setfile_build_hash": "D28ABB54A7C2EA6B4D5F75DEC5E34778946FA283A9A11A0CE31027845CD37A9A",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "minimum_completed_positions_per_full_post_warmup_year": 5
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "manual_backtest_launched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "deploy_manifest_touched": false
+  }
+}
