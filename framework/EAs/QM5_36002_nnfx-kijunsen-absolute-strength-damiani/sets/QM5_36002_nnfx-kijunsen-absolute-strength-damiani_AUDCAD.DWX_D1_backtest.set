@@ -3,16 +3,16 @@
 ; ea_id:        36002
 ; ea_slug:      nnfx-kijunsen-absolute-strength-damiani
 ; ea_version:   v5.0
-; set_version:  s20260826-001
+; set_version:  s20260901-001
 ; symbol:       AUDCAD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   be08dd4e91518f42bddffd7a3a5a1a83d9df4cef13f0642120c22cef1fdb737e
+; build_hash:   fe8f07f99d3eb6ca3a379763ec505f0c9924acca17732a5ceca328ba3dda1205
 ; author:       Development
-; date:         2026-08-26
+; date:         2026-09-01
 ;==========================================================
 qm_ea_id=36002
 qm_magic_slot_offset=2

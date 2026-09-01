@@ -3,16 +3,16 @@
 ; ea_id:        36002
 ; ea_slug:      nnfx-kijunsen-absolute-strength-damiani
 ; ea_version:   v5.0
-; set_version:  s20260826-001
+; set_version:  s20260901-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   5c156c67e907da78068847a9506485a9b0b4afe20180270dac0a11d96a706963
+; build_hash:   cdbd1688f73081cb2f69e6211f8db73fb84d40b0b903208fef60151b1af6e7b7
 ; author:       Development
-; date:         2026-08-26
+; date:         2026-09-01
 ;==========================================================
 qm_ea_id=36002
 qm_magic_slot_offset=0

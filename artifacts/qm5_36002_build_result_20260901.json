@@ -1,0 +1,43 @@
+{
+  "task_id": "a48f0404-cbba-4611-9eaa-bbd9e4f82a75",
+  "build_generation": 0,
+  "ea_id": "QM5_36002",
+  "ea_dir": "framework/EAs/QM5_36002_nnfx-kijunsen-absolute-strength-damiani",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_36002_nnfx-kijunsen-absolute-strength-damiani\\QM5_36002_nnfx-kijunsen-absolute-strength-damiani.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_36002_nnfx-kijunsen-absolute-strength-damiani\\QM5_36002_nnfx-kijunsen-absolute-strength-damiani.ex5",
+  "magic_base": 360020000,
+  "symbols_registered": [
+    "EURUSD.DWX",
+    "GBPJPY.DWX",
+    "AUDCAD.DWX",
+    "NZDUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_36002_nnfx-kijunsen-absolute-strength-damiani\\sets\\QM5_36002_nnfx-kijunsen-absolute-strength-damiani_EURUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_36002_nnfx-kijunsen-absolute-strength-damiani\\sets\\QM5_36002_nnfx-kijunsen-absolute-strength-damiani_GBPJPY.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_36002_nnfx-kijunsen-absolute-strength-damiani\\sets\\QM5_36002_nnfx-kijunsen-absolute-strength-damiani_AUDCAD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_36002_nnfx-kijunsen-absolute-strength-damiani\\sets\\QM5_36002_nnfx-kijunsen-absolute-strength-damiani_NZDUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_36002_nnfx-kijunsen-absolute-strength-damiani\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "compile_work_item_id": "db055f7e-1694-4a24-8ec7-d9b59feee0b6",
+  "compile_evidence_path": "D:\\QM\\reports\\work_items\\db055f7e-1694-4a24-8ec7-d9b59feee0b6\\QM5_36002\\COMPILE_EA\\compile_evidence.json",
+  "mq5_sha256": "66174bddb6fe5031c60a94025a21e2e1a5cde282617442bcf5a59c0a4907b14a",
+  "ex5_sha256": "069de33fb4928e2906602fda584d81dbd8484bfebd0994eb0cd7dbb4921f990a",
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "risk_contract": {
+    "RISK_FIXED": 1000.0,
+    "RISK_PERCENT": 0.0
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "governed current-source binary recovery completed; the one-symbol Q02 canary is the deferred smoke path",
+  "blocked_reason": "",
+  "open_questions": [
+    "The approved card does not define the Absolute Strength Oscillator formula; the compiled deterministic mapping uses mean positive versus mean absolute negative D1 close deltas over strategy_aso_period, as documented in SPEC.md.",
+    "The approved card does not define the Aroon period or Damiani AntiThresh formula/defaults; the compiled implementation uses Aroon(25) and ATR(13)/ATR(40) greater than 1.40 times StdDev(13)/StdDev(40), as documented in SPEC.md.",
+    "The approved card describes the rollover blackout as both server time and GMT; the compiled implementation uses 23:55-00:05 UTC via QM_BrokerToUTC."
+  ]
+}

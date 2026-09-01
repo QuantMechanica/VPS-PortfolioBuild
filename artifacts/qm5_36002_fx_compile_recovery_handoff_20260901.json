@@ -1,0 +1,134 @@
+{
+  "schema": "qm.paced-fleet-compile-recovery-handoff/v1",
+  "recorded_at_utc": "2026-09-01T07:44:58.0463186Z",
+  "branch": "agents/board-advisor",
+  "mission": "diversity_funnel_throughput",
+  "outcome": "COMPILE_RECOVERED_Q02_DEFERRED_CPU_CEILING",
+  "selection": {
+    "ea_id": "QM5_36002",
+    "label": "QM5_36002_nnfx-kijunsen-absolute-strength-damiani",
+    "instrument_class": "forex",
+    "mechanism": "daily trend and volatility expansion",
+    "symbols": [
+      "EURUSD.DWX",
+      "GBPJPY.DWX",
+      "AUDCAD.DWX",
+      "NZDUSD.DWX"
+    ],
+    "timeframe": "D1",
+    "expected_trades_per_year_per_symbol": 25,
+    "selection_basis": "highest-diversity actionable approved sleeve after excluding existing logical FX canaries and the already-completed QM5_36005 handoff; current-source COMPILE_OK evidence existed but the canonical EX5 bytes were absent"
+  },
+  "approved_card": {
+    "runtime_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_36002_nnfx-kijunsen-absolute-strength-damiani.md",
+    "repo_path": "strategy-seeds/cards/QM5_36002_nnfx-kijunsen-absolute-strength-damiani.md",
+    "sha256": "1d24b5e2b5d160fdfe519175a016c8a49e361d248f0627ad384aabf0d5aaf0db",
+    "g0_status": "APPROVED",
+    "r1_track_record": "PASS",
+    "r2_mechanical": "PASS",
+    "r3_data_available": "PASS",
+    "r4_ml_forbidden": "PASS"
+  },
+  "farm_claim": {
+    "build_task_id": "a48f0404-cbba-4611-9eaa-bbd9e4f82a75",
+    "claimed_by": "codex-headless-paced-fleet",
+    "claimed_at_utc": "2026-09-01T07:15:28.650641+00:00",
+    "initial_status": "blocked",
+    "handoff_status": "active",
+    "authority": "build_task:a48f0404-cbba-4611-9eaa-bbd9e4f82a75",
+    "collision_check": "no other pending or active build task and no Q02/P2 row existed for QM5_36002 at claim time",
+    "backup_path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_qm5_36002_claim_20260901T071522Z_085973f3.sqlite",
+    "backup_sha256": "0cc5ef5da4e639345e3fc22e30e2f32080ab03326da943c82b6b39903897fe2b"
+  },
+  "compile_recovery": {
+    "authority_commit": "9bac26d666",
+    "work_item_id": "db055f7e-1694-4a24-8ec7-d9b59feee0b6",
+    "release_dry_run_path": "artifacts/qm5_36002_compile_release_dry_run_20260901.json",
+    "release_apply_path": "artifacts/qm5_36002_compile_release_apply_20260901.json",
+    "release_backup_path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260901T071559Z_511fff12.sqlite",
+    "release_backup_sha256": "0216a1362319a4ee40072af0b15e8f7babc75064d43aec4ca07437cca397a7a7",
+    "build_task_binding_contract": "qm.compile-ea-build-task-binding/v1",
+    "binding_backup_path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_qm5_36002_binding_20260901T073542Z_964aacd6.sqlite",
+    "binding_backup_sha256": "39962b7d9f13292bbfb40f63c15db9d27fe767653e36e14356bda27f955576e2",
+    "terminal": "T2",
+    "status": "done",
+    "verdict": "COMPILE_OK",
+    "build_check": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "mq5_sha256": "66174bddb6fe5031c60a94025a21e2e1a5cde282617442bcf5a59c0a4907b14a",
+    "ex5_sha256": "069de33fb4928e2906602fda584d81dbd8484bfebd0994eb0cd7dbb4921f990a",
+    "ex5_bytes": 440430,
+    "evidence_path": "D:\\QM\\reports\\work_items\\db055f7e-1694-4a24-8ec7-d9b59feee0b6\\QM5_36002\\COMPILE_EA\\compile_evidence.json"
+  },
+  "risk_and_setfiles": {
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "setfiles": [
+      {
+        "symbol": "EURUSD.DWX",
+        "sha256": "65abe66c66308a3bbb97c15f2364db1d970a99be5986fc4ccd53a952052fe8c5"
+      },
+      {
+        "symbol": "GBPJPY.DWX",
+        "sha256": "7ea5a1bd8a7977d1f7062e121347d99f44abb501eb6d70ff9b60a4c9141f54b1"
+      },
+      {
+        "symbol": "AUDCAD.DWX",
+        "sha256": "1fec14d2df9a67498281e9b00139f1c55c5f207af100263e9ffe48c44ab4f732"
+      },
+      {
+        "symbol": "NZDUSD.DWX",
+        "sha256": "55e7b9bd1fbf478ec8e3ddbe9b10b78a5eeb971ce088940aec4ad89af29002f1"
+      }
+    ]
+  },
+  "capacity_checks": [
+    {
+      "stage": "initial_admission",
+      "samples_percent": [48, 62, 53, 63, 57],
+      "average_percent": 56.6,
+      "maximum_percent": 63,
+      "ceiling_percent": 97,
+      "ceiling_binding": false
+    },
+    {
+      "stage": "pre_binding",
+      "samples_percent": [85, 76, 91, 86, 75],
+      "average_percent": 82.6,
+      "maximum_percent": 91,
+      "ceiling_percent": 97,
+      "ceiling_binding": false
+    },
+    {
+      "stage": "final_pre_q02",
+      "samples_percent": [72, 82, 74, 98, 89],
+      "average_percent": 83.0,
+      "maximum_percent": 98,
+      "ceiling_percent": 97,
+      "ceiling_binding": true
+    }
+  ],
+  "deferred_handoff": {
+    "build_result_path": "artifacts/qm5_36002_build_result_20260901.json",
+    "build_result_sha256": "f5ed672922e39a972e7a97eda5b88d2ebdda195330bc11d15a9a9007b66be903",
+    "build_result_recorded": false,
+    "q02_enqueued": false,
+    "reason": "final five-sample CPU check reached 98 percent, above the 97 percent backtest ceiling; stopped before record-build exactly as instructed",
+    "resume_condition": "a fresh five-sample CPU check has maximum below 97 percent",
+    "next_command": "py -3 tools/strategy_farm/farmctl.py record-build --task-id a48f0404-cbba-4611-9eaa-bbd9e4f82a75 --result-file artifacts/qm5_36002_build_result_20260901.json",
+    "expected_q02_canary": "EURUSD.DWX",
+    "dispatch_after_record": false
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "t_live_mutated": false,
+    "t_live_manifest_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "queue_dispatch_called": false,
+    "backtest_started_by_this_run": false,
+    "preexisting_unrelated_worktree_changes_preserved": true
+  }
+}
