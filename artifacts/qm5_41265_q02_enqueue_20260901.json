@@ -1,0 +1,64 @@
+{
+  "schema_version": "qm.q02-enqueue-receipt/v1",
+  "recorded_at_utc": "2026-09-01T08:42:08.0579191Z",
+  "mission_outcome": "Q01_PASS_Q02_ENQUEUED",
+  "ea_id": "QM5_41265",
+  "ea_label": "QM5_41265_xauxag-mbf-scale-rv",
+  "logical_symbol": "QM5_41265_XAU_XAG_MBF_SCALE_RV_D1",
+  "build_task_id": "254ceb98-daa3-4329-8e51-ae13592add78",
+  "build_result_commit": "b1c4f95bd0fa2b03687e9f811c04abf021940fdd",
+  "build_result_sha256": "817A28092933E3604E671402BABAD2249A977DB6BFE4D416BE42E9A72BEF4915",
+  "compile": {
+    "work_item_id": "f60ef37e-1ff1-4922-9f0f-df0af662a2d8",
+    "status": "done",
+    "verdict": "COMPILE_OK",
+    "build_check_result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "build_check_warnings": 1,
+    "terminal": "T5",
+    "ex5_sha256": "0C651782381C2814A08D926D776DFE74137374B42488FBC8EC28F87AA4780DFD"
+  },
+  "cpu_admission": {
+    "sampled_at_utc": "2026-09-01T08:41:32.5134538Z",
+    "command": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "samples_percent": [
+      78.051456,
+      83.171420,
+      84.870182,
+      87.905374,
+      80.962284
+    ],
+    "average_percent": 82.9921432,
+    "maximum_percent": 87.905374,
+    "hard_ceiling_percent": 97.0,
+    "decision_rule": "STOP when any fresh five-sample whole-host CPU maximum is greater than or equal to 97.0 percent",
+    "verdict": "ADMIT_Q02"
+  },
+  "q02": {
+    "record_build_called": true,
+    "record_build_status": "done",
+    "auto_enqueued": true,
+    "logical_work_items_enqueued": 1,
+    "component_work_items_enqueued": 0,
+    "work_item_id": "08b0062e-dd6a-4bd1-88ed-d1eb018423c6",
+    "phase": "Q02",
+    "kind": "backtest",
+    "status_at_receipt": "pending",
+    "symbol": "QM5_41265_XAU_XAG_MBF_SCALE_RV_D1",
+    "timeframe": "D1",
+    "setfile": "framework/EAs/QM5_41265_xauxag-mbf-scale-rv/sets/QM5_41265_xauxag-mbf-scale-rv_QM5_41265_XAU_XAG_MBF_SCALE_RV_D1_D1_backtest.set",
+    "setfile_sha256": "947DAD7CA094D2744A81ACB4A5A3C720786153BD8C98D3BA16DAED1DE6DB8105",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "component_skip_reason": "basket_manifest_logical_setfile_preferred"
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "manual_backtest_launched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "deploy_manifest_touched": false
+  }
+}
