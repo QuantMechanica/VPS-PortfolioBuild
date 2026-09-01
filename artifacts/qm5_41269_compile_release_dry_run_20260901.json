@@ -1,0 +1,19 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "87b4ac6e784f7a85230b28c235a5bd79aa7f758d00b30bc5fa5b54a933bee06e",
+      "ea_id": "QM5_41269",
+      "ea_label": "QM5_41269_xauxag-mklotz-scale-rv",
+      "expected_mq5_sha256": "87b4ac6e784f7a85230b28c235a5bd79aa7f758d00b30bc5fa5b54a933bee06e",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41269_xauxag-mklotz-scale-rv\\QM5_41269_xauxag-mklotz-scale-rv.mq5",
+      "work_item_id": "746ddf8e-c007-41bd-8214-31de6ed2b9be"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "746ddf8e-c007-41bd-8214-31de6ed2b9be"
+}
