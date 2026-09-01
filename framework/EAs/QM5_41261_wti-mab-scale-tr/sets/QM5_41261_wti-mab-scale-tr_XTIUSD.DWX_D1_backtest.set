@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   9593a0f0497e5af156a48caad9222d9099d774d6e2ceb66239bb5ada8a3d6b0a
 ; author:       Development
 ; date:         2026-09-01
 ;==========================================================
@@ -19,7 +19,8 @@ qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; locked strategy-specific params from the approved card
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
 strategy_endpoint_count=13
 strategy_return_count=12
 strategy_block_size=6
