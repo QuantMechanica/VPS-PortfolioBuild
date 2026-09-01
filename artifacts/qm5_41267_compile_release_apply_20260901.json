@@ -1,0 +1,28 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "a5f4b9a8-5478-4d01-97f0-c61e8d5914f1"
+  ],
+  "backup": {
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260901T114102Z_186952ec.sqlite",
+    "sha256": "b71c512c0f1cd5608e242ae8c086766cf8a15c3a1e587b7321a181d546ef81c1"
+  },
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "48718109bd9035a1941f16e9961d84a67d8dc85ea0324d23b0df963fcefaec77",
+      "ea_id": "QM5_41267",
+      "ea_label": "QM5_41267_wti-mmood-scale-tr",
+      "expected_mq5_sha256": "48718109bd9035a1941f16e9961d84a67d8dc85ea0324d23b0df963fcefaec77",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41267_wti-mmood-scale-tr\\QM5_41267_wti-mmood-scale-tr.mq5",
+      "work_item_id": "a5f4b9a8-5478-4d01-97f0-c61e8d5914f1"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-09-01T11:41:09+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "a5f4b9a8-5478-4d01-97f0-c61e8d5914f1"
+}

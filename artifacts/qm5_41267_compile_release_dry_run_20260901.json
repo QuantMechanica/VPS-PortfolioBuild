@@ -1,0 +1,19 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "48718109bd9035a1941f16e9961d84a67d8dc85ea0324d23b0df963fcefaec77",
+      "ea_id": "QM5_41267",
+      "ea_label": "QM5_41267_wti-mmood-scale-tr",
+      "expected_mq5_sha256": "48718109bd9035a1941f16e9961d84a67d8dc85ea0324d23b0df963fcefaec77",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41267_wti-mmood-scale-tr\\QM5_41267_wti-mmood-scale-tr.mq5",
+      "work_item_id": "a5f4b9a8-5478-4d01-97f0-c61e8d5914f1"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "a5f4b9a8-5478-4d01-97f0-c61e8d5914f1"
+}
