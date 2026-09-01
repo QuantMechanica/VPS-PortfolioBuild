@@ -13264,6 +13264,16 @@ def _sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _retained_evidence_path(path: Path) -> Path | None:
+    """Resolve retained evidence after the report compressor adds ``.gz``."""
+    if path.is_file():
+        return path
+    compressed = Path(f"{path}.gz")
+    if compressed.is_file():
+        return compressed
+    return None
+
+
 def _materialize_embedded_build_result(
     root: Path,
     build_task_id: str,
@@ -23330,8 +23340,9 @@ def _enqueue_q02_append_only_exact_row_rerun(
                 "evidence_binding": evidence_binding,
                 "evidence_path": evidence_path_raw,
             }
-        evidence_path = Path(evidence_path_raw)
-        if not evidence_path.is_file():
+        evidence_path_requested = Path(evidence_path_raw)
+        evidence_path = _retained_evidence_path(evidence_path_requested)
+        if evidence_path is None:
             return {
                 "enqueued": False,
                 "ea_id": ea_id,
@@ -23339,7 +23350,7 @@ def _enqueue_q02_append_only_exact_row_rerun(
                 "reason": "q02_rerun_source_evidence_missing",
                 "source_work_item_id": source_id,
                 "evidence_binding": evidence_binding,
-                "evidence_path": str(evidence_path),
+                "evidence_path": str(evidence_path_requested),
             }
         if evidence_sha256 is None:
             evidence_sha256 = _sha256_file(evidence_path)
@@ -23757,15 +23768,18 @@ def _enqueue_q03_exact_identity(
                 "reason": "q03_predecessor_mismatch_or_not_terminal_pass",
                 "predecessor_work_item_id": predecessor_id,
             }
-        predecessor_evidence = Path(str(predecessor["evidence_path"]))
-        if not predecessor_evidence.is_file():
+        predecessor_evidence_requested = Path(str(predecessor["evidence_path"]))
+        predecessor_evidence = _retained_evidence_path(
+            predecessor_evidence_requested
+        )
+        if predecessor_evidence is None:
             return {
                 "enqueued": False,
                 "ea_id": ea_id,
                 "phase": phase,
                 "reason": "q03_predecessor_evidence_missing",
                 "predecessor_work_item_id": predecessor_id,
-                "evidence_path": str(predecessor_evidence),
+                "evidence_path": str(predecessor_evidence_requested),
             }
         risk_ok, risk_detail = _q02_fixed_risk_contract(
             str(predecessor["setfile_path"])
@@ -23853,6 +23867,7 @@ def _enqueue_q03_exact_identity(
         rerun_target = None
         purged_evidence_fallback = False
         purged_identity_row_ids: list[str] = []
+        same_binary_infra_requalification = False
         if rerun_of:
             rerun_target = conn.execute(
                 "SELECT * FROM work_items WHERE id=?", (rerun_of,)
@@ -23878,8 +23893,9 @@ def _enqueue_q03_exact_identity(
                     "predecessor_work_item_id": predecessor_id,
                     "append_only_rerun_of_work_item": rerun_of,
                 }
-            rerun_evidence = Path(str(rerun_target["evidence_path"]))
-            if not rerun_evidence.is_file():
+            rerun_evidence_requested = Path(str(rerun_target["evidence_path"]))
+            rerun_evidence = _retained_evidence_path(rerun_evidence_requested)
+            if rerun_evidence is None:
                 try:
                     rerun_target_payload = json.loads(
                         rerun_target["payload_json"] or "{}"
@@ -23903,18 +23919,35 @@ def _enqueue_q03_exact_identity(
                     )
                 }
                 if current_ex5 in target_ex5_values:
-                    return {
-                        "enqueued": False,
-                        "ea_id": ea_id,
-                        "phase": phase,
-                        "reason": (
-                            "q03_exact_identity_already_has_current_binary_"
-                            "terminal_result"
-                        ),
-                        "existing_work_item_id": rerun_target["id"],
-                        "existing_status": rerun_target["status"],
-                        "existing_verdict": rerun_target["verdict"],
-                    }
+                    if str(rerun_target["verdict"]) != "INFRA_FAIL":
+                        return {
+                            "enqueued": False,
+                            "ea_id": ea_id,
+                            "phase": phase,
+                            "reason": (
+                                "q03_exact_identity_already_has_current_binary_"
+                                "terminal_result"
+                            ),
+                            "existing_work_item_id": rerun_target["id"],
+                            "existing_status": rerun_target["status"],
+                            "existing_verdict": rerun_target["verdict"],
+                        }
+                    for key, expected in expected_payload_bindings.items():
+                        actual = rerun_target_payload.get(key)
+                        if str(actual or "").strip() != str(expected):
+                            return {
+                                "enqueued": False,
+                                "ea_id": ea_id,
+                                "phase": phase,
+                                "reason": (
+                                    "q03_purged_same_binary_infra_binding_mismatch"
+                                ),
+                                "append_only_rerun_of_work_item": rerun_of,
+                                "binding": key,
+                                "expected": expected,
+                                "actual": actual,
+                            }
+                    same_binary_infra_requalification = True
                 identity_rows = conn.execute(
                     """
                     SELECT id,evidence_path FROM work_items
@@ -23932,10 +23965,15 @@ def _enqueue_q03_exact_identity(
                 retained_evidence = []
                 for identity_row in identity_rows:
                     evidence_raw = str(identity_row["evidence_path"] or "").strip()
-                    if evidence_raw and Path(evidence_raw).is_file():
+                    retained_path = (
+                        _retained_evidence_path(Path(evidence_raw))
+                        if evidence_raw
+                        else None
+                    )
+                    if retained_path is not None:
                         retained_evidence.append({
                             "id": identity_row["id"],
-                            "evidence_path": evidence_raw,
+                            "evidence_path": str(retained_path),
                         })
                 if retained_evidence:
                     return {
@@ -23947,7 +23985,7 @@ def _enqueue_q03_exact_identity(
                             "retained_identity_evidence_exists"
                         ),
                         "append_only_rerun_of_work_item": rerun_of,
-                        "evidence_path": str(rerun_evidence),
+                        "evidence_path": str(rerun_evidence_requested),
                         "retained_identity_evidence": retained_evidence,
                     }
                 purged_evidence_fallback = True
@@ -24036,6 +24074,15 @@ def _enqueue_q03_exact_identity(
                 "expected_period": bindings["expected_period"],
                 "expected_expert": bindings["expected_expert"],
                 "historical_work_item_preserved": True,
+                "q03_predecessor_evidence_path_at_enqueue": str(
+                    predecessor_evidence
+                ),
+                "q03_predecessor_evidence_sha256": _sha256_file(
+                    predecessor_evidence
+                ),
+                "q03_predecessor_evidence_compressed_at_enqueue": (
+                    predecessor_evidence != predecessor_evidence_requested
+                ),
                 "promoted_from_phase": "Q02",
                 "promoted_from_work_item": predecessor_id,
                 "promoted_from_p2_work_item": predecessor_id,
@@ -24066,7 +24113,9 @@ def _enqueue_q03_exact_identity(
                 "append_only_rerun": True,
                 "append_only_rerun_of_work_item": rerun_of,
                 "rerun_reason": reason,
-                "rerun_source_evidence_path": str(rerun_target["evidence_path"]),
+                "rerun_source_evidence_path": str(
+                    rerun_evidence or rerun_evidence_requested
+                ),
                 "rerun_source_evidence_purged_at_enqueue": purged_evidence_fallback,
                 "rerun_source_payload_sha256": hashlib.sha256(
                     str(rerun_target["payload_json"] or "{}").encode("utf-8")
@@ -24086,6 +24135,16 @@ def _enqueue_q03_exact_identity(
                         ],
                     },
                 })
+                if same_binary_infra_requalification:
+                    payload.update({
+                        "same_binary_infra_requalification": True,
+                        "same_binary_infra_source_reason": str(
+                            rerun_target_payload.get("verdict_reason") or ""
+                        ),
+                        "same_binary_infra_source_signature": str(
+                            rerun_target_payload.get("cold_cache_signature") or ""
+                        ),
+                    })
         wid = str(uuid.uuid4())
         conn.execute(
             """

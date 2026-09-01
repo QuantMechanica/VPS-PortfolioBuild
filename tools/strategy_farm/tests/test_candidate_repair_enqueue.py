@@ -1,3 +1,4 @@
+import gzip
 import json
 import sqlite3
 import sys
@@ -1872,6 +1873,120 @@ def test_q03_purged_fallback_refuses_current_binary_terminal_target(
         "q03_exact_identity_already_has_current_binary_terminal_result"
     )
     assert result["existing_work_item_id"] == "q03-current"
+    assert _work_item_count(art) == 2
+
+
+def test_q03_purged_fallback_allows_exact_current_binary_infra_target(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    current_payload = _payload(art, stale=False)
+    predecessor_evidence = _insert_work_item(
+        art,
+        item_id="q02-current",
+        phase="Q02",
+        status="done",
+        verdict="PASS",
+        payload=current_payload,
+    )
+    compressed_predecessor = Path(f"{predecessor_evidence}.gz")
+    with gzip.open(compressed_predecessor, "wb") as handle:
+        handle.write(predecessor_evidence.read_bytes())
+    predecessor_evidence.unlink()
+    infra_payload = {
+        **current_payload,
+        "cold_cache_signature": "NO_HISTORY",
+        "verdict_reason": "run_smoke_fail:NO_HISTORY;INCOMPLETE_RUNS",
+    }
+    evidence = _insert_work_item(
+        art,
+        item_id="q03-current-infra",
+        phase="Q03",
+        status="done",
+        verdict="INFRA_FAIL",
+        payload=infra_payload,
+    )
+    evidence.unlink()
+
+    result = farmctl.enqueue_cascade_backtest_for_ea(
+        art["root"],
+        art["ea_id"],
+        "Q03",
+        predecessor_work_item_id="q02-current",
+        append_only_rerun_of="q03-current-infra",
+        rerun_reason="recover terminal-local history after archive isolation",
+        expected_current_ex5_sha256=art["current_ex5"],
+    )
+
+    assert result["enqueued"]
+    assert result["created"][0]["fresh_q03_purged_evidence_fallback"] is True
+    assert _work_item_count(art) == 3
+    root = art["root"]
+    assert isinstance(root, Path)
+    with sqlite3.connect(root / farmctl.DB_REL) as conn:
+        created = conn.execute(
+            "SELECT status,payload_json FROM work_items WHERE id=?",
+            (result["created"][0]["id"],),
+        ).fetchone()
+    assert created is not None and created[0] == "pending"
+    payload = json.loads(created[1])
+    assert payload["same_binary_infra_requalification"] is True
+    assert payload["same_binary_infra_source_signature"] == "NO_HISTORY"
+    assert payload["same_binary_infra_source_reason"] == (
+        "run_smoke_fail:NO_HISTORY;INCOMPLETE_RUNS"
+    )
+    assert payload["append_only_rerun_of_work_item"] == "q03-current-infra"
+    assert payload["expected_current_ex5_sha256"] == art["current_ex5"]
+    assert payload["q03_predecessor_evidence_path_at_enqueue"] == str(
+        compressed_predecessor
+    )
+    assert payload["q03_predecessor_evidence_compressed_at_enqueue"] is True
+    assert payload["q03_predecessor_evidence_sha256"] == farmctl._sha256_file(
+        compressed_predecessor
+    )
+
+
+def test_q03_purged_fallback_refuses_same_binary_infra_binding_drift(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    current_payload = _payload(art, stale=False)
+    _insert_work_item(
+        art,
+        item_id="q02-current",
+        phase="Q02",
+        status="done",
+        verdict="PASS",
+        payload=current_payload,
+    )
+    infra_payload = {
+        **current_payload,
+        "expected_setfile_sha256": "f" * 64,
+        "verdict_reason": "run_smoke_fail:NO_HISTORY;INCOMPLETE_RUNS",
+    }
+    evidence = _insert_work_item(
+        art,
+        item_id="q03-current-infra-drifted",
+        phase="Q03",
+        status="done",
+        verdict="INFRA_FAIL",
+        payload=infra_payload,
+    )
+    evidence.unlink()
+
+    result = farmctl.enqueue_cascade_backtest_for_ea(
+        art["root"],
+        art["ea_id"],
+        "Q03",
+        predecessor_work_item_id="q02-current",
+        append_only_rerun_of="q03-current-infra-drifted",
+        rerun_reason="must reject drifted infra identity",
+        expected_current_ex5_sha256=art["current_ex5"],
+    )
+
+    assert not result["enqueued"]
+    assert result["reason"] == "q03_purged_same_binary_infra_binding_mismatch"
+    assert result["binding"] == "expected_setfile_sha256"
     assert _work_item_count(art) == 2
 
 
