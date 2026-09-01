@@ -1,0 +1,37 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        41266
+; ea_slug:      wti-mfk-scale-tr
+; ea_version:   v5.0
+; set_version:  s20260901-001
+; symbol:       XTIUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-09-01
+;==========================================================
+qm_ea_id=41266
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
+strategy_endpoint_count=13
+strategy_return_count=12
+strategy_block_size=6
+strategy_score_table_size=23
+strategy_relative_epsilon=0.000000000001
+strategy_min_score_variance=0.000000000000000001
+strategy_history_bars_d1=900
+strategy_entry_window_minutes=180
+strategy_max_endpoint_gap_days=10
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=3.5
+strategy_max_hold_days=40
+strategy_max_spread_points=1500
+strategy_deviation_points=20
