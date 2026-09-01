@@ -18179,3 +18179,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41269,xauxag-mklotz-scale-rv,0,XAUUSD.DWX,412690000,2026-09-01,Codex governed allocator,active
 41269,xauxag-mklotz-scale-rv,1,XAGUSD.DWX,412690001,2026-09-01,Codex governed allocator,active
 41270,wti-mlepage-shift-tr,0,XTIUSD.DWX,412700000,2026-09-01,Codex governed allocator,active
+41271,wti-msiegel-tukey-scale-tr,0,XTIUSD.DWX,412710000,2026-09-01,Codex governed allocator,active
