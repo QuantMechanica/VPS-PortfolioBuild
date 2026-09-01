@@ -1,0 +1,109 @@
+{
+  "schema": "qm.qm5-41275-q01-q02-handoff/v1",
+  "captured_at_utc": "2026-09-01T19:52:57.9037088Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "853d7011faf61d8249f75bd345e4b7241f78a97e",
+  "mission_outcome": "NEW_STRUCTURAL_WTI_SLEEVE_BUILT_Q01_PASS_Q02_ENQUEUED",
+  "ea": {
+    "ea_id": "QM5_41275",
+    "ea_label": "QM5_41275_wti-mqndisp-tr",
+    "strategy_id": "AI-CODEX-WTI-MQNDISP-TREND-20260901_S01",
+    "source_id": "AI-CODEX-WTI-MQNDISP-TREND-20260901",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "magic": 412750000,
+    "signal": "final seventeen closes of the immediately completed 17-23-session broker month; sixteen adjacent log returns; raw 36th one-based order statistic from all 120 pairwise absolute return distances; BUY at net >= 4*q_core and SELL at net <= -4*q_core",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "research": {
+    "source_packet_sha256": "C909922DC353DAA8F1C736C88E482137B99454F6678ABD379C2466185BD506FA",
+    "dedup_receipt_sha256": "831C20BF85E9B38C85F29D71F15D22422BD24BD10F3A9C40223DDBCA6AEC066D",
+    "dedup_verdict": "DISTINCT_WTI_COMPLETED_MONTH_FINAL17_RETURN_QN_CORE_DISPERSION_NORMALIZED_CONTINUATION",
+    "claim_boundary": "Peer-reviewed evidence supports WTI membership, monthly own-return continuation, and the Qn order-statistic method only; the exact within-month trading conjunction is disclosed pre-result QM synthesis.",
+    "functional_neighbor_boundary": "One fixed vector qualifies Qn-core but leaves L1 and RMS neighbors flat; a second qualifies both neighbors but remains Qn-core flat."
+  },
+  "q01": {
+    "status": "PASS",
+    "compile_work_item_id": "e6972329-b550-4a3b-ac69-0b6d7ced6bbc",
+    "compile_verdict": "COMPILE_OK",
+    "compile_terminal": "T10",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "build_check_result": "PASS",
+    "build_check_warnings": 3,
+    "build_check_warning_scope": "informational card-resolution fields only; no compile or framework failure",
+    "failure_classes": [],
+    "mq5_sha256": "09583B34D73B50496DA1B1C4C8EFFC07859C86CA3A19F47107DEF83DA971A817",
+    "ex5_sha256": "A7B6C59D541AFA463CF100E6E5A413070EF2A0AF5AD32634A37807D0DF03EE34",
+    "setfile_sha256": "EE1A93961E75BF47F1B957AB48194170FCC4481CB5205EA099892DEB35E734F7",
+    "setfile_build_hash": "CF99E6404568B5EA7EFDF1042D05D98C03D59C1E16E8EAF85F61CBD977A02EDB",
+    "compile_evidence_path": "D:/QM/reports/work_items/e6972329-b550-4a3b-ac69-0b6d7ced6bbc/QM5_41275/COMPILE_EA/compile_evidence.json",
+    "compile_evidence_sha256": "E5691F4388BB71CEC1DF726D08AD737C80A6335967B994F275BDBB3D4306D1A7",
+    "build_check_report": "D:/QM/reports/framework/21/build_check_20260901_194553.json",
+    "build_check_report_sha256": "585ADB324D162443DCC3CE669497878DAA33B7C2D4D3A2970902210BD646DAC3",
+    "reference_tests": "PASS_9",
+    "reference_test_sha256": "75F142CD13CF89DC3AAE6F8CD81B9FE0CAFA374216CA89EF2D885AE3DD602CBB",
+    "spec_validation": "PASS",
+    "spec_sha256": "87270DA07E1733CD1BDD8FED96ECEC53A01F6AFA6FCB7264BDFA98046B129992"
+  },
+  "cards": {
+    "canonical_and_ea_copy_sha256": "CA84C9F08467FC6CE65BA186A7D36E428E7DCCCB7515704046802F602ECDBC71",
+    "canonical_and_ea_copy_byte_identical": true,
+    "runtime_approved_card_sha256": "5745475EB9A3637451B748D52229EA470D6BB1B7C7AB09043E704CB3F432E170",
+    "runtime_normalization": "informational G0 approval text normalized; executable contract unchanged"
+  },
+  "capacity_admission": {
+    "sampling_method": "Win32_PerfFormattedData_PerfOS_Processor Name=_Total",
+    "sample_interval_seconds": 2,
+    "sample_window_utc": {
+      "started_at": "2026-09-01T19:48:33.2011862Z",
+      "ended_at": "2026-09-01T19:48:42.6676994Z"
+    },
+    "cpu_samples_percent": [
+      32.0,
+      20.0,
+      37.0,
+      32.0,
+      45.0
+    ],
+    "cpu_average_percent": 33.2,
+    "cpu_maximum_percent": 45.0,
+    "cpu_ceiling_percent": 97.0,
+    "rule": "admit only when average and maximum are strictly below the ceiling",
+    "admitted": true
+  },
+  "q02": {
+    "status": "pending",
+    "work_item_id": "9cc24276-b079-4abc-8813-1ee3a2f8b5d6",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "attempt_count_at_verification": 0,
+    "claimed_by_at_verification": null,
+    "build_task_id": "680efb0d-58db-452a-a1b0-63cbbbbc7837",
+    "build_result_path": "D:/QM/strategy_farm/artifacts/builds/680efb0d-58db-452a-a1b0-63cbbbbc7837.json",
+    "build_result_sha256_before_record": "022A63B7169B3CDCC7B05A5F84556E7CD88713FC3AB1325F0EFEB3A931969D51",
+    "auto_enqueue_count": 1,
+    "dispatch_owner": "paced worker fleet"
+  },
+  "commits": [
+    "7d2cc07d89 research: approve WTI Qn-core dispersion trend source",
+    "c446f8e321 card(QM5_41275): approve WTI Qn-core dispersion trend",
+    "7c2d681e70 registry(QM5_41275): reserve WTI Qn trend identity",
+    "84a71f20a6 build(QM5_41275): add WTI Qn-core dispersion trend EA",
+    "90370d3ec2 build(QM5_41275): mark preset pending compile",
+    "4af633f91a build(QM5_41275): record governed Q01 binary",
+    "853d7011fa docs(QM5_41275): bind canonical Q01 spec sections"
+  ],
+  "safety": {
+    "manual_backtest_launched": false,
+    "manual_dispatch_requested": false,
+    "terminal_control_performed": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "deploy_manifest_touched": false,
+    "live_manifest_touched": false
+  }
+}

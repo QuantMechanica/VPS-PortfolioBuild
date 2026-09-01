@@ -83,9 +83,9 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: Q00
-q01_status: PENDING_BUILD
-q02_status: NOT_QUEUED
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: ENQUEUED_PENDING
 force_build: true
 review_focus: "Falsify a direct-WTI completed-month Qn-core dispersion-normalized trend sleeve outside the certified XAU/SP500/NDX/XNG book. Verify month/session membership, final seventeen closes, sixteen return orientation, endpoint identity, all 120 distances, exact 36th order statistic, absent consistency factor, inclusive four-core side, consumed month, fixed risk, frozen stop, and next-month lifecycle. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -306,11 +306,12 @@ admission, deploy/live manifest, `T_Live`, AutoTrading, or terminal control.
 | phase | date | verdict | evidence |
 |---|---|---|---|
 | G0 | 2026-09-01 | APPROVED; R1-R4 PASS | source approval, complete-read receipts, dedup, card decision |
-| Q01 | - | PENDING_BUILD | deterministic registry allocation and build required |
-| Q02 | - | NOT_QUEUED | paced enqueue only after Q01 PASS and CPU admission |
+| Q01 | 2026-09-01 | PASS | governed `COMPILE_OK`; build check PASS, 0 compile errors, 0 compile warnings |
+| Q02 | 2026-09-01 | ENQUEUED_PENDING | `9cc24276-b079-4abc-8813-1ee3a2f8b5d6`; paced worker owns dispatch |
 
 ## Revision History
 
 | version | date | reason | phase | verdict |
 |---|---|---|---|---|
 | v1 | 2026-09-01 | initial WTI Qn-core dispersion-normalized trend card | G0 | APPROVED |
+| v1.1 | 2026-09-01 | governed build and paced handoff | Q01/Q02 | PASS / ENQUEUED_PENDING |

@@ -1,0 +1,109 @@
+{
+  "task_id": "680efb0d-58db-452a-a1b0-63cbbbbc7837",
+  "build_generation": 0,
+  "ea_id": "QM5_41275",
+  "ea_label": "QM5_41275_wti-mqndisp-tr",
+  "slug": "wti-mqndisp-tr",
+  "strategy_id": "AI-CODEX-WTI-MQNDISP-TREND-20260901_S01",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41275_wti-mqndisp-tr",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41275_wti-mqndisp-tr\\QM5_41275_wti-mqndisp-tr.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41275_wti-mqndisp-tr\\QM5_41275_wti-mqndisp-tr.ex5",
+  "magic_base": 412750000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "logical_symbol": "XTIUSD.DWX",
+  "host_symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41275_wti-mqndisp-tr\\sets\\QM5_41275_wti-mqndisp-tr_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_sha256": {
+    "QM5_41275_wti-mqndisp-tr_XTIUSD.DWX_D1_backtest.set": "EE1A93961E75BF47F1B957AB48194170FCC4481CB5205EA099892DEB35E734F7"
+  },
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41275_wti-mqndisp-tr\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "The qm-build-ea-from-card skill is build-only and forbids manual backtests; the OWNER mission authorizes one governed paced Q02 enqueue instead.",
+  "blocked_reason": "",
+  "open_questions": [
+    "Q02 must establish activity, fills, cost drag, and baseline economics, including at least five completed positions in every full post-warm-up year.",
+    "Only unchanged Q09 may determine realized correlation or diversification value versus the certified index, metal, and XNG book."
+  ],
+  "compile": {
+    "status": "COMPILE_OK",
+    "work_item_id": "e6972329-b550-4a3b-ac69-0b6d7ced6bbc",
+    "terminal": "T10",
+    "evidence_path": "D:\\QM\\reports\\work_items\\e6972329-b550-4a3b-ac69-0b6d7ced6bbc\\QM5_41275\\COMPILE_EA\\compile_evidence.json",
+    "evidence_sha256": "E5691F4388BB71CEC1DF726D08AD737C80A6335967B994F275BDBB3D4306D1A7",
+    "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260901_194553.json",
+    "build_check_report_sha256": "585ADB324D162443DCC3CE669497878DAA33B7C2D4D3A2970902210BD646DAC3",
+    "build_check_result": "PASS",
+    "build_check_warnings": 3,
+    "build_check_warning_codes": [
+      "EA_CARD_LOSS_LIMIT_UNDECIDABLE",
+      "EA_BROKER_TIME_WINDOW_UNDECIDABLE",
+      "EA_CARD_PENDING_ORDER_UNDECIDABLE"
+    ],
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "failure_classes": [],
+    "mq5_sha256": "09583B34D73B50496DA1B1C4C8EFFC07859C86CA3A19F47107DEF83DA971A817",
+    "ex5_sha256": "A7B6C59D541AFA463CF100E6E5A413070EF2A0AF5AD32634A37807D0DF03EE34",
+    "setfile_build_hash": "CF99E6404568B5EA7EFDF1042D05D98C03D59C1E16E8EAF85F61CBD977A02EDB",
+    "setfile_sha256": "EE1A93961E75BF47F1B957AB48194170FCC4481CB5205EA099892DEB35E734F7"
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "validations": {
+    "approved_card_sha256": "2C99CAA37FA458B6CD74D122A5956983FDE99E9A217957A34F71E90CF480A2F8",
+    "approved_local_card_byte_identical": true,
+    "farm_runtime_card_sha256": "5745475EB9A3637451B748D52229EA470D6BB1B7C7AB09043E704CB3F432E170",
+    "farm_runtime_card_byte_identical": false,
+    "farm_runtime_card_normalization": "Farm approval normalized informational G0 approval text; executable R2-R4, strategy, symbol, risk, and lifecycle are unchanged.",
+    "build_skill_guard": "PASS",
+    "card_schema_lint": "PASS",
+    "dedup_artifact_sha256": "831C20BF85E9B38C85F29D71F15D22422BD24BD10F3A9C40223DDBCA6AEC066D",
+    "reference_test_sha256": "75F142CD13CF89DC3AAE6F8CD81B9FE0CAFA374216CA89EF2D885AE3DD602CBB",
+    "reference_tests": "PASS_9",
+    "source_packet_sha256": "C909922DC353DAA8F1C736C88E482137B99454F6678ABD379C2466185BD506FA",
+    "spec_sha256": "87270DA07E1733CD1BDD8FED96ECEC53A01F6AFA6FCB7264BDFA98046B129992",
+    "spec_validation": "PASS",
+    "static_guardrails": "PASS_WITH_3_INFORMATIONAL_CARD_RESOLUTION_WARNINGS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "setfile_validation": "PASS_1_RISK_FIXED"
+  },
+  "capacity_admission": {
+    "sampling_method": "Win32_PerfFormattedData_PerfOS_Processor Name=_Total",
+    "sample_interval_seconds": 2,
+    "sample_window_utc": {
+      "started_at": "2026-09-01T19:48:33.2011862Z",
+      "ended_at": "2026-09-01T19:48:42.6676994Z"
+    },
+    "cpu_samples_percent": [
+      32.0,
+      20.0,
+      37.0,
+      32.0,
+      45.0
+    ],
+    "cpu_average_percent": 33.2,
+    "cpu_maximum_percent": 45.0,
+    "cpu_ceiling_percent": 97.0,
+    "rule": "admit only when average and maximum are strictly below the ceiling",
+    "admitted": true
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "deploy_manifest_touched": false,
+    "manual_backtest_launched": false,
+    "manual_dispatch_requested": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false
+  }
+}
