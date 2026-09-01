@@ -1,0 +1,19 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "0686c194b36195e3253f9dc35b2801fc8b7321cb3daee39cd281eec7dd678d2f",
+      "ea_id": "QM5_41260",
+      "ea_label": "QM5_41260_xauxag-mad2-rv",
+      "expected_mq5_sha256": "0686c194b36195e3253f9dc35b2801fc8b7321cb3daee39cd281eec7dd678d2f",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41260_xauxag-mad2-rv\\QM5_41260_xauxag-mad2-rv.mq5",
+      "work_item_id": "c0fdbeb3-0067-4d1b-afdf-0adfe67d9f32"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "c0fdbeb3-0067-4d1b-afdf-0adfe67d9f32"
+}
