@@ -1559,7 +1559,8 @@ def pending_claim_order_sql() -> str:
              ), '')) IN (
                'WF_COMBO', 'WF_COMBO_RERUN',
                'NUMERIC_BASELINE', 'NUMERIC_BASELINE_RERUN',
-               'NUMERIC', 'NUMERIC_RERUN'
+               'NUMERIC', 'NUMERIC_RERUN',
+               'FINAL_FULLWINDOW', 'FINAL_FULLWINDOW_RERUN'
              )
              AND json_type(w.payload_json, '$.priority_track')='true'
              AND json_type(

@@ -249,6 +249,16 @@ def test_post_census_critical_path_precedes_annual_frontier_without_reordering_a
         "priority_track": True,
         census.FRONTIER_PRIORITY_MARKER: True,
     }
+    final_fullwindow = {
+        "schema": census.SCHEMA,
+        "program_id": "program-complete",
+        "cell_key": "program-complete:final_fullwindow:final",
+        "arm": "final:selected",
+        "year": 2019,
+        "opt_census_stage": "FINAL_FULLWINDOW",
+        "priority_track": True,
+        census.FRONTIER_PRIORITY_MARKER: True,
+    }
     with farmctl.connect(root) as conn:
         for item_id, payload, updated_at in (
             ("annual-first", annual, "2026-08-31T00:00:00+00:00"),
@@ -259,6 +269,7 @@ def test_post_census_critical_path_precedes_annual_frontier_without_reordering_a
             ),
             ("wf-combo", combo, now),
             ("numeric", numeric, "2026-09-01T00:01:00+00:00"),
+            ("final-fullwindow", final_fullwindow, "2026-09-01T00:02:00+00:00"),
         ):
             _insert(
                 conn,
@@ -280,10 +291,12 @@ def test_post_census_critical_path_precedes_annual_frontier_without_reordering_a
     by_id = {row["id"]: row for row in ordered}
     assert by_id["wf-combo"]["_opt_census_post_census_rank"] == 0
     assert by_id["numeric"]["_opt_census_post_census_rank"] == 0
+    assert by_id["final-fullwindow"]["_opt_census_post_census_rank"] == 0
     assert by_id["annual-first"]["_opt_census_post_census_rank"] == 1
-    assert [row["id"] for row in ordered[:4]] == [
+    assert [row["id"] for row in ordered[:5]] == [
         "wf-combo",
         "numeric",
+        "final-fullwindow",
         "annual-first",
         "annual-second",
     ]
