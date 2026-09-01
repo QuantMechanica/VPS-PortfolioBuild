@@ -2,7 +2,7 @@
 """Reconcile phantom factory capacity in legacy ``dispatch_state.json``.
 
 The command is read-only unless ``--apply`` is present.  Apply is allowed only
-while FACTORY_OFF is hash-bound, no T1-T10 terminal process exists, the state
+while FACTORY_OFF is hash-bound, no T1-T12 terminal process exists, the state
 file still has the planned SHA-256, and a byte-for-byte backup target is fresh.
 Unfinished dedup records are moved (not discarded) to ``dispatch_history``;
 phase-matrix verdict evidence is byte-logically unchanged.
@@ -33,7 +33,7 @@ from factory_mutation_lock import FactoryMutationLock, path_for_factory_flag  # 
 
 DEFAULT_STATE = Path(r"D:\QM\reports\pipeline\dispatch_state.json")
 DEFAULT_FACTORY_OFF = Path(r"D:\QM\strategy_farm\state\FACTORY_OFF.flag")
-FACTORY_TERMINALS = {f"T{i}" for i in range(1, 11)}
+FACTORY_TERMINALS = {f"T{i}" for i in range(1, 13)}
 
 
 def utc_now() -> str:
@@ -54,7 +54,7 @@ def canonical_sha256(value: Any) -> str:
 
 
 def detect_factory_terminal_processes() -> list[dict[str, Any]]:
-    """Return T1-T10 terminal64 processes; T_Live is explicitly out of scope."""
+    """Return T1-T12 terminal64 processes; T_Live is explicitly out of scope."""
     if os.name != "nt":
         return []
     script = (

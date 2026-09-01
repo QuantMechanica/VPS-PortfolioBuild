@@ -128,7 +128,7 @@ $detail = ''
 
 # -------------------------------------------------------------------
 # Operator concurrency cap awareness (2026-06-22 — fixes a 5-min flap loop).
-# disabled_terminals.txt removes terminals (e.g. T8,T9,T10 for the RAM cap,
+# disabled_terminals.txt removes terminals (including inert canaries T11/T12,
 # commit 050829f9b) from the fleet, so start_terminal_workers spawns only the
 # remaining N. The watchdog target MUST track that cap: with the old fixed
 # defaults (MinWorkers=8, ExpectWorkers=10) a capped fleet of 7 satisfies
@@ -141,9 +141,9 @@ $disabledCount = 0
 if (Test-Path $disabledTerminalsPath) {
     $disabledCount = @(Get-Content $disabledTerminalsPath -ErrorAction SilentlyContinue |
         ForEach-Object { $_.Trim() } |
-        Where-Object { $_ -match '^T(?:[1-9]|10)$' }).Count
+        Where-Object { $_ -match '^T(?:[1-9]|1[0-2])$' }).Count
 }
-$ExpectWorkers = [math]::Max(1, 10 - $disabledCount)
+$ExpectWorkers = [math]::Max(1, 12 - $disabledCount)
 # Heal only when BELOW the capped target (workers == cap reads healthy). Never
 # require more workers than the operator cap allows.
 $MinWorkers = [math]::Min($MinWorkers, $ExpectWorkers)
@@ -693,13 +693,13 @@ $nActive = 0
 $nPending = 0
 if ($factoryEnabled) {
     try {
-        # Count ONLY factory T1-T10 terminals, not every terminal64 on the box. A
+        # Count ONLY factory T1-T12 terminals, not every terminal64 on the box. A
         # dedicated analysis terminal (D:\QM\mt5\T_Export) or the live T_Live terminal
         # must NOT count here, else they MASK a real dispatch stall (observed 2026-06-09:
         # a T_Export export run showed term64=1 and the watchdog read 'healthy' while the
         # factory was wedged 0-active).
         $nTerm = @(Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorAction SilentlyContinue |
-                   Where-Object { $_.CommandLine -match '\\mt5\\T(?:[1-9]|10)\\' }).Count
+                   Where-Object { $_.CommandLine -match '\\mt5\\T(?:[1-9]|1[0-2])\\' }).Count
         # single-quoted here-string + stdin pipe avoids all PowerShell/SQL quote escaping
         $q = @'
 import sqlite3

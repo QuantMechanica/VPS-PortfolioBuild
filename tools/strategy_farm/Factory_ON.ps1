@@ -158,6 +158,7 @@ $QM_PREPARATION_DECISION_WORKER_TERMINALS = @(
     'T1','T2','T3','T4','T5','T6','T7','T8','T9','T10'
 )
 $QM_OWNER_APPROVED_DISABLED_TERMINALS = @(
+    'T11','T12'
 )
 $QM_OWNER_APPROVED_WORKER_TERMINALS = @(
     'T1','T2','T3','T4','T5','T6','T7','T8','T9','T10'
@@ -274,7 +275,7 @@ function Get-CanonicalDisabledTerminalPolicySnapshot {
     $rows = @([regex]::Split($text, '\r\n|\n|\r') |
         ForEach-Object { $_.Trim() } |
         Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
-    $invalid = @($rows | Where-Object { $_ -notmatch '(?i)^T(?:[1-9]|10)$' })
+    $invalid = @($rows | Where-Object { $_ -notmatch '(?i)^T(?:[1-9]|1[0-2])$' })
     if ($invalid.Count -ne 0) {
         throw "invalid disabled-terminal rows: $($invalid -join ', ')"
     }
@@ -814,7 +815,7 @@ function Test-ExactFactoryWorkerCohort {
     $errors = New-Object System.Collections.Generic.List[string]
     $expectedSet = @{}
     foreach ($terminal in $ExpectedTerminals) {
-        if ($terminal -notmatch '^T(?:[1-9]|10)$' -or $expectedSet.ContainsKey($terminal)) {
+        if ($terminal -notmatch '^T(?:[1-9]|1[0-2])$' -or $expectedSet.ContainsKey($terminal)) {
             [void]$errors.Add("Invalid or duplicate expected worker terminal '$terminal'.")
         } else {
             $expectedSet[$terminal] = $true
@@ -823,7 +824,7 @@ function Test-ExactFactoryWorkerCohort {
     $actualSet = @{}
     foreach ($row in @($WorkerRows)) {
         $terminal = [string]$row.terminal
-        if ($terminal -notmatch '^T(?:[1-9]|10)$') {
+        if ($terminal -notmatch '^T(?:[1-9]|1[0-2])$') {
             [void]$errors.Add("Worker PID '$($row.process_id)' has invalid terminal '$terminal'.")
             continue
         }
@@ -1287,7 +1288,7 @@ try {
 }
 $script:disabledTerminalPolicySha256 = [string]$disabledTerminalPolicy.sha256
 $disabledTerminals = @($disabledTerminalPolicy.terminals)
-$derivedWorkerTerminals = @(1..10 | ForEach-Object { "T$_" } |
+$derivedWorkerTerminals = @(1..12 | ForEach-Object { "T$_" } |
     Where-Object { $_ -notin $disabledTerminals })
 $missingWorkerTerminals = @($QM_OWNER_APPROVED_WORKER_TERMINALS |
     Where-Object { $_ -notin $derivedWorkerTerminals })
@@ -1397,7 +1398,7 @@ if (Test-Path -LiteralPath $factoryOffFlagPath) {
     throw ("FACTORY ON ABORTED: interlock absent but factory is not verifiably ON " +
         "(worker_errors=[$($alreadyOnWorkers.errors -join '; ')] " +
         "task_errors=[$($alreadyOnTasks.errors -join '; ')]). " +
-        "Exactly T1-T10 must be present in this session. " +
+        "Exactly the enabled factory cohort must be present in this session. " +
         "Run Factory_OFF first to establish a clean restart contract.")
 }
 
@@ -1436,7 +1437,7 @@ try {
         -Context 'immediately after Factory_ON lock acquisition')
     # Preflight and stale factory-process drain occur while the interlock remains
     # asserted and while the same lock used by maintenance one-shots is held.
-    # The exact T1..T10 classifiers structurally exclude T_Live/FTMO.
+    # The exact T1..T12 classifiers structurally exclude T_Live/FTMO.
     Assert-DisabledTerminalPolicyUnchanged `
         -ExpectedSha256 $script:disabledTerminalPolicySha256 `
         -Context 'locked preflight' | Out-Null
@@ -1686,7 +1687,7 @@ try {
     }
 }
 
-Write-Host '  OWNER worker policy enforced: disabled=[]; exact T1-T10 cohort healthy.'
+Write-Host '  OWNER worker policy enforced: disabled=[T11,T12]; exact T1-T10 active cohort healthy.'
 Write-Host '  T_Live/FTMO task state, live terminals and AutoTrading were not touched.'
 Write-Host '  RDP disconnect is safe; explicit LOGOFF still terminates interactive factory workers.'
 Write-Host ''

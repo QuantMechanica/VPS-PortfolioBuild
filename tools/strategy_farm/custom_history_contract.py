@@ -29,6 +29,10 @@ ARCHIVE_EXTENSIONS = frozenset({".hcc", ".tkc"})
 DEFAULT_ARCHIVE_YEARS = tuple(range(2017, 2026))
 DEFAULT_CURRENT_YEAR = 2026
 DEFAULT_RUNNER_TERMINALS = tuple(f"T{number}" for number in range(1, 11))
+# The v1 signed manifest remains bound to the original ten-terminal cutover.
+# OWNER-authorized inert canaries may be provisioned from its content hashes,
+# but cannot dispatch until a later activation/ramp receipt admits them.
+PROVISIONED_FACTORY_TERMINALS = tuple(f"T{number}" for number in range(1, 13))
 _YEAR_STEM_RE = re.compile(r"^(?P<year>\d{4})(?:\d{2})?$")
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 _GIT_OID_RE = re.compile(r"^[0-9a-f]{40}$")

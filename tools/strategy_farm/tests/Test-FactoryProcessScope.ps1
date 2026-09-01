@@ -41,6 +41,8 @@ Assert-QmEqual -Expected 2 -Actual $script:QmFactoryProcessScopeVersion -Name 's
 $acceptedImages = @(
     @('D:\QM\mt5\T1\terminal64.exe', 'terminal64.exe'),
     @('D:\QM\mt5\T10\terminal64.exe', 'terminal64.exe'),
+    @('D:\QM\mt5\T11\terminal64.exe', 'terminal64.exe'),
+    @('D:\QM\mt5\T12\metatester64.exe', 'metatester64.exe'),
     @('d:\qm\MT5\t7\TERMINAL64.EXE', 'terminal64.exe'),
     @('D:/QM/mt5/T1/metatester64.exe', 'metatester64.exe'),
     @('D:\QM\mt5\T10\metatester64.exe', 'metatester64.exe')
@@ -58,7 +60,7 @@ $rejectedImages = @(
     @('D:\QM\mt5\T_Export\terminal64.exe', 'terminal64.exe'),
     @('D:\QM\mt5\T0\terminal64.exe', 'terminal64.exe'),
     @('D:\QM\mt5\T01\terminal64.exe', 'terminal64.exe'),
-    @('D:\QM\mt5\T11\terminal64.exe', 'terminal64.exe'),
+    @('D:\QM\mt5\T13\terminal64.exe', 'terminal64.exe'),
     @('D:\QM\mt5\T1_backup\terminal64.exe', 'terminal64.exe'),
     @('D:\QM\mt5\T1\nested\terminal64.exe', 'terminal64.exe'),
     @('C:\QM\mt5\T1\terminal64.exe', 'terminal64.exe'),
@@ -76,14 +78,16 @@ foreach ($case in $rejectedImages) {
         -Name "reject non-factory image $($case[0])"
 }
 
-# terminal_worker.py must be the fixed script, farm root, and a T1..T10 lane.
+# terminal_worker.py must be the fixed script, farm root, and a T1..T12 lane.
 $acceptedWorkers = @(
     'pythonw.exe -u C:\QM\repo\tools\strategy_farm\terminal_worker.py --terminal T1 --root D:\QM\strategy_farm',
     '"C:\Program Files\Python311\python.exe" "C:\QM\repo\tools\strategy_farm\terminal_worker.py" --root "D:\QM\strategy_farm" --terminal T10',
     'PYTHON.EXE -u C:\QM\REPO\tools\strategy_farm\terminal_worker.py --terminal t7 --root d:\qm\strategy_farm',
     'python.exe -X utf8 C:\QM\repo\tools\strategy_farm\terminal_worker.py --terminal T2 --root D:\QM\strategy_farm',
     'pythonw.exe -Xutf8 -u C:\QM\repo\tools\strategy_farm\terminal_worker.py --terminal T9 --root D:\QM\strategy_farm',
-    'python.exe -u -X utf8 C:\QM\repo\tools\strategy_farm\terminal_worker.py --terminal T10 --root D:\QM\strategy_farm'
+    'python.exe -u -X utf8 C:\QM\repo\tools\strategy_farm\terminal_worker.py --terminal T10 --root D:\QM\strategy_farm',
+    'pythonw.exe -u C:\QM\repo\tools\strategy_farm\terminal_worker.py --terminal T11 --root D:\QM\strategy_farm',
+    'pythonw.exe -u C:\QM\repo\tools\strategy_farm\terminal_worker.py --terminal T12 --root D:\QM\strategy_farm'
 )
 foreach ($commandLine in $acceptedWorkers) {
     Assert-QmTrue -Condition (Test-QmFactoryWorkerCommandLine -CommandLine $commandLine) `
@@ -93,7 +97,7 @@ foreach ($commandLine in $acceptedWorkers) {
 $rejectedWorkers = @(
     'pythonw.exe -u C:\QM\repo\tools\strategy_farm\terminal_worker.py --terminal DEV1 --root D:\QM\strategy_farm',
     'pythonw.exe -u C:\QM\repo\tools\strategy_farm\terminal_worker.py --terminal DEV2 --root D:\QM\strategy_farm',
-    'pythonw.exe -u C:\QM\repo\tools\strategy_farm\terminal_worker.py --terminal T11 --root D:\QM\strategy_farm',
+    'pythonw.exe -u C:\QM\repo\tools\strategy_farm\terminal_worker.py --terminal T13 --root D:\QM\strategy_farm',
     'pythonw.exe -u C:\QM\repo\tools\strategy_farm\terminal_worker.py --terminal T01 --root D:\QM\strategy_farm',
     'pythonw.exe -u C:\QM\repo\tools\strategy_farm\terminal_worker.py --terminal T1evil --root D:\QM\strategy_farm',
     'pythonw.exe -u C:\Temp\terminal_worker.py --terminal T1 --root D:\QM\strategy_farm',
@@ -125,6 +129,8 @@ $acceptedWrappers = @(
     'pwsh.exe -NoProfile -File C:\QM\repo\framework\scripts\run_smoke.ps1 -Terminal T1 -ReportRoot D:\QM\reports\work_items\000034e8-7161-430b-be4f-e140cb99789b',
     '"C:\Program Files\PowerShell\7\pwsh.exe" -NoProfile -File "C:\QM\repo\framework\scripts\run_smoke.ps1" -ReportRoot "D:\QM\reports\work_items\000034e8-7161-430b-be4f-e140cb99789b" -Terminal T10',
     'powershell.exe -Terminal t6 -File C:\QM\REPO\framework\scripts\run_smoke.ps1',
+    'pwsh.exe -File C:\QM\repo\framework\scripts\run_smoke.ps1 -Terminal T11',
+    'pwsh.exe -File C:\QM\repo\framework\scripts\run_smoke.ps1 -Terminal T12',
     'pwsh.exe -File C:/QM/repo/framework/scripts/run_smoke.ps1 -Terminal any -ReportRoot D:/QM/reports/work_items/000034e8-7161-430b-be4f-e140cb99789b'
 )
 foreach ($commandLine in $acceptedWrappers) {
@@ -137,7 +143,7 @@ $rejectedWrappers = @(
     'pwsh.exe -File C:\QM\repo\framework\scripts\run_smoke.ps1 -Terminal DEV2 -ReportRoot D:\QM\reports\dev2',
     'pwsh.exe -File C:\QM\repo\framework\scripts\run_smoke.ps1 -Terminal T_Live',
     'pwsh.exe -File C:\QM\repo\framework\scripts\run_smoke.ps1 -Terminal T_Export',
-    'pwsh.exe -File C:\QM\repo\framework\scripts\run_smoke.ps1 -Terminal T11',
+    'pwsh.exe -File C:\QM\repo\framework\scripts\run_smoke.ps1 -Terminal T13',
     'pwsh.exe -File C:\QM\repo\framework\scripts\run_smoke.ps1 -Terminal T01',
     'pwsh.exe -File C:\QM\repo\framework\scripts\run_smoke.ps1 -Terminal T1evil',
     'pwsh.exe -File C:\QM\repo\framework\scripts\run_smoke.ps1 -NotTerminal T1',
@@ -181,8 +187,8 @@ $originalDisabledTerminalsPath = $script:QmFactoryDisabledTerminalsPath
 $workerPolicyFixture = [System.IO.Path]::GetTempFileName()
 [System.IO.File]::WriteAllText($workerPolicyFixture, '')
 $script:QmFactoryDisabledTerminalsPath = $workerPolicyFixture
-Assert-QmEqual -Expected 10 -Actual @(Get-QmFactoryWorkerPolicyTerminals).Count `
-    -Name 'zero-disabled worker policy exposes all ten phase-runner terminals'
+Assert-QmEqual -Expected 12 -Actual @(Get-QmFactoryWorkerPolicyTerminals).Count `
+    -Name 'zero-disabled worker policy exposes all twelve phase-runner terminals'
 
 $runnerRoot = 'D:\QM\reports\work_items\000034e8-7161-430b-be4f-e140cb99789b'
 foreach ($entry in @($allowlist.entries)) {
@@ -442,7 +448,7 @@ Assert-QmTrue -Condition ($onText.Contains("`$snapshot.phase_runners + `$snapsho
     -Name 'Factory_ON stale drain includes phase runners in safe order'
 Assert-QmTrue -Condition ($onText.Contains('no ambiguous process was reaped')) `
     -Name 'Factory_ON refuses REVIEW_REQUIRED near-matches without reaping'
-Assert-QmTrue -Condition ($windowText.Contains("Name='factory terminal64 (T1..T10)=0'")) `
+Assert-QmTrue -Condition ($windowText.Contains("Name='factory terminal64 (T1..T12)=0'")) `
     -Name 'TestWindow reports factory-only terminal scope'
 Assert-QmTrue -Condition ($windowText.Contains('Test-QmFactoryPumpCommandLine -CommandLine $_.CommandLine')) `
     -Name 'TestWindow uses exact pump classifier'

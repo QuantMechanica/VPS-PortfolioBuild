@@ -446,7 +446,7 @@ Q01_SMOKE_WORK_ITEM_CONTRACT = "qm.q01.worker_bound_basket_smoke.v1"
 # non-strategy harness. This reserved diagnostic id is never registered,
 # reviewed, promoted, or used as a magic number.
 HARNESS_RUN_SMOKE_EA_ID = 999999
-# The factory terminals (T1-T10) always run as Administrator; the shared
+# The factory terminals (T1-T12) always run as Administrator; the shared
 # MQL5 FILE_COMMON root every other consumer in this codebase hardcodes
 # (analyze_ftmo_costs.py, health.py, repair.py, isolated_work_item_runner.py, ...).
 COMMON_FILES_ROOT = Path(
@@ -556,9 +556,9 @@ Q04_DEFAULT_LATEST_FULL_YEAR = 2025
 DWX_MULTI_SYMBOL_FULL_HISTORY_FROM = "2018.07.02"
 P5PLUS_MAX_DRAWDOWN_PCT = 20.0
 P5PLUS_MIN_SHARPE = 0.6
-FACTORY_TERMINAL_PATTERN = re.compile(r"^T(?:[1-9]|10)$", re.IGNORECASE)
+FACTORY_TERMINAL_PATTERN = re.compile(r"^T(?:[1-9]|1[0-2])$", re.IGNORECASE)
 LIVE_TERMINAL_NAMES = {"T_LIVE", "T6_LIVE"}
-MT5_TERMINALS = tuple(f"T{i}" for i in range(1, 11))  # factory fleet, T_Live is never a factory slot
+MT5_TERMINALS = tuple(f"T{i}" for i in range(1, 13))  # factory fleet, T_Live is never a factory slot
 # MNT-046: autonomous phase-runner parents must use the same live worker-policy
 # cohort as terminal workers and factory_process_scope. Eligibility is derived
 # below from disabled_terminals.txt; T_Live is outside MT5_TERMINALS by design.
@@ -732,7 +732,7 @@ def disabled_mt5_terminals() -> set[str]:
 
 
 def worker_policy_terminals() -> tuple[str, ...]:
-    """Return the current T1-T10 worker cohort after the live disabled policy."""
+    """Return the current T1-T12 worker cohort after the live disabled policy."""
     disabled = disabled_mt5_terminals()
     return tuple(
         terminal
@@ -2222,7 +2222,7 @@ def _init_db_once(root: Path) -> None:
                 attempt_count INTEGER NOT NULL DEFAULT 0,
                 parent_task_id TEXT,            -- FK to tasks(id) — the bundled backtest task
                 evidence_path TEXT,             -- path to smoke summary.json
-                claimed_by TEXT,                -- factory terminal name (T1..T10) when active
+                claimed_by TEXT,                -- factory terminal name (T1..T12) when active
                 payload_json TEXT NOT NULL,     -- extra context
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL,
@@ -9283,7 +9283,7 @@ def _running_mt5_terminals() -> set[str]:
                 "-Command",
                 (
                     "Get-CimInstance Win32_Process -Filter \"Name='terminal64.exe'\" "
-                    "| ForEach-Object { if ($_.ExecutablePath -match '\\\\(T(?:[1-9]|10))\\\\terminal64\\.exe$') { $Matches[1] } }"
+                    "| ForEach-Object { if ($_.ExecutablePath -match '\\\\(T(?:[1-9]|1[0-2]))\\\\terminal64\\.exe$') { $Matches[1] } }"
                 ),
             ],
             capture_output=True,
@@ -20323,7 +20323,7 @@ def _pump_unlocked(
         minimum_start_seconds=5.0,
     )
 
-    # Analytic optimization rows are intentionally invisible to T1-T10.  The
+    # Analytic optimization rows are intentionally invisible to T1-T12.  The
     # bounded no-change service handles only the explicit zero-search contract
     # emitted by optimization_fork_driver.  Any measured/candidate-bearing row
     # remains pending for its governed evaluator; no selection rule is applied
@@ -20717,7 +20717,7 @@ def render_claude_prompt(root: Path, source_id_arg: str | None, out_path: str | 
 def _terminal_from_path(path: str | None) -> str | None:
     if not path:
         return None
-    match = re.search(r"\\mt5\\(T(?:[1-9]|10))\\", str(path), re.IGNORECASE)
+    match = re.search(r"\\mt5\\(T(?:[1-9]|1[0-2]))\\", str(path), re.IGNORECASE)
     if not match:
         return None
     terminal = match.group(1).upper()
@@ -20809,7 +20809,7 @@ def _scan_terminal_worker_processes() -> dict[str, list[int]]:
     for row in rows:
         if not isinstance(row, dict):
             continue
-        match = re.search(r"--terminal\s+(T(?:[1-9]|10))\b", str(row.get("CommandLine") or ""), re.IGNORECASE)
+        match = re.search(r"--terminal\s+(T(?:[1-9]|1[0-2]))\b", str(row.get("CommandLine") or ""), re.IGNORECASE)
         if not match:
             continue
         try:
@@ -29394,12 +29394,12 @@ def build_parser() -> argparse.ArgumentParser:
     record_review.add_argument("--result-file", required=True, help="Path to Claude's verdict JSON")
 
     sub.add_parser("mt5-slots", help="Show MT5 terminal process scan with per factory slot attribution")
-    reserve_terminal = sub.add_parser("reserve-terminal", help="Reserve a T1-T10 slot after its current item finishes")
+    reserve_terminal = sub.add_parser("reserve-terminal", help="Reserve a T1-T12 slot after its current item finishes")
     reserve_terminal.add_argument("terminal")
     reserve_terminal.add_argument("--by", required=True, dest="reserved_by")
     reserve_terminal.add_argument("--minutes", type=int, default=DEFAULT_TERMINAL_RESERVATION_MINUTES)
     reserve_terminal.add_argument("--reason", default="")
-    release_terminal = sub.add_parser("release-terminal", help="Release a live T1-T10 reservation")
+    release_terminal = sub.add_parser("release-terminal", help="Release a live T1-T12 reservation")
     release_terminal.add_argument("terminal")
     reconcile_mt5 = sub.add_parser("reconcile-mt5", help="Report MT5/worker slot mismatches; optionally repair safe slot blockers")
     reconcile_mt5.add_argument("--fix-workers", action="store_true", help="Stop duplicate terminal_worker.py daemons and start missing ones")

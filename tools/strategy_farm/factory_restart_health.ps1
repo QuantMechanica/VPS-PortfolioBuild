@@ -338,7 +338,7 @@ function Test-QmFactoryPostStartHealth {
 
     $expectedTerminalSet = @{}
     foreach ($terminal in $ExpectedWorkerTerminals) {
-        if ($terminal -notmatch '(?i)\AT(?:[1-9]|10)\z') {
+        if ($terminal -notmatch '(?i)\AT(?:[1-9]|1[0-2])\z') {
             [void]$errors.Add("Expected worker terminal '$terminal' is invalid.")
             continue
         }
@@ -352,7 +352,7 @@ function Test-QmFactoryPostStartHealth {
     $workerByTerminal = @{}
     foreach ($worker in @($Snapshot.workers)) {
         $terminal = [string]$worker.terminal
-        if ($terminal -notmatch '(?i)\AT(?:[1-9]|10)\z') {
+        if ($terminal -notmatch '(?i)\AT(?:[1-9]|1[0-2])\z') {
             [void]$errors.Add("Worker PID '$($worker.process_id)' has an invalid terminal identity.")
             continue
         }

@@ -112,7 +112,7 @@ ZERO_TRADE_DEAD_THRESHOLD = 0.80
 ZERO_TRADE_DEAD_MIN_DONE = 5
 ZERO_TRADE_REWORK_DEDUP_HOURS = 6
 PHASE_ACTIVE_TIMEOUT_MIN = dict(farmctl.PHASE_ACTIVE_TIMEOUT_MIN)
-FACTORY_TERMINALS = tuple(f"T{i}" for i in range(1, 11))
+FACTORY_TERMINALS = tuple(f"T{i}" for i in range(1, 13))
 MT5_ROOT = Path(os.environ.get("QM_MT5_ROOT", r"D:\QM\mt5"))
 TERMINAL_PROFILE_LOG_TAIL_BYTES = 256 * 1024
 ACCOUNT_NOT_SPECIFIED_TOKEN = "tester not started because the account is not specified"
@@ -232,7 +232,7 @@ def _disabled_terminals() -> set[str]:
     out: set[str] = set()
     for line in text.splitlines():
         name = line.strip().upper()
-        if re.fullmatch(r"T(?:[1-9]|10)", name):
+        if re.fullmatch(r"T(?:[1-9]|1[0-2])", name):
             out.add(name)
     return out
 
@@ -1507,7 +1507,7 @@ def chk_mt5_worker_saturation(con) -> dict:
     running: set[str] = set()
     for row in rows if isinstance(rows, list) else []:
         cmd = str(row.get("CommandLine") or "")
-        match = re.search(r"--terminal\s+(T(?:[1-9]|10))\b", cmd, re.IGNORECASE)
+        match = re.search(r"--terminal\s+(T(?:[1-9]|1[0-2]))\b", cmd, re.IGNORECASE)
         if match:
             running.add(match.group(1).upper())
     disabled = _disabled_terminals()
@@ -1579,7 +1579,7 @@ def chk_terminal_account_profiles(
 ) -> dict:
     """Read-only detection of missing portable-terminal account profiles.
 
-    Each enabled T1-T10 slot must have its account/server files and explicit
+    Each enabled T1-T12 slot must have its account/server files and explicit
     Login/Server keys. Runtime truth comes from the latest terminal log: only an
     ACCOUNT_NOT_SPECIFIED token after the latest tester.ini launch marker is
     actionable, so stale failures from an earlier run cannot poison the probe.
@@ -1686,7 +1686,7 @@ def chk_terminal_account_profiles(
         "OK",
         inspected_logs,
         len(enabled),
-        f"{inspected_logs}/{len(enabled)} enabled T1-T10 profiles have config and no current-launch account fault",
+        f"{inspected_logs}/{len(enabled)} enabled T1-T12 profiles have config and no current-launch account fault",
         "",
     )
 
@@ -2304,7 +2304,7 @@ def _evaluate_disk_scratch_rate(*, free_gb: float, measurement: dict) -> dict:
     hint = (
         "Run tester_cache_purge.ps1 -Mode BusyScratch -DryRun, then apply without "
         "-DryRun if candidates are released. It only targets aged bar*.tmp under "
-        "T1-T10/Tester/Agent-*/temp and skips files that fail exclusive-open. "
+        "T1-T12/Tester/Agent-*/temp and skips files that fail exclusive-open. "
         "Do not stop active backtests or touch T_Live, Bases source ticks, or reports."
     )
     if (

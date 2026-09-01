@@ -9,7 +9,7 @@ param(
     [int]$Year,
     [string]$FromDate,
     [string]$ToDate,
-    [ValidateSet("any", "DEV1", "DEV2", "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10")]
+    [ValidateSet("any", "DEV1", "DEV2", "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10", "T11", "T12")]
     [string]$Terminal = "T1",
     [string]$Expert,
     [string]$Period = "H1",
@@ -528,10 +528,10 @@ function Resolve-TerminalRoot {
     )
 
     $root = Join-Path "D:\QM\mt5" $TerminalName
-    $isFactoryTerminal = $TerminalName -match '^T([1-9]|10)$'
+    $isFactoryTerminal = $TerminalName -match '^T([1-9]|1[0-2])$'
     $isExplicitDevTerminal = $TerminalName -match '^DEV[12]$'
     if (-not $isFactoryTerminal -and -not $isExplicitDevTerminal) {
-        throw "Refusing terminal '$TerminalName'. Allowed terminals are factory T1..T10 plus explicit development terminals DEV1/DEV2; T_Live is off limits."
+        throw "Refusing terminal '$TerminalName'. Allowed terminals are factory T1..T12 plus explicit development terminals DEV1/DEV2; T_Live is off limits."
     }
     if (-not (Test-Path -LiteralPath $root -PathType Container)) {
         throw "Terminal root does not exist: $root"
@@ -671,7 +671,7 @@ function Invoke-CustomHistorySmokeAdmission {
         [int]$RunsValue
     )
 
-    if ($TerminalName -notmatch '^T([1-9]|10)$') {
+    if ($TerminalName -notmatch '^T([1-9]|1[0-2])$') {
         return $null
     }
     $repoRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..\..')).Path
@@ -765,7 +765,18 @@ function Resolve-DispatchTerminal {
     # setfile identity for resolve_backtest_target.py. Pick a currently-free
     # factory terminal directly instead of aborting before MT5 starts.
     if ([string]::IsNullOrWhiteSpace($SetFilePath)) {
-        foreach ($candidate in @("T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10")) {
+        $disabledPolicy = 'D:\QM\strategy_farm\state\disabled_terminals.txt'
+        $disabled = @()
+        if (Test-Path -LiteralPath $disabledPolicy -PathType Leaf) {
+            $disabled = @(Get-Content -LiteralPath $disabledPolicy -ErrorAction Stop |
+                ForEach-Object { ([string]$_).Trim().ToUpperInvariant() } |
+                Where-Object { $_ -match '^T(?:[1-9]|1[0-2])$' })
+        }
+        foreach ($candidate in @("T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10", "T11", "T12")) {
+            if ($candidate -in $disabled) {
+                Write-Host ("run_smoke.dispatch_skip_disabled_terminal={0}" -f $candidate)
+                continue
+            }
             try {
                 $candidateRoot = Resolve-TerminalRoot -TerminalName $candidate
                 if (-not (Test-TerminalAlreadyRunning -TerminalRoot $candidateRoot)) {
@@ -777,7 +788,7 @@ function Resolve-DispatchTerminal {
                 Write-Host ("run_smoke.dispatch_skip_terminal={0} err='{1}'" -f $candidate, $_.Exception.Message)
             }
         }
-        throw "Resolve-DispatchTerminal found no free T1-T10 terminal for -TargetTerminal='any' without -SetFilePath."
+        throw "Resolve-DispatchTerminal found no free T1-T12 terminal for -TargetTerminal='any' without -SetFilePath."
     }
 
     $resolverPath = Join-Path $PSScriptRoot "resolve_backtest_target.py"
@@ -810,8 +821,8 @@ function Resolve-DispatchTerminal {
             $errorCode = if ($decision.PSObject.Properties.Name -contains "error_code") { [string]$decision.error_code } else { "none" }
             throw "Terminal resolution returned no terminal. status=$decisionStatus error_code=$errorCode message=$message"
         }
-        if ($decisionTerminal -notmatch '^T([1-9]|10)$') {
-            throw "Terminal resolution returned non-factory terminal '$decisionTerminal'. -Terminal any is restricted to T1..T10."
+        if ($decisionTerminal -notmatch '^T([1-9]|1[0-2])$') {
+            throw "Terminal resolution returned non-factory terminal '$decisionTerminal'. -Terminal any is restricted to T1..T12."
         }
         Write-Host ("run_smoke.dispatch_status={0}" -f $decisionStatus)
         Write-Host ("run_smoke.dispatch_terminal={0}" -f $decisionTerminal)

@@ -140,6 +140,50 @@ def test_copy_on_claim_refuses_undeclared_custom_symbol(tmp_path: Path) -> None:
         )
 
 
+@pytest.mark.parametrize("terminal", ["T11", "T12"])
+def test_inert_canaries_are_copy_on_claim_ready_without_changing_v1_manifest(
+    tmp_path: Path, terminal: str
+) -> None:
+    source, manifest = _approved_manifest(tmp_path)
+    mt5_root = tmp_path / "mt5"
+    custom = mt5_root / terminal / "Bases" / "Custom"
+    for row in manifest["files"]:
+        relative = Path(row["relative_path"])
+        target = custom / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        # Provisioner fallback for a fully privatized legacy family.
+        target.write_bytes((source / relative).read_bytes())
+
+    receipt = copy_on_claim.privatize_terminal_archives(
+        manifest=manifest,
+        mt5_root=mt5_root,
+        terminal=terminal,
+        symbols=["EURUSD.DWX"],
+    )
+
+    assert set(manifest["runner_terminals"]) == set(contract.DEFAULT_RUNNER_TERMINALS)
+    assert receipt["terminal"] == terminal
+    assert receipt["already_private_file_count"] == 2
+    assert receipt["copied_file_count"] == 0
+
+
+def test_copy_on_claim_refuses_terminal_outside_twelve_slot_fleet(tmp_path: Path) -> None:
+    source, manifest = _approved_manifest(tmp_path)
+    mt5_root = tmp_path / "mt5"
+    _fan_out(mt5_root, source, manifest)
+
+    with pytest.raises(
+        copy_on_claim.CustomHistoryCopyOnClaimError,
+        match="outside the provisioned factory set",
+    ):
+        copy_on_claim.privatize_terminal_archives(
+            manifest=manifest,
+            mt5_root=mt5_root,
+            terminal="T13",
+            symbols=["EURUSD.DWX"],
+        )
+
+
 @pytest.mark.parametrize("corrupt_cache", [False, True])
 def test_prepared_archive_is_verified_and_corruption_falls_back_to_cold_source(
     tmp_path: Path, corrupt_cache: bool

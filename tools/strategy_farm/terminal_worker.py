@@ -1120,7 +1120,7 @@ def _payload_avoid_terminals(payload: dict[str, Any]) -> set[str]:
     if payload.get("diagnostic_non_admission") is True:
         allowed_raw = payload.get("diagnostic_allowed_terminals", [])
         allowed = {str(value or "").strip().upper() for value in allowed_raw}
-        terminals.update({f"T{index}" for index in range(1, 11)} - allowed)
+        terminals.update({f"T{index}" for index in range(1, 13)} - allowed)
     return terminals
 
 
@@ -1566,7 +1566,7 @@ def _accumulate_avoid_terminal(payload: dict[str, Any], failed_terminal: str | N
         if payload.get("diagnostic_non_admission") is True:
             allowed_raw = payload.get("diagnostic_allowed_terminals", [])
             allowed = {str(value or "").strip().upper() for value in allowed_raw}
-            avoid = {f"T{index}" for index in range(1, 11)} - allowed
+            avoid = {f"T{index}" for index in range(1, 13)} - allowed
             payload["avoid_terminals"] = sorted(avoid)
             payload["avoid_terminals_cleared_reason"] = (
                 "diagnostic_retry_hints_would_exclude_allowed_fleet"

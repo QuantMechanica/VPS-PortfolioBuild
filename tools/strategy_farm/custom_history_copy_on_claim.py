@@ -25,6 +25,7 @@ try:
         canonical_bytes,
         file_identity,
         normalize_relative_path,
+        PROVISIONED_FACTORY_TERMINALS,
         sha256_file,
         validate_manifest,
         write_json_atomic,
@@ -35,6 +36,7 @@ except ImportError:  # pragma: no cover - package import path
         canonical_bytes,
         file_identity,
         normalize_relative_path,
+        PROVISIONED_FACTORY_TERMINALS,
         sha256_file,
         validate_manifest,
         write_json_atomic,
@@ -210,9 +212,9 @@ def privatize_terminal_archives(
             farm_root, manifest=validated
         )["master_root"]
     target_terminal = str(terminal or "").strip().upper()
-    if target_terminal not in validated["runner_terminals"]:
+    if target_terminal not in PROVISIONED_FACTORY_TERMINALS:
         raise CustomHistoryCopyOnClaimError(
-            f"terminal is outside the manifest runner set: {target_terminal}"
+            f"terminal is outside the provisioned factory set: {target_terminal}"
         )
     rows, selected_symbols, ignored_symbols = select_archive_rows_for_symbols(
         validated, symbols

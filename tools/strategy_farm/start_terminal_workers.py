@@ -17,8 +17,8 @@ except ModuleNotFoundError:
     from tools.strategy_farm import resource_headroom
 
 
-TERMINALS = tuple(f"T{i}" for i in range(1, 11))
-FACTORY_TERMINAL_RE = re.compile(r"^T(?:[1-9]|10)$", re.IGNORECASE)
+TERMINALS = tuple(f"T{i}" for i in range(1, 13))
+FACTORY_TERMINAL_RE = re.compile(r"^T(?:[1-9]|1[0-2])$", re.IGNORECASE)
 
 
 def _pid_alive(pid: int) -> bool:
@@ -80,7 +80,7 @@ def _scan_running_workers() -> dict[str, list[int]]:
     if isinstance(rows, dict):
         rows = [rows]
     found: dict[str, list[int]] = {t: [] for t in TERMINALS}
-    pattern = re.compile(r"--terminal\s+(T(?:[1-9]|10))\b", re.IGNORECASE)
+    pattern = re.compile(r"--terminal\s+(T(?:[1-9]|1[0-2]))\b", re.IGNORECASE)
     for row in rows if isinstance(rows, list) else []:
         cmd = str(row.get("CommandLine") or "")
         match = pattern.search(cmd)

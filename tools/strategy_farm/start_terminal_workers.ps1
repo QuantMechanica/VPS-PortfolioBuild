@@ -10,7 +10,7 @@ $stateDir = Join-Path $FarmRoot "state"
 $logDir = Join-Path $FarmRoot "logs"
 $pidFile = Join-Path $stateDir "worker_pids.json"
 $worker = Join-Path $RepoRoot "tools\strategy_farm\terminal_worker.py"
-$factoryTerminals = 1..10 | ForEach-Object { "T$_" }
+$factoryTerminals = 1..12 | ForEach-Object { "T$_" }
 $disabledTerminalsFile = Join-Path $stateDir "disabled_terminals.txt"
 
 New-Item -ItemType Directory -Force -Path $stateDir | Out-Null
@@ -33,7 +33,7 @@ if (Test-Path -LiteralPath $disabledTerminalsFile) {
     $disabledTerminals = @(
         Get-Content -LiteralPath $disabledTerminalsFile -ErrorAction SilentlyContinue |
             ForEach-Object { ([string]$_).Trim().ToUpperInvariant() } |
-            Where-Object { $_ -match '^T(?:[1-9]|10)$' }
+            Where-Object { $_ -match '^T(?:[1-9]|1[0-2])$' }
     )
 }
 

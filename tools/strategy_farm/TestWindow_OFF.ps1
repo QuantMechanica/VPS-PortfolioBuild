@@ -96,7 +96,7 @@ $checks = @(
                   (Get-QmFactoryPhaseRunnerClassification -CommandLine $_.CommandLine).Disposition -eq 'REVIEW_REQUIRED'
               }).Count -eq 0);
        Expected='0 unresolved' },
-    @{ Name='factory terminal64 (T1..T10)=0';
+    @{ Name='factory terminal64 (T1..T12)=0';
        OK=(@(Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorAction SilentlyContinue |
               Where-Object { Test-QmFactoryMt5ImagePath -Path $_.ExecutablePath -ImageName 'terminal64.exe' }).Count -eq 0);
        Expected='0 running' },

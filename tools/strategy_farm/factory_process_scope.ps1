@@ -2,7 +2,7 @@
 #
 # Safety contract:
 #   * MT5 binaries are factory-owned only when ExecutablePath resolves to the
-#     exact physical namespace D:\QM\mt5\T1..T10\<expected image>.
+#     exact physical namespace D:\QM\mt5\T1..T12\<expected image>.
 #   * Command-line processes are factory-owned only when their tokenized
 #     invocation identifies the fixed repository script and a positive factory
 #     selector. A basename/sub-string match is never sufficient.
@@ -32,14 +32,14 @@ function Get-QmFactoryWorkerPolicyTerminals {
     [CmdletBinding()]
     param()
 
-    $factoryTerminals = @(1..10 | ForEach-Object { "T$_" })
+    $factoryTerminals = @(1..12 | ForEach-Object { "T$_" })
     $disabled = @{}
     try {
         if (Test-Path -LiteralPath $script:QmFactoryDisabledTerminalsPath -PathType Leaf) {
             foreach ($line in @(Get-Content -LiteralPath $script:QmFactoryDisabledTerminalsPath `
                     -Encoding UTF8 -ErrorAction Stop)) {
                 $terminal = ([string]$line).Trim().ToUpperInvariant()
-                if ($terminal -match '(?i)\AT(?:[1-9]|10)\z') {
+                if ($terminal -match '(?i)\AT(?:[1-9]|1[0-2])\z') {
                     $disabled[$terminal] = $true
                 }
             }
@@ -311,7 +311,7 @@ function Test-QmFactoryMt5ImagePath {
     $canonicalPath = ConvertTo-QmCanonicalProcessPath -Path $Path
     if ($null -eq $canonicalPath) { return $false }
     $imagePattern = [regex]::Escape($ImageName)
-    return [bool]($canonicalPath -match ("(?i)\AD:\\QM\\mt5\\T(?:[1-9]|10)\\{0}\z" -f $imagePattern))
+    return [bool]($canonicalPath -match ("(?i)\AD:\\QM\\mt5\\T(?:[1-9]|1[0-2])\\{0}\z" -f $imagePattern))
 }
 
 function Test-QmFactoryWorkerCommandLine {
@@ -337,7 +337,7 @@ function Test-QmFactoryWorkerCommandLine {
     }
 
     $terminal = Get-QmUniqueCommandLineOptionValue -Arguments $arguments -Option '--terminal'
-    if ($terminal -notmatch '(?i)\AT(?:[1-9]|10)\z') { return $false }
+    if ($terminal -notmatch '(?i)\AT(?:[1-9]|1[0-2])\z') { return $false }
 
     $farmRoot = ConvertTo-QmCanonicalProcessPath -Path (Get-QmUniqueCommandLineOptionValue -Arguments $arguments -Option '--root')
     return [string]::Equals($farmRoot, $script:QmFactoryFarmRoot, [System.StringComparison]::OrdinalIgnoreCase)
@@ -388,7 +388,7 @@ function Test-QmFactoryRunSmokeCommandLine {
     }
 
     $terminal = Get-QmUniqueCommandLineOptionValue -Arguments $arguments -Option '-Terminal'
-    if ($terminal -match '(?i)\AT(?:[1-9]|10)\z') { return $true }
+    if ($terminal -match '(?i)\AT(?:[1-9]|1[0-2])\z') { return $true }
     if (-not [string]::Equals($terminal, 'any', [System.StringComparison]::OrdinalIgnoreCase)) { return $false }
 
     $reportRoot = Get-QmUniqueCommandLineOptionValue -Arguments $arguments -Option '-ReportRoot'
