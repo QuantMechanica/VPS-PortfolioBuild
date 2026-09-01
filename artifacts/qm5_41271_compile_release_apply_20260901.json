@@ -1,0 +1,28 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "ed7dd8f9-cecf-4987-aebd-fae31abfe902"
+  ],
+  "backup": {
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260901T155703Z_d1efe8c2.sqlite",
+    "sha256": "8202a51a5ccc2c216c13cc611cf5e6840c83c23434afc55414f0d11022803ecb"
+  },
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "ed9eb6f964de56b0b696c71e6cc40594bfe9f42fcbf578d14a217c46d23d126c",
+      "ea_id": "QM5_41271",
+      "ea_label": "QM5_41271_wti-msiegel-tukey-scale-tr",
+      "expected_mq5_sha256": "ed9eb6f964de56b0b696c71e6cc40594bfe9f42fcbf578d14a217c46d23d126c",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41271_wti-msiegel-tukey-scale-tr\\QM5_41271_wti-msiegel-tukey-scale-tr.mq5",
+      "work_item_id": "ed7dd8f9-cecf-4987-aebd-fae31abfe902"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-09-01T15:57:09+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "ed7dd8f9-cecf-4987-aebd-fae31abfe902"
+}
