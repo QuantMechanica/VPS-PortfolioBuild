@@ -1,0 +1,143 @@
+{
+  "schema": "qm.paced-fleet-build-complete/v1",
+  "recorded_at_utc": "2026-09-01T05:56:46.0083539Z",
+  "branch": "agents/board-advisor",
+  "mission": "diversity_funnel_throughput",
+  "selection": {
+    "ea_id": "QM5_36005",
+    "label": "QM5_36005_nnfx-coral-trendlord-woodies-harvester",
+    "instrument_class": "forex",
+    "mechanism": "trend_momentum_volatility_expansion",
+    "symbols": [
+      "GBPJPY.DWX",
+      "EURJPY.DWX",
+      "AUDNZD.DWX"
+    ],
+    "timeframe": "D1",
+    "expected_trades_per_year_per_symbol": 25,
+    "selection_basis": "highest-diversity unfinished governed handoff already claimed by this branch; no prior Q02 row and no competing live lease or process"
+  },
+  "farm_claim": {
+    "build_task_id": "85404c3e-51d0-4a7e-85f3-f4658bc1dea9",
+    "claimed_by": "codex:agents/board-advisor",
+    "claimed_at_utc": "2026-08-31T09:42:02+00:00",
+    "initial_status": "active",
+    "final_status": "done",
+    "collision_check": "the exact active build task was resumed; no new build task or compile work item was created"
+  },
+  "approved_card": {
+    "runtime_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_36005_nnfx-coral-trendlord-woodies-harvester.md",
+    "repo_path": "strategy-seeds/cards/approved/QM5_36005_nnfx-coral-trendlord-woodies-harvester.md",
+    "sha256": "82135900487c2231096ff8fbc256da43a18a8a28033bd51971cf2e6610c348c4",
+    "g0_status": "APPROVED",
+    "r1_track_record": "PASS",
+    "r2_mechanical": "PASS",
+    "r3_data_available": "PASS",
+    "r4_ml_forbidden": "PASS"
+  },
+  "compile": {
+    "work_item_id": "59333bce-ff98-4059-9e34-56d306932f90",
+    "status": "done",
+    "verdict": "COMPILE_OK",
+    "build_check": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "mq5_sha256": "12f7871acb352c23f79e6fe3a8268c816929898d340f56247031582279b911e9",
+    "ex5_sha256": "e11e8103deacb817642e1de7013b6c153569011d4751dba4c03c9e3d10dad258",
+    "ex5_bytes": 442092,
+    "evidence_path": "D:\\QM\\reports\\work_items\\59333bce-ff98-4059-9e34-56d306932f90\\QM5_36005\\COMPILE_EA\\compile_evidence.json"
+  },
+  "risk_and_setfiles": {
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "setfiles": [
+      {
+        "symbol": "GBPJPY.DWX",
+        "sha256": "888345657e8a7704444b64fec75dfb64c77e5299d0198b2704e0e37548ca8276"
+      },
+      {
+        "symbol": "EURJPY.DWX",
+        "sha256": "5316cc13fd796beed8ecbb548582db4fe7cab5a542b8671086e9320b22c5576a"
+      },
+      {
+        "symbol": "AUDNZD.DWX",
+        "sha256": "c7f6120f2210800a34793e6862dea4b22b5926c0c46f27b0b7e41f8081507b26"
+      }
+    ]
+  },
+  "capacity_checks": [
+    {
+      "stage": "initial_admission",
+      "samples_percent": [91.99, 94.77, 90.24, 92.25, 91.95],
+      "average_percent": 92.24,
+      "maximum_percent": 94.77,
+      "ceiling_percent": 97.0,
+      "ceiling_binding": false
+    },
+    {
+      "stage": "pre_smoke",
+      "samples_percent": [80.28, 78.27, 69.78, 65.82, 74.43],
+      "average_percent": 73.716,
+      "maximum_percent": 80.28,
+      "ceiling_percent": 97.0,
+      "ceiling_binding": false
+    }
+  ],
+  "single_smoke": {
+    "attempt_count": 1,
+    "requested_symbol": "GBPJPY.DWX",
+    "requested_period": "D1",
+    "requested_year": 2024,
+    "model": 4,
+    "smoke_mode": true,
+    "resolver_status": "duplicate",
+    "resolver_terminal": "T7",
+    "dispatch_dedup_key": "QM5_36005|smoke|GBPJPY.DWX|P1|D1-2024",
+    "dispatch_capacity_evidence": "dispatch_state running counters T1-T10 were each 3, totaling 30/30 at max_per_terminal=3",
+    "conflicting_worker_work_item_id": "152f3b45-acea-4930-9583-d13548c40fac",
+    "custom_history_admission": "REFUSED",
+    "mt5_test_started": false,
+    "reported_result": "deferred_p2_smoke",
+    "retry_attempted": false,
+    "reason": "the stale duplicate selected worker-bound T7; Custom-history isolation refused the reservation before tester launch"
+  },
+  "build_record": {
+    "runtime_result_path": "D:\\QM\\strategy_farm\\artifacts\\builds\\85404c3e-51d0-4a7e-85f3-f4658bc1dea9.json",
+    "repo_result_path": "artifacts/qm5_36005_build_result_20260901.json",
+    "sha256": "25c85a0e294cf6c4acddc6e542fb379a6f429d82ac3122fe0bf73bd8d20bf736",
+    "build_check_passed": true,
+    "compile_succeeded": true,
+    "smoke_result": "deferred_p2_smoke",
+    "recorded": true,
+    "task_status": "done",
+    "needs_p2_smoke_via_pump": true
+  },
+  "q02": {
+    "work_item_id": "3eeb04fa-dc44-4895-89e5-f26f07c929ce",
+    "status_at_record": "pending",
+    "symbol": "AUDNZD.DWX",
+    "timeframe": "D1",
+    "setfile": "framework/EAs/QM5_36005_nnfx-coral-trendlord-woodies-harvester/sets/QM5_36005_nnfx-coral-trendlord-woodies-harvester_AUDNZD.DWX_D1_backtest.set",
+    "fanout_policy": "qm-q02-canary-fanout/v1",
+    "canary": true,
+    "cohort_size": 3,
+    "deferred_symbols": [
+      "GBPJPY.DWX",
+      "EURJPY.DWX"
+    ],
+    "custom_history_archive_status": "ACTIVE",
+    "selected_archive_rows": 324,
+    "dispatched_by_this_run": false
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "t_live_mutated": false,
+    "t_live_manifest_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "queue_dispatch_called": false,
+    "smoke_retry_attempted": false,
+    "preexisting_unrelated_worktree_changes_preserved": true
+  }
+}
