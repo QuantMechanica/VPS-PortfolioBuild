@@ -15,7 +15,8 @@ method_records:
   - CRAN-LEPAGE-1.0
 created: 2026-09-01
 created_by: Research+Development
-cards_extracted: []
+cards_extracted:
+  - QM5_41270_wti-mlepage-shift-tr
 ---
 
 # WTI Monthly Lepage Joint Location-Scale Shift Continuation
