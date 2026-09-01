@@ -10,26 +10,17 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   b584cfbe2723a1d38bf0f3273fff5c2fed5f1028585c22087ee3276bb36a2ad7
 ; author:       Development
 ; date:         2026-09-01
 ;==========================================================
 qm_ea_id=41265
 qm_magic_slot_offset=0
-qm_rng_seed=42
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-qm_news_temporal=0
-qm_news_compliance=0
-qm_news_stale_max_hours=336
-qm_news_min_impact=high
-qm_news_mode_legacy=0
-qm_friday_close_enabled=false
-qm_friday_close_hour_broker=21
-qm_stress_reject_probability=0.0
-; strategy-specific params from approved card; component validation only.
-; card_defaults_source=strategy-seeds/cards/approved/QM5_41265_xauxag-mbf-scale-rv_card.md
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
 strategy_xag_symbol=XAGUSD.DWX
 strategy_endpoint_count=13
 strategy_return_count=12
@@ -48,4 +39,3 @@ strategy_max_hold_days=40
 strategy_xau_max_spread_points=1500
 strategy_xag_max_spread_points=500
 strategy_deviation_points=20
-;==========================================================
