@@ -9,7 +9,8 @@ approval_basis: decisions/2026-09-01_wti_monthly_ansari_bradley_scale_trend_sour
 created: 2026-09-01
 created_by: Codex
 last_reviewed: 2026-09-01
-cards_extracted: []
+cards_extracted:
+  - QM5_41261_wti-mab-scale-tr
 ---
 
 # WTI Monthly Ansari-Bradley Symmetric-Rank Tail Continuation
