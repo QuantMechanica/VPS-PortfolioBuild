@@ -14,8 +14,8 @@ method_records:
   - SCIPY-EPPS-SINGLETON-1.18.0
 created: 2026-09-01
 created_by: Research+Development
-cards_extracted: []
-proposed_card: wti-mepps-shift-tr
+cards_extracted:
+  - QM5_41268_wti-mepps-shift-tr
 ---
 
 # WTI Monthly Epps-Singleton Distribution-Shift Continuation
@@ -220,4 +220,3 @@ backtest setfile, and one paced non-live Q02 handoff if the CPU ceiling
 permits. It does not authorize a manual tester run, optimization,
 live/demo/shadow/stress setfile, AutoTrading, `T_Live`, deploy/live manifest,
 portfolio-gate mutation, portfolio admission, or correlation waiver.
-
