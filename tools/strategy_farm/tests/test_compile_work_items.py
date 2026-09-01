@@ -1435,6 +1435,76 @@ def test_qm5_11465_missing_compile_ok_binary_can_append_recovery(
     assert recovery["refused"] == []
 
 
+def test_qm5_41192_q02_binary_recovery_authority_is_exact_label_bound() -> None:
+    label = "QM5_41192_xtixng-mdaily-hl-rv"
+
+    assert compile_work_items.QM5_41192_Q02_BINARY_RECOVERY_EA_LABELS == {label}
+    assert compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_41192_Q02_BINARY_RECOVERY_AUTHORITY,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        "QM5_41193_unrelated-rv",
+        compile_work_items.QM5_41192_Q02_BINARY_RECOVERY_AUTHORITY,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label,
+        "router_ops_issue:wrong-task",
+    )
+
+
+def test_qm5_41192_pending_q02_missing_binary_can_append_recovery(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    label = "QM5_1001_xtixng-mdaily-hl-rv"
+    repo, root = _fixture(tmp_path, [label])
+    monkeypatch.setattr(
+        compile_work_items,
+        "QM5_41192_Q02_BINARY_RECOVERY_EA_LABELS",
+        frozenset({label}),
+    )
+    setfile = (
+        repo / "framework" / "EAs" / label / "sets"
+        / f"{label}_EURUSD.DWX_D1_backtest.set"
+    )
+    setfile.parent.mkdir()
+    setfile.write_text("; build_hash: pending\n", encoding="utf-8")
+    now = farmctl.utc_now()
+    with farmctl.connect(root) as conn:
+        conn.execute(
+            "INSERT INTO work_items "
+            "(id,kind,phase,ea_id,symbol,setfile_path,status,attempt_count,"
+            "payload_json,created_at,updated_at) "
+            "VALUES ('pending-q02','backtest','Q02','QM5_1001',"
+            "'QM5_1001_XTI_XNG_MDAILY_HL_RV_D1','basket.set','pending',0,'{}',?,?)",
+            (now, now),
+        )
+        conn.commit()
+
+    generic = compile_work_items.enqueue_compile_eas(root, repo, [label])
+    recovery = compile_work_items.enqueue_compile_eas(
+        root,
+        repo,
+        [label],
+        source_repair_authority=(
+            compile_work_items.QM5_41192_Q02_BINARY_RECOVERY_AUTHORITY
+        ),
+    )
+
+    assert generic["ok"] is False
+    assert generic["enqueued_count"] == 0
+    assert "WORK_ITEMS_EXIST" in generic["refused"][0]["reasons"]
+    assert recovery["ok"] is True
+    assert recovery["enqueued_count"] == 1
+    assert recovery["refused"] == []
+    with farmctl.connect(root) as conn:
+        q02 = conn.execute(
+            "SELECT status,attempt_count FROM work_items WHERE id='pending-q02'"
+        ).fetchone()
+    assert tuple(q02) == ("pending", 0)
+
+
 def test_qm5_41164_41191_compile_fail_repair_authority_is_exact_label_bound() -> None:
     allowed = compile_work_items.QM5_41164_41191_COMPILE_FAIL_REPAIR_EA_LABELS
 
