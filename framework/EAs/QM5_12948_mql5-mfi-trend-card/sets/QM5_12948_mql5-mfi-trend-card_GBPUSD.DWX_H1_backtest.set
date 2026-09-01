@@ -3,16 +3,16 @@
 ; ea_id:        12948
 ; ea_slug:      mql5-mfi-trend-card
 ; ea_version:   v5.0
-; set_version:  s20260825-001
+; set_version:  s20260901-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   8b419ba5f0bcdeff5914f246aae5536762541857222446f45d3435ad3306f772
+; build_hash:   601a05604c8592d5ef4a4c4caa6b38b8ab8a3c2ccfbd311fe47fcaad2837a9e8
 ; author:       Development
-; date:         2026-08-25
+; date:         2026-09-01
 ;==========================================================
 qm_ea_id=12948
 qm_magic_slot_offset=1

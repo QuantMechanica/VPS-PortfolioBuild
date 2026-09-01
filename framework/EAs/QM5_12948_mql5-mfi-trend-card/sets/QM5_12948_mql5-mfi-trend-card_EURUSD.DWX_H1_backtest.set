@@ -3,16 +3,16 @@
 ; ea_id:        12948
 ; ea_slug:      mql5-mfi-trend-card
 ; ea_version:   v5.0
-; set_version:  s20260825-001
+; set_version:  s20260901-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   0db3de8fa5b2e21326e71b33ab826e54912ad2fa807192f30f8b0a405cc9d569
+; build_hash:   80580727a5daec9768b4deb79be92a5087560ed51c01c575ee0bd3885b44c39a
 ; author:       Development
-; date:         2026-08-25
+; date:         2026-09-01
 ;==========================================================
 qm_ea_id=12948
 qm_magic_slot_offset=0

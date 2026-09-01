@@ -87,7 +87,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false; // dead volatility range filter per card
    }
 
-   const double close1 = iClose(_Symbol, (ENUM_TIMEFRAMES)_Period, 1);
+   // A one-period pooled SMA is exactly the completed bar close while keeping
+   // all series access inside the V5 indicator framework.
+   const double close1 = QM_SMA(_Symbol, (ENUM_TIMEFRAMES)_Period, 1, 1, PRICE_CLOSE);
    const double ema100 = QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_ema_period, 1, PRICE_CLOSE);
    const double mfi24  = QM_MFI(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_mfi_period, 1);
 
@@ -155,7 +157,7 @@ void Strategy_ManageOpenPosition()
 
 bool Strategy_ExitSignal()
 {
-   const double close1 = iClose(_Symbol, (ENUM_TIMEFRAMES)_Period, 1);
+   const double close1 = QM_SMA(_Symbol, (ENUM_TIMEFRAMES)_Period, 1, 1, PRICE_CLOSE);
    const double ema100 = QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_ema_period, 1, PRICE_CLOSE);
    const double mfi24  = QM_MFI(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_mfi_period, 1);
 
@@ -238,14 +240,6 @@ void OnTick()
    if(Strategy_NewsFilterHook(broker_now))
       return;
 
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
-
    if(QM_FrameworkHandleFridayClose())
       return;
 
@@ -268,12 +262,23 @@ void OnTick()
       }
    }
 
+   // News blackout gates new exposure only. Position management and exits
+   // above must continue to run through news windows.
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
    if(!QM_IsNewBar())
       return;
 
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
    {
       ulong out_ticket = 0;
