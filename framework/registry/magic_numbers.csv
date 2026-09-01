@@ -18181,3 +18181,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41270,wti-mlepage-shift-tr,0,XTIUSD.DWX,412700000,2026-09-01,Codex governed allocator,active
 41271,wti-msiegel-tukey-scale-tr,0,XTIUSD.DWX,412710000,2026-09-01,Codex governed allocator,active
 41272,turn-of-month-index-long-restart-r1,0,NDX.DWX,412720000,2026-09-01,Codex governed allocator,active
+41273,wti-msigned-rank-tr,0,XTIUSD.DWX,412730000,2026-09-01,Codex governed allocator,active
