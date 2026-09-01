@@ -1,0 +1,160 @@
+{
+  "schema": "qm.fx-cointegration-q03-v4-activation-handoff/v1",
+  "recorded_at_utc": "2026-09-01T20:13:17Z",
+  "branch": "agents/board-advisor",
+  "observation_base": "ae7d5f56c17b708a8b779665c01e33d06b72e547",
+  "outcome": "EXISTING_CONCRETE_PAIR_V4_Q03_READY_FACTORY_FAIL_CLOSED",
+  "frontier": {
+    "authoritative_research": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "coverage_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "pair_combinations": 66,
+    "uncovered_sign_aware_identities": 0,
+    "approved_cointegration_ea_ids": 44,
+    "approved_ids_without_ea_directory": 0,
+    "new_card_or_build_authorized": false,
+    "reason": "No reputable unbuilt identity remains; duplicate card/build creation was rejected."
+  },
+  "mission_anchor_state": {
+    "QM5_12532": {
+      "pair": "AUDUSD.DWX/NZDUSD.DWX",
+      "q02": "PASS",
+      "q04": "PASS",
+      "later_gate": "Q05_FAIL"
+    },
+    "QM5_12533": {
+      "pair": "EURJPY.DWX/GBPJPY.DWX",
+      "q02": "PASS",
+      "later_gate": "Q04_FAIL"
+    },
+    "q02_oninit_or_no_history_blocker": false
+  },
+  "selected_fallback": {
+    "ea_id": "QM5_1257",
+    "ea_slug": "QM5_1257_lemishko-fx-cointpair",
+    "pair": [
+      "GBPUSD.DWX",
+      "USDJPY.DWX"
+    ],
+    "host_symbol": "GBPUSD.DWX",
+    "timeframe": "H1",
+    "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1",
+    "structural_method": "Engle-Granger cointegration with monthly frozen OLS and spread z-score",
+    "low_frequency": true,
+    "machine_learning": false,
+    "intramonth_adaptive_refit": false,
+    "source": {
+      "authors": "Tetiana Lemishko, Alexandre Landi, Juliana Caicedo-Llano",
+      "year": 2024,
+      "title": "Cointegration-Based Strategies in Forex Pairs Trading",
+      "locator": "SSRN 4771108"
+    },
+    "card": {
+      "path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_1257_lemishko-fx-cointpair.md",
+      "g0_status": "APPROVED",
+      "reputable_source_checks": "R1-R4_PASS"
+    },
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "tester_account": {
+      "currency": "USD",
+      "deposit": 100000
+    },
+    "q02_window": {
+      "from": "2017-01-01",
+      "to": "2022-12-31"
+    }
+  },
+  "exact_identity": {
+    "mq5_sha256": "f1e0bc08e65c6b46eea7c1397551ebb6c17aa466b48ef1d48d67e573361b9b27",
+    "ex5_sha256": "cc4337c6cfc05a734cc75d30f85af6a07136739017314f27efc7535eceb65516",
+    "basket_manifest_sha256": "518ac63c8b796fbf3f397fc11a59b294d940afb4ec727e64f318ce0303b3c8f3",
+    "backtest_set_sha256": "f7efb0a2183acdaee85f0882a0858447014f970a2e5782227e1c4980e98298d4",
+    "v4_payload_sha256": "c345e2e2e8c583db875e4fd6f1fa1da15ac4555caa965b67dd7b0c47d175ecdf",
+    "all_payload_hashes_match_disk": true
+  },
+  "lineage": {
+    "q02": {
+      "work_item_id": "d4cd660c-c81a-41d3-8a4c-ad21d3319816",
+      "status": "done",
+      "result": "PASS",
+      "trades": 290
+    },
+    "legacy_q04": {
+      "work_item_id": "d48dfb37-d28b-4e9d-aebe-376b7afe12dd",
+      "status": "done",
+      "result": "FAIL",
+      "preserved": true
+    },
+    "v4_q03": {
+      "work_item_id": "162a6230-d6fa-424c-a539-b873cc9a5559",
+      "status": "pending",
+      "claimed_by": null,
+      "attempt_count": 0,
+      "exact_open_row_count": 1,
+      "priority_track": true,
+      "priority_reason": "board_advisor_fx_fallback_full_66_pair_frontier_covered",
+      "created_by": "farmctl.q03_exact_identity",
+      "created_at_utc": "2026-08-31T04:27:04Z"
+    },
+    "owner_authority": {
+      "decision": "OWNER-DEC-BACKFILL-TRANCHE-1=YES",
+      "receipt": "docs/ops/evidence/a4812054_backfill_tranche1_receipt_2026-08-31.json",
+      "receipt_sha256": "4da21c71b0d492cef50ffe471e67acbade6711b16d7b9a038999710ebd9b5c0a",
+      "work_item_explicitly_listed": true
+    },
+    "interpretation": "V4 exact-identity rebaseline; not a waiver or reversal of the legacy Q04 FAIL."
+  },
+  "validation": {
+    "command": "python -m pytest tools/strategy_farm/tests/test_basket_work_items.py -q",
+    "passed": 18,
+    "failed": 0,
+    "duration_seconds": 11.38
+  },
+  "capacity_observation": {
+    "cpu_samples_percent": [
+      37.4346424940803,
+      37.1895519940732,
+      43.6846412267206,
+      43.7100540815502,
+      48.0512696677131
+    ],
+    "cpu_average_percent": 42.0140318722271,
+    "cpu_max_percent": 48.0512696677131,
+    "cpu_ceiling_percent": 97,
+    "cpu_ceiling_hit": false,
+    "launch_gate_max": 1,
+    "canonical_active_work_items": 0,
+    "active_factory_terminals": 0
+  },
+  "factory_blocker": {
+    "classification": "CUSTOM_HISTORY_ACTIVATION_ROLLOUT_FAIL_CLOSED",
+    "landed_repair_commits": [
+      "47c1200f55",
+      "ae7d5f56c1"
+    ],
+    "observed_effect": "Resident workers retained a stale activation contract; an unrelated higher-ranked claim was released unchanged with CUSTOM_HISTORY_ISOLATION_FAIL_CLOSED and its attempt count preserved.",
+    "qm5_1257_effect": "The authorized V4 Q03 row remained pending in canonical order.",
+    "safe_continuation": "Complete the existing activation-v2 worker rollout, then allow normal resident-worker dispatch."
+  },
+  "actions": {
+    "new_card_created": false,
+    "new_ea_built": false,
+    "queue_row_created": false,
+    "queue_row_mutated": false,
+    "target_dispatch_used": false,
+    "factory_off_created": false,
+    "worker_restarted": false,
+    "handoff_documented": true
+  },
+  "safety": {
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "autotrading_touched": false,
+    "runtime_database_touched": false
+  }
+}
