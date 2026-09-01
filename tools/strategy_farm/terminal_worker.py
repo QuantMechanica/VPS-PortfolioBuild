@@ -5606,6 +5606,10 @@ def _dl089_declared_lane(
         )
     elif stage == "WF_COMBO":
         source = list(ledger.get("driver", {}).get("wf", {}).get("combo_runs") or [])
+    elif stage == "FINAL_FULLWINDOW":
+        source = list(
+            ledger.get("driver", {}).get("final_fullwindow", {}).get("runs") or []
+        )
     else:
         cells = [dict(cell) for cell in ledger.get("cells") or []]
         return cells, dict(ledger)

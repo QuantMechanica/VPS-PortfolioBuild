@@ -290,6 +290,8 @@ def _mini_ledger(tmp_path: Path) -> tuple[Path, list[str]]:
         "ea_label": "QM5_41097_opt", "symbol": "USDJPY.DWX", "timeframe": "H1",
         "base_setfile_path": str(base), "output_dir": str(out_dir),
         "declared_trial_count": 154, "activity_floor": 10, "relative_improve_min": 0.05,
+        "q12_work_item_id": "q12-work-item",
+        "q12_declaration_sha256": "a" * 64,
         "param_grid_sha256": None, "cells": cells, "driver": sel.init_driver(),
     }
     path = tmp_path / "ledger.json"
@@ -528,6 +530,211 @@ def test_insert_numeric_payloads_are_governed_and_lane_bound(tmp_path: Path) -> 
     ]
     frontier = scheduling.arm_frontier(rows, lane_ledger)
     assert frontier[("PROG", "strategy_alpha:0.5")]["id"] == "numeric-trial"
+
+
+def test_insert_final_fullwindow_payloads_are_governed_and_lane_bound(
+    tmp_path: Path,
+) -> None:
+    conn = sqlite3.connect(":memory:")
+    conn.execute(WORK_ITEMS_DDL)
+    ledger = _governed_derived_ledger(tmp_path)
+    runs = []
+    for role, expected_arm in (
+        ("baseline", "final:incumbent"),
+        ("final", "final:selected"),
+    ):
+        work_item_id = f"final-{role}"
+        cell_key = f"PROG:final_fullwindow:{role}"
+        spec = {
+            "cell_key": cell_key,
+            "work_item_id": work_item_id,
+            "setfile_path": str(tmp_path / f"{work_item_id}.set"),
+            "from_date": sel.FULL_WINDOW_FROM,
+            "to_date": sel.FULL_WINDOW_TO,
+            "stage": "FINAL_FULLWINDOW",
+            "role": role,
+        }
+        runs.append(spec)
+        assert sel._insert_run(
+            conn,
+            ledger,
+            work_item_id=work_item_id,
+            cell_key=cell_key,
+            setfile_path=spec["setfile_path"],
+            from_date=spec["from_date"],
+            to_date=spec["to_date"],
+            stage=spec["stage"],
+            extra={"role": role},
+        )
+        payload = json.loads(
+            conn.execute(
+                "SELECT payload_json FROM work_items WHERE id=?", (work_item_id,)
+            ).fetchone()[0]
+        )
+        assert payload["arm"] == expected_arm
+        assert payload["year"] == 2019
+        assert payload["priority_track"] is True
+        assert payload[census.FRONTIER_PRIORITY_MARKER] is True
+        assert terminal_worker._is_governed_dl089_census_payload(payload) is True
+
+    ledger["driver"] = {"final_fullwindow": {"runs": runs}, "reruns": {}}
+    for role, expected_arm in (
+        ("baseline", "final:incumbent"),
+        ("final", "final:selected"),
+    ):
+        payload = json.loads(
+            conn.execute(
+                "SELECT payload_json FROM work_items WHERE id=?", (f"final-{role}",)
+            ).fetchone()[0]
+        )
+        cells, lane_ledger = terminal_worker._dl089_declared_lane(ledger, payload)
+        assert [cell["work_item_id"] for cell in cells] == [f"final-{role}"]
+        row = conn.execute(
+            "SELECT * FROM work_items WHERE id=?", (f"final-{role}",)
+        ).fetchone()
+        columns = [column[0] for column in conn.execute("SELECT * FROM work_items LIMIT 0").description]
+        frontier = scheduling.arm_frontier([dict(zip(columns, row))], lane_ledger)
+        assert frontier[("PROG", expected_arm)]["id"] == f"final-{role}"
+
+
+def test_every_select_run_stage_is_governed_or_fails_closed(tmp_path: Path) -> None:
+    conn = sqlite3.connect(":memory:")
+    conn.execute(WORK_ITEMS_DDL)
+    ledger = _governed_derived_ledger(tmp_path)
+    ledger["cells"] = [
+        {
+            "cell_key": "PROG:2019:baseline",
+            "work_item_id": "declared-census",
+            "year": 2019,
+            "arm": "baseline",
+            "direction": "NONE",
+            "predicate_id": 0,
+            "setfile_path": str(tmp_path / "census.set"),
+        }
+    ]
+    cases = {
+        "CENSUS": ("PROG:2019:baseline", {}),
+        "WF_COMBO": ("PROG:wf1:combo:2022", {"wf_step": 1, "test_year": 2022}),
+        "NUMERIC_BASELINE": ("PROG:numeric:baseline:2019", {"year": 2019}),
+        "NUMERIC": (
+            "PROG:numeric:strategy_alpha:0.5:2019",
+            {"param": "strategy_alpha", "value": 0.5, "year": 2019},
+        ),
+        "FINAL_FULLWINDOW": (
+            "PROG:final_fullwindow:final",
+            {"role": "final"},
+        ),
+    }
+    assert set(cases) == set(sel.GOVERNED_RUN_STAGES)
+    sequence = 0
+    for stage, (cell_key, extra) in cases.items():
+        for emitted_stage in (stage, f"{stage}_RERUN"):
+            sequence += 1
+            work_item_id = f"stage-{sequence}"
+            assert sel._insert_run(
+                conn,
+                ledger,
+                work_item_id=work_item_id,
+                cell_key=cell_key,
+                setfile_path=str(tmp_path / f"{work_item_id}.set"),
+                from_date="2019.01.01",
+                to_date="2026.12.31",
+                stage=emitted_stage,
+                extra=extra,
+            )
+            payload = json.loads(
+                conn.execute(
+                    "SELECT payload_json FROM work_items WHERE id=?", (work_item_id,)
+                ).fetchone()[0]
+            )
+            assert terminal_worker._is_governed_dl089_census_payload(payload) is True
+
+    with pytest.raises(census.CensusError, match="unsupported governed run stage"):
+        sel._insert_run(
+            conn,
+            ledger,
+            work_item_id="future-stage",
+            cell_key="PROG:future:cell",
+            setfile_path=str(tmp_path / "future.set"),
+            from_date="2019.01.01",
+            to_date="2026.12.31",
+            stage="FUTURE_STAGE",
+            extra={},
+        )
+
+
+def test_repair_pending_final_fullwindow_governance_never_touches_verdict_rows(
+    tmp_path: Path,
+) -> None:
+    conn = sqlite3.connect(":memory:")
+    conn.execute(WORK_ITEMS_DDL)
+    ledger = _governed_derived_ledger(tmp_path)
+    runs = []
+    for role in ("baseline", "final", "measured"):
+        actual_role = "final" if role == "measured" else role
+        work_item_id = f"final-{role}"
+        cell_key = f"PROG:final_fullwindow:{actual_role}"
+        spec = {
+            "cell_key": cell_key,
+            "work_item_id": work_item_id,
+            "stage": "FINAL_FULLWINDOW",
+            "role": actual_role,
+        }
+        runs.append(spec)
+        sel._insert_run(
+            conn,
+            ledger,
+            work_item_id=work_item_id,
+            cell_key=cell_key,
+            setfile_path=str(tmp_path / f"{work_item_id}.set"),
+            from_date=sel.FULL_WINDOW_FROM,
+            to_date=sel.FULL_WINDOW_TO,
+            stage=spec["stage"],
+            extra={"role": actual_role},
+        )
+        raw = conn.execute(
+            "SELECT payload_json FROM work_items WHERE id=?", (work_item_id,)
+        ).fetchone()[0]
+        payload = json.loads(raw)
+        for key in (
+            "arm",
+            "year",
+            "priority_track",
+            census.FRONTIER_PRIORITY_MARKER,
+            "post_census_priority_authority",
+        ):
+            payload.pop(key, None)
+        conn.execute(
+            "UPDATE work_items SET payload_json=? WHERE id=?",
+            (json.dumps(payload, sort_keys=True), work_item_id),
+        )
+    ledger["driver"] = {"final_fullwindow": {"runs": runs}}
+    conn.execute(
+        "UPDATE work_items SET status='done',verdict='MEASURED' WHERE id='final-measured'"
+    )
+    measured_before = conn.execute(
+        "SELECT status,verdict,payload_json FROM work_items WHERE id='final-measured'"
+    ).fetchone()
+
+    result = sel.repair_pending_final_fullwindow_governance(conn, ledger)
+
+    assert result == {
+        "declared": 3,
+        "repaired": 2,
+        "already_valid": 0,
+        "skipped": 1,
+        "verdict_rows_touched": 0,
+    }
+    repaired = [
+        json.loads(row[0])
+        for row in conn.execute(
+            "SELECT payload_json FROM work_items WHERE id IN ('final-baseline','final-final')"
+        )
+    ]
+    assert all(terminal_worker._is_governed_dl089_census_payload(p) for p in repaired)
+    assert conn.execute(
+        "SELECT status,verdict,payload_json FROM work_items WHERE id='final-measured'"
+    ).fetchone() == measured_before
 
 
 def test_repair_pending_numeric_governance_never_touches_verdict_rows(

@@ -66,6 +66,18 @@ WF_COMBO_PRIORITY_AUTHORITY = (
 NUMERIC_PRIORITY_AUTHORITY = (
     "opt_census_select.numeric critical path (queue-priority-only)"
 )
+FINAL_FULLWINDOW_PRIORITY_AUTHORITY = (
+    "opt_census_select.final_fullwindow critical path (queue-priority-only)"
+)
+GOVERNED_RUN_STAGES = frozenset(
+    {
+        "CENSUS",
+        "WF_COMBO",
+        "NUMERIC_BASELINE",
+        "NUMERIC",
+        "FINAL_FULLWINDOW",
+    }
+)
 # The numeric levers are the parent EA's already-wired numeric inputs, named by the
 # sha-sealed opt_param_grid.json — there is deliberately NO hardcoded name
 # whitelist here.  The three invented opt_* placeholder inputs this constant
@@ -570,6 +582,62 @@ def _numeric_lane_fields(
     }
 
 
+def _census_lane_fields(
+    ledger: dict[str, Any], cell_key: str, extra: dict[str, Any]
+) -> dict[str, Any]:
+    """Recover an annual census lane for an append-only infrastructure rerun."""
+
+    matches = [
+        dict(cell)
+        for cell in ledger.get("cells", [])
+        if isinstance(cell, dict) and str(cell.get("cell_key") or "") == str(cell_key)
+    ]
+    if len(matches) != 1:
+        raise CensusError(
+            f"expected one declared census cell for {cell_key}, found {len(matches)}"
+        )
+    cell = matches[0]
+    fields = {
+        key: cell.get(key) for key in ("arm", "year", "direction", "predicate_id")
+    }
+    if not str(fields["arm"] or "").strip():
+        raise CensusError(f"declared census cell has no arm: {cell_key}")
+    try:
+        fields["year"] = int(fields["year"])
+    except (TypeError, ValueError) as exc:
+        raise CensusError(f"declared census cell has malformed year: {cell_key}") from exc
+    for key in ("arm", "year", "direction", "predicate_id"):
+        if key in extra and extra[key] != fields[key]:
+            raise CensusError(f"census rerun {key} mismatch: {cell_key}")
+    return fields
+
+
+def _final_fullwindow_lane_fields(
+    cell_key: str, extra: dict[str, Any]
+) -> dict[str, Any]:
+    """Authenticate one final full-window role and give it a stable one-cell lane."""
+
+    parts = str(cell_key).rsplit(":", 2)
+    if len(parts) != 3 or not parts[0] or parts[1] != "final_fullwindow":
+        raise CensusError(f"malformed final full-window cell_key: {cell_key}")
+    role = parts[2]
+    arms = {"baseline": "final:incumbent", "final": "final:selected"}
+    if role not in arms:
+        raise CensusError(f"unsupported final full-window role: {cell_key}")
+    if "role" in extra and str(extra["role"]) != role:
+        raise CensusError(f"final full-window role mismatch: {cell_key}")
+    return {
+        "arm": arms[role],
+        # A full-window role is a one-cell lane.  Use the sealed window's first
+        # year as its deterministic frontier ordinal so the shared lane logic
+        # and post-census true-head ranking remain fail-closed and comparable.
+        "year": int(FULL_WINDOW_FROM[:4]),
+        "priority_track": True,
+        census.FRONTIER_PRIORITY_MARKER: True,
+        "post_census_priority_authority": FINAL_FULLWINDOW_PRIORITY_AUTHORITY,
+    }
+
+
 def _derived_run_fields(
     ledger: dict[str, Any], cell_key: str, stage: str, extra: dict[str, Any]
 ) -> dict[str, Any]:
@@ -581,10 +649,22 @@ def _derived_run_fields(
         if str(ledger.get(key) or "").strip()
     }
     normalized_stage = str(stage).removesuffix("_RERUN")
-    if normalized_stage == "WF_COMBO":
+    if normalized_stage == "CENSUS":
+        fields.update(_census_lane_fields(ledger, cell_key, extra))
+    elif normalized_stage == "WF_COMBO":
         fields.update(_wf_combo_lane_fields(cell_key, extra))
     elif normalized_stage in {"NUMERIC_BASELINE", "NUMERIC"}:
         fields.update(_numeric_lane_fields(cell_key, stage, extra))
+    elif normalized_stage == "FINAL_FULLWINDOW":
+        fields.update(_final_fullwindow_lane_fields(cell_key, extra))
+    else:
+        raise CensusError(f"unsupported governed run stage: {stage}")
+    required = ("q12_work_item_id", "q12_declaration_sha256", "arm", "year")
+    missing = [key for key in required if fields.get(key) in (None, "")]
+    if missing:
+        raise CensusError(
+            f"derived run lacks governed fields {missing}: {stage}/{cell_key}"
+        )
     return fields
 
 
@@ -691,6 +771,68 @@ def repair_pending_numeric_governance(
         )
         if cur.rowcount != 1:
             raise CensusError(f"numeric repair row changed concurrently: {work_item_id}")
+        counts["repaired"] += 1
+    return counts
+
+
+def repair_pending_final_fullwindow_governance(
+    conn: sqlite3.Connection, ledger: dict[str, Any]
+) -> dict[str, int]:
+    """Repair only untouched final-window rows with an identity-bound CAS."""
+
+    runs = list(
+        ledger.get("driver", {}).get("final_fullwindow", {}).get("runs") or []
+    )
+    counts = {
+        "declared": len(runs),
+        "repaired": 0,
+        "already_valid": 0,
+        "skipped": 0,
+        "verdict_rows_touched": 0,
+    }
+    for spec in runs:
+        stage = str(spec.get("stage") or "")
+        if stage.removesuffix("_RERUN") != "FINAL_FULLWINDOW":
+            counts["skipped"] += 1
+            continue
+        work_item_id = str(spec.get("work_item_id") or "")
+        row = conn.execute(
+            "SELECT status,claimed_by,verdict,payload_json FROM work_items WHERE id=?",
+            (work_item_id,),
+        ).fetchone()
+        if row is None:
+            counts["skipped"] += 1
+            continue
+        status, claimed_by, verdict, raw_payload = row
+        if str(status).lower() != "pending" or claimed_by is not None or verdict is not None:
+            counts["skipped"] += 1
+            continue
+        payload = json.loads(raw_payload or "{}")
+        expected_identity = {
+            "schema": census.SCHEMA,
+            "program_id": ledger["program_id"],
+            "cell_key": spec["cell_key"],
+            "opt_census_stage": stage,
+            "ledger_path": ledger.get("_ledger_path"),
+            "role": spec["role"],
+        }
+        if any(payload.get(key) != value for key, value in expected_identity.items()):
+            raise CensusError(f"final full-window repair identity mismatch: {work_item_id}")
+        desired = _derived_run_fields(ledger, spec["cell_key"], stage, spec)
+        if all(payload.get(key) == value for key, value in desired.items()):
+            counts["already_valid"] += 1
+            continue
+        payload.update(desired)
+        cur = conn.execute(
+            "UPDATE work_items SET payload_json=? "
+            "WHERE id=? AND status='pending' AND claimed_by IS NULL AND verdict IS NULL "
+            "AND payload_json=?",
+            (json.dumps(payload, sort_keys=True), work_item_id, raw_payload),
+        )
+        if cur.rowcount != 1:
+            raise CensusError(
+                f"final full-window repair row changed concurrently: {work_item_id}"
+            )
         counts["repaired"] += 1
     return counts
 
