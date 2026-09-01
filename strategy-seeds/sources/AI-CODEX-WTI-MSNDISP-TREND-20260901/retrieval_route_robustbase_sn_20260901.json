@@ -1,0 +1,31 @@
+{
+  "schema": "qm.primary-software-retrieval-evidence/v1",
+  "retrieved_at_utc": "2026-09-01T21:41:53.6580758Z",
+  "repository": "https://github.com/cran/robustbase",
+  "release_tag": "0.99-7",
+  "commit": "54c5cc98e27050a78bbd03be15f07a7ba88de62a",
+  "files": [
+    {
+      "path": "R/qnsn.R",
+      "url": "https://raw.githubusercontent.com/cran/robustbase/54c5cc98e27050a78bbd03be15f07a7ba88de62a/R/qnsn.R",
+      "byte_count": 5673,
+      "sha256": "4641E153ABC9033F7073C57D4E8AD254A1D4DF9C1C79CA864C8B51A0922737DD"
+    },
+    {
+      "path": "src/qn_sn.c",
+      "url": "https://raw.githubusercontent.com/cran/robustbase/54c5cc98e27050a78bbd03be15f07a7ba88de62a/src/qn_sn.c",
+      "byte_count": 15082,
+      "sha256": "795011650A3E0BA023C21CBAA7F35854ECA4A1918D277A7A344A772D317E1192"
+    }
+  ],
+  "read_scope": "complete_both_files",
+  "method_findings": {
+    "raw_sn": "LOMED_i HIMED_j abs(x_i-x_j), equivalently LOMED_i LOMED_j_not_i abs(x_i-x_j)",
+    "n16_inner_rule": "for each i, eighth one-based order statistic of the fifteen j!=i distances",
+    "n16_outer_rule": "eighth one-based order statistic of the sixteen inner values",
+    "default_consistency_multiplier": 1.1926,
+    "n16_finite_sample_multiplier": 1.0
+  },
+  "claim_boundary": "Primary-software arithmetic and median conventions only; no trading or WTI claim is imported.",
+  "mutation_performed": false
+}
