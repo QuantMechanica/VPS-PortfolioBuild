@@ -1,0 +1,38 @@
+{
+  "candidate": {
+    "author": "OpenAI Codex; T. W. Epps; Kenneth J. Singleton; Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen; SciPy community",
+    "mechanic": "monthly-wti-fifty-completed-d1-log-returns-fixed-twenty-five-old-twenty-five-recent-epps-singleton-empirical-characteristic-function-distribution-shift-chi-square-median-gated-recent-cumulative-return-continuation",
+    "slug": "wti-mepps-shift-tr",
+    "strategy_id": "AI-CODEX-WTI-MEPPS-SHIFT-20260901_S01"
+  },
+  "error": null,
+  "exit_code": 0,
+  "generated_at_utc": "2026-09-01T12:27:00+00:00",
+  "matches": [],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4767,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1404,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "CLEAN"
+}

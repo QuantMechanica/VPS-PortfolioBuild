@@ -1,0 +1,53 @@
+{
+  "schema": "qm.public-method-retrieval.v1",
+  "retrieved_at_utc": "2026-09-01T12:25:00Z",
+  "route": "publisher_metadata_boundary_plus_complete_official_documentation_and_signed_tag_pinned_source",
+  "paper": {
+    "title": "An Omnibus Test for the Two-Sample Problem Using the Empirical Characteristic Function",
+    "authors": "T. W. Epps and Kenneth J. Singleton",
+    "journal": "Journal of Statistical Computation and Simulation",
+    "volume_issue_pages": "26(3-4), 177-203",
+    "year": 1986,
+    "doi": "10.1080/00949658608810963",
+    "doi_url": "https://doi.org/10.1080/00949658608810963",
+    "publisher_url": "https://www.tandfonline.com/doi/abs/10.1080/00949658608810963",
+    "author_bibliography_url": "https://sites.google.com/stanford.edu/kenneth-j-singleton/research/econometric-methods",
+    "publisher_metadata_and_abstract_read": true,
+    "author_bibliography_read": true,
+    "access_boundary": "Publisher metadata and abstract plus the Stanford author bibliography were read. The article body was not accessible, so no complete-paper body read, hidden derivation, table value, or paper-file hash is claimed."
+  },
+  "official_implementation_record": {
+    "project": "scipy/scipy",
+    "release": "1.18.0",
+    "tag_object_sha": "7adb8c972443f664b9395a0e6e8e0283e9b4faff",
+    "commit_sha": "54ef5423f2e4376230ec3bfda6912a07a50958e3",
+    "tag_signature_verified_by_github": true,
+    "documentation_url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.epps_singleton_2samp.html",
+    "documentation_http_status": 200,
+    "documentation_utf8_length_bytes": 38229,
+    "documentation_utf8_sha256": "4C60E5FFFAF2E96187036425F93B60980B7AA39DBF8A5E312ED0ED3883DC4CD2",
+    "source_url": "https://github.com/scipy/scipy/blob/v1.18.0/scipy/stats/_hypotests.py",
+    "raw_source_url": "https://raw.githubusercontent.com/scipy/scipy/v1.18.0/scipy/stats/_hypotests.py",
+    "raw_source_http_status": 200,
+    "raw_source_utf8_length_bytes": 88494,
+    "raw_source_utf8_sha256": "DD8520A88D5DC6D59DFCA0C8B077F068DDE674AF1917272C6E6B5356A63E9161",
+    "bounded_read": {
+      "complete_documentation_read": true,
+      "source_scope_read": "complete scipy.stats.epps_singleton_2samp implementation and immediately associated documentation",
+      "verified_claims": [
+        "the test compares whether two samples have the same underlying distribution",
+        "the empirical characteristic function uses default positive points 0.4 and 0.8",
+        "the points are divided by the pooled semi-interquartile range",
+        "the feature order is cosine at each point followed by sine at each point",
+        "the implementation uses biased within-sample covariance estimates",
+        "the pooled covariance is n/nx times cov_x plus n/ny times cov_y",
+        "the statistic is n times the quadratic form of the feature-mean difference",
+        "the reference distribution is chi-square with covariance-inverse rank degrees of freedom",
+        "the small-sample correction applies only when both sample maxima are below 25",
+        "continuous samples with at least 25 observations each are the documented recommended domain"
+      ]
+    }
+  },
+  "claim_boundary": "The records support the named empirical-characteristic-function two-sample method and exact pinned implementation arithmetic only. They do not test WTI, fixed 25-by-25 daily-return blocks, the chi-square-four median gate, cumulative-return continuation, CFDs, fixed risk, activity, or performance. The EA imports no SciPy, Python, executable source, optimizer, or trained output."
+}
+
