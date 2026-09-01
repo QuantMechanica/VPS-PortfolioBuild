@@ -93,7 +93,7 @@ single-symbol baseline. No signal value changes risk.
 - R2: `PASS`. Sample membership, population deviation, strict thresholds,
   reversal, side, fixed ATR risk, target, exits, and activity boundary are
   frozen before testing.
-- R3: `PASS_WITH_LIVE_ROUTING_UNRESOLVED`. Canonical `EURCHF.DWX` H4 history
+- R3: `PASS`. Canonical `EURCHF.DWX` H4 history
   provides all research inputs. No confirmed live alias exists in the matrix;
   this source authorizes no live action.
 - R4: `PASS`. Native completed OHLC, fixed arithmetic, ATR, quote, position,

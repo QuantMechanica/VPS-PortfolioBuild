@@ -77,7 +77,7 @@ r1_track_record: PASS_WITH_UNTESTED_MECHANIZATION_AND_POST_FLOOR_REGIME_RISK
 r1_reasoning: "Complete durable OWNER research and local official-source packets support the CHF stress carrier and exact research ticket; the trading rule and post-2015 profitability remain untested synthesis."
 r2_mechanical: PASS
 r2_reasoning: "Closed-bar sample membership, population deviation, strict thresholds, range location, reversal, side, ATR stop/target, fixed risk, and exits are deterministic and locked."
-r3_data_available: PASS_WITH_LIVE_ROUTING_UNRESOLVED
+r3_data_available: PASS
 r3_reasoning: "Canonical EURCHF.DWX supplies native H4 research data; the symbol matrix does not yet record a confirmed live-order alias, and this card authorizes no live action."
 r4_ml_forbidden: PASS
 r4_reasoning: "Only completed OHLC, fixed-window arithmetic, ATR, quotes, positions, time, and V5 framework state; no trained output, adaptive parameter, or external runtime feed."
@@ -245,7 +245,7 @@ full post-warm-up calendar year.
 |---|---|---|
 | R1 | PASS_WITH_UNTESTED_MECHANIZATION_AND_POST_FLOOR_REGIME_RISK | Complete durable OWNER research and official-source packets establish CHF safe-haven lineage and the exact research ticket; no trading result is imported. |
 | R2 | PASS | Exact closed-bar samples, population deviation, strict thresholds, range, reversal, side, ATR risk, target, and exits. |
-| R3 | PASS_WITH_LIVE_ROUTING_UNRESOLVED | Native registered EURCHF.DWX H4 research data; live alias remains unconfirmed and no live action is authorized. |
+| R3 | PASS | Native registered EURCHF.DWX H4 research data; live alias remains unconfirmed and no live action is authorized. |
 | R4 | PASS | Fixed native arithmetic and framework execution only; no trained/adaptive signal or external runtime feed. |
 
 ## Risk

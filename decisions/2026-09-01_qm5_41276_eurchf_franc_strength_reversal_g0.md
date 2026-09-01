@@ -32,7 +32,7 @@ survived.
 - R2 `PASS`: ex-current forty-close population z, strict entry/exit thresholds,
   prior-250-close lower decile, bullish reversal, long-only side, frozen ATR
   stop/target, fixed risk, and exits are locked.
-- R3 `PASS_WITH_LIVE_ROUTING_UNRESOLVED`: canonical `EURCHF.DWX` supplies
+- R3 `PASS`: canonical `EURCHF.DWX` supplies
   native H4 research data. The matrix has no confirmed live-order alias, so
   later live packaging stays blocked without separate evidence.
 - R4 `PASS`: deterministic completed OHLC, fixed arithmetic, ATR risk, quote,

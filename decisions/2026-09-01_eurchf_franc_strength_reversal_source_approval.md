@@ -140,7 +140,7 @@ Verdict:
 - R2 `PASS`: reference sample, population deviation, strict z threshold,
   lower-decile close range, reversal, side, ATR stop/target, risk, and exits
   are deterministic and locked before Q02.
-- R3 `PASS_WITH_LIVE_ROUTING_UNRESOLVED`: `EURCHF.DWX` is canonical in
+- R3 `PASS`: `EURCHF.DWX` is canonical in
   `dwx_symbol_matrix.csv` and supplies native H4 OHLC/ATR for research. The
   matrix has no confirmed live-order alias, which is irrelevant to Q02 but
   remains a hard block for any later live packaging.
