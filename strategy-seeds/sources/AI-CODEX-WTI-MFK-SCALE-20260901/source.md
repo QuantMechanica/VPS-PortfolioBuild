@@ -14,7 +14,8 @@ method_records:
   - SCIPY-FLIGNER-1.18.0
 created: 2026-09-01
 created_by: Research+Development
-cards_extracted: []
+cards_extracted:
+  - QM5_41266_wti-mfk-scale-tr
 ---
 
 # WTI Monthly Fligner-Killeen Scale-Expansion Continuation
@@ -110,9 +111,12 @@ m_recent   = median6(recent)
 z[i]   = abs(old[i]    - m_old),    i=0..5
 z[i+6] = abs(recent[i] - m_recent), i=0..5
 
-For each z[i], assign an ascending pooled midrank R[i] in [1,12].
-Values equal within relative tolerance
-1e-12*max(1,abs(z[i]),abs(z[j])) share the average occupied rank.
+Sort the twelve deviations ascending while preserving original labels. Starting
+at the first unassigned value, extend one tie run while each candidate differs
+from that run's first value by at most
+1e-12*max(1,abs(run_anchor),abs(candidate)). Assign every member the average
+occupied rank R[i] in [1,12]. Require all observations assigned once and
+sum(R)=78 within 1e-12.
 
 a[i] = Phi^-1(0.5 + R[i] / (2*(12+1)))
 A_old    = sum(a[0..5]) / 6
@@ -170,7 +174,8 @@ transition:
    thirteen immediately prior consecutive broker months. Reject missing,
    duplicate, nonchronological, nonpositive, nonfinite, or stale endpoints.
 3. Form twelve adjacent log returns and preserve fixed old/recent membership.
-   Sort copies only for the two even medians.
+   Sort copies only for the two even medians and the explicitly anchored
+   deviation tie runs.
 4. Form group-median absolute deviations, assign pooled relative-tolerance
    midranks, map the 23 locked normal scores, and compute both score means,
    pooled variance, and exact two-group statistic.
@@ -275,4 +280,3 @@ portfolio admission, correlation waiver, or terminal control.
 | version | date | change | gate | verdict |
 |---|---|---|---|---|
 | v1 | 2026-09-01 | bounded carrier/method synthesis fixed before market testing | source approval | APPROVED_SOURCE |
-
