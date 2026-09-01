@@ -13,7 +13,8 @@ parent_sha256:
   KELOHARJU-WILCOXON-WTI-SAMECAL-SR-2026: 57FF7096210C5E48A7236DAD6799A3E6CE706E726BD704416064D5A803D10B98
 created: 2026-09-01
 created_by: Research+Development
-cards_extracted: []
+cards_extracted:
+  - QM5_41273_wti-msigned-rank-tr
 ---
 
 # WTI Monthly Strict Signed-Rank Trend Continuation
