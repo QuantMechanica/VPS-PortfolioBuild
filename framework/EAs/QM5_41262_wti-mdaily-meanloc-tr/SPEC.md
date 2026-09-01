@@ -24,7 +24,7 @@ consume flat inside the neutral band. Persist the decision month before every
 fallible gate, then hold at most one stop-protected position until the next
 normalized broker month.
 
-## 2. Locked Parameters
+## 2. Parameters
 
 | Parameter | Value | Meaning |
 |---|---:|---|
@@ -41,17 +41,28 @@ normalized broker month.
 
 There is one Q02 baseline and no optimization surface.
 
-## 3. Carrier And Cadence
+## 3. Symbol Universe
 
 - Host and traded symbol: exact `XTIUSD.DWX`, D1.
 - Symbol slot: 0; magic: `412620000`.
+- No companion, signal, ratio, conversion, hedge, or external symbol exists.
+
+## 4. Timeframe
+
 - Formation: all daily closes in the immediately completed normalized month.
 - Direction: strict sign of final close versus same-month arithmetic mean.
 - Hold: first tick in a later normalized month; forty-day stale repair.
+
+## 5. Expected Behaviour
+
 - Expected activity: approximately ten to twelve completed positions per full
   post-warm-up year; retire below ten in any scored full year.
+- One consumed decision and at most one fixed-risk WTI position per broker
+  month. Neutral arithmetic or any malformed package remains flat.
+- Direct crude-oil exposure is economically different from the incumbent
+  index/metal and natural-gas carriers; only Q09 can establish correlation.
 
-## 4. Duplicate Boundary
+### Duplicate Boundary
 
 This is not the six-month-end mean in `QM5_13100`, daily-return median in
 `QM5_41133`, monthly high-low range location in `QM5_41105`, month-open
@@ -59,7 +70,17 @@ residence count in `QM5_41130`, or raw boundary-to-endpoint return in
 `QM5_20187`. It forms no daily return, sort, high-low range, month-open count,
 or multi-month average. Reference fixtures require decision disagreement.
 
-## 5. Risk And Lifecycle
+## 6. Source Citation
+
+The canonical governed source is
+`strategy-seeds/sources/AI-CODEX-WTI-MDAILY-MEANLOC-20260901/source.md`.
+Moskowitz, Ooi, and Pedersen (2012), "Time Series Momentum," *Journal of
+Financial Economics* 104(2), 228-250, DOI
+`10.1016/j.jfineco.2011.11.003`, support only the monthly WTI continuation
+carrier. The mean-location rule is a disclosed pre-result QM interpretation;
+no published performance or correlation result transfers.
+
+## 7. Risk Model
 
 Q02 uses `RISK_FIXED=1000`, `RISK_PERCENT=0`, and `PORTFOLIO_WEIGHT=1`.
 Sizing uses a frozen completed-bar `3.5*ATR(20,D1)` hard stop and no target.
@@ -68,14 +89,6 @@ Both news axes, legacy news, Friday close, and stress rejection are OFF.
 Malformed exposure is repaired before entry-only gates. The next-month exit
 and forty-day stale repair run every tick. Terminal-persistent month state,
 owned exposure, and same-month deal history prevent restart retries.
-
-## 6. Source And Scope
-
-The canonical governed source is
-`strategy-seeds/sources/AI-CODEX-WTI-MDAILY-MEANLOC-20260901/source.md`.
-Moskowitz, Ooi, and Pedersen (2012) support only the monthly WTI continuation
-carrier. The mean-location rule is a disclosed pre-result QM interpretation;
-no published performance or correlation result transfers.
 
 No external runtime data, ML, banned signal indicator, optimization result,
 current-month signal price, live/demo/shadow/stress set, manual backtest,
@@ -96,4 +109,3 @@ scale-in, grid, martingale, pyramid, target, trail, or partial exit exists.
 | Version | Date | Reason |
 |---|---|---|
 | v0 | 2026-09-01 | G0-approved card and governed magic `412620000` |
-
