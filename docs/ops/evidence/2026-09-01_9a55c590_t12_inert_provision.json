@@ -1,0 +1,103 @@
+{
+  "activation_performed": false,
+  "authority_task_id": "9a55c590-d426-4abb-bff3-87fc2805022d",
+  "bases_non_custom": {
+    "file_count": 0,
+    "policy": "COLD_EMPTY_MUTABLE_CACHE; populated only after separate activation",
+    "total_bytes": 0
+  },
+  "containment": {
+    "enabled": false,
+    "mode_sha256": "a4fa8c01c2d282ef4dd195761e1573f0382a5dc043104a1e1188fd0d28f6add8",
+    "path": "D:\\QM\\strategy_farm\\state\\custom_history_containment_mode.json"
+  },
+  "custom_history": {
+    "actions": {
+      "archive_family_hardlink": 2149,
+      "archive_private_master_copy": 1797,
+      "mutable_private_copy": 300
+    },
+    "admission_state": "FAIL_CLOSED_NOT_IN_ACTIVE_T1_T10_ACTIVATION",
+    "bytes_by_action": {
+      "archive_family_hardlink": 24697759699,
+      "archive_private_master_copy": 19533894019,
+      "mutable_private_copy": 1893742702
+    },
+    "copy_on_claim_ready": true,
+    "distinct_inodes_hashed": 3946,
+    "manifest_content_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+    "manifest_file_count": 3946,
+    "manifest_file_sha256": "6e82b478a09a642a189f0da17edb6f83c35fe32a587b398c3250ed056919c634",
+    "manifest_path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_custom_history_variant_a_20260809\\archive_manifest_owner_approved.json",
+    "manifest_total_bytes": 44231653718,
+    "signed_runner_set_preserved": [
+      "T1",
+      "T10",
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T8",
+      "T9"
+    ],
+    "verification": "PASS_FULL_SHA256"
+  },
+  "disabled_policy_path": "D:\\QM\\strategy_farm\\state\\disabled_terminals.txt",
+  "disabled_policy_sha256": "c85fb75249417930338a310e62258c74c20b176f3c0bcbf9e2a079e2c04c75a9",
+  "disabled_verified": true,
+  "install_files": {
+    "MetaEditor64.exe": "05718f3fa55f3f59fd2f024d8c433b457fbd58fcf39e947a16ccdad00a614ec7",
+    "metatester64.exe": "46da12974ea4b393fa6855576da57549a1e3255dbe5c667cce60d7f32c1a889f",
+    "portable.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "terminal64.exe": "86c563c8c113e4af8802dc91241ecd51fc06caf92cc86fc40026dd8046e526ed"
+  },
+  "portable_mode": true,
+  "receipt_sha256": "1e804b578f1b09b8a66f7bbd5ba28588348b16ba0f341aaf6ab4bb9ffdad7628",
+  "recorded_at_utc": "2026-09-01T15:52:48.846399+00:00",
+  "reference_terminal": "T1",
+  "rollback": [
+    "remove D:\\QM\\mt5\\T12 only while T12 is disabled and has no process",
+    "remove T12 from the fleet code and keep/remove its disabled-list row under OWNER direction"
+  ],
+  "schema_version": "qm.inert-factory-canary-provision/v1",
+  "status": "PASS_INERT_PROVISIONED",
+  "t_live_touched": false,
+  "target_processes_before": [],
+  "terminal": "T12",
+  "terminal_root": "D:\\QM\\mt5\\T12",
+  "terminal_started": false,
+  "tester_defaults": {
+    "account": {
+      "login": "4000090541",
+      "server": "Darwinex-Live"
+    },
+    "expected": {
+      "currency": "USD",
+      "deposit": 100000.0,
+      "leverage": 100,
+      "risk_fixed": 1000.0,
+      "ticks_mode": 4
+    },
+    "observed_terminal_config": {
+      "currency": "USD",
+      "deposit": 100000.0,
+      "leverage": 100,
+      "ticks_mode": 4
+    },
+    "registry_path": "C:\\QM\\repo\\framework\\registry\\tester_defaults.json",
+    "registry_sha256": "e83e02b2a776bc5022dac8714e2f948a42fdf17a3aad1e64a8c2136e5ca4797b",
+    "status": "PASS"
+  },
+  "top_level_directories": [
+    "Bases",
+    "Config",
+    "MQL5",
+    "Profiles",
+    "Sounds",
+    "Tester",
+    "llm-agent",
+    "logs"
+  ]
+}
