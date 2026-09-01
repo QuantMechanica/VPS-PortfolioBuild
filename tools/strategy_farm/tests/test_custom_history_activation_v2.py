@@ -203,3 +203,53 @@ def test_v2_refuses_activation_hash_tamper(
 
     with pytest.raises(gate.CustomHistoryGateError, match="activation receipt hash"):
         gate.validate_activation(v2)
+
+
+def test_v2_inherits_valid_v1_ramp_as_ten_terminal_hold(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    base, v2 = _activation_pair(tmp_path, monkeypatch)
+    legacy_ramp = gate.build_ramp(
+        activation=base,
+        limit=10,
+        reason="sequenced_full_fleet_soak",
+    )
+
+    validated = gate.validate_ramp(legacy_ramp, activation=v2)
+
+    assert validated["activation_sha256"] == base["activation_sha256"]
+    assert tuple(validated["terminal_order"]) == contract.DEFAULT_RUNNER_TERMINALS
+    assert validated["limit"] == 10
+
+
+@pytest.mark.parametrize("limit", [11, 12])
+def test_v2_builds_exact_staged_extension_ramp(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    limit: int,
+) -> None:
+    _, v2 = _activation_pair(tmp_path, monkeypatch)
+
+    receipt = gate.build_ramp(
+        activation=v2,
+        limit=limit,
+        reason=f"staged_t11_t12_limit_{limit}",
+    )
+
+    assert gate.validate_ramp(receipt, activation=v2) == receipt
+    assert receipt["activation_sha256"] == v2["activation_sha256"]
+    assert tuple(receipt["terminal_order"]) == contract.PROVISIONED_FACTORY_TERMINALS
+
+
+def test_v2_refuses_legacy_ramp_with_non_v1_terminal_order(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    base, v2 = _activation_pair(tmp_path, monkeypatch)
+    legacy_ramp = gate.build_ramp(activation=base, limit=10, reason="legacy")
+    legacy_ramp["terminal_order"] = list(contract.PROVISIONED_FACTORY_TERMINALS)
+    legacy_ramp["ramp_sha256"] = gate._ramp_sha256(legacy_ramp)
+
+    with pytest.raises(gate.CustomHistoryGateError, match="terminal order"):
+        gate.validate_ramp(legacy_ramp, activation=v2)

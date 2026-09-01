@@ -47,6 +47,7 @@ ACTIVATION_RELATIVE_PATH = Path("state/custom_history_isolation_activation.json"
 RAMP_RELATIVE_PATH = Path("state/custom_history_ramp.json")
 RAMP_SCHEMA = "qm.custom-history-ramp/v1"
 RAMP_LIMITS = frozenset({1, 2, 5, 10})
+RAMP_LIMITS_V2 = frozenset({*RAMP_LIMITS, 11, 12})
 ROLLBACK_MODE_RELATIVE_PATH = Path("state/custom_history_isolation_rollback_mode.json")
 ROLLBACK_MODE_SCHEMA = "qm.custom-history-isolation-rollback-mode/v1"
 OWNER_WINDOW_EXTENSION_SCHEMA = "qm.custom-history-owner-window-extension/v1"
@@ -200,14 +201,20 @@ def _ramp_sha256(payload: Mapping[str, Any]) -> str:
 
 def build_ramp(*, activation: Mapping[str, Any], limit: int, reason: str) -> dict[str, Any]:
     validated_activation = validate_activation(activation)
-    if int(limit) not in RAMP_LIMITS:
-        raise CustomHistoryGateError("ramp limit must be one of 1,2,5,10")
+    is_v2 = validated_activation.get("schema_version") == ACTIVATION_SCHEMA_V2
+    allowed_limits = RAMP_LIMITS_V2 if is_v2 else RAMP_LIMITS
+    terminal_order = (
+        PROVISIONED_FACTORY_TERMINALS if is_v2 else DEFAULT_RUNNER_TERMINALS
+    )
+    if int(limit) not in allowed_limits:
+        allowed = ",".join(str(value) for value in sorted(allowed_limits))
+        raise CustomHistoryGateError(f"ramp limit must be one of {allowed}")
     payload: dict[str, Any] = {
         "schema_version": RAMP_SCHEMA,
         "recorded_at_utc": utc_now(),
         "activation_sha256": validated_activation["activation_sha256"],
         "limit": int(limit),
-        "terminal_order": list(DEFAULT_RUNNER_TERMINALS),
+        "terminal_order": list(terminal_order),
         "reason": str(reason).strip(),
     }
     if not payload["reason"]:
@@ -228,11 +235,34 @@ def validate_ramp(payload: Mapping[str, Any], *, activation: Mapping[str, Any]) 
     }
     if set(payload) != required or payload.get("schema_version") != RAMP_SCHEMA:
         raise CustomHistoryGateError("ramp receipt schema/key mismatch")
-    if payload.get("activation_sha256") != activation.get("activation_sha256"):
+    validated_activation = validate_activation(activation)
+    direct_binding = payload.get("activation_sha256") == validated_activation.get(
+        "activation_sha256"
+    )
+    inherited_v1_binding = (
+        validated_activation.get("schema_version") == ACTIVATION_SCHEMA_V2
+        and payload.get("activation_sha256")
+        == validated_activation.get("base_activation", {}).get("activation_sha256")
+    )
+    if not (direct_binding or inherited_v1_binding):
         raise CustomHistoryGateError("ramp activation binding mismatch")
-    if int(payload.get("limit", 0)) not in RAMP_LIMITS:
+    if inherited_v1_binding:
+        allowed_limits = RAMP_LIMITS
+        expected_terminals = DEFAULT_RUNNER_TERMINALS
+    else:
+        allowed_limits = (
+            RAMP_LIMITS_V2
+            if validated_activation.get("schema_version") == ACTIVATION_SCHEMA_V2
+            else RAMP_LIMITS
+        )
+        expected_terminals = (
+            PROVISIONED_FACTORY_TERMINALS
+            if validated_activation.get("schema_version") == ACTIVATION_SCHEMA_V2
+            else DEFAULT_RUNNER_TERMINALS
+        )
+    if int(payload.get("limit", 0)) not in allowed_limits:
         raise CustomHistoryGateError("ramp limit is invalid")
-    if tuple(payload.get("terminal_order", ())) != DEFAULT_RUNNER_TERMINALS:
+    if tuple(payload.get("terminal_order", ())) != expected_terminals:
         raise CustomHistoryGateError("ramp terminal order mismatch")
     if not str(payload.get("reason") or "").strip():
         raise CustomHistoryGateError("ramp reason is required")
