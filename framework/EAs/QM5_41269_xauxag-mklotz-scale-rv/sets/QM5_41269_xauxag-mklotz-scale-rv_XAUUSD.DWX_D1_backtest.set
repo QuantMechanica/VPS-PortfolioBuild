@@ -10,17 +10,16 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   38aecca24d7cb14bccac9619d0cc9915262ad14c94b1e847cf7d8a76cd79ef61
 ; author:       Development
 ; date:         2026-09-01
 ;==========================================================
 qm_ea_id=41269
 qm_magic_slot_offset=0
-qm_rng_seed=42
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; strategy-specific params from the approved card/input defaults.
+; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=ea_input_defaults
 strategy_xag_symbol=XAGUSD.DWX
 strategy_endpoint_count=13

@@ -1,0 +1,89 @@
+{
+  "task_id": "59c3a6dc-b7de-476f-b15e-c05bfa562ca7",
+  "build_generation": 0,
+  "ea_id": "QM5_41269",
+  "ea_label": "QM5_41269_xauxag-mklotz-scale-rv",
+  "slug": "xauxag-mklotz-scale-rv",
+  "strategy_id": "AI-CODEX-XAUXAG-MKLOTZ-SCALE-RV-20260901_S01",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41269_xauxag-mklotz-scale-rv",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41269_xauxag-mklotz-scale-rv\\QM5_41269_xauxag-mklotz-scale-rv.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41269_xauxag-mklotz-scale-rv\\QM5_41269_xauxag-mklotz-scale-rv.ex5",
+  "magic_base": 412690000,
+  "symbols_registered": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "logical_symbol": "QM5_41269_XAU_XAG_KLOTZ_SCALE_RV_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "timeframe": "D1",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41269_xauxag-mklotz-scale-rv\\sets\\QM5_41269_xauxag-mklotz-scale-rv_QM5_41269_XAU_XAG_KLOTZ_SCALE_RV_D1_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41269_xauxag-mklotz-scale-rv\\sets\\QM5_41269_xauxag-mklotz-scale-rv_XAUUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41269_xauxag-mklotz-scale-rv\\sets\\QM5_41269_xauxag-mklotz-scale-rv_XAGUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_sha256": {
+    "QM5_41269_xauxag-mklotz-scale-rv_QM5_41269_XAU_XAG_KLOTZ_SCALE_RV_D1_D1_backtest.set": "E43D040FAA9FB9FFBF4F9833D455E39FFDBFC0AD94C8090AE9FF7E774AC8CD48",
+    "QM5_41269_xauxag-mklotz-scale-rv_XAUUSD.DWX_D1_backtest.set": "DB8861CCAE4EADE13264BD8B1CBD0F6EAFFE9B21D14599D5C60194DC67236F20",
+    "QM5_41269_xauxag-mklotz-scale-rv_XAGUSD.DWX_D1_backtest.set": "C0C725B0530CBB66A6B6D57F279528E322B60B6F42CD0036A0727C12D5DF6972"
+  },
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41269_xauxag-mklotz-scale-rv\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "The qm-build-ea-from-card skill is build-only and forbids manual backtests; the OWNER mission authorizes one governed logical-basket Q02 enqueue instead.",
+  "blocked_reason": "",
+  "open_questions": [
+    "Q02 must establish package-level activity, fills, paired cost drag, and baseline economics, including at least five completed packages in every full post-warm-up year.",
+    "Only unchanged Q09 may determine realized portfolio correlation or diversification value."
+  ],
+  "compile": {
+    "status": "COMPILE_OK",
+    "work_item_id": "746ddf8e-c007-41bd-8214-31de6ed2b9be",
+    "terminal": "T2",
+    "evidence_path": "D:\\QM\\reports\\work_items\\746ddf8e-c007-41bd-8214-31de6ed2b9be\\QM5_41269\\COMPILE_EA\\compile_evidence.json",
+    "evidence_sha256": "1D2F945A93CB510D07D647847E964F7C663F284AEBFF11A52342BED61BEAB1A4",
+    "build_check_result": "PASS",
+    "build_check_warnings": 1,
+    "build_check_warning_codes": [
+      "EA_EVENT_VOCABULARY_UNKNOWN:PACKAGE_PLAN"
+    ],
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "failure_classes": [],
+    "mq5_sha256": "87B4AC6E784F7A85230B28C235A5BD79AA7F758D00B30BC5FA5B54A933BEE06E",
+    "ex5_sha256": "CC5F54B645E8B2D26E7D03AA50DB95081DE229286840D6B29343FD8CECF1D7BE",
+    "logical_setfile_build_hash": "B9097F9CBA981B7C790D03DEB053D5EE3B79EF8B02A817FE8E3C3C62A8E237B0",
+    "logical_setfile_sha256": "E43D040FAA9FB9FFBF4F9833D455E39FFDBFC0AD94C8090AE9FF7E774AC8CD48"
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "validations": {
+    "approved_card_sha256": "A96DCC5C8A31EDBFEF4E9B3893402BEEDFC07D6262400B2A12DBB9801EC026AB",
+    "approved_local_card_byte_identical": true,
+    "farm_runtime_card_sha256": "F8785418477E9B18045C30C6A0A89D4E13152027760EE62EA2080B529A2ECBB2",
+    "farm_runtime_card_normalization": "R1_INFORMATIONAL_TIER_C_ONLY; R2-R4_AND_MECHANICS_UNCHANGED",
+    "basket_manifest_sha256": "1CD169D97349F5E259011B6EADAB5EC770675A2618A90B962380E43AF1CEB3DD",
+    "build_skill_guard": "PASS",
+    "card_schema_lint": "PASS",
+    "dedup_artifact_sha256": "2C5ECB7A982F2C7994F0F1B4EE362A34FB9CC789B53272CF41BB9C3ACC5D565D",
+    "reference_test_sha256": "E1BFC2A86E2E9E67C5D4881FC7247343C16BA0715367ED5E03D0093169CF3CA6",
+    "reference_tests": "PASS_7",
+    "source_packet_sha256": "E2FCB4F683C26A8F89A33D0360B2ADFA451CEBBBB7807324371DFBB6C98B73CA",
+    "spec_sha256": "4C6F07DC968E2D38B4CA9A3CD3BD4584245DF2A87843E00AB1EDE0032D47A5C3",
+    "spec_validation": "PASS",
+    "static_guardrails": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "setfile_validation": "PASS_3_RISK_FIXED"
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "deploy_manifest_touched": false,
+    "manual_backtest_launched": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false
+  }
+}
