@@ -67,7 +67,7 @@ r1_track_record: PASS_WITH_AI_MECHANIZATION_AND_CONTINUOUS_CFD_TRANSLATION_RISK
 r1_reasoning: "Complete-read peer-reviewed WTI monthly continuation evidence; exact daily-close ordinal conjunction disclosed as untested QM synthesis."
 r2_mechanical: PASS
 r2_reasoning: "Month clock, sessions, final-fifteen selection, fixed blocks, ties, 75 comparisons, midpoint, side, attempt, risk, stop, spread, and lifecycle are deterministic and locked."
-r3_data_available: PASS_WITH_CONTINUOUS_CFD_BASIS_RISK
+r3_data_available: PASS
 r3_reasoning: "Registered native XTIUSD.DWX D1 history and MT5 state supply every runtime input; roll, basis, financing, gap, and broker-label risks remain."
 r4_ml_forbidden: PASS
 r4_reasoning: "Only timestamps, completed closes, comparisons, integer counts, ATR risk, quotes, positions, deals, and persistent state; no trained output or external runtime feed."
@@ -244,7 +244,7 @@ year or retire the candidate.
 |---|---|---|
 | R1 | PASS_WITH_AI_MECHANIZATION_AND_CONTINUOUS_CFD_TRANSLATION_RISK | Complete-read peer-reviewed WTI monthly continuation evidence; exact daily-close rank path disclosed as untested QM synthesis. |
 | R2 | PASS | Exact clock, data, blocks, tie rule, 75 comparisons, midpoint, side, attempt, risk, and lifecycle. |
-| R3 | PASS_WITH_CONTINUOUS_CFD_BASIS_RISK | Native registered WTI D1 and MT5 state; roll/basis/financing/gap risks disclosed. |
+| R3 | PASS | Native registered WTI D1 and MT5 state; roll/basis/financing/gap risks disclosed. |
 | R4 | PASS | Deterministic native comparisons and state only; no trained signal or external runtime feed. |
 
 ## Risk Model And Kill Criteria
