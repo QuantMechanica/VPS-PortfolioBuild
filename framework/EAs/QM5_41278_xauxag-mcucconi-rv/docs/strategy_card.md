@@ -252,8 +252,8 @@ assignments. Statistic and rank-sum magnitudes never scale risk.
 2. Any malformed composition, wrong side, missing stop, wrong symbol/magic,
    or notional mismatch closes all owned legs immediately.
 3. On the first synchronized tick in a broker month later than entry, close
-   both legs with `QM_EXIT_TIME`.
-4. At forty elapsed calendar days, close both legs with `QM_EXIT_TIME` even if
+   both legs with `QM_EXIT_TIME_STOP`.
+4. At forty elapsed calendar days, close both legs with `QM_EXIT_TIME_STOP` even if
    synchronized month detection is unavailable.
 5. There is no convergence target, opposite signal, intramonth flip, Friday
    flatten, trail, break-even, partial close, scale-in, or pyramid exit.
