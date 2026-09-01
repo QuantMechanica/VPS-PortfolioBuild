@@ -1,0 +1,80 @@
+{
+  "schema": "qm.public-method-retrieval.v1",
+  "retrieved_at_utc": "2026-09-01T14:20:00Z",
+  "route": "publisher_metadata_boundary_plus_complete_author_preprint_and_complete_official_cran_source",
+  "original_paper": {
+    "title": "A combination of Wilcoxon's and Ansari-Bradley's statistics",
+    "author": "Yves Lepage",
+    "journal": "Biometrika",
+    "volume_issue_pages": "58(1), 213-217",
+    "year": 1971,
+    "doi": "10.1093/biomet/58.1.213",
+    "publisher_url": "https://academic.oup.com/biomet/article/58/1/213/224511",
+    "crossref_url": "https://api.crossref.org/works/10.1093/biomet/58.1.213",
+    "crossref_http_status": 200,
+    "crossref_utf8_length_bytes": 1783,
+    "crossref_utf8_sha256": "2D428645D838F530FC22E325E46D7C7BE46CF65DAC1DCED932DA4657D1EC736B",
+    "publisher_metadata_and_abstract_read": true,
+    "access_boundary": "Publisher metadata and abstract were read. The Oxford PDF was access-blocked, so no complete original-paper body read, hidden derivation, table value, or paper-file hash is claimed."
+  },
+  "author_preprint": {
+    "title": "Enhanced Lepage-type test statistics for location-scale shifts with right-skewed data",
+    "authors": "Abid Hussain and Michail Tsagris",
+    "version": "arXiv:2509.19126v3",
+    "dated": "2025-10-18",
+    "url": "https://arxiv.org/pdf/2509.19126",
+    "http_status": 200,
+    "pdf_length_bytes": 431411,
+    "pdf_sha256": "1761E9D22E26B79D6A21496CDD4C237CBAB27B35A232C29830A0B957C7531359",
+    "page_count": 20,
+    "complete_read": true,
+    "verified_claims": [
+      "the classical Lepage statistic combines standardized Wilcoxon-Mann-Whitney location and Ansari-Bradley scale components",
+      "the Wilcoxon normalized U component and its strong-null variance are stated explicitly",
+      "the even-N symmetric end-rank path and Ansari-Bradley expectation and variance are stated explicitly",
+      "the classical joint statistic is the sum of the two squared standardized components",
+      "under the strong null the classical statistic has an asymptotic chi-square distribution with two degrees of freedom",
+      "small-sample exact inference would instead use permutation critical values"
+    ],
+    "adverse_findings": [
+      "the paper studies biomedical samples rather than WTI",
+      "it recommends robustified variants for right-skewed weak-null inference",
+      "the EA deliberately uses only the classical L0 arithmetic as a transparent state gate and makes no significance claim",
+      "daily return overlap violates the independent-sample interpretation, so the statistic is only a deterministic regime score in this card"
+    ]
+  },
+  "official_implementation_record": {
+    "project": "CRAN LePage",
+    "release": "1.0",
+    "published": "2025-10-01",
+    "package_doi": "10.32614/CRAN.package.LePage",
+    "canonical_url": "https://CRAN.R-project.org/package=LePage",
+    "source_url": "https://cran.r-project.org/src/contrib/LePage_1.0.tar.gz",
+    "index_http_status": 200,
+    "index_utf8_length_bytes": 4817,
+    "index_utf8_sha256": "373A8DB633C4571E59347C1B183E792B50CAF93E7F4E9F97AD88AC333E4E9D82",
+    "archive_http_status": 200,
+    "archive_length_bytes": 2717,
+    "archive_sha256": "613165E7F2809DCFDED603A85B322B6781132A27F16B0CC7F8FF430BC89042CE",
+    "lepage_r_sha256": "4772969A1AEEF2733CDF4E476585F9215771D55590EF02CF78EB58691E4601DD",
+    "lepage_rd_sha256": "10030A11947A95134D3FF1E9C051328215EDF07FE4C36CC29FCD8C93945FF34D",
+    "description_sha256": "0C5CD657F65D633A13B51FCD299F48C83CC658B456EEB14A0F8A6F79C3317E96",
+    "complete_archive_read": true,
+    "verified_claims": [
+      "the implementation pools x then y and ranks all observations",
+      "the location component uses the y-sample rank sum and the classical strong-null variance",
+      "the scale component assigns mirrored ranks from both tails and sums the y-sample scores",
+      "the even-N scale expectation is n*(N+2)/4",
+      "the even-N scale standard deviation squares to m*n*(N+2)*(N-2)/(48*(N-1))",
+      "L0 is the sum of the two squared standardized classical components",
+      "the reference p-value uses chi-square with two degrees of freedom"
+    ]
+  },
+  "carrier_record": {
+    "source": "strategy-seeds/sources/MOP-TSMOM-2012/source.md",
+    "sha256": "C8B07ECD62C1D5EF9E3D7975EEE6A3B6C46C1C566D0B20B42237613D9B3A7042",
+    "complete_governed_record_read": true,
+    "role": "broad own-return continuation family and explicit NYMEX WTI membership only"
+  },
+  "claim_boundary": "The records support the named joint location-scale rank statistic, exact classical arithmetic, broad own-return continuation family, and WTI carrier membership only. They do not test fixed 25-by-25 daily-return blocks, the chi-square-two median activity gate, one-month continuation, CFDs, fixed risk, activity, profitability, or decorrelation. The EA imports no R, package code, executable source, optimizer, random output, or trained output."
+}
