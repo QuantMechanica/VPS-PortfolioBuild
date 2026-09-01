@@ -66,7 +66,7 @@ r1_track_record: PASS
 r1_reasoning: "Durable AI prompt/output/source lineage plus complete-read peer-reviewed monthly WTI continuation evidence with explicit translation and performance boundaries."
 r2_mechanical: PASS
 r2_reasoning: "Clock, buffer, month normalization, observation count, boundary proof, arithmetic mean, strict sign, attempt, risk, stop, spread, and lifecycle are deterministic and locked."
-r3_data_available: PASS_WITH_CONTINUOUS_CFD_BASIS_RISK
+r3_data_available: PASS
 r3_reasoning: "Registered native XTIUSD.DWX D1 and MT5 state supply every runtime input; continuous-CFD roll, financing, gap, and broker-month-label risks remain."
 r4_ml_forbidden: PASS
 r4_reasoning: "Native timestamps, close levels, bounded arithmetic, comparisons, ATR risk, quotes, positions, deals, and persistent state only; no trained output, banned signal indicator, external feed, grid, martingale, scale-in, or pyramid."
