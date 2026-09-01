@@ -1,0 +1,186 @@
+{
+  "artifact_type": "fx_existing_basket_q02_serialized_run2_handoff",
+  "schema_version": "qm.mission-paced-handoff/v1",
+  "generated_at_utc": "2026-09-01T07:22:01.0691340Z",
+  "generated_at_europe_berlin": "2026-09-01T09:22:01.0691340+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "1658c7fe54a5e9d19161ab51e5110917c2e4f0ae",
+  "mission_outcome": "HANDOFF_HELD_HEALTHY_SERIALIZED_MULTISYMBOL_RUN2",
+  "frontier_reconciliation": {
+    "controlling_research": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "latest_complete_census": "docs/research/FX_COINTEGRATION_QM5_20240_Q04_RETIREMENT_20260831T233713Z.md",
+    "relationships_total": 66,
+    "relationships_covered": 66,
+    "relationships_uncovered": 0,
+    "published_threshold_survivors": 2,
+    "approved_cointegration_identities": 123,
+    "matching_ea_directories": 123,
+    "unbuilt_approved_identities": [],
+    "new_card_or_build_eligible": false,
+    "reason": "All governed scan relationships are already covered; creating another identity would duplicate coverage or relax the published reputable-source threshold.",
+    "anchors": {
+      "QM5_12532": {
+        "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+        "q02": "PASS",
+        "later_chain": "Q04 PASS; Q05 FAIL",
+        "current_q02_oninit_or_no_history_blocker": false
+      },
+      "QM5_12533": {
+        "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+        "q02": "PASS",
+        "later_chain": "Q04 FAIL",
+        "current_q02_oninit_or_no_history_blocker": false
+      }
+    },
+    "skill_disposition": {
+      "strategy_card_extraction": "CLOSED_NO_OWNER_APPROVED_NON_DUPLICATE_SCAN_PAIR",
+      "ea_build": "CLOSED_NO_APPROVED_UNBUILT_COINTEGRATION_CARD",
+      "pipeline_phase": "NOT_APPLICABLE_Q02_USES_RESIDENT_SMOKE_RUNNER"
+    }
+  },
+  "selected_existing_forex_fallback": {
+    "ea_id": "QM5_10025",
+    "ea_directory": "framework/EAs/QM5_10025_rw-fx-broad-pairs",
+    "host_symbol": "USDJPY.DWX",
+    "timeframe": "H4",
+    "market_neutral_two_leg_execution": true,
+    "monthly_partner_selection": true,
+    "structural_only": true,
+    "machine_learning": false,
+    "adaptive_intramonth_refit": false,
+    "queue": {
+      "database": "D:/QM/strategy_farm/state/farm_state.sqlite",
+      "database_quick_check": "ok",
+      "work_item_id": "050dd2ea-e9d0-475f-b5ad-40c2206867ff",
+      "phase": "Q02",
+      "status": "pending",
+      "verdict": null,
+      "attempt_count": 0,
+      "claimed_by": null,
+      "open_exact_rows": 1,
+      "priority_track": true,
+      "priority_reason": "board_advisor_fx_existing_market_neutral_q02_after_exhausted_66_pair_frontier",
+      "payload_sha256": "bca99985bb4989d96c0537c81640333870793f2958843797d5357fb6c319a2f8",
+      "duplicate_work_item_created": false,
+      "payload_mutated_this_run": false,
+      "manual_dispatch_started": false
+    },
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "artifact_bindings": {
+      "mq5_sha256": "fd0a18d8710dc8bd0d089ab34b9c881de65e971f0916ba540b34c53b2aa120ff",
+      "ex5_sha256": "9bf2691d4af0a57d553711c37ffceadb513b303e710a25f455c8f2e211eecfcc",
+      "basket_manifest_sha256": "98237a88f0634810f187a63c6d4585950aac4d5b8f21c157d23f88533691daa0",
+      "setfile_sha256": "2d8a1ba1871c229d00b49458dcbd6dbd152d24c170d76404bace39cdea3be53c"
+    },
+    "validation": {
+      "ea_directory_worktree_clean": true,
+      "basket_work_item_tests": "18 passed",
+      "legacy_runtime_card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_10025_rw-fx-broad-pairs.md",
+      "legacy_card_g0_status": "APPROVED",
+      "legacy_card_schema_lint_status": "error",
+      "legacy_card_missing_sections": [
+        "## hypothesis",
+        "## rules",
+        "## risk"
+      ],
+      "legacy_card_ml_hits": [],
+      "card_mutated": false,
+      "card_disposition": "The existing governed build and queue row remain valid; no approved Card was rewritten or implicitly re-approved during a queue handoff."
+    }
+  },
+  "capacity_sample": {
+    "sampled_at_utc": "2026-09-01T07:22:01.0691340Z",
+    "sample_method": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "samples_cpu_percent": [
+      86.14788110535737,
+      65.44820694895483,
+      72.67040399776957,
+      70.04912446012095,
+      64.26870018079495
+    ],
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "average_cpu_percent": 71.71686333859954,
+    "maximum_cpu_percent": 86.14788110535737,
+    "hard_ceiling_percent": 97.0,
+    "average_binding": false,
+    "maximum_binding": false,
+    "ceiling_binding": false
+  },
+  "farm_snapshot": {
+    "active_work_item_count": 9,
+    "active_phase_counts": {
+      "OPT_CENSUS": 7,
+      "Q03": 1,
+      "Q10_NEWS": 1
+    },
+    "mt5_slots_scanned_at": "2026-09-01T09:21:51+02:00",
+    "running_mt5_terminals": [
+      "T3",
+      "T6",
+      "T8"
+    ],
+    "serialized_multisymbol_lane": {
+      "terminal": "T8",
+      "work_item_id": "f9ccf272-d66e-4a68-b332-76133baab427",
+      "ea_id": "QM5_20233",
+      "symbol": "QM5_20233_XAU_XAG_SKEW_RANK_D1",
+      "phase": "Q03",
+      "status": "active",
+      "attempt_count": 2,
+      "process_pid": 4000,
+      "process_started_at_utc": "2026-09-01T06:32:31.0108951Z",
+      "tester_run": "raw/run_02",
+      "process_responding": true,
+      "process_cpu_seconds_delta_over_five_seconds": 1.0625,
+      "tester_log_last_write_utc": "2026-09-01T06:57:46.7360926Z",
+      "tester_last_simulated_time": "2019.06.05 15:25:16",
+      "healthy_forward_progress": true
+    },
+    "duplicate_terminal_workers": 0,
+    "orphaned_terminal_processes": 0,
+    "terminal_or_worker_controlled": false
+  },
+  "actions_this_run": {
+    "frontier_and_anchor_reconciled": true,
+    "selected_existing_q02_revalidated": true,
+    "capacity_rechecked": true,
+    "active_lane_run2_health_checked": true,
+    "basket_regression_tested": true,
+    "legacy_card_schema_lint_recorded": true,
+    "new_card_or_ea_created": false,
+    "queue_row_created": false,
+    "queue_payload_priority_claim_status_or_verdict_mutated": false,
+    "dispatch_tick": false,
+    "compile_smoke_or_backtest_started": false,
+    "paced_handoff_evidence_created": true
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "q08_state_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_terminal_controlled": false,
+    "autotrading_toggled": false,
+    "live_or_deploy_manifest_touched": false,
+    "preexisting_unrelated_worktree_changes_preserved": true
+  },
+  "non_duplicate_delta": {
+    "preceding_fx_handoff_commit": "cb02bfdac6d639119db22ff60609eaab08ef28e",
+    "preceding_active_work_item_count": 6,
+    "current_active_work_item_count": 9,
+    "preceding_capacity_average_cpu_percent": 89.70452268363657,
+    "current_capacity_average_cpu_percent": 71.71686333859954,
+    "preceding_capacity_maximum_cpu_percent": 90.82129395728778,
+    "current_capacity_maximum_cpu_percent": 86.14788110535737,
+    "current_delta": "The T8 predecessor entered a live second tester run and advanced its simulated clock to June 2019; the active farm set grew from six to nine rows while CPU fell further below the ceiling.",
+    "duplicate_work_items_created": 0
+  },
+  "resume_contract": "After f9ccf272-d66e-4a68-b332-76133baab427 reaches a canonical terminal state and no other multisymbol row is active, take a fresh five-sample CPU window. Only if both average and maximum remain strictly below 97 percent should a resident worker claim the unique prioritized QM5_10025 Q02 row. Do not enqueue a duplicate or manually start a second basket tester."
+}
