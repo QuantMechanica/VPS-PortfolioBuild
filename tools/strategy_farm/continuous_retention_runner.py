@@ -230,6 +230,17 @@ def iter_old_files(root: Path, cutoff_epoch: float) -> Iterable[Path]:
     return (p for p in root.rglob("*") if p.is_file() and p.stat().st_mtime < cutoff_epoch)
 
 
+def iter_evidence_candidates(root: Path, cutoff_epoch: float,
+                             open_ids: set[str], open_paths: set[Path]) -> Iterable[Path]:
+    for path in iter_old_files(root, cutoff_epoch):
+        if is_open_bound(path, open_ids, open_paths):
+            continue
+        attributes = file_attributes(path)
+        if attributes & (COMPRESSED_ATTRIBUTE | REPARSE_ATTRIBUTE):
+            continue
+        yield path
+
+
 def safe_delete_batch(paths: list[Path], root: Path, receipt_dir: Path,
                       run_id: str, action: str, apply: bool) -> dict[str, Any]:
     entries = []
@@ -316,9 +327,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         compressed.append({"path": str(path), "status": status, "bytes": before, "bytes_after": after})
     evidence = []
     cutoff = now.timestamp() - args.evidence_age_hours * 3600
-    for path in iter_old_files(args.work_items_root, cutoff):
-        if is_open_bound(path, open_ids, open_paths):
-            continue
+    for path in iter_evidence_candidates(args.work_items_root, cutoff, open_ids, open_paths):
         status, before, after = set_ntfs_compression(path) if args.apply else ("PLANNED", path.stat().st_size, path.stat().st_size)
         evidence.append({"path": str(path), "status": status, "bytes": before, "bytes_after": after})
         if len(evidence) >= args.max_evidence_files:

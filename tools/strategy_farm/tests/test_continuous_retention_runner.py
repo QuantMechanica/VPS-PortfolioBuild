@@ -68,6 +68,23 @@ def test_delete_batch_is_dry_run_by_default(tmp_path: Path) -> None:
     assert result["requested_bytes"] == 3
 
 
+def test_evidence_candidates_skip_already_compressed_and_reparse(tmp_path: Path, monkeypatch) -> None:
+    plain = tmp_path / "plain.json"
+    compressed = tmp_path / "compressed.json"
+    reparse = tmp_path / "reparse.json"
+    for path in (plain, compressed, reparse):
+        path.write_text("{}")
+        age(path, 3)
+    monkeypatch.setattr(
+        runner, "file_attributes",
+        lambda path: (runner.COMPRESSED_ATTRIBUTE if path == compressed else
+                      runner.REPARSE_ATTRIBUTE if path == reparse else 0),
+    )
+    candidates = list(runner.iter_evidence_candidates(
+        tmp_path, dt.datetime.now().timestamp() - 2 * 3600, set(), set()))
+    assert candidates == [plain]
+
+
 def test_noop_above_watermark_does_not_open_database(tmp_path: Path, monkeypatch) -> None:
     args = argparse.Namespace(
         apply=True, db=tmp_path / "missing.sqlite", backups_root=tmp_path,
