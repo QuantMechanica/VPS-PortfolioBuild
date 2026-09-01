@@ -1,0 +1,37 @@
+{
+  "schema": "qm.public-method-retrieval.v1",
+  "retrieved_at_utc": "2026-09-01T08:10:43Z",
+  "route": "publisher_metadata_plus_complete_official_nist_formula",
+  "paper": {
+    "title": "Robust Tests for the Equality of Variances",
+    "authors": [
+      "Morton B. Brown",
+      "Alan B. Forsythe"
+    ],
+    "journal": "Journal of the American Statistical Association",
+    "volume_issue_pages": "69(346), 364-367",
+    "year": 1974,
+    "doi": "10.1080/01621459.1974.10482955",
+    "doi_url": "https://doi.org/10.1080/01621459.1974.10482955",
+    "publisher_url": "https://www.tandfonline.com/doi/abs/10.1080/01621459.1974.10482955",
+    "access_boundary": "Publisher metadata and abstract were available; no complete-paper body read or paper-file hash is claimed."
+  },
+  "official_formula_record": {
+    "publisher": "NIST/SEMATECH",
+    "title": "1.3.5.10. Levene Test for Equality of Variances",
+    "url": "https://www.itl.nist.gov/div898/handbook/eda/section3/eda35a.htm",
+    "http_status": 200,
+    "utf8_length_bytes": 14445,
+    "utf8_sha256": "EF6201BCD0D8C9061CB87E5A094FC81E7C06FD60E5594931B16C3105C8EAC884",
+    "complete_page_read": true,
+    "verified_claims": [
+      "the statistic applies one-way ANOVA arithmetic to absolute deviations within each group",
+      "the Brown-Forsythe median form uses absolute deviations from each group median",
+      "the between-group multiplier is (N-k)/(k-1)",
+      "the denominator is the within-group sum of squared centered absolute deviations",
+      "NIST recommends the median form as broadly robust against non-normal data"
+    ]
+  },
+  "claim_boundary": "The paper and NIST record supply the median-centered scale statistic only. They do not test gold, silver, monthly log-ratio changes, a recent-expansion direction gate, a contrarian basket, CFDs, fixed risk, activity, or performance."
+}
+

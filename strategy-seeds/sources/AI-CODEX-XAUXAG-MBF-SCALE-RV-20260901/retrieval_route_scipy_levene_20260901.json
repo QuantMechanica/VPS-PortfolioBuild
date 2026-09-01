@@ -1,0 +1,30 @@
+{
+  "schema": "qm.public-method-retrieval.v1",
+  "retrieved_at_utc": "2026-09-01T08:11:33Z",
+  "route": "official_documentation_and_signed_tag_pinned_public_source",
+  "project": "scipy/scipy",
+  "release": "1.18.0",
+  "tag_object_sha": "7adb8c972443f664b9395a0e6e8e0283e9b4faff",
+  "commit_sha": "54ef5423f2e4376230ec3bfda6912a07a50958e3",
+  "tag_signature_verified_by_github": true,
+  "documentation_url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.levene.html",
+  "documentation_http_status": 200,
+  "documentation_utf8_length_bytes": 38771,
+  "documentation_utf8_sha256": "C0A0464FC1CE32B01C5B07906938294D4E8C190D9EDF79419933B068B732838E",
+  "source_url": "https://github.com/scipy/scipy/blob/v1.18.0/scipy/stats/_morestats.py",
+  "raw_source_url": "https://raw.githubusercontent.com/scipy/scipy/v1.18.0/scipy/stats/_morestats.py",
+  "raw_source_utf8_length_bytes": 194421,
+  "raw_source_utf8_sha256": "8A933E5FEF233ED33E2AEF5CC82403FAA25849C6F157907F82ADD9323767E53F",
+  "bounded_read": {
+    "complete_documentation_read": true,
+    "source_scope_read": "scipy.stats.levene implementation and its immediately associated documentation",
+    "verified_claims": [
+      "center='median' is the default and is identified as the Brown-Forsythe form",
+      "each sample is transformed to absolute deviations from its group center",
+      "the implementation computes group deviation means and their weighted grand mean",
+      "the statistic divides (N-k) times between-group dispersion by (k-1) times within-group dispersion"
+    ]
+  },
+  "policy": "The EA imports no SciPy, Python, p-value, survival function, or executable source. The pinned implementation is an independent arithmetic cross-check only."
+}
+
