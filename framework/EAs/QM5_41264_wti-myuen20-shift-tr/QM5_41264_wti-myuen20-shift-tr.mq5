@@ -636,8 +636,9 @@ bool Strategy_Yuen20Block(const double &returns[],
          source_index = strategy_trim_each_tail;
       else if(index > upper_index)
          source_index = upper_index;
-      if(index < 0 || index >= ArraySize(winsorized) ||
-         source_index < 0 || source_index >= ArraySize(sorted))
+      if(index < 0 || index >= ArraySize(winsorized))
+         return false;
+      if(source_index < 0 || source_index >= ArraySize(sorted))
          return false;
       winsorized[index] = sorted[source_index];
       winsor_sum += winsorized[index];
