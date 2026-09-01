@@ -1,0 +1,167 @@
+{
+  "schema": "qm.fx-cointegration-q02-multisymbol-busy/v1",
+  "recorded_at_utc": "2026-09-01T17:33:43.3122311Z",
+  "branch": "agents/board-advisor",
+  "observation_base": "101c5d45928e09c9f126277cd7d5d2dfa730dce4",
+  "mission": "grow_certified_v5_portfolio_new_forex_sleeves",
+  "outcome": "SERIALIZED_MULTISYMBOL_BUSY_NO_DUPLICATE_MUTATION",
+  "frontier": {
+    "source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "relationships_scanned": 66,
+    "durable_coverage_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "relationships_covered": 66,
+    "relationships_uncovered": 0,
+    "approved_unbuilt_identities": 0,
+    "new_card_or_ea_created": false,
+    "duplicate_guard_reason": "the frozen sign-aware scan is fully covered and its only two original admission-threshold survivors are already past Q02",
+    "anchors": [
+      {
+        "ea_id": "QM5_12532",
+        "relationship": "AUDUSD.DWX/NZDUSD.DWX",
+        "q02": "PASS",
+        "later_state": "Q04 PASS; Q05 FAIL",
+        "current_q02_oninit_or_no_history_blocker": false
+      },
+      {
+        "ea_id": "QM5_12533",
+        "relationship": "EURJPY.DWX/GBPJPY.DWX",
+        "q02": "PASS",
+        "later_state": "Q04 FAIL",
+        "current_q02_oninit_or_no_history_blocker": false
+      }
+    ]
+  },
+  "fallback": {
+    "ea_id": "QM5_10025",
+    "label": "QM5_10025_rw-fx-broad-pairs",
+    "approved_card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_10025_rw-fx-broad-pairs.md",
+    "source_citation": "Robot Wealth, Index of Strategies, FX Broad Pairs Trading",
+    "mechanism": "monthly frozen-OLS market-neutral FX pair selection",
+    "timeframe": "H4",
+    "structural_only": true,
+    "machine_learning": false,
+    "banned_indicators": false,
+    "grid": false,
+    "martingale": false,
+    "adaptive_intramonth_refit": false,
+    "q02": {
+      "work_item_id": "050dd2ea-e9d0-475f-b5ad-40c2206867ff",
+      "symbol": "USDJPY.DWX",
+      "status": "pending",
+      "claimed_by": null,
+      "attempt_count": 0,
+      "verdict": null,
+      "open_exact_count": 1,
+      "priority_track": true,
+      "priority_reason": "board_advisor_fx_existing_market_neutral_q02_after_exhausted_66_pair_frontier",
+      "payload_sha256": "bca99985bb4989d96c0537c81640333870793f2958843797d5357fb6c319a2f8",
+      "queue_row_created_by_this_run": false,
+      "queue_payload_changed_by_this_run": false
+    },
+    "risk_contract": {
+      "environment": "backtest",
+      "RISK_FIXED": 1000.0,
+      "RISK_PERCENT": 0.0,
+      "PORTFOLIO_WEIGHT": 1.0
+    },
+    "artifacts": {
+      "mq5_sha256": "fd0a18d8710dc8bd0d089ab34b9c881de65e971f0916ba540b34c53b2aa120ff",
+      "ex5_sha256": "9bf2691d4af0a57d553711c37ffceadb513b303e710a25f455c8f2e211eecfcc",
+      "basket_manifest_sha256": "98237a88f0634810f187a63c6d4585950aac4d5b8f21c157d23f88533691daa0",
+      "setfile_sha256": "2d8a1ba1871c229d00b49458dcbd6dbd152d24c170d76404bace39cdea3be53c"
+    }
+  },
+  "capacity": {
+    "paced_launch_max": 1,
+    "final_admission_window": {
+      "sampled_at_utc": "2026-09-01T17:33:43.3122311Z",
+      "sample_interval_seconds": 1,
+      "samples_percent": [
+        94.535659,
+        85.015076,
+        86.064562,
+        86.837665,
+        87.599049
+      ],
+      "average_percent": 88.010402,
+      "maximum_percent": 94.535659,
+      "hard_ceiling_percent": 97.0,
+      "average_below_ceiling": true,
+      "maximum_below_ceiling": true,
+      "hard_ceiling_binding": false
+    },
+    "active_factory_rows": {
+      "count": 8,
+      "opt_census": 7,
+      "q03": 1
+    },
+    "serialized_multisymbol_predecessor": {
+      "work_item_id": "c8edc2dc-43f4-4896-a5b0-9047815b0564",
+      "ea_id": "QM5_20206",
+      "phase": "Q03",
+      "symbol": "QM5_20206_XAU_XAG_MOMIVOL_D1",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at_utc": "2026-09-01T16:48:10Z"
+    },
+    "serialized_multisymbol_lane": {
+      "terminal": "T7",
+      "work_item_id": "eb3993b7-e477-4236-9cb6-385c1a8e7392",
+      "ea_id": "QM5_20203",
+      "phase": "Q03",
+      "relationship": "EURUSD.DWX/AUDJPY.DWX",
+      "symbol": "QM5_20203_EURUSD_AUDJPY_COINTEGRATION_D1",
+      "status": "active",
+      "attempt_count": 2,
+      "run": 1,
+      "runs_total": 2,
+      "progress_percent": 43,
+      "progress_observed_at_utc": "2026-09-01T17:30:53.824Z",
+      "terminal_pid": 17928,
+      "terminal_responding": true,
+      "terminal_cpu_delta_seconds_over_5s": 0.438,
+      "tester_pid": 16608,
+      "tester_responding": true,
+      "tester_cpu_delta_seconds_over_5s": 4.922,
+      "healthy_not_stale": true
+    }
+  },
+  "material_delta_from_2026_09_01T16_18_26Z": {
+    "predecessor_before": "QM5_20206 Q03 active at 79 percent",
+    "predecessor_after": "QM5_20206 Q03 done PASS",
+    "serialized_successor_after": "QM5_20203 Q03 active at 43 percent of run 1 of 2",
+    "cpu_hard_ceiling_binding_before": true,
+    "cpu_hard_ceiling_binding_after": false,
+    "target_q02_state_changed": false
+  },
+  "actions": {
+    "card_created": false,
+    "ea_created_or_changed": false,
+    "registry_changed": false,
+    "basket_manifest_changed": false,
+    "setfile_changed": false,
+    "q02_enqueued": false,
+    "priority_payload_changed": false,
+    "claim_called": false,
+    "dispatch_called": false,
+    "tester_started": false,
+    "terminal_controlled": false,
+    "pipeline_verdict_changed": false
+  },
+  "continuation": {
+    "condition": "QM5_20203 reaches a canonical terminal state, followed by a fresh five-sample CPU window whose average and maximum are both strictly below 97 percent",
+    "action": "allow a resident worker to claim the existing QM5_10025 USDJPY Q02 row",
+    "forbidden": "do not enqueue a duplicate row or manually launch a second basket tester"
+  },
+  "safety": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_terminal_controlled": false,
+    "autotrading_toggled": false,
+    "live_or_deploy_manifest_touched": false,
+    "preexisting_unrelated_worktree_changes_preserved": true
+  }
+}
