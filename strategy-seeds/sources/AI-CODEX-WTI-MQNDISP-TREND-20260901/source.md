@@ -13,7 +13,8 @@ parent_sha256:
   ROUSSEEUW-CROUX-QN-1993: F4355DB3925B02FFD35B4499342F4D26C5C7372535E5A4ACE7CD4F9041628969
 created: 2026-09-01
 created_by: Research+Development
-cards_extracted: []
+cards_extracted:
+  - QM5_41275_wti-mqndisp-tr
 ---
 
 # WTI Completed-Month Qn-Core Dispersion-Normalized Trend
@@ -173,4 +174,3 @@ build, deterministic reference tests, strict Q01, and one CPU-admitted
 non-live Q02 enqueue. It excludes optimization, live/demo/shadow/stress
 presets, portfolio-gate changes, deploy/live manifests, `T_Live`, and
 AutoTrading.
-
