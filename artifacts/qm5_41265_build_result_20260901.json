@@ -1,0 +1,85 @@
+{
+  "task_id": "254ceb98-daa3-4329-8e51-ae13592add78",
+  "build_generation": 0,
+  "ea_id": "QM5_41265",
+  "ea_label": "QM5_41265_xauxag-mbf-scale-rv",
+  "slug": "xauxag-mbf-scale-rv",
+  "strategy_id": "AI-CODEX-XAUXAG-MBF-SCALE-RV-20260901_S01",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41265_xauxag-mbf-scale-rv",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41265_xauxag-mbf-scale-rv\\QM5_41265_xauxag-mbf-scale-rv.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41265_xauxag-mbf-scale-rv\\QM5_41265_xauxag-mbf-scale-rv.ex5",
+  "magic_base": 412650000,
+  "symbols_registered": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "logical_symbol": "QM5_41265_XAU_XAG_MBF_SCALE_RV_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "timeframe": "D1",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41265_xauxag-mbf-scale-rv\\sets\\QM5_41265_xauxag-mbf-scale-rv_QM5_41265_XAU_XAG_MBF_SCALE_RV_D1_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41265_xauxag-mbf-scale-rv\\sets\\QM5_41265_xauxag-mbf-scale-rv_XAUUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41265_xauxag-mbf-scale-rv\\sets\\QM5_41265_xauxag-mbf-scale-rv_XAGUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_sha256": {
+    "QM5_41265_xauxag-mbf-scale-rv_QM5_41265_XAU_XAG_MBF_SCALE_RV_D1_D1_backtest.set": "947DAD7CA094D2744A81ACB4A5A3C720786153BD8C98D3BA16DAED1DE6DB8105",
+    "QM5_41265_xauxag-mbf-scale-rv_XAUUSD.DWX_D1_backtest.set": "64811533CEC9ED0F9875251EA79066A66636B2201EB19AF58D8F5994D7398126",
+    "QM5_41265_xauxag-mbf-scale-rv_XAGUSD.DWX_D1_backtest.set": "8161AF39738CAA6B4BDD18F92E7FD69430DF99DA944D57E1123B16999184FD2F"
+  },
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41265_xauxag-mbf-scale-rv\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "The qm-build-ea-from-card skill is build-only and forbids manual backtests; the OWNER mission authorizes one governed logical-basket Q02 enqueue instead.",
+  "blocked_reason": "",
+  "open_questions": [
+    "Q02 must establish package-level activity, fills, paired cost drag, and baseline economics, including at least five completed packages in every full post-warm-up year.",
+    "Only unchanged Q09 may determine realized portfolio correlation or diversification value."
+  ],
+  "compile": {
+    "status": "COMPILE_OK",
+    "work_item_id": "f60ef37e-1ff1-4922-9f0f-df0af662a2d8",
+    "terminal": "T5",
+    "evidence_path": "D:\\QM\\reports\\work_items\\f60ef37e-1ff1-4922-9f0f-df0af662a2d8\\QM5_41265\\COMPILE_EA\\compile_evidence.json",
+    "evidence_sha256": "3F6576CEB33DA4CAFC746C2AD55F8CA8957AAE930514817CF3B058BAAE6DDD65",
+    "build_check_result": "PASS",
+    "build_check_warnings": 1,
+    "build_check_warning_codes": [
+      "EA_EVENT_VOCABULARY_UNKNOWN:PACKAGE_PLAN"
+    ],
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "failure_classes": [],
+    "mq5_sha256": "2A7C0049BE41DE05AE761585153A00EB267B8DEE530A2B315D7E87E01BD71AAE",
+    "ex5_sha256": "0C651782381C2814A08D926D776DFE74137374B42488FBC8EC28F87AA4780DFD",
+    "logical_setfile_build_hash": "707D172AA9BBD17ABDB60BC39171BD55B648BBC5D22621B2344EA13B629B5B37",
+    "logical_setfile_sha256": "947DAD7CA094D2744A81ACB4A5A3C720786153BD8C98D3BA16DAED1DE6DB8105"
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "validations": {
+    "approved_card_sha256": "A58328F1D38AA62CCAC2BFFBA525D04F6C6B42ADDED3B5A7A5EA42005476F0D2",
+    "approved_local_card_byte_identical": true,
+    "basket_manifest_sha256": "67719D1D820D729371DC781361A0CC5E60B8028BF735C74EA349E4BC78560C9F",
+    "build_skill_guard": "PASS",
+    "card_schema_lint": "PASS",
+    "dedup_artifact_sha256": "9715671276140E339ACBD27B1F855EC12353FF52010448CEE116821FB36CA95F",
+    "reference_test_sha256": "D371C79BC9974D06ED00CCA2B3EBC414E252DC48835579FC1D35BCDE3C9BACE0",
+    "reference_tests": "PASS_6",
+    "source_packet_sha256": "C151166D4583DA5539A7A0D0A90278E4B5732529BB921BB1D389D246723CBEA4",
+    "spec_sha256": "8A7B01DA0CDF20413236493254E9C0F4B20F526870CF4B73D86D87E6B93137D9",
+    "spec_validation": "PASS",
+    "static_guardrails": "PASS"
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "deploy_manifest_touched": false,
+    "manual_backtest_launched": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false
+  }
+}
