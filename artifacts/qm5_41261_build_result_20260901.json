@@ -1,0 +1,74 @@
+{
+  "task_id": "19e9eb6d-a286-4c07-a3c0-c22ffe47cb8a",
+  "ea_id": "QM5_41261",
+  "ea_label": "QM5_41261_wti-mab-scale-tr",
+  "slug": "wti-mab-scale-tr",
+  "strategy_id": "AI-CODEX-WTI-MAB-SCALE-20260901_S01",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41261_wti-mab-scale-tr",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41261_wti-mab-scale-tr\\QM5_41261_wti-mab-scale-tr.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41261_wti-mab-scale-tr\\QM5_41261_wti-mab-scale-tr.ex5",
+  "magic_base": 412610000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "logical_symbol": "XTIUSD.DWX",
+  "host_symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41261_wti-mab-scale-tr\\sets\\QM5_41261_wti-mab-scale-tr_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_sha256": {
+    "QM5_41261_wti-mab-scale-tr_XTIUSD.DWX_D1_backtest.set": "49A71652E3F2AAD86FCA07FAAFD757411E0B25F5880C3861A9B2D71401D9E3DA"
+  },
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41261_wti-mab-scale-tr\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "The qm-build-ea-from-card skill is build-only and forbids manual backtests; the OWNER mission authorizes one governed XTIUSD.DWX Q02 enqueue instead.",
+  "blocked_reason": "",
+  "open_questions": [
+    "Q02 must establish at least five completed positions in every full post-warm-up year and measure baseline economics.",
+    "Only unchanged Q09 may determine realized portfolio correlation or diversification value."
+  ],
+  "compile": {
+    "status": "COMPILE_OK",
+    "work_item_id": "3edc94c3-969a-4f25-ba31-7b8a8735b95d",
+    "terminal": "T2",
+    "evidence_path": "D:\\QM\\reports\\work_items\\3edc94c3-969a-4f25-ba31-7b8a8735b95d\\QM5_41261\\COMPILE_EA\\compile_evidence.json",
+    "evidence_sha256": "B13CF6DDE56DA7AFA9C2055A7D5B5F9779E943B94E9997B9662F0FFC5D04C25D",
+    "build_check_result": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "failure_classes": [],
+    "mq5_sha256": "0D8B2D4985F2A48C1350D7D3C57CB04583809376753E36350C31F62C3B8EBAD0",
+    "ex5_sha256": "0DA3C457C039C3508955FA17F3D22B948B42AB2E93C8663A8CBDAB9CE391F47C",
+    "logical_setfile_build_hash": "9593A0F0497E5AF156A48CAAD9222D9099D774D6E2CEB66239BB5ADA8A3D6B0A",
+    "logical_setfile_sha256": "49A71652E3F2AAD86FCA07FAAFD757411E0B25F5880C3861A9B2D71401D9E3DA"
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "validations": {
+    "approved_card_sha256": "304B1A9DEFA5C0BD8491B554B5E22DD80193E8B18E8E2858373A37CE8E37378E",
+    "approved_local_card_byte_identical": true,
+    "build_skill_guard": "PASS",
+    "card_schema_lint": "PASS",
+    "reference_test_sha256": "304F90B8BB46393347E24F17A279F493F4F3D9D6ACFEC1BBB9C3F72283DA3AAC",
+    "reference_tests": "PASS_10",
+    "p1_artifact_validation": "PASS",
+    "p1_evidence_sha256": "04E55BB3F5223362F96862B00E2B6F1BE023FC9E1B83E89B237A66675E5E69AF",
+    "spec_sha256": "C32DAA06D59E76D3CD9BB3D1D263DD44618937B1B631F9CA2DB498CD2305F074",
+    "spec_validation": "PASS",
+    "static_guardrails": "PASS"
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "deploy_manifest_touched": false,
+    "manual_backtest_launched": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false
+  }
+}
