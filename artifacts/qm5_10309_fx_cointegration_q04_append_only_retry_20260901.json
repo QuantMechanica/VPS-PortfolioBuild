@@ -1,0 +1,140 @@
+{
+  "schema_version": "qm.fx-cointegration-fallback-receipt/v1",
+  "recorded_at_utc": "2026-09-01T19:02:56.5117243Z",
+  "branch": "agents/board-advisor",
+  "base_commit": "ca11f38730264c2c57faa73b42dc4122a9180b75",
+  "outcome": "ONE_LOGICAL_Q04_APPEND_ONLY_RETRY_CREATED",
+  "pipeline_verdict_claimed": false,
+  "research_reconciliation": {
+    "scan_path": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "duplicate_guard_path": "docs/research/FX_COINTEGRATION_FRONTIER_DUPLICATE_GUARD_2026-07-24.md",
+    "scan_pair_count": 66,
+    "positive_beta_survivors": [
+      {
+        "pair": "AUDUSD/NZDUSD",
+        "ea_id": "QM5_12532",
+        "latest_chain": "Q02_PASS_Q04_PASS_Q05_FAIL"
+      },
+      {
+        "pair": "EURJPY/GBPJPY",
+        "ea_id": "QM5_12533",
+        "latest_chain": "Q02_PASS_Q04_FAIL"
+      }
+    ],
+    "governed_scan_rows_fully_mechanized": true,
+    "unbuilt_governed_pair_found": false,
+    "fallback_used": true
+  },
+  "target": {
+    "ea_id": "QM5_10309",
+    "ea_directory": "framework/EAs/QM5_10309_cointeg-hft-pairs",
+    "logical_symbol": "QM5_10309_EURUSD_GBPUSD_COINTEG_FX",
+    "pair": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX"
+    ],
+    "host_symbol": "GBPUSD.DWX",
+    "timeframe": "M15",
+    "expected_packages_per_year": 12,
+    "strategy_class": "STRUCTURAL_MARKET_NEUTRAL_COINTEGRATION",
+    "ml_used": false,
+    "approved_card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_10309_cointeg-hft-pairs.md",
+    "source_url": "https://ssrn.com/abstract=2147012",
+    "source_authors": [
+      "Thomas A. Hanson",
+      "Joshua Hall"
+    ],
+    "basket_manifest": "framework/EAs/QM5_10309_cointeg-hft-pairs/basket_manifest.json"
+  },
+  "execution_identity": {
+    "mq5_sha256": "63f6d5ffe3c85597f6297e2e8cdf28df3367f51e1569cb2570e05dcdb3dd7c64",
+    "ex5_sha256": "6525626a9564a96dd091f4c03ac61490fb67c62a294d712fb78c32cb78720654",
+    "setfile_sha256": "fd6dd79e7b5d3710f9f72842e7eda28543281ea6641c8f9f94b0a0e9be71bdf2",
+    "basket_manifest_sha256": "e13f5101b23a434f172e37dee64a1a8569848953e8b9887da6e75a1e9e8f8f7d",
+    "setfile": "framework/EAs/QM5_10309_cointeg-hft-pairs/sets/QM5_10309_cointeg-hft-pairs_QM5_10309_EURUSD_GBPUSD_COINTEG_FX_M15_backtest.set",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "lineage": {
+    "q02_predecessor": {
+      "work_item_id": "ad8765e4-20ba-4178-b339-9b6c7f7c8bc1",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-19T23:45:20+00:00",
+      "recorded_evidence_path_exists": false
+    },
+    "preserved_q04_infrastructure_result": {
+      "work_item_id": "13ccb8fb-6d23-4ba1-851b-52ad8dd77d00",
+      "status": "done",
+      "verdict": "INFRA_FAIL",
+      "verdict_reason": "F1:invalid_summary:BARS_ZERO,EMPTY_EXPERT,EMPTY_SYMBOL,INCOMPLETE_RUNS,M0_1970_PERIOD,RUN_STATUS_INVALID",
+      "updated_at": "2026-07-20T00:53:42+00:00",
+      "payload_sha256_at_postcheck": "976f7d4390454b991194329d556134db34cbee29f1d88b026bbd62cf3fcdbbe8",
+      "recorded_aggregate_exists": false,
+      "retained_file_count": 0
+    }
+  },
+  "admission": {
+    "cpu_sampled_at_utc": "2026-09-01T18:57:48.1796225Z",
+    "cpu_samples_percent": [
+      35.358289,
+      29.082385,
+      37.897002,
+      36.073899,
+      30.475987
+    ],
+    "cpu_average_percent": 33.777512,
+    "cpu_peak_percent": 37.897002,
+    "cpu_ceiling_percent": 97.0,
+    "cpu_ceiling_hit": false,
+    "symbol_scope_validation": "BASKET_OK",
+    "symbol_scope_violations": 0,
+    "manual_tester_started": false,
+    "dispatch_requested": false
+  },
+  "enqueue": {
+    "created_work_item_id": "84b97968-d2a2-4099-9576-3d90f00dadcf",
+    "created_at": "2026-09-01T18:57:56+00:00",
+    "phase": "Q04",
+    "gate_contract_version": "v4",
+    "status_at_postcheck": "pending",
+    "claimed_by_at_postcheck": null,
+    "verdict_at_postcheck": null,
+    "attempt_count_at_postcheck": 0,
+    "append_only_rerun_of_work_item": "13ccb8fb-6d23-4ba1-851b-52ad8dd77d00",
+    "promoted_from_work_item": "ad8765e4-20ba-4178-b339-9b6c7f7c8bc1",
+    "historical_work_item_preserved": true,
+    "payload_sha256_at_postcheck": "2150eaf788c399f2b54cb326bcab755504b81d9af0995126941ace83cd8c6779",
+    "q04_fold_count_budgeted": 3,
+    "q04_fold_timeout_sec": 25200,
+    "timeout_min": 1275,
+    "exact_logical_q04_rows_after": 2,
+    "exact_append_only_descendants_of_source_after": 1,
+    "rerun_reason": "OWNER 2026-09-01 forex-book fallback: preserve the empty-evidence logical Q04 INFRA_FAIL and retry the exact current-binary EURUSD/GBPUSD market-neutral basket after a fresh sub-ceiling CPU sample; no strategy mechanics changed."
+  },
+  "priority_boundary": {
+    "priority_track_set": false,
+    "reason": "The governed set_priority_track.py controller accepts pending Q02 rows only and is bound to a separate OWNER registry. No ungoverned in-place Q04 payload edit was performed.",
+    "canonical_pending_claim_order_rank_at_snapshot": 7064,
+    "canonical_pending_claim_order_size_at_snapshot": 7838
+  },
+  "backup_observation": {
+    "aborted_online_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_10309_q04_append_retry_20260901T185428Z.sqlite.incomplete_aborted",
+    "aborted_backup_bytes": 64798720,
+    "live_database_bytes_observed": 734773248,
+    "aborted_backup_marked_incomplete": true,
+    "fresh_full_backup_available_before_enqueue": "D:/QM/strategy_farm/state/backups/farm_state_before_supersedes_20260901T183523Z.sqlite",
+    "fresh_full_backup_bytes": 734773248
+  },
+  "protected_scope": {
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "strategy_mechanics_changed": false
+  }
+}
