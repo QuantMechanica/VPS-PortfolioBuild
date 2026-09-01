@@ -459,7 +459,7 @@ class WtiMoodScaleTrendReferenceTests(unittest.TestCase):
             "strategy_block_size": "6",
             "strategy_rank_center": "6.5",
             "strategy_score_expectation": "71.5",
-            "strategy_score_variance": "364",
+            "strategy_score_variance": "364.0",
             "strategy_relative_epsilon": "0.000000000001",
             "strategy_history_bars_d1": "900",
             "strategy_entry_window_minutes": "180",

@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   f972c8c1424c9a3ec23260581e7d97c4b0129a6c3b9626e3e94cdc3d72431e5a
 ; author:       Development
 ; date:         2026-09-01
 ;==========================================================
@@ -26,7 +26,7 @@ strategy_return_count=12
 strategy_block_size=6
 strategy_rank_center=6.5
 strategy_score_expectation=71.5
-strategy_score_variance=364
+strategy_score_variance=364.0
 strategy_relative_epsilon=0.000000000001
 strategy_history_bars_d1=900
 strategy_entry_window_minutes=180
