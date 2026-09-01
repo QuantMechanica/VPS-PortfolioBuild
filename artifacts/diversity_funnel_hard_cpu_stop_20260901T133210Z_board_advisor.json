@@ -1,0 +1,65 @@
+{
+  "artifact_type": "diversity_funnel_hard_cpu_stop",
+  "schema": "qm.diversity-funnel-hard-cpu-stop/v1",
+  "generated_at_utc": "2026-09-01T13:32:10Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "af64044f653f8cd9e69040980157be51e281ed67",
+  "mission_outcome": "STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING_BEFORE_CLAIM",
+  "capacity": {
+    "sample_interval_seconds": 2,
+    "cpu_samples_percent": [
+      95.0,
+      97.7,
+      93.5,
+      94.9,
+      99.1
+    ],
+    "cpu_average_percent": 96.0,
+    "cpu_maximum_percent": 99.1,
+    "cpu_ceiling_percent": 97.0,
+    "cpu_ceiling_rule": "stop when average or maximum is greater than or equal to the ceiling",
+    "cpu_ceiling_hit": true,
+    "sampled_at_local": "2026-09-01T15:32:10.1845193+02:00",
+    "timezone": "Europe/Berlin"
+  },
+  "farm_snapshot": {
+    "db": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "build_ea_active": 5,
+    "build_ea_pending": 70,
+    "running_factory_terminals": [
+      "T3",
+      "T4",
+      "T6",
+      "T7",
+      "T8"
+    ],
+    "snapshot_at_utc": "2026-09-01T13:31:34+00:00"
+  },
+  "selection_disposition": {
+    "priority_1_approved_card_build": "NOT_ENTERED_CPU_CEILING",
+    "priority_2_diverse_infra_repair": "NOT_ENTERED_CPU_CEILING",
+    "priority_3_new_structural_edge": "NOT_ENTERED_CPU_CEILING",
+    "qm_build_ea_from_card": "PREFLIGHT_STOP_BEFORE_CARD_SELECTION_OR_BUILD"
+  },
+  "actions_this_run": {
+    "branch_verified": true,
+    "worktree_preservation_verified": true,
+    "capacity_sampled": true,
+    "farm_db_read": true,
+    "farm_db_mutated": false,
+    "ea_claimed": false,
+    "card_or_ea_created": false,
+    "registry_or_magic_mutated": false,
+    "compile_smoke_or_backtest_started": false,
+    "q02_enqueued": false,
+    "terminal_or_worker_controlled": false
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false,
+    "preexisting_unrelated_worktree_changes_preserved": true
+  },
+  "resume_contract": "On a later paced wake, take a fresh five-sample whole-host CPU window. Continue only if both average and maximum are strictly below 97 percent; then reconcile and claim exactly one distinct highest-diversity approved build candidate through the farm DB."
+}
