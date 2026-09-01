@@ -1852,6 +1852,23 @@ def test_qm5_38006_review_repair_authority_is_exact_label_bound() -> None:
     )
 
 
+def test_qm5_38005_blocked_build_recovery_authority_is_exact_label_bound() -> None:
+    label = "QM5_38005_codetrading-ascending-triangle-breakout"
+
+    assert compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_38005_BLOCKED_BUILD_RECOVERY_AUTHORITY,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        "QM5_38006_codetrading-doji-hammer-pivot-rejection",
+        compile_work_items.QM5_38005_BLOCKED_BUILD_RECOVERY_AUTHORITY,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label,
+        "router_ops_issue:wrong-task",
+    )
+
+
 def test_hma_cata_requal_authority_is_exact_and_artifact_hash_bound(
     tmp_path: Path, monkeypatch,
 ) -> None:

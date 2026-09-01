@@ -154,6 +154,18 @@ QM5_38002_Q02_STALE_BINARY_REPAIR_AUTHORITY = (
 QM5_38002_Q02_STALE_BINARY_REPAIR_EA_LABELS = frozenset({
     "QM5_38002_codetrading-macd-ema-trend-pullback",
 })
+# Exact blocked-build triage authority for QM5_38005.  The first governed
+# compiler attempt wrote its candidate EX5/setfile side effects, then lost the
+# receipt to SQLITE_BUSY; the retry correctly refused those unreceipted side
+# effects.  Router task d8fb391d explicitly authorizes the smallest append-only
+# recovery.  This one-task/one-label binding permits only a current-source
+# COMPILE_EA successor and grants no backtest, gate-verdict, or live authority.
+QM5_38005_BLOCKED_BUILD_RECOVERY_AUTHORITY = (
+    "router_ops_issue:d8fb391d-b18b-4954-8620-c40297559f15"
+)
+QM5_38005_BLOCKED_BUILD_RECOVERY_EA_LABELS = frozenset({
+    "QM5_38005_codetrading-ascending-triangle-breakout",
+})
 # Exact review-rework authority for QM5_35005. The accepted source remediation
 # changed the MQ5 after the existing EX5 was produced, so the normal immutable
 # build guards correctly refuse an overwrite. This router-task/label pair
@@ -1678,6 +1690,10 @@ def _source_repair_authorized(
         or (
             authority == QM5_38002_Q02_STALE_BINARY_REPAIR_AUTHORITY
             and ea_label in QM5_38002_Q02_STALE_BINARY_REPAIR_EA_LABELS
+        )
+        or (
+            authority == QM5_38005_BLOCKED_BUILD_RECOVERY_AUTHORITY
+            and ea_label in QM5_38005_BLOCKED_BUILD_RECOVERY_EA_LABELS
         )
         or (
             authority == QM5_35005_REVIEW_REPAIR_AUTHORITY
