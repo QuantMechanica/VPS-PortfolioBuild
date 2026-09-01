@@ -17,7 +17,8 @@ method_records:
   - SCIPY-LEVENE-1.18.0
 created: 2026-09-01
 created_by: Research+Development
-cards_extracted: []
+cards_extracted:
+  - QM5_41265_xauxag-mbf-scale-rv
 ---
 
 # XAU/XAG Monthly Brown-Forsythe Scale-Expansion Reversion
