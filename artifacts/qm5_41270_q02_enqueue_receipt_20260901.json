@@ -1,0 +1,96 @@
+{
+  "schema_version": "qm.q02-enqueue-receipt/v1",
+  "recorded_at_utc": "2026-09-01T14:57:35.7044345Z",
+  "mission_outcome": "Q01_PASS_Q02_ENQUEUED",
+  "ea_id": "QM5_41270",
+  "ea_label": "QM5_41270_wti-mlepage-shift-tr",
+  "strategy_id": "AI-CODEX-WTI-MLEPAGE-SHIFT-20260901_S01",
+  "branch": "agents/board-advisor",
+  "build_task": {
+    "task_id": "02371cdd-9931-40db-ad3e-e982705c0a7c",
+    "status": "done",
+    "smoke_result": "deferred_p2_smoke",
+    "build_result_file": "artifacts/qm5_41270_build_result_20260901.json",
+    "build_result_sha256": "7CE714E0A971310DAA840E83B09D64FA31418523EB86C17AF742E6908326D9D6",
+    "build_result_commit": "4dba0af39f73dc0c958a15f4510d19ce4e845407"
+  },
+  "compile": {
+    "work_item_id": "7d12d770-154b-4637-9a92-91af17a4d6b4",
+    "status": "done",
+    "verdict": "COMPILE_OK",
+    "build_check_result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "build_check_warnings": 0,
+    "terminal": "T2",
+    "mq5_sha256": "0682A3B650896D2125C968D699D8A25689758B5A80B254E16BD6B980C909588C",
+    "ex5_sha256": "558B928B8EE1221A6E3D35C476563AC878E9D6A9EAA93193BCCDF82ED2A53F59",
+    "evidence_path": "D:\\QM\\reports\\work_items\\7d12d770-154b-4637-9a92-91af17a4d6b4\\QM5_41270\\COMPILE_EA\\compile_evidence.json",
+    "evidence_sha256": "3BFA6F941689D90D859D16D338F648E183D33B6965605C11A72ACE880AFFF77B"
+  },
+  "cpu_admission": {
+    "sampled_at_utc": "2026-09-01T14:56:19.7655300Z",
+    "command": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "samples_percent": [
+      75.7844585592409,
+      74.18844235389868,
+      70.42800557023669,
+      69.14429565767587,
+      71.51049772253866
+    ],
+    "average_percent": 72.21113997271816,
+    "maximum_percent": 75.7844585592409,
+    "hard_ceiling_percent": 97.0,
+    "decision_rule": "STOP when any fresh five-sample whole-host CPU maximum is greater than or equal to 97.0 percent",
+    "verdict": "ADMIT_Q02_ENQUEUE"
+  },
+  "record_build": {
+    "called": true,
+    "recorded": true,
+    "new_status": "done",
+    "fail_code": null,
+    "blocked_reason": "",
+    "auto_q02_enqueued_count": 1,
+    "auto_q02_skipped_count": 0
+  },
+  "q02": {
+    "work_item_id": "1884c158-1783-497d-bb3b-708fc36a50d7",
+    "kind": "backtest",
+    "phase": "Q02",
+    "gate_contract_version": "v4",
+    "status_at_receipt": "pending",
+    "attempt_count_at_receipt": 0,
+    "claimed_by_at_receipt": null,
+    "verdict_at_receipt": null,
+    "created_at_utc": "2026-09-01T14:56:32+00:00",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41270_wti-mlepage-shift-tr\\sets\\QM5_41270_wti-mlepage-shift-tr_XTIUSD.DWX_D1_backtest.set",
+    "setfile_sha256": "457AD5C99C59A416CCB7AABBD077C6236DE559F7BBFCA9F35095C6B237FA9793",
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "enqueued_by": "record_build_result.auto_q02",
+    "q02_cohort_size": 1,
+    "q02_fanout_canary": false,
+    "priority_track": true,
+    "custom_history_archive_admission": {
+      "status": "ACTIVE",
+      "selected_symbol": "XTIUSD.DWX",
+      "selected_archive_rows": 108,
+      "manifest_path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_custom_history_variant_a_20260809\\archive_manifest_owner_approved.json",
+      "manifest_sha256": "FE0DDB0FDD90DC26B806044C82FD0D7C35AF889A96CBD4D79DECE9CFDAC3AAB06",
+      "activation_sha256": "61C8C72CCB0CB8038AE6ECE7B89AA68F602B1637D8BC6B6C866F38492139134E"
+    },
+    "frequency_retirement_rule": "Retire if any full post-warm-up calendar year has fewer than five completed positions."
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "deploy_manifest_touched": false,
+    "manual_backtest_launched": false,
+    "portfolio_gate_touched": false,
+    "q02_dispatched_by_this_mission": false,
+    "t_live_manifest_touched": false
+  }
+}
