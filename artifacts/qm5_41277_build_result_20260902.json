@@ -1,0 +1,105 @@
+{
+  "task_id": "d3dadcf9-0fd0-4597-a868-403abc50115c",
+  "build_generation": 0,
+  "ea_id": "QM5_41277",
+  "ea_label": "QM5_41277_wti-msndisp-tr",
+  "slug": "wti-msndisp-tr",
+  "strategy_id": "AI-CODEX-WTI-MSNDISP-TREND-20260901_S01",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41277_wti-msndisp-tr",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41277_wti-msndisp-tr\\QM5_41277_wti-msndisp-tr.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41277_wti-msndisp-tr\\QM5_41277_wti-msndisp-tr.ex5",
+  "magic_base": 412770000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "logical_symbol": "XTIUSD.DWX",
+  "host_symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41277_wti-msndisp-tr\\sets\\QM5_41277_wti-msndisp-tr_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_sha256": {
+    "QM5_41277_wti-msndisp-tr_XTIUSD.DWX_D1_backtest.set": "E84F5031297CEA2C45616951DC8E2A6EC0C57F5E9779784ED3F3EEDDEB960486"
+  },
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41277_wti-msndisp-tr\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "The qm-build-ea-from-card skill is build-only and forbids manual backtests; the OWNER mission authorizes one governed paced Q02 enqueue instead.",
+  "blocked_reason": "",
+  "open_questions": [
+    "Q02 must establish activity, fills, cost drag, and baseline economics, including at least five completed positions in every full post-warm-up year.",
+    "Only unchanged Q09 may determine realized correlation or diversification value versus the certified index, metal, and XNG book."
+  ],
+  "compile": {
+    "status": "COMPILE_OK",
+    "work_item_id": "2a681436-4a48-4fb5-a494-cdd87490ce59",
+    "terminal": "T1",
+    "evidence_path": "D:\\QM\\reports\\work_items\\2a681436-4a48-4fb5-a494-cdd87490ce59\\QM5_41277\\COMPILE_EA\\compile_evidence.json",
+    "evidence_sha256": "F833C166EF9FFB07C09F2D721A42D130C502B79440A8BF6D16218F277FF7B485",
+    "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260901_221710.json",
+    "build_check_report_sha256": "58907EB08400B964520420DBE86A58DCB9879138C9146E66F2CA72D320FAC769",
+    "build_check_result": "PASS",
+    "build_check_warnings": 0,
+    "build_check_warning_codes": [],
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "failure_classes": [],
+    "mq5_sha256": "EC0E087F1A4BF9621762790E0E0422FB0E9AF5325514A7ED8DAFFAB7D339C946",
+    "ex5_sha256": "EC9072860411E1C3ECBFAE34F547F052C9C820F8122B9A3030C1E368C19FC572",
+    "setfile_build_hash": "B975A52A750834432B072E64254B80364E717FC39F31F5C96386D598F7860261",
+    "setfile_sha256": "E84F5031297CEA2C45616951DC8E2A6EC0C57F5E9779784ED3F3EEDDEB960486"
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "validations": {
+    "approved_card_sha256": "6062492E5AE486DAAA52B1FCE56AF750646E9EB4B375048B9E219C1320063970",
+    "approved_local_card_byte_identical": true,
+    "farm_runtime_card_sha256": "6062492E5AE486DAAA52B1FCE56AF750646E9EB4B375048B9E219C1320063970",
+    "farm_runtime_card_byte_identical": true,
+    "farm_runtime_card_normalization": "None; the governed runtime card is an exact byte copy of the canonical approved card.",
+    "build_skill_guard": "PASS",
+    "card_schema_lint": "PASS",
+    "dedup_artifact_sha256": "74C0023E963CD3105658E09BBFE64168DABE211FC00B82934C37D17B42F40CE5",
+    "reference_test_sha256": "C3CDF9FE1A12ABD4589EFFF6AE0CF0C75767673E09A497965610878C6D7637FD",
+    "reference_tests": "PASS_9",
+    "source_packet_sha256": "A64C6D7FDFFA34CAB48006D52FF9F06E36A3017276C5EC06DAB6E80383AE48D2",
+    "spec_sha256": "03629CA3463E9C8F2A520B47959B1BDBC8259960BEAFF6CB69CBF5322B9E119B",
+    "spec_validation": "PASS",
+    "static_guardrails": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "setfile_validation": "PASS_1_RISK_FIXED"
+  },
+  "capacity_admission": {
+    "sampling_method": "Win32_PerfFormattedData_PerfOS_Processor Name=_Total",
+    "sample_interval_seconds": 2,
+    "sample_window_utc": {
+      "started_at": "2026-09-01T22:19:01.4960465Z",
+      "ended_at": "2026-09-01T22:19:11.1107891Z"
+    },
+    "cpu_samples_percent": [
+      44.0,
+      56.0,
+      73.0,
+      59.0,
+      69.0
+    ],
+    "cpu_average_percent": 60.2,
+    "cpu_maximum_percent": 73.0,
+    "cpu_ceiling_percent": 97.0,
+    "rule": "admit only when average and maximum are strictly below the ceiling",
+    "admitted": true
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "deploy_manifest_touched": false,
+    "manual_backtest_launched": false,
+    "manual_dispatch_requested": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false
+  }
+}

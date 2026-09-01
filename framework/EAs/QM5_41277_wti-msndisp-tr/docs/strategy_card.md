@@ -11,7 +11,7 @@ execution_contract_ref: strategy-seeds/cards/approved/QM5_41277_wti-msndisp-tr_c
 execution_contract_status: APPROVED
 created: 2026-09-01
 created_by: Research+Development
-last_updated: 2026-09-01
+last_updated: 2026-09-02
 g0_status: APPROVED
 g0_decision: decisions/2026-09-01_qm5_41277_wti_monthly_sn_dispersion_trend_g0.md
 source_approval: decisions/2026-09-01_wti_monthly_sn_dispersion_trend_source_approval.md
@@ -89,8 +89,8 @@ news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
 pipeline_phase: Q02
-q01_status: PENDING_BUILD
-q02_status: NOT_ENQUEUED
+q01_status: PASS
+q02_status: ENQUEUED_PENDING
 force_build: true
 review_focus: "Falsify a direct-WTI completed-month Sn-core dispersion-normalized trend sleeve outside the certified XAU/SP500/NDX/XNG book. Verify month/session membership, final seventeen closes, sixteen return orientation, endpoint identity, all 240 directed leave-one-out distances, exact inner/outer lower medians, absent multipliers, inclusive three-core side, consumed month, fixed risk, frozen stop, and next-month lifecycle. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -313,11 +313,12 @@ admission, deploy/live manifest, `T_Live`, AutoTrading, or terminal control.
 | phase | date | verdict | evidence |
 |---|---|---|---|
 | G0 | 2026-09-01 | APPROVED; R1-R4 PASS | source approval, complete-read receipts, dedup, card decision |
-| Q01 | 2026-09-01 | PENDING_BUILD | governed build required |
-| Q02 | 2026-09-01 | NOT_ENQUEUED | Q01 and CPU admission required |
+| Q01 | 2026-09-02 | PASS | governed `COMPILE_OK`; build check PASS, 0 compile errors, 0 compile warnings |
+| Q02 | 2026-09-02 | ENQUEUED_PENDING | `01fbf53a-4349-4d37-aa1f-a94279c730ca`; paced worker owns dispatch |
 
 ## Revision History
 
 | version | date | reason | phase | verdict |
 |---|---|---|---|---|
 | v1 | 2026-09-01 | initial WTI Sn-core dispersion-normalized trend card | G0 | APPROVED |
+| v1.1 | 2026-09-02 | governed build and paced handoff | Q01/Q02 | PASS / ENQUEUED_PENDING |
