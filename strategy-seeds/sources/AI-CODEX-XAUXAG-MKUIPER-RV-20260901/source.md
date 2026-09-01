@@ -15,7 +15,8 @@ parent_sha256:
 created: 2026-09-01
 created_by: Codex
 last_reviewed: 2026-09-01
-cards_extracted: []
+cards_extracted:
+  - QM5_41263_xauxag-mkuiper-rv
 ---
 
 # XAU/XAG Exact-Permutation Kuiper Reversion
