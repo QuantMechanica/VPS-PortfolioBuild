@@ -63,6 +63,9 @@ FULL_WINDOW_TO = "2026.12.31"
 WF_COMBO_PRIORITY_AUTHORITY = (
     "opt_census_select.wf_combo critical path (queue-priority-only)"
 )
+NUMERIC_PRIORITY_AUTHORITY = (
+    "opt_census_select.numeric critical path (queue-priority-only)"
+)
 # The numeric levers are the parent EA's already-wired numeric inputs, named by the
 # sha-sealed opt_param_grid.json — there is deliberately NO hardcoded name
 # whitelist here.  The three invented opt_* placeholder inputs this constant
@@ -505,11 +508,16 @@ def _wf_combo_lane_fields(cell_key: str, extra: dict[str, Any]) -> dict[str, Any
     try:
         parsed_step = int(wf_token.removeprefix("wf"))
         parsed_year = int(parts[3])
-        expected_step = int(extra["wf_step"])
-        expected_year = int(extra["test_year"])
-    except (KeyError, TypeError, ValueError) as exc:
+    except (TypeError, ValueError) as exc:
         raise CensusError(f"malformed WF combo lane identity: {cell_key}") from exc
-    if wf_token != f"wf{parsed_step}" or parsed_step != expected_step:
+    if wf_token != f"wf{parsed_step}":
+        raise CensusError(f"WF combo step mismatch: {cell_key}")
+    try:
+        expected_step = int(extra.get("wf_step", parsed_step))
+        expected_year = int(extra.get("test_year", parsed_year))
+    except (TypeError, ValueError) as exc:
+        raise CensusError(f"malformed WF combo lane identity: {cell_key}") from exc
+    if parsed_step != expected_step:
         raise CensusError(f"WF combo step mismatch: {cell_key}")
     if parsed_year != expected_year:
         raise CensusError(f"WF combo year mismatch: {cell_key}")
@@ -520,6 +528,64 @@ def _wf_combo_lane_fields(cell_key: str, extra: dict[str, Any]) -> dict[str, Any
         census.FRONTIER_PRIORITY_MARKER: True,
         "post_census_priority_authority": WF_COMBO_PRIORITY_AUTHORITY,
     }
+
+
+def _numeric_lane_fields(
+    cell_key: str, stage: str, extra: dict[str, Any]
+) -> dict[str, Any]:
+    """Authenticate a numeric cell and derive one serial lane per trial."""
+
+    normalized_stage = str(stage).removesuffix("_RERUN")
+    if normalized_stage == "NUMERIC_BASELINE":
+        parts = str(cell_key).rsplit(":", 3)
+        if len(parts) != 4 or not parts[0] or parts[1:3] != ["numeric", "baseline"]:
+            raise CensusError(f"malformed numeric baseline cell_key: {cell_key}")
+        arm = "baseline"
+        year_token = parts[3]
+    elif normalized_stage == "NUMERIC":
+        parts = str(cell_key).rsplit(":", 4)
+        if len(parts) != 5 or not parts[0] or parts[1] != "numeric" or not parts[2] or not parts[3]:
+            raise CensusError(f"malformed numeric cell_key: {cell_key}")
+        param, value_token, year_token = parts[2], parts[3], parts[4]
+        if "param" in extra and str(extra["param"]) != param:
+            raise CensusError(f"numeric parameter mismatch: {cell_key}")
+        if "value" in extra and str(extra["value"]) != value_token:
+            raise CensusError(f"numeric value mismatch: {cell_key}")
+        arm = f"{param}:{value_token}"
+    else:
+        raise CensusError(f"unsupported numeric stage: {stage}")
+    try:
+        parsed_year = int(year_token)
+        expected_year = int(extra.get("year", parsed_year))
+    except (TypeError, ValueError) as exc:
+        raise CensusError(f"malformed numeric lane identity: {cell_key}") from exc
+    if parsed_year != expected_year:
+        raise CensusError(f"numeric year mismatch: {cell_key}")
+    return {
+        "arm": arm,
+        "year": parsed_year,
+        "priority_track": True,
+        census.FRONTIER_PRIORITY_MARKER: True,
+        "post_census_priority_authority": NUMERIC_PRIORITY_AUTHORITY,
+    }
+
+
+def _derived_run_fields(
+    ledger: dict[str, Any], cell_key: str, stage: str, extra: dict[str, Any]
+) -> dict[str, Any]:
+    """Return authenticated lane and sealed-Q12 bindings for a derived run."""
+
+    fields = {
+        key: str(ledger[key])
+        for key in ("q12_work_item_id", "q12_declaration_sha256")
+        if str(ledger.get(key) or "").strip()
+    }
+    normalized_stage = str(stage).removesuffix("_RERUN")
+    if normalized_stage == "WF_COMBO":
+        fields.update(_wf_combo_lane_fields(cell_key, extra))
+    elif normalized_stage in {"NUMERIC_BASELINE", "NUMERIC"}:
+        fields.update(_numeric_lane_fields(cell_key, stage, extra))
+    return fields
 
 
 def _ensure_wf_combo_priority(
@@ -555,7 +621,7 @@ def _insert_run(conn: sqlite3.Connection, ledger: dict[str, Any], *, work_item_i
                 cell_key: str, setfile_path: str, from_date: str, to_date: str,
                 stage: str, extra: dict[str, Any]) -> bool:
     now = _now()
-    lane_fields = _wf_combo_lane_fields(cell_key, extra) if stage == "WF_COMBO" else {}
+    derived_fields = _derived_run_fields(ledger, cell_key, stage, extra)
     payload = {
         "schema": census.SCHEMA, "program_id": ledger["program_id"],
         "cell_key": cell_key, "opt_census_pool": True, "opt_census_stage": stage,
@@ -565,7 +631,7 @@ def _insert_run(conn: sqlite3.Connection, ledger: dict[str, Any], *, work_item_i
         "declared_trial_count": ledger["declared_trial_count"],
         "ledger_path": ledger.get("_ledger_path"),
         **extra,
-        **lane_fields,
+        **derived_fields,
     }
     cur = conn.execute(
         """INSERT OR IGNORE INTO work_items
@@ -576,6 +642,57 @@ def _insert_run(conn: sqlite3.Connection, ledger: dict[str, Any], *, work_item_i
          setfile_path, json.dumps(payload, sort_keys=True), now, now),
     )
     return cur.rowcount == 1
+
+
+def repair_pending_numeric_governance(
+    conn: sqlite3.Connection, ledger: dict[str, Any]
+) -> dict[str, int]:
+    """Add claim-path metadata to declared, untouched pending numeric rows only."""
+
+    runs = list(ledger.get("driver", {}).get("numeric", {}).get("runs") or [])
+    counts = {"declared": len(runs), "repaired": 0, "already_valid": 0, "skipped": 0}
+    for spec in runs:
+        stage = str(spec.get("stage") or "")
+        if stage.removesuffix("_RERUN") not in {"NUMERIC_BASELINE", "NUMERIC"}:
+            counts["skipped"] += 1
+            continue
+        work_item_id = str(spec.get("work_item_id") or "")
+        row = conn.execute(
+            "SELECT status,claimed_by,verdict,payload_json FROM work_items WHERE id=?",
+            (work_item_id,),
+        ).fetchone()
+        if row is None:
+            counts["skipped"] += 1
+            continue
+        status, claimed_by, verdict, raw_payload = row
+        if str(status).lower() != "pending" or claimed_by is not None or verdict is not None:
+            counts["skipped"] += 1
+            continue
+        payload = json.loads(raw_payload or "{}")
+        expected_identity = {
+            "schema": census.SCHEMA,
+            "program_id": ledger["program_id"],
+            "cell_key": spec["cell_key"],
+            "opt_census_stage": stage,
+            "ledger_path": ledger.get("_ledger_path"),
+        }
+        if any(payload.get(key) != value for key, value in expected_identity.items()):
+            raise CensusError(f"numeric repair identity mismatch: {work_item_id}")
+        desired = _derived_run_fields(ledger, spec["cell_key"], stage, spec)
+        if all(payload.get(key) == value for key, value in desired.items()):
+            counts["already_valid"] += 1
+            continue
+        payload.update(desired)
+        cur = conn.execute(
+            "UPDATE work_items SET payload_json=? "
+            "WHERE id=? AND status='pending' AND claimed_by IS NULL AND verdict IS NULL "
+            "AND payload_json=?",
+            (json.dumps(payload, sort_keys=True), work_item_id, raw_payload),
+        )
+        if cur.rowcount != 1:
+            raise CensusError(f"numeric repair row changed concurrently: {work_item_id}")
+        counts["repaired"] += 1
+    return counts
 
 
 def _combo_inputs(selection: dict[str, Any]) -> dict[str, str]:

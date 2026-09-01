@@ -1542,15 +1542,19 @@ def pending_claim_order_sql() -> str:
               END
             ELSE 1 END AS _priority_track_rank,
           CASE
-            -- Once an annual matrix resolves, its four WF combo measurements
-            -- are the bounded critical path to selection.  Rank only these
-            -- explicitly marked derived rows before annual frontier refills;
-            -- all annual cells retain their prior relative order and gates.
+            -- Once an annual matrix resolves, its WF-combo and numeric
+            -- measurements are the bounded critical path to selection. Rank
+            -- only explicitly marked derived rows before annual frontier
+            -- refills; all annual cells retain their prior order and gates.
             WHEN upper(COALESCE(w.phase, ''))='OPT_CENSUS'
              AND json_valid(w.payload_json)=1
-             AND COALESCE(json_extract(
+             AND upper(COALESCE(json_extract(
                w.payload_json, '$.opt_census_stage'
-             ), '')='WF_COMBO'
+             ), '')) IN (
+               'WF_COMBO', 'WF_COMBO_RERUN',
+               'NUMERIC_BASELINE', 'NUMERIC_BASELINE_RERUN',
+               'NUMERIC', 'NUMERIC_RERUN'
+             )
              AND json_type(w.payload_json, '$.priority_track')='true'
              AND json_type(
                w.payload_json, '$.opt_census_frontier_priority'

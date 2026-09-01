@@ -19,6 +19,7 @@ import pytest
 from tools.strategy_farm import opt_census as census
 from tools.strategy_farm import opt_census_select as sel
 from tools.strategy_farm import dl089_scheduling as scheduling
+from tools.strategy_farm import terminal_worker
 from tools.strategy_farm.opt_census_select import YearCell
 
 
@@ -409,6 +410,203 @@ def test_advance_backfills_legacy_four_token_wf_combo_lanes(tmp_path: Path) -> N
     ]
     assert all(payload["priority_track"] is True for payload in repaired)
     assert all(payload.get("arm", "").startswith("wf") for payload in repaired)
+
+
+def _governed_derived_ledger(tmp_path: Path) -> dict:
+    return {
+        "schema": census.SCHEMA,
+        "program_id": "PROG",
+        "ea_id": "QM5_41097",
+        "symbol": "USDJPY.DWX",
+        "timeframe": "H1",
+        "declared_trial_count": 154,
+        "q12_work_item_id": "q12-work-item",
+        "q12_declaration_sha256": "a" * 64,
+        "_ledger_path": str((tmp_path / "ledger.json").resolve()),
+    }
+
+
+def test_insert_numeric_payloads_are_governed_and_lane_bound(tmp_path: Path) -> None:
+    conn = sqlite3.connect(":memory:")
+    conn.execute(WORK_ITEMS_DDL)
+    ledger = _governed_derived_ledger(tmp_path)
+    cases = (
+        (
+            "numeric-baseline",
+            "PROG:numeric:baseline:2019",
+            "NUMERIC_BASELINE",
+            {"year": 2019},
+            "baseline",
+        ),
+        (
+            "numeric-trial",
+            "PROG:numeric:strategy_alpha:0.5:2019",
+            "NUMERIC",
+            {"param": "strategy_alpha", "value": 0.5, "year": 2019},
+            "strategy_alpha:0.5",
+        ),
+        # Infra reruns retain the original cell_key but supply only rerun metadata.
+        (
+            "numeric-rerun",
+            "PROG:numeric:strategy_alpha:0.5:2020",
+            "NUMERIC_RERUN",
+            {"append_only_rerun_of": "numeric-trial", "rerun_attempt": 1},
+            "strategy_alpha:0.5",
+        ),
+    )
+    for work_item_id, cell_key, stage, extra, _arm in cases:
+        assert sel._insert_run(
+            conn,
+            ledger,
+            work_item_id=work_item_id,
+            cell_key=cell_key,
+            setfile_path=str(tmp_path / f"{work_item_id}.set"),
+            from_date="2019.01.01",
+            to_date="2019.12.31",
+            stage=stage,
+            extra=extra,
+        )
+    payloads = {
+        row[0]: json.loads(row[1])
+        for row in conn.execute("SELECT id,payload_json FROM work_items")
+    }
+    for work_item_id, _cell_key, _stage, _extra, expected_arm in cases:
+        payload = payloads[work_item_id]
+        assert payload["arm"] == expected_arm
+        assert payload["q12_work_item_id"] == ledger["q12_work_item_id"]
+        assert payload["q12_declaration_sha256"] == ledger["q12_declaration_sha256"]
+        assert payload["priority_track"] is True
+        assert payload[census.FRONTIER_PRIORITY_MARKER] is True
+        assert terminal_worker._is_governed_dl089_census_payload(payload) is True
+
+    ledger["driver"] = {
+        "numeric": {
+            "runs": [
+                {
+                    "cell_key": "PROG:numeric:baseline:2019",
+                    "work_item_id": "numeric-baseline",
+                    "setfile_path": str(tmp_path / "numeric-baseline.set"),
+                    "stage": "NUMERIC_BASELINE",
+                    "year": 2019,
+                },
+                {
+                    "cell_key": "PROG:numeric:strategy_alpha:0.5:2019",
+                    "work_item_id": "numeric-trial",
+                    "setfile_path": str(tmp_path / "numeric-trial.set"),
+                    "stage": "NUMERIC",
+                    "param": "strategy_alpha",
+                    "value": 0.5,
+                    "year": 2019,
+                },
+                {
+                    "cell_key": "PROG:numeric:strategy_alpha:0.5:2020",
+                    "work_item_id": "failed-original",
+                    "setfile_path": str(tmp_path / "numeric-rerun.set"),
+                    "stage": "NUMERIC",
+                    "param": "strategy_alpha",
+                    "value": 0.5,
+                    "year": 2020,
+                },
+            ]
+        },
+        "reruns": {
+            "PROG:numeric:strategy_alpha:0.5:2020": ["numeric-rerun"]
+        },
+    }
+    lane_cells, lane_ledger = terminal_worker._dl089_declared_lane(
+        ledger, payloads["numeric-trial"]
+    )
+    lane_ids = [cell["work_item_id"] for cell in lane_cells]
+    assert lane_ids == ["numeric-trial", "numeric-rerun"]
+    marks = ",".join("?" for _ in lane_ids)
+    rows = [
+        dict(zip([column[0] for column in cursor.description], row))
+        for cursor in [
+            conn.execute(f"SELECT * FROM work_items WHERE id IN ({marks})", lane_ids)
+        ]
+        for row in cursor.fetchall()
+    ]
+    frontier = scheduling.arm_frontier(rows, lane_ledger)
+    assert frontier[("PROG", "strategy_alpha:0.5")]["id"] == "numeric-trial"
+
+
+def test_repair_pending_numeric_governance_never_touches_verdict_rows(
+    tmp_path: Path,
+) -> None:
+    conn = sqlite3.connect(":memory:")
+    conn.execute(WORK_ITEMS_DDL)
+    ledger = _governed_derived_ledger(tmp_path)
+    runs = [
+        {
+            "cell_key": "PROG:numeric:baseline:2019",
+            "work_item_id": "pending-baseline",
+            "stage": "NUMERIC_BASELINE",
+            "year": 2019,
+            "role": "baseline",
+        },
+        {
+            "cell_key": "PROG:numeric:strategy_alpha:0.5:2019",
+            "work_item_id": "pending-trial",
+            "stage": "NUMERIC",
+            "param": "strategy_alpha",
+            "value": 0.5,
+            "year": 2019,
+            "role": "numeric",
+        },
+        {
+            "cell_key": "PROG:numeric:strategy_alpha:1.0:2019",
+            "work_item_id": "measured-trial",
+            "stage": "NUMERIC",
+            "param": "strategy_alpha",
+            "value": 1.0,
+            "year": 2019,
+            "role": "numeric",
+        },
+    ]
+    ledger["driver"] = {"numeric": {"runs": runs}}
+    for run in runs:
+        sel._insert_run(
+            conn,
+            ledger,
+            work_item_id=run["work_item_id"],
+            cell_key=run["cell_key"],
+            setfile_path=str(tmp_path / f"{run['work_item_id']}.set"),
+            from_date="2019.01.01",
+            to_date="2019.12.31",
+            stage=run["stage"],
+            extra={key: run[key] for key in ("param", "value", "year") if key in run},
+        )
+    for work_item_id in ("pending-baseline", "pending-trial", "measured-trial"):
+        raw = conn.execute(
+            "SELECT payload_json FROM work_items WHERE id=?", (work_item_id,)
+        ).fetchone()[0]
+        payload = json.loads(raw)
+        for key in ("arm", "q12_work_item_id", "q12_declaration_sha256"):
+            payload.pop(key)
+        conn.execute(
+            "UPDATE work_items SET payload_json=? WHERE id=?",
+            (json.dumps(payload, sort_keys=True), work_item_id),
+        )
+    conn.execute(
+        "UPDATE work_items SET status='done',verdict='MEASURED' WHERE id='measured-trial'"
+    )
+    measured_before = conn.execute(
+        "SELECT status,verdict,payload_json FROM work_items WHERE id='measured-trial'"
+    ).fetchone()
+
+    result = sel.repair_pending_numeric_governance(conn, ledger)
+
+    assert result == {"declared": 3, "repaired": 2, "already_valid": 0, "skipped": 1}
+    repaired = [
+        json.loads(row[0])
+        for row in conn.execute(
+            "SELECT payload_json FROM work_items WHERE id IN ('pending-baseline','pending-trial')"
+        )
+    ]
+    assert all(terminal_worker._is_governed_dl089_census_payload(p) for p in repaired)
+    assert conn.execute(
+        "SELECT status,verdict,payload_json FROM work_items WHERE id='measured-trial'"
+    ).fetchone() == measured_before
 
 
 def test_advance_dry_run_writes_nothing(tmp_path: Path) -> None:

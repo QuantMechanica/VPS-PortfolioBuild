@@ -50,6 +50,7 @@ import dl089_scheduling
 import longrun_scheduling_policy
 import next_cell_prestage
 import opt_census_pruning
+import opt_census_select
 from framework.scripts._phase_utils import cold_cache_summary_signature
 from factory_mutation_lock import FactoryMutationLock, path_for_factory_flag
 try:
@@ -3593,7 +3594,7 @@ def _next_cell_prestage_dl089_snapshot(
         metadata["governed"] = False
         return metadata, dependencies
     ledger_path, ledger = opt_census_pruning._load_ledger(payload)
-    cells = list(ledger.get("cells") or [])
+    cells, lane_ledger = _dl089_declared_lane(ledger, payload)
     ids = [str(cell.get("work_item_id") or "") for cell in cells]
     if not ids or any(not value for value in ids):
         raise next_cell_prestage.PrestageError("dl089_ledger_cell_ids_incomplete")
@@ -3609,7 +3610,7 @@ def _next_cell_prestage_dl089_snapshot(
         ea_id=candidate.get("ea_id"),
         symbol=candidate.get("symbol"),
     )
-    frontier = dl089_scheduling.arm_frontier(matrix_rows, ledger).get(
+    frontier = dl089_scheduling.arm_frontier(matrix_rows, lane_ledger).get(
         (program, arm)
     )
     candidate_is_frontier = bool(
@@ -5593,6 +5594,56 @@ def _is_governed_dl089_census_payload(payload: Mapping[str, Any]) -> bool:
     )
 
 
+def _dl089_declared_lane(
+    ledger: Mapping[str, Any], payload: Mapping[str, Any]
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """Resolve the authenticated declaration containing one candidate lane."""
+
+    stage = str(payload.get("opt_census_stage") or "").removesuffix("_RERUN")
+    if stage in {"NUMERIC_BASELINE", "NUMERIC"}:
+        source = list(
+            ledger.get("driver", {}).get("numeric", {}).get("runs") or []
+        )
+    elif stage == "WF_COMBO":
+        source = list(ledger.get("driver", {}).get("wf", {}).get("combo_runs") or [])
+    else:
+        cells = [dict(cell) for cell in ledger.get("cells") or []]
+        return cells, dict(ledger)
+
+    program = str(ledger.get("program_id") or "").strip()
+    payload_program = str(payload.get("program_id") or "").strip()
+    if not program or program != payload_program:
+        raise opt_census_pruning.PruningError("payload/ledger program mismatch")
+    target_arm = str(payload.get("arm") or "").strip()
+    if not target_arm:
+        raise opt_census_pruning.PruningError("derived payload has no lane arm")
+    reruns = ledger.get("driver", {}).get("reruns", {}) or {}
+    cells: list[dict[str, Any]] = []
+    for raw_spec in source:
+        spec = dict(raw_spec)
+        spec_stage = str(spec.get("stage") or "")
+        if spec_stage.removesuffix("_RERUN") != stage:
+            continue
+        derived = opt_census_select._derived_run_fields(
+            dict(ledger), str(spec.get("cell_key") or ""), spec_stage, spec
+        )
+        if str(derived.get("arm") or "") != target_arm:
+            continue
+        cell_key = str(spec.get("cell_key") or "")
+        rerun_ids = [str(value) for value in reruns.get(cell_key, []) if str(value)]
+        if rerun_ids:
+            spec["work_item_id"] = rerun_ids[-1]
+        spec.update({"arm": derived["arm"], "year": derived["year"]})
+        cells.append(spec)
+    if not cells:
+        raise opt_census_pruning.PruningError(
+            f"derived lane absent from ledger: {stage}/{target_arm}"
+        )
+    years = sorted({int(cell["year"]) for cell in cells})
+    lane_ledger = {**dict(ledger), "cells": cells, "years": years}
+    return cells, lane_ledger
+
+
 def _predecessor_status_fingerprint(
     conn: sqlite3.Connection, predecessor_ids: list[str]
 ) -> str:
@@ -5713,7 +5764,7 @@ def _opt_census_lane_preflight_outside_factory_lock(
             raise opt_census_pruning.PruningError(
                 "payload/ledger declaration hash mismatch"
             )
-        cells = ledger.get("cells") or []
+        cells, lane_ledger = _dl089_declared_lane(ledger, payload)
         ids = [str(cell.get("work_item_id") or "") for cell in cells]
         if not ids or any(not value for value in ids):
             raise opt_census_pruning.PruningError("ledger cell IDs are incomplete")
@@ -5738,7 +5789,7 @@ def _opt_census_lane_preflight_outside_factory_lock(
                         f"SELECT * FROM work_items WHERE id IN ({marks})", ids
                     ).fetchall()
                 ]
-                frontier = dl089_scheduling.arm_frontier(matrix_rows, ledger)
+                frontier = dl089_scheduling.arm_frontier(matrix_rows, lane_ledger)
                 frontier_row = frontier.get((program, arm))
                 if frontier_row is None or str(frontier_row["id"]) != str(candidate["id"]):
                     return {
