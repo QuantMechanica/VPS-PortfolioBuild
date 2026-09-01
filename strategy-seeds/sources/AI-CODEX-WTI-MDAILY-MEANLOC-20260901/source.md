@@ -9,7 +9,8 @@ approval_basis: decisions/2026-09-01_wti_monthly_daily_mean_location_trend_sourc
 created: 2026-09-01
 created_by: Codex
 last_reviewed: 2026-09-01
-cards_extracted: []
+cards_extracted:
+  - QM5_41262_wti-mdaily-meanloc-tr
 ---
 
 # WTI Completed-Month Daily Mean-Location Continuation
@@ -139,4 +140,3 @@ non-live Q02 enqueue if CPU admission permits. Excluded: manual tester launch,
 optimization, live/demo/shadow/stress presets, `T_Live`, AutoTrading, deploy or
 live manifests, portfolio-gate changes, portfolio admission, and correlation
 waivers.
-
