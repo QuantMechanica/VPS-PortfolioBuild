@@ -119,6 +119,18 @@ Q02_INFRA_SOURCE_REPAIR_AUTHORITY = (
 Q02_INFRA_SOURCE_REPAIR_EA_LABELS = frozenset({
     "QM5_11900_kobasfx-4ema-macd-sentiment-h1",
 })
+# Exact paced-fleet authority for the QM5_10850 EURUSD Q02 infrastructure
+# recovery.  Its June binary embeds the pre-MNT-045 tester-news initializer,
+# which can reject OnInit when the calendar CSVs are unavailable; the current
+# framework preserves that condition as an auditable degraded run.  Binding
+# the authority to the sealed failing Q02 predecessor permits one append-only,
+# source-hash-bound compile successor and grants no backtest or gate authority.
+QM5_10850_Q02_STALE_BINARY_REPAIR_AUTHORITY = (
+    "q02_infra_predecessor:133f2023-7786-40ea-ba08-83ccd02a93bd"
+)
+QM5_10850_Q02_STALE_BINARY_REPAIR_EA_LABELS = frozenset({
+    "QM5_10850_tv-bbmr-long",
+})
 # Exact paced-fleet authority for the QM5_1252 FX Q02 infrastructure recovery.
 # The existing binary predates the current MAE-hook and bounded-buffer build
 # contracts, while the historical EURUSD/GBPUSD rows never produced an
@@ -1642,6 +1654,10 @@ def _source_repair_authorized(
         or (
             authority == Q02_INFRA_SOURCE_REPAIR_AUTHORITY
             and ea_label in Q02_INFRA_SOURCE_REPAIR_EA_LABELS
+        )
+        or (
+            authority == QM5_10850_Q02_STALE_BINARY_REPAIR_AUTHORITY
+            and ea_label in QM5_10850_Q02_STALE_BINARY_REPAIR_EA_LABELS
         )
         or (
             authority == QM5_1252_Q02_INFRA_REPAIR_AUTHORITY

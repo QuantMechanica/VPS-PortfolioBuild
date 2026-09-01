@@ -410,6 +410,26 @@ def test_q02_infra_source_repair_authority_is_exact_label_bound() -> None:
     )
 
 
+def test_qm5_10850_q02_stale_binary_repair_authority_is_exact_label_bound() -> None:
+    label = "QM5_10850_tv-bbmr-long"
+
+    assert compile_work_items.QM5_10850_Q02_STALE_BINARY_REPAIR_EA_LABELS == {
+        label
+    }
+    assert compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_10850_Q02_STALE_BINARY_REPAIR_AUTHORITY,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        "QM5_10851_unrelated-h1",
+        compile_work_items.QM5_10850_Q02_STALE_BINARY_REPAIR_AUTHORITY,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label,
+        "q02_infra_predecessor:wrong-work-item",
+    )
+
+
 def test_qm5_1252_q02_infra_repair_authority_is_exact_label_bound() -> None:
     label = "QM5_1252_carver-handcraft-ens"
 

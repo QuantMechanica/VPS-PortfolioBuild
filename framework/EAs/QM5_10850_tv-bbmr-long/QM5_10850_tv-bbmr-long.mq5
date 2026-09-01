@@ -5,6 +5,8 @@
 #include <QM/QM_Common.mqh>
 #include <QM/QM_Signals.mqh>
 
+// Governed compile primary host timeframe: PERIOD_H1 (EURUSD recovery cell).
+
 // =============================================================================
 // QuantMechanica V5 EA SKELETON
 // -----------------------------------------------------------------------------
