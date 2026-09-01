@@ -1,0 +1,96 @@
+{
+  "schema_version": "qm.q02-enqueue-receipt/v1",
+  "recorded_at_utc": "2026-09-01T16:02:59.3264093Z",
+  "mission_outcome": "Q01_PASS_Q02_ENQUEUED",
+  "ea_id": "QM5_41271",
+  "ea_label": "QM5_41271_wti-msiegel-tukey-scale-tr",
+  "strategy_id": "AI-CODEX-WTI-MSIEGEL-TUKEY-SCALE-20260901_S01",
+  "branch": "agents/board-advisor",
+  "build_task": {
+    "task_id": "2bc4a7ef-7f3c-4c80-8e07-9b1f9a400a80",
+    "status": "done",
+    "smoke_result": "deferred_p2_smoke",
+    "build_result_file": "artifacts/qm5_41271_build_result_20260901.json",
+    "build_result_sha256": "CBFE8CC0D65311A19891D84B67B3C996873DF8BE45275D1BAF05398CCF3B8186",
+    "build_result_commit": "1ec74efd47b87d2667a8cc44a6a69ff48dbbc488"
+  },
+  "compile": {
+    "work_item_id": "ed7dd8f9-cecf-4987-aebd-fae31abfe902",
+    "status": "done",
+    "verdict": "COMPILE_OK",
+    "build_check_result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "build_check_warnings": 0,
+    "terminal": "T7",
+    "mq5_sha256": "ED9EB6F964DE56B0B696C71E6CC40594BFE9F42FCBF578D14A217C46D23D126C",
+    "ex5_sha256": "BC021D50FEAB14D98A3CCEC31295BF74E21CFAEE46C045E868BF8C22C1753714",
+    "evidence_path": "D:\\QM\\reports\\work_items\\ed7dd8f9-cecf-4987-aebd-fae31abfe902\\QM5_41271\\COMPILE_EA\\compile_evidence.json",
+    "evidence_sha256": "45D016DFB19ECD3547A32752C05D8930E123A5AD690FB46282B5A81C5CF75F48"
+  },
+  "cpu_admission": {
+    "sampled_at_utc": "2026-09-01T16:02:08.5366373Z",
+    "command": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "samples_percent": [
+      33.145789774187186,
+      32.78916845860164,
+      45.63829903121505,
+      40.95351598337801,
+      33.89348930669499
+    ],
+    "average_percent": 37.28405251081537,
+    "maximum_percent": 45.63829903121505,
+    "hard_ceiling_percent": 97.0,
+    "decision_rule": "STOP when any fresh five-sample whole-host CPU maximum is greater than or equal to 97.0 percent",
+    "verdict": "ADMIT_Q02_ENQUEUE"
+  },
+  "record_build": {
+    "called": true,
+    "recorded": true,
+    "new_status": "done",
+    "fail_code": null,
+    "blocked_reason": "",
+    "auto_q02_enqueued_count": 1,
+    "auto_q02_skipped_count": 0
+  },
+  "q02": {
+    "work_item_id": "7c2e0cec-5209-4109-9b86-a39b9bdd39fe",
+    "kind": "backtest",
+    "phase": "Q02",
+    "gate_contract_version": "v4",
+    "status_at_receipt": "pending",
+    "attempt_count_at_receipt": 0,
+    "claimed_by_at_receipt": null,
+    "verdict_at_receipt": null,
+    "created_at_utc": "2026-09-01T16:02:21+00:00",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41271_wti-msiegel-tukey-scale-tr\\sets\\QM5_41271_wti-msiegel-tukey-scale-tr_XTIUSD.DWX_D1_backtest.set",
+    "setfile_sha256": "CEE0CED172D90C58953ADCD5D63C21B2861A79C5F76FD0FDEDCB04385D9DA4F8",
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "enqueued_by": "record_build_result.auto_q02",
+    "q02_cohort_size": 1,
+    "q02_fanout_canary": false,
+    "priority_track": true,
+    "custom_history_archive_admission": {
+      "status": "ACTIVE",
+      "selected_symbol": "XTIUSD.DWX",
+      "selected_archive_rows": 108,
+      "manifest_path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_custom_history_variant_a_20260809\\archive_manifest_owner_approved.json",
+      "manifest_sha256": "FE0DDB0FDD90DC26B806044C82FD0D7C35AF889A96CBD4D79DECE9CFDAC3AAB06",
+      "activation_sha256": "61C8C72CCB0CB8038AE6ECE7B89AA68F602B1637D8BC6B6C866F38492139134E"
+    },
+    "frequency_retirement_rule": "Retire if any full post-warm-up calendar year has fewer than five completed positions."
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "deploy_manifest_touched": false,
+    "manual_backtest_launched": false,
+    "portfolio_gate_touched": false,
+    "q02_dispatched_by_this_mission": false,
+    "t_live_manifest_touched": false
+  }
+}
