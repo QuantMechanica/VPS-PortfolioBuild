@@ -1,0 +1,75 @@
+{
+  "task_id": "21f129cd-0afd-49ef-9051-493608326e2b",
+  "build_generation": 0,
+  "ea_id": "QM5_41264",
+  "ea_label": "QM5_41264_wti-myuen20-shift-tr",
+  "slug": "wti-myuen20-shift-tr",
+  "strategy_id": "AI-CODEX-WTI-MYUEN20-20260901_S01",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41264_wti-myuen20-shift-tr",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41264_wti-myuen20-shift-tr\\QM5_41264_wti-myuen20-shift-tr.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41264_wti-myuen20-shift-tr\\QM5_41264_wti-myuen20-shift-tr.ex5",
+  "magic_base": 412640000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "host_symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41264_wti-myuen20-shift-tr\\sets\\QM5_41264_wti-myuen20-shift-tr_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_sha256": {
+    "QM5_41264_wti-myuen20-shift-tr_XTIUSD.DWX_D1_backtest.set": "E086D97237C84AA48E9A7FE2E90B1CAB965A1EFB85144EA19362649B49386128"
+  },
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41264_wti-myuen20-shift-tr\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "The qm-build-ea-from-card skill is build-only and forbids manual backtests; the OWNER mission authorizes one governed Q02 enqueue instead.",
+  "blocked_reason": "",
+  "open_questions": [
+    "Q02 must establish monthly activity, fill viability, and positive governed baseline economics without changing the locked signal or risk contract.",
+    "Only unchanged downstream portfolio testing may determine realized correlation or diversification value."
+  ],
+  "compile": {
+    "status": "COMPILE_OK",
+    "work_item_id": "b2cc9ae7-b95f-4823-bb46-1df2ab35b854",
+    "terminal": "T10",
+    "evidence_path": "D:\\QM\\reports\\work_items\\b2cc9ae7-b95f-4823-bb46-1df2ab35b854\\QM5_41264\\COMPILE_EA\\compile_evidence.json",
+    "evidence_sha256": "EE322784A0EED20FD72B7AF4C45181507A5150AEA6B54D5A4A3CAFD91363D7B4",
+    "build_check_result": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "failure_classes": [],
+    "mq5_sha256": "8977BED13F550482CF7BE8C14B05605623A3C796AB16399908F9C85DC2B31E07",
+    "ex5_sha256": "4259747828263C8E58721DF0263C067481C2B9B8A06AF6920BDAF06CE1212876",
+    "setfile_build_hash": "4897731A395F6EAF5C14F254AD590810CF6AA93105CABBA64EDEFD52D17CB961",
+    "setfile_sha256": "E086D97237C84AA48E9A7FE2E90B1CAB965A1EFB85144EA19362649B49386128"
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "validations": {
+    "approved_card_sha256": "231EF22C2B96034E13AA00E4F425B890B874A409C597F96B30485245E51013FB",
+    "approved_local_card_byte_identical": true,
+    "build_skill_guard": "PASS",
+    "card_schema_lint": "PASS",
+    "execution_contract_lint": "PASS",
+    "dedup_artifact_sha256": "8D33C19E0A75BEFCCCDF8778DD44C89A844DAE48E0FCF64E7D37520BD3C26ED7",
+    "reference_test_sha256": "1C0259DC3F96E941AA34BBEFC7FA9C073A4A8B15F80D57158EF2FDFDBBDB43B9",
+    "reference_tests": "PASS_10",
+    "source_packet_sha256": "39AEF59D5C7A5AF4405F1236A1CC5D027FB23EE618F2408D21F8F6BDDF8FD3D2",
+    "spec_sha256": "0561480E82D54859D581AEE9E0663FA637DC56AC03DC5C0319946A4DE4B987AC",
+    "spec_validation": "PASS",
+    "static_guardrails": "PASS"
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "deploy_manifest_touched": false,
+    "manual_backtest_launched": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false
+  }
+}
