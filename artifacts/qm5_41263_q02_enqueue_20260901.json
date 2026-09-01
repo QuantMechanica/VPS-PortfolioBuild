@@ -1,0 +1,62 @@
+{
+  "schema_version": "qm.q02-enqueue-receipt/v1",
+  "recorded_at_utc": "2026-09-01T06:04:59.1698216Z",
+  "mission_outcome": "Q01_PASS_Q02_ENQUEUED",
+  "ea_id": "QM5_41263",
+  "ea_label": "QM5_41263_xauxag-mkuiper-rv",
+  "logical_symbol": "QM5_41263_XAU_XAG_MKUIPER_RV_D1",
+  "build_task_id": "a684f42c-a0c3-4c8b-9f58-4e635a23a71c",
+  "build_result_commit": "8ac461e778c64df2dfe2d54f199d8d8004fcd2ee",
+  "build_result_sha256": "5E75B6177D4D3E4C96E48191589E9EB7A22712AB269B7C6971B274CC6E4F9B30",
+  "compile": {
+    "work_item_id": "e4f3047d-de65-48be-b2ba-35097e3df32c",
+    "status": "done",
+    "verdict": "COMPILE_OK",
+    "build_check_result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "terminal": "T9",
+    "ex5_sha256": "1DF874B5E959410EB36398BFA46D880D667D71122D6CB5D9E8B30BDC12CD1BB6"
+  },
+  "cpu_admission": {
+    "command": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "samples_percent": [
+      81.4473,
+      74.3725,
+      68.5581,
+      74.9214,
+      80.4026
+    ],
+    "average_percent": 75.9404,
+    "maximum_percent": 81.4473,
+    "hard_ceiling_percent": 97.0,
+    "decision_rule": "STOP when any fresh five-sample whole-host CPU maximum is greater than or equal to 97.0 percent",
+    "verdict": "ADMIT_Q02"
+  },
+  "q02": {
+    "record_build_called": true,
+    "record_build_status": "done",
+    "auto_enqueued": true,
+    "logical_work_items_enqueued": 1,
+    "component_work_items_enqueued": 0,
+    "work_item_id": "33f120c3-592c-443e-a0d4-f43a397c3290",
+    "phase": "Q02",
+    "kind": "backtest",
+    "status_at_receipt": "pending",
+    "symbol": "QM5_41263_XAU_XAG_MKUIPER_RV_D1",
+    "timeframe": "D1",
+    "setfile": "framework/EAs/QM5_41263_xauxag-mkuiper-rv/sets/QM5_41263_xauxag-mkuiper-rv_QM5_41263_XAU_XAG_MKUIPER_RV_D1_D1_backtest.set",
+    "setfile_sha256": "E8EF0465A890D430A3EB9E551B5098830D18BFF4D752033C0143679BD13E8EBA",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "component_skip_reason": "basket_manifest_logical_setfile_preferred"
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "manual_backtest_launched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "deploy_manifest_touched": false
+  }
+}
