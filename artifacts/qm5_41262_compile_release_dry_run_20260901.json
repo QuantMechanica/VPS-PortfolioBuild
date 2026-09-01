@@ -1,0 +1,19 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "d99c2e37ed18985aa38e4dabb415a419038b26915cd3385bef4e12a1cf4cfefb",
+      "ea_id": "QM5_41262",
+      "ea_label": "QM5_41262_wti-mdaily-meanloc-tr",
+      "expected_mq5_sha256": "d99c2e37ed18985aa38e4dabb415a419038b26915cd3385bef4e12a1cf4cfefb",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41262_wti-mdaily-meanloc-tr\\QM5_41262_wti-mdaily-meanloc-tr.mq5",
+      "work_item_id": "29926b20-fce8-4e5b-9f17-164305193fdb"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "29926b20-fce8-4e5b-9f17-164305193fdb"
+}
