@@ -12,7 +12,7 @@
 
 **Last revised:** 2026-09-01
 
-## 1. Strategy logic
+## 1. Strategy Logic
 
 On the first executable `XTIUSD.DWX` D1 bar of a normalized broker month,
 reconstruct 21 consecutive completed broker-month-end closes and form 20
@@ -26,7 +26,7 @@ variance around that mean with divisor five. Follow the signed recent-minus-old
 trimmed-location shift when its unequal-variance score reaches the inclusive
 absolute boundary `0.75`. Every other monthly attempt is consumed flat.
 
-## 2. Locked parameters
+## 2. Parameters
 
 | Parameter | Value | Meaning |
 |---|---:|---|
@@ -47,7 +47,7 @@ absolute boundary `0.75`. Every other monthly attempt is consumed flat.
 
 There is one Q02 baseline and no optimization surface.
 
-## 3. Symbol and timeframe
+## 3. Symbol Universe
 
 - Host and traded symbol: exact `XTIUSD.DWX`, D1.
 - Symbol slot: 0; governed magic: `412640000`.
@@ -55,7 +55,16 @@ There is one Q02 baseline and no optimization surface.
   and terminal-persistent state only.
 - There is no external signal, companion, ratio, hedge, or conversion symbol.
 
-## 4. Exact formula
+## 4. Timeframe
+
+The host chart and order timeframe are exact D1. Signal history is reduced to
+completed broker-month endpoints, and the entry decision is consumed once on
+the first executable D1 bar of each normalized broker month. No intraday or
+higher-frequency fallback is permitted.
+
+## 5. Expected Behaviour
+
+### Exact formula
 
 ```text
 r[i] = log(C[i+1] / C[i]), i=0..19
@@ -86,7 +95,7 @@ months, degenerate scale, a boundary miss, or arithmetic failure consumes the
 month flat. There is no p-value, fitted split, pooled scale, fallback
 estimator, recent-mean sign gate, or score-scaled exposure.
 
-## 5. Execution and lifecycle
+### Execution and lifecycle
 
 - Persist the new `yyyymm` attempt before history, arithmetic, news, spread,
   quote, ATR, sizing, margin, or order gates. A failed gate cannot retry.
@@ -108,7 +117,7 @@ per full post-warm-up year. Q02 retires on zero positions, fewer than five in
 any full scored year, nonpositive governed economics, or a deterministic
 fixture failure. This is a design prior, not a performance claim.
 
-## 6. Source and non-duplicate boundary
+## 6. Source Citation
 
 The governed packet is
 `strategy-seeds/sources/AI-CODEX-WTI-MYUEN20-20260901/source.md`. It records
@@ -130,7 +139,20 @@ two-per-tail Winsorized scales, effective size six, and no sign gate. Two fixed
 reference fixtures prove qualification disagreement in both directions.
 Q09 alone may establish realized portfolio overlap.
 
-## 7. Framework alignment and safety
+## 7. Risk Model
+
+- The governed backtest preset is fixed at `RISK_FIXED=1000`,
+  `RISK_PERCENT=0`, and `PORTFOLIO_WEIGHT=1`; no risk optimization surface is
+  authorized.
+- Initial risk is bounded by the V5 fixed-currency sizing path and a frozen
+  broker hard stop at `3.5*ATR(20,D1)` from completed-bar data.
+- There is no target, scale-in, martingale, grid, pyramid, trail, break-even,
+  or score-scaled exposure. The next-month and 40-calendar-day exits only
+  reduce surviving exposure.
+- Invalid stop geometry, sizing, margin, quote, spread, or position state
+  fails closed. The kill switch and framework loss controls remain active.
+
+## 8. Framework Alignment and Safety
 
 - `no_trade`: exact host, period, identity, slot, risk, news, Friday, stress,
   and strategy locks.
