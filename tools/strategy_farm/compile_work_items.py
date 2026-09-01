@@ -265,6 +265,17 @@ QM5_41194_DL089_BUILD_REPAIR_AUTHORITY = (
 QM5_41194_DL089_BUILD_REPAIR_EA_LABELS = frozenset({
     "QM5_41194_brent-tom-mom-opt",
 })
+# Exact Treasure Phase 2A authority for the fresh QM5_41272 recovery identity.
+# Its first governed compile succeeded in MetaEditor but failed the current
+# raw-series annotation and explicit MAE-hook checks.  This task/label binding
+# permits one append-only, source-hash-bound repair compile and no backtest,
+# gate-verdict, live, or cross-EA authority.
+QM5_41272_TREASURE_BUILD_REPAIR_AUTHORITY = (
+    "router_ops_issue:2e0bc944-0f47-47e2-b6c2-e7b83db89147"
+)
+QM5_41272_TREASURE_BUILD_REPAIR_EA_LABELS = frozenset({
+    "QM5_41272_turn-of-month-index-long-restart-r1",
+})
 # OWNER-approved, append-only sibling-first-compile ceremony.  Unlike an
 # ordinary source repair this authority permits the two named siblings to keep
 # their immutable parent-era setfiles in ``sets/`` while compiling against one
@@ -1730,6 +1741,10 @@ def _source_repair_authorized(
         or (
             authority == QM5_41194_DL089_BUILD_REPAIR_AUTHORITY
             and ea_label in QM5_41194_DL089_BUILD_REPAIR_EA_LABELS
+        )
+        or (
+            authority == QM5_41272_TREASURE_BUILD_REPAIR_AUTHORITY
+            and ea_label in QM5_41272_TREASURE_BUILD_REPAIR_EA_LABELS
         )
         or _sibling_rebind_authorized(ea_label, authority)
         or (

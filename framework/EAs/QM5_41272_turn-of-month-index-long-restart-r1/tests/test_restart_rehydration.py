@@ -29,8 +29,12 @@ def test_missing_entry_history_is_fail_closed() -> None:
 
 def test_source_binds_reconstruction_to_position_time() -> None:
     source = EA.read_text(encoding="utf-8")
-    assert "PositionGetInteger(POSITION_TIME)" in source
-    assert "iBarShift(_Symbol, PERIOD_D1, position_time, false)" in source
-    assert "g_days_elapsed = entry_bar_shift;" in source
+    assert "QM_TM_HeldPeriodsForMagic(QM_FrameworkMagic(), _Symbol, PERIOD_D1)" in source
+    assert "g_days_elapsed = held_periods;" in source
     assert "if(!Strategy_RehydrateHeldDays())" in source
     assert "g_last_seen_day_key = today_key; // restart-safety" not in source
+
+
+def test_current_build_mae_hook_is_explicit() -> None:
+    source = EA.read_text(encoding="utf-8")
+    assert "QM_FrameworkTrackOpenPositionMae();" in source

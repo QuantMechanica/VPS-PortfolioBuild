@@ -41,60 +41,20 @@ input double strategy_sl_atr_mult          = 3.0;
 int g_days_elapsed      = 0;
 int g_last_seen_day_key = 0;
 
-bool Strategy_SelectOwnedPosition(datetime &position_time)
-  {
-   const int magic = QM_FrameworkMagic();
-   bool found = false;
-   position_time = 0;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-
-      const datetime candidate_time = (datetime)PositionGetInteger(POSITION_TIME);
-      if(candidate_time <= 0)
-         continue;
-      if(!found || candidate_time < position_time)
-        {
-         position_time = candidate_time;
-         found = true;
-        }
-     }
-   return found;
-  }
-
 bool Strategy_RehydrateHeldDays()
   {
-   datetime position_time = 0;
-   if(!Strategy_SelectOwnedPosition(position_time))
+   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) <= 0)
       return true;
 
-   // iBarShift(..., false) returns the containing D1 bar's current shift.
-   // Current D1 is shift 0, so the entry bar's shift is exactly the number of
-   // completed D1 transitions. Weekends and market holidays add no bars.
-   const int entry_bar_shift = iBarShift(_Symbol, PERIOD_D1, position_time, false);
-   if(entry_bar_shift < 0)
-     {
-      QM_LogEvent(QM_ERROR,
-                  "HELD_DAY_REHYDRATE_FAILED",
-                  StringFormat("{\"position_time\":%I64d}", (long)position_time));
+   // The framework helper reads POSITION_TIME for the longest-held owned
+   // position and reconstructs completed D1 transitions from actual bars.
+   const int held_periods =
+      QM_TM_HeldPeriodsForMagic(QM_FrameworkMagic(), _Symbol, PERIOD_D1);
+   if(held_periods < 0)
       return false;
-     }
 
-   g_days_elapsed = entry_bar_shift;
+   g_days_elapsed = held_periods;
    g_last_seen_day_key = QM_CalendarPeriodKey(PERIOD_D1);
-   QM_LogEvent(QM_INFO,
-               "HELD_DAY_REHYDRATED",
-               StringFormat("{\"position_time\":%I64d,\"days_elapsed\":%d,\"day_key\":%d}",
-                            (long)position_time,
-                            g_days_elapsed,
-                            g_last_seen_day_key));
    return (g_last_seen_day_key != 0);
   }
 
@@ -115,7 +75,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(strategy_trend_filter_enabled)
      {
-      const double prior_close = iClose(_Symbol, PERIOD_D1, 1);
+      const double prior_close = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: one structural prior-close read on the monthly decision edge; faithful to reviewed QM5_20004.
       const double sma50 = QM_SMA(_Symbol, PERIOD_D1, strategy_trend_sma_period, 1);
       if(prior_close <= 0.0 || sma50 <= 0.0 || prior_close < sma50)
          return false;
@@ -203,7 +163,8 @@ int OnInit()
 
    QM_LogEvent(QM_INFO,
                "INIT_OK",
-               "{\"card\":\"QM5_41272\",\"ea\":\"turn-of-month-index-long-restart-r1\"}");
+               StringFormat("{\"card\":\"QM5_41272\",\"ea\":\"turn-of-month-index-long-restart-r1\",\"days_elapsed\":%d}",
+                            g_days_elapsed));
    return INIT_SUCCEEDED;
   }
 
@@ -215,6 +176,8 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 
