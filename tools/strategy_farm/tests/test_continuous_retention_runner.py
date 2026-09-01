@@ -89,3 +89,18 @@ def test_quick_check_failure_is_fail_closed(tmp_path: Path) -> None:
         pass
     else:
         raise AssertionError("corrupt DB must fail closed")
+
+
+def test_telemetry_keeps_bounded_action_and_byte_counts() -> None:
+    summary = {
+        "status": "PASS", "free_before": 1000, "free_after": 1300,
+        "backup_compression": [{"status": "ALREADY_COMPRESSED", "bytes": 20}],
+        "evidence_compression": [{"status": "COMPRESSED", "bytes": 30}],
+        "log_rotation": [{"status": "HELD_ACTIVE", "bytes": 40}],
+        "log_delete": {"deleted_files": 0, "deleted_bytes": 0},
+    }
+    record = runner.telemetry_record(summary)
+    assert record["free_delta"] == 300
+    assert record["evidence_compression"]["status_counts"] == {"COMPRESSED": 1}
+    assert record["log_rotation"]["logical_bytes"] == 40
+    assert record["purge_log_pattern"]["retention"] == "current_plus_48h"

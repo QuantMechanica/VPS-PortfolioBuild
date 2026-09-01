@@ -64,6 +64,32 @@ def append_jsonl(path: Path, payload: dict[str, Any]) -> None:
         handle.write(json.dumps(payload, sort_keys=True) + "\n")
 
 
+def telemetry_record(summary: dict[str, Any]) -> dict[str, Any]:
+    record = {key: value for key, value in summary.items()
+              if key not in {"backup_compression", "evidence_compression", "log_rotation"}}
+    for source, label in (("backup_compression", "backup_compression"),
+                          ("evidence_compression", "evidence_compression"),
+                          ("log_rotation", "log_rotation")):
+        rows = summary.get(source, [])
+        statuses: dict[str, int] = {}
+        for row in rows:
+            status = str(row.get("status", "UNKNOWN"))
+            statuses[status] = statuses.get(status, 0) + 1
+        record[label] = {
+            "files": len(rows),
+            "logical_bytes": sum(int(row.get("bytes", 0)) for row in rows),
+            "status_counts": statuses,
+        }
+    if "free_before" in summary and "free_after" in summary:
+        record["free_delta"] = int(summary["free_after"]) - int(summary["free_before"])
+    record["purge_log_pattern"] = {
+        "retention": "current_plus_48h",
+        "rotation": record["log_rotation"],
+        "deletion": summary.get("log_delete", {}),
+    }
+    return record
+
+
 @contextmanager
 def exclusive_runner_lock(path: Path):
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -350,11 +376,9 @@ def main() -> int:
             append_jsonl(args.telemetry, failure)
             print(json.dumps(failure, indent=2, sort_keys=True))
             return 1
-        append_jsonl(args.telemetry, {key: value for key, value in summary.items()
-                                     if key not in {"backup_compression", "evidence_compression", "log_rotation"}})
-        print(json.dumps({key: value for key, value in summary.items()
-                          if key not in {"backup_compression", "evidence_compression", "log_rotation"}},
-                         indent=2, sort_keys=True))
+        compact = telemetry_record(summary)
+        append_jsonl(args.telemetry, compact)
+        print(json.dumps(compact, indent=2, sort_keys=True))
         return 0
 
 
