@@ -55,14 +55,17 @@ canonical read-only ordering placed the remaining WF rows at the queue head.
 No terminal was started or interrupted, and no AutoTrading/T_Live setting was
 touched.
 
-Live terminal evidence at the time of this artifact:
+Live terminal evidence after the normal T10 worker completed the queue:
 
 | WF step | year | work item | observed state | terminal/evidence |
 |---:|---:|---|---|---|
 | 1 | 2022 | `e972dfeb-a7f2-58a2-8c4c-482a0bb65ec1` | `done / MEASURED` | T10; `D:/QM/reports/work_items/e972dfeb-a7f2-58a2-8c4c-482a0bb65ec1/QM5_41162/20260901_035941/summary.json` |
 | 2 | 2023 | `6a10e1ff-59f0-5611-a4cc-1f03b8f958b1` | `done / MEASURED` | T10; `D:/QM/reports/work_items/6a10e1ff-59f0-5611-a4cc-1f03b8f958b1/QM5_41162/20260901_040657/summary.json` |
 | 3 | 2024 | `727948af-b4f4-5a15-86c0-48e91ee7ef8b` | `done / MEASURED` | T10; `D:/QM/reports/work_items/727948af-b4f4-5a15-86c0-48e91ee7ef8b/QM5_41162/20260901_041914/summary.json` |
-| 4 | 2025 | `a4938d29-4f82-587a-870a-0e3edd54003e` | `active / running` | T10; child PID 14736 started 04:27:06Z |
+| 4 | 2025 | `a4938d29-4f82-587a-870a-0e3edd54003e` | `done / MEASURED` | T10; `D:/QM/reports/work_items/a4938d29-4f82-587a-870a-0e3edd54003e/QM5_41162/20260901_042817/summary.json` |
+
+The fourth row completed at 04:29:54Z. All four derived combo rows therefore
+reached terminal `done / MEASURED` status through the existing worker path.
 
 ## Focused verification
 
