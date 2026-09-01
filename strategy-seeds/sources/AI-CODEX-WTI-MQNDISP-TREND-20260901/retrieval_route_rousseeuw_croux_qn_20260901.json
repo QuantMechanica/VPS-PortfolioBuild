@@ -1,0 +1,24 @@
+{
+  "schema": "qm.academic-source-retrieval-evidence/v1",
+  "retrieved_at_utc": "2026-09-01T19:24:31.0628837Z",
+  "url": "https://wis.kuleuven.be/stat/robust/papers/publications-1993/rousseeuwcroux-alternativestomedianad-jasa-1993.pdf",
+  "publisher_lineage": "author-hosted KU Leuven published JASA paper",
+  "title": "Alternatives to the Median Absolute Deviation",
+  "authors": ["Peter J. Rousseeuw", "Christophe Croux"],
+  "publication": "Journal of the American Statistical Association 88(424), 1273-1283 (1993)",
+  "doi": "10.1080/01621459.1993.10476408",
+  "content_type": "application/pdf",
+  "page_count": 11,
+  "byte_count": 1861307,
+  "sha256": "F4355DB3925B02FFD35B4499342F4D26C5C7372535E5A4ACE7CD4F9041628969",
+  "read_scope": "complete_all_pages",
+  "method_findings": {
+    "qn_definition": "kth order statistic of pairwise absolute distances",
+    "h_definition": "floor(n/2)+1",
+    "k_definition": "choose(h,2)",
+    "n16_k": 36,
+    "consistency_multiplier_separate": true
+  },
+  "claim_boundary": "Method arithmetic only; the paper contains no WTI, trading, continuation, threshold, CFD, risk, or portfolio result.",
+  "mutation_performed": false
+}
