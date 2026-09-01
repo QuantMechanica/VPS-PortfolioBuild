@@ -29,6 +29,30 @@ Verdict target: `{{verdict_path}}`
 
 Apply each rule literally. If a rule is violated → severity `block`. If unclear → `warn`.
 
+### 0a. Build authority: hash-bound manifests override card disclaimers (NEW 2026-09-01)
+
+Some cards are **reservation cards**: they reserve an identity and carry a
+disclaimer such as "this card does not authorize a compile, seed, hold release,
+or mechanics change". That disclaimer describes the card's own scope — it is
+**not** a rejection ground by itself. Build authority can instead come from an
+OWNER-approved, hash-pinned manifest (e.g. the REQUAL-8 manifest
+`0b6845c941314f9c2f754b0897bd66fd1f4daa0220921726f2d51ef0e72a76f2`,
+OWNER-DEC-Q09HOLD-REQUAL-8-20260829) that the canonical controller honours via
+an explicit hash-bound exception.
+
+Adjudicate mechanically:
+- If the build task/evidence chain binds the EA to such a manifest **by exact
+  SHA-256** and the EA is listed in that manifest → the card disclaimer is
+  satisfied, not violated. Do NOT reject on the disclaimer. Review mechanics,
+  framework corset, risk, and naming as usual against the parent/card mechanics.
+- If NO authority binding exists (no manifest SHA in the build evidence, or the
+  EA is not in the bound manifest) → `block` finding, REJECT_REWORK, directive
+  "produce the OWNER-approved build-authority binding".
+- Never infer authority from prose. Only an exact SHA-256 binding counts.
+
+Precedent: QM5_41215–41218 approved under this construction; QM5_41219 row
+`a3db9bf9` was a false REJECT for exactly this misreading.
+
 ### 0. Canonical naming + setfile coverage (NEW 2026-05-16 — was missed)
 
 - **Directory** is `framework/EAs/QM5_<NNNN>_<slug>/` (with `QM5_` prefix). NOT
