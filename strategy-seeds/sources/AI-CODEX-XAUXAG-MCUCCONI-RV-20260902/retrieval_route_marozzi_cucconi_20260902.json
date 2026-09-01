@@ -1,0 +1,53 @@
+{
+  "schema": "qm.source-retrieval-route/v1",
+  "retrieved_at_utc": "2026-09-01T22:53:46Z",
+  "document": "Marco Marozzi (2012), A modified Cucconi Test for Location and Scale Change Alternatives, Revista Colombiana de Estadistica 35(3), 371-384",
+  "publisher_route": {
+    "article_url": "https://revistas.unal.edu.co/index.php/estad/article/view/36886",
+    "article_http_status": 200,
+    "article_content_type": "text/html; charset=utf-8",
+    "article_response_bytes": 70446,
+    "article_response_sha256": "8FDFC8A3A158DDF607F7D64C1CBBAF3669BA9530B8EF8850E43009FBFE99320C",
+    "pdf_url": "https://revistas.unal.edu.co/index.php/estad/article/download/36886/47666/223645",
+    "pdf_http_status": 200,
+    "pdf_content_type": "application/pdf",
+    "pdf_response_bytes": 520921,
+    "pdf_response_sha256": "236BA86C34B99F126CA6EECB16CEA9082EEACA4D0F1D90406853BB059A2C0BEB",
+    "read_scope": "Complete 14-page publisher PDF, pages 371-384, read end to end after deterministic text extraction with pypdf 6.12.1: abstract, introduction, original Cucconi formula and moments, asymptotic geometry, exact-permutation construction, modified-test construction, size/power study, application, conclusion, and references."
+  },
+  "supporting_metadata_route": {
+    "document": "Marco Marozzi (2009), Some notes on the location-scale Cucconi test, Journal of Nonparametric Statistics 21(5), 629-647",
+    "doi": "10.1080/10485250902952435",
+    "url": "https://api.crossref.org/works/10.1080/10485250902952435",
+    "http_status": 200,
+    "utf8_response_bytes": 4135,
+    "utf8_response_sha256": "9901D24C0AEC104204C74EB7FF219B4D9E315AD55C4481E38B33FE329EB127EB",
+    "observed_fields": {
+      "author": "Marco Marozzi",
+      "title": "Some notes on the location-scale Cucconi test",
+      "container_title": "Journal of Nonparametric Statistics",
+      "volume": "21",
+      "issue": "5",
+      "pages": "629-647",
+      "published": "2009-07"
+    },
+    "read_scope": "Complete bounded Crossref JSON response and deposited bibliographic fields; the 2009 publisher body was not needed for implementation arithmetic and no complete-body claim is made."
+  },
+  "locked_n12_contract": {
+    "sample_sizes": [6, 6],
+    "pooled_size": 12,
+    "rank_square_expectation": 325.0,
+    "rank_square_standard_deviation": 83.3966426182733,
+    "rho": -0.8953271028037383,
+    "rho_exact": "-479/535",
+    "all_six_rank_assignments": 924,
+    "cucconi_tail_count_max": 480,
+    "statistic_boundary": 0.7655677655677652,
+    "neutral_recent_rank_sum": 39,
+    "statistic_qualified_assignments": 480,
+    "neutral_qualified_assignments": 18,
+    "directional_qualified_assignments": 462,
+    "directional_states_per_twelve_attempts": 6.0
+  },
+  "claim_boundary": "The source defines the classical Cucconi rank/contrary-rank statistic and exact permutation tail. The fixed 6-by-6 monthly XAU/XAG sample, strict tie rejection, 480-tail activity boundary, rank-sum side, contrarian trade, CFD mapping, risk, atomicity, and lifecycle are pre-result QuantMechanica choices. No source p-value, critical value, power result, or profitability claim is transferred."
+}
