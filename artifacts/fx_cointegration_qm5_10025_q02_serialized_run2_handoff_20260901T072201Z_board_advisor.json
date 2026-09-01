@@ -172,7 +172,7 @@
     "preexisting_unrelated_worktree_changes_preserved": true
   },
   "non_duplicate_delta": {
-    "preceding_fx_handoff_commit": "cb02bfdac6d639119db22ff60609eaab08ef28e",
+    "preceding_fx_handoff_commit": "cb02bfdac6aa741b6e1f0a23bfb6afd2832cc8c2",
     "preceding_active_work_item_count": 6,
     "current_active_work_item_count": 9,
     "preceding_capacity_average_cpu_percent": 89.70452268363657,
