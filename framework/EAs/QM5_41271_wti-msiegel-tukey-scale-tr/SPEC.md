@@ -156,8 +156,23 @@ ties, and broker-month offsets remain material risks.
   day stale exit.
 - `trade_close`: V5 close helper, broker hard stop, and kill switch.
 
+## Q01 Build Evidence
+
+- Governed build task: `2bc4a7ef-7f3c-4c80-8e07-9b1f9a400a80`.
+- Governed compile item: `ed7dd8f9-cecf-4987-aebd-fae31abfe902` on T7.
+- Compile verdict: `COMPILE_OK`, zero errors, zero warnings, one generated
+  fixed-risk backtest setfile.
+- EX5 SHA-256:
+  `bc021d50feab14d98a3ccec31295bf74e21cfaee46c045e868bf8c22c1753714`.
+- Ten deterministic reference tests, the Card schema lint, the numeric
+  identity/magic build guard, and SPEC validation pass.
+
+This is build evidence only. No manual backtest, live preset, AutoTrading,
+portfolio gate, T_Live, or deployment-manifest action was performed.
+
 ## Revision History
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v0 | 2026-09-01 | approved source build | G0-approved card; governed magic `412710000` |
+| v1 | 2026-09-01 | governed Q01 compile | `COMPILE_OK`; Q02 not yet run |
