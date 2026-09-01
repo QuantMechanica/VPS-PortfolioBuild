@@ -18173,3 +18173,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41264,wti-myuen20-shift-tr,0,XTIUSD.DWX,412640000,2026-09-01,Codex governed allocator,active
 41265,xauxag-mbf-scale-rv,0,XAUUSD.DWX,412650000,2026-09-01,Codex governed allocator,active
 41265,xauxag-mbf-scale-rv,1,XAGUSD.DWX,412650001,2026-09-01,Codex governed allocator,active
+41266,wti-mfk-scale-tr,0,XTIUSD.DWX,412660000,2026-09-01,Codex governed allocator,active
