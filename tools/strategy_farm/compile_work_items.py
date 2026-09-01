@@ -620,6 +620,27 @@ QM5_41264_COMPILE_FAIL_REPAIR_2_REJECTED_SOURCE_SHA256 = (
 QM5_41264_COMPILE_FAIL_REPAIR_2_REPAIRED_SOURCE_SHA256 = (
     "8977bed13f550482cf7be8c14b05605623a3c796ab16399908f9c85dc2b31e07"
 )
+# Exact append-only authority for the first governed QM5_41274 compile. The
+# predecessor compiled with zero errors and warnings but failed Q01 because
+# two already-bounded completed-month buffer reads did not expose resize-count
+# proofs that build_gate_hardening could prove. The repair adds only explicit
+# local bounds; it does not alter the approved signal or lifecycle. This
+# binding accepts only that repaired source hash against the immutable failed
+# row and grants no backtest, gate-verdict, or general binary-overwrite
+# authority.
+QM5_41274_COMPILE_FAIL_REPAIR_PREDECESSOR_ID = (
+    "8fa48f19-98dc-47f5-adba-9c712998b7ce"
+)
+QM5_41274_COMPILE_FAIL_REPAIR_AUTHORITY = (
+    "governed_compile_fail:8fa48f19-98dc-47f5-adba-9c712998b7ce"
+)
+QM5_41274_COMPILE_FAIL_REPAIR_EA_LABEL = "QM5_41274_wti-m3block-rank-tr"
+QM5_41274_COMPILE_FAIL_REJECTED_SOURCE_SHA256 = (
+    "1d7541951d1c3ad7223f3d1b42e5fec53d77fa5bf21d20e721285dad4cfb031f"
+)
+QM5_41274_COMPILE_FAIL_REPAIRED_SOURCE_SHA256 = (
+    "01357e78417024d0719350511a8549c42d42a0fde315571158777e5291f1efd4"
+)
 # Exact append-only authority for the first governed QM5_41228 compile. The
 # predecessor compiled with zero errors and warnings but failed Q01 only
 # because two already-bounded shortest-half buffer accesses lacked the local
@@ -1344,6 +1365,53 @@ def _qm5_41264_compile_fail_repair_2_authorized(
     )
 
 
+def _qm5_41274_compile_fail_repair_authorized(
+    ea_label: str,
+    authority: str | None,
+    *,
+    ea_id: str | None,
+    source_sha: str | None,
+    inventory: dict[str, Any] | None,
+) -> bool:
+    """Bind the QM5_41274 bounds-proof repair to one failed compile."""
+    if (
+        authority != QM5_41274_COMPILE_FAIL_REPAIR_AUTHORITY
+        or ea_label != QM5_41274_COMPILE_FAIL_REPAIR_EA_LABEL
+        or ea_id != "41274"
+        or str(source_sha or "").lower()
+        != QM5_41274_COMPILE_FAIL_REPAIRED_SOURCE_SHA256
+        or inventory is None
+    ):
+        return False
+    predecessor = next(
+        (
+            row
+            for row in inventory.get("work_rows", {}).get(ea_id, [])
+            if str(row.get("id"))
+            == QM5_41274_COMPILE_FAIL_REPAIR_PREDECESSOR_ID
+        ),
+        None,
+    )
+    if predecessor is None:
+        return False
+    payload = _json_object(predecessor.get("payload_json"))
+    compile_result = payload.get("compile_result")
+    return bool(
+        predecessor.get("phase") == COMPILE_EA_PHASE
+        and predecessor.get("status") == "failed"
+        and predecessor.get("verdict") == "COMPILE_FAIL"
+        and payload.get("ea_label") == ea_label
+        and str(payload.get("mq5_sha256") or "").lower()
+        == QM5_41274_COMPILE_FAIL_REJECTED_SOURCE_SHA256
+        and payload.get("verdict_reason") == "EA_INDICATOR_BUFFER_UNBOUNDED"
+        and isinstance(compile_result, dict)
+        and compile_result.get("compile_result") == "PASS"
+        and compile_result.get("build_check_result") == "FAIL"
+        and compile_result.get("failure_classes")
+        == ["EA_INDICATOR_BUFFER_UNBOUNDED"]
+    )
+
+
 def _qm5_41228_compile_fail_repair_authorized(
     ea_label: str,
     authority: str | None,
@@ -1625,6 +1693,14 @@ def _source_repair_authorized(
         )
     if authority == QM5_41264_COMPILE_FAIL_REPAIR_2_AUTHORITY:
         return _qm5_41264_compile_fail_repair_2_authorized(
+            ea_label,
+            authority,
+            ea_id=ea_id,
+            source_sha=source_sha,
+            inventory=inventory,
+        )
+    if authority == QM5_41274_COMPILE_FAIL_REPAIR_AUTHORITY:
+        return _qm5_41274_compile_fail_repair_authorized(
             ea_label,
             authority,
             ea_id=ea_id,

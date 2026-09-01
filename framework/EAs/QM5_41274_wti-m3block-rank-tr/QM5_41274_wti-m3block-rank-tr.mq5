@@ -499,7 +499,12 @@ bool Strategy_LoadCompletedMonthCloses(const int current_month_key,
       if(month_key == prior_month_key)
         {
          prior_started = true;
-         if(!Strategy_BarCloseValid(bars[index]) ||
+         if(!Strategy_BarCloseValid(bars[index]))
+            return false;
+         // Keep the fail-fast bound mechanically tied to ArrayResize's
+         // governed input as well as the runtime array size.
+         if(session_count < 0 ||
+            session_count >= strategy_month_sessions_max ||
             session_count >= ArraySize(newest_closes))
             return false;
          const int date_key = Strategy_DateKeyForTime(normalized);
@@ -531,7 +536,9 @@ bool Strategy_LoadCompletedMonthCloses(const int current_month_key,
    for(int index = 0; index < strategy_close_count; ++index)
      {
       const int reverse_index = strategy_close_count - 1 - index;
-      if(reverse_index < 0 || reverse_index >= session_count)
+      if(reverse_index < 0 ||
+         reverse_index >= strategy_month_sessions_max ||
+         reverse_index >= session_count)
          return false;
       closes[index] = newest_closes[reverse_index];
       if(closes[index] <= 0.0 || !MathIsValidNumber(closes[index]))

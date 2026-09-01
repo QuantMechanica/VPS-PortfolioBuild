@@ -20,7 +20,7 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=ea_input_defaults
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_41274_wti-m3block-rank-tr.md
 strategy_month_sessions_min=17
 strategy_month_sessions_max=23
 strategy_close_count=15
