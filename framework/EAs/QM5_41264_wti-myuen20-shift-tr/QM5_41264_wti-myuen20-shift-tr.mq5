@@ -611,6 +611,8 @@ bool Strategy_Yuen20Block(const double &returns[],
        index < strategy_block_size - strategy_trim_each_tail;
        ++index)
      {
+      if(index < 0 || index >= ArraySize(sorted))
+         return false;
       trimmed_sum += sorted[index];
       if(!MathIsValidNumber(trimmed_sum))
          return false;
@@ -634,6 +636,9 @@ bool Strategy_Yuen20Block(const double &returns[],
          source_index = strategy_trim_each_tail;
       else if(index > upper_index)
          source_index = upper_index;
+      if(index < 0 || index >= ArraySize(winsorized) ||
+         source_index < 0 || source_index >= ArraySize(sorted))
+         return false;
       winsorized[index] = sorted[source_index];
       winsor_sum += winsorized[index];
       if(!MathIsValidNumber(winsorized[index]) ||
@@ -647,6 +652,8 @@ bool Strategy_Yuen20Block(const double &returns[],
    double winsor_ss = 0.0;
    for(int index = 0; index < strategy_block_size; ++index)
      {
+      if(index < 0 || index >= ArraySize(winsorized))
+         return false;
       const double difference = winsorized[index] - winsor_mean;
       const double square = difference * difference;
       if(!MathIsValidNumber(difference) ||

@@ -294,6 +294,8 @@ class WtiMonthlyYuen20ReferenceTests(unittest.TestCase):
             "bool Strategy_Yuen20Signal",
             "ArraySort(sorted);",
             "upper_index != 7",
+            "index >= ArraySize(sorted)",
+            "index >= ArraySize(winsorized)",
             "winsor_ss / (double)strategy_wvar_divisor",
             "metrics.winsor_var_old / (double)strategy_effective_size",
             "Strategy_RecordMonthAttempt(g_decision_month_key)",
