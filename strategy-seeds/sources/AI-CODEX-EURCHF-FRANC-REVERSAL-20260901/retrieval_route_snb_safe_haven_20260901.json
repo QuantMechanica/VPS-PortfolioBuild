@@ -1,0 +1,10 @@
+{
+  "adapter": "generic",
+  "adapter_state": "ROUTER_ONLY",
+  "lead_status": "DEFERRED:SOURCE_POLICY",
+  "next_action": "review the source policy and defer the lead",
+  "reason": "generic runtime retrieval is disabled until a cryptographic OWNER authorization verifier exists",
+  "retrieved_at": null,
+  "status": "PERMISSION_REQUIRED",
+  "url": "https://www.snb.ch/en/publications/research/working-papers/2007/working_paper_2007_17"
+}
