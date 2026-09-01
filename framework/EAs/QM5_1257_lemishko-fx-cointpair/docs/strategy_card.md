@@ -111,6 +111,17 @@ empirical pipeline question.
   on 52 trades. The aggregate is bound to the same EX5 and fixed-risk setfile
   as Q02. No Q05 successor exists; the exact GBPUSD/USDJPY binding is retired
   without a rerun, refit, filter, or rescue.
+- Q03 V4 rebaseline: 2026-08-31, OWNER decision
+  `OWNER-DEC-BACKFILL-TRANCHE-1=YES` authorized one exact-identity rebaseline
+  row, `162a6230-d6fa-424c-a539-b873cc9a5559`, for the same slot-8
+  GBPUSD/USDJPY basket. The row is pending once with the Q02 PASS as its
+  predecessor. It does not erase the historical Q04 FAIL, authorize Q05, or
+  permit a refit, threshold change, added filter, or pair substitution.
+- Current-source preflight: 2026-09-02, strict hardening reports
+  `EA_Q08_MAE_HOOK_MISSING`, and card-to-source review finds the required
+  combined-pair 1.5R stop declaration-only (`strategy_r_stop`). No source,
+  binary, setfile, manifest, queue, or strategy parameter was changed; a
+  governed source-repair/rebuild authority is required before rebinding.
 
 ## Verwandte Strategien
 - [[strategies/QM5_1129_gatev-distance-pairs]] - distance-based pairs; this card uses cointegration and Forex pairs.

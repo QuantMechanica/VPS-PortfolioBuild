@@ -1,0 +1,160 @@
+{
+  "schema": "qm.fx-cointegration-existing-fallback-preflight/v1",
+  "recorded_at_utc": "2026-09-01T22:42:21Z",
+  "recorded_date_europe_berlin": "2026-09-02",
+  "branch": "agents/board-advisor",
+  "observation_base": "36e02783da0227ef9715a4bb3d5e1a8f1b58c58a",
+  "outcome": "EXISTING_FX_FALLBACK_PREFLIGHT_BLOCKED_REPAIR_AUTHORITY_REQUIRED",
+  "frontier": {
+    "source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "unordered_relationships": 66,
+    "uncovered_sign_aware_identities": 0,
+    "new_card_or_build_created": false,
+    "reason": "Every reviewed scan identity is already represented; another card would be duplicate work."
+  },
+  "anchors": {
+    "QM5_12532": {
+      "pair": ["AUDUSD.DWX", "NZDUSD.DWX"],
+      "q02": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL"
+    },
+    "QM5_12533": {
+      "pair": ["EURJPY.DWX", "GBPJPY.DWX"],
+      "q02": "PASS",
+      "later_state": "Q04_FAIL"
+    },
+    "current_q02_oninit_or_no_history_blocker": false
+  },
+  "selected_existing_sleeve": {
+    "ea_id": "QM5_1257",
+    "ea_label": "QM5_1257_lemishko-fx-cointpair",
+    "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1",
+    "pair": ["GBPUSD.DWX", "USDJPY.DWX"],
+    "host_symbol": "GBPUSD.DWX",
+    "timeframe": "H1",
+    "scan_rank": 58,
+    "low_frequency": true,
+    "machine_learning": false,
+    "structural_method": "monthly frozen Engle-Granger/OLS qualification with H1 residual z-score",
+    "source": {
+      "authors": "Tetiana Lemishko, Alexandre Landi, Juliana Caicedo-Llano",
+      "year": 2024,
+      "locator": "SSRN 4771108"
+    },
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1,
+      "tester_currency": "USD",
+      "tester_deposit": 100000
+    }
+  },
+  "material_branch_delta": {
+    "spec_added": "framework/EAs/QM5_1257_lemishko-fx-cointpair/SPEC.md",
+    "strategy_card_lineage_updated": "framework/EAs/QM5_1257_lemishko-fx-cointpair/docs/strategy_card.md",
+    "strategy_source_changed": false,
+    "binary_changed": false,
+    "setfile_changed": false,
+    "basket_manifest_changed": false,
+    "queue_changed": false
+  },
+  "exact_identity": {
+    "mq5_sha256": "f1e0bc08e65c6b46eea7c1397551ebb6c17aa466b48ef1d48d67e573361b9b27",
+    "ex5_sha256": "cc4337c6cfc05a734cc75d30f85af6a07136739017314f27efc7535eceb65516",
+    "basket_manifest_sha256": "518ac63c8b796fbf3f397fc11a59b294d940afb4ec727e64f318ce0303b3c8f3",
+    "logical_setfile_sha256": "f7efb0a2183acdaee85f0882a0858447014f970a2e5782227e1c4980e98298d4",
+    "pending_payload_matches_disk": true,
+    "mechanical_setfile_comment_refresh_reversed": true
+  },
+  "lineage": {
+    "q02": {
+      "work_item_id": "d4cd660c-c81a-41d3-8a4c-ad21d3319816",
+      "status": "done",
+      "verdict": "PASS",
+      "trades": 290
+    },
+    "historical_q04": {
+      "work_item_id": "d48dfb37-d28b-4e9d-aebe-376b7afe12dd",
+      "status": "done",
+      "verdict": "FAIL",
+      "preserved": true
+    },
+    "v4_q03": {
+      "work_item_id": "162a6230-d6fa-424c-a539-b873cc9a5559",
+      "status": "pending",
+      "claimed_by": null,
+      "attempt_count": 0,
+      "priority_track": true,
+      "open_exact_identity_count": 1,
+      "owner_decision": "OWNER-DEC-BACKFILL-TRANCHE-1=YES"
+    }
+  },
+  "blocking_findings": [
+    {
+      "code": "EA_Q08_MAE_HOOK_MISSING",
+      "class": "AUTOMATED_STRICT_BUILD_HARDENING",
+      "source_line": 744,
+      "detail": "Framework-managed OnTick has no direct QM_FrameworkTrackOpenPositionMae call.",
+      "receipt": "D:/QM/reports/framework/21/build_check_20260901_222803.json",
+      "receipt_sha256": "f1f91d1bbbee9cf6336a70701c788bc3eeefb6d6cab615af689f418384ae0c93"
+    },
+    {
+      "code": "CARD_COMBINED_1_5R_STOP_NOT_ENFORCED",
+      "class": "CARD_TO_SOURCE_REVIEW",
+      "source_declaration_line": 43,
+      "identifier": "strategy_r_stop",
+      "source_occurrence_count": 1,
+      "detail": "The approved combined-pair 1.5R stop is declaration-only; per-leg ATR stops do not prove the package-level rule."
+    },
+    {
+      "code": "UNUSED_LEGACY_COINTEGRATION_EXIT_INPUT",
+      "class": "CARD_TO_SOURCE_REVIEW",
+      "source_declaration_line": 39,
+      "identifier": "strategy_coint_exit_p",
+      "source_occurrence_count": 1,
+      "detail": "The card does not authorize inventing a separate 0.10 exit mechanic during this preflight."
+    }
+  ],
+  "governance": {
+    "mae_emergency_allowlist": ["QM5_12947", "QM5_12948", "QM5_12949", "QM5_12950", "QM5_12951", "QM5_12952"],
+    "qm5_1257_authorized_for_force_rebuild": false,
+    "source_repair_authority_available": false,
+    "source_edit_refused_to_preserve_pending_hash_binding": true,
+    "compile_enqueued": false,
+    "duplicate_q03_enqueued": false,
+    "safe_continuation": "Issue an exact one-EA OWNER/router source-repair authority, repair both reviewed source defects, compile through COMPILE_EA, and create a fresh append-only execution binding."
+  },
+  "capacity": {
+    "samples_percent": [59.565424, 36.720120, 28.519358, 25.162314, 24.164439],
+    "average_percent": 34.826331,
+    "maximum_percent": 59.565424,
+    "ceiling_percent": 97,
+    "ceiling_hit": false,
+    "active_serialized_work_item": {
+      "id": "def7ed06-f196-5cf7-827b-e569a7cf23cb",
+      "ea_id": "QM5_41196",
+      "phase": "OPT_CENSUS",
+      "symbol": "XAUUSD.DWX",
+      "claimed_by": "T3"
+    },
+    "target_dispatch_used": false,
+    "second_multisymbol_tester_started": false
+  },
+  "validation": {
+    "spec_validator": {"passed": 1, "failed": 0},
+    "card_schema_lint": {"status": "ok", "missing_sections": [], "ml_hits": []},
+    "build_guardrails": {"verdict": "PASS", "files_checked": 45, "findings": []},
+    "basket_work_item_tests": {"passed": 18, "failed": 0},
+    "strict_build_hardening": {"verdict": "FAIL", "failure_codes": ["EA_Q08_MAE_HOOK_MISSING"]},
+    "diff_check": "PASS_WITH_LINE_ENDING_WARNING"
+  },
+  "safety": {
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_terminal_controlled": false,
+    "autotrading_toggled": false,
+    "unrelated_worktree_changes_preserved": true
+  }
+}
