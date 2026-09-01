@@ -1,0 +1,195 @@
+{
+  "schema_version": "qm.fx-existing-basket-q04-append-retry/v1",
+  "generated_at_utc": "2026-09-01T08:58:18.0116722Z",
+  "mission": "grow_certified_v5_portfolio_new_forex_sleeves",
+  "git": {
+    "branch": "agents/board-advisor",
+    "head_before_evidence_commit": "4fb9fccae0b2a0ff01e9b86ab975832d7846e09c"
+  },
+  "selection": {
+    "mode": "existing_forex_card_fallback_no_unbuilt_66_pair_candidate",
+    "ea_id": "QM5_12741",
+    "ea_label": "QM5_12741_nnfx-fx-basket-pooled",
+    "logical_symbol": "QM5_12741_NNFX_FX_BASKET_D1",
+    "controlling_scan": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "frontier_census": "docs/research/FX_COINTEGRATION_QM5_20240_Q04_RETIREMENT_20260831T233713Z.md",
+    "approved_cointegration_identities": 123,
+    "matching_ea_directories": 123,
+    "unbuilt_cointegration_identities": 0,
+    "anchor_status": {
+      "QM5_12532": [
+        "Q02_PASS",
+        "Q04_PASS",
+        "Q05_FAIL"
+      ],
+      "QM5_12533": [
+        "Q02_PASS",
+        "Q04_FAIL"
+      ]
+    },
+    "anchor_q02_oninit_or_no_history_blocker": false,
+    "new_card_created": false,
+    "new_ea_created": false,
+    "selection_reason": "The governed pair frontier is exhausted and both preferred anchors are past Q02. This existing D1 FX basket had a Q02 PASS, a Q03 PASS, and only a Q04 infrastructure failure with no open retry or Q05 successor."
+  },
+  "strategy_contract": {
+    "approved_card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_12741_nnfx-fx-basket-pooled.md",
+    "source_family": "published canonical No Nonsense Forex stack",
+    "signal_family": "deterministic pooled D1 trend",
+    "timeframe": "D1",
+    "expected_trades_per_year_per_member": 3,
+    "machine_learning": false,
+    "grid": false,
+    "martingale": false,
+    "online_refit": false,
+    "banned_indicator_hits": [],
+    "alpha_or_parameter_change": false,
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "portfolio_weight": 1.0,
+    "basket_manifest": "framework/EAs/QM5_12741_nnfx-fx-basket-pooled/basket_manifest.json",
+    "host_symbol": "AUDUSD.DWX",
+    "host_timeframe": "D1",
+    "basket_symbols": [
+      "AUDUSD.DWX",
+      "EURUSD.DWX",
+      "GBPUSD.DWX",
+      "USDCHF.DWX"
+    ]
+  },
+  "lineage_before": [
+    {
+      "phase": "Q02",
+      "work_item_id": "cab41d73-7573-4648-b58d-ce9fa6df26b3",
+      "status": "done",
+      "verdict": "PASS"
+    },
+    {
+      "phase": "Q03",
+      "work_item_id": "bf4f1a14-2d2f-4caf-9d94-8076560d8b8d",
+      "status": "done",
+      "verdict": "PASS"
+    },
+    {
+      "phase": "Q04",
+      "work_item_id": "fc9e29f1-9729-478f-96fb-dd7dcdb5978d",
+      "status": "done",
+      "verdict": "INFRA_FAIL",
+      "verdict_taxonomy": "infra",
+      "reason": "F3:invalid_summary:BARS_ZERO,EMPTY_EXPERT,EMPTY_SYMBOL,HISTORY_CONTEXT_INVALID,INCOMPLETE_RUNS,M0_1970_PERIOD,NO_HISTORY,RUN_STATUS_INVALID"
+    }
+  ],
+  "duplicate_preflight": {
+    "q04_rows": 1,
+    "open_q04_rows": 0,
+    "exact_append_only_descendants": 0,
+    "checked_before_enqueue": true
+  },
+  "cpu_preflight": {
+    "sampled_at_utc": "2026-09-01T08:55:18.6022089Z",
+    "samples_percent": [
+      92.481259,
+      86.670332,
+      93.074082,
+      85.953019,
+      89.264302
+    ],
+    "average_percent": 89.488599,
+    "maximum_percent": 93.074082,
+    "ceiling_percent": 97.0,
+    "ceiling_hit": false
+  },
+  "state_backup": {
+    "path": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12741_q04_append_retry_20260901T085518Z.sqlite",
+    "bytes": 734773248,
+    "sha256": "6368286688696a5711b75ce700bc3155526ffd96ec4350784c715c8f333cf495",
+    "sqlite_integrity_check": "ok",
+    "work_item_count": 121888
+  },
+  "enqueue": {
+    "enqueued": true,
+    "phase": "Q04",
+    "work_item_id": "4776406a-a34e-4867-983c-8f3b420e9e92",
+    "created_at_utc": "2026-09-01T08:55:55+00:00",
+    "status_after": "pending",
+    "claimed_by_after": null,
+    "from_work_item_id": "bf4f1a14-2d2f-4caf-9d94-8076560d8b8d",
+    "append_only_rerun_of": "fc9e29f1-9729-478f-96fb-dd7dcdb5978d",
+    "rerun_reason": "current factory history-window clamp; append-only retry after Q04 F3 NO_HISTORY infrastructure failure",
+    "historical_work_item_preserved": true,
+    "gate_contract_version": "v4",
+    "timeout_min": 316,
+    "expected_symbol": "AUDUSD.DWX",
+    "expected_period": "D1",
+    "expected_expert": "QM\\QM5_12741_nnfx-fx-basket-pooled",
+    "artifact_sha256": {
+      "ex5": "47c92e1a7f3ba5ef3578f11065368d581b1f7385768eb716371a95b5b57853be",
+      "mq5": "72bea21c0237c38f79053148515e12d33c8b806483c16b30e23cc19cb5e8157f",
+      "setfile": "1d6cc31f683f27598a4a8a31d960a2c2a43fff0b394dc9280dff2e1fb30f0c51",
+      "basket_manifest": "c4e3e1629364122d7f267e8ee911f3e9b36718a9aebbb3487c2afd385c22119d"
+    },
+    "custom_history_archive_admission": {
+      "status": "ACTIVE",
+      "activation_sha256": "61c8c72ccb0cb8038ae6ece7b89aa68f602b1637d8bc6b6c866f38492139134e",
+      "manifest_path": "D:/QM/strategy_farm/artifacts/ops/custom_history_custom_history_variant_a_20260809/archive_manifest_owner_approved.json",
+      "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+      "selected_archive_rows": 432
+    },
+    "open_q04_rows_after": 1,
+    "exact_append_only_descendants_after": 1,
+    "duplicate_work_item_created": false
+  },
+  "paced_fleet_after": {
+    "manual_dispatch_started": false,
+    "manual_tester_started": false,
+    "target_terminal_reserved": false,
+    "target_work_item_claimed": false,
+    "multisymbol_lane_terminal": "T8",
+    "multisymbol_lane_work_item_id": "f9ccf272-d66e-4a68-b332-76133baab427",
+    "multisymbol_lane_ea_id": "QM5_20233",
+    "multisymbol_lane_phase": "Q03"
+  },
+  "cpu_after_enqueue": {
+    "sampled_at_utc": "2026-09-01T08:57:01.8327919Z",
+    "samples_percent": [
+      82.742626,
+      88.706566,
+      88.68439,
+      82.342727,
+      85.367737
+    ],
+    "average_percent": 85.568809,
+    "maximum_percent": 88.706566,
+    "ceiling_percent": 97.0,
+    "ceiling_hit": false
+  },
+  "validation": {
+    "repository_tests": {
+      "command": "python -m pytest -q tools/strategy_farm/tests/test_candidate_repair_enqueue.py::test_append_only_q04_accepts_one_exact_q03_pass_predecessor tools/strategy_farm/tests/test_farmctl_cascade.py::AppendOnlyCascadeRerunTests tools/strategy_farm/tests/test_farmctl_cascade.py::CascadePromotionTests::test_q04_promotion_clamps_basket_latest_year_from_cache tools/strategy_farm/tests/test_fx_basket_manifests.py",
+      "result": "PASS",
+      "passed": 52,
+      "duration_seconds": 11.06
+    },
+    "build_check": {
+      "compile_requested": false,
+      "result": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+      "reason": "The safety guard found live terminal64 processes. No compile or retry was attempted.",
+      "prior_hash_stable_skip_compile_pass": "docs/ops/evidence/2026-08-17_qm5_12741_q04_append_retry_cpu_stop_182604Z.md"
+    }
+  },
+  "safety": {
+    "portfolio_gate_changed": false,
+    "portfolio_admission_changed": false,
+    "portfolio_kpi_changed": false,
+    "q08_contribution_changed": false,
+    "t_live_manifest_changed": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false,
+    "strategy_card_changed": false,
+    "ea_source_changed": false,
+    "ex5_changed": false,
+    "setfile_changed": false,
+    "basket_manifest_changed": false,
+    "registry_or_magic_changed": false
+  }
+}
