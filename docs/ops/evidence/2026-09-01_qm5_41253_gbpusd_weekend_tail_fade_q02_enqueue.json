@@ -1,0 +1,62 @@
+{
+  "schema_version": "qm.q02-enqueue-receipt/v1",
+  "recorded_at_utc": "2026-09-01T00:10:39+00:00",
+  "branch": "agents/board-advisor",
+  "task_id": "13856e51-aaed-47fd-a8de-6db0934b07d8",
+  "ea_id": "QM5_41253",
+  "ea_label": "QM5_41253_gbpusd-weekend-tail-fade",
+  "strategy_id": "AI-CODEX-GBP-WGAP-TAIL-20260831_S01",
+  "compile": {
+    "work_item_id": "e0a98323-dfb0-43c4-aece-2d94f669901f",
+    "status": "done",
+    "verdict": "COMPILE_OK",
+    "build_check_result": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "mq5_sha256": "b25cef9ce1a45c9f130f059cf9f657f6f1193ab97215809ce6f4924a22034f93",
+    "ex5_sha256": "457713872a5d0cad55d56d76fd1e09f93dbf0c17046867c04c94e8287b394f27",
+    "setfile_sha256": "b21edc272727fb4afe5bdfb3afabc1ffef007f3e6a6bd9dbaaec4b72df3dbb2d",
+    "compile_evidence_sha256": "c35947535947144d7919fddf8c215c9a1182fe38b1db3f0ee9362132724db336"
+  },
+  "q02": {
+    "work_item_id": "274bb48e-2444-40c1-aa64-750bb38e2239",
+    "status_at_receipt": "pending",
+    "verdict_at_receipt": null,
+    "attempt_count_at_receipt": 0,
+    "claimed_by_at_receipt": null,
+    "enqueued_by": "record_build_result.auto_q02",
+    "enqueued_at_utc": "2026-09-01T00:10:39+00:00",
+    "priority_track": true,
+    "fanout_policy": "qm-q02-canary-fanout/v1",
+    "fanout_canary": false,
+    "cohort_size": 1,
+    "symbol": "GBPUSD.DWX",
+    "timeframe": "D1",
+    "setfile": "framework/EAs/QM5_41253_gbpusd-weekend-tail-fade/sets/QM5_41253_gbpusd-weekend-tail-fade_GBPUSD.DWX_D1_backtest.set",
+    "gate_contract_version": "v4",
+    "sh3_enforced": true
+  },
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1,
+    "qm_news_stale_max_hours": 336
+  },
+  "custom_history_archive_admission": {
+    "status": "ACTIVE",
+    "activation_sha256": "61c8c72ccb0cb8038ae6ece7b89aa68f602b1637d8bc6b6c866f38492139134e",
+    "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+    "selected_archive_rows": 108
+  },
+  "admission": {
+    "queue_accepted": true,
+    "agent_dispatched_backtest": false,
+    "agent_waited_for_q02_result": false
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "t_live_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false
+  }
+}
