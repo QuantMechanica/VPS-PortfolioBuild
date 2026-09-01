@@ -1,0 +1,19 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "3f211d8b4fd63c833c61fdbbca4417d14272d5c27d5df99e13b93fcfd1fb5fd2",
+      "ea_id": "QM5_41264",
+      "ea_label": "QM5_41264_wti-myuen20-shift-tr",
+      "expected_mq5_sha256": "3f211d8b4fd63c833c61fdbbca4417d14272d5c27d5df99e13b93fcfd1fb5fd2",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41264_wti-myuen20-shift-tr\\QM5_41264_wti-myuen20-shift-tr.mq5",
+      "work_item_id": "cb8bbc1b-770a-46fb-a9d7-a1e28c7d2bc7"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "cb8bbc1b-770a-46fb-a9d7-a1e28c7d2bc7"
+}
