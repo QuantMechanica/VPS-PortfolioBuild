@@ -4,7 +4,7 @@
 **Slug:** `codetrading-bollinger-engulfing-reversal`
 **Source:** `codetrading-bollinger-engulfing-reversal-official-source`
 **Author of this spec:** Codex
-**Last revised:** 2026-08-24
+**Last revised:** 2026-09-01
 
 ---
 
@@ -68,7 +68,7 @@ backtests while `RISK_FIXED=1000`; a future OWNER-approved live setfile may set
 |---|---|
 | Base timeframe | `H1` |
 | Multi-timeframe refs | none |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)`; all indicator and candle reads use completed H1 bar `[1]` |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_H1)`; all indicator and candle reads use completed H1 bar `[1]` |
 
 ---
 
@@ -112,3 +112,4 @@ authorize live use.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-24 | Initial build from approved card | build-QM5_38003_codetrading-bollinger-engulfing-reversal |
+| v2 | 2026-09-01 | Paced-fleet Q01 completion | Task `2e8d6151-2c09-4872-93b7-eed1298d6b54`; corrected the realized-loss gate, bound the H1/weekend execution contract, and made the middle-band partial exit restart-safe via deal-history reconstruction. |

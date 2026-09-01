@@ -1,0 +1,50 @@
+{
+  "task_id": "2e8d6151-2c09-4872-93b7-eed1298d6b54",
+  "ea_id": "QM5_38003",
+  "ea_dir": "framework/EAs/QM5_38003_codetrading-bollinger-engulfing-reversal",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_38003_codetrading-bollinger-engulfing-reversal\\QM5_38003_codetrading-bollinger-engulfing-reversal.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_38003_codetrading-bollinger-engulfing-reversal\\QM5_38003_codetrading-bollinger-engulfing-reversal.ex5",
+  "magic_base": 380030000,
+  "symbols_registered": [
+    "EURUSD.DWX",
+    "GBPJPY.DWX",
+    "AUDUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_38003_codetrading-bollinger-engulfing-reversal\\sets\\QM5_38003_codetrading-bollinger-engulfing-reversal_EURUSD.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_38003_codetrading-bollinger-engulfing-reversal\\sets\\QM5_38003_codetrading-bollinger-engulfing-reversal_GBPJPY.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_38003_codetrading-bollinger-engulfing-reversal\\sets\\QM5_38003_codetrading-bollinger-engulfing-reversal_AUDUSD.DWX_H1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_38003_codetrading-bollinger-engulfing-reversal\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "blocked_reason": "user_cpu_ceiling_stop at 2026-09-01T02:59Z: four samples were 98.0/98.1/97.5/93.0 percent CPU; the concurrent census found six tester-owned factory terminals (T10/T3/T4/T6/T7/T8). No smoke or Q02 backtest was launched.",
+  "open_questions": [
+    "Resume the governed Q01 smoke and Q02 enqueue when backtest CPU capacity is available."
+  ],
+  "symbols_registry_state": "preallocated_active_rows_validated; no registry rows appended",
+  "compile": {
+    "work_item_id": "e78e5d37-e10f-4366-99af-707a94a587e1",
+    "terminal_claim": "T9",
+    "evidence_path": "D:\\QM\\reports\\work_items\\e78e5d37-e10f-4366-99af-707a94a587e1\\QM5_38003\\COMPILE_EA\\compile_evidence.json",
+    "build_check_result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "mq5_sha256": "4e7c155014e3def5823acfac1bbb13a0f4655464fffebf4098f8adb3cbddcb72",
+    "ex5_sha256": "51142c0ff08a6b890d192d86ef83daf2150e1cb335c496f66c188ce77329207a"
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "manual_backtest_launched": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false,
+    "t_live_manifest_touched": false
+  }
+}

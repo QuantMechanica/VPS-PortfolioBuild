@@ -1,0 +1,19 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "4e7c155014e3def5823acfac1bbb13a0f4655464fffebf4098f8adb3cbddcb72",
+      "ea_id": "QM5_38003",
+      "ea_label": "QM5_38003_codetrading-bollinger-engulfing-reversal",
+      "expected_mq5_sha256": "4e7c155014e3def5823acfac1bbb13a0f4655464fffebf4098f8adb3cbddcb72",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_38003_codetrading-bollinger-engulfing-reversal\\QM5_38003_codetrading-bollinger-engulfing-reversal.mq5",
+      "work_item_id": "e78e5d37-e10f-4366-99af-707a94a587e1"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "e78e5d37-e10f-4366-99af-707a94a587e1"
+}
