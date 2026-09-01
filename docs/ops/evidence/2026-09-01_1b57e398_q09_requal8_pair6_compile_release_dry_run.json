@@ -1,0 +1,19 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "a7dd265ed7d3a2b91bf8937451093e2285a1720b87406292e0ff4589f7ac6942",
+      "ea_id": "QM5_41220",
+      "ea_label": "QM5_41220_grimes-context-pb-requal8",
+      "expected_mq5_sha256": "a7dd265ed7d3a2b91bf8937451093e2285a1720b87406292e0ff4589f7ac6942",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41220_grimes-context-pb-requal8\\QM5_41220_grimes-context-pb-requal8.mq5",
+      "work_item_id": "ae18a45e-c0f7-4434-9ae4-d00811ebcc12"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "ae18a45e-c0f7-4434-9ae4-d00811ebcc12"
+}
