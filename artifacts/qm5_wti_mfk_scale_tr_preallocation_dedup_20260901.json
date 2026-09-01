@@ -1,0 +1,47 @@
+{
+  "candidate": {
+    "author": "OpenAI Codex; Michael A. Fligner; Timothy J. Killeen; Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen; SciPy community",
+    "mechanic": "monthly-wti-twelve-completed-log-returns-fixed-six-old-six-recent-group-median-absolute-deviations-pooled-midrank-normal-scores-fligner-killeen-recent-scale-expansion-recent-cumulative-return-continuation",
+    "slug": "wti-mfk-scale-tr",
+    "strategy_id": "AI-CODEX-WTI-MFK-SCALE-20260901_S01"
+  },
+  "error": null,
+  "exit_code": 3,
+  "generated_at_utc": "2026-09-01T10:05:07+00:00",
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41261_wti-mab-scale-tr_card.md",
+      "score": 1.0,
+      "slug": "wti-mab-scale-tr",
+      "source": "card",
+      "strategy_id": "AI-CODEX-WTI-MAB-SCALE-20260901_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4765,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1402,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "FUZZY_MATCH"
+}

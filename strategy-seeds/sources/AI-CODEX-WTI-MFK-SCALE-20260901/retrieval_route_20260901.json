@@ -1,0 +1,51 @@
+{
+  "schema": "qm.public-method-retrieval.v1",
+  "retrieved_at_utc": "2026-09-01T10:02:00Z",
+  "route": "publisher_metadata_boundary_plus_complete_official_documentation_and_signed_tag_pinned_source",
+  "paper": {
+    "title": "Distribution-Free Two-Sample Tests for Scale",
+    "authors": [
+      "Michael A. Fligner",
+      "Timothy J. Killeen"
+    ],
+    "journal": "Journal of the American Statistical Association",
+    "volume_issue_pages": "71(353), 210-213",
+    "year": 1976,
+    "doi": "10.1080/01621459.1976.10481517",
+    "doi_url": "https://doi.org/10.1080/01621459.1976.10481517",
+    "publisher_url": "https://www.tandfonline.com/doi/abs/10.1080/01621459.1976.10481517",
+    "indexed_metadata_and_abstract_read": true,
+    "direct_http_status": 403,
+    "access_boundary": "Publisher metadata and abstract were read through the indexed publisher record. Direct scripted retrieval returned HTTP 403; no complete-paper body read, derivation reconstruction, or paper-file hash is claimed."
+  },
+  "official_implementation_record": {
+    "project": "scipy/scipy",
+    "release": "1.18.0",
+    "tag_object_sha": "7adb8c972443f664b9395a0e6e8e0283e9b4faff",
+    "commit_sha": "54ef5423f2e4376230ec3bfda6912a07a50958e3",
+    "tag_signature_verified_by_github": true,
+    "documentation_url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.fligner.html",
+    "documentation_http_status": 200,
+    "documentation_utf8_length_bytes": 38972,
+    "documentation_utf8_sha256": "FDDA1CD8EA8ACC8138644F92F853305317E6B79EA7BF421907A3C9330E2BC8F1",
+    "source_url": "https://github.com/scipy/scipy/blob/v1.18.0/scipy/stats/_morestats.py",
+    "raw_source_url": "https://raw.githubusercontent.com/scipy/scipy/v1.18.0/scipy/stats/_morestats.py",
+    "raw_source_http_status": 200,
+    "raw_source_utf8_length_bytes": 194421,
+    "raw_source_utf8_sha256": "8A933E5FEF233ED33E2AEF5CC82403FAA25849C6F157907F82ADD9323767E53F",
+    "bounded_read": {
+      "complete_documentation_read": true,
+      "source_scope_read": "scipy.stats.fligner implementation and its immediately associated documentation",
+      "verified_claims": [
+        "the median is the default within-sample center",
+        "each sample is transformed to absolute deviations from its own center",
+        "the pooled deviations receive midranks",
+        "each rank is transformed by Phi^-1(rank/(2*(N+1))+0.5)",
+        "the statistic divides the weighted between-group normal-score dispersion by the pooled sample variance of the scores",
+        "the returned null comparison is chi-square with k-1 degrees of freedom"
+      ]
+    }
+  },
+  "claim_boundary": "The records support a distribution-free scale-method identity and exact implementation arithmetic only. They do not test WTI, fixed six-by-six monthly blocks, recent-only scale direction, cumulative-return continuation, CFDs, fixed risk, activity, or performance. The EA imports no SciPy, Python, p-value, chi-square distribution, or executable source."
+}
+
