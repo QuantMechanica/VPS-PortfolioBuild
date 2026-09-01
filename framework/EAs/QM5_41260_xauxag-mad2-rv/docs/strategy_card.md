@@ -82,7 +82,7 @@ r1_track_record: PASS_WITH_AI_SYNTHESIS_AND_PRIMARY_METHOD_EVIDENCE
 r1_reasoning: "One durable AI-originated source with complete governed peer-reviewed gold/silver evidence and adverse findings, official exchange carrier research, a complete peer-reviewed Anderson-Darling paper, pinned official SciPy documentation/source, hashes, and explicit no-performance boundaries."
 r2_mechanical: PASS
 r2_reasoning: "Month clock, synchronization, endpoints, adjacent changes, fixed blocks, strict ties, all eleven pooled-rank cuts, continuous formula, all 924 assignments, inclusive half-tail, side, attempt, aggregate risk, atomicity, and lifecycle are deterministic and locked."
-r3_data_available: PASS_WITH_CALENDAR_SYNCHRONIZATION_AND_CFD_BASIS_RISK
+r3_data_available: PASS
 r3_reasoning: "Registered native XAUUSD.DWX and XAGUSD.DWX D1 histories and MT5 state supply every runtime input; synchronization, continuous-CFD basis, financing, and legging risks remain explicit."
 r4_ml_forbidden: PASS
 r4_reasoning: "Only timestamps, completed prices, logarithms, sorting, fixed finite integer loops, arithmetic, comparisons, ATR risk controls, quotes, positions, deals, and persistent state; no trained output, prohibited signal indicator, random runtime sampling, or external runtime feed."
