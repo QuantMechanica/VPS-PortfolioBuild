@@ -16,7 +16,8 @@ method_records:
   - SCIPY-ANDERSON-KSAMP-1.13.1
 created: 2026-09-01
 created_by: Research+Development
-cards_extracted: []
+cards_extracted:
+  - QM5_41260_xauxag-mad2-rv
 ---
 
 # XAU/XAG Exact-Permutation Anderson-Darling Reversion Source Packet
