@@ -26,13 +26,9 @@ from typing import Any
 try:
     import compile_work_items as cwi
     from factory_mutation_lock import FactoryMutationLock
-    from work_item_supersedes import ensure_schema as ensure_supersedes_schema
 except ModuleNotFoundError:
     from tools.strategy_farm import compile_work_items as cwi
     from tools.strategy_farm.factory_mutation_lock import FactoryMutationLock
-    from tools.strategy_farm.work_item_supersedes import (
-        ensure_schema as ensure_supersedes_schema,
-    )
 
 
 DEFAULT_ROOT = Path(r"D:\QM\strategy_farm")
@@ -44,6 +40,9 @@ EA_LABEL = cwi.QM5_41285_UNBOUND_COMPILE_RETRY_EA_LABEL
 EA_ID = "QM5_41285"
 NUMERIC_EA_ID = "41285"
 SOURCE_SHA256 = cwi.QM5_41285_UNBOUND_COMPILE_RETRY_SOURCE_SHA256
+PREDECESSOR_PREIMAGE_SHA256 = (
+    "e0805da9f88ecd6dd67599d989a152e618fd4ca2720d6ac7622e43be32dac2c6"
+)
 RETRY_CONTRACT = cwi.QM5_41285_UNBOUND_COMPILE_RETRY_CONTRACT_VERSION
 RETRY_AUTHORITY = cwi.QM5_41285_UNBOUND_COMPILE_RETRY_AUTHORITY
 RETRY_REASON = "COMPILE_ENQUEUED_BEFORE_BUILD_TASK_BINDING"
@@ -275,8 +274,8 @@ def acquire_backup_write_guard(
     later writers once admitted, and still permits the separate backup reader.
     The short bound matters: a writer that predates the filesystem lock may
     itself need that lock to finish, so this attempt releases and retries
-    instead of creating a cross-lock convoy.  The transaction is always rolled
-    back without changing the database.
+    instead of creating a cross-lock convoy.  The caller owns the admitted
+    transaction and must either commit the exact append or roll it back.
     """
 
     db = root / "state" / "farm_state.sqlite"
@@ -285,14 +284,15 @@ def acquire_backup_write_guard(
     last_error = ""
     while time.monotonic() - started < timeout_seconds:
         attempts += 1
-        guard = sqlite3.connect(db, timeout=30)
-        guard.execute("PRAGMA busy_timeout=30000")
+        guard = sqlite3.connect(db, timeout=5)
+        guard.row_factory = sqlite3.Row
+        guard.execute("PRAGMA busy_timeout=5000")
         try:
             guard.execute("BEGIN IMMEDIATE")
             return guard, {
                 "attempts": attempts,
                 "wait_seconds": round(time.monotonic() - started, 3),
-                "transaction": "BEGIN IMMEDIATE / no writes / ROLLBACK",
+                "transaction": "BEGIN IMMEDIATE / caller-owned",
             }
         except sqlite3.OperationalError as exc:
             guard.close()
@@ -313,13 +313,6 @@ def apply_retry(
     backup_dir: Path,
     mutation_lock: Path,
 ) -> dict[str, Any]:
-    preflight = inspect(root, repo, build_task_id)
-    if preflight["classification"] == "already_applied":
-        return {**preflight, "mode": "apply", "applied_count": 0, "backup": None}
-    if not preflight["eligible"]:
-        return {**preflight, "mode": "apply", "applied_count": 0, "backup": None}
-
-    expected_preimage = str(preflight["predecessor_preimage_sha256"])
     new_id = str(uuid.uuid4())
     lock = FactoryMutationLock(
         mutation_lock,
@@ -328,154 +321,203 @@ def apply_retry(
     backup_path: Path | None = None
     backup_sha: str | None = None
     backup_guard_detail: dict[str, Any] | None = None
+    task_binding: dict[str, Any] | None = None
+    post: dict[str, Any] | None = None
     with lock:
-        backup_guard, backup_guard_detail = acquire_backup_write_guard(root)
+        conn, backup_guard_detail = acquire_backup_write_guard(root)
         try:
-            backup_path, backup_sha = backup_database(root, backup_dir)
-        finally:
-            try:
-                backup_guard.rollback()
-            finally:
-                backup_guard.close()
-        recheck = inspect(root, repo, build_task_id)
-        if not recheck["eligible"]:
-            raise RetryError(
-                "ELIGIBILITY_DRIFTED:" + ";".join(recheck.get("hold_reasons") or [])
+            predecessor = conn.execute(
+                "SELECT * FROM work_items WHERE id=?", (PREDECESSOR_ID,)
+            ).fetchone()
+            if (
+                predecessor is None
+                or row_preimage_sha256(predecessor) != PREDECESSOR_PREIMAGE_SHA256
+            ):
+                raise RetryError("PREDECESSOR_CHANGED_AT_APPLY")
+            old_payload = payload_object(predecessor["payload_json"])
+            risk = old_payload.get("risk_contract")
+            if not (
+                predecessor["kind"] == cwi.COMPILE_WORK_ITEM_KIND
+                and predecessor["phase"] == cwi.COMPILE_EA_PHASE
+                and predecessor["ea_id"] == EA_ID
+                and predecessor["status"] == "pending"
+                and predecessor["verdict"] is None
+                and int(predecessor["attempt_count"] or 0) == 0
+                and predecessor["claimed_by"] is None
+                and predecessor["evidence_path"] is None
+                and old_payload.get("compile_contract_version")
+                == cwi.COMPILE_CONTRACT_VERSION
+                and old_payload.get("ea_label") == EA_LABEL
+                and str(old_payload.get("mq5_sha256") or "").lower()
+                == SOURCE_SHA256
+                and not old_payload.get("bound_build_task_id")
+                and old_payload.get("utility_phase") is True
+                and old_payload.get("no_gate_verdict") is True
+                and isinstance(risk, dict)
+                and float(risk.get("RISK_FIXED")) == 1000.0
+                and float(risk.get("RISK_PERCENT")) == 0.0
+            ):
+                raise RetryError("PREDECESSOR_CONTRACT_MISMATCH_AT_APPLY")
+            released_hold = conn.execute(
+                "SELECT active,released_at FROM work_item_holds "
+                "WHERE work_item_id=? AND hold_code=?",
+                (PREDECESSOR_ID, cwi.COMPILE_ACTIVATION_HOLD_CODE),
+            ).fetchone()
+            if not (
+                released_hold
+                and int(released_hold["active"] or 0) == 0
+                and released_hold["released_at"]
+            ):
+                raise RetryError("PREDECESSOR_RELEASED_HOLD_MISMATCH_AT_APPLY")
+            schema = conn.execute(
+                "SELECT 1 FROM sqlite_master WHERE type='table' "
+                "AND name='work_item_supersedes'"
+            ).fetchone()
+            if schema is None:
+                raise RetryError("WORK_ITEM_SUPERSEDES_SCHEMA_MISSING")
+            if conn.execute(
+                "SELECT 1 FROM work_item_supersedes WHERE work_item_id=?",
+                (PREDECESSOR_ID,),
+            ).fetchone():
+                raise RetryError("PREDECESSOR_SUPERSEDED_AT_APPLY")
+            if conn.execute(
+                "SELECT 1 FROM work_items WHERE ea_id=? AND phase=? "
+                "AND json_extract(payload_json, "
+                "'$.compile_unbound_task_retry_contract_version')=?",
+                (EA_ID, cwi.COMPILE_EA_PHASE, RETRY_CONTRACT),
+            ).fetchone():
+                raise RetryError("UNBOUND_RETRY_SUCCESSOR_ALREADY_EXISTS")
+            task_binding = cwi._build_task_binding(
+                repo,
+                EA_LABEL,
+                NUMERIC_EA_ID,
+                build_task_id,
+                build_task_inventory(conn),
             )
-        if recheck["predecessor_preimage_sha256"] != expected_preimage:
-            raise RetryError("PREDECESSOR_PREIMAGE_DRIFTED")
+            if not task_binding.get("authorized"):
+                raise RetryError(
+                    "BUILD_TASK_BINDING_CHANGED_AT_APPLY:"
+                    + str(task_binding.get("reason"))
+                )
+            if sha256_file(canonical_source(repo)) != SOURCE_SHA256:
+                raise RetryError("SOURCE_CHANGED_AT_APPLY")
 
-        with connect(root, read_only=False) as conn:
-            ensure_supersedes_schema(conn)
-            conn.execute("BEGIN IMMEDIATE")
-            try:
-                predecessor = conn.execute(
-                    "SELECT * FROM work_items WHERE id=?", (PREDECESSOR_ID,)
-                ).fetchone()
-                if predecessor is None or row_preimage_sha256(predecessor) != expected_preimage:
-                    raise RetryError("PREDECESSOR_CHANGED_AT_APPLY")
-                task_binding = cwi._build_task_binding(
-                    repo,
-                    EA_LABEL,
-                    NUMERIC_EA_ID,
-                    build_task_id,
-                    build_task_inventory(conn),
-                )
-                if not task_binding.get("authorized"):
-                    raise RetryError(
-                        "BUILD_TASK_BINDING_CHANGED_AT_APPLY:"
-                        + str(task_binding.get("reason"))
-                    )
-                if sha256_file(canonical_source(repo)) != SOURCE_SHA256:
-                    raise RetryError("SOURCE_CHANGED_AT_APPLY")
-                if conn.execute(
-                    "SELECT 1 FROM work_item_supersedes WHERE work_item_id=?",
-                    (PREDECESSOR_ID,),
-                ).fetchone():
-                    raise RetryError("PREDECESSOR_SUPERSEDED_AT_APPLY")
+            # The BEGIN IMMEDIATE reservation above blocks all writers while
+            # this separate read connection captures the exact preimage.
+            backup_path, backup_sha = backup_database(root, backup_dir)
 
-                old_payload = payload_object(predecessor["payload_json"])
-                now = utc_now()
-                new_payload = dict(old_payload)
-                new_payload.update({
-                    "compile_activation_state": "AWAITING_REVIEWED_WORKER_ROLLOUT",
-                    "compile_activation_hold_code": cwi.COMPILE_ACTIVATION_HOLD_CODE,
-                    "compile_build_task_binding_contract_version": (
-                        cwi.BUILD_TASK_BINDING_CONTRACT_VERSION
-                    ),
-                    "bound_build_task_id": build_task_id,
-                    "bound_build_task_ea_id": EA_ID,
-                    "compile_unbound_task_retry_contract_version": RETRY_CONTRACT,
-                    "compile_unbound_task_retry_authority": RETRY_AUTHORITY,
-                    "retry_of_work_item_id": PREDECESSOR_ID,
-                    "unbound_compile_retry_work_item_id": new_id,
-                    "retry_reason": RETRY_REASON,
-                    "append_only_unbound_task_retry": True,
-                    "retry_predecessor_preimage_sha256": expected_preimage,
-                    "enqueued_at": now,
-                })
-                conn.execute(
-                    "INSERT INTO work_items(id,kind,phase,ea_id,symbol,setfile_path,"
-                    "status,verdict,attempt_count,parent_task_id,evidence_path,claimed_by,"
-                    "payload_json,created_at,updated_at) VALUES "
-                    "(?,'compile','COMPILE_EA',?,'','', 'pending',NULL,0,NULL,NULL,NULL,?,?,?)",
-                    (new_id, EA_ID, json.dumps(new_payload, sort_keys=True), now, now),
-                )
-                conn.execute(
-                    "INSERT INTO work_item_holds(work_item_id,hold_code,reason,active,"
-                    "release_on_restart,created_at,updated_at,released_at,release_note) "
-                    "VALUES (?,?,?,1,1,?,?,NULL,NULL)",
-                    (
-                        new_id,
-                        cwi.COMPILE_ACTIVATION_HOLD_CODE,
-                        HOLD_REASON,
-                        now,
-                        now,
-                    ),
-                )
-                detail = {
-                    "schema_version": RETRY_CONTRACT,
-                    "authority": RETRY_AUTHORITY,
-                    "predecessor_work_item_id": PREDECESSOR_ID,
-                    "predecessor_preimage_sha256": expected_preimage,
-                    "successor_work_item_id": new_id,
-                    "build_task_id": build_task_id,
-                    "mq5_sha256": SOURCE_SHA256,
-                    "activation_hold_code": cwi.COMPILE_ACTIVATION_HOLD_CODE,
-                    "no_gate_verdict": True,
-                }
-                detail_json = json.dumps(detail, sort_keys=True, separators=(",", ":"))
-                conn.execute(
-                    "INSERT INTO work_item_supersedes(work_item_id,"
-                    "superseded_by_work_item_id,reason,source_encoding,evidence_path,"
-                    "recorded_by,recorded_at) VALUES (?,?,?,?,?,'codex',?)",
-                    (
-                        PREDECESSOR_ID,
-                        new_id,
-                        RETRY_REASON,
-                        "operator:qm5-41285-unbound-compile-retry/v1",
-                        "artifacts/qm5_41285_unbound_compile_retry_20260902.json",
-                        now,
-                    ),
-                )
-                conn.execute(
-                    "INSERT INTO work_item_transition_ledger(idempotency_key,ts,"
-                    "work_item_id,action,from_status,to_status,from_verdict,to_verdict,"
-                    "from_claimed_by,to_claimed_by,reason,run_id,detail_json) VALUES "
-                    "(?,?,?,'append_only_unbound_compile_retry',NULL,'pending',NULL,NULL,"
-                    "NULL,NULL,?,?,?)",
-                    (
-                        f"qm5-41285-unbound-compile-retry:{PREDECESSOR_ID}",
-                        now,
-                        new_id,
-                        RETRY_REASON,
-                        RETRY_AUTHORITY,
-                        detail_json,
-                    ),
-                )
-                conn.execute(
-                    "INSERT INTO events(ts,entity_type,entity_id,event,detail_json) "
-                    "VALUES (?,'work_item',?,'compile_ea_append_only_unbound_retry',?)",
-                    (now, new_id, detail_json),
-                )
-                conn.execute(
-                    "INSERT INTO events(ts,entity_type,entity_id,event,detail_json) "
-                    "VALUES (?,'work_item',?,'compile_ea_successor_appended',?)",
-                    (now, PREDECESSOR_ID, detail_json),
-                )
-                conn.commit()
-            except Exception:
-                conn.rollback()
-                raise
+            now = utc_now()
+            new_payload = dict(old_payload)
+            new_payload.update({
+                "compile_activation_state": "AWAITING_REVIEWED_WORKER_ROLLOUT",
+                "compile_activation_hold_code": cwi.COMPILE_ACTIVATION_HOLD_CODE,
+                "compile_build_task_binding_contract_version": (
+                    cwi.BUILD_TASK_BINDING_CONTRACT_VERSION
+                ),
+                "bound_build_task_id": build_task_id,
+                "bound_build_task_ea_id": EA_ID,
+                "compile_unbound_task_retry_contract_version": RETRY_CONTRACT,
+                "compile_unbound_task_retry_authority": RETRY_AUTHORITY,
+                "retry_of_work_item_id": PREDECESSOR_ID,
+                "unbound_compile_retry_work_item_id": new_id,
+                "retry_reason": RETRY_REASON,
+                "append_only_unbound_task_retry": True,
+                "retry_predecessor_preimage_sha256": PREDECESSOR_PREIMAGE_SHA256,
+                "enqueued_at": now,
+            })
+            conn.execute(
+                "INSERT INTO work_items(id,kind,phase,ea_id,symbol,setfile_path,"
+                "status,verdict,attempt_count,parent_task_id,evidence_path,claimed_by,"
+                "payload_json,created_at,updated_at) VALUES "
+                "(?,'compile','COMPILE_EA',?,'','', 'pending',NULL,0,NULL,NULL,NULL,?,?,?)",
+                (new_id, EA_ID, json.dumps(new_payload, sort_keys=True), now, now),
+            )
+            conn.execute(
+                "INSERT INTO work_item_holds(work_item_id,hold_code,reason,active,"
+                "release_on_restart,created_at,updated_at,released_at,release_note) "
+                "VALUES (?,?,?,1,1,?,?,NULL,NULL)",
+                (new_id, cwi.COMPILE_ACTIVATION_HOLD_CODE, HOLD_REASON, now, now),
+            )
+            detail = {
+                "schema_version": RETRY_CONTRACT,
+                "authority": RETRY_AUTHORITY,
+                "predecessor_work_item_id": PREDECESSOR_ID,
+                "predecessor_preimage_sha256": PREDECESSOR_PREIMAGE_SHA256,
+                "successor_work_item_id": new_id,
+                "build_task_id": build_task_id,
+                "mq5_sha256": SOURCE_SHA256,
+                "activation_hold_code": cwi.COMPILE_ACTIVATION_HOLD_CODE,
+                "no_gate_verdict": True,
+            }
+            detail_json = json.dumps(detail, sort_keys=True, separators=(",", ":"))
+            conn.execute(
+                "INSERT INTO work_item_supersedes(work_item_id,"
+                "superseded_by_work_item_id,reason,source_encoding,evidence_path,"
+                "recorded_by,recorded_at) VALUES (?,?,?,?,?,'codex',?)",
+                (
+                    PREDECESSOR_ID,
+                    new_id,
+                    RETRY_REASON,
+                    "operator:qm5-41285-unbound-compile-retry/v1",
+                    "artifacts/qm5_41285_unbound_compile_retry_20260902.json",
+                    now,
+                ),
+            )
+            conn.execute(
+                "INSERT INTO work_item_transition_ledger(idempotency_key,ts,"
+                "work_item_id,action,from_status,to_status,from_verdict,to_verdict,"
+                "from_claimed_by,to_claimed_by,reason,run_id,detail_json) VALUES "
+                "(?,?,?,'append_only_unbound_compile_retry',NULL,'pending',NULL,NULL,"
+                "NULL,NULL,?,?,?)",
+                (
+                    f"qm5-41285-unbound-compile-retry:{PREDECESSOR_ID}",
+                    now,
+                    new_id,
+                    RETRY_REASON,
+                    RETRY_AUTHORITY,
+                    detail_json,
+                ),
+            )
+            conn.execute(
+                "INSERT INTO events(ts,entity_type,entity_id,event,detail_json) "
+                "VALUES (?,'work_item',?,'compile_ea_append_only_unbound_retry',?)",
+                (now, new_id, detail_json),
+            )
+            conn.execute(
+                "INSERT INTO events(ts,entity_type,entity_id,event,detail_json) "
+                "VALUES (?,'work_item',?,'compile_ea_successor_appended',?)",
+                (now, PREDECESSOR_ID, detail_json),
+            )
+            conn.commit()
+            backup_guard_detail["transaction"] = (
+                "BEGIN IMMEDIATE / validated / backed up / appended / COMMIT"
+            )
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
 
-    post = inspect(root, repo, build_task_id)
+        post = inspect(root, repo, build_task_id)
+
+    assert post is not None
     verification_errors: list[str] = []
     if post.get("classification") != "already_applied":
         verification_errors.append("SUCCESSOR_NOT_OBSERVABLE")
     if post.get("successor_work_item_id") != new_id:
         verification_errors.append("SUCCESSOR_ID_MISMATCH")
     return {
-        **preflight,
+        "schema_version": RETRY_CONTRACT,
+        "classification": "eligible",
+        "eligible": True,
+        "hold_reasons": [],
+        "idempotent_noop": False,
+        "predecessor_work_item_id": PREDECESSOR_ID,
+        "predecessor_preimage_sha256": PREDECESSOR_PREIMAGE_SHA256,
+        "build_task_id": build_task_id,
+        "task_binding": task_binding,
+        "source_path": str(canonical_source(repo)),
+        "source_sha256": SOURCE_SHA256,
         "mode": "apply",
         "applied_at_utc": utc_now(),
         "applied_count": 1,
