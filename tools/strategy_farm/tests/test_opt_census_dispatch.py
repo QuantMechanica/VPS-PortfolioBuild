@@ -722,3 +722,28 @@ def test_boost_window_bounds_rejected(tmp_path: Path) -> None:
         except census.CensusError:
             continue
         raise AssertionError(f"window {bad} accepted")
+
+
+def test_dl089_q02_prerequisite_arm_tolerates_malformed_payload(monkeypatch):
+    """OQ-SIBLING-SEED-RANK-20260902 guard: a pending Q02 row whose payload_json
+    is empty or not JSON must neither abort the claim-order query nor be lifted;
+    it keeps the ordinary Q02 rank while a valid prerequisite still leads."""
+    monkeypatch.setenv(farmctl.TOPDOWN_GATE_PRIORITY_ENV, "1")
+    rank_sql = farmctl._topdown_gate_rank_sql()
+    conn = sqlite3.connect(":memory:")
+    conn.execute("CREATE TABLE work_items(id TEXT, phase TEXT, payload_json TEXT)")
+    conn.executemany(
+        "INSERT INTO work_items VALUES (?, ?, ?)",
+        [
+            ("prereq", "Q02", json.dumps({"schema": farmctl.DL089_Q02_PREREQUISITE_SCHEMA})),
+            ("empty", "Q02", ""),
+            ("garbage", "Q02", "not json"),
+            ("census", "OPT_CENSUS", "{}"),
+        ],
+    )
+    rows = conn.execute(
+        f"SELECT id, {rank_sql} AS r FROM work_items w ORDER BY r, id"
+    ).fetchall()
+    ranks = dict(rows)
+    assert ranks["prereq"] < ranks["census"]
+    assert ranks["empty"] == ranks["garbage"] > ranks["census"]

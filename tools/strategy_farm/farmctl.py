@@ -1504,6 +1504,7 @@ def _topdown_gate_rank_sql() -> str:
     # so it takes precedence; all other rows keep the existing phase_case rank.
     return (
         "CASE WHEN w.phase='Q02'"
+        " AND json_valid(w.payload_json)=1"
         " AND json_extract(w.payload_json, '$.schema')='"
         + DL089_Q02_PREREQUISITE_SCHEMA
         + "' THEN -1 ELSE (" + phase_case + ") END"
