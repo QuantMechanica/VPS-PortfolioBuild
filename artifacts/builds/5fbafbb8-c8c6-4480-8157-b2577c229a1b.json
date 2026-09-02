@@ -1,0 +1,144 @@
+{
+  "task_id": "5fbafbb8-c8c6-4480-8157-b2577c229a1b",
+  "build_generation": 0,
+  "ea_id": "QM5_36006",
+  "ea_label": "QM5_36006_nnfx-halftrend-jurik-coppock-engine",
+  "slug": "nnfx-halftrend-jurik-coppock-engine",
+  "strategy": "D1 NNFX HalfTrend, Jurik confirmation, and Coppock baseline engine",
+  "source_id": "nnfx-halftrend-jurik-coppock-engine-official-source",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_36006_nnfx-halftrend-jurik-coppock-engine.md",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_36006_nnfx-halftrend-jurik-coppock-engine",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_36006_nnfx-halftrend-jurik-coppock-engine\\QM5_36006_nnfx-halftrend-jurik-coppock-engine.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_36006_nnfx-halftrend-jurik-coppock-engine\\QM5_36006_nnfx-halftrend-jurik-coppock-engine.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_36006_nnfx-halftrend-jurik-coppock-engine\\SPEC.md",
+  "symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX"
+  ],
+  "symbols_registered": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_36006_nnfx-halftrend-jurik-coppock-engine\\sets\\QM5_36006_nnfx-halftrend-jurik-coppock-engine_EURUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_36006_nnfx-halftrend-jurik-coppock-engine\\sets\\QM5_36006_nnfx-halftrend-jurik-coppock-engine_GBPUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_36006_nnfx-halftrend-jurik-coppock-engine\\sets\\QM5_36006_nnfx-halftrend-jurik-coppock-engine_USDJPY.DWX_D1_backtest.set"
+  ],
+  "setfile_hashes": [
+    {
+      "symbol": "EURUSD.DWX",
+      "sha256": "37ce2a5e540b8378bcc97430df03eccfd2f9659dbbe40e5a18ed755bcf334586",
+      "build_hash": "1613c503795e754ab4c88a1fefc4e283fc09dfbe61bb92475c1372258ac408ce"
+    },
+    {
+      "symbol": "GBPUSD.DWX",
+      "sha256": "e6f1288969e62193990ddac4438f5fcc846d736954b0bbb37004d327e465f193",
+      "build_hash": "c8a12f2d9cf06b2fdfb6d1d0cc969c35963e77bc690f95916c199b3a67ad46b0"
+    },
+    {
+      "symbol": "USDJPY.DWX",
+      "sha256": "eced1ed422bb2f470147c68cf3974052b82315ba2c1fcde0ae7e78a3dea0ec97",
+      "build_hash": "aeed617419f4f887579c2b33c50afdd96389835c7067ddd84ad1667f8dc86f8d"
+    }
+  ],
+  "magic_base": 360060000,
+  "magic": [
+    {
+      "slot": 0,
+      "symbol": "EURUSD.DWX",
+      "magic": 360060000,
+      "registry_status": "active"
+    },
+    {
+      "slot": 1,
+      "symbol": "GBPUSD.DWX",
+      "magic": 360060001,
+      "registry_status": "active"
+    },
+    {
+      "slot": 2,
+      "symbol": "USDJPY.DWX",
+      "magic": 360060002,
+      "registry_status": "active"
+    }
+  ],
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "build_check_passed": true,
+  "build_check_strict": true,
+  "build_check_failures": 0,
+  "build_check_warnings": 1,
+  "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260902_140410.json",
+  "compile_succeeded": true,
+  "compile_strict": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260902_140413\\QM5_36006_nnfx-halftrend-jurik-coppock-engine.compile.log",
+  "compile_summary": "D:\\QM\\reports\\compile\\20260902_140413\\summary.csv",
+  "compile_work_item": {
+    "id": "d445db75-f0c0-422b-9517-622028203c7b",
+    "terminal": "T1",
+    "started_at_utc": "2026-09-02T14:03:57+00:00",
+    "completed_at_utc": "2026-09-02T14:04:33+00:00",
+    "verdict": "COMPILE_OK",
+    "evidence_path": "D:\\QM\\reports\\work_items\\d445db75-f0c0-422b-9517-622028203c7b\\QM5_36006\\COMPILE_EA\\compile_evidence.json"
+  },
+  "spec_validation": "PASS",
+  "guardrail_validation": "PASS",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Paced fleet saturated by the backtest CPU ceiling: five fresh host CPU samples averaged 98.66% and peaked at 100.0%; no smoke, tester, dispatch, worker tick, optimization, or backtest was started by this unit.",
+  "capacity_evidence": "Fleet saturated at the backtest CPU ceiling at 2026-09-02T14:07:30Z: samples=[96.7,99.1,98.0,99.5,100.0], average=98.66%, maximum=100.0%, ceiling=97.0%; canonical farm DB showed 8 active paced-fleet work items at 2026-09-02T14:08:45Z.",
+  "blocked_reason": "",
+  "capacity_snapshot": {
+    "cpu_observed_at_utc": "2026-09-02T14:07:30Z",
+    "cpu_samples_percent": [
+      96.7,
+      99.1,
+      98.0,
+      99.5,
+      100.0
+    ],
+    "cpu_average_percent": 98.66,
+    "cpu_maximum_percent": 100.0,
+    "cpu_ceiling_percent": 97.0,
+    "active_work_items_observed_at_utc": "2026-09-02T14:08:45Z",
+    "active_work_items": 8,
+    "tester_launched_by_this_unit": false
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "risk_fixed_backtest_setfiles": true,
+    "reputable_source": true,
+    "ml_required": false,
+    "banned_indicator_used": false
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false
+  },
+  "file_hashes_sha256": {
+    "mq5": "014dc6e0c3d8e466a2947ae0ac1e6590ac0c491b17a67c37cbae748cc665dfb6",
+    "ex5": "57e021403dae0d56d54270d6d1a72d8ad780724a430548f95039ef91f7f47c8d",
+    "spec": "bde13f65d13c47bb6bc85b41ede2c20989b30ee5f4e80b931cf570be299d8fab",
+    "local_strategy_card": "66f9b0ce057d8cca4674b92a12c9b5d7faa65335f1daa8b5526e98b3e9748a78",
+    "approved_card": "c254058ad2609a6bbc9f6ecc52b8058ad6eead58821bab2adcf17bfddded593f",
+    "compile_evidence": "91c6acbcea293b07d35c5ddf2a171f00c35789201b169411dcd8f595824e7858",
+    "build_check_report": "ab0004507407ccf5647b148acd20d7024fe4e69c6ecdd5ac261b59e1e219f475",
+    "compile_log": "2a081b4eb28c9add170a45166ebfc81ba22f9a794a6d7a26091314cf8ecc73ec",
+    "compile_summary": "1476993abed123a94ac2c937e326bf3afd7666bbe7e6bd2a3cc31d6d1f3c4a05"
+  },
+  "open_questions": [
+    "The paced-fleet Q01 smoke successor and Q02 canary must provide first runtime trade-generation evidence after capacity clears."
+  ]
+}

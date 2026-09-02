@@ -1,0 +1,165 @@
+{
+  "schema": "qm.paced-fleet-unit-receipt/v1",
+  "recorded_at_utc": "2026-09-02T14:11:48Z",
+  "branch": "agents/board-advisor",
+  "head_before_commit": "72e1de13931d9cf70b08d8f982463b8e0094e549",
+  "agent": "codex:agents/board-advisor",
+  "result": "BUILD_COMPILED_Q02_ENQUEUED_CPU_STOP",
+  "selection": {
+    "ea_id": "QM5_36006",
+    "ea_label": "QM5_36006_nnfx-halftrend-jurik-coppock-engine",
+    "asset_class": "forex",
+    "timeframe": "D1",
+    "symbols": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX",
+      "USDJPY.DWX"
+    ],
+    "reason": "Highest-diversity exact pending approved-card build: a low-frequency D1 FX sleeve candidate outside the index, metal, and energy concentration of the seven Q08 FAIL_SOFT survivors.",
+    "approved_card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_36006_nnfx-halftrend-jurik-coppock-engine.md",
+    "approved_card_sha256": "c254058ad2609a6bbc9f6ecc52b8058ad6eead58821bab2adcf17bfddded593f",
+    "g0_status": "APPROVED",
+    "source_criteria": {
+      "r1_track_record": "PASS",
+      "r2_mechanical": "PASS",
+      "r3_data_available": "PASS",
+      "r4_ml_forbidden": "PASS",
+      "structural_only": true,
+      "low_frequency": true,
+      "banned_indicator_used": false
+    }
+  },
+  "coordination": {
+    "agent_task_id": "e4fb46e5-3bbb-4510-b723-21a7613e1762",
+    "build_task_id": "5fbafbb8-c8c6-4480-8157-b2577c229a1b",
+    "compile_work_item_id": "d445db75-f0c0-422b-9517-622028203c7b",
+    "claim_key": "build:QM5_36006:5fbafbb8-c8c6-4480-8157-b2577c229a1b",
+    "claimed_at_utc": "2026-09-02T13:54:52+00:00",
+    "claim_preimage_payload_sha256": "c595158adedf8c53cc486a5108f22c5b651fd0554f787627e2b2ad40b8ca0b1d"
+  },
+  "preflight": {
+    "ea_registry_status": "active",
+    "magic_rows": [
+      {
+        "slot": 0,
+        "symbol": "EURUSD.DWX",
+        "magic": 360060000,
+        "status": "active"
+      },
+      {
+        "slot": 1,
+        "symbol": "GBPUSD.DWX",
+        "magic": 360060001,
+        "status": "active"
+      },
+      {
+        "slot": 2,
+        "symbol": "USDJPY.DWX",
+        "magic": 360060002,
+        "status": "active"
+      }
+    ],
+    "build_guard": "PASS",
+    "spec_validation": "PASS",
+    "guardrail_validation": "PASS",
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    }
+  },
+  "compile_release": {
+    "released_at_utc": "2026-09-02T13:55:54+00:00",
+    "transaction": "BEGIN_IMMEDIATE_VALIDATE_BACKUP_RELEASE_COMMIT",
+    "backup_path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260902T135530Z_5824316a.sqlite",
+    "backup_sha256": "142a6fbac06bdecb7a82d87adf373e157f893e3fadf8673031dcb984c7dfb6ba",
+    "expected_mq5_sha256": "014dc6e0c3d8e466a2947ae0ac1e6590ac0c491b17a67c37cbae748cc665dfb6",
+    "actual_mq5_sha256": "014dc6e0c3d8e466a2947ae0ac1e6590ac0c491b17a67c37cbae748cc665dfb6"
+  },
+  "compile": {
+    "claimed_by": "T1",
+    "started_at_utc": "2026-09-02T14:03:57+00:00",
+    "completed_at_utc": "2026-09-02T14:04:33+00:00",
+    "status": "done",
+    "verdict": "COMPILE_OK",
+    "build_check_result": "PASS",
+    "compile_result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "setfile_count": 3,
+    "mq5_sha256": "014dc6e0c3d8e466a2947ae0ac1e6590ac0c491b17a67c37cbae748cc665dfb6",
+    "ex5_sha256": "57e021403dae0d56d54270d6d1a72d8ad780724a430548f95039ef91f7f47c8d",
+    "ex5_bytes": 441696,
+    "evidence_path": "D:\\QM\\reports\\work_items\\d445db75-f0c0-422b-9517-622028203c7b\\QM5_36006\\COMPILE_EA\\compile_evidence.json",
+    "evidence_sha256": "91c6acbcea293b07d35c5ddf2a171f00c35789201b169411dcd8f595824e7858",
+    "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260902_140410.json",
+    "build_check_report_sha256": "ab0004507407ccf5647b148acd20d7024fe4e69c6ecdd5ac261b59e1e219f475"
+  },
+  "capacity_stop": {
+    "ceiling_percent": 97.0,
+    "sampled_at_utc": "2026-09-02T14:07:30Z",
+    "samples_percent": [
+      96.7,
+      99.1,
+      98.0,
+      99.5,
+      100.0
+    ],
+    "average_percent": 98.66,
+    "maximum_percent": 100.0,
+    "trigger": "average_and_maximum_at_or_above_ceiling",
+    "active_work_items_at_2026_09_02T14_08_45Z": 8,
+    "smoke_result": "deferred_p2_smoke",
+    "smoke_waiver_admission": "q01_smoke_saturation_waiver",
+    "tester_launched_by_this_unit": false,
+    "dispatch_invoked_by_this_unit": false,
+    "worker_tick_invoked_by_this_unit": false
+  },
+  "build_record": {
+    "recorded_at_utc": "2026-09-02T14:11:23+00:00",
+    "task_status": "done",
+    "build_result_path": "C:\\QM\\repo\\artifacts\\builds\\5fbafbb8-c8c6-4480-8157-b2577c229a1b.json",
+    "build_result_sha256": "cb900916224658bad18ba464d4142efa1da283163939022a709fa6c8d35ca2e4",
+    "needs_p2_smoke_via_pump": true,
+    "q02": {
+      "work_item_id": "4f7cdc74-5d16-49fc-879c-8fea98605536",
+      "status_at_receipt": "pending",
+      "symbol": "EURUSD.DWX",
+      "timeframe": "D1",
+      "priority_track": true,
+      "fanout_policy": "qm-q02-canary-fanout/v1",
+      "cohort_size": 3,
+      "deferred_symbols": [
+        "GBPUSD.DWX",
+        "USDJPY.DWX"
+      ],
+      "deferred_state": "AWAITING_CANARY"
+    }
+  },
+  "repo_artifacts": {
+    "mq5_path": "framework/EAs/QM5_36006_nnfx-halftrend-jurik-coppock-engine/QM5_36006_nnfx-halftrend-jurik-coppock-engine.mq5",
+    "ex5_path": "framework/EAs/QM5_36006_nnfx-halftrend-jurik-coppock-engine/QM5_36006_nnfx-halftrend-jurik-coppock-engine.ex5",
+    "setfiles": [
+      {
+        "symbol": "EURUSD.DWX",
+        "sha256": "37ce2a5e540b8378bcc97430df03eccfd2f9659dbbe40e5a18ed755bcf334586"
+      },
+      {
+        "symbol": "GBPUSD.DWX",
+        "sha256": "e6f1288969e62193990ddac4438f5fcc846d736954b0bbb37004d327e465f193"
+      },
+      {
+        "symbol": "USDJPY.DWX",
+        "sha256": "eced1ed422bb2f470147c68cf3974052b82315ba2c1fcde0ae7e78a3dea0ec97"
+      }
+    ]
+  },
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "deploy_manifest_touched": false,
+    "unrelated_worktree_changes_staged": false
+  }
+}
