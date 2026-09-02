@@ -1,0 +1,52 @@
+{
+  "schema": "qm.market-free-null-density/v1",
+  "generated_at_utc": "2026-09-02T17:06:10Z",
+  "candidate_slug": "wti-archlm-tr",
+  "strategy_id": "ENGLE-STATSMODELS-MOP-WTI-ARCHLM-20260902_S01",
+  "purpose": "Pre-data finite-sample cadence sanity check only; not WTI evidence, an ARCH significance test, a performance estimate, or a substitute for Q02.",
+  "generator": {
+    "name": "numpy.random.default_rng",
+    "numpy_version": "2.4.6",
+    "bit_generator": "PCG64",
+    "seed": 20260902,
+    "replications": 200000,
+    "batch_size": 5000,
+    "observations_per_replication": 60,
+    "distribution": "independent standard normal"
+  },
+  "locked_statistic": {
+    "demean_returns": true,
+    "square_residuals": true,
+    "lag_count": 6,
+    "regression_rows": 54,
+    "regressors": "intercept plus squared-residual lags one through six",
+    "r_squared": "ordinary centered OLS R-squared",
+    "ddof": 0,
+    "formula": "ARCH_LM=(60-6)*R_squared=54*R_squared",
+    "finite_sample_empirical_median": 4.734633677704946,
+    "locked_rounded_boundary": 4.73,
+    "qualification_rule": "ARCH_LM >= 4.73",
+    "direction_rule": "sign(sum(raw_log_returns[48:60]))"
+  },
+  "results": {
+    "mean_lm": 5.278706693423053,
+    "median_lm": 4.734633677704946,
+    "first_quartile_lm": 3.1402991166699272,
+    "third_quartile_lm": 6.824580630804397,
+    "minimum_lm": 0.03689836383391332,
+    "maximum_lm": 33.38501133220981,
+    "qualification_fraction_at_rounded_boundary": 0.500665,
+    "theoretical_qualifying_clocks_per_12": 6.00798,
+    "qualifying_positive_direction_fraction_all": 0.24977,
+    "qualifying_negative_direction_fraction_all": 0.250895,
+    "direction_ties": 0
+  },
+  "decision": "PASS_PRE_DATA_CADENCE_PRIOR_APPROX_SIX_EXPECTED_QUALIFYING_CLOCKS_PER_YEAR",
+  "limitations": [
+    "Overlapping rolling monthly windows in a backtest are dependent; this independent-null calculation does not estimate actual trade count.",
+    "Raw WTI returns need not be Gaussian, independent, stationary, or distributed like this synthetic input.",
+    "The 4.73 boundary is an empirical finite-sample median used only as a predeclared state divider, not an ARCH rejection threshold or p-value.",
+    "The exact trading conjunction and use of demeaned raw WTI monthly returns are QuantMechanica synthesis, not a result reported by Engle or statsmodels.",
+    "Q02 owns actual completed-position frequency, costs, economics, and every market-data conclusion."
+  ]
+}

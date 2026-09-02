@@ -1,0 +1,38 @@
+{
+  "candidate": {
+    "author": "Robert F. Engle; statsmodels contributors; Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen",
+    "mechanic": "XTIUSD.DWX D1; once per broker month reconstruct 60 completed monthly log returns; subtract arithmetic mean; square the 60 residuals; regress squared residual observations t=6..59 on intercept plus their exact lags 1..6; compute Engle ARCH LM=(60-6)*centered OLS R-squared with ddof zero; qualify only when LM is at or above a predeclared market-free finite-sample median; direction is sign of newest 12-month cumulative log return; one consumed attempt per month; flat at next month; ATR20 3.5x hard stop; no target",
+    "slug": "wti-archlm-tr",
+    "strategy_id": "ENGLE-STATSMODELS-MOP-WTI-ARCHLM-20260902_S01"
+  },
+  "error": null,
+  "exit_code": 0,
+  "generated_at_utc": "2026-09-02T17:04:37+00:00",
+  "matches": [],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4800,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1429,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "CLEAN"
+}

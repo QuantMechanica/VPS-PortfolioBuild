@@ -1,0 +1,82 @@
+{
+  "schema": "qm.source-retrieval-evidence/v1",
+  "source_id": "ENGLE-STATSMODELS-MOP-WTI-ARCHLM-20260902",
+  "retrieved_at_utc": "2026-09-02T17:06:10Z",
+  "routes": [
+    {
+      "role": "complete_arch_lm_implementation_contract",
+      "url": "https://github.com/statsmodels/statsmodels/blob/724510a0f1f1ab0ea79ab31e4bdd56df098f4f58/statsmodels/stats/diagnostic.py",
+      "api_url": "https://api.github.com/repos/statsmodels/statsmodels/contents/statsmodels/stats/diagnostic.py?ref=724510a0f1f1ab0ea79ab31e4bdd56df098f4f58",
+      "publisher": "statsmodels project",
+      "method": "governed_router_ROUTE_GITHUB_API_then_public_GitHub_contents_API",
+      "router_status": "ROUTE_GITHUB_API",
+      "status": "OK",
+      "commit": "724510a0f1f1ab0ea79ab31e4bdd56df098f4f58",
+      "commit_date_utc": "2026-08-24T07:09:44Z",
+      "git_blob_sha": "78f407c9d4ae09d19030ef407998d221f429fd07",
+      "retrieved_byte_count": 78205,
+      "retrieved_content_sha256": "7D935979C0A5A7ADF1729AC27A4F644EB29BF4AB65EA1A40E933D804AD7AFDA5",
+      "bounded_read": "The complete pinned acorr_lm and het_arch functions were read. het_arch squares the supplied residual series and delegates to acorr_lm. With nonrobust covariance, fixed nlags and ddof zero, acorr_lm trims the first nlags observations, fits an intercept plus exact lags one through nlags by OLS, and returns LM=(trimmed observation count)*centered R-squared.",
+      "claim_boundary": "Supports deterministic ARCH-LM arithmetic and implementation alignment only. It does not establish a WTI trading edge, prescribe sixty monthly returns or six lags, validate the empirical-median state boundary, select continuation direction, prove CFD equivalence, or provide activity, profitability, risk, or portfolio evidence. No p-value is imported."
+    },
+    {
+      "role": "lag_alignment_contract",
+      "url": "https://github.com/statsmodels/statsmodels/blob/724510a0f1f1ab0ea79ab31e4bdd56df098f4f58/statsmodels/tsa/tsatools.py",
+      "api_url": "https://api.github.com/repos/statsmodels/statsmodels/contents/statsmodels/tsa/tsatools.py?ref=724510a0f1f1ab0ea79ab31e4bdd56df098f4f58",
+      "publisher": "statsmodels project",
+      "method": "public_GitHub_contents_API",
+      "status": "OK",
+      "commit": "724510a0f1f1ab0ea79ab31e4bdd56df098f4f58",
+      "git_blob_sha": "e13d2953e6611d495c4b03a25eb730b1fc4e5afb",
+      "retrieved_byte_count": 29185,
+      "retrieved_content_sha256": "786EC958264EDD6E4569CF8EBD7FE9014A767377FEFF7AC11E0C4EB5B5C86C64",
+      "bounded_read": "The complete pinned lagmat function was read, including the trim=both and original=ex behavior used by acorr_lm. It fixes chronological alignment as current observations t=p..n-1 against lag columns t-1 through t-p.",
+      "claim_boundary": "Supplies row and lag orientation only; no economic or market claim transfers."
+    },
+    {
+      "role": "independent_upstream_reference_fixtures",
+      "url": "https://github.com/statsmodels/statsmodels/blob/724510a0f1f1ab0ea79ab31e4bdd56df098f4f58/statsmodels/stats/tests/test_diagnostic.py",
+      "api_url": "https://api.github.com/repos/statsmodels/statsmodels/contents/statsmodels/stats/tests/test_diagnostic.py?ref=724510a0f1f1ab0ea79ab31e4bdd56df098f4f58",
+      "publisher": "statsmodels project",
+      "method": "public_GitHub_contents_API",
+      "status": "OK",
+      "commit": "724510a0f1f1ab0ea79ab31e4bdd56df098f4f58",
+      "git_blob_sha": "63ce684ec52839e52cfe9a8864569ad1d06bfc33",
+      "retrieved_byte_count": 75502,
+      "retrieved_content_sha256": "FAE0044AB68B88250D8DC31AA60BC856143E69469E65EA456F7BA6E975858F79",
+      "bounded_read": "The complete pinned test_het_arch and test_het_arch2 methods were read. The upstream R FinTS fixtures fix LM=3.43473400836259 at four lags and LM=8.648320999014171 at twelve lags for the repository test residuals, with agreement asserted to twelve decimal places.",
+      "claim_boundary": "Supplies upstream implementation verification only. The fixture data and p-values do not enter the EA."
+    },
+    {
+      "role": "original_peer_reviewed_method_bibliography",
+      "url": "https://doi.org/10.2307/1912773",
+      "citation": "Engle, R. F. (1982). Autoregressive Conditional Heteroscedasticity with Estimates of the Variance of United Kingdom Inflation. Econometrica 50(4), 987-1007.",
+      "doi": "10.2307/1912773",
+      "method": "bibliographic_attribution_from_statsmodels_reference_and_publisher_metadata",
+      "status": "BIBLIOGRAPHIC_ONLY",
+      "claim_boundary": "Establishes original attribution and peer-reviewed publication identity only. No inaccessible body claim, critical value, or trading conclusion is used."
+    },
+    {
+      "role": "excluded_unapproved_pdf_mirror",
+      "url": "https://web.pdx.edu/~crkl/ec572/readings/Engle82.pdf",
+      "method": "qm_read_trading_source_router",
+      "status": "DEFERRED:SOURCE_POLICY",
+      "router_result": "PERMISSION_REQUIRED",
+      "claim_boundary": "The generic-reader policy did not authorize retrieval. The mirror is excluded from evidence and no claim depends on its body."
+    },
+    {
+      "role": "monthly_wti_own_return_continuation",
+      "url": "https://w4.stern.nyu.edu/facdir/lpederse/papers/TimeSeriesMomentum.pdf",
+      "citation": "Moskowitz, T. J., Ooi, Y. H., and Pedersen, L. H. (2012). Time Series Momentum. Journal of Financial Economics 104(2), 228-250.",
+      "doi": "10.1016/j.jfineco.2011.11.003",
+      "method": "existing_governed_complete_paper_read",
+      "status": "OK_EXISTING_GOVERNED_RECORD",
+      "local_record": "strategy-seeds/sources/MOP-TSMOM-2012/source.md",
+      "local_record_sha256": "C8B07ECD62C1D5EF9E3D7975EEE6A3B6C46C1C566D0B20B42237613D9B3A7042",
+      "claim_boundary": "Supports monthly own-return continuation across liquid futures and explicit NYMEX WTI membership. It does not test an ARCH-LM state gate, the exact conjunction, or the Darwinex continuous CFD."
+    }
+  ],
+  "access_control_bypass_attempted": false,
+  "third_party_code_executed": false,
+  "external_binary_downloaded": false
+}
