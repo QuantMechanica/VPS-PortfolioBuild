@@ -92,6 +92,14 @@ def test_worker_spawner_exports_controller_to_unset_children(
     monkeypatch.delenv("QM_AGENT_ID", raising=False)
     monkeypatch.setattr(start_terminal_workers, "_installed_terminals", lambda _root: ("T1",))
     monkeypatch.setattr(start_terminal_workers, "_scan_running_workers", lambda: {})
+    # This identity test must not become host-RAM dependent. The production
+    # spawner's measured headroom gate is covered by its own policy tests.
+    monkeypatch.setattr(start_terminal_workers.resource_headroom, "probe", lambda _root: {})
+    monkeypatch.setattr(
+        start_terminal_workers.resource_headroom,
+        "concurrency_decision",
+        lambda *_args, **_kwargs: {"max_workers": 1, "allow_new_workers": True},
+    )
     monkeypatch.setattr(start_terminal_workers.subprocess, "Popen", fake_popen)
     monkeypatch.setattr(
         sys,

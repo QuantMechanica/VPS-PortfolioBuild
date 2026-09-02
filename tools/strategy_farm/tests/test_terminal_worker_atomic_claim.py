@@ -129,6 +129,73 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             self.assertEqual(rows[0][0], "active")
             self.assertIn(rows[0][1], {"T1", "T2"})
 
+    def test_optimistic_claim_rechecks_hold_added_after_read_selection(self) -> None:
+        """A writer can add a hold during selection and the final CAS refuses."""
+
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(root, "wi-hold-race", "EURUSD.DWX", phase="P3")
+            original_sha256_text = terminal_worker.next_cell_prestage.sha256_text
+            injected = False
+
+            def add_hold_after_candidate_read(text: str) -> str:
+                nonlocal injected
+                if not injected:
+                    injected = True
+                    now = farmctl.utc_now()
+                    with sqlite3.connect(root / farmctl.DB_REL, timeout=1) as contender:
+                        contender.execute("BEGIN IMMEDIATE")
+                        contender.execute(
+                            """
+                            INSERT INTO work_item_holds
+                              (work_item_id,hold_code,reason,active,
+                               release_on_restart,created_at,updated_at)
+                            VALUES (?,?,?,1,0,?,?)
+                            """,
+                            (
+                                "wi-hold-race",
+                                "TEST_OPTIMISTIC_RACE",
+                                "test writer inserted hold after read selection",
+                                now,
+                                now,
+                            ),
+                        )
+                        contender.commit()
+                return original_sha256_text(text)
+
+            with patch.object(
+                terminal_worker.next_cell_prestage,
+                "sha256_text",
+                side_effect=add_hold_after_candidate_read,
+            ):
+                result = terminal_worker.claim_atomic(root, "T1")
+
+            self.assertTrue(injected)
+            self.assertFalse(result.get("claimed"), result)
+            self.assertEqual(result.get("reason"), "no_pending_claimable")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute(
+                    "SELECT status,claimed_by FROM work_items WHERE id=?",
+                    ("wi-hold-race",),
+                ).fetchone()
+                hold = conn.execute(
+                    "SELECT active FROM work_item_holds WHERE work_item_id=?",
+                    ("wi-hold-race",),
+                ).fetchone()
+            self.assertEqual(row, ("pending", None))
+            self.assertEqual(hold, (1,))
+
+    def test_successful_claim_reports_subsecond_write_lock_hold(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(root, "wi-lock-metric", "EURUSD.DWX", phase="P3")
+
+            result = terminal_worker.claim_atomic(root, "T1")
+
+            self.assertTrue(result.get("claimed"), result)
+            self.assertGreaterEqual(result["claim_write_lock_ms"], 0.0)
+            self.assertLess(result["claim_write_lock_ms"], 1000.0)
+
     def test_running_terminal_probe_precedes_claim_write_transaction(self) -> None:
         """A slow process census must not own the SQLite writer lock."""
 

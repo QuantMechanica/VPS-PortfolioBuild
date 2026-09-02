@@ -2305,7 +2305,39 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                 conn,
                 busy_timeout_ms=CLAIM_LOCK_BUSY_TIMEOUT_MS,
             )
-            conn.execute("BEGIN IMMEDIATE")
+            # Candidate ordering and every selector/preflight DB read run with
+            # SQLite's connection-level write interlock enabled. Only the exact
+            # row transition below temporarily disables query_only and takes
+            # BEGIN IMMEDIATE, so a long candidate walk cannot convoy writers.
+            conn.execute("PRAGMA query_only=ON")
+
+            def _begin_optimistic_write(
+                item_id: str,
+                expected_status: str,
+                expected_payload_json: str,
+            ) -> tuple[sqlite3.Row | None, float | None]:
+                conn.execute("PRAGMA query_only=OFF")
+                lock_started = time.perf_counter()
+                conn.execute("BEGIN IMMEDIATE")
+                current = conn.execute(
+                    "SELECT * FROM work_items WHERE id=?", (item_id,)
+                ).fetchone()
+                if (
+                    current is None
+                    or str(current["status"] or "") != expected_status
+                    or str(current["payload_json"] or "{}")
+                    != str(expected_payload_json or "{}")
+                ):
+                    conn.rollback()
+                    conn.execute("PRAGMA query_only=ON")
+                    return None, None
+                return current, lock_started
+
+            def _commit_optimistic_write(lock_started: float) -> float:
+                conn.commit()
+                elapsed_ms = (time.perf_counter() - lock_started) * 1000.0
+                conn.execute("PRAGMA query_only=ON")
+                return round(elapsed_ms, 3)
             try:
                 active_terminal = conn.execute(
                     "SELECT * FROM work_items WHERE status='active' AND claimed_by=? LIMIT 1",
@@ -2330,6 +2362,19 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                     worker_alive = active_terminal_preflight.get("worker_alive")
                     child_alive = bool(active_terminal_preflight.get("child_alive"))
                     if worker_pid and worker_alive is False:
+                        current, housekeeping_lock_started = _begin_optimistic_write(
+                            str(active_terminal["id"]),
+                            "active",
+                            str(active_terminal["payload_json"] or "{}"),
+                        )
+                        if current is None:
+                            return {
+                                "claimed": False,
+                                "reason": "active_terminal_optimistic_race",
+                                "item_id": active_terminal["id"],
+                            }
+                        active_terminal = current
+                        payload = _json_loads(active_terminal["payload_json"])
                         if pid and child_alive:
                             payload["prior_failure"] = payload.get("prior_failure") or "worker_process_missing_adopted_active_child"
                             payload["orphan_worker_pid"] = worker_pid
@@ -2343,9 +2388,16 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                                 """,
                                 (json.dumps(payload, sort_keys=True), now, active_terminal["id"], terminal),
                             )
-                            conn.commit()
+                            claim_write_lock_ms = _commit_optimistic_write(
+                                housekeeping_lock_started
+                            )
                             row = conn.execute("SELECT * FROM work_items WHERE id=?", (active_terminal["id"],)).fetchone()
-                            return {"claimed": True, "item": dict(row), "adopt_existing": True}
+                            return {
+                                "claimed": True,
+                                "item": dict(row),
+                                "adopt_existing": True,
+                                "claim_write_lock_ms": claim_write_lock_ms,
+                            }
 
                         child_identity = dict(
                             active_terminal_preflight.get("child_identity") or {}
@@ -2359,11 +2411,14 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                                 now,
                                 child_identity,
                             )
-                            conn.commit()
+                            claim_write_lock_ms = _commit_optimistic_write(
+                                housekeeping_lock_started
+                            )
                             return {
                                 "claimed": False,
                                 "reason": "news_runner_spawn_abort_held",
                                 "item_id": active_terminal["id"],
+                                "claim_write_lock_ms": claim_write_lock_ms,
                                 **parked,
                             }
 
@@ -2380,6 +2435,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                             """,
                             (json.dumps(payload, sort_keys=True), now, active_terminal["id"], terminal),
                         )
+                        _commit_optimistic_write(housekeeping_lock_started)
                     elif worker_pid and worker_alive is True:
                         conn.commit()
                         return {
@@ -2392,6 +2448,19 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                         conn.commit()
                         return {"claimed": False, "reason": "terminal_busy", "item_id": active_terminal["id"]}
                     else:
+                        current, housekeeping_lock_started = _begin_optimistic_write(
+                            str(active_terminal["id"]),
+                            "active",
+                            str(active_terminal["payload_json"] or "{}"),
+                        )
+                        if current is None:
+                            return {
+                                "claimed": False,
+                                "reason": "active_terminal_optimistic_race",
+                                "item_id": active_terminal["id"],
+                            }
+                        active_terminal = current
+                        payload = _json_loads(active_terminal["payload_json"])
                         payload["prior_failure"] = payload.get("prior_failure") or "worker_loop_released_stale_claim"
                         terminal_stopped = active_terminal_preflight.get("terminal_stopped")
                         if terminal_stopped is not None:
@@ -2405,6 +2474,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                             """,
                             (json.dumps(payload, sort_keys=True), now, active_terminal["id"], terminal),
                         )
+                        _commit_optimistic_write(housekeeping_lock_started)
 
                 if not calendar_preflight.get("ok"):
                     conn.commit()
@@ -2444,7 +2514,6 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                 # Fleet-wide claim stagger, atomic under this BEGIN IMMEDIATE:
                 # the ledger read and the eventual claim commit cannot interleave
                 # with another worker's, so exactly one worker wins each window.
-                farmctl.ensure_claim_class_ledger(conn)
                 last_claim_iso = conn.execute(
                     "SELECT MAX(claimed_at_utc) FROM claim_class_ledger"
                 ).fetchone()[0]
@@ -2590,6 +2659,15 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                         except Exception as exc:
                             item_bound_detail = _custom_history_item_bound_error(exc)
                             if item_bound_detail is not None:
+                                current, hold_lock_started = _begin_optimistic_write(
+                                    str(item["id"]),
+                                    "pending",
+                                    str(item["payload_json"] or "{}"),
+                                )
+                                if current is None:
+                                    continue
+                                item = current
+                                payload = _json_loads(item["payload_json"])
                                 _hold_custom_history_item(
                                     conn, item, payload, now, item_bound_detail
                                 )
@@ -2602,6 +2680,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                                         item["id"],
                                     ),
                                 )
+                                _commit_optimistic_write(hold_lock_started)
                                 continue
                     if (
                         compile_only_due_to_commit_headroom
@@ -2857,11 +2936,43 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                         multisymbol=item_is_multisym,
                         commit_class=_multisymbol_commit_class(item, payload, item_is_multisym),
                     )
+                    current, claim_lock_started = _begin_optimistic_write(
+                        str(item["id"]),
+                        "pending",
+                        str(item["payload_json"] or "{}"),
+                    )
+                    if current is None:
+                        continue
+                    blocked = conn.execute(
+                        """
+                        SELECT 1
+                        WHERE EXISTS (
+                            SELECT 1 FROM work_item_holds
+                            WHERE work_item_id=? AND active=1
+                        ) OR EXISTS (
+                            SELECT 1 FROM work_item_supersedes
+                            WHERE work_item_id=?
+                        )
+                        """,
+                        (item["id"], item["id"]),
+                    ).fetchone()
+                    if blocked is not None:
+                        conn.rollback()
+                        conn.execute("PRAGMA query_only=ON")
+                        continue
                     cur = conn.execute(
                         """
                         UPDATE work_items
                         SET status='active', claimed_by=?, payload_json=?, updated_at=?
-                        WHERE id=? AND status='pending'
+                        WHERE id=? AND status='pending' AND claimed_by IS NULL
+                          AND NOT EXISTS (
+                            SELECT 1 FROM work_item_holds h
+                            WHERE h.work_item_id=work_items.id AND h.active=1
+                          )
+                          AND NOT EXISTS (
+                            SELECT 1 FROM work_item_supersedes s
+                            WHERE s.work_item_id=work_items.id
+                          )
                         """,
                         (terminal, json.dumps(payload, sort_keys=True), now, item["id"]),
                     )
@@ -2874,7 +2985,9 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                             conn, terminal, item["id"],
                             "recovery" if item_is_recovery else "priority", now,
                         )
-                        conn.commit()
+                        claim_write_lock_ms = _commit_optimistic_write(
+                            claim_lock_started
+                        )
                         row = conn.execute("SELECT * FROM work_items WHERE id=?", (item["id"],)).fetchone()
                         return {
                             "claimed": True,
@@ -2882,7 +2995,10 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                             "claim_class": "recovery" if item_is_recovery else "priority",
                             "claim_admission_mode": payload.get("claim_admission_mode"),
                             "preclaim_payload_sha256": preclaim_payload_sha256,
+                            "claim_write_lock_ms": claim_write_lock_ms,
                         }
+                    conn.rollback()
+                    conn.execute("PRAGMA query_only=ON")
                 conn.commit()
                 return {
                     "claimed": False,
@@ -7734,6 +7850,7 @@ def run_loop(root: Path, terminal: str, timeout_seconds: int) -> int:
                 "custom_history_gate_audit_sha256": history_gate.get("audit_sha256"),
                 "custom_history_lease_token": lease_handle.token if lease_handle else None,
                 "claim_admission_mode": claim.get("claim_admission_mode"),
+                "claim_write_lock_ms": claim.get("claim_write_lock_ms"),
                 "dl089_lane_preflight_status": lane_preflight.get("status"),
                 "dl089_lane_preflight_program_id": lane_preflight.get("program_id"),
                 "dl089_lane_preflight_arm": lane_preflight.get("arm"),
