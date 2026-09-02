@@ -1,0 +1,63 @@
+{
+  "artifact_type": "fx_cointegration_paced_cpu_ceiling_stop",
+  "schema_version": "qm.fx-cointegration-paced-cpu-stop/v1",
+  "generated_at_utc": "2026-09-02T21:31:29.7905410Z",
+  "generated_at_local": "2026-09-02T23:31:29.7905410+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "a83deac0bdf3935703c484122232088a875408fb",
+  "mission": "grow_certified_v5_portfolio_new_forex_sleeves",
+  "outcome": "CPU_CEILING_STOP_BEFORE_FALLBACK_QUEUE_REREAD",
+  "governed_frontier": {
+    "controlling_research": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "latest_eligibility_audit": "artifacts/fx_cointegration_fallback_audit_cpu_stop_20260902T204902Z_board_advisor.json",
+    "unbuilt_relationship_count": 0,
+    "anchor_q02_repair_required": false,
+    "existing_fallback": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+    "fallback_phase_at_latest_audit": "Q09_NEWS",
+    "decision": "No new Card or EA is eligible. The hard CPU ceiling bound before the existing fallback row was reread or mutated."
+  },
+  "capacity": {
+    "sampling_method": "Win32_PerfFormattedData_PerfOS_Processor Name=_Total",
+    "sample_timestamps_utc": [
+      "2026-09-02T21:31:15.4164086Z",
+      "2026-09-02T21:31:17.7137020Z",
+      "2026-09-02T21:31:25.2473519Z",
+      "2026-09-02T21:31:27.5197015Z",
+      "2026-09-02T21:31:29.7905410Z"
+    ],
+    "samples_percent": [
+      96.0,
+      84.0,
+      85.0,
+      94.0,
+      99.0
+    ],
+    "average_percent": 91.6,
+    "maximum_percent": 99.0,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_rule": "stop when average or maximum is greater than or equal to the ceiling",
+    "ceiling_binding": true
+  },
+  "actions": {
+    "card_or_ea_created": false,
+    "ea_or_setfile_changed": false,
+    "registry_or_magic_changed": false,
+    "work_item_reread_after_capacity_check": false,
+    "work_item_created": false,
+    "priority_changed": false,
+    "work_item_claimed": false,
+    "compile_or_backtest_started": false,
+    "terminal_or_worker_controlled": false
+  },
+  "protected_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_files": false,
+    "autotrading": false
+  },
+  "non_duplicate_value": "This later wake sampled capacity against a newer repository head and independently confirmed that the hard ceiling remained binding after the 20:49Z fallback eligibility audit.",
+  "continuation": "On a later wake, sample host CPU first. Only when both average and maximum are strictly below 97 percent, reread the exact QM5_12778 Q09_NEWS row and permit only its existing ordinary paced-worker path. Do not enqueue, reprioritize, manually claim, or dispatch a duplicate."
+}
