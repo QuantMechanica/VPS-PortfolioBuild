@@ -175,4 +175,4 @@ neutrality or certification.
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-09-02 | Initial build from approved card | governed magics `412810000` and `412810001`; Q01 pending |
+| v1 | 2026-09-02 | Initial build from approved card | governed magics `412810000` and `412810001`; Q01 `COMPILE_OK`, strict build-check PASS |

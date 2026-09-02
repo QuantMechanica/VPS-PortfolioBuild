@@ -1,0 +1,120 @@
+{
+  "task_id": "bb9dc5ab-5890-4838-b2e4-2966f4f6daa4",
+  "build_generation": 0,
+  "ea_id": "QM5_41281",
+  "ea_label": "QM5_41281_xauxag-mconover-scale-rv",
+  "slug": "xauxag-mconover-scale-rv",
+  "strategy_id": "AI-CODEX-XAUXAG-MCONOVER-SCALE-RV-20260902_S01",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41281_xauxag-mconover-scale-rv",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41281_xauxag-mconover-scale-rv\\QM5_41281_xauxag-mconover-scale-rv.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41281_xauxag-mconover-scale-rv\\QM5_41281_xauxag-mconover-scale-rv.ex5",
+  "magic_base": 412810000,
+  "symbols_registered": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "logical_symbol": "QM5_41281_XAU_XAG_CONOVER_SCALE_RV_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "timeframe": "D1",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41281_xauxag-mconover-scale-rv\\sets\\QM5_41281_xauxag-mconover-scale-rv_QM5_41281_XAU_XAG_CONOVER_SCALE_RV_D1_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41281_xauxag-mconover-scale-rv\\sets\\QM5_41281_xauxag-mconover-scale-rv_XAUUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41281_xauxag-mconover-scale-rv\\sets\\QM5_41281_xauxag-mconover-scale-rv_XAGUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_sha256": {
+    "QM5_41281_xauxag-mconover-scale-rv_QM5_41281_XAU_XAG_CONOVER_SCALE_RV_D1_D1_backtest.set": "02349491DF309FB3C0004264B4BDAFCBA484C27FC31077C89E7AF5D0A84449CB",
+    "QM5_41281_xauxag-mconover-scale-rv_XAUUSD.DWX_D1_backtest.set": "297E8A75CDCA68F5EE14C19578488C4E1B54032F4E873289B06C26D7FFDF6FB5",
+    "QM5_41281_xauxag-mconover-scale-rv_XAGUSD.DWX_D1_backtest.set": "3C7CFC8D7815FC12D735FEEA17D965514F604D1D206426B1DE3174BC13CC8E43"
+  },
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41281_xauxag-mconover-scale-rv\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "The qm-build-ea-from-card skill is build-only and forbids manual backtests; the OWNER mission authorizes one governed paced logical-basket Q02 enqueue instead.",
+  "blocked_reason": "",
+  "open_questions": [
+    "Q02 must establish package activity, fills, paired costs, and baseline economics, including at least five completed packages in every full post-warm-up year.",
+    "Only unchanged Q09 may determine realized decorrelation or diversification value versus the certified index, metal, and XNG book."
+  ],
+  "compile": {
+    "status": "COMPILE_OK",
+    "work_item_id": "02136d8d-247a-4325-8e15-8d4728b446f3",
+    "terminal": "T1",
+    "evidence_path": "D:\\QM\\reports\\work_items\\02136d8d-247a-4325-8e15-8d4728b446f3\\QM5_41281\\COMPILE_EA\\compile_evidence.json",
+    "evidence_sha256": "102E0522FD1833AB70B7B5BD2BB174D39E0959A5AAEE1182C922C0580D7DF1F3",
+    "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260902_021622.json",
+    "build_check_report_sha256": "6DF02645B293ECA9DC1D9ACEE2DCCFDC9C5C609194EC35780B9FBDACBA836054",
+    "build_check_result": "PASS",
+    "build_check_warnings": 1,
+    "build_check_warning_codes": [
+      "EA_EVENT_VOCABULARY_UNKNOWN"
+    ],
+    "build_check_warning_detail": "PACKAGE_PLAN is a diagnostic event inherited from the proven basket sizing scaffold; the warning is vocabulary-only and does not affect strict compilation or package behavior.",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "failure_classes": [],
+    "mq5_sha256": "337781AEC812ABF138F59CE53ED4D6D270760B48637A43E6DF8C894C92227E72",
+    "ex5_sha256": "D029D41A1E63DABFC7F9F9FB7A865344019833960C97742765799E73D98A674E",
+    "setfile_build_hash": "AD2C8315B6EBF17BFC9F4538FE7DEEAD06BCE3DB17BB49F2059C470F52007598",
+    "setfile_sha256": "02349491DF309FB3C0004264B4BDAFCBA484C27FC31077C89E7AF5D0A84449CB"
+  },
+  "preflight_compile": {
+    "status": "PASS_TRANSIENT_BINARY_REMOVED_AND_REPLACED_BY_GOVERNED_COMPILE",
+    "authoritative": false,
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "transient_ex5_sha256": "1661D6F406DD8D2CFC8EF168A80104162C2881E15603EC360D656DF5A27226AD"
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "validations": {
+    "approved_card_sha256": "55471E5110B9D8591E8689478F3C519B27465B3CF6B5262A64B5EE0C56F0DA13",
+    "approved_local_card_byte_identical": true,
+    "farm_runtime_card_sha256": "1EADF8EE8639E50686076677AA11B1FD0819C7C56C82CB46A532D4CC70470471",
+    "farm_runtime_card_byte_identical": false,
+    "farm_runtime_card_normalization": "The factory approval controller normalized approval metadata in its runtime mirror; executable R2-R4, strategy, symbol, risk, and lifecycle contracts are unchanged.",
+    "build_skill_guard": "PASS",
+    "card_schema_lint": "PASS",
+    "dedup_artifact_sha256": "8B4A95C9CE6F1FABDFDE437DC76CDB2CA917C5458EA12639B6415E9D0B49836E",
+    "reference_test_sha256": "977ABC6AC54828CDB14087C51A74BA8472A9DC58139571A4838640732136194E",
+    "reference_tests": "PASS_8",
+    "source_packet_sha256": "4B82274A5BD2A37C12251340F04FDA0C2E93721EE6EC25EE6C448763D86228E7",
+    "spec_sha256": "3CC1CDAF9A7A5F63A332C865CA8910664A2617DEC473C28B902A807D6EA0B653",
+    "spec_validation": "PASS",
+    "static_guardrails": "PASS",
+    "symbol_scope": "LOGICAL_BASKET_ONLY_Q02_COMPONENT_PRESETS_VALIDATION_ONLY",
+    "setfile_validation": "PASS_3_RISK_FIXED_ONE_LOGICAL_TWO_COMPONENT"
+  },
+  "capacity_admission": {
+    "sampling_method": "Win32_PerfFormattedData_PerfOS_Processor Name=_Total",
+    "sample_interval_seconds": 2,
+    "sample_window_utc": {
+      "started_at": "2026-09-02T02:21:13.2230836Z",
+      "ended_at": "2026-09-02T02:21:22.7065905Z"
+    },
+    "cpu_samples_percent": [
+      65.0,
+      56.0,
+      45.0,
+      38.0,
+      43.0
+    ],
+    "cpu_average_percent": 49.4,
+    "cpu_maximum_percent": 65.0,
+    "cpu_ceiling_percent": 97.0,
+    "rule": "admit only when average and maximum are strictly below the ceiling",
+    "admitted": true
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "deploy_manifest_touched": false,
+    "manual_backtest_launched": false,
+    "manual_dispatch_requested": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false
+  }
+}
