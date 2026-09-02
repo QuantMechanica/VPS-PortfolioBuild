@@ -1,0 +1,60 @@
+{
+  "schema": "qm.source-retrieval-evidence/v1",
+  "source_id": "JARQUEBERA-SCIPY-MOP-WTI-OMNIBUS-20260902",
+  "retrieved_at_utc": "2026-09-02T15:53:09Z",
+  "routes": [
+    {
+      "role": "complete_jarque_bera_implementation_and_estimator_contract",
+      "url": "https://github.com/scipy/scipy/blob/0f0a3dd37f88ecd8c4d83a5913df56471274fefa/scipy/stats/_stats_py.py",
+      "api_url": "https://api.github.com/repos/scipy/scipy/contents/scipy/stats/_stats_py.py?ref=0f0a3dd37f88ecd8c4d83a5913df56471274fefa",
+      "publisher": "SciPy project",
+      "method": "governed_router_ROUTE_GITHUB_API_then_public_GitHub_contents_API",
+      "router_status": "ROUTE_GITHUB_API",
+      "status": "OK",
+      "commit": "0f0a3dd37f88ecd8c4d83a5913df56471274fefa",
+      "commit_date_utc": "2026-08-28T15:51:17Z",
+      "git_blob_sha": "ee903167ab39fc0568ebb1ba43a04d87d4f9884a",
+      "retrieved_byte_count": 444686,
+      "retrieved_content_sha256": "B53DEFA1D9BA760603F1E4E22DCA2FB17FF7CFCD5DC2B4B3336400B7159AC0C0",
+      "bounded_read": "The complete jarque_bera function and the complete skew and kurtosis estimator functions it calls were read, including defaults, formulas, references, examples, finite-sample warning, bias branches, degenerate-input behavior, and return contract. The pinned implementation uses biased central moments by default, Fisher excess kurtosis, and statistic n/6*(s^2+k^2/4).",
+      "claim_boundary": "Supports deterministic statistic arithmetic and the warning that chi-square inference is asymptotic and unsuitable at this small sample. It does not establish a WTI trading edge, the 48-return sample, the empirical-median state boundary, continuation direction, CFD equivalence, activity, profitability, or portfolio fit. No p-value is imported."
+    },
+    {
+      "role": "independent_upstream_reference_fixture",
+      "url": "https://github.com/scipy/scipy/blob/0f0a3dd37f88ecd8c4d83a5913df56471274fefa/scipy/stats/tests/test_stats.py",
+      "api_url": "https://api.github.com/repos/scipy/scipy/contents/scipy/stats/tests/test_stats.py?ref=0f0a3dd37f88ecd8c4d83a5913df56471274fefa",
+      "publisher": "SciPy project",
+      "method": "public_GitHub_contents_API",
+      "status": "OK",
+      "commit": "0f0a3dd37f88ecd8c4d83a5913df56471274fefa",
+      "git_blob_sha": "6bc3c9cbecd0022498feb7e8a6ea5dd15e419482",
+      "retrieved_byte_count": 432914,
+      "retrieved_content_sha256": "DB5726ED54BF2D63AEFEC7157BF68DB5003070F0BEA4B574442471C6A6D32D32",
+      "bounded_read": "The complete TestJarqueBera class was read. Its five-value R-compatible vector fixes statistic 0.17651605223752, and its remaining cases cover array shapes and too-few observations.",
+      "claim_boundary": "Supplies one independent arithmetic fixture only; the p-value, random example, and other library behavior do not enter the EA."
+    },
+    {
+      "role": "original_peer_reviewed_method_bibliography",
+      "url": "https://doi.org/10.2307/1403192",
+      "citation": "Jarque, C. M. and Bera, A. K. (1987). A Test for Normality of Observations and Regression Residuals. International Statistical Review 55(2), 163-172.",
+      "doi": "10.2307/1403192",
+      "method": "bibliographic_attribution_from_pinned_SciPy_reference_and_publisher_metadata",
+      "status": "BIBLIOGRAPHIC_ONLY",
+      "claim_boundary": "Establishes original attribution and peer-reviewed publication identity only. No paywalled body claim, critical value, finite-sample result, or trading conclusion is used."
+    },
+    {
+      "role": "monthly_wti_own_return_continuation",
+      "url": "https://w4.stern.nyu.edu/facdir/lpederse/papers/TimeSeriesMomentum.pdf",
+      "citation": "Moskowitz, T. J., Ooi, Y. H., and Pedersen, L. H. (2012). Time Series Momentum. Journal of Financial Economics 104(2), 228-250.",
+      "doi": "10.1016/j.jfineco.2011.11.003",
+      "method": "existing_governed_complete_paper_read",
+      "status": "OK_EXISTING_GOVERNED_RECORD",
+      "local_record": "strategy-seeds/sources/MOP-TSMOM-2012/source.md",
+      "local_record_sha256": "C8B07ECD62C1D5EF9E3D7975EEE6A3B6C46C1C566D0B20B42237613D9B3A7042",
+      "claim_boundary": "Supports monthly own-return continuation across liquid futures and explicit NYMEX WTI membership. It does not test a Jarque-Bera state gate, the exact conjunction, or the Darwinex continuous CFD."
+    }
+  ],
+  "access_control_bypass_attempted": false,
+  "third_party_code_executed": false,
+  "external_binary_downloaded": false
+}

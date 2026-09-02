@@ -1,0 +1,48 @@
+{
+  "schema": "qm.market-free-null-density/v1",
+  "generated_at_utc": "2026-09-02T15:49:00Z",
+  "candidate_slug": "wti-mjb-tr",
+  "strategy_id": "JARQUEBERA-MOP-WTI-OMNIBUS-20260902_S01",
+  "purpose": "Pre-data finite-sample cadence sanity check only; not market evidence, a normality-test p-value, a performance estimate, or a substitute for Q02.",
+  "generator": {
+    "name": "numpy.random.default_rng",
+    "numpy_version": "2.4.6",
+    "bit_generator": "PCG64",
+    "seed": 20260902,
+    "replications": 200000,
+    "batch_count": 10,
+    "observations_per_batch": 20000,
+    "observations_per_replication": 48,
+    "distribution": "independent standard normal"
+  },
+  "locked_statistic": {
+    "demean": true,
+    "moment_denominator": 48,
+    "skewness": "m3/(m2^1.5)",
+    "excess_kurtosis": "m4/(m2^2)-3",
+    "formula": "JB=48/6*(skewness^2+excess_kurtosis^2/4)",
+    "finite_sample_empirical_median": 1.0396466455041877,
+    "locked_rounded_boundary": 1.04,
+    "qualification_rule": "JB >= 1.04",
+    "direction_rule": "sign(sum(x[36:48]))"
+  },
+  "results": {
+    "mean_jb": 1.6603987209283555,
+    "median_jb": 1.0396466455041877,
+    "first_quartile_jb": 0.4973811272508079,
+    "third_quartile_jb": 1.8359810462400006,
+    "qualification_fraction_at_rounded_boundary": 0.49981,
+    "theoretical_qualifying_clocks_per_12": 5.99772,
+    "qualifying_positive_direction_fraction_all": 0.24909,
+    "qualifying_negative_direction_fraction_all": 0.25072,
+    "direction_ties": 0
+  },
+  "decision": "PASS_PRE_DATA_CADENCE_PRIOR_APPROX_SIX_EXPECTED_QUALIFYING_CLOCKS_PER_YEAR",
+  "limitations": [
+    "Overlapping rolling monthly windows in a backtest are dependent; this independent-null calculation does not estimate actual trade count.",
+    "Raw WTI returns need not be Gaussian, independent, stationary, or distributed like this synthetic input.",
+    "The 1.04 boundary is an empirical finite-sample median used only as a predeclared state divider, not a normality rejection threshold or p-value.",
+    "SciPy explicitly cautions that the asymptotic chi-square calibration needs a much larger sample; no asymptotic critical value or p-value is used here.",
+    "Q02 owns actual completed-position frequency, costs, economics, and all market-data conclusions."
+  ]
+}

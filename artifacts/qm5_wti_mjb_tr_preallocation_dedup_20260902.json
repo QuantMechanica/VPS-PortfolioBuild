@@ -1,0 +1,38 @@
+{
+  "candidate": {
+    "author": "Carlos M. Jarque; Anil K. Bera; Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen",
+    "mechanic": "XTIUSD.DWX D1; once per broker month reconstruct 48 completed monthly log returns; compute biased population centered moments m2,m3,m4; skew=m3/m2^1.5; excess kurtosis=m4/m2^2-3; Jarque-Bera JB=48/6*(skew^2+excess_kurtosis^2/4); qualify only when JB>=1.04; direction is sign of newest 12-month cumulative log return; enter at most once per month; force flat across broker-month boundary; ATR20 3.5x protective stop; no take profit",
+    "slug": "wti-mjb-tr",
+    "strategy_id": "JARQUEBERA-MOP-WTI-OMNIBUS-20260902_S01"
+  },
+  "error": null,
+  "exit_code": 0,
+  "generated_at_utc": "2026-09-02T15:52:44+00:00",
+  "matches": [],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4799,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1428,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "CLEAN"
+}
