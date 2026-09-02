@@ -1,0 +1,139 @@
+{
+  "artifact_type": "fx_cointegration_existing_card_hard_cpu_stop",
+  "schema_version": "qm.fx-cointegration-existing-card-hard-cpu-stop/v1",
+  "generated_at_utc": "2026-09-02T17:48:48.490Z",
+  "generated_at_local": "2026-09-02T19:48:48.498+02:00",
+  "branch": "agents/board-advisor",
+  "observation_head": "e01791a1af15d11f35659ece8bc6fa124e053a53",
+  "mission": "grow_certified_v5_portfolio_new_forex_sleeves",
+  "outcome": "HARD_CPU_CEILING_STOP",
+  "selection_basis": {
+    "scan_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "unordered_scan_relationship_count": 66,
+    "approved_scan_identity_count": 123,
+    "matching_ea_directory_count": 123,
+    "unbuilt_approved_identity_count": 0,
+    "fallback_clause_used": true,
+    "reason": "The fixed scan has no approved unbuilt identity and both preferred anchors are beyond Q02, so the existing-forex-card fallback applies."
+  },
+  "anchor_state": [
+    {
+      "ea_id": "QM5_12532",
+      "relationship": [
+        "AUDUSD.DWX",
+        "NZDUSD.DWX"
+      ],
+      "q02_verdict": "PASS",
+      "current_q02_setup_blocker": false
+    },
+    {
+      "ea_id": "QM5_12533",
+      "relationship": [
+        "EURJPY.DWX",
+        "GBPJPY.DWX"
+      ],
+      "q02_verdict": "PASS",
+      "current_q02_setup_blocker": false
+    }
+  ],
+  "selected_sleeve": {
+    "ea_id": "QM5_12778",
+    "slug": "edgelab-audusd-eurjpy-cointegration",
+    "card": "strategy-seeds/cards/approved/QM5_12778_edgelab-audusd-eurjpy-cointegration_card.md",
+    "g0_status": "APPROVED",
+    "relationship": [
+      "AUDUSD.DWX",
+      "EURJPY.DWX"
+    ],
+    "logical_symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+    "host_symbol": "AUDUSD.DWX",
+    "timeframe": "D1",
+    "structural_contract": {
+      "spread": "ln(AUDUSD) - 0.279193 * ln(EURJPY)",
+      "zscore_lookback_bars": 60,
+      "entry_absolute_z": 2.0,
+      "exit_absolute_z": 0.5,
+      "ml": false,
+      "grid": false,
+      "martingale": false
+    },
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "basket_manifest": "framework/EAs/QM5_12778_edgelab-audusd-eurjpy-cointegration/basket_manifest.json"
+  },
+  "queue_observation": {
+    "work_item_id": "24acc5d4-3e34-526e-a7a8-12640a2e759f",
+    "phase": "Q09_NEWS",
+    "symbol": "AUDUSD.DWX",
+    "diagnostic_non_admission": true,
+    "status": "pending",
+    "verdict": null,
+    "attempt_count": 0,
+    "claimed_by": null,
+    "priority_track": true,
+    "priority_marked_at_utc": "2026-09-02T14:31:41+00:00",
+    "mutation_performed": false,
+    "reason": "An exact open priority-bound row already exists; appending, rewriting, or manually claiming another row would be duplicate work."
+  },
+  "repository_package_observation": {
+    "mq5_sha256": "132a501d94685f013cc62a8b3c2de111d0a8b1e616a8656d2c61b061a754c146",
+    "ex5_sha256": "2a105cfbb364142c96c552136bb450162c142845665ce3366d0c045248c17a01",
+    "basket_manifest_sha256": "0ce25d17ebe7c3664e4acdb6c1d302b28b1f40710301189cc633e44f25854d57",
+    "logical_backtest_setfile_sha256": "0e7949276927c8c5355c413c631e7b67f684e757892de59fa2cff5521836c8e9",
+    "matches_prior_priority_handoff": true
+  },
+  "capacity_guard": {
+    "initial_samples_percent": [
+      90.449,
+      82.553,
+      84.084,
+      71.631,
+      71.297
+    ],
+    "initial_average_percent": 80.003,
+    "initial_maximum_percent": 90.449,
+    "decision_window_average_percent": 99.865,
+    "decision_window_maximum_percent": 100.0,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_rule": "stop when average or maximum is greater than or equal to 97 percent",
+    "ceiling_binding": true,
+    "free_physical_ram_gb": 30.945,
+    "governed_active_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T6",
+      "T7",
+      "T8",
+      "T9",
+      "T10"
+    ],
+    "idle_worker_terminal": "T5",
+    "backtest_or_dispatch_started": false
+  },
+  "actions": {
+    "card_created_or_changed": false,
+    "ea_or_setfile_changed": false,
+    "basket_manifest_changed": false,
+    "registry_or_magic_changed": false,
+    "work_item_created": false,
+    "work_item_priority_changed": false,
+    "work_item_claimed": false,
+    "compile_started": false,
+    "backtest_or_dispatch_started": false,
+    "terminal_or_autotrading_control": false
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_files": false,
+    "autotrading": false
+  }
+}
