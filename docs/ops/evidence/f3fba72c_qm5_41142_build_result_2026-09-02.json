@@ -6,7 +6,7 @@
   "ea_id": "QM5_41142",
   "ea_label": "QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow",
   "slug": "eurusd-month-end-benchmark-fix-hedge-flow",
-  "verdict": "BUILD_COMPLETE_STRICT_COMPILE_PASS_REVIEW_READY",
+  "verdict": "BUILD_COMPLETE_STRICT_COMPILE_PASS_ROUTER_IDENTITY_GATE_BLOCKED",
   "card": {
     "path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow.md",
     "sha256": "62558E7DD039847DAE93DEF565C7F48F1108E9E965611A8502DA33020446DC55",
@@ -67,7 +67,11 @@
   "router_handoff": {
     "requested_state": "REVIEW",
     "artifact_path": "C:\\QM\\repo\\docs\\ops\\evidence\\f3fba72c_qm5_41142_build_result_2026-09-02.json",
-    "verdict": "BUILD_COMPLETE_STRICT_COMPILE_PASS_REVIEW_READY"
+    "verdict": "BUILD_COMPLETE_STRICT_COMPILE_PASS_REVIEW_READY",
+    "accepted": false,
+    "gate_code": "D6_BUILD_IDENTITY_MISSING",
+    "reason": "strict_build_pass_evidence_missing_review_dispatch_refused",
+    "task_state_after_attempt": "BLOCKED"
   },
   "safety": {
     "autotrading_toggled": false,
