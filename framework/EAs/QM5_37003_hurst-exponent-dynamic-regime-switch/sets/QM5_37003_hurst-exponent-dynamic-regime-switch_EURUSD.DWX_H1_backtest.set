@@ -3,16 +3,16 @@
 ; ea_id:        37003
 ; ea_slug:      hurst-exponent-dynamic-regime-switch
 ; ea_version:   v5.0
-; set_version:  s20260824-001
+; set_version:  s20260902-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   ddcd564c46868370f7dbf3581c524e64cf4565f5a276c876f72770a5ffc0b250
+; build_hash:   bf2bbdaa42f685ab1ad0bf57f032ef1a562d6fdc556e9a6fbbb65de482df3769
 ; author:       Development
-; date:         2026-08-24
+; date:         2026-09-02
 ;==========================================================
 qm_ea_id=37003
 qm_magic_slot_offset=0
@@ -20,7 +20,7 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=strategy-seeds/cards/approved/QM5_37003_hurst-exponent-dynamic-regime-switch.md
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\QM5_37003_hurst-exponent-dynamic-regime-switch.md
 strategy_hurst_lookback=100
 strategy_trend_hurst=0.55
 strategy_revert_hurst=0.45
