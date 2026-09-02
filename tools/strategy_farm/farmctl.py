@@ -18549,8 +18549,12 @@ PUMP_TOTAL_BUDGET_SECONDS = 360.0  # 2026-09-02: was 270; dispatch overruns star
 PUMP_DISPATCH_BUDGET_SECONDS = 30.0
 PUMP_AUTOCOMMIT_BUDGET_SECONDS = 30.0
 PUMP_LATE_AUTOSEAL_BUDGET_SECONDS = 45.0
-PUMP_DISPATCH_AUTOSEAL_LIMIT = 2
-PUMP_LATE_AUTOSEAL_LIMIT = 4
+# 2026-09-02 (CEO): autoseal runs in the QM_StrategyFarm_Tick_5min task (dispatch_tick
+# default limit) instead of inside the pump: _build_q09_autoseal_plan ignores the
+# 30 s dispatch deadline while stat-ing plan files and consumed 285 s of the
+# 11:29Z cycle, starving every census/promotion stage. Rollback: 2 / 4.
+PUMP_DISPATCH_AUTOSEAL_LIMIT = 0
+PUMP_LATE_AUTOSEAL_LIMIT = 0
 PUMP_NEWS_EXPANSION_LIMIT = 2
 PUMP_OPT_FORK_BUDGET_SECONDS = 30.0
 PUMP_DL089_FRONTIER_REFILL_BUDGET_SECONDS = 10.0
