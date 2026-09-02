@@ -52,3 +52,7 @@ is unchanged.
 ## Rollback
 
 Single revert of the first CASE arm (or of the commit); tests cover the previous order.
+
+## Adversarial correctness review (post-commit) and fix
+
+The correctness verifier refuted the first commit: the new arm called `json_extract(w.payload_json,'$.schema')` guarded only by `w.phase='Q02'`; an empty or non-JSON payload makes SQLite raise `malformed JSON` and abort the whole canonical claim-order query for every claimant (every other `json_extract` in the selector is `json_valid`-guarded). Fix in `89272cc676`: `AND json_valid(w.payload_json)=1` added to the arm; regression test `test_dl089_q02_prerequisite_arm_tolerates_malformed_payload` proves a malformed Q02 row neither aborts nor is lifted (27 + 93 tests green). No pending row carried invalid JSON at the time; workers reloaded before the fix are reloaded again at the next idle pass.
