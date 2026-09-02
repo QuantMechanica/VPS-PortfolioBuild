@@ -146,9 +146,11 @@ QM5_1252_Q02_INFRA_REPAIR_EA_LABELS = frozenset({
 # zero-trade recovery. The immutable predecessor proves a valid model-4 run,
 # synchronized seven-symbol history, and zero trades while the old binary had
 # no pair-selection/signal decision markers. This authority accepts only the
-# default-off diagnostic source hash below and permits one append-only compile
-# successor. It grants no economic-rule, backtest, gate-verdict, or live-use
-# authority and self-expires on any further source edit.
+# default-off diagnostic source hash below, including the mechanical bounds
+# proof required after COMPILE_EA b94b03b4-abee-4cfc-888f-2c48f4cd2960,
+# and permits one append-only compile successor. It grants no economic-rule,
+# backtest, gate-verdict, or live-use authority and self-expires on any further
+# source edit.
 QM5_10025_Q02_ZERO_TRADE_REPAIR_PREDECESSOR_ID = (
     "050dd2ea-e9d0-475f-b5ad-40c2206867ff"
 )
@@ -159,7 +161,7 @@ QM5_10025_Q02_ZERO_TRADE_REPAIR_EA_LABEL = (
     "QM5_10025_rw-fx-broad-pairs"
 )
 QM5_10025_Q02_ZERO_TRADE_REPAIRED_SOURCE_SHA256 = (
-    "49e0c78c0e45fa39b05580216003ee523839b664844a82e3a7d3d943030e069a"
+    "db7424efcba0a8df90184240e277e1a7546e8030672eec88a4c72a89c32a5a61"
 )
 QM5_10025_Q02_ZERO_TRADE_REJECTED_SOURCE_SHA256 = (
     "fd0a18d8710dc8bd0d089ab34b9c881de65e971f0916ba540b34c53b2aa120ff"
