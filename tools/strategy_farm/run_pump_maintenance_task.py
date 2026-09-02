@@ -29,6 +29,7 @@ from pathlib import Path
 REPO_ROOT = Path(r"C:\QM\repo")
 LOG_DIR = Path(r"D:\QM\strategy_farm\logs")
 FARMCTL = REPO_ROOT / "tools" / "strategy_farm" / "farmctl.py"
+TERMINAL_WORKER = REPO_ROOT / "tools" / "strategy_farm" / "terminal_worker.py"
 LOCK_PATH = LOG_DIR / "pump_maintenance_task.lock"
 LOCK_STALE_SECONDS = 55 * 60  # hourly cadence; clear a lock the next hour
 FACTORY_OFF_FLAG = Path(r"D:\QM\strategy_farm\state\FACTORY_OFF.flag")
@@ -74,6 +75,28 @@ def main() -> int:
         with log_path.open("w", encoding="utf-8", newline="\n") as log:
             env = os.environ.copy()
             env.setdefault("QM_AGENT_ID", "controller")
+            # Reconcile stage: drain durable orphan-claim markers left by a
+            # worker that exited on a busy DB and could not release its own claim
+            # (state/orphan_claims/, terminal_worker c261068d 2026-09-02). This is
+            # fleet-wide and safe to run before the aggregate maintenance; a
+            # failure here must not skip the maintenance/backup below.
+            try:
+                subprocess.run(
+                    [
+                        _console_python(),
+                        str(TERMINAL_WORKER),
+                        "--reconcile-orphan-claims",
+                    ],
+                    cwd=str(REPO_ROOT),
+                    stdout=log,
+                    stderr=subprocess.STDOUT,
+                    stdin=subprocess.DEVNULL,
+                    env=env,
+                    close_fds=True,
+                    timeout=300,
+                )
+            except (OSError, subprocess.SubprocessError):
+                pass
             proc = subprocess.run(
                 [_console_python(), str(FARMCTL), "pump-maintenance"],
                 cwd=str(REPO_ROOT),

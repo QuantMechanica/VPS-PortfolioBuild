@@ -129,7 +129,12 @@ def test_sqlite_busy_defer_outlasts_old_retry_budget(tmp_path: Path) -> None:
     assert connect_attempts == 13
     assert seen == [
         {
-            "attempts": terminal_worker.POST_CLAIM_SQLITE_WRITE_RETRIES,
-            "base_delay_seconds": terminal_worker.POST_CLAIM_SQLITE_WRITE_RETRY_SLEEP_SECONDS,
+            "attempts": terminal_worker.ORPHAN_DEFER_RELEASE_RETRY_ATTEMPTS,
+            "base_delay_seconds": terminal_worker.ORPHAN_DEFER_RELEASE_RETRY_BASE_SECONDS,
+            "max_delay_seconds": terminal_worker.ORPHAN_DEFER_RELEASE_RETRY_MAX_SECONDS,
         }
     ]
+    # The release envelope now spans ~60s of exponential backoff, comfortably
+    # more than the old 20-attempt post-claim budget, so a lock storm that
+    # briefly outlasts the claim window still returns the row to pending.
+    assert terminal_worker.ORPHAN_DEFER_RELEASE_RETRY_ATTEMPTS >= 30
