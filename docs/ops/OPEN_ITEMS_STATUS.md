@@ -1,7 +1,22 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **CEO-Loop 2026-09-02 10:00–10:40Z (OWNER: „Sonntag 06.09. steht; Claude voll verantwortlich für Backtest-Durchsatz und Buch"):**
+> **Steuerungsebene war der Engpass, nicht die Tester.** Evidenz `docs/ops/evidence/2026-09-02_ceo_stranding_census_and_pump_control_plane.md`.
+> (1) Gate-Kaskade lief seit 01.09. in 12 von 261 Pump-Zyklen → 413 Q03-PASS, 58 Q09-PASS, 591 Q02-PASS ohne Folgezeile; Zensus-Services ebenfalls verhungert.
+> Fix: Zensus-Services + Kaskade an den Zyklusanfang, Budget 270→360 s (`f558a07408`, `9abb2290be`), dispatch_tick-Teilzeiten instrumentiert.
+> (2) Juli-Backfill las 3.400 Cards pro 5-min-Zyklus (09:58Z-Zyklus >16 min, py-spy) → mtime-Cache + 15-s-Budget (`ff08f13eb8`); toter Pump-Claim nach 120 s reapbar (`0b93ef5180`).
+> (3) **Claim-Hashing:** jeder Claim hashte die 108 privaten Archivdateien (2,04 GB) neu → D: 3 GB/s Lesen, Queue 37–45, Zellen 29/h statt 60–80/h.
+> Fix: Verifikations-Cache je Terminal, TTL 4 h, Kill-Switch `QM_CUSTOM_HISTORY_VERIFY_CACHE=0` (`76981d683b`); gestaffelter Worker-Reload läuft.
+> (4) Selector las alle Zell-Reports pro Zyklus (>10 min) → Sidecar-Cache (`fcdd83aa37`, `3ec4236dfd`).
+> (5) 133 INFRA_FAIL-Zeilen oberhalb Q02 append-only neu eingereiht (Q03–Q09 inkl. 30 Q04-Probes); 22 korrekt abgelehnt (Binary neu gebaut).
+> (6) REVIEW-Stau abgebaut: 12 Codex-Tasks unabhängig verifiziert (Workflow, Artefakt-Existenz zuerst) → 11 APPROVED, 1 RECYCLE (5851dc5b, Ergebnis nicht in OPEN_ITEMS).
+> Befund daraus für den 06.09.: EURUSD-magic=0 war der Friday-Close-Broker-Deal von QM5_11421, kein manueller Trade (ee18d088); NDX-Herkunft offen (DEAL_REASON fehlt).
+> (7) Verwaister Codex-ripgrep (25 min, 120 MB/s über T_Live-Verzeichnis, Defender hinterher) gestoppt; `QM_StrategyFarm_ClaudeOrchestration_15min` für die Dauer der interaktiven Session deaktiviert (wieder aktivieren beim Handoff).
+> Offen: Q07/Q08-Reruns der Zensus-Eltern stehen auf Rang ~1.500 der Claim-Reihenfolge (kein priority_track) → Markierung folgt; Sibling-Q02-Seeds 41303/41304/41305/41307; 41306 Held-Successor 8620da55; Pair-8-Build c2ef7f4a.
+
 ## CEO Wave 1 — Codex-Ausführung 2026-09-02
 
+- **Q14 orphan-lane hygiene (task `5bcdf6f4-b1b8-4dbb-a952-252270d68d2f`): REVIEW.** Four Q13/Q14 rows derived from generic Q12 `PASS` parents were superseded append-only onto the real terminal chains for 11421/EURUSD and 10706/GBPUSD. Canonical supersession rows and audit events prevent the two pending orphan Q14 rows from being claimed again. Evidence: `docs/ops/evidence/2026-09-02_q14_orphan_lane_hygiene.md`. No sealed criterion or `T_Live` state changed.
 - **FTMO evidence chain (task `b306ca82-56b3-4f31-a75f-4575ca486d1d`): REVIEW.** Audit inputs are pinned to the frozen 24-sleeve bundle with fail-closed fingerprint/anchor checks; `FTMO_2S_100K_SWING_V2` adds the verified economic terms; the TrialPulse task limit is PT20M and the stale `267014` alarm cleared. Evidence: `docs/ops/evidence/2026-09-02_ftmo_evidence_chain_repair.md`, `docs/ops/evidence/2026-09-02_ftmo_economic_terms_snapshot.json`, `artifacts/audit_ev_funded_account_20260902.json`. No sealed criterion or live-trading state changed.
 - **Q08 8.2 real-cohort DSR / Sharpe audit (task `2900ac3d-a328-4e54-802b-b765946d2648`): REVIEW.** 3,001-EA and 13,398-pair DSR is now emitted report-only without changing the sealed verdict threshold; dashboard MT5 Sharpe was replaced by labeled return-based Sharpe, while the remaining sealed Q09 compatibility input is explicitly labeled for OWNER disposition. Evidence: `docs/ops/evidence/2026-09-02_q08_dsr_real_cohort_and_sharpe_audit.md`.
 
