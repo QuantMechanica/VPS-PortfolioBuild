@@ -21436,6 +21436,639 @@ def _q01_smoke_admission(smoke: dict[str, Any] | None) -> dict[str, Any]:
     }
 
 
+# ---------------------------------------------------------------------------
+# REQUAL-8 boundary tooling (OWNER-DEC-Q09HOLD-REQUAL-8-20260829)
+#
+# Two governed, auditable farmctl subcommands replace the ephemeral, uncommitted
+# scripts that pushed REQUAL-8 pairs 2/5/6 through by hand:
+#   * record-q01-smoke-successor - authenticate a worker-bound Q01 smoke PASS and
+#     append a build-generation successor so Q02 admission (via
+#     _latest_build_smoke_result / _q01_smoke_admission) sees smoke_result=passed.
+#   * release-hold - release exactly one active work_item_holds row under the
+#     global factory-mutation lock with a fresh backup, a compare-and-swap, and
+#     append-only ledger + event records, never touching work_items.
+# ---------------------------------------------------------------------------
+
+
+def _normpath_key(value: Any) -> str:
+    """Case/sep-normalized path key for cross-record path equality checks."""
+    return os.path.normcase(os.path.normpath(str(value or "")))
+
+
+def _governed_state_backup(root: Path, label: str) -> tuple[Path, str]:
+    """Fresh pre-mutation SQLite snapshot, matching the governed-hold convention.
+
+    Mirrors ``governed_work_item_hold.sqlite_backup`` / ``_hourly_db_backup``:
+    a distinct, timestamped ``state/backups/farm_state_before_<label>_<stamp>``
+    copy taken with the online ``sqlite3.Connection.backup`` API, returned with
+    its SHA-256 so callers can record a durable rollback anchor.
+    """
+    src = db_path(root)
+    backup_dir = root / "state" / "backups"
+    backup_dir.mkdir(parents=True, exist_ok=True)
+    # Microsecond precision keeps two governed mutations in the same wall-clock
+    # second from colliding on one snapshot name (the governed-hold tool never
+    # runs twice per second, so it uses second resolution).
+    stamp = dt.datetime.now(dt.UTC).strftime("%Y%m%dT%H%M%S_%fZ")
+    dest = backup_dir / f"farm_state_before_{label}_{stamp}.sqlite"
+    if dest.exists():
+        raise RuntimeError(f"backup_exists:{dest}")
+    src_conn = sqlite3.connect(str(src))
+    try:
+        tgt_conn = sqlite3.connect(str(dest))
+        try:
+            src_conn.backup(tgt_conn)
+        finally:
+            tgt_conn.close()
+    finally:
+        src_conn.close()
+    return dest, _sha256_file(dest)
+
+
+def _authenticate_q01_smoke_successor(
+    conn: sqlite3.Connection,
+    build_task_id: str,
+    smoke_work_item_id: str,
+) -> dict[str, Any]:
+    """Read-only authentication of a worker-bound Q01 smoke PASS against a build.
+
+    Returns a dict with ``ok`` True and the derived successor plan, or ``ok``
+    False plus a fail-closed ``reason``/``detail``.  It never mutates state.
+    """
+    smoke_row = conn.execute(
+        "SELECT * FROM work_items WHERE id=?", (smoke_work_item_id,)
+    ).fetchone()
+    if smoke_row is None:
+        return {"ok": False, "reason": "smoke_work_item_not_found",
+                "smoke_work_item_id": smoke_work_item_id}
+    smoke = dict(smoke_row)
+    try:
+        smoke_payload = json.loads(smoke["payload_json"] or "{}")
+    except (json.JSONDecodeError, TypeError):
+        smoke_payload = {}
+
+    if str(smoke.get("status") or "") != "done" or str(smoke.get("verdict") or "") != "PASS":
+        return {
+            "ok": False,
+            "reason": "q01_smoke_not_pass",
+            "detail": f"smoke status/verdict={smoke.get('status')!r}/{smoke.get('verdict')!r}; require done/PASS",
+        }
+
+    contract = str(smoke_payload.get("q01_smoke_contract") or "")
+    if contract != Q01_SMOKE_WORK_ITEM_CONTRACT:
+        return {
+            "ok": False,
+            "reason": "q01_smoke_contract_mismatch",
+            "detail": f"contract={contract!r}; require {Q01_SMOKE_WORK_ITEM_CONTRACT!r}",
+        }
+
+    bound_build_task_id = str(smoke_payload.get("build_task_id") or "")
+    if bound_build_task_id != str(build_task_id):
+        return {
+            "ok": False,
+            "reason": "smoke_build_task_binding_mismatch",
+            "detail": f"smoke.build_task_id={bound_build_task_id!r}; requested {build_task_id!r}",
+        }
+
+    build_row = conn.execute(
+        "SELECT id,kind,card_id,status,payload_json FROM tasks WHERE id=?",
+        (build_task_id,),
+    ).fetchone()
+    if build_row is None:
+        return {"ok": False, "reason": "build_task_not_found", "build_task_id": build_task_id}
+    if str(build_row["kind"]) != "build_ea":
+        return {
+            "ok": False,
+            "reason": "build_task_kind_mismatch",
+            "detail": f"kind={build_row['kind']!r}; require build_ea",
+        }
+    try:
+        build_payload = json.loads(build_row["payload_json"] or "{}")
+    except (json.JSONDecodeError, TypeError):
+        build_payload = {}
+    build_cr = build_payload.get("codex_result")
+    if not isinstance(build_cr, dict) or not build_cr:
+        return {"ok": False, "reason": "build_task_has_no_codex_result",
+                "build_task_id": build_task_id}
+
+    # --- Smoke-row internal binding consistency (3-way): the durable work_items
+    #     columns, the payload expected_* fields, and artifact_identity must all
+    #     agree before their value is trusted as the sealed execution binding.
+    identity = smoke_payload.get("artifact_identity")
+    identity = identity if isinstance(identity, dict) else {}
+    bound: dict[str, str] = {}
+    for kind, col, exp_key in (
+        ("mq5", "mq5_sha256", "expected_mq5_sha256"),
+        ("ex5", "ex5_sha256", "expected_ex5_sha256"),
+        ("setfile", "setfile_sha256", "expected_setfile_sha256"),
+    ):
+        col_sha = str(smoke.get(col) or "").strip().lower()
+        if not col_sha:
+            return {"ok": False, "reason": "smoke_binding_missing",
+                    "detail": f"work_items.{col} is empty for {kind}"}
+        for source_name, source_val in (
+            (exp_key, smoke_payload.get(exp_key)),
+            (f"artifact_identity.{col}", identity.get(col)),
+        ):
+            sval = str(source_val or "").strip().lower()
+            if sval and sval != col_sha:
+                return {
+                    "ok": False,
+                    "reason": "smoke_binding_internal_inconsistent",
+                    "detail": f"{kind}: work_items.{col}={col_sha} != {source_name}={sval}",
+                }
+        bound[kind] = col_sha
+
+    # --- Resolve the exact artifacts the BUILD recorded and hash their CURRENT
+    #     repo bytes.  The build records artifacts by path, so hashing those exact
+    #     paths yields both "the build task's recorded artifact hashes" and "the
+    #     current repo bytes" in one read; equality with the sealed smoke binding
+    #     proves nothing drifted between build, smoke, and now.
+    mq5_path = build_cr.get("mq5_path")
+    ex5_path = build_cr.get("ex5_path")
+    setfiles = build_cr.get("setfiles_generated")
+    setfiles = setfiles if isinstance(setfiles, list) else []
+    smoke_setfile = str(smoke.get("setfile_path") or "").strip()
+    chosen_setfile: str | None = None
+    if smoke_setfile:
+        for candidate in setfiles:
+            if _normpath_key(candidate) == _normpath_key(smoke_setfile):
+                chosen_setfile = str(candidate)
+                break
+        if chosen_setfile is None:
+            return {
+                "ok": False,
+                "reason": "setfile_not_in_build_record",
+                "detail": f"smoke setfile {smoke_setfile!r} absent from build setfiles_generated",
+            }
+    elif len(setfiles) == 1:
+        chosen_setfile = str(setfiles[0])
+    else:
+        return {"ok": False, "reason": "setfile_unresolvable",
+                "detail": "smoke has no setfile_path and build recorded != 1 setfile"}
+
+    artifact_paths = {"mq5": mq5_path, "ex5": ex5_path, "setfile": chosen_setfile}
+    current: dict[str, str] = {}
+    for kind, path_value in artifact_paths.items():
+        if not path_value:
+            return {"ok": False, "reason": "build_artifact_path_missing",
+                    "detail": f"build record has no path for {kind}"}
+        p = Path(str(path_value))
+        cur = _sha256_path_current(p)
+        if cur is None:
+            return {"ok": False, "reason": "build_artifact_missing",
+                    "detail": f"{kind} file not readable: {p}"}
+        current[kind] = cur.lower()
+
+    mismatches = [
+        f"{kind}: sealed={bound[kind]} != current={current[kind]}"
+        for kind in ("mq5", "ex5", "setfile")
+        if bound[kind] != current[kind]
+    ]
+    if mismatches:
+        return {
+            "ok": False,
+            "reason": "artifact_sha256_mismatch",
+            "detail": "; ".join(mismatches),
+            "sealed_sha256": bound,
+            "current_sha256": current,
+        }
+
+    return {
+        "ok": True,
+        "smoke": smoke,
+        "smoke_payload": smoke_payload,
+        "build_payload": build_payload,
+        "build_codex_result": build_cr,
+        "artifact_sha256": current,
+        "artifact_paths": {k: str(v) for k, v in artifact_paths.items()},
+        "smoke_evidence_path": smoke.get("evidence_path"),
+        "ea_id": str(smoke.get("ea_id") or build_row["card_id"] or ""),
+    }
+
+
+def _sha256_path_current(path: Path) -> str | None:
+    try:
+        if path.is_file():
+            return _sha256_file(path)
+    except OSError:
+        return None
+    return None
+
+
+def record_q01_smoke_successor(
+    root: Path,
+    build_task_id: str,
+    smoke_work_item_id: str,
+    *,
+    dry_run: bool = False,
+) -> dict[str, Any]:
+    """Append an authenticated build-generation successor for a Q01 smoke PASS.
+
+    The worker-bound Q01 smoke work item (contract
+    ``qm.q01.worker_bound_basket_smoke.v1``) can finish ``done/PASS`` while the
+    latest ``build_ea`` record still carries ``deferred_p2_smoke``; Q02 admission
+    reads that record and refuses.  This appends a new build-generation record
+    (a distinct ``artifacts/builds/<task_id>.gen<N>.json`` file - the generation-0
+    file is never overwritten) whose ``smoke_result="passed"`` and flips the
+    tasks-row active ``codex_result`` to it, keeping every prior generation in an
+    append-only ``build_generations`` list, so ``_latest_build_smoke_result``
+    returns ``passed``.  Idempotent; refuses on any hash mismatch or non-PASS.
+    """
+    init_db(root)
+    now = utc_now()
+
+    with connect(root) as conn:
+        auth = _authenticate_q01_smoke_successor(conn, build_task_id, smoke_work_item_id)
+    if not auth.get("ok"):
+        return {"recorded": False, **auth, "build_task_id": build_task_id,
+                "smoke_work_item_id": smoke_work_item_id}
+
+    build_payload = auth["build_payload"]
+    build_cr = auth["build_codex_result"]
+    prev_gen = _build_generation(build_payload)
+
+    # Idempotency + conflict detection against a prior successor.
+    prior = build_payload.get("q01_smoke_successor")
+    if isinstance(prior, dict) and prior:
+        prior_smoke = str(prior.get("smoke_work_item_id") or "")
+        if prior_smoke == str(smoke_work_item_id):
+            return {
+                "recorded": False,
+                "already_recorded": True,
+                "reason": "q01_smoke_successor_already_recorded",
+                "build_task_id": build_task_id,
+                "smoke_work_item_id": smoke_work_item_id,
+                "to_build_generation": prior.get("to_build_generation"),
+                "latest_smoke_result": str(
+                    (build_cr or {}).get("smoke_result") or ""
+                ).strip().lower(),
+            }
+        return {
+            "recorded": False,
+            "reason": "q01_smoke_successor_conflict",
+            "detail": f"a successor from smoke {prior_smoke!r} already exists",
+            "build_task_id": build_task_id,
+            "smoke_work_item_id": smoke_work_item_id,
+        }
+
+    next_gen = prev_gen + 1
+    gen_path = root / "artifacts" / "builds" / f"{build_task_id}.gen{next_gen}.json"
+    gen_record = {
+        "task_id": str(build_task_id),
+        "ea_id": build_cr.get("ea_id"),
+        "ea_dir": build_cr.get("ea_dir"),
+        "mq5_path": build_cr.get("mq5_path"),
+        "ex5_path": build_cr.get("ex5_path"),
+        "magic_base": build_cr.get("magic_base"),
+        "symbols_registered": build_cr.get("symbols_registered"),
+        "setfiles_generated": build_cr.get("setfiles_generated"),
+        "spec_md_path": build_cr.get("spec_md_path"),
+        "build_check_passed": bool(build_cr.get("build_check_passed")),
+        "compile_succeeded": bool(build_cr.get("compile_succeeded")),
+        "smoke_result": "passed",
+        "smoke_report_path": auth.get("smoke_evidence_path"),
+        "blocked_reason": "",
+        "open_questions": build_cr.get("open_questions", []),
+        "q09_requal8_manifest_sha256": build_cr.get("q09_requal8_manifest_sha256"),
+        "build_generation": next_gen,
+        "superseded_build_generation": prev_gen,
+        "q01_smoke_work_item_id": str(smoke_work_item_id),
+        "q01_smoke_verdict": "PASS",
+        "authenticated_from_smoke_work_item": str(smoke_work_item_id),
+        "artifact_sha256": auth["artifact_sha256"],
+        "recorded_by": "farmctl.record_q01_smoke_successor",
+    }
+    gen_bytes = (json.dumps(gen_record, indent=2, sort_keys=True) + "\n").encode("utf-8")
+    gen_sha = hashlib.sha256(gen_bytes).hexdigest()
+
+    history = list(build_payload.get("build_generations") or [])
+    if not history:
+        history.append({
+            "build_generation": prev_gen,
+            "codex_result": build_cr,
+            "build_result_path": build_payload.get("build_result_path"),
+            "build_result_sha256": build_payload.get("build_result_sha256"),
+            "recorded_at": build_payload.get("build_recorded_at"),
+            "smoke_result": str((build_cr or {}).get("smoke_result") or ""),
+        })
+    history.append({
+        "build_generation": next_gen,
+        "codex_result": gen_record,
+        "build_result_path": str(gen_path),
+        "build_result_sha256": gen_sha,
+        "recorded_at": now,
+        "smoke_result": "passed",
+        "authenticated_from_smoke_work_item": str(smoke_work_item_id),
+    })
+
+    new_payload = dict(build_payload)
+    new_payload["build_generations"] = history
+    new_payload["build_generation"] = next_gen
+    new_payload["codex_result"] = gen_record
+    new_payload["build_result_path"] = str(gen_path)
+    new_payload["build_result_sha256"] = gen_sha
+    new_payload["smoke_skipped_reason"] = ""
+    new_payload["q01_smoke_successor"] = {
+        "smoke_work_item_id": str(smoke_work_item_id),
+        "from_build_generation": prev_gen,
+        "to_build_generation": next_gen,
+        "authenticated_at": now,
+        "gen_build_result_path": str(gen_path),
+        "gen_build_result_sha256": gen_sha,
+        "gen0_build_result_path": build_payload.get("build_result_path"),
+        "gen0_build_result_sha256": build_payload.get("build_result_sha256"),
+        "artifact_sha256": auth["artifact_sha256"],
+    }
+
+    plan = {
+        "build_task_id": build_task_id,
+        "smoke_work_item_id": smoke_work_item_id,
+        "ea_id": auth.get("ea_id"),
+        "from_build_generation": prev_gen,
+        "to_build_generation": next_gen,
+        "gen_build_result_path": str(gen_path),
+        "gen_build_result_sha256": gen_sha,
+        "artifact_sha256": auth["artifact_sha256"],
+        "artifact_paths": auth["artifact_paths"],
+    }
+
+    if dry_run:
+        return {
+            "recorded": False,
+            "dry_run": True,
+            "would_record": True,
+            "authenticated": True,
+            **plan,
+            "latest_smoke_result_after": "passed",
+        }
+
+    lock = FactoryMutationLock(
+        path_for_factory_flag(factory_off_flag_path(root)),
+        owner=f"record_q01_smoke_successor:{build_task_id}",
+    )
+    try:
+        lock.__enter__()
+    except RuntimeError as exc:
+        return {"recorded": False, "reason": "factory_mutation_lock_busy",
+                "detail": str(exc), **plan}
+    try:
+        backup_path, backup_sha = _governed_state_backup(root, "q01_smoke_successor")
+
+        def _apply() -> dict[str, Any]:
+            conn = connect(root)
+            try:
+                conn.execute("BEGIN IMMEDIATE")
+                row = conn.execute(
+                    "SELECT payload_json,kind FROM tasks WHERE id=?", (build_task_id,)
+                ).fetchone()
+                if row is None or str(row["kind"]) != "build_ea":
+                    raise RuntimeError("build_task_disappeared_or_kind_changed")
+                cur_payload = json.loads(row["payload_json"] or "{}")
+                # CAS: refuse if the generation moved or a successor slipped in.
+                if _build_generation(cur_payload) != prev_gen:
+                    raise RuntimeError("build_task_generation_changed")
+                if isinstance(cur_payload.get("q01_smoke_successor"), dict) and cur_payload.get("q01_smoke_successor"):
+                    raise RuntimeError("q01_smoke_successor_recorded_concurrently")
+                gen_path.parent.mkdir(parents=True, exist_ok=True)
+                if not gen_path.exists():
+                    gen_path.write_bytes(gen_bytes)
+                conn.execute(
+                    "UPDATE tasks SET payload_json=?, updated_at=? WHERE id=?",
+                    (json.dumps(new_payload), now, build_task_id),
+                )
+                event(conn, "task", build_task_id, "q01_smoke_generation_successor_recorded", {
+                    "ea_id": auth.get("ea_id"),
+                    "smoke_work_item_id": smoke_work_item_id,
+                    "from_build_generation": prev_gen,
+                    "to_build_generation": next_gen,
+                    "smoke_verdict": "PASS",
+                    "gen_build_result_path": str(gen_path),
+                    "gen_build_result_sha256": gen_sha,
+                    "artifact_sha256": auth["artifact_sha256"],
+                    "backup_path": str(backup_path),
+                    "backup_sha256": backup_sha,
+                })
+                conn.commit()
+            except Exception:
+                conn.rollback()
+                raise
+            finally:
+                conn.close()
+            return {"committed": True}
+
+        retry_sqlite_busy(_apply, attempts=40)
+    finally:
+        lock.__exit__(None, None, None)
+
+    # Read back the admission result the way enqueue-backtest evaluates it.
+    with connect(root) as conn:
+        latest = _latest_build_smoke_result(conn, str(auth.get("ea_id") or ""))
+    admission = _q01_smoke_admission(latest)
+
+    return {
+        "recorded": True,
+        "dry_run": False,
+        **plan,
+        "latest_smoke_result_after": (latest or {}).get("smoke_result"),
+        "q01_smoke_admission_after": admission,
+        "backup": {"path": str(backup_path), "sha256": backup_sha},
+        "factory_mutation_lock_release": lock.release_status,
+    }
+
+
+def release_work_item_hold(
+    root: Path,
+    work_item_id: str,
+    expected_hold_code: str,
+    release_note: str,
+    *,
+    dry_run: bool = False,
+) -> dict[str, Any]:
+    """Release exactly one active ``work_item_holds`` row, governed and audited.
+
+    Under the global factory-mutation lock and a fresh SQLite backup, an exact
+    compare-and-swap (``hold_code`` and ``active=1`` must match) flips the row to
+    ``active=0`` with ``released_at``/``release_note`` set.  A hold-release record
+    is appended to the append-only ``work_item_transition_ledger`` (the ledger's
+    generic ``action`` column already carries non-status-transition hold-release
+    rows in this schema, e.g. ``reconcile_compile_rollout_holds``) and an
+    ``events`` row is written.  ``work_items.status``/``verdict``/``payload`` are
+    never changed - verified by an in-transaction read-back.
+    """
+    init_db(root)
+    now = utc_now()
+    note = str(release_note or "").strip()
+    if not note:
+        return {"released": False, "reason": "release_note_required",
+                "work_item_id": work_item_id}
+    expected_hold_code = str(expected_hold_code or "").strip()
+    if not expected_hold_code:
+        return {"released": False, "reason": "expected_hold_code_required",
+                "work_item_id": work_item_id}
+
+    def _inspect(conn: sqlite3.Connection) -> dict[str, Any] | None:
+        row = conn.execute(
+            "SELECT * FROM work_item_holds WHERE work_item_id=?", (work_item_id,)
+        ).fetchone()
+        if row is None:
+            return {"released": False, "reason": "hold_not_found",
+                    "work_item_id": work_item_id}
+        hold = dict(row)
+        if not bool(hold.get("active")):
+            return {"released": False, "reason": "hold_not_active",
+                    "work_item_id": work_item_id, "hold_code": hold.get("hold_code"),
+                    "released_at": hold.get("released_at")}
+        if str(hold.get("hold_code") or "") != expected_hold_code:
+            return {"released": False, "reason": "hold_code_mismatch",
+                    "work_item_id": work_item_id,
+                    "actual_hold_code": hold.get("hold_code"),
+                    "expected_hold_code": expected_hold_code}
+        return None  # eligible
+
+    if dry_run:
+        with connect(root) as conn:
+            refusal = _inspect(conn)
+        if refusal is not None:
+            return {**refusal, "dry_run": True}
+        return {
+            "released": False,
+            "dry_run": True,
+            "would_release": True,
+            "work_item_id": work_item_id,
+            "hold_code": expected_hold_code,
+            "release_note": note,
+        }
+
+    lock = FactoryMutationLock(
+        path_for_factory_flag(factory_off_flag_path(root)),
+        owner=f"release_work_item_hold:{work_item_id}",
+    )
+    try:
+        lock.__enter__()
+    except RuntimeError as exc:
+        return {"released": False, "reason": "factory_mutation_lock_busy",
+                "detail": str(exc), "work_item_id": work_item_id}
+    try:
+        # Inspect eligibility before minting a pre-mutation backup: a refused
+        # release (missing / already-inactive / wrong-code) must not litter the
+        # backup directory.  The BEGIN IMMEDIATE re-inspect below is the real CAS.
+        with connect(root) as pre_conn:
+            refusal = _inspect(pre_conn)
+        if refusal is not None:
+            return refusal
+        backup_path, backup_sha = _governed_state_backup(root, "hold_release")
+        ledger_key = f"hold_release:{work_item_id}:{expected_hold_code}:{now}"
+
+        def _apply() -> dict[str, Any]:
+            conn = connect(root)
+            try:
+                conn.execute("BEGIN IMMEDIATE")
+                refusal = _inspect(conn)
+                if refusal is not None:
+                    conn.rollback()
+                    return refusal
+                wi_before = conn.execute(
+                    "SELECT status,verdict,payload_json FROM work_items WHERE id=?",
+                    (work_item_id,),
+                ).fetchone()
+                before_tuple = (
+                    (wi_before["status"], wi_before["verdict"], wi_before["payload_json"])
+                    if wi_before is not None else None
+                )
+                cur = conn.execute(
+                    """
+                    UPDATE work_item_holds
+                    SET active=0, updated_at=?, released_at=?, release_note=?
+                    WHERE work_item_id=? AND hold_code=? AND active=1
+                    """,
+                    (now, now, note, work_item_id, expected_hold_code),
+                )
+                if cur.rowcount != 1:
+                    conn.rollback()
+                    return {"released": False, "reason": "hold_release_cas_failed",
+                            "work_item_id": work_item_id,
+                            "expected_hold_code": expected_hold_code,
+                            "rowcount": cur.rowcount}
+                before_status = wi_before["status"] if wi_before is not None else None
+                before_verdict = wi_before["verdict"] if wi_before is not None else None
+                ledger_written = True
+                try:
+                    conn.execute(
+                        """
+                        INSERT INTO work_item_transition_ledger(
+                          idempotency_key, ts, work_item_id, action,
+                          from_status, to_status, from_verdict, to_verdict,
+                          reason, run_id, detail_json
+                        ) VALUES(?,?,?,?,?,?,?,?,?,?,?)
+                        """,
+                        (
+                            ledger_key, now, work_item_id, "work_item_hold_released",
+                            before_status, before_status, before_verdict, before_verdict,
+                            note, None,
+                            json.dumps({
+                                "hold_code": expected_hold_code,
+                                "expected_hold_code": expected_hold_code,
+                                "released_at": now,
+                                "backup_path": str(backup_path),
+                                "backup_sha256": backup_sha,
+                                "released_by": "farmctl.release_work_item_hold",
+                            }, sort_keys=True),
+                        ),
+                    )
+                except sqlite3.IntegrityError:
+                    ledger_written = False  # duplicate idempotency key
+                event(conn, "work_item", work_item_id, "work_item_hold_released", {
+                    "hold_code": expected_hold_code,
+                    "release_note": note,
+                    "released_at": now,
+                    "backup_path": str(backup_path),
+                    "backup_sha256": backup_sha,
+                    "ledger_idempotency_key": ledger_key,
+                })
+                wi_after = conn.execute(
+                    "SELECT status,verdict,payload_json FROM work_items WHERE id=?",
+                    (work_item_id,),
+                ).fetchone()
+                after_tuple = (
+                    (wi_after["status"], wi_after["verdict"], wi_after["payload_json"])
+                    if wi_after is not None else None
+                )
+                if before_tuple != after_tuple:
+                    conn.rollback()
+                    raise RuntimeError("work_item_row_mutated_during_hold_release")
+                seq_row = conn.execute(
+                    "SELECT seq FROM work_item_transition_ledger WHERE idempotency_key=?",
+                    (ledger_key,),
+                ).fetchone()
+                conn.commit()
+                return {
+                    "released": True,
+                    "dry_run": False,
+                    "work_item_id": work_item_id,
+                    "hold_code": expected_hold_code,
+                    "released_at": now,
+                    "release_note": note,
+                    "ledger_written": ledger_written,
+                    "ledger_seq": (seq_row["seq"] if seq_row is not None else None),
+                    "work_items_untouched": True,
+                }
+            except Exception:
+                conn.rollback()
+                raise
+            finally:
+                conn.close()
+
+        result = retry_sqlite_busy(_apply, attempts=40)
+    finally:
+        lock.__exit__(None, None, None)
+
+    if result.get("released"):
+        result["backup"] = {"path": str(backup_path), "sha256": backup_sha}
+        result["factory_mutation_lock_release"] = lock.release_status
+    return result
+
+
 def _magic_slot_for_symbol(ea_id: str, symbol: str) -> int | None:
     m = re.match(r"^QM5_(\d+)$", ea_id)
     if not m:
@@ -29551,6 +30184,23 @@ def build_parser() -> argparse.ArgumentParser:
     record_review.add_argument("--task-id", required=True, help="ea_review task id")
     record_review.add_argument("--result-file", required=True, help="Path to Claude's verdict JSON")
 
+    rec_smoke_succ = sub.add_parser(
+        "record-q01-smoke-successor",
+        help="Authenticate a worker-bound Q01 smoke PASS and append a build-generation successor so Q02 admission sees smoke_result=passed (append-only; never overwrites generation 0)",
+    )
+    rec_smoke_succ.add_argument("--build-task-id", required=True)
+    rec_smoke_succ.add_argument("--smoke-work-item-id", required=True)
+    rec_smoke_succ.add_argument("--dry-run", action="store_true", help="Authenticate and print the plan without writing")
+
+    release_hold = sub.add_parser(
+        "release-hold",
+        help="Release exactly one active work_item_holds row under the factory mutation lock (CAS + backup + append-only ledger/events); never changes work_items status/verdict/payload",
+    )
+    release_hold.add_argument("--work-item-id", required=True)
+    release_hold.add_argument("--expected-hold-code", required=True)
+    release_hold.add_argument("--release-note", required=True)
+    release_hold.add_argument("--dry-run", action="store_true", help="Inspect eligibility without writing")
+
     sub.add_parser("mt5-slots", help="Show MT5 terminal process scan with per factory slot attribution")
     reserve_terminal = sub.add_parser("reserve-terminal", help="Reserve a T1-T12 slot after its current item finishes")
     reserve_terminal.add_argument("terminal")
@@ -29872,6 +30522,8 @@ _STATE_MUTATING_COMMANDS = frozenset({
 def _command_mutates_state(args: argparse.Namespace) -> bool:
     if args.command == "bind-q09-plan":
         return not bool(getattr(args, "dry_run", False))
+    if args.command in {"record-q01-smoke-successor", "release-hold"}:
+        return not bool(getattr(args, "dry_run", False))
     if args.command == "enqueue-compile":
         return bool(args.apply or not args.from_file)
     if args.command == "enqueue-news-expansions":
@@ -30052,6 +30704,21 @@ def main(argv: list[str] | None = None) -> int:
         print_json(render_claude_review_prompt(root, args.build_task_id, args.out))
     elif args.command == "record-review":
         print_json(record_review_result(root, args.task_id, args.result_file))
+    elif args.command == "record-q01-smoke-successor":
+        print_json(record_q01_smoke_successor(
+            root,
+            args.build_task_id,
+            args.smoke_work_item_id,
+            dry_run=args.dry_run,
+        ))
+    elif args.command == "release-hold":
+        print_json(release_work_item_hold(
+            root,
+            args.work_item_id,
+            args.expected_hold_code,
+            args.release_note,
+            dry_run=args.dry_run,
+        ))
     elif args.command == "ea-metrics":
         import sys as _sys
         _sys.path.insert(0, str(Path(__file__).resolve().parent))
