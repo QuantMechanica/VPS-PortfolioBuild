@@ -85,3 +85,19 @@ No T_Live file or database row was changed while preparing this package.
 - Hyperscaler nur für Burst: AWS (Spot = 2-Minuten-Vorwarnung, tödlich für 2–4-h-Läufe), Azure (Windows inkl.), GCP, Oracle Cloud (billige AMD-Instanzen).
 - Eigene Hardware: gebrauchte 128–256-GB-Workstation (€1.500–3.000 einmalig), Amortisation 1–2 Jahre, Betrieb/Ausfall beim OWNER; nur für Zensus, nie für T_Live.
 - Bei allen gleich: Windows-Lizenz (Add-on oder inklusive), Multi-Host-Umbau, Transfer der ~430 GB Custom-History, Auswahl nach RAM vor Kernen (128 GB je Box).
+
+**Hetzner-Serverbörse, Live-Abfrage 2026-09-02 ~14:55Z (`live_data_sb.json`, 174 Angebote, 40 mit ≥128 GB; Preise €/Monat netto, Setup €0, Bestand ändert sich stündlich):**
+
+| Preis | RAM | CPU (Kerne/Threads) | Disks | DC | ID | CEO-Einordnung |
+|---|---|---|---|---|---|---|
+| €71 | 128 GB ECC | Xeon E5-1650v3 (6/12, Haswell 2014) | 2×480 GB DC-SSD | FSN1 | 3067628 | Budget: RAM für 10 Tester, Kerne nur für ~6 langsame |
+| €102 | 256 GB ECC | Xeon E5-1650v3 (6/12) | 2×480 GB DC-SSD | FSN1 | 3065544 | RAM-reich, CPU-arm |
+| **€137** | **128 GB ECC** | **Xeon W-2295 (18/36, Cascade Lake)** | 2×960 GB DC-SSD | HEL1 | **3065574** | **beste €/Tester-Stunde: 10–12 Tester, Kerne im Überfluss** |
+| €163–165 | 128 GB | Ryzen 7 7700 (8/16, gleiche Klasse wie unser Host) | 2×1 TB SSD | HEL1/FSN1 | 3066985 / 3066848 | identische Laufzeiten zu T1–T10, 10 Tester |
+| €176–180 | 128 GB | i9-12900K (8P+8E) | 2×1,92 TB DC-SSD | HEL1/FSN1 | 3064712 / 3064708 | schnellste Einzelkerne, viel Platte |
+| €183 | 128 GB ECC | Ryzen 9 3900 (12/24) | 2×1,92 TB DC-SSD | FSN1 | 3065953 | solide Mitte |
+| €190 | 128 GB ECC | EPYC 7401P (24/48) | 2×960 GB DC-SSD | FSN1 | 3065860 | viele langsame Kerne |
+
+Zum Vergleich 64 GB: Ryzen 5 3600 ab €61 (nur 5–6 Tester, nicht empfohlen).
+Zusatzkosten überall: Windows-Server-Lizenz (Standard-Add-on, bei >16 Kernen Zusatz-Core-Packs), 1 IPv4 inkl. Custom-History-Transfer ~430 GB einmalig.
+**CEO-Empfehlung:** #3065574 (W-2295, 128 GB ECC, €137) als Satelliten-Fabrik-Kandidat; Alternative #3066985 (Ryzen 7 7700, €163), wenn identische Laufzeiten zum Haupt-Host gewünscht sind. Kauf erst nach dem Multi-Host-Spike (e7d7b102) — die Box nützt nichts ohne Archivverteilung und Queue-Sync.
