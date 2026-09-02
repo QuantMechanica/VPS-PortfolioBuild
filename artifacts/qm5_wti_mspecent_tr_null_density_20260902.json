@@ -1,0 +1,40 @@
+{
+  "schema": "qm.market-free-null-density/v1",
+  "generated_at_utc": "2026-09-02T13:33:00Z",
+  "candidate": "wti-mspectral-entropy-tr",
+  "purpose": "Pre-market-data activity sanity check only; not performance evidence or a WTI probability claim.",
+  "generator": {
+    "family": "numpy.default_rng",
+    "bit_generator": "PCG64",
+    "seed": 20260902,
+    "draws": 100000,
+    "observations_per_draw": 48,
+    "distribution": "independent standard normal",
+    "batch_size": 5000
+  },
+  "statistic": {
+    "demeaning": "subtract arithmetic mean of all 48 observations",
+    "transform": "length-48 DFT with no taper and no zero padding",
+    "bins": "one-sided non-DC bins k=1..24",
+    "one_sided_weighting": "2*abs(DFT[k])^2 for k=1..23; abs(DFT[24])^2 for the unpaired Nyquist bin",
+    "normalization": "p[k]=power[k]/sum(power[1..24])",
+    "formula": "H=-sum(p[k]*ln(p[k]))/ln(24), with zero-power bin contribution defined as zero",
+    "qualification": "finite H <= 0.88"
+  },
+  "result": {
+    "qualified": 59188,
+    "invalid_nonpositive_total_power": 0,
+    "valid_above_boundary": 40812,
+    "qualification_fraction_all_draws": 0.59188,
+    "theoretical_qualified_attempts_per_12_clocks": 7.10256,
+    "minimum_entropy": 0.6510783908756385,
+    "maximum_entropy": 0.9662526188716771,
+    "mean_entropy": 0.8695452569552918
+  },
+  "boundaries": [
+    "No market prices, returns, EA reports, or optimizer output were read.",
+    "The 0.88 boundary was locked from the market-free cadence requirement, not fitted to WTI.",
+    "The null is not asserted to describe WTI.",
+    "Q02 owns actual activity and economics."
+  ]
+}
