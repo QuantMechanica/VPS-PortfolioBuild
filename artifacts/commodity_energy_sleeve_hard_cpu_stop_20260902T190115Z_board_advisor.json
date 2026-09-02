@@ -1,0 +1,104 @@
+{
+  "artifact_type": "commodity_energy_sleeve_hard_cpu_stop",
+  "schema_version": "qm.commodity-energy-sleeve-hard-cpu-stop/v1",
+  "generated_at_utc": "2026-09-02T19:01:56.7713761Z",
+  "generated_at_local": "2026-09-02T21:01:56.7713761+02:00",
+  "branch": "agents/board-advisor",
+  "observation_head": "454036e32f412bb1428cecbffb66f92a80bfdd67",
+  "mission": "grow_certified_v5_portfolio_new_commodity_energy_sleeve",
+  "outcome": "HARD_CPU_CEILING_STOP",
+  "capacity_guard": {
+    "ceiling_rule": "stop the wake when the initial five-sample whole-host CPU window has an average or maximum greater than or equal to 97 percent",
+    "hard_ceiling_percent": 97.0,
+    "admission_window": {
+      "samples_percent": [
+        99.8053,
+        99.7098,
+        99.9036,
+        98.3433,
+        98.4385
+      ],
+      "average_percent": 99.2401,
+      "maximum_percent": 99.9036,
+      "completed_at_utc": "2026-09-02T19:01:15.3295452Z",
+      "ceiling_binding": true
+    },
+    "post_stop_observability_window": {
+      "purpose": "recorded after the stop for transparency; it does not reopen admission in the same wake",
+      "samples": [
+        {
+          "sample_started_utc": "2026-09-02T19:01:47.4054082Z",
+          "sample_completed_utc": "2026-09-02T19:01:48.7449128Z",
+          "percent": 92.6636
+        },
+        {
+          "sample_started_utc": "2026-09-02T19:01:49.7572316Z",
+          "sample_completed_utc": "2026-09-02T19:01:50.7604222Z",
+          "percent": 89.8518
+        },
+        {
+          "sample_started_utc": "2026-09-02T19:01:51.7614811Z",
+          "sample_completed_utc": "2026-09-02T19:01:52.7632373Z",
+          "percent": 92.7755
+        },
+        {
+          "sample_started_utc": "2026-09-02T19:01:53.7642764Z",
+          "sample_completed_utc": "2026-09-02T19:01:54.7688939Z",
+          "percent": 93.9513
+        },
+        {
+          "sample_started_utc": "2026-09-02T19:01:55.7694228Z",
+          "sample_completed_utc": "2026-09-02T19:01:56.7713761Z",
+          "percent": 85.3604
+        }
+      ],
+      "average_percent": 90.9205,
+      "maximum_percent": 93.9513,
+      "ceiling_binding": false
+    },
+    "fleet_snapshot": {
+      "scanned_at_utc": "2026-09-02T19:01:24Z",
+      "governed_active_terminal_count": 7,
+      "governed_active_terminals": [
+        "T3",
+        "T4",
+        "T5",
+        "T6",
+        "T7",
+        "T9",
+        "T10"
+      ],
+      "terminal64_process_count_including_excluded": 9,
+      "metatester64_process_count": 7,
+      "excluded_processes_observed": [
+        "T_Live",
+        "FTMO Global Markets MT5 Terminal"
+      ]
+    },
+    "backtest_or_dispatch_started": false
+  },
+  "selection": {
+    "edge_selected": false,
+    "reason": "The initial admission window bound the mission's explicit CPU stop before edge selection or reservation."
+  },
+  "actions": {
+    "source_created_or_changed": false,
+    "card_created_or_changed": false,
+    "ea_or_setfile_changed": false,
+    "basket_manifest_changed": false,
+    "registry_or_magic_changed": false,
+    "work_item_created": false,
+    "work_item_priority_changed": false,
+    "work_item_claimed": false,
+    "compile_started": false,
+    "backtest_or_dispatch_started": false,
+    "terminal_or_autotrading_control": false
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_files": false,
+    "autotrading": false
+  },
+  "prior_related_record": "artifacts/commodity_energy_sleeve_hard_cpu_stop_20260902T180002Z_board_advisor.json"
+}
