@@ -317,10 +317,14 @@ def test_pump_refills_existing_frontiers_before_budget_heavy_stages() -> None:
     first_budget_return = pump.index(
         'result["build_dispatch"] = {"skipped": "cycle_budget_exhausted"}'
     )
-    late_full_service = pump.index(
-        'result["dl089_matrix_service"] = cycle_budget.run('
-    )
-    assert dispatch < refill < queue_maintenance < first_budget_return < late_full_service
+    # 2026-09-02 (CEO): the full matrix service, the fork driver and the fork
+    # service are census-critical and run right after the cheap refill, BEFORE
+    # the budget-heavy intake/build/review stages (dispatch overruns starved them).
+    full_service = pump.index('result["dl089_matrix_service"] = cycle_budget.run(')
+    fork_driver = pump.index('result["optimization_fork"] = cycle_budget.run(')
+    fork_service = pump.index('result["optimization_fork_service"] = cycle_budget.run(')
+    assert dispatch < refill < fork_driver < full_service < fork_service
+    assert fork_service < queue_maintenance < first_budget_return
 
 
 def test_program_slots_default_override_and_bounds() -> None:

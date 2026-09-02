@@ -18482,7 +18482,7 @@ def _reconcile_magic_resolver(root: Path) -> dict[str, Any]:
         return {"regenerated": False, "reason": f"exception:{exc!r}"[:200]}
 
 
-PUMP_TOTAL_BUDGET_SECONDS = 270.0
+PUMP_TOTAL_BUDGET_SECONDS = 360.0  # 2026-09-02: was 270; dispatch overruns starved the census stages
 PUMP_DISPATCH_BUDGET_SECONDS = 30.0
 PUMP_AUTOCOMMIT_BUDGET_SECONDS = 30.0
 PUMP_LATE_AUTOSEAL_BUDGET_SECONDS = 45.0
@@ -18582,6 +18582,78 @@ def _pump_unlocked(
         budget_seconds=PUMP_DL089_FRONTIER_REFILL_BUDGET_SECONDS,
         minimum_start_seconds=5.0,
     )
+    # 2026-09-02 (CEO): the census-critical control-plane services run BEFORE
+    # the build/review/intake stages.  Observed 09:48Z cycle: dispatch_tick
+    # 208 s + intake 97 s exhausted the 270 s budget, so the matrix service,
+    # the fork driver and the fork service never ran and no Q12 pair could
+    # advance (no sibling Q02 seeds, no refills, no successors).  All three are
+    # idempotent, append-only and bounded (own budgets + min-start guards).
+    # OWNER A2: every incumbent confirmation enters the mandatory optimization
+    # audit.  The role-driven driver is append-only and never launches MT5; it
+    # only materializes the next governed analytic row after authenticating the
+    # predecessor and DL-089 fixture-harness evidence.  It runs as a budgeted
+    # cycle stage placed BEFORE the post-promotion early return: on a tight
+    # cycle its own minimum_start guard DEFERS it (idempotent/append-only —
+    # it resumes next cycle) instead of either blowing the 270s ceiling or
+    # being permanently starved behind the return below.
+    def _opt_fork_stage() -> dict[str, Any]:
+        try:
+            return advance_opt_fork(root, apply=True)
+        except Exception as exc:  # one analytic routing defect must not stop the pump
+            return {
+                "applied": False,
+                "machine_reason": f"OPTIMIZATION_FORK_ROUTING_FAILED:{exc}",
+            }
+
+    result["optimization_fork"] = cycle_budget.run(
+        "optimization_fork",
+        _opt_fork_stage,
+        budget_seconds=PUMP_OPT_FORK_BUDGET_SECONDS,
+        minimum_start_seconds=10.0,
+    )
+
+    # Declared DL-089 Q12 rows are control-plane matrix declarations, never
+    # one-setfile terminal jobs.  This bounded service seeds the governed _opt
+    # Q02 prerequisite, maintains bounded independent program owners, and keeps
+    # each owner's eight-cell priority window/evidence receipts current.
+    def _dl089_matrix_stage() -> dict[str, Any]:
+        try:
+            return service_dl089_matrix(root, apply=True, receipt_limit=16)
+        except Exception as exc:  # fail closed without stopping unrelated work
+            return {
+                "applied": False,
+                "machine_reason": f"DL089_MATRIX_SERVICE_FAILED:{exc}",
+            }
+
+    result["dl089_matrix_service"] = cycle_budget.run(
+        "dl089_matrix_service",
+        _dl089_matrix_stage,
+        budget_seconds=PUMP_DL089_MATRIX_SERVICE_BUDGET_SECONDS,
+        minimum_start_seconds=5.0,
+    )
+
+    # Analytic optimization rows are intentionally invisible to T1-T12.  The
+    # bounded no-change service handles only the explicit zero-search contract
+    # emitted by optimization_fork_driver.  Any measured/candidate-bearing row
+    # remains pending for its governed evaluator; no selection rule is applied
+    # or relaxed here.  Successors are materialized by the routing stage on the
+    # next pump cycle, keeping each serialized writer interval short.
+    def _opt_fork_service_stage() -> dict[str, Any]:
+        try:
+            return service_opt_fork(root, apply=True, limit=3)
+        except Exception as exc:  # fail closed without stopping unrelated pump work
+            return {
+                "applied": False,
+                "machine_reason": f"OPTIMIZATION_FORK_SERVICE_FAILED:{exc}",
+            }
+
+    result["optimization_fork_service"] = cycle_budget.run(
+        "optimization_fork_service",
+        _opt_fork_service_stage,
+        budget_seconds=PUMP_OPT_FORK_SERVICE_BUDGET_SECONDS,
+        minimum_start_seconds=5.0,
+    )
+
     # Expansion authoring is a bounded, append-only control-plane step.  Keep it
     # ahead of build dispatch: build process discovery/spawn can overrun the
     # whole pump budget, which previously starved this stage for many cycles and
@@ -20331,72 +20403,6 @@ def _pump_unlocked(
         ),
         budget_seconds=PUMP_LATE_AUTOSEAL_BUDGET_SECONDS,
         minimum_start_seconds=15.0,
-    )
-
-    # OWNER A2: every incumbent confirmation enters the mandatory optimization
-    # audit.  The role-driven driver is append-only and never launches MT5; it
-    # only materializes the next governed analytic row after authenticating the
-    # predecessor and DL-089 fixture-harness evidence.  It runs as a budgeted
-    # cycle stage placed BEFORE the post-promotion early return: on a tight
-    # cycle its own minimum_start guard DEFERS it (idempotent/append-only —
-    # it resumes next cycle) instead of either blowing the 270s ceiling or
-    # being permanently starved behind the return below.
-    def _opt_fork_stage() -> dict[str, Any]:
-        try:
-            return advance_opt_fork(root, apply=True)
-        except Exception as exc:  # one analytic routing defect must not stop the pump
-            return {
-                "applied": False,
-                "machine_reason": f"OPTIMIZATION_FORK_ROUTING_FAILED:{exc}",
-            }
-
-    result["optimization_fork"] = cycle_budget.run(
-        "optimization_fork",
-        _opt_fork_stage,
-        budget_seconds=PUMP_OPT_FORK_BUDGET_SECONDS,
-        minimum_start_seconds=10.0,
-    )
-
-    # Declared DL-089 Q12 rows are control-plane matrix declarations, never
-    # one-setfile terminal jobs.  This bounded service seeds the governed _opt
-    # Q02 prerequisite, maintains bounded independent program owners, and keeps
-    # each owner's eight-cell priority window/evidence receipts current.
-    def _dl089_matrix_stage() -> dict[str, Any]:
-        try:
-            return service_dl089_matrix(root, apply=True, receipt_limit=16)
-        except Exception as exc:  # fail closed without stopping unrelated work
-            return {
-                "applied": False,
-                "machine_reason": f"DL089_MATRIX_SERVICE_FAILED:{exc}",
-            }
-
-    result["dl089_matrix_service"] = cycle_budget.run(
-        "dl089_matrix_service",
-        _dl089_matrix_stage,
-        budget_seconds=PUMP_DL089_MATRIX_SERVICE_BUDGET_SECONDS,
-        minimum_start_seconds=5.0,
-    )
-
-    # Analytic optimization rows are intentionally invisible to T1-T12.  The
-    # bounded no-change service handles only the explicit zero-search contract
-    # emitted by optimization_fork_driver.  Any measured/candidate-bearing row
-    # remains pending for its governed evaluator; no selection rule is applied
-    # or relaxed here.  Successors are materialized by the routing stage on the
-    # next pump cycle, keeping each serialized writer interval short.
-    def _opt_fork_service_stage() -> dict[str, Any]:
-        try:
-            return service_opt_fork(root, apply=True, limit=3)
-        except Exception as exc:  # fail closed without stopping unrelated pump work
-            return {
-                "applied": False,
-                "machine_reason": f"OPTIMIZATION_FORK_SERVICE_FAILED:{exc}",
-            }
-
-    result["optimization_fork_service"] = cycle_budget.run(
-        "optimization_fork_service",
-        _opt_fork_service_stage,
-        budget_seconds=PUMP_OPT_FORK_SERVICE_BUDGET_SECONDS,
-        minimum_start_seconds=5.0,
     )
 
     if cycle_budget.remaining_seconds <= 15.0:
