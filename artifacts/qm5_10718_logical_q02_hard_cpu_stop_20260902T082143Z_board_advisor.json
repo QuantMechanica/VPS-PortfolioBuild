@@ -1,0 +1,153 @@
+{
+  "schema_version": "qm.fx-existing-basket-q02-capacity-stop/v1",
+  "generated_at_utc": "2026-09-02T08:21:43.8220014Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "d001386ffdeef0a8aa9c77a02c5ee773629f66f9",
+  "mission_result": "STOPPED_AT_HARD_CPU_CEILING_EXISTING_Q02_ALREADY_ENQUEUED",
+  "frontier_reconciliation": {
+    "controlling_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "published_pair_count": 66,
+    "published_hard_qualifier_count": 2,
+    "latest_complete_census": "docs/research/FX_COINTEGRATION_QM5_20240_Q04_RETIREMENT_20260831T233713Z.md",
+    "approved_cointegration_or_coint_identities": 123,
+    "matching_ea_directories": 123,
+    "approved_unbuilt_identities": 0,
+    "relationships_accounted_for": 66,
+    "new_unbuilt_pair_eligible": false,
+    "anchors": {
+      "QM5_12532": {
+        "pair": [
+          "AUDUSD.DWX",
+          "NZDUSD.DWX"
+        ],
+        "canonical_q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+        "q02": "PASS",
+        "later_chain": "Q04 PASS; Q05 FAIL",
+        "current_q02_oninit_or_no_history_block": false
+      },
+      "QM5_12533": {
+        "pair": [
+          "EURJPY.DWX",
+          "GBPJPY.DWX"
+        ],
+        "canonical_q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+        "q02": "PASS",
+        "later_chain": "Q04 FAIL",
+        "current_q02_oninit_or_no_history_block": false
+      }
+    },
+    "skill_gate_disposition": {
+      "strategy_card_extraction": "CLOSED_NO_NON_DUPLICATE_SCAN_QUALIFIED_PAIR",
+      "ea_build": "CLOSED_NO_APPROVED_UNBUILT_COINTEGRATION_CARD"
+    }
+  },
+  "selected_existing_forex_fallback": {
+    "ea_id": "QM5_10718",
+    "ea_directory": "framework/EAs/QM5_10718_edgelab-regime-filtered-carry",
+    "approved_card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_10718_edgelab-regime-filtered-carry.md",
+    "approved_card_sha256": "c9d7d3c0de67941f5eb6b87a1ffe7b55d44b3adab49c54aa38c978fb82bf1a52",
+    "logical_symbol": "QM5_10718_FX8_BASKET_D1",
+    "host_symbol": "EURUSD.DWX",
+    "basket_symbol_count": 28,
+    "timeframe": "D1",
+    "rebalance_frequency": "weekly",
+    "expected_trades_per_year": 20,
+    "strategy_family": "market_neutral_cross_sectional_fx_carry",
+    "structural_only": true,
+    "machine_learning": false,
+    "approved_sources": [
+      "Lustig, Roussanov and Verdelhan, Review of Financial Studies (2011)",
+      "Menkhoff et al., Journal of Finance (2012)"
+    ]
+  },
+  "build_and_risk_binding": {
+    "mq5_sha256": "92fa06a272aa4805e31c6caac4f1ad9feeaf91fec18c349a616bf2cae00f8f00",
+    "ex5_sha256": "10358a8dd852cd495265fc4099dfb7d9fecc711a047d98a4ff5eafbba51a91cc",
+    "basket_manifest_sha256": "8dc0776c1aac52f566b0f0b33f390f34d222bae8bc20992f7740bcce5d0b458f",
+    "logical_setfile_sha256": "cbc4602cc7685d7db68e9e17603916e4b66706ba9566248bf975c2a4782bd680",
+    "queue_hashes_match_current_files": true,
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 500,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "existing_q02_row": {
+    "work_item_id": "31f12573-d903-4386-a857-cad2b445d63a",
+    "phase": "Q02",
+    "status": "pending",
+    "claimed_by": null,
+    "attempt_count": 0,
+    "verdict": null,
+    "created_at": "2026-09-02T01:50:08+00:00",
+    "updated_at": "2026-09-02T01:50:08+00:00",
+    "priority_track": true,
+    "portfolio_scope": "basket",
+    "payload_sha256": "957994dd62e6db1149fecf539e000a600a624b1b9d7bba2f237b3004ccba5231",
+    "open_same_identity_count": 1,
+    "duplicate_q02_enqueue_permitted": false,
+    "prior_priority_receipt": "docs/research/FX_QM5_10718_LOGICAL_Q02_PRIORITY_HANDOFF_20260902T033638Z.md"
+  },
+  "capacity": {
+    "cpu_samples_percent": [
+      97.465432,
+      89.483766,
+      93.657495,
+      95.612021,
+      92.105415
+    ],
+    "cpu_average_percent": 93.664826,
+    "cpu_maximum_percent": 97.465432,
+    "cpu_ceiling_percent": 97,
+    "average_binding": false,
+    "maximum_binding": true,
+    "cpu_ceiling_hit": true,
+    "mt5_slots_scanned_at_utc": "2026-09-02T08:20:12+00:00",
+    "running_factory_terminals": [
+      "T2",
+      "T3",
+      "T10"
+    ],
+    "factory_terminal_reservations": [
+      "T2",
+      "T3",
+      "T9",
+      "T10"
+    ],
+    "terminal_worker_daemons": [
+      "T1",
+      "T2",
+      "T3",
+      "T6",
+      "T9",
+      "T10"
+    ],
+    "active_work_item_count": 6,
+    "active_basket_work_item_count": 0,
+    "t_live_observed_only": true,
+    "t_live_controlled": false,
+    "external_ftmo_terminal_observed_only": true
+  },
+  "actions_this_run": {
+    "frontier_and_anchor_reconciled": true,
+    "existing_forex_fallback_verified": true,
+    "current_artifact_hashes_verified": true,
+    "unique_existing_q02_row_verified": true,
+    "new_card_or_ea_created": false,
+    "queue_row_created_or_mutated": false,
+    "tester_or_backtest_started": false,
+    "terminal_or_worker_controlled": false,
+    "capacity_stop_evidence_committed": true
+  },
+  "safety": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "autotrading_touched": false,
+    "live_or_deploy_manifest_touched": false,
+    "historical_verdict_changed": false,
+    "unrelated_dirty_worktree_preserved": true
+  },
+  "resume_contract": "After a fresh five-sample CPU window has both average and maximum strictly below 97 percent, leave the existing exact priority Q02 row in place for the resident paced worker; do not enqueue a duplicate or manually launch MT5."
+}
