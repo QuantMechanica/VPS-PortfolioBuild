@@ -1,0 +1,34 @@
+{
+  "schema": "qm.asymptotic-null-density/v1",
+  "generated_at_utc": "2026-09-02T20:05:17Z",
+  "candidate_slug": "wti-bds2-tr",
+  "strategy_id": "BROOCK-STATSMODELS-MOP-WTI-BDS2-20260902_S01",
+  "purpose": "Pre-data asymptotic cadence sanity check only; not WTI evidence, a BDS significance test, a performance estimate, or a substitute for Q02.",
+  "source_contract": {
+    "statistic": "statsmodels-aligned embedding-dimension-two BDS statistic",
+    "source_distribution_under_iid_null": "asymptotically standard normal",
+    "observations_per_decision": 48,
+    "embedding_dimension": 2,
+    "epsilon_multiplier_of_sample_sd_ddof1": 1.5,
+    "conditioning_initial_observations": 1
+  },
+  "locked_state_divider": {
+    "derivation": "standard normal 75th percentile",
+    "absolute_boundary": 0.6744897501960817,
+    "qualification_rule": "abs(BDS2) >= 0.6744897501960817",
+    "direction_rule": "sign(sum(raw_log_returns[36:48]))"
+  },
+  "asymptotic_results": {
+    "probability_abs_standard_normal_at_or_above_boundary": 0.5,
+    "theoretical_qualifying_clocks_per_12": 6.0
+  },
+  "decision": "PASS_PRE_DATA_ASYMPTOTIC_CADENCE_PRIOR_SIX_EXPECTED_QUALIFYING_CLOCKS_PER_YEAR",
+  "limitations": [
+    "The BDS statistic is only asymptotically standard normal; forty-eight observations are a small sample and actual qualification frequency can differ materially.",
+    "Overlapping rolling monthly windows in a backtest are dependent; this calculation does not estimate actual trade count.",
+    "Raw WTI returns need not be independent, identically distributed, stationary, normal, or distributed like the null approximation.",
+    "The boundary is a median-absolute-normal state divider, not a conventional BDS rejection threshold or p-value.",
+    "The exact trading conjunction is QuantMechanica synthesis, not a result reported by Broock et al., statsmodels, or Moskowitz-Ooi-Pedersen.",
+    "Q02 owns actual completed-position frequency, costs, economics, and every market-data conclusion."
+  ]
+}

@@ -1,0 +1,96 @@
+{
+  "schema": "qm.source-retrieval-evidence/v1",
+  "source_id": "BROOCK-STATSMODELS-MOP-WTI-BDS2-20260902",
+  "retrieved_at_utc": "2026-09-02T20:05:17Z",
+  "routes": [
+    {
+      "role": "complete_bds_implementation_contract",
+      "url": "https://github.com/statsmodels/statsmodels/blob/2d1115dbd648b1e120a7e7454479d46481a73a9a/statsmodels/tsa/_bds.py",
+      "api_url": "https://api.github.com/repos/statsmodels/statsmodels/contents/statsmodels/tsa/_bds.py?ref=2d1115dbd648b1e120a7e7454479d46481a73a9a",
+      "publisher": "statsmodels project",
+      "method": "governed_router_ROUTE_GITHUB_API_then_public_GitHub_contents_API",
+      "router_status": "ROUTE_GITHUB_API",
+      "status": "OK",
+      "commit": "2d1115dbd648b1e120a7e7454479d46481a73a9a",
+      "commit_date_utc": "2026-08-17T17:53:13Z",
+      "git_blob_sha": "f409f46d090ac550ad9f1d73b83b55a4795bf93f",
+      "retrieved_byte_count": 7870,
+      "retrieved_content_sha256": "5AF0914E7847241883EF2A689A87310643F40918E7DE86345FA297692C4F559F",
+      "bounded_read": "The complete pinned file was read. It fixes strict pairwise distance indicators, epsilon equal to distance times sample standard deviation with ddof one, recursive correlation sums, the full-sample k variance term, first-m-minus-one conditioning, and the asymptotically standard-normal BDS statistic.",
+      "claim_boundary": "Supports deterministic BDS arithmetic and implementation alignment only. It does not establish a WTI trading edge, prescribe forty-eight monthly returns or embedding dimension two, validate the median-absolute-normal state boundary, select continuation direction, prove CFD equivalence, or provide activity, profitability, risk, or portfolio evidence. No p-value is imported."
+    },
+    {
+      "role": "independent_upstream_reference_tests",
+      "url": "https://github.com/statsmodels/statsmodels/blob/2d1115dbd648b1e120a7e7454479d46481a73a9a/statsmodels/tsa/tests/test_bds.py",
+      "api_url": "https://api.github.com/repos/statsmodels/statsmodels/contents/statsmodels/tsa/tests/test_bds.py?ref=2d1115dbd648b1e120a7e7454479d46481a73a9a",
+      "publisher": "statsmodels project",
+      "method": "public_GitHub_contents_API",
+      "status": "OK",
+      "commit": "2d1115dbd648b1e120a7e7454479d46481a73a9a",
+      "git_blob_sha": "03b8f9ec710a29e1f8075d1381092d940347b937",
+      "retrieved_byte_count": 2704,
+      "retrieved_content_sha256": "2877075819DD754982D489F8DA8F54665A73DACEA17BE0F818F3BE7A30406FF3",
+      "bounded_read": "The complete pinned test module was read. It verifies dimensions two through five against Kanzler MATLAB reference outputs for a monotone sequence, a seeded normal vector, a mixed normal-uniform vector, and quarterly real GDP.",
+      "claim_boundary": "Supplies upstream implementation verification only. No fixture value, p-value, GDP observation, or market conclusion enters the EA."
+    },
+    {
+      "role": "upstream_reference_input_fixture",
+      "url": "https://github.com/statsmodels/statsmodels/blob/2d1115dbd648b1e120a7e7454479d46481a73a9a/statsmodels/tsa/tests/results/bds_data.csv",
+      "api_url": "https://api.github.com/repos/statsmodels/statsmodels/contents/statsmodels/tsa/tests/results/bds_data.csv?ref=2d1115dbd648b1e120a7e7454479d46481a73a9a",
+      "publisher": "statsmodels project",
+      "method": "public_GitHub_contents_API",
+      "status": "OK",
+      "commit": "2d1115dbd648b1e120a7e7454479d46481a73a9a",
+      "git_blob_sha": "048831f6544403cd61a503ffa8ed04d7d4e1f365",
+      "retrieved_byte_count": 3971,
+      "retrieved_content_sha256": "E8F2592DF9C64718A4AF23BB21C234213DB01128CF5BDBDAE1DFB50504694F58",
+      "bounded_read": "The complete four-column fixture was read solely to bind the upstream test vectors.",
+      "claim_boundary": "Fixture data do not enter the strategy and provide no WTI or performance evidence."
+    },
+    {
+      "role": "upstream_reference_output_fixture",
+      "url": "https://github.com/statsmodels/statsmodels/blob/2d1115dbd648b1e120a7e7454479d46481a73a9a/statsmodels/tsa/tests/results/bds_results.csv",
+      "api_url": "https://api.github.com/repos/statsmodels/statsmodels/contents/statsmodels/tsa/tests/results/bds_results.csv?ref=2d1115dbd648b1e120a7e7454479d46481a73a9a",
+      "publisher": "statsmodels project",
+      "method": "public_GitHub_contents_API",
+      "status": "OK",
+      "commit": "2d1115dbd648b1e120a7e7454479d46481a73a9a",
+      "git_blob_sha": "370dd42ff8950cd9fdaba5a0660b823689ba7124",
+      "retrieved_byte_count": 1465,
+      "retrieved_content_sha256": "D4A717BA2D31DADC3B06CCB060CE12979C72D204A318BDCA5C84AC44E178099B",
+      "bounded_read": "The complete reference-output fixture was read and includes BDS statistics, p-values, correlation sums, and k values for the upstream vectors.",
+      "claim_boundary": "Used only to validate a local arithmetic port. No source p-value or trading conclusion enters the card."
+    },
+    {
+      "role": "original_peer_reviewed_method_bibliography",
+      "url": "https://doi.org/10.1080/07474939608800353",
+      "citation": "Broock, W. A., Scheinkman, J. A., Dechert, W. D., and LeBaron, B. (1996). A Test for Independence Based on the Correlation Dimension. Econometric Reviews 15(3), 197-235.",
+      "doi": "10.1080/07474939608800353",
+      "method": "bibliographic_attribution_from_pinned_statsmodels_reference",
+      "status": "BIBLIOGRAPHIC_ONLY",
+      "claim_boundary": "Establishes original attribution and peer-reviewed publication identity only. No inaccessible body claim, critical value, or trading conclusion is used."
+    },
+    {
+      "role": "excluded_generic_documentation_page",
+      "url": "https://www.statsmodels.org/stable/generated/statsmodels.tsa.stattools.bds.html",
+      "method": "qm_read_trading_source_router",
+      "status": "DEFERRED:SOURCE_POLICY",
+      "router_result": "PERMISSION_REQUIRED",
+      "claim_boundary": "The generic-reader policy did not authorize retrieval. The page is excluded; every method claim is bound to the complete pinned GitHub implementation instead."
+    },
+    {
+      "role": "monthly_wti_own_return_continuation",
+      "url": "https://w4.stern.nyu.edu/facdir/lpederse/papers/TimeSeriesMomentum.pdf",
+      "citation": "Moskowitz, T. J., Ooi, Y. H., and Pedersen, L. H. (2012). Time Series Momentum. Journal of Financial Economics 104(2), 228-250.",
+      "doi": "10.1016/j.jfineco.2011.11.003",
+      "method": "existing_governed_complete_paper_read",
+      "status": "OK_EXISTING_GOVERNED_RECORD",
+      "local_record": "strategy-seeds/sources/MOP-TSMOM-2012/source.md",
+      "local_record_sha256": "C8B07ECD62C1D5EF9E3D7975EEE6A3B6C46C1C566D0B20B42237613D9B3A7042",
+      "claim_boundary": "Supports monthly own-return continuation across liquid futures and explicit NYMEX WTI membership. It does not test a BDS state gate, the exact conjunction, or the Darwinex continuous CFD."
+    }
+  ],
+  "access_control_bypass_attempted": false,
+  "third_party_code_executed": false,
+  "external_binary_downloaded": false
+}

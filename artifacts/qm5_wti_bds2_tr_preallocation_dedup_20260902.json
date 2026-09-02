@@ -1,0 +1,38 @@
+{
+  "candidate": {
+    "author": "William A. Broock; Jos\u00e9 A. Scheinkman; W. Davis Dechert; Blake LeBaron; statsmodels contributors; Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen",
+    "mechanic": "XTIUSD.DWX D1; once per broker month reconstruct 48 completed monthly log returns; set epsilon to 1.5 sample standard deviations; compute statsmodels-aligned embedding-dimension-two BDS IID statistic with strict pair distances, full-sample k variance and first-observation-conditioned correlation integrals; qualify when absolute BDS2 is at or above the predeclared asymptotic-null median absolute standard-normal value 0.67448975; direction is newest 12-month cumulative log-return sign; one consumed attempt per month; next-month exit; ATR20 3.5x hard stop; no target",
+    "slug": "wti-bds2-tr",
+    "strategy_id": "BROOCK-STATSMODELS-MOP-WTI-BDS2-20260902_S01"
+  },
+  "error": null,
+  "exit_code": 0,
+  "generated_at_utc": "2026-09-02T20:04:57+00:00",
+  "matches": [],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4801,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1430,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "CLEAN"
+}
