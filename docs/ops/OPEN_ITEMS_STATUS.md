@@ -483,6 +483,10 @@ Beide OWNER-Freigaben (MNT020-RECOMPILE, MNT006-CANARY) sind ausgeführt und im 
 
 - Task `70dd5b7a-0fcf-4483-b5ee-db18cc466b3e`: built and authenticated the single-window non-admission runner, then queued 55/55 runs (24 live + 31 frontier) behind census work. Numeric edge read is truthfully pending resident-worker receipts; comparison contract and provenance caveats are sealed in the artifact. Evidence: `docs/ops/evidence/2026-09-02_oos_2026_confirmation_enqueue.md`; runtime plan/receipt under `D:\QM\strategy_farm\artifacts\oos_2026_confirmation_v1`.
 
+# 2026-09-02 OWNER session 06.09
+
+- Task `f299c9e3-70b3-4c1b-a23b-17039fc14dd6`: assembled the decision sheet, 10440 disposition, five-sleeve drag list, unsigned 17-sleeve scenario/pointer dry run, expected-red pre-change verification, and OWNER-only deployment/runbook steps. Evidence: `docs/ops/evidence/2026-09-02_owner_session_20260906_package.md`; runtime drafts under `D:\QM\reports\state\drafts`.
+
 # 2026-09-02 Codex live-book pulse repair
 
 - Task `26434855-391e-43ed-b9f4-9d0e9c0afa9b`: repaired stale lifecycle lookback and severity aggregation. Production pulse now finds all 24 loaded sleeves and reports only the genuine KS-baseline WARN. Evidence: `docs/ops/evidence/2026-09-02_live_book_pulse_load_repair.md`.
