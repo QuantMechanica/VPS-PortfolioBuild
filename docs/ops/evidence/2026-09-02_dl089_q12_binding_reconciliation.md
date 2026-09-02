@@ -1,7 +1,7 @@
 # DL-089 Q12 binding reconciliation — QM5_10706 / GBPUSD
 
-Date: 2026-09-02  
-Task: `0058a401-29c0-4042-826c-17dd737ef3cb`  
+Date: 2026-09-02
+Task: `0058a401-29c0-4042-826c-17dd737ef3cb`
 Authority: CEO mandate 2026-09-02; append-only queue/binding hygiene only
 
 ## Incident and root cause
