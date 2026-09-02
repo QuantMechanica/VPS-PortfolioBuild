@@ -1,0 +1,67 @@
+{
+  "schema": "qm_build_handoff_v1",
+  "checked_at_utc": "2026-09-02T16:52:02Z",
+  "agent_task_id": "f3fba72c-a3be-453e-9e15-830e46135c53",
+  "build_task_id": "9d978a4c-4161-4e15-982d-0d1c56b696a7",
+  "ea_id": "QM5_41142",
+  "ea_label": "QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow",
+  "slug": "eurusd-month-end-benchmark-fix-hedge-flow",
+  "verdict": "SOURCE_COMPLETE_COMPILE_PENDING_GOVERNED_ROLLOUT_NO_Q02",
+  "card": {
+    "path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow.md",
+    "sha256": "62558E7DD039847DAE93DEF565C7F48F1108E9E965611A8502DA33020446DC55",
+    "g0_status": "APPROVED",
+    "identity_match": true
+  },
+  "files": {
+    "mq5": "C:\\QM\\repo\\framework\\EAs\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow.mq5",
+    "mq5_sha256": "1BB336BBBD3B9E06730EA830B94A7C3BFF9C4387F88920C43754757BE5FE3C0F",
+    "spec": "C:\\QM\\repo\\framework\\EAs\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow\\SPEC.md",
+    "basket_manifest": "C:\\QM\\repo\\framework\\EAs\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow\\basket_manifest.json",
+    "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow\\sets\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow_EURUSD.DWX_M15_backtest.set",
+    "reference_test": "C:\\QM\\repo\\framework\\EAs\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow\\docs\\test_qm5_41142_reference.py"
+  },
+  "identity": {
+    "magic_base": 411420000,
+    "magic_row": "41142,eurusd-month-end-benchmark-fix-hedge-flow,0,EURUSD.DWX,411420000,2026-09-02,active",
+    "resolver_regenerated": true,
+    "resolver_dry_run_rows_kept": 18079,
+    "resolver_dry_run_rows_dropped": 0
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1,
+    "qm_news_stale_max_hours": 336
+  },
+  "verification": {
+    "reference_tests": "PASS_5",
+    "build_guardrails": "PASS_NO_FINDINGS",
+    "git_diff_check": "PASS",
+    "forbidden_pattern_scan": "PASS",
+    "ad_hoc_strict_compile": "REFUSED_LIVE_FACTORY_AD_HOC_COMPILE",
+    "ad_hoc_compile_bypassed": false
+  },
+  "compile": {
+    "work_item_id": "07a09214-86ba-4946-9e0b-c9e7baa8b6fc",
+    "status": "pending",
+    "activation_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "release_on_restart": true,
+    "payload_mq5_sha256_matches_source": true,
+    "compile_verdict": null,
+    "compile_evidence_path": null,
+    "ex5_sha256": null
+  },
+  "pipeline": {
+    "q02_enqueued": false,
+    "pipeline_verdict_claimed": false,
+    "reason": "Build-only task; governed compile has not yet produced compile evidence."
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "t_live_touched": false,
+    "terminal_started_manually": false,
+    "active_backtest_interrupted": false,
+    "main_or_cto_main_advanced": false
+  }
+}

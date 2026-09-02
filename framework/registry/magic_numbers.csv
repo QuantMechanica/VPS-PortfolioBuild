@@ -18215,3 +18215,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41312,wti-mspectral-entropy-tr,0,XTIUSD.DWX,413120000,2026-09-02,Codex governed allocator,active
 41313,wti-ljungbox-tr,0,XTIUSD.DWX,413130000,2026-09-02,Codex governed allocator,active
 41314,wti-mjb-tr,0,XTIUSD.DWX,413140000,2026-09-02,Codex governed allocator,active
+41142,eurusd-month-end-benchmark-fix-hedge-flow,0,EURUSD.DWX,411420000,2026-09-02,Codex governed allocator,active

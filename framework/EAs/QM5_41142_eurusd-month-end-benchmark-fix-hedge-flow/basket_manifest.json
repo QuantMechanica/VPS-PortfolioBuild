@@ -1,0 +1,19 @@
+{
+  "logical_symbol": "QM5_41142_EURUSD_MONTHEND_FIX_M15",
+  "host_symbol": "EURUSD.DWX",
+  "host_timeframe": "M15",
+  "basket_symbols": [
+    "EURUSD.DWX",
+    "GDAXI.DWX"
+  ],
+  "execution_symbols": [
+    "EURUSD.DWX"
+  ],
+  "signal_only_symbols": [
+    "GDAXI.DWX"
+  ],
+  "notes": [
+    "Single-symbol execution card: only EURUSD.DWX may receive an order and only EURUSD.DWX has a magic row.",
+    "GDAXI.DWX is a read-only month-to-date direction proxy. Its latest signal close is the latest completed M15 bar at the first executable decision at or after 14:00 Europe/London on the last London business day."
+  ]
+}
