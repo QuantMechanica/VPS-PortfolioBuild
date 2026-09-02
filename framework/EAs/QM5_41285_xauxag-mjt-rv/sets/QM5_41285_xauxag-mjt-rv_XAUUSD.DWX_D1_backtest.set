@@ -1,0 +1,56 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        41285
+; ea_slug:      xauxag-mjt-rv
+; ea_version:   v5.0
+; set_version:  s20260902-001
+; symbol:       XAUUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   PENDING_COMPILE
+; author:       Development
+; date:         2026-09-02
+;==========================================================
+qm_ea_id=41285
+qm_magic_slot_offset=0
+qm_rng_seed=42
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=false
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
+; Component validation only; never enqueue as a standalone Q02 row.
+; card_defaults_source=ea_input_defaults
+strategy_xag_symbol=XAGUSD.DWX
+strategy_endpoint_count=13
+strategy_return_count=12
+strategy_group_count=3
+strategy_group_size=4
+strategy_comparison_count=48
+strategy_assignment_count=34650
+strategy_tail_count_max=18034
+strategy_score_center=24
+strategy_lower_score_max=19
+strategy_upper_score_min=29
+strategy_relative_epsilon=0.000000000001
+strategy_history_bars_d1=900
+strategy_entry_window_minutes=180
+strategy_max_endpoint_gap_days=10
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=3.5
+strategy_notional_ratio=1.0
+strategy_max_notional_mismatch_fraction=0.20
+strategy_max_hold_days=40
+strategy_xau_max_spread_points=1500
+strategy_xag_max_spread_points=500
+strategy_deviation_points=20
+
