@@ -1,0 +1,31 @@
+{
+  "schema": "qm.local-approved-source-reuse-evidence/v1",
+  "recorded_at_utc": "2026-09-02T23:55:00Z",
+  "new_network_retrieval_performed": false,
+  "reason": "The bounded synthesis reuses complete governed local source records and immutable retrieval evidence; no new public page was needed or represented as read.",
+  "parents": [
+    {
+      "source_id": "SRC05",
+      "citation": "Chan, Ernest P. (2013). Algorithmic Trading: Winning Strategies and Their Rationale. Wiley Trading. ISBN 978-1-118-46014-6.",
+      "source_packet_path": "strategy-seeds/sources/SRC05/source.md",
+      "source_packet_sha256": "C968A55E6DBA1B6CDC1F65C62261A6C6A2F71436EBAE9079D28F500E184643F6",
+      "bounded_text_path": "strategy-seeds/sources/SRC05/raw/full_text.txt",
+      "bounded_text_sha256": "EC37FD0A73F5CB7CC7B13000CB50D29A3F06ECF992FFD7E1B404B01EF8A82ECC",
+      "bounded_lines_one_based": "2290-2416",
+      "read_scope": "complete bounded ADF section and Example 2.1 continuation",
+      "role": "constant-no-drift lag-one ADF regression interpretation, chronological ordering, coefficient-standard-error statistic, negative rejection orientation, and displayed 10-percent critical value"
+    },
+    {
+      "source_id": "MOP-TSMOM-2012",
+      "citation": "Moskowitz, Ooi, and Pedersen (2012). Time Series Momentum. Journal of Financial Economics 104(2), 228-250. DOI 10.1016/j.jfineco.2011.11.003.",
+      "path": "strategy-seeds/sources/MOP-TSMOM-2012/source.md",
+      "sha256": "C8B07ECD62C1D5EF9E3D7975EEE6A3B6C46C1C566D0B20B42237613D9B3A7042",
+      "retrieval_receipt": "strategy-seeds/sources/MOP-TSMOM-2012/retrieval_route_20260731.json",
+      "retrieval_receipt_sha256": "ECBCC76CC878F0CC6FBF8C40B23D72084EC6ED03C6375438E3232CC24A33D38F",
+      "read_scope": "complete governed source packet recording a complete 23-page published-paper read",
+      "role": "monthly own-return continuation family and explicit NYMEX WTI membership"
+    }
+  ],
+  "claim_boundary": "The parents support ADF mechanics and a WTI monthly continuation carrier separately. The 60-endpoint lag-one ADF persistence gate, inclusive threshold use, continuous CFD, fixed risk, activity, economics, and portfolio correlation remain an untested QuantMechanica hypothesis."
+}
+

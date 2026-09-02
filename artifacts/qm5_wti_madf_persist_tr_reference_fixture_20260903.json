@@ -1,0 +1,62 @@
+{
+  "schema": "qm.strategy-reference-fixture/v1",
+  "generated_at_utc": "2026-09-02T23:55:00Z",
+  "market_data": false,
+  "strategy": "wti-madf-persist-tr",
+  "method": "constant-no-trend lag-one augmented Dickey-Fuller OLS t-statistic over 60 synthetic log levels",
+  "contract": {
+    "level_count": 60,
+    "regression_observations": 58,
+    "regressors_including_intercept": 3,
+    "residual_degrees_of_freedom": 55,
+    "adf_t_min_inclusive": -2.594,
+    "momentum_months": 12,
+    "direction_epsilon": 1e-12
+  },
+  "fixtures": [
+    {
+      "name": "persistent_up_qualifies_buy",
+      "log_level_formula": "x[t]=4+0.012*t+0.025*sin(0.73*t)+0.009*cos(1.91*t), t=0..59",
+      "alpha": 0.02127399686761441,
+      "gamma": -0.0030177163672809415,
+      "phi": 0.30342181583555766,
+      "sse": 0.014111782456244526,
+      "se_gamma": 0.010494589238325068,
+      "adf_t": -0.28754973622603336,
+      "mom12": 0.12845800868758506,
+      "direction": 1
+    },
+    {
+      "name": "persistent_down_qualifies_sell",
+      "log_level_formula": "x[t]=5-0.010*t+0.023*sin(0.71*t)+0.008*cos(1.83*t), t=0..59",
+      "alpha": 0.010528798517530866,
+      "gamma": -0.0036734803632210065,
+      "phi": 0.3693154768418153,
+      "sse": 0.010273122918969138,
+      "se_gamma": 0.010666609805259108,
+      "adf_t": -0.34439061991466297,
+      "mom12": -0.15505319427565833,
+      "direction": -1
+    },
+    {
+      "name": "mean_reverting_rejected_flat",
+      "log_level_formula": "x[t]=4+0.08*sin(1.17*t)+0.03*cos(0.41*t), t=0..59",
+      "alpha": 4.187110637431112,
+      "gamma": -1.0471283179467026,
+      "phi": 0.9167349411435318,
+      "sse": 0.023461085292155005,
+      "se_gamma": 0.05211514005625978,
+      "adf_t": -20.092593377208576,
+      "mom12": 0.06343917227189211,
+      "direction": 0
+    }
+  ],
+  "boundary_fixture": {
+    "adf_t": -2.594,
+    "mom12": 0.1,
+    "direction": 1,
+    "reason": "The ADF state comparison is inclusive."
+  },
+  "claim_boundary": "Synthetic arithmetic fixtures only. They contain no WTI observations and establish no activity, stationarity, unit root, predictability, performance, or portfolio-correlation result."
+}
+
