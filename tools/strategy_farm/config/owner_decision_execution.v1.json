@@ -43,8 +43,12 @@
         "NO": {
           "mode": "PREPARE_FOLLOWUP_ONLY",
           "objective": "Stay canary-only.",
-          "allowed_actions": ["Document"],
-          "acceptance": ["No env change"]
+          "allowed_actions": [
+            "Document"
+          ],
+          "acceptance": [
+            "No env change"
+          ]
         }
       }
     },
@@ -72,8 +76,12 @@
         "NO": {
           "mode": "PREPARE_FOLLOWUP_ONLY",
           "objective": "Stage 2 stays inert.",
-          "allowed_actions": ["Document"],
-          "acceptance": ["No env change"]
+          "allowed_actions": [
+            "Document"
+          ],
+          "acceptance": [
+            "No env change"
+          ]
         }
       }
     },
@@ -100,8 +108,12 @@
         "NO": {
           "mode": "PREPARE_FOLLOWUP_ONLY",
           "objective": "Keep everything; relocation/compression only.",
-          "allowed_actions": ["Document"],
-          "acceptance": ["No deletion"]
+          "allowed_actions": [
+            "Document"
+          ],
+          "acceptance": [
+            "No deletion"
+          ]
         }
       }
     },
@@ -127,8 +139,12 @@
         "NO": {
           "mode": "PREPARE_FOLLOWUP_ONLY",
           "objective": "Keep the 19 pairs undisposed in the legacy cohort.",
-          "allowed_actions": ["Document the standstill"],
-          "acceptance": ["No mutation"]
+          "allowed_actions": [
+            "Document the standstill"
+          ],
+          "acceptance": [
+            "No mutation"
+          ]
         }
       }
     },
@@ -156,8 +172,12 @@
         "NO": {
           "mode": "PREPARE_FOLLOWUP_ONLY",
           "objective": "Hold at strictly 14 restarts pending an OWNER-named selection rule.",
-          "allowed_actions": ["Document the standstill and request the selection rule"],
-          "acceptance": ["No mutation"]
+          "allowed_actions": [
+            "Document the standstill and request the selection rule"
+          ],
+          "acceptance": [
+            "No mutation"
+          ]
         }
       }
     },
@@ -183,8 +203,12 @@
         "NO": {
           "mode": "PREPARE_FOLLOWUP_ONLY",
           "objective": "Keep both holds standing.",
-          "allowed_actions": ["Document the standing holds"],
-          "acceptance": ["No mutation"]
+          "allowed_actions": [
+            "Document the standing holds"
+          ],
+          "acceptance": [
+            "No mutation"
+          ]
         }
       }
     },
@@ -210,8 +234,12 @@
         "NO": {
           "mode": "PREPARE_FOLLOWUP_ONLY",
           "objective": "Keep the eight holds standing.",
-          "allowed_actions": ["Document the standing holds"],
-          "acceptance": ["No mutation"]
+          "allowed_actions": [
+            "Document the standing holds"
+          ],
+          "acceptance": [
+            "No mutation"
+          ]
         }
       }
     },
@@ -237,8 +265,12 @@
         "NO": {
           "mode": "PREPARE_FOLLOWUP_ONLY",
           "objective": "All 34 pairs go to the retire track; no repair.",
-          "allowed_actions": ["Prepare the full retire disposition for separate execution"],
-          "acceptance": ["No restart is seeded"]
+          "allowed_actions": [
+            "Prepare the full retire disposition for separate execution"
+          ],
+          "acceptance": [
+            "No restart is seeded"
+          ]
         }
       }
     },
@@ -478,6 +510,39 @@
             "No candidate is selected or productized",
             "No marketplace or public artifact changes",
             "The next event trigger remains visible"
+          ]
+        }
+      }
+    },
+    {
+      "id": "OWNER-DEC-DL082-EXT-Q08-20260901",
+      "todo_id": "QM-TODO-20260901-DL082EXT",
+      "priority": 86,
+      "choices": {
+        "YES": {
+          "mode": "APPLY_AND_VERIFY",
+          "objective": "Implement DL-082 extension OPTION D exactly: Q08 sub-gates 8.5_neighborhood and 8.9_runs_test EDGE_HARD downgrade the aggregate to FAIL_SOFT (instead of FAIL_HARD) ONLY when cost_cushion_tier=PASS AND 8.2_dsr_mc_fdr=PASS AND 8.8_edge_decay=PASS AND 8.7_pbo in {PASS, EDGE_SOFT}. All other combinations keep FAIL_HARD. Forward-only calibration change plus one-time append-only re-grade of the 13 historical pairs enumerated in the Vorlage (DL-071 re-grade mechanics: new rows, historical verdicts untouched).",
+          "allowed_actions": [
+            "Edit the Q08 aggregate verdict calibration in framework/scripts/q08_davey/aggregate.py (or its calibration constants) to encode the exact Option-D condition",
+            "Add regression tests covering the conditional downgrade and every keep-FAIL_HARD branch",
+            "Re-grade exactly the 13 pairs listed in docs/ops/DL-082_EXTENSION_VORLAGE_Q08_85_89_2026-09-01.md via append-only rows; historical FAIL_HARD rows remain untouched evidence",
+            "Verify the re-graded pairs become eligible for the Q09 baseline lane per the existing v4 FAIL_SOFT admission rule (no new admission rule)"
+          ],
+          "acceptance": [
+            "Exact Option-D condition encoded and regression-tested; no other sub-gate or threshold changed",
+            "Exactly 13 append-only re-grade rows, ids and shas listed in the execution artifact; zero verdict overwrites",
+            "1567/EURGBP (8.7=INVALID) and the 8 multi-cause FAIL_HARDs remain terminal",
+            "Rollback documented: single calibration revert; re-graded rows marked as DL082-EXT regrade"
+          ]
+        },
+        "NO": {
+          "mode": "DOCUMENT_AND_VERIFY",
+          "objective": "Record the rejection; Q08 8.5/8.9 remain unconditionally hard.",
+          "allowed_actions": [
+            "Document the decision in the register"
+          ],
+          "acceptance": [
+            "No calibration or regrade change"
           ]
         }
       }
