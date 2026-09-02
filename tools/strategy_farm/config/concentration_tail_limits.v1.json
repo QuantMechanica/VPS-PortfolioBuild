@@ -1,6 +1,6 @@
 {
   "schema": "qm.concentration-tail-policy/v1",
-  "status": "PROPOSED_OWNER_RATIFICATION_REQUIRED",
+  "status": "OWNER_RATIFIED",
   "design_ref": "docs/ops/SP-C3_CONCENTRATION_TAIL_LIMITS_DESIGN_2026-08-22.md",
   "stop_risk_budget_pct": 2.5,
   "caps_percent_of_budget": {
@@ -17,9 +17,18 @@
     "maximum_fraction_of_daily_limit": 0.8
   },
   "sessions_broker_wall": {
-    "ASIA": [0, 7],
-    "EU": [7, 13],
-    "US": [13, 24]
+    "ASIA": [
+      0,
+      7
+    ],
+    "EU": [
+      7,
+      13
+    ],
+    "US": [
+      13,
+      24
+    ]
   },
   "family_fallback": "ea_directory_slug_first_hyphen_token",
   "application_authority": "OWNER_ONLY",
@@ -29,5 +38,13 @@
     "Thresholds reproduce the Claude SP-C3 design and remain unratified.",
     "The implementation may show/reject breaches, but no clean proposal is eligible until status is OWNER_RATIFIED.",
     "Any application to live weights is a separate OWNER ceremony."
-  ]
+  ],
+  "ratification": {
+    "decided_by": "OWNER",
+    "decided_at_utc": "2026-09-02T09:50:00Z",
+    "channel": "Claude chat (CEO-ASK-20260902-4: \"ja\")",
+    "receipt": "decisions/2026-09-02_owner_receipts_ceo_asks.md",
+    "thresholds_unchanged": true,
+    "note": "Ratifies the SP-C3 design thresholds as proposed (symbol 40 %, asset class 60 %, family 50 %, session WARN/breach, stop-risk budget 2.5 %). Application, deployment and AutoTrading remain OWNER_ONLY/NONE."
+  }
 }
