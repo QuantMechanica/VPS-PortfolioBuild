@@ -546,6 +546,39 @@
           ]
         }
       }
+    },
+    {
+      "id": "OWNER-DEC-SIBLING-SEED-RANK-20260902",
+      "todo_id": "QM-TODO-20260902-SIBLINGSEED",
+      "priority": 88,
+      "choices": {
+        "YES": {
+          "mode": "APPLY_AND_VERIFY",
+          "objective": "Implement Option A exactly: in farmctl._topdown_gate_rank_sql, Q02 rows whose payload schema is qm.dl089-measurement-q02-prerequisite/v1 rank 0 (same tier as OPT_CENSUS); every other rank, hold, cap and gate criterion unchanged.",
+          "allowed_actions": [
+            "Edit farmctl._topdown_gate_rank_sql (first CASE arm on the payload schema) and its docstring",
+            "Add regression tests proving the seed rows sort before OPT_CENSUS rows and ordinary Q02 rows still sort after",
+            "Verify against the live DB read-only that only the measurement-sibling seeds are lifted",
+            "Commit with explicit pathspecs; workers pick the change up at their next idle reload"
+          ],
+          "acceptance": [
+            "New arm keyed on the exact payload schema string; CASE text otherwise byte-identical",
+            "Tests green: top-down order tests, pending-superseded filter, terminal_worker atomic claim",
+            "Live read-only simulation shows the seven seeds leading; no non-Q02 row lifted",
+            "Rollback documented: single revert of the arm"
+          ]
+        },
+        "NO": {
+          "mode": "DOCUMENT_AND_VERIFY",
+          "objective": "Record the rejection; the top-down order stays as decided on 2026-08-28.",
+          "allowed_actions": [
+            "Document in OPEN_ITEMS_STATUS.md"
+          ],
+          "acceptance": [
+            "No code change"
+          ]
+        }
+      }
     }
   ]
 }

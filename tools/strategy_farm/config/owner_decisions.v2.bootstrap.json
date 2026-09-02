@@ -1,8 +1,8 @@
 {
   "schema_version": "qm.owner-decisions/v2",
-  "revision": 0,
+  "revision": 1,
   "maintainer": "Mission Control decision store; OWNER answers are receipts, not execution authority.",
-  "updated_at_utc": "2026-08-24T00:00:00Z",
+  "updated_at_utc": "2026-09-02T17:47:14Z",
   "items": [
     {
       "id": "OWNER-DEC-A1-COUNT-UNIT",
@@ -106,6 +106,24 @@
       "due": "EVENT:FIRST_Q14_COHORT",
       "severity": "info",
       "created_at_utc": "2026-08-21T00:00:00Z"
+    },
+    {
+      "id": "OWNER-DEC-SIBLING-SEED-RANK-20260902",
+      "status": "OPEN",
+      "category": "Fabrik / Claim-Reihenfolge",
+      "question": "Sollen die Q02-Seeds der _opt-Messgeschwister authentifizierter DL-089-Programme in der Top-Down-Claim-Reihenfolge Rang 0 (wie OPT_CENSUS) erhalten?",
+      "recommendation": "JA (Option A): Amendment zu OWNER-DEC-TOPDOWN-PRIORITY-20260828 - eine CASE-Zeile in farmctl._topdown_gate_rank_sql fuer Zeilen mit payload.schema = qm.dl089-measurement-q02-prerequisite/v1, mit Tests.",
+      "yes_effect": "Die sieben Seeds 41301-41307 (und kuenftige Messgeschwister-Seeds) werden vor Zensus-Zellen gleicher Prioritaet geclaimt; drei bisher 'deferred' DL-089-Programme erhalten ihren Zensus. Keine anderen Raenge, Holds, Caps oder Gate-Kriterien aendern sich.",
+      "no_effect": "Die Reihenfolge bleibt; die Seeds laufen nur, wenn keine Zensus-Zelle zulaessig ist (RAM-Klasse); drei Programme bleiben ohne Zensus.",
+      "cost_of_wait": "Drei von acht Programmen ohne Zensus; Fleet derzeit RAM-gebunden, daher moderat.",
+      "detail": "Befund 2026-09-02 17:15Z: Seeds seit 08:42Z pendend, keine Holds, ex5 vorhanden, priority_track; Ursache ist die versiegelte Reihenfolge _priority_track_rank -> topdown_gate_rank (OPT_CENSUS 0 vor Q02 ~12). Entscheidung im Chat: 'Option A' (OWNER, 2026-09-02 ~17:58Z).",
+      "evidence": [
+        "docs/ops/OPEN_ITEMS_STATUS.md (Nachtrag 17:15Z)",
+        "tools/strategy_farm/farmctl.py::_topdown_gate_rank_sql"
+      ],
+      "due": "2026-09-06",
+      "severity": "high",
+      "created_at_utc": "2026-09-02T17:47:14Z"
     }
   ]
 }
