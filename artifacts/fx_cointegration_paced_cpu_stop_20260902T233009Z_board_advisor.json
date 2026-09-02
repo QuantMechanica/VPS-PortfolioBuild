@@ -1,0 +1,62 @@
+{
+  "artifact_type": "fx_cointegration_paced_cpu_ceiling_stop",
+  "schema_version": "qm.fx-cointegration-paced-cpu-stop/v1",
+  "generated_at_utc": "2026-09-02T23:30:09.8247313Z",
+  "generated_at_local": "2026-09-03T01:30:09.8247313+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "bc8dcb62df8e9656909b45316ba1d917ba2e606e",
+  "mission": "grow_certified_v5_portfolio_new_forex_sleeves",
+  "outcome": "CPU_CEILING_STOP_BEFORE_EXISTING_FALLBACK_REREAD",
+  "governed_frontier": {
+    "controlling_research": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "latest_complete_eligibility_audit": "artifacts/fx_cointegration_fallback_audit_cpu_stop_20260902T204902Z_board_advisor.json",
+    "unbuilt_relationship_count": 0,
+    "anchor_q02_repair_required": false,
+    "anchor_states": {
+      "QM5_12532": "Q02_PASS_Q04_PASS_Q05_FAIL",
+      "QM5_12533": "Q02_PASS_Q04_FAIL"
+    },
+    "existing_fallback": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+    "fallback_phase_at_latest_durable_state": "Q09_NEWS",
+    "fallback_payload_repair_commit": "7d13829a1f",
+    "decision": "No new Card or EA is eligible. The hard CPU ceiling bound before the existing fallback row was reread or mutated."
+  },
+  "capacity": {
+    "sampling_method": "PowerShell Get-Counter Processor(_Total) percent Processor Time, five sequential samples",
+    "window_end_utc": "2026-09-02T23:30:09.8247313Z",
+    "samples_percent": [
+      95.4198183055388,
+      97.0706448654844,
+      97.697480299273,
+      93.8564463401302,
+      88.8741369888642
+    ],
+    "average_percent": 94.5837053598581,
+    "maximum_percent": 97.697480299273,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_rule": "stop when average or maximum is greater than or equal to the ceiling",
+    "ceiling_binding": true
+  },
+  "actions": {
+    "card_or_ea_created": false,
+    "ea_or_setfile_changed": false,
+    "registry_or_magic_changed": false,
+    "work_item_reread_after_capacity_check": false,
+    "work_item_created": false,
+    "priority_changed": false,
+    "work_item_claimed": false,
+    "compile_or_backtest_started": false,
+    "terminal_or_worker_controlled": false
+  },
+  "protected_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_files": false,
+    "autotrading": false
+  },
+  "non_duplicate_value": "This later wake sampled capacity against the current repository head after the QM5_12778 basket-payload repair and preserved the unique existing continuation without duplicating its queue state.",
+  "continuation": "On a later wake, sample host CPU first. Only when both average and maximum are strictly below 97 percent, reread the exact QM5_12778 Q09_NEWS row and leave it to its existing ordinary paced-worker path. Do not enqueue, reprioritize, manually claim, or dispatch a duplicate."
+}
