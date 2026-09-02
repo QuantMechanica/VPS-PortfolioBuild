@@ -3,6 +3,7 @@
 #property description "QM5_10717 Edge Lab Cross-Sectional FX Momentum"
 
 #include <QM/QM_Common.mqh>
+#include <QM/QM_BasketOrder.mqh>
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 10717;

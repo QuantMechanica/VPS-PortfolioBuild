@@ -551,6 +551,84 @@ def test_qm5_10717_basket_build_repair_is_source_and_predecessor_bound() -> None
     )
 
 
+def test_qm5_10717_basket_include_repair_is_compile_failure_bound() -> None:
+    label = compile_work_items.QM5_10717_BASKET_INCLUDE_REPAIR_EA_LABEL
+    predecessor_id = (
+        compile_work_items.QM5_10717_BASKET_INCLUDE_REPAIR_PREDECESSOR_ID
+    )
+    expected_failures = list(
+        compile_work_items.QM5_10717_BASKET_INCLUDE_FAILURE_CLASSES
+    )
+    predecessor_payload = {
+        "ea_label": label,
+        "mq5_sha256": (
+            compile_work_items.QM5_10717_BASKET_INCLUDE_REJECTED_SOURCE_SHA256
+        ),
+        "verdict_reason": ";".join(expected_failures),
+        "compile_source_repair_authority": (
+            compile_work_items.QM5_10717_BASKET_BUILD_REPAIR_AUTHORITY
+        ),
+        "source_repair_predecessor_work_item_ids": [
+            compile_work_items.QM5_10717_BASKET_BUILD_REPAIR_PREDECESSOR_ID
+        ],
+        "compile_result": {
+            "compile_result": "FAIL",
+            "build_check_result": "FAIL",
+            "failure_classes": expected_failures,
+            "setfile_count": 29,
+            "success": False,
+            "ex5_sha256": None,
+        },
+    }
+    inventory = {
+        "work_rows": {
+            "10717": [{
+                "id": predecessor_id,
+                "phase": compile_work_items.COMPILE_EA_PHASE,
+                "status": "failed",
+                "verdict": "COMPILE_FAIL",
+                "payload_json": json.dumps(predecessor_payload),
+            }],
+        },
+    }
+    arguments = {
+        "ea_id": "10717",
+        "source_sha": (
+            compile_work_items.QM5_10717_BASKET_INCLUDE_REPAIRED_SOURCE_SHA256
+        ),
+        "inventory": inventory,
+    }
+
+    assert compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_10717_BASKET_INCLUDE_REPAIR_AUTHORITY,
+        **arguments,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        "QM5_10718_unrelated-d1",
+        compile_work_items.QM5_10717_BASKET_INCLUDE_REPAIR_AUTHORITY,
+        **arguments,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_10717_BASKET_INCLUDE_REPAIR_AUTHORITY,
+        **{**arguments, "source_sha": "0" * 64},
+    )
+    changed_inventory = json.loads(json.dumps(inventory))
+    changed_payload = json.loads(
+        changed_inventory["work_rows"]["10717"][0]["payload_json"]
+    )
+    changed_payload["compile_result"]["failure_classes"] = ["OTHER"]
+    changed_inventory["work_rows"]["10717"][0]["payload_json"] = json.dumps(
+        changed_payload
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_10717_BASKET_INCLUDE_REPAIR_AUTHORITY,
+        **{**arguments, "inventory": changed_inventory},
+    )
+
+
 def test_qm5_10718_mae_build_repair_is_source_and_predecessor_bound() -> None:
     label = compile_work_items.QM5_10718_MAE_BUILD_REPAIR_EA_LABEL
     predecessor_id = (

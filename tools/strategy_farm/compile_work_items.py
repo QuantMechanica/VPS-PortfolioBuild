@@ -189,6 +189,31 @@ QM5_10717_BASKET_BUILD_PREDECESSOR_EX5_SHA256 = (
 QM5_10717_BASKET_BUILD_PREDECESSOR_SETFILE_SHA256 = (
     "4d34f1a3ab50cee7154f979977428e8462b5a9d3ab0f84c41be3b453dc81087c"
 )
+# Exact append-only authority for the first governed QM5_10717 rebuild.  That
+# immutable attempt proved the basket-order include was missing: MetaEditor
+# reported COMPILE_ERRORS before a replacement EX5 existed.  The repair adds
+# only the explicit shared helper include.  This binding accepts its one new
+# source hash against the failed row and grants no backtest, gate-verdict,
+# portfolio-admission, or live-use authority.
+QM5_10717_BASKET_INCLUDE_REPAIR_PREDECESSOR_ID = (
+    "eaa447b1-a990-49a5-83eb-274575b825ab"
+)
+QM5_10717_BASKET_INCLUDE_REPAIR_AUTHORITY = (
+    "governed_compile_fail:eaa447b1-a990-49a5-83eb-274575b825ab"
+)
+QM5_10717_BASKET_INCLUDE_REPAIR_EA_LABEL = (
+    "QM5_10717_edgelab-xsec-fx-momentum"
+)
+QM5_10717_BASKET_INCLUDE_REJECTED_SOURCE_SHA256 = (
+    "91819cbcac68dcc28d204d53b2b5aaeecbfdd6981c5c0e8678d3cf2de4c69596"
+)
+QM5_10717_BASKET_INCLUDE_REPAIRED_SOURCE_SHA256 = (
+    "0278b5ddef713e76617c4ae4bc9c97b21217e88578e36a1a09d5ebe10faef970"
+)
+QM5_10717_BASKET_INCLUDE_FAILURE_CLASSES = (
+    "COMPILE_ERRORS",
+    "BUILD_CHECK_COMPILE_FAILED",
+)
 # Exact paced-fleet authority for the instrumented QM5_10025 USDJPY Q02
 # zero-trade recovery. The immutable predecessor proves a valid model-4 run,
 # synchronized seven-symbol history, and zero trades while the old binary had
@@ -1715,6 +1740,14 @@ def _source_repair_authorized(
     inventory: dict[str, Any] | None = None,
     current_work_item_id: str | None = None,
 ) -> bool:
+    if authority == QM5_10717_BASKET_INCLUDE_REPAIR_AUTHORITY:
+        return _qm5_10717_basket_include_repair_authorized(
+            ea_label,
+            authority,
+            ea_id=ea_id,
+            source_sha=source_sha,
+            inventory=inventory,
+        )
     if authority == QM5_10717_BASKET_BUILD_REPAIR_AUTHORITY:
         return _qm5_10717_basket_build_repair_authorized(
             ea_label,
@@ -2156,6 +2189,60 @@ def _qm5_10717_basket_build_repair_authorized(
         == QM5_10717_BASKET_BUILD_REPAIRED_SOURCE_SHA256
         and QM5_10717_BASKET_BUILD_REPAIR_PREDECESSOR_ID
         in current_payload.get("source_repair_predecessor_work_item_ids", [])
+    )
+
+
+def _qm5_10717_basket_include_repair_authorized(
+    ea_label: str,
+    authority: str | None,
+    *,
+    ea_id: str | None,
+    source_sha: str | None,
+    inventory: dict[str, Any] | None,
+) -> bool:
+    """Bind the missing basket-include repair to its governed compile failure."""
+    if (
+        authority != QM5_10717_BASKET_INCLUDE_REPAIR_AUTHORITY
+        or ea_label != QM5_10717_BASKET_INCLUDE_REPAIR_EA_LABEL
+        or ea_id != "10717"
+        or str(source_sha or "").lower()
+        != QM5_10717_BASKET_INCLUDE_REPAIRED_SOURCE_SHA256
+        or inventory is None
+    ):
+        return False
+    predecessor = next(
+        (
+            row
+            for row in inventory.get("work_rows", {}).get(ea_id, [])
+            if str(row.get("id"))
+            == QM5_10717_BASKET_INCLUDE_REPAIR_PREDECESSOR_ID
+        ),
+        None,
+    )
+    if predecessor is None:
+        return False
+    payload = _json_object(predecessor.get("payload_json"))
+    compile_result = payload.get("compile_result")
+    expected_failures = list(QM5_10717_BASKET_INCLUDE_FAILURE_CLASSES)
+    return bool(
+        predecessor.get("phase") == COMPILE_EA_PHASE
+        and predecessor.get("status") == "failed"
+        and predecessor.get("verdict") == "COMPILE_FAIL"
+        and payload.get("ea_label") == ea_label
+        and str(payload.get("mq5_sha256") or "").lower()
+        == QM5_10717_BASKET_INCLUDE_REJECTED_SOURCE_SHA256
+        and payload.get("verdict_reason") == ";".join(expected_failures)
+        and payload.get("compile_source_repair_authority")
+        == QM5_10717_BASKET_BUILD_REPAIR_AUTHORITY
+        and QM5_10717_BASKET_BUILD_REPAIR_PREDECESSOR_ID
+        in payload.get("source_repair_predecessor_work_item_ids", [])
+        and isinstance(compile_result, dict)
+        and compile_result.get("compile_result") == "FAIL"
+        and compile_result.get("build_check_result") == "FAIL"
+        and compile_result.get("failure_classes") == expected_failures
+        and compile_result.get("setfile_count") == 29
+        and compile_result.get("success") is False
+        and compile_result.get("ex5_sha256") is None
     )
 
 
