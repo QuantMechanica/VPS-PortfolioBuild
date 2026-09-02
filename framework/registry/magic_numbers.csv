@@ -18209,3 +18209,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41306,bandy-cci-extreme-fade-mr-index-opt,0,WS30.DWX,413060000,2026-09-02,Codex governed allocator,active
 41307,brent-tsmom12m-opt,0,XTIUSD.DWX,413070000,2026-09-02,Codex governed allocator,active
 41308,wti-mordinal-entropy-tr,0,XTIUSD.DWX,413080000,2026-09-02,Codex governed allocator,active
+41309,wti-mlz76-tr,0,XTIUSD.DWX,413090000,2026-09-02,Codex governed allocator,active
