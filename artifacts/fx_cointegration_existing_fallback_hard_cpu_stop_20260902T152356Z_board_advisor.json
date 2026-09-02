@@ -1,0 +1,131 @@
+{
+  "artifact_type": "fx_cointegration_existing_fallback_hard_cpu_stop",
+  "schema_version": "qm.fx-cointegration-existing-fallback-stop/v1",
+  "generated_at_utc": "2026-09-02T15:23:56Z",
+  "branch": "agents/board-advisor",
+  "observation_base": "52ead9256050ee088c145063f2395c41da6c999f",
+  "mission_outcome": "STOPPED_AT_HARD_CPU_CEILING",
+  "frontier": {
+    "study": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "latest_complete_reconciliation": "artifacts/fx_cointegration_frontier_ownership_guard_20260902T133112Z_board_advisor.json",
+    "approved_identity_count": 123,
+    "matching_ea_directory_count": 123,
+    "approved_unbuilt_identity_count": 0
+  },
+  "anchor_triage": {
+    "QM5_12532": {
+      "pair": [
+        "AUDUSD.DWX",
+        "NZDUSD.DWX"
+      ],
+      "q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "q02_status": "done",
+      "q02_verdict": "PASS",
+      "q02_oninit_or_no_history_blocker": false,
+      "later_chain": "Q04_PASS_Q05_FAIL"
+    },
+    "QM5_12533": {
+      "pair": [
+        "EURJPY.DWX",
+        "GBPJPY.DWX"
+      ],
+      "q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "q02_status": "done",
+      "q02_verdict": "PASS",
+      "q02_oninit_or_no_history_blocker": false,
+      "later_chain": "Q04_FAIL"
+    }
+  },
+  "selected_existing_fallback": {
+    "ea_id": "QM5_12778",
+    "relationship": [
+      "AUDUSD.DWX",
+      "EURJPY.DWX"
+    ],
+    "logical_symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+    "timeframe": "D1",
+    "approved_card": "strategy-seeds/cards/approved/QM5_12778_edgelab-audusd-eurjpy-cointegration_card.md",
+    "basket_manifest": "framework/EAs/QM5_12778_edgelab-audusd-eurjpy-cointegration/basket_manifest.json",
+    "structural_only": true,
+    "machine_learning": false,
+    "low_frequency": true,
+    "risk_contract": {
+      "RISK_FIXED": 1000.0,
+      "RISK_PERCENT": 0.0
+    },
+    "existing_work_item": {
+      "id": "24acc5d4-3e34-526e-a7a8-12640a2e759f",
+      "phase": "Q09_NEWS",
+      "host_symbol": "AUDUSD.DWX",
+      "status": "pending",
+      "attempt_count": 0,
+      "claimed_by": null,
+      "priority_track": true,
+      "updated_at_utc": "2026-09-02T14:31:41+00:00",
+      "diagnostic_non_admission": true
+    },
+    "duplicate_enqueue_performed": false,
+    "duplicate_priority_mutation_performed": false,
+    "manual_dispatch_performed": false
+  },
+  "other_priority_bound_fx_rows_observed": [
+    {
+      "ea_id": "QM5_12507",
+      "work_item_id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+      "phase": "Q02",
+      "status": "pending"
+    },
+    {
+      "ea_id": "QM5_12512",
+      "work_item_id": "acbad967-bf94-4565-9e51-db193de01bf9",
+      "phase": "Q02",
+      "status": "pending"
+    },
+    {
+      "ea_id": "QM5_10717",
+      "work_item_id": "65319749-3c0b-4636-9131-305c34100a08",
+      "phase": "Q02",
+      "status": "pending"
+    },
+    {
+      "ea_id": "QM5_10718",
+      "work_item_id": "31f12573-d903-4386-a857-cad2b445d63a",
+      "phase": "Q02",
+      "status": "pending"
+    },
+    {
+      "ea_id": "QM5_36006",
+      "work_item_id": "4f7cdc74-5d16-49fc-879c-8fea98605536",
+      "phase": "Q02",
+      "status": "pending"
+    }
+  ],
+  "cpu_gate": {
+    "ceiling_percent": 97.0,
+    "samples_percent": [
+      85.843,
+      86.579,
+      99.612,
+      93.754,
+      85.06
+    ],
+    "average_percent": 90.17,
+    "maximum_percent": 99.612,
+    "ceiling_hit": true,
+    "binding_measure": "maximum_percent"
+  },
+  "mutations": {
+    "strategy_card": false,
+    "ea_source_or_binary": false,
+    "setfile_or_basket_manifest": false,
+    "registry_or_magic": false,
+    "runtime_queue": false,
+    "terminal_or_autotrading": false,
+    "portfolio_gate": false,
+    "t_live_manifest": false
+  },
+  "resume_contract": "On a later paced wake, first confirm that the frozen 66-pair frontier still has no unbuilt approved identity and that QM5_12532/QM5_12533 remain past Q02. Then re-read the exact QM5_12778 Q09_NEWS row and take a fresh five-sample CPU window. Only if both average and maximum are strictly below 97 percent may the resident fleet continue. Do not enqueue or reprioritize a duplicate row."
+}
