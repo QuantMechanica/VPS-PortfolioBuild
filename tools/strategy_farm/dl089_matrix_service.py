@@ -781,7 +781,18 @@ def _finalize_from_terminal_ledger(
     ledger = json.loads(ledger_path.read_text(encoding="utf-8-sig"))
     driver = ledger.get("driver") or {}
     state = str(driver.get("state") or "")
-    if state not in {selector.STATE_PATTERN_READY, selector.STATE_UNSTABLE}:
+    # Terminal pattern-selection states.  READY_FOR_Q15 joined 2026-09-02: the
+    # EUR pilot (QM5_11421/EURUSD) ran the driver past PATTERN_SELECTION_READY
+    # through numeric + full-window measuring into READY_FOR_Q15, and the Q12
+    # owner row stayed pending forever because only the two earlier terminal
+    # states were recognised here.  The pattern verdict is fully determined by
+    # ``wf.final_selection`` in every one of these states; the later stages
+    # never reopen the pattern selection.
+    if state not in {
+        selector.STATE_PATTERN_READY,
+        selector.STATE_UNSTABLE,
+        selector.STATE_READY,
+    }:
         return None
     final = (driver.get("wf") or {}).get("final_selection") or {"BUY": [], "SELL": []}
     selected_count = len(final.get("BUY", [])) + len(final.get("SELL", []))

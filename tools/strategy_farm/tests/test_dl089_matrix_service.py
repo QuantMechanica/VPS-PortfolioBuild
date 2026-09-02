@@ -623,3 +623,112 @@ def test_q12_finalization_accepts_authenticated_exclusion_dispositions(
         "MEASURED",
         pruning.SKIPPED_VERDICT,
     }
+
+
+def test_q12_finalization_accepts_ready_for_q15_terminal_state(
+    tmp_path: Path,
+) -> None:
+    """READY_FOR_Q15 is a terminal pattern-selection state (EUR pilot 2026-09-02).
+
+    The driver may advance past PATTERN_SELECTION_READY through numeric and
+    full-window measuring; the pattern verdict is still determined solely by
+    ``wf.final_selection`` and the Q12 owner row must be finalized.
+    """
+
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    program_dir = tmp_path / "program"
+    program_dir.mkdir()
+    ledger_path = program_dir / "ledger.json"
+    ledger_path.write_text(
+        json.dumps(
+            {
+                "driver": {
+                    "state": service.selector.STATE_READY,
+                    "wf": {"final_selection": {"BUY": [], "SELL": []}},
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    measured = tmp_path / "measured.json"
+    measured.write_text("{}\n", encoding="utf-8")
+    now = farmctl.utc_now()
+    with farmctl.connect(root) as conn:
+        for values in (
+            ("q12-owner", "analytic", "Q12", "QM5_PARENT", "EURUSD.DWX", "pending", None, None, "{}"),
+            (
+                "cell-measured",
+                "backtest",
+                "OPT_CENSUS",
+                "QM5_OPT",
+                "EURUSD.DWX",
+                "done",
+                "MEASURED",
+                str(measured),
+                json.dumps({"q12_work_item_id": "q12-owner", "cell_key": "cell:measured"}),
+            ),
+        ):
+            conn.execute(
+                """
+                INSERT INTO work_items(
+                  id,kind,phase,ea_id,symbol,setfile_path,status,verdict,evidence_path,
+                  payload_json,created_at,updated_at
+                ) VALUES(?,?,?,?,?,'x.set',?,?,?,?,?,?)
+                """,
+                (*values, now, now),
+            )
+        q12 = conn.execute("SELECT * FROM work_items WHERE id='q12-owner'").fetchone()
+        result = service._finalize_from_terminal_ledger(
+            conn,
+            q12_row=q12,
+            ledger_path=ledger_path,
+            program_dir=program_dir,
+            apply=True,
+        )
+        conn.commit()
+        q12_after = conn.execute(
+            "SELECT status,verdict FROM work_items WHERE id='q12-owner'"
+        ).fetchone()
+
+    assert result is not None
+    assert result["verdict"] == "NO_FILTER_CHANGE"
+    assert tuple(q12_after) == ("done", "NO_FILTER_CHANGE")
+    receipt = json.loads((program_dir / "q12_selection_receipt.json").read_text(encoding="utf-8"))
+    assert receipt["driver_state"] == service.selector.STATE_READY
+
+
+def test_q12_finalization_ignores_intermediate_measuring_states(tmp_path: Path) -> None:
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    program_dir = tmp_path / "program"
+    program_dir.mkdir()
+    ledger_path = program_dir / "ledger.json"
+    now = farmctl.utc_now()
+    with farmctl.connect(root) as conn:
+        conn.execute(
+            """
+            INSERT INTO work_items(
+              id,kind,phase,ea_id,symbol,setfile_path,status,verdict,evidence_path,
+              payload_json,created_at,updated_at
+            ) VALUES('q12-owner','analytic','Q12','QM5_PARENT','EURUSD.DWX','x.set','pending',NULL,NULL,'{}',?,?)
+            """,
+            (now, now),
+        )
+        q12 = conn.execute("SELECT * FROM work_items WHERE id='q12-owner'").fetchone()
+        for state in (
+            service.selector.STATE_ENQUEUED,
+            service.selector.STATE_NUMERIC,
+            service.selector.STATE_FINAL_FULLWINDOW,
+            service.selector.STATE_WF_COMBO,
+        ):
+            ledger_path.write_text(
+                json.dumps({"driver": {"state": state, "wf": {"final_selection": {"BUY": [], "SELL": []}}}}),
+                encoding="utf-8",
+            )
+            assert (
+                service._finalize_from_terminal_ledger(
+                    conn, q12_row=q12, ledger_path=ledger_path, program_dir=program_dir, apply=True
+                )
+                is None
+            ), state
