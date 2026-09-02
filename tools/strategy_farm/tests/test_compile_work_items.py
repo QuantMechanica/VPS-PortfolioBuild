@@ -447,6 +447,91 @@ def test_qm5_1252_q02_infra_repair_authority_is_exact_label_bound() -> None:
     )
 
 
+def test_qm5_10718_mae_build_repair_is_source_and_predecessor_bound() -> None:
+    label = compile_work_items.QM5_10718_MAE_BUILD_REPAIR_EA_LABEL
+    predecessor_id = (
+        compile_work_items.QM5_10718_MAE_BUILD_REPAIR_PREDECESSOR_ID
+    )
+    predecessor = {
+        "id": predecessor_id,
+        "phase": "Q02",
+        "status": "done",
+        "verdict": "PASS",
+        "payload_json": json.dumps({
+            "logical_symbol": "QM5_10718_FX8_BASKET_D1",
+            "portfolio_scope": "basket",
+            "host_symbol": "EURUSD.DWX",
+            "host_timeframe": "D1",
+            "basket_symbol_count": 28,
+            "ea_dir_name": "QM5_10718_edgelab-regime-filtered-carry",
+            "basket_manifest": (
+                "C:/QM/repo/framework/EAs/"
+                "QM5_10718_edgelab-regime-filtered-carry/basket_manifest.json"
+            ),
+        }),
+    }
+    inventory = {"work_rows": {"10718": [predecessor]}}
+    arguments = {
+        "ea_id": "10718",
+        "source_sha": (
+            compile_work_items.QM5_10718_MAE_BUILD_REPAIRED_SOURCE_SHA256
+        ),
+        "inventory": inventory,
+    }
+
+    assert compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_10718_MAE_BUILD_REPAIR_AUTHORITY,
+        **arguments,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        "QM5_10719_unrelated-d1",
+        compile_work_items.QM5_10718_MAE_BUILD_REPAIR_AUTHORITY,
+        **arguments,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_10718_MAE_BUILD_REPAIR_AUTHORITY,
+        **{**arguments, "source_sha": "0" * 64},
+    )
+    changed_inventory = json.loads(json.dumps(inventory))
+    changed_payload = json.loads(
+        changed_inventory["work_rows"]["10718"][0]["payload_json"]
+    )
+    changed_payload["logical_symbol"] = "EURUSD.DWX"
+    changed_inventory["work_rows"]["10718"][0]["payload_json"] = json.dumps(
+        changed_payload
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_10718_MAE_BUILD_REPAIR_AUTHORITY,
+        **{**arguments, "inventory": changed_inventory},
+    )
+
+    compile_row_id = "compile-successor"
+    current_inventory = json.loads(json.dumps(inventory))
+    current_inventory["work_rows"]["10718"].append({
+        "id": compile_row_id,
+        "phase": compile_work_items.COMPILE_EA_PHASE,
+        "payload_json": json.dumps({
+            "append_only_source_repair": True,
+            "compile_source_repair_authority": (
+                compile_work_items.QM5_10718_MAE_BUILD_REPAIR_AUTHORITY
+            ),
+            "mq5_sha256": (
+                compile_work_items.QM5_10718_MAE_BUILD_REPAIRED_SOURCE_SHA256
+            ),
+            "source_repair_predecessor_work_item_ids": [predecessor_id],
+        }),
+    })
+    assert compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_10718_MAE_BUILD_REPAIR_AUTHORITY,
+        **{**arguments, "inventory": current_inventory},
+        current_work_item_id=compile_row_id,
+    )
+
+
 def test_qm5_38002_q02_stale_binary_repair_authority_is_exact_label_bound() -> None:
     label = "QM5_38002_codetrading-macd-ema-trend-pullback"
 
