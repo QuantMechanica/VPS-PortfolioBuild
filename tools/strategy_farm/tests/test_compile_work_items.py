@@ -447,6 +447,110 @@ def test_qm5_1252_q02_infra_repair_authority_is_exact_label_bound() -> None:
     )
 
 
+def test_qm5_10717_basket_build_repair_is_source_and_predecessor_bound() -> None:
+    label = compile_work_items.QM5_10717_BASKET_BUILD_REPAIR_EA_LABEL
+    predecessor_id = (
+        compile_work_items.QM5_10717_BASKET_BUILD_REPAIR_PREDECESSOR_ID
+    )
+    predecessor = {
+        "id": predecessor_id,
+        "phase": "Q02",
+        "status": "pending",
+        "verdict": None,
+        "mq5_sha256": (
+            compile_work_items.QM5_10717_BASKET_BUILD_PREDECESSOR_SOURCE_SHA256
+        ),
+        "ex5_sha256": (
+            compile_work_items.QM5_10717_BASKET_BUILD_PREDECESSOR_EX5_SHA256
+        ),
+        "payload_json": json.dumps({
+            "logical_symbol": "FX8_BASKET_D1",
+            "host_symbol": "EURUSD.DWX",
+            "host_timeframe": "D1",
+            "expected_period": "D1",
+            "basket_symbols": [f"PAIR_{index}" for index in range(28)],
+            "priority_track": True,
+            "risk_fixed": 1000.0,
+            "risk_percent": 0.0,
+            "expected_mq5_sha256": (
+                compile_work_items.
+                QM5_10717_BASKET_BUILD_PREDECESSOR_SOURCE_SHA256
+            ),
+            "expected_ex5_sha256": (
+                compile_work_items.QM5_10717_BASKET_BUILD_PREDECESSOR_EX5_SHA256
+            ),
+            "expected_setfile_sha256": (
+                compile_work_items.
+                QM5_10717_BASKET_BUILD_PREDECESSOR_SETFILE_SHA256
+            ),
+            "basket_manifest": (
+                "C:/QM/repo/framework/EAs/"
+                "QM5_10717_edgelab-xsec-fx-momentum/basket_manifest.json"
+            ),
+        }),
+    }
+    inventory = {"work_rows": {"10717": [predecessor]}}
+    arguments = {
+        "ea_id": "10717",
+        "source_sha": (
+            compile_work_items.QM5_10717_BASKET_BUILD_REPAIRED_SOURCE_SHA256
+        ),
+        "inventory": inventory,
+    }
+
+    assert compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_10717_BASKET_BUILD_REPAIR_AUTHORITY,
+        **arguments,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        "QM5_10718_unrelated-d1",
+        compile_work_items.QM5_10717_BASKET_BUILD_REPAIR_AUTHORITY,
+        **arguments,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_10717_BASKET_BUILD_REPAIR_AUTHORITY,
+        **{**arguments, "source_sha": "0" * 64},
+    )
+    changed_inventory = json.loads(json.dumps(inventory))
+    changed_payload = json.loads(
+        changed_inventory["work_rows"]["10717"][0]["payload_json"]
+    )
+    changed_payload["expected_ex5_sha256"] = "0" * 64
+    changed_inventory["work_rows"]["10717"][0]["payload_json"] = json.dumps(
+        changed_payload
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_10717_BASKET_BUILD_REPAIR_AUTHORITY,
+        **{**arguments, "inventory": changed_inventory},
+    )
+
+    compile_row_id = "compile-successor"
+    current_inventory = json.loads(json.dumps(inventory))
+    current_inventory["work_rows"]["10717"].append({
+        "id": compile_row_id,
+        "phase": compile_work_items.COMPILE_EA_PHASE,
+        "payload_json": json.dumps({
+            "append_only_source_repair": True,
+            "compile_source_repair_authority": (
+                compile_work_items.QM5_10717_BASKET_BUILD_REPAIR_AUTHORITY
+            ),
+            "mq5_sha256": (
+                compile_work_items.QM5_10717_BASKET_BUILD_REPAIRED_SOURCE_SHA256
+            ),
+            "source_repair_predecessor_work_item_ids": [predecessor_id],
+        }),
+    })
+    assert compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_10717_BASKET_BUILD_REPAIR_AUTHORITY,
+        **{**arguments, "inventory": current_inventory},
+        current_work_item_id=compile_row_id,
+    )
+
+
 def test_qm5_10718_mae_build_repair_is_source_and_predecessor_bound() -> None:
     label = compile_work_items.QM5_10718_MAE_BUILD_REPAIR_EA_LABEL
     predecessor_id = (

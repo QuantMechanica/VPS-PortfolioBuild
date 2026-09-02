@@ -161,6 +161,34 @@ QM5_10718_MAE_BUILD_REPAIR_EA_LABEL = (
 QM5_10718_MAE_BUILD_REPAIRED_SOURCE_SHA256 = (
     "92fa06a272aa4805e31c6caac4f1ad9feeaf91fec18c349a616bf2cae00f8f00"
 )
+# Exact paced-fleet authority for the QM5_10717 logical FX8 basket repair.
+# The open logical Q02 row is still unclaimed, but its immutable artifact
+# bindings predate the current hardening contract and point to a host-only
+# order path that cannot execute the card's selected cross-symbol legs.  This
+# authority accepts only the repaired source hash and that exact pending Q02
+# binding, then permits one append-only COMPILE_EA successor.  It grants no
+# backtest, gate-verdict, portfolio-admission, or live-use authority.
+QM5_10717_BASKET_BUILD_REPAIR_PREDECESSOR_ID = (
+    "7dd70134-a2a0-4ecf-a706-5f4609a094be"
+)
+QM5_10717_BASKET_BUILD_REPAIR_AUTHORITY = (
+    "q02_pending_predecessor:7dd70134-a2a0-4ecf-a706-5f4609a094be"
+)
+QM5_10717_BASKET_BUILD_REPAIR_EA_LABEL = (
+    "QM5_10717_edgelab-xsec-fx-momentum"
+)
+QM5_10717_BASKET_BUILD_REPAIRED_SOURCE_SHA256 = (
+    "91819cbcac68dcc28d204d53b2b5aaeecbfdd6981c5c0e8678d3cf2de4c69596"
+)
+QM5_10717_BASKET_BUILD_PREDECESSOR_SOURCE_SHA256 = (
+    "1fa4d2fdceaba1fb727ca5d8962964be400490a9546fcb77a8b8579d345e9f7e"
+)
+QM5_10717_BASKET_BUILD_PREDECESSOR_EX5_SHA256 = (
+    "72c118b0a30fc32d0b6bcf921a632bfd8175048431b0547b87f249b841053f0a"
+)
+QM5_10717_BASKET_BUILD_PREDECESSOR_SETFILE_SHA256 = (
+    "4d34f1a3ab50cee7154f979977428e8462b5a9d3ab0f84c41be3b453dc81087c"
+)
 # Exact paced-fleet authority for the instrumented QM5_10025 USDJPY Q02
 # zero-trade recovery. The immutable predecessor proves a valid model-4 run,
 # synchronized seven-symbol history, and zero trades while the old binary had
@@ -1687,6 +1715,15 @@ def _source_repair_authorized(
     inventory: dict[str, Any] | None = None,
     current_work_item_id: str | None = None,
 ) -> bool:
+    if authority == QM5_10717_BASKET_BUILD_REPAIR_AUTHORITY:
+        return _qm5_10717_basket_build_repair_authorized(
+            ea_label,
+            authority,
+            ea_id=ea_id,
+            source_sha=source_sha,
+            inventory=inventory,
+            current_work_item_id=current_work_item_id,
+        )
     if authority == QM5_10718_MAE_BUILD_REPAIR_AUTHORITY:
         return _qm5_10718_mae_build_repair_authorized(
             ea_label,
@@ -2033,6 +2070,91 @@ def _qm5_10718_mae_build_repair_authorized(
         and str(current_payload.get("mq5_sha256") or "").lower()
         == QM5_10718_MAE_BUILD_REPAIRED_SOURCE_SHA256
         and QM5_10718_MAE_BUILD_REPAIR_PREDECESSOR_ID
+        in current_payload.get("source_repair_predecessor_work_item_ids", [])
+    )
+
+
+def _qm5_10717_basket_build_repair_authorized(
+    ea_label: str,
+    authority: str | None,
+    *,
+    ea_id: str | None,
+    source_sha: str | None,
+    inventory: dict[str, Any] | None,
+    current_work_item_id: str | None,
+) -> bool:
+    """Bind one current-build compile to the exact unclaimed logical Q02 row."""
+    if (
+        authority != QM5_10717_BASKET_BUILD_REPAIR_AUTHORITY
+        or ea_label != QM5_10717_BASKET_BUILD_REPAIR_EA_LABEL
+        or ea_id != "10717"
+        or str(source_sha or "").lower()
+        != QM5_10717_BASKET_BUILD_REPAIRED_SOURCE_SHA256
+        or inventory is None
+    ):
+        return False
+    predecessor = next(
+        (
+            row
+            for row in inventory.get("work_rows", {}).get(ea_id, [])
+            if str(row.get("id"))
+            == QM5_10717_BASKET_BUILD_REPAIR_PREDECESSOR_ID
+        ),
+        None,
+    )
+    if predecessor is None:
+        return False
+    payload = _json_object(predecessor.get("payload_json"))
+    basket_symbols = payload.get("basket_symbols")
+    if not (
+        predecessor.get("phase") == "Q02"
+        and predecessor.get("status") == "pending"
+        and predecessor.get("verdict") is None
+        and str(predecessor.get("mq5_sha256") or "").lower()
+        == QM5_10717_BASKET_BUILD_PREDECESSOR_SOURCE_SHA256
+        and str(predecessor.get("ex5_sha256") or "").lower()
+        == QM5_10717_BASKET_BUILD_PREDECESSOR_EX5_SHA256
+        and payload.get("logical_symbol") == "FX8_BASKET_D1"
+        and payload.get("host_symbol") == "EURUSD.DWX"
+        and payload.get("host_timeframe") == "D1"
+        and payload.get("expected_period") == "D1"
+        and isinstance(basket_symbols, list)
+        and len(basket_symbols) == 28
+        and payload.get("priority_track") is True
+        and payload.get("risk_fixed") == 1000.0
+        and payload.get("risk_percent") == 0.0
+        and str(payload.get("expected_mq5_sha256") or "").lower()
+        == QM5_10717_BASKET_BUILD_PREDECESSOR_SOURCE_SHA256
+        and str(payload.get("expected_ex5_sha256") or "").lower()
+        == QM5_10717_BASKET_BUILD_PREDECESSOR_EX5_SHA256
+        and str(payload.get("expected_setfile_sha256") or "").lower()
+        == QM5_10717_BASKET_BUILD_PREDECESSOR_SETFILE_SHA256
+        and str(payload.get("basket_manifest") or "").replace("\\", "/").endswith(
+            "/QM5_10717_edgelab-xsec-fx-momentum/basket_manifest.json"
+        )
+    ):
+        return False
+    if current_work_item_id is None:
+        return True
+    current_row = next(
+        (
+            row
+            for row in inventory.get("work_rows", {}).get(ea_id, [])
+            if str(row.get("id")) == str(current_work_item_id)
+        ),
+        None,
+    )
+    current_payload = _json_object(
+        current_row.get("payload_json") if current_row else None
+    )
+    return bool(
+        current_row
+        and current_row.get("phase") == COMPILE_EA_PHASE
+        and current_payload.get("append_only_source_repair") is True
+        and current_payload.get("compile_source_repair_authority") == authority
+        and str(current_payload.get("mq5_sha256") or "").lower()
+        == QM5_10717_BASKET_BUILD_REPAIRED_SOURCE_SHA256
+        and QM5_10717_BASKET_BUILD_REPAIR_PREDECESSOR_ID
         in current_payload.get("source_repair_predecessor_work_item_ids", [])
     )
 
@@ -2612,6 +2734,13 @@ def classify_candidate(
     ):
         source_repair_predecessor_ids.add(
             QM5_10718_MAE_BUILD_REPAIR_PREDECESSOR_ID
+        )
+    if (
+        repair_authorized
+        and source_repair_authority == QM5_10717_BASKET_BUILD_REPAIR_AUTHORITY
+    ):
+        source_repair_predecessor_ids.add(
+            QM5_10717_BASKET_BUILD_REPAIR_PREDECESSOR_ID
         )
 
     return {
