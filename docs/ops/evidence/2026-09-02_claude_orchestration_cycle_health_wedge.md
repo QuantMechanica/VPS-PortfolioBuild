@@ -9,9 +9,9 @@ All control-plane commands executed against the canonical checkout `C:/QM/repo`.
   codex running 2/5, gemini running 1/2, owner lane disabled (0).
 - `agent_router.py list-tasks --agent claude --state IN_PROGRESS` → `[]`.
 
-**No claude work was assigned this cycle.** No task artifacts produced; nothing
-moved to REVIEW. No routing commands (`run` / `route-many` / `route-once` /
-`replenish`) were issued.
+**No claude work was assigned at the start of this cycle.** *(Superseded later in
+the same cycle — see §6.)* No routing commands (`run` / `route-many` /
+`route-once` / `replenish`) were issued at any point.
 
 ## 2. QM5_10260 queue state (cieslak-fomc-cycle-idx)
 
@@ -178,3 +178,23 @@ off this snapshot.
 - No routing commands. No factory OFF/ON. No T_Live or AutoTrading action.
   No `terminal64.exe` started. No running backtest interrupted. No work item,
   hold, or lock mutated.
+
+## 6. Correction — a task did arrive mid-cycle
+
+§1 recorded an empty claude lane, which was true at ~10:21Z. The router then
+routed `b335e499-86e9-5b7d-a309-8000ad07a282` (priority 85, `ops_issue`,
+"Execute OWNER decision OWNER-DEC-LEGACY-COHORT-DISPO-20260830 = YES") at
+`2026-09-02T10:21:56Z`, and the step-3 re-check picked it up. It was worked.
+
+Outcome: Part B (6 append-only retires) was already complete via ticket
+`7d561f89` and was independently re-verified; Part A (13 Q02-new-identity chains)
+was held fail-closed because the REQUAL-8 wave is 7/8 with pair 8 pending and its
+build reference `c2ef7f4a` is not locatable as a row id. No Codex ticket was
+commissioned.
+
+Full record: `docs/ops/evidence/2026-08-30_legacy-cohort-dispo-20260830_68a58c95_execution.md`
+(commit `8bc92d4d22`). The task sits in `REVIEW` per
+`INDEPENDENT_ORCHESTRATOR_CLOSEOUT`.
+
+Note for open item 1: this cycle's *first* `farmctl health` call is the one that
+wedged and was killed. The step-4 health check was still never satisfied.
