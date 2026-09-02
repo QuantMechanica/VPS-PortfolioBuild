@@ -1,0 +1,123 @@
+{
+  "artifact_type": "fx_cointegration_existing_fallback_cpu_ceiling_stop",
+  "schema_version": "qm.fx-cointegration-existing-fallback-cpu-stop/v1",
+  "generated_at_utc": "2026-09-02T18:46:00.5909825Z",
+  "generated_at_local": "2026-09-02T20:46:00.5909825+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "c46a66f830b55b6e149c7f17473033ec29b1164b",
+  "mission": "grow_certified_v5_portfolio_new_forex_sleeves",
+  "outcome": "HARD_CPU_CEILING_STOP_NO_DUPLICATE_MUTATION",
+  "frontier": {
+    "source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "unordered_relationship_count": 66,
+    "ownership_guard": "artifacts/fx_cointegration_frontier_ownership_guard_20260902T133112Z_board_advisor.json",
+    "approved_identity_count": 123,
+    "matching_ea_directory_count": 123,
+    "unbuilt_approved_identity_count": 0,
+    "new_card_or_build_authorized": false,
+    "reason": "The frozen 66-pair scan is fully represented; another scan-derived card, EA, basket manifest, or Q02 row would duplicate governed coverage."
+  },
+  "preferred_anchor_state": [
+    {
+      "ea_id": "QM5_12532",
+      "relationship": [
+        "AUDUSD.DWX",
+        "NZDUSD.DWX"
+      ],
+      "fresh_work_item_summary": {
+        "Q02_done_PASS": 1,
+        "Q02_failed_INVALID": 6,
+        "Q04_done_PASS": 1,
+        "Q04_failed_INVALID": 1,
+        "Q05_done_FAIL": 1
+      },
+      "terminal_q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "current_q02_oninit_or_no_history_blocker": false,
+      "current_frontier": "Q05_FAIL"
+    },
+    {
+      "ea_id": "QM5_12533",
+      "relationship": [
+        "EURJPY.DWX",
+        "GBPJPY.DWX"
+      ],
+      "fresh_work_item_summary": {
+        "Q02_done_FAIL": 2,
+        "Q02_done_INFRA_FAIL": 5,
+        "Q02_done_PASS": 1,
+        "Q02_failed_INFRA_FAIL": 1,
+        "Q02_failed_INVALID": 27,
+        "Q04_done_FAIL": 1,
+        "Q04_done_INFRA_FAIL": 1
+      },
+      "terminal_q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "current_q02_oninit_or_no_history_blocker": false,
+      "current_frontier": "Q04_FAIL"
+    }
+  ],
+  "existing_forex_fallback": {
+    "ea_id": "QM5_12778",
+    "relationship": [
+      "AUDUSD.DWX",
+      "EURJPY.DWX"
+    ],
+    "strategy_card": "strategy-seeds/cards/approved/QM5_12778_edgelab-audusd-eurjpy-cointegration_card.md",
+    "basket_manifest": "framework/EAs/QM5_12778_edgelab-audusd-eurjpy-cointegration/basket_manifest.json",
+    "work_item_id": "24acc5d4-3e34-526e-a7a8-12640a2e759f",
+    "phase": "Q09_NEWS",
+    "host_symbol": "AUDUSD.DWX",
+    "status": "pending",
+    "claimed_by": null,
+    "attempt_count": 0,
+    "verdict": null,
+    "updated_at_utc": "2026-09-02T14:31:41+00:00",
+    "priority_track": true,
+    "diagnostic_non_admission": true,
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "payload_sha256": "4b480ef617bc8245b12712f7a933ab24c3524f25852efb7976a1bbbeabe30d04",
+    "decision": "Leave the existing unique priority-bound row to the ordinary paced worker; do not enqueue, reprioritize, claim, or dispatch a duplicate."
+  },
+  "package_hashes_sha256": {
+    "mq5": "132a501d94685f013cc62a8b3c2de111d0a8b1e616a8656d2c61b061a754c146",
+    "ex5": "2a105cfbb364142c96c552136bb450162c142845665ce3366d0c045248c17a01",
+    "basket_manifest": "0ce25d17ebe7c3664e4acdb6c1d302b28b1f40710301189cc633e44f25854d57",
+    "logical_backtest_setfile": "0e7949276927c8c5355c413c631e7b67f684e757892de59fa2cff5521836c8e9"
+  },
+  "capacity": {
+    "sampled_at_utc": "2026-09-02T18:46:00.5909825Z",
+    "samples_percent": [
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "average_percent": 100.0,
+    "maximum_percent": 100.0,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_binding": true,
+    "free_physical_ram_gb": 18.668,
+    "total_physical_ram_gb": 63.12
+  },
+  "actions": {
+    "card_created_or_changed": false,
+    "ea_or_setfile_changed": false,
+    "registry_or_magic_changed": false,
+    "work_item_created": false,
+    "priority_changed": false,
+    "work_item_claimed": false,
+    "backtest_or_dispatch_started": false,
+    "terminal_or_autotrading_control": false
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_files": false,
+    "autotrading": false
+  },
+  "continuation": "After host CPU average and maximum are both strictly below 97%, re-read work item 24acc5d4-3e34-526e-a7a8-12640a2e759f and let the ordinary paced worker claim it if still pending. Do not create another scan-derived identity or duplicate queue row."
+}
