@@ -1,0 +1,55 @@
+{
+  "candidate": {
+    "author": "OpenAI Codex; Michael A. Fligner; George E. Policello II; Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen; Grant Schneider; Eric Chicken; Rachel Becvarik",
+    "mechanic": "monthly-wti-twenty-completed-log-returns-fixed-ten-old-ten-recent-fligner-policello-heteroskedastic-rank-location-score-absolute-threshold-0600-continuation",
+    "slug": "wti-mfp-shift-tr",
+    "strategy_id": "AI-CODEX-WTI-MFP-SHIFT-20260902_S01"
+  },
+  "error": null,
+  "exit_code": 3,
+  "generated_at_utc": "2026-09-02T04:10:44+00:00",
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41183_wti-mks-shift-tr_card.md",
+      "score": 1.0,
+      "slug": "wti-mks-shift-tr",
+      "source": "card",
+      "strategy_id": "MOP-NIST-KS2-WTI-MDIST-SHIFT-2026_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41251_wti-mbrunner-shift-tr_card.md",
+      "score": 0.625,
+      "slug": "wti-mbrunner-shift-tr",
+      "source": "card",
+      "strategy_id": "AI-CODEX-WTI-MBRUNNER-20260831_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4783,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1419,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "FUZZY_MATCH"
+}

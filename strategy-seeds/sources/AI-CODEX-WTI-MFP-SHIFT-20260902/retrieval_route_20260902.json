@@ -1,0 +1,50 @@
+{
+  "schema": "qm.source-retrieval-evidence/v1",
+  "source_id": "AI-CODEX-WTI-MFP-SHIFT-20260902",
+  "retrieved_at_utc": "2026-09-02T04:10:06Z",
+  "routes": [
+    {
+      "role": "trading_carrier",
+      "status": "REUSED_GOVERNED_COMPLETE_READ",
+      "citation": "Moskowitz, Ooi, and Pedersen (2012), Time Series Momentum, Journal of Financial Economics 104(2), 228-250",
+      "url": "https://pages.stern.nyu.edu/~lpederse/papers/TimeSeriesMomentum.pdf",
+      "local_evidence": "strategy-seeds/sources/MOP-TSMOM-2012/source.md",
+      "local_evidence_sha256": "C8B07ECD62C1D5EF9E3D7975EEE6A3B6C46C1C566D0B20B42237613D9B3A7042",
+      "boundary": "The governed packet records a complete 23-page read and explicit NYMEX WTI membership; no source performance statistic is imported."
+    },
+    {
+      "role": "original_method_metadata",
+      "status": "PUBLISHER_ABSTRACT_AND_METADATA_ONLY",
+      "citation": "Fligner and Policello (1981), Robust Rank Procedures for the Behrens-Fisher Problem, JASA 76(373), 162-168",
+      "url": "https://doi.org/10.1080/01621459.1981.10477623",
+      "access_result": "Publisher metadata and abstract accessible; article body not claimed read.",
+      "boundary": "Supports the named unequal-shape median-test lineage and its fewer-shape-assumptions purpose, not the trading conjunction or exact runtime arithmetic."
+    },
+    {
+      "role": "complete_method_implementation",
+      "status": "GITHUB_API_COMPLETE_TEXT",
+      "citation": "CRAN NSM3 1.20, R/pFligPoli.R",
+      "repository": "https://github.com/cran/NSM3",
+      "commit": "4f610ad57ca573f82a76f413455206b0ccce2ac2",
+      "blob_sha": "9a41229d88e5ff0173ca6ec3273a3ae0dcec0834",
+      "content_sha256": "D0633DB2F8780E431402030EB622D86536C841608961A57592F9CB9F21D6E060",
+      "bytes": 2541,
+      "raw_url": "https://raw.githubusercontent.com/cran/NSM3/4f610ad57ca573f82a76f413455206b0ccce2ac2/R/pFligPoli.R",
+      "boundary": "Complete pinned source defines p/q pair placements, group means, separate sums of squared placement deviations, the p_bar*q_bar term, denominator, and score orientation."
+    },
+    {
+      "role": "official_package_record",
+      "status": "CRAN_METADATA_AND_MANUAL",
+      "citation": "CRAN package NSM3 1.20, DOI 10.32614/CRAN.package.NSM3",
+      "url": "https://CRAN.R-project.org/package=NSM3",
+      "manual_url": "https://stat.ethz.ch/CRAN/web/packages/NSM3/NSM3.pdf",
+      "boundary": "Documents pFligPoli output and exact, Monte Carlo, and asymptotic modes; this strategy computes only the deterministic score."
+    }
+  ],
+  "safety": {
+    "authentication_used": false,
+    "site_mutation": false,
+    "binary_or_ea_downloaded": false,
+    "external_runtime_dependency_created": false
+  }
+}

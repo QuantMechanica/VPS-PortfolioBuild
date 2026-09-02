@@ -1,0 +1,24 @@
+{
+  "schema": "qm.predata-rank-threshold-density/v1",
+  "generated_at_utc": "2026-09-02T04:10:06Z",
+  "strategy_id": "AI-CODEX-WTI-MFP-SHIFT-20260902_S01",
+  "sample_contract": {
+    "old_block_size": 10,
+    "recent_block_size": 10,
+    "pooled_distinct_ranks": 20,
+    "fixed_size_label_allocations": 184756,
+    "allocation_formula": "C(20,10)",
+    "market_data_used": false
+  },
+  "score_contract": {
+    "statistic": "Fligner-Policello pair-placement U score as implemented by CRAN NSM3 pFligPoli",
+    "absolute_threshold": 0.6,
+    "zero_denominator_rule": "The two complete-separation allocations use a finite signed limit of 1000000 and qualify; an exactly directionless zero denominator is flat."
+  },
+  "result": {
+    "qualifying_allocations": 97616,
+    "qualifying_fraction": 0.5283509060598844,
+    "twelve_month_attempt_prior": 6.340210872718613
+  },
+  "claim_boundary": "Exact pre-data combinatorial activity density under exchangeable distinct ranks. This is not a WTI backtest, p-value, profitability estimate, significance claim, or realized annual trade count."
+}
