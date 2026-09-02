@@ -1,12 +1,12 @@
 {
   "schema": "qm_build_handoff_v1",
-  "checked_at_utc": "2026-09-02T16:58:38Z",
+  "checked_at_utc": "2026-09-02T18:51:16Z",
   "agent_task_id": "f3fba72c-a3be-453e-9e15-830e46135c53",
   "build_task_id": "9d978a4c-4161-4e15-982d-0d1c56b696a7",
   "ea_id": "QM5_41142",
   "ea_label": "QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow",
   "slug": "eurusd-month-end-benchmark-fix-hedge-flow",
-  "verdict": "SOURCE_COMPLETE_COMPILE_BLOCKED_STALE_BINDING_ROLLOUT_PENDING",
+  "verdict": "BUILD_COMPLETE_STRICT_COMPILE_PASS_REVIEW_READY",
   "card": {
     "path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow.md",
     "sha256": "62558E7DD039847DAE93DEF565C7F48F1108E9E965611A8502DA33020446DC55",
@@ -16,6 +16,8 @@
   "files": {
     "mq5": "C:\\QM\\repo\\framework\\EAs\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow.mq5",
     "mq5_sha256": "CB33049FCC851C1BD83762ABE1AEE72768BF38D55D73097DE08E48C1BA177D9A",
+    "ex5": "C:\\QM\\repo\\framework\\EAs\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow.ex5",
+    "ex5_sha256": "F1307FE7109135252EA4DAF59413406AB8F12ABE31C54C4922AD29418E3B2E90",
     "spec": "C:\\QM\\repo\\framework\\EAs\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow\\SPEC.md",
     "basket_manifest": "C:\\QM\\repo\\framework\\EAs\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow\\basket_manifest.json",
     "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow\\sets\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow_EURUSD.DWX_M15_backtest.set",
@@ -39,33 +41,33 @@
     "build_guardrails": "PASS_NO_FINDINGS",
     "git_diff_check": "PASS",
     "forbidden_pattern_scan": "PASS",
-    "ad_hoc_strict_compile": "REFUSED_LIVE_FACTORY_AD_HOC_COMPILE",
+    "governed_strict_compile": "PASS",
     "ad_hoc_compile_bypassed": false
   },
   "compile": {
-    "work_item_id": "07a09214-86ba-4946-9e0b-c9e7baa8b6fc",
-    "status": "pending",
-    "activation_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
-    "release_on_restart": true,
-    "payload_mq5_sha256": "1BB336BBBD3B9E06730EA830B94A7C3BFF9C4387F88920C43754757BE5FE3C0F",
-    "payload_mq5_sha256_matches_source": false,
-    "binding_disposition": "The open held item must fail stale-source validation and be replaced by a new governed compile item after the reviewed worker rollout; direct DB editing and manual hold release are forbidden.",
-    "compile_verdict": null,
-    "compile_evidence_path": null,
-    "ex5_sha256": null
+    "work_item_id": "9adcc3f5-939f-48bd-a5c7-03c08c1c0d85",
+    "status": "done",
+    "terminal_claim": "T10",
+    "compile_result": "PASS",
+    "build_check_result": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "build_check_warning_count": 2,
+    "setfile_count": 1,
+    "compile_evidence_path": "D:\\QM\\reports\\work_items\\9adcc3f5-939f-48bd-a5c7-03c08c1c0d85\\QM5_41142\\COMPILE_EA\\compile_evidence.json",
+    "compile_evidence_sha256": "962049D69F1D24C0C09AA9190D845B03407D3D114BEFF506EC672F465DDE383C",
+    "durable_receipt": "C:\\QM\\repo\\docs\\ops\\evidence\\f3fba72c_qm5_41142_compile_pass_2026-09-02.json",
+    "ex5_sha256": "F1307FE7109135252EA4DAF59413406AB8F12ABE31C54C4922AD29418E3B2E90"
   },
   "pipeline": {
     "q02_enqueued": false,
     "pipeline_verdict_claimed": false,
-    "reason": "Build-only task; governed compile has not yet produced compile evidence."
+    "reason": "Build-only task; strict compile PASS permits code review but is not a pipeline verdict."
   },
   "router_handoff": {
-    "review_update_attempted": true,
-    "review_update_accepted": false,
-    "gate_code": "D6_BUILD_IDENTITY_MISSING",
-    "reason": "strict_build_pass_evidence_missing_review_dispatch_refused",
-    "task_state_after_blocked_handoff": "BLOCKED",
-    "blocked_verdict": "COMPILE_BLOCKED_STALE_BINDING_AWAITING_REVIEWED_WORKER_ROLLOUT"
+    "requested_state": "REVIEW",
+    "artifact_path": "C:\\QM\\repo\\docs\\ops\\evidence\\f3fba72c_qm5_41142_build_result_2026-09-02.json",
+    "verdict": "BUILD_COMPLETE_STRICT_COMPILE_PASS_REVIEW_READY"
   },
   "safety": {
     "autotrading_toggled": false,

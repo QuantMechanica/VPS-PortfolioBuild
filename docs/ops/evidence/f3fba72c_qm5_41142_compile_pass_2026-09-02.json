@@ -1,0 +1,30 @@
+{
+  "schema": "qm.compile-ea-durable-receipt/v1",
+  "agent_task_id": "f3fba72c-a3be-453e-9e15-830e46135c53",
+  "build_task_id": "9d978a4c-4161-4e15-982d-0d1c56b696a7",
+  "work_item_id": "9adcc3f5-939f-48bd-a5c7-03c08c1c0d85",
+  "ea_id": "QM5_41142",
+  "ea_label": "QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow",
+  "started_at": "2026-09-02T18:50:44+00:00",
+  "completed_at": "2026-09-02T18:51:16+00:00",
+  "terminal_claim": "T10",
+  "source_mq5_sha256": "CB33049FCC851C1BD83762ABE1AEE72768BF38D55D73097DE08E48C1BA177D9A",
+  "compile_result": "PASS",
+  "compile_reason_class": "OK",
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "build_check_result": "PASS",
+  "build_check_failures": 0,
+  "build_check_warnings": [
+    "EA_EVENT_VOCABULARY_UNKNOWN: STRATEGY_ENTRY_READY",
+    "EA_PERF_UNGATED_BAR_DATA: cross-series CopyRates performance heuristic at source line 393"
+  ],
+  "setfile_count": 1,
+  "setfile_sha256": "68444A44402C8FA20828499AA84CF25444BF63E90D9C297C82E49183FF878249",
+  "ex5_sha256": "F1307FE7109135252EA4DAF59413406AB8F12ABE31C54C4922AD29418E3B2E90",
+  "runtime_evidence_path": "D:\\QM\\reports\\work_items\\9adcc3f5-939f-48bd-a5c7-03c08c1c0d85\\QM5_41142\\COMPILE_EA\\compile_evidence.json",
+  "runtime_evidence_sha256": "962049D69F1D24C0C09AA9190D845B03407D3D114BEFF506EC672F465DDE383C",
+  "pipeline_verdict_claimed": false,
+  "q02_enqueued": false,
+  "live_authorized": false
+}

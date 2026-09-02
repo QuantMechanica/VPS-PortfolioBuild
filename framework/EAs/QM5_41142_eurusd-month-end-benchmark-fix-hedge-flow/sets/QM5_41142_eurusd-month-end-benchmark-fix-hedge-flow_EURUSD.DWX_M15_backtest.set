@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   07f522cede58a555933643042b9437de7a18d371562181490e98447261cdeb97
 ; author:       Development
 ; date:         2026-09-02
 ;==========================================================
@@ -19,6 +19,7 @@ qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow.md
 strategy_entry_lead_minutes=120
 strategy_atr_period_h1=14
