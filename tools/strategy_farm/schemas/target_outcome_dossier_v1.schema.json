@@ -45,7 +45,7 @@
             {"$ref": "#/$defs/rulepack_binding"},
             {
               "properties": {
-                "rulepack_id": {"const": "FTMO_2S_100K_SWING_V1"},
+                "rulepack_id": {"const": "FTMO_2S_100K_SWING_V2"},
                 "target": {"const": "FTMO"}
               }
             }

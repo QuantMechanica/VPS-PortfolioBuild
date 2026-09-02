@@ -1,11 +1,11 @@
 {
   "schema_version": "target-rulepack/v1",
   "schema_ref": "tools/strategy_farm/schemas/target_rulepack_v1.schema.json",
-  "rulepack_id": "FTMO_2S_100K_SWING_V1",
-  "profile_version": 1,
+  "rulepack_id": "FTMO_2S_100K_SWING_V2",
+  "profile_version": 2,
   "target": "FTMO",
   "account_or_program": "FTMO Challenge 2-Step / USD 100000 / Swing",
-  "as_of": "2026-07-29",
+  "as_of": "2026-09-02",
   "lifecycle_status": "RESEARCH_CONTRACT_ONLY",
   "canonicalization": {
     "algorithm": "QM_CANONICAL_JSON_V1",
@@ -18,10 +18,21 @@
       "title": "FTMO Trading Objectives",
       "url": "https://ftmo.com/en/trading-objectives/",
       "authority": "OFFICIAL_PROVIDER",
-      "retrieved_on": "2026-07-29",
-      "retrieved_at_utc": "2026-07-29T19:25:39Z",
-      "snapshot_path": "docs/ops/evidence/2026-07-29_ftmo_official_rules_snapshot.json",
-      "snapshot_sha256": "60f94e0d1d3ff5f64582c6274ef1cffe25383806b9a718104f3a34ad89384b72",
+      "retrieved_on": "2026-09-02",
+      "retrieved_at_utc": "2026-09-02T09:27:22Z",
+      "snapshot_path": "docs/ops/evidence/2026-09-02_ftmo_economic_terms_snapshot.json",
+      "snapshot_sha256": "daef9de5a3c9093a8b13d9f86cf7525937d4d5c0e0bade1c4aedaa31658e933d",
+      "content_identity_basis": "NORMALIZED_PROVIDER_RULE_SNAPSHOT"
+    },
+    {
+      "source_id": "ftmo_economic_terms_official",
+      "title": "FTMO 2-Step economics, Swing leverage, and Scaling Plan",
+      "url": "https://ftmo.com/en/2-step-challenge/",
+      "authority": "OFFICIAL_PROVIDER",
+      "retrieved_on": "2026-09-02",
+      "retrieved_at_utc": "2026-09-02T09:27:22Z",
+      "snapshot_path": "docs/ops/evidence/2026-09-02_ftmo_economic_terms_snapshot.json",
+      "snapshot_sha256": "daef9de5a3c9093a8b13d9f86cf7525937d4d5c0e0bade1c4aedaa31658e933d",
       "content_identity_basis": "NORMALIZED_PROVIDER_RULE_SNAPSHOT"
     },
     {
@@ -29,10 +40,10 @@
       "title": "FTMO Challenge: 2-Step",
       "url": "https://ftmo.com/en/2-step-challenge/",
       "authority": "OFFICIAL_PROVIDER",
-      "retrieved_on": "2026-07-29",
-      "retrieved_at_utc": "2026-07-29T19:25:39Z",
-      "snapshot_path": "docs/ops/evidence/2026-07-29_ftmo_official_rules_snapshot.json",
-      "snapshot_sha256": "60f94e0d1d3ff5f64582c6274ef1cffe25383806b9a718104f3a34ad89384b72",
+      "retrieved_on": "2026-09-02",
+      "retrieved_at_utc": "2026-09-02T09:27:22Z",
+      "snapshot_path": "docs/ops/evidence/2026-09-02_ftmo_economic_terms_snapshot.json",
+      "snapshot_sha256": "daef9de5a3c9093a8b13d9f86cf7525937d4d5c0e0bade1c4aedaa31658e933d",
       "content_identity_basis": "NORMALIZED_PROVIDER_RULE_SNAPSHOT"
     },
     {
@@ -40,10 +51,10 @@
       "title": "Can I trade news?",
       "url": "https://ftmo.com/faq/can-i-trade-news/",
       "authority": "OFFICIAL_PROVIDER",
-      "retrieved_on": "2026-07-29",
-      "retrieved_at_utc": "2026-07-29T19:25:39Z",
-      "snapshot_path": "docs/ops/evidence/2026-07-29_ftmo_official_rules_snapshot.json",
-      "snapshot_sha256": "60f94e0d1d3ff5f64582c6274ef1cffe25383806b9a718104f3a34ad89384b72",
+      "retrieved_on": "2026-09-02",
+      "retrieved_at_utc": "2026-09-02T09:27:22Z",
+      "snapshot_path": "docs/ops/evidence/2026-09-02_ftmo_economic_terms_snapshot.json",
+      "snapshot_sha256": "daef9de5a3c9093a8b13d9f86cf7525937d4d5c0e0bade1c4aedaa31658e933d",
       "content_identity_basis": "NORMALIZED_PROVIDER_RULE_SNAPSHOT"
     },
     {
@@ -51,10 +62,10 @@
       "title": "Do I have to close my positions overnight or before the weekend?",
       "url": "https://ftmo.com/en/faq/do-i-have-to-close-my-positions-overnight-or-before-the-weekend/",
       "authority": "OFFICIAL_PROVIDER",
-      "retrieved_on": "2026-07-29",
-      "retrieved_at_utc": "2026-07-29T19:25:39Z",
-      "snapshot_path": "docs/ops/evidence/2026-07-29_ftmo_official_rules_snapshot.json",
-      "snapshot_sha256": "60f94e0d1d3ff5f64582c6274ef1cffe25383806b9a718104f3a34ad89384b72",
+      "retrieved_on": "2026-09-02",
+      "retrieved_at_utc": "2026-09-02T09:27:22Z",
+      "snapshot_path": "docs/ops/evidence/2026-09-02_ftmo_economic_terms_snapshot.json",
+      "snapshot_sha256": "daef9de5a3c9093a8b13d9f86cf7525937d4d5c0e0bade1c4aedaa31658e933d",
       "content_identity_basis": "NORMALIZED_PROVIDER_RULE_SNAPSHOT"
     },
     {
@@ -62,10 +73,10 @@
       "title": "Which instruments can I trade and what strategies am I allowed to use?",
       "url": "https://ftmo.com/en/faq/which-instruments-can-i-trade-and-what-strategies-am-i-allowed-to-use/",
       "authority": "OFFICIAL_PROVIDER",
-      "retrieved_on": "2026-07-29",
-      "retrieved_at_utc": "2026-07-29T19:25:39Z",
-      "snapshot_path": "docs/ops/evidence/2026-07-29_ftmo_official_rules_snapshot.json",
-      "snapshot_sha256": "60f94e0d1d3ff5f64582c6274ef1cffe25383806b9a718104f3a34ad89384b72",
+      "retrieved_on": "2026-09-02",
+      "retrieved_at_utc": "2026-09-02T09:27:22Z",
+      "snapshot_path": "docs/ops/evidence/2026-09-02_ftmo_economic_terms_snapshot.json",
+      "snapshot_sha256": "daef9de5a3c9093a8b13d9f86cf7525937d4d5c0e0bade1c4aedaa31658e933d",
       "content_identity_basis": "NORMALIZED_PROVIDER_RULE_SNAPSHOT"
     },
     {
@@ -73,10 +84,10 @@
       "title": "Forbidden Trading Practices",
       "url": "https://ftmo.com/en/forbidden-trading-practices/",
       "authority": "OFFICIAL_PROVIDER",
-      "retrieved_on": "2026-07-29",
-      "retrieved_at_utc": "2026-07-29T19:25:39Z",
-      "snapshot_path": "docs/ops/evidence/2026-07-29_ftmo_official_rules_snapshot.json",
-      "snapshot_sha256": "60f94e0d1d3ff5f64582c6274ef1cffe25383806b9a718104f3a34ad89384b72",
+      "retrieved_on": "2026-09-02",
+      "retrieved_at_utc": "2026-09-02T09:27:22Z",
+      "snapshot_path": "docs/ops/evidence/2026-09-02_ftmo_economic_terms_snapshot.json",
+      "snapshot_sha256": "daef9de5a3c9093a8b13d9f86cf7525937d4d5c0e0bade1c4aedaa31658e933d",
       "content_identity_basis": "NORMALIZED_PROVIDER_RULE_SNAPSHOT"
     }
   ],
@@ -215,6 +226,46 @@
         "non_replicable_risk_allowed": false
       },
       "source_ids": ["ftmo_forbidden_practices_official"]
+    },
+    {
+      "rule_id": "ftmo_2s_evaluation_fee",
+      "category": "OPERATIONAL_LIMIT",
+      "description": "The USD 100000 2-Step evaluation has a USD 540 list fee; temporary promotions are not treated as durable economics.",
+      "scope": ["FTMO_2_STEP_PHASE1", "USD_100000"],
+      "parameters": {"list_fee_usd": "540", "fee_type": "ONE_TIME_REFUNDABLE_AFTER_SUCCESS"},
+      "source_ids": ["ftmo_economic_terms_official"]
+    },
+    {
+      "rule_id": "ftmo_2s_fee_refund",
+      "category": "TRADING_CONDITION",
+      "description": "The evaluation fee is reimbursed in full with the first Reward after successful completion.",
+      "scope": ["FTMO_ACCOUNT_2_STEP", "USD_100000"],
+      "parameters": {"refund_percent": "100", "trigger": "FIRST_REWARD"},
+      "source_ids": ["ftmo_economic_terms_official"]
+    },
+    {
+      "rule_id": "ftmo_2s_reward_split",
+      "category": "TRADING_CONDITION",
+      "description": "The base Reward split is 80 percent and can rise to 90 percent through the Scaling Plan or Premium Programme.",
+      "scope": ["FTMO_ACCOUNT_2_STEP"],
+      "parameters": {"base_percent": "80", "maximum_percent": "90"},
+      "source_ids": ["ftmo_economic_terms_official"]
+    },
+    {
+      "rule_id": "ftmo_swing_leverage",
+      "category": "RISK_LIMIT",
+      "description": "The Swing profile leverage is 1:30 for FX and 1:15 for metals and oil.",
+      "scope": ["FTMO_ACCOUNT_SWING"],
+      "parameters": {"fx": "1:30", "metals": "1:15", "oil": "1:15"},
+      "source_ids": ["ftmo_economic_terms_official"]
+    },
+    {
+      "rule_id": "ftmo_2s_scaling_plan",
+      "category": "TRADING_CONDITION",
+      "description": "Eligible FTMO Traders may receive a 25 percent account-balance increase every four months and a 90 percent Reward split.",
+      "scope": ["FTMO_ACCOUNT_2_STEP"],
+      "parameters": {"balance_increase_percent": "25", "minimum_months": 4, "reward_split_percent": "90"},
+      "source_ids": ["ftmo_economic_terms_official"]
     }
   ],
   "internal_guardrails": [

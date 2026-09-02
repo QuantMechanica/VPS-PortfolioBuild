@@ -72,7 +72,7 @@ def _fresh_snapshot() -> dict:
                 "lane_id": "FTMO_2S_100K_SWING",
                 "label": "FTMO two-step swing",
                 "state": "RESEARCH_RULEPACK_ONLY",
-                "rulepack_id": "FTMO_2S_100K_SWING_V1",
+                "rulepack_id": "FTMO_2S_100K_SWING_V2",
                 "rulepack_canonical_sha256": SHA_C,
                 "eligibility": "NOT_EVALUATED",
                 "deployment_authority": "NONE",
@@ -184,7 +184,7 @@ def test_fresh_programme_renders_orthogonal_status_without_promotion_claim() -> 
     ):
         assert verdict in page
     assert "DXZ_BETTER_BOOK_V1" in page
-    assert "FTMO_2S_100K_SWING_V1" in page
+    assert "FTMO_2S_100K_SWING_V2" in page
     assert "eligibility NOT_EVALUATED" in page
     assert "deploy NONE" in page
     assert "Canonical contracts and execution identity" in page

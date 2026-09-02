@@ -40,7 +40,7 @@ def test_programme_panel_renders_all_required_contracts(
     assert "Q08 V3 // EVIDENCE" in page
     assert "SUPPORTED · CONDITIONAL · INSUFFICIENT · CONTRADICTED · INVALID" in page
     assert "DXZ_BETTER_BOOK_V1" in page
-    assert "FTMO_2S_100K_SWING_V1" in page
+    assert "FTMO_2S_100K_SWING_V2" in page
     assert "GREEN PASS" in page
     assert f'{snapshot["verification_lanes"]["green"]["passed"]} passed' in page
     assert "EXTERNAL RESIDUAL RESOLVED_PASS" in page

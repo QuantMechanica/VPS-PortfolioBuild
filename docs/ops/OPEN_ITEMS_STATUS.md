@@ -1,5 +1,9 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+## CEO Wave 1 — Codex-Ausführung 2026-09-02
+
+- **FTMO evidence chain (task `b306ca82-56b3-4f31-a75f-4575ca486d1d`): REVIEW.** Audit inputs are pinned to the frozen 24-sleeve bundle with fail-closed fingerprint/anchor checks; `FTMO_2S_100K_SWING_V2` adds the verified economic terms; the TrialPulse task limit is PT20M and the stale `267014` alarm cleared. Evidence: `docs/ops/evidence/2026-09-02_ftmo_evidence_chain_repair.md`, `docs/ops/evidence/2026-09-02_ftmo_economic_terms_snapshot.json`, `artifacts/audit_ev_funded_account_20260902.json`. No sealed criterion or live-trading state changed.
+
 > **CEO-Session 2026-09-02 (OWNER-Mandat: volle Autonomie; Ziel FTMO-Payouts + DXZ-Allokation; Build-in-public vertagt):**
 > Vollaudit `docs/ops/CEO_AUDIT_2026-09-02.md` + Decision `decisions/2026-09-02_ceo_full_authority_audit_and_reorientation.md`.
 > **Zähler:** `qualified_pairs` 0→**2 formal** (10706/GBPUSD, 11422/USDCAD; Q14 = 25.08-Kurzschlüsse, echte Zensus laufen) — Ursache war

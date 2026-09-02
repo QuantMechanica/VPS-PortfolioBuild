@@ -163,7 +163,7 @@ def _fixture(tmp_path: Path, monkeypatch) -> dict:
     official_snapshot = repo / "docs/ops/evidence/2026-07-29_ftmo_official_rules_snapshot.json"
     official_snapshot.parent.mkdir(parents=True, exist_ok=True)
     official_snapshot.write_text('{"schema":"qm.ftmo-official-rules-snapshot/v1"}\n', encoding="utf-8")
-    rulepack = repo / "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_SWING_V1.json"
+    rulepack = repo / "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_SWING_V2.json"
     rulepack.parent.mkdir(parents=True, exist_ok=True)
     rulepack.write_text(
         json.dumps({

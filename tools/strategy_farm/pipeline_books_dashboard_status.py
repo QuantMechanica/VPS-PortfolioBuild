@@ -338,7 +338,7 @@ def _validate_bindings(value: Any, repo_root: Path) -> None:
         if loaded.canonical_sha256 != expected_canonical:
             _fail(path, "canonical rulepack hash mismatch")
         seen.add(rulepack_id)
-    if seen != {"DXZ_BETTER_BOOK_V1", "FTMO_2S_100K_SWING_V1"}:
+    if seen != {"DXZ_BETTER_BOOK_V1", "FTMO_2S_100K_SWING_V2"}:
         _fail("$.bindings.rulepacks", "required rulepack IDs missing")
 
 

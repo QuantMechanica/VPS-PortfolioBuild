@@ -1,0 +1,36 @@
+{
+  "schema": "qm.ftmo-economic-terms-snapshot/v1",
+  "retrieved_at_utc": "2026-09-02T09:27:22Z",
+  "sources": [
+    {
+      "url": "https://ftmo.com/en/2-step-challenge/",
+      "http_status": 200,
+      "facts": {
+        "usd_100000_2_step_list_price_usd": 540,
+        "evaluation_fee_refund_percent_with_first_reward": 100,
+        "base_reward_split_percent": 80,
+        "maximum_reward_split_percent": 90
+      },
+      "retrieval_note": "Official page pricing-table payload and provider copy fetched directly on the retrieval date. A temporary promotional price was displayed separately and is not used as the durable list price."
+    },
+    {
+      "url": "https://ftmo.com/en/scaling-plan/",
+      "http_status": 200,
+      "facts": {
+        "account_balance_increase_percent": 25,
+        "minimum_months_between_scaleups": 4,
+        "scaled_reward_split_percent": 90
+      },
+      "retrieval_note": "Official Scaling Plan page fetched directly on the retrieval date."
+    },
+    {
+      "url": "https://ftmo.com/en/trading-symbols/",
+      "facts": {
+        "swing_fx_leverage": "1:30",
+        "swing_metals_and_oil_leverage": "1:15"
+      },
+      "retrieval_note": "Provider symbol-table values cross-checked against the existing hash-bound 2026-07-30 official-provider symbol snapshot; no contradictory current provider value observed."
+    }
+  ],
+  "scope": "research contract only; no purchase or deployment authorization"
+}

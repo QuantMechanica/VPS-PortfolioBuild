@@ -71,7 +71,10 @@ from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 
-STREAMS = Path(r"D:\QM\reports\portfolio\sleeve_streams\QM\q08_trades")
+# Hash-frozen input captured for the sealed 2026-08-19 portfolio evidence.  The
+# live sleeve_streams tree is a mutable export and must never drive this audit.
+STREAMS = Path(r"D:\QM\reports\portfolio\dxz_final_20260719\QM\q08_trades")
+SEALED_STREAM_SET = True
 ACCOUNT, DAILY_CAP, TOTAL_CAP = 100_000.0, 0.05, 0.10
 P1_TARGET, P2_TARGET = 0.10, 0.05
 D1, D2 = 60, 30
@@ -112,19 +115,22 @@ def parse_ts(v):
 con = sqlite3.connect("file:D:/QM/strategy_farm/state/farm_state.sqlite?mode=ro", uri=True)
 con.row_factory = sqlite3.Row
 latest = {}
-for r in con.execute("select ea_id,symbol,phase,verdict from work_items "
-                     "where status='done' order by updated_at"):
-    latest[(r["ea_id"], str(r["symbol"]).upper(), r["phase"])] = str(r["verdict"] or "")
+if not SEALED_STREAM_SET:
+    for r in con.execute("select ea_id,symbol,phase,verdict from work_items "
+                         "where status='done' order by updated_at"):
+        latest[(r["ea_id"], str(r["symbol"]).upper(), r["phase"])] = str(r["verdict"] or "")
 
 sleeves, multi_pct = {}, {}
 for path in sorted(STREAMS.glob("*.jsonl")):
     bare, _, stem = path.stem.partition("_")
     ea, sym = f"QM5_{bare}", stem.replace("_DWX", ".DWX").upper()
-    bad = [g for g in ("Q02", "Q03", "Q04", "Q05", "Q06", "Q07")
-           if (ea, sym, g) in latest and latest[(ea, sym, g)] not in EARLY_OK]
-    q08 = latest.get((ea, sym, "Q08"))
-    if q08 is not None and q08 not in Q08_OK:
-        bad.append("Q08")
+    bad = []
+    if not SEALED_STREAM_SET:
+        bad = [g for g in ("Q02", "Q03", "Q04", "Q05", "Q06", "Q07")
+               if (ea, sym, g) in latest and latest[(ea, sym, g)] not in EARLY_OK]
+        q08 = latest.get((ea, sym, "Q08"))
+        if q08 is not None and q08 not in Q08_OK:
+            bad.append("Q08")
     if bad:
         continue
     ev, cov, n = [], 0, 0
@@ -158,7 +164,10 @@ for path in sorted(STREAMS.glob("*.jsonl")):
     # span must be known: a missing entry_time is unknown exposure, not zero.
     if not n or cov < 0.99 * n:
         continue
-    if len({c for _, c, _, _ in ev}) < MIN_DAYS:
+    # The sealed 24-sleeve bundle is itself the approved population snapshot;
+    # applying today's mutable gate DB or the old candidate-pool activity cut
+    # would silently change that historical population.
+    if not SEALED_STREAM_SET and len({c for _, c, _, _ in ev}) < MIN_DAYS:
         continue
     ev.sort(key=lambda x: (x[1], x[0]))
     key = f"{bare}:{sym.replace('.DWX','')}"

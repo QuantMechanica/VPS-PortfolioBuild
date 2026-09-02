@@ -54,7 +54,7 @@
       "required": ["rulepack_id", "path", "file_sha256", "canonical_sha256"],
       "properties": {
         "rulepack_id": {
-          "enum": ["DXZ_BETTER_BOOK_V1", "FTMO_2S_100K_SWING_V1"]
+          "enum": ["DXZ_BETTER_BOOK_V1", "FTMO_2S_100K_SWING_V2"]
         },
         "path": {"type": "string", "minLength": 1},
         "file_sha256": {"$ref": "#/$defs/sha256"},
@@ -332,7 +332,7 @@
             ]
           },
           "rulepack_id": {
-            "enum": ["DXZ_BETTER_BOOK_V1", "FTMO_2S_100K_SWING_V1"]
+            "enum": ["DXZ_BETTER_BOOK_V1", "FTMO_2S_100K_SWING_V2"]
           },
           "rulepack_canonical_sha256": {"$ref": "#/$defs/sha256"},
           "eligibility": {

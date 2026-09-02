@@ -235,15 +235,16 @@ def crosstab(book: Book, mult: float = 1.00) -> dict[str, Any]:
 
 
 ANCHORS = {
-    "sleeves": 21, "trading_days": 2128, "span_calendar_days": 3004,
-    "worst_close_pct": -6.95, "worst_mae_pct": -9.32,
-    "close_days_le_5pct": 20, "mae_days_le_5pct": 237,
-    "pass_all_1x": 39, "pass_complete_1x": 29,
-    "pass_first_half_1x": 18, "pass_second_half_1x": 21,
+    "sleeves": 24, "trading_days": 2028, "span_calendar_days": 3004,
+    "worst_close_pct": -6.21, "worst_mae_pct": -7.93,
+    "close_days_le_5pct": 2, "mae_days_le_5pct": 19,
+    "pass_all_1x": 34, "pass_complete_1x": 0,
+    "pass_first_half_1x": 15, "pass_second_half_1x": 19,
 }
+EXPECTED_STREAM_FINGERPRINT = "e50e8f891c34f838e576f00c4b4d85e0815bd358c20028ac55dd294369b81759"
 
 
-def selftest(book: Book) -> dict[str, Any]:
+def selftest(book: Book, cb=None) -> dict[str, Any]:
     got = {
         "sleeves": len(book.sleeves),
         "trading_days": len(book.days),
@@ -261,6 +262,13 @@ def selftest(book: Book) -> dict[str, Any]:
     got["pass_first_half_1x"] = sum(passes[:half])
     got["pass_second_half_1x"] = sum(passes[half:])
     mismatch = {k: {"expected": v, "got": got[k]} for k, v in ANCHORS.items() if got[k] != v}
+    if cb is not None:
+        got_fingerprint = stream_fingerprint(cb)
+        if got_fingerprint != EXPECTED_STREAM_FINGERPRINT:
+            mismatch["stream_fingerprint"] = {
+                "expected": EXPECTED_STREAM_FINGERPRINT,
+                "got": got_fingerprint,
+            }
     return {"anchors_expected": ANCHORS, "anchors_got": got, "mismatch": mismatch,
             "reproduced": not mismatch}
 
@@ -282,7 +290,7 @@ def main() -> int:
 
     cb = engine()
     book = Book(cb)
-    st = selftest(book)
+    st = selftest(book, cb)
     if args.selftest:
         print(json.dumps(st, indent=1))
         return 0 if st["reproduced"] else 1

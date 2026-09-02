@@ -137,6 +137,11 @@ def main() -> int:
     with contextlib.redirect_stdout(io.StringIO()):
         cb = sw.engine()
     book = sw.Book(cb)
+    anchor = sw.selftest(book, cb)
+    if not anchor["reproduced"]:
+        print(json.dumps({"error": "sealed stream fingerprint/anchors do not reproduce; refusing to report",
+                          "selftest": anchor}, indent=1))
+        return 1
 
     lows = overlap_floor(cb)
     rows = []
@@ -172,6 +177,7 @@ def main() -> int:
 
     out = {"schema_version": SCHEMA, "baseline_snapshot": "3472a5d2e1b5",
            "payout_share": PAYOUT_SHARE, "account": ACCOUNT,
+           "stream_fingerprint": sw.stream_fingerprint(cb), "selftest": anchor,
            "fee_note": "challenge fee not recorded in-repo; EV reported as a function of the fee",
            "rows": rows}
     if args.json_out:

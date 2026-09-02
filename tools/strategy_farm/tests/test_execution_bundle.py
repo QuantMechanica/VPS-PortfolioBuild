@@ -68,7 +68,7 @@ def _kwargs(root: Path) -> dict[str, object]:
         "history_snapshot_path": Path("snapshots/history.bin"),
         "cost_model_path": Path("models/cost_model.json"),
         "calendar_bundle_path": Path("calendar/calendar_bundle.json"),
-        "rulepack_version": "FTMO_2S_100K_SWING_V1",
+        "rulepack_version": "FTMO_2S_100K_SWING_V2",
         "rulepack_path": Path("rulepacks/FTMO_V1.json"),
     }
 
@@ -98,7 +98,7 @@ def test_builder_binds_every_required_identity_and_sorts_recursively(built) -> N
     assert bundle["tester"]["setfile"]["path"] == "sets/QM5_TEST.set"
     assert bundle["tester"]["compiler"]["build"] == 5320
     assert bundle["tester"]["terminal"]["build"] == 5320
-    assert bundle["rulepack"]["version"] == "FTMO_2S_100K_SWING_V1"
+    assert bundle["rulepack"]["version"] == "FTMO_2S_100K_SWING_V2"
 
     include_paths = [row["path"] for row in bundle["source"]["include_tree"]["files"]]
     assert include_paths == sorted(include_paths)
@@ -165,7 +165,7 @@ def test_every_bound_artifact_byte_change_changes_bundle_id(
         ("compiler_version", "MetaEditor 5.00 build 5321"),
         ("terminal_build", 5321),
         ("terminal_version", "MetaTrader 5 build 5321"),
-        ("rulepack_version", "FTMO_2S_100K_SWING_V2"),
+        ("rulepack_version", "FTMO_2S_100K_SWING_V3"),
     ],
 )
 def test_every_bound_version_or_git_identity_changes_bundle_id(

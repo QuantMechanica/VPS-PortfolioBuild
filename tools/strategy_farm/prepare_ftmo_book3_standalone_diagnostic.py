@@ -313,7 +313,7 @@ def _source_scope(repo: Path, controller_path: Path) -> list[Path]:
         repo / "framework/registry/venue_cost_model.json",
         repo / "framework/registry/dwx_symbol_matrix.csv",
         repo / "docs/ops/evidence/2026-07-29_ftmo_official_rules_snapshot.json",
-        repo / "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_SWING_V1.json",
+        repo / "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_SWING_V2.json",
     ]
 
 
@@ -407,7 +407,7 @@ def _repo_artifacts(repo: Path, controller_path: Path) -> list[dict[str, Any]]:
         base._artifact(repo / "framework/registry/venue_cost_model.json", "venue_cost_model"),
         base._artifact(repo / "framework/registry/dwx_symbol_matrix.csv", "dwx_symbol_matrix"),
         base._artifact(repo / "docs/ops/evidence/2026-07-29_ftmo_official_rules_snapshot.json", "ftmo_official_rules_snapshot"),
-        base._artifact(repo / "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_SWING_V1.json", "ftmo_rulepack"),
+        base._artifact(repo / "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_SWING_V2.json", "ftmo_rulepack"),
     ]
 
 
@@ -888,7 +888,7 @@ def build_prepare_plan(
     )
     errors.extend(
         base._rulepack_snapshot_errors(
-            repo / "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_SWING_V1.json",
+            repo / "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_SWING_V2.json",
             repo / "docs/ops/evidence/2026-07-29_ftmo_official_rules_snapshot.json",
         )
     )

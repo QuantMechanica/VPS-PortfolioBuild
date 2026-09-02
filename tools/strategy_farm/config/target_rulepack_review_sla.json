@@ -7,12 +7,12 @@
       "next_review_due_on": "2026-11-21",
       "note": "WebFetch https://www.darwinexzero.com/docs/en/risk-engine 2026-08-23: Target VaR range 3.25%-6.5%, D-Leverage caps 16.25/13/9.75 (under 30m / 30-60m / over 60m) -- all match dxz_darwin_target_var and dxz_dleverage_duration_caps in DXZ_BETTER_BOOK_V1. Darwinia program and rating pages not re-fetched this pass; only the risk-engine page was checked."
     },
-    "FTMO_2S_100K_SWING_V1": {
+    "FTMO_2S_100K_SWING_V2": {
       "interval_days": 90,
       "last_check_result": "CONFIRMED_UNCHANGED",
       "last_reviewed_on": "2026-08-23",
       "next_review_due_on": "2026-11-21",
-      "note": "WebFetch https://ftmo.com/en/trading-objectives/ 2026-08-23: Phase1 profit target 10%, Verification profit target 5%, Max Daily Loss 5%, Max Loss 10%, Min Trading Days 4 -- all match ftmo_2s_phase1_profit_target/ftmo_2s_verification_profit_target/ftmo_2s_max_daily_loss/ftmo_2s_maximum_loss/ftmo_2s_minimum_trading_days in FTMO_2S_100K_SWING_V1. News/weekend/EA/forbidden-practices sources not re-fetched this pass; only the objectives page was checked."
+      "note": "WebFetch https://ftmo.com/en/trading-objectives/ 2026-08-23: Phase1 profit target 10%, Verification profit target 5%, Max Daily Loss 5%, Max Loss 10%, Min Trading Days 4 -- all match ftmo_2s_phase1_profit_target/ftmo_2s_verification_profit_target/ftmo_2s_max_daily_loss/ftmo_2s_maximum_loss/ftmo_2s_minimum_trading_days in FTMO_2S_100K_SWING_V2. News/weekend/EA/forbidden-practices sources not re-fetched this pass; only the objectives page was checked."
     }
   },
   "schema_version": "target-rulepack-review-sla/v1"

@@ -140,7 +140,7 @@ DEFAULT_COST_SNAPSHOT_SHA256 = (
     "7eab3bf8c97373fcb44e36aca39dd679fbd3e093783cd6eacd9cb171190b3280"
 )
 DEFAULT_RULEPACK_PATH = Path(
-    r"C:\QM\repo\tools\strategy_farm\config\target_rulepacks\FTMO_2S_100K_SWING_V1.json"
+    r"C:\QM\repo\tools\strategy_farm\config\target_rulepacks\FTMO_2S_100K_SWING_V2.json"
 )
 DEFAULT_RULEPACK_SHA256 = (
     "c7c8cc5312552576dd6af118599d5404e68b9e279a9be679dcba8021ec4b8686"
@@ -1216,7 +1216,7 @@ def _official_rules(rulepack: Mapping[str, Any]) -> dict[str, Any]:
     expected_header = {
         "schema_version": "target-rulepack/v1",
         "schema_ref": "tools/strategy_farm/schemas/target_rulepack_v1.schema.json",
-        "rulepack_id": "FTMO_2S_100K_SWING_V1",
+        "rulepack_id": "FTMO_2S_100K_SWING_V2",
         "profile_version": 1,
         "target": "FTMO",
         "account_or_program": "FTMO Challenge 2-Step / USD 100000 / Swing",

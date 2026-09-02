@@ -14,7 +14,7 @@ from tools.strategy_farm import target_rulepacks as rulepacks  # noqa: E402
 
 
 DXZ_ID = "DXZ_BETTER_BOOK_V1"
-FTMO_ID = "FTMO_2S_100K_SWING_V1"
+FTMO_ID = "FTMO_2S_100K_SWING_V2"
 
 
 def _by_id(rows: list[dict], key: str) -> dict[str, dict]:
@@ -29,8 +29,8 @@ def test_loads_both_versioned_rulepacks_with_canonical_hashes() -> None:
     loaded = {pack.rulepack_id: pack for pack in rulepacks.validate_all()}
     assert {DXZ_ID, FTMO_ID} <= set(loaded)
     for pack in loaded.values():
-        assert pack.profile_version == 1
-        assert pack.as_of == "2026-07-29"
+        assert pack.rulepack_id.endswith(f"_V{pack.profile_version}")
+        assert pack.as_of == ("2026-09-02" if pack.rulepack_id == FTMO_ID else "2026-07-29")
         assert len(pack.canonical_sha256) == 64
         assert pack.canonical_sha256 == hashlib.sha256(pack.canonical_payload).hexdigest()
         assert pack.canonical_sha256 == rulepacks.canonical_sha256(pack.as_dict())

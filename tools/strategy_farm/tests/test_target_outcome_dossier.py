@@ -22,7 +22,7 @@ from tools.strategy_farm.target_rulepacks import load_rulepack
 
 RULEPACK_HASHES = {
     "DXZ_BETTER_BOOK_V1": "9cd49385808f2d7b7041135c4f5aaf0d7b62a3020e31e51bee9f8b1904b6f284",
-    "FTMO_2S_100K_SWING_V1": "e65f58fc7dc43becbfc5e671bc4f3c526af998b086a787994be8694780b62d59",
+    "FTMO_2S_100K_SWING_V2": "93735045ca7a473107f1583c9aca011aa5a0fad23cab89a3068453973a707c74",
 }
 
 
@@ -169,10 +169,10 @@ def _observations() -> dict:
         },
         "ftmo": {
             "official_criteria": _criterion_rows(
-                "FTMO_2S_100K_SWING_V1", "official", "ftmo.simulation.sealed"
+                "FTMO_2S_100K_SWING_V2", "official", "ftmo.simulation.sealed"
             ),
             "internal_criteria": _criterion_rows(
-                "FTMO_2S_100K_SWING_V1", "internal", "ftmo.prospective.shadow"
+                "FTMO_2S_100K_SWING_V2", "internal", "ftmo.prospective.shadow"
             ),
             "q08_verdict": "SUPPORTED",
             "evidence_debt_visible": False,

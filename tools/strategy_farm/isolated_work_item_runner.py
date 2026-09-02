@@ -591,7 +591,7 @@ def _ftmo_book3_expected_execution_input_paths(repo_root: Path) -> dict[str, Pat
         "dwx_symbol_matrix": repo_root / "framework/registry/dwx_symbol_matrix.csv",
         "ftmo_rulepack": (
             repo_root
-            / "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_SWING_V1.json"
+            / "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_SWING_V2.json"
         ),
         "ftmo_official_rules_snapshot": (
             repo_root

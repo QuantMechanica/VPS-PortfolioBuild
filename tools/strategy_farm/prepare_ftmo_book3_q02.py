@@ -739,7 +739,7 @@ def _repo_paths(repo: Path, controller_path: Path) -> tuple[list[Path], list[Pat
         repo / "framework/registry/venue_cost_model.json",
         repo / "framework/registry/dwx_symbol_matrix.csv",
         repo / "docs/ops/evidence/2026-07-29_ftmo_official_rules_snapshot.json",
-        repo / "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_SWING_V1.json",
+        repo / "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_SWING_V2.json",
         repo / "framework/scripts/run_smoke.ps1",
     ]
     for spec in RUN_SPECS:
@@ -1170,7 +1170,7 @@ def _required_execution_input_paths(
         "ftmo_official_rules_snapshot": str(
             repo / "docs/ops/evidence/2026-07-29_ftmo_official_rules_snapshot.json"
         ),
-        "ftmo_rulepack": str(repo / "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_SWING_V1.json"),
+        "ftmo_rulepack": str(repo / "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_SWING_V2.json"),
     }
     custom = t10_bases / "Custom"
     for symbol in DATA_SYMBOLS:
@@ -1270,7 +1270,7 @@ def _repo_artifacts(repo: Path, controller_path: Path) -> list[dict[str, Any]]:
             repo / "docs/ops/evidence/2026-07-29_ftmo_official_rules_snapshot.json",
             "ftmo_official_rules_snapshot",
         ),
-        _artifact(repo / "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_SWING_V1.json", "ftmo_rulepack"),
+        _artifact(repo / "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_SWING_V2.json", "ftmo_rulepack"),
     ]
     seen = set()
     for spec in RUN_SPECS:
@@ -1482,7 +1482,7 @@ def build_prepare_plan(
     )
     errors.extend(f"artifact invalid: {a['role']}:{a.get('reason', 'invalid')}" for a in artifacts if not a.get("valid"))
     errors.extend(_rulepack_snapshot_errors(
-        repo / "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_SWING_V1.json",
+        repo / "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_SWING_V2.json",
         repo / "docs/ops/evidence/2026-07-29_ftmo_official_rules_snapshot.json",
     ))
     artifact_roles = [str(item.get("role") or "") for item in artifacts]
@@ -1633,7 +1633,7 @@ def _semantic_source_errors(manifest: dict[str, Any]) -> list[str]:
             repo / "framework/EAs" / spec["ea_dir"] / "sets" / spec["set_name"],
         ))
     errors.extend(_rulepack_snapshot_errors(
-        repo / "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_SWING_V1.json",
+        repo / "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_SWING_V2.json",
         repo / "docs/ops/evidence/2026-07-29_ftmo_official_rules_snapshot.json",
     ))
     current_external = _external_artifacts(Path(manifest["artifact_root"]), specs)
