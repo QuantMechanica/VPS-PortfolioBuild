@@ -1,5 +1,24 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **Session-Handoff 2026-09-02 ~07:00Z (Claude, vor Neustart):**
+> **Containment ENGAGED** (3. Auto-Trip 06:42Z: signiertes Audit-Runner-Binding T1-T10
+> klassifiziert T12-Bases als UNAUTHORIZED) — Fabrik seriell bis OWNER-Release
+> (`release_containment_standing.py`). Aktivierung=v1, T11/12 disabled, 10er-Flotte frisch.
+> **Meilensteine 01.09.:** EUR-Pilot 11421/EURUSD TERMINAL (READY_FOR_Q15, sauberer
+> KEEP_INCUMBENT; Q14-Zeile f81a14df claimbar → wird Zähler 1/25); DL082-EXT Option D
+> executed (Receipt b33989e1, 13 append-only Regrades); Balke-USDJPY recovered (599 Zellen
+> governed, Programm Nr. 9); REQUAL-8 6/8 released (Paar-5 Q02 PASS; Paar 7 wartet auf
+> worker-gebundenes Smoke-Work-Item, Ticket 1b57e398; Paar 8 danach); Juli-Schatzsuche
+> Phase 1 approved (402 EAs; Top-Fund QM5_20004→41272 COMPILE_OK); HP-Powerplan +7 %.
+> **Nacht-Incident:** T11/12-Zündung 2× fail-closed (Ramp-Bindung, dann Audit-Binding);
+> dauerhafte Fixes: Lock-Scopes+Telemetrie (f6f8011d41), Stage-Catch-all, Review-Regel 0a
+> (Paare 6/7 vollautomatisch adjudiziert), Retention-Dauerbetrieb. Versuch 3 = Ticket
+> 93c6959b (vollständige Abhängigkeits-Enumeration + garantierender Preflight).
+> **Offene Codex-Tickets:** 93c6959b, 1b57e398, 2e0bc944 (41272), f1655764 (Era-Audit),
+> 2093b38e (Cleanup), 027fb63f (camofox), 52032627 (Remote-Agents-Spike), df2343c6.
+> Details: Claude-Memory `session-0901-0902-ignition-incidents-state` + Vault-Register 2026-09.
+
+
 > **Gesamtanalyse 2026-08-22 (OWNER-Auftrag):** Vault
 > `12 ToDo/11_Systemanalyse_2026-08-22.md`, verlinkt aus `_INDEX`, Programm 10, OWNER- und
 > Claude-Board. Gemessener Gesamtstand statt Fortschreibung: Trichter je Gate, die fünf
