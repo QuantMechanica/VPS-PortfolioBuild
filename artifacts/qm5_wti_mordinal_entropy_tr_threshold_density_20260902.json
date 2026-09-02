@@ -1,0 +1,22 @@
+{
+  "schema": "qm.predata_state_density/v1",
+  "generated_at_utc": "2026-09-02T08:51:00Z",
+  "candidate_slug": "wti-mordinal-entropy-tr",
+  "market_data_used": false,
+  "construction": {
+    "ordinal_order": 3,
+    "pattern_labels": 6,
+    "disjoint_triples": 8,
+    "label_strings": 1679616,
+    "entropy_normalization": "natural-log Shannon entropy divided by ln(6)",
+    "inclusive_threshold": 0.8
+  },
+  "enumeration": {
+    "qualified_label_strings": 782496,
+    "qualified_fraction": 0.46587791495198905,
+    "theoretical_states_per_12_attempts": 5.590534979423868,
+    "largest_qualified_discrete_entropy": 0.773705614469,
+    "smallest_excluded_discrete_entropy": 0.833915022608
+  },
+  "claim_boundary": "Uniform label-string density only; not market frequency, independence, significance, efficacy, or a backtest result."
+}

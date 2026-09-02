@@ -1,0 +1,33 @@
+{
+  "schema": "qm.source-retrieval-evidence/v1",
+  "source_id": "AI-CODEX-WTI-MORDENTROPY-20260902",
+  "retrieved_at_utc": "2026-09-02T08:50:00Z",
+  "routes": [
+    {
+      "role": "permutation_entropy_method",
+      "status": "WEB_RENDERED_COMPLETE_OFFICIAL_PDF",
+      "citation": "Bandt and Pompe (2002), Permutation Entropy: A Natural Complexity Measure for Time Series, Physical Review Letters 88, 174102",
+      "doi": "10.1103/PhysRevLett.88.174102",
+      "metadata_url": "https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.88.174102",
+      "official_pdf_url": "https://harvest.aps.org/v2/journals/articles/10.1103/PhysRevLett.88.174102/fulltext",
+      "read_scope": "Complete four-page official APS-rendered paper, pages 1-4 and rendered lines 0-311, including definitions, order-three example, support, practical-order guidance, sample-size warning, noise discussion, conclusion, and references.",
+      "boundary": "Defines ordinal-pattern entropy only. It does not define WTI, the eight disjoint triples, threshold 0.80, a trading direction, risk, lifecycle, or any performance result."
+    },
+    {
+      "role": "wti_monthly_continuation_carrier",
+      "status": "REUSED_GOVERNED_COMPLETE_READ",
+      "citation": "Moskowitz, Ooi, and Pedersen (2012), Time Series Momentum, Journal of Financial Economics 104(2), 228-250",
+      "doi": "10.1016/j.jfineco.2011.11.003",
+      "url": "https://fairmodel.econ.yale.edu/ec439/mosk.pdf",
+      "local_evidence": "strategy-seeds/sources/MOP-TSMOM-2012/source.md",
+      "local_evidence_sha256": "C8B07ECD62C1D5EF9E3D7975EEE6A3B6C46C1C566D0B20B42237613D9B3A7042",
+      "boundary": "Complete governed 23-page paper read; supports WTI membership, own-return continuation horizons, and monthly renewal only. Pooled futures results do not establish this conjunction or WTI-only efficacy."
+    }
+  ],
+  "safety": {
+    "authentication_used": false,
+    "site_mutation": false,
+    "binary_or_ea_downloaded": false,
+    "external_runtime_dependency_created": false
+  }
+}
