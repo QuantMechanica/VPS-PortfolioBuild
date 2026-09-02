@@ -8207,6 +8207,11 @@ def main(argv: list[str] | None = None) -> int:
         "event": "worker_start",
         "terminal": args.terminal,
         "pid": os.getpid(),
+        # 2026-09-02 incident: workers restarted from an interactive session
+        # silently lost the machine-level QM_* flags; log the effective config.
+        "topdown_gate_priority": farmctl.topdown_gate_priority_enabled(),
+        "dl089_pruning_env": os.environ.get("QM_ENABLE_DL089_PRUNING"),
+        "sqlite_busy_timeout_ms_env": os.environ.get("QM_SQLITE_BUSY_TIMEOUT_MS"),
     }, sort_keys=True), flush=True)
     _start_stalldump_watcher(args.terminal)
     if args.work_item_id:
