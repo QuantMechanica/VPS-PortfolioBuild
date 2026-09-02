@@ -883,8 +883,8 @@ def required_factory_timeout_min(
         raise RunnerError("Q09 plan must contain at least one cell")
     if not 60 <= int(cell_timeout_sec) <= 28800:
         raise RunnerError("Q09 cell timeout must be between 60 and 28800 seconds")
-    if int(window_count) not in {2, 3}:
-        raise RunnerError("Q09 plan must contain two or three tester windows per cell")
+    if int(window_count) not in {1, 2, 3}:
+        raise RunnerError("Q09 plan must contain one, two, or three tester windows per cell")
     total_seconds = int(cell_count) * int(window_count) * (
         int(cell_timeout_sec) + CELL_TIMEOUT_HEADROOM_SEC
     )
@@ -2307,6 +2307,19 @@ def collect_run_plan_status(
                 "missing_run_identity_sha256": missing,
             },
         )
+    elif input_manifest.get("diagnostic_single_window") is True:
+        cell = cells[0] if cells else {}
+        adjudication = _nonlocking_adjudication(
+            verdict="DIAGNOSTIC_COMPLETE",
+            reason_code="diagnostic_single_window_non_admission",
+            input_manifest=input_manifest,
+            details={
+                "window_source": input_manifest.get("window_source"),
+                "diagnostic_non_admission": True,
+                "cell_count": len(cells),
+                "metrics": cell.get("full"),
+            },
+        )
     else:
         adjudication = contract.adjudicate(payload)
     result = _publish_collection(
@@ -3132,9 +3145,11 @@ def _production_dispatch_cell(
     ea_id = int(context["ea_id"])
     contract_version = manifest.get("contract_version", contract.SCHEMA_VERSION)
     window_names = (
-        ("selection", "holdout")
-        if contract_version == contract.SCHEMA_VERSION_V3
-        else WINDOW_NAMES
+        ("full",)
+        if manifest.get("diagnostic_single_window") is True
+        else (("selection", "holdout")
+              if contract_version == contract.SCHEMA_VERSION_V3
+              else WINDOW_NAMES)
     )
     for window_name in window_names:
         assert_factory_capacity(
@@ -3246,7 +3261,8 @@ def _production_dispatch_cell(
         artifacts[window_name]["run_smoke_log_sha256"] = contract.sha256_file(run_log)
 
     seam: dict[str, Any] | None = None
-    if contract_version == contract.SCHEMA_VERSION_V3:
+    if (contract_version == contract.SCHEMA_VERSION_V3
+            and manifest.get("diagnostic_single_window") is not True):
         try:
             seam = seam_reconstruction.reconstruct_full_metrics(
                 metrics["selection"],
@@ -3273,6 +3289,7 @@ def _production_dispatch_cell(
         "tester_model": manifest["tester_model"],
         "cost_profile": manifest["cost_profile"],
         "windows": artifacts,
+        "window_source": manifest.get("window_source"),
     }
     _write_immutable(report_manifest_path, contract.canonical_json_bytes(report_manifest))
     report_sha = contract.sha256_file(report_manifest_path)
@@ -3303,6 +3320,7 @@ def _production_dispatch_cell(
         "cost_execution_identity_sha256": context.get("cost_execution_identity_sha256"),
         "news_selfreport": context["news_selfreport"],
         "seam_reconstruction": seam,
+        "window_source": manifest.get("window_source"),
     }
     _write_immutable(evidence_path, contract.canonical_json_bytes(evidence))
     receipt = {
@@ -3328,6 +3346,7 @@ def _production_dispatch_cell(
         "q07_seed_stability_pass": True,
         "news_selfreport": context["news_selfreport"],
         "seam_reconstruction": seam,
+        "window_source": manifest.get("window_source"),
     }
     _write_immutable(
         Path(str(spec["receipt_path"])), contract.canonical_json_bytes(receipt)
@@ -3373,6 +3392,7 @@ def _persist_q09_result(
             "reason_codes": ["diagnostic_non_admission", "owner_review_required"],
             "diagnostic_non_admission": True,
             "diagnostic_contract": DIAGNOSTIC_CONTRACT,
+            "window_source": capacity["payload"].get("window_source"),
             "work_item_id": str(work_item_id),
             "underlying_q09_verdict": adjudication.get("verdict"),
             "aggregate_path": str(Path(str(result["aggregate_path"])).resolve()),
