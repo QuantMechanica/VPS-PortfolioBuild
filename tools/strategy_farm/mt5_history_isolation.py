@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+from datetime import datetime, timezone
 import json
 import os
 import time
@@ -407,6 +408,88 @@ def load_acl_evidence(
     }
 
 
+# 2026-09-02 (CEO throughput): the dispatch gate content-hashed the claiming
+# terminal's ENTIRE private archive (up to ~43 GB) on every claim and at every
+# worker start (T2 spent 18 min in run_worker_gate -> sha256_file before its
+# tester could start; fleet-wide 2-3 GB/s read storms, cells 0-5 per 10 min).
+# A persistent per-terminal cache remembers (file_id, size, mtime_ns, sha256,
+# manifest) of every private inode this process hashed; an unchanged identity
+# younger than the TTL reuses the digest.  File ids, sizes, link counts and
+# topology are still enumerated on every gate; copies, manifest changes and TTL
+# expiry hash again.  Kill switch: QM_CUSTOM_HISTORY_VERIFY_CACHE=0.
+AUDIT_HASH_CACHE_SCHEMA = "custom_history_audit_hash_cache.v1"
+AUDIT_HASH_CACHE_DEFAULT_TTL_SECONDS = 4 * 3600
+
+
+def _audit_hash_cache_enabled() -> bool:
+    raw = str(os.environ.get("QM_CUSTOM_HISTORY_VERIFY_CACHE", "1")).strip().lower()
+    return raw not in {"0", "false", "no", "off"}
+
+
+def _audit_hash_cache_ttl_seconds() -> int:
+    raw = str(os.environ.get("QM_CUSTOM_HISTORY_VERIFY_TTL_SECONDS", "")).strip()
+    try:
+        value = int(raw) if raw else AUDIT_HASH_CACHE_DEFAULT_TTL_SECONDS
+    except ValueError:
+        value = AUDIT_HASH_CACHE_DEFAULT_TTL_SECONDS
+    return max(0, value)
+
+
+def _load_audit_hash_cache(path: Path) -> dict[str, dict[str, Any]]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    if not isinstance(payload, dict) or payload.get("schema_version") != AUDIT_HASH_CACHE_SCHEMA:
+        return {}
+    entries = payload.get("entries")
+    return dict(entries) if isinstance(entries, dict) else {}
+
+
+def _save_audit_hash_cache(path: Path, entries: Mapping[str, Mapping[str, Any]]) -> None:
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = path.with_suffix(".json.tmp")
+        tmp.write_text(
+            json.dumps(
+                {
+                    "schema_version": AUDIT_HASH_CACHE_SCHEMA,
+                    "written_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                    "entries": dict(entries),
+                },
+                sort_keys=True,
+            ),
+            encoding="utf-8",
+        )
+        os.replace(tmp, path)
+    except OSError:
+        pass  # accelerator only; a lost cache means re-hashing
+
+
+def _audit_hash_cache_hit(
+    entry: Mapping[str, Any] | None,
+    *,
+    identity: Mapping[str, Any],
+    expected_sha256: str,
+    manifest_sha256: str,
+    ttl_seconds: int,
+    now_epoch: float,
+) -> bool:
+    if not isinstance(entry, dict):
+        return False
+    try:
+        return (
+            str(entry.get("file_id")) == str(identity["file_id"])
+            and int(entry.get("size", -1)) == int(identity["size"])
+            and int(entry.get("mtime_ns", -1)) == int(identity["mtime_ns"])
+            and str(entry.get("sha256", "")).casefold() == str(expected_sha256).casefold()
+            and str(entry.get("manifest_sha256", "")) == manifest_sha256
+            and (now_epoch - float(entry.get("verified_at_epoch", 0.0))) <= ttl_seconds
+        )
+    except (TypeError, ValueError):
+        return False
+
+
 def collect_variant_a_file_inventory(
     *,
     mt5_root: Path | str,
@@ -415,6 +498,7 @@ def collect_variant_a_file_inventory(
     verify_archive_hashes: bool,
     hash_private_terminals: Sequence[str] | None = None,
     acl_probe: Callable[[Path, str], Mapping[str, Any]] = archive_acl_write_denied,
+    hash_cache_dir: Path | str | None = None,
 ) -> list[dict[str, Any]]:
     """Read file IDs and the hashes required by the mixed archive contract.
 
@@ -436,6 +520,25 @@ def collect_variant_a_file_inventory(
         else {str(value).upper() for value in hash_private_terminals}
     )
     hash_cache: dict[tuple[str, int, int], str] = {}
+    persistent_cache: dict[str, dict[str, dict[str, Any]]] = {}
+    persistent_dirty: set[str] = set()
+    persistent_ttl = _audit_hash_cache_ttl_seconds()
+    persistent_dir = (
+        Path(hash_cache_dir)
+        if hash_cache_dir is not None and _audit_hash_cache_enabled() and persistent_ttl > 0
+        else None
+    )
+    manifest_sha256_value = str(validated.get("manifest_sha256") or "")
+
+    def _persistent_entries(terminal_name: str) -> dict[str, dict[str, Any]]:
+        if terminal_name not in persistent_cache:
+            persistent_cache[terminal_name] = (
+                _load_audit_hash_cache(persistent_dir / f"{terminal_name}.audit.json")
+                if persistent_dir is not None
+                else {}
+            )
+        return persistent_cache[terminal_name]
+
     rows: list[dict[str, Any]] = []
     root = Path(mt5_root)
 
@@ -514,6 +617,22 @@ def collect_variant_a_file_inventory(
                             int(identity["size"]),
                             int(identity["mtime_ns"]),
                         )
+                        persistent_key = str(manifest_row.get("relative_path") or path)
+                        if (
+                            cache_key not in hash_cache
+                            and persistent_dir is not None
+                            and not family_hardlink
+                            and _audit_hash_cache_hit(
+                                _persistent_entries(terminal).get(persistent_key),
+                                identity=identity,
+                                expected_sha256=str(manifest_row.get("sha256") or ""),
+                                manifest_sha256=manifest_sha256_value,
+                                ttl_seconds=persistent_ttl,
+                                now_epoch=time.time(),
+                            )
+                        ):
+                            hash_cache[cache_key] = str(manifest_row.get("sha256") or "").casefold()
+                            row["sha256_verification"] = "CACHED_IDENTITY"
                         if cache_key not in hash_cache:
                             try:
                                 hash_cache[cache_key] = sha256_file(path)
@@ -521,6 +640,16 @@ def collect_variant_a_file_inventory(
                                 # Replaced mid-hash; missing-path synthesis
                                 # keeps genuine deletions fail-closed.
                                 continue
+                            if persistent_dir is not None and not family_hardlink:
+                                _persistent_entries(terminal)[persistent_key] = {
+                                    "file_id": str(identity["file_id"]),
+                                    "size": int(identity["size"]),
+                                    "mtime_ns": int(identity["mtime_ns"]),
+                                    "sha256": hash_cache[cache_key],
+                                    "manifest_sha256": manifest_sha256_value,
+                                    "verified_at_epoch": time.time(),
+                                }
+                                persistent_dirty.add(terminal)
                         row["sha256"] = hash_cache[cache_key]
                     elif not family_hardlink:
                         row["sha256_verification"] = "STAT_ONLY"
@@ -539,6 +668,12 @@ def collect_variant_a_file_inventory(
                     "file_class": "ARCHIVE_IMMUTABLE",
                     "manifest_present": True,
                 }
+            )
+    if persistent_dir is not None:
+        for terminal_name in persistent_dirty:
+            _save_audit_hash_cache(
+                persistent_dir / f"{terminal_name}.audit.json",
+                persistent_cache.get(terminal_name, {}),
             )
     return sorted(
         rows,
@@ -1005,6 +1140,7 @@ def audit_history_isolation(
     require_owner_approval: bool = False,
     verify_archive_hashes: bool = True,
     hash_private_terminals: Sequence[str] | None = None,
+    hash_cache_dir: Path | str | None = None,
     authorized_runner_terminals: Sequence[str] | None = None,
     acl_probe: Callable[[Path, str], Mapping[str, Any]] = archive_acl_write_denied,
     acl_evidence_path: Path | str | None = None,
@@ -1036,6 +1172,7 @@ def audit_history_isolation(
         manifest=manifest,
         verify_archive_hashes=verify_archive_hashes,
         hash_private_terminals=hash_private_terminals,
+        hash_cache_dir=hash_cache_dir,
         acl_probe=acl_probe,
     )
     file_audit = evaluate_variant_a_file_inventory(

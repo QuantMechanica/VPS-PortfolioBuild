@@ -1586,6 +1586,7 @@ def run_worker_gate(
             require_owner_approval=True,
             verify_archive_hashes=False,
             hash_private_terminals=(target,),
+            hash_cache_dir=Path(root) / "state" / "custom_history_verify_cache",
             authorized_runner_terminals=_runtime_audit_runner_terminals(
                 activation
             ),
