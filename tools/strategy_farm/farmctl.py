@@ -1383,6 +1383,15 @@ CLAIM_RECOVERY_OCCUPANCY_MIN_ACTIVE = 5
 # rows inside the same claim transaction. Only the last (WINDOW-1) rows are ever read.
 CLAIM_LEDGER_RETAIN = 64
 TOPDOWN_GATE_PRIORITY_ENV = "QM_TOPDOWN_GATE_PRIORITY_ENABLED"
+# OQ-SIBLING-SEED-RANK-20260902 (OWNER Option A, 2026-09-02): the exact payload
+# schema the DL-089 matrix service seed path (dl089_matrix_service._seed_q02)
+# stamps on a measurement-sibling Q02 PREREQUISITE row. These rows also carry
+# priority_reason 'OWNER_P0_DL089_MATRIX_PREREQUISITE', subject_ea_id,
+# q12_work_item_id and priority_track=true. The top-down claim order lifts a row
+# with this schema to the optimization-census priority level (see
+# _topdown_gate_rank_sql). Keep this literal identical to the value written in
+# dl089_matrix_service._seed_q02.
+DL089_Q02_PREREQUISITE_SCHEMA = "qm.dl089-measurement-q02-prerequisite/v1"
 CLAIM_CLASS_LEDGER_DDL = (
     "CREATE TABLE IF NOT EXISTS claim_class_ledger ("
     " seq INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -1452,6 +1461,21 @@ def _topdown_gate_rank_sql() -> str:
     and all gate criteria remain in their existing claim-path locations.  The
     claim loop continues after a capped/held candidate, which is the OWNER's
     utilization fall-through clause.
+
+    OQ-SIBLING-SEED-RANK-20260902 (OWNER Option A, 2026-09-02) amends this order
+    so a DL-089 measurement-sibling Q02 PREREQUISITE row -- deterministically
+    identified by the seed-path schema DL089_Q02_PREREQUISITE_SCHEMA -- is
+    lifted out of the ordinary Q02 tier to the optimization-census priority
+    level as the FIRST arm of the CASE, so it takes precedence.  Placing it at
+    the SAME value as OPT_CENSUS (0) is not sufficient to make the prerequisite
+    sort BEFORE OPT_CENSUS: the tie at 0 falls through to the downstream
+    ``(_phase_rank - _age_weeks)`` term, which ranks OPT_CENSUS at Q04's tier
+    ahead of any Q02 row, so an equal-priority_track/age prerequisite would
+    still lose the tie.  Ranking it one step ahead of the tier-0 optimization
+    rows (-1) is the minimal value that satisfies OWNER Option A's requirement
+    that the prerequisite sort ahead of OPT_CENSUS, while leaving every other
+    row's rank byte-for-byte identical (only rows carrying that exact schema
+    are matched by the new arm; NULL/invalid payloads fall through to the ELSE).
     """
     optimization_phases = tuple(dict.fromkeys(
         (_PATTERN_PHASE, _PARAM_OPT_PHASE, _HEAD_TO_HEAD_PHASE, OPT_CENSUS_PHASE)
@@ -1474,7 +1498,16 @@ def _topdown_gate_rank_sql() -> str:
         if phase == _INCUMBENT_PHASE or not (phase_rank("Q02") <= rank < incumbent_rank):
             continue
         arms.append(f"WHEN '{phase}' THEN {incumbent_rank - rank + 1}")
-    return "CASE w.phase " + " ".join(arms) + " ELSE 99 END"
+    phase_case = "CASE w.phase " + " ".join(arms) + " ELSE 99 END"
+    # OQ-SIBLING-SEED-RANK-20260902 first arm: a DL-089 measurement-sibling Q02
+    # prerequisite ranks ahead of the tier-0 optimization rows (incl. OPT_CENSUS)
+    # so it takes precedence; all other rows keep the existing phase_case rank.
+    return (
+        "CASE WHEN w.phase='Q02'"
+        " AND json_extract(w.payload_json, '$.schema')='"
+        + DL089_Q02_PREREQUISITE_SCHEMA
+        + "' THEN -1 ELSE (" + phase_case + ") END"
+    )
 
 
 def pending_claim_order_sql() -> str:

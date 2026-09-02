@@ -91,6 +91,92 @@ def test_opt_census_ranks_tier6_not_priority(tmp_path: Path) -> None:
     assert opt_term == q04_term  # true interleave, not ahead
 
 
+def test_dl089_q02_prerequisite_outranks_opt_census_under_topdown(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """OQ-SIBLING-SEED-RANK-20260902 (OWNER Option A, 2026-09-02).
+
+    A DL-089 measurement-sibling Q02 PREREQUISITE row -- identified purely by
+    the seed-path schema ``DL089_Q02_PREREQUISITE_SCHEMA`` -- is lifted out of
+    the ordinary Q02 tier and sorts strictly ahead of an OPT_CENSUS row of
+    equal priority_track and age under the top-down selector, while an ordinary
+    Q02 row of equal priority_track/age still sorts after OPT_CENSUS.
+    """
+    monkeypatch.setenv(farmctl.TOPDOWN_GATE_PRIORITY_ENV, "1")
+    assert farmctl.topdown_gate_priority_enabled()
+    # Pin the constant to the exact literal the matrix-service seed path
+    # (dl089_matrix_service._seed_q02) stamps on the prerequisite payload.
+    assert (
+        farmctl.DL089_Q02_PREREQUISITE_SCHEMA
+        == "qm.dl089-measurement-q02-prerequisite/v1"
+    )
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    now = "2026-09-01T00:00:00+00:00"
+    # Equal priority_track and equal created_at (age) across all three rows so
+    # the only distinguishing factor is the top-down gate rank the schema earns.
+    prereq_payload = {
+        "schema": farmctl.DL089_Q02_PREREQUISITE_SCHEMA,
+        "priority_track": True,
+        "priority_reason": "OWNER_P0_DL089_MATRIX_PREREQUISITE",
+    }
+    opt_census_payload = {"priority_track": True}
+    ordinary_q02_payload = {"priority_track": True}
+    with farmctl.connect(root) as conn:
+        for rid, phase, payload in (
+            ("dl089-prereq", "Q02", prereq_payload),
+            ("opt-census", "OPT_CENSUS", opt_census_payload),
+            ("ordinary-q02", "Q02", ordinary_q02_payload),
+        ):
+            _insert(
+                conn, id=rid, kind="backtest", phase=phase, ea_id=f"QM5_{rid}",
+                symbol="EURUSD.DWX", setfile_path=f"{rid}.set", status="pending",
+                attempt_count=0, payload_json=json.dumps(payload),
+                created_at=now, updated_at=now,
+            )
+        conn.commit()
+        ordered = conn.execute(farmctl.pending_claim_order_sql()).fetchall()
+
+    order = [r["id"] for r in ordered]
+    # First arm ranks the prerequisite ahead of the tier-0 optimization rows,
+    # so it precedes OPT_CENSUS; the ordinary Q02 keeps its ordinary (large)
+    # top-down rank and stays behind OPT_CENSUS.
+    assert order.index("dl089-prereq") < order.index("opt-census")
+    assert order.index("opt-census") < order.index("ordinary-q02")
+
+
+def test_dl089_q02_prerequisite_schema_only_matches_that_exact_schema(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The new first arm must not lift ordinary Q02 rows: only the exact
+    seed-path schema is matched; a bare/other-schema Q02 stays in its tier."""
+    monkeypatch.setenv(farmctl.TOPDOWN_GATE_PRIORITY_ENV, "1")
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    now = "2026-09-01T00:00:00+00:00"
+    with farmctl.connect(root) as conn:
+        for rid, payload in (
+            ("no-schema", {"priority_track": True}),
+            ("other-schema", {"schema": "qm.something-else/v1", "priority_track": True}),
+            ("opt-census", None),
+        ):
+            phase = "OPT_CENSUS" if rid == "opt-census" else "Q02"
+            body = {"priority_track": True} if payload is None else payload
+            _insert(
+                conn, id=rid, kind="backtest", phase=phase, ea_id=f"QM5_{rid}",
+                symbol="EURUSD.DWX", setfile_path=f"{rid}.set", status="pending",
+                attempt_count=0, payload_json=json.dumps(body),
+                created_at=now, updated_at=now,
+            )
+        conn.commit()
+        ordered = conn.execute(farmctl.pending_claim_order_sql()).fetchall()
+
+    order = [r["id"] for r in ordered]
+    # Neither ordinary Q02 row is lifted; OPT_CENSUS still precedes both.
+    assert order.index("opt-census") < order.index("no-schema")
+    assert order.index("opt-census") < order.index("other-schema")
+
+
 def test_released_source_repair_compile_beats_priority_measurement(
     tmp_path: Path,
 ) -> None:
