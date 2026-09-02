@@ -1,0 +1,55 @@
+{
+  "schema": "qm.source-retrieval-evidence/v1",
+  "source_id": "AI-CODEX-XAUXAG-MJT-RV-20260902",
+  "retrieved_at_utc": "2026-09-02T05:22:19Z",
+  "routes": [
+    {
+      "role": "gold_silver_relationship",
+      "status": "REUSED_GOVERNED_COMPLETE_READ",
+      "citation": "Schweikert (2018), Are gold and silver cointegrated? New evidence from quantile cointegrating regressions, Journal of Banking & Finance 88, 44-51",
+      "url": "https://doi.org/10.1016/j.jbankfin.2017.11.010",
+      "local_evidence": "strategy-seeds/sources/SCHWEIKERT-QC-2018/source.md",
+      "local_evidence_sha256": "7C409472768550C1F3A4A58CB22E12A6E915EB752B09ABC8E9B98F3E99048FFA",
+      "boundary": "Complete governed 32-page preprint read; state dependence and adverse evidence are binding. No performance result transfers."
+    },
+    {
+      "role": "opposed_leg_carrier",
+      "status": "REUSED_GOVERNED_OFFICIAL_EXCHANGE_RECORD",
+      "citation": "CME Group, Gold & Silver Ratio Spread",
+      "url": "https://www.cmegroup.com/education/lessons/gold-and-silver-ratio-spread-trade",
+      "local_evidence": "strategy-seeds/sources/CME-GSR-SPREAD-2025/source.md",
+      "local_evidence_sha256": "2B5903457BD861771821A81F554BE95CA369AD56C1AA45494E0B81555493AF93",
+      "boundary": "Official exchange carrier record only; futures execution, margin, liquidity, and performance do not transfer to CFDs."
+    },
+    {
+      "role": "official_method_definition",
+      "status": "WEB_RENDERED_COMPLETE_BOUNDED_METHOD_PAGE",
+      "citation": "NIST/SEMATECH Dataplot, Jonckheere-Terpstra Test",
+      "url": "https://itl.nist.gov/div898/software/dataplot/refman1/auxillar/jonck.htm",
+      "read_scope": "Complete description, statistic, ordered-group convention, permutation method, assumptions, syntax, and references; rendered lines 11-87 plus examples checked through line 237.",
+      "boundary": "Defines the ordered-alternative comparison count and permutation reference distribution. The strategy does not import NIST p-values, random permutations, critical values, independence claims, or a trading rule."
+    },
+    {
+      "role": "peer_reviewed_method_formula",
+      "status": "WEB_RENDERED_COMPLETE_RELEVANT_SECTIONS",
+      "citation": "Altunkaynak and Gamgam (2020), npordtests: An R Package of Nonparametric Tests for Equality of Location Against Ordered Alternatives, The R Journal 12(1)",
+      "url": "https://journal.r-project.org/articles/RJ-2020-022/",
+      "read_scope": "Introduction, Section 2.1 classic Jonckheere-Terpstra definition, implementation example, summary, and references; the full rendered article was available.",
+      "boundary": "Defines JT as the sum of pairwise Mann-Whitney ordered-win counts. It does not define this time-series grouping, tail cap, carrier, direction, risk, or lifecycle."
+    },
+    {
+      "role": "original_method_metadata",
+      "status": "PUBLISHER_METADATA_ONLY_BODY_PAYWALLED",
+      "citation": "Jonckheere (1954), A Distribution-Free k-Sample Test Against Ordered Alternatives, Biometrika 41(1-2), 133-145",
+      "url": "https://doi.org/10.1093/biomet/41.1-2.133",
+      "access_result": "Publisher title, author, journal, volume, issue, date, pages, and DOI read; article body not claimed read.",
+      "boundary": "Bibliographic lineage only; operative arithmetic is independently supported by the complete NIST and R Journal method records."
+    }
+  ],
+  "safety": {
+    "authentication_used": false,
+    "site_mutation": false,
+    "binary_or_ea_downloaded": false,
+    "external_runtime_dependency_created": false
+  }
+}

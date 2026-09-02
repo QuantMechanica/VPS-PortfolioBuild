@@ -1,0 +1,79 @@
+{
+  "candidate": {
+    "author": "OpenAI Codex; A. R. Jonckheere; T. J. Terpstra; Karsten Schweikert; CME Group; NIST/SEMATECH; R Journal",
+    "mechanic": "monthly-xauxag-thirteen-synchronized-completed-month-log-ratio-endpoints-twelve-adjacent-changes-three-chronological-four-return-blocks-jonckheere-terpstra-48-cross-block-ordered-win-score-exact-34650-two-sided-threshold29-contrarian-equal-notional-basket",
+    "slug": "xauxag-mjt-rv",
+    "strategy_id": "AI-CODEX-XAUXAG-MJT-RV-20260902_S01"
+  },
+  "error": null,
+  "exit_code": 3,
+  "generated_at_utc": "2026-09-02T05:21:28+00:00",
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_12724_cme-xauxag-brk_card.md",
+      "score": 1.0,
+      "slug": "cme-xauxag-brk",
+      "source": "card",
+      "strategy_id": ""
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_20161_xauxag-ols-rv_card.md",
+      "score": 1.0,
+      "slug": "xauxag-ols-rv",
+      "source": "card",
+      "strategy_id": "SCHWEIKERT-XAUXAG-OLS-2026_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_20202_xauxag-rev18_card.md",
+      "score": 1.0,
+      "slug": "xauxag-rev18",
+      "source": "card",
+      "strategy_id": "BIANCHI-MOMREV-2015_XAU_XAG_S03"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_20234_xauxag-rsj_card.md",
+      "score": 1.0,
+      "slug": "xauxag-rsj",
+      "source": "card",
+      "strategy_id": "KISS-RSJ-2025_XAU_XAG_S02"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_20263_xauxag-mad-rv_card.md",
+      "score": 1.0,
+      "slug": "xauxag-mad-rv",
+      "source": "card",
+      "strategy_id": "SCHWEIKERT-CME-XAUXAG-MADRV-2026_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4784,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1420,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "FUZZY_MATCH"
+}
