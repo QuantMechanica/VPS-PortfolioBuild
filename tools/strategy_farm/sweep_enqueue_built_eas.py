@@ -87,18 +87,11 @@ def _acquire_mutation_lock() -> FactoryMutationLock | None:
 
 
 _MUTATION_LOCK: FactoryMutationLock | None = None
-if APPLY:
-    _MUTATION_LOCK = _acquire_mutation_lock()
-    if _MUTATION_LOCK is None:
-        print(json.dumps({
-            "skipped": "factory mutation lock busy",
-            "lock": str(_FACTORY_MUTATION_LOCK),
-        }))
-        raise SystemExit(0)
-    atexit.register(_release_mutation_lock)
-    if _FACTORY_OFF_FLAG.exists():
-        print(json.dumps({"skipped": "FACTORY_OFF.flag set after lock", "flag": str(_FACTORY_OFF_FLAG)}))
-        raise SystemExit(0)
+# 2026-09-02 (CEO): the factory mutation lock is taken AFTER the read-only
+# directory/DB scan (see Part 1 below), not at module start.  Holding the global
+# lock across the ~3,700-directory scan blocked every terminal claim for 5+ min
+# per hourly run under D: saturation (10:52-10:58Z: all idle workers declined
+# with factory_mutation_lock_busy; the run was stopped by the CEO loop).
 QUEUE_CEILING = 7000
 if "--queue-ceiling" in sys.argv:
     QUEUE_CEILING = int(sys.argv[sys.argv.index("--queue-ceiling") + 1])
@@ -353,6 +346,25 @@ for d in sorted(EAS.iterdir()):
         continue
     ea_dirs.setdefault(f"QM5_{m.group(1)}", []).append(d)
 
+if APPLY:
+    _MUTATION_LOCK = _acquire_mutation_lock()
+    if _MUTATION_LOCK is None:
+        print(json.dumps({
+            "skipped": "factory mutation lock busy",
+            "lock": str(_FACTORY_MUTATION_LOCK),
+        }))
+        raise SystemExit(0)
+    atexit.register(_release_mutation_lock)
+    if _FACTORY_OFF_FLAG.exists():
+        print(json.dumps({"skipped": "FACTORY_OFF.flag set after lock", "flag": str(_FACTORY_OFF_FLAG)}))
+        raise SystemExit(0)
+    # Refresh the DB-derived guards under the lock: another writer may have
+    # enqueued for an EA between the unlocked scan and this point.
+    wi_eas = {r[0] for r in cur.execute("SELECT DISTINCT ea_id FROM work_items")}
+    pending_now = cur.execute(
+        "SELECT COUNT(*) FROM work_items WHERE status='pending'").fetchone()[0]
+    budget = max(0, QUEUE_CEILING - pending_now)
+    report["wave_budget"] = budget
 budget_left = budget
 for ea_id in sorted((e for e in ea_dirs if e not in wi_eas), key=_prio):
     if TARGET_EAS and ea_id not in TARGET_EAS:
