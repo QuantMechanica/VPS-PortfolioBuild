@@ -1,0 +1,101 @@
+{
+  "schema": "qm.source-retrieval-route/v1",
+  "retrieved_at_utc": "2026-09-02T02:51:21Z",
+  "method": "Van der Waerden signed normal-quantile linear-rank scores with exact two-sample permutation enumeration",
+  "parent_complete_read_route": {
+    "path": "strategy-seeds/sources/AI-CODEX-XAUXAG-MSAVAGE-RV-20260902/retrieval_route_savage_scores_20260902.json",
+    "sha256": "ADA5EE09723CFBC5007B28A6BE79FEEAE429BFF42AE79CF0366FF988F2709475",
+    "scope_reused": "The same complete bounded NIST and SAS score/exact-test chapters were read for the Van der Waerden sections and formulas; no raw page text is duplicated into the repository."
+  },
+  "nist_route": {
+    "document": "NIST/SEMATECH Dataplot, Two Sample Linear Rank Sum Test",
+    "url": "https://www.itl.nist.gov/div898/software/dataplot/refman1/auxillar/lrst.htm",
+    "http_status": 200,
+    "content_type": "text/html; charset=utf-8",
+    "utf8_response_bytes": 31270,
+    "utf8_response_sha256": "24E7A8FED8779204C103DE43FD4FF6CF1BDFBECE579FEAA3122E35DE53D84058",
+    "read_scope": "Complete bounded method sections defining the pooled two-sample linear-rank statistic, expected value, standard deviation, tie treatment, score-selection contract, and all score formulas. The Van der Waerden section defines a(r)=Phi^-1(r/(N+1)) and identifies the score as a location test."
+  },
+  "sas_score_route": {
+    "document": "SAS/STAT 12.1 User's Guide, NPAR1WAY Scores for Linear Rank and One-Way ANOVA Tests",
+    "url": "https://support.sas.com/documentation/cdl/en/statug/65328/HTML/default/statug_npar1way_details08.htm",
+    "http_status": 200,
+    "content_type": "text/html",
+    "utf8_response_bytes": 28816,
+    "utf8_response_sha256": "3DA4F03866E2BF648A23E76847A46F19BE16A8482F97EECA8F635C6522B66C6D",
+    "read_scope": "Complete bounded score chapter. SAS independently defines Van der Waerden scores as Phi^-1(r/(N+1)), classifies them as location scores, and distinguishes them from Wilcoxon, Savage, Klotz, Mood, Conover, Ansari-Bradley, and Siegel-Tukey scores."
+  },
+  "sas_exact_route": {
+    "document": "SAS/STAT 12.3 User's Guide, NPAR1WAY EXACT Statement",
+    "url": "https://support.sas.com/documentation/cdl/en/statug/66103/HTML/default/statug_npar1way_syntax04.htm",
+    "http_status": 200,
+    "content_type": "text/html",
+    "utf8_response_bytes": 42918,
+    "utf8_response_sha256": "E9EBE09A876F308F812EF817DF93E0000B10E4E3F99C026E1768DEA59F5A4F3A",
+    "read_scope": "Complete bounded VW/NORMAL exact-test option contract: the two-sample exact Van der Waerden test is based on a simple linear-rank statistic. No asymptotic p-value or source critical value is transferred."
+  },
+  "carrier_records": [
+    {
+      "source_id": "SCHWEIKERT-QC-2018",
+      "path": "strategy-seeds/sources/SCHWEIKERT-QC-2018/source.md",
+      "bytes": 6813,
+      "sha256": "7C409472768550C1F3A4A58CB22E12A6E915EB752B09ABC8E9B98F3E99048FFA",
+      "read_scope": "Complete governed peer-reviewed-paper packet, including adverse findings and extraction boundary."
+    },
+    {
+      "source_id": "CME-GSR-SPREAD-2025",
+      "path": "strategy-seeds/sources/CME-GSR-SPREAD-2025/source.md",
+      "bytes": 2182,
+      "sha256": "2B5903457BD861771821A81F554BE95CA369AD56C1AA45494E0B81555493AF93",
+      "read_scope": "Complete governed official-exchange carrier packet."
+    }
+  ],
+  "locked_n12_contract": {
+    "sample_sizes": [6, 6],
+    "pooled_size": 12,
+    "score_formula": "a(r)=Phi^-1(r/13)",
+    "score_denominator": 1000000000000000,
+    "score_numerators": [-1426076872272847, -1020076232786202, -736315917376130, -502402223373355, -293381232121193, -96558615289639, 96558615289639, 293381232121193, 502402223373355, 736315917376130, 1020076232786202, 1426076872272847],
+    "quantile_reproduction": "80-decimal inverse-erf evaluation, rounded to signed 15-decimal integer numerators; independent stdlib NormalDist values agree within 2e-16",
+    "score_numerator_sum": 0,
+    "all_six_rank_assignments": 924,
+    "absolute_score_tail_count_max": 462,
+    "minimum_qualified_absolute_score_numerator": 1041895523917931,
+    "directional_qualified_assignments": 462,
+    "buy_assignments": 231,
+    "sell_assignments": 231,
+    "neutral_score_assignments": 20,
+    "directional_states_per_twelve_attempts": 6.0
+  },
+  "nonduplicate_fixtures": [
+    {
+      "label_path": "RRROOOORORRO",
+      "vdw_score_numerator": -1132695640151654,
+      "vdw_tail_count": 422,
+      "vdw_direction": "BUY_XAU_SELL_XAG",
+      "savage_tail_count": 616,
+      "wilcoxon_recent_rank_sum": 35,
+      "wilcoxon_tail_count": 544,
+      "neighbor_result": "Van der Waerden trades while both Savage and Wilcoxon are flat"
+    },
+    {
+      "label_path": "RRROROOOOORR",
+      "vdw_score_numerator": -1029697149497323,
+      "vdw_tail_count": 476,
+      "vdw_direction": "FLAT",
+      "wilcoxon_recent_rank_sum": 34,
+      "wilcoxon_tail_count": 448,
+      "neighbor_result": "Wilcoxon buys XAU while Van der Waerden and Savage are flat"
+    },
+    {
+      "label_path": "RRROOOOOORRR",
+      "vdw_score_numerator": 0,
+      "vdw_tail_count": 924,
+      "vdw_direction": "FLAT",
+      "savage_score": 1.3414502164502164,
+      "savage_tail_count": 400,
+      "neighbor_result": "Savage sells XAU while Van der Waerden and Wilcoxon are exactly neutral"
+    }
+  ],
+  "claim_boundary": "NIST and SAS define Van der Waerden normal scores and SAS defines their exact two-sample test. Schweikert and CME supply a state-dependent gold/silver relative-value carrier and opposed-leg form, including adverse evidence. The fixed monthly sample, strict tie rejection, 15-decimal score freeze, complete 924-label absolute-score enumeration, 462-tail activity boundary, score-sign fade, CFD mapping, risk, atomicity, and lifecycle are pre-result QuantMechanica choices. No p-value, critical value, power result, return, frequency, neutrality, or profitability claim transfers."
+}
