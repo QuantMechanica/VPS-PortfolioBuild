@@ -15584,7 +15584,11 @@ def _resolved_card_source_lineage(
     }
 
 
-def _backfill_owner_source_lineage(root: Path) -> list[dict[str, str]]:
+def _backfill_owner_source_lineage(
+    root: Path,
+    *,
+    deadline_monotonic: float | None = None,
+) -> list[dict[str, str]]:
     """Give source-less active cards deterministic OWNER lineage.
 
     A missing machine-readable source_id must never turn a viable strategy into
@@ -15594,11 +15598,51 @@ def _backfill_owner_source_lineage(root: Path) -> list[dict[str, str]]:
     explicit R2-R4 recovery audit.
     """
     repaired: list[dict[str, str]] = []
+    # 2026-09-02 (CEO): this July backfill re-read every card file (~3.4k) on
+    # every 5-minute pump cycle, unbudgeted; under tester I/O load one cycle
+    # spent >16 min here (py-spy: read_text <- parse_card_frontmatter) and the
+    # whole control plane stalled.  Cards whose (mtime, size) are unchanged
+    # since their last evaluation are skipped; the scan stops at the deadline
+    # and resumes where it left off on the next cycle (append-only cache).
+    cache_path = root / "state" / "owner_source_lineage_backfill_cache.json"
+    try:
+        seen: dict[str, list[float]] = json.loads(cache_path.read_text(encoding="utf-8"))
+        if not isinstance(seen, dict):
+            seen = {}
+    except (OSError, ValueError):
+        seen = {}
+    cache_dirty = False
+    deadline_hit = False
+
+    def _save_cache() -> None:
+        if not cache_dirty:
+            return
+        try:
+            cache_path.parent.mkdir(parents=True, exist_ok=True)
+            tmp = cache_path.with_suffix(".json.tmp")
+            tmp.write_text(json.dumps(seen, sort_keys=True), encoding="utf-8")
+            os.replace(tmp, cache_path)
+        except OSError:
+            pass
+
     for bucket in ("cards_draft", "cards_approved"):
+        if deadline_hit:
+            break
         cards_dir = root / "artifacts" / bucket
         if not cards_dir.is_dir():
             continue
         for card_path in sorted(cards_dir.glob("QM5_*.md")):
+            if deadline_monotonic is not None and time.monotonic() >= deadline_monotonic:
+                deadline_hit = True
+                break
+            try:
+                st = card_path.stat()
+                stamp = [float(st.st_mtime), float(st.st_size)]
+            except OSError:
+                continue
+            key = str(card_path)
+            if seen.get(key) == stamp:
+                continue
             try:
                 fm = parse_card_frontmatter(card_path)
             except (OSError, ValueError):
@@ -15634,6 +15678,8 @@ def _backfill_owner_source_lineage(root: Path) -> list[dict[str, str]]:
                 and not needs_citation_correction
                 and not needs_r1_normalization
             ):
+                seen[key] = stamp
+                cache_dirty = True
                 continue
             updates: dict[str, str] = {}
             if needs_source or needs_citation_correction:
@@ -15667,6 +15713,12 @@ def _backfill_owner_source_lineage(root: Path) -> list[dict[str, str]]:
                     ensure_ascii=False,
                 )
             _update_flat_frontmatter_file(card_path, updates)
+            try:
+                st2 = card_path.stat()
+                seen[key] = [float(st2.st_mtime), float(st2.st_size)]
+                cache_dirty = True
+            except OSError:
+                pass
             repaired.append({
                 "ea_id": str(fm.get("ea_id") or card_path.stem),
                 "card_path": str(card_path),
@@ -15674,6 +15726,7 @@ def _backfill_owner_source_lineage(root: Path) -> list[dict[str, str]]:
                 "source_id": resolved_source_id,
                 "resolution_kind": resolved["kind"],
             })
+    _save_cache()
     return repaired
 
 
@@ -19340,7 +19393,14 @@ def _pump_unlocked(
 
     result["resume_mining"] = resume_mining(root)
     result["research_cards_extracted"] = _extract_cards_from_research_results(root)
-    result["owner_source_lineage_backfill"] = _backfill_owner_source_lineage(root)
+    result["owner_source_lineage_backfill"] = cycle_budget.run(
+        "owner_source_lineage_backfill",
+        lambda: _backfill_owner_source_lineage(
+            root, deadline_monotonic=cycle_budget.stage_deadline(15.0)
+        ),
+        budget_seconds=15.0,
+        minimum_start_seconds=5.0,
+    )
     result["auto_r_eval_queued"] = _auto_queue_r_eval_for_unknown_drafts(root)
 
     result["auto_build_queued"] = []
