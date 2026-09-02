@@ -1,0 +1,90 @@
+{
+  "schema": "qm.paced-fleet-q03-infra-recovery-cpu-stop/v1",
+  "captured_at_utc": "2026-09-02T15:11:27.0605103Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "5beb11acb97780a22ba8d186d4861f500f3f4836",
+  "mission": "diversity_funnel_throughput",
+  "outcome": "STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING_BEFORE_CLAIM_OR_Q03_ENQUEUE",
+  "selection": {
+    "priority": 2,
+    "ea_id": "QM5_20062",
+    "ea_label": "QM5_20062_kats-eu-macisar",
+    "symbol": "EURUSD.DWX",
+    "timeframe": "D1",
+    "asset_class": "forex",
+    "expected_trades_per_year_per_symbol": 12,
+    "source": "Markos Katsanos, Intermarket Trading Strategies, Wiley, 2008",
+    "source_tier": "A",
+    "g0_status": "APPROVED",
+    "structural_only": true,
+    "machine_learning": false,
+    "selection_reason": "Current continuation of the documented highest-value diverse Q03 infrastructure handoff: immutable Q02 PASS, exact-identity Q03 NO_HISTORY failure, and no open farm row or competing claim."
+  },
+  "lineage": {
+    "q02_predecessor_work_item_id": "36bfac85-63e2-46a7-9f35-8ae583252d2f",
+    "q02_status": "done",
+    "q02_verdict": "PASS",
+    "q03_source_work_item_id": "0108e4d5-2d2d-49e4-8458-5434dd8f34d4",
+    "q03_status": "done",
+    "q03_verdict": "INFRA_FAIL",
+    "q03_reason": "run_smoke_fail:NO_HISTORY;INCOMPLETE_RUNS",
+    "historical_rows_preserved": true
+  },
+  "identity": {
+    "mq5_sha256": "c245bdc262f7d4c8ce0e70171ea852919765eb299a278eaab4b607c2a0b78424",
+    "ex5_sha256": "68d54999a025cb1b95692f0702055a4acc18c28061ce61087728c37c279994d2",
+    "setfile_sha256": "c4c05dbc0a377b27ed3cabe7465dbc5e130d03ec4dfcd2b2511b577db9877000",
+    "matches_q02_and_q03_sealed_identity": true,
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "relevant_repo_paths_clean_at_preflight": true
+  },
+  "farm_coordination_preflight": {
+    "db": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "captured_read_only": true,
+    "open_work_rows_for_ea": 0,
+    "open_agent_claims_for_ea": 0,
+    "farm_claim_created": false,
+    "q03_successor_enqueued": false
+  },
+  "verification": {
+    "command": "python -m pytest tools/strategy_farm/tests/test_candidate_repair_enqueue.py -q",
+    "result": "PASS",
+    "tests_passed": 48,
+    "tests_failed": 0,
+    "prior_guard_repair_evidence": "docs/ops/evidence/2026-09-01_qm5_20062_q03_infra_recovery_cpu_defer.md"
+  },
+  "capacity": {
+    "sampling_method": "Get-CimInstance Win32_Processor LoadPercentage, processor-average",
+    "sample_interval_seconds": 2,
+    "cpu_samples_percent": [96.0, 96.0, 97.0, 99.0, 99.0],
+    "cpu_average_percent": 97.4,
+    "cpu_maximum_percent": 99.0,
+    "cpu_ceiling_percent": 97.0,
+    "cpu_ceiling_rule": "stop when average or maximum is greater than or equal to the ceiling",
+    "cpu_ceiling_hit": true,
+    "binding_measures": ["average", "maximum"],
+    "sample_window_utc": {
+      "started_at": "2026-09-02T15:11:14.9741085Z",
+      "ended_at": "2026-09-02T15:11:27.0605103Z"
+    }
+  },
+  "actions": {
+    "farm_db_mutated": false,
+    "claim_created": false,
+    "work_item_created_or_updated": false,
+    "compile_started": false,
+    "backtest_started": false,
+    "terminal_or_worker_controlled": false,
+    "portfolio_gate_touched": false,
+    "t_live_or_live_manifest_touched": false,
+    "autotrading_toggled": false,
+    "unrelated_worktree_changes_preserved": true
+  },
+  "resume_contract": {
+    "condition": "Take a fresh five-sample CPU window and proceed only when both average and maximum are strictly below 97 percent.",
+    "claim_key": "q03-infra-recovery:QM5_20062:0108e4d5-2d2d-49e4-8458-5434dd8f34d4",
+    "operation": "Atomically claim QM5_20062, recheck zero open rows and competing claims, then create one append-only Q03 rerun of 0108e4d5 using Q02 predecessor 36bfac85 and expected current EX5 68d54999; do not dispatch manually."
+  }
+}
