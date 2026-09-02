@@ -266,14 +266,17 @@ def backup_database(root: Path, backup_dir: Path) -> tuple[Path, str]:
 def acquire_backup_write_guard(
     root: Path,
     *,
-    timeout_seconds: float = 600.0,
+    timeout_seconds: float = 15.0,
 ) -> tuple[sqlite3.Connection, dict[str, Any]]:
     """Wait for one write window and retain a RESERVED lock during backup.
 
     SQLite online backups are readers and can be starved indefinitely by the
     farm's queued long writers.  A no-op BEGIN IMMEDIATE waits its turn, blocks
     later writers once admitted, and still permits the separate backup reader.
-    The transaction is always rolled back without changing the database.
+    The short bound matters: a writer that predates the filesystem lock may
+    itself need that lock to finish, so this attempt releases and retries
+    instead of creating a cross-lock convoy.  The transaction is always rolled
+    back without changing the database.
     """
 
     db = root / "state" / "farm_state.sqlite"
