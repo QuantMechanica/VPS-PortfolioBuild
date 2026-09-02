@@ -227,3 +227,12 @@ def test_limit_smoke():
         _ins(con, f"r{i}", "Q02", f"QM5_{i:02d}", "EURUSD.DWX", "done", "PASS")
     res = rc.compute(con, 2)
     assert len(res["pair_rows"]) == 2
+
+
+def test_vclass_fail_soft_is_pass_only_at_q08() -> None:
+    from tools.strategy_farm import rebaseline_census as rc
+
+    assert rc.vclass("FAIL_SOFT", "Q08") == "PASS"
+    assert rc.vclass("FAIL_SOFT", "Q05") == "ECON_FAIL"
+    assert rc.vclass("FAIL_SOFT") == "ECON_FAIL"
+    assert rc.vclass("FAIL_HARD", "Q08") == "ECON_FAIL"

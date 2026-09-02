@@ -175,10 +175,19 @@ def canonical_gate(
     return None
 
 
-def vclass(verdict: str | None) -> str:
-    """Classify a verdict string into a coarse class."""
+# OWNER receipt 2026-09-02 (CEO-ASK-20260902-2 = "ja", consistent with
+# OWNER-DEC-DL082-EXT Option D): a Q08 Davey FAIL_SOFT is contiguous book
+# evidence.  Gate-scoped on purpose - FAIL_SOFT at any other gate keeps its
+# economic-fail meaning.
+GATE_SCOPED_PASS = {"Q08": {"FAIL_SOFT"}}
+
+
+def vclass(verdict: str | None, gate: str | None = None) -> str:
+    """Classify a verdict string into a coarse class (optionally gate-scoped)."""
     v = (verdict or "").strip().upper()
     if v in PASS_ECON:
+        return "PASS"
+    if gate and v in GATE_SCOPED_PASS.get(str(gate).strip().upper(), ()):
         return "PASS"
     if v in NA_CLS:
         return "NA"
@@ -348,7 +357,7 @@ def build_pairs(con: sqlite3.Connection, limit: int | None) -> dict:
         gd["statuses"][(status or "")] += 1
         gd["verdicts"][(verdict or "")] += 1
         gd["observed_labels"].add(label)
-        cls = vclass(verdict)
+        cls = vclass(verdict, g)
         is_done = (status or "").strip().lower() == "done"
         informational_lane = resolved_phase.endswith("_PORTFOLIO")
         if informational_lane:
@@ -492,7 +501,7 @@ def build_finer(con: sqlite3.Connection, limit: int | None) -> dict:
                 "infra": 0, "invalid": 0, "stale": 0, "other": 0, "valid": False,
             }
         rec["n"] += 1
-        cls = vclass(verdict)
+        cls = vclass(verdict, g)
         is_done = (status or "").strip().lower() == "done"
         if cls == "PASS":
             rec["pass"] += 1
