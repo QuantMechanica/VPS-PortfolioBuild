@@ -1,0 +1,28 @@
+{
+  "source_id": "AI-CODEX-AUDUSD-DOLLAR-STRESS-TREND-20260902",
+  "retrieved_at_utc": "2026-09-02T03:46:37Z",
+  "routes": [
+    {
+      "url": "https://www.aeaweb.org/articles?id=10.1257/aeri.20180322",
+      "host": "www.aeaweb.org",
+      "owner": "American Economic Association",
+      "document": "Avdjiev, Du, Koch, and Shin (2019), The Dollar, Bank Leverage, and Deviations from Covered Interest Parity, American Economic Review: Insights 1(2), 193-208",
+      "doi": "10.1257/aeri.20180322",
+      "http_result": "FETCHED",
+      "read_scope": "complete public AEA article metadata and abstract only",
+      "full_paper_read": false
+    },
+    {
+      "url": "https://www.aeaweb.org/articles?id=10.1257/aer.20130479",
+      "host": "www.aeaweb.org",
+      "owner": "American Economic Association",
+      "document": "Maggiori (2017), Financial Intermediation, International Risk Sharing, and Reserve Currencies, American Economic Review 107(10), 3038-3071",
+      "doi": "10.1257/aer.20130479",
+      "http_result": "FETCHED",
+      "read_scope": "complete public AEA article metadata and abstract only",
+      "full_paper_read": false
+    }
+  ],
+  "runtime_external_data": false,
+  "committed_documents": false
+}
