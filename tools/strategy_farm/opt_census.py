@@ -631,11 +631,12 @@ def cell_report(summary_path: Path) -> dict[str, Any]:
         raise CensusError(f"native report missing: {report_path}")
     cache_enabled = _cell_report_cache_enabled()
     cache_path = _cell_report_cache_path(summary_path)
-    stamps: dict[str, list[int]] | None = None
+    stamps: dict[str, Any] | None = None
     if cache_enabled:
         try:
             stamps = {
                 "summary": _file_stamp(summary_path),
+                "summary_sha256": _sha256(summary_path),
                 "report": _file_stamp(report_path),
             }
             cached = json.loads(cache_path.read_text(encoding="utf-8"))
