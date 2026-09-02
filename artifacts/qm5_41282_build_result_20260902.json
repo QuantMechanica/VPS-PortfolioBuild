@@ -1,0 +1,114 @@
+{
+  "task_id": "73b1b024-b48a-451a-b198-f0c67cee3878",
+  "build_generation": 0,
+  "ea_id": "QM5_41282",
+  "ea_label": "QM5_41282_xauxag-mvdw-rv",
+  "slug": "xauxag-mvdw-rv",
+  "strategy_id": "AI-CODEX-XAUXAG-MVDW-RV-20260902_S01",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41282_xauxag-mvdw-rv",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41282_xauxag-mvdw-rv\\QM5_41282_xauxag-mvdw-rv.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41282_xauxag-mvdw-rv\\QM5_41282_xauxag-mvdw-rv.ex5",
+  "magic_base": 412820000,
+  "symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "symbols_registered": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "logical_symbol": "QM5_41282_XAU_XAG_VDW_RV_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "timeframe": "D1",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41282_xauxag-mvdw-rv\\sets\\QM5_41282_xauxag-mvdw-rv_QM5_41282_XAU_XAG_VDW_RV_D1_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41282_xauxag-mvdw-rv\\sets\\QM5_41282_xauxag-mvdw-rv_XAUUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41282_xauxag-mvdw-rv\\sets\\QM5_41282_xauxag-mvdw-rv_XAGUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_sha256": {
+    "QM5_41282_xauxag-mvdw-rv_QM5_41282_XAU_XAG_VDW_RV_D1_D1_backtest.set": "FFDEC509E13C0469606E8667214156BECFF3559FA572C137BDBBD139B49EB2DA",
+    "QM5_41282_xauxag-mvdw-rv_XAUUSD.DWX_D1_backtest.set": "CB3E5AF4FC018F2314BFBD541D394290CF530C7663945F3FCA3F1FE1D504419A",
+    "QM5_41282_xauxag-mvdw-rv_XAGUSD.DWX_D1_backtest.set": "29E73F24F0815FBCAFF486E231EFE43331774B87B8CC6CE63BBD907BDC6EAB1F"
+  },
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41282_xauxag-mvdw-rv\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "The qm-build-ea-from-card skill is build-only and forbids manual backtests; the OWNER mission authorizes one governed paced logical-basket Q02 enqueue instead.",
+  "blocked_reason": "",
+  "open_questions": [
+    "Q02 must establish package activity, fills, paired costs, and baseline economics, including at least five completed packages in every full post-warm-up year.",
+    "Only unchanged Q09 may determine realized decorrelation or diversification value versus the certified index, metal, and XNG book."
+  ],
+  "compile": {
+    "status": "COMPILE_OK",
+    "work_item_id": "dc33c27c-8b0d-4e92-8a46-25478e9d58b8",
+    "terminal": "T8",
+    "evidence_path": "D:\\QM\\reports\\work_items\\dc33c27c-8b0d-4e92-8a46-25478e9d58b8\\QM5_41282\\COMPILE_EA\\compile_evidence.json",
+    "evidence_sha256": "42E9A74A5144623196DEA6182D4C8F14CD0690E98CA59BFAE38F729DB5FAE488",
+    "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260902_033425.json",
+    "build_check_report_sha256": "25530B97C45E0ED60BB4D5CA079F7B52EA57818B3C6FB1427A27ACA21C817400",
+    "build_check_result": "PASS",
+    "build_check_warnings": 0,
+    "build_check_warning_codes": [],
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "failure_classes": [],
+    "mq5_sha256": "03C9993AD0EB38A2F52E67B04FD1C90260F244E641CC67233B11E04D1C81E900",
+    "ex5_sha256": "71415041EE70E5A1480518C4811B766C44EAB1AA276973E9AFCD1D27B5D7BB2B",
+    "setfile_build_hash": "31CF2120BAFB3C6E6ED45B3D11DCCC712081D44C5CD4DD50F15B9C3121C1B18E",
+    "setfile_sha256": "FFDEC509E13C0469606E8667214156BECFF3559FA572C137BDBBD139B49EB2DA"
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "validations": {
+    "approved_card_sha256": "F158C6B87759706DA21FABBAC9B1B54E22D2DC5067D3F2ADD0110066FE160BB7",
+    "approved_local_card_byte_identical": true,
+    "farm_runtime_card_sha256": "6838CB8C4B773C9CE131A6CCF6F4009A70774FF737C5511D9E66DEDDCAFF7A8C",
+    "farm_runtime_card_byte_identical": false,
+    "farm_runtime_card_normalization": "The factory approval controller normalized approval metadata in its runtime mirror; executable R2-R4, strategy, symbol, risk, and lifecycle contracts are unchanged.",
+    "build_skill_guard": "PASS",
+    "card_schema_lint": "PASS",
+    "dedup_artifact_sha256": "F356B42F07A95D6F5929A75AF3C5067D18A3A9EC7B830D2A0DBF40D999790310",
+    "reference_test_sha256": "D4AAD471FD7D424C4155626E569F337C96926A9E474792BA0BA52705E1D5EE13",
+    "reference_tests": "PASS_7",
+    "source_packet_sha256": "7DDC6A9511619A5C008141600905FC3F7F92CF70137E2A38DDD9691E50D9CEDD",
+    "spec_sha256": "BE570F6055A5824E7743221AD98B2BB23AB3CB2F00FD764F818E581FC51CFD59",
+    "spec_validation": "PASS",
+    "static_guardrails": "PASS",
+    "symbol_scope": "LOGICAL_BASKET_ONLY_Q02_COMPONENT_PRESETS_VALIDATION_ONLY",
+    "setfile_validation": "PASS_3_RISK_FIXED_ONE_LOGICAL_TWO_COMPONENT"
+  },
+  "capacity_admission": {
+    "sampling_method": "Win32_PerfFormattedData_PerfOS_Processor Name=_Total",
+    "sample_interval_seconds": 2,
+    "sample_window_utc": {
+      "started_at": "2026-09-02T03:38:37.9548265Z",
+      "ended_at": "2026-09-02T03:38:47.4646822Z"
+    },
+    "cpu_samples_percent": [
+      13.0,
+      37.0,
+      25.0,
+      14.0,
+      17.0
+    ],
+    "cpu_average_percent": 21.2,
+    "cpu_maximum_percent": 37.0,
+    "cpu_ceiling_percent": 97.0,
+    "rule": "admit only when average and maximum are strictly below the ceiling",
+    "admitted": true
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "deploy_manifest_touched": false,
+    "manual_backtest_launched": false,
+    "manual_dispatch_requested": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false
+  }
+}
