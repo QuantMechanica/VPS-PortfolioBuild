@@ -88,9 +88,9 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: Q01
-q01_status: NOT_BUILT
-q02_status: NOT_ENQUEUED_Q01_PENDING
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: ENQUEUED_PENDING
 force_build: true
 review_focus: "Falsify a monthly signed-normal-score gold/silver location-shift fade outside the directional XAU/SP500/NDX/XNG book. Verify synchronization, change orientation, strict ranks, twelve frozen numerators, exact 924 enumeration, absolute tail 462, score-sign side, consumed month, aggregate fixed risk, equal-notional tolerance, atomicity, and next-month lifecycle. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -424,17 +424,19 @@ admission, deploy/live manifest, `T_Live`, AutoTrading, or terminal control.
 | version | date | reason | gate | verdict |
 |---|---|---|---|---|
 | v1 | 2026-09-02 | initial monthly Van der Waerden XAU/XAG card | G0 | APPROVED; build pending |
+| v1.1 | 2026-09-02 | governed compile and paced logical-basket handoff | Q02 | Q01 PASS; Q02 ENQUEUED_PENDING; Q09 alone owns correlation |
 
 ## Pipeline History
 
 | version | date | rebuild reason | Q-stage reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-09-02 | initial build | Q01 | IN_PROGRESS |
+| v1.1 | 2026-09-02 | initial governed binary | Q02 | ENQUEUED_PENDING as work item `5d878c73-e206-415a-a67e-0dc7fc0231fb` |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-09-02 | APPROVED | `decisions/2026-09-02_qm5_41282_xauxag_monthly_van_der_waerden_reversion_g0.md` |
-| Q01 Build & Spec | TBD | PENDING | TBD |
-| Q02 Baseline | TBD | NOT_ENQUEUED | TBD |
+| Q01 Build & Spec | 2026-09-02 | PASS | `artifacts/qm5_41282_build_result_20260902.json` |
+| Q02 Baseline | 2026-09-02 | ENQUEUED_PENDING | `artifacts/qm5_41282_xauxag_mvdw_rv_q01_q02_handoff_20260902.json` |

@@ -1,0 +1,98 @@
+{
+  "schema_version": "qm.q01-q02-handoff/v1",
+  "ea_id": "QM5_41282",
+  "ea_label": "QM5_41282_xauxag-mvdw-rv",
+  "strategy_id": "AI-CODEX-XAUXAG-MVDW-RV-20260902_S01",
+  "recorded_at_utc": "2026-09-02T03:40:34Z",
+  "mission": "one new low-frequency structural commodity relative-value sleeve outside the directional XAU, SP500, NDX, and XNG book",
+  "edge": {
+    "logical_symbol": "QM5_41282_XAU_XAG_VDW_RV_D1",
+    "host_symbol": "XAUUSD.DWX",
+    "traded_symbols": [
+      "XAUUSD.DWX",
+      "XAGUSD.DWX"
+    ],
+    "timeframe": "D1",
+    "decision_frequency": "one consumed attempt per broker month",
+    "mechanic": "exact Van der Waerden signed normal-quantile rank-location shift fade on twelve monthly XAU/XAG log-ratio changes, submitted as an opposed equal-notional package",
+    "portfolio_correlation_claim": "NONE_Q09_ONLY"
+  },
+  "research_and_build_commits": {
+    "source_approval": "396bdf003ae5f636ede555b6741f2e19faeccf46",
+    "g0_card_approval": "2d6cbac4019d7c3320ff8c7cebf8300797b639c4",
+    "identity_and_magic_allocation": "484fd95feaccc0d317231e4bc180b4645b1f5f4a",
+    "source_build": "a461f6c4ff94108fd3316d7a58c67a7f223f6220",
+    "governed_q01_binary": "b543e62a54401c5e4da519dcb5096eda7909c52e"
+  },
+  "q01": {
+    "status": "PASS",
+    "build_task_id": "73b1b024-b48a-451a-b198-f0c67cee3878",
+    "compile_work_item_id": "dc33c27c-8b0d-4e92-8a46-25478e9d58b8",
+    "compile_terminal": "T8",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "build_check_result": "PASS",
+    "build_check_warnings": 0,
+    "reference_tests": "PASS_7",
+    "mq5_sha256": "03c9993ad0eb38a2f52e67b04fd1c90260f244e641cc67233b11e04d1c81e900",
+    "ex5_sha256": "71415041ee70e5a1480518c4811b766c44eab1aa276973e9afcd1d27b5d7bb2b",
+    "compile_evidence_path": "D:\\QM\\reports\\work_items\\dc33c27c-8b0d-4e92-8a46-25478e9d58b8\\QM5_41282\\COMPILE_EA\\compile_evidence.json",
+    "compile_evidence_sha256": "42e9a74a5144623196dea6182d4c8f14cd0690e98ca59bfae38f729db5fae488",
+    "build_result_path": "artifacts/qm5_41282_build_result_20260902.json",
+    "build_result_sha256": "444e681a286281e7240f8c88ed8a312692c86f874274daabd652767ad20129be"
+  },
+  "risk_contract": {
+    "mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "setfile_count": 3,
+    "q02_setfile_sha256": "ffdec509e13c0469606e8667214156becff3559fa572c137bdbbd139b49eb2da"
+  },
+  "capacity_admission": {
+    "sampling_method": "Win32_PerfFormattedData_PerfOS_Processor Name=_Total",
+    "sample_interval_seconds": 2,
+    "sample_window_utc": {
+      "started_at": "2026-09-02T03:38:37.9548265Z",
+      "ended_at": "2026-09-02T03:38:47.4646822Z"
+    },
+    "cpu_samples_percent": [
+      13.0,
+      37.0,
+      25.0,
+      14.0,
+      17.0
+    ],
+    "cpu_average_percent": 21.2,
+    "cpu_maximum_percent": 37.0,
+    "cpu_ceiling_percent": 97.0,
+    "rule": "admit only when average and maximum are strictly below the ceiling",
+    "admitted": true
+  },
+  "q02": {
+    "status_at_handoff": "pending",
+    "work_item_id": "5d878c73-e206-415a-a67e-0dc7fc0231fb",
+    "enqueued_at_utc": "2026-09-02T03:40:33Z",
+    "symbol": "QM5_41282_XAU_XAG_VDW_RV_D1",
+    "host_symbol": "XAUUSD.DWX",
+    "timeframe": "D1",
+    "portfolio_scope": "basket",
+    "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_41282_xauxag-mvdw-rv\\sets\\QM5_41282_xauxag-mvdw-rv_QM5_41282_XAU_XAG_VDW_RV_D1_D1_backtest.set",
+    "component_presets_skipped": [
+      "QM5_41282_xauxag-mvdw-rv_XAUUSD.DWX_D1_backtest.set",
+      "QM5_41282_xauxag-mvdw-rv_XAGUSD.DWX_D1_backtest.set"
+    ],
+    "attempt_count_at_handoff": 0,
+    "claimed_by_at_handoff": null,
+    "dispatch_requested": false
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "deploy_manifest_touched": false,
+    "manual_backtest_launched": false,
+    "manual_dispatch_requested": false,
+    "optimization_enqueued": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false
+  }
+}
