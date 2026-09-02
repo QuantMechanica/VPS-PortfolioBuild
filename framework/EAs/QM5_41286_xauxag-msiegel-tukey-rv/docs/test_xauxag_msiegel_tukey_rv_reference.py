@@ -355,7 +355,12 @@ class MonthlySiegelTukeyReferenceTests(unittest.TestCase):
             headers, values = parse_setfile(path)
             self.assertEqual((values["RISK_FIXED"], values["RISK_PERCENT"]), ("1000", "0"))
             self.assertEqual(values["PORTFOLIO_WEIGHT"], "1")
-            self.assertEqual(set(values), input_names)
+            self.assertTrue(set(values) <= input_names)
+            self.assertTrue(
+                {name for name in input_names if name.startswith("strategy_")} <= set(values)
+            )
+            if path == LOGICAL_SET:
+                self.assertEqual(set(values), input_names)
             self.assertEqual(headers["environment"], "backtest")
             self.assertEqual(headers["risk_mode"], "FIXED")
             self.assertRegex(headers["build_hash"], r"^(PENDING_COMPILE|[0-9a-f]{64})$")

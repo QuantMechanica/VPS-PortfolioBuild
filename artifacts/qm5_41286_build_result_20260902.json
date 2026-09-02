@@ -1,0 +1,120 @@
+{
+  "task_id": "63dd9404-ac50-4d16-ac24-f9866ac94903",
+  "build_generation": 0,
+  "ea_id": "QM5_41286",
+  "ea_label": "QM5_41286_xauxag-msiegel-tukey-rv",
+  "slug": "xauxag-msiegel-tukey-rv",
+  "strategy_id": "AI-CODEX-XAUXAG-MSIEGEL-TUKEY-RV-20260902_S01",
+  "source_id": "AI-CODEX-XAUXAG-MSIEGEL-TUKEY-RV-20260902",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41286_xauxag-msiegel-tukey-rv",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41286_xauxag-msiegel-tukey-rv\\QM5_41286_xauxag-msiegel-tukey-rv.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41286_xauxag-msiegel-tukey-rv\\QM5_41286_xauxag-msiegel-tukey-rv.ex5",
+  "magic_base": 412860000,
+  "symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "symbols_registered": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "logical_symbol": "QM5_41286_XAU_XAG_ST_RV_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "timeframe": "D1",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41286_xauxag-msiegel-tukey-rv\\sets\\QM5_41286_xauxag-msiegel-tukey-rv_QM5_41286_XAU_XAG_ST_RV_D1_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41286_xauxag-msiegel-tukey-rv\\sets\\QM5_41286_xauxag-msiegel-tukey-rv_XAUUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41286_xauxag-msiegel-tukey-rv\\sets\\QM5_41286_xauxag-msiegel-tukey-rv_XAGUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_sha256": {
+    "QM5_41286_xauxag-msiegel-tukey-rv_QM5_41286_XAU_XAG_ST_RV_D1_D1_backtest.set": "E0EC7BF9BDFF3BD3A08996BB3EEBD9A14AAA07E2C370B8CA0A9E35065A8DBC65",
+    "QM5_41286_xauxag-msiegel-tukey-rv_XAUUSD.DWX_D1_backtest.set": "BAE5762A744BBDDB6BE6E35999C4029D62E9A0E10CBD513064E059E329DADDD1",
+    "QM5_41286_xauxag-msiegel-tukey-rv_XAGUSD.DWX_D1_backtest.set": "89B522B60BCD51C5D742E0D7BB81EBF65AF9BF7FE24D31A88FD8D9CCD74C4EC5"
+  },
+  "setfile_build_hash": {
+    "QM5_41286_xauxag-msiegel-tukey-rv_QM5_41286_XAU_XAG_ST_RV_D1_D1_backtest.set": "d2d6fa54d13f3282566478b3ce9eb350a7c58ae326c42c642c80d673ff171c2e",
+    "QM5_41286_xauxag-msiegel-tukey-rv_XAUUSD.DWX_D1_backtest.set": "e05d8de7b58dceaf7bd5a8faeb9c2267e38bfb718032674678750b9046f690d4",
+    "QM5_41286_xauxag-msiegel-tukey-rv_XAGUSD.DWX_D1_backtest.set": "852f57fb67e0d247a04efce91ce14c90e07b7327b9d4cc9aa573d02364e67240"
+  },
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41286_xauxag-msiegel-tukey-rv\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "The qm-build-ea-from-card skill is build-only and forbids manual backtests; the OWNER mission authorizes one governed paced logical-basket Q02 enqueue instead.",
+  "blocked_reason": "",
+  "open_questions": [
+    "Q02 must establish combined package activity, fills, paired costs, and baseline economics, including at least five completed packages in every full post-warm-up year.",
+    "Only unchanged Q09 may determine realized decorrelation or diversification value versus the certified XAU, SP500, NDX, and XNG book."
+  ],
+  "compile": {
+    "status": "COMPILE_OK",
+    "work_item_id": "040b41b1-ab97-4d7e-a667-978e0f373f37",
+    "terminal": "T2",
+    "evidence_path": "D:\\QM\\reports\\work_items\\040b41b1-ab97-4d7e-a667-978e0f373f37\\QM5_41286\\COMPILE_EA\\compile_evidence.json",
+    "evidence_sha256": "019553FCBCEBD2425BAE8AC4A992DF45D2689FFBE08029CCD1E6E81BEBBBB880",
+    "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260902_083904.json",
+    "build_check_report_sha256": "B6134959415F098D9BED8D30B2BC63BAE463A343B01183DD256B6279FA5A42AB",
+    "build_check_result": "PASS",
+    "build_check_warnings": 0,
+    "build_check_warning_codes": [],
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "failure_classes": [],
+    "mq5_sha256": "DAE00A2C622B2DB8109706C266A160855A405067D38117D796B119BFF71F013D",
+    "ex5_sha256": "08D976DEF0FD7D89B94696BE2D24CD1776469E92BB0EFF79F159C170856B32F8"
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "validations": {
+    "approved_card_sha256": "FD10E7D55D052C7D61B9EFABD20CB091F3B216B0FF99ED5C3DB97A9218EEED11",
+    "approved_local_card_byte_identical": true,
+    "farm_runtime_card_sha256": "BB1CB1A1DCA5EA9C1771692A9E88238F7DC3A3E302133B7D566094F8D3FC1692",
+    "farm_runtime_card_byte_identical": false,
+    "farm_runtime_card_normalization": "The factory approval controller normalized informational R1 metadata in its runtime mirror; executable R2-R4, strategy, symbol, risk, and lifecycle contracts are unchanged.",
+    "build_skill_guard": "PASS",
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "dedup_artifact_sha256": "171D776FF11CC3383AD1426F8198CC0075C2FA835CAECF3254D9F041BA43FA06",
+    "density_artifact_sha256": "B83421FF8D15477C20C85EDDBFB261E0714C775DE9F2F1F76D00AFBD68AF0816",
+    "reference_test_sha256": "A79101CB67D70D2BB07CD78DB9FCBBD3C84ED64DB65A0F58881ED2F6D48004E8",
+    "reference_tests": "PASS_7",
+    "source_packet_sha256": "2C7D7E7DE91C4B8A739E76A016AB3BB6D6C0529AC41FF436267EF2AAF8DDA259",
+    "spec_sha256": "E8434DF7B4FB5F54FACDCB2231ACA41F4D13BFA22E0A98BB2936B157331A852E",
+    "spec_validation": "PASS",
+    "static_guardrails": "PASS",
+    "symbol_scope": "LOGICAL_XAU_XAG_BASKET_EXACT_D1",
+    "setfile_validation": "PASS_3_RISK_FIXED_BACKTEST_ONLY"
+  },
+  "capacity_admission": {
+    "sampling_method": "Win32_PerfFormattedData_PerfOS_Processor Name=_Total",
+    "sample_interval_seconds": 2,
+    "sample_window_utc": {
+      "started_at": "2026-09-02T08:42:20.4187306Z",
+      "ended_at": "2026-09-02T08:42:30.0502408Z"
+    },
+    "cpu_samples_percent": [
+      83.0,
+      82.0,
+      77.0,
+      61.0,
+      59.0
+    ],
+    "cpu_average_percent": 72.4,
+    "cpu_maximum_percent": 83.0,
+    "cpu_ceiling_percent": 97.0,
+    "rule": "admit only when average and maximum are strictly below the ceiling",
+    "admitted": true
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "deploy_manifest_touched": false,
+    "manual_backtest_launched": false,
+    "manual_dispatch_requested": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false
+  }
+}

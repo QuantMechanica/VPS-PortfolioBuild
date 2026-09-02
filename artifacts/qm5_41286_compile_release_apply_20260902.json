@@ -1,0 +1,28 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "040b41b1-ab97-4d7e-a667-978e0f373f37"
+  ],
+  "backup": {
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260902T083748Z_4963365b.sqlite",
+    "sha256": "5ec40f778a6332987529fb6d74d6dbb23f5c0dfdd27aa9eea46e390a921fb1f5"
+  },
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "dae00a2c622b2db8109706c266a160855a405067d38117d796b119bff71f013d",
+      "ea_id": "QM5_41286",
+      "ea_label": "QM5_41286_xauxag-msiegel-tukey-rv",
+      "expected_mq5_sha256": "dae00a2c622b2db8109706c266a160855a405067d38117d796b119bff71f013d",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41286_xauxag-msiegel-tukey-rv\\QM5_41286_xauxag-msiegel-tukey-rv.mq5",
+      "work_item_id": "040b41b1-ab97-4d7e-a667-978e0f373f37"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-09-02T08:38:41+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "040b41b1-ab97-4d7e-a667-978e0f373f37"
+}
