@@ -1,0 +1,100 @@
+{
+  "schema": "qm.paced-fleet-cpu-ceiling-stop/v1",
+  "recorded_at_utc": "2026-09-02T11:58:07.679160+00:00",
+  "branch": "agents/board-advisor",
+  "head_before_commit": "9b2338020f",
+  "mission": "diversity_funnel_throughput",
+  "selection": {
+    "ea_id": "QM5_36006",
+    "ea_label": "QM5_36006_nnfx-halftrend-jurik-coppock-engine",
+    "reason": "highest-diversity exact pending low-frequency D1 FX build; reviewed unchanged source, registry-complete, no EX5/Q02 or competing claim",
+    "symbols": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX",
+      "USDJPY.DWX"
+    ],
+    "timeframe": "D1",
+    "expected_trades_per_year_per_symbol": 25,
+    "g0_status": "APPROVED",
+    "r_status": {
+      "r1": "PASS",
+      "r2": "PASS",
+      "r3": "PASS",
+      "r4": "PASS"
+    },
+    "structural_non_ml": true,
+    "banned_indicator": false
+  },
+  "farm_claim": {
+    "build_task_id": "5fbafbb8-c8c6-4480-8157-b2577c229a1b",
+    "agent_task_id": "ce28db7e-0cda-40a0-b4de-3cb3aeed6bc9",
+    "claim_key": "build:QM5_36006:5fbafbb8-c8c6-4480-8157-b2577c229a1b",
+    "claimed_at_utc": "2026-09-02T11:56:45+00:00",
+    "claimed_by": "codex:agents/board-advisor",
+    "released_at_utc": "2026-09-02T12:01:17.014539+00:00",
+    "released_reason": "BACKTEST_CPU_CEILING",
+    "agent_task_final_state": "BLOCKED",
+    "build_task_final_state": "pending",
+    "claim_preimage_payload_sha256": "dacfb0056e04436285b24c37ca8937f1d664c0e8528515a5b4ccafda8d54e0b4",
+    "collision_check": "pending exact build task; no in-flight sibling; no open competing agent task; no Q02 row"
+  },
+  "preflight": {
+    "skill_build_ea_guard": "PASS",
+    "spec_validation": "PASS",
+    "build_guardrails": "PASS",
+    "build_guardrail_findings": 0,
+    "mq5_sha256": "014dc6e0c3d8e466a2947ae0ac1e6590ac0c491b17a67c37cbae748cc665dfb6",
+    "ex5_exists": false,
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "release_dry_run": {
+    "work_item_id": "d445db75-f0c0-422b-9517-622028203c7b",
+    "release_count": 1,
+    "deferred_count": 0,
+    "expected_mq5_sha256": "014dc6e0c3d8e466a2947ae0ac1e6590ac0c491b17a67c37cbae748cc665dfb6",
+    "actual_mq5_sha256": "014dc6e0c3d8e466a2947ae0ac1e6590ac0c491b17a67c37cbae748cc665dfb6",
+    "status_after_stop": "pending",
+    "claimed_by_after_stop": null,
+    "attempt_count_after_stop": 0,
+    "verdict_after_stop": null,
+    "active_hold_after_stop": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "apply_started": false
+  },
+  "capacity": {
+    "ceiling_percent": 97.0,
+    "initial_window": {
+      "samples_percent": [46.69, 45.03, 48.16, 48.83, 57.75],
+      "average_percent": 49.29,
+      "maximum_percent": 57.75,
+      "active_work_items": 7
+    },
+    "pre_apply_window": {
+      "samples_percent": [90.05, 92.40, 92.48, 97.95, 96.68],
+      "average_percent": 93.91,
+      "maximum_percent": 97.95,
+      "ceiling_hit": true
+    },
+    "post_stop_active_work_items": 9,
+    "stop_reason": "BACKTEST_CPU_CEILING avg=93.91 max=97.95"
+  },
+  "outcome": {
+    "compile_hold_released": false,
+    "compile_started": false,
+    "smoke_started": false,
+    "tester_started": false,
+    "q02_rows": 0,
+    "q02_enqueued": false,
+    "next_action": "After a fresh five-sample window has both average and maximum strictly below 97%, reclaim build task 5fbafbb8-c8c6-4480-8157-b2577c229a1b and release only compile item d445db75-f0c0-422b-9517-622028203c7b."
+  },
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "deploy_manifest_touched": false,
+    "live_setfile_created": false,
+    "duplicate_build_task_created": false,
+    "duplicate_compile_item_created": false
+  }
+}
