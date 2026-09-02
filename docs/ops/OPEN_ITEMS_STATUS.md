@@ -13,6 +13,8 @@
 > Befund daraus für den 06.09.: EURUSD-magic=0 war der Friday-Close-Broker-Deal von QM5_11421, kein manueller Trade (ee18d088); NDX-Herkunft offen (DEAL_REASON fehlt).
 > (7) Verwaister Codex-ripgrep (25 min, 120 MB/s über T_Live-Verzeichnis, Defender hinterher) gestoppt; `QM_StrategyFarm_ClaudeOrchestration_15min` für die Dauer der interaktiven Session deaktiviert (wieder aktivieren beim Handoff).
 > Offen: Q07/Q08-Reruns der Zensus-Eltern stehen auf Rang ~1.500 der Claim-Reihenfolge (kein priority_track) → Markierung folgt; Sibling-Q02-Seeds 41303/41304/41305/41307; 41306 Held-Successor 8620da55; Pair-8-Build c2ef7f4a.
+>
+> **Nachtrag 11:10Z — Purge-Schleife war der Worker-Killer:** `QM_StrategyFarm_TesterCachePurge` (10 min, LowWater 140 GB) triggerte bei ~80 GB frei auf D: bei jedem Lauf (3.566×) und stoppte alle idle Worker → alle 10 min Startup-Gate, Null-Zellen-Fenster. Seit Variant A (10×43 GB Custom-History) ist 140 GB unerreichbar. Task-Argument auf `-LowWaterGB 60` gesetzt (Rollback: 140). Stündlicher Sweep hielt den Mutation-Lock über den Verzeichnis-Scan (10:52–10:58Z alle Claims blockiert) → Fix `1938e703dc`. Kaskade jetzt vor der Pre-Promotion-Automation (`3d9dd0a92e`). Neuer Subcommand `farmctl mark-priority-track` (`f7a42389bc`); die 4 Q07/Q08-Reruns stehen auf Rang 0–4. 41306-Successor-Hold gelöst. Reviews: 7865c865/b335e499/2093b38e APPROVED, 027fb63f BLOCKED (Docker/WSL2 = OWNER-Host-Fenster); Park/Retire-Ausführung der Juli-Kohorte = Codex-Task c9a1bdab.
 
 ## CEO Wave 1 — Codex-Ausführung 2026-09-02
 
