@@ -224,10 +224,60 @@ def backup_plan(root: Path, now: dt.datetime) -> tuple[list[Path], list[Path]]:
     return keep, delete
 
 
+LONG_PATH_PREFIX = "\\\\?\\"
+
+
+def long_path(path: "str | Path") -> str:
+    """Return ``path`` with the Win32 extended-length prefix (no-op elsewhere)."""
+    text = os.fspath(path)
+    if os.name != "nt" or text.startswith(LONG_PATH_PREFIX):
+        return text
+    return LONG_PATH_PREFIX + os.path.abspath(text)
+
+
 def iter_old_files(root: Path, cutoff_epoch: float) -> Iterable[Path]:
+    """Yield files under ``root`` older than ``cutoff_epoch``.
+
+    2026-09-02: ``Path.rglob`` aborted the whole run with ``FileNotFoundError``
+    (WinError 3) as soon as the evidence tree contained a directory deeper
+    than MAX_PATH (Q09 contract-v3 successor cells: ``reports/work_items/<id>/
+    q09_contract_v3/successors/<sha256>/cells/.../raw/run_01/...``).  Every
+    scheduled run since 2026-08-26 failed closed, so no backup was compressed
+    and no evidence aged out while D: filled up.  The walk now descends with
+    ``os.scandir``; a directory that cannot be listed by its plain name is
+    retried with the extended-length prefix, and a directory that still cannot
+    be listed is skipped (recorded by the caller as untouched) instead of
+    aborting the run.  Files found below a prefixed directory are yielded with
+    the prefix so that the Win32 attribute/compression calls can open them;
+    the work-item id guard in ``is_open_bound`` matches on path parts and is
+    prefix-agnostic, and the exclusive-handle check still protects every file
+    that is in use.
+    """
     if not root.is_dir():
         return []
-    return (p for p in root.rglob("*") if p.is_file() and p.stat().st_mtime < cutoff_epoch)
+
+    def _walk() -> Iterable[Path]:
+        stack = [os.fspath(root)]
+        while stack:
+            directory = stack.pop()
+            try:
+                listing = os.scandir(directory)
+            except OSError:
+                try:
+                    listing = os.scandir(long_path(directory))
+                except OSError:
+                    continue
+            with listing:
+                for entry in listing:
+                    try:
+                        if entry.is_dir(follow_symlinks=False):
+                            stack.append(entry.path)
+                        elif entry.is_file(follow_symlinks=False) and entry.stat().st_mtime < cutoff_epoch:
+                            yield Path(entry.path)
+                    except OSError:
+                        continue
+
+    return _walk()
 
 
 def iter_evidence_candidates(root: Path, cutoff_epoch: float,
