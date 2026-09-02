@@ -28,9 +28,22 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
         # pressure. Individual resource-guard tests override this explicitly.
         self._original_commit_headroom_gb = terminal_worker._commit_headroom_gb
         terminal_worker._commit_headroom_gb = lambda: 10_000.0
+        self._original_free_ram_gb = terminal_worker._free_ram_gb
+        terminal_worker._free_ram_gb = lambda: 10_000.0
+        self._original_test_free_ram = os.environ.get(
+            terminal_worker.TEST_FREE_RAM_GB_ENV
+        )
+        os.environ[terminal_worker.TEST_FREE_RAM_GB_ENV] = "10000"
 
     def tearDown(self) -> None:
         terminal_worker._commit_headroom_gb = self._original_commit_headroom_gb
+        terminal_worker._free_ram_gb = self._original_free_ram_gb
+        if self._original_test_free_ram is None:
+            os.environ.pop(terminal_worker.TEST_FREE_RAM_GB_ENV, None)
+        else:
+            os.environ[terminal_worker.TEST_FREE_RAM_GB_ENV] = (
+                self._original_test_free_ram
+            )
 
     def _root(self) -> tempfile.TemporaryDirectory:
         return tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
@@ -195,6 +208,127 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             self.assertTrue(result.get("claimed"), result)
             self.assertGreaterEqual(result["claim_write_lock_ms"], 0.0)
             self.assertLess(result["claim_write_lock_ms"], 1000.0)
+
+    def test_physical_ram_reservation_classes_are_conservative(self) -> None:
+        ordinary = {"phase": "P3", "symbol": "EURUSD.DWX", "ea_id": "QM5_A"}
+        index = {"phase": "P3", "symbol": "SP500.DWX", "ea_id": "QM5_B"}
+        census = {
+            "phase": "OPT_CENSUS",
+            "symbol": "EURUSD.DWX",
+            "ea_id": "QM5_C",
+        }
+        two_leg_payload = {
+            "basket_symbols": ["EURUSD.DWX", "GBPUSD.DWX"],
+            "basket_symbol_count": 2,
+        }
+        multi_leg_payload = {
+            "basket_symbols": [
+                "EURUSD.DWX",
+                "GBPUSD.DWX",
+                "USDJPY.DWX",
+            ],
+            "basket_symbol_count": 3,
+        }
+
+        self.assertEqual(
+            terminal_worker._ram_reservation_for_candidate(ordinary, {}, False),
+            (terminal_worker.MULTISYMBOL_COMMIT_CLASS_ORDINARY, 8.0),
+        )
+        self.assertEqual(
+            terminal_worker._ram_reservation_for_candidate(index, {}, False),
+            (terminal_worker.COMMIT_CLASS_SINGLE_INDEX_TICK, 44.0),
+        )
+        self.assertEqual(
+            terminal_worker._ram_reservation_for_candidate(census, {}, False),
+            (terminal_worker.RAM_CLASS_OPT_CENSUS_CELL, 4.0),
+        )
+        self.assertEqual(
+            terminal_worker._ram_reservation_for_candidate(
+                ordinary, two_leg_payload, True
+            ),
+            (terminal_worker.MULTISYMBOL_COMMIT_CLASS_TWO_LEG_FX, 8.0),
+        )
+        self.assertEqual(
+            terminal_worker._ram_reservation_for_candidate(
+                ordinary, multi_leg_payload, True
+            ),
+            (terminal_worker.MULTISYMBOL_COMMIT_CLASS_MULTI_LEG_FX, 32.0),
+        )
+
+    def test_ram_class_boundary_admits_census_and_skips_ordinary(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "ordinary-needs-eight",
+                "EURUSD.DWX",
+                phase="P3",
+            )
+            with patch.object(terminal_worker, "_free_ram_gb", return_value=18.0):
+                skipped = terminal_worker.claim_atomic(root, "T1")
+
+            self.assertFalse(skipped.get("claimed"), skipped)
+            self.assertEqual(
+                skipped["ram_class_skipped"][0]["ram_class"],
+                terminal_worker.MULTISYMBOL_COMMIT_CLASS_ORDINARY,
+            )
+            self.assertEqual(
+                skipped["ram_class_skipped"][0]["post_reservation_free_gb"],
+                10.0,
+            )
+
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "census-needs-four",
+                "EURUSD.DWX",
+                phase="OPT_CENSUS",
+            )
+            with patch.object(terminal_worker, "_free_ram_gb", return_value=18.0):
+                admitted = terminal_worker.claim_atomic(root, "T1")
+
+            self.assertTrue(admitted.get("claimed"), admitted)
+            self.assertEqual(admitted["item"]["id"], "census-needs-four")
+
+    def test_invalid_free_ram_override_falls_back_to_provider(self) -> None:
+        os.environ[terminal_worker.TEST_FREE_RAM_GB_ENV] = "not-a-number"
+        with (
+            patch.object(
+                terminal_worker, "_free_ram_gb", self._original_free_ram_gb
+            ),
+            patch.object(
+                terminal_worker,
+                "_memory_headroom_gb",
+                return_value=(123.0, 456.0),
+            ),
+        ):
+            self.assertEqual(terminal_worker._free_ram_gb(), 123.0)
+
+    def test_ram_hysteresis_bypass_only_opens_for_admissible_census(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "ordinary-only",
+                "EURUSD.DWX",
+                phase="P3",
+            )
+            self.assertFalse(
+                terminal_worker._ram_latch_opt_census_bypass_available(root, 19.0)
+            )
+            self._insert_work_item(
+                root,
+                "small-census",
+                "EURUSD.DWX",
+                phase="OPT_CENSUS",
+            )
+            self.assertFalse(
+                terminal_worker._ram_latch_opt_census_bypass_available(root, 17.9)
+            )
+            self.assertTrue(
+                terminal_worker._ram_latch_opt_census_bypass_available(root, 18.0)
+            )
 
     def test_running_terminal_probe_precedes_claim_write_transaction(self) -> None:
         """A slow process census must not own the SQLite writer lock."""
@@ -2012,7 +2146,10 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
 
             old_free_ram_gb = terminal_worker._free_ram_gb
             try:
-                terminal_worker._free_ram_gb = lambda: terminal_worker.MULTISYMBOL_RAM_MIN_FREE_GB + 1.0
+                terminal_worker._free_ram_gb = lambda: (
+                    terminal_worker.RAM_MIN_FREE_GB
+                    + terminal_worker.MULTISYMBOL_COMMIT_RESERVATION_GB
+                )
                 result = terminal_worker.claim_atomic(root, "T2")
             finally:
                 terminal_worker._free_ram_gb = old_free_ram_gb
@@ -2047,7 +2184,10 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             old_free_ram_gb = terminal_worker._free_ram_gb
             try:
                 terminal_worker._multisymbol_ea_ids = lambda: frozenset({"QM5_12533"})
-                terminal_worker._free_ram_gb = lambda: terminal_worker.MULTISYMBOL_RAM_MIN_FREE_GB - 0.5
+                terminal_worker._free_ram_gb = lambda: (
+                    terminal_worker.RAM_MIN_FREE_GB
+                    + terminal_worker.ORDINARY_COMMIT_RESERVATION_GB
+                )
 
                 result = terminal_worker.claim_atomic(root, "T2")
             finally:
@@ -2120,7 +2260,10 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             old_free_ram_gb = terminal_worker._free_ram_gb
             try:
                 terminal_worker._multisymbol_ea_ids = lambda: frozenset()
-                terminal_worker._free_ram_gb = lambda: terminal_worker.MULTISYMBOL_RAM_MIN_FREE_GB - 0.5
+                terminal_worker._free_ram_gb = lambda: (
+                    terminal_worker.RAM_MIN_FREE_GB
+                    + terminal_worker.ORDINARY_COMMIT_RESERVATION_GB
+                )
 
                 result = terminal_worker.claim_atomic(root, "T2")
             finally:
@@ -2177,7 +2320,10 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             old_free_ram_gb = terminal_worker._free_ram_gb
             try:
                 terminal_worker._multisymbol_ea_ids = lambda: frozenset()
-                terminal_worker._free_ram_gb = lambda: terminal_worker.MULTISYMBOL_RAM_MIN_FREE_GB + 1.0
+                terminal_worker._free_ram_gb = lambda: (
+                    terminal_worker.RAM_MIN_FREE_GB
+                    + terminal_worker.ORDINARY_COMMIT_RESERVATION_GB
+                )
 
                 result = terminal_worker.claim_atomic(root, "T2")
             finally:

@@ -156,6 +156,7 @@ _last_disk_purge_trigger = [0.0]
 RAM_MIN_FREE_GB = 14.0
 RAM_RESUME_FREE_GB = 20.0
 RAM_GUARD_SLEEP_SECONDS = 20
+TEST_FREE_RAM_GB_ENV = "QM_TEST_FREE_RAM_GB"
 # CPU admission (OWNER 2026-08-15): don't add testers while the box is already
 # compute-saturated. The load sample is a GetSystemTimes delta over the whole
 # previous worker-loop iteration (>= POLL_SLEEP_SECONDS), so a trip is a
@@ -223,6 +224,12 @@ MULTISYMBOL_HEAVY_SYMBOL_COUNT = 10
 # ordinary jobs keep flowing beside one.
 COMMIT_CLASS_SINGLE_INDEX_TICK = "single_index_tick"
 SINGLE_INDEX_TICK_COMMIT_RESERVATION_GB = 44.0
+# Today's annual OPT_CENSUS metatester cells were measured in the 2-4GB
+# working-set band. Reserve the observed upper bound; unlike an ordinary
+# full-history/news run, a single annual cell must not inherit the flat 8GB
+# class. Any multisymbol census declaration retains its heavier class.
+RAM_CLASS_OPT_CENSUS_CELL = "opt_census_cell"
+OPT_CENSUS_RAM_RESERVATION_GB = 4.0
 # DWX index universe seen in farm dispatch; extend with evidence, not guesses.
 INDEX_TICK_SYMBOL_BASES = frozenset({"GDAXI", "SP500", "WS30", "NDX", "UK100"})
 # Legacy source-scanned EAs do not carry basket_symbols in their old work-item
@@ -851,6 +858,23 @@ def _commit_reservation_gb(commit_class: str) -> float:
     if commit_class == MULTISYMBOL_COMMIT_CLASS_MULTI_LEG_FX:
         return MULTISYMBOL_MULTI_LEG_FX_COMMIT_RESERVATION_GB
     return MULTISYMBOL_COMMIT_RESERVATION_GB
+
+
+def _ram_reservation_for_candidate(
+    item: sqlite3.Row | dict[str, Any],
+    payload: dict[str, Any],
+    multisymbol: bool,
+) -> tuple[str, float]:
+    """Return the conservative physical-RAM class and launch reservation."""
+
+    if (
+        not multisymbol
+        and str(_work_item_value(item, "phase", "") or "").upper()
+        == "OPT_CENSUS"
+    ):
+        return RAM_CLASS_OPT_CENSUS_CELL, OPT_CENSUS_RAM_RESERVATION_GB
+    ram_class = _multisymbol_commit_class(item, payload, multisymbol)
+    return ram_class, float(_commit_reservation_gb(ram_class))
 
 
 _PROCESS_SNAPSHOT_TTL_SECONDS = 3.0
@@ -2092,6 +2116,55 @@ def _claim_queue_may_need_mutation(root: Path, terminal: str) -> bool:
         return True
 
 
+def _ram_latch_opt_census_bypass_available(root: Path, free_ram_gb: float) -> bool:
+    """Allow only a class-admissible OPT_CENSUS row through RAM hysteresis.
+
+    The 14/20GB latch remains the default and emergency defence. During the
+    18-20GB recovery band, however, a measured 4GB annual cell can leave the
+    full 14GB safety floor intact; holding it until 20GB would waste the small
+    lane while large jobs drain. Any DB/registry ambiguity fails closed.
+    """
+
+    if free_ram_gb - OPT_CENSUS_RAM_RESERVATION_GB < RAM_MIN_FREE_GB:
+        return False
+    db_path = root / farmctl.DB_REL
+    if not db_path.is_file():
+        return False
+    try:
+        multisym_ids = _multisymbol_ea_ids()
+        uri = f"file:{db_path.as_posix()}?mode=ro"
+        with sqlite3.connect(uri, uri=True, timeout=1) as conn:
+            conn.row_factory = sqlite3.Row
+            rows = conn.execute(
+                """
+                SELECT * FROM work_items w
+                WHERE w.status='pending' AND upper(w.phase)='OPT_CENSUS'
+                  AND NOT EXISTS (
+                    SELECT 1 FROM work_item_holds h
+                    WHERE h.work_item_id=w.id AND h.active=1
+                  )
+                  AND NOT EXISTS (
+                    SELECT 1 FROM work_item_supersedes s
+                    WHERE s.work_item_id=w.id
+                  )
+                LIMIT 32
+                """
+            ).fetchall()
+        for row in rows:
+            payload = _json_loads(row["payload_json"])
+            multisymbol = _work_item_is_multisymbol(
+                row, payload, multisym_ids
+            )
+            _, reservation_gb = _ram_reservation_for_candidate(
+                row, payload, multisymbol
+            )
+            if free_ram_gb - reservation_gb >= RAM_MIN_FREE_GB:
+                return True
+        return False
+    except (OSError, sqlite3.Error, MultisymbolRegistryUnavailable):
+        return False
+
+
 def _ensure_claim_db_initialized(root: Path) -> None:
     """Run idempotent schema setup once per worker process and farm root."""
 
@@ -2164,6 +2237,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
             "history_skipped": [],
             "launch_cooldown_skipped": [],
             "multisymbol_ram_skipped": [],
+            "ram_class_skipped": [],
             "multisymbol_commit_skipped": [],
             "terminal_avoid_skipped": [],
             "longrun_cap_skipped": [],
@@ -2614,6 +2688,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                 skipped_launch_cooldown: list[dict[str, Any]] = []
                 skipped_multisym_ram: list[dict[str, Any]] = []
                 skipped_multisym_commit: list[dict[str, Any]] = []
+                skipped_ram_class: list[dict[str, Any]] = []
                 skipped_avoid_terminal: list[dict[str, Any]] = []
                 skipped_longrun_cap: list[dict[str, Any]] = []
                 skipped_opt_census_slots: list[dict[str, Any]] = []
@@ -2837,6 +2912,25 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                                 "threshold_gb": MULTISYMBOL_RAM_MIN_FREE_GB,
                             })
                             continue
+                    ram_class, ram_reservation_gb = _ram_reservation_for_candidate(
+                        item, payload, item_is_multisym
+                    )
+                    post_reservation_free_gb = (
+                        multisym_free_ram_snapshot - ram_reservation_gb
+                    )
+                    if post_reservation_free_gb < RAM_MIN_FREE_GB:
+                        skipped_ram_class.append({
+                            "item_id": item["id"],
+                            "ea_id": item["ea_id"],
+                            "ram_class": ram_class,
+                            "reservation_gb": ram_reservation_gb,
+                            "free_ram_gb": round(multisym_free_ram_snapshot, 1),
+                            "post_reservation_free_gb": round(
+                                post_reservation_free_gb, 1
+                            ),
+                            "threshold_gb": RAM_MIN_FREE_GB,
+                        })
+                        continue
                     # Capacity, duplicate, and resource checks above are entirely
                     # local to this transaction. Run the cold-file lane preflight
                     # only after they admit the candidate; otherwise the default
@@ -2996,6 +3090,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                             "claim_admission_mode": payload.get("claim_admission_mode"),
                             "preclaim_payload_sha256": preclaim_payload_sha256,
                             "claim_write_lock_ms": claim_write_lock_ms,
+                            "ram_class_skipped": skipped_ram_class,
                         }
                     conn.rollback()
                     conn.execute("PRAGMA query_only=ON")
@@ -3006,6 +3101,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                     "history_skipped": skipped_history,
                     "launch_cooldown_skipped": skipped_launch_cooldown,
                     "multisymbol_ram_skipped": skipped_multisym_ram,
+                    "ram_class_skipped": skipped_ram_class,
                     "multisymbol_commit_skipped": skipped_multisym_commit,
                     "terminal_avoid_skipped": skipped_avoid_terminal,
                     "longrun_cap_skipped": skipped_longrun_cap,
@@ -7309,6 +7405,14 @@ def _memory_headroom_gb() -> tuple[float, float]:
 
 def _free_ram_gb() -> float:
     """Free physical RAM in GB; fail-open on probe error."""
+    override = os.environ.get(TEST_FREE_RAM_GB_ENV)
+    if override is not None:
+        try:
+            value = float(override)
+            if math.isfinite(value) and value >= 0.0:
+                return value
+        except (TypeError, ValueError):
+            pass
     return _memory_headroom_gb()[0]
 
 
@@ -7762,7 +7866,11 @@ def run_loop(root: Path, terminal: str, timeout_seconds: int) -> int:
         # recovers to RAM_RESUME_FREE_GB — sustained improvement, not the first
         # sample that crawls back over the trip floor (OWNER 2026-08-15).
         ram_floor = RAM_RESUME_FREE_GB if _RESOURCE_LATCH["ram_low"] else RAM_MIN_FREE_GB
-        if free_ram < ram_floor:
+        ram_census_bypass = (
+            free_ram < ram_floor
+            and _ram_latch_opt_census_bypass_available(root, free_ram)
+        )
+        if free_ram < ram_floor and not ram_census_bypass:
             _RESOURCE_LATCH["ram_low"] = True
             print(json.dumps({"event": "ram_low_pause", "terminal": terminal,
                               "free_ram_gb": round(free_ram, 1), "threshold_gb": ram_floor,
@@ -7770,7 +7878,8 @@ def run_loop(root: Path, terminal: str, timeout_seconds: int) -> int:
             # jitter so the fleet doesn't wake in lockstep and re-spike RAM together
             time.sleep(RAM_GUARD_SLEEP_SECONDS + random.uniform(0, 10))
             continue
-        _RESOURCE_LATCH["ram_low"] = False
+        if not ram_census_bypass:
+            _RESOURCE_LATCH["ram_low"] = False
         cpu_load = _cpu_load_percent()
         cpu_ceiling = (
             CPU_RESUME_LOAD_PERCENT if _RESOURCE_LATCH["cpu_high"] else CPU_MAX_LOAD_PERCENT
