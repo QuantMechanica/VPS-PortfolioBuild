@@ -64,7 +64,8 @@
     "review_update_accepted": false,
     "gate_code": "D6_BUILD_IDENTITY_MISSING",
     "reason": "strict_build_pass_evidence_missing_review_dispatch_refused",
-    "task_state_retained": "IN_PROGRESS"
+    "task_state_after_blocked_handoff": "BLOCKED",
+    "blocked_verdict": "COMPILE_BLOCKED_STALE_BINDING_AWAITING_REVIEWED_WORKER_ROLLOUT"
   },
   "safety": {
     "autotrading_toggled": false,
