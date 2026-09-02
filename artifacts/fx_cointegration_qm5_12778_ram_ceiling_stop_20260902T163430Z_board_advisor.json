@@ -1,0 +1,147 @@
+{
+  "artifact_type": "fx_cointegration_existing_fallback_ram_ceiling_stop",
+  "schema_version": "qm.fx-cointegration-existing-fallback-resource-stop/v1",
+  "generated_at_utc": "2026-09-02T16:34:30Z",
+  "generated_at_local": "2026-09-02T18:34:30+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base": "aacd0232cdb563ccd1aefc3964ccb5a97f073c6c",
+  "mission_outcome": "STOPPED_AT_RAM_CLAIM_GUARD",
+  "frontier": {
+    "study": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "latest_complete_reconciliation": "artifacts/fx_cointegration_frontier_ownership_guard_20260902T133112Z_board_advisor.json",
+    "approved_identity_count": 123,
+    "matching_ea_directory_count": 123,
+    "approved_unbuilt_identity_count": 0
+  },
+  "anchor_triage": {
+    "QM5_12532": {
+      "pair": [
+        "AUDUSD.DWX",
+        "NZDUSD.DWX"
+      ],
+      "q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "q02_status": "done",
+      "q02_verdict": "PASS",
+      "q02_oninit_or_no_history_blocker": false,
+      "later_chain": "Q04_PASS_Q05_FAIL"
+    },
+    "QM5_12533": {
+      "pair": [
+        "EURJPY.DWX",
+        "GBPJPY.DWX"
+      ],
+      "q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "q02_status": "done",
+      "q02_verdict": "PASS",
+      "q02_oninit_or_no_history_blocker": false,
+      "later_chain": "Q04_FAIL"
+    }
+  },
+  "selected_existing_fallback": {
+    "ea_id": "QM5_12778",
+    "relationship": [
+      "AUDUSD.DWX",
+      "EURJPY.DWX"
+    ],
+    "logical_symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+    "timeframe": "D1",
+    "approved_card": "strategy-seeds/cards/approved/QM5_12778_edgelab-audusd-eurjpy-cointegration_card.md",
+    "basket_manifest": "framework/EAs/QM5_12778_edgelab-audusd-eurjpy-cointegration/basket_manifest.json",
+    "structural_only": true,
+    "machine_learning": false,
+    "low_frequency": true,
+    "risk_contract": {
+      "RISK_FIXED": 1000.0,
+      "RISK_PERCENT": 0.0
+    },
+    "existing_work_item": {
+      "id": "24acc5d4-3e34-526e-a7a8-12640a2e759f",
+      "phase": "Q09_NEWS",
+      "host_symbol": "AUDUSD.DWX",
+      "status": "pending",
+      "attempt_count": 0,
+      "claimed_by": null,
+      "priority_track": true,
+      "updated_at_utc": "2026-09-02T14:31:41+00:00",
+      "diagnostic_non_admission": true,
+      "observed_via_farmctl_at_utc": "2026-09-02T16:31:00Z"
+    },
+    "duplicate_enqueue_performed": false,
+    "duplicate_priority_mutation_performed": false,
+    "manual_dispatch_performed": false
+  },
+  "package_observation": {
+    "mq5_sha256": "132a501d94685f013cc62a8b3c2de111d0a8b1e616a8656d2c61b061a754c146",
+    "ex5_sha256": "2a105cfbb364142c96c552136bb450162c142845665ce3366d0c045248c17a01",
+    "basket_manifest_sha256": "0ce25d17ebe7c3664e4acdb6c1d302b28b1f40710301189cc633e44f25854d57",
+    "logical_backtest_setfile_sha256": "0e7949276927c8c5355c413c631e7b67f684e757892de59fa2cff5521836c8e9"
+  },
+  "resource_gate": {
+    "hard_cpu_ceiling_percent": 97.0,
+    "initial_cpu_window": {
+      "captured_at_utc": "2026-09-02T16:31:33.8675709Z",
+      "samples_percent": [
+        70.023,
+        69.426,
+        50.138,
+        66.214,
+        50.893
+      ],
+      "average_percent": 61.339,
+      "maximum_percent": 70.023,
+      "ceiling_hit": false
+    },
+    "drain_recheck": {
+      "captured_at_utc": "2026-09-02T16:34:30.7403560Z",
+      "available_ram_gb": 1.367,
+      "cpu_samples_percent": [
+        62.914,
+        55.043,
+        73.356,
+        61.431,
+        52.188
+      ],
+      "cpu_average_percent": 60.986,
+      "cpu_maximum_percent": 73.356,
+      "cpu_ceiling_hit": false
+    },
+    "allowed_lane": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T5"
+    ],
+    "lane_observation_at_utc": "2026-09-02T16:32:05+00:00",
+    "occupied_allowed_terminals": [
+      "T2",
+      "T5"
+    ],
+    "idle_but_ram_latched_terminals": [
+      "T1",
+      "T3",
+      "T4"
+    ],
+    "worker_restart_thresholds_gb": {
+      "T1": 12.0,
+      "T3": 20.0,
+      "T4": 20.0
+    },
+    "ram_claim_guard_binding": true,
+    "backtest_or_dispatch_started": false
+  },
+  "mutations": {
+    "strategy_card": false,
+    "ea_source_or_binary": false,
+    "setfile_or_basket_manifest": false,
+    "registry_or_magic": false,
+    "runtime_queue": false,
+    "terminal_or_autotrading": false,
+    "portfolio_gate": false,
+    "t_live_manifest": false
+  },
+  "resume_contract": "Re-read work item 24acc5d4-3e34-526e-a7a8-12640a2e759f and take a fresh CPU/RAM window. Let the ordinary worker claim the already-priority-bound row only after an allowed T1-T5 lane satisfies its configured RAM hysteresis and both CPU measures remain strictly below 97 percent. Do not enqueue, reprioritize, or manually claim a duplicate row."
+}
