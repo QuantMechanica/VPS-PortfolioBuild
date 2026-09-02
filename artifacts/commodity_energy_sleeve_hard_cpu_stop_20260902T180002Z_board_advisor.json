@@ -1,0 +1,68 @@
+{
+  "artifact_type": "commodity_energy_sleeve_hard_cpu_stop",
+  "schema_version": "qm.commodity-energy-sleeve-hard-cpu-stop/v1",
+  "generated_at_utc": "2026-09-02T18:00:07.327Z",
+  "generated_at_local": "2026-09-02T20:00:07.327+02:00",
+  "branch": "agents/board-advisor",
+  "observation_head": "14afb2d1ab1b4e946415e9803c9d1d67946ae60a",
+  "mission": "grow_certified_v5_portfolio_new_commodity_energy_sleeve",
+  "outcome": "HARD_CPU_CEILING_STOP",
+  "capacity_guard": {
+    "samples_percent": [
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "average_percent": 100.0,
+    "maximum_percent": 100.0,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_rule": "stop when average or maximum is greater than or equal to 97 percent",
+    "ceiling_binding": true,
+    "sample_window_utc": {
+      "first": "2026-09-02T18:00:02.8462451Z",
+      "last": "2026-09-02T18:00:07.3279809Z"
+    },
+    "governed_active_terminal_count": 7,
+    "governed_active_terminals": [
+      "T1",
+      "T2",
+      "T4",
+      "T6",
+      "T8",
+      "T9",
+      "T10"
+    ],
+    "terminal64_process_count_including_excluded": 9,
+    "metatester64_process_count": 7,
+    "excluded_processes_observed": [
+      "T_Live",
+      "FTMO Global Markets MT5 Terminal"
+    ],
+    "backtest_or_dispatch_started": false
+  },
+  "selection": {
+    "edge_selected": false,
+    "reason": "The mission requires an immediate stop when the backtest CPU ceiling is hit; selecting or reserving a new lineage after the binding capacity observation would exceed that boundary."
+  },
+  "actions": {
+    "source_created_or_changed": false,
+    "card_created_or_changed": false,
+    "ea_or_setfile_changed": false,
+    "basket_manifest_changed": false,
+    "registry_or_magic_changed": false,
+    "work_item_created": false,
+    "work_item_priority_changed": false,
+    "work_item_claimed": false,
+    "compile_started": false,
+    "backtest_or_dispatch_started": false,
+    "terminal_or_autotrading_control": false
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_files": false,
+    "autotrading": false
+  }
+}
