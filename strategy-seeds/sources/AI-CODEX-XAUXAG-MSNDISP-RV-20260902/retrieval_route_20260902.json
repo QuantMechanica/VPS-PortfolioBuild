@@ -1,0 +1,42 @@
+{
+  "schema": "qm.local-approved-source-reuse-evidence/v1",
+  "recorded_at_utc": "2026-09-02T21:52:00Z",
+  "new_network_retrieval_performed": false,
+  "reason": "The bounded synthesis reuses complete governed source packets and their existing immutable retrieval receipts; no new public URL was needed or represented as read.",
+  "parents": [
+    {
+      "source_id": "SCHWEIKERT-QC-2018",
+      "path": "strategy-seeds/sources/SCHWEIKERT-QC-2018/source.md",
+      "sha256": "7C409472768550C1F3A4A58CB22E12A6E915EB752B09ABC8E9B98F3E99048FFA",
+      "read_scope": "complete governed packet; packet records complete 32-page author-preprint read",
+      "role": "state-dependent gold/silver relation and adverse constant-spread evidence"
+    },
+    {
+      "source_id": "CME-GSR-SPREAD-2025",
+      "path": "strategy-seeds/sources/CME-GSR-SPREAD-2025/source.md",
+      "sha256": "2B5903457BD861771821A81F554BE95CA369AD56C1AA45494E0B81555493AF93",
+      "read_scope": "complete governed exchange packet",
+      "role": "gold/silver ratio definition, distinct demand drivers, and opposed-leg carrier"
+    },
+    {
+      "source_id": "AI-CODEX-WTI-MSNDISP-TREND-20260901",
+      "path": "strategy-seeds/sources/AI-CODEX-WTI-MSNDISP-TREND-20260901/source.md",
+      "sha256": "A64C6D7FDFFA34CAB48006D52FF9F06E36A3017276C5EC06DAB6E80383AE48D2",
+      "read_scope": "complete governed composite packet",
+      "role": "raw Sn arithmetic, exact even-sample lower-median convention, and multiplier separation",
+      "underlying_receipts": [
+        {
+          "path": "strategy-seeds/sources/AI-CODEX-WTI-MSNDISP-TREND-20260901/retrieval_route_rousseeuw_croux_sn_20260901.json",
+          "source_sha256": "F4355DB3925B02FFD35B4499342F4D26C5C7372535E5A4ACE7CD4F9041628969",
+          "read_scope": "complete eleven-page author-hosted published JASA paper"
+        },
+        {
+          "path": "strategy-seeds/sources/AI-CODEX-WTI-MSNDISP-TREND-20260901/retrieval_route_robustbase_sn_20260901.json",
+          "commit": "54c5cc98e27050a78bbd03be15f07a7ba88de62a",
+          "read_scope": "complete R/qnsn.R and src/qn_sn.c"
+        }
+      ]
+    }
+  ],
+  "claim_boundary": "Parent records support the relationship, carrier, and Sn arithmetic only. The completed-month XAU/XAG three-core contrarian conjunction, CFD mapping, threshold, risk, activity, economics, neutrality, and correlation remain an untested QuantMechanica hypothesis."
+}
