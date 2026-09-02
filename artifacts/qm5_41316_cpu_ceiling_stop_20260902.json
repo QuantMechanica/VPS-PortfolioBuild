@@ -1,0 +1,34 @@
+{
+  "schema": "qm.cpu-ceiling-stop/v1",
+  "recorded_at_utc": "2026-09-02T20:45:21.9505639Z",
+  "ea_id": "QM5_41316",
+  "ea_label": "QM5_41316_wti-bds2-tr",
+  "mission": "Build one non-duplicate structural commodity or energy edge and enqueue Q02 only below the whole-host CPU ceiling.",
+  "cpu_gate": {
+    "counter": "\\Processor(_Total)\\% Processor Time",
+    "samples_pct": [98.5353, 80.008, 77.9544, 88.2883, 87.6052],
+    "average_pct": 86.4782,
+    "maximum_pct": 98.5353,
+    "ceiling_pct": 97.0,
+    "verdict": "STOP_MAXIMUM_AT_OR_ABOVE_CEILING"
+  },
+  "compile": {
+    "work_item_id": "a838f3c9-5949-4b95-b3f6-d13e9b600d07",
+    "status": "pending",
+    "activation_hold": null,
+    "source_sha256": "4ee0919dfdd6ca6514a96f3595783764d245a03a0ddb63158c796f30e8922137",
+    "q01_verdict": null,
+    "ex5_sha256": null
+  },
+  "q02": {
+    "status": "NOT_ENQUEUED",
+    "reason": "CPU ceiling stop and no authenticated COMPILE_OK/Q01 prerequisite; no verdict was fabricated."
+  },
+  "safety": {
+    "manual_tester_launched": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "live_manifest_touched": false
+  }
+}

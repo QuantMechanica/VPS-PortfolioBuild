@@ -1,0 +1,19 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "4ee0919dfdd6ca6514a96f3595783764d245a03a0ddb63158c796f30e8922137",
+      "ea_id": "QM5_41316",
+      "ea_label": "QM5_41316_wti-bds2-tr",
+      "expected_mq5_sha256": "4ee0919dfdd6ca6514a96f3595783764d245a03a0ddb63158c796f30e8922137",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41316_wti-bds2-tr\\QM5_41316_wti-bds2-tr.mq5",
+      "work_item_id": "a838f3c9-5949-4b95-b3f6-d13e9b600d07"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "a838f3c9-5949-4b95-b3f6-d13e9b600d07"
+}
