@@ -3,6 +3,8 @@ import json
 import sqlite3
 from pathlib import Path
 
+import pytest
+
 from tools.strategy_farm import release_compile_wave as rollout
 
 
@@ -40,6 +42,10 @@ def test_apply_releases_only_hold_and_records_audit(tmp_path):
     db, repo, _ = _fixture(tmp_path)
     result = rollout.apply_wave(db, repo, tmp_path / "backups", 1, "canary")
     assert result["applied"] == 1
+    assert Path(result["backup"]["path"]).stat().st_size > 0
+    assert result["backup_write_guard"]["transaction"].endswith("/ COMMIT")
+    assert result["factory_mutation_lock"]["release_status"] == "released"
+    assert not (tmp_path / "FACTORY_MUTATION.lock").exists()
     conn = sqlite3.connect(db)
     assert conn.execute("SELECT status FROM work_items WHERE id='one'").fetchone()[0] == "pending"
     assert conn.execute("SELECT active FROM work_item_holds WHERE work_item_id='one'").fetchone()[0] == 0
@@ -53,6 +59,16 @@ def test_stale_source_is_deferred(tmp_path):
     plan = rollout.inspect(db, repo, 1)
     assert plan["release_count"] == 0
     assert plan["deferred"][0]["reason"] == "SOURCE_SHA_STALE_OR_MISSING"
+
+
+def test_backup_timeout_removes_partial_snapshot(tmp_path):
+    db, _, _ = _fixture(tmp_path)
+    backup_dir = tmp_path / "backups"
+
+    with pytest.raises(TimeoutError, match="COMPILE_WAVE_BACKUP_TIMEOUT"):
+        rollout._backup(db, backup_dir, timeout_seconds=1e-9)
+
+    assert list(backup_dir.glob("*.partial")) == []
 
 
 def test_exact_selector_releases_only_requested_item(tmp_path):

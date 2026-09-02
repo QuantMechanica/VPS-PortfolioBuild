@@ -13,14 +13,21 @@ import datetime as dt
 import hashlib
 import json
 import sqlite3
+import time
 import uuid
 from pathlib import Path
 from typing import Any
+
+try:
+    from factory_mutation_lock import FactoryMutationLock
+except ModuleNotFoundError:
+    from tools.strategy_farm.factory_mutation_lock import FactoryMutationLock
 
 
 DEFAULT_DB = Path(r"D:\QM\strategy_farm\state\farm_state.sqlite")
 DEFAULT_REPO = Path(r"C:\QM\repo")
 DEFAULT_BACKUP_DIR = Path(r"D:\QM\strategy_farm\state\backups")
+DEFAULT_MUTATION_LOCK = Path(r"D:\QM\strategy_farm\state\FACTORY_MUTATION.lock")
 HOLD_CODE = "COMPILE_EA_WORKER_ROLLOUT_PENDING"
 
 
@@ -101,18 +108,83 @@ def inspect(
     }
 
 
-def _backup(db: Path, backup_dir: Path) -> tuple[Path, str]:
+def _backup(
+    db: Path,
+    backup_dir: Path,
+    *,
+    timeout_seconds: float = 60.0,
+) -> tuple[Path, str]:
+    if timeout_seconds <= 0:
+        raise ValueError("backup timeout must be positive")
     backup_dir.mkdir(parents=True, exist_ok=True)
     stamp = dt.datetime.now(dt.UTC).strftime("%Y%m%dT%H%M%SZ")
     target = backup_dir / f"farm_state_before_compile_wave_{stamp}_{uuid.uuid4().hex[:8]}.sqlite"
+    partial = target.with_suffix(target.suffix + ".partial")
     source_conn = sqlite3.connect(db, timeout=30)
-    target_conn = sqlite3.connect(target)
+    target_conn = sqlite3.connect(partial)
+    started = time.monotonic()
+
+    def progress(_status: int, remaining: int, total: int) -> None:
+        elapsed = time.monotonic() - started
+        if elapsed > timeout_seconds:
+            raise TimeoutError(
+                "COMPILE_WAVE_BACKUP_TIMEOUT:"
+                f"elapsed_seconds={elapsed:.3f}:remaining_pages={remaining}:"
+                f"total_pages={total}"
+            )
+
     try:
-        source_conn.backup(target_conn)
-    finally:
+        source_conn.backup(target_conn, pages=256, progress=progress, sleep=0.05)
         target_conn.close()
         source_conn.close()
+        partial.replace(target)
+    except BaseException:
+        target_conn.close()
+        source_conn.close()
+        try:
+            partial.unlink(missing_ok=True)
+        except OSError:
+            pass
+        raise
+    finally:
+        try:
+            target_conn.close()
+        finally:
+            source_conn.close()
     return target, sha256_file(target)
+
+
+def _acquire_backup_write_guard(
+    db: Path,
+    *,
+    timeout_seconds: float = 30.0,
+) -> tuple[sqlite3.Connection, dict[str, Any]]:
+    """Reserve one bounded writer window before taking the online backup."""
+
+    started = time.monotonic()
+    attempts = 0
+    last_error = ""
+    while time.monotonic() - started < timeout_seconds:
+        attempts += 1
+        conn = _connect(db)
+        conn.execute("PRAGMA busy_timeout=5000")
+        try:
+            conn.execute("BEGIN IMMEDIATE")
+            return conn, {
+                "attempts": attempts,
+                "wait_seconds": round(time.monotonic() - started, 3),
+                "transaction": "BEGIN IMMEDIATE / caller-owned",
+            }
+        except sqlite3.OperationalError as exc:
+            conn.close()
+            last_error = str(exc)
+            if "locked" not in last_error.casefold() and "busy" not in last_error.casefold():
+                raise
+            time.sleep(0.5)
+    raise RuntimeError(
+        "BACKUP_WRITE_WINDOW_TIMEOUT:"
+        f"attempts={attempts}:last_error={last_error or 'unknown'}"
+    )
 
 
 def apply_wave(
@@ -122,15 +194,20 @@ def apply_wave(
     max_items: int,
     note: str,
     work_item_id: str | None = None,
+    mutation_lock: Path | None = None,
+    backup_timeout_seconds: float = 60.0,
 ) -> dict[str, Any]:
     plan = inspect(db, repo, max_items, work_item_id)
     if not plan["release"]:
         return {**plan, "mode": "apply", "applied": 0, "backup": None}
-    backup_path, backup_sha = _backup(db, backup_dir)
-    now = utc_now()
+    lock_path = mutation_lock or db.parent / "FACTORY_MUTATION.lock"
+    lock = FactoryMutationLock(lock_path, owner="release_compile_wave.apply")
+    backup_path: Path | None = None
+    backup_sha: str | None = None
+    guard_detail: dict[str, Any] | None = None
     applied: list[str] = []
-    with _connect(db) as conn:
-        conn.execute("BEGIN IMMEDIATE")
+    with lock:
+        conn, guard_detail = _acquire_backup_write_guard(db)
         try:
             for item in plan["release"]:
                 row = conn.execute(
@@ -148,6 +225,21 @@ def apply_wave(
                 source = repo / "framework" / "EAs" / label / f"{label}.mq5"
                 if not source.is_file() or sha256_file(source).lower() != str(payload.get("mq5_sha256") or "").lower():
                     raise RuntimeError(f"source SHA changed before release: {item['work_item_id']}")
+
+            # The reservation blocks later writers while a separate read
+            # connection captures the exact pre-mutation database image.
+            backup_path, backup_sha = _backup(
+                db,
+                backup_dir,
+                timeout_seconds=backup_timeout_seconds,
+            )
+            now = utc_now()
+            for item in plan["release"]:
+                row = conn.execute(
+                    """SELECT h.hold_code
+                       FROM work_item_holds h WHERE h.work_item_id=?""",
+                    (item["work_item_id"],),
+                ).fetchone()
                 cursor = conn.execute(
                     """UPDATE work_item_holds SET active=0,updated_at=?,released_at=?,release_note=?
                        WHERE work_item_id=? AND hold_code=? AND active=1""",
@@ -185,9 +277,14 @@ def apply_wave(
                 )
                 applied.append(item["work_item_id"])
             conn.commit()
+            guard_detail["transaction"] = (
+                "BEGIN IMMEDIATE / validated / backed up / released / COMMIT"
+            )
         except Exception:
             conn.rollback()
             raise
+        finally:
+            conn.close()
     return {
         **plan,
         "mode": "apply",
@@ -195,6 +292,12 @@ def apply_wave(
         "applied_work_item_ids": applied,
         "released_at": now,
         "backup": {"path": str(backup_path), "sha256": backup_sha},
+        "backup_timeout_seconds": backup_timeout_seconds,
+        "backup_write_guard": guard_detail,
+        "factory_mutation_lock": {
+            "path": str(lock_path),
+            "release_status": lock.release_status,
+        },
     }
 
 
@@ -203,6 +306,8 @@ def main() -> int:
     parser.add_argument("--db", type=Path, default=DEFAULT_DB)
     parser.add_argument("--repo", type=Path, default=DEFAULT_REPO)
     parser.add_argument("--backup-dir", type=Path, default=DEFAULT_BACKUP_DIR)
+    parser.add_argument("--mutation-lock", type=Path, default=DEFAULT_MUTATION_LOCK)
+    parser.add_argument("--backup-timeout-seconds", type=float, default=60.0)
     parser.add_argument("--max-items", type=int, default=1)
     parser.add_argument(
         "--work-item-id",
@@ -220,6 +325,8 @@ def main() -> int:
             args.max_items,
             args.release_note,
             args.work_item_id,
+            args.mutation_lock,
+            args.backup_timeout_seconds,
         )
         if args.apply
         else inspect(args.db, args.repo, args.max_items, args.work_item_id)

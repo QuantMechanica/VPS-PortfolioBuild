@@ -43,6 +43,11 @@ R11_INCIDENT_REASON = "ex5_missing"
 COMPILE_RECHECK_RETRY_CONTRACT_VERSION = "qm.compile-ea-candidate-recheck-retry/v1"
 COMPILE_RECHECK_RETRY_AUTHORITY_TASK_ID = "1fb9943f-1b87-4515-b2b4-f5ca3ffb56f8"
 COMPILE_RECHECK_FAILURE_CLASS = "CANDIDATE_RECHECK_REFUSED"
+RECHECK_SUCCESSOR_CONTRACT_VERSION = (
+    "qm.compile-ea-stale-build-binding-successor/v1"
+)
+RECHECK_SUCCESSOR_AUTHORITY = "compile_work_items:stale-build-binding-successor"
+RECHECK_SUCCESSOR_FAILURE_REASON = "BUILD_TASK_BINDING_NOT_OPEN"
 
 # One exact operator-ordering incident: QM5_41245's initial source-fresh
 # COMPILE_EA row was released after its setfile header had already been bound
@@ -3097,6 +3102,82 @@ def _qm5_41285_unbound_compile_predecessor_authorized(
     return predecessor_id
 
 
+def _stale_build_binding_failure_evidence_sha(
+    predecessor: dict[str, Any] | None,
+    *,
+    ea_id: str,
+    ea_label: str,
+    source_sha: str,
+) -> str | None:
+    """Authenticate a pre-compiler failure caused only by a closed build task."""
+
+    if not predecessor or not _BOUND_HASH_RE.fullmatch(source_sha):
+        return None
+    payload = _json_object(predecessor.get("payload_json"))
+    compile_result = payload.get("compile_result")
+    evidence_path = Path(str(predecessor.get("evidence_path") or ""))
+    risk = payload.get("risk_contract")
+    try:
+        fixed_risk = float(risk.get("RISK_FIXED")) if isinstance(risk, dict) else 0.0
+        percent_risk = float(risk.get("RISK_PERCENT")) if isinstance(risk, dict) else -1.0
+    except (TypeError, ValueError):
+        return None
+    if not (
+        predecessor.get("kind") == COMPILE_WORK_ITEM_KIND
+        and predecessor.get("phase") == COMPILE_EA_PHASE
+        and predecessor.get("status") == "failed"
+        and predecessor.get("verdict") == "COMPILE_FAIL"
+        and predecessor.get("ea_id") == f"QM5_{ea_id}"
+        and payload.get("compile_contract_version") == COMPILE_CONTRACT_VERSION
+        and payload.get("compile_build_task_binding_contract_version")
+        == BUILD_TASK_BINDING_CONTRACT_VERSION
+        and str(payload.get("bound_build_task_id") or "").strip()
+        and payload.get("bound_build_task_ea_id") == f"QM5_{ea_id}"
+        and payload.get("ea_label") == ea_label
+        and str(payload.get("mq5_sha256") or "").lower() == source_sha
+        and payload.get("utility_phase") is True
+        and payload.get("no_gate_verdict") is True
+        and fixed_risk == 1000.0
+        and percent_risk == 0.0
+        and payload.get("verdict_reason") == COMPILE_RECHECK_FAILURE_CLASS
+        and isinstance(compile_result, dict)
+        and compile_result.get("success") is False
+        and compile_result.get("failure_classes")
+        == [COMPILE_RECHECK_FAILURE_CLASS]
+        and compile_result.get("compile_result") is None
+        and compile_result.get("build_check_result") is None
+        and compile_result.get("ex5_sha256") is None
+        and int(compile_result.get("setfile_count") or 0) == 0
+        and evidence_path.is_file()
+    ):
+        return None
+    try:
+        evidence = json.loads(evidence_path.read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    candidate = evidence.get("candidate_recheck")
+    binding = candidate.get("build_task_binding") if isinstance(candidate, dict) else None
+    if not (
+        evidence.get("work_item_id") == str(predecessor.get("id"))
+        and evidence.get("ea_id") == f"QM5_{ea_id}"
+        and evidence.get("ea_label") == ea_label
+        and evidence.get("success") is False
+        and evidence.get("failure_classes") == [COMPILE_RECHECK_FAILURE_CLASS]
+        and isinstance(candidate, dict)
+        and candidate.get("eligible") is False
+        and candidate.get("reason") == RECHECK_SUCCESSOR_FAILURE_REASON
+        and candidate.get("reasons") == [RECHECK_SUCCESSOR_FAILURE_REASON]
+        and str(candidate.get("mq5_sha256") or "").lower() == source_sha
+        and isinstance(binding, dict)
+        and binding.get("requested") is True
+        and binding.get("authorized") is False
+        and binding.get("reason") == RECHECK_SUCCESSOR_FAILURE_REASON
+        and binding.get("build_task_id") == payload.get("bound_build_task_id")
+    ):
+        return None
+    return sha256_file(evidence_path).lower()
+
+
 def _sanctioned_compile_predecessor_ids(
     payload: dict[str, Any],
     inventory: dict[str, Any],
@@ -3107,15 +3188,62 @@ def _sanctioned_compile_predecessor_ids(
 ) -> set[str]:
     """Return only incident-authorized immutable COMPILE_EA lineage.
 
-    COMPILE_EA normally refuses an EA with *any* prior work. The R11 repair
-    incident necessarily leaves one immutable failed COMPILE_EA predecessor,
-    and the first post-revival canary left a second immutable failure before
-    this check was corrected. Those two exact lineages are the only exception;
-    malformed provenance fails closed and ordinary Q work is never ignored.
+    COMPILE_EA normally refuses an EA with *any* prior work. Recognized
+    append-only contracts may hide only their authenticated predecessor: the
+    historical R11 incidents, or an unchanged-source pre-compiler failure whose
+    sole defect was an expired build-task binding. Malformed provenance fails
+    closed and ordinary Q work is never ignored.
     """
 
     source_sha = str(payload.get("mq5_sha256") or "").lower()
     if not _BOUND_HASH_RE.fullmatch(source_sha):
+        return set()
+
+    if (
+        payload.get("recheck_successor_contract_version")
+        == RECHECK_SUCCESSOR_CONTRACT_VERSION
+        and payload.get("recheck_successor_authority")
+        == RECHECK_SUCCESSOR_AUTHORITY
+        and payload.get("append_only_recheck_successor") is True
+        and current_work_item_id
+    ):
+        predecessor_id = str(payload.get("retry_of_work_item_id") or "")
+        predecessor = _work_row_by_id(inventory, ea_id, predecessor_id)
+        current = _work_row_by_id(inventory, ea_id, str(current_work_item_id))
+        predecessor_payload = (
+            _json_object(predecessor.get("payload_json")) if predecessor else {}
+        )
+        predecessor_evidence_sha = _stale_build_binding_failure_evidence_sha(
+            predecessor,
+            ea_id=ea_id,
+            ea_label=str(payload.get("ea_label") or ""),
+            source_sha=source_sha,
+        )
+        old_build_task_id = str(
+            predecessor_payload.get("bound_build_task_id") or ""
+        )
+        new_build_task_id = str(payload.get("bound_build_task_id") or "")
+        if (
+            predecessor_id
+            and predecessor_id not in seen
+            and current
+            and str(current.get("id")) == str(current_work_item_id)
+            and current.get("phase") == COMPILE_EA_PHASE
+            and current.get("ea_id") == f"QM5_{ea_id}"
+            and predecessor_evidence_sha
+            and payload.get("predecessor_evidence_sha256")
+            == predecessor_evidence_sha
+            and payload.get("predecessor_build_task_id") == old_build_task_id
+            and old_build_task_id
+            and new_build_task_id
+            and new_build_task_id != old_build_task_id
+            and payload.get("compile_build_task_binding_contract_version")
+            == BUILD_TASK_BINDING_CONTRACT_VERSION
+            and payload.get("bound_build_task_ea_id") == f"QM5_{ea_id}"
+            and str(current_work_item_id)
+            in inventory.get("superseded_by", {}).get(predecessor_id, set())
+        ):
+            return {predecessor_id}
         return set()
 
     if (
@@ -3721,6 +3849,267 @@ def enqueue_repair_successor(
         conn.execute(
             "INSERT INTO work_item_supersedes (work_item_id,superseded_by_work_item_id,reason,source_encoding,evidence_path,recorded_by,recorded_at) VALUES (?,?,?,?,?,?,?)",
             (predecessor_id, successor_id, "source repaired after terminal compile/build-check failure", "farmctl:repair-successor-of", predecessor.get("evidence_path"), "farmctl", now),
+        )
+        conn.commit()
+    return {**plan, "mode": "apply", "successor_work_item_id": successor_id}
+
+
+def enqueue_recheck_successor(
+    root: Path,
+    repo_root: Path,
+    predecessor_id: str,
+    build_task_id: str,
+    *,
+    apply: bool = False,
+) -> dict[str, Any]:
+    """Append an unchanged-source retry for an expired build-task binding.
+
+    This path sanctions exactly one immutable predecessor whose worker stopped
+    before build-check/compile. The replacement must bind to the sole open
+    build task for the same EA, while all ordinary candidate guards remain on.
+    """
+
+    inventory = _inventory(root, repo_root)
+    predecessor = next(
+        (
+            row
+            for rows in inventory["work_rows"].values()
+            for row in rows
+            if str(row.get("id")) == str(predecessor_id)
+        ),
+        None,
+    )
+    reasons: list[str] = []
+    old_payload = _json_object(predecessor.get("payload_json")) if predecessor else {}
+    label = str(old_payload.get("ea_label") or "")
+    parts = _label_parts(label)
+    old_sha = str(old_payload.get("mq5_sha256") or "").lower()
+    source = repo_root / "framework" / "EAs" / label / f"{label}.mq5"
+    current_sha = sha256_file(source).lower() if source.is_file() else None
+    requested_build_task_id = str(build_task_id or "").strip()
+    old_build_task_id = str(old_payload.get("bound_build_task_id") or "").strip()
+    evidence_sha = None
+
+    if not predecessor:
+        reasons.append("PREDECESSOR_NOT_FOUND")
+    if not parts or predecessor and predecessor.get("ea_id") != f"QM5_{parts[1]}":
+        reasons.append("PREDECESSOR_EA_IDENTITY_INVALID")
+    if not current_sha:
+        reasons.append("CURRENT_SOURCE_MISSING")
+    elif current_sha != old_sha:
+        reasons.append("SOURCE_CHANGED_AFTER_RECHECK_FAILURE")
+    if not requested_build_task_id:
+        reasons.append("BUILD_TASK_BINDING_NOT_REQUESTED")
+    elif requested_build_task_id == old_build_task_id:
+        reasons.append("BUILD_TASK_BINDING_NOT_RENEWED")
+    if parts and predecessor and current_sha:
+        evidence_sha = _stale_build_binding_failure_evidence_sha(
+            predecessor,
+            ea_id=parts[1],
+            ea_label=label,
+            source_sha=current_sha,
+        )
+        if not evidence_sha:
+            reasons.append("PREDECESSOR_NOT_STALE_BUILD_BINDING_FAILURE")
+    binding = (
+        _build_task_binding(
+            repo_root,
+            label,
+            parts[1],
+            requested_build_task_id,
+            inventory,
+        )
+        if parts and requested_build_task_id
+        else {"authorized": False, "reason": "BUILD_TASK_BINDING_NOT_REQUESTED"}
+    )
+    if requested_build_task_id and not binding.get("authorized"):
+        reasons.append(str(binding.get("reason") or "BUILD_TASK_BINDING_INVALID"))
+    if predecessor_id in inventory.get("superseded_by", {}):
+        reasons.append("PREDECESSOR_ALREADY_SUPERSEDED")
+
+    candidate: dict[str, Any] | None = None
+    if not reasons and parts:
+        candidate = classify_candidate(
+            root,
+            repo_root,
+            label,
+            inventory,
+            sanctioned_predecessor_ids={predecessor_id},
+            bound_build_task_id=requested_build_task_id,
+        )
+        if not candidate.get("eligible"):
+            reasons.extend(
+                str(reason)
+                for reason in candidate.get("reasons") or [candidate.get("reason")]
+                if reason
+            )
+
+    plan = {
+        "ok": not reasons,
+        "mode": "apply" if apply else "dry_run",
+        "eligible": not reasons,
+        "reasons": reasons,
+        "predecessor_work_item_id": predecessor_id,
+        "ea_label": label or None,
+        "mq5_sha256": current_sha,
+        "predecessor_evidence_sha256": evidence_sha,
+        "predecessor_build_task_id": old_build_task_id or None,
+        "build_task_id": requested_build_task_id or None,
+        "build_task_binding": binding,
+        "candidate": candidate,
+        "successor_work_item_id": None,
+    }
+    if reasons or not apply:
+        return plan
+
+    assert predecessor and parts and current_sha and evidence_sha and candidate
+    successor_id = str(uuid.uuid4())
+    now = utc_now()
+    with _connect(root) as conn:
+        conn.execute("BEGIN IMMEDIATE")
+        apply_reasons: list[str] = []
+        current_predecessor_row = conn.execute(
+            "SELECT * FROM work_items WHERE id=?", (predecessor_id,)
+        ).fetchone()
+        current_predecessor = (
+            dict(current_predecessor_row) if current_predecessor_row else None
+        )
+        if not current_predecessor or (
+            current_predecessor.get("status") != "failed"
+            or current_predecessor.get("verdict") != "COMPILE_FAIL"
+            or _json_object(current_predecessor.get("payload_json")) != old_payload
+        ):
+            apply_reasons.append("PREDECESSOR_CHANGED_AT_APPLY")
+        if conn.execute(
+            "SELECT 1 FROM work_item_supersedes WHERE work_item_id=?",
+            (predecessor_id,),
+        ).fetchone():
+            apply_reasons.append("PREDECESSOR_ALREADY_SUPERSEDED_AT_APPLY")
+        if conn.execute(
+            "SELECT 1 FROM work_items WHERE ea_id=? AND id<>? LIMIT 1",
+            (f"QM5_{parts[1]}", predecessor_id),
+        ).fetchone():
+            apply_reasons.append("OTHER_WORK_ITEMS_EXIST_AT_APPLY")
+        if not source.is_file() or sha256_file(source).lower() != current_sha:
+            apply_reasons.append("SOURCE_CHANGED_AT_APPLY")
+        elif source.with_suffix(".ex5").exists():
+            apply_reasons.append("EX5_ALREADY_PRESENT_AT_APPLY")
+        if _bound_setfile_hashes(source.parent):
+            apply_reasons.append("BOUND_SETFILE_HASH_EXISTS_AT_APPLY")
+        current_evidence_sha = (
+            _stale_build_binding_failure_evidence_sha(
+                current_predecessor,
+                ea_id=parts[1],
+                ea_label=label,
+                source_sha=current_sha,
+            )
+            if current_predecessor
+            else None
+        )
+        if current_evidence_sha != evidence_sha:
+            apply_reasons.append("PREDECESSOR_EVIDENCE_CHANGED_AT_APPLY")
+
+        current_build_tasks_by_id: dict[str, dict[str, Any]] = {}
+        current_build_tasks_by_ea: dict[str, list[dict[str, Any]]] = defaultdict(list)
+        for task_row in conn.execute(
+            "SELECT id,status,card_id,payload_json FROM tasks WHERE kind='build_ea'"
+        ):
+            task = dict(task_row)
+            current_build_tasks_by_id[str(task_row["id"])] = task
+            task_ea_id = _numeric_ea_reference(task_row["card_id"])
+            if task_ea_id:
+                current_build_tasks_by_ea[task_ea_id].append(task)
+        current_binding = _build_task_binding(
+            repo_root,
+            label,
+            parts[1],
+            requested_build_task_id,
+            {
+                "build_tasks_by_id": current_build_tasks_by_id,
+                "build_tasks_by_ea": current_build_tasks_by_ea,
+            },
+        )
+        if not current_binding.get("authorized"):
+            apply_reasons.append("BUILD_TASK_BINDING_INVALID_AT_APPLY")
+        if apply_reasons:
+            conn.rollback()
+            return {
+                **plan,
+                "ok": False,
+                "eligible": False,
+                "reasons": apply_reasons,
+                "build_task_binding": current_binding,
+            }
+
+        payload = {
+            "compile_contract_version": COMPILE_CONTRACT_VERSION,
+            "compile_activation_state": "AWAITING_REVIEWED_WORKER_ROLLOUT",
+            "compile_activation_hold_code": COMPILE_ACTIVATION_HOLD_CODE,
+            "ea_label": candidate["ea_label"],
+            "ea_dir": candidate["ea_dir"],
+            "mq5_path": candidate["mq5_path"],
+            "mq5_sha256": candidate["mq5_sha256"],
+            "symbols": candidate["symbols"],
+            "timeframe": candidate["timeframe"],
+            "risk_contract": {"RISK_FIXED": 1000.0, "RISK_PERCENT": 0.0},
+            "utility_phase": True,
+            "no_gate_verdict": True,
+            "compile_build_task_binding_contract_version": (
+                BUILD_TASK_BINDING_CONTRACT_VERSION
+            ),
+            "bound_build_task_id": requested_build_task_id,
+            "bound_build_task_ea_id": candidate["ea_id"],
+            "recheck_successor_contract_version": RECHECK_SUCCESSOR_CONTRACT_VERSION,
+            "recheck_successor_authority": RECHECK_SUCCESSOR_AUTHORITY,
+            "retry_of_work_item_id": predecessor_id,
+            "predecessor_build_task_id": old_build_task_id,
+            "predecessor_evidence_path": predecessor.get("evidence_path"),
+            "predecessor_evidence_sha256": evidence_sha,
+            "append_only_recheck_successor": True,
+            "enqueued_at": now,
+        }
+        conn.execute(
+            "INSERT INTO work_items "
+            "(id,kind,phase,ea_id,symbol,setfile_path,status,attempt_count,"
+            "payload_json,created_at,updated_at) "
+            "VALUES (?,?,?,?,?,'','pending',0,?,?,?)",
+            (
+                successor_id,
+                COMPILE_WORK_ITEM_KIND,
+                COMPILE_EA_PHASE,
+                candidate["ea_id"],
+                "",
+                json.dumps(payload, sort_keys=True),
+                now,
+                now,
+            ),
+        )
+        conn.execute(
+            "INSERT INTO work_item_holds "
+            "(work_item_id,hold_code,reason,active,release_on_restart,"
+            "created_at,updated_at,released_at,release_note) "
+            "VALUES (?,?,?,1,1,?,?,NULL,NULL)",
+            (
+                successor_id,
+                COMPILE_ACTIVATION_HOLD_CODE,
+                COMPILE_ACTIVATION_HOLD_REASON,
+                now,
+                now,
+            ),
+        )
+        conn.execute(
+            "INSERT INTO work_item_supersedes "
+            "(work_item_id,superseded_by_work_item_id,reason,source_encoding,"
+            "evidence_path,recorded_by,recorded_at) VALUES (?,?,?,?,?,?,?)",
+            (
+                predecessor_id,
+                successor_id,
+                "retry unchanged source after stale build-task binding refusal",
+                RECHECK_SUCCESSOR_AUTHORITY,
+                predecessor.get("evidence_path"),
+                "compile_work_items",
+                now,
+            ),
         )
         conn.commit()
     return {**plan, "mode": "apply", "successor_work_item_id": successor_id}

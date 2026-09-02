@@ -454,6 +454,150 @@ def test_enqueue_repair_successor_requires_source_delta_and_preserves_predecesso
     assert edge[0] == successor_id
 
 
+def test_recheck_successor_rebinds_unchanged_source_and_fails_closed_on_evidence_tamper(
+    tmp_path: Path,
+) -> None:
+    label = "QM5_1001_compile-fixture-h1"
+    old_task_id = "build-old"
+    new_task_id = "build-new"
+    predecessor_id = "stale-binding-failed"
+    repo, root = _fixture(tmp_path, [label])
+    _insert_build_task(root, repo, label, old_task_id, status="failed")
+    _insert_build_task(root, repo, label, new_task_id)
+    source = repo / "framework" / "EAs" / label / f"{label}.mq5"
+    source_sha = compile_work_items.sha256_file(source)
+    evidence_path = root / "reports" / predecessor_id / "compile_evidence.json"
+    evidence_path.parent.mkdir(parents=True)
+    evidence = {
+        "work_item_id": predecessor_id,
+        "ea_id": "QM5_1001",
+        "ea_label": label,
+        "success": False,
+        "failure_classes": [compile_work_items.COMPILE_RECHECK_FAILURE_CLASS],
+        "candidate_recheck": {
+            "eligible": False,
+            "reason": compile_work_items.RECHECK_SUCCESSOR_FAILURE_REASON,
+            "reasons": [compile_work_items.RECHECK_SUCCESSOR_FAILURE_REASON],
+            "mq5_sha256": source_sha,
+            "build_task_binding": {
+                "requested": True,
+                "authorized": False,
+                "reason": compile_work_items.RECHECK_SUCCESSOR_FAILURE_REASON,
+                "build_task_id": old_task_id,
+            },
+        },
+    }
+    evidence_path.write_text(json.dumps(evidence), encoding="utf-8")
+    payload = {
+        "compile_contract_version": compile_work_items.COMPILE_CONTRACT_VERSION,
+        "compile_build_task_binding_contract_version": (
+            compile_work_items.BUILD_TASK_BINDING_CONTRACT_VERSION
+        ),
+        "bound_build_task_id": old_task_id,
+        "bound_build_task_ea_id": "QM5_1001",
+        "ea_label": label,
+        "mq5_sha256": source_sha,
+        "risk_contract": {"RISK_FIXED": 1000.0, "RISK_PERCENT": 0.0},
+        "utility_phase": True,
+        "no_gate_verdict": True,
+        "verdict_reason": compile_work_items.COMPILE_RECHECK_FAILURE_CLASS,
+        "compile_result": {
+            "success": False,
+            "failure_classes": [compile_work_items.COMPILE_RECHECK_FAILURE_CLASS],
+            "compile_result": None,
+            "build_check_result": None,
+            "ex5_sha256": None,
+            "setfile_count": 0,
+        },
+    }
+    now = farmctl.utc_now()
+    with farmctl.connect(root) as conn:
+        conn.execute(
+            "INSERT INTO work_items "
+            "(id,kind,phase,ea_id,symbol,setfile_path,status,verdict,attempt_count,"
+            "evidence_path,payload_json,created_at,updated_at) "
+            "VALUES (?,'compile','COMPILE_EA','QM5_1001','','','failed',"
+            "'COMPILE_FAIL',0,?,?,?,?)",
+            (predecessor_id, str(evidence_path), json.dumps(payload), now, now),
+        )
+        conn.commit()
+
+    planned = compile_work_items.enqueue_recheck_successor(
+        root, repo, predecessor_id, new_task_id
+    )
+    assert planned["ok"] is True
+    assert planned["eligible"] is True
+    assert planned["mq5_sha256"] == source_sha
+    assert planned["build_task_binding"]["authorized"] is True
+
+    applied = compile_work_items.enqueue_recheck_successor(
+        root, repo, predecessor_id, new_task_id, apply=True
+    )
+    assert applied["ok"] is True
+    successor_id = applied["successor_work_item_id"]
+    with farmctl.connect(root) as conn:
+        predecessor = conn.execute(
+            "SELECT status,verdict,payload_json FROM work_items WHERE id=?",
+            (predecessor_id,),
+        ).fetchone()
+        successor = conn.execute(
+            "SELECT status,verdict,payload_json FROM work_items WHERE id=?",
+            (successor_id,),
+        ).fetchone()
+        edge = conn.execute(
+            "SELECT superseded_by_work_item_id FROM work_item_supersedes "
+            "WHERE work_item_id=?",
+            (predecessor_id,),
+        ).fetchone()
+        hold = conn.execute(
+            "SELECT hold_code,active,release_on_restart FROM work_item_holds "
+            "WHERE work_item_id=?",
+            (successor_id,),
+        ).fetchone()
+    assert tuple(predecessor[:2]) == ("failed", "COMPILE_FAIL")
+    assert json.loads(predecessor[2]) == payload
+    assert tuple(successor[:2]) == ("pending", None)
+    successor_payload = json.loads(successor[2])
+    assert successor_payload["mq5_sha256"] == source_sha
+    assert successor_payload["bound_build_task_id"] == new_task_id
+    assert successor_payload["predecessor_build_task_id"] == old_task_id
+    assert successor_payload["append_only_recheck_successor"] is True
+    assert edge[0] == successor_id
+    assert tuple(hold) == (
+        compile_work_items.COMPILE_ACTIVATION_HOLD_CODE,
+        1,
+        1,
+    )
+
+    inventory = compile_work_items._inventory(root, repo)
+    sanctioned = compile_work_items._sanctioned_compile_predecessor_ids(
+        successor_payload,
+        inventory,
+        "1001",
+        current_work_item_id=successor_id,
+    )
+    assert sanctioned == {predecessor_id}
+    candidate = compile_work_items.classify_candidate(
+        root,
+        repo,
+        label,
+        inventory,
+        current_work_item_id=successor_id,
+        sanctioned_predecessor_ids=sanctioned,
+        bound_build_task_id=new_task_id,
+    )
+    assert candidate["eligible"] is True
+
+    evidence["candidate_recheck"]["reason"] = "SOURCE_CHANGED_AFTER_ENQUEUE"
+    evidence_path.write_text(json.dumps(evidence), encoding="utf-8")
+    assert compile_work_items._sanctioned_compile_predecessor_ids(
+        successor_payload,
+        compile_work_items._inventory(root, repo),
+        "1001",
+        current_work_item_id=successor_id,
+    ) == set()
+
+
 def test_qm5_10850_q02_stale_binary_repair_authority_is_exact_label_bound() -> None:
     label = "QM5_10850_tv-bbmr-long"
 
