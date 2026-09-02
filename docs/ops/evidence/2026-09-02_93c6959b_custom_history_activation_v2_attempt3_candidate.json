@@ -1,0 +1,77 @@
+{
+  "activated_at_utc": "2026-09-02T07:17:13.397416+00:00",
+  "activation_sha256": "58799bfdddb5c5eed8f8d5912601e66b0fe5eca682b15ddbedd7e7f5f638760d",
+  "auto_reengage_containment": true,
+  "base_activation": {
+    "activation_sha256": "61c8c72ccb0cb8038ae6ece7b89aa68f602b1637d8bc6b6c866f38492139134e",
+    "file_sha256": "0089c8b613a1181ff4d2304a9b2d7102da5445e6f7e9970841739dd5533f3672",
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-01_d7919623_custom_history_activation_v1_rollback.json"
+  },
+  "dual_audits": [
+    {
+      "audit_sha256": "0638d5c13b3dd94da2a0ba361de0e784dd7eed7702b517f12da063962c2be12a",
+      "file_sha256": "e20655c0333862a7a62f5be97131b7c96590b88f18e3feee6454265c1f973b1b",
+      "path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_custom_history_variant_a_20260809\\isolation_audit_3.json"
+    },
+    {
+      "audit_sha256": "f008b1f03dfae1bfaff5491e8db6916b19adc605591f5ba2a6b8370d8360721c",
+      "file_sha256": "95933d66a2a672855899e6322d8fb14e08ae7b9a7209a9357d6ca13b7bab6ee2",
+      "path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_custom_history_variant_a_20260809\\isolation_audit_4.json"
+    }
+  ],
+  "enabled": true,
+  "manifest_path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_custom_history_variant_a_20260809\\archive_manifest_owner_approved.json",
+  "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+  "owner_window_authority": {
+    "file_sha256": "69806a532663b5743dfff3c3203c40cc0773c16634e8d2895de634fda19d304c",
+    "owner_window_sha256": "4988f0d8ab16e6faa3469881e73316442af00a0fd64399e973ba9bc82b1483a6",
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-01_d7919623_t11_t12_owner_window_extension.json"
+  },
+  "owner_window_receipt_path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_custom_history_variant_a_20260809\\owner_window_receipt.json",
+  "owner_window_receipt_sha256": "abd7fb601b6e80c11610dd39d27d086f15c79f9a3ef6992c0c4529e759a43bf6",
+  "protected_roots": [
+    "C:\\QM\\mt5\\T_Live",
+    "D:\\QM\\mt5\\T_Live",
+    "D:\\QM\\mt5\\FTMO_STREAM1",
+    "D:\\QM\\mt5\\FTMO_STREAM2",
+    "D:\\QM\\mt5\\DEV1",
+    "D:\\QM\\mt5\\DEV2",
+    "D:\\QM\\mt5\\T_Export",
+    "D:\\QM\\mt5\\T11\\Bases",
+    "D:\\QM\\mt5\\T12\\Bases"
+  ],
+  "runner_audit_authority": {
+    "authorization_sha256": "1860d50587b729b2f5abddb6b22337dc494999194a232a8366c43df797308ea1",
+    "file_sha256": "bbb19485daab855f52e549050e999cd494fb1a9b45bba5891da33859369d8430",
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-02_93c6959b_t11_t12_runner_audit_authority.json"
+  },
+  "runner_extension_audits": [
+    {
+      "file_sha256": "0a3443fc0ba2add6b959457b6a38abc08371509e55c2ee78190b3a4351d47355",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-01_9a55c590_t11_inert_provision.json",
+      "receipt_sha256": "41f1951b3e28fbb5c19cc4b34754fe21b84b4691ec40974dfea4ab8d9a80f344",
+      "terminal": "T11"
+    },
+    {
+      "file_sha256": "3a46fdc579eebf437d59ec8f83787f158ceb2780a5f94c508f5d9b761350a03a",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-01_9a55c590_t12_inert_provision.json",
+      "receipt_sha256": "1e804b578f1b09b8a66f7bbd5ba28588348b16ba0f341aaf6ab4bb9ffdad7628",
+      "terminal": "T12"
+    }
+  ],
+  "runner_terminals": [
+    "T1",
+    "T2",
+    "T3",
+    "T4",
+    "T5",
+    "T6",
+    "T7",
+    "T8",
+    "T9",
+    "T10",
+    "T11",
+    "T12"
+  ],
+  "schema_version": "qm.custom-history-isolation-activation/v2"
+}

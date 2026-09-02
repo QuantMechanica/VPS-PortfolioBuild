@@ -1,0 +1,123 @@
+{
+  "candidate_activation_sha256": "58799bfdddb5c5eed8f8d5912601e66b0fe5eca682b15ddbedd7e7f5f638760d",
+  "checked_at_utc": "2026-09-02T07:18:13.145062+00:00",
+  "containment_mode": {
+    "authorization_sha256": "61c8c72ccb0cb8038ae6ece7b89aa68f602b1637d8bc6b6c866f38492139134e",
+    "enabled": true,
+    "file_sha256": "1ed1efeb745b8db643c945d7c3a2de28c36b958853933e5a82cca8253b50cb99",
+    "mode_sha256": "c116a941abc4afb424f90243486a5c6b450099777dd4cf21f43f438230355ef6",
+    "path": "D:\\QM\\strategy_farm\\state\\custom_history_containment_mode.json",
+    "present": true
+  },
+  "current_activation": {
+    "activation_sha256": "61c8c72ccb0cb8038ae6ece7b89aa68f602b1637d8bc6b6c866f38492139134e",
+    "file_sha256": "0089c8b613a1181ff4d2304a9b2d7102da5445e6f7e9970841739dd5533f3672",
+    "path": "D:\\QM\\strategy_farm\\state\\custom_history_isolation_activation.json",
+    "present": true
+  },
+  "disabled_terminal_policy": {
+    "file_sha256": "5af124b9494bf8c1391765fddb5462b963b61abbb973eebbdcb14d810c72aa3d",
+    "path": "D:\\QM\\strategy_farm\\state\\disabled_terminals.txt",
+    "present": true,
+    "terminals": [
+      "T11",
+      "T12"
+    ]
+  },
+  "effective_protected_roots": [
+    "C:\\QM\\mt5\\T_Live",
+    "D:\\QM\\mt5\\T_Live",
+    "D:\\QM\\mt5\\FTMO_STREAM1",
+    "D:\\QM\\mt5\\FTMO_STREAM2",
+    "D:\\QM\\mt5\\DEV1",
+    "D:\\QM\\mt5\\DEV2",
+    "D:\\QM\\mt5\\T_Export",
+    "D:\\QM\\mt5\\T11\\Bases",
+    "D:\\QM\\mt5\\T12\\Bases"
+  ],
+  "guarantee_scope": "NO_AUTHORITY_BINDING_SELF_TRIP_ON_FIRST_POST_INSTALL_WORKER_GATE_WHILE_THE_HASH_BOUND_SNAPSHOT_REMAINS_UNCHANGED",
+  "install_ramp": {
+    "activation_sha256": "61c8c72ccb0cb8038ae6ece7b89aa68f602b1637d8bc6b6c866f38492139134e",
+    "allowed_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T8",
+      "T9",
+      "T10"
+    ],
+    "file_sha256": "2c2bf6e8db6ddac3e0f9b7f49976d6c12117eb0b2559f95d6006015f41a284e0",
+    "limit": 10,
+    "path": "D:\\QM\\strategy_farm\\state\\custom_history_ramp.json",
+    "present": true,
+    "ramp_sha256": "d6084d754547353e3bc72bf794f92d2213492b48de25870d2165c9d46e6ff922"
+  },
+  "live_install_performed": false,
+  "live_trading_authorized": false,
+  "post_ignition_ramp": {
+    "activation_sha256": "58799bfdddb5c5eed8f8d5912601e66b0fe5eca682b15ddbedd7e7f5f638760d",
+    "file_sha256": "ebc83871f01b4420f51d117c256d713d73a753226861a87d9fe3441ea3acc365",
+    "limit": 12,
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-02_93c6959b_custom_history_ramp_limit12_candidate.json",
+    "present": true,
+    "ramp_sha256": "7c557264c6538fa463d8d4a45de654bc02de9492abfc7e6ca64e84a99038f6c8"
+  },
+  "preflight_sha256": "f64f64371bbf29b45836f9a268245a88b5b896cf02530b9b849a3868a9861e70",
+  "rollback_mode": {
+    "file_sha256": null,
+    "path": "D:\\QM\\strategy_farm\\state\\custom_history_isolation_rollback_mode.json",
+    "present": false,
+    "rollback_mode_sha256": null
+  },
+  "runner_audit_authority": {
+    "authorization_sha256": "1860d50587b729b2f5abddb6b22337dc494999194a232a8366c43df797308ea1",
+    "file_sha256": "bbb19485daab855f52e549050e999cd494fb1a9b45bba5891da33859369d8430",
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-02_93c6959b_t11_t12_runner_audit_authority.json",
+    "present": true,
+    "runner_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T8",
+      "T9",
+      "T10",
+      "T11",
+      "T12"
+    ]
+  },
+  "runtime_foreign_protected_roots": [
+    "C:\\QM\\mt5\\T_Live",
+    "D:\\QM\\mt5\\T_Live",
+    "D:\\QM\\mt5\\FTMO_STREAM1",
+    "D:\\QM\\mt5\\FTMO_STREAM2",
+    "D:\\QM\\mt5\\DEV1",
+    "D:\\QM\\mt5\\DEV2",
+    "D:\\QM\\mt5\\T_Export"
+  ],
+  "schema_version": "qm.custom-history-activation-install-preflight/v1",
+  "status": "PASS_ALL_DEPENDENT_AUTHORITIES",
+  "validated_authorities": [
+    "active_v1_base_bytes",
+    "candidate_activation",
+    "archive_manifest_owner_approval",
+    "owner_window_extension",
+    "dual_cutover_audits_and_acl_evidence",
+    "inert_runner_extension_audits",
+    "signed_runner_audit_authority",
+    "protected_root_policy",
+    "inherited_install_ramp",
+    "rollback_mode",
+    "containment_mode",
+    "disabled_terminal_policy",
+    "post_ignition_limit_12_ramp"
+  ],
+  "write_contract": "REVALIDATE_IDENTICAL_PREFLIGHT_SNAPSHOT_IMMEDIATELY_BEFORE_ATOMIC_ACTIVATION_WRITE"
+}

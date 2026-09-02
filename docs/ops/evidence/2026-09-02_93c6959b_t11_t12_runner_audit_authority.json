@@ -1,0 +1,74 @@
+{
+  "audit_contract": "BASE_MANIFEST_FILES_PLUS_SIGNED_RUNNER_EXTENSION",
+  "authority": "OWNER",
+  "authority_task_id": "d7919623-bae4-445f-888c-00f2a3e058ca",
+  "authorization_sha256": "1860d50587b729b2f5abddb6b22337dc494999194a232a8366c43df797308ea1",
+  "base_activation": {
+    "activation_sha256": "61c8c72ccb0cb8038ae6ece7b89aa68f602b1637d8bc6b6c866f38492139134e",
+    "file_sha256": "0089c8b613a1181ff4d2304a9b2d7102da5445e6f7e9970841739dd5533f3672",
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-01_d7919623_custom_history_activation_v1_rollback.json"
+  },
+  "base_manifest": {
+    "file_sha256": "6e82b478a09a642a189f0da17edb6f83c35fe32a587b398c3250ed056919c634",
+    "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+    "path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_custom_history_variant_a_20260809\\archive_manifest_owner_approved.json",
+    "runner_terminals": [
+      "T1",
+      "T10",
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T8",
+      "T9"
+    ]
+  },
+  "ceremony_task_id": "93c6959b-d051-47bf-b799-3bb1011d5b5f",
+  "decision_register": "Vault OWNER-Entscheidungsregister 2026-09",
+  "extension_terminals": [
+    "T11",
+    "T12"
+  ],
+  "live_trading_authorized": false,
+  "orchestrator_countersign": {
+    "authority": "ORCHESTRATOR",
+    "countersigned": true,
+    "scope": "FACTORY_T11_T12_STAGED_NO_LIVE_TRADING",
+    "task_id": "93c6959b-d051-47bf-b799-3bb1011d5b5f"
+  },
+  "owner_directive": "T11/T12 Canary starten, sobald High-Performance-Effekt gemessen",
+  "owner_window_authority": {
+    "file_sha256": "69806a532663b5743dfff3c3203c40cc0773c16634e8d2895de634fda19d304c",
+    "owner_window_sha256": "4988f0d8ab16e6faa3469881e73316442af00a0fd64399e973ba9bc82b1483a6",
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-01_d7919623_t11_t12_owner_window_extension.json"
+  },
+  "protected_roots": [
+    "C:\\QM\\mt5\\T_Live",
+    "D:\\QM\\mt5\\T_Live",
+    "D:\\QM\\mt5\\FTMO_STREAM1",
+    "D:\\QM\\mt5\\FTMO_STREAM2",
+    "D:\\QM\\mt5\\DEV1",
+    "D:\\QM\\mt5\\DEV2",
+    "D:\\QM\\mt5\\T_Export",
+    "D:\\QM\\mt5\\T11\\Bases",
+    "D:\\QM\\mt5\\T12\\Bases"
+  ],
+  "recorded_at_utc": "2026-09-02T07:16:45+00:00",
+  "runner_terminals": [
+    "T1",
+    "T2",
+    "T3",
+    "T4",
+    "T5",
+    "T6",
+    "T7",
+    "T8",
+    "T9",
+    "T10",
+    "T11",
+    "T12"
+  ],
+  "schema_version": "qm.custom-history-runner-audit-authority/v1"
+}

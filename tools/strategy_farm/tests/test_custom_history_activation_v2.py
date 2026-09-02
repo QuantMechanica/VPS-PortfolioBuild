@@ -84,6 +84,7 @@ def _activation_pair(
         "owner_approval": owner,
         "runner_terminals": list(contract.DEFAULT_RUNNER_TERMINALS),
     }
+    _write_json(tmp_path / "manifest.json", manifest)
     monkeypatch.setattr(gate, "load_manifest", lambda *args, **kwargs: manifest)
     monkeypatch.setattr(gate, "validate_owner_approval", lambda *args, **kwargs: None)
     monkeypatch.setattr(
@@ -148,6 +149,14 @@ def _activation_pair(
     authority_path = tmp_path / "owner-extension.json"
     _write_json(authority_path, authority)
 
+    runner_authority = gate.build_runner_audit_authority(
+        base_activation_path=base_path,
+        owner_window_authority_path=authority_path,
+        recorded_at_utc="2026-09-02T07:15:00+00:00",
+    )
+    runner_authority_path = tmp_path / "runner-audit-authority.json"
+    _write_json(runner_authority_path, runner_authority)
+
     extension_paths = [
         _provision_receipt(tmp_path, terminal, manifest_sha256)
         for terminal in gate.ACTIVATION_V2_EXTENSION_TERMINALS
@@ -156,6 +165,7 @@ def _activation_pair(
         base_activation_path=base_path,
         owner_window_authority_path=authority_path,
         runner_extension_audit_paths=extension_paths,
+        runner_audit_authority_path=runner_authority_path,
     )
     return base, v2
 
@@ -253,3 +263,131 @@ def test_v2_refuses_legacy_ramp_with_non_v1_terminal_order(
 
     with pytest.raises(gate.CustomHistoryGateError, match="terminal order"):
         gate.validate_ramp(legacy_ramp, activation=v2)
+
+
+def test_signed_runner_authority_removes_exact_t12_unauthorized_trip(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "source"
+    archive = source / "ticks" / "XNGUSD.DWX" / "202001.tkc"
+    archive.parent.mkdir(parents=True)
+    archive.write_bytes(b"xng-archive")
+    manifest = contract.build_archive_manifest(
+        source,
+        runner_identity="TEST\\Runner",
+        created_at_utc="2026-09-02T07:00:00+00:00",
+    )
+    manifest_row = manifest["files"][0]
+    rows = [
+        {
+            "terminal": terminal,
+            "relative_path": manifest_row["relative_path"],
+            "path": str(tmp_path / terminal / manifest_row["relative_path"]),
+            "exists": True,
+            "file_class": "ARCHIVE_IMMUTABLE",
+            "manifest_present": True,
+            "file_id": f"private-{terminal}",
+            "size": manifest_row["size"],
+            "sha256": manifest_row["sha256"],
+            "link_count": 1,
+            "archive_storage_mode": "TERMINAL_PRIVATE",
+        }
+        for terminal in contract.PROVISIONED_FACTORY_TERMINALS
+    ]
+
+    legacy = gate.mt5_history_isolation.evaluate_variant_a_file_inventory(
+        rows,
+        manifest=manifest,
+        verify_archive_hashes=True,
+    )
+    extended = gate.mt5_history_isolation.evaluate_variant_a_file_inventory(
+        rows,
+        manifest=manifest,
+        verify_archive_hashes=True,
+        authorized_runner_terminals=contract.PROVISIONED_FACTORY_TERMINALS,
+    )
+
+    legacy_codes = {finding["code"] for finding in legacy["findings"]}
+    assert "UNAUTHORIZED_RUNNER_TERMINAL" in legacy_codes
+    assert extended["status"] == "PASS_ISOLATED", extended
+    assert not any(
+        finding["code"] == "UNAUTHORIZED_RUNNER_TERMINAL"
+        for finding in extended["findings"]
+    )
+
+
+def test_v2_install_requires_unchanged_complete_preflight(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    base, v2 = _activation_pair(tmp_path, monkeypatch)
+    farm_root = tmp_path / "farm"
+    state = farm_root / "state"
+    state.mkdir(parents=True)
+    _write_json(gate.activation_path(farm_root), base)
+    install_ramp = gate.build_ramp(
+        activation=base,
+        limit=10,
+        reason="sequenced_full_fleet_soak",
+    )
+    _write_json(gate.ramp_path(farm_root), install_ramp)
+    (state / "disabled_terminals.txt").write_text(
+        "T11\nT12\n", encoding="utf-8", newline="\n"
+    )
+    post_ramp = gate.build_ramp(
+        activation=v2,
+        limit=12,
+        reason="post_ignition_t11_t12_limit_12",
+    )
+    post_ramp_path = tmp_path / "post-ignition-ramp.json"
+    _write_json(post_ramp_path, post_ramp)
+
+    preflight = gate.preflight_activation_install(
+        farm_root,
+        activation=v2,
+        post_ignition_ramp_path=post_ramp_path,
+    )
+
+    assert preflight["status"] == "PASS_ALL_DEPENDENT_AUTHORITIES"
+    assert preflight["install_ramp"]["limit"] == 10
+    assert preflight["post_ignition_ramp"]["limit"] == 12
+    assert "signed_runner_audit_authority" in preflight["validated_authorities"]
+    with pytest.raises(gate.CustomHistoryGateError, match="requires a complete preflight"):
+        gate.write_activation(farm_root, v2)
+    assert gate.write_activation(
+        farm_root, v2, preflight_receipt=preflight
+    )["activation_sha256"] == v2["activation_sha256"]
+
+
+def test_v2_install_preflight_refuses_state_change_before_write(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    base, v2 = _activation_pair(tmp_path, monkeypatch)
+    farm_root = tmp_path / "farm"
+    state = farm_root / "state"
+    state.mkdir(parents=True)
+    _write_json(gate.activation_path(farm_root), base)
+    _write_json(
+        gate.ramp_path(farm_root),
+        gate.build_ramp(activation=base, limit=10, reason="legacy"),
+    )
+    disabled_path = state / "disabled_terminals.txt"
+    disabled_path.write_text("T11\nT12\n", encoding="utf-8", newline="\n")
+    post_ramp_path = tmp_path / "post-ignition-ramp.json"
+    _write_json(
+        post_ramp_path,
+        gate.build_ramp(activation=v2, limit=12, reason="post-ignition"),
+    )
+    preflight = gate.preflight_activation_install(
+        farm_root,
+        activation=v2,
+        post_ignition_ramp_path=post_ramp_path,
+    )
+    disabled_path.write_text("T11\n", encoding="utf-8", newline="\n")
+
+    with pytest.raises(
+        gate.CustomHistoryGateError,
+        match="T11/T12 must remain disabled|snapshot changed",
+    ):
+        gate.write_activation(farm_root, v2, preflight_receipt=preflight)

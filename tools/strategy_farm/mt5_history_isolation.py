@@ -554,12 +554,38 @@ def evaluate_variant_a_file_inventory(
     *,
     manifest: Mapping[str, Any],
     verify_archive_hashes: bool,
+    authorized_runner_terminals: Sequence[str] | None = None,
 ) -> dict[str, Any]:
-    """Pure evaluator for mutable-file isolation and archive manifest equality."""
+    """Pure evaluator for mutable-file isolation and archive manifest equality.
+
+    The immutable v1 archive manifest records the ten runners present at the
+    original cutover.  A later, separately signed authority may extend the
+    runner set without rewriting that manifest or its OWNER approval.  Callers
+    may pass only a runner set obtained from that validated authority.  With no
+    extension, the original manifest remains the sole authority.
+    """
 
     validated = validate_manifest(manifest, require_owner_approval=False)
     archive_rows = _manifest_rows(validated)
-    terminals = tuple(sorted({str(value).upper() for value in validated["runner_terminals"]}))
+    manifest_terminals = tuple(
+        sorted({str(value).upper() for value in validated["runner_terminals"]})
+    )
+    if authorized_runner_terminals is None:
+        terminals = manifest_terminals
+    else:
+        normalized = tuple(
+            str(value).strip().upper() for value in authorized_runner_terminals
+        )
+        if (
+            any(not value for value in normalized)
+            or len(normalized) != len(set(normalized))
+            or not set(manifest_terminals).issubset(normalized)
+        ):
+            raise ValueError(
+                "authorized runner extension must be unique and include the "
+                "complete manifest runner set"
+            )
+        terminals = tuple(sorted(normalized))
     findings: list[dict[str, Any]] = []
     mutable_identities: dict[str, list[dict[str, str]]] = {}
     mutable_paths_by_terminal: dict[str, dict[str, int]] = {
@@ -979,6 +1005,7 @@ def audit_history_isolation(
     require_owner_approval: bool = False,
     verify_archive_hashes: bool = True,
     hash_private_terminals: Sequence[str] | None = None,
+    authorized_runner_terminals: Sequence[str] | None = None,
     acl_probe: Callable[[Path, str], Mapping[str, Any]] = archive_acl_write_denied,
     acl_evidence_path: Path | str | None = None,
 ) -> dict[str, Any]:
@@ -1015,6 +1042,7 @@ def audit_history_isolation(
         file_rows,
         manifest=manifest,
         verify_archive_hashes=verify_archive_hashes,
+        authorized_runner_terminals=authorized_runner_terminals,
     )
     payload = dict(topology)
     payload["topology_audit_sha256"] = payload.pop("audit_sha256")
