@@ -560,11 +560,51 @@ def test_public_snapshot_schema_pins_archive_and_gate_copy_contracts() -> None:
     ]
 
 
+def test_strategy_archive_v2_exposes_terminal_binary_coverage_only() -> None:
+    states = {gate: "UNTESTED" for gate in wac.PUBLIC_GATE_IDS}
+    states.update(Q00="PASS", Q02="FAIL", Q03="IN_PROGRESS")
+    public = {
+        "gate_contract_version": "v4",
+        "progress_metric": wac.PUBLIC_PROGRESS_METRIC,
+        "gates": list(wac.PUBLIC_GATE_IDS),
+        "cards": [{
+            "public_id": "card_0123456789abcdef",
+            "mechanism_class": "A mechanical trend continuation method.",
+            "gates": states,
+        }],
+    }
+    archive = wac.build_strategy_archive_v2(
+        public, generated_at="2026-09-02T15:00:00+00:00"
+    )
+    assert archive["schema_version"] == 2
+    assert archive["disclosure"] == "terminal_pass_fail_without_metrics"
+    assert archive["items"][0]["gate_coverage"] == {"Q00": "PASS", "Q02": "FAIL"}
+    serialized = json.dumps(archive)
+    for forbidden in ("UNTESTED", "IN_PROGRESS", "symbol", "QM5_"):
+        assert forbidden not in serialized
+    assert '"metrics":' not in serialized
+
+
+def test_strategy_archive_v2_schema_is_closed_and_metric_free() -> None:
+    schema = json.loads(
+        (REPO / "public-data" / "strategy-archive.schema.v2.json").read_text()
+    )
+    assert schema["properties"]["schema_version"]["enum"] == [2]
+    item = schema["properties"]["items"]["items"]
+    assert item["additionalProperties"] is False
+    assert set(item["properties"]) == {
+        "public_id", "mechanism_class", "gate_coverage"
+    }
+    assert item["properties"]["gate_coverage"]["additionalProperties"]["enum"] == [
+        "PASS", "FAIL"
+    ]
+
+
 def test_exporter_invokes_fail_closed_public_projection() -> None:
     source = (REPO / "scripts" / "export_public_snapshot.ps1").read_text(
         encoding="utf-8-sig"
     )
-    generator = source.index("--public-snapshot-blocks")
+    generator = source.index("--public-bundle")
     archive_assignment = source.index("public_archive = $publicBlocks.public_archive")
     schema_validation = source.index(
         "Validate-JsonAgainstSchema -Object $publicSnapshot"
@@ -572,3 +612,4 @@ def test_exporter_invokes_fail_closed_public_projection() -> None:
     assert generator < archive_assignment < schema_validation
     assert "Public archive redaction grep guard refused generated blocks" in source
     assert "pipeline_gates = $publicBlocks.pipeline_gates" in source
+    assert "$strategyArchive = $publicBlocks.strategy_archive_v2" in source

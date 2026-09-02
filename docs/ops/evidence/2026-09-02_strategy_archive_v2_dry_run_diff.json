@@ -1,0 +1,36 @@
+{
+  "schema": "qm.strategy-archive-v2-dry-run-diff/v1",
+  "generated_at_utc": "2026-09-02T15:24:00Z",
+  "router_task_id": "1aed20ca-2824-434e-a8da-0970b913944a",
+  "mode": "LOCAL_PREVIEW_NO_PUBLISH",
+  "old": {
+    "schema_version": 1,
+    "total": 3953,
+    "item_fields": ["last_updated_utc", "slug", "source", "visibility"]
+  },
+  "new": {
+    "path": "D:\\QM\\exports\\public_archive_v2_task80_20260902\\strategy-archive.json",
+    "sha256": "6d6749326413ea210161c1f7727464704f152a95d246f68a509aa51a58da062e",
+    "schema_version": 2,
+    "schema_id": "https://quantmechanica.com/schemas/strategy-archive/v2.json",
+    "total": 3378,
+    "disclosure": "terminal_pass_fail_without_metrics",
+    "item_fields": ["gate_coverage", "public_id"],
+    "coverage_state_counts": {"PASS": 10022, "FAIL": 1298},
+    "forbidden_field_counts": {
+      "ea_id": 0,
+      "metrics": 0,
+      "path": 0,
+      "slug": 0,
+      "source": 0,
+      "symbol": 0
+    }
+  },
+  "schema_file": {
+    "path": "C:\\QM\\repo\\public-data\\strategy-archive.schema.v2.json",
+    "sha256": "cd729be9525acfd5a4c9fb5eb55ca076f3c60ee77128862e0c3d9e07bee02aba",
+    "schema_version_enum": [2],
+    "additional_properties": false
+  },
+  "publication": {"committed": false, "pushed": false, "deployed": false}
+}

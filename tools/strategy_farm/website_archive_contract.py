@@ -55,6 +55,9 @@ CONTRACT_SCHEMA_ID = "https://quantmechanica.com/schemas/website-strategy-archiv
 PUBLIC_ARCHIVE_STATES = frozenset({"PASS", "FAIL", "UNTESTED", "IN_PROGRESS"})
 PUBLIC_GATE_IDS = tuple(f"Q{i:02d}" for i in range(18))
 PUBLIC_PROGRESS_METRIC = "highest_contiguous_valid_gate"
+STRATEGY_ARCHIVE_V2_SCHEMA_ID = (
+    "https://quantmechanica.com/schemas/strategy-archive/v2.json"
+)
 
 # Website copy is deliberately mechanism-level.  Each sentence is a public
 # paraphrase of the first Purpose/Zweck paragraph in the matching vault
@@ -933,6 +936,87 @@ def build_public_snapshot_blocks(
     return blocks
 
 
+def build_strategy_archive_v2(
+    public_archive: dict[str, Any], *, generated_at: str | None = None
+) -> dict[str, Any]:
+    """Project the card matrix to OWNER Variant (b): terminal PASS/FAIL only.
+
+    Open and untested gates are omitted, never collapsed to FAIL. This keeps
+    disclosure binary where evidence is terminal without inventing a result.
+    """
+    if tuple(public_archive.get("gates") or ()) != PUBLIC_GATE_IDS:
+        raise PublicSnapshotContractError("strategy archive v2 gate order mismatch")
+    items: list[dict[str, Any]] = []
+    for card in public_archive.get("cards") or []:
+        coverage = {
+            gate: card["gates"][gate]
+            for gate in PUBLIC_GATE_IDS
+            if card["gates"][gate] in {"PASS", "FAIL"}
+        }
+        item: dict[str, Any] = {
+            "public_id": card["public_id"],
+            "gate_coverage": coverage,
+        }
+        if "mechanism_class" in card:
+            item["mechanism_class"] = card["mechanism_class"]
+        items.append(item)
+    result = {
+        "schema_version": 2,
+        "$schema_id": STRATEGY_ARCHIVE_V2_SCHEMA_ID,
+        "generated_at": generated_at or dt.datetime.now(
+            dt.timezone.utc
+        ).replace(microsecond=0).isoformat(),
+        "gate_contract_version": "v4",
+        "disclosure": "terminal_pass_fail_without_metrics",
+        "gates": list(PUBLIC_GATE_IDS),
+        "total": len(items),
+        "items": items,
+    }
+    assert_strategy_archive_v2_safe(result)
+    return result
+
+
+def assert_strategy_archive_v2_safe(archive: dict[str, Any]) -> None:
+    expected = {
+        "schema_version", "$schema_id", "generated_at", "gate_contract_version",
+        "disclosure", "gates", "total", "items",
+    }
+    if set(archive) != expected or archive["schema_version"] != 2:
+        raise PublicSnapshotContractError("strategy archive v2 shape mismatch")
+    if archive["$schema_id"] != STRATEGY_ARCHIVE_V2_SCHEMA_ID:
+        raise PublicSnapshotContractError("strategy archive v2 schema id mismatch")
+    if archive["gate_contract_version"] != "v4":
+        raise PublicSnapshotContractError("strategy archive v2 gate version mismatch")
+    if archive["disclosure"] != "terminal_pass_fail_without_metrics":
+        raise PublicSnapshotContractError("strategy archive v2 disclosure mismatch")
+    if tuple(archive["gates"]) != PUBLIC_GATE_IDS:
+        raise PublicSnapshotContractError("strategy archive v2 gates mismatch")
+    if archive["total"] != len(archive["items"]):
+        raise PublicSnapshotContractError("strategy archive v2 total mismatch")
+    for item in archive["items"]:
+        allowed = {"public_id", "gate_coverage"}
+        if "mechanism_class" in item:
+            allowed.add("mechanism_class")
+        if set(item) != allowed or not _PUBLIC_ID_RE.fullmatch(item["public_id"]):
+            raise PublicSnapshotContractError("strategy archive v2 item shape mismatch")
+        if any(gate not in PUBLIC_GATE_IDS for gate in item["gate_coverage"]):
+            raise PublicSnapshotContractError("strategy archive v2 unknown gate")
+        if any(state not in {"PASS", "FAIL"} for state in item["gate_coverage"].values()):
+            raise PublicSnapshotContractError("strategy archive v2 non-terminal state")
+        if "mechanism_class" in item:
+            _normalise_public_sentence(item["mechanism_class"], field="mechanism_class")
+
+
+def build_publication_bundle(
+    db_path: Path, farm_root: Path, repo_root: Path
+) -> dict[str, Any]:
+    blocks = build_public_snapshot_blocks(db_path, farm_root, repo_root)
+    return {
+        **blocks,
+        "strategy_archive_v2": build_strategy_archive_v2(blocks["public_archive"]),
+    }
+
+
 # ---------------------------------------------------------------------------
 # Main build
 # ---------------------------------------------------------------------------
@@ -1255,15 +1339,26 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="emit only the fail-closed public_archive and pipeline_gates JSON",
     )
+    ap.add_argument(
+        "--public-bundle",
+        action="store_true",
+        help="emit public snapshot blocks plus the standalone v2 archive",
+    )
     ap.add_argument("--dry-run", action="store_true",
                     help="build and report counts, write nothing")
     args = ap.parse_args(argv)
 
+    if args.public_snapshot_blocks and args.public_bundle:
+        ap.error("choose only one public output mode")
     if args.public_snapshot_blocks:
         blocks = build_public_snapshot_blocks(
             args.db, args.farm_root, args.repo_root
         )
         print(json.dumps(blocks, ensure_ascii=False, separators=(",", ":")))
+        return 0
+    if args.public_bundle:
+        bundle = build_publication_bundle(args.db, args.farm_root, args.repo_root)
+        print(json.dumps(bundle, ensure_ascii=False, separators=(",", ":")))
         return 0
 
     contract = build_contract(args.db, args.farm_root, args.repo_root,

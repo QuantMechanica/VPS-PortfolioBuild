@@ -27,11 +27,18 @@ Stable identifiers are exposed via JSON Schema `$id`:
 - `https://quantmechanica.com/schemas/company-operating-model/v1.json`
 - `https://quantmechanica.com/schemas/public-snapshot/v2.json`
 - `https://quantmechanica.com/schemas/public-stats/v1.json`
+- `https://quantmechanica.com/schemas/strategy-archive/v2.json`
 
 `public-snapshot` v2 removes the legacy `t6` object and the P-keyed compatibility
 funnel. Its headline `phase` is an exact Qxx token and its only funnel is
 `pipeline.by_gate_v4`. The separate `stats.json` sidecar contains only four
 aggregate website counters; infrastructure and live-account fields are rejected.
+
+`strategy-archive` v2 is the OWNER-selected binary disclosure. Each opaque card
+contains only completed per-gate `PASS`/`FAIL` outcomes and an optional safe
+mechanism-class sentence. `UNTESTED` and `IN_PROGRESS` are omitted rather than
+misrepresented; metrics, parameters, symbols and internal identities are not in
+the schema.
 
 ## Contracts
 

@@ -1,0 +1,16 @@
+{
+  "schema_version": 2,
+  "$schema_id": "https://quantmechanica.com/schemas/strategy-archive/v2.json",
+  "generated_at": "2026-09-02T15:00:00Z",
+  "gate_contract_version": "v4",
+  "disclosure": "terminal_pass_fail_without_metrics",
+  "gates": ["Q00", "Q01", "Q02", "Q03", "Q04", "Q05", "Q06", "Q07", "Q08", "Q09", "Q10", "Q11", "Q12", "Q13", "Q14", "Q15", "Q16", "Q17"],
+  "total": 1,
+  "items": [
+    {
+      "public_id": "card_0123456789abcdef",
+      "gate_coverage": {"Q00": "PASS"},
+      "metrics": {"profit_factor": 2.0}
+    }
+  ]
+}

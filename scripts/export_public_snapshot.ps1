@@ -152,16 +152,26 @@ function Validate-JsonAgainstSchema {
             }
         }
         "strategy-archive" {
-            foreach ($key in @("schema_version", "generated_at", "total", "items")) {
+            foreach ($key in @("schema_version", '$schema_id', "generated_at", "gate_contract_version", "disclosure", "gates", "total", "items")) {
                 if (-not (Test-ObjectHasKey -Target $Object -Key $key)) { throw "Missing key '$key' in $Name." }
             }
-            if ($Object.schema_version -ne $SchemaVersionV1) { throw "Invalid schema_version in $Name." }
+            if ($Object.schema_version -ne $SchemaVersionV2) { throw "Invalid schema_version in $Name." }
+            if ($Object.gate_contract_version -cne 'v4' -or
+                $Object.disclosure -cne 'terminal_pass_fail_without_metrics') {
+                throw "Invalid contract metadata in $Name."
+            }
             if ($Object.total -lt 0) { throw "Invalid total in $Name." }
             foreach ($item in $Object.items) {
-                foreach ($k in @("slug", "source", "visibility", "last_updated_utc")) {
+                foreach ($k in @("public_id", "gate_coverage")) {
                     if (-not (Test-ObjectHasKey -Target $item -Key $k)) { throw "Missing item key '$k' in $Name." }
                 }
-                if ($item.visibility -notin @("public", "private_redacted")) { throw "Invalid strategy visibility '$($item.visibility)' in $Name." }
+                if ([string]$item.public_id -cnotmatch '^card_[0-9a-f]{16}$') { throw "Invalid public_id in $Name." }
+                foreach ($gate in (Get-ObjectKeys -Target $item.gate_coverage)) {
+                    if ($gate -cnotmatch '^Q(?:0[0-9]|1[0-7])$' -or
+                        $item.gate_coverage.$gate -cnotin @('PASS','FAIL')) {
+                        throw "Invalid gate coverage in $Name."
+                    }
+                }
             }
         }
         "public-stats" {
@@ -209,7 +219,7 @@ function Get-PublicSnapshotBlocks {
         # Stop. Capture it, then trust only one complete JSON output record.
         $ErrorActionPreference = "Continue"
         $output = @(& $PythonPath $GeneratorPath `
-            --public-snapshot-blocks `
+            --public-bundle `
             --db $DatabasePath `
             --farm-root $RuntimeRoot `
             --repo-root $RepositoryRoot 2>&1)
@@ -244,6 +254,9 @@ function Get-PublicSnapshotBlocks {
         if ($serialized -match $pattern) {
             throw "Public archive redaction grep guard refused generated blocks."
         }
+    }
+    if (-not (Test-ObjectHasKey -Target $blocks -Key 'strategy_archive_v2')) {
+        throw 'Public archive bundle omitted strategy_archive_v2.'
     }
     return $blocks
 }
@@ -354,19 +367,13 @@ Ensure-Directory -Path $effectiveOutputDir
 
 $expenses = Get-ExpenseSummary -ExpensesCsvPath (Join-Path $RepoRoot "expenses\expenses.csv")
 $processRoadmap = Get-ProcessRoadmap -ProcessesDir (Join-Path $RepoRoot "processes")
-$strategyArchive = Get-StrategyArchiveSnapshot `
-    -StrategySeedSpecsDir (Join-Path $RepoRoot "strategy-seeds\specs") `
-    -FarmCardDirs @(
-        (Join-Path $RepoRoot "strategy-seeds\cards"),
-        "D:\QM\strategy_farm\artifacts\cards_approved",
-        "D:\QM\strategy_farm\artifacts\cards_draft"
-    )
 $publicBlocks = Get-PublicSnapshotBlocks `
     -PythonPath $PythonExe `
     -GeneratorPath (Join-Path $RepoRoot "tools\strategy_farm\website_archive_contract.py") `
     -DatabasePath $FarmDbPath `
     -RuntimeRoot $FarmRoot `
     -RepositoryRoot $RepoRoot
+$strategyArchive = $publicBlocks.strategy_archive_v2
 
 # Load pipeline_state.json (single source of truth for the public-snapshot live fields).
 # Built by scripts/build_pipeline_state.py against D:/QM/reports/pipeline + watchdog + aggregator state.
@@ -431,7 +438,7 @@ $publicStats = [ordered]@{
 
 $publicSchemaPath = Join-Path $PublicDataDir "public-snapshot.schema.v2.json"
 $roadmapSchemaPath = Join-Path $PublicDataDir "process-roadmap.schema.json"
-$archiveSchemaPath = Join-Path $PublicDataDir "strategy-archive.schema.json"
+$archiveSchemaPath = Join-Path $PublicDataDir "strategy-archive.schema.v2.json"
 $companyModelSchemaPath = Join-Path $PublicDataDir "company-operating-model.schema.json"
 $statsSchemaPath = Join-Path $PublicDataDir "public-stats.schema.json"
 $companyModelPath = Join-Path $PublicDataDir "company-operating-model.json"

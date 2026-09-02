@@ -46,9 +46,9 @@ $targets = @(
     },
     @{
         Name = "strategy-archive"
-        Schema = Join-Path $schemaDir "strategy-archive.schema.json"
+        Schema = Join-Path $schemaDir "strategy-archive.schema.v2.json"
         Data = Join-Path $publicDataDir "strategy-archive.json"
-        Negative = Join-Path $fixturesDir "strategy-archive.invalid.wrong-enum.json"
+        Negative = Join-Path $fixturesDir "strategy-archive.v2.invalid.metrics.json"
     },
     @{
         Name = "company-operating-model"

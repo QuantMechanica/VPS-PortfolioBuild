@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantmechanica.com/schemas/strategy-archive/v2.json",
+  "title": "QuantMechanica Strategy Archive v2",
+  "type": "object",
+  "required": ["schema_version", "$schema_id", "generated_at", "gate_contract_version", "disclosure", "gates", "total", "items"],
+  "properties": {
+    "schema_version": { "type": "integer", "enum": [2] },
+    "$schema_id": { "const": "https://quantmechanica.com/schemas/strategy-archive/v2.json" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "gate_contract_version": { "const": "v4" },
+    "disclosure": { "const": "terminal_pass_fail_without_metrics" },
+    "gates": { "$ref": "#/$defs/gate_ids" },
+    "total": { "type": "integer", "minimum": 0 },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["public_id", "gate_coverage"],
+        "properties": {
+          "public_id": { "type": "string", "pattern": "^card_[0-9a-f]{16}$" },
+          "mechanism_class": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 320,
+            "pattern": "^[^0-9]+[.!?]$"
+          },
+          "gate_coverage": {
+            "type": "object",
+            "propertyNames": { "pattern": "^Q(?:0[0-9]|1[0-7])$" },
+            "additionalProperties": { "type": "string", "enum": ["PASS", "FAIL"] }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "$defs": {
+    "gate_ids": {
+      "type": "array",
+      "prefixItems": [
+        { "const": "Q00" }, { "const": "Q01" }, { "const": "Q02" },
+        { "const": "Q03" }, { "const": "Q04" }, { "const": "Q05" },
+        { "const": "Q06" }, { "const": "Q07" }, { "const": "Q08" },
+        { "const": "Q09" }, { "const": "Q10" }, { "const": "Q11" },
+        { "const": "Q12" }, { "const": "Q13" }, { "const": "Q14" },
+        { "const": "Q15" }, { "const": "Q16" }, { "const": "Q17" }
+      ],
+      "items": false,
+      "minItems": 18,
+      "maxItems": 18
+    }
+  },
+  "additionalProperties": false
+}
