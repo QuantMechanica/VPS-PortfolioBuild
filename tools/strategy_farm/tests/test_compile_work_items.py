@@ -410,6 +410,50 @@ def test_q02_infra_source_repair_authority_is_exact_label_bound() -> None:
     )
 
 
+def test_enqueue_repair_successor_requires_source_delta_and_preserves_predecessor(tmp_path: Path) -> None:
+    label = "QM5_1001_compile-fixture-h1"
+    repo, root = _fixture(tmp_path, [label])
+    _insert_build_task(root, repo, label, "build-1")
+    source = repo / "framework" / "EAs" / label / f"{label}.mq5"
+    old_sha = compile_work_items.sha256_file(source)
+    payload = {
+        "ea_label": label,
+        "mq5_path": str(source),
+        "mq5_sha256": old_sha,
+        "bound_build_task_id": "build-1",
+        "compile_build_task_binding_contract_version": compile_work_items.BUILD_TASK_BINDING_CONTRACT_VERSION,
+    }
+    now = farmctl.utc_now()
+    with farmctl.connect(root) as conn:
+        conn.execute(
+            "INSERT INTO work_items (id,kind,phase,ea_id,symbol,setfile_path,status,verdict,attempt_count,payload_json,created_at,updated_at) VALUES ('failed-1','compile','COMPILE_EA','QM5_1001','','','failed','COMPILE_FAIL',1,?,?,?)",
+            (json.dumps(payload), now, now),
+        )
+        conn.commit()
+
+    refused = compile_work_items.enqueue_repair_successor(root, repo, "failed-1")
+    assert refused["eligible"] is False
+    assert "SOURCE_NOT_REPAIRED" in refused["reasons"]
+
+    source.write_text(source.read_text(encoding="utf-8") + "// repaired\n", encoding="utf-8")
+    planned = compile_work_items.enqueue_repair_successor(root, repo, "failed-1")
+    assert planned["eligible"] is True
+    applied = compile_work_items.enqueue_repair_successor(root, repo, "failed-1", apply=True)
+    assert applied["ok"] is True
+    successor_id = applied["successor_work_item_id"]
+    with farmctl.connect(root) as conn:
+        predecessor = conn.execute("SELECT status,verdict,payload_json FROM work_items WHERE id='failed-1'").fetchone()
+        successor = conn.execute("SELECT status,verdict,payload_json FROM work_items WHERE id=?", (successor_id,)).fetchone()
+        edge = conn.execute("SELECT superseded_by_work_item_id FROM work_item_supersedes WHERE work_item_id='failed-1'").fetchone()
+    assert tuple(predecessor[:2]) == ("failed", "COMPILE_FAIL")
+    assert json.loads(predecessor[2]) == payload
+    assert tuple(successor[:2]) == ("pending", None)
+    successor_payload = json.loads(successor[2])
+    assert successor_payload["mq5_sha256"] != old_sha
+    assert "compile_result" not in successor_payload
+    assert edge[0] == successor_id
+
+
 def test_qm5_10850_q02_stale_binary_repair_authority_is_exact_label_bound() -> None:
     label = "QM5_10850_tv-bbmr-long"
 

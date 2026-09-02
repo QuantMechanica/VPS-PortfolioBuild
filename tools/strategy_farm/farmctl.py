@@ -13065,6 +13065,20 @@ def _spawn_codex_for_pre_review(root: Path, build_task_row: sqlite3.Row) -> dict
         root / "artifacts" / "builds" / f"{build_task_id}.json"
     )
 
+
+def enqueue_compile_repair_successor(
+    root: Path, predecessor_id: str, *, apply: bool = False
+) -> dict[str, Any]:
+    """Plan or append a generic, immutable compile-repair successor."""
+    try:
+        import compile_work_items as _compile_work_items
+    except ModuleNotFoundError:
+        from tools.strategy_farm import compile_work_items as _compile_work_items
+    init_db(root)
+    return _compile_work_items.enqueue_repair_successor(
+        root, REPO_ROOT, predecessor_id, apply=apply
+    )
+
     codex_result = payload_build.get("codex_result") or {}
     mq5_path = codex_result.get("mq5_path") or ""
     ex5_path = codex_result.get("ex5_path") or ""
@@ -30291,6 +30305,13 @@ def build_parser() -> argparse.ArgumentParser:
         "--owner-decision",
         help="Required OWNER decision id for the universe-expansion path",
     )
+    enqueue_compile.add_argument(
+        "--repair-successor-of",
+        help=(
+            "Failed COMPILE_EA work-item ID to supersede after a verified source "
+            "repair; dry-run unless --apply"
+        ),
+    )
     enqueue_bt.add_argument(
         "--q09-anchor-binding-file",
         help=(
@@ -30558,7 +30579,7 @@ def _command_mutates_state(args: argparse.Namespace) -> bool:
     if args.command in {"record-q01-smoke-successor", "release-hold"}:
         return not bool(getattr(args, "dry_run", False))
     if args.command == "enqueue-compile":
-        return bool(args.apply or not args.from_file)
+        return bool(args.apply or (not args.from_file and not args.repair_successor_of))
     if args.command == "enqueue-news-expansions":
         return bool(args.apply)
     if args.command in {
@@ -30840,14 +30861,21 @@ def main(argv: list[str] | None = None) -> int:
             apply=args.apply,
         ))
     elif args.command == "enqueue-compile":
-        compile_enqueue_result = enqueue_compile_eas(
-            root,
-            args.ea_labels,
-            from_file=args.from_file,
-            apply=args.apply,
-            source_repair_authority=args.source_repair_authority,
-            build_task_id=args.build_task_id,
-        )
+        if args.repair_successor_of:
+            if args.ea_labels or args.from_file or args.source_repair_authority or args.build_task_id:
+                raise SystemExit("--repair-successor-of cannot be combined with labels, --from-file, --source-repair-authority, or --build-task-id")
+            compile_enqueue_result = enqueue_compile_repair_successor(
+                root, args.repair_successor_of, apply=args.apply
+            )
+        else:
+            compile_enqueue_result = enqueue_compile_eas(
+                root,
+                args.ea_labels,
+                from_file=args.from_file,
+                apply=args.apply,
+                source_repair_authority=args.source_repair_authority,
+                build_task_id=args.build_task_id,
+            )
         print_json(compile_enqueue_result)
         if not compile_enqueue_result.get("ok", False):
             return 2

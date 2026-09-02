@@ -85,6 +85,8 @@ QM5_41285_UNBOUND_COMPILE_RETRY_SOURCE_SHA256 = (
     "94954df95dc79b7bc2c653df9b4980428295af1a7f05566d58f8a03548519f43"
 )
 SOURCE_REPAIR_CONTRACT_VERSION = "qm.compile-ea-source-repair/v1"
+REPAIR_SUCCESSOR_CONTRACT_VERSION = "qm.compile-ea-repair-successor/v1"
+REPAIR_SUCCESSOR_AUTHORITY = "farmctl:repair-successor-of"
 SOURCE_REPAIR_AUTHORITY = "router_ops_issue:50467e7e"
 SOURCE_REPAIR_EA_LABELS = frozenset({
     "QM5_41104_xauxag-mmedian-shift-rv",
@@ -2674,6 +2676,21 @@ def classify_candidate(
         inventory=inventory,
         current_work_item_id=current_work_item_id,
     )
+    current_row = (
+        _work_row_by_id(inventory, ea_id, str(current_work_item_id))
+        if current_work_item_id else None
+    )
+    current_payload = _json_object(current_row.get("payload_json")) if current_row else {}
+    generic_repair = bool(
+        current_payload.get("repair_successor_contract_version")
+        == REPAIR_SUCCESSOR_CONTRACT_VERSION
+        and current_payload.get("compile_source_repair_authority")
+        == REPAIR_SUCCESSOR_AUTHORITY
+        and current_payload.get("append_only_source_repair") is True
+        and str(current_payload.get("repair_successor_of_work_item_id") or "")
+        in sanctioned_ids
+    )
+    repair_authorized = repair_authorized or generic_repair
     prior_compile_rows = [
         row
         for row in inventory["work_rows"].get(ea_id, [])
@@ -3099,6 +3116,35 @@ def _sanctioned_compile_predecessor_ids(
 
     source_sha = str(payload.get("mq5_sha256") or "").lower()
     if not _BOUND_HASH_RE.fullmatch(source_sha):
+        return set()
+
+    if (
+        payload.get("repair_successor_contract_version")
+        == REPAIR_SUCCESSOR_CONTRACT_VERSION
+        and payload.get("append_only_source_repair") is True
+        and current_work_item_id
+    ):
+        predecessor_id = str(payload.get("repair_successor_of_work_item_id") or "")
+        predecessor = _work_row_by_id(inventory, ea_id, predecessor_id)
+        predecessor_payload = _json_object(predecessor.get("payload_json")) if predecessor else {}
+        old_sha = str(predecessor_payload.get("mq5_sha256") or "").lower()
+        if (
+            predecessor_id
+            and predecessor_id not in seen
+            and predecessor
+            and predecessor.get("phase") == COMPILE_EA_PHASE
+            and predecessor.get("status") == "failed"
+            and predecessor.get("verdict") in {"COMPILE_FAIL", "BUILD_CHECK_FAIL"}
+            and predecessor.get("ea_id") == f"QM5_{ea_id}"
+            and _BOUND_HASH_RE.fullmatch(old_sha)
+            and old_sha != source_sha
+            and payload.get("repair_predecessor_mq5_sha256") == old_sha
+            and str(payload.get("bound_build_task_id") or "")
+            == str(predecessor_payload.get("bound_build_task_id") or "")
+            and str(current_work_item_id)
+            in inventory.get("superseded_by", {}).get(predecessor_id, set())
+        ):
+            return {predecessor_id}
         return set()
 
     qm5_41285_predecessor = (
@@ -3573,6 +3619,111 @@ def enqueue_compile_eas(
         "source_repair_authority": source_repair_authority,
         "build_task_id": bound_build_task_id,
     }
+
+
+def enqueue_repair_successor(
+    root: Path,
+    repo_root: Path,
+    predecessor_id: str,
+    *,
+    apply: bool = False,
+) -> dict[str, Any]:
+    """Append a held, task-bound successor for a source-repaired compile failure."""
+    inventory = _inventory(root, repo_root)
+    predecessor = next(
+        (row for rows in inventory["work_rows"].values() for row in rows
+         if str(row.get("id")) == str(predecessor_id)),
+        None,
+    )
+    reasons: list[str] = []
+    old_payload = _json_object(predecessor.get("payload_json")) if predecessor else {}
+    label = str(old_payload.get("ea_label") or "")
+    parts = _label_parts(label)
+    old_sha = str(old_payload.get("mq5_sha256") or "").lower()
+    source = repo_root / "framework" / "EAs" / label / f"{label}.mq5"
+    new_sha = sha256_file(source) if source.is_file() else None
+    build_task_id = str(old_payload.get("bound_build_task_id") or "")
+    if not predecessor:
+        reasons.append("PREDECESSOR_NOT_FOUND")
+    elif not (
+        predecessor.get("phase") == COMPILE_EA_PHASE
+        and predecessor.get("status") == "failed"
+        and predecessor.get("verdict") in {"COMPILE_FAIL", "BUILD_CHECK_FAIL"}
+    ):
+        reasons.append("PREDECESSOR_NOT_TERMINAL_COMPILE_FAILURE")
+    if not parts or predecessor and predecessor.get("ea_id") != f"QM5_{parts[1]}":
+        reasons.append("PREDECESSOR_EA_IDENTITY_INVALID")
+    if not _BOUND_HASH_RE.fullmatch(old_sha):
+        reasons.append("PREDECESSOR_MQ5_SHA256_INVALID")
+    if not new_sha:
+        reasons.append("CURRENT_SOURCE_MISSING")
+    elif new_sha.lower() == old_sha:
+        reasons.append("SOURCE_NOT_REPAIRED")
+    binding = (
+        _build_task_binding(repo_root, label, parts[1], build_task_id, inventory)
+        if parts else {"authorized": False, "reason": "EA_LABEL_INVALID"}
+    )
+    if not binding.get("authorized"):
+        reasons.append(str(binding.get("reason") or "BUILD_TASK_BINDING_INVALID"))
+    if predecessor_id in inventory.get("superseded_by", {}):
+        reasons.append("PREDECESSOR_ALREADY_SUPERSEDED")
+    plan = {
+        "ok": not reasons,
+        "mode": "apply" if apply else "dry_run",
+        "eligible": not reasons,
+        "reasons": reasons,
+        "predecessor_work_item_id": predecessor_id,
+        "ea_label": label or None,
+        "old_mq5_sha256": old_sha or None,
+        "current_mq5_sha256": new_sha,
+        "build_task_id": build_task_id or None,
+        "build_task_binding": binding,
+        "successor_work_item_id": None,
+    }
+    if reasons or not apply:
+        return plan
+    assert predecessor and parts and new_sha
+    successor_id = str(uuid.uuid4())
+    now = utc_now()
+    payload = {
+        key: value for key, value in old_payload.items()
+        if key not in {"compile_completed_at", "compile_result", "verdict_reason", "verdict_taxonomy", "ex5_sha256", "expected_ex5_sha256"}
+    }
+    payload.update({
+        "compile_contract_version": COMPILE_CONTRACT_VERSION,
+        "compile_activation_state": "AWAITING_REVIEWED_WORKER_ROLLOUT",
+        "compile_activation_hold_code": COMPILE_ACTIVATION_HOLD_CODE,
+        "mq5_path": str(source),
+        "mq5_sha256": new_sha,
+        "compile_source_repair_contract_version": SOURCE_REPAIR_CONTRACT_VERSION,
+        "compile_source_repair_authority": REPAIR_SUCCESSOR_AUTHORITY,
+        "repair_successor_contract_version": REPAIR_SUCCESSOR_CONTRACT_VERSION,
+        "repair_successor_of_work_item_id": predecessor_id,
+        "repair_predecessor_mq5_sha256": old_sha,
+        "append_only_source_repair": True,
+        "source_repair_predecessor_work_item_ids": [predecessor_id],
+        "ignore_stale_ex5_and_bound_setfile": True,
+        "enqueued_at": now,
+    })
+    with _connect(root) as conn:
+        conn.execute("BEGIN IMMEDIATE")
+        if conn.execute("SELECT 1 FROM work_item_supersedes WHERE work_item_id=?", (predecessor_id,)).fetchone():
+            conn.rollback()
+            return {**plan, "ok": False, "eligible": False, "reasons": ["PREDECESSOR_ALREADY_SUPERSEDED_AT_APPLY"]}
+        conn.execute(
+            "INSERT INTO work_items (id,kind,phase,ea_id,symbol,setfile_path,status,attempt_count,payload_json,created_at,updated_at) VALUES (?,?,?,?,?,'','pending',0,?,?,?)",
+            (successor_id, COMPILE_WORK_ITEM_KIND, COMPILE_EA_PHASE, predecessor["ea_id"], "", json.dumps(payload, sort_keys=True), now, now),
+        )
+        conn.execute(
+            "INSERT INTO work_item_holds (work_item_id,hold_code,reason,active,release_on_restart,created_at,updated_at,released_at,release_note) VALUES (?,?,?,1,1,?,?,NULL,NULL)",
+            (successor_id, COMPILE_ACTIVATION_HOLD_CODE, COMPILE_ACTIVATION_HOLD_REASON, now, now),
+        )
+        conn.execute(
+            "INSERT INTO work_item_supersedes (work_item_id,superseded_by_work_item_id,reason,source_encoding,evidence_path,recorded_by,recorded_at) VALUES (?,?,?,?,?,?,?)",
+            (predecessor_id, successor_id, "source repaired after terminal compile/build-check failure", "farmctl:repair-successor-of", predecessor.get("evidence_path"), "farmctl", now),
+        )
+        conn.commit()
+    return {**plan, "mode": "apply", "successor_work_item_id": successor_id}
 
 
 def compile_batch_status(

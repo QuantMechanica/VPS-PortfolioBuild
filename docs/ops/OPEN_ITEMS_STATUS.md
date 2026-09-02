@@ -471,6 +471,10 @@ Beide OWNER-Freigaben (MNT020-RECOMPILE, MNT006-CANARY) sind ausgeführt und im 
 **Ehrlich zur Zahl:** RECYCLE ist von 429 auf **450** gestiegen, nicht gefallen. Das ist erwartet — die Reviews haben 21 Builds als defekt terminiert, statt sie unentschieden liegen zu lassen. Der Drain verschiebt Arbeit zuerst von „unbekannt" nach „bekannt defekt"; das ist Fortschritt in der Klassifikation, auch wenn der Zähler steigt.
 
 **Offen und benannt:** (1) die Review-Lane ist die Decke des Drain-Programms — 268 Rebuilds ≈ zehn Review-Sitzungen; (2) Q09_NEWS steht weiter bei **0 PASS**, Volumen staut sich dahinter; (3) Prioritätsboden: RECYCLE-Build-Zeilen tragen p1–15 und würden nie gezogen, der Requeue normalisiert auf 50 — ob Drain vor Neu-Builds rangiert, ist eine bewusste Reihenfolge-Entscheidung; (4) drei neue OWNER-Entscheidungen auf der Decision-Surface (`OWNER-DEC-GATECONTRACT`, `OWNER-DEC-EVIDENCE-RETENTION`, `OWNER-DEC-FTMO-THRESHOLDS`).
+# 2026-09-02 Canonical compile repair successor
+
+- Task `68f97015-c892-4690-80ed-1ccb3b573a40`: added the generic fail-closed `farmctl enqueue-compile --repair-successor-of` flow. First use appended held QM5_41306 successor `8620da55-f687-4ebd-9922-5fc831834628`, bound to build task `118915f8-0275-492c-8eeb-f71e49ce515e`; failed row remains immutable. Evidence: `docs/ops/evidence/2026-09-02_generic_compile_repair_successor.md`.
+
 # 2026-09-02 Codex live-book pulse repair
 
-- Task `26434855-11fb-46e6-aeab-a2d594c4a1b1`: repaired stale lifecycle lookback and severity aggregation. Production pulse now finds all 24 loaded sleeves and reports only the genuine KS-baseline WARN. Evidence: `docs/ops/evidence/2026-09-02_live_book_pulse_load_repair.md`.
+- Task `26434855-391e-43ed-b9f4-9d0e9c0afa9b`: repaired stale lifecycle lookback and severity aggregation. Production pulse now finds all 24 loaded sleeves and reports only the genuine KS-baseline WARN. Evidence: `docs/ops/evidence/2026-09-02_live_book_pulse_load_repair.md`.
