@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import sqlite3
 import sys
 
 import pytest
@@ -547,6 +548,70 @@ def test_claim_local_copy_error_quarantines_terminal_without_containment(
     assert event["fleet_containment_engaged"] is False
     assert event["terminal_quarantined"] is True
     assert event["item_id"] == "item-cl"
+
+
+@pytest.mark.parametrize(
+    "message",
+    [
+        "manifest has no archive rows for claimed symbols: XCUUSD.DWX",
+        "claim declares no .DWX host/conversion/basket history symbols",
+    ],
+)
+def test_item_bound_copy_error_holds_item_without_terminal_quarantine(
+    monkeypatch, tmp_path: Path, message: str
+) -> None:
+    _force_copy_failure(
+        monkeypatch,
+        tmp_path,
+        _raiser(
+            _COC.CustomHistoryCopyOnClaimError(
+                message, reason_code=_COC.CLAIM_LOCAL
+            )
+        ),
+    )
+
+    result = terminal_worker._privatize_custom_history_claim(
+        tmp_path, _row("item-poison"), "T3", _PASS_GATE
+    )
+
+    assert result["status"] == "FAIL_CLOSED"
+    assert result["item_hold_code"] == "CUSTOM_HISTORY_SYMBOL_NOT_IN_MANIFEST"
+    assert result["terminal_quarantined"] is False
+    assert terminal_worker._custom_history_quarantine_active(tmp_path, "T3") is None
+
+
+def test_custom_history_item_hold_is_durable_non_restart_and_audited() -> None:
+    conn = sqlite3.connect(":memory:")
+    conn.executescript(
+        """
+        CREATE TABLE work_item_holds(
+          work_item_id TEXT PRIMARY KEY, hold_code TEXT, reason TEXT,
+          active INTEGER, release_on_restart INTEGER, created_at TEXT,
+          updated_at TEXT, released_at TEXT, release_note TEXT
+        );
+        CREATE TABLE events(
+          ts TEXT, entity_type TEXT, entity_id TEXT, event TEXT, detail_json TEXT
+        );
+        """
+    )
+    payload: dict = {}
+
+    terminal_worker._hold_custom_history_item(
+        conn,
+        {"id": "poison-1"},
+        payload,
+        "2026-09-02T10:00:00+00:00",
+        "manifest has no archive rows for claimed symbols: XCUUSD.DWX",
+    )
+
+    hold = conn.execute("SELECT * FROM work_item_holds").fetchone()
+    event = conn.execute("SELECT event,detail_json FROM events").fetchone()
+    assert hold[1] == "CUSTOM_HISTORY_SYMBOL_NOT_IN_MANIFEST"
+    assert hold[3] == 1
+    assert hold[4] == 0
+    assert event[0] == "custom_history_item_held"
+    assert json.loads(event[1])["release_on_restart"] is False
+    assert payload["custom_history_item_hold"]["hold_code"] == hold[1]
 
 
 def test_transient_copy_race_error_quarantines_without_containment(

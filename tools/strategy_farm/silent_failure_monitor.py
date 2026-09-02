@@ -471,6 +471,16 @@ def check_scheduled_tasks(probe: dict) -> list[dict]:
                     hint="One-off task hit its time limit recently; inspect if still relevant.",
                     evidence=ev))
             # else: stale/parked historical hard-fail ⇒ not actionable, skip.
+        elif name == "QM_EvidenceCohortWatch_Daily_0420" and result == 3:
+            # Exit 3 is this watcher's documented semantic alarm, not an
+            # execution error. Preserve it as a hard evidence-loss finding
+            # instead of diluting it into a generic scheduled-task warning.
+            findings.append(finding(
+                f"schtask:{name}", FAIL,
+                f"{name} reports LOSS_OBSERVED (documented exit 3)",
+                value=result, threshold=0,
+                hint="Investigate ongoing disappearance of baselined evidence; do not mask exit 3.",
+                evidence=r"D:\QM\strategy_farm\logs\evidence_cohort_watch.log"))
         else:  # generic non-zero
             if parked:
                 pass  # manual/parked task (e.g. NextRun years out) — ignore generic results

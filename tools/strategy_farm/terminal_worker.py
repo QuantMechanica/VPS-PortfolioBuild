@@ -380,6 +380,10 @@ CUSTOM_HISTORY_QUARANTINE_MINUTES = 15
 CUSTOM_HISTORY_COPY_FAILURE_LOG = Path(
     "D:/QM/reports/state/custom_history_copy_on_claim_failures.jsonl"
 )
+CUSTOM_HISTORY_ITEM_HOLD_CODE = "CUSTOM_HISTORY_SYMBOL_NOT_IN_MANIFEST"
+CUSTOM_HISTORY_ITEM_HOLD_REASON = (
+    "claimed custom-history symbols are absent from the OWNER-signed archive manifest"
+)
 
 _STOP = False
 _CLAIM_DB_INIT_LOCK = threading.Lock()
@@ -1264,6 +1268,18 @@ def _defer_custom_history_gate(
                     row["id"],
                     str(claimed_at) if claimed_at else None,
                 )
+                if gate.get("item_hold_code") == CUSTOM_HISTORY_ITEM_HOLD_CODE:
+                    _hold_custom_history_item(
+                        conn,
+                        row,
+                        payload,
+                        now,
+                        str(gate.get("item_hold_detail") or gate.get("error") or ""),
+                    )
+                    conn.execute(
+                        "UPDATE work_items SET payload_json=?,updated_at=? WHERE id=?",
+                        (json.dumps(payload, sort_keys=True), now, row["id"]),
+                    )
             conn.commit()
             return cur.rowcount == 1
 
@@ -1540,6 +1556,81 @@ def _copy_on_claim_reason_code(exc: BaseException) -> str | None:
     return None
 
 
+def _custom_history_item_bound_error(exc: BaseException) -> str | None:
+    """Return a stable item-bound cause while walking wrapped exceptions."""
+
+    prefixes = (
+        "claim declares no .DWX host/conversion/basket history symbols",
+        "manifest has no archive rows for claimed symbols:",
+    )
+    seen: set[int] = set()
+    current: BaseException | None = exc
+    while current is not None and id(current) not in seen:
+        seen.add(id(current))
+        if isinstance(
+            current, custom_history_copy_on_claim.CustomHistoryCopyOnClaimError
+        ):
+            message = str(current)
+            if any(message.startswith(prefix) for prefix in prefixes):
+                return message
+        current = current.__cause__ or current.__context__
+    return None
+
+
+def _hold_custom_history_item(
+    conn: sqlite3.Connection,
+    item: sqlite3.Row | dict[str, Any],
+    payload: dict[str, Any],
+    now: str,
+    detail: str,
+) -> None:
+    """Append/update the non-restart poison hold and its audit event."""
+
+    diagnostic = {
+        "hold_code": CUSTOM_HISTORY_ITEM_HOLD_CODE,
+        "reason": CUSTOM_HISTORY_ITEM_HOLD_REASON,
+        "detail": detail,
+        "release_condition": (
+            "OWNER-signed archive manifest covers every declared .DWX symbol, "
+            "then explicit governed hold release"
+        ),
+        "release_on_restart": False,
+    }
+    payload["custom_history_item_hold"] = diagnostic
+    conn.execute(
+        """
+        INSERT INTO work_item_holds(
+          work_item_id,hold_code,reason,active,release_on_restart,
+          created_at,updated_at,released_at,release_note
+        ) VALUES(?,?,?,1,0,?,?,NULL,NULL)
+        ON CONFLICT(work_item_id) DO UPDATE SET
+          hold_code=excluded.hold_code,
+          reason=excluded.reason,
+          active=1,
+          release_on_restart=0,
+          updated_at=excluded.updated_at,
+          released_at=NULL,
+          release_note=NULL
+        """,
+        (
+            str(_work_item_value(item, "id", "")),
+            CUSTOM_HISTORY_ITEM_HOLD_CODE,
+            CUSTOM_HISTORY_ITEM_HOLD_REASON,
+            now,
+            now,
+        ),
+    )
+    conn.execute(
+        "INSERT INTO events(ts,entity_type,entity_id,event,detail_json) "
+        "VALUES(?,'work_item',?,'custom_history_item_held',?)",
+        (
+            now,
+            str(_work_item_value(item, "id", "")),
+            json.dumps(diagnostic, sort_keys=True),
+        ),
+    )
+
+
 def _privatize_custom_history_claim(
     root: Path,
     row: sqlite3.Row | dict[str, Any],
@@ -1639,6 +1730,30 @@ def _privatize_custom_history_claim(
         # and copy-race failures fail THIS claim closed and quarantine only this
         # terminal for a bounded window, leaving the rest of the fleet running.
         reason_code = _copy_on_claim_reason_code(exc)
+        item_bound_error = _custom_history_item_bound_error(exc)
+        if item_bound_error is not None:
+            _record_copy_on_claim_failure(
+                root,
+                terminal,
+                item_id,
+                reason_code or custom_history_copy_on_claim.CLAIM_LOCAL,
+                exc,
+                fleet_containment_engaged=False,
+                quarantined=False,
+            )
+            return {
+                "required": True,
+                "status": "FAIL_CLOSED",
+                "terminal": str(terminal).upper(),
+                "reason": "custom_history_item_not_in_manifest",
+                "reason_code": reason_code or custom_history_copy_on_claim.CLAIM_LOCAL,
+                "fleet_containment_engaged": False,
+                "terminal_quarantined": False,
+                "item_hold_code": CUSTOM_HISTORY_ITEM_HOLD_CODE,
+                "item_hold_detail": item_bound_error,
+                "error": repr(exc),
+                "activation_sha256": activation_sha256,
+            }
         engage_fleet = reason_code in (
             None,
             custom_history_copy_on_claim.INTEGRITY,
@@ -2091,6 +2206,19 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
     watchdog_reset_blocked = _watchdog_reset_admission_blocked(root)
     longrun_policy_enabled = longrun_scheduling_policy.policy_enabled()
     history_registry = farmctl._dwx_symbol_history_registry()
+    claim_history_manifest: dict[str, Any] | None = None
+    try:
+        claim_activation = custom_history_gate.load_activation(root)
+        if claim_activation is not None:
+            claim_history_manifest = custom_history_contract.load_manifest(
+                Path(str(claim_activation["manifest_path"])),
+                require_owner_approval=True,
+            )
+    except Exception:
+        # The ordinary post-claim gate owns activation/manifest integrity
+        # failures. This selector guard only acts when a valid signed manifest
+        # is cheaply available and the defect conclusively follows the item.
+        claim_history_manifest = None
     try:
         multisym_ids = _multisymbol_ea_ids()
     except MultisymbolRegistryUnavailable as exc:
@@ -2444,6 +2572,33 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                         item["payload_json"] or "{}"
                     )
                     payload = _json_loads(item["payload_json"])
+                    if (
+                        claim_history_manifest is not None
+                        and str(item["phase"] or "").upper() != farmctl.COMPILE_EA_PHASE
+                        and str(item["kind"] or "").lower()
+                        != farmctl.COMPILE_WORK_ITEM_KIND
+                    ):
+                        try:
+                            custom_history_copy_on_claim.select_archive_rows_for_symbols(
+                                claim_history_manifest,
+                                _work_item_history_symbols(item, payload),
+                            )
+                        except Exception as exc:
+                            item_bound_detail = _custom_history_item_bound_error(exc)
+                            if item_bound_detail is not None:
+                                _hold_custom_history_item(
+                                    conn, item, payload, now, item_bound_detail
+                                )
+                                conn.execute(
+                                    "UPDATE work_items SET payload_json=?,updated_at=? "
+                                    "WHERE id=? AND status='pending' AND claimed_by IS NULL",
+                                    (
+                                        json.dumps(payload, sort_keys=True),
+                                        now,
+                                        item["id"],
+                                    ),
+                                )
+                                continue
                     if (
                         compile_only_due_to_commit_headroom
                         and str(item["phase"]).upper() != farmctl.COMPILE_EA_PHASE

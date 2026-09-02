@@ -314,3 +314,26 @@ def test_service_task_killed_at_time_limit_still_fails(monkeypatch) -> None:
 
     fails = [f for f in findings if f["status"] == monitor.FAIL]
     assert any(f["value"] == 267014 for f in fails), findings
+
+
+def test_evidence_cohort_exit_three_is_semantic_hard_failure(monkeypatch) -> None:
+    monkeypatch.setattr(monitor, "_now", lambda: NOW)
+    probe = {
+        "tasks": [{
+            "Name": "QM_EvidenceCohortWatch_Daily_0420",
+            "State": "Ready",
+            "LastResult": 3,
+            "LastRun": "2026-07-22T04:20:00Z",
+            "NextRun": "2026-07-23T04:20:00Z",
+            "LogonType": "ServiceAccount",
+            "UserId": "SYSTEM",
+        }],
+        "worker_count": 0,
+    }
+
+    findings = monitor.check_scheduled_tasks(probe)
+
+    assert len(findings) == 1
+    assert findings[0]["status"] == monitor.FAIL
+    assert findings[0]["value"] == 3
+    assert "LOSS_OBSERVED" in findings[0]["detail"]

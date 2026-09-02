@@ -63,6 +63,15 @@ function Invoke-BoundedProcess {
             }
             throw "$Label exceeded the public snapshot ${TaskTimeoutSeconds}s task deadline"
         }
+        # WaitForExit(Int32) can report completion before redirected async
+        # stdout/stderr handlers have drained, and on some PowerShell/.NET
+        # combinations ExitCode remains unset until the parameterless wait and
+        # refresh complete.  A null ExitCode compares unequal to zero and made
+        # the incident guard fail closed even when its JSON said valid=true and
+        # publication_allowed=true (the log showed ``rc=``).
+        $process.WaitForExit()
+        $process.Refresh()
+        $exitCode = [int]$process.ExitCode
         $output = @()
         if (Test-Path -LiteralPath $stdoutPath) {
             $output += @(Get-Content -LiteralPath $stdoutPath -ErrorAction SilentlyContinue)
@@ -71,7 +80,7 @@ function Invoke-BoundedProcess {
             $output += @(Get-Content -LiteralPath $stderrPath -ErrorAction SilentlyContinue)
         }
         return [pscustomobject]@{
-            ExitCode = $process.ExitCode
+            ExitCode = $exitCode
             Output = $output
         }
     }

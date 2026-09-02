@@ -225,6 +225,7 @@ def collect_db_metrics(
     }
     occupied_hours = round(sum(occupied_by_terminal.values()), 3)
     available_hours = round(float(configured_slots) * float(window_hours), 3)
+    lost_hours = round(max(0.0, available_hours - occupied_hours), 3)
     utilization = 0.0 if available_hours <= 0 else occupied_hours / available_hours
     days = float(window_hours) / 24.0
     hours = float(window_hours)
@@ -283,6 +284,7 @@ def collect_db_metrics(
         "slot_utilization": round(utilization, 6),
         "occupied_terminal_hours": occupied_hours,
         "available_slot_hours": available_hours,
+        "lost_slot_hours": lost_hours,
         "occupied_hours_by_terminal": occupied_by_terminal,
         "skipped_wall_no_claim": skipped_wall_no_claim,
         "skipped_utilization_no_binding": skipped_utilization_no_binding,
@@ -410,6 +412,10 @@ def metric_rows(snapshot: Mapping[str, Any], label: str) -> list[dict[str, Any]]
         "configured_slots": snapshot["configured_slots"],
     }
     rows: list[dict[str, Any]] = []
+    lost_slot_hours = snapshot.get(
+        "lost_slot_hours",
+        max(0.0, float(snapshot["available_slot_hours"]) - float(snapshot["occupied_terminal_hours"])),
+    )
 
     def add(
         metric: str,
@@ -470,6 +476,9 @@ def metric_rows(snapshot: Mapping[str, Any], label: str) -> list[dict[str, Any]]
             f"{snapshot['available_slot_hours']} configured slot-hours"
         ),
     )
+    add("available_slot_hours", "fleet", snapshot["available_slot_hours"], "hours")
+    add("used_slot_hours", "fleet", snapshot["occupied_terminal_hours"], "hours")
+    add("lost_slot_hours", "idle_or_unattributed", lost_slot_hours, "hours")
     for phase, item in snapshot["median_wall_minutes_by_phase"].items():
         add(
             "median_wall_minutes",
@@ -502,8 +511,12 @@ def _fmt(value: Any, digits: int = 2) -> str:
 def render_report(snapshot: Mapping[str, Any], label: str) -> str:
     coverage = "complete" if snapshot["coverage_complete"] else "INCOMPLETE (lower bound)"
     disabled = snapshot["disabled_terminals_file"]
+    lost_slot_hours = snapshot.get(
+        "lost_slot_hours",
+        max(0.0, float(snapshot["available_slot_hours"]) - float(snapshot["occupied_terminal_hours"])),
+    )
     lines = [
-        f"# V3 concurrency A/B — {label} 24-hour baseline",
+        f"# V3 concurrency A/B — {label} ({_fmt(snapshot['window_hours'])}-hour window)",
         "",
         "**Verdict:** `BASELINE_MEASURED_NO_SWITCH`",
         "",
@@ -541,6 +554,10 @@ def render_report(snapshot: Mapping[str, Any], label: str) -> str:
             f"| Slot utilization | **{_fmt(snapshot['slot_utilization'] * 100.0, 2)}%** | "
             f"{_fmt(snapshot['occupied_terminal_hours'], 3)} / "
             f"{_fmt(snapshot['available_slot_hours'], 3)} terminal-hours |"
+        ),
+        (
+            f"| Lost slot-hours | **{_fmt(lost_slot_hours, 3)} h** | "
+            "available minus terminal-bound occupied hours (`idle_or_unattributed`) |"
         ),
         "",
         "`disposition_only` is excluded only from execution throughput and wall-time "

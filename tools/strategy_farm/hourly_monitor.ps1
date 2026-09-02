@@ -37,6 +37,25 @@ $now = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
 $actions = @()
 $escalations = @()
 
+# Rolling factory-hours panel. Run this before the broader health sweep so a
+# slow health query cannot starve the utilization evidence. The measurement
+# code is read-only against the farm DB and overwrites a bounded CSV/Markdown
+# snapshot. Lost hours are labelled idle_or_unattributed rather than guessed
+# into a strategy class.
+try {
+    $factoryHoursDir = 'D:\QM\reports\state\factory_hours'
+    $factoryHoursRaw = & $py (Join-Path $repo 'tools\strategy_farm\concurrency_ab_measure.py') `
+        --window-hours 168 --configured-slots 10 --label ROLLING_7D `
+        --output-dir $factoryHoursDir --output-stem factory_hours_rolling_7d
+    $factoryHours = $factoryHoursRaw | ConvertFrom-Json
+    if ([double]$factoryHours.slot_utilization -lt 0.55) {
+        $pct = [math]::Round(100.0 * [double]$factoryHours.slot_utilization, 2)
+        $escalations += "FACTORY_UTILIZATION_LOW:${pct}%<55%; panel=$factoryHoursDir\factory_hours_rolling_7d.md"
+    }
+} catch {
+    $escalations += "factory_hours_panel_failed:$_"
+}
+
 # 1. health
 $health = $null
 try {

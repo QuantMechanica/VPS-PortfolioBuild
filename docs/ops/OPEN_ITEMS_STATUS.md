@@ -16,6 +16,7 @@
 
 ## CEO Wave 1 — Codex-Ausführung 2026-09-02
 
+- **Scheduled-task hygiene / factory-hours (task `246d5d1f-49b8-490b-b005-f1534ffc3e8d`): REVIEW.** Five recurring time limits were raised with 18 rollback XMLs captured; 13 dead one-offs were exported and unregistered; the public-snapshot null-exit race was fixed; evidence-watch exit 3 is now correctly a hard `LOSS_OBSERVED` alarm (642/1,205 files missing), not masked. The rolling seven-day panel reports 914.088/1,680 used slot-hours = 54.41%, so the new `<55%` alarm is active. Evidence: `docs/ops/evidence/2026-09-02_scheduled_task_hygiene_and_factory_hours.md`; 54 focused tests passed. No task was manually started and no `T_Live` state changed.
 - **Q14 orphan-lane hygiene (task `5bcdf6f4-b1b8-4dbb-a952-252270d68d2f`): REVIEW.** Four Q13/Q14 rows derived from generic Q12 `PASS` parents were superseded append-only onto the real terminal chains for 11421/EURUSD and 10706/GBPUSD. Canonical supersession rows and audit events prevent the two pending orphan Q14 rows from being claimed again. Evidence: `docs/ops/evidence/2026-09-02_q14_orphan_lane_hygiene.md`. No sealed criterion or `T_Live` state changed.
 - **FTMO evidence chain (task `b306ca82-56b3-4f31-a75f-4575ca486d1d`): REVIEW.** Audit inputs are pinned to the frozen 24-sleeve bundle with fail-closed fingerprint/anchor checks; `FTMO_2S_100K_SWING_V2` adds the verified economic terms; the TrialPulse task limit is PT20M and the stale `267014` alarm cleared. Evidence: `docs/ops/evidence/2026-09-02_ftmo_evidence_chain_repair.md`, `docs/ops/evidence/2026-09-02_ftmo_economic_terms_snapshot.json`, `artifacts/audit_ev_funded_account_20260902.json`. No sealed criterion or live-trading state changed.
 - **Q08 8.2 real-cohort DSR / Sharpe audit (task `2900ac3d-a328-4e54-802b-b765946d2648`): REVIEW.** 3,001-EA and 13,398-pair DSR is now emitted report-only without changing the sealed verdict threshold; dashboard MT5 Sharpe was replaced by labeled return-based Sharpe, while the remaining sealed Q09 compatibility input is explicitly labeled for OWNER disposition. Evidence: `docs/ops/evidence/2026-09-02_q08_dsr_real_cohort_and_sharpe_audit.md`.
@@ -509,3 +510,11 @@ Beide OWNER-Freigaben (MNT020-RECOMPILE, MNT006-CANARY) sind ausgeführt und im 
 # 2026-09-02 Codex live-book pulse repair
 
 - Task `26434855-391e-43ed-b9f4-9d0e9c0afa9b`: repaired stale lifecycle lookback and severity aggregation. Production pulse now finds all 24 loaded sleeves and reports only the genuine KS-baseline WARN. Evidence: `docs/ops/evidence/2026-09-02_live_book_pulse_load_repair.md`.
+
+# 2026-09-02 dark live sleeves
+
+- Task `cef343ab-bb9b-49c3-a6a5-5432cfa30c0d`: 12778/13117 have deterministic four-leg `.DWX` warmup failure and zero trade events; 12969 is unexpectedly dark relative to Q10 frequency. Recommendations are REMOVE, REMOVE, and REMOVE-or-requalify respectively. Evidence: `docs/ops/evidence/2026-09-02_dark_live_sleeves_disposition.md`.
+
+# 2026-09-02 item-bound custom-history isolation
+
+- Task `3b25f49e-220f-4b17-b596-470ae8050e15`: item-bound manifest omissions now create durable non-restart work-item holds before claim and never quarantine a terminal; terminal-bound claim-local failures retain bounded quarantine. Both known poison rows are held. Evidence: `docs/ops/evidence/2026-09-02_custom_history_item_bound_isolation.md`.
