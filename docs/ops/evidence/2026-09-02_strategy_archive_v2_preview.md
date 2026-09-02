@@ -1,8 +1,8 @@
 # Strategy Archive v2 — PASS/FAIL gate coverage preview
 
-**Router task:** `1aed20ca-2824-434e-a8da-0970b913944a`  
+**Router task:** `1aed20ca-2824-434e-a8da-0970b913944a`
 **OWNER decision:** `OWNER-DEC-ARCHIVE-PUBLIC`, Variant (b) — PASS/FAIL per
-gate without numbers  
+gate without numbers
 **State:** prepared locally; not pushed or deployed
 
 ## Result
