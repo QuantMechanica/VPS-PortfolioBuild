@@ -10,7 +10,8 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; author:       Claude CEO
+; build_hash:   3de196d9820608705733d8ac69bb1472914e47b7a39e43a3a9f4a109fcab713d
+; author:       Development
 ; date:         2026-09-02
 ;==========================================================
 qm_ea_id=41301
@@ -18,16 +19,6 @@ qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-qm_rng_seed=42
-; Parent-exact framework gates remain active for this derivative.
-qm_news_temporal=3
-qm_news_compliance=1
-qm_news_stale_max_hours=336
-qm_news_min_impact=high
-qm_news_mode_legacy=0
-qm_friday_close_enabled=true
-qm_friday_close_hour_broker=21
-qm_stress_reject_probability=0.0
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_41301_tsm-meanret-opt.md
 strategy_lookback_n=15
@@ -35,8 +26,6 @@ strategy_shorts_enabled=false
 strategy_atr_period=14
 strategy_atr_stop_mult=3.0
 strategy_min_abs_mean_return=0.0
-
-; DL-089 pattern measurement surface (neutral control defaults)
 opt_pp_buy1=0
 opt_pp_buy2=0
 opt_pp_buy3=0

@@ -7,37 +7,31 @@
 ; symbol:       XAUUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
-; magic_slot:   3
+; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; author:       Claude CEO
+; build_hash:   646760abb28e5e34df5fd87f4d9185202019b93b5e0251ecb0e4f77286e7a10b
+; author:       Development
 ; date:         2026-09-02
 ;==========================================================
 qm_ea_id=41302
-qm_magic_slot_offset=3
+qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-qm_rng_seed=42
-; Parent-exact framework gates remain active for this derivative.
-qm_news_temporal=3
-qm_news_compliance=1
-qm_news_stale_max_hours=336
-qm_news_min_impact=high
-qm_news_mode_legacy=0
-qm_friday_close_enabled=true
-qm_friday_close_hour_broker=21
-qm_stress_reject_probability=0.0
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_41302_mql5-ichimoku-opt.md
-; parent XAUUSD backtest baseline declared the disabled session contract and
-; relied on compiled Ichimoku defaults (tenkan 9 / kijun 26 / senkou_b 52 /
-; atr 14 / atr_sl_mult 1.5 / tp_rr 1.5); those defaults are preserved unchanged.
-strategy_session_enabled=0
+strategy_signal_tf=16408
+strategy_tenkan_period=9
+strategy_kijun_period=26
+strategy_senkou_b_period=52
+strategy_atr_period=14
+strategy_atr_sl_mult=1.5
+strategy_tp_rr=1.5
+strategy_max_spread_points=0
+strategy_session_enabled=false
 strategy_session_start_hhmm=0
 strategy_session_end_hhmm=2359
-
-; DL-089 pattern measurement surface (neutral control defaults)
 opt_pp_buy1=0
 opt_pp_buy2=0
 opt_pp_buy3=0
