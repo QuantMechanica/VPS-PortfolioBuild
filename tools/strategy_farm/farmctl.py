@@ -22053,6 +22053,86 @@ def record_q01_smoke_successor(
 PRIORITY_TRACK_MARK_LOG = Path(r"D:/QM/reports/state/priority_track_marks.jsonl")
 
 
+def mark_program_priority_track(
+    root: Path,
+    program_id: str,
+    reason: str,
+    *,
+    value: bool,
+    dry_run: bool = False,
+) -> dict[str, Any]:
+    """Set ``payload.priority_track`` for every PENDING OPT_CENSUS cell of one program.
+
+    One transaction, append-only marks in each payload plus one JSONL line per
+    row.  Queue-order change only (Stehende Vollmacht GRUEN).  First use
+    2026-09-02 12:4xZ: program DL089_QM5_10706_GBPUSD carried 793 priority cells
+    whose payload Q12 binding no longer matched the re-declared ledger; every
+    worker burned its 8 preflight attempts on them at the head of the claim
+    order and the whole fleet stopped claiming census cells.
+    """
+    program = str(program_id or "").strip()
+    note = str(reason or "").strip()
+    if not program or not note:
+        return {"applied": False, "reason": "program_id_and_reason_required"}
+    init_db(root)
+
+    def _apply() -> dict[str, Any]:
+        with connect(root) as conn:
+            rows = conn.execute(
+                "SELECT id, payload_json FROM work_items WHERE phase=? AND status='pending' "
+                "AND json_valid(payload_json)=1 AND json_extract(payload_json,'$.program_id')=?",
+                (OPT_CENSUS_PHASE, program),
+            ).fetchall()
+            changed: list[str] = []
+            now = utc_now()
+            by = os.environ.get("QM_AGENT_ID") or "controller"
+            for row in rows:
+                payload = json.loads(row["payload_json"] or "{}")
+                if not isinstance(payload, dict):
+                    continue
+                current = payload.get("priority_track") is True
+                if current == value:
+                    continue
+                marks = payload.get("priority_track_marks")
+                if not isinstance(marks, list):
+                    marks = []
+                marks.append({
+                    "marked_at_utc": now,
+                    "reason": note,
+                    "by": by,
+                    "previous_priority_track": payload.get("priority_track"),
+                    "value": bool(value),
+                    "batch_program_id": program,
+                })
+                payload["priority_track"] = bool(value)
+                payload["priority_track_marks"] = marks
+                if not dry_run:
+                    conn.execute(
+                        "UPDATE work_items SET payload_json=?, updated_at=? WHERE id=? AND status='pending'",
+                        (json.dumps(payload, sort_keys=True), now, row["id"]),
+                    )
+                changed.append(str(row["id"]))
+            if not dry_run:
+                conn.commit()
+                try:
+                    PRIORITY_TRACK_MARK_LOG.parent.mkdir(parents=True, exist_ok=True)
+                    with PRIORITY_TRACK_MARK_LOG.open("a", encoding="utf-8") as handle:
+                        for wid in changed:
+                            handle.write(json.dumps({"work_item_id": wid, "phase": OPT_CENSUS_PHASE, "program_id": program, "value": bool(value), "marked_at_utc": now, "reason": note, "by": by}, sort_keys=True) + "\n")
+                except OSError:
+                    pass
+            return {
+                "applied": not dry_run,
+                "dry_run": bool(dry_run),
+                "program_id": program,
+                "value": bool(value),
+                "pending_rows": len(rows),
+                "changed_rows": len(changed),
+            }
+
+    return retry_sqlite_busy(_apply, attempts=MUTATION_LOCK_DB_ATTEMPTS)
+
+
 def mark_work_item_priority_track(
     root: Path,
     work_item_id: str,
@@ -30508,7 +30588,9 @@ def build_parser() -> argparse.ArgumentParser:
         "mark-priority-track",
         help="Set payload.priority_track=true on exactly one PENDING work item (queue-order change only; append-only mark + JSONL log; never touches status/verdict/evidence)",
     )
-    mark_pt.add_argument("--work-item-id", required=True)
+    mark_pt.add_argument("--work-item-id")
+    mark_pt.add_argument("--program-id", help="Batch mode: every PENDING OPT_CENSUS cell of this DL-089 program")
+    mark_pt.add_argument("--unset", action="store_true", help="Clear priority_track instead of setting it")
     mark_pt.add_argument("--reason", required=True)
     mark_pt.add_argument("--dry-run", action="store_true", help="Inspect without writing")
 
@@ -31038,12 +31120,23 @@ def main(argv: list[str] | None = None) -> int:
             dry_run=args.dry_run,
         ))
     elif args.command == "mark-priority-track":
-        print_json(mark_work_item_priority_track(
-            root,
-            args.work_item_id,
-            args.reason,
-            dry_run=args.dry_run,
-        ))
+        if args.program_id:
+            print_json(mark_program_priority_track(
+                root,
+                args.program_id,
+                args.reason,
+                value=not args.unset,
+                dry_run=args.dry_run,
+            ))
+        elif args.unset:
+            print_json({"applied": False, "reason": "unset_requires_program_id"})
+        else:
+            print_json(mark_work_item_priority_track(
+                root,
+                args.work_item_id or "",
+                args.reason,
+                dry_run=args.dry_run,
+            ))
     elif args.command == "ea-metrics":
         import sys as _sys
         _sys.path.insert(0, str(Path(__file__).resolve().parent))
