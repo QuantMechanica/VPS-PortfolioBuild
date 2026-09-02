@@ -16527,28 +16527,27 @@ def _q08_input_row_for_news_promotion(
     """Return the Q08 row that feeds the news phase for ``work_item``.
 
     2026-09-02 (CEO): under gate manifest v4 the news phase follows the Q09
-    baseline full run, but the cascade kept passing the promoted Q09 row itself
-    as the ``Q08_INPUT`` dependency parent; the q09_news_dependencies trigger
-    rejects that (``Q08_INPUT phase mismatch``) and 50 Q09 PASS pairs never got
-    a news row. A Q08 row is returned unchanged; for any other phase the pair's
-    latest done Q08 row with an allowed verdict (same setfile first, then any
-    setfile) is resolved.
+    baseline full run.  The autoseal derives lineage strictly along the exact
+    ``promoted_from_work_item`` edge (Q09 -> its frozen Q08 input); binding any
+    other Q08 row (an earlier heuristic bound "the newest Q08 with readable
+    evidence") produces rows the autoseal rejects with ``Q08_INPUT work-item
+    identity mismatch``.  A Q08 row is returned unchanged; for a Q09 row the
+    exact Q08 predecessor is returned, or ``None`` when the edge is missing or
+    does not point at a Q08 row (the caller then skips with a reason).
     """
     if str(work_item["phase"] or "").upper() == "Q08":
         return work_item
-    # Newest first, same setfile preferred; the first row whose evidence file
-    # still exists wins (July-era aggregate.json files were removed by the D:
-    # crisis clean-ups, so the newest matching row is not always readable).
-    rows = conn.execute(
-        "SELECT * FROM work_items WHERE ea_id=? AND symbol=? AND phase='Q08' "
-        "AND status='done' AND verdict IN ('PASS','FAIL_SOFT') "
-        "ORDER BY (setfile_path = ?) DESC, updated_at DESC LIMIT 12",
-        (work_item["ea_id"], work_item["symbol"], work_item["setfile_path"]),
-    ).fetchall()
-    for row in rows:
-        if _work_item_evidence_sha256(row):
-            return row
-    return rows[0] if rows else None
+    try:
+        payload = json.loads(work_item["payload_json"] or "{}")
+    except (TypeError, ValueError):
+        return None
+    predecessor_id = str((payload or {}).get("promoted_from_work_item") or "").strip()
+    if not predecessor_id:
+        return None
+    row = conn.execute("SELECT * FROM work_items WHERE id=?", (predecessor_id,)).fetchone()
+    if row is None or str(row["phase"] or "").upper() != "Q08":
+        return None
+    return row
 
 
 def _add_q08_input_dependency(
