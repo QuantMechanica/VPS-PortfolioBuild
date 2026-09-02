@@ -18195,3 +18195,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41281,xauxag-mconover-scale-rv,1,XAGUSD.DWX,412810001,2026-09-02,Codex governed allocator,active
 41282,xauxag-mvdw-rv,0,XAUUSD.DWX,412820000,2026-09-02,Codex governed allocator,active
 41282,xauxag-mvdw-rv,1,XAGUSD.DWX,412820001,2026-09-02,Codex governed allocator,active
+41284,wti-mfp-shift-tr,0,XTIUSD.DWX,412840000,2026-09-02,Codex governed allocator,active
