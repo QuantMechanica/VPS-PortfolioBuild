@@ -1,0 +1,52 @@
+{
+  "schema": "qm.source-retrieval-evidence/v1",
+  "source_id": "LJUNGBOX-MAHDI-MOP-WTI-PORTMANTEAU-20260902",
+  "retrieved_at_utc": "2026-09-02T14:44:47Z",
+  "routes": [
+    {
+      "role": "complete_portmanteau_method",
+      "url": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pmc&id=5011475",
+      "citation": "Mahdi, E. (2016). Portmanteau test statistics for seasonal serial correlation in time series models. SpringerPlus 5, 1485.",
+      "doi": "10.1186/s40064-016-3167-4",
+      "publisher": "SpringerOpen / PubMed Central",
+      "method": "complete_open_access_JATS_XML_read",
+      "status": "OK",
+      "retrieved_character_count": 368435,
+      "retrieved_byte_count": 369131,
+      "retrieved_content_sha256": "C336ED0ED04507896E1ECD03F239F71CF4B9616A151A601E5318F9BCE368E7BD",
+      "bounded_read": "The complete open-access article was read end to end, including front matter, abstract, background, definitions, every theorem and proof, simulation studies and tables, empirical application, conclusion, declarations, and references. Its nonseasonal background section gives the residual-autocorrelation definition, the Box-Pierce statistic, and the finite-sample Ljung-Box modification n(n+2) times the sum of squared residual autocorrelations divided by n-l, with an asymptotic chi-square reference distribution.",
+      "claim_boundary": "Supports the deterministic Ljung-Box arithmetic and its role as an omnibus serial-correlation diagnostic. The article studies model residual diagnostics, mostly seasonal extensions, and does not establish a WTI trading edge, use raw WTI returns, prescribe 48 observations, six lags, a median gate, continuation direction, CFD equivalence, activity, profitability, or portfolio fit. Its simulation and empirical results do not transfer."
+    },
+    {
+      "role": "original_method_bibliography_and_abstract",
+      "url": "https://academic.oup.com/biomet/article-abstract/65/2/297/236869",
+      "citation": "Ljung, G. M. and Box, G. E. P. (1978). On a measure of lack of fit in time series models. Biometrika 65(2), 297-303.",
+      "doi": "10.1093/biomet/65.2.297",
+      "publisher": "Oxford University Press",
+      "method": "publisher_metadata_and_abstract_only",
+      "status": "BIBLIOGRAPHIC_AND_ABSTRACT_ONLY",
+      "claim_boundary": "Establishes original attribution and publisher-level abstract context only. No paywalled body claim is used. The complete formula and limitations are taken from the open-access Mahdi record."
+    },
+    {
+      "role": "monthly_wti_own_return_continuation",
+      "url": "https://w4.stern.nyu.edu/facdir/lpederse/papers/TimeSeriesMomentum.pdf",
+      "citation": "Moskowitz, T. J., Ooi, Y. H., and Pedersen, L. H. (2012). Time Series Momentum. Journal of Financial Economics 104(2), 228-250.",
+      "doi": "10.1016/j.jfineco.2011.11.003",
+      "method": "existing_governed_complete_paper_read",
+      "status": "OK_EXISTING_GOVERNED_RECORD",
+      "local_record": "strategy-seeds/sources/MOP-TSMOM-2012/source.md",
+      "local_record_sha256": "C8B07ECD62C1D5EF9E3D7975EEE6A3B6C46C1C566D0B20B42237613D9B3A7042",
+      "claim_boundary": "Supports monthly own-return continuation across liquid futures and explicit NYMEX WTI membership. It does not test a Ljung-Box state gate, the exact conjunction, or the Darwinex continuous CFD."
+    },
+    {
+      "role": "excluded_unapproved_mirror",
+      "url": "https://www.euroestech.net/bibdoc/LjungBox.pdf",
+      "method": "qm_read_trading_source_router",
+      "status": "DEFERRED:SOURCE_POLICY",
+      "router_result": "PERMISSION_REQUIRED",
+      "claim_boundary": "The generic-reader policy did not authorize this mirror. It is excluded from evidence and no claim depends on its content."
+    }
+  ],
+  "access_control_bypass_attempted": false,
+  "third_party_code_executed": false
+}

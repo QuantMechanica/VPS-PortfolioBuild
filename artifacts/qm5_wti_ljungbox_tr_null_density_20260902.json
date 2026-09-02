@@ -1,0 +1,43 @@
+{
+  "schema": "qm.market-free-null-density/v1",
+  "generated_at_utc": "2026-09-02T14:43:00Z",
+  "candidate_slug": "wti-ljungbox-tr",
+  "strategy_id": "LJUNGBOX-MOP-WTI-PORTMANTEAU-20260902_S01",
+  "purpose": "Pre-data cadence sanity check only; not market evidence, a p-value, a performance estimate, or a substitute for Q02.",
+  "generator": {
+    "name": "numpy.random.default_rng",
+    "bit_generator": "PCG64",
+    "seed": 20260902,
+    "replications": 200000,
+    "observations_per_replication": 48,
+    "distribution": "independent standard normal"
+  },
+  "locked_statistic": {
+    "demean": true,
+    "autocorrelation_lags": [1, 2, 3, 4, 5, 6],
+    "autocorrelation_denominator": "sum((x-mean(x))^2)",
+    "formula": "Q6=48*(48+2)*sum(rho_k^2/(48-k),k=1..6)",
+    "reference_distribution": "chi-square with 6 degrees of freedom",
+    "reference_median": 5.348120627447121,
+    "locked_rounded_boundary": 5.35,
+    "qualification_rule": "Q6 >= 5.35",
+    "direction_rule": "sign(sum(x[36:48]))"
+  },
+  "results": {
+    "mean_q6": 6.1052809011700235,
+    "median_q6": 5.358032479744828,
+    "qualification_fraction_at_exact_median": 0.50125,
+    "qualification_fraction_at_rounded_boundary": 0.501025,
+    "theoretical_qualifying_clocks_per_12": 6.0123,
+    "qualifying_positive_direction_fraction_all": 0.249575,
+    "qualifying_negative_direction_fraction_all": 0.25145,
+    "direction_ties": 0
+  },
+  "decision": "PASS_PRE_DATA_CADENCE_PRIOR_GE_5_EXPECTED_QUALIFYING_CLOCKS_PER_YEAR",
+  "limitations": [
+    "Rolling monthly observations in a backtest are dependent; this independent-null calculation does not estimate actual trade count.",
+    "Raw WTI returns need not be Gaussian, independent, stationary, or distributed like this synthetic input.",
+    "The chi-square median is used only as a predeclared state divider, not as a significance threshold.",
+    "Q02 owns actual completed-position frequency, costs, economics, and all market-data conclusions."
+  ]
+}
