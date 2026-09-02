@@ -1,0 +1,77 @@
+{
+  "schema_version": "qm.q02-infra-recovery-cpu-stop/v1",
+  "recorded_at_utc": "2026-09-02T08:16:04.1413325Z",
+  "branch": "agents/board-advisor",
+  "observed_head": "5395b058d4e6063b61e76cad3300d588d5e47f5f",
+  "mission_priority": 2,
+  "outcome": "STOPPED_CPU_CEILING_NO_ENQUEUE",
+  "selection": {
+    "ea_id": "QM5_12943",
+    "ea_label": "QM5_12943_robopip-hlhb-trend-catcher-h1",
+    "symbol": "EURUSD.DWX",
+    "timeframe": "H1",
+    "market": "forex",
+    "strategy_family": "structural_trend_following",
+    "ml_required": false,
+    "g0_status": "APPROVED",
+    "diversity_reason": "Forex is absent from the seven Q08 FAIL_SOFT survivors named in the mission."
+  },
+  "farm_claim": {
+    "agent_task_id": "7db9abd6-3aa1-4a8c-ad29-7b395818d805",
+    "assigned_agent": "codex:agents/board-advisor",
+    "claimed_state": "IN_PROGRESS",
+    "predecessor_work_item_id": "2b04b129-89e8-4489-8653-5dac22f8439a",
+    "predecessor_status": "failed",
+    "predecessor_verdict": "INFRA_FAIL",
+    "exact_successor_count_after_stop": 0,
+    "open_same_stream_count_after_stop": 0,
+    "related_q02_row_count_after_stop": 1,
+    "db_enqueued_by_this_unit": false
+  },
+  "repair_validation": {
+    "repair_commits_are_head_ancestors": true,
+    "repair_commits": [
+      "c1fe07e30fe27d92233ecae64773ca974abf3493",
+      "b63bf8b6e828b8297396d7ae46c841c5f3565191"
+    ],
+    "focused_test_command": "python -m pytest tools/strategy_farm/tests/test_candidate_repair_enqueue.py -k 'worker_crash_q02' -q",
+    "focused_test_result": "2 passed, 45 deselected",
+    "focused_test_duration_seconds": 1.15
+  },
+  "execution_bindings": {
+    "approved_card_sha256": "ef72a38ac2cc6ba8ab0c741c6204af46db31dba3f802984eab8205d043b9d406",
+    "mq5_sha256": "6ebb42799e23755d3c31c1de56dca0c9c4023e60ccd4519cd9256f34c239161a",
+    "ex5_sha256": "95ba06400a66dfa39e31dd09855beb3f4c64f8ee4d2573d5f6476c63234155b2",
+    "predecessor_expected_ex5_sha256": "95ba06400a66dfa39e31dd09855beb3f4c64f8ee4d2573d5f6476c63234155b2",
+    "setfile_sha256": "8e1604e168b117a130a92285d3892352151c85a5c49965e71a9345fadd726586",
+    "risk_fixed": 1000,
+    "risk_percent": 0
+  },
+  "cpu_admission": {
+    "metric": "Processor(_Total)/% Processor Time",
+    "sample_interval_seconds": 1,
+    "sample_count": 5,
+    "samples_percent": [
+      95.117284,
+      95.231196,
+      97.659653,
+      99.718635,
+      96.685818
+    ],
+    "average_percent": 96.882517,
+    "maximum_percent": 99.718635,
+    "ceiling_percent": 97.0,
+    "admitted": false,
+    "stop_trigger": "maximum_percent_gte_ceiling",
+    "enqueue_command_invoked": false
+  },
+  "safety": {
+    "backtest_enqueued": false,
+    "manual_dispatch": false,
+    "mt5_started_or_stopped": false,
+    "autotrading_toggled": false,
+    "t_live_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
