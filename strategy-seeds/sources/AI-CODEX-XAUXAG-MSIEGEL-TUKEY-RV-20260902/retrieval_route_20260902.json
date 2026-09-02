@@ -1,0 +1,43 @@
+{
+  "schema": "qm.source-retrieval-evidence/v1",
+  "source_id": "AI-CODEX-XAUXAG-MSIEGEL-TUKEY-RV-20260902",
+  "retrieved_at_utc": "2026-09-02T07:52:06Z",
+  "routes": [
+    {
+      "role": "peer_reviewed_carrier_and_adverse_evidence",
+      "status": "REUSED_GOVERNED_COMPLETE_READ",
+      "citation": "Schweikert (2018), Are gold and silver cointegrated? New evidence from quantile cointegrating regressions, Journal of Banking & Finance 88, 44-51",
+      "doi": "10.1016/j.jbankfin.2017.11.010",
+      "url": "https://karstenschweikert.github.io/qcoint/qcoint_20171121_preprint.pdf",
+      "local_evidence": "strategy-seeds/sources/SCHWEIKERT-QC-2018/source.md",
+      "local_evidence_sha256": "7C409472768550C1F3A4A58CB22E12A6E915EB752B09ABC8E9B98F3E99048FFA",
+      "boundary": "The governed packet records a complete 32-page author-preprint read. It supports a state-dependent gold/silver relationship and adverse evidence against a constant spread, not this trading rule or a profitability claim."
+    },
+    {
+      "role": "official_exchange_carrier",
+      "status": "REUSED_GOVERNED_COMPLETE_READ",
+      "citation": "CME Group, Gold & Silver Ratio Spread",
+      "url": "https://www.cmegroup.com/education/lessons/gold-and-silver-ratio-spread-trade",
+      "local_evidence": "strategy-seeds/sources/CME-GSR-SPREAD-2025/source.md",
+      "local_evidence_sha256": "2B5903457BD861771821A81F554BE95CA369AD56C1AA45494E0B81555493AF93",
+      "boundary": "Supports the ratio definition, distinct demand drivers, and opposed-leg carrier only; futures liquidity, margin, and execution properties do not transfer to CFDs."
+    },
+    {
+      "role": "statistical_method_lineage_and_complete_algorithm",
+      "status": "REUSED_GOVERNED_COMPLETE_READ",
+      "citation": "Siegel and Tukey (1960), A Nonparametric Sum of Ranks Procedure for Relative Spread in Unpaired Samples, JASA 55(291), 429-445; NIST Dataplot, Siegel Tukey Test",
+      "doi": "10.1080/01621459.1960.10482073",
+      "official_url": "https://www.itl.nist.gov/div898/software/dataplot/refman1/auxillar/siegel.htm",
+      "local_evidence": "strategy-seeds/sources/AI-CODEX-WTI-MSIEGEL-TUKEY-SCALE-20260901/source.md",
+      "local_evidence_sha256": "3BDFD314CAC96641DC994553CBB023FC88AFD7F435DDDCD296D30C9BAB6171C2",
+      "complete_method_record": "strategy-seeds/sources/AI-CODEX-WTI-MSIEGEL-TUKEY-SCALE-20260901/retrieval_route_20260901.json",
+      "boundary": "The original paper body was access-controlled. Publisher metadata and abstract plus the completely read official NIST page support the alternating-extremes construction only; no inferential result transfers to overlapping time blocks."
+    }
+  ],
+  "safety": {
+    "authentication_used": false,
+    "site_mutation": false,
+    "binary_or_ea_downloaded": false,
+    "external_runtime_dependency_created": false
+  }
+}

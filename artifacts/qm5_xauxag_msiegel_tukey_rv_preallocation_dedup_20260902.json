@@ -1,0 +1,79 @@
+{
+  "candidate": {
+    "author": "OpenAI Codex Sidney Siegel John W Tukey Karsten Schweikert CME Group NIST",
+    "mechanic": "monthly XAU XAG seventeen synchronized completed month end log ratio endpoints sixteen adjacent relative changes fixed eight old eight recent Siegel Tukey alternating extremes rank sum exact 12870 inclusive lower tail 6698 recent cumulative relative return contrarian equal notional basket",
+    "slug": "xauxag-msiegel-tukey-rv",
+    "strategy_id": "AI-CODEX-XAUXAG-MSIEGEL-TUKEY-RV-20260902_S01"
+  },
+  "error": null,
+  "exit_code": 3,
+  "generated_at_utc": "2026-09-02T07:52:06+00:00",
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41271_wti-msiegel-tukey-scale-tr_card.md",
+      "score": 0.75,
+      "slug": "wti-msiegel-tukey-scale-tr",
+      "source": "card",
+      "strategy_id": "AI-CODEX-WTI-MSIEGEL-TUKEY-SCALE-20260901_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41282_xauxag-mvdw-rv_card.md",
+      "score": 0.5862068965517241,
+      "slug": "xauxag-mvdw-rv",
+      "source": "card",
+      "strategy_id": "AI-CODEX-XAUXAG-MVDW-RV-20260902_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41278_xauxag-mcucconi-rv_card.md",
+      "score": 0.5666666666666667,
+      "slug": "xauxag-mcucconi-rv",
+      "source": "card",
+      "strategy_id": "AI-CODEX-XAUXAG-MCUCCONI-RV-20260902_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41263_xauxag-mkuiper-rv_card.md",
+      "score": 0.5517241379310345,
+      "slug": "xauxag-mkuiper-rv",
+      "source": "card",
+      "strategy_id": "AI-CODEX-XAUXAG-MKUIPER-RV-20260901_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41279_xauxag-msavage-rv_card.md",
+      "score": 0.5333333333333333,
+      "slug": "xauxag-msavage-rv",
+      "source": "card",
+      "strategy_id": "AI-CODEX-XAUXAG-MSAVAGE-RV-20260902_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4785,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1421,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "FUZZY_MATCH"
+}

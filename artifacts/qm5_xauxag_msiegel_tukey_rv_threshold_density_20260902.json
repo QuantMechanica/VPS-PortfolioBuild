@@ -1,0 +1,27 @@
+{
+  "schema": "qm.predata-rank-threshold-density/v1",
+  "generated_at_utc": "2026-09-02T07:52:06Z",
+  "strategy_id": "AI-CODEX-XAUXAG-MSIEGEL-TUKEY-RV-20260902_S01",
+  "sample_contract": {
+    "old_block_size": 8,
+    "recent_block_size": 8,
+    "pooled_distinct_ranks": 16,
+    "fixed_size_label_allocations": 12870,
+    "allocation_formula": "C(16,8)",
+    "market_data_used": false
+  },
+  "score_contract": {
+    "statistic": "Siegel-Tukey alternating-extremes rank sum of the recent block",
+    "ascending_observation_score_path": [1, 4, 5, 8, 9, 12, 13, 16, 15, 14, 11, 10, 7, 6, 3, 2],
+    "inclusive_score_max": 68,
+    "inclusive_lower_tail_max": 6698,
+    "direction": "fade the sign of the recent eight-change cumulative gold/silver log-ratio move"
+  },
+  "result": {
+    "qualifying_allocations": 6698,
+    "boundary_allocations_at_score_68": 526,
+    "qualifying_fraction": 0.5204351204351204,
+    "twelve_month_attempt_prior": 6.245221445221445
+  },
+  "claim_boundary": "Complete pre-data enumeration of fixed-size strict-rank label allocations. This is not a market backtest, p-value, significance level, profitability estimate, realized annual package count, neutrality result, or decorrelation result."
+}
