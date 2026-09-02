@@ -18654,6 +18654,560 @@ def _pump_unlocked(
         minimum_start_seconds=5.0,
     )
 
+    # 2026-09-02 (CEO): gate-cascade promotions (Q02 review -> Q03, Q03..Q09
+    # PASS -> successor, Q02 -> Q04 probe) are census-critical and run right
+    # after the DL-089 services, BEFORE intake/build/review.  Since 01.09 the
+    # stage ran in 12 of 261 completed cycles (budget exhausted by dispatch and
+    # intake overruns) and PASS rows waited hours to days for successors.
+    pre_promotion_stage_started = time.monotonic()
+    # 10. Parameter ablation — phase-aware:
+    #     - P2-PASS (exploration): 5 random ±25% mutations to find a viable
+    #       region. OWNER 2026-05-16 "Ablation auf Gewinner statt Greenfield".
+    #     - P3-PASS (exploitation): 50 systematic grid points ±30% across the
+    #       top numeric strategy_* inputs (cartesian product). OWNER 2026-05-17
+    #       "für jeden P3-PASS 50 Ablations spawnen (parameter-grid)".
+    #     Ablation children themselves never re-ablate (is_ablation=0 filter).
+    try:
+        from ablate import spawn_ablation_workitems
+    except ImportError:
+        import sys as _sys
+        _sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from ablate import spawn_ablation_workitems
+    result["ablation_children"] = []
+
+    # §10a P2-PASS → 5 random
+    #
+    # NOTE: depth-1 filter uses setfile_path pattern, NOT payload flag.
+    # The MT5 worker overwrites payload_json with its own runtime fields
+    # (terminal, pid, started_at, etc.) — any is_ablation flag we set at
+    # work_item-insertion time is GONE by the time the verdict comes in.
+    # The setfile name (`*_ablation_NN.set` / `*_grid_NNN.set`) is the only
+    # reliable lineage marker that survives worker overwrites.
+    with connect(root) as conn:
+        # Task 5343f90a: never ablation-expand a defect-blocked EA's PASS row
+        # (this path also bumps updated_at, which is why the gate is EA-membership
+        # based rather than time-gated). No table alias here, so gate on ea_id.
+        _abl_defect_exclusion = _defect_block_exclusion_clause(
+            include_defect_blocked_evidence, ea_col="ea_id"
+        )
+        p2_pass = conn.execute(
+            f"""
+            SELECT * FROM work_items
+            WHERE status='done' AND verdict='PASS' AND phase in ('Q02', 'P2')
+              {_abl_defect_exclusion}
+              AND setfile_path NOT LIKE '%_ablation_%'
+              AND setfile_path NOT LIKE '%_grid_%'
+              AND COALESCE(json_extract(payload_json, '$.ablated_at'), '')=''
+            ORDER BY updated_at ASC LIMIT 5
+            """
+        ).fetchall()
+        try:
+            import strategy_priority as _sp_abl
+            _abl_scores = _sp_abl.compute_scores()
+        except Exception:
+            _abl_scores = {}
+        for wi in p2_pass:
+            try:
+                # 2026-06-10 OWNER gate-acceleration #4: ablation budget by
+                # priority tier — 8 variants for priority_track EAs, 3 for the
+                # rest (was a flat 5). Shifts perturbation compute toward the
+                # cards the diversification/metrics prior ranks highest.
+                _tier_priority = bool(
+                    _abl_scores.get(str(wi["ea_id"]), {}).get("priority_track", False)
+                    or '"priority_track": true' in (wi["payload_json"] or "")
+                )
+                report = spawn_ablation_workitems(
+                    conn, dict(wi), FRAMEWORK_EAS_DIR,
+                    n_variants=8 if _tier_priority else 3,
+                    perturb_pct=0.25, method="random",
+                )
+                result["ablation_children"].append(report)
+            except Exception as exc:
+                result["ablation_children"].append({
+                    "parent_id": wi["id"], "ea_id": wi["ea_id"],
+                    "method": "random",
+                    "children_count": 0, "reason": f"error: {exc!r}",
+                })
+
+    # §10c Promote exploration P2-PASS work_items into P3.
+    #
+    # Problem: the original P2→P3 auto-enqueue (in classify_aggregate) gates
+    # on "does a backtest_p3 task already exist for this ea_id". When the
+    # first 3 P2-PASSes for 1049 created a backtest_p3 task, that task only
+    # received work_items for the setfiles that existed at the time (3
+    # originals). Exploration children that later pass P2 never get a
+    # corresponding P3 work_item because the gate sees "P3 task exists".
+    #
+    # Fix: directly insert P3 work_items per (ea_id, symbol, setfile) that
+    # passed P2 but has no P3 work_item yet. Re-open the parent P3 task back
+    # to 'pending' so classify_aggregate re-aggregates when new work_items
+    # finish. Skip rows where no parent P3 task exists yet (next cycle will
+    # catch them after the first PASS goes through normal auto-enqueue).
+    result["p3_promotions"] = []
+    result["p3_promotions_skipped"] = []
+    # The normalized metric layer is a throughput/observability aggregate, not
+    # a gate.  Its 61k-path stat scan and tens of thousands of stale-row upserts
+    # now run under the lower-frequency ``pump-maintenance`` command.  Promotion
+    # still reads the latest committed metrics and therefore changes no gate
+    # criterion; a fresh result can be delayed by one maintenance interval.
+    result["ea_metrics_refresh"] = {
+        "deferred": True,
+        "reason": "moved_to_pump_maintenance",
+        "command": "farmctl pump-maintenance",
+    }
+    with connect(root) as conn:
+        # §10c starvation fix (2026-06-22): the candidate set is every Q02-PASS
+        # without a Q03 sibling. The overwhelming majority are permanently
+        # UNPROFITABLE (correctly never promoted) yet were never removed, so
+        # 5000+ of them saturated the old `LIMIT 5000 ORDER BY updated_at ASC`
+        # window and starved the handful of genuinely-promotable PROFITABLE rows
+        # — which are always the newest, hence forever beyond the window (this is
+        # why p2_pass_no_p3 sat at a permanent FAIL). Pre-filter to profitable
+        # candidates via ea_metrics so unprofitable rows never consume the window;
+        # the loop below still applies the authoritative evidence-based gate.
+        # Task 5343f90a: exclude defect-blocked EAs' pre-block Q02 PASS rows.
+        _defect_exclusion = _defect_block_exclusion_clause(include_defect_blocked_evidence)
+        _base_q = (
+            "SELECT w.* FROM work_items w "
+            "WHERE w.status='done' AND w.verdict='PASS' AND w.phase in ('Q02', 'P2') "
+            f"{_defect_exclusion} "
+            "AND NOT EXISTS ("
+            "  SELECT 1 FROM work_items w2 "
+            "  WHERE w2.ea_id = w.ea_id AND w2.symbol = w.symbol "
+            "    AND w2.setfile_path = w.setfile_path AND w2.phase in ('Q03', 'P3'))"
+        )
+        _profit_prefilter = (
+            " AND EXISTS (SELECT 1 FROM ea_metrics m "
+            "WHERE m.work_item_id = w.id AND m.net_profit > 0)"
+        )
+        try:
+            promotable = conn.execute(
+                _base_q + _profit_prefilter + " ORDER BY w.updated_at ASC LIMIT 5000"
+            ).fetchall()
+        except sqlite3.OperationalError:
+            # ea_metrics table not built yet — degrade to the legacy full scan.
+            promotable = conn.execute(
+                _base_q + " ORDER BY w.updated_at ASC LIMIT 5000"
+            ).fetchall()
+        reopened_parents: set[str] = set()
+        for wi in promotable:
+            if len(result["p3_promotions"]) >= 250:
+                break
+            p2_net_profit = _work_item_p2_net_profit(wi)
+            if p2_net_profit is None or p2_net_profit <= 0.0:
+                result["p3_promotions_skipped"].append({
+                    "ea_id": wi["ea_id"],
+                    "symbol": wi["symbol"],
+                    "setfile_path": wi["setfile_path"],
+                    "reason": P2_UNPROFITABLE_SYMBOL_REASON,
+                    "p2_net_profit": p2_net_profit,
+                    "parent_p2_work_item_id": wi["id"],
+                })
+                continue
+            if not _setfile_path_exists(wi["setfile_path"]):
+                result["p3_promotions_skipped"].append({
+                    "ea_id": wi["ea_id"],
+                    "symbol": wi["symbol"],
+                    "setfile_path": wi["setfile_path"],
+                    "reason": "missing_setfile",
+                    "parent_p2_work_item_id": wi["id"],
+                })
+                continue
+            # 2026-05-23 OR3: this cascade path is the pre-rewrite P2→P3
+            # promoter. Kept for back-compat (returns 0 rows on the wiped DB
+            # since no P2 work_items exist). New Q-pipeline cascade happens
+            # at the `cascade_phase_map` loop further down (sets phase='Q03').
+            parent = conn.execute(
+                "SELECT id, status FROM tasks WHERE kind='backtest_q03' "
+                "AND payload_json LIKE ? ORDER BY created_at ASC LIMIT 1",
+                (f'%"ea_id": "{wi["ea_id"]}"%',),
+            ).fetchone()
+            if not parent:
+                parent_id = create_task(
+                    conn,
+                    kind="backtest_q03",
+                    source_id=None,
+                    card_id=wi["ea_id"],
+                    payload={
+                        "ea_id": wi["ea_id"],
+                        "phase": "Q03",
+                        "created_by": "p2_pass_promoter",
+                    },
+                )
+                parent = conn.execute(
+                    "SELECT id, status FROM tasks WHERE id=?",
+                    (parent_id,),
+                ).fetchone()
+            new_id = str(uuid.uuid4())
+            now = utc_now()
+            payload = _promotion_payload_with_basket_context(
+                wi,
+                {"promoted_from_p2_work_item": wi["id"]},
+            )
+            conn.execute(
+                """
+                INSERT INTO work_items
+                  (id, kind, phase, ea_id, symbol, setfile_path, status,
+                   attempt_count, parent_task_id, payload_json, created_at, updated_at,
+                   gate_contract_version)
+                VALUES (?, 'backtest', 'Q03', ?, ?, ?, 'pending', 0, ?, ?, ?, ?, ?)
+                """,
+                (new_id, wi["ea_id"], wi["symbol"], wi["setfile_path"],
+                 parent["id"], json.dumps(payload), now, now,
+                 ACTIVE_GATE_CONTRACT_VERSION),
+            )
+            # Re-open parent Q03 task so classify_aggregate re-runs when this
+            # work_item finishes. No-op if already pending.
+            if parent["id"] not in reopened_parents and parent["status"] == "done":
+                conn.execute(
+                    "UPDATE tasks SET status='pending', updated_at=? WHERE id=?",
+                    (now, parent["id"]),
+                )
+                reopened_parents.add(parent["id"])
+            result["p3_promotions"].append({
+                "p3_work_item_id": new_id,
+                "ea_id": wi["ea_id"],
+                "symbol": wi["symbol"],
+                "setfile": Path(wi["setfile_path"]).name,
+                "parent_p2_work_item_id": wi["id"],
+                "parent_p3_task_id": parent["id"],
+                "reopened_parent": parent["id"] in reopened_parents and parent["status"] == "done",
+            })
+        if result["p3_promotions"]:
+            conn.commit()
+
+    with connect(root) as conn:
+        result["p5_calibration_auto_stubbed"] = _auto_stub_p5_calibration(root, conn)
+
+    result["cascade_promotions"] = []
+    result["cascade_promotions_skipped"] = []
+    result["q09_portfolio_promotions"] = []
+    result["q09_portfolio_promotions_skipped"] = []
+    result["q09_portfolio_admissions"] = []
+    # Q09_NEWS is a canonical, evidence-producing phase. Q10 requires its
+    # CONFIG_LOCKED result; portfolio output is optional information.
+    cascade_phase_map = {
+        phase: next_phase(phase)
+        for phase in ORDINARY_STORAGE_PHASE_ORDER
+        if phase_rank("Q03") <= phase_rank(phase) < phase_rank(_INCUMBENT_PHASE)
+    }
+    cascade_pass_verdicts = {
+        "Q03": {"PASS"},
+        "Q04": {"PASS", "PASS_SOFT", "PASS_LOWFREQ"},  # DL-071 soft-pass + DL-076 low-freq pooled pass advance
+        "Q05": {"PASS"},
+        # OWNER Option A 2026-08-21: Q06 PASS_SOFT (probation:q06_soft band) advances to Q07.
+        "Q06": {"PASS", "PASS_SOFT"},
+        "Q07": {"PASS"},
+        "Q08": {"PASS", "FAIL_SOFT"},
+        _BASELINE_FULL_RUN_PHASE: {"PASS"},
+        _NEWS_PHASE: Q09_NEWS_SUCCESS_VERDICTS,
+        # Pre-rewrite keys retained inert for any orphan reads against the
+        # empty post-wipe DB. These will never match new rows.
+        "P3": {"PASS"},
+        "P3.5": {"PASS"},
+        "P4": {"PASS"},
+        "P5": {"PASS"},
+        "P5b": {"PASS"},
+        "P5c": {"PASS"},
+        "P6": {"PASS", "MULTI_SEED_PASS"},
+        "P7": {"PASS"},
+    }
+    # Task 5343f90a: defect-blocked EAs' pre-block PASS rows (notably Q03 PASS)
+    # must not cascade to the next phase.
+    _cascade_defect_exclusion = _defect_block_exclusion_clause(
+        include_defect_blocked_evidence
+    )
+    cycle_budget.record_elapsed(
+        "pre_promotion_automation", pre_promotion_stage_started, budget_seconds=45.0
+    )
+    if cycle_budget.remaining_seconds <= 15.0:
+        result["promotion_stage"] = {
+            "skipped": "cycle_budget_exhausted",
+            "remaining_seconds": cycle_budget.remaining_seconds,
+        }
+        result["stage_timings"] = cycle_budget.snapshot()
+        return result
+    promotion_stage_started = time.monotonic()
+    promotion_deadline = cycle_budget.stage_deadline(60.0)
+    with connect(root) as conn:
+        reopened_parents: set[str] = set()
+        for prev_phase, successor_phase in cascade_phase_map.items():
+            if time.monotonic() >= promotion_deadline:
+                result["cascade_promotions_skipped"].append({
+                    "reason": "promotion_stage_budget_exhausted",
+                    "from_phase": prev_phase,
+                    "to_phase": successor_phase,
+                })
+                break
+            verdicts = sorted(cascade_pass_verdicts[prev_phase])
+            placeholders = ",".join("?" for _ in verdicts)
+            promotable = conn.execute(
+                f"""
+                SELECT w.* FROM work_items w
+                WHERE w.status='done' AND w.phase=? AND w.verdict in ({placeholders})
+                  {_cascade_defect_exclusion}
+                  AND NOT (
+                    w.phase=?
+                    AND json_valid(w.payload_json)=1
+                    AND json_extract(w.payload_json, '$.diagnostic_non_admission')=1
+                  )
+                  AND NOT EXISTS (
+                    -- DL-074 2026-06-10: block on ANY existing next-phase row
+                    -- for the same (ea, symbol, setfile), regardless of which
+                    -- source created it. The old promoted_from_phase payload
+                    -- filter let the Q04-early default-probe row coexist with
+                    -- a duplicate Q03->Q04 promotion of the identical setfile.
+                    SELECT 1 FROM work_items w2
+                    WHERE w2.ea_id = w.ea_id
+                      AND w2.symbol = w.symbol
+                      AND w2.phase = ?
+                      AND w2.setfile_path = w.setfile_path
+                  )
+                -- Inspect the full bounded cohort.  LIMIT 10 here used to let
+                -- ten permanently unpromotable old rows starve every later
+                -- Q08 PASS, including 16 pairs that already had a portfolio
+                -- sibling but never received Q09_NEWS.
+                ORDER BY w.updated_at ASC LIMIT 50
+                """,
+                (
+                    prev_phase,
+                    *verdicts,
+                    _NEWS_PHASE,
+                    successor_phase,
+                ),
+            ).fetchall()
+            for wi in promotable:
+                if time.monotonic() >= promotion_deadline:
+                    result["cascade_promotions_skipped"].append({
+                        "reason": "promotion_stage_budget_exhausted",
+                        "from_phase": prev_phase,
+                        "to_phase": successor_phase,
+                    })
+                    break
+                if not _setfile_path_exists(wi["setfile_path"]):
+                    result["cascade_promotions_skipped"].append({
+                        "ea_id": wi["ea_id"],
+                        "symbol": wi["symbol"],
+                        "setfile_path": wi["setfile_path"],
+                        "from_phase": prev_phase,
+                        "to_phase": successor_phase,
+                        "from_work_item_id": wi["id"],
+                        "reason": "missing_setfile",
+                    })
+                    continue
+                q08_evidence_sha256: str | None = None
+                q10_dependency_context: dict[str, Any] | None = None
+                if successor_phase == _NEWS_PHASE:
+                    q08_evidence_sha256 = _work_item_evidence_sha256(wi)
+                    if not q08_evidence_sha256:
+                        result["cascade_promotions_skipped"].append({
+                            "ea_id": wi["ea_id"],
+                            "symbol": wi["symbol"],
+                            "from_phase": prev_phase,
+                            "to_phase": successor_phase,
+                            "from_work_item_id": wi["id"],
+                            "reason": "q08_evidence_missing_or_unreadable",
+                        })
+                        continue
+                elif successor_phase == _INCUMBENT_PHASE:
+                    q10_dependency_context, dependency_reason = _q10_dependency_context(conn, wi)
+                    if q10_dependency_context is None:
+                        result["cascade_promotions_skipped"].append({
+                            "ea_id": wi["ea_id"],
+                            "symbol": wi["symbol"],
+                            "from_phase": prev_phase,
+                            "to_phase": successor_phase,
+                            "from_work_item_id": wi["id"],
+                            "reason": dependency_reason,
+                        })
+                        continue
+                next_kind = successor_phase.lower().replace(".", "")
+                parent = conn.execute(
+                    "SELECT id, status FROM tasks WHERE kind=? "
+                    "AND payload_json LIKE ? ORDER BY created_at ASC LIMIT 1",
+                    (f"backtest_{next_kind}", f'%"ea_id": "{wi["ea_id"]}"%'),
+                ).fetchone()
+                parent_id = parent["id"] if parent else None
+                new_id = str(uuid.uuid4())
+                now = utc_now()
+                payload = _promotion_payload_with_basket_context(
+                    wi,
+                    {
+                        "promoted_from_phase": prev_phase,
+                        "promoted_from_work_item": wi["id"],
+                        "promotion_source": "pump_cascade",
+                    },
+                )
+                if successor_phase in {"Q04", "Q05"}:
+                    _apply_q04_latest_full_year_from_history(wi, payload)
+                if successor_phase == "Q04":
+                    _apply_q04_timeout_budget(conn, wi, payload)
+                if successor_phase in {"Q05", "Q06", "Q08"}:
+                    _apply_phase_timeout_min(payload, successor_phase)
+                if successor_phase in {"Q05", "Q06", "Q07", _INCUMBENT_PHASE}:
+                    _apply_q_phase_full_history_from(payload, successor_phase)
+                contract_phase = successor_phase in {_NEWS_PHASE, _INCUMBENT_PHASE}
+                insert_sql = """
+                    INSERT INTO work_items
+                      (id, kind, phase, ea_id, symbol, setfile_path, status,
+                       attempt_count, parent_task_id, payload_json, created_at, updated_at,
+                       gate_contract_version)
+                    VALUES (?, 'backtest', ?, ?, ?, ?, 'pending', 0, ?, ?, ?, ?, ?)
+                """
+                insert_args = (
+                    new_id, successor_phase, wi["ea_id"], wi["symbol"], wi["setfile_path"],
+                    parent_id, json.dumps(payload, sort_keys=True), now, now,
+                    ACTIVE_GATE_CONTRACT_VERSION,
+                )
+                if not contract_phase:
+                    conn.execute(insert_sql, insert_args)
+                else:
+                    conn.execute("SAVEPOINT q09_contract_promotion")
+                    try:
+                        conn.execute(insert_sql, insert_args)
+                        if successor_phase == _NEWS_PHASE:
+                            _add_q08_input_dependency(
+                                conn,
+                                child_work_item_id=new_id,
+                                q08_work_item=wi,
+                                evidence_sha256=str(q08_evidence_sha256),
+                            )
+                            _mark_q09_awaiting_sealed_plan(
+                                conn,
+                                work_item_id=new_id,
+                                payload=payload,
+                                now=now,
+                            )
+                        else:
+                            _bind_q10_dependencies(
+                                conn,
+                                q10_work_item_id=new_id,
+                                q09_news_work_item_id=str(wi["id"]),
+                                dependency_context=q10_dependency_context or {},
+                            )
+                    except (Q09NewsSchemaError, sqlite3.Error, KeyError) as exc:
+                        conn.execute("ROLLBACK TO q09_contract_promotion")
+                        conn.execute("RELEASE q09_contract_promotion")
+                        result["cascade_promotions_skipped"].append({
+                            "ea_id": wi["ea_id"],
+                            "symbol": wi["symbol"],
+                            "from_phase": prev_phase,
+                            "to_phase": successor_phase,
+                            "from_work_item_id": wi["id"],
+                            "reason": f"dependency_contract_rejected:{exc}",
+                        })
+                        continue
+                    else:
+                        conn.execute("RELEASE q09_contract_promotion")
+                reopened_parent = False
+                if parent and parent["id"] not in reopened_parents and parent["status"] == "done":
+                    conn.execute(
+                        "UPDATE tasks SET status='pending', updated_at=? WHERE id=?",
+                        (now, parent["id"]),
+                    )
+                    reopened_parents.add(parent["id"])
+                    reopened_parent = True
+                result["cascade_promotions"].append({
+                    "work_item_id": new_id,
+                    "ea_id": wi["ea_id"],
+                    "symbol": wi["symbol"],
+                    "from_phase": prev_phase,
+                    "to_phase": successor_phase,
+                    "from_work_item_id": wi["id"],
+                    "parent_task_id": parent_id,
+                    "reopened_parent": reopened_parent,
+                })
+                # Keep the serialized writer interval to one promotion.  The
+                # global pump claim prevents a second promoter; terminal workers
+                # regain the WAL writer slot between rows.
+                conn.commit()
+        # DL-074 (gate-acceleration #3) Q04-early probe: every Q02-PASS
+        # primary goes straight to a Q04 walk-forward probe on its DEFAULT
+        # params, in parallel with the normal Q02->Q03 path. ~88% of EAs die
+        # at Q04; probing it before the 50-point Q03 grid stops us spending
+        # the grid on parameter sets that were never walk-forward-robust.
+        # Gate criteria are unchanged — only the order of compute moves.
+        q04_probe_rows = conn.execute(
+            f"""
+            SELECT w.* FROM work_items w
+            WHERE w.status='done' AND w.phase='Q02' AND w.verdict='PASS'
+              {_cascade_defect_exclusion}
+              AND w.setfile_path NOT LIKE '%_ablation_%'
+              AND w.setfile_path NOT LIKE '%_grid_%'
+              AND w.setfile_path NOT LIKE '%_synth_%'
+              AND NOT EXISTS (
+                SELECT 1 FROM work_items w2
+                WHERE w2.ea_id = w.ea_id AND w2.symbol = w.symbol
+                  AND w2.phase = 'Q04' AND w2.setfile_path = w.setfile_path
+              )
+            ORDER BY w.updated_at ASC LIMIT 10
+            """
+        ).fetchall()
+        for wi in q04_probe_rows:
+            if not _setfile_path_exists(wi["setfile_path"]):
+                continue
+            probe_id = str(uuid.uuid4())
+            now = utc_now()
+            payload = _promotion_payload_with_basket_context(
+                wi,
+                {
+                    "promoted_from_phase": "Q02",
+                    "promoted_from_work_item": wi["id"],
+                    "promotion_source": "pump_q04_early_probe",
+                    "q04_default_probe": True,
+                },
+            )
+            _apply_q04_latest_full_year_from_history(wi, payload)
+            _apply_q04_timeout_budget(conn, wi, payload)
+            conn.execute(
+                """
+                INSERT INTO work_items
+                  (id, kind, phase, ea_id, symbol, setfile_path, status,
+                   attempt_count, parent_task_id, payload_json, created_at, updated_at,
+                   gate_contract_version)
+                VALUES (?, 'backtest', 'Q04', ?, ?, ?, 'pending', 0, NULL, ?, ?, ?, ?)
+                """,
+                (probe_id, wi["ea_id"], wi["symbol"], wi["setfile_path"],
+                 json.dumps(payload, sort_keys=True), now, now,
+                 ACTIVE_GATE_CONTRACT_VERSION),
+            )
+            result["cascade_promotions"].append({
+                "work_item_id": probe_id,
+                "ea_id": wi["ea_id"],
+                "symbol": wi["symbol"],
+                "from_phase": "Q02",
+                "to_phase": "Q04",
+                "from_work_item_id": wi["id"],
+                "parent_task_id": None,
+                "reopened_parent": False,
+                "q04_default_probe": True,
+            })
+            conn.commit()
+        q09_promoted = _promote_q08_soft_fails_to_q09_portfolio(
+            conn, result, include_defect_blocked_evidence=include_defect_blocked_evidence
+        )
+        if q09_promoted:
+            conn.commit()
+        q09_paired_news = _promote_paired_q09_portfolio_passes_to_news(
+            conn,
+            result,
+            include_defect_blocked_evidence=include_defect_blocked_evidence,
+            max_rows=20,
+            commit_each=True,
+        )
+        q09_admitted = 0
+        if (
+            result["cascade_promotions"]
+            or q09_promoted
+            or q09_paired_news
+            or q09_admitted
+        ):
+            conn.commit()
+
+    cycle_budget.record_elapsed(
+        "promotions", promotion_stage_started, budget_seconds=60.0
+    )
+
     # Expansion authoring is a bounded, append-only control-plane step.  Keep it
     # ahead of build dispatch: build process discovery/spawn can overrun the
     # whole pump budget, which previously starved this stage for many cycles and
@@ -19840,554 +20394,6 @@ def _pump_unlocked(
         result["pre_promotion_stage"] = {"skipped": "cycle_budget_exhausted"}
         result["stage_timings"] = cycle_budget.snapshot()
         return result
-    pre_promotion_stage_started = time.monotonic()
-    # 10. Parameter ablation — phase-aware:
-    #     - P2-PASS (exploration): 5 random ±25% mutations to find a viable
-    #       region. OWNER 2026-05-16 "Ablation auf Gewinner statt Greenfield".
-    #     - P3-PASS (exploitation): 50 systematic grid points ±30% across the
-    #       top numeric strategy_* inputs (cartesian product). OWNER 2026-05-17
-    #       "für jeden P3-PASS 50 Ablations spawnen (parameter-grid)".
-    #     Ablation children themselves never re-ablate (is_ablation=0 filter).
-    try:
-        from ablate import spawn_ablation_workitems
-    except ImportError:
-        import sys as _sys
-        _sys.path.insert(0, str(Path(__file__).resolve().parent))
-        from ablate import spawn_ablation_workitems
-    result["ablation_children"] = []
-
-    # §10a P2-PASS → 5 random
-    #
-    # NOTE: depth-1 filter uses setfile_path pattern, NOT payload flag.
-    # The MT5 worker overwrites payload_json with its own runtime fields
-    # (terminal, pid, started_at, etc.) — any is_ablation flag we set at
-    # work_item-insertion time is GONE by the time the verdict comes in.
-    # The setfile name (`*_ablation_NN.set` / `*_grid_NNN.set`) is the only
-    # reliable lineage marker that survives worker overwrites.
-    with connect(root) as conn:
-        # Task 5343f90a: never ablation-expand a defect-blocked EA's PASS row
-        # (this path also bumps updated_at, which is why the gate is EA-membership
-        # based rather than time-gated). No table alias here, so gate on ea_id.
-        _abl_defect_exclusion = _defect_block_exclusion_clause(
-            include_defect_blocked_evidence, ea_col="ea_id"
-        )
-        p2_pass = conn.execute(
-            f"""
-            SELECT * FROM work_items
-            WHERE status='done' AND verdict='PASS' AND phase in ('Q02', 'P2')
-              {_abl_defect_exclusion}
-              AND setfile_path NOT LIKE '%_ablation_%'
-              AND setfile_path NOT LIKE '%_grid_%'
-              AND COALESCE(json_extract(payload_json, '$.ablated_at'), '')=''
-            ORDER BY updated_at ASC LIMIT 5
-            """
-        ).fetchall()
-        try:
-            import strategy_priority as _sp_abl
-            _abl_scores = _sp_abl.compute_scores()
-        except Exception:
-            _abl_scores = {}
-        for wi in p2_pass:
-            try:
-                # 2026-06-10 OWNER gate-acceleration #4: ablation budget by
-                # priority tier — 8 variants for priority_track EAs, 3 for the
-                # rest (was a flat 5). Shifts perturbation compute toward the
-                # cards the diversification/metrics prior ranks highest.
-                _tier_priority = bool(
-                    _abl_scores.get(str(wi["ea_id"]), {}).get("priority_track", False)
-                    or '"priority_track": true' in (wi["payload_json"] or "")
-                )
-                report = spawn_ablation_workitems(
-                    conn, dict(wi), FRAMEWORK_EAS_DIR,
-                    n_variants=8 if _tier_priority else 3,
-                    perturb_pct=0.25, method="random",
-                )
-                result["ablation_children"].append(report)
-            except Exception as exc:
-                result["ablation_children"].append({
-                    "parent_id": wi["id"], "ea_id": wi["ea_id"],
-                    "method": "random",
-                    "children_count": 0, "reason": f"error: {exc!r}",
-                })
-
-    # §10c Promote exploration P2-PASS work_items into P3.
-    #
-    # Problem: the original P2→P3 auto-enqueue (in classify_aggregate) gates
-    # on "does a backtest_p3 task already exist for this ea_id". When the
-    # first 3 P2-PASSes for 1049 created a backtest_p3 task, that task only
-    # received work_items for the setfiles that existed at the time (3
-    # originals). Exploration children that later pass P2 never get a
-    # corresponding P3 work_item because the gate sees "P3 task exists".
-    #
-    # Fix: directly insert P3 work_items per (ea_id, symbol, setfile) that
-    # passed P2 but has no P3 work_item yet. Re-open the parent P3 task back
-    # to 'pending' so classify_aggregate re-aggregates when new work_items
-    # finish. Skip rows where no parent P3 task exists yet (next cycle will
-    # catch them after the first PASS goes through normal auto-enqueue).
-    result["p3_promotions"] = []
-    result["p3_promotions_skipped"] = []
-    # The normalized metric layer is a throughput/observability aggregate, not
-    # a gate.  Its 61k-path stat scan and tens of thousands of stale-row upserts
-    # now run under the lower-frequency ``pump-maintenance`` command.  Promotion
-    # still reads the latest committed metrics and therefore changes no gate
-    # criterion; a fresh result can be delayed by one maintenance interval.
-    result["ea_metrics_refresh"] = {
-        "deferred": True,
-        "reason": "moved_to_pump_maintenance",
-        "command": "farmctl pump-maintenance",
-    }
-    with connect(root) as conn:
-        # §10c starvation fix (2026-06-22): the candidate set is every Q02-PASS
-        # without a Q03 sibling. The overwhelming majority are permanently
-        # UNPROFITABLE (correctly never promoted) yet were never removed, so
-        # 5000+ of them saturated the old `LIMIT 5000 ORDER BY updated_at ASC`
-        # window and starved the handful of genuinely-promotable PROFITABLE rows
-        # — which are always the newest, hence forever beyond the window (this is
-        # why p2_pass_no_p3 sat at a permanent FAIL). Pre-filter to profitable
-        # candidates via ea_metrics so unprofitable rows never consume the window;
-        # the loop below still applies the authoritative evidence-based gate.
-        # Task 5343f90a: exclude defect-blocked EAs' pre-block Q02 PASS rows.
-        _defect_exclusion = _defect_block_exclusion_clause(include_defect_blocked_evidence)
-        _base_q = (
-            "SELECT w.* FROM work_items w "
-            "WHERE w.status='done' AND w.verdict='PASS' AND w.phase in ('Q02', 'P2') "
-            f"{_defect_exclusion} "
-            "AND NOT EXISTS ("
-            "  SELECT 1 FROM work_items w2 "
-            "  WHERE w2.ea_id = w.ea_id AND w2.symbol = w.symbol "
-            "    AND w2.setfile_path = w.setfile_path AND w2.phase in ('Q03', 'P3'))"
-        )
-        _profit_prefilter = (
-            " AND EXISTS (SELECT 1 FROM ea_metrics m "
-            "WHERE m.work_item_id = w.id AND m.net_profit > 0)"
-        )
-        try:
-            promotable = conn.execute(
-                _base_q + _profit_prefilter + " ORDER BY w.updated_at ASC LIMIT 5000"
-            ).fetchall()
-        except sqlite3.OperationalError:
-            # ea_metrics table not built yet — degrade to the legacy full scan.
-            promotable = conn.execute(
-                _base_q + " ORDER BY w.updated_at ASC LIMIT 5000"
-            ).fetchall()
-        reopened_parents: set[str] = set()
-        for wi in promotable:
-            if len(result["p3_promotions"]) >= 250:
-                break
-            p2_net_profit = _work_item_p2_net_profit(wi)
-            if p2_net_profit is None or p2_net_profit <= 0.0:
-                result["p3_promotions_skipped"].append({
-                    "ea_id": wi["ea_id"],
-                    "symbol": wi["symbol"],
-                    "setfile_path": wi["setfile_path"],
-                    "reason": P2_UNPROFITABLE_SYMBOL_REASON,
-                    "p2_net_profit": p2_net_profit,
-                    "parent_p2_work_item_id": wi["id"],
-                })
-                continue
-            if not _setfile_path_exists(wi["setfile_path"]):
-                result["p3_promotions_skipped"].append({
-                    "ea_id": wi["ea_id"],
-                    "symbol": wi["symbol"],
-                    "setfile_path": wi["setfile_path"],
-                    "reason": "missing_setfile",
-                    "parent_p2_work_item_id": wi["id"],
-                })
-                continue
-            # 2026-05-23 OR3: this cascade path is the pre-rewrite P2→P3
-            # promoter. Kept for back-compat (returns 0 rows on the wiped DB
-            # since no P2 work_items exist). New Q-pipeline cascade happens
-            # at the `cascade_phase_map` loop further down (sets phase='Q03').
-            parent = conn.execute(
-                "SELECT id, status FROM tasks WHERE kind='backtest_q03' "
-                "AND payload_json LIKE ? ORDER BY created_at ASC LIMIT 1",
-                (f'%"ea_id": "{wi["ea_id"]}"%',),
-            ).fetchone()
-            if not parent:
-                parent_id = create_task(
-                    conn,
-                    kind="backtest_q03",
-                    source_id=None,
-                    card_id=wi["ea_id"],
-                    payload={
-                        "ea_id": wi["ea_id"],
-                        "phase": "Q03",
-                        "created_by": "p2_pass_promoter",
-                    },
-                )
-                parent = conn.execute(
-                    "SELECT id, status FROM tasks WHERE id=?",
-                    (parent_id,),
-                ).fetchone()
-            new_id = str(uuid.uuid4())
-            now = utc_now()
-            payload = _promotion_payload_with_basket_context(
-                wi,
-                {"promoted_from_p2_work_item": wi["id"]},
-            )
-            conn.execute(
-                """
-                INSERT INTO work_items
-                  (id, kind, phase, ea_id, symbol, setfile_path, status,
-                   attempt_count, parent_task_id, payload_json, created_at, updated_at,
-                   gate_contract_version)
-                VALUES (?, 'backtest', 'Q03', ?, ?, ?, 'pending', 0, ?, ?, ?, ?, ?)
-                """,
-                (new_id, wi["ea_id"], wi["symbol"], wi["setfile_path"],
-                 parent["id"], json.dumps(payload), now, now,
-                 ACTIVE_GATE_CONTRACT_VERSION),
-            )
-            # Re-open parent Q03 task so classify_aggregate re-runs when this
-            # work_item finishes. No-op if already pending.
-            if parent["id"] not in reopened_parents and parent["status"] == "done":
-                conn.execute(
-                    "UPDATE tasks SET status='pending', updated_at=? WHERE id=?",
-                    (now, parent["id"]),
-                )
-                reopened_parents.add(parent["id"])
-            result["p3_promotions"].append({
-                "p3_work_item_id": new_id,
-                "ea_id": wi["ea_id"],
-                "symbol": wi["symbol"],
-                "setfile": Path(wi["setfile_path"]).name,
-                "parent_p2_work_item_id": wi["id"],
-                "parent_p3_task_id": parent["id"],
-                "reopened_parent": parent["id"] in reopened_parents and parent["status"] == "done",
-            })
-        if result["p3_promotions"]:
-            conn.commit()
-
-    with connect(root) as conn:
-        result["p5_calibration_auto_stubbed"] = _auto_stub_p5_calibration(root, conn)
-
-    result["cascade_promotions"] = []
-    result["cascade_promotions_skipped"] = []
-    result["q09_portfolio_promotions"] = []
-    result["q09_portfolio_promotions_skipped"] = []
-    result["q09_portfolio_admissions"] = []
-    # Q09_NEWS is a canonical, evidence-producing phase. Q10 requires its
-    # CONFIG_LOCKED result; portfolio output is optional information.
-    cascade_phase_map = {
-        phase: next_phase(phase)
-        for phase in ORDINARY_STORAGE_PHASE_ORDER
-        if phase_rank("Q03") <= phase_rank(phase) < phase_rank(_INCUMBENT_PHASE)
-    }
-    cascade_pass_verdicts = {
-        "Q03": {"PASS"},
-        "Q04": {"PASS", "PASS_SOFT", "PASS_LOWFREQ"},  # DL-071 soft-pass + DL-076 low-freq pooled pass advance
-        "Q05": {"PASS"},
-        # OWNER Option A 2026-08-21: Q06 PASS_SOFT (probation:q06_soft band) advances to Q07.
-        "Q06": {"PASS", "PASS_SOFT"},
-        "Q07": {"PASS"},
-        "Q08": {"PASS", "FAIL_SOFT"},
-        _BASELINE_FULL_RUN_PHASE: {"PASS"},
-        _NEWS_PHASE: Q09_NEWS_SUCCESS_VERDICTS,
-        # Pre-rewrite keys retained inert for any orphan reads against the
-        # empty post-wipe DB. These will never match new rows.
-        "P3": {"PASS"},
-        "P3.5": {"PASS"},
-        "P4": {"PASS"},
-        "P5": {"PASS"},
-        "P5b": {"PASS"},
-        "P5c": {"PASS"},
-        "P6": {"PASS", "MULTI_SEED_PASS"},
-        "P7": {"PASS"},
-    }
-    # Task 5343f90a: defect-blocked EAs' pre-block PASS rows (notably Q03 PASS)
-    # must not cascade to the next phase.
-    _cascade_defect_exclusion = _defect_block_exclusion_clause(
-        include_defect_blocked_evidence
-    )
-    cycle_budget.record_elapsed(
-        "pre_promotion_automation", pre_promotion_stage_started, budget_seconds=45.0
-    )
-    if cycle_budget.remaining_seconds <= 15.0:
-        result["promotion_stage"] = {
-            "skipped": "cycle_budget_exhausted",
-            "remaining_seconds": cycle_budget.remaining_seconds,
-        }
-        result["stage_timings"] = cycle_budget.snapshot()
-        return result
-    promotion_stage_started = time.monotonic()
-    promotion_deadline = cycle_budget.stage_deadline(60.0)
-    with connect(root) as conn:
-        reopened_parents: set[str] = set()
-        for prev_phase, successor_phase in cascade_phase_map.items():
-            if time.monotonic() >= promotion_deadline:
-                result["cascade_promotions_skipped"].append({
-                    "reason": "promotion_stage_budget_exhausted",
-                    "from_phase": prev_phase,
-                    "to_phase": successor_phase,
-                })
-                break
-            verdicts = sorted(cascade_pass_verdicts[prev_phase])
-            placeholders = ",".join("?" for _ in verdicts)
-            promotable = conn.execute(
-                f"""
-                SELECT w.* FROM work_items w
-                WHERE w.status='done' AND w.phase=? AND w.verdict in ({placeholders})
-                  {_cascade_defect_exclusion}
-                  AND NOT (
-                    w.phase=?
-                    AND json_valid(w.payload_json)=1
-                    AND json_extract(w.payload_json, '$.diagnostic_non_admission')=1
-                  )
-                  AND NOT EXISTS (
-                    -- DL-074 2026-06-10: block on ANY existing next-phase row
-                    -- for the same (ea, symbol, setfile), regardless of which
-                    -- source created it. The old promoted_from_phase payload
-                    -- filter let the Q04-early default-probe row coexist with
-                    -- a duplicate Q03->Q04 promotion of the identical setfile.
-                    SELECT 1 FROM work_items w2
-                    WHERE w2.ea_id = w.ea_id
-                      AND w2.symbol = w.symbol
-                      AND w2.phase = ?
-                      AND w2.setfile_path = w.setfile_path
-                  )
-                -- Inspect the full bounded cohort.  LIMIT 10 here used to let
-                -- ten permanently unpromotable old rows starve every later
-                -- Q08 PASS, including 16 pairs that already had a portfolio
-                -- sibling but never received Q09_NEWS.
-                ORDER BY w.updated_at ASC LIMIT 50
-                """,
-                (
-                    prev_phase,
-                    *verdicts,
-                    _NEWS_PHASE,
-                    successor_phase,
-                ),
-            ).fetchall()
-            for wi in promotable:
-                if time.monotonic() >= promotion_deadline:
-                    result["cascade_promotions_skipped"].append({
-                        "reason": "promotion_stage_budget_exhausted",
-                        "from_phase": prev_phase,
-                        "to_phase": successor_phase,
-                    })
-                    break
-                if not _setfile_path_exists(wi["setfile_path"]):
-                    result["cascade_promotions_skipped"].append({
-                        "ea_id": wi["ea_id"],
-                        "symbol": wi["symbol"],
-                        "setfile_path": wi["setfile_path"],
-                        "from_phase": prev_phase,
-                        "to_phase": successor_phase,
-                        "from_work_item_id": wi["id"],
-                        "reason": "missing_setfile",
-                    })
-                    continue
-                q08_evidence_sha256: str | None = None
-                q10_dependency_context: dict[str, Any] | None = None
-                if successor_phase == _NEWS_PHASE:
-                    q08_evidence_sha256 = _work_item_evidence_sha256(wi)
-                    if not q08_evidence_sha256:
-                        result["cascade_promotions_skipped"].append({
-                            "ea_id": wi["ea_id"],
-                            "symbol": wi["symbol"],
-                            "from_phase": prev_phase,
-                            "to_phase": successor_phase,
-                            "from_work_item_id": wi["id"],
-                            "reason": "q08_evidence_missing_or_unreadable",
-                        })
-                        continue
-                elif successor_phase == _INCUMBENT_PHASE:
-                    q10_dependency_context, dependency_reason = _q10_dependency_context(conn, wi)
-                    if q10_dependency_context is None:
-                        result["cascade_promotions_skipped"].append({
-                            "ea_id": wi["ea_id"],
-                            "symbol": wi["symbol"],
-                            "from_phase": prev_phase,
-                            "to_phase": successor_phase,
-                            "from_work_item_id": wi["id"],
-                            "reason": dependency_reason,
-                        })
-                        continue
-                next_kind = successor_phase.lower().replace(".", "")
-                parent = conn.execute(
-                    "SELECT id, status FROM tasks WHERE kind=? "
-                    "AND payload_json LIKE ? ORDER BY created_at ASC LIMIT 1",
-                    (f"backtest_{next_kind}", f'%"ea_id": "{wi["ea_id"]}"%'),
-                ).fetchone()
-                parent_id = parent["id"] if parent else None
-                new_id = str(uuid.uuid4())
-                now = utc_now()
-                payload = _promotion_payload_with_basket_context(
-                    wi,
-                    {
-                        "promoted_from_phase": prev_phase,
-                        "promoted_from_work_item": wi["id"],
-                        "promotion_source": "pump_cascade",
-                    },
-                )
-                if successor_phase in {"Q04", "Q05"}:
-                    _apply_q04_latest_full_year_from_history(wi, payload)
-                if successor_phase == "Q04":
-                    _apply_q04_timeout_budget(conn, wi, payload)
-                if successor_phase in {"Q05", "Q06", "Q08"}:
-                    _apply_phase_timeout_min(payload, successor_phase)
-                if successor_phase in {"Q05", "Q06", "Q07", _INCUMBENT_PHASE}:
-                    _apply_q_phase_full_history_from(payload, successor_phase)
-                contract_phase = successor_phase in {_NEWS_PHASE, _INCUMBENT_PHASE}
-                insert_sql = """
-                    INSERT INTO work_items
-                      (id, kind, phase, ea_id, symbol, setfile_path, status,
-                       attempt_count, parent_task_id, payload_json, created_at, updated_at,
-                       gate_contract_version)
-                    VALUES (?, 'backtest', ?, ?, ?, ?, 'pending', 0, ?, ?, ?, ?, ?)
-                """
-                insert_args = (
-                    new_id, successor_phase, wi["ea_id"], wi["symbol"], wi["setfile_path"],
-                    parent_id, json.dumps(payload, sort_keys=True), now, now,
-                    ACTIVE_GATE_CONTRACT_VERSION,
-                )
-                if not contract_phase:
-                    conn.execute(insert_sql, insert_args)
-                else:
-                    conn.execute("SAVEPOINT q09_contract_promotion")
-                    try:
-                        conn.execute(insert_sql, insert_args)
-                        if successor_phase == _NEWS_PHASE:
-                            _add_q08_input_dependency(
-                                conn,
-                                child_work_item_id=new_id,
-                                q08_work_item=wi,
-                                evidence_sha256=str(q08_evidence_sha256),
-                            )
-                            _mark_q09_awaiting_sealed_plan(
-                                conn,
-                                work_item_id=new_id,
-                                payload=payload,
-                                now=now,
-                            )
-                        else:
-                            _bind_q10_dependencies(
-                                conn,
-                                q10_work_item_id=new_id,
-                                q09_news_work_item_id=str(wi["id"]),
-                                dependency_context=q10_dependency_context or {},
-                            )
-                    except (Q09NewsSchemaError, sqlite3.Error, KeyError) as exc:
-                        conn.execute("ROLLBACK TO q09_contract_promotion")
-                        conn.execute("RELEASE q09_contract_promotion")
-                        result["cascade_promotions_skipped"].append({
-                            "ea_id": wi["ea_id"],
-                            "symbol": wi["symbol"],
-                            "from_phase": prev_phase,
-                            "to_phase": successor_phase,
-                            "from_work_item_id": wi["id"],
-                            "reason": f"dependency_contract_rejected:{exc}",
-                        })
-                        continue
-                    else:
-                        conn.execute("RELEASE q09_contract_promotion")
-                reopened_parent = False
-                if parent and parent["id"] not in reopened_parents and parent["status"] == "done":
-                    conn.execute(
-                        "UPDATE tasks SET status='pending', updated_at=? WHERE id=?",
-                        (now, parent["id"]),
-                    )
-                    reopened_parents.add(parent["id"])
-                    reopened_parent = True
-                result["cascade_promotions"].append({
-                    "work_item_id": new_id,
-                    "ea_id": wi["ea_id"],
-                    "symbol": wi["symbol"],
-                    "from_phase": prev_phase,
-                    "to_phase": successor_phase,
-                    "from_work_item_id": wi["id"],
-                    "parent_task_id": parent_id,
-                    "reopened_parent": reopened_parent,
-                })
-                # Keep the serialized writer interval to one promotion.  The
-                # global pump claim prevents a second promoter; terminal workers
-                # regain the WAL writer slot between rows.
-                conn.commit()
-        # DL-074 (gate-acceleration #3) Q04-early probe: every Q02-PASS
-        # primary goes straight to a Q04 walk-forward probe on its DEFAULT
-        # params, in parallel with the normal Q02->Q03 path. ~88% of EAs die
-        # at Q04; probing it before the 50-point Q03 grid stops us spending
-        # the grid on parameter sets that were never walk-forward-robust.
-        # Gate criteria are unchanged — only the order of compute moves.
-        q04_probe_rows = conn.execute(
-            f"""
-            SELECT w.* FROM work_items w
-            WHERE w.status='done' AND w.phase='Q02' AND w.verdict='PASS'
-              {_cascade_defect_exclusion}
-              AND w.setfile_path NOT LIKE '%_ablation_%'
-              AND w.setfile_path NOT LIKE '%_grid_%'
-              AND w.setfile_path NOT LIKE '%_synth_%'
-              AND NOT EXISTS (
-                SELECT 1 FROM work_items w2
-                WHERE w2.ea_id = w.ea_id AND w2.symbol = w.symbol
-                  AND w2.phase = 'Q04' AND w2.setfile_path = w.setfile_path
-              )
-            ORDER BY w.updated_at ASC LIMIT 10
-            """
-        ).fetchall()
-        for wi in q04_probe_rows:
-            if not _setfile_path_exists(wi["setfile_path"]):
-                continue
-            probe_id = str(uuid.uuid4())
-            now = utc_now()
-            payload = _promotion_payload_with_basket_context(
-                wi,
-                {
-                    "promoted_from_phase": "Q02",
-                    "promoted_from_work_item": wi["id"],
-                    "promotion_source": "pump_q04_early_probe",
-                    "q04_default_probe": True,
-                },
-            )
-            _apply_q04_latest_full_year_from_history(wi, payload)
-            _apply_q04_timeout_budget(conn, wi, payload)
-            conn.execute(
-                """
-                INSERT INTO work_items
-                  (id, kind, phase, ea_id, symbol, setfile_path, status,
-                   attempt_count, parent_task_id, payload_json, created_at, updated_at,
-                   gate_contract_version)
-                VALUES (?, 'backtest', 'Q04', ?, ?, ?, 'pending', 0, NULL, ?, ?, ?, ?)
-                """,
-                (probe_id, wi["ea_id"], wi["symbol"], wi["setfile_path"],
-                 json.dumps(payload, sort_keys=True), now, now,
-                 ACTIVE_GATE_CONTRACT_VERSION),
-            )
-            result["cascade_promotions"].append({
-                "work_item_id": probe_id,
-                "ea_id": wi["ea_id"],
-                "symbol": wi["symbol"],
-                "from_phase": "Q02",
-                "to_phase": "Q04",
-                "from_work_item_id": wi["id"],
-                "parent_task_id": None,
-                "reopened_parent": False,
-                "q04_default_probe": True,
-            })
-            conn.commit()
-        q09_promoted = _promote_q08_soft_fails_to_q09_portfolio(
-            conn, result, include_defect_blocked_evidence=include_defect_blocked_evidence
-        )
-        if q09_promoted:
-            conn.commit()
-        q09_paired_news = _promote_paired_q09_portfolio_passes_to_news(
-            conn,
-            result,
-            include_defect_blocked_evidence=include_defect_blocked_evidence,
-            max_rows=20,
-            commit_each=True,
-        )
-        q09_admitted = 0
-        if (
-            result["cascade_promotions"]
-            or q09_promoted
-            or q09_paired_news
-            or q09_admitted
-        ):
-            conn.commit()
-
-    cycle_budget.record_elapsed(
-        "promotions", promotion_stage_started, budget_seconds=60.0
-    )
     # Newly created and previously parked news rows become runnable in the same
     # pump cycle.  Each row is independently fail-closed, so one bad lineage
     # cannot starve the remaining cohort.
@@ -26269,6 +26275,11 @@ def dispatch_tick(
     All current spawning is owned by ``dispatch_work_items``.
     """
     init_db(root)
+    # 2026-09-02 (CEO): sub-step timings; dispatch_tick overran its 30 s budget
+    # by ~7x (208 s) and starved every later pump stage.
+    _t_start = time.monotonic()
+    _timings: dict[str, Any] = {}
+    _row_times: list[tuple[str, float]] = []
     q09_autoseal = auto_seal_pending_q09_news(
         root,
         limit=q09_autoseal_limit,
@@ -26276,10 +26287,14 @@ def dispatch_tick(
     )
     actions: list[dict[str, Any]] = []
     started_iso = utc_now()
+    _t_scan = time.monotonic()
+    _timings["autoseal_seconds"] = round(_t_scan - _t_start, 3)
     running_mt5_terminals = _running_mt5_terminals()
     factory_terminals = active_mt5_terminals()
     busy_terminals: set[str] = set(running_mt5_terminals)
 
+    _t_with = time.monotonic()
+    _timings["terminal_scan_seconds"] = round(_t_with - _t_scan, 3)
     with connect(root) as conn:
         # Phase 1 — poll all active backtest tasks. Tasks that have
         # work_items are owned by dispatch_work_items; this legacy path
@@ -26291,7 +26306,15 @@ def dispatch_tick(
             "ORDER BY t.created_at"
         ).fetchall()
 
+        _t_loop = time.monotonic()
+        _timings["db_scan_seconds"] = round(_t_loop - _t_with, 3)
+        _prev_row = None
+        _prev_t = _t_loop
         for row in active_rows:
+            _now = time.monotonic()
+            if _prev_row is not None:
+                _row_times.append((_prev_row, round(_now - _prev_t, 3)))
+            _prev_row, _prev_t = row["id"], _now
             payload = json.loads(row["payload_json"])
             phase = payload.get("phase", "?")
             ea_id = payload.get("ea_id")
@@ -26517,6 +26540,11 @@ def dispatch_tick(
         # orphaned legacy parents pending and visible for explicit migration,
         # but never create another autonomous process from this path.
         dispatch_mode = "legacy_direct_spawn_deprecated"
+        if _prev_row is not None:
+            _row_times.append((_prev_row, round(time.monotonic() - _prev_t, 3)))
+        _timings["active_rows_seconds"] = round(time.monotonic() - _t_loop, 3)
+        _timings["active_rows_count"] = len(_row_times)
+        _t_pending = time.monotonic()
         for pending_row in pending_rows:
             try:
                 payload = json.loads(pending_row["payload_json"] or "{}")
@@ -26532,6 +26560,8 @@ def dispatch_tick(
                 "all_mode_disabled": True,
             })
 
+    _timings["total_seconds"] = round(time.monotonic() - _t_start, 3)
+    _timings["slowest_active_rows"] = sorted(_row_times, key=lambda x: -x[1])[:3]
     return {
         "scanned_at": started_iso,
         "q09_autoseal": q09_autoseal,
@@ -26540,6 +26570,7 @@ def dispatch_tick(
         "free_terminals": sorted([t for t in factory_terminals if t not in busy_terminals]),
         "running_mt5_terminals": sorted(running_mt5_terminals),
         "mode": dispatch_mode if pending_rows or actions else "idle",
+        "timings": _timings,
     }
 
 
