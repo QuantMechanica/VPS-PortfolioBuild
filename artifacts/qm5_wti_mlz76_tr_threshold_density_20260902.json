@@ -1,0 +1,54 @@
+{
+  "schema": "qm.predata_state_density/v1",
+  "generated_at_utc": "2026-09-02T09:55:00Z",
+  "candidate_slug": "wti-mlz76-tr",
+  "market_data_used": false,
+  "construction": {
+    "alphabet": "binary monthly log-return signs",
+    "word_length": 20,
+    "parser": "LZ76 unique exhaustive history",
+    "complexity_measure": "raw exhaustive component count",
+    "inclusive_threshold": 6,
+    "possible_words": 1048576
+  },
+  "enumeration": {
+    "component_count_distribution": {
+      "2": 4,
+      "3": 396,
+      "4": 11552,
+      "5": 125696,
+      "6": 452428,
+      "7": 410944,
+      "8": 47508,
+      "9": 48
+    },
+    "distribution_checksum": 1048576,
+    "qualified_words": 590076,
+    "qualified_fraction": 0.5627403259277344,
+    "theoretical_states_per_12_attempts": 6.7528839111328125,
+    "largest_qualified_complexity": 6,
+    "smallest_excluded_complexity": 7
+  },
+  "reference_vectors": [
+    {
+      "word": "0011011101110110",
+      "phrases": ["0", "01", "10", "111", "01110110"],
+      "complexity": 5
+    },
+    {
+      "word": "00000001101110100100",
+      "phrases": ["0", "0000001", "10", "111", "010", "0100"],
+      "complexity": 6,
+      "ones": 7,
+      "runs": 9
+    },
+    {
+      "word": "00000001101110101000",
+      "phrases": ["0", "0000001", "10", "111", "010", "100", "0"],
+      "complexity": 7,
+      "ones": 7,
+      "runs": 9
+    }
+  ],
+  "claim_boundary": "Uniform binary-word density only; not market frequency, independence, significance, efficacy, or a backtest result."
+}

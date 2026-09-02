@@ -1,0 +1,42 @@
+{
+  "schema": "qm.source-retrieval-evidence/v1",
+  "source_id": "AI-CODEX-WTI-MLZ76-TREND-20260902",
+  "retrieved_at_utc": "2026-09-02T09:55:00Z",
+  "routes": [
+    {
+      "role": "lz76_exhaustive_history_definition_and_finite_word_distribution",
+      "status": "WEB_RENDERED_COMPLETE_ARXIV_MANUSCRIPT",
+      "citation": "Szczepanski (2009), On the Distribution Function of the Complexity of Finite Sequences, Information Sciences 179(9), 1217-1220",
+      "doi": "10.1016/j.ins.2008.12.019",
+      "published_url": "https://doi.org/10.1016/j.ins.2008.12.019",
+      "complete_manuscript_url": "https://arxiv.org/abs/math/0009084",
+      "read_scope": "Complete rendered manuscript, Sections I-IV, Definitions 1-3, theorem, Corollaries 1-2, final remarks, and references; rendered lines 0-188.",
+      "boundary": "Defines the LZ76 unique exhaustive history, component-count complexity, and finite-word distribution only. It does not define WTI, monthly return signs, a complexity ceiling, trading direction, risk, lifecycle, or performance."
+    },
+    {
+      "role": "original_lz76_provenance",
+      "status": "OFFICIAL_BIBLIOGRAPHIC_METADATA_ONLY",
+      "citation": "Lempel and Ziv (1976), On the Complexity of Finite Sequences, IEEE Transactions on Information Theory 22(1), 75-81",
+      "doi": "10.1109/TIT.1976.1055501",
+      "metadata_url": "https://doi.org/10.1109/TIT.1976.1055501",
+      "read_scope": "IEEE/Crossref bibliographic identity verified; inaccessible full text was not represented as a complete read.",
+      "boundary": "Provenance only; executable definitions are bounded to the complete Szczepanski manuscript."
+    },
+    {
+      "role": "wti_monthly_continuation_carrier",
+      "status": "REUSED_GOVERNED_COMPLETE_READ",
+      "citation": "Moskowitz, Ooi, and Pedersen (2012), Time Series Momentum, Journal of Financial Economics 104(2), 228-250",
+      "doi": "10.1016/j.jfineco.2011.11.003",
+      "url": "https://fairmodel.econ.yale.edu/ec439/mosk.pdf",
+      "local_evidence": "strategy-seeds/sources/MOP-TSMOM-2012/source.md",
+      "local_evidence_sha256": "C8B07ECD62C1D5EF9E3D7975EEE6A3B6C46C1C566D0B20B42237613D9B3A7042",
+      "boundary": "Complete governed 23-page paper read; supports WTI membership, own-return continuation horizons, and monthly renewal only. Pooled futures results do not establish this conjunction or WTI-only efficacy."
+    }
+  ],
+  "safety": {
+    "authentication_used": false,
+    "site_mutation": false,
+    "binary_or_ea_downloaded": false,
+    "external_runtime_dependency_created": false
+  }
+}
