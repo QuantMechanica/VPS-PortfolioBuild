@@ -596,7 +596,31 @@ def enqueue(plan: dict[str, Any], *, db_path: Path, ledger_path: Path,
         conn.close()
 
 
+CELL_REPORT_CACHE_SCHEMA = "qm.opt-census-cell-report-cache.v1"
+
+
+def _cell_report_cache_path(summary_path: Path) -> Path:
+    return summary_path.with_name(summary_path.stem + ".cell_report_cache.v1.json")
+
+
+def _file_stamp(path: Path) -> list[int]:
+    stat = path.stat()
+    return [int(stat.st_size), int(stat.st_mtime_ns)]
+
+
+def _cell_report_cache_enabled() -> bool:
+    raw = str(os.environ.get("QM_OPT_CENSUS_CELL_REPORT_CACHE", "1")).strip().lower()
+    return raw not in {"0", "false", "no", "off"}
+
+
 def cell_report(summary_path: Path) -> dict[str, Any]:
+    # 2026-09-02 (CEO throughput): the selector re-derived every resolved cell's
+    # report on every pump cycle (summary + native report hashed and the native
+    # report re-parsed, thousands of cells per cycle).  Under D: saturation one
+    # pump cycle spent >10 min here.  A cell's summary and native report are
+    # immutable evidence once written, so the derived report is memoised in a
+    # sidecar keyed by both files' (size, mtime_ns); any change re-derives.
+    summary_path = Path(summary_path)
     summary = json.loads(summary_path.read_text(encoding="utf-8-sig"))
     runs = [run for run in summary.get("runs", []) if run.get("status") == "OK"]
     if len(runs) != 1:
@@ -605,6 +629,25 @@ def cell_report(summary_path: Path) -> dict[str, Any]:
     report_path = Path(str(run.get("report_canonical_path") or ""))
     if not report_path.is_file():
         raise CensusError(f"native report missing: {report_path}")
+    cache_enabled = _cell_report_cache_enabled()
+    cache_path = _cell_report_cache_path(summary_path)
+    stamps: dict[str, list[int]] | None = None
+    if cache_enabled:
+        try:
+            stamps = {
+                "summary": _file_stamp(summary_path),
+                "report": _file_stamp(report_path),
+            }
+            cached = json.loads(cache_path.read_text(encoding="utf-8"))
+            if (
+                isinstance(cached, dict)
+                and cached.get("schema") == CELL_REPORT_CACHE_SCHEMA
+                and cached.get("stamps") == stamps
+                and isinstance(cached.get("report"), dict)
+            ):
+                return dict(cached["report"])
+        except (OSError, ValueError, TypeError):
+            pass
     sys.path.insert(0, str(REPO_ROOT))
     from framework.scripts.q10_recency import extract_closed_trades
 
@@ -612,7 +655,7 @@ def cell_report(summary_path: Path) -> dict[str, Any]:
     entry_days = len({trade.entry_time.date() for trade in trades})
     net = float(run["net_profit"])
     max_dd = float(run["drawdown"])
-    return {
+    report = {
         "schema": "qm.opt-census-cell-report.v1",
         "summary_path": str(summary_path.resolve()),
         "summary_sha256": _sha256(summary_path),
@@ -626,6 +669,20 @@ def cell_report(summary_path: Path) -> dict[str, Any]:
         "return_to_maxdd": None if max_dd <= 0 else net / max_dd,
         "report_reconciled": int(native["total_trades"]) == len(trades) == int(run["total_trades"]),
     }
+    if cache_enabled and stamps is not None:
+        try:
+            tmp = cache_path.with_suffix(".tmp")
+            tmp.write_text(
+                json.dumps(
+                    {"schema": CELL_REPORT_CACHE_SCHEMA, "stamps": stamps, "report": report},
+                    sort_keys=True,
+                ),
+                encoding="utf-8",
+            )
+            os.replace(tmp, cache_path)
+        except (OSError, TypeError, ValueError):
+            pass
+    return report
 
 
 BOOST_AUTHORITY = "opt_census.boost frontier window (queue-priority-only)"
