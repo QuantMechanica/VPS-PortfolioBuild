@@ -21997,6 +21997,94 @@ def record_q01_smoke_successor(
     }
 
 
+PRIORITY_TRACK_MARK_LOG = Path(r"D:/QM/reports/state/priority_track_marks.jsonl")
+
+
+def mark_work_item_priority_track(
+    root: Path,
+    work_item_id: str,
+    reason: str,
+    *,
+    dry_run: bool = False,
+) -> dict[str, Any]:
+    """Set ``payload.priority_track = true`` on exactly one PENDING work item.
+
+    Queue-order change only (Stehende Vollmacht GRUEN): the row's phase, status,
+    verdict, evidence and setfile are never touched, the mark is appended to a
+    ``priority_track_marks`` list inside the payload and to an append-only JSONL
+    log.  Non-pending rows are refused fail-closed.  First use 2026-09-02: the
+    Q07/Q08 unblock reruns of the DL-089 census parents sat at claim-order rank
+    ~1,500 behind census cells although the queue doctrine puts them first.
+    """
+    wid = str(work_item_id or "").strip()
+    note = str(reason or "").strip()
+    if not wid or not note:
+        return {"applied": False, "reason": "work_item_id_and_reason_required"}
+    init_db(root)
+
+    def _apply() -> dict[str, Any]:
+        with connect(root) as conn:
+            row = conn.execute(
+                "SELECT id, phase, ea_id, symbol, status, payload_json FROM work_items WHERE id = ?",
+                (wid,),
+            ).fetchone()
+            if row is None:
+                return {"applied": False, "reason": "work_item_not_found", "work_item_id": wid}
+            if str(row["status"]) != "pending":
+                return {
+                    "applied": False,
+                    "reason": f"work_item_not_pending:{row['status']}",
+                    "work_item_id": wid,
+                }
+            try:
+                payload = json.loads(row["payload_json"] or "{}")
+            except ValueError:
+                return {"applied": False, "reason": "payload_json_invalid", "work_item_id": wid}
+            if not isinstance(payload, dict):
+                return {"applied": False, "reason": "payload_not_object", "work_item_id": wid}
+            already = payload.get("priority_track") is True
+            mark = {
+                "marked_at_utc": utc_now(),
+                "reason": note,
+                "by": os.environ.get("QM_AGENT_ID") or "controller",
+                "previous_priority_track": payload.get("priority_track"),
+            }
+            result = {
+                "applied": False,
+                "dry_run": bool(dry_run),
+                "work_item_id": wid,
+                "phase": row["phase"],
+                "ea_id": row["ea_id"],
+                "symbol": row["symbol"],
+                "already_priority_track": already,
+                "mark": mark,
+            }
+            if dry_run or already:
+                result["reason"] = "already_priority_track" if already else "dry_run"
+                return result
+            payload["priority_track"] = True
+            marks = payload.get("priority_track_marks")
+            if not isinstance(marks, list):
+                marks = []
+            marks.append(mark)
+            payload["priority_track_marks"] = marks
+            conn.execute(
+                "UPDATE work_items SET payload_json = ?, updated_at = ? WHERE id = ? AND status = 'pending'",
+                (json.dumps(payload, sort_keys=True), utc_now(), wid),
+            )
+            conn.commit()
+            result["applied"] = True
+            try:
+                PRIORITY_TRACK_MARK_LOG.parent.mkdir(parents=True, exist_ok=True)
+                with PRIORITY_TRACK_MARK_LOG.open("a", encoding="utf-8") as handle:
+                    handle.write(json.dumps({"work_item_id": wid, "phase": row["phase"], "ea_id": row["ea_id"], "symbol": row["symbol"], **mark}, sort_keys=True) + "\n")
+            except OSError:
+                result["log_write_failed"] = True
+            return result
+
+    return retry_sqlite_busy(_apply, attempts=MUTATION_LOCK_DB_ATTEMPTS)
+
+
 def release_work_item_hold(
     root: Path,
     work_item_id: str,
@@ -30355,6 +30443,14 @@ def build_parser() -> argparse.ArgumentParser:
     release_hold.add_argument("--release-note", required=True)
     release_hold.add_argument("--dry-run", action="store_true", help="Inspect eligibility without writing")
 
+    mark_pt = sub.add_parser(
+        "mark-priority-track",
+        help="Set payload.priority_track=true on exactly one PENDING work item (queue-order change only; append-only mark + JSONL log; never touches status/verdict/evidence)",
+    )
+    mark_pt.add_argument("--work-item-id", required=True)
+    mark_pt.add_argument("--reason", required=True)
+    mark_pt.add_argument("--dry-run", action="store_true", help="Inspect without writing")
+
     sub.add_parser("mt5-slots", help="Show MT5 terminal process scan with per factory slot attribution")
     reserve_terminal = sub.add_parser("reserve-terminal", help="Reserve a T1-T12 slot after its current item finishes")
     reserve_terminal.add_argument("terminal")
@@ -30683,7 +30779,7 @@ _STATE_MUTATING_COMMANDS = frozenset({
 def _command_mutates_state(args: argparse.Namespace) -> bool:
     if args.command == "bind-q09-plan":
         return not bool(getattr(args, "dry_run", False))
-    if args.command in {"record-q01-smoke-successor", "release-hold"}:
+    if args.command in {"record-q01-smoke-successor", "release-hold", "mark-priority-track"}:
         return not bool(getattr(args, "dry_run", False))
     if args.command == "enqueue-compile":
         return bool(args.apply or (not args.from_file and not args.repair_successor_of))
@@ -30878,6 +30974,13 @@ def main(argv: list[str] | None = None) -> int:
             args.work_item_id,
             args.expected_hold_code,
             args.release_note,
+            dry_run=args.dry_run,
+        ))
+    elif args.command == "mark-priority-track":
+        print_json(mark_work_item_priority_track(
+            root,
+            args.work_item_id,
+            args.reason,
             dry_run=args.dry_run,
         ))
     elif args.command == "ea-metrics":
