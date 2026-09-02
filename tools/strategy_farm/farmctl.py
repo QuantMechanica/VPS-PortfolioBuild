@@ -18847,7 +18847,12 @@ def _pump_unlocked(
                 -- ten permanently unpromotable old rows starve every later
                 -- Q08 PASS, including 16 pairs that already had a portfolio
                 -- sibling but never received Q09_NEWS.
-                ORDER BY w.updated_at ASC LIMIT 50
+                -- 2026-09-02 (CEO): newest first and a wider window. With the
+                -- v4 Q09->news edge, 50+ permanently unpromotable July rows
+                -- (frozen Q08 evidence purged) sat at the front of the ASC
+                -- window and starved every newer, promotable pair (13:28Z:
+                -- 50 x q08_evidence_missing_or_unreadable, 0 promotions).
+                ORDER BY w.updated_at DESC LIMIT 300
                 """,
                 (
                     prev_phase,
