@@ -1,0 +1,41 @@
+{
+  "schema_version": "qm.compile-build-task-binding-recovery/v1",
+  "ea_id": "QM5_41279",
+  "ea_label": "QM5_41279_xauxag-msavage-rv",
+  "work_item_id": "b31e2aec-fee2-4fd7-8bd3-ea0d4f00e7ad",
+  "build_task_id": "ddf48cd8-6276-49ae-b799-61b0a1716750",
+  "reason": "The compile item was enqueued before the canonical build_ea task existed. The public idempotent enqueue path correctly refused to create a duplicate but does not retrofit an exact open row.",
+  "classifier_validation": {
+    "eligible": true,
+    "reason": "ELIGIBLE",
+    "build_task_binding_authorized": true,
+    "binding_contract_version": "qm.compile-ea-build-task-binding/v1",
+    "build_task_status": "pending",
+    "mq5_sha256": "bae3234d5f52dee95afddcd4435ef193fe4bd48a550c1e93a464a6c352e1caec"
+  },
+  "compare_and_swap": {
+    "required_work_item_status": "pending",
+    "before_payload_sha256": "7f86ab8aa8de8ba7df130b07ecd7e75de37003ea38ada70bec52222a914796f5",
+    "expected_after_payload_sha256": "18e1a824e01f9d14e4ff574384def2e83f705bfd9b93b1672a643b5b60553367",
+    "fields_added": {
+      "compile_build_task_binding_contract_version": "qm.compile-ea-build-task-binding/v1",
+      "bound_build_task_id": "ddf48cd8-6276-49ae-b799-61b0a1716750",
+      "bound_build_task_ea_id": "QM5_41279"
+    },
+    "fields_removed": [],
+    "other_payload_fields_changed": false,
+    "work_item_updated_at_refreshed": true
+  },
+  "rollback_evidence": {
+    "full_database_backup": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260902T002946Z_54b460f3.sqlite",
+    "full_database_backup_sha256": "a83ec2e910e5f7490c8ab8ad2c82c94a5e8f23fe4a0e61f4b3e8e7199b327418",
+    "pre_update_payload_is_recorded_in": "artifacts/qm5_41279_compile_release_dry_run_20260902.json and runtime query evidence"
+  },
+  "scope": {
+    "status_changed": false,
+    "source_hash_changed": false,
+    "activation_hold_changed": false,
+    "tester_started": false,
+    "live_surface_touched": false
+  }
+}
