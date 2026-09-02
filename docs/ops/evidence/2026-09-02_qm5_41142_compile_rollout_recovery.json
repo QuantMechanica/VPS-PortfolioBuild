@@ -1,0 +1,41 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "9adcc3f5-939f-48bd-a5c7-03c08c1c0d85"
+  ],
+  "backup": {
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260902T184804Z_29d6ddb2.sqlite",
+    "reused": false,
+    "sha256": "45a35db019ce967b429180edc4e6e891c5b8176e0d929a5337bc40e649780f4c"
+  },
+  "backup_reuse_max_age_minutes": 60.0,
+  "backup_timeout_seconds": 60.0,
+  "backup_write_guard": {
+    "attempts": 1,
+    "transaction": "BEGIN IMMEDIATE / validated / backed up / released / COMMIT",
+    "wait_seconds": 0.0
+  },
+  "deferred": [],
+  "factory_mutation_lock": {
+    "path": "D:\\QM\\strategy_farm\\state\\FACTORY_MUTATION.lock",
+    "release_status": "released"
+  },
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "cb33049fcc851c1bd83762abe1aee72768bf38d55d73097de08e48c1ba177d9a",
+      "ea_id": "QM5_41142",
+      "ea_label": "QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow",
+      "expected_mq5_sha256": "cb33049fcc851c1bd83762abe1aee72768bf38d55d73097de08e48c1ba177d9a",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow.mq5",
+      "work_item_id": "9adcc3f5-939f-48bd-a5c7-03c08c1c0d85"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-09-02T18:48:26+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "9adcc3f5-939f-48bd-a5c7-03c08c1c0d85"
+}

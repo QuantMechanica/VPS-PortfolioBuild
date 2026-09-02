@@ -354,18 +354,21 @@ def test_rollout_reconciliation_authority_requires_stale_hold_and_supersession(
     assert repair["enqueued_count"] == 1
     new_id = repair["enqueued"][0]["work_item_id"]
     with farmctl.connect(root) as conn:
-        conn.execute(
-            """INSERT INTO work_item_supersedes
-               (work_item_id,superseded_by_work_item_id,reason,source_encoding,
-                evidence_path,recorded_by,recorded_at)
-               VALUES (?,?,'test','operator:test',NULL,'test',?)""",
-            (old_id, new_id, farmctl.utc_now()),
-        )
+        edge = conn.execute(
+            "SELECT superseded_by_work_item_id,source_encoding "
+            "FROM work_item_supersedes WHERE work_item_id=?",
+            (old_id,),
+        ).fetchone()
         conn.execute(
             "UPDATE work_item_holds SET active=0 WHERE work_item_id=?",
             (old_id,),
         )
         conn.commit()
+
+    assert tuple(edge) == (
+        new_id,
+        compile_work_items.ROLLOUT_RECONCILIATION_SOURCE_REPAIR_AUTHORITY,
+    )
 
     worker_recheck = compile_work_items.classify_candidate(
         root,

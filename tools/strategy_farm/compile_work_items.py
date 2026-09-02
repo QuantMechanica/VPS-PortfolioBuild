@@ -2023,6 +2023,8 @@ def _source_repair_authorized(
     if current_work_item_id is None:
         return any(
             int(row.get("active") or 0) == 1
+            and row.get("status") == "pending"
+            and row.get("claimed_by") is None
             and str(_json_object(row.get("payload_json")).get("ea_label") or "")
             == ea_label
             and str(_json_object(row.get("payload_json")).get("mq5_sha256") or "").lower()
@@ -2349,6 +2351,30 @@ def _qm5_10025_q02_zero_trade_repair_authorized(
     )
 
 
+def _active_stale_rollout_hold_ids(
+    conn: sqlite3.Connection,
+    *,
+    ea_id: str,
+    ea_label: str,
+    source_sha: str,
+) -> list[str]:
+    rows = conn.execute(
+        """SELECT w.id,w.status,w.claimed_by,w.payload_json
+           FROM work_items w JOIN work_item_holds h ON h.work_item_id=w.id
+           WHERE w.ea_id=? AND w.phase=? AND h.hold_code=? AND h.active=1""",
+        (ea_id, COMPILE_EA_PHASE, COMPILE_ACTIVATION_HOLD_CODE),
+    ).fetchall()
+    return sorted(
+        str(row["id"])
+        for row in rows
+        if row["status"] == "pending"
+        and row["claimed_by"] is None
+        and str(_json_object(row["payload_json"]).get("ea_label") or "") == ea_label
+        and str(_json_object(row["payload_json"]).get("mq5_sha256") or "").lower()
+        != source_sha.lower()
+    )
+
+
 def _active_stale_rollout_hold_exists(
     conn: sqlite3.Connection,
     *,
@@ -2356,17 +2382,13 @@ def _active_stale_rollout_hold_exists(
     ea_label: str,
     source_sha: str,
 ) -> bool:
-    rows = conn.execute(
-        """SELECT w.payload_json
-           FROM work_items w JOIN work_item_holds h ON h.work_item_id=w.id
-           WHERE w.ea_id=? AND w.phase=? AND h.hold_code=? AND h.active=1""",
-        (ea_id, COMPILE_EA_PHASE, COMPILE_ACTIVATION_HOLD_CODE),
-    ).fetchall()
-    return any(
-        str(_json_object(row["payload_json"]).get("ea_label") or "") == ea_label
-        and str(_json_object(row["payload_json"]).get("mq5_sha256") or "").lower()
-        != source_sha.lower()
-        for row in rows
+    return bool(
+        _active_stale_rollout_hold_ids(
+            conn,
+            ea_id=ea_id,
+            ea_label=ea_label,
+            source_sha=source_sha,
+        )
     )
 
 
@@ -2539,7 +2561,8 @@ def _inventory(root: Path, repo_root: Path) -> dict[str, Any]:
             if row["phase"] == COMPILE_EA_PHASE and row["status"] in ("pending", "active"):
                 open_compile[ea_id].append(item)
         for row in conn.execute(
-            """SELECT w.id,w.ea_id,w.status,w.verdict,w.payload_json,h.active
+            """SELECT w.id,w.ea_id,w.status,w.verdict,w.claimed_by,
+                      w.payload_json,h.active
                FROM work_items w JOIN work_item_holds h ON h.work_item_id=w.id
                WHERE w.phase=? AND h.hold_code=?""",
             (COMPILE_EA_PHASE, COMPILE_ACTIVATION_HOLD_CODE),
@@ -3493,6 +3516,7 @@ def enqueue_compile_eas(
         with _connect(root) as conn:
             conn.execute("BEGIN IMMEDIATE")
             for candidate in eligible:
+                rollout_predecessor_ids: list[str] = []
                 if bound_build_task_id:
                     current_build_tasks_by_id: dict[str, dict[str, Any]] = {}
                     current_build_tasks_by_ea: dict[str, list[dict[str, Any]]] = (
@@ -3542,23 +3566,65 @@ def enqueue_compile_eas(
                         "reasons": ["SOURCE_REPAIR_AUTHORITY_INVALID_AT_APPLY"],
                     })
                     continue
-                if (
-                    source_repair_authority
-                    == ROLLOUT_RECONCILIATION_SOURCE_REPAIR_AUTHORITY
-                    and not _active_stale_rollout_hold_exists(
+                if source_repair_authority == (
+                    ROLLOUT_RECONCILIATION_SOURCE_REPAIR_AUTHORITY
+                ):
+                    rollout_predecessor_ids = _active_stale_rollout_hold_ids(
                         conn,
                         ea_id=str(candidate["ea_id"]),
                         ea_label=str(candidate["ea_label"]),
                         source_sha=str(candidate["mq5_sha256"]),
                     )
-                ):
-                    refused.append({
-                        **candidate,
-                        "eligible": False,
-                        "reason": "SOURCE_REPAIR_AUTHORITY_INVALID_AT_APPLY",
-                        "reasons": ["SOURCE_REPAIR_AUTHORITY_INVALID_AT_APPLY"],
-                    })
-                    continue
+                    expected_predecessor_ids = sorted(
+                        str(value)
+                        for value in candidate.get(
+                            "source_repair_stale_open_work_item_ids", []
+                        )
+                        if str(value or "")
+                    )
+                    if (
+                        not rollout_predecessor_ids
+                        or rollout_predecessor_ids != expected_predecessor_ids
+                    ):
+                        refused.append({
+                            **candidate,
+                            "eligible": False,
+                            "reason": "SOURCE_REPAIR_AUTHORITY_INVALID_AT_APPLY",
+                            "reasons": [
+                                "SOURCE_REPAIR_AUTHORITY_INVALID_AT_APPLY"
+                            ],
+                            "expected_stale_rollout_predecessor_ids": (
+                                expected_predecessor_ids
+                            ),
+                            "active_stale_rollout_predecessor_ids": (
+                                rollout_predecessor_ids
+                            ),
+                        })
+                        continue
+                    already_superseded_ids = [
+                        predecessor_id
+                        for predecessor_id in rollout_predecessor_ids
+                        if conn.execute(
+                            "SELECT 1 FROM work_item_supersedes "
+                            "WHERE work_item_id=? LIMIT 1",
+                            (predecessor_id,),
+                        ).fetchone()
+                    ]
+                    if already_superseded_ids:
+                        refused.append({
+                            **candidate,
+                            "eligible": False,
+                            "reason": (
+                                "SOURCE_REPAIR_PREDECESSOR_ALREADY_SUPERSEDED_AT_APPLY"
+                            ),
+                            "reasons": [
+                                "SOURCE_REPAIR_PREDECESSOR_ALREADY_SUPERSEDED_AT_APPLY"
+                            ],
+                            "already_superseded_work_item_ids": (
+                                already_superseded_ids
+                            ),
+                        })
+                        continue
                 existing_rows = conn.execute(
                     "SELECT id,payload_json FROM work_items WHERE ea_id=? AND phase=? "
                     "AND status IN ('pending','active') ORDER BY created_at,id",
@@ -3715,6 +3781,21 @@ def enqueue_compile_eas(
                         now,
                     ),
                 )
+                for predecessor_id in rollout_predecessor_ids:
+                    conn.execute(
+                        "INSERT INTO work_item_supersedes "
+                        "(work_item_id,superseded_by_work_item_id,reason,"
+                        "source_encoding,evidence_path,recorded_by,recorded_at) "
+                        "VALUES (?,?,?,?,NULL,?,?)",
+                        (
+                            predecessor_id,
+                            work_item_id,
+                            "current-source compile supersedes stale rollout-held compile",
+                            ROLLOUT_RECONCILIATION_SOURCE_REPAIR_AUTHORITY,
+                            "compile_work_items",
+                            now,
+                        ),
+                    )
                 enqueued.append({
                     "work_item_id": work_item_id,
                     "ea_id": candidate["ea_id"],
