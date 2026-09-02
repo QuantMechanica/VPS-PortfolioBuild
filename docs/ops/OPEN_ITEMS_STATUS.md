@@ -552,3 +552,7 @@ Beide OWNER-Freigaben (MNT020-RECOMPILE, MNT006-CANARY) sind ausgeführt und im 
 # 2026-09-02 QM5_41283 mandatory Codex review
 
 - Task `ea56a51b-4442-41f3-8b18-507a2b39324f`: PASS for build review after independent semantic inspection, 8/8 reference tests, exact hash readback, and zero-finding canonical hardening. Economics remain for governed Q02; this is not live or portfolio approval. Evidence: `docs/ops/evidence/2026-09-02_qm5_41283_codex_review.md`.
+
+# 2026-09-02 terminal RAM class admission
+
+- Task `ddee6f24-6e57-423b-858d-bfb323beada2`: candidate admission now reserves 4/8/32/44 GB by measured workload class and preserves the 14/20 GB fleet guard; deterministic RAM injection and `ram_class_skipped` receipts are covered by the green 213-test worker suite. Live staggered reload and the after-reload 10-minute census measurement are deferred because the host had only 8.69 GB free with seven active tester runs, none of which were interrupted. Evidence: `docs/ops/evidence/2026-09-02_terminal_ram_class_admission.md`.
