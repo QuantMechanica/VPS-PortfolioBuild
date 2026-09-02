@@ -1,0 +1,132 @@
+{
+  "artifact_type": "fx_existing_card_stale_q02_cpu_ceiling_stop",
+  "generated_at_utc": "2026-09-02T12:19:10.666960Z",
+  "branch": "agents/board-advisor",
+  "observation_base": "6965a87a9ac8dc46d3a016a3e40a55e3621ac9c1",
+  "mission_outcome": "STOPPED_AT_CPU_CEILING_BEFORE_QUEUE_MUTATION",
+  "frontier_duplicate_guard": {
+    "controlling_research": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "scan_relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "approved_cointegration_or_coint_identities": 123,
+    "matching_ea_directories": 123,
+    "unbuilt_approved_identities": 0,
+    "anchors": {
+      "QM5_12532": {
+        "relationship": "AUDUSD.DWX / NZDUSD.DWX",
+        "state": "Q02 PASS; Q04 PASS; Q05 FAIL",
+        "q02_oninit_or_no_history_blocker": false
+      },
+      "QM5_12533": {
+        "relationship": "EURJPY.DWX / GBPJPY.DWX",
+        "state": "Q02 PASS; Q04 FAIL",
+        "q02_oninit_or_no_history_blocker": false
+      }
+    },
+    "decision": "Do not create a duplicate scan-derived Card, EA, manifest, registry allocation, or Q02 row; inspect an existing approved forex Card instead."
+  },
+  "selected_existing_forex_card": {
+    "ea_id": "QM5_10025",
+    "slug": "rw-fx-broad-pairs",
+    "source": "Robot Wealth, Index of Strategies, FX Broad Pairs Trading material",
+    "timeframe": "H4",
+    "structure": "Monthly seven-major FX partner selection with a frozen OLS hedge ratio and a beta-weighted two-leg package.",
+    "market_neutral_design": true,
+    "low_frequency": true,
+    "ml_banned_indicator_grid_martingale_or_hft": false,
+    "risk_contract": {
+      "setfile": "framework/EAs/QM5_10025_rw-fx-broad-pairs/sets/QM5_10025_rw-fx-broad-pairs_USDJPY.DWX_H4_backtest.set",
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    }
+  },
+  "stale_pending_q02": {
+    "work_item_id": "e49888a1-6dbe-45b7-bb4f-29461bbcfb0c",
+    "phase": "Q02",
+    "symbol": "USDJPY.DWX",
+    "timeframe": "H4",
+    "state": "pending",
+    "verdict": null,
+    "claimed_by": null,
+    "attempt_count": 0,
+    "priority_track": true,
+    "created_at_utc": "2026-09-01T23:44:14+00:00",
+    "append_only_rerun_of_work_item": "050dd2ea-e9d0-475f-b5ad-40c2206867ff",
+    "bound_hashes": {
+      "mq5_sha256": "49e0c78c0e45fa39b05580216003ee523839b664844a82e3a7d3d943030e069a",
+      "ex5_sha256": "030e7acc63a735a514c5490000eed4d4bf062bf8f6ee8e4da34a601da8f9ba1e",
+      "setfile_sha256": "9567e0f91b1e6892eadc822a2f6ee4f06482a80ba30c50ccfbf4a205d2acda70"
+    },
+    "canonical_supersedes_edge_count_at_observation": 0
+  },
+  "terminal_zero_trade_predecessor": {
+    "work_item_id": "050dd2ea-e9d0-475f-b5ad-40c2206867ff",
+    "state": "done",
+    "verdict": "ZERO_TRADES",
+    "updated_at_utc": "2026-09-01T21:58:17+00:00",
+    "evidence_path": "D:/QM/reports/work_items/050dd2ea-e9d0-475f-b5ad-40c2206867ff/QM5_10025/20260901_215109/summary.json"
+  },
+  "later_governed_compile": {
+    "work_item_id": "21c7d995-2fd6-44f6-b624-8c5f097c0961",
+    "state": "done",
+    "verdict": "COMPILE_OK",
+    "updated_at_utc": "2026-09-02T00:27:56+00:00",
+    "evidence_path": "D:/QM/reports/work_items/21c7d995-2fd6-44f6-b624-8c5f097c0961/QM5_10025/COMPILE_EA/compile_evidence.json",
+    "mq5_sha256": "db7424efcba0a8df90184240e277e1a7546e8030672eec88a4c72a89c32a5a61",
+    "ex5_sha256": "49fcc59b5232531f5fd2e3ba7a0c71f0bac703f54e17f7c92c911e31944d91f1",
+    "current_setfile_sha256": "4ca9d75bdb2274888ab9afc339034e7f1dc2af93ada2ff62b5672bb2976b92a5",
+    "pending_row_binding_is_stale": true,
+    "changed_execution_bindings": [
+      "mq5_sha256",
+      "ex5_sha256",
+      "setfile_sha256"
+    ]
+  },
+  "capacity_check": {
+    "sampled_at_utc": "2026-09-02T12:19:10.666960Z",
+    "samples_pct": [
+      97.2,
+      99.5,
+      93.2,
+      83.0,
+      90.7
+    ],
+    "average_pct": 92.72,
+    "maximum_pct": 99.5,
+    "ceiling_pct": 97,
+    "ceiling_hit": true,
+    "trigger": "maximum_pct >= ceiling_pct"
+  },
+  "governed_continuation": {
+    "precondition": "A fresh five-sample whole-host CPU window has both average and maximum strictly below 97 percent, and the target artifacts remain stable.",
+    "steps": [
+      "Record one canonical work_item_supersedes edge for e49888a1-6dbe-45b7-bb4f-29461bbcfb0c without rewriting or deleting the row.",
+      "Use the authenticated append-only Q02 rerun path from terminal predecessor 050dd2ea-e9d0-475f-b5ad-40c2206867ff with the then-current EX5 SHA-256.",
+      "Verify exactly one unsuperseded open USDJPY.DWX/H4 Q02 row and leave dispatch to the paced farm."
+    ]
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "ea_or_setfile_edited": false,
+    "registry_or_magic_mutation": false,
+    "work_item_or_priority_mutation": false,
+    "supersession_recorded": false,
+    "q02_enqueued": false,
+    "dispatch_tick": false,
+    "tester_or_backtest_run": false,
+    "terminal_reservation_or_control": false,
+    "committed_handoff_evidence": true
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_terminal": false,
+    "autotrading": false
+  }
+}
