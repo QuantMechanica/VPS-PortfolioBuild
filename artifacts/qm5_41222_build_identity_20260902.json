@@ -1,0 +1,27 @@
+{
+  "schema_version": "qm.build-identity/v1",
+  "build_task_id": "c2ef7f4a-5b2a-472b-a8bf-6cc4c64acb8b",
+  "ea_id": "QM5_41222",
+  "ea_label": "QM5_41222_lien-k-double-bb-trend-h1-requal8",
+  "identity_commit": "cf18ae5a88bf0c98534d41bf3dcd22f5f24f828d",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41222_lien-k-double-bb-trend-h1-requal8\\QM5_41222_lien-k-double-bb-trend-h1-requal8.mq5",
+  "mq5_sha256": "6befddb17c01ffd70fd91994d90286d8c19cdaf0683433769a3e62f0179d3545",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41222_lien-k-double-bb-trend-h1-requal8\\QM5_41222_lien-k-double-bb-trend-h1-requal8.ex5",
+  "ex5_sha256": "c79da53b30c53ae2b23e13d3009e57395b0be3f5d075037b79c59518c8abae0d",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41222_lien-k-double-bb-trend-h1-requal8\\sets\\QM5_41222_lien-k-double-bb-trend-h1-requal8_USDJPY.DWX_H1_backtest.set"
+  ],
+  "setfile_sha256": {
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41222_lien-k-double-bb-trend-h1-requal8\\sets\\QM5_41222_lien-k-double-bb-trend-h1-requal8_USDJPY.DWX_H1_backtest.set": "325dfb83f3755d4c184ac45772e1e2065fc909a8251eed484602e0441f6daf47"
+  },
+  "build_check_passed": true,
+  "build_check": {
+    "result": "PASS",
+    "exit_code": 0,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260902_131126.json",
+    "report_sha256": "a379ea9fd5398dba3a611560cd5e9820500d123e95914fde779ab37adca48de5"
+  },
+  "compile_work_item_id": "57868897-b86a-4d46-9af0-7f7aefe81561",
+  "compile_evidence_path": "D:\\QM\\reports\\work_items\\57868897-b86a-4d46-9af0-7f7aefe81561\\QM5_41222\\COMPILE_EA\\compile_evidence.json",
+  "compile_evidence_sha256": "033218e027aa8caad5457ff8bdd129d36482a221d4c163b4cba75bb8c5678759"
+}
