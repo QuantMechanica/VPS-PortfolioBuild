@@ -1,0 +1,168 @@
+{
+  "schema_version": "qm.fx-existing-basket-q04-priority-handoff/v1",
+  "generated_at_utc": "2026-09-02T07:00:56.669217Z",
+  "branch": "agents/board-advisor",
+  "git_head_before_runtime_mutation": "f1af4289108151af6db422ede93919bb34bdb2bb",
+  "mission_result": "EXISTING_FOREX_FALLBACK_Q04_PRIORITY_APPLIED",
+  "frontier_reconciliation": {
+    "controlling_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "published_pair_count": 66,
+    "published_hard_qualifier_count": 2,
+    "published_hard_qualifiers": [
+      {
+        "ea_id": "QM5_12532",
+        "pair": [
+          "AUDUSD.DWX",
+          "NZDUSD.DWX"
+        ],
+        "canonical_frontier": "Q02_PASS_Q04_PASS_Q05_FAIL"
+      },
+      {
+        "ea_id": "QM5_12533",
+        "pair": [
+          "EURJPY.DWX",
+          "GBPJPY.DWX"
+        ],
+        "canonical_frontier": "Q02_PASS_Q04_FAIL"
+      }
+    ],
+    "anchors_current_q02_oninit_or_no_history_blocked": false,
+    "anchor_open_q02_rows_at_apply": 0,
+    "latest_complete_census": "docs/research/FX_COINTEGRATION_QM5_20240_Q04_RETIREMENT_20260831T233713Z.md",
+    "approved_cointegration_or_coint_identities": 123,
+    "matching_ea_directories": 123,
+    "approved_unbuilt_identities": 0,
+    "relationships_accounted_for": 66,
+    "unbuilt_pair_selected": false,
+    "fallback_authorized": true
+  },
+  "selection": {
+    "ea_id": "QM5_12741",
+    "ea_directory": "framework/EAs/QM5_12741_nnfx-fx-basket-pooled",
+    "approved_card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_12741_nnfx-fx-basket-pooled.md",
+    "approved_card_sha256": "29b87974e2762fb7afd7d13632828ff4228b786d5a9af0420c87637789844654",
+    "logical_symbol": "QM5_12741_NNFX_FX_BASKET_D1",
+    "host_symbol": "AUDUSD.DWX",
+    "basket_symbols": [
+      "AUDUSD.DWX",
+      "EURUSD.DWX",
+      "GBPUSD.DWX",
+      "USDCHF.DWX"
+    ],
+    "selection_mode": "existing_forex_card_fallback_no_unbuilt_66_pair_candidate",
+    "strategy_family": "pooled_fx_trend",
+    "timeframe": "D1",
+    "expected_trades_per_year_per_symbol": 3,
+    "expected_pooled_trades_per_year": "12-14",
+    "structural_only": true,
+    "machine_learning": false,
+    "grid": false,
+    "martingale": false,
+    "approved_source": "VP / No Nonsense Forex published algorithm (nononsenseforex.com)",
+    "new_card_created": false,
+    "new_ea_created": false,
+    "novel_scan_relationship_claimed": false
+  },
+  "build_and_risk_binding": {
+    "mq5_sha256": "72bea21c0237c38f79053148515e12d33c8b806483c16b30e23cc19cb5e8157f",
+    "ex5_sha256": "47c92e1a7f3ba5ef3578f11065368d581b1f7385768eb716371a95b5b57853be",
+    "basket_manifest": "framework/EAs/QM5_12741_nnfx-fx-basket-pooled/basket_manifest.json",
+    "basket_manifest_sha256": "c4e3e1629364122d7f267e8ee911f3e9b36718a9aebbb3487c2afd385c22119d",
+    "logical_setfile": "framework/EAs/QM5_12741_nnfx-fx-basket-pooled/sets/QM5_12741_nnfx-fx-basket-pooled_QM5_12741_NNFX_FX_BASKET_D1_D1_backtest.set",
+    "logical_setfile_sha256": "1d6cc31f683f27598a4a8a31d960a2c2a43fff0b394dc9280dff2e1fb30f0c51",
+    "queue_hashes_match_current_files": true,
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "predecessor_chain": {
+    "q02": {
+      "work_item_id": "cab41d73-7573-4648-b58d-ce9fa6df26b3",
+      "status": "done",
+      "verdict": "PASS",
+      "evidence_path": "D:/QM/reports/work_items/cab41d73-7573-4648-b58d-ce9fa6df26b3/QM5_12741/20260630_002130/summary.json"
+    },
+    "q03": {
+      "work_item_id": "bf4f1a14-2d2f-4caf-9d94-8076560d8b8d",
+      "status": "done",
+      "verdict": "PASS",
+      "evidence_path": "D:/QM/reports/work_items/bf4f1a14-2d2f-4caf-9d94-8076560d8b8d/QM5_12741/20260630_024338/summary.json"
+    },
+    "q04_infrastructure_predecessor": {
+      "work_item_id": "fc9e29f1-9729-478f-96fb-dd7dcdb5978d",
+      "status": "done",
+      "verdict": "INFRA_FAIL",
+      "evidence_path": "D:/QM/reports/work_items/fc9e29f1-9729-478f-96fb-dd7dcdb5978d/QM5_12741/Q04/QM5_12741_NNFX_FX_BASKET_D1/aggregate.json"
+    }
+  },
+  "queue_action": {
+    "work_item_id": "4776406a-a34e-4867-983c-8f3b420e9e92",
+    "phase": "Q04",
+    "mutation": "EXACT_ID_IN_PLACE_PAYLOAD_CAS",
+    "status_after": "pending",
+    "claimed_by_after": null,
+    "attempt_count_after": 0,
+    "verdict_after": null,
+    "updated_at_preserved": "2026-09-01T08:55:55+00:00",
+    "priority_track_before": null,
+    "priority_track_after": true,
+    "priority_reason": "board_advisor_fx_existing_card_fallback_q04_infra_retry_after_exhausted_66_pair_frontier",
+    "queue_rank_before": 6946,
+    "queue_rank_after": 1391,
+    "queue_rank_improvement": 5555,
+    "pending_rows_after": 7711,
+    "prior_payload_sha256": "e5c9a13c8a521858620c97aa293733da0fa2d530a2daf10278d20e9acea9766a",
+    "post_payload_sha256": "5d15171f32ca37002dac8005061aa23395a4c2522ef05eed83e7a425336fa233",
+    "audit_event_id": 382243,
+    "audit_event": "priority_track_set",
+    "row_journal": "D:/QM/reports/state/qm5_12741_q04_priority_20260902T070056Z.journal.json",
+    "row_journal_planned_sha256": "fa25c3be0781a23135a18f19114631702c9a609020902ee84e8317058670afb0",
+    "row_journal_sha256": "4baa9bd5ac532130dafa3ba0fca282c62d80b05bf3ecaf6651021f80cc9d2506",
+    "row_journal_state": "COMMITTED",
+    "open_matching_q04_rows_after": 1,
+    "duplicate_work_items_created": 0,
+    "pipeline_verdict_changed": false,
+    "alpha_changed": false
+  },
+  "capacity": {
+    "factory_mutation_lock_wait_seconds": 0.016,
+    "factory_mutation_lock_release_status": "released",
+    "cpu_samples_percent": [
+      82.5,
+      83.1,
+      75.8,
+      81.2,
+      84.8
+    ],
+    "cpu_average_percent": 81.48,
+    "cpu_maximum_percent": 84.8,
+    "cpu_ceiling_percent": 97,
+    "cpu_ceiling_hit": false,
+    "active_logical_multisymbol_work_items_at_apply": [],
+    "serialized_basket_lane_respected": true,
+    "manual_mt5_dispatch_started": false
+  },
+  "verification": {
+    "card_g0_status": "APPROVED",
+    "card_r4_ml_forbidden": "PASS",
+    "unique_open_logical_q04": true,
+    "active_work_item_holds": 0,
+    "work_item_supersession_relations": 0,
+    "active_poison_quarantine_rows": 0,
+    "postimage_verified": true,
+    "append_only_retry_receipt": "docs/research/FX_FRONTIER_QM5_12741_Q04_APPEND_RETRY_20260901T085518Z.md"
+  },
+  "safety": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "live_manifest_touched": false,
+    "manual_terminal_action": false,
+    "pipeline_verdict_changed": false,
+    "unrelated_dirty_worktree_preserved": true
+  }
+}
