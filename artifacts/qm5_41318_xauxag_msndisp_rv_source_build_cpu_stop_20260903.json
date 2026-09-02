@@ -1,0 +1,113 @@
+{
+  "schema": "qm.qm5-41318-source-build-cpu-stop/v1",
+  "recorded_at_utc": "2026-09-02T22:14:30Z",
+  "branch": "agents/board-advisor",
+  "mission_outcome": "NEW_STRUCTURAL_XAUXAG_SLEEVE_CARD_AND_SOURCE_BUILD_COMMITTED_COMPILE_PENDING_CPU_CEILING_Q02_NOT_ENQUEUED",
+  "ea": {
+    "ea_id": "QM5_41318",
+    "ea_label": "QM5_41318_xauxag-msndisp-rv",
+    "strategy_id": "AI-CODEX-XAUXAG-MSNDISP-RV-20260902_S01",
+    "logical_symbol": "QM5_41318_XAU_XAG_SN_RV_D1",
+    "host_symbol": "XAUUSD.DWX",
+    "traded_symbols": [
+      "XAUUSD.DWX",
+      "XAGUSD.DWX"
+    ],
+    "timeframe": "D1",
+    "magics": [
+      413180000,
+      413180001
+    ],
+    "mechanic": "final seventeen exact timestamp-matched XAU/XAG D1 close pairs from the immediately completed 17-23-session broker month; sixteen gold-minus-silver log-ratio changes; raw Sn eighth-of-fifteen then eighth-of-sixteen lower medians over 240 directed distances; inclusive three-core contrarian opposed equal-notional package",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "research_and_build": {
+    "source_approval_commit": "0099cdf1e4",
+    "identity_reservation_commit": "0083656285",
+    "g0_card_commit": "a7cf5b69e8",
+    "magic_allocation_commit": "ba25c11f15",
+    "source_build_commit": "04643662b6",
+    "dedup_verdict": "CLEAN",
+    "dedup_scope": {
+      "registry_rows": 4803,
+      "cards": 1432,
+      "wiki_nodes": 45
+    },
+    "reference_tests": "PASS_6",
+    "card_schema_lint": "PASS",
+    "magic_resolver_tests": "PASS_11",
+    "mq5_sha256": "af3e9b5bc4e528afda3b0cd1a9296f92f53329dc3f095da4317dcb20f6543d24",
+    "logical_set_sha256": "d5b318322c2c87e29c26791664ff1ed35d381e205427345c3d164254e0e1770d",
+    "reference_test_sha256": "c188d1f1d296ca3a4dcfed1e25a73d4c6d99118ceb9440308c32e52941b495b6",
+    "card_sha256": "8b6b135df264c5a33681d503837a27c3b20860a96d6fa50706df312680ff12ad"
+  },
+  "q01": {
+    "status": "PENDING_GOVERNED_COMPILE",
+    "direct_compile_result": "REFUSED_WITHOUT_RETRY",
+    "direct_compile_failure_class": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+    "governed_compile_work_item_id": "30acd863-8522-4b1b-8d61-34b98d082e94",
+    "governed_compile_status_at_stop": "pending",
+    "activation_hold_released": true,
+    "activation_hold_code": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "activation_release_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_hold_release_20260902T221133_961374Z.sqlite",
+    "activation_release_backup_sha256": "1da59f0b2cca8756f58a5f8508e24754ff466a0f44f71bac520588f846a3bf0a",
+    "compile_claimed_by": null,
+    "compile_verdict": null,
+    "build_check_result": null,
+    "ex5_exists": false
+  },
+  "capacity": {
+    "ceiling_percent": 97.0,
+    "initial_whole_host_sample": {
+      "started_at_utc": "2026-09-02T22:09:26.9152403Z",
+      "ended_at_utc": "2026-09-02T22:09:41.3893887Z",
+      "interval_seconds": 2,
+      "samples_percent": [
+        70.0,
+        85.0,
+        88.0,
+        71.0,
+        77.0
+      ],
+      "average_percent": 78.2,
+      "maximum_percent": 88.0,
+      "admitted": true
+    },
+    "post_release_stop_observations": [
+      {
+        "source": "D:/QM/strategy_farm/logs/terminal_worker_T6.log",
+        "at_utc": "2026-09-02T22:11:39.425721Z",
+        "cpu_percent": 97.9
+      },
+      {
+        "source": "D:/QM/strategy_farm/logs/terminal_worker_T7.log",
+        "at_utc": "2026-09-02T22:11:40.287777Z",
+        "cpu_percent": 98.5
+      },
+      {
+        "source": "D:/QM/strategy_farm/logs/terminal_worker_T6.log",
+        "at_utc": "2026-09-02T22:13:17.626267Z",
+        "cpu_percent": 98.4
+      }
+    ],
+    "stop_rule_applied": "Ceiling was crossed after governed compile release; no further compile dispatch, wait-for-capacity, tester launch, or Q02 mutation was performed."
+  },
+  "q02": {
+    "status": "NOT_ENQUEUED",
+    "reason": "Q01 has no governed COMPILE_OK/build-check PASS binary, and the explicit 97-percent CPU stop condition bound.",
+    "component_rows_enqueued": 0,
+    "logical_rows_enqueued": 0
+  },
+  "safety": {
+    "manual_backtest_launched": false,
+    "manual_dispatch_requested": false,
+    "terminal_control_performed": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "deploy_manifest_touched": false,
+    "live_manifest_touched": false
+  }
+}
