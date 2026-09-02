@@ -518,3 +518,7 @@ Beide OWNER-Freigaben (MNT020-RECOMPILE, MNT006-CANARY) sind ausgeführt und im 
 # 2026-09-02 item-bound custom-history isolation
 
 - Task `3b25f49e-220f-4b17-b596-470ae8050e15`: item-bound manifest omissions now create durable non-restart work-item holds before claim and never quarantine a terminal; terminal-bound claim-local failures retain bounded quarantine. Both known poison rows are held. Evidence: `docs/ops/evidence/2026-09-02_custom_history_item_bound_isolation.md`.
+
+# 2026-09-02 QM5_41283 mandatory Codex review
+
+- Task `ea56a51b-4442-41f3-8b18-507a2b39324f`: PASS for build review after independent semantic inspection, 8/8 reference tests, exact hash readback, and zero-finding canonical hardening. Economics remain for governed Q02; this is not live or portfolio approval. Evidence: `docs/ops/evidence/2026-09-02_qm5_41283_codex_review.md`.
