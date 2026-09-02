@@ -491,7 +491,16 @@ if ($changedFiles.Count -eq 0) {
 Write-Host "Snapshot files updated:"
 $changedFiles | ForEach-Object { Write-Host "- $_" }
 
-if ($NoGit) { exit 0 }
+$canonicalOutputDir = [IO.Path]::GetFullPath($PublicDataDir).TrimEnd('\', '/')
+$resolvedOutputDir = [IO.Path]::GetFullPath($effectiveOutputDir).TrimEnd('\', '/')
+if ($NoGit -or -not $resolvedOutputDir.Equals(
+        $canonicalOutputDir, [StringComparison]::OrdinalIgnoreCase
+    )) {
+    if (-not $NoGit) {
+        Write-Host "Git publication skipped for non-canonical OutputDir: $effectiveOutputDir"
+    }
+    exit 0
+}
 
 Push-Location $RepoRoot
 try {

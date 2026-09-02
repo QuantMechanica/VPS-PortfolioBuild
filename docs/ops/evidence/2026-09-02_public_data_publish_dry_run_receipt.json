@@ -1,0 +1,121 @@
+{
+    "schema":  "qm.public-data-deploy-sync-receipt/v1",
+    "generated_at_utc":  "2026-09-02T15:47:48.0617752Z",
+    "mode":  "DRY_RUN",
+    "validation_passed":  true,
+    "apply_requested":  false,
+    "commit_requested":  false,
+    "push_requested":  false,
+    "deploy_repo":  "C:/QM/deploy/quantmechanica-ops",
+    "netlify_toml_changed":  false,
+    "files":  [
+                  {
+                      "source":  "D:\\QM\\exports\\public_archive_v2_task80_20260902\\public-snapshot.json",
+                      "target":  "C:\\QM\\deploy\\quantmechanica-ops\\Website\\public-data\\public-snapshot.json",
+                      "relative_target":  "Website/public-data/public-snapshot.json",
+                      "sha256":  "9c72d829fd5ff1658d932760d46737b07005cebfd5d12221cf55ea4d4e56c58a",
+                      "changed":  true
+                  },
+                  {
+                      "source":  "D:\\QM\\exports\\public_archive_v2_task80_20260902\\process-roadmap.json",
+                      "target":  "C:\\QM\\deploy\\quantmechanica-ops\\Website\\public-data\\process-roadmap.json",
+                      "relative_target":  "Website/public-data/process-roadmap.json",
+                      "sha256":  "3291223474f295b2570da61540398b3162f5be1d69cef4a57ba07d40b9c00075",
+                      "changed":  true
+                  },
+                  {
+                      "source":  "D:\\QM\\exports\\public_archive_v2_task80_20260902\\strategy-archive.json",
+                      "target":  "C:\\QM\\deploy\\quantmechanica-ops\\Website\\public-data\\strategy-archive.json",
+                      "relative_target":  "Website/public-data/strategy-archive.json",
+                      "sha256":  "6d6749326413ea210161c1f7727464704f152a95d246f68a509aa51a58da062e",
+                      "changed":  true
+                  },
+                  {
+                      "source":  "D:\\QM\\exports\\public_archive_v2_task80_20260902\\company-operating-model.json",
+                      "target":  "C:\\QM\\deploy\\quantmechanica-ops\\Website\\public-data\\company-operating-model.json",
+                      "relative_target":  "Website/public-data/company-operating-model.json",
+                      "sha256":  "fe32438a46febe6e1e7638ffef768fc56fab2d6c4c16e1cc68d0343feb211ece",
+                      "changed":  false
+                  },
+                  {
+                      "source":  "D:\\QM\\exports\\public_archive_v2_task80_20260902\\stats.json",
+                      "target":  "C:\\QM\\deploy\\quantmechanica-ops\\Website\\public-data\\stats.json",
+                      "relative_target":  "Website/public-data/stats.json",
+                      "sha256":  "87a3716c9fdbf8aa0050d1470adedacb6dbb4d22250903648f2d9f1edf15a165",
+                      "changed":  true
+                  },
+                  {
+                      "source":  "C:\\QM\\repo\\public-data\\public-snapshot.schema.v2.json",
+                      "target":  "C:\\QM\\deploy\\quantmechanica-ops\\Website\\public-data\\public-snapshot.schema.v2.json",
+                      "relative_target":  "Website/public-data/public-snapshot.schema.v2.json",
+                      "sha256":  "e9773cd602996ae24f92526bcc02d22f54c0bdc76490e9d4ff63ea8b06104a99",
+                      "changed":  true
+                  },
+                  {
+                      "source":  "C:\\QM\\repo\\public-data\\process-roadmap.schema.json",
+                      "target":  "C:\\QM\\deploy\\quantmechanica-ops\\Website\\public-data\\process-roadmap.schema.json",
+                      "relative_target":  "Website/public-data/process-roadmap.schema.json",
+                      "sha256":  "dfe02c49b7b3c224ca46cc7fb79f5957b9f138b8067b0939c9d8166018987142",
+                      "changed":  true
+                  },
+                  {
+                      "source":  "C:\\QM\\repo\\public-data\\strategy-archive.schema.v2.json",
+                      "target":  "C:\\QM\\deploy\\quantmechanica-ops\\Website\\public-data\\strategy-archive.schema.v2.json",
+                      "relative_target":  "Website/public-data/strategy-archive.schema.v2.json",
+                      "sha256":  "cd729be9525acfd5a4c9fb5eb55ca076f3c60ee77128862e0c3d9e07bee02aba",
+                      "changed":  true
+                  },
+                  {
+                      "source":  "C:\\QM\\repo\\public-data\\company-operating-model.schema.json",
+                      "target":  "C:\\QM\\deploy\\quantmechanica-ops\\Website\\public-data\\company-operating-model.schema.json",
+                      "relative_target":  "Website/public-data/company-operating-model.schema.json",
+                      "sha256":  "f6714e2b9ed0d3b2f68c8b006b9cd689e99b3fc1e4163a2c8e61d6a42efc15df",
+                      "changed":  true
+                  },
+                  {
+                      "source":  "C:\\QM\\repo\\public-data\\public-stats.schema.json",
+                      "target":  "C:\\QM\\deploy\\quantmechanica-ops\\Website\\public-data\\public-stats.schema.json",
+                      "relative_target":  "Website/public-data/public-stats.schema.json",
+                      "sha256":  "c98f55e85f88ee92f2df34ff1e8cccc0ac7403bdb083a5c6c398463b7b6c2a97",
+                      "changed":  true
+                  },
+                  {
+                      "source":  "C:\\QM\\repo\\scripts\\public_site\\stats-loader.js",
+                      "target":  "C:\\QM\\deploy\\quantmechanica-ops\\Website\\scripts\\stats-loader.js",
+                      "relative_target":  "Website/scripts/stats-loader.js",
+                      "sha256":  "9a306f6eaef1b05d7bdbc4ce0bff02d024403eee1925d7e96a4649c0c0b32438",
+                      "changed":  false
+                  }
+              ],
+    "changed_file_count":  9,
+    "planned_commands":  [
+                             "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"C:\\QM\\repo\\scripts\\validate_public_snapshot.ps1\" -RepoRoot \"C:/QM/repo\" -DataDir \"D:/QM/exports/public_archive_v2_task80_20260902\"",
+                             "Copy-Item -LiteralPath \"D:\\QM\\exports\\public_archive_v2_task80_20260902\\public-snapshot.json\" -Destination \"C:\\QM\\deploy\\quantmechanica-ops\\Website\\public-data\\public-snapshot.json\" -Force",
+                             "Copy-Item -LiteralPath \"D:\\QM\\exports\\public_archive_v2_task80_20260902\\process-roadmap.json\" -Destination \"C:\\QM\\deploy\\quantmechanica-ops\\Website\\public-data\\process-roadmap.json\" -Force",
+                             "Copy-Item -LiteralPath \"D:\\QM\\exports\\public_archive_v2_task80_20260902\\strategy-archive.json\" -Destination \"C:\\QM\\deploy\\quantmechanica-ops\\Website\\public-data\\strategy-archive.json\" -Force",
+                             "Copy-Item -LiteralPath \"D:\\QM\\exports\\public_archive_v2_task80_20260902\\stats.json\" -Destination \"C:\\QM\\deploy\\quantmechanica-ops\\Website\\public-data\\stats.json\" -Force",
+                             "Copy-Item -LiteralPath \"C:\\QM\\repo\\public-data\\public-snapshot.schema.v2.json\" -Destination \"C:\\QM\\deploy\\quantmechanica-ops\\Website\\public-data\\public-snapshot.schema.v2.json\" -Force",
+                             "Copy-Item -LiteralPath \"C:\\QM\\repo\\public-data\\process-roadmap.schema.json\" -Destination \"C:\\QM\\deploy\\quantmechanica-ops\\Website\\public-data\\process-roadmap.schema.json\" -Force",
+                             "Copy-Item -LiteralPath \"C:\\QM\\repo\\public-data\\strategy-archive.schema.v2.json\" -Destination \"C:\\QM\\deploy\\quantmechanica-ops\\Website\\public-data\\strategy-archive.schema.v2.json\" -Force",
+                             "Copy-Item -LiteralPath \"C:\\QM\\repo\\public-data\\company-operating-model.schema.json\" -Destination \"C:\\QM\\deploy\\quantmechanica-ops\\Website\\public-data\\company-operating-model.schema.json\" -Force",
+                             "Copy-Item -LiteralPath \"C:\\QM\\repo\\public-data\\public-stats.schema.json\" -Destination \"C:\\QM\\deploy\\quantmechanica-ops\\Website\\public-data\\public-stats.schema.json\" -Force"
+                         ],
+    "publish_commands":  [
+                             "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"C:\\QM\\repo\\scripts\\validate_public_snapshot.ps1\" -RepoRoot \"C:/QM/repo\" -DataDir \"D:/QM/exports/public_archive_v2_task80_20260902\"",
+                             "Copy-Item -LiteralPath \"D:\\QM\\exports\\public_archive_v2_task80_20260902\\public-snapshot.json\" -Destination \"C:\\QM\\deploy\\quantmechanica-ops\\Website\\public-data\\public-snapshot.json\" -Force",
+                             "Copy-Item -LiteralPath \"D:\\QM\\exports\\public_archive_v2_task80_20260902\\process-roadmap.json\" -Destination \"C:\\QM\\deploy\\quantmechanica-ops\\Website\\public-data\\process-roadmap.json\" -Force",
+                             "Copy-Item -LiteralPath \"D:\\QM\\exports\\public_archive_v2_task80_20260902\\strategy-archive.json\" -Destination \"C:\\QM\\deploy\\quantmechanica-ops\\Website\\public-data\\strategy-archive.json\" -Force",
+                             "Copy-Item -LiteralPath \"D:\\QM\\exports\\public_archive_v2_task80_20260902\\stats.json\" -Destination \"C:\\QM\\deploy\\quantmechanica-ops\\Website\\public-data\\stats.json\" -Force",
+                             "Copy-Item -LiteralPath \"C:\\QM\\repo\\public-data\\public-snapshot.schema.v2.json\" -Destination \"C:\\QM\\deploy\\quantmechanica-ops\\Website\\public-data\\public-snapshot.schema.v2.json\" -Force",
+                             "Copy-Item -LiteralPath \"C:\\QM\\repo\\public-data\\process-roadmap.schema.json\" -Destination \"C:\\QM\\deploy\\quantmechanica-ops\\Website\\public-data\\process-roadmap.schema.json\" -Force",
+                             "Copy-Item -LiteralPath \"C:\\QM\\repo\\public-data\\strategy-archive.schema.v2.json\" -Destination \"C:\\QM\\deploy\\quantmechanica-ops\\Website\\public-data\\strategy-archive.schema.v2.json\" -Force",
+                             "Copy-Item -LiteralPath \"C:\\QM\\repo\\public-data\\company-operating-model.schema.json\" -Destination \"C:\\QM\\deploy\\quantmechanica-ops\\Website\\public-data\\company-operating-model.schema.json\" -Force",
+                             "Copy-Item -LiteralPath \"C:\\QM\\repo\\public-data\\public-stats.schema.json\" -Destination \"C:\\QM\\deploy\\quantmechanica-ops\\Website\\public-data\\public-stats.schema.json\" -Force",
+                             "git -C \"C:/QM/deploy/quantmechanica-ops\" add -- \"Website/public-data/public-snapshot.json\" \"Website/public-data/process-roadmap.json\" \"Website/public-data/strategy-archive.json\" \"Website/public-data/company-operating-model.json\" \"Website/public-data/stats.json\" \"Website/public-data/public-snapshot.schema.v2.json\" \"Website/public-data/process-roadmap.schema.json\" \"Website/public-data/strategy-archive.schema.v2.json\" \"Website/public-data/company-operating-model.schema.json\" \"Website/public-data/public-stats.schema.json\" \"Website/scripts/stats-loader.js\"",
+                             "git -C \"C:/QM/deploy/quantmechanica-ops\" commit -m \"web: refresh validated public data\" -- \"Website/public-data/public-snapshot.json\" \"Website/public-data/process-roadmap.json\" \"Website/public-data/strategy-archive.json\" \"Website/public-data/company-operating-model.json\" \"Website/public-data/stats.json\" \"Website/public-data/public-snapshot.schema.v2.json\" \"Website/public-data/process-roadmap.schema.json\" \"Website/public-data/strategy-archive.schema.v2.json\" \"Website/public-data/company-operating-model.schema.json\" \"Website/public-data/public-stats.schema.json\" \"Website/scripts/stats-loader.js\"",
+                             "git -C \"C:/QM/deploy/quantmechanica-ops\" push"
+                         ],
+    "executed_commands":  [
+                              "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"C:\\QM\\repo\\scripts\\validate_public_snapshot.ps1\" -RepoRoot \"C:/QM/repo\" -DataDir \"D:/QM/exports/public_archive_v2_task80_20260902\""
+                          ]
+}

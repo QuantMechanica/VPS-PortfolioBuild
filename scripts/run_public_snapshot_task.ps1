@@ -6,6 +6,9 @@ param(
     [string]$FarmDbPath = "D:\QM\strategy_farm\state\farm_state.sqlite",
     [string]$FactoryOffFlagPath = "D:\QM\strategy_farm\state\FACTORY_OFF.flag",
     [string]$FactoryMutationLockPath = "D:\QM\strategy_farm\state\FACTORY_MUTATION.lock",
+    [string]$DeployRepo = "C:\QM\deploy\quantmechanica-ops",
+    [string]$PublishReceiptPath = "",
+    [switch]$Publish,
     [ValidateRange(30, 3600)]
     [int]$TaskTimeoutSeconds = 600
 )
@@ -95,6 +98,8 @@ New-Item -ItemType Directory -Path (Split-Path -Parent $LogPath) -Force |
     Out-Null
 Write-TaskLog "public_snapshot_task start"
 $script:taskDeadlineUtc = [datetime]::UtcNow.AddSeconds($TaskTimeoutSeconds)
+$publishRequested = [bool]$Publish -or ([string]$env:QM_PUBLIC_PUBLISH -ceq '1')
+Write-TaskLog "public_snapshot_task publish_requested=$publishRequested"
 
 $mutationLockStream = $null
 $mutationLockBytesBase64 = $null
@@ -164,16 +169,18 @@ try {
     $snapshotStageDir = Join-Path ([IO.Path]::GetTempPath()) `
         ("qm_public_snapshot_stage_{0}" -f [guid]::NewGuid().ToString('N'))
     New-Item -ItemType Directory -Path $snapshotStageDir | Out-Null
-    $exportRun = Invoke-BoundedProcess -FilePath 'powershell.exe' -ArgumentList @(
+    $exportArguments = @(
         '-NoProfile', '-ExecutionPolicy', 'Bypass',
         '-File', (Join-Path $RepoRoot 'scripts\export_public_snapshot.ps1'),
         '-RepoRoot', $RepoRoot,
         '-PublicDataDir', (Join-Path $RepoRoot 'public-data'),
         '-OutputDir', $snapshotStageDir,
         '-FarmDbPath', $FarmDbPath,
-        '-PythonExe', $PythonExe,
-        '-NoGit'
-    ) -Label 'export_public_snapshot.ps1'
+        '-PythonExe', $PythonExe
+    )
+    if (-not $publishRequested) { $exportArguments += '-NoGit' }
+    $exportRun = Invoke-BoundedProcess -FilePath 'powershell.exe' `
+        -ArgumentList $exportArguments -Label 'export_public_snapshot.ps1'
     $exportRun.Output | ForEach-Object { Write-TaskLog $_ }
     if ($exportRun.ExitCode -ne 0) {
         throw "export_public_snapshot.ps1 failed with exit code $($exportRun.ExitCode)"
@@ -247,6 +254,84 @@ try {
         $published.Add($destination)
     }
     Write-TaskLog "public_snapshot_task publish_count=$($published.Count)"
+
+    # Git and network operations never run while the factory mutation lock is
+    # held. Release the exact nonce-bound lock before validation/publication.
+    $mutationLockStream.Dispose()
+    $mutationLockStream = $null
+    $releasedExactLock = Remove-QmFactoryMutationLockIfUnchanged `
+        -Path $FactoryMutationLockPath `
+        -ExpectedRawBytesBase64 $mutationLockBytesBase64
+    if (-not $releasedExactLock) {
+        throw 'public snapshot mutation lock release failed closed'
+    }
+
+    $validationRun = Invoke-BoundedProcess -FilePath 'powershell.exe' `
+        -ArgumentList @(
+            '-NoProfile', '-ExecutionPolicy', 'Bypass',
+            '-File', (Join-Path $RepoRoot 'scripts\validate_public_snapshot.ps1'),
+            '-RepoRoot', $RepoRoot,
+            '-DataDir', $publicDataDir
+        ) -Label 'validate_public_snapshot.ps1'
+    $validationRun.Output | ForEach-Object { Write-TaskLog $_ }
+    if ($validationRun.ExitCode -ne 0) {
+        throw "validate_public_snapshot.ps1 failed with exit code $($validationRun.ExitCode)"
+    }
+
+    if ($publishRequested) {
+        $publicPaths = @(
+            'public-data/public-snapshot.json',
+            'public-data/process-roadmap.json',
+            'public-data/strategy-archive.json',
+            'public-data/company-operating-model.json',
+            'public-data/stats.json'
+        )
+        $gitAddRun = Invoke-BoundedProcess -FilePath 'git.exe' `
+            -ArgumentList (@('-C', $RepoRoot, 'add', '--') + $publicPaths) `
+            -Label 'git add public snapshot'
+        if ($gitAddRun.ExitCode -ne 0) { throw 'git add public snapshot failed' }
+
+        $gitDiffRun = Invoke-BoundedProcess -FilePath 'git.exe' `
+            -ArgumentList (@('-C', $RepoRoot, 'diff', '--cached', '--quiet', '--') + $publicPaths) `
+            -Label 'git diff public snapshot'
+        if ($gitDiffRun.ExitCode -eq 1) {
+            $gitCommitRun = Invoke-BoundedProcess -FilePath 'git.exe' `
+                -ArgumentList (@(
+                    '-C', $RepoRoot, 'commit', '-m',
+                    'infra: refresh validated public snapshot', '--'
+                ) + $publicPaths) -Label 'git commit public snapshot'
+            $gitCommitRun.Output | ForEach-Object { Write-TaskLog $_ }
+            if ($gitCommitRun.ExitCode -ne 0) { throw 'git commit public snapshot failed' }
+        } elseif ($gitDiffRun.ExitCode -ne 0) {
+            throw "git diff public snapshot failed with exit code $($gitDiffRun.ExitCode)"
+        }
+
+        $gitPushRun = Invoke-BoundedProcess -FilePath 'git.exe' `
+            -ArgumentList @('-C', $RepoRoot, 'push') -Label 'git push public snapshot'
+        $gitPushRun.Output | ForEach-Object { Write-TaskLog $_ }
+        if ($gitPushRun.ExitCode -ne 0) { throw 'git push public snapshot failed' }
+    }
+
+    $syncArguments = @(
+        '-NoProfile', '-ExecutionPolicy', 'Bypass',
+        '-File', (Join-Path $RepoRoot 'scripts\sync_public_data_to_website.ps1'),
+        '-RepoRoot', $RepoRoot,
+        '-DataDir', $publicDataDir,
+        '-SchemaDir', $publicDataDir,
+        '-DeployRepo', $DeployRepo,
+        '-Apply', '-Commit'
+    )
+    if (-not [string]::IsNullOrWhiteSpace($PublishReceiptPath)) {
+        $syncArguments += @('-ReceiptPath', $PublishReceiptPath)
+    }
+    if ($publishRequested) { $syncArguments += '-Push' }
+    $syncRun = Invoke-BoundedProcess -FilePath 'powershell.exe' `
+        -ArgumentList $syncArguments -Label 'sync_public_data_to_website.ps1'
+    $syncRun.Output | ForEach-Object { Write-TaskLog $_ }
+    if ($syncRun.ExitCode -ne 0) {
+        throw "sync_public_data_to_website.ps1 failed with exit code $($syncRun.ExitCode)"
+    }
+
     Write-TaskLog "public_snapshot_task exit=0"
 }
 catch {
