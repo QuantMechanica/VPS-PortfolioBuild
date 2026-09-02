@@ -292,6 +292,57 @@ def test_stale_pass_q02_is_append_only_and_double_enqueue_safe(
     assert new_payload["risk_percent"] == 0.0
 
 
+def test_q02_append_only_rebind_ignores_canonically_superseded_pending_rerun(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    _insert_work_item(
+        art,
+        item_id="q02-stale",
+        phase="Q02",
+        status="done",
+        verdict="ZERO_TRADES",
+        payload=_payload(art, stale=True),
+    )
+    kwargs = {
+        "predecessor_work_item_id": "q02-stale",
+        "append_only_rerun_of": "q02-stale",
+        "rerun_reason": "bounded diagnostics",
+        "expected_current_ex5_sha256": art["current_ex5"],
+    }
+    first = farmctl.enqueue_cascade_backtest_for_ea(
+        art["root"], art["ea_id"], "Q02", **kwargs
+    )
+    assert first["enqueued"]
+    first_id = first["created"][0]["id"]
+
+    root = art["root"]
+    assert isinstance(root, Path)
+    with sqlite3.connect(root / farmctl.DB_REL) as conn:
+        conn.execute(
+            """
+            INSERT INTO work_item_supersedes(
+                work_item_id, superseded_by_work_item_id, reason,
+                source_encoding, evidence_path, recorded_by, recorded_at
+            ) VALUES(?, NULL, ?, 'operator:record', NULL, 'test', ?)
+            """,
+            (first_id, "binary rebuilt before claim", "2026-09-02T00:00:00Z"),
+        )
+        conn.commit()
+
+    second = farmctl.enqueue_cascade_backtest_for_ea(
+        art["root"], art["ea_id"], "Q02", **kwargs
+    )
+    assert second["enqueued"]
+    assert second["created"][0]["id"] != first_id
+    with sqlite3.connect(root / farmctl.DB_REL) as conn:
+        stale = conn.execute(
+            "SELECT status,verdict FROM work_items WHERE id=?", (first_id,)
+        ).fetchone()
+    assert stale == ("pending", None)
+    assert _work_item_count(art) == 3
+
+
 def test_stale_setfile_pass_q02_is_append_only_with_same_ex5(
     tmp_path: Path, monkeypatch
 ) -> None:

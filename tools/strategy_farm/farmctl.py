@@ -23775,6 +23775,10 @@ def _enqueue_q02_append_only_exact_row_rerun(
             SELECT id, status, verdict FROM work_items
             WHERE ea_id=? AND phase IN ('Q02','P2') AND symbol=?
               AND json_extract(payload_json, '$.append_only_rerun_of_work_item')=?
+              AND NOT EXISTS (
+                SELECT 1 FROM work_item_supersedes s
+                WHERE s.work_item_id=work_items.id
+              )
             ORDER BY created_at ASC LIMIT 1
             """,
             (ea_id, target["symbol"], source_id),
@@ -23799,6 +23803,10 @@ def _enqueue_q02_append_only_exact_row_rerun(
             SELECT id, status FROM work_items
             WHERE ea_id=? AND phase IN ('Q02','P2') AND symbol=?
               AND status IN ('pending','active')
+              AND NOT EXISTS (
+                SELECT 1 FROM work_item_supersedes s
+                WHERE s.work_item_id=work_items.id
+              )
             ORDER BY created_at ASC LIMIT 1
             """,
             (ea_id, target["symbol"]),
