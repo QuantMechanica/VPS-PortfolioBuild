@@ -1,0 +1,129 @@
+{
+  "schema_version": "qm.fx-existing-basket-q02-priority-cpu-stop/v1",
+  "generated_at_utc": "2026-09-02T02:45:21.8115178Z",
+  "branch": "agents/board-advisor",
+  "git_head_before_receipt": "8bd4cc1783ff6f7e4cac0760272149fd88b9db4f",
+  "mission_result": "CPU_CEILING_STOP_BEFORE_RUNTIME_MUTATION",
+  "frontier_reconciliation": {
+    "controlling_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "published_pair_count": 66,
+    "published_hard_qualifier_count": 2,
+    "published_hard_qualifiers": [
+      {
+        "ea_id": "QM5_12532",
+        "pair": [
+          "AUDUSD.DWX",
+          "NZDUSD.DWX"
+        ],
+        "canonical_frontier": "Q02_PASS_Q04_PASS_Q05_FAIL"
+      },
+      {
+        "ea_id": "QM5_12533",
+        "pair": [
+          "EURJPY.DWX",
+          "GBPJPY.DWX"
+        ],
+        "canonical_frontier": "Q02_PASS_Q04_FAIL"
+      }
+    ],
+    "latest_complete_census": "docs/research/FX_COINTEGRATION_QM5_20240_Q04_RETIREMENT_20260831T233713Z.md",
+    "approved_cointegration_or_coint_identities": 123,
+    "matching_ea_directories": 123,
+    "approved_unbuilt_identities": 0,
+    "relationships_accounted_for": 66,
+    "unbuilt_pair_selected": false,
+    "fallback_authorized": true
+  },
+  "selection": {
+    "ea_id": "QM5_10718",
+    "ea_directory": "framework/EAs/QM5_10718_edgelab-regime-filtered-carry",
+    "logical_symbol": "QM5_10718_FX8_BASKET_D1",
+    "selection_mode": "existing_forex_card_fallback_no_unbuilt_66_pair_candidate",
+    "strategy_family": "market_neutral_cross_sectional_fx_carry",
+    "timeframe": "D1",
+    "rebalance_frequency": "weekly",
+    "structural_only": true,
+    "machine_learning": false,
+    "approved_sources": [
+      "Lustig, Roussanov and Verdelhan, Review of Financial Studies (2011)",
+      "Menkhoff et al., Journal of Finance (2012)"
+    ],
+    "new_card_created": false,
+    "new_ea_created": false,
+    "novel_scan_relationship_claimed": false
+  },
+  "artifact_binding": {
+    "mq5_sha256": "92fa06a272aa4805e31c6caac4f1ad9feeaf91fec18c349a616bf2cae00f8f00",
+    "ex5_sha256": "10358a8dd852cd495265fc4099dfb7d9fecc711a047d98a4ff5eafbba51a91cc",
+    "basket_manifest": "framework/EAs/QM5_10718_edgelab-regime-filtered-carry/basket_manifest.json",
+    "basket_manifest_sha256": "8dc0776c1aac52f566b0f0b33f390f34d222bae8bc20992f7740bcce5d0b458f",
+    "setfile": "framework/EAs/QM5_10718_edgelab-regime-filtered-carry/sets/QM5_10718_edgelab-regime-filtered-carry_QM5_10718_FX8_BASKET_D1_D1_backtest.set",
+    "setfile_sha256": "cbc4602cc7685d7db68e9e17603916e4b66706ba9566248bf975c2a4782bd680",
+    "queue_hashes_match_current_files": true,
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 500,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "queue_preflight": {
+    "work_item_id": "31f12573-d903-4386-a857-cad2b445d63a",
+    "phase": "Q02",
+    "status": "pending",
+    "claimed_by": null,
+    "attempt_count": 0,
+    "verdict": null,
+    "created_at": "2026-09-02T01:50:08+00:00",
+    "updated_at": "2026-09-02T01:50:08+00:00",
+    "payload_sha256": "a2a9616a5e058f543b5515a7ed0f1204ac956dd79fb75888abb4662fa214d3ea",
+    "priority_track_before": null,
+    "open_matching_q02_rows": 1,
+    "active_holds": 0,
+    "supersession_relations": 0,
+    "simulated_priority_reason": "board_advisor_fx_existing_card_fallback_logical_q02_after_exhausted_66_pair_frontier",
+    "canonical_rank_before": 7225,
+    "canonical_rank_after_simulated": 1436,
+    "canonical_rank_improvement_simulated": 5789,
+    "displaced_ids_sha256_simulated": "6f8ea276db8aa96137e9529bb6b4e8e40101997de98189d57a920dbcde58225d",
+    "mutation_applied": false,
+    "duplicate_work_items_created": 0,
+    "manual_dispatch_started": false,
+    "pipeline_verdict_changed": false
+  },
+  "capacity_stop": {
+    "sampled_at_utc": "2026-09-02T02:45:21.8115178Z",
+    "samples_percent": [
+      97.5,
+      97.1,
+      89.3,
+      90.5,
+      86.4
+    ],
+    "average_percent": 92.16,
+    "maximum_percent": 97.5,
+    "ceiling_percent": 97,
+    "ceiling_rule": "stop_when_average_or_maximum_is_at_least_ceiling",
+    "ceiling_hit": true,
+    "active_work_items_at_preflight": 1,
+    "active_multisymbol_work_items_at_preflight": 0,
+    "stop_respected": true
+  },
+  "verification": {
+    "build_gate_hardening": "PASS_ZERO_FAILURES_ZERO_WARNINGS",
+    "build_guardrails": "PASS_ZERO_FINDINGS_30_FILES",
+    "spec_validator": "NOT_APPLICABLE_LEGACY_PACKAGE_SPEC_MD_ABSENT",
+    "compile_receipt": "docs/ops/evidence/2026-09-02_qm5_10718_fx8_mae_rebuild_q02_enqueue.md",
+    "compile_verdict": "COMPILE_OK_ZERO_ERRORS_ZERO_WARNINGS"
+  },
+  "safety": {
+    "runtime_database_mutated": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "live_manifest_touched": false,
+    "manual_terminal_action": false,
+    "unrelated_dirty_worktree_preserved": true
+  }
+}
