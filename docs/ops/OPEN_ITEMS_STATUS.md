@@ -487,6 +487,10 @@ Beide OWNER-Freigaben (MNT020-RECOMPILE, MNT006-CANARY) sind ausgeführt und im 
 
 - Task `f299c9e3-70b3-4c1b-a23b-17039fc14dd6`: assembled the decision sheet, 10440 disposition, five-sleeve drag list, unsigned 17-sleeve scenario/pointer dry run, expected-red pre-change verification, and OWNER-only deployment/runbook steps. Evidence: `docs/ops/evidence/2026-09-02_owner_session_20260906_package.md`; runtime drafts under `D:\QM\reports\state\drafts`.
 
+# 2026-09-02 Dukascopy backfill
+
+- Task `bd73130a-2cbb-42fc-93b5-7529a4f5849f`: P0 range inventory completed for 37/37 symbols (703 rows), then stopped fail-closed because exact per-symbol tick-tail/splice timestamps require a governed T1 probe and no repository TKC-tail decoder exists. P1–P4 were not started and no history/import state changed. Evidence: `docs/ops/evidence/2026-09-02_dukascopy_backfill_p0_block.md`, `docs/ops/evidence/2026-09-02_dukascopy_p0_history_ranges.{csv,json}`.
+
 # 2026-09-02 Codex live-book pulse repair
 
 - Task `26434855-391e-43ed-b9f4-9d0e9c0afa9b`: repaired stale lifecycle lookback and severity aggregation. Production pulse now finds all 24 loaded sleeves and reports only the genuine KS-baseline WARN. Evidence: `docs/ops/evidence/2026-09-02_live_book_pulse_load_repair.md`.
