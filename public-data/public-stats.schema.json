@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantmechanica.com/schemas/public-stats/v1.json",
+  "title": "QuantMechanica redacted public statistics",
+  "type": "object",
+  "required": ["schema_version", "generated_at", "eas_compiled", "strategy_cards", "backtests_total", "phases"],
+  "properties": {
+    "schema_version": { "type": "integer", "enum": [1] },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "eas_compiled": { "type": "integer", "minimum": 0 },
+    "strategy_cards": { "type": "integer", "minimum": 0 },
+    "backtests_total": { "type": "integer", "minimum": 0 },
+    "phases": { "type": "integer", "const": 18 }
+  },
+  "additionalProperties": false
+}

@@ -227,7 +227,7 @@ try {
     $published = New-Object System.Collections.Generic.List[string]
     foreach ($name in @(
         'public-snapshot.json', 'process-roadmap.json',
-        'strategy-archive.json', 'company-operating-model.json'
+        'strategy-archive.json', 'company-operating-model.json', 'stats.json'
     )) {
         $source = Join-Path $snapshotStageDir $name
         if (-not (Test-Path -LiteralPath $source -PathType Leaf)) {

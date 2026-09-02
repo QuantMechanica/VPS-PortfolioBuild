@@ -567,6 +567,21 @@ def load_per_ea_from_db() -> tuple[list[dict], bool]:
     return out, True
 
 
+def count_work_items_read_only() -> int:
+    """Return the aggregate public work-item count without mutating the farm."""
+    if not FARM_DB.is_file():
+        return 0
+    try:
+        with sqlite3.connect(
+            f"file:{FARM_DB.as_posix()}?mode=ro", uri=True, timeout=4
+        ) as con:
+            con.execute("PRAGMA query_only=ON")
+            con.execute("PRAGMA busy_timeout=4000")
+            return int(con.execute("SELECT COUNT(*) FROM work_items").fetchone()[0])
+    except sqlite3.Error:
+        return 0
+
+
 def db_by_phase_legacy(per_ea: list[dict]) -> dict[str, int]:
     """Legacy P-keyed funnel (compat view for the public snapshot): distinct EAs
     with a pass-family verdict at each Qxx gate, mapped to legacy P-keys.
@@ -654,6 +669,7 @@ def build() -> dict:
         "strategy_cards_count": cards,
         "eas_registered_count": len(registry),
         "eas_with_reports_count": len(per_ea),
+        "work_items_total": count_work_items_read_only(),
         "by_phase": by_phase,
         "by_phase_gate_contract_version": LEGACY_COMPAT_GATE_CONTRACT_VERSION,
         "by_gate_v4": by_gate_v4,

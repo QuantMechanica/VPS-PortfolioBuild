@@ -15,6 +15,7 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 $SchemaVersionV1 = 1
+$SchemaVersionV2 = 2
 
 function Read-JsonFile {
     param([string]$Path)
@@ -82,22 +83,19 @@ function Validate-JsonAgainstSchema {
     # Windows PowerShell 5.x fallback validation (schema-aligned checks).
     switch ($Name) {
         "public-snapshot" {
-            $requiredTop = @("schema_version", "generated_at", "phase", "agents", "pipeline", "public_archive", "pipeline_gates", "t6", "expenses")
+            $requiredTop = @("schema_version", "generated_at", "phase", "agents", "pipeline", "public_archive", "pipeline_gates", "expenses")
             foreach ($key in $requiredTop) {
                 if (-not (Test-ObjectHasKey -Target $Object -Key $key)) { throw "Missing key '$key' in $Name." }
             }
-            if ($Object.schema_version -ne $SchemaVersionV1) { throw "Invalid schema_version in $Name." }
+            if ($Object.schema_version -ne $SchemaVersionV2) { throw "Invalid schema_version in $Name." }
+            if ([string]$Object.phase -cnotmatch '^Q(?:0[0-9]|1[0-7])$') { throw "Invalid Q-only phase in $Name." }
             foreach ($k in @("online", "offline", "blocked")) {
                 if ($null -eq $Object.agents.$k -or $Object.agents.$k -lt 0) { throw "Invalid agents.$k in $Name." }
             }
             foreach ($k in @("strategy_cards", "eas_built")) {
                 if ($null -eq $Object.pipeline.$k -or $Object.pipeline.$k -lt 0) { throw "Invalid pipeline.$k in $Name." }
             }
-            if (-not $Object.pipeline.by_phase.gate_contract_version) { throw "Missing pipeline.by_phase.gate_contract_version in $Name." }
-            $phaseKeys = @("G0", "P1", "P2", "P3", "P3_5", "P4", "P5", "P5b", "P5c", "P6", "P7", "P8", "P9", "P9b", "P10")
-            foreach ($k in $phaseKeys) {
-                if ($null -eq $Object.pipeline.by_phase.$k -or $Object.pipeline.by_phase.$k -lt 0) { throw "Invalid pipeline.by_phase.$k in $Name." }
-            }
+            if ($Object.pipeline.work_items_total -lt 0) { throw "Invalid pipeline.work_items_total in $Name." }
             if ($Object.pipeline.by_gate_v4.gate_contract_version -ne "v4") { throw "Invalid pipeline.by_gate_v4.gate_contract_version in $Name." }
             $v4GateKeys = @(0..17 | ForEach-Object { 'Q{0:d2}' -f $_ })
             foreach ($k in $v4GateKeys) {
@@ -110,8 +108,6 @@ function Validate-JsonAgainstSchema {
                 if ($k -eq "gate_contract_version") { continue }
                 if ($k -notmatch '^Q(?:0[0-9]|1[0-7])$' -or $Object.pipeline.by_gate_v4.$k -lt 0) { throw "Invalid pipeline.by_gate_v4.$k in $Name." }
             }
-            if ($Object.t6.status -notin @("offline", "demo", "live", "degraded")) { throw "Invalid t6.status in $Name." }
-            if ($Object.t6.risk_state -notin @("green", "yellow", "red")) { throw "Invalid t6.risk_state in $Name." }
             if ($Object.expenses.spent_eur -lt 0 -or $Object.expenses.budget_eur -lt 0 -or $Object.expenses.entries -lt 0) { throw "Invalid expenses fields in $Name." }
             if ($Object.public_archive.gate_contract_version -cne "v4" -or
                 $Object.public_archive.progress_metric -cne "highest_contiguous_valid_gate") {
@@ -167,6 +163,16 @@ function Validate-JsonAgainstSchema {
                 }
                 if ($item.visibility -notin @("public", "private_redacted")) { throw "Invalid strategy visibility '$($item.visibility)' in $Name." }
             }
+        }
+        "public-stats" {
+            foreach ($key in @("schema_version", "generated_at", "eas_compiled", "strategy_cards", "backtests_total", "phases")) {
+                if (-not (Test-ObjectHasKey -Target $Object -Key $key)) { throw "Missing key '$key' in $Name." }
+            }
+            if ($Object.schema_version -ne $SchemaVersionV1) { throw "Invalid schema_version in $Name." }
+            foreach ($key in @("eas_compiled", "strategy_cards", "backtests_total", "phases")) {
+                if ($Object.$key -lt 0) { throw "Invalid $key in $Name." }
+            }
+            if ($Object.phases -ne 18) { throw "Invalid Q-gate count in $Name." }
         }
         "company-operating-model" {
             foreach ($key in @("schema_version", "schema", "updated_at", "cache_ttl_minutes", "menu", "dashboard")) {
@@ -372,19 +378,13 @@ if ([int]$pipelineState.schema_version -ne 1) {
     throw "Unsupported pipeline_state.json schema_version. Expected 1, got $($pipelineState.schema_version)."
 }
 
-# Derive phase label: highest phase any EA has reached (best signal of company progress)
-# under DL-061 Endausbaustufe-Modus (no company-level phase gating).
+# Public operator surfaces use the exact Qxx token only.
 $phaseOrder = @($pipelineState.by_gate_v4.PSObject.Properties.Name | Where-Object { $_ -match '^Q(?:0[0-9]|1[0-7])$' })
 $highestPhase = $null
 foreach ($p in $phaseOrder) {
     if ([int]$pipelineState.by_gate_v4.$p -gt 0) { $highestPhase = $p }
 }
-if ($null -eq $highestPhase) {
-    $phaseLabel = "Endausbaustufe-Modus - no EA past G0 yet"
-} else {
-    $displayPhase = $highestPhase -replace "_", "."
-    $phaseLabel = "Endausbaustufe-Modus - highest EA at $displayPhase"
-}
+if ($null -eq $highestPhase) { $phaseLabel = "Q00" } else { $phaseLabel = $highestPhase }
 
 # agents.{online,offline,blocked} from watchdog sub-agent state.
 # online = sub-agents producing runs in last 2h; offline = idle >=2h.
@@ -392,19 +392,16 @@ $agentsOnline = [int]$pipelineState.agents_watchdog.online_count
 $agentsOffline = [int]$pipelineState.agents_watchdog.offline_count
 $agentsBlocked = 0
 
-# pipeline.{strategy_cards,eas_built,by_phase} from pipeline_state.json.
-$legacyPhaseOrder = @("G0", "P1", "P2", "P3", "P3_5", "P4", "P5", "P5b", "P5c", "P6", "P7", "P8", "P9", "P9b", "P10")
-$byPhaseLive = [ordered]@{ gate_contract_version = [string]$pipelineState.by_phase_gate_contract_version }
-foreach ($p in $legacyPhaseOrder) {
-    $byPhaseLive[$p] = [int]$pipelineState.by_phase.$p
-}
+# pipeline.{strategy_cards,eas_built,work_items_total,by_gate_v4} comes from
+# the read-only pipeline-state producer. The legacy P-keyed compatibility view
+# is intentionally not public in v2.
 $byGateV4 = [ordered]@{ gate_contract_version = [string]$pipelineState.by_gate_v4_gate_contract_version }
 foreach ($p in $phaseOrder) {
     $byGateV4[$p] = [int]$pipelineState.by_gate_v4.$p
 }
 
 $publicSnapshot = [ordered]@{
-    schema_version = $SchemaVersionV1
+    schema_version = $SchemaVersionV2
     generated_at = [datetime]::UtcNow.ToString("o")
     phase = $phaseLabel
     agents = @{
@@ -415,23 +412,28 @@ $publicSnapshot = [ordered]@{
     pipeline = @{
         strategy_cards = [int]$pipelineState.strategy_cards_count
         eas_built = [int]$pipelineState.eas_registered_count
-        by_phase = $byPhaseLive
+        work_items_total = [int]$pipelineState.work_items_total
         by_gate_v4 = $byGateV4
     }
     public_archive = $publicBlocks.public_archive
     pipeline_gates = $publicBlocks.pipeline_gates
-    t6 = @{
-        status = "offline"
-        autotrading = $false
-        risk_state = "green"
-    }
     expenses = $expenses
 }
 
-$publicSchemaPath = Join-Path $PublicDataDir "public-snapshot.schema.json"
+$publicStats = [ordered]@{
+    schema_version = $SchemaVersionV1
+    generated_at = [datetime]::UtcNow.ToString("o")
+    eas_compiled = [int]$pipelineState.eas_registered_count
+    strategy_cards = [int]$pipelineState.strategy_cards_count
+    backtests_total = [int]$pipelineState.work_items_total
+    phases = 18
+}
+
+$publicSchemaPath = Join-Path $PublicDataDir "public-snapshot.schema.v2.json"
 $roadmapSchemaPath = Join-Path $PublicDataDir "process-roadmap.schema.json"
 $archiveSchemaPath = Join-Path $PublicDataDir "strategy-archive.schema.json"
 $companyModelSchemaPath = Join-Path $PublicDataDir "company-operating-model.schema.json"
+$statsSchemaPath = Join-Path $PublicDataDir "public-stats.schema.json"
 $companyModelPath = Join-Path $PublicDataDir "company-operating-model.json"
 $companyOperatingModel = Read-JsonFile -Path $companyModelPath
 if ($null -eq $companyOperatingModel) {
@@ -448,6 +450,7 @@ Validate-JsonAgainstSchema -Object $publicSnapshot -SchemaPath $publicSchemaPath
 Validate-JsonAgainstSchema -Object $processRoadmap -SchemaPath $roadmapSchemaPath -Name "process-roadmap"
 Validate-JsonAgainstSchema -Object $strategyArchive -SchemaPath $archiveSchemaPath -Name "strategy-archive"
 Validate-JsonAgainstSchema -Object $companyOperatingModel -SchemaPath $companyModelSchemaPath -Name "company-operating-model"
+Validate-JsonAgainstSchema -Object $publicStats -SchemaPath $statsSchemaPath -Name "public-stats"
 
 $changedFiles = New-Object System.Collections.Generic.List[string]
 
@@ -455,12 +458,14 @@ $publicPath = Join-Path $effectiveOutputDir "public-snapshot.json"
 $roadmapPath = Join-Path $effectiveOutputDir "process-roadmap.json"
 $archivePath = Join-Path $effectiveOutputDir "strategy-archive.json"
 $companyModelOutputPath = Join-Path $effectiveOutputDir "company-operating-model.json"
+$statsPath = Join-Path $effectiveOutputDir "stats.json"
 
 if ($DryRun) {
     Write-Host "[DryRun] Would write public-snapshot:"
     $publicSnapshot | ConvertTo-Json -Depth 20 | Write-Host
     Write-Host "[DryRun] Process roadmap items: $($processRoadmap.total)"
     Write-Host "[DryRun] Strategy archive items: $($strategyArchive.total)"
+    Write-Host "[DryRun] Public stats: eas=$($publicStats.eas_compiled) cards=$($publicStats.strategy_cards) work_items=$($publicStats.backtests_total) gates=$($publicStats.phases)"
     Write-Host "[DryRun] Skipping git + Netlify."
     exit 0
 }
@@ -469,6 +474,7 @@ if (Write-JsonIfChanged -Path $publicPath -Object $publicSnapshot) { $changedFil
 if (Write-JsonIfChanged -Path $roadmapPath -Object $processRoadmap) { $changedFiles.Add($roadmapPath) }
 if (Write-JsonIfChanged -Path $archivePath -Object $strategyArchive) { $changedFiles.Add($archivePath) }
 if (Write-JsonIfChanged -Path $companyModelOutputPath -Object $companyOperatingModel) { $changedFiles.Add($companyModelOutputPath) }
+if (Write-JsonIfChanged -Path $statsPath -Object $publicStats) { $changedFiles.Add($statsPath) }
 
 if ($changedFiles.Count -eq 0) {
     Write-Host "No snapshot changes."
@@ -482,7 +488,7 @@ if ($NoGit) { exit 0 }
 
 Push-Location $RepoRoot
 try {
-    git add public-data/public-snapshot.json public-data/process-roadmap.json public-data/strategy-archive.json public-data/company-operating-model.json
+    git add public-data/public-snapshot.json public-data/process-roadmap.json public-data/strategy-archive.json public-data/company-operating-model.json public-data/stats.json
     $diff = git diff --cached --name-only
     if (-not $diff) {
         Write-Host "No git-staged snapshot diff."

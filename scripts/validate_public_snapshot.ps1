@@ -1,42 +1,66 @@
 [CmdletBinding()]
 param(
-    [string]$RepoRoot = "C:\QM\repo"
+    [string]$RepoRoot = "C:\QM\repo",
+    [string]$DataDir = ""
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-$publicDataDir = Join-Path $RepoRoot "public-data"
+$publicDataDir = if ([string]::IsNullOrWhiteSpace($DataDir)) {
+    Join-Path $RepoRoot "public-data"
+} else {
+    $DataDir
+}
+$schemaDir = Join-Path $RepoRoot "public-data"
 $fixturesDir = Join-Path $RepoRoot "scripts\tests\fixtures\public_snapshot_validation"
 
 if (-not (Get-Command Test-Json -ErrorAction SilentlyContinue)) {
-    throw "Test-Json is required for schema validation."
+    $pwsh = Get-Command pwsh.exe -ErrorAction SilentlyContinue
+    if ($null -eq $pwsh) {
+        throw "Test-Json is required for schema validation and pwsh.exe is unavailable."
+    }
+    $forward = @(
+        '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $PSCommandPath,
+        '-RepoRoot', $RepoRoot
+    )
+    if (-not [string]::IsNullOrWhiteSpace($DataDir)) {
+        $forward += @('-DataDir', $DataDir)
+    }
+    & $pwsh.Source @forward
+    exit $LASTEXITCODE
 }
 
 $targets = @(
     @{
         Name = "public-snapshot"
-        Schema = Join-Path $publicDataDir "public-snapshot.schema.json"
+        Schema = Join-Path $schemaDir "public-snapshot.schema.v2.json"
         Data = Join-Path $publicDataDir "public-snapshot.json"
-        Negative = Join-Path $fixturesDir "public-snapshot.invalid.extra-field.json"
+        Negative = Join-Path $fixturesDir "public-snapshot.v2.invalid.legacy-t6.json"
     },
     @{
         Name = "process-roadmap"
-        Schema = Join-Path $publicDataDir "process-roadmap.schema.json"
+        Schema = Join-Path $schemaDir "process-roadmap.schema.json"
         Data = Join-Path $publicDataDir "process-roadmap.json"
         Negative = Join-Path $fixturesDir "process-roadmap.invalid.missing-required.json"
     },
     @{
         Name = "strategy-archive"
-        Schema = Join-Path $publicDataDir "strategy-archive.schema.json"
+        Schema = Join-Path $schemaDir "strategy-archive.schema.json"
         Data = Join-Path $publicDataDir "strategy-archive.json"
         Negative = Join-Path $fixturesDir "strategy-archive.invalid.wrong-enum.json"
     },
     @{
         Name = "company-operating-model"
-        Schema = Join-Path $publicDataDir "company-operating-model.schema.json"
+        Schema = Join-Path $schemaDir "company-operating-model.schema.json"
         Data = Join-Path $publicDataDir "company-operating-model.json"
         Negative = Join-Path $fixturesDir "company-operating-model.invalid.extra-field.json"
+    },
+    @{
+        Name = "public-stats"
+        Schema = Join-Path $schemaDir "public-stats.schema.json"
+        Data = Join-Path $publicDataDir "stats.json"
+        Negative = Join-Path $fixturesDir "public-stats.invalid.infrastructure-field.json"
     }
 )
 

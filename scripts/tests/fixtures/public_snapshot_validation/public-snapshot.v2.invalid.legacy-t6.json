@@ -1,0 +1,21 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-09-02T14:50:00Z",
+  "phase": "Endausbaustufe-Modus - highest EA at Q14",
+  "agents": {"online": 0, "offline": 0, "blocked": 0},
+  "pipeline": {
+    "strategy_cards": 0,
+    "eas_built": 0,
+    "work_items_total": 0,
+    "by_gate_v4": {
+      "gate_contract_version": "v4",
+      "Q00": 0, "Q01": 0, "Q02": 0, "Q03": 0, "Q04": 0, "Q05": 0,
+      "Q06": 0, "Q07": 0, "Q08": 0, "Q09": 0, "Q10": 0, "Q11": 0,
+      "Q12": 0, "Q13": 0, "Q14": 0, "Q15": 0, "Q16": 0, "Q17": 0
+    }
+  },
+  "public_archive": {"gate_contract_version": "v4", "progress_metric": "highest_contiguous_valid_gate", "gates": [], "cards": []},
+  "pipeline_gates": {"gate_contract_version": "v4", "macro_phases": [], "gates": []},
+  "t6": {"status": "offline", "autotrading": false, "risk_state": "green"},
+  "expenses": {"spent_eur": 0, "budget_eur": 0, "entries": 0}
+}
