@@ -1,0 +1,118 @@
+{
+  "task_id": "a9be46b3-3f73-4afe-bcd8-7130031338a5",
+  "build_generation": 0,
+  "ea_id": "QM5_41309",
+  "ea_label": "QM5_41309_wti-mlz76-tr",
+  "slug": "wti-mlz76-tr",
+  "strategy_id": "AI-CODEX-WTI-MLZ76-TREND-20260902_S01",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41309_wti-mlz76-tr",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41309_wti-mlz76-tr\\QM5_41309_wti-mlz76-tr.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41309_wti-mlz76-tr\\QM5_41309_wti-mlz76-tr.ex5",
+  "magic_base": 413090000,
+  "symbols": [
+    "XTIUSD.DWX"
+  ],
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "logical_symbol": "XTIUSD.DWX",
+  "host_symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41309_wti-mlz76-tr\\sets\\QM5_41309_wti-mlz76-tr_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_sha256": {
+    "QM5_41309_wti-mlz76-tr_XTIUSD.DWX_D1_backtest.set": "5935507C4F5FD58DAD763D3B2100F50FAF33C25A9C7A8B342839C560ADBE5F67"
+  },
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41309_wti-mlz76-tr\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "The qm-build-ea-from-card skill is build-only and forbids manual backtests; the OWNER mission authorizes one governed paced Q02 enqueue instead.",
+  "blocked_reason": "",
+  "open_questions": [
+    "Q02 must establish activity, fills, costs, and baseline economics, including at least five completed positions in every full post-warm-up year.",
+    "Only unchanged Q09 may determine realized decorrelation or diversification value versus the certified index, metal, and XNG book."
+  ],
+  "compile": {
+    "status": "COMPILE_OK",
+    "work_item_id": "60885f37-3f78-421a-80d1-0e4e19fd8ebb",
+    "terminal": "T7",
+    "evidence_path": "D:\\QM\\reports\\work_items\\60885f37-3f78-421a-80d1-0e4e19fd8ebb\\QM5_41309\\COMPILE_EA\\compile_evidence.json",
+    "evidence_sha256": "3961CEDEE3635AEA8D6B3AA1C388D3FEF4D5F255576A844781EB14DD46BE3D83",
+    "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260902_104513.json",
+    "build_check_report_sha256": "077D7B1F71C24285E43CCF4C01A31E645EC12F32FDD588872077A4A8283D0E10",
+    "build_check_result": "PASS",
+    "build_check_warnings": 0,
+    "build_check_warning_codes": [],
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "failure_classes": [],
+    "mq5_sha256": "3E57ADDBD07C40BD338C9CA2703A2CD97DA9BF27CA42152D5D78CBECB5940FD9",
+    "ex5_sha256": "A6706E40897D25F399637C087FF333C93EF248EA1DF82F9A341477CBD8F82659",
+    "setfile_build_hash": "534A649FE21B14CDCCE1022F6D0230F127A0877C5428048F8923C4D614D3EC15",
+    "setfile_sha256": "5935507C4F5FD58DAD763D3B2100F50FAF33C25A9C7A8B342839C560ADBE5F67"
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "validations": {
+    "approved_card_sha256": "555A6EFB6FF1ED0387A44A4DDEBAD15DA7F72C539B1DEF1323EC2978AFD98F3E",
+    "approved_local_card_byte_identical": true,
+    "farm_runtime_card_sha256": "129BA00EBB869C5EE663FFBCF1B94F231544ECF2BE495F06D0360C9F02AE77B4",
+    "farm_runtime_card_byte_identical": false,
+    "farm_runtime_card_normalization": "The factory approval controller normalized approval metadata in its runtime mirror; executable R2-R4, strategy, symbol, risk, and lifecycle contracts are unchanged.",
+    "build_skill_guard": "PASS",
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "dedup_artifact_sha256": "765F81B5494C0DEFBC3F8A017B743493073A4803AAE4BF6C7AB72A8927058B69",
+    "density_artifact_sha256": "5D8EDAEDE91575A31270C75AE7DCA2BF9CEB34CFC23B4EF75EEEBAF2C927B6D9",
+    "reference_test_sha256": "B52760B80F131408223D8542D4502764D686A85D6D33834D29932937BD4645F0",
+    "reference_tests": "PASS_11",
+    "source_packet_sha256": "6C03347BB420026B8B5B7D607A593158BE518C4AB8AF3EC258E345D1143095CD",
+    "spec_sha256": "33F7E63E8E35C3A4C0E7D626AE6D2B1D46E44D7C0DF388C9AFE74B31077F3B7B",
+    "spec_validation": "PASS",
+    "static_guardrails": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_EXACT_XTIUSD_DWX_D1",
+    "setfile_validation": "PASS_1_RISK_FIXED_BACKTEST_ONLY"
+  },
+  "capacity_admission": {
+    "sampling_method": "Win32_PerfFormattedData_PerfOS_Processor Name=_Total plus exact D:\\QM\\mt5\\T1-T10 terminal path scan",
+    "sample_interval_seconds": 2,
+    "sample_window_utc": {
+      "started_at": "2026-09-02T10:47:17.1926749Z",
+      "ended_at": "2026-09-02T10:47:26.7581432Z"
+    },
+    "cpu_samples_percent": [
+      55.0,
+      44.0,
+      46.0,
+      48.0,
+      43.0
+    ],
+    "cpu_average_percent": 47.2,
+    "cpu_maximum_percent": 55.0,
+    "cpu_ceiling_percent": 97.0,
+    "factory_terminal_count": 4,
+    "factory_terminal_ceiling": 7,
+    "factory_terminals": [
+      "T10",
+      "T4",
+      "T6",
+      "T5"
+    ],
+    "rule": "Admit only when CPU average and maximum are strictly below 97 percent and the factory terminal count is below seven.",
+    "admitted": true
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "deploy_manifest_touched": false,
+    "manual_backtest_launched": false,
+    "manual_dispatch_requested": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false
+  }
+}

@@ -10,25 +10,16 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   PENDING_COMPILE
+; build_hash:   534a649fe21b14cdcce1022f6d0230f127a0877c5428048f8923c4d614d3ec15
 ; author:       Development
 ; date:         2026-09-02
 ;==========================================================
 qm_ea_id=41309
 qm_magic_slot_offset=0
-qm_rng_seed=42
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-qm_news_temporal=0
-qm_news_compliance=0
-qm_news_stale_max_hours=336
-qm_news_min_impact=high
-qm_news_mode_legacy=0
-qm_friday_close_enabled=false
-qm_friday_close_hour_broker=21
-qm_stress_reject_probability=0.0
-; strategy-specific params from the approved card
+; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=ea_input_defaults
 strategy_month_returns=20
 strategy_complexity_ceiling=6
