@@ -18,6 +18,7 @@ import datetime as dt
 import hashlib
 import json
 import sqlite3
+import time
 import uuid
 from pathlib import Path
 from typing import Any
@@ -262,6 +263,46 @@ def backup_database(root: Path, backup_dir: Path) -> tuple[Path, str]:
     return destination, sha256_file(destination)
 
 
+def acquire_backup_write_guard(
+    root: Path,
+    *,
+    timeout_seconds: float = 600.0,
+) -> tuple[sqlite3.Connection, dict[str, Any]]:
+    """Wait for one write window and retain a RESERVED lock during backup.
+
+    SQLite online backups are readers and can be starved indefinitely by the
+    farm's queued long writers.  A no-op BEGIN IMMEDIATE waits its turn, blocks
+    later writers once admitted, and still permits the separate backup reader.
+    The transaction is always rolled back without changing the database.
+    """
+
+    db = root / "state" / "farm_state.sqlite"
+    started = time.monotonic()
+    attempts = 0
+    last_error = ""
+    while time.monotonic() - started < timeout_seconds:
+        attempts += 1
+        guard = sqlite3.connect(db, timeout=30)
+        guard.execute("PRAGMA busy_timeout=30000")
+        try:
+            guard.execute("BEGIN IMMEDIATE")
+            return guard, {
+                "attempts": attempts,
+                "wait_seconds": round(time.monotonic() - started, 3),
+                "transaction": "BEGIN IMMEDIATE / no writes / ROLLBACK",
+            }
+        except sqlite3.OperationalError as exc:
+            guard.close()
+            last_error = str(exc)
+            if "locked" not in last_error.casefold() and "busy" not in last_error.casefold():
+                raise
+            time.sleep(0.5)
+    raise RetryError(
+        "BACKUP_WRITE_WINDOW_TIMEOUT:"
+        f"attempts={attempts}:last_error={last_error or 'unknown'}"
+    )
+
+
 def apply_retry(
     root: Path,
     repo: Path,
@@ -283,8 +324,16 @@ def apply_retry(
     )
     backup_path: Path | None = None
     backup_sha: str | None = None
+    backup_guard_detail: dict[str, Any] | None = None
     with lock:
-        backup_path, backup_sha = backup_database(root, backup_dir)
+        backup_guard, backup_guard_detail = acquire_backup_write_guard(root)
+        try:
+            backup_path, backup_sha = backup_database(root, backup_dir)
+        finally:
+            try:
+                backup_guard.rollback()
+            finally:
+                backup_guard.close()
         recheck = inspect(root, repo, build_task_id)
         if not recheck["eligible"]:
             raise RetryError(
@@ -429,6 +478,7 @@ def apply_retry(
         "applied_count": 1,
         "successor_work_item_id": new_id,
         "backup": {"path": str(backup_path), "sha256": backup_sha},
+        "backup_write_guard": backup_guard_detail,
         "post": post,
         "factory_mutation_lock": {
             "path": str(mutation_lock),
