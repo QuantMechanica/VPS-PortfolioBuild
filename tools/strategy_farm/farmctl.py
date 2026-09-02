@@ -18327,17 +18327,40 @@ def _active_build_eas_for_artifact_plan(
         conn.close()
 
     now = time.time()
+    # 2026-09-02 (CEO): one directory listing instead of up to three stat()
+    # calls per build task. With 1,915 pending+done build_ea rows the old loop
+    # issued ~5.7k stats per pump cycle on D:/QM/strategy_farm/logs; under
+    # tester I/O saturation that took 45+ s of the 360-s cycle budget (py-spy
+    # 15:34Z). Semantics unchanged: a task is active when one of its three
+    # lane live logs exists and was modified less than within_sec ago.
+    live_prefixes = ("codex_build_", "claude_build_", "gemini_build_")
+    recent_live_logs: set[tuple[str, str]] = set()
+    logs_dir = root / "logs"
+    try:
+        with os.scandir(logs_dir) as entries:
+            for entry in entries:
+                name = entry.name
+                if not name.endswith(".live.log"):
+                    continue
+                for prefix in live_prefixes:
+                    if not name.startswith(prefix):
+                        continue
+                    try:
+                        mtime = entry.stat().st_mtime
+                    except OSError:
+                        break
+                    if now - mtime < within_sec:
+                        recent_live_logs.add((prefix, name[len(prefix):-len(".live.log")]))
+                    break
+    except FileNotFoundError:
+        pass
     active_eas: set[str] = set()
     for row in rows:
         task_id = str(row["id"] or "").strip()
         if not task_id:
             raise ValueError("build task has an empty id")
-        for prefix in ("codex_build_", "claude_build_", "gemini_build_"):
-            live_log = root / "logs" / f"{prefix}{task_id}.live.log"
-            if not live_log.exists():
-                continue
-            age_seconds = now - live_log.stat().st_mtime
-            if age_seconds >= within_sec:
+        for prefix in live_prefixes:
+            if (prefix, task_id) not in recent_live_logs:
                 continue
             payload = json.loads(row["payload_json"] or "{}")
             if not isinstance(payload, dict):
