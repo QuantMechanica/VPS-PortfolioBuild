@@ -88,7 +88,7 @@ returns. Every executable detail is untested QuantMechanica synthesis fixed
 before Q02. The earlier local null result is preserved as direct warning
 against reinterpreting this as an SP500 lead-lag strategy.
 
-Retire zero trades, fewer than five distinct entry days in any full
+Retire zero trades, fewer than ten distinct entry days in any full
 post-warm-up year, nonpositive governed economics, failed walk-forward or
 stress gates, timestamp misalignment, or any implementation drift. No
 threshold rescue is authorized.

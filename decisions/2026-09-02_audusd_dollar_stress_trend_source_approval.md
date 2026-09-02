@@ -115,7 +115,7 @@ Verdict:
 ## Activity And Kill Boundary
 
 The source program's approximately ten annual trades is only an ordering
-prior. Retire zero trades or fewer than five distinct entry days in any full
+prior. Retire zero trades or fewer than ten distinct entry days in any full
 post-warm-up year. Retire nonpositive governed economics, walk-forward or
 stress failure, timestamp misalignment, signal-bar leakage, equality drift,
 wrong side, missing hard stop, loosening trail, retry/scale-in, or wrong risk

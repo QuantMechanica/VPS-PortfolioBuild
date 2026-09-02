@@ -71,7 +71,7 @@ control, or any action above Q02.
 
 ## Kill Boundary
 
-Retire zero trades, fewer than five distinct entry days in any full
+Retire zero trades, fewer than ten distinct entry days in any full
 post-warm-up year, nonpositive governed economics, or any downstream gate
 failure. Fail closed on misaligned timestamps, current-bar/reference leakage,
 wrong endpoints or boundaries, wrong side, repeat/auxiliary entry, missing or

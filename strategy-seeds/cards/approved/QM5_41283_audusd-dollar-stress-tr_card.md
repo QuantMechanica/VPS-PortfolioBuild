@@ -72,8 +72,8 @@ direction: short_only
 intraday: false
 closed_bar_cache_required: true
 smoke_year: 2020
-expected_trade_frequency: "Approximately 5-15 completed AUDUSD positions per full post-warm-up year as an ordering prior only; retire below five distinct entry days in any full year."
-expected_trades_per_year_per_symbol: 10
+expected_trade_frequency: "Approximately 10-15 completed AUDUSD positions per full post-warm-up year as an ordering prior only; retire below ten distinct entry days in any full year."
+expected_trades_per_year_per_symbol: 12
 expected_hold_time: "one to ten D1 bar shifts; earlier composite-gate clear, hard stop, or monotone ATR trail"
 expected_regime: "episodic global risk-off dollar shortage with broad USD appreciation and AUDUSD downside continuation"
 expected_pf: 1.01
@@ -95,9 +95,9 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: Q01
-q01_status: NOT_BUILT
-q02_status: NOT_ENQUEUED_Q01_PENDING
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: ENQUEUED_PENDING
 force_build: true
 review_focus: "Falsify a short-only AUDUSD global-dollar-stress sleeve outside the certified index/metal/energy book. Verify exact cross-symbol D1 alignment, ex-current SP500 mean, return endpoints, broad-USD equality, prior-low exclusion, consumed daily attempt, short-only side, hard stop, monotone trail, gate/time exits, and fixed risk. Q09 alone may establish portfolio overlap."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -174,7 +174,7 @@ Verdict:
   have that exact timestamp.
 - Exclude the forming bar and the just-completed signal bar from historical
   reference windows. Require positive finite prices and chronological bars.
-- Persist the aligned completed-bar timestamp as the consumed daily attempt
+- Persist the framework current-D1 decision key as the consumed daily attempt
   before history, signal, spread, quote, ATR, sizing, margin, or send gates.
 
 ### Exact Signal
@@ -215,7 +215,7 @@ magnitude never changes risk.
 1. Require exact EA ID, magic slot, symbol, D1 period, fixed-risk mode, news
    modes, Friday mode, and locked strategy inputs.
 2. Run owned-position integrity and exit management before entry-only gates.
-3. On a new D1 edge, persist the completed host bar timestamp before every
+3. On a new D1 edge, persist the framework current-D1 decision key before every
    fallible gate. A restart or later tick cannot retry that signal day.
 4. Reject owned exposure or a same-magic entry deal attributable to the
    consumed day.
@@ -262,7 +262,7 @@ magnitude never changes risk.
 ## 7. Trade Management Rules
 
 - Maintain zero or one valid short AUDUSD position and one consumed attempt
-  per aligned completed D1 timestamp.
+  per framework D1 decision key.
 - Close duplicate, wrong-symbol, wrong-side, invalid-volume, or stopless owned
   exposure; never repair it by adding risk.
 - On completed bars, perform gate-clear and ten-shift exits before considering
@@ -359,7 +359,7 @@ external runtime dataset exists.
 
 Retire or fail on any of the following:
 
-- zero trades or fewer than five distinct entry days in any full post-warm-up
+- zero trades or fewer than ten distinct entry days in any full post-warm-up
   Q02 year;
 - nonpositive governed economics or any downstream gate failure;
 - forming-bar leakage, signal-bar inclusion in a reference sample, timestamp
@@ -434,6 +434,7 @@ admission, correlation waivers, external runtime data, or terminal control.
 | Date | Change |
 |---|---|
 | 2026-09-02 | Initial AUDUSD global-dollar-stress card approved under the OWNER diversity/funnel mission; canonical dedup CLEAN; R1-R4 bounded PASS. |
+| 2026-09-02 | Governed compile passed and one paced RISK_FIXED AUDUSD.DWX D1 Q02 row was enqueued; Q09 alone owns portfolio correlation. |
 
 ## Pipeline Phase Status
 
@@ -441,7 +442,7 @@ admission, correlation waivers, external runtime data, or terminal control.
 |---|---|---|
 | G0 Source Approval | APPROVED | `decisions/2026-09-02_audusd_dollar_stress_trend_source_approval.md` |
 | G0 Card Decision | APPROVED | `decisions/2026-09-02_qm5_41283_audusd_dollar_stress_trend_g0.md` |
-| EA Identity | RESERVED | atomic `farmctl reserve-ea-ids`; registry row `QM5_41283` |
-| Magic | PENDING_GOVERNED_ALLOCATION | slot 0 requested for `AUDUSD.DWX` |
-| Q01 | NOT_BUILT | strict compile pending |
-| Q02 | NOT_ENQUEUED_Q01_PENDING | one paced row only after Q01 PASS |
+| EA Identity | ACTIVE | registry row `QM5_41283` |
+| Magic | ACTIVE | slot 0 `AUDUSD.DWX`, magic `412830000` |
+| Q01 | PASS | `artifacts/qm5_41283_build_result_20260902.json` |
+| Q02 | ENQUEUED_PENDING | work item `077d392b-8596-4d25-a183-1c83aef949bd`; `artifacts/qm5_41283_audusd_dollar_stress_tr_q01_q02_handoff_20260902.json` |

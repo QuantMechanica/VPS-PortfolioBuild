@@ -1,0 +1,99 @@
+{
+  "schema_version": "qm.q01-q02-handoff/v1",
+  "ea_id": "QM5_41283",
+  "ea_label": "QM5_41283_audusd-dollar-stress-tr",
+  "strategy_id": "AI-CODEX-AUDUSD-DOLLAR-STRESS-TREND-20260902_S01",
+  "recorded_at_utc": "2026-09-02T04:47:49Z",
+  "branch": "agents/board-advisor",
+  "mission": "one low-frequency structural forex sleeve outside the certified index, metal, and XNG book",
+  "edge": {
+    "symbol": "AUDUSD.DWX",
+    "signal_dependency_symbols": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX",
+      "SP500.DWX"
+    ],
+    "timeframe": "D1",
+    "direction": "short_only",
+    "decision_frequency": "one consumed attempt per framework D1 decision key",
+    "mechanic": "short AUDUSD only when synchronized completed D1 bars show SP500 below its ex-current 50-close mean with a negative 20-session return, broad five-session USD appreciation across EURUSD, GBPUSD, and AUDUSD of at least one percent, and an AUDUSD prior-20-low break",
+    "portfolio_correlation_claim": "NONE_Q09_ONLY"
+  },
+  "upstream_governance": {
+    "source_card_identity_commit": "39ce44bcfc7a76ca9518b20387d1d03aff1e9ce4",
+    "source_approval": "decisions/2026-09-02_audusd_dollar_stress_trend_source_approval.md",
+    "g0_decision": "decisions/2026-09-02_qm5_41283_audusd_dollar_stress_trend_g0.md",
+    "approved_card": "strategy-seeds/cards/approved/QM5_41283_audusd-dollar-stress-tr_card.md",
+    "dedup_receipt": "artifacts/qm5_audusd_dollar_stress_preallocation_dedup_20260902.json"
+  },
+  "q01": {
+    "status": "PASS",
+    "build_task_id": "3e575e50-46b2-46f4-8601-ad4344fd5449",
+    "compile_work_item_id": "e556459c-f58d-49e8-9c05-926a447d3cd8",
+    "compile_terminal": "T3",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "build_check_result": "PASS",
+    "build_check_warnings": 3,
+    "build_check_warning_code": "EA_PERF_UNGATED_BAR_DATA",
+    "build_check_warning_disposition": "The bounded CopyRates helpers are reached only after the single new-D1-bar gate; no per-tick bar copy is present.",
+    "reference_tests": "PASS_8",
+    "mq5_sha256": "7e3677b6091f8ef85aff72af4f38d3aadf94595c1730d8bb42617bd2f24e1812",
+    "ex5_sha256": "7f9d0837f45046ca323a8b4507b01944879d6918788214f0ecef631f5d38c2a6",
+    "compile_evidence_path": "D:\\QM\\reports\\work_items\\e556459c-f58d-49e8-9c05-926a447d3cd8\\QM5_41283\\COMPILE_EA\\compile_evidence.json",
+    "compile_evidence_sha256": "e65477947746bfaca005a1d3285b299df960ab7bd2d7cc654206e97cf0d0feef",
+    "build_result_path": "artifacts/qm5_41283_build_result_20260902.json",
+    "build_result_sha256": "a7159f2f88499876225ecec633236d3f8b2e155f2f366ea0964d861bb22a2850"
+  },
+  "risk_contract": {
+    "mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "setfile_count": 1,
+    "q02_setfile_sha256": "546752a006ee4f772e2e9c0101e41a7712a2ff097ebd776ce0746bf09375f033"
+  },
+  "capacity_admission": {
+    "sampling_method": "Win32_PerfFormattedData_PerfOS_Processor Name=_Total",
+    "sample_interval_seconds": 2,
+    "sample_window_utc": {
+      "started_at": "2026-09-02T04:45:52.2832446Z",
+      "ended_at": "2026-09-02T04:46:01.7278335Z"
+    },
+    "cpu_samples_percent": [
+      62.0,
+      69.0,
+      66.0,
+      54.0,
+      70.0
+    ],
+    "cpu_average_percent": 64.2,
+    "cpu_maximum_percent": 70.0,
+    "cpu_ceiling_percent": 97.0,
+    "active_work_items_at_admission": 1,
+    "rule": "admit only when average and maximum are strictly below the ceiling",
+    "admitted": true
+  },
+  "q02": {
+    "status_at_handoff": "pending",
+    "work_item_id": "077d392b-8596-4d25-a183-1c83aef949bd",
+    "enqueued_at_utc": "2026-09-02T04:47:49Z",
+    "symbol": "AUDUSD.DWX",
+    "host_symbol": "AUDUSD.DWX",
+    "timeframe": "D1",
+    "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_41283_audusd-dollar-stress-tr\\sets\\QM5_41283_audusd-dollar-stress-tr_AUDUSD.DWX_D1_backtest.set",
+    "attempt_count_at_handoff": 0,
+    "claimed_by_at_handoff": null,
+    "priority_track": true,
+    "dispatch_requested": false
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "deploy_manifest_touched": false,
+    "manual_backtest_launched": false,
+    "manual_dispatch_requested": false,
+    "optimization_enqueued": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false
+  }
+}

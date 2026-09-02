@@ -1,0 +1,114 @@
+{
+  "task_id": "3e575e50-46b2-46f4-8601-ad4344fd5449",
+  "build_generation": 0,
+  "ea_id": "QM5_41283",
+  "ea_label": "QM5_41283_audusd-dollar-stress-tr",
+  "slug": "audusd-dollar-stress-tr",
+  "strategy_id": "AI-CODEX-AUDUSD-DOLLAR-STRESS-TREND-20260902_S01",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41283_audusd-dollar-stress-tr",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41283_audusd-dollar-stress-tr\\QM5_41283_audusd-dollar-stress-tr.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41283_audusd-dollar-stress-tr\\QM5_41283_audusd-dollar-stress-tr.ex5",
+  "magic_base": 412830000,
+  "symbols": [
+    "AUDUSD.DWX"
+  ],
+  "symbols_registered": [
+    "AUDUSD.DWX"
+  ],
+  "logical_symbol": "AUDUSD.DWX",
+  "host_symbol": "AUDUSD.DWX",
+  "timeframe": "D1",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41283_audusd-dollar-stress-tr\\sets\\QM5_41283_audusd-dollar-stress-tr_AUDUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_sha256": {
+    "QM5_41283_audusd-dollar-stress-tr_AUDUSD.DWX_D1_backtest.set": "546752A006EE4F772E2E9C0101E41A7712A2FF097EBD776CE0746BF09375F033"
+  },
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41283_audusd-dollar-stress-tr\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "The qm-build-ea-from-card skill is build-only and forbids manual backtests; the OWNER mission authorizes one governed paced Q02 enqueue instead.",
+  "blocked_reason": "",
+  "open_questions": [
+    "Q02 must establish activity, fills, costs, and baseline economics, including at least ten distinct entry days in every full post-warm-up year.",
+    "Only unchanged Q09 may determine realized decorrelation or diversification value versus the certified index, metal, and XNG book."
+  ],
+  "compile": {
+    "status": "COMPILE_OK",
+    "work_item_id": "e556459c-f58d-49e8-9c05-926a447d3cd8",
+    "terminal": "T3",
+    "evidence_path": "D:\\QM\\reports\\work_items\\e556459c-f58d-49e8-9c05-926a447d3cd8\\QM5_41283\\COMPILE_EA\\compile_evidence.json",
+    "evidence_sha256": "E65477947746BFACA005A1D3285B299DF960AB7BD2D7CC654206E97CF0D0FEEF",
+    "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260902_044234.json",
+    "build_check_report_sha256": "36EB170ACC02EE60E230A31EC545CD556E99E32C18B9A4F7972AA4F66FA4FBF7",
+    "build_check_result": "PASS",
+    "build_check_warnings": 3,
+    "build_check_warning_codes": [
+      "EA_PERF_UNGATED_BAR_DATA"
+    ],
+    "build_check_warning_disposition": "False-positive proximity heuristic: each reported CopyRates call is inside a helper reached only after the single OnTick new-D1-bar gate; the EA does not perform per-tick bar copying.",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "failure_classes": [],
+    "mq5_sha256": "7E3677B6091F8EF85AFF72AF4F38D3AADF94595C1730D8BB42617BD2F24E1812",
+    "ex5_sha256": "7F9D0837F45046CA323A8B4507B01944879D6918788214F0ECEF631F5D38C2A6",
+    "setfile_build_hash": "712403C1469009753E256BD2C97B6B7B16A3FD08E8ABE3E2FE466C3F7DAE4347",
+    "setfile_sha256": "546752A006EE4F772E2E9C0101E41A7712A2FF097EBD776CE0746BF09375F033"
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "validations": {
+    "approved_card_sha256": "790E06AFE5C1EA43123F87B1E19A7A88073B1E315DC2F79CE14405945F47FBED",
+    "approved_local_card_byte_identical": true,
+    "farm_runtime_card_sha256": "D260B6134DEA8A3454DD98AC3B754A0ADFADF8F3A4385A2F57CC171FB43A4EF0",
+    "farm_runtime_card_byte_identical": false,
+    "farm_runtime_card_normalization": "The factory approval controller normalized approval metadata in its runtime mirror; executable R2-R4, strategy, symbol, risk, and lifecycle contracts are unchanged.",
+    "build_skill_guard": "PASS",
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "dedup_artifact_sha256": "5EA79E6A5AC8FE6F4187C8F0F6118F9BE550804E297B8D1CB43975D222377F2E",
+    "retrieval_receipt_sha256": "7B6E4BD4E1C587E465DDA5249EBCF6C274AE1A133D60A0F2FA07B7AB43553E64",
+    "reference_test_sha256": "0E3765472C7D7E6C56F1ADA9B67E17BA6D74889AFB8A46FE5ABAEE21908B66B6",
+    "reference_tests": "PASS_8",
+    "source_packet_sha256": "5D63041DF67F1F905C16A0E06B5634D4EEE5EF33406C65C30C3B7DEC909336B7",
+    "spec_sha256": "6809EF6DD128AB41D9D2DDE0DBA0503CB76102BBE09955715D501D60D16B6C7E",
+    "spec_validation": "PASS",
+    "static_guardrails": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_EXACT_AUDUSD_DWX_D1_WITH_SIGNAL_ONLY_EURUSD_GBPUSD_SP500",
+    "setfile_validation": "PASS_1_RISK_FIXED_BACKTEST_ONLY"
+  },
+  "capacity_admission": {
+    "sampling_method": "Win32_PerfFormattedData_PerfOS_Processor Name=_Total",
+    "sample_interval_seconds": 2,
+    "sample_window_utc": {
+      "started_at": "2026-09-02T04:45:52.2832446Z",
+      "ended_at": "2026-09-02T04:46:01.7278335Z"
+    },
+    "cpu_samples_percent": [
+      62.0,
+      69.0,
+      66.0,
+      54.0,
+      70.0
+    ],
+    "cpu_average_percent": 64.2,
+    "cpu_maximum_percent": 70.0,
+    "cpu_ceiling_percent": 97.0,
+    "active_work_items_at_admission": 1,
+    "rule": "admit only when average and maximum are strictly below the ceiling",
+    "admitted": true
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "deploy_manifest_touched": false,
+    "manual_backtest_launched": false,
+    "manual_dispatch_requested": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false
+  }
+}

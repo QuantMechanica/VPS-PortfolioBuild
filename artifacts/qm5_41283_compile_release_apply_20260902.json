@@ -1,0 +1,28 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "e556459c-f58d-49e8-9c05-926a447d3cd8"
+  ],
+  "backup": {
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260902T043837Z_753e6e1d.sqlite",
+    "sha256": "18a5607ab991da93db309929ef0a47e91be7942d9e5b468307fa6161d1e76222"
+  },
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "7e3677b6091f8ef85aff72af4f38d3aadf94595c1730d8bb42617bd2f24e1812",
+      "ea_id": "QM5_41283",
+      "ea_label": "QM5_41283_audusd-dollar-stress-tr",
+      "expected_mq5_sha256": "7e3677b6091f8ef85aff72af4f38d3aadf94595c1730d8bb42617bd2f24e1812",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41283_audusd-dollar-stress-tr\\QM5_41283_audusd-dollar-stress-tr.mq5",
+      "work_item_id": "e556459c-f58d-49e8-9c05-926a447d3cd8"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-09-02T04:40:27+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "e556459c-f58d-49e8-9c05-926a447d3cd8"
+}
