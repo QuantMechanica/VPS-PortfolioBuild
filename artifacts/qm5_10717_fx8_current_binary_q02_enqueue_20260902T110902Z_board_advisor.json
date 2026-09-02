@@ -1,0 +1,151 @@
+{
+  "artifact_type": "fx_existing_card_current_binary_q02_enqueue",
+  "generated_at_utc": "2026-09-02T11:09:02Z",
+  "branch": "agents/board-advisor",
+  "mission_outcome": "ENQUEUED_ONE_CURRENT_BINARY_LOGICAL_FX_BASKET_Q02",
+  "frontier_duplicate_guard": {
+    "controlling_research": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "latest_complete_census": "docs/research/FX_FRONTIER_QM5_12741_Q04_PRIORITY_HANDOFF_20260902T070056Z.md",
+    "scan_relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "approved_cointegration_or_coint_identities": 123,
+    "matching_ea_directories": 123,
+    "unbuilt_approved_identities": 0,
+    "anchors": {
+      "QM5_12532": {
+        "relationship": "AUDUSD.DWX / NZDUSD.DWX",
+        "state": "Q02 PASS; Q04 PASS; Q05 FAIL",
+        "q02_oninit_or_no_history_blocker": false
+      },
+      "QM5_12533": {
+        "relationship": "EURJPY.DWX / GBPJPY.DWX",
+        "state": "Q02 PASS; Q04 FAIL",
+        "q02_oninit_or_no_history_blocker": false
+      }
+    },
+    "decision": "Do not create a duplicate scan-derived Card, EA, manifest, or Q02 row; advance an existing approved forex Card instead."
+  },
+  "selected_existing_forex_card": {
+    "ea_id": "QM5_10717",
+    "slug": "edgelab-xsec-fx-momentum",
+    "approved_card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_10717_edgelab-xsec-fx-momentum.md",
+    "approved_card_sha256": "1f53501d7c6d2ec610a62c1ca21ac93ff41e7fc1bdee0196a9969cd7737cdcae",
+    "spec": "framework/EAs/QM5_10717_edgelab-xsec-fx-momentum/SPEC.md",
+    "spec_sha256": "8966fe6f555ca2d9c3e64073adf87f4cfd84df1d17472016d2324b2369ea13cf",
+    "g0_status": "APPROVED",
+    "r1_track_record": "PASS",
+    "r2_mechanical": "PASS",
+    "r3_data_available": "PASS",
+    "r4_ml_forbidden": "PASS",
+    "reputable_source": "Menkhoff, Sarno, Schmeling, and Schrimpf (2012), Currency Momentum Strategies, Journal of Financial Economics 106(3)",
+    "structure": "Weekly D1 FX8 cross-sectional return ranking; long the strongest against the weakest and the second strongest against the second weakest; top-decile realized-volatility skip; two ATR-stopped legs.",
+    "low_frequency": true,
+    "market_neutral_design": true,
+    "ml_grid_martingale_or_hft": false,
+    "logical_symbol": "FX8_BASKET_D1",
+    "host_symbol": "EURUSD.DWX",
+    "host_timeframe": "D1",
+    "basket_symbol_count": 28,
+    "basket_manifest": "framework/EAs/QM5_10717_edgelab-xsec-fx-momentum/basket_manifest.json",
+    "basket_manifest_sha256": "9aea91d105f8ff70a9993d646259d3d2a1e87a608ea477651ac8f16673235e6a",
+    "risk_contract": {
+      "setfile": "framework/EAs/QM5_10717_edgelab-xsec-fx-momentum/sets/QM5_10717_edgelab-xsec-fx-momentum_FX8_BASKET_D1_D1_backtest.set",
+      "setfile_sha256": "e6cf041bce7de65c935edbeab71bd5c5e6f6524dcbc5732f280ad3ad3684548b",
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0
+    }
+  },
+  "governed_compile_receipt": {
+    "work_item_id": "9f797114-aa19-4a82-ad10-65c18157170a",
+    "state": "done",
+    "verdict": "COMPILE_OK",
+    "evidence_path": "D:/QM/reports/work_items/9f797114-aa19-4a82-ad10-65c18157170a/QM5_10717/COMPILE_EA/compile_evidence.json",
+    "mq5_sha256": "0278b5ddef713e76617c4ae4bc9c97b21217e88578e36a1a09d5ebe10faef970",
+    "ex5_sha256": "3d5680d0022df60ca523630822515e5f1cf86a2e7bc4d512eda45065cb8ce463"
+  },
+  "stale_seed_supersession": {
+    "work_item_id": "7dd70134-a2a0-4ecf-a706-5f4609a094be",
+    "logical_symbol": "FX8_BASKET_D1",
+    "preserved_state": "pending",
+    "claimed_by": null,
+    "attempt_count": 0,
+    "verdict": null,
+    "stale_binding": {
+      "mq5_sha256": "1fa4d2fdceaba1fb727ca5d8962964be400490a9546fcb77a8b8579d345e9f7e",
+      "ex5_sha256": "72c118b0a30fc32d0b6bcf921a632bfd8175048431b0547b87f249b841053f0a",
+      "setfile_sha256": "4d34f1a3ab50cee7154f979977428e8462b5a9d3ab0f84c41be3b453dc81087c"
+    },
+    "supersession_edge": {
+      "source_encoding": "operator:record",
+      "recorded_at_utc": "2026-09-02T11:01:11Z",
+      "recorded_by": "codex/agents-board-advisor",
+      "superseded_by_work_item_id": null,
+      "reason": "The governed source repair rebuilt MQ5/EX5 before the pending seed was claimed; its immutable execution binding must not dispatch."
+    },
+    "pre_mutation_backup": {
+      "path": "D:/QM/strategy_farm/state/backups/farm_state_before_supersedes_20260902T104711Z.sqlite",
+      "sha256": "ab37ef1f910bfa08c747f8591f838b27f858657b2636b9f13f9d469c2d15b4b9"
+    }
+  },
+  "fresh_q02_enqueue": {
+    "work_item_id": "65319749-3c0b-4636-9131-305c34100a08",
+    "created_at_utc": "2026-09-02T11:05:10Z",
+    "phase": "Q02",
+    "logical_symbol": "FX8_BASKET_D1",
+    "state_at_verification": "pending",
+    "claimed_by": null,
+    "attempt_count": 0,
+    "verdict": null,
+    "priority_track": true,
+    "fresh_q02_seed": true,
+    "source_work_item_id": "221dba0e-3ed3-490b-8cf0-99345b7b4407",
+    "expected_mq5_sha256": "0278b5ddef713e76617c4ae4bc9c97b21217e88578e36a1a09d5ebe10faef970",
+    "expected_ex5_sha256": "3d5680d0022df60ca523630822515e5f1cf86a2e7bc4d512eda45065cb8ce463",
+    "expected_setfile_sha256": "e6cf041bce7de65c935edbeab71bd5c5e6f6524dcbc5732f280ad3ad3684548b",
+    "expected_expert": "QM\\QM5_10717_edgelab-xsec-fx-momentum",
+    "expected_symbol": "EURUSD.DWX",
+    "expected_period": "D1",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "unsuperseded_open_logical_q02_count": 1,
+    "unsuperseded_open_logical_q02_ids": [
+      "65319749-3c0b-4636-9131-305c34100a08"
+    ],
+    "per_pair_fanout_created": false
+  },
+  "queue_safety_fix": {
+    "commit": "4519677517b1db0b01f5f5ccf34876b1cdfcbf4e",
+    "summary": "seed-fresh-q02 now excludes canonically superseded rows from both open-row and prior-seed duplicate guards",
+    "regression_test": "test_fresh_q02_seed_ignores_canonically_superseded_prior_seed",
+    "test_result": "48 passed in 32.60s",
+    "diff_check": "PASS"
+  },
+  "capacity_check": {
+    "sampled_at_utc": "2026-09-02T11:09:02Z",
+    "samples_pct": [43.114, 46.382, 43.878, 43.606, 46.8],
+    "average_pct": 44.756,
+    "maximum_pct": 46.8,
+    "ceiling_pct": 97,
+    "ceiling_hit": false
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_or_magic_mutation": false,
+    "stale_seed_supersession_recorded": true,
+    "fresh_logical_q02_enqueued": true,
+    "duplicate_or_per_pair_q02_enqueued": false,
+    "dispatch_tick": false,
+    "tester_or_backtest_run": false,
+    "terminal_reservation_or_control": false
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_terminal": false,
+    "autotrading": false
+  }
+}
