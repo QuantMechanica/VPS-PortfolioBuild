@@ -175,14 +175,50 @@ function Validate-JsonAgainstSchema {
             }
         }
         "public-stats" {
-            foreach ($key in @("schema_version", "generated_at", "eas_compiled", "strategy_cards", "backtests_total", "phases")) {
+            $requiredStats = @(
+                "schema_version", "generated_at", "eas_compiled", "strategy_cards",
+                "backtests_total", "phases", "q02_baseline_pass",
+                "q04_walkforward_pass", "q08_davey_stats_pass", "portfolio_candidates",
+                "archive_total", "archive_passed_q10", "archive_failed", "symbols"
+            )
+            foreach ($key in $requiredStats) {
                 if (-not (Test-ObjectHasKey -Target $Object -Key $key)) { throw "Missing key '$key' in $Name." }
             }
             if ($Object.schema_version -ne $SchemaVersionV1) { throw "Invalid schema_version in $Name." }
-            foreach ($key in @("eas_compiled", "strategy_cards", "backtests_total", "phases")) {
+            $nonNegativeStats = @(
+                "eas_compiled", "strategy_cards", "backtests_total", "phases",
+                "q02_baseline_pass", "q04_walkforward_pass", "q08_davey_stats_pass",
+                "portfolio_candidates", "archive_total", "archive_passed_q10",
+                "archive_failed", "symbols"
+            )
+            foreach ($key in $nonNegativeStats) {
                 if ($Object.$key -lt 0) { throw "Invalid $key in $Name." }
             }
+            if ((Test-ObjectHasKey -Target $Object -Key 'research_sources') -and
+                $Object.research_sources -lt 0) {
+                throw "Invalid research_sources in $Name."
+            }
             if ($Object.phases -ne 18) { throw "Invalid Q-gate count in $Name." }
+        }
+        "hero-equity" {
+            foreach ($key in @("schema_version", "generated_at", "basis", "sleeves", "series")) {
+                if (-not (Test-ObjectHasKey -Target $Object -Key $key)) { throw "Missing key '$key' in $Name." }
+            }
+            if ($Object.schema_version -ne $SchemaVersionV1) { throw "Invalid schema_version in $Name." }
+            if ([string]::IsNullOrWhiteSpace([string]$Object.basis)) { throw "Missing basis in $Name." }
+            if ($Object.sleeves -lt 0) { throw "Invalid sleeves in $Name." }
+            if ($null -eq $Object.series) { throw "Missing series in $Name." }
+            foreach ($point in @($Object.series)) {
+                $coords = @($point)
+                if ($coords.Count -ne 2) { throw "Invalid series point arity in $Name." }
+                if ([string]$coords[0] -cnotmatch '^\d{4}-\d{2}-\d{2}$') { throw "Invalid series date in $Name." }
+                $value = $coords[1]
+                if ($null -eq $value -or -not (
+                        $value -is [int] -or $value -is [long] -or $value -is [double] -or
+                        $value -is [decimal] -or $value -is [single] -or $value -is [byte])) {
+                    throw "Invalid series value in $Name."
+                }
+            }
         }
         "company-operating-model" {
             foreach ($key in @("schema_version", "schema", "updated_at", "cache_ttl_minutes", "menu", "dashboard")) {
@@ -259,6 +295,78 @@ function Get-PublicSnapshotBlocks {
         throw 'Public archive bundle omitted strategy_archive_v2.'
     }
     return $blocks
+}
+
+function Invoke-PythonJsonRecord {
+    param(
+        [string]$PythonPath,
+        [string]$ScriptPath,
+        [string[]]$ScriptArgs = @(),
+        [string]$Label
+    )
+    if (-not (Test-Path -LiteralPath $PythonPath -PathType Leaf)) {
+        throw "Python executable not found: $PythonPath"
+    }
+    if (-not (Test-Path -LiteralPath $ScriptPath -PathType Leaf)) {
+        throw "$Label generator not found: $ScriptPath"
+    }
+    $priorErrorPreference = $ErrorActionPreference
+    try {
+        # Windows PowerShell converts native stderr into error records under
+        # Stop. Capture it, then trust only one complete JSON output record.
+        $ErrorActionPreference = "Continue"
+        $output = @(& $PythonPath $ScriptPath @ScriptArgs 2>&1)
+        $exitCode = $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $priorErrorPreference
+    }
+    $jsonLines = @($output | ForEach-Object { [string]$_ } |
+        Where-Object { $_.Trim().StartsWith('{') -and $_.Trim().EndsWith('}') })
+    if ($exitCode -ne 0 -or $jsonLines.Count -ne 1) {
+        throw ("$Label generation failed " +
+            "(rc=$exitCode output=$($output -join ' | '))")
+    }
+    try {
+        return [string]$jsonLines[0] | ConvertFrom-Json -ErrorAction Stop
+    }
+    catch {
+        throw "$Label returned invalid JSON: $($_.Exception.Message)"
+    }
+}
+
+function Get-ArchiveKpiCounts {
+    param([object]$StrategyArchive)
+    # Derive the archive KPIs from the same strategy-archive projection the
+    # public archive page consumes, replicating its terminal-state category
+    # logic so both surfaces agree: passed = Q10 PASS; failed = the last
+    # terminal gate in gate order is FAIL; everything else is "advancing".
+    $gates = @($StrategyArchive.gates)
+    $total = 0
+    $passed = 0
+    $failed = 0
+    foreach ($item in @($StrategyArchive.items)) {
+        $total++
+        $coverage = $item.gate_coverage
+        if ($null -eq $coverage) { continue }
+        $q10 = $null
+        if (Test-ObjectHasKey -Target $coverage -Key 'Q10') {
+            $q10 = [string]$coverage.Q10
+        }
+        if ($q10 -eq 'PASS') { $passed++; continue }
+        $terminalState = $null
+        foreach ($gate in $gates) {
+            if (Test-ObjectHasKey -Target $coverage -Key $gate) {
+                $terminalState = [string]$coverage.$gate
+            }
+        }
+        if ($terminalState -eq 'FAIL') { $failed++ }
+    }
+    return [ordered]@{
+        archive_total = $total
+        archive_passed_q10 = $passed
+        archive_failed = $failed
+    }
 }
 
 function Get-ExpenseSummary {
@@ -407,6 +515,23 @@ foreach ($p in $phaseOrder) {
     $byGateV4[$p] = [int]$pipelineState.by_gate_v4.$p
 }
 
+# Redacted pipeline-funnel counts (unit-tested read-only SQL helper).
+$statsFunnel = Invoke-PythonJsonRecord `
+    -PythonPath $PythonExe `
+    -ScriptPath (Join-Path $RepoRoot "tools\strategy_farm\public_stats_funnel.py") `
+    -ScriptArgs @('--db', $FarmDbPath) `
+    -Label 'public stats funnel'
+
+# Archive KPIs from the same strategy-archive projection the archive page uses.
+$archiveKpis = Get-ArchiveKpiCounts -StrategyArchive $strategyArchive
+
+# Redacted aggregate hero-equity curve (ported build_public_hero_equity.py).
+$heroEquity = Invoke-PythonJsonRecord `
+    -PythonPath $PythonExe `
+    -ScriptPath (Join-Path $RepoRoot "tools\strategy_farm\build_public_hero_equity.py") `
+    -ScriptArgs @('--stdout') `
+    -Label 'public hero equity'
+
 $publicSnapshot = [ordered]@{
     schema_version = $SchemaVersionV2
     generated_at = [datetime]::UtcNow.ToString("o")
@@ -434,6 +559,17 @@ $publicStats = [ordered]@{
     strategy_cards = [int]$pipelineState.strategy_cards_count
     backtests_total = [int]$pipelineState.work_items_total
     phases = 18
+    q02_baseline_pass = [int]$statsFunnel.q02_baseline_pass
+    q04_walkforward_pass = [int]$statsFunnel.q04_walkforward_pass
+    q08_davey_stats_pass = [int]$statsFunnel.q08_davey_stats_pass
+    portfolio_candidates = [int]$statsFunnel.portfolio_candidates
+    archive_total = [int]$archiveKpis.archive_total
+    archive_passed_q10 = [int]$archiveKpis.archive_passed_q10
+    archive_failed = [int]$archiveKpis.archive_failed
+    symbols = [int]$statsFunnel.symbols
+}
+if (Test-ObjectHasKey -Target $statsFunnel -Key 'research_sources') {
+    $publicStats['research_sources'] = [int]$statsFunnel.research_sources
 }
 
 $publicSchemaPath = Join-Path $PublicDataDir "public-snapshot.schema.v2.json"
@@ -441,6 +577,7 @@ $roadmapSchemaPath = Join-Path $PublicDataDir "process-roadmap.schema.json"
 $archiveSchemaPath = Join-Path $PublicDataDir "strategy-archive.schema.v2.json"
 $companyModelSchemaPath = Join-Path $PublicDataDir "company-operating-model.schema.json"
 $statsSchemaPath = Join-Path $PublicDataDir "public-stats.schema.json"
+$heroEquitySchemaPath = Join-Path $PublicDataDir "hero-equity.schema.json"
 $companyModelPath = Join-Path $PublicDataDir "company-operating-model.json"
 $companyOperatingModel = Read-JsonFile -Path $companyModelPath
 if ($null -eq $companyOperatingModel) {
@@ -458,6 +595,7 @@ Validate-JsonAgainstSchema -Object $processRoadmap -SchemaPath $roadmapSchemaPat
 Validate-JsonAgainstSchema -Object $strategyArchive -SchemaPath $archiveSchemaPath -Name "strategy-archive"
 Validate-JsonAgainstSchema -Object $companyOperatingModel -SchemaPath $companyModelSchemaPath -Name "company-operating-model"
 Validate-JsonAgainstSchema -Object $publicStats -SchemaPath $statsSchemaPath -Name "public-stats"
+Validate-JsonAgainstSchema -Object $heroEquity -SchemaPath $heroEquitySchemaPath -Name "hero-equity"
 
 $changedFiles = New-Object System.Collections.Generic.List[string]
 
@@ -466,6 +604,7 @@ $roadmapPath = Join-Path $effectiveOutputDir "process-roadmap.json"
 $archivePath = Join-Path $effectiveOutputDir "strategy-archive.json"
 $companyModelOutputPath = Join-Path $effectiveOutputDir "company-operating-model.json"
 $statsPath = Join-Path $effectiveOutputDir "stats.json"
+$heroEquityPath = Join-Path $effectiveOutputDir "hero-equity.json"
 
 if ($DryRun) {
     Write-Host "[DryRun] Would write public-snapshot:"
@@ -473,6 +612,9 @@ if ($DryRun) {
     Write-Host "[DryRun] Process roadmap items: $($processRoadmap.total)"
     Write-Host "[DryRun] Strategy archive items: $($strategyArchive.total)"
     Write-Host "[DryRun] Public stats: eas=$($publicStats.eas_compiled) cards=$($publicStats.strategy_cards) work_items=$($publicStats.backtests_total) gates=$($publicStats.phases)"
+    Write-Host "[DryRun] Funnel: q02=$($publicStats.q02_baseline_pass) q04=$($publicStats.q04_walkforward_pass) q08=$($publicStats.q08_davey_stats_pass) portfolio=$($publicStats.portfolio_candidates) symbols=$($publicStats.symbols)"
+    Write-Host "[DryRun] Archive KPIs: total=$($publicStats.archive_total) passed_q10=$($publicStats.archive_passed_q10) failed=$($publicStats.archive_failed)"
+    Write-Host "[DryRun] Hero equity: sleeves=$($heroEquity.sleeves) points=$(@($heroEquity.series).Count)"
     Write-Host "[DryRun] Skipping git + Netlify."
     exit 0
 }
@@ -482,6 +624,7 @@ if (Write-JsonIfChanged -Path $roadmapPath -Object $processRoadmap) { $changedFi
 if (Write-JsonIfChanged -Path $archivePath -Object $strategyArchive) { $changedFiles.Add($archivePath) }
 if (Write-JsonIfChanged -Path $companyModelOutputPath -Object $companyOperatingModel) { $changedFiles.Add($companyModelOutputPath) }
 if (Write-JsonIfChanged -Path $statsPath -Object $publicStats) { $changedFiles.Add($statsPath) }
+if (Write-JsonIfChanged -Path $heroEquityPath -Object $heroEquity) { $changedFiles.Add($heroEquityPath) }
 
 if ($changedFiles.Count -eq 0) {
     Write-Host "No snapshot changes."
@@ -504,7 +647,7 @@ if ($NoGit -or -not $resolvedOutputDir.Equals(
 
 Push-Location $RepoRoot
 try {
-    git add public-data/public-snapshot.json public-data/process-roadmap.json public-data/strategy-archive.json public-data/company-operating-model.json public-data/stats.json
+    git add public-data/public-snapshot.json public-data/process-roadmap.json public-data/strategy-archive.json public-data/company-operating-model.json public-data/stats.json public-data/hero-equity.json
     $diff = git diff --cached --name-only
     if (-not $diff) {
         Write-Host "No git-staged snapshot diff."

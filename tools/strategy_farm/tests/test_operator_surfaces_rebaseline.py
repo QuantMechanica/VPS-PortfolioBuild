@@ -154,7 +154,7 @@ def test_main_surface_compacts_frontier_and_full_explorer_keeps_every_pair() -> 
 
 
 def test_checked_public_snapshot_validates_against_schema() -> None:
-    schema = REPO_ROOT / "public-data" / "public-snapshot.schema.json"
+    schema = REPO_ROOT / "public-data" / "public-snapshot.schema.v2.json"
     snapshot = REPO_ROOT / "public-data" / "public-snapshot.json"
     command = (
         f"Get-Content -Raw -LiteralPath '{snapshot}' | "
@@ -170,5 +170,5 @@ def test_checked_public_snapshot_validates_against_schema() -> None:
     assert result.returncode == 0, result.stderr or result.stdout
 
     data = json.loads(snapshot.read_text(encoding="utf-8-sig"))
-    assert data["pipeline"]["by_phase"]["gate_contract_version"] == "legacy-p-frozen/v1"
+    assert data["schema_version"] == 2
     assert data["pipeline"]["by_gate_v4"]["gate_contract_version"] == "v4"

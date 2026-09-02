@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantmechanica.com/schemas/hero-equity/v1.json",
+  "title": "QuantMechanica redacted hero equity curve",
+  "type": "object",
+  "required": ["schema_version", "generated_at", "basis", "sleeves", "series"],
+  "properties": {
+    "schema_version": { "type": "integer", "const": 1 },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "basis": { "type": "string", "minLength": 1 },
+    "sleeves": { "type": "integer", "minimum": 0 },
+    "series": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 2,
+        "prefixItems": [
+          { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+          { "type": "number" }
+        ]
+      }
+    }
+  },
+  "additionalProperties": false
+}

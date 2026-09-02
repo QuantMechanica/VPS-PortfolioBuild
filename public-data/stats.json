@@ -1,0 +1,17 @@
+{
+    "schema_version":  1,
+    "generated_at":  "2026-09-02T18:41:15.8120552Z",
+    "eas_compiled":  4801,
+    "strategy_cards":  3953,
+    "backtests_total":  122267,
+    "phases":  18,
+    "q02_baseline_pass":  7021,
+    "q04_walkforward_pass":  336,
+    "q08_davey_stats_pass":  46,
+    "portfolio_candidates":  21,
+    "archive_total":  3378,
+    "archive_passed_q10":  9,
+    "archive_failed":  1297,
+    "symbols":  275,
+    "research_sources":  118
+}

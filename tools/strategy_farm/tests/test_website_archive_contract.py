@@ -546,7 +546,7 @@ def test_public_gate_copy_is_active_v4_three_phase_and_has_no_threshold_numbers(
 
 def test_public_snapshot_schema_pins_archive_and_gate_copy_contracts() -> None:
     schema = json.loads(
-        (REPO / "public-data" / "public-snapshot.schema.json").read_text(
+        (REPO / "public-data" / "public-snapshot.schema.v2.json").read_text(
             encoding="utf-8"
         )
     )
@@ -555,7 +555,7 @@ def test_public_snapshot_schema_pins_archive_and_gate_copy_contracts() -> None:
     gates = schema["properties"]["pipeline_gates"]
     assert archive["additionalProperties"] is False
     assert gates["additionalProperties"] is False
-    assert schema["$defs"]["public_gate_state"]["enum"] == [
+    assert schema["$defs"]["gate_state"]["enum"] == [
         "PASS", "FAIL", "UNTESTED", "IN_PROGRESS"
     ]
 

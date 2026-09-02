@@ -234,7 +234,8 @@ try {
     $published = New-Object System.Collections.Generic.List[string]
     foreach ($name in @(
         'public-snapshot.json', 'process-roadmap.json',
-        'strategy-archive.json', 'company-operating-model.json', 'stats.json'
+        'strategy-archive.json', 'company-operating-model.json', 'stats.json',
+        'hero-equity.json'
     )) {
         $source = Join-Path $snapshotStageDir $name
         if (-not (Test-Path -LiteralPath $source -PathType Leaf)) {
@@ -284,7 +285,8 @@ try {
             'public-data/process-roadmap.json',
             'public-data/strategy-archive.json',
             'public-data/company-operating-model.json',
-            'public-data/stats.json'
+            'public-data/stats.json',
+            'public-data/hero-equity.json'
         )
         $gitAddRun = Invoke-BoundedProcess -FilePath 'git.exe' `
             -ArgumentList (@('-C', $RepoRoot, 'add', '--') + $publicPaths) `

@@ -69,8 +69,18 @@ def test_stats_schema_refuses_infrastructure_fields() -> None:
         "strategy_cards": 9,
         "backtests_total": 8,
         "phases": 18,
+        "q02_baseline_pass": 7,
+        "q04_walkforward_pass": 6,
+        "q08_davey_stats_pass": 5,
+        "portfolio_candidates": 4,
+        "archive_total": 300,
+        "archive_passed_q10": 3,
+        "archive_failed": 120,
+        "symbols": 23,
     }
     jsonschema.validate(valid, schema)
+    # research_sources is an optional key (omitted when the sources table is absent).
+    jsonschema.validate(dict(valid, research_sources=100), schema)
     invalid = dict(valid, terminals=10)
     with pytest.raises(jsonschema.ValidationError):
         jsonschema.validate(invalid, schema)

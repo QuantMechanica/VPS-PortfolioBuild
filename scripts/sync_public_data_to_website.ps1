@@ -73,11 +73,13 @@ $mappings = @(
     @{ Source = Join-Path $DataDir 'strategy-archive.json'; Target = Join-Path $deployPublicDir 'strategy-archive.json'; Relative = 'Website/public-data/strategy-archive.json' },
     @{ Source = Join-Path $DataDir 'company-operating-model.json'; Target = Join-Path $deployPublicDir 'company-operating-model.json'; Relative = 'Website/public-data/company-operating-model.json' },
     @{ Source = Join-Path $DataDir 'stats.json'; Target = Join-Path $deployPublicDir 'stats.json'; Relative = 'Website/public-data/stats.json' },
+    @{ Source = Join-Path $DataDir 'hero-equity.json'; Target = Join-Path $deployPublicDir 'hero-equity.json'; Relative = 'Website/public-data/hero-equity.json' },
     @{ Source = Join-Path $SchemaDir 'public-snapshot.schema.v2.json'; Target = Join-Path $deployPublicDir 'public-snapshot.schema.v2.json'; Relative = 'Website/public-data/public-snapshot.schema.v2.json' },
     @{ Source = Join-Path $SchemaDir 'process-roadmap.schema.json'; Target = Join-Path $deployPublicDir 'process-roadmap.schema.json'; Relative = 'Website/public-data/process-roadmap.schema.json' },
     @{ Source = Join-Path $SchemaDir 'strategy-archive.schema.v2.json'; Target = Join-Path $deployPublicDir 'strategy-archive.schema.v2.json'; Relative = 'Website/public-data/strategy-archive.schema.v2.json' },
     @{ Source = Join-Path $SchemaDir 'company-operating-model.schema.json'; Target = Join-Path $deployPublicDir 'company-operating-model.schema.json'; Relative = 'Website/public-data/company-operating-model.schema.json' },
     @{ Source = Join-Path $SchemaDir 'public-stats.schema.json'; Target = Join-Path $deployPublicDir 'public-stats.schema.json'; Relative = 'Website/public-data/public-stats.schema.json' },
+    @{ Source = Join-Path $SchemaDir 'hero-equity.schema.json'; Target = Join-Path $deployPublicDir 'hero-equity.schema.json'; Relative = 'Website/public-data/hero-equity.schema.json' },
     @{ Source = $loaderSource; Target = $deployLoader; Relative = 'Website/scripts/stats-loader.js' }
 )
 

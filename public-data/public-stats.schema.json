@@ -3,14 +3,38 @@
   "$id": "https://quantmechanica.com/schemas/public-stats/v1.json",
   "title": "QuantMechanica redacted public statistics",
   "type": "object",
-  "required": ["schema_version", "generated_at", "eas_compiled", "strategy_cards", "backtests_total", "phases"],
+  "required": [
+    "schema_version",
+    "generated_at",
+    "eas_compiled",
+    "strategy_cards",
+    "backtests_total",
+    "phases",
+    "q02_baseline_pass",
+    "q04_walkforward_pass",
+    "q08_davey_stats_pass",
+    "portfolio_candidates",
+    "archive_total",
+    "archive_passed_q10",
+    "archive_failed",
+    "symbols"
+  ],
   "properties": {
     "schema_version": { "type": "integer", "enum": [1] },
     "generated_at": { "type": "string", "format": "date-time" },
     "eas_compiled": { "type": "integer", "minimum": 0 },
     "strategy_cards": { "type": "integer", "minimum": 0 },
     "backtests_total": { "type": "integer", "minimum": 0 },
-    "phases": { "type": "integer", "const": 18 }
+    "phases": { "type": "integer", "const": 18 },
+    "q02_baseline_pass": { "type": "integer", "minimum": 0 },
+    "q04_walkforward_pass": { "type": "integer", "minimum": 0 },
+    "q08_davey_stats_pass": { "type": "integer", "minimum": 0 },
+    "portfolio_candidates": { "type": "integer", "minimum": 0 },
+    "archive_total": { "type": "integer", "minimum": 0 },
+    "archive_passed_q10": { "type": "integer", "minimum": 0 },
+    "archive_failed": { "type": "integer", "minimum": 0 },
+    "symbols": { "type": "integer", "minimum": 0 },
+    "research_sources": { "type": "integer", "minimum": 0 }
   },
   "additionalProperties": false
 }

@@ -360,8 +360,9 @@ def dispatch_state_summary() -> dict:
 #
 # The DB stores canonical Qxx phase keys (Q02..Q10, plus residual legacy "P2"
 # rows and "Q09_PORTFOLIO"). Legacy P* by_phase keys are kept as a COMPATIBILITY
-# VIEW mapped from Qxx (public-snapshot.schema.json / export_public_snapshot.ps1
-# require exactly the 15 P-keys). The maps below faithfully mirror
+# VIEW mapped from Qxx (retained for the internal pipeline_state export; the
+# public snapshot moved to public-snapshot.schema.v2.json, which drops the
+# legacy P-key block). The maps below faithfully mirror
 # tools/strategy_farm/phase_ids.py (Q_TO_LEGACY_P, PHASE_ORDER) — kept inlined so
 # this SYSTEM-scheduled script has no cross-package import dependency.
 # ---------------------------------------------------------------------------

@@ -42,7 +42,7 @@ the schema.
 
 ## Contracts
 
-- `public-snapshot.schema.json` — top-level project state plus the numeric-free public Strategy Archive and active v4 gate-page copy.
+- `public-snapshot.schema.v2.json` — top-level project state plus the numeric-free public Strategy Archive and active v4 gate-page copy (schema_version 2; the legacy v1 `public-snapshot.schema.json` was retired on migration).
 - `process-roadmap.schema.json` — list of public processes with status.
 - `strategy-archive.schema.json` — strategy-archive items with visibility flag.
 - `company-operating-model.schema.json` — operating-model menu/dashboard config.
