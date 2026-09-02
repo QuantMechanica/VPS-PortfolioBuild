@@ -228,3 +228,92 @@ def test_prepared_archive_is_verified_and_corruption_falls_back_to_cold_source(
         else {"prestage_cache_from_verified_master"}
     )
 
+
+
+# --- Copy-on-claim failure classification (2026-09-02) ---------------------
+# Four claim-local privatization failures each tripped fleet-wide containment on
+# 01./02.09 and serialized the whole factory. Each raise site now carries a
+# reason_code so the worker can contain a genuine integrity breach while failing
+# a claim-local/copy-race condition closed for one terminal only.
+
+
+def test_exception_defaults_to_integrity() -> None:
+    err = copy_on_claim.CustomHistoryCopyOnClaimError("boom")
+    assert err.reason_code == copy_on_claim.INTEGRITY
+
+
+def test_exception_accepts_explicit_reason_code() -> None:
+    err = copy_on_claim.CustomHistoryCopyOnClaimError(
+        "boom", reason_code=copy_on_claim.CLAIM_LOCAL
+    )
+    assert err.reason_code == copy_on_claim.CLAIM_LOCAL
+
+
+def test_terminal_outside_provisioned_set_is_claim_local(tmp_path: Path) -> None:
+    _, manifest = _approved_manifest(tmp_path)
+    with pytest.raises(copy_on_claim.CustomHistoryCopyOnClaimError) as excinfo:
+        copy_on_claim.privatize_terminal_archives(
+            manifest=manifest,
+            mt5_root=tmp_path / "mt5",
+            terminal="T99",
+            symbols=["EURUSD.DWX"],
+        )
+    assert excinfo.value.reason_code == copy_on_claim.CLAIM_LOCAL
+
+
+def test_claim_declares_no_custom_symbols_is_claim_local(tmp_path: Path) -> None:
+    _, manifest = _approved_manifest(tmp_path)
+    with pytest.raises(copy_on_claim.CustomHistoryCopyOnClaimError) as excinfo:
+        copy_on_claim.privatize_terminal_archives(
+            manifest=manifest,
+            mt5_root=tmp_path / "mt5",
+            terminal="T3",
+            symbols=["SYNTHETIC_BASKET_ONLY"],
+        )
+    assert excinfo.value.reason_code == copy_on_claim.CLAIM_LOCAL
+
+
+def test_manifest_has_no_rows_for_symbol_is_claim_local(tmp_path: Path) -> None:
+    _, manifest = _approved_manifest(tmp_path)
+    with pytest.raises(copy_on_claim.CustomHistoryCopyOnClaimError) as excinfo:
+        copy_on_claim.privatize_terminal_archives(
+            manifest=manifest,
+            mt5_root=tmp_path / "mt5",
+            terminal="T3",
+            symbols=["AUDUSD.DWX"],
+        )
+    assert excinfo.value.reason_code == copy_on_claim.CLAIM_LOCAL
+
+
+def test_missing_custom_root_is_claim_local(tmp_path: Path) -> None:
+    _, manifest = _approved_manifest(tmp_path)
+    # No fan-out: the terminal's Bases/Custom directory does not exist.
+    with pytest.raises(copy_on_claim.CustomHistoryCopyOnClaimError) as excinfo:
+        copy_on_claim.privatize_terminal_archives(
+            manifest=manifest,
+            mt5_root=tmp_path / "mt5",
+            terminal="T3",
+            symbols=["EURUSD.DWX"],
+        )
+    assert excinfo.value.reason_code == copy_on_claim.CLAIM_LOCAL
+
+
+def test_resident_size_mismatch_is_integrity(tmp_path: Path) -> None:
+    source, manifest = _approved_manifest(tmp_path)
+    mt5_root = tmp_path / "mt5"
+    _fan_out(mt5_root, source, manifest)
+    # A resident archive whose size no longer matches the signed manifest is a
+    # content-integrity fact (the shared family inode is wrong for everyone).
+    row = manifest["files"][0]
+    target = mt5_root / "T3" / "Bases" / "Custom"
+    target = target.joinpath(*str(row["relative_path"]).split("/"))
+    target.write_bytes(b"x")
+    with pytest.raises(copy_on_claim.CustomHistoryCopyOnClaimError) as excinfo:
+        copy_on_claim.privatize_terminal_archives(
+            manifest=manifest,
+            mt5_root=mt5_root,
+            terminal="T3",
+            symbols=["EURUSD.DWX"],
+        )
+    assert "claimed archive size differs from manifest" in str(excinfo.value)
+    assert excinfo.value.reason_code == copy_on_claim.INTEGRITY

@@ -1,12 +1,26 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 import sys
+
+import pytest
 
 REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO / "tools" / "strategy_farm"))
 
 import terminal_worker  # noqa: E402
+
+
+@pytest.fixture(autouse=True)
+def _isolate_copy_failure_log(monkeypatch, tmp_path):
+    """Redirect the forensic JSONL off the real ops path during tests."""
+
+    monkeypatch.setattr(
+        terminal_worker,
+        "CUSTOM_HISTORY_COPY_FAILURE_LOG",
+        tmp_path / "custom_history_copy_on_claim_failures.jsonl",
+    )
 
 
 def _failing_gate(terminal: str, **extra) -> dict:
@@ -445,3 +459,231 @@ def test_non_transient_gate_exception_still_engages_containment(
     assert gate["reason"] == "custom_history_gate_exception"
     assert len(calls) == 1
     assert calls[0][1]["reason"] == "custom_history_gate_exception:ValueError"
+
+
+# --- Copy-on-claim failure blast-radius classification (2026-09-02) --------
+# INTEGRITY -> fleet-wide containment; CLAIM_LOCAL / TRANSIENT -> quarantine this
+# terminal only. Four claim-local copy failures serialized the whole fleet for
+# ~12h on 01./02.09, and the 07:02Z trip left no log line anywhere.
+
+_COC = terminal_worker.custom_history_copy_on_claim
+
+_CLAIM_ROW = {
+    "id": "item-x",
+    "payload_json": "{}",
+    "ea_id": "QM5_1",
+    "symbol": "EURUSD.DWX",
+}
+_PASS_GATE = {"required": True, "status": "PASS_ISOLATED", "activation_sha256": "a" * 64}
+
+
+def _force_copy_failure(monkeypatch, tmp_path, raiser) -> None:
+    manifest_path = tmp_path / "manifest.json"
+    manifest_path.write_text("{}", encoding="utf-8")
+    monkeypatch.setattr(
+        terminal_worker.custom_history_gate,
+        "load_activation",
+        lambda root: {"manifest_path": str(manifest_path)},
+    )
+    monkeypatch.setattr(
+        terminal_worker.custom_history_contract,
+        "load_manifest",
+        lambda path, require_owner_approval=True: {"files": []},
+    )
+    monkeypatch.setattr(
+        terminal_worker.custom_history_copy_on_claim,
+        "privatize_terminal_archives",
+        raiser,
+    )
+
+
+def _raiser(exc):
+    def _run(**kwargs):
+        raise exc
+
+    return _run
+
+
+def _row(item_id: str) -> dict:
+    return {**_CLAIM_ROW, "id": item_id}
+
+
+def test_claim_local_copy_error_quarantines_terminal_without_containment(
+    monkeypatch, tmp_path: Path
+) -> None:
+    _force_copy_failure(
+        monkeypatch,
+        tmp_path,
+        _raiser(_COC.CustomHistoryCopyOnClaimError("boom", reason_code=_COC.CLAIM_LOCAL)),
+    )
+    calls = []
+    monkeypatch.setattr(
+        terminal_worker.custom_history_lease,
+        "engage_emergency_mode",
+        lambda root, **kwargs: calls.append(kwargs),
+    )
+
+    result = terminal_worker._privatize_custom_history_claim(
+        tmp_path, _row("item-cl"), "T3", _PASS_GATE
+    )
+
+    assert result["status"] == "FAIL_CLOSED"
+    assert result["reason_code"] == "CLAIM_LOCAL"
+    assert result["fleet_containment_engaged"] is False
+    assert result["terminal_quarantined"] is True
+    assert calls == []
+    marker = terminal_worker._custom_history_quarantine_active(tmp_path, "T3")
+    assert marker is not None
+    assert marker["reason_code"] == "CLAIM_LOCAL"
+    assert marker["item_id"] == "item-cl"
+    lines = (
+        terminal_worker.CUSTOM_HISTORY_COPY_FAILURE_LOG.read_text(encoding="utf-8")
+        .strip()
+        .splitlines()
+    )
+    assert len(lines) == 1
+    event = json.loads(lines[0])
+    assert event["reason_code"] == "CLAIM_LOCAL"
+    assert event["fleet_containment_engaged"] is False
+    assert event["terminal_quarantined"] is True
+    assert event["item_id"] == "item-cl"
+
+
+def test_transient_copy_race_error_quarantines_without_containment(
+    monkeypatch, tmp_path: Path
+) -> None:
+    _force_copy_failure(
+        monkeypatch,
+        tmp_path,
+        _raiser(_COC.CustomHistoryCopyOnClaimError("race", reason_code=_COC.TRANSIENT)),
+    )
+    calls = []
+    monkeypatch.setattr(
+        terminal_worker.custom_history_lease,
+        "engage_emergency_mode",
+        lambda root, **kwargs: calls.append(kwargs),
+    )
+
+    result = terminal_worker._privatize_custom_history_claim(
+        tmp_path, _row("item-tr"), "T5", _PASS_GATE
+    )
+
+    assert result["reason_code"] == "TRANSIENT"
+    assert result["terminal_quarantined"] is True
+    assert calls == []
+
+
+def test_integrity_copy_error_engages_containment_and_logs(
+    monkeypatch, tmp_path: Path
+) -> None:
+    _force_copy_failure(
+        monkeypatch,
+        tmp_path,
+        _raiser(_COC.CustomHistoryCopyOnClaimError("breach", reason_code=_COC.INTEGRITY)),
+    )
+    calls = []
+    monkeypatch.setattr(
+        terminal_worker.custom_history_lease,
+        "engage_emergency_mode",
+        lambda root, **kwargs: calls.append(kwargs),
+    )
+
+    result = terminal_worker._privatize_custom_history_claim(
+        tmp_path, _row("item-int"), "T7", _PASS_GATE
+    )
+
+    assert result["status"] == "FAIL_CLOSED"
+    assert result["reason_code"] == "INTEGRITY"
+    assert result["fleet_containment_engaged"] is True
+    assert len(calls) == 1
+    # An integrity breach contains the whole fleet; it does NOT quarantine one seat.
+    assert terminal_worker._custom_history_quarantine_active(tmp_path, "T7") is None
+    lines = (
+        terminal_worker.CUSTOM_HISTORY_COPY_FAILURE_LOG.read_text(encoding="utf-8")
+        .strip()
+        .splitlines()
+    )
+    assert json.loads(lines[0])["fleet_containment_engaged"] is True
+
+
+def test_unclassified_non_transient_error_fails_safe_to_containment(
+    monkeypatch, tmp_path: Path
+) -> None:
+    _force_copy_failure(monkeypatch, tmp_path, _raiser(ValueError("activation corrupt")))
+    calls = []
+    monkeypatch.setattr(
+        terminal_worker.custom_history_lease,
+        "engage_emergency_mode",
+        lambda root, **kwargs: calls.append(kwargs),
+    )
+
+    result = terminal_worker._privatize_custom_history_claim(
+        tmp_path, _row("item-u"), "T2", _PASS_GATE
+    )
+
+    assert result["reason_code"] == "UNCLASSIFIED"
+    assert result["fleet_containment_engaged"] is True
+    assert len(calls) == 1
+
+
+def test_wrapped_claim_local_cause_is_not_contained(
+    monkeypatch, tmp_path: Path
+) -> None:
+    def _raise_wrapped(**kwargs):
+        try:
+            raise _COC.CustomHistoryCopyOnClaimError(
+                "custom root missing", reason_code=_COC.CLAIM_LOCAL
+            )
+        except Exception as exc:
+            raise RuntimeError("privatization wrapper") from exc
+
+    _force_copy_failure(monkeypatch, tmp_path, _raise_wrapped)
+    calls = []
+    monkeypatch.setattr(
+        terminal_worker.custom_history_lease,
+        "engage_emergency_mode",
+        lambda root, **kwargs: calls.append(kwargs),
+    )
+
+    result = terminal_worker._privatize_custom_history_claim(
+        tmp_path, _row("item-w"), "T4", _PASS_GATE
+    )
+
+    assert result["reason_code"] == "CLAIM_LOCAL"
+    assert result["terminal_quarantined"] is True
+    assert calls == []
+
+
+def test_quarantine_marker_active_then_expires(tmp_path: Path) -> None:
+    from datetime import datetime, timezone
+
+    marker = terminal_worker._write_custom_history_quarantine(
+        tmp_path, "T6", reason_code="CLAIM_LOCAL", item_id="i1", error="boom"
+    )
+    assert marker is not None
+    assert terminal_worker._custom_history_quarantine_active(tmp_path, "T6") is not None
+    record = json.loads(marker.read_text(encoding="utf-8"))
+    record["expires_at_utc"] = datetime(2000, 1, 1, tzinfo=timezone.utc).isoformat()
+    marker.write_text(json.dumps(record), encoding="utf-8")
+    # An expired marker is treated as absent and self-clears (no operator needed).
+    assert terminal_worker._custom_history_quarantine_active(tmp_path, "T6") is None
+    assert not marker.exists()
+
+
+def test_absent_or_corrupt_marker_is_fail_open(tmp_path: Path) -> None:
+    assert terminal_worker._custom_history_quarantine_active(tmp_path, "T8") is None
+    path = terminal_worker._custom_history_quarantine_path(tmp_path, "T8")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("{not json", encoding="utf-8")
+    assert terminal_worker._custom_history_quarantine_active(tmp_path, "T8") is None
+
+
+def test_run_loop_skips_quarantined_terminal_before_claim() -> None:
+    source = Path(terminal_worker.__file__).read_text(encoding="utf-8")
+    loop = source[
+        source.index("def run_loop") : source.index("def _fail_item_after_worker_crash")
+    ]
+    assert "_custom_history_quarantine_active(root, terminal)" in loop
+    assert loop.index("_custom_history_quarantine_active(root, terminal)") < loop.index(
+        "claim_atomic(root, terminal)"
+    )

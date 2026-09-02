@@ -312,6 +312,20 @@ CLAIM_LOCK_BUSY_TIMEOUT_MS = 750
 # those post-claim writes a longer, still-bounded retry envelope.
 POST_CLAIM_SQLITE_WRITE_RETRIES = 20
 POST_CLAIM_SQLITE_WRITE_RETRY_SLEEP_SECONDS = 0.5
+# A pre-spawn claim that cannot even be RELEASED because the DB is locked used
+# to make the daemon exit (return 1) and strand the row as status='active',
+# claimed_by=<terminal>, no runner pid — pinning that terminal's symbol lane and
+# blocking containment-release quiescence until an operator ran
+# release_stale_claims_for_terminal by hand (row c261068d, T4, 2026-09-02
+# 07:22:42Z: ~15 minutes lost). The very same lock storm can also defeat the
+# next worker's startup release, so we give the release its OWN ~60s exponential
+# envelope first, then fall back to a durable filesystem marker that the worker
+# startup path and the pump-maintenance reconcile stage drain later.
+ORPHAN_DEFER_RELEASE_RETRY_ATTEMPTS = 32
+ORPHAN_DEFER_RELEASE_RETRY_BASE_SECONDS = 0.5
+ORPHAN_DEFER_RELEASE_RETRY_MAX_SECONDS = 2.0
+# Durable marker location for a claim that could neither run nor be released.
+ORPHAN_CLAIMS_REL = Path("state") / "orphan_claims"
 # run_smoke can spend up to 240 seconds publishing a report after terminal_exit.
 # The outer worker therefore waits through that complete contract plus 60 seconds
 # of margin before treating the wrapper as stalled. A 60-second ceiling destroyed
@@ -347,6 +361,25 @@ LAUNCH_GATE_MAX_CONCURRENT = 1            # max overlapping inits (override: lau
 LAUNCH_GATE_WAIT_TIMEOUT_SECONDS = 90.0   # fail-open after this so the factory never stalls
 LAUNCH_FAULT_DEFER_SECONDS = 300.0        # host launch storm: defer without burning retries
 LAUNCH_FAULT_DEFER_MAX_SECONDS = 3600.0   # repeated launch storms should not thrash the queue
+
+# Copy-on-claim failure isolation (2026-09-02). A privatization failure that is
+# claim-local (terminal outside the provisioned set, missing Custom root/archive,
+# no claimed symbols, prepared-binding mismatch) or a copy race must fail THIS
+# terminal's claim closed WITHOUT stopping the whole fleet; only a genuine
+# isolation-integrity breach engages fleet-wide containment. Four claim-local
+# copy-on-claim failures in ~12h on 01./02.09 each tripped fleet containment and
+# serialized the 10-terminal fleet down to a single claim lease for ~12h. A
+# quarantine marker parks only the offending terminal for a bounded window so the
+# same claim-local defect neither spins nor idles the rest of the fleet; an
+# operator clears it by deleting the marker, or it expires on its own.
+CUSTOM_HISTORY_QUARANTINE_DIRNAME = "custom_history_quarantine"
+CUSTOM_HISTORY_QUARANTINE_MINUTES = 15
+# Append-only forensic trail for every copy-on-claim failure and its containment
+# decision. The 2026-09-02 07:02Z trip left no log line anywhere; that must never
+# happen again.
+CUSTOM_HISTORY_COPY_FAILURE_LOG = Path(
+    "D:/QM/reports/state/custom_history_copy_on_claim_failures.jsonl"
+)
 
 _STOP = False
 _CLAIM_DB_INIT_LOCK = threading.Lock()
@@ -1372,6 +1405,141 @@ def _custom_history_copy_receipt_path(root: Path, item_id: str, terminal: str) -
     )
 
 
+def _custom_history_quarantine_path(root: Path, terminal: str) -> Path:
+    return (
+        Path(root)
+        / "state"
+        / CUSTOM_HISTORY_QUARANTINE_DIRNAME
+        / f"{str(terminal).upper()}.json"
+    )
+
+
+def _custom_history_quarantine_active(
+    root: Path, terminal: str
+) -> dict[str, Any] | None:
+    """Return the live quarantine marker for a terminal, or None.
+
+    Fail-open: an unreadable or absent marker never wedges a terminal. An expired
+    marker (past its bounded window) is cleared and treated as absent, so the
+    terminal resumes on its own after N minutes even without an operator.
+    """
+
+    path = _custom_history_quarantine_path(root, terminal)
+    try:
+        record = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return None
+    except (OSError, ValueError):
+        # A corrupt/half-written marker must not permanently pause a terminal.
+        return None
+    if not isinstance(record, dict):
+        return None
+    expires_at = str(record.get("expires_at_utc") or "")
+    try:
+        expired = datetime.now(timezone.utc) >= datetime.fromisoformat(expires_at)
+    except ValueError:
+        expired = True
+    if expired:
+        try:
+            path.unlink()
+        except OSError:
+            pass
+        return None
+    return record
+
+
+def _write_custom_history_quarantine(
+    root: Path,
+    terminal: str,
+    *,
+    reason_code: str,
+    item_id: str,
+    error: str,
+) -> Path | None:
+    """Park one terminal for a bounded window after a claim-local copy failure."""
+
+    now = datetime.now(timezone.utc)
+    record = {
+        "schema_version": "qm.custom-history-copy-on-claim-quarantine/v1",
+        "terminal": str(terminal).upper(),
+        "reason_code": reason_code,
+        "item_id": item_id or None,
+        "error": error,
+        "recorded_at_utc": now.isoformat(timespec="seconds"),
+        "expires_at_utc": (
+            now + timedelta(minutes=CUSTOM_HISTORY_QUARANTINE_MINUTES)
+        ).isoformat(timespec="seconds"),
+        "quarantine_minutes": CUSTOM_HISTORY_QUARANTINE_MINUTES,
+        "cleared_by": "operator_delete_or_window_expiry",
+    }
+    path = _custom_history_quarantine_path(root, terminal)
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = path.parent / f".{path.name}.{os.getpid()}.{uuid.uuid4().hex}.tmp"
+        tmp.write_text(json.dumps(record, sort_keys=True), encoding="utf-8")
+        os.replace(tmp, path)
+    except OSError:
+        return None
+    return path
+
+
+def _record_copy_on_claim_failure(
+    root: Path,
+    terminal: str,
+    item_id: str,
+    reason_code: str,
+    exc: BaseException,
+    *,
+    fleet_containment_engaged: bool,
+    quarantined: bool,
+) -> None:
+    """Append one forensic JSONL line for a copy-on-claim failure (best effort)."""
+
+    event = {
+        "event": "custom_history_copy_on_claim_failure",
+        "at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "terminal": str(terminal).upper(),
+        "item_id": item_id or None,
+        "reason_code": reason_code,
+        "exception_type": type(exc).__name__,
+        "error": repr(exc),
+        "fleet_containment_engaged": bool(fleet_containment_engaged),
+        "terminal_quarantined": bool(quarantined),
+    }
+    try:
+        CUSTOM_HISTORY_COPY_FAILURE_LOG.parent.mkdir(parents=True, exist_ok=True)
+        with open(CUSTOM_HISTORY_COPY_FAILURE_LOG, "a", encoding="utf-8") as handle:
+            handle.write(json.dumps(event, sort_keys=True) + "\n")
+    except OSError:
+        pass
+
+
+def _copy_on_claim_reason_code(exc: BaseException) -> str | None:
+    """Walk the cause chain for a classified copy-on-claim error's reason code.
+
+    Returns the reason_code of the nearest CustomHistoryCopyOnClaimError, or None
+    when the failure is some other exception type. None fails safe: the caller
+    engages fleet containment for an unclassified non-transient failure.
+    """
+
+    seen: set[int] = set()
+    current: BaseException | None = exc
+    while current is not None and id(current) not in seen:
+        seen.add(id(current))
+        if isinstance(
+            current, custom_history_copy_on_claim.CustomHistoryCopyOnClaimError
+        ):
+            return str(
+                getattr(
+                    current,
+                    "reason_code",
+                    custom_history_copy_on_claim.INTEGRITY,
+                )
+            )
+        current = current.__cause__ or current.__context__
+    return None
+
+
 def _privatize_custom_history_claim(
     root: Path,
     row: sqlite3.Row | dict[str, Any],
@@ -1440,11 +1608,42 @@ def _privatize_custom_history_claim(
             "receipt_file_sha256": receipt["receipt_file_sha256"],
         }
     except Exception as exc:
+        item_id = str(_work_item_value(row, "id", "") or "")
         # Sharing violations / mid-swap misses while other terminals' MT5
-        # processes hold archives open are concurrency artifacts of THIS
-        # attempt, not integrity breaches — defer without fleet containment
-        # (same classification as the gate's transient-IO path).
-        if not _is_transient_gate_io_error(exc):
+        # processes hold archives open are OS-level concurrency artifacts of THIS
+        # attempt, not integrity breaches — defer without fleet containment and
+        # without quarantine (same classification as the gate's transient-IO
+        # path); the terminal simply retries on its next poll.
+        if _is_transient_gate_io_error(exc):
+            _record_copy_on_claim_failure(
+                root,
+                terminal,
+                item_id,
+                "TRANSIENT_IO",
+                exc,
+                fleet_containment_engaged=False,
+                quarantined=False,
+            )
+            return {
+                "required": True,
+                "status": "FAIL_CLOSED",
+                "terminal": str(terminal).upper(),
+                "reason": "custom_history_copy_on_claim_failure",
+                "reason_code": "TRANSIENT_IO",
+                "error": repr(exc),
+                "activation_sha256": activation_sha256,
+            }
+        # A classified copy-on-claim error decides the blast radius: only a
+        # genuine isolation-integrity breach — or an unclassified non-transient
+        # failure, which fails safe — engages fleet-wide containment. Claim-local
+        # and copy-race failures fail THIS claim closed and quarantine only this
+        # terminal for a bounded window, leaving the rest of the fleet running.
+        reason_code = _copy_on_claim_reason_code(exc)
+        engage_fleet = reason_code in (
+            None,
+            custom_history_copy_on_claim.INTEGRITY,
+        )
+        if engage_fleet:
             try:
                 custom_history_lease.engage_emergency_mode(
                     root,
@@ -1453,11 +1652,50 @@ def _privatize_custom_history_claim(
                 )
             except Exception:
                 pass
+            _record_copy_on_claim_failure(
+                root,
+                terminal,
+                item_id,
+                reason_code or "UNCLASSIFIED",
+                exc,
+                fleet_containment_engaged=True,
+                quarantined=False,
+            )
+            return {
+                "required": True,
+                "status": "FAIL_CLOSED",
+                "terminal": str(terminal).upper(),
+                "reason": "custom_history_copy_on_claim_failure",
+                "reason_code": reason_code or "UNCLASSIFIED",
+                "fleet_containment_engaged": True,
+                "error": repr(exc),
+                "activation_sha256": activation_sha256,
+            }
+        marker = _write_custom_history_quarantine(
+            root,
+            terminal,
+            reason_code=reason_code,
+            item_id=item_id,
+            error=repr(exc),
+        )
+        _record_copy_on_claim_failure(
+            root,
+            terminal,
+            item_id,
+            reason_code,
+            exc,
+            fleet_containment_engaged=False,
+            quarantined=marker is not None,
+        )
         return {
             "required": True,
             "status": "FAIL_CLOSED",
             "terminal": str(terminal).upper(),
             "reason": "custom_history_copy_on_claim_failure",
+            "reason_code": reason_code,
+            "fleet_containment_engaged": False,
+            "terminal_quarantined": marker is not None,
+            "quarantine_path": str(marker) if marker else None,
             "error": repr(exc),
             "activation_sha256": activation_sha256,
         }
@@ -6969,13 +7207,200 @@ def _pause_after_unclaimed(claim: dict[str, Any], terminal: str) -> None:
     time.sleep(POLL_SLEEP_SECONDS)
 
 
+def _orphan_claim_marker_path(root: Path, item_id: str) -> Path:
+    safe = "".join(
+        ch if (ch.isalnum() or ch in "._-") else "_" for ch in str(item_id)
+    )
+    return root / ORPHAN_CLAIMS_REL / f"{safe}.json"
+
+
+def _write_orphan_claim_marker(
+    root: Path,
+    item: dict[str, Any],
+    terminal: str,
+    run_exc: BaseException,
+    release_exc: BaseException | None,
+) -> Path | None:
+    """Record a claim that could neither run nor be released, for later reconcile.
+
+    Written to the filesystem (not the DB, which is exactly what is unavailable)
+    so the next worker startup or the pump-maintenance reconcile stage can return
+    the row to ``pending`` once the lock storm has cleared. Best-effort: a marker
+    that cannot be written must not mask the original busy exit.
+    """
+
+    marker = _orphan_claim_marker_path(root, item["id"])
+    record = {
+        "item_id": item["id"],
+        "terminal": terminal,
+        "reason": "worker_exit_sqlite_busy_defer_release_failed",
+        "run_error": str(run_exc)[:240],
+        "release_error": (str(release_exc)[:240] if release_exc is not None else None),
+        "created_at_iso": farmctl.utc_now(),
+        "created_by_pid": os.getpid(),
+    }
+    try:
+        marker.parent.mkdir(parents=True, exist_ok=True)
+        tmp = marker.with_suffix(marker.suffix + f".tmp{os.getpid()}")
+        tmp.write_text(json.dumps(record, sort_keys=True), encoding="utf-8")
+        os.replace(tmp, marker)
+        return marker
+    except OSError as write_exc:
+        print(json.dumps({
+            "event": "orphan_claim_marker_write_failed",
+            "terminal": terminal,
+            "item_id": item["id"],
+            "error": f"{type(write_exc).__name__}: {write_exc}",
+        }), flush=True)
+        return None
+
+
+def _release_orphan_claim_row(
+    root: Path, item_id: str, terminal: str
+) -> str:
+    """Return an orphaned active row to pending; append-only event on success.
+
+    Returns one of ``released`` / ``already_clear`` (row moved on already) /
+    ``missing`` (row gone). Raises ``sqlite3.OperationalError`` only when the DB
+    is still locked, so the caller can keep the marker for the next reconcile.
+    """
+
+    def _release() -> str:
+        now = farmctl.utc_now()
+        with farmctl.connect(root) as conn:
+            row = conn.execute(
+                "SELECT status,claimed_by,payload_json FROM work_items WHERE id=?",
+                (item_id,),
+            ).fetchone()
+            if row is None:
+                return "missing"
+            if not (
+                str(row["status"]) == "active"
+                and str(row["claimed_by"] or "") == terminal
+            ):
+                return "already_clear"
+            payload = _json_loads(row["payload_json"])
+            payload["prior_failure"] = "worker_exit_sqlite_busy_released"
+            payload["orphan_claim_released_at_iso"] = now
+            _clear_stale_runtime_payload(payload)
+            cursor = conn.execute(
+                """
+                UPDATE work_items
+                SET status='pending', verdict=NULL, claimed_by=NULL,
+                    payload_json=?, updated_at=?
+                WHERE id=? AND status='active' AND claimed_by=?
+                """,
+                (json.dumps(payload, sort_keys=True), now, item_id, terminal),
+            )
+            if cursor.rowcount != 1:
+                return "already_clear"
+            conn.execute(
+                "INSERT INTO events(ts,entity_type,entity_id,event,detail_json) "
+                "VALUES(?,'work_item',?,'orphan_claim_released',?)",
+                (
+                    now,
+                    item_id,
+                    json.dumps(
+                        {
+                            "terminal": terminal,
+                            "reason": "worker_exit_sqlite_busy_released",
+                        },
+                        sort_keys=True,
+                    ),
+                ),
+            )
+            conn.commit()
+            return "released"
+
+    return _with_post_claim_sqlite_retry(_release)
+
+
+def reconcile_orphan_claims(root: Path, terminal: str | None = None) -> list[str]:
+    """Drain durable orphan-claim markers, releasing their rows to pending.
+
+    Read by the worker startup path (scoped to its own terminal) and by the
+    pump-maintenance reconcile stage (fleet-wide, ``terminal=None``). Fully
+    best-effort: a marker whose row is still lock-pinned is left in place for the
+    next pass, and no exception here may block worker startup or the pump.
+    """
+
+    marker_dir = root / ORPHAN_CLAIMS_REL
+    try:
+        markers = sorted(marker_dir.glob("*.json"))
+    except OSError:
+        return []
+    released: list[str] = []
+    for marker in markers:
+        try:
+            record = json.loads(marker.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            # An unreadable/partial marker is not actionable; drop it so it does
+            # not accumulate. A concurrently-written .tmp file is skipped by the
+            # *.json glob above.
+            try:
+                marker.unlink()
+            except OSError:
+                pass
+            continue
+        item_id = str(record.get("item_id") or "")
+        marker_terminal = str(record.get("terminal") or "")
+        if not item_id or not marker_terminal:
+            try:
+                marker.unlink()
+            except OSError:
+                pass
+            continue
+        if terminal is not None and marker_terminal != terminal:
+            continue
+        try:
+            outcome = _release_orphan_claim_row(root, item_id, marker_terminal)
+        except sqlite3.OperationalError as exc:
+            if not _is_sqlite_locked(exc):
+                raise
+            # Still locked — keep the marker and try again next reconcile pass.
+            print(json.dumps({
+                "event": "orphan_claim_reconcile_deferred",
+                "terminal": marker_terminal,
+                "item_id": item_id,
+                "error": str(exc)[:240],
+            }), flush=True)
+            continue
+        except Exception as exc:  # noqa: BLE001 — reconcile must never crash startup
+            print(json.dumps({
+                "event": "orphan_claim_reconcile_error",
+                "terminal": marker_terminal,
+                "item_id": item_id,
+                "error": f"{type(exc).__name__}: {exc}",
+            }), flush=True)
+            continue
+        try:
+            marker.unlink()
+        except OSError:
+            pass
+        if outcome == "released":
+            released.append(item_id)
+        print(json.dumps({
+            "event": "orphan_claim_reconciled",
+            "terminal": marker_terminal,
+            "item_id": item_id,
+            "outcome": outcome,
+        }), flush=True)
+    return released
+
+
 def _defer_item_after_sqlite_busy(
     root: Path,
     item: dict[str, Any],
     terminal: str,
     exc: sqlite3.OperationalError,
 ) -> bool:
-    """Return a pre-spawn item to pending without manufacturing INFRA evidence."""
+    """Return a pre-spawn item to pending without manufacturing INFRA evidence.
+
+    On persistent lock (the release itself cannot commit within the ~60s
+    exponential envelope) we write a durable orphan-claim marker so the row is
+    still returned to pending by the next reconcile, instead of being stranded
+    active for an operator to release by hand.
+    """
 
     def _defer() -> bool:
         with farmctl.connect(root) as conn:
@@ -7008,10 +7433,21 @@ def _defer_item_after_sqlite_busy(
             return cursor.rowcount == 1
 
     try:
-        return bool(_with_post_claim_sqlite_retry(_defer))
+        return bool(
+            retry_sqlite_busy(
+                _defer,
+                attempts=ORPHAN_DEFER_RELEASE_RETRY_ATTEMPTS,
+                base_delay_seconds=ORPHAN_DEFER_RELEASE_RETRY_BASE_SECONDS,
+                max_delay_seconds=ORPHAN_DEFER_RELEASE_RETRY_MAX_SECONDS,
+            )
+        )
     except sqlite3.OperationalError as defer_exc:
         if not _is_sqlite_locked(defer_exc):
             raise
+        # The DB is still locked after the full retry envelope. Do not strand the
+        # row as active/<terminal> with no runner pid: persist a durable marker
+        # so the worker startup path or the pump reconcile stage releases it.
+        _write_orphan_claim_marker(root, item, terminal, exc, defer_exc)
         return False
 
 
@@ -7029,6 +7465,12 @@ def run_loop(root: Path, terminal: str, timeout_seconds: int) -> int:
     released = release_stale_claims_for_terminal(root, terminal)
     if released:
         print(json.dumps({"event": "released_stale_claims", "terminal": terminal, "item_ids": released}), flush=True)
+    # Drain durable orphan-claim markers left by a prior worker that exited on a
+    # busy DB and could not release its own claim (c261068d, 2026-09-02). Scoped
+    # to this terminal so a peer's marker is left for its own worker / the pump.
+    reconciled = reconcile_orphan_claims(root, terminal)
+    if reconciled:
+        print(json.dumps({"event": "reconciled_orphan_claims", "terminal": terminal, "item_ids": reconciled}), flush=True)
     startup_gate = _custom_history_gate(root, terminal)
     print(json.dumps({"event": "custom_history_startup_gate", **startup_gate}, sort_keys=True), flush=True)
     prestage_controller = _make_next_cell_prestage_controller(root, terminal)
@@ -7068,6 +7510,18 @@ def run_loop(root: Path, terminal: str, timeout_seconds: int) -> int:
             time.sleep(CPU_GUARD_SLEEP_SECONDS + random.uniform(0, 10))
             continue
         _RESOURCE_LATCH["cpu_high"] = False
+        quarantine = _custom_history_quarantine_active(root, terminal)
+        if quarantine is not None:
+            print(json.dumps({
+                "event": "custom_history_terminal_quarantined",
+                "terminal": terminal,
+                "reason_code": quarantine.get("reason_code"),
+                "item_id": quarantine.get("item_id"),
+                "expires_at_utc": quarantine.get("expires_at_utc"),
+                "at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            }, sort_keys=True), flush=True)
+            time.sleep(CUSTOM_HISTORY_GUARD_SLEEP_SECONDS)
+            continue
         if not _claim_queue_may_need_mutation(root, terminal):
             time.sleep(POLL_SLEEP_SECONDS)
             continue
@@ -7324,14 +7778,30 @@ def main(argv: list[str] | None = None) -> int:
     # 2026-08-01). setdefault keeps explicit spawned identities intact.
     os.environ.setdefault("QM_AGENT_ID", "controller")
     parser = argparse.ArgumentParser()
-    parser.add_argument("--terminal", required=True, choices=farmctl.MT5_TERMINALS)
+    parser.add_argument("--terminal", choices=farmctl.MT5_TERMINALS)
     parser.add_argument("--root", type=Path, default=farmctl.DEFAULT_ROOT)
     parser.add_argument("--timeout-minutes", type=float, default=90.0)
     parser.add_argument(
         "--work-item-id",
         help="run exactly this pending work item once; requires FACTORY_OFF.flag",
     )
+    parser.add_argument(
+        "--reconcile-orphan-claims",
+        action="store_true",
+        help="fleet-wide: drain state/orphan_claims/ markers to pending, then exit "
+        "(pump-maintenance reconcile stage); does not require --terminal",
+    )
     args = parser.parse_args(argv)
+    if args.reconcile_orphan_claims:
+        released = reconcile_orphan_claims(args.root, None)
+        print(json.dumps({
+            "event": "reconcile_orphan_claims_cli",
+            "released": released,
+            "count": len(released),
+        }, sort_keys=True), flush=True)
+        return 0
+    if not args.terminal:
+        parser.error("--terminal is required unless --reconcile-orphan-claims is set")
     mutex = _acquire_instance_mutex(args.terminal)
     if mutex is False:
         print(json.dumps({"event": "duplicate_instance_exit", "terminal": args.terminal}))

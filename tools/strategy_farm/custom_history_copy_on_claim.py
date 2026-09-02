@@ -47,8 +47,45 @@ except ImportError:  # pragma: no cover - package import path
 RECEIPT_SCHEMA = "qm.custom-history-copy-on-claim/v1"
 
 
+# Copy-on-claim failure classes (2026-09-02). The worker reads ``reason_code`` to
+# decide the blast radius of a failed privatization:
+#
+#   INTEGRITY   - a genuine isolation-integrity breach: private/family archive
+#                 content does not match the signed manifest, a family hardlink is
+#                 still shared after privatization, an inode has an unexpected link
+#                 count, or a manifest path escapes the terminal Custom root. These
+#                 facts are fleet-wide (the shared archive is wrong for everyone) or
+#                 prove the isolation invariant is broken, so they MUST engage
+#                 fleet-wide containment.
+#   CLAIM_LOCAL - a claim-/config-local condition scoped to THIS terminal+claim:
+#                 the claim declares no Custom symbols, the manifest has no rows for
+#                 the claimed symbols, the terminal is outside the provisioned set,
+#                 the Custom root is missing, a claimed/master archive file is
+#                 absent, or a prepared prestage binding does not match. Nothing
+#                 cross-terminal is proven, so containment MUST NOT engage.
+#   TRANSIENT   - a copy race artifact: a freshly written temporary archive does not
+#                 match the manifest size/SHA. Retryable and terminal-local; MUST NOT
+#                 engage containment.
+#
+# INTEGRITY is the default so a new raise site that forgets to classify itself
+# fails safe (engages containment) rather than silently widening the
+# no-containment path.
+INTEGRITY = "INTEGRITY"
+CLAIM_LOCAL = "CLAIM_LOCAL"
+TRANSIENT = "TRANSIENT"
+
+
 class CustomHistoryCopyOnClaimError(RuntimeError):
-    """The claimed archive set could not be proven safe for dispatch."""
+    """The claimed archive set could not be proven safe for dispatch.
+
+    ``reason_code`` (INTEGRITY / CLAIM_LOCAL / TRANSIENT) classifies whether the
+    failure is a fleet-wide isolation breach or a terminal-local condition, so the
+    worker can fail one claim closed without serializing the whole factory.
+    """
+
+    def __init__(self, *args: object, reason_code: str = INTEGRITY) -> None:
+        super().__init__(*args)
+        self.reason_code = reason_code
 
 
 def _utc_now() -> str:
@@ -117,7 +154,8 @@ def select_archive_rows_for_symbols(
     ignored_symbols = [symbol for symbol in requested if symbol not in selected_symbols]
     if not selected_symbols:
         raise CustomHistoryCopyOnClaimError(
-            "claim declares no .DWX host/conversion/basket history symbols"
+            "claim declares no .DWX host/conversion/basket history symbols",
+            reason_code=CLAIM_LOCAL,
         )
 
     wanted = set(selected_symbols)
@@ -137,7 +175,8 @@ def select_archive_rows_for_symbols(
     missing = sorted(wanted - matched)
     if missing:
         raise CustomHistoryCopyOnClaimError(
-            "manifest has no archive rows for claimed symbols: " + ",".join(missing)
+            "manifest has no archive rows for claimed symbols: " + ",".join(missing),
+            reason_code=CLAIM_LOCAL,
         )
     return rows, selected_symbols, ignored_symbols
 
@@ -151,7 +190,8 @@ def _target_path(custom_root: Path, relative_path: str) -> Path:
         parent_resolved.relative_to(root_resolved)
     except ValueError as exc:
         raise CustomHistoryCopyOnClaimError(
-            f"manifest path escapes terminal Custom root: {relative}"
+            f"manifest path escapes terminal Custom root: {relative}",
+            reason_code=INTEGRITY,
         ) from exc
     return target
 
@@ -166,20 +206,24 @@ def _verified_private_identity(
     identity = file_identity(path)
     if int(identity["size"]) != int(expected_size):
         raise CustomHistoryCopyOnClaimError(
-            f"archive size mismatch after privatization: {path}"
+            f"archive size mismatch after privatization: {path}",
+            reason_code=INTEGRITY,
         )
     digest = sha256_file(path)
     if digest != expected_sha256:
         raise CustomHistoryCopyOnClaimError(
-            f"archive SHA-256 mismatch after privatization: {path}"
+            f"archive SHA-256 mismatch after privatization: {path}",
+            reason_code=INTEGRITY,
         )
     if str(identity["file_id"]) == manifest_file_id:
         raise CustomHistoryCopyOnClaimError(
-            f"archive path is still the family hardlink after privatization: {path}"
+            f"archive path is still the family hardlink after privatization: {path}",
+            reason_code=INTEGRITY,
         )
     if int(identity["link_count"]) != 1:
         raise CustomHistoryCopyOnClaimError(
-            f"terminal-private archive inode has link_count={identity['link_count']}: {path}"
+            f"terminal-private archive inode has link_count={identity['link_count']}: {path}",
+            reason_code=INTEGRITY,
         )
     return identity, digest
 
@@ -214,7 +258,8 @@ def privatize_terminal_archives(
     target_terminal = str(terminal or "").strip().upper()
     if target_terminal not in PROVISIONED_FACTORY_TERMINALS:
         raise CustomHistoryCopyOnClaimError(
-            f"terminal is outside the provisioned factory set: {target_terminal}"
+            f"terminal is outside the provisioned factory set: {target_terminal}",
+            reason_code=CLAIM_LOCAL,
         )
     rows, selected_symbols, ignored_symbols = select_archive_rows_for_symbols(
         validated, symbols
@@ -222,7 +267,8 @@ def privatize_terminal_archives(
     custom_root = Path(mt5_root) / target_terminal / "Bases" / "Custom"
     if not custom_root.is_dir():
         raise CustomHistoryCopyOnClaimError(
-            f"terminal Custom root is missing: {custom_root}"
+            f"terminal Custom root is missing: {custom_root}",
+            reason_code=CLAIM_LOCAL,
         )
 
     file_results: list[dict[str, Any]] = []
@@ -241,12 +287,14 @@ def privatize_terminal_archives(
         target = _target_path(custom_root, relative)
         if not target.is_file():
             raise CustomHistoryCopyOnClaimError(
-                f"claimed archive file is missing: {target}"
+                f"claimed archive file is missing: {target}",
+                reason_code=CLAIM_LOCAL,
             )
         before = file_identity(target)
         if int(before["size"]) != expected_size:
             raise CustomHistoryCopyOnClaimError(
-                f"claimed archive size differs from manifest: {target}"
+                f"claimed archive size differs from manifest: {target}",
+                reason_code=INTEGRITY,
             )
 
         if str(before["file_id"]) != manifest_file_id:
@@ -266,7 +314,8 @@ def privatize_terminal_archives(
                 )
                 if not copy_source.is_file():
                     raise CustomHistoryCopyOnClaimError(
-                        f"master archive file missing for privatization: {copy_source}"
+                        f"master archive file missing for privatization: {copy_source}",
+                        reason_code=CLAIM_LOCAL,
                     )
                 copy_source_mode = "verified_master"
             else:
@@ -282,7 +331,8 @@ def privatize_terminal_archives(
                     or prepared_path.stat().st_size != expected_size
                 ):
                     raise CustomHistoryCopyOnClaimError(
-                        f"prepared archive binding mismatch: {relative}"
+                        f"prepared archive binding mismatch: {relative}",
+                        reason_code=CLAIM_LOCAL,
                     )
                 copy_source = prepared_path
                 copy_source_mode = "prestage_cache_from_verified_master"
@@ -320,11 +370,13 @@ def privatize_terminal_archives(
                     copy_source_mode = "prestage_cache_invalid_fallback_master"
                 if int(temp_identity["size"]) != expected_size:
                     raise CustomHistoryCopyOnClaimError(
-                        f"temporary archive size differs from manifest: {relative}"
+                        f"temporary archive size differs from manifest: {relative}",
+                        reason_code=TRANSIENT,
                     )
                 if digest != expected_sha256:
                     raise CustomHistoryCopyOnClaimError(
-                        f"temporary archive SHA-256 differs from manifest: {relative}"
+                        f"temporary archive SHA-256 differs from manifest: {relative}",
+                        reason_code=TRANSIENT,
                     )
                 os.replace(temporary, target)
             finally:
