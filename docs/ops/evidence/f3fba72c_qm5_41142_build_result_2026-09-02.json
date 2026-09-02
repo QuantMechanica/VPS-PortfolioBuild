@@ -1,12 +1,12 @@
 {
   "schema": "qm_build_handoff_v1",
-  "checked_at_utc": "2026-09-02T16:52:02Z",
+  "checked_at_utc": "2026-09-02T16:58:38Z",
   "agent_task_id": "f3fba72c-a3be-453e-9e15-830e46135c53",
   "build_task_id": "9d978a4c-4161-4e15-982d-0d1c56b696a7",
   "ea_id": "QM5_41142",
   "ea_label": "QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow",
   "slug": "eurusd-month-end-benchmark-fix-hedge-flow",
-  "verdict": "SOURCE_COMPLETE_COMPILE_PENDING_GOVERNED_ROLLOUT_NO_Q02",
+  "verdict": "SOURCE_COMPLETE_COMPILE_BLOCKED_STALE_BINDING_ROLLOUT_PENDING",
   "card": {
     "path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow.md",
     "sha256": "62558E7DD039847DAE93DEF565C7F48F1108E9E965611A8502DA33020446DC55",
@@ -15,7 +15,7 @@
   },
   "files": {
     "mq5": "C:\\QM\\repo\\framework\\EAs\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow.mq5",
-    "mq5_sha256": "1BB336BBBD3B9E06730EA830B94A7C3BFF9C4387F88920C43754757BE5FE3C0F",
+    "mq5_sha256": "CB33049FCC851C1BD83762ABE1AEE72768BF38D55D73097DE08E48C1BA177D9A",
     "spec": "C:\\QM\\repo\\framework\\EAs\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow\\SPEC.md",
     "basket_manifest": "C:\\QM\\repo\\framework\\EAs\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow\\basket_manifest.json",
     "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow\\sets\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow_EURUSD.DWX_M15_backtest.set",
@@ -47,7 +47,9 @@
     "status": "pending",
     "activation_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
     "release_on_restart": true,
-    "payload_mq5_sha256_matches_source": true,
+    "payload_mq5_sha256": "1BB336BBBD3B9E06730EA830B94A7C3BFF9C4387F88920C43754757BE5FE3C0F",
+    "payload_mq5_sha256_matches_source": false,
+    "binding_disposition": "The open held item must fail stale-source validation and be replaced by a new governed compile item after the reviewed worker rollout; direct DB editing and manual hold release are forbidden.",
     "compile_verdict": null,
     "compile_evidence_path": null,
     "ex5_sha256": null
@@ -56,6 +58,13 @@
     "q02_enqueued": false,
     "pipeline_verdict_claimed": false,
     "reason": "Build-only task; governed compile has not yet produced compile evidence."
+  },
+  "router_handoff": {
+    "review_update_attempted": true,
+    "review_update_accepted": false,
+    "gate_code": "D6_BUILD_IDENTITY_MISSING",
+    "reason": "strict_build_pass_evidence_missing_review_dispatch_refused",
+    "task_state_retained": "IN_PROGRESS"
   },
   "safety": {
     "autotrading_toggled": false,
