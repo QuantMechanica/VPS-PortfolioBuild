@@ -119,6 +119,31 @@ def test_compare_loaded_charts_to_presets_accepts_daily_alias() -> None:
     assert result["mismatch_count"] == 0
 
 
+def test_parse_terminal_journals_walks_back_to_last_profile_load(tmp_path: Path) -> None:
+    root = tmp_path / "terminal"
+    log_dir = root / "logs"
+    log_dir.mkdir(parents=True)
+    start = datetime(2026, 8, 23, 10, 29)
+    for offset in range(11):
+        day = start + timedelta(days=offset)
+        line = f"AA\t0\t10:29:00.000\tNetwork\t'4000090541': scanning network finished\n"
+        if offset == 0:
+            line += (
+                "AA\t0\t10:29:01.000\tExperts\texpert "
+                "QM5_10403_example (XAUUSD,D1) loaded successfully\n"
+            )
+        path = log_dir / f"{day:%Y%m%d}.log"
+        path.write_text(line, encoding="utf-8")
+        os.utime(path, (day.timestamp(), day.timestamp()))
+
+    result = live_book_pulse.parse_terminal_journals([root], lookback_files=10, tail_bytes=4096)
+
+    assert result["load_lookback_extended"] is True
+    assert result["loaded_sleeve_count"] == 1
+    assert result["loaded_sleeves"][0]["ea_id"] == 10403
+    assert any(path.endswith("20260823.log") for path in result["terminal_journal_files"])
+
+
 def test_heartbeat_flat_allows_normal_three_hour_journal_gap(tmp_path: Path) -> None:
     now = datetime(2026, 7, 3, 12, 0, tzinfo=_local_tz())
     root = tmp_path / "terminal"
@@ -427,6 +452,16 @@ def test_parse_ea_logs_exposes_latest_ks_baseline_event(tmp_path: Path) -> None:
         "path": "terminal-local",
         "source_file": str(log),
     }
+
+
+def test_warn_only_alarms_do_not_escalate_to_alarm() -> None:
+    assert live_book_pulse.verdict_from_alarms([
+        {"metric": "ks_baseline_status", "severity": "WARN"},
+    ]) == "WARN"
+    assert live_book_pulse.verdict_from_alarms([
+        {"metric": "manifest", "severity": "FAIL"},
+    ]) == "ALARM"
+    assert live_book_pulse.verdict_from_alarms([]) == "OK"
 
 
 def test_parse_ea_logs_streams_full_log_for_ks_event_before_latest_init(tmp_path: Path) -> None:

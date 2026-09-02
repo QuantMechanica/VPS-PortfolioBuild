@@ -471,3 +471,6 @@ Beide OWNER-Freigaben (MNT020-RECOMPILE, MNT006-CANARY) sind ausgeführt und im 
 **Ehrlich zur Zahl:** RECYCLE ist von 429 auf **450** gestiegen, nicht gefallen. Das ist erwartet — die Reviews haben 21 Builds als defekt terminiert, statt sie unentschieden liegen zu lassen. Der Drain verschiebt Arbeit zuerst von „unbekannt" nach „bekannt defekt"; das ist Fortschritt in der Klassifikation, auch wenn der Zähler steigt.
 
 **Offen und benannt:** (1) die Review-Lane ist die Decke des Drain-Programms — 268 Rebuilds ≈ zehn Review-Sitzungen; (2) Q09_NEWS steht weiter bei **0 PASS**, Volumen staut sich dahinter; (3) Prioritätsboden: RECYCLE-Build-Zeilen tragen p1–15 und würden nie gezogen, der Requeue normalisiert auf 50 — ob Drain vor Neu-Builds rangiert, ist eine bewusste Reihenfolge-Entscheidung; (4) drei neue OWNER-Entscheidungen auf der Decision-Surface (`OWNER-DEC-GATECONTRACT`, `OWNER-DEC-EVIDENCE-RETENTION`, `OWNER-DEC-FTMO-THRESHOLDS`).
+# 2026-09-02 Codex live-book pulse repair
+
+- Task `26434855-11fb-46e6-aeab-a2d594c4a1b1`: repaired stale lifecycle lookback and severity aggregation. Production pulse now finds all 24 loaded sleeves and reports only the genuine KS-baseline WARN. Evidence: `docs/ops/evidence/2026-09-02_live_book_pulse_load_repair.md`.

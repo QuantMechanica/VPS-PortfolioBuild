@@ -910,9 +910,43 @@ def parse_terminal_journals(
     for root in terminal_roots:
         terminal_journal_files.extend((root / "logs").glob("*.log"))
         mql_log_files.extend((root / "MQL5" / "logs").glob("*.log"))
-    terminal_journal_files = latest_files(
-        [p for p in terminal_journal_files if p.is_file() and DATE_FILE_RE.search(p.name)], lookback_files
-    )
+    all_terminal_journal_files = [
+        p for p in terminal_journal_files if p.is_file() and DATE_FILE_RE.search(p.name)
+    ]
+    terminal_journal_files = latest_files(all_terminal_journal_files, lookback_files)
+    load_lookback_extended = False
+    # Expert-load lines are lifecycle events, not heartbeats.  If a terminal has
+    # stayed up longer than the fixed file window, walk back to the most recent
+    # journal containing either the startup epoch or the profile-load event.
+    recent_set = {p.resolve() for p in terminal_journal_files}
+    recent_has_epoch = False
+    for path in terminal_journal_files:
+        try:
+            text = read_tail(path, tail_bytes)
+        except OSError:
+            continue
+        if EXPERT_LOADED_RE.search(text) or (
+            "metatrader 5" in text.lower() and "started" in text.lower()
+        ):
+            recent_has_epoch = True
+            break
+    if not recent_has_epoch:
+        older = sorted(
+            (p for p in all_terminal_journal_files if p.resolve() not in recent_set),
+            key=lambda p: (p.stat().st_mtime_ns, str(p)),
+            reverse=True,
+        )
+        for path in older:
+            try:
+                text = read_tail(path, tail_bytes)
+            except OSError:
+                continue
+            if EXPERT_LOADED_RE.search(text) or (
+                "metatrader 5" in text.lower() and "started" in text.lower()
+            ):
+                terminal_journal_files.append(path)
+                load_lookback_extended = True
+                break
     mql_log_files = latest_files([p for p in mql_log_files if p.is_file() and DATE_FILE_RE.search(p.name)], lookback_files)
     journal_files = terminal_journal_files + mql_log_files
 
@@ -1035,6 +1069,7 @@ def parse_terminal_journals(
         "last_terminal_sync": latest_sync,
         "loaded_sleeve_count": len(loaded),
         "loaded_sleeves": loaded,
+        "load_lookback_extended": load_lookback_extended,
         "autotrading_transitions": transitions[-25:],
         "journal_warning_counts": dict(sorted(warning_counts.items())),
         "journal_warning_samples": warning_samples,
@@ -1609,6 +1644,16 @@ def build_alarms(snapshot: dict[str, Any]) -> list[dict[str, Any]]:
     return alarms
 
 
+def verdict_from_alarms(alarms: list[dict[str, Any]]) -> str:
+    """Summarize observation severity without promoting WARN-only findings."""
+    if not alarms:
+        return "OK"
+    if any(str(alarm.get("severity") or "FAIL").upper() in {"FAIL", "ALARM", "ERROR"}
+           for alarm in alarms if isinstance(alarm, dict)):
+        return "ALARM"
+    return "WARN"
+
+
 def write_json_atomic(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temp_path = path.with_suffix(path.suffix + ".tmp")
@@ -1727,7 +1772,7 @@ def build_snapshot(args: argparse.Namespace) -> dict[str, Any]:
         ),
     }
     snapshot["alarms"] = build_alarms(snapshot)
-    snapshot["verdict"] = "ALARM" if snapshot["alarms"] else "OK"
+    snapshot["verdict"] = verdict_from_alarms(snapshot["alarms"])
     attach_observability_contract(
         snapshot,
         observed_at=now,
@@ -1870,7 +1915,7 @@ def main(argv: list[str] | None = None) -> int:
         append_alarms(alarm_log, datetime.fromisoformat(snapshot["generated_at_utc"].replace("Z", "+00:00")), snapshot["alarms"])
 
     print(json.dumps(snapshot, indent=2, sort_keys=True))
-    return 0 if snapshot["verdict"] in {"OK", "ALARM"} else 2
+    return 0 if snapshot["verdict"] in {"OK", "WARN", "ALARM"} else 2
 
 
 if __name__ == "__main__":
