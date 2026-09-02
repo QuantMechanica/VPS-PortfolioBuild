@@ -12,6 +12,7 @@ import argparse
 import datetime as dt
 import hashlib
 import json
+import os
 import sqlite3
 import time
 import uuid
@@ -29,6 +30,26 @@ DEFAULT_REPO = Path(r"C:\QM\repo")
 DEFAULT_BACKUP_DIR = Path(r"D:\QM\strategy_farm\state\backups")
 DEFAULT_MUTATION_LOCK = Path(r"D:\QM\strategy_farm\state\FACTORY_MUTATION.lock")
 HOLD_CODE = "COMPILE_EA_WORKER_ROLLOUT_PENDING"
+
+# Tables whose row counts participate in the cheap DB-identity fingerprint
+# used for backup reuse. Deliberately narrow: enough to detect any mutation
+# relevant to this wave (work items, agent tasks, and the holds this wave
+# releases) without scanning the whole database.
+IDENTITY_TABLES = ("work_items", "agent_tasks", "work_item_holds")
+
+# Default freshness window for backup reuse (minutes). CLI: --backup-reuse-max-age-minutes.
+# Env override: QM_COMPILE_WAVE_BACKUP_REUSE_MAX_AGE_MINUTES.
+DEFAULT_BACKUP_REUSE_MAX_AGE_MINUTES = 60.0
+
+
+def _env_default_backup_reuse_max_age_minutes() -> float:
+    raw = os.environ.get("QM_COMPILE_WAVE_BACKUP_REUSE_MAX_AGE_MINUTES")
+    if raw is None or not raw.strip():
+        return DEFAULT_BACKUP_REUSE_MAX_AGE_MINUTES
+    try:
+        return float(raw)
+    except ValueError:
+        return DEFAULT_BACKUP_REUSE_MAX_AGE_MINUTES
 
 
 def utc_now() -> str:
@@ -154,6 +175,182 @@ def _backup(
     return target, sha256_file(target)
 
 
+def _identity_sidecar_path(backup_path: Path) -> Path:
+    return backup_path.with_name(backup_path.name + ".identity.json")
+
+
+def _row_counts(conn: sqlite3.Connection) -> dict[str, int] | None:
+    """Cheap per-table row counts used as part of the DB-identity fingerprint.
+
+    Returns None (identity cannot be established) if any expected table is
+    missing or the count query otherwise fails -- callers must fail closed
+    to a fresh backup in that case.
+    """
+
+    counts: dict[str, int] = {}
+    for table in IDENTITY_TABLES:
+        try:
+            row = conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()
+        except sqlite3.Error:
+            return None
+        if row is None:
+            return None
+        counts[table] = int(row[0])
+    return counts
+
+
+def _db_identity(conn: sqlite3.Connection, db: Path) -> dict[str, Any] | None:
+    """Cheap, robust identity fingerprint of the live DB image.
+
+    Combines the main file's mtime/size (updated on checkpoint), the WAL
+    file's size (grows with uncommitted-to-main writes visible to readers),
+    and row counts of the tables this wave reads/mutates. Returns None when
+    any component cannot be read -- callers must fail closed (fresh backup)
+    rather than ever reuse an unverifiable identity.
+    """
+
+    try:
+        stat = db.stat()
+    except OSError:
+        return None
+    wal_path = db.with_name(db.name + "-wal")
+    try:
+        wal_size = wal_path.stat().st_size if wal_path.exists() else 0
+    except OSError:
+        return None
+    row_counts = _row_counts(conn)
+    if row_counts is None:
+        return None
+    return {
+        "source_mtime_ns": stat.st_mtime_ns,
+        "source_size": stat.st_size,
+        "wal_size": wal_size,
+        "row_counts": row_counts,
+    }
+
+
+def _identities_match(a: dict[str, Any], b: dict[str, Any]) -> bool:
+    return (
+        a.get("source_mtime_ns") == b.get("source_mtime_ns")
+        and a.get("source_size") == b.get("source_size")
+        and a.get("wal_size") == b.get("wal_size")
+        and a.get("row_counts") == b.get("row_counts")
+    )
+
+
+def _write_identity_sidecar(
+    backup_path: Path,
+    identity: dict[str, Any],
+    backup_sha: str,
+) -> None:
+    sidecar = _identity_sidecar_path(backup_path)
+    payload = {
+        **identity,
+        "backup_path": str(backup_path),
+        "backup_sha256": backup_sha,
+        "created_at": utc_now(),
+    }
+    temp = sidecar.with_name(f".{sidecar.name}.{uuid.uuid4().hex}.tmp")
+    temp.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    temp.replace(sidecar)
+
+
+def _find_reusable_backup(
+    backup_dir: Path,
+    live_identity: dict[str, Any],
+    max_age_minutes: float,
+) -> tuple[Path, str, Path] | None:
+    """Newest backup (of any class) with a matching, fresh-enough identity sidecar.
+
+    Returns (backup_path, backup_sha256, sidecar_path) or None. Any sidecar
+    that cannot be read/parsed, is missing required fields, or whose
+    referenced backup file no longer exists on disk is skipped -- never
+    treated as a match.
+    """
+
+    if max_age_minutes <= 0 or not backup_dir.is_dir():
+        return None
+    cutoff = time.time() - (max_age_minutes * 60.0)
+    candidates: list[tuple[float, Path]] = []
+    for sidecar in backup_dir.glob("*.identity.json"):
+        try:
+            mtime = sidecar.stat().st_mtime
+        except OSError:
+            continue
+        if mtime < cutoff:
+            continue
+        candidates.append((mtime, sidecar))
+    candidates.sort(key=lambda pair: pair[0], reverse=True)
+    for _, sidecar in candidates:
+        try:
+            data = json.loads(sidecar.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if not isinstance(data, dict) or not _identities_match(data, live_identity):
+            continue
+        backup_path_raw = data.get("backup_path")
+        backup_sha = data.get("backup_sha256")
+        if not backup_path_raw or not backup_sha:
+            continue
+        backup_path = Path(backup_path_raw)
+        if not backup_path.is_file():
+            continue
+        return backup_path, str(backup_sha), sidecar
+    return None
+
+
+def _resolve_backup(
+    conn: sqlite3.Connection,
+    db: Path,
+    backup_dir: Path,
+    *,
+    timeout_seconds: float = 60.0,
+    reuse_max_age_minutes: float = DEFAULT_BACKUP_REUSE_MAX_AGE_MINUTES,
+) -> dict[str, Any]:
+    """Reuse a fresh, identity-matched backup when one exists; else write one.
+
+    Fail-closed by construction: reuse only fires when a live identity can
+    be established AND a sidecar-backed candidate matches it exactly AND
+    the candidate file still exists on disk. Any failure to establish or
+    match identity falls through to a fresh online backup (never a silent
+    skip).
+    """
+
+    live_identity = _db_identity(conn, db)
+    if live_identity is not None and reuse_max_age_minutes > 0:
+        reusable = _find_reusable_backup(backup_dir, live_identity, reuse_max_age_minutes)
+        if reusable is not None:
+            backup_path, backup_sha, sidecar_path = reusable
+            return {
+                "path": backup_path,
+                "sha256": backup_sha,
+                "reused": True,
+                "reused_from_sidecar": str(sidecar_path),
+                "identity": live_identity,
+                "identity_established": True,
+            }
+
+    backup_path, backup_sha = _backup(db, backup_dir, timeout_seconds=timeout_seconds)
+    # Re-derive identity post-backup if the pre-backup read failed (e.g. a
+    # table was briefly unreadable); a sidecar is written on a best-effort
+    # basis only -- its absence never blocks the backup that already
+    # succeeded, it just means future calls cannot reuse this snapshot.
+    identity_for_sidecar = live_identity if live_identity is not None else _db_identity(conn, db)
+    if identity_for_sidecar is not None:
+        try:
+            _write_identity_sidecar(backup_path, identity_for_sidecar, backup_sha)
+        except OSError:
+            pass
+    return {
+        "path": backup_path,
+        "sha256": backup_sha,
+        "reused": False,
+        "reused_from_sidecar": None,
+        "identity": identity_for_sidecar,
+        "identity_established": identity_for_sidecar is not None,
+    }
+
+
 def _acquire_backup_write_guard(
     db: Path,
     *,
@@ -196,6 +393,7 @@ def apply_wave(
     work_item_id: str | None = None,
     mutation_lock: Path | None = None,
     backup_timeout_seconds: float = 60.0,
+    backup_reuse_max_age_minutes: float = DEFAULT_BACKUP_REUSE_MAX_AGE_MINUTES,
 ) -> dict[str, Any]:
     plan = inspect(db, repo, max_items, work_item_id)
     if not plan["release"]:
@@ -204,6 +402,8 @@ def apply_wave(
     lock = FactoryMutationLock(lock_path, owner="release_compile_wave.apply")
     backup_path: Path | None = None
     backup_sha: str | None = None
+    backup_reused = False
+    backup_identity_established = False
     guard_detail: dict[str, Any] | None = None
     applied: list[str] = []
     with lock:
@@ -228,11 +428,21 @@ def apply_wave(
 
             # The reservation blocks later writers while a separate read
             # connection captures the exact pre-mutation database image.
-            backup_path, backup_sha = _backup(
+            # Reuse a fresh, identity-matched backup instead of writing a
+            # new ~700MB snapshot when nothing in the DB has changed since
+            # one was already captured (fail-closed to a fresh backup
+            # whenever identity cannot be established or matched).
+            backup_resolution = _resolve_backup(
+                conn,
                 db,
                 backup_dir,
                 timeout_seconds=backup_timeout_seconds,
+                reuse_max_age_minutes=backup_reuse_max_age_minutes,
             )
+            backup_path = backup_resolution["path"]
+            backup_sha = backup_resolution["sha256"]
+            backup_reused = backup_resolution["reused"]
+            backup_identity_established = backup_resolution["identity_established"]
             now = utc_now()
             for item in plan["release"]:
                 row = conn.execute(
@@ -278,7 +488,8 @@ def apply_wave(
                 applied.append(item["work_item_id"])
             conn.commit()
             guard_detail["transaction"] = (
-                "BEGIN IMMEDIATE / validated / backed up / released / COMMIT"
+                "BEGIN IMMEDIATE / validated / "
+                f"{'backup reused' if backup_reused else 'backed up'} / released / COMMIT"
             )
         except Exception:
             conn.rollback()
@@ -291,8 +502,14 @@ def apply_wave(
         "applied": len(applied),
         "applied_work_item_ids": applied,
         "released_at": now,
-        "backup": {"path": str(backup_path), "sha256": backup_sha},
+        "backup": {
+            "path": str(backup_path),
+            "sha256": backup_sha,
+            "reused": backup_reused,
+            "identity_established": backup_identity_established,
+        },
         "backup_timeout_seconds": backup_timeout_seconds,
+        "backup_reuse_max_age_minutes": backup_reuse_max_age_minutes,
         "backup_write_guard": guard_detail,
         "factory_mutation_lock": {
             "path": str(lock_path),
@@ -308,6 +525,17 @@ def main() -> int:
     parser.add_argument("--backup-dir", type=Path, default=DEFAULT_BACKUP_DIR)
     parser.add_argument("--mutation-lock", type=Path, default=DEFAULT_MUTATION_LOCK)
     parser.add_argument("--backup-timeout-seconds", type=float, default=60.0)
+    parser.add_argument(
+        "--backup-reuse-max-age-minutes",
+        type=float,
+        default=_env_default_backup_reuse_max_age_minutes(),
+        help=(
+            "reuse the newest identity-matched backup (any class) younger than this "
+            "many minutes instead of writing a fresh one; <=0 disables reuse. "
+            "Env override: QM_COMPILE_WAVE_BACKUP_REUSE_MAX_AGE_MINUTES "
+            f"(default {DEFAULT_BACKUP_REUSE_MAX_AGE_MINUTES})"
+        ),
+    )
     parser.add_argument("--max-items", type=int, default=1)
     parser.add_argument(
         "--work-item-id",
@@ -327,6 +555,7 @@ def main() -> int:
             args.work_item_id,
             args.mutation_lock,
             args.backup_timeout_seconds,
+            args.backup_reuse_max_age_minutes,
         )
         if args.apply
         else inspect(args.db, args.repo, args.max_items, args.work_item_id)
