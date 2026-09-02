@@ -14201,6 +14201,7 @@ def _acquire_build_dispatch_claim(
                     raise TypeError("dispatch claim payload is not an object")
                 age = time.time() - claim_path.stat().st_mtime
                 owner_alive = _pid_exists(existing.get("owner_pid"))
+                owner_decoded = isinstance(existing.get("owner_pid"), int)
             except (json.JSONDecodeError, TypeError):
                 # A truncated lock can be produced by abrupt process death.
                 # Fail closed while it is fresh, but allow deterministic stale
@@ -14210,10 +14211,19 @@ def _acquire_build_dispatch_claim(
                 except OSError:
                     age = 0
                 owner_alive = False
+                owner_decoded = False
             except OSError:
                 age = 0
                 owner_alive = True
-            if age <= stale_sec or owner_alive:
+                owner_decoded = False
+            # 2026-09-02 (CEO): a claim whose decoded owner pid is verifiably dead
+            # is reaped after a short grace instead of the full stale window.  The
+            # global pump claim (stale_sec=1800) otherwise blocked five scheduled
+            # cycles after a stuck cycle had to be killed.
+            dead_owner_grace_sec = 120
+            if owner_alive:
+                return None
+            if age <= stale_sec and not (owner_decoded and age > dead_owner_grace_sec):
                 return None
             try:
                 claim_path.unlink()
