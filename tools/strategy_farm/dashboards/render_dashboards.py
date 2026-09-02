@@ -18,6 +18,7 @@ import json
 import os
 import re
 import sqlite3
+import statistics
 import subprocess
 import sys
 from collections import Counter, defaultdict
@@ -205,7 +206,7 @@ def extract_mt5_stats(html: str) -> dict[str, Any]:
         "net_profit": r"Total Net Profit:\s*(-?[\d.,]+)",
         "profit_factor": r"Profit Factor:\s*(-?[\d.,]+)",
         "expected_payoff": r"Expected Payoff:\s*(-?[\d.,]+)",
-        "sharpe": r"Sharpe Ratio:\s*(-?[\d.,]+)",
+        "mt5_reported_sharpe": r"Sharpe Ratio:\s*(-?[\d.,]+)",
         "recovery": r"Recovery Factor:\s*(-?[\d.,]+)",
         "total_trades": r"Total Trades:\s*(\d+)",
     }
@@ -272,6 +273,16 @@ def extract_mt5_deals(html: str) -> list[tuple[str, float]]:
             continue
         out.append((ts, bal))
     return out
+
+
+def return_based_sharpe(deals: list[tuple[str, float]]) -> float | None:
+    """Scale-free per-deal Sharpe from consecutive MT5 balance changes."""
+    changes = [right[1] - left[1] for left, right in zip(deals, deals[1:])]
+    if len(changes) < 2:
+        return None
+    mean = statistics.fmean(changes)
+    std = statistics.pstdev(changes)
+    return None if std == 0 else mean / std
 
 
 def equity_svg(deals: list[tuple[str, float]], width: int = 320, height: int = 64,
@@ -1996,9 +2007,9 @@ def _parse_summary_stats(evidence_path: str | None) -> dict[str, Any]:
                 htm = read_mt5_report(Path(rp))
                 if htm:
                     more = extract_mt5_stats(htm)
-                    if more.get("sharpe") is not None:
-                        out["sharpe"] = more["sharpe"]
                     out["deals"] = extract_mt5_deals(htm)
+                    out["sharpe"] = return_based_sharpe(out["deals"])
+                    out["mt5_reported_sharpe"] = more.get("mt5_reported_sharpe")
             except Exception:
                 pass
     except Exception:
@@ -4518,7 +4529,7 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
       <th>Symbol</th><th>Verdict</th><th class="col-spark">Equity</th>
       <th class="col-num">Trades</th><th class="col-num">Net P&amp;L</th>
       <th class="col-num">Max DD</th><th class="col-num">PF</th>
-      <th class="col-num">Sharpe</th><th>Report</th>
+      <th class="col-num">Return Sharpe (per deal)</th><th>Report</th>
     </tr></thead>
     <tbody>{''.join(rows_html)}</tbody>
   </table>"""

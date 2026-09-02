@@ -19,6 +19,7 @@ import os
 import re
 import shutil
 import sqlite3
+import statistics
 import subprocess
 import sys
 import time
@@ -2697,6 +2698,30 @@ def _report_cell_after(path: Path, label: str) -> str:
     raise RunnerError(f"MT5 report metric missing: {label}")
 
 
+def _report_return_based_sharpe(path: Path) -> float:
+    """Per-deal Sharpe from MT5 balance changes, never the MT5 summary field."""
+    balances: list[float] = []
+    report_html = _read_report_html(path)
+    for row_match in re.finditer(r"<tr\b.*?</tr>", report_html, re.IGNORECASE | re.DOTALL):
+        cells = [
+            html.unescape(re.sub(r"<[^>]+>", "", raw)).strip()
+            for raw in re.findall(
+                r"<td\b[^>]*>(.*?)</td>", row_match.group(0), re.IGNORECASE | re.DOTALL
+            )
+        ]
+        if len(cells) != 13 or not re.fullmatch(r"\d{4}\.\d{2}\.\d{2}\s+\d{2}:\d{2}:\d{2}", cells[0]):
+            continue
+        try:
+            balances.append(_finite_report_number(cells[11], "deal balance"))
+        except RunnerError:
+            continue
+    changes = [right - left for left, right in zip(balances, balances[1:])]
+    if len(changes) < 2:
+        raise RunnerError("MT5 report has insufficient deal balances for return-based Sharpe")
+    sd = statistics.pstdev(changes)
+    return 0.0 if sd == 0 else statistics.fmean(changes) / sd
+
+
 def _finite_report_number(raw: Any, field: str) -> float:
     # A numeric zero is a legitimate report value (zero trades, zero profit);
     # `raw or ""` would silently reclassify it as missing.
@@ -2913,6 +2938,7 @@ def _validate_window_summary(
     profit_factor = _finite_report_number(run.get("profit_factor"), "profit factor")
     net_profit = _finite_report_number(run.get("net_profit"), "net profit")
     sharpe = _finite_report_number(_report_cell_after(report_path, "Sharpe Ratio"), "Sharpe ratio")
+    return_based_sharpe = _report_return_based_sharpe(report_path)
     report_trades = int(_finite_report_number(_report_cell_after(report_path, "Total Trades"), "total trades"))
     if report_trades != trades:
         raise RunnerError("run_smoke and MT5 report trade totals disagree")
@@ -2945,6 +2971,9 @@ def _validate_window_summary(
         "profit_factor": profit_factor,
         "drawdown_pct": _drawdown_percent(report_path),
         "sharpe": sharpe,
+        "mt5_reported_sharpe": sharpe,
+        "return_based_sharpe_per_deal": return_based_sharpe,
+        "sharpe_semantics": "LEGACY_MT5_REPORTED_THRESHOLD_INPUT_OWNER_REVIEW_REQUIRED",
         "net_r": net_profit / risk_fixed,
         "original_entries": original,
         "blocked_entries": blocked,

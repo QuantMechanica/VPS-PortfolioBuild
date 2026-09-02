@@ -32,6 +32,11 @@ from .common import make_result, trade_timestamp
 GATE_NAME = "8.2_dsr_mc_fdr"
 DSR_P_MIN = 0.05
 N_CANDIDATE_STRATEGIES = 369   # rough V5 candidate count; updates as the farm grows
+# CEO audit 2026-09-02, read-only farm census.  These do not alter the sealed
+# 8.2 threshold or verdict yet; they are emitted as the mandatory report-only
+# cohort deflation for OWNER review.
+FUNNEL_DISTINCT_EAS = 3_001
+FUNNEL_DISTINCT_PAIRS = 13_398
 # Optimization-track selection multiplicity (DL-084 / plan v2 A3).
 # `selection_trial_count` is the number of configurations the evaluated one was
 # SELECTED FROM, not the number measured. Under the plan-v2 firewall (E0-1) a
@@ -95,6 +100,49 @@ def _expected_max_sharpe(n_strats: int, sharpe_std: float) -> float:
                          EULER_MASCHERONI / math.sqrt(2.0 * math.log(n_strats)))
 
 
+def _report_only_funnel_dsr(sharpe: float, skew: float, kurt_ex: float,
+                            n_obs: int) -> dict:
+    """Bailey-Lopez de Prado DSR against the audited full search funnel.
+
+    The annualized benchmark uses the observed daily-series duration.  This is
+    deliberately evidence-only: existing 8.2 PASS/FAIL semantics and the sealed
+    p<0.05 threshold remain untouched pending OWNER disposition.
+    """
+    years = n_obs / 252.0
+    nd = statistics.NormalDist()
+    sr_se_annual = math.sqrt(252.0) * math.sqrt(max(
+        (1.0 - skew * sharpe / math.sqrt(252.0)
+         + ((kurt_ex - 1.0) / 4.0) * (sharpe / math.sqrt(252.0)) ** 2)
+        / max(1, n_obs - 1),
+        1e-12,
+    ))
+    rows = []
+    for label, count in (("distinct_eas", FUNNEL_DISTINCT_EAS),
+                         ("distinct_pairs", FUNNEL_DISTINCT_PAIRS)):
+        expected_max = (
+            ((1.0 - EULER_MASCHERONI) * nd.inv_cdf(1.0 - 1.0 / count)
+             + EULER_MASCHERONI * nd.inv_cdf(1.0 - 1.0 / (count * math.e)))
+            / math.sqrt(years)
+        )
+        probability = nd.cdf((sharpe - expected_max) / sr_se_annual)
+        rows.append({
+            "cohort": label,
+            "effective_trial_count": count,
+            "expected_max_annualized_sharpe": round(expected_max, 6),
+            "dsr_probability": round(probability, 8),
+            "would_meet_existing_probability_bar": probability > 1.0 - DSR_P_MIN,
+        })
+    return {
+        "mode": "REPORT_ONLY_OWNER_REVIEW",
+        "formula": "BAILEY_LOPEZ_DE_PRADO_2014",
+        "threshold_changed": False,
+        "observed_annualized_sharpe": round(sharpe, 6),
+        "n_obs_days": n_obs,
+        "years_at_252_days": round(years, 6),
+        "rows": rows,
+    }
+
+
 def _deflated_sharpe_pvalue(observed_sr: float, sharpe_std: float, skew: float,
                             kurt_ex: float, n_obs: int, n_strats: int) -> float:
     """Compute DSR p-value via Bailey & López de Prado (2014)."""
@@ -138,10 +186,12 @@ def run(trades: list[dict], *, portfolio: list[dict] | None = None,
                            detail=f"insufficient_daily_returns:got={len(returns)}:need>=60")
 
     sharpe, skew, kurt_ex, n_obs = _sharpe_annual(returns)
+    funnel_report = _report_only_funnel_dsr(sharpe, skew, kurt_ex, n_obs)
     if sharpe <= 0:
         return make_result(GATE_NAME, "FAIL",
                            value=round(sharpe, 4), threshold=0,
-                           detail=f"sharpe_non_positive:sr={sharpe:.3f}")
+                           detail=f"sharpe_non_positive:sr={sharpe:.3f}",
+                           evidence={"cohort_dsr_report": funnel_report})
 
     # First-entry / empty-cohort: no selection bias to deflate. Trivial PASS
     # pending cohort, consistent with 8.1 / 8.3. The DSR deflation activates
@@ -156,7 +206,8 @@ def run(trades: list[dict], *, portfolio: list[dict] | None = None,
                            evidence={"sharpe": round(sharpe, 4), "skew": round(skew, 4),
                                      "excess_kurtosis": round(kurt_ex, 4),
                                      "n_obs_days": n_obs, "n_peers": n_peers,
-                                     "tier": "standalone_pending_cohort"})
+                                     "tier": "standalone_pending_cohort",
+                                     "cohort_dsr_report": funnel_report})
 
     # Cohort mode — deflate against the candidate set's max-Sharpe selection bias.
     # Deliberately conservative, NOT an un-investigated placeholder: the 2026-08-13
@@ -183,7 +234,8 @@ def run(trades: list[dict], *, portfolio: list[dict] | None = None,
                                      "selection_mode": selection_mode,
                                      "selection_trial_count": selection_count,
                                      "sharpe_std_estimate": sharpe_std_estimate,
-                                     "sharpe_std_calibrated": False})
+                                     "sharpe_std_calibrated": False,
+                                     "cohort_dsr_report": funnel_report})
 
     # Tier-1 statistical fail. There is no batch-level BH-FDR rescue pass in the
     # aggregator yet, so resolve to a real verdict (FAIL) rather than a permanent
@@ -199,4 +251,5 @@ def run(trades: list[dict], *, portfolio: list[dict] | None = None,
                                  "selection_mode": selection_mode,
                                  "selection_trial_count": selection_count,
                                  "sharpe_std_estimate": sharpe_std_estimate,
-                                 "sharpe_std_calibrated": False})
+                                 "sharpe_std_calibrated": False,
+                                 "cohort_dsr_report": funnel_report})

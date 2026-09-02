@@ -99,6 +99,16 @@ def test_no_cohort_path_ignores_selection_count():
     assert a["detail"] == b["detail"]
 
 
+def test_no_cohort_path_reports_real_funnel_dsr_without_changing_verdict():
+    result = m.run(trades=_trades(200, 55.0), portfolio=[])
+    report = result["evidence"]["cohort_dsr_report"]
+    assert result["status"] == "PASS"
+    assert report["mode"] == "REPORT_ONLY_OWNER_REVIEW"
+    assert report["threshold_changed"] is False
+    assert [row["effective_trial_count"] for row in report["rows"]] == [3001, 13398]
+    assert all("dsr_probability" in row for row in report["rows"])
+
+
 def test_insufficient_returns_still_invalid_with_count():
     res = m.run(trades=_trades(10, 55.0), portfolio=PEERS, selection_trial_count=154)
     assert res["status"] == "INVALID"

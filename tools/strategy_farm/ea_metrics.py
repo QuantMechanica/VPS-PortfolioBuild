@@ -681,7 +681,7 @@ _TABLE_COLS = ["ea_id", "phase", "symbol", "verdict", "profit_factor",
                "trades", "net_profit", "drawdown_pct", "sharpe", "source"]
 _TABLE_HDR = {"ea_id": "EA", "phase": "GATE", "symbol": "SYMBOL", "verdict": "VERDICT",
               "profit_factor": "PF", "trades": "TR", "net_profit": "NET",
-              "drawdown_pct": "DD%", "sharpe": "SHARPE", "source": "SOURCE"}
+              "drawdown_pct": "DD%", "sharpe": "SHARPE(SOURCE-DEFINED)", "source": "SOURCE"}
 
 
 def _fmt_cell(col: str, v: Any) -> str:
