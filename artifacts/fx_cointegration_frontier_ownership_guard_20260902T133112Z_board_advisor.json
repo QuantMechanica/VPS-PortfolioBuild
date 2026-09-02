@@ -1,0 +1,142 @@
+{
+  "artifact_type": "fx_cointegration_frontier_ownership_guard",
+  "schema_version": "qm.fx-cointegration-frontier-ownership-guard/v1",
+  "generated_at_utc": "2026-09-02T13:31:12Z",
+  "generated_at_local": "2026-09-02T15:31:12+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "c24268d40cb006368436494a0cc0b129a947abe1",
+  "mission": "grow_certified_v5_portfolio_new_forex_sleeves",
+  "outcome": "NO_SAFE_NON_DUPLICATE_MUTATION",
+  "scan_frontier": {
+    "source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "unordered_relationship_count": 66,
+    "latest_complete_census_source": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "approved_identity_count": 123,
+    "matching_ea_directory_count": 123,
+    "unbuilt_approved_identity_count": 0,
+    "new_card_or_build_authorized": false,
+    "reason": "All 66 frozen-scan relationships are already represented; creating another scan-derived card or EA would duplicate governed coverage."
+  },
+  "anchor_state": [
+    {
+      "ea_id": "QM5_12532",
+      "relationship": ["AUDUSD.DWX", "NZDUSD.DWX"],
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02": {"work_item_id": "e4890d77-b865-4a48-b946-315faefca920", "verdict": "PASS"},
+      "q04": {"work_item_id": "94f89f07-58ad-487f-a0ab-b57c4e99106a", "verdict": "PASS"},
+      "q05": {"work_item_id": "82cab3d1-bf05-4aa4-8278-86c8064b16e7", "verdict": "FAIL"},
+      "current_q02_setup_blocker": false
+    },
+    {
+      "ea_id": "QM5_12533",
+      "relationship": ["EURJPY.DWX", "GBPJPY.DWX"],
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02": {"work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62", "verdict": "PASS"},
+      "q04": {"work_item_id": "ff2cb183-8269-4e63-abaf-27ba79afdb62", "verdict": "FAIL"},
+      "current_q02_setup_blocker": false
+    }
+  ],
+  "existing_forex_fallbacks": [
+    {
+      "ea_id": "QM5_12507",
+      "work_item_id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+      "phase": "Q02",
+      "logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+      "state": "pending_unclaimed_attempt_0",
+      "priority_track": true,
+      "decision": "leave_existing_unique_row_to_paced_fleet"
+    },
+    {
+      "ea_id": "QM5_12512",
+      "work_item_id": "acbad967-bf94-4565-9e51-db193de01bf9",
+      "phase": "Q02",
+      "logical_symbol": "QM5_12512_FX_PAIRS_THRESHOLD_H1",
+      "state": "pending_unclaimed_attempt_0",
+      "priority_track": true,
+      "decision": "leave_existing_unique_row_to_paced_fleet"
+    },
+    {
+      "ea_id": "QM5_10717",
+      "work_item_id": "65319749-3c0b-4636-9131-305c34100a08",
+      "phase": "Q02",
+      "logical_symbol": "FX8_BASKET_D1",
+      "state": "pending_unclaimed_attempt_0",
+      "priority_track": true,
+      "ex5_sha256": "3d5680d0022df60ca523630822515e5f1cf86a2e7bc4d512eda45065cb8ce463",
+      "prior_stale_work_item_id": "7dd70134-a2a0-4ecf-a706-5f4609a094be",
+      "prior_stale_row_has_canonical_supersedes_edge": true,
+      "decision": "leave_current_binary_row_to_paced_fleet"
+    },
+    {
+      "ea_id": "QM5_10718",
+      "work_item_id": "31f12573-d903-4386-a857-cad2b445d63a",
+      "phase": "Q02",
+      "logical_symbol": "QM5_10718_FX8_BASKET_D1",
+      "state": "pending_unclaimed_attempt_0",
+      "priority_track": true,
+      "ex5_sha256": "10358a8dd852cd495265fc4099dfb7d9fecc711a047d98a4ff5eafbba51a91cc",
+      "decision": "leave_existing_unique_row_to_paced_fleet"
+    }
+  ],
+  "blocked_unqueued_builds": [
+    {
+      "ea_id": "QM5_34008",
+      "review_task_id": "72b63c06-7749-4ac4-8276-fcf7bdc02dc4",
+      "review_state": "BLOCKED",
+      "reason": "Approved-card package-risk allocation is mechanically incomplete and the execution-contract registry entry is missing; Q02 is not authorized."
+    },
+    {
+      "ea_id": "QM5_37001",
+      "build_task_id": "92c3eb98-4998-40dc-b31a-8b2da987365e",
+      "build_state": "RECYCLE",
+      "reason": "The current EA is a single-symbol OU implementation rather than the approved two-leg spread package; Q02 is not authorized."
+    }
+  ],
+  "actionable_but_owned_frontier": {
+    "ea_id": "QM5_10025",
+    "symbol": "USDJPY.DWX",
+    "stale_pending_work_item_id": "e49888a1-6dbe-45b7-bb4f-29461bbcfb0c",
+    "stale_row_ex5_sha256": "030e7acc63a735a514c5490000eed4d4bf062bf8f6ee8e4da34a601da8f9ba1e",
+    "current_worktree_ex5_sha256": "49fcc59b5232531f5fd2e3ba7a0c71f0bac703f54e17f7c92c911e31944d91f1",
+    "current_worktree_mq5_sha256": "db7424efcba0a8df90184240e277e1a7546e8030672eec88a4c72a89c32a5a61",
+    "canonical_supersedes_edge_present": false,
+    "exact_scope_porcelain_entry_count": 6,
+    "ownership_state": "preexisting_staged_and_unstaged_changes",
+    "mutation_refused": true,
+    "reason": "The exact EA, EX5, setfile, SPEC, and recovery evidence are already staged and/or modified by another shared-tree worker. Committing, superseding, or seeding against those uncommitted artifacts would absorb foreign work or bind a noncanonical build."
+  },
+  "capacity": {
+    "sampled_at_utc": "2026-09-02T13:29:53.6364936Z",
+    "samples_percent": [53.934714, 54.812425, 53.520724, 53.645469, 57.762159],
+    "average_percent": 54.735098,
+    "maximum_percent": 57.762159,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_binding": false
+  },
+  "workspace": {
+    "porcelain_entry_count": 165,
+    "preexisting_changes_preserved": true,
+    "qm5_10025_changes_absorbed": false,
+    "unrelated_paths_staged_or_committed": false
+  },
+  "actions": {
+    "card_created_or_changed": false,
+    "ea_or_setfile_changed": false,
+    "registry_or_magic_changed": false,
+    "work_item_created": false,
+    "priority_changed": false,
+    "supersedes_edge_created": false,
+    "backtest_or_dispatch_started": false,
+    "terminal_or_autotrading_control": false
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_files": false,
+    "autotrading": false
+  },
+  "continuation": "After the exact QM5_10025 paths are clean and committed by their current owner, re-read the current artifact hashes and the USDJPY Q02 lineage. If e49888a1 remains the only unsuperseded open row and still has stale bindings, preserve it with one canonical supersedes edge and use the governed current-binary append-only Q02 seed path."
+}
