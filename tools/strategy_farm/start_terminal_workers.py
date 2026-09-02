@@ -163,6 +163,53 @@ def _load_existing(pid_file: Path) -> dict[str, int]:
     return out
 
 
+
+def machine_qm_environment() -> dict[str, str]:
+    """Return the machine-level QM_* environment variables (Windows HKLM), else {}."""
+    if sys.platform != "win32":
+        return {}
+    try:
+        import winreg
+    except ImportError:  # pragma: no cover - non-Windows
+        return {}
+    values: dict[str, str] = {}
+    try:
+        key = winreg.OpenKey(
+            winreg.HKEY_LOCAL_MACHINE,
+            r"SYSTEM\CurrentControlSet\Control\Session Manager\Environment",
+        )
+    except OSError:
+        return {}
+    try:
+        index = 0
+        while True:
+            try:
+                name, value, _kind = winreg.EnumValue(key, index)
+            except OSError:
+                break
+            index += 1
+            if str(name).upper().startswith("QM_") and value is not None:
+                values[str(name)] = str(value)
+    finally:
+        winreg.CloseKey(key)
+    return values
+
+
+def merge_machine_qm_env(environ: dict[str, str], machine: dict[str, str]) -> dict[str, str]:
+    """Spawn environment = process env with every machine QM_* var filled in when absent.
+
+    Incident 2026-09-02: workers restarted from an interactive session inherited
+    that session's environment, which lacked QM_TOPDOWN_GATE_PRIORITY_ENABLED,
+    QM_ENABLE_DL089_PRUNING and QM_SQLITE_BUSY_TIMEOUT_MS, so the fleet ran the
+    cold claim order and without worker-side pruning for most of the day. An
+    explicitly set process value still wins (setdefault semantics).
+    """
+    merged = dict(environ)
+    for name, value in machine.items():
+        if str(name).upper().startswith("QM_"):
+            merged.setdefault(name, value)
+    return merged
+
 def main() -> int:
     # DL-065: spawned terminal workers inherit this env. The spawner and the
     # workers are deterministic factory machinery (trusted base 'controller');
@@ -192,6 +239,7 @@ def main() -> int:
     updated: dict[str, int] = {}
     stopped_duplicates: dict[str, list[int]] = {}
     creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
+    spawn_env = merge_machine_qm_env(dict(os.environ), machine_qm_environment())
 
     python_exe = Path(sys.executable)
     if python_exe.name.lower() == "python.exe":
@@ -247,6 +295,7 @@ def main() -> int:
             stdin=subprocess.DEVNULL,
             close_fds=True,
             creationflags=creationflags,
+            env=spawn_env,
         )
         out.close()
         err.close()
