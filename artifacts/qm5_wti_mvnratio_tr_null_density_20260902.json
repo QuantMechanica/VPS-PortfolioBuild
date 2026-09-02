@@ -1,0 +1,19 @@
+{
+  "schema": "qm.preallocation-density-prior/v1",
+  "strategy_id": "AI-CODEX-WTI-MVNRATIO-TREND-20260902_S01",
+  "generated_at_utc": "2026-09-02T11:22:00Z",
+  "purpose": "Pre-market-data cadence sanity check only",
+  "experiment": {
+    "distribution": "independent standard normal",
+    "sample_length": 20,
+    "draws": 200000,
+    "prng": "Python random.Random MT19937",
+    "seed": 20260902,
+    "statistic": "sum((x[i+1]-x[i])^2,i=0..18) / sum((x[i]-mean(x))^2,i=0..19)",
+    "qualification": "statistic < 2.0",
+    "qualified_draws": 99943,
+    "qualified_fraction": 0.499715,
+    "expected_monthly_packages_per_year": 5.99658
+  },
+  "boundary": "This is a fixed-seed null simulation, not market evidence, backtest evidence, a significance result, or a claim about WTI. Q02 owns observed yearly cadence and economics."
+}

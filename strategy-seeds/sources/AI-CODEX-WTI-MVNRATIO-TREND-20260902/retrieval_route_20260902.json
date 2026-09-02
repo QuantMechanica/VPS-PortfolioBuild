@@ -1,0 +1,36 @@
+{
+  "schema": "qm.source-retrieval-evidence/v1",
+  "source_id": "AI-CODEX-WTI-MVNRATIO-TREND-20260902",
+  "retrieved_at_utc": "2026-09-02T11:24:00Z",
+  "routes": [
+    {
+      "role": "exact_mean_successive_differences_formula_and_interpretation",
+      "url": "https://www.itl.nist.gov/div898/software/dataplot/refman1/auxillar/msdt.htm",
+      "publisher": "NIST/SEMATECH Dataplot",
+      "method": "web_open_complete_page",
+      "status": "OK",
+      "bounded_read": "Complete 391-line public reference page read in sections; formula and interpretation are at lines 14-19, bibliography at line 99, examples and page metadata at lines 105-390.",
+      "claim_boundary": "Supports the raw squared successive-difference ratio, the null average of two, and the interpretation of small ratios as long-term trend. It does not define WTI, a trading rule, a 20-return sample, a threshold as statistical significance, direction, risk, lifecycle, or performance."
+    },
+    {
+      "role": "original_statistical_method_provenance",
+      "url": "https://doi.org/10.1214/aoms/1177731677",
+      "citation": "von Neumann (1941), Distribution of the Ratio of the Mean Square Successive Difference to the Variance, Annals of Mathematical Statistics 12(4), 367-395",
+      "method": "publisher_metadata_and_nist_bibliography",
+      "status": "BIBLIOGRAPHIC_ONLY",
+      "claim_boundary": "Original-method provenance only; the article body is not represented as completely read."
+    },
+    {
+      "role": "monthly_wti_own_return_continuation",
+      "url": "https://w4.stern.nyu.edu/facdir/lpederse/papers/TimeSeriesMomentum.pdf",
+      "citation": "Moskowitz, Ooi, and Pedersen (2012), Time Series Momentum, Journal of Financial Economics 104(2), 228-250",
+      "method": "existing_governed_complete_paper_read",
+      "status": "OK_EXISTING_GOVERNED_RECORD",
+      "local_record": "strategy-seeds/sources/MOP-TSMOM-2012/source.md",
+      "local_record_sha256": "C8B07ECD62C1D5EF9E3D7975EEE6A3B6C46C1C566D0B20B42237613D9B3A7042",
+      "claim_boundary": "Supports monthly own-return continuation across liquid futures and explicit WTI membership. It does not test the raw von Neumann conjunction or the Darwinex CFD implementation."
+    }
+  ],
+  "access_control_bypass_attempted": false,
+  "third_party_code_executed": false
+}
