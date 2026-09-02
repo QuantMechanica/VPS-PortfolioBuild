@@ -1304,6 +1304,21 @@ def connect(root: Path) -> sqlite3.Connection:
     return configure_sqlite_connection(conn)
 
 
+# 2026-09-02: a governed writer that already holds the global factory mutation
+# lock must never wait minutes for the SQLite write lock - every idle worker
+# declines claims while the lock is held (observed 09:28-09:36Z: release-hold
+# under a 15 s x 40 retry envelope starved the whole fleet).  Short envelope,
+# fail closed, release the mutation lock, let the caller retry.
+MUTATION_LOCK_DB_TIMEOUT_SECONDS = 3.0
+MUTATION_LOCK_DB_ATTEMPTS = 3
+
+
+def connect_short_under_mutation_lock(root: Path) -> sqlite3.Connection:
+    conn = sqlite3.connect(db_path(root), timeout=MUTATION_LOCK_DB_TIMEOUT_SECONDS)
+    conn.row_factory = sqlite3.Row
+    return configure_sqlite_connection(conn)
+
+
 def _is_sqlite_locked(exc: sqlite3.OperationalError) -> bool:
     return is_sqlite_busy(exc)
 
@@ -21803,6 +21818,10 @@ def record_q01_smoke_successor(
             "latest_smoke_result_after": "passed",
         }
 
+    # Pre-mutation snapshot BEFORE taking the fleet-wide mutation lock: the
+    # online backup of a ~700 MB database takes tens of seconds and must not
+    # stall every worker claim.  The BEGIN IMMEDIATE CAS below is the guard.
+    backup_path, backup_sha = _governed_state_backup(root, "q01_smoke_successor")
     lock = FactoryMutationLock(
         path_for_factory_flag(factory_off_flag_path(root)),
         owner=f"record_q01_smoke_successor:{build_task_id}",
@@ -21813,10 +21832,9 @@ def record_q01_smoke_successor(
         return {"recorded": False, "reason": "factory_mutation_lock_busy",
                 "detail": str(exc), **plan}
     try:
-        backup_path, backup_sha = _governed_state_backup(root, "q01_smoke_successor")
 
         def _apply() -> dict[str, Any]:
-            conn = connect(root)
+            conn = connect_short_under_mutation_lock(root)
             try:
                 conn.execute("BEGIN IMMEDIATE")
                 row = conn.execute(
@@ -21857,7 +21875,13 @@ def record_q01_smoke_successor(
                 conn.close()
             return {"committed": True}
 
-        retry_sqlite_busy(_apply, attempts=40)
+        try:
+            retry_sqlite_busy(_apply, attempts=MUTATION_LOCK_DB_ATTEMPTS)
+        except sqlite3.OperationalError as exc:
+            if not _is_sqlite_locked(exc):
+                raise
+            return {"recorded": False, "reason": "db_busy_under_mutation_lock",
+                    "detail": str(exc), "backup_path": str(backup_path), **plan}
     finally:
         lock.__exit__(None, None, None)
 
@@ -21940,6 +21964,16 @@ def release_work_item_hold(
             "release_note": note,
         }
 
+    # Inspect eligibility before minting a pre-mutation backup: a refused
+    # release (missing / already-inactive / wrong-code) must not litter the
+    # backup directory.  Both the inspect and the (slow) online backup run
+    # BEFORE the fleet-wide mutation lock is taken; the BEGIN IMMEDIATE
+    # re-inspect below is the real CAS.
+    with connect(root) as pre_conn:
+        refusal = _inspect(pre_conn)
+    if refusal is not None:
+        return refusal
+    backup_path, backup_sha = _governed_state_backup(root, "hold_release")
     lock = FactoryMutationLock(
         path_for_factory_flag(factory_off_flag_path(root)),
         owner=f"release_work_item_hold:{work_item_id}",
@@ -21950,18 +21984,10 @@ def release_work_item_hold(
         return {"released": False, "reason": "factory_mutation_lock_busy",
                 "detail": str(exc), "work_item_id": work_item_id}
     try:
-        # Inspect eligibility before minting a pre-mutation backup: a refused
-        # release (missing / already-inactive / wrong-code) must not litter the
-        # backup directory.  The BEGIN IMMEDIATE re-inspect below is the real CAS.
-        with connect(root) as pre_conn:
-            refusal = _inspect(pre_conn)
-        if refusal is not None:
-            return refusal
-        backup_path, backup_sha = _governed_state_backup(root, "hold_release")
         ledger_key = f"hold_release:{work_item_id}:{expected_hold_code}:{now}"
 
         def _apply() -> dict[str, Any]:
-            conn = connect(root)
+            conn = connect_short_under_mutation_lock(root)
             try:
                 conn.execute("BEGIN IMMEDIATE")
                 refusal = _inspect(conn)
@@ -22059,7 +22085,14 @@ def release_work_item_hold(
             finally:
                 conn.close()
 
-        result = retry_sqlite_busy(_apply, attempts=40)
+        try:
+            result = retry_sqlite_busy(_apply, attempts=MUTATION_LOCK_DB_ATTEMPTS)
+        except sqlite3.OperationalError as exc:
+            if not _is_sqlite_locked(exc):
+                raise
+            return {"released": False, "reason": "db_busy_under_mutation_lock",
+                    "detail": str(exc), "work_item_id": work_item_id,
+                    "backup_path": str(backup_path)}
     finally:
         lock.__exit__(None, None, None)
 
