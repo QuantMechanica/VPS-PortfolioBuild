@@ -1,0 +1,19 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "df9ca3e09733a4f9195f8fe57e8f0b83955987a8b99f04842d8b9f42fd6d8e00",
+      "ea_id": "QM5_41280",
+      "ea_label": "QM5_41280_usdchf-ww-shift-tr",
+      "expected_mq5_sha256": "df9ca3e09733a4f9195f8fe57e8f0b83955987a8b99f04842d8b9f42fd6d8e00",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41280_usdchf-ww-shift-tr\\QM5_41280_usdchf-ww-shift-tr.mq5",
+      "work_item_id": "7952c185-f0d0-4d38-8d66-e08b1f49f477"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "7952c185-f0d0-4d38-8d66-e08b1f49f477"
+}
