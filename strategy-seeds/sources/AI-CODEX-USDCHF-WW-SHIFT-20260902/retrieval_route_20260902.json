@@ -1,0 +1,67 @@
+{
+  "schema": "qm.composite-source-lineage.v1",
+  "source_id": "AI-CODEX-USDCHF-WW-SHIFT-20260902",
+  "created_at_utc": "2026-09-02T01:10:00Z",
+  "route": "governed_local_parent_packets_only",
+  "new_external_retrieval": false,
+  "source_approval": {
+    "path": "decisions/2026-09-02_usdchf_weekly_mann_whitney_shift_trend_source_approval.md",
+    "commit": "cae9a7497d",
+    "status": "APPROVED_SOURCE"
+  },
+  "parent_records": [
+    {
+      "path": "strategy-seeds/sources/MOP-TSMOM-2012/source.md",
+      "sha256": "C8B07ECD62C1D5EF9E3D7975EEE6A3B6C46C1C566D0B20B42237613D9B3A7042",
+      "read_scope": "complete governed packet recording an end-to-end read of the 23-page published paper",
+      "role": "broad own-price continuation and fixed renewal lineage"
+    },
+    {
+      "path": "strategy-seeds/sources/MOP-TSMOM-2012/retrieval_route_20260731.json",
+      "sha256": "ECBCC76CC878F0CC6FBF8C40B23D72084EC6ED03C6375438E3232CC24A33D38F",
+      "read_scope": "complete retrieval receipt",
+      "role": "paper identity, complete-read scope, page count, and published-PDF hash"
+    },
+    {
+      "path": "strategy-seeds/sources/MOP-MANNWHITNEY-WTI-MSHIFT-TREND-2026/source.md",
+      "sha256": "8D42ED6DF1415B6EDF7FF29AE9349BCA576F0F66204A8021E2E0B8D73B0AEDE0",
+      "read_scope": "complete governed composite packet",
+      "role": "strict no-tie rank-sum and pair-count mechanization boundary"
+    },
+    {
+      "path": "strategy-seeds/sources/MOP-MANNWHITNEY-WTI-MSHIFT-TREND-2026/retrieval_route_20260827.json",
+      "sha256": "F9E300BBF564F12E7F17056EE90458FD728E5BF0A7ADFEDDE9391CFAA3E5086E",
+      "read_scope": "complete retrieval receipt",
+      "role": "pinned R Core implementation/manual hashes and original-method metadata boundary"
+    }
+  ],
+  "method_identity": {
+    "named_record": "Mann and Whitney (1947), DOI 10.1214/aoms/1177730491",
+    "article_body_read_complete": false,
+    "publisher_route": "DEFERRED:SOURCE_POLICY",
+    "operative_public_files": [
+      {
+        "repository": "wch/r-source",
+        "commit": "7344a2d9d96b3c2b997535d3abc8c3a44af16e82",
+        "path": "src/library/stats/R/wilcox.test.R",
+        "sha256": "669C3DC5B93B8DFA7F1C1ED866725960BA6F34C55E1E0378D3775E8EAA0E3C15",
+        "read_complete": true
+      },
+      {
+        "repository": "wch/r-source",
+        "commit": "7344a2d9d96b3c2b997535d3abc8c3a44af16e82",
+        "path": "src/library/stats/man/wilcox.test.Rd",
+        "sha256": "4B75352AB44829943EF35F0B174D7FA84CF17EFB4F22F1BD6CBA1B09EF0A3E69",
+        "read_complete": true
+      }
+    ]
+  },
+  "claim_boundary": "The records support broad own-price continuation research and the exact strict no-tie two-sample rank-sum/pair-count identity only. They do not test USDCHF.DWX, D1 closes, a weekly decision, the fixed six/six split, U boundaries 12/24, mandatory Friday flattening, CFD costs, fixed risk, activity, profitability, or portfolio overlap.",
+  "safety": {
+    "authentication_used": false,
+    "third_party_code_executed": false,
+    "binary_downloaded": false,
+    "deferred_body_used": false,
+    "external_runtime_dependency": false
+  }
+}
