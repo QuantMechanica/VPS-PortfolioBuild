@@ -10,6 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
+; build_hash:   5306c99731297388ea303f55473a8dc0e5c6af6fbabe5a73e48f854413d1a8a6
 ; author:       Development
 ; date:         2026-09-02
 ;==========================================================
@@ -18,16 +19,6 @@ qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-qm_rng_seed=42
-; Parent-exact framework gates remain active for this derivative.
-qm_news_temporal=3
-qm_news_compliance=1
-qm_news_stale_max_hours=336
-qm_news_min_impact=high
-qm_news_mode_legacy=0
-qm_friday_close_enabled=true
-qm_friday_close_hour_broker=21
-qm_stress_reject_probability=0.0
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_41307_brent-tsmom12m-opt.md
 strategy_momentum_lookback_d1=252
@@ -36,8 +27,6 @@ strategy_atr_period=20
 strategy_atr_sl_mult=3.5
 strategy_max_hold_days=31
 strategy_max_spread_points=1200
-
-; DL-089 pattern measurement surface (neutral control defaults)
 opt_pp_buy1=0
 opt_pp_buy2=0
 opt_pp_buy3=0
