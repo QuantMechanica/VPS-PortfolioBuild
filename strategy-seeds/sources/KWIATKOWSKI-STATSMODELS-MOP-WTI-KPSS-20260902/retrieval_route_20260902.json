@@ -1,0 +1,60 @@
+{
+  "schema": "qm.source-retrieval-evidence/v1",
+  "source_id": "KWIATKOWSKI-STATSMODELS-MOP-WTI-KPSS-20260902",
+  "retrieved_at_utc": "2026-09-02T20:52:00Z",
+  "routes": [
+    {
+      "role": "complete_bounded_kpss_implementation_contract",
+      "url": "https://github.com/statsmodels/statsmodels/blob/2d1115dbd648b1e120a7e7454479d46481a73a9a/statsmodels/tsa/stattools/_stattools.py",
+      "api_url": "https://api.github.com/repos/statsmodels/statsmodels/contents/statsmodels/tsa/stattools/_stattools.py?ref=2d1115dbd648b1e120a7e7454479d46481a73a9a",
+      "publisher": "statsmodels project",
+      "method": "governed_router_ROUTE_GITHUB_API_then_public_GitHub_contents_API",
+      "router_status": "ROUTE_GITHUB_API",
+      "status": "OK",
+      "commit": "2d1115dbd648b1e120a7e7454479d46481a73a9a",
+      "commit_date_utc": "2026-08-17T17:53:13Z",
+      "git_blob_sha": "ebe4a024bd1df5c8dab7db93d7487c7e23592cfc",
+      "retrieved_byte_count": 141035,
+      "retrieved_content_sha256": "86BF64753641451C73F425E2F7E0F403A10E8609354774B73D62424118F39982",
+      "bounded_read": "The complete kpss, _sigma_est_kpss, and _kpss_autolag definitions and their enclosing documentation/references were read. They fix constant/trend residuals, partial-sum eta, Bartlett/Newey-West long-run variance, integer-lag behavior, Table-1 critical values, and p-value interpolation.",
+      "claim_boundary": "Supports deterministic KPSS arithmetic and implementation alignment only. It does not establish a WTI edge, prescribe sixty monthly levels or lag four, validate the statistic as a trading gate, select continuation direction, prove CFD equivalence, or supply activity, performance, risk, or correlation evidence. No interpolated p-value enters the strategy."
+    },
+    {
+      "role": "complete_upstream_method_test_record",
+      "url": "https://github.com/statsmodels/statsmodels/blob/2d1115dbd648b1e120a7e7454479d46481a73a9a/statsmodels/tsa/tests/test_stattools.py",
+      "api_url": "https://api.github.com/repos/statsmodels/statsmodels/contents/statsmodels/tsa/tests/test_stattools.py?ref=2d1115dbd648b1e120a7e7454479d46481a73a9a",
+      "publisher": "statsmodels project",
+      "method": "public_GitHub_contents_API",
+      "status": "OK",
+      "commit": "2d1115dbd648b1e120a7e7454479d46481a73a9a",
+      "git_blob_sha": "81e202b2f6d45853e50e54129d2715046f526a49",
+      "retrieved_byte_count": 96294,
+      "retrieved_content_sha256": "1CD1204A2C99546C995DF2F21DE2ACC7F624C604926DBA98771B6A4DE952D85F",
+      "bounded_read": "The complete pinned test file was read, including TestKPSS. It verifies fixed-lag constant/trend statistics against R/tseries values and tests lag selection and failure boundaries.",
+      "claim_boundary": "Supplies upstream implementation verification only. No macrodata observation, statistic, p-value, or economic conclusion enters the card."
+    },
+    {
+      "role": "original_peer_reviewed_method_bibliography",
+      "url": "https://doi.org/10.1016/0304-4076(92)90104-Y",
+      "citation": "Kwiatkowski, D., Phillips, P. C. B., Schmidt, P., and Shin, Y. (1992). Testing the Null Hypothesis of Stationarity against the Alternative of a Unit Root. Journal of Econometrics 54, 159-178.",
+      "doi": "10.1016/0304-4076(92)90104-Y",
+      "method": "bibliographic_and_equation_attribution_from_pinned_statsmodels_reference",
+      "status": "BIBLIOGRAPHIC_ONLY",
+      "claim_boundary": "Establishes original attribution, published null, equation, and critical-table identity through the pinned implementation. No inaccessible publisher-body claim or trading conclusion is used."
+    },
+    {
+      "role": "monthly_wti_own_return_continuation",
+      "url": "https://w4.stern.nyu.edu/facdir/lpederse/papers/TimeSeriesMomentum.pdf",
+      "citation": "Moskowitz, T. J., Ooi, Y. H., and Pedersen, L. H. (2012). Time Series Momentum. Journal of Financial Economics 104(2), 228-250.",
+      "doi": "10.1016/j.jfineco.2011.11.003",
+      "method": "existing_governed_complete_paper_read",
+      "status": "OK_EXISTING_GOVERNED_RECORD",
+      "local_record": "strategy-seeds/sources/MOP-TSMOM-2012/source.md",
+      "local_record_sha256": "C8B07ECD62C1D5EF9E3D7975EEE6A3B6C46C1C566D0B20B42237613D9B3A7042",
+      "claim_boundary": "Supports monthly own-return continuation across liquid futures and explicit NYMEX WTI membership. It does not test a KPSS state gate, the exact conjunction, or the Darwinex continuous CFD."
+    }
+  ],
+  "access_control_bypass_attempted": false,
+  "third_party_code_executed": false,
+  "external_binary_downloaded": false
+}

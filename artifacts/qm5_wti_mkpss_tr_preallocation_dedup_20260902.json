@@ -1,0 +1,38 @@
+{
+  "candidate": {
+    "author": "Denis Kwiatkowski; Peter C. B. Phillips; Peter Schmidt; Yongcheol Shin; statsmodels contributors; Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen",
+    "mechanic": "XTIUSD.DWX D1 once per broker month; 60 completed monthly log price levels; constant-only KPSS with fixed four-lag Bartlett Newey-West long-run variance; qualify at inclusive 10-percent critical statistic 0.347; follow newest 12-month cumulative log-return sign; one consumed monthly attempt; next-month exit; ATR20 3.5x hard stop; no target",
+    "slug": "wti-mkpss-tr",
+    "strategy_id": "KWIATKOWSKI-STATSMODELS-MOP-WTI-KPSS-20260902_S01"
+  },
+  "error": null,
+  "exit_code": 0,
+  "generated_at_utc": "2026-09-02T20:50:23+00:00",
+  "matches": [],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4802,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1431,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "CLEAN"
+}

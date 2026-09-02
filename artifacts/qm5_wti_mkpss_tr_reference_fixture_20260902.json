@@ -1,0 +1,38 @@
+{
+  "schema": "qm.kpss-reference-fixture/v1",
+  "generated_at_utc": "2026-09-02T20:52:00Z",
+  "candidate_slug": "wti-mkpss-tr",
+  "purpose": "Deterministic non-market arithmetic fixture only; not WTI evidence, a cadence estimate, a performance estimate, or a substitute for Q02.",
+  "contract": {
+    "observations": 60,
+    "regression": "constant_only_level_stationarity_null",
+    "fixed_covariance_lags": 4,
+    "kernel": "Bartlett",
+    "inclusive_critical_value": 0.347,
+    "critical_value_label": "10_percent"
+  },
+  "stationary_fixture": {
+    "generator": "x[i]=4.2+0.02*sin(0.71*i)+0.01*cos(0.23*i), i=0..59",
+    "mean": 4.2012656466414855,
+    "eta": 0.000035705149216046106,
+    "long_run_variance": 0.0005902870983839596,
+    "kpss_statistic": 0.06048776826360729,
+    "qualified": false
+  },
+  "trending_fixture": {
+    "generator": "x[i]=4.0+0.012*i+0.025*sin(0.31*i)+0.007*cos(0.13*i), i=0..59",
+    "mean": 4.355042807880309,
+    "eta": 0.25320831609291167,
+    "long_run_variance": 0.1944633107748587,
+    "kpss_statistic": 1.302087859576069,
+    "qualified": true,
+    "twelve_month_log_return": 0.10242055751093648,
+    "direction": "BUY"
+  },
+  "limitations": [
+    "Both paths are deterministic mathematical fixtures and contain no market observations.",
+    "The fixtures validate formula orientation and boundary classification only.",
+    "They do not validate lag choice, critical-value finite-sample size, activity, profitability, costs, WTI suitability, or portfolio correlation.",
+    "The exact KPSS-gated WTI continuation conjunction is QuantMechanica synthesis."
+  ]
+}
