@@ -28,7 +28,7 @@ Follow the newest twelve-month WTI return sign for one month only when the raw
 component count is at most six. Complexity and momentum magnitude never scale
 risk.
 
-## 2. Locked Parameters
+## 2. Parameters
 
 | Parameter | Value | Meaning |
 |---|---:|---|
@@ -47,13 +47,22 @@ risk.
 
 There is one locked Q02 baseline and no optimization surface.
 
-## 3. Symbol, Clock, and Formula
+## 3. Symbol Universe
 
 - Exact host and traded symbol: `XTIUSD.DWX`, D1.
 - Symbol slot: 0; governed magic: `413090000`.
+
+No proxy, substitute symbol, synthetic spread, or secondary carrier is
+authorized.
+
+## 4. Timeframe
+
+- Execution and signal timeframe: D1.
 - Decision clock: first executable tick after a genuine broker-month change,
   within 180 elapsed minutes of the D1 boundary.
 - Every current-month price is excluded.
+
+### Clock and Formula
 
 For completed endpoints `c[0..20]` in oldest-to-newest order:
 
@@ -92,7 +101,9 @@ All inputs and intermediate values must be finite. Missing, duplicate,
 nonconsecutive, stale, nonchronological, nonpositive, tied, or malformed data
 fail closed. Return, sign, and phrase strings are diagnostic only.
 
-## 4. Entry and Risk
+## 5. Expected Behaviour
+
+### Entry and Risk
 
 Q02 fixes `RISK_FIXED=1000`, `RISK_PERCENT=0`, and
 `PORTFOLIO_WEIGHT=1`. A qualified month can open one market position with a
@@ -108,7 +119,7 @@ news, spread, quote, ATR, sizing, margin, or order gates. A failed gate cannot
 cause a same-month retry. The entry month is persisted only after a confirmed
 fill and can be recovered from matching position-deal history after restart.
 
-## 5. Management and Exit
+### Management and Exit
 
 An owned position closes on the first processed tick in a later normalized
 broker month or after forty elapsed calendar days. Missing or inconsistent
@@ -122,7 +133,7 @@ uses MT5-native price, calendar, ATR, quote, position, deal, and terminal-global
 state only; no futures chain, API, file, inventory, optimizer, portfolio state,
 randomized tie breaker, compression library, or trained artifact is allowed.
 
-## 6. Expected Activity and Kill Criteria
+### Expected Activity and Kill Criteria
 
 Exact pre-data enumeration of all `2^20=1,048,576` binary words admits
 590,076 (`56.2740325928%`) at `C<=6`, or 6.7529 qualifying states per twelve
@@ -134,7 +145,7 @@ scored post-warm-up year, nonpositive governed economics, nondeterminism, or
 any formula, fixed-risk, hard-stop, lifecycle, or downstream gate failure.
 Q09 alone may establish or reject portfolio diversification.
 
-## 7. Source and Non-Duplicate Boundary
+## 6. Source Citation
 
 The governed source packet is
 `strategy-seeds/sources/AI-CODEX-WTI-MLZ76-TREND-20260902/source.md`.
@@ -148,6 +159,16 @@ The canonical dedup receipt is
 from ordinal-entropy, sign/run, sign-count, sign-vote, pure WTI trend,
 distribution, scale, calendar, event, and channel families. Certified
 `QM5_12567` is a long-only short-horizon XNG oscillator pullback.
+
+## 7. Risk Model
+
+Risk is fixed at `$1,000` per trade with percentage risk disabled and
+portfolio weight one. The frozen `3.5*ATR(20,D1)` broker stop controls initial
+risk distance, subject to gap and slippage. Principal risks are WTI gaps,
+continuous-CFD roll/basis and financing, single-carrier concentration, short
+finite-word inference, broker-month labels, and correlation with XNG or risk
+assets. A low LZ76 count describes repetition; it does not prove a trend,
+prediction, stationarity, independence, or portfolio diversification.
 
 ## Framework Alignment
 
