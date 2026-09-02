@@ -1,0 +1,69 @@
+{
+  "schema": "qm.q10-news-spawn-abort-forensic/v1",
+  "generated_at_utc": "2026-09-02T15:35:04Z",
+  "router_task_id": "4a9d6cfa-69af-4f00-b842-ca8cb00c72ee",
+  "database": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+  "disposition": "NO_RERUN_BOUND_LINEAGE_EVIDENCE_MISSING",
+  "rows": [
+    {
+      "work_item_id": "745671a4-02e4-4df5-b5e1-e25f0e41ca0e",
+      "ea_id": "QM5_11129",
+      "symbol": "SP500.DWX",
+      "status": "pending",
+      "active_hold": "NEWS_RUNNER_SPAWN_SILENT_ABORT",
+      "runner_pid": 10504,
+      "runner_creation_key": "windows-filetime:134324602517888426",
+      "runner_started_at_utc": "2026-08-29T06:57:31Z",
+      "stderr_after_seconds": 4.67,
+      "root_cause_class": "launch_fault_missing_bound_q07_evidence",
+      "missing_bound_evidence": "D:\\QM\\reports\\work_items\\e3187d46-42c3-4dc7-beac-25cc8a0d947b\\QM5_11129\\Q07\\SP500_DWX\\aggregate.json",
+      "sealed_plan_sha256": "8189aaba33eb00e847dbd62fc60e70d26a4916dacbd960c2821bc010571e878a",
+      "work_item_log_exists": false,
+      "target_ea_terminal_journal_matches": 0,
+      "target_ea_tester_journal_matches": 0,
+      "rerun_enqueued": false
+    },
+    {
+      "work_item_id": "77bd97c2-b2bb-4de6-8644-c0011e837f75",
+      "ea_id": "QM5_10700",
+      "symbol": "XAUUSD.DWX",
+      "status": "pending",
+      "active_hold": "NEWS_RUNNER_SPAWN_SILENT_ABORT",
+      "runner_pid": 6280,
+      "runner_creation_key": "windows-filetime:134324943684875935",
+      "runner_started_at_utc": "2026-08-29T16:26:08Z",
+      "stderr_after_seconds": 1.97,
+      "root_cause_class": "launch_fault_missing_bound_q08_evidence",
+      "missing_bound_evidence": "D:\\QM\\reports\\work_items\\fb35a79a-1541-4a35-90a4-056f3e5363db\\QM5_10700\\Q08\\XAUUSD_DWX\\aggregate.json",
+      "sealed_plan_sha256": "eb2538b34a5fc2b2640ad2f3ebb9e73667eb22fa60d73eef4f01324128bd7c18",
+      "work_item_log_exists": false,
+      "target_ea_terminal_journal_matches": 0,
+      "target_ea_tester_journal_matches": 0,
+      "rerun_enqueued": false
+    },
+    {
+      "work_item_id": "dd7b14a0-103c-4765-b2b5-8d0efb79e23b",
+      "ea_id": "QM5_11910",
+      "symbol": "NZDUSD.DWX",
+      "status": "pending",
+      "active_hold": "NEWS_RUNNER_SPAWN_SILENT_ABORT",
+      "runner_pid": 35864,
+      "runner_creation_key": "windows-filetime:134324135581498901",
+      "runner_started_at_utc": "2026-08-28T17:59:18Z",
+      "stderr_after_seconds": 5.52,
+      "root_cause_class": "launch_fault_missing_bound_q08_evidence",
+      "missing_bound_evidence": "D:\\QM\\reports\\work_items\\0cb83f40-5301-4f40-a99a-4d3f63874678\\QM5_11910\\Q08\\NZDUSD_DWX\\aggregate.json",
+      "sealed_plan_sha256": "82e98c9127a8d9a8592483657d96c0d47a3a03fd90c88279db02959049c4b06a",
+      "work_item_log_exists": false,
+      "target_ea_terminal_journal_matches": 0,
+      "target_ea_tester_journal_matches": 0,
+      "rerun_enqueued": false
+    }
+  ],
+  "system_resource_exhaustion_event_2004_count_2026_08_28_through_29": 0,
+  "mutations": {
+    "holds_released": 0,
+    "work_items_enqueued": 0,
+    "sealed_rows_changed": 0
+  }
+}
