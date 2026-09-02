@@ -18201,3 +18201,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41285,xauxag-mjt-rv,1,XAGUSD.DWX,412850001,2026-09-02,Codex governed allocator,active
 41286,xauxag-msiegel-tukey-rv,0,XAUUSD.DWX,412860000,2026-09-02,Codex governed allocator,active
 41286,xauxag-msiegel-tukey-rv,1,XAGUSD.DWX,412860001,2026-09-02,Codex governed allocator,active
+41301,tsm-meanret-opt,0,XAUUSD.DWX,413010000,2026-09-02,Codex governed allocator,active
+41302,mql5-ichimoku-opt,0,XAUUSD.DWX,413020000,2026-09-02,Codex governed allocator,active
+41303,wti-preholiday-opt,0,XTIUSD.DWX,413030000,2026-09-02,Codex governed allocator,active
+41304,xag-weekly-lowvol-momentum-opt,0,XAGUSD.DWX,413040000,2026-09-02,Codex governed allocator,active
+41305,brent-nov-fade-opt,0,XTIUSD.DWX,413050000,2026-09-02,Codex governed allocator,active
+41306,bandy-cci-extreme-fade-mr-index-opt,0,WS30.DWX,413060000,2026-09-02,Codex governed allocator,active
+41307,brent-tsmom12m-opt,0,XTIUSD.DWX,413070000,2026-09-02,Codex governed allocator,active
