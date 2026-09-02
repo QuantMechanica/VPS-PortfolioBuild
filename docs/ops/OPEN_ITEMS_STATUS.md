@@ -1,5 +1,16 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **CEO-Session 2026-09-02 (OWNER-Mandat: volle Autonomie; Ziel FTMO-Payouts + DXZ-Allokation; Build-in-public vertagt):**
+> Vollaudit `docs/ops/CEO_AUDIT_2026-09-02.md` + Decision `decisions/2026-09-02_ceo_full_authority_audit_and_reorientation.md`.
+> **Zähler:** `qualified_pairs` 0→**2 formal** (10706/GBPUSD, 11422/USDCAD; Q14 = 25.08-Kurzschlüsse, echte Zensus laufen) — Ursache war
+> ein Census-Read-Model-Defekt (CONFIG_LOCKED/NO_FILTER_CHANGE/NO_PARAMETER_CHANGE zählten nicht), gefixt `8baa00fde9`; Q12-Finalizer-Bug
+> gefixt `219217c28c` (erstes echtes terminales Paar 11421/EURUSD `ff733cf6`). **Fabrik:** Containment-Trip #4 released 07:44Z; drei
+> Worker-Fixes committet (Containment-Scope, Orphan-Claim, Release-Tool); Defender-Ausschlüsse; SAMEPROG-Fleet-Decision ausgeführt;
+> gestaffelter Worker-Reload. **Sibling-Welle** QM5_41301–41307 gebaut/kompiliert (41305 läuft, 41306 Retry offen). **Q10-Unblock:**
+> Q07/Q08-Append-only-Reruns für 11421/13128/11288/13013. **Geld-Wahrheit:** Live-Verlust ~76 % aus zwei magic=0-Trades (kein Sleeve);
+> Edge unbewiesen/unwiderlegt (DSR 0/24, aber WF-OOS 82 % PF>1; Live-CI enthält +2,4) → **erste Geldschwelle = 2026-Q1-OOS-Pass +
+> saubere Live-Attribution**, nicht Paarzahl. **FTMO: NO-BUY.** OWNER-Fragen (6) in `12 ToDo/AI ToDos/OWNER.md`.
+
 > **Session-Handoff 2026-09-02 ~07:00Z (Claude, vor Neustart):**
 > **Containment ENGAGED** (3. Auto-Trip 06:42Z: signiertes Audit-Runner-Binding T1-T10
 > klassifiziert T12-Bases als UNAUTHORIZED) — Fabrik seriell bis OWNER-Release
