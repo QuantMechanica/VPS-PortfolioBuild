@@ -16536,20 +16536,19 @@ def _q08_input_row_for_news_promotion(
     """
     if str(work_item["phase"] or "").upper() == "Q08":
         return work_item
-    base = (
+    # Newest first, same setfile preferred; the first row whose evidence file
+    # still exists wins (July-era aggregate.json files were removed by the D:
+    # crisis clean-ups, so the newest matching row is not always readable).
+    rows = conn.execute(
         "SELECT * FROM work_items WHERE ea_id=? AND symbol=? AND phase='Q08' "
-        "AND status='done' AND verdict IN ('PASS','FAIL_SOFT')"
-    )
-    row = conn.execute(
-        base + " AND setfile_path=? ORDER BY updated_at DESC LIMIT 1",
+        "AND status='done' AND verdict IN ('PASS','FAIL_SOFT') "
+        "ORDER BY (setfile_path = ?) DESC, updated_at DESC LIMIT 12",
         (work_item["ea_id"], work_item["symbol"], work_item["setfile_path"]),
-    ).fetchone()
-    if row is None:
-        row = conn.execute(
-            base + " ORDER BY updated_at DESC LIMIT 1",
-            (work_item["ea_id"], work_item["symbol"]),
-        ).fetchone()
-    return row
+    ).fetchall()
+    for row in rows:
+        if _work_item_evidence_sha256(row):
+            return row
+    return rows[0] if rows else None
 
 
 def _add_q08_input_dependency(
