@@ -78,3 +78,10 @@ No T_Live file or database row was changed while preparing this package.
 4. **Kein Zukauf, Software weiter schärfen:** Claim-Overhead (Prestage/Hash) ist heute gecacht; verbleibender Hebel ~10–20 %. Reicht nicht für die Zeitlinie.
 
 **CEO-Empfehlung für Sonntag:** Option 1 als Standardpfad (bestes €/Zellen-Stunde, keine Unterbrechungen), Option 2 nur als Burst-Werkzeug für OOS-/News-Kampagnen. Vorab beauftrage ich den Multi-Host-Spike (Archivverteilung, Queue-Sync, Kosten je Zellen-Stunde) an Codex, damit am Sonntag Zahlen statt Vermutungen vorliegen. Kauf/Anmietung bleibt OWNER-Entscheidung.
+
+**Anbieter-Vergleichsrahmen für den Spike e7d7b102 (OWNER-Frage 14:4xZ; Preise am Abfragetag verifizieren):**
+- Dedicated: Hetzner (inkl. Serverbörse), OVHcloud Rise/Advance, netcup Root-Server (Virtualisierung prüfen), Scaleway Elastic Metal, Leaseweb, IONOS.
+- Cloud mit dedizierten vCPUs, stundenweise, ohne Spot-Unterbrechung: Hetzner Cloud CCX, OVH Public Cloud, Scaleway.
+- Hyperscaler nur für Burst: AWS (Spot = 2-Minuten-Vorwarnung, tödlich für 2–4-h-Läufe), Azure (Windows inkl.), GCP, Oracle Cloud (billige AMD-Instanzen).
+- Eigene Hardware: gebrauchte 128–256-GB-Workstation (€1.500–3.000 einmalig), Amortisation 1–2 Jahre, Betrieb/Ausfall beim OWNER; nur für Zensus, nie für T_Live.
+- Bei allen gleich: Windows-Lizenz (Add-on oder inklusive), Multi-Host-Umbau, Transfer der ~430 GB Custom-History, Auswahl nach RAM vor Kernen (128 GB je Box).
