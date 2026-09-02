@@ -1,0 +1,146 @@
+{
+  "schema_version": "qm.fx-existing-basket-q02-priority-handoff/v1",
+  "generated_at_utc": "2026-09-02T03:36:38.909828Z",
+  "branch": "agents/board-advisor",
+  "git_head_before_runtime_mutation": "a461f6c4ff94108fd3316d7a58c67a7f223f6220",
+  "mission_result": "EXISTING_FOREX_FALLBACK_LOGICAL_Q02_PRIORITY_APPLIED",
+  "frontier_reconciliation": {
+    "controlling_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "published_pair_count": 66,
+    "published_hard_qualifier_count": 2,
+    "published_hard_qualifiers": [
+      {
+        "ea_id": "QM5_12532",
+        "pair": [
+          "AUDUSD.DWX",
+          "NZDUSD.DWX"
+        ],
+        "canonical_q02_work_item": "e4890d77-b865-4a48-b946-315faefca920",
+        "canonical_frontier": "Q02_PASS_Q04_PASS_Q05_FAIL"
+      },
+      {
+        "ea_id": "QM5_12533",
+        "pair": [
+          "EURJPY.DWX",
+          "GBPJPY.DWX"
+        ],
+        "canonical_q02_work_item": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+        "canonical_frontier": "Q02_PASS_Q04_FAIL"
+      }
+    ],
+    "anchors_current_q02_oninit_or_no_history_blocked": false,
+    "latest_complete_census": "docs/research/FX_COINTEGRATION_QM5_20240_Q04_RETIREMENT_20260831T233713Z.md",
+    "approved_cointegration_or_coint_identities": 123,
+    "matching_ea_directories": 123,
+    "approved_unbuilt_identities": 0,
+    "relationships_accounted_for": 66,
+    "unbuilt_pair_selected": false,
+    "fallback_authorized": true
+  },
+  "selection": {
+    "ea_id": "QM5_10718",
+    "ea_directory": "framework/EAs/QM5_10718_edgelab-regime-filtered-carry",
+    "approved_card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_10718_edgelab-regime-filtered-carry.md",
+    "approved_card_sha256": "c9d7d3c0de67941f5eb6b87a1ffe7b55d44b3adab49c54aa38c978fb82bf1a52",
+    "logical_symbol": "QM5_10718_FX8_BASKET_D1",
+    "host_symbol": "EURUSD.DWX",
+    "basket_symbol_count": 28,
+    "selection_mode": "existing_forex_card_fallback_no_unbuilt_66_pair_candidate",
+    "strategy_family": "market_neutral_cross_sectional_fx_carry",
+    "timeframe": "D1",
+    "rebalance_frequency": "weekly",
+    "expected_trades_per_year": 20,
+    "structural_only": true,
+    "machine_learning": false,
+    "approved_sources": [
+      "Lustig, Roussanov and Verdelhan, Review of Financial Studies (2011)",
+      "Menkhoff et al., Journal of Finance (2012)"
+    ],
+    "new_card_created": false,
+    "new_ea_created": false,
+    "novel_scan_relationship_claimed": false
+  },
+  "build_and_risk_binding": {
+    "mq5_sha256": "92fa06a272aa4805e31c6caac4f1ad9feeaf91fec18c349a616bf2cae00f8f00",
+    "ex5_sha256": "10358a8dd852cd495265fc4099dfb7d9fecc711a047d98a4ff5eafbba51a91cc",
+    "basket_manifest": "framework/EAs/QM5_10718_edgelab-regime-filtered-carry/basket_manifest.json",
+    "basket_manifest_sha256": "8dc0776c1aac52f566b0f0b33f390f34d222bae8bc20992f7740bcce5d0b458f",
+    "logical_setfile": "framework/EAs/QM5_10718_edgelab-regime-filtered-carry/sets/QM5_10718_edgelab-regime-filtered-carry_QM5_10718_FX8_BASKET_D1_D1_backtest.set",
+    "logical_setfile_sha256": "cbc4602cc7685d7db68e9e17603916e4b66706ba9566248bf975c2a4782bd680",
+    "queue_hashes_match_current_files": true,
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 500,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "queue_action": {
+    "work_item_id": "31f12573-d903-4386-a857-cad2b445d63a",
+    "phase": "Q02",
+    "mutation": "EXACT_ID_IN_PLACE_PAYLOAD_CAS",
+    "status_after": "pending",
+    "claimed_by_after": null,
+    "attempt_count_after": 0,
+    "verdict_after": null,
+    "updated_at_preserved": "2026-09-02T01:50:08+00:00",
+    "priority_track_before": null,
+    "priority_track_after": true,
+    "priority_reason": "board_advisor_fx_existing_card_fallback_logical_q02_after_exhausted_66_pair_frontier",
+    "queue_rank_before": 7220,
+    "queue_rank_after": 1436,
+    "queue_rank_improvement": 5784,
+    "pending_rows_after": 7782,
+    "prior_payload_sha256": "a2a9616a5e058f543b5515a7ed0f1204ac956dd79fb75888abb4662fa214d3ea",
+    "post_payload_sha256": "957994dd62e6db1149fecf539e000a600a624b1b9d7bba2f237b3004ccba5231",
+    "audit_event_id": 382087,
+    "audit_event": "priority_track_set",
+    "row_journal": "D:/QM/reports/state/qm5_10718_logical_q02_priority_20260902T033638Z.journal.json",
+    "row_journal_planned_sha256": "57ff055c56a28fd0773643a6c8f5ea0f595a31e795c94296aafbff3eab973b93",
+    "row_journal_sha256": "24d39820653bec025698c7cfaf034f20c18353d174d4ee1e1acbb2ee31dad070",
+    "row_journal_state": "COMMITTED",
+    "open_matching_q02_rows_after": 1,
+    "duplicate_work_items_created": 0,
+    "pipeline_verdict_changed": false,
+    "alpha_changed": false
+  },
+  "capacity": {
+    "factory_mutation_lock_wait_seconds": 0.032,
+    "factory_mutation_lock_release_status": "released",
+    "cpu_samples_percent": [
+      67.3,
+      61.9,
+      73.5,
+      71.2,
+      66.0
+    ],
+    "cpu_average_percent": 67.98,
+    "cpu_maximum_percent": 73.5,
+    "cpu_ceiling_percent": 97,
+    "cpu_ceiling_hit": false,
+    "active_multisymbol_work_items_at_apply": [],
+    "serialized_basket_lane_respected": true,
+    "manual_mt5_dispatch_started": false
+  },
+  "verification": {
+    "card_g0_status": "APPROVED",
+    "card_r4_ml_forbidden": "PASS",
+    "unique_open_logical_q02": true,
+    "active_work_item_holds": 0,
+    "work_item_supersession_relations": 0,
+    "active_poison_quarantine_rows": 0,
+    "postimage_verified": true,
+    "prior_compile_receipt": "docs/ops/evidence/2026-09-02_qm5_10718_fx8_mae_rebuild_q02_enqueue.md",
+    "prior_compile_verdict": "COMPILE_OK_ZERO_ERRORS_ZERO_WARNINGS"
+  },
+  "safety": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "live_manifest_touched": false,
+    "manual_terminal_action": false,
+    "pipeline_verdict_changed": false,
+    "unrelated_dirty_worktree_preserved": true
+  }
+}
