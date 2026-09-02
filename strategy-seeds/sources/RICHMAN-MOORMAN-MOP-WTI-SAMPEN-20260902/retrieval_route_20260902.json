@@ -1,0 +1,51 @@
+{
+  "schema": "qm.source-retrieval-evidence/v1",
+  "source_id": "RICHMAN-MOORMAN-MOP-WTI-SAMPEN-20260902",
+  "retrieved_at_utc": "2026-09-02T12:23:00Z",
+  "routes": [
+    {
+      "role": "complete_sample_entropy_method_and_default_parameters",
+      "url": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pmc&id=7517465",
+      "citation": "Tomcala, J. (2020). New Fast ApEn and SampEn Entropy Algorithms Implementation and Their Application to Supercomputer Power Consumption. Entropy 22(8), 863.",
+      "doi": "10.3390/e22080863",
+      "publisher": "MDPI / PubMed Central",
+      "method": "complete_open_access_JATS_XML_read",
+      "status": "OK",
+      "retrieved_character_count": 67393,
+      "retrieved_content_sha256": "1A63764770AAE0A04DF2DDA64365248B6F7299F75DB91018B2BE9F96003EABE7",
+      "bounded_read": "The complete open-access article was read end to end, including abstract, Sections 1-5, appendices, references, and figure captions. Equation 2 defines original SampEn; Appendix B fixes m=2, lag=1, and r=0.2*sd as package defaults.",
+      "claim_boundary": "Supports SampEn as a deterministic time-series complexity descriptor and the exact template-count ratio. It does not establish a WTI trading edge, a sixty-return window, a 2.5 gate, monthly continuation, CFD equivalence, activity, profitability, or portfolio fit."
+    },
+    {
+      "role": "pinned_transparent_reference_implementation",
+      "url": "https://raw.githubusercontent.com/cran/TSEntropies/master/R/SampEn_R.R",
+      "publisher": "CRAN TSEntropies source mirror",
+      "method": "complete_raw_method_file_read",
+      "status": "OK",
+      "retrieved_character_count": 1460,
+      "retrieved_content_sha256": "2E74A7DA4C836E039E48F7985E68218D8C23B954AAEE5051873AD2BC7CF73933",
+      "bounded_read": "The complete SampEn_R function and documentation were read. The implementation uses lag one, maximum-coordinate template distance, strict distance < r, excludes self-matches, defaults to m=2 and r=0.2*sample-sd, and returns log(m-match-count/(m+1)-match-count).",
+      "claim_boundary": "Pins executable arithmetic only. The EA independently reimplements the bounded formula and does not import or execute R or third-party code at runtime."
+    },
+    {
+      "role": "original_sample_entropy_provenance",
+      "url": "https://doi.org/10.1152/ajpheart.2000.278.6.H2039",
+      "citation": "Richman, J. S. and Moorman, J. R. (2000). Physiological time-series analysis using approximate entropy and sample entropy. American Journal of Physiology-Heart and Circulatory Physiology 278(6), H2039-H2049.",
+      "method": "publisher_metadata_and_abstract",
+      "status": "BIBLIOGRAPHIC_AND_ABSTRACT_ONLY",
+      "claim_boundary": "Original-method provenance and abstract-level comparison with approximate entropy only; the publisher denied automated full-body retrieval, so the body is not represented as completely read."
+    },
+    {
+      "role": "monthly_wti_own_return_continuation",
+      "url": "https://w4.stern.nyu.edu/facdir/lpederse/papers/TimeSeriesMomentum.pdf",
+      "citation": "Moskowitz, T. J., Ooi, Y. H., and Pedersen, L. H. (2012). Time Series Momentum. Journal of Financial Economics 104(2), 228-250.",
+      "method": "existing_governed_complete_paper_read",
+      "status": "OK_EXISTING_GOVERNED_RECORD",
+      "local_record": "strategy-seeds/sources/MOP-TSMOM-2012/source.md",
+      "local_record_sha256": "C8B07ECD62C1D5EF9E3D7975EEE6A3B6C46C1C566D0B20B42237613D9B3A7042",
+      "claim_boundary": "Supports monthly own-return continuation across liquid futures and explicit NYMEX WTI membership. It does not test sample entropy, the exact conjunction, or the Darwinex continuous CFD."
+    }
+  ],
+  "access_control_bypass_attempted": false,
+  "third_party_code_executed": false
+}

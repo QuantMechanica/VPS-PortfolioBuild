@@ -1,0 +1,39 @@
+{
+  "schema": "qm.market-free-null-density/v1",
+  "generated_at_utc": "2026-09-02T12:21:00Z",
+  "candidate": "wti-msampen-tr",
+  "purpose": "Pre-market-data activity sanity check only; not performance evidence or a WTI probability claim.",
+  "generator": {
+    "family": "numpy.default_rng",
+    "bit_generator": "PCG64",
+    "seed": 20260902,
+    "draws": 100000,
+    "observations_per_draw": 60,
+    "distribution": "independent standard normal"
+  },
+  "statistic": {
+    "embedding_dimension": 2,
+    "lag": 1,
+    "radius_fraction_of_sample_sd": 0.2,
+    "distance": "Chebyshev maximum coordinate distance",
+    "match_boundary": "strictly less than radius",
+    "self_matches": false,
+    "pair_counting": "unordered pairs counted once",
+    "length_2_template_count": 59,
+    "length_3_template_count": 58,
+    "formula": "ln(length_2_match_pairs / length_3_match_pairs)",
+    "qualification": "finite SampEn <= 2.5"
+  },
+  "result": {
+    "qualified": 59272,
+    "invalid_zero_length_3_matches": 13328,
+    "valid_above_boundary": 27400,
+    "qualification_fraction_all_draws": 0.59272,
+    "theoretical_qualified_attempts_per_12_clocks": 7.11264
+  },
+  "boundaries": [
+    "No market prices, returns, EA reports, or optimizer output were read.",
+    "The null is not asserted to describe WTI.",
+    "Q02 owns actual activity and economics."
+  ]
+}
