@@ -198,3 +198,28 @@ Full record: `docs/ops/evidence/2026-08-30_legacy-cohort-dispo-20260830_68a58c95
 
 Note for open item 1: this cycle's *first* `farmctl health` call is the one that
 wedged and was killed. The step-4 health check was still never satisfied.
+
+## 7. Correction to §3 — health is pathologically slow, not deadlocked
+
+§3 characterised the five `farmctl health` processes as "blocked, not computing"
+on the basis of ~3 CPU-seconds after 10–25 minutes. A later scan at ~10:58Z
+revises that:
+
+- PIDs 4808, 5528 and 30744 **exited on their own** — they were not deadlocked.
+- PID 32776 was still alive at **34.2 min**, but its user CPU had risen
+  **2.8 s → 9.1 s**, i.e. it is making progress, just extremely slowly.
+
+Corrected finding: `farmctl health` is **pathologically slow (25–35+ min per
+run), not wedged.** Because the scheduled trigger fires far more often than a run
+takes, invocations **overlap and stack** — five concurrent at 10:21Z. The
+stacking is real and still worth fixing; the deadlock reading was wrong.
+
+This changes the remedy in open item 1: the fix is not primarily a deadlock hunt
+but (a) find why a health pass takes >25 minutes, and (b) make the scheduled
+trigger non-overlapping (skip-if-running) so runs cannot pile up. A hard timeout
+is still worth having as a backstop.
+
+The correlation with the worker `sqlite_locked` claim backoffs stands as an
+observation, but with several long-running health readers overlapping, causation
+is more plausibly "slow overlapping readers contend with the claim writer" than
+"health holds a lock and never releases it".
