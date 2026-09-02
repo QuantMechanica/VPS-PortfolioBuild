@@ -312,13 +312,11 @@ bool QM10717_OpenLeg(const string strong_ccy,
 
    SymbolSelect(symbol, true);
 
-   if(symbol != _Symbol)
-      return false;
-
-   QM_EntryRequest req;
+   QM_BasketOrderRequest req;
+   ZeroMemory(req);
+   req.symbol = symbol;
    req.type = inverted ? QM_SELL : QM_BUY;
-   req.price = QM_OrderTypeIsBuy(req.type) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                                           : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   req.price = QM_BasketMarketPrice(symbol, req.type);
    if(req.price <= 0.0)
       return false;
 
@@ -327,12 +325,17 @@ bool QM10717_OpenLeg(const string strong_ccy,
       return false;
 
    req.tp = 0.0;
+   req.lots = 0.0;
    req.reason = StringFormat("XSEC_MOM_%s_%s", strong_ccy, weak_ccy);
    req.symbol_slot = slot;
    req.expiration_seconds = 0;
 
    ulong ticket = 0;
-   return QM_TM_OpenPosition(req, ticket);
+   return QM_BasketOpenPosition(qm_ea_id,
+                                qm_news_mode_legacy,
+                                strategy_deviation_points,
+                                req,
+                                ticket);
   }
 
 bool QM10717_Rebalance()
@@ -477,6 +480,8 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 
@@ -519,6 +524,7 @@ void OnTick()
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;

@@ -119,3 +119,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 |---|---|---|---|
 | v1 | 2026-05-31 | Initial build from card | 9f1105b7-07e7-4d56-a977-20249cc7a79a |
 | v2 | 2026-06-09 | Rebuild in place from approved card | 156f675d-d1ca-4dda-ba6e-97713eadab4b |
+| v3 | 2026-09-02 | Repair logical-basket execution and build hardening | Route selected legs through `QM_BasketOpenPosition`, sample first-action MAE, and zero-initialize requests. |
