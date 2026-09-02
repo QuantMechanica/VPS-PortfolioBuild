@@ -1,0 +1,53 @@
+{
+  "applied_at_utc": "2026-09-02T22:44:57+00:00",
+  "changed_rows": 1,
+  "database": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+  "diagnostic_non_admission": true,
+  "entry": {
+    "added_keys": [
+      "basket_manifest",
+      "basket_manifest_sha256",
+      "basket_symbol_count",
+      "basket_symbols",
+      "conversion_symbols",
+      "logical_symbol",
+      "portfolio_scope",
+      "tester_currency",
+      "tester_deposit",
+      "traded_symbols"
+    ],
+    "after_payload_sha256": "7b2f7d95001a9330acda995ba0cd7e02e264cad8a5d9b5e6cb158313ec8a44f6",
+    "basket_context": {
+      "basket_manifest": "C:\\QM\\repo\\framework\\EAs\\QM5_12778_edgelab-audusd-eurjpy-cointegration\\basket_manifest.json",
+      "basket_manifest_sha256": "0ce25d17ebe7c3664e4acdb6c1d302b28b1f40710301189cc633e44f25854d57",
+      "basket_symbol_count": 4,
+      "basket_symbols": [
+        "AUDUSD.DWX",
+        "EURJPY.DWX",
+        "EURUSD.DWX",
+        "EURAUD.DWX"
+      ],
+      "conversion_symbols": [
+        "EURUSD.DWX",
+        "EURAUD.DWX"
+      ],
+      "host_symbol": "AUDUSD.DWX",
+      "host_timeframe": "D1",
+      "logical_symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+      "portfolio_scope": "basket",
+      "tester_currency": "EUR",
+      "tester_deposit": 100000,
+      "traded_symbols": [
+        "AUDUSD.DWX",
+        "EURJPY.DWX"
+      ]
+    },
+    "before_payload_sha256": "4b480ef617bc8245b12712f7a933ab24c3524f25852efb7976a1bbbeabe30d04",
+    "ea_id": "QM5_12778",
+    "phase": "Q09_NEWS",
+    "symbol": "AUDUSD.DWX",
+    "work_item_id": "24acc5d4-3e34-526e-a7a8-12640a2e759f"
+  },
+  "reason": "restore_manifest_bound_multisymbol_history_scope",
+  "schema_version": "qm.oos-2026-basket-payload-repair-journal/v1"
+}
