@@ -10,7 +10,7 @@
 > **Zähler:** `qualified_pairs` 0→**2 formal** (10706/GBPUSD, 11422/USDCAD; Q14 = 25.08-Kurzschlüsse, echte Zensus laufen) — Ursache war
 > ein Census-Read-Model-Defekt (CONFIG_LOCKED/NO_FILTER_CHANGE/NO_PARAMETER_CHANGE zählten nicht), gefixt `8baa00fde9`; Q12-Finalizer-Bug
 > gefixt `219217c28c` (erstes echtes terminales Paar 11421/EURUSD `ff733cf6`). **Fabrik:** Containment-Trip #4 released 07:44Z; drei
-> Worker-Fixes committet (Containment-Scope, Orphan-Claim, Release-Tool); Defender-Ausschlüsse; SAMEPROG-Fleet-Decision ausgeführt;
+> Worker-Fixes committet (Containment-Scope, Orphan-Claim, Release-Tool); Defender-Ausschlüsse; SAMEPROG-Fleet-Decision ausgeführt und 09:42Z ZURÜCKGEROLLT (Canary war 01.09. wegen Decline-Schleife abgebrochen; Muster reproduziert);
 > gestaffelter Worker-Reload. **Sibling-Welle** QM5_41301–41307 gebaut/kompiliert (41305 läuft, 41306 Retry offen). **Q10-Unblock:**
 > Q07/Q08-Append-only-Reruns für 11421/13128/11288/13013. **Geld-Wahrheit:** Live-Verlust ~76 % aus zwei magic=0-Trades (kein Sleeve);
 > Edge unbewiesen/unwiderlegt (DSR 0/24, aber WF-OOS 82 % PF>1; Live-CI enthält +2,4) → **erste Geldschwelle = 2026-Q1-OOS-Pass +
