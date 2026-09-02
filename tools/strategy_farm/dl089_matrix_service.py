@@ -725,6 +725,144 @@ def _matrix_rows(conn: sqlite3.Connection, q12_id: str) -> list[sqlite3.Row]:
     return result
 
 
+def _program_matrix_rows(
+    conn: sqlite3.Connection, program_id: str
+) -> list[tuple[sqlite3.Row, dict[str, Any]]]:
+    """Return every census row that claims one deterministic program id."""
+
+    rows = conn.execute(
+        """
+        SELECT * FROM work_items
+        WHERE upper(phase)=?
+          AND json_extract(
+                CASE WHEN json_valid(payload_json) THEN payload_json ELSE '{}' END,
+                '$.program_id'
+              )=?
+        ORDER BY created_at,id
+        """,
+        (census.PHASE, program_id),
+    ).fetchall()
+    result: list[tuple[sqlite3.Row, dict[str, Any]]] = []
+    for row in rows:
+        try:
+            payload = _payload(row)
+        except MatrixServiceError:
+            continue
+        if str(payload.get("program_id") or "") == program_id:
+            result.append((row, payload))
+    return result
+
+
+def _program_binding_guard(
+    conn: sqlite3.Connection,
+    *,
+    q12_row: sqlite3.Row,
+    artifact_root: Path,
+) -> dict[str, Any]:
+    """Refuse implicit Q12-owner changes for an existing deterministic program.
+
+    DL-089 cell UUIDs are derived from ``program_id`` rather than the Q12 row.
+    Two Q12 rows for the same EA/symbol therefore collide intentionally.  An
+    idempotent INSERT cannot transfer ownership of those cells, but ``enqueue``
+    used to rewrite the shared ledger before noticing the existing UUIDs.  The
+    result was a ledger owned by one Q12 row and cells owned by another.
+
+    Existing cells are the durable owner-of-record.  A mismatched ledger may be
+    re-stamped only when all 1,085 sealed cells prove one exact Q12/declaration
+    binding; every attempted owner change is rejected before any artifact write.
+    """
+
+    q12_id = str(q12_row["id"])
+    declaration = _payload(q12_row)["pattern_filter_sweep"]
+    program_id = str(declaration["program_id"])
+    declaration_sha = str(declaration["declaration_sha256"])
+    declared_cells = declaration.get("annual_cells") or []
+    expected_ids = {str(cell.get("work_item_id") or "") for cell in declared_cells}
+    expected_keys = {str(cell.get("cell_key") or "") for cell in declared_cells}
+    if (
+        len(expected_ids) != 1085
+        or "" in expected_ids
+        or len(expected_keys) != 1085
+        or "" in expected_keys
+    ):
+        raise MatrixServiceError(
+            f"PROGRAM_BINDING_DECLARATION_INVALID: program={program_id} q12={q12_id}"
+        )
+
+    rows = _program_matrix_rows(conn, program_id)
+    if rows:
+        row_ids = {str(row["id"]) for row, _payload_row in rows}
+        row_keys = {str(payload.get("cell_key") or "") for _row, payload in rows}
+        q12_bindings = {
+            str(payload.get("q12_work_item_id") or "") for _row, payload in rows
+        }
+        parent_bindings = {
+            str(row["parent_task_id"] or "") for row, _payload_row in rows
+        }
+        declaration_bindings = {
+            str(payload.get("q12_declaration_sha256") or "")
+            for _row, payload in rows
+        }
+        if q12_bindings != {q12_id} or parent_bindings != {q12_id}:
+            raise MatrixServiceError(
+                "PROGRAM_Q12_REBIND_REFUSED: "
+                f"program={program_id} requested={q12_id} "
+                f"cell_q12={sorted(q12_bindings)} parent_task={sorted(parent_bindings)}"
+            )
+        if declaration_bindings != {declaration_sha}:
+            raise MatrixServiceError(
+                "PROGRAM_DECLARATION_REBIND_REFUSED: "
+                f"program={program_id} requested={declaration_sha} "
+                f"cell_declaration={sorted(declaration_bindings)}"
+            )
+        if row_ids != expected_ids or row_keys != expected_keys:
+            raise MatrixServiceError(
+                "PROGRAM_CELL_IDENTITY_MISMATCH: "
+                f"program={program_id} rows={len(row_ids)} expected={len(expected_ids)}"
+            )
+
+    ledger_path = artifact_root / program_id / "ledger.json"
+    ledger_q12 = None
+    ledger_declaration = None
+    ledger_cell_ids: set[str] = set()
+    if ledger_path.is_file():
+        ledger = json.loads(ledger_path.read_text(encoding="utf-8-sig"))
+        ledger_q12 = str(ledger.get("q12_work_item_id") or "")
+        ledger_declaration = str(ledger.get("q12_declaration_sha256") or "")
+        ledger_cell_ids = {
+            str(cell.get("work_item_id") or "") for cell in ledger.get("cells") or []
+        }
+        if rows and ledger_cell_ids != expected_ids:
+            raise MatrixServiceError(
+                "PROGRAM_LEDGER_CELL_IDENTITY_MISMATCH: "
+                f"program={program_id} ledger={len(ledger_cell_ids)} expected={len(expected_ids)}"
+            )
+        if not rows and (
+            ledger_q12 != q12_id or ledger_declaration != declaration_sha
+        ):
+            raise MatrixServiceError(
+                "PROGRAM_LEDGER_REBIND_REFUSED: "
+                f"program={program_id} requested={q12_id}/{declaration_sha} "
+                f"ledger={ledger_q12}/{ledger_declaration}"
+            )
+
+    requires_restamp = bool(
+        rows
+        and ledger_path.is_file()
+        and (ledger_q12 != q12_id or ledger_declaration != declaration_sha)
+    )
+    return {
+        "program_id": program_id,
+        "q12_work_item_id": q12_id,
+        "declaration_sha256": declaration_sha,
+        "cell_count": len(rows),
+        "ledger_path": str(ledger_path.resolve()),
+        "ledger_q12_work_item_id": ledger_q12,
+        "ledger_declaration_sha256": ledger_declaration,
+        "requires_restamp": requires_restamp,
+    }
+
+
 def _collect_cell_receipts(
     conn: sqlite3.Connection,
     *,
@@ -1225,6 +1363,11 @@ def service_pending(
                 }
             )
             if str(q02_state["status"]).lower() == "done" and str(q02_state["verdict"] or "").upper() == "PASS":
+                _program_binding_guard(
+                    conn,
+                    q12_row=row,
+                    artifact_root=artifact_root,
+                )
                 candidates.append((row, sibling))
             elif str(q02_state["status"]).lower() in {"failed", "done"}:
                 raise MatrixServiceError(
@@ -1292,7 +1435,36 @@ def service_pending(
             "measurement_ea_id": str(sibling["ea_id"]),
             "symbol": str(row["symbol"]),
         }
-        if _matrix_rows(conn, str(row["id"])):
+        matrix_rows = _matrix_rows(conn, str(row["id"]))
+        binding = _program_binding_guard(
+            conn,
+            q12_row=row,
+            artifact_root=artifact_root,
+        )
+        if matrix_rows and binding["requires_restamp"] and not apply:
+            maintained.append(
+                {
+                    "work_item_id": str(row["id"]),
+                    "program_id": program,
+                    "ledger_path": binding["ledger_path"],
+                    "would_restamp_binding": True,
+                    "binding_guard": binding,
+                }
+            )
+            owner["action"] = "would_restamp_binding"
+        elif matrix_rows:
+            restamp = None
+            if binding["requires_restamp"]:
+                restamp = _materialize(
+                    db_path=db_path,
+                    repo_root=repo_root,
+                    artifact_root=artifact_root,
+                    q12_row=row,
+                    sibling=sibling,
+                    window=window,
+                    lane_limit=program_lane_limit,
+                    cell_limit=program_cell_limit,
+                )
             maintained_row = _service_existing_matrix(
                 conn,
                 db_path=db_path,
@@ -1304,6 +1476,18 @@ def service_pending(
                 lane_limit=program_lane_limit,
                 cell_limit=program_cell_limit,
             )
+            if restamp is not None:
+                maintained_row["binding_reconciliation"] = {
+                    "action": "RESTAMPED_FROM_CELL_OWNER",
+                    "previous_ledger_q12_work_item_id": binding[
+                        "ledger_q12_work_item_id"
+                    ],
+                    "previous_ledger_declaration_sha256": binding[
+                        "ledger_declaration_sha256"
+                    ],
+                    "enqueue": restamp["enqueue"],
+                    "registration_path": restamp["registration_path"],
+                }
             maintained.append(maintained_row)
             owner["action"] = "maintained"
         elif apply:

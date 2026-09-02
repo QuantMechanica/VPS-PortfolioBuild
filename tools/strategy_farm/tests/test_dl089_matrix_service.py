@@ -308,6 +308,105 @@ def test_matrix_service_materializes_declared_cells_with_bounded_window(tmp_path
     assert restored == 6
 
 
+def test_matrix_service_refuses_q12_rebind_for_existing_program_cells(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    files = _sibling(repo)
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    db = root / farmctl.DB_REL
+    artifact_root = tmp_path / "matrix_artifacts"
+    _insert_fixture_rows(db, files, tmp_path, artifact_root)
+
+    with farmctl.connect(root) as conn:
+        first = service.service_pending(
+            conn,
+            db_path=db,
+            repo_root=repo,
+            artifact_root=artifact_root,
+            apply=True,
+            q12_work_item_ids=["q12-declared"],
+        )
+    ledger_path = Path(first["materialized"][0]["ledger_path"])
+    before = ledger_path.read_bytes()
+
+    with sqlite3.connect(db) as conn:
+        owner = conn.execute(
+            "SELECT payload_json FROM work_items WHERE id='q12-declared'"
+        ).fetchone()
+        shadow_payload = json.loads(owner[0])
+        shadow_payload["parent_work_item_id"] = "ablation-parent"
+        conn.execute(
+            """
+            INSERT INTO work_items(
+              id,kind,phase,ea_id,symbol,setfile_path,status,verdict,attempt_count,
+              payload_json,created_at,updated_at,gate_contract_version
+            ) VALUES('q12-ablation-shadow','analytic','Q12','QM5_10706','GBPUSD.DWX',
+                     'ablation.set','pending',NULL,0,?,?,?,'v4')
+            """,
+            (
+                json.dumps(shadow_payload, sort_keys=True),
+                "2026-08-29T10:00:00+00:00",
+                "2026-08-29T10:00:00+00:00",
+            ),
+        )
+        conn.commit()
+
+    with farmctl.connect(root) as conn:
+        result = service.service_pending(
+            conn,
+            db_path=db,
+            repo_root=repo,
+            artifact_root=artifact_root,
+            apply=True,
+            q12_work_item_ids=["q12-ablation-shadow"],
+        )
+
+    assert result["materialized"] == []
+    assert result["maintained"] == []
+    assert len(result["deferred"]) == 1
+    assert result["deferred"][0]["work_item_id"] == "q12-ablation-shadow"
+    assert result["deferred"][0]["machine_reason"].startswith(
+        "PROGRAM_Q12_REBIND_REFUSED:"
+    )
+    assert ledger_path.read_bytes() == before
+    ledger = json.loads(before)
+    assert ledger["q12_work_item_id"] == "q12-declared"
+    with sqlite3.connect(db) as conn:
+        owners = conn.execute(
+            "SELECT DISTINCT parent_task_id,json_extract(payload_json,'$.q12_work_item_id') "
+            "FROM work_items WHERE phase='OPT_CENSUS'"
+        ).fetchall()
+    assert owners == [("q12-declared", "q12-declared")]
+
+    corrupted = json.loads(before)
+    corrupted["q12_work_item_id"] = "q12-ablation-shadow"
+    corrupted["q12_declaration_sha256"] = "shadow-declaration"
+    ledger_path.write_text(
+        json.dumps(corrupted, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    with farmctl.connect(root) as conn:
+        repaired = service.service_pending(
+            conn,
+            db_path=db,
+            repo_root=repo,
+            artifact_root=artifact_root,
+            apply=True,
+            q12_work_item_ids=["q12-declared"],
+        )
+    reconciliation = repaired["maintained"][0]["binding_reconciliation"]
+    assert reconciliation["action"] == "RESTAMPED_FROM_CELL_OWNER"
+    assert reconciliation["previous_ledger_q12_work_item_id"] == (
+        "q12-ablation-shadow"
+    )
+    restamped = json.loads(ledger_path.read_text(encoding="utf-8"))
+    assert restamped["q12_work_item_id"] == "q12-declared"
+    assert restamped["q12_declaration_sha256"] == (
+        json.loads(owner[0])["pattern_filter_sweep"]["declaration_sha256"]
+    )
+
+
 def test_pump_refills_existing_frontiers_before_budget_heavy_stages() -> None:
     source = Path(farmctl.__file__).read_text(encoding="utf-8")
     pump = source.split("def _pump_unlocked(", 1)[1].split("\ndef pump(", 1)[0]
