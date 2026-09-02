@@ -1,0 +1,79 @@
+{
+  "candidate": {
+    "author": "OpenAI Codex; William J. Conover; Karsten Schweikert; CME Group; NIST",
+    "mechanic": "monthly-xauxag-thirteen-synchronized-completed-month-log-ratio-endpoints-twelve-adjacent-changes-fixed-six-old-six-recent-separate-arithmetic-mean-centered-absolute-deviations-strict-pooled-ranks-squared-rank-sum-exact-924-inclusive-upper-half-tail461-raw-mean-shift-contrarian-equal-notional-basket",
+    "slug": "xauxag-mconover-scale-rv",
+    "strategy_id": "AI-CODEX-XAUXAG-MCONOVER-SCALE-RV-20260902_S01"
+  },
+  "error": null,
+  "exit_code": 3,
+  "generated_at_utc": "2026-09-02T01:38:49+00:00",
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41269_xauxag-mklotz-scale-rv_card.md",
+      "score": 0.8235294117647058,
+      "slug": "xauxag-mklotz-scale-rv",
+      "source": "card",
+      "strategy_id": "AI-CODEX-XAUXAG-MKLOTZ-SCALE-RV-20260901_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41265_xauxag-mbf-scale-rv_card.md",
+      "score": 0.75,
+      "slug": "xauxag-mbf-scale-rv",
+      "source": "card",
+      "strategy_id": "AI-CODEX-XAUXAG-MBF-SCALE-RV-20260901_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41278_xauxag-mcucconi-rv_card.md",
+      "score": 0.7352941176470589,
+      "slug": "xauxag-mcucconi-rv",
+      "source": "card",
+      "strategy_id": "AI-CODEX-XAUXAG-MCUCCONI-RV-20260902_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41279_xauxag-msavage-rv_card.md",
+      "score": 0.6764705882352942,
+      "slug": "xauxag-msavage-rv",
+      "source": "card",
+      "strategy_id": "AI-CODEX-XAUXAG-MSAVAGE-RV-20260902_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41263_xauxag-mkuiper-rv_card.md",
+      "score": 0.6176470588235294,
+      "slug": "xauxag-mkuiper-rv",
+      "source": "card",
+      "strategy_id": "AI-CODEX-XAUXAG-MKUIPER-RV-20260901_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4780,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1416,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "FUZZY_MATCH"
+}

@@ -1,0 +1,94 @@
+{
+  "schema": "qm.source-retrieval-route/v1",
+  "retrieved_at_utc": "2026-09-02T01:39:36Z",
+  "method": "Conover two-sample squared ranks of within-group mean-centered absolute deviations with exhaustive fixed-score label enumeration",
+  "nist_linear_rank_route": {
+    "document": "NIST/SEMATECH Dataplot, Two Sample Linear Rank Sum Test",
+    "url": "https://www.itl.nist.gov/div898/software/dataplot/refman1/auxillar/lrst.htm",
+    "http_status": 200,
+    "content_type": "text/html; charset=utf-8",
+    "utf8_response_bytes": 31270,
+    "utf8_response_sha256": "CA647351B0C4C31B8A05F916D082D77D3CB06FBEDC9F0F911D1D3D42E5026248",
+    "read_scope": "Complete bounded definition, score-function notes, tie rule, and Conover section. The page defines a two-sample pooled linear-rank score sum and Conover scores as squared ranks of absolute deviations from the relevant group mean."
+  },
+  "nist_squared_ranks_route": {
+    "document": "NIST/SEMATECH Dataplot, Squared Ranks Test",
+    "url": "https://www.itl.nist.gov/div898/software/dataplot/refman1/auxillar/squarank.htm",
+    "http_status": 200,
+    "content_type": "text/html; charset=utf-8",
+    "utf8_response_bytes": 23520,
+    "utf8_response_sha256": "D5DC192A84BE7A720E8446E38EBEDD20F3E2F5F6D4D5128072A9756DC31D91B1",
+    "read_scope": "Complete bounded two-sample construction, mean-centered absolute-deviation definition, squared-rank sum, asymptotic statistic, approximation warning, examples, and Conover (1999) reference."
+  },
+  "method_bibliography": {
+    "document": "W. J. Conover (1999), Practical Nonparametric Statistics, Third Edition, Wiley, pp. 300-310",
+    "read_scope": "Bibliographic lineage as stated by the complete official NIST squared-ranks page. The book body is not claimed as a complete read; implementation arithmetic comes from the official NIST pages."
+  },
+  "carrier_records": [
+    {
+      "source_id": "SCHWEIKERT-QC-2018",
+      "path": "strategy-seeds/sources/SCHWEIKERT-QC-2018/source.md",
+      "sha256": "7C409472768550C1F3A4A58CB22E12A6E915EB752B09ABC8E9B98F3E99048FFA",
+      "read_scope": "Complete governed peer-reviewed-paper packet, including adverse findings and extraction boundary."
+    },
+    {
+      "source_id": "CME-GSR-SPREAD-2025",
+      "path": "strategy-seeds/sources/CME-GSR-SPREAD-2025/source.md",
+      "sha256": "2B5903457BD861771821A81F554BE95CA369AD56C1AA45494E0B81555493AF93",
+      "read_scope": "Complete governed official-exchange carrier packet."
+    }
+  ],
+  "locked_n12_contract": {
+    "sample_sizes": [6, 6],
+    "pooled_size": 12,
+    "center": "separate arithmetic mean per fixed old/recent block",
+    "transformation": "absolute deviation from own block mean",
+    "tie_rule": "reject any pooled deviation tie within relative epsilon 1e-12",
+    "score_formula": "a(rank)=rank^2",
+    "score_vector": [1, 4, 9, 16, 25, 36, 49, 64, 81, 100, 121, 144],
+    "score_total": 650,
+    "recent_expected_score": 325,
+    "all_six_rank_assignments": 924,
+    "neutral_score_assignments": 2,
+    "recent_expansion_assignments": 461,
+    "recent_contraction_assignments": 461,
+    "recent_score_min_qualified": 326,
+    "inclusive_upper_tail_count_max": 461,
+    "qualified_states_per_twelve_attempts": 5.987012987012987
+  },
+  "nonduplicate_fixtures": [
+    {
+      "name": "conover_only",
+      "changes": [1.730871, -4.25355, 2.94213, 3.730888, -0.057275, 0.662848, 0.808899, 4.555005, -2.252364, 1.445557, 2.931657, 4.195571],
+      "conover_recent_score": 331,
+      "conover_tail_count": 440,
+      "conover_direction": "SELL_XAU_BUY_XAG",
+      "neighbor_result": "Klotz tail 640 and Brown-Forsythe are flat"
+    },
+    {
+      "name": "klotz_only",
+      "changes": [4.787636, 4.977662, -0.155177, 4.303156, -5.294428, -0.48416, -3.876079, 0.55729, 3.755243, -1.349457, -3.862835, -4.147329],
+      "conover_recent_score": 248,
+      "conover_tail_count": 753,
+      "conover_direction": "FLAT",
+      "neighbor_result": "Klotz score 3.9642160041063397 and tail 494 qualify BUY XAU; Brown-Forsythe is flat"
+    },
+    {
+      "name": "brown_forsythe_only",
+      "changes": [-1.0688, 5.811016, -1.405426, -1.104323, -4.699905, -5.230559, -3.70756, -0.776133, 1.903656, -4.227494, 5.989247, -3.392596],
+      "conover_recent_score": 313,
+      "conover_tail_count": 514,
+      "conover_direction": "FLAT",
+      "neighbor_result": "Klotz tail 725 is flat; Brown-Forsythe qualifies BUY XAU"
+    },
+    {
+      "name": "side_disagreement",
+      "changes": [1.835782, 2.887219, 5.865684, 0.583978, 0.439193, -1.753346, 3.958708, 2.429016, -0.440576, 5.134423, -5.637578, 3.048016],
+      "conover_recent_score": 397,
+      "conover_tail_count": 187,
+      "conover_direction": "BUY_XAU_SELL_XAG",
+      "neighbor_result": "Brown-Forsythe qualifies the opposite side"
+    }
+  ],
+  "claim_boundary": "NIST defines the Conover squared-rank scale statistic and warns that its published small-sample critical route is approximate. Schweikert and CME support a state-dependent gold/silver relative-value carrier and opposed-leg form, including adverse evidence. The fixed monthly XAU/XAG sample, strict deviation tie rejection, complete 924 fixed-score label enumeration, 461-tail activity boundary, raw-mean contrarian side, CFD mapping, aggregate risk, atomicity, and lifecycle are pre-result QuantMechanica choices. The exhaustive label count is an activity gate, not a source p-value or published critical value. No return, frequency, neutrality, decorrelation, or profitability claim transfers."
+}
