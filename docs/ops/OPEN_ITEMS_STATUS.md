@@ -558,3 +558,7 @@ Beide OWNER-Freigaben (MNT020-RECOMPILE, MNT006-CANARY) sind ausgeführt und im 
 # 2026-09-02 terminal RAM class admission
 
 - Task `ddee6f24-6e57-423b-858d-bfb323beada2`: candidate admission now reserves 4/8/32/44 GB by measured workload class and preserves the 14/20 GB fleet guard; deterministic RAM injection and `ram_class_skipped` receipts are covered by the green 213-test worker suite. Live staggered reload and the after-reload 10-minute census measurement are deferred because the host had only 8.69 GB free with seven active tester runs, none of which were interrupted. Evidence: `docs/ops/evidence/2026-09-02_terminal_ram_class_admission.md`.
+
+# 2026-09-02 Q10 lineage debt wave 2
+
+- Task `ba5f4754-82a9-4074-a640-0bdb521999ef`: appended and priority-marked exact current-binary Q07 reruns `e046b36b` (11129/SP500), `3815515b` (10700/XAUUSD), and `f3689f77` (11910/NZDUSD); canonically recorded 10114/SP500 Q10 `9812fc7b` as dead lineage after two Q08 FAIL_SOFT results. For 11421/EURUSD, exact Q08 `c93263aa` is pending from Q07 PASS `2556a768`; the old released Q10 `30584122` must be superseded to a new row bound to `c93263aa` only after that Q08 PASSes, with the REQUAL-8 receipt preserved and no re-hold. Evidence: `docs/ops/evidence/2026-09-02_q10_lineage_wave2.md`.
