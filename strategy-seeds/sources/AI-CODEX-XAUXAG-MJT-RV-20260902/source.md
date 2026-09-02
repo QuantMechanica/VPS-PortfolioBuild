@@ -17,7 +17,8 @@ method_records:
   - JONCKHEERE-BIOMETRIKA-1954-METADATA
 created: 2026-09-02
 created_by: Research+Development
-cards_extracted: []
+cards_extracted:
+  - QM5_41285_xauxag-mjt-rv
 ---
 
 # XAU/XAG Monthly Jonckheere-Terpstra Ordered-Block Reversion
