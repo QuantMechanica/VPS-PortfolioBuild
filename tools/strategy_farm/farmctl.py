@@ -18584,7 +18584,9 @@ PUMP_LATE_AUTOSEAL_BUDGET_SECONDS = 45.0
 # 30 s dispatch deadline while stat-ing plan files and consumed 285 s of the
 # 11:29Z cycle, starving every census/promotion stage. Rollback: 2 / 4.
 PUMP_DISPATCH_AUTOSEAL_LIMIT = 0
-PUMP_LATE_AUTOSEAL_LIMIT = 0
+# Late-cycle autoseal stays on (budgeted at the END of the cycle) so seal outcomes
+# remain visible in the pump log; the Tick task has no log capture.
+PUMP_LATE_AUTOSEAL_LIMIT = 4
 PUMP_NEWS_EXPANSION_LIMIT = 2
 PUMP_OPT_FORK_BUDGET_SECONDS = 30.0
 PUMP_DL089_FRONTIER_REFILL_BUDGET_SECONDS = 10.0
