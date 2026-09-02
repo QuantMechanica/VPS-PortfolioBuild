@@ -14,6 +14,8 @@ from __future__ import annotations
 
 import datetime as dt
 import hashlib
+import json
+import time
 import os
 from pathlib import Path, PurePosixPath
 import shutil
@@ -196,12 +198,95 @@ def _target_path(custom_root: Path, relative_path: str) -> Path:
     return target
 
 
+# 2026-09-02 (CEO throughput): every claim re-hashed the terminal's already
+# private archive subset (108 files / 2.04 GB for one XAU claim; ~40 claims/h
+# fleet-wide -> multi-GB/s bursts, D: queue length 35-45, testers and the pump
+# starved).  A per-terminal verification cache remembers the (file_id, size,
+# mtime_ns, sha256, manifest) tuple of every file this terminal hashed and skips
+# the re-hash while the identity is unchanged and the entry is younger than the
+# TTL.  Cheap checks (size, private inode, link_count == 1) still run on every
+# claim; the first claim after a copy, a manifest change or TTL expiry hashes
+# again.  Kill switch: QM_CUSTOM_HISTORY_VERIFY_CACHE=0 (old behaviour).
+VERIFY_CACHE_SCHEMA = "custom_history_verify_cache.v1"
+VERIFY_CACHE_DEFAULT_TTL_SECONDS = 4 * 3600
+
+
+def _verify_cache_enabled() -> bool:
+    raw = str(os.environ.get("QM_CUSTOM_HISTORY_VERIFY_CACHE", "1")).strip().lower()
+    return raw not in {"0", "false", "no", "off"}
+
+
+def _verify_cache_ttl_seconds() -> int:
+    raw = str(os.environ.get("QM_CUSTOM_HISTORY_VERIFY_TTL_SECONDS", "")).strip()
+    try:
+        value = int(raw) if raw else VERIFY_CACHE_DEFAULT_TTL_SECONDS
+    except ValueError:
+        value = VERIFY_CACHE_DEFAULT_TTL_SECONDS
+    return max(0, value)
+
+
+def _verify_cache_path(farm_root: Path | str, terminal: str) -> Path:
+    return Path(farm_root) / "state" / "custom_history_verify_cache" / f"{terminal}.json"
+
+
+def _load_verify_cache(path: Path) -> dict[str, dict[str, Any]]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    if not isinstance(payload, dict) or payload.get("schema_version") != VERIFY_CACHE_SCHEMA:
+        return {}
+    entries = payload.get("entries")
+    return dict(entries) if isinstance(entries, dict) else {}
+
+
+def _save_verify_cache(path: Path, entries: Mapping[str, Mapping[str, Any]]) -> None:
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        write_json_atomic(
+            path,
+            {
+                "schema_version": VERIFY_CACHE_SCHEMA,
+                "written_at_utc": _utc_now(),
+                "entries": dict(entries),
+            },
+        )
+    except OSError:
+        # The cache is an accelerator only; losing it means re-hashing.
+        pass
+
+
+def _verify_cache_hit(
+    entry: Mapping[str, Any] | None,
+    *,
+    identity: Mapping[str, Any],
+    expected_sha256: str,
+    manifest_sha256: str,
+    ttl_seconds: int,
+    now_epoch: float,
+) -> bool:
+    if not isinstance(entry, dict):
+        return False
+    try:
+        return (
+            str(entry.get("file_id")) == str(identity["file_id"])
+            and int(entry.get("size", -1)) == int(identity["size"])
+            and int(entry.get("mtime_ns", -1)) == int(identity["mtime_ns"])
+            and str(entry.get("sha256", "")).casefold() == expected_sha256
+            and str(entry.get("manifest_sha256", "")) == manifest_sha256
+            and (now_epoch - float(entry.get("verified_at_epoch", 0.0))) <= ttl_seconds
+        )
+    except (TypeError, ValueError):
+        return False
+
+
 def _verified_private_identity(
     path: Path,
     *,
     expected_sha256: str,
     expected_size: int,
     manifest_file_id: str,
+    cached_digest: str | None = None,
 ) -> tuple[dict[str, Any], str]:
     identity = file_identity(path)
     if int(identity["size"]) != int(expected_size):
@@ -209,7 +294,7 @@ def _verified_private_identity(
             f"archive size mismatch after privatization: {path}",
             reason_code=INTEGRITY,
         )
-    digest = sha256_file(path)
+    digest = cached_digest if cached_digest is not None else sha256_file(path)
     if digest != expected_sha256:
         raise CustomHistoryCopyOnClaimError(
             f"archive SHA-256 mismatch after privatization: {path}",
@@ -274,6 +359,15 @@ def privatize_terminal_archives(
     file_results: list[dict[str, Any]] = []
     copied = 0
     already_private = 0
+    verify_cache_path: Path | None = None
+    verify_cache: dict[str, dict[str, Any]] = {}
+    verify_cache_dirty = False
+    verify_ttl = _verify_cache_ttl_seconds()
+    if farm_root is not None and _verify_cache_enabled() and verify_ttl > 0:
+        verify_cache_path = _verify_cache_path(farm_root, target_terminal)
+        verify_cache = _load_verify_cache(verify_cache_path)
+    manifest_sha256_value = str(validated["manifest_sha256"])
+    cached_verifications = 0
     prepared_cache_files = 0
     prepared_by_relative = {
         normalize_relative_path(str(key)): dict(value)
@@ -297,15 +391,30 @@ def privatize_terminal_archives(
                 reason_code=INTEGRITY,
             )
 
+        verify_mode = "hashed"
         if str(before["file_id"]) != manifest_file_id:
+            cached_digest: str | None = None
+            if verify_cache_path is not None and _verify_cache_hit(
+                verify_cache.get(relative),
+                identity=before,
+                expected_sha256=expected_sha256,
+                manifest_sha256=manifest_sha256_value,
+                ttl_seconds=verify_ttl,
+                now_epoch=time.time(),
+            ):
+                cached_digest = expected_sha256
+                verify_mode = "cached"
             after, digest = _verified_private_identity(
                 target,
                 expected_sha256=expected_sha256,
                 expected_size=expected_size,
                 manifest_file_id=manifest_file_id,
+                cached_digest=cached_digest,
             )
             action = "ALREADY_PRIVATE_VERIFIED"
             already_private += 1
+            if verify_mode == "cached":
+                cached_verifications += 1
         else:
             copy_source_mode = "family_inode"
             if master_root is not None:
@@ -406,8 +515,20 @@ def privatize_terminal_archives(
                 "copy_source_mode": (
                     copy_source_mode if action == "COPIED_AND_REPLACED" else "already_private"
                 ),
+                "verify_mode": verify_mode,
             }
         )
+        if verify_cache_path is not None and verify_mode == "hashed":
+            verify_cache[relative] = {
+                "file_id": str(after["file_id"]),
+                "size": int(after["size"]),
+                "mtime_ns": int(after["mtime_ns"]),
+                "sha256": digest,
+                "manifest_sha256": manifest_sha256_value,
+                "verified_at_epoch": time.time(),
+                "verified_at_utc": _utc_now(),
+            }
+            verify_cache_dirty = True
 
     receipt: dict[str, Any] = {
         "schema_version": RECEIPT_SCHEMA,
@@ -422,12 +543,16 @@ def privatize_terminal_archives(
         "selected_file_count": len(rows),
         "copied_file_count": copied,
         "already_private_file_count": already_private,
+        "cached_verification_file_count": cached_verifications,
+        "verify_cache_ttl_seconds": verify_ttl if verify_cache_path is not None else 0,
         "prepared_cache_file_count": prepared_cache_files,
         "prestage_token_sha256": (
             str(prestage_token_sha256) if prepared_cache_files else None
         ),
         "files": file_results,
     }
+    if verify_cache_path is not None and verify_cache_dirty:
+        _save_verify_cache(verify_cache_path, verify_cache)
     receipt["receipt_sha256"] = hashlib.sha256(canonical_bytes(receipt)).hexdigest()
     if receipt_path is not None:
         destination = Path(receipt_path)
