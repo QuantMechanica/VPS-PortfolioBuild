@@ -1,0 +1,172 @@
+{
+  "artifact_type": "fx_cointegration_fallback_eligibility_audit_cpu_stop",
+  "schema_version": "qm.fx-cointegration-fallback-eligibility-audit/v1",
+  "generated_at_utc": "2026-09-02T20:49:02.0596037Z",
+  "generated_at_local": "2026-09-02T22:49:02.0596037+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "173d92a9def1d6c67915cac4e91d96826df02cdc",
+  "mission": "grow_certified_v5_portfolio_new_forex_sleeves",
+  "outcome": "CPU_CEILING_STOP_AFTER_NON_DUPLICATE_FALLBACK_ELIGIBILITY_AUDIT",
+  "frontier_reconciliation": {
+    "research_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "reproduction_script": "tools/research/analyze_cross_asset_v3.py",
+    "reproduction_mode": "--include-negative-hedges",
+    "unordered_relationship_count": 66,
+    "represented_relationship_count": 66,
+    "unbuilt_relationship_count": 0,
+    "tail_checks": [
+      {
+        "rank": 65,
+        "relationship": [
+          "USDCHF.DWX",
+          "AUDUSD.DWX"
+        ],
+        "governed_owner": "QM5_1156",
+        "current_disposition": "Q02 terminal"
+      },
+      {
+        "rank": 66,
+        "relationship": [
+          "USDCAD.DWX",
+          "EURAUD.DWX"
+        ],
+        "governed_owner": "QM5_12803",
+        "current_disposition": "Q02 PASS then Q04 FAIL"
+      }
+    ],
+    "decision": "No new scan-derived card or EA is eligible; creating one would duplicate an existing governed relationship."
+  },
+  "preferred_anchor_state": [
+    {
+      "ea_id": "QM5_12532",
+      "relationship": [
+        "AUDUSD.DWX",
+        "NZDUSD.DWX"
+      ],
+      "terminal_q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "q02_verdict": "PASS",
+      "current_frontier": "Q04 PASS then Q05 FAIL",
+      "current_q02_oninit_or_no_history_blocker": false
+    },
+    {
+      "ea_id": "QM5_12533",
+      "relationship": [
+        "EURJPY.DWX",
+        "GBPJPY.DWX"
+      ],
+      "terminal_q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "q02_verdict": "PASS",
+      "current_frontier": "Q04 FAIL",
+      "current_q02_oninit_or_no_history_blocker": false
+    }
+  ],
+  "existing_forex_fallback_audit": {
+    "selected_continuation": {
+      "ea_id": "QM5_12778",
+      "relationship": [
+        "AUDUSD.DWX",
+        "EURJPY.DWX"
+      ],
+      "timeframe": "D1",
+      "phase": "Q09_NEWS",
+      "work_item_id": "24acc5d4-3e34-526e-a7a8-12640a2e759f",
+      "status": "pending",
+      "attempt_count": 0,
+      "priority_track": true,
+      "risk_fixed": 1000.0,
+      "risk_percent": 0.0,
+      "action": "preserved_without_duplicate_mutation"
+    },
+    "rejected_or_deferred_candidates": [
+      {
+        "ea_id": "QM5_34008",
+        "candidate_reason": "pure-FX multicurrency market-neutral basket with zero work-item history",
+        "rejection": "not low frequency",
+        "evidence": "SPEC expects about 70 trades/year on the owner lane and describes 80-160 trades/year cadence"
+      },
+      {
+        "ea_id": "QM5_10309",
+        "candidate_reason": "unprioritized pending logical Q04 after Q02 PASS",
+        "rejection": "M15 high-frequency implementation violates this mission's low-frequency constraint"
+      },
+      {
+        "ea_id": "QM5_12512",
+        "candidate_reason": "logical FX-pairs Q02",
+        "rejection": "already has one unique priority-bound pending row; a second mutation would duplicate governed work"
+      },
+      {
+        "ea_ids": [
+          "QM5_20195",
+          "QM5_20197",
+          "QM5_20201",
+          "QM5_20207",
+          "QM5_20211",
+          "QM5_20250"
+        ],
+        "candidate_reason": "unprioritized pending D1 cointegration rows",
+        "rejection": "each pending row is stale behind a later terminal economic failure and is not eligible for replay"
+      },
+      {
+        "ea_range": "QM5_11241..QM5_11256",
+        "candidate_reason": "D1 structural spread family without logical-basket work items",
+        "rejection": "legacy _per_instance manifests plus existing pair-level economic terminals and/or active rows make manifest repurposing non-governed and non-unique"
+      },
+      {
+        "ea_ids": [
+          "QM5_10717",
+          "QM5_10718",
+          "QM5_41140",
+          "QM5_41153",
+          "QM5_41154",
+          "QM5_41155"
+        ],
+        "candidate_reason": "other low-frequency FX basket continuations",
+        "rejection": "already priority-bound and not a new cointegration relationship"
+      }
+    ]
+  },
+  "capacity": {
+    "sampling_method": "Win32_PerfFormattedData_PerfOS_Processor Name=_Total",
+    "sample_interval_seconds": 2,
+    "sample_window_utc": {
+      "started_at": "2026-09-02T20:48:52.6359472Z",
+      "ended_at": "2026-09-02T20:49:02.0596037Z"
+    },
+    "samples_percent": [
+      90.0,
+      90.0,
+      70.0,
+      83.0,
+      100.0
+    ],
+    "average_percent": 86.6,
+    "maximum_percent": 100.0,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_rule": "stop when average or maximum is greater than or equal to the ceiling",
+    "ceiling_binding": true
+  },
+  "actions": {
+    "scan_reproduced": true,
+    "relationship_ownership_reconciled": true,
+    "fallback_rows_classified": true,
+    "card_or_ea_created": false,
+    "ea_or_setfile_changed": false,
+    "registry_or_magic_changed": false,
+    "work_item_created": false,
+    "priority_changed": false,
+    "work_item_claimed": false,
+    "compile_or_backtest_started": false,
+    "terminal_or_worker_controlled": false
+  },
+  "protected_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_files": false,
+    "autotrading": false
+  },
+  "non_duplicate_value": "This receipt adds a systematic eligibility classification of untouched, pending, and legacy-manifest FX fallbacks; prior CPU receipts did not record why QM5_34008, QM5_10309, stale D1 rows, and the QM5_11241..11256 family are ineligible for this low-frequency cointegration wake.",
+  "continuation": "On a later wake, sample host CPU first. Only when both average and maximum are strictly below 97 percent, re-read QM5_12778 work item 24acc5d4-3e34-526e-a7a8-12640a2e759f and let the ordinary paced worker claim it if still pending. Do not enqueue or reprioritize a duplicate."
+}
