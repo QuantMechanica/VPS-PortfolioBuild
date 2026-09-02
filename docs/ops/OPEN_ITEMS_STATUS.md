@@ -475,6 +475,10 @@ Beide OWNER-Freigaben (MNT020-RECOMPILE, MNT006-CANARY) sind ausgeführt und im 
 
 - Task `68f97015-c892-4690-80ed-1ccb3b573a40`: added the generic fail-closed `farmctl enqueue-compile --repair-successor-of` flow. First use appended held QM5_41306 successor `8620da55-f687-4ebd-9922-5fc831834628`, bound to build task `118915f8-0275-492c-8eeb-f71e49ce515e`; failed row remains immutable. Evidence: `docs/ops/evidence/2026-09-02_generic_compile_repair_successor.md`.
 
+# 2026-09-02 magic=0 forensic
+
+- Task `ee18d088-24e6-4aee-9400-4e5b83625efa`: EURUSD was not an orphan (QM5_11421 entry plus Friday close); the 1.00-lot NDX lifecycle is outside the governed book and remains external/manual-unknown because the export lacks `DEAL_REASON`. Evidence: `docs/ops/evidence/2026-09-02_magic0_trade_forensic.md`.
+
 # 2026-09-02 Codex live-book pulse repair
 
 - Task `26434855-391e-43ed-b9f4-9d0e9c0afa9b`: repaired stale lifecycle lookback and severity aggregation. Production pulse now finds all 24 loaded sleeves and reports only the genuine KS-baseline WARN. Evidence: `docs/ops/evidence/2026-09-02_live_book_pulse_load_repair.md`.
