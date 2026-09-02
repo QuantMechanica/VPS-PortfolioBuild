@@ -1,34 +1,31 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        10718
 ; ea_slug:      edgelab-regime-filtered-carry
 ; ea_version:   v5.0
-; set_version:  s20260522-001
+; set_version:  s20260902-001
 ; symbol:       NZDUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   5a4eb63a05909a01f115c0ba0a6f7b662dbc2936976375e39df4e05c9b8f606f
+; build_hash:   f713f0e47c1714ecf8f811c6360a629615a19ac43793d0ed72940748197ca339
 ; author:       Development
-; date:         2026-05-22
+; date:         2026-09-02
 ;==========================================================
+qm_ea_id=10718
 qm_magic_slot_offset=3
-RISK_FIXED=500
+RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10718_edgelab-regime-filtered-carry.md
+strategy_rebalance_dow=1
+strategy_atr_period=20
+strategy_atr_sl_mult=2.0
+strategy_deviation_points=30
+strategy_regime_enabled=true
+strategy_vol_window=20
+strategy_regime_lookback_days=252
+strategy_regime_vol_pct=0.50
