@@ -1,0 +1,99 @@
+{
+  "schema": "qm.source-retrieval-route/v1",
+  "retrieved_at_utc": "2026-09-02T00:07:04Z",
+  "method": "centered Savage exponential-order linear rank scores with exact two-sample permutation enumeration",
+  "nist_route": {
+    "document": "NIST/SEMATECH Dataplot, Two Sample Linear Rank Sum Test",
+    "url": "https://www.itl.nist.gov/div898/software/dataplot/refman1/auxillar/lrst.htm",
+    "http_status": 200,
+    "content_type": "text/html; charset=utf-8",
+    "utf8_response_bytes": 31270,
+    "utf8_response_sha256": "24E7A8FED8779204C103DE43FD4FF6CF1BDFBECE579FEAA3122E35DE53D84058",
+    "read_scope": "Complete bounded method sections defining the pooled two-sample linear-rank statistic, expected value and standard deviation, tie treatment, score-selection contract, and all eight score formulas and roles. The Savage section defines a(r)=sum_{j=1}^r 1/(N-j+1)-1 and its extreme-value/exponential interpretation."
+  },
+  "sas_score_route": {
+    "document": "SAS/STAT 12.1 User's Guide, NPAR1WAY Scores for Linear Rank and One-Way ANOVA Tests",
+    "url": "https://support.sas.com/documentation/cdl/en/statug/65328/HTML/default/statug_npar1way_details08.htm",
+    "http_status": 200,
+    "content_type": "text/html",
+    "utf8_response_bytes": 28816,
+    "utf8_response_sha256": "3DA4F03866E2BF648A23E76847A46F19BE16A8482F97EECA8F635C6522B66C6D",
+    "read_scope": "Complete bounded score chapter, including the centered Savage-score formula, exponential-order-statistic interpretation, location-shift role for extreme-value distributions, and contrasts with Wilcoxon, normal, Siegel-Tukey, Ansari-Bradley, Klotz, Mood, and Conover scores."
+  },
+  "sas_exact_route": {
+    "document": "SAS/STAT 12.3 User's Guide, NPAR1WAY EXACT Statement",
+    "url": "https://support.sas.com/documentation/cdl/en/statug/66103/HTML/default/statug_npar1way_syntax04.htm",
+    "http_status": 200,
+    "content_type": "text/html",
+    "utf8_response_bytes": 42918,
+    "utf8_response_sha256": "E9EBE09A876F308F812EF817DF93E0000B10E4E3F99C026E1768DEA59F5A4F3A",
+    "read_scope": "Complete bounded SAVAGE/EXACT option contract: SAVAGE requests the exact Savage test and the two-sample exact test is based on the linear rank-sum statistic. No asymptotic p-value or source critical value is transferred."
+  },
+  "original_metadata_route": {
+    "document": "I. Richard Savage (1956), Contributions to the Theory of Rank Order Statistics-the Two-Sample Case, The Annals of Mathematical Statistics 27(3), 590-615",
+    "url": "https://www.jstor.org/stable/2237370",
+    "http_status": 200,
+    "content_type": "text/html; charset=utf-8",
+    "utf8_response_bytes": 3038,
+    "utf8_response_sha256": "32ED63159C77E21EE19CA1B9AA3213CCF0218EB59539560B132A8E68EF0E18EA",
+    "read_scope": "Authoritative journal-archive bibliographic identity only. The original article body is not claimed as a complete read; implementation arithmetic comes from the complete bounded NIST and SAS official method sections."
+  },
+  "carrier_records": [
+    {
+      "source_id": "SCHWEIKERT-QC-2018",
+      "path": "strategy-seeds/sources/SCHWEIKERT-QC-2018/source.md",
+      "bytes": 6813,
+      "sha256": "7C409472768550C1F3A4A58CB22E12A6E915EB752B09ABC8E9B98F3E99048FFA",
+      "read_scope": "Complete governed peer-reviewed-paper packet, including adverse findings and extraction boundary."
+    },
+    {
+      "source_id": "CME-GSR-SPREAD-2025",
+      "path": "strategy-seeds/sources/CME-GSR-SPREAD-2025/source.md",
+      "bytes": 2182,
+      "sha256": "2B5903457BD861771821A81F554BE95CA369AD56C1AA45494E0B81555493AF93",
+      "read_scope": "Complete governed official-exchange carrier packet."
+    }
+  ],
+  "locked_n12_contract": {
+    "sample_sizes": [6, 6],
+    "pooled_size": 12,
+    "score_formula": "a(r)=sum_{j=1}^r 1/(12-j+1)-1",
+    "score_numerators_over_27720": [-25410, -22890, -20118, -17038, -13573, -9613, -4993, 551, 7481, 16721, 30581, 58301],
+    "all_six_rank_assignments": 924,
+    "absolute_score_tail_count_max": 462,
+    "absolute_score_boundary_exact": "15991/13860",
+    "absolute_score_boundary": 1.1537518037518038,
+    "directional_qualified_assignments": 462,
+    "buy_assignments": 231,
+    "sell_assignments": 231,
+    "neutral_score_assignments": 0,
+    "directional_states_per_twelve_attempts": 6.0
+  },
+  "nonduplicate_fixtures": [
+    {
+      "label_path": "RRROOOOOORRR",
+      "savage_score": 1.3414502164502164,
+      "savage_tail_count": 400,
+      "savage_direction": "SELL_XAU_BUY_XAG",
+      "recent_rank_sum": 39,
+      "neighbor_result": "Cucconi, Anderson-Darling, Kuiper, raw-rank-sum direction, and centered Klotz are flat"
+    },
+    {
+      "label_path": "RRRROOOROOOR",
+      "savage_score": -0.95974025974026,
+      "savage_tail_count": 536,
+      "savage_direction": "FLAT",
+      "recent_rank_sum": 30,
+      "neighbor_result": "Cucconi tail 88, Anderson-Darling tail 110, and Kuiper tail 108 all BUY XAU"
+    },
+    {
+      "label_path": "RRRROOOOROOR",
+      "savage_score": -0.70974025974026,
+      "savage_tail_count": 632,
+      "savage_direction": "FLAT",
+      "recent_rank_sum": 31,
+      "neighbor_result": "centered Klotz recent score 6.410233092890735, tail 26, BUY XAU"
+    }
+  ],
+  "claim_boundary": "NIST and SAS define centered Savage rank scores and SAS defines their exact two-sample test. Savage (1956) supplies method identity only. Schweikert and CME supply a state-dependent gold/silver relative-value carrier and opposed-leg form, including adverse evidence. The fixed monthly XAU/XAG sample, strict tie rejection, complete 924-label absolute-score enumeration, 462-tail activity boundary, score-sign contrarian side, CFD mapping, risk, atomicity, and lifecycle are pre-result QuantMechanica choices. No p-value, critical value, power result, return, frequency, neutrality, or profitability claim transfers."
+}
