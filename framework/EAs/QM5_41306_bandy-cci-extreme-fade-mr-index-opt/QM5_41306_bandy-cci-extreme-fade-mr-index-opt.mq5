@@ -211,6 +211,14 @@ bool PassesVolChaosFilter()
       idx = 0;
    if(idx >= strategy_vol_lookback_bars)
       idx = strategy_vol_lookback_bars - 1;
+   // Explicit ArraySize bound guard (D10). idx is already clamped to
+   // [0, strategy_vol_lookback_bars-1] above and ArraySize(ratios) equals
+   // strategy_vol_lookback_bars after the ArrayResize, so this guard can never
+   // fire on the normal path — it is a fail-safe against a failed ArrayResize
+   // only. It does not change which percentile bucket is selected: the same
+   // lookback bars are read and the same vol-chaos signal is produced.
+   if(idx < 0 || idx >= ArraySize(ratios))
+      return false;
    return (current_ratio < ratios[idx]);
   }
 
