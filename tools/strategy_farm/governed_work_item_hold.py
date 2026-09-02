@@ -104,6 +104,7 @@ def inspect_targets(
     phase: str,
     hold_code: str,
     reason: str,
+    supersede_hold_code: str | None = None,
 ) -> list[dict[str, Any]]:
     result: list[dict[str, Any]] = []
     for work_item_id, symbol in targets:
@@ -135,12 +136,23 @@ def inspect_targets(
         ).fetchone()
         hold_doc = dict(hold) if hold is not None else None
         if hold_doc and bool(hold_doc["active"]):
-            if (
+            explicit_supersession = bool(
+                supersede_hold_code
+                and hold_doc["hold_code"] == supersede_hold_code
+                and hold_doc["hold_code"] != hold_code
+            )
+            if not explicit_supersession and (
                 hold_doc["hold_code"] != hold_code
                 or hold_doc["reason"] != reason
                 or bool(hold_doc["release_on_restart"])
             ):
                 raise HoldError(f"conflicting_active_hold:{work_item_id}:{hold_doc['hold_code']}")
+        elif (
+            hold_doc
+            and hold_doc["hold_code"] != hold_code
+            and not (supersede_hold_code and hold_doc["hold_code"] == supersede_hold_code)
+        ):
+            raise HoldError(f"conflicting_inactive_hold:{work_item_id}:{hold_doc['hold_code']}")
         result.append(
             {
                 "work_item": actual,
@@ -177,6 +189,7 @@ def apply_holds(
     hold_code: str,
     reason: str,
     release_condition: str,
+    supersede_hold_code: str | None = None,
 ) -> dict[str, Any]:
     backup_path, backup_sha = sqlite_backup(db, backup_dir)
 
@@ -187,16 +200,57 @@ def apply_holds(
         conn.execute("PRAGMA busy_timeout=750")
         inserted = 0
         already_held = 0
+        superseded = 0
         try:
             ensure_schema(conn)
             conn.execute("BEGIN IMMEDIATE")
             before = inspect_targets(
                 conn, targets, ea_id=ea_id, phase=phase,
                 hold_code=hold_code, reason=reason,
+                supersede_hold_code=supersede_hold_code,
             )
             for item in before:
                 row = item["work_item"]
                 existing = item["hold"]
+                if (
+                    existing
+                    and supersede_hold_code
+                    and existing["hold_code"] == supersede_hold_code
+                    and existing["hold_code"] != hold_code
+                ):
+                    # Explicit, audited hold-code supersession: the schema keys
+                    # holds by work_item_id, so a released or still-active hold
+                    # with the named prior code is re-armed IN PLACE under the
+                    # new code.  The row never becomes claimable in between and
+                    # the full prior hold document is preserved in the event.
+                    conn.execute(
+                        """
+                        UPDATE work_item_holds
+                        SET hold_code=?,reason=?,active=1,release_on_restart=0,
+                            updated_at=?,released_at=NULL,release_note=NULL
+                        WHERE work_item_id=? AND hold_code=?
+                        """,
+                        (hold_code, reason, now, row["id"], existing["hold_code"]),
+                    )
+                    detail = {
+                        "ea_id": ea_id,
+                        "symbol": row["symbol"],
+                        "phase": phase,
+                        "hold_code": hold_code,
+                        "reason": reason,
+                        "release_condition": release_condition,
+                        "release_on_restart": False,
+                        "superseded_hold": dict(existing),
+                        "backup_path": str(backup_path),
+                        "backup_sha256": backup_sha,
+                    }
+                    conn.execute(
+                        "INSERT INTO events(ts,entity_type,entity_id,event,detail_json) "
+                        "VALUES(?,'work_item',?,'governed_hold_superseded',?)",
+                        (now, row["id"], json.dumps(detail, sort_keys=True)),
+                    )
+                    superseded += 1
+                    continue
                 if existing and bool(existing["active"]):
                     already_held += 1
                     continue
@@ -260,6 +314,8 @@ def apply_holds(
                 "release_condition": release_condition,
                 "inserted": inserted,
                 "already_held": already_held,
+                "superseded": superseded,
+                "supersede_hold_code": supersede_hold_code,
                 "backup": {"path": str(backup_path), "sha256": backup_sha},
                 "rows": after,
                 "all_unclaimable": True,
@@ -285,13 +341,15 @@ def plan_holds(
     hold_code: str,
     reason: str,
     release_condition: str,
+    supersede_hold_code: str | None = None,
 ) -> dict[str, Any]:
     conn = sqlite3.connect(db, timeout=30)
     conn.row_factory = sqlite3.Row
     try:
         ensure_schema(conn)
         rows = inspect_targets(
-            conn, targets, ea_id=ea_id, phase=phase, hold_code=hold_code, reason=reason
+            conn, targets, ea_id=ea_id, phase=phase, hold_code=hold_code, reason=reason,
+            supersede_hold_code=supersede_hold_code,
         )
     finally:
         conn.close()
@@ -302,6 +360,14 @@ def plan_holds(
         "release_condition": release_condition,
         "targets": rows,
         "would_insert": sum(not item["hold"] or not bool(item["hold"]["active"]) for item in rows),
+        "would_supersede": sum(
+            bool(item["hold"])
+            and bool(supersede_hold_code)
+            and item["hold"]["hold_code"] == supersede_hold_code
+            and item["hold"]["hold_code"] != hold_code
+            for item in rows
+        ),
+        "supersede_hold_code": supersede_hold_code,
     }
 
 
@@ -316,6 +382,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--hold-code", required=True)
     parser.add_argument("--reason", required=True)
     parser.add_argument("--release-condition", required=True)
+    parser.add_argument(
+        "--supersede-hold-code",
+        help=(
+            "Exact prior hold code that may be re-armed in place under --hold-code "
+            "(audited as governed_hold_superseded; the row never becomes claimable). "
+            "Any other existing hold code still aborts."
+        ),
+    )
     parser.add_argument("--output", type=Path)
     return parser
 
@@ -325,6 +399,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         if not HOLD_CODE_RE.fullmatch(args.hold_code):
             raise HoldError(f"invalid_hold_code:{args.hold_code}")
+        supersede_hold_code = (args.supersede_hold_code or "").strip() or None
+        if supersede_hold_code is not None:
+            if not HOLD_CODE_RE.fullmatch(supersede_hold_code):
+                raise HoldError(f"invalid_supersede_hold_code:{supersede_hold_code}")
+            if supersede_hold_code == args.hold_code:
+                raise HoldError("supersede_hold_code_equals_hold_code")
         targets = parse_targets(args.target)
         common = {
             "ea_id": args.ea_id,
@@ -332,6 +412,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "hold_code": args.hold_code,
             "reason": args.reason,
             "release_condition": args.release_condition,
+            "supersede_hold_code": supersede_hold_code,
         }
         if args.command == "plan":
             result = plan_holds(args.db, targets, **common)

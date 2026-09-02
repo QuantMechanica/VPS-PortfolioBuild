@@ -94,3 +94,74 @@ def test_repeated_apply_is_idempotent(tmp_path: Path) -> None:
         assert conn.execute("SELECT COUNT(*) FROM work_item_holds").fetchone()[0] == 3
         details = [json.loads(row[0]) for row in conn.execute("SELECT detail_json FROM events")]
         assert all(detail["release_on_restart"] is False for detail in details)
+
+
+def test_supersede_hold_code_rearms_in_place_and_records_prior_hold(tmp_path: Path) -> None:
+    db = _db(tmp_path)
+    with sqlite3.connect(db) as conn:
+        conn.execute(
+            "INSERT INTO work_item_holds VALUES"
+            "('one','NEWS_RUNNER_SPAWN_SILENT_ABORT','runner vanished',1,0,'t0','t1',NULL,NULL)"
+        )
+        conn.execute(
+            "INSERT INTO work_item_holds VALUES"
+            "('two','NEWS_RUNNER_SPAWN_SILENT_ABORT','runner vanished',0,0,'t0','t2','t2','reviewed')"
+        )
+    # Without the explicit flag both the active and the released prior hold abort.
+    with pytest.raises(hold.HoldError, match="conflicting_active_hold:one"):
+        hold.plan_holds(db, TARGETS[:1], **COMMON)
+    with pytest.raises(hold.HoldError, match="conflicting_inactive_hold:two"):
+        hold.plan_holds(db, TARGETS[1:2], **COMMON)
+    plan = hold.plan_holds(
+        db, TARGETS, supersede_hold_code="NEWS_RUNNER_SPAWN_SILENT_ABORT", **COMMON
+    )
+    assert plan["would_supersede"] == 2
+    result = hold.apply_holds(
+        db, tmp_path / "backups", TARGETS,
+        supersede_hold_code="NEWS_RUNNER_SPAWN_SILENT_ABORT", **COMMON,
+    )
+    assert result["superseded"] == 2
+    assert result["inserted"] == 1
+    assert result["all_unclaimable"] is True
+    with sqlite3.connect(db) as conn:
+        rows = conn.execute(
+            "SELECT work_item_id,hold_code,active,release_on_restart,released_at,release_note "
+            "FROM work_item_holds ORDER BY work_item_id"
+        ).fetchall()
+        assert rows == [
+            ("one", COMMON["hold_code"], 1, 0, None, None),
+            ("three", COMMON["hold_code"], 1, 0, None, None),
+            ("two", COMMON["hold_code"], 1, 0, None, None),
+        ]
+        superseded = [
+            json.loads(row[0])
+            for row in conn.execute(
+                "SELECT detail_json FROM events WHERE event='governed_hold_superseded'"
+            )
+        ]
+        assert sorted(d["superseded_hold"]["work_item_id"] for d in superseded) == ["one", "two"]
+        assert all(
+            d["superseded_hold"]["hold_code"] == "NEWS_RUNNER_SPAWN_SILENT_ABORT" for d in superseded
+        )
+        assert conn.execute("SELECT COUNT(*) FROM work_items WHERE status='pending'").fetchone()[0] == 3
+    # Idempotent: a second apply with the same flag re-arms nothing.
+    again = hold.apply_holds(
+        db, tmp_path / "backups2", TARGETS,
+        supersede_hold_code="NEWS_RUNNER_SPAWN_SILENT_ABORT", **COMMON,
+    )
+    assert again["superseded"] == 0 and again["inserted"] == 0 and again["already_held"] == 3
+
+
+def test_supersede_flag_never_touches_other_hold_codes(tmp_path: Path) -> None:
+    db = _db(tmp_path)
+    with sqlite3.connect(db) as conn:
+        conn.execute(
+            "INSERT INTO work_item_holds VALUES('one','OTHER','other',1,0,'old','old',NULL,NULL)"
+        )
+    with pytest.raises(hold.HoldError, match="conflicting_active_hold:one:OTHER"):
+        hold.apply_holds(
+            db, tmp_path / "backups", TARGETS,
+            supersede_hold_code="NEWS_RUNNER_SPAWN_SILENT_ABORT", **COMMON,
+        )
+    with sqlite3.connect(db) as conn:
+        assert conn.execute("SELECT hold_code,active FROM work_item_holds").fetchall() == [("OTHER", 1)]
