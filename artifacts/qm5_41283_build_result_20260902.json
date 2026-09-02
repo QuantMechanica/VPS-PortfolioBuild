@@ -1,5 +1,6 @@
 {
-  "task_id": "3e575e50-46b2-46f4-8601-ad4344fd5449",
+  "task_id": "7865c865-a28a-447e-a216-3f4690f692f2",
+  "original_build_task_id": "3e575e50-46b2-46f4-8601-ad4344fd5449",
   "build_generation": 0,
   "ea_id": "QM5_41283",
   "ea_label": "QM5_41283_audusd-dollar-stress-tr",
@@ -7,7 +8,9 @@
   "strategy_id": "AI-CODEX-AUDUSD-DOLLAR-STRESS-TREND-20260902_S01",
   "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41283_audusd-dollar-stress-tr",
   "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41283_audusd-dollar-stress-tr\\QM5_41283_audusd-dollar-stress-tr.mq5",
+  "mq5_sha256": "7e3677b6091f8ef85aff72af4f38d3aadf94595c1730d8bb42617bd2f24e1812",
   "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41283_audusd-dollar-stress-tr\\QM5_41283_audusd-dollar-stress-tr.ex5",
+  "ex5_sha256": "7f9d0837f45046ca323a8b4507b01944879d6918788214f0ecef631f5d38c2a6",
   "magic_base": 412830000,
   "symbols": [
     "AUDUSD.DWX"
