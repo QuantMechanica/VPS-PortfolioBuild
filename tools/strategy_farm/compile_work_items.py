@@ -142,6 +142,37 @@ QM5_1252_Q02_INFRA_REPAIR_AUTHORITY = (
 QM5_1252_Q02_INFRA_REPAIR_EA_LABELS = frozenset({
     "QM5_1252_carver-handcraft-ens",
 })
+# Exact paced-fleet authority for the instrumented QM5_10025 USDJPY Q02
+# zero-trade recovery. The immutable predecessor proves a valid model-4 run,
+# synchronized seven-symbol history, and zero trades while the old binary had
+# no pair-selection/signal decision markers. This authority accepts only the
+# default-off diagnostic source hash below and permits one append-only compile
+# successor. It grants no economic-rule, backtest, gate-verdict, or live-use
+# authority and self-expires on any further source edit.
+QM5_10025_Q02_ZERO_TRADE_REPAIR_PREDECESSOR_ID = (
+    "050dd2ea-e9d0-475f-b5ad-40c2206867ff"
+)
+QM5_10025_Q02_ZERO_TRADE_REPAIR_AUTHORITY = (
+    "q02_zero_trade_predecessor:050dd2ea-e9d0-475f-b5ad-40c2206867ff"
+)
+QM5_10025_Q02_ZERO_TRADE_REPAIR_EA_LABEL = (
+    "QM5_10025_rw-fx-broad-pairs"
+)
+QM5_10025_Q02_ZERO_TRADE_REPAIRED_SOURCE_SHA256 = (
+    "49e0c78c0e45fa39b05580216003ee523839b664844a82e3a7d3d943030e069a"
+)
+QM5_10025_Q02_ZERO_TRADE_REJECTED_SOURCE_SHA256 = (
+    "fd0a18d8710dc8bd0d089ab34b9c881de65e971f0916ba540b34c53b2aa120ff"
+)
+QM5_10025_Q02_ZERO_TRADE_REJECTED_EX5_SHA256 = (
+    "9bf2691d4af0a57d553711c37ffceadb513b303e710a25f455c8f2e211eecfcc"
+)
+QM5_10025_Q02_ZERO_TRADE_REJECTED_SETFILE_SHA256 = (
+    "2d8a1ba1871c229d00b49458dcbd6dbd152d24c170d76404bace39cdea3be53c"
+)
+QM5_10025_Q02_ZERO_TRADE_EVIDENCE_SHA256 = (
+    "37084386dd4a8c5e3011c8a86d9cd3c4201a5d5424bccadb29b90455393e0a09"
+)
 # Exact paced-fleet authority for the post-review QM5_38002 EURUSD Q02
 # recovery.  Its existing binary predates the approved card-faithful source
 # repair, while the only Q02 attempt ended in the farm taxonomy writer before
@@ -1635,6 +1666,15 @@ def _source_repair_authorized(
     inventory: dict[str, Any] | None = None,
     current_work_item_id: str | None = None,
 ) -> bool:
+    if authority == QM5_10025_Q02_ZERO_TRADE_REPAIR_AUTHORITY:
+        return _qm5_10025_q02_zero_trade_repair_authorized(
+            ea_label,
+            authority,
+            ea_id=ea_id,
+            source_sha=source_sha,
+            inventory=inventory,
+            current_work_item_id=current_work_item_id,
+        )
     if authority == QM5_1538_COMPILE_FAIL_REPAIR_AUTHORITY:
         return _qm5_1538_compile_fail_repair_authorized(
             ea_label,
@@ -1892,6 +1932,89 @@ def _source_repair_authorized(
         str(row.get("id")) in predecessor_ids
         and current_work_item_id in superseded_by.get(str(row.get("id")), set())
         for row in rollout_rows
+    )
+
+
+def _qm5_10025_q02_zero_trade_repair_authorized(
+    ea_label: str,
+    authority: str | None,
+    *,
+    ea_id: str | None,
+    source_sha: str | None,
+    inventory: dict[str, Any] | None,
+    current_work_item_id: str | None,
+) -> bool:
+    """Bind one diagnostic compile to the exact valid USDJPY zero-trade run."""
+    if (
+        authority != QM5_10025_Q02_ZERO_TRADE_REPAIR_AUTHORITY
+        or ea_label != QM5_10025_Q02_ZERO_TRADE_REPAIR_EA_LABEL
+        or ea_id != "10025"
+        or str(source_sha or "").lower()
+        != QM5_10025_Q02_ZERO_TRADE_REPAIRED_SOURCE_SHA256
+        or inventory is None
+    ):
+        return False
+    predecessor = next(
+        (
+            row
+            for row in inventory.get("work_rows", {}).get(ea_id, [])
+            if str(row.get("id"))
+            == QM5_10025_Q02_ZERO_TRADE_REPAIR_PREDECESSOR_ID
+        ),
+        None,
+    )
+    if predecessor is None:
+        return False
+    payload = _json_object(predecessor.get("payload_json"))
+    evidence_path = Path(str(predecessor.get("evidence_path") or ""))
+    try:
+        evidence_valid = (
+            evidence_path.is_file()
+            and sha256_file(evidence_path).lower()
+            == QM5_10025_Q02_ZERO_TRADE_EVIDENCE_SHA256
+        )
+    except OSError:
+        evidence_valid = False
+    if not (
+        predecessor.get("phase") == "Q02"
+        and predecessor.get("status") == "done"
+        and predecessor.get("verdict") == "ZERO_TRADES"
+        and payload.get("verdict_reason") == "Q02_ZERO_TRADES"
+        and payload.get("priority_reason")
+        == "board_advisor_fx_existing_market_neutral_q02_after_exhausted_66_pair_frontier"
+        and payload.get("expected_symbol") == "USDJPY.DWX"
+        and payload.get("expected_period") == "H4"
+        and str(payload.get("expected_mq5_sha256") or "").lower()
+        == QM5_10025_Q02_ZERO_TRADE_REJECTED_SOURCE_SHA256
+        and str(payload.get("expected_ex5_sha256") or "").lower()
+        == QM5_10025_Q02_ZERO_TRADE_REJECTED_EX5_SHA256
+        and str(payload.get("expected_setfile_sha256") or "").lower()
+        == QM5_10025_Q02_ZERO_TRADE_REJECTED_SETFILE_SHA256
+        and evidence_valid
+    ):
+        return False
+    if current_work_item_id is None:
+        return True
+    current_row = next(
+        (
+            row
+            for row in inventory.get("work_rows", {}).get(ea_id, [])
+            if str(row.get("id")) == str(current_work_item_id)
+        ),
+        None,
+    )
+    current_payload = _json_object(
+        current_row.get("payload_json") if current_row else None
+    )
+    return bool(
+        current_row
+        and current_row.get("phase") == COMPILE_EA_PHASE
+        and current_payload.get("append_only_source_repair") is True
+        and current_payload.get("compile_source_repair_authority") == authority
+        and str(current_payload.get("mq5_sha256") or "").lower()
+        == QM5_10025_Q02_ZERO_TRADE_REPAIRED_SOURCE_SHA256
+        and QM5_10025_Q02_ZERO_TRADE_REPAIR_PREDECESSOR_ID
+        in current_payload.get("source_repair_predecessor_work_item_ids", [])
     )
 
 
@@ -2370,6 +2493,17 @@ def classify_candidate(
         reasons = [
             reason for reason in reasons if reason not in FORCE_REBUILD_WAIVABLE_REASONS
         ]
+    source_repair_predecessor_ids = {
+        str(row.get("id")) for row in prior_compile_rows
+    }
+    if (
+        repair_authorized
+        and source_repair_authority
+        == QM5_10025_Q02_ZERO_TRADE_REPAIR_AUTHORITY
+    ):
+        source_repair_predecessor_ids.add(
+            QM5_10025_Q02_ZERO_TRADE_REPAIR_PREDECESSOR_ID
+        )
 
     return {
         "ea_label": canonical_label,
@@ -2396,7 +2530,7 @@ def classify_candidate(
         "source_repair_contract_version": SOURCE_REPAIR_CONTRACT_VERSION,
         "source_repair_waived_reasons": source_repair_waived_reasons,
         "source_repair_predecessor_work_item_ids": sorted(
-            str(row.get("id")) for row in prior_compile_rows
+            source_repair_predecessor_ids
         ),
         "source_repair_stale_open_work_item_ids": sorted(
             str(row.get("id"))
