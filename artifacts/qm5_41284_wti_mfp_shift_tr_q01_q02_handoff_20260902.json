@@ -1,0 +1,96 @@
+{
+  "schema_version": "qm.q01-q02-handoff/v1",
+  "ea_id": "QM5_41284",
+  "ea_label": "QM5_41284_wti-mfp-shift-tr",
+  "strategy_id": "AI-CODEX-WTI-MFP-SHIFT-20260902_S01",
+  "recorded_at_utc": "2026-09-02T04:45:48Z",
+  "mission": "one new low-frequency structural commodity or energy sleeve outside the certified XAU, SP500, NDX, and XNG carrier set",
+  "edge": {
+    "logical_symbol": "XTIUSD.DWX",
+    "host_symbol": "XTIUSD.DWX",
+    "traded_symbols": [
+      "XTIUSD.DWX"
+    ],
+    "timeframe": "D1",
+    "decision_frequency": "one consumed attempt per broker month",
+    "mechanic": "monthly WTI continuation from a fixed ten-old versus ten-recent Fligner-Policello unequal-shape pair-placement score with an inclusive absolute 0.600 boundary",
+    "portfolio_correlation_claim": "NONE_Q09_ONLY"
+  },
+  "research_and_build_commits": {
+    "source_approval": "3df48ffd73",
+    "identity_reservation": "e5c8f5c8db",
+    "g0_card_approval": "bb051957ec",
+    "identity_and_magic_allocation": "3cc4e1262d",
+    "source_build": "61f97b1b5c",
+    "q01_preset_unbound": "1a8365f684",
+    "governed_q01_binary": "11b24de639"
+  },
+  "q01": {
+    "status": "PASS",
+    "build_task_id": "ae835804-adde-4f94-bc9d-ff681ea69f98",
+    "compile_work_item_id": "6b5f3ed1-994d-4a72-8ad8-1d8b66ae2bc6",
+    "compile_terminal": "T5",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "build_check_result": "PASS",
+    "build_check_warnings": 0,
+    "reference_tests": "PASS_11",
+    "mq5_sha256": "a68d06ca3a91682e11b4106153a049c9b9457ad24eecd27505731ddea118b844",
+    "ex5_sha256": "36169ef16258025dc6f81b51d7a1dd87c0c60ed4c0ca97bc31c4b7eff43fa5c1",
+    "compile_evidence_path": "D:\\QM\\reports\\work_items\\6b5f3ed1-994d-4a72-8ad8-1d8b66ae2bc6\\QM5_41284\\COMPILE_EA\\compile_evidence.json",
+    "compile_evidence_sha256": "78862c1a80f453b0ce7b6b70366fcd0213e055cbc545d84afc5512ec505a9d2d",
+    "build_result_path": "artifacts/qm5_41284_build_result_20260902.json",
+    "build_result_sha256": "f820a8164fc075cc703486d5e0934771252736ed57151bfd73c16e6636f5d118"
+  },
+  "risk_contract": {
+    "mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "setfile_count": 1,
+    "q02_setfile_sha256": "a519aba12c2c6d36f43e85796bd25c174a807d3f4b80e9ac1a5f20269b81c1ad"
+  },
+  "capacity_admission": {
+    "sampling_method": "Win32_PerfFormattedData_PerfOS_Processor Name=_Total",
+    "sample_interval_seconds": 2,
+    "sample_window_utc": {
+      "started_at": "2026-09-02T04:43:36.3739526Z",
+      "ended_at": "2026-09-02T04:43:45.9430828Z"
+    },
+    "cpu_samples_percent": [
+      44.0,
+      45.0,
+      47.0,
+      48.0,
+      49.0
+    ],
+    "cpu_average_percent": 46.6,
+    "cpu_maximum_percent": 49.0,
+    "cpu_ceiling_percent": 97.0,
+    "rule": "admit only when average and maximum are strictly below the ceiling",
+    "admitted": true
+  },
+  "q02": {
+    "status_at_handoff": "pending",
+    "work_item_id": "efdc8b9c-074f-4118-9056-efee11110655",
+    "enqueued_at_utc": "2026-09-02T04:44:42Z",
+    "symbol": "XTIUSD.DWX",
+    "host_symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "portfolio_scope": "single_symbol",
+    "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_41284_wti-mfp-shift-tr\\sets\\QM5_41284_wti-mfp-shift-tr_XTIUSD.DWX_D1_backtest.set",
+    "attempt_count_at_handoff": 0,
+    "claimed_by_at_handoff": null,
+    "enqueue_route": "record-build automatic Q02 handoff",
+    "dispatch_requested": false
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "deploy_manifest_touched": false,
+    "manual_backtest_launched": false,
+    "manual_dispatch_requested": false,
+    "optimization_enqueued": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false
+  }
+}
