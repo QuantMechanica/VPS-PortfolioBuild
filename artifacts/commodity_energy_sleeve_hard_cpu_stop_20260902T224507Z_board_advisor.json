@@ -1,0 +1,46 @@
+{
+  "schema_version": "commodity_energy_sleeve_cpu_stop_v1",
+  "recorded_at_utc": "2026-09-02T22:45:07.0836230Z",
+  "recorded_at_local": "2026-09-03T00:45:07.0836230+02:00",
+  "branch": "agents/board-advisor",
+  "observation_head": "73ded4490aa773ed9f97ee616cc9847f719e375c",
+  "ceiling_percent": 97.0,
+  "samples_percent": [
+    90.0427,
+    79.8719,
+    86.9578,
+    100.0,
+    99.563
+  ],
+  "average_percent": 91.2871,
+  "maximum_percent": 100.0,
+  "admission": "STOP_CPU_CEILING",
+  "binding_metric": "maximum_percent",
+  "farmctl_scanned_at_utc": "2026-09-02T22:44:50+00:00",
+  "governed_active_terminals": [
+    "T1",
+    "T10",
+    "T2",
+    "T3",
+    "T7",
+    "T9"
+  ],
+  "governed_active_terminal_count": 6,
+  "terminal64_running_count": 8,
+  "excluded_terminal_processes": [
+    "T_Live",
+    "FTMO Global Markets MT5 Terminal"
+  ],
+  "free_ram_gib": 23.67,
+  "mutations": {
+    "source_or_card": false,
+    "identity_or_magic": false,
+    "ea_or_setfile": false,
+    "compile_or_backtest": false,
+    "q02_enqueue_or_dispatch": false,
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "autotrading": false
+  },
+  "prior_receipt": "docs/research/COMMODITY_ENERGY_SLEEVE_HARD_CPU_STOP_20260902T190115Z.md"
+}
