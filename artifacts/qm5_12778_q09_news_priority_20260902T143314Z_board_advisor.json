@@ -1,0 +1,171 @@
+{
+  "artifact_type": "fx_cointegration_existing_card_priority_handoff",
+  "schema_version": "qm.fx-cointegration-existing-card-priority-handoff/v1",
+  "generated_at_utc": "2026-09-02T14:33:14.234Z",
+  "generated_at_local": "2026-09-02T16:33:14.242+02:00",
+  "branch": "agents/board-advisor",
+  "observation_head_before_evidence_commit": "2292add1a1b07083254044936a7aa10c41aa44b8",
+  "mission": "grow_certified_v5_portfolio_new_forex_sleeves",
+  "outcome": "EXISTING_FOREX_CARD_ADVANCED_TO_PACED_PRIORITY",
+  "selection_basis": {
+    "scan_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "frontier_guard": "artifacts/fx_cointegration_frontier_ownership_guard_20260902T133112Z_board_advisor.json",
+    "unordered_scan_relationship_count": 66,
+    "approved_scan_identity_count": 123,
+    "matching_ea_directory_count": 123,
+    "unbuilt_approved_identity_count": 0,
+    "fallback_clause_used": true,
+    "reason": "The frozen 66-pair frontier has no approved unbuilt identity. Both proven anchors are already past Q02, so the mission's existing-forex-card fallback applies."
+  },
+  "anchor_state": [
+    {
+      "ea_id": "QM5_12532",
+      "relationship": [
+        "AUDUSD.DWX",
+        "NZDUSD.DWX"
+      ],
+      "q02_verdict": "PASS",
+      "current_q02_setup_blocker": false
+    },
+    {
+      "ea_id": "QM5_12533",
+      "relationship": [
+        "EURJPY.DWX",
+        "GBPJPY.DWX"
+      ],
+      "q02_verdict": "PASS",
+      "current_q02_setup_blocker": false
+    }
+  ],
+  "selected_sleeve": {
+    "ea_id": "QM5_12778",
+    "slug": "edgelab-audusd-eurjpy-cointegration",
+    "card": "strategy-seeds/cards/approved/QM5_12778_edgelab-audusd-eurjpy-cointegration_card.md",
+    "g0_status": "APPROVED",
+    "relationship": [
+      "AUDUSD.DWX",
+      "EURJPY.DWX"
+    ],
+    "logical_symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+    "host_symbol": "AUDUSD.DWX",
+    "timeframe": "D1",
+    "scan_rank": 25,
+    "expected_logical_packages_per_year": "4-8",
+    "structural_contract": {
+      "spread": "ln(AUDUSD) - 0.279193 * ln(EURJPY)",
+      "zscore_lookback_bars": 60,
+      "entry_absolute_z": 2.0,
+      "exit_absolute_z": 0.5,
+      "atr_stop_period": 20,
+      "atr_stop_multiple": 2.0,
+      "ml": false,
+      "grid": false,
+      "martingale": false
+    },
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "reputable_source": "Ernest P. Chan, Quantitative Trading (2009), Chapter 7, plus the OWNER-requested in-house 66-pair Darwinex .DWX D1 scan",
+    "basket_manifest": "framework/EAs/QM5_12778_edgelab-audusd-eurjpy-cointegration/basket_manifest.json"
+  },
+  "queue_mutation": {
+    "command": "python tools/strategy_farm/farmctl.py mark-priority-track --work-item-id 24acc5d4-3e34-526e-a7a8-12640a2e759f --reason board_advisor_fx_existing_card_fallback_q09_news_after_exhausted_66_pair_frontier",
+    "work_item_id": "24acc5d4-3e34-526e-a7a8-12640a2e759f",
+    "phase": "Q09_NEWS",
+    "symbol": "AUDUSD.DWX",
+    "diagnostic_contract": "q09-live-news-backfill/v1",
+    "diagnostic_non_admission": true,
+    "same_identity_open_row_count": 1,
+    "active_hold_count": 0,
+    "supersession_edge_count": 0,
+    "before": {
+      "status": "pending",
+      "verdict": null,
+      "attempt_count": 0,
+      "claimed_by": null,
+      "priority_track": null,
+      "updated_at": "2026-09-02T10:10:35.641002+00:00",
+      "payload_sha256": "53b7c75f4fb332e6b528149c1b79d1cc4697f22f837653838a42e3f10ec4ef23"
+    },
+    "after": {
+      "status": "pending",
+      "verdict": null,
+      "attempt_count": 0,
+      "claimed_by": null,
+      "priority_track": true,
+      "updated_at": "2026-09-02T14:31:41+00:00",
+      "payload_sha256": "4b480ef617bc8245b12712f7a933ab24c3524f25852efb7976a1bbbeabe30d04"
+    },
+    "mark": {
+      "by": "controller",
+      "marked_at_utc": "2026-09-02T14:31:41+00:00",
+      "previous_priority_track": null,
+      "reason": "board_advisor_fx_existing_card_fallback_q09_news_after_exhausted_66_pair_frontier"
+    },
+    "append_only_log": "D:/QM/reports/state/priority_track_marks.jsonl",
+    "allowed_diagnostic_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T5"
+    ],
+    "avoided_terminals": [
+      "T6",
+      "T7",
+      "T8",
+      "T9",
+      "T10"
+    ]
+  },
+  "sealed_diagnostic_bindings": {
+    "diagnostic_anchor_sha256": "676ecc1362455aee69e4a78dc40154841e6aa5ab4a726337c4e8ed2ef85681fc",
+    "q09_input_manifest_sha256": "bcafcfc8ce06f18da66ba467207c4c50c267de03578e1fa551cda9a98a9dcd1e",
+    "q09_run_plan_file_sha256": "160704d47dd7adc40d36917cef5e459fd21177db6b89b0479467a9731e9ea7bf",
+    "q09_run_plan_sha256": "1d77790b402be23298a29b02cbe74e07bb67bc2d6ac5cf6554153f1167379784",
+    "note": "The priority mutation changed queue metadata only and did not alter or rebind any sealed diagnostic artifact."
+  },
+  "repository_package_observation": {
+    "mq5_sha256": "132a501d94685f013cc62a8b3c2de111d0a8b1e616a8656d2c61b061a754c146",
+    "ex5_sha256": "2a105cfbb364142c96c552136bb450162c142845665ce3366d0c045248c17a01",
+    "basket_manifest_sha256": "0ce25d17ebe7c3664e4acdb6c1d302b28b1f40710301189cc633e44f25854d57",
+    "logical_backtest_setfile": "framework/EAs/QM5_12778_edgelab-audusd-eurjpy-cointegration/sets/QM5_12778_edgelab-audusd-eurjpy-cointegration_QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1_D1_backtest.set",
+    "logical_backtest_setfile_sha256": "0e7949276927c8c5355c413c631e7b67f684e757892de59fa2cff5521836c8e9",
+    "note": "These are repository observations, not a claim that the separate sealed Q09 diagnostic copies have identical hashes."
+  },
+  "capacity_guard": {
+    "samples_percent": [
+      58.1,
+      62.9,
+      55.5,
+      59.4,
+      59.9
+    ],
+    "average_percent": 59.2,
+    "maximum_percent": 62.9,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_binding": false,
+    "backtest_or_dispatch_started": false
+  },
+  "actions": {
+    "card_created_or_changed": false,
+    "ea_or_setfile_changed": false,
+    "basket_manifest_changed": false,
+    "registry_or_magic_changed": false,
+    "work_item_created": false,
+    "work_item_priority_changed": true,
+    "backtest_or_dispatch_started": false,
+    "terminal_or_autotrading_control": false
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_files": false,
+    "autotrading": false
+  }
+}
