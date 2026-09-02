@@ -109,6 +109,18 @@ PASS_ECON = {
     "CHALLENGER_PROMOTED",
     "KEEP_INCUMBENT",
     "ADMIT_BOTH",
+    # Q10 news gate: CONFIG_LOCKED is the ratified success verdict of the
+    # news-impact adjudication (farmctl Q09_NEWS_SUCCESS_VERDICTS,
+    # news_gate_service CONCLUSIVE_VERDICTS).  Until 2026-09-02 it was scored
+    # STALE here, which broke Q10 contiguity for every pair that had actually
+    # passed the news gate and pinned the book guard at qualified_pairs=0.
+    "CONFIG_LOCKED",
+    # Optimization branch (Q12/Q13) explicit no-change contracts: the fork
+    # driver's PATTERN_SUCCESS_VERDICTS / PARAM_SUCCESS_VERDICTS treat them as
+    # successful routable outcomes and OWNER-DEC-A2 makes the resulting Q14
+    # KEEP_INCUMBENT terminal-valid, so the chain through them is contiguous.
+    "NO_FILTER_CHANGE",
+    "NO_PARAMETER_CHANGE",
 }
 ECON_FAIL = {
     "FAIL", "FAIL_HARD", "FAIL_SOFT", "ZERO_TRADES", "RETIRE",
@@ -124,7 +136,7 @@ INVALID_CLS = {
 STALE_CLS = {
     "SUPERSEDED", "SUPERSEDED_BY_LOGICAL_BASKET", "SUPERSEDED_DUPLICATE",
     "BLOCKED_STALE_BUILD_RESULT", "RETIRED_ARCHIVED", "RETIRED_WITHOUT_BUILD",
-    "CANCELLED_DUPLICATE_REQUEUE", "CHALLENGER_SPAWNED", "CONFIG_LOCKED",
+    "CANCELLED_DUPLICATE_REQUEUE", "CHALLENGER_SPAWNED",
 }
 NA_CLS = {"OBSOLETE_NON_DWX_SYMBOL"}
 
