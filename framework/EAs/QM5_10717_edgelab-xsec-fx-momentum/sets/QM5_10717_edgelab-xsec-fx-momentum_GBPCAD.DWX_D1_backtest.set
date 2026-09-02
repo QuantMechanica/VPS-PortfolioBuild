@@ -3,32 +3,31 @@
 ; ea_id:        10717
 ; ea_slug:      edgelab-xsec-fx-momentum
 ; ea_version:   v5.0
-; set_version:  s20260609-001
+; set_version:  s20260902-001
 ; symbol:       GBPCAD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   17
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   49c6d556272e80d6312c5deec276cf5ac263800d6ec7d21c2f4bbd90607cddb1
+; build_hash:   290c9f2c2507342db4172f36261662d6728f15e48992fa396b7283b470b52c9b
 ; author:       Development
-; date:         2026-06-09
+; date:         2026-09-02
 ;==========================================================
+qm_ea_id=10717
 qm_magic_slot_offset=17
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10717_edgelab-xsec-fx-momentum.md
+strategy_lookback_days=63
+strategy_rebalance_dow=1
+strategy_atr_period=20
+strategy_atr_sl_mult=2.0
+strategy_deviation_points=30
+strategy_volfilter_enabled=true
+strategy_vol_window=20
+strategy_vol_percentile_days=252
+strategy_vol_skip_pct=0.90
+strategy_max_spread_points=0
