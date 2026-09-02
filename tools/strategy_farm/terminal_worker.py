@@ -149,8 +149,12 @@ _last_disk_purge_trigger = [0.0]
 # RAM_RESUME_FREE_GB — a single sample above the trip floor is not sustained
 # improvement (an ordinary job allocates 6-7GB right after launch, and single
 # testers have been observed at 46.8GB working set, 2026-08-15 T6 SP500).
-RAM_MIN_FREE_GB = 6.0
-RAM_RESUME_FREE_GB = 12.0
+# 2026-09-02 (CEO): 6/12 let six testers (4.8-11.8 GB each; XAUUSD "ordinary" runs
+# use 11-12 GB against an 8 GB reservation) drive a 63 GB host to 0.9 GB free and
+# 16k pages/s; three workers died. Keep ~14 GB headroom for the growth of the
+# runs already started; resume only once 20 GB are free. Rollback: 6.0 / 12.0.
+RAM_MIN_FREE_GB = 14.0
+RAM_RESUME_FREE_GB = 20.0
 RAM_GUARD_SLEEP_SECONDS = 20
 # CPU admission (OWNER 2026-08-15): don't add testers while the box is already
 # compute-saturated. The load sample is a GetSystemTimes delta over the whole
@@ -2160,7 +2164,6 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
             "history_skipped": [],
             "launch_cooldown_skipped": [],
             "multisymbol_ram_skipped": [],
-            "ram_class_skipped": [],
             "multisymbol_commit_skipped": [],
             "terminal_avoid_skipped": [],
             "longrun_cap_skipped": [],
@@ -2542,7 +2545,6 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                 skipped_launch_cooldown: list[dict[str, Any]] = []
                 skipped_multisym_ram: list[dict[str, Any]] = []
                 skipped_multisym_commit: list[dict[str, Any]] = []
-                skipped_ram_class: list[dict[str, Any]] = []
                 skipped_avoid_terminal: list[dict[str, Any]] = []
                 skipped_longrun_cap: list[dict[str, Any]] = []
                 skipped_opt_census_slots: list[dict[str, Any]] = []
@@ -2764,27 +2766,6 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                     # flowing. This block must remain outside the multisymbol-only
                     # resource branch: governed census cells are normally single-
                     # symbol and may never bypass their authenticated arm frontier.
-                    # 2026-09-02 (CEO): physical-RAM admission per reservation class.
-                    # The commit-headroom guard reasons in commit (pagefile-backed,
-                    # limit 123 GB on a 63 GB box); at 13:45Z six testers
-                    # (4.8-11.8 GB each, two 44 GB-class index runs) drove free RAM
-                    # to 1.3 GB and 16k pages/s, three workers died and the fleet
-                    # paged for an hour. A candidate is admitted only when the
-                    # current free RAM minus its class reservation still leaves
-                    # RAM_MIN_FREE_GB; expected sizes are the existing class
-                    # reservations (ordinary 8, index tick 44, multisymbol 8-44).
-                    _ram_class = _multisymbol_commit_class(item, payload, item_is_multisym)
-                    _ram_expected_gb = float(_commit_reservation_gb(_ram_class))
-                    if multisym_free_ram_snapshot - _ram_expected_gb < RAM_MIN_FREE_GB:
-                        skipped_ram_class.append({
-                            "item_id": item["id"],
-                            "ea_id": item["ea_id"],
-                            "commit_class": _ram_class,
-                            "expected_gb": _ram_expected_gb,
-                            "free_ram_gb": round(multisym_free_ram_snapshot, 1),
-                            "threshold_gb": RAM_MIN_FREE_GB,
-                        })
-                        continue
                     if governed_opt_census:
                         token = opt_census_lane_tokens.get(str(item["id"]))
                         if not _opt_census_token_matches(
@@ -2909,7 +2890,6 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                     "history_skipped": skipped_history,
                     "launch_cooldown_skipped": skipped_launch_cooldown,
                     "multisymbol_ram_skipped": skipped_multisym_ram,
-                    "ram_class_skipped": skipped_ram_class,
                     "multisymbol_commit_skipped": skipped_multisym_commit,
                     "terminal_avoid_skipped": skipped_avoid_terminal,
                     "longrun_cap_skipped": skipped_longrun_cap,
