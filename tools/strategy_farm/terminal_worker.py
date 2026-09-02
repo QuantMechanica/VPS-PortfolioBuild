@@ -2160,6 +2160,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
             "history_skipped": [],
             "launch_cooldown_skipped": [],
             "multisymbol_ram_skipped": [],
+            "ram_class_skipped": [],
             "multisymbol_commit_skipped": [],
             "terminal_avoid_skipped": [],
             "longrun_cap_skipped": [],
@@ -2541,6 +2542,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                 skipped_launch_cooldown: list[dict[str, Any]] = []
                 skipped_multisym_ram: list[dict[str, Any]] = []
                 skipped_multisym_commit: list[dict[str, Any]] = []
+                skipped_ram_class: list[dict[str, Any]] = []
                 skipped_avoid_terminal: list[dict[str, Any]] = []
                 skipped_longrun_cap: list[dict[str, Any]] = []
                 skipped_opt_census_slots: list[dict[str, Any]] = []
@@ -2762,6 +2764,27 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                     # flowing. This block must remain outside the multisymbol-only
                     # resource branch: governed census cells are normally single-
                     # symbol and may never bypass their authenticated arm frontier.
+                    # 2026-09-02 (CEO): physical-RAM admission per reservation class.
+                    # The commit-headroom guard reasons in commit (pagefile-backed,
+                    # limit 123 GB on a 63 GB box); at 13:45Z six testers
+                    # (4.8-11.8 GB each, two 44 GB-class index runs) drove free RAM
+                    # to 1.3 GB and 16k pages/s, three workers died and the fleet
+                    # paged for an hour. A candidate is admitted only when the
+                    # current free RAM minus its class reservation still leaves
+                    # RAM_MIN_FREE_GB; expected sizes are the existing class
+                    # reservations (ordinary 8, index tick 44, multisymbol 8-44).
+                    _ram_class = _multisymbol_commit_class(item, payload, item_is_multisym)
+                    _ram_expected_gb = float(_commit_reservation_gb(_ram_class))
+                    if multisym_free_ram_snapshot - _ram_expected_gb < RAM_MIN_FREE_GB:
+                        skipped_ram_class.append({
+                            "item_id": item["id"],
+                            "ea_id": item["ea_id"],
+                            "commit_class": _ram_class,
+                            "expected_gb": _ram_expected_gb,
+                            "free_ram_gb": round(multisym_free_ram_snapshot, 1),
+                            "threshold_gb": RAM_MIN_FREE_GB,
+                        })
+                        continue
                     if governed_opt_census:
                         token = opt_census_lane_tokens.get(str(item["id"]))
                         if not _opt_census_token_matches(
@@ -2886,6 +2909,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                     "history_skipped": skipped_history,
                     "launch_cooldown_skipped": skipped_launch_cooldown,
                     "multisymbol_ram_skipped": skipped_multisym_ram,
+                    "ram_class_skipped": skipped_ram_class,
                     "multisymbol_commit_skipped": skipped_multisym_commit,
                     "terminal_avoid_skipped": skipped_avoid_terminal,
                     "longrun_cap_skipped": skipped_longrun_cap,
