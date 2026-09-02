@@ -71,6 +71,19 @@ QM5_41245_SETFILE_UNBIND_RETRY_EVIDENCE_SHA256 = (
 )
 COMPILE_BINDING_RETRY_CONTRACT_VERSION = "qm.compile-ea-build-binding-retry/v1"
 COMPILE_BINDING_FAILURE_CLASS = "BUILD_CHECK_FAILED"
+QM5_41285_UNBOUND_COMPILE_RETRY_CONTRACT_VERSION = (
+    "qm.compile-ea-unbound-build-task-retry/v1"
+)
+QM5_41285_UNBOUND_COMPILE_RETRY_AUTHORITY = (
+    "OWNER_COMMODITY_SLEEVE_2026-09-02_QM5_41285_UNBOUND_COMPILE_RETRY"
+)
+QM5_41285_UNBOUND_COMPILE_RETRY_PREDECESSOR_ID = (
+    "e313ef05-f345-477a-9a15-6eed458afb27"
+)
+QM5_41285_UNBOUND_COMPILE_RETRY_EA_LABEL = "QM5_41285_xauxag-mjt-rv"
+QM5_41285_UNBOUND_COMPILE_RETRY_SOURCE_SHA256 = (
+    "94954df95dc79b7bc2c653df9b4980428295af1a7f05566d58f8a03548519f43"
+)
 SOURCE_REPAIR_CONTRACT_VERSION = "qm.compile-ea-source-repair/v1"
 SOURCE_REPAIR_AUTHORITY = "router_ops_issue:50467e7e"
 SOURCE_REPAIR_EA_LABELS = frozenset({
@@ -2507,8 +2520,9 @@ def _inventory(root: Path, repo_root: Path) -> dict[str, Any]:
         open_compile: dict[str, list[dict[str, Any]]] = defaultdict(list)
         rollout_holds: dict[str, list[dict[str, Any]]] = defaultdict(list)
         for row in conn.execute(
-            "SELECT id,ea_id,phase,status,verdict,evidence_path,payload_json,"
-            "ex5_sha256,mq5_sha256 FROM work_items"
+            "SELECT id,kind,ea_id,phase,status,verdict,attempt_count,claimed_by,"
+            "parent_task_id,setfile_path,evidence_path,payload_json,ex5_sha256,"
+            "mq5_sha256 FROM work_items"
         ):
             ea_id = _numeric_ea_reference(row["ea_id"])
             if not ea_id:
@@ -2986,12 +3000,93 @@ def _qm5_41245_setfile_unbind_predecessor_authorized(
     return predecessor_id
 
 
+def _qm5_41285_unbound_compile_predecessor_authorized(
+    payload: dict[str, Any],
+    inventory: dict[str, Any],
+    ea_id: str,
+    current_work_item_id: str | None,
+    seen: frozenset[str],
+) -> str | None:
+    """Validate the one immutable enqueue-before-build-task incident.
+
+    The successor is append-only and must be bound to the sole open build task.
+    This exception ignores only the exact unclaimed predecessor row; ordinary
+    work, source drift, alternate labels, and alternate successor ids remain
+    fail-closed.
+    """
+
+    predecessor_id = QM5_41285_UNBOUND_COMPILE_RETRY_PREDECESSOR_ID
+    successor_id = str(payload.get("unbound_compile_retry_work_item_id") or "")
+    source_sha = str(payload.get("mq5_sha256") or "").lower()
+    if not (
+        ea_id == "41285"
+        and current_work_item_id
+        and successor_id == str(current_work_item_id)
+        and predecessor_id not in seen
+        and payload.get("compile_unbound_task_retry_contract_version")
+        == QM5_41285_UNBOUND_COMPILE_RETRY_CONTRACT_VERSION
+        and payload.get("compile_unbound_task_retry_authority")
+        == QM5_41285_UNBOUND_COMPILE_RETRY_AUTHORITY
+        and payload.get("retry_of_work_item_id") == predecessor_id
+        and payload.get("append_only_unbound_task_retry") is True
+        and payload.get("ea_label") == QM5_41285_UNBOUND_COMPILE_RETRY_EA_LABEL
+        and source_sha == QM5_41285_UNBOUND_COMPILE_RETRY_SOURCE_SHA256
+        and payload.get("compile_build_task_binding_contract_version")
+        == BUILD_TASK_BINDING_CONTRACT_VERSION
+        and str(payload.get("bound_build_task_id") or "").strip()
+        and payload.get("bound_build_task_ea_id") == "QM5_41285"
+        and successor_id
+        in inventory.get("superseded_by", {}).get(predecessor_id, set())
+    ):
+        return None
+
+    successor = _work_row_by_id(inventory, ea_id, successor_id)
+    predecessor = _work_row_by_id(inventory, ea_id, predecessor_id)
+    if not successor or not predecessor:
+        return None
+    predecessor_payload = _json_object(predecessor.get("payload_json"))
+    risk = predecessor_payload.get("risk_contract")
+    try:
+        fixed_risk = float(risk.get("RISK_FIXED")) if isinstance(risk, dict) else 0.0
+        percent_risk = float(risk.get("RISK_PERCENT")) if isinstance(risk, dict) else -1.0
+    except (TypeError, ValueError):
+        return None
+    if not (
+        str(successor.get("id")) == successor_id
+        and successor.get("phase") == COMPILE_EA_PHASE
+        and predecessor.get("kind") == COMPILE_WORK_ITEM_KIND
+        and predecessor.get("phase") == COMPILE_EA_PHASE
+        and predecessor.get("status") == "pending"
+        and predecessor.get("verdict") is None
+        and int(predecessor.get("attempt_count") or 0) == 0
+        and predecessor.get("claimed_by") is None
+        and predecessor.get("parent_task_id") is None
+        and not str(predecessor.get("setfile_path") or "")
+        and predecessor.get("evidence_path") is None
+        and predecessor.get("ex5_sha256") is None
+        and predecessor_payload.get("compile_contract_version")
+        == COMPILE_CONTRACT_VERSION
+        and predecessor_payload.get("ea_label")
+        == QM5_41285_UNBOUND_COMPILE_RETRY_EA_LABEL
+        and str(predecessor_payload.get("mq5_sha256") or "").lower()
+        == source_sha
+        and not predecessor_payload.get("bound_build_task_id")
+        and predecessor_payload.get("utility_phase") is True
+        and predecessor_payload.get("no_gate_verdict") is True
+        and fixed_risk == 1000.0
+        and percent_risk == 0.0
+    ):
+        return None
+    return predecessor_id
+
+
 def _sanctioned_compile_predecessor_ids(
     payload: dict[str, Any],
     inventory: dict[str, Any],
     ea_id: str,
     *,
     seen: frozenset[str] = frozenset(),
+    current_work_item_id: str | None = None,
 ) -> set[str]:
     """Return only incident-authorized immutable COMPILE_EA lineage.
 
@@ -3005,6 +3100,18 @@ def _sanctioned_compile_predecessor_ids(
     source_sha = str(payload.get("mq5_sha256") or "").lower()
     if not _BOUND_HASH_RE.fullmatch(source_sha):
         return set()
+
+    qm5_41285_predecessor = (
+        _qm5_41285_unbound_compile_predecessor_authorized(
+            payload,
+            inventory,
+            ea_id,
+            current_work_item_id,
+            seen,
+        )
+    )
+    if qm5_41285_predecessor:
+        return {qm5_41285_predecessor}
 
     qm5_41245_predecessor = (
         _qm5_41245_setfile_unbind_predecessor_authorized(
@@ -3055,6 +3162,7 @@ def _sanctioned_compile_predecessor_ids(
             inventory,
             ea_id,
             seen=seen | {predecessor_id},
+            current_work_item_id=predecessor_id,
         )
         if not earlier:
             return set()
@@ -3096,6 +3204,7 @@ def _sanctioned_compile_predecessor_ids(
             inventory,
             ea_id,
             seen=seen | {predecessor_id},
+            current_work_item_id=predecessor_id,
         )
         # A retry is valid only when its failed predecessor itself has the exact
         # R11 revival lineage. This prevents a forged retry marker from hiding
@@ -3736,6 +3845,7 @@ def run_compile_work_item(
                 payload,
                 inventory,
                 parts[1],
+                current_work_item_id=work_item_id,
             )
             if parts
             else set()

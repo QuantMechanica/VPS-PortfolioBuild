@@ -2993,3 +2993,85 @@ def test_terminal_worker_routes_compile_before_generic_ex5_preflight(
 
     assert result == {"action": "compile_ea_finished", "success": True}
     assert called == {"root": root, "repo": repo, "id": "compile-row", "terminal": "T3"}
+
+
+def test_qm5_41285_unbound_compile_retry_is_exact_and_append_only() -> None:
+    predecessor_id = (
+        compile_work_items.QM5_41285_UNBOUND_COMPILE_RETRY_PREDECESSOR_ID
+    )
+    successor_id = "qm5-41285-bound-successor"
+    source_sha = compile_work_items.QM5_41285_UNBOUND_COMPILE_RETRY_SOURCE_SHA256
+    predecessor_payload = {
+        "compile_contract_version": compile_work_items.COMPILE_CONTRACT_VERSION,
+        "ea_label": compile_work_items.QM5_41285_UNBOUND_COMPILE_RETRY_EA_LABEL,
+        "mq5_sha256": source_sha,
+        "risk_contract": {"RISK_FIXED": 1000.0, "RISK_PERCENT": 0.0},
+        "utility_phase": True,
+        "no_gate_verdict": True,
+    }
+    successor_payload = {
+        **predecessor_payload,
+        "compile_build_task_binding_contract_version": (
+            compile_work_items.BUILD_TASK_BINDING_CONTRACT_VERSION
+        ),
+        "bound_build_task_id": "build-task-41285",
+        "bound_build_task_ea_id": "QM5_41285",
+        "compile_unbound_task_retry_contract_version": (
+            compile_work_items.QM5_41285_UNBOUND_COMPILE_RETRY_CONTRACT_VERSION
+        ),
+        "compile_unbound_task_retry_authority": (
+            compile_work_items.QM5_41285_UNBOUND_COMPILE_RETRY_AUTHORITY
+        ),
+        "retry_of_work_item_id": predecessor_id,
+        "unbound_compile_retry_work_item_id": successor_id,
+        "append_only_unbound_task_retry": True,
+    }
+    predecessor = {
+        "id": predecessor_id,
+        "kind": "compile",
+        "phase": "COMPILE_EA",
+        "status": "pending",
+        "verdict": None,
+        "attempt_count": 0,
+        "claimed_by": None,
+        "parent_task_id": None,
+        "setfile_path": "",
+        "evidence_path": None,
+        "ex5_sha256": None,
+        "payload_json": json.dumps(predecessor_payload, sort_keys=True),
+    }
+    successor = {
+        "id": successor_id,
+        "kind": "compile",
+        "phase": "COMPILE_EA",
+        "status": "pending",
+        "verdict": None,
+        "payload_json": json.dumps(successor_payload, sort_keys=True),
+    }
+    inventory = {
+        "work_rows": {"41285": [predecessor, successor]},
+        "superseded_by": {predecessor_id: {successor_id}},
+    }
+
+    sanctioned = compile_work_items._sanctioned_compile_predecessor_ids(
+        successor_payload,
+        inventory,
+        "41285",
+        current_work_item_id=successor_id,
+    )
+
+    assert sanctioned == {predecessor_id}
+    assert compile_work_items._sanctioned_compile_predecessor_ids(
+        successor_payload,
+        inventory,
+        "41285",
+        current_work_item_id="different-successor",
+    ) == set()
+    tampered = dict(successor_payload)
+    tampered["mq5_sha256"] = "0" * 64
+    assert compile_work_items._sanctioned_compile_predecessor_ids(
+        tampered,
+        inventory,
+        "41285",
+        current_work_item_id=successor_id,
+    ) == set()
