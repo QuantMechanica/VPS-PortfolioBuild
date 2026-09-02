@@ -23714,6 +23714,10 @@ def enqueue_fresh_q02_seed(
             FROM work_items
             WHERE ea_id=? AND phase IN ('Q02','P2')
               AND status IN ('pending','active')
+              AND NOT EXISTS (
+                SELECT 1 FROM work_item_supersedes s
+                WHERE s.work_item_id=work_items.id
+              )
             ORDER BY created_at ASC
             """,
             (ea_id,),
@@ -23835,6 +23839,10 @@ def enqueue_fresh_q02_seed(
               AND json_extract(
                 payload_json, '$.requalification_old_work_item_id'
               )=?
+              AND NOT EXISTS (
+                SELECT 1 FROM work_item_supersedes s
+                WHERE s.work_item_id=work_items.id
+              )
             ORDER BY created_at ASC LIMIT 1
             """,
             (ea_id, source["symbol"], source_id),

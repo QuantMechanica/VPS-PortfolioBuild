@@ -1914,6 +1914,82 @@ def test_fresh_q02_seed_refuses_open_same_symbol_but_not_other_symbol(
     assert blocked["existing_work_item_id"] == allowed["created"][0]["id"]
 
 
+def test_fresh_q02_seed_ignores_canonically_superseded_prior_seed(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    _insert_work_item(
+        art,
+        item_id="q02-prebinding",
+        kind="backtest_p2",
+        phase="Q02",
+        status="failed",
+        verdict="INFRA_FAIL",
+        payload={
+            **_prebinding_payload("EURUSD.DWX"),
+            "basket_symbols": ["EURUSD.DWX", "GBPUSD.DWX"],
+            "logical_symbol": "EURUSD_GBPUSD_BASKET",
+        },
+        symbol="EURUSD_GBPUSD_BASKET",
+    )
+
+    first = farmctl.enqueue_fresh_q02_seed(
+        art["root"],
+        art["ea_id"],
+        old_work_item_id="q02-prebinding",
+        requal_reason="first current-binary qualification",
+        expected_current_ex5_sha256=art["current_ex5"],
+    )
+    assert first["enqueued"]
+    first_id = first["created"][0]["id"]
+
+    root = art["root"]
+    ex5 = art["ex5"]
+    assert isinstance(root, Path)
+    assert isinstance(ex5, Path)
+    ex5.write_bytes(b"governed repaired binary")
+    repaired_ex5 = farmctl._sha256_file(ex5)
+    with sqlite3.connect(root / farmctl.DB_REL) as conn:
+        conn.execute(
+            """
+            INSERT INTO work_item_supersedes(
+                work_item_id, superseded_by_work_item_id, reason,
+                source_encoding, evidence_path, recorded_by, recorded_at
+            ) VALUES(?, NULL, ?, 'operator:record', NULL, 'test', ?)
+            """,
+            (
+                first_id,
+                "binary rebuilt before the pending seed was claimed",
+                "2026-09-02T00:00:00Z",
+            ),
+        )
+        conn.commit()
+
+    second = farmctl.enqueue_fresh_q02_seed(
+        root,
+        art["ea_id"],
+        old_work_item_id="q02-prebinding",
+        requal_reason="governed repaired binary must requalify",
+        expected_current_ex5_sha256=repaired_ex5,
+    )
+
+    assert second["enqueued"]
+    assert second["created"][0]["id"] != first_id
+    with sqlite3.connect(root / farmctl.DB_REL) as conn:
+        historical = conn.execute(
+            "SELECT status,verdict FROM work_items WHERE id=?", (first_id,)
+        ).fetchone()
+        successor_payload = json.loads(
+            conn.execute(
+                "SELECT payload_json FROM work_items WHERE id=?",
+                (second["created"][0]["id"],),
+            ).fetchone()[0]
+        )
+    assert historical == ("pending", None)
+    assert successor_payload["expected_ex5_sha256"] == repaired_ex5
+    assert _work_item_count(art) == 3
+
+
 def test_q03_exact_identity_refuses_broad_fanout(tmp_path: Path, monkeypatch) -> None:
     art = _artifacts(tmp_path, monkeypatch)
 
