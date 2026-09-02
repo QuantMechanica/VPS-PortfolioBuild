@@ -60,3 +60,21 @@ That RED is the correct pre-change result: the current profile still has the sev
 - Sleeve execution / KS evidence: `docs/ops/evidence/2026-09-02_ceo_wave1_sleeve-execution-parity.md`; `D:\QM\reports\state\live_book_pulse.json`.
 
 No T_Live file or database row was changed while preparing this package.
+
+## Rechen- und Speicherkapazität — Optionen für den 06.09. (CEO, 2026-09-02 14:30Z)
+
+**Befund heute (Messungen, nicht Schätzungen):**
+- Der Durchsatzverlust der letzten Tage kam überwiegend aus der Steuerungsebene (Pump-Kaskade tot, Claim-Hashing 2–3 GB/s, Purge-Schleife, Poison-Programm) — alles heute gefixt; Zellen 0–5/10 min → 8–9/10 min.
+- Nach den Fixes ist **RAM** der härteste Deckel: 63 GB physisch, Tester brauchen 5–12 GB (XAUUSD-Läufe 11–12 GB, Index-Tick-Läufe bis 44 GB); ab sechs gleichzeitigen Testern paged der Host (13:45Z: 0,9 GB frei, 16k Pages/s, drei Worker tot). Ehrliche Kapazität: **5–6 Tester parallel**.
+- **CPU** (16 logische Kerne, SMT) liegt bei 60–96 % — zweiter Deckel, aber erst hinter dem RAM.
+- **D:** (1 TB, ~70 GB frei) war nur wegen der Steuerungsdefekte gesättigt; 10×43 GB Custom-History sind strukturell, Purge-LowWater auf 60 GB gesetzt.
+
+**Was das für das Ziel heißt:** ein DL-089-Zensus hat ~1.085 Zellen (mit Pruning ~700) à ~7 min; bei 40–50 Zellen/h ≈ 15–20 h je Programm. 25 terminale Paare ≈ 25 Programme ≈ **3 Wochen auf dieser Maschine, wenn sie sauber läuft** (heute 279 Zellen). Jede Verdopplung der Kapazität halbiert das.
+
+**Optionen (Vorbereitung für Sonntag):**
+1. **VPS bleibt, zweite Bare-Metal-Box als Satelliten-Fabrik** (z. B. Hetzner AX52, 64→128 GB RAM, ~€90–110/Monat): +8–10 Tester. Voraussetzung: Multi-Host-Design — Custom-History-Archiv (43 GB je Terminal, signiertes Manifest) auf den zweiten Host verteilen, Work-Queue/Evidenz-Sync (SQLite ist Single-Host; kein SQLite über SMB), Containment je Host, gleicher Darwinex-Login. Aufwand: Codex-Spike + ~1–2 Wochen Umbau. Dauerbetrieb am günstigsten.
+2. **AWS/Cloud-Burst** (c6i.4xlarge 16 vCPU/32 GB ≈ $0,68/h on-demand ≈ $500/Monat; r6i.4xlarge 128 GB ≈ $1/h; Spot ≈ −60 %, aber Unterbrechungen killen 2–4-h-Läufe (Q07/News)): sinnvoll nur für Kampagnen-Bursts, nicht für Dauerbetrieb; gleiche Multi-Host-Voraussetzungen wie 1., plus Windows-Lizenz/AMI und Archiv-Transfer (430 GB) je Instanz.
+3. **MT5 Remote Agents** (Spike 52032627 liegt im Board): hilft nur im Optimizer-Modus; unsere Zellen sind Einzel-Backtests mit Custom-Symbolen → geringer Hebel, wahrscheinlich NO-GO; Spike bestätigt das billig.
+4. **Kein Zukauf, Software weiter schärfen:** Claim-Overhead (Prestage/Hash) ist heute gecacht; verbleibender Hebel ~10–20 %. Reicht nicht für die Zeitlinie.
+
+**CEO-Empfehlung für Sonntag:** Option 1 als Standardpfad (bestes €/Zellen-Stunde, keine Unterbrechungen), Option 2 nur als Burst-Werkzeug für OOS-/News-Kampagnen. Vorab beauftrage ich den Multi-Host-Spike (Archivverteilung, Queue-Sync, Kosten je Zellen-Stunde) an Codex, damit am Sonntag Zahlen statt Vermutungen vorliegen. Kauf/Anmietung bleibt OWNER-Entscheidung.
