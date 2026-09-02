@@ -16521,6 +16521,37 @@ def _q08_input_for_news_predecessor(
     return row
 
 
+def _q08_input_row_for_news_promotion(
+    conn: sqlite3.Connection, work_item: sqlite3.Row
+) -> sqlite3.Row | None:
+    """Return the Q08 row that feeds the news phase for ``work_item``.
+
+    2026-09-02 (CEO): under gate manifest v4 the news phase follows the Q09
+    baseline full run, but the cascade kept passing the promoted Q09 row itself
+    as the ``Q08_INPUT`` dependency parent; the q09_news_dependencies trigger
+    rejects that (``Q08_INPUT phase mismatch``) and 50 Q09 PASS pairs never got
+    a news row. A Q08 row is returned unchanged; for any other phase the pair's
+    latest done Q08 row with an allowed verdict (same setfile first, then any
+    setfile) is resolved.
+    """
+    if str(work_item["phase"] or "").upper() == "Q08":
+        return work_item
+    base = (
+        "SELECT * FROM work_items WHERE ea_id=? AND symbol=? AND phase='Q08' "
+        "AND status='done' AND verdict IN ('PASS','FAIL_SOFT')"
+    )
+    row = conn.execute(
+        base + " AND setfile_path=? ORDER BY updated_at DESC LIMIT 1",
+        (work_item["ea_id"], work_item["symbol"], work_item["setfile_path"]),
+    ).fetchone()
+    if row is None:
+        row = conn.execute(
+            base + " ORDER BY updated_at DESC LIMIT 1",
+            (work_item["ea_id"], work_item["symbol"]),
+        ).fetchone()
+    return row
+
+
 def _add_q08_input_dependency(
     conn: sqlite3.Connection,
     *,
@@ -18845,9 +18876,21 @@ def _pump_unlocked(
                     })
                     continue
                 q08_evidence_sha256: str | None = None
+                q08_input_row: sqlite3.Row | None = None
                 q10_dependency_context: dict[str, Any] | None = None
                 if successor_phase == _NEWS_PHASE:
-                    q08_evidence_sha256 = _work_item_evidence_sha256(wi)
+                    q08_input_row = _q08_input_row_for_news_promotion(conn, wi)
+                    if q08_input_row is None:
+                        result["cascade_promotions_skipped"].append({
+                            "ea_id": wi["ea_id"],
+                            "symbol": wi["symbol"],
+                            "from_phase": prev_phase,
+                            "to_phase": successor_phase,
+                            "from_work_item_id": wi["id"],
+                            "reason": "q08_input_row_missing",
+                        })
+                        continue
+                    q08_evidence_sha256 = _work_item_evidence_sha256(q08_input_row)
                     if not q08_evidence_sha256:
                         result["cascade_promotions_skipped"].append({
                             "ea_id": wi["ea_id"],
@@ -18918,7 +18961,7 @@ def _pump_unlocked(
                             _add_q08_input_dependency(
                                 conn,
                                 child_work_item_id=new_id,
-                                q08_work_item=wi,
+                                q08_work_item=q08_input_row if q08_input_row is not None else wi,
                                 evidence_sha256=str(q08_evidence_sha256),
                             )
                             _mark_q09_awaiting_sealed_plan(
