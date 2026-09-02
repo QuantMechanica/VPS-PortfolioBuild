@@ -3831,3 +3831,21 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_dl089_prerequisite_seed_uses_census_ram_class():
+    """OQ-SIBLING-SEED-RANK-20260902 follow-through: a DL-089 measurement-sibling
+    Q02 prerequisite seed is reserved like the census cells it unlocks (4 GB);
+    an ordinary Q02 row keeps the ordinary 8 GB class."""
+    seed = {"phase": "Q02", "symbol": "XAUUSD.DWX", "ea_id": "QM5_S"}
+    seed_payload = {"schema": "qm.dl089-measurement-q02-prerequisite/v1"}
+    plain = {"phase": "Q02", "symbol": "XAUUSD.DWX", "ea_id": "QM5_P"}
+    assert terminal_worker._ram_reservation_for_candidate(seed, seed_payload, False) == (
+        terminal_worker.RAM_CLASS_OPT_CENSUS_CELL, 4.0
+    )
+    assert terminal_worker._ram_reservation_for_candidate(plain, {}, False) == (
+        terminal_worker.MULTISYMBOL_COMMIT_CLASS_ORDINARY, 8.0
+    )
+    assert terminal_worker._ram_reservation_for_candidate(seed, seed_payload, True) != (
+        terminal_worker.RAM_CLASS_OPT_CENSUS_CELL, 4.0
+    )

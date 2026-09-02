@@ -867,10 +867,20 @@ def _ram_reservation_for_candidate(
 ) -> tuple[str, float]:
     """Return the conservative physical-RAM class and launch reservation."""
 
+    phase_upper = str(_work_item_value(item, "phase", "") or "").upper()
+    if not multisymbol and phase_upper == "OPT_CENSUS":
+        return RAM_CLASS_OPT_CENSUS_CELL, OPT_CENSUS_RAM_RESERVATION_GB
+    # OQ-SIBLING-SEED-RANK-20260902 follow-through (CEO 2026-09-02): a DL-089
+    # measurement-sibling Q02 prerequisite seed runs the same program window
+    # on the same symbol as the census cells it unlocks (single symbol, D1/H1
+    # smoke window); its tester footprint is the census-cell class, not the
+    # 8 GB ordinary reservation that kept the seeds RAM-skipped while census
+    # cells were admitted. Identified by the exact seed-path payload schema.
     if (
         not multisymbol
-        and str(_work_item_value(item, "phase", "") or "").upper()
-        == "OPT_CENSUS"
+        and phase_upper == "Q02"
+        and str((payload or {}).get("schema") or "")
+        == "qm.dl089-measurement-q02-prerequisite/v1"
     ):
         return RAM_CLASS_OPT_CENSUS_CELL, OPT_CENSUS_RAM_RESERVATION_GB
     ram_class = _multisymbol_commit_class(item, payload, multisymbol)
