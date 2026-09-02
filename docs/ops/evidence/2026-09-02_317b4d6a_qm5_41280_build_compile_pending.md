@@ -130,6 +130,28 @@ rows. All T1-T10 workers were active or atomically claimed. This is a governed
 priority/capacity defer, not compile evidence and not authorization to change
 queue priority.
 
+## Review-dispatch gate and router disposition
+
+After committing the source checkpoint, an exact requested transition to
+`REVIEW` with this evidence was deterministically refused by the canonical
+router:
+
+```text
+gate_code=D6_BUILD_IDENTITY_MISSING
+reason=build_identity_json_missing_review_dispatch_refused
+updated=false
+```
+
+That refusal is correct. Build tasks may enter REVIEW only with a committed
+JSON packet proving strict-build PASS and binding the exact MQ5, EX5, and
+final-hash setfile bytes. This compile has not run, there is no EX5, and the
+setfile intentionally remains at its precompile `build_hash: pending` state.
+No build-identity JSON was fabricated.
+
+The truthful task disposition is therefore `BLOCKED` on the already released
+resident-worker compile work item. This is not a request for a queue-priority
+override, another compile row, an ad-hoc compile, or a pipeline action.
+
 ## Continuation boundary
 
 The resident worker may compile only the released, source-hash-matching row.
@@ -149,4 +171,5 @@ review. Until then:
 `Q01_SOURCE_BUILT_COMPILE_RELEASED_PENDING_PRIORITY_CAPACITY`: approved-card
 source, SPEC, locked set, fixtures, static checks, and exact controlled compile
 release are complete; the resident worker has not claimed the unheld row, so
-there is no EX5 and no build or pipeline PASS.
+there is no EX5 and no build or pipeline PASS. Canonical D6 correctly refused
+REVIEW; the task is blocked pending that governed compile evidence.
