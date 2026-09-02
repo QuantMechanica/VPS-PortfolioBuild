@@ -15,7 +15,8 @@ parent_sha256:
   AI-CODEX-WTI-MSIEGEL-TUKEY-SCALE-20260901: 3BDFD314CAC96641DC994553CBB023FC88AFD7F435DDDCD296D30C9BAB6171C2
 created: 2026-09-02
 created_by: Research+Development
-cards_extracted: []
+cards_extracted:
+  - QM5_41286_xauxag-msiegel-tukey-rv
 ---
 
 # XAU/XAG Monthly Siegel-Tukey Tail-Occupancy Reversion
