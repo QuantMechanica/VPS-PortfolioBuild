@@ -1,0 +1,39 @@
+{
+  "schema": "qm.claim-write-lock-measurement/v1",
+  "generated_at_utc": "2026-09-02T16:07:19Z",
+  "router_task_id": "09c5a4b4-8a97-4c13-845a-ca5150c3bce6",
+  "implementation_commit": "522662de1d",
+  "fixture": "20 isolated canonical-schema single-candidate P3 claims",
+  "samples": 20,
+  "write_lock_ms": {
+    "minimum": 2.976,
+    "maximum": 8.752,
+    "mean": 4.048,
+    "acceptance_maximum": 1000.0,
+    "pass": true
+  },
+  "end_to_end_claim_ms": {
+    "mean": 430.453
+  },
+  "race_test": {
+    "writer_action": "insert active work_item hold after candidate read",
+    "writer_acquired_during_selection": true,
+    "final_status": "pending",
+    "final_claimed_by": null,
+    "hold_active": true,
+    "pass": true
+  },
+  "worker_suite": {
+    "passed": 209,
+    "subtests_passed": 4,
+    "failed": 0,
+    "duration_seconds": 80.73
+  },
+  "live_rollout": {
+    "attempted_worker_stops": 0,
+    "reason": "governed spawner THROTTLED on RAM; stopping an idle worker would reduce its next decision to the already-running fleet and prevent governed replacement",
+    "free_ram_gb": 5.31,
+    "active_terminal_rows": 6,
+    "deferred": true
+  }
+}
