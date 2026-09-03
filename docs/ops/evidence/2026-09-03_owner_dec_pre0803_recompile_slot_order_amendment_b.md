@@ -359,3 +359,12 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   loop every 45 s until ~22:30Z); census 11 cells/10 min during the burst, RAM 14.9 GB free. Opus workflows running:
   B+C (wf_3d2098c6-6f4), vein-1 affordance + decay-test fix (wf_28c0e10b-c08), G1/G2/G8 (wf_8c3a9afe-b0f),
   G3 orthogonality standard (wf_18ea64f8-b1c).
+- 16:07Z–16:20Z: RAM identified as the binding fleet constraint (51.9/63.1 GB used: 4 testers 32.6 GB, terminals 3.8,
+  workers/pump 3.0, Opus agents ~3.5, RDP browsers ~3.3; six workers latched at 11.3 GB free) — OWNER Vorlage for a
+  RAM upgrade filed; T3 20085 Q07 (11.5 GB) left to run out per the park packet. Merged after verified verdicts:
+  decay-test fix `5ec57fdfdd` (16/16), vein-1 affordance `c77a8c9dc1` (`farmctl requeue-false-invalid-setfile`,
+  +564 additive, 62 tests; canonical dry-run on 27d2a2ab = would_enqueue true; wave 1 stays the 04.09 04:00Z
+  Auffangregel), G1/G2/G8 `58221e3401` (order template + minter, q15_fit_report, rehearsal: 6 defects, D3/D4
+  structural), G5 Vorlage + hygiene audit + first fit report `4f02c7f1c5` (all 18 legacy COMPILE_EA rows already
+  superseded → no action; G5 epoch sentence corrected after refutation). D1–D6 fix workflow launched
+  (wf_10455ec8-70e). Fleet back to 10/10 active at 16:19Z (19.9 GB free), 12580 Q02 `d53328e2` running on T7.

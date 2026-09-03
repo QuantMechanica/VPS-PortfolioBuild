@@ -267,7 +267,7 @@ signature.
 `deployment_epoch_utc = 2026-07-24T06:42:00Z` is the manifest's `generated_at`
 (file-provenance), but the book's actual go-live is `2026-07-19 ~15:50 CEST ≈ 13:50Z`
 (`decisions/2026-07-19_t_live_dxz_sunday_final_book.md`), and
-`scripts/sunday_livevsbook_compare.ps1` no longer hardcodes an epoch: since SP-A2 (header 2026-08-22) its `-DeploymentEpoch` defaults to `$null` and is read from the runtime deploy pointer (`scripts/sunday_livevsbook_compare.ps1:41`, `:60-72`), which today carries `2026-07-24T06:42:00+00:00`; the script header records abandoning the hardcoded `07-19` because it drifted from the deployed 24-sleeve manifest (`:24-27`). Adopting `07-19` therefore CHANGES the consumer's effective epoch rather than matching it (CEO correction 2026-09-03 16:35Z after the adversarial verifier refuted the original sentence). The morning-brief
+`scripts/sunday_livevsbook_compare.ps1` no longer hardcodes an epoch: since SP-A2 (header 2026-08-22) its `-DeploymentEpoch` defaults to `$null` and is read from the runtime deploy pointer (`scripts/sunday_livevsbook_compare.ps1:41`, `:60-72`), which today carries `2026-07-24T06:42:00+00:00`; the script header records abandoning the hardcoded `07-19` because it drifted from the deployed 24-sleeve manifest (`:24-27`). Adopting `07-19` therefore CHANGES the consumer's effective epoch rather than matching it (CEO correction 2026-09-03 16:18Z after the adversarial verifier refuted the original sentence). The morning-brief
 lamp only checks the epoch *parses* (`morning_brief.py:740`), so the lamp is unaffected — but
 burn-in / "days-live" math is **understated by 5 days** if 07-24 is signed in. Full analysis:
 `docs/ops/evidence/2026-08-22_sp-a1_deployment_epoch_discrepancy_note.md`. **Decision needed:**
@@ -329,7 +329,7 @@ it has no T_Live effect on its own; the deployed presets/binaries roll back via
 freeze change, no queue/DB write, no commit. The generator ran once, unsigned, `--dry-run`
 (no bytes written). Every ROT action above remains a separate OWNER act.
 
-## CEO verification notes (2026-09-03 16:35Z, workflow wf_b892e025-176)
+## CEO verification notes (2026-09-03 16:18Z, workflow wf_b892e025-176)
 
 Verifier re-derived ~17 claims (pointer sha, manifest sha equality, roster
 identity, fingerprint, n_binary_missing=0, account/server/phase/epoch) and
