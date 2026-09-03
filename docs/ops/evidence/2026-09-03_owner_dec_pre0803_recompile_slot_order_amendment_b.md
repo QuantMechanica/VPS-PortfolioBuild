@@ -350,3 +350,12 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
 - 15:50Z: Opus workflows launched — runbook revision (wf_6be351fc-4b6: FTMO claim refuted, builder already does
   aggregate control), proposals B + C (wf_3d2098c6-6f4). 17 legacy unheld COMPILE_EA rows from 21.–24.08. (41097,
   11465, 9914, 13128 …) sit pending with 0 attempts and no release binding — queue-hygiene item, not on the 25-path.
+- 15:52Z–16:07Z: tester peak-memory ledger + measured RAM admission merged worker-side (`77fc3266a6`, Opus wf_54b66153-8a7
+  verified; 3-way apply onto the census-floor commit; 112 worker tests green); reload chunk 19 (six workers already
+  reloaded by chunk 18) queued behind chunk 18. Runbook committed `c032dbb1a5` after the revision verdict (FTMO
+  aggregate control corrected). Old-identity zombies superseded (`work_item_supersedes record --apply`): 10815 Q10_NEWS
+  `57d8bacd`; 12580 Q09 `a2431935` + Q10_NEWS `aece4bcc` (all pre-binding, would bind the superseded binary).
+  Host at 100 % CPU from parallel Opus test runs → agent/test processes set to Idle/BelowNormal (`prio_normalize.ps1`
+  loop every 45 s until ~22:30Z); census 11 cells/10 min during the burst, RAM 14.9 GB free. Opus workflows running:
+  B+C (wf_3d2098c6-6f4), vein-1 affordance + decay-test fix (wf_28c0e10b-c08), G1/G2/G8 (wf_8c3a9afe-b0f),
+  G3 orthogonality standard (wf_18ea64f8-b1c).
