@@ -174,6 +174,7 @@ OFFICIAL_RULE_SNAPSHOT_SHA256 = (
 EXPECTED_OFFICIAL_SOURCE_IDS = frozenset(
     {
         "ftmo_trading_objectives_official",
+        "ftmo_economic_terms_official",
         "ftmo_2_step_challenge_official",
         "ftmo_news_official",
         "ftmo_weekend_official",
@@ -303,6 +304,53 @@ EXPECTED_OFFICIAL_RULE_SEMANTICS: dict[str, dict[str, Any]] = {
             "non_replicable_risk_allowed": False,
         },
         "source_ids": ["ftmo_forbidden_practices_official"],
+    },
+    "ftmo_2s_evaluation_fee": {
+        "category": "OPERATIONAL_LIMIT",
+        "scope": ["FTMO_2_STEP_PHASE1", "USD_100000"],
+        "parameters": {
+            "list_fee_usd": "540",
+            "fee_type": "ONE_TIME_REFUNDABLE_AFTER_SUCCESS",
+        },
+        "source_ids": ["ftmo_economic_terms_official"],
+    },
+    "ftmo_2s_fee_refund": {
+        "category": "TRADING_CONDITION",
+        "scope": ["FTMO_ACCOUNT_2_STEP", "USD_100000"],
+        "parameters": {
+            "refund_percent": "100",
+            "trigger": "FIRST_REWARD",
+        },
+        "source_ids": ["ftmo_economic_terms_official"],
+    },
+    "ftmo_2s_reward_split": {
+        "category": "TRADING_CONDITION",
+        "scope": ["FTMO_ACCOUNT_2_STEP"],
+        "parameters": {
+            "base_percent": "80",
+            "maximum_percent": "90",
+        },
+        "source_ids": ["ftmo_economic_terms_official"],
+    },
+    "ftmo_swing_leverage": {
+        "category": "RISK_LIMIT",
+        "scope": ["FTMO_ACCOUNT_SWING"],
+        "parameters": {
+            "fx": "1:30",
+            "metals": "1:15",
+            "oil": "1:15",
+        },
+        "source_ids": ["ftmo_economic_terms_official"],
+    },
+    "ftmo_2s_scaling_plan": {
+        "category": "TRADING_CONDITION",
+        "scope": ["FTMO_ACCOUNT_2_STEP"],
+        "parameters": {
+            "balance_increase_percent": "25",
+            "minimum_months": 4,
+            "reward_split_percent": "90",
+        },
+        "source_ids": ["ftmo_economic_terms_official"],
     },
 }
 

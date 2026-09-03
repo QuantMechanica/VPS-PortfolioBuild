@@ -1548,6 +1548,25 @@ def test_official_source_snapshot_identity_and_claims_are_exact() -> None:
         evaluator._validate_official_rule_sources(rulepack, claim_drift, now_utc=now)
 
 
+def test_official_source_id_set_rejects_unknown_extra_source() -> None:
+    now = dt.datetime(2026, 7, 30, 1, 30, tzinfo=dt.UTC)
+    rulepack = _rulepack()
+    snapshot = json.loads(
+        (evaluator.REPO_ROOT / evaluator.OFFICIAL_RULE_SNAPSHOT_RELATIVE_PATH).read_text(
+            encoding="utf-8"
+        )
+    )
+    extra = json.loads(json.dumps(rulepack))
+    injected = dict(extra["official_sources"][0])
+    injected["source_id"] = "ftmo_unlisted_unknown_official"
+    extra["official_sources"].append(injected)
+    with pytest.raises(
+        evaluator.StandaloneEvaluationError,
+        match="official_source_id_set_invalid",
+    ):
+        evaluator._validate_official_rule_sources(extra, snapshot, now_utc=now)
+
+
 def test_rulepack_as_of_and_official_snapshot_freshness_are_fail_closed() -> None:
     as_of_drift = _rulepack()
     as_of_drift["as_of"] = "1900-01-01"
