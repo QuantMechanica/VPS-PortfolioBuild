@@ -460,3 +460,11 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
 - 19:35Z: **V1(b) Auffangregel executed** exactly as the verified packet: append-only Q05 rerun 10911/GDAXI `57aad04d`
   (rerun of f4ac4d5c INFRA_FAIL, predecessor Q04 538405f6 PASS, ex5 5199e260 unchanged). Nothing else was governed
   to run for 1556/12969 (news gate) or 10403/11708 (program slots).
+- 19:45Z–20:05Z: the Opus seats hit the weekly session limit (reset 20:00Z): governor v2 (wf_36c785e8-af5) delivered
+  its design + adapter but the verifier died → NOT merged; the run_smoke hardening + false-zero sweep
+  (wf_2dc8f552-a32) delivered nothing. Both resumed 20:05Z after the reset; a drain-window arming refinement was
+  commissioned (wf_f29d8ff0-37c). A drain had armed at 19:48:54Z for e046b36b (11129 Q07, 44 GB index class) while two
+  Q07 and two Q10_NEWS long runs held RAM at 16 GB free and most workers still lack the drain-floor code (chunk 22
+  queued) - unwinnable within 30 min, census-only cost - closed by hand in drain_window.json (active=None, 6 h
+  cooldown until 02:04Z). Fabric 20:03Z: 8 active (2 Q07, 2 news incl. 10700 expansion 152e8d29 on T4, 4 census),
+  17 cells/10 min, 16 GB free, C: 82 GB, pump 20:03Z, guardian alive (4), chunk 20 9/10 (T1 last).
