@@ -212,3 +212,8 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
 - 06:30Z–06:45Z: 12710 Q07 `fad536b4` **PASS** (06:30Z) → Q08 `bfda1943` enqueued; 11910 Q07 `797f03ae`
   claimed by T5 06:31Z (third slot); 10700 Q07 `21317bcc` pending behind the cap. Amendment B tuple's last
   element now resolved through the v4 contract map (`4884fbbab5`, value unchanged).
+- 07:25Z–07:40Z: 12710 Q08 `bfda1943` FAIL_SOFT (gate-scoped PASS under OWNER-DEC-DL082-EXT Option D, same
+  disposition as the prior identity) → Q09 `e1f7a095` enqueued (rerun of 51a2cd5c). 11910 Q08 `e0237a77`
+  claimed by T4 07:26Z; 10700 Q07 `21317bcc` claimed by T7 07:35Z after the 20085 EURUSD recovery run hit its
+  216-min budget (INFRA_FAIL 07:28Z, fourth attempt). Next: at 12710 Q09 PASS the pre-0803 Q10_NEWS zombie
+  `678b8cac` must be recorded as superseded before the news gate re-mints Q10_NEWS on the new identity.
