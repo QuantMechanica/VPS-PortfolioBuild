@@ -482,3 +482,10 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   sweep since 08-15 (`bd3ef7ff81`): 133 candidates, exactly ONE false zero (12580 Q03), 18 genuine zeros, 96 genuine
   below-floor, 5 evidence purged. 12580/AUDUSD Q03 append-only rerun enqueued `9cac4667` (from Q02 d53328e2, rerun of
   a64d18d3, ex5 9541ef44 unchanged) — run_smoke starts fresh per run, so the fix applies immediately.
+- 21:35Z: **Auffangregel executed** (Vorlage 09:35Z, no OWNER answer within 12 h): governed hold RECOVERY_BUDGET_EXHAUSTED
+  applied on the only pending 20085 recovery row `0bc6a5bc` (WS30 Q07) with the packet's exact reason/release
+  condition (plan → apply, backup taken, row non-claimable, verdict untouched); XAUUSD `19d3d8e5` had reaped
+  INFRA_FAIL at 17:31Z, EURUSD has no pending row → the r1-recovery track is parked. Fabric 21:35Z: 5 active (two
+  Q10_NEWS incl. the 10700 expansion, two Q07, one Q04), 10.9 GB free → census latched (10 cells/10 min), CPU 52 %,
+  C: 88.7 GB, pump 21:33Z, guardian alive, T_Live journal 21:04Z. 12580 Q03 `9cac4667`, 10911 Q05 `57aad04d`,
+  10815 Q02 `bd12175c` pending on RAM. Reload chunk 21 8/10 (T1/T4 hold the news runs).
