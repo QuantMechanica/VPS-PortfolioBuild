@@ -155,6 +155,13 @@ _last_disk_purge_trigger = [0.0]
 # runs already started; resume only once 20 GB are free. Rollback: 6.0 / 12.0.
 RAM_MIN_FREE_GB = 14.0
 RAM_RESUME_FREE_GB = 20.0
+# 2026-09-03 (CEO): a governed COMPILE_EA row needs well under 1 GB, yet the
+# 14/20 GB latch idled six workers for hours while three DL-089 sibling
+# compiles (the critical path to a pair's census) waited.  Under the latch a
+# worker may still claim COMPILE_EA rows -- and only those -- as long as free
+# RAM stays above this small floor.  Backtests keep the full latch.
+COMPILE_RAM_MIN_FREE_GB = 3.0
+_RAM_LATCH_COMPILE_ONLY = False
 RAM_GUARD_SLEEP_SECONDS = 20
 TEST_FREE_RAM_GB_ENV = "QM_TEST_FREE_RAM_GB"
 # CPU admission (OWNER 2026-08-15): don't add testers while the box is already
@@ -2126,6 +2133,41 @@ def _claim_queue_may_need_mutation(root: Path, terminal: str) -> bool:
         return True
 
 
+def _ram_latch_compile_bypass_available(root: Path, free_ram_gb: float) -> bool:
+    """Allow only a claimable COMPILE_EA row through the RAM latch.
+
+    Fail closed on any DB ambiguity; the floor keeps a small margin for the
+    compiler process itself.  Mirrors ``_ram_latch_opt_census_bypass_available``.
+    """
+    if free_ram_gb < COMPILE_RAM_MIN_FREE_GB:
+        return False
+    db_path = root / farmctl.DB_REL
+    if not db_path.is_file():
+        return False
+    try:
+        uri = f"file:{db_path.as_posix()}?mode=ro"
+        with sqlite3.connect(uri, uri=True, timeout=1) as conn:
+            row = conn.execute(
+                """
+                SELECT 1 FROM work_items w
+                WHERE w.status='pending' AND upper(w.phase)=?
+                  AND NOT EXISTS (
+                    SELECT 1 FROM work_item_holds h
+                    WHERE h.work_item_id=w.id AND h.active=1
+                  )
+                  AND NOT EXISTS (
+                    SELECT 1 FROM work_item_supersedes s
+                    WHERE s.work_item_id=w.id
+                  )
+                LIMIT 1
+                """,
+                (farmctl.COMPILE_EA_PHASE,),
+            ).fetchone()
+        return row is not None
+    except sqlite3.Error:
+        return False
+
+
 def _ram_latch_opt_census_bypass_available(root: Path, free_ram_gb: float) -> bool:
     """Allow only a class-admissible OPT_CENSUS row through RAM hysteresis.
 
@@ -2768,7 +2810,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                                 _commit_optimistic_write(hold_lock_started)
                                 continue
                     if (
-                        compile_only_due_to_commit_headroom
+                        (compile_only_due_to_commit_headroom or _RAM_LATCH_COMPILE_ONLY)
                         and str(item["phase"]).upper() != farmctl.COMPILE_EA_PHASE
                     ):
                         continue
@@ -2928,7 +2970,10 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                     post_reservation_free_gb = (
                         multisym_free_ram_snapshot - ram_reservation_gb
                     )
-                    if post_reservation_free_gb < RAM_MIN_FREE_GB:
+                    if post_reservation_free_gb < RAM_MIN_FREE_GB and not (
+                        _RAM_LATCH_COMPILE_ONLY
+                        and str(item["phase"]).upper() == farmctl.COMPILE_EA_PHASE
+                    ):
                         skipped_ram_class.append({
                             "item_id": item["id"],
                             "ea_id": item["ea_id"],
@@ -7899,15 +7944,25 @@ def run_loop(root: Path, terminal: str, timeout_seconds: int) -> int:
             free_ram < ram_floor
             and _ram_latch_opt_census_bypass_available(root, free_ram)
         )
+        global _RAM_LATCH_COMPILE_ONLY
+        _RAM_LATCH_COMPILE_ONLY = False
         if free_ram < ram_floor and not ram_census_bypass:
             _RESOURCE_LATCH["ram_low"] = True
-            print(json.dumps({"event": "ram_low_pause", "terminal": terminal,
-                              "free_ram_gb": round(free_ram, 1), "threshold_gb": ram_floor,
-                              "hysteresis_latched": True}), flush=True)
-            # jitter so the fleet doesn't wake in lockstep and re-spike RAM together
-            time.sleep(RAM_GUARD_SLEEP_SECONDS + random.uniform(0, 10))
-            continue
-        if not ram_census_bypass:
+            if _ram_latch_compile_bypass_available(root, free_ram):
+                # Latched, but a governed compile is claimable and cheap: run the
+                # claim in compile-only mode instead of idling (2026-09-03).
+                _RAM_LATCH_COMPILE_ONLY = True
+                print(json.dumps({"event": "ram_low_compile_only", "terminal": terminal,
+                                  "free_ram_gb": round(free_ram, 1), "threshold_gb": ram_floor,
+                                  "compile_floor_gb": COMPILE_RAM_MIN_FREE_GB}), flush=True)
+            else:
+                print(json.dumps({"event": "ram_low_pause", "terminal": terminal,
+                                  "free_ram_gb": round(free_ram, 1), "threshold_gb": ram_floor,
+                                  "hysteresis_latched": True}), flush=True)
+                # jitter so the fleet doesn't wake in lockstep and re-spike RAM together
+                time.sleep(RAM_GUARD_SLEEP_SECONDS + random.uniform(0, 10))
+                continue
+        elif not ram_census_bypass:
             _RESOURCE_LATCH["ram_low"] = False
         cpu_load = _cpu_load_percent()
         cpu_ceiling = (
