@@ -255,6 +255,9 @@ double PercentileATR(const int bars, const double percentile)
       p = 100.0;
 
    const int index = (int)MathRound((p / 100.0) * (bars - 1));
+   const int value_count = ArraySize(values);
+   if(index < 0 || index >= value_count)
+      return 0.0;
    return values[index];
   }
 
@@ -372,6 +375,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    QM_EntryRequest buy_req;
    QM_EntryRequest sell_req;
+   ZeroMemory(buy_req);
+   ZeroMemory(sell_req);
    const bool can_buy = BuildStopRequest(QM_BUY_STOP, entry_high, exit_low, buy_req);
    const bool can_sell = BuildStopRequest(QM_SELL_STOP, entry_low, exit_high, sell_req);
 
@@ -596,6 +601,7 @@ void OnTick()
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req) && Pattern_AllowsRequest(req))
      {
       ulong out_ticket = 0;
