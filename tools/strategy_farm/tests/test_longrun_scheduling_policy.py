@@ -384,5 +384,53 @@ class ClaimAtomicIntegrationTests(unittest.TestCase):
         self.assertEqual(result["item"]["id"], "pending-3")
 
 
+class LineageRerunExtraSlotTests(unittest.TestCase):
+    """2026-09-03: a priority-tracked exact lineage rerun (Amendment B row) may
+    take one Q07/Q08 slot above the cap; ordinary rows, unmarked reruns and
+    quarantined lineages keep the cap of 2."""
+
+    def _counts(self, q07_q08_active: int) -> dict[str, int]:
+        return {
+            policy.EXPANDED_NEWS_PARENT_CLASS: 0,
+            policy.TOTAL_NEWS_PARENT_CLASS: 0,
+            policy.Q07_Q08_LONGRUN_CLASS: q07_q08_active,
+        }
+
+    def test_lineage_rerun_takes_third_slot(self) -> None:
+        payload = {"append_only_rerun": True, "priority_track": True}
+        skip, detail = policy.should_skip_for_longrun_cap(
+            "Q07", payload, self._counts(2), news_phase=NEWS_PHASE
+        )
+        self.assertFalse(skip)
+        self.assertIsNone(detail)
+
+    def test_lineage_rerun_bounded_at_cap_plus_one(self) -> None:
+        payload = {"append_only_rerun": 1, "priority_track": True}
+        skip, detail = policy.should_skip_for_longrun_cap(
+            "Q08", payload, self._counts(3), news_phase=NEWS_PHASE
+        )
+        self.assertTrue(skip)
+        self.assertEqual(detail["fleet_cap"], policy.Q07_Q08_LONGRUN_FLEET_CAP + 1)
+
+    def test_ordinary_q07_row_keeps_cap_of_two(self) -> None:
+        for payload in ({}, {"priority_track": True}, {"append_only_rerun": True},
+                        {"append_only_rerun": True, "priority_track": True,
+                         "poison_pill_priority_override": 1}):
+            skip, detail = policy.should_skip_for_longrun_cap(
+                "Q07", payload, self._counts(2), news_phase=NEWS_PHASE
+            )
+            self.assertTrue(skip, payload)
+            self.assertEqual(detail["fleet_cap"], policy.Q07_Q08_LONGRUN_FLEET_CAP)
+
+    def test_news_caps_unchanged_for_lineage_reruns(self) -> None:
+        payload = {"append_only_rerun": True, "priority_track": True}
+        counts = self._counts(0)
+        counts[policy.TOTAL_NEWS_PARENT_CLASS] = policy.TOTAL_NEWS_PARENT_FLEET_CAP
+        skip, _detail = policy.should_skip_for_longrun_cap(
+            NEWS_PHASE, payload, counts, news_phase=NEWS_PHASE
+        )
+        self.assertTrue(skip)
+
+
 if __name__ == "__main__":
     unittest.main()

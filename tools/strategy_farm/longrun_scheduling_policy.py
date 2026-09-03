@@ -33,6 +33,15 @@ Q07_Q08_LONGRUN_CLASS = "q07_q08_longrun"
 EXPANDED_NEWS_PARENT_FLEET_CAP = 2
 TOTAL_NEWS_PARENT_FLEET_CAP = 4
 Q07_Q08_LONGRUN_FLEET_CAP = 2
+# 2026-09-03 (CEO, OWNER-DEC-PRE0803-RECOMPILE-SLOTORDER-AMENDB-20260903 §3
+# "Recompiles zuerst"): an exact append-only lineage rerun that the
+# orchestrator marked priority_track (Amendment B row) is the critical path
+# to a Q10 lock.  With both Q07/Q08 slots held by multi-hour recovery
+# regenerations (QM5_20085 H4, budgets 216/418 min) such a rerun waited for
+# hours at claim position 2.  A lineage rerun may take ONE extra slot above
+# the cap (2 -> 3); ordinary Q07/Q08 rows keep the cap of 2 and the short-flow
+# reserve stays >= 3 on a ten-terminal fleet.  Bounded, selection-only.
+LINEAGE_RERUN_Q07_Q08_EXTRA_SLOTS = 1
 # Documents the intended outcome; not enforced directly.  The combined news
 # cap and Q07/Q08 cap imply it on a ten-terminal fleet: 10 - (4 + 2) = 4.
 SHORT_FLOW_RESERVE_FLOOR = 4
@@ -80,6 +89,25 @@ def classify_longrun_candidate(
     if phase_upper in (q07_phase, q08_phase):
         return Q07_Q08_LONGRUN_CLASS
     return None
+
+
+def _is_priority_lineage_rerun(payload: Any) -> bool:
+    """Amendment B row: exact append-only lineage rerun marked priority_track.
+
+    Same two predicates as ``farmctl._lineage_rerun_rank_sql`` (JSON true or
+    integer 1 for ``append_only_rerun``; JSON literal true for
+    ``priority_track``); a quarantined lineage (poison-pill override) does not
+    qualify, mirroring the claim-order key.
+    """
+    payload_dict = _payload_dict(payload)
+    rerun = payload_dict.get("append_only_rerun")
+    if rerun is not True and rerun != 1:
+        return False
+    if payload_dict.get("priority_track") is not True:
+        return False
+    if payload_dict.get("poison_pill_priority_override") == 1:
+        return False
+    return True
 
 
 def fleet_cap_for_class(longrun_class: str) -> int:
@@ -158,8 +186,11 @@ def should_skip_for_longrun_cap(
         # four-row combined news cap.  Check the stricter subcap first so the
         # skip ledger preserves the most specific governing reason.
         classes_to_check.append(TOTAL_NEWS_PARENT_CLASS)
+    lineage_rerun = _is_priority_lineage_rerun(payload)
     for governed_class in classes_to_check:
         cap = fleet_cap_for_class(governed_class)
+        if governed_class == Q07_Q08_LONGRUN_CLASS and lineage_rerun:
+            cap += LINEAGE_RERUN_Q07_Q08_EXTRA_SLOTS
         active = active_counts.get(governed_class, 0)
         if active >= cap:
             return True, {
