@@ -375,3 +375,7 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   93 tests), C `e72c4d62cc` (expansion children of a lineage parent rank 0; additive arm; readiness 23/23). Both take
   effect for the pump immediately (fresh process) and for workers at their idle-only reload (chunks 18/19).
   Throughput-lever workflow launched (wf_f3c42ecc-550: census-first RAM priority, claim-order cost, G5 consumer read).
+- 16:45Z–16:58Z: G3 orthogonality standard for sparse D1 merged (`4189444b87` + `3406825c14`; Opus design panel
+  wf_18ea64f8-b1c, verified ok, Tier-1 numbers recomputed exactly): the current correlation tool yields a usable
+  value for 0/46 book-relevant pairs; adopted two-layer fail-closed standard (ZK-SBB certify-or-abstain + COS
+  co-occupancy flag); V4 Vorlage updated to option (c). Router: 0 REVIEW tasks in any lane (16:40Z).
