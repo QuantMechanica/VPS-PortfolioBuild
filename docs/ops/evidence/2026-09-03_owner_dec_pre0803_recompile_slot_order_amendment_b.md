@@ -387,3 +387,15 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   (7-symbol FX basket) sits at claim position 1 but needs 48 GB commit headroom (MULTISYMBOL_COMMIT_MIN_FREE_GB,
   reservation 32 GB) — unreachable while 8 testers run; 10815 Q02 `bd12175c` at position 3 also unclaimed (cause not
   logged; RAM class suspected). Both stay priority-tracked; the census-first/claim-cost workflow may address it.
+- 16:55Z–17:15Z: claim-path finding — 10815/GDAXI Q02 `bd12175c` carries RAM class single_index_tick (44 GB flat,
+  SP500 Q02 measured 46.8 GB WS on 2026-08-15) → needs 58 GB free → unclaimable on the 63 GB host while anything
+  runs; 112 pending index Q02 + 369 index Q04 share the class. Drain-window workflow launched (wf_051790b8-a85) —
+  FAILED at worktree creation: **C: ran full (0.1 GB free)** from ~30 Opus workflow worktrees (each a full checkout)
+  plus 13 rework-slot / 5 claude-orchestration worktrees (108 total). T_Live terminal alive (pid 19016 since 23.08.),
+  journal last written 16:17Z (deal entry), no error entries. Cleanup: completed wf_* worktrees removed (detached
+  passes wt_cleanup.sh / wt_cleanup2.sh; running workflows kept); 38 → 40 GB free by 17:12Z. The Q08 durable-export
+  workflow (wf_82fd54d3-a9c) delivered its implementation but its verifier and the rerun packet failed on the same
+  ENOSPC — nothing merged; both workflows to be resumed after cleanup. Implementer finding: aggregate.py already
+  persists the durable stream at seal time (_persist_durable_sleeve_stream :748); the four missing files were
+  deleted afterwards, so the added value is verify-and-record + append-only sibling guard + backfill CLI.
+  CPU guard tripped T1/T7/T10 during the git removals → git/bash added to the Idle-priority loop.
