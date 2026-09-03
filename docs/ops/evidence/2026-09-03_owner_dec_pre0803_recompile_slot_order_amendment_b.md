@@ -174,3 +174,11 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   the path is on the pump auto-commit list). Reverted in main and in the agent worktree; fix commissioned as
   router task `1258a0c5` (ops_issue, Opus lane). All-worker staggered reload (chunk 9) started 04:28Z for the
   claim-order change.
+- 04:33Z–04:46Z: QM5_11910 Q03 `fa66883f` **PASS**, QM5_12710 Q03 `55b7d71f` **PASS** (Q02 `f1378383` PASS
+  04:28Z), QM5_10700 Q02 `71fddb4a` **PASS** (seed-fresh path). 04:55Z next steps enqueued as exact reruns of
+  the prior-identity rows with the new-identity PASS as predecessor (scratchpad `chain_step.py`):
+  11910 Q04 `cdf56ffe` (rerun of 3b783833), 12710 Q04 `c2297ba2` (rerun of cf751465), 10700 Q03 `f625c325`
+  (rerun of 8f1d3116); all inherit priority_track and rank at the claim head under Amendment B.
+- 04:48Z: worker reload chunk 9 finished (T1, T4, T5, T6, T8, T10 reloaded; T2/T3/T7/T9 busy) → chunk 10
+  for the remaining four started 04:54Z. Verifier note on `farmctl.P5_CALIBRATION_JSON` commissioned as
+  router task `1258a0c5` (IN_PROGRESS, Opus lane; launch paced behind the running revision workflows).
