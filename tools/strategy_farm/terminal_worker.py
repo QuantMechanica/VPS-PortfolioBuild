@@ -257,6 +257,38 @@ def _ram_floor_for_class(ram_class: str) -> float:
     return RAM_MIN_FREE_GB
 # DWX index universe seen in farm dispatch; extend with evidence, not guesses.
 INDEX_TICK_SYMBOL_BASES = frozenset({"GDAXI", "SP500", "WS30", "NDX", "UK100"})
+# --- Tester-memory measurement + measured-RAM admission (2026-09-03, CEO) ---
+# Per-run peak working-set of the metatester/terminal subtree is sampled into a
+# JSONL ledger; aggregated max-per-class expectations then feed the per-item RAM
+# admission gate, replacing the flat commit class ONLY for heavy single-symbol
+# runs (measured peak > TESTER_MEMORY_HEAVY_GB).  Fail-open throughout; the
+# ledger keeps recording even when the admission override is rolled back via
+# QM_TESTER_MEMORY_ADMISSION=0.
+TESTER_MEMORY_SAMPLE_SECONDS = 20.0
+TESTER_MEMORY_HEAVY_GB = 10.0
+TESTER_MEMORY_MIN_SAMPLES = 3
+# Classification-only currency/symbol sets: they never touch _FX_CURRENCIES or
+# the reservation classes, only the ledger's lookup-key bucketing.
+_TESTER_MEMORY_FX_MAJOR_BASES = frozenset({
+    "EURUSD", "USDJPY", "GBPUSD", "USDCHF", "USDCAD", "AUDUSD", "NZDUSD",
+})
+_TESTER_MEMORY_METAL_BASES = frozenset({"XAUUSD", "XAGUSD", "XPTUSD", "XPDUSD"})
+_TESTER_MEMORY_ENERGY_BASES = frozenset({
+    "XTIUSD", "XBRUSD", "XNGUSD", "USOIL", "UKOIL",
+})
+_TESTER_MEMORY_EXOTIC_CURRENCIES = frozenset({
+    "TRY", "ZAR", "MXN", "SGD", "NOK", "SEK", "DKK", "PLN", "HUF", "CZK",
+    "HKD", "CNH", "RUB", "THB",
+})
+_TESTER_MEMORY_TIMEFRAMES = frozenset({
+    "M1", "M5", "M15", "M30", "H1", "H2", "H4", "D1", "W1", "MN1",
+})
+_TESTER_MEMORY_EXPECTATIONS_TTL_SECONDS = 60.0
+_TESTER_MEMORY_REBUILD_MIN_INTERVAL_SECONDS = 300.0
+_TESTER_MEMORY_EXPECTATIONS_CACHE: dict[str, Any] = {
+    "path": None, "mtime": None, "data": {}, "at": -1e9,
+}
+_TESTER_MEMORY_REBUILD_STATE: dict[str, Any] = {"at": -1e9, "src_mtime": None}
 # Legacy source-scanned EAs do not carry basket_symbols in their old work-item
 # payloads. Keep this narrow and host-specific: the audited QM5_11240 FX hosts
 # each exercise one two-leg FX sleeve; its metal/index hosts remain heavy.
@@ -885,6 +917,284 @@ def _commit_reservation_gb(commit_class: str) -> float:
     return MULTISYMBOL_COMMIT_RESERVATION_GB
 
 
+def _tester_memory_ledger_path() -> Path:
+    """JSONL ledger location (env override for tests)."""
+    return Path(
+        os.environ.get("QM_TESTER_MEMORY_LEDGER")
+        or "D:/QM/reports/state/tester_memory_ledger.jsonl"
+    )
+
+
+def _tester_memory_expectations_path() -> Path:
+    """Compiled per-class expectations location (env override for tests)."""
+    return Path(
+        os.environ.get("QM_TESTER_MEMORY_EXPECTATIONS")
+        or "D:/QM/reports/state/tester_memory_expectations.json"
+    )
+
+
+def _normalize_timeframe(
+    item: sqlite3.Row | dict[str, Any], payload: dict[str, Any]
+) -> str:
+    """Canonical MT5 timeframe token, or 'TF?' when unknown."""
+    tf = _work_item_test_period(item, payload).strip().upper()
+    if tf.startswith("PERIOD_"):
+        tf = tf[len("PERIOD_"):]
+    return tf if tf in _TESTER_MEMORY_TIMEFRAMES else "TF?"
+
+
+def _tester_memory_symbol_class(
+    item: sqlite3.Row | dict[str, Any],
+    payload: dict[str, Any],
+    multisymbol: bool,
+) -> str:
+    """Coarse memory-cohort label for the ledger lookup key (classify-only)."""
+    if multisymbol:
+        count = 0
+        raw = payload.get("basket_symbols")
+        if isinstance(raw, list):
+            count = len([sym for sym in raw if str(sym or "").strip()])
+        if count == 0:
+            try:
+                count = int(payload.get("basket_symbol_count") or 0)
+            except (TypeError, ValueError):
+                count = 0
+        if count == 2:
+            return "basket2"
+        if 3 <= count < MULTISYMBOL_HEAVY_SYMBOL_COUNT:
+            return "basket3_9"
+        return "basket10+"
+    base = _work_item_test_symbol(item, payload).split(".")[0].upper()
+    if base in INDEX_TICK_SYMBOL_BASES:
+        return "index"
+    if base in _TESTER_MEMORY_METAL_BASES:
+        return "metal"
+    if base in _TESTER_MEMORY_ENERGY_BASES:
+        return "energy"
+    if _is_fx_symbol(base):
+        return "fx_major" if base in _TESTER_MEMORY_FX_MAJOR_BASES else "fx_cross"
+    if len(base) == 6:
+        leg1, leg2 = base[:3], base[3:]
+        known1 = leg1 in _FX_CURRENCIES or leg1 in _TESTER_MEMORY_EXOTIC_CURRENCIES
+        known2 = leg2 in _FX_CURRENCIES or leg2 in _TESTER_MEMORY_EXOTIC_CURRENCIES
+        exotic = (
+            leg1 in _TESTER_MEMORY_EXOTIC_CURRENCIES
+            or leg2 in _TESTER_MEMORY_EXOTIC_CURRENCIES
+        )
+        if known1 and known2 and exotic:
+            return "fx_exotic"
+    return "other"
+
+
+def _tester_memory_run_kind(
+    item: sqlite3.Row | dict[str, Any], payload: dict[str, Any]
+) -> str:
+    """Coarse run-kind label for the ledger lookup key."""
+    phase = str(_work_item_value(item, "phase", "") or "").strip().upper()
+    if phase == farmctl.OPT_CENSUS_PHASE:
+        return "census"
+    if phase == farmctl.COMPILE_EA_PHASE:
+        return "compile"
+    if farmctl.is_recovery_payload(payload):
+        return "recovery"
+    if phase == str(_Q09_NEWS_PHASE).strip().upper():
+        return "news"
+    if phase in {
+        str(farmctl._PATTERN_PHASE).strip().upper(),
+        str(farmctl._PARAM_OPT_PHASE).strip().upper(),
+        str(farmctl._HEAD_TO_HEAD_PHASE).strip().upper(),
+    }:
+        return "wf"
+    if _is_early_run_smoke_phase(phase):
+        return "smoke"
+    return "backtest"
+
+
+def _tester_memory_lookup_key(
+    symbol_class: str, timeframe: str, run_kind: str
+) -> str:
+    return f"{symbol_class}|{timeframe}|{run_kind}"
+
+
+def _tester_memory_percentile(sorted_values: list[float], q: float) -> float:
+    """Linear-interpolated percentile of a pre-sorted, non-empty list."""
+    if not sorted_values:
+        return 0.0
+    if len(sorted_values) == 1:
+        return float(sorted_values[0])
+    pos = q * (len(sorted_values) - 1)
+    lo = int(pos)
+    hi = min(lo + 1, len(sorted_values) - 1)
+    frac = pos - lo
+    return float(sorted_values[lo] * (1.0 - frac) + sorted_values[hi] * frac)
+
+
+def _compile_tester_memory_expectations(
+    rows: list[dict[str, Any]]
+) -> dict[str, dict[str, float]]:
+    """Aggregate ledger rows into per-lookup-key {n, max_gb, p95_gb} (pure)."""
+    groups: dict[str, list[float]] = {}
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        key = row.get("lookup_key")
+        if not key:
+            continue
+        try:
+            gb = float(row.get("peak_subtree_working_set_gb"))
+        except (TypeError, ValueError):
+            continue
+        groups.setdefault(str(key), []).append(gb)
+    out: dict[str, dict[str, float]] = {}
+    for key, values in groups.items():
+        ordered = sorted(values)
+        out[key] = {
+            "n": len(ordered),
+            "max_gb": round(max(ordered), 3),
+            "p95_gb": round(_tester_memory_percentile(ordered, 0.95), 3),
+        }
+    return out
+
+
+def rebuild_tester_memory_expectations(*, force: bool = False) -> bool:
+    """Opportunistically rebuild the compiled expectations file (fail-open).
+
+    Bounded: rebuilds only when the ledger mtime changed AND at least
+    _TESTER_MEMORY_REBUILD_MIN_INTERVAL_SECONDS elapsed since the last check.
+    Never raises; returns True only when a fresh file was written.
+    """
+    try:
+        ledger = _tester_memory_ledger_path()
+        if not ledger.is_file():
+            return False
+        now = time.monotonic()
+        if not force and (
+            now - _TESTER_MEMORY_REBUILD_STATE["at"]
+        ) < _TESTER_MEMORY_REBUILD_MIN_INTERVAL_SECONDS:
+            return False
+        _TESTER_MEMORY_REBUILD_STATE["at"] = now
+        try:
+            src_mtime = ledger.stat().st_mtime
+        except OSError:
+            return False
+        if not force and _TESTER_MEMORY_REBUILD_STATE["src_mtime"] == src_mtime:
+            return False
+        rows: list[dict[str, Any]] = []
+        with open(ledger, "r", encoding="utf-8") as handle:
+            for line in handle:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    rows.append(json.loads(line))
+                except (ValueError, json.JSONDecodeError):
+                    continue
+        expectations = _compile_tester_memory_expectations(rows)
+        out_path = _tester_memory_expectations_path()
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        document = {
+            "schema": "qm.tester_memory_expectations/v1",
+            "generated_at_utc": farmctl.utc_now(),
+            "source_ledger": str(ledger),
+            "keys": expectations,
+        }
+        tmp_path = out_path.with_suffix(out_path.suffix + ".tmp")
+        tmp_path.write_text(
+            json.dumps(document, sort_keys=True, indent=2), encoding="utf-8"
+        )
+        os.replace(tmp_path, out_path)
+        _TESTER_MEMORY_REBUILD_STATE["src_mtime"] = src_mtime
+        return True
+    except Exception:
+        return False
+
+
+def _tester_memory_admission_active() -> bool:
+    """Fast gate: is the measured-RAM override in play at all right now?
+
+    False (skip all classification/lookup) when the env rollback flag is set or
+    the compiled expectations file does not yet exist, so a first deploy and the
+    disabled state are both near-zero cost on the hot admission path.
+    """
+    if os.environ.get("QM_TESTER_MEMORY_ADMISSION") == "0":
+        return False
+    try:
+        return _tester_memory_expectations_path().is_file()
+    except Exception:
+        return False
+
+
+def _measured_ram_expectation_gb(
+    symbol_class: str, timeframe: str, run_kind: str
+) -> float | None:
+    """Measured expected peak (GB) for a class, or None (no data / disabled).
+
+    Returns the conservative per-key max_gb once at least
+    TESTER_MEMORY_MIN_SAMPLES runs exist; None disables the override and keeps
+    the flat commit class.  Fail-open None on any error.
+    """
+    if os.environ.get("QM_TESTER_MEMORY_ADMISSION") == "0":
+        return None
+    try:
+        path = _tester_memory_expectations_path()
+        if not path.is_file():
+            return None
+        mtime = path.stat().st_mtime
+        now = time.monotonic()
+        cache = _TESTER_MEMORY_EXPECTATIONS_CACHE
+        if (
+            cache["path"] != str(path)
+            or cache["mtime"] != mtime
+            or (now - cache["at"]) >= _TESTER_MEMORY_EXPECTATIONS_TTL_SECONDS
+        ):
+            with open(path, "r", encoding="utf-8") as handle:
+                document = json.load(handle)
+            keys = document.get("keys") if isinstance(document, dict) else None
+            cache["data"] = keys if isinstance(keys, dict) else {}
+            cache["path"] = str(path)
+            cache["mtime"] = mtime
+            cache["at"] = now
+        entry = cache["data"].get(
+            _tester_memory_lookup_key(symbol_class, timeframe, run_kind)
+        )
+        if not isinstance(entry, dict):
+            return None
+        try:
+            samples = int(entry.get("n") or 0)
+            max_gb = float(entry.get("max_gb"))
+        except (TypeError, ValueError):
+            return None
+        if samples < TESTER_MEMORY_MIN_SAMPLES:
+            return None
+        return max_gb
+    except Exception:
+        return None
+
+
+def _resolve_ram_reservation_gb(
+    ram_class: str,
+    flat_gb: float,
+    measured_gb: float | None,
+    *,
+    multisymbol: bool,
+) -> float:
+    """Pure admission-reservation resolver (the unit-test target).
+
+    Heavy single-symbol runs (measured peak > TESTER_MEMORY_HEAVY_GB) reserve
+    their measured peak; everything else keeps today's flat class.  max() so a
+    class is never lowered below its flat default.
+    """
+    if multisymbol:
+        return flat_gb
+    if ram_class == RAM_CLASS_OPT_CENSUS_CELL:
+        return flat_gb
+    if measured_gb is None:
+        return flat_gb
+    if measured_gb <= TESTER_MEMORY_HEAVY_GB:
+        return flat_gb
+    return max(flat_gb, float(measured_gb))
+
+
 def _ram_reservation_for_candidate(
     item: sqlite3.Row | dict[str, Any],
     payload: dict[str, Any],
@@ -909,12 +1219,23 @@ def _ram_reservation_for_candidate(
     ):
         return RAM_CLASS_OPT_CENSUS_CELL, OPT_CENSUS_RAM_RESERVATION_GB
     ram_class = _multisymbol_commit_class(item, payload, multisymbol)
-    return ram_class, float(_commit_reservation_gb(ram_class))
+    flat_gb = float(_commit_reservation_gb(ram_class))
+    measured_gb = None
+    if not multisymbol and _tester_memory_admission_active():
+        measured_gb = _measured_ram_expectation_gb(
+            _tester_memory_symbol_class(item, payload, multisymbol),
+            _normalize_timeframe(item, payload),
+            _tester_memory_run_kind(item, payload),
+        )
+    return ram_class, _resolve_ram_reservation_gb(
+        ram_class, flat_gb, measured_gb, multisymbol=multisymbol
+    )
 
 
 _PROCESS_SNAPSHOT_TTL_SECONDS = 3.0
 _process_snapshot_cache: dict[str, Any] = {
     "at": -1e9, "children": {}, "private": {}, "alive": set(),
+    "working_set": {}, "peak_working_set": {}, "image": {},
 }
 
 
@@ -939,6 +1260,9 @@ def _process_private_snapshot() -> tuple[dict[int, list[int]], dict[int, int], s
     children: dict[int, list[int]] = {}
     private: dict[int, int] = {}
     alive: set[int] = set()
+    working_set: dict[int, int] = {}
+    peak_working_set: dict[int, int] = {}
+    image: dict[int, str] = {}
     if sys.platform != "win32":
         return children, private, alive
     try:
@@ -990,14 +1314,15 @@ def _process_private_snapshot() -> tuple[dict[int, list[int]], dict[int, int], s
             more = kernel32.Process32FirstW(snapshot, ctypes.byref(entry))
             pids: list[tuple[int, int]] = []
             while more:
-                pids.append((int(entry.th32ProcessID), int(entry.th32ParentProcessID)))
+                pids.append((int(entry.th32ProcessID), int(entry.th32ParentProcessID), str(entry.szExeFile or "")))
                 more = kernel32.Process32NextW(snapshot, ctypes.byref(entry))
         finally:
             kernel32.CloseHandle(snapshot)
 
-        for pid, ppid in pids:
+        for pid, ppid, exe in pids:
             children.setdefault(ppid, []).append(pid)
             alive.add(pid)
+            image[pid] = exe.lower()
             handle = kernel32.OpenProcess(
                 PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_VM_READ, False, pid
             )
@@ -1014,6 +1339,8 @@ def _process_private_snapshot() -> tuple[dict[int, list[int]], dict[int, int], s
                     handle, ctypes.byref(counters), counters.cb
                 ):
                     private[pid] = int(counters.PrivateUsage)
+                    working_set[pid] = int(counters.WorkingSetSize)
+                    peak_working_set[pid] = int(counters.PeakWorkingSetSize)
             finally:
                 kernel32.CloseHandle(handle)
     except Exception:
@@ -1023,6 +1350,9 @@ def _process_private_snapshot() -> tuple[dict[int, list[int]], dict[int, int], s
     _process_snapshot_cache["children"] = children
     _process_snapshot_cache["private"] = private
     _process_snapshot_cache["alive"] = alive
+    _process_snapshot_cache["working_set"] = working_set
+    _process_snapshot_cache["peak_working_set"] = peak_working_set
+    _process_snapshot_cache["image"] = image
     return children, private, alive
 
 
@@ -1074,6 +1404,130 @@ def _measured_subtree_gb(
         # unknown, so the caller keeps the full reservation.
         return None
     return total / (1024 ** 3)
+
+
+def _sample_tester_memory(root_pid: Any, acc: dict[str, int]) -> None:
+    """Accumulate running-max working-set of the pid subtree into ``acc``.
+
+    Fail-open: any error leaves ``acc`` untouched and returns.  Reads the
+    working-set / peak / image maps the refreshed process snapshot stored in
+    ``_process_snapshot_cache`` (its 3-tuple return signature is unchanged).
+    """
+    try:
+        children, private, alive = _process_private_snapshot()
+        working_set = _process_snapshot_cache.get("working_set") or {}
+        peak_working_set = _process_snapshot_cache.get("peak_working_set") or {}
+        image = _process_snapshot_cache.get("image") or {}
+        try:
+            start = int(root_pid)
+        except (TypeError, ValueError):
+            return
+        seen: set[int] = set()
+        queue = [start]
+        subtree_ws = 0
+        subtree_private = 0
+        metatester_ws = 0
+        metatester_os_peak = 0
+        terminal_ws = 0
+        any_live = False
+        while queue:
+            current = queue.pop()
+            if current in seen:
+                continue
+            seen.add(current)
+            if current in alive:
+                any_live = True
+            ws = int(working_set.get(current, 0) or 0)
+            subtree_ws += ws
+            subtree_private += int(private.get(current, 0) or 0)
+            img = str(image.get(current, "") or "")
+            if img == "metatester64.exe":
+                metatester_ws += ws
+                osp = int(peak_working_set.get(current, 0) or 0)
+                if osp > metatester_os_peak:
+                    metatester_os_peak = osp
+            elif img == "terminal64.exe":
+                terminal_ws += ws
+            queue.extend(children.get(current, ()))
+        if not any_live:
+            return
+        if subtree_ws > acc["peak_subtree_ws"]:
+            acc["peak_subtree_ws"] = subtree_ws
+        if subtree_private > acc["peak_subtree_private"]:
+            acc["peak_subtree_private"] = subtree_private
+        if metatester_ws > acc["peak_metatester_ws"]:
+            acc["peak_metatester_ws"] = metatester_ws
+        if metatester_os_peak > acc["metatester_os_peak_ws"]:
+            acc["metatester_os_peak_ws"] = metatester_os_peak
+        if terminal_ws > acc["peak_terminal_ws"]:
+            acc["peak_terminal_ws"] = terminal_ws
+        acc["samples"] = int(acc.get("samples", 0)) + 1
+    except Exception:
+        return
+
+
+def _write_tester_memory_ledger(
+    root: Path,
+    item: sqlite3.Row | dict[str, Any],
+    payload: dict[str, Any],
+    spawn: dict[str, Any],
+    acc: dict[str, int],
+    terminal: str,
+    *,
+    run_seconds: float,
+    outcome: str,
+) -> None:
+    """Append one qm.tester_memory_ledger/v1 line for a monitored run (fail-open)."""
+    try:
+        try:
+            multisym_ids = _multisymbol_ea_ids()
+        except Exception:
+            multisym_ids = frozenset()
+        try:
+            multisymbol = _work_item_is_multisymbol(item, payload, multisym_ids)
+        except Exception:
+            multisymbol = False
+        symbol_class = _tester_memory_symbol_class(item, payload, multisymbol)
+        timeframe = _normalize_timeframe(item, payload)
+        run_kind = _tester_memory_run_kind(item, payload)
+        try:
+            ram_class, _ = _ram_reservation_for_candidate(item, payload, multisymbol)
+        except Exception:
+            ram_class = MULTISYMBOL_COMMIT_CLASS_ORDINARY
+        if ram_class == RAM_CLASS_OPT_CENSUS_CELL:
+            flat_gb = OPT_CENSUS_RAM_RESERVATION_GB
+        else:
+            flat_gb = float(_commit_reservation_gb(ram_class))
+        gib = float(1024 ** 3)
+        record = {
+            "schema": "qm.tester_memory_ledger/v1",
+            "ts_utc": farmctl.utc_now(),
+            "ea_id": str(_work_item_value(item, "ea_id", "") or ""),
+            "symbol": _work_item_test_symbol(item, payload),
+            "symbol_class": symbol_class,
+            "timeframe": timeframe,
+            "phase": str(_work_item_value(item, "phase", "") or ""),
+            "run_kind": run_kind,
+            "ram_class": ram_class,
+            "reservation_gb": round(float(flat_gb), 3),
+            "lookup_key": _tester_memory_lookup_key(symbol_class, timeframe, run_kind),
+            "run_seconds": round(float(run_seconds), 3),
+            "samples": int(acc.get("samples", 0)),
+            "peak_subtree_working_set_gb": round(int(acc.get("peak_subtree_ws", 0)) / gib, 3),
+            "peak_metatester_working_set_gb": round(int(acc.get("peak_metatester_ws", 0)) / gib, 3),
+            "metatester_os_peak_working_set_gb": round(int(acc.get("metatester_os_peak_ws", 0)) / gib, 3),
+            "peak_terminal_working_set_gb": round(int(acc.get("peak_terminal_ws", 0)) / gib, 3),
+            "peak_subtree_private_gb": round(int(acc.get("peak_subtree_private", 0)) / gib, 3),
+            "outcome": str(outcome),
+            "worker_pid": os.getpid(),
+            "terminal": str(terminal or ""),
+        }
+        path = _tester_memory_ledger_path()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "a", encoding="utf-8") as handle:
+            handle.write(json.dumps(record, sort_keys=True) + "\n")
+    except Exception:
+        return
 
 
 def _commit_admission_snapshot(
@@ -6740,6 +7194,15 @@ def _monitor_spawned_work_item(
     child_alive = True
     terminal_alive_after_child_exit = False
     runner_dead_observed_at: float | None = None
+    _mem_acc: dict[str, int] = {
+        "samples": 0,
+        "peak_subtree_ws": 0,
+        "peak_subtree_private": 0,
+        "peak_metatester_ws": 0,
+        "metatester_os_peak_ws": 0,
+        "peak_terminal_ws": 0,
+    }
+    _last_mem_sample = 0.0
     while time.monotonic() < deadline:
         child_alive = bool(_bound_runner_identity(identity_payload).get("alive"))
         terminal_alive_after_child_exit = (not child_alive) and _terminal_slot_running(root, terminal)
@@ -6798,6 +7261,10 @@ def _monitor_spawned_work_item(
                 log_bomb_path = _lb_bomb[0]
                 farmctl._stop_pid_tree(pid)
                 break
+        _now_mem = time.monotonic()
+        if _now_mem - _last_mem_sample >= TESTER_MEMORY_SAMPLE_SECONDS:
+            _last_mem_sample = _now_mem
+            _sample_tester_memory(pid, _mem_acc)
         time.sleep(DETACHED_TERMINAL_POLL_SECONDS)
     if log_bomb_path:
         # Reclaim the disk immediately and record a terminal verdict with a high
@@ -6882,6 +7349,12 @@ def _monitor_spawned_work_item(
                 conn.commit()
 
         _with_sqlite_retry(_record_log_bomb)
+        if _mem_acc["samples"] > 0:
+            _write_tester_memory_ledger(
+                root, item, payload, spawn, _mem_acc, terminal,
+                run_seconds=(time.monotonic() - spawn_started),
+                outcome="log_bomb",
+            )
         return {"action": "log_bomb_killed", "item_id": item["id"],
                 "ea_id": item.get("ea_id"), "journal_gb": gb,
                 "evidence_path": str(evidence_path) if evidence_path is not None else None,
@@ -6973,6 +7446,16 @@ def _monitor_spawned_work_item(
                 {"reason": "staged_ex5_post_run_sha256_mismatch", "detail": str(exc)},
             ),
         }
+    if _mem_acc["samples"] > 0:
+        _write_tester_memory_ledger(
+            root, item, payload, spawn, _mem_acc, terminal,
+            run_seconds=ran_seconds,
+            outcome=(
+                "timeout"
+                if (child_alive or terminal_alive_after_child_exit)
+                else "finished"
+            ),
+        )
     if post_exit_watchdog is None:
         finish_result = _finish_work_item(root, item["id"], exit_code)
     else:
@@ -7949,6 +8432,7 @@ def run_loop(root: Path, terminal: str, timeout_seconds: int) -> int:
     print(json.dumps({"event": "custom_history_startup_gate", **startup_gate}, sort_keys=True), flush=True)
     prestage_controller = _make_next_cell_prestage_controller(root, terminal)
     while not _STOP:
+        rebuild_tester_memory_expectations()
         free_gb = _disk_free_gb(root)
         if free_gb < DISK_MIN_FREE_GB:
             print(json.dumps({"event": "disk_low_pause", "terminal": terminal,
