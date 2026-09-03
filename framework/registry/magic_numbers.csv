@@ -18227,3 +18227,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41322,et-turtle20x-opt,0,XAUUSD.DWX,413220000,2026-09-03,Codex governed allocator,active
 41323,pp-wedge-opt,0,NDX.DWX,413230000,2026-09-03,Codex governed allocator,active
 41324,balke-gmt3-range-breakout-path25-opt,0,USDJPY.DWX,413240000,2026-09-03,Codex governed allocator,active
+41331,commodity-tsmom-12m-atr-opt,0,XTIUSD.DWX,413310000,2026-09-03,Codex governed allocator,active
