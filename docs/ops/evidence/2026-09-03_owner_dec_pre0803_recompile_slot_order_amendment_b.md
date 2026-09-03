@@ -407,3 +407,17 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   chunks 18/19; workflow worktrees removed (pass 3). Verifier flagged 8 pre-existing failing tests on the
   branch (rulepack snapshot-hash / seal-identity: test_opt_census_pruning, test_target_outcome_dossier,
   test_pipeline_books_dashboard_status, test_ftmo_book3_standalone_evaluator) — repair commissioned.
+- 17:05Z: 10700/XAUUSD 7x4 expansion `c0faeb48` ended REVIEW_REQUIRED with the single reason cell_execution_failed —
+  one cell's Q09 terminal-process scan (pwsh Get-CimInstance, timeout 30 s) timed out while the host sat at 100 %
+  CPU (worktree removals + agent test runs). Infra, not strategy. The pump retries only stale-worktree expansions,
+  so an exact append-only rerun was enqueued by hand at 17:39Z: `0c247960` (claimed immediately via the lineage key;
+  it is an 8-cell run because enqueue-backtest cannot carry the expansion identity — flag commissioned,
+  wf_1bef194a-0b8, together with CIM-scan hardening and the 8 pre-existing test failures).
+- 17:31Z: 20085/XAUUSD Q07 `19d3d8e5` reaped INFRA_FAIL at its 418-min budget as the park packet predicted; the
+  21:35Z Auffangregel (hold on WS30 `0bc6a5bc`) stands.
+- 17:43Z: **Auffangregel executed (2 min ahead of 17:45Z; effect starts at worker reload):** same-program canary
+  L=2 — machine env DL089_LANES_PER_PROGRAM=2, DL089_SAME_PROGRAM_PARALLEL_ALLOWLIST=21507+12710+11910 programs;
+  workers pick it up through reload chunk 20 (idle-only, running). Rollback: unset both variables + reload.
+- 17:50Z: Q08 durable-stream verify/record + backfill CLI and the Q08 re-emission packet merged (`27625045c0`,
+  Opus wf_82fd54d3-a9c resumed after the disk incident; both verdicts ok). Worktrees of finished workflows removed
+  (passes 3/4); C: ~80 GB free.
