@@ -134,7 +134,7 @@ bool Pattern_AllowsRequest(const QM_EntryRequest &req)
    return allowed;
   }
 
-string g_fx_symbols[7] =
+string g_fx_symbols[1] =
   {
    "AUDUSD.DWX"   // DL-089 measurement sibling: single carrier at slot 0 (parent slot map not reproduced)
   };
