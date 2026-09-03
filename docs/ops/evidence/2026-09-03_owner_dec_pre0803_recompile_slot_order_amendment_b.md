@@ -368,3 +368,10 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   structural), G5 Vorlage + hygiene audit + first fit report `4f02c7f1c5` (all 18 legacy COMPILE_EA rows already
   superseded → no action; G5 epoch sentence corrected after refutation). D1–D6 fix workflow launched
   (wf_10455ec8-70e). Fleet back to 10/10 active at 16:19Z (19.9 GB free), 12580 Q02 `d53328e2` running on T7.
+- 16:23Z–16:35Z: T7 ran the 12580 Q02 (multi-symbol EA, 19.7 GB tester) next to 20085 (11.5 GB): five workers latched at
+  9.4 GB free, census 3-4 cells/10 min — accepted (recompile priority; 20085 runs out ~17:31Z). 12580/AUDUSD Q02
+  `d53328e2` PASS 16:27Z on the new identity → Q03 `a64d18d3` (exact rerun of 6ce2cb7c, priority_track inherited).
+  News-gate proposals merged after verified verdicts: B `1210766f97` (7x4 expansion-child reaper budget 11080 → 900 min,
+  93 tests), C `e72c4d62cc` (expansion children of a lineage parent rank 0; additive arm; readiness 23/23). Both take
+  effect for the pump immediately (fresh process) and for workers at their idle-only reload (chunks 18/19).
+  Throughput-lever workflow launched (wf_f3c42ecc-550: census-first RAM priority, claim-order cost, G5 consumer read).
