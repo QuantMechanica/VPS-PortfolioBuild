@@ -314,3 +314,10 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   done, 11910 starting; 21507 at 542/1,085. 10700's expansion `c0faeb48` running on T5 since 12:48Z.
   Throughput brake of the day: the RAM latch (14/20 GB) again idles 4–6 workers at 12.5 GB free while the
   census cells need ~4 GB — Vorlage filed (census-cell bypass floor).
+- 14:41Z–14:45Z: **Batch 2 executed under the Auffangregel** (Vorlage 02:13Z, no OWNER answer by 14:13Z; the
+  wake-up fired late at 14:41Z): `farmctl enqueue-compile` rows 2f8fe7d9 (QM5_10815_tv-post-vwap, GDAXI) and
+  bc865e0b (QM5_12580_fx-usd-exhaustion-reversal, AUDUSD); both released via `release_compile_wave.py
+  --work-item-id --backup-reuse-max-age-minutes 0` (12580 needed a second attempt — first pass applied 0, transient)
+  and marked priority_track. Next: COMPILE_OK → build gate → new-identity Q02 → chain_step.py → sibling wave 4.
+  Census state: 12710 14/1,085 (1 active), 11910 boosted (6 frontier cells) but not yet claimed, 21507 543/1,085;
+  the fleet recovered to 10 active claims at 24 GB free after the 13:30Z–14:30Z RAM latch.
