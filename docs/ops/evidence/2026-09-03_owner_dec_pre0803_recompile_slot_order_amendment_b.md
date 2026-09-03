@@ -430,3 +430,10 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   authenticate_amendment OK; the 93 spurious test failures were worktree-only). Genuine regression found:
   ftmo_book3_standalone_evaluator EXPECTED_OFFICIAL_SOURCE_IDS out of sync with rulepack V2 since 0abbc24b02 (fix
   commissioned, same workflow). Reload chunk 20 7/10 (T1/T9/T4 busy), chunk 21 (drain window) queued behind it.
+- 18:40Z–18:46Z: drained-fleet admission floor merged (`73e0119ccc`, Opus wf_ac0211ba-fee verified ok; 160 tests): the
+  armed drain row is admitted at 4 GB post-reservation once no other tester runs, so 44 GB index rows (10815 Q02)
+  become winnable at 48 GB free; reload chunk 22 queued behind 21/20. FTMO evaluator source ids/semantics synced
+  (`5065dcda78`), but the 24 evaluator tests stay red: pin 0abbc24b02 (02.09.) bumped profile_version/as_of and
+  rebased all sources to the economic-terms snapshot whose schema the evaluator does not accept → OWNER Vorlage
+  (FTMO evidence chain). 12580/AUDUSD Q03 `a64d18d3` claimed 18:41Z on T3 through the normal gate (commit headroom
+  cleared before the 20-min drain trigger); chain continues.
