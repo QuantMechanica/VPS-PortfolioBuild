@@ -25479,6 +25479,10 @@ def _enqueue_q03_exact_identity(
                 WHERE ea_id=? AND phase IN ('Q03','P3') AND symbol=?
                   AND setfile_path=?
                   AND json_extract(payload_json, '$.append_only_rerun_of_work_item')=?
+                  AND NOT EXISTS (
+                    SELECT 1 FROM work_item_supersedes s
+                    WHERE s.work_item_id=work_items.id
+                  )
                 ORDER BY created_at ASC LIMIT 1
                 """,
                 (
@@ -26098,6 +26102,10 @@ def enqueue_cascade_backtest_for_ea(
                     SELECT id, status, verdict FROM work_items
                     WHERE ea_id=? AND phase=? AND symbol=? AND setfile_path=?
                       AND json_extract(payload_json, '$.append_only_rerun_of_work_item')=?
+                      AND NOT EXISTS (
+                        SELECT 1 FROM work_item_supersedes s
+                        WHERE s.work_item_id=work_items.id
+                      )
                     ORDER BY created_at ASC LIMIT 1
                     """,
                     (
