@@ -468,3 +468,8 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   queued) - unwinnable within 30 min, census-only cost - closed by hand in drain_window.json (active=None, 6 h
   cooldown until 02:04Z). Fabric 20:03Z: 8 active (2 Q07, 2 news incl. 10700 expansion 152e8d29 on T4, 4 census),
   17 cells/10 min, 16 GB free, C: 82 GB, pump 20:03Z, guardian alive (4), chunk 20 9/10 (T1 last).
+- 20:10Z: governor v2 (G6) DISABLED action adapter + design/activation-gate record merged (`7ecc1b7457`; verifier ok
+  after the resume: no live-action path even with valid policy + activation artifact; 12 tests). ROT rest list for
+  OWNER filed (monitor v1.10 deploy, scheduled dry-run task, executor component, policy/activation artifacts).
+  Reload chunk 21 (drain window) started 20:09Z after chunk 20 finished 9/10 (T1 held the news run). Drain state
+  active=None (cooldown to 02:04Z). Fabric: 7 active, 18 cells/10 min, 21 GB free, C: 82.6 GB, pump 20:08Z.
