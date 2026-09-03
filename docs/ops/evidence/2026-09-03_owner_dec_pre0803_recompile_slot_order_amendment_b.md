@@ -508,3 +508,10 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   tests): long-run rows count as non-releasable instead of blocking; abandon only on a NEW long-run id. Reload
   chunk 24 queued behind 23 (22 at 6/10). Drain cooldown ends 02:04Z; 12580 Q03 `9cac4667` (32 GB basket) is the
   first row that can now arm a winnable drain beside the news runs.
+- 23:41Z–23:55Z: stale DL-089 lane lock removed — DL089_CLAIM_PRUNING.ffb5ca86… (program DL089_QM5_21507_XAUUSD…,
+  arm buy_045) created 04:18Z by T10's lane preflight, owner pid 37680 dead, 19.4 h old, no reaper → that arm's
+  cells were unclaimable (dl089_claim_pruning_lock_busy). Finding: census cell dispatch has NO program-priority
+  term (post_census → frontier → idle_program → age), i.e. round-robin across the 8 admitted programs: 21507
+  (575/1085, next counter pair) got ~29 cells in 8 h while 12710/11910 ran 70-76 cells/h; XAUUSD cells take 3.8 min
+  median (no runtime issue). Queue-order tie-break commissioned (wf_4b2b9b09-d04). Census 23:41Z: 21507 575,
+  11910 344, 12710 216; 21505/XAGUSD 778/1085 and 20048/XTIUSD 582 with 0 active cells (lane sharing). RAM 5-11 GB.
