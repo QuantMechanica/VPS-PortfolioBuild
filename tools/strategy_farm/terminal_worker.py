@@ -1542,6 +1542,64 @@ def _drain_row_is_qualifying(
     return True
 
 
+def _drain_phase_is_long_run(phase: object) -> bool:
+    """True when an ACTIVE row's phase holds RAM for hours, so a bounded drain
+    cannot win while it runs: Q07, Q08, the news phase, and Q09 and later.
+
+    Long-run vs short is read from the active gate manifest through the same
+    phase_rank helper farmctl uses -- never a bare Qxx literal -- so a gate
+    renumbering flows through unchanged.  Q07 is the first full-history gate;
+    Q02-Q06 single-symbol gates, OPT_CENSUS cells and COMPILE_EA rows (manifest
+    rank -1) are short and release their RAM inside the window.
+    """
+    try:
+        rank = int(farmctl.phase_rank(str(phase or "").strip().upper()))
+        longrun_floor = int(farmctl.phase_rank(_Q07_PHASE))
+    except Exception:
+        return False
+    if rank < 0 or longrun_floor < 0:
+        return False
+    return rank >= longrun_floor
+
+
+def _drain_candidate_is_winnable(
+    candidate: dict[str, Any],
+    *,
+    free_ram_gb: float,
+    long_run_active: bool,
+    releasable_short_ram_gb: float,
+) -> tuple[bool, str]:
+    """Pure predicate: may this qualifying candidate ARM a drain right now?
+
+    A drain only pays off if a fully drained fleet reaches the armed row's need
+    within the bounded window.  Two conditions on top of the qualifying
+    predicate (which already enforced need <= host total - baseline, condition
+    3): (1) no long-run row is active -- they hold RAM for hours, past the
+    window; and (2) current free RAM plus the RAM the active short rows will
+    release once the drain parks the fleet covers the armed row's need under the
+    reduced drained floor (reservation + DRAIN_ARMED_ROW_FLOOR_GB).  Returns
+    (winnable, reason); reason is the refusal tag when not winnable.
+    """
+    if long_run_active:
+        return False, "long_run_row_active"
+    try:
+        reservation = float(candidate.get("reservation_gb"))
+        free_now = float(free_ram_gb)
+        releasable = float(releasable_short_ram_gb)
+    except (TypeError, ValueError, AttributeError):
+        return False, "unreadable_inputs"
+    if not (
+        math.isfinite(reservation)
+        and math.isfinite(free_now)
+        and math.isfinite(releasable)
+    ):
+        return False, "unreadable_inputs"
+    need = reservation + DRAIN_ARMED_ROW_FLOOR_GB
+    if free_now + releasable < need:
+        return False, "insufficient_releasable_ram"
+    return True, ""
+
+
 def _drain_candidate_from_row(
     item: sqlite3.Row | dict[str, Any],
     payload: dict[str, Any],
@@ -1624,6 +1682,8 @@ def _drain_evaluate(
     *,
     now_epoch: float,
     qualifying_candidate: dict[str, Any] | None,
+    winnable: bool = True,
+    winnable_reason: str = "",
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     """Pure open/expire/track state transition.  Returns (new_state, events).
 
@@ -1675,23 +1735,56 @@ def _drain_evaluate(
             now_epoch >= cooldown_until
             and waited >= DRAIN_WINDOW_TRIGGER_MIN * 60.0
         ):
-            active = {
-                "item_id": cid,
-                "ea_id": qualifying_candidate.get("ea_id"),
-                "reservation_gb": qualifying_candidate.get("reservation_gb"),
-                "floor_gb": qualifying_candidate.get("floor_gb"),
-                "opened_epoch": now_epoch,
-                "opened_iso": _drain_iso(now_epoch),
-            }
-            events.append({
-                "event": "drain_window_open",
-                "item_id": cid,
-                "ea_id": qualifying_candidate.get("ea_id"),
-                "reservation_gb": qualifying_candidate.get("reservation_gb"),
-                "floor_gb": qualifying_candidate.get("floor_gb"),
-                "waited_seconds": round(waited, 1),
-            })
-            tracker = {}  # consumed by the open
+            if winnable:
+                active = {
+                    "item_id": cid,
+                    "ea_id": qualifying_candidate.get("ea_id"),
+                    "reservation_gb": qualifying_candidate.get("reservation_gb"),
+                    "floor_gb": qualifying_candidate.get("floor_gb"),
+                    "opened_epoch": now_epoch,
+                    "opened_iso": _drain_iso(now_epoch),
+                }
+                events.append({
+                    "event": "drain_window_open",
+                    "item_id": cid,
+                    "ea_id": qualifying_candidate.get("ea_id"),
+                    "reservation_gb": qualifying_candidate.get("reservation_gb"),
+                    "floor_gb": qualifying_candidate.get("floor_gb"),
+                    "waited_seconds": round(waited, 1),
+                })
+                tracker = {}  # consumed by the open
+            else:
+                # WINNABILITY gate (2026-09-03, CEO): a fully aged candidate a
+                # drained fleet cannot satisfy within the bounded window must NOT
+                # arm -- arming only refuses short rows and costs census
+                # throughput (the 2026-09-03 ~20:05Z window the CEO closed by
+                # hand).  Keep tracking so it arms the instant the fleet becomes
+                # winnable, and throttle the structured refusal to once per
+                # DRAIN_COOLDOWN_MIN per row so it cannot spam the log.
+                last_not_winnable = rec.get("last_not_winnable_epoch")
+                try:
+                    last_epoch = (
+                        float(last_not_winnable)
+                        if last_not_winnable is not None
+                        else None
+                    )
+                except (TypeError, ValueError):
+                    last_epoch = None
+                if (
+                    last_epoch is None
+                    or now_epoch - last_epoch >= DRAIN_COOLDOWN_MIN * 60.0
+                ):
+                    events.append({
+                        "event": "drain_window_not_winnable",
+                        "item_id": cid,
+                        "ea_id": qualifying_candidate.get("ea_id"),
+                        "reservation_gb": qualifying_candidate.get("reservation_gb"),
+                        "floor_gb": qualifying_candidate.get("floor_gb"),
+                        "reason": str(winnable_reason or ""),
+                        "waited_seconds": round(waited, 1),
+                    })
+                    rec["last_not_winnable_epoch"] = now_epoch
+                tracker = {cid: rec}  # keep tracking, do not arm
     elif active is None and qualifying_candidate is None:
         tracker = {}  # nothing waiting -> drop any stale tracker entry
 
@@ -1719,6 +1812,39 @@ def _drain_note_claim(
         "event": "drain_window_claim",
         "item_id": active.get("item_id"),
         "ea_id": active.get("ea_id"),
+        "open_seconds": round(now_epoch - opened, 1),
+    }]
+    new_state = {
+        "version": 1,
+        "active": None,
+        "cooldown_until_epoch": now_epoch + DRAIN_COOLDOWN_MIN * 60.0,
+        "tracker": {},
+    }
+    return new_state, events
+
+
+def _drain_abandon(
+    state: dict[str, Any], *, now_epoch: float, reason: str
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    """Close an open drain early and set the cooldown.  Returns (state, events).
+
+    Used when an active drain can no longer win -- a long-run row became active
+    (holds RAM for hours), or the armed heavy row was claimed / finished by
+    another terminal -- so the fleet stops refusing short rows at once instead
+    of idling until the max window.
+    """
+    active = state.get("active") if isinstance(state.get("active"), dict) else None
+    if active is None:
+        return state, []
+    try:
+        opened = float(active.get("opened_epoch") or now_epoch)
+    except (TypeError, ValueError):
+        opened = now_epoch
+    events = [{
+        "event": "drain_window_abandoned",
+        "item_id": active.get("item_id"),
+        "ea_id": active.get("ea_id"),
+        "reason": str(reason or ""),
         "open_seconds": round(now_epoch - opened, 1),
     }]
     new_state = {
@@ -1760,6 +1886,85 @@ def _drain_scan_candidate(
     return None
 
 
+def _drain_active_ram_facts(
+    root: Path,
+    *,
+    multisym_ids: frozenset,
+    armed_item_id: str | None,
+) -> dict[str, Any]:
+    """Read-only fleet-occupancy facts for the drain winnability decision.
+
+    Returns three fail-open facts (never raises):
+      * ``long_run_active_other`` -- any ACTIVE row in a long-run phase (Q07,
+        Q08, the news phase, Q09 and later) other than the armed row itself;
+        such a row holds RAM for hours, so the bounded drain cannot win.
+      * ``releasable_short_ram_gb`` -- summed physical-RAM reservation of the
+        ACTIVE short rows the drain refuses new copies of (Q02-Q06, OPT_CENSUS),
+        read through the unchanged _ram_reservation_for_candidate (measured
+        working set when the tester ledger has it, else the flat class): the RAM
+        those running rows release once the drain parks the fleet.  COMPILE_EA
+        rows keep flowing during a drain, so they are not counted as releasable.
+      * ``armed_row_pending`` -- whether the armed row (when given) is still a
+        pending work item; False means it was claimed / finished elsewhere.
+
+    Runs OUTSIDE the claim transaction on a short read connection, mirroring the
+    existing _drain_scan_candidate preflight.  Any failure fails open to the
+    benign defaults (no long-run seen, nothing releasable, armed row present).
+    """
+    armed = str(armed_item_id) if armed_item_id is not None else None
+    facts: dict[str, Any] = {
+        "long_run_active_other": False,
+        "releasable_short_ram_gb": 0.0,
+        "armed_row_pending": True,
+    }
+    try:
+        with farmctl.connect(root) as conn:
+            conn.row_factory = sqlite3.Row
+            for row in conn.execute(
+                "SELECT id, ea_id, phase, symbol, payload_json FROM work_items "
+                "WHERE status='active'"
+            ).fetchall():
+                rid = str(_work_item_value(row, "id", "") or "")
+                phase = str(_work_item_value(row, "phase", "") or "").upper()
+                if _drain_phase_is_long_run(phase):
+                    if armed is None or rid != armed:
+                        facts["long_run_active_other"] = True
+                    continue
+                # A short row counts as releasable only if the drain refuses new
+                # copies of it (Q02-Q06, OPT_CENSUS); COMPILE_EA and the armed
+                # row itself are exempt and never counted.
+                if not _drain_blocks_candidate(row, armed):
+                    continue
+                payload = _json_loads(_work_item_value(row, "payload_json", "{}"))
+                try:
+                    multisymbol = _work_item_is_multisymbol(
+                        row, payload, multisym_ids
+                    )
+                    _cls, reservation_gb = _ram_reservation_for_candidate(
+                        row, payload, multisymbol
+                    )
+                    reservation = float(reservation_gb)
+                except Exception:
+                    continue
+                if math.isfinite(reservation) and reservation > 0.0:
+                    facts["releasable_short_ram_gb"] += reservation
+            if armed is not None:
+                arow = conn.execute(
+                    "SELECT status FROM work_items WHERE id=?", (armed,)
+                ).fetchone()
+                facts["armed_row_pending"] = bool(
+                    arow is not None
+                    and str(arow["status"] or "").strip().lower() == "pending"
+                )
+    except Exception:
+        return {
+            "long_run_active_other": False,
+            "releasable_short_ram_gb": 0.0,
+            "armed_row_pending": True,
+        }
+    return facts
+
+
 def _drain_run_postprocess(
     root: Path,
     terminal: str,
@@ -1793,15 +1998,48 @@ def _drain_run_postprocess(
                 state, now_epoch=now_epoch, claimed_item_id=claimed_item_id
             )
         else:
-            qualifying = _drain_scan_candidate(
-                root,
-                free_ram_gb=free_ram_gb,
-                host_total_gb=host_total_gb,
-                multisym_ids=multisym_ids,
+            facts = _drain_active_ram_facts(
+                root, multisym_ids=multisym_ids, armed_item_id=active_item_id
             )
-            new_state, events = _drain_evaluate(
-                state, now_epoch=now_epoch, qualifying_candidate=qualifying
-            )
+            if active is not None and (
+                facts["long_run_active_other"] or not facts["armed_row_pending"]
+            ):
+                # WINNABILITY abandon (2026-09-03, CEO): an open drain is closed
+                # the instant it can no longer win -- a long-run row became
+                # active (holds RAM for hours), or the armed heavy row was
+                # claimed / finished by another terminal -- so the fleet resumes
+                # short rows now instead of idling to the max window.
+                reason = (
+                    "long_run_row_active"
+                    if facts["long_run_active_other"]
+                    else "armed_row_claimed_elsewhere"
+                )
+                new_state, events = _drain_abandon(
+                    state, now_epoch=now_epoch, reason=reason
+                )
+            else:
+                qualifying = _drain_scan_candidate(
+                    root,
+                    free_ram_gb=free_ram_gb,
+                    host_total_gb=host_total_gb,
+                    multisym_ids=multisym_ids,
+                )
+                if qualifying is not None:
+                    winnable, winnable_reason = _drain_candidate_is_winnable(
+                        qualifying,
+                        free_ram_gb=free_ram_gb,
+                        long_run_active=facts["long_run_active_other"],
+                        releasable_short_ram_gb=facts["releasable_short_ram_gb"],
+                    )
+                else:
+                    winnable, winnable_reason = True, ""
+                new_state, events = _drain_evaluate(
+                    state,
+                    now_epoch=now_epoch,
+                    qualifying_candidate=qualifying,
+                    winnable=winnable,
+                    winnable_reason=winnable_reason,
+                )
         if events or new_state != state:
             _write_drain_state_atomic(root, new_state)
         for event in events:
