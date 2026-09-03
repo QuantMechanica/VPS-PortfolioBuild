@@ -255,3 +255,6 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   `expanded_7x4_matrix_required` (material_effect: Δnet R, ΔPF, sign-or-gate flips 5 of 5 → strong news
   sensitivity); the expansion parent `f7264187` was minted 08:58Z (priority_track). Both recompile chains that
   reached the news gate therefore need the 105-cell expansion; 12710's (`58d84268`) is running on T8.
+- 09:33Z–09:50Z: 10700 Q08 `ce371d25` PASS (H1 walk-forward, 60 min) → Q09 `3030129c` enqueued (rerun of
+  3e40593d). At its PASS the pre-0803 Q10_NEWS zombie `77bd97c2` gets the Q09_AWAITING_SEALED_PLAN re-arm.
+  Expansions 12710 (T8) and 11910 (T1) still running.
