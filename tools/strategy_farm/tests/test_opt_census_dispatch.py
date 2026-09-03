@@ -1112,6 +1112,7 @@ def test_amendment_b_admits_news_gate_parents_of_a_lineage(
         "q09_binding_version": "q09-news-dispatch-binding/v1",
         "q09_run_plan_path": "D:/plan.json",
         "q09_run_plan_file_sha256": "0" * 64,
+        "q09_dispatch_binding_sha256": "1" * 64,
     }
     rerun_parent = {**bound, "append_only_rerun": True, "priority_track": True}
     replacement = {**bound, "supersedes_held_q09_work_item": "77bd97c2-old", "priority_track": True}
