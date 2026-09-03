@@ -104,3 +104,6 @@ tools/strategy_farm/config/gate_manifest.v4.json text eol=lf
 # Q13 numeric grids are raw-byte sealed into optimization ledgers. Pin the
 # first real pilot grid to LF so its reviewed SHA-256 survives autocrlf checkouts.
 framework/EAs/QM5_41162_ohlc-daily-squeeze-reversal-d1-opt/opt_param_grid.json text eol=lf
+# 2026-09-03 (CEO): hash-bound raw-byte evidence must never be EOL-smudged (autocrlf corrupted their sha in worktrees)
+decisions/DL-089_amendment_1_deterministic_floor_break_pruning_2026-08-27.md -text
+docs/ops/evidence/2026-09-02_ftmo_economic_terms_snapshot.json -text
