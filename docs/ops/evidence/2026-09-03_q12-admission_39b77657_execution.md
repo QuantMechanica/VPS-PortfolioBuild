@@ -76,7 +76,7 @@ No stored correlation artifact bound to this Q12-ready cohort exists under `docs
 
 ## Per-member provenance
 
-Hash cells show 12-char prefixes; `expected` = hash bound on the DB rows/evidence, `current` = hash of the working-copy file at git HEAD above. `MISMATCH`/`UNBOUND` on EX5 or setfile means the current repo bytes are a **new identity since** the bound evidence (these members re-enter at `Q02_NEW_IDENTITY`). Full gate chains (latest terminal row per phase, with row ids, verdicts, `vclass`, evidence paths+SHA-256) are in the JSON sidecar.
+Hash cells show 12-char prefixes; `expected` = hash bound on the DB rows/evidence, `current` = hash of the file in the canonical working tree C:/QM/repo at verification time (branch agents/board-advisor, HEAD f6421cb5, descendant of the git HEAD above; the tree carried uncommitted recompiled ex5 for QM5_10700/11910/12710 — exactly the new-identity signal reported here). `MISMATCH`/`UNBOUND` on EX5 or setfile means the current repo bytes are a **new identity since** the bound evidence (these members re-enter at `Q02_NEW_IDENTITY`). Full gate chains (latest terminal row per phase, with row ids, verdicts, `vclass`, evidence paths+SHA-256) are in the JSON sidecar.
 
 `vclass` is the coarse class from `rebaseline_census.py:vclass` for the anchor row's verdict: `FAIL_SOFT` classifies as **PASS** (economically valid, above the economic floor), `INFRA_FAIL` as **INFRA** (non-economic infrastructure outcome, not a strategy failure). The `verdict/vclass` pair is a provenance readout, not a re-grade.
 
