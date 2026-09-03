@@ -310,3 +310,7 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   boosted with a 6-cell frontier window). 10700 Q10_NEWS `fe33550e` ended REVIEW_REQUIRED (expansion required,
   like the other two); the expansion parent `c0faeb48` was minted 12:43Z and claimed by T5 12:48Z.
   Guardian loop restarted 12:57Z (6-h cycle ended 12:43Z).
+- 13:10Z: both recompiled programs are serviced by the matrix service (boost window 6 each): 12710 2/1,085 cells
+  done, 11910 starting; 21507 at 542/1,085. 10700's expansion `c0faeb48` running on T5 since 12:48Z.
+  Throughput brake of the day: the RAM latch (14/20 GB) again idles 4–6 workers at 12.5 GB free while the
+  census cells need ~4 GB — Vorlage filed (census-cell bypass floor).
