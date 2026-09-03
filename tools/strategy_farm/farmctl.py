@@ -2104,6 +2104,15 @@ def _lineage_rerun_rank_sql() -> str:
         pre-execution-binding source whose evidence retention expired (the
         QM5_10700/XAUUSD pre-0803 recompile); it is admitted on the same terms
         as an append-only rerun -- Q02 only, priority-tracked, not quarantined;
+      * 2026-09-03 11:30Z (CEO, same decision): the news-gate parent of such a
+        lineage -- the ``_NEWS_PHASE`` row that is itself an append-only rerun
+        OR the service-minted replacement parent (``supersedes_held_q09_work_item``)
+        -- is the last step to the Q10 lock.  Without this key it sorted behind
+        every frontier census cell (the census sub-ranks precede ``_phase_rank``)
+        and QM5_10700's replacement parent starved for an hour at position ~1,300
+        while workers still found claimable census cells.  Q10_NEWS only, still
+        priority-tracked and not quarantined; the long-run caps in
+        ``longrun_scheduling_policy`` keep applying at claim time;
       * ``json_type('$.priority_track')='true'`` matches only the JSON literal
         true, identical to the test used by ``_priority_track_rank``;
       * the poison-pill override is honoured exactly as ``_priority_track_rank``
@@ -2119,9 +2128,12 @@ def _lineage_rerun_rank_sql() -> str:
         " AND COALESCE(json_extract("
         "w.payload_json, '$.requalification_old_work_item_id'), '') <> ''"
         " AND w.phase='Q02')"
+        " OR (COALESCE(json_extract("
+        "w.payload_json, '$.supersedes_held_q09_work_item'), '') <> ''"
+        f" AND w.phase='{_NEWS_PHASE}')"
         ")"
         " AND json_type(w.payload_json, '$.priority_track')='true'"
-        f" AND w.phase IN ({phases})"
+        f" AND w.phase IN ({phases}, '{_NEWS_PHASE}')"
         " AND COALESCE(json_extract("
         "w.payload_json, '$.poison_pill_priority_override'), 0) <> 1"
         " THEN 0 ELSE 1 END"

@@ -1093,3 +1093,53 @@ def test_amendment_b_admits_governed_fresh_q02_seed_restart(
     for item_id in ("seed-unmarked", "seed-unbound", "seed-wrong-phase", "census-cell"):
         assert by_id[item_id]["_lineage_rerun_rank"] == 1, item_id
     assert [row["id"] for row in ordered][0] == "seed-governed"
+
+
+def test_amendment_b_admits_news_gate_parents_of_a_lineage(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """CEO 2026-09-03 11:30Z: the Q10_NEWS parent of a recompile lineage (an
+    append-only rerun, or the service-minted replacement parent carrying
+    ``supersedes_held_q09_work_item``) ranks with the lineage reruns instead of
+    behind every frontier census cell; an ordinary news parent and an unmarked
+    replacement do not."""
+    monkeypatch.setenv(farmctl.TOPDOWN_GATE_PRIORITY_ENV, "1")
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    now = "2026-09-03T00:00:00+00:00"
+    news = farmctl._NEWS_PHASE
+    bound = {  # the claim order admits a news row only once bind-q09-plan sealed it
+        "q09_binding_version": "q09-news-dispatch-binding/v1",
+        "q09_run_plan_path": "D:/plan.json",
+        "q09_run_plan_file_sha256": "0" * 64,
+    }
+    rerun_parent = {**bound, "append_only_rerun": True, "priority_track": True}
+    replacement = {**bound, "supersedes_held_q09_work_item": "77bd97c2-old", "priority_track": True}
+    ordinary = {**bound, "priority_track": True}
+    unmarked = {**bound, "supersedes_held_q09_work_item": "77bd97c2-old"}
+    census_cell = {"priority_track": True, "cell_key": "P:2021:buy_001",
+                   "opt_census_frontier_priority": True}
+    with farmctl.connect(root) as conn:
+        for item_id, phase, payload in (
+            ("census-cell", "OPT_CENSUS", census_cell),
+            ("news-rerun", news, rerun_parent),
+            ("news-replacement", news, replacement),
+            ("news-ordinary", news, ordinary),
+            ("news-unmarked", news, unmarked),
+        ):
+            _insert(
+                conn, id=item_id, kind="backtest", phase=phase,
+                ea_id=f"QM5_{item_id}", symbol="", setfile_path="",
+                status="pending", attempt_count=0,
+                payload_json=json.dumps(payload), created_at=now, updated_at=now,
+            )
+        conn.commit()
+        ordered = conn.execute(farmctl.pending_claim_order_sql()).fetchall()
+    by_id = {row["id"]: row for row in ordered}
+    assert by_id["news-rerun"]["_lineage_rerun_rank"] == 0
+    assert by_id["news-replacement"]["_lineage_rerun_rank"] == 0
+    for item_id in ("news-ordinary", "news-unmarked", "census-cell"):
+        assert by_id[item_id]["_lineage_rerun_rank"] == 1, item_id
+    head = [row["id"] for row in ordered]
+    assert set(head[:2]) == {"news-rerun", "news-replacement"}
+    assert head.index("census-cell") < head.index("news-ordinary")
