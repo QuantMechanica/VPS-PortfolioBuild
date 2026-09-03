@@ -228,3 +228,10 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
 - 07:57Z–08:02Z: the news-gate service minted 12710's replacement Q10_NEWS parent `9a2e9380` (ex5
   `11474d4c…`) in the 07:51Z pump cycle; the zombie `678b8cac` is now done/SUPERSEDED; `9a2e9380` claimed by
   T10 07:57Z. 11910 Q08 `e0237a77` FAIL_SOFT (gate-scoped PASS) → Q09 `859b114d` enqueued (rerun of 2b2ec7d3).
+- 08:07Z–08:14Z: **11910 Q09 `859b114d` PASS** (chain contiguous Q02→Q09 on `e18d477e…`). Q10_NEWS parent
+  `bdae4b44` enqueued via the ordinary rerun form (`--append-only-rerun-of a6dbacf5`, the terminal
+  REVIEW_REQUIRED parent of the pre-0803 identity; predecessor 859b114d); it carries
+  q09_activation_state AWAITING_SEALED_PLAN + the Q09_AWAITING_SEALED_PLAN hold, i.e. the news-gate service
+  seals/binds the run plan and activates it (RUNNABLE_BOUND) in a following pump cycle — the same lifecycle
+  a6dbacf5 and 12710's 9a2e9380 went through. 13213/XAUUSD Q11 `7db06ca0` PASS 08:11Z (Q12 `2ea9cd64` owns
+  slot 1; program 513+/1085 cells).
