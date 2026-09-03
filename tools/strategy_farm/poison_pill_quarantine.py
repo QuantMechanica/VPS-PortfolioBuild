@@ -33,6 +33,26 @@ CREATE TABLE IF NOT EXISTS poison_pill_quarantine (
 SUMMARY_MISSING_EXHAUSTED = "summary_missing_retries_exhausted"
 SINGLE_OBSERVATION_KEY = "poison_pill_single_observation"
 PRIORITY_OVERRIDE_KEY = "poison_pill_priority_override"
+# The seal below writes a TERMINAL work_item row (status='failed'). MNT-009's
+# evidence triggers on work_items abort any terminal write whose evidence_path
+# is NULL/empty, so the seal must bind either a real evidence path or the
+# canonical EVIDENCE_UNAVAILABLE sentinel. The reason mirrors the verdict_reason
+# this seal already stamps into the payload.
+SEAL_EVIDENCE_REASON = "poison_pill:summary_missing_retries_exhausted"
+
+
+def _evidence_unavailable_sentinel(reason: str) -> str:
+    """Reuse farmctl's canonical MNT-009 sentinel builder -- one definition only.
+
+    Imported lazily (same idiom as the other sibling tools) so this module stays
+    a cheap standalone CLI and so farmctl's own lazy ``import
+    poison_pill_quarantine`` can never become an import cycle.
+    """
+    try:
+        import farmctl  # type: ignore
+    except ModuleNotFoundError:  # pragma: no cover - packaged-import fallback
+        from tools.strategy_farm import farmctl  # type: ignore
+    return farmctl._evidence_unavailable_sentinel(reason)
 
 
 def utc_now() -> str:
@@ -154,12 +174,20 @@ def _single_observation_pending(
 def _seal_summary_missing_pending(
     conn: sqlite3.Connection, item: dict[str, Any], now: str,
 ) -> int:
-    """Seal dead no-summary successors with a non-merit verdict."""
+    """Seal dead no-summary successors with a non-merit verdict.
+
+    The sealed row is TERMINAL, so it must carry evidence: an already-bound
+    evidence_path is never overwritten (append-only), and a row that has none
+    gets the canonical ``EVIDENCE_UNAVAILABLE:<reason>`` sentinel instead of a
+    silent NULL. Writing NULL here aborted the whole ``refresh_pending``
+    transaction against the live DB's MNT-009 evidence trigger, which also
+    rolled back the quarantine upserts in the same transaction.
+    """
     if item["verdict_reason"] != SUMMARY_MISSING_EXHAUSTED:
         return 0
     changed = 0
     rows = conn.execute(
-        """SELECT id,payload_json FROM work_items
+        """SELECT id,payload_json,evidence_path FROM work_items
            WHERE ea_id=? AND symbol=? AND phase=? AND status='pending'""",
         (item["ea_id"], item["symbol"], item["phase"]),
     ).fetchall()
@@ -170,19 +198,26 @@ def _seal_summary_missing_pending(
             payload = {}
         if not isinstance(payload, dict):
             payload = {}
+        existing_evidence = str(row["evidence_path"] or "").strip()
+        evidence_path = existing_evidence or _evidence_unavailable_sentinel(
+            SEAL_EVIDENCE_REASON
+        )
         payload["final_failure"] = SUMMARY_MISSING_EXHAUSTED
-        payload["verdict_reason"] = "poison_pill:summary_missing_retries_exhausted"
+        payload["verdict_reason"] = SEAL_EVIDENCE_REASON
         payload["verdict_taxonomy"] = "invalid"
         payload["poison_pill_disposition"] = {
             "sealed_at": now,
             "reason": "five_identical_infra_failures_no_merit_verdict",
             "verdict": "INVALID",
+            "evidence_path": evidence_path,
+            "evidence_binding": "existing" if existing_evidence else "sentinel",
         }
         cur = conn.execute(
             """UPDATE work_items
-               SET status='failed',verdict='INVALID',payload_json=?,updated_at=?
+               SET status='failed',verdict='INVALID',evidence_path=?,
+                   payload_json=?,updated_at=?
                WHERE id=? AND status='pending'""",
-            (json.dumps(payload, sort_keys=True), now, row["id"]),
+            (evidence_path, json.dumps(payload, sort_keys=True), now, row["id"]),
         )
         changed += cur.rowcount
     return changed
