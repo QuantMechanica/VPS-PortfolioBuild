@@ -399,3 +399,11 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   persists the durable stream at seal time (_persist_durable_sleeve_stream :748); the four missing files were
   deleted afterwards, so the added value is verify-and-record + append-only sibling guard + backfill CLI.
   CPU guard tripped T1/T7/T10 during the git removals → git/bash added to the Idle-priority loop.
+- 17:25Z–17:37Z: throughput levers merged after three verified verdicts (Opus wf_f3c42ecc-550): census-first RAM
+  priority + claim-order memo `4fe39056cc` (claim_atomic evaluated the ~12.7k-row ordering twice per attempt at
+  ~0.9 s each — the CPU-guard feedback loop; memo hit ~0.2 ms, order proven identical; kill switches
+  QM_CENSUS_FIRST_RAM_PRIORITY=0 / QM_CLAIM_ORDER_CACHE_TTL_MS=0), authenticated pointer read in
+  verify_live_deployment_contract `06c3220131` (G5 residual). Reload chunk 20 (all ten, idle-only) replaces
+  chunks 18/19; workflow worktrees removed (pass 3). Verifier flagged 8 pre-existing failing tests on the
+  branch (rulepack snapshot-hash / seal-identity: test_opt_census_pruning, test_target_outcome_dossier,
+  test_pipeline_books_dashboard_status, test_ftmo_book3_standalone_evaluator) — repair commissioned.
