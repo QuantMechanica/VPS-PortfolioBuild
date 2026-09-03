@@ -232,6 +232,20 @@ class P2BaselineTests(unittest.TestCase):
         self.assertEqual(verdict, "INVALID")
         self.assertEqual(reason, "G1_NO_REAL_TICKS")
 
+    def test_derive_verdict_report_capture_incomplete_is_infra(self) -> None:
+        # Report-capture race (MT5 shell latched over a completed, traded run):
+        # run_smoke tags REPORT_CAPTURE_INCOMPLETE, which must grade as infra
+        # (INVALID here, mirrored to INFRA_FAIL in farmctl), never a strategy
+        # zero-trade FAIL.
+        summary = {
+            "result": "FAIL",
+            "reason_classes": ["REPORT_CAPTURE_INCOMPLETE"],
+            "report_dir": "/tmp/report",
+        }
+        verdict, reason, _ = p2_baseline.derive_verdict(summary, min_trades=25)
+        self.assertEqual(verdict, "INVALID")
+        self.assertIn("REPORT_CAPTURE_INCOMPLETE", reason)
+
     def test_derive_verdict_pass_requires_g1_marker(self) -> None:
         # DL-082 §4: 50 trades clears the trade floor but faces the evidence-
         # conditional PF floor (floor(50) ~= 1.72) — fixture PF sits above it.

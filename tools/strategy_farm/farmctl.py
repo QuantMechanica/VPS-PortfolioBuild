@@ -6858,6 +6858,7 @@ def _derive_verdict_from_summary(summary: dict[str, Any], min_trades: int = 5, p
             "NO_HISTORY_LOG",
             "NO_REAL_TICKS",
             "REPORT_MISSING",
+            "REPORT_CAPTURE_INCOMPLETE",
             "REPORT_PARSE_ERROR",
             "INVALID_REPORT",
             "INCOMPLETE_RUNS",

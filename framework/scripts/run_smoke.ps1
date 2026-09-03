@@ -1799,6 +1799,159 @@ function Test-TesterReportSafeToLatch {
     }
 }
 
+$script:ReportFinalizeGraceSec = 180
+
+function Test-TesterReportIsShell {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ReportPath
+    )
+
+    # MT5 can leave its modeling-phase report shell on disk for a short window
+    # while the main terminal64 process flushes the finished report during its
+    # ShutdownTerminal=1 exit. The shell has a real bar/tick context (Bars > 0)
+    # but has not yet consolidated the account: Total Deals = 0 AND Initial
+    # Deposit = 0.00 AND Symbols = 0. A genuine completed run - even a real
+    # zero-trade run - always carries a settled non-zero Initial Deposit and a
+    # non-zero Symbols count, so this signature is specific to the capture race
+    # and never matches an ordinary zero-trade report. English labels only: no
+    # invented German aliases (Hard Rule: no invented report values).
+    if (-not (Test-Path -LiteralPath $ReportPath -PathType Leaf)) {
+        return $false
+    }
+    try {
+        $html = Get-Content -Raw -LiteralPath $ReportPath -ErrorAction Stop
+        $barsRaw = Get-ReportMetricValue -Html $html -Label "Bars" -AllowMissing
+        if ($null -eq $barsRaw) {
+            return $false
+        }
+        $bars = 0
+        try {
+            $bars = [int](Convert-ReportNumber -Value $barsRaw)
+        } catch {
+            return $false
+        }
+        if ($bars -le 0) {
+            return $false
+        }
+        $symbolsRaw = Get-ReportMetricValue -Html $html -Label "Symbols" -AllowMissing
+        $dealsRaw = Get-ReportMetricValue -Html $html -Label "Total Deals" -AllowMissing
+        $depositRaw = Get-ReportMetricValue -Html $html -Label "Initial Deposit" -AllowMissing
+        if ($null -eq $symbolsRaw -or $null -eq $dealsRaw -or $null -eq $depositRaw) {
+            return $false
+        }
+        $symbolsZero = $false
+        $dealsZero = $false
+        $depositZero = $false
+        try { $symbolsZero = ([int](Convert-ReportNumber -Value $symbolsRaw) -eq 0) } catch { return $false }
+        try { $dealsZero = ([int](Convert-ReportNumber -Value $dealsRaw) -eq 0) } catch { return $false }
+        try { $depositZero = ((Convert-ReportNumber -Value $depositRaw) -eq 0) } catch { return $false }
+        return ($symbolsZero -and $dealsZero -and $depositZero)
+    } catch {
+        return $false
+    }
+}
+
+function Test-TesterJournalHasDeals {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$JournalPath
+    )
+
+    # The MT5 tester journal is the authoritative execution record. A real fill
+    # prints "... deal #<n> <side> <vol> <symbol> at <price> done", so a run that
+    # traded leaves "deal #<n>" lines even when the captured report is still the
+    # pre-consolidation shell. MT5 writes the journal UTF-16 (BOM); tests use
+    # ASCII/UTF-8. Decode by BOM before scanning so a UTF-16 journal is not read
+    # as empty (which would misclassify a real capture race as a genuine zero).
+    if ([string]::IsNullOrWhiteSpace($JournalPath) -or -not (Test-Path -LiteralPath $JournalPath -PathType Leaf)) {
+        return $false
+    }
+    try {
+        $bytes = [System.IO.File]::ReadAllBytes($JournalPath)
+    } catch {
+        return $false
+    }
+    if ($bytes.Length -eq 0) {
+        return $false
+    }
+    if ($bytes.Length -ge 2 -and $bytes[0] -eq 0xFF -and $bytes[1] -eq 0xFE) {
+        $text = [System.Text.Encoding]::Unicode.GetString($bytes)
+    } elseif ($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF) {
+        $text = [System.Text.Encoding]::UTF8.GetString($bytes, 3, $bytes.Length - 3)
+    } else {
+        $text = [System.Text.Encoding]::UTF8.GetString($bytes)
+    }
+    return [regex]::IsMatch($text, "(?im)\bdeal\s+#\d+\b")
+}
+
+function Test-TerminalProcessAlive {
+    param(
+        [Parameter(Mandatory = $true)]
+        [int]$TerminalPid
+    )
+
+    if ($TerminalPid -le 0) {
+        return $false
+    }
+    try {
+        $proc = Get-Process -Id $TerminalPid -ErrorAction Stop
+    } catch {
+        return $false
+    }
+    return ($null -ne $proc -and $proc.ProcessName -eq 'terminal64')
+}
+
+function Wait-ForTesterReportFinalization {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ReportPath,
+        [Parameter(Mandatory = $true)]
+        [int]$TerminalPid,
+        [ValidateRange(0, 600)]
+        [int]$GraceSeconds = $script:ReportFinalizeGraceSec,
+        [ValidateRange(1, 60)]
+        [int]$PollSeconds = 5
+    )
+
+    # A naturally finished run (not early-latched, not timed out) can still expose
+    # MT5's report shell for a short window while terminal64 flushes the final
+    # report during shutdown. Poll (bounded) until the shell resolves into a
+    # settled report, the writing terminal exits (no writer left to consolidate
+    # it), or the grace expires. terminal64 is the only writer of this report, so
+    # once it is gone the on-disk shell cannot gain deals and waiting longer is
+    # pointless - hand off to the journal cross-check instead.
+    $deadline = (Get-Date).ToUniversalTime().AddSeconds($GraceSeconds)
+    $polls = 0
+    while ($true) {
+        if (-not (Test-TesterReportIsShell -ReportPath $ReportPath)) {
+            return [pscustomobject]@{
+                shell_persisted = $false
+                polls = $polls
+                terminal_exited = (-not (Test-TerminalProcessAlive -TerminalPid $TerminalPid))
+            }
+        }
+        if (-not (Test-TerminalProcessAlive -TerminalPid $TerminalPid)) {
+            return [pscustomobject]@{
+                shell_persisted = $true
+                polls = $polls
+                terminal_exited = $true
+            }
+        }
+        if ((Get-Date).ToUniversalTime() -ge $deadline) {
+            break
+        }
+        Start-Sleep -Seconds $PollSeconds
+        $polls++
+    }
+    return [pscustomobject]@{
+        shell_persisted = (Test-TesterReportIsShell -ReportPath $ReportPath)
+        polls = $polls
+        terminal_exited = (-not (Test-TerminalProcessAlive -TerminalPid $TerminalPid))
+    }
+}
+
+
 function Remove-TesterJournalBombArtifacts {
     param(
         [Parameter(Mandatory = $true)]
@@ -2901,6 +3054,57 @@ for ($i = 1; $i -le $maxRunAttempts; $i++) {
             failure_hints = @($failureHints)
         }
         continue
+    }
+
+    # Durable report-capture-race guard (2026-09-03, QM5_12580 AUDUSD Q03 false
+    # zero; docs/ops/evidence/2026-09-03_qm5_12580_audusd_q03_zero_trade_diagnosis.md).
+    # A run that finished naturally can still expose MT5's modeling-phase report
+    # shell (Symbols=0 AND Total Deals=0 AND Initial Deposit=0.00 while Bars>0) on
+    # disk for a moment while terminal64 flushes the final report during its
+    # ShutdownTerminal=1 exit. Test-TesterReportHasCompleteMetrics only requires
+    # Bars>0, so the shell is otherwise accepted and its 0 trades misgraded as a
+    # strategy MIN_TRADES_NOT_MET. Do not trust the shell: wait (bounded) for it
+    # to settle or the sole writer (terminal64) to exit; if it persists, the
+    # tester journal is the authoritative execution record - if it already
+    # recorded real deals, this is a capture race (infra REPORT_CAPTURE_INCOMPLETE),
+    # not a zero-trade strategy result. If the journal shows no deals either, the
+    # zero is genuine and falls through to the normal parser. The early-stop
+    # latch, min_trades floor and verdict math are untouched.
+    if ((-not $runExec.timed_out) -and (-not $runExec.valid_report_latched) -and (-not $runExec.log_bomb) -and (Test-TesterReportIsShell -ReportPath $sourceReportPath)) {
+        $finalizeWait = Wait-ForTesterReportFinalization -ReportPath $sourceReportPath -TerminalPid ([int]$runExec.terminal_pid)
+        Write-Host ("run_smoke.stage=report_finalize_wait run={0} shell_persisted={1} polls={2} terminal_exited={3} grace_seconds={4}" -f $runName, $finalizeWait.shell_persisted, $finalizeWait.polls, $finalizeWait.terminal_exited, $script:ReportFinalizeGraceSec)
+        if ($finalizeWait.shell_persisted) {
+            $runJournal = Get-LatestTesterLog -TerminalRoot $terminalRoot -SinceUtc $runStartUtc
+            $shellJournalPath = $null
+            $shellJournalHasDeals = $false
+            if ($runJournal) {
+                $shellJournalHasDeals = Test-TesterJournalHasDeals -JournalPath $runJournal.FullName
+                try {
+                    $shellJournalPath = Join-Path $runDir $runJournal.Name
+                    Copy-Item -LiteralPath $runJournal.FullName -Destination $shellJournalPath -Force
+                } catch {
+                    $shellJournalPath = $runJournal.FullName
+                }
+            }
+            if ($shellJournalHasDeals) {
+                $reasonClasses.Add("REPORT_CAPTURE_INCOMPLETE")
+                $globalRealTicksMarker = $false
+                Write-Host ("run_smoke.stage=report_capture_incomplete run={0} report='{1}' journal='{2}' reason=journal_deals_without_report_trades" -f $runName, $sourceReportPath, [string]$shellJournalPath)
+                $runResults += [pscustomobject]@{
+                    run = $runName
+                    status = "FAIL"
+                    failure = "REPORT_CAPTURE_INCOMPLETE"
+                    error = "Tester journal recorded executed deals but the captured report is MT5's incomplete shell (Symbols=0/Total Deals=0/Initial Deposit=0.00 with Bars>0). Infra report-capture race; not a strategy zero-trade result."
+                    exit_code = $exitCode
+                    report_source_path = $sourceReportPath
+                    report_canonical_path = $reportHtmPath
+                    report_size_bytes = [int64](Get-Item -LiteralPath $sourceReportPath).Length
+                    tester_log_path = $shellJournalPath
+                }
+                continue
+            }
+            Write-Host ("run_smoke.stage=report_shell_genuine_zero run={0} report='{1}' journal='{2}' reason=no_journal_deals" -f $runName, $sourceReportPath, [string]$shellJournalPath)
+        }
     }
 
     $sourceInfo = Get-Item -LiteralPath $sourceReportPath

@@ -351,6 +351,7 @@ def derive_verdict(summary: dict, min_trades: int) -> tuple[str, str, str]:
             "NO_HISTORY_LOG",
             "NO_REAL_TICKS",
             "REPORT_MISSING",
+            "REPORT_CAPTURE_INCOMPLETE",
             "REPORT_PARSE_ERROR",
             "INVALID_REPORT",
             "INCOMPLETE_RUNS",
@@ -663,7 +664,7 @@ def run_one_symbol(ea_id: int, ea_dir: Path, ea_label: str, symbol: str, year: i
         verdict, reason, evidence = derive_verdict(summary, min_trades)
         # G10: NO_HISTORY added — 96% of cold-cache faults self-heal on the
         # immediate retry (2026-06-20 root cause), saving a full requeue cycle.
-        transient_fault = any(flag in (reason or "") for flag in ("REPORT_MISSING", "METATESTER_HUNG", "INCOMPLETE_RUNS", "NO_HISTORY"))
+        transient_fault = any(flag in (reason or "") for flag in ("REPORT_MISSING", "METATESTER_HUNG", "INCOMPLETE_RUNS", "NO_HISTORY", "REPORT_CAPTURE_INCOMPLETE"))
         if verdict in ("FAIL", "INVALID") and transient_fault and attempt < max_attempts:
             safe_print(f"[RETRY] {symbol} ({terminal}) {elapsed:.0f}s reason={reason} -> retrying once")
             attempt += 1

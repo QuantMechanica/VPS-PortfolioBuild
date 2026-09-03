@@ -176,3 +176,16 @@ def test_every_named_cold_cache_signature_is_classified() -> None:
 
 def test_signature_substring_inside_another_token_is_not_classified() -> None:
     assert utils.cold_cache_retry_signature("diagnostic=NOT_BARS_ZERO") is None
+
+
+def test_report_capture_incomplete_summary_is_retryable_infra() -> None:
+    # A completed, traded run whose captured report was MT5's shell is an infra
+    # report-capture race: run_smoke tags REPORT_CAPTURE_INCOMPLETE, which must be
+    # a retryable transient (relaunch), not a terminal strategy result.
+    assert "REPORT_CAPTURE_INCOMPLETE" in utils.COLD_CACHE_SIGNATURES
+    assert (
+        utils.cold_cache_summary_signature(
+            {"result": "FAIL", "reason_classes": ["REPORT_CAPTURE_INCOMPLETE"]}
+        )
+        == "REPORT_CAPTURE_INCOMPLETE"
+    )

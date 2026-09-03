@@ -83,6 +83,19 @@ class VerdictTaxonomyWs2Tests(unittest.TestCase):
         self.assertEqual(verdict, "FAIL")
         self.assertIn("DRAWDOWN_EXCEEDED", reason)
 
+    def test_report_capture_incomplete_is_infra_fail(self) -> None:
+        # A completed, traded run whose captured report was MT5's modeling-phase
+        # shell (Symbols=0/Total Deals=0/Initial Deposit=0.00) while the tester
+        # journal already recorded real deals is an infra report-capture race, not
+        # a strategy zero-trade FAIL. run_smoke tags REPORT_CAPTURE_INCOMPLETE.
+        verdict, reason = farmctl._derive_verdict_from_summary(
+            {"result": "FAIL", "reason_classes": ["REPORT_CAPTURE_INCOMPLETE"]},
+            min_trades=25,
+            phase="Q03",
+        )
+        self.assertEqual(verdict, "INFRA_FAIL")
+        self.assertIn("REPORT_CAPTURE_INCOMPLETE", reason)
+
     def test_p8_proxy_evidence_is_infra_fail(self) -> None:
         verdict, reason = farmctl._derive_phase_runner_verdict(
             {
