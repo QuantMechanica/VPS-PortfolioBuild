@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import sqlite3
+import sys
 from unittest.mock import patch
 from pathlib import Path
 
@@ -200,7 +201,22 @@ def _insert_fixture_rows(
     return declaration["declaration_sha256"]
 
 
-def test_matrix_service_materializes_declared_cells_with_bounded_window(tmp_path: Path) -> None:
+def test_matrix_service_materializes_declared_cells_with_bounded_window(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # The G-sized authenticated frontier buffer is
+    # min(DL089_CELL_SLOTS, K_eff*L_eff, workers). On the live factory host
+    # DL089_PROGRAM_SLOTS=8 is a machine-scope env var, so K_eff*L_eff=8 and
+    # g_eff caps at the default cell_slots (6). A clean test shell does not
+    # inherit that machine var and falls back to the default program_slots=4,
+    # silently shrinking the buffer to 4 flagged cells. Pin the program-slot
+    # and worker levers so this asserts the intended G=6 buffer deterministically
+    # (L stays 1 - one executable lane - by default).
+    monkeypatch.setenv("DL089_PROGRAM_SLOTS", "8")
+    cohort = tuple(f"T{i}" for i in range(1, 11))
+    for module in {farmctl, sys.modules.get("farmctl")}:
+        if module is not None:
+            monkeypatch.setattr(module, "worker_policy_terminals", lambda: cohort)
     repo = tmp_path / "repo"
     files = _sibling(repo)
     root = tmp_path / "farm"

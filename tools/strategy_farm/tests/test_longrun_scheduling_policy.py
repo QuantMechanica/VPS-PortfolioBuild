@@ -192,6 +192,14 @@ class ClaimAtomicIntegrationTests(unittest.TestCase):
     def setUp(self) -> None:
         self._original_commit_headroom_gb = terminal_worker._commit_headroom_gb
         terminal_worker._commit_headroom_gb = lambda: 10_000.0
+        # The claim path also reads the REAL host physical-RAM headroom
+        # before admitting any candidate. Under fleet memory pressure
+        # _free_ram_gb() falls below RAM_MIN_FREE_GB and every candidate that
+        # is not long-run-capped is skipped_ram_class, which would mask the
+        # behaviour under test. Pin it high; these tests exercise the
+        # long-run scheduling cap, not the RAM guard.
+        self._original_free_ram_gb = terminal_worker._free_ram_gb
+        terminal_worker._free_ram_gb = lambda: 10_000.0
         self.addCleanup(self._restore)
         self.tmp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self.tmp.cleanup)
@@ -199,6 +207,7 @@ class ClaimAtomicIntegrationTests(unittest.TestCase):
 
     def _restore(self) -> None:
         terminal_worker._commit_headroom_gb = self._original_commit_headroom_gb
+        terminal_worker._free_ram_gb = self._original_free_ram_gb
 
     def _insert(
         self,
