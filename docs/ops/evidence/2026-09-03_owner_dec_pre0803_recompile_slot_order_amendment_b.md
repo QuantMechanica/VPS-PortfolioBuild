@@ -147,3 +147,30 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
 - 04:12Z: worker reload coverage after the seal fix `b8cd532137` (03:52Z): T1–T6, T8 restarted after it;
   T7/T9/T10 still hold the pre-fix module → idle-only staggered reload of T7/T9/T10 started 04:15Z.
   1537/XAGUSD attempt-2 rerun `b878d9ba` active on T2 (restarted 04:02Z, has the fix) since 04:08Z.
+- 04:25Z–04:40Z: `--new-identity-restart` (workflow `wlv9tw55z`) implemented but **refuted by the
+  adversarial verifier and NOT merged** (diff parked as scratchpad `parked_new_identity_restart_flag.patch`):
+  P1 the flag unblocks none of the three pairs — 12710's Q02 `ecd82fa8` evidence is retained (compressed
+  `summary.json.gz`, accepted by `_retained_evidence_path`), 11910's too; 10700's source `6205ba82` is a
+  pre-execution-binding row (no ex5/mq5/setfile shas) that the existing `farmctl seed-fresh-q02` serves;
+  P2 the changed-identity guard is vacuous for rows without a recorded ex5 identity; P3 the escape is an
+  unscoped free-text OWNER id (ROT-adjacent vs the pinned-constant idiom); P4 test contamination (below).
+  Premise correction recorded: the earlier 'no governed path exists' statement (03:53Z) was wrong for both
+  pairs; the real gap (bound source whose report aged out) is not in today's wave.
+- 04:25Z: QM5_12710 new-identity Q02 `f1378383` enqueued via the ordinary exact-rerun form (source
+  `ecd82fa8`, ex5 `11474d4c…`), claimed by T6 at 04:25Z. QM5_10700 new-identity Q02 `71fddb4a` created via
+  `farmctl seed-fresh-q02` (old row `6205ba82`, ex5 `5fbf2ba0…`, setfile `a684dad2…`), marked priority_track.
+  Its payload carries `fresh_q02_seed` instead of `append_only_rerun`, so Amendment B did not cover it
+  (claim position 11,125) → `a8abdd16a8`: a governed fresh seed (bound to `requalification_old_work_item_id`,
+  priority-tracked, Q02) ranks as a lineage rerun (position 4 after the change; 13 dispatch tests green).
+- 04:33Z: QM5_11910 Q03 `fa66883f` enqueued on the new identity (predecessor = the new-identity Q02
+  `71d1ad66`, `--append-only-rerun-of` the prior-identity Q03 `6a2d8480`) — the Q03 rerun form needs the
+  Q02 PASS predecessor as `--from-work-item-id`; no generalisation of any restart flag is required. The
+  chain is driven one phase per round (Q03 → Q04 … Q09, each an exact rerun of the prior-identity row with
+  the new ex5 sha); Amendment B ranks each step at the head. Claim position 2.
+- 04:40Z: verifier P4 confirmed in the MAIN checkout: `framework/calibrations/VPS_SLIPPAGE_LATENCY_
+  CALIBRATION_V2.json` carried a 19-line `auto_stub` for the synthetic test symbol
+  `QM5_9993_GBPJPY_AUDJPY_COINTEGRATION_D1` (stub_created_at 2026-09-02T11:52Z, written by
+  `test_farmctl_cascade.py` through `P5_CALIBRATION_JSON`, a module constant bound to the real repo root;
+  the path is on the pump auto-commit list). Reverted in main and in the agent worktree; fix commissioned as
+  router task `1258a0c5` (ops_issue, Opus lane). All-worker staggered reload (chunk 9) started 04:28Z for the
+  claim-order change.
