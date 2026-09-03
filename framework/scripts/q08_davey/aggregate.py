@@ -1843,6 +1843,22 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
         baseline_run=baseline_run,
     )
 
+    # Durable-stream export + self-verification (additive, fail-open). The seal above
+    # binds content_sha256 to the recorded durable path; this confirms a durable file
+    # with those exact bytes is present, records durable_path/durable_sha256/exported_at
+    # on the block, and never overwrites a differently-hashed durable file (append-only
+    # sibling instead). It never alters the verdict and never raises: an import or export
+    # fault is captured as durable_export_status and the seal proceeds unchanged.
+    try:
+        from tools.strategy_farm import q08_durable_stream_export as _durable_export
+        _durable_export.export_sealed_stream(portfolio_stream)
+    except Exception as _durable_exc:  # noqa: BLE001 - export must never break the seal
+        if isinstance(portfolio_stream, dict):
+            portfolio_stream["durable_export_status"] = "EXPORT_WIRING_ERROR"
+            portfolio_stream["durable_export_warning"] = (
+                f"{type(_durable_exc).__name__}:{_durable_exc}"
+            )
+
     trades, commission_info = _apply_worst_case_commission(trades, symbol)
 
     # PT4 — best-effort pre-run of Q08.5 + Q08.7 supporting runners
