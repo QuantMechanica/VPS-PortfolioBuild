@@ -1549,6 +1549,12 @@ def _lineage_rerun_rank_sql() -> str:
         query for every claimant (the defect found post-commit in Option A);
       * ``json_extract('$.append_only_rerun')=1`` matches JSON ``true`` and the
         integer ``1``, and yields NULL (-> ELSE 1) when the key is absent;
+      * 2026-09-03 (CEO, same OWNER priority "Recompiles zuerst"): a governed
+        ``farmctl seed-fresh-q02`` restart (``fresh_q02_seed: true`` bound to a
+        ``requalification_old_work_item_id``) is the lineage restart for a
+        pre-execution-binding source whose evidence retention expired (the
+        QM5_10700/XAUUSD pre-0803 recompile); it is admitted on the same terms
+        as an append-only rerun -- Q02 only, priority-tracked, not quarantined;
       * ``json_type('$.priority_track')='true'`` matches only the JSON literal
         true, identical to the test used by ``_priority_track_rank``;
       * the poison-pill override is honoured exactly as ``_priority_track_rank``
@@ -1558,7 +1564,13 @@ def _lineage_rerun_rank_sql() -> str:
     return (
         "CASE"
         " WHEN json_valid(w.payload_json)=1"
-        " AND json_extract(w.payload_json, '$.append_only_rerun')=1"
+        " AND ("
+        "json_extract(w.payload_json, '$.append_only_rerun')=1"
+        " OR (json_extract(w.payload_json, '$.fresh_q02_seed')=1"
+        " AND COALESCE(json_extract("
+        "w.payload_json, '$.requalification_old_work_item_id'), '') <> ''"
+        " AND w.phase='Q02')"
+        ")"
         " AND json_type(w.payload_json, '$.priority_track')='true'"
         f" AND w.phase IN ({phases})"
         " AND COALESCE(json_extract("

@@ -1050,3 +1050,46 @@ def test_amendment_b_keeps_cheap_prerequisites_ahead_of_lineage_rerun(
     head = [row["id"] for row in ordered]
     assert set(head[:2]) == {"compile-repair", "q01-smoke"}
     assert head[2] == "lineage-q08-rerun"
+
+
+def test_amendment_b_admits_governed_fresh_q02_seed_restart(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """CEO 2026-09-03: a ``seed-fresh-q02`` restart of a pre-binding source
+    (QM5_10700/XAUUSD after the pre-0803 recompile) ranks with the lineage
+    reruns; an unmarked fresh seed, a seed without its old-row binding and a
+    fresh seed on any other phase do not."""
+    monkeypatch.setenv(farmctl.TOPDOWN_GATE_PRIORITY_ENV, "1")
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    now = "2026-09-03T00:00:00+00:00"
+    governed = {
+        "fresh_q02_seed": True,
+        "priority_track": True,
+        "requalification_old_work_item_id": "6205ba82-old",
+    }
+    unmarked = {"fresh_q02_seed": True, "requalification_old_work_item_id": "x"}
+    unbound = {"fresh_q02_seed": True, "priority_track": True}
+    wrong_phase = dict(governed)
+    census_cell = {"priority_track": True, "cell_key": "P:2021:buy_001"}
+    with farmctl.connect(root) as conn:
+        for item_id, phase, payload in (
+            ("census-cell", "OPT_CENSUS", census_cell),
+            ("seed-governed", "Q02", governed),
+            ("seed-unmarked", "Q02", unmarked),
+            ("seed-unbound", "Q02", unbound),
+            ("seed-wrong-phase", "Q03", wrong_phase),
+        ):
+            _insert(
+                conn, id=item_id, kind="backtest", phase=phase,
+                ea_id=f"QM5_{item_id}", symbol="", setfile_path="",
+                status="pending", attempt_count=0,
+                payload_json=json.dumps(payload), created_at=now, updated_at=now,
+            )
+        conn.commit()
+        ordered = conn.execute(farmctl.pending_claim_order_sql()).fetchall()
+    by_id = {row["id"]: row for row in ordered}
+    assert by_id["seed-governed"]["_lineage_rerun_rank"] == 0
+    for item_id in ("seed-unmarked", "seed-unbound", "seed-wrong-phase", "census-cell"):
+        assert by_id[item_id]["_lineage_rerun_rank"] == 1, item_id
+    assert [row["id"] for row in ordered][0] == "seed-governed"
