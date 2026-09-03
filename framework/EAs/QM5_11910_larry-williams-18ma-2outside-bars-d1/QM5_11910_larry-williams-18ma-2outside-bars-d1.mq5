@@ -205,6 +205,8 @@ void OnDeinit(const int reason) { QM_FrameworkShutdown(); }
 
 void OnTick()
 {
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck()) return;
    const datetime broker_now = TimeCurrent();
    if(QM_FrameworkHandleFridayClose()) return;
@@ -237,6 +239,7 @@ void OnTick()
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
    {
       ulong out_ticket = 0;
