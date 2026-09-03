@@ -235,3 +235,8 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   seals/binds the run plan and activates it (RUNNABLE_BOUND) in a following pump cycle — the same lifecycle
   a6dbacf5 and 12710's 9a2e9380 went through. 13213/XAUUSD Q11 `7db06ca0` PASS 08:11Z (Q12 `2ea9cd64` owns
   slot 1; program 513+/1085 cells).
+- 08:22Z–08:27Z: 11910 Q10_NEWS `bdae4b44` sealed/activated by the news-gate service (RUNNABLE_BOUND, hold
+  released) and claimed by T1 08:22Z — two of the three chains now run the news gate on their new identity
+  (12710 on T10 since 07:57Z). 10700 Q07 `21317bcc` PASS 08:22Z → Q08 `ce371d25` enqueued (rerun of fb35a79a).
+  RAM 6.7 GB free with two 11 GB Q09/recovery testers (T7, T9) plus three news runs — above the 1.5 GB floor,
+  claim guard active; no intervention.
