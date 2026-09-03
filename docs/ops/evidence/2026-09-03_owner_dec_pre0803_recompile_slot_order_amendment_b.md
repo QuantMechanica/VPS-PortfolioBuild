@@ -188,3 +188,7 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   `4d8e9c24` (T6) running.
 - 05:30Z–05:35Z: 11910 Q05 `063eec00` PASS → Q06 `dbb6fc97` (T1); 12710 Q06 `9da6362d` PASS → Q07
   `fad536b4`; 10700 Q04 `4d8e9c24` PASS → Q05 `c44015fa`.
+- 05:34Z–05:42Z: 11910 Q06 `dbb6fc97` PASS → Q07 `797f03ae` (`--append-only-rerun-of` must name the NEWEST
+  row of the prior-identity lineage — the 07-24 original `966fdb3a` was refused with
+  `append_only_rerun_already_exists` because the 09-02 rerun `f3689f77` exists); 12710 Q07 `fad536b4` and
+  10700 Q05 `c44015fa` pending at the claim head.
