@@ -248,3 +248,6 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   (force_expanded_news_matrix, 105 further cells) at 08:38Z; fleet cap for expanded parents = 2 (the other
   pending one is 11422/USDCAD from 2026-08-23). 11910 Q10_NEWS `bdae4b44` still running on T1; 10700 Q08
   `ce371d25` on T2.
+- 08:50Z–08:55Z: 12710's expanded Q10_NEWS parent `58d84268` claimed by T8 (the expanded subcap of 2 is not
+  binding today: the only other expanded parent, 11422/USDCAD, is held). Reload chunk 13 finished (9/10; T9
+  follows via chunk 14 once its 20085 recovery run ends ~10:30Z).
