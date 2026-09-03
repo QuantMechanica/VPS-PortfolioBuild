@@ -1333,6 +1333,462 @@ def _census_first_defers_heavy_candidate(
     return free_ram_gb - reservation_gb < _census_first_protected_band_gb()
 
 
+# --- Bounded drain window for headroom-starved priority rows (2026-09-03, CEO) ---
+# Evidence: docs/ops/evidence/2026-09-03_index_tick_admission_audit.md.  A heavy
+# single-symbol / multi-leg priority-tracked row reserves a flat class (e.g. the
+# 44 GB single_index_tick or the 32 GB multi_leg_fx_basket) and can only be
+# claimed once free physical RAM clears reservation + floor.  With ordinary short
+# rows (OPT_CENSUS cells, Q02-Q06 single-symbol jobs) continuously re-consuming
+# every gigabyte that frees, a heavy priority row can wait indefinitely: over the
+# 24 h in the audit host free RAM exceeded 44 GB in 0/1438 samples while short
+# rows kept flowing.  The drain window is a claim-SELECTION-only reorder: when a
+# qualifying heavy priority row has been headroom-skipped past the trigger age,
+# the fleet stops taking NEW short rows (running rows finish, COMPILE_EA keeps
+# flowing) so free RAM can organically climb to the row's reservation + floor,
+# at which point the normal RAM gate admits it.  It changes WHICH claimable row a
+# worker takes next, never how much any row reserves: no reservation constant,
+# the RAM latch, the census floor and the tester ledger are all untouched.
+#
+# A row is only allowed to arm a drain when a fully drained fleet could actually
+# satisfy it (reservation + floor <= host total minus DRAIN_WINDOW_HOST_BASELINE_GB,
+# the ~10 GB that T_Live + resident workers + OS hold and never release, measured
+# 2026-09-03 16:55Z).  A row needing more than that ceiling (e.g. the 58 GB index
+# case on a 63 GB host) stays a reservation-tuning matter (ROT) and never idles
+# the fleet on a promise a drain cannot keep.
+QM_DRAIN_WINDOW_ENV = "QM_DRAIN_WINDOW"          # "0" disables; any other/unset = on
+QM_TEST_TOTAL_RAM_GB_ENV = "QM_TEST_TOTAL_RAM_GB"
+DRAIN_WINDOW_TRIGGER_MIN = 20.0                  # heavy priority row must be headroom-skipped this long
+DRAIN_WINDOW_MAX_MIN = 30.0                      # a drain auto-expires after this many minutes
+DRAIN_COOLDOWN_MIN = 90.0                        # no new drain until this long after one ends
+DRAIN_WINDOW_HOST_BASELINE_GB = 10.0             # undrainable floor: T_Live + workers + OS
+DRAIN_WINDOW_MIN_RESERVATION_GB = 24.0           # only genuinely heavy classes (32/44 GB) may drain
+DRAIN_STATE_FILENAME = "drain_window.json"
+# Short-row phases the drain refuses while open (the armed heavy row and any
+# COMPILE_EA row are always exempt); OPT_CENSUS is handled by name separately.
+_DRAIN_SHORT_ROW_PHASES = frozenset({"Q02", "Q03", "Q04", "Q05", "Q06"})
+
+
+def _total_ram_gb() -> float:
+    """Total physical RAM in GB; env override for tests, fail-closed (inf) live.
+
+    Returns +inf when the host total is unknown so the drainable-ceiling check in
+    _drain_row_is_qualifying fails closed (no drain opens on an unreadable probe).
+    """
+    override = os.environ.get(QM_TEST_TOTAL_RAM_GB_ENV)
+    if override is not None:
+        try:
+            value = float(override)
+            if math.isfinite(value) and value > 0.0:
+                return value
+        except (TypeError, ValueError):
+            pass
+    if sys.platform != "win32":
+        return float("inf")
+    try:
+        import ctypes
+
+        class _MEMSTATEX(ctypes.Structure):
+            _fields_ = [
+                ("dwLength", ctypes.c_ulong),
+                ("dwMemoryLoad", ctypes.c_ulong),
+                ("ullTotalPhys", ctypes.c_ulonglong),
+                ("ullAvailPhys", ctypes.c_ulonglong),
+                ("ullTotalPageFile", ctypes.c_ulonglong),
+                ("ullAvailPageFile", ctypes.c_ulonglong),
+                ("ullTotalVirtual", ctypes.c_ulonglong),
+                ("ullAvailVirtual", ctypes.c_ulonglong),
+                ("ullAvailExtendedVirtual", ctypes.c_ulonglong),
+            ]
+
+        stat = _MEMSTATEX()
+        stat.dwLength = ctypes.sizeof(_MEMSTATEX)
+        if not ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(stat)):
+            return float("inf")
+        return stat.ullTotalPhys / (1024 ** 3)
+    except Exception:
+        return float("inf")
+
+
+def _drain_window_enabled() -> bool:
+    """Kill switch: QM_DRAIN_WINDOW=0 restores the pre-drain claim behaviour."""
+    return str(os.environ.get(QM_DRAIN_WINDOW_ENV, "1")).strip() != "0"
+
+
+def _drain_state_path(root: Path) -> Path:
+    return root / "state" / DRAIN_STATE_FILENAME
+
+
+def _empty_drain_state() -> dict[str, Any]:
+    return {"version": 1, "active": None, "cooldown_until_epoch": 0.0, "tracker": {}}
+
+
+def _load_drain_state(root: Path) -> dict[str, Any]:
+    """Load the fleet drain state; fail-open to an empty state on any error."""
+    try:
+        with open(_drain_state_path(root), "r", encoding="utf-8") as handle:
+            data = json.load(handle)
+    except FileNotFoundError:
+        return _empty_drain_state()
+    except Exception:
+        return _empty_drain_state()
+    if not isinstance(data, dict):
+        return _empty_drain_state()
+    active = data.get("active")
+    if not isinstance(active, dict):
+        active = None
+    tracker = data.get("tracker")
+    if not isinstance(tracker, dict):
+        tracker = {}
+    try:
+        cooldown = float(data.get("cooldown_until_epoch") or 0.0)
+    except (TypeError, ValueError):
+        cooldown = 0.0
+    return {
+        "version": 1,
+        "active": active,
+        "cooldown_until_epoch": cooldown,
+        "tracker": tracker,
+    }
+
+
+def _write_drain_state_atomic(root: Path, state: dict[str, Any]) -> bool:
+    """Atomically replace the drain state file; fail-open (never raises)."""
+    path = _drain_state_path(root)
+    tmp = path.with_name(f"{path.name}.{os.getpid()}.tmp")
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(tmp, "w", encoding="utf-8") as handle:
+            json.dump(state, handle, sort_keys=True)
+        os.replace(tmp, path)
+        return True
+    except Exception:
+        try:
+            if tmp.exists():
+                tmp.unlink()
+        except Exception:
+            pass
+        return False
+
+
+def _drain_iso(now_epoch: float) -> str:
+    try:
+        return datetime.fromtimestamp(
+            float(now_epoch), tz=timezone.utc
+        ).isoformat(timespec="seconds")
+    except Exception:
+        return ""
+
+
+def _drain_row_is_qualifying(
+    *,
+    reservation_gb: float,
+    floor_gb: float,
+    free_ram_gb: float,
+    host_total_gb: float,
+) -> bool:
+    """Pure predicate: may a heavy row arm a drain given the current RAM picture?
+
+    Qualifies only when it is genuinely heavy, cannot be claimed now, yet a fully
+    drained fleet could satisfy it.  Reservation + floor are the row's existing
+    physical-RAM admission requirement (read, never modified).
+    """
+    try:
+        reservation = float(reservation_gb)
+        floor = float(floor_gb)
+        free_now = float(free_ram_gb)
+        total = float(host_total_gb)
+    except (TypeError, ValueError):
+        return False
+    if not (math.isfinite(reservation) and math.isfinite(floor)):
+        return False
+    if reservation < DRAIN_WINDOW_MIN_RESERVATION_GB:
+        return False
+    need = reservation + floor
+    if not math.isfinite(need) or not math.isfinite(free_now):
+        return False
+    if need <= free_now:
+        return False  # already claimable under the normal gate; no drain needed
+    if not math.isfinite(total):
+        return False  # unknown host total -> fail closed, do not idle the fleet
+    if need > total - DRAIN_WINDOW_HOST_BASELINE_GB:
+        return False  # unwinnable even on a fully drained fleet (reservation-tuning matter)
+    return True
+
+
+def _drain_candidate_from_row(
+    item: sqlite3.Row | dict[str, Any],
+    payload: dict[str, Any],
+    free_ram_gb: float,
+    host_total_gb: float,
+    multisym_ids: frozenset,
+) -> dict[str, Any] | None:
+    """Return a drain-candidate descriptor for a qualifying priority row, else None.
+
+    Reads the row's existing reservation/floor via the unchanged resolver; only a
+    priority-tracked, drain-qualifying row yields a descriptor.
+    """
+    try:
+        if payload.get("priority_track") is not True:
+            return None
+        multisymbol = _work_item_is_multisymbol(item, payload, multisym_ids)
+        ram_class, reservation_gb = _ram_reservation_for_candidate(
+            item, payload, multisymbol
+        )
+        floor_gb = _ram_floor_for_class(ram_class)
+        if not _drain_row_is_qualifying(
+            reservation_gb=reservation_gb,
+            floor_gb=floor_gb,
+            free_ram_gb=free_ram_gb,
+            host_total_gb=host_total_gb,
+        ):
+            return None
+        return {
+            "item_id": str(_work_item_value(item, "id", "") or ""),
+            "ea_id": str(_work_item_value(item, "ea_id", "") or ""),
+            "phase": str(_work_item_value(item, "phase", "") or "").upper(),
+            "ram_class": ram_class,
+            "reservation_gb": round(float(reservation_gb), 1),
+            "floor_gb": round(float(floor_gb), 1),
+        }
+    except Exception:
+        return None
+
+
+def _drain_blocks_candidate(
+    item: sqlite3.Row | dict[str, Any], drain_item_id: str | None
+) -> bool:
+    """True when an active drain must refuse this NEW short row.
+
+    The armed heavy row itself and every COMPILE_EA row are always exempt.
+    """
+    if drain_item_id is not None and str(
+        _work_item_value(item, "id", "") or ""
+    ) == str(drain_item_id):
+        return False
+    phase = str(_work_item_value(item, "phase", "") or "").upper()
+    if phase == farmctl.COMPILE_EA_PHASE:
+        return False
+    if phase == "OPT_CENSUS":
+        return True
+    return phase in _DRAIN_SHORT_ROW_PHASES
+
+
+def _drain_active_now(
+    state: dict[str, Any], now_epoch: float
+) -> tuple[bool, str | None]:
+    """Blocking-side read: is a drain in force now, honouring the max window?"""
+    active = state.get("active") if isinstance(state, dict) else None
+    if not isinstance(active, dict):
+        return False, None
+    try:
+        opened = float(active.get("opened_epoch") or 0.0)
+    except (TypeError, ValueError):
+        return False, None
+    if now_epoch - opened >= DRAIN_WINDOW_MAX_MIN * 60.0:
+        return False, None  # past the max window -> treat as inactive even if unwritten
+    item_id = active.get("item_id")
+    if not item_id:
+        return False, None
+    return True, str(item_id)
+
+
+def _drain_evaluate(
+    state: dict[str, Any],
+    *,
+    now_epoch: float,
+    qualifying_candidate: dict[str, Any] | None,
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    """Pure open/expire/track state transition.  Returns (new_state, events).
+
+    Only ONE heavy row holds a drain at a time; a drain opens only after the
+    candidate has been continuously tracked for DRAIN_WINDOW_TRIGGER_MIN and no
+    cooldown is in force, and expires after DRAIN_WINDOW_MAX_MIN.
+    """
+    events: list[dict[str, Any]] = []
+    active = state.get("active") if isinstance(state.get("active"), dict) else None
+    try:
+        cooldown_until = float(state.get("cooldown_until_epoch") or 0.0)
+    except (TypeError, ValueError):
+        cooldown_until = 0.0
+    tracker = dict(state.get("tracker") or {})
+
+    if active is not None:
+        try:
+            opened = float(active.get("opened_epoch") or now_epoch)
+        except (TypeError, ValueError):
+            opened = now_epoch
+        if now_epoch - opened >= DRAIN_WINDOW_MAX_MIN * 60.0:
+            events.append({
+                "event": "drain_window_expired",
+                "item_id": active.get("item_id"),
+                "ea_id": active.get("ea_id"),
+                "reason": "max_window",
+                "open_seconds": round(now_epoch - opened, 1),
+            })
+            cooldown_until = now_epoch + DRAIN_COOLDOWN_MIN * 60.0
+            active = None
+
+    if active is None and qualifying_candidate is not None:
+        cid = str(qualifying_candidate.get("item_id"))
+        rec = tracker.get(cid)
+        if not isinstance(rec, dict):
+            rec = {
+                "first_skipped_epoch": now_epoch,
+                "reservation_gb": qualifying_candidate.get("reservation_gb"),
+                "floor_gb": qualifying_candidate.get("floor_gb"),
+                "ea_id": qualifying_candidate.get("ea_id"),
+            }
+        tracker = {cid: rec}  # only one heavy row is tracked at a time
+        try:
+            first_skipped = float(rec.get("first_skipped_epoch") or now_epoch)
+        except (TypeError, ValueError):
+            first_skipped = now_epoch
+        waited = now_epoch - first_skipped
+        if (
+            now_epoch >= cooldown_until
+            and waited >= DRAIN_WINDOW_TRIGGER_MIN * 60.0
+        ):
+            active = {
+                "item_id": cid,
+                "ea_id": qualifying_candidate.get("ea_id"),
+                "reservation_gb": qualifying_candidate.get("reservation_gb"),
+                "floor_gb": qualifying_candidate.get("floor_gb"),
+                "opened_epoch": now_epoch,
+                "opened_iso": _drain_iso(now_epoch),
+            }
+            events.append({
+                "event": "drain_window_open",
+                "item_id": cid,
+                "ea_id": qualifying_candidate.get("ea_id"),
+                "reservation_gb": qualifying_candidate.get("reservation_gb"),
+                "floor_gb": qualifying_candidate.get("floor_gb"),
+                "waited_seconds": round(waited, 1),
+            })
+            tracker = {}  # consumed by the open
+    elif active is None and qualifying_candidate is None:
+        tracker = {}  # nothing waiting -> drop any stale tracker entry
+
+    new_state = {
+        "version": 1,
+        "active": active,
+        "cooldown_until_epoch": cooldown_until,
+        "tracker": tracker,
+    }
+    return new_state, events
+
+
+def _drain_note_claim(
+    state: dict[str, Any], *, now_epoch: float, claimed_item_id: str
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    """Close the drain when its armed heavy row is claimed.  Returns (state, events)."""
+    active = state.get("active") if isinstance(state.get("active"), dict) else None
+    if active is None or str(active.get("item_id")) != str(claimed_item_id):
+        return state, []
+    try:
+        opened = float(active.get("opened_epoch") or now_epoch)
+    except (TypeError, ValueError):
+        opened = now_epoch
+    events = [{
+        "event": "drain_window_claim",
+        "item_id": active.get("item_id"),
+        "ea_id": active.get("ea_id"),
+        "open_seconds": round(now_epoch - opened, 1),
+    }]
+    new_state = {
+        "version": 1,
+        "active": None,
+        "cooldown_until_epoch": now_epoch + DRAIN_COOLDOWN_MIN * 60.0,
+        "tracker": {},
+    }
+    return new_state, events
+
+
+def _drain_scan_candidate(
+    root: Path,
+    *,
+    free_ram_gb: float,
+    host_total_gb: float,
+    multisym_ids: frozenset,
+) -> dict[str, Any] | None:
+    """Read-only scan for the top qualifying priority heavy row; None if none.
+
+    Priority-tracked rows sort first in the canonical claim order, so the scan
+    stops at the first non-priority row.  Runs OUTSIDE the claim transaction on a
+    short read connection, mirroring the existing candidate preflight.
+    """
+    try:
+        with farmctl.connect(root) as conn:
+            conn.row_factory = sqlite3.Row
+            for item in conn.execute(_priority_pending_query()).fetchall():
+                payload = _json_loads(item["payload_json"])
+                if payload.get("priority_track") is not True:
+                    break
+                candidate = _drain_candidate_from_row(
+                    item, payload, free_ram_gb, host_total_gb, multisym_ids
+                )
+                if candidate is not None:
+                    return candidate
+    except Exception:
+        return None
+    return None
+
+
+def _drain_run_postprocess(
+    root: Path,
+    terminal: str,
+    claim_result: dict[str, Any],
+    *,
+    now_epoch: float,
+    free_ram_gb: float,
+    host_total_gb: float,
+    multisym_ids: frozenset,
+) -> None:
+    """Advance the fleet drain state after a claim attempt and emit its events.
+
+    Advisory fleet coordination: any failure here is swallowed so it can never
+    break the claim path.
+    """
+    try:
+        state = _load_drain_state(root)
+        active = state.get("active") if isinstance(state.get("active"), dict) else None
+        active_item_id = str(active.get("item_id")) if active else None
+        claimed_item_id: str | None = None
+        if claim_result.get("claimed"):
+            item = claim_result.get("item")
+            if isinstance(item, dict):
+                claimed_item_id = str(item.get("id"))
+        if (
+            claimed_item_id is not None
+            and active_item_id is not None
+            and claimed_item_id == active_item_id
+        ):
+            new_state, events = _drain_note_claim(
+                state, now_epoch=now_epoch, claimed_item_id=claimed_item_id
+            )
+        else:
+            qualifying = _drain_scan_candidate(
+                root,
+                free_ram_gb=free_ram_gb,
+                host_total_gb=host_total_gb,
+                multisym_ids=multisym_ids,
+            )
+            new_state, events = _drain_evaluate(
+                state, now_epoch=now_epoch, qualifying_candidate=qualifying
+            )
+        if events or new_state != state:
+            _write_drain_state_atomic(root, new_state)
+        for event in events:
+            print(
+                json.dumps(
+                    {**event, "terminal": terminal, "at_utc": _drain_iso(now_epoch)},
+                    sort_keys=True,
+                ),
+                flush=True,
+            )
+    except Exception:
+        pass
+
+
 _PROCESS_SNAPSHOT_TTL_SECONDS = 3.0
 _process_snapshot_cache: dict[str, Any] = {
     "at": -1e9, "children": {}, "private": {}, "alive": set(),
@@ -2940,6 +3396,19 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
     process_snapshot = _process_private_snapshot()
     commit_headroom_snapshot = _commit_headroom_gb()
     multisym_free_ram_snapshot = _free_ram_gb()
+    # Bounded drain window (2026-09-03): read the fleet drain state now so the
+    # candidate loop can refuse NEW short rows while a heavy priority row drains
+    # the fleet. State is advanced (open/expire/claim) AFTER the claim below,
+    # outside the BEGIN IMMEDIATE transaction. Kill switch QM_DRAIN_WINDOW=0.
+    drain_enabled = _drain_window_enabled()
+    drain_now_epoch = time.time()
+    drain_host_total_gb = _total_ram_gb() if drain_enabled else float("inf")
+    drain_active = False
+    drain_item_id: str | None = None
+    if drain_enabled:
+        drain_active, drain_item_id = _drain_active_now(
+            _load_drain_state(root), drain_now_epoch
+        )
     reservation = farmctl.terminal_reservation(root, terminal)
     watchdog_reset_blocked = _watchdog_reset_admission_blocked(root)
     longrun_policy_enabled = longrun_scheduling_policy.policy_enabled()
@@ -3358,6 +3827,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                 skipped_avoid_terminal: list[dict[str, Any]] = []
                 skipped_longrun_cap: list[dict[str, Any]] = []
                 skipped_opt_census_slots: list[dict[str, Any]] = []
+                skipped_drain_window: list[dict[str, Any]] = []
                 longrun_active_counts: dict[str, int] | None = None
                 # NOTE: do NOT refresh the poison-pill table here. Measured cost of
                 # poison_pill_quarantine.refresh_pending() on the live DB is ~413ms
@@ -3443,6 +3913,19 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                         if not recovery_allowed:
                             recovery_capped = True
                             break
+                    # Bounded drain window: while a heavy priority row drains the
+                    # fleet, refuse NEW short rows (OPT_CENSUS + Q02-Q06) so free
+                    # RAM can climb to the heavy row's reservation. The armed row
+                    # and COMPILE_EA are always exempt (2026-09-03; audit
+                    # docs/ops/evidence/2026-09-03_index_tick_admission_audit.md).
+                    if drain_active and _drain_blocks_candidate(item, drain_item_id):
+                        skipped_drain_window.append({
+                            "item_id": item["id"],
+                            "ea_id": item["ea_id"],
+                            "phase": str(item["phase"] or "").upper(),
+                            "drain_item_id": drain_item_id,
+                        })
+                        continue
                     avoid_terminals = _payload_avoid_terminals(payload)
                     if str(terminal).upper() in avoid_terminals:
                         skipped_avoid_terminal.append({
@@ -3838,6 +4321,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                     "terminal_avoid_skipped": skipped_avoid_terminal,
                     "longrun_cap_skipped": skipped_longrun_cap,
                     "opt_census_slot_deferred": skipped_opt_census_slots,
+                    "drain_window_skipped": skipped_drain_window,
                     "opt_census_program_slots": opt_k_eff,
                     "opt_census_lanes_per_program": opt_l_eff,
                     "opt_census_cell_slots": opt_g_eff,
@@ -4082,6 +4566,19 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
         claim_result["history_claim_preflights"] = history_preflights
     if completed_claim_recovery:
         claim_result["completed_claim_recovery"] = completed_claim_recovery
+    # Advance the fleet drain state (open/expire/claim) and emit its events.
+    # Runs outside every claim transaction and swallows its own errors, so the
+    # advisory drain coordination can never affect the claim result above.
+    if drain_enabled:
+        _drain_run_postprocess(
+            root,
+            terminal,
+            claim_result,
+            now_epoch=drain_now_epoch,
+            free_ram_gb=multisym_free_ram_snapshot,
+            host_total_gb=drain_host_total_gb,
+            multisym_ids=multisym_ids,
+        )
     return claim_result
 
 
