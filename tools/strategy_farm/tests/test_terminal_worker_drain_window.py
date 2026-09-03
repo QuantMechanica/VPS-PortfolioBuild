@@ -11,13 +11,16 @@ these tests assert the pure predicates, the JSON state machine, and the
 postprocess wrapper only.
 """
 import json
+import sqlite3
 import sys
+import time
 from pathlib import Path
 
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+import farmctl  # noqa: E402
 import terminal_worker  # noqa: E402
 
 tw = terminal_worker
@@ -56,10 +59,32 @@ def test_predicate_winnable_heavy_priority_qualifies():
 
 
 def test_predicate_unwinnable_row_never_qualifies():
-    # 58 > 63 - 10 = 53: even a fully drained 63 GB host cannot satisfy it.
+    # Even at the reduced armed-row floor (4 GB), 44 + 4 = 48 > 50 - 10 = 40, so
+    # a fully drained 50 GB host cannot satisfy it -> reservation-tuning matter.
     assert not tw._drain_row_is_qualifying(
-        reservation_gb=44.0, floor_gb=14.0, free_ram_gb=18.0, host_total_gb=63.0
+        reservation_gb=44.0, floor_gb=14.0, free_ram_gb=18.0, host_total_gb=50.0
     )
+
+
+def test_predicate_index_row_now_qualifies_on_drained_63gb_host():
+    # DRAINED-FLEET floor (audit 2026-09-03): the 44 GB single_index_tick row was
+    # unwinnable under the 14 GB floor (44 + 14 = 58 > 63.1 - 10 = 53.1) but the
+    # reduced armed-row floor makes it winnable (44 + 4 = 48 <= 53.1).
+    assert tw._drain_row_is_qualifying(
+        reservation_gb=44.0, floor_gb=14.0, free_ram_gb=12.0, host_total_gb=63.1
+    )
+    # The boundary tracks the reduced floor, not the 14 GB one: 44 + 4 = 48
+    # exactly equals 58 - 10, still winnable; one GB smaller host is not.
+    assert tw._drain_row_is_qualifying(
+        reservation_gb=44.0, floor_gb=14.0, free_ram_gb=12.0, host_total_gb=58.0
+    )
+    assert not tw._drain_row_is_qualifying(
+        reservation_gb=44.0, floor_gb=14.0, free_ram_gb=12.0, host_total_gb=57.0
+    )
+
+
+def test_drain_armed_row_floor_constant():
+    assert tw.DRAIN_ARMED_ROW_FLOOR_GB == 4.0
 
 
 def test_predicate_already_claimable_not_qualifying():
@@ -108,9 +133,24 @@ def test_candidate_non_priority_heavy_row_never_qualifies():
 
 
 def test_candidate_index_row_unwinnable_on_small_host_is_none():
+    # 44 + 4 (reduced armed-row floor) = 48 > 50 - 10 = 40: unwinnable even on a
+    # fully drained 50 GB host, so no drain candidate is derived.
     assert tw._drain_candidate_from_row(
-        _index_item(), {"priority_track": True}, 18.0, 63.0, _FZ
+        _index_item(), {"priority_track": True}, 18.0, 50.0, _FZ
     ) is None
+
+
+def test_candidate_index_row_qualifies_on_drained_63gb_host():
+    # The real audit host: a 44 GB index row on a 63 GB host, now winnable
+    # because the armed row is admitted at the reduced 4 GB floor.  The row's own
+    # class floor (14 GB) is still reported unchanged -- only admission changes.
+    cand = tw._drain_candidate_from_row(
+        _index_item(), {"priority_track": True}, 12.0, 63.1, _FZ
+    )
+    assert cand is not None
+    assert cand["ram_class"] == tw.COMMIT_CLASS_SINGLE_INDEX_TICK
+    assert cand["reservation_gb"] == 44.0
+    assert cand["floor_gb"] == 14.0
 
 
 # --- short-row blocking ---------------------------------------------------
@@ -398,3 +438,236 @@ def test_scan_candidate_fails_open_without_db(tmp_path):
     assert tw._drain_scan_candidate(
         tmp_path, free_ram_gb=18.0, host_total_gb=80.0, multisym_ids=_FZ
     ) is None
+
+
+# --- fleet-drained probe (real DB) ---------------------------------------
+# The DRAINED-FLEET floor (audit 2026-09-03) drops the armed row's post-
+# reservation floor to DRAIN_ARMED_ROW_FLOOR_GB only when no OTHER backtest
+# tester is running; COMPILE_EA rows use <1 GB and never count.
+
+def _insert_row(conn, item_id, phase, *, status="pending", kind="backtest"):
+    now = "2026-09-03T00:00:00+00:00"
+    conn.execute(
+        """
+        INSERT INTO work_items(id,kind,phase,ea_id,symbol,setfile_path,status,
+                               verdict,evidence_path,payload_json,created_at,
+                               updated_at)
+        VALUES(?,?,?,?,?, 'x.set', ?, NULL, NULL, '{}', ?, ?)
+        """,
+        (item_id, kind, phase, f"QM5_{item_id}", "GDAXI.DWX", status, now, now),
+    )
+
+
+def test_no_other_tester_active_on_empty_and_pending_fleet(tmp_path):
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    with farmctl.connect(root) as conn:
+        assert tw._no_other_backtest_tester_active(conn) is True
+        # A pending row is not a running tester.
+        _insert_row(conn, "p1", "Q02", status="pending")
+        assert tw._no_other_backtest_tester_active(conn) is True
+        conn.commit()
+
+
+def test_no_other_tester_active_false_when_backtest_running(tmp_path):
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    with farmctl.connect(root) as conn:
+        _insert_row(conn, "a1", "Q02", status="active")
+        assert tw._no_other_backtest_tester_active(conn) is False
+        conn.commit()
+
+
+def test_no_other_tester_active_ignores_active_compile(tmp_path):
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    with farmctl.connect(root) as conn:
+        # An active COMPILE_EA row never counts as a running tester.
+        _insert_row(conn, "c1", tw.farmctl.COMPILE_EA_PHASE, status="active")
+        assert tw._no_other_backtest_tester_active(conn) is True
+        # By compile KIND too (phase-agnostic).
+        _insert_row(
+            conn, "c2", "SOMEPHASE", status="active",
+            kind=tw.farmctl.COMPILE_WORK_ITEM_KIND,
+        )
+        assert tw._no_other_backtest_tester_active(conn) is True
+        # A real active backtest alongside the compiles flips it to False.
+        _insert_row(conn, "b1", "Q04", status="active")
+        assert tw._no_other_backtest_tester_active(conn) is False
+        conn.commit()
+
+
+# --- DRAINED-FLEET armed-row admission at the real claim path -------------
+# The armed heavy row is made 44 GB (single_index_tick) by overriding only its
+# reservation; commit/calendar gates are neutralized and no census cells exist,
+# so admission turns solely on the post-reservation RAM floor.  Selection-only:
+# a skipped row stays pending, never verdicted.
+
+def _insert_backtest(root, item_id, *, phase="P3", status="pending",
+                     claimed_by=None, payload=None, ea="QM5_9999"):
+    farmctl.init_db(root)
+    now = farmctl.utc_now()
+    with sqlite3.connect(root / farmctl.DB_REL) as conn:
+        conn.execute(
+            """
+            INSERT INTO work_items(id,kind,phase,ea_id,symbol,setfile_path,
+                                   status,verdict,attempt_count,parent_task_id,
+                                   evidence_path,claimed_by,payload_json,
+                                   created_at,updated_at)
+            VALUES(?,?,?,?,?,?, ?, NULL, 0, NULL, NULL, ?, ?, ?, ?)
+            """,
+            (item_id, "backtest", phase, ea, "EURUSD.DWX", "dummy.set",
+             status, claimed_by, json.dumps(payload or {}), now, now),
+        )
+        conn.commit()
+
+
+def _seed_drain_active(root, armed_item_id):
+    now = time.time()
+    tw._write_drain_state_atomic(root, {
+        "version": 1,
+        "active": {
+            "item_id": armed_item_id,
+            "ea_id": "QM5_9999",
+            "reservation_gb": 44.0,
+            "floor_gb": 14.0,
+            "opened_epoch": now,
+            "opened_iso": tw._drain_iso(now),
+        },
+        "cooldown_until_epoch": 0.0,
+        "tracker": {},
+    })
+
+
+def _status(root, item_id):
+    with sqlite3.connect(root / farmctl.DB_REL) as conn:
+        return conn.execute(
+            "SELECT status,claimed_by FROM work_items WHERE id=?", (item_id,)
+        ).fetchone()
+
+
+@pytest.fixture
+def armed_claim(monkeypatch):
+    """'idx-row' reserves 44 GB (single_index_tick); commit/calendar gates are
+    neutralized and no census cells are claimable so nothing but the RAM floor
+    gates admission.  Returns monkeypatch so each test injects free RAM."""
+    real_reservation = tw._ram_reservation_for_candidate
+
+    def fake_reservation(item, payload, multisym):
+        if tw._work_item_value(item, "id") == "idx-row":
+            return (tw.COMMIT_CLASS_SINGLE_INDEX_TICK, 44.0)
+        return real_reservation(item, payload, multisym)
+
+    monkeypatch.setattr(tw, "_ram_reservation_for_candidate", fake_reservation)
+    monkeypatch.setattr(tw, "_commit_headroom_gb", lambda: 10_000.0)
+    monkeypatch.setattr(
+        tw, "_opt_census_cells_claimable_in_txn", lambda conn: False
+    )
+    monkeypatch.setattr(
+        tw.farmctl,
+        "_news_calendar_preflight",
+        lambda *a, **k: {"ok": True, "status": "VALID"},
+    )
+    return monkeypatch
+
+
+def test_claim_armed_row_admitted_at_48_on_drained_fleet(tmp_path, armed_claim):
+    monkeypatch = armed_claim
+    root = tmp_path / "farm"
+    _insert_backtest(root, "idx-row")
+    _seed_drain_active(root, "idx-row")
+    monkeypatch.setattr(tw, "_free_ram_gb", lambda: 48.0)
+
+    result = tw.claim_atomic(root, "T1")
+
+    # 48 - 44 = 4 >= DRAIN_ARMED_ROW_FLOOR_GB (4): the armed row clears.
+    assert result.get("claimed") is True, result
+    assert result["item"]["id"] == "idx-row"
+    assert result["ram_class_skipped"] == []
+    assert _status(root, "idx-row") == ("active", "T1")
+
+
+def test_claim_armed_row_skipped_at_47_on_drained_fleet(tmp_path, armed_claim):
+    monkeypatch = armed_claim
+    root = tmp_path / "farm"
+    _insert_backtest(root, "idx-row")
+    _seed_drain_active(root, "idx-row")
+    monkeypatch.setattr(tw, "_free_ram_gb", lambda: 47.0)
+
+    result = tw.claim_atomic(root, "T1")
+
+    # 47 - 44 = 3 < 4: even the reduced floor is not met -> deferred, not verdicted.
+    assert result.get("claimed") is False, result
+    assert result["reason"] == "no_pending_claimable"
+    skipped = result["ram_class_skipped"]
+    assert len(skipped) == 1
+    assert skipped[0]["item_id"] == "idx-row"
+    # The reduced floor WAS applied (4, not 14) -- it just was not cleared at 47.
+    assert skipped[0]["threshold_gb"] == tw.DRAIN_ARMED_ROW_FLOOR_GB
+    assert _status(root, "idx-row") == ("pending", None)
+
+
+def test_claim_armed_row_keeps_full_floor_with_another_tester_active(
+    tmp_path, armed_claim
+):
+    monkeypatch = armed_claim
+    root = tmp_path / "farm"
+    _insert_backtest(root, "idx-row")
+    # A real backtest tester (a different EA) is still running -> the 14 GB floor
+    # still protects it, so the reduced floor must NOT apply even to the armed row.
+    _insert_backtest(
+        root, "busy", phase="Q04", status="active", claimed_by="T9", ea="QM5_8888"
+    )
+    _seed_drain_active(root, "idx-row")
+    monkeypatch.setattr(tw, "_free_ram_gb", lambda: 48.0)
+
+    result = tw.claim_atomic(root, "T1")
+
+    assert result.get("claimed") is False, result
+    skipped = result["ram_class_skipped"]
+    assert len(skipped) == 1
+    assert skipped[0]["item_id"] == "idx-row"
+    assert skipped[0]["threshold_gb"] == tw.RAM_MIN_FREE_GB  # 14, not reduced
+    assert _status(root, "idx-row") == ("pending", None)
+
+
+def test_claim_non_armed_heavy_row_never_gets_reduced_floor(tmp_path, armed_claim):
+    monkeypatch = armed_claim
+    root = tmp_path / "farm"
+    # idx-row is NOT the armed row; the drain is armed for a different id and the
+    # fleet is otherwise drained.  The reduced floor is armed-row-only, so idx-row
+    # keeps the full 14 GB floor and is deferred at 48 GB free.
+    _insert_backtest(root, "idx-row")
+    _seed_drain_active(root, "some-other-armed-row")
+    monkeypatch.setattr(tw, "_free_ram_gb", lambda: 48.0)
+
+    result = tw.claim_atomic(root, "T1")
+
+    assert result.get("claimed") is False, result
+    skipped = result["ram_class_skipped"]
+    assert len(skipped) == 1
+    assert skipped[0]["item_id"] == "idx-row"
+    assert skipped[0]["threshold_gb"] == tw.RAM_MIN_FREE_GB  # 14, no reduction
+    assert _status(root, "idx-row") == ("pending", None)
+
+
+def test_claim_armed_row_reduced_floor_off_under_kill_switch(
+    tmp_path, armed_claim
+):
+    monkeypatch = armed_claim
+    root = tmp_path / "farm"
+    _insert_backtest(root, "idx-row")
+    _seed_drain_active(root, "idx-row")
+    # QM_DRAIN_WINDOW=0 clears drain_active upstream, so the reduced floor never
+    # applies: the armed row keeps the 14 GB floor and is deferred at 48 GB free.
+    monkeypatch.setenv("QM_DRAIN_WINDOW", "0")
+    monkeypatch.setattr(tw, "_free_ram_gb", lambda: 48.0)
+
+    result = tw.claim_atomic(root, "T1")
+
+    assert result.get("claimed") is False, result
+    skipped = result["ram_class_skipped"]
+    assert len(skipped) == 1
+    assert skipped[0]["item_id"] == "idx-row"
+    assert skipped[0]["threshold_gb"] == tw.RAM_MIN_FREE_GB
+    assert _status(root, "idx-row") == ("pending", None)

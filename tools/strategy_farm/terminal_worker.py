@@ -1350,11 +1350,16 @@ def _census_first_defers_heavy_candidate(
 # the RAM latch, the census floor and the tester ledger are all untouched.
 #
 # A row is only allowed to arm a drain when a fully drained fleet could actually
-# satisfy it (reservation + floor <= host total minus DRAIN_WINDOW_HOST_BASELINE_GB,
-# the ~10 GB that T_Live + resident workers + OS hold and never release, measured
-# 2026-09-03 16:55Z).  A row needing more than that ceiling (e.g. the 58 GB index
-# case on a 63 GB host) stays a reservation-tuning matter (ROT) and never idles
-# the fleet on a promise a drain cannot keep.
+# satisfy it.  Because the ONE armed row is admitted at the reduced
+# DRAIN_ARMED_ROW_FLOOR_GB on a drained fleet (see that constant), the arming
+# ceiling is measured against that reduced floor: reservation +
+# DRAIN_ARMED_ROW_FLOOR_GB <= host total minus DRAIN_WINDOW_HOST_BASELINE_GB, the
+# ~10 GB that T_Live + resident workers + OS hold and never release (measured
+# 2026-09-03 16:55Z).  This lets the 44 GB single_index_tick class arm on a
+# 63 GB host (44 + 4 = 48 <= 53) though its 44 + 14 = 58 GB normal-floor
+# requirement never fit; a row still needing more than the reduced ceiling stays
+# a reservation-tuning matter (ROT) and never idles the fleet on an unkept
+# promise (audit docs/ops/evidence/2026-09-03_index_tick_admission_audit.md).
 QM_DRAIN_WINDOW_ENV = "QM_DRAIN_WINDOW"          # "0" disables; any other/unset = on
 QM_TEST_TOTAL_RAM_GB_ENV = "QM_TEST_TOTAL_RAM_GB"
 DRAIN_WINDOW_TRIGGER_MIN = 20.0                  # heavy priority row must be headroom-skipped this long
@@ -1362,6 +1367,19 @@ DRAIN_WINDOW_MAX_MIN = 30.0                      # a drain auto-expires after th
 DRAIN_COOLDOWN_MIN = 90.0                        # no new drain until this long after one ends
 DRAIN_WINDOW_HOST_BASELINE_GB = 10.0             # undrainable floor: T_Live + workers + OS
 DRAIN_WINDOW_MIN_RESERVATION_GB = 24.0           # only genuinely heavy classes (32/44 GB) may drain
+# DRAINED-FLEET admission floor (2026-09-03; audit
+# docs/ops/evidence/2026-09-03_index_tick_admission_audit.md): the 14 GB
+# post-reservation floor (RAM_MIN_FREE_GB) exists to protect OTHER running
+# testers from the growth of their working sets.  Once a drain window has parked
+# the fleet and NO other backtest tester is running (only COMPILE_EA rows may be
+# active), there is nothing left to protect, so the ONE armed row is admitted
+# when free RAM clears its reservation + this reduced floor instead of the 14 GB
+# floor -- a 44 GB single_index_tick row then needs 44 + 4 = 48 GB free, which a
+# drained 63 GB host provides but the 44 + 14 = 58 GB gate never could.  Every
+# other row (and the armed row while any other tester still runs) keeps the
+# 14/20 GB latch and its class floor; the QM_DRAIN_WINDOW=0 kill switch, which
+# clears drain_active upstream, disables this reduced floor as well.
+DRAIN_ARMED_ROW_FLOOR_GB = 4.0
 DRAIN_STATE_FILENAME = "drain_window.json"
 # Short-row phases the drain refuses while open (the armed heavy row and any
 # COMPILE_EA row are always exempt); OPT_CENSUS is handled by name separately.
@@ -1510,7 +1528,16 @@ def _drain_row_is_qualifying(
         return False  # already claimable under the normal gate; no drain needed
     if not math.isfinite(total):
         return False  # unknown host total -> fail closed, do not idle the fleet
-    if need > total - DRAIN_WINDOW_HOST_BASELINE_GB:
+    # The armed row is admitted on a fully drained fleet at the reduced
+    # DRAIN_ARMED_ROW_FLOOR_GB, not the class floor that protects other running
+    # testers (2026-09-03; audit
+    # docs/ops/evidence/2026-09-03_index_tick_admission_audit.md).  Measure the
+    # drainable ceiling against that reduced floor so the 44 GB index class can
+    # arm (44 + 4 = 48 <= 63.1 - 10) though 44 + 14 = 58 never fit.
+    drained_need = reservation + DRAIN_ARMED_ROW_FLOOR_GB
+    if not math.isfinite(drained_need):
+        return False
+    if drained_need > total - DRAIN_WINDOW_HOST_BASELINE_GB:
         return False  # unwinnable even on a fully drained fleet (reservation-tuning matter)
     return True
 
@@ -3280,6 +3307,35 @@ def _opt_census_cells_claimable_in_txn(conn: sqlite3.Connection) -> bool:
         return False
 
 
+def _no_other_backtest_tester_active(conn: sqlite3.Connection) -> bool:
+    """True when NO non-COMPILE backtest tester is active fleet-wide.
+
+    Read on the already-open claim connection inside BEGIN IMMEDIATE so the
+    answer is consistent with the row about to be claimed.  COMPILE_EA rows
+    commit well under 1 GB and keep flowing during a drain, so an active compile
+    never counts as a running tester here.  Fails toward False (treat the fleet
+    as NOT drained -> keep the full floor) on any DB ambiguity, so the reduced
+    DRAINED-FLEET floor is applied only when the armed drain is provably the last
+    backtest work on the host (2026-09-03; audit
+    docs/ops/evidence/2026-09-03_index_tick_admission_audit.md).
+    """
+    try:
+        for row in conn.execute(
+            "SELECT phase, kind FROM work_items WHERE status='active'"
+        ):
+            phase = str(row["phase"] or "").upper()
+            kind = str(row["kind"] or "").lower()
+            if (
+                phase == farmctl.COMPILE_EA_PHASE
+                or kind == farmctl.COMPILE_WORK_ITEM_KIND
+            ):
+                continue
+            return False
+        return True
+    except sqlite3.Error:
+        return False
+
+
 def _ensure_claim_db_initialized(root: Path) -> None:
     """Run idempotent schema setup once per worker process and farm root."""
 
@@ -4128,6 +4184,25 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                         multisym_free_ram_snapshot - ram_reservation_gb
                     )
                     ram_floor_gb = _ram_floor_for_class(ram_class)
+                    # DRAINED-FLEET admission floor (2026-09-03; audit
+                    # docs/ops/evidence/2026-09-03_index_tick_admission_audit.md):
+                    # the class floor protects OTHER running testers.  When THIS
+                    # row is the one an open drain window is armed for and no
+                    # other backtest tester is running fleet-wide (only COMPILE_EA
+                    # rows may still be active), nothing is left to protect, so
+                    # the armed row -- and only it -- clears at the reduced
+                    # DRAIN_ARMED_ROW_FLOOR_GB (a 44 GB index row then needs
+                    # 44 + 4 = 48 GB free, which a drained 63 GB host provides).
+                    # The fleet-drained probe runs only for the armed row (the
+                    # short-circuit keeps it off every other candidate), and the
+                    # QM_DRAIN_WINDOW=0 kill switch clears drain_active upstream.
+                    if (
+                        drain_active
+                        and drain_item_id is not None
+                        and str(item["id"]) == str(drain_item_id)
+                        and _no_other_backtest_tester_active(conn)
+                    ):
+                        ram_floor_gb = DRAIN_ARMED_ROW_FLOOR_GB
                     if post_reservation_free_gb < ram_floor_gb and not (
                         _RAM_LATCH_COMPILE_ONLY
                         and str(item["phase"]).upper() == farmctl.COMPILE_EA_PHASE
