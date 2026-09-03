@@ -36,7 +36,7 @@ from tools.strategy_farm.portfolio.book_builder_common import (
 )
 from tools.strategy_farm.portfolio import concentration_tail
 from tools.strategy_farm.portfolio.portfolio_common import load_streams
-from tools.strategy_farm import book_build_guard
+from tools.strategy_farm import book_build_guard, risk_freeze
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -609,7 +609,10 @@ def parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = parser().parse_args(argv)
-    book_build_guard.require_book_build_allowed("ftmo", args.book_db, args.order_dir)
+    try:
+        book_build_guard.require_book_build_allowed("ftmo", args.book_db, args.order_dir)
+    except book_build_guard.BookBuildRefused as exc:
+        return book_build_guard.emit_book_build_refusal(exc)
     out_dir = args.out_dir or DEFAULT_REPORT_ROOT / f"book_ftmo_{args.as_of}"
     manifest_path = out_dir / "manifest.json"
     try:
@@ -630,6 +633,9 @@ def main(argv: list[str] | None = None) -> int:
             symbol_matrix_path=args.symbol_matrix,
         )
         validate_dual_book_manifest(manifest)
+        risk_freeze.assert_live_book_mutation_allowed(
+            "mint a proposed FTMO book manifest",
+        )
         write_json(manifest_path, manifest)
         write_text(out_dir / "evidence.md", evidence_markdown(manifest, manifest_path))
     except BookBuildError as exc:

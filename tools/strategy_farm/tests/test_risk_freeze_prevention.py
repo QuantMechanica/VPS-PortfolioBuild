@@ -15,6 +15,7 @@ from tools.strategy_farm import risk_freeze
 from tools.strategy_farm import reseal_chart09_ks_delta as reseal_chart
 from tools.strategy_farm.portfolio import build_11422_preset_FINAL24b as build_11422
 from tools.strategy_farm.portfolio import build_book_dxz
+from tools.strategy_farm.portfolio import build_book_ftmo
 from tools.strategy_farm.portfolio import portfolio_manifest
 from tools.strategy_farm.portfolio import stage_tlive_presets_risk as stage_risk
 
@@ -299,12 +300,40 @@ def test_current_dxz_book_builder_guard_negative_and_positive(tmp_path: Path, mo
         raise risk_freeze.RiskFreezeBlocked("blocked", {})
 
     monkeypatch.setattr(build_book_dxz.risk_freeze, "assert_live_book_mutation_allowed", blocked)
-    with pytest.raises(risk_freeze.RiskFreezeBlocked):
-        build_book_dxz.main(["--out-dir", str(tmp_path / "never")])
+    # The DXZ builder catches the risk-freeze refusal and reports it as a
+    # structured JSON refusal (exit 2), never an uncaught traceback; no write.
+    assert build_book_dxz.main(["--out-dir", str(tmp_path / "never")]) == 2
     assert writes == []
 
     monkeypatch.setattr(build_book_dxz.risk_freeze, "assert_live_book_mutation_allowed", lambda _op: {})
     assert build_book_dxz.main(["--out-dir", str(tmp_path / "allowed")]) == 0
+    assert writes == [tmp_path / "allowed" / "manifest.json", tmp_path / "allowed" / "evidence.md"]
+
+
+def test_current_ftmo_book_builder_guard_negative_and_positive(tmp_path: Path, monkeypatch):
+    manifest = {"status": "DRY_RUN", "sleeves": [], "bar": {"measured_gap": 0.0}}
+    monkeypatch.setattr(
+        build_book_ftmo.book_build_guard,
+        "require_book_build_allowed",
+        lambda *_args: None,
+    )
+    monkeypatch.setattr(build_book_ftmo, "build_ftmo_manifest", lambda **_kw: manifest)
+    monkeypatch.setattr(build_book_ftmo, "validate_dual_book_manifest", lambda _m: None)
+    monkeypatch.setattr(build_book_ftmo, "evidence_markdown", lambda *_a: "fixture")
+    writes: list[Path] = []
+    monkeypatch.setattr(build_book_ftmo, "write_json", lambda path, _m: writes.append(path))
+    monkeypatch.setattr(build_book_ftmo, "write_text", lambda path, _text: writes.append(path))
+
+    def blocked(_operation):
+        raise risk_freeze.RiskFreezeBlocked("blocked", {})
+
+    monkeypatch.setattr(build_book_ftmo.risk_freeze, "assert_live_book_mutation_allowed", blocked)
+    with pytest.raises(risk_freeze.RiskFreezeBlocked):
+        build_book_ftmo.main(["--out-dir", str(tmp_path / "never")])
+    assert writes == []
+
+    monkeypatch.setattr(build_book_ftmo.risk_freeze, "assert_live_book_mutation_allowed", lambda _op: {})
+    assert build_book_ftmo.main(["--out-dir", str(tmp_path / "allowed")]) == 0
     assert writes == [tmp_path / "allowed" / "manifest.json", tmp_path / "allowed" / "evidence.md"]
 
 

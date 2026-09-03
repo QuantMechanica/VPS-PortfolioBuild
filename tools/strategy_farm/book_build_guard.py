@@ -60,6 +60,42 @@ class BookBuildRefused(RuntimeError):
         )
 
 
+REFUSAL_EXIT_CODE = 2
+
+
+def emit_refusal(
+    status: str,
+    reason: str,
+    fields: dict,
+    *,
+    stream=None,
+) -> int:
+    """Print ONE structured JSON refusal and return the fail-closed exit code.
+
+    Mirrors the ``book_build_guard.py --status`` contract: the guard/freeze
+    status ``fields`` plus a refusal ``reason``, rendered as JSON with exit
+    code 2.  Book-path entrypoints call this from their ``main`` so a
+    fail-closed refusal surfaces legibly instead of an uncaught traceback.  It
+    changes only how a refusal is presented, never whether a path may proceed.
+    """
+    payload = {"status": status, "reason": reason, **fields}
+    print(
+        json.dumps(payload, indent=2, sort_keys=True),
+        file=stream if stream is not None else sys.stdout,
+    )
+    return REFUSAL_EXIT_CODE
+
+
+def emit_book_build_refusal(exc: "BookBuildRefused", *, stream=None) -> int:
+    """Render a ``BookBuildRefused`` as the structured refusal (exit 2)."""
+    return emit_refusal(
+        "BOOK_BUILD_REFUSED",
+        "; ".join(exc.result.reasons) or "book-build guard refused",
+        dataclasses.asdict(exc.result),
+        stream=stream,
+    )
+
+
 def _normalize_venue(venue: str) -> str:
     normalized = str(venue).strip().lower()
     if normalized not in SUPPORTED_VENUES:

@@ -259,7 +259,10 @@ def parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = parser().parse_args(argv)
-    book_build_guard.require_book_build_allowed("dxz", args.book_db, args.order_dir)
+    try:
+        book_build_guard.require_book_build_allowed("dxz", args.book_db, args.order_dir)
+    except book_build_guard.BookBuildRefused as exc:
+        return book_build_guard.emit_book_build_refusal(exc)
     out_dir = args.out_dir or DEFAULT_REPORT_ROOT / f"book_dxz_{args.as_of}"
     manifest_path = out_dir / "manifest.json"
     try:
@@ -284,6 +287,10 @@ def main(argv: list[str] | None = None) -> int:
     except BookBuildError as exc:
         print(json.dumps({"status": "INPUT_INVALID", "error": str(exc)}, indent=2), file=sys.stderr)
         return 2
+    except risk_freeze.RiskFreezeBlocked as exc:
+        return book_build_guard.emit_refusal(
+            "LIVE_RISK_FREEZE_BLOCKED", str(exc), {"freeze": exc.result}
+        )
     print(json.dumps({
         "status": manifest["status"],
         "manifest": str(manifest_path),

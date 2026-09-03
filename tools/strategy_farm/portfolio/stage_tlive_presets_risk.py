@@ -153,6 +153,7 @@ def main(argv: list[str] | None = None) -> int:
     for p in problems:
         print(f"  PROBLEM: {p}")
     if args.json:
+        args.json.parent.mkdir(parents=True, exist_ok=True)
         args.json.write_text(json.dumps({"mode": mode, "staged": report, "problems": problems},
                                         indent=1), encoding="utf-8")
         print(f"  -> {args.json}")

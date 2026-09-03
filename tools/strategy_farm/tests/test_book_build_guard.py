@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import datetime as dt
 import inspect
+import json
 import re
 from pathlib import Path
 from types import MappingProxyType
@@ -219,7 +220,9 @@ def test_manifest_accessor_resolves_v3_and_future_v4_without_consumer_literals()
 
 
 def test_guard_refuses_before_each_entry_path_does_work(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
 ) -> None:
     refused = book_build_guard.GuardResult(False, 0, 0, 0, None, ["fixture"])
 
@@ -241,10 +244,16 @@ def test_guard_refuses_before_each_entry_path_does_work(
     assert not runtime_root.exists()
 
     monkeypatch.setattr(book_build_guard, "require_book_build_allowed", deny)
-    with pytest.raises(book_build_guard.BookBuildRefused):
-        build_book_dxz.main([])
-    with pytest.raises(book_build_guard.BookBuildRefused):
-        build_book_ftmo.main([])
+    # A fail-closed refusal now surfaces as ONE structured JSON refusal + exit
+    # code 2 (never an uncaught traceback), matching book_build_guard --status.
+    assert build_book_dxz.main([]) == 2
+    dxz_refusal = json.loads(capsys.readouterr().out)
+    assert dxz_refusal["status"] == "BOOK_BUILD_REFUSED"
+    assert dxz_refusal["reasons"] == ["fixture"]
+    assert build_book_ftmo.main([]) == 2
+    ftmo_refusal = json.loads(capsys.readouterr().out)
+    assert ftmo_refusal["status"] == "BOOK_BUILD_REFUSED"
+    assert ftmo_refusal["reasons"] == ["fixture"]
 
 
 def test_grep_guard_no_auto_book_path_bypasses_the_guard() -> None:

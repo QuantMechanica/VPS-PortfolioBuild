@@ -197,14 +197,21 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--book-db", type=Path, default=book_build_guard.DEFAULT_DB_PATH)
     parser.add_argument("--order-dir", type=Path, default=book_build_guard.DEFAULT_ORDER_DIR)
     args = parser.parse_args(argv)
-    result = execute(
-        args.plan,
-        live_root=args.live_root,
-        backup_dir=args.backup_dir,
-        apply=args.apply,
-        book_db_path=args.book_db,
-        order_dir=args.order_dir,
-    )
+    try:
+        result = execute(
+            args.plan,
+            live_root=args.live_root,
+            backup_dir=args.backup_dir,
+            apply=args.apply,
+            book_db_path=args.book_db,
+            order_dir=args.order_dir,
+        )
+    except book_build_guard.BookBuildRefused as exc:
+        return book_build_guard.emit_book_build_refusal(exc)
+    except risk_freeze.RiskFreezeBlocked as exc:
+        return book_build_guard.emit_refusal(
+            "LIVE_RISK_FREEZE_BLOCKED", str(exc), {"freeze": exc.result}
+        )
     print(json.dumps(result, indent=2))
     return 0
 
