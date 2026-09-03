@@ -305,3 +305,8 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   after its reload): **41331 / 41332 / 41333 COMPILE_OK** 12:38Z–12:39Z (the two released August siblings 41175
   and 41177 compiled too). The matrix service seeded 41331's Q02 census prerequisite `c0cc02a5` at 12:38Z and T2
   claimed it immediately; 41332/41333 seeds follow with their Q12 rows. Router task 262f7959 → APPROVED.
+- 12:43Z–12:55Z: sibling seeds 41331 `c0cc02a5` PASS 12:43Z and 41332 `417a6769` PASS 12:47Z → the matrix service
+  materialized the DL-089 programs of **12710/XTIUSD** and **11910/NZDUSD** (1,085 cells each; 12710 already
+  boosted with a 6-cell frontier window). 10700 Q10_NEWS `fe33550e` ended REVIEW_REQUIRED (expansion required,
+  like the other two); the expansion parent `c0faeb48` was minted 12:43Z and claimed by T5 12:48Z.
+  Guardian loop restarted 12:57Z (6-h cycle ended 12:43Z).
