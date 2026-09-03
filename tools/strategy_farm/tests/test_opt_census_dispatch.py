@@ -1179,3 +1179,84 @@ def test_amendment_b_admits_priority_tracked_q11_rows(
     for item_id in ("q11-unmarked", "q05-priority", "census-cell"):
         assert by_id[item_id]["_lineage_rerun_rank"] == 1, item_id
     assert [row["id"] for row in ordered][0] == "q11-priority"
+
+
+def test_amendment_b_admits_news_expansion_child_of_a_lineage_parent(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Proposal C (docs/ops/evidence/
+    2026-09-03_newsgate_expansion_forensics.md section 4): a Q10_NEWS expansion
+    child (``news_expansion_of_work_item`` set) whose PARENT row is itself a
+    lineage row ranks with the lineage reruns; a child of an ordinary parent
+    does not, and a frontier census cell still sorts before that ordinary child.
+
+    Children inherit ``priority_track`` from their source via
+    PROMOTION_QUEUE_CONTEXT_PAYLOAD_KEYS, so the child's own flag is what the arm
+    reads (verified on the live DB: QM5_10700/XAUUSD child c0faeb48 carries
+    priority_track=true; parent fe33550e carries supersedes_held_q09_work_item).
+    The children here carry NO ``append_only_rerun`` marker so that rank 0 can
+    only come from the new parent-is-lineage arm, not the existing rerun arm.
+    """
+    monkeypatch.setenv(farmctl.TOPDOWN_GATE_PRIORITY_ENV, "1")
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    now = "2026-09-03T00:00:00+00:00"
+    news = farmctl._NEWS_PHASE
+    bound = {  # a Q10_NEWS row is only claimable once bind-q09-plan sealed it
+        "q09_binding_version": "q09-news-dispatch-binding/v1",
+        "q09_run_plan_path": "D:/plan.json",
+        "q09_run_plan_file_sha256": "0" * 64,
+        "q09_dispatch_binding_sha256": "1" * 64,
+    }
+    # Parents are done REVIEW_REQUIRED sources (mirrors the live farm): not
+    # pending, so they never enter the ordering, only the child EXISTS-by-id.
+    lineage_parent = {
+        "supersedes_held_q09_work_item": "77bd97c2-old",
+        "priority_track": True,
+    }
+    ordinary_parent = {"priority_track": True}  # priority, but no lineage marker
+    child_of_lineage = {
+        **bound,
+        "news_expansion_of_work_item": "parent-lineage",
+        "priority_track": True,
+    }
+    child_of_ordinary = {
+        **bound,
+        "news_expansion_of_work_item": "parent-ordinary",
+        "priority_track": True,
+    }
+    census_cell = {
+        "priority_track": True,
+        "cell_key": "P:2021:buy_001",
+        "opt_census_frontier_priority": True,
+    }
+    with farmctl.connect(root) as conn:
+        for item_id, phase, status, verdict, payload in (
+            ("parent-lineage", news, "done", "REVIEW_REQUIRED", lineage_parent),
+            ("parent-ordinary", news, "done", "REVIEW_REQUIRED", ordinary_parent),
+            ("child-of-lineage", news, "pending", None, child_of_lineage),
+            ("child-of-ordinary", news, "pending", None, child_of_ordinary),
+            ("census-cell", "OPT_CENSUS", "pending", None, census_cell),
+        ):
+            _insert(
+                conn, id=item_id, kind="backtest", phase=phase,
+                ea_id=f"QM5_{item_id}", symbol="", setfile_path="",
+                status=status, verdict=verdict, attempt_count=0,
+                payload_json=json.dumps(payload), created_at=now, updated_at=now,
+            )
+        conn.commit()
+        ordered = conn.execute(farmctl.pending_claim_order_sql()).fetchall()
+    by_id = {row["id"]: row for row in ordered}
+    # the done parents are excluded from the pending ordering
+    assert set(by_id) == {"child-of-lineage", "child-of-ordinary", "census-cell"}
+    # a child of a lineage parent ranks 0
+    assert by_id["child-of-lineage"]["_lineage_rerun_rank"] == 0
+    # a child of an ordinary (non-lineage) parent ranks 1
+    assert by_id["child-of-ordinary"]["_lineage_rerun_rank"] == 1
+    assert by_id["census-cell"]["_lineage_rerun_rank"] == 1
+    head = [row["id"] for row in ordered]
+    # the lineage child leads; the frontier census cell still sorts before the
+    # ordinary child (both rank 1 on the lineage key; the census wins the
+    # top-down gate key: OPT_CENSUS=0 vs Q10_NEWS=2).
+    assert head[0] == "child-of-lineage"
+    assert head.index("census-cell") < head.index("child-of-ordinary")

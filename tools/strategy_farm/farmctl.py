@@ -2079,6 +2079,39 @@ def _topdown_gate_rank_sql() -> str:
     )
 
 
+def _lineage_rerun_row_predicate_sql(alias: str) -> str:
+    """The exact lineage-row test, parameterized by table alias.
+
+    Factored out of ``_lineage_rerun_rank_sql`` so the identical predicate a
+    lineage row must satisfy can also be applied to the parent of a Q10_NEWS
+    expansion child (Proposal C, docs/ops/evidence/
+    2026-09-03_newsgate_expansion_forensics.md section 4).  ``alias`` is ``w``
+    for the row being ranked and ``p`` for its expansion parent; every phase
+    token is still resolved through the manifest constants so the v4 readiness
+    check never sees a bare v3 literal.
+    """
+    phases = ", ".join(f"'{phase}'" for phase in LINEAGE_RERUN_PRIORITY_PHASES)
+    a = alias
+    return (
+        f"json_valid({a}.payload_json)=1"
+        " AND ("
+        f"json_extract({a}.payload_json, '$.append_only_rerun')=1"
+        f" OR (json_extract({a}.payload_json, '$.fresh_q02_seed')=1"
+        " AND COALESCE(json_extract("
+        f"{a}.payload_json, '$.requalification_old_work_item_id'), '') <> ''"
+        f" AND {a}.phase='Q02')"
+        " OR (COALESCE(json_extract("
+        f"{a}.payload_json, '$.supersedes_held_q09_work_item'), '') <> ''"
+        f" AND {a}.phase='{_NEWS_PHASE}')"
+        f" OR {a}.phase='{_Q11_PHASE}'"
+        ")"
+        f" AND json_type({a}.payload_json, '$.priority_track')='true'"
+        f" AND {a}.phase IN ({phases}, '{_NEWS_PHASE}', '{_Q11_PHASE}')"
+        " AND COALESCE(json_extract("
+        f"{a}.payload_json, '$.poison_pill_priority_override'), 0) <> 1"
+    )
+
+
 def _lineage_rerun_rank_sql() -> str:
     """SQL CASE implementing OWNER-DEC-PRE0803-...-AMENDB-20260903 §3.
 
@@ -2122,31 +2155,49 @@ def _lineage_rerun_rank_sql() -> str:
         census cells for the same reason as the news parent above.  Q11 rows
         are few (auto-minted after a CONFIG_LOCKED news gate) and cheap, so
         the census loses nothing measurable;
+      * 2026-09-03 (Proposal C, docs/ops/evidence/
+        2026-09-03_newsgate_expansion_forensics.md section 4): a Q10_NEWS
+        expansion CHILD (``news_expansion_of_work_item`` set) whose PARENT row
+        is itself a lineage row -- the append-only rerun or service-minted
+        replacement parent above -- is the counter-critical last leg to the
+        Q10 lock and must not queue behind every frontier census cell.  The
+        child inherits ``priority_track`` from its source
+        (PROMOTION_QUEUE_CONTEXT_PAYLOAD_KEYS), so the child's own flag is
+        authoritative and is what is tested; the parent is matched by the same
+        exact lineage predicate via an EXISTS on ``work_items`` by that id;
       * ``json_type('$.priority_track')='true'`` matches only the JSON literal
         true, identical to the test used by ``_priority_track_rank``;
       * the poison-pill override is honoured exactly as ``_priority_track_rank``
         honours it, so a quarantined lineage cannot buy its way to the head.
     """
-    phases = ", ".join(f"'{phase}'" for phase in LINEAGE_RERUN_PRIORITY_PHASES)
-    return (
-        "CASE"
-        " WHEN json_valid(w.payload_json)=1"
-        " AND ("
-        "json_extract(w.payload_json, '$.append_only_rerun')=1"
-        " OR (json_extract(w.payload_json, '$.fresh_q02_seed')=1"
+    lineage_row = _lineage_rerun_row_predicate_sql("w")
+    parent_lineage = _lineage_rerun_row_predicate_sql("p")
+    # Proposal C child arm: a Q10_NEWS expansion child whose expansion parent
+    # (work_items.id == payload.news_expansion_of_work_item) is itself a lineage
+    # row ranks with the reruns.  priority_track is read off the child, which
+    # inherits it from the source via PROMOTION_QUEUE_CONTEXT_PAYLOAD_KEYS; the
+    # EXISTS is only reached for a priority-tracked Q10_NEWS row that carries a
+    # non-empty parent id, and hits work_items by primary key.
+    child_of_lineage_parent = (
+        f"w.phase='{_NEWS_PHASE}'"
+        " AND json_valid(w.payload_json)=1"
         " AND COALESCE(json_extract("
-        "w.payload_json, '$.requalification_old_work_item_id'), '') <> ''"
-        " AND w.phase='Q02')"
-        " OR (COALESCE(json_extract("
-        "w.payload_json, '$.supersedes_held_q09_work_item'), '') <> ''"
-        f" AND w.phase='{_NEWS_PHASE}')"
-        f" OR w.phase='{_Q11_PHASE}'"
-        ")"
+        "w.payload_json, '$.news_expansion_of_work_item'), '') <> ''"
         " AND json_type(w.payload_json, '$.priority_track')='true'"
-        f" AND w.phase IN ({phases}, '{_NEWS_PHASE}', '{_Q11_PHASE}')"
         " AND COALESCE(json_extract("
         "w.payload_json, '$.poison_pill_priority_override'), 0) <> 1"
-        " THEN 0 ELSE 1 END"
+        " AND EXISTS (SELECT 1 FROM work_items p"
+        " WHERE p.id=json_extract("
+        "w.payload_json, '$.news_expansion_of_work_item')"
+        f" AND {parent_lineage})"
+    )
+    return (
+        "CASE"
+        f" WHEN {lineage_row}"
+        " THEN 0"
+        f" WHEN {child_of_lineage_parent}"
+        " THEN 0"
+        " ELSE 1 END"
     )
 
 
