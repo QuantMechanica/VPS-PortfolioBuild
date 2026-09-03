@@ -246,3 +246,86 @@ def test_enqueue_ledger_records_q02_and_seal(tmp_path: Path) -> None:
     assert ledger["q02_precondition"]["verdict"] == "PASS"
     assert ledger["sealed_rule_sha256"] == subject.SEALED_RULE_SHA256
     assert ledger["param_grid_sha256"] is not None
+
+
+def test_cell_report_zero_trade_run_is_a_measurement_not_a_parse_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """2026-09-03 regression: a MEASURED cell with total_trades=0 must yield a
+    zero-activity report instead of letting q10_recency raise
+    'no closed round trips parsed' through the matrix service."""
+    monkeypatch.setenv("QM_OPT_CENSUS_CELL_REPORT_CACHE", "0")
+    report = tmp_path / "report.htm"
+    report.write_text("<html><body>no deals</body></html>", encoding="utf-8")
+    summary = tmp_path / "summary.json"
+    summary.write_text(
+        json.dumps(
+            {
+                "runs": [
+                    {
+                        "status": "OK",
+                        "report_canonical_path": str(report),
+                        "total_trades": 0,
+                        "net_profit": 0.0,
+                        "drawdown": 0.0,
+                        "profit_factor": 0.0,
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    import framework.scripts.q10_recency as recency
+
+    def _must_not_be_called(_path):
+        raise AssertionError("extract_closed_trades must not run for a zero-trade cell")
+
+    monkeypatch.setattr(recency, "extract_closed_trades", _must_not_be_called)
+    result = subject.cell_report(summary)
+    assert result["trades"] == 0
+    assert result["entry_trading_days"] == 0
+    assert result["return_to_maxdd"] is None
+    assert result["report_reconciled"] is True
+
+
+def test_cell_report_still_parses_native_report_when_trades_exist(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("QM_OPT_CENSUS_CELL_REPORT_CACHE", "0")
+    report = tmp_path / "report.htm"
+    report.write_text("<html></html>", encoding="utf-8")
+    summary = tmp_path / "summary.json"
+    summary.write_text(
+        json.dumps(
+            {
+                "runs": [
+                    {
+                        "status": "OK",
+                        "report_canonical_path": str(report),
+                        "total_trades": 3,
+                        "net_profit": 100.0,
+                        "drawdown": 50.0,
+                        "profit_factor": 1.5,
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    import datetime as _dt
+    import framework.scripts.q10_recency as recency
+
+    class _Trade:
+        def __init__(self, day):
+            self.entry_time = _dt.datetime(2024, 1, day, 10, 0)
+
+    monkeypatch.setattr(
+        recency,
+        "extract_closed_trades",
+        lambda _path: ([_Trade(2), _Trade(2), _Trade(5)], {"total_trades": 3}),
+    )
+    result = subject.cell_report(summary)
+    assert result["trades"] == 3
+    assert result["entry_trading_days"] == 2
+    assert result["return_to_maxdd"] == 2.0
+    assert result["report_reconciled"] is True

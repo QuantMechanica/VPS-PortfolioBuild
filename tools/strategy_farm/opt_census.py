@@ -650,10 +650,22 @@ def cell_report(summary_path: Path) -> dict[str, Any]:
                 return dict(cached["report"])
         except (OSError, ValueError, TypeError):
             pass
-    sys.path.insert(0, str(REPO_ROOT))
-    from framework.scripts.q10_recency import extract_closed_trades
+    total_trades = int(run["total_trades"])
+    if total_trades == 0:
+        # 2026-09-03: a MEASURED cell whose native run closed zero trades
+        # (MIN_TRADES_NOT_MET, e.g. DL089_QM5_1537 2025 baseline) is a valid,
+        # sealed measurement with zero activity.  q10_recency.extract_closed_trades
+        # raises ValueError("no closed round trips parsed") on such a report and
+        # that exception escaped the selector reader, failed the whole
+        # dl089_matrix_service pass (DL089_MATRIX_SERVICE_FAILED) and froze every
+        # program.  Zero trades is the defined answer here, not a parse error.
+        trades = []
+        native = {"total_trades": 0}
+    else:
+        sys.path.insert(0, str(REPO_ROOT))
+        from framework.scripts.q10_recency import extract_closed_trades
 
-    trades, native = extract_closed_trades(report_path)
+        trades, native = extract_closed_trades(report_path)
     entry_days = len({trade.entry_time.date() for trade in trades})
     net = float(run["net_profit"])
     max_dd = float(run["drawdown"])
@@ -663,7 +675,7 @@ def cell_report(summary_path: Path) -> dict[str, Any]:
         "summary_sha256": _sha256(summary_path),
         "report_path": str(report_path.resolve()),
         "report_sha256": _sha256(report_path),
-        "trades": int(run["total_trades"]),
+        "trades": total_trades,
         "entry_trading_days": entry_days,
         "profit_factor": float(run["profit_factor"]),
         "net_profit": net,
