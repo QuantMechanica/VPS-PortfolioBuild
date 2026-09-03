@@ -248,6 +248,24 @@ OPT_CENSUS_RAM_RESERVATION_GB = 4.0
 # with 8 GB backtests, which keep the full 14/20 GB latch.  Rollback: set the
 # floor back to RAM_MIN_FREE_GB and idle-reload the workers.
 OPT_CENSUS_POST_RESERVATION_FLOOR_GB = 8.0
+# 2026-09-03 (CEO, infra repair under the Stehende Vollmacht GRUEN zone):
+# CENSUS-FIRST claim-selection priority.  Measured today: four or five heavy
+# single-symbol testers (Q07 5-seed full-history 11-20 GB, multi-symbol Q02
+# like QM5_12580 at 19.7 GB, news expansions 8 GB) leave 9-11 GB free, six
+# workers idle in ram_low_pause and the DL-089 census (the counter's critical
+# path) drops from 26 to 4 cells / 10 min.  When claimable census cells exist
+# and admitting a heavy candidate (measured or flat reservation
+# >= HEAVY_RUN_RAM_GB) would push free RAM below the protected census band,
+# the heavy row is DEFERRED this claim round so the small cells keep flowing.
+# Bounded and selection-only: it defers, it never changes a verdict, cap,
+# budget, or the census floor, and it never defers a priority-tracked
+# OWNER-DEC-PRE0803 lineage rerun (Amendment B) or a COMPILE_EA row.  Rollback:
+# QM_CENSUS_FIRST_RAM_PRIORITY=0 restores the prior admit-in-claim-order path.
+HEAVY_RUN_RAM_GB = 10.0
+# Keep this many 4 GB census lanes' worth of headroom above the
+# post-reservation floor before a heavy candidate may consume it:
+# 8 + 4 * 2 = 16 GB.
+CENSUS_LANES_PROTECTED = 2
 
 
 def _ram_floor_for_class(ram_class: str) -> float:
@@ -1230,6 +1248,89 @@ def _ram_reservation_for_candidate(
     return ram_class, _resolve_ram_reservation_gb(
         ram_class, flat_gb, measured_gb, multisymbol=multisymbol
     )
+
+
+def _census_first_ram_priority_enabled() -> bool:
+    """CENSUS-FIRST claim priority is on unless QM_CENSUS_FIRST_RAM_PRIORITY=0.
+
+    Env kill switch (2026-09-03, CEO).  Default on; the exact string "0"
+    restores the prior admit-in-claim-order behaviour with no other effect.
+    """
+    return os.environ.get("QM_CENSUS_FIRST_RAM_PRIORITY") != "0"
+
+
+def _census_first_protected_band_gb() -> float:
+    """Free RAM that must stay claimable for the protected census lanes.
+
+    OPT_CENSUS_POST_RESERVATION_FLOOR_GB plus one census reservation per
+    protected lane (8 + 4 * 2 = 16 GB by default).  Reads the live census
+    constants so a floor/reservation rollback flows through unchanged; this
+    band never lowers the census floor itself.
+    """
+    return (
+        OPT_CENSUS_POST_RESERVATION_FLOOR_GB
+        + OPT_CENSUS_RAM_RESERVATION_GB * CENSUS_LANES_PROTECTED
+    )
+
+
+def _is_priority_tracked_lineage_rerun(
+    payload: "dict[str, Any] | None",
+) -> bool:
+    """True for an OWNER-DEC-PRE0803 Amendment B priority-tracked lineage rerun.
+
+    Mirrors the two forms farmctl._lineage_rerun_rank_sql ranks ahead of the
+    census: an exact append-only rerun (append_only_rerun true/1), or a
+    governed fresh-Q02 requalification seed (fresh_q02_seed with a non-empty
+    requalification_old_work_item_id) -- in either case additionally marked
+    priority_track true.  Such a row is the critical path to a Q10 lock and is
+    never deferred by CENSUS-FIRST.
+    """
+    if not isinstance(payload, dict):
+        return False
+    if payload.get("priority_track") is not True:
+        return False
+    append_only = payload.get("append_only_rerun")
+    if append_only is True or append_only == 1:
+        return True
+    if payload.get("fresh_q02_seed") is True and str(
+        payload.get("requalification_old_work_item_id") or ""
+    ):
+        return True
+    return False
+
+
+def _census_first_defers_heavy_candidate(
+    *,
+    reservation_gb: float,
+    free_ram_gb: float,
+    census_cells_claimable: bool,
+    is_priority_tracked_lineage_rerun: bool,
+    is_compile: bool,
+    enabled: bool,
+) -> bool:
+    """Pure CENSUS-FIRST deferral predicate (the unit-test target).
+
+    True iff a heavy candidate should be SKIPPED this claim round to keep RAM
+    headroom for the protected DL-089 census lanes.  Selection-only: on True
+    the caller merely ``continue``s to a lighter row, exactly like
+    skipped_ram_class; it never changes a verdict, cap, budget, or the census
+    floor.
+
+    A candidate is heavy when its measured-or-flat launch reservation is
+    >= HEAVY_RUN_RAM_GB.  It is deferred only while (a) the rule is enabled,
+    (b) it is neither a COMPILE_EA row nor a priority-tracked Amendment B
+    lineage rerun, (c) claimable census cells exist, and (d) admitting it would
+    leave free RAM below the protected band.
+    """
+    if not enabled:
+        return False
+    if is_compile or is_priority_tracked_lineage_rerun:
+        return False
+    if not census_cells_claimable:
+        return False
+    if reservation_gb < HEAVY_RUN_RAM_GB:
+        return False
+    return free_ram_gb - reservation_gb < _census_first_protected_band_gb()
 
 
 _PROCESS_SNAPSHOT_TTL_SECONDS = 3.0
@@ -2691,6 +2792,38 @@ def _ram_latch_opt_census_bypass_available(root: Path, free_ram_gb: float) -> bo
         return False
 
 
+def _opt_census_cells_claimable_in_txn(conn: sqlite3.Connection) -> bool:
+    """Cheap in-transaction EXISTS: is any OPT_CENSUS cell claimable now?
+
+    Runs on the already-open claim connection -- no second connection while
+    BEGIN IMMEDIATE is held (see the poison-pill note in claim_atomic) -- and
+    mirrors the pending/not-held/not-superseded row filter of
+    _ram_latch_opt_census_bypass_available without its headroom coupling: this
+    answers only "does protected census work exist", which the CENSUS-FIRST
+    rule then weighs against the heavy candidate's reservation.  Fails toward
+    False (do not defer the heavy) on any DB ambiguity -- the rule only defers.
+    """
+    try:
+        row = conn.execute(
+            """
+            SELECT 1 FROM work_items w
+            WHERE w.status='pending' AND upper(w.phase)='OPT_CENSUS'
+              AND NOT EXISTS (
+                SELECT 1 FROM work_item_holds h
+                WHERE h.work_item_id=w.id AND h.active=1
+              )
+              AND NOT EXISTS (
+                SELECT 1 FROM work_item_supersedes s
+                WHERE s.work_item_id=w.id
+              )
+            LIMIT 1
+            """
+        ).fetchone()
+        return row is not None
+    except sqlite3.Error:
+        return False
+
+
 def _ensure_claim_db_initialized(root: Path) -> None:
     """Run idempotent schema setup once per worker process and farm root."""
 
@@ -2764,6 +2897,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
             "launch_cooldown_skipped": [],
             "multisymbol_ram_skipped": [],
             "ram_class_skipped": [],
+            "census_lane_protection_skipped": [],
             "multisymbol_commit_skipped": [],
             "terminal_avoid_skipped": [],
             "longrun_cap_skipped": [],
@@ -2862,9 +2996,14 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
     # transaction while still revalidating the exact identity in `_claim`.
     try:
         with farmctl.connect(root) as _preflight_conn:
-            initial_candidate_row = _preflight_conn.execute(
-                _priority_pending_query()
-            ).fetchone()
+            # Build the full memoized claim order here so the main-loop
+            # fetchall reuses it (same db, same process) instead of
+            # re-sorting ~12.7k pending rows a second time in the same
+            # claim_atomic.  execute_pending_claim_order returns the exact
+            # rows _priority_pending_query() would, and the head row is the
+            # fetchone this prime needs.
+            _primed_order = farmctl.execute_pending_claim_order(_preflight_conn)
+            initial_candidate_row = _primed_order[0] if _primed_order else None
     except sqlite3.Error:
         initial_candidate_row = None
     if initial_candidate_row is not None and not (
@@ -3215,6 +3354,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                 skipped_multisym_ram: list[dict[str, Any]] = []
                 skipped_multisym_commit: list[dict[str, Any]] = []
                 skipped_ram_class: list[dict[str, Any]] = []
+                skipped_census_lane_protection: list[dict[str, Any]] = []
                 skipped_avoid_terminal: list[dict[str, Any]] = []
                 skipped_longrun_cap: list[dict[str, Any]] = []
                 skipped_opt_census_slots: list[dict[str, Any]] = []
@@ -3241,7 +3381,14 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                 recovery_gate_checked = False
                 recovery_allowed = False
                 recovery_capped = False
-                for item in conn.execute(_priority_pending_query()).fetchall():
+                # CENSUS-FIRST (2026-09-03, CEO): the env flag is read once, and
+                # the census-cell EXISTS runs at most once per claim round and
+                # only when a heavy non-exempt candidate is actually reached.
+                census_first_enabled = _census_first_ram_priority_enabled()
+                census_cells_claimable: bool | None = None
+                # claim-order memo (2026-09-03): byte-identical rows, reused while
+                # PRAGMA data_version proves the DB unchanged (see farmctl).
+                for item in farmctl.execute_pending_claim_order(conn):
                     preclaim_payload_sha256 = next_cell_prestage.sha256_text(
                         item["payload_json"] or "{}"
                     )
@@ -3441,6 +3588,59 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                     ram_class, ram_reservation_gb = _ram_reservation_for_candidate(
                         item, payload, item_is_multisym
                     )
+                    # CENSUS-FIRST claim priority (2026-09-03, CEO;
+                    # OWNER-DEC-PRE0803 census is the counter's critical path):
+                    # defer a heavy candidate this round when admitting it would
+                    # starve the protected census lanes, then fall through to a
+                    # lighter row -- exactly like skipped_ram_class below.  The
+                    # gate short-circuits on the reservation so light census
+                    # cells cost one float compare; the pure predicate owns the
+                    # decision and re-checks the exemptions independently.
+                    if (
+                        census_first_enabled
+                        and ram_reservation_gb >= HEAVY_RUN_RAM_GB
+                    ):
+                        item_is_compile = (
+                            str(item["phase"] or "").upper()
+                            == farmctl.COMPILE_EA_PHASE
+                            or str(item["kind"] or "").lower()
+                            == farmctl.COMPILE_WORK_ITEM_KIND
+                        )
+                        is_lineage_rerun = _is_priority_tracked_lineage_rerun(
+                            payload
+                        )
+                        if not item_is_compile and not is_lineage_rerun:
+                            if census_cells_claimable is None:
+                                census_cells_claimable = (
+                                    _opt_census_cells_claimable_in_txn(conn)
+                                )
+                            if _census_first_defers_heavy_candidate(
+                                reservation_gb=ram_reservation_gb,
+                                free_ram_gb=multisym_free_ram_snapshot,
+                                census_cells_claimable=census_cells_claimable,
+                                is_priority_tracked_lineage_rerun=is_lineage_rerun,
+                                is_compile=item_is_compile,
+                                enabled=census_first_enabled,
+                            ):
+                                skipped_census_lane_protection.append({
+                                    "item_id": item["id"],
+                                    "ea_id": item["ea_id"],
+                                    "ram_class": ram_class,
+                                    "reservation_gb": ram_reservation_gb,
+                                    "free_ram_gb": round(
+                                        multisym_free_ram_snapshot, 1
+                                    ),
+                                    "post_reservation_free_gb": round(
+                                        multisym_free_ram_snapshot
+                                        - ram_reservation_gb,
+                                        1,
+                                    ),
+                                    "protected_band_gb": (
+                                        _census_first_protected_band_gb()
+                                    ),
+                                    "reason": "census_lane_protection",
+                                })
+                                continue
                     post_reservation_free_gb = (
                         multisym_free_ram_snapshot - ram_reservation_gb
                     )
@@ -3621,6 +3821,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                             "preclaim_payload_sha256": preclaim_payload_sha256,
                             "claim_write_lock_ms": claim_write_lock_ms,
                             "ram_class_skipped": skipped_ram_class,
+                            "census_lane_protection_skipped": skipped_census_lane_protection,
                         }
                     conn.rollback()
                     conn.execute("PRAGMA query_only=ON")
@@ -3632,6 +3833,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                     "launch_cooldown_skipped": skipped_launch_cooldown,
                     "multisymbol_ram_skipped": skipped_multisym_ram,
                     "ram_class_skipped": skipped_ram_class,
+                    "census_lane_protection_skipped": skipped_census_lane_protection,
                     "multisymbol_commit_skipped": skipped_multisym_commit,
                     "terminal_avoid_skipped": skipped_avoid_terminal,
                     "longrun_cap_skipped": skipped_longrun_cap,

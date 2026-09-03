@@ -19,6 +19,7 @@ import re
 import sqlite3
 import subprocess
 import sys
+import threading
 import time
 import uuid
 from pathlib import Path
@@ -2521,6 +2522,203 @@ def pending_claim_order_sql() -> str:
           )
         ORDER BY {order_by}
     """
+
+
+# --------------------------------------------------------------------------
+# Pending-claim-order per-process memo (order-preserving cost reduction)
+# --------------------------------------------------------------------------
+# OWNER GRUEN infra repair (2026-09-03): a claim attempt re-computes
+# pending_claim_order_sql() over ~12.7k pending rows (~0.9 s per execution) and
+# claim_atomic runs it TWICE -- the fetchone prime plus the fetchall main loop.
+# Ten workers doing this every 10-20 s pinned the host at 97-100% and tripped
+# the worker CPU guard, which idled workers and FROZE the pending set: a
+# feedback loop that re-sorts a provably-unchanged queue thousands of times.
+#
+# execute_pending_claim_order returns the SAME ordered rows the query returns,
+# reusing the last result only while (a) a persistent read-only poller's
+# PRAGMA data_version proves NO connection has committed any change to the
+# database since the result was built, and (b) the memo is still inside a TTL
+# capped so no row can have crossed an _age_weeks boundary (the query's only
+# julianday('now') dependence).  pending_claim_order_sql is byte-identical to
+# before; a miss runs it verbatim; any doubt falls back to the plain query.
+# Claim SAFETY never depends on the memo: every claimant re-validates each row
+# under BEGIN IMMEDIATE (status='pending' + exact payload_json match + NOT
+# EXISTS holds/supersedes) before its CAS UPDATE, so a stale ordering can only
+# change which row is TRIED first, never what is claimed.
+CLAIM_ORDER_CACHE_TTL_MS_ENV = "QM_CLAIM_ORDER_CACHE_TTL_MS"
+_CLAIM_ORDER_CACHE_DEFAULT_TTL_MS = 5000
+_WEEK_SECONDS = 7 * 24 * 3600
+
+
+class _ClaimOrderCacheEntry:
+    __slots__ = ("data_version", "expiry_monotonic", "rows")
+
+    def __init__(self, data_version: int, expiry_monotonic: float, rows: list) -> None:
+        self.data_version = data_version
+        self.expiry_monotonic = expiry_monotonic
+        self.rows = rows
+
+
+_CLAIM_ORDER_CACHE: "dict[tuple, _ClaimOrderCacheEntry]" = {}
+# One long-lived READ-ONLY poller per (database file, OS thread).  PRAGMA
+# data_version on a connection changes iff ANOTHER connection has committed
+# since the previous read on that same connection, so a poller that never
+# writes detects every committed change to the whole database (work_items,
+# holds, supersedes, quarantine, verdicts -- everything the ordering reads) at
+# O(1) cost, with no timestamp-resolution blind spot.  A production worker is
+# one process with one claim thread, so its prime and main-loop calls share a
+# poller; the thread key keeps a sqlite3 connection from ever being touched
+# from another thread (e.g. a threaded test harness) and keeps each entry's
+# stored data_version comparable only against the poller that produced it.
+_CLAIM_ORDER_POLLERS: "dict[tuple, sqlite3.Connection]" = {}
+
+
+def claim_order_cache_ttl_ms(environ: "Mapping[str, str] | None" = None) -> int:
+    """Memo lifetime in ms.  <=0 disables the memo (kill-switch / rollback)."""
+    source = os.environ if environ is None else environ
+    raw = source.get(CLAIM_ORDER_CACHE_TTL_MS_ENV)
+    if raw is None:
+        return _CLAIM_ORDER_CACHE_DEFAULT_TTL_MS
+    try:
+        return int(str(raw).strip())
+    except (TypeError, ValueError):
+        return _CLAIM_ORDER_CACHE_DEFAULT_TTL_MS
+
+
+def _claim_order_conn_key(conn: sqlite3.Connection) -> "str | None":
+    """Stable cache key = main database file path.  None for in-memory DBs,
+    which are never memoized (distinct in-memory connections collide on '')."""
+    try:
+        for _seq, name, filename in conn.execute("PRAGMA database_list"):
+            if name == "main":
+                path = str(filename or "")
+                return path or None
+    except sqlite3.Error:
+        return None
+    return None
+
+
+def _claim_order_data_version(db_file: str) -> "int | None":
+    """Monotone whole-database change token from the persistent read poller.
+
+    Returns None -> bypass the memo (the caller runs the query directly).  A
+    broken poller is dropped so the next call reopens it."""
+    poller_key = (db_file, threading.get_ident())
+    poller = _CLAIM_ORDER_POLLERS.get(poller_key)
+    try:
+        if poller is None:
+            poller = sqlite3.connect(db_file, isolation_level=None, timeout=1.0)
+            poller.execute("PRAGMA busy_timeout=1000")
+            _CLAIM_ORDER_POLLERS[poller_key] = poller
+        return int(poller.execute("PRAGMA data_version").fetchone()[0])
+    except (sqlite3.Error, TypeError, ValueError):
+        if poller is not None:
+            try:
+                poller.close()
+            except sqlite3.Error:
+                pass
+        _CLAIM_ORDER_POLLERS.pop(poller_key, None)
+        return None
+
+
+def _reset_claim_order_pollers() -> None:
+    """Close and forget every poller (test isolation / process teardown)."""
+    for poller in list(_CLAIM_ORDER_POLLERS.values()):
+        try:
+            poller.close()
+        except sqlite3.Error:
+            pass
+    _CLAIM_ORDER_POLLERS.clear()
+
+
+def _seconds_to_earliest_age_flip(rows: list, wall_now: float) -> "float | None":
+    """Smallest wall-seconds until any row's _age_weeks integer would change.
+
+    _age_weeks = MAX(0, CAST((now-created)/7d AS INT)); it steps up when
+    (now-created) crosses a 7-day multiple.  A created_at that SQLite's
+    julianday cannot parse yields NULL -> age 0 forever (never flips); we mirror
+    that by skipping rows Python cannot parse.  None => nothing can flip."""
+    earliest: "float | None" = None
+    for row in rows:
+        try:
+            created = row["created_at"]
+        except (IndexError, KeyError, TypeError):
+            created = None
+        if not created:
+            continue
+        try:
+            parsed = dt.datetime.fromisoformat(str(created))
+        except ValueError:
+            continue
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=dt.UTC)
+        created_epoch = parsed.timestamp()
+        delta = wall_now - created_epoch
+        k = int(delta // _WEEK_SECONDS) + 1
+        if k < 1:
+            k = 1
+        seconds = (created_epoch + k * _WEEK_SECONDS) - wall_now
+        if seconds < 0:
+            seconds = 0.0
+        if earliest is None or seconds < earliest:
+            earliest = seconds
+    return earliest
+
+
+def execute_pending_claim_order(
+    conn: sqlite3.Connection,
+    *,
+    cache_ttl_ms: "int | None" = None,
+    monotonic: "Callable[[], float]" = time.monotonic,
+    wall_clock: "Callable[[], float]" = time.time,
+) -> "list[sqlite3.Row]":
+    """Ordered pending rows, identical to
+    ``conn.execute(pending_claim_order_sql()).fetchall()`` in rows AND order.
+
+    Faster only on a memo hit, which requires the data_version token to prove
+    the database is unchanged and the memo to still be inside its
+    age-boundary-capped TTL.  Every uncertain path returns a fresh query.  The
+    returned list is read-only for callers (the cache holds the same object)."""
+    sql = pending_claim_order_sql()
+    ttl_ms = claim_order_cache_ttl_ms() if cache_ttl_ms is None else cache_ttl_ms
+    if ttl_ms <= 0:
+        return conn.execute(sql).fetchall()
+    key = _claim_order_conn_key(conn)
+    if key is None:
+        return conn.execute(sql).fetchall()
+    data_version = _claim_order_data_version(key)
+    if data_version is None:
+        return conn.execute(sql).fetchall()
+    # The SQL text is part of the identity: the topdown flag / active gate
+    # manifest select different ORDER BY text, and a reused list must match the
+    # exact selector in force now.  The thread ident keeps the stored
+    # data_version comparable only against the same-thread poller that built it.
+    cache_key = (key, threading.get_ident(), sql)
+    now_mono = monotonic()
+    entry = _CLAIM_ORDER_CACHE.get(cache_key)
+    if (
+        entry is not None
+        and entry.data_version == data_version
+        and now_mono < entry.expiry_monotonic
+    ):
+        return entry.rows
+    # data_version is read BEFORE the build: a later HIT requires the token to
+    # still equal this value, i.e. no commit occurred across the whole interval,
+    # so the rows built here reflect that same unchanged state.  A commit racing
+    # the build only bumps the live token, forcing a rebuild on the next call --
+    # never a stale hit.
+    rows = conn.execute(sql).fetchall()
+    try:
+        budget_s = ttl_ms / 1000.0
+        flip_s = _seconds_to_earliest_age_flip(rows, float(wall_clock()))
+        if flip_s is not None and flip_s < budget_s:
+            budget_s = flip_s
+        _CLAIM_ORDER_CACHE[cache_key] = _ClaimOrderCacheEntry(
+            data_version, now_mono + budget_s, rows
+        )
+    except Exception:
+        _CLAIM_ORDER_CACHE.pop(cache_key, None)
+    return rows
 
 
 def recovery_claim_allowed(conn: sqlite3.Connection) -> bool:
