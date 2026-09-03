@@ -321,3 +321,10 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   and marked priority_track. Next: COMPILE_OK → build gate → new-identity Q02 → chain_step.py → sibling wave 4.
   Census state: 12710 14/1,085 (1 active), 11910 boosted (6 frontier cells) but not yet claimed, 21507 543/1,085;
   the fleet recovered to 10 active claims at 24 GB free after the 13:30Z–14:30Z RAM latch.
+- 15:15Z–15:22Z: root cause of the census crawl found — not the latch alone: with 17 GB free every census
+  cell failed the per-item RAM check (17.2 − 4 GB reservation < 14 GB floor) and non-latched workers logged
+  `no_pending_claimable`. Infra repair `49e7b029f4` (standing authorization, reversible): census cells keep
+  8 GB after their reservation (claimable from 12 GB free); backtests keep 14/20, compiles the 3 GB bypass;
+  97 worker tests green. Reload chunk 18 (idle workers first) started 15:20Z. T7 held a census cell
+  (20266 program, `c25808a8`) for 107 min with a 0.3 GB tester and no run log — stuck launch; worker + tester
+  restarted 15:19Z (the cell re-enters via the driver's INFRA rerun).
