@@ -184,3 +184,5 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   router task `1258a0c5` (IN_PROGRESS, Opus lane; launch paced behind the running revision workflows).
 - 05:05Z–05:17Z: 11910 Q04 `cdf56ffe` PASS, 12710 Q04 `c2297ba2` PASS, 10700 Q03 `f625c325` PASS → next
   steps enqueued (`chain_step2.py`): 11910 Q05 `063eec00`, 12710 Q05 `84125a3a`, 10700 Q04 `4d8e9c24`.
+- 05:24Z: 12710 Q05 `84125a3a` PASS → Q06 `9da6362d` enqueued. 11910 Q05 `063eec00` (T1) and 10700 Q04
+  `4d8e9c24` (T6) running.
