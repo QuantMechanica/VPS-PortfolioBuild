@@ -2107,6 +2107,118 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
         self.assertEqual(result["authenticated_cell_count"], 40)
         self.assertEqual(result["helper_abortions"][0]["terminal"], "T2")
 
+    def test_required_factory_timeout_min_documents_expansion_budgets(self) -> None:
+        # The over-provisioned budgets proposal B tightens: 11080 min for the
+        # contract-v3 7x4 expansion child (29 cells x 2 windows) and 22860 min
+        # for the legacy 40-cell v2 reference pilot (40 cells x 3 windows), both
+        # at the 3h (10800s) autopilot per-cell budget.
+        self.assertEqual(
+            runner.required_factory_timeout_min(
+                29, cell_timeout_sec=10800, window_count=2
+            ),
+            11080,
+        )
+        self.assertEqual(
+            runner.required_factory_timeout_min(
+                40, cell_timeout_sec=10800, window_count=3
+            ),
+            22860,
+        )
+
+    def test_bounded_expansion_timeout_min_caps_only_7x4(self) -> None:
+        self.assertEqual(
+            runner.bounded_expansion_timeout_min(11080, "7x4"),
+            runner.EXPANDED_NEWS_CHILD_TIMEOUT_MIN,
+        )
+        # Bounded budget stays above the observed 13.2h (792 min) child
+        # execution max, with margin.
+        self.assertGreater(runner.EXPANDED_NEWS_CHILD_TIMEOUT_MIN, 792)
+        # 8-cell parent scope and any other scope pass through unchanged.
+        self.assertEqual(
+            runner.bounded_expansion_timeout_min(3100, "7x1_target_compliance"),
+            3100,
+        )
+        # The cap never inflates a computed budget already below it.
+        self.assertEqual(runner.bounded_expansion_timeout_min(500, "7x4"), 500)
+
+    def test_bind_bounds_minted_expansion_child_timeout_budget(self) -> None:
+        plan = self.build(
+            output="expansion-child",
+            news=True,
+            contract_version=contract.SCHEMA_VERSION_V3,
+        )
+        self.assertEqual(plan["matrix_scope"], "7x4")
+        self.assertEqual(plan["cell_count"], 29)
+        farm_root, plan_hash = self.setup_bound_farm(
+            plan, activate=False, bind=False
+        )
+        # A promoted expansion child inherits the parent 8-cell timeout_min;
+        # the bound must win over that inherited value, not max() with it.
+        with closing(farmctl.connect(farm_root)) as connection:
+            payload = json.loads(
+                connection.execute(
+                    "SELECT payload_json FROM work_items WHERE id='q09-news-1'"
+                ).fetchone()[0]
+            )
+            payload["timeout_min"] = 5000
+            connection.execute(
+                "UPDATE work_items SET payload_json=? WHERE id='q09-news-1'",
+                (json.dumps(payload, sort_keys=True),),
+            )
+            connection.commit()
+        binding = runner.bind_plan_to_work_item(
+            farm_root,
+            work_item_id="q09-news-1",
+            plan_path=Path(plan["plan_path"]),
+            expected_plan_file_sha256=plan_hash,
+            cell_timeout_sec=10800,  # production autopilot per-cell 3h budget
+        )
+        self.assertEqual(
+            binding["timeout_min"], runner.EXPANDED_NEWS_CHILD_TIMEOUT_MIN
+        )
+        # The per-cell 3h budget is untouched by the outer-budget bound.
+        self.assertEqual(binding["cell_timeout_sec"], 10800)
+        with closing(farmctl.connect(farm_root)) as connection:
+            bound_payload = json.loads(
+                connection.execute(
+                    "SELECT payload_json FROM work_items WHERE id='q09-news-1'"
+                ).fetchone()[0]
+            )
+        self.assertEqual(
+            bound_payload["timeout_min"], runner.EXPANDED_NEWS_CHILD_TIMEOUT_MIN
+        )
+        self.assertEqual(bound_payload["q09_cell_timeout_sec"], 10800)
+
+    def test_bind_keeps_nonexpansion_news_row_timeout_budget(self) -> None:
+        plan = self.build(
+            output="nonexpansion-parent",
+            contract_version=contract.SCHEMA_VERSION_V3,
+        )
+        self.assertEqual(plan["matrix_scope"], "7x1_target_compliance")
+        self.assertEqual(plan["cell_count"], 8)
+        farm_root, plan_hash = self.setup_bound_farm(
+            plan, activate=False, bind=False
+        )
+        binding = runner.bind_plan_to_work_item(
+            farm_root,
+            work_item_id="q09-news-1",
+            plan_path=Path(plan["plan_path"]),
+            expected_plan_file_sha256=plan_hash,
+            cell_timeout_sec=10800,
+        )
+        expected = runner.required_factory_timeout_min(
+            8, cell_timeout_sec=10800, window_count=2
+        )
+        self.assertEqual(binding["timeout_min"], expected)
+        self.assertGreater(expected, runner.EXPANDED_NEWS_CHILD_TIMEOUT_MIN)
+        with closing(farmctl.connect(farm_root)) as connection:
+            bound_payload = json.loads(
+                connection.execute(
+                    "SELECT payload_json FROM work_items WHERE id='q09-news-1'"
+                ).fetchone()[0]
+            )
+        self.assertEqual(bound_payload["timeout_min"], expected)
+
 
 if __name__ == "__main__":
     unittest.main()

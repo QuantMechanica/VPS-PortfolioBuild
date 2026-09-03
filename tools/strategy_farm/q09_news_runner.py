@@ -178,6 +178,22 @@ Q09_TRANSIENT_REASON_CLASSES = frozenset(
     }
 )
 WINDOW_NAMES = ("selection", "holdout", "full")
+# 2026-09-03, docs/ops/evidence/2026-09-03_newsgate_expansion_forensics.md
+# section 4 proposal B (GRUEN, reaper timing only).  A 7x4 news-matrix
+# expansion child is a fresh work item that re-runs the whole compliance
+# matrix (29 cells x 2 windows under contract v3), so
+# required_factory_timeout_min() budgets its serial run at 11080 min == 7.7
+# days (the legacy 40-cell v2 reference pilot reaches 22860 min).  The
+# measured child execution max is 13.2h (median 5.3h); the per-cell average
+# is ~11 min, so the 3h per-cell budget is never the binding constraint.  An
+# over-provisioned outer budget lets a hung or silently-aborted child hold one
+# of the cap-2 news-expansion slots for days, so bind_plan_to_work_item()
+# bounds the expansion child outer (reaper) budget to this fixed value --
+# above the observed max plus margin.  Reaper timing only: the per-cell
+# timeout_sec and every verdict decision are unchanged, and 8-cell parents
+# (matrix_scope 7x1_target_compliance) keep the unbounded workload budget.
+EXPANDED_NEWS_MATRIX_SCOPE = "7x4"
+EXPANDED_NEWS_CHILD_TIMEOUT_MIN = 900
 FACTORY_DB_RELATIVE_PATH = Path("state") / "farm_state.sqlite"
 FACTORY_MT5_ROOT = Path(r"D:\QM\mt5")
 
@@ -891,6 +907,22 @@ def required_factory_timeout_min(
     return math.ceil(total_seconds / 60) + 60
 
 
+def bounded_expansion_timeout_min(timeout_min: int, matrix_scope: str) -> int:
+    """Bound a 7x4 news-expansion child outer budget; other scopes pass through.
+
+    See ``EXPANDED_NEWS_CHILD_TIMEOUT_MIN`` and
+    docs/ops/evidence/2026-09-03_newsgate_expansion_forensics.md section 4
+    proposal B.  Only the 7x4 expansion matrix is capped; the 8-cell parent
+    scope (``7x1_target_compliance``) and any other scope keep the computed
+    budget.  The cap only ever lowers the budget -- a computed value already
+    below the cap is returned unchanged.
+    """
+
+    if str(matrix_scope or "") == EXPANDED_NEWS_MATRIX_SCOPE:
+        return min(int(timeout_min), EXPANDED_NEWS_CHILD_TIMEOUT_MIN)
+    return int(timeout_min)
+
+
 def _dispatch_binding_material(payload: Mapping[str, Any]) -> dict[str, Any]:
     fields = (
         "q09_run_plan_path",
@@ -1122,6 +1154,9 @@ def bind_plan_to_work_item(
         cell_timeout_sec=timeout_sec,
         window_count=int(plan.get("window_count") or len(WINDOW_NAMES)),
     )
+    plan_matrix_scope = str(plan.get("matrix_scope") or "")
+    expanded_news_child = plan_matrix_scope == EXPANDED_NEWS_MATRIX_SCOPE
+    timeout_min = bounded_expansion_timeout_min(timeout_min, plan_matrix_scope)
     database = _farm_db_path(farm_root)
     if not database.is_file():
         raise RunnerError(f"strategy-farm database missing: {database}")
@@ -1272,7 +1307,14 @@ def bind_plan_to_work_item(
         }
         payload.update(binding_updates)
         payload["q09_dispatch_binding_sha256"] = _dispatch_binding_sha256(payload)
-        payload["timeout_min"] = max(int(payload.get("timeout_min") or 0), timeout_min)
+        if expanded_news_child:
+            # A promoted expansion child inherits the parent 8-cell row larger
+            # timeout_min (BASKET_CONTEXT_PAYLOAD_KEYS carries it), so a max()
+            # here would re-inflate the bound; the bounded expansion budget
+            # replaces it outright.  See EXPANDED_NEWS_CHILD_TIMEOUT_MIN.
+            payload["timeout_min"] = timeout_min
+        else:
+            payload["timeout_min"] = max(int(payload.get("timeout_min") or 0), timeout_min)
         bound_at = datetime.now(timezone.utc).isoformat()
         payload["q09_plan_bound_at"] = bound_at
         active_hold = connection.execute(
