@@ -421,3 +421,12 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
 - 17:50Z: Q08 durable-stream verify/record + backfill CLI and the Q08 re-emission packet merged (`27625045c0`,
   Opus wf_82fd54d3-a9c resumed after the disk incident; both verdicts ok). Worktrees of finished workflows removed
   (passes 3/4); C: ~80 GB free.
+- 18:05Z–18:15Z: T8 census cell `4c8d2ef4` (12710 program) stuck 85 min (tester 0.26 GB, 52 s CPU, no run log after
+  tester.ini) → worker + tester + terminal killed, worker respawned via start_terminal_workers (guardian alive), cell
+  back to pending. Merged after verified verdicts: drain window `0000407c2e` (+ index-tick audit: the 44 GB class rests
+  on one SP500 measurement; host free RAM never exceeded 42.8 GB in 24 h; by design the window arms for 32 GB baskets
+  but not for 44 GB index rows — follow-up floor commissioned wf_ac0211ba-fee), CIM-scan hardening `d5ec4ade50`,
+  --force-expanded-news-matrix `73e28c2bd2`, .gitattributes -text pins `f52e88129a` (canonical checkout verified LF,
+  authenticate_amendment OK; the 93 spurious test failures were worktree-only). Genuine regression found:
+  ftmo_book3_standalone_evaluator EXPECTED_OFFICIAL_SOURCE_IDS out of sync with rulepack V2 since 0abbc24b02 (fix
+  commissioned, same workflow). Reload chunk 20 7/10 (T1/T9/T4 busy), chunk 21 (drain window) queued behind it.
