@@ -840,9 +840,8 @@ def test_lineage_rerun_precedes_sibling_seed_and_priority_census(
         # marker present but as text, neither true nor 1
         ("rerun-marker-is-text", "Q07",
          {"append_only_rerun": "true", "priority_track": True}),
-        # outside the OWNER-enumerated Q03..Q09 span
-        ("q02-rerun", "Q02",
-         {"append_only_rerun": True, "priority_track": True}),
+        # outside the OWNER-enumerated Q02..Q09 span (Q02 joined 2026-09-03
+        # 03:45Z for governed-recompile new-identity chains)
         # (a NEWS-phase row cannot be used here: the selector's WHERE clause
         # excludes it until bind-q09-plan has written the dispatch binding)
         ("q11-rerun", "Q11",

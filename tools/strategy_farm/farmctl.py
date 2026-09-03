@@ -1401,7 +1401,12 @@ DL089_Q02_PREREQUISITE_SCHEMA = "qm.dl089-measurement-q02-prerequisite/v1"
 # literal too: deriving it from the phase manifest would silently widen or
 # narrow an OWNER decision the next time a phase is inserted into that span.
 LINEAGE_RERUN_PRIORITY_PHASES: tuple[str, ...] = (
-    "Q03", "Q04", "Q05", "Q06", "Q07", "Q08", "Q09",
+    # "Q02" added 2026-09-03 03:45Z (CEO, same OWNER decision, chat 02:08Z
+    # "vor allem die Recompiles ... dementsprechend priorisieren"): the fresh
+    # Q02 of a governed-recompile NEW identity is an append-only, priority-
+    # tracked lineage rerun too (11910 sat at claim position 1,333 behind the
+    # priority-tracked census cells otherwise).
+    "Q02", "Q03", "Q04", "Q05", "Q06", "Q07", "Q08", "Q09",
 )
 CLAIM_CLASS_LEDGER_DDL = (
     "CREATE TABLE IF NOT EXISTS claim_class_ledger ("
