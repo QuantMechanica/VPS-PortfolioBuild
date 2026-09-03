@@ -96,3 +96,26 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   20266, 10145, 10513, 20048 (enters), …
 - Open verifier notes (non-blocking): `list` mode of the slot tool models slot ownership
   without the service's deferral/no-sibling filters; its unit tests use a trigger-less schema.
+- 02:49Z–03:10Z (batch 1, second wave): the first compiles PASSED the compiler but FAILED the
+  current build gate (`build_gate_hardening.py`): `EA_Q08_MAE_HOOK_MISSING` (all three — an
+  explicit `QM_FrameworkTrackOpenPositionMae();` as the first OnTick statement is now mandatory,
+  the kill-switch fallback no longer counts) and `EA_TRADE_REQUEST_UNINITIALIZED` (11910 only,
+  bare `QM_EntryRequest req` → `ZeroMemory(req)`). 12710's first row was refused at the compile-
+  time recheck (`CANDIDATE_RECHECK_REFUSED`, `force_rebuild_authorized=false`) because that
+  worker still held the pre-allowlist `compile_work_items` module in memory — resident workers
+  import it once; the staggered all-terminal reload (started 03:06Z, one worker per ~150 s)
+  refreshes the module and also activates Amendment B. Corset repairs (7 insertions, 0 deletions,
+  gate PASS for all three) implemented by an Opus agent in a worktree, adversarially verified,
+  merged as `5afa209e41`. `--repair-successor-of` was not usable (requires a build-task binding:
+  `BUILD_TASK_BINDING_NOT_REQUESTED`), so fresh force-rebuild rows were enqueued: 57101a83
+  (11910), dfb92b8a (10700), 47cd9a37 (12710); holds released with backup reuse disabled
+  (`--backup-reuse-max-age-minutes 0`, see 03:05Z note), priority_track set.
+- 03:05Z: backup-reuse identity (615608abd0, live for `release_compile_wave`) proven FAIL-OPEN by
+  the adversarial verifier of task 4ce6ec32 (WAL overwritten in place after checkpoint restarts →
+  row-count-neutral UPDATEs invisible). Mitigation: machine env
+  `QM_COMPILE_WAVE_BACKUP_REUSE_MAX_AGE_MINUTES=0` (fresh backups); the shared-module refactor is
+  in a revision stage (WAL header salts/frame count + max(updated_at)/events rowid), not merged.
+- 03:15Z: sibling chains held — the pump cascade (regular Q03 promotion + `pump_q04_early_probe`)
+  mints Q03/Q04 rows for DL-089 measurement siblings although their cards state 'No live or
+  pipeline verdict is authorized'; 17 pending rows (41301–41307, 41321–41324) parked under
+  `SIBLING_MEASUREMENT_ONLY_CHAIN_HOLD`; cascade filter commissioned (Opus, `wb9k5vses`).
