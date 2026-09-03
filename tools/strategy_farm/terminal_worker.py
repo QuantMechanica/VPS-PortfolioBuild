@@ -6230,7 +6230,26 @@ def _dl089_declared_lane(
             ledger.get("driver", {}).get("final_fullwindow", {}).get("runs") or []
         )
     else:
-        cells = [dict(cell) for cell in ledger.get("cells") or []]
+        # 2026-09-03 (CEO): the annual CENSUS stage must see the driver's
+        # append-only INFRA reruns exactly like the derived stages below do -
+        # driver['reruns'] maps cell_key -> [rerun ids]; the newest rerun is
+        # the cell's current row.  Without this the rerun row (new UUID) was
+        # refused as candidate_not_arm_frontier / dl089_candidate_absent_from_ledger
+        # and a program could never finish its last cell (DL089_QM5_1537).
+        census_reruns = ledger.get("driver", {}).get("reruns", {}) or {}
+        cells = []
+        for raw_cell in ledger.get("cells") or []:
+            cell = dict(raw_cell)
+            rerun_ids = [
+                str(value)
+                for value in census_reruns.get(str(cell.get("cell_key") or ""), [])
+                if str(value)
+            ]
+            if rerun_ids:
+                cell["work_item_id"] = rerun_ids[-1]
+            cells.append(cell)
+        if census_reruns:
+            return cells, {**dict(ledger), "cells": cells}
         return cells, dict(ledger)
 
     program = str(ledger.get("program_id") or "").strip()

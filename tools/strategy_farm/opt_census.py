@@ -735,6 +735,25 @@ def boost(
         # window stays bounded so reverting to interleave is one call).
         raise CensusError(f"boost window out of range 1..64: {window}")
     ledger = json.loads(ledger_path.read_text(encoding="utf-8"))
+    # 2026-09-03 (CEO): resolve each declared cell to its current row through
+    # the driver's append-only INFRA rerun map (cell_key -> [rerun ids]); the
+    # newest rerun carries the cell.  Same rule as terminal_worker's declared
+    # lane, so boost, frontier authentication and the claim gate agree.  With
+    # no reruns the ledger is used verbatim (unchanged behaviour).
+    census_reruns = ledger.get("driver", {}).get("reruns", {}) or {}
+    if census_reruns:
+        resolved_cells = []
+        for raw_cell in ledger.get("cells", []):
+            cell = dict(raw_cell)
+            rerun_ids = [
+                str(value)
+                for value in census_reruns.get(str(cell.get("cell_key") or ""), [])
+                if str(value)
+            ]
+            if rerun_ids:
+                cell["work_item_id"] = rerun_ids[-1]
+            resolved_cells.append(cell)
+        ledger = {**ledger, "cells": resolved_cells}
     ids = [cell["work_item_id"] for cell in ledger.get("cells", [])]
     if not ids:
         raise CensusError("ledger has no cells")

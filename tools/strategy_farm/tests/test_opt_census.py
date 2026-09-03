@@ -329,3 +329,61 @@ def test_cell_report_still_parses_native_report_when_trades_exist(
     assert result["entry_trading_days"] == 2
     assert result["return_to_maxdd"] == 2.0
     assert result["report_reconciled"] is True
+
+
+def test_boost_resolves_declared_cells_through_driver_reruns(tmp_path: Path) -> None:
+    """2026-09-03: a declared cell that the driver re-enqueued (append-only
+    INFRA rerun, new UUID) must be boosted on its rerun row, not on the dead
+    declared row - otherwise a program never finishes its last cell."""
+    db = tmp_path / "farm.sqlite"
+    with sqlite3.connect(db) as conn:
+        conn.execute(
+            "CREATE TABLE work_items(id TEXT PRIMARY KEY, status TEXT, verdict TEXT, "
+            "claimed_by TEXT, setfile_path TEXT, payload_json TEXT, updated_at TEXT)"
+        )
+        rows = [
+            ("dead-2021", "done", "INFRA_FAIL", None, "a.set", json.dumps({"cell_key": "P:2021:buy_001"}), "t"),
+            ("rerun-2021", "pending", None, None, "a.set", json.dumps({"cell_key": "P:2021:buy_001", "append_only_rerun_of": "dead-2021"}), "t"),
+            ("cell-2022", "done", "MEASURED", None, "a.set", json.dumps({"cell_key": "P:2022:buy_001"}), "t"),
+        ]
+        conn.executemany("INSERT INTO work_items VALUES(?,?,?,?,?,?,?)", rows)
+        conn.commit()
+    ledger = {
+        "program_id": "P",
+        "cells": [
+            {"cell_key": "P:2021:buy_001", "work_item_id": "dead-2021", "arm": "buy_001", "year": 2021},
+            {"cell_key": "P:2022:buy_001", "work_item_id": "cell-2022", "arm": "buy_001", "year": 2022},
+        ],
+        "driver": {"reruns": {"P:2021:buy_001": ["rerun-2021"]}},
+    }
+    ledger_path = tmp_path / "ledger.json"
+    ledger_path.write_text(json.dumps(ledger), encoding="utf-8")
+    result = subject.boost(ledger_path=ledger_path, db_path=db, window=4)
+    with sqlite3.connect(db) as conn:
+        flagged = {
+            row[0]: json.loads(row[1]).get("priority_track")
+            for row in conn.execute("SELECT id,payload_json FROM work_items")
+        }
+    assert flagged["rerun-2021"] is True
+    assert flagged["dead-2021"] is None
+    assert result["done"] == 1
+
+
+def test_boost_without_driver_reruns_is_unchanged(tmp_path: Path) -> None:
+    db = tmp_path / "farm.sqlite"
+    with sqlite3.connect(db) as conn:
+        conn.execute(
+            "CREATE TABLE work_items(id TEXT PRIMARY KEY, status TEXT, verdict TEXT, "
+            "claimed_by TEXT, setfile_path TEXT, payload_json TEXT, updated_at TEXT)"
+        )
+        conn.execute(
+            "INSERT INTO work_items VALUES(?,?,?,?,?,?,?)",
+            ("cell-2021", "pending", None, None, "a.set", json.dumps({"cell_key": "P:2021:buy_001"}), "t"),
+        )
+        conn.commit()
+    ledger = {"program_id": "P", "cells": [{"cell_key": "P:2021:buy_001", "work_item_id": "cell-2021", "arm": "buy_001", "year": 2021}], "driver": {}}
+    ledger_path = tmp_path / "ledger.json"
+    ledger_path.write_text(json.dumps(ledger), encoding="utf-8")
+    subject.boost(ledger_path=ledger_path, db_path=db, window=4)
+    with sqlite3.connect(db) as conn:
+        assert json.loads(conn.execute("SELECT payload_json FROM work_items WHERE id='cell-2021'").fetchone()[0]).get("priority_track") is True
