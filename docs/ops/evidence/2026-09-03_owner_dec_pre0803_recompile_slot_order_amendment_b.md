@@ -263,3 +263,6 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   Q10_NEWS zombie `77bd97c2` re-armed under Q09_AWAITING_SEALED_PLAN (superseded=1) for the news-gate
   replacement parent. The census claim pause 09:58Z–10:09Z was the worker RAM guard (free RAM ~6 GB with two
   11 GB testers), not a stall.
+- 10:20Z–10:28Z: the news-gate service minted 10700's replacement Q10_NEWS parent `fe33550e` (RUNNABLE_BOUND,
+  priority_track, supersedes 77bd97c2 which is now done/SUPERSEDED); claimable as soon as a news slot frees
+  (3 of 4 news slots busy: 11910 + 12710 expansions, 11403 standard).
