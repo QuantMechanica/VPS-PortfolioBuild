@@ -497,3 +497,10 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   fx_major|H4|backtest n=5 max 15.3 GB → the measured reservation applies from here (max(flat, measured)); other
   heavy classes self-calibrate after three samples. Mechanism: reservations decay faster than tester working sets
   ramp (history load takes minutes), so a burst of admissions overcommits — the ledger closes this per class.
+- 22:38Z: loop round — fabric at its best of the day (31 cells/10 min, 9 active, 21.7 GB free, C: 88 GB, pump 22:38Z,
+  guardian alive, T_Live journal 22:01Z); reload chunk 21 done 9/10 (T4 holds the 10700 expansion), chunk 22 started
+  22:36Z. Census 21507 574/1085, 11910 274, 12710 140. 12580 Q03 `9cac4667`, 10911 Q05 `57aad04d`, 10815 Q02
+  `bd12175c` pending (heavy classes). Finding: the winnability rule's hard 'no long-run active' block would keep
+  drains from ever arming on a fleet that always runs news/Q07 rows although 32 GB baskets are arithmetically
+  winnable beside them → small refinement commissioned (wf_ee80ee12-00f: count long-run RAM as non-releasable,
+  abandon only on NEW long runs).
