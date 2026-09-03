@@ -251,3 +251,7 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
 - 08:50Z–08:55Z: 12710's expanded Q10_NEWS parent `58d84268` claimed by T8 (the expanded subcap of 2 is not
   binding today: the only other expanded parent, 11422/USDCAD, is held). Reload chunk 13 finished (9/10; T9
   follows via chunk 14 once its 20085 recovery run ends ~10:30Z).
+- 08:57Z–09:08Z: 11910 Q10_NEWS `bdae4b44` (8 cells, 35 min on T1) ended REVIEW_REQUIRED /
+  `expanded_7x4_matrix_required` (material_effect: Δnet R, ΔPF, sign-or-gate flips 5 of 5 → strong news
+  sensitivity); the expansion parent `f7264187` was minted 08:58Z (priority_track). Both recompile chains that
+  reached the news gate therefore need the 105-cell expansion; 12710's (`58d84268`) is running on T8.
