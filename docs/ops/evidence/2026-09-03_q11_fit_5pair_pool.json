@@ -1,0 +1,668 @@
+{
+  "application_authority": "OWNER_ONLY",
+  "as_of": "2026-09-03",
+  "autotrading_action": "NONE",
+  "cap_checks": {
+    "book_size": {
+      "band": [
+        10,
+        15
+      ],
+      "band_source": "docs/ops/BOOK_CEREMONY_RUNBOOK_2026-09.md lines 202-203 (Vault Q15 hard caps)",
+      "n_eas": 5,
+      "status": "BELOW_BAND"
+    },
+    "correlation": {
+      "breaches": [],
+      "cap": 0.5,
+      "cap_source": "docs/ops/BOOK_CEREMONY_RUNBOOK_2026-09.md lines 213-214 (Vault Q15 hard rule)",
+      "comparator": "|r| < 0.5",
+      "pairs_evaluable": 0,
+      "pairs_not_evaluable": 10,
+      "pairs_total": 10,
+      "status": "NOT_ASSERTABLE"
+    },
+    "family": {
+      "cap": 3,
+      "cap_source": "docs/ops/BOOK_CEREMONY_RUNBOOK_2026-09.md lines 202-203 (Vault Q15 hard caps)",
+      "dimension": "family",
+      "distinct_groups": 5,
+      "rows": [
+        {
+          "cap": 3,
+          "count": 1,
+          "group": "aa",
+          "members": [
+            "1537:XAGUSD.DWX"
+          ],
+          "status": "PASS"
+        },
+        {
+          "cap": 3,
+          "count": 1,
+          "group": "brent",
+          "members": [
+            "13054:XTIUSD.DWX"
+          ],
+          "status": "PASS"
+        },
+        {
+          "cap": 3,
+          "count": 1,
+          "group": "ohlc",
+          "members": [
+            "11421:EURUSD.DWX"
+          ],
+          "status": "PASS"
+        },
+        {
+          "cap": 3,
+          "count": 1,
+          "group": "tv",
+          "members": [
+            "10706:GBPUSD.DWX"
+          ],
+          "status": "PASS"
+        },
+        {
+          "cap": 3,
+          "count": 1,
+          "group": "williams",
+          "members": [
+            "11422:USDCAD.DWX"
+          ],
+          "status": "PASS"
+        }
+      ],
+      "status": "PASS"
+    },
+    "symbol": {
+      "cap": 2,
+      "cap_source": "docs/ops/BOOK_CEREMONY_RUNBOOK_2026-09.md lines 202-203 (Vault Q15 hard caps)",
+      "dimension": "symbol",
+      "distinct_groups": 5,
+      "rows": [
+        {
+          "cap": 2,
+          "count": 1,
+          "group": "EURUSD.DWX",
+          "members": [
+            "11421:EURUSD.DWX"
+          ],
+          "status": "PASS"
+        },
+        {
+          "cap": 2,
+          "count": 1,
+          "group": "GBPUSD.DWX",
+          "members": [
+            "10706:GBPUSD.DWX"
+          ],
+          "status": "PASS"
+        },
+        {
+          "cap": 2,
+          "count": 1,
+          "group": "USDCAD.DWX",
+          "members": [
+            "11422:USDCAD.DWX"
+          ],
+          "status": "PASS"
+        },
+        {
+          "cap": 2,
+          "count": 1,
+          "group": "XAGUSD.DWX",
+          "members": [
+            "1537:XAGUSD.DWX"
+          ],
+          "status": "PASS"
+        },
+        {
+          "cap": 2,
+          "count": 1,
+          "group": "XTIUSD.DWX",
+          "members": [
+            "13054:XTIUSD.DWX"
+          ],
+          "status": "PASS"
+        }
+      ],
+      "status": "PASS"
+    }
+  },
+  "correlation": {
+    "dates_end": "2025-12-30",
+    "dates_start": "2017-10-10",
+    "evaluable_pairs": [],
+    "key_tuples": [
+      [
+        1537,
+        "XAGUSD.DWX"
+      ],
+      [
+        10706,
+        "GBPUSD.DWX"
+      ],
+      [
+        11421,
+        "EURUSD.DWX"
+      ],
+      [
+        11422,
+        "USDCAD.DWX"
+      ],
+      [
+        13054,
+        "XTIUSD.DWX"
+      ]
+    ],
+    "keys": [
+      "1537:XAGUSD.DWX",
+      "10706:GBPUSD.DWX",
+      "11421:EURUSD.DWX",
+      "11422:USDCAD.DWX",
+      "13054:XTIUSD.DWX"
+    ],
+    "matrix": [
+      [
+        1.0,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        1.0,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        1.0,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        1.0,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        1.0
+      ]
+    ],
+    "min_overlap_days": 60,
+    "n_union_days": 656,
+    "not_evaluable_pairs": [
+      {
+        "overlap_days": 4,
+        "pair": [
+          "1537:XAGUSD.DWX",
+          "10706:GBPUSD.DWX"
+        ]
+      },
+      {
+        "overlap_days": 2,
+        "pair": [
+          "1537:XAGUSD.DWX",
+          "11421:EURUSD.DWX"
+        ]
+      },
+      {
+        "overlap_days": 5,
+        "pair": [
+          "1537:XAGUSD.DWX",
+          "11422:USDCAD.DWX"
+        ]
+      },
+      {
+        "overlap_days": 1,
+        "pair": [
+          "1537:XAGUSD.DWX",
+          "13054:XTIUSD.DWX"
+        ]
+      },
+      {
+        "overlap_days": 12,
+        "pair": [
+          "10706:GBPUSD.DWX",
+          "11421:EURUSD.DWX"
+        ]
+      },
+      {
+        "overlap_days": 27,
+        "pair": [
+          "10706:GBPUSD.DWX",
+          "11422:USDCAD.DWX"
+        ]
+      },
+      {
+        "overlap_days": 8,
+        "pair": [
+          "10706:GBPUSD.DWX",
+          "13054:XTIUSD.DWX"
+        ]
+      },
+      {
+        "overlap_days": 26,
+        "pair": [
+          "11421:EURUSD.DWX",
+          "11422:USDCAD.DWX"
+        ]
+      },
+      {
+        "overlap_days": 11,
+        "pair": [
+          "11421:EURUSD.DWX",
+          "13054:XTIUSD.DWX"
+        ]
+      },
+      {
+        "overlap_days": 22,
+        "pair": [
+          "11422:USDCAD.DWX",
+          "13054:XTIUSD.DWX"
+        ]
+      }
+    ],
+    "overlap_days_matrix": [
+      [
+        22,
+        4,
+        2,
+        5,
+        1
+      ],
+      [
+        4,
+        366,
+        12,
+        27,
+        8
+      ],
+      [
+        2,
+        12,
+        92,
+        26,
+        11
+      ],
+      [
+        5,
+        27,
+        26,
+        197,
+        22
+      ],
+      [
+        1,
+        8,
+        11,
+        22,
+        83
+      ]
+    ]
+  },
+  "coverage": {
+    "asset_class_coverage": {
+      "distinct_asset_classes": 3,
+      "rows": [
+        {
+          "asset_class": "energy",
+          "count": 1,
+          "members": [
+            "13054:XTIUSD.DWX"
+          ]
+        },
+        {
+          "asset_class": "fx",
+          "count": 3,
+          "members": [
+            "10706:GBPUSD.DWX",
+            "11421:EURUSD.DWX",
+            "11422:USDCAD.DWX"
+          ]
+        },
+        {
+          "asset_class": "metals",
+          "count": 1,
+          "members": [
+            "1537:XAGUSD.DWX"
+          ]
+        }
+      ]
+    },
+    "family_cap": {
+      "cap": 3,
+      "cap_source": "docs/ops/BOOK_CEREMONY_RUNBOOK_2026-09.md lines 202-203 (Vault Q15 hard caps)",
+      "dimension": "family",
+      "distinct_groups": 5,
+      "rows": [
+        {
+          "cap": 3,
+          "count": 1,
+          "group": "aa",
+          "members": [
+            "1537:XAGUSD.DWX"
+          ],
+          "status": "PASS"
+        },
+        {
+          "cap": 3,
+          "count": 1,
+          "group": "brent",
+          "members": [
+            "13054:XTIUSD.DWX"
+          ],
+          "status": "PASS"
+        },
+        {
+          "cap": 3,
+          "count": 1,
+          "group": "ohlc",
+          "members": [
+            "11421:EURUSD.DWX"
+          ],
+          "status": "PASS"
+        },
+        {
+          "cap": 3,
+          "count": 1,
+          "group": "tv",
+          "members": [
+            "10706:GBPUSD.DWX"
+          ],
+          "status": "PASS"
+        },
+        {
+          "cap": 3,
+          "count": 1,
+          "group": "williams",
+          "members": [
+            "11422:USDCAD.DWX"
+          ],
+          "status": "PASS"
+        }
+      ],
+      "status": "PASS"
+    },
+    "symbol_cap": {
+      "cap": 2,
+      "cap_source": "docs/ops/BOOK_CEREMONY_RUNBOOK_2026-09.md lines 202-203 (Vault Q15 hard caps)",
+      "dimension": "symbol",
+      "distinct_groups": 5,
+      "rows": [
+        {
+          "cap": 2,
+          "count": 1,
+          "group": "EURUSD.DWX",
+          "members": [
+            "11421:EURUSD.DWX"
+          ],
+          "status": "PASS"
+        },
+        {
+          "cap": 2,
+          "count": 1,
+          "group": "GBPUSD.DWX",
+          "members": [
+            "10706:GBPUSD.DWX"
+          ],
+          "status": "PASS"
+        },
+        {
+          "cap": 2,
+          "count": 1,
+          "group": "USDCAD.DWX",
+          "members": [
+            "11422:USDCAD.DWX"
+          ],
+          "status": "PASS"
+        },
+        {
+          "cap": 2,
+          "count": 1,
+          "group": "XAGUSD.DWX",
+          "members": [
+            "1537:XAGUSD.DWX"
+          ],
+          "status": "PASS"
+        },
+        {
+          "cap": 2,
+          "count": 1,
+          "group": "XTIUSD.DWX",
+          "members": [
+            "13054:XTIUSD.DWX"
+          ],
+          "status": "PASS"
+        }
+      ],
+      "status": "PASS"
+    }
+  },
+  "deployment_action": "NONE",
+  "enb": {
+    "eigenvalues": null,
+    "formula": "ENB = (sum_i lambda_i)^2 / (sum_i lambda_i^2), where lambda_i are the eigenvalues of the N x N Pearson correlation matrix C. Because trace(C) = sum_i lambda_i = N, this equals N^2 / sum_i lambda_i^2, and sum_i lambda_i^2 = ||C||_F^2 = sum_{i,j} C_ij^2 (Frobenius identity). ENB = N when all members are mutually uncorrelated and ENB = 1 when all members are perfectly correlated.",
+    "n_series": 5,
+    "not_evaluable_pairs": [
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        0,
+        3
+      ],
+      [
+        0,
+        4
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        2,
+        4
+      ],
+      [
+        3,
+        4
+      ]
+    ],
+    "reason": "10 of 10 off-diagonal pairs are NOT_EVALUABLE (below the 60-day overlap floor); ENB requires a complete correlation matrix",
+    "reference": "Meucci, A. (2009), 'Managing Diversification', Risk 22(5), 74-79 (diversification distribution / effective number of bets); the closed form used here is the inverse participation ratio (effective rank) of the correlation eigenvalue spectrum.",
+    "status": "NOT_EVALUABLE",
+    "value": null
+  },
+  "generated_at_utc": "2026-09-03T16:04:36+00:00",
+  "inputs": {
+    "commission_basis": "worst_case_dxz_ftmo",
+    "commission_degraded": false,
+    "commission_model": {
+      "default_class": "forex",
+      "degraded": false,
+      "degraded_symbols": [],
+      "registry_path": "C:\\QM\\repo\\.claude\\worktrees\\wf_8c3a9afe-b0f-2\\framework\\registry\\live_commission.json",
+      "unknown_symbols": []
+    },
+    "common_dir": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files",
+    "db_access": "read-only via rebaseline_census.open_ro (mode=ro)",
+    "db_path": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "order_dir": "C:\\QM\\repo\\.claude\\worktrees\\wf_8c3a9afe-b0f-2\\decisions",
+    "stream_source": "portfolio_common.load_streams (Common/Files/QM/q08_trades)"
+  },
+  "marginal_sharpe": {
+    "formula": "Pool daily series P(d) = sum_k x_k(d) over the union of all members' trade days, where x_k(d) is member k's daily net-of-cost P/L (0 on days k did not close a trade) at equal unit weight (no per-sleeve risk weights exist pre-Q15). Sharpe_daily(S) = mean(S) / stdev(S) with sample stdev (ddof=1); non-annualized (the union grid is irregular, so no periods-per-year constant is invented). Marginal Sharpe of member m = Sharpe_daily(P) - Sharpe_daily(P - x_m) on the same fixed union grid (leave-one-out).",
+    "members": [
+      {
+        "key": "1537:XAGUSD.DWX",
+        "leave_one_out_sharpe_daily": 0.07635584,
+        "marginal_sharpe_daily": 0.00177811
+      },
+      {
+        "key": "10706:GBPUSD.DWX",
+        "leave_one_out_sharpe_daily": 0.06282287,
+        "marginal_sharpe_daily": 0.01531108
+      },
+      {
+        "key": "11421:EURUSD.DWX",
+        "leave_one_out_sharpe_daily": 0.07626165,
+        "marginal_sharpe_daily": 0.0018723
+      },
+      {
+        "key": "11422:USDCAD.DWX",
+        "leave_one_out_sharpe_daily": 0.06697843,
+        "marginal_sharpe_daily": 0.01115552
+      },
+      {
+        "key": "13054:XTIUSD.DWX",
+        "leave_one_out_sharpe_daily": 0.0743983,
+        "marginal_sharpe_daily": 0.00373565
+      }
+    ],
+    "n_union_days": 656,
+    "pool_sharpe_daily": 0.07813395,
+    "series_units": "daily net-of-cost P/L (account currency), equal unit weight, RISK_FIXED backtest scale"
+  },
+  "outputs": {
+    "json": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\3\\claude\\C--QM-repo\\bf445003-6640-4617-ac2f-e2e705bd7988\\scratchpad\\q11_fit_2026-09-03.json",
+    "markdown": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\3\\claude\\C--QM-repo\\bf445003-6640-4617-ac2f-e2e705bd7988\\scratchpad\\q11_fit_2026-09-03.md"
+  },
+  "per_series": {
+    "10706:GBPUSD.DWX": {
+      "active_days": 366,
+      "asset_class": "fx",
+      "family": "tv",
+      "first_day": "2017-10-10",
+      "last_day": "2025-12-30",
+      "net_of_cost_total": 61158.090357,
+      "symbol": "GBPUSD.DWX",
+      "trades": 366
+    },
+    "11421:EURUSD.DWX": {
+      "active_days": 92,
+      "asset_class": "fx",
+      "family": "ohlc",
+      "first_day": "2018-05-11",
+      "last_day": "2025-12-11",
+      "net_of_cost_total": 3196.5026875,
+      "symbol": "EURUSD.DWX",
+      "trades": 92
+    },
+    "11422:USDCAD.DWX": {
+      "active_days": 197,
+      "asset_class": "fx",
+      "family": "williams",
+      "first_day": "2018-03-02",
+      "last_day": "2025-12-26",
+      "net_of_cost_total": 16570.3808705,
+      "symbol": "USDCAD.DWX",
+      "trades": 197
+    },
+    "13054:XTIUSD.DWX": {
+      "active_days": 83,
+      "asset_class": "energy",
+      "family": "brent",
+      "first_day": "2018-03-02",
+      "last_day": "2025-12-30",
+      "net_of_cost_total": 4520.55902,
+      "symbol": "XTIUSD.DWX",
+      "trades": 83
+    },
+    "1537:XAGUSD.DWX": {
+      "active_days": 22,
+      "asset_class": "metals",
+      "family": "aa",
+      "first_day": "2024-01-17",
+      "last_day": "2024-12-06",
+      "net_of_cost_total": 2122.01259,
+      "symbol": "XAGUSD.DWX",
+      "trades": 22
+    }
+  },
+  "pool": {
+    "allowed": false,
+    "distinct_eas": 5,
+    "order_artifact": null,
+    "qualified_pairs": 5,
+    "reasons": [
+      "qualified_pairs_below_minimum: 5 < 25",
+      "owner_order_missing: venue=both order_dir=C:\\QM\\repo\\.claude\\worktrees\\wf_8c3a9afe-b0f-2\\decisions"
+    ],
+    "strategy_families": 5,
+    "terminal_requalification_gate": "Q14",
+    "unparseable_ea_ids": [],
+    "venue": "both"
+  },
+  "read_only": true,
+  "schema": "qm.q15_fit_report/v1",
+  "stream_availability": {
+    "streams_empty": [],
+    "streams_missing": [],
+    "streams_present": [
+      "1537:XAGUSD.DWX",
+      "10706:GBPUSD.DWX",
+      "11421:EURUSD.DWX",
+      "11422:USDCAD.DWX",
+      "13054:XTIUSD.DWX"
+    ]
+  },
+  "threshold_provenance": {
+    "book_size_band_eas": {
+      "comparator": "10-15 EAs",
+      "source": "docs/ops/BOOK_CEREMONY_RUNBOOK_2026-09.md lines 202-203 (Vault Q15 hard caps)",
+      "value": [
+        10,
+        15
+      ]
+    },
+    "correlation_cap_abs_r": {
+      "comparator": "|r| < 0.5",
+      "source": "docs/ops/BOOK_CEREMONY_RUNBOOK_2026-09.md lines 213-214 (Vault Q15 hard rule)",
+      "value": 0.5
+    },
+    "family_cap_members": {
+      "comparator": "family <= 3 members",
+      "source": "docs/ops/BOOK_CEREMONY_RUNBOOK_2026-09.md lines 202-203 (Vault Q15 hard caps)",
+      "value": 3
+    },
+    "min_overlap_days": {
+      "source": "portfolio_correlation.py build_artifact default; docs/ops/BOOK_CEREMONY_RUNBOOK_2026-09.md lines 212-214 (Vault Q15 V4)",
+      "value": 60
+    },
+    "symbol_cap_members": {
+      "comparator": "symbol <= 2 members",
+      "source": "docs/ops/BOOK_CEREMONY_RUNBOOK_2026-09.md lines 202-203 (Vault Q15 hard caps)",
+      "value": 2
+    }
+  }
+}
