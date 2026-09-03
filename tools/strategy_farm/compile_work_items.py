@@ -3835,9 +3835,16 @@ def enqueue_repair_successor(
     repo_root: Path,
     predecessor_id: str,
     *,
+    build_task_id: str | None = None,
     apply: bool = False,
 ) -> dict[str, Any]:
-    """Append a held, task-bound successor for a source-repaired compile failure."""
+    """Append a held, task-bound successor for a source-repaired compile failure.
+
+    A predecessor normally carries its immutable build-task binding.  An
+    initial unbound enqueue can still fail closed on a later source hash before
+    a build task exists; in that one case the caller may supply the sole open
+    task explicitly.  Existing bindings are never silently replaced.
+    """
     inventory = _inventory(root, repo_root)
     predecessor = next(
         (row for rows in inventory["work_rows"].values() for row in rows
@@ -3851,7 +3858,12 @@ def enqueue_repair_successor(
     old_sha = str(old_payload.get("mq5_sha256") or "").lower()
     source = repo_root / "framework" / "EAs" / label / f"{label}.mq5"
     new_sha = sha256_file(source) if source.is_file() else None
-    build_task_id = str(old_payload.get("bound_build_task_id") or "")
+    predecessor_build_task_id = str(
+        old_payload.get("bound_build_task_id") or ""
+    ).strip()
+    requested_build_task_id = str(
+        build_task_id or predecessor_build_task_id
+    ).strip()
     if not predecessor:
         reasons.append("PREDECESSOR_NOT_FOUND")
     elif not (
@@ -3868,8 +3880,20 @@ def enqueue_repair_successor(
         reasons.append("CURRENT_SOURCE_MISSING")
     elif new_sha.lower() == old_sha:
         reasons.append("SOURCE_NOT_REPAIRED")
+    if (
+        predecessor_build_task_id
+        and build_task_id
+        and str(build_task_id).strip() != predecessor_build_task_id
+    ):
+        reasons.append("PREDECESSOR_BUILD_TASK_REBIND_FORBIDDEN")
     binding = (
-        _build_task_binding(repo_root, label, parts[1], build_task_id, inventory)
+        _build_task_binding(
+            repo_root,
+            label,
+            parts[1],
+            requested_build_task_id,
+            inventory,
+        )
         if parts else {"authorized": False, "reason": "EA_LABEL_INVALID"}
     )
     if not binding.get("authorized"):
@@ -3885,7 +3909,7 @@ def enqueue_repair_successor(
         "ea_label": label or None,
         "old_mq5_sha256": old_sha or None,
         "current_mq5_sha256": new_sha,
-        "build_task_id": build_task_id or None,
+        "build_task_id": requested_build_task_id or None,
         "build_task_binding": binding,
         "successor_work_item_id": None,
     }
@@ -3913,6 +3937,13 @@ def enqueue_repair_successor(
         "source_repair_predecessor_work_item_ids": [predecessor_id],
         "ignore_stale_ex5_and_bound_setfile": True,
         "enqueued_at": now,
+    })
+    payload.update({
+        "compile_build_task_binding_contract_version": (
+            BUILD_TASK_BINDING_CONTRACT_VERSION
+        ),
+        "bound_build_task_id": requested_build_task_id,
+        "bound_build_task_ea_id": predecessor["ea_id"],
     })
     with _connect(root) as conn:
         conn.execute("BEGIN IMMEDIATE")

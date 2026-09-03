@@ -457,6 +457,69 @@ def test_enqueue_repair_successor_requires_source_delta_and_preserves_predecesso
     assert edge[0] == successor_id
 
 
+def test_enqueue_repair_successor_binds_explicit_task_when_predecessor_unbound(
+    tmp_path: Path,
+) -> None:
+    label = "QM5_1001_compile-fixture-h1"
+    repo, root = _fixture(tmp_path, [label])
+    _insert_build_task(root, repo, label, "build-1")
+    source = repo / "framework" / "EAs" / label / f"{label}.mq5"
+    old_sha = compile_work_items.sha256_file(source)
+    payload = {
+        "compile_contract_version": compile_work_items.COMPILE_CONTRACT_VERSION,
+        "ea_label": label,
+        "mq5_path": str(source),
+        "mq5_sha256": old_sha,
+        "risk_contract": {"RISK_FIXED": 1000.0, "RISK_PERCENT": 0.0},
+        "utility_phase": True,
+        "no_gate_verdict": True,
+    }
+    now = farmctl.utc_now()
+    with farmctl.connect(root) as conn:
+        conn.execute(
+            "INSERT INTO work_items "
+            "(id,kind,phase,ea_id,symbol,setfile_path,status,verdict,"
+            "attempt_count,payload_json,created_at,updated_at) VALUES "
+            "('failed-unbound','compile','COMPILE_EA','QM5_1001','','',"
+            "'failed','COMPILE_FAIL',1,?,?,?)",
+            (json.dumps(payload), now, now),
+        )
+        conn.commit()
+
+    source.write_text(
+        source.read_text(encoding="utf-8") + "// normalized\n",
+        encoding="utf-8",
+    )
+    planned = compile_work_items.enqueue_repair_successor(
+        root,
+        repo,
+        "failed-unbound",
+        build_task_id="build-1",
+    )
+    assert planned["eligible"] is True
+    assert planned["build_task_binding"]["authorized"] is True
+
+    applied = compile_work_items.enqueue_repair_successor(
+        root,
+        repo,
+        "failed-unbound",
+        build_task_id="build-1",
+        apply=True,
+    )
+    assert applied["ok"] is True
+    with farmctl.connect(root) as conn:
+        successor = conn.execute(
+            "SELECT payload_json FROM work_items WHERE id=?",
+            (applied["successor_work_item_id"],),
+        ).fetchone()
+    successor_payload = json.loads(successor["payload_json"])
+    assert successor_payload["bound_build_task_id"] == "build-1"
+    assert successor_payload["bound_build_task_ea_id"] == "QM5_1001"
+    assert successor_payload[
+        "compile_build_task_binding_contract_version"
+    ] == compile_work_items.BUILD_TASK_BINDING_CONTRACT_VERSION
+
+
 def test_recheck_successor_rebinds_unchanged_source_and_fails_closed_on_evidence_tamper(
     tmp_path: Path,
 ) -> None:

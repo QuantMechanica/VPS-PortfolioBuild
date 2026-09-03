@@ -13101,7 +13101,11 @@ def _spawn_codex_for_pre_review(root: Path, build_task_row: sqlite3.Row) -> dict
 
 
 def enqueue_compile_repair_successor(
-    root: Path, predecessor_id: str, *, apply: bool = False
+    root: Path,
+    predecessor_id: str,
+    *,
+    build_task_id: str | None = None,
+    apply: bool = False,
 ) -> dict[str, Any]:
     """Plan or append a generic, immutable compile-repair successor."""
     try:
@@ -13110,7 +13114,11 @@ def enqueue_compile_repair_successor(
         from tools.strategy_farm import compile_work_items as _compile_work_items
     init_db(root)
     return _compile_work_items.enqueue_repair_successor(
-        root, REPO_ROOT, predecessor_id, apply=apply
+        root,
+        REPO_ROOT,
+        predecessor_id,
+        build_task_id=build_task_id,
+        apply=apply,
     )
 
     codex_result = payload_build.get("codex_result") or {}
@@ -30716,7 +30724,8 @@ def build_parser() -> argparse.ArgumentParser:
         "--repair-successor-of",
         help=(
             "Failed COMPILE_EA work-item ID to supersede after a verified source "
-            "repair; dry-run unless --apply"
+            "repair; may bind --build-task-id when the predecessor was unbound; "
+            "dry-run unless --apply"
         ),
     )
     enqueue_bt.add_argument(
@@ -31287,10 +31296,13 @@ def main(argv: list[str] | None = None) -> int:
         ))
     elif args.command == "enqueue-compile":
         if args.repair_successor_of:
-            if args.ea_labels or args.from_file or args.source_repair_authority or args.build_task_id:
-                raise SystemExit("--repair-successor-of cannot be combined with labels, --from-file, --source-repair-authority, or --build-task-id")
+            if args.ea_labels or args.from_file or args.source_repair_authority:
+                raise SystemExit("--repair-successor-of cannot be combined with labels, --from-file, or --source-repair-authority")
             compile_enqueue_result = enqueue_compile_repair_successor(
-                root, args.repair_successor_of, apply=args.apply
+                root,
+                args.repair_successor_of,
+                build_task_id=args.build_task_id,
+                apply=args.apply,
             )
         else:
             compile_enqueue_result = enqueue_compile_eas(
