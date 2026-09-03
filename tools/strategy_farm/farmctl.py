@@ -1946,6 +1946,9 @@ def _measurement_sibling_guard(
 # optimisation census.  The OWNER enumerated Q03-Q09 literally, so this tuple is
 # literal too: deriving it from the phase manifest would silently widen or
 # narrow an OWNER decision the next time a phase is inserted into that span.
+# v4 portfolio gate (v3 "Q10"), resolved through the contract map so the v4
+# readiness check never sees a bare literal (see LINEAGE_RERUN_PRIORITY_PHASES).
+_Q11_PHASE = ACTIVE_GATE_MANIFEST.equivalent_gate("Q10", "v3", "v4")
 LINEAGE_RERUN_PRIORITY_PHASES: tuple[str, ...] = (
     # "Q02" added 2026-09-03 03:45Z (CEO, same OWNER decision, chat 02:08Z
     # "vor allem die Recompiles ... dementsprechend priorisieren"): the fresh
@@ -2113,6 +2116,12 @@ def _lineage_rerun_rank_sql() -> str:
         while workers still found claimable census cells.  Q10_NEWS only, still
         priority-tracked and not quarantined; the long-run caps in
         ``longrun_scheduling_policy`` keep applying at claim time;
+      * 2026-09-03 12:10Z (CEO, same decision): a priority-tracked Q11 row
+        (the minutes-long portfolio gate that mints the Q12 program row) is
+        admitted on the same terms -- 11910's Q11 sat 20+ min behind frontier
+        census cells for the same reason as the news parent above.  Q11 rows
+        are few (auto-minted after a CONFIG_LOCKED news gate) and cheap, so
+        the census loses nothing measurable;
       * ``json_type('$.priority_track')='true'`` matches only the JSON literal
         true, identical to the test used by ``_priority_track_rank``;
       * the poison-pill override is honoured exactly as ``_priority_track_rank``
@@ -2131,9 +2140,10 @@ def _lineage_rerun_rank_sql() -> str:
         " OR (COALESCE(json_extract("
         "w.payload_json, '$.supersedes_held_q09_work_item'), '') <> ''"
         f" AND w.phase='{_NEWS_PHASE}')"
+        f" OR w.phase='{_Q11_PHASE}'"
         ")"
         " AND json_type(w.payload_json, '$.priority_track')='true'"
-        f" AND w.phase IN ({phases}, '{_NEWS_PHASE}')"
+        f" AND w.phase IN ({phases}, '{_NEWS_PHASE}', '{_Q11_PHASE}')"
         " AND COALESCE(json_extract("
         "w.payload_json, '$.poison_pill_priority_override'), 0) <> 1"
         " THEN 0 ELSE 1 END"

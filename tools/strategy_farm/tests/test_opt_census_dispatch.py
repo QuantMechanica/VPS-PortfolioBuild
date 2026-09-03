@@ -844,7 +844,10 @@ def test_lineage_rerun_precedes_sibling_seed_and_priority_census(
         # 03:45Z for governed-recompile new-identity chains)
         # (a NEWS-phase row cannot be used here: the selector's WHERE clause
         # excludes it until bind-q09-plan has written the dispatch binding)
-        ("q11-rerun", "Q11",
+        # Q11 joined the admitted set on 2026-09-03 12:10Z (priority-tracked
+        # Q11 rows are the minutes-long gate to the Q12 program row); Q13 is
+        # the nearest phase that stays outside.
+        ("q13-rerun", "Q13",
          {"append_only_rerun": True, "priority_track": True}),
         ("census-rerun", "OPT_CENSUS",
          {"append_only_rerun": True, "priority_track": True}),
@@ -1144,3 +1147,35 @@ def test_amendment_b_admits_news_gate_parents_of_a_lineage(
     head = [row["id"] for row in ordered]
     assert set(head[:2]) == {"news-rerun", "news-replacement"}
     assert head.index("census-cell") < head.index("news-ordinary")
+
+
+def test_amendment_b_admits_priority_tracked_q11_rows(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """CEO 2026-09-03 12:10Z: a priority-tracked Q11 row ranks with the lineage
+    reruns; an unmarked Q11 row and a priority-tracked Q05 row do not."""
+    monkeypatch.setenv(farmctl.TOPDOWN_GATE_PRIORITY_ENV, "1")
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    now = "2026-09-03T00:00:00+00:00"
+    with farmctl.connect(root) as conn:
+        for item_id, phase, payload in (
+            ("census-cell", "OPT_CENSUS", {"priority_track": True, "cell_key": "P:2021:buy_001",
+                                            "opt_census_frontier_priority": True}),
+            ("q11-priority", "Q11", {"priority_track": True}),
+            ("q11-unmarked", "Q11", {}),
+            ("q05-priority", "Q05", {"priority_track": True}),
+        ):
+            _insert(
+                conn, id=item_id, kind="backtest", phase=phase,
+                ea_id=f"QM5_{item_id}", symbol="", setfile_path="",
+                status="pending", attempt_count=0,
+                payload_json=json.dumps(payload), created_at=now, updated_at=now,
+            )
+        conn.commit()
+        ordered = conn.execute(farmctl.pending_claim_order_sql()).fetchall()
+    by_id = {row["id"]: row for row in ordered}
+    assert by_id["q11-priority"]["_lineage_rerun_rank"] == 0
+    for item_id in ("q11-unmarked", "q05-priority", "census-cell"):
+        assert by_id[item_id]["_lineage_rerun_rank"] == 1, item_id
+    assert [row["id"] for row in ordered][0] == "q11-priority"
