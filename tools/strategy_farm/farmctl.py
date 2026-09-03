@@ -1392,6 +1392,17 @@ TOPDOWN_GATE_PRIORITY_ENV = "QM_TOPDOWN_GATE_PRIORITY_ENABLED"
 # _topdown_gate_rank_sql). Keep this literal identical to the value written in
 # dl089_matrix_service._seed_q02.
 DL089_Q02_PREREQUISITE_SCHEMA = "qm.dl089-measurement-q02-prerequisite/v1"
+# OWNER-DEC-PRE0803-RECOMPILE-SLOTORDER-AMENDB-20260903 §3 ("Amendment B",
+# decided in chat 2026-09-03 ~02:08Z, recorded in
+# docs/ops/evidence/2026-09-03_owner_dec_pre0803_recompile_slot_order_amendment_b.md):
+# the gates at which an exact append-only lineage rerun is the critical path to
+# a Q10 lock and must therefore not queue behind the priority-tracked
+# optimisation census.  The OWNER enumerated Q03-Q09 literally, so this tuple is
+# literal too: deriving it from the phase manifest would silently widen or
+# narrow an OWNER decision the next time a phase is inserted into that span.
+LINEAGE_RERUN_PRIORITY_PHASES: tuple[str, ...] = (
+    "Q03", "Q04", "Q05", "Q06", "Q07", "Q08", "Q09",
+)
 CLAIM_CLASS_LEDGER_DDL = (
     "CREATE TABLE IF NOT EXISTS claim_class_ledger ("
     " seq INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -1511,6 +1522,46 @@ def _topdown_gate_rank_sql() -> str:
     )
 
 
+def _lineage_rerun_rank_sql() -> str:
+    """SQL CASE implementing OWNER-DEC-PRE0803-...-AMENDB-20260903 §3.
+
+    Amendment B to OWNER-DEC-TOPDOWN-PRIORITY-20260828.  An exact append-only
+    lineage rerun (``farmctl enqueue-backtest --append-only-rerun-of``, which
+    stamps ``append_only_rerun: true``) that the orchestrator has additionally
+    marked ``priority_track`` is the critical path to a Q10 lock, yet under the
+    unamended order it sorts behind every other priority-tracked row -- ~1,300
+    priority-tracked census cells on 2026-09-03, measured as a 6-7 h wait for
+    the QM5_11910 Q07 rerun.  This key ranks such a row (0) ahead of all other
+    pending work (1) that survives the universe-expansion and recovery keys.
+
+    Selection only: holds, caps, the duplicate-pair/symbol guards, history and
+    resource checks, verdicts and every gate criterion stay exactly where they
+    are in the claim path.  The four conditions are deliberately exact so that
+    an ordinary priority row cannot acquire the rank by accident:
+
+      * ``json_valid`` first -- an empty or non-JSON payload must never make
+        SQLite raise ``malformed JSON`` and abort the canonical claim-order
+        query for every claimant (the defect found post-commit in Option A);
+      * ``json_extract('$.append_only_rerun')=1`` matches JSON ``true`` and the
+        integer ``1``, and yields NULL (-> ELSE 1) when the key is absent;
+      * ``json_type('$.priority_track')='true'`` matches only the JSON literal
+        true, identical to the test used by ``_priority_track_rank``;
+      * the poison-pill override is honoured exactly as ``_priority_track_rank``
+        honours it, so a quarantined lineage cannot buy its way to the head.
+    """
+    phases = ", ".join(f"'{phase}'" for phase in LINEAGE_RERUN_PRIORITY_PHASES)
+    return (
+        "CASE"
+        " WHEN json_valid(w.payload_json)=1"
+        " AND json_extract(w.payload_json, '$.append_only_rerun')=1"
+        " AND json_type(w.payload_json, '$.priority_track')='true'"
+        f" AND w.phase IN ({phases})"
+        " AND COALESCE(json_extract("
+        "w.payload_json, '$.poison_pill_priority_override'), 0) <> 1"
+        " THEN 0 ELSE 1 END"
+    )
+
+
 def pending_claim_order_sql() -> str:
     """Canonical pending-work ordering — the ONE selector every claimant uses.
 
@@ -1524,7 +1575,17 @@ def pending_claim_order_sql() -> str:
     if topdown_gate_priority_enabled():
         order_by = (
             "_universe_expansion_rank ASC, _recovery_rank ASC, "
+            # Amendment B (OWNER-DEC-PRE0803-...-AMENDB-20260903 §3): exact
+            # append-only lineage reruns ahead of all other priority-tracked
+            # rows.  Gated by the same env flag as every other top-down key
+            # (_topdown_gate_rank_sql below), so the cold order is unchanged.
             "_priority_track_rank ASC, "
+            # CEO merge note 2026-09-03: placed AFTER _priority_track_rank so the
+            # seconds-cheap -1 prerequisites (authorized source-repair compile
+            # rows, exact Q01 smoke rows) keep precedence over an hours-long
+            # lineage rerun; within the priority tier the documented order
+            # lineage rerun > sibling seed > census cell is unchanged.
+            "_lineage_rerun_rank ASC, "
             f"{_topdown_gate_rank_sql()} ASC, "
             "_opt_census_post_census_rank ASC, "
             "_opt_census_frontier_rank ASC, "
@@ -1561,6 +1622,13 @@ def pending_claim_order_sql() -> str:
             -- durable rolling cap before actually taking one.
             WHEN w.payload_json LIKE '%"recovery_class":%' THEN 1
             ELSE 0 END AS _recovery_rank,
+          -- Amendment B (OWNER-DEC-PRE0803-RECOMPILE-SLOTORDER-AMENDB-20260903
+          -- §3): an exact append-only lineage rerun that is marked
+          -- priority_track at Q03..Q09 is the critical path to a Q10 lock and
+          -- ranks ahead of every other priority-tracked row.  The column is
+          -- always projected (diagnostics read it); only the top-down ORDER BY
+          -- consumes it, so the cold order is byte-for-byte the old one.
+          {_lineage_rerun_rank_sql()} AS _lineage_rerun_rank,
           CASE
             WHEN json_valid(w.payload_json) = 1 THEN
               CASE

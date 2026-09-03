@@ -747,3 +747,307 @@ def test_dl089_q02_prerequisite_arm_tolerates_malformed_payload(monkeypatch):
     ranks = dict(rows)
     assert ranks["prereq"] < ranks["census"]
     assert ranks["empty"] == ranks["garbage"] > ranks["census"]
+
+
+# ---------------------------------------------------------------------------
+# 8 · AMENDMENT B — exact append-only lineage reruns lead the priority lane
+#     (OWNER-DEC-PRE0803-RECOMPILE-SLOTORDER-AMENDB-20260903 §3, recorded in
+#     docs/ops/evidence/
+#     2026-09-03_owner_dec_pre0803_recompile_slot_order_amendment_b.md)
+# ---------------------------------------------------------------------------
+
+def _lineage_rerun_payload(**extra: object) -> dict:
+    """The payload an exact append-only rerun carries once it is marked.
+
+    ``append_only_rerun`` is written by ``farmctl.append_only_exact_row_rerun``
+    (the ``enqueue-backtest --append-only-rerun-of`` path); ``priority_track``
+    is added afterwards by ``farmctl mark-priority-track``.
+    """
+    payload = {
+        "append_only_rerun": True,
+        "append_only_rerun_of_work_item": "source-row-id",
+        "priority_track": True,
+    }
+    payload.update(extra)
+    return payload
+
+
+def test_lineage_rerun_precedes_sibling_seed_and_priority_census(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Amendment B, including the documented consequence of the key position.
+
+    The new ``_lineage_rerun_rank`` sits between ``_recovery_rank`` and
+    ``_priority_track_rank``, i.e. BEFORE the top-down gate key that carries
+    Option A's sibling-seed arm (-1).  A lineage rerun therefore outranks the
+    DL-089 measurement-sibling Q02 prerequisite seed as well as the
+    priority-tracked census cell.  Option A's ordering is preserved *within*
+    the gate key (seed still ahead of the census cell) — the OWNER note's
+    "sibling seeds are unaffected" holds for their gate rank, not for their
+    position relative to a lineage rerun.  Documented order:
+    lineage rerun > sibling seed > census cell.
+    """
+    monkeypatch.setenv(farmctl.TOPDOWN_GATE_PRIORITY_ENV, "1")
+    assert farmctl.topdown_gate_priority_enabled()
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    now = "2026-09-03T00:00:00+00:00"
+    rows = (
+        ("census-cell", "OPT_CENSUS", {
+            "schema": census.SCHEMA,
+            "priority_track": True,
+            census.FRONTIER_PRIORITY_MARKER: True,
+        }),
+        ("sibling-seed", "Q02", {
+            "schema": farmctl.DL089_Q02_PREREQUISITE_SCHEMA,
+            "priority_track": True,
+            "priority_reason": "OWNER_P0_DL089_MATRIX_PREREQUISITE",
+        }),
+        ("lineage-q07-rerun", "Q07", _lineage_rerun_payload()),
+    )
+    with farmctl.connect(root) as conn:
+        for rid, phase, payload in rows:
+            _insert(
+                conn, id=rid, kind="backtest", phase=phase, ea_id=f"QM5_{rid}",
+                symbol="NZDUSD.DWX", setfile_path=f"{rid}.set", status="pending",
+                attempt_count=0, payload_json=json.dumps(payload),
+                created_at=now, updated_at=now,
+            )
+        conn.commit()
+        ordered = conn.execute(farmctl.pending_claim_order_sql()).fetchall()
+
+    by_id = {row["id"]: row for row in ordered}
+    assert by_id["lineage-q07-rerun"]["_lineage_rerun_rank"] == 0
+    assert by_id["sibling-seed"]["_lineage_rerun_rank"] == 1
+    assert by_id["census-cell"]["_lineage_rerun_rank"] == 1
+    assert [row["id"] for row in ordered] == [
+        "lineage-q07-rerun",   # Amendment B key (0) wins before anything else
+        "sibling-seed",        # Option A gate arm (-1) still beats the census
+        "census-cell",
+    ]
+
+
+@pytest.mark.parametrize(
+    ("rid", "phase", "payload"),
+    [
+        # priority_track without the append-only marker
+        ("no-rerun-marker", "Q07", {"priority_track": True}),
+        # the rerun marker without the priority mark
+        ("not-priority", "Q07", {"append_only_rerun": True}),
+        # priority_track present but not the JSON literal true
+        ("priority-track-not-true", "Q07",
+         {"append_only_rerun": True, "priority_track": 1}),
+        # marker present but as text, neither true nor 1
+        ("rerun-marker-is-text", "Q07",
+         {"append_only_rerun": "true", "priority_track": True}),
+        # outside the OWNER-enumerated Q03..Q09 span
+        ("q02-rerun", "Q02",
+         {"append_only_rerun": True, "priority_track": True}),
+        # (a NEWS-phase row cannot be used here: the selector's WHERE clause
+        # excludes it until bind-q09-plan has written the dispatch binding)
+        ("q11-rerun", "Q11",
+         {"append_only_rerun": True, "priority_track": True}),
+        ("census-rerun", "OPT_CENSUS",
+         {"append_only_rerun": True, "priority_track": True}),
+        # quarantined lineage: the poison-pill override is honoured exactly as
+        # _priority_track_rank honours it
+        ("poison-pill", "Q07",
+         {"append_only_rerun": True, "priority_track": True,
+          "poison_pill_priority_override": 1}),
+    ],
+)
+def test_lineage_rerun_rank_requires_all_four_exact_conditions(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+    rid: str, phase: str, payload: dict,
+) -> None:
+    """Only the exact marker set earns rank 0; every near-miss stays at 1."""
+    monkeypatch.setenv(farmctl.TOPDOWN_GATE_PRIORITY_ENV, "1")
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    now = "2026-09-03T00:00:00+00:00"
+    with farmctl.connect(root) as conn:
+        for item_id, item_phase, body in (
+            (rid, phase, payload),
+            ("exact-lineage", "Q07", _lineage_rerun_payload()),
+        ):
+            _insert(
+                conn, id=item_id, kind="backtest", phase=item_phase,
+                ea_id=f"QM5_{item_id}", symbol="XAUUSD.DWX",
+                setfile_path=f"{item_id}.set", status="pending", attempt_count=0,
+                payload_json=json.dumps(body), created_at=now, updated_at=now,
+            )
+        conn.commit()
+        ordered = conn.execute(farmctl.pending_claim_order_sql()).fetchall()
+
+    by_id = {row["id"]: row for row in ordered}
+    assert by_id["exact-lineage"]["_lineage_rerun_rank"] == 0
+    assert by_id[rid]["_lineage_rerun_rank"] == 1
+    order = [row["id"] for row in ordered]
+    assert order.index("exact-lineage") < order.index(rid)
+
+
+def test_lineage_rerun_rank_tolerates_malformed_payload(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A pending row with an empty / non-JSON payload must neither abort the
+    canonical claim-order query nor be lifted (the defect Option A shipped and
+    then fixed: an unguarded json_extract raises 'malformed JSON' and kills the
+    query for EVERY claimant).  ``payload_json`` is NOT NULL in the real
+    schema, so the NULL case is covered by the SQL-only test below."""
+    monkeypatch.setenv(farmctl.TOPDOWN_GATE_PRIORITY_ENV, "1")
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    now = "2026-09-03T00:00:00+00:00"
+    with farmctl.connect(root) as conn:
+        for item_id, phase, raw_payload in (
+            ("empty-payload", "Q07", ""),
+            ("garbage-payload", "Q07", "not json"),
+            ("exact-lineage", "Q07", json.dumps(_lineage_rerun_payload())),
+        ):
+            _insert(
+                conn, id=item_id, kind="backtest", phase=phase,
+                ea_id=f"QM5_{item_id}", symbol="XTIUSD.DWX",
+                setfile_path=f"{item_id}.set", status="pending", attempt_count=0,
+                payload_json=raw_payload, created_at=now, updated_at=now,
+            )
+        conn.commit()
+        # The query itself must execute; a malformed-JSON abort would raise here.
+        ordered = conn.execute(farmctl.pending_claim_order_sql()).fetchall()
+
+    by_id = {row["id"]: row for row in ordered}
+    assert len(by_id) == 3
+    assert by_id["exact-lineage"]["_lineage_rerun_rank"] == 0
+    for item_id in ("empty-payload", "garbage-payload"):
+        assert by_id[item_id]["_lineage_rerun_rank"] == 1
+    assert ordered[0]["id"] == "exact-lineage"
+
+
+def test_lineage_rerun_rank_sql_is_total_over_malformed_rows() -> None:
+    """The CASE alone (as the claim path evaluates it) is total over garbage."""
+    rank_sql = farmctl._lineage_rerun_rank_sql()
+    conn = sqlite3.connect(":memory:")
+    conn.execute("CREATE TABLE work_items(id TEXT, phase TEXT, payload_json TEXT)")
+    conn.executemany(
+        "INSERT INTO work_items VALUES (?, ?, ?)",
+        [
+            ("lineage", "Q07", json.dumps({
+                "append_only_rerun": True, "priority_track": True,
+            })),
+            ("lineage-int-marker", "Q09", json.dumps({
+                "append_only_rerun": 1, "priority_track": True,
+            })),
+            ("empty", "Q07", ""),
+            ("garbage", "Q07", "not json"),
+            ("null", "Q07", None),
+            ("census", "OPT_CENSUS", "{}"),
+        ],
+    )
+    ranks = dict(conn.execute(
+        f"SELECT id, {rank_sql} AS r FROM work_items w"
+    ).fetchall())
+    conn.close()
+    assert ranks["lineage"] == ranks["lineage-int-marker"] == 0
+    assert ranks["empty"] == ranks["garbage"] == ranks["null"] == 1
+    assert ranks["census"] == 1
+
+
+def test_amendment_b_is_inert_when_topdown_flag_is_off(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Cold path unchanged: the alias is projected but never ordered on.
+
+    The fixture is deliberately discriminating — under the cold age-weighted
+    term a priority OPT_CENSUS cell (Q04 tier) sorts ahead of a priority Q03
+    lineage rerun (one tier further upstream), and Amendment B inverts exactly
+    that pair.
+    """
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    now = "2026-09-03T00:00:00+00:00"
+    with farmctl.connect(root) as conn:
+        for item_id, phase, payload in (
+            ("census-cell", "OPT_CENSUS", {
+                "schema": census.SCHEMA, "priority_track": True,
+            }),
+            ("lineage-q03-rerun", "Q03", _lineage_rerun_payload()),
+        ):
+            _insert(
+                conn, id=item_id, kind="backtest", phase=phase,
+                ea_id=f"QM5_{item_id}", symbol="GDAXI.DWX",
+                setfile_path=f"{item_id}.set", status="pending", attempt_count=0,
+                payload_json=json.dumps(payload), created_at=now, updated_at=now,
+            )
+        conn.commit()
+
+        monkeypatch.delenv(farmctl.TOPDOWN_GATE_PRIORITY_ENV, raising=False)
+        assert not farmctl.topdown_gate_priority_enabled()
+        cold_sql = farmctl.pending_claim_order_sql()
+        cold_order = [r["id"] for r in conn.execute(cold_sql).fetchall()]
+
+        monkeypatch.setenv(farmctl.TOPDOWN_GATE_PRIORITY_ENV, "0")
+        assert farmctl.pending_claim_order_sql() == cold_sql  # only "1" arms it
+
+        monkeypatch.setenv(farmctl.TOPDOWN_GATE_PRIORITY_ENV, "1")
+        hot_sql = farmctl.pending_claim_order_sql()
+        hot_order = [r["id"] for r in conn.execute(hot_sql).fetchall()]
+
+    # The cold ORDER BY never mentions the new key (the alias stays in the
+    # projection for diagnostics), so the pre-amendment order is preserved.
+    assert "_lineage_rerun_rank" not in cold_sql.rsplit("ORDER BY", 1)[1]
+    assert "_lineage_rerun_rank" in hot_sql.rsplit("ORDER BY", 1)[1]
+    assert cold_order == ["census-cell", "lineage-q03-rerun"]
+    assert hot_order == ["lineage-q03-rerun", "census-cell"]
+
+
+def test_amendment_b_keeps_cheap_prerequisites_ahead_of_lineage_rerun(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """CEO merge decision 2026-09-03 on the key POSITION.
+
+    ``_priority_track_rank`` ranks two seconds-cheap prerequisites at -1: an
+    authorized append-only source-repair COMPILE_EA row and an exact Q01 smoke
+    row.  The lineage-rerun key is ordered AFTER that column, so those
+    prerequisites keep their precedence over an hours-long lineage rerun,
+    while inside the priority tier the OWNER-documented order (lineage rerun
+    > sibling seed > census cell) is unchanged (see the sibling-seed test).
+    """
+    monkeypatch.setenv(farmctl.TOPDOWN_GATE_PRIORITY_ENV, "1")
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    now = "2026-09-03T00:00:00+00:00"
+    source_repair = {
+        "compile_contract_version": farmctl.COMPILE_WORK_ITEM_CONTRACT,
+        "append_only_source_repair": True,
+        "compile_source_repair_contract_version": (
+            farmctl.COMPILE_SOURCE_REPAIR_CONTRACT
+        ),
+        "compile_source_repair_authority": "router_ops_issue:test-task",
+    }
+    q01_smoke = {
+        "priority_track": True,
+        "q01_smoke_contract": farmctl.Q01_SMOKE_WORK_ITEM_CONTRACT,
+    }
+    with farmctl.connect(root) as conn:
+        for item_id, kind, phase, payload in (
+            ("compile-repair", farmctl.COMPILE_WORK_ITEM_KIND,
+             farmctl.COMPILE_EA_PHASE, source_repair),
+            ("q01-smoke", farmctl.Q01_SMOKE_WORK_ITEM_KIND, "Q01", q01_smoke),
+            ("lineage-q08-rerun", "backtest", "Q08", _lineage_rerun_payload()),
+        ):
+            _insert(
+                conn, id=item_id, kind=kind, phase=phase,
+                ea_id=f"QM5_{item_id}", symbol="", setfile_path="",
+                status="pending", attempt_count=0,
+                payload_json=json.dumps(payload), created_at=now, updated_at=now,
+            )
+        conn.commit()
+        ordered = conn.execute(farmctl.pending_claim_order_sql()).fetchall()
+
+    by_id = {row["id"]: row for row in ordered}
+    # The prerequisites keep their -1 priority rank; only the key ORDER changed.
+    assert by_id["compile-repair"]["_priority_track_rank"] == -1
+    assert by_id["q01-smoke"]["_priority_track_rank"] == -1
+    assert by_id["lineage-q08-rerun"]["_priority_track_rank"] == 0
+    head = [row["id"] for row in ordered]
+    assert set(head[:2]) == {"compile-repair", "q01-smoke"}
+    assert head[2] == "lineage-q08-rerun"
