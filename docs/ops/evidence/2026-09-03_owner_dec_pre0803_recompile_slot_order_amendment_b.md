@@ -274,3 +274,10 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   a Q10_NEWS row that is an append-only rerun or a service-minted replacement parent
   (`supersedes_held_q09_work_item`), priority-tracked, takes the lineage-rerun key; long-run caps still apply
   at claim time. Idle-only reload chunk 15 (all workers) started 11:22Z.
+- 11:24Z–11:40Z: the news-parent rank key worked on first contact — T8 claimed 10700's parent `fe33550e` two
+  minutes after its reload (11:24Z). **12710 Q11 `a10aa1da` PASS 11:25Z** → Q12 program row `9384656c`
+  (11:28Z). Applied §2 mechanics for the recompiled pair: `set_dl089_queue_order.py apply --queue-order-at
+  2026-08-29T08:02:00+00:00` (rank 27 → 5, behind the four earliest slot owners; the eighth current owner is
+  deboosted at the next service cycle and resumes later, its measured cells stay). Receipt
+  scratchpad `queue_order_12710_apply.json`, backup by the tool. 11910/10700 get the same placement when
+  their Q12 rows exist.
