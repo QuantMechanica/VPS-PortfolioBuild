@@ -292,3 +292,7 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   as the news parent). `4cd1d1f35a`: priority-tracked Q11 rows take the lineage-rerun key (phase resolved via
   the v4 contract map; the parametrized negative case moved to Q13). Reload chunk 16 (all workers) replaces
   chunk 15 (8/10 done) so every worker carries 608cc5ec6b + 4cd1d1f35a.
+- 12:10Z–12:22Z: sibling wave 3 delivered and merged (`5e6f19a61a`): QM5_41331 (12710/XTIUSD), QM5_41332
+  (11910/NZDUSD), QM5_41333 (10700/XAUUSD); magics allocated (`270019d078`, `129c6e887e`, `3e8cd06ec1`); compile
+  rows 98bfe19a / fa3cff26 / c299634e released and priority-tracked. Evidence:
+  docs/ops/evidence/2026-09-03_sibling_wave3_recompiled_pairs.md.
