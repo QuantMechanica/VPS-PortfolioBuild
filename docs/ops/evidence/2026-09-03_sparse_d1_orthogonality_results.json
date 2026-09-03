@@ -1,0 +1,2669 @@
+{
+  "generated_at": "2026-09-03T16:15:39+00:00",
+  "commission_model": {
+    "registry_path": "C:\\QM\\repo\\framework\\registry\\live_commission.json",
+    "default_class": "forex",
+    "degraded": false,
+    "degraded_symbols": [],
+    "unknown_symbols": []
+  },
+  "q15_threshold": 0.5,
+  "B_boot": 4000,
+  "null_reps": 3000,
+  "seed": 20260903,
+  "qualified_pool": {
+    "pool": "qualified_pool_5",
+    "members": {
+      "10706/GBPUSD": {
+        "ea": 10706,
+        "symbol": "GBPUSD.DWX",
+        "file": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\10706_GBPUSD_DWX.jsonl",
+        "sha256_16": "85d7abd4d1cb9ed3",
+        "trades": null,
+        "active_days": 366,
+        "first": "2017-10-10",
+        "last": "2025-12-30"
+      },
+      "11421/EURUSD": {
+        "ea": 11421,
+        "symbol": "EURUSD.DWX",
+        "file": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\11421_EURUSD_DWX.jsonl",
+        "sha256_16": "072b0c82ebdf96e4",
+        "trades": null,
+        "active_days": 92,
+        "first": "2018-05-11",
+        "last": "2025-12-11"
+      },
+      "11422/USDCAD": {
+        "ea": 11422,
+        "symbol": "USDCAD.DWX",
+        "file": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\11422_USDCAD_DWX.jsonl",
+        "sha256_16": "539567527f312817",
+        "trades": null,
+        "active_days": 197,
+        "first": "2018-03-02",
+        "last": "2025-12-26"
+      },
+      "13054/XTIUSD": {
+        "ea": 13054,
+        "symbol": "XTIUSD.DWX",
+        "file": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\13054_XTIUSD_DWX.jsonl",
+        "sha256_16": "261c2de68a544b29",
+        "trades": null,
+        "active_days": 83,
+        "first": "2018-03-02",
+        "last": "2025-12-30"
+      },
+      "1537/XAGUSD": {
+        "ea": 1537,
+        "symbol": "XAGUSD.DWX",
+        "file": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\1537_XAGUSD_DWX.jsonl",
+        "sha256_16": "6b1ae9ee1c6357d0",
+        "trades": null,
+        "active_days": 22,
+        "first": "2024-01-17",
+        "last": "2024-12-06"
+      }
+    },
+    "pairs": [
+      {
+        "pair": [
+          "10706/GBPUSD",
+          "11421/EURUSD"
+        ],
+        "n_businessdays": 1980,
+        "coactive_days": 12,
+        "active_a": 340,
+        "active_c": 92,
+        "weekend_folded": 0,
+        "window": [
+          "2018-05-11",
+          "2025-12-11"
+        ],
+        "r_pearson_zeroskept": 0.0116,
+        "r_coactive_subset": 0.0386,
+        "coactive_m": 12,
+        "block_len_x": 1.0,
+        "block_len_y": 1.0,
+        "block_len_xy": 1.0,
+        "block_len_used": 1.0,
+        "boot_mean": 0.0124,
+        "boot_ci95": [
+          -0.0342,
+          0.0587
+        ],
+        "boot_abs_upper": 0.0587,
+        "boot_ci_width": 0.0929,
+        "fisher_ci95_fulln": [
+          -0.0325,
+          0.0556
+        ],
+        "fisher_ci95_coactive": [
+          -0.5661,
+          0.5816
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "10706/GBPUSD",
+          "11422/USDCAD"
+        ],
+        "n_businessdays": 2041,
+        "coactive_days": 27,
+        "active_a": 350,
+        "active_c": 197,
+        "weekend_folded": 0,
+        "window": [
+          "2018-03-02",
+          "2025-12-26"
+        ],
+        "r_pearson_zeroskept": -0.0026,
+        "r_coactive_subset": -0.0053,
+        "coactive_m": 27,
+        "block_len_x": 1.0,
+        "block_len_y": 1.22,
+        "block_len_xy": 1.0,
+        "block_len_used": 1.22,
+        "boot_mean": -0.0025,
+        "boot_ci95": [
+          -0.0383,
+          0.0297
+        ],
+        "boot_abs_upper": 0.0383,
+        "boot_ci_width": 0.068,
+        "fisher_ci95_fulln": [
+          -0.046,
+          0.0408
+        ],
+        "fisher_ci95_coactive": [
+          -0.3823,
+          0.3778
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "10706/GBPUSD",
+          "13054/XTIUSD"
+        ],
+        "n_businessdays": 2043,
+        "coactive_days": 8,
+        "active_a": 351,
+        "active_c": 83,
+        "weekend_folded": 0,
+        "window": [
+          "2018-03-02",
+          "2025-12-30"
+        ],
+        "r_pearson_zeroskept": 0.004,
+        "r_coactive_subset": -0.0306,
+        "coactive_m": 8,
+        "block_len_x": 1.0,
+        "block_len_y": 1.0,
+        "block_len_xy": 1.0,
+        "block_len_used": 1.0,
+        "boot_mean": 0.0039,
+        "boot_ci95": [
+          -0.0154,
+          0.0296
+        ],
+        "boot_abs_upper": 0.0296,
+        "boot_ci_width": 0.045,
+        "fisher_ci95_fulln": [
+          -0.0394,
+          0.0473
+        ],
+        "fisher_ci95_coactive": [
+          -0.7027,
+          0.7067
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "10706/GBPUSD",
+          "1537/XAGUSD"
+        ],
+        "n_businessdays": 233,
+        "coactive_days": 4,
+        "active_a": 40,
+        "active_c": 22,
+        "weekend_folded": 0,
+        "window": [
+          "2024-01-17",
+          "2024-12-06"
+        ],
+        "r_pearson_zeroskept": 0.0127,
+        "r_coactive_subset": 0.7916,
+        "coactive_m": 4,
+        "block_len_x": 6.65,
+        "block_len_y": 1.0,
+        "block_len_xy": 1.0,
+        "block_len_used": 6.65,
+        "boot_mean": 0.0145,
+        "boot_ci95": [
+          -0.0048,
+          0.0443
+        ],
+        "boot_abs_upper": 0.0443,
+        "boot_ci_width": 0.0491,
+        "fisher_ci95_fulln": [
+          -0.116,
+          0.141
+        ],
+        "fisher_ci95_coactive": [
+          -0.9601,
+          0.962
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "11421/EURUSD",
+          "11422/USDCAD"
+        ],
+        "n_businessdays": 1980,
+        "coactive_days": 26,
+        "active_a": 92,
+        "active_c": 189,
+        "weekend_folded": 0,
+        "window": [
+          "2018-05-11",
+          "2025-12-11"
+        ],
+        "r_pearson_zeroskept": 0.0293,
+        "r_coactive_subset": 0.2111,
+        "coactive_m": 26,
+        "block_len_x": 1.0,
+        "block_len_y": 1.27,
+        "block_len_xy": 19.99,
+        "block_len_used": 19.99,
+        "boot_mean": 0.0294,
+        "boot_ci95": [
+          -0.0055,
+          0.0728
+        ],
+        "boot_abs_upper": 0.0728,
+        "boot_ci_width": 0.0784,
+        "fisher_ci95_fulln": [
+          -0.0148,
+          0.0733
+        ],
+        "fisher_ci95_coactive": [
+          -0.3622,
+          0.412
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "11421/EURUSD",
+          "13054/XTIUSD"
+        ],
+        "n_businessdays": 1980,
+        "coactive_days": 11,
+        "active_a": 92,
+        "active_c": 79,
+        "weekend_folded": 0,
+        "window": [
+          "2018-05-11",
+          "2025-12-11"
+        ],
+        "r_pearson_zeroskept": -0.0315,
+        "r_coactive_subset": -0.2493,
+        "coactive_m": 11,
+        "block_len_x": 1.0,
+        "block_len_y": 1.0,
+        "block_len_xy": 1.0,
+        "block_len_used": 1.0,
+        "boot_mean": -0.0309,
+        "boot_ci95": [
+          -0.1172,
+          0.0329
+        ],
+        "boot_abs_upper": 0.1172,
+        "boot_ci_width": 0.15,
+        "fisher_ci95_fulln": [
+          -0.0755,
+          0.0126
+        ],
+        "fisher_ci95_coactive": [
+          -0.6197,
+          0.5793
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "11421/EURUSD",
+          "1537/XAGUSD"
+        ],
+        "n_businessdays": 233,
+        "coactive_days": 2,
+        "active_a": 9,
+        "active_c": 22,
+        "weekend_folded": 0,
+        "window": [
+          "2024-01-17",
+          "2024-12-06"
+        ],
+        "r_pearson_zeroskept": -0.1037,
+        "r_coactive_subset": -1.0,
+        "coactive_m": 2,
+        "block_len_x": 1.0,
+        "block_len_y": 1.0,
+        "block_len_xy": 1.0,
+        "block_len_used": 1.0,
+        "boot_mean": -0.0858,
+        "boot_ci95": [
+          -0.4646,
+          0.275
+        ],
+        "boot_abs_upper": 0.4646,
+        "boot_ci_width": 0.7396,
+        "fisher_ci95_fulln": [
+          -0.2292,
+          0.0251
+        ],
+        "fisher_ci95_coactive": null,
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "11422/USDCAD",
+          "13054/XTIUSD"
+        ],
+        "n_businessdays": 2041,
+        "coactive_days": 22,
+        "active_a": 197,
+        "active_c": 82,
+        "weekend_folded": 0,
+        "window": [
+          "2018-03-02",
+          "2025-12-26"
+        ],
+        "r_pearson_zeroskept": -0.0077,
+        "r_coactive_subset": -0.0701,
+        "coactive_m": 22,
+        "block_len_x": 1.22,
+        "block_len_y": 1.0,
+        "block_len_xy": 1.0,
+        "block_len_used": 1.22,
+        "boot_mean": -0.0074,
+        "boot_ci95": [
+          -0.0679,
+          0.0429
+        ],
+        "boot_abs_upper": 0.0679,
+        "boot_ci_width": 0.1108,
+        "fisher_ci95_fulln": [
+          -0.0511,
+          0.0357
+        ],
+        "fisher_ci95_coactive": [
+          -0.4279,
+          0.4153
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "11422/USDCAD",
+          "1537/XAGUSD"
+        ],
+        "n_businessdays": 233,
+        "coactive_days": 5,
+        "active_a": 19,
+        "active_c": 22,
+        "weekend_folded": 0,
+        "window": [
+          "2024-01-17",
+          "2024-12-06"
+        ],
+        "r_pearson_zeroskept": -0.0054,
+        "r_coactive_subset": -0.0389,
+        "coactive_m": 5,
+        "block_len_x": 1.0,
+        "block_len_y": 1.0,
+        "block_len_xy": 1.0,
+        "block_len_used": 1.0,
+        "boot_mean": -0.0045,
+        "boot_ci95": [
+          -0.0883,
+          0.0649
+        ],
+        "boot_abs_upper": 0.0883,
+        "boot_ci_width": 0.1532,
+        "fisher_ci95_fulln": [
+          -0.1338,
+          0.1232
+        ],
+        "fisher_ci95_coactive": [
+          -0.8835,
+          0.8811
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "13054/XTIUSD",
+          "1537/XAGUSD"
+        ],
+        "n_businessdays": 233,
+        "coactive_days": 1,
+        "active_a": 8,
+        "active_c": 22,
+        "weekend_folded": 0,
+        "window": [
+          "2024-01-17",
+          "2024-12-06"
+        ],
+        "r_pearson_zeroskept": -0.0331,
+        "r_coactive_subset": null,
+        "coactive_m": 1,
+        "block_len_x": 1.0,
+        "block_len_y": 1.0,
+        "block_len_xy": 1.0,
+        "block_len_used": 1.0,
+        "boot_mean": -0.0361,
+        "boot_ci95": [
+          -0.1288,
+          0.0117
+        ],
+        "boot_abs_upper": 0.1288,
+        "boot_ci_width": 0.1405,
+        "fisher_ci95_fulln": [
+          -0.1609,
+          0.0959
+        ],
+        "fisher_ci95_coactive": null,
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      }
+    ],
+    "matrix_labels": [
+      "10706/GBPUSD",
+      "11421/EURUSD",
+      "11422/USDCAD",
+      "13054/XTIUSD",
+      "1537/XAGUSD"
+    ],
+    "matrix_raw": [
+      [
+        1.0,
+        0.0116,
+        -0.0026,
+        0.004,
+        0.0127
+      ],
+      [
+        0.0116,
+        1.0,
+        0.0293,
+        -0.0315,
+        -0.1037
+      ],
+      [
+        -0.0026,
+        0.0293,
+        1.0,
+        -0.0077,
+        -0.0054
+      ],
+      [
+        0.004,
+        -0.0315,
+        -0.0077,
+        1.0,
+        -0.0331
+      ],
+      [
+        0.0127,
+        -0.1037,
+        -0.0054,
+        -0.0331,
+        1.0
+      ]
+    ],
+    "min_eigenvalue": 0.875107,
+    "psd": true,
+    "enb_raw": 4.972,
+    "enb_shrunk": 4.997,
+    "delta_lw_toward_identity": 1.0,
+    "delta_psd_ridge": 0.0,
+    "matrix_shrunk": [
+      [
+        1.0,
+        0.0022,
+        -0.0001,
+        0.0004,
+        0.0064
+      ],
+      [
+        0.0022,
+        1.0,
+        0.02,
+        -0.0127,
+        -0.0241
+      ],
+      [
+        -0.0001,
+        0.02,
+        1.0,
+        -0.0005,
+        -0.0001
+      ],
+      [
+        0.0004,
+        -0.0127,
+        -0.0005,
+        1.0,
+        -0.0152
+      ],
+      [
+        0.0064,
+        -0.0241,
+        -0.0001,
+        -0.0152,
+        1.0
+      ]
+    ]
+  },
+  "audited_pool": {
+    "pool": "audited_16_with_stream_9",
+    "members": {
+      "1556/XAUUSD": {
+        "ea": 1556,
+        "symbol": "XAUUSD.DWX",
+        "file": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\1556_XAUUSD_DWX.jsonl",
+        "sha256_16": "b1e84c8a1e8c74f8",
+        "trades": null,
+        "active_days": 53,
+        "first": "2019-02-01",
+        "last": "2025-12-05"
+      },
+      "11132/SP500": {
+        "ea": 11132,
+        "symbol": "SP500.DWX",
+        "file": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11132_SP500_DWX.jsonl",
+        "sha256_16": "35aef7994a5b8f57",
+        "trades": null,
+        "active_days": 73,
+        "first": "2019-05-10",
+        "last": "2025-12-23"
+      },
+      "11165/AUDCAD": {
+        "ea": 11165,
+        "symbol": "AUDCAD.DWX",
+        "file": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11165_AUDCAD_DWX.jsonl",
+        "sha256_16": "46354e14c7ce9a31",
+        "trades": null,
+        "active_days": 181,
+        "first": "2017-10-19",
+        "last": "2025-12-05"
+      },
+      "11165/EURUSD": {
+        "ea": 11165,
+        "symbol": "EURUSD.DWX",
+        "file": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11165_EURUSD_DWX.jsonl",
+        "sha256_16": "e30270fa71a427e5",
+        "trades": null,
+        "active_days": 220,
+        "first": "2017-11-20",
+        "last": "2025-12-17"
+      },
+      "11708/EURUSD": {
+        "ea": 11708,
+        "symbol": "EURUSD.DWX",
+        "file": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11708_EURUSD_DWX.jsonl",
+        "sha256_16": "0fbccdfed14837c8",
+        "trades": null,
+        "active_days": 166,
+        "first": "2018-06-08",
+        "last": "2025-12-05"
+      },
+      "11910/NZDUSD": {
+        "ea": 11910,
+        "symbol": "NZDUSD.DWX",
+        "file": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11910_NZDUSD_DWX.jsonl",
+        "sha256_16": "555bbee205432c62",
+        "trades": null,
+        "active_days": 63,
+        "first": "2018-03-23",
+        "last": "2025-06-05"
+      },
+      "12710/XTIUSD": {
+        "ea": 12710,
+        "symbol": "XTIUSD.DWX",
+        "file": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12710_XTIUSD_DWX.jsonl",
+        "sha256_16": "c09e9ea0bdeb4d88",
+        "trades": null,
+        "active_days": 82,
+        "first": "2018-10-05",
+        "last": "2025-12-05"
+      },
+      "12778/basket": {
+        "ea": 12778,
+        "symbol": "AUDUSD.DWX",
+        "file": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12778_AUDUSD_DWX.jsonl",
+        "sha256_16": "276adef910f3eca3",
+        "trades": null,
+        "active_days": 105,
+        "first": "2018-05-04",
+        "last": "2025-11-28"
+      },
+      "12969/USDJPY": {
+        "ea": 12969,
+        "symbol": "USDJPY.DWX",
+        "file": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12969_USDJPY_DWX.jsonl",
+        "sha256_16": "1788388f79e41977",
+        "trades": null,
+        "active_days": 300,
+        "first": "2017-10-10",
+        "last": "2025-12-30"
+      }
+    },
+    "pairs": [
+      {
+        "pair": [
+          "1556/XAUUSD",
+          "11132/SP500"
+        ],
+        "n_businessdays": 1716,
+        "coactive_days": 9,
+        "active_a": 52,
+        "active_c": 72,
+        "weekend_folded": 0,
+        "window": [
+          "2019-05-10",
+          "2025-12-05"
+        ],
+        "r_pearson_zeroskept": 0.0275,
+        "r_coactive_subset": 0.127,
+        "coactive_m": 9,
+        "block_len_x": 1.0,
+        "block_len_y": 1.59,
+        "block_len_xy": 1.0,
+        "block_len_used": 1.59,
+        "boot_mean": 0.0279,
+        "boot_ci95": [
+          -0.0266,
+          0.0926
+        ],
+        "boot_abs_upper": 0.0926,
+        "boot_ci_width": 0.1192,
+        "fisher_ci95_fulln": [
+          -0.0198,
+          0.0747
+        ],
+        "fisher_ci95_coactive": [
+          -0.6485,
+          0.6792
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "1556/XAUUSD",
+          "11165/AUDCAD"
+        ],
+        "n_businessdays": 1786,
+        "coactive_days": 11,
+        "active_a": 53,
+        "active_c": 149,
+        "weekend_folded": 0,
+        "window": [
+          "2019-02-01",
+          "2025-12-05"
+        ],
+        "r_pearson_zeroskept": -0.0599,
+        "r_coactive_subset": -0.276,
+        "coactive_m": 11,
+        "block_len_x": 1.0,
+        "block_len_y": 1.0,
+        "block_len_xy": 1.0,
+        "block_len_used": 1.0,
+        "boot_mean": -0.0589,
+        "boot_ci95": [
+          -0.184,
+          0.0369
+        ],
+        "boot_abs_upper": 0.184,
+        "boot_ci_width": 0.2209,
+        "fisher_ci95_fulln": [
+          -0.106,
+          -0.0135
+        ],
+        "fisher_ci95_coactive": [
+          -0.6369,
+          0.5601
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "1556/XAUUSD",
+          "11165/EURUSD"
+        ],
+        "n_businessdays": 1786,
+        "coactive_days": 14,
+        "active_a": 53,
+        "active_c": 187,
+        "weekend_folded": 0,
+        "window": [
+          "2019-02-01",
+          "2025-12-05"
+        ],
+        "r_pearson_zeroskept": -0.0373,
+        "r_coactive_subset": -0.3707,
+        "coactive_m": 14,
+        "block_len_x": 1.0,
+        "block_len_y": 1.0,
+        "block_len_xy": 1.0,
+        "block_len_used": 1.0,
+        "boot_mean": -0.037,
+        "boot_ci95": [
+          -0.1547,
+          0.0414
+        ],
+        "boot_abs_upper": 0.1547,
+        "boot_ci_width": 0.1961,
+        "fisher_ci95_fulln": [
+          -0.0836,
+          0.0091
+        ],
+        "fisher_ci95_coactive": [
+          -0.5569,
+          0.5032
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "1556/XAUUSD",
+          "11708/EURUSD"
+        ],
+        "n_businessdays": 1786,
+        "coactive_days": 18,
+        "active_a": 53,
+        "active_c": 145,
+        "weekend_folded": 0,
+        "window": [
+          "2019-02-01",
+          "2025-12-05"
+        ],
+        "r_pearson_zeroskept": -0.0931,
+        "r_coactive_subset": -0.2752,
+        "coactive_m": 18,
+        "block_len_x": 1.0,
+        "block_len_y": 1.0,
+        "block_len_xy": 1.0,
+        "block_len_used": 1.0,
+        "boot_mean": -0.0932,
+        "boot_ci95": [
+          -0.2174,
+          0.0204
+        ],
+        "boot_abs_upper": 0.2174,
+        "boot_ci_width": 0.2378,
+        "fisher_ci95_fulln": [
+          -0.1389,
+          -0.0469
+        ],
+        "fisher_ci95_coactive": [
+          -0.5366,
+          0.3908
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "1556/XAUUSD",
+          "11910/NZDUSD"
+        ],
+        "n_businessdays": 1655,
+        "coactive_days": 5,
+        "active_a": 51,
+        "active_c": 49,
+        "weekend_folded": 0,
+        "window": [
+          "2019-02-01",
+          "2025-06-05"
+        ],
+        "r_pearson_zeroskept": -0.1115,
+        "r_coactive_subset": -0.6595,
+        "coactive_m": 5,
+        "block_len_x": 1.0,
+        "block_len_y": 1.0,
+        "block_len_xy": 1.0,
+        "block_len_used": 1.0,
+        "boot_mean": -0.1027,
+        "boot_ci95": [
+          -0.2897,
+          0.0093
+        ],
+        "boot_abs_upper": 0.2897,
+        "boot_ci_width": 0.299,
+        "fisher_ci95_fulln": [
+          -0.1589,
+          -0.0637
+        ],
+        "fisher_ci95_coactive": [
+          -0.9048,
+          0.8549
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "1556/XAUUSD",
+          "12710/XTIUSD"
+        ],
+        "n_businessdays": 1786,
+        "coactive_days": 50,
+        "active_a": 53,
+        "active_c": 78,
+        "weekend_folded": 0,
+        "window": [
+          "2019-02-01",
+          "2025-12-05"
+        ],
+        "r_pearson_zeroskept": 0.0382,
+        "r_coactive_subset": 0.0015,
+        "coactive_m": 50,
+        "block_len_x": 1.0,
+        "block_len_y": 1.0,
+        "block_len_xy": 1.0,
+        "block_len_used": 1.0,
+        "boot_mean": 0.0359,
+        "boot_ci95": [
+          -0.196,
+          0.274
+        ],
+        "boot_abs_upper": 0.274,
+        "boot_ci_width": 0.47,
+        "fisher_ci95_fulln": [
+          -0.0082,
+          0.0844
+        ],
+        "fisher_ci95_coactive": [
+          -0.2428,
+          0.3132
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "1556/XAUUSD",
+          "12778/basket"
+        ],
+        "n_businessdays": 1781,
+        "coactive_days": 13,
+        "active_a": 52,
+        "active_c": 98,
+        "weekend_folded": 0,
+        "window": [
+          "2019-02-01",
+          "2025-11-28"
+        ],
+        "r_pearson_zeroskept": -0.0403,
+        "r_coactive_subset": -0.2013,
+        "coactive_m": 13,
+        "block_len_x": 1.0,
+        "block_len_y": 1.77,
+        "block_len_xy": 1.0,
+        "block_len_used": 1.77,
+        "boot_mean": -0.0406,
+        "boot_ci95": [
+          -0.1719,
+          0.0758
+        ],
+        "boot_abs_upper": 0.1719,
+        "boot_ci_width": 0.2477,
+        "fisher_ci95_fulln": [
+          -0.0866,
+          0.0062
+        ],
+        "fisher_ci95_coactive": [
+          -0.5784,
+          0.5223
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "1556/XAUUSD",
+          "12969/USDJPY"
+        ],
+        "n_businessdays": 1786,
+        "coactive_days": 9,
+        "active_a": 53,
+        "active_c": 246,
+        "weekend_folded": 0,
+        "window": [
+          "2019-02-01",
+          "2025-12-05"
+        ],
+        "r_pearson_zeroskept": -0.0126,
+        "r_coactive_subset": -0.2549,
+        "coactive_m": 9,
+        "block_len_x": 1.0,
+        "block_len_y": 1.0,
+        "block_len_xy": 1.0,
+        "block_len_used": 1.0,
+        "boot_mean": -0.0129,
+        "boot_ci95": [
+          -0.04,
+          0.0104
+        ],
+        "boot_abs_upper": 0.04,
+        "boot_ci_width": 0.0503,
+        "fisher_ci95_fulln": [
+          -0.0589,
+          0.0338
+        ],
+        "fisher_ci95_coactive": [
+          -0.6711,
+          0.657
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "11132/SP500",
+          "11165/AUDCAD"
+        ],
+        "n_businessdays": 1716,
+        "coactive_days": 8,
+        "active_a": 72,
+        "active_c": 141,
+        "weekend_folded": 0,
+        "window": [
+          "2019-05-10",
+          "2025-12-05"
+        ],
+        "r_pearson_zeroskept": 0.018,
+        "r_coactive_subset": 0.4097,
+        "coactive_m": 8,
+        "block_len_x": 1.59,
+        "block_len_y": 1.0,
+        "block_len_xy": 1.0,
+        "block_len_used": 1.59,
+        "boot_mean": 0.018,
+        "boot_ci95": [
+          -0.035,
+          0.0791
+        ],
+        "boot_abs_upper": 0.0791,
+        "boot_ci_width": 0.1142,
+        "fisher_ci95_fulln": [
+          -0.0293,
+          0.0653
+        ],
+        "fisher_ci95_coactive": [
+          -0.6955,
+          0.7137
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "11132/SP500",
+          "11165/EURUSD"
+        ],
+        "n_businessdays": 1724,
+        "coactive_days": 9,
+        "active_a": 72,
+        "active_c": 184,
+        "weekend_folded": 0,
+        "window": [
+          "2019-05-10",
+          "2025-12-17"
+        ],
+        "r_pearson_zeroskept": -0.0232,
+        "r_coactive_subset": -0.1393,
+        "coactive_m": 9,
+        "block_len_x": 1.6,
+        "block_len_y": 1.0,
+        "block_len_xy": 1.0,
+        "block_len_used": 1.6,
+        "boot_mean": -0.0242,
+        "boot_ci95": [
+          -0.0659,
+          0.0033
+        ],
+        "boot_abs_upper": 0.0659,
+        "boot_ci_width": 0.0692,
+        "fisher_ci95_fulln": [
+          -0.0704,
+          0.024
+        ],
+        "fisher_ci95_coactive": [
+          -0.6769,
+          0.6509
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "11132/SP500",
+          "11708/EURUSD"
+        ],
+        "n_businessdays": 1716,
+        "coactive_days": 7,
+        "active_a": 72,
+        "active_c": 143,
+        "weekend_folded": 0,
+        "window": [
+          "2019-05-10",
+          "2025-12-05"
+        ],
+        "r_pearson_zeroskept": 0.0739,
+        "r_coactive_subset": 0.7447,
+        "coactive_m": 7,
+        "block_len_x": 1.59,
+        "block_len_y": 1.0,
+        "block_len_xy": 1.0,
+        "block_len_used": 1.59,
+        "boot_mean": 0.0717,
+        "boot_ci95": [
+          -0.0017,
+          0.1943
+        ],
+        "boot_abs_upper": 0.1943,
+        "boot_ci_width": 0.196,
+        "fisher_ci95_fulln": [
+          0.0267,
+          0.1208
+        ],
+        "fisher_ci95_coactive": [
+          -0.7192,
+          0.7834
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "11132/SP500",
+          "11910/NZDUSD"
+        ],
+        "n_businessdays": 1585,
+        "coactive_days": 6,
+        "active_a": 68,
+        "active_c": 47,
+        "weekend_folded": 0,
+        "window": [
+          "2019-05-10",
+          "2025-06-05"
+        ],
+        "r_pearson_zeroskept": -0.0295,
+        "r_coactive_subset": -0.6565,
+        "coactive_m": 6,
+        "block_len_x": 12.41,
+        "block_len_y": 1.0,
+        "block_len_xy": 1.0,
+        "block_len_used": 12.41,
+        "boot_mean": -0.0307,
+        "boot_ci95": [
+          -0.085,
+          0.0051
+        ],
+        "boot_abs_upper": 0.085,
+        "boot_ci_width": 0.09,
+        "fisher_ci95_fulln": [
+          -0.0787,
+          0.0197
+        ],
+        "fisher_ci95_coactive": [
+          -0.8214,
+          0.8012
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "11132/SP500",
+          "12710/XTIUSD"
+        ],
+        "n_businessdays": 1716,
+        "coactive_days": 12,
+        "active_a": 72,
+        "active_c": 74,
+        "weekend_folded": 0,
+        "window": [
+          "2019-05-10",
+          "2025-12-05"
+        ],
+        "r_pearson_zeroskept": 0.0181,
+        "r_coactive_subset": 0.0128,
+        "coactive_m": 12,
+        "block_len_x": 1.59,
+        "block_len_y": 1.0,
+        "block_len_xy": 1.0,
+        "block_len_used": 1.59,
+        "boot_mean": 0.0194,
+        "boot_ci95": [
+          -0.07,
+          0.1188
+        ],
+        "boot_abs_upper": 0.1188,
+        "boot_ci_width": 0.1888,
+        "fisher_ci95_fulln": [
+          -0.0292,
+          0.0654
+        ],
+        "fisher_ci95_coactive": [
+          -0.5616,
+          0.5859
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "11132/SP500",
+          "12778/basket"
+        ],
+        "n_businessdays": 1711,
+        "coactive_days": 17,
+        "active_a": 72,
+        "active_c": 97,
+        "weekend_folded": 0,
+        "window": [
+          "2019-05-10",
+          "2025-11-28"
+        ],
+        "r_pearson_zeroskept": 0.0073,
+        "r_coactive_subset": 0.0364,
+        "coactive_m": 17,
+        "block_len_x": 1.59,
+        "block_len_y": 1.75,
+        "block_len_xy": 1.0,
+        "block_len_used": 1.75,
+        "boot_mean": 0.0069,
+        "boot_ci95": [
+          -0.0613,
+          0.0801
+        ],
+        "boot_abs_upper": 0.0801,
+        "boot_ci_width": 0.1414,
+        "fisher_ci95_fulln": [
+          -0.0401,
+          0.0546
+        ],
+        "fisher_ci95_coactive": [
+          -0.475,
+          0.4862
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "11132/SP500",
+          "12969/USDJPY"
+        ],
+        "n_businessdays": 1728,
+        "coactive_days": 10,
+        "active_a": 73,
+        "active_c": 237,
+        "weekend_folded": 0,
+        "window": [
+          "2019-05-10",
+          "2025-12-23"
+        ],
+        "r_pearson_zeroskept": -0.0028,
+        "r_coactive_subset": 0.0474,
+        "coactive_m": 10,
+        "block_len_x": 1.58,
+        "block_len_y": 1.0,
+        "block_len_xy": 1.0,
+        "block_len_used": 1.58,
+        "boot_mean": -0.0024,
+        "boot_ci95": [
+          -0.0464,
+          0.0331
+        ],
+        "boot_abs_upper": 0.0464,
+        "boot_ci_width": 0.0795,
+        "fisher_ci95_fulln": [
+          -0.0499,
+          0.0444
+        ],
+        "fisher_ci95_coactive": [
+          -0.6313,
+          0.628
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "11165/AUDCAD",
+          "11165/EURUSD"
+        ],
+        "n_businessdays": 2100,
+        "coactive_days": 27,
+        "active_a": 179,
+        "active_c": 218,
+        "weekend_folded": 0,
+        "window": [
+          "2017-11-20",
+          "2025-12-05"
+        ],
+        "r_pearson_zeroskept": 0.0039,
+        "r_coactive_subset": -0.015,
+        "coactive_m": 27,
+        "block_len_x": 1.0,
+        "block_len_y": 16.86,
+        "block_len_xy": 1.0,
+        "block_len_used": 16.86,
+        "boot_mean": 0.0042,
+        "boot_ci95": [
+          -0.0323,
+          0.0379
+        ],
+        "boot_abs_upper": 0.0379,
+        "boot_ci_width": 0.0702,
+        "fisher_ci95_fulln": [
+          -0.0389,
+          0.0466
+        ],
+        "fisher_ci95_coactive": [
+          -0.3767,
+          0.3833
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "11165/AUDCAD",
+          "11708/EURUSD"
+        ],
+        "n_businessdays": 1956,
+        "coactive_days": 18,
+        "active_a": 170,
+        "active_c": 166,
+        "weekend_folded": 0,
+        "window": [
+          "2018-06-08",
+          "2025-12-05"
+        ],
+        "r_pearson_zeroskept": -0.0404,
+        "r_coactive_subset": -0.4107,
+        "coactive_m": 18,
+        "block_len_x": 1.0,
+        "block_len_y": 1.0,
+        "block_len_xy": 1.0,
+        "block_len_used": 1.0,
+        "boot_mean": -0.0401,
+        "boot_ci95": [
+          -0.1151,
+          0.0098
+        ],
+        "boot_abs_upper": 0.1151,
+        "boot_ci_width": 0.1248,
+        "fisher_ci95_fulln": [
+          -0.0845,
+          0.004
+        ],
+        "fisher_ci95_coactive": [
+          -0.4979,
+          0.4347
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "11165/AUDCAD",
+          "11910/NZDUSD"
+        ],
+        "n_businessdays": 1880,
+        "coactive_days": 8,
+        "active_a": 162,
+        "active_c": 63,
+        "weekend_folded": 0,
+        "window": [
+          "2018-03-23",
+          "2025-06-05"
+        ],
+        "r_pearson_zeroskept": 0.0094,
+        "r_coactive_subset": 0.1534,
+        "coactive_m": 8,
+        "block_len_x": 1.0,
+        "block_len_y": 1.0,
+        "block_len_xy": 1.0,
+        "block_len_used": 1.0,
+        "boot_mean": 0.0095,
+        "boot_ci95": [
+          -0.0032,
+          0.0255
+        ],
+        "boot_abs_upper": 0.0255,
+        "boot_ci_width": 0.0287,
+        "fisher_ci95_fulln": [
+          -0.0359,
+          0.0545
+        ],
+        "fisher_ci95_coactive": [
+          -0.6999,
+          0.7094
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "11165/AUDCAD",
+          "12710/XTIUSD"
+        ],
+        "n_businessdays": 1871,
+        "coactive_days": 13,
+        "active_a": 159,
+        "active_c": 82,
+        "weekend_folded": 0,
+        "window": [
+          "2018-10-05",
+          "2025-12-05"
+        ],
+        "r_pearson_zeroskept": -0.0572,
+        "r_coactive_subset": -0.2731,
+        "coactive_m": 13,
+        "block_len_x": 1.0,
+        "block_len_y": 1.0,
+        "block_len_xy": 1.0,
+        "block_len_used": 1.0,
+        "boot_mean": -0.0573,
+        "boot_ci95": [
+          -0.143,
+          0.0131
+        ],
+        "boot_abs_upper": 0.143,
+        "boot_ci_width": 0.1561,
+        "fisher_ci95_fulln": [
+          -0.1022,
+          -0.0119
+        ],
+        "fisher_ci95_coactive": [
+          -0.5896,
+          0.5099
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "11165/AUDCAD",
+          "12778/basket"
+        ],
+        "n_businessdays": 1976,
+        "coactive_days": 15,
+        "active_a": 170,
+        "active_c": 105,
+        "weekend_folded": 0,
+        "window": [
+          "2018-05-04",
+          "2025-11-28"
+        ],
+        "r_pearson_zeroskept": -0.0455,
+        "r_coactive_subset": -0.3261,
+        "coactive_m": 15,
+        "block_len_x": 1.0,
+        "block_len_y": 1.76,
+        "block_len_xy": 1.0,
+        "block_len_used": 1.76,
+        "boot_mean": -0.046,
+        "boot_ci95": [
+          -0.1048,
+          0.0037
+        ],
+        "boot_abs_upper": 0.1048,
+        "boot_ci_width": 0.1085,
+        "fisher_ci95_fulln": [
+          -0.0894,
+          -0.0014
+        ],
+        "fisher_ci95_coactive": [
+          -0.545,
+          0.4779
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "11165/AUDCAD",
+          "12969/USDJPY"
+        ],
+        "n_businessdays": 2122,
+        "coactive_days": 31,
+        "active_a": 181,
+        "active_c": 296,
+        "weekend_folded": 0,
+        "window": [
+          "2017-10-19",
+          "2025-12-05"
+        ],
+        "r_pearson_zeroskept": -0.0122,
+        "r_coactive_subset": -0.1328,
+        "coactive_m": 31,
+        "block_len_x": 1.0,
+        "block_len_y": 1.0,
+        "block_len_xy": 1.0,
+        "block_len_used": 1.0,
+        "boot_mean": -0.0115,
+        "boot_ci95": [
+          -0.0374,
+          0.0157
+        ],
+        "boot_abs_upper": 0.0374,
+        "boot_ci_width": 0.0531,
+        "fisher_ci95_fulln": [
+          -0.0547,
+          0.0304
+        ],
+        "fisher_ci95_coactive": [
+          -0.3649,
+          0.3437
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "11165/EURUSD",
+          "11708/EURUSD"
+        ],
+        "n_businessdays": 1956,
+        "coactive_days": 37,
+        "active_a": 205,
+        "active_c": 166,
+        "weekend_folded": 0,
+        "window": [
+          "2018-06-08",
+          "2025-12-05"
+        ],
+        "r_pearson_zeroskept": -0.0393,
+        "r_coactive_subset": -0.3353,
+        "coactive_m": 37,
+        "block_len_x": 18.3,
+        "block_len_y": 1.0,
+        "block_len_xy": 1.0,
+        "block_len_used": 18.3,
+        "boot_mean": -0.0427,
+        "boot_ci95": [
+          -0.0962,
+          -0.0053
+        ],
+        "boot_abs_upper": 0.0962,
+        "boot_ci_width": 0.0909,
+        "fisher_ci95_fulln": [
+          -0.0834,
+          0.0051
+        ],
+        "fisher_ci95_coactive": [
+          -0.3587,
+          0.2884
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "11165/EURUSD",
+          "11910/NZDUSD"
+        ],
+        "n_businessdays": 1880,
+        "coactive_days": 11,
+        "active_a": 191,
+        "active_c": 63,
+        "weekend_folded": 0,
+        "window": [
+          "2018-03-23",
+          "2025-06-05"
+        ],
+        "r_pearson_zeroskept": 0.0012,
+        "r_coactive_subset": -0.0133,
+        "coactive_m": 11,
+        "block_len_x": 18.99,
+        "block_len_y": 1.0,
+        "block_len_xy": 1.0,
+        "block_len_used": 18.99,
+        "boot_mean": 0.0014,
+        "boot_ci95": [
+          -0.0219,
+          0.0248
+        ],
+        "boot_abs_upper": 0.0248,
+        "boot_ci_width": 0.0467,
+        "fisher_ci95_fulln": [
+          -0.0441,
+          0.0464
+        ],
+        "fisher_ci95_coactive": [
+          -0.5991,
+          0.6006
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "11165/EURUSD",
+          "12710/XTIUSD"
+        ],
+        "n_businessdays": 1871,
+        "coactive_days": 19,
+        "active_a": 196,
+        "active_c": 82,
+        "weekend_folded": 0,
+        "window": [
+          "2018-10-05",
+          "2025-12-05"
+        ],
+        "r_pearson_zeroskept": -0.0224,
+        "r_coactive_subset": -0.0343,
+        "coactive_m": 19,
+        "block_len_x": 18.2,
+        "block_len_y": 1.0,
+        "block_len_xy": 1.0,
+        "block_len_used": 18.2,
+        "boot_mean": -0.022,
+        "boot_ci95": [
+          -0.0629,
+          0.0202
+        ],
+        "boot_abs_upper": 0.0629,
+        "boot_ci_width": 0.0831,
+        "fisher_ci95_fulln": [
+          -0.0676,
+          0.023
+        ],
+        "fisher_ci95_coactive": [
+          -0.4718,
+          0.4363
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "11165/EURUSD",
+          "12778/basket"
+        ],
+        "n_businessdays": 1976,
+        "coactive_days": 17,
+        "active_a": 207,
+        "active_c": 105,
+        "weekend_folded": 0,
+        "window": [
+          "2018-05-04",
+          "2025-11-28"
+        ],
+        "r_pearson_zeroskept": -0.0056,
+        "r_coactive_subset": -0.0229,
+        "coactive_m": 17,
+        "block_len_x": 18.39,
+        "block_len_y": 1.76,
+        "block_len_xy": 1.0,
+        "block_len_used": 18.39,
+        "boot_mean": -0.0069,
+        "boot_ci95": [
+          -0.0402,
+          0.0211
+        ],
+        "boot_abs_upper": 0.0402,
+        "boot_ci_width": 0.0613,
+        "fisher_ci95_fulln": [
+          -0.0497,
+          0.0385
+        ],
+        "fisher_ci95_coactive": [
+          -0.485,
+          0.4763
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "11165/EURUSD",
+          "12969/USDJPY"
+        ],
+        "n_businessdays": 2108,
+        "coactive_days": 30,
+        "active_a": 220,
+        "active_c": 293,
+        "weekend_folded": 0,
+        "window": [
+          "2017-11-20",
+          "2025-12-17"
+        ],
+        "r_pearson_zeroskept": 0.0016,
+        "r_coactive_subset": 0.0126,
+        "coactive_m": 30,
+        "block_len_x": 16.72,
+        "block_len_y": 1.0,
+        "block_len_xy": 1.0,
+        "block_len_used": 16.72,
+        "boot_mean": 0.0018,
+        "boot_ci95": [
+          -0.0265,
+          0.0391
+        ],
+        "boot_abs_upper": 0.0391,
+        "boot_ci_width": 0.0656,
+        "fisher_ci95_fulln": [
+          -0.0411,
+          0.0443
+        ],
+        "fisher_ci95_coactive": [
+          -0.3589,
+          0.3617
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "11708/EURUSD",
+          "11910/NZDUSD"
+        ],
+        "n_businessdays": 1825,
+        "coactive_days": 11,
+        "active_a": 159,
+        "active_c": 60,
+        "weekend_folded": 0,
+        "window": [
+          "2018-06-08",
+          "2025-06-05"
+        ],
+        "r_pearson_zeroskept": 0.1004,
+        "r_coactive_subset": 0.4802,
+        "coactive_m": 11,
+        "block_len_x": 1.0,
+        "block_len_y": 1.0,
+        "block_len_xy": 1.0,
+        "block_len_used": 1.0,
+        "boot_mean": 0.0997,
+        "boot_ci95": [
+          0.0042,
+          0.2196
+        ],
+        "boot_abs_upper": 0.2196,
+        "boot_ci_width": 0.2154,
+        "fisher_ci95_fulln": [
+          0.0548,
+          0.1456
+        ],
+        "fisher_ci95_coactive": [
+          -0.5315,
+          0.6605
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "11708/EURUSD",
+          "12710/XTIUSD"
+        ],
+        "n_businessdays": 1871,
+        "coactive_days": 21,
+        "active_a": 153,
+        "active_c": 82,
+        "weekend_folded": 0,
+        "window": [
+          "2018-10-05",
+          "2025-12-05"
+        ],
+        "r_pearson_zeroskept": -0.0887,
+        "r_coactive_subset": -0.4545,
+        "coactive_m": 21,
+        "block_len_x": 1.0,
+        "block_len_y": 1.0,
+        "block_len_xy": 1.0,
+        "block_len_used": 1.0,
+        "boot_mean": -0.0892,
+        "boot_ci95": [
+          -0.2016,
+          -0.0104
+        ],
+        "boot_abs_upper": 0.2016,
+        "boot_ci_width": 0.1912,
+        "fisher_ci95_fulln": [
+          -0.1335,
+          -0.0436
+        ],
+        "fisher_ci95_coactive": [
+          -0.5012,
+          0.3566
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "11708/EURUSD",
+          "12778/basket"
+        ],
+        "n_businessdays": 1951,
+        "coactive_days": 19,
+        "active_a": 165,
+        "active_c": 104,
+        "weekend_folded": 0,
+        "window": [
+          "2018-06-08",
+          "2025-11-28"
+        ],
+        "r_pearson_zeroskept": -0.0723,
+        "r_coactive_subset": -0.4165,
+        "coactive_m": 19,
+        "block_len_x": 1.0,
+        "block_len_y": 1.75,
+        "block_len_xy": 1.0,
+        "block_len_used": 1.75,
+        "boot_mean": -0.0715,
+        "boot_ci95": [
+          -0.1493,
+          -0.0069
+        ],
+        "boot_abs_upper": 0.1493,
+        "boot_ci_width": 0.1425,
+        "fisher_ci95_fulln": [
+          -0.1163,
+          -0.028
+        ],
+        "fisher_ci95_coactive": [
+          -0.5098,
+          0.3949
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "11708/EURUSD",
+          "12969/USDJPY"
+        ],
+        "n_businessdays": 1956,
+        "coactive_days": 22,
+        "active_a": 166,
+        "active_c": 270,
+        "weekend_folded": 0,
+        "window": [
+          "2018-06-08",
+          "2025-12-05"
+        ],
+        "r_pearson_zeroskept": 0.0026,
+        "r_coactive_subset": -0.0217,
+        "coactive_m": 22,
+        "block_len_x": 1.0,
+        "block_len_y": 1.0,
+        "block_len_xy": 1.0,
+        "block_len_used": 1.0,
+        "boot_mean": 0.0026,
+        "boot_ci95": [
+          -0.0205,
+          0.0223
+        ],
+        "boot_abs_upper": 0.0223,
+        "boot_ci_width": 0.0428,
+        "fisher_ci95_fulln": [
+          -0.0417,
+          0.0469
+        ],
+        "fisher_ci95_coactive": [
+          -0.4194,
+          0.4238
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "11910/NZDUSD",
+          "12710/XTIUSD"
+        ],
+        "n_businessdays": 1740,
+        "coactive_days": 10,
+        "active_a": 56,
+        "active_c": 75,
+        "weekend_folded": 0,
+        "window": [
+          "2018-10-05",
+          "2025-06-05"
+        ],
+        "r_pearson_zeroskept": -0.0699,
+        "r_coactive_subset": -0.4893,
+        "coactive_m": 10,
+        "block_len_x": 1.0,
+        "block_len_y": 1.0,
+        "block_len_xy": 1.0,
+        "block_len_used": 1.0,
+        "boot_mean": -0.0665,
+        "boot_ci95": [
+          -0.178,
+          0.0128
+        ],
+        "boot_abs_upper": 0.178,
+        "boot_ci_width": 0.1909,
+        "fisher_ci95_fulln": [
+          -0.1165,
+          -0.023
+        ],
+        "fisher_ci95_coactive": [
+          -0.6701,
+          0.5855
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "11910/NZDUSD",
+          "12778/basket"
+        ],
+        "n_businessdays": 1850,
+        "coactive_days": 14,
+        "active_a": 60,
+        "active_c": 99,
+        "weekend_folded": 0,
+        "window": [
+          "2018-05-04",
+          "2025-06-05"
+        ],
+        "r_pearson_zeroskept": -0.0622,
+        "r_coactive_subset": -0.3979,
+        "coactive_m": 14,
+        "block_len_x": 1.0,
+        "block_len_y": 1.76,
+        "block_len_xy": 1.0,
+        "block_len_used": 1.76,
+        "boot_mean": -0.0631,
+        "boot_ci95": [
+          -0.1177,
+          -0.0138
+        ],
+        "boot_abs_upper": 0.1177,
+        "boot_ci_width": 0.1039,
+        "fisher_ci95_fulln": [
+          -0.1074,
+          -0.0166
+        ],
+        "fisher_ci95_coactive": [
+          -0.5738,
+          0.4844
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "11910/NZDUSD",
+          "12969/USDJPY"
+        ],
+        "n_businessdays": 1880,
+        "coactive_days": 16,
+        "active_a": 63,
+        "active_c": 261,
+        "weekend_folded": 0,
+        "window": [
+          "2018-03-23",
+          "2025-06-05"
+        ],
+        "r_pearson_zeroskept": -0.0443,
+        "r_coactive_subset": -0.1885,
+        "coactive_m": 16,
+        "block_len_x": 1.0,
+        "block_len_y": 1.0,
+        "block_len_xy": 1.0,
+        "block_len_used": 1.0,
+        "boot_mean": -0.0397,
+        "boot_ci95": [
+          -0.2198,
+          0.1005
+        ],
+        "boot_abs_upper": 0.2198,
+        "boot_ci_width": 0.3204,
+        "fisher_ci95_fulln": [
+          -0.0894,
+          0.0009
+        ],
+        "fisher_ci95_coactive": [
+          -0.5284,
+          0.4615
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "12710/XTIUSD",
+          "12778/basket"
+        ],
+        "n_businessdays": 1866,
+        "coactive_days": 21,
+        "active_a": 81,
+        "active_c": 101,
+        "weekend_folded": 0,
+        "window": [
+          "2018-10-05",
+          "2025-11-28"
+        ],
+        "r_pearson_zeroskept": 0.0347,
+        "r_coactive_subset": 0.0514,
+        "coactive_m": 21,
+        "block_len_x": 1.0,
+        "block_len_y": 1.77,
+        "block_len_xy": 1.0,
+        "block_len_used": 1.77,
+        "boot_mean": 0.0341,
+        "boot_ci95": [
+          -0.0879,
+          0.1505
+        ],
+        "boot_abs_upper": 0.1505,
+        "boot_ci_width": 0.2384,
+        "fisher_ci95_fulln": [
+          -0.0107,
+          0.0799
+        ],
+        "fisher_ci95_coactive": [
+          -0.4031,
+          0.4595
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "12710/XTIUSD",
+          "12969/USDJPY"
+        ],
+        "n_businessdays": 1871,
+        "coactive_days": 14,
+        "active_a": 82,
+        "active_c": 258,
+        "weekend_folded": 0,
+        "window": [
+          "2018-10-05",
+          "2025-12-05"
+        ],
+        "r_pearson_zeroskept": -0.0013,
+        "r_coactive_subset": 0.0021,
+        "coactive_m": 14,
+        "block_len_x": 1.0,
+        "block_len_y": 1.0,
+        "block_len_xy": 1.0,
+        "block_len_used": 1.0,
+        "boot_mean": -0.0014,
+        "boot_ci95": [
+          -0.0355,
+          0.0362
+        ],
+        "boot_abs_upper": 0.0362,
+        "boot_ci_width": 0.0717,
+        "fisher_ci95_fulln": [
+          -0.0467,
+          0.044
+        ],
+        "fisher_ci95_coactive": [
+          -0.5315,
+          0.5296
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      },
+      {
+        "pair": [
+          "12778/basket",
+          "12969/USDJPY"
+        ],
+        "n_businessdays": 1976,
+        "coactive_days": 16,
+        "active_a": 105,
+        "active_c": 273,
+        "weekend_folded": 0,
+        "window": [
+          "2018-05-04",
+          "2025-11-28"
+        ],
+        "r_pearson_zeroskept": 0.0146,
+        "r_coactive_subset": 0.1041,
+        "coactive_m": 16,
+        "block_len_x": 1.76,
+        "block_len_y": 1.0,
+        "block_len_xy": 1.0,
+        "block_len_used": 1.76,
+        "boot_mean": 0.015,
+        "boot_ci95": [
+          -0.0106,
+          0.0442
+        ],
+        "boot_abs_upper": 0.0442,
+        "boot_ci_width": 0.0548,
+        "fisher_ci95_fulln": [
+          -0.0296,
+          0.0586
+        ],
+        "fisher_ci95_coactive": [
+          -0.4846,
+          0.5066
+        ],
+        "certifiable_orthogonal": true,
+        "tool_min_overlap60_verdict": "insufficient_overlap(None)"
+      }
+    ],
+    "matrix_labels": [
+      "1556/XAUUSD",
+      "11132/SP500",
+      "11165/AUDCAD",
+      "11165/EURUSD",
+      "11708/EURUSD",
+      "11910/NZDUSD",
+      "12710/XTIUSD",
+      "12778/basket",
+      "12969/USDJPY"
+    ],
+    "matrix_raw": [
+      [
+        1.0,
+        0.0275,
+        -0.0599,
+        -0.0373,
+        -0.0931,
+        -0.1115,
+        0.0382,
+        -0.0403,
+        -0.0126
+      ],
+      [
+        0.0275,
+        1.0,
+        0.018,
+        -0.0232,
+        0.0739,
+        -0.0295,
+        0.0181,
+        0.0073,
+        -0.0028
+      ],
+      [
+        -0.0599,
+        0.018,
+        1.0,
+        0.0039,
+        -0.0404,
+        0.0094,
+        -0.0572,
+        -0.0455,
+        -0.0122
+      ],
+      [
+        -0.0373,
+        -0.0232,
+        0.0039,
+        1.0,
+        -0.0393,
+        0.0012,
+        -0.0224,
+        -0.0056,
+        0.0016
+      ],
+      [
+        -0.0931,
+        0.0739,
+        -0.0404,
+        -0.0393,
+        1.0,
+        0.1004,
+        -0.0887,
+        -0.0723,
+        0.0026
+      ],
+      [
+        -0.1115,
+        -0.0295,
+        0.0094,
+        0.0012,
+        0.1004,
+        1.0,
+        -0.0699,
+        -0.0622,
+        -0.0443
+      ],
+      [
+        0.0382,
+        0.0181,
+        -0.0572,
+        -0.0224,
+        -0.0887,
+        -0.0699,
+        1.0,
+        0.0347,
+        -0.0013
+      ],
+      [
+        -0.0403,
+        0.0073,
+        -0.0455,
+        -0.0056,
+        -0.0723,
+        -0.0622,
+        0.0347,
+        1.0,
+        0.0146
+      ],
+      [
+        -0.0126,
+        -0.0028,
+        -0.0122,
+        0.0016,
+        0.0026,
+        -0.0443,
+        -0.0013,
+        0.0146,
+        1.0
+      ]
+    ],
+    "min_eigenvalue": 0.777283,
+    "psd": true,
+    "enb_raw": 8.838,
+    "enb_shrunk": 8.924,
+    "delta_lw_toward_identity": 0.8416,
+    "delta_psd_ridge": 0.0,
+    "matrix_shrunk": [
+      [
+        1.0,
+        0.0124,
+        -0.0318,
+        -0.0133,
+        -0.0654,
+        -0.076,
+        0.0035,
+        -0.0117,
+        -0.0062
+      ],
+      [
+        0.0124,
+        1.0,
+        0.005,
+        -0.0147,
+        0.0507,
+        -0.0184,
+        0.0022,
+        0.0003,
+        -0.0001
+      ],
+      [
+        -0.0318,
+        0.005,
+        1.0,
+        0.0002,
+        -0.0249,
+        0.0059,
+        -0.0385,
+        -0.0332,
+        -0.0055
+      ],
+      [
+        -0.0133,
+        -0.0147,
+        0.0002,
+        1.0,
+        -0.0292,
+        0.0,
+        -0.0118,
+        -0.0006,
+        0.0
+      ],
+      [
+        -0.0654,
+        0.0507,
+        -0.0249,
+        -0.0292,
+        1.0,
+        0.0773,
+        -0.0681,
+        -0.0577,
+        0.0001
+      ],
+      [
+        -0.076,
+        -0.0184,
+        0.0059,
+        0.0,
+        0.0773,
+        1.0,
+        -0.0471,
+        -0.0526,
+        -0.0101
+      ],
+      [
+        0.0035,
+        0.0022,
+        -0.0385,
+        -0.0118,
+        -0.0681,
+        -0.0471,
+        1.0,
+        0.0085,
+        -0.0
+      ],
+      [
+        -0.0117,
+        0.0003,
+        -0.0332,
+        -0.0006,
+        -0.0577,
+        -0.0526,
+        0.0085,
+        1.0,
+        0.0076
+      ],
+      [
+        -0.0062,
+        -0.0001,
+        -0.0055,
+        0.0,
+        0.0001,
+        -0.0101,
+        -0.0,
+        0.0076,
+        1.0
+      ]
+    ]
+  },
+  "controls": {
+    "positive_same_ea_11165": {
+      "pair": [
+        "11165/AUDCAD",
+        "11165/EURUSD"
+      ],
+      "r": 0.0039,
+      "coactive": 27,
+      "n": 2100,
+      "block_len": 16.86,
+      "boot_ci95": [
+        -0.0322,
+        0.0377
+      ],
+      "boot_abs_upper": 0.0377,
+      "certifiable_orthogonal": true,
+      "null_abs_p975": 0.0515,
+      "null_frac_ge_0p5": 0.0
+    },
+    "positive_identity_12969": {
+      "r": 1.0
+    }
+  },
+  "detection_power": {
+    "base": "12969/USDJPY",
+    "curve": [
+      {
+        "k_coactive": 2,
+        "reps": 200,
+        "median_r": 0.047,
+        "median_boot_abs_upper": 0.086,
+        "reject_rate": 0.0
+      },
+      {
+        "k_coactive": 3,
+        "reps": 200,
+        "median_r": 0.067,
+        "median_boot_abs_upper": 0.121,
+        "reject_rate": 0.01
+      },
+      {
+        "k_coactive": 5,
+        "reps": 200,
+        "median_r": 0.099,
+        "median_boot_abs_upper": 0.17,
+        "reject_rate": 0.005
+      },
+      {
+        "k_coactive": 8,
+        "reps": 200,
+        "median_r": 0.127,
+        "median_boot_abs_upper": 0.21,
+        "reject_rate": 0.03
+      },
+      {
+        "k_coactive": 10,
+        "reps": 200,
+        "median_r": 0.145,
+        "median_boot_abs_upper": 0.228,
+        "reject_rate": 0.025
+      },
+      {
+        "k_coactive": 12,
+        "reps": 200,
+        "median_r": 0.165,
+        "median_boot_abs_upper": 0.257,
+        "reject_rate": 0.055
+      },
+      {
+        "k_coactive": 15,
+        "reps": 200,
+        "median_r": 0.184,
+        "median_boot_abs_upper": 0.282,
+        "reject_rate": 0.09
+      },
+      {
+        "k_coactive": 20,
+        "reps": 200,
+        "median_r": 0.229,
+        "median_boot_abs_upper": 0.343,
+        "reject_rate": 0.125
+      },
+      {
+        "k_coactive": 25,
+        "reps": 200,
+        "median_r": 0.245,
+        "median_boot_abs_upper": 0.347,
+        "reject_rate": 0.17
+      },
+      {
+        "k_coactive": 30,
+        "reps": 200,
+        "median_r": 0.28,
+        "median_boot_abs_upper": 0.388,
+        "reject_rate": 0.275
+      },
+      {
+        "k_coactive": 40,
+        "reps": 200,
+        "median_r": 0.347,
+        "median_boot_abs_upper": 0.487,
+        "reject_rate": 0.445
+      },
+      {
+        "k_coactive": 50,
+        "reps": 200,
+        "median_r": 0.377,
+        "median_boot_abs_upper": 0.511,
+        "reject_rate": 0.555
+      }
+    ],
+    "k_star_reject95": null
+  },
+  "null_calibration": {
+    "pairs": [
+      {
+        "pair": [
+          "1556/XAUUSD",
+          "11132/SP500"
+        ],
+        "null_abs_p975": 0.0644,
+        "null_frac_ge_0p5": 0.0
+      },
+      {
+        "pair": [
+          "1556/XAUUSD",
+          "11165/AUDCAD"
+        ],
+        "null_abs_p975": 0.0727,
+        "null_frac_ge_0p5": 0.0
+      },
+      {
+        "pair": [
+          "1556/XAUUSD",
+          "11165/EURUSD"
+        ],
+        "null_abs_p975": 0.0537,
+        "null_frac_ge_0p5": 0.0
+      },
+      {
+        "pair": [
+          "1556/XAUUSD",
+          "11708/EURUSD"
+        ],
+        "null_abs_p975": 0.0647,
+        "null_frac_ge_0p5": 0.0
+      },
+      {
+        "pair": [
+          "1556/XAUUSD",
+          "11910/NZDUSD"
+        ],
+        "null_abs_p975": 0.0657,
+        "null_frac_ge_0p5": 0.0
+      },
+      {
+        "pair": [
+          "1556/XAUUSD",
+          "12710/XTIUSD"
+        ],
+        "null_abs_p975": 0.0755,
+        "null_frac_ge_0p5": 0.0
+      },
+      {
+        "pair": [
+          "1556/XAUUSD",
+          "12778/basket"
+        ],
+        "null_abs_p975": 0.0727,
+        "null_frac_ge_0p5": 0.0
+      },
+      {
+        "pair": [
+          "1556/XAUUSD",
+          "12969/USDJPY"
+        ],
+        "null_abs_p975": 0.0699,
+        "null_frac_ge_0p5": 0.0
+      },
+      {
+        "pair": [
+          "11132/SP500",
+          "11165/AUDCAD"
+        ],
+        "null_abs_p975": 0.0644,
+        "null_frac_ge_0p5": 0.0
+      },
+      {
+        "pair": [
+          "11132/SP500",
+          "11165/EURUSD"
+        ],
+        "null_abs_p975": 0.0597,
+        "null_frac_ge_0p5": 0.0
+      },
+      {
+        "pair": [
+          "11132/SP500",
+          "11708/EURUSD"
+        ],
+        "null_abs_p975": 0.0612,
+        "null_frac_ge_0p5": 0.0
+      },
+      {
+        "pair": [
+          "11132/SP500",
+          "11910/NZDUSD"
+        ],
+        "null_abs_p975": 0.0654,
+        "null_frac_ge_0p5": 0.0
+      },
+      {
+        "pair": [
+          "11132/SP500",
+          "12710/XTIUSD"
+        ],
+        "null_abs_p975": 0.0691,
+        "null_frac_ge_0p5": 0.0
+      },
+      {
+        "pair": [
+          "11132/SP500",
+          "12778/basket"
+        ],
+        "null_abs_p975": 0.0622,
+        "null_frac_ge_0p5": 0.0
+      },
+      {
+        "pair": [
+          "11132/SP500",
+          "12969/USDJPY"
+        ],
+        "null_abs_p975": 0.0615,
+        "null_frac_ge_0p5": 0.0
+      },
+      {
+        "pair": [
+          "11165/AUDCAD",
+          "11165/EURUSD"
+        ],
+        "null_abs_p975": 0.0533,
+        "null_frac_ge_0p5": 0.0
+      },
+      {
+        "pair": [
+          "11165/AUDCAD",
+          "11708/EURUSD"
+        ],
+        "null_abs_p975": 0.0575,
+        "null_frac_ge_0p5": 0.0
+      },
+      {
+        "pair": [
+          "11165/AUDCAD",
+          "11910/NZDUSD"
+        ],
+        "null_abs_p975": 0.0591,
+        "null_frac_ge_0p5": 0.0
+      },
+      {
+        "pair": [
+          "11165/AUDCAD",
+          "12710/XTIUSD"
+        ],
+        "null_abs_p975": 0.0608,
+        "null_frac_ge_0p5": 0.0
+      },
+      {
+        "pair": [
+          "11165/AUDCAD",
+          "12778/basket"
+        ],
+        "null_abs_p975": 0.0639,
+        "null_frac_ge_0p5": 0.0
+      },
+      {
+        "pair": [
+          "11165/AUDCAD",
+          "12969/USDJPY"
+        ],
+        "null_abs_p975": 0.0527,
+        "null_frac_ge_0p5": 0.0
+      },
+      {
+        "pair": [
+          "11165/EURUSD",
+          "11708/EURUSD"
+        ],
+        "null_abs_p975": 0.0544,
+        "null_frac_ge_0p5": 0.0
+      },
+      {
+        "pair": [
+          "11165/EURUSD",
+          "11910/NZDUSD"
+        ],
+        "null_abs_p975": 0.0658,
+        "null_frac_ge_0p5": 0.0
+      },
+      {
+        "pair": [
+          "11165/EURUSD",
+          "12710/XTIUSD"
+        ],
+        "null_abs_p975": 0.0583,
+        "null_frac_ge_0p5": 0.0
+      },
+      {
+        "pair": [
+          "11165/EURUSD",
+          "12778/basket"
+        ],
+        "null_abs_p975": 0.054,
+        "null_frac_ge_0p5": 0.0
+      },
+      {
+        "pair": [
+          "11165/EURUSD",
+          "12969/USDJPY"
+        ],
+        "null_abs_p975": 0.0548,
+        "null_frac_ge_0p5": 0.0
+      },
+      {
+        "pair": [
+          "11708/EURUSD",
+          "11910/NZDUSD"
+        ],
+        "null_abs_p975": 0.0686,
+        "null_frac_ge_0p5": 0.0
+      },
+      {
+        "pair": [
+          "11708/EURUSD",
+          "12710/XTIUSD"
+        ],
+        "null_abs_p975": 0.0665,
+        "null_frac_ge_0p5": 0.0
+      },
+      {
+        "pair": [
+          "11708/EURUSD",
+          "12778/basket"
+        ],
+        "null_abs_p975": 0.0566,
+        "null_frac_ge_0p5": 0.0
+      },
+      {
+        "pair": [
+          "11708/EURUSD",
+          "12969/USDJPY"
+        ],
+        "null_abs_p975": 0.054,
+        "null_frac_ge_0p5": 0.0
+      },
+      {
+        "pair": [
+          "11910/NZDUSD",
+          "12710/XTIUSD"
+        ],
+        "null_abs_p975": 0.0705,
+        "null_frac_ge_0p5": 0.0
+      },
+      {
+        "pair": [
+          "11910/NZDUSD",
+          "12778/basket"
+        ],
+        "null_abs_p975": 0.0637,
+        "null_frac_ge_0p5": 0.0
+      },
+      {
+        "pair": [
+          "11910/NZDUSD",
+          "12969/USDJPY"
+        ],
+        "null_abs_p975": 0.0581,
+        "null_frac_ge_0p5": 0.0
+      },
+      {
+        "pair": [
+          "12710/XTIUSD",
+          "12778/basket"
+        ],
+        "null_abs_p975": 0.0679,
+        "null_frac_ge_0p5": 0.0
+      },
+      {
+        "pair": [
+          "12710/XTIUSD",
+          "12969/USDJPY"
+        ],
+        "null_abs_p975": 0.0591,
+        "null_frac_ge_0p5": 0.0
+      },
+      {
+        "pair": [
+          "12778/basket",
+          "12969/USDJPY"
+        ],
+        "null_abs_p975": 0.0541,
+        "null_frac_ge_0p5": 0.0
+      }
+    ],
+    "worst_null_abs_p975": 0.0755,
+    "any_false_positive": false
+  }
+}

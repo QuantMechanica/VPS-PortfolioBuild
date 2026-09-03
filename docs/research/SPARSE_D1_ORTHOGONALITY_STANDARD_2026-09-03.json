@@ -1,0 +1,131 @@
+{
+  "doc": "docs/research/SPARSE_D1_ORTHOGONALITY_STANDARD_2026-09-03.md",
+  "generated_at_utc": "2026-09-03",
+  "scope": "Book-Ceremony runbook gap G3 / OWNER Vorlage V4: orthogonality standard for sparse D1 sleeves supplementing the Vault Q15 hard rule |r|<0.5 on Q10 equity curves.",
+  "authority": "Estimator + decision-rule SHAPE adopted; all gate thresholds are ROT and left to OWNER. No invented thresholds.",
+  "merge": {"branch_ff_merged": "agents/board-advisor", "from_sha": "a92cda60fe1e62eeee73de6068dd2634dba490d2", "to_sha": "d0367451a2fd883e779a5dcfc797e18e089656e9", "ff_only": true},
+  "cited_source_files_sha16": {
+    "tools/strategy_farm/portfolio/portfolio_correlation.py": "ec0a890b49502c5e",
+    "tools/strategy_farm/portfolio/portfolio_common.py": "905bc2a4a71fb94d",
+    "tools/strategy_farm/portfolio/build_book_ftmo.py": "31d0e81509cd6609",
+    "tools/strategy_farm/book_build_guard.py": "8c11e369f19852af",
+    "docs/ops/BOOK_CEREMONY_RUNBOOK_2026-09.md": "e903e472feaf4bd4",
+    "docs/ops/evidence/2026-09-03_shadow_book_evaluation_39b77657_dossier.md": "3d28b6927b0c0477"
+  },
+  "adopted_method": {
+    "shape": "two_layer_fail_closed",
+    "layer_a_primary_certifier": {
+      "name": "ZK-SBB (Zeros-Kept daily-return Pearson + stationary block-bootstrap CI)",
+      "estimand": "daily-return correlation of the two equity curves = the Q15 hard-rule object",
+      "window": "exogenous Mon-Fri business-day grid over the COMMON-SUPPORT intersection window [max(first_a,first_b)..min(last_a,last_b)]; non-trade days kept as real zeros",
+      "point_estimate": "Pearson r on zeros-kept vectors",
+      "uncertainty": "stationary block bootstrap (Politis-Romano 1994); block length auto (Politis-White 2004 / PPW 2009), b=max(b_x,b_y,b_xy); report |r|_upper=max(|r_lo|,|r_hi|)",
+      "verdict": "CERTIFY_A iff bootstrap 95% CI subset (-0.5,+0.5) [= build_book_ftmo.py:70 default 0.50]; else ABSTAIN (fail-closed)"
+    },
+    "layer_b_supplementary_flag": {
+      "name": "COS (trade-level open-position co-occupancy + exact circular-shift null)",
+      "role": "FLAG only, not a certifier (surrogate estimand: time-in-market != return co-movement)",
+      "occupancy": "D_s = union over trades of [entry_day..exit_day] inclusive; entry_time schema portfolio_common.py:55",
+      "estimators": {"O_ab": "sum_i o_a[i]*o_b[i]", "E_ab": "n_a*n_b/T (exact shift-null mean)", "lambda": "O_ab/E_ab", "null": "exact all-T circular shift via FFT; p_upper=#{delta:O(delta)>=O}/T >= 1/T (Phipson-Smyth 2010)", "fdr": "Benjamini-Hochberg 1995", "signed_same_instrument": "Psi = (#same_dir - #opp_dir)/O_ab, reported only if O_ab>=20"},
+      "flag": "FLAG_B iff BH-adjusted p_upper<=alpha AND lambda>lambda* AND (where defined) Psi indicates same-direction stacking",
+      "untestable": "UNTESTABLE_SATURATION when a sleeve occupies large ring fraction -> route to Layer A"
+    },
+    "combined_rule_below_60_coactive_days": {
+      "CERTIFY_A + not_flagged": "CERTIFY_ORTHOGONAL (screening prior)",
+      "CERTIFY_A + FLAG_B": "REVIEW (escalate to family/tail caps)",
+      "ABSTAIN": "ABSTAIN (not admitted)",
+      "both_untestable": "ABSTAIN"
+    },
+    "above_60_coactive_days": "incumbent Pearson |r|<0.5 on zeros-kept common-support window is decisive; Layer B advisory",
+    "separation_of_concerns": "cross-symbol economic correlation, signal-family redundancy, tail co-crash remain with select_under_aggregate_control (build_book_ftmo.py:181) + family<=3/symbol<=2 caps, never this screen"
+  },
+  "vorlage_v4": {
+    "option_a": {"label": "status quo sparse Pearson as screening prior", "consequence": "portfolio_correlation.py returns None for 0/46 book-relevant pairs (dossier 3c); |r|<0.5 control fail-OPEN by omission", "verdict": "reject"},
+    "option_b": {"label": "require fresh Q14-terminal streams with >=60-day overlap before any orthogonality claim (dossier 3c rec)", "consequence": "gold standard but structurally UNSATISFIABLE for this cadence (activity criterion yields ~2 expected co-active exit days, never 60); permanently defers the control", "verdict": "keep as standing gold standard, cannot be the only control"},
+    "option_c": {"label": "adopt two-layer sparse-D1 standard; Pearson |r|<0.5 decisive above 60 co-active exit-days", "verdict": "RECOMMENDED"},
+    "recommendation": "Option (c), with (b) as the standing gold standard it supplements not replaces. Ratify the METHOD now (GRUEN/GELB); defer numeric thresholds (ROT) to first SHA-frozen Q14-terminal calibration cohort.",
+    "cost_of_wait": "LOW today (binding gate is the 25-floor: qualified_pairs=5 allowed=false; no book buildable). Front-loaded: leaving V4 at (a)/(b) means the control is still fail-open-by-omission / unsatisfiable when census reaches 25, stalling Q15 then. Ratifying the method now costs nothing today and removes that future stall."
+  },
+  "proposed_defaults_OWNER_RATIFY": {
+    "layer_a_gate": "CI subset (-0.5,+0.5) [Vault Q15 = build_book_ftmo.py:70]",
+    "layer_a_caution_band": "|r|_upper within 0.05 of 0.5 -> PROVISIONAL",
+    "layer_b_alpha": 0.05,
+    "layer_b_fdr": "Benjamini-Hochberg 1995",
+    "layer_b_lambda_star": 1.5,
+    "cos_testability_floor": {"E_ab_min": 5, "occupancy_days_min_per_sleeve": 30},
+    "signed_layer_report_floor_O_ab": 20,
+    "bootstrap": {"B": 4000, "seed": "reported"},
+    "status_tag": "WORKING_DEFAULT_OPEN_OWNER_ITEM (mirror build_book_ftmo.py:70-71,291)"
+  },
+  "portfolio_correlation_py_changes_design_only": [
+    {"change": "replace value=None silent drop with structured fail-closed verdict {CERTIFY_ORTHOGONAL|REVIEW|ABSTAIN|UNTESTABLE}", "current_behavior": "portfolio_correlation.py:108-110"},
+    {"change": "remove both-nonzero subset; compute Layer A on Mon-Fri intersection-window zeros-kept vectors", "current_behavior": "portfolio_correlation.py:102-106 (subset); portfolio_common.py:531-548 (union align)"},
+    {"change": "add occupancy series from entry_time..time for Layer B; keep to_daily_pnl for Layer A", "current_behavior": "portfolio_common.py:55 (entry_time), :509 (to_daily_pnl)"},
+    {"change": "emit per-pair {co_active_exit_days, layer_a{r_hat,ci_lo,ci_hi,b_block,verdict}, layer_b{lambda,p_upper,bh_reject,psi|null,testable}, verdict}", "current_behavior": "portfolio_correlation.py:94,115-116 scalar correlation|None matrix"},
+    {"change": "parameterize alpha,lambda*,caution band,B,seed as WORKING_DEFAULT_OPEN_OWNER_ITEM config", "current_behavior": "build_book_ftmo.py:70-71,291"}
+  ],
+  "refutation_criteria": [
+    "1 no-discrimination: same-EA-two-symbols positive control must FLAG on Layer B (else refuted)",
+    "2 benign-reparam: verdict sign must be invariant to calendar-vs-weekday ring, +-1 day occupancy, granularity (weekday rerun NOT yet run)",
+    "3 occupancy saturation: high-occupancy sleeves must be UNTESTABLE_SATURATION -> Layer A (else refuted if book admitted on saturation artifacts)",
+    "4 P&L/CI cross-check: a Layer-B pass with strongly same-signed shared-day P&L, or a Layer-A CERTIFY realizing |r|>=0.5 OOS on SHA-bound streams, refutes that pair -> abstain",
+    "5 Layer-A honesty controls: rotation negative control must not be anti-conservative; identity must reject; partial-clone power curve must be monotone rising"
+  ],
+  "minimum_data": {
+    "layer_a": "self-calibrating; CI must clear +-0.5; starvation -> wide CI -> ABSTAIN. Reported adequacy ~m>=8-12 co-active days for near-zero pairs; heavy-tailed pairs stay wide even at m=50 (decision rides CI not day count).",
+    "layer_b_power_boundary_proposal_measured": "E_ab>=5 AND n_a,n_b>=30 occupancy days = testable at lambda>=1.5 p<0.05; underpowered only for 1537/XAGUSD (22 trades)",
+    "signed_layer": "O_ab>=20 same-instrument co-days",
+    "activity_criterion_tie_in": "a sleeve passing >=10 entry-days/scored-year accumulates ~150-600 occupancy days -> E_ab~7.5>=5 (Layer-B testable) while expected co-active EXIT days ~2 (Pearson-on-exit structurally empty). The ratified criterion guarantees co-activity testability while leaving the 60-exit-day floor unreachable."
+  },
+  "measured_results": {
+    "tier_1_verified_in_tree": {
+      "note": "quoted from dossier 3d28b6.. (read-only-DB sourced) and source file:line; independently citable",
+      "min_overlap_floor": {"value": 60, "source": "portfolio_correlation.py:44"},
+      "q15_pairwise_default": {"value": 0.50, "source": "build_book_ftmo.py:70 WORKING_DEFAULT_MAX_PAIRWISE_CORRELATION"},
+      "max_coactive_exit_overlap_audited": {"value_days": 50, "pair": "1556/XAUUSD x 12710/XTIUSD", "source": "dossier 3c"},
+      "max_zero_filled_abs_r_audited": {"value": 0.102, "pair": "11910/NZDUSD x 1556/XAUUSD", "source": "dossier 3c"},
+      "pairs_reaching_60_floor": {"value": 0, "source": "dossier 3c"},
+      "union_window": {"value": "2017-10-10..2025-12-30", "source": "dossier 3a"},
+      "audited_streams_available": {"value": "9 of 16", "source": "dossier 3b"},
+      "streams_binding_current_binary": {"value": "3 of 9 (1556,11708,12969)", "source": "dossier 3b/3c"},
+      "qualified_pool": {"qualified_pairs": 5, "allowed": false, "reasons": ["qualified_pairs_below_minimum 5<25", "owner_order_missing"], "identities": ["QM5_10706/GBPUSD", "QM5_11421/EURUSD", "QM5_11422/USDCAD", "QM5_13054/XTIUSD", "QM5_1537/XAGUSD"], "source": "dossier 2 (book_build_guard --status --venue both, this session, read-only)"},
+      "per_stream_stats": [
+        {"member": "1556/XAUUSD", "trades": 53, "active_days": 53, "first": "2019-02-01", "last": "2025-12-05", "net_usd": 6619.1, "binding": "representative", "sha16": "b1e84c8a1e8c74f8"},
+        {"member": "11132/SP500", "trades": 73, "active_days": 73, "first": "2019-05-10", "last": "2025-12-23", "net_usd": 6919.9, "binding": "superseded_set", "sha16": "35aef7994a5b8f57"},
+        {"member": "11165/AUDCAD", "trades": 181, "active_days": 181, "first": "2017-10-19", "last": "2025-12-05", "net_usd": 2143.1, "binding": "superseded_set", "sha16": "46354e14c7ce9a31"},
+        {"member": "11165/EURUSD", "trades": 223, "active_days": 220, "first": "2017-11-20", "last": "2025-12-17", "net_usd": 761.4, "binding": "superseded_set", "sha16": "e30270fa71a427e5"},
+        {"member": "11708/EURUSD", "trades": 173, "active_days": 166, "first": "2018-06-08", "last": "2025-12-05", "net_usd": 2607.6, "binding": "representative", "sha16": "0fbccdfed14837c8"},
+        {"member": "11910/NZDUSD", "trades": 63, "active_days": 63, "first": "2018-03-23", "last": "2025-06-05", "net_usd": 2509.5, "binding": "superseded_ex5_set", "sha16": "92c51571583c99de"},
+        {"member": "12710/XTIUSD", "trades": 82, "active_days": 82, "first": "2018-10-05", "last": "2025-12-05", "net_usd": 7579.5, "binding": "superseded_unbound", "sha16": "c09e9ea0bdeb4d88"},
+        {"member": "12778/AUDUSD.EURJPY", "trades": 210, "active_days": 105, "first": "2018-05-04", "last": "2025-11-28", "net_usd": 4502.8, "binding": "superseded_unbound", "sha16": "276adef910f3eca3"},
+        {"member": "12969/USDJPY", "trades": 300, "active_days": 300, "first": "2017-10-10", "last": "2025-12-30", "net_usd": 10848.6, "binding": "representative", "sha16": "1788388f79e41977"}
+      ]
+    },
+    "tier_2_proposal_reported_NOT_reproduced": {
+      "PROVENANCE_CAVEAT": "Both proposals cite estimator scripts + result JSONs (docs/research/2026-09-03_sparse_coactivity_orthogonality_{probe.py,results.json}; docs/ops/evidence/2026-09-03_sparse_d1_orthogonality_{estimator.py,results.json}). ALL FOUR ABSENT from worktree (verified ls at HEAD d0367451a2, 2026-09-03). Numbers below are self-reported by proposal authors, NOT re-executed here. Must be re-run in-tree on SHA-frozen Q14-terminal streams before ratification.",
+      "cos_positive_control": {"pair": "11165:AUDCAD x 11165:EURUSD", "lambda": 1.90, "O": 64, "p_upper": 0.0013, "bh_reject": true, "pearson_both_nonzero": -0.015, "pearson_zero_filled": 0.002},
+      "cos_headline_hidden_concentration": {"pair": "12710:XTIUSD x 1556:XAUUSD", "lambda": 8.61, "O": 216, "p_upper": 0.0003, "pearson_approx": 0.001},
+      "cos_signed_layer": {"pair": "11165:EURUSD x 11708:EURUSD", "lambda": 1.86, "p_upper": 0.0013, "psi": -0.75, "n": 72},
+      "cos_audited_summary": {"pairs": 36, "testable": 36, "lambda_range": [0.84, 8.61], "p_lt_0.05": 24, "bh_survive_0.05": 18},
+      "cos_qualified_summary": {"pairs": 10, "testable": 8, "underpowered_pairs_involving": "1537/XAGUSD", "lambda_range": [0.79, 1.82], "p_lt_0.05": 2, "bh_survive": 0, "flags": [{"pair": "13054:XTIUSD x 11422:USDCAD", "lambda": 1.67, "p_upper": 0.008}, {"pair": "13054:XTIUSD x 11421:EURUSD", "lambda": 1.66, "p_upper": 0.037}]},
+      "zksbb_qualified": {"pairs": 10, "certify": 10, "point_abs_r_range": [0.003, 0.104], "fragile_pair": {"pair": "11421:EURUSD x 1537:XAGUSD", "co_active": 2, "ci": [-0.46, 0.28], "abs_r_upper": 0.465, "verdict": "ABSTAIN (caution band)"}},
+      "zksbb_audited": {"pairs": 36, "certify": 36, "max_co_active": 50},
+      "zksbb_controls": {"negative_rotation_null_worst_abs_r_97.5": 0.0755, "false_positive_rate": 0.000, "identity_r": 1.0, "identity_rejected": true, "power_curve_reject_k2_to_k50": [0.00, 0.56], "same_ea_11165_audcad_eurusd_r": 0.0039}
+    }
+  },
+  "judge_synthesis": {
+    "panel_split": "1-1",
+    "statistical_validity_lens": {"best": "ZK-SBB", "scores": {"ZK-SBB": 8, "COS": 7}, "reason": "ZK-SBB keeps the Q15 estimand identical and fixes two confirmed defects (both-nonzero selection bias; union-window fabricated zeros); COS's exact null is on a surrogate whose gap is exhibited by its own Lambda=8.61 at r~0.001"},
+    "goodhart_lens": {"best": "COS", "scores": {"COS": 8, "ZK-SBB": 7}, "reason": "COS position-open observable is immune to exit-timing games and catches same-EA/two-symbol redundancy daily-r certifies orthogonal; ZK-SBB inherits exit-day P&L bucketing so held-but-unexited co-exposure reads as flat"},
+    "resolution": "Adopt both: ZK-SBB primary certifier on the true Q15 object with fail-closed abstain; COS mandatory supplementary flag for co-timing/family redundancy that daily-r is blind to. Both proposals self-frame as supplementing |r|<0.5 and the separate family/tail caps."
+  },
+  "limitations": [
+    "screening prior not book-grade: <=50 co-active days, 6/9 audited streams superseded, qualified streams in mutable Common\\Files export",
+    "Layer A construct gap: daily-r blind to family redundancy (same-EA r~0.004) and tail co-crash -> family<=3/symbol<=2 + tail caps stay separate",
+    "Layer B construct gap: co-occupancy is a surrogate for drawdown-clustering (flag not certifier)",
+    "cross-symbol sign undefined without FX/asset factor model; signed layer same-instrument only",
+    "thresholds are ROT/OWNER; proposed defaults not set here",
+    "NOT yet run: weekday-vs-calendar ring robustness rerun + in-tree re-execution of both estimators (prerequisites before treated as measured evidence)"
+  ],
+  "mutation_statement": "Read-only synthesis. No code, gate threshold, verdict, trade stream, queue row, portfolio_candidates state, book, manifest, weight, or live/T_Live state created or changed. Nothing written outside this worktree docs/research/."
+}
