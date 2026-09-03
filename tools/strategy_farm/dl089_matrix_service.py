@@ -790,35 +790,92 @@ def _program_binding_guard(
         )
 
     rows = _program_matrix_rows(conn, program_id)
+    # The census driver appends rows AFTER the 1,085 declared annual cells and
+    # they legitimately share the program id (2026-09-03 regression: the
+    # 2026-09-02 guard treated them as owner changes and froze every program
+    # exactly at PATTERN_SELECTION_READY, e.g. QM5_13054/XTIUSD):
+    #   * derived measurement rows (``:wfN:combo:``, ``:numeric:``,
+    #     ``:final_fullwindow:``) whose cell_key lies outside the declaration,
+    #     created without ``parent_task_id`` and, for WF rows, without a
+    #     payload Q12 binding;
+    #   * driver INFRA_FAIL reruns: same declared cell_key, new UUID, payload
+    #     ``append_only_rerun_of`` naming the declared cell, no parent_task_id.
+    # Ownership is therefore proven by the declared annual rows; the other
+    # classes never transfer ownership but every binding they DO carry must
+    # still name this exact Q12 owner and declaration.
+    declared_rows: list[tuple[sqlite3.Row, dict[str, Any]]] = []
+    rerun_rows: list[tuple[sqlite3.Row, dict[str, Any]]] = []
+    derived_rows: list[tuple[sqlite3.Row, dict[str, Any]]] = []
+    unclassified: list[str] = []
+    for row, payload in rows:
+        row_id = str(row["id"])
+        key = str(payload.get("cell_key") or "")
+        if row_id in expected_ids:
+            declared_rows.append((row, payload))
+        elif key in expected_keys and str(payload.get("append_only_rerun_of") or ""):
+            rerun_rows.append((row, payload))
+        elif key and key not in expected_keys:
+            derived_rows.append((row, payload))
+        else:
+            unclassified.append(row_id)
+    if unclassified:
+        raise MatrixServiceError(
+            "PROGRAM_CELL_IDENTITY_MISMATCH: "
+            f"program={program_id} rows={len(rows)} expected={len(expected_ids)} "
+            f"unclassified={sorted(unclassified)[:5]}"
+        )
     if rows:
-        row_ids = {str(row["id"]) for row, _payload_row in rows}
-        row_keys = {str(payload.get("cell_key") or "") for _row, payload in rows}
+        row_ids = {str(row["id"]) for row, _payload_row in declared_rows}
+        row_keys = {
+            str(payload.get("cell_key") or "") for _row, payload in declared_rows
+        }
         q12_bindings = {
-            str(payload.get("q12_work_item_id") or "") for _row, payload in rows
+            str(payload.get("q12_work_item_id") or "") for _row, payload in declared_rows
         }
         parent_bindings = {
-            str(row["parent_task_id"] or "") for row, _payload_row in rows
+            str(row["parent_task_id"] or "") for row, _payload_row in declared_rows
         }
-        declaration_bindings = {
-            str(payload.get("q12_declaration_sha256") or "")
-            for _row, payload in rows
-        }
-        if q12_bindings != {q12_id} or parent_bindings != {q12_id}:
+        # Rows outside the declaration: bindings are optional, but never foreign.
+        extra_q12_bindings = {
+            str(payload.get("q12_work_item_id") or "")
+            for _row, payload in rerun_rows + derived_rows
+        } - {""}
+        extra_parent_bindings = {
+            str(row["parent_task_id"] or "") for row, _payload_row in rerun_rows + derived_rows
+        } - {""}
+        if (
+            (declared_rows and (q12_bindings != {q12_id} or parent_bindings != {q12_id}))
+            or extra_q12_bindings - {q12_id}
+            or extra_parent_bindings - {q12_id}
+        ):
             raise MatrixServiceError(
                 "PROGRAM_Q12_REBIND_REFUSED: "
                 f"program={program_id} requested={q12_id} "
-                f"cell_q12={sorted(q12_bindings)} parent_task={sorted(parent_bindings)}"
+                f"cell_q12={sorted(q12_bindings | extra_q12_bindings)} "
+                f"parent_task={sorted(parent_bindings | extra_parent_bindings)}"
             )
-        if declaration_bindings != {declaration_sha}:
+        declaration_bindings = {
+            str(payload.get("q12_declaration_sha256") or "")
+            for _row, payload in declared_rows
+        }
+        extra_declaration_bindings = {
+            str(payload.get("q12_declaration_sha256") or "")
+            for _row, payload in rerun_rows + derived_rows
+        } - {""}
+        if (
+            (declared_rows and declaration_bindings != {declaration_sha})
+            or extra_declaration_bindings - {declaration_sha}
+        ):
             raise MatrixServiceError(
                 "PROGRAM_DECLARATION_REBIND_REFUSED: "
                 f"program={program_id} requested={declaration_sha} "
-                f"cell_declaration={sorted(declaration_bindings)}"
+                f"cell_declaration={sorted(declaration_bindings | extra_declaration_bindings)}"
             )
         if row_ids != expected_ids or row_keys != expected_keys:
             raise MatrixServiceError(
                 "PROGRAM_CELL_IDENTITY_MISMATCH: "
-                f"program={program_id} rows={len(row_ids)} expected={len(expected_ids)}"
+                f"program={program_id} rows={len(row_ids)} expected={len(expected_ids)} "
+                f"reruns={len(rerun_rows)} derived={len(derived_rows)}"
             )
 
     ledger_path = artifact_root / program_id / "ledger.json"
@@ -856,6 +913,9 @@ def _program_binding_guard(
         "q12_work_item_id": q12_id,
         "declaration_sha256": declaration_sha,
         "cell_count": len(rows),
+        "declared_cell_count": len(declared_rows),
+        "rerun_row_count": len(rerun_rows),
+        "derived_row_count": len(derived_rows),
         "ledger_path": str(ledger_path.resolve()),
         "ledger_q12_work_item_id": ledger_q12,
         "ledger_declaration_sha256": ledger_declaration,

@@ -835,3 +835,122 @@ def test_q12_finalization_ignores_intermediate_measuring_states(tmp_path: Path) 
                 )
                 is None
             ), state
+
+
+def _program_binding_fixture(tmp_path: Path):
+    repo = tmp_path / "repo"
+    files = _sibling(repo)
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    db = root / farmctl.DB_REL
+    artifact_root = tmp_path / "matrix_artifacts"
+    _insert_fixture_rows(db, files, tmp_path, artifact_root)
+    with farmctl.connect(root) as conn:
+        first = service.service_pending(
+            conn,
+            db_path=db,
+            repo_root=repo,
+            artifact_root=artifact_root,
+            apply=True,
+            q12_work_item_ids=["q12-declared"],
+        )
+    assert first["materialized"], first
+    with sqlite3.connect(db) as conn:
+        conn.row_factory = sqlite3.Row
+        template = conn.execute(
+            "SELECT * FROM work_items WHERE upper(phase)='OPT_CENSUS' "
+            "ORDER BY created_at,id LIMIT 1"
+        ).fetchone()
+    return root, db, artifact_root, dict(template)
+
+
+def _insert_program_row(db: Path, template: dict, *, row_id: str, payload_mutator) -> None:
+    payload = json.loads(template["payload_json"])
+    payload_mutator(payload)
+    with sqlite3.connect(db) as conn:
+        conn.execute(
+            """
+            INSERT INTO work_items(
+              id,kind,phase,ea_id,symbol,setfile_path,status,verdict,attempt_count,
+              parent_task_id,payload_json,created_at,updated_at,gate_contract_version
+            ) VALUES(?,?,?,?,?,?,'pending',NULL,0,NULL,?,?,?,'v4')
+            """,
+            (
+                row_id,
+                template["kind"],
+                template["phase"],
+                template["ea_id"],
+                template["symbol"],
+                template["setfile_path"],
+                json.dumps(payload, sort_keys=True),
+                "2026-09-02T11:23:00+00:00",
+                "2026-09-02T11:23:00+00:00",
+            ),
+        )
+        conn.commit()
+
+
+def _guard(root: Path, artifact_root: Path, q12_id: str = "q12-declared"):
+    with farmctl.connect(root) as conn:
+        q12_row = conn.execute("SELECT * FROM work_items WHERE id=?", (q12_id,)).fetchone()
+        return service._program_binding_guard(conn, q12_row=q12_row, artifact_root=artifact_root)
+
+
+def test_binding_guard_admits_driver_derived_rows_and_reruns(tmp_path: Path) -> None:
+    """2026-09-03 regression: WF-combo/numeric rows and driver INFRA_FAIL reruns
+    share the program id but never transfer ownership; the guard must not
+    freeze a program at PATTERN_SELECTION_READY (live case QM5_13054/XTIUSD)."""
+    root, db, artifact_root, template = _program_binding_fixture(tmp_path)
+    program_id = json.loads(template["payload_json"])["program_id"]
+    baseline = _guard(root, artifact_root)
+    assert baseline["declared_cell_count"] == 1085
+    assert baseline["requires_restamp"] is False
+
+    def wf_combo(payload):
+        payload["cell_key"] = f"{program_id}:wf1:combo:2022"
+        payload["arm"] = "wf1_combo"
+        payload.pop("q12_work_item_id", None)
+        payload.pop("q12_declaration_sha256", None)
+
+    def numeric(payload):
+        payload["cell_key"] = f"{program_id}:numeric:baseline:2019"
+        payload["arm"] = "baseline"
+
+    def rerun(payload):
+        payload["append_only_rerun_of"] = template["id"]
+        payload["rerun_attempt"] = 1
+
+    _insert_program_row(db, template, row_id="wf1-combo-2022", payload_mutator=wf_combo)
+    _insert_program_row(db, template, row_id="numeric-baseline-2019", payload_mutator=numeric)
+    _insert_program_row(db, template, row_id="rerun-of-declared", payload_mutator=rerun)
+    binding = _guard(root, artifact_root)
+    assert binding["cell_count"] == 1088
+    assert binding["declared_cell_count"] == 1085
+    assert binding["rerun_row_count"] == 1
+    assert binding["derived_row_count"] == 2
+    assert binding["requires_restamp"] is False
+
+
+def test_binding_guard_still_refuses_foreign_or_unexplained_rows(tmp_path: Path) -> None:
+    root, db, artifact_root, template = _program_binding_fixture(tmp_path)
+    program_id = json.loads(template["payload_json"])["program_id"]
+
+    def foreign_numeric(payload):
+        payload["cell_key"] = f"{program_id}:numeric:baseline:2020"
+        payload["q12_work_item_id"] = "q12-ablation-shadow"
+
+    _insert_program_row(db, template, row_id="numeric-foreign", payload_mutator=foreign_numeric)
+    with pytest.raises(service.MatrixServiceError, match="PROGRAM_Q12_REBIND_REFUSED"):
+        _guard(root, artifact_root)
+    with sqlite3.connect(db) as conn:
+        conn.execute("DELETE FROM work_items WHERE id='numeric-foreign'")
+        conn.commit()
+
+    def duplicate_without_lineage(payload):
+        payload.pop("append_only_rerun_of", None)
+
+    _insert_program_row(
+        db, template, row_id="duplicate-no-lineage", payload_mutator=duplicate_without_lineage
+    )
+    with pytest.raises(service.MatrixServiceError, match="PROGRAM_CELL_IDENTITY_MISMATCH"):
+        _guard(root, artifact_root)
