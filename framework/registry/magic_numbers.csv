@@ -18223,3 +18223,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41318,xauxag-msndisp-rv,1,XAGUSD.DWX,413180001,2026-09-02,Codex governed allocator,active
 41319,wti-madf-persist-tr,0,XTIUSD.DWX,413190000,2026-09-02,Codex governed allocator,active
 41320,wti-mpp-persist-tr,0,XTIUSD.DWX,413200000,2026-09-03,Codex governed allocator,active
+41321,grimes-trendday-v2-opt,0,NDX.DWX,413210000,2026-09-03,Codex governed allocator,active
+41322,et-turtle20x-opt,0,XAUUSD.DWX,413220000,2026-09-03,Codex governed allocator,active
+41323,pp-wedge-opt,0,NDX.DWX,413230000,2026-09-03,Codex governed allocator,active
+41324,balke-gmt3-range-breakout-path25-opt,0,USDJPY.DWX,413240000,2026-09-03,Codex governed allocator,active
