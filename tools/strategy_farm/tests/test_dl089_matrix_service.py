@@ -954,3 +954,61 @@ def test_binding_guard_still_refuses_foreign_or_unexplained_rows(tmp_path: Path)
     )
     with pytest.raises(service.MatrixServiceError, match="PROGRAM_CELL_IDENTITY_MISMATCH"):
         _guard(root, artifact_root)
+
+
+def test_finalize_commits_before_the_next_program_takes_its_own_write_lock(
+    tmp_path: Path,
+) -> None:
+    """2026-09-03: the Q12 completion must be durable (and its RESERVED lock
+    released) before the service moves on - the next program's ``boost`` opens a
+    separate ``BEGIN IMMEDIATE`` connection and otherwise self-deadlocks."""
+    root, db, artifact_root, template = _program_binding_fixture(tmp_path)
+    program_id = json.loads(template["payload_json"])["program_id"]
+    program_dir = artifact_root / program_id
+    ledger_path = program_dir / "ledger.json"
+    now = "2026-09-03T00:00:00+00:00"
+    with sqlite3.connect(db) as conn:
+        # Resolve every declared cell with sealed evidence on disk.
+        rows = conn.execute(
+            "SELECT id FROM work_items WHERE upper(phase)='OPT_CENSUS'"
+        ).fetchall()
+        evidence_dir = tmp_path / "evidence"
+        evidence_dir.mkdir()
+        for (row_id,) in rows:
+            evidence = evidence_dir / f"{row_id}.json"
+            evidence.write_text("{}\n", encoding="utf-8")
+            conn.execute(
+                "UPDATE work_items SET status='done',verdict=?,evidence_path=?,updated_at=? WHERE id=?",
+                (pruning.SKIPPED_VERDICT, str(evidence), now, row_id),
+            )
+        conn.commit()
+    ledger = json.loads(ledger_path.read_text(encoding="utf-8-sig"))
+    ledger["driver"] = {
+        "schema": "qm.opt-census-driver.v1",
+        "state": service.selector.STATE_PATTERN_READY,
+        "wf": {"final_selection": {"selected": []}, "stability": {}},
+        "transitions": [],
+    }
+    ledger_path.write_text(json.dumps(ledger, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    with farmctl.connect(root) as conn:
+        q12_row = conn.execute("SELECT * FROM work_items WHERE id='q12-declared'").fetchone()
+        finalized = service._finalize_from_terminal_ledger(
+            conn,
+            q12_row=q12_row,
+            ledger_path=ledger_path,
+            program_dir=program_dir,
+            apply=True,
+        )
+        assert finalized is not None and finalized["applied"] is True
+        # A SEPARATE connection must already see the completion and must be able
+        # to take the write lock immediately (no lingering RESERVED lock).
+        other = sqlite3.connect(db, timeout=0.2)
+        try:
+            assert other.execute(
+                "SELECT status,verdict FROM work_items WHERE id='q12-declared'"
+            ).fetchone() == ("done", finalized["verdict"])
+            other.execute("BEGIN IMMEDIATE")
+            other.rollback()
+        finally:
+            other.close()
+    assert (program_dir / "q12_selection_receipt.json").is_file()

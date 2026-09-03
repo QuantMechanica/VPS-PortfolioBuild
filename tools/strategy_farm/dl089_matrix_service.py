@@ -1050,6 +1050,17 @@ def _finalize_from_terminal_ledger(
             """,
             (now, now, "DL-089 matrix completed from sealed cell evidence", q12_row["id"]),
         )
+        # Commit the completion HERE.  The compare-and-set above takes the
+        # RESERVED lock on the service's outer connection; ``census.boost`` and
+        # ``selector.advance`` for the NEXT governed program open their own
+        # connections with ``BEGIN IMMEDIATE`` and would wait on that lock until
+        # their busy timeout, the write-retry wrapper then re-ran the whole
+        # service pass and finally rolled everything back
+        # (2026-09-03 00:18Z cycle: 673 s, DL089_MATRIX_SERVICE_FAILED:database
+        # is locked, QM5_13054 receipt on disk but row still pending).  The
+        # receipt write, the row completion and the hold release stay one
+        # atomic unit; nothing else is pending on this connection at this point.
+        conn.commit()
     return {
         "work_item_id": q12_row["id"],
         "verdict": verdict,
