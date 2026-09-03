@@ -504,3 +504,7 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   drains from ever arming on a fleet that always runs news/Q07 rows although 32 GB baskets are arithmetically
   winnable beside them → small refinement commissioned (wf_ee80ee12-00f: count long-run RAM as non-releasable,
   abandon only on NEW long runs).
+- 23:00Z: drain arming arithmetic merged (`996ec49a64`, Opus wf_ee80ee12-00f verified ok; 77 drain/census-first
+  tests): long-run rows count as non-releasable instead of blocking; abandon only on a NEW long-run id. Reload
+  chunk 24 queued behind 23 (22 at 6/10). Drain cooldown ends 02:04Z; 12580 Q03 `9cac4667` (32 GB basket) is the
+  first row that can now arm a winnable drain beside the news runs.
