@@ -192,3 +192,11 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   row of the prior-identity lineage — the 07-24 original `966fdb3a` was refused with
   `append_only_rerun_already_exists` because the 09-02 rerun `f3689f77` exists); 12710 Q07 `fad536b4` and
   10700 Q05 `c44015fa` pending at the claim head.
+- 05:50Z–05:58Z: 10700 Q05 `c44015fa` PASS → Q06 `02df28c0`. The Q07 reruns of 12710 (`fad536b4`) and 11910
+  (`797f03ae`) sat at claim positions 2–3 unclaimed: the 2026-08-24 long-run scheduling policy caps
+  concurrent Q07/Q08 at 2 fleet-wide and both slots are held by QM5_20085 H4 recovery regenerations
+  (T9 since 03:32Z, budget 418 min; T7 since 03:52Z, budget 216 min; three prior INFRA_FAIL attempts on
+  INCOMPLETE_RUNS/TIMEOUT). Selection-only change `1c94f049bf`: an Amendment B row (append-only lineage
+  rerun + priority_track, not quarantined) may take ONE Q07/Q08 slot above the cap (2 → 3); ordinary
+  rows keep 2, news caps unchanged. Idle-only reload chunk 12 (T1/T4/T5/T6/T8/T10) started 05:55Z;
+  chunk 11 covers T2/T3/T7/T9 when they go idle.
