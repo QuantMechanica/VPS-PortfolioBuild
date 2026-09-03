@@ -225,3 +225,6 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   Awaiting the replacement row in the next pump cycles; then Q10_NEWS runs → CONFIG_LOCKED → Q11 → Q12 slot.
 - 07:38Z: unrelated but on the same critical path: 13213/XAUUSD Q10_NEWS `6e415bb4` CONFIG_LOCKED after a
   6.4-h run on T3 → Q11 `7db06ca0` minted; its Q12 `2ea9cd64` already owns slot 1.
+- 07:57Z–08:02Z: the news-gate service minted 12710's replacement Q10_NEWS parent `9a2e9380` (ex5
+  `11474d4c…`) in the 07:51Z pump cycle; the zombie `678b8cac` is now done/SUPERSEDED; `9a2e9380` claimed by
+  T10 07:57Z. 11910 Q08 `e0237a77` FAIL_SOFT (gate-scoped PASS) → Q09 `859b114d` enqueued (rerun of 2b2ec7d3).
