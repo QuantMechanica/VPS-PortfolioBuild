@@ -119,3 +119,12 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   mints Q03/Q04 rows for DL-089 measurement siblings although their cards state 'No live or
   pipeline verdict is authorized'; 17 pending rows (41301–41307, 41321–41324) parked under
   `SIBLING_MEASUREMENT_ONLY_CHAIN_HOLD`; cascade filter commissioned (Opus, `wb9k5vses`).
+- 03:25Z: QM5_11910 second compile `57101a83` **COMPILE_OK** (compiler PASS + build gate PASS), new
+  identity ex5 `e18d477e…`. 03:30Z: fresh Q02 `71d1ad66` enqueued for the new identity on the
+  NZDUSD lineage (append-only successor of the prior-identity Q02 `5af21957`, binary sha recorded;
+  `--owner-decision` must NOT be passed to `enqueue-backtest` — it switches the command into the
+  universe-expansion path). It ranked 1,333 behind the priority-tracked census cells, so Amendment B's
+  phase span was extended to Q02 (`be721b7612`, same OWNER priority 'Recompiles zuerst'); position 1
+  afterwards, claimed by T2 at 03:33Z. 10700/12710 second compiles pending (workers busy / CPU pause).
+- 03:37Z: staggered worker reload pass 2 running (pass 1 done 03:29Z) so every worker imports the
+  allowlist module, Amendment B incl. Q02 and the rerun-visibility fix `a1cc06688b`.
