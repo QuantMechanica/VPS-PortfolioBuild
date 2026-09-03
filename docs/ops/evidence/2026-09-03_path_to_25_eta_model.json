@@ -1,0 +1,373 @@
+{
+  "counter": {
+    "now_utc": "2026-09-03T15:02:00+00:00",
+    "qualified_now": 5,
+    "target": 25,
+    "terminal_gate": "Q14",
+    "q11_contiguous_candidates": 19,
+    "structural_gap": "5 qualified + 19 Q11-contiguous = 24 max; 25 needs >=1 pair from the 63-pair Q09 feeder"
+  },
+  "ladder": [
+    {
+      "counter": 6,
+      "pair": "QM5_21505/XAGUSD",
+      "program": "DL089_QM5_21505",
+      "remaining_cells": 307,
+      "has_census_rows": true,
+      "needs_sibling": false,
+      "cumulative_cells": 307,
+      "note": "running"
+    },
+    {
+      "counter": 7,
+      "pair": "QM5_20048/XTIUSD",
+      "program": "DL089_QM5_20048",
+      "remaining_cells": 503,
+      "has_census_rows": true,
+      "needs_sibling": false,
+      "cumulative_cells": 810,
+      "note": "running"
+    },
+    {
+      "counter": 8,
+      "pair": "QM5_13213/USDJPY",
+      "program": "DL089_QM5_41097",
+      "remaining_cells": 524,
+      "has_census_rows": true,
+      "needs_sibling": false,
+      "cumulative_cells": 1334,
+      "note": "sibling 41097 running"
+    },
+    {
+      "counter": 9,
+      "pair": "QM5_21507/XAUUSD",
+      "program": "DL089_QM5_21507",
+      "remaining_cells": 539,
+      "has_census_rows": true,
+      "needs_sibling": false,
+      "cumulative_cells": 1873,
+      "note": "running"
+    },
+    {
+      "counter": 10,
+      "pair": "QM5_20266/XTIUSD",
+      "program": "DL089_QM5_20266",
+      "remaining_cells": 777,
+      "has_census_rows": true,
+      "needs_sibling": false,
+      "cumulative_cells": 2650,
+      "note": "running"
+    },
+    {
+      "counter": 11,
+      "pair": "QM5_10513/XAUUSD",
+      "program": "DL089_QM5_10513",
+      "remaining_cells": 881,
+      "has_census_rows": true,
+      "needs_sibling": false,
+      "cumulative_cells": 3531,
+      "note": "running"
+    },
+    {
+      "counter": 12,
+      "pair": "QM5_10145/XAUUSD",
+      "program": "DL089_QM5_10145",
+      "remaining_cells": 926,
+      "has_census_rows": true,
+      "needs_sibling": false,
+      "cumulative_cells": 4457,
+      "note": "running"
+    },
+    {
+      "counter": 13,
+      "pair": "QM5_11881/GBPUSD",
+      "program": "DL089_QM5_11881",
+      "remaining_cells": 936,
+      "has_census_rows": true,
+      "needs_sibling": false,
+      "cumulative_cells": 5393,
+      "note": "running"
+    },
+    {
+      "counter": 14,
+      "pair": "QM5_10403/XAUUSD",
+      "program": "DL089_QM5_10403",
+      "remaining_cells": 1043,
+      "has_census_rows": true,
+      "needs_sibling": false,
+      "cumulative_cells": 6436,
+      "note": "sibling 41322 built today"
+    },
+    {
+      "counter": 15,
+      "pair": "QM5_12710/XTIUSD",
+      "program": "DL089_QM5_12710",
+      "remaining_cells": 1064,
+      "has_census_rows": true,
+      "needs_sibling": false,
+      "cumulative_cells": 7500,
+      "note": "running"
+    },
+    {
+      "counter": 16,
+      "pair": "QM5_11910/NZDUSD",
+      "program": "DL089_QM5_11910",
+      "remaining_cells": 1084,
+      "has_census_rows": true,
+      "needs_sibling": false,
+      "cumulative_cells": 8584,
+      "note": "recompiled identity"
+    },
+    {
+      "counter": 17,
+      "pair": "QM5_13013/NDX",
+      "program": "DL089_QM5_13013",
+      "remaining_cells": 1085,
+      "has_census_rows": false,
+      "needs_sibling": false,
+      "cumulative_cells": 9669,
+      "note": "sibling 41321 built today"
+    },
+    {
+      "counter": 18,
+      "pair": "QM5_11660/NDX",
+      "program": "DL089_QM5_11660",
+      "remaining_cells": 1085,
+      "has_census_rows": false,
+      "needs_sibling": false,
+      "cumulative_cells": 10754,
+      "note": "sibling 41323 built today"
+    },
+    {
+      "counter": 19,
+      "pair": "QM5_21501/USDJPY",
+      "program": "DL089_QM5_21501",
+      "remaining_cells": 1085,
+      "has_census_rows": false,
+      "needs_sibling": false,
+      "cumulative_cells": 11839,
+      "note": "sibling 41324 built today"
+    },
+    {
+      "counter": 20,
+      "pair": "QM5_12849/XTIUSD",
+      "program": "DL089_QM5_12849",
+      "remaining_cells": 1085,
+      "has_census_rows": false,
+      "needs_sibling": false,
+      "cumulative_cells": 12924,
+      "note": "ledger, awaiting slot"
+    },
+    {
+      "counter": 21,
+      "pair": "QM5_12855/XTIUSD",
+      "program": "DL089_QM5_12855",
+      "remaining_cells": 1085,
+      "has_census_rows": false,
+      "needs_sibling": false,
+      "cumulative_cells": 14009,
+      "note": "ledger, awaiting slot"
+    },
+    {
+      "counter": 22,
+      "pair": "QM5_9641/WS30",
+      "program": "DL089_QM5_9641",
+      "remaining_cells": 1085,
+      "has_census_rows": false,
+      "needs_sibling": false,
+      "cumulative_cells": 15094,
+      "note": "ledger, awaiting slot"
+    },
+    {
+      "counter": 23,
+      "pair": "QM5_11708/EURUSD",
+      "program": "DL089_QM5_11708",
+      "remaining_cells": 1085,
+      "has_census_rows": false,
+      "needs_sibling": true,
+      "cumulative_cells": 16179,
+      "note": "needs _opt sibling (deferral log)"
+    },
+    {
+      "counter": 24,
+      "pair": "QM5_41221/EURUSD",
+      "program": "DL089_QM5_41221",
+      "remaining_cells": 1085,
+      "has_census_rows": false,
+      "needs_sibling": true,
+      "cumulative_cells": 17264,
+      "note": "needs _opt sibling (deferral log)"
+    },
+    {
+      "counter": 25,
+      "pair": "below-Q11 feeder (e.g. QM5_10700/XAUUSD)",
+      "program": "n/a",
+      "remaining_cells": 1085,
+      "has_census_rows": false,
+      "needs_sibling": true,
+      "cumulative_cells": 18349,
+      "note": "ONLY 19 pairs are Q11-contiguous; the 25th must climb Q02->Q10 from the 63-pair Q09 pool"
+    }
+  ],
+  "scenarios": {
+    "S0_current_K8_L1": {
+      "low": 111,
+      "central": 138,
+      "high": 172,
+      "G_eff": 6,
+      "basis": "24h avg 111/h .. peak-steady 172/h (05-12Z); median cell 2.0min; G_eff=6"
+    },
+    "S1_canary_L2_3leads": {
+      "low": 140,
+      "central": 165,
+      "high": 180,
+      "G_eff": 6,
+      "basis": "G_eff unchanged at 6 (cell_slots=6 caps it); utilisation lift toward 180/h ceiling IFF sub-6 concurrency is program-starvation"
+    },
+    "S2_L2_all_G10": {
+      "low": 200,
+      "central": 240,
+      "high": 290,
+      "G_eff": 10,
+      "basis": "requires DL089_CELL_SLOTS>=10 as well; ceiling = measured 20-50 cells/10min; RAM latch caps sustained ~240/h"
+    }
+  },
+  "milestones": {
+    "S0_current_K8_L1": {
+      "10": {
+        "cumulative_cells": 2650,
+        "rate_central_cells_h": 138,
+        "hours_central": 19.2,
+        "date_central": "2026-09-04 10:14Z",
+        "date_earliest": "2026-09-04 06:26Z",
+        "date_latest": "2026-09-04 14:54Z"
+      },
+      "15": {
+        "cumulative_cells": 7500,
+        "rate_central_cells_h": 138,
+        "hours_central": 54.3,
+        "date_central": "2026-09-05 21:22Z",
+        "date_earliest": "2026-09-05 10:38Z",
+        "date_latest": "2026-09-06 10:36Z"
+      },
+      "20": {
+        "cumulative_cells": 12924,
+        "rate_central_cells_h": 138,
+        "hours_central": 93.7,
+        "date_central": "2026-09-07 12:41Z",
+        "date_earliest": "2026-09-06 18:10Z",
+        "date_latest": "2026-09-08 11:27Z"
+      },
+      "25": {
+        "cumulative_cells": 18349,
+        "rate_central_cells_h": 138,
+        "hours_central": 133.0,
+        "date_central": "2026-09-09 03:59Z",
+        "date_earliest": "2026-09-08 01:42Z",
+        "date_latest": "2026-09-10 12:20Z"
+      }
+    },
+    "S1_canary_L2_3leads": {
+      "10": {
+        "cumulative_cells": 2650,
+        "rate_central_cells_h": 165,
+        "hours_central": 16.1,
+        "date_central": "2026-09-04 07:05Z",
+        "date_earliest": "2026-09-04 05:45Z",
+        "date_latest": "2026-09-04 09:57Z"
+      },
+      "15": {
+        "cumulative_cells": 7500,
+        "rate_central_cells_h": 165,
+        "hours_central": 45.5,
+        "date_central": "2026-09-05 12:29Z",
+        "date_earliest": "2026-09-05 08:42Z",
+        "date_latest": "2026-09-05 20:36Z"
+      },
+      "20": {
+        "cumulative_cells": 12924,
+        "rate_central_cells_h": 165,
+        "hours_central": 78.3,
+        "date_central": "2026-09-06 21:21Z",
+        "date_earliest": "2026-09-06 14:50Z",
+        "date_latest": "2026-09-07 11:20Z"
+      },
+      "25": {
+        "cumulative_cells": 18349,
+        "rate_central_cells_h": 165,
+        "hours_central": 111.2,
+        "date_central": "2026-09-08 06:14Z",
+        "date_earliest": "2026-09-07 20:58Z",
+        "date_latest": "2026-09-09 02:05Z"
+      }
+    },
+    "S2_L2_all_G10": {
+      "10": {
+        "cumulative_cells": 2650,
+        "rate_central_cells_h": 240,
+        "hours_central": 11.0,
+        "date_central": "2026-09-04 02:04Z",
+        "date_earliest": "2026-09-04 00:10Z",
+        "date_latest": "2026-09-04 04:17Z"
+      },
+      "15": {
+        "cumulative_cells": 7500,
+        "rate_central_cells_h": 240,
+        "hours_central": 31.2,
+        "date_central": "2026-09-04 22:17Z",
+        "date_earliest": "2026-09-04 16:53Z",
+        "date_latest": "2026-09-05 04:32Z"
+      },
+      "20": {
+        "cumulative_cells": 12924,
+        "rate_central_cells_h": 240,
+        "hours_central": 53.9,
+        "date_central": "2026-09-05 20:53Z",
+        "date_earliest": "2026-09-05 11:35Z",
+        "date_latest": "2026-09-06 07:39Z"
+      },
+      "25": {
+        "cumulative_cells": 18349,
+        "rate_central_cells_h": 240,
+        "hours_central": 76.5,
+        "date_central": "2026-09-06 19:29Z",
+        "date_earliest": "2026-09-06 06:18Z",
+        "date_latest": "2026-09-07 10:46Z"
+      }
+    }
+  },
+  "upstream_feeder": {
+    "news_expansion": {
+      "concurrency_cap": 2,
+      "cells_per_expansion_measured_2017_2022": 29,
+      "cells_stated_full_window": 105,
+      "wall_per_expansion_h": 2.5,
+      "candidate_count_log": 31,
+      "read_phase": "Q10_NEWS",
+      "note": "cap 2 => draining ~4-6 counter-relevant expansions is ~5-15h serial"
+    },
+    "compile_to_Q09_h": [
+      4,
+      6
+    ],
+    "sibling_requirement": {
+      "pairs_blocked_found_0_sibling": [
+        "QM5_11708/EURUSD",
+        "QM5_41221/EURUSD",
+        "QM5_21502/XAUUSD",
+        "QM5_20086/NDX",
+        "QM5_20086/EURUSD",
+        "QM5_11294/XAUUSD",
+        "QM5_10911/GDAXI"
+      ],
+      "siblings_built_today": [
+        "QM5_41321->13013/NDX",
+        "QM5_41322->10403/XAU",
+        "QM5_41323->11660/NDX",
+        "QM5_41324->21501/USDJPY"
+      ],
+      "note": "every new program needs exactly one APPROVED _opt sibling (build+compile+Q02 PASS) before its census can start"
+    },
+    "verdict": "For 10 and 15 pairs census throughput is the sole binding constraint. For 20/25 the feeder (siblings 11708/41221 + the below-Q11 climb + news cap-2) must be commissioned NOW; if it is, it completes inside the census window and does not move the dates. If not, it becomes binding and pushes 20 by ~0.5-1d and 25 by ~1-2d."
+  }
+}

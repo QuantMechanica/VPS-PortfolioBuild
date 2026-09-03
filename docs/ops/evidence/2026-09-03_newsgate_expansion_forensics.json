@@ -1,0 +1,175 @@
+{
+  "artifact": "2026-09-03_newsgate_expansion_forensics",
+  "generated_at_utc": "2026-09-03T15:10:00Z",
+  "author": "claude/board-advisor (read-only forensics)",
+  "sources": {
+    "state_db": "D:/QM/strategy_farm/state/farm_state.sqlite (opened mode=ro)",
+    "aggregate_json_root": "D:/QM/reports/work_items/<wid>/<EA>/Q10_NEWS/<SYMBOL>/aggregate.json",
+    "contract_code": "tools/strategy_farm/q09_news_contract.py",
+    "runner_code": "tools/strategy_farm/q09_news_runner.py",
+    "scheduling_cap_code": "tools/strategy_farm/longrun_scheduling_policy.py",
+    "expansion_authoring": "tools/strategy_farm/farmctl.py::author_news_expansion_continuations",
+    "service_metrics": "tools/strategy_farm/news_gate_service.py"
+  },
+  "mechanism": {
+    "news_storage_phase": "Q10_NEWS (operator surface); legacy role also present as Q09_NEWS",
+    "eight_cell_run": "matrix_scope=7x1_target_compliance, q09_cell_count=8 = 1 CONTROL_OFF + 7 POLICY_ON temporal modes at target compliance, seed 17 (contract v3 inert-seed fanout to 5 selector seeds)",
+    "temporal_modes": ["OFF","PRE30","PRE60","PRE30_POST30","PRE60_POST60","SKIP_DAY","CLOSE_ALL_PRE"],
+    "compliance_modes": ["NONE","DXZ","FTMO","5ERS"],
+    "seeds_executed": [17],
+    "seeds_selector_fanout": [42,17,99,7,2026],
+    "expansion_run": "matrix_scope=7x4, q09_cell_count=29 = 1 CONTROL_OFF + 4 compliance x 7 temporal (seed 17). Fresh work item; re-runs the full matrix, does not resume the 8-cell.",
+    "cell_count_reconciliation": {
+      "logical_selector_cells_added_by_expansion": 105,
+      "computation": "4 compliance x 7 temporal x 5 seeds (=140) minus target-compliance column already present (1 x 7 x 5 = 35) = 105",
+      "executed_backtests_in_child": 29,
+      "note": "The +105 is the growth of the logical seed-fanned selector matrix; the terminal only executes 29 backtests (seed-17 configs) under the OWNER-ratified inert-seed contract v3."
+    },
+    "cell_timeout_sec": 10800,
+    "child_whole_job_timeout_min_observed": [11080, 22860],
+    "expansion_trigger": "q09_news_contract.adjudicate(): if any expansion_reason in {news_or_event_strategy, prop_deployment_target, material_effect} AND the full 4-compliance matrix is not present -> verdict REVIEW_REQUIRED, reason_codes=[expanded_7x4_matrix_required]",
+    "selection_scope": "adjudicate() line 739 scores ONLY policy_by_mode[temporal] at target_compliance vs control; the 3 non-target compliance columns computed by the expansion are recorded but never scored or selected (verified: all 8 sampled CONFIG_LOCKED children chose compliance==target, ranking has 6 entries = 6 non-OFF temporal modes)."
+  },
+  "scheduling_caps": {
+    "EXPANDED_NEWS_PARENT_FLEET_CAP": 2,
+    "TOTAL_NEWS_PARENT_FLEET_CAP": 4,
+    "Q07_Q08_LONGRUN_FLEET_CAP": 2,
+    "LINEAGE_RERUN_Q07_Q08_EXTRA_SLOTS": 1,
+    "SHORT_FLOW_RESERVE_FLOOR": 4,
+    "rollback_env": "QM_DISABLE_LONGRUN_SCHEDULING_CAP=1",
+    "kind": "claim-selection only; skipped candidate stays pending; never touches verdict/gate logic"
+  },
+  "measured_facts": {
+    "q10_news_verdict_counts": {
+      "by_created_at": {
+        "7d": {"REVIEW_REQUIRED": 24, "CONFIG_LOCKED": 26, "running_or_null": 27, "RETIRE": 2, "INFRA_FAIL": 2, "SUPERSEDED": 1, "TOTAL": 82},
+        "14d": {"REVIEW_REQUIRED": 79, "running_or_null": 39, "SUPERSEDED": 34, "CONFIG_LOCKED": 31, "INFRA_FAIL": 9, "RETIRE": 2, "TOTAL": 194},
+        "30d": {"REVIEW_REQUIRED": 85, "running_or_null": 43, "SUPERSEDED": 37, "CONFIG_LOCKED": 31, "INFRA_FAIL": 12, "RETIRE": 2, "TOTAL": 210}
+      },
+      "by_updated_at": {
+        "REVIEW_REQUIRED_7d": 41, "REVIEW_REQUIRED_14d": 85,
+        "CONFIG_LOCKED_7d": 28, "CONFIG_LOCKED_14d": 31, "CONFIG_LOCKED_30d": 31
+      },
+      "cited_figure_reconciliation": "Task cited '51 REVIEW_REQUIRED in 7 days'; measured 41 (Q10_NEWS, updated<=7d) + 0 (Q09_NEWS) = 41. Same order of magnitude; the 51 was an earlier snapshot before ~10 of those rows were SUPERSEDED by reruns. Phenomenon confirmed."
+    },
+    "review_required_reason_breakdown_83_with_test_row": {
+      "cell_execution_failed": 36,
+      "expanded_7x4_matrix_required": 34,
+      "control_or_policy_off_not_qualifiable": 11,
+      "aggregate_file_missing": 2,
+      "interpretation": "Only 34/83 (41%) of REVIEW_REQUIRED are genuine expansion demand. 36/83 (43%) are cell_execution_failed = a reliability leak surfaced as REVIEW (cheap re-run, NO expansion). 11/83 (13%) are control/OFF-not-qualifiable = terminal, no expansion."
+    },
+    "expansion_durations_hours": {
+      "child_total_created_to_done": {"n": 33, "min": 2.64, "median": 20.25, "max": 90.76, "mean": 28.58},
+      "child_pending_wait_created_to_claimed": {"n": 38, "min": 0.04, "median": 8.28, "max": 85.82, "mean": 20.89},
+      "child_execution_claimed_to_done": {"n": 33, "min": 2.45, "median": 5.30, "max": 13.20, "mean": 5.86},
+      "child_execution_by_timeframe": {"D1": {"n": 23, "median": 4.44, "min": 2.45, "max": 13.20}, "H1": {"n": 4, "median": 5.99}, "H4": {"n": 5, "median": 8.20}},
+      "authoring_latency_parentDone_to_childCreated": {"n": 34, "min": 0.0, "median": 15.59, "max": 128.93, "mean": 30.15},
+      "eight_cell_parent_pending_created_to_claimed": {"n": 89, "median": 19.15, "max": 415.23, "mean": 42.53},
+      "eight_cell_parent_execution_claimed_to_done": {"n": 83, "median": 2.45, "max": 42.12, "mean": 4.13},
+      "note": "'~2.5h for D1' in the task matches the D1 minimum (2.45h); realistic D1 execution median is 4.44h. Pending wait (median 8.3h, max 85.8h) is the cap-2 starvation cost, not execution."
+    },
+    "config_locked_after_expansion_share": {
+      "child_work_item_final_verdicts": {"CONFIG_LOCKED": 31, "REVIEW_REQUIRED_again": 2, "INFRA_FAIL": 4, "running": 2},
+      "adjudication_7x4_verdicts": {"CONFIG_LOCKED": 32, "REVIEW_REQUIRED": 6, "INVALID_EVIDENCE": 1},
+      "config_locked_share_of_concluded_children": "31/33 = 93.9%",
+      "chosen_temporal_of_recent_8_locks": {"OFF": 6, "SKIP_DAY": 2},
+      "interpretation": "94% of concluded expansions lock, but 6/8 recent locks chose temporal OFF (reason off_fallback_no_robust_improvement) i.e. the 29-cell run concluded no news policy beats OFF. Expansion is mostly confirming the null."
+    },
+    "cells_per_expansion": {"executed_backtests": 29, "logical_selector_cells_added": 105, "cell_count_field_all_children": 29},
+    "material_effect_distribution_last_30_review": {
+      "rows_with_material_detail": 17,
+      "reasons_fired": {"delta_net_r": 16, "delta_profit_factor": 15, "delta_drawdown_pct_points": 9, "sign_or_gate_flip_3_of_5": 4, "affected_entries": 0},
+      "max_affected_entries": {"n": 17, "min": 0, "median": 0, "max": 0, "all_zero": true},
+      "sign_or_gate_flip_pairs_distribution": {"0": 13, "5": 4, "none_no_material": 13},
+      "expansion_reason_composition": {"only_material_effect": 17, "news_or_event_strategy": 0, "prop_deployment_target": 0},
+      "interpretation": "Every material-effect expansion (17/17) fired with max_affected_entries=0 -> the entry-blocking news channel NEVER engaged. The deltas come from exit-side temporal modes (SKIP_DAY/CLOSE_ALL_PRE/POST) and/or numerical variation. sign_or_gate_flip only ever reads 0 or 5 (never 1-4) because seeds are inert (contract v3) -> the '3 of 5 seeds' robustness gate degenerates to '1 of 1'."
+    },
+    "compliance_provenance": {
+      "eight_cell_parent_target_compliance": "NONE (54 of 99 7x1 test rows); DXZ (45)",
+      "child_target_compliance": "DXZ (39 of 39)",
+      "parent_to_child_mapping": "NONE(parent) -> DXZ(child): 34 of 34 material lineages",
+      "anomaly": "54 q09_news_tests rows carry deployment_target=DXZ but target_compliance=NONE, contradicting compliance_for_target('DXZ')='DXZ'. The 8-cell ran the NONE column for DXZ targets; the expansion is what first computes the true DXZ column. This is a data-integrity/provenance defect that both (a) makes the 8-cell decision-incomplete for the real target and (b) makes the material_effect a NONE-vs-NONE comparison dominated by exit-side deltas."
+    },
+    "current_backlog_snapshot": {
+      "pending_q10_news_total": 42,
+      "pending_with_active_hold": 30,
+      "hold_codes": {"Q09_AWAITING_SEALED_PLAN": 28, "NEWS_RUNNER_SPAWN_SILENT_ABORT": 2},
+      "pending_no_hold_claimable": 12,
+      "claimable_that_are_expansion_children": 0,
+      "active_q10_news": 1,
+      "active_q07": 1,
+      "interpretation": "RIGHT NOW the expanded cap-2 is NOT binding: 0 unheld pending children, 1 active. The standing constraint on the news gate is upstream: 28 rows held on Q09_AWAITING_SEALED_PLAN plus 12 claimable-but-unclaimed 8-cell parents (claim starvation while cap-4 has only 1 active). The cap-2 bottleneck is a BURST-time phenomenon (the recent 34-request wave), not the current steady state."
+    },
+    "gate_output_and_coverage": {
+      "config_locked_per_day": {"7d": 4.0, "14d": 2.21, "30d": 1.03},
+      "unique_EAs_with_lock": 28,
+      "unique_ea_symbol_with_lock": 29,
+      "unique_ea_symbol_stuck_review_no_lock_sibling": 46,
+      "expansion_children_infra_fail": 4
+    },
+    "host": {"ram_total_gb": 63.1, "ram_free_gb": 17.4, "ram_used_gb": 45.7, "logical_cpus": 16, "terminal64_running": 6, "per_terminal_commit_reservation_gb": 8.0}
+  },
+  "capacity_math": {
+    "expansion_demand_per_day": "34 expanded_7x4 requests over ~11 active days (2026-08-23..09-03) = ~3.1/day; NONE-7x1 REVIEW set (superset) = 23 updated in last 7d",
+    "service_at_cap2": {
+      "theoretical_ceiling_pure_exec": "2 slots x 24h / 5.30h median exec = 9.1 children/day",
+      "theoretical_ceiling_D1_only": "2 x 24 / 4.44 = 10.8/day",
+      "measured_sustained_last_7d": "29 children done / 7 = 4.1/day (a drain burst)",
+      "gap_cause": "median 8.3h pending wait + 15.6h authoring latency + slots not always filled with expansions"
+    },
+    "queue_depth_days": {
+      "ea_symbol_stuck_in_review_no_lock": 46,
+      "fraction_needing_expansion": "~41% (34/83) -> ~19 expansion-needing pairs",
+      "at_service_3_to_4_per_day": "~5-6 days to drain the expansion-specific queue",
+      "dominant_drag": "NOT the expansion cap but (a) 28 Q09_AWAITING_SEALED_PLAN upstream holds and (b) 36 cell_execution_failed re-reviews"
+    }
+  },
+  "proposals": [
+    {
+      "id": "A",
+      "title": "Expanded cap 2->3, RAM-gated",
+      "zone": "GELB",
+      "change": "EXPANDED_NEWS_PARENT_FLEET_CAP 2->3 in longrun_scheduling_policy.py, guarded by a free-RAM precheck at claim time (only grant the 3rd expansion slot when free physical RAM >= 10GB, i.e. > commit_reservation_gb headroom).",
+      "rationale": "Claim-selection only; never touches verdict/gate logic. Raises burst ceiling ~50% and cuts child pending wait (median 8.3h, max 85.8h).",
+      "cost_of_waiting": "Low right now (cap not binding). High during the next expansion burst.",
+      "blast_radius": "<=1 extra terminal; short-flow reserve drops 4->3 on a 10-terminal fleet only while all news slots busy. Rollback: QM_DISABLE_LONGRUN_SCHEDULING_CAP=1 or revert constant.",
+      "recommendation": "Implement as a dormant burst valve, but treat as secondary; it does not reduce the NUMBER of expansions."
+    },
+    {
+      "id": "B",
+      "title": "Tighten expansion whole-child timeout budget",
+      "zone": "GRUEN",
+      "change": "Reduce child timeout_min from 11080/22860 (7.7-15.9 days) to ~900 min (15h > observed max exec 13.2h + margin). Per-cell 10800s (3h) stays; it is not binding (avg cell ~11 min).",
+      "rationale": "4 expansion children INFRA_FAIL; an over-provisioned budget lets a hung/silent-abort child hold a capped slot for days. A tight budget reaps it into requeue faster, freeing 1 of 2 capped slots.",
+      "cost_of_waiting": "Each hung child can idle a scarce expansion slot up to the current 7.7-15.9 day budget.",
+      "blast_radius": "Reaper timing only; no verdict impact. Rollback: revert the budget."
+    },
+    {
+      "id": "C",
+      "title": "Lineage-rank claim ordering for news expansions",
+      "zone": "GRUEN",
+      "change": "Apply the existing priority_track/append_only_rerun lineage rank (already used for Q07/Q08 reruns and replacement parents) to expansion-child claim ordering so Q10-lock-blocking counter-critical lineages take the 2 (or 3) expansion slots before FIFO rows.",
+      "rationale": "The 0/25 census is gated on Q10 locks; prioritising lineages that unblock the census beats arrival order.",
+      "blast_radius": "Claim ordering only; no cap change, no verdict change."
+    },
+    {
+      "id": "D",
+      "title": "Pre-check to skip expansion when material fires only from an inert channel",
+      "zone": "ROT (contract/gate-criteria change - OWNER only)",
+      "evidence": "17/17 material expansions had max_affected_entries=0 (entry-block channel inert); 6/8 recent locks chose OFF; sign_or_gate_flip degenerate (0/5) under inert seeds; selection uses target-compliance column only; 8-cell ran compliance NONE for DXZ targets (provenance anomaly).",
+      "sub_options": {
+        "D1_provenance_fix": "Correct the 8-cell to run the ACTUAL target compliance (DXZ) instead of NONE. Then the 8-cell target column is decision-complete and the 29-cell expansion (which only adds non-selected compliance columns) can be deferred/made lazy - removing ~all expansion cost for the current target. Highest leverage; ROT because it changes what the gate computes.",
+        "D2_threshold_recal": "Re-derive material_effect thresholds for the inert-seed contract-v3 world: the sign_or_gate_flip 3-of-5 gate is meaningless when seeds are inert, and delta_net_r/delta_profit_factor fire at 0 blocked entries. Tighten so exit-side numerical deltas do not force 29-cell expansions that 75% conclude OFF. ROT because it changes gate criteria."
+      },
+      "statement": "Any change to WHEN expansion fires, the material_effect thresholds, or the compliance the 8-cell runs is a gate-criteria/contract change = ROT, OWNER only. A/B/C are scheduling/claim/timeout and touch no verdict logic."
+    }
+  ],
+  "ceo_actions_today_gruen_gelb": [
+    "GRUEN: The cap is not the live bottleneck - drain the 28 Q09_AWAITING_SEALED_PLAN holds and nudge the 12 claimable-but-unclaimed 8-cell parents first (see ready_commands).",
+    "GELB: Land RAM-gated expanded cap 2->3 as a dormant burst valve (proposal A); test against QM_DISABLE_LONGRUN_SCHEDULING_CAP rollback.",
+    "GRUEN: Tighten expansion child timeout_min to ~900 (proposal B).",
+    "GRUEN: Extend lineage-rank ordering to news expansions (proposal C).",
+    "Prepare the ROT Vorlage for OWNER on D1/D2 - the real fix that removes most expansions."
+  ]
+}
