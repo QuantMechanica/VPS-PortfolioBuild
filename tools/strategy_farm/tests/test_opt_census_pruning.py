@@ -401,3 +401,19 @@ def test_selector_fails_closed_if_bound_receipt_is_modified(tmp_path: Path) -> N
 
     with pytest.raises(census.CensusError, match="receipt sha256 mismatch"):
         selection._default_metric_reader(conn)("arm50-2021")
+
+
+def test_declared_cell_resolves_driver_rerun_ids() -> None:
+    """2026-09-03: a driver INFRA rerun (new UUID listed in driver['reruns'])
+    must resolve to its declared ledger cell instead of crashing the seal."""
+    ledger = {
+        "cells": [
+            {"cell_key": "P:2021:buy_048", "work_item_id": "declared-1", "arm": "buy_048", "year": 2021},
+            {"cell_key": "P:2022:buy_048", "work_item_id": "declared-2", "arm": "buy_048", "year": 2022},
+        ],
+        "driver": {"reruns": {"P:2021:buy_048": ["rerun-1", "rerun-2"]}},
+    }
+    assert pruning._declared_cell(ledger, "declared-2")["cell_key"] == "P:2022:buy_048"
+    assert pruning._declared_cell(ledger, "rerun-2")["cell_key"] == "P:2021:buy_048"
+    with pytest.raises(pruning.PruningError, match="expected one declared ledger cell, found 0"):
+        pruning._declared_cell(ledger, "unknown-id")

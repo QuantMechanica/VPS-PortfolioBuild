@@ -167,6 +167,24 @@ def _declared_cell(
         for cell in ledger.get("cells", [])
         if isinstance(cell, Mapping) and cell.get("work_item_id") == work_item_id
     ]
+    if not matches:
+        # 2026-09-03 (CEO): the driver's append-only INFRA reruns carry a new
+        # work item id; the ledger driver['reruns'][cell_key] lists them.  Map
+        # the rerun id back to its declared cell so the post-run seal accepts
+        # the rerun row (T1 03:49Z crashed with 'expected one declared ledger
+        # cell, found 0' on DL089_QM5_1537 rerun 08767105 after a 130 s run).
+        reruns = (ledger.get("driver") or {}).get("reruns") or {}
+        rerun_keys = {
+            str(cell_key)
+            for cell_key, ids in reruns.items()
+            if isinstance(ids, (list, tuple)) and work_item_id in {str(v) for v in ids}
+        }
+        if rerun_keys:
+            matches = [
+                cell
+                for cell in ledger.get("cells", [])
+                if isinstance(cell, Mapping) and str(cell.get("cell_key")) in rerun_keys
+            ]
     if len(matches) != 1:
         raise PruningError(
             f"{work_item_id}: expected one declared ledger cell, found {len(matches)}"
