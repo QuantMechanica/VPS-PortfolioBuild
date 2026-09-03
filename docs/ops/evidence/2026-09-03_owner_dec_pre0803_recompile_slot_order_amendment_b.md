@@ -476,3 +476,9 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
 - 20:45Z: drain-window winnability rule merged (`52c784feb1`, Opus wf_f29d8ff0-37c verified ok, 170 tests): no arming
   while a long-run row (Q07+ incl. news) is active, releasable short-row RAM must cover the need, early abandon when a
   long run appears; throttled drain_window_not_winnable events. Reload chunk 23 queued behind 22 (21: 6/10 at 20:32Z).
+- 21:10Z–21:20Z: run_smoke report-shell race closed (`99fa0a7995`, Opus wf_2dc8f552-a32 verified ok, 54 tests incl. a
+  pwsh unit test; run_smoke.ps1 CRLF byte-exact): shell signature + bounded 180 s finalize grace + UTF-16 journal
+  cross-check → transient infra class REPORT_CAPTURE_INCOMPLETE (farmctl / p2_baseline / _phase_utils). False-zero
+  sweep since 08-15 (`bd3ef7ff81`): 133 candidates, exactly ONE false zero (12580 Q03), 18 genuine zeros, 96 genuine
+  below-floor, 5 evidence purged. 12580/AUDUSD Q03 append-only rerun enqueued `9cac4667` (from Q02 d53328e2, rerun of
+  a64d18d3, ex5 9541ef44 unchanged) — run_smoke starts fresh per run, so the fix applies immediately.
