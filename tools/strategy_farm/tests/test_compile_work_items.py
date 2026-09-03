@@ -3135,6 +3135,240 @@ def test_mae_hook_force_rebuild_requires_exact_routed_owner_task(tmp_path: Path)
     assert compile_work_items.mae_hook_force_rebuild_allowlist(root) == frozenset()
 
 
+def _write_pre0803_decision_doc(
+    repo: Path,
+    *,
+    ea_labels: list[str] | None = None,
+    owner_reference: str | None = None,
+) -> Path:
+    """Write the OWNER decision document the pre-0803 wave is bound to."""
+    labels = (
+        ea_labels
+        if ea_labels is not None
+        else sorted(compile_work_items.PRE0803_FORCE_REBUILD_EA_IDS)
+    )
+    reference = (
+        owner_reference
+        if owner_reference is not None
+        else compile_work_items.PRE0803_NEWS_PROVENANCE_FORCE_REBUILD_OWNER_REFERENCE
+    )
+    path = repo / compile_work_items.PRE0803_NEWS_PROVENANCE_DECISION_DOC
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        "# OWNER decision 2026-09-03 - pre-0803 recompile wave\n\n"
+        f"owner reference `{reference}`\n\n"
+        "Approved scope: " + ", ".join(labels) + "\n"
+        "Out of scope until their chain state is reviewed: QM5_13036, QM5_9510, "
+        "QM5_12357\n",
+        encoding="utf-8",
+    )
+    return path
+
+
+def test_pre0803_force_rebuild_allowlists_news_provenance_wave(
+    tmp_path: Path,
+) -> None:
+    ea_id = "11910"
+    assert ea_id in compile_work_items.PRE0803_FORCE_REBUILD_NUMERIC_EA_IDS
+    label = f"QM5_{ea_id}_pre0803-fixture-h1"
+    repo, root = _dl089_fixture(tmp_path, ea_id, label)
+    _write_pre0803_decision_doc(repo)
+
+    allowlist = compile_work_items.pre0803_force_rebuild_allowlist(repo)
+    assert allowlist == compile_work_items.PRE0803_FORCE_REBUILD_NUMERIC_EA_IDS
+    # The composed allowlist is what classify_candidate/run_compile actually use.
+    assert ea_id in compile_work_items.force_rebuild_allowlist(root, repo)
+    assert compile_work_items.force_rebuild_owner_reference(ea_id) == (
+        compile_work_items.PRE0803_NEWS_PROVENANCE_FORCE_REBUILD_OWNER_REFERENCE
+    )
+
+    inventory = compile_work_items._inventory(root, repo)
+    candidate = compile_work_items.classify_candidate(
+        root, repo, label, inventory,
+        force_rebuild_ea_ids=compile_work_items.force_rebuild_allowlist(root, repo),
+    )
+    assert candidate["eligible"] is True
+    assert candidate["force_rebuild_authorized"] is True
+    assert set(candidate["force_rebuild_waived_reasons"]) == {
+        "EX5_ALREADY_PRESENT", "WORK_ITEMS_EXIST", "BOUND_SETFILE_HASH_EXISTS",
+    }
+
+    applied = compile_work_items.enqueue_compile_eas(root, repo, [label])
+    assert applied["enqueued_count"] == 1
+    with farmctl.connect(root) as conn:
+        row = conn.execute(
+            "SELECT payload_json FROM work_items WHERE ea_id=? AND phase='COMPILE_EA'",
+            (f"QM5_{ea_id}",),
+        ).fetchone()
+    payload = json.loads(row[0])
+    assert payload["force_rebuild"] is True
+    assert payload["force_rebuild_owner_reference"] == (
+        compile_work_items.PRE0803_NEWS_PROVENANCE_FORCE_REBUILD_OWNER_REFERENCE
+    )
+    assert sorted(payload["force_rebuild_waived_reasons"]) == [
+        "BOUND_SETFILE_HASH_EXISTS", "EX5_ALREADY_PRESENT", "WORK_ITEMS_EXIST",
+    ]
+    assert payload["force_rebuild_evidence_note"] == (
+        compile_work_items.PRE0803_NEWS_PROVENANCE_DECISION_DOC
+    )
+
+
+def test_pre0803_force_rebuild_fails_closed_without_bound_decision_document(
+    tmp_path: Path,
+) -> None:
+    ea_id = "11910"
+    label = f"QM5_{ea_id}_pre0803-fixture-h1"
+    repo, root = _dl089_fixture(tmp_path, ea_id, label)
+    # No decision document at all: the hardcoded id alone must not unlock it.
+    assert compile_work_items.pre0803_force_rebuild_allowlist(repo) == frozenset()
+
+    # Document present but bound to a different owner reference (revocation /
+    # rewrite): still closed.
+    _write_pre0803_decision_doc(repo, owner_reference="OWNER_DECISION_SOMETHING_ELSE")
+    assert compile_work_items.pre0803_force_rebuild_allowlist(repo) == frozenset()
+
+    # Document with the right reference but this EA no longer named: closed for
+    # that EA only.
+    _write_pre0803_decision_doc(repo, ea_labels=["QM5_10700"])
+    assert compile_work_items.pre0803_force_rebuild_allowlist(repo) == frozenset(
+        {"10700"}
+    )
+
+    inventory = compile_work_items._inventory(root, repo)
+    candidate = compile_work_items.classify_candidate(
+        root, repo, label, inventory,
+        force_rebuild_ea_ids=compile_work_items.force_rebuild_allowlist(root, repo),
+    )
+    assert candidate["eligible"] is False
+    assert candidate["force_rebuild_authorized"] is False
+    assert "EX5_ALREADY_PRESENT" in candidate["reasons"]
+
+
+def test_ea_outside_every_force_rebuild_allowlist_is_still_refused(
+    tmp_path: Path,
+) -> None:
+    """13036 is named in the decision document as explicitly OUT of scope."""
+    ea_id = "13036"
+    assert ea_id not in compile_work_items.PRE0803_FORCE_REBUILD_NUMERIC_EA_IDS
+    assert ea_id not in compile_work_items.DL089_FORCE_REBUILD_EA_IDS
+    assert ea_id not in compile_work_items.MAE_HOOK_FORCE_REBUILD_EA_IDS
+    label = f"QM5_{ea_id}_out-of-scope-fixture-h1"
+    repo, root = _dl089_fixture(tmp_path, ea_id, label)
+    _write_pre0803_decision_doc(repo)
+    _write_owner_priority_tracks(
+        repo, ea_id, compile_work_items.DL089_FORCE_REBUILD_OWNER_REFERENCE
+    )
+
+    allowlist = compile_work_items.force_rebuild_allowlist(root, repo)
+    assert ea_id not in allowlist
+
+    inventory = compile_work_items._inventory(root, repo)
+    candidate = compile_work_items.classify_candidate(
+        root, repo, label, inventory, force_rebuild_ea_ids=allowlist,
+    )
+    assert candidate["eligible"] is False
+    assert candidate["force_rebuild_authorized"] is False
+    assert candidate["force_rebuild_waived_reasons"] == []
+    assert "EX5_ALREADY_PRESENT" in candidate["reasons"]
+    assert "WORK_ITEMS_EXIST" in candidate["reasons"]
+
+    refused = compile_work_items.enqueue_compile_eas(root, repo, [label])
+    assert refused["enqueued_count"] == 0
+
+
+def test_force_rebuild_allowlist_sources_stay_separate(tmp_path: Path) -> None:
+    """The pre-0803 wave must not widen or reshuffle the two older lists."""
+    assert compile_work_items.DL089_FORCE_REBUILD_EA_IDS == frozenset({
+        "1556", "1567", "10919", "10939", "11132", "11165", "11421", "11708",
+        "12567", "12778", "12969", "12989", "13117", "13128", "13213", "13301",
+    })
+    assert compile_work_items.DL089_FORCE_REBUILD_OWNER_REFERENCE == (
+        "OWNER_DECISION_2026-08-21_DL-089_LIVE_BOOK_REQUALIFICATION"
+    )
+    assert compile_work_items.MAE_HOOK_FORCE_REBUILD_EA_IDS == frozenset({
+        "12947", "12948", "12949", "12950", "12951", "12952",
+    })
+    assert compile_work_items.MAE_HOOK_FORCE_REBUILD_OWNER_REFERENCE == (
+        "OWNER_TASK_8fe2a461_2026-08-22_MAE_HOOK_EMERGENCY_REBUILD"
+    )
+    assert compile_work_items.PRE0803_FORCE_REBUILD_EA_IDS == frozenset({
+        "QM5_11910", "QM5_10700", "QM5_12710", "QM5_10815", "QM5_12580",
+    })
+    assert compile_work_items.PRE0803_FORCE_REBUILD_NUMERIC_EA_IDS == frozenset({
+        "11910", "10700", "12710", "10815", "12580",
+    })
+    assert compile_work_items.PRE0803_NEWS_PROVENANCE_FORCE_REBUILD_OWNER_REFERENCE == (
+        "OWNER_DECISION_2026-09-03_PRE0803_NEWS_PROVENANCE_RECOMPILE"
+    )
+    assert compile_work_items.FORCE_REBUILD_WAIVABLE_REASONS == frozenset({
+        "EX5_ALREADY_PRESENT", "WORK_ITEMS_EXIST", "BOUND_SETFILE_HASH_EXISTS",
+        "BUILD_TASK_EXISTS",
+    })
+    assert not (
+        compile_work_items.DL089_FORCE_REBUILD_EA_IDS
+        & compile_work_items.MAE_HOOK_FORCE_REBUILD_EA_IDS
+    )
+    assert not (
+        compile_work_items.DL089_FORCE_REBUILD_EA_IDS
+        & compile_work_items.PRE0803_FORCE_REBUILD_NUMERIC_EA_IDS
+    )
+    assert not (
+        compile_work_items.MAE_HOOK_FORCE_REBUILD_EA_IDS
+        & compile_work_items.PRE0803_FORCE_REBUILD_NUMERIC_EA_IDS
+    )
+
+    # Each list keeps its own owner reference; only the pre-0803 wave carries a
+    # decision-document receipt.
+    for ea_id in compile_work_items.DL089_FORCE_REBUILD_EA_IDS:
+        assert compile_work_items.force_rebuild_owner_reference(ea_id) == (
+            compile_work_items.DL089_FORCE_REBUILD_OWNER_REFERENCE
+        )
+        assert compile_work_items.force_rebuild_evidence_note(ea_id) is None
+    for ea_id in compile_work_items.MAE_HOOK_FORCE_REBUILD_EA_IDS:
+        assert compile_work_items.force_rebuild_owner_reference(ea_id) == (
+            compile_work_items.MAE_HOOK_FORCE_REBUILD_OWNER_REFERENCE
+        )
+        assert compile_work_items.force_rebuild_evidence_note(ea_id) is None
+    for ea_id in compile_work_items.PRE0803_FORCE_REBUILD_NUMERIC_EA_IDS:
+        assert compile_work_items.force_rebuild_owner_reference(ea_id) == (
+            compile_work_items.PRE0803_NEWS_PROVENANCE_FORCE_REBUILD_OWNER_REFERENCE
+        )
+        assert compile_work_items.force_rebuild_evidence_note(ea_id) == (
+            compile_work_items.PRE0803_NEWS_PROVENANCE_DECISION_DOC
+        )
+
+    # Composition: the union of the three sources, nothing else.
+    dl089_ea_id = "11421"
+    repo, root = _dl089_fixture(
+        tmp_path, dl089_ea_id, f"QM5_{dl089_ea_id}_dl089-fixture-h1"
+    )
+    _write_owner_priority_tracks(
+        repo, dl089_ea_id, compile_work_items.DL089_FORCE_REBUILD_OWNER_REFERENCE
+    )
+    _write_pre0803_decision_doc(repo)
+    with farmctl.connect(root) as conn:
+        conn.execute(
+            "CREATE TABLE agent_tasks(id TEXT PRIMARY KEY, payload_json TEXT NOT NULL)"
+        )
+        conn.execute(
+            "INSERT INTO agent_tasks(id,payload_json) VALUES (?,?)",
+            (
+                compile_work_items.MAE_HOOK_FORCE_REBUILD_AUTHORITY_TASK_ID,
+                json.dumps({
+                    "title": "NOTFALL Template-Defekt: MAE-Hook reparieren",
+                    "goal": "QM5_12947-12952 batch-reparieren",
+                }),
+            ),
+        )
+        conn.commit()
+
+    assert compile_work_items.force_rebuild_allowlist(root, repo) == (
+        frozenset({dl089_ea_id})
+        | compile_work_items.MAE_HOOK_FORCE_REBUILD_EA_IDS
+        | compile_work_items.PRE0803_FORCE_REBUILD_NUMERIC_EA_IDS
+    )
+
+
 def test_candidate_refuses_unresolved_timeframe_before_enqueue(tmp_path: Path) -> None:
     label = "QM5_1001_compile-fixture"
     repo, root = _fixture(tmp_path, [label])

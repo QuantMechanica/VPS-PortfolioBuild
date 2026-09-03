@@ -979,6 +979,31 @@ MAE_HOOK_FORCE_REBUILD_EA_IDS = frozenset({
     "12947", "12948", "12949", "12950", "12951", "12952",
 })
 
+# Pre-0803 news-provenance recompile wave (OWNER decision 2026-09-03,
+# OWNER-DEC-PRE0803-RECOMPILE-SLOTORDER-AMENDB-20260903). Every .ex5 compiled
+# before commit f0102fbcf (2026-08-03, QM_NewsFilter.mqh provenance inputs
+# qm_news_calendar_bundle_id / _expected_sha256 / _common_relative_path) fails
+# every Q10_NEWS cell with an effective-input bundle-id mismatch, so these EAs
+# can never close a chain without a rebuild. The rebuilt EX5 is a NEW identity
+# from Q02 (23.08. identity rule); the old rows stay as append-only evidence.
+# Batch 1 = 11910 / 10700 / 12710, batch 2 = 10815 / 12580 - one list, the
+# execution order is the CEO's. This is NOT a general .ex5-overwrite path.
+PRE0803_NEWS_PROVENANCE_FORCE_REBUILD_OWNER_REFERENCE = (
+    "OWNER_DECISION_2026-09-03_PRE0803_NEWS_PROVENANCE_RECOMPILE"
+)
+PRE0803_NEWS_PROVENANCE_DECISION_DOC = (
+    "docs/ops/evidence/"
+    "2026-09-03_owner_dec_pre0803_recompile_slot_order_amendment_b.md"
+)
+PRE0803_FORCE_REBUILD_EA_IDS = frozenset({
+    "QM5_11910", "QM5_10700", "QM5_12710",  # batch 1
+    "QM5_10815", "QM5_12580",               # batch 2
+})
+PRE0803_FORCE_REBUILD_NUMERIC_EA_IDS = frozenset(
+    value.split("_", 1)[1] if value.upper().startswith("QM5_") else value
+    for value in PRE0803_FORCE_REBUILD_EA_IDS
+)
+
 
 def dl089_force_rebuild_allowlist(repo_root: Path) -> frozenset[str]:
     """Return the numeric EA ids authorized for a COMPILE_EA force-rebuild.
@@ -1037,14 +1062,58 @@ def mae_hook_force_rebuild_allowlist(root: Path) -> frozenset[str]:
     return MAE_HOOK_FORCE_REBUILD_EA_IDS
 
 
+def pre0803_force_rebuild_allowlist(repo_root: Path) -> frozenset[str]:
+    """Return the numeric EA ids authorized by the 2026-09-03 pre-0803 wave.
+
+    Fail-closed in the same shape as dl089_force_rebuild_allowlist: an id only
+    clears the bypass when the hardcoded PRE0803_FORCE_REBUILD_EA_IDS name AND
+    the OWNER decision document in this checkout agree. The document must carry
+    the exact owner reference and name the EA, so a checkout without the
+    decision (or an OWNER revocation that removes/rewrites it) turns the bypass
+    back off without a code change.
+    """
+    try:
+        text = (repo_root / PRE0803_NEWS_PROVENANCE_DECISION_DOC).read_text(
+            encoding="utf-8-sig"
+        )
+    except OSError:
+        return frozenset()
+    if PRE0803_NEWS_PROVENANCE_FORCE_REBUILD_OWNER_REFERENCE not in text:
+        return frozenset()
+    authorized: set[str] = set()
+    for numeric_ea_id in PRE0803_FORCE_REBUILD_NUMERIC_EA_IDS:
+        if not numeric_ea_id.isdigit():
+            continue
+        if re.search(rf"QM5_{numeric_ea_id}(?![0-9])", text):
+            authorized.add(numeric_ea_id)
+    return frozenset(authorized)
+
+
 def force_rebuild_allowlist(root: Path, repo_root: Path) -> frozenset[str]:
-    return dl089_force_rebuild_allowlist(repo_root) | mae_hook_force_rebuild_allowlist(root)
+    return (
+        dl089_force_rebuild_allowlist(repo_root)
+        | mae_hook_force_rebuild_allowlist(root)
+        | pre0803_force_rebuild_allowlist(repo_root)
+    )
 
 
 def force_rebuild_owner_reference(ea_id: str) -> str:
     if ea_id in MAE_HOOK_FORCE_REBUILD_EA_IDS:
         return MAE_HOOK_FORCE_REBUILD_OWNER_REFERENCE
+    if ea_id in PRE0803_FORCE_REBUILD_NUMERIC_EA_IDS:
+        return PRE0803_NEWS_PROVENANCE_FORCE_REBUILD_OWNER_REFERENCE
     return DL089_FORCE_REBUILD_OWNER_REFERENCE
+
+
+def force_rebuild_evidence_note(ea_id: str) -> str | None:
+    """Repo-relative decision document backing a document-bound rebuild wave.
+
+    Returns None for the DL-089 and MAE-hook waves so their compile payloads
+    stay byte-identical to what they were before the pre-0803 wave existed.
+    """
+    if ea_id in PRE0803_FORCE_REBUILD_NUMERIC_EA_IDS:
+        return PRE0803_NEWS_PROVENANCE_DECISION_DOC
+    return None
 
 
 def utc_now() -> str:
@@ -3706,6 +3775,11 @@ def enqueue_compile_eas(
                             "force_rebuild_waived_reasons", []
                         ),
                     })
+                    force_rebuild_note = force_rebuild_evidence_note(
+                        str(candidate["numeric_ea_id"])
+                    )
+                    if force_rebuild_note:
+                        payload["force_rebuild_evidence_note"] = force_rebuild_note
                 if candidate.get("source_repair_authorized"):
                     payload.update({
                         "compile_source_repair_contract_version": (
