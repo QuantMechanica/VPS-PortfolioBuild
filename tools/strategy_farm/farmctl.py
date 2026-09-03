@@ -27700,6 +27700,56 @@ def _append_only_rerun_lineage_work_item_ids(
     return lineage
 
 
+_FORCED_NEWS_EXPANSION_IDENTITY_KEYS = (
+    "news_expansion_of_work_item",
+    "news_expansion_source_aggregate_sha256",
+    "news_expansion_reason_code",
+)
+
+
+def _forced_news_expansion_identity(
+    rerun_target: sqlite3.Row | None,
+) -> tuple[dict[str, Any] | None, str]:
+    """Authenticate a done expansion child as a --force-expanded-news-matrix seed.
+
+    The opt-in append-only rerun copies the expansion identity of a prior
+    ``done`` full-matrix child so a fresh row re-authors the same 7x4 matrix
+    instead of the ordinary 8-cell target-compliance scope.
+    ``news_expansion_of_work_item`` stays the ORIGINAL 8-cell source id (never
+    rewritten to the rerun target), which is exactly what makes the pump's
+    expansion-continuation dedup treat the new row as an existing continuation.
+    Returns the identity fields plus the parent's plan-derived ``q09_cell_count``
+    (the autoseal re-stamps the authoritative value from the freshly authored
+    plan; nothing here hardcodes the expanded count), or ``(None, reason)`` for
+    a machine-readable refusal.
+    """
+
+    if rerun_target is None:
+        return None, "force_expanded_news_matrix_rerun_of_not_found"
+    if str(rerun_target["status"] or "") != "done":
+        return None, "force_expanded_news_matrix_rerun_of_not_done"
+    try:
+        payload = json.loads(str(rerun_target["payload_json"] or "{}"))
+    except (TypeError, json.JSONDecodeError):
+        payload = None
+    if not isinstance(payload, dict):
+        return None, "force_expanded_news_matrix_rerun_of_payload_invalid"
+    if payload.get("force_expanded_news_matrix") is not True:
+        return None, "force_expanded_news_matrix_rerun_of_missing_expansion_identity"
+    identity: dict[str, Any] = {"force_expanded_news_matrix": True}
+    for key in _FORCED_NEWS_EXPANSION_IDENTITY_KEYS:
+        value = payload.get(key)
+        if value in (None, ""):
+            return (
+                None,
+                "force_expanded_news_matrix_rerun_of_missing_expansion_identity",
+            )
+        identity[key] = value
+    if payload.get("q09_cell_count") is not None:
+        identity["q09_cell_count"] = payload["q09_cell_count"]
+    return identity, ""
+
+
 def enqueue_cascade_backtest_for_ea(
     root: Path,
     ea_id: str,
@@ -27710,6 +27760,7 @@ def enqueue_cascade_backtest_for_ea(
     rerun_reason: str | None = None,
     expected_current_ex5_sha256: str | None = None,
     q09_anchor_binding: dict[str, Any] | None = None,
+    force_expanded_news_matrix: bool = False,
 ) -> dict[str, Any]:
     """Requeue or create a cascade work_item from the prior PASS phase.
 
@@ -27725,6 +27776,45 @@ def enqueue_cascade_backtest_for_ea(
     reviewed adjudication overlay supersedes them.
     """
     phase_token = str(phase or "").strip().upper()
+    force_expanded_news_matrix = bool(force_expanded_news_matrix)
+    forced_news_expansion_identity: dict[str, Any] | None = None
+    if force_expanded_news_matrix:
+        # Opt-in full-matrix append-only rerun. Valid ONLY for the news phase
+        # and only when --append-only-rerun-of names a done full-matrix child;
+        # every other precondition is refused with a machine-readable reason
+        # before any row is minted. The existing append-only guards (duplicate,
+        # supersedes, binding, target identity) below stay authoritative.
+        if phase_token != _NEWS_PHASE:
+            return {
+                "enqueued": False,
+                "reason": "force_expanded_news_matrix_requires_news_phase",
+                "ea_id": ea_id,
+                "phase": phase,
+            }
+        rerun_of = str(append_only_rerun_of or "").strip()
+        if not rerun_of:
+            return {
+                "enqueued": False,
+                "reason": "force_expanded_news_matrix_requires_append_only_rerun_of",
+                "ea_id": ea_id,
+                "phase": phase,
+            }
+        init_db(root)
+        with connect(root) as _identity_conn:
+            rerun_target_row = _identity_conn.execute(
+                "SELECT * FROM work_items WHERE id=?", (rerun_of,)
+            ).fetchone()
+        forced_news_expansion_identity, identity_reason = (
+            _forced_news_expansion_identity(rerun_target_row)
+        )
+        if forced_news_expansion_identity is None:
+            return {
+                "enqueued": False,
+                "reason": identity_reason,
+                "ea_id": ea_id,
+                "phase": phase,
+                "append_only_rerun_of": rerun_of,
+            }
     if phase_token == _NEWS_GATE:
         return {
             "enqueued": False,
@@ -28069,6 +28159,13 @@ def enqueue_cascade_backtest_for_ea(
                         "expected_period": current_bindings["expected_period"],
                         "expected_expert": current_bindings["expected_expert"],
                     })
+                if forced_news_expansion_identity is not None:
+                    # Carry the parent's expansion identity so the autoseal
+                    # re-authors the full 7x4 matrix and the pump's continuation
+                    # dedup sees this row as the existing continuation for the
+                    # ORIGINAL 8-cell source. rerun_reason is recorded by the
+                    # append-only update above (guarded non-empty upstream).
+                    payload.update(forced_news_expansion_identity)
                 wid = str(uuid.uuid4())
                 insert_sql = """
                     INSERT INTO work_items
@@ -32696,6 +32793,15 @@ def build_parser() -> argparse.ArgumentParser:
         help="required audit reason for --append-only-rerun-of",
     )
     enqueue_bt.add_argument(
+        "--force-expanded-news-matrix",
+        action="store_true",
+        help=(
+            "opt-in full 7x4 news matrix for an append-only rerun; valid ONLY "
+            "with --phase Q10_NEWS and an --append-only-rerun-of naming a done "
+            "row that itself carries force_expanded_news_matrix=True"
+        ),
+    )
+    enqueue_bt.add_argument(
         "--expected-current-ex5-sha256",
         help=(
             "required current repo EX5 binding for stale terminal reruns and "
@@ -33421,6 +33527,7 @@ def main(argv: list[str] | None = None) -> int:
                 rerun_reason=args.rerun_reason,
                 expected_current_ex5_sha256=args.expected_current_ex5_sha256,
                 q09_anchor_binding=q09_anchor_binding,
+                force_expanded_news_matrix=args.force_expanded_news_matrix,
             ))
         elif args.review_task_id:
             print_json(enqueue_backtest(root, args.review_task_id, args.phase))
