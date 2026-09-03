@@ -1,0 +1,157 @@
+{
+  "schema_version": "qm.fx-market-neutral-frontier-governance-stop/v1",
+  "captured_at_utc": "2026-09-03T01:22:36Z",
+  "branch": "agents/board-advisor",
+  "head_before": "85afe12405e917f1c7f1cf21324d5812e6a8f529",
+  "result": "NO_MUTATION_GOVERNANCE_AND_DATA_GUARD",
+  "mission": "grow low-frequency market-neutral FX baskets without repeating the completed 66-pair scan",
+  "anchor_census": [
+    {
+      "ea_id": "QM5_12532",
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "status": "done",
+      "verdict": "PASS",
+      "repair_required": false,
+      "downstream": "Q04_PASS_THEN_Q05_FAIL"
+    },
+    {
+      "ea_id": "QM5_12533",
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "status": "done",
+      "verdict": "PASS",
+      "repair_required": false,
+      "downstream": "Q04_FAIL"
+    }
+  ],
+  "zero_trade_recovery_audit": {
+    "ea_id": "QM5_20292",
+    "slug": "fx-carry-unwind",
+    "source": "Kathy Lien (2015), Day Trading and Swing Trading the Currency Market, 3rd ed., Chapter 18, pp. 153-160",
+    "expected_frequency": "4-12 two-leg packages per year",
+    "market_neutral_contract": "symmetric opposite-carry two-leg package",
+    "logical_symbol": "QM5_20292_FX_CARRY_UNWIND_D1",
+    "q02_work_item_id": "257d153d-a880-4431-8661-e4d736676ecb",
+    "status": "done",
+    "verdict": "ZERO_TRADES",
+    "trades": 0,
+    "window_start": "2018.07.02",
+    "window_end": "2022.12.31",
+    "real_ticks": true,
+    "oninit_failure": false,
+    "history_warmup": {
+      "traded_symbols_requested": 6,
+      "traded_symbols_loaded": 6,
+      "signal_symbols_requested": 7,
+      "signal_symbols_loaded": 7
+    },
+    "classification": "SETUP_DATA_BLOCKER_NOT_SAFE_TO_REPAIR",
+    "blocker": "The approved strategy requires comparable broker swap metadata, while the canonical cost model has no certified point-in-time historical swap series; current swap snapshots cannot be used retroactively.",
+    "artifact_sha256": {
+      "approved_card": "3e004d64182dac8325e5032bb8e33beb804842d4fd908f3cfae5620692c09c39",
+      "basket_manifest": "60d7bea45d6a700f95c32ace8535c76b62fad616abb19bfa46ac53b4320c4d23",
+      "mq5": "845f638d46b66968705f6ee4226d28fd078f699f96425551b0536f4c39481199",
+      "ex5": "614d5b7adb051a4d1a51acbbd78b733ad8ccfcb6fa56aa78835de471a4eb9e6c",
+      "logical_setfile": "8a1cee7c2c76d9dfde076227459bcec07b12138c8ff03bf8c637be95d6ce3d8d",
+      "report": "f2433d8f941397cd2736fcc16bb8435a0ae1067b3f997a7f25871672530e7462"
+    },
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "duplicate_rerun_created": false
+  },
+  "research_frontier": {
+    "completed_scan_relationships": 66,
+    "represented_approved_cointegration_identities": 123,
+    "scan_repeated": false,
+    "new_build_ready_relationship_found": false,
+    "blocked_families": [
+      "MC-01 FX8 XSMOM 6/1 requires lineage and architecture ratification and overlaps QM5_10717/QM5_1111",
+      "FX carry requires certified point-in-time historical swap/rate data",
+      "FX value requires point-in-time REER data",
+      "month-end FX card is killed as specified",
+      "QM5_37001 and QM5_34008 have unresolved mechanics and exceed the low-frequency boundary"
+    ]
+  },
+  "existing_priority_q02": [
+    {
+      "ea_id": "QM5_10717",
+      "work_item_id": "65319749-3c0b-4636-9131-305c34100a08",
+      "logical_symbol": "FX8_BASKET_D1",
+      "status": "pending",
+      "claimed_by": null,
+      "attempt_count": 0,
+      "priority_track": true,
+      "risk_fixed": 1000.0,
+      "risk_percent": 0.0,
+      "ex5_sha256": "3d5680d0022df60ca523630822515e5f1cf86a2e7bc4d512eda45065cb8ce463",
+      "setfile_sha256": "e6cf041bce7de65c935edbeab71bd5c5e6f6524dcbc5732f280ad3ad3684548b"
+    },
+    {
+      "ea_id": "QM5_10718",
+      "work_item_id": "31f12573-d903-4386-a857-cad2b445d63a",
+      "logical_symbol": "QM5_10718_FX8_BASKET_D1",
+      "status": "pending",
+      "claimed_by": null,
+      "attempt_count": 0,
+      "priority_track": true,
+      "risk_fixed": 500.0,
+      "risk_percent": 0.0,
+      "ex5_sha256": "10358a8dd852cd495265fc4099dfb7d9fecc711a047d98a4ff5eafbba51a91cc",
+      "setfile_sha256": "cbc4602cc7685d7db68e9e17603916e4b66706ba9566248bf975c2a4782bd680"
+    },
+    {
+      "ea_id": "QM5_12507",
+      "work_item_id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+      "logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+      "status": "pending",
+      "claimed_by": null,
+      "attempt_count": 0
+    },
+    {
+      "ea_id": "QM5_12512",
+      "work_item_id": "acbad967-bf94-4565-9e51-db193de01bf9",
+      "logical_symbol": "QM5_12512_FX_PAIRS_THRESHOLD_H1",
+      "status": "pending",
+      "claimed_by": null,
+      "attempt_count": 0
+    }
+  ],
+  "capacity": {
+    "cpu_sampled_at_utc": "2026-09-03T01:22:36Z",
+    "cpu_ceiling_percent": 97.0,
+    "cpu_samples_percent": [
+      96.0980932124452,
+      92.8825654752759,
+      96.2137370514654,
+      83.3066577258147,
+      79.807745133196
+    ],
+    "cpu_average_percent": 89.6617597196394,
+    "cpu_maximum_percent": 96.2137370514654,
+    "ceiling_hit": false,
+    "mt5_slots_scanned_at_utc": "2026-09-03T01:22:57Z",
+    "terminal_workers_present": 10,
+    "active_factory_terminals": ["T1", "T2", "T3", "T8", "T9"],
+    "duplicate_terminal_workers": 0,
+    "orphaned_terminal_processes": 0,
+    "manual_dispatch_started": false
+  },
+  "mutations": {
+    "ea_source": false,
+    "basket_manifest": false,
+    "setfile": false,
+    "registry": false,
+    "resolver": false,
+    "farm_queue": false,
+    "portfolio_gate": false,
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live": false,
+    "autotrading": false
+  },
+  "resume_contract": "Allow the ordinary factory worker to consume an existing priority-bound logical Q02 row when capacity permits. Do not enqueue a duplicate. A genuinely new relationship requires MC-R0 lineage/architecture ratification; QM5_20292 requires certified point-in-time historical carry data or it retains the honest ZERO_TRADES verdict.",
+  "documentation_path": "docs/research/FX_MARKET_NEUTRAL_FRONTIER_GOVERNANCE_STOP_20260903T012236Z.md"
+}
