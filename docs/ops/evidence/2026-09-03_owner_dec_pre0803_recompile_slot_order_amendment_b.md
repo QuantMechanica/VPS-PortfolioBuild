@@ -437,3 +437,10 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   rebased all sources to the economic-terms snapshot whose schema the evaluator does not accept → OWNER Vorlage
   (FTMO evidence chain). 12580/AUDUSD Q03 `a64d18d3` claimed 18:41Z on T3 through the normal gate (commit headroom
   cleared before the 20-min drain trigger); chain continues.
+- 19:04Z: 12580/AUDUSD Q03 `a64d18d3` (new identity) FAIL run_smoke_fail:MIN_TRADES_NOT_MET — both model-4 runs over
+  2018-07-02..2022-12-31 produced ZERO trades (net 0.00, DD 0.00) while the old-identity Q03 6ce2cb7c PASSed on
+  2026-06-28 (evidence purged) and today's Q02 traded. Same window and symptom as the documented QM5_10025 zero-trade
+  case (2026-09-02: INIT_OK, all partner histories synchronized, zero selection/signal markers). Read-only diagnosis
+  workflow launched (wf_710ffab1-cea). The FAIL stands append-only; no rerun until an infra cause is proven fixed.
+- 19:02Z: loop round — guardian_long still alive (5 procs), 10 workers, pump 19:02Z, containment enabled:false,
+  C: 85.6 GB free, RAM 18-38 GB free, census 11 cells/10 min (3 lanes), 21507 562/1085, 12710 54, 11910 92.
