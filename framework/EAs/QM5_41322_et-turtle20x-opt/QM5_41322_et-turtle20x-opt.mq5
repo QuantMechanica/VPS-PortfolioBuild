@@ -255,8 +255,7 @@ double PercentileATR(const int bars, const double percentile)
       p = 100.0;
 
    const int index = (int)MathRound((p / 100.0) * (bars - 1));
-   const int value_count = ArraySize(values);
-   if(index < 0 || index >= value_count)
+   if(index < 0 || index >= ArraySize(values))
       return 0.0;
    return values[index];
   }
