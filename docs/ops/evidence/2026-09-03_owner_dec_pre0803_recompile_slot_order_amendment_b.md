@@ -444,3 +444,10 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   workflow launched (wf_710ffab1-cea). The FAIL stands append-only; no rerun until an infra cause is proven fixed.
 - 19:02Z: loop round — guardian_long still alive (5 procs), 10 workers, pump 19:02Z, containment enabled:false,
   C: 85.6 GB free, RAM 18-38 GB free, census 11 cells/10 min (3 lanes), 21507 562/1085, 12710 54, 11910 92.
+- 19:10Z–19:20Z: news-gate proposal D analysis + foreign-worktree audit committed (`ee300a8f5c`, Opus wf_cee8cc14-938,
+  both verified ok). D: the NONE-compliance value is a persistence label omitted by the two REVIEW dicts (all 54 rows
+  executed DXZ/POLICY_ON, verdict impact 0); material_effect fires on real temporal-mode effects; affected_entries is
+  unwired (0/15); the selector scores only the target column (32/32 locks DXZ) so the 29-cell expansion adds columns
+  never selected -> option (e) lazy expansion for single-target deployments would lock all 43 open expanded rows at
+  the 8-cell (ROT Vorlage filed, replaces the 15:55Z D Vorlage). Worktrees: all 21 under C:/QM/worktrees carry WIP,
+  none reclaimable. Governor v2 build (G6, OWNER-gated activation) launched as Opus workflow wf_36c785e8-af5.
