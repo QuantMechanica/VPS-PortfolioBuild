@@ -3077,7 +3077,101 @@ def _path_is_under_root(path: str, root: Path) -> bool:
         return False
 
 
-def _scan_terminal64_processes() -> list[dict[str, Any]]:
+# 2026-09-03: hardening of the claimed-terminal exit scan.  Under a saturated
+# host (100% CPU) a single Get-CimInstance Win32_Process probe can exceed its
+# timeout, and the resulting scan RunnerError used to fail the in-flight cell
+# WITHOUT a retry -- one such miss ended a 29-cell / 4.3h Q10_NEWS expansion
+# child (c0faeb48) in REVIEW_REQUIRED and forced a full rerun.  A native
+# Toolhelp32 walk (no PowerShell process, so a busy host cannot time it out) is
+# tried first; the pwsh probe is the fallback, retried with backoff and a wider
+# per-attempt timeout; a final failure is classified TransientCellError so the
+# existing bounded per-cell retry lane absorbs it.  Retry routing only: no gate
+# threshold, adjudication rule, or verdict is affected.
+#
+# The pwsh probe is attempted once and then retried up to
+# TERMINAL_SCAN_RETRY_BUDGET more times (4 attempts total), sleeping
+# TERMINAL_SCAN_BACKOFF_SEC[i] before retry i (5 -> 15 -> 30 s).  Each attempt
+# is given TERMINAL_SCAN_TIMEOUT_SEC (90 s, up from 30) because a single
+# Get-CimInstance can stall for tens of seconds on a saturated host.
+TERMINAL_SCAN_RETRY_BUDGET = 3
+TERMINAL_SCAN_BACKOFF_SEC = (5.0, 15.0, 30.0)
+TERMINAL_SCAN_TIMEOUT_SEC = 90
+
+
+def _scan_terminal64_processes_via_toolhelp() -> list[dict[str, Any]] | None:
+    """Enumerate terminal64.exe processes with a ctypes Toolhelp32 walk.
+
+    Returns ``{"ProcessId", "ExecutablePath"}`` rows on success -- an empty
+    list is a valid "no terminal64 running" result.  Returns ``None`` when the
+    snapshot cannot be taken or a live terminal64's full image path cannot be
+    resolved, so the caller falls back to the pwsh probe rather than risk a
+    false "already exited" for the claimed-terminal wait.  This walk holds no
+    PowerShell process, so a saturated host cannot time it out.
+    """
+
+    if sys.platform != "win32":
+        return None
+    try:
+        import ctypes
+        from ctypes import wintypes
+
+        class _PROCESSENTRY32W(ctypes.Structure):
+            _fields_ = [
+                ("dwSize", wintypes.DWORD),
+                ("cntUsage", wintypes.DWORD),
+                ("th32ProcessID", wintypes.DWORD),
+                ("th32DefaultHeapID", ctypes.POINTER(ctypes.c_ulong)),
+                ("th32ModuleID", wintypes.DWORD),
+                ("cntThreads", wintypes.DWORD),
+                ("th32ParentProcessID", wintypes.DWORD),
+                ("pcPriClassBase", ctypes.c_long),
+                ("dwFlags", wintypes.DWORD),
+                ("szExeFile", ctypes.c_wchar * 260),
+            ]
+
+        kernel32 = ctypes.windll.kernel32
+        TH32CS_SNAPPROCESS = 0x00000002
+        INVALID_HANDLE_VALUE = ctypes.c_void_p(-1).value
+        PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+
+        snapshot = kernel32.CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0)
+        if snapshot == INVALID_HANDLE_VALUE:
+            return None
+        pids: list[int] = []
+        try:
+            entry = _PROCESSENTRY32W()
+            entry.dwSize = ctypes.sizeof(_PROCESSENTRY32W)
+            more = kernel32.Process32FirstW(snapshot, ctypes.byref(entry))
+            while more:
+                if str(entry.szExeFile or "").lower() == "terminal64.exe":
+                    pids.append(int(entry.th32ProcessID))
+                more = kernel32.Process32NextW(snapshot, ctypes.byref(entry))
+        finally:
+            kernel32.CloseHandle(snapshot)
+
+        rows: list[dict[str, Any]] = []
+        for pid in pids:
+            handle = kernel32.OpenProcess(
+                PROCESS_QUERY_LIMITED_INFORMATION, False, pid
+            )
+            if not handle:
+                return None
+            try:
+                size = wintypes.DWORD(32768)
+                buffer = ctypes.create_unicode_buffer(size.value)
+                if not kernel32.QueryFullProcessImageNameW(
+                    handle, 0, buffer, ctypes.byref(size)
+                ):
+                    return None
+                rows.append({"ProcessId": pid, "ExecutablePath": buffer.value})
+            finally:
+                kernel32.CloseHandle(handle)
+        return rows
+    except Exception:
+        return None
+
+
+def _scan_terminal64_processes_via_pwsh(timeout_sec: float) -> list[dict[str, Any]]:
     command = [
         "pwsh.exe",
         "-NoProfile",
@@ -3096,7 +3190,7 @@ def _scan_terminal64_processes() -> list[dict[str, Any]]:
             command,
             capture_output=True,
             text=True,
-            timeout=30,
+            timeout=float(timeout_sec),
             creationflags=creationflags,
             check=False,
         )
@@ -3118,6 +3212,52 @@ def _scan_terminal64_processes() -> list[dict[str, Any]]:
     if not all(isinstance(row, dict) for row in rows):
         raise RunnerError("Q09 terminal process scan returned an invalid row set")
     return rows
+
+
+def _scan_terminal64_processes(
+    *,
+    toolhelp_scan: Callable[[], list[dict[str, Any]] | None] | None = None,
+    pwsh_scan: Callable[[float], list[dict[str, Any]]] | None = None,
+    sleeper: Callable[[float], None] | None = None,
+    retry_budget: int = TERMINAL_SCAN_RETRY_BUDGET,
+    backoff_sec: Sequence[float] = TERMINAL_SCAN_BACKOFF_SEC,
+    timeout_sec: float = TERMINAL_SCAN_TIMEOUT_SEC,
+) -> list[dict[str, Any]]:
+    """Enumerate running terminal64 processes for the claimed-exit wait.
+
+    The native Toolhelp32 walk is tried first; the pwsh Get-CimInstance probe
+    is the fallback and is attempted once and then retried up to
+    ``retry_budget`` more times with backoff, because under 100% CPU a single
+    Get-CimInstance can exceed even a generous timeout.  When every fallback
+    attempt still fails, the scan raises ``TransientCellError`` (a
+    ``RunnerError`` subclass) so the existing bounded per-cell retry lane treats
+    a saturated-host scan miss as the transient infrastructure flake it is
+    instead of a non-transient tester result that fails the cell without a
+    retry.  Retry routing only: no gate threshold, adjudication rule, or verdict
+    is affected.
+    """
+
+    native = toolhelp_scan or _scan_terminal64_processes_via_toolhelp
+    probe = pwsh_scan or _scan_terminal64_processes_via_pwsh
+    sleep = sleeper or time.sleep
+    rows = native()
+    if rows is not None:
+        return rows
+    total_attempts = 1 + max(0, int(retry_budget))
+    last_error: RunnerError | None = None
+    for attempt in range(total_attempts):
+        try:
+            return probe(float(timeout_sec))
+        except RunnerError as exc:
+            last_error = exc
+            if attempt < total_attempts - 1 and backoff_sec:
+                index = min(attempt, len(backoff_sec) - 1)
+                sleep(float(backoff_sec[index]))
+    raise TransientCellError(
+        "Q09 terminal process scan failed after "
+        f"{total_attempts} attempt(s); treating a saturated-host scan failure "
+        f"as transient: {last_error}"
+    ) from last_error
 
 
 def _claimed_terminal_processes(
