@@ -266,3 +266,11 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
 - 10:20Z–10:28Z: the news-gate service minted 10700's replacement Q10_NEWS parent `fe33550e` (RUNNABLE_BOUND,
   priority_track, supersedes 77bd97c2 which is now done/SUPERSEDED); claimable as soon as a news slot frees
   (3 of 4 news slots busy: 11910 + 12710 expansions, 11403 standard).
+- 11:17Z: **12710 Q10_NEWS expansion `58d84268` CONFIG_LOCKED** (2.4 h, 105 cells on T8) → Q11 `a10aa1da`
+  auto-minted and claimed. 12710 is the first batch-1 pair through the news gate on its new identity.
+- 11:20Z–11:30Z: claim-order defect for the chains' news parents: 10700's replacement parent `fe33550e`
+  (RUNNABLE_BOUND, priority_track) sat at position ~1,300 for an hour because the census sub-ranks precede
+  `_phase_rank` and workers kept finding claimable frontier cells. `608cc5ec6b` (+ fixture `eabf4437bb`):
+  a Q10_NEWS row that is an append-only rerun or a service-minted replacement parent
+  (`supersedes_held_q09_work_item`), priority-tracked, takes the lineage-rerun key; long-run caps still apply
+  at claim time. Idle-only reload chunk 15 (all workers) started 11:22Z.
