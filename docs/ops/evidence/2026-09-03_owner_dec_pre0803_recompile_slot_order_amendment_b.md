@@ -281,3 +281,10 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   deboosted at the next service cycle and resumes later, its measured cells stay). Receipt
   scratchpad `queue_order_12710_apply.json`, backup by the tool. 11910/10700 get the same placement when
   their Q12 rows exist.
+- 11:42Z–11:58Z: **11910 Q10_NEWS expansion `f7264187` CONFIG_LOCKED** (2.5 h) → Q11 `839984e5` (priority_track).
+  12710's Q12 `9384656c` is deferred by the matrix service: 'expected one approved _opt sibling for
+  QM5_12710/XTIUSD.DWX, found 0' — the recompiled pairs have no DL-089 measurement sibling yet (the census
+  runs on the sibling EA, not on the parent). Sibling wave 3 commissioned: router task `262f7959`
+  (Claude lane), Opus workflow `wg8u1drba` (one worktree per sibling, ids 41331–41333 unless the reservation
+  tool dictates otherwise, adversarial verifier each); CEO does magic allocation, card copies, compile enqueue
+  and release. Until the siblings compile, the three Q12 rows stay deferred regardless of their queue rank.
