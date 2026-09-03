@@ -1,0 +1,1403 @@
+{
+  "snapshot": {
+    "measured_at_utc": "2026-09-03T04:00:51Z",
+    "db": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "db_mtime_utc": "2026-09-03T04:00:41Z",
+    "work_items_total": 127793,
+    "pairs_total": 14745,
+    "eas_with_work_items": 3274
+  },
+  "cohort": {
+    "PRE_JUNE": {
+      "card_scoped": 2637,
+      "union_any_git_touch": 2652,
+      "first_lifecycle_disjoint": 2652
+    },
+    "JUNE": {
+      "card_scoped": 410,
+      "union_any_git_touch": 2507,
+      "first_lifecycle_disjoint": 236
+    },
+    "JULY": {
+      "card_scoped": 539,
+      "union_any_git_touch": 1606,
+      "first_lifecycle_disjoint": 538
+    },
+    "AUGUST": {
+      "card_scoped": 522,
+      "union_any_git_touch": 1139,
+      "first_lifecycle_disjoint": 472
+    },
+    "SEPTEMBER": {
+      "card_scoped": 47,
+      "union_any_git_touch": 73,
+      "first_lifecycle_disjoint": 52
+    },
+    "_card_files_parsed": 4964,
+    "_ea_ids_with_runtime_card_era": 3727,
+    "_ea_ids_with_any_lifecycle_date": 3950,
+    "_ea_ids_in_any_era_card_scoped": 3820,
+    "_ea_ids_in_any_era_union": 3950,
+    "overlaps_card_scoped": {
+      "AUGUST_x_SEPTEMBER": 2,
+      "JULY_x_AUGUST": 24,
+      "JUNE_x_AUGUST": 3,
+      "JUNE_x_JULY": 10,
+      "PRE_JUNE_x_AUGUST": 49,
+      "PRE_JUNE_x_JULY": 54,
+      "PRE_JUNE_x_JUNE": 193,
+      "PRE_JUNE_x_SEPTEMBER": 1
+    }
+  },
+  "inventory": {
+    "PRE_JUNE": {
+      "eas": 2637,
+      "work_items": 104218,
+      "pairs": 12905,
+      "deepest_pass_hist": {
+        "none": 1241,
+        "Q02": 592,
+        "Q03": 462,
+        "Q04": 164,
+        "Q05": 13,
+        "Q06": 39,
+        "Q07": 60,
+        "Q08": 10,
+        "Q09": 32,
+        "Q10": 13,
+        "Q11": 8,
+        "Q14": 3
+      },
+      "head_verdict_hist": {
+        "PENDING": 786,
+        "FAIL": 705,
+        "NO_WORK_ITEMS": 532,
+        "INVALID": 163,
+        "PASS": 126,
+        "ZERO_TRADES": 115,
+        "INFRA_FAIL": 86,
+        "COMPILE_FAIL": 48,
+        "COMPILE_OK": 37,
+        "RETIRE": 16,
+        "RETIRED_LOW_FREQ": 6,
+        "FAIL_HARD": 5,
+        "FAIL_DD_PORTFOLIO_REVIEW": 5,
+        "REVIEW_REQUIRED": 3,
+        "DRAFT_DEFECT": 2,
+        "SUPERSEDED_BY_LOGICAL_BASKET": 1,
+        "PASS_SOFT": 1
+      },
+      "pair_terminal_class": {
+        "ECON_FAIL": 8223,
+        "PENDING": 2092,
+        "PASS": 915,
+        "INVALID": 847,
+        "INFRA": 756,
+        "STALE": 72
+      }
+    },
+    "JUNE": {
+      "eas": 410,
+      "work_items": 11839,
+      "pairs": 1626,
+      "deepest_pass_hist": {
+        "none": 156,
+        "Q02": 112,
+        "Q03": 90,
+        "Q04": 21,
+        "Q05": 3,
+        "Q06": 6,
+        "Q07": 9,
+        "Q08": 4,
+        "Q09": 6,
+        "Q10": 3
+      },
+      "head_verdict_hist": {
+        "FAIL": 191,
+        "PENDING": 120,
+        "PASS": 28,
+        "INFRA_FAIL": 27,
+        "INVALID": 15,
+        "NO_WORK_ITEMS": 9,
+        "ZERO_TRADES": 8,
+        "FAIL_HARD": 3,
+        "DRAFT_DEFECT": 3,
+        "RETIRE": 2,
+        "COMPILE_OK": 1,
+        "RETIRED_LOW_FREQ": 1,
+        "RETIRED_ARCHIVED": 1,
+        "REVIEW_REQUIRED": 1
+      },
+      "pair_terminal_class": {
+        "ECON_FAIL": 886,
+        "PENDING": 320,
+        "INVALID": 137,
+        "INFRA": 129,
+        "PASS": 119,
+        "STALE": 35
+      }
+    },
+    "AUGUST": {
+      "eas": 522,
+      "work_items": 8260,
+      "pairs": 772,
+      "deepest_pass_hist": {
+        "none": 278,
+        "Q02": 99,
+        "Q03": 85,
+        "Q04": 26,
+        "Q05": 13,
+        "Q06": 6,
+        "Q08": 2,
+        "Q09": 5,
+        "Q11": 8
+      },
+      "head_verdict_hist": {
+        "FAIL": 189,
+        "PENDING": 110,
+        "NO_WORK_ITEMS": 57,
+        "COMPILE_OK": 45,
+        "PASS": 41,
+        "ZERO_TRADES": 35,
+        "COMPILE_FAIL": 15,
+        "INFRA_FAIL": 10,
+        "DRAFT_DEFECT": 8,
+        "INVALID": 5,
+        "REVIEW_REQUIRED": 2,
+        "FAIL_DD_PORTFOLIO_REVIEW": 1,
+        "PASS_LOWFREQ": 1,
+        "RETIRE": 1,
+        "ARTIFACT_READY": 1,
+        "MEASURED": 1
+      },
+      "pair_terminal_class": {
+        "ECON_FAIL": 438,
+        "PENDING": 165,
+        "PASS": 70,
+        "INVALID": 56,
+        "STALE": 28,
+        "INFRA": 13,
+        "OTHER": 2
+      }
+    }
+  },
+  "findings": {
+    "q08_fail_soft": {
+      "rows": 259,
+      "pairs": 105,
+      "eas": 92
+    },
+    "config_locked": {
+      "rows": 28,
+      "pairs": 25
+    },
+    "no_filter_change": {
+      "rows": 5,
+      "pairs": 4
+    },
+    "no_parameter_change": {
+      "rows": 7,
+      "pairs": 4
+    },
+    "deep_pass_frontier": {
+      "pairs_with_pass_at_q09_or_deeper": 113,
+      "eas": 96,
+      "states": {
+        "NO_SUCCESSOR": 39,
+        "SUCCESSOR_PENDING": 42,
+        "SUCCESSOR_TERMINAL_AFTER_PASS": 9,
+        "SUCCESSOR_TERMINAL_BEFORE_PASS": 23
+      },
+      "state_semantics": {
+        "SUCCESSOR_PENDING": "an OPEN pending/active row at a deeper gate already exists -- re-seeding it would be a duplicate enqueue",
+        "NO_SUCCESSOR": "no row of any kind after the standing PASS gate",
+        "SUCCESSOR_TERMINAL_AFTER_PASS": "the next gate ran after the PASS and answered -- the pair is not stalled",
+        "SUCCESSOR_TERMINAL_BEFORE_PASS": "every successor is closed AND older than the standing PASS -- the PASS re-opened the pair and nothing was seeded since"
+      },
+      "successor_terminal_owner_tagged": 1,
+      "stalled_pairs_no_open_successor": [
+        "QM5_10094/GDAXI.DWX",
+        "QM5_10114/GDAXI.DWX",
+        "QM5_10115/GDAXI.DWX",
+        "QM5_10123/XAUUSD.DWX",
+        "QM5_10127/AUDCAD.DWX",
+        "QM5_10142/SP500.DWX",
+        "QM5_10145/CHFJPY.DWX",
+        "QM5_10291/SP500.DWX",
+        "QM5_10494/XAUUSD.DWX",
+        "QM5_10553/XAUUSD.DWX",
+        "QM5_10706/GBPUSD.DWX",
+        "QM5_10815/EURUSD.DWX",
+        "QM5_10848/XAUUSD.DWX",
+        "QM5_10916/GDAXI.DWX",
+        "QM5_10916/SP500.DWX",
+        "QM5_10919/XTIUSD.DWX",
+        "QM5_10920/XAUUSD.DWX",
+        "QM5_10938/GDAXI.DWX",
+        "QM5_10939/GBPUSD.DWX",
+        "QM5_10939/XAUUSD.DWX",
+        "QM5_10940/XAUUSD.DWX",
+        "QM5_11063/USDJPY.DWX",
+        "QM5_11124/SP500.DWX",
+        "QM5_11124/WS30.DWX",
+        "QM5_11128/NDX.DWX",
+        "QM5_11128/SP500.DWX",
+        "QM5_11132/NDX.DWX",
+        "QM5_11132/SP500.DWX",
+        "QM5_11165/AUDCAD.DWX",
+        "QM5_11165/EURUSD.DWX",
+        "QM5_11421/AUDUSD.DWX",
+        "QM5_11421/EURUSD.DWX",
+        "QM5_11422/USDCAD.DWX",
+        "QM5_12354/XAUUSD.DWX",
+        "QM5_12357/GDAXI.DWX",
+        "QM5_12567/XAUUSD.DWX",
+        "QM5_12778/AUDUSD.DWX",
+        "QM5_12847/NDX.DWX",
+        "QM5_12915/SP500.DWX",
+        "QM5_12958/XAUUSD.DWX",
+        "QM5_12966/GDAXI.DWX",
+        "QM5_12969/USDJPY.DWX",
+        "QM5_12989/XAUUSD.DWX",
+        "QM5_13036/GDAXI.DWX",
+        "QM5_13054/XTIUSD.DWX",
+        "QM5_13108/XTIUSD.DWX",
+        "QM5_13117/EURGBP.DWX",
+        "QM5_13128/NDX.DWX",
+        "QM5_1328/EURJPY.DWX",
+        "QM5_1354/XAUUSD.DWX",
+        "QM5_1551/USDJPY.DWX",
+        "QM5_1556/XAUUSD.DWX",
+        "QM5_1567/EURUSD.DWX",
+        "QM5_20010/XAUUSD.DWX",
+        "QM5_20047/XTIUSD.DWX",
+        "QM5_21506/XAUUSD.DWX",
+        "QM5_9403/GDAXI.DWX",
+        "QM5_9502/SP500.DWX",
+        "QM5_9503/USDJPY.DWX",
+        "QM5_9510/XAUUSD.DWX",
+        "QM5_9929/XAUUSD.DWX",
+        "QM5_9936/USDJPY.DWX"
+      ],
+      "stalled_pairs_count": 62,
+      "stalled_quiet_count": 37,
+      "stalled_reworked_count": 25,
+      "stalled_reworked_with_open_row": 22,
+      "stalled_quiet_pairs": [
+        "QM5_10094/GDAXI.DWX",
+        "QM5_10115/GDAXI.DWX",
+        "QM5_10127/AUDCAD.DWX",
+        "QM5_10145/CHFJPY.DWX",
+        "QM5_10291/SP500.DWX",
+        "QM5_10494/XAUUSD.DWX",
+        "QM5_10553/XAUUSD.DWX",
+        "QM5_10815/EURUSD.DWX",
+        "QM5_10848/XAUUSD.DWX",
+        "QM5_10916/GDAXI.DWX",
+        "QM5_10916/SP500.DWX",
+        "QM5_10920/XAUUSD.DWX",
+        "QM5_10939/XAUUSD.DWX",
+        "QM5_11063/USDJPY.DWX",
+        "QM5_11124/SP500.DWX",
+        "QM5_11124/WS30.DWX",
+        "QM5_11128/NDX.DWX",
+        "QM5_11128/SP500.DWX",
+        "QM5_11132/NDX.DWX",
+        "QM5_12354/XAUUSD.DWX",
+        "QM5_12357/GDAXI.DWX",
+        "QM5_12847/NDX.DWX",
+        "QM5_12915/SP500.DWX",
+        "QM5_12958/XAUUSD.DWX",
+        "QM5_12966/GDAXI.DWX",
+        "QM5_13054/XTIUSD.DWX",
+        "QM5_13108/XTIUSD.DWX",
+        "QM5_1354/XAUUSD.DWX",
+        "QM5_20010/XAUUSD.DWX",
+        "QM5_20047/XTIUSD.DWX",
+        "QM5_21506/XAUUSD.DWX",
+        "QM5_9403/GDAXI.DWX",
+        "QM5_9502/SP500.DWX",
+        "QM5_9503/USDJPY.DWX",
+        "QM5_9510/XAUUSD.DWX",
+        "QM5_9929/XAUUSD.DWX",
+        "QM5_9936/USDJPY.DWX"
+      ],
+      "stalled_quiet_formation_eras": {
+        "PRE_JUNE": 22,
+        "JULY": 10,
+        "PRE_JUNE+JULY": 2,
+        "PRE_JUNE+JUNE": 2,
+        "AUGUST": 1
+      },
+      "stalled_formation_eras": {
+        "PRE_JUNE": 37,
+        "JULY": 13,
+        "PRE_JUNE+JULY": 4,
+        "PRE_JUNE+JUNE": 3,
+        "UNATTRIBUTED": 2,
+        "AUGUST": 1,
+        "JUNE": 1,
+        "JUNE+JULY": 1
+      }
+    },
+    "flagship_pairs": {
+      "QM5_12710/XTIUSD.DWX": {
+        "standing_gate": "Q09",
+        "standing_verdict": "PASS",
+        "standing_updated_at": "2026-08-29 20:38:36",
+        "successors": [
+          {
+            "phase": "Q10_NEWS",
+            "gate": "Q10",
+            "status": "pending",
+            "verdict": "",
+            "updated_at": "2026-08-29 17:43:40"
+          }
+        ]
+      },
+      "QM5_21507/XAUUSD.DWX": {
+        "standing_gate": "Q11",
+        "standing_verdict": "PASS",
+        "standing_updated_at": "2026-08-29 15:31:31",
+        "successors": [
+          {
+            "phase": "Q12",
+            "gate": "Q12",
+            "status": "pending",
+            "verdict": "",
+            "updated_at": "2026-08-29 08:01:43"
+          }
+        ]
+      },
+      "QM5_9510/XAUUSD.DWX": {
+        "standing_gate": "Q09",
+        "standing_verdict": "PASS",
+        "standing_updated_at": "2026-08-30 02:14:32",
+        "successors": [
+          {
+            "phase": "Q10_NEWS",
+            "gate": "Q10",
+            "status": "done",
+            "verdict": "REVIEW_REQUIRED",
+            "updated_at": "2026-08-25 16:50:35"
+          }
+        ]
+      }
+    },
+    "q10_news_lane": {
+      "REVIEW_REQUIRED": 79,
+      "PENDING": 41,
+      "SUPERSEDED": 35,
+      "CONFIG_LOCKED": 27,
+      "INFRA_FAIL": 12,
+      "RETIRE": 2,
+      "ACTIVE": 2
+    },
+    "q10_news_review_required_terminal": {
+      "rows": 6,
+      "pairs": 6,
+      "eas": 5,
+      "list": [
+        "QM5_10114/SP500.DWX",
+        "QM5_11754/USDCAD.DWX",
+        "QM5_12823/USDJPY.DWX",
+        "QM5_12925/WS30.DWX",
+        "QM5_12925/XAUUSD.DWX",
+        "QM5_20188/USDJPY.DWX"
+      ]
+    },
+    "stranded_q02_sweep": {
+      "rows": 538,
+      "eas": 333,
+      "symbols": {
+        "XAUUSD.DWX": 285,
+        "NDX.DWX": 42,
+        "GBPUSD.DWX": 32,
+        "EURUSD.DWX": 26
+      },
+      "stamped_2026_07_26": 518,
+      "tags": {
+        "record_build_result.auto_q02": 61,
+        "sweep_enqueue.deferred_promotion": 24,
+        "claude_sweep_enqueue_2026-06-10.stranded": 449,
+        "stranded_infra_fail": 449
+      },
+      "with_active_hold": 3
+    },
+    "pending_inventory": {
+      "rows": 12181,
+      "opt_census": 9526
+    },
+    "setfile_missing_class": {
+      "rows": 870,
+      "eas": 89
+    },
+    "t2_dead_worktree": {
+      "rows": 150,
+      "eas": 16,
+      "worktrees": {
+        "rb-universe-expansion": 150
+      },
+      "canonical_setfile_present": 150,
+      "evidence_path_present": 0,
+      "setfile_path_present": 0
+    },
+    "dead_worktree_dirs_exist": {
+      "rb-universe-expansion": false
+    },
+    "zero_trade_deep_fail": {
+      "rows": 24,
+      "by_gate": {
+        "Q05": 13,
+        "Q09": 9,
+        "Q06": 2
+      },
+      "still_terminal": [
+        "QM5_10940/XAUUSD.DWX",
+        "QM5_20211/QM5_20211_GBPJPY_EURAUD_COINTEGRATION_D1",
+        "QM5_41307/XTIUSD.DWX"
+      ]
+    },
+    "q08_5_empty_strategy_params": {
+      "needle": "q08_8.5_neighborhood:neighborhood_evidence_lineage_invalid:baseline_setfile_defect:empty_strategy_params",
+      "rows": 12,
+      "eas": 10,
+      "by_verdict": {
+        "INFRA_FAIL": 7,
+        "INVALID": 5
+      },
+      "by_date": {
+        "2026-08-20": 4,
+        "2026-07-25": 3,
+        "2026-07-26": 3,
+        "2026-08-02": 1,
+        "2026-08-21": 1
+      },
+      "detail": [
+        "QM5_10148/EURNZD.DWX Q08 INVALID 2026-08-20",
+        "QM5_10582/XAUUSD.DWX Q08 INFRA_FAIL 2026-08-02",
+        "QM5_10771/GDAXI.DWX Q08 INFRA_FAIL 2026-07-26",
+        "QM5_10771/USDJPY.DWX Q08 INFRA_FAIL 2026-07-26",
+        "QM5_10771/XAUUSD.DWX Q08 INVALID 2026-08-20",
+        "QM5_10848/GDAXI.DWX Q08 INVALID 2026-08-21",
+        "QM5_10939/XAUUSD.DWX Q08 INFRA_FAIL 2026-07-26",
+        "QM5_11124/SP500.DWX Q08 INFRA_FAIL 2026-07-25",
+        "QM5_11132/NDX.DWX Q08 INVALID 2026-08-20",
+        "QM5_11916/GBPUSD.DWX Q08 INFRA_FAIL 2026-07-25",
+        "QM5_1230/XAUUSD.DWX Q08 INFRA_FAIL 2026-07-25",
+        "QM5_9573/NDX.DWX Q08 INVALID 2026-08-20"
+      ],
+      "ea_ids": [
+        "QM5_10148",
+        "QM5_10582",
+        "QM5_10771",
+        "QM5_10848",
+        "QM5_10939",
+        "QM5_11124",
+        "QM5_11132",
+        "QM5_11916",
+        "QM5_1230",
+        "QM5_9573"
+      ],
+      "setfile_spot_check": {
+        "QM5_10148": {
+          "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_10148_tii-signal",
+          "mq5": "C:\\QM\\repo\\framework\\EAs\\QM5_10148_tii-signal\\QM5_10148_tii-signal.mq5",
+          "declared_mq5_strategy_inputs": 6,
+          "example_setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_10148_tii-signal\\sets\\QM5_10148_tii-signal_AUDCAD.DWX_D1_backtest.set",
+          "setfile_strategy_params": 0,
+          "defect_unrepaired": true
+        },
+        "QM5_10582": {
+          "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_10582_mql5-ema-pred",
+          "mq5": "C:\\QM\\repo\\framework\\EAs\\QM5_10582_mql5-ema-pred\\QM5_10582_mql5-ema-pred.mq5",
+          "declared_mq5_strategy_inputs": 6,
+          "example_setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_10582_mql5-ema-pred\\sets\\QM5_10582_mql5-ema-pred_EURUSD.DWX_H6_backtest.set",
+          "setfile_strategy_params": 6,
+          "defect_unrepaired": false
+        },
+        "QM5_10771": {
+          "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_10771_tv-trail-hunter",
+          "mq5": "C:\\QM\\repo\\framework\\EAs\\QM5_10771_tv-trail-hunter\\QM5_10771_tv-trail-hunter.mq5",
+          "declared_mq5_strategy_inputs": 13,
+          "example_setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_10771_tv-trail-hunter\\sets\\QM5_10771_tv-trail-hunter_EURUSD.DWX_H1_backtest.set",
+          "setfile_strategy_params": 0,
+          "defect_unrepaired": true
+        },
+        "QM5_10848": {
+          "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_10848_tv-mtf-ambush",
+          "mq5": "C:\\QM\\repo\\framework\\EAs\\QM5_10848_tv-mtf-ambush\\QM5_10848_tv-mtf-ambush.mq5",
+          "declared_mq5_strategy_inputs": 12,
+          "example_setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_10848_tv-mtf-ambush\\sets\\QM5_10848_tv-mtf-ambush_EURUSD.DWX_H1_backtest.set",
+          "setfile_strategy_params": 0,
+          "defect_unrepaired": true
+        },
+        "QM5_10939": {
+          "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_10939_grimes-context-pb",
+          "mq5": "C:\\QM\\repo\\framework\\EAs\\QM5_10939_grimes-context-pb\\QM5_10939_grimes-context-pb.mq5",
+          "declared_mq5_strategy_inputs": 21,
+          "example_setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_10939_grimes-context-pb\\sets\\QM5_10939_grimes-context-pb_EURUSD.DWX_H4_backtest.set",
+          "setfile_strategy_params": 21,
+          "defect_unrepaired": false
+        },
+        "QM5_11124": {
+          "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_11124_tm-r2-index",
+          "mq5": "C:\\QM\\repo\\framework\\EAs\\QM5_11124_tm-r2-index\\QM5_11124_tm-r2-index.mq5",
+          "declared_mq5_strategy_inputs": 8,
+          "example_setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_11124_tm-r2-index\\sets\\QM5_11124_tm-r2-index_NDX.DWX_D1_backtest.set",
+          "setfile_strategy_params": 0,
+          "defect_unrepaired": true
+        },
+        "QM5_11132": {
+          "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_11132_tm-cum-rsi2",
+          "mq5": "C:\\QM\\repo\\framework\\EAs\\QM5_11132_tm-cum-rsi2\\QM5_11132_tm-cum-rsi2.mq5",
+          "declared_mq5_strategy_inputs": 9,
+          "example_setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_11132_tm-cum-rsi2\\sets\\QM5_11132_tm-cum-rsi2_GDAXI.DWX_D1_backtest.set",
+          "setfile_strategy_params": 9,
+          "defect_unrepaired": false
+        },
+        "QM5_11916": {
+          "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_11916_neely-weller-alexander-filter-2pct-d1",
+          "mq5": "C:\\QM\\repo\\framework\\EAs\\QM5_11916_neely-weller-alexander-filter-2pct-d1\\QM5_11916_neely-weller-alexander-filter-2pct-d1.mq5",
+          "declared_mq5_strategy_inputs": 4,
+          "example_setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_11916_neely-weller-alexander-filter-2pct-d1\\sets\\QM5_11916_neely-weller-alexander-filter-2pct-d1_AUDJPY.DWX_D1_backtest.set",
+          "setfile_strategy_params": 4,
+          "defect_unrepaired": false
+        },
+        "QM5_1230": {
+          "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_1230_carver-dynvol-mav",
+          "mq5": "C:\\QM\\repo\\framework\\EAs\\QM5_1230_carver-dynvol-mav\\QM5_1230_carver-dynvol-mav.mq5",
+          "declared_mq5_strategy_inputs": 10,
+          "example_setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_1230_carver-dynvol-mav\\sets\\QM5_1230_carver-dynvol-mav_AUDCAD.DWX_D1_backtest.set",
+          "setfile_strategy_params": 0,
+          "defect_unrepaired": true
+        },
+        "QM5_9573": {
+          "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_9573_brooks-ib-breakout-failure-h4",
+          "mq5": "C:\\QM\\repo\\framework\\EAs\\QM5_9573_brooks-ib-breakout-failure-h4\\QM5_9573_brooks-ib-breakout-failure-h4.mq5",
+          "declared_mq5_strategy_inputs": 10,
+          "example_setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_9573_brooks-ib-breakout-failure-h4\\sets\\QM5_9573_brooks-ib-breakout-failure-h4_AUDUSD.DWX_H4_backtest.set",
+          "setfile_strategy_params": 0,
+          "defect_unrepaired": true
+        }
+      }
+    },
+    "dl071_fallthrough": {
+      "criterion": "n_pos >= ceil(0.666667*n) and mean > 1.1 and min >= 0.8; per-fold floor 1.0; a null / no-trade fold counts as 0.0",
+      "source": "framework/scripts/q04_walkforward.py:676-736 (constants :53-61, guard :111-139)",
+      "population_sql": "work_items w LEFT JOIN ea_metrics m ON m.work_item_id=w.id WHERE w.phase IN ('Q04','P2','P3.5') AND w.verdict IN ('FAIL','INVALID')",
+      "population_rows": 13933,
+      "population_rows_fail_only": 13928,
+      "rows_with_ge3_folds": 784,
+      "hits_bare_arithmetic": 1,
+      "hits_surviving_plausibility_guard": 0,
+      "hits": [
+        {
+          "work_item_id": "a0f8065c-ad99-41e5-b475-3a48aae6dfe4",
+          "ea_id": "QM5_10714",
+          "symbol": "XAUUSD.DWX",
+          "phase": "Q04",
+          "verdict": "FAIL",
+          "fold_pf_net": [
+            1.09,
+            1.27,
+            999.0
+          ],
+          "fold_trades": [
+            31,
+            31,
+            1
+          ],
+          "n_pos": 3,
+          "need_pos": 2,
+          "mean": 333.7867,
+          "min": 1.09,
+          "plausibility_guard": [
+            "pf_net_no_measurement_sentinel:999.000"
+          ],
+          "survives_guard": false,
+          "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_10714\\Q04\\XAUUSD.DWX__a0f8065c-ad99-41e5-b475-3a48aae6dfe4\\aggregate.json",
+          "evidence_present": true
+        }
+      ]
+    },
+    "disposition_era": {
+      "PRE_JUNE": {
+        "pairs": 71,
+        "eas": 32,
+        "by_class": {
+          "ECON_FAIL": 70,
+          "INFRA": 1
+        },
+        "non_economic": 1
+      },
+      "JUNE": {
+        "pairs": 4241,
+        "eas": 1442,
+        "by_class": {
+          "ECON_FAIL": 3108,
+          "PASS": 404,
+          "INFRA": 387,
+          "INVALID": 335,
+          "STALE": 7
+        },
+        "non_economic": 729
+      },
+      "JULY": {
+        "pairs": 5396,
+        "eas": 1820,
+        "by_class": {
+          "ECON_FAIL": 4455,
+          "PASS": 454,
+          "INFRA": 394,
+          "INVALID": 57,
+          "STALE": 36
+        },
+        "non_economic": 487
+      },
+      "AUGUST": {
+        "pairs": 2559,
+        "eas": 1135,
+        "by_class": {
+          "ECON_FAIL": 1735,
+          "INVALID": 556,
+          "PASS": 197,
+          "STALE": 48,
+          "INFRA": 21,
+          "OTHER": 2
+        },
+        "non_economic": 627
+      },
+      "SEPTEMBER": {
+        "pairs": 70,
+        "eas": 57,
+        "by_class": {
+          "ECON_FAIL": 32,
+          "INVALID": 10,
+          "STALE": 10,
+          "PASS": 9,
+          "INFRA": 8,
+          "OTHER": 1
+        },
+        "non_economic": 29
+      }
+    },
+    "june_non_economic_kill_days": {
+      "2026-06-18": 185,
+      "2026-06-22": 167,
+      "2026-06-13": 76,
+      "2026-06-21": 74,
+      "2026-06-26": 60,
+      "2026-06-14": 40,
+      "2026-06-09": 25,
+      "2026-06-25": 21,
+      "2026-06-20": 14,
+      "2026-06-06": 13
+    },
+    "never_seeded_builds": {
+      "eas": 190,
+      "by_head_verdict": {
+        "COMPILE_OK": 105,
+        "COMPILE_FAIL": 60,
+        "PENDING": 25
+      },
+      "compile_ok_all_on_or_after_2026_08_20": true,
+      "compile_ok_earliest": "2026-08-22"
+    },
+    "t2_by_ea": {
+      "QM5_10038": {
+        "rows": 9,
+        "still_terminal": 9,
+        "canonical_present": 9,
+        "params": 11,
+        "example_canonical_setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_10038_ff-4x25ema-mtf-h4\\sets\\QM5_10038_ff-4x25ema-mtf-h4_AUDUSD.DWX_H4_backtest.set"
+      },
+      "QM5_10069": {
+        "rows": 9,
+        "still_terminal": 9,
+        "canonical_present": 9,
+        "params": 6,
+        "example_canonical_setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_10069_mql5-hs-rev\\sets\\QM5_10069_mql5-hs-rev_AUDUSD.DWX_H1_backtest.set"
+      },
+      "QM5_10116": {
+        "rows": 9,
+        "still_terminal": 9,
+        "canonical_present": 9,
+        "params": 6,
+        "example_canonical_setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_10116_tv-multi-ma-exit\\sets\\QM5_10116_tv-multi-ma-exit_AUDUSD.DWX_H1_backtest.set"
+      },
+      "QM5_10269": {
+        "rows": 9,
+        "still_terminal": 9,
+        "canonical_present": 9,
+        "params": 5,
+        "example_canonical_setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_10269_gawd-wma30-trend\\sets\\QM5_10269_gawd-wma30-trend_AUDUSD.DWX_D1_backtest.set"
+      },
+      "QM5_10428": {
+        "rows": 8,
+        "still_terminal": 8,
+        "canonical_present": 8,
+        "params": 10,
+        "example_canonical_setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_10428_et-hg-adx\\sets\\QM5_10428_et-hg-adx_AUDUSD.DWX_D1_backtest.set"
+      },
+      "QM5_10489": {
+        "rows": 10,
+        "still_terminal": 10,
+        "canonical_present": 10,
+        "params": 7,
+        "example_canonical_setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_10489_mql5-trendmgr\\sets\\QM5_10489_mql5-trendmgr_AUDUSD.DWX_H4_backtest.set"
+      },
+      "QM5_10494": {
+        "rows": 10,
+        "still_terminal": 10,
+        "canonical_present": 10,
+        "params": 10,
+        "example_canonical_setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_10494_mql5-dema-chan\\sets\\QM5_10494_mql5-dema-chan_AUDUSD.DWX_H8_backtest.set"
+      },
+      "QM5_10513": {
+        "rows": 9,
+        "still_terminal": 9,
+        "canonical_present": 9,
+        "params": 11,
+        "example_canonical_setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_10513_mql5-ichimoku\\sets\\QM5_10513_mql5-ichimoku_AUDUSD.DWX_D1_backtest.set"
+      },
+      "QM5_10553": {
+        "rows": 9,
+        "still_terminal": 9,
+        "canonical_present": 9,
+        "params": 13,
+        "example_canonical_setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_10553_mql5-rsioma\\sets\\QM5_10553_mql5-rsioma_AUDUSD.DWX_H4_backtest.set"
+      },
+      "QM5_10555": {
+        "rows": 9,
+        "still_terminal": 9,
+        "canonical_present": 9,
+        "params": 6,
+        "example_canonical_setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_10555_mql5-fradx\\sets\\QM5_10555_mql5-fradx_AUDUSD.DWX_H12_backtest.set"
+      },
+      "QM5_10558": {
+        "rows": 10,
+        "still_terminal": 10,
+        "canonical_present": 10,
+        "params": 11,
+        "example_canonical_setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_10558_mql5-mfi-slow\\sets\\QM5_10558_mql5-mfi-slow_AUDUSD.DWX_H6_backtest.set"
+      },
+      "QM5_10566": {
+        "rows": 6,
+        "still_terminal": 6,
+        "canonical_present": 6,
+        "params": 8,
+        "example_canonical_setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_10566_mql5-ravi-hist\\sets\\QM5_10566_mql5-ravi-hist_AUDUSD.DWX_H4_backtest.set"
+      },
+      "QM5_11294": {
+        "rows": 8,
+        "still_terminal": 8,
+        "canonical_present": 8,
+        "params": 5,
+        "example_canonical_setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_11294_cs-ichi-cloud\\sets\\QM5_11294_cs-ichi-cloud_AUDUSD.DWX_H4_backtest.set"
+      },
+      "QM5_12567": {
+        "rows": 12,
+        "still_terminal": 12,
+        "canonical_present": 12,
+        "params": 9,
+        "example_canonical_setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_12567_cum-rsi2-commodity\\sets\\QM5_12567_cum-rsi2-commodity_AUDUSD.DWX_D1_backtest.set"
+      },
+      "QM5_20048": {
+        "rows": 13,
+        "still_terminal": 13,
+        "canonical_present": 13,
+        "params": 4,
+        "example_canonical_setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20048_wti-preholiday\\sets\\QM5_20048_wti-preholiday_AUDUSD.DWX_D1_backtest.set"
+      },
+      "QM5_9641": {
+        "rows": 10,
+        "still_terminal": 10,
+        "canonical_present": 10,
+        "params": 9,
+        "example_canonical_setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_9641_bandy-cci-extreme-fade-mr-index\\sets\\QM5_9641_bandy-cci-extreme-fade-mr-index_AUDUSD.DWX_D1_backtest.set"
+      }
+    },
+    "owner_dispositions": {
+      "rule": "non-null work_items.payload_json['owner_decision_id']",
+      "rows_total": 275,
+      "by_decision_rows": {
+        "OWNER-DEC-STRANDED-182": 182,
+        "OWNER-DEC-Q02-SPLIT-FIX-20260830": 34,
+        "OWNER-DEC-HMA-CATA": 18,
+        "OWNER-DEC-Q02-DEAD16-20260825": 16,
+        "OWNER-DEC-DL082-EXT-Q08-20260901": 13,
+        "OWNER-DEC-LEGACY-COHORT-DISPO-20260830": 6,
+        "OWNER-DEC-Q09HOLD-RETIRE-2-20260829": 4,
+        "OWNER-DEC-Q12-MISRUN-DISPO-20260826": 2
+      },
+      "by_decision_pairs": {
+        "OWNER-DEC-STRANDED-182": 182,
+        "OWNER-DEC-Q02-SPLIT-FIX-20260830": 34,
+        "OWNER-DEC-Q02-DEAD16-20260825": 16,
+        "OWNER-DEC-DL082-EXT-Q08-20260901": 13,
+        "OWNER-DEC-LEGACY-COHORT-DISPO-20260830": 6,
+        "OWNER-DEC-Q12-MISRUN-DISPO-20260826": 2,
+        "OWNER-DEC-Q09HOLD-RETIRE-2-20260829": 2
+      },
+      "legacy_cohort_retire6_pairs": [
+        "QM5_10476/USDCAD.DWX",
+        "QM5_10919/XTIUSD.DWX",
+        "QM5_11421/AUDUSD.DWX",
+        "QM5_12567/XNGUSD.DWX",
+        "QM5_13117/QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1",
+        "QM5_1567/XAGUSD.DWX"
+      ]
+    },
+    "poison_pill": {
+      "rows": 217,
+      "active": 216,
+      "successes_ever_nonzero": 0,
+      "by_reason": {
+        "summary_missing_retries_exhausted": 185,
+        "run_smoke_fail:ONINIT_FAILED;INCOMPLETE_RUNS": 8,
+        "ACTIVE_TIMEOUT": 8,
+        "F1:stream_and_selfreport_missing;F2:stream_and_selfreport_missing;F3:stream_and_selfreport_missing": 7,
+        "summary_missing:launch_fault": 2,
+        "phase_runner_invalid_report": 2,
+        "cold_cache_retries_exhausted:NO_HISTORY": 1,
+        "F1:stream_and_selfreport_missing;F2:stream_and_selfreport_missing": 1,
+        "F2:stream_and_selfreport_missing": 1,
+        "run_smoke_fail:TIMEOUT;METATESTER_HUNG;INCOMPLETE_RUNS": 1
+      },
+      "by_date": {
+        "2026-08-17": 183,
+        "2026-09-03": 33
+      }
+    },
+    "candidates": {
+      "rows": 346,
+      "by_class": {
+        "T2_SETFILE_PATH_PROVENANCE_FALSE_INVALID": 150,
+        "T1_STANDING_DEEP_PASS_SUCCESSOR_PENDING": 42,
+        "T3_FROZEN_NONECONOMIC_INVALID": 42,
+        "T1_STANDING_DEEP_PASS_NO_SUCCESSOR": 39,
+        "T3_FROZEN_NONECONOMIC_INFRA": 35,
+        "T1_STANDING_DEEP_PASS_SUCCESSOR_TERMINAL_BEFORE_PASS": 23,
+        "T1_STANDING_DEEP_PASS_SUCCESSOR_TERMINAL_AFTER_PASS": 9,
+        "T3_FROZEN_NONECONOMIC_STALE": 6
+      },
+      "evidence_present_true": 108,
+      "canonical_setfile_present_true": 150
+    }
+  },
+  "classifier": {
+    "module": "tools/strategy_farm/rebaseline_census.py",
+    "vclass_line": 185,
+    "gate_scoped_pass_line": 182,
+    "gate_scoped_pass": {
+      "Q08": [
+        "FAIL_SOFT"
+      ]
+    },
+    "pass_econ_lines": "100-124",
+    "legacy_alias_lines": "85-90",
+    "open_ro_line": 209,
+    "gate_axis": "storage"
+  },
+  "classifier_delta": {
+    "pairs_total": 14745,
+    "pairs_with_changed_deepest_pass": 21,
+    "pairs_changed_detail": [
+      {
+        "pair": "QM5_10476/USDCAD.DWX",
+        "old": "Q07",
+        "new": "Q08",
+        "verdict": "FAIL_SOFT",
+        "phase": "Q08",
+        "updated_at": "2026-09-01 18:22:35"
+      },
+      {
+        "pair": "QM5_10715/USDJPY.DWX",
+        "old": "Q07",
+        "new": "Q08",
+        "verdict": "FAIL_SOFT",
+        "phase": "Q08",
+        "updated_at": "2026-09-01 18:22:35"
+      },
+      {
+        "pair": "QM5_10943/NDX.DWX",
+        "old": "Q07",
+        "new": "Q08",
+        "verdict": "FAIL_SOFT",
+        "phase": "Q08",
+        "updated_at": "2026-07-04 02:31:03"
+      },
+      {
+        "pair": "QM5_12475/NDX.DWX",
+        "old": "Q03",
+        "new": "Q08",
+        "verdict": "FAIL_SOFT",
+        "phase": "Q08",
+        "updated_at": "2026-07-10 15:12:01"
+      },
+      {
+        "pair": "QM5_11125/WS30.DWX",
+        "old": "Q06",
+        "new": "Q08",
+        "verdict": "FAIL_SOFT",
+        "phase": "Q08",
+        "updated_at": "2026-07-05 19:00:40"
+      },
+      {
+        "pair": "QM5_12474/GBPUSD.DWX",
+        "old": "Q07",
+        "new": "Q08",
+        "verdict": "FAIL_SOFT",
+        "phase": "Q08",
+        "updated_at": "2026-09-01 18:22:35"
+      },
+      {
+        "pair": "QM5_1567/GBPNZD.DWX",
+        "old": "Q07",
+        "new": "Q08",
+        "verdict": "FAIL_SOFT",
+        "phase": "Q08",
+        "updated_at": "2026-09-01 18:22:35"
+      },
+      {
+        "pair": "QM5_11147/SP500.DWX",
+        "old": "Q07",
+        "new": "Q08",
+        "verdict": "FAIL_SOFT",
+        "phase": "Q08",
+        "updated_at": "2026-08-08 14:36:51"
+      },
+      {
+        "pair": "QM5_11476/USDJPY.DWX",
+        "old": "Q04",
+        "new": "Q08",
+        "verdict": "FAIL_SOFT",
+        "phase": "Q08",
+        "updated_at": "2026-07-13 06:41:03"
+      },
+      {
+        "pair": "QM5_12580/AUDUSD.DWX",
+        "old": "Q07",
+        "new": "Q08",
+        "verdict": "FAIL_SOFT",
+        "phase": "Q08",
+        "updated_at": "2026-07-26 01:42:27"
+      },
+      {
+        "pair": "QM5_12712/QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1",
+        "old": "Q07",
+        "new": "Q08",
+        "verdict": "FAIL_SOFT",
+        "phase": "Q08",
+        "updated_at": "2026-07-08 19:37:26"
+      },
+      {
+        "pair": "QM5_12778/QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+        "old": "Q07",
+        "new": "Q08",
+        "verdict": "FAIL_SOFT",
+        "phase": "Q08",
+        "updated_at": "2026-07-18 08:26:47"
+      },
+      {
+        "pair": "QM5_12864/QM5_12864_XTI_XAG_RSPREAD_D1",
+        "old": "Q07",
+        "new": "Q08",
+        "verdict": "FAIL_SOFT",
+        "phase": "Q08",
+        "updated_at": "2026-07-06 09:49:04"
+      },
+      {
+        "pair": "QM5_12990/GBPUSD.DWX",
+        "old": "Q07",
+        "new": "Q08",
+        "verdict": "FAIL_SOFT",
+        "phase": "Q08",
+        "updated_at": "2026-07-03 10:40:23"
+      },
+      {
+        "pair": "QM5_11403/EURUSD.DWX",
+        "old": "Q07",
+        "new": "Q08",
+        "verdict": "FAIL_SOFT",
+        "phase": "Q08",
+        "updated_at": "2026-09-01 18:22:35"
+      },
+      {
+        "pair": "QM5_13059/QM5_13059_XTI_AUDJPY_RSPREAD_D1",
+        "old": "Q07",
+        "new": "Q08",
+        "verdict": "FAIL_SOFT",
+        "phase": "Q08",
+        "updated_at": "2026-07-26 20:43:37"
+      },
+      {
+        "pair": "QM5_13076/QM5_13076_XTI_NZDCAD_RSPREAD_D1",
+        "old": "Q07",
+        "new": "Q08",
+        "verdict": "FAIL_SOFT",
+        "phase": "Q08",
+        "updated_at": "2026-07-09 07:37:32"
+      },
+      {
+        "pair": "QM5_12552/USDCAD.DWX",
+        "old": "Q07",
+        "new": "Q08",
+        "verdict": "FAIL_SOFT",
+        "phase": "Q08",
+        "updated_at": "2026-09-01 18:22:35"
+      },
+      {
+        "pair": "QM5_11294/NDX.DWX",
+        "old": "Q07",
+        "new": "Q08",
+        "verdict": "FAIL_SOFT",
+        "phase": "Q08",
+        "updated_at": "2026-09-01 18:22:35"
+      },
+      {
+        "pair": "QM5_1355/NDX.DWX",
+        "old": "Q07",
+        "new": "Q08",
+        "verdict": "FAIL_SOFT",
+        "phase": "Q08",
+        "updated_at": "2026-09-01 18:22:35"
+      },
+      {
+        "pair": "QM5_41220/GBPUSD.DWX",
+        "old": "Q07",
+        "new": "Q08",
+        "verdict": "FAIL_SOFT",
+        "phase": "Q08",
+        "updated_at": "2026-09-02 21:35:27"
+      }
+    ],
+    "eas_with_changed_deepest_pass": 18,
+    "eas_changed_detail": [
+      {
+        "ea_id": "QM5_10476",
+        "old": "Q07",
+        "new": "Q08",
+        "verdict": "FAIL_SOFT",
+        "phase": "Q08",
+        "symbol": "USDCAD.DWX",
+        "updated_at": "2026-09-01 18:22:35",
+        "eras": [
+          "PRE_JUNE"
+        ]
+      },
+      {
+        "ea_id": "QM5_10715",
+        "old": "Q07",
+        "new": "Q08",
+        "verdict": "FAIL_SOFT",
+        "phase": "Q08",
+        "symbol": "USDJPY.DWX",
+        "updated_at": "2026-09-01 18:22:35",
+        "eras": [
+          "PRE_JUNE"
+        ]
+      },
+      {
+        "ea_id": "QM5_10943",
+        "old": "Q07",
+        "new": "Q08",
+        "verdict": "FAIL_SOFT",
+        "phase": "Q08",
+        "symbol": "NDX.DWX",
+        "updated_at": "2026-07-04 02:31:03",
+        "eras": [
+          "PRE_JUNE"
+        ]
+      },
+      {
+        "ea_id": "QM5_11125",
+        "old": "Q06",
+        "new": "Q08",
+        "verdict": "FAIL_SOFT",
+        "phase": "Q08",
+        "symbol": "WS30.DWX",
+        "updated_at": "2026-07-05 19:00:40",
+        "eras": [
+          "PRE_JUNE"
+        ]
+      },
+      {
+        "ea_id": "QM5_11147",
+        "old": "Q07",
+        "new": "Q08",
+        "verdict": "FAIL_SOFT",
+        "phase": "Q08",
+        "symbol": "SP500.DWX",
+        "updated_at": "2026-08-08 14:36:51",
+        "eras": [
+          "PRE_JUNE"
+        ]
+      },
+      {
+        "ea_id": "QM5_11403",
+        "old": "Q07",
+        "new": "Q08",
+        "verdict": "FAIL_SOFT",
+        "phase": "Q08",
+        "symbol": "EURUSD.DWX",
+        "updated_at": "2026-09-01 18:22:35",
+        "eras": [
+          "PRE_JUNE"
+        ]
+      },
+      {
+        "ea_id": "QM5_11476",
+        "old": "Q04",
+        "new": "Q08",
+        "verdict": "FAIL_SOFT",
+        "phase": "Q08",
+        "symbol": "USDJPY.DWX",
+        "updated_at": "2026-07-13 06:41:03",
+        "eras": [
+          "PRE_JUNE"
+        ]
+      },
+      {
+        "ea_id": "QM5_12474",
+        "old": "Q07",
+        "new": "Q08",
+        "verdict": "FAIL_SOFT",
+        "phase": "Q08",
+        "symbol": "GBPUSD.DWX",
+        "updated_at": "2026-09-01 18:22:35",
+        "eras": [
+          "PRE_JUNE"
+        ]
+      },
+      {
+        "ea_id": "QM5_12475",
+        "old": "Q03",
+        "new": "Q08",
+        "verdict": "FAIL_SOFT",
+        "phase": "Q08",
+        "symbol": "NDX.DWX",
+        "updated_at": "2026-07-10 15:12:01",
+        "eras": [
+          "PRE_JUNE"
+        ]
+      },
+      {
+        "ea_id": "QM5_12552",
+        "old": "Q07",
+        "new": "Q08",
+        "verdict": "FAIL_SOFT",
+        "phase": "Q08",
+        "symbol": "USDCAD.DWX",
+        "updated_at": "2026-09-01 18:22:35",
+        "eras": [
+          "JUNE",
+          "AUGUST"
+        ]
+      },
+      {
+        "ea_id": "QM5_12580",
+        "old": "Q07",
+        "new": "Q08",
+        "verdict": "FAIL_SOFT",
+        "phase": "Q08",
+        "symbol": "AUDUSD.DWX",
+        "updated_at": "2026-07-26 01:42:27",
+        "eras": [
+          "JUNE"
+        ]
+      },
+      {
+        "ea_id": "QM5_12712",
+        "old": "Q07",
+        "new": "Q08",
+        "verdict": "FAIL_SOFT",
+        "phase": "Q08",
+        "symbol": "QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1",
+        "updated_at": "2026-07-08 19:37:26",
+        "eras": [
+          "JUNE"
+        ]
+      },
+      {
+        "ea_id": "QM5_12864",
+        "old": "Q07",
+        "new": "Q08",
+        "verdict": "FAIL_SOFT",
+        "phase": "Q08",
+        "symbol": "QM5_12864_XTI_XAG_RSPREAD_D1",
+        "updated_at": "2026-07-06 09:49:04",
+        "eras": [
+          "JULY"
+        ]
+      },
+      {
+        "ea_id": "QM5_12990",
+        "old": "Q07",
+        "new": "Q08",
+        "verdict": "FAIL_SOFT",
+        "phase": "Q08",
+        "symbol": "GBPUSD.DWX",
+        "updated_at": "2026-07-03 10:40:23",
+        "eras": []
+      },
+      {
+        "ea_id": "QM5_13059",
+        "old": "Q07",
+        "new": "Q08",
+        "verdict": "FAIL_SOFT",
+        "phase": "Q08",
+        "symbol": "QM5_13059_XTI_AUDJPY_RSPREAD_D1",
+        "updated_at": "2026-07-26 20:43:37",
+        "eras": [
+          "JULY"
+        ]
+      },
+      {
+        "ea_id": "QM5_13076",
+        "old": "Q07",
+        "new": "Q08",
+        "verdict": "FAIL_SOFT",
+        "phase": "Q08",
+        "symbol": "QM5_13076_XTI_NZDCAD_RSPREAD_D1",
+        "updated_at": "2026-07-09 07:37:32",
+        "eras": [
+          "JULY"
+        ]
+      },
+      {
+        "ea_id": "QM5_1355",
+        "old": "Q07",
+        "new": "Q08",
+        "verdict": "FAIL_SOFT",
+        "phase": "Q08",
+        "symbol": "NDX.DWX",
+        "updated_at": "2026-09-01 18:22:35",
+        "eras": [
+          "JULY"
+        ]
+      },
+      {
+        "ea_id": "QM5_41220",
+        "old": "Q07",
+        "new": "Q08",
+        "verdict": "FAIL_SOFT",
+        "phase": "Q08",
+        "symbol": "GBPUSD.DWX",
+        "updated_at": "2026-09-02 21:35:27",
+        "eras": [
+          "AUGUST"
+        ]
+      }
+    ],
+    "eas_changed_inside_report_cohorts": 13,
+    "eas_changed_by_report_era": {
+      "PRE_JUNE": 9,
+      "JUNE": 3,
+      "AUGUST": 2
+    },
+    "pairs_gaining_q10_pass_from_config_locked": [
+      {
+        "pair": "QM5_20266/XTIUSD.DWX",
+        "token": "CONFIG_LOCKED",
+        "phase": "Q10_NEWS",
+        "updated_at": "2026-09-01 07:51:07"
+      },
+      {
+        "pair": "QM5_9641/WS30.DWX",
+        "token": "CONFIG_LOCKED",
+        "phase": "Q10_NEWS",
+        "updated_at": "2026-08-31 21:03:14"
+      },
+      {
+        "pair": "QM5_11660/NDX.DWX",
+        "token": "CONFIG_LOCKED",
+        "phase": "Q10_NEWS",
+        "updated_at": "2026-08-31 10:00:24"
+      },
+      {
+        "pair": "QM5_12849/XTIUSD.DWX",
+        "token": "CONFIG_LOCKED",
+        "phase": "Q10_NEWS",
+        "updated_at": "2026-09-01 00:18:11"
+      },
+      {
+        "pair": "QM5_12855/XTIUSD.DWX",
+        "token": "CONFIG_LOCKED",
+        "phase": "Q10_NEWS",
+        "updated_at": "2026-08-31 20:18:02"
+      },
+      {
+        "pair": "QM5_13054/XTIUSD.DWX",
+        "token": "CONFIG_LOCKED",
+        "phase": "Q10_NEWS",
+        "updated_at": "2026-08-28 07:05:36"
+      },
+      {
+        "pair": "QM5_21501/USDJPY.DWX",
+        "token": "CONFIG_LOCKED",
+        "phase": "Q10_NEWS",
+        "updated_at": "2026-09-02 21:55:18"
+      },
+      {
+        "pair": "QM5_1537/XAGUSD.DWX",
+        "token": "CONFIG_LOCKED",
+        "phase": "Q10_NEWS",
+        "updated_at": "2026-08-28 03:46:14"
+      },
+      {
+        "pair": "QM5_20086/EURUSD.DWX",
+        "token": "CONFIG_LOCKED",
+        "phase": "Q10_NEWS",
+        "updated_at": "2026-08-31 06:30:56"
+      },
+      {
+        "pair": "QM5_20086/NDX.DWX",
+        "token": "CONFIG_LOCKED",
+        "phase": "Q10_NEWS",
+        "updated_at": "2026-08-30 09:21:03"
+      },
+      {
+        "pair": "QM5_11294/XAUUSD.DWX",
+        "token": "CONFIG_LOCKED",
+        "phase": "Q10_NEWS",
+        "updated_at": "2026-08-30 09:51:50"
+      },
+      {
+        "pair": "QM5_21505/XAGUSD.DWX",
+        "token": "CONFIG_LOCKED",
+        "phase": "Q10_NEWS",
+        "updated_at": "2026-08-31 11:09:18"
+      },
+      {
+        "pair": "QM5_21507/XAUUSD.DWX",
+        "token": "CONFIG_LOCKED",
+        "phase": "Q10_NEWS",
+        "updated_at": "2026-08-29 15:13:23"
+      },
+      {
+        "pair": "QM5_21502/XAUUSD.DWX",
+        "token": "CONFIG_LOCKED",
+        "phase": "Q10_NEWS",
+        "updated_at": "2026-08-30 18:52:18"
+      },
+      {
+        "pair": "QM5_11881/GBPUSD.DWX",
+        "token": "CONFIG_LOCKED",
+        "phase": "Q10_NEWS",
+        "updated_at": "2026-08-25 21:47:50"
+      }
+    ],
+    "pairs_gaining_q10_pass_from_config_locked_count": 15,
+    "pairs_gaining_q08_pass_from_fail_soft": 84
+  },
+  "gate_axis_divergence": {
+    "Q09_PORTFOLIO[legacy] storage=Q09 canonical=Q10": 139,
+    "Q09_NEWS[v4] storage=Q10 canonical=None": 55,
+    "Q10[legacy] storage=Q10 canonical=Q11": 41,
+    "Q14[legacy] storage=Q14 canonical=Q12": 14,
+    "Q14[v3] storage=Q14 canonical=Q12": 3,
+    "Q15[legacy] storage=Q15 canonical=Q13": 1
+  }
+}
