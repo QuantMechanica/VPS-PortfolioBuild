@@ -45,7 +45,7 @@ Two supporting facts, also from source:
 
 - **Exit-day bucketing.** `portfolio_common.py:509-513` (`to_daily_pnl`) buckets each trade's
   net-of-cost P&L on `trade.time` — the **close/exit** stamp (rows are `TRADE_CLOSED`,
-  `_load_one_stream` at `:571`). Daily-P&L co-movement therefore only "sees" a sleeve on its exit
+  `_load_one_stream` at `:550`, trade construction from `:571`). Daily-P&L co-movement therefore only "sees" a sleeve on its exit
   days, blind to the many days it holds an open position.
 - **Union-window zero-fill.** `align` (`portfolio_common.py:531-548`) unions all dates
   (`dates = sorted({day for series in …})`) and zero-fills a dense matrix. Pre-birth / post-death
@@ -122,7 +122,7 @@ Q14-terminal overlap). Data starvation manifests automatically as a CI too wide 
 ### 2.2 · Layer B — COS (supplementary co-timing flag)
 
 Each trade carries `entry_time` and `time` (exit), both unix-UTC (schema:
-`portfolio_common.py:55` for `entry_time`, `:51` for `notional`, `:571`+ for the loader).
+`portfolio_common.py:55` for `entry_time`, `:52` for `notional`, `:550`+ for the loader).
 A sleeve's **occupancy set** `D_s` is the union over its trades of every UTC calendar day from
 `entry_day..exit_day` inclusive. On a common calendar-day ring `d_1..d_T` (every day in
 `[min entry, max exit]` across the pool — assumption-free, no market-calendar model), let
@@ -217,7 +217,7 @@ Pearson), so it can live inside `correlation_matrix`; Layer B is an additive dia
 209-213, which offered only (a)/(b)):
 
 - **(a) Status quo** — accept the current sparse-stream Pearson as a screening prior.
-  *Consequence:* `portfolio_correlation.py` returns `None` for 0/46 book-relevant pairs (dossier
+  *Consequence:* `portfolio_correlation.py` returns a usable correlation for 0/46 book-relevant pairs (`None` for all 46) (dossier
   §3c); the |r|<0.5 control is **fail-open by omission**. **Reject.**
 - **(b) Defer** — require fresh Q14-terminal streams with **≥ 60-day overlap** before any
   orthogonality claim (dossier §3c Rec (b)). *Consequence:* correct as a gold standard, but
