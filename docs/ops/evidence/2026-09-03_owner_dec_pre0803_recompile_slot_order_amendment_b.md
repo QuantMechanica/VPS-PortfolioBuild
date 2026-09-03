@@ -258,3 +258,8 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
 - 09:33Z–09:50Z: 10700 Q08 `ce371d25` PASS (H1 walk-forward, 60 min) → Q09 `3030129c` enqueued (rerun of
   3e40593d). At its PASS the pre-0803 Q10_NEWS zombie `77bd97c2` gets the Q09_AWAITING_SEALED_PLAN re-arm.
   Expansions 12710 (T8) and 11910 (T1) still running.
+- 10:08Z–10:18Z: **10700 Q09 `3030129c` PASS** — all three batch-1 pairs are now contiguous Q02→Q09 on their
+  recompiled identity (11910 03:33Z→08:07Z, 12710 04:25Z→07:48Z, 10700 04:46Z→10:08Z). 10700's pre-0803
+  Q10_NEWS zombie `77bd97c2` re-armed under Q09_AWAITING_SEALED_PLAN (superseded=1) for the news-gate
+  replacement parent. The census claim pause 09:58Z–10:09Z was the worker RAM guard (free RAM ~6 GB with two
+  11 GB testers), not a stall.
