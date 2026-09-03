@@ -3117,12 +3117,25 @@ $loggerPathsForFrequency = @($loggerSampleCaptures | ForEach-Object {
 $testerLogPathsForFrequency = @($completedRuns | ForEach-Object {
     if ($_.PSObject.Properties.Name -contains 'tester_log_path') { [string]$_.tester_log_path }
 })
+# Run identity is MANDATORY here. The tester day-log is shared by every expert
+# that ran on this terminal today AND by every earlier RUN of this same EA on
+# this same symbol, so an unscoped marker scan adopts foreign warm-up markers
+# and silently shortens this run's Q02 coverage window:
+#   * cross-EA:  QM5_41321/NDX.DWX inherited QM5_41195/XAGUSD -> floor 10 -> 5
+#   * cross-run: QM5_41196/XAUUSD.DWX census cells (1-year windows) would have
+#                pulled the canonical 2018.07.02-2022.12.31 run to 2022.01.03
+#                -> floor 25 -> 5.
+# The helper anchors the run window on the tester's own run-start line for this
+# expert+symbol+window, so only markers printed inside it are attributable.
 $frequencyFloorEvidence = Get-QmPatternFrequencyFloorEvidence `
     -LoggerSamplePaths $loggerPathsForFrequency `
     -TesterLogPaths $testerLogPathsForFrequency `
     -FallbackStartDate $fromDate `
     -EndDate $toDate `
-    -RatePerYear $Q02MinTradesPerYear
+    -RatePerYear $Q02MinTradesPerYear `
+    -ExpectedExpert $Expert `
+    -ExpectedEaId $EAId `
+    -RunSymbol $Symbol
 $frequencyFloorEvidence['calculated_min_trades_required'] = [int]$frequencyFloorEvidence.min_trades_required
 if ($SmokeMode) {
     $frequencyFloorEvidence['applied'] = $false
@@ -3133,14 +3146,18 @@ if ($SmokeMode) {
     $frequencyFloorEvidence['application_reason'] = 'q02_frequency_floor'
     $MinTrades = [int]$frequencyFloorEvidence.min_trades_required
 }
-Write-Host ("run_smoke.frequency_floor source={0} marker_status={1} start={2} end={3} years={4} min_trades={5} applied={6}" -f `
+Write-Host ("run_smoke.frequency_floor source={0} marker_status={1} start={2} end={3} years={4} min_trades={5} applied={6} attributed={7} rejected={8} run_windows_resolved={9}/{10}" -f `
     $frequencyFloorEvidence.coverage_start_source,
     $frequencyFloorEvidence.marker_status,
     $frequencyFloorEvidence.coverage_start,
     $frequencyFloorEvidence.coverage_end,
     $frequencyFloorEvidence.year_count,
     $MinTrades,
-    $frequencyFloorEvidence.applied)
+    $frequencyFloorEvidence.applied,
+    $frequencyFloorEvidence.attributed_marker_count,
+    $frequencyFloorEvidence.rejected_marker_count,
+    $frequencyFloorEvidence.run_scope.tester_log_window_resolved_count,
+    $frequencyFloorEvidence.run_scope.tester_log_file_count)
 
 if ($completedRunCount -eq $Runs) {
     $reasonClasses = New-Object System.Collections.Generic.List[string]

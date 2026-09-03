@@ -84,7 +84,10 @@ the evidence parser reports marker status `absent` explicitly.
   `coverage_start_source`, `marker_status`, `coverage_start`, `coverage_end`,
   year count, and calculated minimum trades. With no valid marker it uses
   `test_window_start_fallback_marker_absent` (or the visible invalid-marker
-  fallback); the fallback is never silent.
+  fallback); the fallback is never silent. **Amended 2026-09-03, see B4-5:**
+  the emitted block is schema `qm.q02-frequency-coverage/v2`, markers are
+  attributed per RUN rather than per (EA, symbol), and a third fallback
+  value `test_window_start_fallback_marker_not_attributable` exists.
 - Activity criterion: `audit_activity_criterion.py` reads the generation-bound
   Q02 summary marker. It uses that date for entry/close coverage when valid;
   otherwise it retains the historical earliest-trade substitute and labels the
@@ -128,3 +131,158 @@ explicit `GOVERNED_RUNTIME_EVIDENCE_PENDING` residual. Task acceptance remains
 open until the governed result contains the real first-tradable marker and proves
 both evidence consumers can ingest it. The first `PATTERN_FILTER_COMBO` trial
 remains prohibited until that proof is reviewed and accepted.
+
+## B4-5 - 2026-09-03 amendment: per-run marker attribution (schema v2)
+
+- Authority: Claude orchestrator, 2026-09-03 (GRUEN: infra repair that does not
+  touch verdict logic; no gate threshold and no gate criterion changed).
+- Defect class: the tester day-log is a SHARED terminal artifact. The v1 parser
+  text-scanned it and adopted any `QM_PATTERN_FIRST_TRADABLE_BAR` line it found.
+  Two fail-open leaks followed, both measured on production artifacts:
+  - **cross-EA** - work item `95e706ea-531c-504b-ae46-4e16f7d79134`
+    (QM5_41321 / NDX.DWX, run_tag `20260903_012953`) recorded
+    `first_tradable_bar.symbol=XAGUSD.DWX`, emitted by QM5_41195. Coverage start
+    moved 2021.01.01 -> 2022.01.12, year count 2 -> 1, floor 10 -> 5.
+  - **cross-RUN** - the same day-log holds four QM5_41196 / XAUUSD.DWX markers
+    from four DL089 census cells (1-year windows, four distinct `profile_key`s).
+    An (EA, symbol)-only rule adopts the latest of them for the canonical
+    2018.07.02-2022.12.31 Q02 run: floor 25 -> 5.
+
+### Attribution rule (fail-closed)
+
+A marker may move `coverage_start` only when all three hold:
+
+1. **Run window.** Its day-log clock lies inside this run's own tester window.
+   The window is anchored on the tester's own run-start line
+   `<symbol>,<tf>: testing of Experts\<expert>.ex5 from <from> 00:00 to <to> 00:00 started with inputs:`,
+   required to match this run's expert leaf, this run's symbol AND the exact
+   requested window (`from_date`/`to_date`) - the same triple
+   `Test-TesterLogHasNoHistoryForRun` already uses to scope history failures to
+   the current run. The LAST such line is this run (run_smoke copies the day-log
+   immediately after the run finishes); the window closes at the next run
+   boundary (`expert file added:` or another run-start line) or at end of log.
+2. **Source identity.** The day-log source column names this expert, or - for
+   the tester-core layout that carries no EA identity - rule 1 plus rule 3 carry
+   the scoping (`core_source_window`).
+3. **Symbol scope.** The marker symbol is the run symbol, or the emitting chart
+   is the run's own chart symbol (multi-symbol basket member).
+
+The structured-logger sample is exempt from rule 1: `run_smoke.ps1` captures it
+as a per-run delta of this EA's logger files (`Save-QmLoggerDelta`
+`-BeforeState` / `-EAIdValue`), so the artifact is already run-scoped
+(`run_scope.logger_sample_scope = per_run_delta_capture`).
+
+### Two production day-log layouts
+
+Measured 2026-09-03 over all 1,058 retained production day-logs (819 of them
+carrying markers, 2,921 marker lines in total); no third layout exists:
+
+| layout | source column | share | attribution |
+| --- | --- | --- | --- |
+| 1 | `QM5_41321_grimes-trendday-v2-opt (NDX.DWX,M15)` | 2,782 (95.2%) | run window + expert + symbol |
+| 2 | `Core 01`, e.g. `IE<TAB>0<TAB>03:27:52.986<TAB>Core 01<TAB>...` | 139 (4.8%) | run window + symbol, reason `core_source_window` |
+
+Layout 2 carries no EA identity at all. Rejecting it outright would silently
+disable the Bug #4 marker for any run whose only marker source is such a journal
+and whose `logger_sample.jsonl` is missing, so it is attributed on the run window
+plus the run symbol instead - that window belongs to exactly one dispatched run
+on that terminal.
+
+### Emitted values (schema `qm.q02-frequency-coverage/v2`)
+
+`coverage_start_source`:
+
+- `pattern_first_tradable_bar`
+- `test_window_start_fallback_marker_absent`
+- `test_window_start_fallback_marker_invalid_or_outside_window`
+- `test_window_start_fallback_marker_not_attributable` *(new in v2)*
+
+`marker_status`: `present_consistent`, `present_conflict_conservative_earliest`,
+`absent`, `invalid_or_outside_window`, `present_not_attributable` *(new in v2)*.
+
+Per-marker `attribution_reason` - attributed: `own_ea_run_symbol`,
+`own_ea_member_symbol`, `core_source_window` *(new in v2)*; rejected:
+`no_expected_run_identity`, `run_window_unresolved` *(new)*,
+`outside_run_window` *(new)*, `marker_line_without_timestamp` *(new)*,
+`source_line_without_ea_identity`, `foreign_ea`, `foreign_symbol`.
+
+New v2 fields: `run_window_enforced`, `attributed_profile_key_count`,
+`attributed_profile_keys`, and `run_scope` with per-file `tester_log_windows[]`
+(`window_source`, `window_start`, `window_end`, `exact_run_start_count`,
+`own_ea_symbol_run_start_count`, `run_start_count`, `marker_count`,
+`attributed_marker_count`); each marker additionally carries `source_column`,
+`source_column_kind`, `source_line_time`, `run_window_state` and
+`run_window_source`. Together they let a reviewer - or
+`tools/strategy_farm/portfolio/audit_activity_criterion.py` - tell a same-run
+marker from a cross-run one without re-reading the day-log.
+
+`run_scope.tester_log_windows[].window_source`:
+
+- `tester_log_run_start_exact` - anchored on this run's own run-start line.
+- `rollover_continuation_no_run_start` - the day-log contains NO run-start line
+  at all, i.e. the run started before 00:00 and `run_smoke.ps1` copied the
+  current day file; such a file carries exactly one run's output. Measured
+  2026-09-03: 4 of 1,059 retained production day-logs (0.4%).
+- `unresolved_no_matching_run_start`, `unresolved_no_expected_run_identity`,
+  `unresolved_log_missing`, `unresolved_window_not_supplied` - fail-closed: every
+  marker in the file is rejected and the full test window is scored.
+
+Measured resolution rate over all 1,059 retained production day-logs that still
+have a summary: 1,053 anchored on their own run-start line, 4 rollover
+continuations (all already `marker_status=absent`), 2 unresolved - 99.8%
+resolved. Both unresolved files are the INVALID first leg of a two-leg run
+whose OK leg resolves normally, e.g. work item
+`71d1ad66-3f15-463c-ac55-76a0b09a86cd` (QM5_11910 / NZDUSD.DWX,
+2018.07.02-2022.12.31), whose v1 evidence had adopted a QM5_41301 / QM5_41302
+XAUUSD.DWX census marker (coverage start 2019.01.02, floor 20). Under the new
+rule run_02's own window resolves, all 22 markers are rejected
+(19 `run_window_unresolved` from the INVALID leg, 3 `outside_run_window`) and
+the floor returns to 25 - the run's 33 trades still PASS.
+
+### Direction of the change
+
+Every rejection falls back to the requested test-window start: MORE coverage,
+MORE scored years, a STRICTER floor. The repair can therefore only raise a
+frequency floor, never lower one. No threshold and no gate criterion moved.
+
+### Retroactive scope
+
+Inventory run 2026-09-03: 17,162 run summaries scanned, 9,657 carrying a
+frequency-floor block since 2026-08-01, **3,312 affected rows** - 463 with a
+provably foreign marker symbol, 157 conclusively re-parsed (every one of them
+with a moved coverage start), 2,818 no longer checkable because D: retention
+purged the quoted day-log. **4 rows would flip the Q02 verdict**
+(QM5_36005 / AUDNZD.DWX and QM5_41264 / QM5_41267 / QM5_41271 on XTIUSD.DWX:
+floor 10 instead of 25 with 19-24 trades); all four already carry a FAIL
+work-item verdict, so no standing PASS rests on the leak. (The factory keeps
+writing summaries, so a re-run of the inventory drifts by a handful of rows;
+the committed CSV is the 2026-09-03 06:5xZ snapshot.)
+
+The change corrects future runs only. Q02 evidence written under v1 is not
+rewritten and no verdict is regraded - regrades are an OWNER decision (ROT:
+"delete/overwrite verdicts or trade streams"). The read-only inventory
+`docs/ops/evidence/2026-09-03_q02_frequency_floor_leak_inventory.py` enumerates
+the affected rows and writes
+`docs/ops/evidence/2026-09-03_q02_frequency_floor_leak_inventory.csv`
+(`floor_used` vs `floor_fail_closed`, plus the live work-item verdict) as the
+OWNER decision input. It performs no database writes.
+
+### Verification
+
+- `framework/scripts/tests/Test-PatternWarmupEvidence.ps1`: **PASS**.
+- `python -m pytest -q framework/scripts/tests/test_q02_frequency_floor_attribution.py`:
+  **9 passed**.
+- Production replay, cross-RUN case (the 2026-09-03 refutation command) against
+  `D:\QM\reports\work_items\95e706ea-531c-504b-ae46-4e16f7d79134\QM5_41321\20260903_012953\raw\run_01\20260903.log`
+  with `-ExpectedExpert 'QM\QM5_41196_qs-kama-trend-xau-opt' -ExpectedEaId 41196 -RunSymbol 'XAUUSD.DWX' -FallbackStartDate '2018.07.02' -EndDate '2022.12.31'`
+  -> `coverage_start=2018.07.02`, `year_count=5`, `min_trades_required=25`,
+  all 5 markers rejected `run_window_unresolved`
+  (v1 / (EA, symbol)-only: 2022.01.03, 1 year, floor 5).
+- Production replay, the original defect run (QM5_41321 / NDX.DWX,
+  2021.01.01-2022.12.31, same day-log) -> window `03:30:39.592..end_of_log`,
+  all 5 foreign markers rejected `outside_run_window`, floor back to 10 (was 5).
+- Production replay, tester-core layout (QM5_41097 / USDJPY.DWX,
+  2022.01.01-2022.12.31,
+  `D:\QM\reports\work_items\6d08514a-21e4-560a-b2e6-54f69a97679d\QM5_41097\20260902_173801\raw\run_01\20260902.log`)
+  -> `coverage_start=2022.01.03` attributed via `core_source_window`, 60 of 61
+  markers rejected `outside_run_window`.
