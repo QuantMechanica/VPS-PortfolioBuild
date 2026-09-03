@@ -217,3 +217,11 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   claimed by T4 07:26Z; 10700 Q07 `21317bcc` claimed by T7 07:35Z after the 20085 EURUSD recovery run hit its
   216-min budget (INFRA_FAIL 07:28Z, fourth attempt). Next: at 12710 Q09 PASS the pre-0803 Q10_NEWS zombie
   `678b8cac` must be recorded as superseded before the news gate re-mints Q10_NEWS on the new identity.
+- 07:48Z–07:56Z: **12710 Q09 `e1f7a095` PASS** — the chain is contiguous Q02→Q09 on the new identity
+  `11474d4c…`. The only Q10_NEWS row (`678b8cac`, pre-0803 identity, held NEWS_RUNNER_SPAWN_SILENT_ABORT)
+  was re-armed under `Q09_AWAITING_SEALED_PLAN` via `governed_work_item_hold.py apply
+  --supersede-hold-code` (superseded=1, row stays unclaimable) so the news-gate service mints the
+  replacement parent on the current binary — the same path that produced 11910's `a6dbacf5` earlier today.
+  Awaiting the replacement row in the next pump cycles; then Q10_NEWS runs → CONFIG_LOCKED → Q11 → Q12 slot.
+- 07:38Z: unrelated but on the same critical path: 13213/XAUUSD Q10_NEWS `6e415bb4` CONFIG_LOCKED after a
+  6.4-h run on T3 → Q11 `7db06ca0` minted; its Q12 `2ea9cd64` already owns slot 1.
