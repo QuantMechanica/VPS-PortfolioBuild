@@ -15,6 +15,7 @@ r4_ml_forbidden: PASS
 pipeline_phase: G0
 period: H1
 target_symbols: [USDJPY.DWX]
+expected_trades_per_year_per_symbol: 140
 last_updated: 2026-09-03
 ---
 
@@ -29,3 +30,12 @@ mechanics and exposes exactly six closed-D1 pattern veto inputs:
 baseline is neutral. No live or pipeline verdict is authorized. Backtests
 require `RISK_FIXED > 0`, `RISK_PERCENT = 0`, and
 `qm_news_stale_max_hours <= 336`.
+
+## R1-R4 assessment
+
+| Criterion | Status | Rationale |
+|---|---|---|
+| R1 Source-Link | PASS | Inherited through QM5_21501 from the approved GMT+3 range-breakout source lineage. |
+| R2 Mechanical | PASS | Parent mechanics and A1-safe straddle flow are unchanged; six inputs only veto entries. |
+| R3 Data Available | PASS | Uses closed D1 OHLC predicates on USDJPY.DWX, alongside the parent's H1 inputs. |
+| R4 No ML | PASS | Fixed deterministic rules; no ML, grid, martingale, or online adaptation. |
