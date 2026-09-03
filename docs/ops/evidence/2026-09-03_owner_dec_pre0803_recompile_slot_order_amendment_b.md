@@ -473,3 +473,6 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   OWNER filed (monitor v1.10 deploy, scheduled dry-run task, executor component, policy/activation artifacts).
   Reload chunk 21 (drain window) started 20:09Z after chunk 20 finished 9/10 (T1 held the news run). Drain state
   active=None (cooldown to 02:04Z). Fabric: 7 active, 18 cells/10 min, 21 GB free, C: 82.6 GB, pump 20:08Z.
+- 20:45Z: drain-window winnability rule merged (`52c784feb1`, Opus wf_f29d8ff0-37c verified ok, 170 tests): no arming
+  while a long-run row (Q07+ incl. news) is active, releasable short-row RAM must cover the need, early abandon when a
+  long run appears; throttled drain_window_not_winnable events. Reload chunk 23 queued behind 22 (21: 6/10 at 20:32Z).
