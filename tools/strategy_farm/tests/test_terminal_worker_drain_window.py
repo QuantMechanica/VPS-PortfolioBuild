@@ -693,30 +693,33 @@ def test_short_phases_not_long_run():
 
 # --- WINNABILITY: pure predicate -----------------------------------------
 # need = reservation + DRAIN_ARMED_ROW_FLOOR_GB (44 + 4 = 48 for the index row);
-# it is winnable only when no long-run row runs AND free RAM plus the RAM the
-# active short rows release covers that need.
+# it is winnable when free RAM plus the RAM the active SHORT rows release covers
+# that need.  Long-run rows are not an input to the predicate any more -- they
+# hold RAM for hours and are already excluded from free RAM, so they add no
+# releasable headroom; a heavy row can arm beside a long run when the arithmetic
+# clears (a NEW long run appearing after the open still abandons the drain).
 
 def test_winnable_true_when_short_rows_release_enough():
     ok, reason = tw._drain_candidate_is_winnable(
-        _cand(), free_ram_gb=12.0, long_run_active=False,
-        releasable_short_ram_gb=40.0,
+        _cand(), free_ram_gb=12.0, releasable_short_ram_gb=40.0,
     )
     assert (ok, reason) == (True, "")
 
 
-def test_not_winnable_when_long_run_row_active():
+def test_winnable_beside_long_run_ignores_it_and_uses_arithmetic():
+    # A long run holds RAM for hours and adds no releasable headroom, but it no
+    # longer refuses the arm outright: free 12 + short 40 = 52 >= need 48 -> the
+    # heavy row is winnable (the old model returned long_run_row_active here).
     ok, reason = tw._drain_candidate_is_winnable(
-        _cand(), free_ram_gb=12.0, long_run_active=True,
-        releasable_short_ram_gb=999.0,
+        _cand(), free_ram_gb=12.0, releasable_short_ram_gb=40.0,
     )
-    assert (ok, reason) == (False, "long_run_row_active")
+    assert (ok, reason) == (True, "")
 
 
 def test_not_winnable_when_releasable_ram_insufficient():
     # free 12 + releasable 30 = 42 < need 48.
     ok, reason = tw._drain_candidate_is_winnable(
-        _cand(), free_ram_gb=12.0, long_run_active=False,
-        releasable_short_ram_gb=30.0,
+        _cand(), free_ram_gb=12.0, releasable_short_ram_gb=30.0,
     )
     assert (ok, reason) == (False, "insufficient_releasable_ram")
 
@@ -724,8 +727,7 @@ def test_not_winnable_when_releasable_ram_insufficient():
 def test_winnable_boundary_exact_need_is_winnable():
     # free 12 + releasable 36 = 48 == need -> winnable (>=).
     ok, reason = tw._drain_candidate_is_winnable(
-        _cand(), free_ram_gb=12.0, long_run_active=False,
-        releasable_short_ram_gb=36.0,
+        _cand(), free_ram_gb=12.0, releasable_short_ram_gb=36.0,
     )
     assert (ok, reason) == (True, "")
 
@@ -743,12 +745,12 @@ def test_evaluate_not_winnable_does_not_arm_but_keeps_tracking():
     }
     state, events = tw._drain_evaluate(
         seeded, now_epoch=t0 + trig, qualifying_candidate=_cand(),
-        winnable=False, winnable_reason="long_run_row_active",
+        winnable=False, winnable_reason="insufficient_releasable_ram",
     )
     assert state["active"] is None
     assert "IDX1" in state["tracker"]  # still tracked for the next round
     assert [e["event"] for e in events] == ["drain_window_not_winnable"]
-    assert events[0]["reason"] == "long_run_row_active"
+    assert events[0]["reason"] == "insufficient_releasable_ram"
 
 
 def test_evaluate_not_winnable_event_throttled_per_cooldown():
@@ -794,15 +796,17 @@ def test_evaluate_arms_once_row_becomes_winnable():
     }
     state, _ = tw._drain_evaluate(
         state, now_epoch=t0 + trig, qualifying_candidate=_cand(),
-        winnable=False, winnable_reason="long_run_row_active",
+        winnable=False, winnable_reason="insufficient_releasable_ram",
     )
     assert state["active"] is None
-    # The long-run row finished; the same tracked row arms immediately.
+    # The releasable RAM now covers the need; the same tracked row arms
+    # immediately, recording the (here empty) long-run id set at open.
     state, events = tw._drain_evaluate(
         state, now_epoch=t0 + trig + 30.0, qualifying_candidate=_cand(),
         winnable=True,
     )
     assert state["active"] is not None
+    assert state["active"]["long_run_ids_at_open"] == []
     assert [e["event"] for e in events] == ["drain_window_open"]
 
 
@@ -818,12 +822,12 @@ def test_abandon_closes_active_and_sets_cooldown():
         "tracker": {},
     }
     closed, events = tw._drain_abandon(
-        active_state, now_epoch=now, reason="long_run_row_active"
+        active_state, now_epoch=now, reason="new_long_run_row_active"
     )
     assert closed["active"] is None
     assert closed["cooldown_until_epoch"] == pytest.approx(now + cool)
     assert [e["event"] for e in events] == ["drain_window_abandoned"]
-    assert events[0]["reason"] == "long_run_row_active"
+    assert events[0]["reason"] == "new_long_run_row_active"
 
 
 def test_abandon_noop_when_no_active_drain():
@@ -860,7 +864,7 @@ def test_active_ram_facts_detects_long_run_and_sums_short(tmp_path):
         _insert_wi(conn, "l1", "Q07", symbol="EURUSD.DWX")      # long-run
         conn.commit()
     facts = tw._drain_active_ram_facts(root, multisym_ids=_FZ, armed_item_id=None)
-    assert facts["long_run_active_other"] is True
+    assert facts["long_run_active_ids"] == ["l1"]
     # 8 (ordinary FX) + 4 (census); compile and long-run are excluded.
     assert facts["releasable_short_ram_gb"] == pytest.approx(12.0)
     assert facts["armed_row_pending"] is True
@@ -877,7 +881,7 @@ def test_active_ram_facts_excludes_armed_row_from_long_run(tmp_path):
     facts = tw._drain_active_ram_facts(
         root, multisym_ids=_FZ, armed_item_id="armed"
     )
-    assert facts["long_run_active_other"] is False
+    assert facts["long_run_active_ids"] == []
     assert facts["armed_row_pending"] is False
 
 
@@ -898,7 +902,7 @@ def test_active_ram_facts_fail_open_without_db(tmp_path):
         tmp_path, multisym_ids=_FZ, armed_item_id="x"
     )
     assert facts == {
-        "long_run_active_other": False,
+        "long_run_active_ids": [],
         "releasable_short_ram_gb": 0.0,
         "armed_row_pending": True,
     }
@@ -923,7 +927,11 @@ def _emitted_events(capsys):
     ]
 
 
-def test_postprocess_not_armed_while_long_run_row_active(tmp_path, capsys):
+def test_postprocess_arms_beside_long_runs_when_arithmetic_ok(tmp_path, capsys):
+    # Two long-run rows are active (the fleet almost always has some), but the
+    # heavy row is arithmetically winnable beside them: long runs add no
+    # releasable headroom, yet free 12 + five short FX (5 * 8 = 40) = 52 >= need
+    # 48, so the drain arms and records the two long-run ids at open time.
     trig = tw.DRAIN_WINDOW_TRIGGER_MIN * 60.0
     now = 10_000_000.0
     root = tmp_path / "farm"
@@ -931,6 +939,45 @@ def test_postprocess_not_armed_while_long_run_row_active(tmp_path, capsys):
     with farmctl.connect(root) as conn:
         _insert_pending_priority_index(conn, "idx")
         _insert_wi(conn, "l1", "Q07", symbol="EURUSD.DWX", status="active")
+        _insert_wi(conn, "l2", "Q10_NEWS", symbol="GBPUSD.DWX", status="active")
+        for i in range(5):
+            _insert_wi(conn, f"q{i}", "Q02", symbol="EURUSD.DWX", status="active")
+        conn.commit()
+    tw._write_drain_state_atomic(root, {
+        "version": 1,
+        "active": None,
+        "cooldown_until_epoch": 0.0,
+        "tracker": {"idx": {"first_skipped_epoch": now - trig - 10.0}},
+    })
+    tw._drain_run_postprocess(
+        root, "T1", {"claimed": False},
+        now_epoch=now, free_ram_gb=12.0, host_total_gb=80.0, multisym_ids=_FZ,
+    )
+    after = tw._load_drain_state(root)
+    assert after["active"] is not None
+    assert after["active"]["item_id"] == "idx"
+    assert set(after["active"]["long_run_ids_at_open"]) == {"l1", "l2"}
+    assert any(
+        e.get("event") == "drain_window_open" for e in _emitted_events(capsys)
+    )
+
+
+def test_postprocess_not_armed_beside_long_runs_when_arithmetic_short(
+    tmp_path, capsys
+):
+    # Two long-run rows active and only three short FX (3 * 8 = 24) releasable:
+    # free 12 + 24 = 36 < need 48, so the heavy row is not winnable even beside
+    # the long runs -> not armed, structured refusal insufficient_releasable_ram.
+    trig = tw.DRAIN_WINDOW_TRIGGER_MIN * 60.0
+    now = 10_300_000.0
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    with farmctl.connect(root) as conn:
+        _insert_pending_priority_index(conn, "idx")
+        _insert_wi(conn, "l1", "Q07", symbol="EURUSD.DWX", status="active")
+        _insert_wi(conn, "l2", "Q10_NEWS", symbol="GBPUSD.DWX", status="active")
+        for i in range(3):
+            _insert_wi(conn, f"q{i}", "Q02", symbol="EURUSD.DWX", status="active")
         conn.commit()
     tw._write_drain_state_atomic(root, {
         "version": 1,
@@ -947,7 +994,7 @@ def test_postprocess_not_armed_while_long_run_row_active(tmp_path, capsys):
     assert "idx" in after["tracker"]
     assert any(
         e.get("event") == "drain_window_not_winnable"
-        and e.get("reason") == "long_run_row_active"
+        and e.get("reason") == "insufficient_releasable_ram"
         for e in _emitted_events(capsys)
     )
 
@@ -1013,7 +1060,10 @@ def test_postprocess_not_armed_when_releasable_ram_insufficient(tmp_path, capsys
     )
 
 
-def test_postprocess_abandons_active_drain_on_long_run_appearance(tmp_path, capsys):
+def test_postprocess_abandons_active_drain_on_new_long_run(tmp_path, capsys):
+    # The drain opened with NO long-run row running (long_run_ids_at_open empty).
+    # A long-run row (l1) then goes active -- a NEW id the open set did not have
+    # -> the open drain is abandoned so the fleet resumes short rows at once.
     now = 11_000_000.0
     cool = tw.DRAIN_COOLDOWN_MIN * 60.0
     root = tmp_path / "farm"
@@ -1028,6 +1078,7 @@ def test_postprocess_abandons_active_drain_on_long_run_appearance(tmp_path, caps
             "item_id": "idx", "ea_id": "QM5_idx",
             "reservation_gb": 44.0, "floor_gb": 14.0,
             "opened_epoch": now - 300.0, "opened_iso": tw._drain_iso(now - 300.0),
+            "long_run_ids_at_open": [],
         },
         "cooldown_until_epoch": 0.0,
         "tracker": {},
@@ -1041,7 +1092,43 @@ def test_postprocess_abandons_active_drain_on_long_run_appearance(tmp_path, caps
     assert after["cooldown_until_epoch"] == pytest.approx(now + cool)
     assert any(
         e.get("event") == "drain_window_abandoned"
-        and e.get("reason") == "long_run_row_active"
+        and e.get("reason") == "new_long_run_row_active"
+        for e in _emitted_events(capsys)
+    )
+
+
+def test_postprocess_does_not_abandon_on_preexisting_long_run(tmp_path, capsys):
+    # The drain opened WHILE l1 was already running (recorded in
+    # long_run_ids_at_open).  l1 is still the only long-run row and the armed row
+    # is still pending, so nothing NEW appeared -> the drain stays open, not
+    # abandoned.
+    now = 11_050_000.0
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    with farmctl.connect(root) as conn:
+        _insert_pending_priority_index(conn, "idx")  # armed row still pending
+        _insert_wi(conn, "l1", "Q10_NEWS", symbol="EURUSD.DWX", status="active")
+        conn.commit()
+    tw._write_drain_state_atomic(root, {
+        "version": 1,
+        "active": {
+            "item_id": "idx", "ea_id": "QM5_idx",
+            "reservation_gb": 44.0, "floor_gb": 14.0,
+            "opened_epoch": now - 300.0, "opened_iso": tw._drain_iso(now - 300.0),
+            "long_run_ids_at_open": ["l1"],
+        },
+        "cooldown_until_epoch": 0.0,
+        "tracker": {},
+    })
+    tw._drain_run_postprocess(
+        root, "T1", {"claimed": False},
+        now_epoch=now, free_ram_gb=12.0, host_total_gb=80.0, multisym_ids=_FZ,
+    )
+    after = tw._load_drain_state(root)
+    assert after["active"] is not None
+    assert after["active"]["item_id"] == "idx"
+    assert not any(
+        e.get("event") == "drain_window_abandoned"
         for e in _emitted_events(capsys)
     )
 

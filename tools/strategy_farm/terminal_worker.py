@@ -1566,22 +1566,24 @@ def _drain_candidate_is_winnable(
     candidate: dict[str, Any],
     *,
     free_ram_gb: float,
-    long_run_active: bool,
     releasable_short_ram_gb: float,
 ) -> tuple[bool, str]:
     """Pure predicate: may this qualifying candidate ARM a drain right now?
 
     A drain only pays off if a fully drained fleet reaches the armed row's need
-    within the bounded window.  Two conditions on top of the qualifying
-    predicate (which already enforced need <= host total - baseline, condition
-    3): (1) no long-run row is active -- they hold RAM for hours, past the
-    window; and (2) current free RAM plus the RAM the active short rows will
-    release once the drain parks the fleet covers the armed row's need under the
-    reduced drained floor (reservation + DRAIN_ARMED_ROW_FLOOR_GB).  Returns
-    (winnable, reason); reason is the refusal tag when not winnable.
+    within the bounded window.  One arithmetic condition on top of the
+    qualifying predicate (which already enforced need <= host total - baseline):
+    current free RAM plus the RAM the active SHORT rows will release once the
+    drain parks the fleet covers the armed row's need under the reduced drained
+    floor (reservation + DRAIN_ARMED_ROW_FLOOR_GB).  Long-run rows (Q07+, news)
+    are simply NOT counted as releasable -- they hold RAM for hours and their
+    working sets are already excluded from free_ram_gb -- so a long run does not
+    contribute headroom, but it no longer refuses the arm outright: a heavy row
+    is arithmetically winnable beside a long run whenever free RAM plus the
+    short rows already cover its reduced need (2026-09-03, CEO; a new long run
+    that appears AFTER the drain opens still abandons it, see _drain_abandon).
+    Returns (winnable, reason); reason is the refusal tag when not winnable.
     """
-    if long_run_active:
-        return False, "long_run_row_active"
     try:
         reservation = float(candidate.get("reservation_gb"))
         free_now = float(free_ram_gb)
@@ -1684,12 +1686,16 @@ def _drain_evaluate(
     qualifying_candidate: dict[str, Any] | None,
     winnable: bool = True,
     winnable_reason: str = "",
+    long_run_ids_active: list[str] | None = None,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     """Pure open/expire/track state transition.  Returns (new_state, events).
 
     Only ONE heavy row holds a drain at a time; a drain opens only after the
     candidate has been continuously tracked for DRAIN_WINDOW_TRIGGER_MIN and no
-    cooldown is in force, and expires after DRAIN_WINDOW_MAX_MIN.
+    cooldown is in force, and expires after DRAIN_WINDOW_MAX_MIN.  When a drain
+    opens it records ``long_run_ids_active`` as ``long_run_ids_at_open`` so a
+    NEW long-run row appearing later (one not already running here) can abandon
+    it while the long runs already active at open time do not.
     """
     events: list[dict[str, Any]] = []
     active = state.get("active") if isinstance(state.get("active"), dict) else None
@@ -1743,6 +1749,9 @@ def _drain_evaluate(
                     "floor_gb": qualifying_candidate.get("floor_gb"),
                     "opened_epoch": now_epoch,
                     "opened_iso": _drain_iso(now_epoch),
+                    "long_run_ids_at_open": sorted(
+                        str(x) for x in (long_run_ids_active or [])
+                    ),
                 }
                 events.append({
                     "event": "drain_window_open",
@@ -1828,10 +1837,11 @@ def _drain_abandon(
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     """Close an open drain early and set the cooldown.  Returns (state, events).
 
-    Used when an active drain can no longer win -- a long-run row became active
-    (holds RAM for hours), or the armed heavy row was claimed / finished by
-    another terminal -- so the fleet stops refusing short rows at once instead
-    of idling until the max window.
+    Used when an active drain can no longer win -- a NEW long-run row became
+    active after the drain opened (one whose id was not already running at open
+    time; it holds RAM for hours), or the armed heavy row was claimed / finished
+    by another terminal -- so the fleet stops refusing short rows at once
+    instead of idling until the max window.
     """
     active = state.get("active") if isinstance(state.get("active"), dict) else None
     if active is None:
@@ -1895,9 +1905,13 @@ def _drain_active_ram_facts(
     """Read-only fleet-occupancy facts for the drain winnability decision.
 
     Returns three fail-open facts (never raises):
-      * ``long_run_active_other`` -- any ACTIVE row in a long-run phase (Q07,
-        Q08, the news phase, Q09 and later) other than the armed row itself;
-        such a row holds RAM for hours, so the bounded drain cannot win.
+      * ``long_run_active_ids`` -- the ids of the ACTIVE rows in a long-run
+        phase (Q07, Q08, the news phase, Q09 and later) other than the armed row
+        itself; such a row holds RAM for hours.  Arming no longer refuses while
+        one runs (arithmetic winnability decides that, and long-run working sets
+        are already excluded from free RAM); the id set is captured at open time
+        so a NEW long-run id appearing later abandons the drain while the ids
+        already running at open time do not.
       * ``releasable_short_ram_gb`` -- summed physical-RAM reservation of the
         ACTIVE short rows the drain refuses new copies of (Q02-Q06, OPT_CENSUS),
         read through the unchanged _ram_reservation_for_candidate (measured
@@ -1913,7 +1927,7 @@ def _drain_active_ram_facts(
     """
     armed = str(armed_item_id) if armed_item_id is not None else None
     facts: dict[str, Any] = {
-        "long_run_active_other": False,
+        "long_run_active_ids": [],
         "releasable_short_ram_gb": 0.0,
         "armed_row_pending": True,
     }
@@ -1928,7 +1942,7 @@ def _drain_active_ram_facts(
                 phase = str(_work_item_value(row, "phase", "") or "").upper()
                 if _drain_phase_is_long_run(phase):
                     if armed is None or rid != armed:
-                        facts["long_run_active_other"] = True
+                        facts["long_run_active_ids"].append(rid)
                     continue
                 # A short row counts as releasable only if the drain refuses new
                 # copies of it (Q02-Q06, OPT_CENSUS); COMPILE_EA and the armed
@@ -1958,7 +1972,7 @@ def _drain_active_ram_facts(
                 )
     except Exception:
         return {
-            "long_run_active_other": False,
+            "long_run_active_ids": [],
             "releasable_short_ram_gb": 0.0,
             "armed_row_pending": True,
         }
@@ -2001,17 +2015,32 @@ def _drain_run_postprocess(
             facts = _drain_active_ram_facts(
                 root, multisym_ids=multisym_ids, armed_item_id=active_item_id
             )
+            # A drain may now ARM beside pre-existing long-run rows (arithmetic
+            # winnability decides that), so an OPEN drain is abandoned only when
+            # a NEW long-run row -- one whose id was not already running when the
+            # drain opened -- appears; the long runs already active at open time
+            # do not abandon it.
+            opened_long_run_ids = (
+                set(active.get("long_run_ids_at_open") or [])
+                if active is not None
+                else set()
+            )
+            new_long_run_active = bool(
+                set(facts["long_run_active_ids"]) - opened_long_run_ids
+            )
             if active is not None and (
-                facts["long_run_active_other"] or not facts["armed_row_pending"]
+                new_long_run_active or not facts["armed_row_pending"]
             ):
-                # WINNABILITY abandon (2026-09-03, CEO): an open drain is closed
-                # the instant it can no longer win -- a long-run row became
-                # active (holds RAM for hours), or the armed heavy row was
-                # claimed / finished by another terminal -- so the fleet resumes
-                # short rows now instead of idling to the max window.
+                # WINNABILITY abandon (2026-09-03, CEO; revised): an open drain
+                # is closed the instant it can no longer win -- a NEW long-run
+                # row became active after it opened (holds RAM for hours), or the
+                # armed heavy row was claimed / finished by another terminal --
+                # so the fleet resumes short rows now instead of idling to the
+                # max window.  Long-run rows already running when the drain
+                # opened do not abandon it: the arm was taken knowing they ran.
                 reason = (
-                    "long_run_row_active"
-                    if facts["long_run_active_other"]
+                    "new_long_run_row_active"
+                    if new_long_run_active
                     else "armed_row_claimed_elsewhere"
                 )
                 new_state, events = _drain_abandon(
@@ -2028,7 +2057,6 @@ def _drain_run_postprocess(
                     winnable, winnable_reason = _drain_candidate_is_winnable(
                         qualifying,
                         free_ram_gb=free_ram_gb,
-                        long_run_active=facts["long_run_active_other"],
                         releasable_short_ram_gb=facts["releasable_short_ram_gb"],
                     )
                 else:
@@ -2039,6 +2067,7 @@ def _drain_run_postprocess(
                     qualifying_candidate=qualifying,
                     winnable=winnable,
                     winnable_reason=winnable_reason,
+                    long_run_ids_active=facts["long_run_active_ids"],
                 )
         if events or new_state != state:
             _write_drain_state_atomic(root, new_state)
