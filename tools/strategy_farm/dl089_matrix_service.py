@@ -995,8 +995,40 @@ def _finalize_from_terminal_ledger(
     final = (driver.get("wf") or {}).get("final_selection") or {"BUY": [], "SELL": []}
     selected_count = len(final.get("BUY", [])) + len(final.get("SELL", []))
     verdict = "OPT_ELIGIBLE" if state == selector.STATE_PATTERN_READY and selected_count else "NO_FILTER_CHANGE"
+    # 2026-09-03 (CEO): the driver's append-only INFRA reruns supersede the
+    # declared cell row and every older rerun of the same cell_key
+    # (driver['reruns'][cell_key] = [rerun ids, newest last]).  Only the
+    # CURRENT row of each cell has to be terminal; the superseded rows keep
+    # their INFRA_FAIL verdicts as evidence in the receipt.  Without this the
+    # Q12 owner stayed pending forever once a program contained one rerun
+    # (QM5_1537/XAGUSD 2026-09-03: declared d110b111 INFRA_FAIL, rerun 1
+    # INFRA_FAIL, rerun 2 MEASURED, driver PATTERN_SELECTION_READY).
+    census_reruns = driver.get("reruns") or {}
+    superseded_ids: set[str] = set()
+    current_by_key: dict[str, str] = {}
+    for key, values in census_reruns.items():
+        ids = [str(value) for value in (values or []) if str(value)]
+        if not ids:
+            continue
+        current_by_key[str(key)] = ids[-1]
+        superseded_ids.update(ids[:-1])
     evidence_rows: list[dict[str, Any]] = []
+    superseded_rows: list[dict[str, Any]] = []
     for row in _matrix_rows(conn, str(q12_row["id"])):
+        row_id = str(row["id"])
+        row_key = str(_payload(row).get("cell_key") or "")
+        current_id = current_by_key.get(row_key)
+        if row_id in superseded_ids or (current_id and row_id != current_id):
+            superseded_rows.append(
+                {
+                    "work_item_id": row_id,
+                    "status": row["status"],
+                    "verdict": row["verdict"],
+                    "cell_key": row_key,
+                    "superseded_by": current_id,
+                }
+            )
+            continue
         path = Path(str(row["evidence_path"] or ""))
         evidence_rows.append(
             {
@@ -1028,6 +1060,7 @@ def _finalize_from_terminal_ledger(
         "ledger_path": str(ledger_path.resolve()),
         "ledger_sha256": _sha256_file(ledger_path),
         "cell_evidence": evidence_rows,
+        "superseded_cell_evidence": superseded_rows,
     }
     if apply:
         census._atomic_write(receipt_path, json.dumps(receipt, indent=2, sort_keys=True) + "\n")

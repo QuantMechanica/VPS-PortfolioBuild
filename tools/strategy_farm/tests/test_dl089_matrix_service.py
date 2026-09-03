@@ -1012,3 +1012,108 @@ def test_finalize_commits_before_the_next_program_takes_its_own_write_lock(
         finally:
             other.close()
     assert (program_dir / "q12_selection_receipt.json").is_file()
+
+
+def test_q12_finalization_resolves_driver_reruns_to_the_current_cell_row(
+    tmp_path: Path,
+) -> None:
+    """2026-09-03: a declared cell that INFRA-failed and was re-enqueued by the
+    driver (append-only reruns, newest last) must be judged on its CURRENT
+    rerun row; the dead declared row and superseded reruns are receipt
+    evidence, not blockers (QM5_1537/XAGUSD stayed pending at
+    PATTERN_SELECTION_READY)."""
+
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    program_dir = tmp_path / "program"
+    program_dir.mkdir()
+    ledger_path = program_dir / "ledger.json"
+    ledger_path.write_text(
+        json.dumps(
+            {
+                "driver": {
+                    "state": service.selector.STATE_PATTERN_READY,
+                    "wf": {"final_selection": {"BUY": ["buy_001"], "SELL": []}},
+                    "reruns": {"P:2021:buy_048": ["rerun-1", "rerun-2"]},
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    measured = tmp_path / "measured.json"
+    measured.write_text("{}\n", encoding="utf-8")
+    now = farmctl.utc_now()
+    common = {"q12_work_item_id": "q12-owner"}
+    with farmctl.connect(root) as conn:
+        for values in (
+            ("q12-owner", "analytic", "Q12", "QM5_PARENT", "XAGUSD.DWX", "pending", None, None, "{}"),
+            ("cell-ok", "backtest", "OPT_CENSUS", "QM5_OPT", "XAGUSD.DWX", "done", "MEASURED", str(measured),
+             json.dumps({**common, "cell_key": "P:2020:buy_001"})),
+            ("declared-dead", "backtest", "OPT_CENSUS", "QM5_OPT", "XAGUSD.DWX", "done", "INFRA_FAIL", "EVIDENCE_UNAVAILABLE:test",
+             json.dumps({**common, "cell_key": "P:2021:buy_048"})),
+            ("rerun-1", "backtest", "OPT_CENSUS", "QM5_OPT", "XAGUSD.DWX", "failed", "INFRA_FAIL", "EVIDENCE_UNAVAILABLE:test",
+             json.dumps({**common, "cell_key": "P:2021:buy_048", "append_only_rerun_of": "declared-dead"})),
+            ("rerun-2", "backtest", "OPT_CENSUS", "QM5_OPT", "XAGUSD.DWX", "done", "MEASURED", str(measured),
+             json.dumps({**common, "cell_key": "P:2021:buy_048", "append_only_rerun_of": "declared-dead"})),
+        ):
+            conn.execute(
+                """
+                INSERT INTO work_items(
+                  id,kind,phase,ea_id,symbol,setfile_path,status,verdict,evidence_path,
+                  payload_json,created_at,updated_at
+                ) VALUES(?,?,?,?,?,'x.set',?,?,?,?,?,?)
+                """,
+                (*values, now, now),
+            )
+        q12 = conn.execute("SELECT * FROM work_items WHERE id='q12-owner'").fetchone()
+        result = service._finalize_from_terminal_ledger(
+            conn, q12_row=q12, ledger_path=ledger_path, program_dir=program_dir, apply=True,
+        )
+        conn.commit()
+        q12_after = conn.execute("SELECT status,verdict FROM work_items WHERE id='q12-owner'").fetchone()
+
+    assert result is not None
+    assert result["verdict"] == "OPT_ELIGIBLE"
+    assert tuple(q12_after) == ("done", "OPT_ELIGIBLE")
+    receipt = json.loads((program_dir / "q12_selection_receipt.json").read_text(encoding="utf-8"))
+    assert {row["work_item_id"] for row in receipt["cell_evidence"]} == {"cell-ok", "rerun-2"}
+    assert {row["work_item_id"] for row in receipt["superseded_cell_evidence"]} == {"declared-dead", "rerun-1"}
+    assert all(row["superseded_by"] == "rerun-2" for row in receipt["superseded_cell_evidence"])
+
+
+def test_q12_finalization_still_waits_while_the_current_rerun_is_open(tmp_path: Path) -> None:
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    program_dir = tmp_path / "program"
+    program_dir.mkdir()
+    ledger_path = program_dir / "ledger.json"
+    ledger_path.write_text(
+        json.dumps({"driver": {"state": service.selector.STATE_PATTERN_READY,
+                               "wf": {"final_selection": {"BUY": [], "SELL": []}},
+                               "reruns": {"P:2021:buy_048": ["rerun-1"]}}}),
+        encoding="utf-8",
+    )
+    now = farmctl.utc_now()
+    common = {"q12_work_item_id": "q12-owner"}
+    with farmctl.connect(root) as conn:
+        for values in (
+            ("q12-owner", "analytic", "Q12", "QM5_PARENT", "XAGUSD.DWX", "pending", None, None, "{}"),
+            ("declared-dead", "backtest", "OPT_CENSUS", "QM5_OPT", "XAGUSD.DWX", "done", "INFRA_FAIL", "EVIDENCE_UNAVAILABLE:test",
+             json.dumps({**common, "cell_key": "P:2021:buy_048"})),
+            ("rerun-1", "backtest", "OPT_CENSUS", "QM5_OPT", "XAGUSD.DWX", "pending", None, None,
+             json.dumps({**common, "cell_key": "P:2021:buy_048", "append_only_rerun_of": "declared-dead"})),
+        ):
+            conn.execute(
+                """
+                INSERT INTO work_items(
+                  id,kind,phase,ea_id,symbol,setfile_path,status,verdict,evidence_path,
+                  payload_json,created_at,updated_at
+                ) VALUES(?,?,?,?,?,'x.set',?,?,?,?,?,?)
+                """,
+                (*values, now, now),
+            )
+        q12 = conn.execute("SELECT * FROM work_items WHERE id='q12-owner'").fetchone()
+        result = service._finalize_from_terminal_ledger(
+            conn, q12_row=q12, ledger_path=ledger_path, program_dir=program_dir, apply=True,
+        )
+    assert result is None
