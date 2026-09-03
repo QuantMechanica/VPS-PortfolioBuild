@@ -328,3 +328,25 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   97 worker tests green. Reload chunk 18 (idle workers first) started 15:20Z. T7 held a census cell
   (20266 program, `c25808a8`) for 107 min with a 0.3 GB tester and no run log — stuck launch; worker + tester
   restarted 15:19Z (the cell re-enters via the driver's INFRA rerun).
+- 15:27Z: test-fixture repair `c71d9ecbc` (test_longrun_scheduling_policy pins `_free_ram_gb`; test_dl089_matrix_service
+  sets DL089_PROGRAM_SLOTS=8 + pinned terminals); 41 passed.
+- 15:33Z–15:39Z: **batch 2 executed** (Opus workflow wf_3082f98f-2a8, 4/4 verdicts ok). Parents QM5_10815/GDAXI and
+  QM5_12580/AUDUSD repaired for the build gate (`a8badb90cb`, MAE hook only, same recipe as batch 1); DL-089 siblings
+  QM5_41334 / QM5_41335 built (`35671df4b8`; 41335 reduced to a single-carrier slot table `b684a794b0` + `1d1f5c016a`
+  because the governed allocator registers card symbols from slot 0 and has no slot-map declaration); magics
+  413340000 (`f8ea22e549`) and 413350000 (`85515487d1`) allocated serially; four COMPILE_EA rows enqueued and released
+  by id — 10815 `08aea615` COMPILE_OK 15:38Z, 12580 `2b49b806` COMPILE_OK 15:38Z, 41334 `85dafae7` COMPILE_OK,
+  41335 `08440065` pending. New identities re-enter at Q02 via `seed-fresh-q02` (pre-binding sources; the rerun form
+  refuses PASS targets): 10815 `bd12175c`, 12580 `d53328e2`, both priority-tracked (claim positions 2 and 3).
+  Old-identity zombies to supersede when the chains arrive: 10815 Q10_NEWS `57d8bacd`; 12580 Q09 `a2431935` + Q10_NEWS `aece4bcc`.
+- 15:40Z: five verified preparation packets committed (`54162ed052`): path-to-25 ETA model (structural ceiling 24 =
+  5 + 19 Q11-contiguous; pair 25 needs a climber from the Q09 pool, modelled as 10700/XAUUSD; S0 dates 10→04.09,
+  15→05/06.09, 20→07.09, 25→09.09, optimistic bias), V1(b) packet (only 10911 has a runnable governed command),
+  vein-1 requeue packet (no farmctl path re-enters the 150 false INVALIDs → affordance needed), 20085 park packet
+  (hold `0bc6a5bc` WS30 at the 21:35Z Auffangregel; let `19d3d8e5` run out), news-gate forensics (34 real expansions
+  of 85 REVIEW rows; 38 cell_execution_failed = cheap reruns; proposals A GELB / B+C GRÜN / D ROT).
+- 15:43Z: live check — 28 of 30 pending Q12 rows carry `Q12_DL089_MATRIX_WORKER_ROLLOUT_PENDING` incl. the running
+  21507 program: the hold does not gate the census service; K=8 program slots do.
+- 15:50Z: Opus workflows launched — runbook revision (wf_6be351fc-4b6: FTMO claim refuted, builder already does
+  aggregate control), proposals B + C (wf_3d2098c6-6f4). 17 legacy unheld COMPILE_EA rows from 21.–24.08. (41097,
+  11465, 9914, 13128 …) sit pending with 0 attempts and no release binding — queue-hygiene item, not on the 25-path.
