@@ -301,3 +301,7 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   `ram_low_pause` (4 testers = 44 GB, 6.8 GB free) — a governed compile needs < 1 GB. `ef1c4dbbff`: under the
   RAM latch a worker may claim COMPILE_EA rows only (floor 3 GB), mirroring the census bypass; reload chunk 17
   (paused workers first) started 12:36Z. Reload chunk 16 (6/10) superseded.
+- 12:38Z–12:45Z: the compile-only bypass worked on first contact (T1 logged `ram_low_compile_only` ×3 right
+  after its reload): **41331 / 41332 / 41333 COMPILE_OK** 12:38Z–12:39Z (the two released August siblings 41175
+  and 41177 compiled too). The matrix service seeded 41331's Q02 census prerequisite `c0cc02a5` at 12:38Z and T2
+  claimed it immediately; 41332/41333 seeds follow with their Q12 rows. Router task 262f7959 → APPROVED.
