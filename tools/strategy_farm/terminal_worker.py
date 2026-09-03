@@ -237,6 +237,24 @@ SINGLE_INDEX_TICK_COMMIT_RESERVATION_GB = 44.0
 # class. Any multisymbol census declaration retains its heavier class.
 RAM_CLASS_OPT_CENSUS_CELL = "opt_census_cell"
 OPT_CENSUS_RAM_RESERVATION_GB = 4.0
+# 2026-09-03 (CEO, infra repair under the standing authorization): a DL-089
+# census cell reserves 4 GB but was admitted only while free RAM minus that
+# reservation still cleared the full 14 GB backtest floor, i.e. at >= 18 GB
+# free.  Measured today: with three or four 8-14 GB testers running, free RAM
+# sits at 12-18 GB for hours, every worker reports no_pending_claimable and
+# the census (the counter's critical path) crawls at 2-10 cells / 10 min.
+# Census cells now need 8 GB left after their reservation (claimable from
+# 12 GB free); the 2026-09-02 crash class happened at a 6/12 GB GLOBAL guard
+# with 8 GB backtests, which keep the full 14/20 GB latch.  Rollback: set the
+# floor back to RAM_MIN_FREE_GB and idle-reload the workers.
+OPT_CENSUS_POST_RESERVATION_FLOOR_GB = 8.0
+
+
+def _ram_floor_for_class(ram_class: str) -> float:
+    """Minimum free RAM that must remain AFTER a candidate's reservation."""
+    if ram_class == RAM_CLASS_OPT_CENSUS_CELL:
+        return OPT_CENSUS_POST_RESERVATION_FLOOR_GB
+    return RAM_MIN_FREE_GB
 # DWX index universe seen in farm dispatch; extend with evidence, not guesses.
 INDEX_TICK_SYMBOL_BASES = frozenset({"GDAXI", "SP500", "WS30", "NDX", "UK100"})
 # Legacy source-scanned EAs do not carry basket_symbols in their old work-item
@@ -2177,7 +2195,7 @@ def _ram_latch_opt_census_bypass_available(root: Path, free_ram_gb: float) -> bo
     lane while large jobs drain. Any DB/registry ambiguity fails closed.
     """
 
-    if free_ram_gb - OPT_CENSUS_RAM_RESERVATION_GB < RAM_MIN_FREE_GB:
+    if free_ram_gb - OPT_CENSUS_RAM_RESERVATION_GB < OPT_CENSUS_POST_RESERVATION_FLOOR_GB:
         return False
     db_path = root / farmctl.DB_REL
     if not db_path.is_file():
@@ -2210,7 +2228,9 @@ def _ram_latch_opt_census_bypass_available(root: Path, free_ram_gb: float) -> bo
             _, reservation_gb = _ram_reservation_for_candidate(
                 row, payload, multisymbol
             )
-            if free_ram_gb - reservation_gb >= RAM_MIN_FREE_GB:
+            if free_ram_gb - reservation_gb >= _ram_floor_for_class(
+                RAM_CLASS_OPT_CENSUS_CELL if not multisymbol else ""
+            ):
                 return True
         return False
     except (OSError, sqlite3.Error, MultisymbolRegistryUnavailable):
@@ -2970,7 +2990,8 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                     post_reservation_free_gb = (
                         multisym_free_ram_snapshot - ram_reservation_gb
                     )
-                    if post_reservation_free_gb < RAM_MIN_FREE_GB and not (
+                    ram_floor_gb = _ram_floor_for_class(ram_class)
+                    if post_reservation_free_gb < ram_floor_gb and not (
                         _RAM_LATCH_COMPILE_ONLY
                         and str(item["phase"]).upper() == farmctl.COMPILE_EA_PHASE
                     ):
@@ -2983,7 +3004,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                             "post_reservation_free_gb": round(
                                 post_reservation_free_gb, 1
                             ),
-                            "threshold_gb": RAM_MIN_FREE_GB,
+                            "threshold_gb": ram_floor_gb,
                         })
                         continue
                     # Capacity, duplicate, and resource checks above are entirely

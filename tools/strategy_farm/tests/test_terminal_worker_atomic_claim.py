@@ -324,10 +324,10 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                 phase="OPT_CENSUS",
             )
             self.assertFalse(
-                terminal_worker._ram_latch_opt_census_bypass_available(root, 17.9)
+                terminal_worker._ram_latch_opt_census_bypass_available(root, 11.9)
             )
             self.assertTrue(
-                terminal_worker._ram_latch_opt_census_bypass_available(root, 18.0)
+                terminal_worker._ram_latch_opt_census_bypass_available(root, 12.0)
             )
 
     def test_running_terminal_probe_precedes_claim_write_transaction(self) -> None:
@@ -3849,3 +3849,11 @@ def test_dl089_prerequisite_seed_uses_census_ram_class():
     assert terminal_worker._ram_reservation_for_candidate(seed, seed_payload, True) != (
         terminal_worker.RAM_CLASS_OPT_CENSUS_CELL, 4.0
     )
+
+
+def test_ram_floor_for_class_census_cells_keep_eight_gb_after_reservation() -> None:
+    """2026-09-03: census cells (4 GB) are admitted from 12 GB free; every other
+    class keeps the full RAM_MIN_FREE_GB floor after its reservation."""
+    assert terminal_worker._ram_floor_for_class(terminal_worker.RAM_CLASS_OPT_CENSUS_CELL) == 8.0
+    assert terminal_worker._ram_floor_for_class("ordinary") == terminal_worker.RAM_MIN_FREE_GB
+    assert terminal_worker._ram_floor_for_class("") == terminal_worker.RAM_MIN_FREE_GB
