@@ -489,3 +489,11 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   Q10_NEWS incl. the 10700 expansion, two Q07, one Q04), 10.9 GB free → census latched (10 cells/10 min), CPU 52 %,
   C: 88.7 GB, pump 21:33Z, guardian alive, T_Live journal 21:04Z. 12580 Q03 `9cac4667`, 10911 Q05 `57aad04d`,
   10815 Q02 `bd12175c` pending on RAM. Reload chunk 21 8/10 (T1/T4 hold the news runs).
+- 21:57Z: NEAR-OOM — free RAM 1.86 GB (available 1,854 MB): five testers admitted within four minutes (21:48–21:52Z)
+  on flat 8 GB reservations while their working sets grew to 15.0 GB (10978 Q07 USDJPY H4), 11.6 GB (1634 Q05 XAUUSD),
+  8.2 + 8.2 GB (news 41219, 10700 expansion), 5.8 GB (11015 Q07) = ~49 GB + 10 GB baseline. Kill rule (< 1.5 GB) not
+  reached; re-measured after 45 s: 7.1 GB (10978 finished 21:59Z), 21.7 GB by 22:02Z → HOLD, nothing killed. The
+  tester ledger recorded the run (peak 15.35 GB vs 8 GB flat) and the expectations file now carries
+  fx_major|H4|backtest n=5 max 15.3 GB → the measured reservation applies from here (max(flat, measured)); other
+  heavy classes self-calibrate after three samples. Mechanism: reservations decay faster than tester working sets
+  ramp (history load takes minutes), so a burst of admissions overcommits — the ledger closes this per class.
