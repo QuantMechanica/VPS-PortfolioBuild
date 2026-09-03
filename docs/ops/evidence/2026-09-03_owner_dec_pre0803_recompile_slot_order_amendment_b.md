@@ -186,3 +186,5 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   steps enqueued (`chain_step2.py`): 11910 Q05 `063eec00`, 12710 Q05 `84125a3a`, 10700 Q04 `4d8e9c24`.
 - 05:24Z: 12710 Q05 `84125a3a` PASS → Q06 `9da6362d` enqueued. 11910 Q05 `063eec00` (T1) and 10700 Q04
   `4d8e9c24` (T6) running.
+- 05:30Z–05:35Z: 11910 Q05 `063eec00` PASS → Q06 `dbb6fc97` (T1); 12710 Q06 `9da6362d` PASS → Q07
+  `fad536b4`; 10700 Q04 `4d8e9c24` PASS → Q05 `c44015fa`.
