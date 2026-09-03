@@ -240,3 +240,11 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   (12710 on T10 since 07:57Z). 10700 Q07 `21317bcc` PASS 08:22Z → Q08 `ce371d25` enqueued (rerun of fb35a79a).
   RAM 6.7 GB free with two 11 GB Q09/recovery testers (T7, T9) plus three news runs — above the 1.5 GB floor,
   claim guard active; no intervention.
+- 08:36Z–08:45Z: 12710 Q10_NEWS `9a2e9380` (8-cell contract v3) ended **REVIEW_REQUIRED** with reason code
+  `expanded_7x4_matrix_required`: material_effect=true (delta drawdown / net R / profit factor) — verified on the
+  cell summaries: policy modes m2–m5 differ from control (m5: 16 trades / net −1,054 vs 23 / +3,153 in the first
+  window), so the expansion is a legitimate adjudication, not an artefact (`max_affected_entries=0` only counts
+  blocked entries). The news-expansions stage minted the expanded parent `58d84268`
+  (force_expanded_news_matrix, 105 further cells) at 08:38Z; fleet cap for expanded parents = 2 (the other
+  pending one is 11422/USDCAD from 2026-08-23). 11910 Q10_NEWS `bdae4b44` still running on T1; 10700 Q08
+  `ce371d25` on T2.
