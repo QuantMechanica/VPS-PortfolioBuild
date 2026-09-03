@@ -26308,6 +26308,535 @@ def _enqueue_q02_append_only_exact_row_rerun(
     }
 
 
+_FALSE_INVALID_SETFILE_REQUEUE_CLASS = "T2_SETFILE_PATH_PROVENANCE_FALSE_INVALID"
+_FALSE_INVALID_SETFILE_REQUEUE_ENQUEUED_BY = "farmctl.requeue-false-invalid-setfile"
+
+
+def _row_to_dict(row: sqlite3.Row | None) -> dict[str, Any] | None:
+    if row is None:
+        return None
+    return {key: row[key] for key in row.keys()}
+
+
+def _false_invalid_setfile_requeue_precondition(
+    facts: dict[str, Any],
+) -> dict[str, Any]:
+    """Pure gate for the false-INVALID universe-expansion setfile-path requeue.
+
+    Every value in ``facts`` is resolved by the caller (no I/O happens here), so
+    the packet's five preconditions
+    (docs/ops/evidence/2026-09-03_vein1_false_invalid_requeue_packet.md, 2.4)
+    can be unit-tested in isolation.  The removed source setfile bytes are never
+    read: setfile equivalence is proven by SHA-256 of the *canonical* setfile
+    against the preserved row's ``expected_setfile_sha256``.
+
+    Returns ``{"ok": True}`` when one append-only successor may be inserted,
+    else ``{"ok": False, "reason": <machine-readable>, ...}``.
+    """
+    # 1. Source row is a terminal Q02 false-INVALID universe-expansion row.
+    if not facts.get("source_exists"):
+        return {"ok": False, "reason": "false_invalid_requeue_source_missing"}
+    source_ok = bool(
+        facts.get("kind") == "backtest"
+        and facts.get("phase") in {"Q02", "P2"}
+        and facts.get("status") == "failed"
+        and facts.get("verdict") == "INVALID"
+        and str(facts.get("verdict_reason") or "").strip() == "setfile_missing"
+        and facts.get("universe_expansion") is True
+        and not facts.get("claimed")
+    )
+    if not source_ok:
+        return {
+            "ok": False,
+            "reason": "false_invalid_requeue_source_not_q02_invalid_setfile_missing",
+            "kind": facts.get("kind"),
+            "phase": facts.get("phase"),
+            "status": facts.get("status"),
+            "verdict": facts.get("verdict"),
+            "verdict_reason": facts.get("verdict_reason"),
+            "universe_expansion": facts.get("universe_expansion"),
+        }
+    # 2. Source setfile path is a removed-worktree preset bound to the exact EA dir.
+    if not facts.get("setfile_bound_to_ea_dir"):
+        return {
+            "ok": False,
+            "reason": "false_invalid_requeue_setfile_not_bound_to_exact_ea_directory",
+        }
+    if not facts.get("setfile_is_removed_worktree"):
+        return {
+            "ok": False,
+            "reason": "false_invalid_requeue_setfile_path_not_removed_worktree",
+        }
+    # 3. Operator-bound current EX5 is a real digest.
+    if not facts.get("expected_current_ex5_valid"):
+        return {
+            "ok": False,
+            "reason": "expected_current_ex5_sha256_required_or_invalid",
+        }
+    # 4. Binary identity unchanged: canonical == operator-bound == preserved binding.
+    if not facts.get("canonical_ex5_present"):
+        return {"ok": False, "reason": "false_invalid_requeue_canonical_ex5_missing"}
+    canonical_ex5 = str(facts.get("canonical_ex5_sha256") or "").lower()
+    expected_current_ex5 = str(facts.get("expected_current_ex5_sha256") or "").lower()
+    source_ex5 = str(facts.get("source_expected_ex5_sha256") or "").lower()
+    if expected_current_ex5 != canonical_ex5:
+        return {
+            "ok": False,
+            "reason": "false_invalid_requeue_current_ex5_hash_mismatch",
+            "expected_sha256": expected_current_ex5,
+            "actual_sha256": canonical_ex5,
+        }
+    if source_ex5 != canonical_ex5:
+        return {
+            "ok": False,
+            "reason": "false_invalid_requeue_source_ex5_binding_mismatch",
+            "expected_sha256": source_ex5,
+            "actual_sha256": canonical_ex5,
+        }
+    # 5a. Canonical setfile present and byte-identical to the generated preset.
+    if not facts.get("canonical_setfile_present"):
+        return {
+            "ok": False,
+            "reason": "false_invalid_requeue_canonical_setfile_missing",
+        }
+    source_setfile = str(facts.get("source_expected_setfile_sha256") or "").lower()
+    if not re.fullmatch(r"[0-9a-f]{64}", source_setfile):
+        return {
+            "ok": False,
+            "reason": "false_invalid_requeue_source_setfile_binding_missing_or_invalid",
+            "value": source_setfile,
+        }
+    canonical_setfile = str(facts.get("canonical_setfile_sha256") or "").lower()
+    if canonical_setfile != source_setfile:
+        return {
+            "ok": False,
+            "reason": "false_invalid_requeue_canonical_setfile_sha_mismatch",
+            "expected_sha256": source_setfile,
+            "actual_sha256": canonical_setfile,
+        }
+    # 5b. Fixed-risk contract on the canonical setfile (RISK_FIXED>0, RISK_PERCENT=0).
+    if not facts.get("risk_contract_ok"):
+        detail = dict(facts.get("risk_contract_detail") or {})
+        detail.setdefault("reason", "fixed_risk_contract_missing_or_invalid")
+        detail["ok"] = False
+        return detail
+    # 5c. Native Q02 PASS parent still valid; exactly one active magic row.
+    if not facts.get("native_pass_valid"):
+        return {
+            "ok": False,
+            "reason": "false_invalid_requeue_native_pass_parent_invalid",
+        }
+    if int(facts.get("active_magic_row_count") or 0) != 1:
+        return {
+            "ok": False,
+            "reason": "false_invalid_requeue_active_magic_row_count_invalid",
+            "active_magic_rows": int(facts.get("active_magic_row_count") or 0),
+        }
+    # 6. No existing successor already created for this exact source row.
+    successor = facts.get("existing_successor_row")
+    if successor:
+        return {
+            "ok": False,
+            "reason": "false_invalid_requeue_successor_already_exists",
+            "existing_work_item_id": successor.get("id"),
+            "existing_status": successor.get("status"),
+            "existing_verdict": successor.get("verdict"),
+        }
+    # 7. No pending/active or newer terminal row for the (ea, symbol, phase) pair.
+    open_row = facts.get("pair_open_row")
+    if open_row:
+        return {
+            "ok": False,
+            "reason": "already_pending_or_active",
+            "existing_work_item_id": open_row.get("id"),
+            "existing_status": open_row.get("status"),
+        }
+    newer_terminal = facts.get("pair_newer_terminal_row")
+    if newer_terminal:
+        return {
+            "ok": False,
+            "reason": "false_invalid_requeue_pair_has_newer_terminal",
+            "existing_work_item_id": newer_terminal.get("id"),
+            "existing_status": newer_terminal.get("status"),
+            "existing_verdict": newer_terminal.get("verdict"),
+        }
+    return {"ok": True}
+
+
+def enqueue_false_invalid_setfile_requeue(
+    root: Path,
+    work_item_id: str,
+    *,
+    requal_reason: str | None,
+    expected_current_ex5_sha256: str | None,
+    apply: bool = False,
+) -> dict[str, Any]:
+    """Append one Q02 successor for a false-INVALID universe-expansion row.
+
+    Class ``T2_SETFILE_PATH_PROVENANCE_FALSE_INVALID``
+    (docs/ops/evidence/2026-09-03_vein1_false_invalid_requeue_packet.md, 2.4):
+    150 terminal Q02 rows were stamped INVALID / ``setfile_missing`` only
+    because their ``setfile_path`` pointed at the since-removed worktree
+    ``C:/QM/worktrees/rb-universe-expansion``.  The binary is unchanged and the
+    canonical repo setfile is byte-identical to the generated preset, yet every
+    existing enqueue path is fail-closed for the class.  This guarded path
+    inserts one append-only successor bound to the CANONICAL setfile when all
+    five packet preconditions hold; the terminal INVALID row is preserved.
+
+    The removed source setfile is never read - equivalence is proven by SHA-256
+    of the canonical setfile against the preserved row's
+    ``expected_setfile_sha256``.  Default is a read-only dry run (the live DB is
+    opened ``?mode=ro``); ``apply=True`` performs the single insert inside one
+    ``BEGIN IMMEDIATE`` transaction and is refused unless every precondition
+    holds.
+    """
+    phase = "Q02"
+    source_id = str(work_item_id or "").strip()
+    reason = str(requal_reason or "").strip()
+    expected_ex5 = str(expected_current_ex5_sha256 or "").strip().lower()
+    if not source_id:
+        return {
+            "enqueued": False,
+            "phase": phase,
+            "dry_run": not apply,
+            "reason": "false_invalid_requeue_requires_work_item_id",
+        }
+    if not reason:
+        return {
+            "enqueued": False,
+            "phase": phase,
+            "dry_run": not apply,
+            "reason": "false_invalid_requeue_requires_requal_reason",
+        }
+    expected_ex5_valid = bool(re.fullmatch(r"[0-9a-f]{64}", expected_ex5))
+
+    if apply:
+        init_db(root)
+        conn = connect(root)
+    else:
+        conn = sqlite3.connect(
+            f"file:{db_path(root).as_posix()}?mode=ro", uri=True
+        )
+        conn.row_factory = sqlite3.Row
+    try:
+        if apply:
+            conn.execute("BEGIN IMMEDIATE")
+        source = conn.execute(
+            "SELECT * FROM work_items WHERE id=?", (source_id,)
+        ).fetchone()
+        if source is None:
+            return {
+                "enqueued": False,
+                "phase": phase,
+                "dry_run": not apply,
+                "reason": "false_invalid_requeue_source_missing",
+                "source_work_item_id": source_id,
+            }
+        ea_id = str(source["ea_id"])
+        symbol = str(source["symbol"])
+        try:
+            source_payload = json.loads(source["payload_json"] or "{}")
+        except json.JSONDecodeError:
+            source_payload = None
+        if not isinstance(source_payload, dict):
+            return {
+                "enqueued": False,
+                "ea_id": ea_id,
+                "phase": phase,
+                "dry_run": not apply,
+                "reason": "false_invalid_requeue_source_payload_invalid",
+                "source_work_item_id": source_id,
+            }
+
+        # Resolve the canonical (live-repo) EA directory from the exact dir name
+        # embedded in the preserved row's setfile path.  The dead worktree bytes
+        # are never touched: only the canonical repo copy is stat'd and hashed.
+        source_setfile = Path(str(source["setfile_path"]))
+        setfile_is_removed_worktree = any(
+            part.casefold() == "worktrees" for part in source_setfile.parts
+        )
+        setfile_bound_to_ea_dir = bool(
+            source_setfile.parent.name.lower() == "sets"
+            and source_setfile.parent.parent.name.startswith(f"{ea_id}_")
+        )
+        canonical_setfile_path: Path | None = None
+        canonical_ex5_path: Path | None = None
+        if setfile_bound_to_ea_dir:
+            ea_dir_name = source_setfile.parent.parent.name
+            canonical_ea_dir = REPO_ROOT / "framework" / "EAs" / ea_dir_name
+            canonical_setfile_path = canonical_ea_dir / "sets" / source_setfile.name
+            canonical_ex5_path = canonical_ea_dir / f"{ea_dir_name}.ex5"
+        canonical_setfile_present = bool(
+            canonical_setfile_path is not None and canonical_setfile_path.is_file()
+        )
+        canonical_ex5_present = bool(
+            canonical_ex5_path is not None and canonical_ex5_path.is_file()
+        )
+        canonical_setfile_sha256 = (
+            _sha256_file(canonical_setfile_path)
+            if canonical_setfile_present and canonical_setfile_path is not None
+            else None
+        )
+        canonical_ex5_sha256 = (
+            _sha256_file(canonical_ex5_path)
+            if canonical_ex5_present and canonical_ex5_path is not None
+            else None
+        )
+        if canonical_setfile_present and canonical_setfile_path is not None:
+            risk_ok, risk_detail = _q02_fixed_risk_contract(
+                str(canonical_setfile_path)
+            )
+        else:
+            risk_ok, risk_detail = False, {
+                "reason": "false_invalid_requeue_canonical_setfile_missing",
+            }
+
+        # Native Q02 PASS parent still valid?
+        native_pass_id = str(
+            source_payload.get("native_q02_pass_work_item_id") or ""
+        ).strip()
+        native_pass_valid = False
+        if native_pass_id:
+            native = conn.execute(
+                "SELECT id FROM work_items WHERE id=? AND ea_id=? "
+                "AND phase IN ('Q02','P2') AND status='done' AND verdict='PASS'",
+                (native_pass_id, ea_id),
+            ).fetchone()
+            native_pass_valid = native is not None
+
+        # Exactly one active magic row for (ea_id, symbol)?
+        numeric_id = _ea_numeric_id(ea_id)
+        active_magic_row_count = len([
+            row
+            for row in _read_csv_dicts_if_exists(
+                REPO_ROOT / "framework" / "registry" / "magic_numbers.csv"
+            )
+            if str(row.get("ea_id") or "").strip() == str(numeric_id)
+            and str(row.get("symbol") or "").strip().upper() == symbol.upper()
+            and str(row.get("status") or "").strip().lower() == "active"
+        ])
+
+        # Existing successor already created for this exact source row?
+        existing_successor = conn.execute(
+            """
+            SELECT id, status, verdict FROM work_items
+            WHERE ea_id=? AND phase IN ('Q02','P2') AND symbol=?
+              AND json_extract(payload_json, '$.append_only_rerun_of')=?
+              AND json_extract(payload_json, '$.requeue_class')=?
+              AND NOT EXISTS (
+                SELECT 1 FROM work_item_supersedes s
+                WHERE s.work_item_id=work_items.id
+              )
+            ORDER BY created_at ASC LIMIT 1
+            """,
+            (ea_id, symbol, source_id, _FALSE_INVALID_SETFILE_REQUEUE_CLASS),
+        ).fetchone()
+
+        # Any other pending/active row for the pair?
+        pair_open_row = conn.execute(
+            """
+            SELECT id, status FROM work_items
+            WHERE ea_id=? AND phase IN ('Q02','P2') AND symbol=? AND id<>?
+              AND status IN ('pending','active')
+              AND NOT EXISTS (
+                SELECT 1 FROM work_item_supersedes s
+                WHERE s.work_item_id=work_items.id
+              )
+            ORDER BY created_at ASC LIMIT 1
+            """,
+            (ea_id, symbol, source_id),
+        ).fetchone()
+        # Any newer terminal row for the pair (updated_at strictly after source)?
+        pair_newer_terminal_row = conn.execute(
+            """
+            SELECT id, status, verdict FROM work_items
+            WHERE ea_id=? AND phase IN ('Q02','P2') AND symbol=? AND id<>?
+              AND status IN ('done','failed')
+              AND replace(substr(updated_at,1,19),'T',' ') >
+                  replace(substr(?,1,19),'T',' ')
+              AND NOT EXISTS (
+                SELECT 1 FROM work_item_supersedes s
+                WHERE s.work_item_id=work_items.id
+              )
+            ORDER BY updated_at DESC LIMIT 1
+            """,
+            (ea_id, symbol, source_id, str(source["updated_at"])),
+        ).fetchone()
+
+        facts = {
+            "source_exists": True,
+            "kind": source["kind"],
+            "phase": source["phase"],
+            "status": source["status"],
+            "verdict": source["verdict"],
+            "verdict_reason": source_payload.get("verdict_reason"),
+            "universe_expansion": source_payload.get("universe_expansion"),
+            "claimed": bool(source["claimed_by"]),
+            "setfile_bound_to_ea_dir": setfile_bound_to_ea_dir,
+            "setfile_is_removed_worktree": setfile_is_removed_worktree,
+            "expected_current_ex5_valid": expected_ex5_valid,
+            "expected_current_ex5_sha256": expected_ex5,
+            "canonical_ex5_present": canonical_ex5_present,
+            "canonical_ex5_sha256": canonical_ex5_sha256,
+            "source_expected_ex5_sha256": source_payload.get("expected_ex5_sha256"),
+            "canonical_setfile_present": canonical_setfile_present,
+            "canonical_setfile_sha256": canonical_setfile_sha256,
+            "source_expected_setfile_sha256": source_payload.get(
+                "expected_setfile_sha256"
+            ),
+            "risk_contract_ok": risk_ok,
+            "risk_contract_detail": risk_detail,
+            "native_pass_valid": native_pass_valid,
+            "active_magic_row_count": active_magic_row_count,
+            "existing_successor_row": _row_to_dict(existing_successor),
+            "pair_open_row": _row_to_dict(pair_open_row),
+            "pair_newer_terminal_row": _row_to_dict(pair_newer_terminal_row),
+        }
+        decision = _false_invalid_setfile_requeue_precondition(facts)
+        if not decision.get("ok"):
+            refusal = {key: value for key, value in decision.items() if key != "ok"}
+            return {
+                "enqueued": False,
+                "ea_id": ea_id,
+                "phase": phase,
+                "symbol": symbol,
+                "dry_run": not apply,
+                "source_work_item_id": source_id,
+                **refusal,
+            }
+
+        assert canonical_setfile_path is not None
+        assert canonical_ex5_sha256 is not None
+        now = utc_now()
+        payload = {
+            key: source_payload[key]
+            for key in _Q02_APPEND_ONLY_STABLE_PAYLOAD_KEYS
+            if key in source_payload
+        }
+        payload.update({
+            "append_only_rerun": True,
+            "append_only_rerun_of": source_id,
+            "enqueued_at_utc": now,
+            "enqueued_by": _FALSE_INVALID_SETFILE_REQUEUE_ENQUEUED_BY,
+            "historical_work_item_preserved": True,
+            "requeue_class": _FALSE_INVALID_SETFILE_REQUEUE_CLASS,
+            "requalification_reason": reason,
+            "priority_track": False,
+            "priority_reason": "below_rebaseline_backfill_frontier",
+            "recovery_class": "UNIVERSE_EXPANSION_LOW_PRIORITY",
+            "universe_expansion": True,
+            "universe_expansion_priority": "BELOW_ALL_REBASELINE_BACKFILL",
+            "universe_expansion_owner_decision": source_payload.get(
+                "universe_expansion_owner_decision"
+            ),
+            "target_symbols": [symbol],
+            "target_timeframe": source_payload.get("target_timeframe")
+            or _detect_ea_period(ea_id, canonical_setfile_path),
+            "expected_ex5_sha256": str(
+                source_payload.get("expected_ex5_sha256")
+            ).lower(),
+            "expected_mq5_sha256": source_payload.get("expected_mq5_sha256"),
+            "expected_setfile_sha256": str(
+                source_payload.get("expected_setfile_sha256")
+            ).lower(),
+            "expected_symbol": source_payload.get("expected_symbol"),
+            "expected_period": source_payload.get("expected_period"),
+            "expected_expert": source_payload.get("expected_expert"),
+            "expected_current_ex5_sha256": canonical_ex5_sha256,
+            "risk_fixed": risk_detail["risk_fixed"],
+            "risk_percent": risk_detail["risk_percent"],
+            "requeue_source_work_item_id": source_id,
+            "requeue_source_status": source["status"],
+            "requeue_source_verdict": source["verdict"],
+            "requeue_source_verdict_reason": source_payload.get("verdict_reason"),
+            "requeue_source_updated_at": source["updated_at"],
+            "requeue_source_setfile_path": str(source_setfile),
+            "requeue_source_payload_sha256": hashlib.sha256(
+                str(source["payload_json"] or "{}").encode("utf-8")
+            ).hexdigest(),
+            "requeue_canonical_setfile_path": str(canonical_setfile_path),
+            "requeue_canonical_setfile_sha256": canonical_setfile_sha256,
+            "requeue_setfile_equivalence_verified": True,
+        })
+        _apply_q02_multisymbol_timeout_min(
+            payload, phase=phase, ea_id=ea_id, symbol=symbol
+        )
+        preview = {
+            "ea_id": ea_id,
+            "phase": phase,
+            "symbol": symbol,
+            "source_work_item_id": source_id,
+            "setfile_path": str(canonical_setfile_path),
+            "requeue_class": _FALSE_INVALID_SETFILE_REQUEUE_CLASS,
+            "expected_ex5_sha256": payload["expected_ex5_sha256"],
+            "expected_setfile_sha256": payload["expected_setfile_sha256"],
+        }
+        if not apply:
+            return {
+                "enqueued": False,
+                "dry_run": True,
+                "would_enqueue": True,
+                **preview,
+            }
+        wid = str(uuid.uuid4())
+        conn.execute(
+            """
+            INSERT INTO work_items
+              (id, kind, phase, ea_id, symbol, setfile_path, status,
+               attempt_count, parent_task_id, payload_json, created_at, updated_at,
+               gate_contract_version)
+            VALUES (?, 'backtest', 'Q02', ?, ?, ?, 'pending', 0, NULL, ?, ?, ?, ?)
+            """,
+            (
+                wid,
+                ea_id,
+                symbol,
+                str(canonical_setfile_path),
+                json.dumps(payload, sort_keys=True),
+                now,
+                now,
+                ACTIVE_GATE_CONTRACT_VERSION,
+            ),
+        )
+        created = [{
+            "id": wid,
+            "symbol": symbol,
+            "setfile_path": str(canonical_setfile_path),
+            "requeue_of_work_item_id": source_id,
+        }]
+        event(
+            conn,
+            "work_items",
+            phase,
+            "false_invalid_setfile_requeue_enqueued",
+            {
+                "ea_id": ea_id,
+                "created": created,
+                "requeue_class": _FALSE_INVALID_SETFILE_REQUEUE_CLASS,
+                "requalification_reason": reason,
+                "source_work_item_id": source_id,
+                "canonical_setfile_path": str(canonical_setfile_path),
+                "canonical_setfile_sha256": canonical_setfile_sha256,
+            },
+        )
+        conn.commit()
+        return {
+            "enqueued": True,
+            "dry_run": False,
+            "ea_id": ea_id,
+            "phase": phase,
+            "symbol": symbol,
+            "id": wid,
+            "created": created,
+            "setfile_path": str(canonical_setfile_path),
+            "requeue_class": _FALSE_INVALID_SETFILE_REQUEUE_CLASS,
+            "source_work_item_id": source_id,
+            "next_action_hint": "Pump/dispatch-tick will claim the pending work_item.",
+        }
+    finally:
+        conn.close()
+
+
 def _enqueue_q03_exact_identity(
     root: Path,
     ea_id: str,
@@ -31969,6 +32498,31 @@ def build_parser() -> argparse.ArgumentParser:
     harness_pp.add_argument("--to-date", default="2024.01.10")
     harness_pp.add_argument("--timeout-seconds", type=int, default=600)
 
+    requeue_false_invalid = sub.add_parser(
+        "requeue-false-invalid-setfile",
+        help=(
+            "Append one Q02 successor for a false-INVALID universe-expansion "
+            "row whose setfile_path points at a removed worktree "
+            "(class T2_SETFILE_PATH_PROVENANCE_FALSE_INVALID); dry-run unless --apply"
+        ),
+    )
+    requeue_false_invalid.add_argument("--work-item-id", required=True)
+    requeue_false_invalid.add_argument(
+        "--requal-reason",
+        required=True,
+        help="Durable reason stamped into the append-only requalification successor",
+    )
+    requeue_false_invalid.add_argument(
+        "--expected-current-ex5-sha256",
+        required=True,
+        help="Exact SHA-256 required to match the current canonical repo EX5 bytes",
+    )
+    requeue_false_invalid.add_argument(
+        "--apply",
+        action="store_true",
+        help="Insert the append-only successor; default is a read-only dry run",
+    )
+
     seed_fresh_q02 = sub.add_parser(
         "seed-fresh-q02",
         help=(
@@ -32216,6 +32770,8 @@ def _command_mutates_state(args: argparse.Namespace) -> bool:
         return not bool(getattr(args, "dry_run", False))
     if args.command == "enqueue-compile":
         return bool(args.apply or (not args.from_file and not args.repair_successor_of))
+    if args.command == "requeue-false-invalid-setfile":
+        return bool(args.apply)
     if args.command == "enqueue-news-expansions":
         return bool(args.apply)
     if args.command in {
@@ -32642,6 +33198,14 @@ def main(argv: list[str] | None = None) -> int:
             requal_reason=args.requal_reason,
             expected_current_ex5_sha256=args.expected_current_ex5_sha256,
             reconcile_noncanonical_setfile=args.reconcile_noncanonical_setfile,
+        ))
+    elif args.command == "requeue-false-invalid-setfile":
+        print_json(enqueue_false_invalid_setfile_requeue(
+            root,
+            args.work_item_id,
+            requal_reason=args.requal_reason,
+            expected_current_ex5_sha256=args.expected_current_ex5_sha256,
+            apply=args.apply,
         ))
     elif args.command == "bind-q09-plan":
         print_json(bind_q09_run_plan(
