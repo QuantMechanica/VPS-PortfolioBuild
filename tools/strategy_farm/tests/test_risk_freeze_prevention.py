@@ -328,8 +328,9 @@ def test_current_ftmo_book_builder_guard_negative_and_positive(tmp_path: Path, m
         raise risk_freeze.RiskFreezeBlocked("blocked", {})
 
     monkeypatch.setattr(build_book_ftmo.risk_freeze, "assert_live_book_mutation_allowed", blocked)
-    with pytest.raises(risk_freeze.RiskFreezeBlocked):
-        build_book_ftmo.main(["--out-dir", str(tmp_path / "never")])
+    # Like the DXZ builder (D2 + D6, 2026-09-03): the risk-freeze refusal is
+    # reported as one structured JSON refusal (exit 2), never a traceback; no write.
+    assert build_book_ftmo.main(["--out-dir", str(tmp_path / "never")]) == 2
     assert writes == []
 
     monkeypatch.setattr(build_book_ftmo.risk_freeze, "assert_live_book_mutation_allowed", lambda _op: {})
