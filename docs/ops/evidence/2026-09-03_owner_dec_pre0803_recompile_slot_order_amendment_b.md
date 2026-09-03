@@ -379,3 +379,11 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   wf_18ea64f8-b1c, verified ok, Tier-1 numbers recomputed exactly): the current correlation tool yields a usable
   value for 0/46 book-relevant pairs; adopted two-layer fail-closed standard (ZK-SBB certify-or-abstain + COS
   co-occupancy flag); V4 Vorlage updated to option (c). Router: 0 REVIEW tasks in any lane (16:40Z).
+- 16:45Z–16:58Z: book-path defects merged after four verified verdicts (Opus wf_10455ec8-70e): D1/D2/D5/D6
+  `4a4cb78355` (+ FTMO freeze refusal `e7f0ee2b13`, test `032454c904`), D3 roster generator + D4 stream-bundle
+  assembler `68eba1e611`. D4 real run: only 11421/EURUSD has a physically present current-identity sealed stream;
+  1537, 10706, 11422, 13054 need their Q08 baseline re-emitted on the current binary (seals are recorded in the Q08
+  aggregates, the bytes are gone) → OWNER Vorlage (GELB, 4 heavy runs). Claim-path finding: 12580 Q03 `a64d18d3`
+  (7-symbol FX basket) sits at claim position 1 but needs 48 GB commit headroom (MULTISYMBOL_COMMIT_MIN_FREE_GB,
+  reservation 32 GB) — unreachable while 8 testers run; 10815 Q02 `bd12175c` at position 3 also unclaimed (cause not
+  logged; RAM class suspected). Both stay priority-tracked; the census-first/claim-cost workflow may address it.
