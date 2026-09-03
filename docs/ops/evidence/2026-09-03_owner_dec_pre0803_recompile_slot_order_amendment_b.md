@@ -451,3 +451,12 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   never selected -> option (e) lazy expansion for single-target deployments would lock all 43 open expanded rows at
   the 8-cell (ROT Vorlage filed, replaces the 15:55Z D Vorlage). Worktrees: all 21 under C:/QM/worktrees carry WIP,
   none reclaimable. Governor v2 build (G6, OWNER-gated activation) launched as Opus workflow wf_36c785e8-af5.
+- 19:30Z: 12580/AUDUSD Q03 FAIL diagnosed as a HARNESS FALSE ZERO (Opus wf_710ffab1-cea, verified; `ab8aa8584d`):
+  run_smoke.ps1 latched MetaTester's report shell (Deposit 0.00 / Symbols 0 / Trades 0, Bars 958, 119M ticks) before
+  terminal64 flushed the final report; tester journal shows deals #2-#69 and 'Test passed in 0:10:25', EA logger 36
+  ENTRY_ACCEPTED; Q02 of the same binary/window traded 47 times. FAIL row stands append-only (taxonomy strategy ->
+  infra); rerun only after the harness gap is closed. Hardening + false-zero sweep since 08-15 launched
+  (wf_2dc8f552-a32); governor v2 build running (wf_36c785e8-af5).
+- 19:35Z: **V1(b) Auffangregel executed** exactly as the verified packet: append-only Q05 rerun 10911/GDAXI `57aad04d`
+  (rerun of f4ac4d5c INFRA_FAIL, predecessor Q04 538405f6 PASS, ex5 5199e260 unchanged). Nothing else was governed
+  to run for 1556/12969 (news gate) or 10403/11708 (program slots).
