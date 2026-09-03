@@ -296,3 +296,8 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   (11910/NZDUSD), QM5_41333 (10700/XAUUSD); magics allocated (`270019d078`, `129c6e887e`, `3e8cd06ec1`); compile
   rows 98bfe19a / fa3cff26 / c299634e released and priority-tracked. Evidence:
   docs/ops/evidence/2026-09-03_sibling_wave3_recompiled_pairs.md.
+- 12:09Z–12:40Z: 11910 Q11 `839984e5` PASS 12:09Z → Q12 `b764a145` placed at queue rank 6 (behind 12710,
+  `--queue-order-at 2026-08-29T08:03Z`). The three sibling compiles stayed pending because six workers sat in
+  `ram_low_pause` (4 testers = 44 GB, 6.8 GB free) — a governed compile needs < 1 GB. `ef1c4dbbff`: under the
+  RAM latch a worker may claim COMPILE_EA rows only (floor 3 GB), mirroring the census bypass; reload chunk 17
+  (paused workers first) started 12:36Z. Reload chunk 16 (6/10) superseded.
