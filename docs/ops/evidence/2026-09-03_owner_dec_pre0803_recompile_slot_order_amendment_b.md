@@ -74,3 +74,25 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
 - 02:12Z decision recorded; implementation of 1–3 commissioned to Opus agents in isolated
   worktrees with adversarial verification (workflow `pre0803-slot-amendb`), CEO merges.
 - Follow-ups are appended below as they complete.
+- 02:44Z–02:47Z (CEO): all three implementations merged after adversarial verification:
+  allowlist `fcc1a439d8` (72 tests), Amendment B `ea1bbb5e86` (40 tests; key placed AFTER
+  `_priority_track_rank`, see the amendment evidence doc), slot-order tool `55ca6e950a` (16 tests).
+  Precision on §1: the waivable set is the existing `FORCE_REBUILD_WAIVABLE_REASONS` (four
+  reasons, unchanged), not only the three named above. The allowlist gate is a presence check
+  of the owner reference and `QM5_<id>` in THIS document; removing an id from this document
+  revokes it.
+- 02:44Z: batch 1 enqueued — `farmctl enqueue-compile` rows 9df0f1ad (QM5_11910),
+  f1acbae1 (QM5_10700), b8a3b1f5 (QM5_12710); rollout holds released via
+  `release_compile_wave.py --apply` (backup farm_state_before_compile_wave_20260903T024435Z);
+  rows marked `priority_track` (claim positions 31–33 at 02:50Z). Batch 2 (10815, 12580) is
+  allowlisted but NOT enqueued: proposed to the OWNER 02:13Z, Auffangregel (12 h) applies.
+- 02:46Z: slot order applied — `set_dl089_queue_order.py apply --defer` set
+  `queue_order_at = 2099-01-01T00:00:00+00:00` on 1a92b33e (QM5_10706/GBPUSD) and f9e1f7fc
+  (QM5_11422/USDCAD); backup farm_state_before_dl089_queue_order_20260903T024553Z, events
+  `dl089_queue_order_set`. Precision on §2: the 2099 sentinel is not "resume when a slot frees"
+  — it defers both rows behind every current AND future governed row until they are
+  explicitly re-ordered (`--queue-order-at`), which is the intended reading for the 25-pair
+  target (both pairs already count). Governed order after apply: 13213, 1537, 21507, 11881,
+  20266, 10145, 10513, 20048 (enters), …
+- Open verifier notes (non-blocking): `list` mode of the slot tool models slot ownership
+  without the service's deferral/no-sibling filters; its unit tests use a trigger-less schema.

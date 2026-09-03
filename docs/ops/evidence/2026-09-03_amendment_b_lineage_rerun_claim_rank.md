@@ -102,3 +102,16 @@ tests cover both the amended and the pre-amendment order.
 Resident terminal workers cache the selector at start, so the amendment reaches the fleet only
 through the staggered idle-worker reload (one terminal at a time, never an active claim), the
 same path Option A used.
+
+## CEO merge note (2026-09-03 02:47Z, commit ea1bbb5e86)
+
+The key was merged one position LATER than drafted above: the ORDER BY is now
+`_universe_expansion_rank, _recovery_rank, _priority_track_rank, _lineage_rerun_rank, <gate rank>, …`.
+Reason: `_priority_track_rank` ranks two seconds-cheap prerequisites at -1 (an authorized
+append-only source-repair COMPILE_EA row and an exact Q01 smoke row); they keep precedence
+over an hours-long lineage rerun. Inside the priority tier the OWNER-documented order
+lineage rerun > sibling seed > census cell is unchanged. The test
+`test_amendment_b_keeps_cheap_prerequisites_ahead_of_lineage_rerun` pins this placement;
+any statement above that puts the lineage key before `_priority_track_rank` describes the
+draft, not the shipped code. Live check 02:47Z: the QM5_11129 Q07 rerun sits at claim
+position 2 (behind two other lineage reruns), previously ~1,285.
