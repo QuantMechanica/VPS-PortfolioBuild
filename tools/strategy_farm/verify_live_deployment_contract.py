@@ -70,6 +70,15 @@ import sys
 from dataclasses import dataclass, field, asdict
 from typing import Any, Dict, List, Optional, Tuple
 
+# Shared, ASCII, side-effect-free deploy-pointer authentication rules -- the SAME
+# checks morning_brief.py's Deploy lamp applies (parity-tested). Sibling module
+# (same dir; importable when this file is run as a script or imported by tests).
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+try:
+    import live_deployment_pointer_auth as pointer_auth  # noqa: E402
+except ImportError:  # pragma: no cover - packaged import fallback
+    from tools.strategy_farm import live_deployment_pointer_auth as pointer_auth  # noqa: E402
+
 TOOL_NAME = "verify_live_deployment_contract"
 TOOL_VERSION = "2.0"
 SCHEMA_VERSION = "wse3-live-deployment-contract/1"
@@ -82,6 +91,8 @@ DEFAULT_PROFILE_DIR = r"C:\QM\mt5\T_Live\MT5_Base\MQL5\Profiles\Charts\DarwinexZ
 DEFAULT_EVENT_LOG_DIR = r"C:\QM\mt5\T_Live\MT5_Base\MQL5\Files\QM"
 DEFAULT_ACCOUNT_SNAPSHOT = r"C:\QM\mt5\T_Live\MT5_Base\MQL5\Files\QM\journal\account_snapshot.json"
 DEFAULT_COMMON_INI = r"C:\QM\mt5\T_Live\MT5_Base\config\common.ini"
+# Runtime deploy pointer (ops-maintained; OWNER-signed). The documented state path.
+DEFAULT_DEPLOY_POINTER = r"D:\QM\reports\state\live_deployment_pointer.json"
 DEFAULT_MONITOR_NAME = "QM_AccountMonitor"
 DEFAULT_FRESHNESS_HOURS = 24.0
 DEFAULT_SNAPSHOT_STALE_MIN = 30.0
@@ -542,6 +553,206 @@ def _finding(severity, category, layer, detail, magic=None, ea_id=None, symbol=N
 
 
 # ---------------------------------------------------------------------------
+# Live-deployment pointer binding (WS-E3 G5). STRICTLY READ-ONLY.
+# ---------------------------------------------------------------------------
+def _read_pointer_file(path) -> Tuple[Optional[dict], str]:
+    """(obj, status) with status in {ok, disabled, missing, malformed}. dict-typed
+    JSON only. Never raises; never writes. An empty/None path is `disabled`."""
+    if not path or not str(path).strip():
+        return None, "disabled"
+    try:
+        if not os.path.exists(path):
+            return None, "missing"
+    except OSError:
+        return None, "missing"
+    try:
+        with open(path, "r", encoding="utf-8-sig") as fh:
+            obj = json.load(fh)
+    except (OSError, ValueError, UnicodeDecodeError):
+        return None, "malformed"
+    if not isinstance(obj, dict):
+        return None, "malformed"
+    return obj, "ok"
+
+
+def _same_manifest_path(a, b) -> bool:
+    try:
+        na = os.path.normcase(os.path.normpath(os.path.abspath(a)))
+        nb = os.path.normcase(os.path.normpath(os.path.abspath(b)))
+        return na == nb
+    except (OSError, TypeError, ValueError):
+        return False
+
+
+def _pointer_targets_manifest(ptr: dict, manifest_path, manifest_sha_actual) -> bool:
+    """True iff this pointer is ABOUT the manifest under verification -- it names the
+    same file by path, OR its declared manifest_sha256 equals the actual manifest
+    hash. A pointer that binds a DIFFERENT manifest is not applicable here and is
+    ignored (verify keeps its manifest-only behaviour), so the documented default
+    pointer never contaminates an unrelated manifest run."""
+    pm = ptr.get("manifest_path")
+    if pm and _same_manifest_path(pm, manifest_path):
+        return True
+    claimed = str(ptr.get("manifest_sha256") or "").strip().lower()
+    if claimed and claimed == (manifest_sha_actual or "").lower():
+        return True
+    return False
+
+
+def _resolve_pointer_binding(args, manifest) -> dict:
+    """Build the pointer_binding block and decide which identity fields an
+    AUTHENTICATED pointer resolves. Read-only. Returns the block plus a private
+    `_resolved_flags` dict the caller strips before publishing.
+
+    auth_status:
+      VERIFIED       -- applicable pointer authenticates (all morning_brief checks pass)
+      MISMATCH       -- applicable pointer, but a hard conflict fired (sha/account tamper)
+      UNKNOWN        -- applicable pointer, not yet authentic (unsigned / missing field)
+      NOT_APPLICABLE -- present but binds a different manifest
+      ABSENT         -- no readable pointer (missing / disabled / malformed)
+
+    Fields (server/phase/deployment_epoch/binary_fingerprint) are VERIFIED only when
+    auth_status==VERIFIED and the pointer actually carries the value; MISMATCH when
+    the binding conflicts; UNKNOWN otherwise. NOTHING is resolved unless VERIFIED."""
+    fields = ("server", "phase", "deployment_epoch", "binary_fingerprint")
+    flags = {f: False for f in fields}
+    pointer_arg = getattr(args, "pointer", DEFAULT_DEPLOY_POINTER)
+    pointer_path = os.path.abspath(pointer_arg) if (pointer_arg and str(pointer_arg).strip()) else None
+
+    def field(status, value=None, reason=None):
+        return {"status": status, "value": value, "reason": reason}
+
+    def all_fields(status, reason, values=None):
+        values = values or {}
+        return {f: field(status, values.get(f), reason) for f in fields}
+
+    block = {
+        "label": "LIVE-DEPLOYMENT POINTER binding (authenticated by the SAME rules as "
+                 "morning_brief.py's Deploy lamp; resolves identity ONLY from an "
+                 "OWNER-signed pointer over THIS manifest)",
+        "pointer_path": pointer_path,
+        "read_status": None,
+        "present": False,
+        "applicable": False,
+        "auth_status": "ABSENT",
+        "auth_rank": None,
+        "auth_reasons": [],
+        "resolved": all_fields("UNKNOWN", "no readable deploy pointer"),
+        "_resolved_flags": flags,
+    }
+
+    ptr, read_status = _read_pointer_file(pointer_arg)
+    block["read_status"] = read_status
+    if read_status != "ok":
+        # missing / disabled / malformed -> resolves nothing; old behaviour unchanged.
+        reason = {"disabled": "pointer read disabled (--pointer '')",
+                  "missing": "no deploy pointer at path",
+                  "malformed": "deploy pointer unreadable / not a JSON object"}.get(
+                      read_status, "no readable deploy pointer")
+        block["resolved"] = all_fields("UNKNOWN", reason)
+        return block
+
+    block["present"] = True
+    pointer_values = {
+        "server": ptr.get("expected_server"),
+        "phase": ptr.get("expected_phase"),
+        "deployment_epoch": ptr.get("deployment_epoch_utc") or ptr.get("deployment_epoch"),
+        "binary_fingerprint": ((ptr.get("binary_setfile_fingerprint") or {})
+                               .get("fingerprint_sha256")),
+    }
+
+    if not _pointer_targets_manifest(ptr, args.manifest, manifest.file_sha256):
+        block["auth_status"] = "NOT_APPLICABLE"
+        block["resolved"] = all_fields(
+            "UNKNOWN", "pointer binds a different manifest (manifest_path=%r); not "
+            "applicable to this run" % ptr.get("manifest_path"), pointer_values)
+        return block
+
+    block["applicable"] = True
+    res = pointer_auth.authenticate_deploy_stamp(
+        ptr, "runtime_stamp",
+        manifest_sha_actual=(manifest.file_sha256 or ""),
+        manifest_status=manifest.declared_status,
+        manifest_book=manifest.book)
+    block["auth_rank"] = res.rank
+    block["auth_reasons"] = [{"code": r.code, "rank": r.rank, "detail": r.detail}
+                             for r in res.reasons]
+    reason_txt = "; ".join(r.detail for r in res.reasons)
+
+    if res.clean:
+        block["auth_status"] = "VERIFIED"
+        fp_meta = ptr.get("binary_setfile_fingerprint") or {}
+        n_missing = fp_meta.get("n_binary_missing")
+        resolved = {}
+        for f in fields:
+            val = pointer_values[f]
+            if not str(val or "").strip():
+                resolved[f] = field("UNKNOWN", val,
+                                    "authenticated pointer carries no %s" % f)
+                continue
+            if f == "deployment_epoch" and pointer_auth.parse_utc_epoch(val) is None:
+                resolved[f] = field("UNKNOWN", val,
+                                    "authenticated pointer deployment_epoch unparseable")
+                continue
+            if f == "binary_fingerprint" and n_missing not in (0, None):
+                resolved[f] = field("MISMATCH", val,
+                                    "authenticated pointer reports %s missing binaries"
+                                    % n_missing)
+                continue
+            reason = "resolved from authenticated pointer"
+            resolved[f] = field("VERIFIED", val, reason)
+            if f == "binary_fingerprint":
+                resolved[f]["n_sleeves"] = fp_meta.get("n_sleeves")
+                resolved[f]["n_binary_missing"] = n_missing
+            flags[f] = True
+        block["resolved"] = resolved
+    elif res.has_conflict:
+        block["auth_status"] = "MISMATCH"
+        block["resolved"] = all_fields(
+            "MISMATCH", "pointer does not authentically bind this manifest: %s"
+            % reason_txt, pointer_values)
+    else:
+        block["auth_status"] = "UNKNOWN"
+        block["resolved"] = all_fields(
+            "UNKNOWN", "pointer not authenticated: %s" % reason_txt, pointer_values)
+    return block
+
+
+def _emit_pointer_findings(findings: List[dict], pb: dict) -> None:
+    """Add the pointer layer's findings. NEVER CRITICAL (a pointer issue must not
+    turn a run RED); the only rollup-affecting one is a MISMATCH -> WARN (AMBER),
+    so a mismatching pointer yields AMBER, never GREEN. VERIFIED / UNKNOWN /
+    NOT_APPLICABLE / ABSENT are INFO and leave the manifest-driven verdict intact."""
+    st = pb["auth_status"]
+    ev = pb.get("pointer_path")
+    if st == "VERIFIED":
+        resolved = pb["resolved"]
+        got = [f for f in ("server", "phase", "deployment_epoch", "binary_fingerprint")
+               if resolved[f]["status"] == "VERIFIED"]
+        findings.append(_finding(INFO, "POINTER_AUTHENTICATED", "identity",
+            "OWNER-signed deploy pointer authenticated against this manifest; resolved "
+            "%s from the pointer" % (", ".join(got) or "no identity fields"), evidence=ev))
+    elif st == "MISMATCH":
+        findings.append(_finding(WARN, "POINTER_MANIFEST_MISMATCH", "identity",
+            "deploy pointer is present and targets this manifest but does not "
+            "authentically bind it (%s); identity fields flagged MISMATCH, NOT resolved"
+            % "; ".join(r["detail"] for r in pb["auth_reasons"] if r["rank"] == pointer_auth.RANK_CONFLICT),
+            evidence=ev))
+    elif st == "UNKNOWN" and pb.get("applicable"):
+        findings.append(_finding(INFO, "POINTER_NOT_AUTHENTICATED", "identity",
+            "deploy pointer targets this manifest but is not yet authenticated (%s); "
+            "identity stays UNKNOWN until it is OWNER-signed"
+            % "; ".join(r["detail"] for r in pb["auth_reasons"]), evidence=ev))
+    elif st == "NOT_APPLICABLE":
+        findings.append(_finding(INFO, "POINTER_NOT_APPLICABLE", "identity",
+            "deploy pointer read but it binds a different manifest; ignored for this run",
+            evidence=ev))
+    elif pb.get("read_status") == "malformed":
+        findings.append(_finding(INFO, "POINTER_MALFORMED", "identity",
+            "deploy pointer present but unreadable / not a JSON object; ignored", evidence=ev))
+
+
+# ---------------------------------------------------------------------------
 # Main verification.
 # ---------------------------------------------------------------------------
 def verify(args) -> dict:
@@ -887,6 +1098,11 @@ def verify(args) -> dict:
         "account": {"known": account_known, "value": manifest.expected_account,
                     "source": manifest.expected_account_source},
         "server": {"known": server_known, "value": manifest.expected_server},
+        # `phase` is NOT carried by the manifest; it is resolved (if at all) only
+        # from an authenticated live-deployment pointer below. It is deliberately
+        # excluded from `fully_bound` and `missing_fields` so a manifest that was
+        # fully bound before this field existed stays fully bound.
+        "phase": {"known": False, "value": None, "source": "absent"},
         "deployment_epoch": {"known": epoch_known, "value": manifest.deployment_epoch,
                              "source": manifest.deployment_epoch_source},
         "manifest_sha256": {"known": manifest.file_sha256 is not None,
@@ -905,30 +1121,71 @@ def verify(args) -> dict:
         "fully_bound": bool(account_known and server_known and epoch_known
                             and binary_known and signed_known),
     }
+    # ---------------------------------------------------------------------
+    # LIVE-DEPLOYMENT POINTER binding (WS-E3 G5). The manifest alone carries no
+    # expected_server / expected_phase / deployment_epoch / binary fingerprint, so
+    # those read UNKNOWN above. An OWNER-SIGNED runtime deploy pointer DOES carry
+    # them. We resolve them from the pointer -- but ONLY when the pointer
+    # AUTHENTICATES against THIS manifest under exactly morning_brief.py's rules
+    # (shared module live_deployment_pointer_auth; parity-tested). An unsigned or
+    # mismatching pointer resolves nothing (fields stay UNKNOWN / are flagged
+    # MISMATCH, never green). The pointer never lowers the PASS bar: only an OWNER
+    # signature over the matching manifest can clear the identity UNKNOWNs.
+    pb = _resolve_pointer_binding(args, manifest)
+    server_resolved = pb["_resolved_flags"]["server"]
+    epoch_resolved = pb["_resolved_flags"]["deployment_epoch"]
+    binary_resolved = pb["_resolved_flags"]["binary_fingerprint"]
+    phase_resolved = pb["_resolved_flags"]["phase"]
+    if server_resolved:
+        identity_binding["server"] = {"known": True, "value": pb["resolved"]["server"]["value"],
+                                      "source": "authenticated_pointer"}
+    if epoch_resolved:
+        identity_binding["deployment_epoch"] = {"known": True,
+            "value": pb["resolved"]["deployment_epoch"]["value"], "source": "authenticated_pointer"}
+    if phase_resolved:
+        identity_binding["phase"] = {"known": True, "value": pb["resolved"]["phase"]["value"],
+                                     "source": "authenticated_pointer"}
+    if binary_resolved:
+        bf = pb["resolved"]["binary_fingerprint"]
+        identity_binding["binary_fingerprint"] = {"known": True, "value": bf["value"],
+            "source": "authenticated_pointer", "n_sleeves": bf.get("n_sleeves"),
+            "n_binary_missing": bf.get("n_binary_missing")}
+    # Recompute fully_bound with pointer-resolved fields folded in (binary via the
+    # aggregate fingerprint OR per-sleeve manifest pins).
+    identity_binding["fully_bound"] = bool(
+        account_known and (server_known or server_resolved)
+        and (epoch_known or epoch_resolved)
+        and (binary_known or binary_resolved) and signed_known)
+    # Strip the pointer's private resolution flags before publishing the block.
+    pb.pop("_resolved_flags", None)
+    state_pointer_binding = pb
+
     missing_fields = _identity_missing_fields(identity_binding)
     identity_binding["missing_fields"] = missing_fields
 
-    # UNKNOWN findings (do not force RED, but forbid a "signed PASS" claim).
+    # UNKNOWN findings (do not force RED, but forbid a "signed PASS" claim). Each is
+    # SUPPRESSED (replaced by an INFO) when an authenticated pointer resolved it.
     if not account_known:
         findings.append(_finding(WARN, "ACCOUNT_EXPECTATION_UNKNOWN", "identity",
             "manifest pins no expected account (book=%r has no account digits); account "
             "identity cannot be bound -- add expected_account" % manifest.book,
             evidence=os.path.abspath(args.manifest)))
-    if not server_known:
+    if not server_known and not server_resolved:
         findings.append(_finding(WARN, "SERVER_EXPECTATION_UNKNOWN", "identity",
             "manifest pins no expected_server; server identity cannot be bound "
             "(absent expected server is NOT a match) -- add expected_server",
             evidence=os.path.abspath(args.manifest)))
-    if not epoch_known:
+    if not epoch_known and not epoch_resolved:
         findings.append(_finding(WARN, "DEPLOYMENT_EPOCH_UNKNOWN", "identity",
             "manifest pins no deployment_epoch; runtime freshness falls back to a %.0fh "
             "window and is heuristic, not epoch-bound -- add deployment_epoch" % args.freshness_hours,
             evidence=os.path.abspath(args.manifest)))
-    if not binary_known:
+    if not binary_known and not binary_resolved:
         findings.append(_finding(WARN, "BINARY_IDENTITY_UNKNOWN", "identity",
             "manifest pins ex5_sha256 for %d/%d sleeve(s); deployed-binary identity is "
             "UNKNOWN for the rest -- add per-sleeve ex5_sha256" % (n_pinned, n_sleeves),
             evidence=os.path.abspath(args.manifest)))
+    _emit_pointer_findings(findings, state_pointer_binding)
     if manifest.declared_signed is False or (manifest.declared_signed is None and not manifest.declared_approved_by):
         findings.append(_finding(WARN, "MANIFEST_UNSIGNED", "identity",
             "manifest status=%r, signed=%r, approver=%s -- this run is a read-only "
@@ -1002,6 +1259,7 @@ def verify(args) -> dict:
             "freshness_window_hours": args.freshness_hours,
         },
         "identity_binding": identity_binding,
+        "pointer_binding": state_pointer_binding,
         "identity": identity,
         "disk_profile": {
             "label": "DISK-PROFILE TRUTH (recovery profile on disk; NOT proof of runtime attachment)",
@@ -1050,7 +1308,8 @@ def _identity_missing_fields(ib: dict) -> List[dict]:
         missing.append({"scope": "manifest", "field": "deployment_epoch",
                         "why": "ISO-8601 UTC; runtime INIT_OK must be >= this to be 'fresh'"})
     per = ib["per_sleeve"]
-    if per["ea_binary_sha256"]["known_count"] < per["ea_binary_sha256"]["total"]:
+    binary_fp_bound = bool(ib.get("binary_fingerprint", {}).get("known"))
+    if not binary_fp_bound and per["ea_binary_sha256"]["known_count"] < per["ea_binary_sha256"]["total"]:
         missing.append({"scope": "per_sleeve", "field": "ex5_sha256",
                         "why": "pin deployed-binary SHA-256 (%d/%d present)" % (
                             per["ea_binary_sha256"]["known_count"],
@@ -1245,6 +1504,18 @@ def render_report(state: dict) -> str:
         A("- fields the manifest must add (see deploy_stamp_contract):")
         for mf in ib["missing_fields"]:
             A("  - %s `%s` -- %s" % (mf["scope"], mf["field"], mf["why"]))
+    pb = state.get("pointer_binding")
+    if pb:
+        A("")
+        A("## Live-deployment pointer binding")
+        A("- pointer: `%s`" % pb.get("pointer_path"))
+        A("- auth status: **%s** (read: %s | applicable: %s)" % (
+            pb.get("auth_status"), pb.get("read_status"), pb.get("applicable")))
+        for f in ("server", "phase", "deployment_epoch", "binary_fingerprint"):
+            rf = pb.get("resolved", {}).get(f, {})
+            A("- %s: **%s** (value: %s)%s" % (
+                f, rf.get("status"), rf.get("value"),
+                "" if rf.get("status") == "VERIFIED" else " -- %s" % rf.get("reason")))
     idn = state["identity"]
     A("")
     A("## Account / server identity")
@@ -1328,6 +1599,10 @@ def build_arg_parser() -> argparse.ArgumentParser:
     p.add_argument("--event-log-dir", default=DEFAULT_EVENT_LOG_DIR, help="MQL5\\Files\\QM event-log dir")
     p.add_argument("--account-snapshot", default=DEFAULT_ACCOUNT_SNAPSHOT, help="AccountMonitor account_snapshot.json")
     p.add_argument("--common-ini", default=DEFAULT_COMMON_INI, help="MT5 config\\common.ini for Login/Server")
+    p.add_argument("--pointer", default=DEFAULT_DEPLOY_POINTER,
+                   help="OWNER-signed runtime deploy pointer JSON; resolves expected "
+                        "server/phase/epoch/binary-fingerprint when it AUTHENTICATES this "
+                        "manifest (morning_brief rules). Pass '' to disable the read.")
     p.add_argument("--terminal-mql5-dir", default=None,
                    help="MQL5 root for resolving chart binary paths (default: inferred from --profile-dir)")
     p.add_argument("--module", default=DEFAULT_MODULE,
