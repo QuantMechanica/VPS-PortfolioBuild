@@ -1,0 +1,43 @@
+{
+  "schema": "qm.public-source-retrieval-evidence/v1",
+  "recorded_at_utc": "2026-09-03T00:44:00Z",
+  "network_retrieval_performed": true,
+  "sources": [
+    {
+      "source_id": "PHILLIPS-PERRON-1988",
+      "citation": "Phillips, P. C. B. and Perron, P. (1988). Testing for a Unit Root in Time Series Regression. Biometrika 75(2), 335-346. DOI 10.1093/biomet/75.2.335.",
+      "official_catalog_url": "https://elischolar.library.yale.edu/cowles-discussion-paper-series/1038/",
+      "official_catalog_read": "complete landing record; CFDP 795R, revised 1987-09-01, 31-page discussion-paper metadata and abstract",
+      "paper_url": "https://users.ssc.wisc.edu/~behansen/718/PhillipsPerron1988.pdf",
+      "paper_host": "University of Wisconsin-Madison Social Science Computing Cooperative faculty course site",
+      "paper_sha256": "62FE139F59B2630AFC6634EA27BA93FB48CA4B711F48F7BCA70D7EC147EFD336",
+      "paper_bytes": 1296497,
+      "paper_pages": 12,
+      "read_scope": "complete 12/12 journal pages, Biometrika pages 335-346, rendered and OCR-read page by page; equations on 340-341 cross-checked against the pinned implementation source below",
+      "access_note": "The Yale catalog was public but its PDF endpoint returned HTTP 403. The identical published article was read from the public University of Wisconsin academic mirror; no access-control bypass was attempted.",
+      "role": "lag-zero AR(1) with intercept, residual Bartlett long-run variance, Phillips-Perron Z-tau correction, Dickey-Fuller limiting distribution, and finite-sample adverse caveat"
+    },
+    {
+      "source_id": "ARCH-PP-IMPLEMENTATION-704BB70",
+      "citation": "arch project, PhillipsPerron implementation and cov_nw utility, git commit 704bb70e48372e3ccccdde7da379811657ad0224.",
+      "unitroot_url": "https://raw.githubusercontent.com/bashtage/arch/704bb70e48372e3ccccdde7da379811657ad0224/arch/unitroot/unitroot.py",
+      "unitroot_sha256": "8EEB84B30D7DB3CE1808FEBC6F3FF0F2AB23C714B2DB300B06EECAE9478B3204",
+      "unitroot_lines": "1012-1193, completely read",
+      "covariance_url": "https://raw.githubusercontent.com/bashtage/arch/704bb70e48372e3ccccdde7da379811657ad0224/arch/utility/cov.py",
+      "covariance_sha256": "671C9835AF818AD8CA27AFCD483787059FF60715203409FBD1917F46D1DC3FAC",
+      "covariance_lines": "1-62, complete file read",
+      "role": "arithmetic transcription oracle only; no economic or performance claim"
+    },
+    {
+      "source_id": "MOP-TSMOM-2012",
+      "citation": "Moskowitz, T. J., Ooi, Y. H., and Pedersen, L. H. (2012). Time Series Momentum. Journal of Financial Economics 104(2), 228-250. DOI 10.1016/j.jfineco.2011.11.003.",
+      "source_packet_path": "strategy-seeds/sources/MOP-TSMOM-2012/source.md",
+      "source_packet_sha256": "C8B07ECD62C1D5EF9E3D7975EEE6A3B6C46C1C566D0B20B42237613D9B3A7042",
+      "retrieval_receipt": "strategy-seeds/sources/MOP-TSMOM-2012/retrieval_route_20260731.json",
+      "retrieval_receipt_sha256": "ECBCC76CC878F0CC6FBF8C40B23D72084EC6ED03C6375438E3232CC24A33D38F",
+      "read_scope": "complete governed packet recording a complete 23-page published-paper read",
+      "role": "monthly own-return continuation and explicit NYMEX WTI membership"
+    }
+  ],
+  "claim_boundary": "Phillips-Perron supplies a unit-root statistic, not a trading rule. Moskowitz-Ooi-Pedersen supplies monthly WTI continuation, not a PP filter. Their conjunction, the 60-level sample, 11-lag window, threshold use, CFD translation, activity, economics, and correlation are untested QuantMechanica choices."
+}

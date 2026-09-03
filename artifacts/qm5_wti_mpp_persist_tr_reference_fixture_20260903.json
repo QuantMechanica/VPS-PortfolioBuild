@@ -1,0 +1,75 @@
+{
+  "schema": "qm.strategy-reference-fixture/v1",
+  "generated_at_utc": "2026-09-03T00:42:00Z",
+  "market_data": false,
+  "purpose": "Independent non-market arithmetic vectors for the locked WTI monthly Phillips-Perron Z-tau state gate.",
+  "contract": {
+    "level_count": 60,
+    "regression_observations": 59,
+    "regression_coefficients": 2,
+    "residual_degrees_of_freedom": 57,
+    "bartlett_newey_west_lags": 11,
+    "pp_z_tau_min_inclusive": -2.594,
+    "momentum_months": 12,
+    "direction_epsilon": 1e-12
+  },
+  "reference_oracle": {
+    "package": "arch==8.0.0",
+    "call": "PhillipsPerron(levels, lags=11, trend='c', test_type='tau').stat",
+    "up": -0.24331769997460134,
+    "down": 0.07854739371848773,
+    "mean_reverting": -4.263223835451292
+  },
+  "generation": {
+    "persistent_up_qualifies_buy": "4.0 + 0.012*t + 0.025*sin(0.73*t) + 0.009*cos(1.91*t), t=0..59",
+    "persistent_down_qualifies_sell": "5.0 - 0.010*t + 0.023*sin(0.71*t) + 0.008*cos(1.83*t), t=0..59",
+    "mean_reverting_rejected_flat": "4.0 + 0.080*sin(1.17*t) + 0.030*cos(0.41*t), t=0..59"
+  },
+  "fixtures": [
+    {
+      "name": "persistent_up_qualifies_buy",
+      "alpha": 0.02724270925895933,
+      "rho": 0.9964146723997247,
+      "sxx": 2.4467933049409543,
+      "sse": 0.015522180223794766,
+      "residual_variance": 0.000272318951294645,
+      "gamma0": 0.0002630878004033011,
+      "long_run_variance": 0.00009947677846019413,
+      "se_rho": 0.010549704405791378,
+      "raw_tau": -0.33985100078321584,
+      "pp_z_tau": -0.24331769997513303,
+      "momentum_12": 0.12845800868758506,
+      "direction": 1
+    },
+    {
+      "name": "persistent_down_qualifies_sell",
+      "alpha": -0.0029173059955471814,
+      "rho": 0.9984076493796683,
+      "sxx": 1.7331024629663438,
+      "sse": 0.011901003597395887,
+      "residual_variance": 0.00020878953679641905,
+      "gamma0": 0.0002017119253795913,
+      "long_run_variance": 0.00007867115638928305,
+      "se_rho": 0.010975953176768968,
+      "raw_tau": -0.14507629494101407,
+      "pp_z_tau": 0.07854739371943104,
+      "momentum_12": -0.15505319427565833,
+      "direction": -1
+    },
+    {
+      "name": "mean_reverting_rejected_flat",
+      "alpha": 2.169070864743115,
+      "rho": 0.45753941465526815,
+      "sxx": 0.21693745095327163,
+      "sse": 0.1707028128946789,
+      "residual_variance": 0.0029947861911347176,
+      "gamma0": 0.002893268015164049,
+      "long_run_variance": 0.0005479747375108131,
+      "se_rho": 0.11749398789484711,
+      "raw_tau": -4.616922066090859,
+      "pp_z_tau": -4.263223835451262,
+      "momentum_12": 0.06343917227189211,
+      "direction": 0
+    }
+  ]
+}
