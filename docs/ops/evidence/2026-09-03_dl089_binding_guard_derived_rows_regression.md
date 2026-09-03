@@ -101,3 +101,38 @@ Verification:
 - Pump cycle 23:58 ran 365 s (budget 360): reviews_and_research 109 s,
   queue_maintenance_and_intake 95 s, build_dispatch 70 s, dl089_matrix_service 49 s,
   news_expansions 23 s. No stage skipped.
+
+## Addendum 01:00Z — second blocker (service self-deadlock) and verified outcome
+
+The first pump cycle with the guard fix (`pump_task_20260903T001801Z.log`) admitted
+QM5_13054 and wrote `q12_selection_receipt.json` (verdict NO_FILTER_CHANGE, 00:28:57Z),
+but the stage ran 673 s and ended `DL089_MATRIX_SERVICE_FAILED:database is locked`;
+every later stage was skipped (`cycle_budget_exhausted`), worker claims starved
+(fleet 24 → 14 cells/10 min) and the transaction rolled back (row still pending).
+Cause: `_finalize_from_terminal_ledger` took the RESERVED lock on the service's outer
+connection (compare-and-set + hold release) without committing; `census.boost` /
+`selector.advance` of the NEXT governed program open their own connections with
+`BEGIN IMMEDIATE`, waited until their busy timeout, and the write-retry wrapper re-ran
+the whole pass (py-spy on the 00:33Z cycle: `boost (opt_census.py:732)`, idle). That
+cycle was killed (rollback is the same outcome; lock released, claims resumed within
+seconds). Fix `c230995ae8`: commit right after the completion + hold release (atomic
+unit unchanged); regression test with a second connection. Historical note: the
+11421/EURUSD finalisation at 07:30Z only succeeded because no further program followed
+it in that pass (that cycle still took 1,399 s).
+
+Verified: cycle `pump_task_20260903T003801Z.log` 330 s, matrix stage 46 s, `finalized`
+block present; DB: Q12 `a5b90e08` done/NO_FILTER_CHANGE 00:39Z, rollout hold released
+("DL-089 matrix completed from sealed cell evidence"); Q13 `83c1e21f` NO_PARAMETER_CHANGE
+00:49Z via optimization_fork_service; Q14 expected in the following cycle.
+
+`book_build_guard --status --venue both` (01:00Z): `qualified_pairs = 2`
+(QM5_10706/GBPUSD, QM5_11422/USDCAD — contiguous through Q14). rebaseline_census map of
+the 24 held Q12 pairs: 13054/XTI contiguous to Q13 (→ 3rd pair after Q14); 13 pairs
+contiguous to Q11 and missing only the Q12 program: 1537 (78 cells left), 21507 (606),
+11881 (954), 20266 (873), 10513 (976), 20048 (1,085), 21505 (1,049) with cells;
+12855/9641/12849 with approved siblings (41305/41306/41307, Q02 PASS) waiting for a
+program slot (K=8); 21501/USDJPY, 13013/NDX, 10403/XAUUSD, 11660/NDX without any
+`_opt` sibling → Codex task `57bc396f` (P85, sibling wave 2). 11421/EURUSD is
+contiguous only to Q09 (legacy Q10 STALE) until its news continuation on T2 locks.
+Two of the eight program slots (10706, 11422) measure second-pass programs for pairs
+that already count — a slot-order decision for the Sunday package, not changed tonight.
