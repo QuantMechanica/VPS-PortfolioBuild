@@ -1,0 +1,971 @@
+{
+ "schema": "qm.shadow-book-evaluation-dossier/v1",
+ "record_kind": "EVIDENCE_ONLY_DOSSIER",
+ "builds_book": false,
+ "computes_weights": false,
+ "creates_deploy_artifact": false,
+ "router_task_id": "08ba621a-0928-41d5-844b-62080da79401",
+ "owner_decision": "OWNER-DEC-Q12-ADMISSION",
+ "receipt_id": "39b77657-66a6-4b2f-bb14-5a480c1fd4d7",
+ "generated_at_utc": "2026-09-03T07:16:58+00:00",
+ "db_snapshot_utc": "2026-09-03T07:12:06+00:00",
+ "db_read_only_proof": {
+  "uri": "file:D:/QM/strategy_farm/state/farm_state.sqlite?mode=ro",
+  "query_only": 1,
+  "quick_check": "ok",
+  "write_probe": "rejected_OperationalError"
+ },
+ "git_head": "2f0f1e3eb8aaacc6a0e4c0e10e81d10fed853767",
+ "cohort_size": 24,
+ "audited_count": 16,
+ "excluded_active_track_count": 8,
+ "anchor_counts_audited": {
+  "Q09": 5,
+  "Q02_NEW_IDENTITY": 11
+ },
+ "book_build_guard": {
+  "qualified_pairs": 5,
+  "distinct_eas": 5,
+  "strategy_families": 5,
+  "allowed": false,
+  "min_qualified_pairs": 25,
+  "reasons": [
+   "qualified_pairs_below_minimum: 5 < 25",
+   "owner_order_missing: venue=both order_dir=C:\\QM\\repo\\decisions"
+  ]
+ },
+ "cohort_q14_terminal_members": 0,
+ "qualified_pairs_overlap_with_cohort": [
+  "QM5_10706/GBPUSD.DWX (excl ACTIVE_OPT_FORK)",
+  "QM5_11421/EURUSD.DWX (excl)",
+  "QM5_11422/USDCAD.DWX (excl)"
+ ],
+ "qualified_pairs_outside_cohort": [
+  "QM5_13054/XTIUSD.DWX",
+  "QM5_1537/XAGUSD.DWX"
+ ],
+ "mix_audited": {
+  "asset_class": {
+   "gold": 4,
+   "fx_major_or_cross": 7,
+   "index": 3,
+   "oil": 1,
+   "fx_statarb": 1
+  },
+  "timeframe": {
+   "D1": 9,
+   "H1": 5,
+   "H4": 1,
+   "M30": 1
+  },
+  "edge_family": {
+   "mean_reversion_pullback": 8,
+   "trend_breakout_momentum": 5,
+   "vol_squeeze_breakout": 1,
+   "statarb": 1,
+   "calendar_seasonal": 1
+  }
+ },
+ "tradability": {
+  "SP500.DWX": "ORDER_ROUTABLE_CONFIRMED",
+  "others": "canonical_name_verified=true but live_order_symbol/status EMPTY in dwx_symbol_matrix.csv (presumed routable via shared Darwinex-Live account; confirm per-symbol before deploy)"
+ },
+ "near_duplicate_flags": {
+  "same_ea_two_symbols": [
+   "QM5_11165 weiss-rsi-ma AUDCAD+EURUSD",
+   "QM5_10815 tv-post-vwap EURUSD+GDAXI(excl)"
+  ],
+  "family_clusters": {
+   "grimes_pullback": [
+    "QM5_10911",
+    "QM5_10940",
+    "QM5_10939(excl)"
+   ],
+   "connors_rsi2": [
+    "QM5_11132",
+    "QM5_12567(excl)"
+   ],
+   "williams_18ma": [
+    "QM5_11910",
+    "QM5_11422(excl)"
+   ]
+  },
+  "gold_concentration_of_24": [
+   "QM5_1556",
+   "QM5_10403",
+   "QM5_10700",
+   "QM5_10940",
+   "QM5_10513(excl)",
+   "QM5_12567(excl)"
+  ]
+ },
+ "members": [
+  {
+   "ea_id": "QM5_1556",
+   "symbol": "XAUUSD.DWX",
+   "timeframe": "D1",
+   "anchor_2026_09_03": "Q09",
+   "anchor_2026_08_30": "Q02_NEW_IDENTITY",
+   "exclusions": [],
+   "excluded": false,
+   "edge_family": "trend_momentum_12m",
+   "asset_class": "gold",
+   "ex5_binding": "MATCH",
+   "setfile_binding": "MATCH",
+   "stream_binding": "representative",
+   "stream_file": "1556_XAUUSD_DWX.jsonl"
+  },
+  {
+   "ea_id": "QM5_1567",
+   "symbol": "EURUSD.DWX",
+   "timeframe": "H4",
+   "anchor_2026_09_03": "EXCLUDED_ACTIVE_TRACK",
+   "anchor_2026_08_30": "EXCLUDED_ACTIVE_TRACK",
+   "exclusions": [
+    "REQUAL8"
+   ],
+   "excluded": true,
+   "edge_family": null,
+   "asset_class": "fx_major",
+   "ex5_binding": null,
+   "setfile_binding": null,
+   "stream_binding": null,
+   "stream_file": "1567_EURUSD_DWX.jsonl"
+  },
+  {
+   "ea_id": "QM5_10403",
+   "symbol": "XAUUSD.DWX",
+   "timeframe": "D1",
+   "anchor_2026_09_03": "Q09",
+   "anchor_2026_08_30": "Q09",
+   "exclusions": [],
+   "excluded": false,
+   "edge_family": "breakout_turtle20",
+   "asset_class": "gold",
+   "ex5_binding": "MATCH",
+   "setfile_binding": "MATCH",
+   "stream_binding": "representative",
+   "stream_file": null
+  },
+  {
+   "ea_id": "QM5_10513",
+   "symbol": "XAUUSD.DWX",
+   "timeframe": "D1",
+   "anchor_2026_09_03": "EXCLUDED_ACTIVE_TRACK",
+   "anchor_2026_08_30": "EXCLUDED_ACTIVE_TRACK",
+   "exclusions": [
+    "ACTIVE_NEWS_MATRIX"
+   ],
+   "excluded": true,
+   "edge_family": null,
+   "asset_class": "gold",
+   "ex5_binding": null,
+   "setfile_binding": null,
+   "stream_binding": null,
+   "stream_file": null
+  },
+  {
+   "ea_id": "QM5_10700",
+   "symbol": "XAUUSD.DWX",
+   "timeframe": "H1",
+   "anchor_2026_09_03": "Q02_NEW_IDENTITY",
+   "anchor_2026_08_30": "Q02_NEW_IDENTITY",
+   "exclusions": [],
+   "excluded": false,
+   "edge_family": "liquidity_breakout",
+   "asset_class": "gold",
+   "ex5_binding": "UNBOUND",
+   "setfile_binding": "UNBOUND",
+   "stream_binding": "unbound",
+   "stream_file": null
+  },
+  {
+   "ea_id": "QM5_10706",
+   "symbol": "GBPUSD.DWX",
+   "timeframe": "H1",
+   "anchor_2026_09_03": "EXCLUDED_ACTIVE_TRACK",
+   "anchor_2026_08_30": "EXCLUDED_ACTIVE_TRACK",
+   "exclusions": [
+    "ACTIVE_OPT_FORK"
+   ],
+   "excluded": true,
+   "edge_family": null,
+   "asset_class": "fx_major",
+   "ex5_binding": null,
+   "setfile_binding": null,
+   "stream_binding": null,
+   "stream_file": null
+  },
+  {
+   "ea_id": "QM5_10815",
+   "symbol": "EURUSD.DWX",
+   "timeframe": "H1",
+   "anchor_2026_09_03": "Q02_NEW_IDENTITY",
+   "anchor_2026_08_30": "Q02_NEW_IDENTITY",
+   "exclusions": [],
+   "excluded": false,
+   "edge_family": "vwap_mean_reversion",
+   "asset_class": "fx_major",
+   "ex5_binding": "UNBOUND",
+   "setfile_binding": "UNBOUND",
+   "stream_binding": "unbound",
+   "stream_file": null
+  },
+  {
+   "ea_id": "QM5_10815",
+   "symbol": "GDAXI.DWX",
+   "timeframe": "H1",
+   "anchor_2026_09_03": "EXCLUDED_ACTIVE_TRACK",
+   "anchor_2026_08_30": "EXCLUDED_ACTIVE_TRACK",
+   "exclusions": [
+    "REQUAL8"
+   ],
+   "excluded": true,
+   "edge_family": "vwap_mean_reversion",
+   "asset_class": "eu_index",
+   "ex5_binding": null,
+   "setfile_binding": null,
+   "stream_binding": null,
+   "stream_file": null
+  },
+  {
+   "ea_id": "QM5_10911",
+   "symbol": "GDAXI.DWX",
+   "timeframe": "H1",
+   "anchor_2026_09_03": "Q09",
+   "anchor_2026_08_30": "Q09",
+   "exclusions": [],
+   "excluded": false,
+   "edge_family": "pullback_grimes",
+   "asset_class": "eu_index",
+   "ex5_binding": "MATCH",
+   "setfile_binding": "MATCH",
+   "stream_binding": "representative",
+   "stream_file": null
+  },
+  {
+   "ea_id": "QM5_10939",
+   "symbol": "GBPUSD.DWX",
+   "timeframe": "H4",
+   "anchor_2026_09_03": "EXCLUDED_ACTIVE_TRACK",
+   "anchor_2026_08_30": "EXCLUDED_ACTIVE_TRACK",
+   "exclusions": [
+    "REQUAL8"
+   ],
+   "excluded": true,
+   "edge_family": null,
+   "asset_class": "fx_major",
+   "ex5_binding": null,
+   "setfile_binding": null,
+   "stream_binding": null,
+   "stream_file": "10939_GBPUSD_DWX.jsonl"
+  },
+  {
+   "ea_id": "QM5_10940",
+   "symbol": "XAUUSD.DWX",
+   "timeframe": "H4",
+   "anchor_2026_09_03": "Q02_NEW_IDENTITY",
+   "anchor_2026_08_30": "Q02_NEW_IDENTITY",
+   "exclusions": [],
+   "excluded": false,
+   "edge_family": "pullback_grimes",
+   "asset_class": "gold",
+   "ex5_binding": "UNBOUND",
+   "setfile_binding": "UNBOUND",
+   "stream_binding": "unbound",
+   "stream_file": null
+  },
+  {
+   "ea_id": "QM5_11132",
+   "symbol": "SP500.DWX",
+   "timeframe": "D1",
+   "anchor_2026_09_03": "Q02_NEW_IDENTITY",
+   "anchor_2026_08_30": "Q02_NEW_IDENTITY",
+   "exclusions": [],
+   "excluded": false,
+   "edge_family": "connors_rsi2_mean_reversion",
+   "asset_class": "us_index",
+   "ex5_binding": "MATCH",
+   "setfile_binding": "MISMATCH",
+   "stream_binding": "superseded_setfile",
+   "stream_file": "11132_SP500_DWX.jsonl"
+  },
+  {
+   "ea_id": "QM5_11165",
+   "symbol": "AUDCAD.DWX",
+   "timeframe": "H1",
+   "anchor_2026_09_03": "Q02_NEW_IDENTITY",
+   "anchor_2026_08_30": "Q02_NEW_IDENTITY",
+   "exclusions": [],
+   "excluded": false,
+   "edge_family": "rsi_ma_mean_reversion",
+   "asset_class": "fx_cross",
+   "ex5_binding": "MATCH",
+   "setfile_binding": "MISMATCH",
+   "stream_binding": "superseded_setfile",
+   "stream_file": "11165_AUDCAD_DWX.jsonl"
+  },
+  {
+   "ea_id": "QM5_11165",
+   "symbol": "EURUSD.DWX",
+   "timeframe": "H1",
+   "anchor_2026_09_03": "Q02_NEW_IDENTITY",
+   "anchor_2026_08_30": "Q02_NEW_IDENTITY",
+   "exclusions": [],
+   "excluded": false,
+   "edge_family": "rsi_ma_mean_reversion",
+   "asset_class": "fx_major",
+   "ex5_binding": "MATCH",
+   "setfile_binding": "MISMATCH",
+   "stream_binding": "superseded_setfile",
+   "stream_file": "11165_EURUSD_DWX.jsonl"
+  },
+  {
+   "ea_id": "QM5_11421",
+   "symbol": "EURUSD.DWX",
+   "timeframe": "D1",
+   "anchor_2026_09_03": "EXCLUDED_ACTIVE_TRACK",
+   "anchor_2026_08_30": "EXCLUDED_ACTIVE_TRACK",
+   "exclusions": [
+    "REQUAL8",
+    "ACTIVE_OPT_FORK"
+   ],
+   "excluded": true,
+   "edge_family": null,
+   "asset_class": "fx_major",
+   "ex5_binding": null,
+   "setfile_binding": null,
+   "stream_binding": null,
+   "stream_file": "11421_EURUSD_DWX.jsonl"
+  },
+  {
+   "ea_id": "QM5_11422",
+   "symbol": "USDCAD.DWX",
+   "timeframe": "D1",
+   "anchor_2026_09_03": "EXCLUDED_ACTIVE_TRACK",
+   "anchor_2026_08_30": "EXCLUDED_ACTIVE_TRACK",
+   "exclusions": [
+    "ACTIVE_OPT_FORK"
+   ],
+   "excluded": true,
+   "edge_family": null,
+   "asset_class": "fx_major",
+   "ex5_binding": null,
+   "setfile_binding": null,
+   "stream_binding": null,
+   "stream_file": null
+  },
+  {
+   "ea_id": "QM5_11708",
+   "symbol": "EURUSD.DWX",
+   "timeframe": "D1",
+   "anchor_2026_09_03": "Q09",
+   "anchor_2026_08_30": "Q02_NEW_IDENTITY",
+   "exclusions": [],
+   "excluded": false,
+   "edge_family": "vol_squeeze_breakout",
+   "asset_class": "fx_major",
+   "ex5_binding": "MATCH",
+   "setfile_binding": "MATCH",
+   "stream_binding": "representative",
+   "stream_file": "11708_EURUSD_DWX.jsonl"
+  },
+  {
+   "ea_id": "QM5_11910",
+   "symbol": "NZDUSD.DWX",
+   "timeframe": "D1",
+   "anchor_2026_09_03": "Q02_NEW_IDENTITY",
+   "anchor_2026_08_30": "Q02_NEW_IDENTITY",
+   "exclusions": [],
+   "excluded": false,
+   "edge_family": "breakout_williams18ma",
+   "asset_class": "fx_major",
+   "ex5_binding": "MISMATCH",
+   "setfile_binding": "MISMATCH",
+   "stream_binding": "superseded_ex5_setfile",
+   "stream_file": "11910_NZDUSD_DWX.jsonl"
+  },
+  {
+   "ea_id": "QM5_12567",
+   "symbol": "XAUUSD.DWX",
+   "timeframe": "D1",
+   "anchor_2026_09_03": "EXCLUDED_ACTIVE_TRACK",
+   "anchor_2026_08_30": "EXCLUDED_ACTIVE_TRACK",
+   "exclusions": [
+    "REQUAL8"
+   ],
+   "excluded": true,
+   "edge_family": null,
+   "asset_class": "gold",
+   "ex5_binding": null,
+   "setfile_binding": null,
+   "stream_binding": null,
+   "stream_file": "12567_XAUUSD_DWX.jsonl"
+  },
+  {
+   "ea_id": "QM5_12580",
+   "symbol": "AUDUSD.DWX",
+   "timeframe": "D1",
+   "anchor_2026_09_03": "Q02_NEW_IDENTITY",
+   "anchor_2026_08_30": "Q02_NEW_IDENTITY",
+   "exclusions": [],
+   "excluded": false,
+   "edge_family": "exhaustion_mean_reversion",
+   "asset_class": "fx_major",
+   "ex5_binding": "UNBOUND",
+   "setfile_binding": "UNBOUND",
+   "stream_binding": "unbound",
+   "stream_file": null
+  },
+  {
+   "ea_id": "QM5_12710",
+   "symbol": "XTIUSD.DWX",
+   "timeframe": "D1",
+   "anchor_2026_09_03": "Q02_NEW_IDENTITY",
+   "anchor_2026_08_30": "Q02_NEW_IDENTITY",
+   "exclusions": [],
+   "excluded": false,
+   "edge_family": "ts_momentum",
+   "asset_class": "oil",
+   "ex5_binding": "UNBOUND",
+   "setfile_binding": "UNBOUND",
+   "stream_binding": "unbound",
+   "stream_file": "12710_XTIUSD_DWX.jsonl"
+  },
+  {
+   "ea_id": "QM5_12778",
+   "symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+   "timeframe": "D1",
+   "anchor_2026_09_03": "Q02_NEW_IDENTITY",
+   "anchor_2026_08_30": "Q02_NEW_IDENTITY",
+   "exclusions": [],
+   "excluded": false,
+   "edge_family": "statarb_cointegration",
+   "asset_class": "fx_statarb",
+   "ex5_binding": "UNBOUND",
+   "setfile_binding": "UNBOUND",
+   "stream_binding": "unbound",
+   "stream_file": "12778_QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1.jsonl"
+  },
+  {
+   "ea_id": "QM5_12966",
+   "symbol": "GDAXI.DWX",
+   "timeframe": "D1",
+   "anchor_2026_09_03": "Q02_NEW_IDENTITY",
+   "anchor_2026_08_30": "Q02_NEW_IDENTITY",
+   "exclusions": [],
+   "excluded": false,
+   "edge_family": "oversold_mean_reversion",
+   "asset_class": "eu_index",
+   "ex5_binding": "UNBOUND",
+   "setfile_binding": "UNBOUND",
+   "stream_binding": "unbound",
+   "stream_file": null
+  },
+  {
+   "ea_id": "QM5_12969",
+   "symbol": "USDJPY.DWX",
+   "timeframe": "M30",
+   "anchor_2026_09_03": "Q09",
+   "anchor_2026_08_30": "Q09",
+   "exclusions": [],
+   "excluded": false,
+   "edge_family": "calendar_gotobi",
+   "asset_class": "fx_major",
+   "ex5_binding": "MATCH",
+   "setfile_binding": "MATCH",
+   "stream_binding": "representative",
+   "stream_file": "12969_USDJPY_DWX.jsonl"
+  }
+ ],
+ "correlation": {
+  "method": "daily net-of-worst-case-cost P&L (stream 'net' field) bucketed by UTC exit day; Pearson on 0-filled daily vectors over union window; coactive_days=shared trading days",
+  "cost_basis": "worst_case_dxz_ftmo (already embedded in stream net)",
+  "min_overlap_days_tool_floor": 60,
+  "streams_available_of_audited": "9/16",
+  "streams_missing_audited": [
+   "QM5_10403/XAUUSD",
+   "QM5_10700/XAUUSD",
+   "QM5_10815/EURUSD",
+   "QM5_10911/GDAXI",
+   "QM5_10940/XAUUSD",
+   "QM5_12580/AUDUSD",
+   "QM5_12966/GDAXI"
+  ],
+  "union_window": [
+   "2017-10-10",
+   "2025-12-30"
+  ],
+  "n_series": 9,
+  "per_member": {
+   "QM5_1556/XAUUSD": {
+    "trades": 53,
+    "active_days": 53,
+    "first": "2019-02-01",
+    "last": "2025-12-05",
+    "net_of_cost_total": 6619.11,
+    "sha256": "b1e84c8a1e8c74f8611d600adc1174c6269067020356969e19f35b513fa485c8",
+    "file": "1556_XAUUSD_DWX.jsonl",
+    "stream_binding": "representative"
+   },
+   "QM5_11132/SP500": {
+    "trades": 73,
+    "active_days": 73,
+    "first": "2019-05-10",
+    "last": "2025-12-23",
+    "net_of_cost_total": 6919.85,
+    "sha256": "35aef7994a5b8f57a98c8a7ed4037ebc938a0c10dbff65afe9d54c311ed4274d",
+    "file": "11132_SP500_DWX.jsonl",
+    "stream_binding": "superseded_setfile"
+   },
+   "QM5_11165/AUDCAD": {
+    "trades": 181,
+    "active_days": 181,
+    "first": "2017-10-19",
+    "last": "2025-12-05",
+    "net_of_cost_total": 2143.11,
+    "sha256": "46354e14c7ce9a31bbbcb2a32cc82e40f46993e92efa0db645a87923b605e547",
+    "file": "11165_AUDCAD_DWX.jsonl",
+    "stream_binding": "superseded_setfile"
+   },
+   "QM5_11165/EURUSD": {
+    "trades": 223,
+    "active_days": 220,
+    "first": "2017-11-20",
+    "last": "2025-12-17",
+    "net_of_cost_total": 761.42,
+    "sha256": "e30270fa71a427e5494761f0ffe4a36a375be7ddcc483643f3ef31e771b78a4d",
+    "file": "11165_EURUSD_DWX.jsonl",
+    "stream_binding": "superseded_setfile"
+   },
+   "QM5_11708/EURUSD": {
+    "trades": 173,
+    "active_days": 166,
+    "first": "2018-06-08",
+    "last": "2025-12-05",
+    "net_of_cost_total": 2607.55,
+    "sha256": "0fbccdfed14837c8b58e983f4367be08c9f8fef02d49377d3984b663e1e5d914",
+    "file": "11708_EURUSD_DWX.jsonl",
+    "stream_binding": "representative"
+   },
+   "QM5_11910/NZDUSD": {
+    "trades": 63,
+    "active_days": 63,
+    "first": "2018-03-23",
+    "last": "2025-06-05",
+    "net_of_cost_total": 2509.53,
+    "sha256": "92c51571583c99de2957b894026e17fd5feb130f02e6b3494ba5b1d6f1a074d9",
+    "file": "11910_NZDUSD_DWX.jsonl",
+    "stream_binding": "superseded_ex5_setfile"
+   },
+   "QM5_12710/XTIUSD": {
+    "trades": 82,
+    "active_days": 82,
+    "first": "2018-10-05",
+    "last": "2025-12-05",
+    "net_of_cost_total": 7579.54,
+    "sha256": "c09e9ea0bdeb4d888300bf4fe5afa6d84dd097aba864472415facc643d7e8dcd",
+    "file": "12710_XTIUSD_DWX.jsonl",
+    "stream_binding": "unbound"
+   },
+   "QM5_12778/QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1": {
+    "trades": 210,
+    "active_days": 105,
+    "first": "2018-05-04",
+    "last": "2025-11-28",
+    "net_of_cost_total": 4502.83,
+    "sha256": "276adef910f3eca3432ee03a31f5abc0c5e7791794325c930294707be5b00186",
+    "file": "12778_QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1.jsonl",
+    "stream_binding": "unbound"
+   },
+   "QM5_12969/USDJPY": {
+    "trades": 300,
+    "active_days": 300,
+    "first": "2017-10-10",
+    "last": "2025-12-30",
+    "net_of_cost_total": 10848.6,
+    "sha256": "1788388f79e4197739169ef4e289abd5f6104cd492b34bd30cc221f03b971f10",
+    "file": "12969_USDJPY_DWX.jsonl",
+    "stream_binding": "representative"
+   }
+  },
+  "pairs": [
+   {
+    "a": "QM5_11132/SP500",
+    "b": "QM5_11165/AUDCAD",
+    "pearson": 0.0165,
+    "coactive_days": 8,
+    "meets_min_overlap_60": false
+   },
+   {
+    "a": "QM5_11132/SP500",
+    "b": "QM5_11165/EURUSD",
+    "pearson": -0.0224,
+    "coactive_days": 9,
+    "meets_min_overlap_60": false
+   },
+   {
+    "a": "QM5_11132/SP500",
+    "b": "QM5_11708/EURUSD",
+    "pearson": 0.0668,
+    "coactive_days": 7,
+    "meets_min_overlap_60": false
+   },
+   {
+    "a": "QM5_11132/SP500",
+    "b": "QM5_11910/NZDUSD",
+    "pearson": -0.0256,
+    "coactive_days": 6,
+    "meets_min_overlap_60": false
+   },
+   {
+    "a": "QM5_11132/SP500",
+    "b": "QM5_12710/XTIUSD",
+    "pearson": 0.0167,
+    "coactive_days": 12,
+    "meets_min_overlap_60": false
+   },
+   {
+    "a": "QM5_11132/SP500",
+    "b": "QM5_12778/QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+    "pearson": 0.0062,
+    "coactive_days": 17,
+    "meets_min_overlap_60": false
+   },
+   {
+    "a": "QM5_11132/SP500",
+    "b": "QM5_12969/USDJPY",
+    "pearson": -0.0055,
+    "coactive_days": 10,
+    "meets_min_overlap_60": false
+   },
+   {
+    "a": "QM5_11132/SP500",
+    "b": "QM5_1556/XAUUSD",
+    "pearson": 0.0263,
+    "coactive_days": 9,
+    "meets_min_overlap_60": false
+   },
+   {
+    "a": "QM5_11165/AUDCAD",
+    "b": "QM5_11165/EURUSD",
+    "pearson": 0.0025,
+    "coactive_days": 27,
+    "meets_min_overlap_60": false
+   },
+   {
+    "a": "QM5_11165/AUDCAD",
+    "b": "QM5_11708/EURUSD",
+    "pearson": -0.0391,
+    "coactive_days": 18,
+    "meets_min_overlap_60": false
+   },
+   {
+    "a": "QM5_11165/AUDCAD",
+    "b": "QM5_11910/NZDUSD",
+    "pearson": 0.0077,
+    "coactive_days": 8,
+    "meets_min_overlap_60": false
+   },
+   {
+    "a": "QM5_11165/AUDCAD",
+    "b": "QM5_12710/XTIUSD",
+    "pearson": -0.0527,
+    "coactive_days": 13,
+    "meets_min_overlap_60": false
+   },
+   {
+    "a": "QM5_11165/AUDCAD",
+    "b": "QM5_12778/QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+    "pearson": -0.0435,
+    "coactive_days": 15,
+    "meets_min_overlap_60": false
+   },
+   {
+    "a": "QM5_11165/AUDCAD",
+    "b": "QM5_12969/USDJPY",
+    "pearson": -0.0121,
+    "coactive_days": 31,
+    "meets_min_overlap_60": false
+   },
+   {
+    "a": "QM5_11165/AUDCAD",
+    "b": "QM5_1556/XAUUSD",
+    "pearson": -0.0553,
+    "coactive_days": 11,
+    "meets_min_overlap_60": false
+   },
+   {
+    "a": "QM5_11165/EURUSD",
+    "b": "QM5_11708/EURUSD",
+    "pearson": -0.0381,
+    "coactive_days": 37,
+    "meets_min_overlap_60": false
+   },
+   {
+    "a": "QM5_11165/EURUSD",
+    "b": "QM5_11910/NZDUSD",
+    "pearson": 0.0006,
+    "coactive_days": 11,
+    "meets_min_overlap_60": false
+   },
+   {
+    "a": "QM5_11165/EURUSD",
+    "b": "QM5_12710/XTIUSD",
+    "pearson": -0.0216,
+    "coactive_days": 19,
+    "meets_min_overlap_60": false
+   },
+   {
+    "a": "QM5_11165/EURUSD",
+    "b": "QM5_12778/QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+    "pearson": -0.0053,
+    "coactive_days": 17,
+    "meets_min_overlap_60": false
+   },
+   {
+    "a": "QM5_11165/EURUSD",
+    "b": "QM5_12969/USDJPY",
+    "pearson": 0.0009,
+    "coactive_days": 30,
+    "meets_min_overlap_60": false
+   },
+   {
+    "a": "QM5_11165/EURUSD",
+    "b": "QM5_1556/XAUUSD",
+    "pearson": -0.0367,
+    "coactive_days": 14,
+    "meets_min_overlap_60": false
+   },
+   {
+    "a": "QM5_11708/EURUSD",
+    "b": "QM5_11910/NZDUSD",
+    "pearson": 0.0922,
+    "coactive_days": 11,
+    "meets_min_overlap_60": false
+   },
+   {
+    "a": "QM5_11708/EURUSD",
+    "b": "QM5_12710/XTIUSD",
+    "pearson": -0.0844,
+    "coactive_days": 21,
+    "meets_min_overlap_60": false
+   },
+   {
+    "a": "QM5_11708/EURUSD",
+    "b": "QM5_12778/QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+    "pearson": -0.0726,
+    "coactive_days": 19,
+    "meets_min_overlap_60": false
+   },
+   {
+    "a": "QM5_11708/EURUSD",
+    "b": "QM5_12969/USDJPY",
+    "pearson": 0.0019,
+    "coactive_days": 22,
+    "meets_min_overlap_60": false
+   },
+   {
+    "a": "QM5_11708/EURUSD",
+    "b": "QM5_1556/XAUUSD",
+    "pearson": -0.0863,
+    "coactive_days": 18,
+    "meets_min_overlap_60": false
+   },
+   {
+    "a": "QM5_11910/NZDUSD",
+    "b": "QM5_12710/XTIUSD",
+    "pearson": -0.0641,
+    "coactive_days": 10,
+    "meets_min_overlap_60": false
+   },
+   {
+    "a": "QM5_11910/NZDUSD",
+    "b": "QM5_12778/QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+    "pearson": -0.0585,
+    "coactive_days": 14,
+    "meets_min_overlap_60": false
+   },
+   {
+    "a": "QM5_11910/NZDUSD",
+    "b": "QM5_12969/USDJPY",
+    "pearson": -0.0424,
+    "coactive_days": 16,
+    "meets_min_overlap_60": false
+   },
+   {
+    "a": "QM5_11910/NZDUSD",
+    "b": "QM5_1556/XAUUSD",
+    "pearson": -0.1015,
+    "coactive_days": 5,
+    "meets_min_overlap_60": false
+   },
+   {
+    "a": "QM5_12710/XTIUSD",
+    "b": "QM5_12778/QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+    "pearson": 0.0335,
+    "coactive_days": 21,
+    "meets_min_overlap_60": false
+   },
+   {
+    "a": "QM5_12710/XTIUSD",
+    "b": "QM5_12969/USDJPY",
+    "pearson": -0.005,
+    "coactive_days": 14,
+    "meets_min_overlap_60": false
+   },
+   {
+    "a": "QM5_12710/XTIUSD",
+    "b": "QM5_1556/XAUUSD",
+    "pearson": 0.0365,
+    "coactive_days": 50,
+    "meets_min_overlap_60": false
+   },
+   {
+    "a": "QM5_12778/QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+    "b": "QM5_12969/USDJPY",
+    "pearson": 0.0128,
+    "coactive_days": 16,
+    "meets_min_overlap_60": false
+   },
+   {
+    "a": "QM5_12778/QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+    "b": "QM5_1556/XAUUSD",
+    "pearson": -0.04,
+    "coactive_days": 13,
+    "meets_min_overlap_60": false
+   },
+   {
+    "a": "QM5_12969/USDJPY",
+    "b": "QM5_1556/XAUUSD",
+    "pearson": -0.0158,
+    "coactive_days": 9,
+    "meets_min_overlap_60": false
+   }
+  ],
+  "max_abs_pearson": 0.1015,
+  "max_coactive_days": 50,
+  "pairs_meeting_60d_overlap": 0,
+  "verdict": "INSUFFICIENT_FOR_BOOK_GRADE_CORRELATION: no pair meets 60-day overlap; 6/9 streams bind to superseded identities; treat as screening prior only"
+ },
+ "what_if_orthogonal_set": [
+  {
+   "member": "QM5_1556/XAUUSD",
+   "anchor": "Q09",
+   "edge": "12m_momentum",
+   "asset": "gold",
+   "stream": "representative"
+  },
+  {
+   "member": "QM5_12969/USDJPY",
+   "anchor": "Q09",
+   "edge": "calendar_gotobi",
+   "asset": "fx_major",
+   "stream": "representative"
+  },
+  {
+   "member": "QM5_11708/EURUSD",
+   "anchor": "Q09",
+   "edge": "vol_squeeze_breakout",
+   "asset": "fx_major",
+   "stream": "representative"
+  },
+  {
+   "member": "QM5_10911/GDAXI",
+   "anchor": "Q09",
+   "edge": "pullback",
+   "asset": "eu_index",
+   "stream": "none"
+  },
+  {
+   "member": "QM5_12710/XTIUSD",
+   "anchor": "Q02_NEW",
+   "edge": "ts_momentum",
+   "asset": "oil",
+   "stream": "superseded_unbound"
+  },
+  {
+   "member": "QM5_11132/SP500",
+   "anchor": "Q02_NEW",
+   "edge": "connors_rsi2",
+   "asset": "us_index_ORDER_ROUTABLE_CONFIRMED",
+   "stream": "superseded_setfile"
+  },
+  {
+   "member": "QM5_12778/AUDUSD_EURJPY_basket",
+   "anchor": "Q02_NEW",
+   "edge": "statarb_cointegration",
+   "asset": "fx_market_neutral",
+   "stream": "superseded_unbound"
+  }
+ ],
+ "what_if_optional_8th": "QM5_12580/AUDUSD (usd_exhaustion_reversal, Q02_NEW)",
+ "what_if_disclaimer": "discussion basis only; NOT weights, NOT allocations, NOT a book",
+ "owner_vorlagen": [
+  {
+   "id": "V1",
+   "topic": "re-entry sequencing",
+   "options": [
+    "all 16",
+    "5 Q09 first",
+    "7-member what-if",
+    "none"
+   ],
+   "recommendation": "5 Q09 first, then what-if",
+   "cost_of_waiting": "25-floor stays at 5; no book evaluable"
+  },
+  {
+   "id": "V2",
+   "topic": "concentration cap",
+   "options": [
+    "1 per symbol",
+    "cap by asset class",
+    "no cap"
+   ],
+   "recommendation": "1 per symbol (esp gold) until aggregate control exists",
+   "cost_of_waiting": "unpriced concentration risk"
+  },
+  {
+   "id": "V3",
+   "topic": "venue targeting",
+   "options": [
+    "DXZ only",
+    "FTMO only",
+    "both"
+   ],
+   "recommendation": "DXZ-first",
+   "cost_of_waiting": "FTMO payouts deferred vs sprint-failure risk"
+  },
+  {
+   "id": "V4",
+   "topic": "correlation evidence standard",
+   "options": [
+    "accept sparse screening prior",
+    "require Q14-terminal streams >=60d overlap"
+   ],
+   "recommendation": "require Q14-terminal bound streams",
+   "cost_of_waiting": "correlation truth deferred to first Q14 cohort"
+  },
+  {
+   "id": "V5",
+   "topic": "news binding before FTMO",
+   "options": [
+    "require bound calendar + terminal Q10_NEWS",
+    "evaluate pre-news"
+   ],
+   "recommendation": "require for FTMO; pre-news only for DXZ screening",
+   "cost_of_waiting": "FTMO eval blocked on Q10_NEWS bottleneck"
+  }
+ ],
+ "recommended_next_step": "V1(b): commission re-entry of the 5 Q09-anchored members to grow the Q14 census (separate OWNER/queue decision; NOT enqueued here)",
+ "inputs_sha256": {
+  "admission_md": "e01fdd83fe2d9bd2fe3e98c5b3891be603e0c447e76fdfbcaad0dbe5a33c6016",
+  "admission_json": "42b0b680dd0680240a5e4e4eea8704ce75b053889906ff1f018f332440156b32",
+  "audit_0830_md_current": "031da06e097eee937ac9a516d9f580711fcbd148575158e4b1e7bef7ed391204",
+  "audit_0830_md_admission_bound": "0451794fc1ffa6868bee7ae88fad00a18d718d7b76247ff58b1d7c438e43292b",
+  "audit_0830_json": "574ae1fdad48cbecd933ddd6f17fc34d9797eda7d0e1a47d666e35e18a4daaf8",
+  "dwx_symbol_matrix": "e7844d9a18db8723db2b31d839581d0cc348140cf883200524a1af26d465821d",
+  "live_commission": "e9f3c23ae44e5b11c57bb874d4d4bec8cf1dc9987777f5c9ef3add6e2bb43eea"
+ },
+ "mutation_statement": "read-only; no book/manifest/weight/deploy/live/queue/verdict/gate/portfolio_candidates mutation"
+}
