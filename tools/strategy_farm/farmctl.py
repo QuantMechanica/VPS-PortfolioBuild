@@ -25533,6 +25533,10 @@ def _enqueue_q03_exact_identity(
             SELECT id,status FROM work_items
             WHERE ea_id=? AND phase IN ('Q03','P3') AND symbol=? AND setfile_path=?
               AND status IN ('pending','active')
+              AND NOT EXISTS (
+                SELECT 1 FROM work_item_supersedes s
+                WHERE s.work_item_id=work_items.id
+              )
             ORDER BY created_at ASC LIMIT 1
             """,
             (ea_id, predecessor["symbol"], predecessor["setfile_path"]),
@@ -26130,6 +26134,10 @@ def enqueue_cascade_backtest_for_ea(
                     SELECT id, status FROM work_items
                     WHERE ea_id=? AND phase=? AND symbol=? AND setfile_path=?
                       AND status IN ('pending','active')
+                      AND NOT EXISTS (
+                        SELECT 1 FROM work_item_supersedes s
+                        WHERE s.work_item_id=work_items.id
+                      )
                     ORDER BY created_at ASC LIMIT 1
                     """,
                     (ea_id, phase, prev["symbol"], prev["setfile_path"]),
