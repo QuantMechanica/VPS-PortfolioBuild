@@ -128,3 +128,13 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   afterwards, claimed by T2 at 03:33Z. 10700/12710 second compiles pending (workers busy / CPU pause).
 - 03:37Z: staggered worker reload pass 2 running (pass 1 done 03:29Z) so every worker imports the
   allowlist module, Amendment B incl. Q02 and the rerun-visibility fix `a1cc06688b`.
+- 03:49Z: QM5_11910 new-identity Q02 `71d1ad66` **PASS** (T2); cascade rows on the new identity
+  expected from the following pump cycles.
+- 03:53Z: QM5_10700 second compile `dfb92b8a` **COMPILE_OK** (new ex5 `5fbf2ba0…`). The new-identity
+  Q02 could NOT be enqueued: the exact-rerun path refuses `q02_rerun_source_evidence_missing` (both
+  prior XAUUSD Q02 rows, 6205ba82 PASS 2026-06-27 / fac4b180, lost their evidence to report
+  retention) and the universe-expansion path refuses `ea_symbol_already_tested`. No governed path
+  exists today to restart an already-tested pair on a new identity without retained old evidence →
+  explicit `enqueue-backtest --new-identity-restart <OWNER decision>` commissioned (Opus workflow
+  `wlv9tw55z`, fail-closed: PASS-family source, changed ex5 sha, payload discloses the restart).
+  12710's second compile `47cd9a37` still pending (workers CPU/RAM-paused).
