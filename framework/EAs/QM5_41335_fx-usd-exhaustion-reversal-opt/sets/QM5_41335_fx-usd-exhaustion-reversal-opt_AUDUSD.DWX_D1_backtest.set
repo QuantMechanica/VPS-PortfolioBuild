@@ -13,7 +13,7 @@
 ; author:       Development
 ; date:         2026-09-03
 ;==========================================================
-qm_magic_slot_offset=2
+qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1

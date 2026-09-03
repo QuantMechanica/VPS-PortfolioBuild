@@ -136,13 +136,7 @@ bool Pattern_AllowsRequest(const QM_EntryRequest &req)
 
 string g_fx_symbols[7] =
   {
-   "EURUSD.DWX",
-   "GBPUSD.DWX",
-   "AUDUSD.DWX",
-   "NZDUSD.DWX",
-   "USDJPY.DWX",
-   "USDCHF.DWX",
-   "USDCAD.DWX"
+   "AUDUSD.DWX"   // DL-089 measurement sibling: single carrier at slot 0 (parent slot map not reproduced)
   };
 
 int SymbolSlot(const string symbol)
