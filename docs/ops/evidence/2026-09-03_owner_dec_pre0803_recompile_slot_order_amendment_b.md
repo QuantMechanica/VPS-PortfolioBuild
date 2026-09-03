@@ -200,3 +200,12 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   rerun + priority_track, not quarantined) may take ONE Q07/Q08 slot above the cap (2 → 3); ordinary
   rows keep 2, news caps unchanged. Idle-only reload chunk 12 (T1/T4/T5/T6/T8/T10) started 05:55Z;
   chunk 11 covers T2/T3/T7/T9 when they go idle.
+- 06:03Z–06:15Z: the third Q07/Q08 slot took effect (12710 Q07 `fad536b4` claimed by T5 at 06:03Z). 10700 Q06
+  `02df28c0` PASS 06:01Z; its Q07 rerun was refused twice by a ZOMBIE row: the Codex 'Q10 lineage wave2'
+  rerun `3815515b` (2026-09-02 16:30Z) is pending, bound to the pre-0803 identity `0126116d`, unclaimable
+  under the execution-binding filter, and counted by the duplicate guards. Governed path used:
+  `work_item_supersedes.py record --apply` (backup, recorded_by claude, reason bound to this decision) — the
+  Q02 guards already honoured the supersedes table, the Q03/generic `append_only_rerun_already_exists`
+  (`c6dba4c092`) and `already_pending_or_active` (`80269fed36`) guards now do too. 10700 Q07 `21317bcc`
+  enqueued 06:15Z (rerun of 3fdcc9af). Same class remains for the two pre-0803 Q10_NEWS pending rows
+  (10700 `77bd97c2`, 12710 `678b8cac`) — handled when the chains reach Q09 (news gate service path).
