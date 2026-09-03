@@ -94,7 +94,7 @@ class CommitReservationDecayTests(unittest.TestCase):
 
     def test_reservation_decays_by_measured_usage(self):
         """26GB already allocated -> only the unmaterialized 18GB stays reserved."""
-        terminal_worker._measured_subtree_gb = lambda pid: 26.0
+        terminal_worker._measured_subtree_gb = lambda pid, process_snapshot=None: 26.0
         conn, now = self._conn_with_active(self._payload(peak_gb=44.0, age_seconds=600))
         snap = self._snapshot(conn, now)
         self.assertAlmostEqual(snap["reserved_gb"], 18.0, places=2)
@@ -102,7 +102,7 @@ class CommitReservationDecayTests(unittest.TestCase):
 
     def test_job_at_or_above_peak_reserves_nothing(self):
         """This is the incident: the OS measurement already covers it."""
-        terminal_worker._measured_subtree_gb = lambda pid: 47.0
+        terminal_worker._measured_subtree_gb = lambda pid, process_snapshot=None: 47.0
         conn, now = self._conn_with_active(self._payload(peak_gb=44.0, age_seconds=1200))
         snap = self._snapshot(conn, now)
         self.assertEqual(snap["reserved_gb"], 0.0)
@@ -114,14 +114,14 @@ class CommitReservationDecayTests(unittest.TestCase):
 
     def test_unmeasurable_job_keeps_full_reservation(self):
         """Probe failure must stay conservative, never assume zero usage."""
-        terminal_worker._measured_subtree_gb = lambda pid: None
+        terminal_worker._measured_subtree_gb = lambda pid, process_snapshot=None: None
         conn, now = self._conn_with_active(self._payload(peak_gb=44.0, age_seconds=600))
         snap = self._snapshot(conn, now)
         self.assertAlmostEqual(snap["reserved_gb"], 44.0, places=2)
 
     def test_vanished_process_tree_releases_the_reservation(self):
         """Lineage gone -> no future growth to reserve for."""
-        terminal_worker._measured_subtree_gb = lambda pid: float("inf")
+        terminal_worker._measured_subtree_gb = lambda pid, process_snapshot=None: float("inf")
         conn, now = self._conn_with_active(self._payload(peak_gb=44.0, age_seconds=600))
         snap = self._snapshot(conn, now)
         self.assertEqual(snap["reserved_gb"], 0.0)
@@ -129,14 +129,14 @@ class CommitReservationDecayTests(unittest.TestCase):
 
     def test_multisym_window_outlives_the_ordinary_one(self):
         """A 40-minute-old multisym claim is still inside its window..."""
-        terminal_worker._measured_subtree_gb = lambda pid: 5.0
+        terminal_worker._measured_subtree_gb = lambda pid, process_snapshot=None: 5.0
         conn, now = self._conn_with_active(self._payload(peak_gb=44.0, age_seconds=2400))
         snap = self._snapshot(conn, now)
         self.assertEqual(len(snap["reservations"]), 1)
         self.assertAlmostEqual(snap["reserved_gb"], 39.0, places=2)
 
     def test_expired_window_drops_the_reservation_entirely(self):
-        terminal_worker._measured_subtree_gb = lambda pid: 5.0
+        terminal_worker._measured_subtree_gb = lambda pid, process_snapshot=None: 5.0
         conn, now = self._conn_with_active(self._payload(peak_gb=44.0, age_seconds=4000))
         snap = self._snapshot(conn, now)
         self.assertEqual(snap["reservations"], [])
@@ -144,7 +144,7 @@ class CommitReservationDecayTests(unittest.TestCase):
 
     def test_ordinary_job_window_is_unchanged_at_300s(self):
         """Non-multisym lineage must keep its original short window."""
-        terminal_worker._measured_subtree_gb = lambda pid: 1.0
+        terminal_worker._measured_subtree_gb = lambda pid, process_snapshot=None: 1.0
         conn, now = self._conn_with_active(
             self._payload(peak_gb=8.0, age_seconds=400, multisymbol=False),
             ea_id="QM5_10150",
@@ -153,7 +153,7 @@ class CommitReservationDecayTests(unittest.TestCase):
         self.assertEqual(snap["reservations"], [])
 
     def test_ordinary_job_inside_its_window_still_decays(self):
-        terminal_worker._measured_subtree_gb = lambda pid: 3.0
+        terminal_worker._measured_subtree_gb = lambda pid, process_snapshot=None: 3.0
         conn, now = self._conn_with_active(
             self._payload(peak_gb=8.0, age_seconds=60, multisymbol=False),
             ea_id="QM5_10150",
@@ -163,7 +163,7 @@ class CommitReservationDecayTests(unittest.TestCase):
 
     def test_fleet_is_not_starved_while_a_grown_multisym_runs(self):
         """End-to-end shape of the incident, asserted on the admission verdict."""
-        terminal_worker._measured_subtree_gb = lambda pid: 26.4
+        terminal_worker._measured_subtree_gb = lambda pid, process_snapshot=None: 26.4
         conn, now = self._conn_with_active(self._payload(peak_gb=44.0, age_seconds=900))
         snap = self._snapshot(conn, now)
         # Pre-fix arithmetic would have been 64.5 - 44.0 = 20.5 -> below 24 -> fleet pinned.
