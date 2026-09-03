@@ -1,0 +1,67 @@
+{
+  "schema": "qm.q01-q02-cpu-stop/v1",
+  "recorded_date": "2026-09-03",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41319",
+  "ea_label": "QM5_41319_wti-madf-persist-tr",
+  "strategy_id": "AI-CODEX-WTI-MADF-PERSIST-TREND-20260903_S01",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "status": "SOURCE_BUILD_COMMITTED_Q01_SUCCESSOR_HELD_CPU_STOP",
+  "cpu_ceiling_percent": 97.0,
+  "binding_cpu_sample_percent": [
+    93.7515,
+    96.9881,
+    99.6102,
+    100.0,
+    99.9121
+  ],
+  "cpu_average_percent": 98.0524,
+  "cpu_maximum_percent": 100.0,
+  "cpu_admissible": false,
+  "stop_action": "No repaired compile hold release and no Q02 enqueue.",
+  "reference_test": {
+    "command": "python framework/EAs/QM5_41319_wti-madf-persist-tr/docs/test_wti_madf_persist_tr_reference.py",
+    "result": "PASS",
+    "tests": 9
+  },
+  "compile": {
+    "ad_hoc_attempt_result": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+    "immutable_failed_work_item_id": "07211f28-64ad-4ea4-9527-32d43c08e8c9",
+    "immutable_failure_class": "SOURCE_CHANGED_AFTER_ENQUEUE",
+    "immutable_failure_evidence": "D:/QM/reports/work_items/07211f28-64ad-4ea4-9527-32d43c08e8c9/QM5_41319/COMPILE_EA/compile_evidence.json",
+    "repair_successor_work_item_id": "74fb5a2d-a4cd-43e3-bc12-e7dbeac67ac1",
+    "repair_successor_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "repair_successor_released": false,
+    "compiled": false,
+    "ex5_present": false
+  },
+  "governed_build_task_id": "cd3a3f60-895d-49cc-850c-c2c42f09cc9d",
+  "mq5_sha256": "B13F136A3358E3B3EC3B11374993D86D2BE27C388FB6DD729C7B42C89C806F70",
+  "setfile_sha256": "7382B8EE53055F7933FAAB1E2FC10CEAAF482FE8227A5482BF44568B85A244D2",
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "q02": {
+    "enqueued": false,
+    "reason": "Q01 has no COMPILE_OK binary and the fresh CPU sample crossed the 97 percent ceiling."
+  },
+  "safety": {
+    "manual_backtest_run": false,
+    "terminal_started_or_stopped": false,
+    "autotrading_toggled": false,
+    "t_live_modified": false,
+    "portfolio_gate_modified": false,
+    "t_live_manifest_modified": false
+  },
+  "commits": {
+    "source_approval": "d486b131e7",
+    "g0_card": "6c21f381b7",
+    "ea_identity": "214d712410",
+    "magic_allocation": "e87c1e319e",
+    "source_build": "28b8322048",
+    "compile_repair_path": "83687f8440"
+  }
+}
