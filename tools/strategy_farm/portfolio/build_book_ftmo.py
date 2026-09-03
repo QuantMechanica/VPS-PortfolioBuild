@@ -641,6 +641,12 @@ def main(argv: list[str] | None = None) -> int:
     except BookBuildError as exc:
         print(json.dumps({"status": "INPUT_INVALID", "error": str(exc)}, indent=2), file=sys.stderr)
         return 2
+    except risk_freeze.RiskFreezeBlocked as exc:
+        # D2 + D6 (2026-09-03): the FTMO freeze guard refuses like the DXZ builder,
+        # as one structured refusal (exit 2), never a traceback.
+        return book_build_guard.emit_refusal(
+            "LIVE_RISK_FREEZE_BLOCKED", str(exc), {"freeze": exc.result}
+        )
     print(json.dumps({
         "status": manifest["status"],
         "manifest": str(manifest_path),
