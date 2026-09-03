@@ -138,3 +138,12 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   explicit `enqueue-backtest --new-identity-restart <OWNER decision>` commissioned (Opus workflow
   `wlv9tw55z`, fail-closed: PASS-family source, changed ex5 sha, payload discloses the restart).
   12710's second compile `47cd9a37` still pending (workers CPU/RAM-paused).
+- 04:05Z: QM5_12710 second compile `47cd9a37` **COMPILE_OK** (new ex5 `11474d4c…`) — batch 1 fully
+  recompiled (11910 `e18d477e…`, 10700 `5fbf2ba0…`, 12710 `11474d4c…`). New-identity Q02 for 10700 and
+  12710 waits for the `--new-identity-restart` path (`wlv9tw55z`); 11910's chain beyond Q02 is blocked
+  by the DL-074 cascade rule (any next-phase row for (ea, symbol, setfile) blocks promotion) and its
+  old Q03–Q06 evidence is purged → the restart flag must be generalised to Q03–Q09 (clone the old
+  phase-row config onto the new ex5 without old evidence); commissioned after the Q02 form lands.
+- 04:12Z: worker reload coverage after the seal fix `b8cd532137` (03:52Z): T1–T6, T8 restarted after it;
+  T7/T9/T10 still hold the pre-fix module → idle-only staggered reload of T7/T9/T10 started 04:15Z.
+  1537/XAGUSD attempt-2 rerun `b878d9ba` active on T2 (restarted 04:02Z, has the fix) since 04:08Z.
