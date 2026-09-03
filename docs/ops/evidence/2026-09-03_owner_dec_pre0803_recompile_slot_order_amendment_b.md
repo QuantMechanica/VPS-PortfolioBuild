@@ -182,3 +182,5 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
 - 04:48Z: worker reload chunk 9 finished (T1, T4, T5, T6, T8, T10 reloaded; T2/T3/T7/T9 busy) → chunk 10
   for the remaining four started 04:54Z. Verifier note on `farmctl.P5_CALIBRATION_JSON` commissioned as
   router task `1258a0c5` (IN_PROGRESS, Opus lane; launch paced behind the running revision workflows).
+- 05:05Z–05:17Z: 11910 Q04 `cdf56ffe` PASS, 12710 Q04 `c2297ba2` PASS, 10700 Q03 `f625c325` PASS → next
+  steps enqueued (`chain_step2.py`): 11910 Q05 `063eec00`, 12710 Q05 `84125a3a`, 10700 Q04 `4d8e9c24`.
