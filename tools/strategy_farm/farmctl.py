@@ -209,6 +209,10 @@ CANONICAL_REPO_ROOT = Path(os.environ.get("QM_CANONICAL_REPO_ROOT", r"C:\QM\repo
 FRAMEWORK_EAS_DIR = CANONICAL_REPO_ROOT / "framework" / "EAs"
 REQUEUE_EXCLUDED_EAS_FILE = DEFAULT_ROOT / "state" / "requeue_excluded_eas.txt"
 MULTISYMBOL_EAS_FILE = DEFAULT_ROOT / "state" / "multisymbol_eas.txt"
+# Frozen at import against the ORIGINAL REPO_ROOT. Read-only dispatch/enqueue paths
+# use this constant directly; the pump AUTOSTUB WRITER must NOT -- it resolves via
+# _p5_calibration_path() so a test that monkeypatches REPO_ROOT (or sets the env
+# override) never seeds a synthetic symbol into the tracked registry (task 1258a0c5).
 P5_CALIBRATION_JSON = REPO_ROOT / "framework" / "calibrations" / "VPS_SLIPPAGE_LATENCY_CALIBRATION_V2.json"
 MT5_ROOT = Path(os.environ.get("QM_MT5_ROOT", r"D:\QM\mt5"))
 PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
@@ -16876,9 +16880,30 @@ def _auto_create_ea_review_for_unenqueued_eas(root: Path, con: sqlite3.Connectio
     return out
 
 
+def _p5_calibration_path() -> Path:
+    """Resolve the P5 slippage/latency calibration registry path for the autostub writer.
+
+    Precedence (an override always wins; the production default is unchanged):
+      1. ``QM_P5_CALIBRATION_JSON`` env override -> that exact path (tests / relocated roots).
+      2. ``REPO_ROOT``-derived default. Tests monkeypatch ``farmctl.REPO_ROOT`` to a throwaway
+         tmp repo, so the writer lands in that tmp root instead of the real tracked registry.
+         In production ``REPO_ROOT`` is the real checkout, so this resolves to
+         ``framework/calibrations/VPS_SLIPPAGE_LATENCY_CALIBRATION_V2.json``.
+
+    The module-level ``P5_CALIBRATION_JSON`` constant is frozen at import against the ORIGINAL
+    ``REPO_ROOT`` and does not follow a monkeypatched root. The autostub mutates this file and
+    the pump auto-commits it (ARTIFACT_COMMIT_ALLOWLIST), so the writer must resolve
+    dynamically -- otherwise a test run seeds a synthetic symbol into production (task 1258a0c5).
+    """
+    override = os.environ.get("QM_P5_CALIBRATION_JSON")
+    if override:
+        return Path(override)
+    return REPO_ROOT / "framework" / "calibrations" / "VPS_SLIPPAGE_LATENCY_CALIBRATION_V2.json"
+
+
 def _auto_stub_p5_calibration(root: Path, con: sqlite3.Connection, limit: int = 10) -> list[dict[str, Any]]:
     """Add missing P5 calibration symbol blocks from recent successful evidence."""
-    cal_path = P5_CALIBRATION_JSON
+    cal_path = _p5_calibration_path()
     if not cal_path.exists():
         return []
     try:
