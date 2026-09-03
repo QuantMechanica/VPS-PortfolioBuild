@@ -209,3 +209,6 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   (`c6dba4c092`) and `already_pending_or_active` (`80269fed36`) guards now do too. 10700 Q07 `21317bcc`
   enqueued 06:15Z (rerun of 3fdcc9af). Same class remains for the two pre-0803 Q10_NEWS pending rows
   (10700 `77bd97c2`, 12710 `678b8cac`) — handled when the chains reach Q09 (news gate service path).
+- 06:30Z–06:45Z: 12710 Q07 `fad536b4` **PASS** (06:30Z) → Q08 `bfda1943` enqueued; 11910 Q07 `797f03ae`
+  claimed by T5 06:31Z (third slot); 10700 Q07 `21317bcc` pending behind the cap. Amendment B tuple's last
+  element now resolved through the v4 contract map (`4884fbbab5`, value unchanged).
