@@ -1392,6 +1392,548 @@ TOPDOWN_GATE_PRIORITY_ENV = "QM_TOPDOWN_GATE_PRIORITY_ENABLED"
 # _topdown_gate_rank_sql). Keep this literal identical to the value written in
 # dl089_matrix_service._seed_q02.
 DL089_Q02_PREREQUISITE_SCHEMA = "qm.dl089-measurement-q02-prerequisite/v1"
+# OQ-SIBLING-CASCADE-20260903: a DL-089 "_opt" measurement sibling exists ONLY
+# to instrument its parent EA for the optimization census.  The matrix service
+# seeds exactly ONE Q02 PREREQUISITE row per sibling (schema above) to unlock
+# the OPT_CENSUS cells; nothing beyond that Q02 is authorized.  The ordinary
+# pump promoters read raw work_items and knew nothing about that, so a
+# sibling's Q02 PASS was fanned out into the normal gate chain: measured on the
+# live DB 2026-09-03, 69 beyond-Q02 rows across 20 sibling EAs, one of them
+# (QM5_41161/GBPUSD.DWX) carried all the way to a Q10_NEWS REVIEW_REQUIRED.
+#
+# RECOGNITION IS THE DANGEROUS PART, so it is pinned to the DL-089 measurement
+# contract and to nothing else.  Three recognizers, any one sufficient:
+#
+#   1. the EA has a Q02 row carrying DL089_Q02_PREREQUISITE_SCHEMA -- the exact
+#      literal dl089_matrix_service._seed_q02 stamps (19/20 live siblings);
+#   2. a DL-089 matrix registration receipt names the EA as its
+#      ``measurement_ea_id`` (14/20 live, and the ONLY recognizer that covers
+#      QM5_41097, whose Q02 predates the matrix service);
+#   3. an approved strategy card carries BOTH a non-empty ``parent_ea_id`` AND
+#      the measurement sentence DL089_MEASUREMENT_CARD_SENTENCE (4/20 live) --
+#      the only recognizer that works before the first seed row or receipt
+#      exists, i.e. between card approval and matrix registration.
+#
+# ``parent_ea_id`` ALONE IS NOT A RECOGNIZER and must never become one.  It is
+# the repo's generic lineage field: decisions/DL-062_zero_trade_rework_policy.md
+# and processes/zero_trade_v2_build_pipeline.md give every zero-trade ``_v2``
+# rework card a ``parent_ea_id`` pointing at the original, and those cards
+# inherit APPROVED and MUST run the full pipeline.  Recognizing them here would
+# bar an ordinary EA from Q03/Q04 and every later gate with no FAIL and no
+# verdict -- the worst possible failure mode, because this exclusion takes no
+# override.  Hence the conjunction in recognizer 3.  Membership in
+# MEASUREMENT_PHASES is deliberately NOT a recognizer either: measured against
+# the live DB it adds no EA that recognizer 2 does not already cover, so it
+# would only widen the false-positive surface for nothing.
+DL089_MEASUREMENT_SIBLING_SKIP_REASON = "dl089_measurement_sibling_measurement_only"
+# Emitted when a recognizer could not run.  A blind recognizer must never look
+# like "no siblings exist", so every minting site FAILS CLOSED on this: it
+# withholds its own minting for the cycle and records this reason, rather than
+# promoting against a set that may be silently short.
+DL089_MEASUREMENT_SIBLING_DEGRADED_REASON = (
+    "dl089_measurement_sibling_recognizer_unavailable"
+)
+# Literal from the approved sibling cards (QM5_41321-41324).  Matched against a
+# whitespace-collapsed card body: the sentence is hard-wrapped mid-phrase in
+# 41321/41322, so a raw substring test finds only half of them.
+DL089_MEASUREMENT_CARD_SENTENCE = "No live or pipeline verdict is authorized"
+DL089_MATRIX_REGISTRATION_FILENAME = "runner_registration.json"
+# dl089_matrix_service.DEFAULT_ARTIFACT_ROOT.  Kept as a literal rather than
+# imported because that module pulls the whole census stack in behind it.
+DL089_MATRIX_ARTIFACT_ROOT = Path(r"D:\QM\strategy_farm\artifacts\opt_census")
+_MEASUREMENT_SIBLING_EA_ID_RE = re.compile(r"QM5_\d+")
+# (dir, filename) -> (mtime_ns, size, ea_id_or_None).  Per FILE, not per
+# directory: a directory-signature cache re-reads all 3,608 approved cards
+# (22 MB) whenever any single card changes, and a directory-MTIME cache never
+# re-reads at all, because NTFS does not bump a directory's mtime when a card
+# body is edited in place -- which is exactly how a card acquires the sentence.
+_MEASUREMENT_SIBLING_CARD_CACHE: "dict[tuple[str, str], tuple[int, int, str | None]]" = {}
+# OQ-SIBLING-CASCADE-20260903 (round 3): a MANUAL stopgap governed hold an
+# operator placed directly on the live DB at 2026-09-03T03:15Z (the
+# ``farm_state_before_governed_hold_*`` backups bracket it), AHEAD of the
+# automatic recognizer filter in this module, to park the measurement-sibling
+# chains that had already been fanned past Q02: 24 pending sibling work_items,
+# 23 active ``work_item_holds`` rows carrying this hold_code at placement.  The
+# code was written into ``work_item_holds.hold_code`` by hand and lived in NO
+# source file, so nothing on the CEO surface distinguished "parked by hand" from
+# "withheld by this filter".  Pinned here so the visibility pass can COUNT the
+# still-parked rows -- strictly read-only; releasing a governed hold stays an
+# operator action (``farmctl release-hold``), never something this module does.
+SIBLING_MEASUREMENT_ONLY_CHAIN_HOLD = "SIBLING_MEASUREMENT_ONLY_CHAIN_HOLD"
+SIBLING_MEASUREMENT_ONLY_CHAIN_HOLD_PLACED_AT = "2026-09-03T03:15:00+00:00"
+
+
+class MeasurementSiblingSet:
+    """A resolved DL-089 measurement-sibling population plus its blind spots.
+
+    ``failures`` is non-empty when a recognizer could not run.  Callers must
+    treat that as fail-closed: withhold minting, record the machine reason, and
+    let the next cycle retry.  ``inventory`` is the per-recognizer report that
+    goes into the pump result, so an empty set is never silent.
+    """
+
+    __slots__ = ("ea_ids", "failures", "inventory")
+
+    def __init__(
+        self,
+        ea_ids: "Iterable[str]",
+        failures: "Iterable[Mapping[str, str]]" = (),
+        inventory: "Mapping[str, Any] | None" = None,
+    ) -> None:
+        self.ea_ids = frozenset(
+            ea_id for ea_id in ea_ids if _MEASUREMENT_SIBLING_EA_ID_RE.fullmatch(ea_id)
+        )
+        self.failures = tuple(dict(failure) for failure in failures)
+        self.inventory = dict(inventory or {})
+
+    @property
+    def degraded(self) -> bool:
+        return bool(self.failures)
+
+    def holds(self, ea_id: "str | None") -> bool:
+        return str(ea_id or "").strip().upper() in self.ea_ids
+
+    def report(self) -> "dict[str, Any]":
+        return {
+            "status": "degraded" if self.degraded else "ok",
+            "ea_id_count": len(self.ea_ids),
+            "ea_ids": sorted(self.ea_ids),
+            "recognizers": self.inventory,
+            "failures": [dict(failure) for failure in self.failures],
+        }
+
+
+def _measurement_sibling_card_ea_id(path: Path, name: str) -> "str | None":
+    """The EA id declared by ``path`` when it is a measurement-sibling card.
+
+    Requires BOTH markers (see the block comment above): a non-empty frontmatter
+    ``parent_ea_id`` AND the measurement sentence in the body.  Lets OSError
+    reach the caller so an unreadable card degrades the recognizer instead of
+    silently shrinking the set.
+    """
+
+    data = path.read_bytes()
+    # Cheap byte prefilter: skips the ~99.5% of approved cards that are not
+    # derivative at all, so the decode and regex work runs on a handful.
+    if b"parent_ea_id:" not in data:
+        return None
+    text = data.decode("utf-8", errors="replace")
+    if not text.startswith("---"):
+        return None
+    parts = text.split("---", 2)
+    if len(parts) < 3:
+        return None
+    frontmatter, body = parts[1], parts[2]
+    parent = re.search(r"^parent_ea_id:\s*(\S+)\s*$", frontmatter, re.MULTILINE)
+    if parent is None or not parent.group(1).strip().strip("\"'"):
+        return None
+    if DL089_MEASUREMENT_CARD_SENTENCE not in re.sub(r"\s+", " ", body):
+        return None
+    declared = re.search(r"^ea_id:\s*(\S+)\s*$", frontmatter, re.MULTILINE)
+    raw_ea = declared.group(1).strip().strip("\"'") if declared else name
+    match = _MEASUREMENT_SIBLING_EA_ID_RE.match(raw_ea.upper())
+    return match.group(0) if match else None
+
+
+def _measurement_sibling_card_ea_ids_in(
+    cards_dir: Path,
+) -> "tuple[frozenset[str], list[dict[str, str]], bool]":
+    """Scan one ``cards_approved`` directory. Returns (ids, failures, present)."""
+
+    try:
+        entries = [
+            entry
+            for entry in os.scandir(cards_dir)
+            if entry.is_file() and entry.name.endswith(".md")
+        ]
+    except (FileNotFoundError, NotADirectoryError):
+        # A legitimate state: a fresh checkout, a test root, a farm whose card
+        # mirror is not provisioned.  Reported as root_present=false rather than
+        # as a failure, so it stays visible without wedging every pump cycle.
+        return frozenset(), [], False
+    except OSError as exc:
+        return frozenset(), [{
+            "recognizer": "approved_card",
+            "reason": "approved_card_root_unreadable",
+            "detail": f"{cards_dir}: {exc!r}",
+        }], True
+    found: set[str] = set()
+    failures: list[dict[str, str]] = []
+    for entry in entries:
+        key = (str(cards_dir), entry.name)
+        try:
+            stat = entry.stat()
+        except OSError as exc:
+            failures.append({
+                "recognizer": "approved_card",
+                "reason": "approved_card_unreadable",
+                "detail": f"{entry.path}: {exc!r}",
+            })
+            continue
+        cached = _MEASUREMENT_SIBLING_CARD_CACHE.get(key)
+        if (
+            cached is not None
+            and cached[0] == stat.st_mtime_ns
+            and cached[1] == stat.st_size
+        ):
+            if cached[2]:
+                found.add(cached[2])
+            continue
+        try:
+            ea_id = _measurement_sibling_card_ea_id(Path(entry.path), entry.name)
+        except OSError as exc:
+            failures.append({
+                "recognizer": "approved_card",
+                "reason": "approved_card_unreadable",
+                "detail": f"{entry.path}: {exc!r}",
+            })
+            continue
+        _MEASUREMENT_SIBLING_CARD_CACHE[key] = (stat.st_mtime_ns, stat.st_size, ea_id)
+        if ea_id:
+            found.add(ea_id)
+    return frozenset(found), failures, True
+
+
+def _measurement_sibling_card_roots(root: "Path | None") -> "list[Path]":
+    """Both ``cards_approved`` copies. Neither is reliably the newer one."""
+
+    roots = [REPO_ROOT / "artifacts" / "cards_approved"]
+    if root is not None:
+        roots.append(Path(root) / "artifacts" / "cards_approved")
+    return roots
+
+
+def _measurement_sibling_registration_ea_ids(
+    artifact_root: "Path | None" = None,
+) -> "tuple[frozenset[str], list[dict[str, str]], bool]":
+    """``measurement_ea_id`` from every DL-089 matrix registration receipt.
+
+    Both receipt schemas count: ``qm.dl089-matrix-registration-receipt/v1``
+    written by dl089_matrix_service, and the
+    ``qm.dl089-legacy-matrix-registration/v1`` recover_legacy_opt_census writes
+    for a pre-service program (QM5_41097's, live 2026-09-03).  The FIELD, not
+    the schema literal, is the contract.
+    """
+
+    base = DL089_MATRIX_ARTIFACT_ROOT if artifact_root is None else Path(artifact_root)
+    try:
+        program_dirs = [entry for entry in os.scandir(base) if entry.is_dir()]
+    except (FileNotFoundError, NotADirectoryError):
+        return frozenset(), [], False
+    except OSError as exc:
+        return frozenset(), [{
+            "recognizer": "matrix_registration",
+            "reason": "matrix_registration_root_unreadable",
+            "detail": f"{base}: {exc!r}",
+        }], True
+    found: set[str] = set()
+    failures: list[dict[str, str]] = []
+    for entry in program_dirs:
+        receipt = Path(entry.path) / DL089_MATRIX_REGISTRATION_FILENAME
+        try:
+            raw = receipt.read_text(encoding="utf-8")
+        except FileNotFoundError:
+            continue
+        except OSError as exc:
+            failures.append({
+                "recognizer": "matrix_registration",
+                "reason": "matrix_registration_file_unreadable",
+                "detail": f"{receipt}: {exc!r}",
+            })
+            continue
+        try:
+            payload = json.loads(raw)
+        except (ValueError, TypeError) as exc:
+            failures.append({
+                "recognizer": "matrix_registration",
+                "reason": "matrix_registration_file_malformed",
+                "detail": f"{receipt}: {exc!r}",
+            })
+            continue
+        if not isinstance(payload, dict):
+            failures.append({
+                "recognizer": "matrix_registration",
+                "reason": "matrix_registration_file_malformed",
+                "detail": f"{receipt}: not a JSON object",
+            })
+            continue
+        measurement_ea_id = str(payload.get("measurement_ea_id") or "").strip().upper()
+        match = _MEASUREMENT_SIBLING_EA_ID_RE.fullmatch(measurement_ea_id)
+        if match is not None:
+            found.add(match.group(0))
+    return frozenset(found), failures, True
+
+
+def _measurement_sibling_seeded_ea_ids(
+    conn: "sqlite3.Connection",
+) -> "tuple[frozenset[str], list[dict[str, str]]]":
+    """EAs carrying a DL-089-seeded Q02 PREREQUISITE row."""
+
+    try:
+        rows = conn.execute(
+            # json_valid FIRST: SQLite short-circuits AND, and json_extract on a
+            # non-JSON payload raises `malformed JSON`, which would abort the
+            # whole resolution rather than skip one row.
+            "SELECT DISTINCT ea_id FROM work_items WHERE phase='Q02'"
+            " AND json_valid(payload_json)=1"
+            " AND json_extract(payload_json, '$.schema')=?",
+            (DL089_Q02_PREREQUISITE_SCHEMA,),
+        ).fetchall()
+    except sqlite3.Error as exc:
+        return frozenset(), [{
+            "recognizer": "q02_prerequisite_schema",
+            "reason": "q02_prerequisite_schema_query_failed",
+            "detail": repr(exc),
+        }]
+    return frozenset(str(row[0]).strip().upper() for row in rows if row[0]), []
+
+
+def _measurement_sibling_ea_ids(
+    conn: "sqlite3.Connection | None" = None,
+    root: "Path | None" = None,
+    *,
+    artifact_root: "Path | None" = None,
+) -> MeasurementSiblingSet:
+    """Resolve the whole measurement-sibling population, once per pump cycle.
+
+    Resolving to an EA-id SET rather than leaving the recognizers as correlated
+    subqueries in each caller's WHERE clause is a measured decision: the
+    subquery form cost the Q04 early probe 2.6 s per query per cycle against
+    0.29 s, while ONE resolution costs 0.96 s cold / 0.56 s warm measured
+    against the live DB 2026-09-03.  The cost is dominated by the Q02 DISTINCT
+    scan (0.607 s); the registration receipts cost 5 ms and the two card roots
+    12 ms warm, because the per-file cache absorbs the 22 MB cold read (0.36 s,
+    paid once per process).
+
+    Fail-closed backstop: a farm that demonstrably runs a census but resolves to
+    ZERO siblings has lost every recognizer, which is byte-identical to "no
+    siblings exist" and would silently widen promotion.  That case is reported
+    as a failure so the minting sites withhold instead of guessing.
+    """
+
+    ea_ids: set[str] = set()
+    failures: list[dict[str, str]] = []
+    inventory: dict[str, Any] = {}
+
+    if conn is None:
+        inventory["q02_prerequisite_schema"] = {"queried": False, "ea_id_count": 0}
+    else:
+        seeded, seeded_failures = _measurement_sibling_seeded_ea_ids(conn)
+        ea_ids |= set(seeded)
+        failures.extend(seeded_failures)
+        inventory["q02_prerequisite_schema"] = {
+            "queried": True,
+            "ea_id_count": len(seeded),
+            "failed": bool(seeded_failures),
+        }
+
+    registered, registration_failures, registration_root_present = (
+        _measurement_sibling_registration_ea_ids(artifact_root)
+    )
+    ea_ids |= set(registered)
+    failures.extend(registration_failures)
+    inventory["matrix_registration"] = {
+        "root": str(
+            DL089_MATRIX_ARTIFACT_ROOT if artifact_root is None else Path(artifact_root)
+        ),
+        "root_present": registration_root_present,
+        "ea_id_count": len(registered),
+    }
+
+    card_ids: set[str] = set()
+    card_roots: list[dict[str, Any]] = []
+    for cards_dir in _measurement_sibling_card_roots(root):
+        found, card_failures, present = _measurement_sibling_card_ea_ids_in(cards_dir)
+        card_ids |= set(found)
+        failures.extend(card_failures)
+        card_roots.append({
+            "root": str(cards_dir),
+            "root_present": present,
+            "ea_id_count": len(found),
+        })
+    ea_ids |= card_ids
+    inventory["approved_card"] = {"ea_id_count": len(card_ids), "roots": card_roots}
+
+    resolved = MeasurementSiblingSet(ea_ids, failures, inventory)
+    if resolved.ea_ids or conn is None:
+        return resolved
+    try:
+        census_present = conn.execute(
+            "SELECT 1 FROM work_items WHERE phase=? LIMIT 1", (OPT_CENSUS_PHASE,)
+        ).fetchone() is not None
+    except sqlite3.Error as exc:
+        return MeasurementSiblingSet(ea_ids, [*failures, {
+            "recognizer": "census_consistency",
+            "reason": "census_consistency_probe_failed",
+            "detail": repr(exc),
+        }], inventory)
+    if not census_present:
+        return resolved
+    return MeasurementSiblingSet(ea_ids, [*failures, {
+        "recognizer": "census_consistency",
+        "reason": "measurement_sibling_set_empty_despite_census_rows",
+        "detail": (
+            "OPT_CENSUS rows exist but no recognizer named a measurement"
+            " sibling; every recognizer is blind"
+        ),
+    }], inventory)
+
+
+def _measurement_sibling_probe(
+    ea_id: str,
+    conn: "sqlite3.Connection | None" = None,
+    root: "Path | None" = None,
+    *,
+    artifact_root: "Path | None" = None,
+) -> MeasurementSiblingSet:
+    """Single-EA form, for callers that hold the factory mutation lock.
+
+    Cost order matters here, and the earlier claim that this is "two indexed
+    lookups" was wrong: the recognizers are tried CHEAPEST FIRST -- one indexed
+    point lookup on (ea_id, phase), then the registration receipts (~20 small
+    JSON files behind one directory listing), and only then the approved cards.
+    The card step is narrowed to ``<ea_id>*.md``, so it costs a directory
+    listing plus at most a couple of small reads instead of the set path's
+    22 MB scan (measured 0.81 s cold / 10 ms warm when that scan ran first --
+    paid while holding the lock).  The narrowing is the one place probe and set
+    can differ: a card whose FILENAME does not start with its declared
+    ``ea_id`` is seen by the set scan and not by the probe.  Every sibling card
+    the build pipeline writes is named ``<ea_id>_<slug>.md``, and the probe is
+    defence in depth behind the pump's set-based exclusions, so that is an
+    accepted, documented gap.  Measured against the live roots 2026-09-03:
+    0.1 ms for a seeded sibling, 2.4 ms when the registration receipts decide
+    it, 9.4 ms worst case for an ORDINARY EA (the only path that reaches both
+    card globs) -- against 810 ms when the full card scan ran first.
+
+    Returns a one-element (or empty) ``MeasurementSiblingSet`` so the caller can
+    tell "not a sibling" from "could not tell" and fail closed on the latter
+    exactly as the set path does.
+    """
+
+    normalized = str(ea_id or "").strip().upper()
+    if not _MEASUREMENT_SIBLING_EA_ID_RE.fullmatch(normalized):
+        return MeasurementSiblingSet((), (), {"probe": {"ea_id": normalized}})
+    failures: list[dict[str, str]] = []
+
+    if conn is not None:
+        try:
+            hit = conn.execute(
+                "SELECT 1 FROM work_items WHERE ea_id=? AND phase='Q02'"
+                " AND json_valid(payload_json)=1"
+                " AND json_extract(payload_json, '$.schema')=? LIMIT 1",
+                (normalized, DL089_Q02_PREREQUISITE_SCHEMA),
+            ).fetchone()
+        except sqlite3.Error as exc:
+            failures.append({
+                "recognizer": "q02_prerequisite_schema",
+                "reason": "q02_prerequisite_schema_query_failed",
+                "detail": repr(exc),
+            })
+        else:
+            if hit is not None:
+                return MeasurementSiblingSet((normalized,), (), {"probe": {
+                    "ea_id": normalized, "matched": "q02_prerequisite_schema"}})
+
+    registered, registration_failures, _present = (
+        _measurement_sibling_registration_ea_ids(artifact_root)
+    )
+    failures.extend(registration_failures)
+    if normalized in registered:
+        return MeasurementSiblingSet((normalized,), (), {"probe": {
+            "ea_id": normalized, "matched": "matrix_registration"}})
+
+    for cards_dir in _measurement_sibling_card_roots(root):
+        try:
+            candidates = sorted(Path(cards_dir).glob(f"{normalized}*.md"))
+        except OSError as exc:
+            failures.append({
+                "recognizer": "approved_card",
+                "reason": "approved_card_root_unreadable",
+                "detail": f"{cards_dir}: {exc!r}",
+            })
+            continue
+        for candidate in candidates:
+            try:
+                declared = _measurement_sibling_card_ea_id(candidate, candidate.name)
+            except OSError as exc:
+                failures.append({
+                    "recognizer": "approved_card",
+                    "reason": "approved_card_unreadable",
+                    "detail": f"{candidate}: {exc!r}",
+                })
+                continue
+            if declared == normalized:
+                return MeasurementSiblingSet((normalized,), (), {"probe": {
+                    "ea_id": normalized, "matched": "approved_card"}})
+    return MeasurementSiblingSet((), failures, {"probe": {"ea_id": normalized}})
+
+
+def _measurement_sibling_in_sql(ea_ids: "Iterable[str]", ea_col: str) -> str:
+    """``"<ea_col> IN ('QM5_1','QM5_2')"``, or ``""`` when the set is empty.
+
+    Every id was matched against ``QM5_<digits>`` in ``MeasurementSiblingSet``
+    before it reached here, so the literal list cannot carry a quote and the
+    result stays a plain string the existing promoter queries interpolate.
+    """
+
+    literals = ",".join(f"'{ea_id}'" for ea_id in sorted(ea_ids))
+    return f"{ea_col} IN ({literals})" if literals else ""
+
+
+def _measurement_sibling_exclusion_clause(
+    siblings: MeasurementSiblingSet, *, ea_col: str = "w.ea_id"
+) -> str:
+    """``" AND NOT COALESCE(<ea_col> IN (...), 0)"`` holding siblings at Q02.
+
+    Unlike ``_defect_block_exclusion_clause`` this one takes no override: a
+    measurement sibling is not a quarantined strategy a governed repair can
+    release, it is an instrument whose card authorizes no pipeline verdict at
+    all.  Running one of these chains is an OWNER decision, never a caller flag.
+
+    ``COALESCE`` guards the negation: ``NULL IN (...)`` is NULL and ``NOT NULL``
+    is NULL, so an unnamed EA would otherwise be silently dropped from the
+    caller's result rather than kept.
+
+    The exclusion lives in SQL rather than in the promotion loops because the
+    promoters read BOUNDED windows -- the Q04 early probe takes the ten OLDEST
+    Q02 PASSes.  Twenty permanently unpromotable siblings sitting at the head of
+    that ASC window would starve every ordinary candidate: the same starvation
+    class the Q02->Q03 profit pre-filter and the cascade's ``ORDER BY
+    updated_at DESC`` were introduced to fix.  Because SQL exclusion is silent,
+    ``_record_measurement_sibling_promotion_holds`` re-finds the genuinely
+    withheld rows once per cycle and logs them with the machine reason.
+    """
+
+    in_sql = _measurement_sibling_in_sql(siblings.ea_ids, ea_col)
+    return f" AND NOT COALESCE({in_sql}, 0)" if in_sql else ""
+
+
+def _measurement_sibling_guard(
+    siblings: "MeasurementSiblingSet | None",
+    result: "dict[str, Any]",
+    *,
+    site: str,
+    ea_col: str = "w.ea_id",
+) -> "str | None":
+    """The SQL exclusion for one minting site, or ``None`` = do not mint.
+
+    ``None`` is the fail-closed answer: a recognizer went blind, so the sibling
+    set may be silently short and this site must withhold its minting for the
+    cycle rather than promote against it.  The refusal is recorded with a
+    machine reason on ``result``, so the degradation is never invisible.
+    """
+
+    if siblings is None or siblings.degraded:
+        result.setdefault("measurement_sibling_guard_blocks", []).append({
+            "site": site,
+            "reason": DL089_MEASUREMENT_SIBLING_DEGRADED_REASON,
+            "failures": [] if siblings is None else [
+                dict(failure) for failure in siblings.failures
+            ],
+        })
+        return None
+    return _measurement_sibling_exclusion_clause(siblings, ea_col=ea_col)
+
 # OWNER-DEC-PRE0803-RECOMPILE-SLOTORDER-AMENDB-20260903 §3 ("Amendment B",
 # decided in chat 2026-09-03 ~02:08Z, recorded in
 # docs/ops/evidence/2026-09-03_owner_dec_pre0803_recompile_slot_order_amendment_b.md):
@@ -11270,6 +11812,32 @@ def _auto_enqueue_parent_progression(root: Path, result: dict[str, Any]) -> None
     parent_payload = result.get("parent_payload") or {}
     next_kind = str(next_phase).lower().replace(".", "")
     with connect(root) as check_conn:
+        # OQ-SIBLING-CASCADE-20260903: the minting path the pump's SQL
+        # exclusions cannot see, because it is task-driven rather than
+        # work_item-driven.  It produced 12 of the 69 live beyond-Q02 sibling
+        # rows, including QM5_41161's Q09_NEWS.  Uses the single-EA probe:
+        # this runs while the caller holds the factory mutation lock, so it
+        # must not pay the set path's 22 MB card scan.  A probe that could not
+        # decide fails CLOSED -- the progression is deferred with a machine
+        # reason and retried by the next aggregation, never enqueued blind.
+        sibling_probe = _measurement_sibling_probe(
+            str(parent_payload.get("ea_id") or ""), check_conn, root
+        )
+        if sibling_probe.degraded:
+            result["auto_next"] = {
+                "phase": next_phase,
+                "status": "deferred",
+                "reason": DL089_MEASUREMENT_SIBLING_DEGRADED_REASON,
+                "failures": [dict(f) for f in sibling_probe.failures],
+            }
+            return
+        if sibling_probe.holds(parent_payload.get("ea_id")):
+            result["auto_next"] = {
+                "phase": next_phase,
+                "status": "skipped",
+                "reason": DL089_MEASUREMENT_SIBLING_SKIP_REASON,
+            }
+            return
         existing = check_conn.execute(
             "SELECT id FROM tasks WHERE kind=? AND payload_json LIKE ?",
             (
@@ -17113,6 +17681,7 @@ def author_news_expansion_continuations(
     include_historical: bool = False,
     pair_allowlist_path: Path | None = None,
     apply: bool = True,
+    measurement_siblings: "MeasurementSiblingSet | None" = None,
 ) -> dict[str, Any]:
     """Append sealed-plan holds for authenticated full-matrix requests.
 
@@ -17138,10 +17707,35 @@ def author_news_expansion_continuations(
         candidates = news_gate_service.expansion_requests(
             connection, news_phases=phases
         )
+        # OQ-SIBLING-CASCADE-20260903: an expansion request is a Q10_NEWS
+        # REVIEW_REQUIRED row, and a measurement sibling has exactly one of
+        # those on the live farm (QM5_41161, no q09_news_tests row today, so
+        # this is closed before it opens).  A degraded recognizer refuses every
+        # continuation for this run rather than authoring against a possibly
+        # short set.
+        siblings = (
+            _measurement_sibling_ea_ids(connection, root)
+            if measurement_siblings is None
+            else measurement_siblings
+        )
+        if siblings.degraded:
+            skipped.append({
+                "reason": DL089_MEASUREMENT_SIBLING_DEGRADED_REASON,
+                "failures": [dict(failure) for failure in siblings.failures],
+            })
+            candidates = []
         for source in candidates:
             if len(planned) >= bounded_limit:
                 break
             pair = (str(source["ea_id"]), str(source["symbol"]))
+            if siblings.holds(source["ea_id"]):
+                skipped.append({
+                    "ea_id": source["ea_id"],
+                    "symbol": source["symbol"],
+                    "work_item_id": source["id"],
+                    "reason": DL089_MEASUREMENT_SIBLING_SKIP_REASON,
+                })
+                continue
             if allowed_pairs is not None and pair not in allowed_pairs:
                 continue
             existing_rows = connection.execute(
@@ -17877,6 +18471,31 @@ def auto_enqueue_q10_after_q09_result(
         and row["verdict"] == "CONFIG_LOCKED"
     ):
         return {"enqueued": False, "reason": "q09_news_not_config_locked_done"}
+    # OQ-SIBLING-CASCADE-20260903 (round 3): terminal_worker invokes this on
+    # EVERY _NEWS_PHASE CONFIG_LOCKED finish, and it is the one automatic
+    # forward-minting path _pump_unlocked's SQL exclusions cannot cover -- it is
+    # driven by the worker, not routed through the pump, and it mints the
+    # _NEWS_PHASE successor for the exact EA that just finished.  A measurement
+    # sibling that reached _NEWS_PHASE (QM5_41161/GBPUSD.DWX did on the live DB)
+    # would otherwise be cascaded past its authorized Q02.  Single-EA probe on a
+    # fresh short connection (the fetchone connection is already closed) so the
+    # Q02-prerequisite recognizer runs; FAIL CLOSED on a blind recognizer --
+    # defer and let the next finish retry rather than mint blind.
+    with connect(root) as sibling_conn:
+        sibling_probe = _measurement_sibling_probe(
+            str(row["ea_id"]), sibling_conn, root
+        )
+    if sibling_probe.degraded:
+        return {
+            "enqueued": False,
+            "reason": DL089_MEASUREMENT_SIBLING_DEGRADED_REASON,
+            "failures": [dict(f) for f in sibling_probe.failures],
+        }
+    if sibling_probe.holds(str(row["ea_id"])):
+        return {
+            "enqueued": False,
+            "reason": DL089_MEASUREMENT_SIBLING_SKIP_REASON,
+        }
     # The enqueue path re-authenticates q09_news_tests, aggregate hashes, and
     # the exact Q08 lineage; terminal portfolio evidence is informational.
     return enqueue_cascade_backtest_for_ea(
@@ -17973,6 +18592,7 @@ def _promote_q08_soft_fails_to_q09_portfolio(
     conn: sqlite3.Connection,
     result: dict[str, Any],
     include_defect_blocked_evidence: bool = False,
+    measurement_siblings: "MeasurementSiblingSet | None" = None,
 ) -> int:
     if conn.execute(
         "SELECT 1 FROM sqlite_master WHERE type='table' AND name='work_item_dependencies'"
@@ -17983,6 +18603,18 @@ def _promote_q08_soft_fails_to_q09_portfolio(
     promoted = 0
     # Task 5343f90a: never advance a defect-blocked EA's pre-block Q08 evidence.
     _defect_exclusion = _defect_block_exclusion_clause(include_defect_blocked_evidence)
+    # OQ-SIBLING-CASCADE-20260903: this promoter was live-open on the measured
+    # farm -- QM5_41161/GBPUSD.DWX has a Q08 PASS and no Q10_PORTFOLIO row, so
+    # its only protection was window position.  ``measurement_siblings=None``
+    # means "resolve it yourself": the pump always passes the set it already
+    # resolved, and any other caller still gets the containment.
+    if measurement_siblings is None:
+        measurement_siblings = _measurement_sibling_ea_ids(conn)
+    _sibling_exclusion = _measurement_sibling_guard(
+        measurement_siblings, result, site="pump_q08_portfolio_promoter"
+    )
+    if _sibling_exclusion is None:
+        return 0
     q08_soft_rows = conn.execute(
         f"""
         SELECT w.* FROM work_items w
@@ -17990,6 +18622,7 @@ def _promote_q08_soft_fails_to_q09_portfolio(
           AND w.phase='Q08'
           AND w.verdict IN ('FAIL_SOFT','PASS')  -- DL-082 SS3c: clean Q08 PASS advances too
           {_defect_exclusion}
+          {_sibling_exclusion}
           AND NOT EXISTS (
             SELECT 1 FROM work_items w2
             WHERE w2.ea_id = w.ea_id
@@ -18171,6 +18804,7 @@ def _promote_paired_q09_portfolio_passes_to_news(
     include_defect_blocked_evidence: bool = False,
     max_rows: int | None = None,
     commit_each: bool = False,
+    measurement_siblings: "MeasurementSiblingSet | None" = None,
 ) -> int:
     """Backfill a held news arm from each latest Q08 PASS/FAIL_SOFT lineage.
 
@@ -18184,6 +18818,17 @@ def _promote_paired_q09_portfolio_passes_to_news(
     defect_exclusion = _defect_block_exclusion_clause(
         include_defect_blocked_evidence, ea_col="q.ea_id"
     )
+    # OQ-SIBLING-CASCADE-20260903: inert on the measured farm only because
+    # QM5_41161's Q08 and Q10_NEWS rows happen to share a setfile_path -- any
+    # requeue that changes that setfile re-opens the path, so it is closed here
+    # rather than left to coincidence.
+    if measurement_siblings is None:
+        measurement_siblings = _measurement_sibling_ea_ids(conn)
+    sibling_exclusion = _measurement_sibling_guard(
+        measurement_siblings, result, site="pump_q08_news_backfill", ea_col="q.ea_id"
+    )
+    if sibling_exclusion is None:
+        return 0
     rows = conn.execute(
         f"""
         SELECT
@@ -18198,6 +18843,7 @@ def _promote_paired_q09_portfolio_passes_to_news(
         WHERE q.phase='Q08' AND q.status='done'
           AND q.verdict IN ('PASS','FAIL_SOFT')
           {defect_exclusion}
+          {sibling_exclusion}
           AND NOT EXISTS (
             SELECT 1 FROM work_items n
             WHERE n.phase=? AND n.ea_id=q.ea_id
@@ -18278,6 +18924,326 @@ def _promote_paired_q09_portfolio_passes_to_news(
         if commit_each:
             conn.commit()
     return promoted
+
+
+def _measurement_sibling_hold_edges(
+    cascade_phase_map: "Mapping[str, str]",
+    cascade_pass_verdicts: "Mapping[str, set[str]]",
+) -> "list[dict[str, Any]]":
+    """One entry per real promotion edge, mirroring that promoter's predicate.
+
+    The emitted set MUST stay in lock-step with every promoter that drops a
+    measurement sibling inside its SQL or its probe, so the withheld count is
+    complete.  As of round 3 that is nine edges:
+      * ``pump_cascade`` -- one per ``cascade_phase_map`` step (Q03->Q04 ...
+        _NEWS_PHASE->incumbent);
+      * ``pump_q04_early_probe`` (Q02->Q04) and ``p2_pass_promoter`` (Q02->Q03);
+      * ``pump_q08_portfolio_promoter`` (Q08->_NEWS_PORTFOLIO_PHASE) and
+        ``pump_q08_news_backfill`` (Q08->_NEWS_PHASE);
+      * ``pump_ablation_random`` (Q02 PASS -> random variants) and
+        ``pump_ablation_grid`` (Q03 PASS -> 50-point grid), whose "successor"
+        marker is ``$.ablated_at`` rather than a downstream phase row, with the
+        grid additionally gated on the DL-074 Q04 default-probe survival;
+      * ``q10_news_auto_enqueue`` (_NEWS_PHASE CONFIG_LOCKED -> its successor),
+        the terminal-worker path ``auto_enqueue_q10_after_q09_result`` drives --
+        invisible to the pump's own SQL because the worker, not the pump,
+        invokes it.
+
+    Each entry carries the promoter's OWN candidate SQL -- crucially including
+    its ``NOT EXISTS`` successor condition.  Omitting that condition is what
+    made the first version of this pass report 51 "withheld" rows on the live
+    DB when only 2 were genuinely withheld: 49 of them had already been
+    promoted and merely still matched the source-side predicate.  A number
+    matching neither the historical row count nor reality would be re-emitted
+    into ``cascade_promotions_skipped`` every cycle, misleading exactly the
+    surface this pass exists to protect.
+
+    The one predicate deliberately NOT mirrored is the Q02->Q03 promoter's
+    ``ea_metrics.net_profit > 0`` pre-filter.  That is a starvation guard on a
+    5,000-row window, not part of the promotion contract: a row it drops is
+    still refused by the authoritative Python gate with its own
+    ``p2_symbol_unprofitable`` reason.  Including it here would hide rows that
+    the sibling exclusion -- not economics -- is what stops.
+    """
+
+    edges: list[dict[str, Any]] = []
+    for prev, successor in cascade_phase_map.items():
+        verdicts = sorted(cascade_pass_verdicts[prev])
+        placeholders = ",".join("?" for _ in verdicts)
+        edges.append({
+            "from_phase": prev,
+            "to_phase": successor,
+            "promoter": "pump_cascade",
+            "sql": (
+                "SELECT w.id, w.ea_id, w.symbol FROM work_items w"
+                f" WHERE w.status='done' AND w.phase=? AND w.verdict in ({placeholders})"
+                "   AND NOT ("
+                "     w.phase=?"
+                "     AND json_valid(w.payload_json)=1"
+                "     AND json_extract(w.payload_json, '$.diagnostic_non_admission')=1"
+                "   )"
+                "   AND NOT EXISTS ("
+                "     SELECT 1 FROM work_items w2"
+                "     WHERE w2.ea_id = w.ea_id AND w2.symbol = w.symbol"
+                "       AND w2.phase = ? AND w2.setfile_path = w.setfile_path"
+                "   )"
+            ),
+            "params": (prev, *verdicts, _NEWS_PHASE, successor),
+        })
+    edges.append({
+        "from_phase": "Q02",
+        "to_phase": "Q04",
+        "promoter": "pump_q04_early_probe",
+        "sql": (
+            "SELECT w.id, w.ea_id, w.symbol FROM work_items w"
+            " WHERE w.status='done' AND w.phase='Q02' AND w.verdict='PASS'"
+            "   AND w.setfile_path NOT LIKE '%_ablation_%'"
+            "   AND w.setfile_path NOT LIKE '%_grid_%'"
+            "   AND w.setfile_path NOT LIKE '%_synth_%'"
+            "   AND NOT EXISTS ("
+            "     SELECT 1 FROM work_items w2"
+            "     WHERE w2.ea_id = w.ea_id AND w2.symbol = w.symbol"
+            "       AND w2.phase = 'Q04' AND w2.setfile_path = w.setfile_path"
+            "   )"
+        ),
+        "params": (),
+    })
+    edges.append({
+        "from_phase": "Q02",
+        "to_phase": "Q03",
+        "promoter": "p2_pass_promoter",
+        "sql": (
+            "SELECT w.id, w.ea_id, w.symbol FROM work_items w"
+            " WHERE w.status='done' AND w.verdict='PASS' AND w.phase in ('Q02', 'P2')"
+            "   AND NOT EXISTS ("
+            "     SELECT 1 FROM work_items w2"
+            "     WHERE w2.ea_id = w.ea_id AND w2.symbol = w.symbol"
+            "       AND w2.setfile_path = w.setfile_path"
+            "       AND w2.phase in ('Q03', 'P3')"
+            "   )"
+        ),
+        "params": (),
+    })
+    edges.append({
+        "from_phase": "Q08",
+        "to_phase": _NEWS_PORTFOLIO_PHASE,
+        "promoter": "pump_q08_portfolio_promoter",
+        "sql": (
+            "SELECT w.id, w.ea_id, w.symbol FROM work_items w"
+            " WHERE w.status='done' AND w.phase='Q08'"
+            "   AND w.verdict IN ('FAIL_SOFT','PASS')"
+            "   AND NOT EXISTS ("
+            "     SELECT 1 FROM work_items w2"
+            "     WHERE w2.ea_id = w.ea_id AND w2.symbol = w.symbol AND w2.phase = ?"
+            "   )"
+        ),
+        "params": (_NEWS_PORTFOLIO_PHASE,),
+    })
+    edges.append({
+        "from_phase": "Q08",
+        "to_phase": _NEWS_PHASE,
+        "promoter": "pump_q08_news_backfill",
+        "sql": (
+            "SELECT w.id, w.ea_id, w.symbol FROM work_items w"
+            " WHERE w.phase='Q08' AND w.status='done'"
+            "   AND w.verdict IN ('PASS','FAIL_SOFT')"
+            "   AND NOT EXISTS ("
+            "     SELECT 1 FROM work_items n"
+            "     WHERE n.phase=? AND n.ea_id=w.ea_id"
+            "       AND n.symbol=w.symbol AND n.setfile_path=w.setfile_path"
+            "   )"
+            # The promoter only acts on the newest row of each exact lineage.
+            "   AND w.updated_at = ("
+            "     SELECT max(w3.updated_at) FROM work_items w3"
+            "     WHERE w3.ea_id=w.ea_id AND w3.symbol=w.symbol"
+            "       AND w3.setfile_path=w.setfile_path AND w3.phase='Q08'"
+            "       AND w3.status='done' AND w3.verdict IN ('PASS','FAIL_SOFT')"
+            "   )"
+        ),
+        "params": (_NEWS_PHASE,),
+    })
+    # OQ-SIBLING-CASCADE-20260903 (round 3): the ablation spawners and the
+    # _NEWS_PHASE->successor auto-enqueue are REAL minting paths too, so a
+    # withheld sibling must be visible on each of them as well.  Their
+    # "successor condition" is not a downstream phase row: an ablation parent is
+    # marked by ``$.ablated_at`` (mirrored below), and the grid additionally
+    # requires the DL-074 Q04 default-probe survival (mirrored as the EXISTS
+    # clause) -- a Q03 PASS whose probe is still pending is not a grid candidate
+    # and must not be reported as "withheld by the filter".
+    edges.append({
+        "from_phase": "Q02",
+        "to_phase": "Q02_ABLATION_RANDOM",
+        "promoter": "pump_ablation_random",
+        "sql": (
+            "SELECT w.id, w.ea_id, w.symbol FROM work_items w"
+            " WHERE w.status='done' AND w.verdict='PASS' AND w.phase in ('Q02','P2')"
+            "   AND w.setfile_path NOT LIKE '%_ablation_%'"
+            "   AND w.setfile_path NOT LIKE '%_grid_%'"
+            "   AND COALESCE(json_extract(w.payload_json, '$.ablated_at'), '')=''"
+        ),
+        "params": (),
+    })
+    edges.append({
+        "from_phase": "Q03",
+        "to_phase": "Q03_ABLATION_GRID",
+        "promoter": "pump_ablation_grid",
+        "sql": (
+            "SELECT w.id, w.ea_id, w.symbol FROM work_items w"
+            " WHERE w.status='done' AND w.verdict='PASS' AND w.phase in ('Q03','P3')"
+            "   AND w.setfile_path NOT LIKE '%_ablation_%'"
+            "   AND w.setfile_path NOT LIKE '%_grid_%'"
+            "   AND COALESCE(json_extract(w.payload_json, '$.ablated_at'), '')=''"
+            "   AND EXISTS ("
+            "     SELECT 1 FROM work_items q4"
+            "     WHERE q4.ea_id = w.ea_id AND q4.symbol = w.symbol"
+            "       AND q4.phase IN ('Q04', 'P4') AND q4.status='done'"
+            "       AND q4.verdict IN ('PASS', 'PASS_SOFT', 'PASS_LOWFREQ')"
+            "   )"
+        ),
+        "params": (),
+    })
+    _q10_successor = next_phase(_NEWS_PHASE, ACTIVE_GATE_MANIFEST)
+    edges.append({
+        "from_phase": _NEWS_PHASE,
+        "to_phase": _q10_successor,
+        "promoter": "q10_news_auto_enqueue",
+        "sql": (
+            "SELECT w.id, w.ea_id, w.symbol FROM work_items w"
+            " WHERE w.status='done' AND w.phase=? AND w.verdict='CONFIG_LOCKED'"
+            # COALESCE, not a bare NOT(...): SQLite three-valued logic makes
+            # NOT(... AND json_extract=1) evaluate to NULL -- and drop the row --
+            # for every _NEWS_PHASE row that simply lacks the diagnostic key.
+            "   AND COALESCE(json_extract(w.payload_json, '$.diagnostic_non_admission'), 0) <> 1"
+            "   AND NOT EXISTS ("
+            "     SELECT 1 FROM work_items w2"
+            "     WHERE w2.ea_id = w.ea_id AND w2.symbol = w.symbol AND w2.phase = ?"
+            "   )"
+        ),
+        "params": (_NEWS_PHASE, _q10_successor),
+    })
+    return edges
+
+
+def _record_measurement_sibling_promotion_holds(
+    conn: sqlite3.Connection,
+    result: dict[str, Any],
+    siblings: MeasurementSiblingSet,
+    *,
+    cascade_phase_map: "Mapping[str, str]",
+    cascade_pass_verdicts: "Mapping[str, set[str]]",
+    limit: int = 100,
+) -> int:
+    """Record every row a promoter WOULD have minted but for the sibling hold.
+
+    The promoters exclude these rows inside their SQL (see
+    ``_measurement_sibling_exclusion_clause`` for why the filter cannot live in
+    the Python loops), so without this pass a withheld chain is
+    indistinguishable from "nothing was promotable".  Entries land in the same
+    ``cascade_promotions_skipped`` list the other promotion refusals use, so the
+    existing operator surfaces need no change.
+
+    Every edge applies its promoter's own ``NOT EXISTS`` successor condition, so
+    a row whose successor already exists is NOT reported: it was not withheld,
+    it was already promoted.  Measured live 2026-09-03 with the condition: 3
+    entries (QM5_41195/XAGUSD.DWX and QM5_41321/NDX.DWX at Q02->Q03, and
+    QM5_41161/GBPUSD.DWX at Q08->Q10_PORTFOLIO) against 51 without it.
+
+    Withheld rows are permanent, so they are re-reported every cycle -- the same
+    way ``q08_evidence_missing_or_unreadable`` repeats for rows whose frozen
+    evidence is gone.  ``limit`` bounds the list; the sibling population is ~20
+    EAs, so the cap is a guard, not an expected truncation.
+
+    Independently of the filter it also reports the MANUAL
+    ``SIBLING_MEASUREMENT_ONLY_CHAIN_HOLD`` stopgap under
+    ``result["measurement_sibling_manual_hold"]`` (read-only), so the CEO
+    surface can tell "withheld by this filter" from "parked by hand".
+    """
+
+    skipped = result.setdefault("cascade_promotions_skipped", [])
+    # OQ-SIBLING-CASCADE-20260903 (round 3): report the MANUAL stopgap hold
+    # separately from the automatic filter, and do it UNCONDITIONALLY (before
+    # the degraded early-return) so the CEO surface keeps the parked count even
+    # when a recognizer is blind.  Read-only: this module never writes, clears,
+    # or overwrites a ``work_item_holds`` row -- only the operator lifts the
+    # governed hold.
+    try:
+        parked = conn.execute(
+            "SELECT COUNT(*) AS n FROM work_items w"
+            " JOIN work_item_holds h ON h.work_item_id = w.id"
+            " WHERE w.status='pending' AND h.hold_code=? AND h.active=1",
+            (SIBLING_MEASUREMENT_ONLY_CHAIN_HOLD,),
+        ).fetchone()
+        active_holds = conn.execute(
+            "SELECT COUNT(*) AS n FROM work_item_holds"
+            " WHERE hold_code=? AND active=1",
+            (SIBLING_MEASUREMENT_ONLY_CHAIN_HOLD,),
+        ).fetchone()
+        result["measurement_sibling_manual_hold"] = {
+            "hold_code": SIBLING_MEASUREMENT_ONLY_CHAIN_HOLD,
+            "placed_at": SIBLING_MEASUREMENT_ONLY_CHAIN_HOLD_PLACED_AT,
+            "pending_rows_parked": int(parked["n"] if parked is not None else 0),
+            "active_holds": int(active_holds["n"] if active_holds is not None else 0),
+        }
+    except sqlite3.Error as exc:
+        result["measurement_sibling_manual_hold"] = {
+            "hold_code": SIBLING_MEASUREMENT_ONLY_CHAIN_HOLD,
+            "placed_at": SIBLING_MEASUREMENT_ONLY_CHAIN_HOLD_PLACED_AT,
+            "pending_rows_parked": None,
+            "active_holds": None,
+            "error": repr(exc),
+        }
+    if siblings.degraded:
+        # Never report "0 withheld" against a set that may be silently short --
+        # and say so on THIS surface, not only in the resolution report, because
+        # cascade_promotions_skipped is the list an operator actually reads.
+        skipped.append({
+            "site": "measurement_sibling_hold_record",
+            "reason": DL089_MEASUREMENT_SIBLING_DEGRADED_REASON,
+            "failures": [dict(failure) for failure in siblings.failures],
+        })
+        result["measurement_sibling_promotions_withheld"] = 0
+        return 0
+    in_sql = _measurement_sibling_in_sql(siblings.ea_ids, "w.ea_id")
+    if not in_sql:
+        result["measurement_sibling_promotions_withheld"] = 0
+        return 0
+    seen: set[tuple[str, str, str]] = set()
+    recorded = 0
+    for edge in _measurement_sibling_hold_edges(cascade_phase_map, cascade_pass_verdicts):
+        if recorded >= int(limit):
+            break
+        try:
+            rows = conn.execute(
+                f"{edge['sql']} AND {in_sql} ORDER BY w.updated_at DESC LIMIT ?",
+                (*edge["params"], int(limit) - recorded),
+            ).fetchall()
+        except sqlite3.Error as exc:
+            # Visibility must never take the pump down; the exclusions above it
+            # have already held the rows.
+            skipped.append({
+                "reason": "measurement_sibling_hold_scan_failed",
+                "from_phase": edge["from_phase"],
+                "to_phase": edge["to_phase"],
+                "detail": repr(exc),
+            })
+            continue
+        for row in rows:
+            key = (str(row["id"]), str(edge["from_phase"]), str(edge["to_phase"]))
+            if key in seen:
+                continue
+            seen.add(key)
+            skipped.append({
+                "ea_id": row["ea_id"],
+                "symbol": row["symbol"],
+                "from_phase": edge["from_phase"],
+                "to_phase": edge["to_phase"],
+                "from_work_item_id": row["id"],
+                "promoter": edge["promoter"],
+                "reason": DL089_MEASUREMENT_SIBLING_SKIP_REASON,
+            })
+            recorded += 1
+    result["measurement_sibling_promotions_withheld"] = recorded
+    return recorded
 
 
 def _admit_q09_portfolio_passes(
@@ -18741,6 +19707,11 @@ PUMP_OPT_FORK_BUDGET_SECONDS = 30.0
 PUMP_DL089_FRONTIER_REFILL_BUDGET_SECONDS = 10.0
 PUMP_DL089_MATRIX_SERVICE_BUDGET_SECONDS = 20.0
 PUMP_OPT_FORK_SERVICE_BUDGET_SECONDS = 15.0
+# OQ-SIBLING-CASCADE-20260903 (round 3): the measurement-sibling hold record is
+# a read-only visibility scan (~20-EA population across nine promoter edges), so
+# a small budget is a guard, not an expected truncation.  It also carries a
+# promotion_deadline check so it cannot starve the promoters that run after it.
+PUMP_MEASUREMENT_SIBLING_HOLD_BUDGET_SECONDS = 15.0
 
 
 def _pump_unlocked(
@@ -18957,11 +19928,40 @@ def _pump_unlocked(
         }
         result["stage_timings"] = cycle_budget.snapshot()
         return result
+    # OQ-SIBLING-CASCADE-20260903: resolve the measurement-sibling population
+    # ONCE and share it with every minting site below.  Placed AFTER the budget
+    # early-return and inside ``cycle_budget.run`` so it is timed and appears in
+    # ``stage_timings`` like every other stage -- an unbudgeted, untimed
+    # pre-stage costing ~0.4 s warm has no business in a function whose own
+    # comments record the cascade being starved by budget exhaustion.
+    # ``required=True`` because ``run`` returns a dict placeholder when it skips
+    # a stage: a skipped resolution would make every site below fail closed and
+    # mint nothing at all, which is a far worse outcome than 0.4 s.
+    def _resolve_measurement_siblings() -> MeasurementSiblingSet:
+        with connect(root) as sibling_conn:
+            return _measurement_sibling_ea_ids(sibling_conn, root)
+
+    measurement_siblings = cycle_budget.run(
+        "measurement_sibling_resolution",
+        _resolve_measurement_siblings,
+        budget_seconds=5.0,
+        required=True,
+    )
+    result["measurement_sibling_resolution"] = measurement_siblings.report()
+    # Each site takes its own guard so a degraded recognizer is recorded once
+    # per site with the site name, instead of one anonymous global refusal.
+    _cascade_sibling_exclusion = _measurement_sibling_guard(
+        measurement_siblings, result, site="pump_cascade"
+    )
+    _cascade_sibling_sql = _cascade_sibling_exclusion or ""
+    _cascade_edges = (
+        () if _cascade_sibling_exclusion is None else tuple(cascade_phase_map.items())
+    )
     promotion_stage_started = time.monotonic()
     promotion_deadline = cycle_budget.stage_deadline(60.0)
     with connect(root) as conn:
         reopened_parents: set[str] = set()
-        for prev_phase, successor_phase in cascade_phase_map.items():
+        for prev_phase, successor_phase in _cascade_edges:
             if time.monotonic() >= promotion_deadline:
                 result["cascade_promotions_skipped"].append({
                     "reason": "promotion_stage_budget_exhausted",
@@ -18976,6 +19976,7 @@ def _pump_unlocked(
                 SELECT w.* FROM work_items w
                 WHERE w.status='done' AND w.phase=? AND w.verdict in ({placeholders})
                   {_cascade_defect_exclusion}
+                  {_cascade_sibling_sql}
                   AND NOT (
                     w.phase=?
                     AND json_valid(w.payload_json)=1
@@ -19174,11 +20175,15 @@ def _pump_unlocked(
         # at Q04; probing it before the 50-point Q03 grid stops us spending
         # the grid on parameter sets that were never walk-forward-robust.
         # Gate criteria are unchanged — only the order of compute moves.
-        q04_probe_rows = conn.execute(
+        _q04_probe_sibling_sql = _measurement_sibling_guard(
+            measurement_siblings, result, site="pump_q04_early_probe"
+        )
+        q04_probe_rows = [] if _q04_probe_sibling_sql is None else conn.execute(
             f"""
             SELECT w.* FROM work_items w
             WHERE w.status='done' AND w.phase='Q02' AND w.verdict='PASS'
               {_cascade_defect_exclusion}
+              {_q04_probe_sibling_sql}
               AND w.setfile_path NOT LIKE '%_ablation_%'
               AND w.setfile_path NOT LIKE '%_grid_%'
               AND w.setfile_path NOT LIKE '%_synth_%'
@@ -19230,8 +20235,41 @@ def _pump_unlocked(
                 "q04_default_probe": True,
             })
             conn.commit()
+        # The promoters above drop measurement siblings inside their SQL, which
+        # is silent by construction.  Re-find the rows a promoter would actually
+        # have minted -- successor condition included -- and record them with the
+        # machine reason so the hold is visible and correctly counted.
+        #
+        # OQ-SIBLING-CASCADE-20260903 (round 3): run it as a budgeted, timed
+        # stage that also honours the 60 s promotion_deadline the promoters
+        # below it obey, so this read-only visibility scan can never starve
+        # _promote_q08_soft_fails_to_q09_portfolio or the Q08 news backfill that
+        # follow.  Past the deadline the scan is deferred (recorded, not silent)
+        # and the real promoters keep their remaining time.
+        def _record_sibling_holds() -> int:
+            if time.monotonic() >= promotion_deadline:
+                result["cascade_promotions_skipped"].append({
+                    "reason": "measurement_sibling_hold_record_deadline_exhausted",
+                })
+                return 0
+            return _record_measurement_sibling_promotion_holds(
+                conn,
+                result,
+                measurement_siblings,
+                cascade_phase_map=cascade_phase_map,
+                cascade_pass_verdicts=cascade_pass_verdicts,
+            )
+
+        cycle_budget.run(
+            "measurement_sibling_hold_record",
+            _record_sibling_holds,
+            budget_seconds=PUMP_MEASUREMENT_SIBLING_HOLD_BUDGET_SECONDS,
+        )
         q09_promoted = _promote_q08_soft_fails_to_q09_portfolio(
-            conn, result, include_defect_blocked_evidence=include_defect_blocked_evidence
+            conn,
+            result,
+            include_defect_blocked_evidence=include_defect_blocked_evidence,
+            measurement_siblings=measurement_siblings,
         )
         if q09_promoted:
             conn.commit()
@@ -19241,6 +20279,7 @@ def _pump_unlocked(
             include_defect_blocked_evidence=include_defect_blocked_evidence,
             max_rows=20,
             commit_each=True,
+            measurement_siblings=measurement_siblings,
         )
         q09_admitted = 0
         if (
@@ -19286,11 +20325,21 @@ def _pump_unlocked(
         _abl_defect_exclusion = _defect_block_exclusion_clause(
             include_defect_blocked_evidence, ea_col="ea_id"
         )
-        p2_pass = conn.execute(
+        # OQ-SIBLING-CASCADE-20260903: this spawner is a REAL minting path --
+        # 3-8 live backtests per selected row -- and its only exclusion was the
+        # defect cohort, so all 21 sibling Q02 PASS rows still satisfied its
+        # predicate (verified live 2026-09-03; none carries ``ablated_at`` yet).
+        # It is remote in practice only because the ASC window is 6,783 rows
+        # deep with a June-2026 head; that is queue position, not containment.
+        _abl_sibling_exclusion = _measurement_sibling_guard(
+            measurement_siblings, result, site="pump_ablation_random", ea_col="ea_id"
+        )
+        p2_pass = [] if _abl_sibling_exclusion is None else conn.execute(
             f"""
             SELECT * FROM work_items
             WHERE status='done' AND verdict='PASS' AND phase in ('Q02', 'P2')
               {_abl_defect_exclusion}
+              {_abl_sibling_exclusion}
               AND setfile_path NOT LIKE '%_ablation_%'
               AND setfile_path NOT LIKE '%_grid_%'
               AND COALESCE(json_extract(payload_json, '$.ablated_at'), '')=''
@@ -19363,10 +20412,17 @@ def _pump_unlocked(
         # the loop below still applies the authoritative evidence-based gate.
         # Task 5343f90a: exclude defect-blocked EAs' pre-block Q02 PASS rows.
         _defect_exclusion = _defect_block_exclusion_clause(include_defect_blocked_evidence)
+        # OQ-SIBLING-CASCADE-20260903: the Q02->Q03 grid must never be spent on
+        # an instrument.  This is the edge that is genuinely withholding rows on
+        # the live farm today (2: QM5_41195/XAGUSD.DWX, QM5_41321/NDX.DWX).
+        _p3_sibling_exclusion = _measurement_sibling_guard(
+            measurement_siblings, result, site="p2_pass_promoter"
+        )
         _base_q = (
             "SELECT w.* FROM work_items w "
             "WHERE w.status='done' AND w.verdict='PASS' AND w.phase in ('Q02', 'P2') "
             f"{_defect_exclusion} "
+            f"{_p3_sibling_exclusion or ''} "
             "AND NOT EXISTS ("
             "  SELECT 1 FROM work_items w2 "
             "  WHERE w2.ea_id = w.ea_id AND w2.symbol = w.symbol "
@@ -19376,15 +20432,18 @@ def _pump_unlocked(
             " AND EXISTS (SELECT 1 FROM ea_metrics m "
             "WHERE m.work_item_id = w.id AND m.net_profit > 0)"
         )
-        try:
-            promotable = conn.execute(
-                _base_q + _profit_prefilter + " ORDER BY w.updated_at ASC LIMIT 5000"
-            ).fetchall()
-        except sqlite3.OperationalError:
-            # ea_metrics table not built yet — degrade to the legacy full scan.
-            promotable = conn.execute(
-                _base_q + " ORDER BY w.updated_at ASC LIMIT 5000"
-            ).fetchall()
+        if _p3_sibling_exclusion is None:
+            promotable = []
+        else:
+            try:
+                promotable = conn.execute(
+                    _base_q + _profit_prefilter + " ORDER BY w.updated_at ASC LIMIT 5000"
+                ).fetchall()
+            except sqlite3.OperationalError:
+                # ea_metrics table not built yet — degrade to the legacy full scan.
+                promotable = conn.execute(
+                    _base_q + " ORDER BY w.updated_at ASC LIMIT 5000"
+                ).fetchall()
         reopened_parents: set[str] = set()
         for wi in promotable:
             if len(result["p3_promotions"]) >= 250:
@@ -19487,7 +20546,10 @@ def _pump_unlocked(
     result["news_expansions"] = cycle_budget.run(
         "news_expansions",
         lambda: author_news_expansion_continuations(
-            root, limit=PUMP_NEWS_EXPANSION_LIMIT, apply=True
+            root,
+            limit=PUMP_NEWS_EXPANSION_LIMIT,
+            apply=True,
+            measurement_siblings=measurement_siblings,
         ),
         budget_seconds=10.0,
         minimum_start_seconds=10.0,
@@ -20722,10 +21784,17 @@ def _pump_unlocked(
     # the scan window (LIMIT 25) and get their grid as soon as the probe
     # lands; probe-FAIL parents simply never get a grid (intended saving).
     with connect(root) as conn:
-        p3_pass = conn.execute(
-            """
+        # OQ-SIBLING-CASCADE-20260903: same class as the random spawner above,
+        # 50 live backtests per selected row.  13 sibling Q03 PASS rows satisfy
+        # this predicate on the live farm.
+        _grid_sibling_exclusion = _measurement_sibling_guard(
+            measurement_siblings, result, site="pump_ablation_grid", ea_col="ea_id"
+        )
+        p3_pass = [] if _grid_sibling_exclusion is None else conn.execute(
+            f"""
             SELECT * FROM work_items
             WHERE status='done' AND verdict='PASS' AND phase in ('Q03', 'P3')
+              {_grid_sibling_exclusion}
               AND setfile_path NOT LIKE '%_ablation_%'
               AND setfile_path NOT LIKE '%_grid_%'
               AND COALESCE(json_extract(payload_json, '$.ablated_at'), '')=''
