@@ -92,7 +92,10 @@ QM_PermissionResult Pattern_Permission()
       perm.allow_buy = true;
       perm.allow_sell = true;
       perm.valid = true;
-      perm.reference_bar_time = iTime(_Symbol, QM_PPC_REFERENCE_TF, QM_PPC_CLOSED_SHIFT);
+      MqlRates reference_bar;
+      perm.reference_bar_time = (QM_ReadBar(_Symbol, QM_PPC_REFERENCE_TF,
+                                            QM_PPC_CLOSED_SHIFT, reference_bar)
+                                 ? reference_bar.time : 0);
       perm.reason = "census_control";
       return perm;
      }

@@ -448,7 +448,10 @@ QM_PermissionResult Census_Permission()
       // Control cell only, once per new bar. It exists so the control's verdict
       // carries the SAME reference-bar stamp a trial would, keeping the two
       // comparable in the ledger; QM_PatternPermissionEvaluate reads that bar.
-      perm.reference_bar_time = iTime(_Symbol, QM_PPC_REFERENCE_TF, QM_PPC_CLOSED_SHIFT); // perf-allowed: single closed-bar timestamp read on the control path.
+      MqlRates reference_bar;
+      perm.reference_bar_time = (QM_ReadBar(_Symbol, QM_PPC_REFERENCE_TF,
+                                            QM_PPC_CLOSED_SHIFT, reference_bar)
+                                 ? reference_bar.time : 0);
       perm.reason = "census_control";
       return perm;
      }
