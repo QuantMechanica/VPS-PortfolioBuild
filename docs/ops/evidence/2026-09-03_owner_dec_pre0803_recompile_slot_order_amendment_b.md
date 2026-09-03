@@ -288,3 +288,7 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   (Claude lane), Opus workflow `wg8u1drba` (one worktree per sibling, ids 41331–41333 unless the reservation
   tool dictates otherwise, adversarial verifier each); CEO does magic allocation, card copies, compile enqueue
   and release. Until the siblings compile, the three Q12 rows stay deferred regardless of their queue rank.
+- 12:05Z–12:12Z: 11910's priority-tracked Q11 `839984e5` sat 20+ min behind frontier census cells (same class
+  as the news parent). `4cd1d1f35a`: priority-tracked Q11 rows take the lineage-rerun key (phase resolved via
+  the v4 contract map; the parametrized negative case moved to Q13). Reload chunk 16 (all workers) replaces
+  chunk 15 (8/10 done) so every worker carries 608cc5ec6b + 4cd1d1f35a.
