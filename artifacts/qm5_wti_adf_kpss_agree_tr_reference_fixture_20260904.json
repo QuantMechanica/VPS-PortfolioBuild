@@ -1,0 +1,70 @@
+{
+  "schema": "qm.strategy-reference-fixture/v1",
+  "generated_at_utc": "2026-09-04T19:54:00Z",
+  "market_data": false,
+  "purpose": "Independent non-market arithmetic vectors for the locked WTI monthly ADF-KPSS persistence-agreement state gate.",
+  "contract": {
+    "level_count": 60,
+    "adf_regression_observations": 58,
+    "adf_residual_degrees_of_freedom": 55,
+    "adf_t_min_inclusive": -2.594,
+    "kpss_covariance_lags": 4,
+    "kpss_min_inclusive": 0.347,
+    "momentum_months": 12,
+    "direction_epsilon": 1e-12
+  },
+  "generation": {
+    "persistent_up_qualifies_buy": "4.0 + 0.012*t + 0.025*sin(0.73*t) + 0.009*cos(1.91*t), t=0..59",
+    "persistent_down_qualifies_sell": "5.0 - 0.010*t + 0.023*sin(0.71*t) + 0.008*cos(1.83*t), t=0..59",
+    "adf_only_disagreement_flat": "4.0 - 0.002*t + 0.100*sin(0.26*t) + 0.009*cos(1.91*t), t=0..59",
+    "kpss_only_disagreement_flat": "4.0 - 0.002*t + 0.018*sin(1.19*t) + 0.009*cos(1.91*t), t=0..59",
+    "mean_reverting_rejected_flat": "4.0 + 0.080*sin(1.17*t) + 0.030*cos(0.41*t), t=0..59"
+  },
+  "fixtures": [
+    {
+      "name": "persistent_up_qualifies_buy",
+      "adf": {"alpha": 0.02127399686761441, "gamma": -0.0030177163672809415, "phi": 0.30342181583555766, "sse": 0.014111782456244526, "se_gamma": 0.010494589238325068, "adf_t": -0.28754973622603336},
+      "kpss": {"mean": 4.354169642214222, "residual_energy": 2.5659632657403466, "eta": 0.25534932694826673, "long_run_variance": 0.19683753913603017, "statistic": 1.2972592934714569},
+      "momentum_12": 0.12845800868758506,
+      "adf_qualified": true,
+      "kpss_qualified": true,
+      "direction": 1
+    },
+    {
+      "name": "persistent_down_qualifies_sell",
+      "adf": {"alpha": 0.010528798517530866, "gamma": -0.0036734803632210065, "phi": 0.3693154768418153, "sse": 0.010273122918969138, "se_gamma": 0.010666609805259108, "adf_t": -0.34439061991466297},
+      "kpss": {"mean": 4.705748902831554, "residual_energy": 1.832392575291248, "eta": 0.18127847499566943, "long_run_variance": 0.13890881139017466, "statistic": 1.3050178255898004},
+      "momentum_12": -0.15505319427565833,
+      "adf_qualified": true,
+      "kpss_qualified": true,
+      "direction": -1
+    },
+    {
+      "name": "adf_only_disagreement_flat",
+      "adf": {"alpha": 0.2365976130052642, "gamma": -0.0600498626504857, "phi": 0.6680566828868021, "sse": 0.013226410795714124, "se_gamma": 0.025963055532297653, "adf_t": -2.3128965916890856},
+      "kpss": {"mean": 3.953744141536644, "residual_energy": 0.36548484103086504, "eta": 0.009284396578131354, "long_run_variance": 0.027025145255606838, "statistic": 0.3435465930087885},
+      "momentum_12": 0.056275983830263776,
+      "adf_qualified": true,
+      "kpss_qualified": false,
+      "direction": 0
+    },
+    {
+      "name": "kpss_only_disagreement_flat",
+      "adf": {"alpha": 0.6383568615676899, "gamma": -0.16231705261137605, "phi": 0.22419399616809307, "sse": 0.01571921789910039, "se_gamma": 0.06152010812376492, "adf_t": -2.638439000868299},
+      "kpss": {"mean": 3.9413762786044737, "residual_energy": 0.08551890409437861, "eta": 0.0073342344065055, "long_run_variance": 0.005643956698947869, "statistic": 1.2994845279150933},
+      "momentum_12": 0.012795283189358297,
+      "adf_qualified": false,
+      "kpss_qualified": true,
+      "direction": 0
+    },
+    {
+      "name": "mean_reverting_rejected_flat",
+      "adf": {"alpha": 4.187110637431112, "gamma": -1.0471283179467026, "phi": 0.9167349411435318, "sse": 0.023461085292155005, "se_gamma": 0.05211514005625978, "adf_t": -20.092593377208576},
+      "kpss": {"mean": 3.9993709736263177, "residual_energy": 0.21707103918443263, "eta": 0.00023718669620935085, "long_run_variance": 0.0019433765284506744, "statistic": 0.1220487603596016},
+      "momentum_12": 0.06343917227189211,
+      "adf_qualified": false,
+      "kpss_qualified": false,
+      "direction": 0
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "schema": "qm.local-approved-source-composition-evidence/v1",
+  "recorded_at_utc": "2026-09-04T19:52:00Z",
+  "network_retrieval_performed": false,
+  "sources": [
+    {
+      "source_id": "AI-CODEX-WTI-MADF-PERSIST-TREND-20260903",
+      "source_packet_path": "strategy-seeds/sources/AI-CODEX-WTI-MADF-PERSIST-TREND-20260903/source.md",
+      "source_packet_sha256": "576505363DE9DCA4F8E0CB4047D30DE630FB76CBC754F3F9FE3805CDA33507EC",
+      "retrieval_receipt_path": "strategy-seeds/sources/AI-CODEX-WTI-MADF-PERSIST-TREND-20260903/retrieval_route_20260903.json",
+      "retrieval_receipt_sha256": "6098F3321241D2CE1272844AD377E517A6FEE4A296BFAF3497B0061A12BD235D",
+      "approval_path": "decisions/2026-09-03_wti_monthly_adf_persistence_trend_source_approval.md",
+      "read_scope": "complete approved local source packet and its pinned bounded Chan/MOP evidence",
+      "role": "lag-one constant/no-time-trend ADF arithmetic, negative rejection orientation, and translated -2.594 boundary"
+    },
+    {
+      "source_id": "KWIATKOWSKI-STATSMODELS-MOP-WTI-KPSS-20260902",
+      "source_packet_path": "strategy-seeds/sources/KWIATKOWSKI-STATSMODELS-MOP-WTI-KPSS-20260902/source.md",
+      "source_packet_sha256": "484F927088FCA0A01E4332B289A6A195A29152FDDE3BF08D7FD47CD8D86BEAD9",
+      "retrieval_receipt_path": "strategy-seeds/sources/KWIATKOWSKI-STATSMODELS-MOP-WTI-KPSS-20260902/retrieval_route_20260902.json",
+      "retrieval_receipt_sha256": "CBABE38A7AEE263C417A55692697C1A8FD5D35D6D50A99482D073A948E89D42D",
+      "approval_path": "decisions/2026-09-02_wti_monthly_kpss_trend_source_approval.md",
+      "read_scope": "complete approved local source packet and pinned KPSS implementation/test evidence",
+      "role": "constant-only residual partial sums, fixed lag-four Bartlett long-run variance, and 0.347 boundary"
+    },
+    {
+      "source_id": "MOP-TSMOM-2012",
+      "source_packet_path": "strategy-seeds/sources/MOP-TSMOM-2012/source.md",
+      "source_packet_sha256": "C8B07ECD62C1D5EF9E3D7975EEE6A3B6C46C1C566D0B20B42237613D9B3A7042",
+      "retrieval_receipt_path": "strategy-seeds/sources/MOP-TSMOM-2012/retrieval_route_20260731.json",
+      "retrieval_receipt_sha256": "ECBCC76CC878F0CC6FBF8C40B23D72084EC6ED03C6375438E3232CC24A33D38F",
+      "read_scope": "complete approved local packet recording a complete 23-page published-paper read",
+      "role": "monthly own-return continuation and explicit NYMEX WTI membership"
+    }
+  ],
+  "claim_boundary": "The parents supply two statistical tests and monthly WTI continuation separately. No parent tests the ADF/KPSS agreement conjunction, sixty-level CFD translation, fixed thresholds, execution lifecycle, activity, economics, or portfolio overlap."
+}
