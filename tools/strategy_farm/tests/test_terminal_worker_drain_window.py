@@ -175,6 +175,21 @@ def test_longrun_phases_not_treated_as_short_rows():
         assert not tw._drain_blocks_candidate({"id": "L", "phase": phase}, "IDX1")
 
 
+def test_new_long_run_rows_blocked_while_open_claim_path():
+    """2026-09-04: a NEW Q07/Q08/news-parent claim during an open drain used to
+    abandon it; the claim path now refuses such rows (armed row and COMPILE_EA
+    exempt) while the releasable arithmetic predicate is unchanged."""
+    for phase in ("Q07", "Q08", tw._Q09_NEWS_PHASE):
+        assert tw._drain_blocks_new_long_run({"id": "L", "phase": phase}, "IDX1")
+        assert not tw._drain_blocks_candidate({"id": "L", "phase": phase}, "IDX1")
+    assert not tw._drain_blocks_new_long_run({"id": "IDX1", "phase": "Q08"}, "IDX1")
+    assert not tw._drain_blocks_new_long_run(
+        {"id": "C1", "phase": tw.farmctl.COMPILE_EA_PHASE}, "IDX1"
+    )
+    for phase in ("Q02", "Q05", "OPT_CENSUS"):
+        assert not tw._drain_blocks_new_long_run({"id": "S", "phase": phase}, "IDX1")
+
+
 # --- state machine: open only after the trigger age ----------------------
 
 def test_drain_opens_only_after_trigger_age():

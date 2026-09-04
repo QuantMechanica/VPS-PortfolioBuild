@@ -1660,6 +1660,30 @@ def _drain_blocks_candidate(
     return phase in _DRAIN_SHORT_ROW_PHASES
 
 
+def _drain_blocks_new_long_run(
+    item: sqlite3.Row | dict[str, Any], drain_item_id: str | None
+) -> bool:
+    """True when an active drain must refuse this NEW long-run row.
+
+    2026-09-04 (CEO): the drain refused only new SHORT rows, so a new Q07/Q08/
+    news-parent claim made during the window abandoned it every time
+    (QM5_12580 basket: 02:33Z, 04:22Z, ~05:50Z -- each cycle idled the fleet
+    for up to ten minutes and the drain never won).  While a drain is open a
+    NEW long-run row is refused as well; the armed heavy row and COMPILE_EA
+    rows stay exempt.  Claim-path only: the releasable-RAM arithmetic keeps
+    using ``_drain_blocks_candidate`` so active long runs are never counted as
+    releasable.  Bounded by the drain's own max window and abandon rules.
+    """
+    if drain_item_id is not None and str(
+        _work_item_value(item, "id", "") or ""
+    ) == str(drain_item_id):
+        return False
+    phase = str(_work_item_value(item, "phase", "") or "").upper()
+    if phase == str(farmctl.COMPILE_EA_PHASE).upper():
+        return False
+    return _drain_phase_is_long_run(phase)
+
+
 def _drain_active_now(
     state: dict[str, Any], now_epoch: float
 ) -> tuple[bool, str | None]:
@@ -4241,12 +4265,16 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                     # RAM can climb to the heavy row's reservation. The armed row
                     # and COMPILE_EA are always exempt (2026-09-03; audit
                     # docs/ops/evidence/2026-09-03_index_tick_admission_audit.md).
-                    if drain_active and _drain_blocks_candidate(item, drain_item_id):
+                    if drain_active and (
+                        _drain_blocks_candidate(item, drain_item_id)
+                        or _drain_blocks_new_long_run(item, drain_item_id)
+                    ):
                         skipped_drain_window.append({
                             "item_id": item["id"],
                             "ea_id": item["ea_id"],
                             "phase": str(item["phase"] or "").upper(),
                             "drain_item_id": drain_item_id,
+                            "long_run": _drain_blocks_new_long_run(item, drain_item_id),
                         })
                         continue
                     avoid_terminals = _payload_avoid_terminals(payload)
