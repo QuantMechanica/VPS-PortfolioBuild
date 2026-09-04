@@ -1,0 +1,210 @@
+{
+  "schema": "qm.q08-stream-auto-rerun/v1",
+  "applied": false,
+  "watermark_path": "D:\\QM\\strategy_farm\\state\\q08_stream_auto_rerun_watermark.json",
+  "items": [
+    {
+      "ea_id": "QM5_10706",
+      "symbol": "GBPUSD.DWX",
+      "q14_work_item_id": "b5e18759-1377-5af7-9634-9f66bd293d0c",
+      "identity_ex5_sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb",
+      "q14_verdict": "KEEP_INCUMBENT",
+      "q14_evidence_path": "D:\\QM\\reports\\optimization_fork\\b5e18759-1377-5af7-9634-9f66bd293d0c\\receipt.json",
+      "action": "skip",
+      "reason": "stream_already_bound",
+      "q08_work_item_id": "a2e1aba6-45ea-4dcf-af98-1f679ebeb64f",
+      "seal_content_sha256": "71fb35b8f8539356f511609a4d1dfb06571f85b19b60de6647e907ec891e34f7",
+      "recorded_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10706_GBPUSD_DWX.jsonl",
+      "source_artifact_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\10706_GBPUSD_DWX.jsonl",
+      "identity_status": "BOUND_STREAM_BUILD_SETFILE_SOURCE_AND_REPORT",
+      "q08_evidence_path": "D:\\QM\\reports\\work_items\\a2e1aba6-45ea-4dcf-af98-1f679ebeb64f\\QM5_10706\\Q08\\GBPUSD_DWX\\aggregate.json"
+    },
+    {
+      "ea_id": "QM5_11421",
+      "symbol": "EURUSD.DWX",
+      "q14_work_item_id": "a42f2a71-ed1c-538a-b97a-142a67b907f2",
+      "action": "skip",
+      "reason": "superseded_q14_trigger"
+    },
+    {
+      "ea_id": "QM5_11422",
+      "symbol": "USDCAD.DWX",
+      "q14_work_item_id": "3078ad67-9a19-56cb-a252-0a112596343a",
+      "identity_ex5_sha256": "2b98e9e902313148be78d88513fcbda2476150b1a7605eb15a50b2cca6b32d66",
+      "q14_verdict": "KEEP_INCUMBENT",
+      "q14_evidence_path": "D:\\QM\\reports\\optimization_fork\\3078ad67-9a19-56cb-a252-0a112596343a\\receipt.json",
+      "action": "skip",
+      "reason": "stream_already_bound",
+      "q08_work_item_id": "2bd0f95c-6c62-4a53-92cf-04f0d39fbb48",
+      "seal_content_sha256": "7ce6cc3ec2f1279c18e8601119e3319375d5d3fa1ce4cf95cf33e05eefc33198",
+      "recorded_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11422_USDCAD_DWX.jsonl",
+      "source_artifact_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\11422_USDCAD_DWX.jsonl",
+      "identity_status": "BOUND_STREAM_BUILD_SETFILE_SOURCE_AND_REPORT",
+      "q08_evidence_path": "D:\\QM\\reports\\work_items\\2bd0f95c-6c62-4a53-92cf-04f0d39fbb48\\QM5_11422\\Q08\\USDCAD_DWX\\aggregate.json"
+    },
+    {
+      "ea_id": "QM5_11421",
+      "symbol": "EURUSD.DWX",
+      "q14_work_item_id": "ff733cf6-52a1-5aad-9bff-4f8c31ef4dc6",
+      "identity_ex5_sha256": "9dd7facd1da7e2c6564929b92a2e4a62e65bc40b99a03edd729030f72d18924b",
+      "q14_verdict": "KEEP_INCUMBENT",
+      "q14_evidence_path": "D:\\QM\\reports\\optimization_fork\\ff733cf6-52a1-5aad-9bff-4f8c31ef4dc6\\receipt.json",
+      "action": "skip",
+      "reason": "stream_already_bound",
+      "q08_work_item_id": "c93263aa-a707-45ea-a915-204ec59df077",
+      "seal_content_sha256": "e9d0a9ef831f156f0f67e5bf1140d7e57702c3923a4ff47b5548847957d7c0c1",
+      "recorded_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11421_EURUSD_DWX.jsonl",
+      "source_artifact_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\11421_EURUSD_DWX.jsonl",
+      "identity_status": "BOUND_STREAM_BUILD_SETFILE_SOURCE_AND_REPORT",
+      "q08_evidence_path": "D:\\QM\\reports\\work_items\\c93263aa-a707-45ea-a915-204ec59df077\\QM5_11421\\Q08\\EURUSD_DWX\\aggregate.json"
+    },
+    {
+      "ea_id": "QM5_13054",
+      "symbol": "XTIUSD.DWX",
+      "q14_work_item_id": "4aaa524d-c11a-5725-8de7-f1d00d51eca9",
+      "identity_ex5_sha256": "2e65488fccdbd985f78318861a223a305d820a4fce3d2ebdcafae6ce956fd96d",
+      "q14_verdict": "KEEP_INCUMBENT",
+      "q14_evidence_path": "D:\\QM\\reports\\optimization_fork\\4aaa524d-c11a-5725-8de7-f1d00d51eca9\\receipt.json",
+      "action": "skip",
+      "reason": "stream_already_bound",
+      "q08_work_item_id": "21dd6839-4d77-4228-b5ba-5dd86aeb0cdb",
+      "seal_content_sha256": "67d4fe2cef067e041f01d10e5e6c98312a32b43683eee2da3d0bfa9af296955b",
+      "recorded_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13054_XTIUSD_DWX.jsonl",
+      "source_artifact_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\13054_XTIUSD_DWX.jsonl",
+      "identity_status": "BOUND_STREAM_BUILD_SETFILE_SOURCE_AND_REPORT",
+      "q08_evidence_path": "D:\\QM\\reports\\work_items\\21dd6839-4d77-4228-b5ba-5dd86aeb0cdb\\QM5_13054\\Q08\\XTIUSD_DWX\\aggregate.json"
+    },
+    {
+      "ea_id": "QM5_1537",
+      "symbol": "XAGUSD.DWX",
+      "q14_work_item_id": "18859f02-5371-5094-a7a5-b63619482545",
+      "identity_ex5_sha256": "142a019e773a493def0640722efb9d591d094650b35a69d5de39f6af3a048106",
+      "q14_verdict": "KEEP_INCUMBENT",
+      "q14_evidence_path": "D:\\QM\\reports\\optimization_fork\\18859f02-5371-5094-a7a5-b63619482545\\receipt.json",
+      "action": "skip",
+      "reason": "stream_already_bound",
+      "q08_work_item_id": "f62fe6b3-f734-466e-95dd-d7ca76294729",
+      "seal_content_sha256": "1885c21e4c895827c79ff3d55849308ab4ee5c0db96a7d576cd652dc3eff8658",
+      "recorded_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\1537_XAGUSD_DWX.jsonl",
+      "source_artifact_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\1537_XAGUSD_DWX.jsonl",
+      "identity_status": "BOUND_STREAM_BUILD_SETFILE_SOURCE_AND_REPORT",
+      "q08_evidence_path": "D:\\QM\\reports\\work_items\\f62fe6b3-f734-466e-95dd-d7ca76294729\\QM5_1537\\Q08\\XAGUSD_DWX\\aggregate.json"
+    },
+    {
+      "ea_id": "QM5_21505",
+      "symbol": "XAGUSD.DWX",
+      "q14_work_item_id": "aecfbf06-63ef-520b-8943-48b5b1d3769e",
+      "identity_ex5_sha256": "395c4747832acbcdf8a68d8598e53abe5786bdc6c538767c400884cd82b2aea1",
+      "q14_verdict": "KEEP_INCUMBENT",
+      "q14_evidence_path": "D:\\QM\\reports\\optimization_fork\\aecfbf06-63ef-520b-8943-48b5b1d3769e\\receipt.json",
+      "action": "skip",
+      "reason": "stream_already_bound",
+      "q08_work_item_id": "15c1ec7b-5821-4944-81a7-86d23754565d",
+      "seal_content_sha256": "243804faaf0050f5482b9a4aac8f9eb0dcd552de1c2c139a486f0bcfa46b94c1",
+      "recorded_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\21505_XAGUSD_DWX.jsonl",
+      "source_artifact_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\21505_XAGUSD_DWX.jsonl",
+      "identity_status": "BOUND_STREAM_BUILD_SETFILE_SOURCE_AND_REPORT",
+      "q08_evidence_path": "D:\\QM\\reports\\work_items\\15c1ec7b-5821-4944-81a7-86d23754565d\\QM5_21505\\Q08\\XAGUSD_DWX\\aggregate.json"
+    },
+    {
+      "ea_id": "QM5_20048",
+      "symbol": "XTIUSD.DWX",
+      "q14_work_item_id": "aefddcb5-3ff1-5b19-a0ef-e188555edf37",
+      "identity_ex5_sha256": "1312391ad7e654812244e48a6df92d5bd323dba7d32ddae60c54adc464527f00",
+      "q14_verdict": "KEEP_INCUMBENT",
+      "q14_evidence_path": "D:\\QM\\reports\\optimization_fork\\aefddcb5-3ff1-5b19-a0ef-e188555edf37\\receipt.json",
+      "action": "skip",
+      "reason": "stream_already_bound",
+      "q08_work_item_id": "a43559cd-b084-4c0e-8bc3-2c7b6fc1a5ea",
+      "seal_content_sha256": "a792e2635250bcd6df5aa4a290359b54e6d5ffe8fbe10e34d143b74dfe0e8d55",
+      "recorded_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\20048_XTIUSD_DWX.jsonl",
+      "source_artifact_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\20048_XTIUSD_DWX.jsonl",
+      "identity_status": "BOUND_STREAM_BUILD_SETFILE_SOURCE_AND_REPORT",
+      "q08_evidence_path": "D:\\QM\\reports\\work_items\\a43559cd-b084-4c0e-8bc3-2c7b6fc1a5ea\\QM5_20048\\Q08\\XTIUSD_DWX\\aggregate.json"
+    },
+    {
+      "ea_id": "QM5_11910",
+      "symbol": "NZDUSD.DWX",
+      "q14_work_item_id": "e21567f4-e6f9-51e4-8c9a-c3b4ccef3272",
+      "identity_ex5_sha256": "e18d477e63c40cb1002aa4d93d8efcc3ec6fddf1081fb73ad9df1b0a7a3042de",
+      "q14_verdict": "KEEP_INCUMBENT",
+      "q14_evidence_path": "D:\\QM\\reports\\optimization_fork\\e21567f4-e6f9-51e4-8c9a-c3b4ccef3272\\receipt.json",
+      "action": "skip",
+      "reason": "stream_already_bound",
+      "q08_work_item_id": "977a478e-1f23-4297-ac76-656bb497e2ec",
+      "seal_content_sha256": "555bbee205432c62f06da96a0a291d14028dc5c88e3fa8b2792ad62bc5d885b0",
+      "recorded_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11910_NZDUSD_DWX.jsonl",
+      "source_artifact_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\11910_NZDUSD_DWX.jsonl",
+      "identity_status": "BOUND_STREAM_BUILD_SETFILE_SOURCE_AND_REPORT",
+      "q08_evidence_path": "D:\\QM\\reports\\work_items\\977a478e-1f23-4297-ac76-656bb497e2ec\\QM5_11910\\Q08\\NZDUSD_DWX\\aggregate.json"
+    }
+  ],
+  "created_count": 0,
+  "would_enqueue_count": 0,
+  "watermark_before": {
+    "schema": "qm.q08-stream-auto-rerun/v1",
+    "updated_at": "1970-01-01T00:00:00+00:00",
+    "q14_work_item_id": "",
+    "retry_q14_ids": []
+  },
+  "proposed_watermark": {
+    "schema": "qm.q08-stream-auto-rerun/v1",
+    "updated_at": "2026-09-04T15:34:10.510023+00:00",
+    "q14_work_item_id": "e21567f4-e6f9-51e4-8c9a-c3b4ccef3272",
+    "retry_q14_ids": []
+  },
+  "checked_at": "2026-09-04T20:03:55.468070+00:00",
+  "watermark_unchanged": true,
+  "physical_seals": [
+    {
+      "ea_id": "QM5_10706",
+      "symbol": "GBPUSD.DWX",
+      "seal_bytes_found": true,
+      "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10706_GBPUSD_DWX.jsonl"
+    },
+    {
+      "ea_id": "QM5_11422",
+      "symbol": "USDCAD.DWX",
+      "seal_bytes_found": true,
+      "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11422_USDCAD_DWX.jsonl"
+    },
+    {
+      "ea_id": "QM5_11421",
+      "symbol": "EURUSD.DWX",
+      "seal_bytes_found": true,
+      "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11421_EURUSD_DWX.jsonl"
+    },
+    {
+      "ea_id": "QM5_13054",
+      "symbol": "XTIUSD.DWX",
+      "seal_bytes_found": true,
+      "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13054_XTIUSD_DWX.jsonl"
+    },
+    {
+      "ea_id": "QM5_1537",
+      "symbol": "XAGUSD.DWX",
+      "seal_bytes_found": true,
+      "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\1537_XAGUSD_DWX.jsonl"
+    },
+    {
+      "ea_id": "QM5_21505",
+      "symbol": "XAGUSD.DWX",
+      "seal_bytes_found": true,
+      "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\21505_XAGUSD_DWX.jsonl"
+    },
+    {
+      "ea_id": "QM5_20048",
+      "symbol": "XTIUSD.DWX",
+      "seal_bytes_found": true,
+      "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\20048_XTIUSD_DWX.jsonl"
+    },
+    {
+      "ea_id": "QM5_11910",
+      "symbol": "NZDUSD.DWX",
+      "seal_bytes_found": true,
+      "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11910_NZDUSD_DWX.jsonl"
+    }
+  ],
+  "manual_precedent_count": 7,
+  "expected_pool_pairs": 8
+}

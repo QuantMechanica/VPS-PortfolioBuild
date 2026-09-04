@@ -1,0 +1,628 @@
+diff --git a/tools/strategy_farm/farmctl.py b/tools/strategy_farm/farmctl.py
+index 0d08d2aa6e..8a8e4d6821 100644
+--- a/tools/strategy_farm/farmctl.py
++++ b/tools/strategy_farm/farmctl.py
+@@ -20747,7 +20747,21 @@ PUMP_OPT_FORK_SERVICE_BUDGET_SECONDS = 15.0
+ PUMP_MEASUREMENT_SIBLING_HOLD_BUDGET_SECONDS = 15.0
+ 
+ 
+-def _pump_unlocked(
++def auto_enqueue_q08_stream_reruns(
++    root: Path, *, deadline_monotonic: float | None = None
++) -> dict[str, Any]:
++    """Recover missing current-identity Q08 seals after terminal Q14 results."""
++    try:
++        from tools.strategy_farm.q08_stream_rerun import service
++        return service(
++            root, apply=True, deadline_monotonic=deadline_monotonic,
++            farm_module=sys.modules[__name__],
++        )
++    except Exception as exc:
++        return {"applied": False, "machine_reason": f"Q08_STREAM_AUTO_RERUN_FAILED:{exc}"}
++
++
++def _pump_unlocked(
+     root: Path, include_defect_blocked_evidence: bool = False
+ ) -> dict[str, Any]:
+     """Continuous deterministic worker — run every 5 min.
+@@ -20899,12 +20913,22 @@ def _pump_unlocked(
+                 "machine_reason": f"OPTIMIZATION_FORK_SERVICE_FAILED:{exc}",
+             }
+ 
+-    result["optimization_fork_service"] = cycle_budget.run(
++    result["optimization_fork_service"] = cycle_budget.run(
+         "optimization_fork_service",
+         _opt_fork_service_stage,
+         budget_seconds=PUMP_OPT_FORK_SERVICE_BUDGET_SECONDS,
+-        minimum_start_seconds=5.0,
+-    )
++        minimum_start_seconds=5.0,
++    )
++
++    # Current-identity book evidence must survive the optimization fork.
++    # Append-only service; no tester spawn and no bundle/selection rule change.
++    stream_deadline = cycle_budget.stage_deadline(10.0)
++    result["q08_stream_auto_rerun"] = cycle_budget.run(
++        "q08_stream_auto_rerun",
++        lambda: auto_enqueue_q08_stream_reruns(root, deadline_monotonic=stream_deadline),
++        budget_seconds=10.0,
++        minimum_start_seconds=5.0,
++    )
+ 
+     # 2026-09-02 (CEO): gate-cascade promotions (Q02 review -> Q03, Q03..Q09
+     # PASS -> successor, Q02 -> Q04 probe) are census-critical and run right
+diff --git a/tools/strategy_farm/q08_stream_rerun.py b/tools/strategy_farm/q08_stream_rerun.py
+new file mode 100644
+index 0000000000..579f937c54
+--- /dev/null
++++ b/tools/strategy_farm/q08_stream_rerun.py
+@@ -0,0 +1,240 @@
++"""Append-only Q08 stream recovery after a terminal Q14 identity (task ccea329e).
++
++The CLI is read-only. Only the canonical pump calls service(apply=True), under
++the factory mutation lock. Bundle binding and Q08 verdict policies are unchanged.
++"""
++from __future__ import annotations
++
++import argparse
++import contextlib
++import datetime as dt
++import json
++import os
++import sqlite3
++import sys
++import time
++import uuid
++from pathlib import Path
++from typing import Any
++
++if __package__ in (None, ""):
++    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
++
++from tools.strategy_farm import assemble_stream_bundle as bundle
++from tools.strategy_farm.factory_mutation_lock import FactoryMutationLock
++
++SCHEMA = "qm.q08-stream-auto-rerun/v1"
++STATE_NAME = "q08_stream_auto_rerun_watermark.json"
++DISABLE_ENV = "QM_DISABLE_Q08_STREAM_AUTO_RERUN"
++EPOCH = "1970-01-01T00:00:00+00:00"
++
++
++def _cursor(timestamp: str, row_id: str) -> tuple[dt.datetime, str]:
++    if not isinstance(timestamp, str) or not isinstance(row_id, str):
++        raise ValueError("Q14 watermark timestamp and id must be strings")
++    value = dt.datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
++    if value.tzinfo is None:
++        raise ValueError("Q14 watermark/timestamp must include a UTC offset")
++    return value.astimezone(dt.timezone.utc), row_id
++
++
++def _read_state(path: Path) -> dict[str, Any]:
++    if not path.exists():
++        return {"schema": SCHEMA, "updated_at": EPOCH, "q14_work_item_id": "", "retry_q14_ids": []}
++    state = json.loads(path.read_text(encoding="utf-8"))
++    if not isinstance(state, dict) or state.get("schema") != SCHEMA or not isinstance(state.get("retry_q14_ids"), list):
++        raise ValueError("invalid Q08 stream rerun watermark schema")
++    _cursor(state["updated_at"], state["q14_work_item_id"])
++    if not all(isinstance(item, str) for item in state["retry_q14_ids"]):
++        raise ValueError("invalid retry Q14 ids")
++    return state
++
++
++def _write_state(path: Path, state: dict[str, Any]) -> None:
++    path.parent.mkdir(parents=True, exist_ok=True)
++    temporary = path.with_name(f".{path.name}.{uuid.uuid4().hex}.tmp")
++    try:
++        with temporary.open("x", encoding="utf-8", newline="\n") as handle:
++            handle.write(json.dumps(state, indent=2, sort_keys=True) + "\n")
++            handle.flush()
++            os.fsync(handle.fileno())
++        os.replace(temporary, path)
++    finally:
++        temporary.unlink(missing_ok=True)
++
++
++def rerun_reason(identity: dict[str, Any], timestamp: str) -> str:
++    return (
++        f"Q08 sealed-stream re-emission after Q14 {identity['q14_verdict']} {timestamp}: "
++        "current-identity daily-PnL bytes missing from sleeve_streams; append-only "
++        "rerun to reproduce the seal for the book-path bundle (D4)."
++    )
++
++
++def inspect_trigger(con, trigger: dict[str, Any], farm) -> dict[str, Any]:
++    """Plan one exact rerun, with no bundle, queue, or state writes."""
++    ea, symbol = trigger["ea_id"], trigger["symbol"]
++    result = {"ea_id": ea, "symbol": symbol, "q14_work_item_id": trigger["id"]}
++    identity = bundle.resolve_identity(con, ea, symbol)
++    if not identity:
++        return {**result, "action": "defer", "reason": "no_terminal_q14_identity"}
++    if identity["q14_work_item_id"] != trigger["id"]:
++        return {**result, "action": "skip", "reason": "superseded_q14_trigger"}
++    result.update(identity)
++    bound = bundle.find_bound_q08(con, ea, symbol, identity["identity_ex5_sha256"])
++    if bound:
++        return {**result, "action": "skip", "reason": "stream_already_bound", **bound}
++    open_row = con.execute(
++        "SELECT id FROM work_items WHERE ea_id=? AND symbol=? AND phase='Q08' "
++        "AND status IN ('pending','active') ORDER BY id LIMIT 1", (ea, symbol),
++    ).fetchone()
++    if open_row:
++        return {**result, "action": "skip", "reason": "q08_pending_or_active", "existing_q08_id": open_row["id"]}
++    reason = rerun_reason(identity, trigger["updated_at"])
++    # Covers enqueue success followed by a process crash before event/watermark
++    # persistence, including a rerun that already finished before the next cycle.
++    prior = con.execute(
++        "SELECT id FROM work_items WHERE ea_id=? AND symbol=? AND phase='Q08' "
++        "AND json_valid(payload_json) "
++        "AND json_extract(payload_json,'$.rerun_reason')=? "
++        "AND json_extract(payload_json,'$.expected_current_ex5_sha256')=? LIMIT 1",
++        (ea, symbol, reason, identity["identity_ex5_sha256"]),
++    ).fetchone()
++    if prior:
++        return {**result, "action": "skip", "reason": "trigger_rerun_already_recorded", "existing_q08_id": prior["id"]}
++    predecessor = con.execute(
++        "SELECT id FROM work_items WHERE ea_id=? AND symbol=? AND phase='Q07' "
++        "AND status='done' AND verdict='PASS' "
++        "ORDER BY julianday(updated_at) DESC, updated_at DESC, id DESC LIMIT 1", (ea, symbol),
++    ).fetchone()
++    verdicts = tuple(sorted(bundle.Q08_STREAM_PASS_VERDICTS))
++    target = con.execute(
++        "SELECT id FROM work_items WHERE ea_id=? AND symbol=? AND phase='Q08' "
++        "AND status='done' AND verdict IN (" + ",".join("?" for _ in verdicts) + ") "
++        "ORDER BY julianday(updated_at) DESC, updated_at DESC, id DESC LIMIT 1",
++        (ea, symbol, *verdicts),
++    ).fetchone()
++    if not predecessor or not target:
++        return {**result, "action": "defer", "reason": "missing_q07_pass_or_q08_pass_class_predecessor"}
++    directory = farm._preferred_ea_dir(ea)
++    binary = directory / f"{directory.name}.ex5" if directory else None
++    if binary is None or not binary.is_file():
++        return {**result, "action": "defer", "reason": "current_ex5_missing_or_ambiguous"}
++    digest = bundle.sha256_file(binary)
++    if digest != identity["identity_ex5_sha256"]:
++        return {**result, "action": "defer", "reason": "current_binary_differs_from_q14_identity", "current_ex5_sha256": digest}
++    return {**result, "action": "would_enqueue", "reason": "no_q08_stream_bound_to_identity",
++        "enqueue_kwargs": {"ea_id": ea, "phase": "Q08",
++            "predecessor_work_item_id": predecessor["id"], "append_only_rerun_of": target["id"],
++            "expected_current_ex5_sha256": digest, "rerun_reason": reason}}
++
++
++def service(root: Path, *, apply: bool = False, limit: int = 16,
++            deadline_monotonic: float | None = None, farm_module=None) -> dict[str, Any]:
++    if farm_module is None:
++        from tools.strategy_farm import farmctl as farm_module
++    farm = farm_module
++    root = Path(root)
++    state_path = root / "state" / STATE_NAME
++    result: dict[str, Any] = {"schema": SCHEMA, "applied": apply, "watermark_path": str(state_path),
++        "items": [], "created_count": 0, "would_enqueue_count": 0}
++    if os.environ.get(DISABLE_ENV) == "1":
++        return {**result, "applied": False, "reason": "disabled_by_environment"}
++    if limit < 1:
++        raise ValueError("limit must be positive")
++    if apply:
++        farm._assert_canonical_checkout()
++    lock = FactoryMutationLock(root / "state" / "FACTORY_MUTATION.lock", owner="q08_stream_auto_rerun")
++    try:
++        with lock if apply else contextlib.nullcontext():
++            # Check OFF while holding the same boundary as Factory_OFF/ON.
++            if (root / "FACTORY_OFF.flag").exists():
++                return {**result, "applied": False, "reason": "factory_off"}
++            state = _read_state(state_path)
++            highwater = _cursor(state["updated_at"], state["q14_work_item_id"])
++            retry = set(state["retry_q14_ids"])
++            retry_order = list(dict.fromkeys(state["retry_q14_ids"]))
++            result["watermark_before"] = dict(state)
++            con = bundle.open_ro(root / "state" / "farm_state.sqlite")
++            try:
++                verdicts = tuple(sorted(bundle.TERMINAL_PASS_VERDICTS))
++                rows = [dict(row) for row in con.execute(
++                    "SELECT id, ea_id, symbol, updated_at FROM work_items WHERE phase='Q14' "
++                    "AND status='done' AND verdict IN (" + ",".join("?" for _ in verdicts) + ")",
++                    verdicts,
++                )]
++                new_rows = sorted((row for row in rows if
++                    _cursor(row["updated_at"], row["id"]) > highwater),
++                    key=lambda row: _cursor(row["updated_at"], row["id"]))
++                by_id = {row["id"]: row for row in rows}
++                retry_rows = [by_id[wid] for wid in retry_order if wid in by_id and
++                    _cursor(by_id[wid]["updated_at"], wid) <= highwater]
++                retry_limit = min(len(retry_rows), limit // 2 if new_rows else limit)
++                rows = retry_rows[:retry_limit] + new_rows[:limit - retry_limit]
++                for trigger in rows:
++                    if deadline_monotonic is not None and time.monotonic() >= deadline_monotonic:
++                        result["budget_exhausted"] = True
++                        break
++                    if os.environ.get(DISABLE_ENV) == "1" or (root / "FACTORY_OFF.flag").exists():
++                        result["stopped_before_next_trigger"] = True
++                        break
++                    item = inspect_trigger(con, trigger, farm)
++                    if item["action"] == "would_enqueue":
++                        result["would_enqueue_count"] += 1
++                        if apply:
++                            answer = farm.enqueue_cascade_backtest_for_ea(root, **item["enqueue_kwargs"])
++                            item["enqueue_result"] = answer
++                            created = answer.get("created", [])
++                            if len(created) == 1 and not answer.get("requeued"):
++                                item.update(action="enqueued", new_q08_work_item_id=created[0]["id"])
++                                result["created_count"] += 1
++                                with farm.connect(root) as writer:
++                                    farm.event(writer, "work_item", created[0]["id"],
++                                        "q08_stream_rerun_auto_minted", {
++                                            "ea_id": trigger["ea_id"], "symbol": trigger["symbol"],
++                                            "q14_work_item_id": trigger["id"],
++                                            "q07_work_item_id": item["enqueue_kwargs"]["predecessor_work_item_id"],
++                                            "q08_rerun_of_work_item_id": item["enqueue_kwargs"]["append_only_rerun_of"],
++                                            "new_q08_work_item_id": created[0]["id"],
++                                            "expected_current_ex5_sha256": item["identity_ex5_sha256"],
++                                        })
++                                    writer.commit()
++                            else:
++                                # farmctl can report enqueued=True for a refusal;
++                                # only an actual created row counts as delivery.
++                                item.update(action="defer", reason="governed_enqueue_created_no_single_row")
++                    result["items"].append(item)
++                    if trigger["id"] in retry_order:
++                        retry_order.remove(trigger["id"])
++                    if item["action"] == "defer":
++                        retry.add(trigger["id"])
++                        retry_order.append(trigger["id"])
++                    else:
++                        retry.discard(trigger["id"])
++                    cursor = _cursor(trigger["updated_at"], trigger["id"])
++                    if cursor > highwater:
++                        highwater = cursor
++                        state.update(updated_at=trigger["updated_at"], q14_work_item_id=trigger["id"])
++                    state["retry_q14_ids"] = retry_order.copy()
++                    if apply:
++                        _write_state(state_path, state)
++            finally:
++                con.close()
++            result["watermark_after" if apply else "proposed_watermark"] = state
++            return result
++    except (OSError, RuntimeError, ValueError, KeyError, sqlite3.Error) as exc:
++        return {**result, "error": f"{type(exc).__name__}: {exc}", "reason": "q08_stream_service_deferred"}
++
++
++def main() -> int:
++    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
++    parser.add_argument("--root", type=Path, default=Path("D:/QM/strategy_farm"))
++    parser.add_argument("--limit", type=int, default=100)
++    args = parser.parse_args()
++    result = service(args.root, limit=args.limit)
++    print(json.dumps(result, indent=2, sort_keys=True))
++    return 1 if result.get("error") else 0
++
++
++if __name__ == "__main__":
++    raise SystemExit(main())
+diff --git a/tools/strategy_farm/tests/fixtures/q08_stream_reruns_20260904.json b/tools/strategy_farm/tests/fixtures/q08_stream_reruns_20260904.json
+new file mode 100644
+index 0000000000..819a8227fb
+--- /dev/null
++++ b/tools/strategy_farm/tests/fixtures/q08_stream_reruns_20260904.json
+@@ -0,0 +1,58 @@
++[
++  {
++    "rerun_id": "f62fe6b3-f734-466e-95dd-d7ca76294729",
++    "ea_id": "QM5_1537",
++    "symbol": "XAGUSD.DWX",
++    "predecessor_work_item_id": "5e832838-5d29-4405-86b1-b4840eac22cf",
++    "append_only_rerun_of": "262514ac-c3c6-4834-9e17-02a42c8878b7",
++    "expected_current_ex5_sha256": "142a019e773a493def0640722efb9d591d094650b35a69d5de39f6af3a048106"
++  },
++  {
++    "rerun_id": "a2e1aba6-45ea-4dcf-af98-1f679ebeb64f",
++    "ea_id": "QM5_10706",
++    "symbol": "GBPUSD.DWX",
++    "predecessor_work_item_id": "81cd341c-a2c1-4c18-9ec6-6b85f0226080",
++    "append_only_rerun_of": "7855588a-9ff8-4896-8d8d-16e1fdc25f72",
++    "expected_current_ex5_sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb"
++  },
++  {
++    "rerun_id": "2bd0f95c-6c62-4a53-92cf-04f0d39fbb48",
++    "ea_id": "QM5_11422",
++    "symbol": "USDCAD.DWX",
++    "predecessor_work_item_id": "474ba0d0-00c1-4672-a14d-a465d635405f",
++    "append_only_rerun_of": "d3907c1a-dc69-4498-be2f-80b064a2c02f",
++    "expected_current_ex5_sha256": "2b98e9e902313148be78d88513fcbda2476150b1a7605eb15a50b2cca6b32d66"
++  },
++  {
++    "rerun_id": "21dd6839-4d77-4228-b5ba-5dd86aeb0cdb",
++    "ea_id": "QM5_13054",
++    "symbol": "XTIUSD.DWX",
++    "predecessor_work_item_id": "fd882da0-8822-427f-9266-1f300154b1d1",
++    "append_only_rerun_of": "d62d792e-442a-494b-964f-40963d8365e8",
++    "expected_current_ex5_sha256": "2e65488fccdbd985f78318861a223a305d820a4fce3d2ebdcafae6ce956fd96d"
++  },
++  {
++    "rerun_id": "15c1ec7b-5821-4944-81a7-86d23754565d",
++    "ea_id": "QM5_21505",
++    "symbol": "XAGUSD.DWX",
++    "predecessor_work_item_id": "b837549a-4871-49c2-bf38-ba1862d7cfca",
++    "append_only_rerun_of": "9c51f7eb-d3a2-435c-a50d-66ade0356f5c",
++    "expected_current_ex5_sha256": "395c4747832acbcdf8a68d8598e53abe5786bdc6c538767c400884cd82b2aea1"
++  },
++  {
++    "rerun_id": "a43559cd-b084-4c0e-8bc3-2c7b6fc1a5ea",
++    "ea_id": "QM5_20048",
++    "symbol": "XTIUSD.DWX",
++    "predecessor_work_item_id": "bf54ff43-b0c4-4e48-a290-25c3304ec28f",
++    "append_only_rerun_of": "3ee5c53c-6fe5-4776-9baf-a3ec9600e626",
++    "expected_current_ex5_sha256": "1312391ad7e654812244e48a6df92d5bd323dba7d32ddae60c54adc464527f00"
++  },
++  {
++    "rerun_id": "977a478e-1f23-4297-ac76-656bb497e2ec",
++    "ea_id": "QM5_11910",
++    "symbol": "NZDUSD.DWX",
++    "predecessor_work_item_id": "797f03ae-173b-4c24-96f8-492f6f22930a",
++    "append_only_rerun_of": "e0237a77-9017-4b56-aef3-1be924c2c8cc",
++    "expected_current_ex5_sha256": "e18d477e63c40cb1002aa4d93d8efcc3ec6fddf1081fb73ad9df1b0a7a3042de"
++  }
++]
+diff --git a/tools/strategy_farm/tests/test_q08_stream_rerun.py b/tools/strategy_farm/tests/test_q08_stream_rerun.py
+new file mode 100644
+index 0000000000..4cb8028293
+--- /dev/null
++++ b/tools/strategy_farm/tests/test_q08_stream_rerun.py
+@@ -0,0 +1,259 @@
++from __future__ import annotations
++
++import hashlib
++import json
++import sqlite3
++from pathlib import Path
++
++import pytest
++
++from tools.strategy_farm import q08_stream_rerun as service
++
++
++class Farm:
++    """Real temporary DB and evidence; only the governed enqueue is substituted."""
++    def __init__(self, root):
++        self.root = root
++        self.calls = []
++
++    def _assert_canonical_checkout(self):
++        pass
++
++    def _preferred_ea_dir(self, ea):
++        return self.root / "repo" / "framework" / "EAs" / f"{ea}_fixture"
++
++    def connect(self, root):
++        con = sqlite3.connect(root / "state" / "farm_state.sqlite")
++        con.row_factory = sqlite3.Row
++        return con
++
++    def enqueue_cascade_backtest_for_ea(self, root, **kwargs):
++        self.calls.append(kwargs)
++        wid = f"rerun_{len(self.calls)}"
++        with self.connect(root) as con:
++            con.execute(
++                "INSERT INTO work_items(id,ea_id,symbol,phase,status,updated_at,payload_json) "
++                "VALUES (?,?,?,'Q08','pending',?,?)",
++                (wid, kwargs["ea_id"], "EURUSD.DWX", "2026-09-04T12:00:00Z", json.dumps({
++                    "rerun_reason": kwargs["rerun_reason"],
++                    "expected_current_ex5_sha256": kwargs["expected_current_ex5_sha256"],
++                })),
++            )
++        return {"enqueued": True, "created": [{"id": wid}], "requeued": [], "skipped": []}
++
++    def event(self, con, kind, entity, name, detail):
++        con.execute("INSERT INTO events VALUES (?, ?, ?)", (entity, name, json.dumps(detail)))
++
++
++@pytest.fixture
++def layout(tmp_path, monkeypatch):
++    monkeypatch.delenv(service.DISABLE_ENV, raising=False)
++    root = tmp_path / "farm"
++    (root / "state").mkdir(parents=True)
++    farm = Farm(root)
++    with farm.connect(root) as con:
++        con.executescript("""
++            CREATE TABLE work_items(id TEXT PRIMARY KEY, ea_id TEXT, symbol TEXT,
++                phase TEXT, status TEXT, verdict TEXT, updated_at TEXT,
++                ex5_sha256 TEXT, payload_json TEXT, evidence_path TEXT);
++            CREATE TABLE events(entity_id TEXT, event TEXT, detail_json TEXT);
++        """)
++    seed(farm)
++    return root, farm
++
++
++def seed(farm, ea="QM5_9001", symbol="EURUSD.DWX", q14="q14", q07="q07", q08="q08",
++         digest=None, target_verdict="PASS"):
++    directory = farm._preferred_ea_dir(ea)
++    directory.mkdir(parents=True, exist_ok=True)
++    binary = directory / f"{directory.name}.ex5"
++    binary.write_bytes(b"fixture-binary")
++    digest = digest or hashlib.sha256(binary.read_bytes()).hexdigest()
++    with farm.connect(farm.root) as con:
++        for wid, phase, verdict, timestamp in [
++            (q07, "Q07", "PASS", "2026-09-04T09:00:00Z"),
++            (q08, "Q08", target_verdict, "2026-09-04T10:00:00Z"),
++            (q14, "Q14", "KEEP_INCUMBENT", "2026-09-04T11:00:00Z"),
++        ]:
++            con.execute("INSERT INTO work_items VALUES (?,?,?,?,?,?,?,?,?,?)",
++                (wid, ea, symbol, phase, "done", verdict, timestamp, digest, "{}", None))
++    return digest
++
++
++def run(layout, **kwargs):
++    root, farm = layout
++    return service.service(root, farm_module=farm, **kwargs)
++
++
++def bind(layout):
++    root, farm = layout
++    with farm.connect(root) as con:
++        digest = con.execute("SELECT ex5_sha256 FROM work_items WHERE id='q14'").fetchone()[0]
++        evidence = root / "aggregate.json"
++        evidence.write_text(json.dumps({"portfolio_stream": {
++            "source_ex5_sha256": digest, "content_sha256": "a" * 64}}))
++        con.execute("UPDATE work_items SET evidence_path=? WHERE id='q08'", (str(evidence),))
++
++
++def test_missing_stream_enqueues_once_with_exact_sources_and_event(layout):
++    first = run(layout, apply=True)
++    assert first["created_count"] == 1
++    root, farm = layout
++    call = farm.calls[0]
++    assert call["predecessor_work_item_id"] == "q07"
++    assert call["append_only_rerun_of"] == "q08"
++    assert call["phase"] == "Q08"
++    assert call["expected_current_ex5_sha256"] == hashlib.sha256(b"fixture-binary").hexdigest()
++    assert call["rerun_reason"] == (
++        "Q08 sealed-stream re-emission after Q14 KEEP_INCUMBENT 2026-09-04T11:00:00Z: "
++        "current-identity daily-PnL bytes missing from sleeve_streams; append-only "
++        "rerun to reproduce the seal for the book-path bundle (D4)."
++    )
++    assert run(layout, apply=True)["items"] == []
++    assert len(farm.calls) == 1
++    with farm.connect(root) as con:
++        event = con.execute("SELECT * FROM events").fetchone()
++        assert event["event"] == "q08_stream_rerun_auto_minted"
++        assert json.loads(event["detail_json"])["q14_work_item_id"] == "q14"
++        assert con.execute("SELECT verdict FROM work_items WHERE id='q08'").fetchone()[0] == "PASS"
++
++
++def test_bound_pair_never_enqueues(layout):
++    bind(layout)
++    assert run(layout, apply=True)["items"][0]["reason"] == "stream_already_bound"
++    assert not layout[1].calls
++
++
++@pytest.mark.parametrize("status", ["pending", "active"])
++def test_existing_open_q08_suppresses_enqueue(layout, status):
++    root, farm = layout
++    with farm.connect(root) as con:
++        con.execute("INSERT INTO work_items(id,ea_id,symbol,phase,status) VALUES ('open','QM5_9001','EURUSD.DWX','Q08',?)", (status,))
++    assert run(layout, apply=True)["items"][0]["reason"] == "q08_pending_or_active"
++    assert not farm.calls
++
++
++def test_kill_switch_has_no_filesystem_or_enqueue_effect(tmp_path, monkeypatch):
++    monkeypatch.setenv(service.DISABLE_ENV, "1")
++    root = tmp_path / "absent"
++    answer = service.service(root, apply=True, farm_module=Farm(root))
++    assert answer["reason"] == "disabled_by_environment"
++    assert not root.exists()
++
++
++def test_factory_off_blocks_state_and_queue(layout):
++    root, farm = layout
++    (root / "FACTORY_OFF.flag").touch()
++    assert run(layout, apply=True)["reason"] == "factory_off"
++    assert not (root / "state" / service.STATE_NAME).exists()
++    assert not farm.calls
++
++
++def test_dry_run_writes_neither_queue_nor_watermark(layout):
++    root, farm = layout
++    answer = run(layout)
++    assert answer["would_enqueue_count"] == 1
++    assert answer["created_count"] == 0
++    assert not farm.calls
++    assert not (root / "state" / service.STATE_NAME).exists()
++    assert not (root / "state" / "FACTORY_MUTATION.lock").exists()
++
++
++def test_malformed_watermark_is_not_reset(layout):
++    root, farm = layout
++    path = root / "state" / service.STATE_NAME
++    path.write_text("{broken")
++    assert run(layout, apply=True)["reason"] == "q08_stream_service_deferred"
++    assert path.read_text() == "{broken"
++    assert not farm.calls
++
++
++def test_q14_binary_drift_defers_and_retries(layout):
++    root, farm = layout
++    directory = farm._preferred_ea_dir("QM5_9001")
++    binary = directory / f"{directory.name}.ex5"
++    binary.write_bytes(b"different")
++    first = run(layout, apply=True)
++    assert first["items"][0]["reason"] == "current_binary_differs_from_q14_identity"
++    assert first["watermark_after"]["retry_q14_ids"] == ["q14"]
++    binary.write_bytes(b"fixture-binary")
++    assert run(layout, apply=True)["created_count"] == 1
++
++
++def test_crash_after_enqueue_does_not_mint_a_second_rerun(layout, monkeypatch):
++    root, farm = layout
++    original = service._write_state
++    monkeypatch.setattr(service, "_write_state", lambda *args: (_ for _ in ()).throw(OSError("simulated crash")))
++    assert run(layout, apply=True).get("error")
++    monkeypatch.setattr(service, "_write_state", original)
++    with farm.connect(root) as con:
++        con.execute("UPDATE work_items SET status='done', verdict='INFRA_FAIL' WHERE id='rerun_1'")
++    second = run(layout, apply=True)
++    assert second["items"][0]["reason"] == "trigger_rerun_already_recorded"
++    assert len(farm.calls) == 1
++
++
++def test_enqueue_true_without_created_row_remains_retryable(layout, monkeypatch):
++    monkeypatch.setattr(layout[1], "enqueue_cascade_backtest_for_ea", lambda *a, **kw: {"enqueued": True, "created": [], "skipped": [{"reason": "missing_setfile"}]})
++    answer = run(layout, apply=True)
++    assert answer["created_count"] == 0
++    assert answer["watermark_after"]["retry_q14_ids"] == ["q14"]
++
++
++def test_equal_timestamp_rows_are_not_lost_across_bounded_cycles(layout):
++    root, farm = layout
++    seed(farm, ea="QM5_9002", q14="q14_b", q07="q07_b", q08="q08_b")
++    assert run(layout, apply=True, limit=1)["created_count"] == 1
++    second = run(layout, apply=True, limit=1)
++    assert second["created_count"] == 1
++    assert second["watermark_after"]["q14_work_item_id"] == "q14_b"
++
++
++def test_fail_soft_target_is_allowed_but_fail_hard_is_not(layout):
++    root, farm = layout
++    with farm.connect(root) as con:
++        con.execute("UPDATE work_items SET verdict='FAIL_SOFT' WHERE id='q08'")
++    assert run(layout)["would_enqueue_count"] == 1
++    with farm.connect(root) as con:
++        con.execute("UPDATE work_items SET verdict='FAIL_HARD' WHERE id='q08'")
++    assert run(layout)["items"][0]["action"] == "defer"
++
++
++def test_old_retries_do_not_starve_new_terminal_pairs(layout):
++    root, farm = layout
++    with farm.connect(root) as con:
++        con.execute("DELETE FROM work_items WHERE phase='Q07'")
++    assert run(layout, apply=True)["watermark_after"]["retry_q14_ids"] == ["q14"]
++    seed(farm, ea="QM5_9002", q14="q14_b", q07="q07_b", q08="q08_b")
++    answer = run(layout, apply=True, limit=1)
++    assert answer["created_count"] == 1
++    assert answer["watermark_after"]["retry_q14_ids"] == ["q14"]
++
++
++def test_pump_wrapper_passes_its_module_and_deadline(monkeypatch):
++    from tools.strategy_farm import farmctl
++    calls = []
++    def fake(root, **kwargs):
++        calls.append((root, kwargs))
++        return {"created_count": 0}
++    monkeypatch.setattr(service, "service", fake)
++    root = Path("unused-test-root")
++    assert farmctl.auto_enqueue_q08_stream_reruns(root, deadline_monotonic=123)["created_count"] == 0
++    assert calls == [(root, {"apply": True, "deadline_monotonic": 123, "farm_module": farmctl})]
++
++
++PRECEDENTS = json.loads((Path(__file__).parent / "fixtures" / "q08_stream_reruns_20260904.json").read_text())
++
++
++@pytest.mark.parametrize("precedent", PRECEDENTS, ids=lambda p: p["ea_id"])
++def test_enqueue_arguments_match_recorded_manual_precedents(layout, precedent, monkeypatch):
++    root, farm = layout
++    with farm.connect(root) as con:
++        con.execute("DELETE FROM work_items")
++    seed(farm, ea=precedent["ea_id"], symbol=precedent["symbol"],
++        q07=precedent["predecessor_work_item_id"], q08=precedent["append_only_rerun_of"],
++        digest=precedent["expected_current_ex5_sha256"])
++    monkeypatch.setattr(service.bundle, "sha256_file", lambda p: precedent["expected_current_ex5_sha256"])
++    call = run(layout)["items"][0]["enqueue_kwargs"]
++    for key in ("ea_id", "predecessor_work_item_id", "append_only_rerun_of", "expected_current_ex5_sha256"):
++        assert call[key] == precedent[key]
