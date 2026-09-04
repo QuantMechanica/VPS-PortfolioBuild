@@ -65,3 +65,7 @@ als aufbewahrungsgeschützt markieren (Spawn-Binding hängt daran). Empfehlung: 
 
 Ein JA zu E1-A erzeugt genau einen entscheidungsgebundenen Claude-Auftrag (Reparaturplan → Codex-Implementierung → Verifikation
 gegen Tick-Volumen-Footprints → Repin); E2 erzeugt einen zweiten (append-only Nachmessungen). VERTAGT erzeugt keinen.
+
+## Nachtrag 23:33Z — Sizing (Codex 72e5884d, abgenommen)
+
+171 Phasen-Paare klassifiziert: **63 EXPONIERT / 108 INERT**. Q14 KEEP_INCUMBENT: 1/9 exponiert (10706/GBPUSD H1). Q11-PASS-Paare: 7/31 exponiert (10700/XAUUSD, 10706/GBPUSD, 11294/XAUUSD, 11660/NDX, 13013/NDX, 13213/USDJPY, 21501/USDJPY). Q09 v3: 39 PASS + 9 FAIL exponiert; Q10 v3: 11 PASS + 1 FAIL exponiert. Entry-Zeitstempel-Spot-Check 10/10 Übereinstimmung. Detektoren (Codex 0f61815f, nur Bericht) bestätigen: NFP-Anker 0/12 pro Jahr 2016–2025 in beiden Dateien. → E2 „Mittel“ umfasst damit konkret 63 append-only Nachmessungen (davon 12 Q10/Q14-relevant); Liste in `docs/ops/evidence/2026-09-05_news_defect_blast_radius/blast_radius.csv`.
