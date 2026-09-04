@@ -127,3 +127,22 @@ already covered by a green verified workflow.
 - Which Codex plan tier is active (Plus / Pro 5x / Pro 20x)? Until stated, `plus`.
 - Whether Astra may be spent on new-strategy mechanization ahead of forensics when both
   compete in one 5h window (default: mechanization first while the reservoir is below 5).
+
+## 7. Edge-discovery program (OWNER goal, 2026-09-04 ~02:00Z)
+
+OWNER: Fable and Astra are the strongest models available; with the tick and news data
+on hand (and more purchasable) they should find edges and design strategies and
+frameworks that succeed on FTMO. That is the big goal. Doctrine consequence:
+
+- The models design, the pipeline judges. Every hypothesis enters as a Strategy Card
+  with a mechanical rule set, a parameter count, a frequency floor check and a written
+  refutation criterion; Q02-Q13 remain the only verdict. No ML libraries in EAs.
+- Raw ticks never go into a model context. Sonnet/Terra scripts compute the summary
+  statistics a hypothesis needs (conditional returns, event-window behaviour, regime
+  tables), written as CSV under `docs/research/`; Fable/Astra reason over those tables.
+- Orthogonality over addition (long-term plan 2026-08-03): a new edge must be a new
+  return source (sparse-D1 standard V4), not a variant of an existing survivor.
+- Program owner: Fable (design, critique, refutation); Astra: one message per fully
+  specified hypothesis brief; measurement: Sonnet headless. Commissioned as a router
+  task on the Claude lane; the first deliverable is the data inventory plus five
+  hypotheses with refutation criteria.

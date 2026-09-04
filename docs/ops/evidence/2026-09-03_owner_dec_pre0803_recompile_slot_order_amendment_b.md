@@ -536,3 +536,8 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   wf_04d206e1-add (V2 OWNER_RATIFIED stamp, V4 two-layer standard in portfolio_correlation, G5 command epoch 07-19),
   wf_9448cf1a-0fc (official-rules snapshot 2026-09-02 + evaluator/rulepack pins). Live pointer, freeze and book
   stay OWNER acts. Morning briefing delivered 00:50Z; census 50 cells/10 min after the slot-order fix.
+
+## 02:07Z 2026-09-04 - slot order rank 7 applied
+
+- QM5_10700/XAUUSD Q12 `40e69c26-1ddb-5728-99a1-02b08f83c284` -> `queue_order_at = 2026-08-29T08:04:00+00:00` (plan+apply `set_dl089_queue_order.py`, DL089_PROGRAM_SLOTS=8; scratch `queue_order_r7_plan.json` / `queue_order_r7_apply.json`). Lineage: recompile -> fresh Q02 -> ... -> Q10_NEWS expansion `152e8d29` CONFIG_LOCKED 00:58Z -> Q11 PASS `e4097945` -> Q12 minted 01:28Z. Sibling QM5_41333 Q02 `bcac7790` PASS 01:29Z.
+- Ranks 1-7 are now all written; the slot order is complete.
