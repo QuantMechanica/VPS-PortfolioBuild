@@ -602,3 +602,8 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
 
 - 08:34Z free RAM 3.3 GB; tester pid 38528 (T9, Q05 QM5_10395/EURJPY `bd18ccaa`, second seed process) at 31 GB working set vs 8 GB reservation. Terminated 08:36Z (free RAM 34.3 GB afterwards); hold `RAM_OUTLIER_4X_RESERVATION` on `bd18ccaa` until router task `924c36df` lands per-EA memory expectations.
 - Reload chunk 30 (legacy-lane long-run classification f6236b5e46) started 08:35Z with 10 workers and 35 GB free.
+
+## 08:47Z 2026-09-04 - outlier run stopped at worker level
+
+- 08:45Z free RAM 2.2 GB; T9 had relaunched the next seed of `bd18ccaa` (pid 34232, 26 GB). Stopped reload chunk 30, terminated pid 34232 and the T9 worker (pid 9432); free RAM 32.9 GB; starter restored ten workers. `bd18ccaa` returned to pending under hold `RAM_OUTLIER_4X_RESERVATION`.
+- Reload chunk 31 started for T6/T8/T4/T10/T2/T5/T7 (legacy-lane fix f6236b5e46); T1/T3/T9 already on the new code.
