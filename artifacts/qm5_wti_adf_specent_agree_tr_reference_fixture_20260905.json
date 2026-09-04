@@ -1,0 +1,76 @@
+{
+  "schema": "qm.strategy-reference-fixture/v1",
+  "strategy_id": "AI-CODEX-WTI-ADF-SPECENT-AGREE-TREND-20260905_S01",
+  "contract": {
+    "level_count": 60,
+    "adf_regression_observations": 58,
+    "adf_residual_degrees_of_freedom": 55,
+    "adf_t_min_inclusive": -2.594,
+    "spectral_return_start_level_index": 11,
+    "spectral_return_count": 48,
+    "spectral_bins": 24,
+    "spectral_entropy_max_inclusive": 0.88,
+    "momentum_start_level_index": 47,
+    "momentum_end_level_index": 59,
+    "direction_epsilon": 1e-12
+  },
+  "generator": {
+    "rng": "python_random_mt19937_seed_0_gauss",
+    "initial_level": 4.5,
+    "rw": "x0=4.5; x[i+1]=x[i]+0.006+N(0,0.035), i=0..58",
+    "ar": "x[i]=4.5+0.25*(x[i-1]-4.5)+0.025*sin(2*pi*i/6)+N(0,0.004), x[-1]=4.5, i=0..59",
+    "up": "x0=4.5; x[i+1]=x[i]+0.007+0.018*cos(2*pi*i/12)+0.006*cos(2*pi*i/6)+N(0,0.002)",
+    "down": "x0=4.5; x[i+1]=x[i]-0.007+0.018*cos(2*pi*i/12)+0.006*cos(2*pi*i/6)+N(0,0.002)"
+  },
+  "fixtures": [
+    {
+      "name": "adf_only_high_entropy_and_prior_adf_kpss_qualifier",
+      "generator": "rw",
+      "adf_t": 0.2639738555833502,
+      "kpss": 1.1147020066688103,
+      "spectral_entropy": 0.8845849634793777,
+      "momentum_12": 0.19562390290232656,
+      "adf_qualified": true,
+      "spectral_qualified": false,
+      "prior_adf_kpss_qualified": true,
+      "direction": 0
+    },
+    {
+      "name": "spectral_only_adf_reject",
+      "generator": "ar",
+      "adf_t": -18.085195927690275,
+      "kpss": 0.08463216728300135,
+      "spectral_entropy": 0.17231859473890215,
+      "momentum_12": -0.010621365586782616,
+      "adf_qualified": false,
+      "spectral_qualified": true,
+      "prior_adf_kpss_qualified": false,
+      "direction": 0
+    },
+    {
+      "name": "agreement_buy",
+      "generator": "up",
+      "adf_t": -0.6731821349860418,
+      "kpss": 1.2667184536829397,
+      "spectral_entropy": 0.1349039113654017,
+      "momentum_12": 0.09106422302298611,
+      "adf_qualified": true,
+      "spectral_qualified": true,
+      "prior_adf_kpss_qualified": true,
+      "direction": 1
+    },
+    {
+      "name": "agreement_sell",
+      "generator": "down",
+      "adf_t": -2.058853854998158,
+      "kpss": 1.274877393841211,
+      "spectral_entropy": 0.1349039113654017,
+      "momentum_12": -0.07693577697700604,
+      "adf_qualified": true,
+      "spectral_qualified": true,
+      "prior_adf_kpss_qualified": true,
+      "direction": -1
+    }
+  ],
+  "claim_boundary": "Synthetic deterministic arithmetic fixtures only; not market evidence, calibration, performance, or decorrelation evidence."
+}
