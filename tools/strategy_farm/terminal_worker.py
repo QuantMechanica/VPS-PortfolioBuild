@@ -166,6 +166,30 @@ COMPILE_RAM_MIN_FREE_GB = 3.0
 _RAM_LATCH_COMPILE_ONLY = False
 RAM_GUARD_SLEEP_SECONDS = 20
 TEST_FREE_RAM_GB_ENV = "QM_TEST_FREE_RAM_GB"
+# --- RAM emergency reaper (2026-09-05, incident 2026-09-04 08:09Z) ------------
+# The 14/20 GB latch only defers NEW claims; it cannot reclaim an already-
+# running tester whose real-tick working set balloons far past its reservation.
+# On 2026-09-04 a Q05 QM5_10395/EURJPY run grew to a 27 GB working set against
+# an 8 GB ordinary reservation, drove the 64 GB host to 0.6 GB free, and the OS
+# killed three idle workers outright. This last-resort branch, run from an idle
+# worker at the top of the guard loop, terminates the single newest FACTORY
+# tester (never the live terminal, never a COMPILE_EA run) whose working set
+# exceeds 2x its reservation, records the item re-runnable with reason
+# ram_emergency_reap, and captures the observed peak into the tester-memory
+# ledger so the per-EA expectation reserves it next time. Kill switch:
+# QM_DISABLE_RAM_EMERGENCY_REAP=1.
+RAM_EMERGENCY_FREE_GB = 2.0
+RAM_EMERGENCY_CONSEC_SAMPLES = 2
+RAM_EMERGENCY_WS_RESERVATION_MULTIPLE = 2.0
+RAM_EMERGENCY_COOLDOWN_SECONDS = 90.0
+RAM_EMERGENCY_LOCK_STALE_SECONDS = 60.0
+RAM_EMERGENCY_LOG_THROTTLE_SECONDS = 300.0
+DISABLE_RAM_EMERGENCY_REAP_ENV = "QM_DISABLE_RAM_EMERGENCY_REAP"
+RAM_EMERGENCY_STATE_DIR_ENV = "QM_RAM_EMERGENCY_STATE_DIR"
+# Structural exclusion of the live terminal: its image path is
+# C:/QM/mt5/T_Live/terminal64.exe. The T1..T12 factory anchor never matches it,
+# and this marker is asserted a second time before any kill.
+_LIVE_TERMINAL_PATH_MARKER = "T_LIVE"
 # CPU admission (OWNER 2026-08-15): don't add testers while the box is already
 # compute-saturated. The load sample is a GetSystemTimes delta over the whole
 # previous worker-loop iteration (>= POLL_SLEEP_SECONDS), so a trip is a
@@ -187,6 +211,10 @@ CPU_GUARD_SLEEP_SECONDS = 20
 CLAIM_SPACING_SECONDS = 10.0
 # Per-worker resource hysteresis latches (process-local; workers are resident).
 _RESOURCE_LATCH = {"ram_low": False, "cpu_high": False}
+# Per-worker consecutive-sample counter for the RAM emergency reaper and its
+# throttled idle-MemoryError logger (both process-local; reset when RAM recovers).
+_RAM_EMERGENCY_STATE: dict[str, Any] = {"consec": 0, "samples": []}
+_IDLE_MEMORYERROR_LOG_AT = -1e9
 # Free physical RAM did not expose the 2026-07-23 failure mode: Windows still
 # had RAM available while system commit was close enough to its limit that new
 # processes failed with 0xC0000142.  Gate new claims on commit headroom too.
@@ -1036,6 +1064,32 @@ def _tester_memory_lookup_key(
     return f"{symbol_class}|{timeframe}|{run_kind}"
 
 
+def _tester_memory_ea_lookup_key(ea_id: str, timeframe: str, run_kind: str) -> str:
+    """Per-EA memory key, namespaced 'ea:' to never collide with a class key.
+
+    The asset-class key's first field is one of the fixed cohort labels
+    (index/metal/fx_cross/...); prefixing the EA id keeps the two families
+    disjoint inside the single flat expectations dict (schema v2) and makes the
+    key self-describing to a human reading the file.
+    """
+    return f"ea:{ea_id}|{timeframe}|{run_kind}"
+
+
+def _tester_memory_ea_key_from_row(row: dict[str, Any]) -> str | None:
+    """Per-EA key for a ledger row, or None when its identity fields are absent.
+
+    Legacy/aggregation-only rows that carry a ``lookup_key`` but no
+    ea_id/timeframe/run_kind (the pure-aggregation unit test feeds these) yield
+    no per-EA key, so the class-only aggregation stays byte-for-byte unchanged.
+    """
+    ea_id = str(row.get("ea_id") or "").strip()
+    timeframe = str(row.get("timeframe") or "").strip()
+    run_kind = str(row.get("run_kind") or "").strip()
+    if not ea_id or not timeframe or not run_kind:
+        return None
+    return _tester_memory_ea_lookup_key(ea_id, timeframe, run_kind)
+
+
 def _tester_memory_percentile(sorted_values: list[float], q: float) -> float:
     """Linear-interpolated percentile of a pre-sorted, non-empty list."""
     if not sorted_values:
@@ -1052,19 +1106,28 @@ def _tester_memory_percentile(sorted_values: list[float], q: float) -> float:
 def _compile_tester_memory_expectations(
     rows: list[dict[str, Any]]
 ) -> dict[str, dict[str, float]]:
-    """Aggregate ledger rows into per-lookup-key {n, max_gb, p95_gb} (pure)."""
+    """Aggregate ledger rows into per-key {n, max_gb, p95_gb} (pure).
+
+    Emits BOTH the asset-class key (``symbol_class|timeframe|run_kind``) and,
+    when the row carries EA identity, the per-EA key
+    (``ea:ea_id|timeframe|run_kind``).  The per-EA family lets a single known
+    memory-balloon EA (the 2026-09-04 QM5_10395/EURJPY 27 GB run) reserve its
+    true peak even when its coarse class average stays small.
+    """
     groups: dict[str, list[float]] = {}
     for row in rows:
         if not isinstance(row, dict):
-            continue
-        key = row.get("lookup_key")
-        if not key:
             continue
         try:
             gb = float(row.get("peak_subtree_working_set_gb"))
         except (TypeError, ValueError):
             continue
-        groups.setdefault(str(key), []).append(gb)
+        key = row.get("lookup_key")
+        if key:
+            groups.setdefault(str(key), []).append(gb)
+        ea_key = _tester_memory_ea_key_from_row(row)
+        if ea_key:
+            groups.setdefault(ea_key, []).append(gb)
     out: dict[str, dict[str, float]] = {}
     for key, values in groups.items():
         ordered = sorted(values)
@@ -1113,7 +1176,10 @@ def rebuild_tester_memory_expectations(*, force: bool = False) -> bool:
         out_path = _tester_memory_expectations_path()
         out_path.parent.mkdir(parents=True, exist_ok=True)
         document = {
-            "schema": "qm.tester_memory_expectations/v1",
+            # v2 adds the per-EA key family (ea:ea_id|tf|kind) alongside the
+            # v1 asset-class keys in the same flat "keys" map; readers that only
+            # look up by key are unaffected (the reader below is schema-agnostic).
+            "schema": "qm.tester_memory_expectations/v2",
             "generated_at_utc": farmctl.utc_now(),
             "source_ledger": str(ledger),
             "keys": expectations,
@@ -1144,14 +1210,35 @@ def _tester_memory_admission_active() -> bool:
         return False
 
 
-def _measured_ram_expectation_gb(
-    symbol_class: str, timeframe: str, run_kind: str
+def _tester_memory_key_max_gb(
+    data: dict[str, Any], key: str, min_samples: int
 ) -> float | None:
-    """Measured expected peak (GB) for a class, or None (no data / disabled).
+    """max_gb for one expectations key once it has >= min_samples runs, else None."""
+    entry = data.get(key)
+    if not isinstance(entry, dict):
+        return None
+    try:
+        samples = int(entry.get("n") or 0)
+        max_gb = float(entry.get("max_gb"))
+    except (TypeError, ValueError):
+        return None
+    if samples < min_samples:
+        return None
+    return max_gb
 
-    Returns the conservative per-key max_gb once at least
-    TESTER_MEMORY_MIN_SAMPLES runs exist; None disables the override and keeps
-    the flat commit class.  Fail-open None on any error.
+
+def _measured_ram_expectation_gb(
+    symbol_class: str, timeframe: str, run_kind: str, *, ea_id: str | None = None
+) -> float | None:
+    """Measured expected peak (GB) for a run, or None (no data / disabled).
+
+    Precedence (2026-09-05): the per-EA key ``ea:ea_id|tf|kind`` needs only
+    ``n>=1`` and WINS over the asset-class key whenever its recorded max exceeds
+    the class value, so a known memory-balloon EA (QM5_10395/EURJPY, 27 GB)
+    reserves its true peak on the very next admission instead of the 8 GB class
+    average.  The class key keeps its conservative ``TESTER_MEMORY_MIN_SAMPLES``
+    floor.  Returns the larger of whichever is available, or None.  Fail-open
+    None on any error.
     """
     if os.environ.get("QM_TESTER_MEMORY_ADMISSION") == "0":
         return None
@@ -1174,19 +1261,22 @@ def _measured_ram_expectation_gb(
             cache["path"] = str(path)
             cache["mtime"] = mtime
             cache["at"] = now
-        entry = cache["data"].get(
-            _tester_memory_lookup_key(symbol_class, timeframe, run_kind)
+        data = cache["data"]
+        class_gb = _tester_memory_key_max_gb(
+            data,
+            _tester_memory_lookup_key(symbol_class, timeframe, run_kind),
+            TESTER_MEMORY_MIN_SAMPLES,
         )
-        if not isinstance(entry, dict):
-            return None
-        try:
-            samples = int(entry.get("n") or 0)
-            max_gb = float(entry.get("max_gb"))
-        except (TypeError, ValueError):
-            return None
-        if samples < TESTER_MEMORY_MIN_SAMPLES:
-            return None
-        return max_gb
+        ea_gb = None
+        if ea_id:
+            ea_gb = _tester_memory_key_max_gb(
+                data,
+                _tester_memory_ea_lookup_key(str(ea_id), timeframe, run_kind),
+                1,
+            )
+        if ea_gb is not None and (class_gb is None or ea_gb > class_gb):
+            return ea_gb
+        return class_gb
     except Exception:
         return None
 
@@ -1246,6 +1336,7 @@ def _ram_reservation_for_candidate(
             _tester_memory_symbol_class(item, payload, multisymbol),
             _normalize_timeframe(item, payload),
             _tester_memory_run_kind(item, payload),
+            ea_id=str(_work_item_value(item, "ea_id", "") or "") or None,
         )
     return ram_class, _resolve_ram_reservation_gb(
         ram_class, flat_gb, measured_gb, multisymbol=multisymbol
@@ -7867,6 +7958,555 @@ def _defer_runner_death(
     }
 
 
+# --- RAM emergency reaper (2026-09-05) ----------------------------------------
+def _defer_ram_emergency_reap(
+    root: Path,
+    item_id: str,
+    victim_terminal: str,
+    pid: Any,
+    facts: dict[str, Any],
+) -> bool:
+    """Record a reaped tester's work item re-runnable with the infra reason.
+
+    Mirrors _defer_runner_death: status='pending', verdict=NULL, claimed_by=NULL
+    (re-runnable). The WHERE clause matches only the still-active claim on the
+    victim terminal, so an existing verdict is never overwritten (append-only).
+    The ram_emergency_reap facts and infra taxonomy go into the payload; the
+    verdict column stays NULL and the row is reclaimable by any terminal.
+    """
+    now = farmctl.utc_now()
+
+    def _update() -> int:
+        with farmctl.connect(root) as conn:
+            row = conn.execute(
+                "SELECT payload_json FROM work_items "
+                "WHERE id=? AND status='active' AND claimed_by=?",
+                (item_id, victim_terminal),
+            ).fetchone()
+            if row is None:
+                return 0
+            payload = _json_loads(row["payload_json"])
+            payload["prior_failure"] = "ram_emergency_reap"
+            payload["ram_emergency_reap"] = facts
+            try:
+                prior = max(0, int(payload.get("ram_emergency_reap_count") or 0))
+            except (TypeError, ValueError):
+                prior = 0
+            payload["ram_emergency_reap_count"] = prior + 1
+            _clear_stale_runtime_payload(payload)
+            cursor = conn.execute(
+                """
+                UPDATE work_items
+                SET status='pending',verdict=NULL,claimed_by=NULL,
+                    payload_json=?,updated_at=?
+                WHERE id=? AND status='active' AND claimed_by=?
+                """,
+                (json.dumps(payload, sort_keys=True), now, item_id, victim_terminal),
+            )
+            conn.commit()
+            return cursor.rowcount
+
+    return bool(_with_sqlite_retry(_update))
+
+
+def _factory_terminal_from_image_path(image_path: str | None) -> str | None:
+    """Return 'T1'..'T12' when the path is a factory tester exe, else None.
+
+    Path-anchored exactly like farmctl's terminal enumeration: the exe must be
+    <...>/Tn/terminal64.exe with n in 1..12. The live terminal
+    (C:/QM/mt5/T_Live/terminal64.exe) has parent 'T_Live' and is structurally
+    excluded; the T_LIVE marker is additionally rejected as a defensive guard.
+    """
+    text = str(image_path or "").replace("\\", "/")
+    if not text:
+        return None
+    if _LIVE_TERMINAL_PATH_MARKER in text.upper():
+        return None
+    parts = text.rsplit("/", 2)
+    if len(parts) < 2 or parts[-1].lower() != "terminal64.exe":
+        return None
+    parent = parts[-2].upper()
+    if len(parent) < 2 or parent[0] != "T" or not parent[1:].isdigit():
+        return None
+    try:
+        n = int(parent[1:])
+    except ValueError:
+        return None
+    return parent if 1 <= n <= 12 else None
+
+
+def _query_full_process_image_path(pid: Any) -> str | None:
+    """Full image path for a pid via QueryFullProcessImageNameW, or None."""
+    if sys.platform != "win32":
+        return None
+    try:
+        import ctypes
+        from ctypes import wintypes
+
+        kernel32 = ctypes.windll.kernel32
+        PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+        handle = kernel32.OpenProcess(
+            PROCESS_QUERY_LIMITED_INFORMATION, False, int(pid)
+        )
+        if not handle:
+            return None
+        try:
+            size = wintypes.DWORD(32768)
+            buf = ctypes.create_unicode_buffer(size.value)
+            if kernel32.QueryFullProcessImageNameW(
+                handle, 0, buf, ctypes.byref(size)
+            ):
+                return str(buf.value)
+            return None
+        finally:
+            kernel32.CloseHandle(handle)
+    except Exception:
+        return None
+
+
+def _process_creation_time(pid: Any) -> int | None:
+    """Process creation FILETIME (100ns ticks since 1601), or None.
+
+    Larger == newer; used only to pick the NEWEST runaway tester.
+    """
+    if sys.platform != "win32":
+        return None
+    try:
+        import ctypes
+        from ctypes import wintypes
+
+        kernel32 = ctypes.windll.kernel32
+        PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+        handle = kernel32.OpenProcess(
+            PROCESS_QUERY_LIMITED_INFORMATION, False, int(pid)
+        )
+        if not handle:
+            return None
+        try:
+            creation = wintypes.FILETIME()
+            exit_t = wintypes.FILETIME()
+            kernel_t = wintypes.FILETIME()
+            user_t = wintypes.FILETIME()
+            if kernel32.GetProcessTimes(
+                handle,
+                ctypes.byref(creation),
+                ctypes.byref(exit_t),
+                ctypes.byref(kernel_t),
+                ctypes.byref(user_t),
+            ):
+                return (int(creation.dwHighDateTime) << 32) | int(
+                    creation.dwLowDateTime
+                )
+            return None
+        finally:
+            kernel32.CloseHandle(handle)
+    except Exception:
+        return None
+
+
+def _enumerate_factory_testers() -> list[dict[str, Any]]:
+    """Path-anchored snapshot of running FACTORY testers (fail-open []).
+
+    For each terminal64.exe under D:/QM/mt5/Tn/ (T1..T12; the live terminal is
+    excluded by the path anchor), returns {terminal, pid, image_path,
+    subtree_ws_bytes, terminal_ws_bytes, create_time}. subtree_ws_bytes sums the
+    working set of the terminal64 pid and every descendant (the metatester grid),
+    the same figure the incident measured. Single monkeypatch point for the
+    reaper unit tests.
+    """
+    try:
+        children, _private, _alive = _process_private_snapshot()
+        working_set = _process_snapshot_cache.get("working_set") or {}
+        image = _process_snapshot_cache.get("image") or {}
+        out: list[dict[str, Any]] = []
+        for pid, img in list(image.items()):
+            if str(img or "").lower() != "terminal64.exe":
+                continue
+            image_path = _query_full_process_image_path(pid)
+            terminal = _factory_terminal_from_image_path(image_path)
+            if terminal is None:
+                continue
+            seen: set[int] = set()
+            queue = [int(pid)]
+            subtree_ws = 0
+            while queue:
+                cur = queue.pop()
+                if cur in seen:
+                    continue
+                seen.add(cur)
+                subtree_ws += int(working_set.get(cur, 0) or 0)
+                queue.extend(children.get(cur, ()))
+            out.append({
+                "terminal": terminal,
+                "pid": int(pid),
+                "image_path": image_path,
+                "subtree_ws_bytes": int(subtree_ws),
+                "terminal_ws_bytes": int(working_set.get(int(pid), 0) or 0),
+                "create_time": _process_creation_time(pid),
+            })
+        return out
+    except Exception:
+        return []
+
+
+def _ram_emergency_state_dir() -> Path:
+    return Path(
+        os.environ.get(RAM_EMERGENCY_STATE_DIR_ENV) or "D:/QM/strategy_farm/state"
+    )
+
+
+def _ram_emergency_state_path() -> Path:
+    return _ram_emergency_state_dir() / "ram_emergency_reap_state.json"
+
+
+def _ram_emergency_lock_path() -> Path:
+    return _ram_emergency_state_dir() / "ram_emergency_reap.lock"
+
+
+def _ram_emergency_in_cooldown(now_epoch: float) -> bool:
+    """True when a reap happened within RAM_EMERGENCY_COOLDOWN_SECONDS (cross-worker)."""
+    try:
+        path = _ram_emergency_state_path()
+        if not path.is_file():
+            return False
+        doc = json.loads(path.read_text(encoding="utf-8"))
+        last = float(doc.get("last_reap_epoch") or 0.0)
+        return (now_epoch - last) < RAM_EMERGENCY_COOLDOWN_SECONDS
+    except Exception:
+        return False
+
+
+def _ram_emergency_record_reap(
+    now_epoch: float, terminal: str, facts: dict[str, Any]
+) -> None:
+    """Persist the cool-down marker (wall-clock, shared across workers; fail-open)."""
+    try:
+        path = _ram_emergency_state_path()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            prior = json.loads(path.read_text(encoding="utf-8")) if path.is_file() else {}
+            reaps = int(prior.get("reaps") or 0)
+        except Exception:
+            reaps = 0
+        doc = {
+            "schema": "qm.ram_emergency_reap_state/v1",
+            "last_reap_epoch": float(now_epoch),
+            "last_reap_utc": farmctl.utc_now(),
+            "last_reaper_terminal": terminal,
+            "last_victim": facts.get("victim_terminal"),
+            "reaps": reaps + 1,
+        }
+        tmp = path.with_suffix(path.suffix + ".tmp")
+        tmp.write_text(json.dumps(doc, sort_keys=True), encoding="utf-8")
+        os.replace(tmp, path)
+    except Exception:
+        return
+
+
+@contextmanager
+def _ram_emergency_reap_lock():
+    """Best-effort cross-worker mutex so only ONE worker reaps per window.
+
+    Atomic O_CREAT|O_EXCL create; a stale lock older than
+    RAM_EMERGENCY_LOCK_STALE_SECONDS is broken so a worker that died mid-reap
+    never wedges the mechanism. Yields True to the holder, False to a worker that
+    could not acquire it (which then does nothing this round).
+    """
+    lock_path = _ram_emergency_lock_path()
+    fd = None
+    acquired = False
+    try:
+        try:
+            lock_path.parent.mkdir(parents=True, exist_ok=True)
+        except Exception:
+            pass
+        try:
+            fd = os.open(str(lock_path), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            acquired = True
+        except FileExistsError:
+            try:
+                age = time.time() - lock_path.stat().st_mtime
+            except OSError:
+                age = 0.0
+            if age > RAM_EMERGENCY_LOCK_STALE_SECONDS:
+                try:
+                    os.unlink(str(lock_path))
+                except OSError:
+                    pass
+                try:
+                    fd = os.open(str(lock_path), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+                    acquired = True
+                except OSError:
+                    acquired = False
+            else:
+                acquired = False
+        except OSError:
+            acquired = False
+        if acquired and fd is not None:
+            try:
+                os.write(fd, f"{os.getpid()} {farmctl.utc_now()}".encode("utf-8"))
+            except OSError:
+                pass
+        yield acquired
+    finally:
+        if fd is not None:
+            try:
+                os.close(fd)
+            except OSError:
+                pass
+        if acquired:
+            try:
+                os.unlink(str(lock_path))
+            except OSError:
+                pass
+
+
+def _active_work_items_by_terminal(root: Path) -> dict[str, dict[str, Any]]:
+    """Upper-cased claimed_by terminal -> its active work item (read-only, fail-open)."""
+    out: dict[str, dict[str, Any]] = {}
+    try:
+        with farmctl.connect(root) as conn:
+            rows = conn.execute(
+                "SELECT id, ea_id, symbol, phase, claimed_by, payload_json "
+                "FROM work_items WHERE status='active' AND claimed_by IS NOT NULL"
+            ).fetchall()
+    except Exception:
+        return {}
+    for row in rows:
+        key = str(row["claimed_by"] or "").upper()
+        if not key:
+            continue
+        out[key] = {
+            "id": row["id"],
+            "ea_id": row["ea_id"],
+            "symbol": row["symbol"],
+            "phase": row["phase"],
+            "claimed_by": row["claimed_by"],
+            "payload_json": row["payload_json"],
+        }
+    return out
+
+
+def _record_ram_emergency_ledger(
+    root: Path, victim: dict[str, Any], terminal: str
+) -> bool:
+    """Synthesize one tester-memory ledger row for a reaped run (fail-open).
+
+    A killed run never reaches _monitor_run's own ledger write, so without this
+    the per-EA expectation never learns the runaway peak. Feeds the measured
+    working set as the subtree peak with outcome 'ram_emergency_reap' so the next
+    admission of this (ea_id|tf|kind) reserves the true footprint.
+    """
+    try:
+        acc = {
+            "samples": 1,
+            "peak_subtree_ws": int(victim.get("subtree_ws_bytes") or 0),
+            "peak_subtree_private": 0,
+            "peak_metatester_ws": 0,
+            "metatester_os_peak_ws": 0,
+            "peak_terminal_ws": int(victim.get("terminal_ws_bytes") or 0),
+        }
+        _write_tester_memory_ledger(
+            root,
+            victim.get("item") or {},
+            victim.get("payload") or {},
+            {"pid": victim.get("pid")},
+            acc,
+            str(victim.get("terminal") or terminal),
+            run_seconds=0.0,
+            outcome="ram_emergency_reap",
+        )
+        return True
+    except Exception:
+        return False
+
+
+def _run_ram_emergency_reap(
+    root: Path, terminal: str, free_samples: list[float]
+) -> dict[str, Any] | None:
+    """Select and terminate the newest over-reserved factory tester (fail-open).
+
+    Path-anchored, live-terminal-excluded, COMPILE_EA-skipped. Only one worker
+    acts per window (cross-worker lock + wall-clock cool-down). Kills the pid
+    tree, records the observed peak into the tester-memory ledger, and requeues
+    the victim's work item re-runnable with reason ram_emergency_reap.
+    """
+    now_epoch = time.time()
+    if _ram_emergency_in_cooldown(now_epoch):
+        return None
+    with _ram_emergency_reap_lock() as acquired:
+        if not acquired:
+            return None
+        if _ram_emergency_in_cooldown(time.time()):
+            return None
+        testers = _enumerate_factory_testers()
+        if not testers:
+            return None
+        active = _active_work_items_by_terminal(root)
+        try:
+            multisym_ids = _multisymbol_ea_ids()
+        except Exception:
+            multisym_ids = frozenset()
+        gib = float(1024 ** 3)
+        candidates: list[dict[str, Any]] = []
+        for tester in testers:
+            term = str(tester.get("terminal") or "").upper()
+            image_path = tester.get("image_path")
+            # First, explicit path assertion: factory Tn only, never the live term.
+            if not term or _factory_terminal_from_image_path(image_path) != term:
+                continue
+            item = active.get(term)
+            if not item:
+                continue  # no resolvable work item -> never reap
+            if str(item.get("phase") or "").upper() == farmctl.COMPILE_EA_PHASE:
+                continue  # never reap a COMPILE_EA run
+            payload = _json_loads(item.get("payload_json"))
+            try:
+                multisymbol = _work_item_is_multisymbol(item, payload, multisym_ids)
+            except Exception:
+                multisymbol = False
+            try:
+                ram_class, reservation_gb = _ram_reservation_for_candidate(
+                    item, payload, multisymbol
+                )
+            except Exception:
+                continue
+            reservation_gb = float(reservation_gb)
+            threshold_gb = reservation_gb * RAM_EMERGENCY_WS_RESERVATION_MULTIPLE
+            subtree_ws_gb = float(tester.get("subtree_ws_bytes") or 0) / gib
+            if subtree_ws_gb <= threshold_gb:
+                continue
+            candidates.append({
+                "terminal": term,
+                "pid": int(tester.get("pid")),
+                "image_path": image_path,
+                "item_id": item.get("id"),
+                "ea_id": str(item.get("ea_id") or ""),
+                "symbol": item.get("symbol"),
+                "phase": item.get("phase"),
+                "ram_class": ram_class,
+                "reservation_gb": round(reservation_gb, 3),
+                "threshold_gb": round(threshold_gb, 3),
+                "subtree_ws_gb": round(subtree_ws_gb, 3),
+                "subtree_ws_bytes": int(tester.get("subtree_ws_bytes") or 0),
+                "terminal_ws_bytes": int(tester.get("terminal_ws_bytes") or 0),
+                "create_time": tester.get("create_time"),
+                "item": item,
+                "payload": payload,
+            })
+        if not candidates:
+            return None
+        # Newest first (largest creation FILETIME); ties -> larger WS, then pid.
+        candidates.sort(
+            key=lambda c: (
+                c["create_time"] if c["create_time"] is not None else -1,
+                c["subtree_ws_bytes"],
+                c["pid"],
+            ),
+            reverse=True,
+        )
+        victim = candidates[0]
+        # Final, load-bearing assertion before any kill: factory Tn, never T_Live.
+        if _factory_terminal_from_image_path(victim["image_path"]) != victim["terminal"]:
+            return None
+        assert _LIVE_TERMINAL_PATH_MARKER not in str(
+            victim["image_path"] or ""
+        ).upper(), "ram_emergency_reap refuses the live terminal"
+        facts = {
+            "reason": "ram_emergency_reap",
+            "taxonomy": "infra",
+            "reaper_terminal": terminal,
+            "reaped_at_utc": farmctl.utc_now(),
+            "free_ram_samples_gb": [round(float(s), 3) for s in free_samples],
+            "free_ram_threshold_gb": RAM_EMERGENCY_FREE_GB,
+            "consecutive_samples": len(free_samples),
+            "victim_terminal": victim["terminal"],
+            "victim_pid": victim["pid"],
+            "victim_image_path": victim["image_path"],
+            "victim_item_id": victim["item_id"],
+            "victim_ea_id": victim["ea_id"],
+            "victim_symbol": victim["symbol"],
+            "victim_phase": victim["phase"],
+            "victim_ram_class": victim["ram_class"],
+            "reservation_gb": victim["reservation_gb"],
+            "reservation_multiple": RAM_EMERGENCY_WS_RESERVATION_MULTIPLE,
+            "kill_threshold_gb": victim["threshold_gb"],
+            "working_set_gb": victim["subtree_ws_gb"],
+            "candidate_count": len(candidates),
+        }
+        try:
+            facts["killed"] = bool(farmctl._stop_pid_tree(victim["pid"]))
+        except Exception:
+            facts["killed"] = False
+        facts["ledger_recorded"] = _record_ram_emergency_ledger(root, victim, terminal)
+        facts["requeued"] = _defer_ram_emergency_reap(
+            root, victim["item_id"], victim["terminal"], victim["pid"], facts
+        )
+        _ram_emergency_record_reap(time.time(), terminal, facts)
+        print(json.dumps(
+            {"event": "ram_emergency_reap", "terminal": terminal, **facts},
+            sort_keys=True,
+        ), flush=True)
+        return facts
+
+
+def _maybe_ram_emergency_reap(
+    root: Path, terminal: str, free_ram_gb: float
+) -> dict[str, Any] | None:
+    """Idle-worker RAM emergency reaper hook, called once per guard-loop pass.
+
+    Counts consecutive sub-threshold free-RAM samples; only after
+    RAM_EMERGENCY_CONSEC_SAMPLES in a row does it attempt a single reap (further
+    bounded by the cross-worker lock and cool-down). Near-zero cost while free
+    RAM is healthy. Kill switch QM_DISABLE_RAM_EMERGENCY_REAP=1.
+    """
+    try:
+        if os.environ.get(DISABLE_RAM_EMERGENCY_REAP_ENV) == "1":
+            _RAM_EMERGENCY_STATE["consec"] = 0
+            _RAM_EMERGENCY_STATE["samples"] = []
+            return None
+        try:
+            free_ram_gb = float(free_ram_gb)
+        except (TypeError, ValueError):
+            return None
+        if free_ram_gb >= RAM_EMERGENCY_FREE_GB:
+            _RAM_EMERGENCY_STATE["consec"] = 0
+            _RAM_EMERGENCY_STATE["samples"] = []
+            return None
+        _RAM_EMERGENCY_STATE["consec"] = int(_RAM_EMERGENCY_STATE.get("consec", 0)) + 1
+        samples = list(_RAM_EMERGENCY_STATE.get("samples") or [])
+        samples.append(round(free_ram_gb, 3))
+        samples = samples[-(RAM_EMERGENCY_CONSEC_SAMPLES + 2):]
+        _RAM_EMERGENCY_STATE["samples"] = samples
+        if _RAM_EMERGENCY_STATE["consec"] < RAM_EMERGENCY_CONSEC_SAMPLES:
+            return None
+        result = _run_ram_emergency_reap(root, terminal, list(samples))
+        # Reset so a second victim requires re-confirming the threshold across
+        # another RAM_EMERGENCY_CONSEC_SAMPLES window.
+        _RAM_EMERGENCY_STATE["consec"] = 0
+        _RAM_EMERGENCY_STATE["samples"] = []
+        return result
+    except Exception:
+        return None
+
+
+def _log_idle_memoryerror(terminal: str) -> None:
+    """Log an idle-loop MemoryError at most once per RAM_EMERGENCY_LOG_THROTTLE_SECONDS."""
+    global _IDLE_MEMORYERROR_LOG_AT
+    now = time.monotonic()
+    if (now - _IDLE_MEMORYERROR_LOG_AT) < RAM_EMERGENCY_LOG_THROTTLE_SECONDS:
+        return
+    _IDLE_MEMORYERROR_LOG_AT = now
+    try:
+        print(json.dumps({
+            "event": "idle_loop_memoryerror",
+            "terminal": terminal,
+            "at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        }, sort_keys=True), flush=True)
+    except Exception:
+        return
+
+
 def _bound_runner_identity(payload: dict[str, Any]) -> dict[str, Any]:
     """Resolve runner liveness without accepting a reused historical PID.
 
@@ -9919,203 +10559,219 @@ def run_loop(root: Path, terminal: str, timeout_seconds: int) -> int:
     print(json.dumps({"event": "custom_history_startup_gate", **startup_gate}, sort_keys=True), flush=True)
     prestage_controller = _make_next_cell_prestage_controller(root, terminal)
     while not _STOP:
-        rebuild_tester_memory_expectations()
-        free_gb = _disk_free_gb(root)
-        if free_gb < DISK_MIN_FREE_GB:
-            print(json.dumps({"event": "disk_low_pause", "terminal": terminal,
-                              "free_gb": round(free_gb, 1), "threshold_gb": DISK_MIN_FREE_GB}), flush=True)
-            _trigger_disk_purge()
-            time.sleep(DISK_GUARD_SLEEP_SECONDS)
-            continue
-        free_ram = _free_ram_gb()
-        # Hysteresis: after a low-RAM trip, claims stay paused until free RAM
-        # recovers to RAM_RESUME_FREE_GB — sustained improvement, not the first
-        # sample that crawls back over the trip floor (OWNER 2026-08-15).
-        ram_floor = RAM_RESUME_FREE_GB if _RESOURCE_LATCH["ram_low"] else RAM_MIN_FREE_GB
-        ram_census_bypass = (
-            free_ram < ram_floor
-            and _ram_latch_opt_census_bypass_available(root, free_ram)
-        )
-        global _RAM_LATCH_COMPILE_ONLY
-        _RAM_LATCH_COMPILE_ONLY = False
-        if free_ram < ram_floor and not ram_census_bypass:
-            _RESOURCE_LATCH["ram_low"] = True
-            if _ram_latch_compile_bypass_available(root, free_ram):
-                # Latched, but a governed compile is claimable and cheap: run the
-                # claim in compile-only mode instead of idling (2026-09-03).
-                _RAM_LATCH_COMPILE_ONLY = True
-                print(json.dumps({"event": "ram_low_compile_only", "terminal": terminal,
-                                  "free_ram_gb": round(free_ram, 1), "threshold_gb": ram_floor,
-                                  "compile_floor_gb": COMPILE_RAM_MIN_FREE_GB}), flush=True)
-            else:
-                print(json.dumps({"event": "ram_low_pause", "terminal": terminal,
-                                  "free_ram_gb": round(free_ram, 1), "threshold_gb": ram_floor,
+        try:
+            rebuild_tester_memory_expectations()
+            free_gb = _disk_free_gb(root)
+            if free_gb < DISK_MIN_FREE_GB:
+                print(json.dumps({"event": "disk_low_pause", "terminal": terminal,
+                                  "free_gb": round(free_gb, 1), "threshold_gb": DISK_MIN_FREE_GB}), flush=True)
+                _trigger_disk_purge()
+                time.sleep(DISK_GUARD_SLEEP_SECONDS)
+                continue
+            free_ram = _free_ram_gb()
+            # Last-resort RAM emergency reaper: the 14/20 GB latch below only defers
+            # NEW claims. When host free RAM has collapsed below RAM_EMERGENCY_FREE_GB
+            # for RAM_EMERGENCY_CONSEC_SAMPLES passes, an already-running tester has
+            # ballooned past its reservation and must be reclaimed before the OS kills
+            # idle workers (2026-09-04 08:09Z). Runs from this idle worker against the
+            # runaway on ANOTHER terminal; path-anchored to a factory Tn, never the
+            # live terminal, never a COMPILE_EA run.
+            _maybe_ram_emergency_reap(root, terminal, free_ram)
+            # Hysteresis: after a low-RAM trip, claims stay paused until free RAM
+            # recovers to RAM_RESUME_FREE_GB — sustained improvement, not the first
+            # sample that crawls back over the trip floor (OWNER 2026-08-15).
+            ram_floor = RAM_RESUME_FREE_GB if _RESOURCE_LATCH["ram_low"] else RAM_MIN_FREE_GB
+            ram_census_bypass = (
+                free_ram < ram_floor
+                and _ram_latch_opt_census_bypass_available(root, free_ram)
+            )
+            global _RAM_LATCH_COMPILE_ONLY
+            _RAM_LATCH_COMPILE_ONLY = False
+            if free_ram < ram_floor and not ram_census_bypass:
+                _RESOURCE_LATCH["ram_low"] = True
+                if _ram_latch_compile_bypass_available(root, free_ram):
+                    # Latched, but a governed compile is claimable and cheap: run the
+                    # claim in compile-only mode instead of idling (2026-09-03).
+                    _RAM_LATCH_COMPILE_ONLY = True
+                    print(json.dumps({"event": "ram_low_compile_only", "terminal": terminal,
+                                      "free_ram_gb": round(free_ram, 1), "threshold_gb": ram_floor,
+                                      "compile_floor_gb": COMPILE_RAM_MIN_FREE_GB}), flush=True)
+                else:
+                    print(json.dumps({"event": "ram_low_pause", "terminal": terminal,
+                                      "free_ram_gb": round(free_ram, 1), "threshold_gb": ram_floor,
+                                      "hysteresis_latched": True}), flush=True)
+                    # jitter so the fleet doesn't wake in lockstep and re-spike RAM together
+                    time.sleep(RAM_GUARD_SLEEP_SECONDS + random.uniform(0, 10))
+                    continue
+            elif not ram_census_bypass:
+                _RESOURCE_LATCH["ram_low"] = False
+            cpu_load = _cpu_load_percent()
+            cpu_ceiling = (
+                CPU_RESUME_LOAD_PERCENT if _RESOURCE_LATCH["cpu_high"] else CPU_MAX_LOAD_PERCENT
+            )
+            if cpu_load > cpu_ceiling:
+                _RESOURCE_LATCH["cpu_high"] = True
+                print(json.dumps({"event": "cpu_high_pause", "terminal": terminal,
+                                  "at_utc": datetime.now(timezone.utc).isoformat(),
+                                  "cpu_load_percent": round(cpu_load, 1),
+                                  "threshold_percent": cpu_ceiling,
                                   "hysteresis_latched": True}), flush=True)
-                # jitter so the fleet doesn't wake in lockstep and re-spike RAM together
-                time.sleep(RAM_GUARD_SLEEP_SECONDS + random.uniform(0, 10))
+                time.sleep(CPU_GUARD_SLEEP_SECONDS + random.uniform(0, 10))
                 continue
-        elif not ram_census_bypass:
-            _RESOURCE_LATCH["ram_low"] = False
-        cpu_load = _cpu_load_percent()
-        cpu_ceiling = (
-            CPU_RESUME_LOAD_PERCENT if _RESOURCE_LATCH["cpu_high"] else CPU_MAX_LOAD_PERCENT
-        )
-        if cpu_load > cpu_ceiling:
-            _RESOURCE_LATCH["cpu_high"] = True
-            print(json.dumps({"event": "cpu_high_pause", "terminal": terminal,
-                              "at_utc": datetime.now(timezone.utc).isoformat(),
-                              "cpu_load_percent": round(cpu_load, 1),
-                              "threshold_percent": cpu_ceiling,
-                              "hysteresis_latched": True}), flush=True)
-            time.sleep(CPU_GUARD_SLEEP_SECONDS + random.uniform(0, 10))
-            continue
-        _RESOURCE_LATCH["cpu_high"] = False
-        quarantine = _custom_history_quarantine_active(root, terminal)
-        if quarantine is not None:
-            print(json.dumps({
-                "event": "custom_history_terminal_quarantined",
-                "terminal": terminal,
-                "reason_code": quarantine.get("reason_code"),
-                "item_id": quarantine.get("item_id"),
-                "expires_at_utc": quarantine.get("expires_at_utc"),
-                "at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-            }, sort_keys=True), flush=True)
-            time.sleep(CUSTOM_HISTORY_GUARD_SLEEP_SECONDS)
-            continue
-        if not _claim_queue_may_need_mutation(root, terminal):
-            time.sleep(POLL_SLEEP_SECONDS)
-            continue
-        history_gate = _custom_history_gate(root, terminal)
-        if history_gate.get("required") and (
-            history_gate.get("status") not in CUSTOM_HISTORY_GATE_PASS_STATUSES
-            or history_gate.get("admission_allowed") is False
-        ):
-            print(json.dumps({"event": "custom_history_gate_pause", **history_gate}, sort_keys=True), flush=True)
-            time.sleep(CUSTOM_HISTORY_GUARD_SLEEP_SECONDS)
-            continue
-        try:
-            lease_result = _acquire_custom_history_lease(root, terminal)
-        except Exception as exc:
-            print(json.dumps({
-                "event": "custom_history_lease_error_pause",
-                "terminal": terminal,
-                "error": repr(exc),
-            }, sort_keys=True), flush=True)
-            time.sleep(CUSTOM_HISTORY_GUARD_SLEEP_SECONDS)
-            continue
-        if lease_result.required and not lease_result.acquired:
-            print(json.dumps({
-                "event": "custom_history_lease_busy",
-                "terminal": terminal,
-                "reason": lease_result.reason,
-                "detail": lease_result.detail,
-                # v11 7.9: an event without a time cannot answer "how often". The
-                # busy/release ratio was measurable (dimensionless); the lease cycle
-                # RATE was not, so the (b) tail ETA could not be stated at all.
-                "at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-            }, sort_keys=True), flush=True)
-            time.sleep(POLL_SLEEP_SECONDS + random.uniform(0, 2))
-            continue
-        lease_handle = lease_result.handle
-        try:
-            prestage_controller.claim_attempt()
-            claim = claim_atomic(root, terminal)
-            prestage_adoption = prestage_controller.claim_result(claim)
-            if not claim.get("claimed"):
-                _pause_after_unclaimed(claim, terminal)
-                continue
-            item = claim["item"]
-            lane_preflight = claim.get("dl089_lane_preflight") or {}
-            if lease_handle is not None:
-                lease_handle.bind_work_item(item["id"])
-            print(json.dumps({
-                "event": "claimed",
-                "terminal": terminal,
-                "item_id": item["id"],
-                "custom_history_gate_audit_sha256": history_gate.get("audit_sha256"),
-                "custom_history_lease_token": lease_handle.token if lease_handle else None,
-                "claim_admission_mode": claim.get("claim_admission_mode"),
-                "claim_write_lock_ms": claim.get("claim_write_lock_ms"),
-                "dl089_lane_preflight_status": lane_preflight.get("status"),
-                "dl089_lane_preflight_program_id": lane_preflight.get("program_id"),
-                "dl089_lane_preflight_arm": lane_preflight.get("arm"),
-                "at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-            }), flush=True)
-            try:
-                result = _run_claimed_item(
-                    root,
-                    item,
-                    terminal,
-                    timeout_seconds,
-                    prestage_controller=prestage_controller,
-                    prestage_adoption=prestage_adoption,
-                )
-            except sqlite3.OperationalError as exc:
-                if not _is_sqlite_locked(exc):
-                    raise
-                deferred = _defer_item_after_sqlite_busy(root, item, terminal, exc)
+            _RESOURCE_LATCH["cpu_high"] = False
+            quarantine = _custom_history_quarantine_active(root, terminal)
+            if quarantine is not None:
                 print(json.dumps({
-                    "event": "run_item_sqlite_busy_deferred",
+                    "event": "custom_history_terminal_quarantined",
                     "terminal": terminal,
-                    "item_id": item["id"],
-                    "deferred_to_pending": deferred,
-                    "error": str(exc),
+                    "reason_code": quarantine.get("reason_code"),
+                    "item_id": quarantine.get("item_id"),
+                    "expires_at_utc": quarantine.get("expires_at_utc"),
                     "at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-                }), flush=True)
-                if not deferred:
-                    # Exit cleanly without writing a verdict.  The supervisor
-                    # restarts the daemon; the dead worker PID makes the claim
-                    # safely releasable on the next atomic claim pass.
-                    return 1
-                time.sleep(random.uniform(0.05, 0.25))
+                }, sort_keys=True), flush=True)
+                time.sleep(CUSTOM_HISTORY_GUARD_SLEEP_SECONDS)
                 continue
-            except Exception as exc:  # noqa: BLE001 — a bad ITEM must never kill the DAEMON
-                # 2026-08-22 fleet attrition: an unhandled exception here used to
-                # propagate through run_loop (which only had a finally) straight
-                # to SystemExit — the daemon died, the watchdog respawned, and
-                # the same poison-pill row was re-claimed by the fresh worker
-                # (rank-0 harness KeyError; secondly a T10 IntegrityError from
-                # the MNT-009 evidence trigger). Convert the crash into a
-                # terminal INFRA_FAIL on THIS item with the EVIDENCE_UNAVAILABLE
-                # sentinel (satisfying that very trigger) and keep the loop.
-                tb = traceback.format_exc()
+            if not _claim_queue_may_need_mutation(root, terminal):
+                time.sleep(POLL_SLEEP_SECONDS)
+                continue
+            history_gate = _custom_history_gate(root, terminal)
+            if history_gate.get("required") and (
+                history_gate.get("status") not in CUSTOM_HISTORY_GATE_PASS_STATUSES
+                or history_gate.get("admission_allowed") is False
+            ):
+                print(json.dumps({"event": "custom_history_gate_pause", **history_gate}, sort_keys=True), flush=True)
+                time.sleep(CUSTOM_HISTORY_GUARD_SLEEP_SECONDS)
+                continue
+            try:
+                lease_result = _acquire_custom_history_lease(root, terminal)
+            except Exception as exc:
                 print(json.dumps({
-                    "event": "run_item_crashed",
+                    "event": "custom_history_lease_error_pause",
+                    "terminal": terminal,
+                    "error": repr(exc),
+                }, sort_keys=True), flush=True)
+                time.sleep(CUSTOM_HISTORY_GUARD_SLEEP_SECONDS)
+                continue
+            if lease_result.required and not lease_result.acquired:
+                print(json.dumps({
+                    "event": "custom_history_lease_busy",
+                    "terminal": terminal,
+                    "reason": lease_result.reason,
+                    "detail": lease_result.detail,
+                    # v11 7.9: an event without a time cannot answer "how often". The
+                    # busy/release ratio was measurable (dimensionless); the lease cycle
+                    # RATE was not, so the (b) tail ETA could not be stated at all.
+                    "at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                }, sort_keys=True), flush=True)
+                time.sleep(POLL_SLEEP_SECONDS + random.uniform(0, 2))
+                continue
+            lease_handle = lease_result.handle
+            try:
+                prestage_controller.claim_attempt()
+                claim = claim_atomic(root, terminal)
+                prestage_adoption = prestage_controller.claim_result(claim)
+                if not claim.get("claimed"):
+                    _pause_after_unclaimed(claim, terminal)
+                    continue
+                item = claim["item"]
+                lane_preflight = claim.get("dl089_lane_preflight") or {}
+                if lease_handle is not None:
+                    lease_handle.bind_work_item(item["id"])
+                print(json.dumps({
+                    "event": "claimed",
                     "terminal": terminal,
                     "item_id": item["id"],
-                    "error": f"{type(exc).__name__}: {exc}",
+                    "custom_history_gate_audit_sha256": history_gate.get("audit_sha256"),
+                    "custom_history_lease_token": lease_handle.token if lease_handle else None,
+                    "claim_admission_mode": claim.get("claim_admission_mode"),
+                    "claim_write_lock_ms": claim.get("claim_write_lock_ms"),
+                    "dl089_lane_preflight_status": lane_preflight.get("status"),
+                    "dl089_lane_preflight_program_id": lane_preflight.get("program_id"),
+                    "dl089_lane_preflight_arm": lane_preflight.get("arm"),
                     "at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
                 }), flush=True)
                 try:
-                    _fail_item_after_worker_crash(root, item, terminal, tb)
-                except Exception as fail_exc:  # noqa: BLE001
+                    result = _run_claimed_item(
+                        root,
+                        item,
+                        terminal,
+                        timeout_seconds,
+                        prestage_controller=prestage_controller,
+                        prestage_adoption=prestage_adoption,
+                    )
+                except sqlite3.OperationalError as exc:
+                    if not _is_sqlite_locked(exc):
+                        raise
+                    deferred = _defer_item_after_sqlite_busy(root, item, terminal, exc)
                     print(json.dumps({
-                        "event": "run_item_crash_record_failed",
+                        "event": "run_item_sqlite_busy_deferred",
                         "terminal": terminal,
                         "item_id": item["id"],
-                        "error": f"{type(fail_exc).__name__}: {fail_exc}",
+                        "deferred_to_pending": deferred,
+                        "error": str(exc),
+                        "at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
                     }), flush=True)
-                continue
-            stop_condition = _custom_history_stop_condition(result)
-            if stop_condition and history_gate.get("required"):
-                custom_history_lease.engage_emergency_mode(
-                    root,
-                    reason=f"runtime_stop_condition:{stop_condition}",
-                    activation_sha256=str(history_gate.get("activation_sha256")),
-                )
-            print(json.dumps({"event": "run_result", "terminal": terminal, **result}, sort_keys=True), flush=True)
-        finally:
-            if lease_handle is not None:
-                release_status = lease_handle.release()
-                print(json.dumps({
-                    "event": "custom_history_lease_release",
-                    "terminal": terminal,
-                    "status": release_status,
-                    # The token pairs this release with its "claimed" record, so hold
-                    # duration is a subtraction rather than an inference from ordering.
-                    "lease_token": lease_handle.token,
-                    "at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-                }, sort_keys=True), flush=True)
+                    if not deferred:
+                        # Exit cleanly without writing a verdict.  The supervisor
+                        # restarts the daemon; the dead worker PID makes the claim
+                        # safely releasable on the next atomic claim pass.
+                        return 1
+                    time.sleep(random.uniform(0.05, 0.25))
+                    continue
+                except Exception as exc:  # noqa: BLE001 — a bad ITEM must never kill the DAEMON
+                    # 2026-08-22 fleet attrition: an unhandled exception here used to
+                    # propagate through run_loop (which only had a finally) straight
+                    # to SystemExit — the daemon died, the watchdog respawned, and
+                    # the same poison-pill row was re-claimed by the fresh worker
+                    # (rank-0 harness KeyError; secondly a T10 IntegrityError from
+                    # the MNT-009 evidence trigger). Convert the crash into a
+                    # terminal INFRA_FAIL on THIS item with the EVIDENCE_UNAVAILABLE
+                    # sentinel (satisfying that very trigger) and keep the loop.
+                    tb = traceback.format_exc()
+                    print(json.dumps({
+                        "event": "run_item_crashed",
+                        "terminal": terminal,
+                        "item_id": item["id"],
+                        "error": f"{type(exc).__name__}: {exc}",
+                        "at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                    }), flush=True)
+                    try:
+                        _fail_item_after_worker_crash(root, item, terminal, tb)
+                    except Exception as fail_exc:  # noqa: BLE001
+                        print(json.dumps({
+                            "event": "run_item_crash_record_failed",
+                            "terminal": terminal,
+                            "item_id": item["id"],
+                            "error": f"{type(fail_exc).__name__}: {fail_exc}",
+                        }), flush=True)
+                    continue
+                stop_condition = _custom_history_stop_condition(result)
+                if stop_condition and history_gate.get("required"):
+                    custom_history_lease.engage_emergency_mode(
+                        root,
+                        reason=f"runtime_stop_condition:{stop_condition}",
+                        activation_sha256=str(history_gate.get("activation_sha256")),
+                    )
+                print(json.dumps({"event": "run_result", "terminal": terminal, **result}, sort_keys=True), flush=True)
+            finally:
+                if lease_handle is not None:
+                    release_status = lease_handle.release()
+                    print(json.dumps({
+                        "event": "custom_history_lease_release",
+                        "terminal": terminal,
+                        "status": release_status,
+                        # The token pairs this release with its "claimed" record, so hold
+                        # duration is a subtraction rather than an inference from ordering.
+                        "lease_token": lease_handle.token,
+                        "at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                    }, sort_keys=True), flush=True)
+        except MemoryError:
+            # Idle-loop allocation failed under host memory pressure. Do not
+            # die (the guardian would only respawn us); log once per window,
+            # back off, and let the emergency reaper reclaim the runaway.
+            _log_idle_memoryerror(terminal)
+            time.sleep(RAM_GUARD_SLEEP_SECONDS + random.uniform(0, 10))
+            continue
     prestage_controller.shutdown()
     return 0
 
