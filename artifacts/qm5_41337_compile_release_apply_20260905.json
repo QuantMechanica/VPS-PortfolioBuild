@@ -1,0 +1,41 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "dc2db235-f889-411a-8775-db523fcf00c6"
+  ],
+  "backup": {
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260904T223459Z_76cff430.sqlite",
+    "reused": false,
+    "sha256": "109d624c5535e46ab1028c6eb2c853f362106464f9a189301099e3788e262928"
+  },
+  "backup_reuse_max_age_minutes": 0.0,
+  "backup_timeout_seconds": 60.0,
+  "backup_write_guard": {
+    "attempts": 1,
+    "transaction": "BEGIN IMMEDIATE / validated / backed up / released / COMMIT",
+    "wait_seconds": 0.0
+  },
+  "deferred": [],
+  "factory_mutation_lock": {
+    "path": "D:\\QM\\strategy_farm\\state\\FACTORY_MUTATION.lock",
+    "release_status": "released"
+  },
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "1f786321afd244837f13aeb194fac86bda7edd45d8215424e65b35b072695626",
+      "ea_id": "QM5_41337",
+      "ea_label": "QM5_41337_wti-adf-specent-agree-tr",
+      "expected_mq5_sha256": "1f786321afd244837f13aeb194fac86bda7edd45d8215424e65b35b072695626",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41337_wti-adf-specent-agree-tr\\QM5_41337_wti-adf-specent-agree-tr.mq5",
+      "work_item_id": "dc2db235-f889-411a-8775-db523fcf00c6"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-09-04T22:35:10+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "dc2db235-f889-411a-8775-db523fcf00c6"
+}

@@ -3,16 +3,16 @@
 ; ea_id:        41337
 ; ea_slug:      wti-adf-specent-agree-tr
 ; ea_version:   v5.0
-; set_version:  s20260905-001
+; set_version:  s20260904-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   PENDING_COMPILE
+; build_hash:   2afbd8621756a7efe5c5f2179a6c777bd87fe0fe8610110410c90a07b925b2f0
 ; author:       Development
-; date:         2026-09-05
+; date:         2026-09-04
 ;==========================================================
 qm_ea_id=41337
 qm_magic_slot_offset=0
@@ -29,7 +29,7 @@ strategy_determinant_relative_floor=0.000000000001
 strategy_adf_t_min=-2.594
 strategy_spectral_return_count=48
 strategy_dft_bins=24
-strategy_total_power_floor=1.0e-24
+strategy_total_power_floor=0.000000000000000000000001
 strategy_probability_tolerance=0.0000000001
 strategy_entropy_lower_tolerance=0.000000000001
 strategy_entropy_upper_tolerance=0.0000000001
