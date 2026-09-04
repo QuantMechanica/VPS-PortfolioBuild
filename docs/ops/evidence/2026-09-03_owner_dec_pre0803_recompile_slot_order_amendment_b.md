@@ -573,3 +573,8 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
 
 - Merge b8c62c975a (wf_76cb7101-72e rounds 1-3, verified; round-3 residuals are tier-layer only). Machine env `QM_CODEX_MODEL_TIERS=0` set via `[Environment]::SetEnvironmentVariable(..., 'Machine')`; fresh-process probe: `codex_spawn_contract` flags [] / ledger not recorded, `command_for` argv identical to the pre-patch form. Router-side decision-bound pinning and payload capability union are active unconditionally.
 - Round 4 (D8-D12) resumed on wf_76cb7101-72e as a delta against HEAD; the tier layer is switched on only after round 4 merges and OWNER states the Codex plan tier.
+
+## 06:47Z 2026-09-04 - bundle 6/7, seventh-pair rerun, worker restart
+
+- Q08 reruns 2bd0f95c (11422), 21dd6839 (13054), 15c1ec7b (21505) done/PASS; bundle dry-run bound 6 / refused 1 (QM5_20048/XTIUSD, seal a792e263...). Enqueued `a43559cd` (Q08 rerun of `3ee5c53c` from Q07 `bf54ff43`, expected ex5 1312391a...) after the identical pre-flight.
+- 06:20Z free RAM 5.0 GB (two 11.5 GB Q08 runs + Q05/Q06/news); latch held; reload chunk 28 stopped after T4/T10 respawn was refused by the starter's headroom gate; both restarted 06:23Z via `start_terminal_workers.py --dedupe`; chunk 29 (T2/T3/T5/T7) started 06:45Z at 22 GB free.
