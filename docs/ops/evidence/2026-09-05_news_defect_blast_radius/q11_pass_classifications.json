@@ -1,0 +1,250 @@
+[
+  {
+    "classification": "INERT",
+    "classification_reason": "D1_bar_entry_grid_does_not_intersect_target_30m_windows",
+    "ea_id": "QM5_10145",
+    "source_phase": "Q09",
+    "source_work_item_id": "24475032-82b8-4fa1-a0fc-c541f29ed0e8",
+    "symbol": "XAUUSD.DWX"
+  },
+  {
+    "classification": "INERT",
+    "classification_reason": "D1_bar_entry_grid_does_not_intersect_target_30m_windows",
+    "ea_id": "QM5_10403",
+    "source_phase": "Q09",
+    "source_work_item_id": "478451a5-1f51-43b1-99f6-abe07bb45aa8",
+    "symbol": "XAUUSD.DWX"
+  },
+  {
+    "classification": "INERT",
+    "classification_reason": "D1_bar_entry_grid_does_not_intersect_target_30m_windows",
+    "ea_id": "QM5_10513",
+    "source_phase": "Q09",
+    "source_work_item_id": "73f065d2-1a2a-462f-a8c9-48e1f46b2a67",
+    "symbol": "XAUUSD.DWX"
+  },
+  {
+    "classification": "EXPOSED",
+    "classification_reason": "active_news_filter_on_H1_intraday_entry_grid",
+    "ea_id": "QM5_10700",
+    "source_phase": "Q09",
+    "source_work_item_id": "3030129c-fdc2-4c3d-a2fd-55629948e644",
+    "symbol": "XAUUSD.DWX"
+  },
+  {
+    "classification": "EXPOSED",
+    "classification_reason": "active_news_filter_on_H1_intraday_entry_grid",
+    "ea_id": "QM5_10706",
+    "source_phase": "Q09",
+    "source_work_item_id": "a56206f0-f83c-42d5-87cf-5c86a20265f2",
+    "symbol": "GBPUSD.DWX"
+  },
+  {
+    "classification": "INERT",
+    "classification_reason": "symbol_has_no_USD_leg_or_USD_index_mapping",
+    "ea_id": "QM5_10911",
+    "source_phase": "Q09",
+    "source_work_item_id": "6b4532f2-9de5-4b99-b824-c05ce2848cac",
+    "symbol": "GDAXI.DWX"
+  },
+  {
+    "classification": "EXPOSED",
+    "classification_reason": "active_news_filter_on_H4_intraday_entry_grid",
+    "ea_id": "QM5_11294",
+    "source_phase": "Q09",
+    "source_work_item_id": "2a4117a1-74e6-4b96-985e-dc9615591d46",
+    "symbol": "XAUUSD.DWX"
+  },
+  {
+    "classification": "INERT",
+    "classification_reason": "D1_bar_entry_grid_does_not_intersect_target_30m_windows",
+    "ea_id": "QM5_11421",
+    "source_phase": "Q14",
+    "source_work_item_id": "ff733cf6-52a1-5aad-9bff-4f8c31ef4dc6",
+    "symbol": "EURUSD.DWX"
+  },
+  {
+    "classification": "INERT",
+    "classification_reason": "D1_bar_entry_grid_does_not_intersect_target_30m_windows",
+    "ea_id": "QM5_11422",
+    "source_phase": "Q09",
+    "source_work_item_id": "0f23b026-2cc0-485f-8a05-e05f224134e0",
+    "symbol": "USDCAD.DWX"
+  },
+  {
+    "classification": "EXPOSED",
+    "classification_reason": "active_news_filter_on_H4_intraday_entry_grid",
+    "ea_id": "QM5_11660",
+    "source_phase": "Q09",
+    "source_work_item_id": "c35489ec-72d3-4213-a6e2-03c1d88eae94",
+    "symbol": "NDX.DWX"
+  },
+  {
+    "classification": "INERT",
+    "classification_reason": "D1_bar_entry_grid_does_not_intersect_target_30m_windows",
+    "ea_id": "QM5_11708",
+    "source_phase": "Q09",
+    "source_work_item_id": "74fad2fb-d815-42dd-bb02-1c21926cdf67",
+    "symbol": "EURUSD.DWX"
+  },
+  {
+    "classification": "INERT",
+    "classification_reason": "D1_bar_entry_grid_does_not_intersect_target_30m_windows",
+    "ea_id": "QM5_11881",
+    "source_phase": "Q09",
+    "source_work_item_id": "8e6a49e5-4e80-43b6-9037-550c48bb4603",
+    "symbol": "GBPUSD.DWX"
+  },
+  {
+    "classification": "INERT",
+    "classification_reason": "D1_bar_entry_grid_does_not_intersect_target_30m_windows",
+    "ea_id": "QM5_11910",
+    "source_phase": "Q14",
+    "source_work_item_id": "e21567f4-e6f9-51e4-8c9a-c3b4ccef3272",
+    "symbol": "NZDUSD.DWX"
+  },
+  {
+    "classification": "INERT",
+    "classification_reason": "D1_bar_entry_grid_does_not_intersect_target_30m_windows",
+    "ea_id": "QM5_12710",
+    "source_phase": "Q09",
+    "source_work_item_id": "e1f7a095-f2d2-4ac9-be97-f1d12503b78f",
+    "symbol": "XTIUSD.DWX"
+  },
+  {
+    "classification": "INERT",
+    "classification_reason": "D1_bar_entry_grid_does_not_intersect_target_30m_windows",
+    "ea_id": "QM5_12849",
+    "source_phase": "Q09",
+    "source_work_item_id": "c2d9d7e2-301d-404e-bc01-f4bfcede20fe",
+    "symbol": "XTIUSD.DWX"
+  },
+  {
+    "classification": "INERT",
+    "classification_reason": "D1_bar_entry_grid_does_not_intersect_target_30m_windows",
+    "ea_id": "QM5_12855",
+    "source_phase": "Q09",
+    "source_work_item_id": "9f8d8558-41e0-4043-8e9b-8b1110d8f323",
+    "symbol": "XTIUSD.DWX"
+  },
+  {
+    "classification": "EXPOSED",
+    "classification_reason": "active_news_filter_on_M15_intraday_entry_grid",
+    "ea_id": "QM5_13013",
+    "source_phase": "Q09",
+    "source_work_item_id": "878c5d16-b9e8-404e-9532-ef8f71bbea51",
+    "symbol": "NDX.DWX"
+  },
+  {
+    "classification": "INERT",
+    "classification_reason": "D1_bar_entry_grid_does_not_intersect_target_30m_windows",
+    "ea_id": "QM5_13054",
+    "source_phase": "Q14",
+    "source_work_item_id": "4aaa524d-c11a-5725-8de7-f1d00d51eca9",
+    "symbol": "XTIUSD.DWX"
+  },
+  {
+    "classification": "EXPOSED",
+    "classification_reason": "active_news_filter_on_H1_intraday_entry_grid",
+    "ea_id": "QM5_13213",
+    "source_phase": "Q09",
+    "source_work_item_id": "e5a8f194-2369-4d59-b6b0-f6f5a6872478",
+    "symbol": "USDJPY.DWX"
+  },
+  {
+    "classification": "INERT",
+    "classification_reason": "D1_bar_entry_grid_does_not_intersect_target_30m_windows",
+    "ea_id": "QM5_1537",
+    "source_phase": "Q14",
+    "source_work_item_id": "18859f02-5371-5094-a7a5-b63619482545",
+    "symbol": "XAGUSD.DWX"
+  },
+  {
+    "classification": "INERT",
+    "classification_reason": "D1_bar_entry_grid_does_not_intersect_target_30m_windows",
+    "ea_id": "QM5_20048",
+    "source_phase": "Q14",
+    "source_work_item_id": "aefddcb5-3ff1-5b19-a0ef-e188555edf37",
+    "symbol": "XTIUSD.DWX"
+  },
+  {
+    "classification": "UNKNOWN",
+    "classification_reason": "no_completed_Q09_Q10_Q14_row_to_resolve",
+    "ea_id": "QM5_20086",
+    "source_phase": null,
+    "source_work_item_id": null,
+    "symbol": "EURUSD.DWX"
+  },
+  {
+    "classification": "UNKNOWN",
+    "classification_reason": "no_completed_Q09_Q10_Q14_row_to_resolve",
+    "ea_id": "QM5_20086",
+    "source_phase": null,
+    "source_work_item_id": null,
+    "symbol": "NDX.DWX"
+  },
+  {
+    "classification": "INERT",
+    "classification_reason": "D1_bar_entry_grid_does_not_intersect_target_30m_windows",
+    "ea_id": "QM5_20266",
+    "source_phase": "Q09",
+    "source_work_item_id": "a95c30a6-9216-45cf-b373-485d0bb6cbb7",
+    "symbol": "XTIUSD.DWX"
+  },
+  {
+    "classification": "EXPOSED",
+    "classification_reason": "active_news_filter_on_H1_intraday_entry_grid",
+    "ea_id": "QM5_21501",
+    "source_phase": "Q09",
+    "source_work_item_id": "2f530f46-5fd0-4e00-b38f-b33ed606ec7b",
+    "symbol": "USDJPY.DWX"
+  },
+  {
+    "classification": "INERT",
+    "classification_reason": "D1_bar_entry_grid_does_not_intersect_target_30m_windows",
+    "ea_id": "QM5_21502",
+    "source_phase": "Q09",
+    "source_work_item_id": "d529d072-c781-483c-999b-cbdadf29fe5e",
+    "symbol": "XAUUSD.DWX"
+  },
+  {
+    "classification": "INERT",
+    "classification_reason": "D1_bar_entry_grid_does_not_intersect_target_30m_windows",
+    "ea_id": "QM5_21505",
+    "source_phase": "Q14",
+    "source_work_item_id": "aecfbf06-63ef-520b-8943-48b5b1d3769e",
+    "symbol": "XAGUSD.DWX"
+  },
+  {
+    "classification": "INERT",
+    "classification_reason": "D1_bar_entry_grid_does_not_intersect_target_30m_windows",
+    "ea_id": "QM5_21507",
+    "source_phase": "Q09",
+    "source_work_item_id": "b11b8340-1666-454a-861d-a7917b48b60e",
+    "symbol": "XAUUSD.DWX"
+  },
+  {
+    "classification": "INERT",
+    "classification_reason": "D1_bar_entry_grid_does_not_intersect_target_30m_windows",
+    "ea_id": "QM5_41219",
+    "source_phase": "Q09",
+    "source_work_item_id": "7bd13f68-3ea2-4431-8ec6-07e471328fc9",
+    "symbol": "XAUUSD.DWX"
+  },
+  {
+    "classification": "INERT",
+    "classification_reason": "D1_bar_entry_grid_does_not_intersect_target_30m_windows",
+    "ea_id": "QM5_41221",
+    "source_phase": "Q09",
+    "source_work_item_id": "62619138-ac96-431d-b1f1-a754bf9d3d0c",
+    "symbol": "EURUSD.DWX"
+  },
+  {
+    "classification": "INERT",
+    "classification_reason": "D1_bar_entry_grid_does_not_intersect_target_30m_windows",
+    "ea_id": "QM5_9641",
+    "source_phase": "Q09",
+    "source_work_item_id": "97552886-b9b3-4741-be2b-4af26e2bf912",
+    "symbol": "WS30.DWX"
+  }
+]

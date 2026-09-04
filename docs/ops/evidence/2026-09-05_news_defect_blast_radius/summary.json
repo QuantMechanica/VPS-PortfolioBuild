@@ -1,0 +1,168 @@
+{
+  "classification_counts": {
+    "EXPOSED": 63,
+    "INERT": 108
+  },
+  "db_uri": "file:D:/QM/strategy_farm/state/farm_state.sqlite?mode=ro",
+  "distinct_pairs": 125,
+  "generated_at_utc": "2026-09-04T23:20:49.068409+00:00",
+  "phase_verdict_class_counts": [
+    {
+      "classification": "EXPOSED",
+      "count": 9,
+      "phase": "Q09",
+      "verdict": "FAIL"
+    },
+    {
+      "classification": "INERT",
+      "count": 5,
+      "phase": "Q09",
+      "verdict": "FAIL"
+    },
+    {
+      "classification": "INERT",
+      "count": 1,
+      "phase": "Q09",
+      "verdict": "INFRA_FAIL"
+    },
+    {
+      "classification": "EXPOSED",
+      "count": 39,
+      "phase": "Q09",
+      "verdict": "PASS"
+    },
+    {
+      "classification": "INERT",
+      "count": 67,
+      "phase": "Q09",
+      "verdict": "PASS"
+    },
+    {
+      "classification": "EXPOSED",
+      "count": 1,
+      "phase": "Q10",
+      "verdict": "FAIL"
+    },
+    {
+      "classification": "EXPOSED",
+      "count": 11,
+      "phase": "Q10",
+      "verdict": "PASS"
+    },
+    {
+      "classification": "INERT",
+      "count": 23,
+      "phase": "Q10",
+      "verdict": "PASS"
+    },
+    {
+      "classification": "EXPOSED",
+      "count": 1,
+      "phase": "Q14",
+      "verdict": "KEEP_INCUMBENT"
+    },
+    {
+      "classification": "INERT",
+      "count": 7,
+      "phase": "Q14",
+      "verdict": "KEEP_INCUMBENT"
+    },
+    {
+      "classification": "EXPOSED",
+      "count": 2,
+      "phase": "Q14",
+      "verdict": "OPT_ELIGIBLE"
+    },
+    {
+      "classification": "INERT",
+      "count": 2,
+      "phase": "Q14",
+      "verdict": "OPT_ELIGIBLE"
+    },
+    {
+      "classification": "INERT",
+      "count": 3,
+      "phase": "Q14",
+      "verdict": "OPT_REJECTED"
+    }
+  ],
+  "q11_pass_classification_counts": {
+    "EXPOSED": 7,
+    "INERT": 22,
+    "UNKNOWN": 2
+  },
+  "q11_pass_exposed_pairs": [
+    {
+      "ea_id": "QM5_10700",
+      "symbol": "XAUUSD.DWX"
+    },
+    {
+      "ea_id": "QM5_10706",
+      "symbol": "GBPUSD.DWX"
+    },
+    {
+      "ea_id": "QM5_11294",
+      "symbol": "XAUUSD.DWX"
+    },
+    {
+      "ea_id": "QM5_11660",
+      "symbol": "NDX.DWX"
+    },
+    {
+      "ea_id": "QM5_13013",
+      "symbol": "NDX.DWX"
+    },
+    {
+      "ea_id": "QM5_13213",
+      "symbol": "USDJPY.DWX"
+    },
+    {
+      "ea_id": "QM5_21501",
+      "symbol": "USDJPY.DWX"
+    }
+  ],
+  "q11_pass_pair_count": 31,
+  "q14_keep_incumbent_classification_counts": {
+    "EXPOSED": 1,
+    "INERT": 8
+  },
+  "q14_keep_incumbent_exposed": [
+    {
+      "classification": "EXPOSED",
+      "classification_reason": "active_news_filter_on_H1_intraday_entry_grid",
+      "ea_id": "QM5_10706",
+      "entry_timing_class": "INTRADAY_CAPABLE",
+      "evidence_path": "D:\\QM\\reports\\optimization_fork\\b5e18759-1377-5af7-9634-9f66bd293d0c\\receipt.json",
+      "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\QM5_10706_tv-mon-ls.ex5",
+      "ex5_sha256_bound": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb",
+      "ex5_sha256_current": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb",
+      "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\QM5_10706_tv-mon-ls.mq5",
+      "mq5_sha256_bound": "909327914d7fd65301751c38421c5dec3cddf8e96864d45c26f4db7a1f8fe27c",
+      "mq5_sha256_current": "909327914d7fd65301751c38421c5dec3cddf8e96864d45c26f4db7a1f8fe27c",
+      "news_state": "ACTIVE",
+      "news_value": "QM_NEWS_TEMPORAL_PRE30_POST30",
+      "news_value_source": "setfile.qm_news_temporal",
+      "phase": "Q14",
+      "q11_pass_pair": true,
+      "report_path": null,
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\sets\\QM5_10706_tv-mon-ls_GBPUSD.DWX_H1_q10_confirmation.set",
+      "setfile_sha256_bound": "275e66e9e6151277ba180b4d7c3a786804a9a7346687dd034ee6d9c8d3e444ac",
+      "setfile_sha256_current": "b458a1b3367c8ff18414efee3ec9586dace370872082dbf0f7f7972e63a6469d",
+      "symbol": "GBPUSD.DWX",
+      "timeframe": "H1",
+      "updated_at": "2026-08-25T19:03:06.038747+00:00",
+      "usd_exposure": true,
+      "verdict": "KEEP_INCUMBENT",
+      "work_item_id": "b5e18759-1377-5af7-9634-9f66bd293d0c"
+    }
+  ],
+  "q14_keep_incumbent_rows": 9,
+  "read_only": true,
+  "row_count": 171,
+  "schema_version": "qm.news-calendar-defect-blast-radius/v1",
+  "spot_checks": {
+    "agreement": 10,
+    "disagreement": 0,
+    "rows": 10
+  }
+}
