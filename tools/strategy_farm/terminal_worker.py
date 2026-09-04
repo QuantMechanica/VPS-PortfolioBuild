@@ -1929,6 +1929,42 @@ def _drain_scan_candidate(
     return None
 
 
+def _drain_measured_subtree_gb(
+    worker_pid: object,
+    children: dict[int, list[int]],
+    private: dict[int, int],
+    alive: set[int],
+) -> float | None:
+    """Private commit bytes (GB) of a worker pid's live process subtree.
+
+    2026-09-04 09:27Z (CEO): the drain arithmetic summed the PAPER reservation
+    of every active short row (8 GB Q02-Q06, 4 GB census) as releasable RAM,
+    while the real working sets are 1-6 GB.  That armed unwinnable windows for
+    44 GB rows (11129 02:33Z, 10718 09:12Z) and idled the fleet for up to 30
+    minutes each.  Releasable RAM is now the MEASURED subtree of the worker
+    that runs the row (worker + tester), capped at the reservation; with no
+    usable measurement the row contributes nothing (fail closed: a drain opens
+    only on evidence).
+    """
+    try:
+        start = int(worker_pid)
+    except (TypeError, ValueError):
+        return None
+    if start <= 0 or not alive or start not in alive:
+        return None
+    seen: set[int] = set()
+    queue = [start]
+    total = 0
+    while queue:
+        current = queue.pop()
+        if current in seen:
+            continue
+        seen.add(current)
+        total += int(private.get(current, 0) or 0)
+        queue.extend(children.get(current, []) or [])
+    return total / float(1024 ** 3)
+
+
 def _drain_active_ram_facts(
     root: Path,
     *,
@@ -1963,7 +1999,13 @@ def _drain_active_ram_facts(
         "long_run_active_ids": [],
         "releasable_short_ram_gb": 0.0,
         "armed_row_pending": True,
+        "releasable_measured_rows": 0,
+        "releasable_unmeasured_rows": 0,
     }
+    try:
+        snap_children, snap_private, snap_alive = _process_private_snapshot()
+    except Exception:
+        snap_children, snap_private, snap_alive = {}, {}, set()
     try:
         with farmctl.connect(root) as conn:
             conn.row_factory = sqlite3.Row
@@ -1991,6 +2033,16 @@ def _drain_active_ram_facts(
                         row, payload, multisymbol
                     )
                     reservation = float(reservation_gb)
+                    worker_pid = payload.get("claimed_by_worker_pid") or payload.get("pid")
+                    measured = _drain_measured_subtree_gb(
+                        worker_pid, snap_children, snap_private, snap_alive
+                    )
+                    if measured is None:
+                        facts["releasable_unmeasured_rows"] += 1
+                        reservation = 0.0
+                    else:
+                        facts["releasable_measured_rows"] += 1
+                        reservation = min(reservation, measured)
                 except Exception:
                     continue
                 if math.isfinite(reservation) and reservation > 0.0:
@@ -2008,6 +2060,8 @@ def _drain_active_ram_facts(
             "long_run_active_ids": [],
             "releasable_short_ram_gb": 0.0,
             "armed_row_pending": True,
+            "releasable_measured_rows": 0,
+            "releasable_unmeasured_rows": 0,
         }
     return facts
 

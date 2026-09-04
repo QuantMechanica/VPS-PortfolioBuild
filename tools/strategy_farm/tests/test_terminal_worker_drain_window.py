@@ -879,20 +879,50 @@ def _insert_wi(conn, item_id, phase, *, symbol="EURUSD.DWX", status="active",
     )
 
 
-def test_active_ram_facts_detects_long_run_and_sums_short(tmp_path):
+def test_active_ram_facts_detects_long_run_and_sums_short(tmp_path, monkeypatch):
     root = tmp_path / "farm"
     farmctl.init_db(root)
     with farmctl.connect(root) as conn:
-        _insert_wi(conn, "s1", "Q02", symbol="EURUSD.DWX")      # ordinary FX = 8
-        _insert_wi(conn, "s2", "OPT_CENSUS", symbol="EURUSD.DWX")  # census = 4
+        _insert_wi(conn, "s1", "Q02", symbol="EURUSD.DWX",
+                   payload={"claimed_by_worker_pid": 101})      # ordinary FX = 8 (paper)
+        _insert_wi(conn, "s2", "OPT_CENSUS", symbol="EURUSD.DWX",
+                   payload={"claimed_by_worker_pid": 102})      # census = 4 (paper)
         _insert_wi(conn, "c1", tw.farmctl.COMPILE_EA_PHASE)     # keeps flowing
         _insert_wi(conn, "l1", "Q07", symbol="EURUSD.DWX")      # long-run
         conn.commit()
+    gib = 1024 ** 3
+    # 2026-09-04: releasable RAM is the MEASURED worker subtree capped at the
+    # paper reservation.  Worker 101 + tester 1001 hold 20 GB (capped to 8);
+    # worker 102 + tester 1002 hold 1.5 GB (below the 4 GB census paper value).
+    snapshot = (
+        {101: [1001], 102: [1002]},
+        {101: 1 * gib, 1001: 19 * gib, 102: int(0.5 * gib), 1002: 1 * gib},
+        {101, 1001, 102, 1002},
+    )
+    monkeypatch.setattr(tw, "_process_private_snapshot", lambda: snapshot)
     facts = tw._drain_active_ram_facts(root, multisym_ids=_FZ, armed_item_id=None)
     assert facts["long_run_active_ids"] == ["l1"]
-    # 8 (ordinary FX) + 4 (census); compile and long-run are excluded.
-    assert facts["releasable_short_ram_gb"] == pytest.approx(12.0)
+    assert facts["releasable_short_ram_gb"] == pytest.approx(8.0 + 1.5)
+    assert facts["releasable_measured_rows"] == 2
+    assert facts["releasable_unmeasured_rows"] == 0
     assert facts["armed_row_pending"] is True
+
+
+def test_releasable_counts_nothing_without_a_measurement(tmp_path, monkeypatch):
+    """No usable process snapshot (or an unknown worker pid) -> the short row
+    releases nothing on paper, so a drain cannot arm on reservations alone."""
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    with farmctl.connect(root) as conn:
+        _insert_wi(conn, "s1", "Q02", symbol="EURUSD.DWX",
+                   payload={"claimed_by_worker_pid": 101})
+        _insert_wi(conn, "s3", "Q03", symbol="GBPUSD.DWX")  # no pid at all
+        conn.commit()
+    monkeypatch.setattr(tw, "_process_private_snapshot", lambda: ({}, {}, set()))
+    facts = tw._drain_active_ram_facts(root, multisym_ids=_FZ, armed_item_id=None)
+    assert facts["releasable_short_ram_gb"] == 0.0
+    assert facts["releasable_unmeasured_rows"] == 2
+    assert facts["releasable_measured_rows"] == 0
 
 
 def test_active_ram_facts_excludes_armed_row_from_long_run(tmp_path):
@@ -930,6 +960,8 @@ def test_active_ram_facts_fail_open_without_db(tmp_path):
         "long_run_active_ids": [],
         "releasable_short_ram_gb": 0.0,
         "armed_row_pending": True,
+        "releasable_measured_rows": 0,
+        "releasable_unmeasured_rows": 0,
     }
 
 
@@ -952,7 +984,20 @@ def _emitted_events(capsys):
     ]
 
 
-def test_postprocess_arms_beside_long_runs_when_arithmetic_ok(tmp_path, capsys):
+def _q_rows_snapshot(count, gb_each=8.0):
+    """Synthetic process snapshot: worker pid 200+i with a tester child 300+i,
+    each subtree holding ``gb_each`` GB private bytes (2026-09-04 measured rule)."""
+    gib = 1024 ** 3
+    children = {200 + i: [300 + i] for i in range(count)}
+    private = {}
+    for i in range(count):
+        private[200 + i] = int(0.5 * gib)
+        private[300 + i] = int((gb_each - 0.5) * gib)
+    alive = set(children) | {300 + i for i in range(count)}
+    return children, private, alive
+
+
+def test_postprocess_arms_beside_long_runs_when_arithmetic_ok(tmp_path, capsys, monkeypatch):
     # Two long-run rows are active (the fleet almost always has some), but the
     # heavy row is arithmetically winnable beside them: long runs add no
     # releasable headroom, yet free 12 + five short FX (5 * 8 = 40) = 52 >= need
@@ -966,7 +1011,8 @@ def test_postprocess_arms_beside_long_runs_when_arithmetic_ok(tmp_path, capsys):
         _insert_wi(conn, "l1", "Q07", symbol="EURUSD.DWX", status="active")
         _insert_wi(conn, "l2", "Q10_NEWS", symbol="GBPUSD.DWX", status="active")
         for i in range(5):
-            _insert_wi(conn, f"q{i}", "Q02", symbol="EURUSD.DWX", status="active")
+            _insert_wi(conn, f"q{i}", "Q02", symbol="EURUSD.DWX", status="active",
+                       payload={"claimed_by_worker_pid": 200 + i})
         conn.commit()
     tw._write_drain_state_atomic(root, {
         "version": 1,
@@ -974,6 +1020,7 @@ def test_postprocess_arms_beside_long_runs_when_arithmetic_ok(tmp_path, capsys):
         "cooldown_until_epoch": 0.0,
         "tracker": {"idx": {"first_skipped_epoch": now - trig - 10.0}},
     })
+    monkeypatch.setattr(tw, "_process_private_snapshot", lambda: _q_rows_snapshot(5))
     tw._drain_run_postprocess(
         root, "T1", {"claimed": False},
         now_epoch=now, free_ram_gb=12.0, host_total_gb=80.0, multisym_ids=_FZ,
@@ -1002,7 +1049,8 @@ def test_postprocess_not_armed_beside_long_runs_when_arithmetic_short(
         _insert_wi(conn, "l1", "Q07", symbol="EURUSD.DWX", status="active")
         _insert_wi(conn, "l2", "Q10_NEWS", symbol="GBPUSD.DWX", status="active")
         for i in range(3):
-            _insert_wi(conn, f"q{i}", "Q02", symbol="EURUSD.DWX", status="active")
+            _insert_wi(conn, f"q{i}", "Q02", symbol="EURUSD.DWX", status="active",
+                       payload={"claimed_by_worker_pid": 200 + i})
         conn.commit()
     tw._write_drain_state_atomic(root, {
         "version": 1,
@@ -1024,7 +1072,7 @@ def test_postprocess_not_armed_beside_long_runs_when_arithmetic_short(
     )
 
 
-def test_postprocess_arms_when_short_rows_release_enough(tmp_path, capsys):
+def test_postprocess_arms_when_short_rows_release_enough(tmp_path, capsys, monkeypatch):
     trig = tw.DRAIN_WINDOW_TRIGGER_MIN * 60.0
     now = 10_100_000.0
     root = tmp_path / "farm"
@@ -1034,7 +1082,8 @@ def test_postprocess_arms_when_short_rows_release_enough(tmp_path, capsys):
         # five ordinary FX testers = 5 * 8 = 40 GB releasable; free 12 + 40 = 52
         # >= need 48 -> winnable once the fleet parks; only short rows are active.
         for i in range(5):
-            _insert_wi(conn, f"q{i}", "Q02", symbol="EURUSD.DWX", status="active")
+            _insert_wi(conn, f"q{i}", "Q02", symbol="EURUSD.DWX", status="active",
+                       payload={"claimed_by_worker_pid": 200 + i})
         conn.commit()
     tw._write_drain_state_atomic(root, {
         "version": 1,
@@ -1042,6 +1091,7 @@ def test_postprocess_arms_when_short_rows_release_enough(tmp_path, capsys):
         "cooldown_until_epoch": 0.0,
         "tracker": {"idx": {"first_skipped_epoch": now - trig - 10.0}},
     })
+    monkeypatch.setattr(tw, "_process_private_snapshot", lambda: _q_rows_snapshot(5))
     tw._drain_run_postprocess(
         root, "T1", {"claimed": False},
         now_epoch=now, free_ram_gb=12.0, host_total_gb=80.0, multisym_ids=_FZ,
@@ -1063,7 +1113,8 @@ def test_postprocess_not_armed_when_releasable_ram_insufficient(tmp_path, capsys
         _insert_pending_priority_index(conn, "idx")
         # three ordinary FX testers = 24 GB releasable; free 12 + 24 = 36 < 48.
         for i in range(3):
-            _insert_wi(conn, f"q{i}", "Q02", symbol="EURUSD.DWX", status="active")
+            _insert_wi(conn, f"q{i}", "Q02", symbol="EURUSD.DWX", status="active",
+                       payload={"claimed_by_worker_pid": 200 + i})
         conn.commit()
     tw._write_drain_state_atomic(root, {
         "version": 1,
