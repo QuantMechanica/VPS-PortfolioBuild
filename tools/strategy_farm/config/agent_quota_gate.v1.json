@@ -32,6 +32,12 @@
       ],
       "explicit_tier_payload_field": "codex_model_tier",
       "effort_class_tier_mapping_enabled": false,
+      "_window_enforcement_mode_doc": "CEO decision D9 (round 4, 2026-09-04). 'observe' (DEFAULT) RECORDS every Codex dispatch in the 5h ledger and REPORTS what enforcement would have done (would_refuse / would_downgrade / over_budget), but refuses, holds and downgrades NOTHING: an untiered task keeps gpt-5.6-sol indefinitely and a scalpel task still gets gpt-6-astra. 'enforce' is the round-3 behaviour - refuse at floor(five_hour_messages[plan_tier] * window_safety_factor), hold astra, fall back down the chain for every other tier. Switch to 'enforce' only once OWNER has confirmed the real plan tier (doctrine section 6) and that the fallback model ids gpt-5.6-terra / gpt-5.6-luna / gpt-5.5 / gpt-5.4 / gpt-5.4-mini exist on the account: with plan_tier 'plus' the sol budget is floor(10*0.8)=8 messages per 5h, so enforcement changes the model of the 9th ordinary build. Any other value is a fail-closed config error.",
+      "window_enforcement_mode": "observe",
+      "allowed_window_enforcement_modes": [
+        "observe",
+        "enforce"
+      ],
       "default_tier": "sol",
       "window_safety_factor": 0.8,
       "five_hour_window_minutes": 300,

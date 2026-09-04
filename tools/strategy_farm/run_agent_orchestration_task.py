@@ -1171,6 +1171,13 @@ def _quota_lane_candidates(agent: str) -> tuple[list[dict[str, Any]], str]:
             required |= set(agent_router.payload_required_capabilities(row_payload)) & (
                 declared_caps | governed_caps
             )
+            # CEO decision D10 (round 4, 2026-09-04): scalpel-class work is
+            # gated at the lane too, so this selector and `route_once` agree
+            # about which lanes may see a `strategy_mechanize_source` row or a
+            # payload carrying `scalpel: true`.
+            required |= agent_router.scalpel_routing_capabilities(
+                row["task_type"], row_payload
+            )
             assigned = str(row["assigned_agent"] or "")
             # A human-owned task is never offered to an automated lane, even
             # if a stale assignment or registry drift says otherwise.

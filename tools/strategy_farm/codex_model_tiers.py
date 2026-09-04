@@ -49,6 +49,27 @@ CEO decisions of round 3 (2026-09-04), all implemented here:
   a weaker tier.
 * **D6** - ``five_hour_window_minutes`` (60..1440) and ``window_safety_factor``
   (0.1..1.0) are validated fail-closed, so a unit slip cannot remove the cap.
+
+CEO decisions of round 4 (2026-09-04), implemented here:
+
+* **D8** - ``read_ledger`` catches decode errors raised while ITERATING the
+  file, not only around ``open()``. One invalid UTF-8 byte used to raise
+  ``UnicodeDecodeError`` out through ``select_dispatch`` and abort the whole
+  ``route_once`` pass for every lane; it now refuses with
+  ``codex_ledger_read_error`` (enforce) or is reported (observe).
+* **D9** - ``model_matrix.codex.window_enforcement_mode`` with values
+  ``observe`` (DEFAULT) and ``enforce``. Observe RECORDS every dispatch and
+  reports ``would_refuse`` / ``would_downgrade`` / ``over_budget`` but refuses,
+  holds and downgrades NOTHING, so an untiered task keeps ``gpt-5.6-sol``
+  indefinitely and an Astra task still gets Astra. Enforce is round-3
+  behaviour. An unreadable mode is a fail-closed config error.
+* **D11** - a ledger lock that cannot be taken fails CLOSED in enforce mode
+  (``codex_ledger_lock_error``, nothing appended) and is reported in observe.
+* **D12** - a corrupt line counts only while the ledger FILE's mtime is inside
+  the window; a record with an unreadable ``ts`` counts conservatively;
+  ``validate_matrix`` rejects two tiers sharing a model id and any fallback on
+  the scalpel tier; :func:`rotate_ledger` prunes records older than 2x the
+  window at commit time, under the lock.
 """
 
 from __future__ import annotations
@@ -71,6 +92,31 @@ DEFAULT_WINDOW_MINUTES = 300.0
 DEFAULT_SAFETY_FACTOR = 0.8
 DEFAULT_PLAN_TIER = "plus"
 LEDGER_LOCK_TIMEOUT_SECONDS = 10.0
+
+# CEO decision D9 (round 4, 2026-09-04): the 5h window has two modes. OBSERVE
+# (the shipped default) RECORDS every dispatch and REPORTS what enforce mode
+# would have done (`would_refuse` / `would_downgrade` / `over_budget`) without
+# ever refusing, holding or downgrading - an untiered task keeps `gpt-5.6-sol`
+# indefinitely and a scalpel task still gets Astra. ENFORCE is the round-3
+# behaviour: refuse at the budget, hold Astra, fall back for the rest.
+# Round-3 finding F3: with enforcement on from day one the farm silently
+# acquired an 8-message/5h model-stability window and a hard ceiling built on
+# model ids nobody had verified against the account.
+ENFORCEMENT_MODE_FIELD = "window_enforcement_mode"
+ENFORCEMENT_OBSERVE = "observe"
+ENFORCEMENT_ENFORCE = "enforce"
+DEFAULT_ENFORCEMENT_MODE = ENFORCEMENT_OBSERVE
+ENFORCEMENT_MODES = frozenset({ENFORCEMENT_OBSERVE, ENFORCEMENT_ENFORCE})
+# CEO decision D11 (round 4): a ledger lock that cannot be taken fails CLOSED in
+# enforce mode. Round-3 finding F5: `_ledger_lock` yields `unavailable:...` and
+# `commit_dispatch` counted-and-appended anyway, reopening the exact double-book
+# race the lock was added to close.
+LEDGER_LOCK_ERROR_REASON = "codex_ledger_lock_error"
+# CEO decision D12 (round 4): the ledger is pruned at commit time under the same
+# lock, so a torn line from 2020 cannot hold a model shut forever and the file
+# cannot grow without bound (round-3 finding F4).
+LEDGER_ROTATION_KEEP_FACTOR = 2.0
+LEDGER_ROTATION_MIN_LINES = 500
 
 # Doctrine section 2: `scalpel: true` or the mechanization task type map to the
 # scalpel tier, which is HELD rather than downgraded when its window is spent.
@@ -180,6 +226,17 @@ def effort_class_tier_mapping_enabled(codex_matrix: dict[str, Any]) -> bool:
     return bool((codex_matrix or {}).get(EFFORT_MAPPING_FIELD, False) is True)
 
 
+def enforcement_mode(codex_matrix: dict[str, Any] | None) -> str:
+    """CEO decision D9 (round 4): ``observe`` (default) or ``enforce``.
+
+    An unreadable value resolves to the DEFAULT here; :func:`validate_matrix`
+    rejects it fail-closed before the policy can load, so production never
+    reaches this fallback with a typo'd mode.
+    """
+    raw = str((codex_matrix or {}).get(ENFORCEMENT_MODE_FIELD, "") or "").strip().lower()
+    return raw if raw in ENFORCEMENT_MODES else DEFAULT_ENFORCEMENT_MODE
+
+
 def _tier_value_error(name: str, cfg: dict[str, Any], allowed_efforts: set[str]) -> str | None:
     """Fix round 2026-09-04: presence of a key was never enough.
 
@@ -237,6 +294,12 @@ def validate_matrix(codex_matrix: dict[str, Any]) -> str | None:
         for item in codex_matrix.get("allowed_reasoning_efforts") or []
         if str(item).strip()
     }
+    # CEO decision D12 (round 4, 2026-09-04): two tiers may not share one model
+    # id. Round-3 finding F7: `tiers.sol.model = "gpt-5.6-luna"` passed
+    # validation, and `commit_dispatch` then booked sol against LUNA's shared
+    # window count while checking it against SOL's budget - the structural
+    # guarantee this fail-closed matrix exists to give, silently removed.
+    model_owner: dict[str, str] = {}
     for name in sorted(tiers):
         cfg = tiers[name]
         if not isinstance(cfg, dict):
@@ -259,10 +322,25 @@ def validate_matrix(codex_matrix: dict[str, Any]) -> str | None:
                 return f"{MATRIX_INCOMPLETE}:tier_{name}_budget_not_int:{plan_key}"
             if parsed < 0:
                 return f"{MATRIX_INCOMPLETE}:tier_{name}_budget_negative:{plan_key}"
+        model_id = str(cfg.get("model")).strip().lower()
+        if model_id in model_owner:
+            return (
+                f"{MATRIX_INCOMPLETE}:duplicate_model_id:{model_id}:"
+                f"{model_owner[model_id]},{name}"
+            )
+        model_owner[model_id] = name
         for key in ("fallback_tier", "legacy_fallback_tier"):
             reference = cfg.get(key)
             if reference in (None, ""):
                 continue
+            # CEO decision D12: the scalpel tier carries NO fallback at all.
+            # Round-3 finding F7: an `astra.fallback_tier` passed validation and
+            # was inert only because `select_dispatch` hard-codes a single-entry
+            # chain for the scalpel tier - `fallback_chain` and `commit_dispatch`
+            # have no scalpel notion, so the hold-not-downgrade invariant lived
+            # at ONE call site instead of in the data model.
+            if name == SCALPEL_TIER:
+                return f"{MATRIX_INCOMPLETE}:tier_{name}_{key}_forbidden:{reference}"
             if str(reference) not in tiers:
                 return f"{MATRIX_INCOMPLETE}:tier_{name}_{key}_unknown:{reference}"
         cycle = _fallback_cycle(name, tiers)
@@ -286,6 +364,16 @@ def validate_matrix(codex_matrix: dict[str, Any]) -> str | None:
             return f"{MATRIX_INCOMPLETE}:window_safety_factor_not_a_number:{raw_factor}"
         if not SAFETY_FACTOR_MIN <= float(raw_factor) <= SAFETY_FACTOR_MAX:
             return f"{MATRIX_INCOMPLETE}:window_safety_factor_out_of_range:{raw_factor}"
+    # CEO decision D9 (round 4, 2026-09-04): an unreadable enforcement mode is a
+    # fail-closed CONFIG error, not a silent fall back to the default - the mode
+    # decides whether the 5h window refuses work at all.
+    if ENFORCEMENT_MODE_FIELD in codex_matrix:
+        raw_mode = codex_matrix.get(ENFORCEMENT_MODE_FIELD)
+        if (
+            not isinstance(raw_mode, str)
+            or raw_mode.strip().lower() not in ENFORCEMENT_MODES
+        ):
+            return f"{MATRIX_INCOMPLETE}:{ENFORCEMENT_MODE_FIELD}_invalid:{raw_mode}"
     if EFFORT_MAPPING_FIELD in codex_matrix and not isinstance(
         codex_matrix.get(EFFORT_MAPPING_FIELD), bool
     ):
@@ -495,19 +583,32 @@ def read_ledger(path: Path) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     except (OSError, ValueError) as exc:
         return records, {"corrupt_lines": 0, "read_error": f"{type(exc).__name__}"}
     with handle:
-        for line in handle:
-            stripped = line.strip()
-            if not stripped:
-                continue
-            try:
-                record = json.loads(stripped)
-            except (json.JSONDecodeError, ValueError):
-                corrupt += 1
-                continue
-            if isinstance(record, dict):
-                records.append(record)
-            else:
-                corrupt += 1
+        # CEO decision D8 (round 4, 2026-09-04): the DECODE happens here, not in
+        # `open()`. Round-3 finding F2: one invalid UTF-8 byte in the middle of
+        # the ledger raised `UnicodeDecodeError` (a `ValueError` subclass) out of
+        # `read_ledger`, through `select_dispatch` / `invocation_profile` /
+        # `evaluate_spawn` and aborted the WHOLE `route_once` pass for every
+        # lane, instead of refusing this one dispatch with the structured
+        # `codex_ledger_read_error` D4 specifies.
+        try:
+            for line in handle:
+                stripped = line.strip()
+                if not stripped:
+                    continue
+                try:
+                    record = json.loads(stripped)
+                except (json.JSONDecodeError, ValueError):
+                    corrupt += 1
+                    continue
+                if isinstance(record, dict):
+                    records.append(record)
+                else:
+                    corrupt += 1
+        except (OSError, ValueError) as exc:
+            # Partial records travel with the error so OBSERVE mode can still
+            # report a count; every ENFORCE-mode consumer checks `read_error`
+            # first and refuses.
+            return records, {"corrupt_lines": corrupt, "read_error": f"{type(exc).__name__}"}
     return records, {"corrupt_lines": corrupt, "read_error": None}
 
 
@@ -515,6 +616,14 @@ def iter_ledger(path: Path) -> Iterator[dict[str, Any]]:
     """Records only (integrity is reported through :func:`read_ledger`)."""
     records, _integrity = read_ledger(path)
     yield from records
+
+
+def ledger_mtime(path: Path) -> dt.datetime | None:
+    """UTC mtime of the ledger file, or ``None`` when it cannot be stat'ed."""
+    try:
+        return dt.datetime.fromtimestamp(Path(path).stat().st_mtime, dt.UTC)
+    except (OSError, ValueError, OverflowError):
+        return None
 
 
 def scan_window(
@@ -536,6 +645,18 @@ def scan_window(
     An unparseable line carries no model attribution, so the conservative
     reading charges it to every model rather than letting a torn write hand a
     message back. The count is surfaced as ``integrity.counted_corrupt_lines``.
+
+    CEO decision D12 (round 4) bounds that rule in TIME. Round-3 finding F4: a
+    corrupt line had no timestamp, so it was charged forever - two torn lines
+    dated 2020 held `gpt-6-astra` permanently shut at count=2/budget=2 with no
+    way back except manual file surgery. A corrupt line now counts only while
+    the ledger FILE's mtime is inside the window (nothing can have been written
+    to it more recently than that); outside the window it is still reported as
+    ``integrity.corrupt_lines`` / ``corrupt_lines_outside_window``.
+
+    D12 also makes a JSON-valid record with a missing or unparseable ``ts``
+    count CONSERVATIVELY (as if inside the window) instead of being dropped -
+    round-3 finding F6, the one fail-OPEN asymmetry left in the arithmetic.
     """
     cutoff = now - dt.timedelta(minutes=float(minutes))
     records, integrity = read_ledger(path)
@@ -552,15 +673,22 @@ def scan_window(
         if str(record.get("model") or "") != str(model):
             continue
         stamp = _parse_time(record.get("ts"))
-        if stamp is None or stamp <= cutoff:
+        # D12/F6: an unreadable `ts` counts (conservative), a readable one that
+        # has left the window does not.
+        if stamp is not None and stamp <= cutoff:
             continue
         if str(record.get("id") or "") in released:
             continue
         count += 1
     corrupt = int(integrity.get("corrupt_lines") or 0)
+    mtime = ledger_mtime(path)
+    corrupt_in_window = bool(corrupt) and (mtime is None or mtime > cutoff)
+    counted_corrupt = corrupt if corrupt_in_window else 0
     integrity = dict(integrity)
-    integrity["counted_corrupt_lines"] = corrupt
-    return {"count": count + corrupt, "integrity": integrity}
+    integrity["counted_corrupt_lines"] = counted_corrupt
+    integrity["corrupt_lines_outside_window"] = corrupt - counted_corrupt
+    integrity["ledger_mtime"] = mtime.isoformat() if mtime is not None else None
+    return {"count": count + counted_corrupt, "integrity": integrity}
 
 
 def window_count(
@@ -645,6 +773,86 @@ def _append_record(path: Path, record: dict[str, Any]) -> str | None:
     return None
 
 
+def rotate_ledger(
+    path: Path,
+    *,
+    now: dt.datetime,
+    minutes: float = DEFAULT_WINDOW_MINUTES,
+    keep_factor: float = LEDGER_ROTATION_KEEP_FACTOR,
+    min_lines: int = LEDGER_ROTATION_MIN_LINES,
+) -> dict[str, Any]:
+    """Drop records older than ``keep_factor`` x the window (CEO decision D12).
+
+    Round-3 finding F4: nothing in the repo ever pruned
+    ``codex_model_window_ledger.jsonl``, so every dispatch re-read a file that
+    grows without bound (up to 7 full reads per ``select_dispatch``) and a torn
+    line stayed charged forever.
+
+    BOUNDED on purpose: below ``min_lines`` the file is left alone, so the
+    common case adds one ``stat``-sized read and no rewrite at all. Called from
+    :func:`commit_dispatch` while the exclusive ledger lock is held - never
+    concurrently with an append. Records whose ``ts`` cannot be read are KEPT,
+    matching the conservative counting rule, so rotation can never hand back a
+    message the window arithmetic is still charging for. Never raises.
+    """
+    target = Path(path)
+    try:
+        raw_lines = target.read_text(encoding="utf-8").splitlines()
+    except FileNotFoundError:
+        return {"rotated": False, "reason": "ledger_absent"}
+    except (OSError, ValueError) as exc:
+        return {"rotated": False, "reason": f"{LEDGER_READ_ERROR_REASON}:{type(exc).__name__}"}
+    if len(raw_lines) < int(min_lines):
+        return {
+            "rotated": False,
+            "reason": "below_rotation_threshold",
+            "lines": len(raw_lines),
+            "min_lines": int(min_lines),
+        }
+    cutoff = now.astimezone(dt.UTC) - dt.timedelta(minutes=float(minutes) * float(keep_factor))
+    kept: list[str] = []
+    dropped = 0
+    dropped_corrupt = 0
+    for line in raw_lines:
+        stripped = line.strip()
+        if not stripped:
+            continue
+        try:
+            record = json.loads(stripped)
+        except (json.JSONDecodeError, ValueError):
+            dropped += 1
+            dropped_corrupt += 1
+            continue
+        if not isinstance(record, dict):
+            dropped += 1
+            dropped_corrupt += 1
+            continue
+        stamp = _parse_time(record.get("ts"))
+        if stamp is not None and stamp <= cutoff:
+            dropped += 1
+            continue
+        kept.append(stripped)
+    if not dropped:
+        return {"rotated": False, "reason": "nothing_expired", "lines": len(raw_lines)}
+    tmp = Path(str(target) + ".rotate.tmp")
+    try:
+        with open(tmp, "w", encoding="utf-8", newline="\n") as handle:
+            for line in kept:
+                handle.write(line + "\n")
+        os.replace(tmp, target)
+    except OSError as exc:
+        with contextlib.suppress(OSError):
+            tmp.unlink()
+        return {"rotated": False, "reason": f"{LEDGER_WRITE_ERROR_REASON}:{type(exc).__name__}"}
+    return {
+        "rotated": True,
+        "kept": len(kept),
+        "dropped": dropped,
+        "dropped_corrupt_lines": dropped_corrupt,
+        "cutoff": cutoff.isoformat(),
+    }
+
+
 def chain_entries(
     codex_matrix: dict[str, Any],
     chain: list[str],
@@ -681,16 +889,30 @@ def commit_dispatch(
     now: dt.datetime | None = None,
     minutes: float = DEFAULT_WINDOW_MINUTES,
     env: dict[str, str] | None = None,
+    mode: str = ENFORCEMENT_ENFORCE,
 ) -> dict[str, Any]:
-    """Atomically book ONE message against the first chain entry with room.
+    """Book ONE message against the fallback chain, under the ledger lock.
 
-    This is the single fail-closed choke point of the 5h contract: count and
+    ENFORCE mode is the fail-closed choke point of the 5h contract: count and
     append happen under the same lock, so a concurrent spawner cannot slip a
-    second message through the same remaining slot. A refusal carries the
+    second message through the same remaining slot, and a refusal carries the
     structured ``codex_tier_window_exhausted`` detail.
+
+    OBSERVE mode (CEO decision D9, round 4, the shipped default) books the FIRST
+    usable entry unconditionally - no refusal, no hold, no downgrade - and
+    reports what enforce mode would have done through ``over_budget``,
+    ``would_refuse`` and ``would_downgrade``. Config defects (no model id at
+    all) still fail closed in BOTH modes: without a model id there is nothing to
+    dispatch and nothing the ledger could count.
+
+    ``mode`` defaults to ENFORCE because this is the strict primitive; the
+    POLICY decides in production (:func:`record_dispatch` passes
+    :func:`enforcement_mode` of the live matrix).
     """
     if not tiers_enabled(env):
         return {"recorded": False, "reason": "codex_model_tiers_disabled"}
+    active_mode = mode if mode in ENFORCEMENT_MODES else DEFAULT_ENFORCEMENT_MODE
+    observe = active_mode == ENFORCEMENT_OBSERVE
     usable = [
         entry
         for entry in (chain or [])
@@ -701,6 +923,7 @@ def commit_dispatch(
         return {
             "recorded": False,
             "reason": UNUSABLE_TIER_REASON if blocked else "model_unresolved",
+            "enforcement_mode": active_mode,
             "refusal": {
                 "code": UNUSABLE_TIER_REASON if blocked else "model_unresolved",
                 "chain": list(chain or []),
@@ -710,36 +933,72 @@ def commit_dispatch(
     stamp = (now or dt.datetime.now(dt.UTC)).astimezone(dt.UTC).replace(microsecond=0)
     exhausted: list[dict[str, Any]] = []
     with _ledger_lock(target) as lock_status:
-        # CEO decision D4: an unreadable ledger is a REFUSAL, not a fresh
-        # budget. `read_ledger` reported count=0 with a side-band `read_error`,
-        # so every dispatch was re-granted the whole window while
-        # `D:/QM/reports/state` was unavailable - a documented incident class.
+        # CEO decision D11 (round 4): no lock, no booking. Round-3 finding F5:
+        # the lock status was recorded in the result dict and then ignored, so
+        # under contention (10s deadline) or a lock-file OSError two spawners
+        # could read the same remaining slot and both append.
+        if lock_status != "acquired" and not observe:
+            return {
+                "recorded": False,
+                "reason": LEDGER_LOCK_ERROR_REASON,
+                "path": str(target),
+                "enforcement_mode": active_mode,
+                "lock": lock_status,
+                "refusal": {
+                    "code": LEDGER_LOCK_ERROR_REASON,
+                    "lock": lock_status,
+                    "path": str(target),
+                    "chain": list(chain or []),
+                },
+            }
+        # CEO decision D12: prune under the same lock, before the count.
+        if lock_status == "acquired":
+            rotation = rotate_ledger(target, now=stamp, minutes=minutes)
+        else:
+            rotation = {"rotated": False, "reason": "ledger_lock_unavailable"}
+        # CEO decision D4: an unreadable ledger is a REFUSAL in enforce mode,
+        # not a fresh budget. D8/D9: in observe mode it is REPORTED and the
+        # dispatch proceeds with an unknown count.
         _records, preflight = read_ledger(target)
-        if preflight.get("read_error"):
+        read_error = preflight.get("read_error")
+        if read_error and not observe:
             return {
                 "recorded": False,
                 "reason": LEDGER_READ_ERROR_REASON,
                 "path": str(target),
+                "enforcement_mode": active_mode,
+                "lock": lock_status,
                 "refusal": {
                     "code": LEDGER_READ_ERROR_REASON,
                     "path": str(target),
-                    "read_error": preflight.get("read_error"),
+                    "read_error": read_error,
                     "chain": list(chain or []),
                 },
             }
-        for entry in usable:
+        # Observe mode never walks down the chain: the requested tier is what
+        # gets dispatched and recorded, so an untiered task keeps `gpt-5.6-sol`
+        # indefinitely and a scalpel task keeps Astra.
+        candidates = usable[:1] if observe else usable
+        for entry in candidates:
             model = str(entry["model"])
             budget = entry.get("budget")
-            scan = scan_window(model, now=stamp, path=target, minutes=minutes)
+            if read_error:
+                scan = {"count": None, "integrity": dict(preflight)}
+            else:
+                scan = scan_window(model, now=stamp, path=target, minutes=minutes)
+            count = scan["count"]
             window = {
                 "tier": entry.get("tier"),
                 "model": model,
-                "count": scan["count"],
+                "count": count,
                 "budget": budget,
                 "window_minutes": minutes,
                 "ledger_integrity": scan["integrity"],
             }
-            if budget is not None and scan["count"] >= int(budget):
+            over_budget = (
+                budget is not None and count is not None and int(count) >= int(budget)
+            )
+            if over_budget and not observe:
                 exhausted.append(window)
                 continue
             record = {
@@ -749,16 +1008,20 @@ def commit_dispatch(
                 "model": model,
                 "kind": RECORD_KIND_DISPATCH,
                 "id": uuid.uuid4().hex,
+                "enforcement_mode": active_mode,
             }
+            if over_budget:
+                record["over_budget"] = True
             write_error = _append_record(target, record)
             if write_error is not None:
                 return {
                     "recorded": False,
                     "reason": write_error,
                     "path": str(target),
+                    "enforcement_mode": active_mode,
                     "record": record,
                 }
-            return {
+            result: dict[str, Any] = {
                 "recorded": True,
                 "path": str(target),
                 "record": record,
@@ -767,16 +1030,52 @@ def commit_dispatch(
                 "tier": record["tier"],
                 "window": window,
                 "lock": lock_status,
+                "enforcement_mode": active_mode,
+                "rotation": rotation,
                 "ledger_integrity": scan["integrity"],
                 "downgraded_from": (
                     str(usable[0].get("tier") or "") if entry is not usable[0] else None
                 ),
             }
+            if observe:
+                result["over_budget"] = bool(over_budget)
+                if read_error:
+                    result["would_refuse"] = {
+                        "code": LEDGER_READ_ERROR_REASON,
+                        "path": str(target),
+                        "read_error": read_error,
+                    }
+                elif over_budget:
+                    result["would_refuse"] = {
+                        "code": WINDOW_EXHAUSTED_REASON,
+                        "tier": entry.get("tier"),
+                        "model": model,
+                        "count": count,
+                        "budget": budget,
+                        "window_minutes": minutes,
+                    }
+                    fallback = _first_entry_with_room(
+                        usable[1:], now=stamp, path=target, minutes=minutes
+                    )
+                    if fallback is not None:
+                        result["would_downgrade"] = {
+                            "from_tier": entry.get("tier"),
+                            "to_tier": fallback.get("tier"),
+                            "to_model": fallback.get("model"),
+                        }
+                if lock_status != "acquired":
+                    result["would_refuse"] = {
+                        "code": LEDGER_LOCK_ERROR_REASON,
+                        "lock": lock_status,
+                        "path": str(target),
+                    }
+            return result
     first = exhausted[0]
     return {
         "recorded": False,
         "reason": WINDOW_EXHAUSTED_REASON,
         "path": str(target),
+        "enforcement_mode": active_mode,
         "refusal": {
             "code": WINDOW_EXHAUSTED_REASON,
             "tier": first.get("tier"),
@@ -787,6 +1086,26 @@ def commit_dispatch(
             "chain": exhausted,
         },
     }
+
+
+def _first_entry_with_room(
+    entries: list[dict[str, Any]],
+    *,
+    now: dt.datetime,
+    path: Path,
+    minutes: float,
+) -> dict[str, Any] | None:
+    """First chain entry whose window still has room (observe-mode reporting)."""
+    for entry in entries:
+        model = str(entry.get("model") or "").strip()
+        if not model or entry.get("unusable"):
+            continue
+        budget = entry.get("budget")
+        if budget is None:
+            return entry
+        if int(scan_window(model, now=now, path=path, minutes=minutes)["count"]) < int(budget):
+            return entry
+    return None
 
 
 def release_dispatch(
@@ -858,6 +1177,8 @@ def record_dispatch(
         now=now,
         minutes=minutes,
         env=env,
+        # CEO decision D9 (round 4): the live matrix decides observe vs enforce.
+        mode=enforcement_mode(matrix),
     )
 
 
@@ -922,6 +1243,9 @@ def select_dispatch(
     plan = plan_tier(codex_matrix)
     minutes = window_minutes(codex_matrix)
     factor = safety_factor(codex_matrix)
+    # CEO decision D9 (round 4, 2026-09-04): observe reports, enforce blocks.
+    active_mode = enforcement_mode(codex_matrix)
+    observe = active_mode == ENFORCEMENT_OBSERVE
     target = Path(path) if path is not None else ledger_path(codex_matrix, env)
     stamp = (now or dt.datetime.now(dt.UTC)).astimezone(dt.UTC)
     chain = [requested] if requested == SCALPEL_TIER else fallback_chain(requested, tiers)
@@ -929,7 +1253,8 @@ def select_dispatch(
     # CEO decision D4: fail CLOSED on an unreadable ledger instead of previewing
     # a full, uncounted budget.
     _records, preflight = read_ledger(target)
-    if preflight.get("read_error"):
+    read_error = preflight.get("read_error")
+    if read_error and not observe:
         return {
             "model": str(requested_cfg.get("model") or ""),
             "reasoning_effort": selected_effort,
@@ -939,19 +1264,20 @@ def select_dispatch(
             "model_tier_chain": chain,
             "model_tier_chain_detail": detail,
             "model_tier_ledger_integrity": preflight,
+            "model_tier_enforcement_mode": active_mode,
             "model_tier_refusal": {
                 "code": LEDGER_READ_ERROR_REASON,
                 "tier": requested,
                 "model": str(requested_cfg.get("model") or ""),
                 "path": str(target),
-                "read_error": preflight.get("read_error"),
+                "read_error": read_error,
                 "plan_tier": plan,
                 "window_minutes": minutes,
             },
         }
     integrity: dict[str, Any] | None = None
     exhausted: list[dict[str, Any]] = []
-    for entry in detail:
+    for position, entry in enumerate(detail):
         if entry.get("unusable"):
             exhausted.append(
                 {
@@ -966,8 +1292,11 @@ def select_dispatch(
             continue
         model = str(entry["model"])
         budget = entry["budget"]
-        scan = scan_window(model, now=stamp, path=target, minutes=minutes)
-        if integrity is None or scan["integrity"]["corrupt_lines"]:
+        if read_error:
+            scan = {"count": None, "integrity": dict(preflight)}
+        else:
+            scan = scan_window(model, now=stamp, path=target, minutes=minutes)
+        if integrity is None or scan["integrity"].get("corrupt_lines"):
             integrity = scan["integrity"]
         window = {
             "model": model,
@@ -979,7 +1308,10 @@ def select_dispatch(
             "safety_factor": factor,
             "ledger_integrity": scan["integrity"],
         }
-        if budget is None or scan["count"] < int(budget):
+        has_room = budget is None or scan["count"] is None or scan["count"] < int(budget)
+        # Observe mode takes the FIRST usable entry whether or not it has room:
+        # nothing is refused, held or downgraded, only reported.
+        if has_room or observe:
             selected: dict[str, Any] = {
                 "model": model,
                 "reasoning_effort": selected_effort,
@@ -989,10 +1321,45 @@ def select_dispatch(
                 "model_window": window,
                 "model_tier_chain": chain,
                 "model_tier_chain_detail": detail,
+                "model_tier_enforcement_mode": active_mode,
             }
             if entry["tier"] != requested:
                 selected["model_tier_downgraded_from"] = requested
                 selected["model_tier_reason"] = f"{resolution['reason']};downgraded_from:{requested}"
+            if observe and read_error:
+                selected["model_tier_would_refuse"] = {
+                    "code": LEDGER_READ_ERROR_REASON,
+                    "tier": entry["tier"],
+                    "model": model,
+                    "path": str(target),
+                    "read_error": read_error,
+                }
+                selected["model_tier_reason"] = (
+                    f"{selected['model_tier_reason']};observe:{LEDGER_READ_ERROR_REASON}"
+                )
+            elif observe and not has_room:
+                selected["model_tier_over_budget"] = True
+                selected["model_tier_would_refuse"] = {
+                    "code": WINDOW_EXHAUSTED_REASON,
+                    "tier": entry["tier"],
+                    "model": model,
+                    "count": scan["count"],
+                    "budget": budget,
+                    "plan_tier": plan,
+                    "window_minutes": minutes,
+                }
+                fallback = _first_entry_with_room(
+                    detail[position + 1 :], now=stamp, path=target, minutes=minutes
+                )
+                if fallback is not None:
+                    selected["model_tier_would_downgrade"] = {
+                        "from_tier": entry["tier"],
+                        "to_tier": fallback.get("tier"),
+                        "to_model": fallback.get("model"),
+                    }
+                selected["model_tier_reason"] = (
+                    f"{selected['model_tier_reason']};observe:{WINDOW_EXHAUSTED_REASON}"
+                )
             if integrity and (integrity.get("corrupt_lines") or integrity.get("read_error")):
                 selected["model_tier_ledger_integrity"] = integrity
             return selected
@@ -1018,6 +1385,7 @@ def select_dispatch(
         "model_window": first,
         "model_tier_chain": chain,
         "model_tier_chain_detail": detail,
+        "model_tier_enforcement_mode": active_mode,
         "model_tier_refusal": refusal,
     }
     if integrity and (integrity.get("corrupt_lines") or integrity.get("read_error")):

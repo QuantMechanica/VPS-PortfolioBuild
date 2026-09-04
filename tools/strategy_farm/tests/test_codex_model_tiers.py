@@ -9,9 +9,11 @@ is a tmp_path or a monkeypatched env value.
 
 from __future__ import annotations
 
+import contextlib
 import copy
 import datetime as dt
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -48,8 +50,58 @@ def _isolated_environment(tmp_path, monkeypatch):
             monkeypatch.setitem(mod.BURN_FLAGS, agent, tmp_path / f"absent_{agent}.flag")
 
 
+def _gate_modules() -> list:
+    """Both import shapes of `quota_spawn_gate`.
+
+    farmctl / codex_fleet_pacer / mailbox_source_intake import the PACKAGE
+    shape (`from tools.strategy_farm import quota_spawn_gate`), the test module
+    the flat one - two distinct module objects with two distinct `CONFIG_PATH`
+    globals, so a policy patch has to reach both.
+    """
+    mods = {id(quota_spawn_gate): quota_spawn_gate}
+    try:
+        from tools.strategy_farm import quota_spawn_gate as pkg_gate  # noqa: PLC0415
+
+        mods[id(pkg_gate)] = pkg_gate
+    except ModuleNotFoundError:  # pragma: no cover - import shape dependent
+        pass
+    return list(mods.values())
+
+
+SHIPPED_CONFIG_PATH = Path(quota_spawn_gate.CONFIG_PATH)
+
+
+@pytest.fixture(autouse=True)
+def _enforce_window_mode(tmp_path, monkeypatch):
+    """CEO decision D9 (round 4): the SHIPPED policy OBSERVES, this suite ENFORCES.
+
+    Observe is deliberately the production default - it refuses, holds and
+    downgrades nothing - so every enforcement assertion in this file would be
+    vacuous against the shipped file. The suite therefore runs the same policy
+    with `window_enforcement_mode: "enforce"`. The shipped default itself is
+    asserted by `test_the_shipped_policy_observes_by_default`, and the observe
+    behaviour by the D9 block, both reading the real config path.
+    """
+    policy = json.loads(SHIPPED_CONFIG_PATH.read_text(encoding="utf-8"))
+    policy["model_matrix"]["codex"][tiers.ENFORCEMENT_MODE_FIELD] = tiers.ENFORCEMENT_ENFORCE
+    config_path = tmp_path / "policy_enforce.json"
+    config_path.write_text(json.dumps(policy), encoding="utf-8")
+    for mod in _gate_modules():
+        monkeypatch.setattr(mod, "CONFIG_PATH", config_path)
+    return config_path
+
+
 def _policy() -> dict:
+    """The ENFORCING policy (see `_enforce_window_mode`)."""
     policy, error = quota_spawn_gate.load_policy()
+    assert error is None, error
+    assert policy is not None
+    return policy
+
+
+def _shipped_policy() -> dict:
+    """The policy exactly as it ships, bypassing the enforce fixture."""
+    policy, error = quota_spawn_gate.load_policy(SHIPPED_CONFIG_PATH)
     assert error is None, error
     assert policy is not None
     return policy
@@ -57,6 +109,35 @@ def _policy() -> dict:
 
 def _codex_matrix() -> dict:
     return _policy()["model_matrix"]["codex"]
+
+
+def _observing_matrix() -> dict:
+    matrix = copy.deepcopy(_codex_matrix())
+    matrix[tiers.ENFORCEMENT_MODE_FIELD] = tiers.ENFORCEMENT_OBSERVE
+    return matrix
+
+
+def _observe_config(tmp_path: Path, monkeypatch) -> Path:
+    """Point the whole gate stack at an OBSERVE-mode copy of the policy."""
+    policy = _policy()
+    policy["model_matrix"]["codex"][tiers.ENFORCEMENT_MODE_FIELD] = tiers.ENFORCEMENT_OBSERVE
+    config_path = tmp_path / "policy_observe.json"
+    config_path.write_text(json.dumps(policy), encoding="utf-8")
+    for mod in _gate_modules():
+        monkeypatch.setattr(mod, "CONFIG_PATH", config_path)
+    return config_path
+
+
+def _touch(path: Path, when: dt.datetime) -> None:
+    """Pin the ledger file's mtime.
+
+    CEO decision D12 (round 4) bounds the corrupt-line charge by the FILE's
+    mtime, so a fixture that writes records at a fictional `NOW` must stamp the
+    file to match - otherwise the assertions depend on the wall clock of the
+    machine running the suite.
+    """
+    stamp = when.timestamp()
+    os.utime(path, (stamp, stamp))
 
 
 def _tier_modules() -> list:
@@ -112,6 +193,7 @@ def _write_ledger(path: Path, entries: list[tuple[str, dt.datetime]]) -> None:
         for index, (model, stamp) in enumerate(entries)
     ]
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    _touch(path, max((stamp for _model, stamp in entries), default=NOW))
 
 
 # --- config validation ------------------------------------------------------
@@ -350,6 +432,9 @@ def test_ledger_counts_only_the_rolling_five_hour_window(tmp_path: Path) -> None
         ],
     )
     path.write_text(path.read_text(encoding="utf-8") + "not json\n", encoding="utf-8")
+    # CEO decision D12 (round 4): a corrupt line is charged only while the FILE
+    # is younger than the window, so the fixture pins the mtime to `NOW`.
+    _touch(path, NOW)
 
     # Fix round: a record stamped ahead of the reader's clock is COUNTED. The
     # first version dropped it and thereby re-granted the whole budget after a
@@ -886,6 +971,7 @@ def _saturate(path: Path, model: str, count: int, *, now: dt.datetime = NOW) -> 
     ]
     with path.open("a", encoding="utf-8") as handle:
         handle.write("\n".join(lines) + "\n")
+    _touch(path, now)
 
 
 # --- M1: the refusal is the RESULT, not a side-band field -------------------
@@ -1242,6 +1328,7 @@ def test_a_torn_ledger_line_is_reported_not_swallowed(tmp_path: Path) -> None:
     _saturate(ledger, "gpt-5.6-terra", 1)
     with ledger.open("a", encoding="utf-8") as handle:
         handle.write('{"ts": "2026-09-04T11:5\n')
+    _touch(ledger, NOW)  # D12: the corrupt charge is bounded by the file mtime
 
     scan = tiers.scan_window("gpt-5.6-terra", now=NOW, path=ledger)
     # CEO decision D4: the torn line is COUNTED as a consumed message as well
@@ -1283,7 +1370,13 @@ def test_the_scalpel_task_type_can_be_enqueued(tmp_path: Path) -> None:
             "SELECT required_capabilities_json FROM agent_tasks WHERE id=?",
             (task["task_id"],),
         ).fetchone()
-    assert json.loads(row["required_capabilities_json"]) == ["research", "strategy"]
+    # CEO decision D10 (round 4): the third capability is what keeps the class
+    # off the gemini/agy lane (see the D10 block below).
+    assert json.loads(row["required_capabilities_json"]) == [
+        "research",
+        "strategy",
+        "scalpel_mechanization",
+    ]
     resolution = tiers.resolve_tier(_codex_matrix(), {}, "strategy_mechanize_source", "high")
     assert resolution["tier"] == "astra"
 
@@ -1809,3 +1902,563 @@ def test_the_shipped_window_knobs_are_in_range() -> None:
     assert tiers.window_minutes(codex) == 300.0
     assert tiers.safety_factor(codex) == 0.8
     assert tiers.effort_class_tier_mapping_enabled(codex) is False
+
+
+# ===========================================================================
+# Round 4, 2026-09-04 - CEO decisions D8-D12, one block each.
+# ===========================================================================
+
+
+def _write_undecodable_ledger(path: Path, *, when: dt.datetime = NOW) -> None:
+    """A ledger with a VALID first line and invalid UTF-8 bytes in the middle.
+
+    Round-3 finding F2: the round-3 read-error tests monkeypatched
+    `read_ledger` to RETURN a read_error dict, so no test ever performed the
+    I/O that actually raised.
+    """
+    good = json.dumps(
+        {
+            "ts": when.isoformat(),
+            "task_id": "t0",
+            "tier": "sol",
+            "model": "gpt-5.6-sol",
+            "kind": "dispatch",
+            "id": "g0",
+        }
+    ).encode("utf-8")
+    path.write_bytes(good + b"\n" + b'{"ts": "\xff\xfe\x00bad"}\n')
+    _touch(path, when)
+
+
+def _break_ledger_lock(monkeypatch, status: str = "unavailable:timeout") -> None:
+    @contextlib.contextmanager
+    def _fake_lock(path, timeout=tiers.LEDGER_LOCK_TIMEOUT_SECONDS):
+        yield status
+
+    for mod in _tier_modules():
+        monkeypatch.setattr(mod, "_ledger_lock", _fake_lock)
+
+
+def _governor_state(tmp_path: Path, now: dt.datetime) -> Path:
+    state_path = tmp_path / "governor.json"
+    state_path.write_text(
+        json.dumps(
+            {
+                "ts": now.isoformat(),
+                "agents": {
+                    agent: {"used_pct": 10, "elapsed_pct": 50, "five_hour_used_pct": 5}
+                    for agent in ("codex", "claude")
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    return state_path
+
+
+# --- D8: an undecodable ledger REFUSES, it never raises ---------------------
+
+
+def test_an_undecodable_ledger_is_reported_by_read_ledger(tmp_path: Path) -> None:
+    ledger = tmp_path / "undecodable.jsonl"
+    _write_undecodable_ledger(ledger)
+
+    _records, integrity = tiers.read_ledger(ledger)
+
+    assert integrity["read_error"] == "UnicodeDecodeError"
+
+
+def test_an_undecodable_ledger_refuses_instead_of_raising(tmp_path: Path) -> None:
+    """CEO decision D8: the decode happens while ITERATING, not in open()."""
+    ledger = tmp_path / "undecodable.jsonl"
+    _write_undecodable_ledger(ledger)
+
+    selected = tiers.select_dispatch(
+        _codex_matrix(), {}, "build_ea", "high", now=NOW, path=ledger
+    )
+    assert selected["model_tier_refusal"]["code"] == tiers.LEDGER_READ_ERROR_REASON
+    assert selected["model_tier_refusal"]["read_error"] == "UnicodeDecodeError"
+
+    committed = tiers.record_dispatch(
+        task_id="t",
+        tier="sol",
+        model="gpt-5.6-sol",
+        path=ledger,
+        now=NOW,
+        codex_matrix=_codex_matrix(),
+    )
+    assert committed["recorded"] is False
+    assert committed["reason"] == tiers.LEDGER_READ_ERROR_REASON
+
+    contract = quota_spawn_gate.codex_spawn_contract(
+        "build_ea", {}, task_id="t", now=NOW, ledger_path=ledger
+    )
+    assert contract["allowed"] is False
+    assert contract["refusal"]["reason"] == tiers.LEDGER_READ_ERROR_REASON
+
+
+def test_an_undecodable_ledger_does_not_abort_the_routing_pass(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """Round-3 finding F2: one bad byte killed route_once for EVERY lane."""
+    now = dt.datetime.now(dt.UTC).replace(microsecond=0)
+    ledger = tmp_path / "undecodable.jsonl"
+    _write_undecodable_ledger(ledger, when=now)
+    monkeypatch.setenv(tiers.LEDGER_PATH_ENV, str(ledger))
+    agent_router.enqueue_task(
+        tmp_path,
+        "ops_issue",
+        state="TODO",
+        priority=50,
+        required_capabilities=["ops", "code"],
+        payload={"brief": "anything"},
+        assigned_agent="codex",
+    )
+
+    routed = agent_router.route_once(
+        tmp_path,
+        claude_disabled_flag=tmp_path / "missing.flag",
+        quota_gate_enabled=True,
+        quota_state_path=_governor_state(tmp_path, now),
+        quota_summary_path=tmp_path / "summary.json",
+    )
+
+    assert routed.assigned_agent is None
+    assert routed.reason == "quota_gate_blocked"
+
+
+def test_observe_mode_reports_an_undecodable_ledger_instead_of_refusing(
+    tmp_path: Path,
+) -> None:
+    ledger = tmp_path / "undecodable.jsonl"
+    _write_undecodable_ledger(ledger)
+    matrix = _observing_matrix()
+
+    selected = tiers.select_dispatch(matrix, {}, "build_ea", "high", now=NOW, path=ledger)
+
+    assert "model_tier_refusal" not in selected
+    assert selected["model"] == "gpt-5.6-sol"
+    assert selected["model_tier_would_refuse"]["code"] == tiers.LEDGER_READ_ERROR_REASON
+
+
+# --- D9: observe (default) vs enforce ---------------------------------------
+
+
+def test_the_shipped_policy_observes_by_default() -> None:
+    codex = _shipped_policy()["model_matrix"]["codex"]
+
+    assert codex[tiers.ENFORCEMENT_MODE_FIELD] == tiers.ENFORCEMENT_OBSERVE
+    assert tiers.enforcement_mode(codex) == tiers.ENFORCEMENT_OBSERVE
+    # An absent field is observe too - the module default and the shipped file
+    # agree, so no deployment can enforce by accident.
+    assert tiers.enforcement_mode({}) == tiers.DEFAULT_ENFORCEMENT_MODE
+    assert tiers.DEFAULT_ENFORCEMENT_MODE == tiers.ENFORCEMENT_OBSERVE
+    assert tiers.validate_matrix(codex) is None
+    assert codex["plan_tier"] == "plus"
+
+
+def test_observe_mode_never_refuses_across_twenty_dispatches(tmp_path: Path) -> None:
+    matrix = _observing_matrix()
+    ledger = tmp_path / "observe_window.jsonl"
+    chain = tiers.chain_entries(matrix, [tiers.SCALPEL_TIER])
+    budget = tiers.window_budget(matrix["tiers"]["astra"], "plus", 0.8)
+    assert budget == 2
+
+    results = [
+        tiers.record_dispatch(
+            task_id=f"t{index}",
+            tier="astra",
+            model="gpt-6-astra",
+            path=ledger,
+            now=NOW,
+            codex_matrix=matrix,
+            chain=chain,
+        )
+        for index in range(20)
+    ]
+
+    assert all(result["recorded"] for result in results)
+    assert all(result["enforcement_mode"] == tiers.ENFORCEMENT_OBSERVE for result in results)
+    assert [bool(result.get("over_budget")) for result in results[:budget]] == [False] * budget
+    assert all(result["over_budget"] for result in results[budget:])
+    assert results[-1]["would_refuse"]["code"] == tiers.WINDOW_EXHAUSTED_REASON
+    # Astra has no chain to fall to, so observe reports no downgrade either.
+    assert "would_downgrade" not in results[-1]
+    assert tiers.window_count("gpt-6-astra", now=NOW, path=ledger) == 20
+
+
+def test_enforce_mode_refuses_at_the_budget(tmp_path: Path) -> None:
+    matrix = _codex_matrix()  # the suite's enforcing copy
+    ledger = tmp_path / "enforce_window.jsonl"
+    chain = tiers.chain_entries(matrix, [tiers.SCALPEL_TIER])
+
+    results = [
+        tiers.record_dispatch(
+            task_id=f"t{index}",
+            tier="astra",
+            model="gpt-6-astra",
+            path=ledger,
+            now=NOW,
+            codex_matrix=matrix,
+            chain=chain,
+        )
+        for index in range(5)
+    ]
+
+    assert [bool(result["recorded"]) for result in results] == [True, True, False, False, False]
+    assert results[-1]["reason"] == tiers.WINDOW_EXHAUSTED_REASON
+    assert results[-1]["refusal"]["budget"] == 2
+    assert tiers.window_count("gpt-6-astra", now=NOW, path=ledger) == 2
+
+
+def test_observe_mode_keeps_the_untiered_model_indefinitely(tmp_path: Path) -> None:
+    """Round-3 finding F3: enforcement silently moved build #9 off gpt-5.6-sol."""
+    matrix = _observing_matrix()
+    ledger = tmp_path / "sol_full.jsonl"
+    _saturate(ledger, "gpt-5.6-sol", 8)
+
+    selected = tiers.select_dispatch(matrix, {}, "build_ea", "high", now=NOW, path=ledger)
+
+    assert selected["model"] == "gpt-5.6-sol"
+    assert selected["model_tier"] == "sol"
+    assert selected["model_tier_over_budget"] is True
+    assert selected["model_tier_would_refuse"]["code"] == tiers.WINDOW_EXHAUSTED_REASON
+    assert selected["model_tier_would_downgrade"]["to_model"] == "gpt-5.6-terra"
+    assert "model_tier_refusal" not in selected
+    assert "model_tier_downgraded_from" not in selected
+
+
+def test_observe_mode_dispatches_astra_over_budget_instead_of_holding(
+    tmp_path: Path,
+) -> None:
+    matrix = _observing_matrix()
+    ledger = tmp_path / "astra_full.jsonl"
+    _saturate(ledger, "gpt-6-astra", 2)
+
+    selected = tiers.select_dispatch(
+        matrix, {"scalpel": True}, "ops_issue", "max", now=NOW, path=ledger
+    )
+
+    assert selected["model"] == "gpt-6-astra"
+    assert selected["model_tier_over_budget"] is True
+    assert "model_tier_hold" not in selected
+    assert "model_tier_would_downgrade" not in selected
+
+
+def test_the_spawn_contract_never_refuses_in_observe_mode(
+    tmp_path: Path, monkeypatch
+) -> None:
+    config_path = _observe_config(tmp_path, monkeypatch)
+    ledger = tmp_path / "observe_contract.jsonl"
+    _saturate(ledger, "gpt-6-astra", 5)
+
+    contract = quota_spawn_gate.codex_spawn_contract(
+        "ops_issue",
+        {"scalpel": True},
+        task_id="t",
+        now=NOW,
+        ledger_path=ledger,
+        config_path=config_path,
+    )
+
+    assert contract["allowed"] is True
+    assert contract["invocation"]["model"] == "gpt-6-astra"
+    assert contract["ledger"]["recorded"] is True
+    assert contract["ledger"]["over_budget"] is True
+
+
+@pytest.mark.parametrize("mode", ["monitor", "", None, True, 1, "enforce-ish"])
+def test_an_invalid_enforcement_mode_fails_closed(mode) -> None:
+    matrix = copy.deepcopy(_codex_matrix())
+    matrix[tiers.ENFORCEMENT_MODE_FIELD] = mode
+
+    error = tiers.validate_matrix(matrix)
+
+    assert error is not None
+    assert f"{tiers.ENFORCEMENT_MODE_FIELD}_invalid" in error
+
+
+def test_an_invalid_enforcement_mode_blocks_the_whole_policy(tmp_path: Path) -> None:
+    policy = _policy()
+    policy["model_matrix"]["codex"][tiers.ENFORCEMENT_MODE_FIELD] = "monitor"
+    config_path = tmp_path / "bad_mode.json"
+    config_path.write_text(json.dumps(policy), encoding="utf-8")
+
+    loaded, error = quota_spawn_gate.load_policy(config_path)
+
+    assert loaded is None
+    assert error is not None
+    assert error.startswith(tiers.MATRIX_INCOMPLETE)
+
+
+# --- D10: SCALPEL work never reaches the gemini/agy lane --------------------
+
+
+def test_only_the_codex_and_claude_lanes_declare_the_scalpel_capability() -> None:
+    declaring = {
+        agent
+        for agent, cfg in agent_router.DEFAULT_AGENT_REGISTRY.items()
+        if agent_router.SCALPEL_ROUTING_CAPABILITY in cfg["capabilities"]
+    }
+
+    assert declaring == {"codex", "claude"}
+    assert (
+        agent_router.SCALPEL_ROUTING_CAPABILITY
+        in agent_router.TASK_TYPE_CAPABILITIES["strategy_mechanize_source"]
+    )
+    # The precondition that made F1 bite: gemini is enabled and cheapest.
+    assert agent_router.DEFAULT_AGENT_REGISTRY["gemini"]["enabled"] is True
+    assert (
+        agent_router.DEFAULT_AGENT_REGISTRY["gemini"]["cost_rank"]
+        < agent_router.DEFAULT_AGENT_REGISTRY["codex"]["cost_rank"]
+        < agent_router.DEFAULT_AGENT_REGISTRY["claude"]["cost_rank"]
+    )
+
+
+def test_scalpel_work_never_routes_to_the_gemini_lane(tmp_path: Path) -> None:
+    """Round-3 finding F1, end-to-end: the three lanes enabled, gemini cheapest."""
+    agent_router.sync_default_registry(tmp_path, claude_disabled_flag=tmp_path / "missing.flag")
+    mechanize = agent_router.enqueue_task(
+        tmp_path, "strategy_mechanize_source", state="TODO", priority=80
+    )
+    marked = agent_router.enqueue_task(
+        tmp_path,
+        "research_strategy",
+        state="TODO",
+        priority=70,
+        payload={"scalpel": True},
+    )
+    plain = agent_router.enqueue_task(
+        tmp_path, "research_strategy", state="TODO", priority=60
+    )
+
+    first = agent_router.route_once(tmp_path, claude_disabled_flag=tmp_path / "missing.flag")
+    second = agent_router.route_once(tmp_path, claude_disabled_flag=tmp_path / "missing.flag")
+    third = agent_router.route_once(tmp_path, claude_disabled_flag=tmp_path / "missing.flag")
+
+    assert (first.task_id, first.assigned_agent) == (mechanize["task_id"], "codex")
+    assert (second.task_id, second.assigned_agent) == (marked["task_id"], "codex")
+    # Control: an unmarked research row still takes the cheapest lane, so the
+    # pin is the scalpel capability and not a blanket gemini exclusion.
+    assert (third.task_id, third.assigned_agent) == (plain["task_id"], "gemini")
+
+
+def test_a_scalpel_payload_row_written_outside_enqueue_is_still_pinned(
+    tmp_path: Path,
+) -> None:
+    """The union is applied at ROUTING too, so pre-patch rows are covered."""
+    agent_router.sync_default_registry(tmp_path, claude_disabled_flag=tmp_path / "missing.flag")
+    task = agent_router.enqueue_task(
+        tmp_path, "research_strategy", state="TODO", priority=70
+    )
+    with agent_router.connect(tmp_path) as conn:
+        conn.execute(
+            "UPDATE agent_tasks SET payload_json=? WHERE id=?",
+            (json.dumps({"scalpel": True}), task["task_id"]),
+        )
+        conn.commit()
+
+    routed = agent_router.route_once(tmp_path, claude_disabled_flag=tmp_path / "missing.flag")
+
+    assert routed.task_id == task["task_id"]
+    assert routed.assigned_agent == "codex"
+
+
+# --- D11: no ledger lock, no booking (enforce) ------------------------------
+
+
+def test_a_missing_ledger_lock_refuses_in_enforce_mode(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """Round-3 finding F5: the lock status was reported and then ignored."""
+    _break_ledger_lock(monkeypatch)
+    ledger = tmp_path / "locked_out.jsonl"
+
+    result = tiers.record_dispatch(
+        task_id="t",
+        tier="sol",
+        model="gpt-5.6-sol",
+        path=ledger,
+        now=NOW,
+        codex_matrix=_codex_matrix(),
+    )
+
+    assert result["recorded"] is False
+    assert result["reason"] == tiers.LEDGER_LOCK_ERROR_REASON
+    assert result["refusal"]["lock"] == "unavailable:timeout"
+    assert not ledger.exists()
+
+
+def test_a_missing_ledger_lock_is_only_reported_in_observe_mode(
+    tmp_path: Path, monkeypatch
+) -> None:
+    _break_ledger_lock(monkeypatch, "unavailable:OSError")
+    ledger = tmp_path / "locked_out_observe.jsonl"
+
+    result = tiers.record_dispatch(
+        task_id="t",
+        tier="sol",
+        model="gpt-5.6-sol",
+        path=ledger,
+        now=NOW,
+        codex_matrix=_observing_matrix(),
+    )
+
+    assert result["recorded"] is True
+    assert result["lock"] == "unavailable:OSError"
+    assert result["would_refuse"]["code"] == tiers.LEDGER_LOCK_ERROR_REASON
+    assert ledger.exists()
+
+
+def test_the_spawn_contract_refuses_when_the_ledger_lock_is_unavailable(
+    tmp_path: Path, monkeypatch
+) -> None:
+    _break_ledger_lock(monkeypatch)
+
+    contract = quota_spawn_gate.codex_spawn_contract(
+        "build_ea", {}, task_id="t", now=NOW, ledger_path=tmp_path / "no_lock.jsonl"
+    )
+
+    assert contract["allowed"] is False
+    assert contract["refusal"]["reason"] == tiers.LEDGER_LOCK_ERROR_REASON
+
+
+# --- D12: bounded corrupt charge, conservative ts, matrix + rotation --------
+
+
+def test_corrupt_lines_outside_the_window_are_reported_not_counted(
+    tmp_path: Path,
+) -> None:
+    """Round-3 finding F4: two torn lines from 2020 held astra shut forever."""
+    ledger = tmp_path / "old_torn.jsonl"
+    ledger.write_text("{oops\n{also broken\n", encoding="utf-8")
+    _touch(ledger, NOW - dt.timedelta(minutes=600))
+
+    scan = tiers.scan_window("gpt-6-astra", now=NOW, path=ledger)
+
+    assert scan["count"] == 0
+    assert scan["integrity"]["corrupt_lines"] == 2
+    assert scan["integrity"]["counted_corrupt_lines"] == 0
+    assert scan["integrity"]["corrupt_lines_outside_window"] == 2
+
+    # ...and the astra hold that used to be unrecoverable is gone.
+    selected = tiers.select_dispatch(
+        _codex_matrix(), {"scalpel": True}, "ops_issue", "max", now=NOW, path=ledger
+    )
+    assert selected["model"] == "gpt-6-astra"
+    assert "model_tier_hold" not in selected
+
+
+def test_corrupt_lines_inside_the_window_still_count(tmp_path: Path) -> None:
+    ledger = tmp_path / "fresh_torn.jsonl"
+    ledger.write_text("{oops\n{also broken\n", encoding="utf-8")
+    _touch(ledger, NOW - dt.timedelta(minutes=5))
+
+    scan = tiers.scan_window("gpt-6-astra", now=NOW, path=ledger)
+
+    assert scan["count"] == 2
+    assert scan["integrity"]["counted_corrupt_lines"] == 2
+
+
+def test_a_record_without_a_parseable_ts_counts_conservatively(tmp_path: Path) -> None:
+    """Round-3 finding F6: such records were dropped from the count (fail-open)."""
+    ledger = tmp_path / "no_ts.jsonl"
+    lines = []
+    for index in range(4):
+        record = {
+            "task_id": f"t{index}",
+            "tier": "astra",
+            "model": "gpt-6-astra",
+            "kind": "dispatch",
+            "id": f"n{index}",
+        }
+        if index % 2 == 0:
+            record["ts"] = "not-a-time"
+        lines.append(json.dumps(record))
+    ledger.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    _touch(ledger, NOW)
+
+    assert tiers.window_count("gpt-6-astra", now=NOW, path=ledger) == 4
+
+
+def test_two_tiers_may_not_share_one_model_id() -> None:
+    """Round-3 finding F7: sol booked against luna's window, checked vs sol's."""
+    matrix = copy.deepcopy(_codex_matrix())
+    matrix["tiers"]["sol"]["model"] = matrix["tiers"]["luna"]["model"]
+
+    error = tiers.validate_matrix(matrix)
+
+    assert error is not None
+    assert "duplicate_model_id" in error
+
+
+@pytest.mark.parametrize("key", ["fallback_tier", "legacy_fallback_tier"])
+def test_the_scalpel_tier_may_not_declare_a_fallback(key) -> None:
+    matrix = copy.deepcopy(_codex_matrix())
+    matrix["tiers"][tiers.SCALPEL_TIER][key] = "luna"
+
+    error = tiers.validate_matrix(matrix)
+
+    assert error is not None
+    assert f"tier_{tiers.SCALPEL_TIER}_{key}_forbidden" in error
+
+
+def test_rotate_ledger_truncates_records_older_than_twice_the_window(
+    tmp_path: Path,
+) -> None:
+    ledger = tmp_path / "rotate.jsonl"
+    entries = [("gpt-5.6-sol", NOW - dt.timedelta(minutes=700))] * 300
+    entries += [("gpt-5.6-sol", NOW - dt.timedelta(minutes=10))] * 300
+    _write_ledger(ledger, entries)
+
+    result = tiers.rotate_ledger(ledger, now=NOW, minutes=300)
+
+    assert result["rotated"] is True
+    assert result["dropped"] == 300
+    assert result["kept"] == 300
+    assert len(ledger.read_text(encoding="utf-8").splitlines()) == 300
+    assert tiers.window_count("gpt-5.6-sol", now=NOW, path=ledger) == 300
+
+
+def test_rotate_ledger_leaves_a_small_file_alone(tmp_path: Path) -> None:
+    ledger = tmp_path / "small.jsonl"
+    _write_ledger(ledger, [("gpt-5.6-sol", NOW - dt.timedelta(minutes=900))])
+
+    result = tiers.rotate_ledger(ledger, now=NOW, minutes=300)
+
+    assert result["rotated"] is False
+    assert result["reason"] == "below_rotation_threshold"
+    assert len(ledger.read_text(encoding="utf-8").splitlines()) == 1
+
+
+def test_rotate_ledger_keeps_records_whose_ts_cannot_be_read(tmp_path: Path) -> None:
+    ledger = tmp_path / "rotate_no_ts.jsonl"
+    lines = [json.dumps({"task_id": f"t{index}", "model": "gpt-5.6-sol"}) for index in range(600)]
+    ledger.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    result = tiers.rotate_ledger(ledger, now=NOW, minutes=300)
+
+    assert result["rotated"] is False
+    assert result["reason"] == "nothing_expired"
+    assert len(ledger.read_text(encoding="utf-8").splitlines()) == 600
+
+
+def test_commit_rotates_the_ledger_under_the_lock(tmp_path: Path) -> None:
+    ledger = tmp_path / "commit_rotate.jsonl"
+    _write_ledger(ledger, [("gpt-5.6-luna", NOW - dt.timedelta(minutes=900))] * 600)
+
+    result = tiers.record_dispatch(
+        task_id="t",
+        tier="luna",
+        model="gpt-5.6-luna",
+        path=ledger,
+        now=NOW,
+        codex_matrix=_codex_matrix(),
+    )
+
+    assert result["recorded"] is True
+    assert result["lock"] == "acquired"
+    assert result["rotation"]["rotated"] is True
+    assert result["rotation"]["dropped"] == 600
+    # 600 expired lines pruned, one fresh dispatch appended.
+    assert len(ledger.read_text(encoding="utf-8").splitlines()) == 1

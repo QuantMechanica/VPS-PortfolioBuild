@@ -114,8 +114,46 @@ TASK_TYPE_CAPABILITIES: dict[str, list[str]] = {
     # Without this entry `enqueue_task` raised KeyError, so the doctrine's own
     # scalpel task type was unreachable and Astra could only be selected via a
     # payload marker.
-    "strategy_mechanize_source": ["research", "strategy"],
+    #
+    # CEO decision D10 (round 4, 2026-09-04): the third capability is what keeps
+    # the class off the gemini/agy lane. Round-3 finding F1: `["research",
+    # "strategy"]` is declared by gemini, which has the LOWEST cost_rank (10 vs
+    # codex 20 / claude 30), so `route_once` assigned every scalpel row to
+    # gemini - the hardest problem class executed by the weakest seat, with the
+    # whole Astra tier contract (hold-not-downgrade, the 5h window) bypassed at
+    # the LANE level because `quota_spawn_gate.GATED_AGENTS` is {codex, claude}.
+    # OWNER 2026-09-03 declared agy backup-only ("agy halluziniert").
+    "strategy_mechanize_source": ["research", "strategy", "scalpel_mechanization"],
 }
+
+# CEO decision D10 (round 4, 2026-09-04). Declared ONLY by the codex and claude
+# lanes in DEFAULT_AGENT_REGISTRY, so no scalpel row can be selected for gemini
+# however cheap that lane is. Required by the `strategy_mechanize_source` task
+# type AND by any payload carrying `scalpel: true` (the same routing-side union
+# the payload `required_capabilities` fix uses), because both are the doctrine's
+# routes into the Astra tier.
+SCALPEL_ROUTING_CAPABILITY = "scalpel_mechanization"
+SCALPEL_PAYLOAD_FIELD = "scalpel"
+SCALPEL_TASK_TYPES: frozenset[str] = frozenset({"strategy_mechanize_source"})
+
+
+def scalpel_routing_capabilities(
+    task_type: str | None,
+    payload: dict[str, Any] | None,
+) -> set[str]:
+    """``{SCALPEL_ROUTING_CAPABILITY}`` for scalpel-class work, else ``set()``.
+
+    Mirrors `codex_model_tiers.resolve_tier`: the task type, or a payload
+    `scalpel` marker that is JSON `true`. A non-boolean marker is deliberately
+    NOT treated as scalpel here - it is a config defect that the tier contract
+    holds with `invalid_scalpel_marker`; adding the capability for it would only
+    change which lane reports the same defect.
+    """
+    if str(task_type or "").strip().lower() in SCALPEL_TASK_TYPES:
+        return {SCALPEL_ROUTING_CAPABILITY}
+    if (payload or {}).get(SCALPEL_PAYLOAD_FIELD) is True:
+        return {SCALPEL_ROUTING_CAPABILITY}
+    return set()
 
 # Minimum eligibility contract per lane.  Task-type requirements are kept as
 # the source of truth; lane-specific capabilities cover governed specialist
@@ -198,7 +236,19 @@ LIMBO_STATES = ("RECYCLE", "APPROVED", "PIPELINE")
 DEFAULT_AGENT_REGISTRY: dict[str, dict[str, Any]] = {
     "codex": {
         "enabled": True,
-        "capabilities": ["code", "tests", "repo_edit", "review", "ops", "research", "strategy"],
+        # `scalpel_mechanization` (CEO decision D10, 2026-09-04) is declared by
+        # the codex and claude lanes ONLY - it is the routing-side expression of
+        # doctrine section 2 ("SCALPEL: Fable (own) or Astra").
+        "capabilities": [
+            "code",
+            "tests",
+            "repo_edit",
+            "review",
+            "ops",
+            "research",
+            "strategy",
+            "scalpel_mechanization",
+        ],
         "max_parallel": 5,
         "cost_rank": 20,
     },
@@ -208,7 +258,20 @@ DEFAULT_AGENT_REGISTRY: dict[str, dict[str, Any]] = {
         # codex work) -> full coding capability set; Codex weekly quota is the
         # scarce one. "repo" added 2026-07-03 (main lane) to match ops_issue
         # task requirements ([code,repo,ops]).
-        "capabilities": ["code", "tests", "repo_edit", "repo", "ops", "research", "review", "strategy", "summary"],
+        # `scalpel_mechanization`: CEO decision D10 (2026-09-04) - "Fable (own)
+        # or Astra", i.e. this lane and the codex/Astra lane, never gemini/agy.
+        "capabilities": [
+            "code",
+            "tests",
+            "repo_edit",
+            "repo",
+            "ops",
+            "research",
+            "review",
+            "strategy",
+            "summary",
+            "scalpel_mechanization",
+        ],
         "max_parallel": 3,  # OWNER 2026-06-09: 2->3 (use weekly headroom before Wed reset)
         "cost_rank": 30,
     },
@@ -853,6 +916,10 @@ def enqueue_task(
         # declares (exactly the routing-side intersection), so a descriptive
         # label can never make a row permanently unroutable.
         base_caps = list(required_capabilities or TASK_TYPE_CAPABILITIES[task_type])
+        # CEO decision D10: a payload `scalpel: true` on an ORDINARY task type
+        # reaches the Astra tier exactly like the scalpel task type does, so it
+        # must gate the lane exactly like it too.
+        payload_caps |= scalpel_routing_capabilities(task_type, task_payload)
         capabilities = base_caps + sorted(payload_caps - set(base_caps))
         conn.execute(
             """
@@ -1382,6 +1449,11 @@ def route_once(
             required |= set(payload_required_capabilities(task_payload)) & (
                 declared_caps | governed_caps
             )
+            # CEO decision D10 (round 4, 2026-09-04): scalpel-class work is
+            # gated at the LANE, not only at the model tier. Applied here as
+            # well as at enqueue so a row written outside `enqueue_task` (or
+            # before this patch) cannot fall to the cheapest lane.
+            required |= scalpel_routing_capabilities(task["task_type"], task_payload)
             # required_skills gate routing too — for capabilities governed by
             # defaults even if the live registry has drifted (e.g. Gemini's
             # video_analysis). Routing was
