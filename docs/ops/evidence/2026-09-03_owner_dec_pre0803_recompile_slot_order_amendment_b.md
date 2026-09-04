@@ -520,3 +520,12 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   immediately, workers via reload chunk 25 (queued behind 24; chunk 22 at 7/10, 23/24 waiting). Fabric: 5 active
   (two news incl. 10700 expansion at 292 min, Q07 11015, Q06 11179, Q04), 7.8 GB free → census lanes latched;
   census 21507 578, 21505 778, 11910 372, 12710 225.
+- 00:40Z–00:55Z (04.09.): **slot order ranks 1–4 completed** (GRÜN priority change under the same OWNER decision):
+  dl089_matrix_service._queue_order ranks programs by queue_order_at OR Q12 created_at, so the four programs nearest
+  the counter carried no order and had lost their K=8 slots to 8–19 percent programs (PROGRAM_SLOT_WAIT:K=8 since
+  ~13:00Z: 21505/XAGUSD 112 measured + 666 pruned, 307 remaining; 20048/XTIUSD 503 remaining). Applied via
+  set_dl089_queue_order.py plan→apply: 21505 07:57, 20048 07:58, 21507 07:59, 20266 08:00 (all 2026-08-29, before
+  12710 08:02 / 11910 08:03 / 10700 08:04); 13213 keeps its 08-22 order; 10706/11422 stay deferred (2099).
+  Reload chain consolidated: chunks 23/24/25 stopped, chunk 26 (all ten, idle-only, all merged worker code) queued
+  behind chunk 22 (8/10). Fabric 00:38Z: 25 cells/10 min, 8 active, 23.7 GB free, no stale locks; 10700 expansion
+  at 315 min still running.
