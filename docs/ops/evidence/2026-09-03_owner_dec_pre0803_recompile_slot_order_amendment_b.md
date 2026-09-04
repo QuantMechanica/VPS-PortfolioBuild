@@ -617,3 +617,9 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
 
 - Chunk 32 finished 11:07Z (all ten workers on f6236b5e46 + e1413e756a). Drain 10:57:49-11:17Z for QM5_10025 basket `e49888a1` (32 GB) plateaued at 33.9 GB free beside two Q07 runs; closed manually, row held `DRAIN_UNWINNABLE_ARITHMETIC`.
 - Fix f232200f0a: 3 GB margin + ceiling `need <= host_total - 10 - long_run_ram_gb` (facts carry measured long-run RAM). Chunk 33 to roll out at >= 20 GB free; holds on 9cac4667 / 31f12573 / e49888a1 released afterwards.
+
+## 13:32Z 2026-09-04 - drain plateau memory and Q07 child budget
+
+- 12:49:40Z the freshly reloaded T3 (f232200f0a) armed a drain for QM5_10717 `65319749` (44 GB) beside a Q07 that measured ~2 GB at that instant (11.6 GB at 13:01Z); parked fleet plateaued at 36.7 GB free; closed by hand 12:59Z (cooldown 14:29Z), row held `DRAIN_UNWINNABLE_ARITHMETIC`.
+- Fix 17cedd8124: long-run floor max(reservation, 8 GB), baseline 14 GB, continuous re-evaluation of an open window (abandon after 120 s, `plateau_memory` 6 h), arithmetic facts on the drain events. Chunk 35 rolling out (eight terminals); T1/T5 later. Four drain holds stay until then.
+- Q07 QM5_12935/XAUUSD `80eac290`: three attempts killed at 5406 s child runtime (seed 3/5 mid-run) by the 5400 s monitor default while the reaper budget was 200 min. Fix 2fde461dce (monitor budget for Q05-Q07 follows the workload-scaled reaper budget); append-only rerun `9f63dc88` with lineage.
