@@ -630,3 +630,9 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
 - Terminal hang: T2 census cell `b7b1fb26` finished 12:52Z (agent log) but terminal64 35412 wrote no report and lived 108 min; terminal killed 14:41Z, run_smoke shell killed 14:45Z -> `runner_death_requeued`, cell rerun. Same signature once each on T1/T2/T3/T5/T8 logs -> follow-up task.
 - T5 old-monitor Q07 11179 (`88a7cb34`) released 14:49Z (worker killed, row pending, T5 restarted on new code). T1 Q07 10571 (`0356eb57`) PASS 15:24Z, 90 s before its 5400 s deadline.
 - 11910/NZDUSD census done; Q12 `NO_FILTER_CHANGE` 15:18Z; Q13/Q14 pending. Counter 7/25.
+
+## 15:54Z 2026-09-04 - counter 8/25 (11910/NZDUSD) and Q08 stream rerun
+
+- 11910/NZDUSD: Q12 NO_FILTER_CHANGE 15:18Z -> Q13 NO_PARAMETER_CHANGE 15:28Z -> Q14 KEEP_INCUMBENT 15:34Z (`e21567f4`); book_build_guard qualified_pairs 8.
+- Bundle dry-run 15:55Z: 7/8 bound, 11910/NZDUSD refused `no_q08_stream_bound_to_identity`; Q08 stream rerun `977a478e` enqueued 15:53Z (from Q07 PASS `797f03ae`, append-only rerun of `e0237a77`, expected ex5 e18d477e...). Re-run the dry-run after it completes.
+- RAM episode 15:43-15:52Z: Q03 basket 12580 (32 GB reservation) admitted at ~25 GB free beside two XAUUSD Q07; free fell to 5.6 GB, RAM latch idled 7 workers; tester plateaued at 19.9 GB, no kill; recovered to 36.8 GB free. Vorlage-1 item: heavy-row admission vs. reservation.
