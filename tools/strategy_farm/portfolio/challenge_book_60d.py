@@ -63,7 +63,9 @@ RULE PROVENANCE, checked against ftmo.com by Codex on 2026-07-27
   time and would need enforced exits or a Swing account once funded.
 """
 import itertools
+import hashlib
 import json
+import os
 import sqlite3
 import statistics
 import sys
@@ -71,9 +73,13 @@ from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 
-# Hash-frozen input captured for the sealed 2026-08-19 portfolio evidence.  The
-# live sleeve_streams tree is a mutable export and must never drive this audit.
-STREAMS = Path(r"D:\QM\reports\portfolio\dxz_final_20260719\QM\q08_trades")
+# Hash-frozen default captured for the sealed 2026-08-19 portfolio evidence.
+# Current-population callers must select their assembled bundle explicitly.  The
+# environment binding is intentionally narrow: fund_score.py sets it before
+# importing this historical module so every downstream calculation consumes the
+# same bytes instead of enumerating one directory while scoring another.
+LEGACY_STREAMS = Path(r"D:\QM\reports\portfolio\dxz_final_20260719\QM\q08_trades")
+STREAMS = Path(os.environ.get("QM_FUND_SCORE_STREAMS", str(LEGACY_STREAMS))).resolve()
 SEALED_STREAM_SET = True
 ACCOUNT, DAILY_CAP, TOTAL_CAP = 100_000.0, 0.05, 0.10
 P1_TARGET, P2_TARGET = 0.10, 0.05
@@ -120,7 +126,7 @@ if not SEALED_STREAM_SET:
                          "where status='done' order by updated_at"):
         latest[(r["ea_id"], str(r["symbol"]).upper(), r["phase"])] = str(r["verdict"] or "")
 
-sleeves, multi_pct = {}, {}
+sleeves, multi_pct, stream_inputs = {}, {}, {}
 for path in sorted(STREAMS.glob("*.jsonl")):
     bare, _, stem = path.stem.partition("_")
     ea, sym = f"QM5_{bare}", stem.replace("_DWX", ".DWX").upper()
@@ -172,6 +178,10 @@ for path in sorted(STREAMS.glob("*.jsonl")):
     ev.sort(key=lambda x: (x[1], x[0]))
     key = f"{bare}:{sym.replace('.DWX','')}"
     sleeves[key] = ev
+    stream_inputs[key] = {
+        "path": str(path.resolve()),
+        "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+    }
     multi_pct[key] = 100.0 * sum(1 for e, c, _, _ in ev if (c - e).days >= 1) / len(ev)
 
 keys = sorted(sleeves)

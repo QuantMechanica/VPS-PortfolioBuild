@@ -37,6 +37,7 @@ keys = cb.keys
 CFGS = cb.CFGS
 results = cb.results
 sleeves = cb.sleeves
+stream_inputs = cb.stream_inputs
 multi_pct = cb.multi_pct
 DORMANCY = cb.DORMANCY_DAYS
 
@@ -187,6 +188,8 @@ for k in keys:
     gap = max_gap_days(k)
     rows.append(dict(
         k=k, lev=lev, dstop=dstop,
+        input_stream_path=stream_inputs[k]["path"],
+        input_stream_sha256=stream_inputs[k]["sha256"],
         p_p1=rate(p1), p_fund=rate(fu), breach=rate(br), dorm=rate(do),
         maxgap=gap, multi=multi_pct[k], **st))
 
@@ -283,6 +286,9 @@ for label, f, direction in [
 ]:
     gv = [f(r) for r in good]
     bv = [f(r) for r in bad]
+    if not gv or not bv:
+        print(f"{label:20} insufficient groups for separation")
+        continue
     lo_good = min(gv)
     hi_bad = max(bv)
     clean = lo_good > hi_bad
