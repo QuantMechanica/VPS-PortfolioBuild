@@ -1051,9 +1051,10 @@ def test_postprocess_arms_beside_long_runs_when_arithmetic_ok(tmp_path, capsys, 
         "tracker": {"idx": {"first_skipped_epoch": now - trig - 10.0}},
     })
     monkeypatch.setattr(tw, "_process_private_snapshot", lambda: _q_rows_snapshot(5))
+    # 2026-09-04: two long runs at the 8 GB floor + 14 GB baseline leave 84-14-16 = 54 >= 51.
     tw._drain_run_postprocess(
         root, "T1", {"claimed": False},
-        now_epoch=now, free_ram_gb=12.0, host_total_gb=80.0, multisym_ids=_FZ,
+        now_epoch=now, free_ram_gb=12.0, host_total_gb=84.0, multisym_ids=_FZ,
     )
     after = tw._load_drain_state(root)
     assert after["active"] is not None
@@ -1088,9 +1089,10 @@ def test_postprocess_not_armed_beside_long_runs_when_arithmetic_short(
         "cooldown_until_epoch": 0.0,
         "tracker": {"idx": {"first_skipped_epoch": now - trig - 10.0}},
     })
+    # 2026-09-04: two long runs at the 8 GB floor + 14 GB baseline leave 84-14-16 = 54 >= 51.
     tw._drain_run_postprocess(
         root, "T1", {"claimed": False},
-        now_epoch=now, free_ram_gb=12.0, host_total_gb=80.0, multisym_ids=_FZ,
+        now_epoch=now, free_ram_gb=12.0, host_total_gb=84.0, multisym_ids=_FZ,
     )
     after = tw._load_drain_state(root)
     assert after["active"] is None
@@ -1268,3 +1270,156 @@ def test_postprocess_abandons_when_armed_row_claimed_elsewhere(tmp_path, capsys)
         and e.get("reason") == "armed_row_claimed_elsewhere"
         for e in _emitted_events(capsys)
     )
+
+
+def test_winnable_refuses_a_fresh_plateau_memory():
+    """2026-09-04 12:49Z (10717 basket): after a parked fleet plateaued below a
+    need, no candidate needing at least that much arms on arithmetic alone
+    while the memory is fresh -- unless free RAM already covers the need."""
+    now = 20_000_000.0
+    mem = {"need_gb": 39.0, "free_gb": 33.9, "epoch": now - 600.0}
+    ok, reason = tw._drain_candidate_is_winnable(
+        _cand(reservation=32.0), free_ram_gb=20.0, releasable_short_ram_gb=30.0,
+        plateau_memory=mem, now_epoch=now,
+    )
+    assert (ok, reason) == (False, "plateau_memory")
+    # free RAM alone already covers the need: the memory does not apply
+    ok, reason = tw._drain_candidate_is_winnable(
+        _cand(reservation=32.0), free_ram_gb=40.0, releasable_short_ram_gb=0.0,
+        plateau_memory=mem, now_epoch=now,
+    )
+    assert (ok, reason) == (True, "")
+    # a smaller need than the remembered one is not covered by the memory
+    ok, reason = tw._drain_candidate_is_winnable(
+        _cand(reservation=24.0), free_ram_gb=20.0, releasable_short_ram_gb=30.0,
+        plateau_memory=mem, now_epoch=now,
+    )
+    assert (ok, reason) == (True, "")
+    # aged out
+    ok, reason = tw._drain_candidate_is_winnable(
+        _cand(reservation=32.0), free_ram_gb=20.0, releasable_short_ram_gb=30.0,
+        plateau_memory=mem, now_epoch=now + tw.DRAIN_PLATEAU_MEMORY_MIN * 60.0 + 1.0,
+    )
+    assert (ok, reason) == (True, "")
+
+
+def test_open_event_carries_the_arithmetic_facts():
+    trig = tw.DRAIN_WINDOW_TRIGGER_MIN * 60.0
+    now = 20_100_000.0
+    state = {
+        "version": 1, "active": None, "cooldown_until_epoch": 0.0,
+        "tracker": {"IDX1": {"first_skipped_epoch": now - trig - 1.0}},
+        "plateau_memory": {"need_gb": 60.0, "free_gb": 30.0, "epoch": now - 60.0},
+    }
+    facts = {"free_ram_gb": 30.0, "releasable_short_ram_gb": 25.0,
+             "long_run_ram_gb": 8.0, "need_gb": 51.0, "ceiling_gb": 58.0}
+    new_state, events = tw._drain_evaluate(
+        state, now_epoch=now, qualifying_candidate=_cand(), winnable=True,
+        decision_facts=facts,
+    )
+    opened = [e for e in events if e.get("event") == "drain_window_open"]
+    assert len(opened) == 1 and opened[0]["arithmetic"] == facts
+    # the plateau memory survives the transition
+    assert new_state["plateau_memory"] == state["plateau_memory"]
+
+
+def test_facts_count_a_long_run_at_least_at_its_floor(tmp_path, monkeypatch):
+    """2026-09-04 12:49Z: the 12935 Q07 measured ~2 GB at open time and 11.6 GB
+    twelve minutes later; a long run never counts below its reservation."""
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    with farmctl.connect(root) as conn:
+        _insert_wi(conn, "l1", "Q07", symbol="XAUUSD.DWX", status="active",
+                   payload={"claimed_by_worker_pid": 200})
+        conn.commit()
+    monkeypatch.setattr(tw, "_process_private_snapshot", lambda: _q_rows_snapshot(1, gb_each=1.5))
+    facts = tw._drain_active_ram_facts(root, multisym_ids=_FZ, armed_item_id=None)
+    assert facts["long_run_active_ids"] == ["l1"]
+    assert facts["long_run_ram_gb"] == pytest.approx(8.0)
+    # a measured working set above the floor is what counts
+    monkeypatch.setattr(tw, "_process_private_snapshot", lambda: _q_rows_snapshot(1, gb_each=11.5))
+    facts = tw._drain_active_ram_facts(root, multisym_ids=_FZ, armed_item_id=None)
+    assert facts["long_run_ram_gb"] == pytest.approx(11.5)
+
+
+def test_postprocess_abandons_an_open_window_that_stays_unwinnable(tmp_path, capsys, monkeypatch):
+    """2026-09-04 12:49Z: an open drain whose parked fleet plateaus below the
+    armed row's need is abandoned after the grace period and the plateau is
+    remembered; a transient dip shorter than the grace is tolerated."""
+    now = 20_200_000.0
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    with farmctl.connect(root) as conn:
+        _insert_pending_priority_index(conn, "idx")
+        _insert_wi(conn, "q0", "Q02", symbol="EURUSD.DWX", status="active",
+                   payload={"claimed_by_worker_pid": 200})
+        conn.commit()
+    tw._write_drain_state_atomic(root, {
+        "version": 1,
+        "active": {"item_id": "idx", "ea_id": "E", "reservation_gb": 44.0,
+                   "floor_gb": 14.0, "opened_epoch": now - 300.0,
+                   "opened_iso": "x", "long_run_ids_at_open": []},
+        "cooldown_until_epoch": 0.0,
+        "tracker": {},
+    })
+    monkeypatch.setattr(tw, "_process_private_snapshot", lambda: _q_rows_snapshot(1, gb_each=2.0))
+    # pass 1: free 30 + releasable 2 = 32 < need 51 -> marked, still open
+    tw._drain_run_postprocess(
+        root, "T1", {"claimed": False},
+        now_epoch=now, free_ram_gb=30.0, host_total_gb=80.0, multisym_ids=_FZ,
+    )
+    mid = tw._load_drain_state(root)
+    assert mid["active"] is not None
+    assert mid["active"]["not_winnable_since_epoch"] == now
+    assert not any(e.get("event") == "drain_window_abandoned" for e in _emitted_events(capsys))
+    # pass 2 inside the grace: still open
+    tw._drain_run_postprocess(
+        root, "T1", {"claimed": False},
+        now_epoch=now + 60.0, free_ram_gb=31.0, host_total_gb=80.0, multisym_ids=_FZ,
+    )
+    assert tw._load_drain_state(root)["active"] is not None
+    # pass 3 past the grace: abandoned with the plateau remembered
+    tw._drain_run_postprocess(
+        root, "T1", {"claimed": False},
+        now_epoch=now + 130.0, free_ram_gb=31.0, host_total_gb=80.0, multisym_ids=_FZ,
+    )
+    after = tw._load_drain_state(root)
+    assert after["active"] is None
+    assert after["cooldown_until_epoch"] == pytest.approx(now + 130.0 + tw.DRAIN_COOLDOWN_MIN * 60.0)
+    assert after["plateau_memory"]["need_gb"] == pytest.approx(51.0)
+    assert after["plateau_memory"]["free_gb"] == pytest.approx(31.0)
+    abandoned = [e for e in _emitted_events(capsys) if e.get("event") == "drain_window_abandoned"]
+    assert len(abandoned) == 1
+    assert abandoned[0]["reason"] == "no_longer_winnable:insufficient_releasable_ram"
+    assert abandoned[0]["arithmetic"]["need_gb"] == pytest.approx(51.0)
+
+
+def test_postprocess_keeps_a_winnable_open_window_and_clears_a_dip(tmp_path, capsys, monkeypatch):
+    now = 20_300_000.0
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    with farmctl.connect(root) as conn:
+        _insert_pending_priority_index(conn, "idx")
+        _insert_wi(conn, "q0", "Q02", symbol="EURUSD.DWX", status="active",
+                   payload={"claimed_by_worker_pid": 200})
+        conn.commit()
+    tw._write_drain_state_atomic(root, {
+        "version": 1,
+        "active": {"item_id": "idx", "ea_id": "E", "reservation_gb": 44.0,
+                   "floor_gb": 14.0, "opened_epoch": now - 300.0,
+                   "opened_iso": "x", "long_run_ids_at_open": [],
+                   "not_winnable_since_epoch": now - 30.0,
+                   "not_winnable_reason": "insufficient_releasable_ram"},
+        "cooldown_until_epoch": 0.0,
+        "tracker": {},
+    })
+    monkeypatch.setattr(tw, "_process_private_snapshot", lambda: _q_rows_snapshot(1, gb_each=8.0))
+    # free 45 + releasable 8 = 53 >= 51: winnable again -> the dip marker clears
+    tw._drain_run_postprocess(
+        root, "T1", {"claimed": False},
+        now_epoch=now, free_ram_gb=45.0, host_total_gb=80.0, multisym_ids=_FZ,
+    )
+    after = tw._load_drain_state(root)
+    assert after["active"] is not None
+    assert "not_winnable_since_epoch" not in after["active"]
+    assert not any(e.get("event") == "drain_window_abandoned" for e in _emitted_events(capsys))

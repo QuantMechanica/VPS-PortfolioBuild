@@ -1386,7 +1386,23 @@ DRAIN_ARMED_ROW_FLOOR_GB = 4.0
 # caches), and long runs keep their working sets for hours, so a window can
 # only be won when need + margin fits under host_total - baseline - long-run RAM.
 DRAIN_WINNABLE_MARGIN_GB = 3.0
-DRAIN_HOST_BASELINE_GB = 10.0
+# 2026-09-04 12:49Z (CEO): two measured plateaus of a fully parked fleet --
+# 33.9 GB free beside 17 GB of long runs (10:57Z) and 36.7 GB free beside
+# 12 GB (12:58Z) on the 63.1 GB host -- put the undrainable baseline at
+# 12-14 GB, not 10: OS, T_Live, ten workers, prestage caches, standby lists.
+DRAIN_HOST_BASELINE_GB = 14.0
+# A long run's working set GROWS over its run (the 12935 XAUUSD Q07 measured
+# ~2 GB at 12:49Z and 11.6 GB at 13:01Z: the tester accumulates tick history),
+# so an instantaneous measurement understates what the window must fit under.
+# A long run never counts below its class reservation (8 GB ordinary).
+DRAIN_LONG_RUN_FLOOR_GB = 8.0
+# An OPEN drain is re-evaluated on every pass with the same arithmetic; when it
+# stays unwinnable this long (transient dips right after parking a row are
+# tolerated) it is abandoned and the measured plateau is remembered ...
+DRAIN_REEVAL_GRACE_SECONDS = 120.0
+# ... for this long: no candidate whose need is at least the remembered need
+# may arm again until free RAM alone already covers it, or the memory ages out.
+DRAIN_PLATEAU_MEMORY_MIN = 360.0
 DRAIN_STATE_FILENAME = "drain_window.json"
 # Short-row phases the drain refuses while open (the armed heavy row and any
 # COMPILE_EA row are always exempt); OPT_CENSUS is handled by name separately.
@@ -1468,12 +1484,18 @@ def _load_drain_state(root: Path) -> dict[str, Any]:
         cooldown = float(data.get("cooldown_until_epoch") or 0.0)
     except (TypeError, ValueError):
         cooldown = 0.0
-    return {
+    loaded = {
         "version": 1,
         "active": active,
         "cooldown_until_epoch": cooldown,
         "tracker": tracker,
     }
+    # 2026-09-04 (CEO): the remembered plateau of an abandoned drain rides
+    # along; only a non-empty dict is kept.
+    memory = data.get("plateau_memory")
+    if isinstance(memory, dict) and memory:
+        loaded["plateau_memory"] = memory
+    return loaded
 
 
 def _write_drain_state_atomic(root: Path, state: dict[str, Any]) -> bool:
@@ -1585,6 +1607,8 @@ def _drain_candidate_is_winnable(
     releasable_short_ram_gb: float,
     long_run_ram_gb: float = 0.0,
     host_total_gb: float = math.inf,
+    plateau_memory: dict[str, Any] | None = None,
+    now_epoch: float | None = None,
 ) -> tuple[bool, str]:
     """Pure predicate: may this qualifying candidate ARM a drain right now?
 
@@ -1626,6 +1650,25 @@ def _drain_candidate_is_winnable(
         ceiling = host_total - DRAIN_HOST_BASELINE_GB - max(0.0, long_run)
         if need > ceiling:
             return False, "long_run_ceiling"
+    # 2026-09-04 (CEO): a drain that was abandoned because the parked fleet
+    # plateaued below its need leaves a memory; while it is fresh, no candidate
+    # needing at least that much may arm on arithmetic alone -- only free RAM
+    # that already covers the need (no drain required) overrides the evidence.
+    if isinstance(plateau_memory, dict) and plateau_memory and now_epoch is not None:
+        try:
+            mem_need = float(plateau_memory.get("need_gb"))
+            mem_epoch = float(plateau_memory.get("epoch"))
+            now_f = float(now_epoch)
+        except (TypeError, ValueError):
+            mem_need = None
+        if (
+            mem_need is not None
+            and math.isfinite(mem_need)
+            and 0.0 <= now_f - mem_epoch <= DRAIN_PLATEAU_MEMORY_MIN * 60.0
+            and need >= mem_need - 0.05
+            and free_now < need
+        ):
+            return False, "plateau_memory"
     if free_now + releasable < need:
         return False, "insufficient_releasable_ram"
     return True, ""
@@ -1740,6 +1783,7 @@ def _drain_evaluate(
     winnable: bool = True,
     winnable_reason: str = "",
     long_run_ids_active: list[str] | None = None,
+    decision_facts: dict[str, Any] | None = None,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     """Pure open/expire/track state transition.  Returns (new_state, events).
 
@@ -1757,6 +1801,12 @@ def _drain_evaluate(
     except (TypeError, ValueError):
         cooldown_until = 0.0
     tracker = dict(state.get("tracker") or {})
+    plateau_memory = (
+        dict(state.get("plateau_memory"))
+        if isinstance(state.get("plateau_memory"), dict) and state.get("plateau_memory")
+        else None
+    )
+    arithmetic = dict(decision_facts) if isinstance(decision_facts, dict) else None
 
     if active is not None:
         try:
@@ -1813,6 +1863,7 @@ def _drain_evaluate(
                     "reservation_gb": qualifying_candidate.get("reservation_gb"),
                     "floor_gb": qualifying_candidate.get("floor_gb"),
                     "waited_seconds": round(waited, 1),
+                    **({"arithmetic": arithmetic} if arithmetic else {}),
                 })
                 tracker = {}  # consumed by the open
             else:
@@ -1844,6 +1895,7 @@ def _drain_evaluate(
                         "floor_gb": qualifying_candidate.get("floor_gb"),
                         "reason": str(winnable_reason or ""),
                         "waited_seconds": round(waited, 1),
+                        **({"arithmetic": arithmetic} if arithmetic else {}),
                     })
                     rec["last_not_winnable_epoch"] = now_epoch
                 tracker = {cid: rec}  # keep tracking, do not arm
@@ -1856,6 +1908,8 @@ def _drain_evaluate(
         "cooldown_until_epoch": cooldown_until,
         "tracker": tracker,
     }
+    if plateau_memory:
+        new_state["plateau_memory"] = plateau_memory
     return new_state, events
 
 
@@ -1886,7 +1940,11 @@ def _drain_note_claim(
 
 
 def _drain_abandon(
-    state: dict[str, Any], *, now_epoch: float, reason: str
+    state: dict[str, Any],
+    *,
+    now_epoch: float,
+    reason: str,
+    plateau_memory: dict[str, Any] | None = None,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     """Close an open drain early and set the cooldown.  Returns (state, events).
 
@@ -1916,6 +1974,17 @@ def _drain_abandon(
         "cooldown_until_epoch": now_epoch + DRAIN_COOLDOWN_MIN * 60.0,
         "tracker": {},
     }
+    memory = (
+        dict(plateau_memory)
+        if isinstance(plateau_memory, dict) and plateau_memory
+        else (
+            dict(state.get("plateau_memory"))
+            if isinstance(state.get("plateau_memory"), dict) and state.get("plateau_memory")
+            else None
+        )
+    )
+    if memory:
+        new_state["plateau_memory"] = memory
     return new_state, events
 
 
@@ -2047,17 +2116,21 @@ def _drain_active_ram_facts(
                     lr_measured = _drain_measured_subtree_gb(
                         lr_pid, snap_children, snap_private, snap_alive
                     )
-                    if lr_measured is None:
-                        try:
-                            lr_multisymbol = _work_item_is_multisymbol(row, lr_payload, multisym_ids)
-                            _lr_cls, lr_reservation = _ram_reservation_for_candidate(
-                                row, lr_payload, lr_multisymbol
-                            )
-                            facts["long_run_ram_gb"] += float(lr_reservation)
-                        except Exception:
-                            facts["long_run_ram_gb"] += ORDINARY_COMMIT_RESERVATION_GB
-                    else:
-                        facts["long_run_ram_gb"] += float(lr_measured)
+                    try:
+                        lr_multisymbol = _work_item_is_multisymbol(row, lr_payload, multisym_ids)
+                        _lr_cls, lr_reservation = _ram_reservation_for_candidate(
+                            row, lr_payload, lr_multisymbol
+                        )
+                        lr_floor = max(float(lr_reservation), DRAIN_LONG_RUN_FLOOR_GB)
+                    except Exception:
+                        lr_floor = DRAIN_LONG_RUN_FLOOR_GB
+                    if not math.isfinite(lr_floor):
+                        lr_floor = DRAIN_LONG_RUN_FLOOR_GB
+                    # 2026-09-04 12:49Z (CEO): a long run's working set grows
+                    # over its run, so the instantaneous measurement never
+                    # counts below the row's reservation / class floor.
+                    lr_gb = float(lr_measured) if lr_measured is not None else 0.0
+                    facts["long_run_ram_gb"] += max(lr_gb, lr_floor)
                     continue
                 # A short row counts as releasable only if the drain refuses new
                 # copies of it (Q02-Q06, OPT_CENSUS); COMPILE_EA and the armed
@@ -2174,6 +2247,78 @@ def _drain_run_postprocess(
                 new_state, events = _drain_abandon(
                     state, now_epoch=now_epoch, reason=reason
                 )
+            elif active is not None:
+                # CONTINUOUS winnability (2026-09-04 12:49Z, CEO): the 10717
+                # basket window armed on a transiently low long-run measurement
+                # and the parked fleet plateaued at 36.7 GB free against a 51 GB
+                # need, idling eight workers until closed by hand.  An OPEN drain
+                # is re-run through the same arithmetic on every pass; once it
+                # stays unwinnable for DRAIN_REEVAL_GRACE_SECONDS it is abandoned
+                # and the measured plateau is remembered for the arming side.
+                new_state, events = _drain_evaluate(
+                    state, now_epoch=now_epoch, qualifying_candidate=None
+                )
+                if new_state.get("active") is not None:
+                    reeval = {
+                        "item_id": active_item_id,
+                        "ea_id": active.get("ea_id"),
+                        "reservation_gb": active.get("reservation_gb"),
+                        "floor_gb": active.get("floor_gb"),
+                    }
+                    still, still_reason = _drain_candidate_is_winnable(
+                        reeval,
+                        free_ram_gb=free_ram_gb,
+                        releasable_short_ram_gb=facts["releasable_short_ram_gb"],
+                        long_run_ram_gb=facts.get("long_run_ram_gb", 0.0),
+                        host_total_gb=host_total_gb,
+                    )
+                    since_raw = active.get("not_winnable_since_epoch")
+                    try:
+                        since = float(since_raw) if since_raw is not None else None
+                    except (TypeError, ValueError):
+                        since = None
+                    if still:
+                        if since is not None:
+                            cleared = dict(active)
+                            cleared.pop("not_winnable_since_epoch", None)
+                            cleared.pop("not_winnable_reason", None)
+                            new_state = {**new_state, "active": cleared}
+                    elif since is None:
+                        marked = dict(active)
+                        marked["not_winnable_since_epoch"] = now_epoch
+                        marked["not_winnable_reason"] = str(still_reason or "")
+                        new_state = {**new_state, "active": marked}
+                    elif now_epoch - since >= DRAIN_REEVAL_GRACE_SECONDS:
+                        try:
+                            need_gb = (
+                                float(active.get("reservation_gb") or 0.0)
+                                + DRAIN_ARMED_ROW_FLOOR_GB
+                                + DRAIN_WINNABLE_MARGIN_GB
+                            )
+                        except (TypeError, ValueError):
+                            need_gb = 0.0
+                        memory = {
+                            "item_id": active_item_id,
+                            "ea_id": active.get("ea_id"),
+                            "need_gb": round(need_gb, 1),
+                            "free_gb": round(float(free_ram_gb), 1),
+                            "releasable_short_ram_gb": round(
+                                float(facts["releasable_short_ram_gb"]), 1
+                            ),
+                            "long_run_ram_gb": round(
+                                float(facts.get("long_run_ram_gb", 0.0)), 1
+                            ),
+                            "reason": str(still_reason or ""),
+                            "epoch": now_epoch,
+                        }
+                        new_state, events = _drain_abandon(
+                            new_state,
+                            now_epoch=now_epoch,
+                            reason=f"no_longer_winnable:{still_reason}",
+                            plateau_memory=memory,
+                        )
+                        for event in events:
+                            event["arithmetic"] = dict(memory)
             else:
                 qualifying = _drain_scan_candidate(
                     root,
@@ -2181,6 +2326,7 @@ def _drain_run_postprocess(
                     host_total_gb=host_total_gb,
                     multisym_ids=multisym_ids,
                 )
+                decision_facts: dict[str, Any] | None = None
                 if qualifying is not None:
                     winnable, winnable_reason = _drain_candidate_is_winnable(
                         qualifying,
@@ -2188,7 +2334,35 @@ def _drain_run_postprocess(
                         releasable_short_ram_gb=facts["releasable_short_ram_gb"],
                         long_run_ram_gb=facts.get("long_run_ram_gb", 0.0),
                         host_total_gb=host_total_gb,
+                        plateau_memory=state.get("plateau_memory"),
+                        now_epoch=now_epoch,
                     )
+                    try:
+                        q_need = (
+                            float(qualifying.get("reservation_gb") or 0.0)
+                            + DRAIN_ARMED_ROW_FLOOR_GB
+                            + DRAIN_WINNABLE_MARGIN_GB
+                        )
+                        q_ceiling = (
+                            float(host_total_gb)
+                            - DRAIN_HOST_BASELINE_GB
+                            - max(0.0, float(facts.get("long_run_ram_gb", 0.0)))
+                        )
+                        decision_facts = {
+                            "free_ram_gb": round(float(free_ram_gb), 1),
+                            "releasable_short_ram_gb": round(
+                                float(facts["releasable_short_ram_gb"]), 1
+                            ),
+                            "long_run_ram_gb": round(
+                                float(facts.get("long_run_ram_gb", 0.0)), 1
+                            ),
+                            "need_gb": round(q_need, 1),
+                            "ceiling_gb": (
+                                round(q_ceiling, 1) if math.isfinite(q_ceiling) else None
+                            ),
+                        }
+                    except (TypeError, ValueError):
+                        decision_facts = None
                 else:
                     winnable, winnable_reason = True, ""
                 new_state, events = _drain_evaluate(
@@ -2198,6 +2372,7 @@ def _drain_run_postprocess(
                     winnable=winnable,
                     winnable_reason=winnable_reason,
                     long_run_ids_active=facts["long_run_active_ids"],
+                    decision_facts=decision_facts,
                 )
         if events or new_state != state:
             _write_drain_state_atomic(root, new_state)
