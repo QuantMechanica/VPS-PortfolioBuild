@@ -20,7 +20,7 @@ Method (see docs/ops/evidence/2026-07-20_ftmo_p1_mc_design.md):
   * Risk scaling: source streams are RISK_FIXED $1000/trade on a 100k account
     (= 1.0%). A sleeve at risk r% multiplies its P&L by r/1.0.
   * MC: per-sleeve DAY-bundle bootstrap. A sleeve's historical stream is grouped into
-    active-day bundles (all trades closed the same broker-time day stay together,
+    active-day bundles (all trades closed the same Prague calendar day stay together,
     preserving intra-day clustering). Each simulated trading day, each sleeve is
     active with its empirical daily arrival probability and, if active, realises a
     uniformly resampled historical day bundle. Sleeves are resampled independently
@@ -29,8 +29,9 @@ Method (see docs/ops/evidence/2026-07-20_ftmo_p1_mc_design.md):
     faithful anchor).
   * Phase-1 rules applied on closed daily P&L (floating intraday drawdown is not
     visible in these artifacts, so breach probabilities are lower bounds): fail when
-    day P&L <= -daily_limit_pct of initial balance, fail when cumulative P&L <=
-    -total_limit_pct, pass when cumulative P&L >= +target_pct and >= 4 trading days.
+    day P&L is strictly below -daily_limit_pct of initial balance, fail when cumulative
+    P&L is strictly below -total_limit_pct, and pass only when cumulative P&L is
+    strictly above +target_pct after positions opened on at least four Prague days.
     Breaches are evaluated before the target on the same day (conservative).
 
 Usage:
@@ -49,8 +50,14 @@ import statistics
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
+from zoneinfo import ZoneInfo
 
 import numpy as np
+
+try:
+    from tools.strategy_farm.portfolio.ftmo_rule_contract import load_two_step_contract
+except ModuleNotFoundError:  # pragma: no cover - direct script execution
+    from ftmo_rule_contract import load_two_step_contract
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 VENUE_COST_MODEL_PATH = REPO_ROOT / "framework" / "registry" / "venue_cost_model.json"
@@ -63,14 +70,16 @@ COMMON_STREAM_DIR = Path(
     r"\Common\Files\QM\q08_trades"
 )
 
-DEFAULT_CAPITAL = 100_000.0
-DEFAULT_TARGET_PCT = 10.0
-DEFAULT_DAILY_LIMIT_PCT = 5.0
-DEFAULT_TOTAL_LIMIT_PCT = 10.0
+RULES = load_two_step_contract()
+PRAGUE = ZoneInfo(RULES.timezone)
+DEFAULT_CAPITAL = float(RULES.initial_equity)
+DEFAULT_TARGET_PCT = float(RULES.phase1_target_fraction * 100)
+DEFAULT_DAILY_LIMIT_PCT = float(RULES.maximum_daily_loss_fraction * 100)
+DEFAULT_TOTAL_LIMIT_PCT = float(RULES.maximum_total_loss_fraction * 100)
 DEFAULT_HORIZON_TRADING_DAYS = 90
 DEFAULT_PATHS = 10_000
 DEFAULT_SEED = 20260720
-MIN_TRADING_DAYS = 4  # FTMO Phase-1 minimum trading days
+MIN_TRADING_DAYS = RULES.minimum_trading_days
 SOURCE_RISK_PCT = 1.0  # RISK_FIXED=1000 on 100k source account
 
 
@@ -250,6 +259,7 @@ class LoadedSleeve:
     trades: list[dict[str, Any]] = field(default_factory=list)
     # derived
     day_bundles: dict[dt.date, float] = field(default_factory=dict)  # at 1% risk
+    opening_days: set[dt.date] = field(default_factory=set)
     first_day: dt.date | None = None
     last_day: dt.date | None = None
     n_weekdays_span: int = 0
@@ -343,12 +353,15 @@ def load_sleeve(spec: SleeveSpec, cost_model: FtmoCostModel) -> LoadedSleeve:
                 nights = _nights_crossed(entry_val, close_ts)
                 loaded.overnight_nights += nights
                 loaded.lot_nights += nights * volume
+                loaded.opening_days.add(
+                    dt.datetime.fromtimestamp(entry_val, tz=dt.UTC).astimezone(PRAGUE).date()
+                )
 
     if not loaded.trades:
         raise ValueError(f"stream for {spec.name} contains no TRADE_CLOSED rows: {path}")
 
     for trade in loaded.trades:
-        day = dt.datetime.utcfromtimestamp(trade["close_ts"]).date()
+        day = dt.datetime.fromtimestamp(trade["close_ts"], tz=dt.UTC).astimezone(PRAGUE).date()
         loaded.day_bundles[day] = loaded.day_bundles.get(day, 0.0) + trade["net_ftmo_1pct"]
     days = sorted(loaded.day_bundles)
     loaded.first_day, loaded.last_day = days[0], days[-1]
@@ -432,17 +445,20 @@ def simulate_composition(
     total_limit = capital * total_limit_pct / 100.0
 
     pnl = np.zeros((paths, horizon), dtype=np.float64)
-    active_any = np.zeros((paths, horizon), dtype=bool)
+    opened_any = np.zeros((paths, horizon), dtype=bool)
     for name, risk in sorted(risks.items()):
         sleeve = loaded[name]
-        bundles = np.array(list(sleeve.day_bundles.values()), dtype=np.float64)
+        bundle_days = list(sleeve.day_bundles)
+        bundles = np.array([sleeve.day_bundles[day] for day in bundle_days], dtype=np.float64)
+        opened = np.array([day in sleeve.opening_days for day in bundle_days], dtype=bool)
         active = rng.random((paths, horizon)) < sleeve.p_active
-        draws = bundles[rng.integers(0, len(bundles), size=(paths, horizon))]
+        draw_indices = rng.integers(0, len(bundles), size=(paths, horizon))
+        draws = bundles[draw_indices]
         pnl += np.where(active, draws * (risk / SOURCE_RISK_PCT), 0.0)
-        active_any |= active
+        opened_any |= active & opened[draw_indices]
 
     cum = np.cumsum(pnl, axis=1)
-    trading_days = np.cumsum(active_any, axis=1)
+    trading_days = np.cumsum(opened_any, axis=1)
 
     sentinel = horizon + 1
     day_index = np.arange(1, horizon + 1)
@@ -451,9 +467,9 @@ def simulate_composition(
         hit = np.where(mask, day_index[None, :], sentinel)
         return hit.min(axis=1)
 
-    fail_daily_day = first_hit(pnl <= -daily_limit)
-    fail_total_day = first_hit(cum <= -total_limit)
-    pass_day = first_hit((cum >= target) & (trading_days >= MIN_TRADING_DAYS))
+    fail_daily_day = first_hit(pnl < -daily_limit)
+    fail_total_day = first_hit(cum < -total_limit)
+    pass_day = first_hit((cum > target) & (trading_days >= MIN_TRADING_DAYS))
 
     fail_day = np.minimum(fail_daily_day, fail_total_day)
     # breaches evaluated before the target on the same day (conservative)
@@ -513,18 +529,19 @@ def historical_daily_series(
             dates.append(cursor)
         cursor += dt.timedelta(days=1)
     values: list[float] = []
-    active: list[bool] = []
+    opened: list[bool] = []
     for day in dates:
         total = 0.0
-        any_active = False
+        any_opened = False
         for name, risk in risks.items():
             bundle = loaded[name].day_bundles.get(day)
             if bundle is not None:
                 total += bundle * (risk / SOURCE_RISK_PCT)
-                any_active = True
+            if day in loaded[name].opening_days:
+                any_opened = True
         values.append(total)
-        active.append(any_active)
-    return dates, values, active
+        opened.append(any_opened)
+    return dates, values, opened
 
 
 def historical_windows(
@@ -538,7 +555,7 @@ def historical_windows(
     total_limit_pct: float,
     stride: int = 5,
 ) -> dict[str, Any]:
-    _dates, values, active = historical_daily_series(risks, loaded)
+    _dates, values, opened = historical_daily_series(risks, loaded)
     target = capital * target_pct / 100.0
     daily_limit = capital * daily_limit_pct / 100.0
     total_limit = capital * total_limit_pct / 100.0
@@ -552,16 +569,16 @@ def historical_windows(
         outcome = "timeout"
         for offset in range(horizon):
             day_pnl = values[start + offset]
-            if active[start + offset]:
+            if opened[start + offset]:
                 tdays += 1
             cum += day_pnl
-            if day_pnl <= -daily_limit:
+            if day_pnl < -daily_limit:
                 outcome = "fail_daily"
                 break
-            if cum <= -total_limit:
+            if cum < -total_limit:
                 outcome = "fail_total"
                 break
-            if cum >= target and tdays >= MIN_TRADING_DAYS:
+            if cum > target and tdays >= MIN_TRADING_DAYS:
                 outcome = "pass"
                 pass_days.append(offset + 1)
                 break
@@ -913,6 +930,17 @@ def main(argv: list[str] | None = None) -> int:
             "seed": args.seed,
             "min_trading_days": MIN_TRADING_DAYS,
             "source_risk_pct": SOURCE_RISK_PCT,
+        },
+        "rulepack": {
+            "id": RULES.rulepack_id,
+            "as_of": RULES.rulepack_as_of,
+            "canonical_sha256": RULES.canonical_sha256,
+            "timezone": RULES.timezone,
+            "trading_day_qualifier": RULES.trading_day_qualifier,
+            "breach_operator": RULES.breach_operator,
+            "target_operator": RULES.target_operator,
+            "phase_reset_to_initial_equity": RULES.phase_reset_to_initial_equity,
+            "live_equity_compounding_allowed": RULES.live_equity_compounding_allowed,
         },
         "sleeves": sleeves,
         "exclusions": EXCLUSIONS,

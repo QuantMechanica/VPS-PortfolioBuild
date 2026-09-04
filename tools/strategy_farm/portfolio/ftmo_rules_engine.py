@@ -79,11 +79,17 @@ from enum import Enum
 from typing import Any, Mapping, Sequence
 from zoneinfo import ZoneInfo
 
+try:
+    from tools.strategy_farm.portfolio.ftmo_rule_contract import load_two_step_contract
+except ModuleNotFoundError:  # pragma: no cover - direct script execution
+    from ftmo_rule_contract import load_two_step_contract
+
 
 TRACE_SCHEMA_VERSION = 1
-RULES_AS_OF = "2026-07-21"
+_TWO_STEP_CONTRACT = load_two_step_contract()
+RULES_AS_OF = _TWO_STEP_CONTRACT.rulepack_as_of
 RULES_SOURCE_URL = "https://ftmo.com/en/trading-objectives/"
-PRAGUE = ZoneInfo("Europe/Prague")
+PRAGUE = ZoneInfo(_TWO_STEP_CONTRACT.timezone)
 EQUITY_BASIS_MTM = "MARK_TO_MARKET_INCLUDING_OPEN_PNL_SWAP_COMMISSION"
 BALANCE_BASIS_NET_TRADING = (
     "NET_CLOSED_TRADING_PNL_INCLUDING_COSTS_NO_EXTERNAL_CASHFLOWS"
@@ -133,26 +139,26 @@ ONE_STEP_CHALLENGE = FtmoRuleSet(
 )
 
 TWO_STEP_PHASE1 = FtmoRuleSet(
-    rule_set_id="FTMO_2_STEP_PHASE1_2026_07_21",
+    rule_set_id=f"{_TWO_STEP_CONTRACT.rulepack_id}_PHASE1",
     product="2_STEP",
     phase="PHASE1",
-    profit_target_fraction=Decimal("0.10"),
-    maximum_daily_loss_fraction=Decimal("0.05"),
-    maximum_loss_fraction=Decimal("0.10"),
+    profit_target_fraction=_TWO_STEP_CONTRACT.phase1_target_fraction,
+    maximum_daily_loss_fraction=_TWO_STEP_CONTRACT.maximum_daily_loss_fraction,
+    maximum_loss_fraction=_TWO_STEP_CONTRACT.maximum_total_loss_fraction,
     maximum_loss_model=MaximumLossModel.STATIC_INITIAL,
-    minimum_trading_days=4,
+    minimum_trading_days=_TWO_STEP_CONTRACT.minimum_trading_days,
     best_day_fraction=None,
 )
 
 TWO_STEP_VERIFICATION = FtmoRuleSet(
-    rule_set_id="FTMO_2_STEP_VERIFICATION_2026_07_21",
+    rule_set_id=f"{_TWO_STEP_CONTRACT.rulepack_id}_VERIFICATION",
     product="2_STEP",
     phase="VERIFICATION",
-    profit_target_fraction=Decimal("0.05"),
-    maximum_daily_loss_fraction=Decimal("0.05"),
-    maximum_loss_fraction=Decimal("0.10"),
+    profit_target_fraction=_TWO_STEP_CONTRACT.phase2_target_fraction,
+    maximum_daily_loss_fraction=_TWO_STEP_CONTRACT.maximum_daily_loss_fraction,
+    maximum_loss_fraction=_TWO_STEP_CONTRACT.maximum_total_loss_fraction,
     maximum_loss_model=MaximumLossModel.STATIC_INITIAL,
-    minimum_trading_days=4,
+    minimum_trading_days=_TWO_STEP_CONTRACT.minimum_trading_days,
     best_day_fraction=None,
 )
 

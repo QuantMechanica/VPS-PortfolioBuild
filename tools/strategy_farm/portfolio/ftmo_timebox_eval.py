@@ -30,6 +30,14 @@ from typing import Any, Mapping, Sequence
 from zoneinfo import ZoneInfo
 
 try:
+    from tools.strategy_farm.portfolio.ftmo_rule_contract import (
+        DEFAULT_RULEPACK_PATH,
+        load_two_step_contract,
+    )
+except ModuleNotFoundError:  # pragma: no cover - direct script execution
+    from ftmo_rule_contract import DEFAULT_RULEPACK_PATH, load_two_step_contract
+
+try:
     from .ftmo_q09_admission import ADMITTED_REASON, EVIDENCE_MISSING
 except ImportError:  # pragma: no cover - direct script execution
     from ftmo_q09_admission import ADMITTED_REASON, EVIDENCE_MISSING  # type: ignore
@@ -54,26 +62,31 @@ REFUSED_COST_ADJUSTED_DECLARATION = "REFUSED_MISSING_EXPLICIT_COST_ADJUSTED_CLAS
 REFUSED_SENSITIVITY = "REFUSED_SPREAD_SENSITIVITY_NON_MONOTONIC"
 REFUSED_QUALIFICATION_MISSING = "FTMO_QUALIFICATION_EVIDENCE_MISSING"
 REFUSED_QUALIFICATION_NOT_READY = "FTMO_QUALIFICATION_NOT_CHALLENGE_READY"
-PRAGUE = ZoneInfo("Europe/Prague")
 SHA_RE = re.compile(r"^[0-9a-f]{64}$")
 
+RULE_CONTRACT = load_two_step_contract()
+PRAGUE = ZoneInfo(RULE_CONTRACT.timezone)
 DEFAULT_RULES: dict[str, Any] = {
     "initial_equity": 1.0,
-    "phase1_target_fraction": 0.10,
+    "phase1_target_fraction": float(RULE_CONTRACT.phase1_target_fraction),
     "phase1_horizon_calendar_days": 60,
-    "phase2_target_fraction": 0.05,
+    "phase2_target_fraction": float(RULE_CONTRACT.phase2_target_fraction),
     "phase2_horizon_calendar_days": 30,
-    "maximum_daily_loss_fraction": 0.05,
-    "maximum_total_loss_fraction": 0.10,
-    "daily_floor": "BROKER_MIDNIGHT_BALANCE_MINUS_FIXED_INITIAL_EQUITY_0P05",
+    "maximum_daily_loss_fraction": float(RULE_CONTRACT.maximum_daily_loss_fraction),
+    "maximum_total_loss_fraction": float(RULE_CONTRACT.maximum_total_loss_fraction),
+    "minimum_trading_days": RULE_CONTRACT.minimum_trading_days,
+    "trading_day_qualifier": RULE_CONTRACT.trading_day_qualifier,
+    "daily_floor": "PRAGUE_MIDNIGHT_BALANCE_MINUS_FIXED_INITIAL_EQUITY_AMOUNT",
     "total_floor": "INITIAL_EQUITY_TIMES_0P90",
-    "breach_operator": "STRICTLY_BELOW",
-    "target_operator": "AT_OR_ABOVE_WHILE_FLAT",
-    "timezone": "Europe/Prague",
-    "broker_day": "NY_CLOSE_GMT_PLUS_2_OR_3",
-    "rolling_start": "EVERY_ELIGIBLE_BROKER_CALENDAR_DAY",
+    "breach_operator": RULE_CONTRACT.breach_operator,
+    "target_operator": RULE_CONTRACT.target_operator,
+    "timezone": RULE_CONTRACT.timezone,
+    "daily_reset_local_time": RULE_CONTRACT.daily_reset_local_time,
+    "broker_day": "EUROPE_PRAGUE_CALENDAR_DAY",
+    "rolling_start": "EVERY_ELIGIBLE_PRAGUE_CALENDAR_DAY",
     "censoring": "RIGHT_CENSORED_IS_TIMEOUT_NON_PASS",
-    "phase_transition": "RESET_TO_INITIAL_EQUITY_NEXT_BROKER_DAY_AFTER_P1_PASS",
+    "phase_transition": "RESET_TO_INITIAL_EQUITY_NEXT_PRAGUE_DAY_AFTER_P1_PASS",
+    "live_equity_compounding_allowed": RULE_CONTRACT.live_equity_compounding_allowed,
     "design_bar_p1": 0.80,
 }
 
@@ -108,6 +121,8 @@ class DailyPoint:
     day: dt.date
     net_return: float
     intraday_low_return: float
+    # Stream-schema compatibility name: this is the count of positions opened
+    # on the Prague calendar day, not the count of positions closed that day.
     trade_count: int
     eligible_start: bool
     flat_at_end: bool
@@ -261,8 +276,23 @@ def _parse_bool(value: Any, label: str) -> bool:
     return value
 
 
-def _validate_rules(rules: Any) -> None:
-    if rules != DEFAULT_RULES:
+def _validate_rules(rules: Any, rulepack_path: Path | str = DEFAULT_RULEPACK_PATH) -> None:
+    contract = load_two_step_contract(rulepack_path)
+    expected = dict(DEFAULT_RULES)
+    expected.update(
+        phase1_target_fraction=float(contract.phase1_target_fraction),
+        phase2_target_fraction=float(contract.phase2_target_fraction),
+        maximum_daily_loss_fraction=float(contract.maximum_daily_loss_fraction),
+        maximum_total_loss_fraction=float(contract.maximum_total_loss_fraction),
+        minimum_trading_days=contract.minimum_trading_days,
+        trading_day_qualifier=contract.trading_day_qualifier,
+        timezone=contract.timezone,
+        daily_reset_local_time=contract.daily_reset_local_time,
+        breach_operator=contract.breach_operator,
+        target_operator=contract.target_operator,
+        live_equity_compounding_allowed=contract.live_equity_compounding_allowed,
+    )
+    if rules != expected:
         raise TimeboxEvaluationError("rules: binding FTMO rules differ from OWNER time-box contract")
 
 
@@ -348,6 +378,7 @@ def validate_config(config: Any) -> None:
         "schema",
         "claim_label",
         "rules",
+        "rulepack",
         "bootstrap",
         "correlation",
         "inputs",
@@ -360,7 +391,12 @@ def validate_config(config: Any) -> None:
         raise TimeboxEvaluationError("config.schema: unsupported schema")
     if config["claim_label"] != CLAIM_LABEL:
         raise TimeboxEvaluationError("config.claim_label: unsupported claim")
-    _validate_rules(config["rules"])
+    rulepack = config.get("rulepack")
+    if not isinstance(rulepack, Mapping) or set(rulepack) != {"path", "sha256", "canonical_sha256"}:
+        raise TimeboxEvaluationError("config.rulepack: invalid binding")
+    _normalized_sha(rulepack["sha256"], "config.rulepack.sha256")
+    _normalized_sha(rulepack["canonical_sha256"], "config.rulepack.canonical_sha256")
+    _validate_rules(config["rules"], rulepack["path"])
     _validate_bootstrap(config["bootstrap"])
     _validate_correlation(config["correlation"])
     if "evidence_class" in config:
@@ -413,7 +449,7 @@ def prepare_config(spec: Any) -> dict[str, Any]:
         "streams",
         "compositions",
     }
-    optional = {"bootstrap", "evidence_class"}
+    optional = {"bootstrap", "evidence_class", "rulepack_path"}
     if not expected.issubset(spec) or not set(spec).issubset(expected | optional):
         raise TimeboxEvaluationError("spec: unexpected or missing fields")
     streams_value = spec["streams"]
@@ -441,10 +477,16 @@ def prepare_config(spec: Any) -> dict[str, Any]:
         if not set(spec["bootstrap"]).issubset(DEFAULT_BOOTSTRAP):
             raise TimeboxEvaluationError("spec.bootstrap: unexpected fields")
         bootstrap.update(spec["bootstrap"])
+    rulepack_path = Path(spec.get("rulepack_path", DEFAULT_RULEPACK_PATH)).resolve()
+    rulepack_contract = load_two_step_contract(rulepack_path)
     config = {
         "schema": CONFIG_SCHEMA,
         "claim_label": CLAIM_LABEL,
         "rules": dict(DEFAULT_RULES),
+        "rulepack": {
+            **pin_binding(str(rulepack_path), "spec.rulepack_path"),
+            "canonical_sha256": rulepack_contract.canonical_sha256,
+        },
         "bootstrap": bootstrap,
         "correlation": dict(DEFAULT_CORRELATION),
         "inputs": {
@@ -781,21 +823,23 @@ def combine_streams(
 
 
 def evaluate_phase(
-    days: Sequence[DailyPoint], start_index: int, target_fraction: float, horizon_days: int
+    days: Sequence[DailyPoint], start_index: int, target_fraction: float, horizon_days: int,
+    *, rules: Mapping[str, Any] = DEFAULT_RULES,
 ) -> dict[str, Any]:
     if start_index < 0 or start_index >= len(days):
         raise TimeboxEvaluationError("phase start index outside trace")
     start_day = days[start_index].day
     deadline = start_day + dt.timedelta(days=horizon_days)
     balance = 1.0
+    opened_days = 0
     for index in range(start_index, len(days)):
         point = days[index]
         if point.day >= deadline:
             break
         midnight_balance = balance
-        intraday_low = midnight_balance * (1.0 + point.intraday_low_return)
-        daily_floor = midnight_balance - DEFAULT_RULES["maximum_daily_loss_fraction"]
-        total_floor = 1.0 - DEFAULT_RULES["maximum_total_loss_fraction"]
+        intraday_low = midnight_balance + point.intraday_low_return
+        daily_floor = midnight_balance - float(rules["maximum_daily_loss_fraction"])
+        total_floor = 1.0 - float(rules["maximum_total_loss_fraction"])
         if intraday_low < daily_floor:
             return {
                 "outcome": "DAILY_LOSS_BREACH",
@@ -808,8 +852,14 @@ def evaluate_phase(
                 "end_index": index,
                 "days_elapsed": (point.day - start_day).days + 1,
             }
-        balance *= 1.0 + point.net_return
-        if balance >= 1.0 + target_fraction and point.flat_at_end:
+        balance += point.net_return
+        if point.trade_count > 0:
+            opened_days += 1
+        if (
+            balance > 1.0 + target_fraction
+            and point.flat_at_end
+            and opened_days >= int(rules["minimum_trading_days"])
+        ):
             return {
                 "outcome": "PASS",
                 "end_index": index,
@@ -827,12 +877,20 @@ def rolling_outcomes(days: Sequence[DailyPoint]) -> list[dict[str, Any]]:
     for start_index, point in enumerate(days):
         if not point.eligible_start:
             continue
-        p1 = evaluate_phase(days, start_index, 0.10, 60)
+        p1 = evaluate_phase(
+            days, start_index,
+            float(DEFAULT_RULES["phase1_target_fraction"]),
+            int(DEFAULT_RULES["phase1_horizon_calendar_days"]),
+        )
         p2: dict[str, Any] | None = None
         if p1["outcome"] == "PASS":
             p2_start = int(p1["end_index"]) + 1
             if p2_start < len(days):
-                p2 = evaluate_phase(days, p2_start, 0.05, 30)
+                p2 = evaluate_phase(
+                    days, p2_start,
+                    float(DEFAULT_RULES["phase2_target_fraction"]),
+                    int(DEFAULT_RULES["phase2_horizon_calendar_days"]),
+                )
             else:
                 p2 = {"outcome": "TIMEOUT", "end_index": None, "days_elapsed": 30}
         outcomes.append(
@@ -1071,6 +1129,8 @@ def summarize(days: Sequence[DailyPoint], bootstrap: Mapping[str, Any]) -> dict[
         "median_days_to_p2_target": median(p2_days) if p2_days else None,
         "p1_taxonomy": _taxonomy(outcomes, "p1"),
         "p2_taxonomy_given_p1": _taxonomy(p2_outcomes, "p2"),
+        "total_opening_days": sum(point.trade_count > 0 for point in days),
+        # Retained for consumers of the original result schema.
         "total_trade_days": sum(point.trade_count > 0 for point in days),
         "trace_calendar_days": len(days),
     }
@@ -1161,6 +1221,13 @@ def _inventory_admission_map(inventory: Any) -> dict[str, dict[str, Any]]:
 
 def evaluate_config(config: Mapping[str, Any], config_sha256: str) -> dict[str, Any]:
     validate_config(config)
+    rulepack_path = verify_binding(
+        {"path": config["rulepack"]["path"], "sha256": config["rulepack"]["sha256"]},
+        "rulepack",
+    )
+    contract = load_two_step_contract(rulepack_path)
+    if contract.canonical_sha256 != config["rulepack"]["canonical_sha256"]:
+        raise TimeboxEvaluationError("rulepack: canonical SHA-256 mismatch")
     inputs = config["inputs"]
     inventory_path = verify_binding(inputs["inventory"], "inputs.inventory")
     fund_path = verify_binding(inputs["fund_scores"], "inputs.fund_scores")
@@ -1363,6 +1430,8 @@ def evaluate_config(config: Mapping[str, Any], config_sha256: str) -> dict[str, 
         "rules": config["rules"],
         "correlation_rule": config["correlation"],
         "input_sha256": {
+            "rulepack": config["rulepack"]["sha256"],
+            "rulepack_canonical": contract.canonical_sha256,
             "inventory": inputs["inventory"]["sha256"],
             "fund_scores": inputs["fund_scores"]["sha256"],
             "ftmo_cost_snapshot": inputs["ftmo_cost_snapshot"]["sha256"],
