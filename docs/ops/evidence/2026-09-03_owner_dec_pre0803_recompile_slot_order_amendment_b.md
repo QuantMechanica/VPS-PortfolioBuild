@@ -644,3 +644,7 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
 ## 16:35Z 2026-09-04 - OWNER-DEC-BUNDLE-Q08-PASSCLASS-20260904 executed (3e7f5752c2)
 
 - Receipt row 7; decision-bound task c9e256cb -> REVIEW. Bundle accepts Q08 PASS-class (PASS, FAIL_SOFT); tests 10/10; dry-run bound 8/8 (11910/NZDUSD via 977a478e). D1/D2 open.
+
+## 17:00Z 2026-09-04 - idle-worker CPU sink fixed (d630c08bf9)
+
+- Eight idle workers at ~6 % host each: `_running_mt5_terminals()` PowerShell scan per claim iteration. Native Toolhelp enumeration (11-14 ms) with PowerShell fallback; live equivalence verified; reload chunk 37 rolling out. Throughput 16:35-16:55Z: 20 census cells / 20 min (~37 % of fleet max).
