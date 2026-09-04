@@ -1,0 +1,75 @@
+{
+  "schema_version": "qm.q02-infra-recovery-cpu-recheck-stop/v1",
+  "recorded_at_utc": "2026-09-04T21:36:13.854Z",
+  "branch": "agents/board-advisor",
+  "observed_head": "cadb7f3322bb6edd29170b748f656dae05316a2b",
+  "mission_priority": 2,
+  "outcome": "STOPPED_CPU_CEILING_NO_CLAIM_OR_ENQUEUE",
+  "selection": {
+    "ea_id": "QM5_12943",
+    "ea_label": "QM5_12943_robopip-hlhb-trend-catcher-h1",
+    "symbol": "EURUSD.DWX",
+    "timeframe": "H1",
+    "market": "forex",
+    "strategy_family": "structural_trend_following",
+    "g0_status": "APPROVED",
+    "diversity_reason": "A genuine EURUSD canary result can unlock the approved GBPUSD, USDJPY, and XAUUSD basket instead of adding another index-only build."
+  },
+  "farm_observation": {
+    "database": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "predecessor_work_item_id": "2b04b129-89e8-4489-8653-5dac22f8439a",
+    "predecessor_status": "failed",
+    "predecessor_verdict": "INFRA_FAIL",
+    "predecessor_verdict_taxonomy": "infra",
+    "matching_q02_eurusd_row_count": 1,
+    "open_same_ea_symbol_phase_count": 0,
+    "append_only_successor_count": 0,
+    "claimed_or_running_work_item_count_at_observation": 0,
+    "database_mutated_by_this_unit": false
+  },
+  "recovery_readiness": {
+    "repair_commits": [
+      "c1fe07e30fe27d92233ecae64773ca974abf3493",
+      "b63bf8b6e828b8297396d7ae46c841c5f3565191"
+    ],
+    "test_command": "python -m pytest tools/strategy_farm/tests/test_candidate_repair_enqueue.py -k \"worker_crash or spawn_refusal\" -q",
+    "test_result": "2 passed, 46 deselected in 1.08s",
+    "current_ex5_sha256": "95ba06400a66dfa39e31dd09855beb3f4c64f8ee4d2573d5f6476c63234155b2",
+    "predecessor_expected_ex5_sha256": "95ba06400a66dfa39e31dd09855beb3f4c64f8ee4d2573d5f6476c63234155b2",
+    "same_binary_verified": true,
+    "risk_fixed": 1000,
+    "risk_percent": 0
+  },
+  "cpu_admission": {
+    "metric": "Processor(_Total)/% Processor Time",
+    "sample_interval_seconds": 2,
+    "sample_count": 5,
+    "samples_percent": [
+      97.3813,
+      99.0763,
+      99.3257,
+      93.7063,
+      94.7282
+    ],
+    "average_percent": 96.8436,
+    "maximum_percent": 99.3257,
+    "ceiling_percent": 97.0,
+    "admitted": false,
+    "blocking_metric": "maximum_percent",
+    "stop_rule": "Stop when either the five-sample average or maximum is greater than or equal to 97%."
+  },
+  "actions": {
+    "task_claimed": false,
+    "farm_db_mutated": false,
+    "backtest_enqueued": false,
+    "manual_dispatch": false,
+    "ea_compiled_or_changed": false,
+    "confirmation_cpu_sample_after_stop": false
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "t_live_touched": false,
+    "portfolio_gate_touched": false,
+    "live_manifest_touched": false
+  }
+}
