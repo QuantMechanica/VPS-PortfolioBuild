@@ -340,7 +340,33 @@ def test_q08_fail_soft_stream_binds_and_fail_hard_does_not(tmp_path):
     assert soft["outcome"] == "bound"
     assert soft["q08_work_item_id"] == "q08_soft"
     assert soft["sha256"] == sha_soft
+    assert manifest["loader_verification"]["verified"] is True
     hard = items["QM5_9011:AUDUSD.DWX"]
     assert hard["outcome"] == "refused"
     assert hard["reason"] == "no_q08_stream_bound_to_identity"
 
+
+@pytest.mark.parametrize("older_verdict,newer_verdict", [("PASS", "FAIL_SOFT"), ("FAIL_SOFT", "PASS")])
+@pytest.mark.parametrize("reverse", [False, True])
+@pytest.mark.parametrize("older_ts", ["2026-09-04T09:30:00Z", "2026-09-04T11:30:00+02:00"])
+def test_q08_mixed_pass_class_uses_newest_instant(tmp_path, older_verdict, newer_verdict, reverse, older_ts):
+    db = tmp_path / "mixed.sqlite"
+    con = _make_db(db)
+    identity = "a" * 64
+    rows = [("older", older_verdict, older_ts), ("newer", newer_verdict, "2026-09-04T10:00:00Z")]
+    if reverse:
+        rows.reverse()
+    for wid, verdict, timestamp in rows:
+        stream = tmp_path / wid / "9001_EURUSD_DWX.jsonl"
+        sha = _write_stream(stream, "EURUSD.DWX")
+        aggregate = tmp_path / wid / "aggregate.json"
+        _aggregate(aggregate, source_ex5=identity, content_sha=sha, stream_path=stream)
+        _q08(con, wid, "QM5_9001", "EURUSD.DWX", aggregate, timestamp, verdict)
+    con.commit()
+    con.close()
+    con = asb.open_ro(db)
+    try:
+        bound = asb.find_bound_q08(con, "QM5_9001", "EURUSD.DWX", identity)
+        assert bound["q08_work_item_id"] == "newer"
+    finally:
+        con.close()

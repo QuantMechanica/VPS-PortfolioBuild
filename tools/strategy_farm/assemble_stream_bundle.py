@@ -158,7 +158,7 @@ def resolve_identity(con: sqlite3.Connection, ea_label: str, symbol: str) -> dic
     rows = con.execute(
         "SELECT id, verdict, ex5_sha256, payload_json, evidence_path, updated_at "
         "FROM work_items WHERE ea_id=? AND symbol=? AND phase='Q14' AND status='done' "
-        "ORDER BY updated_at DESC",
+        "ORDER BY julianday(updated_at) DESC, updated_at DESC, id DESC",
         (ea_label, symbol),
     ).fetchall()
     for row in rows:
@@ -199,7 +199,7 @@ def find_bound_q08(
         "SELECT id, verdict, evidence_path, updated_at FROM work_items "
         "WHERE ea_id=? AND symbol=? AND phase='Q08' AND status='done' "
         f"AND verdict IN ({placeholders}) "
-        "ORDER BY updated_at DESC",
+        "ORDER BY julianday(updated_at) DESC, updated_at DESC, id DESC",
         (ea_label, symbol, *verdicts),
     ).fetchall()
     for row in rows:
@@ -303,7 +303,7 @@ def assemble_pair(
             "outcome": "refused",
             "reason": "no_q08_stream_bound_to_identity",
             "detail": (
-                "no Q08 done/PASS aggregate.json portfolio_stream whose source_ex5_sha256 "
+                "no Q08 done/PASS-class (PASS, FAIL_SOFT) aggregate.json portfolio_stream whose source_ex5_sha256 "
                 f"== current identity {identity['identity_ex5_sha256']}"
             ),
         }
