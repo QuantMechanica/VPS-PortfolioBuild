@@ -640,3 +640,7 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
 ## 16:31Z 2026-09-04 - path-to-25 Vorlage submitted
 
 - 8/8 terminal pairs KEEP_INCUMBENT (Q13 8/8 NO_PARAMETER_CHANGE, Q12 7/8 NO_FILTER_CHANGE). Census pipeline 11 programs / 8005 cells; 13 Q11-complete pairs without a program. Vorlage: census shortening (D1), Amendment C (D2), bundle FAIL_SOFT rule (D3) — see docs/ops/OWNER_VORLAGE_2026-09-04_census_shortening_amendment_c_bundle_rule.md. Pair 8 stream 977a478e sealed but refused by the PASS-only bundle filter.
+
+## 16:35Z 2026-09-04 - OWNER-DEC-BUNDLE-Q08-PASSCLASS-20260904 executed (3e7f5752c2)
+
+- Receipt row 7; decision-bound task c9e256cb -> REVIEW. Bundle accepts Q08 PASS-class (PASS, FAIL_SOFT); tests 10/10; dry-run bound 8/8 (11910/NZDUSD via 977a478e). D1/D2 open.

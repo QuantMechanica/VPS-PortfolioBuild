@@ -12,4 +12,6 @@
 | 5 | Dukascopy backfill to 2026-07 | "ja" | `OWNER-DEC-DUKASCOPY-BACKFILL-20260829` = YES; exactly one execution task per the plan `docs/ops/DUKASCOPY_BACKFILL_PLAN_2026-08-29.md`. |
 | 6 | FTMO NO-BUY, trigger re-anchored to positive OOS/live evidence | "ja, wann kommen wir aber auf FTMO?" | Park stays; timeline answer in the CEO status. |
 
+| 7 | Bundle rule = census rule for Q08 FAIL_SOFT (Vorlage 2026-09-04 D3) | "Bundle Regel an Census Regel angleichen, ja." (2026-09-04 ~16:45Z) | `OWNER-DEC-BUNDLE-Q08-PASSCLASS-20260904` = YES; exactly one decision-bound Claude task: assemble_stream_bundle.py accepts the Q08 PASS-class of the census (PASS, FAIL_SOFT per GATE_SCOPED_PASS), test, dry-run 8/8. D1/D2 of the same Vorlage remain open. |
+
 Standing order (verbatim): "Weitermachen, bis Portfolio steht, mit Loop kontrollieren und Fabrik am Laufen halten!"
