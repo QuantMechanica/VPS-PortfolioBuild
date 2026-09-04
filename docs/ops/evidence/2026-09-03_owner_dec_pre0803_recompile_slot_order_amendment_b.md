@@ -612,3 +612,8 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
 
 - 09:12:35Z drain armed for QM5_10718 FX8 basket Q02 `31f12573` (44 GB) on paper reservations; closed manually 09:27Z (cooldown 10:56Z), row held `DRAIN_UNWINNABLE_ARITHMETIC`. 553 pending rows carry >= 40 GB reservations.
 - Fix e1413e756a (`_drain_measured_subtree_gb`, releasable = min(reservation, measured), unmeasured = 0); reload chunk 32 for all ten workers started 09:33Z; holds on 12580 (`9cac4667`) and 10718 (`31f12573`) to be released after the reload.
+
+## 11:23Z 2026-09-04 - drain margin and long-run ceiling
+
+- Chunk 32 finished 11:07Z (all ten workers on f6236b5e46 + e1413e756a). Drain 10:57:49-11:17Z for QM5_10025 basket `e49888a1` (32 GB) plateaued at 33.9 GB free beside two Q07 runs; closed manually, row held `DRAIN_UNWINNABLE_ARITHMETIC`.
+- Fix f232200f0a: 3 GB margin + ceiling `need <= host_total - 10 - long_run_ram_gb` (facts carry measured long-run RAM). Chunk 33 to roll out at >= 20 GB free; holds on 9cac4667 / 31f12573 / e49888a1 released afterwards.
