@@ -1,0 +1,84 @@
+{
+  "schema": "qm.paced-fleet-q03-infra-recovery/v1",
+  "captured_at_utc": "2026-09-04T22:34:16Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "5ee89fa949ab0557772b513f8e8cd17423f42a11",
+  "mission": "diversity_funnel_throughput",
+  "outcome": "APPEND_ONLY_Q03_INFRA_RERUN_ACTIVE",
+  "selection": {
+    "priority": 2,
+    "ea_id": "QM5_20062",
+    "ea_label": "QM5_20062_kats-eu-macisar",
+    "symbol": "EURUSD.DWX",
+    "timeframe": "D1",
+    "asset_class": "forex",
+    "expected_trades_per_year_per_symbol": 12,
+    "source": "Markos Katsanos, Intermarket Trading Strategies, Wiley, 2008",
+    "source_tier": "A",
+    "selection_reason": "No collision-free eligible diverse build remained: rates and lumber fail R3, market-neutral no-EX5 rows already have governed compile work, and the remaining unclaimed no-EX5 rows are WTI variants. This exact-binary Q03 NO_HISTORY recovery is the highest-value diverse continuation toward the Q04 wall."
+  },
+  "capacity": {
+    "sampled_at_utc": "2026-09-04T22:29:38.8174267Z",
+    "sampling_method": "Get-Counter \\Processor(_Total)\\% Processor Time",
+    "sample_interval_seconds": 2,
+    "cpu_samples_percent": [63.68, 58.69, 61.16, 60.79, 39.26],
+    "cpu_average_percent": 56.72,
+    "cpu_maximum_percent": 63.68,
+    "cpu_ceiling_percent": 97.0,
+    "cpu_ceiling_hit": false
+  },
+  "coordination": {
+    "agent_task_id": "02e733f4-e3e4-48a7-9477-d55704b7ef38",
+    "claim_key": "q03-infra-recovery:QM5_20062:0108e4d5-2d2d-49e4-8458-5434dd8f34d4",
+    "claimed_by": "codex:agents/board-advisor",
+    "pre_claim_open_work_items": 0,
+    "pre_claim_open_agent_claims": 0,
+    "post_claim_competing_agent_claims": 0,
+    "enqueue_event_id": 384540,
+    "enqueue_event": "q03_exact_identity_enqueued"
+  },
+  "lineage": {
+    "q02_predecessor_work_item_id": "36bfac85-63e2-46a7-9f35-8ae583252d2f",
+    "q02_status": "done",
+    "q02_verdict": "PASS",
+    "q03_infra_source_work_item_id": "0108e4d5-2d2d-49e4-8458-5434dd8f34d4",
+    "q03_infra_source_status": "done",
+    "q03_infra_source_verdict": "INFRA_FAIL",
+    "q03_infra_source_reason": "run_smoke_fail:NO_HISTORY;INCOMPLETE_RUNS",
+    "q03_infra_source_payload_sha256": "0bf0188ca76d4112ecc454b9429d6a4da8d3a94243d734fdb744195bbc462614",
+    "q03_successor_work_item_id": "1d6de524-13e0-4bec-8c61-9b8836879840",
+    "historical_rows_preserved": true
+  },
+  "identity": {
+    "mq5_sha256": "c245bdc262f7d4c8ce0e70171ea852919765eb299a278eaab4b607c2a0b78424",
+    "ex5_sha256": "68d54999a025cb1b95692f0702055a4acc18c28061ce61087728c37c279994d2",
+    "setfile_sha256": "c4c05dbc0a377b27ed3cabe7465dbc5e130d03ec4dfcd2b2511b577db9877000",
+    "matches_q02_and_q03_sealed_identity": true,
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "successor": {
+    "status_at_capture": "active",
+    "claimed_by_at_capture": "T6",
+    "attempt_count": 0,
+    "gate_contract_version": "v4",
+    "sh3_enforced": 1,
+    "priority_track": true,
+    "append_only_rerun": true,
+    "same_binary_infra_requalification": true,
+    "custom_history_archive_status": "ACTIVE",
+    "custom_history_selected_archive_rows": 108,
+    "from_date": "2018.07.02",
+    "to_date": "2022.12.31"
+  },
+  "actions": {
+    "manual_dispatch_called": false,
+    "terminal_or_worker_controlled": false,
+    "ea_source_binary_or_setfile_changed": false,
+    "portfolio_gate_touched": false,
+    "t_live_or_live_manifest_touched": false,
+    "autotrading_toggled": false,
+    "unrelated_worktree_changes_preserved": true
+  }
+}
