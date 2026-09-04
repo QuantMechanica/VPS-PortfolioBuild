@@ -142,6 +142,27 @@ def test_ordinary_and_near_match_q02_contracts_retain_prescreen(
     assert len(commands) == 1
 
 
+def test_q02_prescreen_is_unaffected_by_the_diagnostic_window_contract(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """The 2026-09-04 explicit-window contract is scoped to diagnostic rows.
+
+    A Q02 row that happens to carry ``window_source``/``diagnostic_single_window``
+    must still take the Q02 prescreen path with its own derived window - the new
+    fail-closed branch may never divert or refuse it.
+    """
+    payload = _payload(contract=None)
+    payload.update({"window_source": "oos_2026", "diagnostic_single_window": True})
+
+    result, commands = _dispatch(monkeypatch, tmp_path, payload)
+
+    assert result["spawned"] is True
+    assert result["p2_run_stage"] == "prescreen"
+    assert result["from_date"] == result["expected_from_date"] == "2025.07.01"
+    assert result["to_date"] == result["expected_to_date"] == "2025.12.31"
+    assert len(commands) == 1
+
+
 @pytest.mark.parametrize(
     ("from_date", "to_date"),
     [

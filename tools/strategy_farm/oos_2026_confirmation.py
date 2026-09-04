@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import sqlite3
 import uuid
 from datetime import datetime, timezone
@@ -33,6 +34,41 @@ ALLOWED = ["T1", "T2", "T3", "T4", "T5"]
 AVOID = ["T6", "T7", "T8", "T9", "T10"]
 BASKET_REPAIR_MARKER = "oos_2026_basket_payload_repair"
 BASKET_REPAIR_REASON = "restore_manifest_bound_multisymbol_history_scope"
+CAMPAIGN_PLAN_PATH = ARTIFACT_ROOT / "campaign_plan.json"
+WINDOW_REPAIR_MARKER = "oos_window_repair"
+WINDOW_REPAIR_SCHEMA = "qm.oos-2026-window-repair/v1"
+WINDOW_HOLD_CODE = "OOS_WINDOW_MISMATCH"
+WINDOW_REPAIR_TASK_REF = "e544e3b8"
+SUPERSEDES_SOURCE_ENCODING = "repair:oos-2026-window/v1"
+SUPERSEDES_RECORDED_BY = "oos_2026_confirmation.apply_oos_window_repair"
+WINDOW_KEYS = ("from_date", "to_date", "window_from_utc", "window_to_utc")
+# Payload keys a completed run writes back (claim, spawn bindings, runner
+# results). A minted append-only successor is a FRESH pending row, so none of
+# the previous execution's residue may travel with it -- above all the stale
+# ``expected_from_date``/``expected_to_date`` of the mismeasured 2024 run.
+# Derived from the exact key delta between a completed and a freshly enqueued
+# OOS-2026 row (2026-09-04).
+RUNTIME_RESIDUE_PAYLOAD_KEYS = frozenset({
+    "artifact_identity", "claimed_at_iso", "claimed_by_worker_pid",
+    "commit_reservation_class", "commit_reservation_gb",
+    "commit_reservation_until_utc", "custom_history_copy_on_claim",
+    "custom_history_post_copy_audit_sha256",
+    "custom_history_pre_copy_audit_sha256", "diagnostic_underlying_q09_verdict",
+    "dispatch_ex5_verified_at", "ea_dir_name", "effective_min_trades",
+    "evidence_binding_required", "evidence_provenance", "expected_ex5_path",
+    "expected_ex5_sha256", "expected_expert", "expected_from_date",
+    "expected_mq5_sha256", "expected_period", "expected_setfile_sha256",
+    "expected_symbol", "expected_to_date",
+    "expected_trades_per_year_per_symbol", "finished_at_iso",
+    "job_object_assigned", "job_object_mode", "job_object_registry_key",
+    "log_path", "p2_run_stage", "phase_evidence_path", "phase_runner", "pid",
+    "primary_thread_resumed", "process_creation_key", "process_image_path",
+    "process_started_at_epoch", "process_started_suspended",
+    "q09_plan_bound_at", "q09_sidecar_verification", "report_root",
+    "run_smoke_exit_code", "smoke_year_count", "staged_ex5", "started_at_iso",
+    "summary_path", "terminal", "timeout_seconds", "verdict_reason",
+    "verdict_taxonomy",
+})
 
 FRONTIER = (
     (10145,"XAUUSD"),(10513,"XAUUSD"),(10706,"GBPUSD"),(11422,"USDCAD"),
@@ -62,6 +98,68 @@ def write_json(path: Path, value: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     if not path.exists():
         path.write_bytes(data)
+
+
+def tester_date_from_utc(value: Any, *, field: str) -> str:
+    """Map a campaign-plan ISO-8601 UTC bound to an MT5 tester ``YYYY.MM.DD`` date.
+
+    Inclusive end-day convention (documented 2026-09-04): the MetaTrader 5
+    strategy tester treats ``ToDate`` as the INCLUSIVE last calendar day of the
+    run -- it tests through the end of that day, it does not stop at its
+    midnight boundary. The campaign plan therefore states the closing bound as
+    an end-of-day instant (``full_to_utc = 2026-04-06T23:59:59Z``) and the
+    tester date is the DATE PART of that instant (``2026.04.06``), never the
+    following day. The opening bound maps the same way: ``full_from_utc =
+    2026-01-01T00:00:00Z`` -> ``FromDate = 2026.01.01``.
+    """
+    text = str(value or "").strip()
+    try:
+        parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise OOS2026Error(f"{field} is not an ISO-8601 UTC instant: {value!r}") from exc
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc).strftime("%Y.%m.%d")
+
+
+def campaign_window(campaign: dict[str, Any]) -> dict[str, str]:
+    """Return the campaign plan's single measurement window in both spellings."""
+    from_utc = str(campaign.get("full_from_utc") or "")
+    to_utc = str(campaign.get("full_to_utc") or "")
+    from_date = tester_date_from_utc(from_utc, field="full_from_utc")
+    to_date = tester_date_from_utc(to_utc, field="full_to_utc")
+    if from_date > to_date:
+        raise OOS2026Error(f"campaign window is inverted: {from_date} > {to_date}")
+    return {
+        "from_date": from_date,
+        "to_date": to_date,
+        "window_from_utc": from_utc,
+        "window_to_utc": to_utc,
+    }
+
+
+def campaign_plan_binding(campaign: dict[str, Any]) -> dict[str, str]:
+    """The tamper-evident (path, sha256) pointer at the plan a row is bound to.
+
+    ``prepare`` writes the immutable campaign plan and returns both fields; a
+    campaign dict without them cannot produce governed rows, so this fails
+    closed rather than guessing a default path.
+    """
+    path = str(campaign.get("campaign_plan_path") or "").strip()
+    digest = str(campaign.get("campaign_plan_sha256") or "").strip().lower()
+    if not path or len(digest) != 64:
+        raise OOS2026Error(
+            "campaign is missing campaign_plan_path/campaign_plan_sha256; "
+            "refusing to enqueue rows whose window is unbound"
+        )
+    return {
+        "diagnostic_campaign_plan_path": path,
+        "diagnostic_campaign_plan_sha256": digest,
+    }
+
+
+FROM_DATE = tester_date_from_utc(FROM_UTC, field="full_from_utc")
+TO_DATE = tester_date_from_utc(TO_UTC, field="full_to_utc")
 
 
 def _period(value: str) -> str:
@@ -282,12 +380,26 @@ def prepare(task_id: str) -> dict[str, Any]:
 
 def enqueue(campaign: dict[str, Any]) -> dict[str, Any]:
     now = datetime.now(timezone.utc).isoformat(); inserted=[]; existing=[]
+    # EXPLICIT WINDOW CONTRACT (2026-09-04): every diagnostic row carries the
+    # campaign window in its payload. Without it farmctl's spawn builder found
+    # no window, and terminal_worker._resolved_evidence_window silently
+    # substituted DEFAULT_RUN_SMOKE_YEAR (2024) -- the whole first wave measured
+    # 2024 and was labelled 2026 out-of-sample. from_date/to_date are the MT5
+    # tester bounds; window_from_utc/window_to_utc keep the plan's own source
+    # instants for audit.
+    window = campaign_window(campaign)
+    # The window is invisible to every stored binding hash (the dispatch-binding
+    # material and the sealed run plan are both window-blind), so each row also
+    # names the plan file it was derived from.  farmctl's spawn builder re-reads
+    # that file, checks the sha256 and refuses to launch if the payload window
+    # and the plan disagree.
+    plan_binding = campaign_plan_binding(campaign)
     with farmctl.connect(FARM_ROOT) as conn:
         conn.execute("BEGIN IMMEDIATE")
         for row in campaign["runs"]:
             if conn.execute("SELECT 1 FROM work_items WHERE id=?",(row["work_item_id"],)).fetchone():
                 existing.append(row["work_item_id"]); continue
-            payload={"window_source":WINDOW_SOURCE,"diagnostic_non_admission":True,"diagnostic_contract":q09.DIAGNOSTIC_CONTRACT,
+            payload={"window_source":WINDOW_SOURCE,**window,**plan_binding,"diagnostic_non_admission":True,"diagnostic_contract":q09.DIAGNOSTIC_CONTRACT,
                      "diagnostic_single_window":True,"diagnostic_campaign_id":CAMPAIGN_ID,"diagnostic_queue_rank":10000+row["rank"],
                      "host_symbol":row["symbol"],"host_timeframe":row["period"],"risk_fixed":1000.0,"risk_percent":0.0,
                      "staged_ex5_path":row["staged_ex5_path"],"staged_ex5_sha256":row["staged_ex5_sha256"],
@@ -309,7 +421,8 @@ def enqueue(campaign: dict[str, Any]) -> dict[str, Any]:
             inserted.append(row["work_item_id"])
         conn.commit()
     receipt={"schema_version":"qm.oos-2026-enqueue/v1","diagnostic_non_admission":True,"inserted":inserted,
-             "existing":existing,"count":55,"queue_policy":"behind census","enqueued_at_utc":now}
+             "existing":existing,"count":55,"queue_policy":"behind census","enqueued_at_utc":now,
+             "tester_window":window,**plan_binding}
     path=ARTIFACT_ROOT/"enqueue_receipt.json"; write_json(path,receipt)
     return {**receipt,"receipt_path":str(path),"receipt_sha256":sha(path)}
 
@@ -479,6 +592,734 @@ def apply_basket_payload_repair(
             conn.close()
 
 
+# --------------------------------------------------------------------------
+# OOS-2026 explicit-window repair (Astra task e544e3b8, 2026-09-04)
+# --------------------------------------------------------------------------
+# The campaign plan declared 2026-01-01..2026-04-06, but ``enqueue`` never wrote
+# the window into the work-item payloads. farmctl's spawn builder found none,
+# and terminal_worker._resolved_evidence_window substituted the default calendar
+# year: all 15 completed rows measured 2024. The 40 unstarted rows were held
+# with hold_code OOS_WINDOW_MISMATCH. This repair (a) patches the held pending
+# rows with the plan window and releases exactly those holds, and (b) mints one
+# append-only successor per mismeasured completed row and records the
+# supersession in ``work_item_supersedes`` so no consumer keeps reading the 2024
+# measurement as a valid oos-2026 result. Verdicts, trade streams and historical
+# rows are never rewritten.
+#
+# Governance (review 2026-09-04): the classifier scan runs OUTSIDE the write
+# transaction and outside the mutation lock; the writer uses farmctl's short
+# mutation-lock busy envelope with jittered transaction retry; a governed
+# pre-mutation state backup is minted before the lock and recorded in the
+# ledger, the events rows and the receipt; and the receipt is published only
+# after the commit returns.
+
+
+def _load_campaign_plan(path: Path) -> tuple[dict[str, Any], str]:
+    try:
+        document = json.loads(path.read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise OOS2026Error(f"unreadable campaign plan: {path}: {exc}") from exc
+    if not isinstance(document, dict):
+        raise OOS2026Error(f"campaign plan root must be an object: {path}")
+    if str(document.get("campaign_id") or "") != CAMPAIGN_ID:
+        raise OOS2026Error(
+            f"campaign plan is not {CAMPAIGN_ID}: {document.get('campaign_id')!r}"
+        )
+    return document, sha(path)
+
+
+def _successor_work_item_id(source_id: str) -> str:
+    """Deterministic successor id: a second repair run mints nothing new."""
+    return str(
+        uuid.uuid5(
+            uuid.NAMESPACE_URL,
+            f"quantmechanica:{CAMPAIGN_ID}:window-repair:{source_id}",
+        )
+    )
+
+
+def _row_value(row: sqlite3.Row, key: str) -> Any:
+    return row[key] if key in row.keys() else None
+
+
+def _measured_window(row: sqlite3.Row, payload: dict[str, Any]) -> tuple[str | None, str | None]:
+    """The window a completed row actually ran, as bound at spawn time."""
+    measured_from = payload.get("expected_from_date") or _row_value(row, "data_window_start")
+    measured_to = payload.get("expected_to_date") or _row_value(row, "data_window_end")
+    return (
+        str(measured_from) if measured_from else None,
+        str(measured_to) if measured_to else None,
+    )
+
+
+def _rerun_reason(window: dict[str, str], measured: tuple[str | None, str | None]) -> str:
+    measured_from, measured_to = measured
+    return (
+        "OOS-2026 window mismatch: the completed run measured "
+        f"{measured_from or 'UNKNOWN'}..{measured_to or 'UNKNOWN'} (default run_smoke "
+        "year 2024, substituted because the payload carried no from_date/to_date) "
+        f"instead of the campaign window {window['from_date']}..{window['to_date']} "
+        f"declared by {CAMPAIGN_ID}; append-only successor minted by "
+        f"oos_2026_confirmation repair-oos-window (Astra task {WINDOW_REPAIR_TASK_REF})"
+    )
+
+
+def _window_repair_audit(
+    window: dict[str, str],
+    *,
+    at_utc: str,
+    campaign_plan_path: Path,
+    campaign_plan_sha256: str,
+    source_work_item_id: str | None = None,
+    superseded_window: tuple[str | None, str | None] | None = None,
+) -> dict[str, Any]:
+    """The audit block a repaired payload carries.
+
+    ``campaign_plan_path``/``campaign_plan_sha256`` are not decoration: farmctl's
+    spawn builder reads exactly these two fields back, re-hashes the plan file
+    and refuses the spawn unless the payload window still equals the plan window.
+    Recording the sha without the path would leave nothing to re-derive from.
+    """
+    audit: dict[str, Any] = {
+        "at_utc": at_utc,
+        "campaign_plan_path": str(campaign_plan_path),
+        "campaign_plan_sha256": campaign_plan_sha256,
+        "from": window["from_date"],
+        "schema_version": WINDOW_REPAIR_SCHEMA,
+        "task_ref": WINDOW_REPAIR_TASK_REF,
+        "to": window["to_date"],
+        "window_from_utc": window["window_from_utc"],
+        "window_to_utc": window["window_to_utc"],
+    }
+    if source_work_item_id:
+        audit["source_work_item_id"] = source_work_item_id
+    if superseded_window is not None:
+        audit["superseded_measured_window"] = {
+            "from": superseded_window[0],
+            "to": superseded_window[1],
+        }
+    return audit
+
+
+def _successor_payload(
+    payload: dict[str, Any],
+    *,
+    window: dict[str, str],
+    source_id: str,
+    lineage: list[str],
+    measured: tuple[str | None, str | None],
+    at_utc: str,
+    campaign_plan_path: Path,
+    campaign_plan_sha256: str,
+) -> dict[str, Any]:
+    successor = {
+        key: value
+        for key, value in payload.items()
+        if key not in RUNTIME_RESIDUE_PAYLOAD_KEYS
+    }
+    successor.update(window)
+    successor.update({
+        "append_only_rerun": True,
+        "append_only_rerun_of_work_item": source_id,
+        "append_only_rerun_lineage_work_items": lineage,
+        "historical_work_item_preserved": True,
+        "rerun_reason": _rerun_reason(window, measured),
+        WINDOW_REPAIR_MARKER: _window_repair_audit(
+            window,
+            at_utc=at_utc,
+            campaign_plan_path=campaign_plan_path,
+            campaign_plan_sha256=campaign_plan_sha256,
+            source_work_item_id=source_id,
+            superseded_window=measured,
+        ),
+    })
+    successor["q09_dispatch_binding_sha256"] = q09._dispatch_binding_sha256(successor)
+    return successor
+
+
+def _campaign_binding_is_current(
+    payload: dict[str, Any], *, campaign_plan_sha256: str
+) -> bool:
+    """True when the row already names the campaign plan the spawn will verify.
+
+    Two spellings satisfy the spawn-time check: the dispatcher's
+    ``diagnostic_campaign_plan_*`` keys on a freshly enqueued row, and the
+    repair's ``oos_window_repair`` audit block on a patched one.
+    """
+    expected = campaign_plan_sha256.lower()
+    marker = payload.get(WINDOW_REPAIR_MARKER)
+    if isinstance(marker, dict):
+        return bool(str(marker.get("campaign_plan_path") or "").strip()) and (
+            str(marker.get("campaign_plan_sha256") or "").strip().lower() == expected
+        )
+    return bool(str(payload.get("diagnostic_campaign_plan_path") or "").strip()) and (
+        str(payload.get("diagnostic_campaign_plan_sha256") or "").strip().lower() == expected
+    )
+
+
+def _supersedes_row(conn: sqlite3.Connection, work_item_id: str) -> sqlite3.Row | None:
+    try:
+        return conn.execute(
+            "SELECT * FROM work_item_supersedes "
+            "WHERE work_item_id=? AND source_encoding=?",
+            (work_item_id, SUPERSEDES_SOURCE_ENCODING),
+        ).fetchone()
+    except sqlite3.OperationalError:
+        return None
+
+
+def _active_window_hold(conn: sqlite3.Connection, work_item_id: str) -> sqlite3.Row | None:
+    try:
+        return conn.execute(
+            "SELECT * FROM work_item_holds "
+            "WHERE work_item_id=? AND hold_code=? AND active=1",
+            (work_item_id, WINDOW_HOLD_CODE),
+        ).fetchone()
+    except sqlite3.OperationalError:
+        return None
+
+
+def _window_repair_plan(
+    conn: sqlite3.Connection,
+    *,
+    window: dict[str, str],
+    campaign_plan_path: Path,
+    campaign_plan_sha256: str,
+    at_utc: str,
+) -> dict[str, Any]:
+    conn.row_factory = sqlite3.Row
+    rows = conn.execute(
+        "SELECT * FROM work_items "
+        "WHERE json_extract(payload_json,'$.diagnostic_campaign_id')=? "
+        "ORDER BY COALESCE(json_extract(payload_json,'$.diagnostic_queue_rank'),0), created_at",
+        (CAMPAIGN_ID,),
+    ).fetchall()
+
+    pending_patches: list[dict[str, Any]] = []
+    successors: list[dict[str, Any]] = []
+    unchanged: list[dict[str, Any]] = []
+    skipped: list[dict[str, Any]] = []
+
+    for row in rows:
+        try:
+            payload = json.loads(row["payload_json"] or "{}")
+        except json.JSONDecodeError:
+            payload = None
+        base = {
+            "work_item_id": row["id"],
+            "ea_id": row["ea_id"],
+            "symbol": row["symbol"],
+            "status": row["status"],
+            "verdict": _row_value(row, "verdict"),
+        }
+        if not isinstance(payload, dict):
+            skipped.append({**base, "reason": "payload_not_an_object"})
+            continue
+        if payload.get("diagnostic_non_admission") is not True:
+            skipped.append({**base, "reason": "outside_diagnostic_non_admission_lane"})
+            continue
+
+        if row["status"] == "pending":
+            if _row_value(row, "claimed_by") is not None:
+                skipped.append({**base, "reason": "pending_row_is_claimed"})
+                continue
+            contradictions = {
+                key: {"actual": payload[key], "expected": window[key]}
+                for key in WINDOW_KEYS
+                if key in payload and payload[key] != window[key]
+            }
+            if contradictions:
+                skipped.append({
+                    **base,
+                    "reason": "pending_window_contradiction",
+                    "contradictions": contradictions,
+                })
+                continue
+            missing = [key for key in WINDOW_KEYS if key not in payload]
+            binding_stale = not _campaign_binding_is_current(
+                payload, campaign_plan_sha256=campaign_plan_sha256
+            )
+            hold = _active_window_hold(conn, str(row["id"]))
+            if not missing and not binding_stale and hold is None:
+                unchanged.append({**base, "reason": "already_repaired"})
+                continue
+            pending_patches.append({
+                **base,
+                "before": {key: payload.get(key) for key in WINDOW_KEYS},
+                "after": {key: window[key] for key in WINDOW_KEYS},
+                "added_keys": sorted(
+                    missing + ([WINDOW_REPAIR_MARKER] if binding_stale else [])
+                ),
+                "payload_change": bool(missing or binding_stale),
+                "before_payload_sha256": _payload_sha256(row["payload_json"]),
+                "hold_release": hold is not None,
+                "hold_code": WINDOW_HOLD_CODE if hold is not None else None,
+            })
+            continue
+
+        if row["status"] == "done":
+            measured = _measured_window(row, payload)
+            if measured == (window["from_date"], window["to_date"]):
+                unchanged.append({
+                    **base,
+                    "reason": "done_window_matches_plan",
+                    "measured_window": {"from": measured[0], "to": measured[1]},
+                })
+                continue
+            existing_supersede = _supersedes_row(conn, str(row["id"]))
+            if existing_supersede is not None:
+                unchanged.append({
+                    **base,
+                    "reason": "supersession_already_recorded",
+                    "successor_work_item_id": existing_supersede["superseded_by_work_item_id"],
+                })
+                continue
+            prior = conn.execute(
+                "SELECT id,status FROM work_items "
+                "WHERE json_extract(payload_json,'$.append_only_rerun_of_work_item')=?",
+                (row["id"],),
+            ).fetchone()
+            if prior is not None:
+                unchanged.append({
+                    **base,
+                    "reason": "append_only_successor_exists",
+                    "successor_work_item_id": prior["id"],
+                    "successor_status": prior["status"],
+                })
+                continue
+            successor_id = _successor_work_item_id(str(row["id"]))
+            if conn.execute(
+                "SELECT 1 FROM work_items WHERE id=?", (successor_id,)
+            ).fetchone():
+                unchanged.append({
+                    **base,
+                    "reason": "successor_id_already_present",
+                    "successor_work_item_id": successor_id,
+                })
+                continue
+            lineage = farmctl._append_only_rerun_lineage_work_item_ids(conn, row)
+            successor_payload = _successor_payload(
+                payload,
+                window=window,
+                source_id=str(row["id"]),
+                lineage=lineage,
+                measured=measured,
+                at_utc=at_utc,
+                campaign_plan_path=campaign_plan_path,
+                campaign_plan_sha256=campaign_plan_sha256,
+            )
+            successors.append({
+                **base,
+                "successor_work_item_id": successor_id,
+                "before_payload_sha256": _payload_sha256(row["payload_json"]),
+                "measured_window": {"from": measured[0], "to": measured[1]},
+                "before": {
+                    "expected_from_date": measured[0],
+                    "expected_to_date": measured[1],
+                    **{key: payload.get(key) for key in WINDOW_KEYS},
+                },
+                "after": {key: successor_payload[key] for key in WINDOW_KEYS},
+                "added_keys": sorted(set(successor_payload) - set(payload)),
+                "dropped_keys": sorted(set(payload) - set(successor_payload)),
+                "append_only_rerun_lineage_work_items": lineage,
+                "rerun_reason": successor_payload["rerun_reason"],
+                "successor_payload": successor_payload,
+                "phase": row["phase"],
+                "setfile_path": row["setfile_path"],
+                "gate_contract_version": _row_value(row, "gate_contract_version"),
+            })
+            continue
+
+        skipped.append({**base, "reason": f"status_not_repairable:{row['status']}"})
+
+    return {
+        "schema_version": WINDOW_REPAIR_SCHEMA,
+        "mode": "DRY_RUN",
+        "at_utc": at_utc,
+        "campaign_id": CAMPAIGN_ID,
+        "campaign_plan_path": str(campaign_plan_path),
+        "campaign_plan_sha256": campaign_plan_sha256,
+        "diagnostic_non_admission": True,
+        "window": dict(window),
+        "counts": {
+            "campaign_rows": len(rows),
+            "pending_to_patch": sum(1 for e in pending_patches if e["payload_change"]),
+            "holds_to_release": sum(1 for e in pending_patches if e["hold_release"]),
+            "done_to_succeed": len(successors),
+            "unchanged": len(unchanged),
+            "skipped": len(skipped),
+        },
+        "pending_patches": pending_patches,
+        "successors": successors,
+        "unchanged": unchanged,
+        "skipped": skipped,
+    }
+
+
+def _stripped_plan(plan: dict[str, Any]) -> dict[str, Any]:
+    """Receipt view: keep every decision field, drop the bulky successor payloads."""
+    return {
+        **plan,
+        "successors": [
+            {key: value for key, value in entry.items() if key != "successor_payload"}
+            for entry in plan["successors"]
+        ],
+    }
+
+
+def plan_oos_window_repair(
+    db: Path,
+    *,
+    campaign_plan_path: Path = CAMPAIGN_PLAN_PATH,
+    at_utc: str | None = None,
+) -> dict[str, Any]:
+    """Read-only dry run: exactly what the repair would change, and nothing else."""
+    campaign, campaign_plan_sha256 = _load_campaign_plan(campaign_plan_path)
+    window = campaign_window(campaign)
+    now = at_utc or datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+    conn = sqlite3.connect(f"file:{db.resolve()}?mode=ro", uri=True, timeout=30)
+    try:
+        return _window_repair_plan(
+            conn,
+            window=window,
+            campaign_plan_path=campaign_plan_path,
+            campaign_plan_sha256=campaign_plan_sha256,
+            at_utc=now,
+        )
+    finally:
+        conn.close()
+
+
+def _connect_under_mutation_lock(db: Path) -> sqlite3.Connection:
+    """Open the farm DB with the SHORT busy envelope the mutation lock demands.
+
+    farmctl.py:1312-1324 (2026-09-02): "a governed writer that already holds the
+    global factory mutation lock must never wait minutes for the SQLite write
+    lock - every idle worker declines claims while the lock is held".  A long
+    ``timeout=`` here would reproduce the 09:28-09:36Z fleet starvation, so the
+    writer uses ``MUTATION_LOCK_DB_TIMEOUT_SECONDS`` and the caller retries the
+    whole transaction after jittered backoff instead of sleeping in the C call.
+    """
+    conn = sqlite3.connect(str(db), timeout=farmctl.MUTATION_LOCK_DB_TIMEOUT_SECONDS)
+    conn.row_factory = sqlite3.Row
+    return farmctl.configure_sqlite_connection(conn)
+
+
+def _record_hold_release_ledger(
+    conn: sqlite3.Connection,
+    *,
+    work_item_id: str,
+    released_at: str,
+    release_note: str,
+    backup_path: str | None,
+    backup_sha256: str | None,
+) -> tuple[bool, str]:
+    """Mirror farmctl.release_work_item_hold's append-only ledger row.
+
+    The canonical writer swallows exactly one failure -- a duplicate
+    idempotency key (``IntegrityError``) -- and lets every other SQLite error
+    propagate, so a ledger-schema drift can never release a hold in silence.
+    It also records the pre-mutation backup anchor in ``detail_json``; without
+    it a released hold has no rollback pointer.
+    """
+    row = conn.execute(
+        "SELECT status,verdict FROM work_items WHERE id=?", (work_item_id,)
+    ).fetchone()
+    status = row["status"] if row is not None else None
+    verdict = row["verdict"] if row is not None else None
+    ledger_key = f"hold_release:{work_item_id}:{WINDOW_HOLD_CODE}:{released_at}"
+    detail = {
+        "hold_code": WINDOW_HOLD_CODE,
+        "expected_hold_code": WINDOW_HOLD_CODE,
+        "released_at": released_at,
+        "released_by": SUPERSEDES_RECORDED_BY,
+    }
+    if backup_path:
+        detail["backup_path"] = backup_path
+    if backup_sha256:
+        detail["backup_sha256"] = backup_sha256
+    try:
+        conn.execute(
+            "INSERT INTO work_item_transition_ledger("
+            "idempotency_key, ts, work_item_id, action, from_status, to_status,"
+            " from_verdict, to_verdict, reason, run_id, detail_json)"
+            " VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+            (
+                ledger_key, released_at, work_item_id, "work_item_hold_released",
+                status, status, verdict, verdict, release_note, None,
+                json.dumps(detail, sort_keys=True),
+            ),
+        )
+    except sqlite3.IntegrityError:
+        return False, ledger_key
+    return True, ledger_key
+
+
+def _write_receipt_atomically(out: Path, receipt: dict[str, Any]) -> None:
+    """Publish the receipt only once the transaction has actually committed.
+
+    Writing it inside the transaction produced an on-disk artifact claiming 95
+    mutations for a transaction that could still roll back -- and the overwrite
+    guard then blocked the retry.  Temp file + os.replace keeps the receipt
+    atomic and truthful.
+    """
+    out.parent.mkdir(parents=True, exist_ok=True)
+    tmp = out.with_name(out.name + ".tmp")
+    tmp.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    os.replace(tmp, out)
+
+
+def _apply_window_repair_locked(
+    conn: sqlite3.Connection,
+    *,
+    plan: dict[str, Any],
+    window: dict[str, str],
+    applied_at: str,
+    release_note: str,
+    campaign_plan_path: Path,
+    campaign_plan_sha256: str,
+    backup_path: str | None,
+    backup_sha256: str | None,
+    receipt_path: Path,
+) -> dict[str, Any]:
+    """Mutate exactly the rows the preflight named, addressed by primary key.
+
+    Deliberately NO classifier scan in here: the preflight already decided, and
+    re-running its unindexed ``json_extract`` scan inside ``BEGIN IMMEDIATE``
+    held the exclusive write lock for ~30 s on an uncontended copy.  Every row
+    is re-read by id and re-verified against its recorded payload sha, so a row
+    that moved between preflight and lock fails the apply closed instead of
+    being rewritten blind.
+    """
+    patched: list[str] = []
+    released: list[str] = []
+    minted: list[str] = []
+    superseded: list[dict[str, str]] = []
+
+    for entry in plan["pending_patches"]:
+        work_item_id = str(entry["work_item_id"])
+        row = conn.execute(
+            "SELECT payload_json,status,claimed_by FROM work_items WHERE id=?",
+            (work_item_id,),
+        ).fetchone()
+        if row is None:
+            raise OOS2026Error(f"{work_item_id}: row vanished between preflight and lock")
+        if _payload_sha256(row["payload_json"]) != entry["before_payload_sha256"]:
+            raise OOS2026Error(f"{work_item_id}: payload changed between preflight and lock")
+        if row["status"] != "pending" or row["claimed_by"] is not None:
+            raise OOS2026Error(
+                f"{work_item_id}: no longer an unclaimed pending row "
+                f"(status={row['status']!r}, claimed_by={row['claimed_by']!r})"
+            )
+        if entry["payload_change"]:
+            payload = json.loads(row["payload_json"] or "{}")
+            payload.update(window)
+            payload[WINDOW_REPAIR_MARKER] = _window_repair_audit(
+                window,
+                at_utc=applied_at,
+                campaign_plan_path=campaign_plan_path,
+                campaign_plan_sha256=campaign_plan_sha256,
+            )
+            payload["q09_dispatch_binding_sha256"] = q09._dispatch_binding_sha256(payload)
+            new_payload_json = json.dumps(payload, sort_keys=True)
+            cursor = conn.execute(
+                "UPDATE work_items SET payload_json=?,updated_at=? "
+                "WHERE id=? AND status='pending' AND claimed_by IS NULL "
+                "AND payload_json=?",
+                (new_payload_json, applied_at, work_item_id, row["payload_json"]),
+            )
+            if cursor.rowcount != 1:
+                raise OOS2026Error(
+                    f"{work_item_id}: guarded payload update changed {cursor.rowcount} rows"
+                )
+            entry["after_payload_sha256"] = _payload_sha256(new_payload_json)
+            patched.append(work_item_id)
+        if entry["hold_release"]:
+            cursor = conn.execute(
+                "UPDATE work_item_holds "
+                "SET active=0, updated_at=?, released_at=?, release_note=? "
+                "WHERE work_item_id=? AND hold_code=? AND active=1",
+                (applied_at, applied_at, release_note, work_item_id, WINDOW_HOLD_CODE),
+            )
+            if cursor.rowcount != 1:
+                raise OOS2026Error(
+                    f"{work_item_id}: hold release CAS changed {cursor.rowcount} rows"
+                )
+            ledger_written, ledger_key = _record_hold_release_ledger(
+                conn,
+                work_item_id=work_item_id,
+                released_at=applied_at,
+                release_note=release_note,
+                backup_path=backup_path,
+                backup_sha256=backup_sha256,
+            )
+            farmctl.event(conn, "work_item", work_item_id, "work_item_hold_released", {
+                "hold_code": WINDOW_HOLD_CODE,
+                "release_note": release_note,
+                "released_at": applied_at,
+                "backup_path": backup_path,
+                "backup_sha256": backup_sha256,
+                "ledger_idempotency_key": ledger_key,
+            })
+            entry["release_note"] = release_note
+            entry["released_at"] = applied_at
+            entry["ledger_written"] = ledger_written
+            entry["ledger_idempotency_key"] = ledger_key
+            released.append(work_item_id)
+
+    for entry in plan["successors"]:
+        source_id = str(entry["work_item_id"])
+        successor_id = str(entry["successor_work_item_id"])
+        source = conn.execute(
+            "SELECT payload_json,status FROM work_items WHERE id=?", (source_id,)
+        ).fetchone()
+        if source is None:
+            raise OOS2026Error(f"{source_id}: row vanished between preflight and lock")
+        if _payload_sha256(source["payload_json"]) != entry["before_payload_sha256"]:
+            raise OOS2026Error(f"{source_id}: payload changed between preflight and lock")
+        if source["status"] != "done":
+            raise OOS2026Error(
+                f"{source_id}: no longer a completed row (status={source['status']!r})"
+            )
+        if conn.execute("SELECT 1 FROM work_items WHERE id=?", (successor_id,)).fetchone():
+            raise OOS2026Error(f"{successor_id}: successor already present under lock")
+        conn.execute(
+            "INSERT INTO work_items(id,kind,phase,ea_id,symbol,setfile_path,"
+            "status,attempt_count,payload_json,created_at,updated_at,"
+            "gate_contract_version) VALUES(?,'backtest',?,?,?,?,'pending',0,?,?,?,?)",
+            (
+                successor_id, entry["phase"], entry["ea_id"], entry["symbol"],
+                entry["setfile_path"],
+                json.dumps(entry["successor_payload"], sort_keys=True),
+                applied_at, applied_at, entry["gate_contract_version"],
+            ),
+        )
+        minted.append(successor_id)
+        # The forward pointer.  Without it every surface keyed on
+        # (diagnostic_campaign_id, status='done') keeps reading the 2024
+        # measurement as a valid oos-2026 result, indistinguishable from a
+        # correct one except by re-deriving expected_from_date.
+        measured = entry["measured_window"]
+        supersede_reason = (
+            "OOS-2026 window mismatch: measured "
+            f"{measured['from'] or 'UNKNOWN'}..{measured['to'] or 'UNKNOWN'} instead of "
+            f"the campaign window {window['from_date']}..{window['to_date']}; superseded "
+            f"by the append-only rerun (Astra task {WINDOW_REPAIR_TASK_REF})"
+        )
+        conn.execute(
+            "INSERT INTO work_item_supersedes("
+            "work_item_id,superseded_by_work_item_id,reason,source_encoding,"
+            "evidence_path,recorded_by,recorded_at) VALUES(?,?,?,?,?,?,?)",
+            (
+                source_id, successor_id, supersede_reason, SUPERSEDES_SOURCE_ENCODING,
+                str(receipt_path), SUPERSEDES_RECORDED_BY, applied_at,
+            ),
+        )
+        farmctl.event(conn, "work_item", source_id, "work_item_superseded", {
+            "superseded_by_work_item_id": successor_id,
+            "reason": supersede_reason,
+            "source_encoding": SUPERSEDES_SOURCE_ENCODING,
+            "evidence_path": str(receipt_path),
+            "recorded_by": SUPERSEDES_RECORDED_BY,
+            "campaign_plan_sha256": campaign_plan_sha256,
+        })
+        entry["supersede_reason"] = supersede_reason
+        superseded.append({
+            "work_item_id": source_id,
+            "superseded_by_work_item_id": successor_id,
+        })
+
+    return {
+        **_stripped_plan(plan),
+        "mode": "APPLY",
+        "applied_at_utc": applied_at,
+        "patched_work_items": patched,
+        "released_holds": released,
+        "minted_successors": minted,
+        "superseded_work_items": superseded,
+        "state_backup": {"path": backup_path, "sha256": backup_sha256},
+    }
+
+
+def apply_oos_window_repair(
+    db: Path,
+    mutation_lock: Path,
+    out: Path,
+    *,
+    campaign_plan_path: Path = CAMPAIGN_PLAN_PATH,
+    farm_root: Path = FARM_ROOT,
+) -> dict[str, Any]:
+    """Apply the repair: governed backup, short-lock transaction, receipt after commit."""
+    if out.exists():
+        raise OOS2026Error(f"refusing to overwrite repair receipt: {out}")
+    campaign, campaign_plan_sha256 = _load_campaign_plan(campaign_plan_path)
+    window = campaign_window(campaign)
+    applied_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+    # Classification first, OUTSIDE the mutation lock and outside any write
+    # transaction: it is an unindexed full-table scan of work_items (~15 s on
+    # the live DB).  Under the lock only the named rows are touched, by id.
+    plan = plan_oos_window_repair(
+        db, campaign_plan_path=campaign_plan_path, at_utc=applied_at
+    )
+    release_note = (
+        f"OOS-2026 explicit window contract repaired: {window['from_date']}.."
+        f"{window['to_date']} written into the payload; "
+        f"campaign_plan_sha256={campaign_plan_sha256}; "
+        f"Astra task {WINDOW_REPAIR_TASK_REF}"
+    )
+    mutates = bool(
+        plan["counts"]["pending_to_patch"]
+        or plan["counts"]["holds_to_release"]
+        or plan["counts"]["done_to_succeed"]
+    )
+    backup_path: str | None = None
+    backup_sha256: str | None = None
+    if mutates:
+        # Pre-mutation rollback anchor, minted BEFORE the fleet-wide lock so the
+        # (slow) online backup never runs inside it -- exactly how
+        # farmctl.release_work_item_hold orders the same two steps.  A no-op
+        # apply mints nothing, so a refused repair cannot litter the directory.
+        backup, digest = farmctl._governed_state_backup(farm_root, WINDOW_REPAIR_MARKER)
+        backup_path, backup_sha256 = str(backup), digest
+
+    with FactoryMutationLock(mutation_lock, owner=f"oos-2026-window-repair:{CAMPAIGN_ID}"):
+        def _transaction() -> dict[str, Any]:
+            conn = _connect_under_mutation_lock(db)
+            try:
+                if plan["successors"]:
+                    # executescript commits implicitly: DDL before BEGIN.
+                    farmctl.ensure_work_item_supersedes_schema(conn)
+                conn.execute("BEGIN IMMEDIATE")
+                receipt = _apply_window_repair_locked(
+                    conn,
+                    plan=plan,
+                    window=window,
+                    applied_at=applied_at,
+                    release_note=release_note,
+                    campaign_plan_path=campaign_plan_path,
+                    campaign_plan_sha256=campaign_plan_sha256,
+                    backup_path=backup_path,
+                    backup_sha256=backup_sha256,
+                    receipt_path=out,
+                )
+                conn.commit()
+                return receipt
+            except Exception:
+                conn.rollback()
+                raise
+            finally:
+                conn.close()
+
+        receipt = farmctl.retry_sqlite_busy(
+            _transaction, attempts=farmctl.MUTATION_LOCK_DB_ATTEMPTS
+        )
+        receipt["database"] = str(db.resolve())
+        receipt["receipt_path"] = str(out.resolve())
+        # Only now, with the transaction committed, is the receipt true.
+        _write_receipt_atomically(out, receipt)
+    return receipt
+
+
 def main() -> int:
     parser=argparse.ArgumentParser(description=__doc__); sub=parser.add_subparsers(dest="command",required=True)
     for name in ("plan","apply"):
@@ -489,8 +1330,38 @@ def main() -> int:
     repair.add_argument("--mutation-lock",type=Path,default=FACTORY_MUTATION_LOCK)
     repair.add_argument("--journal-out",type=Path)
     repair.add_argument("--apply",action="store_true")
+    window_repair=sub.add_parser(
+        "repair-oos-window",
+        help="Dry-run by default: patch the campaign window into held pending rows "
+             "and mint append-only successors for rows measured on the wrong window",
+    )
+    window_repair.add_argument("--db",type=Path,default=FARM_DB)
+    window_repair.add_argument("--campaign-plan",type=Path,default=CAMPAIGN_PLAN_PATH)
+    window_repair.add_argument("--mutation-lock",type=Path,default=FACTORY_MUTATION_LOCK)
+    window_repair.add_argument("--out",type=Path,help="receipt path (required with --apply)")
+    window_repair.add_argument("--farm-root",type=Path,default=FARM_ROOT,
+                               help="farm root the pre-mutation state backup is taken from")
+    window_repair.add_argument("--apply",action="store_true")
     args=parser.parse_args()
-    if args.command == "repair-basket-payload":
+    if args.command == "repair-oos-window":
+        if args.apply:
+            if not args.out:
+                raise OOS2026Error("--apply requires --out")
+            result=apply_oos_window_repair(
+                args.db,args.mutation_lock,args.out,campaign_plan_path=args.campaign_plan,
+                farm_root=args.farm_root,
+            )
+        else:
+            result=_stripped_plan(
+                plan_oos_window_repair(args.db,campaign_plan_path=args.campaign_plan)
+            )
+            if args.out:
+                args.out.parent.mkdir(parents=True,exist_ok=True)
+                args.out.write_text(
+                    json.dumps(result,indent=2,sort_keys=True)+"\n",encoding="utf-8",
+                )
+                result={**result,"receipt_path":str(args.out.resolve())}
+    elif args.command == "repair-basket-payload":
         if args.apply:
             if not args.journal_out:
                 raise OOS2026Error("--apply requires --journal-out")

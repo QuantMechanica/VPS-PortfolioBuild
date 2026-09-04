@@ -5815,6 +5815,183 @@ def _opt_census_window(payload: dict[str, Any]) -> tuple[str, str] | None:
     return from_date, to_date
 
 
+# Structured spawn refusal for a diagnostic single-window row whose payload does
+# not carry a usable explicit tester window.  Mirrors ``opt_census_window_invalid``.
+DIAGNOSTIC_SINGLE_WINDOW_INVALID_REASON = "diagnostic_single_window_invalid"
+
+
+def _declares_diagnostic_single_window(payload: dict[str, Any]) -> bool:
+    """True when the payload claims an EXPLICIT, campaign-declared tester window.
+
+    Two independent markers select the class, because both are written by the
+    diagnostic dispatchers and either one on its own is a promise that the run
+    is measured over a named window rather than the generic default:
+
+      * ``diagnostic_single_window: true`` - the single-window measurement flag.
+      * a non-empty ``window_source`` - the campaign/window identity
+        (e.g. ``oos_2026``) that names where the window came from.
+    """
+    if payload.get("diagnostic_single_window") is True:
+        return True
+    return bool(str(payload.get("window_source") or "").strip())
+
+
+def _diagnostic_single_window(payload: dict[str, Any]) -> tuple[str, str] | None:
+    """Return the explicit ``YYYY.MM.DD`` window of a diagnostic row, else None.
+
+    OOS-2026 postmortem (Astra task e544e3b8, 2026-09-04): the OOS-2026
+    confirmation campaign declared a 2026-01-01..2026-04-06 window in its
+    campaign plan but never wrote ``from_date``/``to_date`` into the work-item
+    payloads.  The spawn builder found no window, ``_basket_payload_date_window``
+    returned ``(None, None)`` for these single-symbol rows, and the worker's
+    ``_resolved_evidence_window`` silently substituted the default calendar year
+    (``DEFAULT_RUN_SMOKE_YEAR = 2024``).  All 15 completed rows measured 2024 and
+    were mislabelled as 2026 out-of-sample evidence.
+
+    A declared window is measurement evidence, exactly like the OPT_CENSUS
+    per-cell window: it must be present, well-formed and ordered, or the spawn
+    fails closed instead of falling back to a default year.
+    """
+    from_date = _valid_ymd_date(payload.get("from_date"))
+    to_date = _valid_ymd_date(payload.get("to_date"))
+    if not from_date or not to_date or from_date > to_date:
+        return None
+    return from_date, to_date
+
+
+# --- Tamper-evident campaign binding for a declared diagnostic window --------
+# Review finding (2026-09-04): the payload window is invisible to every existing
+# binding hash -- ``q09_news_runner._dispatch_binding_material`` never hashes
+# ``from_date``/``to_date`` and the sealed run plan does not declare dates
+# either.  The field whose ABSENCE mislabelled 15 runs as 2026 evidence could
+# therefore still be edited afterwards with every stored sha still validating.
+# A campaign row closes that hole at the only place that matters -- the spawn --
+# by re-deriving the window from the named campaign plan file and refusing to
+# launch on any disagreement.
+DIAGNOSTIC_CAMPAIGN_WINDOW_BINDING_MISSING = "diagnostic_campaign_window_binding_missing"
+DIAGNOSTIC_CAMPAIGN_PLAN_UNREADABLE = "diagnostic_campaign_plan_unreadable"
+DIAGNOSTIC_CAMPAIGN_PLAN_SHA256_MISMATCH = "diagnostic_campaign_plan_sha256_mismatch"
+DIAGNOSTIC_CAMPAIGN_PLAN_IDENTITY_MISMATCH = "diagnostic_campaign_plan_identity_mismatch"
+DIAGNOSTIC_CAMPAIGN_PLAN_WINDOW_INVALID = "diagnostic_campaign_plan_window_invalid"
+DIAGNOSTIC_CAMPAIGN_WINDOW_CONTRADICTION = "diagnostic_campaign_window_contradiction"
+
+
+def _campaign_plan_tester_window(plan: dict[str, Any]) -> tuple[str, str] | None:
+    """Derive the MT5 tester window from a campaign plan's UTC bounds.
+
+    Inclusive end-day convention (documented 2026-09-04): the tester ``ToDate``
+    is the INCLUSIVE last calendar day, so a plan states its closing bound as an
+    end-of-day instant (``2026-04-06T23:59:59Z``) and the tester date is the DATE
+    PART of that instant (``2026.04.06``), never the following day.
+    """
+    bounds: list[str] = []
+    for key in ("full_from_utc", "full_to_utc"):
+        text = str(plan.get(key) or "").strip()
+        if not text:
+            return None
+        try:
+            parsed = dt.datetime.fromisoformat(text.replace("Z", "+00:00"))
+        except ValueError:
+            return None
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=dt.timezone.utc)
+        bounds.append(parsed.astimezone(dt.timezone.utc).strftime("%Y.%m.%d"))
+    from_date, to_date = bounds
+    if not _valid_ymd_date(from_date) or not _valid_ymd_date(to_date) or from_date > to_date:
+        return None
+    return from_date, to_date
+
+
+def _diagnostic_campaign_plan_binding(
+    payload: dict[str, Any]
+) -> tuple[str | None, str | None]:
+    """The campaign plan a diagnostic row binds its window to (path, sha256)."""
+    marker = payload.get("oos_window_repair")
+    if isinstance(marker, dict):
+        path = str(marker.get("campaign_plan_path") or "").strip()
+        digest = str(marker.get("campaign_plan_sha256") or "").strip().lower()
+        if path and digest:
+            return path, digest
+    path = str(payload.get("diagnostic_campaign_plan_path") or "").strip()
+    digest = str(payload.get("diagnostic_campaign_plan_sha256") or "").strip().lower()
+    return (path or None), (digest or None)
+
+
+def _diagnostic_campaign_window_refusal(
+    payload: dict[str, Any], window: tuple[str, str]
+) -> dict[str, Any] | None:
+    """Fail-closed campaign-plan check; ``None`` means the spawn may proceed.
+
+    Only rows that name a ``diagnostic_campaign_id`` are governed: an ad-hoc
+    single-window diagnostic without a campaign has no plan to bind to.
+    """
+    campaign_id = str(payload.get("diagnostic_campaign_id") or "").strip()
+    if not campaign_id:
+        return None
+    plan_path_text, expected_sha = _diagnostic_campaign_plan_binding(payload)
+    base = {
+        "spawned": False,
+        "diagnostic_campaign_id": campaign_id,
+        "campaign_plan_path": plan_path_text,
+        "campaign_plan_sha256": expected_sha,
+        "from_date": window[0],
+        "to_date": window[1],
+    }
+    if not plan_path_text or not expected_sha:
+        return {**base, "reason": DIAGNOSTIC_CAMPAIGN_WINDOW_BINDING_MISSING}
+    plan_path = Path(plan_path_text)
+    try:
+        actual_sha = _sha256_file(plan_path)
+        plan = json.loads(plan_path.read_text(encoding="utf-8-sig"))
+    except (OSError, ValueError) as exc:
+        return {**base, "reason": DIAGNOSTIC_CAMPAIGN_PLAN_UNREADABLE, "detail": str(exc)}
+    if actual_sha.lower() != expected_sha:
+        return {**base, "reason": DIAGNOSTIC_CAMPAIGN_PLAN_SHA256_MISMATCH,
+                "actual_campaign_plan_sha256": actual_sha}
+    if not isinstance(plan, dict) or str(plan.get("campaign_id") or "") != campaign_id:
+        return {**base, "reason": DIAGNOSTIC_CAMPAIGN_PLAN_IDENTITY_MISMATCH,
+                "plan_campaign_id": (plan.get("campaign_id")
+                                     if isinstance(plan, dict) else None)}
+    plan_window = _campaign_plan_tester_window(plan)
+    if plan_window is None:
+        return {**base, "reason": DIAGNOSTIC_CAMPAIGN_PLAN_WINDOW_INVALID,
+                "full_from_utc": plan.get("full_from_utc"),
+                "full_to_utc": plan.get("full_to_utc")}
+    if plan_window != window:
+        return {**base, "reason": DIAGNOSTIC_CAMPAIGN_WINDOW_CONTRADICTION,
+                "plan_from_date": plan_window[0], "plan_to_date": plan_window[1]}
+    return None
+
+
+# A declared diagnostic window may be a fraction of a calendar year (the
+# OOS-2026 campaign measures 96 days).  The Q02 annual floor Max(5, 5*years)
+# would then demand a full year's trades from a quarter and stamp a correct run
+# MIN_TRADES_NOT_MET, so the floor is pro-rated over the declared calendar days
+# instead.  The formula degenerates to the annual floor exactly (366 d -> 5,
+# 731 d -> 10), so nothing outside a declared diagnostic window changes.
+DIAGNOSTIC_WINDOW_MIN_TRADES_FLOOR = 1
+
+
+def _inclusive_window_days(from_date: str | None, to_date: str | None) -> int | None:
+    try:
+        start = dt.datetime.strptime(str(from_date), "%Y.%m.%d").date()
+        end = dt.datetime.strptime(str(to_date), "%Y.%m.%d").date()
+    except (TypeError, ValueError):
+        return None
+    days = (end - start).days + 1
+    return days if days > 0 else None
+
+
+def _declared_window_min_trades(from_date: str | None, to_date: str | None) -> int:
+    days = _inclusive_window_days(from_date, to_date)
+    if days is None:
+        return DIAGNOSTIC_WINDOW_MIN_TRADES_FLOOR
+    return max(
+        DIAGNOSTIC_WINDOW_MIN_TRADES_FLOOR,
+        int(Q02_MIN_TRADES_PER_YEAR * days / 365.0),
+    )
+
+
 # Q02 absolute trade floor (OWNER 2026-06-26): 5 trades/year is a sufficient sample at
 # Q02 for low-frequency structural edges; the per-window floor is this rate * window years.
 Q02_MIN_TRADES_PER_YEAR = 5
@@ -8645,6 +8822,9 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
     #   - Keep 2 runs + 6 years for rigor
     is_exploration = ("_ablation_" in setfile_path or "_grid_" in setfile_path
                       or "_synth_" in setfile_path or "_opt_census_" in setfile_path)
+    # Set only by the diagnostic single-window branch below; keeps the explicit
+    # window contract from leaking into Q02 / OPT_CENSUS / basket behavior.
+    declared_diagnostic_window = False
     n_runs = "1" if is_exploration else "2"
     if phase in ("P2", "Q02"):
         # PT8 2026-05-23 — Q02 window now scales with detected period so D1/W1
@@ -8748,6 +8928,48 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         n_runs = "1"
         p2_run_stage = None
         timeout_seconds = _opt_census_timeout_seconds(item_payload)
+    elif _declares_diagnostic_single_window(item_payload):
+        # EXPLICIT WINDOW CONTRACT (2026-09-04): a diagnostic single-window row
+        # carries its measurement window in the payload.  It is authoritative
+        # evidence input, so it is used verbatim for -FromDate/-ToDate and for
+        # expected_from_date/expected_to_date, and a missing/malformed bound
+        # fails the spawn closed instead of inheriting the default year.  Run
+        # count and the timeout budget for the class are unchanged.
+        diagnostic_window = _diagnostic_single_window(item_payload)
+        if diagnostic_window is None:
+            return {
+                "spawned": False,
+                "reason": DIAGNOSTIC_SINGLE_WINDOW_INVALID_REASON,
+                "window_source": item_payload.get("window_source"),
+                "diagnostic_single_window": item_payload.get(
+                    "diagnostic_single_window"
+                ),
+                "diagnostic_campaign_id": item_payload.get("diagnostic_campaign_id"),
+                "from_date": item_payload.get("from_date"),
+                "to_date": item_payload.get("to_date"),
+            }
+        campaign_refusal = _diagnostic_campaign_window_refusal(
+            item_payload, diagnostic_window
+        )
+        if campaign_refusal is not None:
+            # The declared window is otherwise unhashed by every binding (the
+            # dispatch-binding material and the sealed run plan are both
+            # window-blind), so a campaign row re-derives it from the named
+            # plan file at spawn time and refuses to launch on disagreement.
+            return campaign_refusal
+        from_date, to_date = diagnostic_window
+        declared_diagnostic_window = True
+        p2_run_stage = None
+        _basket_n = 1
+        try:
+            _basket_n = max(1, int(item_payload.get("basket_symbol_count") or 1))
+        except (TypeError, ValueError):
+            _basket_n = 1
+        timeout_seconds = max(
+            P2_FULL_TIMEOUT_MIN_SECONDS,
+            min(25200, 1800 + _basket_n * 600),
+            _payload_timeout_floor_seconds(item_payload),
+        )
     else:
         from_date, to_date = _basket_payload_date_window(item_payload)
         p2_run_stage = None
@@ -8785,16 +9007,35 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
     # OPT_CENSUS is exempt for the same reason as the FTMO book-3 window: its
     # per-cell calendar-year bounds are immutable measurement evidence (the
     # single-symbol `_opt` EA has no cross-symbol member gap to protect), so a
-    # silent start-shift would corrupt the (arm x year) ledger.
+    # silent start-shift would corrupt the (arm x year) ledger.  A declared
+    # diagnostic single window is exempt for the same reason: the campaign plan
+    # named the exact bounds, so shifting the start silently would reproduce the
+    # very mislabelling this contract exists to prevent (a member-symbol gap now
+    # surfaces as an honest NO_HISTORY instead).
     if (
         ftmo_book3_exact_window is None
         and phase != OPT_CENSUS_PHASE
+        and not declared_diagnostic_window
         and from_date
         and from_date < DWX_MULTI_SYMBOL_FULL_HISTORY_FROM
     ):
         from_date = DWX_MULTI_SYMBOL_FULL_HISTORY_FROM
     year = 2024
     min_trade_info = _effective_min_trades(root, ea_id, from_date, to_date, year)
+    if declared_diagnostic_window:
+        # The Q02 annual floor is derived from CALENDAR YEARS TOUCHED, so a
+        # 96-day declared window inherits a full year's 5-trade demand and a
+        # correct quarter-length run gets stamped MIN_TRADES_NOT_MET in
+        # run_smoke's summary.  Pro-rate over the declared days and pass
+        # -SmokeMode so run_smoke honours this number verbatim instead of
+        # re-deriving the annual floor from the same year arithmetic.
+        min_trade_info = {
+            **min_trade_info,
+            "effective_min_trades": _declared_window_min_trades(from_date, to_date),
+            "min_trade_scope": "declared_diagnostic_window_prorated",
+            "declared_window_days": _inclusive_window_days(from_date, to_date),
+            "q02_annual_frequency_floor_applied": False,
+        }
     effective_min_trades = str(min_trade_info["effective_min_trades"])
 
     # Freeze the exact artifacts before launch. The resulting hashes are stored
@@ -8884,6 +9125,10 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         "-TimeoutSeconds", str(timeout_seconds),
         "-ExpectedExpertSha256", expected_ex5_sha256,
     ]
+    if declared_diagnostic_window:
+        # -SmokeMode is exactly "honour the caller's -MinTrades"; it does not
+        # change the run, the model or the evidence in any other way.
+        cmd.append("-SmokeMode")
     tester_currency = str(item_payload.get("tester_currency") or "").strip().upper()
     if tester_currency:
         cmd.extend(["-TesterCurrencyOverride", tester_currency])
