@@ -6637,6 +6637,15 @@ def classify_summary_missing_run(
     an authenticated positive signature (clean terminal exit / report latched /
     log-bomb / an explicit deterministic token).
     """
+    # A row-bound worker kill is stronger than an incomplete runner log. This
+    # cause requires budget review, not an EA INVALID or a launch-fault retry.
+    try:
+        from monitor_budget import classify as classify_monitor_budget
+    except ModuleNotFoundError:
+        from tools.strategy_farm.monitor_budget import classify as classify_monitor_budget
+    monitor_classification = classify_monitor_budget(payload)
+    if monitor_classification is not None:
+        return monitor_classification
     vr = str(payload.get("verdict_reason") or "").upper()
 
     def _result(cls: str, sub: str, retryable: bool, evidence: str) -> dict[str, Any]:

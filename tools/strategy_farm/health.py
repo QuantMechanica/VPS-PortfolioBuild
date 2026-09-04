@@ -3932,6 +3932,25 @@ def chk_pending_tail_age(con) -> dict:
     return _check("pending_tail_age", "WARN", old, PENDING_TAIL_FAIL_TOTAL, detail, hint)
 
 
+def chk_monitor_budget_exhausted(con) -> dict:
+    """Count monitor kills per UTC day; budget-review retries remain visible."""
+    cutoff = (_utc_now() - dt.timedelta(hours=24)).isoformat()
+    rows = con.execute(
+        "SELECT date(ts) AS day,COUNT(*) AS n FROM events WHERE event='monitor_kill' "
+        "AND julianday(ts)>=julianday(?) GROUP BY date(ts)", (cutoff,),
+    ).fetchall()
+    days = {r["day"]: int(r["n"]) for r in rows}
+    count = sum(days.values())
+    held = con.execute(
+        "SELECT COUNT(*) FROM work_item_holds WHERE active=1 AND hold_code='MONITOR_BUDGET_REVIEW_REQUIRED'"
+    ).fetchone()[0]
+    result = _check("monitor_budget_exhausted", "WARN" if count or held else "OK", count, 1,
+                    f"monitor kills in 24h={count}; UTC days={days}; pending budget review={held}",
+                    "Review the recorded effective budget and workload before releasing the retry hold.")
+    result.update({"by_utc_day": days, "budget_review_holds": held})
+    return result
+
+
 def chk_q02_summary_missing_unclassified(con) -> dict:
     """Catch a rising unclassified-failure rate (census rank 1). Every new Q02
     summary-missing terminal must carry a failure_class from the forward classifier;
@@ -4505,6 +4524,7 @@ ALL_CHECKS = [
     # Failure-classification + tail detectors (census 2026-07-27 ranks 1/3)
     ("pending_tail_age", chk_pending_tail_age, True),
     ("q02_summary_missing_unclassified", chk_q02_summary_missing_unclassified, True),
+    ("monitor_budget_exhausted", chk_monitor_budget_exhausted, True),
     ("q09_sealed_plan_hold_age", chk_q09_sealed_plan_hold_age, True),
     ("q10_long_cell_breaker_holds", chk_q10_long_cell_breaker_holds, True),
     ("q09_autoseal_hold_census", chk_q09_autoseal_hold_census, True),

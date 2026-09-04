@@ -49,6 +49,7 @@ import custom_history_master
 import dl089_scheduling
 import longrun_scheduling_policy
 import next_cell_prestage
+import monitor_budget
 import opt_census_pruning
 import opt_census_select
 from framework.scripts._phase_utils import cold_cache_summary_signature
@@ -2835,6 +2836,10 @@ def _payload_avoid_terminals(payload: dict[str, Any]) -> set[str]:
 
 
 _STALE_RUNTIME_PAYLOAD_KEYS = (
+    "monitor_kill",
+    "worker_exit_record",
+    "effective_monitor_budget_seconds",
+    "tester_runtime_seconds",
     "pid",
     "started_at_iso",
     "log_path",
@@ -7034,6 +7039,39 @@ def _finish_harness_work_item(
             "aggregate": None}
 
 
+def _requeue_for_monitor_budget_review(conn, item, payload, now, classification):
+    """Release only this active claim and hold its retry until budget review."""
+    diagnostic = {"classification": classification, "worker_exit_record": payload.get("worker_exit_record"),
+                  "monitor_kill": payload.get("monitor_kill"), "detected_at_utc": now}
+    payload.update({"prior_failure": monitor_budget.SUBCLASS,
+                    "failure_class": monitor_budget.FAILURE_CLASS,
+                    "failure_subclass": monitor_budget.SUBCLASS,
+                    "failure_class_evidence": classification["evidence"],
+                    "monitor_budget_review": {"required": True, **diagnostic}})
+    _clear_stale_runtime_payload(payload)
+    cursor = conn.execute(
+        "UPDATE work_items SET status='pending',verdict=NULL,claimed_by=NULL,payload_json=?,updated_at=? "
+        "WHERE id=? AND status='active' AND claimed_by=?",
+        (json.dumps(payload, sort_keys=True), now, item["id"], item["claimed_by"]),
+    )
+    if cursor.rowcount != 1:
+        return {"finished": False, "reason": "budget_review_claim_changed"}
+    conn.execute(
+        "INSERT INTO work_item_holds(work_item_id,hold_code,reason,active,release_on_restart,created_at,updated_at) "
+        "VALUES(?,?,?,1,0,?,?) ON CONFLICT(work_item_id) DO UPDATE SET "
+        "hold_code=excluded.hold_code,reason=excluded.reason,active=1,release_on_restart=0,"
+        "updated_at=excluded.updated_at,released_at=NULL,release_note=NULL "
+        "WHERE work_item_holds.active=0 OR work_item_holds.hold_code=excluded.hold_code",
+        (item["id"], monitor_budget.HOLD_CODE,
+         "Monitor budget exhausted; review effective workload budget before releasing retry.", now, now),
+    )
+    farmctl.event(conn, "work_item", item["id"], "monitor_budget_exhausted", diagnostic)
+    conn.commit()
+    return {"finished": True, "status": "pending", "verdict": None,
+            "reason": monitor_budget.SUBCLASS, "retry_requires_budget_review": True,
+            "hold_code": monitor_budget.HOLD_CODE, "attempt": int(item["attempt_count"] or 0)}
+
+
 def _finish_work_item(
     root: Path,
     item_id: str,
@@ -7285,6 +7323,9 @@ def _finish_work_item(
 
             payload["run_smoke_exit_code"] = exit_code
             failed_terminal = str(item["claimed_by"] or "").strip().upper()
+            budget_failure = monitor_budget.classify(payload)
+            if budget_failure is not None:
+                return _requeue_for_monitor_budget_review(conn, item, payload, now, budget_failure)
 
             # Shared-bases history-lock STORM auto-heal (see constants above). Only
             # probe the LIVE factory's MT5 logs (root == DEFAULT_ROOT); on a temp/test
@@ -8535,6 +8576,40 @@ def _monitor_deadline_monotonic(
     return monitor_started + timeout_seconds
 
 
+def _record_monitor_budget_kill(root, item, terminal, spawn, payload, runtime_seconds, budget_seconds):
+    """Persist cause before the existing timeout kill; survive loss of runner log."""
+    marker = {"monitor_kill": True, "reason": monitor_budget.SUBCLASS,
+              "item_id": item["id"], "terminal": terminal, "pid": spawn["pid"],
+              "started_at_iso": payload.get("started_at_iso"), "killed_at_utc": farmctl.utc_now(),
+              "tester_runtime_seconds": round(runtime_seconds, 3),
+              "effective_monitor_budget_seconds": budget_seconds}
+    event_record = {"event": "monitor_kill", "at_utc": marker["killed_at_utc"], **marker}
+    print(json.dumps(event_record, sort_keys=True), flush=True)
+    log_path = spawn.get("log_path") or payload.get("log_path")
+    if log_path:
+        try:
+            with Path(str(log_path)).open("a", encoding="utf-8") as stream:
+                stream.write("\n" + json.dumps(event_record, sort_keys=True) + "\n")
+                stream.flush()
+                os.fsync(stream.fileno())
+        except OSError as exc:
+            print(json.dumps({"event": "monitor_kill_log_write_failed", "item_id": item["id"], "error": str(exc)}), flush=True)
+    try:
+        with farmctl.connect(root) as conn:
+            encoded = json.dumps(marker, sort_keys=True)
+            conn.execute(
+                "UPDATE work_items SET payload_json=json_set(payload_json,'$.monitor_kill',json(?),"
+                "'$.worker_exit_record',json(?)) WHERE id=? AND status='active' AND claimed_by=? "
+                "AND json_extract(payload_json,'$.pid')=?",
+                (encoded, encoded, item["id"], terminal, spawn["pid"]),
+            )
+            farmctl.event(conn, "work_item", item["id"], "monitor_kill", marker)
+            conn.commit()
+    except sqlite3.Error as exc:
+        print(json.dumps({"event": "monitor_kill_event_write_failed", "item_id": item["id"], "error": str(exc)}), flush=True)
+    return marker
+
+
 def _monitor_spawned_work_item(
     root: Path,
     item: dict[str, Any],
@@ -8556,6 +8631,10 @@ def _monitor_spawned_work_item(
         adopted=adopted,
         phase=str(item.get("phase") or ""),
     )
+    effective_budget = _monitor_timeout_seconds(payload, timeout_seconds, phase=str(item.get("phase") or ""))
+    adopted_start = _parse_utc_iso(payload.get("started_at_iso") or payload.get("claimed_at_iso")) if adopted else None
+    elapsed_before_adoption = max(0.0, (datetime.now(timezone.utc) - adopted_start).total_seconds()) if adopted_start else 0.0
+    monitor_kill = None
     log_bomb_path: str | None = None
     _lb_iter = 0
     _lb_sizes: dict = {}
@@ -8755,6 +8834,10 @@ def _monitor_spawned_work_item(
         # treat as no-result. MT5 can outlive run_smoke.ps1; stopping only the
         # parent can leave the tester writing a late summary after the DB row
         # has already been classified from stale evidence.
+        monitor_kill = _record_monitor_budget_kill(
+            root, item, terminal, spawn, payload,
+            ran_seconds + elapsed_before_adoption, effective_budget,
+        )
         if child_alive:
             farmctl._stop_pid_tree(pid)
         _stop_terminal_slot_for_release(root, terminal)
@@ -8826,16 +8909,19 @@ def _monitor_spawned_work_item(
                 else "finished"
             ),
         )
-    if post_exit_watchdog is None:
+    runtime_updates = dict(post_exit_watchdog or {})
+    if monitor_kill:
+        runtime_updates.update({"monitor_kill": monitor_kill, "worker_exit_record": monitor_kill})
+    if not runtime_updates:
         finish_result = _finish_work_item(root, item["id"], exit_code)
     else:
         finish_result = _finish_work_item(
             root,
             item["id"],
             exit_code,
-            runtime_payload_updates=post_exit_watchdog,
+            runtime_payload_updates=runtime_updates,
         )
-    return {"action": "finished", "item_id": item["id"], **finish_result}
+    return {"action": "finished", "item_id": item["id"], **runtime_updates, **finish_result}
 
 
 def _record_active_payload(

@@ -223,12 +223,13 @@ class TerminalWorkerAdoptionTests(unittest.TestCase):
                 farmctl._pid_tree_exists = lambda pid: int(pid) == 4321
                 farmctl._stop_pid_tree = lambda pid: stopped.update({"pid": int(pid)}) or True
                 terminal_worker._finish_work_item = (
-                    lambda _root, item_id, exit_code: {
+                    lambda _root, item_id, exit_code, runtime_payload_updates=None: {
                         "finished": True,
                         "status": "done",
                         "verdict": "INFRA_FAIL",
                         "item_id": item_id,
                         "exit_code_seen": exit_code,
+                        "monitor_kill_seen": (runtime_payload_updates or {}).get("monitor_kill"),
                     }
                 )
 
@@ -241,6 +242,8 @@ class TerminalWorkerAdoptionTests(unittest.TestCase):
 
             self.assertEqual(result["action"], "finished")
             self.assertEqual(stopped["pid"], 4321)
+            self.assertEqual(result["monitor_kill_seen"]["effective_monitor_budget_seconds"], 900)
+            self.assertGreaterEqual(result["monitor_kill_seen"]["tester_runtime_seconds"], 1200)
             self.assertIsNone(result["exit_code_seen"])
 
     def test_adopted_monitor_deadline_never_below_inner_budget(self) -> None:
