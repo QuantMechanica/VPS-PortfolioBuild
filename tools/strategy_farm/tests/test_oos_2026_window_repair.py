@@ -821,6 +821,71 @@ def test_a_stale_plan_binding_is_repaired_even_with_the_window_present(
     assert entry["added_keys"] == [subject.WINDOW_REPAIR_MARKER]
 
 
+def test_exact_work_item_selector_is_fail_closed_and_leaves_bystanders_out(
+    fixture_db: tuple[Path, Path, Path]
+) -> None:
+    db, plan_path, _farm_root = fixture_db
+    before = _snapshot(db)
+
+    result = subject.plan_oos_window_repair(
+        db,
+        campaign_plan_path=plan_path,
+        work_item_ids=("pending-held",),
+    )
+
+    assert result["requested_work_item_ids"] == ["pending-held"]
+    assert result["counts"] == {
+        "campaign_rows": 1,
+        "pending_to_patch": 1,
+        "holds_to_release": 1,
+        "done_to_succeed": 0,
+        "unchanged": 0,
+        "skipped": 0,
+    }
+    assert [e["work_item_id"] for e in result["pending_patches"]] == [
+        "pending-held"
+    ]
+    assert _snapshot(db) == before
+
+    with pytest.raises(subject.OOS2026Error, match="absent or outside"):
+        subject.plan_oos_window_repair(
+            db,
+            campaign_plan_path=plan_path,
+            work_item_ids=("foreign-campaign-pending",),
+        )
+
+
+def test_exact_work_item_apply_mutates_only_the_selected_row(
+    fixture_db: tuple[Path, Path, Path], tmp_path: Path
+) -> None:
+    db, plan_path, farm_root = fixture_db
+    lock = tmp_path / "FACTORY_MUTATION.lock"
+    out = tmp_path / "targeted-receipt.json"
+    bystanders = tuple(sorted(set(BYSTANDER_IDS + (
+        "pending-foreign-hold",
+        "pending-repaired",
+        "done-correct",
+        "done-wrong",
+    ))))
+    bystanders_before = _snapshot(db, bystanders)
+
+    receipt = subject.apply_oos_window_repair(
+        db,
+        lock,
+        out,
+        campaign_plan_path=plan_path,
+        farm_root=farm_root,
+        work_item_ids=("pending-held",),
+    )
+
+    assert receipt["requested_work_item_ids"] == ["pending-held"]
+    assert receipt["patched_work_items"] == ["pending-held"]
+    assert receipt["released_holds"] == ["pending-held"]
+    assert receipt["minted_successors"] == []
+    assert _payload_of(db, "pending-held")["from_date"] == FROM_DATE
+    assert _snapshot(db, bystanders) == bystanders_before
+
+
 def test_apply_patches_releases_and_mints_then_is_idempotent(
     fixture_db: tuple[Path, Path, Path], tmp_path: Path
 ) -> None:

@@ -786,14 +786,29 @@ def _window_repair_plan(
     campaign_plan_path: Path,
     campaign_plan_sha256: str,
     at_utc: str,
+    work_item_ids: tuple[str, ...] | None = None,
 ) -> dict[str, Any]:
     conn.row_factory = sqlite3.Row
+    requested_ids = tuple(sorted(set(work_item_ids or ())))
+    where = "WHERE json_extract(payload_json,'$.diagnostic_campaign_id')=? "
+    params: tuple[Any, ...] = (CAMPAIGN_ID,)
+    if requested_ids:
+        where += f"AND id IN ({','.join('?' for _ in requested_ids)}) "
+        params += requested_ids
     rows = conn.execute(
         "SELECT * FROM work_items "
-        "WHERE json_extract(payload_json,'$.diagnostic_campaign_id')=? "
-        "ORDER BY COALESCE(json_extract(payload_json,'$.diagnostic_queue_rank'),0), created_at",
-        (CAMPAIGN_ID,),
+        + where
+        + "ORDER BY COALESCE(json_extract(payload_json,'$.diagnostic_queue_rank'),0), created_at",
+        params,
     ).fetchall()
+    if requested_ids:
+        found_ids = {str(row["id"]) for row in rows}
+        missing_ids = sorted(set(requested_ids) - found_ids)
+        if missing_ids:
+            raise OOS2026Error(
+                "requested work item is absent or outside the OOS-2026 campaign: "
+                + ", ".join(missing_ids)
+            )
 
     pending_patches: list[dict[str, Any]] = []
     successors: list[dict[str, Any]] = []
@@ -940,6 +955,7 @@ def _window_repair_plan(
         "campaign_plan_path": str(campaign_plan_path),
         "campaign_plan_sha256": campaign_plan_sha256,
         "diagnostic_non_admission": True,
+        "requested_work_item_ids": list(requested_ids) if requested_ids else None,
         "window": dict(window),
         "counts": {
             "campaign_rows": len(rows),
@@ -972,6 +988,7 @@ def plan_oos_window_repair(
     *,
     campaign_plan_path: Path = CAMPAIGN_PLAN_PATH,
     at_utc: str | None = None,
+    work_item_ids: tuple[str, ...] | None = None,
 ) -> dict[str, Any]:
     """Read-only dry run: exactly what the repair would change, and nothing else."""
     campaign, campaign_plan_sha256 = _load_campaign_plan(campaign_plan_path)
@@ -985,6 +1002,7 @@ def plan_oos_window_repair(
             campaign_plan_path=campaign_plan_path,
             campaign_plan_sha256=campaign_plan_sha256,
             at_utc=now,
+            work_item_ids=work_item_ids,
         )
     finally:
         conn.close()
@@ -1248,6 +1266,7 @@ def apply_oos_window_repair(
     *,
     campaign_plan_path: Path = CAMPAIGN_PLAN_PATH,
     farm_root: Path = FARM_ROOT,
+    work_item_ids: tuple[str, ...] | None = None,
 ) -> dict[str, Any]:
     """Apply the repair: governed backup, short-lock transaction, receipt after commit."""
     if out.exists():
@@ -1259,7 +1278,10 @@ def apply_oos_window_repair(
     # transaction: it is an unindexed full-table scan of work_items (~15 s on
     # the live DB).  Under the lock only the named rows are touched, by id.
     plan = plan_oos_window_repair(
-        db, campaign_plan_path=campaign_plan_path, at_utc=applied_at
+        db,
+        campaign_plan_path=campaign_plan_path,
+        at_utc=applied_at,
+        work_item_ids=work_item_ids,
     )
     release_note = (
         f"OOS-2026 explicit window contract repaired: {window['from_date']}.."
@@ -1341,6 +1363,12 @@ def main() -> int:
     window_repair.add_argument("--out",type=Path,help="receipt path (required with --apply)")
     window_repair.add_argument("--farm-root",type=Path,default=FARM_ROOT,
                                help="farm root the pre-mutation state backup is taken from")
+    window_repair.add_argument(
+        "--work-item-id",
+        action="append",
+        dest="work_item_ids",
+        help="repair only this exact campaign work item (repeatable; fail-closed)",
+    )
     window_repair.add_argument("--apply",action="store_true")
     args=parser.parse_args()
     if args.command == "repair-oos-window":
@@ -1349,11 +1377,14 @@ def main() -> int:
                 raise OOS2026Error("--apply requires --out")
             result=apply_oos_window_repair(
                 args.db,args.mutation_lock,args.out,campaign_plan_path=args.campaign_plan,
-                farm_root=args.farm_root,
+                farm_root=args.farm_root,work_item_ids=tuple(args.work_item_ids or ()) or None,
             )
         else:
             result=_stripped_plan(
-                plan_oos_window_repair(args.db,campaign_plan_path=args.campaign_plan)
+                plan_oos_window_repair(
+                    args.db,campaign_plan_path=args.campaign_plan,
+                    work_item_ids=tuple(args.work_item_ids or ()) or None,
+                )
             )
             if args.out:
                 args.out.parent.mkdir(parents=True,exist_ok=True)

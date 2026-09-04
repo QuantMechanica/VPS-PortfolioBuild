@@ -1,0 +1,81 @@
+{
+  "applied_at_utc": "2026-09-04T22:49:53+00:00",
+  "at_utc": "2026-09-04T22:49:53+00:00",
+  "campaign_id": "oos-2026-confirmation-v1",
+  "campaign_plan_path": "D:\\QM\\strategy_farm\\artifacts\\oos_2026_confirmation_v1\\campaign_plan.json",
+  "campaign_plan_sha256": "6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad",
+  "counts": {
+    "campaign_rows": 1,
+    "done_to_succeed": 0,
+    "holds_to_release": 1,
+    "pending_to_patch": 1,
+    "skipped": 0,
+    "unchanged": 0
+  },
+  "database": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+  "diagnostic_non_admission": true,
+  "minted_successors": [],
+  "mode": "APPLY",
+  "patched_work_items": [
+    "24acc5d4-3e34-526e-a7a8-12640a2e759f"
+  ],
+  "pending_patches": [
+    {
+      "added_keys": [
+        "from_date",
+        "oos_window_repair",
+        "to_date",
+        "window_from_utc",
+        "window_to_utc"
+      ],
+      "after": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06",
+        "window_from_utc": "2026-01-01T00:00:00Z",
+        "window_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "after_payload_sha256": "5b7613207b9f89bd466b9165d6b257c4f1d97e33a954be3c6c66f6be9c6d7589",
+      "before": {
+        "from_date": null,
+        "to_date": null,
+        "window_from_utc": null,
+        "window_to_utc": null
+      },
+      "before_payload_sha256": "7b2f7d95001a9330acda995ba0cd7e02e264cad8a5d9b5e6cb158313ec8a44f6",
+      "ea_id": "QM5_12778",
+      "hold_code": "OOS_WINDOW_MISMATCH",
+      "hold_release": true,
+      "ledger_idempotency_key": "hold_release:24acc5d4-3e34-526e-a7a8-12640a2e759f:OOS_WINDOW_MISMATCH:2026-09-04T22:49:53+00:00",
+      "ledger_written": true,
+      "payload_change": true,
+      "release_note": "OOS-2026 explicit window contract repaired: 2026.01.01..2026.04.06 written into the payload; campaign_plan_sha256=6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad; Astra task e544e3b8",
+      "released_at": "2026-09-04T22:49:53+00:00",
+      "status": "pending",
+      "symbol": "AUDUSD.DWX",
+      "verdict": null,
+      "work_item_id": "24acc5d4-3e34-526e-a7a8-12640a2e759f"
+    }
+  ],
+  "receipt_path": "C:\\QM\\repo\\artifacts\\fx_cointegration_qm5_12778_oos_window_repair_20260904T224953Z_board_advisor.json",
+  "released_holds": [
+    "24acc5d4-3e34-526e-a7a8-12640a2e759f"
+  ],
+  "requested_work_item_ids": [
+    "24acc5d4-3e34-526e-a7a8-12640a2e759f"
+  ],
+  "schema_version": "qm.oos-2026-window-repair/v1",
+  "skipped": [],
+  "state_backup": {
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_oos_window_repair_20260904T224953_919361Z.sqlite",
+    "sha256": "3e6173639d9c9d37c756448747706c4d906e630a7eba6bcccf6801451548a573"
+  },
+  "successors": [],
+  "superseded_work_items": [],
+  "unchanged": [],
+  "window": {
+    "from_date": "2026.01.01",
+    "to_date": "2026.04.06",
+    "window_from_utc": "2026-01-01T00:00:00Z",
+    "window_to_utc": "2026-04-06T23:59:59Z"
+  }
+}
