@@ -656,3 +656,7 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
 ## 18:56Z 2026-09-04 - long-run RAM cap (67fa2cf9d1)
 
 - Chunk 37 done 18:23:50Z; host load 100 -> 62 %. 18:50Z three heavy long runs (38.5 GB) idled seven workers via the RAM latch. New policy: measured long-run RAM cap 26 GB + Q09 stress class (RAM-gated only). Rollout chunk 38 at >= 20 GB free.
+
+## 19:37Z 2026-09-04 - Codex reset, Pro 20x, first Astra tasks
+
+- plan_tier pro_20x (d2a2145ab9); orchestration task re-enabled; tasks 1ff3fa26 (Astra, pattern fire-count tool), ccea329e (Astra, auto Q08 stream rerun; supersedes cfce4d87), 348af875 (Sol, independent review of c9e256cb).
