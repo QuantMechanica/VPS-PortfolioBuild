@@ -660,3 +660,7 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
 ## 19:37Z 2026-09-04 - Codex reset, Pro 20x, first Astra tasks
 
 - plan_tier pro_20x (d2a2145ab9); orchestration task re-enabled; tasks 1ff3fa26 (Astra, pattern fire-count tool), ccea329e (Astra, auto Q08 stream rerun; supersedes cfce4d87), 348af875 (Sol, independent review of c9e256cb).
+
+## 20:26Z 2026-09-04 - Astra returns accepted
+
+- 348af875 review PASS-with-findings -> diff applied f0738ca5d3; c9e256cb APPROVED. ccea329e auto Q08 stream rerun deployed b7c8891cb3 (42 tests, preview 0). 1ff3fa26 running. Sol cycle built QM5_41336 (card d9c86dc43d, build 67ce3bc876).
