@@ -664,3 +664,7 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
 ## 20:26Z 2026-09-04 - Astra returns accepted
 
 - 348af875 review PASS-with-findings -> diff applied f0738ca5d3; c9e256cb APPROVED. ccea329e auto Q08 stream rerun deployed b7c8891cb3 (42 tests, preview 0). 1ff3fa26 running. Sol cycle built QM5_41336 (card d9c86dc43d, build 67ce3bc876).
+
+## 21:01Z 2026-09-04 - monitor_budget_exhausted deployed (e1a8f38cd6); Astra FTMO analysis commissioned
+
+- b2106bba APPROVED and deployed; worker reload pending. Astra task e544e3b8 (FTMO book: faster and safe, mandatory gap list) IN_PROGRESS. Edge-lab workflow wf_35b7e0ed running for 315041f7.
