@@ -1,0 +1,48 @@
+{
+  "code_checkout": "C:\\QM\\worktrees\\codex",
+  "code_hashes": {
+    "tools/strategy_farm/research/pattern_fire_count.py": "50ba1bae6c2618a638b0c3a7f3596a4a042a79ca87b4e61b2bfb1edeea6a909d",
+    "tools/strategy_farm/research/verify_pattern_fire_count.py": "30fd1b2488230ba5ddfbc96a9e0834a148470597e744caf9b903dcf56dab9543",
+    "tools/strategy_farm/tests/test_pattern_fire_count.py": "01466ed34ef9465da354d8becd690a9d409f6af990745253d9cb93d97da68749"
+  },
+  "runs": [
+    {
+      "argv": [
+        "C:\\Python311\\python.exe",
+        "-m",
+        "pytest",
+        "tools/strategy_farm/tests/test_pattern_fire_count.py",
+        "-q"
+      ],
+      "returncode": 0,
+      "stdout": "........................................................................ [ 13%]\n........................................................................ [ 26%]\n........................................................................ [ 39%]\n........................................................................ [ 52%]\n........................................................................ [ 65%]\n........................................................................ [ 78%]\n........................................................................ [ 91%]\n................................................                         [100%]\n552 passed in 2.22s\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "C:\\Python311\\python.exe",
+        "tools/strategy_farm/research/verify_pattern_fire_count.py",
+        "--output-dir",
+        "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-04_pattern_fire_count_data"
+      ],
+      "returncode": 2,
+      "stdout": "[\n  {\n    \"program_id\": \"DL089_QM5_11421_EURUSD_DWX_2019_2025\",\n    \"compared_cells\": 154,\n    \"confusion_matrix\": {\n      \"true_never_fires\": 135,\n      \"false_never_fires\": 0,\n      \"true_fires\": 19,\n      \"false_fires\": 0\n    },\n    \"agreement\": 1.0,\n    \"accepted\": false,\n    \"acceptance_blockers\": [\n      \"Raw DWX TKC tick derivation and 20 tester-bar spot checks have not been verified.\",\n      \"Some completed/missing cells lack usable comparison evidence.\"\n    ],\n    \"never_firing_share_observed_years\": 0.564935064935065\n  },\n  {\n    \"program_id\": \"DL089_QM5_10706_GBPUSD_DWX_2019_2025\",\n    \"compared_cells\": 326,\n    \"confusion_matrix\": {\n      \"true_never_fires\": 160,\n      \"false_never_fires\": 0,\n      \"true_fires\": 166,\n      \"false_fires\": 0\n    },\n    \"agreement\": 1.0,\n    \"accepted\": false,\n    \"acceptance_blockers\": [\n      \"Raw DWX TKC tick derivation and 20 tester-bar spot checks have not been verified.\"\n    ],\n    \"never_firing_share_observed_years\": 0.3246753246753247\n  }\n]\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "C:\\Python311\\python.exe",
+        "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-04_pattern_fire_count_bar_probe.py"
+      ],
+      "returncode": 0,
+      "stdout": "[{\"symbol\": \"EURUSD.DWX\", \"matched\": 20, \"sample_days\": 20, \"native_tkc_files\": 99}, {\"symbol\": \"GBPUSD.DWX\", \"matched\": 20, \"sample_days\": 20, \"native_tkc_files\": 99}]\n",
+      "stderr": ""
+    }
+  ],
+  "expected_returncodes": [
+    0,
+    2,
+    0
+  ],
+  "explanation": "Harness exit 2 is mandatory non-acceptance, despite matching measured cells: raw tick/tester parity is unverified."
+}

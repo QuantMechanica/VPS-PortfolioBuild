@@ -1,0 +1,808 @@
+{
+  "schema": "qm.pattern_fire_count.supplemental_bar_probe.v1",
+  "raw_tick_derivation_verified": false,
+  "tester_bar_spot_checks_verified": false,
+  "limitation": "Independent D1 versus H1 native CopyRates exports only. No decoder for native TKC. Retained baseline report directories contain report.htm/tester.ini, not the referenced tester logs.",
+  "results": [
+    {
+      "symbol": "EURUSD.DWX",
+      "seed": 20260904,
+      "sample_days": 20,
+      "sample_population_days": 1799,
+      "matched": 20,
+      "daily_path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\EURUSD.DWX_D1.csv",
+      "daily_sha256": "7ecdc7c45678de73cb9fbe9390b563ee88d3dddd876feace489e3b4add653d0f",
+      "hourly_path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\EURUSD.DWX_H1.csv",
+      "hourly_sha256": "9d77d94b463abea9333b6622e2565107b396527d58959f7363eedabeba7620c4",
+      "archive_path": "D:\\QM\\archive\\Custom_master\\ticks\\EURUSD.DWX",
+      "native_tkc_files": 99,
+      "native_tkc_first_last": [
+        "201710.tkc",
+        "202512.tkc"
+      ],
+      "archive_total_bytes": 876244628,
+      "checks": [
+        {
+          "broker_day": "2019-01-24",
+          "h1_bars": 24,
+          "daily_export": {
+            "open": 1.13791,
+            "high": 1.13914,
+            "low": 1.12894,
+            "close": 1.1305,
+            "tickvol": 224164.0
+          },
+          "h1_aggregation": {
+            "open": 1.13791,
+            "high": 1.13914,
+            "low": 1.12894,
+            "close": 1.1305,
+            "tickvol": 224164
+          },
+          "exact_ohlcv_match": true
+        },
+        {
+          "broker_day": "2019-12-10",
+          "h1_bars": 24,
+          "daily_export": {
+            "open": 1.10638,
+            "high": 1.10976,
+            "low": 1.10626,
+            "close": 1.10928,
+            "tickvol": 64868.0
+          },
+          "h1_aggregation": {
+            "open": 1.10638,
+            "high": 1.10976,
+            "low": 1.10626,
+            "close": 1.10928,
+            "tickvol": 64868
+          },
+          "exact_ohlcv_match": true
+        },
+        {
+          "broker_day": "2020-01-15",
+          "h1_bars": 24,
+          "daily_export": {
+            "open": 1.11255,
+            "high": 1.11634,
+            "low": 1.11184,
+            "close": 1.11494,
+            "tickvol": 62237.0
+          },
+          "h1_aggregation": {
+            "open": 1.11255,
+            "high": 1.11634,
+            "low": 1.11184,
+            "close": 1.11494,
+            "tickvol": 62237
+          },
+          "exact_ohlcv_match": true
+        },
+        {
+          "broker_day": "2020-07-24",
+          "h1_bars": 24,
+          "daily_export": {
+            "open": 1.15947,
+            "high": 1.1658,
+            "low": 1.15811,
+            "close": 1.16547,
+            "tickvol": 162395.0
+          },
+          "h1_aggregation": {
+            "open": 1.15947,
+            "high": 1.1658,
+            "low": 1.15811,
+            "close": 1.16547,
+            "tickvol": 162395
+          },
+          "exact_ohlcv_match": true
+        },
+        {
+          "broker_day": "2020-12-08",
+          "h1_bars": 24,
+          "daily_export": {
+            "open": 1.21078,
+            "high": 1.2134,
+            "low": 1.20955,
+            "close": 1.21047,
+            "tickvol": 169673.0
+          },
+          "h1_aggregation": {
+            "open": 1.21078,
+            "high": 1.2134,
+            "low": 1.20955,
+            "close": 1.21047,
+            "tickvol": 169673
+          },
+          "exact_ohlcv_match": true
+        },
+        {
+          "broker_day": "2020-12-14",
+          "h1_bars": 24,
+          "daily_export": {
+            "open": 1.21356,
+            "high": 1.21766,
+            "low": 1.21155,
+            "close": 1.21411,
+            "tickvol": 151280.0
+          },
+          "h1_aggregation": {
+            "open": 1.21356,
+            "high": 1.21766,
+            "low": 1.21155,
+            "close": 1.21411,
+            "tickvol": 151280
+          },
+          "exact_ohlcv_match": true
+        },
+        {
+          "broker_day": "2021-02-18",
+          "h1_bars": 24,
+          "daily_export": {
+            "open": 1.20386,
+            "high": 1.20944,
+            "low": 1.20355,
+            "close": 1.20931,
+            "tickvol": 138145.0
+          },
+          "h1_aggregation": {
+            "open": 1.20386,
+            "high": 1.20944,
+            "low": 1.20355,
+            "close": 1.20931,
+            "tickvol": 138145
+          },
+          "exact_ohlcv_match": true
+        },
+        {
+          "broker_day": "2021-03-19",
+          "h1_bars": 24,
+          "daily_export": {
+            "open": 1.19119,
+            "high": 1.19371,
+            "low": 1.18738,
+            "close": 1.19043,
+            "tickvol": 158522.0
+          },
+          "h1_aggregation": {
+            "open": 1.19119,
+            "high": 1.19371,
+            "low": 1.18738,
+            "close": 1.19043,
+            "tickvol": 158522
+          },
+          "exact_ohlcv_match": true
+        },
+        {
+          "broker_day": "2021-11-16",
+          "h1_bars": 24,
+          "daily_export": {
+            "open": 1.13678,
+            "high": 1.13856,
+            "low": 1.13088,
+            "close": 1.13188,
+            "tickvol": 128507.0
+          },
+          "h1_aggregation": {
+            "open": 1.13678,
+            "high": 1.13856,
+            "low": 1.13088,
+            "close": 1.13188,
+            "tickvol": 128507
+          },
+          "exact_ohlcv_match": true
+        },
+        {
+          "broker_day": "2022-02-16",
+          "h1_bars": 24,
+          "daily_export": {
+            "open": 1.13567,
+            "high": 1.13956,
+            "low": 1.13449,
+            "close": 1.13722,
+            "tickvol": 145390.0
+          },
+          "h1_aggregation": {
+            "open": 1.13567,
+            "high": 1.13956,
+            "low": 1.13449,
+            "close": 1.13722,
+            "tickvol": 145390
+          },
+          "exact_ohlcv_match": true
+        },
+        {
+          "broker_day": "2022-09-29",
+          "h1_bars": 24,
+          "daily_export": {
+            "open": 0.97326,
+            "high": 0.9815,
+            "low": 0.96355,
+            "close": 0.98129,
+            "tickvol": 260794.0
+          },
+          "h1_aggregation": {
+            "open": 0.97326,
+            "high": 0.9815,
+            "low": 0.96355,
+            "close": 0.98129,
+            "tickvol": 260794
+          },
+          "exact_ohlcv_match": true
+        },
+        {
+          "broker_day": "2022-11-04",
+          "h1_bars": 24,
+          "daily_export": {
+            "open": 0.97478,
+            "high": 0.99665,
+            "low": 0.97424,
+            "close": 0.99593,
+            "tickvol": 227338.0
+          },
+          "h1_aggregation": {
+            "open": 0.97478,
+            "high": 0.99665,
+            "low": 0.97424,
+            "close": 0.99593,
+            "tickvol": 227338
+          },
+          "exact_ohlcv_match": true
+        },
+        {
+          "broker_day": "2022-12-16",
+          "h1_bars": 24,
+          "daily_export": {
+            "open": 1.06274,
+            "high": 1.06631,
+            "low": 1.05848,
+            "close": 1.05891,
+            "tickvol": 170286.0
+          },
+          "h1_aggregation": {
+            "open": 1.06274,
+            "high": 1.06631,
+            "low": 1.05848,
+            "close": 1.05891,
+            "tickvol": 170286
+          },
+          "exact_ohlcv_match": true
+        },
+        {
+          "broker_day": "2024-04-25",
+          "h1_bars": 24,
+          "daily_export": {
+            "open": 1.0694,
+            "high": 1.07401,
+            "low": 1.06783,
+            "close": 1.07296,
+            "tickvol": 69688.0
+          },
+          "h1_aggregation": {
+            "open": 1.0694,
+            "high": 1.07401,
+            "low": 1.06783,
+            "close": 1.07296,
+            "tickvol": 69688
+          },
+          "exact_ohlcv_match": true
+        },
+        {
+          "broker_day": "2024-11-08",
+          "h1_bars": 24,
+          "daily_export": {
+            "open": 1.08034,
+            "high": 1.08056,
+            "low": 1.06868,
+            "close": 1.07178,
+            "tickvol": 89857.0
+          },
+          "h1_aggregation": {
+            "open": 1.08034,
+            "high": 1.08056,
+            "low": 1.06868,
+            "close": 1.07178,
+            "tickvol": 89857
+          },
+          "exact_ohlcv_match": true
+        },
+        {
+          "broker_day": "2025-01-30",
+          "h1_bars": 24,
+          "daily_export": {
+            "open": 1.04182,
+            "high": 1.04675,
+            "low": 1.0386,
+            "close": 1.03918,
+            "tickvol": 114628.0
+          },
+          "h1_aggregation": {
+            "open": 1.04182,
+            "high": 1.04675,
+            "low": 1.0386,
+            "close": 1.03918,
+            "tickvol": 114628
+          },
+          "exact_ohlcv_match": true
+        },
+        {
+          "broker_day": "2025-02-27",
+          "h1_bars": 24,
+          "daily_export": {
+            "open": 1.04817,
+            "high": 1.04924,
+            "low": 1.03969,
+            "close": 1.03983,
+            "tickvol": 111134.0
+          },
+          "h1_aggregation": {
+            "open": 1.04817,
+            "high": 1.04924,
+            "low": 1.03969,
+            "close": 1.03983,
+            "tickvol": 111134
+          },
+          "exact_ohlcv_match": true
+        },
+        {
+          "broker_day": "2025-05-07",
+          "h1_bars": 24,
+          "daily_export": {
+            "open": 1.13645,
+            "high": 1.13781,
+            "low": 1.12917,
+            "close": 1.12989,
+            "tickvol": 145567.0
+          },
+          "h1_aggregation": {
+            "open": 1.13645,
+            "high": 1.13781,
+            "low": 1.12917,
+            "close": 1.12989,
+            "tickvol": 145567
+          },
+          "exact_ohlcv_match": true
+        },
+        {
+          "broker_day": "2025-09-15",
+          "h1_bars": 24,
+          "daily_export": {
+            "open": 1.17283,
+            "high": 1.17744,
+            "low": 1.17161,
+            "close": 1.17612,
+            "tickvol": 72433.0
+          },
+          "h1_aggregation": {
+            "open": 1.17283,
+            "high": 1.17744,
+            "low": 1.17161,
+            "close": 1.17612,
+            "tickvol": 72433
+          },
+          "exact_ohlcv_match": true
+        },
+        {
+          "broker_day": "2025-11-18",
+          "h1_bars": 24,
+          "daily_export": {
+            "open": 1.15901,
+            "high": 1.16077,
+            "low": 1.15714,
+            "close": 1.15803,
+            "tickvol": 81669.0
+          },
+          "h1_aggregation": {
+            "open": 1.15901,
+            "high": 1.16077,
+            "low": 1.15714,
+            "close": 1.15803,
+            "tickvol": 81669
+          },
+          "exact_ohlcv_match": true
+        }
+      ]
+    },
+    {
+      "symbol": "GBPUSD.DWX",
+      "seed": 20260904,
+      "sample_days": 20,
+      "sample_population_days": 1800,
+      "matched": 20,
+      "daily_path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\GBPUSD.DWX_D1.csv",
+      "daily_sha256": "c354b33f801382b8cc508180238c1d4d04e1d743d5d76f1ce7f0634f3ce5b5ea",
+      "hourly_path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\GBPUSD.DWX_H1.csv",
+      "hourly_sha256": "21f323f4e4a93fea4ce7f107095a62fded25fd38cc644ec9fbc88d0ec5d46924",
+      "archive_path": "D:\\QM\\archive\\Custom_master\\ticks\\GBPUSD.DWX",
+      "native_tkc_files": 99,
+      "native_tkc_first_last": [
+        "201710.tkc",
+        "202512.tkc"
+      ],
+      "archive_total_bytes": 1114888340,
+      "checks": [
+        {
+          "broker_day": "2019-01-24",
+          "h1_bars": 24,
+          "daily_export": {
+            "open": 1.30641,
+            "high": 1.30942,
+            "low": 1.3012,
+            "close": 1.30621,
+            "tickvol": 257012.0
+          },
+          "h1_aggregation": {
+            "open": 1.30641,
+            "high": 1.30942,
+            "low": 1.3012,
+            "close": 1.30621,
+            "tickvol": 257012
+          },
+          "exact_ohlcv_match": true
+        },
+        {
+          "broker_day": "2019-12-10",
+          "h1_bars": 24,
+          "daily_export": {
+            "open": 1.31368,
+            "high": 1.32149,
+            "low": 1.31325,
+            "close": 1.3153,
+            "tickvol": 142224.0
+          },
+          "h1_aggregation": {
+            "open": 1.31368,
+            "high": 1.32149,
+            "low": 1.31325,
+            "close": 1.3153,
+            "tickvol": 142224
+          },
+          "exact_ohlcv_match": true
+        },
+        {
+          "broker_day": "2020-01-15",
+          "h1_bars": 24,
+          "daily_export": {
+            "open": 1.3017,
+            "high": 1.30427,
+            "low": 1.29842,
+            "close": 1.3038,
+            "tickvol": 148065.0
+          },
+          "h1_aggregation": {
+            "open": 1.3017,
+            "high": 1.30427,
+            "low": 1.29842,
+            "close": 1.3038,
+            "tickvol": 148065
+          },
+          "exact_ohlcv_match": true
+        },
+        {
+          "broker_day": "2020-07-24",
+          "h1_bars": 24,
+          "daily_export": {
+            "open": 1.27301,
+            "high": 1.28034,
+            "low": 1.27168,
+            "close": 1.27958,
+            "tickvol": 184162.0
+          },
+          "h1_aggregation": {
+            "open": 1.27301,
+            "high": 1.28034,
+            "low": 1.27168,
+            "close": 1.27958,
+            "tickvol": 184162
+          },
+          "exact_ohlcv_match": true
+        },
+        {
+          "broker_day": "2020-12-08",
+          "h1_bars": 24,
+          "daily_export": {
+            "open": 1.3373,
+            "high": 1.33931,
+            "low": 1.32894,
+            "close": 1.33558,
+            "tickvol": 227476.0
+          },
+          "h1_aggregation": {
+            "open": 1.3373,
+            "high": 1.33931,
+            "low": 1.32894,
+            "close": 1.33558,
+            "tickvol": 227476
+          },
+          "exact_ohlcv_match": true
+        },
+        {
+          "broker_day": "2020-12-14",
+          "h1_bars": 24,
+          "daily_export": {
+            "open": 1.33473,
+            "high": 1.34454,
+            "low": 1.32898,
+            "close": 1.33287,
+            "tickvol": 199273.0
+          },
+          "h1_aggregation": {
+            "open": 1.33473,
+            "high": 1.34454,
+            "low": 1.32898,
+            "close": 1.33287,
+            "tickvol": 199273
+          },
+          "exact_ohlcv_match": true
+        },
+        {
+          "broker_day": "2021-02-18",
+          "h1_bars": 24,
+          "daily_export": {
+            "open": 1.38528,
+            "high": 1.3986,
+            "low": 1.38395,
+            "close": 1.39722,
+            "tickvol": 188567.0
+          },
+          "h1_aggregation": {
+            "open": 1.38528,
+            "high": 1.3986,
+            "low": 1.38395,
+            "close": 1.39722,
+            "tickvol": 188567
+          },
+          "exact_ohlcv_match": true
+        },
+        {
+          "broker_day": "2021-03-19",
+          "h1_bars": 24,
+          "daily_export": {
+            "open": 1.39254,
+            "high": 1.39592,
+            "low": 1.38308,
+            "close": 1.3863,
+            "tickvol": 207764.0
+          },
+          "h1_aggregation": {
+            "open": 1.39254,
+            "high": 1.39592,
+            "low": 1.38308,
+            "close": 1.3863,
+            "tickvol": 207764
+          },
+          "exact_ohlcv_match": true
+        },
+        {
+          "broker_day": "2021-11-16",
+          "h1_bars": 24,
+          "daily_export": {
+            "open": 1.34086,
+            "high": 1.34725,
+            "low": 1.34049,
+            "close": 1.34277,
+            "tickvol": 173129.0
+          },
+          "h1_aggregation": {
+            "open": 1.34086,
+            "high": 1.34725,
+            "low": 1.34049,
+            "close": 1.34277,
+            "tickvol": 173129
+          },
+          "exact_ohlcv_match": true
+        },
+        {
+          "broker_day": "2022-02-16",
+          "h1_bars": 24,
+          "daily_export": {
+            "open": 1.35326,
+            "high": 1.36009,
+            "low": 1.35273,
+            "close": 1.35832,
+            "tickvol": 152963.0
+          },
+          "h1_aggregation": {
+            "open": 1.35326,
+            "high": 1.36009,
+            "low": 1.35273,
+            "close": 1.35832,
+            "tickvol": 152963
+          },
+          "exact_ohlcv_match": true
+        },
+        {
+          "broker_day": "2022-09-29",
+          "h1_bars": 24,
+          "daily_export": {
+            "open": 1.0876,
+            "high": 1.11195,
+            "low": 1.07621,
+            "close": 1.1115,
+            "tickvol": 277215.0
+          },
+          "h1_aggregation": {
+            "open": 1.0876,
+            "high": 1.11195,
+            "low": 1.07621,
+            "close": 1.1115,
+            "tickvol": 277215
+          },
+          "exact_ohlcv_match": true
+        },
+        {
+          "broker_day": "2022-11-04",
+          "h1_bars": 24,
+          "daily_export": {
+            "open": 1.11517,
+            "high": 1.13823,
+            "low": 1.11455,
+            "close": 1.13733,
+            "tickvol": 229759.0
+          },
+          "h1_aggregation": {
+            "open": 1.11517,
+            "high": 1.13823,
+            "low": 1.11455,
+            "close": 1.13733,
+            "tickvol": 229759
+          },
+          "exact_ohlcv_match": true
+        },
+        {
+          "broker_day": "2022-12-16",
+          "h1_bars": 24,
+          "daily_export": {
+            "open": 1.21773,
+            "high": 1.2223,
+            "low": 1.21195,
+            "close": 1.21527,
+            "tickvol": 173650.0
+          },
+          "h1_aggregation": {
+            "open": 1.21773,
+            "high": 1.2223,
+            "low": 1.21195,
+            "close": 1.21527,
+            "tickvol": 173650
+          },
+          "exact_ohlcv_match": true
+        },
+        {
+          "broker_day": "2024-04-26",
+          "h1_bars": 24,
+          "daily_export": {
+            "open": 1.25112,
+            "high": 1.2541,
+            "low": 1.24487,
+            "close": 1.24925,
+            "tickvol": 119814.0
+          },
+          "h1_aggregation": {
+            "open": 1.25112,
+            "high": 1.2541,
+            "low": 1.24487,
+            "close": 1.24925,
+            "tickvol": 119814
+          },
+          "exact_ohlcv_match": true
+        },
+        {
+          "broker_day": "2024-11-11",
+          "h1_bars": 24,
+          "daily_export": {
+            "open": 1.2882,
+            "high": 1.29257,
+            "low": 1.28559,
+            "close": 1.28676,
+            "tickvol": 115135.0
+          },
+          "h1_aggregation": {
+            "open": 1.2882,
+            "high": 1.29257,
+            "low": 1.28559,
+            "close": 1.28676,
+            "tickvol": 115135
+          },
+          "exact_ohlcv_match": true
+        },
+        {
+          "broker_day": "2025-01-31",
+          "h1_bars": 24,
+          "daily_export": {
+            "open": 1.24105,
+            "high": 1.24715,
+            "low": 1.23857,
+            "close": 1.23904,
+            "tickvol": 169858.0
+          },
+          "h1_aggregation": {
+            "open": 1.24105,
+            "high": 1.24715,
+            "low": 1.23857,
+            "close": 1.23904,
+            "tickvol": 169858
+          },
+          "exact_ohlcv_match": true
+        },
+        {
+          "broker_day": "2025-02-28",
+          "h1_bars": 24,
+          "daily_export": {
+            "open": 1.26012,
+            "high": 1.26216,
+            "low": 1.25591,
+            "close": 1.25784,
+            "tickvol": 177056.0
+          },
+          "h1_aggregation": {
+            "open": 1.26012,
+            "high": 1.26216,
+            "low": 1.25591,
+            "close": 1.25784,
+            "tickvol": 177056
+          },
+          "exact_ohlcv_match": true
+        },
+        {
+          "broker_day": "2025-05-08",
+          "h1_bars": 24,
+          "daily_export": {
+            "open": 1.32839,
+            "high": 1.33561,
+            "low": 1.32362,
+            "close": 1.3245,
+            "tickvol": 148651.0
+          },
+          "h1_aggregation": {
+            "open": 1.32839,
+            "high": 1.33561,
+            "low": 1.32362,
+            "close": 1.3245,
+            "tickvol": 148651
+          },
+          "exact_ohlcv_match": true
+        },
+        {
+          "broker_day": "2025-09-16",
+          "h1_bars": 24,
+          "daily_export": {
+            "open": 1.35961,
+            "high": 1.36716,
+            "low": 1.35961,
+            "close": 1.3645,
+            "tickvol": 129472.0
+          },
+          "h1_aggregation": {
+            "open": 1.35961,
+            "high": 1.36716,
+            "low": 1.35961,
+            "close": 1.3645,
+            "tickvol": 129472
+          },
+          "exact_ohlcv_match": true
+        },
+        {
+          "broker_day": "2025-11-18",
+          "h1_bars": 24,
+          "daily_export": {
+            "open": 1.31547,
+            "high": 1.31766,
+            "low": 1.31336,
+            "close": 1.31449,
+            "tickvol": 161817.0
+          },
+          "h1_aggregation": {
+            "open": 1.31547,
+            "high": 1.31766,
+            "low": 1.31336,
+            "close": 1.31449,
+            "tickvol": 161817
+          },
+          "exact_ohlcv_match": true
+        }
+      ]
+    }
+  ]
+}
