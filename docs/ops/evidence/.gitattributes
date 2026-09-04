@@ -1,0 +1,2 @@
+# Preserve exact bytes of the hash-bound FTMO analysis inputs and receipts.
+2026-09-04_astra_ftmo_*.json -text
