@@ -69,6 +69,8 @@ def _gate_modules() -> list:
 
 
 SHIPPED_CONFIG_PATH = Path(quota_spawn_gate.CONFIG_PATH)
+SCENARIO_PLAN_TIER = "plus"          # budgets the window scenarios were written against
+SHIPPED_PLAN_TIER = "pro_20x"        # OWNER 2026-09-04: "Wir haben Pro 20x"
 
 
 @pytest.fixture(autouse=True)
@@ -84,6 +86,11 @@ def _enforce_window_mode(tmp_path, monkeypatch):
     """
     policy = json.loads(SHIPPED_CONFIG_PATH.read_text(encoding="utf-8"))
     policy["model_matrix"]["codex"][tiers.ENFORCEMENT_MODE_FIELD] = tiers.ENFORCEMENT_ENFORCE
+    # 2026-09-04 ~19:30Z: OWNER stated the real plan (pro_20x) and the shipped
+    # config now carries it.  The window scenarios below were written against
+    # the Plus budgets (astra floor(3*0.8)=2, sol 8, ...) and pin that plan
+    # explicitly; the shipped value is asserted separately.
+    policy["model_matrix"]["codex"]["plan_tier"] = SCENARIO_PLAN_TIER
     config_path = tmp_path / "policy_enforce.json"
     config_path.write_text(json.dumps(policy), encoding="utf-8")
     for mod in _gate_modules():
@@ -204,7 +211,10 @@ def test_shipped_matrix_is_complete_and_keeps_the_current_default_model() -> Non
 
     assert tiers.validate_matrix(codex) is None
     assert codex["model"] == "gpt-5.6-sol"
-    assert codex["plan_tier"] == "plus"
+    assert codex["plan_tier"] == SCENARIO_PLAN_TIER          # pinned by _enforce_window_mode
+    shipped = _shipped_policy()["model_matrix"]["codex"]
+    assert shipped["plan_tier"] == SHIPPED_PLAN_TIER
+    assert shipped["plan_tier"] in shipped["allowed_plan_tiers"]
     assert codex["explicit_tier_payload_field"] == "codex_model_tier"
     assert codex["window_safety_factor"] == 0.8
     assert codex["tiers"]["astra"]["model"] == "gpt-6-astra"
@@ -2054,7 +2064,7 @@ def test_the_shipped_policy_observes_by_default() -> None:
     assert tiers.enforcement_mode({}) == tiers.DEFAULT_ENFORCEMENT_MODE
     assert tiers.DEFAULT_ENFORCEMENT_MODE == tiers.ENFORCEMENT_OBSERVE
     assert tiers.validate_matrix(codex) is None
-    assert codex["plan_tier"] == "plus"
+    assert codex["plan_tier"] == SHIPPED_PLAN_TIER
 
 
 def test_observe_mode_never_refuses_across_twenty_dispatches(tmp_path: Path) -> None:

@@ -21,10 +21,10 @@
         "max"
       ],
       "explicit_payload_field": "codex_reasoning_effort",
-      "_tiers_doc": "Model routing doctrine 2026-09-04 section 5. five_hour_messages = LOW end of the OWNER message table per plan tier; the budget actually spent is floor(value * window_safety_factor), the remainder is the interactive OWNER reserve. plan_tier stays 'plus' until OWNER states the active plan (doctrine section 6). Rollback: QM_CODEX_MODEL_TIERS=0 restores the single 'model' above.",
+      "_tiers_doc": "Model routing doctrine 2026-09-04 section 5. five_hour_messages = LOW end of the OWNER message table per plan tier; the budget actually spent is floor(value * window_safety_factor), the remainder is the interactive OWNER reserve. plan_tier = pro_20x per OWNER 2026-09-04 ~19:30Z ('Wir haben Pro 20x'); Codex reset done the same time. Rollback: QM_CODEX_MODEL_TIERS=0 restores the single 'model' above.",
       "_tier_selection_doc": "Precedence (doctrine section 2): explicit payload codex_model_tier > scalpel:true / strategy_mechanize_source -> astra > effort class max->sol, high->terra, medium->luna > default_tier. The effort-class step is OPT-IN behind effort_class_tier_mapping_enabled (CEO decision D1, round 3, 2026-09-04): with the flag false a task that names no codex_model_tier resolves to default_tier 'sol' and KEEPS its existing effort class, i.e. the dispatched command line is byte-identical to the pre-doctrine one. Set the flag to true only with an explicit OWNER/orchestrator acknowledgement that every ordinary Codex build then runs gpt-5.6-terra and every bulk task gpt-5.6-luna.",
       "_effort_class_tier_mapping_doc": "false = untiered tasks keep today's model (gpt-5.6-sol) with their existing max/high/medium effort. true = doctrine section 2 mapping max->sol, high->terra, medium->luna. Explicit codex_model_tier, scalpel:true and task type strategy_mechanize_source resolve to their tiers in BOTH settings.",
-      "plan_tier": "plus",
+      "plan_tier": "pro_20x",
       "allowed_plan_tiers": [
         "plus",
         "pro_5x",
