@@ -553,3 +553,8 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
 - Vein-1 wave 1: 16 FX rows of the first 30 packet rows requeued append-only (Q02 successors c3b82ffc, e0b5b369, 901d3f05, 525a75e4, 0d614c0a, 727fd995, 75b113ab, 2c7d0845, e5998de2, e3a60097, b31bd6bc, 90f77b53, 83ac79f0, 9a0ced77, c246db5e, 138e5d99); 14 index rows deferred (single_index_tick 44 GB class, unclaimable). Result file: scratch `vein1_wave1_result.json`.
 - News-Gate A: RAM-gated expansion subcap 2->3 merged as 88be67be5b (122 tests green); idle-only worker reload chunk 27 started 04:12Z.
 - Q08 stream reruns: due 05:00Z; commands extracted to scratch `q08_rerun_cmds.txt`.
+
+## 05:01Z 2026-09-04 - counter 6/25, Q08 stream reruns (Auffangregel 05:00Z)
+
+- QM5_21505/XAGUSD terminal: Q12 `540eadc0` NO_FILTER_CHANGE 04:29Z -> Q13 NO_PARAMETER_CHANGE 04:39Z -> Q14 KEEP_INCUMBENT 04:49Z; `book_build_guard --status --venue both` qualified_pairs = 6.
+- Q08 sealed-stream reruns enqueued from `docs/ops/evidence/2026-09-03_q08_stream_reemission_packet.md` section 4 after re-running the section 5 pre-flight (all four PASS): `f62fe6b3` (QM5_1537/XAGUSD, rerun of 262514ac), `a2e1aba6` (QM5_10706/GBPUSD, rerun of 7855588a), `2bd0f95c` (QM5_11422/USDCAD, rerun of d3907c1a), `21dd6839` (QM5_13054/XTIUSD, rerun of d62d792e). Scratch: `q08_rerun_result.json`.
