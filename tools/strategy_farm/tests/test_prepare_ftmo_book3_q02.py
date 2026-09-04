@@ -160,7 +160,7 @@ def _fixture(tmp_path: Path, monkeypatch) -> dict:
         target = repo / relative
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(content, encoding="utf-8")
-    official_snapshot = repo / "docs/ops/evidence/2026-09-02_ftmo_official_rules_snapshot.json"
+    official_snapshot = repo / "docs/ops/evidence/2026-09-04_ftmo_official_rules_snapshot.json"
     official_snapshot.parent.mkdir(parents=True, exist_ok=True)
     official_snapshot.write_text('{"schema":"qm.ftmo-official-rules-snapshot/v1"}\n', encoding="utf-8")
     rulepack = repo / "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_SWING_V2.json"
@@ -168,7 +168,7 @@ def _fixture(tmp_path: Path, monkeypatch) -> dict:
     rulepack.write_text(
         json.dumps({
             "official_sources": [{
-                "snapshot_path": "docs/ops/evidence/2026-09-02_ftmo_official_rules_snapshot.json",
+                "snapshot_path": "docs/ops/evidence/2026-09-04_ftmo_official_rules_snapshot.json",
                 "snapshot_sha256": _sha(official_snapshot),
             }]
         }) + "\n",
@@ -550,7 +550,7 @@ def test_prepare_plan_is_exact_six_item_t10_contract(tmp_path: Path, monkeypatch
         assert payload["live_commission_path"].endswith("live_commission.json")
         assert payload["dwx_symbol_matrix_path"].endswith("dwx_symbol_matrix.csv")
         assert payload["ftmo_official_rules_snapshot_path"].endswith(
-            "2026-09-02_ftmo_official_rules_snapshot.json"
+            "2026-09-04_ftmo_official_rules_snapshot.json"
         )
         assert payload["isolated_runner_sha256"] == plan["controller_artifacts"]["isolated_runner"]["sha256"]
         assert payload["terminal_worker_sha256"] == plan["controller_artifacts"]["terminal_worker"]["sha256"]

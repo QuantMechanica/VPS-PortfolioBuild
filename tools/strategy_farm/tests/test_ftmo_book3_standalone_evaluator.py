@@ -12,7 +12,7 @@ from tools.strategy_farm.portfolio import ftmo_book3_standalone_evaluator as eva
 
 EVALUATOR_SOURCE_COMMIT = "2" * 40
 INCLUDE_TREE_SHA256 = "b" * 64
-RULE_SNAPSHOT_FRESH_NOW = dt.datetime(2026, 9, 3, 1, 30, tzinfo=dt.UTC)
+RULE_SNAPSHOT_FRESH_NOW = dt.datetime(2026, 9, 5, 1, 30, tzinfo=dt.UTC)
 EXPECTED_BASE_SUCCESS_KEYS = {
     "worker_exit_code_zero",
     "work_item_done",
@@ -1598,7 +1598,7 @@ def test_rulepack_as_of_and_official_snapshot_freshness_are_fail_closed() -> Non
         )
 
     future = json.loads(json.dumps(snapshot))
-    future["retrieved_at_utc"] = "2026-09-04T00:00:00Z"
+    future["retrieved_at_utc"] = "2026-09-06T00:00:00Z"
     with pytest.raises(
         evaluator.StandaloneEvaluationError, match="rule_snapshot:future_timestamp"
     ):

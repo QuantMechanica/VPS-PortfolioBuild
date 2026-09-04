@@ -139,11 +139,16 @@ DEFAULT_COST_SNAPSHOT_PATH = Path(
 DEFAULT_COST_SNAPSHOT_SHA256 = (
     "7eab3bf8c97373fcb44e36aca39dd679fbd3e093783cd6eacd9cb171190b3280"
 )
-DEFAULT_RULEPACK_PATH = Path(
-    r"C:\QM\repo\tools\strategy_farm\config\target_rulepacks\FTMO_2S_100K_SWING_V2.json"
+# Resolved against this module's own checkout, exactly like
+# OFFICIAL_RULE_SNAPSHOT_RELATIVE_PATH below.  The rulepack and the official-rules
+# snapshot are cross-validated against each other, so they must never be read from
+# two different checkouts.  In the canonical repository this resolves to the same
+# absolute path the constant carried before.
+DEFAULT_RULEPACK_PATH = (
+    REPO_ROOT / "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_SWING_V2.json"
 )
 DEFAULT_RULEPACK_SHA256 = (
-    "042fbcf9d7fd5c520473c6715200f22706b34cd036ba4d3d8d87228890ea5924"
+    "298ef1285eca49ea7f010ebc0a9353b5a821fccb40a025be129f5ca5314fd992"
 )
 
 STARTING_BALANCE = 100_000.0
@@ -166,10 +171,10 @@ EXPECTED_BOOK: dict[str, tuple[int, str, str]] = {
 }
 
 OFFICIAL_RULE_SNAPSHOT_RELATIVE_PATH = Path(
-    "docs/ops/evidence/2026-09-02_ftmo_official_rules_snapshot.json"
+    "docs/ops/evidence/2026-09-04_ftmo_official_rules_snapshot.json"
 )
 OFFICIAL_RULE_SNAPSHOT_SHA256 = (
-    "d055f71cd2f4c094928a3b19861f0a4ae29654718808117a44458963e9c3d7f8"
+    "c199b8f5f528cce5a93f4751f63394de63e5fe832483ac9c4b9d0314732d2905"
 )
 EXPECTED_OFFICIAL_SOURCE_IDS = frozenset(
     {
@@ -1236,7 +1241,7 @@ def _validate_official_rule_sources(
         raise StandaloneEvaluationError("rule_snapshot:stale")
     if any(
         row.get("retrieved_at_utc") != snapshot.get("retrieved_at_utc")
-        or row.get("retrieved_on") != "2026-09-02"
+        or row.get("retrieved_on") != "2026-09-04"
         for row in by_id.values()
     ):
         raise StandaloneEvaluationError("rulepack:official_source_vintage_invalid")
@@ -1324,7 +1329,7 @@ def _official_rules(rulepack: Mapping[str, Any]) -> dict[str, Any]:
         "profile_version": 2,
         "target": "FTMO",
         "account_or_program": "FTMO Challenge 2-Step / USD 100000 / Swing",
-        "as_of": "2026-09-02",
+        "as_of": "2026-09-04",
         "lifecycle_status": "RESEARCH_CONTRACT_ONLY",
         "canonicalization": {
             "algorithm": "QM_CANONICAL_JSON_V1",

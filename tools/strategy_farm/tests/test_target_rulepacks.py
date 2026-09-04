@@ -30,7 +30,7 @@ def test_loads_both_versioned_rulepacks_with_canonical_hashes() -> None:
     assert {DXZ_ID, FTMO_ID} <= set(loaded)
     for pack in loaded.values():
         assert pack.rulepack_id.endswith(f"_V{pack.profile_version}")
-        assert pack.as_of == ("2026-09-02" if pack.rulepack_id == FTMO_ID else "2026-07-29")
+        assert pack.as_of == ("2026-09-04" if pack.rulepack_id == FTMO_ID else "2026-07-29")
         assert len(pack.canonical_sha256) == 64
         assert pack.canonical_sha256 == hashlib.sha256(pack.canonical_payload).hexdigest()
         assert pack.canonical_sha256 == rulepacks.canonical_sha256(pack.as_dict())
