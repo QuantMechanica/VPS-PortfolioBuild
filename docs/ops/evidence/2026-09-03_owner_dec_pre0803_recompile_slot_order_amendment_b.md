@@ -547,3 +547,9 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
 - Drain window armed 02:33:26Z for QM5_11129 Q07 `e046b36b` (reservation 44 GB, floor 14) was not winnable (free 19.6 GB + releasable tester working sets 25.5 GB < 48 GB) and held the fleet at 0 cells/10 min. Closed manually 02:52Z (`active=null`, cooldown until 04:21Z; before-copy in scratch `drain_window_before_0252Z.json`).
 - Holds `RAM_WINDOW_44GB` (active=1, release_on_restart=0) placed on `e046b36b` (QM5_11129 Q07) and `bd12175c` (QM5_10815 Q02). Rollback: `farmctl release-hold`.
 - Throughput recovered to 44-60 cells/10 min by 03:00Z after the claim-spacing phase of the nine workers reloaded by chunk 26.
+
+## 04:14Z 2026-09-04 - Auffangregel executions 04:00Z
+
+- Vein-1 wave 1: 16 FX rows of the first 30 packet rows requeued append-only (Q02 successors c3b82ffc, e0b5b369, 901d3f05, 525a75e4, 0d614c0a, 727fd995, 75b113ab, 2c7d0845, e5998de2, e3a60097, b31bd6bc, 90f77b53, 83ac79f0, 9a0ced77, c246db5e, 138e5d99); 14 index rows deferred (single_index_tick 44 GB class, unclaimable). Result file: scratch `vein1_wave1_result.json`.
+- News-Gate A: RAM-gated expansion subcap 2->3 merged as 88be67be5b (122 tests green); idle-only worker reload chunk 27 started 04:12Z.
+- Q08 stream reruns: due 05:00Z; commands extracted to scratch `q08_rerun_cmds.txt`.
