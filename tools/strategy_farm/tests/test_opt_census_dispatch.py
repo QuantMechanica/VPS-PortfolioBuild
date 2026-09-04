@@ -1260,3 +1260,199 @@ def test_amendment_b_admits_news_expansion_child_of_a_lineage_parent(
     # top-down gate key: OPT_CENSUS=0 vs Q10_NEWS=2).
     assert head[0] == "child-of-lineage"
     assert head.index("census-cell") < head.index("child-of-ordinary")
+
+
+# ---------------------------------------------------------------------------
+# 9 . QUEUE-ORDER DISPATCH -- the OWNER program queue order steers the spare
+#     per-cell lanes among the K admitted DL-089 programs
+#     (OWNER-DEC-PRE0803-RECOMPILE-SLOTORDER-AMENDB-20260903, claim-selection
+#     half).  set_dl089_queue_order.py writes payload.queue_order_at onto the
+#     pending Q12 owner row (earlier = higher priority); a census cell joins its
+#     owner by payload.q12_work_item_id.  The new _opt_census_queue_order_rank is
+#     ordered AFTER the idle-program fairness key and BEFORE the age term.
+# ---------------------------------------------------------------------------
+
+
+def _q12_owner_payload(queue_order_at: object) -> dict:
+    payload = {"role": "PATTERN"}
+    if queue_order_at is not None:
+        payload["queue_order_at"] = queue_order_at
+    return payload
+
+
+def _frontier_cell_payload(program_id: str, q12_id: str, arm: str, year: int) -> dict:
+    return {
+        "schema": census.SCHEMA,
+        "program_id": program_id,
+        "q12_work_item_id": q12_id,
+        "arm": arm,
+        "year": year,
+        "priority_track": True,
+        census.FRONTIER_PRIORITY_MARKER: True,
+    }
+
+
+def _insert_spec(conn: sqlite3.Connection, spec: list, created_at: str) -> None:
+    """spec rows: (id, phase, status, claimed_by, payload, updated_at)."""
+    for item_id, phase, status, claimed_by, payload, updated_at in spec:
+        _insert(
+            conn, id=item_id, kind="backtest", phase=phase,
+            ea_id=f"QM5_{item_id}", symbol="XAUUSD.DWX",
+            setfile_path=f"{item_id}.set", status=status, claimed_by=claimed_by,
+            attempt_count=0, payload_json=json.dumps(payload),
+            created_at=created_at, updated_at=updated_at,
+        )
+    conn.commit()
+
+
+def test_queue_order_dispatches_next_cell_to_earlier_ordered_program(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Two admitted programs, each with one active cell: the next pending cell
+    goes to the program whose Q12 owner carries the earlier OWNER queue order.
+
+    Both programs are busy, so the idle-program key ties at 1 and the new
+    queue-order key is the deciding tie-break."""
+    monkeypatch.setenv(farmctl.TOPDOWN_GATE_PRIORITY_ENV, "1")
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    now = "2026-09-03T00:00:00+00:00"
+    with farmctl.connect(root) as conn:
+        _insert_spec(conn, [
+            ("q12-early", "Q12", "pending", None,
+             _q12_owner_payload("2026-09-01T00:00:00+00:00"), now),
+            ("q12-late", "Q12", "pending", None,
+             _q12_owner_payload("2026-09-02T00:00:00+00:00"), now),
+            ("early-active", "OPT_CENSUS", "active", "T1",
+             _frontier_cell_payload("prog-early", "q12-early", "a1", 2019), now),
+            ("late-active", "OPT_CENSUS", "active", "T2",
+             _frontier_cell_payload("prog-late", "q12-late", "b1", 2019), now),
+            ("early-cell", "OPT_CENSUS", "pending", None,
+             _frontier_cell_payload("prog-early", "q12-early", "a2", 2020), now),
+            ("late-cell", "OPT_CENSUS", "pending", None,
+             _frontier_cell_payload("prog-late", "q12-late", "b2", 2020), now),
+        ], now)
+        ordered = conn.execute(farmctl.pending_claim_order_sql()).fetchall()
+
+    by_id = {row["id"]: row for row in ordered}
+    # both admitted programs are busy (each has an active cell) -> idle key ties
+    assert by_id["early-cell"]["_opt_census_idle_program_rank"] == 1
+    assert by_id["late-cell"]["_opt_census_idle_program_rank"] == 1
+    # the rank column is the owner's OWNER queue-order timestamp verbatim
+    assert (by_id["early-cell"]["_opt_census_queue_order_rank"]
+            == "2026-09-01T00:00:00+00:00")
+    assert (by_id["late-cell"]["_opt_census_queue_order_rank"]
+            == "2026-09-02T00:00:00+00:00")
+    order = [row["id"] for row in ordered]
+    assert order.index("early-cell") < order.index("late-cell")
+
+
+def test_idle_program_precedes_busy_higher_priority_program(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """An idle admitted program still gets its first lane: the idle-program key
+    is ordered BEFORE the queue-order key, so the idle program's head sorts
+    ahead of a busy program even when the busy program carries the earlier
+    (higher-priority) OWNER queue order."""
+    monkeypatch.setenv(farmctl.TOPDOWN_GATE_PRIORITY_ENV, "1")
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    now = "2026-09-03T00:00:00+00:00"
+    with farmctl.connect(root) as conn:
+        _insert_spec(conn, [
+            ("q12-busy", "Q12", "pending", None,
+             _q12_owner_payload("2026-09-01T00:00:00+00:00"), now),
+            ("q12-idle", "Q12", "pending", None,
+             _q12_owner_payload("2026-09-05T00:00:00+00:00"), now),
+            ("busy-active", "OPT_CENSUS", "active", "T1",
+             _frontier_cell_payload("prog-busy", "q12-busy", "a1", 2019), now),
+            ("busy-cell", "OPT_CENSUS", "pending", None,
+             _frontier_cell_payload("prog-busy", "q12-busy", "a2", 2020), now),
+            ("idle-cell", "OPT_CENSUS", "pending", None,
+             _frontier_cell_payload("prog-idle", "q12-idle", "c1", 2019), now),
+        ], now)
+        ordered = conn.execute(farmctl.pending_claim_order_sql()).fetchall()
+
+    by_id = {row["id"]: row for row in ordered}
+    assert by_id["idle-cell"]["_opt_census_idle_program_rank"] == 0
+    assert by_id["busy-cell"]["_opt_census_idle_program_rank"] == 1
+    # the busy program does carry the higher-priority (earlier) queue order ...
+    assert (by_id["busy-cell"]["_opt_census_queue_order_rank"]
+            == "2026-09-01T00:00:00+00:00")
+    assert (by_id["idle-cell"]["_opt_census_queue_order_rank"]
+            == "2026-09-05T00:00:00+00:00")
+    # ... yet fairness wins: the idle head is dispatched first.
+    order = [row["id"] for row in ordered]
+    assert order.index("idle-cell") < order.index("busy-cell")
+
+
+def test_unordered_programs_keep_their_relative_order(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A census cell whose Q12 owner carries no explicit queue order takes the
+    sentinel, so the new key never differentiates two unordered programs; their
+    relative order stays exactly what the existing tie-breaks (here updated_at
+    ASC) produce."""
+    monkeypatch.setenv(farmctl.TOPDOWN_GATE_PRIORITY_ENV, "1")
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    now = "2026-09-03T00:00:00+00:00"
+    with farmctl.connect(root) as conn:
+        _insert_spec(conn, [
+            ("q12-none-a", "Q12", "pending", None, _q12_owner_payload(None), now),
+            ("q12-none-b", "Q12", "pending", None, _q12_owner_payload(None), now),
+            ("cell-a", "OPT_CENSUS", "pending", None,
+             _frontier_cell_payload("prog-a", "q12-none-a", "a1", 2020),
+             "2026-09-03T00:00:00+00:00"),
+            ("cell-b", "OPT_CENSUS", "pending", None,
+             _frontier_cell_payload("prog-b", "q12-none-b", "b1", 2020),
+             "2026-09-03T01:00:00+00:00"),
+        ], now)
+        ordered = conn.execute(farmctl.pending_claim_order_sql()).fetchall()
+
+    by_id = {row["id"]: row for row in ordered}
+    sentinel = farmctl._OPT_CENSUS_QUEUE_ORDER_SENTINEL
+    assert by_id["cell-a"]["_opt_census_queue_order_rank"] == sentinel
+    assert by_id["cell-b"]["_opt_census_queue_order_rank"] == sentinel
+    census_order = [r["id"] for r in ordered if r["id"] in ("cell-a", "cell-b")]
+    assert census_order == ["cell-a", "cell-b"]
+
+
+def test_queue_order_memo_returns_identical_rows(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The per-process claim-order memo (execute_pending_claim_order) returns the
+    byte-identical ordered rows the raw query returns, on both the build MISS and
+    the reuse HIT, with the new queue-order key present in the SQL text."""
+    monkeypatch.setenv(farmctl.TOPDOWN_GATE_PRIORITY_ENV, "1")
+    monkeypatch.setenv(farmctl.CLAIM_ORDER_CACHE_TTL_MS_ENV, "5000")
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    now = "2026-09-03T00:00:00+00:00"
+    farmctl._CLAIM_ORDER_CACHE.clear()
+    farmctl._reset_claim_order_pollers()
+    try:
+        with farmctl.connect(root) as conn:
+            _insert_spec(conn, [
+                ("q12-early", "Q12", "pending", None,
+                 _q12_owner_payload("2026-09-01T00:00:00+00:00"), now),
+                ("q12-none", "Q12", "pending", None, _q12_owner_payload(None), now),
+                ("early-active", "OPT_CENSUS", "active", "T1",
+                 _frontier_cell_payload("prog-early", "q12-early", "a1", 2019), now),
+                ("early-cell", "OPT_CENSUS", "pending", None,
+                 _frontier_cell_payload("prog-early", "q12-early", "a2", 2020), now),
+                ("none-cell", "OPT_CENSUS", "pending", None,
+                 _frontier_cell_payload("prog-none", "q12-none", "c1", 2020), now),
+                ("plain-q02", "Q02", "pending", None, {}, now),
+            ], now)
+            raw = conn.execute(farmctl.pending_claim_order_sql()).fetchall()
+            assert "_opt_census_queue_order_rank" in farmctl.pending_claim_order_sql()
+            miss = farmctl.execute_pending_claim_order(conn)   # MISS -> builds
+            hit = farmctl.execute_pending_claim_order(conn)    # HIT -> reuse
+            assert [tuple(r) for r in miss] == [tuple(r) for r in raw]
+            assert [r["id"] for r in hit] == [r["id"] for r in raw]
+            entry = next(iter(farmctl._CLAIM_ORDER_CACHE.values()))
+            assert hit is entry.rows
+    finally:
+        farmctl._CLAIM_ORDER_CACHE.clear()
+        farmctl._reset_claim_order_pollers()

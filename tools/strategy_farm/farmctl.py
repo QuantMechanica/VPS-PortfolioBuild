@@ -2202,6 +2202,18 @@ def _lineage_rerun_rank_sql() -> str:
     )
 
 
+# OWNER-DEC-PRE0803-RECOMPILE-SLOTORDER-AMENDB-20260903 (claim-selection half):
+# the OWNER queue-order timestamp on a program's Q12 owner row governs slot
+# admission (set_dl089_queue_order.py writes payload.queue_order_at; earlier =
+# higher priority).  Among the K admitted programs the spare per-cell lanes then
+# go to the highest-priority (earliest queue_order_at) program.  This sentinel
+# sorts strictly AFTER every real ISO 8601 queue_order_at (tilde 0x7E > any
+# digit), so an OPT_CENSUS cell whose owner carries no explicit queue order
+# keeps today's behaviour: it ties with every other unordered cell on this key
+# and falls through to the age term below.
+_OPT_CENSUS_QUEUE_ORDER_SENTINEL = "~QM_NO_QUEUE_ORDER"
+
+
 def pending_claim_order_sql() -> str:
     """Canonical pending-work ordering — the ONE selector every claimant uses.
 
@@ -2230,6 +2242,7 @@ def pending_claim_order_sql() -> str:
             "_opt_census_post_census_rank ASC, "
             "_opt_census_frontier_rank ASC, "
             "_opt_census_idle_program_rank ASC, "
+            "_opt_census_queue_order_rank ASC, "
             "(_phase_rank - _age_weeks) ASC, "
             "_basket_q02_rank ASC, _diagnostic_queue_rank ASC, "
             "_winner_rank ASC, _asset_rank ASC, "
@@ -2396,6 +2409,37 @@ def pending_claim_order_sql() -> str:
                  ), ''))) > 0
              ) THEN 0
             ELSE 1 END AS _opt_census_idle_program_rank,
+          CASE
+            -- OWNER-DEC-PRE0803-...-AMENDB-20260903 (claim-selection half):
+            -- among the K admitted DL-089 programs the spare per-cell lanes
+            -- go to the highest-priority program -- the one whose Q12 owner
+            -- row carries the earliest OWNER queue-order timestamp
+            -- (set_dl089_queue_order.py writes payload.queue_order_at onto the
+            -- pending Q12 owner; earlier sorts first).  A census cell joins its
+            -- owner by payload.q12_work_item_id.  A cell whose owner has no
+            -- explicit queue order takes the sentinel (sorts after every real
+            -- timestamp), so it keeps today's behaviour and falls through to
+            -- the age term.  Ordered ONLY under the top-down selector, AFTER
+            -- the idle-program fairness key and BEFORE the age term, so an idle
+            -- admitted program still gets its first lane.
+            WHEN upper(COALESCE(w.phase, ''))='OPT_CENSUS'
+             AND json_valid(w.payload_json)=1
+             AND length(trim(COALESCE(
+               json_extract(w.payload_json, '$.q12_work_item_id'), ''
+             ))) > 0
+            THEN COALESCE(
+              (SELECT CASE WHEN json_valid(q12_owner.payload_json)=1
+                THEN json_extract(q12_owner.payload_json, '$.queue_order_at')
+                ELSE NULL END
+               FROM work_items q12_owner
+               WHERE q12_owner.id = json_extract(
+                 w.payload_json, '$.q12_work_item_id'
+               )
+               LIMIT 1),
+              '{_OPT_CENSUS_QUEUE_ORDER_SENTINEL}'
+            )
+            ELSE '{_OPT_CENSUS_QUEUE_ORDER_SENTINEL}' END
+            AS _opt_census_queue_order_rank,
           MAX(0, CAST(COALESCE(julianday('now') - julianday(w.created_at), 0) / 7 AS INTEGER))
             AS _age_weeks,
           CASE w.phase
