@@ -10418,6 +10418,81 @@ while ($queue.Count -gt 0) {{
 _RUNNING_MT5_TTL_SECONDS = 4.0
 _RUNNING_MT5_STALE_OK_SECONDS = 30.0
 _running_mt5_cache: dict[str, Any] = {"ts": 0.0, "value": None}
+# 2026-09-04 16:55Z (CEO): the PowerShell/CIM scan costs ~1.6 s wall and ~1 s CPU
+# per call; with the 4 s cache and a ~20 s idle claim loop every resident worker
+# re-ran it each iteration -- eight idle workers burned ~6 % of the 16-thread host
+# EACH (measured 16:52Z), starving the three running testers.  The native path
+# below enumerates terminal64.exe images through Toolhelp32 +
+# QueryFullProcessImageNameW in ~10 ms without spawning a process; the
+# PowerShell scan stays as the fallback and the fail-open semantics are unchanged.
+_MT5_TERMINAL_IMAGE_RE = re.compile(r"[\\/](T(?:[1-9]|1[0-2]))[\\/]terminal64\.exe$", re.IGNORECASE)
+
+
+def _terminal_ids_from_image_paths(paths: "Iterable[str]") -> set[str]:
+    """T-ids (upper-case) of terminal64.exe image paths shaped ``...\Tn\terminal64.exe``."""
+    found: set[str] = set()
+    for raw in paths:
+        match = _MT5_TERMINAL_IMAGE_RE.search(str(raw or "").strip())
+        if match:
+            found.add(match.group(1).upper())
+    return found
+
+
+def _running_mt5_terminal_ids_native() -> "set[str] | None":
+    """Enumerate running terminal64.exe images natively; None when unavailable."""
+    if sys.platform != "win32":
+        return None
+    try:
+        import ctypes
+        from ctypes import wintypes
+
+        class _PROCESSENTRY32W(ctypes.Structure):
+            _fields_ = [
+                ("dwSize", wintypes.DWORD),
+                ("cntUsage", wintypes.DWORD),
+                ("th32ProcessID", wintypes.DWORD),
+                ("th32DefaultHeapID", ctypes.POINTER(ctypes.c_ulong)),
+                ("th32ModuleID", wintypes.DWORD),
+                ("cntThreads", wintypes.DWORD),
+                ("th32ParentProcessID", wintypes.DWORD),
+                ("pcPriClassBase", ctypes.c_long),
+                ("dwFlags", wintypes.DWORD),
+                ("szExeFile", ctypes.c_wchar * 260),
+            ]
+
+        kernel32 = ctypes.windll.kernel32
+        TH32CS_SNAPPROCESS = 0x00000002
+        INVALID_HANDLE_VALUE = ctypes.c_void_p(-1).value
+        PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+        snapshot = kernel32.CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0)
+        if snapshot == INVALID_HANDLE_VALUE or not snapshot:
+            return None
+        pids: list[int] = []
+        try:
+            entry = _PROCESSENTRY32W()
+            entry.dwSize = ctypes.sizeof(_PROCESSENTRY32W)
+            more = kernel32.Process32FirstW(snapshot, ctypes.byref(entry))
+            while more:
+                if str(entry.szExeFile or "").lower() == "terminal64.exe":
+                    pids.append(int(entry.th32ProcessID))
+                more = kernel32.Process32NextW(snapshot, ctypes.byref(entry))
+        finally:
+            kernel32.CloseHandle(snapshot)
+        images: list[str] = []
+        for pid in pids:
+            handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
+            if not handle:
+                continue
+            try:
+                size = wintypes.DWORD(1024)
+                buffer = ctypes.create_unicode_buffer(int(size.value))
+                if kernel32.QueryFullProcessImageNameW(handle, 0, buffer, ctypes.byref(size)):
+                    images.append(str(buffer.value))
+            finally:
+                kernel32.CloseHandle(handle)
+        return _terminal_ids_from_image_paths(images)
+    except Exception:
+        return None
 
 
 def _running_mt5_terminals() -> set[str]:
@@ -10427,6 +10502,12 @@ def _running_mt5_terminals() -> set[str]:
     cache_age = now_m - float(_running_mt5_cache.get("ts") or 0.0)
     if cached is not None and cache_age < _RUNNING_MT5_TTL_SECONDS:
         return set(cached)
+    native = _running_mt5_terminal_ids_native()
+    if native is not None:
+        result = {t for t in native if t in allowed}
+        _running_mt5_cache["ts"] = now_m
+        _running_mt5_cache["value"] = set(result)
+        return result
     try:
         proc = subprocess.run(
             [
