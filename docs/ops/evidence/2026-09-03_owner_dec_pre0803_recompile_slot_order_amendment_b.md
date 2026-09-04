@@ -607,3 +607,8 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
 
 - 08:45Z free RAM 2.2 GB; T9 had relaunched the next seed of `bd18ccaa` (pid 34232, 26 GB). Stopped reload chunk 30, terminated pid 34232 and the T9 worker (pid 9432); free RAM 32.9 GB; starter restored ten workers. `bd18ccaa` returned to pending under hold `RAM_OUTLIER_4X_RESERVATION`.
 - Reload chunk 31 started for T6/T8/T4/T10/T2/T5/T7 (legacy-lane fix f6236b5e46); T1/T3/T9 already on the new code.
+
+## 09:34Z 2026-09-04 - drain winnability on measured working sets
+
+- 09:12:35Z drain armed for QM5_10718 FX8 basket Q02 `31f12573` (44 GB) on paper reservations; closed manually 09:27Z (cooldown 10:56Z), row held `DRAIN_UNWINNABLE_ARITHMETIC`. 553 pending rows carry >= 40 GB reservations.
+- Fix e1413e756a (`_drain_measured_subtree_gb`, releasable = min(reservation, measured), unmeasured = 0); reload chunk 32 for all ten workers started 09:33Z; holds on 12580 (`9cac4667`) and 10718 (`31f12573`) to be released after the reload.
