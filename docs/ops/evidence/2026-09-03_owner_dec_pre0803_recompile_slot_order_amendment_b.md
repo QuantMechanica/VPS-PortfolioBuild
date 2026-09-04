@@ -568,3 +568,8 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
 
 - QM5_20048/XTIUSD terminal: Q12 `5a6d1b1c` NO_FILTER_CHANGE 05:48Z -> Q13 NO_PARAMETER_CHANGE 05:58Z -> Q14 KEEP_INCUMBENT 06:08Z; `book_build_guard --status --venue both` qualified_pairs = 7.
 - Drain fix 5e8e5c9a2a (open drain refuses NEW long-run claims on the claim path); hold `DRAIN_DEFER_LONGRUN_BURST` on QM5_12580 Q03 `9cac4667` until the three pending Q08 reruns finish; worker reload chunk 28 started 06:08Z.
+
+## 06:20Z 2026-09-04 - Codex model tiers merged with the tier layer disabled
+
+- Merge b8c62c975a (wf_76cb7101-72e rounds 1-3, verified; round-3 residuals are tier-layer only). Machine env `QM_CODEX_MODEL_TIERS=0` set via `[Environment]::SetEnvironmentVariable(..., 'Machine')`; fresh-process probe: `codex_spawn_contract` flags [] / ledger not recorded, `command_for` argv identical to the pre-patch form. Router-side decision-bound pinning and payload capability union are active unconditionally.
+- Round 4 (D8-D12) resumed on wf_76cb7101-72e as a delta against HEAD; the tier layer is switched on only after round 4 merges and OWNER states the Codex plan tier.
