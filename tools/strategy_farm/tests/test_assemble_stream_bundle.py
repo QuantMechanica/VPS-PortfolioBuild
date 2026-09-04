@@ -290,3 +290,57 @@ def test_cli_writes_manifest_and_exit_code(layout, tmp_path):
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     assert manifest["bound_count"] == 1
     assert manifest["refused_count"] == 1
+
+
+def test_q08_pass_class_mirrors_the_census_rule():
+    """OWNER-DEC-BUNDLE-Q08-PASSCLASS-20260904: the bundle accepts exactly the
+    census Q08 PASS-class (PASS plus rebaseline_census.GATE_SCOPED_PASS['Q08'])."""
+    import tools.strategy_farm.rebaseline_census as rc
+
+    expected = {"PASS"} | set(rc.GATE_SCOPED_PASS.get("Q08", ()))
+    assert set(asb.Q08_STREAM_PASS_VERDICTS) == expected
+    assert "FAIL_SOFT" in asb.Q08_STREAM_PASS_VERDICTS
+    assert "FAIL_HARD" not in asb.Q08_STREAM_PASS_VERDICTS
+
+
+def test_q08_fail_soft_stream_binds_and_fail_hard_does_not(tmp_path):
+    """Pair 8 (QM5_11910 NZDUSD, 2026-09-04): a Q08 FAIL_SOFT row with a sealed
+    current-identity stream binds; a FAIL_HARD row never does."""
+    ev = tmp_path / "reports" / "work_items"
+    seal_dir = tmp_path / "reports" / "portfolio" / "sleeve_streams" / "QM" / "q08_trades"
+    db_path = tmp_path / "farm_state.sqlite"
+    con = _make_db(db_path)
+
+    ex5_soft = "5" * 64
+    stream_soft = seal_dir / "9010_NZDUSD_DWX.jsonl"
+    sha_soft = _write_stream(stream_soft, "NZDUSD.DWX")
+    agg_soft = ev / "wi_soft" / "aggregate.json"
+    _aggregate(agg_soft, source_ex5=ex5_soft, content_sha=sha_soft, stream_path=stream_soft)
+    _q14(con, "q14_soft", "QM5_9010", "NZDUSD.DWX", ex5_soft, "2026-09-04T15:34:00Z")
+    _q08(con, "q08_soft", "QM5_9010", "NZDUSD.DWX", agg_soft, "2026-09-04T16:05:00Z", verdict="FAIL_SOFT")
+
+    ex5_hard = "6" * 64
+    stream_hard = seal_dir / "9011_AUDUSD_DWX.jsonl"
+    sha_hard = _write_stream(stream_hard, "AUDUSD.DWX")
+    agg_hard = ev / "wi_hard" / "aggregate.json"
+    _aggregate(agg_hard, source_ex5=ex5_hard, content_sha=sha_hard, stream_path=stream_hard)
+    _q14(con, "q14_hard", "QM5_9011", "AUDUSD.DWX", ex5_hard, "2026-09-04T15:34:00Z")
+    _q08(con, "q08_hard", "QM5_9011", "AUDUSD.DWX", agg_hard, "2026-09-04T16:05:00Z", verdict="FAIL_HARD")
+    con.commit(); con.close()
+
+    manifest = asb.assemble_bundle(
+        db_path=db_path,
+        out_root=tmp_path / "out",
+        pairs=[("QM5_9010", "NZDUSD.DWX"), ("QM5_9011", "AUDUSD.DWX")],
+        search_roots=[tmp_path / "reports" / "portfolio" / "sleeve_streams"],
+        verify_loadable=True,
+    )
+    items = _by_pair(manifest)
+    soft = items["QM5_9010:NZDUSD.DWX"]
+    assert soft["outcome"] == "bound"
+    assert soft["q08_work_item_id"] == "q08_soft"
+    assert soft["sha256"] == sha_soft
+    hard = items["QM5_9011:AUDUSD.DWX"]
+    assert hard["outcome"] == "refused"
+    assert hard["reason"] == "no_q08_stream_bound_to_identity"
+

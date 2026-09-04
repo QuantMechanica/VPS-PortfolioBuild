@@ -15,7 +15,8 @@ Binding contract (fail-closed, never fabricates a stream):
 1. Current identity = the ``ex5_sha256`` that carried the pair's terminal Q14
    head-to-head verdict (KEEP_INCUMBENT / PROMOTE_CHALLENGER / CHALLENGER_PROMOTED /
    ADMIT_BOTH -- the Q14 PASS-class of rebaseline_census.PASS_ECON).
-2. The pair's most recent Q08 ``done`` / ``PASS`` work item must carry a
+2. The pair's most recent Q08 ``done`` work item of the census Q08 PASS-class
+   (``PASS`` or ``FAIL_SOFT``; OWNER-DEC-BUNDLE-Q08-PASSCLASS-20260904) must carry a
    ``portfolio_stream`` block in its ``aggregate.json`` whose
    ``source_ex5_sha256`` equals that identity; that block pins the sealed
    ``content_sha256`` and the recorded stream path.
@@ -56,6 +57,14 @@ TERMINAL_PASS_VERDICTS = frozenset({
     "CHALLENGER_PROMOTED",
     "ADMIT_BOTH",
 })
+
+# Q08 verdicts whose sealed stream is book evidence.  Mirrors the census rule
+# rebaseline_census.GATE_SCOPED_PASS["Q08"] (OWNER-DEC-DL082-EXT Option D: a Q08
+# Davey FAIL_SOFT is contiguous book evidence), aligned to the bundle by
+# OWNER-DEC-BUNDLE-Q08-PASSCLASS-20260904 ("Bundle Regel an Census Regel
+# angleichen, ja.", 2026-09-04).  Pair 8 (QM5_11910 NZDUSD) carried a sealed
+# current-identity stream (work item 977a478e) that the PASS-only filter refused.
+Q08_STREAM_PASS_VERDICTS = frozenset({"PASS", "FAIL_SOFT"})
 
 # Identity-hash payload keys, in priority order (rebaseline_census.BUILD_HASH_KEYS).
 BUILD_HASH_KEYS = (
@@ -183,12 +192,15 @@ def _read_portfolio_stream(evidence_path: str | None) -> dict[str, Any] | None:
 def find_bound_q08(
     con: sqlite3.Connection, ea_label: str, symbol: str, identity_ex5: str
 ) -> dict[str, Any] | None:
-    """Most recent Q08 PASS row whose sealed stream is bound to ``identity_ex5``."""
+    """Most recent Q08 PASS-class row whose sealed stream is bound to ``identity_ex5``."""
+    verdicts = tuple(sorted(Q08_STREAM_PASS_VERDICTS))
+    placeholders = ", ".join("?" for _ in verdicts)
     rows = con.execute(
         "SELECT id, verdict, evidence_path, updated_at FROM work_items "
-        "WHERE ea_id=? AND symbol=? AND phase='Q08' AND status='done' AND verdict='PASS' "
+        "WHERE ea_id=? AND symbol=? AND phase='Q08' AND status='done' "
+        f"AND verdict IN ({placeholders}) "
         "ORDER BY updated_at DESC",
-        (ea_label, symbol),
+        (ea_label, symbol, *verdicts),
     ).fetchall()
     for row in rows:
         block = _read_portfolio_stream(row["evidence_path"])
