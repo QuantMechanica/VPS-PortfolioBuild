@@ -597,3 +597,8 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
 
 - Free RAM 0.6 GB at 08:09Z (T1 worker log `ram_low_pause`); cause: Q05 QM5_10395/EURJPY on T9 (`bd18ccaa`, reservation 8 GB) at 27 GB working set plus two Q07 runs. Workers T1/T3/T10 exited; starter refused restarts (ram capacity 0). T_Live pid 19016 unaffected (0.19 GB).
 - 45 s re-measure 08:14Z: 6.9 -> 7.2 GB free, tester steady at 27 GB -> no kill under the 1.5 GB rule; detached watcher `ram_watch_34496.py` armed at 3 GB (two consecutive samples) as T_Live protection. Router task `924c36df` commissioned (emergency reaper, per-EA memory expectations, MemoryError hardening).
+
+## 08:36Z 2026-09-04 - RAM outlier terminated, reload chunk 30
+
+- 08:34Z free RAM 3.3 GB; tester pid 38528 (T9, Q05 QM5_10395/EURJPY `bd18ccaa`, second seed process) at 31 GB working set vs 8 GB reservation. Terminated 08:36Z (free RAM 34.3 GB afterwards); hold `RAM_OUTLIER_4X_RESERVATION` on `bd18ccaa` until router task `924c36df` lands per-EA memory expectations.
+- Reload chunk 30 (legacy-lane long-run classification f6236b5e46) started 08:35Z with 10 workers and 35 GB free.
