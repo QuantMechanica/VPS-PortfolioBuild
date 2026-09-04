@@ -32,3 +32,19 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
+; strategy params backfilled from the EA's own input defaults;
+; behaviour-identical (an omitted param already used this value),
+; required by Q08 sub-gate 8.5 which perturbs named parameters.
+strategy_atr_period=14
+strategy_cci_oversold=-80.0
+strategy_cci_period=11
+strategy_fast_sma_period=24
+strategy_keep_alive_bars=3
+strategy_slow_sma_period=31
+strategy_stop_atr_mult=3.0
+strategy_stop_loss_pct=3.25
+strategy_trail_activation_atr=1.5
+strategy_trail_activation_pct=1.50
+strategy_trail_deviation_atr=0.5
+strategy_trail_deviation_pct=0.15
+strategy_use_atr_equivalent=false

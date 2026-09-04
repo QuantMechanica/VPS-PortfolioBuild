@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -10,6 +11,41 @@ import pytest
 
 REPO = Path(__file__).resolve().parents[3]
 GEN_SETFILE = REPO / "framework" / "scripts" / "gen_setfile.ps1"
+
+REPAIRED_Q08_BASELINES = (
+    ("QM5_10771_tv-trail-hunter", "XAUUSD.DWX_H1"),
+    ("QM5_10771_tv-trail-hunter", "USDJPY.DWX_H1"),
+    ("QM5_9573_brooks-ib-breakout-failure-h4", "NDX.DWX_H4"),
+    ("QM5_9573_brooks-ib-breakout-failure-h4", "USDCHF.DWX_H4"),
+    ("QM5_10148_tii-signal", "EURNZD.DWX_D1"),
+    ("QM5_10848_tv-mtf-ambush", "GDAXI.DWX_H1"),
+    ("QM5_10287_cinar-ichimoku", "XAUUSD.DWX_D1"),
+    ("QM5_1230_carver-dynvol-mav", "XAUUSD.DWX_D1"),
+)
+
+
+@pytest.mark.parametrize(("ea_slug", "symbol_tf"), REPAIRED_Q08_BASELINES)
+def test_repaired_q08_baseline_materializes_every_strategy_input(
+    ea_slug: str, symbol_tf: str
+) -> None:
+    ea_dir = REPO / "framework" / "EAs" / ea_slug
+    source = (ea_dir / f"{ea_slug}.mq5").read_text(encoding="utf-8-sig")
+    set_text = (
+        ea_dir / "sets" / f"{ea_slug}_{symbol_tf}_backtest.set"
+    ).read_text(encoding="utf-8-sig")
+
+    input_names = set(
+        re.findall(
+            r"(?m)^input\s+\w+\s+(strategy_[A-Za-z0-9_]+)\s*=",
+            source,
+        )
+    )
+    assignment_names = set(
+        re.findall(r"(?m)^(strategy_[A-Za-z0-9_]+)=", set_text)
+    )
+
+    assert input_names
+    assert assignment_names == input_names
 
 
 def test_missing_card_falls_back_to_strategy_input_defaults(tmp_path: Path) -> None:

@@ -32,3 +32,12 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
+; strategy params backfilled from the EA's own input defaults;
+; behaviour-identical (an omitted param already used this value),
+; required by Q08 sub-gate 8.5 which perturbs named parameters.
+strategy_atr_period=14
+strategy_atr_sl_mult=2.0
+strategy_kijun_period=26
+strategy_senkou_b_period=52
+strategy_signal_shift=1
+strategy_tenkan_period=9
