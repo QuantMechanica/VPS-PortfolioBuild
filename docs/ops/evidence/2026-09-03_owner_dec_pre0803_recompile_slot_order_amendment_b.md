@@ -563,3 +563,8 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
 
 - Reruns f62fe6b3 (QM5_1537) and a2e1aba6 (QM5_10706) finished PASS; re-emitted `portfolio_stream.content_sha256` equals the recorded seals byte-for-byte. `assemble_stream_bundle.py --out <scratch>/stream_bundle_0540`: bound 3 / refused 3.
 - QM5_21505/XAGUSD (terminal 04:49Z) had the same missing-bytes gap; enqueued `15c1ec7b` (Q08, from Q07 `b837549a`, rerun of `9c51f7eb`, expected ex5 395c4747...) as an extension of the same Auffangregel class after the identical pre-flight.
+
+## 06:09Z 2026-09-04 - counter 7/25, drain long-run refusal
+
+- QM5_20048/XTIUSD terminal: Q12 `5a6d1b1c` NO_FILTER_CHANGE 05:48Z -> Q13 NO_PARAMETER_CHANGE 05:58Z -> Q14 KEEP_INCUMBENT 06:08Z; `book_build_guard --status --venue both` qualified_pairs = 7.
+- Drain fix 5e8e5c9a2a (open drain refuses NEW long-run claims on the claim path); hold `DRAIN_DEFER_LONGRUN_BURST` on QM5_12580 Q03 `9cac4667` until the three pending Q08 reruns finish; worker reload chunk 28 started 06:08Z.
