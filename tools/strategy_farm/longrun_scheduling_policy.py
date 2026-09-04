@@ -29,6 +29,19 @@ from typing import Any
 EXPANDED_NEWS_PARENT_CLASS = "expanded_news_parent"
 TOTAL_NEWS_PARENT_CLASS = "total_news_parent"
 Q07_Q08_LONGRUN_CLASS = "q07_q08_longrun"
+Q09_STRESS_LONGRUN_CLASS = "q09_stress_longrun"
+# 2026-09-04 18:50Z (CEO): three heavy long runs (Q09 QM5_10571/XAUUSD 15 GB
+# and growing, Q07 QM5_11180/XAUUSD 12 GB, Q07 QM5_11179/USDJPY 12 GB) held
+# 38 GB together; free RAM fell to 10 GB, the RAM latch idled seven workers and
+# the census frontier stalled for hours.  Count caps cannot see RAM, and Q09
+# stress runs were not classified at all.  A NEW long run of any class is now
+# refused while the MEASURED RAM of the active long runs (caller-supplied,
+# terminal_worker._drain_active_ram_facts: measured subtree, never below the
+# row's reservation floor) is at or above this cap -- two XAU-class runs fit,
+# a third waits.  Q09 carries no count cap of its own (RAM-gated only).
+# Rollback: QM_DISABLE_LONGRUN_SCHEDULING_CAP=1 disables the whole policy.
+LONG_RUN_RAM_CAP_GB = 26.0
+NO_COUNT_CAP = 1_000_000
 
 EXPANDED_NEWS_PARENT_FLEET_CAP = 2
 # 2026-09-04 04:00Z (CEO, Auffangregel on the News-Gate A Vorlage of 2026-09-03):
@@ -95,6 +108,7 @@ def classify_longrun_candidate(
     news_phase: str,
     q07_phase: str = "Q07",
     q08_phase: str = "Q08",
+    q09_phase: str = "Q09",
 ) -> str | None:
     """Return the long-run class for a candidate row, or None for ordinary work.
 
@@ -110,6 +124,8 @@ def classify_longrun_candidate(
         return TOTAL_NEWS_PARENT_CLASS
     if phase_upper in (q07_phase, q08_phase):
         return Q07_Q08_LONGRUN_CLASS
+    if phase_upper == str(q09_phase or "").strip().upper():
+        return Q09_STRESS_LONGRUN_CLASS
     return None
 
 
@@ -139,6 +155,8 @@ def fleet_cap_for_class(longrun_class: str) -> int:
         return TOTAL_NEWS_PARENT_FLEET_CAP
     if longrun_class == Q07_Q08_LONGRUN_CLASS:
         return Q07_Q08_LONGRUN_FLEET_CAP
+    if longrun_class == Q09_STRESS_LONGRUN_CLASS:
+        return NO_COUNT_CAP
     raise ValueError(f"unknown longrun class: {longrun_class!r}")
 
 
@@ -148,6 +166,7 @@ def active_longrun_counts(
     news_phase: str,
     q07_phase: str = "Q07",
     q08_phase: str = "Q08",
+    q09_phase: str = "Q09",
 ) -> dict[str, int]:
     """Fleet-wide count of currently `active` claims per long-run class.
 
@@ -159,11 +178,12 @@ def active_longrun_counts(
         EXPANDED_NEWS_PARENT_CLASS: 0,
         TOTAL_NEWS_PARENT_CLASS: 0,
         Q07_Q08_LONGRUN_CLASS: 0,
+        Q09_STRESS_LONGRUN_CLASS: 0,
     }
     rows = conn.execute(
         "SELECT phase, payload_json FROM work_items WHERE status='active' "
-        "AND (phase IN (?, ?, ?) OR upper(phase) LIKE '%\\_NEWS' ESCAPE '\\')",
-        (news_phase, q07_phase, q08_phase),
+        "AND (phase IN (?, ?, ?, ?) OR upper(phase) LIKE '%\\_NEWS' ESCAPE '\\')",
+        (news_phase, q07_phase, q08_phase, q09_phase),
     ).fetchall()
     for row in rows:
         phase = row["phase"] if isinstance(row, sqlite3.Row) else row[0]
@@ -176,6 +196,9 @@ def active_longrun_counts(
             continue
         if phase_upper in (q07_phase, q08_phase):
             counts[Q07_Q08_LONGRUN_CLASS] += 1
+            continue
+        if phase_upper == str(q09_phase or "").strip().upper():
+            counts[Q09_STRESS_LONGRUN_CLASS] += 1
     return counts
 
 
@@ -187,8 +210,10 @@ def should_skip_for_longrun_cap(
     news_phase: str,
     q07_phase: str = "Q07",
     q08_phase: str = "Q08",
+    q09_phase: str = "Q09",
     enabled: bool = True,
     free_ram_gb: float | None = None,
+    long_run_ram_gb: float | None = None,
 ) -> tuple[bool, dict[str, Any] | None]:
     """Decide whether a candidate row must be skipped this claim attempt.
 
@@ -199,10 +224,24 @@ def should_skip_for_longrun_cap(
     if not enabled:
         return False, None
     longrun_class = classify_longrun_candidate(
-        phase, payload, news_phase=news_phase, q07_phase=q07_phase, q08_phase=q08_phase
+        phase, payload, news_phase=news_phase, q07_phase=q07_phase,
+        q08_phase=q08_phase, q09_phase=q09_phase,
     )
     if longrun_class is None:
         return False, None
+    # Measured-RAM gate (2026-09-04): physical, class-independent, applies to
+    # lineage reruns as well -- RAM that is not there cannot be prioritised.
+    if long_run_ram_gb is not None:
+        try:
+            measured = float(long_run_ram_gb)
+        except (TypeError, ValueError):
+            measured = None
+        if measured is not None and measured == measured and measured >= LONG_RUN_RAM_CAP_GB:
+            return True, {
+                "longrun_class": longrun_class,
+                "long_run_ram_gb": round(measured, 1),
+                "long_run_ram_cap_gb": LONG_RUN_RAM_CAP_GB,
+            }
     classes_to_check = [longrun_class]
     if longrun_class == EXPANDED_NEWS_PARENT_CLASS:
         # An expansion consumes both the two-row expansion subcap and the

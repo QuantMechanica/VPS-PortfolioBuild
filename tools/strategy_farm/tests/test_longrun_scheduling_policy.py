@@ -561,3 +561,66 @@ class LegacyNewsLaneTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class MeasuredRamCapTests(unittest.TestCase):
+    """2026-09-04 18:50Z: a new long run is refused while the measured RAM of
+    the active long runs is at or above LONG_RUN_RAM_CAP_GB; Q09 stress runs
+    are classified (RAM-gated only, no count cap)."""
+
+    def _skip(self, phase, ram, counts=None, payload="{}"):
+        return policy.should_skip_for_longrun_cap(
+            phase, payload, counts or {}, news_phase="Q10_NEWS",
+            q07_phase="Q07", q08_phase="Q08", q09_phase="Q09",
+            enabled=True, long_run_ram_gb=ram,
+        )
+
+    def test_q09_classified_without_count_cap(self) -> None:
+        self.assertEqual(
+            policy.classify_longrun_candidate("Q09", "{}", news_phase="Q10_NEWS"),
+            policy.Q09_STRESS_LONGRUN_CLASS,
+        )
+        self.assertEqual(policy.fleet_cap_for_class(policy.Q09_STRESS_LONGRUN_CLASS), policy.NO_COUNT_CAP)
+        skip, _ = self._skip("Q09", 12.0, {policy.Q09_STRESS_LONGRUN_CLASS: 5})
+        self.assertFalse(skip)
+
+    def test_new_long_run_refused_at_or_above_the_ram_cap(self) -> None:
+        for phase in ("Q07", "Q08", "Q09", "Q10_NEWS"):
+            skip, detail = self._skip(phase, policy.LONG_RUN_RAM_CAP_GB)
+            self.assertTrue(skip, phase)
+            self.assertEqual(detail["long_run_ram_cap_gb"], policy.LONG_RUN_RAM_CAP_GB)
+            self.assertAlmostEqual(detail["long_run_ram_gb"], policy.LONG_RUN_RAM_CAP_GB)
+        skip, detail = self._skip("Q07", 38.5)
+        self.assertTrue(skip)
+        self.assertEqual(detail["longrun_class"], policy.Q07_Q08_LONGRUN_CLASS)
+
+    def test_long_run_admitted_below_the_ram_cap_and_without_a_snapshot(self) -> None:
+        skip, _ = self._skip("Q07", policy.LONG_RUN_RAM_CAP_GB - 0.1)
+        self.assertFalse(skip)
+        skip, _ = self._skip("Q07", None)
+        self.assertFalse(skip)
+
+    def test_ordinary_rows_ignore_the_ram_cap(self) -> None:
+        for phase in ("Q02", "Q04", "OPT_CENSUS", "Q12"):
+            skip, _ = self._skip(phase, 60.0)
+            self.assertFalse(skip, phase)
+
+    def test_lineage_rerun_is_also_ram_capped(self) -> None:
+        payload = '{"append_only_rerun": true, "priority_track": true}'
+        skip, detail = self._skip("Q07", 30.0, payload=payload)
+        self.assertTrue(skip)
+        self.assertEqual(detail["longrun_class"], policy.Q07_Q08_LONGRUN_CLASS)
+
+    def test_active_counts_include_q09(self) -> None:
+        import sqlite3 as _sqlite3
+        con = _sqlite3.connect(":memory:")
+        con.row_factory = _sqlite3.Row
+        con.execute("CREATE TABLE work_items (id TEXT, phase TEXT, status TEXT, payload_json TEXT)")
+        con.executemany(
+            "INSERT INTO work_items VALUES (?,?,?,?)",
+            [("a", "Q09", "active", "{}"), ("b", "Q09", "done", "{}"), ("c", "Q07", "active", "{}")],
+        )
+        counts = policy.active_longrun_counts(con, news_phase="Q10_NEWS", q07_phase="Q07", q08_phase="Q08", q09_phase="Q09")
+        self.assertEqual(counts[policy.Q09_STRESS_LONGRUN_CLASS], 1)
+        self.assertEqual(counts[policy.Q07_Q08_LONGRUN_CLASS], 1)
+

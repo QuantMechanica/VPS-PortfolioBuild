@@ -4456,7 +4456,8 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                 skipped_longrun_cap: list[dict[str, Any]] = []
                 skipped_opt_census_slots: list[dict[str, Any]] = []
                 skipped_drain_window: list[dict[str, Any]] = []
-                longrun_active_counts: dict[str, int] | None = None
+                longrun_active_counts = None
+                longrun_ram_gb_snapshot: float | None = None
                 # NOTE: do NOT refresh the poison-pill table here. Measured cost of
                 # poison_pill_quarantine.refresh_pending() on the live DB is ~413ms
                 # (full scan + one upsert per finding, 371 today), and this point is
@@ -4575,6 +4576,17 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                             q07_phase=_Q07_PHASE,
                             q08_phase=_Q08_PHASE,
                         )
+                        # 2026-09-04 (CEO): measured RAM of the active long runs
+                        # (subtree bytes, never below the reservation floor) for
+                        # the policy's RAM gate; one read per claim attempt.
+                        try:
+                            longrun_ram_gb_snapshot = float(
+                                _drain_active_ram_facts(
+                                    root, multisym_ids=multisym_ids, armed_item_id=drain_item_id
+                                ).get("long_run_ram_gb", 0.0)
+                            )
+                        except Exception:
+                            longrun_ram_gb_snapshot = None
                     longrun_skip, longrun_detail = longrun_scheduling_policy.should_skip_for_longrun_cap(
                         item["phase"],
                         payload,
@@ -4584,6 +4596,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                         q08_phase=_Q08_PHASE,
                         enabled=longrun_policy_enabled,
                         free_ram_gb=multisym_free_ram_snapshot,
+                        long_run_ram_gb=longrun_ram_gb_snapshot,
                     )
                     if longrun_skip:
                         skipped_longrun_cap.append({
