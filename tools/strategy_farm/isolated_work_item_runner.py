@@ -595,7 +595,7 @@ def _ftmo_book3_expected_execution_input_paths(repo_root: Path) -> dict[str, Pat
         ),
         "ftmo_official_rules_snapshot": (
             repo_root
-            / "docs/ops/evidence/2026-07-29_ftmo_official_rules_snapshot.json"
+            / "docs/ops/evidence/2026-09-02_ftmo_official_rules_snapshot.json"
         ),
     }
     for symbol in FTMO_BOOK3_SYMBOLS:

@@ -12,6 +12,7 @@ from tools.strategy_farm.portfolio import ftmo_book3_standalone_evaluator as eva
 
 EVALUATOR_SOURCE_COMMIT = "2" * 40
 INCLUDE_TREE_SHA256 = "b" * 64
+RULE_SNAPSHOT_FRESH_NOW = dt.datetime(2026, 9, 3, 1, 30, tzinfo=dt.UTC)
 EXPECTED_BASE_SUCCESS_KEYS = {
     "worker_exit_code_zero",
     "work_item_done",
@@ -719,7 +720,7 @@ def test_evaluate_manifest_keeps_qualification_no_go_separate(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    now = dt.datetime(2026, 7, 30, 1, 30, tzinfo=dt.UTC)
+    now = RULE_SNAPSHOT_FRESH_NOW
     manifest, manifest_path = _manifest_fixture(tmp_path, now)
     monkeypatch.setattr(
         evaluator,
@@ -876,7 +877,7 @@ def test_content_stager_allows_distinct_same_content_files(tmp_path: Path) -> No
 
 
 def test_native_report_sha_drift_is_refused(tmp_path: Path) -> None:
-    now = dt.datetime(2026, 7, 30, 1, 30, tzinfo=dt.UTC)
+    now = RULE_SNAPSHOT_FRESH_NOW
     manifest, manifest_path = _manifest_fixture(tmp_path, now)
     first = manifest["sleeves"][0]  # type: ignore[index]
     Path(first["report"]["path"]).write_text("tampered report\n", encoding="utf-8")  # type: ignore[index]
@@ -889,7 +890,7 @@ def test_sha_drift_refuses_before_reconciliation(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    now = dt.datetime(2026, 7, 30, 1, 30, tzinfo=dt.UTC)
+    now = RULE_SNAPSHOT_FRESH_NOW
     manifest, manifest_path = _manifest_fixture(tmp_path, now)
     first = manifest["sleeves"][0]  # type: ignore[index]
     Path(first["m15"]["path"]).write_text("drift\n", encoding="utf-8")  # type: ignore[index]
@@ -911,7 +912,7 @@ def test_sha_drift_during_model_is_refused_before_receipt(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    now = dt.datetime(2026, 7, 30, 1, 30, tzinfo=dt.UTC)
+    now = RULE_SNAPSHOT_FRESH_NOW
     manifest, manifest_path = _manifest_fixture(tmp_path, now)
     monkeypatch.setattr(
         evaluator,
@@ -938,7 +939,7 @@ def test_r2_receipt_rejects_v2_rung_field_even_when_rehashed(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    now = dt.datetime(2026, 7, 30, 1, 30, tzinfo=dt.UTC)
+    now = RULE_SNAPSHOT_FRESH_NOW
     manifest, manifest_path = _manifest_fixture(tmp_path, now)
     r2 = manifest["sleeves"][2]  # type: ignore[index]
     receipt_path = Path(r2["receipt"]["path"])  # type: ignore[index]
@@ -1001,7 +1002,7 @@ def test_r2_receipt_exact_contract_rejects_substitution(
     mutate: object,
     message: str,
 ) -> None:
-    now = dt.datetime(2026, 7, 30, 1, 30, tzinfo=dt.UTC)
+    now = RULE_SNAPSHOT_FRESH_NOW
     manifest, manifest_path = _manifest_fixture(tmp_path, now)
     r2 = manifest["sleeves"][2]  # type: ignore[index]
     receipt_path = Path(r2["receipt"]["path"])  # type: ignore[index]
@@ -1053,7 +1054,7 @@ def test_r2_receipt_rejects_diagnostic_hold_contract_drift(
     mutate: object,
     message: str,
 ) -> None:
-    now = dt.datetime(2026, 7, 30, 1, 30, tzinfo=dt.UTC)
+    now = RULE_SNAPSHOT_FRESH_NOW
     manifest, manifest_path = _manifest_fixture(tmp_path, now)
     r2 = manifest["sleeves"][2]  # type: ignore[index]
     receipt_path = Path(r2["receipt"]["path"])  # type: ignore[index]
@@ -1074,7 +1075,7 @@ def test_runner_receipt_rejects_unknown_success_check_key(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    now = dt.datetime(2026, 7, 30, 1, 30, tzinfo=dt.UTC)
+    now = RULE_SNAPSHOT_FRESH_NOW
     manifest, manifest_path = _manifest_fixture(tmp_path, now)
     r0 = manifest["sleeves"][0]  # type: ignore[index]
     receipt_path = Path(r0["receipt"]["path"])  # type: ignore[index]
@@ -1099,7 +1100,7 @@ def test_historical_receipt_omission_requires_payload_contract_hash(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    now = dt.datetime(2026, 7, 30, 1, 30, tzinfo=dt.UTC)
+    now = RULE_SNAPSHOT_FRESH_NOW
     manifest, manifest_path = _manifest_fixture(tmp_path, now)
     r0 = manifest["sleeves"][0]  # type: ignore[index]
     receipt_path = Path(r0["receipt"]["path"])  # type: ignore[index]
@@ -1191,7 +1192,7 @@ def test_qualification_rejects_contradictory_ready_string() -> None:
 
 
 def test_cost_and_qualification_authorization_keysets_are_exact() -> None:
-    now = dt.datetime(2026, 7, 30, 1, 30, tzinfo=dt.UTC)
+    now = RULE_SNAPSHOT_FRESH_NOW
     for key, expected_value in evaluator.EXPECTED_COST_AUTHORIZATION.items():
         missing = _cost_snapshot(now)
         missing["authorization"].pop(key)  # type: ignore[union-attr]
@@ -1307,7 +1308,7 @@ def test_evaluator_source_binding_refuses_dirty_controller_scope(
 
 
 def test_prepare_manifest_cli_is_deterministic_and_create_only(tmp_path: Path) -> None:
-    now = dt.datetime(2026, 7, 30, 1, 30, tzinfo=dt.UTC)
+    now = RULE_SNAPSHOT_FRESH_NOW
     source_manifest, _source_path = _manifest_fixture(tmp_path, now)
     output = tmp_path / "prepared_manifest.json"
     args = [
@@ -1512,7 +1513,7 @@ def test_internal_guardrail_set_fields_and_duplicates_are_fail_closed() -> None:
 
 
 def test_official_source_snapshot_identity_and_claims_are_exact() -> None:
-    now = dt.datetime(2026, 7, 30, 1, 30, tzinfo=dt.UTC)
+    now = RULE_SNAPSHOT_FRESH_NOW
     rulepack = _rulepack()
     snapshot = json.loads(
         (evaluator.REPO_ROOT / evaluator.OFFICIAL_RULE_SNAPSHOT_RELATIVE_PATH).read_text(
@@ -1547,9 +1548,20 @@ def test_official_source_snapshot_identity_and_claims_are_exact() -> None:
     ):
         evaluator._validate_official_rule_sources(rulepack, claim_drift, now_utc=now)
 
+    provenance_drift = json.loads(json.dumps(snapshot))
+    provenance_drift["claim_provenance"]["maximum_loss_percent_of_initial"] = [
+        "ftmo_news_official"
+    ]
+    with pytest.raises(
+        evaluator.StandaloneEvaluationError, match="claim_provenance_invalid"
+    ):
+        evaluator._validate_official_rule_sources(
+            rulepack, provenance_drift, now_utc=now
+        )
+
 
 def test_official_source_id_set_rejects_unknown_extra_source() -> None:
-    now = dt.datetime(2026, 7, 30, 1, 30, tzinfo=dt.UTC)
+    now = RULE_SNAPSHOT_FRESH_NOW
     rulepack = _rulepack()
     snapshot = json.loads(
         (evaluator.REPO_ROOT / evaluator.OFFICIAL_RULE_SNAPSHOT_RELATIVE_PATH).read_text(
@@ -1582,18 +1594,18 @@ def test_rulepack_as_of_and_official_snapshot_freshness_are_fail_closed() -> Non
         evaluator._validate_official_rule_sources(
             rulepack,
             stale,
-            now_utc=dt.datetime(2026, 7, 30, 1, 30, tzinfo=dt.UTC),
+            now_utc=RULE_SNAPSHOT_FRESH_NOW,
         )
 
     future = json.loads(json.dumps(snapshot))
-    future["retrieved_at_utc"] = "2026-07-31T00:00:00Z"
+    future["retrieved_at_utc"] = "2026-09-04T00:00:00Z"
     with pytest.raises(
         evaluator.StandaloneEvaluationError, match="rule_snapshot:future_timestamp"
     ):
         evaluator._validate_official_rule_sources(
             rulepack,
             future,
-            now_utc=dt.datetime(2026, 7, 30, 1, 30, tzinfo=dt.UTC),
+            now_utc=RULE_SNAPSHOT_FRESH_NOW,
         )
 
 
@@ -1621,7 +1633,7 @@ def test_evaluation_profile_and_deployment_six_audit_repros_fail_closed() -> Non
     ):
         evaluator._evaluation_and_deployment_contract(deployment_open)
 
-    now = dt.datetime(2026, 7, 30, 1, 30, tzinfo=dt.UTC)
+    now = RULE_SNAPSHOT_FRESH_NOW
     joint_drifts = [
         ("USDJPY.DWX", "USD/JPY", "flat_round_trip_commission_per_lot", "commission", 6),
         ("XAUUSD.DWX", "XAU/USD", "commission_percent_per_side", "commission", 0.002),
@@ -1739,7 +1751,7 @@ def test_every_evaluation_and_deployment_semantic_field_is_fail_closed() -> None
 
 
 def test_every_absolute_cost_matrix_field_is_fail_closed() -> None:
-    now = dt.datetime(2026, 7, 30, 1, 30, tzinfo=dt.UTC)
+    now = RULE_SNAPSHOT_FRESH_NOW
     for symbol, expected in evaluator.EXPECTED_COST_MATRIX.items():
         for field, value in expected.items():
             document = _cost_snapshot(now)
@@ -1776,7 +1788,7 @@ def test_every_absolute_cost_matrix_field_is_fail_closed() -> None:
 
 
 def test_cost_snapshot_crosswalk_rejects_bool_and_provider_drift() -> None:
-    now = dt.datetime(2026, 7, 30, 1, 30, tzinfo=dt.UTC)
+    now = RULE_SNAPSHOT_FRESH_NOW
     boolean_substitution = _cost_snapshot(now)
     normalization = boolean_substitution["book3_normalization"]
     assert isinstance(normalization, list)
@@ -1795,7 +1807,7 @@ def test_cost_snapshot_crosswalk_rejects_bool_and_provider_drift() -> None:
 
 
 def test_cost_snapshot_exact_currency_contract_and_dwxsizes_fail_closed() -> None:
-    now = dt.datetime(2026, 7, 30, 1, 30, tzinfo=dt.UTC)
+    now = RULE_SNAPSHOT_FRESH_NOW
 
     def normalized(document: dict[str, object], symbol: str) -> dict[str, object]:
         return next(

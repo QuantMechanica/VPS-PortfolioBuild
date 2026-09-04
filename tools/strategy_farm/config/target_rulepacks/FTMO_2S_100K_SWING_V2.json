@@ -20,8 +20,8 @@
       "authority": "OFFICIAL_PROVIDER",
       "retrieved_on": "2026-09-02",
       "retrieved_at_utc": "2026-09-02T09:27:22Z",
-      "snapshot_path": "docs/ops/evidence/2026-09-02_ftmo_economic_terms_snapshot.json",
-      "snapshot_sha256": "daef9de5a3c9093a8b13d9f86cf7525937d4d5c0e0bade1c4aedaa31658e933d",
+      "snapshot_path": "docs/ops/evidence/2026-09-02_ftmo_official_rules_snapshot.json",
+      "snapshot_sha256": "d055f71cd2f4c094928a3b19861f0a4ae29654718808117a44458963e9c3d7f8",
       "content_identity_basis": "NORMALIZED_PROVIDER_RULE_SNAPSHOT"
     },
     {
@@ -31,8 +31,8 @@
       "authority": "OFFICIAL_PROVIDER",
       "retrieved_on": "2026-09-02",
       "retrieved_at_utc": "2026-09-02T09:27:22Z",
-      "snapshot_path": "docs/ops/evidence/2026-09-02_ftmo_economic_terms_snapshot.json",
-      "snapshot_sha256": "daef9de5a3c9093a8b13d9f86cf7525937d4d5c0e0bade1c4aedaa31658e933d",
+      "snapshot_path": "docs/ops/evidence/2026-09-02_ftmo_official_rules_snapshot.json",
+      "snapshot_sha256": "d055f71cd2f4c094928a3b19861f0a4ae29654718808117a44458963e9c3d7f8",
       "content_identity_basis": "NORMALIZED_PROVIDER_RULE_SNAPSHOT"
     },
     {
@@ -42,8 +42,8 @@
       "authority": "OFFICIAL_PROVIDER",
       "retrieved_on": "2026-09-02",
       "retrieved_at_utc": "2026-09-02T09:27:22Z",
-      "snapshot_path": "docs/ops/evidence/2026-09-02_ftmo_economic_terms_snapshot.json",
-      "snapshot_sha256": "daef9de5a3c9093a8b13d9f86cf7525937d4d5c0e0bade1c4aedaa31658e933d",
+      "snapshot_path": "docs/ops/evidence/2026-09-02_ftmo_official_rules_snapshot.json",
+      "snapshot_sha256": "d055f71cd2f4c094928a3b19861f0a4ae29654718808117a44458963e9c3d7f8",
       "content_identity_basis": "NORMALIZED_PROVIDER_RULE_SNAPSHOT"
     },
     {
@@ -53,8 +53,8 @@
       "authority": "OFFICIAL_PROVIDER",
       "retrieved_on": "2026-09-02",
       "retrieved_at_utc": "2026-09-02T09:27:22Z",
-      "snapshot_path": "docs/ops/evidence/2026-09-02_ftmo_economic_terms_snapshot.json",
-      "snapshot_sha256": "daef9de5a3c9093a8b13d9f86cf7525937d4d5c0e0bade1c4aedaa31658e933d",
+      "snapshot_path": "docs/ops/evidence/2026-09-02_ftmo_official_rules_snapshot.json",
+      "snapshot_sha256": "d055f71cd2f4c094928a3b19861f0a4ae29654718808117a44458963e9c3d7f8",
       "content_identity_basis": "NORMALIZED_PROVIDER_RULE_SNAPSHOT"
     },
     {
@@ -64,8 +64,8 @@
       "authority": "OFFICIAL_PROVIDER",
       "retrieved_on": "2026-09-02",
       "retrieved_at_utc": "2026-09-02T09:27:22Z",
-      "snapshot_path": "docs/ops/evidence/2026-09-02_ftmo_economic_terms_snapshot.json",
-      "snapshot_sha256": "daef9de5a3c9093a8b13d9f86cf7525937d4d5c0e0bade1c4aedaa31658e933d",
+      "snapshot_path": "docs/ops/evidence/2026-09-02_ftmo_official_rules_snapshot.json",
+      "snapshot_sha256": "d055f71cd2f4c094928a3b19861f0a4ae29654718808117a44458963e9c3d7f8",
       "content_identity_basis": "NORMALIZED_PROVIDER_RULE_SNAPSHOT"
     },
     {
@@ -75,8 +75,8 @@
       "authority": "OFFICIAL_PROVIDER",
       "retrieved_on": "2026-09-02",
       "retrieved_at_utc": "2026-09-02T09:27:22Z",
-      "snapshot_path": "docs/ops/evidence/2026-09-02_ftmo_economic_terms_snapshot.json",
-      "snapshot_sha256": "daef9de5a3c9093a8b13d9f86cf7525937d4d5c0e0bade1c4aedaa31658e933d",
+      "snapshot_path": "docs/ops/evidence/2026-09-02_ftmo_official_rules_snapshot.json",
+      "snapshot_sha256": "d055f71cd2f4c094928a3b19861f0a4ae29654718808117a44458963e9c3d7f8",
       "content_identity_basis": "NORMALIZED_PROVIDER_RULE_SNAPSHOT"
     },
     {
@@ -86,8 +86,8 @@
       "authority": "OFFICIAL_PROVIDER",
       "retrieved_on": "2026-09-02",
       "retrieved_at_utc": "2026-09-02T09:27:22Z",
-      "snapshot_path": "docs/ops/evidence/2026-09-02_ftmo_economic_terms_snapshot.json",
-      "snapshot_sha256": "daef9de5a3c9093a8b13d9f86cf7525937d4d5c0e0bade1c4aedaa31658e933d",
+      "snapshot_path": "docs/ops/evidence/2026-09-02_ftmo_official_rules_snapshot.json",
+      "snapshot_sha256": "d055f71cd2f4c094928a3b19861f0a4ae29654718808117a44458963e9c3d7f8",
       "content_identity_basis": "NORMALIZED_PROVIDER_RULE_SNAPSHOT"
     }
   ],

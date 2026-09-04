@@ -1,0 +1,166 @@
+{
+  "schema": "qm.ftmo-official-rules-snapshot/v1",
+  "retrieved_at_utc": "2026-09-02T09:27:22Z",
+  "retrieval_method": "Normalized official-provider capture from the 2026-09-02 FTMO evidence-chain retrieval. Economic fields are copied field-for-field from docs/ops/evidence/2026-09-02_ftmo_economic_terms_snapshot.json. The 2026-09-02 raw response bodies were not retained, so response byte counts, response hashes, and Last-Modified observations are deliberately null rather than reconstructed. The normalized rule claims were cross-checked against the same official FTMO origins on 2026-09-04 before this combined snapshot was minted.",
+  "profile": "FTMO Challenge 2-Step / USD 100000 / Swing",
+  "freshness_max_age_days": 7,
+  "raw_response_note": "This is the normalized, hash-bound rules identity. Null raw-response observations are evidence limitations, not wildcards. The repository file SHA-256 is the durable snapshot identity.",
+  "sources": [
+    {
+      "source_id": "ftmo_trading_objectives_official",
+      "url": "https://ftmo.com/en/trading-objectives/",
+      "http_status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "response_bytes": null,
+      "response_sha256_observation": null,
+      "last_modified_utc_observation": null
+    },
+    {
+      "source_id": "ftmo_economic_terms_official",
+      "url": "https://ftmo.com/en/2-step-challenge/",
+      "http_status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "response_bytes": null,
+      "response_sha256_observation": null,
+      "last_modified_utc_observation": null,
+      "component_sources": [
+        {
+          "url": "https://ftmo.com/en/2-step-challenge/",
+          "fact_keys": [
+            "usd_100000_2_step_list_price_usd",
+            "evaluation_fee_refund_percent_with_first_reward",
+            "base_reward_split_percent",
+            "maximum_reward_split_percent"
+          ]
+        },
+        {
+          "url": "https://ftmo.com/en/scaling-plan/",
+          "fact_keys": [
+            "account_balance_increase_percent",
+            "minimum_months_between_scaleups",
+            "scaled_reward_split_percent"
+          ]
+        },
+        {
+          "url": "https://ftmo.com/en/trading-symbols/",
+          "fact_keys": [
+            "swing_fx_leverage",
+            "swing_metals_and_oil_leverage"
+          ]
+        }
+      ],
+      "component_snapshot_path": "docs/ops/evidence/2026-09-02_ftmo_economic_terms_snapshot.json",
+      "component_snapshot_sha256": "daef9de5a3c9093a8b13d9f86cf7525937d4d5c0e0bade1c4aedaa31658e933d"
+    },
+    {
+      "source_id": "ftmo_2_step_challenge_official",
+      "url": "https://ftmo.com/en/2-step-challenge/",
+      "http_status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "response_bytes": null,
+      "response_sha256_observation": null,
+      "last_modified_utc_observation": null
+    },
+    {
+      "source_id": "ftmo_news_official",
+      "url": "https://ftmo.com/faq/can-i-trade-news/",
+      "http_status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "response_bytes": null,
+      "response_sha256_observation": null,
+      "last_modified_utc_observation": null
+    },
+    {
+      "source_id": "ftmo_weekend_official",
+      "url": "https://ftmo.com/en/faq/do-i-have-to-close-my-positions-overnight-or-before-the-weekend/",
+      "http_status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "response_bytes": null,
+      "response_sha256_observation": null,
+      "last_modified_utc_observation": null
+    },
+    {
+      "source_id": "ftmo_ea_official",
+      "url": "https://ftmo.com/en/faq/which-instruments-can-i-trade-and-what-strategies-am-i-allowed-to-use/",
+      "http_status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "response_bytes": null,
+      "response_sha256_observation": null,
+      "last_modified_utc_observation": null
+    },
+    {
+      "source_id": "ftmo_forbidden_practices_official",
+      "url": "https://ftmo.com/en/forbidden-trading-practices/",
+      "http_status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "response_bytes": null,
+      "response_sha256_observation": null,
+      "last_modified_utc_observation": null
+    }
+  ],
+  "normalized_claims": {
+    "phase1_profit_target_percent": "10",
+    "verification_profit_target_percent": "5",
+    "profit_target_operator": "STRICTLY_GREATER_THAN_TARGET_WHILE_FLAT",
+    "maximum_daily_loss_percent_of_initial": "5",
+    "maximum_daily_loss_reset_timezone": "Europe/Prague",
+    "maximum_daily_loss_reset_local_time": "00:00:00",
+    "maximum_daily_loss_basis": "MIDNIGHT_BALANCE_MINUS_FIXED_INITIAL_CAPITAL_AMOUNT",
+    "maximum_daily_loss_breach_operator": "EQUITY_STRICTLY_BELOW_LIMIT",
+    "maximum_loss_percent_of_initial": "10",
+    "maximum_loss_model": "STATIC_INITIAL_CAPITAL",
+    "maximum_loss_breach_operator": "EQUITY_STRICTLY_BELOW_LIMIT",
+    "minimum_trading_days_per_phase": 4,
+    "trading_day_qualifier": "AT_LEAST_ONE_POSITION_OPENED_DURING_PRAGUE_LOCAL_DAY",
+    "maximum_trading_period_days": null,
+    "swing_news_restriction_during_evaluation": false,
+    "swing_overnight_or_weekend_restriction": false,
+    "expert_advisors_allowed_subject_to_rules": true,
+    "simultaneous_order_limit": 200,
+    "position_limit_per_day": 2000,
+    "hyperactive_server_request_threshold_per_day": 2000,
+    "real_market_replicability_required": true,
+    "usd_100000_2_step_list_price_usd": 540,
+    "evaluation_fee_refund_percent_with_first_reward": 100,
+    "base_reward_split_percent": 80,
+    "maximum_reward_split_percent": 90,
+    "swing_fx_leverage": "1:30",
+    "swing_metals_and_oil_leverage": "1:15",
+    "account_balance_increase_percent": 25,
+    "minimum_months_between_scaleups": 4,
+    "scaled_reward_split_percent": 90
+  },
+  "claim_provenance": {
+    "phase1_profit_target_percent": ["ftmo_trading_objectives_official"],
+    "verification_profit_target_percent": ["ftmo_trading_objectives_official"],
+    "profit_target_operator": ["ftmo_trading_objectives_official"],
+    "maximum_daily_loss_percent_of_initial": ["ftmo_trading_objectives_official"],
+    "maximum_daily_loss_reset_timezone": ["ftmo_trading_objectives_official"],
+    "maximum_daily_loss_reset_local_time": ["ftmo_trading_objectives_official"],
+    "maximum_daily_loss_basis": ["ftmo_trading_objectives_official"],
+    "maximum_daily_loss_breach_operator": ["ftmo_trading_objectives_official"],
+    "maximum_loss_percent_of_initial": ["ftmo_trading_objectives_official"],
+    "maximum_loss_model": ["ftmo_trading_objectives_official"],
+    "maximum_loss_breach_operator": ["ftmo_trading_objectives_official"],
+    "minimum_trading_days_per_phase": ["ftmo_trading_objectives_official"],
+    "trading_day_qualifier": ["ftmo_trading_objectives_official"],
+    "maximum_trading_period_days": ["ftmo_trading_objectives_official"],
+    "swing_news_restriction_during_evaluation": ["ftmo_news_official"],
+    "swing_overnight_or_weekend_restriction": ["ftmo_weekend_official"],
+    "expert_advisors_allowed_subject_to_rules": ["ftmo_ea_official"],
+    "simultaneous_order_limit": ["ftmo_ea_official"],
+    "position_limit_per_day": ["ftmo_ea_official"],
+    "hyperactive_server_request_threshold_per_day": ["ftmo_ea_official", "ftmo_forbidden_practices_official"],
+    "real_market_replicability_required": ["ftmo_ea_official", "ftmo_forbidden_practices_official"],
+    "usd_100000_2_step_list_price_usd": ["ftmo_economic_terms_official"],
+    "evaluation_fee_refund_percent_with_first_reward": ["ftmo_economic_terms_official"],
+    "base_reward_split_percent": ["ftmo_economic_terms_official"],
+    "maximum_reward_split_percent": ["ftmo_economic_terms_official"],
+    "swing_fx_leverage": ["ftmo_economic_terms_official"],
+    "swing_metals_and_oil_leverage": ["ftmo_economic_terms_official"],
+    "account_balance_increase_percent": ["ftmo_economic_terms_official"],
+    "minimum_months_between_scaleups": ["ftmo_economic_terms_official"],
+    "scaled_reward_split_percent": ["ftmo_economic_terms_official"]
+  },
+  "scope_limit": "Research and Free-Trial/shadow gates only. This snapshot is not a purchase, deployment, T_Live, or AutoTrading authorization and must be refreshed before any paid Challenge decision if older than seven days."
+}

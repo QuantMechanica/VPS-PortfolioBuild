@@ -50,8 +50,8 @@
       {
         "rulepack_id": "FTMO_2S_100K_SWING_V2",
         "path": "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_SWING_V2.json",
-        "file_sha256": "f9647e4f4e9b7e7614355a77af2debcd5138ce23dfa977e3e3445ec8813a2029",
-        "canonical_sha256": "93735045ca7a473107f1583c9aca011aa5a0fad23cab89a3068453973a707c74"
+        "file_sha256": "042fbcf9d7fd5c520473c6715200f22706b34cd036ba4d3d8d87228890ea5924",
+        "canonical_sha256": "5505a56dc22fc463c852f13f11de534179b0165d2bf849bc2bb90900caf159d2"
       }
     ]
   },
@@ -168,7 +168,7 @@
       "label": "FTMO two-step 100K swing",
       "state": "RESEARCH_RUNTIME_EVALUATED_STRICT_UNVERIFIED",
       "rulepack_id": "FTMO_2S_100K_SWING_V2",
-      "rulepack_canonical_sha256": "93735045ca7a473107f1583c9aca011aa5a0fad23cab89a3068453973a707c74",
+      "rulepack_canonical_sha256": "5505a56dc22fc463c852f13f11de534179b0165d2bf849bc2bb90900caf159d2",
       "eligibility": "STRICT_QUALIFICATION_UNVERIFIED",
       "deployment_authority": "NONE",
       "next_action": "Treat the completed native model as research only; close missing setup data and pass a separately preregistered exact-profile free trial before any money gate."

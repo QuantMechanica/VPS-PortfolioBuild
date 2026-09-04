@@ -738,7 +738,7 @@ def _repo_paths(repo: Path, controller_path: Path) -> tuple[list[Path], list[Pat
         repo / "framework/registry/live_commission.json",
         repo / "framework/registry/venue_cost_model.json",
         repo / "framework/registry/dwx_symbol_matrix.csv",
-        repo / "docs/ops/evidence/2026-07-29_ftmo_official_rules_snapshot.json",
+        repo / "docs/ops/evidence/2026-09-02_ftmo_official_rules_snapshot.json",
         repo / "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_SWING_V2.json",
         repo / "framework/scripts/run_smoke.ps1",
     ]
@@ -1131,7 +1131,7 @@ def _rulepack_snapshot_errors(rulepack: Path, snapshot: Path) -> list[str]:
         return [f"FTMO rulepack parse failed: {exc}"]
     if not snapshot.is_file():
         return [f"FTMO official rules snapshot missing: {snapshot}"]
-    expected_path = "docs/ops/evidence/2026-07-29_ftmo_official_rules_snapshot.json"
+    expected_path = "docs/ops/evidence/2026-09-02_ftmo_official_rules_snapshot.json"
     expected_sha = sha256_file(snapshot)
     sources = document.get("official_sources")
     if not isinstance(sources, list) or not sources:
@@ -1168,7 +1168,7 @@ def _required_execution_input_paths(
         "venue_cost_model": str(repo / "framework/registry/venue_cost_model.json"),
         "dwx_symbol_matrix": str(repo / "framework/registry/dwx_symbol_matrix.csv"),
         "ftmo_official_rules_snapshot": str(
-            repo / "docs/ops/evidence/2026-07-29_ftmo_official_rules_snapshot.json"
+            repo / "docs/ops/evidence/2026-09-02_ftmo_official_rules_snapshot.json"
         ),
         "ftmo_rulepack": str(repo / "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_SWING_V2.json"),
     }
@@ -1267,7 +1267,7 @@ def _repo_artifacts(repo: Path, controller_path: Path) -> list[dict[str, Any]]:
         _artifact(repo / "framework/registry/venue_cost_model.json", "venue_cost_model"),
         _artifact(repo / "framework/registry/dwx_symbol_matrix.csv", "dwx_symbol_matrix"),
         _artifact(
-            repo / "docs/ops/evidence/2026-07-29_ftmo_official_rules_snapshot.json",
+            repo / "docs/ops/evidence/2026-09-02_ftmo_official_rules_snapshot.json",
             "ftmo_official_rules_snapshot",
         ),
         _artifact(repo / "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_SWING_V2.json", "ftmo_rulepack"),
@@ -1483,7 +1483,7 @@ def build_prepare_plan(
     errors.extend(f"artifact invalid: {a['role']}:{a.get('reason', 'invalid')}" for a in artifacts if not a.get("valid"))
     errors.extend(_rulepack_snapshot_errors(
         repo / "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_SWING_V2.json",
-        repo / "docs/ops/evidence/2026-07-29_ftmo_official_rules_snapshot.json",
+        repo / "docs/ops/evidence/2026-09-02_ftmo_official_rules_snapshot.json",
     ))
     artifact_roles = [str(item.get("role") or "") for item in artifacts]
     artifact_paths = [str(item.get("path") or "").casefold() for item in artifacts]
@@ -1634,7 +1634,7 @@ def _semantic_source_errors(manifest: dict[str, Any]) -> list[str]:
         ))
     errors.extend(_rulepack_snapshot_errors(
         repo / "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_SWING_V2.json",
-        repo / "docs/ops/evidence/2026-07-29_ftmo_official_rules_snapshot.json",
+        repo / "docs/ops/evidence/2026-09-02_ftmo_official_rules_snapshot.json",
     ))
     current_external = _external_artifacts(Path(manifest["artifact_root"]), specs)
     errors.extend(

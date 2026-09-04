@@ -85,6 +85,8 @@ docs/ops/evidence/2026-08-11_factory_preparation_owner_decision_standing_unlimit
 # Target-rulepack source snapshots are raw-byte sealed evidence. Their SHA-256
 # bindings are validated directly from disk, so autocrlf must not alter them.
 docs/ops/evidence/2026-07-29_ftmo_official_rules_snapshot.json text eol=lf
+docs/ops/evidence/2026-09-02_ftmo_official_rules_snapshot.json text eol=lf
+tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_SWING_V2.json text eol=lf
 docs/ops/evidence/2026-07-30_factory_preparation_owner_decision.json text eol=lf
 
 # These generated/raw-byte bindings are calculated from Git-canonical LF bytes.

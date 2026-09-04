@@ -143,7 +143,7 @@ DEFAULT_RULEPACK_PATH = Path(
     r"C:\QM\repo\tools\strategy_farm\config\target_rulepacks\FTMO_2S_100K_SWING_V2.json"
 )
 DEFAULT_RULEPACK_SHA256 = (
-    "c7c8cc5312552576dd6af118599d5404e68b9e279a9be679dcba8021ec4b8686"
+    "042fbcf9d7fd5c520473c6715200f22706b34cd036ba4d3d8d87228890ea5924"
 )
 
 STARTING_BALANCE = 100_000.0
@@ -166,10 +166,10 @@ EXPECTED_BOOK: dict[str, tuple[int, str, str]] = {
 }
 
 OFFICIAL_RULE_SNAPSHOT_RELATIVE_PATH = Path(
-    "docs/ops/evidence/2026-07-29_ftmo_official_rules_snapshot.json"
+    "docs/ops/evidence/2026-09-02_ftmo_official_rules_snapshot.json"
 )
 OFFICIAL_RULE_SNAPSHOT_SHA256 = (
-    "60f94e0d1d3ff5f64582c6274ef1cffe25383806b9a718104f3a34ad89384b72"
+    "d055f71cd2f4c094928a3b19861f0a4ae29654718808117a44458963e9c3d7f8"
 )
 EXPECTED_OFFICIAL_SOURCE_IDS = frozenset(
     {
@@ -182,6 +182,46 @@ EXPECTED_OFFICIAL_SOURCE_IDS = frozenset(
         "ftmo_forbidden_practices_official",
     }
 )
+EXPECTED_OFFICIAL_CLAIM_PROVENANCE: dict[str, list[str]] = {
+    "phase1_profit_target_percent": ["ftmo_trading_objectives_official"],
+    "verification_profit_target_percent": ["ftmo_trading_objectives_official"],
+    "profit_target_operator": ["ftmo_trading_objectives_official"],
+    "maximum_daily_loss_percent_of_initial": ["ftmo_trading_objectives_official"],
+    "maximum_daily_loss_reset_timezone": ["ftmo_trading_objectives_official"],
+    "maximum_daily_loss_reset_local_time": ["ftmo_trading_objectives_official"],
+    "maximum_daily_loss_basis": ["ftmo_trading_objectives_official"],
+    "maximum_daily_loss_breach_operator": ["ftmo_trading_objectives_official"],
+    "maximum_loss_percent_of_initial": ["ftmo_trading_objectives_official"],
+    "maximum_loss_model": ["ftmo_trading_objectives_official"],
+    "maximum_loss_breach_operator": ["ftmo_trading_objectives_official"],
+    "minimum_trading_days_per_phase": ["ftmo_trading_objectives_official"],
+    "trading_day_qualifier": ["ftmo_trading_objectives_official"],
+    "maximum_trading_period_days": ["ftmo_trading_objectives_official"],
+    "swing_news_restriction_during_evaluation": ["ftmo_news_official"],
+    "swing_overnight_or_weekend_restriction": ["ftmo_weekend_official"],
+    "expert_advisors_allowed_subject_to_rules": ["ftmo_ea_official"],
+    "simultaneous_order_limit": ["ftmo_ea_official"],
+    "position_limit_per_day": ["ftmo_ea_official"],
+    "hyperactive_server_request_threshold_per_day": [
+        "ftmo_ea_official",
+        "ftmo_forbidden_practices_official",
+    ],
+    "real_market_replicability_required": [
+        "ftmo_ea_official",
+        "ftmo_forbidden_practices_official",
+    ],
+    "usd_100000_2_step_list_price_usd": ["ftmo_economic_terms_official"],
+    "evaluation_fee_refund_percent_with_first_reward": [
+        "ftmo_economic_terms_official"
+    ],
+    "base_reward_split_percent": ["ftmo_economic_terms_official"],
+    "maximum_reward_split_percent": ["ftmo_economic_terms_official"],
+    "swing_fx_leverage": ["ftmo_economic_terms_official"],
+    "swing_metals_and_oil_leverage": ["ftmo_economic_terms_official"],
+    "account_balance_increase_percent": ["ftmo_economic_terms_official"],
+    "minimum_months_between_scaleups": ["ftmo_economic_terms_official"],
+    "scaled_reward_split_percent": ["ftmo_economic_terms_official"],
+}
 
 EXPECTED_OFFICIAL_RULE_SEMANTICS: dict[str, dict[str, Any]] = {
     "ftmo_2s_phase1_profit_target": {
@@ -1196,7 +1236,7 @@ def _validate_official_rule_sources(
         raise StandaloneEvaluationError("rule_snapshot:stale")
     if any(
         row.get("retrieved_at_utc") != snapshot.get("retrieved_at_utc")
-        or row.get("retrieved_on") != "2026-07-29"
+        or row.get("retrieved_on") != "2026-09-02"
         for row in by_id.values()
     ):
         raise StandaloneEvaluationError("rulepack:official_source_vintage_invalid")
@@ -1244,18 +1284,34 @@ def _validate_official_rule_sources(
         "position_limit_per_day": 2000,
         "hyperactive_server_request_threshold_per_day": 2000,
         "real_market_replicability_required": True,
+        "usd_100000_2_step_list_price_usd": 540,
+        "evaluation_fee_refund_percent_with_first_reward": 100,
+        "base_reward_split_percent": 80,
+        "maximum_reward_split_percent": 90,
+        "swing_fx_leverage": "1:30",
+        "swing_metals_and_oil_leverage": "1:15",
+        "account_balance_increase_percent": 25,
+        "minimum_months_between_scaleups": 4,
+        "scaled_reward_split_percent": 90,
     }
     if canonical_sha256(snapshot.get("normalized_claims")) != canonical_sha256(
         expected_claims
     ):
         raise StandaloneEvaluationError("rule_snapshot:normalized_claims_invalid")
+    if canonical_sha256(snapshot.get("claim_provenance")) != canonical_sha256(
+        EXPECTED_OFFICIAL_CLAIM_PROVENANCE
+    ):
+        raise StandaloneEvaluationError("rule_snapshot:claim_provenance_invalid")
     return {
         "source_ids": sorted(by_id),
         "snapshot_sha256": OFFICIAL_RULE_SNAPSHOT_SHA256,
         "retrieved_at_utc": retrieved.isoformat().replace("+00:00", "Z"),
         "age_seconds": int(age.total_seconds()),
         "maximum_age_days": 7,
-        "semantic_scope": "source identity/url/status plus complete normalized claims",
+        "semantic_scope": (
+            "source identity/url/status plus complete normalized claims and "
+            "field-level provenance"
+        ),
     }
 
 
@@ -1265,10 +1321,10 @@ def _official_rules(rulepack: Mapping[str, Any]) -> dict[str, Any]:
         "schema_version": "target-rulepack/v1",
         "schema_ref": "tools/strategy_farm/schemas/target_rulepack_v1.schema.json",
         "rulepack_id": "FTMO_2S_100K_SWING_V2",
-        "profile_version": 1,
+        "profile_version": 2,
         "target": "FTMO",
         "account_or_program": "FTMO Challenge 2-Step / USD 100000 / Swing",
-        "as_of": "2026-07-29",
+        "as_of": "2026-09-02",
         "lifecycle_status": "RESEARCH_CONTRACT_ONLY",
         "canonicalization": {
             "algorithm": "QM_CANONICAL_JSON_V1",
