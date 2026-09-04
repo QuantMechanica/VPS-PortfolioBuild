@@ -48,6 +48,31 @@ class TerminalWorkerAdoptionTests(unittest.TestCase):
             expected_min * 60,
         )
 
+    def test_q07_monitor_uses_workload_scaled_timeout(self) -> None:
+        """2026-09-04: QM5_12935 XAUUSD Q07 was killed three times at the 5400 s
+        child default (seed 3 of 5 mid-run) while the reaper budget was 200 min."""
+        payload = {"timeout_min": 120}
+        expected_min = farmctl._active_timeout_min_for_work_item(
+            "Q07", json.dumps(payload)
+        )
+        self.assertGreater(expected_min, 120)
+        self.assertEqual(
+            terminal_worker._monitor_timeout_seconds(payload, 5400, phase="Q07"),
+            expected_min * 60,
+        )
+        # a legacy row without timeout_min gets the scaled budget, not 5400 s
+        self.assertEqual(
+            terminal_worker._monitor_timeout_seconds({}, 5400, phase="Q07"),
+            expected_min * 60,
+        )
+        # phases outside the scaled set keep the payload / default rule
+        self.assertEqual(
+            terminal_worker._monitor_timeout_seconds(
+                {"timeout_min": 45}, 1800, phase="Q02"
+            ),
+            45 * 60,
+        )
+
     def _insert_active_item(self, root: Path, *, payload: dict[str, object]) -> dict[str, object]:
         farmctl.init_db(root)
         now = farmctl.utc_now()

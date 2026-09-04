@@ -8488,9 +8488,15 @@ def _monitor_timeout_seconds(
             timeout_seconds = max(timeout_seconds, payload_timeout_min * 60)
     except (TypeError, ValueError):
         pass
-    if str(phase or "").upper() == _Q08_PHASE:
+    phase_upper = str(phase or "").upper()
+    if phase_upper == _Q08_PHASE or phase_upper in farmctl._WORKLOAD_SCALED_PHASES:
+        # 2026-09-04 (CEO): the child monitor budget for Q05-Q07 follows the
+        # reaper's workload-scaled budget, as Q08 already did.  QM5_12935
+        # XAUUSD Q07 was killed three times at the 5400 s child default with
+        # seed 3 of 5 mid-run (five seeds need ~185 min) while the reaper
+        # would have allowed 200 min -- three slot-hours without a verdict.
         phase_timeout_min = farmctl._active_timeout_min_for_work_item(
-            _Q08_PHASE, json.dumps(payload, sort_keys=True)
+            phase_upper, json.dumps(payload, sort_keys=True)
         )
         if phase_timeout_min is not None:
             timeout_seconds = max(timeout_seconds, int(phase_timeout_min) * 60)
