@@ -636,3 +636,7 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
 - 11910/NZDUSD: Q12 NO_FILTER_CHANGE 15:18Z -> Q13 NO_PARAMETER_CHANGE 15:28Z -> Q14 KEEP_INCUMBENT 15:34Z (`e21567f4`); book_build_guard qualified_pairs 8.
 - Bundle dry-run 15:55Z: 7/8 bound, 11910/NZDUSD refused `no_q08_stream_bound_to_identity`; Q08 stream rerun `977a478e` enqueued 15:53Z (from Q07 PASS `797f03ae`, append-only rerun of `e0237a77`, expected ex5 e18d477e...). Re-run the dry-run after it completes.
 - RAM episode 15:43-15:52Z: Q03 basket 12580 (32 GB reservation) admitted at ~25 GB free beside two XAUUSD Q07; free fell to 5.6 GB, RAM latch idled 7 workers; tester plateaued at 19.9 GB, no kill; recovered to 36.8 GB free. Vorlage-1 item: heavy-row admission vs. reservation.
+
+## 16:31Z 2026-09-04 - path-to-25 Vorlage submitted
+
+- 8/8 terminal pairs KEEP_INCUMBENT (Q13 8/8 NO_PARAMETER_CHANGE, Q12 7/8 NO_FILTER_CHANGE). Census pipeline 11 programs / 8005 cells; 13 Q11-complete pairs without a program. Vorlage: census shortening (D1), Amendment C (D2), bundle FAIL_SOFT rule (D3) — see docs/ops/OWNER_VORLAGE_2026-09-04_census_shortening_amendment_c_bundle_rule.md. Pair 8 stream 977a478e sealed but refused by the PASS-only bundle filter.
