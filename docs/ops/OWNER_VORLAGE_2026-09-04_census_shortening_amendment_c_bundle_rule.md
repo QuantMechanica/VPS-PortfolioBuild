@@ -23,13 +23,17 @@ Census pipeline (16:35Z): 11 programs, 8005 pending cells, throughput 44/h (last
 
 Thirteen Q11-complete pairs have NO census program yet: 11294/XAUUSD, 11660/NDX, 11708/EURUSD, 12849/XTIUSD, 12855/XTIUSD, 13013/NDX, 20086/EURUSD, 20086/NDX, 21501/USDJPY, 21502/XAUUSD, 41219/XAUUSD, 41221/EURUSD (+1). Eight of them are needed for 25. NDX pairs additionally sit behind the 44 GB single_index_tick admission (Vorlage 1, RAM). Without a decision: 25 not before ~2–3 weeks.
 
-## Decision 1 — shorten the census (RECOMMENDED: YES)
+## Decision 1 — shorten the census (CORRECTED 16:43Z; RECOMMENDED: Option B2)
 
-Option A (recommended): skip the Q13 parameter census when the pair's Q08 sub-gate 8.5 (parameter neighbourhood) is PASS; keep the Q12 filter census (~200 cells) and Q14 as the closing head-to-head. Rationale: 8.5 already measures parameter robustness on the same binary and window; Q13 has never overturned it (8/8). Effect: 3–5x fewer cells per pair; 25 reachable in ~1 week instead of ~3. Rollback: re-enable Q13 for any pair on request (append-only rows; nothing is overwritten). Blast radius: gate criterion (DL-089 census plan v3 declared trial count changes; the selection rule itself is untouched).
+Correction: the 1085-cell programs ARE the pattern census (7 baseline + 539 buy + 539 sell = 77 patterns x 2 directions x 7 years). The Q13 numeric sweep declared zero parameters in 11 of 11 runs (`NO_NEW_PARAMETER_SWEEP`, no cells). Skipping Q13 therefore saves nothing; the original Option A is withdrawn.
 
-Option B: keep the full census (status quo). Cost of waiting: ~2 weeks of factory time for a fork that has adopted nothing in 8/8 cases.
+Option B1 — fewer years: census 2021–2025 instead of 2019–2025 (775 cells, −29 %). Simple, weakens the walk-forward base.
 
-Option C: count Q11-complete pairs directly (change of OWNER-DEC-A1). Not recommended: the census is the only proof that the incumbents are not fragile.
+Option B2 (recommended) — two-stage screening: stage 1 measures all 154 arms on two screening years (2 x 155 = 310 cells); only arms that beat the baseline by >= +5 % in BOTH screening years enter stage 2 (the remaining five years). Expected ~350–450 cells per pair (−60 % to −65 %); the declared trial count stays 154 (DSR deflation unchanged), the selection rule (consistency >= 2/3 folds at +5 %) applies to stage 2. Pre-registered, append-only, no change to the head-to-head. Effect: 25 reachable in ~1.5 weeks instead of ~3.
+
+Option B3 — curated pattern subset (e.g. the arms that ever produced a candidate). Changes the declared trial count and the selection rule = ROT; not recommended without a separate study.
+
+Option B4 — status quo (1085 cells per pair; ~2 weeks of factory time for the remaining programs plus the 13 uncovered pairs).
 
 ## Decision 2 — Amendment C to the slot order (RECOMMENDED: YES)
 
