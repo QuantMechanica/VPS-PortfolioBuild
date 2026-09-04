@@ -111,3 +111,15 @@ decisions/DL-089_amendment_1_deterministic_floor_break_pruning_2026-08-27.md -te
 docs/ops/evidence/2026-09-02_ftmo_economic_terms_snapshot.json -text
 docs/ops/evidence/2026-09-04_ftmo_official_rules_snapshot.json -text
 docs/ops/evidence/ftmo_fetch_20260904/*.html -text
+
+# The sealed EDGE program doc is a raw-byte contract: edge_lab_stats.py records
+# its sha256 in every manifest's rule_seal, and core.autocrlf re-smudging it on
+# checkout would break that seal in one checkout while it verifies in another
+# (exactly the trap the LF-blob Pin-SHA rule exists for).  Keep the bytes as-is.
+docs/research/EDGE_DISCOVERY_PROGRAM_V1_2026-09-04.md -text
+
+# EDGE-lab evidence tables are hash-bound the same way: every manifest records
+# the sha256 of the LF bytes the tool wrote, so a CRLF checkout makes the
+# committed evidence fail its own manifest (it did, for the r2 copies).
+docs/research/edge_lab/**/*.csv -text
+docs/research/edge_lab/**/*.json -text

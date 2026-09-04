@@ -133,10 +133,25 @@ explains fewer than ``CALIB_MIN_VERIFIED_FRAC`` of its own rows is dropped
 entirely.  No event is ever re-fitted individually: a per-event offset fit would
 be exactly the circularity Stage 0 exists to avoid.
 
-The residual circularity is weak and is named rather than assumed away: the
-argmax uses tickvol, the statistic uses returns, and the recovered offset is a
-per-group constant.  Stage 0 CANNOT repair a wrong Actual/Forecast value and
-CANNOT supply ``known_at_utc``.  Both remain declared GAPs.
+The residual circularity is weak but it is NOT confined to the per-group
+constant, and naming only that part understated it.  There are TWO exposures:
+
+  (i)  the group offset is fitted from tickvol on a probe symbol while the
+       statistic is computed on returns, and the fitted quantity is a per-group
+       CONSTANT -- a weak dependence, and the one Stage 0 was designed around;
+  (ii) gate B conditions SAMPLE MEMBERSHIP on tickvol printed AFTER the release,
+       inside the window the statistic later measures: the +/-90 min local grid
+       covers the whole 90-minute holding window.  An event is therefore kept or
+       dropped partly on the basis of what happened after entry.  Gate B can only
+       ever VOID and never reshapes a return, so it cannot manufacture drift, but
+       it can select WHICH releases are measured, and that selection is not
+       independent of the measurement window.
+
+Exposure (ii) is not argued away: every EDGE-1 summary publishes the
+with/without-gate-B statistic side by side (``stage0b_gate_b_sensitivity``), so
+the reader can see whether the headline depends on it.  Stage 0 CANNOT repair a
+wrong Actual/Forecast value and CANNOT supply ``known_at_utc``.  Both remain
+declared GAPs.
 """
 
 from __future__ import annotations
@@ -146,6 +161,7 @@ import bisect
 import calendar as _calendar
 import csv
 import datetime as dt
+import gzip
 import hashlib
 import json
 import math
@@ -231,6 +247,23 @@ EDGE1_BASELINE_NEWS_EXCL_MIN = 120
 EDGE1_BASELINE_EVENT_EXCL_DAYS = 3
 EDGE1_CONFOUND_MIN = max(EDGE1_GRID_DELAY) + max(EDGE1_GRID_HOLD) + 15
 
+# --- EDGE-1 regime-composition disclosure (r3) -------------------------------
+# The IS sample that carries the primary-cell result is not evenly spread over
+# 2018-2023.  The three 2020 Q2 payroll prints are the largest surprises in the
+# entire calendar by orders of magnitude (z = -8.9 / +12.1 / +37.3), and they
+# also inflate the trailing 3-year surprise sd that every LATER event is scored
+# against -- so they simultaneously dominate the numerator and empty the sample
+# after them.  Their contribution is therefore published as a sensitivity, in
+# exactly the shape of cluster_direction_sensitivity.
+#
+# This is a DISCLOSURE, not an outlier policy.  Nothing is dropped from the
+# headline: the sealed verdict rule is untouched and the ex-window block is
+# reported beside it.  Excluding these clusters from a verdict, or re-running at
+# a lower z threshold because they were excluded, would be a criterion change
+# and needs an OWNER seal first (see deviations_from_spec).
+EDGE1_COVID_WINDOW = (dt.date(2020, 4, 1), dt.date(2020, 6, 30))
+EDGE1_COVID_WINDOW_LABEL = "2020-04-01..2020-06-30 (COVID payroll shock)"
+
 CALIB_MAX_OFFSET_MIN = 1560           # +/- 26h
 CALIB_STEP_MIN = 5
 CALIB_MIN_OBS = 20
@@ -269,6 +302,26 @@ CALIB_EVENT_LOCAL_GRID_MIN = 90
 CALIB_EVENT_LOCAL_TOL_MIN = 5          # one M5 slot
 CALIB_EVENT_LOCAL_PROMINENCE = 1.5     # local peak / local median to be authoritative
 CALIB_MIN_VERIFIED_FRAC = 0.50         # below this the whole GROUP is dropped
+
+# Group-level Stage-0 outcomes.  VERIFY_FRAC_LOW and HOME_CLOCK_TIE are their own
+# statuses rather than a reused AMBIGUOUS: AMBIGUOUS means "the tickvol peak moved
+# between the two halves of the sample", which is a different failure with a
+# different remedy, and folding three causes into one label made the calibration
+# table unable to say why a group was dropped.
+#   VERIFY_FRAC_LOW  the group constant explains fewer than CALIB_MIN_VERIFIED_FRAC
+#                    of the group's own rows -- the displacement is not a constant.
+#   HOME_CLOCK_TIE   the group's modal home wall-clock minute is not unique (the
+#                    top two counts are equal), so gate A has no reference value.
+#                    An arbitrary tie-break here would silently void one half of a
+#                    group on the sort order of a dict, so the group is DROPPED.
+CALIB_STATUS_COUNT_KEY = {
+    "CALIBRATED": "calibrated",
+    "NO_SIGNATURE": "no_signature",
+    "AMBIGUOUS": "ambiguous",
+    "UNDERPOWERED": "underpowered",
+    "VERIFY_FRAC_LOW": "verify_frac_low",
+    "HOME_CLOCK_TIE": "home_clock_tie",
+}
 
 # Home timezone per event currency, for gate A.  Standard offset in hours plus
 # the DST rule that applies to it.  US Eastern uses qm.dst_rule.us.v1 (its
@@ -1005,6 +1058,26 @@ def write_csv(path: str, header: Sequence[str], rows: Sequence[Sequence]) -> Tup
     return sha256_file(path), len(rows)
 
 
+def write_gzip_copy(src_path: str, gz_path: str) -> str:
+    """Deterministic gzip of an already-written table.
+
+    ``mtime=0`` and an empty filename field keep the bytes reproducible, so the
+    compressed copy has a stable sha256 like every other output.  This exists so
+    a table too large to commit raw (fix_days.csv, 6.5 MB) can still ship its
+    exact bytes next to the compact tables instead of living only in a scratch
+    directory the manifest points at and nobody else can read.
+    """
+    with open(src_path, "rb") as fin:
+        raw = fin.read()
+    with open(gz_path, "wb") as f:
+        gz = gzip.GzipFile(filename="", mode="wb", fileobj=f, compresslevel=9, mtime=0)
+        try:
+            gz.write(raw)
+        finally:
+            gz.close()
+    return sha256_file(gz_path)
+
+
 def write_json(path: str, obj) -> str:
     os.makedirs(os.path.dirname(path), exist_ok=True)
     text = json.dumps(obj, indent=2, sort_keys=True, ensure_ascii=False, allow_nan=False)
@@ -1077,6 +1150,23 @@ CALIB_EVENTS_HEADER = [
 ]
 
 
+def modal_home_clock(hist: Dict[int, int]) -> Tuple[Optional[int], bool]:
+    """(modal home wall-clock minute-of-day, tie) for Stage-0b gate A.
+
+    An exact tie between the two most common values means the group has NO
+    identifiable home release time.  Returning ``(None, True)`` makes the caller
+    drop the group; the previous behaviour took the numerically smaller minute,
+    which on an exactly-split group voided one arbitrary half of it on the sort
+    order of a dict and reported the result as a measurement.
+    """
+    if not hist:
+        return None, False
+    ordered = sorted(hist.items(), key=lambda kv: (-kv[1], kv[0]))
+    if len(ordered) > 1 and ordered[0][1] == ordered[1][1]:
+        return None, True
+    return ordered[0][0], False
+
+
 def _argmax_offset(offsets: Sequence[int], values: Sequence[float]) -> int:
     best_i = 0
     best_v = values[0]
@@ -1117,9 +1207,11 @@ def run_stage0(cal_rows: List[CalendarRow], bars: Dict[str, BarSeries], cfg) -> 
     applied: Dict[Tuple[str, str], Optional[int]] = {}
     verify: Dict[Tuple[str, str, int], Dict] = {}
     counts = {"examined": 0, "calibrated": 0, "no_signature": 0, "ambiguous": 0,
-              "underpowered": 0, "offset_nonzero": 0,
+              "underpowered": 0, "verify_frac_low": 0, "home_clock_tie": 0,
+              "offset_nonzero": 0,
               "events_verified": 0, "events_voided_home_clock": 0,
-              "events_voided_local_peak": 0, "groups_dropped_verify_frac": 0}
+              "events_voided_local_peak": 0, "events_voided_home_clock_tie": 0,
+              "groups_dropped_verify_frac": 0, "groups_dropped_home_clock_tie": 0}
 
     local_grid = list(range(-CALIB_EVENT_LOCAL_GRID_MIN, CALIB_EVENT_LOCAL_GRID_MIN + 1,
                             CALIB_STEP_MIN))
@@ -1229,7 +1321,9 @@ def run_stage0(cal_rows: List[CalendarRow], bars: Dict[str, BarSeries], cfg) -> 
         n_ver = 0
         n_void_clock = 0
         n_void_peak = 0
+        n_void_tie = 0
         modal_local: Optional[int] = None
+        modal_tie = False
         ev_rows_this: List[List] = []
         if applied_off is not None:
             # gate A -- the modal home wall-clock minute-of-day of the group
@@ -1241,8 +1335,7 @@ def run_stage0(cal_rows: List[CalendarRow], bars: Dict[str, BarSeries], cfg) -> 
                 locals_.append((r, rel, lm))
                 if lm is not None:
                     hist[lm] = hist.get(lm, 0) + 1
-            if hist:
-                modal_local = sorted(hist.items(), key=lambda kv: (-kv[1], kv[0]))[0][0]
+            modal_local, modal_tie = modal_home_clock(hist)
 
             for r, rel, lm in locals_:
                 raw_epoch = _calendar.timegm(r.raw_utc.timetuple())
@@ -1266,7 +1359,10 @@ def run_stage0(cal_rows: List[CalendarRow], bars: Dict[str, BarSeries], cfg) -> 
                         prominent = 1 if lpeak_ratio >= CALIB_EVENT_LOCAL_PROMINENCE else 0
 
                 reason = ""
-                if modal_local is not None and lm is not None and lm != modal_local:
+                if modal_tie:
+                    reason = "home_clock_tie"
+                    n_void_tie += 1
+                elif modal_local is not None and lm is not None and lm != modal_local:
                     reason = "home_clock_mismatch"
                     n_void_clock += 1
                 elif (prominent and lpeak_off is not None
@@ -1287,10 +1383,19 @@ def run_stage0(cal_rows: List[CalendarRow], bars: Dict[str, BarSeries], cfg) -> 
                 ])
 
             ver_frac = n_ver / float(len(evs)) if evs else 0.0
-            if ver_frac < CALIB_MIN_VERIFIED_FRAC:
+            if modal_tie:
+                # gate A has no reference value -> the group cannot be verified
+                status = "HOME_CLOCK_TIE"
+                applied_off = None
+                counts["groups_dropped_home_clock_tie"] += 1
+                counts["events_voided_home_clock_tie"] += n_void_tie
+                n_ver = 0
+            elif ver_frac < CALIB_MIN_VERIFIED_FRAC:
                 # the group constant explains less than half of its own rows:
                 # the displacement is not a constant at all -> drop the group.
-                status = "AMBIGUOUS"
+                # This is NOT the AMBIGUOUS sub-era disagreement; it has its own
+                # status so the calibration table can say which test failed.
+                status = "VERIFY_FRAC_LOW"
                 applied_off = None
                 counts["groups_dropped_verify_frac"] += 1
                 for (c, e, re_) in list(verify.keys()):
@@ -1307,8 +1412,7 @@ def run_stage0(cal_rows: List[CalendarRow], bars: Dict[str, BarSeries], cfg) -> 
                 counts["events_voided_local_peak"] += n_void_peak
         calib_event_rows.extend(ev_rows_this)
 
-        counts[{"CALIBRATED": "calibrated", "NO_SIGNATURE": "no_signature",
-                "AMBIGUOUS": "ambiguous", "UNDERPOWERED": "underpowered"}[status]] += 1
+        counts[CALIB_STATUS_COUNT_KEY[status]] += 1
         applied[key] = applied_off
         if status == "CALIBRATED" and applied_off not in (None, 0):
             counts["offset_nonzero"] += 1
@@ -1341,6 +1445,21 @@ EVENTS_HEADER = [
     "cluster_direction", "cluster_dir_rule",
 ]
 
+# event_windows.csv COLUMN SIGNING -- read this before using any ret_* column.
+#   ret_raw_p<h>   unsigned close-to-close return of the SYMBOL, in bp.
+#   ret_p<h>       ret_raw_p<h> * trade_dir          -- the ROW's OWN event.
+#   ret_cl_p<h>    ret_raw_p<h> * cluster_trade_dir  -- the CLUSTER's direction.
+#   mae_p90_bp / mfe_p90_bp        signed by trade_dir.
+#   mae_cl_p90_bp / mfe_cl_p90_bp  signed by cluster_trade_dir.
+# The headline statistic signs by the CLUSTER (a cluster is signed and triggered
+# by its highest-ranked member, EDGE1_DIR_RULE_PRIMARY), so ret_cl_p* is the
+# column it is computed from.  trade_dir and cluster_trade_dir disagree on every
+# row whose own event's surprise direction differs from its cluster primary's;
+# on the production run that is 330 of 1200 rows.  Publishing only the
+# own-direction family made the headline unreproducible from the table without
+# out-of-band knowledge of the sealed rule -- the twins fix that.  The
+# own-direction family is KEPT because it is the right column for any per-event
+# (non-cluster) reading of the same rows.
 EW_HEADER = (["event_id", "cluster_id", "currency", "era", "symbol", "currency_leg",
               "trade_dir", "cluster_trade_dir", "entry_delay_min", "entry_bar_epoch",
               "entry_lag_sec", "entry_price"]
@@ -1349,7 +1468,22 @@ EW_HEADER = (["event_id", "cluster_id", "currency", "era", "symbol", "currency_l
              + ["ret_raw_p%d" % h for h in EDGE1_HORIZONS]
              + ["mae_p90_bp", "mfe_p90_bp", "atr_m5_bp", "bars_missing",
                 "session_intact", "window_ok", "weekday", "broker_hour",
-                "minute_of_hour"])
+                "minute_of_hour"]
+             + ["ret_cl_p%d" % h for h in EDGE1_HORIZONS]
+             + ["mae_cl_p90_bp", "mfe_cl_p90_bp"])
+
+EW_COLUMN_NOTES = {
+    "ret_raw_p<h>": "unsigned close-to-close return of the symbol over <h> minutes, bp",
+    "ret_p<h>": "ret_raw_p<h> * trade_dir -- signed by the ROW's OWN event direction",
+    "ret_cl_p<h>": ("ret_raw_p<h> * cluster_trade_dir -- signed by the CLUSTER's "
+                    "direction; THIS is the family the headline statistic uses"),
+    "mae_p90_bp/mfe_p90_bp": "M5 excursion envelope over 90 min, signed by trade_dir",
+    "mae_cl_p90_bp/mfe_cl_p90_bp": ("the same envelope signed by cluster_trade_dir; "
+                                    "empty when the cluster has no resolved direction"),
+    "trade_dir": "sign(surprise_z) * polarity * currency_leg for THIS row's event",
+    "cluster_trade_dir": ("the cluster's sealed direction * currency_leg; empty when "
+                          "the cluster resolved to no direction"),
+}
 
 BASELINE_HEADER = (["baseline_id", "symbol", "era", "weekday", "broker_hour",
                     "minute_of_hour", "bar_epoch", "entry_price"]
@@ -1365,7 +1499,12 @@ class Edge1Event(object):
     __slots__ = ("event_id", "cluster_id", "currency", "event", "raw_utc",
                  "applied_offset", "release_utc", "release_epoch", "era",
                  "surprise_z", "polarity", "direction", "is_confounded",
-                 "instant_verified", "rank")
+                 "instant_verified", "rank",
+                 # ``direction_gb`` is the direction this event WOULD carry if
+                 # Stage-0b gate B (the post-release tickvol peak) were off.  It
+                 # equals ``direction`` for every event gate B did not void and is
+                 # used ONLY by the published gate-B sensitivity scope.
+                 "direction_gb", "gate_b_voided")
 
 
 def _window_metrics(series: BarSeries, entry_slot: int, horizons: Sequence[int]):
@@ -1447,10 +1586,40 @@ class Cell(object):
         return n, mu, math.sqrt(var)
 
 
+def calibrated_instant_set(cal_rows, applied,
+                          lo: Optional[dt.date] = None,
+                          hi: Optional[dt.date] = None) -> List[int]:
+    """Broker epochs of every HIGH-impact release Stage 0 could calibrate.
+
+    ``lo``/``hi`` optionally restrict by corrected RELEASE date.  The
+    UNRESTRICTED set is the shared one: it is a property of the calendar and of
+    the calibration, not of which hypothesis is being run.  Deriving it inside
+    EDGE-1 made it depend on ``--hypothesis`` -- 150 instants when EDGE-3 ran
+    standalone, 106 when EDGE-1 ran first and handed over its window-truncated
+    copy -- so EDGE-3's own news mask silently changed shape depending on a flag
+    that should not touch it.  It is now computed once, in main(), for both.
+    """
+    out: List[int] = []
+    for r in cal_rows:
+        if r.impact != "High" or r.currency not in EDGE1_CURRENCIES:
+            continue
+        off = applied.get((r.currency, r.event))
+        if off is None:
+            continue
+        rel = r.raw_utc + dt.timedelta(minutes=off)
+        if lo is not None and rel.date() < lo:
+            continue
+        if hi is not None and rel.date() > hi:
+            continue
+        out.append(utc_to_broker_epoch(rel))
+    return sorted(set(out))
+
+
 def run_edge1(bars: Dict[str, BarSeries], cal_rows, calib_rows, applied, calib_counts,
               verify: Dict[Tuple[str, str, int], Dict],
               polarity: Dict[str, int], polarity_sha: str, cfg, out_dir: str,
-              calib_event_rows: List[List]) -> Dict:
+              calib_event_rows: List[List],
+              calibrated_instants: Optional[List[int]] = None) -> Dict:
     symbol_map = EDGE1_SYMBOL_MAP_GBPJPY if cfg.edge1_include_gbpjpy else EDGE1_SYMBOL_MAP_BASE
     universe = sorted({s for v in symbol_map.values() for s in v})
     missing = [s for s in universe if s not in bars]
@@ -1461,16 +1630,30 @@ def run_edge1(bars: Dict[str, BarSeries], cal_rows, calib_rows, applied, calib_c
               "dropped_unparseable": 0, "dropped_not_calibrated": 0,
               "dropped_no_polarity": 0, "dropped_window_not_ok": 0,
               "dropped_confounded": 0, "dropped_thin_cell": 0,
-              "dropped_instant_unverified": 0, "dropped_direction_conflict": 0,
-              "surprise_history_seed_rows": 0, "calibrated_instants": 0}
+              "dropped_instant_unverified": 0, "dropped_instant_gate_b_only": 0,
+              "dropped_direction_conflict": 0,
+              "surprise_history_seed_rows_before_is_start": 0,
+              "surprise_history_rows_after_oos_end": 0,
+              "surprise_history_rows_outside_window": 0,
+              "calibrated_instants": 0, "calibrated_instants_confound_window": 0}
 
     # ---- 1. calibrated high-impact instants (for confounding + baseline excl.)
     # An event whose INSTANT failed Stage 0b is excluded from the tradeable set
     # but its applied instant is deliberately KEPT in this list: something did
     # happen near there, and the news-exclusion halo must stay conservative.
-    calibrated_instants: List[int] = []
+    # The SET is hypothesis-independent and is handed in (see
+    # calibrated_instant_set); only the CONFOUNDING test uses a window-truncated
+    # copy, because is_confounded is a flag on a MEASURED event and every measured
+    # event lies inside the study window by construction.  The baseline's news
+    # halo deliberately uses the full set: it must stay conservative, and an
+    # instant just outside the window still has a 120-minute halo inside it.
+    if calibrated_instants is None:
+        calibrated_instants = calibrated_instant_set(cal_rows, applied)
+    confound_instants = calibrated_instant_set(cal_rows, applied, cfg.is_start, cfg.oos_end)
     cal_sel: List[Tuple[CalendarRow, int]] = []
     cal_hist: List[Tuple[CalendarRow, int]] = []      # history seed, NO window filter
+    n_before_is_start = 0
+    n_after_oos_end = 0
     for r in cal_rows:
         if r.impact != "High" or r.currency not in EDGE1_CURRENCIES:
             continue
@@ -1479,13 +1662,22 @@ def run_edge1(bars: Dict[str, BarSeries], cal_rows, calib_rows, applied, calib_c
             continue
         rel = r.raw_utc + dt.timedelta(minutes=off)
         cal_hist.append((r, off))
-        if not (cfg.is_start <= rel.date() <= cfg.oos_end):
+        if rel.date() < cfg.is_start:
+            n_before_is_start += 1
+            continue
+        if rel.date() > cfg.oos_end:
+            n_after_oos_end += 1
             continue
         cal_sel.append((r, off))
-        calibrated_instants.append(utc_to_broker_epoch(rel))
-    calibrated_instants = sorted(set(calibrated_instants))
     counts["calibrated_instants"] = len(calibrated_instants)
-    counts["surprise_history_seed_rows"] = len(cal_hist) - len(cal_sel)
+    counts["calibrated_instants_confound_window"] = len(confound_instants)
+    # LABELLING (r3).  The single old counter was called seed_rows_before_is_start
+    # but counted every calibrated row OUTSIDE the study window -- including rows
+    # AFTER oos_end, which seed nothing because the surprise history is strictly
+    # backward-looking.  The two are counted apart now.
+    counts["surprise_history_seed_rows_before_is_start"] = n_before_is_start
+    counts["surprise_history_rows_after_oos_end"] = n_after_oos_end
+    counts["surprise_history_rows_outside_window"] = n_before_is_start + n_after_oos_end
 
     # ---- 2. surprise z per (currency, event)
     # The z-history is accumulated over the FULL calendar, not over the study
@@ -1501,6 +1693,10 @@ def run_edge1(bars: Dict[str, BarSeries], cal_rows, calib_rows, applied, calib_c
     events: List[Edge1Event] = []
     event_rows: List[List] = []
     surprise_n_hist: List[int] = []
+    # trailing-3y surprise sd, per group per year.  This is the DENOMINATOR every
+    # z is scored against; publishing it is what turns "the holdout is empty"
+    # from an assertion into a measurement (see holdout.trigger_diagnostics).
+    sd_by_group_year: Dict[str, Dict[int, List[float]]] = {}
     for key in sorted(by_group.keys()):
         currency, ev_name = key
         items = sorted(by_group[key], key=lambda x: x[2])
@@ -1532,6 +1728,9 @@ def run_edge1(bars: Dict[str, BarSeries], cal_rows, calib_rows, applied, calib_c
                 continue
             if z is not None:
                 surprise_n_hist.append(n3)
+            if sd3 is not None:
+                sd_by_group_year.setdefault("%s|%s" % (currency, ev_name), {}) \
+                                .setdefault(rel.year, []).append(sd3)
 
             pol = polarity.get(ev_name)
             if pol is None:
@@ -1540,9 +1739,22 @@ def run_edge1(bars: Dict[str, BarSeries], cal_rows, calib_rows, applied, calib_c
             inst_ok = int(vrec.get("instant_verified", 1))
             if not inst_ok:
                 counts["dropped_instant_unverified"] += 1
+            # Gate B is the ONE Stage-0b gate that reads inside the measurement
+            # window (its +/-90 min tickvol grid covers the whole 90-minute hold),
+            # so it conditions sample MEMBERSHIP on post-entry data.  Events voided
+            # ONLY by gate B therefore keep a shadow direction, used exclusively by
+            # the published gate-B sensitivity scope and never by the seal.
+            gate_b_only = bool(not inst_ok
+                               and vrec.get("void_reason") == "local_peak_elsewhere")
+            if gate_b_only:
+                counts["dropped_instant_gate_b_only"] += 1
             direction = None
-            if z is not None and pol is not None and _sign(z) != 0 and inst_ok:
-                direction = _sign(z) * pol
+            direction_gb = None
+            if z is not None and pol is not None and _sign(z) != 0:
+                if inst_ok:
+                    direction = _sign(z) * pol
+                if inst_ok or gate_b_only:
+                    direction_gb = _sign(z) * pol
 
             year = rel.year
             era = "IS" if cfg.is_start.year <= year <= cfg.is_end.year else (
@@ -1558,9 +1770,9 @@ def run_edge1(bars: Dict[str, BarSeries], cal_rows, calib_rows, applied, calib_c
             # different time
             wlo = rel_epoch_exact - EDGE1_CONFOUND_MIN * 60
             whi = rel_epoch_exact + EDGE1_CONFOUND_MIN * 60
-            a = bisect.bisect_left(calibrated_instants, wlo)
-            b = bisect.bisect_right(calibrated_instants, whi)
-            others = [t for t in calibrated_instants[a:b] if t != rel_epoch_exact]
+            a = bisect.bisect_left(confound_instants, wlo)
+            b = bisect.bisect_right(confound_instants, whi)
+            others = [t for t in confound_instants[a:b] if t != rel_epoch_exact]
             confounded = 1 if others else 0
 
             e = Edge1Event()
@@ -1576,6 +1788,8 @@ def run_edge1(bars: Dict[str, BarSeries], cal_rows, calib_rows, applied, calib_c
             e.surprise_z = z
             e.polarity = pol
             e.direction = direction
+            e.direction_gb = direction_gb
+            e.gate_b_voided = 1 if gate_b_only else 0
             e.is_confounded = confounded
             e.instant_verified = inst_ok
             e.rank = CLUSTER_PRIMARY_RANK.get(ev_name)
@@ -1596,24 +1810,28 @@ def run_edge1(bars: Dict[str, BarSeries], cal_rows, calib_rows, applied, calib_c
     for e in events:
         clusters.setdefault(e.cluster_id, []).append(e)
 
-    def resolve_cluster(members: List[Edge1Event], rule: str):
-        """(direction, primary_event or None, conflict) under one sealed rule."""
-        with_dir = [m for m in members if m.direction is not None]
+    def resolve_cluster(members: List[Edge1Event], rule: str, attr: str = "direction"):
+        """(direction, primary_event or None, conflict) under one sealed rule.
+
+        ``attr`` selects the direction field: ``direction`` is the sealed one,
+        ``direction_gb`` the gate-B-off shadow used only by the sensitivity scope.
+        """
+        with_dir = [m for m in members if getattr(m, attr) is not None]
         if not with_dir:
             return None, None, False
         if rule == "primary_event_rank":
             ranked = [m for m in with_dir if m.rank is not None]
             if ranked:
                 prim = sorted(ranked, key=lambda m: (m.rank, m.event))[0]
-                return prim.direction, prim, False
-            dirs = {m.direction for m in with_dir}
+                return getattr(prim, attr), prim, False
+            dirs = {getattr(m, attr) for m in with_dir}
             if len(dirs) == 1:
-                return with_dir[0].direction, None, False
+                return getattr(with_dir[0], attr), None, False
             return None, None, True
         if rule == "unanimous_only":
-            dirs = {m.direction for m in with_dir}
+            dirs = {getattr(m, attr) for m in with_dir}
             if len(dirs) == 1:
-                return with_dir[0].direction, None, False
+                return getattr(with_dir[0], attr), None, False
             return None, None, True
         return None, None, False      # row_mean: no cluster-level direction
 
@@ -1633,7 +1851,13 @@ def run_edge1(bars: Dict[str, BarSeries], cal_rows, calib_rows, applied, calib_c
     event_rows.sort(key=lambda r: (r[8], r[2], r[3]))
 
     # ---- 3. event windows
-    tradeable = [e for e in events if e.direction is not None]
+    # The window set is built over the SUPERSET (sealed direction OR gate-B-only
+    # shadow direction) so the gate-B sensitivity costs no second pass over the
+    # bars.  Rows of gate-B-voided events live in memory ONLY: they are not
+    # written to event_windows.csv, they never reach the sealed statistic, and
+    # they never create a baseline cell.
+    tradeable = [e for e in events
+                 if (e.direction is not None or e.direction_gb is not None)]
     ew_rows: List[List] = []
     ew_recs: List[Dict] = []
     needed_cells: Dict[str, set] = {s: set() for s in universe}
@@ -1646,7 +1870,8 @@ def run_edge1(bars: Dict[str, BarSeries], cal_rows, calib_rows, applied, calib_c
                 leg = -1
             else:
                 continue
-            trade_dir = e.direction * leg
+            edir = e.direction if e.direction is not None else e.direction_gb
+            trade_dir = edir * leg
             series = bars[symbol]
             for delay in EDGE1_GRID_DELAY:
                 target = e.release_epoch + delay * 60
@@ -1681,23 +1906,37 @@ def run_edge1(bars: Dict[str, BarSeries], cal_rows, calib_rows, applied, calib_c
                       and atr_bp is not None and all(rets[h] is not None for h in EDGE1_HORIZONS))
                 bep = series.epoch_of(es)
                 wd, hh, mm = broker_weekday(bep), broker_hour(bep), broker_minute(bep)
-                if ok:
+                if ok and not e.gate_b_voided:
                     needed_cells[symbol].add((wd, hh, mm))
                 cdir = cluster_dir.get(e.cluster_id)
                 ctd = None if cdir is None else cdir * leg
-                ew_rows.append([e.event_id, e.cluster_id, e.currency, e.era, symbol, leg,
-                                trade_dir, ctd, delay, bep, lag, entry_price]
-                               + [px[h] for h in EDGE1_HORIZONS]
-                               + [rets[h] for h in EDGE1_HORIZONS]
-                               + [rets_raw[h] for h in EDGE1_HORIZONS]
-                               + [mae, mfe, atr_bp, bars_missing, 1 if intact else 0,
-                                  1 if ok else 0, wd, hh, mm])
+                # cluster-signed twins -- see EW_HEADER / EW_COLUMN_NOTES
+                rets_cl = {h: (None if (rets_raw[h] is None or ctd is None)
+                               else rets_raw[h] * ctd) for h in EDGE1_HORIZONS}
+                if ctd is None:
+                    mae_cl, mfe_cl = None, None
+                elif ctd == trade_dir:
+                    mae_cl, mfe_cl = mae, mfe
+                else:
+                    mae_cl, mfe_cl = _mae_mfe(series, es, entry_price, 90, ctd)
+                if not e.gate_b_voided:
+                    ew_rows.append([e.event_id, e.cluster_id, e.currency, e.era, symbol, leg,
+                                    trade_dir, ctd, delay, bep, lag, entry_price]
+                                   + [px[h] for h in EDGE1_HORIZONS]
+                                   + [rets[h] for h in EDGE1_HORIZONS]
+                                   + [rets_raw[h] for h in EDGE1_HORIZONS]
+                                   + [mae, mfe, atr_bp, bars_missing, 1 if intact else 0,
+                                      1 if ok else 0, wd, hh, mm]
+                                   + [rets_cl[h] for h in EDGE1_HORIZONS]
+                                   + [mae_cl, mfe_cl])
                 ew_recs.append({"event": e, "symbol": symbol, "delay": delay,
                                 "leg": leg, "trade_dir": trade_dir, "rets": rets,
                                 "rets_raw": rets_raw, "ok": ok,
-                                "cell": (wd, hh, mm), "entry_epoch": bep})
+                                "cell": (wd, hh, mm), "entry_epoch": bep,
+                                "gate_b_voided": e.gate_b_voided})
     counts["event_windows_total"] = len(ew_rows)
-    counts["dropped_window_not_ok"] = sum(1 for r in ew_recs if not r["ok"])
+    counts["dropped_window_not_ok"] = sum(1 for r in ew_recs
+                                          if not r["ok"] and not r["gate_b_voided"])
     ew_rows.sort(key=lambda r: (r[0], r[4], r[8]))
 
     # ---- 4. baseline (IS only), restricted to the cells events actually use
@@ -1773,7 +2012,9 @@ def run_edge1(bars: Dict[str, BarSeries], cal_rows, calib_rows, applied, calib_c
     # ---- 5. grid statistics
     def cell_stat(z_thr: float, delay: int, hold: int, era: str,
                   symbol_filter: Optional[str] = None,
-                  dir_rule: str = EDGE1_DIR_RULE_PRIMARY) -> Dict:
+                  dir_rule: str = EDGE1_DIR_RULE_PRIMARY,
+                  gate_b: bool = True,
+                  exclude_release_window: Optional[Tuple[dt.date, dt.date]] = None) -> Dict:
         """One grid cell under ONE sealed cluster-direction rule.
 
         Under ``primary_event_rank`` (the sealed rule) the cluster's direction
@@ -1783,7 +2024,23 @@ def run_edge1(bars: Dict[str, BarSeries], cal_rows, calib_rows, applied, calib_c
         mean averages them -- that is the previous delivery's behaviour, kept
         only as a disclosed sensitivity: it can average a long and a short on
         the identical price path and rescale the observation by the vote margin.
+
+        ``gate_b=False`` reinstates the events Stage-0b gate B voided (and only
+        those), so the selection effect of a gate that reads post-release tickvol
+        can be measured instead of asserted away.  ``exclude_release_window``
+        drops every cluster whose release date falls inside it -- used ONLY for
+        the published regime-composition disclosure; it is not an outlier policy
+        and never touches the verdict.  Both are reported on the returned dict.
         """
+        excl_lo = excl_hi = None
+        if exclude_release_window is not None:
+            excl_lo, excl_hi = exclude_release_window
+        dir_attr = "direction" if gate_b else "direction_gb"
+
+        def _excluded(members) -> bool:
+            return (excl_lo is not None
+                    and excl_lo <= members[0].release_utc.date() <= excl_hi)
+
         # which clusters trigger, and with what direction
         trig_dir: Dict[str, Optional[int]] = {}
         conflicts = 0
@@ -1791,12 +2048,14 @@ def run_edge1(bars: Dict[str, BarSeries], cal_rows, calib_rows, applied, calib_c
             members = [m for m in clusters[cid] if m.era == era]
             if not members:
                 continue
+            if _excluded(members):
+                continue
             if dir_rule == "row_mean":
-                if any(m.direction is not None and m.surprise_z is not None
+                if any(getattr(m, dir_attr) is not None and m.surprise_z is not None
                        and abs(m.surprise_z) >= z_thr for m in members):
                     trig_dir[cid] = 0        # 0 == "use each row's own trade_dir"
                 continue
-            d, prim, conflict = resolve_cluster(members, dir_rule)
+            d, prim, conflict = resolve_cluster(members, dir_rule, dir_attr)
             if conflict:
                 conflicts += 1
                 continue
@@ -1806,7 +2065,7 @@ def run_edge1(bars: Dict[str, BarSeries], cal_rows, calib_rows, applied, calib_c
                 if prim.surprise_z is None or abs(prim.surprise_z) < z_thr:
                     continue
             else:
-                if not any(m.direction is not None and m.surprise_z is not None
+                if not any(getattr(m, dir_attr) is not None and m.surprise_z is not None
                            and abs(m.surprise_z) >= z_thr for m in members):
                     continue
             trig_dir[cid] = d
@@ -1815,6 +2074,8 @@ def run_edge1(bars: Dict[str, BarSeries], cal_rows, calib_rows, applied, calib_c
         thin = 0
         for rec in ew_recs:
             e = rec["event"]
+            if gate_b and rec["gate_b_voided"]:
+                continue
             if e.era != era or not rec["ok"] or e.is_confounded:
                 continue
             if e.cluster_id not in trig_dir:
@@ -1825,7 +2086,8 @@ def run_edge1(bars: Dict[str, BarSeries], cal_rows, calib_rows, applied, calib_c
                 continue
             cd = trig_dir[e.cluster_id]
             if cd == 0:
-                if e.direction is None or e.surprise_z is None or abs(e.surprise_z) < z_thr:
+                if (getattr(e, dir_attr) is None or e.surprise_z is None
+                        or abs(e.surprise_z) < z_thr):
                     continue
                 sdir = rec["trade_dir"]
             else:
@@ -1857,7 +2119,11 @@ def run_edge1(bars: Dict[str, BarSeries], cal_rows, calib_rows, applied, calib_c
             raw.append(r_c)
         n_eff = len(diffs)
         out = {"n_eff": n_eff, "n_rows": n_rows, "n_dropped_thin_cell": thin,
-               "dir_rule": dir_rule, "n_clusters_direction_conflict": conflicts}
+               "dir_rule": dir_rule, "n_clusters_direction_conflict": conflicts,
+               "stage0b_gate_b": bool(gate_b),
+               "excluded_release_window": (None if excl_lo is None
+                                           else "%s..%s" % (excl_lo.isoformat(),
+                                                            excl_hi.isoformat()))}
         if n_eff == 0:
             out.update({"effect_bp": None, "baseline_projected_bp": None, "sigma0_bp": None,
                         "effect_sigma": None, "se_cluster_bp": None, "t_stat": None,
@@ -1975,6 +2241,92 @@ def run_edge1(bars: Dict[str, BarSeries], cal_rows, calib_rows, applied, calib_c
             "clusters_dropped_conflict": st_is["n_clusters_direction_conflict"],
         })
 
+    # ---- 5d. Stage-0b GATE B sensitivity (circularity disclosure, r3)
+    # Gate B decides membership on tickvol printed after the release, inside the
+    # holding window.  The honest response is not to argue it is harmless but to
+    # publish the statistic with the gate on and off, side by side.
+    gb_is = cell_stat(pz, pd_, ph, "IS", gate_b=False)
+    gb_oos = cell_stat(pz, pd_, ph, "OOS", gate_b=False)
+
+    def _scope_row(name, sealed, st_is_, st_oos_, **extra):
+        row = {"scope": name, "sealed": sealed,
+               "n_eff_is": st_is_["n_eff"], "n_rows_is": st_is_["n_rows"],
+               "effect_bp_is": st_is_["effect_bp"],
+               "effect_sigma_is": st_is_["effect_sigma"],
+               "se_cluster_bp_is": st_is_["se_cluster_bp"],
+               "t_stat_is": st_is_["t_stat"],
+               "sigma0_bp_is": st_is_["sigma0_bp"],
+               "n_dropped_thin_cell_is": st_is_["n_dropped_thin_cell"],
+               "n_eff_oos": st_oos_["n_eff"], "effect_bp_oos": st_oos_["effect_bp"]}
+        row.update(extra)
+        return row
+
+    gate_b_sensitivity = [
+        _scope_row("GATE_B_ON", True, primary, oos,
+                   events_instant_verified=calib_counts["events_verified"]),
+        _scope_row("GATE_B_OFF", False, gb_is, gb_oos,
+                   events_instant_verified=(calib_counts["events_verified"]
+                                            + calib_counts["events_voided_local_peak"]),
+                   events_reinstated=calib_counts["events_voided_local_peak"]),
+    ]
+    gate_b_identical = bool(
+        gb_is["n_eff"] == primary["n_eff"]
+        and gb_is["effect_bp"] == primary["effect_bp"]
+        and gb_is["effect_sigma"] == primary["effect_sigma"])
+
+    # ---- 5e. REGIME-COMPOSITION sensitivity (r3, MAJOR disclosure)
+    # The IS sample is not evenly spread over 2018-2023.  Publishing the headline
+    # without saying which clusters carry it, and what is left when the 2020 Q2
+    # payroll shock is set aside, hid a composition the reader must see.
+    covid_lo, covid_hi = EDGE1_COVID_WINDOW
+    covid_excluded: List[Dict] = []
+    for cid in sorted(clusters.keys()):
+        members = [m for m in clusters[cid] if m.era == "IS"]
+        if not members:
+            continue
+        rel_date = members[0].release_utc.date()
+        if not (covid_lo <= rel_date <= covid_hi):
+            continue
+        d, prim_m, conflict = resolve_cluster(members, EDGE1_DIR_RULE_PRIMARY)
+        if conflict or d is None or prim_m is None:
+            continue
+        if prim_m.surprise_z is None or abs(prim_m.surprise_z) < pz:
+            continue
+        covid_excluded.append({
+            "cluster_id": cid,
+            "release_utc": members[0].release_utc.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "primary_event": prim_m.event,
+            "primary_surprise_z": prim_m.surprise_z,
+            "cluster_direction": d,
+        })
+    ex_covid_is = cell_stat(pz, pd_, ph, "IS", exclude_release_window=EDGE1_COVID_WINDOW)
+    ex_covid_oos = cell_stat(pz, pd_, ph, "OOS", exclude_release_window=EDGE1_COVID_WINDOW)
+    regime_sensitivity = [
+        _scope_row("ALL_IS_CLUSTERS", True, primary, oos, excluded_window=None,
+                   excluded_clusters=[]),
+        _scope_row("EX_COVID_2020Q2", False, ex_covid_is, ex_covid_oos,
+                   excluded_window=EDGE1_COVID_WINDOW_LABEL,
+                   excluded_clusters=covid_excluded),
+    ]
+
+    # ---- 5f. WHY the holdout is empty -- measured, not asserted
+    def _primary_abs_z(era_name: str) -> List[float]:
+        vals = []
+        for cid in sorted(clusters.keys()):
+            members = [m for m in clusters[cid] if m.era == era_name]
+            if not members:
+                continue
+            _d, _p, _c = resolve_cluster(members, EDGE1_DIR_RULE_PRIMARY)
+            if _p is None or _p.surprise_z is None:
+                continue
+            vals.append(abs(_p.surprise_z))
+        return vals
+
+    oos_primary_z = _primary_abs_z("OOS")
+    is_primary_z = _primary_abs_z("IS")
+    sd_medians = {g: {str(y): _median(v) for y, v in sorted(ys.items())}
+                  for g, ys in sorted(sd_by_group_year.items())}
+
     if primary["status"] == "UNDERPOWERED":
         verdict = "UNDERPOWERED"
     elif primary["status"] == "REFUTED":
@@ -2001,7 +2353,14 @@ def run_edge1(bars: Dict[str, BarSeries], cal_rows, calib_rows, applied, calib_c
     tables.append({"path": p, "sha256": sha, "rows": n})
     p = os.path.join(out_dir, "event_windows.csv")
     sha, n = write_csv(p, EW_HEADER, ew_rows)
-    tables.append({"path": p, "sha256": sha, "rows": n})
+    tables.append({"path": p, "sha256": sha, "rows": n,
+                   "note": ("TWO signed return families.  ret_p*/mae_p90_bp/mfe_p90_bp "
+                            "are signed by trade_dir (the ROW's OWN event direction); "
+                            "ret_cl_p*/mae_cl_p90_bp/mfe_cl_p90_bp are signed by "
+                            "cluster_trade_dir (the CLUSTER's sealed direction) and are "
+                            "the family the headline statistic is computed from.  "
+                            "ret_raw_p* is unsigned.  See summary.resolution."
+                            "event_windows_signing.")})
     if cfg.emit_baseline_rows:
         p = os.path.join(out_dir, "baseline.csv")
         sha, n = write_csv(p, BASELINE_HEADER, baseline_rows)
@@ -2076,6 +2435,21 @@ def run_edge1(bars: Dict[str, BarSeries], cal_rows, calib_rows, applied, calib_c
             "spread_modelled": False, "price_side": "bid",
             "known_at_utc_available": False,
             "p1_horizon_representable": False,
+            "event_windows_signing": {
+                "headline_statistic_column_family": "ret_cl_p<h>",
+                "own_direction_column_family": "ret_p<h>",
+                "column_notes": EW_COLUMN_NOTES,
+                "note": ("event_windows.csv carries TWO signed families.  ret_p*, "
+                         "mae_p90_bp and mfe_p90_bp are signed by the ROW's own event "
+                         "direction (trade_dir).  The headline statistic signs by the "
+                         "CLUSTER's sealed direction (cluster_trade_dir), so the "
+                         "cluster-signed twins ret_cl_p*, mae_cl_p90_bp and "
+                         "mfe_cl_p90_bp are published alongside and ARE the columns the "
+                         "headline is reproducible from.  The two disagree on every row "
+                         "whose own event's surprise direction differs from its "
+                         "cluster primary's; the own-direction family is retained "
+                         "because it is the correct column for a per-event reading."),
+            },
         },
         "calibration": {
             "groups_examined": calib_counts["examined"],
@@ -2084,10 +2458,30 @@ def run_edge1(bars: Dict[str, BarSeries], cal_rows, calib_rows, applied, calib_c
             "groups_ambiguous": calib_counts["ambiguous"],
             "groups_underpowered": calib_counts["underpowered"],
             "groups_offset_nonzero": calib_counts["offset_nonzero"],
+            "groups_verify_frac_low": calib_counts["verify_frac_low"],
+            "groups_home_clock_tie": calib_counts["home_clock_tie"],
             "groups_dropped_verify_frac": calib_counts["groups_dropped_verify_frac"],
+            "groups_dropped_home_clock_tie": calib_counts["groups_dropped_home_clock_tie"],
             "events_instant_verified": calib_counts["events_verified"],
             "events_voided_home_clock": calib_counts["events_voided_home_clock"],
             "events_voided_local_peak": calib_counts["events_voided_local_peak"],
+            "events_voided_home_clock_tie": calib_counts["events_voided_home_clock_tie"],
+            "status_semantics": {
+                "CALIBRATED": "group offset recovered and it explains the group's own rows",
+                "NO_SIGNATURE": "no prominent, sharp, stable tickvol peak anywhere on the grid",
+                "AMBIGUOUS": "the peak moved between the two halves of the group's own sample",
+                "UNDERPOWERED": "fewer than calib_min_obs usable events in the group",
+                "VERIFY_FRAC_LOW": ("the group constant explains fewer than %.2f of the "
+                                    "group's own rows -- the displacement is not a "
+                                    "constant.  A distinct status since r3; it was "
+                                    "previously folded into AMBIGUOUS"
+                                    % CALIB_MIN_VERIFIED_FRAC),
+                "HOME_CLOCK_TIE": ("the modal home wall-clock minute is not unique, so "
+                                   "gate A has no reference value.  The group is dropped "
+                                   "rather than tie-broken: an exact 50/50 tie used to "
+                                   "survive on the dict sort order and voided one half "
+                                   "of the group arbitrarily"),
+            },
             "stage0b_note": (
                 "the group offset is a CONSTANT; the production calendar's displacement "
                 "is not.  Stage 0b verifies every individual instant against (A) the "
@@ -2095,6 +2489,15 @@ def run_edge1(bars: Dict[str, BarSeries], cal_rows, calib_rows, applied, calib_c
                 "local tickvol peak, and VOIDS the non-conforming ones.  No event is "
                 "ever re-shifted individually -- a per-event fit would be exactly the "
                 "circularity Stage 0 exists to avoid."),
+            "stage0b_gate_b_circularity": (
+                "gate B's +/-90 min local tickvol grid COVERS the 90-minute holding "
+                "window, so the gate conditions sample MEMBERSHIP on data printed after "
+                "entry.  It can only void, never reshape a return, so it cannot "
+                "manufacture drift -- but it does select which releases are measured, "
+                "and that selection is not independent of the measurement window.  The "
+                "with/without-gate-B statistic is published in "
+                "stage0b_gate_b_sensitivity so the dependence is visible rather than "
+                "argued about."),
             "probe_space": ("offsets are probed in UTC space: the profile is sampled at "
                             "utc_to_broker_epoch(raw_utc + off), the same epoch EDGE-1 "
                             "later measures at"),
@@ -2110,7 +2513,22 @@ def run_edge1(bars: Dict[str, BarSeries], cal_rows, calib_rows, applied, calib_c
         "surprise_history": {
             "window_days": EDGE1_SURPRISE_WINDOW_DAYS,
             "min_history": cfg.surprise_min_history,
-            "seed_rows_before_is_start": counts["surprise_history_seed_rows"],
+            "seed_rows_before_is_start": counts["surprise_history_seed_rows_before_is_start"],
+            "rows_after_oos_end": counts["surprise_history_rows_after_oos_end"],
+            "rows_outside_study_window": counts["surprise_history_rows_outside_window"],
+            "seed_label_note": ("seed_rows_before_is_start counts ONLY rows before "
+                                "is_start, which are the rows that actually seed the "
+                                "backward-looking history.  Until r3 the same key also "
+                                "carried the rows after oos_end, which seed nothing; "
+                                "they are reported separately as rows_after_oos_end."),
+            "rolling_sd_median_by_group_year": sd_medians,
+            "rolling_sd_note": ("the %d-day rolling surprise sd is the denominator every "
+                                "z is scored against.  It is published per group per year "
+                                "because it is not stationary: the 2020 Q2 payroll prints "
+                                "raise it by more than an order of magnitude and it stays "
+                                "raised for the following three years, which compresses "
+                                "every later z toward zero"
+                                % EDGE1_SURPRISE_WINDOW_DAYS),
             "n_hist_min": (min(surprise_n_hist) if surprise_n_hist else None),
             "n_hist_median": (_median(surprise_n_hist) if surprise_n_hist else None),
             "n_hist_max": (max(surprise_n_hist) if surprise_n_hist else None),
@@ -2120,15 +2538,67 @@ def run_edge1(bars: Dict[str, BarSeries], cal_rows, calib_rows, applied, calib_c
                      "those rows never become measured events.  min_history is the "
                      "declared floor -- events below it carry no z and cannot trigger"),
         },
+        "reproduction": {
+            "target": "primary_cell_result.effect_bp",
+            "tables_required": ["events.csv", "event_windows.csv", "baseline.csv"],
+            "return_column_family": "ret_cl_p<holding_min>",
+            "baseline_column": "baseline.csv ret_p<holding_min> (unsigned)",
+            "baseline_cell_key": ["symbol", "weekday", "broker_hour", "minute_of_hour"],
+            "baseline_event_exclusion_days": EDGE1_BASELINE_EVENT_EXCL_DAYS,
+            "thin_cell_min_n": EDGE1_THIN_CELL_N,
+            "recipe": [
+                "1. clusters (events.csv, era=IS): a cluster triggers iff its "
+                "cluster_is_primary row has |surprise_z| >= surprise_z_threshold; if the "
+                "cluster has no primary row it triggers iff any member with a direction "
+                "does.  Clusters with an empty cluster_direction never trigger.",
+                "2. rows (event_windows.csv): era=IS, entry_delay_min = the cell's delay, "
+                "window_ok=1, the event's is_confounded=0, cluster in the triggering set. "
+                "Take ret_cl_p<hold> -- the CLUSTER-signed column.",
+                "3. baseline: mean of baseline.csv ret_p<hold> over the rows matching the "
+                "event window's (symbol, weekday, broker_hour, minute_of_hour), EXCLUDING "
+                "bar_epoch within +/- baseline_event_exclusion_days of the event's exact "
+                "release broker epoch; require at least thin_cell_min_n survivors; then "
+                "multiply by that row's cluster_trade_dir.",
+                "4. per cluster take the mean of (2) and the mean of (3); effect_bp is the "
+                "mean over clusters of their difference.",
+            ],
+            "note": ("published because the r2 tables signed their ret_p* columns by the "
+                     "ROW's own direction while the headline signed by the CLUSTER's, so "
+                     "the number could not be rebuilt from the tables without knowing the "
+                     "sealed rule from outside the delivery"),
+        },
         "cells": grid_cells,
         "primary_cell_result": primary,
         "doc_literal": doc_lit,
         "cluster_direction_sensitivity": dir_sensitivity,
+        "regime_composition_sensitivity": regime_sensitivity,
+        "stage0b_gate_b_sensitivity": gate_b_sensitivity,
+        "stage0b_gate_b_statistic_unchanged": gate_b_identical,
         "holdout": {
             "era": "OOS", "n_eff": oos["n_eff"], "effect_bp": oos["effect_bp"],
             "effect_sigma": oos["effect_sigma"], "t_stat": oos["t_stat"],
             "sign_matches_is": bool(sign_oos == sign_is and sign_is != 0),
             "baseline_frozen_from": "IS", "status": oos_status,
+            "trigger_diagnostics": {
+                "trigger_threshold_abs_z": pz,
+                "n_clusters_with_primary_z_oos": len(oos_primary_z),
+                "max_abs_primary_z_oos": (max(oos_primary_z) if oos_primary_z else None),
+                "n_clusters_with_primary_z_is": len(is_primary_z),
+                "max_abs_primary_z_is": (max(is_primary_z) if is_primary_z else None),
+            },
+            "empty_reason": (
+                "TWO causes, not one, and the second was not stated before r3.  (1) The "
+                "calendar's coverage hole (~2025-04-10..2026-06-30) truncates the OOS "
+                "era.  (2) The trigger is |z| >= %.2f against a %d-day ROLLING surprise "
+                "sd, and that denominator is inflated by the 2020 Q2 payroll shock -- it "
+                "rises from ~6.5e4 (2019) to ~1.7e6 (2021-22), so no cluster primary "
+                "between 2020-07 and 2023 reaches |z| >= 1 either, and the largest OOS "
+                "cluster-primary |z| is %s.  The empty holdout is therefore only partly "
+                "a calendar hole; it is also an artefact of the same three clusters that "
+                "carry the IS result.  See surprise_history.rolling_sd_median_by_group_"
+                "year and regime_composition_sensitivity."
+                % (pz, EDGE1_SURPRISE_WINDOW_DAYS,
+                   ("%.4f" % max(oos_primary_z)) if oos_primary_z else "n/a")),
         },
         "fragility": {"cells_agreeing": agreeing, "cells_total": len(grid_cells),
                       "threshold": EDGE1_FRAGILITY_CELLS, "symbols_agreeing": sym_agree,
@@ -2171,10 +2641,33 @@ def run_edge1(bars: Dict[str, BarSeries], cal_rows, calib_rows, applied, calib_c
             "EUR second cross: no EURJPY/EURGBP M5 export exists in T_Export",
             "calendar coverage hole ~2025-04-10..2026-06-30 truncates the OOS era",
             ("the baseline's news exclusion uses exactly the CALIBRATED instant set "
-             "(%d instants).  Groups Stage 0 could not calibrate are invisible to it, "
-             "so the baseline is 'unconditional of calibrated news', not of all news -- "
-             "the stricter Stage 0 is, the weaker this exclusion becomes"
-             % len(calibrated_instants)),
+             "(%d instants over the full calendar; %d of them inside the study window, "
+             "which is the subset the confounding test uses).  Groups Stage 0 could not "
+             "calibrate are invisible to it, so the baseline is 'unconditional of "
+             "calibrated news', not of all news -- the stricter Stage 0 is, the weaker "
+             "this exclusion becomes"
+             % (len(calibrated_instants), len(confound_instants))),
+            ("REGIME COMPOSITION of the primary-cell IS sample: %d of the %d triggering "
+             "clusters are the 2020 Q2 payroll prints (%s), whose surprises are the "
+             "largest in the whole calendar by more than an order of magnitude.  "
+             "Excluding them leaves n_eff %s at effect %s bp / %s sigma / t %s.  The "
+             "same three prints also inflate the trailing surprise sd every LATER event "
+             "is scored against, so they simultaneously carry the estimate and empty the "
+             "sample after it.  Published in regime_composition_sensitivity; NOT applied "
+             "to the verdict, which needs a sealed outlier policy first"
+             % (len(covid_excluded), primary["n_eff"],
+                ", ".join(c["release_utc"][:10] for c in covid_excluded) or "none",
+                ex_covid_is["n_eff"], fmt(ex_covid_is["effect_bp"]),
+                fmt(ex_covid_is["effect_sigma"]), fmt(ex_covid_is["t_stat"]))),
+            ("Stage-0b gate B conditions sample MEMBERSHIP on tickvol printed inside the "
+             "holding window (its +/-90 min grid covers the 90-minute hold).  The gate "
+             "can only void, so it cannot manufacture drift, but it does select which "
+             "releases are measured.  %d events are reinstated with the gate off (%d vs "
+             "%d verified) and the with/without statistic is published in "
+             "stage0b_gate_b_sensitivity"
+             % (calib_counts["events_voided_local_peak"],
+                calib_counts["events_verified"] + calib_counts["events_voided_local_peak"],
+                calib_counts["events_verified"])),
             ("three .DWX history holes fall inside the study window and are not "
              "weekends or holidays: 2023-12-12..2023-12-18 (all four symbols), "
              "2025-10-08..2025-11-03 (FX only, ~26 days of the OOS era), "
@@ -2215,6 +2708,16 @@ def run_edge1(bars: Dict[str, BarSeries], cal_rows, calib_rows, applied, calib_c
             "NEEDS A SEAL: Stage 0b voids individual instants that disagree with their "
             "group's modal home wall-clock time or with their own local tickvol peak; "
             "the doc has no per-event verification step",
+            "NEEDS A SEAL: there is NO outlier or regime-exclusion policy, and r3 did "
+            "not invent one.  regime_composition_sensitivity is a DISCLOSURE reported "
+            "beside the headline; the verdict rule is unchanged and still computed on "
+            "all clusters.  Before EDGE-1 may be retried at a lower surprise-z "
+            "threshold -- the obvious response to a 12-cluster sample of which 3 are "
+            "the 2020 Q2 payroll shock -- an outlier policy must be SEALED first: it "
+            "has to say what counts as a regime outlier, whether the trailing surprise "
+            "sd is winsorised or re-estimated, and whether the holdout is re-scored on "
+            "the same basis.  Choosing the threshold after seeing which clusters "
+            "survive is the search this whole file exists to prevent.",
             "GBP is measured on ONE cross (GBPUSD.DWX) by default although GBPJPY.DWX M5 "
             "exists, so the doc's 'the currency's two most liquid crosses' is honoured "
             "for USD only.  --edge1-include-gbpjpy switches the second GBP cross on",
@@ -2533,6 +3036,9 @@ def run_edge3(bars: Dict[str, BarSeries], calibrated_instants: List[int],
                     store[(symbol, code, wd, minute, pw, thr, hold)] = {
                         "n_anchors": len(recs), "n_trigger": len(trig),
                         "r_base_atr": r_base,
+                        # sd of the TRIGGERED baseline observations -- the term the
+                        # differenced SE deliberately does NOT include (see _paired)
+                        "sd_trigger_atr": (math.sqrt(_svar(trig)) if len(trig) > 1 else None),
                         # NOTE: this slope is the BASELINE's ambient reversion
                         # coefficient, frozen from IS.  It is NOT a fix-day or
                         # out-of-sample statistic -- the arm's own slope is
@@ -2586,6 +3092,12 @@ def run_edge3(bars: Dict[str, BarSeries], calibrated_instants: List[int],
                         "r_excess_atr_all_hours": None, "se_all_hours": None,
                         "t_stat_all_hours": None, "beta_fix": None, "beta_fix_se": None,
                         "frozen_is_baseline_beta0": None,
+                        "se_baseline_mean_rms_atr": None,
+                        "se_baseline_mean_rms_atr_all_hours": None,
+                        "se_baseline_component_atr": None,
+                        "se_incl_baseline_atr": None, "t_stat_incl_baseline": None,
+                        "n_baseline_cells_used": 0,
+                        "se_excludes_baseline_mean_error": True,
                         "baseline_cells_thin": True, "status": "UNDERPOWERED"})
             return out
         r_fix = _mean(vals)
@@ -2593,19 +3105,49 @@ def run_edge3(bars: Dict[str, BarSeries], calibrated_instants: List[int],
         se_fix = (sd_fix / math.sqrt(len(vals))) if sd_fix else None
 
         def _paired(store) -> Tuple[Optional[float], Optional[float], Optional[float],
-                                    bool, List[float]]:
-            """(r_base, r_excess, se, thin, baseline_betas) with the baseline
-            differenced PER TRIGGER.
+                                    bool, List[float], Optional[float]]:
+            """(r_base, r_excess, se, thin, baseline_betas, base_mean_se_rms).
 
-            Differencing each trigger against its own cell's frozen baseline and
-            taking the SE of that differenced series propagates the baseline's
-            own estimation variance.  Using sd(fix)/sqrt(n) with r_excess in the
-            numerator treats an ESTIMATED baseline as a known constant, which
-            inflates |t| -- always in the pass direction of the t >= 2 gate.
+            Each trigger is differenced against ITS OWN cell's frozen-IS baseline
+            level, and the SE is sd(diffs)/sqrt(n) of that differenced series.
+
+            What that does and does not do, stated precisely (the r2 docstring
+            overclaimed it):
+              * it removes the between-cell baseline LEVEL from the estimate, and
+                because the subtracted constant differs per cell, the DISPERSION
+                of those cell baselines enters sd(diffs) -- a cell with an unusual
+                ambient reversion widens the SE instead of quietly shifting the
+                mean.  That is the whole gain over sd(fix)/sqrt(n) with r_excess
+                in the numerator, which ignores the baseline entirely and inflates
+                |t| in the pass direction of the t >= 2 gate.
+              * it does NOT propagate the cell means' own SAMPLING error.  Each
+                r_base_atr is subtracted as a KNOWN CONSTANT.  So r3 ADDS THE TERM
+                EXPLICITLY instead of bounding it by hand -- and the naive bound
+                would have been wrong, because triggers sharing a cell share ONE
+                baseline estimate, so their errors are perfectly correlated and do
+                not average away with the number of triggers.  Writing w_c for the
+                share of triggers falling in cell c and se_c = sd_trigger_c /
+                sqrt(n_trigger_c) for that cell's estimation error:
+
+                    se_baseline_component = sqrt( sum_c w_c^2 * se_c^2 )
+                    se_incl_baseline      = sqrt( se^2 + se_baseline_component^2 )
+
+                The divisor is the number of distinct CELLS, not of triggers, so
+                on a 5-weekday cell set this term is of the same order as ``se``
+                itself, not a rounding error.
+
+            ``se`` and ``t_stat`` keep the differenced-only definition -- they are
+            what the sealed criterion was computed with and moving them silently
+            would be a criterion change -- and ``se_incl_baseline_atr`` /
+            ``t_stat_incl_baseline`` are published beside them so the cost of the
+            omission is visible per cell.
             """
             diffs: List[float] = []
             bases: List[float] = []
             betas: List[float] = []
+            base_ses: List[float] = []
+            cell_se: Dict[Tuple, float] = {}
+            cell_n: Dict[Tuple, int] = {}
             thin = False
             for r, v in zip(trig, vals):
                 k = (symbol, code, r["cell"][0], r["cell"][1], pw, thr, hold)
@@ -2617,18 +3159,40 @@ def run_edge3(bars: Dict[str, BarSeries], calibrated_instants: List[int],
                     thin = True
                 diffs.append(v - st["r_base_atr"])
                 bases.append(st["r_base_atr"])
+                cell_n[k] = cell_n.get(k, 0) + 1
+                if st.get("sd_trigger_atr") and st.get("n_trigger"):
+                    sec = st["sd_trigger_atr"] / math.sqrt(st["n_trigger"])
+                    base_ses.append(sec)
+                    cell_se[k] = sec
                 if st["frozen_is_baseline_beta0"] is not None:
                     betas.append(st["frozen_is_baseline_beta0"])
+            bse = (math.sqrt(_mean([x * x for x in base_ses])) if base_ses else None)
+            comp = None
+            if diffs and cell_se:
+                tot = float(len(diffs))
+                comp = math.sqrt(sum(((cell_n[k] / tot) ** 2) * (cell_se[k] ** 2)
+                                     for k in sorted(cell_se)))
             if not diffs:
-                return None, None, None, True, betas
+                return {"r_base": None, "r_excess": None, "se": None, "thin": True,
+                        "betas": betas, "base_se_rms": bse, "base_se_component": comp,
+                        "se_incl": None, "n_cells": len(cell_n)}
             rb = _mean(bases)
             rx = _mean(diffs)
             sdd = math.sqrt(_svar(diffs)) if len(diffs) > 1 else None
             se = (sdd / math.sqrt(len(diffs))) if sdd else None
-            return rb, rx, se, thin, betas
+            se_incl = None
+            if se is not None:
+                se_incl = math.sqrt(se * se + (comp * comp if comp else 0.0))
+            return {"r_base": rb, "r_excess": rx, "se": se, "thin": thin,
+                    "betas": betas, "base_se_rms": bse, "base_se_component": comp,
+                    "se_incl": se_incl, "n_cells": len(cell_n)}
 
-        rb_s, rx_s, se_s, thin_s, betas_s = _paired(base_stats_session)
-        rb_a, rx_a, se_a, thin_a, _ = _paired(base_stats)
+        ps = _paired(base_stats_session)
+        pa = _paired(base_stats)
+        rb_s, rx_s, se_s, thin_s, betas_s, bse_s = (
+            ps["r_base"], ps["r_excess"], ps["se"], ps["thin"], ps["betas"], ps["base_se_rms"])
+        rb_a, rx_a, se_a, thin_a, bse_a = (
+            pa["r_base"], pa["r_excess"], pa["se"], pa["thin"], pa["base_se_rms"])
         # the arm's OWN regression of the post-fix return on the pre-fix move,
         # per era -- NOT the baseline slope.
         beta_fix, beta_fix_se = _ols_slope([r["premove_norm"] for r in trig],
@@ -2644,6 +3208,16 @@ def run_edge3(bars: Dict[str, BarSeries], calibrated_instants: List[int],
             "beta_fix": beta_fix, "beta_fix_se": beta_fix_se,
             "frozen_is_baseline_beta0": (_mean(betas_s) if betas_s else None),
             "baseline_scope": "SESSION", "baseline_cells_thin": bool(thin_s or thin_a),
+            # the term `se` deliberately omits, computed exactly (per-CELL, not
+            # per-trigger: triggers sharing a cell share one baseline estimate)
+            "se_baseline_mean_rms_atr": bse_s,
+            "se_baseline_mean_rms_atr_all_hours": bse_a,
+            "se_baseline_component_atr": ps["base_se_component"],
+            "se_incl_baseline_atr": ps["se_incl"],
+            "t_stat_incl_baseline": ((rx_s / ps["se_incl"])
+                                     if (rx_s is not None and ps["se_incl"]) else None),
+            "n_baseline_cells_used": ps["n_cells"],
+            "se_excludes_baseline_mean_error": True,
         })
         return out
 
@@ -2819,6 +3393,15 @@ def run_edge3(bars: Dict[str, BarSeries], calibrated_instants: List[int],
     p = os.path.join(out_dir, "fix_days.csv")
     sha, n = write_csv(p, FIXDAYS_HEADER, fix_rows)
     tables.append({"path": p, "sha256": sha, "rows": n})
+    # fix_days.csv is ~6.5 MB on the production window -- too large to commit raw
+    # beside the compact tables, and r2 therefore shipped a manifest pointing at a
+    # scratch directory nobody else could read.  A deterministic gzip of the exact
+    # same bytes ships instead.
+    pgz = p + ".gz"
+    shagz = write_gzip_copy(p, pgz)
+    tables.append({"path": pgz, "sha256": shagz, "rows": n,
+                   "note": ("deterministic gzip (mtime=0) of fix_days.csv; the "
+                            "uncompressed sha256 is the fix_days.csv entry")})
     if cfg.emit_baseline_rows:
         p = os.path.join(out_dir, "fix_baseline.csv")
         sha, n = write_csv(p, FIXBASE_HEADER, base_rows)
@@ -2918,10 +3501,26 @@ def run_edge3(bars: Dict[str, BarSeries], calibrated_instants: List[int],
             "R_FIX and needs an explicit seal before it may be cited as the verdict",
             "n_trigger >= %d is a second floor not present in the doc and needs a seal"
             % EDGE3_N_TRIGGER_FLOOR,
-            ("has_news uses exactly the CALIBRATED instant set inherited from EDGE-1's "
-             "Stage 0 (%d instants).  Releases Stage 0 could not calibrate are invisible "
-             "to it, so n_excluded_has_news understates the true news contamination"
+            ("has_news uses exactly the CALIBRATED instant set from Stage 0 (%d "
+             "instants over the FULL calendar).  Releases Stage 0 could not calibrate are "
+             "invisible to it, so n_excluded_has_news understates the true news "
+             "contamination.  Until r3 this set was inherited from EDGE-1 when both "
+             "hypotheses ran together, which truncated it to the study window (106 "
+             "instants) and made EDGE-3's news mask depend on --hypothesis; it is now "
+             "computed once, outside either hypothesis"
              % len(calibrated_instants)),
+            ("the sealed se / t_stat treat each frozen-IS baseline cell mean as a KNOWN "
+             "constant.  Between-cell baseline DISPERSION does enter them; the cell "
+             "means' own SAMPLING error does not.  That term is now computed exactly "
+             "(se_baseline_component_atr = sqrt(sum_c w_c^2 se_c^2), weighted per CELL "
+             "because triggers sharing a cell share one estimate) and published beside "
+             "them as se_incl_baseline_atr / t_stat_incl_baseline.  It divides by the "
+             "number of distinct cells, not of triggers, so it is of the same ORDER as "
+             "se and not a rounding error; se / t_stat are left unchanged because they "
+             "are what the criterion was computed with, and moving them silently would "
+             "be a criterion change.  n_anchors >= %d is enforced per cell or the arm "
+             "carries baseline_cells_thin"
+             % EDGE3_BASELINE_MIN_N),
             ("three .DWX history holes fall inside the study window (2023-12-12..18, "
              "2025-10-08..11-03 FX-only, 2025-12-17..22); session_intact voids windows "
              "spanning them but cannot restore the missing days"),
@@ -2961,6 +3560,57 @@ def run_edge3(bars: Dict[str, BarSeries], calibrated_instants: List[int],
 # manifest
 # ===========================================================================
 
+def git_blob_state(path: str) -> Dict[str, Optional[str]]:
+    """Git identity of a file the run READ, so a later edit to it is detectable.
+
+    The raw sha256 of a repo text file is checkout-dependent (core.autocrlf), so a
+    seal resting on it alone cannot be verified from another checkout -- and a
+    sha256 alone cannot say WHICH revision of the tree the file was read at.  The
+    blob id is computed through the repo's own filters and is stable; the commit
+    pins the tree.  Recorded because the sealed EDGE program doc was appended to
+    by a later commit, which silently invalidated the r2 manifest's doc_sha256
+    with nothing in the manifest able to show when or by what.
+    """
+    out: Dict[str, Optional[str]] = {
+        "git_blob_sha": None, "read_at_commit": None, "committed_blob_sha": None,
+        "matches_committed_blob": None, "repo_root": None, "path_in_repo": None}
+    ap = os.path.abspath(path)
+    d = os.path.dirname(ap)
+    try:
+        root = subprocess.check_output(["git", "rev-parse", "--show-toplevel"], cwd=d,
+                                       stderr=subprocess.DEVNULL).decode().strip()
+    except Exception:
+        return out
+    out["repo_root"] = root.replace("\\", "/")
+    try:
+        rel = os.path.relpath(ap, root).replace("\\", "/")
+        out["path_in_repo"] = rel
+    except Exception:
+        rel = None
+    try:
+        out["git_blob_sha"] = subprocess.check_output(
+            ["git", "hash-object", "--", ap], cwd=root,
+            stderr=subprocess.DEVNULL).decode().strip() or None
+    except Exception:
+        pass
+    try:
+        out["read_at_commit"] = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=root,
+            stderr=subprocess.DEVNULL).decode().strip() or None
+    except Exception:
+        pass
+    if rel:
+        try:
+            out["committed_blob_sha"] = subprocess.check_output(
+                ["git", "rev-parse", "HEAD:%s" % rel], cwd=root,
+                stderr=subprocess.DEVNULL).decode().strip() or None
+        except Exception:
+            pass
+    if out["git_blob_sha"] and out["committed_blob_sha"]:
+        out["matches_committed_blob"] = bool(out["git_blob_sha"] == out["committed_blob_sha"])
+    return out
+
+
 def git_state(repo_root: str) -> Tuple[Optional[str], Optional[bool]]:
     try:
         commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repo_root,
@@ -2974,6 +3624,18 @@ def git_state(repo_root: str) -> Tuple[Optional[str], Optional[bool]]:
     except Exception:
         dirty = None
     return commit, dirty
+
+
+def _rel_to_out(cfg, path: str) -> str:
+    """Path relative to the --out root, falling back to the absolute path."""
+    ap = os.path.abspath(path).replace("\\", "/")
+    root = getattr(cfg, "out_root", None)
+    if not root:
+        return ap
+    root = os.path.abspath(root).replace("\\", "/").rstrip("/")
+    if ap.startswith(root + "/"):
+        return ap[len(root) + 1:]
+    return ap
 
 
 def build_manifest(hypothesis: str, cfg, bars: Dict[str, BarSeries], cal_meta: Dict,
@@ -3007,6 +3669,14 @@ def build_manifest(hypothesis: str, cfg, bars: Dict[str, BarSeries], cal_meta: D
         "code": {"path": "tools/strategy_farm/research/edge_lab_stats.py",
                  "file_sha256": sha256_file(code_path),
                  "file_sha256_lf": sha256_file_lf(code_path),
+                 "hash_note": ("file_sha256 is the ON-DISK bytes of THIS checkout and "
+                               "therefore changes with core.autocrlf; file_sha256_lf is "
+                               "CRLF-normalised and is the AUTHORITATIVE key when "
+                               "comparing across checkouts.  The r2 manifest recorded "
+                               "the two as equal only because that run happened in an LF "
+                               "worktree; in the canonical CRLF checkout of the same "
+                               "commit the raw hash differs and the LF hash does not."),
+                 "git_blob_sha": (git_blob_state(code_path) or {}).get("git_blob_sha"),
                  "code_version": CODE_VERSION,
                  "git_commit": commit, "git_dirty": dirty},
         "rule_seal": {"primary_cell": primary_cell,
@@ -3021,6 +3691,7 @@ def build_manifest(hypothesis: str, cfg, bars: Dict[str, BarSeries], cal_meta: D
                       "doc_sha256": cfg.program_doc_meta.get("sha256"),
                       "doc_sha256_lf": cfg.program_doc_meta.get("sha256_lf"),
                       "doc_resolved_from": cfg.program_doc_meta.get("resolved_from"),
+                      "program_doc": cfg.program_doc_meta,
                       "sealed_before_measurement": (False if dirty is not False else True),
                       "seal_note": "git_dirty=true forces sealed_before_measurement=false"},
         "inputs": inputs,
@@ -3044,10 +3715,19 @@ def build_manifest(hypothesis: str, cfg, bars: Dict[str, BarSeries], cal_meta: D
                    "emit_baseline_rows": cfg.emit_baseline_rows,
                    "edge1_include_gbpjpy": cfg.edge1_include_gbpjpy,
                    "edge3_diagnostics": cfg.edge3_diagnostics},
-        "outputs": sorted([{"path": t["path"].replace("\\", "/"), "sha256": t["sha256"],
-                            "rows": t["rows"]} for t in tables]
-                          + [{"path": summary_path.replace("\\", "/"),
-                              "sha256": summary_sha, "rows": None}],
+        # OUTPUT PATHS.  ``path`` is relative to the --out root so a manifest is
+        # readable from wherever the tables are copied to; ``abs_path`` keeps the
+        # absolute location the run actually wrote, as provenance.  r2 recorded
+        # only the absolute scratchpad path, which made the manifest useless
+        # beside the committed copies of the same tables.
+        "out_root": os.path.abspath(getattr(cfg, "out_root", "")).replace("\\", "/"),
+        "outputs": sorted([{"path": _rel_to_out(cfg, t["path"]),
+                            "abs_path": os.path.abspath(t["path"]).replace("\\", "/"),
+                            "sha256": t["sha256"], "rows": t["rows"],
+                            "note": t.get("note")} for t in tables]
+                          + [{"path": _rel_to_out(cfg, summary_path),
+                              "abs_path": os.path.abspath(summary_path).replace("\\", "/"),
+                              "sha256": summary_sha, "rows": None, "note": None}],
                          key=lambda x: x["path"]),
         "determinism": {"rng_used": False, "rng_seed": None, "csv_encoding": "utf-8",
                         "csv_newline": "\\n", "float_format": "%.10g",
@@ -3116,6 +3796,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     args = build_parser().parse_args(argv)
     cfg = Config()
     cfg.repo_root = args.repo_root
+    cfg.out_root = args.out
     cfg.is_start, cfg.is_end = args.is_start, args.is_end
     cfg.oos_start, cfg.oos_end = args.oos_start, args.oos_end
     cfg.emit_baseline_rows = not args.no_baseline_rows
@@ -3133,9 +3814,20 @@ def main(argv: Optional[List[str]] = None) -> int:
     # --- resolve + hash the sealed program doc ------------------------------
     doc_meta = {"path": None, "sha256": None, "sha256_lf": None, "bytes": None,
                 "resolved_from": None,
+                "git_blob_sha": None, "read_at_commit": None,
+                "committed_blob_sha": None, "matches_committed_blob": None,
+                "repo_root": None, "path_in_repo": None,
                 "note": ("the sealed doc is the source of the refutation criteria; a null "
                          "sha256 means the criteria could not be verified against it and "
-                         "no seal may be claimed")}
+                         "no seal may be claimed"),
+                "hash_note": ("sha256 is the on-disk bytes of THIS checkout and changes "
+                              "with core.autocrlf; sha256_lf is CRLF-normalised.  "
+                              "git_blob_sha is computed through the repo's own filters "
+                              "and is the checkout-independent identity, and "
+                              "read_at_commit pins the revision of the tree the doc was "
+                              "read at -- so a later APPEND to a sealed doc (which is "
+                              "what invalidated the r2 manifest's doc_sha256) is "
+                              "detectable from the manifest alone.")}
     cands = []
     if args.program_doc:
         cands.append(("explicit", args.program_doc))
@@ -3148,6 +3840,7 @@ def main(argv: Optional[List[str]] = None) -> int:
                              "sha256_lf": sha256_file_lf(cand),
                              "bytes": os.path.getsize(cand),
                              "resolved_from": src})
+            doc_meta.update(git_blob_state(cand))
             break
     cfg.program_doc_meta = doc_meta
     cfg.invocation = "python -X utf8 tools/strategy_farm/research/edge_lab_stats.py " + " ".join(sys.argv[1:])
@@ -3216,12 +3909,21 @@ def main(argv: Optional[List[str]] = None) -> int:
     sys.stderr.write("[edge_lab] stage 0 calibration\n")
     calib_rows, applied, calib_counts, verify, calib_event_rows = run_stage0(cal_rows, bars, cfg)
 
+    # The calibrated instant set is a property of (calendar, calibration) alone.
+    # Computing it HERE, once, is what stops it depending on --hypothesis: EDGE-1
+    # used to derive a window-truncated copy and hand it to EDGE-3, so EDGE-3's
+    # news mask had 106 instants when both ran and 150 when it ran alone.
+    all_calibrated_instants = calibrated_instant_set(cal_rows, applied)
+    sys.stderr.write("[edge_lab] calibrated instants (full calendar): %d\n"
+                     % len(all_calibrated_instants))
+
     results = {}
     if args.hypothesis in ("EDGE-1", "both"):
         out_dir = os.path.join(args.out, "EDGE-1")
         sys.stderr.write("[edge_lab] EDGE-1\n")
         r1 = run_edge1(bars, cal_rows, calib_rows, applied, calib_counts, verify,
-                       polarity, polarity_sha, cfg, out_dir, calib_event_rows)
+                       polarity, polarity_sha, cfg, out_dir, calib_event_rows,
+                       calibrated_instants=all_calibrated_instants)
         sp = os.path.join(out_dir, "summary.json")
         ssha = write_json(sp, _clean_floats(r1["summary"]))
         man = build_manifest("EDGE-1", cfg, bars, cal_input, r1["tables"], sp, ssha,
@@ -3235,18 +3937,9 @@ def main(argv: Optional[List[str]] = None) -> int:
     if args.hypothesis in ("EDGE-3", "both"):
         out_dir = os.path.join(args.out, "EDGE-3")
         sys.stderr.write("[edge_lab] EDGE-3\n")
-        if r1 is not None:
-            instants = r1["calibrated_instants"]
-        else:
-            instants = []
-            for r in cal_rows:
-                if r.impact != "High" or r.currency not in EDGE1_CURRENCIES:
-                    continue
-                off = applied.get((r.currency, r.event))
-                if off is None:
-                    continue
-                instants.append(utc_to_broker_epoch(r.raw_utc + dt.timedelta(minutes=off)))
-            instants = sorted(set(instants))
+        # the SAME set in both cases -- never inherited from whichever hypothesis
+        # happened to run first
+        instants = all_calibrated_instants
         # coverage is measured over EVERY calendar row, not just the calibrated
         # ones: "the calendar covers this day" is a property of the file.
         cal_days = sorted({r.raw_utc.date().toordinal() for r in cal_rows})

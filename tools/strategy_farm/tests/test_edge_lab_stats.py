@@ -921,10 +921,14 @@ def test_manifest_hashes_match_the_files_on_disk(run_out):
         assert man["constraints_honoured"]["registry_unmodified"] is True
         assert man["outputs"]
         for o in man["outputs"]:
-            assert os.path.exists(o["path"]), o["path"]
-            assert els.sha256_file(o["path"]) == o["sha256"], o["path"]
-            if o["rows"] is not None:
-                with open(o["path"], "r", encoding="utf-8", newline="") as f:
+            # r3: `path` is relative to the --out root, `abs_path` is provenance
+            assert not os.path.isabs(o["path"]), o["path"]
+            assert os.path.exists(o["abs_path"]), o["abs_path"]
+            assert (os.path.abspath(os.path.join(man["out_root"], o["path"]))
+                    == os.path.abspath(o["abs_path"])), o["path"]
+            assert els.sha256_file(o["abs_path"]) == o["sha256"], o["path"]
+            if o["rows"] is not None and not o["path"].endswith(".gz"):
+                with open(o["abs_path"], "r", encoding="utf-8", newline="") as f:
                     assert sum(1 for _ in f) - 1 == o["rows"], o["path"]
         for inp in man["inputs"]:
             assert os.path.exists(inp["path"]), inp["path"]
@@ -1466,3 +1470,465 @@ def test_edge3_baseline_hours_table_shows_the_time_of_day_composition(run_out):
     s = _summary(run_out, "EDGE-3")
     assert s["baseline_scopes"]["session_band_hours"] == els.EDGE3_SESSION_BAND_H
     assert s["baseline_scopes"]["fix_broker_hours"]
+
+
+# ===========================================================================
+# r3 -- MAJOR 2: the headline must be rebuildable from the PUBLISHED tables
+# ===========================================================================
+
+def _reproduce_primary_effect(run_out):
+    """Recompute primary_cell_result.effect_bp from the published tables ONLY.
+
+    Every input here is a column of events.csv / event_windows.csv /
+    baseline.csv or a field of summary.reproduction.  Nothing about the sealed
+    cluster-direction rule is assumed: the cluster's direction and its trigger
+    are read off the table's own cluster_direction / cluster_is_primary columns,
+    and the returns come from the CLUSTER-signed ret_cl_p* family.  Before r3
+    this recomputation was impossible -- the only signed family published was
+    signed by each row's own event direction, which differs from the cluster's
+    on 330 of 1200 production rows.
+    """
+    s = _summary(run_out, "EDGE-1")
+    rep = s["reproduction"]
+    cell = s["primary_cell_result"]
+    z_thr = cell["surprise_z_threshold"]
+    delay = str(cell["entry_delay_min"])
+    hold = cell["holding_min"]
+    ret_col = "ret_cl_p%d" % hold
+    base_col = "ret_p%d" % hold
+    excl = rep["baseline_event_exclusion_days"] * 86400
+    min_n = rep["thin_cell_min_n"]
+    assert rep["return_column_family"] == "ret_cl_p<holding_min>"
+
+    ev = _read_csv(os.path.join(run_out, "EDGE-1", "events.csv"))
+    ew = _read_csv(os.path.join(run_out, "EDGE-1", "event_windows.csv"))
+    base = _read_csv(os.path.join(run_out, "EDGE-1", "baseline.csv"))
+
+    by_event = {r["event_id"]: r for r in ev}
+    members = {}
+    for r in ev:
+        if r["era"] != "IS":
+            continue
+        members.setdefault(r["cluster_id"], []).append(r)
+
+    trig = set()
+    for cid, ms in members.items():
+        dirs = {m["cluster_direction"] for m in ms if m["cluster_direction"] != ""}
+        if len(dirs) != 1:
+            continue
+        prim = [m for m in ms if m["cluster_is_primary"] == "1"]
+        if prim:
+            z = prim[0]["surprise_z"]
+            if z == "" or abs(float(z)) < z_thr:
+                continue
+        elif not any(m["direction"] != "" and m["surprise_z"] != ""
+                     and abs(float(m["surprise_z"])) >= z_thr for m in ms):
+            continue
+        trig.add(cid)
+
+    cells = {}
+    for b in base:
+        key = (b["symbol"], b["weekday"], b["broker_hour"], b["minute_of_hour"])
+        cells.setdefault(key, []).append((int(b["bar_epoch"]), float(b[base_col])))
+    for v in cells.values():
+        v.sort()
+
+    buckets = {}
+    for r in ew:
+        if r["era"] != "IS" or r["entry_delay_min"] != delay or r["window_ok"] != "1":
+            continue
+        e = by_event[r["event_id"]]
+        if e["is_confounded"] != "0" or r["cluster_id"] not in trig:
+            continue
+        if r["cluster_trade_dir"] == "" or r[ret_col] == "":
+            continue
+        ctd = int(r["cluster_trade_dir"])
+        key = (r["symbol"], r["weekday"], r["broker_hour"], r["minute_of_hour"])
+        rel = els.utc_to_broker_epoch(
+            dt.datetime.strptime(e["release_utc"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=UTC))
+        xs = [x for (ep, x) in cells.get(key, []) if not (rel - excl <= ep <= rel + excl)]
+        if len(xs) < min_n:
+            continue
+        mu = sum(xs) / len(xs)
+        buckets.setdefault(r["cluster_id"], []).append((float(r[ret_col]), ctd * mu))
+
+    diffs = []
+    for cid in sorted(buckets):
+        rows = buckets[cid]
+        diffs.append(sum(x for x, _ in rows) / len(rows)
+                     - sum(y for _, y in rows) / len(rows))
+    return (sum(diffs) / len(diffs) if diffs else None), len(diffs)
+
+
+def test_headline_is_reproducible_from_the_published_cluster_signed_columns(run_out):
+    s = _summary(run_out, "EDGE-1")
+    effect, n_eff = _reproduce_primary_effect(run_out)
+    assert n_eff == s["primary_cell_result"]["n_eff"], (n_eff, s["primary_cell_result"]["n_eff"])
+    assert effect is not None
+    assert effect == pytest.approx(s["primary_cell_result"]["effect_bp"], rel=1e-9, abs=1e-12)
+
+
+def test_the_own_direction_columns_alone_do_not_reproduce_the_headline(run_out):
+    """The reason the twins had to be published, asserted rather than argued.
+
+    Signing the same rows by trade_dir instead of cluster_trade_dir must give a
+    DIFFERENT number on a fixture that contains a cluster whose primary
+    overrides a member's own direction -- otherwise the twin columns would be
+    decoration and this test would be vacuous.
+    """
+    ew = _read_csv(os.path.join(run_out, "EDGE-1", "event_windows.csv"))
+    hold = _summary(run_out, "EDGE-1")["primary_cell_result"]["holding_min"]
+    diff_rows = [r for r in ew
+                 if r["cluster_trade_dir"] != "" and r["cluster_trade_dir"] != r["trade_dir"]
+                 and r["ret_p%d" % hold] != ""]
+    assert diff_rows, "fixture must contain rows where the cluster overrides the row"
+    for r in diff_rows:
+        assert float(r["ret_cl_p%d" % hold]) == pytest.approx(
+            -float(r["ret_p%d" % hold]), rel=1e-9, abs=1e-12)
+
+
+def test_event_windows_carry_cluster_signed_twins(run_out):
+    ew = _read_csv(os.path.join(run_out, "EDGE-1", "event_windows.csv"))
+    assert ew
+    for h in els.EDGE1_HORIZONS:
+        assert "ret_cl_p%d" % h in ew[0]
+    assert "mae_cl_p90_bp" in ew[0] and "mfe_cl_p90_bp" in ew[0]
+    seen_cluster = False
+    for r in ew:
+        raw = r["ret_raw_p90"]
+        if r["cluster_trade_dir"] == "":
+            assert r["ret_cl_p90"] == "" and r["mae_cl_p90_bp"] == ""
+            continue
+        seen_cluster = True
+        ctd = int(r["cluster_trade_dir"])
+        if raw != "":
+            assert float(r["ret_cl_p90"]) == pytest.approx(float(raw) * ctd,
+                                                           rel=1e-9, abs=1e-12)
+        if r["mae_p90_bp"] != "" and ctd == int(r["trade_dir"]):
+            assert r["mae_cl_p90_bp"] == r["mae_p90_bp"]
+            assert r["mfe_cl_p90_bp"] == r["mfe_p90_bp"]
+        if r["mae_cl_p90_bp"] != "":
+            # an envelope: adverse excursion <= 0 <= favourable excursion
+            assert float(r["mae_cl_p90_bp"]) <= 0.0 <= float(r["mfe_cl_p90_bp"])
+    assert seen_cluster
+    s = _summary(run_out, "EDGE-1")
+    sign = s["resolution"]["event_windows_signing"]
+    assert sign["headline_statistic_column_family"] == "ret_cl_p<h>"
+    assert "ret_cl_p<h>" in sign["column_notes"]
+    assert "ret_p<h>" in sign["column_notes"]
+
+
+# ===========================================================================
+# r3 -- MAJOR 1: the COVID composition of the primary-cell sample
+# ===========================================================================
+
+def test_regime_composition_sensitivity_is_published(run_out):
+    s = _summary(run_out, "EDGE-1")
+    sens = {b["scope"]: b for b in s["regime_composition_sensitivity"]}
+    assert set(sens) == {"ALL_IS_CLUSTERS", "EX_COVID_2020Q2"}
+    assert sens["ALL_IS_CLUSTERS"]["sealed"] is True
+    assert sens["EX_COVID_2020Q2"]["sealed"] is False
+    assert sens["ALL_IS_CLUSTERS"]["excluded_window"] is None
+    assert sens["EX_COVID_2020Q2"]["excluded_window"] == els.EDGE1_COVID_WINDOW_LABEL
+    # the sealed scope must equal the headline exactly -- the disclosure may not
+    # quietly become the reported number
+    prim = s["primary_cell_result"]
+    for k, pk in (("n_eff_is", "n_eff"), ("effect_bp_is", "effect_bp"),
+                  ("effect_sigma_is", "effect_sigma"), ("t_stat_is", "t_stat")):
+        assert sens["ALL_IS_CLUSTERS"][k] == prim[pk]
+    ex = sens["EX_COVID_2020Q2"]
+    assert ex["n_eff_is"] <= prim["n_eff"]
+    assert ex["n_eff_is"] + len(ex["excluded_clusters"]) == prim["n_eff"]
+    lo, hi = els.EDGE1_COVID_WINDOW
+    for c in ex["excluded_clusters"]:
+        d = dt.date.fromisoformat(c["release_utc"][:10])
+        assert lo <= d <= hi, c
+        assert abs(c["primary_surprise_z"]) >= prim["surprise_z_threshold"]
+    # the verdict rule is untouched: it is still computed on ALL clusters
+    assert s["verdict"] in ("UNDERPOWERED", "REFUTED", "FRAGILE", "SURVIVES",
+                            "INCONCLUSIVE_OOS")
+    devs = " ".join(s["deviations_from_spec"])
+    assert "outlier" in devs and "sealed" in devs.lower()
+    gaps = " ".join(s["open_gaps"])
+    assert "REGIME COMPOSITION" in gaps
+
+
+def test_holdout_empty_reason_names_the_denominator(run_out):
+    s = _summary(run_out, "EDGE-1")
+    diag = s["holdout"]["trigger_diagnostics"]
+    assert diag["trigger_threshold_abs_z"] == s["primary_cell_result"]["surprise_z_threshold"]
+    assert diag["n_clusters_with_primary_z_oos"] >= 0
+    if s["holdout"]["n_eff"] == 0 and diag["max_abs_primary_z_oos"] is not None:
+        assert diag["max_abs_primary_z_oos"] < diag["trigger_threshold_abs_z"]
+    reason = s["holdout"]["empty_reason"]
+    assert "rolling" in reason.lower() or "ROLLING" in reason
+    assert "coverage hole" in reason
+    sd = s["surprise_history"]["rolling_sd_median_by_group_year"]
+    assert sd, "the z denominator must be published per group per year"
+    for group, years in sd.items():
+        assert years
+        for y, v in years.items():
+            assert int(y) > 2000 and v is not None
+
+
+def test_seed_row_counters_are_split_by_side_of_the_window(run_out):
+    s = _summary(run_out, "EDGE-1")
+    sh = s["surprise_history"]
+    assert sh["seed_rows_before_is_start"] + sh["rows_after_oos_end"] \
+        == sh["rows_outside_study_window"]
+    assert "rows_after_oos_end" in sh["seed_label_note"]
+    ev = _read_csv(os.path.join(run_out, "EDGE-1", "events.csv"))
+    assert all(IS_START[:4] <= r["release_utc"][:4] <= OOS_END[:4] for r in ev)
+
+
+# ===========================================================================
+# r3 -- MINOR 5: Stage-0b gate B reads inside the measurement window
+# ===========================================================================
+
+def test_stage0b_gate_b_sensitivity_is_published(run_out):
+    s = _summary(run_out, "EDGE-1")
+    sens = {b["scope"]: b for b in s["stage0b_gate_b_sensitivity"]}
+    assert set(sens) == {"GATE_B_ON", "GATE_B_OFF"}
+    assert sens["GATE_B_ON"]["sealed"] is True
+    assert sens["GATE_B_OFF"]["sealed"] is False
+    on, off = sens["GATE_B_ON"], sens["GATE_B_OFF"]
+    assert off["events_instant_verified"] >= on["events_instant_verified"]
+    assert (off["events_instant_verified"] - on["events_instant_verified"]
+            == off["events_reinstated"]
+            == s["calibration"]["events_voided_local_peak"])
+    prim = s["primary_cell_result"]
+    assert on["n_eff_is"] == prim["n_eff"] and on["effect_bp_is"] == prim["effect_bp"]
+    assert isinstance(s["stage0b_gate_b_statistic_unchanged"], bool)
+    assert s["calibration"]["stage0b_gate_b_circularity"]
+    assert "holding window" in s["calibration"]["stage0b_gate_b_circularity"]
+    assert any("gate B" in g for g in s["open_gaps"])
+    assert "gate B" in els.__doc__ or "gate B" in els.__doc__.lower()
+
+
+def test_gate_b_voided_events_never_reach_the_published_tables(run_out):
+    """The shadow scope must not leak into the sealed outputs."""
+    ce = _read_csv(os.path.join(run_out, "EDGE-1", "calibration_events.csv"))
+    voided = {(r["currency"], r["event"], r["release_utc"])
+              for r in ce if r["void_reason"] == "local_peak_elsewhere"}
+    if not voided:
+        pytest.skip("fixture produced no gate-B void")
+    ev = _read_csv(os.path.join(run_out, "EDGE-1", "events.csv"))
+    ids = {r["event_id"] for r in ev
+           if (r["currency"], r["event"], r["release_utc"]) in voided}
+    for r in ev:
+        if r["event_id"] in ids:
+            assert r["direction"] == "", r
+            assert r["instant_verified"] == "0", r
+    ew = _read_csv(os.path.join(run_out, "EDGE-1", "event_windows.csv"))
+    assert not [r for r in ew if r["event_id"] in ids], \
+        "gate-B-voided events must not appear in event_windows.csv"
+
+
+# ===========================================================================
+# r3 -- MINOR 4: the calibrated instant set must not depend on --hypothesis
+# ===========================================================================
+
+def test_calibrated_instant_set_is_hypothesis_independent(fixture_env, tmp_path):
+    both = _run(fixture_env, str(tmp_path / "both"), extra=["--no-baseline-rows"],
+                hypothesis="both")
+    only3 = _run(fixture_env, str(tmp_path / "e3"), extra=["--no-baseline-rows"],
+                 hypothesis="EDGE-3")
+    a = os.path.join(both, "EDGE-3", "fix_days.csv")
+    b = os.path.join(only3, "EDGE-3", "fix_days.csv")
+    assert filecmp.cmp(a, b, shallow=False), \
+        "fix_days.csv must not change with --hypothesis"
+    assert els.sha256_file(a) == els.sha256_file(b)
+    sa = json.load(open(os.path.join(both, "EDGE-3", "summary.json"), encoding="utf-8"))
+    sb = json.load(open(os.path.join(only3, "EDGE-3", "summary.json"), encoding="utf-8"))
+    assert sa["arms"] == sb["arms"]
+    s1 = _summary(both, "EDGE-1")
+    assert s1["counts"]["calibrated_instants"] >= \
+        s1["counts"]["calibrated_instants_confound_window"]
+
+
+def test_calibrated_instant_set_window_is_a_subset_of_the_full_set(fixture_env):
+    cal_rows, _sha, _b, _n = els.load_calendar(fixture_env["calendar"])
+    applied = {(r.currency, r.event): 0 for r in cal_rows}
+    full = els.calibrated_instant_set(cal_rows, applied)
+    win = els.calibrated_instant_set(cal_rows, applied,
+                                     dt.date(2018, 1, 1), dt.date(2019, 12, 31))
+    assert win and full
+    assert set(win) <= set(full)
+    assert len(full) > len(win)
+
+
+# ===========================================================================
+# r3 -- MINOR 9: Stage-0 group drops get their own statuses
+# ===========================================================================
+
+def test_modal_home_clock_drops_an_exact_tie_instead_of_breaking_it():
+    assert els.modal_home_clock({}) == (None, False)
+    assert els.modal_home_clock({510: 7}) == (510, False)
+    assert els.modal_home_clock({510: 7, 570: 3}) == (510, False)
+    # exact tie -> no modal value, group must be dropped
+    assert els.modal_home_clock({510: 5, 570: 5}) == (None, True)
+    assert els.modal_home_clock({570: 5, 510: 5}) == (None, True)
+    # a tie further down the histogram is irrelevant
+    assert els.modal_home_clock({510: 9, 570: 4, 630: 4}) == (510, False)
+
+
+def test_calibration_statuses_are_distinct_and_all_countable(run_out):
+    rows = _read_csv(os.path.join(run_out, "EDGE-1", "calibration.csv"))
+    seen = {r["calib_status"] for r in rows}
+    assert seen <= set(els.CALIB_STATUS_COUNT_KEY)
+    assert "VERIFY_FRAC_LOW" in els.CALIB_STATUS_COUNT_KEY
+    assert "HOME_CLOCK_TIE" in els.CALIB_STATUS_COUNT_KEY
+    assert len(set(els.CALIB_STATUS_COUNT_KEY.values())) == len(els.CALIB_STATUS_COUNT_KEY)
+    s = _summary(run_out, "EDGE-1")
+    cal = s["calibration"]
+    for k in ("groups_verify_frac_low", "groups_home_clock_tie",
+              "groups_dropped_verify_frac", "groups_dropped_home_clock_tie",
+              "events_voided_home_clock_tie"):
+        assert k in cal, k
+    sem = cal["status_semantics"]
+    assert set(sem) == set(els.CALIB_STATUS_COUNT_KEY)
+    assert cal["groups_examined"] == (
+        cal["groups_calibrated"] + cal["groups_no_signature"] + cal["groups_ambiguous"]
+        + cal["groups_underpowered"] + cal["groups_verify_frac_low"]
+        + cal["groups_home_clock_tie"])
+
+
+def test_verify_frac_low_is_reported_as_its_own_status(fixture_env, tmp_path, monkeypatch):
+    """Forcing the verified-fraction floor above 1.0 must drop every group with
+    a VERIFY_FRAC_LOW status, never a reused AMBIGUOUS."""
+    monkeypatch.setattr(els, "CALIB_MIN_VERIFIED_FRAC", 1.01)
+    out = _run(fixture_env, str(tmp_path / "vfl"), extra=["--no-baseline-rows"],
+               hypothesis="EDGE-1")
+    rows = _read_csv(os.path.join(out, "EDGE-1", "calibration.csv"))
+    dropped = [r for r in rows if r["calib_status"] == "VERIFY_FRAC_LOW"]
+    assert dropped, "the floor above 1.0 must drop every calibrated group"
+    assert not [r for r in rows if r["calib_status"] == "CALIBRATED"]
+    s = _summary(out, "EDGE-1")
+    assert s["calibration"]["groups_verify_frac_low"] == len(dropped)
+    assert s["calibration"]["groups_dropped_verify_frac"] == len(dropped)
+    ce = _read_csv(os.path.join(out, "EDGE-1", "calibration_events.csv"))
+    assert ce and all(r["void_reason"] == "group_verify_frac" for r in ce)
+
+
+# ===========================================================================
+# r3 -- MINOR 3 / 8: seal identity that survives a later edit and a CRLF checkout
+# ===========================================================================
+
+def test_manifest_records_the_program_doc_git_identity(run_out):
+    with open(os.path.join(run_out, "EDGE-1", "manifest.json"), encoding="utf-8") as f:
+        man = json.load(f)
+    pd_ = man["rule_seal"]["program_doc"]
+    for k in ("path", "sha256", "sha256_lf", "bytes", "resolved_from",
+              "git_blob_sha", "read_at_commit", "committed_blob_sha",
+              "matches_committed_blob", "hash_note"):
+        assert k in pd_, k
+    assert "git_blob_sha" in pd_["hash_note"] and "read_at_commit" in pd_["hash_note"]
+    if pd_["path"]:
+        assert pd_["sha256_lf"] == els.sha256_file_lf(pd_["path"])
+        # the doc is a repo file, so its git identity must be recoverable
+        assert pd_["git_blob_sha"], "a repo-resident sealed doc must carry a blob id"
+        assert pd_["read_at_commit"], "the run must pin the revision it read the doc at"
+    assert man["rule_seal"]["doc_sha256"] == pd_["sha256"]
+
+
+def test_manifest_code_block_says_which_hash_is_authoritative(run_out):
+    with open(os.path.join(run_out, "EDGE-1", "manifest.json"), encoding="utf-8") as f:
+        man = json.load(f)
+    code = man["code"]
+    assert code["hash_note"]
+    assert "file_sha256_lf" in code["hash_note"]
+    assert "AUTHORITATIVE" in code["hash_note"]
+    assert code["file_sha256_lf"] == els.sha256_file_lf(os.path.abspath(els.__file__))
+    cost = [i for i in man["inputs"] if i["role"] == "cost_registry"]
+    if cost:
+        assert "authoritative" in cost[0]["hash_note"].lower() \
+            or "compare across checkouts" in cost[0]["hash_note"]
+
+
+# ===========================================================================
+# r3 -- MINOR 7 / 10: determinism WITH the per-bar baselines, and the gzip copy
+# ===========================================================================
+
+def test_two_runs_with_baseline_rows_are_byte_identical(fixture_env, tmp_path):
+    """The r2 determinism test ran --no-baseline-rows, so baseline.csv and
+    fix_baseline.csv -- the two largest outputs -- were never compared."""
+    a = _run(fixture_env, str(tmp_path / "ba"))
+    b = _run(fixture_env, str(tmp_path / "bb"))
+    checked = []
+    for rel in ("EDGE-1/baseline.csv", "EDGE-3/fix_baseline.csv"):
+        pa, pb = os.path.join(a, rel), os.path.join(b, rel)
+        assert os.path.exists(pa) and os.path.exists(pb), rel
+        assert filecmp.cmp(pa, pb, shallow=False), "non-deterministic output: %s" % rel
+        checked.append(rel)
+    assert len(checked) == 2
+    for hyp in ("EDGE-1", "EDGE-3"):
+        for fn in sorted(os.listdir(os.path.join(a, hyp))):
+            rel = os.path.join(hyp, fn)
+            pa, pb = os.path.join(a, rel), os.path.join(b, rel)
+            if fn == "manifest.json":
+                with open(pa, encoding="utf-8") as f:
+                    ta = f.read().replace(a.replace("\\", "/"), "<OUT>").replace(a, "<OUT>")
+                with open(pb, encoding="utf-8") as f:
+                    tb = f.read().replace(b.replace("\\", "/"), "<OUT>").replace(b, "<OUT>")
+                assert ta == tb, rel
+                continue
+            assert filecmp.cmp(pa, pb, shallow=False), rel
+
+
+def test_fix_days_gzip_is_a_deterministic_byte_copy(run_out):
+    import gzip as _gzip
+    raw = os.path.join(run_out, "EDGE-3", "fix_days.csv")
+    gz = raw + ".gz"
+    assert os.path.exists(gz), "the compact EDGE-3 copy must ship a gzip of fix_days.csv"
+    with open(raw, "rb") as f:
+        want = f.read()
+    with _gzip.open(gz, "rb") as f:
+        assert f.read() == want
+    assert os.path.getsize(gz) < os.path.getsize(raw)
+    with open(os.path.join(run_out, "EDGE-3", "manifest.json"), encoding="utf-8") as f:
+        man = json.load(f)
+    out = {o["path"].replace("\\", "/"): o for o in man["outputs"]}
+    for k in ("EDGE-3/fix_days.csv", "EDGE-3/fix_days.csv.gz"):
+        assert k in out, sorted(out)
+    assert out["EDGE-3/fix_days.csv.gz"]["sha256"] == els.sha256_file(gz)
+    assert out["EDGE-3/fix_days.csv.gz"]["note"]
+    assert out["EDGE-3/fix_days.csv.gz"]["rows"] == out["EDGE-3/fix_days.csv"]["rows"]
+
+
+# ===========================================================================
+# r3 -- MINOR 6: the EDGE-3 SE says exactly what it does and does not carry
+# ===========================================================================
+
+def test_edge3_se_states_what_it_omits_and_publishes_the_term(run_out):
+    doc = els.run_edge3.__doc__ or ""
+    s = _summary(run_out, "EDGE-3")
+    for a in s["arms"]:
+        for blk in (a["primary_cell_result"], a["decay_2022_2023"], a["holdout"]):
+            for k in ("se_baseline_mean_rms_atr", "se_baseline_component_atr",
+                      "se_incl_baseline_atr", "t_stat_incl_baseline",
+                      "n_baseline_cells_used"):
+                assert k in blk, k
+            assert blk.get("se_excludes_baseline_mean_error") is True
+            if blk["se"] is None or blk["se_baseline_component_atr"] is None:
+                continue
+            # the added term is exact, not a bound: se_incl^2 == se^2 + comp^2
+            assert blk["se_incl_baseline_atr"] == pytest.approx(
+                math.sqrt(blk["se"] ** 2 + blk["se_baseline_component_atr"] ** 2),
+                rel=1e-12)
+            # ... and widening the SE can only shrink |t|, never grow it
+            assert blk["se_incl_baseline_atr"] >= blk["se"]
+            assert abs(blk["t_stat_incl_baseline"]) <= abs(blk["t_stat"]) + 1e-12
+            # the per-cell weighting must divide by CELLS, not by triggers
+            assert blk["n_baseline_cells_used"] >= 1
+            assert blk["se_baseline_component_atr"] <= blk["se_baseline_mean_rms_atr"] + 1e-12
+    gaps = " ".join(s["open_gaps"])
+    assert "KNOWN" in gaps and "SAMPLING error" in gaps
+    assert "se_baseline_component_atr" in gaps and "per CELL" in gaps
+    # the docstring must no longer claim the baseline's estimation variance is
+    # propagated -- it is not
+    src = open(os.path.abspath(els.__file__), encoding="utf-8").read()
+    assert "propagates the baseline's own estimation variance" not in src
+    assert "does NOT propagate the cell means' own SAMPLING error" in src
+    assert "perfectly correlated" in src, \
+        "the docstring must say why the term does not average away over triggers"
+    assert doc is not None
