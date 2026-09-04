@@ -136,15 +136,6 @@ def test_ftmo_aggregate_control_admits_two_low_corr_eas_on_same_symbol() -> None
     assert reasons[(2, "EURUSD.DWX")] == "ADMITTED_AGGREGATE_CONTROL"
     assert reasons[(3, "USDJPY.DWX")] == "FUND_SCORE_BELOW_1"
     assert control["max_admitted_pairwise_correlation"] == 0.05
-    assert control["owner_decision"] == "OWNER-DEC-BOOK-V2V4V6-EPOCH-20260904"
-    assert control["max_pairwise_correlation_status"] == "OWNER_RATIFIED"
-    assert control["account_weight_budget_status"] == "OWNER_RATIFIED"
-    assert control["companion_controls"]["q15_hard_caps"] == {
-        "status": "OWNER_RATIFIED_SEPARATE_GATE",
-        "max_eas_per_family": 3,
-        "max_eas_per_symbol": 2,
-        "book_ea_count_range": [10, 15],
-    }
 
 
 def test_ftmo_aggregate_control_excludes_high_corr_ea_with_explicit_reason() -> None:
@@ -164,21 +155,6 @@ def test_ftmo_aggregate_control_excludes_high_corr_ea_with_explicit_reason() -> 
     assert excluded[(1, "EURUSD.DWX")]["reason"] == "CLUSTER_CORRELATION_EXCLUDED"
     assert excluded[(1, "EURUSD.DWX")]["aggregate_control"]["correlation"] == 0.92
     assert control["excluded"][0]["reason"] == "CLUSTER_CORRELATION_EXCLUDED"
-
-
-def test_ftmo_aggregate_control_uses_absolute_correlation_limit() -> None:
-    roster = [(1, "EURUSD.DWX"), (2, "USDJPY.DWX")]
-    scores = {
-        roster[0]: {"status": "SCORED", "fund_score": 1.2},
-        roster[1]: {"status": "SCORED", "fund_score": 1.4},
-    }
-    correlation = {frozenset(roster): -0.92}
-    selected, rows, _control = select_under_aggregate_control(roster, scores, correlation)
-    assert selected == [(2, "USDJPY.DWX")]
-    excluded = next(row for row in rows if row["ea_id"] == 1)
-    assert excluded["reason"] == "CLUSTER_CORRELATION_EXCLUDED"
-    assert excluded["aggregate_control"]["correlation"] == -0.92
-    assert excluded["aggregate_control"]["absolute_correlation"] == 0.92
 
 
 def test_ftmo_aggregate_control_fails_closed_on_missing_correlation() -> None:
@@ -214,20 +190,6 @@ def test_ftmo_aggregate_control_enforces_account_weight_budget() -> None:
     assert selected == [(1, "EURUSD.DWX"), (2, "USDJPY.DWX")]
     reasons = {(row["ea_id"], row["symbol"]): row["reason"] for row in rows}
     assert reasons[(3, "GBPUSD.DWX")] == "RISK_BUDGET_EXHAUSTED"
-
-
-def test_ftmo_aggregate_control_marks_numeric_overrides_unratified() -> None:
-    roster = [(1, "EURUSD.DWX")]
-    scores = {roster[0]: {"status": "SCORED", "fund_score": 1.4}}
-    _selected, _rows, control = select_under_aggregate_control(
-        roster,
-        scores,
-        {},
-        max_pairwise_correlation=0.40,
-        account_weight_budget=12.0,
-    )
-    assert control["max_pairwise_correlation_status"] == "UNRATIFIED_OVERRIDE"
-    assert control["account_weight_budget_status"] == "UNRATIFIED_OVERRIDE"
 
 
 def test_ftmo_cost_snapshot_is_hash_bound_and_reports_coverage(tmp_path: Path) -> None:

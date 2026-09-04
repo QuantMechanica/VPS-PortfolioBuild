@@ -59,13 +59,16 @@ P1_LOWER_BOUND_FLOOR = 0.80
 # is controlled at the AGGREGATE level — pairwise correlation/cluster control plus an
 # account-wide risk budget — NOT via a per-symbol cap.
 #
-# OWNER-ratified FTMO numbers (OWNER-DEC-BOOK-V2V4V6-EPOCH-20260904): pairwise
-# absolute correlation < 0.50 and account-wide admitted unit weight <= 10.0.
-# These operate together with SP-C3 and the separate Q15 hard caps (family <= 3,
-# symbol <= 2, 10-15 EAs); they do not replace those downstream controls.
-OWNER_RATIFIED_MAX_PAIRWISE_CORRELATION = 0.50
-OWNER_RATIFIED_ACCOUNT_WEIGHT_BUDGET = 10.0
-OWNER_DECISION = "OWNER-DEC-BOOK-V2V4V6-EPOCH-20260904"
+# WORKING DEFAULTS — OPEN OWNER ITEMS (not yet ratified as FTMO-lane numbers):
+#   * WORKING_DEFAULT_MAX_PAIRWISE_CORRELATION mirrors book_reoptimizer's greedy
+#     pairwise-correlation selection constraint (<=0.50, OWNER 2026-07-15). DL-083
+#     sets the Q09 marginal-eval reject at 0.40. Neither is pinned to the FTMO book.
+#   * WORKING_DEFAULT_ACCOUNT_WEIGHT_BUDGET caps the sum of admitted unit weights
+#     (each admitted sleeve carries weight 1.0). No ratified FTMO account-wide unit
+#     count exists; 10.0 is a non-binding working ceiling pending OWNER ratification.
+# Both are overridable via CLI and must be ratified before any book is constructed.
+WORKING_DEFAULT_MAX_PAIRWISE_CORRELATION = 0.50
+WORKING_DEFAULT_ACCOUNT_WEIGHT_BUDGET = 10.0
 SLEEVE_UNIT_WEIGHT = 1.0
 
 
@@ -180,8 +183,8 @@ def select_under_aggregate_control(
     scores: Mapping[tuple[int, str], Mapping[str, Any]],
     correlation: Mapping[frozenset[tuple[int, str]], float],
     *,
-    max_pairwise_correlation: float = OWNER_RATIFIED_MAX_PAIRWISE_CORRELATION,
-    account_weight_budget: float = OWNER_RATIFIED_ACCOUNT_WEIGHT_BUDGET,
+    max_pairwise_correlation: float = WORKING_DEFAULT_MAX_PAIRWISE_CORRELATION,
+    account_weight_budget: float = WORKING_DEFAULT_ACCOUNT_WEIGHT_BUDGET,
     unit_weight: float = SLEEVE_UNIT_WEIGHT,
 ) -> tuple[list[tuple[int, str]], list[dict[str, Any]], dict[str, Any]]:
     """Admit sleeves under the ratified aggregate control (FTMO lane).
@@ -189,9 +192,8 @@ def select_under_aggregate_control(
     Multiple EAs on the same symbol are permitted. Fund-score-eligible candidates are
     considered in deterministic order (fund_score desc, then ea_id asc) and admitted
     greedily subject to two aggregate controls:
-      (a) pairwise correlation/cluster: reject any candidate whose absolute
-          return-stream correlation with an already-admitted sleeve reaches or
-          exceeds ``max_pairwise_correlation``
+      (a) pairwise correlation/cluster: reject any candidate whose return-stream
+          correlation with an already-admitted sleeve exceeds ``max_pairwise_correlation``
           (``CLUSTER_CORRELATION_EXCLUDED``); a candidate whose correlation to an admitted
           sleeve is unknown is rejected fail-closed (``CLUSTER_CORRELATION_UNVERIFIED``);
       (b) account-wide risk budget: reject once the sum of admitted unit weights would
@@ -233,34 +235,31 @@ def select_under_aggregate_control(
                 "account_weight_budget": account_weight_budget,
             })
             continue
-        worst: tuple[float, float, tuple[int, str]] | None = None
+        worst: tuple[float, tuple[int, str]] | None = None
         unverified_peer: tuple[int, str] | None = None
         for peer in admitted:
             corr = _pair_correlation(correlation, key, peer)
             if corr is None:
                 unverified_peer = peer
                 break
-            absolute_correlation = abs(corr)
-            if worst is None or absolute_correlation > worst[0]:
-                worst = (absolute_correlation, corr, peer)
+            if worst is None or corr > worst[0]:
+                worst = (corr, peer)
         if unverified_peer is not None:
             decisions[key] = (False, "CLUSTER_CORRELATION_UNVERIFIED", {
                 "peer": f"{unverified_peer[0]}:{unverified_peer[1]}",
             })
             continue
-        if worst is not None and worst[0] >= max_pairwise_correlation:
+        if worst is not None and worst[0] > max_pairwise_correlation:
             decisions[key] = (False, "CLUSTER_CORRELATION_EXCLUDED", {
-                "peer": f"{worst[2][0]}:{worst[2][1]}",
-                "correlation": worst[1],
-                "absolute_correlation": worst[0],
+                "peer": f"{worst[1][0]}:{worst[1][1]}",
+                "correlation": worst[0],
                 "threshold": max_pairwise_correlation,
             })
             continue
         admitted.append(key)
         admitted_weight += unit_weight
         decisions[key] = (True, "ADMITTED_AGGREGATE_CONTROL", {
-            "max_peer_correlation": (worst[1] if worst is not None else None),
-            "max_peer_absolute_correlation": (worst[0] if worst is not None else None),
+            "max_peer_correlation": (worst[0] if worst is not None else None),
         })
 
     for row in assessments:
@@ -274,29 +273,8 @@ def select_under_aggregate_control(
         row["aggregate_control"] = detail
 
     selected = sorted(admitted)
-    correlation_status = (
-        "OWNER_RATIFIED"
-        if math.isclose(
-            max_pairwise_correlation,
-            OWNER_RATIFIED_MAX_PAIRWISE_CORRELATION,
-            rel_tol=0.0,
-            abs_tol=1e-12,
-        )
-        else "UNRATIFIED_OVERRIDE"
-    )
-    budget_status = (
-        "OWNER_RATIFIED"
-        if math.isclose(
-            account_weight_budget,
-            OWNER_RATIFIED_ACCOUNT_WEIGHT_BUDGET,
-            rel_tol=0.0,
-            abs_tol=1e-12,
-        )
-        else "UNRATIFIED_OVERRIDE"
-    )
     admitted_pairs: list[dict[str, Any]] = []
     max_admitted = None
-    max_admitted_absolute = None
     for i in range(len(selected)):
         for j in range(i + 1, len(selected)):
             corr = _pair_correlation(correlation, selected[i], selected[j])
@@ -304,35 +282,19 @@ def select_under_aggregate_control(
                 "a": f"{selected[i][0]}:{selected[i][1]}",
                 "b": f"{selected[j][0]}:{selected[j][1]}",
                 "correlation": corr,
-                "absolute_correlation": abs(corr) if corr is not None else None,
             })
             if corr is not None and (max_admitted is None or corr > max_admitted):
                 max_admitted = corr
-            if corr is not None and (
-                max_admitted_absolute is None or abs(corr) > max_admitted_absolute
-            ):
-                max_admitted_absolute = abs(corr)
     control_summary = {
         "policy": "AGGREGATE_CORRELATION_CLUSTER_AND_ACCOUNT_RISK_BUDGET",
-        "owner_decision": OWNER_DECISION,
         "max_pairwise_correlation": max_pairwise_correlation,
-        "max_pairwise_correlation_status": correlation_status,
+        "max_pairwise_correlation_status": "WORKING_DEFAULT_OPEN_OWNER_ITEM",
         "account_weight_budget": account_weight_budget,
-        "account_weight_budget_status": budget_status,
-        "companion_controls": {
-            "sp_c3": "OWNER_RATIFIED_SEPARATE_GATE",
-            "q15_hard_caps": {
-                "status": "OWNER_RATIFIED_SEPARATE_GATE",
-                "max_eas_per_family": 3,
-                "max_eas_per_symbol": 2,
-                "book_ea_count_range": [10, 15],
-            },
-        },
+        "account_weight_budget_status": "WORKING_DEFAULT_OPEN_OWNER_ITEM",
         "unit_weight": unit_weight,
         "admitted_weight": admitted_weight,
         "admitted_pairs": admitted_pairs,
         "max_admitted_pairwise_correlation": max_admitted,
-        "max_admitted_absolute_pairwise_correlation": max_admitted_absolute,
         "excluded": [
             {"ea_id": key[0], "symbol": key[1], "reason": reason, **detail}
             for key, (admitted_flag, reason, detail) in sorted(decisions.items())
@@ -469,8 +431,8 @@ def build_ftmo_manifest(
     correlation_path: Path | None = None,
     min_sleeves: int = 3,
     min_active_days_per_60d: float = 4.0,
-    max_pairwise_correlation: float = OWNER_RATIFIED_MAX_PAIRWISE_CORRELATION,
-    account_weight_budget: float = OWNER_RATIFIED_ACCOUNT_WEIGHT_BUDGET,
+    max_pairwise_correlation: float = WORKING_DEFAULT_MAX_PAIRWISE_CORRELATION,
+    account_weight_budget: float = WORKING_DEFAULT_ACCOUNT_WEIGHT_BUDGET,
     required_cost_sha256: str = EXPECTED_COST_SNAPSHOT_SHA256,
     stream_root: Path = DEFAULT_STREAM_ROOT,
     starting_capital: float = 100_000.0,
@@ -545,17 +507,12 @@ def build_ftmo_manifest(
     )
     fund_pass = bool(selected) and all(row["fund_score"] >= FUND_SCORE_FLOOR for row in bindings)
     admitted_pair_corrs = [p["correlation"] for p in aggregate_control["admitted_pairs"]]
-    parameters_ratified = (
-        aggregate_control["max_pairwise_correlation_status"] == "OWNER_RATIFIED"
-        and aggregate_control["account_weight_budget_status"] == "OWNER_RATIFIED"
-    )
-    aggregate_control_pass = parameters_ratified and bool(selected) and all(
-        c is not None and abs(c) < max_pairwise_correlation for c in admitted_pair_corrs
+    aggregate_control_pass = bool(selected) and all(
+        c is not None and c <= max_pairwise_correlation for c in admitted_pair_corrs
     ) and aggregate_control["admitted_weight"] <= account_weight_budget + 1e-9
     aggregate_control["passed"] = aggregate_control_pass
     checks = {
         "fund_score_each_at_least_1": fund_pass,
-        "aggregate_control_parameters_owner_ratified": parameters_ratified,
         "aggregate_correlation_and_risk_budget_control": aggregate_control_pass,
         "density": density["passed"],
         "cost_and_swap_snapshot_coverage": cost_pass,
@@ -632,10 +589,10 @@ def parser() -> argparse.ArgumentParser:
     ap.add_argument("--cost-snapshot", type=Path, default=DEFAULT_COST_SNAPSHOT)
     ap.add_argument("--bootstrap-result", type=Path)
     ap.add_argument("--correlation", type=Path, help="Q11 pairwise daily-PnL correlation artifact (portfolio_correlation.py output).")
-    ap.add_argument("--max-pairwise-correlation", type=float, default=OWNER_RATIFIED_MAX_PAIRWISE_CORRELATION,
-                    help="OWNER-ratified aggregate cluster-correlation reject threshold (0.50).")
-    ap.add_argument("--account-weight-budget", type=float, default=OWNER_RATIFIED_ACCOUNT_WEIGHT_BUDGET,
-                    help="OWNER-ratified account-wide sum-of-unit-weights budget (10.0).")
+    ap.add_argument("--max-pairwise-correlation", type=float, default=WORKING_DEFAULT_MAX_PAIRWISE_CORRELATION,
+                    help="WORKING DEFAULT (OPEN OWNER ITEM) — aggregate cluster-correlation reject threshold.")
+    ap.add_argument("--account-weight-budget", type=float, default=WORKING_DEFAULT_ACCOUNT_WEIGHT_BUDGET,
+                    help="WORKING DEFAULT (OPEN OWNER ITEM) — account-wide sum-of-unit-weights budget.")
     ap.add_argument("--stream-root", type=Path, default=DEFAULT_STREAM_ROOT,
                     help="sealed OOS q08 stream bundle used by SP-C3 concentration/tail checks")
     ap.add_argument("--starting-capital", type=float, default=100_000.0)
