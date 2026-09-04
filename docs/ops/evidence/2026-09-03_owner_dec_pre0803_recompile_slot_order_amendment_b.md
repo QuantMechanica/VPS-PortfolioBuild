@@ -529,3 +529,10 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   Reload chain consolidated: chunks 23/24/25 stopped, chunk 26 (all ten, idle-only, all merged worker code) queued
   behind chunk 22 (8/10). Fabric 00:38Z: 25 cells/10 min, 8 active, 23.7 GB free, no stale locks; 10700 expansion
   at 315 min still running.
+- 00:55Z–01:05Z (04.09.): OWNER decided briefing items 2–4 ("2-4: freigegeben, deiner Empfehlung folgend"). Receipt
+  decisions/2026-09-04_owner_receipts_briefing_2_4.md (`e956ffff5e`); three decision-bound Claude tasks reserved
+  (253f7e09 news-gate a+e, b9f7a280 book V2/V4/V6+epoch, a4fb4108 FTMO rulepack). Execution launched as verified
+  Opus workflows: wf_7c3a5e11-c3d (label fix, single-target lock, affected_entries wiring, readjudication CLI),
+  wf_04d206e1-add (V2 OWNER_RATIFIED stamp, V4 two-layer standard in portfolio_correlation, G5 command epoch 07-19),
+  wf_9448cf1a-0fc (official-rules snapshot 2026-09-02 + evaluator/rulepack pins). Live pointer, freeze and book
+  stay OWNER acts. Morning briefing delivered 00:50Z; census 50 cells/10 min after the slot-order fix.
