@@ -22,13 +22,12 @@ commit/push. Farm DB was not written.
 
 The unsigned pointer already contains the **correct, byte-identical** composition that is
 live today (all three fingerprints reproduce exactly from disk — §2). Signing is a
-review-and-approve act, not a rebuild. Before signing, settle **two** things:
-
-1. **Which `deployment_epoch_utc`** — `2026-07-24T06:42:00Z` (manifest-finalized, current
-   value) vs `2026-07-19T13:50:00Z` (actual go-live). §6 Risk-1.
-2. **Ordering** — a *signed write* is itself freeze-gated and will be **refused while the
-   freeze is ACTIVE** (`generate_live_deployment_pointer.py:215-218` → `risk_freeze.py:446,463-464`).
-   The freeze must be in its LIFTED state before the signed mint runs. §6 Risk-2.
+review-and-approve act, not a rebuild. OWNER has settled the epoch as
+`2026-07-19T13:50:00Z`, with **went-live** semantics
+(`OWNER-DEC-BOOK-V2V4V6-EPOCH-20260904`). Before signing, settle the remaining **ordering**
+constraint: a *signed write* is itself freeze-gated and will be **refused while the freeze is
+ACTIVE** (`generate_live_deployment_pointer.py:215-218` → `risk_freeze.py:446,463-464`). The
+freeze must be in its LIFTED state before the signed mint runs. §6 Risk-2.
 
 Also note (§5): signing flips **morning_brief.py** GELB→GRÜN on its own, but it does **not**
 by itself clear the UNKNOWNs in **verify_live_deployment_contract.py** — that consumer does
@@ -59,7 +58,8 @@ not read the pointer yet and needs the small code rollout G5 also names.
 - `expected_account` = `4000090541` (matches manifest `book = DXZ_4000090541`)
 - `expected_server` = `Darwinex-Live`
 - `expected_phase` = `DXZ_LIVE`
-- `deployment_epoch_utc` = `2026-07-24T06:42:00+00:00` (see §6 Risk-1 — contested)
+- `deployment_epoch_utc` = `2026-07-24T06:42:00+00:00` in the current unsigned pointer;
+  OWNER has selected `2026-07-19T13:50:00Z` for the replacement signed pointer (§6 Risk-1).
 
 **Sleeve identity / binary evidence:**
 - `expected_sleeves.count` = **24** · `expected_sleeves.identity_sha256` =
@@ -118,12 +118,13 @@ python tools/strategy_farm/generate_live_deployment_pointer.py \
   --expected-account 4000090541 \
   --expected-server "Darwinex-Live" \
   --expected-phase "DXZ_LIVE" \
-  --deployment-epoch-utc "2026-07-24T06:42:00+00:00" \
+  --deployment-epoch-utc "2026-07-19T13:50:00Z" \
   --written-at-utc "$NOW" \
   --dry-run --out "<scratch>/live_deployment_pointer_DRYRUN.json"
 ```
 
-**Result of the run (2026-09-03, `written_at_utc=2026-09-03T16:03:30Z`):** exit 0, nothing
+**Historical result of the 2026-09-03 run using the former 07-24 epoch candidate
+(`written_at_utc=2026-09-03T16:03:30Z`):** exit 0, nothing
 written to the live path (SHA unchanged `f5f23f3c…`). The dry-run output is **byte-identical
 to the live pointer except `written_at_utc`** — i.e. the deployed composition has **not
 drifted** since the pointer was last written:
@@ -155,7 +156,7 @@ Everything below already checks out today (§2); the review is a confirmation, n
 | 5 | **No missing binaries** | `binary_setfile_fingerprint.n_binary_missing` | **`0`** | A nonzero count means a sleeve's `.ex5` is not on disk — signing would authenticate a book that cannot run (SP-A1 schema §4). |
 | 6 | Account bindable + matches | `expected_account` vs manifest `book` digits | both `4000090541` | Unbindable/mismatched account is the guard that stops a false GRÜN (`morning_brief.py:752-765`). |
 | 7 | Server / phase present | `expected_server` / `expected_phase` | `Darwinex-Live` / `DXZ_LIVE` | Absent → GELB (never GRÜN). |
-| 8 | Epoch semantics | `deployment_epoch_utc` | **decide: `2026-07-24T06:42Z` vs `2026-07-19T13:50Z`** | Downstream "days-live" math off by 5 days if wrong (§6 Risk-1). |
+| 8 | Epoch semantics | `deployment_epoch_utc` | **`2026-07-19T13:50:00Z` (went-live)** | OWNER settled the field's semantics and value (§6 Risk-1). |
 | 9 | Approval record exists | the `--approval-evidence` path | a dated OWNER record on disk | Generator refuses `--signed` if the path is absent (`:158-162`). |
 
 ---
@@ -165,9 +166,10 @@ Everything below already checks out today (§2); the review is a confirmation, n
 > **AI restriction:** an AI seat runs this tool **only unsigned**. The commands below are
 > for OWNER (or Claude acting on a dated written OWNER approval, never by default).
 
-**Pre-req A — settle the epoch (§6 Risk-1).** Keep `2026-07-24T06:42:00+00:00`, *or* switch
-to the go-live epoch `2026-07-19T13:50:00Z` (cite `decisions/2026-07-19_t_live_dxz_sunday_final_book.md`).
-Use the chosen value verbatim in `--deployment-epoch-utc` below.
+**Pre-req A — epoch settled (§6 Risk-1).** OWNER selected the go-live epoch
+`2026-07-19T13:50:00Z` with went-live semantics in
+`OWNER-DEC-BOOK-V2V4V6-EPOCH-20260904`. Use that value verbatim below; do not substitute the
+manifest-generation timestamp.
 
 **Pre-req B — the signed write is freeze-gated (§6 Risk-2).** A `--signed` write (non-dry-run)
 calls `risk_freeze.assert_live_book_mutation_allowed(...)` and is **refused while the freeze
@@ -187,7 +189,7 @@ python tools/strategy_farm/generate_live_deployment_pointer.py \
   --expected-account 4000090541 \
   --expected-server "Darwinex-Live" \
   --expected-phase "DXZ_LIVE" \
-  --deployment-epoch-utc "<CHOSEN EPOCH from Pre-req A>" \
+  --deployment-epoch-utc "2026-07-19T13:50:00Z" \
   --written-at-utc "<ISO-8601 UTC now>" \
   --signed \
   --approved-by "OWNER (Fabian) 2026-09-03 <channel/method>" \
@@ -263,16 +265,17 @@ signature.
 
 ## 6 · Risks & rollback
 
-**Risk-1 — epoch discrepancy (settle before signing).** The pointer's
+**Risk-1 — epoch discrepancy (resolved value; pending OWNER mint).** The pointer's
 `deployment_epoch_utc = 2026-07-24T06:42:00Z` is the manifest's `generated_at`
 (file-provenance), but the book's actual go-live is `2026-07-19 ~15:50 CEST ≈ 13:50Z`
 (`decisions/2026-07-19_t_live_dxz_sunday_final_book.md`), and
-`scripts/sunday_livevsbook_compare.ps1` no longer hardcodes an epoch: since SP-A2 (header 2026-08-22) its `-DeploymentEpoch` defaults to `$null` and is read from the runtime deploy pointer (`scripts/sunday_livevsbook_compare.ps1:41`, `:60-72`), which today carries `2026-07-24T06:42:00+00:00`; the script header records abandoning the hardcoded `07-19` because it drifted from the deployed 24-sleeve manifest (`:24-27`). Adopting `07-19` therefore CHANGES the consumer's effective epoch rather than matching it (CEO correction 2026-09-03 16:18Z after the adversarial verifier refuted the original sentence). The morning-brief
+`scripts/sunday_livevsbook_compare.ps1` no longer hardcodes an epoch: since SP-A2 (header 2026-08-22) its `-DeploymentEpoch` defaults to `$null` and is read from the runtime deploy pointer (`scripts/sunday_livevsbook_compare.ps1:41`, `:60-72`), which today carries `2026-07-24T06:42:00+00:00`; the script header records abandoning the hardcoded `07-19` because it drifted from the deployed 24-sleeve manifest (`:24-27`). Adopting `07-19` therefore CHANGES the consumer's effective epoch rather than matching the current pointer (CEO correction 2026-09-03 16:18Z after the adversarial verifier refuted the original sentence). The morning-brief
 lamp only checks the epoch *parses* (`morning_brief.py:740`), so the lamp is unaffected — but
-burn-in / "days-live" math is **understated by 5 days** if 07-24 is signed in. Full analysis:
-`docs/ops/evidence/2026-08-22_sp-a1_deployment_epoch_discrepancy_note.md`. **Decision needed:**
-adopt `2026-07-19T13:50:00Z` (recommended — matches the field's "went-live" definition and the
-existing consumer) or keep 07-24 and update the field's documented semantic.
+burn-in / "days-live" math would be **understated by 5 days** if 07-24 were signed in. Full
+analysis: `docs/ops/evidence/2026-08-22_sp-a1_deployment_epoch_discrepancy_note.md`. OWNER
+resolved the choice on 2026-09-04: use `2026-07-19T13:50:00Z`, matching the field's
+**went-live** semantic. The current unsigned runtime pointer remains unchanged until the separate
+OWNER-only mint.
 
 **Risk-2 — freeze-gating / ordering (a real block, not a warning).** A `--signed` non-dry-run
 mint is refused while the freeze is ACTIVE (`generate_live_deployment_pointer.py:215-218`;
@@ -335,6 +338,5 @@ Verifier re-derived ~17 claims (pointer sha, manifest sha equality, roster
 identity, fingerprint, n_binary_missing=0, account/server/phase/epoch) and
 confirmed the dry-run wrote nothing. One claim was refuted and is corrected
 above (Risk-1: the Sunday compare script reads the epoch from the pointer;
-it does not default to 07-19). The epoch decision itself (07-24 file
-provenance vs 07-19 go-live) remains open for OWNER; both candidates are
-documented with their consequences.
+it does not default to 07-19). The epoch choice was subsequently closed by
+`OWNER-DEC-BOOK-V2V4V6-EPOCH-20260904`: 07-19 go-live, with went-live semantics.
