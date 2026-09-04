@@ -515,3 +515,8 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
   (575/1085, next counter pair) got ~29 cells in 8 h while 12710/11910 ran 70-76 cells/h; XAUUSD cells take 3.8 min
   median (no runtime issue). Queue-order tie-break commissioned (wf_4b2b9b09-d04). Census 23:41Z: 21507 575,
   11910 344, 12710 216; 21505/XAGUSD 778/1085 and 20048/XTIUSD 582 with 0 active cells (lane sharing). RAM 5-11 GB.
+- 00:15Z (04.09.): census queue-order tie-break merged (`224c46282c`, Opus wf_4b2b9b09-d04 verified ok; 97 + 132
+  tests): spare census lanes now follow the OWNER queue order after the idle-program fairness key; pump uses it
+  immediately, workers via reload chunk 25 (queued behind 24; chunk 22 at 7/10, 23/24 waiting). Fabric: 5 active
+  (two news incl. 10700 expansion at 292 min, Q07 11015, Q06 11179, Q04), 7.8 GB free → census lanes latched;
+  census 21507 578, 21505 778, 11910 372, 12710 225.
