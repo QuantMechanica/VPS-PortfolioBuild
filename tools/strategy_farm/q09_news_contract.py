@@ -446,7 +446,28 @@ def _material_effect(policy_by_mode: Mapping[str, Sequence[Cell]], control: Mapp
     max_affected = 0
     off_entries = sum(cell.full.original_entries for cell in control.values())
     for cells in policy_by_mode.values():
-        affected = sum(cell.full.affected_entries for cell in cells)
+        # affected_entries = entries the temporal news mode removed from or
+        # altered in the control's entry set.  Two suppression mechanisms
+        # register in different logger fields, so both are counted.  Entries
+        # the filter flags at the entry decision emit an explicit
+        # QM_ENTRY_REJECTED_NEWS marker and land in Metrics.affected_entries
+        # (= blocked_entries; runner _logger_entry_counts); those entries are
+        # still present in original_entries.  Entries the filter suppresses
+        # before signal generation (e.g. SKIP_DAY) never reach the
+        # accept/reject decision and register only as a drop in
+        # original_entries relative to the OFF/NONE control.  Summing the
+        # per-cell affected_entries marker alone (the prior wiring) read 0
+        # for the suppression modes although the entry set demonstrably
+        # collapsed (e.g. SKIP_DAY 696 -> 207); adding the control-relative
+        # drop wires the counter to the real value.  The two terms are
+        # disjoint (marker entries stay inside original_entries), so the sum
+        # never double-counts.  Both sums span the same SEEDS fan-out -- the
+        # missing-cell guard above guarantees equal seed counts on control
+        # and every policy mode -- so the drop is scale-consistent with
+        # off_entries and the max(3, ceil(0.05 * off_entries)) threshold.
+        flagged = sum(cell.full.affected_entries for cell in cells)
+        suppressed = off_entries - sum(cell.full.original_entries for cell in cells)
+        affected = flagged + max(0, suppressed)
         max_affected = max(max_affected, affected)
         if affected >= max(3, math.ceil(0.05 * off_entries)):
             reasons.add("affected_entries")
@@ -695,18 +716,35 @@ def adjudicate(payload: Mapping[str, Any]) -> dict[str, Any]:
             "verdict": "REVIEW_REQUIRED",
             "reason_codes": ["control_or_policy_off_not_qualifiable"],
             "details": {"control_reasons": control_reasons, "policy_off_reasons": off_reasons},
+            "target_compliance": target_compliance,
             "chosen_config": None,
             "locked_arms": [],
+            "matrix_scope": "7x1_target_compliance",
         }
         result["adjudication_sha256"] = sha256_bytes(canonical_json_bytes(result))
         return result
 
     material = _material_effect(policy_by_mode, control)
     normalized_target = header["deployment_target"].strip().upper().replace("-", "_").replace(" ", "_")
+    news_or_event = bool(payload.get("news_or_event_strategy"))
+    prop_deployment_target = normalized_target in {"FTMO", "5ERS", "THE5ERS", "THE_5ERS"}
+    # OWNER-DEC-NEWSGATE-AE-20260904 (e): a deployment with exactly one target
+    # resolves to a single compliance column, and the selector only ever scores
+    # that target column.  For such single-target deployments a material effect
+    # alone does not require the full 4-compliance (7x4) completeness matrix: the
+    # 8-cell run already carries the target column and the OFF control, so the
+    # adjudication locks on the target column and records the non-target
+    # compliance columns lazily.  Prop targets (FTMO/5ERS) and news/event
+    # strategies need cross-compliance portability evidence and keep the 7x4
+    # expansion requirement unchanged.
+    single_target_deployment = not prop_deployment_target and not news_or_event
+    expansion_policy = (
+        "single_target_lock" if single_target_deployment else "multi_target_full_matrix"
+    )
     expansion_reasons: list[str] = []
-    if bool(payload.get("news_or_event_strategy")):
+    if news_or_event:
         expansion_reasons.append("news_or_event_strategy")
-    if normalized_target in {"FTMO", "5ERS", "THE5ERS", "THE_5ERS"}:
+    if prop_deployment_target:
         expansion_reasons.append("prop_deployment_target")
     if material["material"]:
         expansion_reasons.append("material_effect")
@@ -719,22 +757,33 @@ def adjudicate(payload: Mapping[str, Any]) -> dict[str, Any]:
                     if key not in by_key:
                         missing_expanded.append("/".join(map(str, key)))
         if missing_expanded:
-            result = {
-                "schema_version": adjudication_schema,
-                "verdict": "REVIEW_REQUIRED",
-                "reason_codes": ["expanded_7x4_matrix_required"],
-                "details": {
-                    "expansion_reasons": expansion_reasons,
-                    "missing_cell_count": len(missing_expanded),
-                    "missing_cells": missing_expanded,
-                    "material_effect": material,
-                },
-                "chosen_config": None,
-                "locked_arms": [],
-                "seed_provenance": seed_provenance,
-            }
-            result["adjudication_sha256"] = sha256_bytes(canonical_json_bytes(result))
-            return result
+            if single_target_deployment:
+                # material_effect alone on a single deployment target does not
+                # force the absent 7x4 matrix; drop it as an expansion trigger
+                # and lock on the target column the selector actually scores.
+                expansion_reasons = [
+                    reason for reason in expansion_reasons if reason != "material_effect"
+                ]
+            else:
+                result = {
+                    "schema_version": adjudication_schema,
+                    "verdict": "REVIEW_REQUIRED",
+                    "reason_codes": ["expanded_7x4_matrix_required"],
+                    "details": {
+                        "expansion_reasons": expansion_reasons,
+                        "missing_cell_count": len(missing_expanded),
+                        "missing_cells": missing_expanded,
+                        "material_effect": material,
+                    },
+                    "chosen_config": None,
+                    "locked_arms": [],
+                    "seed_provenance": seed_provenance,
+                    "target_compliance": target_compliance,
+                    "matrix_scope": "7x4",
+                    "expansion_policy": expansion_policy,
+                }
+                result["adjudication_sha256"] = sha256_bytes(canonical_json_bytes(result))
+                return result
 
     scores = [_score_candidate(policy_by_mode[mode], control) for mode in TEMPORAL_MODES if mode != "OFF"]
     robust_scores = sorted((score for score in scores if score.robust), key=cmp_to_key(_compare_scores))
@@ -780,6 +829,7 @@ def adjudicate(payload: Mapping[str, Any]) -> dict[str, Any]:
         "ranking": [score.as_dict() for score in sorted(scores, key=cmp_to_key(_compare_scores))],
         "matrix_scope": "7x4" if expansion_reasons else "7x1_target_compliance",
         "expansion_reasons": expansion_reasons,
+        "expansion_policy": expansion_policy,
         "material_effect": material,
         "seed_provenance": seed_provenance,
         "calendar_bundle": {

@@ -18258,6 +18258,480 @@ def author_news_expansion_continuations(
     }
 
 
+_READJUDICATE_NEWS_8CELL_ENQUEUED_BY = "farmctl.readjudicate-news-8cell"
+_READJUDICATE_NEWS_8CELL_CLASS = "Q10_NEWS_SINGLE_TARGET_READJUDICATION"
+
+
+def _q09_news_contract_module():
+    try:
+        import q09_news_contract as _contract
+    except ModuleNotFoundError:
+        from tools.strategy_farm import q09_news_contract as _contract
+    return _contract
+
+
+def _q09_news_schema_module():
+    try:
+        import q09_news_schema as _schema
+    except ModuleNotFoundError:
+        from tools.strategy_farm import q09_news_schema as _schema
+    return _schema
+
+
+def _readjudicate_news_git_commit(repo_root: Path) -> str | None:
+    """Best-effort read-only git HEAD; never fails the readjudication."""
+    try:
+        flags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
+        completed = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=str(repo_root),
+            capture_output=True,
+            text=True,
+            timeout=10,
+            creationflags=flags,
+        )
+    except (OSError, ValueError, subprocess.SubprocessError):
+        return None
+    if completed.returncode != 0:
+        return None
+    commit = str(completed.stdout or "").strip()
+    return commit or None
+
+
+def _readjudicate_news_source_row(conn: sqlite3.Connection, source_id: str):
+    return conn.execute(
+        """
+        SELECT w.id AS work_item_id, w.phase AS phase, w.ea_id AS ea_id,
+               w.symbol AS symbol, w.setfile_path AS setfile_path,
+               w.status AS status, w.verdict AS verdict,
+               w.payload_json AS payload_json, w.gate_contract_version AS gate_contract_version,
+               t.aggregate_path AS aggregate_path, t.aggregate_sha256 AS aggregate_sha256,
+               t.matrix_scope AS matrix_scope, t.contract_version AS contract_version,
+               t.deployment_target AS deployment_target, t.target_compliance AS target_compliance,
+               t.q08_work_item_id AS q08_work_item_id, t.calendar_bundle_id AS calendar_bundle_id
+        FROM work_items w
+        LEFT JOIN q09_news_tests t ON t.work_item_id=w.id
+        WHERE w.id=?
+        """,
+        (source_id,),
+    ).fetchone()
+
+
+def _readjudicate_news_existing_successor(conn: sqlite3.Connection, source_id: str):
+    return conn.execute(
+        """
+        SELECT id, status, verdict FROM work_items
+        WHERE phase=? AND json_valid(payload_json)=1
+          AND json_extract(payload_json, '$.readjudicated_from_work_item')=?
+        ORDER BY created_at ASC, id ASC LIMIT 1
+        """,
+        (_NEWS_PHASE, source_id),
+    ).fetchone()
+
+
+def _readjudicate_news_list(conn: sqlite3.Connection) -> dict[str, Any]:
+    """Enumerate every done 8-cell REVIEW row still awaiting single-target readjudication."""
+    phases = _news_read_phases(include_historical=True)
+    candidates = news_gate_service.expansion_requests(conn, news_phases=phases)
+    eligible: list[dict[str, Any]] = []
+    already: list[dict[str, Any]] = []
+    # 2026-09-04 (CEO, wf_7c3a5e11 verifier finding): the UNION read also
+    # returns rows stored under the historical (v3-named) lane, but the action
+    # path binds ``_NEWS_PHASE`` and refuses any other source phase.  List them
+    # explicitly as excluded instead of advertising them as eligible.
+    excluded_phase: list[dict[str, Any]] = []
+    for source in candidates:
+        source_id = str(source["id"])
+        phase_row = conn.execute(
+            "SELECT phase FROM work_items WHERE id=?", (source_id,)
+        ).fetchone()
+        source_phase = str(phase_row[0]) if phase_row is not None else ""
+        adjudication = source.get("adjudication") or {}
+        details = adjudication.get("details") if isinstance(adjudication, dict) else {}
+        expansion_reasons = (
+            list(details.get("expansion_reasons") or [])
+            if isinstance(details, dict) else []
+        )
+        aggregate_path = str(source.get("aggregate_path") or "")
+        evidence_present = bool(
+            aggregate_path
+            and (Path(aggregate_path).resolve().parent / "q09_news_evidence.json").is_file()
+        )
+        entry = {
+            "source_work_item_id": source_id,
+            "ea_id": str(source["ea_id"]),
+            "symbol": str(source["symbol"]),
+            "aggregate_sha256": str(source.get("aggregate_sha256") or ""),
+            "expansion_reasons": expansion_reasons,
+            "sealed_evidence_present": evidence_present,
+            "phase": source_phase,
+        }
+        if source_phase != _NEWS_PHASE:
+            entry["reason"] = "readjudicate_source_phase_not_current"
+            entry["required_phase"] = _NEWS_PHASE
+            excluded_phase.append(entry)
+            continue
+        successor = _readjudicate_news_existing_successor(conn, source_id)
+        if successor is not None:
+            entry["successor_work_item_id"] = str(successor["id"])
+            already.append(entry)
+        else:
+            eligible.append(entry)
+    return {
+        "command": "readjudicate-news-8cell",
+        "list": True,
+        "news_read_phases": list(phases),
+        "eligible_count": len(eligible),
+        "already_readjudicated_count": len(already),
+        "excluded_historical_phase_count": len(excluded_phase),
+        "eligible": eligible,
+        "already_readjudicated": already,
+        "excluded_historical_phase": excluded_phase,
+    }
+
+
+def readjudicate_news_8cell(
+    root: Path,
+    work_item_id: str | None,
+    *,
+    apply: bool = False,
+    list_mode: bool = False,
+) -> dict[str, Any]:
+    """Append-only single-target readjudication of a sealed Q10_NEWS 8-cell REVIEW row.
+
+    Re-runs the CURRENT ``q09_news_contract.adjudicate`` rule over the SEALED
+    8-cell evidence of a done ``REVIEW_REQUIRED`` / ``expanded_7x4_matrix_required``
+    row - no tester run.  When (and only when) the current rule now returns
+    ``CONFIG_LOCKED`` (the single-target defer-expansion decision,
+    OWNER-DEC-NEWSGATE-AE-20260904), one append-only successor Q10_NEWS row is
+    inserted (status ``done``, verdict ``CONFIG_LOCKED``) carrying full
+    provenance, the successor aggregate.json is written under the successor work
+    item directory, and the q09_news_tests row is recorded exactly as the runner
+    records it.  The original row is never modified.
+
+    Refuses (machine-readable ``reason``) when the source is not a done 8-cell
+    REVIEW row, when a successor already exists, when the sealed cell aggregates
+    are missing, or when the current rule still returns a non-lock verdict.
+    Dry-run by default; ``apply=True`` performs the single append-only insert.
+    """
+    contract = _q09_news_contract_module()
+    news_phase = _NEWS_PHASE
+    if apply:
+        init_db(root)
+        conn = connect(root)
+    else:
+        conn = sqlite3.connect(
+            f"file:{db_path(root).as_posix()}?mode=ro", uri=True
+        )
+        conn.row_factory = sqlite3.Row
+    try:
+        if list_mode:
+            return _readjudicate_news_list(conn)
+        source_id = str(work_item_id or "").strip()
+        if not source_id:
+            return {
+                "command": "readjudicate-news-8cell",
+                "readjudicated": False,
+                "dry_run": not apply,
+                "reason": "readjudicate_requires_work_item_id",
+            }
+        source = _readjudicate_news_source_row(conn, source_id)
+        if source is None:
+            return {
+                "command": "readjudicate-news-8cell",
+                "readjudicated": False,
+                "dry_run": not apply,
+                "reason": "readjudicate_source_missing",
+                "source_work_item_id": source_id,
+            }
+        facts = {
+            "phase": source["phase"],
+            "status": source["status"],
+            "verdict": source["verdict"],
+            "matrix_scope": source["matrix_scope"],
+            "has_q09_news_test_row": source["aggregate_path"] is not None,
+        }
+        if (
+            str(source["phase"]) != news_phase
+            or str(source["status"]) != "done"
+            or str(source["verdict"]) != "REVIEW_REQUIRED"
+            or source["aggregate_path"] is None
+        ):
+            return {
+                "command": "readjudicate-news-8cell",
+                "readjudicated": False,
+                "dry_run": not apply,
+                "reason": "readjudicate_source_not_done_review_row",
+                "source_work_item_id": source_id,
+                "facts": facts,
+            }
+        adjudication = news_gate_service.verified_expansion_adjudication(
+            source["aggregate_path"], source["aggregate_sha256"]
+        )
+        if adjudication is None or str(source["matrix_scope"] or "") != "7x1_target_compliance":
+            return {
+                "command": "readjudicate-news-8cell",
+                "readjudicated": False,
+                "dry_run": not apply,
+                "reason": "readjudicate_source_not_expanded_8cell",
+                "source_work_item_id": source_id,
+                "facts": facts,
+                "aggregate_authenticated": adjudication is not None,
+            }
+        existing = _readjudicate_news_existing_successor(conn, source_id)
+        if existing is not None:
+            return {
+                "command": "readjudicate-news-8cell",
+                "readjudicated": False,
+                "dry_run": not apply,
+                "reason": "readjudicate_successor_already_exists",
+                "source_work_item_id": source_id,
+                "successor_work_item_id": str(existing["id"]),
+                "successor_status": str(existing["status"]),
+                "successor_verdict": existing["verdict"],
+            }
+        source_aggregate_path = Path(str(source["aggregate_path"])).resolve()
+        source_dir = source_aggregate_path.parent
+        evidence_path = source_dir / "q09_news_evidence.json"
+        if not evidence_path.is_file():
+            return {
+                "command": "readjudicate-news-8cell",
+                "readjudicated": False,
+                "dry_run": not apply,
+                "reason": "readjudicate_cell_aggregates_missing",
+                "source_work_item_id": source_id,
+                "missing_evidence_path": str(evidence_path),
+            }
+        try:
+            evidence_payload = json.loads(evidence_path.read_text(encoding="utf-8-sig"))
+        except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+            return {
+                "command": "readjudicate-news-8cell",
+                "readjudicated": False,
+                "dry_run": not apply,
+                "reason": "readjudicate_cell_aggregates_missing",
+                "source_work_item_id": source_id,
+                "sealed_evidence_path": str(evidence_path),
+                "error": str(exc),
+            }
+        if (
+            not isinstance(evidence_payload, dict)
+            or not isinstance(evidence_payload.get("cells"), list)
+            or not evidence_payload["cells"]
+        ):
+            return {
+                "command": "readjudicate-news-8cell",
+                "readjudicated": False,
+                "dry_run": not apply,
+                "reason": "readjudicate_cell_aggregates_missing",
+                "source_work_item_id": source_id,
+                "sealed_evidence_path": str(evidence_path),
+                "error": "sealed evidence carries no cell aggregates",
+            }
+        source_evidence_sha256 = _sha256_file(evidence_path)
+        successor_id = str(uuid.uuid4())
+        successor_evidence = dict(evidence_payload)
+        successor_evidence["work_item_id"] = successor_id
+        result = contract.adjudicate(successor_evidence)
+        result_verdict = str(result.get("verdict") or "")
+        if result_verdict != "CONFIG_LOCKED":
+            return {
+                "command": "readjudicate-news-8cell",
+                "readjudicated": False,
+                "dry_run": not apply,
+                "reason": "readjudicate_new_rule_still_review",
+                "source_work_item_id": source_id,
+                "readjudicated_verdict": result_verdict,
+                "readjudicated_reason_codes": list(result.get("reason_codes") or []),
+            }
+        contract_source_path = Path(getattr(contract, "__file__", "")).resolve()
+        original_reason_codes = list(adjudication.get("reason_codes") or [])
+        original_details = adjudication.get("details")
+        original_expansion_reasons = (
+            list(original_details.get("expansion_reasons") or [])
+            if isinstance(original_details, dict) else []
+        )
+        chosen = result.get("chosen_config") or {}
+        provenance = {
+            "readjudicated_from_work_item": source_id,
+            "readjudication_class": _READJUDICATE_NEWS_8CELL_CLASS,
+            "readjudication_source_aggregate_sha256": str(source["aggregate_sha256"]),
+            "readjudication_source_evidence_sha256": source_evidence_sha256,
+            "readjudication_source_matrix_scope": str(source["matrix_scope"]),
+            "readjudication_rule_adjudication_schema": str(result.get("schema_version") or ""),
+            "readjudication_rule_contract_sha256": (
+                _sha256_file(contract_source_path) if contract_source_path.is_file() else None
+            ),
+            "readjudication_rule_commit": _readjudicate_news_git_commit(REPO_ROOT),
+            "readjudication_original_review_reason_codes": original_reason_codes,
+            "readjudication_original_expansion_reasons": original_expansion_reasons,
+            "readjudicated_verdict": result_verdict,
+            "readjudicated_chosen_temporal": chosen.get("temporal_mode"),
+            "readjudicated_chosen_compliance": chosen.get("compliance_mode"),
+        }
+        preview = {
+            "command": "readjudicate-news-8cell",
+            "source_work_item_id": source_id,
+            "ea_id": str(source["ea_id"]),
+            "symbol": str(source["symbol"]),
+            "successor_work_item_id": successor_id,
+            "readjudicated_verdict": result_verdict,
+            "readjudicated_reason_codes": list(result.get("reason_codes") or []),
+            "chosen_temporal": chosen.get("temporal_mode"),
+            "chosen_compliance": chosen.get("compliance_mode"),
+            "readjudicated_from_work_item": source_id,
+            "source_aggregate_sha256": str(source["aggregate_sha256"]),
+            "original_review_reason_codes": original_reason_codes,
+            "original_expansion_reasons": original_expansion_reasons,
+        }
+        if not apply:
+            return {
+                "readjudicated": False,
+                "dry_run": True,
+                "would_readjudicate": True,
+                **preview,
+            }
+        dependency = conn.execute(
+            """
+            SELECT parent_work_item_id, parent_evidence_sha256, required_verdicts_json
+            FROM work_item_dependencies
+            WHERE child_work_item_id=? AND dependency_role='Q08_INPUT'
+            """,
+            (source_id,),
+        ).fetchone()
+        if dependency is None:
+            return {
+                "command": "readjudicate-news-8cell",
+                "readjudicated": False,
+                "dry_run": False,
+                "reason": "readjudicate_source_q08_input_dependency_missing",
+                "source_work_item_id": source_id,
+            }
+        try:
+            required_verdicts = list(json.loads(str(dependency["required_verdicts_json"])))
+        except (TypeError, json.JSONDecodeError):
+            required_verdicts = []
+        if not required_verdicts:
+            return {
+                "command": "readjudicate-news-8cell",
+                "readjudicated": False,
+                "dry_run": False,
+                "reason": "readjudicate_source_q08_input_dependency_invalid",
+                "source_work_item_id": source_id,
+            }
+        successor_dir = source_dir.parent / successor_id
+        successor_dir.mkdir(parents=True, exist_ok=True)
+        successor_aggregate_path = successor_dir / "aggregate.json"
+        successor_aggregate_path.write_bytes(contract.canonical_json_bytes(result))
+        (successor_dir / "q09_news_evidence.json").write_bytes(
+            contract.canonical_json_bytes(successor_evidence)
+        )
+        provenance_document = {
+            "schema_version": "qm-q10-news-readjudication-provenance/v1",
+            **provenance,
+            "successor_work_item_id": successor_id,
+            "successor_aggregate_path": str(successor_aggregate_path),
+            "readjudicated_at_utc": utc_now(),
+            "readjudicated_by": _READJUDICATE_NEWS_8CELL_ENQUEUED_BY,
+        }
+        provenance_path = successor_dir / "readjudication_provenance.json"
+        provenance_path.write_bytes(contract.canonical_json_bytes(provenance_document))
+        successor_aggregate_sha256 = contract.sha256_file(successor_aggregate_path)
+        now = utc_now()
+        payload = {
+            "readjudicated_from_work_item": source_id,
+            "append_only_rerun": True,
+            "append_only_rerun_of_work_item": source_id,
+            "historical_work_item_preserved": True,
+            "readjudication_of_work_item": source_id,
+            "promotion_source": _READJUDICATE_NEWS_8CELL_ENQUEUED_BY,
+            "promoted_from_phase": str(source["phase"]),
+            "promoted_from_work_item": source_id,
+            "requeued_at": now,
+            "no_tester_run": True,
+            "successor_aggregate_sha256": successor_aggregate_sha256,
+            **provenance,
+        }
+        conn.execute("BEGIN IMMEDIATE")
+        conn.execute(
+            """
+            INSERT INTO work_items(
+                id, kind, phase, ea_id, symbol, setfile_path, status, verdict,
+                attempt_count, parent_task_id, evidence_path, claimed_by,
+                payload_json, created_at, updated_at, gate_contract_version
+            ) VALUES (?, 'backtest', ?, ?, ?, ?, 'done', 'CONFIG_LOCKED',
+                      0, NULL, ?, NULL, ?, ?, ?, ?)
+            """,
+            (
+                successor_id,
+                news_phase,
+                str(source["ea_id"]),
+                str(source["symbol"]),
+                str(source["setfile_path"]),
+                str(successor_aggregate_path),
+                json.dumps(payload, sort_keys=True),
+                now,
+                now,
+                source["gate_contract_version"] or ACTIVE_GATE_CONTRACT_VERSION,
+            ),
+        )
+        add_q09_dependency(
+            conn,
+            child_work_item_id=successor_id,
+            dependency_role="Q08_INPUT",
+            parent_work_item_id=str(dependency["parent_work_item_id"]),
+            parent_evidence_sha256=str(dependency["parent_evidence_sha256"]),
+            required_verdicts=required_verdicts,
+        )
+        event(
+            conn,
+            "work_items",
+            news_phase,
+            "readjudicate_news_8cell_successor_created",
+            {
+                "source_work_item_id": source_id,
+                "successor_work_item_id": successor_id,
+                "ea_id": str(source["ea_id"]),
+                "symbol": str(source["symbol"]),
+                "chosen_temporal": chosen.get("temporal_mode"),
+                "chosen_compliance": chosen.get("compliance_mode"),
+                "source_aggregate_sha256": str(source["aggregate_sha256"]),
+                "successor_aggregate_sha256": successor_aggregate_sha256,
+            },
+        )
+        conn.commit()
+        schema_module = _q09_news_schema_module()
+        summary_inserted = _with_sqlite_write_retry(
+            lambda: schema_module.record_q09_adjudication(
+                conn,
+                evidence_payload=successor_evidence,
+                adjudication=result,
+                aggregate_path=str(successor_aggregate_path),
+                aggregate_sha256=successor_aggregate_sha256,
+            )
+        )
+        recorded = conn.execute(
+            "SELECT verdict, aggregate_sha256 FROM q09_news_tests WHERE work_item_id=?",
+            (successor_id,),
+        ).fetchone()
+        if recorded is None or str(recorded["aggregate_sha256"]) != successor_aggregate_sha256:
+            raise RuntimeError("readjudication q09_news_tests verification failed")
+        return {
+            "command": "readjudicate-news-8cell",
+            "readjudicated": True,
+            "dry_run": False,
+            "summary_inserted": bool(summary_inserted),
+            "successor_work_item_id": successor_id,
+            "successor_aggregate_path": str(successor_aggregate_path),
+            "successor_aggregate_sha256": successor_aggregate_sha256,
+            "successor_verdict": str(recorded["verdict"]),
+            "provenance_path": str(provenance_path),
+            **preview,
+        }
+    finally:
+        conn.close()
+
+
 def _validated_q09_include_closure(
     closure_builder: Any,
     *,
@@ -32994,6 +33468,32 @@ def build_parser() -> argparse.ArgumentParser:
         "--apply", action="store_true", help="Create append-only child rows; default is read-only"
     )
 
+    readjudicate_news = sub.add_parser(
+        "readjudicate-news-8cell",
+        help=(
+            "Append-only single-target readjudication of a sealed Q10_NEWS "
+            "8-cell REVIEW row under the current adjudication rule; no tester run"
+        ),
+    )
+    readjudicate_news.add_argument(
+        "--work-item-id",
+        help=(
+            "Exact done Q10_NEWS 8-cell row (verdict REVIEW_REQUIRED, reason "
+            "expanded_7x4_matrix_required) to readjudicate"
+        ),
+    )
+    readjudicate_news.add_argument(
+        "--list",
+        dest="list_mode",
+        action="store_true",
+        help="Enumerate eligible rows still awaiting single-target readjudication",
+    )
+    readjudicate_news.add_argument(
+        "--apply",
+        action="store_true",
+        help="Insert the append-only CONFIG_LOCKED successor; default is a read-only dry run",
+    )
+
     dispatch = sub.add_parser(
         "dispatch-tick",
         help="Advance backtest tasks one step: start one pending, poll active, classify completed",
@@ -33173,6 +33673,8 @@ def _command_mutates_state(args: argparse.Namespace) -> bool:
     if args.command == "requeue-false-invalid-setfile":
         return bool(args.apply)
     if args.command == "enqueue-news-expansions":
+        return bool(args.apply)
+    if args.command == "readjudicate-news-8cell":
         return bool(args.apply)
     if args.command in {
         "admit-optimization",
@@ -33624,6 +34126,13 @@ def main(argv: list[str] | None = None) -> int:
             include_historical=args.include_historical,
             pair_allowlist_path=args.pair_allowlist_csv,
             apply=args.apply,
+        ))
+    elif args.command == "readjudicate-news-8cell":
+        print_json(readjudicate_news_8cell(
+            root,
+            args.work_item_id,
+            apply=args.apply,
+            list_mode=args.list_mode,
         ))
     elif args.command == "dispatch-tick":
         print_json(dispatch_tick(root, timeout_hours=args.timeout_hours))
