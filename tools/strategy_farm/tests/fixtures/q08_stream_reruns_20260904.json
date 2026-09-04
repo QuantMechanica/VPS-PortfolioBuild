@@ -1,0 +1,58 @@
+[
+  {
+    "rerun_id": "f62fe6b3-f734-466e-95dd-d7ca76294729",
+    "ea_id": "QM5_1537",
+    "symbol": "XAGUSD.DWX",
+    "predecessor_work_item_id": "5e832838-5d29-4405-86b1-b4840eac22cf",
+    "append_only_rerun_of": "262514ac-c3c6-4834-9e17-02a42c8878b7",
+    "expected_current_ex5_sha256": "142a019e773a493def0640722efb9d591d094650b35a69d5de39f6af3a048106"
+  },
+  {
+    "rerun_id": "a2e1aba6-45ea-4dcf-af98-1f679ebeb64f",
+    "ea_id": "QM5_10706",
+    "symbol": "GBPUSD.DWX",
+    "predecessor_work_item_id": "81cd341c-a2c1-4c18-9ec6-6b85f0226080",
+    "append_only_rerun_of": "7855588a-9ff8-4896-8d8d-16e1fdc25f72",
+    "expected_current_ex5_sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb"
+  },
+  {
+    "rerun_id": "2bd0f95c-6c62-4a53-92cf-04f0d39fbb48",
+    "ea_id": "QM5_11422",
+    "symbol": "USDCAD.DWX",
+    "predecessor_work_item_id": "474ba0d0-00c1-4672-a14d-a465d635405f",
+    "append_only_rerun_of": "d3907c1a-dc69-4498-be2f-80b064a2c02f",
+    "expected_current_ex5_sha256": "2b98e9e902313148be78d88513fcbda2476150b1a7605eb15a50b2cca6b32d66"
+  },
+  {
+    "rerun_id": "21dd6839-4d77-4228-b5ba-5dd86aeb0cdb",
+    "ea_id": "QM5_13054",
+    "symbol": "XTIUSD.DWX",
+    "predecessor_work_item_id": "fd882da0-8822-427f-9266-1f300154b1d1",
+    "append_only_rerun_of": "d62d792e-442a-494b-964f-40963d8365e8",
+    "expected_current_ex5_sha256": "2e65488fccdbd985f78318861a223a305d820a4fce3d2ebdcafae6ce956fd96d"
+  },
+  {
+    "rerun_id": "15c1ec7b-5821-4944-81a7-86d23754565d",
+    "ea_id": "QM5_21505",
+    "symbol": "XAGUSD.DWX",
+    "predecessor_work_item_id": "b837549a-4871-49c2-bf38-ba1862d7cfca",
+    "append_only_rerun_of": "9c51f7eb-d3a2-435c-a50d-66ade0356f5c",
+    "expected_current_ex5_sha256": "395c4747832acbcdf8a68d8598e53abe5786bdc6c538767c400884cd82b2aea1"
+  },
+  {
+    "rerun_id": "a43559cd-b084-4c0e-8bc3-2c7b6fc1a5ea",
+    "ea_id": "QM5_20048",
+    "symbol": "XTIUSD.DWX",
+    "predecessor_work_item_id": "bf54ff43-b0c4-4e48-a290-25c3304ec28f",
+    "append_only_rerun_of": "3ee5c53c-6fe5-4776-9baf-a3ec9600e626",
+    "expected_current_ex5_sha256": "1312391ad7e654812244e48a6df92d5bd323dba7d32ddae60c54adc464527f00"
+  },
+  {
+    "rerun_id": "977a478e-1f23-4297-ac76-656bb497e2ec",
+    "ea_id": "QM5_11910",
+    "symbol": "NZDUSD.DWX",
+    "predecessor_work_item_id": "797f03ae-173b-4c24-96f8-492f6f22930a",
+    "append_only_rerun_of": "e0237a77-9017-4b56-aef3-1be924c2c8cc",
+    "expected_current_ex5_sha256": "e18d477e63c40cb1002aa4d93d8efcc3ec6fddf1081fb73ad9df1b0a7a3042de"
+  }
+]

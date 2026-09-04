@@ -20747,6 +20747,20 @@ PUMP_OPT_FORK_SERVICE_BUDGET_SECONDS = 15.0
 PUMP_MEASUREMENT_SIBLING_HOLD_BUDGET_SECONDS = 15.0
 
 
+def auto_enqueue_q08_stream_reruns(
+    root: Path, *, deadline_monotonic: float | None = None
+) -> dict[str, Any]:
+    """Recover missing current-identity Q08 seals after terminal Q14 results."""
+    try:
+        from tools.strategy_farm.q08_stream_rerun import service
+        return service(
+            root, apply=True, deadline_monotonic=deadline_monotonic,
+            farm_module=sys.modules[__name__],
+        )
+    except Exception as exc:
+        return {"applied": False, "machine_reason": f"Q08_STREAM_AUTO_RERUN_FAILED:{exc}"}
+
+
 def _pump_unlocked(
     root: Path, include_defect_blocked_evidence: bool = False
 ) -> dict[str, Any]:
@@ -20903,6 +20917,16 @@ def _pump_unlocked(
         "optimization_fork_service",
         _opt_fork_service_stage,
         budget_seconds=PUMP_OPT_FORK_SERVICE_BUDGET_SECONDS,
+        minimum_start_seconds=5.0,
+    )
+
+    # Current-identity book evidence must survive the optimization fork.
+    # Append-only service; no tester spawn and no bundle/selection rule change.
+    stream_deadline = cycle_budget.stage_deadline(10.0)
+    result["q08_stream_auto_rerun"] = cycle_budget.run(
+        "q08_stream_auto_rerun",
+        lambda: auto_enqueue_q08_stream_reruns(root, deadline_monotonic=stream_deadline),
+        budget_seconds=10.0,
         minimum_start_seconds=5.0,
     )
 
