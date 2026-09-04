@@ -50,6 +50,7 @@ import dl089_scheduling
 import longrun_scheduling_policy
 import next_cell_prestage
 import monitor_budget
+import finished_terminal
 import opt_census_pruning
 import opt_census_select
 from framework.scripts._phase_utils import cold_cache_summary_signature
@@ -8610,6 +8611,26 @@ def _record_monitor_budget_kill(root, item, terminal, spawn, payload, runtime_se
     return marker
 
 
+def _recover_finished_terminal(root, item, terminal, spawn, payload, state, now_monotonic):
+    if root.resolve() != farmctl.DEFAULT_ROOT.resolve():
+        return None
+    result = finished_terminal.poll(
+        str(item["id"]), terminal, {**spawn, **payload}, farmctl.MT5_ROOT,
+        state, now_monotonic, farmctl.get_process_identity,
+    )
+    if result is None:
+        return None
+    result["runner_pid"] = spawn["pid"]
+    print(json.dumps(result, sort_keys=True), flush=True)
+    try:
+        with farmctl.connect(root) as conn:
+            farmctl.event(conn, "work_item", item["id"], "terminal_finished_but_alive", result)
+            conn.commit()
+    except sqlite3.Error as exc:
+        print(json.dumps({"event": "terminal_finished_but_alive_event_write_failed", "item_id": item["id"], "error": str(exc)}), flush=True)
+    return result
+
+
 def _monitor_spawned_work_item(
     root: Path,
     item: dict[str, Any],
@@ -8635,6 +8656,8 @@ def _monitor_spawned_work_item(
     adopted_start = _parse_utc_iso(payload.get("started_at_iso") or payload.get("claimed_at_iso")) if adopted else None
     elapsed_before_adoption = max(0.0, (datetime.now(timezone.utc) - adopted_start).total_seconds()) if adopted_start else 0.0
     monitor_kill = None
+    finished_terminal_state = {}
+    finished_terminal_recoveries = []
     log_bomb_path: str | None = None
     _lb_iter = 0
     _lb_sizes: dict = {}
@@ -8689,6 +8712,11 @@ def _monitor_spawned_work_item(
                 "terminal_stopped": terminal_stopped,
                 **ownership,
             }
+        if child_alive:
+            recovery = _recover_finished_terminal(root, item, terminal, spawn, payload,
+                                                   finished_terminal_state, time.monotonic())
+            if recovery is not None:
+                finished_terminal_recoveries.append(recovery)
         stalled_grace_seconds = _smoke_terminal_exit_stall_grace_seconds(item, payload)
         if stalled_grace_seconds is not None:
             post_exit_watchdog = {
@@ -8815,6 +8843,7 @@ def _monitor_spawned_work_item(
         not child_alive
         and not terminal_alive_after_child_exit
         and ran_seconds >= LAUNCH_FAULT_MIN_SECONDS
+        and not any(r.get("terminal_stopped") for r in finished_terminal_recoveries)
         and not _work_item_has_summary_data(root, item["id"])
     ):
         return _defer_runner_death_or_hold(
@@ -8910,6 +8939,8 @@ def _monitor_spawned_work_item(
             ),
         )
     runtime_updates = dict(post_exit_watchdog or {})
+    if finished_terminal_recoveries:
+        runtime_updates["terminal_finished_recoveries"] = finished_terminal_recoveries
     if monitor_kill:
         runtime_updates.update({"monitor_kill": monitor_kill, "worker_exit_record": monitor_kill})
     if not runtime_updates:

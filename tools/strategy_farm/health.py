@@ -3932,6 +3932,23 @@ def chk_pending_tail_age(con) -> dict:
     return _check("pending_tail_age", "WARN", old, PENDING_TAIL_FAIL_TOTAL, detail, hint)
 
 
+def chk_terminal_finished_but_alive(con) -> dict:
+    cutoff = (_utc_now() - dt.timedelta(hours=24)).isoformat()
+    rows = con.execute(
+        "SELECT date(ts) AS day,COUNT(*) AS n,"
+        "SUM(CASE WHEN json_extract(detail_json,'$.terminal_stopped')=1 THEN 1 ELSE 0 END) AS stopped "
+        "FROM events WHERE event='terminal_finished_but_alive' "
+        "AND julianday(ts)>=julianday(?) GROUP BY date(ts)", (cutoff,),
+    ).fetchall()
+    days = {r["day"]: int(r["n"]) for r in rows}
+    count, stopped = sum(days.values()), sum(int(r["stopped"]) for r in rows)
+    result = _check("terminal_finished_but_alive", "WARN" if count else "OK", count, 1,
+                    f"finished-but-alive detections in 24h={count}; terminated={stopped}; UTC days={days}",
+                    "Inspect bound run/config and report evidence for recurring post-test terminal hangs.")
+    result.update({"by_utc_day": days, "terminated": stopped})
+    return result
+
+
 def chk_monitor_budget_exhausted(con) -> dict:
     """Count monitor kills per UTC day; budget-review retries remain visible."""
     cutoff = (_utc_now() - dt.timedelta(hours=24)).isoformat()
@@ -4525,6 +4542,7 @@ ALL_CHECKS = [
     ("pending_tail_age", chk_pending_tail_age, True),
     ("q02_summary_missing_unclassified", chk_q02_summary_missing_unclassified, True),
     ("monitor_budget_exhausted", chk_monitor_budget_exhausted, True),
+    ("terminal_finished_but_alive", chk_terminal_finished_but_alive, True),
     ("q09_sealed_plan_hold_age", chk_q09_sealed_plan_hold_age, True),
     ("q10_long_cell_breaker_holds", chk_q10_long_cell_breaker_holds, True),
     ("q09_autoseal_hold_census", chk_q09_autoseal_hold_census, True),
