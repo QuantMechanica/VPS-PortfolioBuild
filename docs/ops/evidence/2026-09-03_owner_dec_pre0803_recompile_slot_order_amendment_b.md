@@ -668,3 +668,7 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
 ## 21:01Z 2026-09-04 - monitor_budget_exhausted deployed (e1a8f38cd6); Astra FTMO analysis commissioned
 
 - b2106bba APPROVED and deployed; worker reload pending. Astra task e544e3b8 (FTMO book: faster and safe, mandatory gap list) IN_PROGRESS. Edge-lab workflow wf_35b7e0ed running for 315041f7.
+
+## 21:41Z 2026-09-04 - Astra FTMO analysis accepted; OOS-2026 window defect verified and contained
+
+- e544e3b8 APPROVED (NO-BUY; gap list; decision list). Verified: 15/15 done oos_2026_confirmation_v1 rows measured 2024 (payload expected dates); dispatcher passes no window, spawn builder has no single-symbol window contract. 40 pending rows held OOS_WINDOW_MISMATCH. Repair workflow wf_1e969f7f running. d9379ede deployed cadb7f3322.
