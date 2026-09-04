@@ -191,11 +191,11 @@ def _config_sha(config: object) -> str:
 def test_deterministic_drift_phase_logic_and_chaining() -> None:
     days = [_day(index, net=0.0025) for index in range(140)]
     p1 = ftmo.evaluate_phase(days, 0, 0.10, 60)
-    assert p1 == {"outcome": "PASS", "end_index": 38, "days_elapsed": 39}
+    assert p1 == {"outcome": "PASS", "end_index": 40, "days_elapsed": 41}
 
     first = ftmo.rolling_outcomes(days)[0]
     assert first["p1"]["outcome"] == "PASS"
-    assert first["p2"] == {"outcome": "PASS", "end_index": 58, "days_elapsed": 20}
+    assert first["p2"] == {"outcome": "PASS", "end_index": 61, "days_elapsed": 21}
     assert first["joint_pass"] is True
 
 
@@ -203,6 +203,22 @@ def test_daily_loss_breach_precedes_close() -> None:
     result = ftmo.evaluate_phase([_day(0, low=-0.051)], 0, 0.10, 60)
     assert result["outcome"] == "DAILY_LOSS_BREACH"
     assert result["days_elapsed"] == 1
+
+
+def test_astra_one_day_probe_cannot_pass_four_opening_day_minimum() -> None:
+    one_day = [_day(0, net=0.101, trades=1)]
+    result = ftmo.evaluate_phase(one_day, 0, 0.10, 60)
+    assert result["outcome"] == "TIMEOUT"
+
+
+def test_target_is_strict_and_four_distinct_opening_days_are_required() -> None:
+    exact = [_day(index, net=0.025 if index < 4 else 0.0) for index in range(5)]
+    assert ftmo.evaluate_phase(exact, 0, 0.10, 60)["outcome"] == "TIMEOUT"
+    above = [_day(0, net=0.101, trades=1)] + [
+        _day(index, trades=1) for index in range(1, 4)
+    ]
+    result = ftmo.evaluate_phase(above, 0, 0.10, 60)
+    assert result == {"outcome": "PASS", "end_index": 3, "days_elapsed": 4}
 
 
 def test_compounded_path_hits_max_loss_without_daily_breach() -> None:

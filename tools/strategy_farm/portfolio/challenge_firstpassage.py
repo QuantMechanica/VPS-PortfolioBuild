@@ -29,8 +29,8 @@ Three corrections to the earlier instrument, all tightening:
    the check to end of day makes the criterion exactly right for this sleeve
    class, which is flat overnight by construction (<=1% multi-day positions).
 
-2. FOUR-TRADING-DAY MINIMUM ENFORCED. FTMO requires at least four trading days.
-   The earlier scripts did not check it.
+2. FOUR-OPENING-DAY MINIMUM ENFORCED. FTMO requires positions to be opened on at
+   least four distinct Prague calendar days. The earlier scripts did not check it.
 
 3. CENSORING REPORTED, NOT HIDDEN. Starts too late in the data to resolve are
    counted as failures in the headline and shown separately, so the number is a
@@ -50,11 +50,22 @@ import statistics
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
+from zoneinfo import ZoneInfo
+
+try:
+    from tools.strategy_farm.portfolio.ftmo_rule_contract import load_two_step_contract
+except ModuleNotFoundError:  # pragma: no cover - direct script execution
+    from ftmo_rule_contract import load_two_step_contract
 
 STREAMS = Path(r"D:\QM\reports\portfolio\sleeve_streams\QM\q08_trades")
-ACCOUNT, TARGET, DAILY_CAP, TOTAL_CAP = 100_000.0, 0.10, 0.05, 0.10
+RULES = load_two_step_contract()
+PRAGUE = ZoneInfo(RULES.timezone)
+ACCOUNT = float(RULES.initial_equity)
+TARGET = float(RULES.phase1_target_fraction)
+DAILY_CAP = float(RULES.maximum_daily_loss_fraction)
+TOTAL_CAP = float(RULES.maximum_total_loss_fraction)
 MIN_DAYS, SPLIT = 500, 0.60
-MIN_TRADING_DAYS = 4          # FTMO Phase 1 minimum
+MIN_TRADING_DAYS = RULES.minimum_trading_days
 # 1.0 is what the framework actually enforces (QM_Common.mqh:182). 5.0 is the
 # ceiling QM_FrameworkSetRiskCapPct would permit if it were ever wired in
 # (QM_Common.mqh:315, OWNER-ratified 2026-07-05). Both are reported; neither is
@@ -92,7 +103,7 @@ for r in con.execute("select ea_id,symbol,phase,verdict from work_items "
                      "where status='done' order by updated_at"):
     latest[(r["ea_id"], str(r["symbol"]).upper(), r["phase"])] = str(r["verdict"] or "")
 
-trades, gate_note, excluded = {}, {}, []
+trades, opening_days, gate_note, excluded = {}, {}, {}, []
 for path in sorted(STREAMS.glob("*.jsonl")):
     bare, _, stem = path.stem.partition("_")
     ea, sym = f"QM5_{bare}", stem.replace("_DWX", ".DWX").upper()
@@ -144,12 +155,15 @@ for path in sorted(STREAMS.glob("*.jsonl")):
     if pct > 1.0:
         excluded.append((key, pct, "multi-day"))
         continue
-    if len({r[0].date() for r in rows}) >= MIN_DAYS:
+    if len({r[0].astimezone(PRAGUE).date() for r in rows}) >= MIN_DAYS:
         trades[key] = rows
+        opening_days[key] = {
+            entry.astimezone(PRAGUE).date() for entry, _ in raw_span if entry is not None
+        }
         gate_note[key] = q08 if q08 is not None else "PENDING (requeued)"
 
 keys = sorted(trades)
-all_days = sorted({r[0].date() for rs in trades.values() for r in rs})
+all_days = sorted({r[0].astimezone(PRAGUE).date() for rs in trades.values() for r in rs})
 cut = all_days[int(len(all_days) * SPLIT)]
 FAR = datetime(2100, 1, 1).date()
 
@@ -158,7 +172,8 @@ def outcomes(members, cfg, lo, hi):
     """First-passage outcome per start day.
 
     Returns (pass_flags, days_to_pass). A start resolves 'pass' when at least one
-    account's END-OF-DAY balance is at or above target having traded >=4 days,
+    account's END-OF-DAY balance is strictly above target after opening positions
+    on at least four distinct Prague calendar days,
     and 'fail' when every account has breached. Starts that reach the end of the
     data unresolved count as failures - censoring is not silently dropped.
     """
@@ -166,8 +181,9 @@ def outcomes(members, cfg, lo, hi):
     for k in members:
         lev = cfg[k]["lev"]
         for close, net, mae in trades[k]:
-            if lo <= close.date() < hi:
-                by_day[close.date()].append((close, net * lev, mae * lev, k))
+            close_day = close.astimezone(PRAGUE).date()
+            if lo <= close_day < hi:
+                by_day[close_day].append((close, net * lev, mae * lev, k))
     if not by_day:
         return None, None, None
     for d in by_day:
@@ -197,13 +213,13 @@ def outcomes(members, cfg, lo, hi):
                 net *= sc
                 mae *= sc
                 low = realized[k] + pending[k]
-                if low <= -DAILY_CAP * ACCOUNT or eq[k] + low <= -TOTAL_CAP * ACCOUNT:
+                if low < -DAILY_CAP * ACCOUNT or eq[k] + low < -TOTAL_CAP * ACCOUNT:
                     state[k] = "breach"
                     continue
                 pending[k] -= mae
                 realized[k] += net
-                if realized[k] <= -DAILY_CAP * ACCOUNT or \
-                        eq[k] + realized[k] <= -TOTAL_CAP * ACCOUNT:
+                if realized[k] < -DAILY_CAP * ACCOUNT or \
+                        eq[k] + realized[k] < -TOTAL_CAP * ACCOUNT:
                     state[k] = "breach"
                     continue
                 ds = cfg[k]["ds"]
@@ -214,10 +230,10 @@ def outcomes(members, cfg, lo, hi):
             for k in members:
                 if state[k] != "live":
                     continue
-                if any(e[3] == k for e in day_events):
+                if days[di] in opening_days[k]:
                     traded[k] += 1
                 eq[k] += realized[k]
-                if eq[k] >= TARGET * ACCOUNT and traded[k] >= MIN_TRADING_DAYS:
+                if eq[k] > TARGET * ACCOUNT and traded[k] >= MIN_TRADING_DAYS:
                     state[k] = "pass"
             if any(state[k] == "pass" for k in members):
                 won = di - s + 1

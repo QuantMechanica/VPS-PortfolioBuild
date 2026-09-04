@@ -72,6 +72,12 @@ import sys
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
+from zoneinfo import ZoneInfo
+
+try:
+    from tools.strategy_farm.portfolio.ftmo_rule_contract import load_two_step_contract
+except ModuleNotFoundError:  # pragma: no cover - direct script execution
+    from ftmo_rule_contract import load_two_step_contract
 
 # Hash-frozen default captured for the sealed 2026-08-19 portfolio evidence.
 # Current-population callers must select their assembled bundle explicitly.  The
@@ -81,15 +87,20 @@ from pathlib import Path
 LEGACY_STREAMS = Path(r"D:\QM\reports\portfolio\dxz_final_20260719\QM\q08_trades")
 STREAMS = Path(os.environ.get("QM_FUND_SCORE_STREAMS", str(LEGACY_STREAMS))).resolve()
 SEALED_STREAM_SET = True
-ACCOUNT, DAILY_CAP, TOTAL_CAP = 100_000.0, 0.05, 0.10
-P1_TARGET, P2_TARGET = 0.10, 0.05
+RULES = load_two_step_contract()
+PRAGUE = ZoneInfo(RULES.timezone)
+ACCOUNT = float(RULES.initial_equity)
+DAILY_CAP = float(RULES.maximum_daily_loss_fraction)
+TOTAL_CAP = float(RULES.maximum_total_loss_fraction)
+P1_TARGET = float(RULES.phase1_target_fraction)
+P2_TARGET = float(RULES.phase2_target_fraction)
 D1, D2 = 60, 30
 # 250 rather than 500: the 500-day floor was inherited from the sprint-era
 # work, where a long window was needed for stability. A 60-day KPI resolves
 # in ~43 trading days, so a 250-day sleeve still yields ~200 starts. Halving
 # the floor more than doubles the pool, 7 -> 15, and admits 10128 and 10145,
 # the only two sleeves ever marked challenge_ready.
-MIN_DAYS, MIN_TRADING_DAYS, DORMANCY_DAYS = 250, 4, 30
+MIN_DAYS, MIN_TRADING_DAYS, DORMANCY_DAYS = 250, RULES.minimum_trading_days, 30
 LEVERAGES = (1.0, 2.0, 3.0, 4.0, 5.0)
 # The overlay was measured and did not help: a daily stop changed the best
 # book from 65.2% to 64.3%, inside noise. Kept as one option, not a grid.
@@ -126,7 +137,7 @@ if not SEALED_STREAM_SET:
                          "where status='done' order by updated_at"):
         latest[(r["ea_id"], str(r["symbol"]).upper(), r["phase"])] = str(r["verdict"] or "")
 
-sleeves, multi_pct, stream_inputs = {}, {}, {}
+sleeves, multi_pct, stream_inputs, opening_days = {}, {}, {}, {}
 for path in sorted(STREAMS.glob("*.jsonl")):
     bare, _, stem = path.stem.partition("_")
     ea, sym = f"QM5_{bare}", stem.replace("_DWX", ".DWX").upper()
@@ -166,7 +177,9 @@ for path in sorted(STREAMS.glob("*.jsonl")):
             n += 1
             if entry is not None:
                 cov += 1
-            ev.append((entry.date() if entry else close.date(), close.date(), net, mae))
+            entry_day = entry.astimezone(PRAGUE).date() if entry else close.astimezone(PRAGUE).date()
+            close_day = close.astimezone(PRAGUE).date()
+            ev.append((entry_day, close_day, net, mae))
     # span must be known: a missing entry_time is unknown exposure, not zero.
     if not n or cov < 0.99 * n:
         continue
@@ -178,6 +191,7 @@ for path in sorted(STREAMS.glob("*.jsonl")):
     ev.sort(key=lambda x: (x[1], x[0]))
     key = f"{bare}:{sym.replace('.DWX','')}"
     sleeves[key] = ev
+    opening_days[key] = {entry for entry, _, _, _ in ev}
     stream_inputs[key] = {
         "path": str(path.resolve()),
         "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
@@ -230,22 +244,23 @@ def phase(k, cfg, start_i, target, deadline):
         if dr and eq <= -dr[0] * ACCOUNT:
             sc = lev * dr[1]
         float_low = floating[k].get(day, 0.0) * sc
-        if float_low and (eq + float_low <= -TOTAL_CAP * ACCOUNT
-                          or float_low <= -DAILY_CAP * ACCOUNT):
+        if float_low and (eq + float_low < -TOTAL_CAP * ACCOUNT
+                          or float_low < -DAILY_CAP * ACCOUNT):
             return "breach", di
         todays = closes[k].get(day)
+        if day in opening_days[k]:
+            traded += 1
         if not todays:
             continue
-        traded += 1
         realized = 0.0
         for net, mae in todays:
             if dstop and realized <= -dstop * ACCOUNT:
                 break                      # flat for the rest of the day
             realized += net * sc
-            if realized <= -DAILY_CAP * ACCOUNT or eq + realized <= -TOTAL_CAP * ACCOUNT:
+            if realized < -DAILY_CAP * ACCOUNT or eq + realized < -TOTAL_CAP * ACCOUNT:
                 return "breach", di
         eq += realized
-        if eq >= target * ACCOUNT and traded >= MIN_TRADING_DAYS:
+        if eq > target * ACCOUNT and traded >= MIN_TRADING_DAYS:
             return "pass", di
     return "censored", len(all_days) - 1
 
