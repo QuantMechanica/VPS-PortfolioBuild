@@ -4274,6 +4274,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                         q07_phase=_Q07_PHASE,
                         q08_phase=_Q08_PHASE,
                         enabled=longrun_policy_enabled,
+                        free_ram_gb=multisym_free_ram_snapshot,
                     )
                     if longrun_skip:
                         skipped_longrun_cap.append({

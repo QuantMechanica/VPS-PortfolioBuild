@@ -31,6 +31,14 @@ TOTAL_NEWS_PARENT_CLASS = "total_news_parent"
 Q07_Q08_LONGRUN_CLASS = "q07_q08_longrun"
 
 EXPANDED_NEWS_PARENT_FLEET_CAP = 2
+# 2026-09-04 04:00Z (CEO, Auffangregel on the News-Gate A Vorlage of 2026-09-03):
+# the expansion subcap may rise to three parents, but only while the host has
+# real headroom at claim time.  The gate is the caller-supplied free-RAM
+# snapshot (``free_ram_gb``); with no snapshot the cap stays at 2.  Rollback:
+# ``QM_DISABLE_LONGRUN_SCHEDULING_CAP=1`` disables the whole policy, or set
+# EXPANDED_NEWS_PARENT_FLEET_CAP_RAM_GATED back to 2.
+EXPANDED_NEWS_PARENT_FLEET_CAP_RAM_GATED = 3
+EXPANDED_NEWS_PARENT_RAM_GATE_GB = 10.0
 TOTAL_NEWS_PARENT_FLEET_CAP = 4
 Q07_Q08_LONGRUN_FLEET_CAP = 2
 # 2026-09-03 (CEO, OWNER-DEC-PRE0803-RECOMPILE-SLOTORDER-AMENDB-20260903 §3
@@ -166,6 +174,7 @@ def should_skip_for_longrun_cap(
     q07_phase: str = "Q07",
     q08_phase: str = "Q08",
     enabled: bool = True,
+    free_ram_gb: float | None = None,
 ) -> tuple[bool, dict[str, Any] | None]:
     """Decide whether a candidate row must be skipped this claim attempt.
 
@@ -191,11 +200,23 @@ def should_skip_for_longrun_cap(
         cap = fleet_cap_for_class(governed_class)
         if governed_class == Q07_Q08_LONGRUN_CLASS and lineage_rerun:
             cap += LINEAGE_RERUN_Q07_Q08_EXTRA_SLOTS
+        ram_gated = False
+        if (
+            governed_class == EXPANDED_NEWS_PARENT_CLASS
+            and free_ram_gb is not None
+            and float(free_ram_gb) >= EXPANDED_NEWS_PARENT_RAM_GATE_GB
+        ):
+            cap = max(cap, EXPANDED_NEWS_PARENT_FLEET_CAP_RAM_GATED)
+            ram_gated = True
         active = active_counts.get(governed_class, 0)
         if active >= cap:
-            return True, {
+            detail = {
                 "longrun_class": governed_class,
                 "active_count": active,
                 "fleet_cap": cap,
             }
+            if ram_gated:
+                detail["ram_gated_cap"] = True
+                detail["free_ram_gb"] = round(float(free_ram_gb), 1)
+            return True, detail
     return False, None

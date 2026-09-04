@@ -252,6 +252,11 @@ class ClaimAtomicIntegrationTests(unittest.TestCase):
                       status="active", claimed_by="T1", payload=expanded_payload, ea_id="QM5_1")
         self._insert("active-2", "GBPUSD.DWX", phase=terminal_worker._Q09_NEWS_PHASE,
                       status="active", claimed_by="T2", payload=expanded_payload, ea_id="QM5_2")
+        # 2026-09-04 (News-Gate A): the stubbed 10_000 GB of free RAM opens the
+        # RAM-gated subcap of 3, so a THIRD active expansion is needed before the
+        # pending one is refused.
+        self._insert("active-2b", "NZDUSD.DWX", phase=terminal_worker._Q09_NEWS_PHASE,
+                      status="active", claimed_by="T4", payload=expanded_payload, ea_id="QM5_2b")
         # A third pending expansion is the only claimable candidate for T3.
         self._insert("pending-3", "USDJPY.DWX", phase=terminal_worker._Q09_NEWS_PHASE,
                       status="pending", payload=expanded_payload, ea_id="QM5_3")
@@ -264,6 +269,8 @@ class ClaimAtomicIntegrationTests(unittest.TestCase):
         self.assertEqual(len(skipped), 1)
         self.assertEqual(skipped[0]["item_id"], "pending-3")
         self.assertEqual(skipped[0]["longrun_class"], policy.EXPANDED_NEWS_PARENT_CLASS)
+        self.assertEqual(skipped[0]["fleet_cap"], policy.EXPANDED_NEWS_PARENT_FLEET_CAP_RAM_GATED)
+        self.assertTrue(skipped[0]["ram_gated_cap"])
 
     def test_fifth_standard_news_not_claimed_while_four_active_fleet_wide(self) -> None:
         standard_payload = {
@@ -307,6 +314,11 @@ class ClaimAtomicIntegrationTests(unittest.TestCase):
                       status="active", claimed_by="T1", payload=expanded_payload, ea_id="QM5_1")
         self._insert("active-2", "GBPUSD.DWX", phase=terminal_worker._Q09_NEWS_PHASE,
                       status="active", claimed_by="T2", payload=expanded_payload, ea_id="QM5_2")
+        # 2026-09-04 (News-Gate A): the stubbed 10_000 GB of free RAM opens the
+        # RAM-gated subcap of 3, so a THIRD active expansion is needed before the
+        # pending one is refused.
+        self._insert("active-2b", "NZDUSD.DWX", phase=terminal_worker._Q09_NEWS_PHASE,
+                      status="active", claimed_by="T4", payload=expanded_payload, ea_id="QM5_2b")
         # A capped-out third expansion AND an ordinary Q03 row are both pending.
         self._insert("pending-expansion", "USDJPY.DWX", phase=terminal_worker._Q09_NEWS_PHASE,
                       status="pending", payload=expanded_payload, ea_id="QM5_3")
@@ -439,6 +451,75 @@ class LineageRerunExtraSlotTests(unittest.TestCase):
             NEWS_PHASE, payload, counts, news_phase=NEWS_PHASE
         )
         self.assertTrue(skip)
+
+
+class ExpandedNewsRamGatedCapTests(unittest.TestCase):
+    """2026-09-04 (Auffangregel News-Gate A): the expansion subcap rises 2 -> 3
+    only while the caller reports >= 10 GB free RAM; without a snapshot or
+    below the gate the cap of 2 stands, and the combined news cap is untouched."""
+
+    def _counts(self, expanded: int, total: int | None = None) -> dict[str, int]:
+        return {
+            policy.EXPANDED_NEWS_PARENT_CLASS: expanded,
+            policy.TOTAL_NEWS_PARENT_CLASS: expanded if total is None else total,
+            policy.Q07_Q08_LONGRUN_CLASS: 0,
+        }
+
+    def _expansion_payload(self) -> dict:
+        return {"force_expanded_news_matrix": True}
+
+    def _is_expansion(self) -> bool:
+        return policy.classify_longrun_candidate(
+            NEWS_PHASE, self._expansion_payload(), news_phase=NEWS_PHASE
+        ) == policy.EXPANDED_NEWS_PARENT_CLASS
+
+    def test_cap_stays_two_without_ram_snapshot(self) -> None:
+        if not self._is_expansion():
+            self.skipTest("expansion payload marker differs in this build")
+        skip, detail = policy.should_skip_for_longrun_cap(
+            NEWS_PHASE, self._expansion_payload(), self._counts(2), news_phase=NEWS_PHASE
+        )
+        self.assertTrue(skip)
+        self.assertEqual(detail["fleet_cap"], policy.EXPANDED_NEWS_PARENT_FLEET_CAP)
+        self.assertNotIn("ram_gated_cap", detail)
+
+    def test_cap_stays_two_below_ram_gate(self) -> None:
+        if not self._is_expansion():
+            self.skipTest("expansion payload marker differs in this build")
+        skip, detail = policy.should_skip_for_longrun_cap(
+            NEWS_PHASE, self._expansion_payload(), self._counts(2),
+            news_phase=NEWS_PHASE, free_ram_gb=policy.EXPANDED_NEWS_PARENT_RAM_GATE_GB - 0.1,
+        )
+        self.assertTrue(skip)
+        self.assertEqual(detail["fleet_cap"], 2)
+
+    def test_cap_rises_to_three_with_ram_headroom(self) -> None:
+        if not self._is_expansion():
+            self.skipTest("expansion payload marker differs in this build")
+        skip, detail = policy.should_skip_for_longrun_cap(
+            NEWS_PHASE, self._expansion_payload(), self._counts(2),
+            news_phase=NEWS_PHASE, free_ram_gb=policy.EXPANDED_NEWS_PARENT_RAM_GATE_GB,
+        )
+        self.assertFalse(skip)
+        self.assertIsNone(detail)
+        skip3, detail3 = policy.should_skip_for_longrun_cap(
+            NEWS_PHASE, self._expansion_payload(), self._counts(3),
+            news_phase=NEWS_PHASE, free_ram_gb=20.0,
+        )
+        self.assertTrue(skip3)
+        self.assertEqual(detail3["fleet_cap"], 3)
+        self.assertTrue(detail3["ram_gated_cap"])
+
+    def test_total_news_cap_unchanged_by_ram_gate(self) -> None:
+        if not self._is_expansion():
+            self.skipTest("expansion payload marker differs in this build")
+        counts = self._counts(2, total=policy.TOTAL_NEWS_PARENT_FLEET_CAP)
+        skip, detail = policy.should_skip_for_longrun_cap(
+            NEWS_PHASE, self._expansion_payload(), counts, news_phase=NEWS_PHASE, free_ram_gb=30.0,
+        )
+        self.assertTrue(skip)
+        self.assertEqual(detail["longrun_class"], policy.TOTAL_NEWS_PARENT_CLASS)
+        self.assertEqual(detail["fleet_cap"], policy.TOTAL_NEWS_PARENT_FLEET_CAP)
 
 
 if __name__ == "__main__":
