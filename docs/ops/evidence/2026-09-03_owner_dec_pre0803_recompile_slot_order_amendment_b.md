@@ -648,3 +648,7 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
 ## 17:00Z 2026-09-04 - idle-worker CPU sink fixed (d630c08bf9)
 
 - Eight idle workers at ~6 % host each: `_running_mt5_terminals()` PowerShell scan per claim iteration. Native Toolhelp enumeration (11-14 ms) with PowerShell fallback; live equivalence verified; reload chunk 37 rolling out. Throughput 16:35-16:55Z: 20 census cells / 20 min (~37 % of fleet max).
+
+## 18:18Z 2026-09-04 - GELB: Q07 budget raise 12365/XAUUSD (acf5fa02)
+
+- Monitor requeue at 200 min with 4/5 seeds done; timeout_min=260 set on the pending row (audit field timeout_min_raised). Reaper 260 min / monitor 15600 s verified. Cost reported: ~3.3 slot-hours of seed recomputation (no in-row seed reuse).
