@@ -40,3 +40,17 @@ Result: 32 successors minted; 1 row excluded (historical lane `Q09_NEWS`: QM5_13
 | 32 | QM5_12849 | XTIUSD.DWX | `c0fda6f1-84f0-49eb-846d-a7f729dcf984` | `5f23b9ad-db71-4416-b4b1-6c2f66a4970c` | 2026-09-04T02:02:10Z | `441b3740a5` |
 
 Watch item: QM5_10700/XAUUSD already relocked through its expansion child 152e8d29 (00:58Z, Q11 PASS e4097945, Q12 40e69c26 pending); its readjudication successor bb299ec1 is redundant. If the pump mints a second Q11 for that pair it is to be held as a duplicate (append-only, no deletion).
+
+## Census verification (02:17Z, read-only `rebaseline_census.build_pairs` + `summarise_pair`)
+
+The census validates a gate by gate order (any done PASS-class row at the gate; `CONFIG_LOCKED` is PASS-class at Q10, `REVIEW_REQUIRED` is INVALID), not by promotion edges. The readjudicated successors therefore close the Q10 gap directly:
+
+| pair | before (memo 2026-09-02) | after |
+|---|---|---|
+| QM5_21505/XAGUSD, QM5_11910/NZDUSD, QM5_12710/XTIUSD, QM5_10700/XAUUSD | break at Q10 (REVIEW/legacy) | `highest_contiguous_valid_gate = Q11`, frontier Q12 (census in progress, class OTHER, disposition REUSABLE) |
+| QM5_41219/XAUUSD, QM5_11294/GDAXI (no prior Q11) | - | Q10 valid; Q11 rows minted via `auto_enqueue_q10_after_q09_result` (cc50783d, b62dbcec) |
+| QM5_11421/EURUSD, QM5_13054/XTIUSD, QM5_1537/XAGUSD | Q14 COMPLETE | unchanged |
+
+Fleet distribution of `highest_contiguous_valid_gate` after the wave: Q14 = 5, Q11 = 20, Q10 = 2, Q09 = 60, Q08 = 14. Structural ceiling for the 25-pair counter is now 27 (5 terminal + 20 at Q11 + 2 at Q10); the remaining path is census throughput (K=8 slots) and Q12 -> Q14.
+
+Q11 cascade policy: the worker-driven cascade is NOT called by the readjudicate CLI. It was invoked explicitly only for pairs without any Q11/Q12 row (2 pairs); the 30 pairs with existing Q11/Q12 rows need no new Q11 (their chains are contiguous through the existing rows). QM5_10700 keeps its expansion-lock chain (Q11 e4097945 -> Q12 40e69c26); its successor bb299ec1 is redundant evidence only. Scratch record: `readjudicate_wave1_cascade.json`.
