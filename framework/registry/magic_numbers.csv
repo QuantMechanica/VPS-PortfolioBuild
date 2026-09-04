@@ -18232,3 +18232,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41333,tv-liq-break-opt,0,XAUUSD.DWX,413330000,2026-09-03,Codex governed allocator,active
 41334,tv-post-vwap-opt,0,GDAXI.DWX,413340000,2026-09-03,Codex governed allocator,active
 41335,fx-usd-exhaustion-reversal-opt,0,AUDUSD.DWX,413350000,2026-09-03,Codex governed allocator,active
+41336,wti-adf-kpss-agree-tr,0,XTIUSD.DWX,413360000,2026-09-04,Codex governed allocator,active
