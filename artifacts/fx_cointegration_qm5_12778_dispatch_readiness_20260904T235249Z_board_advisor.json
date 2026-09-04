@@ -1,0 +1,120 @@
+{
+  "artifact_type": "fx_cointegration_dispatch_readiness",
+  "schema_version": "qm.fx-cointegration-dispatch-readiness/v1",
+  "generated_at_utc": "2026-09-04T23:52:49.437885+00:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "cefadef4829396ca19e0dafa2bef9b354ed4e69d",
+  "mission": "grow_certified_v5_portfolio_new_forex_sleeves",
+  "outcome": "EXISTING_FOREX_CONTINUATION_RUNNABLE_BUT_GOVERNED_QUEUE_ORDER_PENDING",
+  "frontier": {
+    "research_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "unordered_relationship_count": 66,
+    "approved_identity_count": 123,
+    "matching_ea_directory_count": 123,
+    "unbuilt_approved_identity_count": 0,
+    "new_card_or_build_created": false,
+    "reason": "The frozen 66-pair scan is fully represented; another card, EA, basket manifest, or logical Q02 row would duplicate governed work."
+  },
+  "preferred_anchor_state": [
+    {
+      "ea_id": "QM5_12532",
+      "relationship": ["AUDUSD.DWX", "NZDUSD.DWX"],
+      "logical_q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "logical_q02_verdict": "PASS",
+      "downstream_state": "Q04 PASS then Q05 FAIL",
+      "current_q02_oninit_or_no_history_blocker": false
+    },
+    {
+      "ea_id": "QM5_12533",
+      "relationship": ["EURJPY.DWX", "GBPJPY.DWX"],
+      "logical_q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "logical_q02_verdict": "PASS",
+      "downstream_state": "Q04 FAIL",
+      "current_q02_oninit_or_no_history_blocker": false
+    }
+  ],
+  "selected_existing_forex_continuation": {
+    "ea_id": "QM5_12778",
+    "relationship": ["AUDUSD.DWX", "EURJPY.DWX"],
+    "logical_symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+    "timeframe": "D1",
+    "work_item_id": "24acc5d4-3e34-526e-a7a8-12640a2e759f",
+    "phase": "Q09_NEWS",
+    "status": "pending",
+    "verdict": null,
+    "claimed_by": null,
+    "attempt_count": 0,
+    "open_same_identity_count": 1,
+    "active_holds": [],
+    "priority_track": true,
+    "q09_activation_state": "RUNNABLE_BOUND",
+    "diagnostic_queue_rank": 10006,
+    "canonical_eligible_position_one_based": 1241,
+    "canonical_eligible_row_count": 9240,
+    "payload_sha256": "5b7613207b9f89bd466b9165d6b257c4f1d97e33a954be3c6c66f6be9c6d7589",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "basket_symbols": [
+      "AUDUSD.DWX",
+      "EURJPY.DWX",
+      "EURUSD.DWX",
+      "EURAUD.DWX"
+    ],
+    "dispatch_decision": "Leave the unique runnable row to the resident paced worker. Do not forge lineage priority, override the sealed campaign diagnostic order, or enqueue a duplicate."
+  },
+  "artifact_hashes": {
+    "mq5_sha256": "132a501d94685f013cc62a8b3c2de111d0a8b1e616a8656d2c61b061a754c146",
+    "ex5_sha256": "2a105cfbb364142c96c552136bb450162c142845665ce3366d0c045248c17a01",
+    "basket_manifest_sha256": "0ce25d17ebe7c3664e4acdb6c1d302b28b1f40710301189cc633e44f25854d57",
+    "logical_backtest_setfile_sha256": "0e7949276927c8c5355c413c631e7b67f684e757892de59fa2cff5521836c8e9"
+  },
+  "scheduled_pacing": {
+    "task": "QM_StrategyFarm_Tick_5min",
+    "observed_last_run_local": "2026-09-05T01:50:50+02:00",
+    "observed_last_task_result": 0,
+    "observed_next_run_local": "2026-09-05T01:55:55+02:00",
+    "claim_watch_utc": [
+      "2026-09-04T23:49:32.2777803Z",
+      "2026-09-04T23:49:40.4985930Z",
+      "2026-09-04T23:49:48.5607537Z",
+      "2026-09-04T23:49:56.6325952Z",
+      "2026-09-04T23:50:04.7139104Z",
+      "2026-09-04T23:50:13.2161098Z"
+    ],
+    "claim_watch_result": "pending_unclaimed_attempt_0",
+    "manual_dispatch_started": false
+  },
+  "capacity": {
+    "sampling_method": "Get-Counter Processor(_Total) % Processor Time",
+    "samples_percent": [
+      55.69840259830578,
+      69.5352469755968,
+      62.608324105964975,
+      55.09154762725945,
+      58.69995910846455
+    ],
+    "average_percent": 60.326696083118314,
+    "maximum_percent": 69.5352469755968,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_binding": false
+  },
+  "actions": {
+    "new_card_or_ea_created": false,
+    "work_item_created": false,
+    "duplicate_work_item_created": false,
+    "queue_payload_changed": false,
+    "work_item_claimed": false,
+    "backtest_or_terminal_started": false,
+    "dispatch_readiness_and_canonical_position_recorded": true
+  },
+  "protected_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_files": false,
+    "autotrading": false
+  },
+  "resume_contract": "Re-read exact row 24acc5d4-3e34-526e-a7a8-12640a2e759f on the next wake. If it remains pending, preserve its sealed diagnostic_queue_rank and allow the resident paced worker to claim it. If terminal with CONFIG_LOCKED, use only the canonical automatic successor; if terminal with infra taxonomy, use the governed append-only rerun path."
+}
