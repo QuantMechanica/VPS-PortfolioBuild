@@ -588,3 +588,7 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
 
 - Q08 rerun `a43559cd` (QM5_20048/XTIUSD) done/PASS; re-emitted seal equals the recorded `a792e263...`; `assemble_stream_bundle.py --out <scratch>/stream_bundle_0730`: bound 7 / refused 0, loader True.
 - Pace decision: no new Opus workflows while the Claude weekly projection exceeds 150 % (07:23Z: 15 % used at 5.6 % elapsed); open router tasks cfce4d87 / 315041f7 / 453b8edf stay TODO.
+
+## 07:50Z 2026-09-04 - legacy news lane long-run classification
+
+- Drain 07:30:32-07:42:05Z abandoned (`new_long_run_row_active`) after T2/T5 claimed `Q09_NEWS` rows (phase_rank -1) inside the open window. Fix f6236b5e46 classifies `*_NEWS` / `*_PORTFOLIO` lanes as long runs in the worker drain predicate and in `longrun_scheduling_policy` (classification and active counts). Hold `DRAIN_DEFER_LEGACY_NEWS_GAP` re-activated on QM5_12580 Q03 until reload chunk 30 (all ten workers, at >= 20 GB free).
