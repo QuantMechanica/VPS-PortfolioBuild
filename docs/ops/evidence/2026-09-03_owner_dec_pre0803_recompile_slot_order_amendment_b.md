@@ -541,3 +541,9 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
 
 - QM5_10700/XAUUSD Q12 `40e69c26-1ddb-5728-99a1-02b08f83c284` -> `queue_order_at = 2026-08-29T08:04:00+00:00` (plan+apply `set_dl089_queue_order.py`, DL089_PROGRAM_SLOTS=8; scratch `queue_order_r7_plan.json` / `queue_order_r7_apply.json`). Lineage: recompile -> fresh Q02 -> ... -> Q10_NEWS expansion `152e8d29` CONFIG_LOCKED 00:58Z -> Q11 PASS `e4097945` -> Q12 minted 01:28Z. Sibling QM5_41333 Q02 `bcac7790` PASS 01:29Z.
 - Ranks 1-7 are now all written; the slot order is complete.
+
+## 03:22Z 2026-09-04 - drain window closed, 44 GB holds
+
+- Drain window armed 02:33:26Z for QM5_11129 Q07 `e046b36b` (reservation 44 GB, floor 14) was not winnable (free 19.6 GB + releasable tester working sets 25.5 GB < 48 GB) and held the fleet at 0 cells/10 min. Closed manually 02:52Z (`active=null`, cooldown until 04:21Z; before-copy in scratch `drain_window_before_0252Z.json`).
+- Holds `RAM_WINDOW_44GB` (active=1, release_on_restart=0) placed on `e046b36b` (QM5_11129 Q07) and `bd12175c` (QM5_10815 Q02). Rollback: `farmctl release-hold`.
+- Throughput recovered to 44-60 cells/10 min by 03:00Z after the claim-spacing phase of the nine workers reloaded by chunk 26.
