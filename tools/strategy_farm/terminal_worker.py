@@ -1380,6 +1380,13 @@ DRAIN_WINDOW_MIN_RESERVATION_GB = 24.0           # only genuinely heavy classes 
 # 14/20 GB latch and its class floor; the QM_DRAIN_WINDOW=0 kill switch, which
 # clears drain_active upstream, disables this reduced floor as well.
 DRAIN_ARMED_ROW_FLOOR_GB = 4.0
+# 2026-09-04 11:17Z (CEO): a drain armed on "free + releasable >= need" with no
+# margin (10025 basket: 36.0 needed, plateau 33.9) and ignored the long-run
+# ceiling.  RAM released by parked short rows never returns 1:1 (standby lists,
+# caches), and long runs keep their working sets for hours, so a window can
+# only be won when need + margin fits under host_total - baseline - long-run RAM.
+DRAIN_WINNABLE_MARGIN_GB = 3.0
+DRAIN_HOST_BASELINE_GB = 10.0
 DRAIN_STATE_FILENAME = "drain_window.json"
 # Short-row phases the drain refuses while open (the armed heavy row and any
 # COMPILE_EA row are always exempt); OPT_CENSUS is handled by name separately.
@@ -1576,6 +1583,8 @@ def _drain_candidate_is_winnable(
     *,
     free_ram_gb: float,
     releasable_short_ram_gb: float,
+    long_run_ram_gb: float = 0.0,
+    host_total_gb: float = math.inf,
 ) -> tuple[bool, str]:
     """Pure predicate: may this qualifying candidate ARM a drain right now?
 
@@ -1605,7 +1614,18 @@ def _drain_candidate_is_winnable(
         and math.isfinite(releasable)
     ):
         return False, "unreadable_inputs"
-    need = reservation + DRAIN_ARMED_ROW_FLOOR_GB
+    need = reservation + DRAIN_ARMED_ROW_FLOOR_GB + DRAIN_WINNABLE_MARGIN_GB
+    try:
+        long_run = float(long_run_ram_gb)
+        host_total = float(host_total_gb)
+    except (TypeError, ValueError):
+        return False, "unreadable_inputs"
+    if not math.isfinite(long_run):
+        return False, "unreadable_inputs"
+    if math.isfinite(host_total):
+        ceiling = host_total - DRAIN_HOST_BASELINE_GB - max(0.0, long_run)
+        if need > ceiling:
+            return False, "long_run_ceiling"
     if free_now + releasable < need:
         return False, "insufficient_releasable_ram"
     return True, ""
@@ -2001,6 +2021,7 @@ def _drain_active_ram_facts(
         "armed_row_pending": True,
         "releasable_measured_rows": 0,
         "releasable_unmeasured_rows": 0,
+        "long_run_ram_gb": 0.0,
     }
     try:
         snap_children, snap_private, snap_alive = _process_private_snapshot()
@@ -2018,6 +2039,25 @@ def _drain_active_ram_facts(
                 if _drain_phase_is_long_run(phase):
                     if armed is None or rid != armed:
                         facts["long_run_active_ids"].append(rid)
+                    # 2026-09-04: long runs hold their RAM for hours; count the
+                    # measured subtree (or, unmeasured, the row's reservation)
+                    # toward the ceiling a drain can never exceed.
+                    lr_payload = _json_loads(_work_item_value(row, "payload_json", "{}"))
+                    lr_pid = lr_payload.get("claimed_by_worker_pid") or lr_payload.get("pid")
+                    lr_measured = _drain_measured_subtree_gb(
+                        lr_pid, snap_children, snap_private, snap_alive
+                    )
+                    if lr_measured is None:
+                        try:
+                            lr_multisymbol = _work_item_is_multisymbol(row, lr_payload, multisym_ids)
+                            _lr_cls, lr_reservation = _ram_reservation_for_candidate(
+                                row, lr_payload, lr_multisymbol
+                            )
+                            facts["long_run_ram_gb"] += float(lr_reservation)
+                        except Exception:
+                            facts["long_run_ram_gb"] += ORDINARY_COMMIT_RESERVATION_GB
+                    else:
+                        facts["long_run_ram_gb"] += float(lr_measured)
                     continue
                 # A short row counts as releasable only if the drain refuses new
                 # copies of it (Q02-Q06, OPT_CENSUS); COMPILE_EA and the armed
@@ -2062,6 +2102,7 @@ def _drain_active_ram_facts(
             "armed_row_pending": True,
             "releasable_measured_rows": 0,
             "releasable_unmeasured_rows": 0,
+            "long_run_ram_gb": 0.0,
         }
     return facts
 
@@ -2145,6 +2186,8 @@ def _drain_run_postprocess(
                         qualifying,
                         free_ram_gb=free_ram_gb,
                         releasable_short_ram_gb=facts["releasable_short_ram_gb"],
+                        long_run_ram_gb=facts.get("long_run_ram_gb", 0.0),
+                        host_total_gb=host_total_gb,
                     )
                 else:
                     winnable, winnable_reason = True, ""

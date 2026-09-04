@@ -743,18 +743,45 @@ def test_winnable_beside_long_run_ignores_it_and_uses_arithmetic():
 
 def test_not_winnable_when_releasable_ram_insufficient():
     # free 12 + releasable 30 = 42 < need 48.
+    # 2026-09-04: need = 32 + 4 floor + 3 margin = 39; 12 + 20 < 39.
     ok, reason = tw._drain_candidate_is_winnable(
-        _cand(), free_ram_gb=12.0, releasable_short_ram_gb=30.0,
+        _cand(), free_ram_gb=12.0, releasable_short_ram_gb=20.0,
     )
     assert (ok, reason) == (False, "insufficient_releasable_ram")
 
 
-def test_winnable_boundary_exact_need_is_winnable():
-    # free 12 + releasable 36 = 48 == need -> winnable (>=).
+def test_winnable_respects_the_long_run_ceiling():
+    """2026-09-04 (10025 basket 10:57Z): even with enough releasable short RAM
+    on paper, a drain cannot win when need + margin does not fit under
+    host_total - baseline - long-run RAM."""
+    basket = _cand(reservation=32.0)                      # need = 32 + 4 + 3 = 39
     ok, reason = tw._drain_candidate_is_winnable(
-        _cand(), free_ram_gb=12.0, releasable_short_ram_gb=36.0,
+        basket, free_ram_gb=24.0, releasable_short_ram_gb=20.0,
+        long_run_ram_gb=17.0, host_total_gb=63.1,
+    )
+    assert (ok, reason) == (False, "long_run_ceiling")   # 39 > 63.1-10-17 = 36.1
+    ok, reason = tw._drain_candidate_is_winnable(
+        basket, free_ram_gb=24.0, releasable_short_ram_gb=20.0,
+        long_run_ram_gb=5.0, host_total_gb=63.1,
+    )
+    assert (ok, reason) == (True, "")                     # 39 <= 48.1
+    ok, reason = tw._drain_candidate_is_winnable(
+        basket, free_ram_gb=24.0, releasable_short_ram_gb=20.0,
+        long_run_ram_gb=17.0,                             # unknown host total: no ceiling
     )
     assert (ok, reason) == (True, "")
+
+
+def test_winnable_boundary_exact_need_is_winnable():
+    # free 12 + releasable 39 = 51 == need (44 + 4 floor + 3 margin) -> winnable (>=).
+    ok, reason = tw._drain_candidate_is_winnable(
+        _cand(), free_ram_gb=12.0, releasable_short_ram_gb=39.0,
+    )
+    assert (ok, reason) == (True, "")
+    ok, reason = tw._drain_candidate_is_winnable(
+        _cand(), free_ram_gb=12.0, releasable_short_ram_gb=38.9,
+    )
+    assert (ok, reason) == (False, "insufficient_releasable_ram")
 
 
 # --- WINNABILITY: evaluate does not arm when not winnable, keeps tracking -
@@ -905,6 +932,8 @@ def test_active_ram_facts_detects_long_run_and_sums_short(tmp_path, monkeypatch)
     assert facts["releasable_short_ram_gb"] == pytest.approx(8.0 + 1.5)
     assert facts["releasable_measured_rows"] == 2
     assert facts["releasable_unmeasured_rows"] == 0
+    # l1 (Q07) carries no worker pid -> unmeasured long run counts its reservation (8 GB).
+    assert facts["long_run_ram_gb"] == pytest.approx(8.0)
     assert facts["armed_row_pending"] is True
 
 
@@ -962,6 +991,7 @@ def test_active_ram_facts_fail_open_without_db(tmp_path):
         "armed_row_pending": True,
         "releasable_measured_rows": 0,
         "releasable_unmeasured_rows": 0,
+        "long_run_ram_gb": 0.0,
     }
 
 
