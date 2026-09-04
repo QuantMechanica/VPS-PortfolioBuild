@@ -623,3 +623,10 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
 - 12:49:40Z the freshly reloaded T3 (f232200f0a) armed a drain for QM5_10717 `65319749` (44 GB) beside a Q07 that measured ~2 GB at that instant (11.6 GB at 13:01Z); parked fleet plateaued at 36.7 GB free; closed by hand 12:59Z (cooldown 14:29Z), row held `DRAIN_UNWINNABLE_ARITHMETIC`.
 - Fix 17cedd8124: long-run floor max(reservation, 8 GB), baseline 14 GB, continuous re-evaluation of an open window (abandon after 120 s, `plateau_memory` 6 h), arithmetic facts on the drain events. Chunk 35 rolling out (eight terminals); T1/T5 later. Four drain holds stay until then.
 - Q07 QM5_12935/XAUUSD `80eac290`: three attempts killed at 5406 s child runtime (seed 3/5 mid-run) by the 5400 s monitor default while the reaper budget was 200 min. Fix 2fde461dce (monitor budget for Q05-Q07 follows the workload-scaled reaper budget); append-only rerun `9f63dc88` with lineage.
+
+## 15:30Z 2026-09-04 - rollout complete, holds released, terminal-hang class
+
+- Chunks 35/36 finished; all ten workers on 17cedd8124 + 2fde461dce. Four drain holds released 14:51Z; arithmetic refused 12580 at 15:12Z (ceiling 25.5 < 39).
+- Terminal hang: T2 census cell `b7b1fb26` finished 12:52Z (agent log) but terminal64 35412 wrote no report and lived 108 min; terminal killed 14:41Z, run_smoke shell killed 14:45Z -> `runner_death_requeued`, cell rerun. Same signature once each on T1/T2/T3/T5/T8 logs -> follow-up task.
+- T5 old-monitor Q07 11179 (`88a7cb34`) released 14:49Z (worker killed, row pending, T5 restarted on new code). T1 Q07 10571 (`0356eb57`) PASS 15:24Z, 90 s before its 5400 s deadline.
+- 11910/NZDUSD census done; Q12 `NO_FILTER_CHANGE` 15:18Z; Q13/Q14 pending. Counter 7/25.
