@@ -651,4 +651,4 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
 
 ## 18:18Z 2026-09-04 - GELB: Q07 budget raise 12365/XAUUSD (acf5fa02)
 
-- Monitor requeue at 200 min with 4/5 seeds done; timeout_min=260 set on the pending row (audit field timeout_min_raised). Reaper 260 min / monitor 15600 s verified. Cost reported: ~3.3 slot-hours of seed recomputation (no in-row seed reuse).
+- Monitor requeue at 200 min with 4/5 seeds done; timeout_min=260 set on the pending row (audit field timeout_min_raised). Effective budget 433 min (reaper applies the 5/3 workload factor on top of timeout_min 260), monitor 25980 s. Cost reported: ~3.3 slot-hours of seed recomputation (no in-row seed reuse).
