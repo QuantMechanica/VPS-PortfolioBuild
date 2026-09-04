@@ -1,7 +1,8 @@
 # QM5_41337 WTI ADF-Spectral-Entropy Agreement — Q02 CPU-Ceiling Stop
 
-**Date:** 2026-09-05  
-**Branch:** `agents/board-advisor`  
+**Date:** 2026-09-05
+
+**Branch:** `agents/board-advisor`
 **Outcome:** one new, non-duplicate commodity edge was carded, source-built,
 strict-compiled, and committed. The final Q01-smoke/Q02 admission stopped at the
 binding host CPU ceiling; no smoke or Q02 work item was launched.
