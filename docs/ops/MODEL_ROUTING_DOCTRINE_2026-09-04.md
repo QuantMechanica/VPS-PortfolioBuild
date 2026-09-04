@@ -146,3 +146,17 @@ frameworks that succeed on FTMO. That is the big goal. Doctrine consequence:
   specified hypothesis brief; measurement: Sonnet headless. Commissioned as a router
   task on the Claude lane; the first deliverable is the data inventory plus five
   hypotheses with refutation criteria.
+
+## 8. Implementation status (2026-09-04 07:00Z)
+
+- Merged: b8c62c975a (rounds 1-3) and a769c2f5b8 (round 4) of wf_76cb7101-72e. Tier layer
+  ACTIVE in `window_enforcement_mode: observe` (ledger records every Codex dispatch under
+  `D:/QM/reports/state/codex_model_window_ledger.jsonl`; no refusals, holds or downgrades;
+  effort-class remap opt-in via `effort_class_tier_mapping_enabled`, default false; untiered
+  tasks keep `gpt-5.6-sol`). Decision-bound lane pinning (`owner_decision` /
+  `decision_bound_agent` -> claude) and the `scalpel_mechanization` capability (codex +
+  claude only) are unconditional router behaviour.
+- Enforce mode is switched on only after (a) the OWNER states the Codex plan tier and
+  (b) router task 453b8edf (enforce-mode preconditions) is APPROVED. Rollback of the whole
+  tier layer: machine env `QM_CODEX_MODEL_TIERS=0`.
+- CodexOrchestration scheduled task stays disabled until 2026-09-07 (weekly quota 93 %).

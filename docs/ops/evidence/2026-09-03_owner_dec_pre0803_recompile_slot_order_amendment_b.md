@@ -578,3 +578,8 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
 
 - Q08 reruns 2bd0f95c (11422), 21dd6839 (13054), 15c1ec7b (21505) done/PASS; bundle dry-run bound 6 / refused 1 (QM5_20048/XTIUSD, seal a792e263...). Enqueued `a43559cd` (Q08 rerun of `3ee5c53c` from Q07 `bf54ff43`, expected ex5 1312391a...) after the identical pre-flight.
 - 06:20Z free RAM 5.0 GB (two 11.5 GB Q08 runs + Q05/Q06/news); latch held; reload chunk 28 stopped after T4/T10 respawn was refused by the starter's headroom gate; both restarted 06:23Z via `start_terminal_workers.py --dedupe`; chunk 29 (T2/T3/T5/T7) started 06:45Z at 22 GB free.
+
+## 07:00Z 2026-09-04 - Codex model tiers round 4 merged, observe mode live
+
+- Merge a769c2f5b8 (round 4, D8-D12); machine env `QM_CODEX_MODEL_TIERS` removed 06:56Z; fresh-process probe with `QM_CODEX_MODEL_LEDGER_PATH` on scratch: tiers enabled, observe mode, 3 dispatches recorded, argv unchanged, live ledger untouched.
+- Residual enforce-mode findings tracked as router task `453b8edf` (precondition for `window_enforcement_mode=enforce`, after the OWNER names the Codex plan tier).
