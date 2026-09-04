@@ -68,7 +68,10 @@ def _payload(artifacts: dict[str, object], *, stale: bool) -> dict[str, object]:
 
 
 def _worker_crash_payload(
-    artifacts: dict[str, object], *, staged_verified: bool = True
+    artifacts: dict[str, object],
+    *,
+    staged_verified: bool = True,
+    binding_source: str = "work_item_expected_ex5_sha256",
 ) -> dict[str, object]:
     ex5 = artifacts["ex5"]
     assert isinstance(ex5, Path)
@@ -80,7 +83,7 @@ def _worker_crash_payload(
         "host_symbol": "EURUSD.DWX",
         "host_timeframe": "H1",
         "staged_ex5": {
-            "binding_source": "work_item_expected_ex5_sha256",
+            "binding_source": binding_source,
             "pre_run_sha256": expected_ex5,
             "required_sha256": expected_ex5,
             "source_path": str(ex5),
@@ -931,6 +934,67 @@ def test_exact_worker_crash_q02_payload_evidence_is_same_binary_append_only(
     assert successor_payload["risk_percent"] == 0.0
 
 
+def test_exact_worker_crash_q02_accepts_repaired_canonical_dispatch_binary(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    payload = _worker_crash_payload(
+        art, binding_source="canonical_ex5_at_dispatch"
+    )
+    source_ex5 = payload["expected_ex5_sha256"]
+    item_id = "q02-worker-crash-stale-canonical-dispatch"
+    _insert_work_item(
+        art,
+        item_id=item_id,
+        phase="Q02",
+        status="failed",
+        verdict="INFRA_FAIL",
+        payload=payload,
+    )
+    _bind_worker_crash_sentinel(art, item_id, payload)
+
+    ex5 = art["ex5"]
+    assert isinstance(ex5, Path)
+    ex5.write_bytes(b"repaired compiled binary")
+    art["current_ex5"] = farmctl._sha256_file(ex5)
+
+    result = farmctl.enqueue_cascade_backtest_for_ea(
+        art["root"],
+        art["ea_id"],
+        "Q02",
+        predecessor_work_item_id=item_id,
+        append_only_rerun_of=item_id,
+        rerun_reason="retry the authenticated worker crash with repaired binary",
+        expected_current_ex5_sha256=art["current_ex5"],
+    )
+
+    assert result["enqueued"]
+    assert _work_item_count(art) == 2
+    root = art["root"]
+    assert isinstance(root, Path)
+    with sqlite3.connect(root / farmctl.DB_REL) as conn:
+        historical = conn.execute(
+            "SELECT status,verdict,ex5_sha256 FROM work_items WHERE id=?",
+            (item_id,),
+        ).fetchone()
+        successor_payload = json.loads(
+            conn.execute(
+                "SELECT payload_json FROM work_items WHERE id=?",
+                (result["created"][0]["id"],),
+            ).fetchone()[0]
+        )
+    assert historical == ("failed", "INFRA_FAIL", source_ex5)
+    assert successor_payload["same_binary_worker_crash_rerun"] is False
+    assert successor_payload["repaired_infra_rerun"] is True
+    assert successor_payload["rerun_source_repaired_after_infra"] is True
+    assert successor_payload["rerun_source_worker_crash_payload_authenticated"] is True
+    assert successor_payload["rerun_source_current_ex5_mismatch_verified"] is True
+    assert successor_payload["rerun_source_expected_ex5_sha256"] == source_ex5
+    assert successor_payload["expected_ex5_sha256"] == art["current_ex5"]
+    assert successor_payload["risk_fixed"] == 1000.0
+    assert successor_payload["risk_percent"] == 0.0
+
+
 def test_exact_worker_crash_q02_refuses_unverified_staged_binary(
     tmp_path: Path, monkeypatch
 ) -> None:
@@ -960,6 +1024,38 @@ def test_exact_worker_crash_q02_refuses_unverified_staged_binary(
     assert not result["enqueued"]
     assert result["reason"] == "q02_worker_crash_payload_evidence_invalid"
     assert result["binding"] == "payload.staged_ex5.verified"
+    assert _work_item_count(art) == 1
+
+
+def test_exact_worker_crash_q02_refuses_unknown_dispatch_binding(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    payload = _worker_crash_payload(art, binding_source="untrusted_dispatch")
+    item_id = "q02-worker-crash-unknown-binding"
+    _insert_work_item(
+        art,
+        item_id=item_id,
+        phase="Q02",
+        status="failed",
+        verdict="INFRA_FAIL",
+        payload=payload,
+    )
+    _bind_worker_crash_sentinel(art, item_id, payload)
+
+    result = farmctl.enqueue_cascade_backtest_for_ea(
+        art["root"],
+        art["ea_id"],
+        "Q02",
+        predecessor_work_item_id=item_id,
+        append_only_rerun_of=item_id,
+        rerun_reason="unknown dispatch bindings must remain fail closed",
+        expected_current_ex5_sha256=art["current_ex5"],
+    )
+
+    assert not result["enqueued"]
+    assert result["reason"] == "q02_worker_crash_payload_evidence_invalid"
+    assert result["binding"] == "payload.staged_ex5.binding_source"
     assert _work_item_count(art) == 1
 
 

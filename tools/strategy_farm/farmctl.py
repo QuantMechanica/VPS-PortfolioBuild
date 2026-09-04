@@ -26872,11 +26872,17 @@ def _q02_authenticated_worker_crash_payload_evidence(
             }
 
     assert isinstance(staged_ex5, dict)
+    # terminal_worker emits the first label when the work item was already
+    # hash-bound and the second when it sealed the canonical EX5 at dispatch.
+    # Both paths are authenticated below by the same three digest checks.
     staged_checks = {
         "payload.staged_ex5.verified": staged_ex5.get("verified") is True,
         "payload.staged_ex5.binding_source": (
             str(staged_ex5.get("binding_source") or "").strip()
-            == "work_item_expected_ex5_sha256"
+            in {
+                "work_item_expected_ex5_sha256",
+                "canonical_ex5_at_dispatch",
+            }
         ),
     }
     for key in (
@@ -26910,13 +26916,20 @@ def _q02_authenticated_worker_crash_payload_evidence(
     }
 
 
-def _q02_same_binary_worker_crash_source_binding(
+def _q02_worker_crash_source_binding(
     target: sqlite3.Row,
     source_payload: dict[str, Any],
     current_bindings: dict[str, Any],
     crash_evidence: dict[str, Any],
 ) -> tuple[bool, dict[str, Any]]:
-    """Bind a pre-spawn worker crash to the exact current execution identity."""
+    """Bind an authenticated pre-spawn crash to the current execution identity.
+
+    The dispatch payload seals the historical EX5 even when the source row
+    predates MQ5/setfile binding.  A different operator-bound current EX5 is a
+    repaired-infrastructure transition; an identical EX5 is the narrow
+    same-binary retry.  Both retain the exact symbol, timeframe, and canonical
+    source path checks below.
+    """
     if not crash_evidence.get("ok"):
         return False, {
             "reason": "q02_worker_crash_payload_evidence_invalid",
@@ -26929,14 +26942,6 @@ def _q02_same_binary_worker_crash_source_binding(
     source_ex5 = str(
         source_payload.get("expected_ex5_sha256") or ""
     ).strip().lower()
-    if source_ex5 != current_ex5:
-        return False, {
-            "reason": "q02_worker_crash_current_ex5_mismatch",
-            "binding": "expected_ex5_sha256",
-            "expected": current_ex5,
-            "actual": source_ex5,
-        }
-
     identity_checks = {
         "host_symbol": current_bindings["expected_symbol"],
         "host_timeframe": current_bindings["expected_period"],
@@ -26977,6 +26982,7 @@ def _q02_same_binary_worker_crash_source_binding(
     return True, {
         "source_expected_ex5_sha256": source_ex5,
         "current_ex5_sha256": current_ex5,
+        "same_binary_worker_crash": source_ex5 == current_ex5,
         "worker_crash_signature": crash_evidence["worker_crash_signature"],
     }
 
@@ -27222,7 +27228,7 @@ def _enqueue_q02_append_only_exact_row_rerun(
                 if current_ok:
                     if worker_crash_evidence is not None:
                         transition_ok, source_transition_detail = (
-                            _q02_same_binary_worker_crash_source_binding(
+                            _q02_worker_crash_source_binding(
                                 target,
                                 source_payload,
                                 current_bindings,
@@ -27230,7 +27236,11 @@ def _enqueue_q02_append_only_exact_row_rerun(
                             )
                         )
                         if transition_ok:
-                            same_binary_worker_crash = True
+                            same_binary_worker_crash = bool(
+                                source_transition_detail[
+                                    "same_binary_worker_crash"
+                                ]
+                            )
                     else:
                         transition_ok, source_transition_detail = (
                             _repaired_infra_source_binding(

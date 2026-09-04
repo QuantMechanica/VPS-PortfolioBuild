@@ -3,16 +3,16 @@
 ; ea_id:        38002
 ; ea_slug:      codetrading-macd-ema-trend-pullback
 ; ea_version:   v5.0
-; set_version:  s20260817-001
+; set_version:  s20260901-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    M15
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   b28cfaf402c8b46f21d3a81df010a5eed5b44981929472a6c6880c2295174fe3
+; build_hash:   5695bf27db81bd277e6c911c521f7de140c0a40e0c4723d4676f5ef7e791b0b5
 ; author:       Development
-; date:         2026-08-17
+; date:         2026-09-01
 ;==========================================================
 qm_ea_id=38002
 qm_magic_slot_offset=2
