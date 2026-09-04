@@ -1,0 +1,115 @@
+{
+  "read_only": true,
+  "legacy_budget_seconds": 5400.0,
+  "count": 4,
+  "by_utc_day": {
+    "2026-09-03": 1,
+    "2026-09-04": 3
+  },
+  "rows": [
+    {
+      "path": "D:\\QM\\strategy_farm\\logs\\terminal_worker_T10.log",
+      "line": 2406,
+      "item_id": "6537611e-1609-4a52-b1a9-2b9b52545305",
+      "terminal": "T10",
+      "at_utc": "2026-09-03T14:29:16.768+00:00",
+      "legacy_budget_assumed": true,
+      "source_record": {
+        "at_monotonic": 1719169.421,
+        "at_utc": "2026-09-03T14:29:16.768+00:00",
+        "event": "next_cell_prestage",
+        "item_id": "6537611e-1609-4a52-b1a9-2b9b52545305",
+        "stage_event": "current_child_exit",
+        "terminal": "T10",
+        "tester_runtime_seconds": 5366.39,
+        "worker_generation": "7c473d53eda54ec78bbff43ec865eb08"
+      },
+      "failure_class": "MONITOR_BUDGET_REVIEW",
+      "failure_subclass": "monitor_budget_exhausted",
+      "retryable": true,
+      "deterministic": true,
+      "retry_requires_budget_review": true,
+      "evidence": "worker runtime within 2% of recorded effective monitor budget",
+      "tester_runtime_seconds": 5366.39,
+      "effective_monitor_budget_seconds": 5400.0
+    },
+    {
+      "path": "D:\\QM\\strategy_farm\\logs\\terminal_worker_T10.log",
+      "line": 4076,
+      "item_id": "8a6e0e30-3d19-4475-9ba6-49dac6a147b4",
+      "terminal": "T10",
+      "at_utc": "2026-09-04T04:31:35.634+00:00",
+      "legacy_budget_assumed": true,
+      "source_record": {
+        "at_monotonic": 1769709.109,
+        "at_utc": "2026-09-04T04:31:35.634+00:00",
+        "event": "next_cell_prestage",
+        "item_id": "8a6e0e30-3d19-4475-9ba6-49dac6a147b4",
+        "stage_event": "current_child_exit",
+        "terminal": "T10",
+        "tester_runtime_seconds": 5407.938,
+        "worker_generation": "3f6b028ae35343228eabad096cb0c2d3"
+      },
+      "failure_class": "MONITOR_BUDGET_REVIEW",
+      "failure_subclass": "monitor_budget_exhausted",
+      "retryable": true,
+      "deterministic": true,
+      "retry_requires_budget_review": true,
+      "evidence": "worker runtime within 2% of recorded effective monitor budget",
+      "tester_runtime_seconds": 5407.938,
+      "effective_monitor_budget_seconds": 5400.0
+    },
+    {
+      "path": "D:\\QM\\strategy_farm\\logs\\terminal_worker_T10.log",
+      "line": 4757,
+      "item_id": "5515fc04-de3f-440f-9eb7-04dd54c07c64",
+      "terminal": "T10",
+      "at_utc": "2026-09-04T11:33:24.303+00:00",
+      "legacy_budget_assumed": true,
+      "source_record": {
+        "at_monotonic": 1795018.187,
+        "at_utc": "2026-09-04T11:33:24.303+00:00",
+        "event": "next_cell_prestage",
+        "item_id": "5515fc04-de3f-440f-9eb7-04dd54c07c64",
+        "stage_event": "current_child_exit",
+        "terminal": "T10",
+        "tester_runtime_seconds": 5407.625,
+        "worker_generation": "f65e198f9ad449469d52c3ba40e7379f"
+      },
+      "failure_class": "MONITOR_BUDGET_REVIEW",
+      "failure_subclass": "monitor_budget_exhausted",
+      "retryable": true,
+      "deterministic": true,
+      "retry_requires_budget_review": true,
+      "evidence": "worker runtime within 2% of recorded effective monitor budget",
+      "tester_runtime_seconds": 5407.625,
+      "effective_monitor_budget_seconds": 5400.0
+    },
+    {
+      "path": "D:\\QM\\strategy_farm\\logs\\terminal_worker_T10.log",
+      "line": 4763,
+      "item_id": "80eac290-815c-4550-9b26-9a5e3cfb3c38",
+      "terminal": "T10",
+      "at_utc": "2026-09-04T13:04:11.381+00:00",
+      "legacy_budget_assumed": true,
+      "source_record": {
+        "at_monotonic": 1800465.359,
+        "at_utc": "2026-09-04T13:04:11.381+00:00",
+        "event": "next_cell_prestage",
+        "item_id": "80eac290-815c-4550-9b26-9a5e3cfb3c38",
+        "stage_event": "current_child_exit",
+        "terminal": "T10",
+        "tester_runtime_seconds": 5406.734,
+        "worker_generation": "f65e198f9ad449469d52c3ba40e7379f"
+      },
+      "failure_class": "MONITOR_BUDGET_REVIEW",
+      "failure_subclass": "monitor_budget_exhausted",
+      "retryable": true,
+      "deterministic": true,
+      "retry_requires_budget_review": true,
+      "evidence": "worker runtime within 2% of recorded effective monitor budget",
+      "tester_runtime_seconds": 5406.734,
+      "effective_monitor_budget_seconds": 5400.0
+    }
+  ]
+}

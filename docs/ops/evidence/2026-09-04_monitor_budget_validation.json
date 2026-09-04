@@ -1,0 +1,33 @@
+{
+  "argv": [
+    "C:\\Python311\\python.exe",
+    "-m",
+    "pytest",
+    "tools/strategy_farm/tests/test_monitor_budget.py",
+    "tools/strategy_farm/tests/test_summary_missing_classification.py",
+    "tools/strategy_farm/tests/test_terminal_worker_adoption.py",
+    "-q"
+  ],
+  "returncode": 0,
+  "stdout": "......................................................                   [100%]\n============================== warnings summary ===============================\ntools\\strategy_farm\\farmctl.py:10441\n  C:\\QM\\worktrees\\codex\\tools\\strategy_farm\\farmctl.py:10441: DeprecationWarning: invalid escape sequence '\\T'\n    \"\"\"T-ids (upper-case) of terminal64.exe image paths shaped ``...\\Tn\\terminal64.exe``.\"\"\"\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n54 passed, 1 warning in 12.90s\n",
+  "stderr": "",
+  "health_read_only": {
+    "name": "monitor_budget_exhausted",
+    "status": "OK",
+    "value": 0,
+    "threshold": 1,
+    "detail": "monitor kills in 24h=0; UTC days={}; pending budget review=0",
+    "action_hint": "Review the recorded effective budget and workload before releasing the retry hold.",
+    "by_utc_day": {},
+    "budget_review_holds": 0
+  },
+  "required_base": "29d4f083b6",
+  "code_files": {
+    "tools\\strategy_farm\\monitor_budget.py": "7ad5886645d7a22b4a87cbf760781d194172c09ade2207ec3fe7ef901b3ea7f0",
+    "tools\\strategy_farm\\farmctl.py": "3b058df08dac05b4edf45c7c5abb5f80bfb5983157a71e2b11459b13720d2a93",
+    "tools\\strategy_farm\\terminal_worker.py": "6bedfdb1835628d7f075bb4615dfeb0f2a2937be9dc5ed40fea694699b233d90",
+    "tools\\strategy_farm\\health.py": "be36887c7ae5bd4c2848aa94c584c7511e41229c4b002a2dc4178ebbb93994a3",
+    "tools\\strategy_farm\\tests\\test_monitor_budget.py": "d37e6d32c2f7627cad93b9a142be551b6cb66af5825a025342d87485a9a86d27",
+    "tools\\strategy_farm\\tests\\test_terminal_worker_adoption.py": "64d26afe49e6e8db2678c9d5726dcd0303b7326c9efd2a2bf6c3e7f2c2495402"
+  }
+}
