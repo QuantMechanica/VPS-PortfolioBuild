@@ -16,6 +16,15 @@ import uuid
 from pathlib import Path
 from typing import Any
 
+# Model routing doctrine 2026-09-04 (section 5): the Codex model TIER contract
+# lives in its own module so the resolution/ledger arithmetic stays pure and
+# unit-testable. Dual import keeps both package and bare-script execution
+# working, exactly like the other strategy_farm modules.
+try:  # pragma: no cover - import shape depends on the caller
+    from tools.strategy_farm import codex_model_tiers
+except ModuleNotFoundError:  # pragma: no cover - direct script execution
+    import codex_model_tiers  # type: ignore
+
 
 CONFIG_PATH = Path(__file__).with_name("config") / "agent_quota_gate.v1.json"
 GOVERNOR_STATE_PATH = Path(r"D:\QM\reports\state\quota_governor_state.json")
@@ -107,6 +116,15 @@ def load_policy(path: Path | None = None) -> tuple[dict[str, Any] | None, str | 
         "medium",
     }.issubset(codex_matrix):
         return None, "codex_model_matrix_incomplete"
+    # Doctrine 2026-09-04 section 5: while tiers are active the tier block is
+    # part of the same fail-closed matrix. Under the QM_CODEX_MODEL_TIERS=0
+    # rollback the pre-doctrine matrix above is the whole contract again.
+    if codex_model_tiers.tiers_enabled():
+        if not {"plan_tier", "tiers", "explicit_tier_payload_field"}.issubset(codex_matrix):
+            return None, "codex_model_matrix_incomplete"
+        tier_error = codex_model_tiers.validate_matrix(codex_matrix)
+        if tier_error:
+            return None, tier_error
     if not {"default_model", "allowed_models", "explicit_payload_field", "sonnet", "opus"}.issubset(
         claude_matrix
     ):
@@ -195,6 +213,35 @@ def _payload_rule_matches(rule: dict[str, Any], payload: dict[str, Any], payload
     return any(str(marker).lower() in payload_text for marker in rule.get("payload_markers", []))
 
 
+def _codex_tier_view(
+    codex_matrix: dict[str, Any],
+    payload: dict[str, Any],
+    task_type: str,
+    effort: str,
+    *,
+    effort_explicit: bool,
+    now: dt.datetime | None = None,
+    ledger_path: Path | None = None,
+) -> dict[str, Any]:
+    """Tier fields for one Codex invocation ({} under the tier rollback).
+
+    Model routing doctrine 2026-09-04 section 5. The effort CLASS is unchanged;
+    the tier only decides which model id serves that class and whether the
+    rolling 5h window still has messages for it.
+    """
+    if not codex_model_tiers.tiers_enabled():
+        return {}
+    return codex_model_tiers.select_dispatch(
+        codex_matrix,
+        payload,
+        task_type,
+        effort,
+        effort_explicit=effort_explicit,
+        now=now,
+        path=ledger_path,
+    )
+
+
 def invocation_profile(
     agent: str,
     task_type: str,
@@ -202,8 +249,19 @@ def invocation_profile(
     *,
     policy: dict[str, Any] | None = None,
     config_path: Path | None = None,
+    now: dt.datetime | None = None,
+    ledger_path: Path | None = None,
+    with_tiers: bool = True,
 ) -> dict[str, Any] | None:
-    """Resolve the OWNER-approved model/effort tier from the same gate policy."""
+    """Resolve the OWNER-approved model/effort tier from the same gate policy.
+
+    ``with_tiers=False`` returns the pre-doctrine effort-class profile only (no
+    tier resolution, no ledger READ). It exists for callers that need a cheap,
+    time-independent default snapshot - see the module-level fallbacks in
+    ``run_agent_orchestration_task`` - because a tier profile is only valid for
+    the instant its 5h window was measured (model routing doctrine 2026-09-04
+    section 3.1) and must therefore never be frozen at import time.
+    """
     normalized_agent = str(agent or "").strip().lower()
     task_payload = payload or {}
     if policy is None:
@@ -254,11 +312,31 @@ def invocation_profile(
             else:
                 effort = str(codex["default_reasoning_effort"])
                 reason = "high_class_ordinary_code_build_or_evidence_tooling"
-        return {
+        profile = {
             "model": str(codex["model"]),
             "reasoning_effort": effort,
             "selection_reason": reason,
         }
+        # Doctrine 2026-09-04 section 5: tier resolution rides on top of the
+        # effort class and may replace `model` (and, for an explicitly
+        # requested tier, the effort) without touching the class logic above.
+        tier_view = (
+            _codex_tier_view(
+                codex,
+                task_payload,
+                task_type,
+                effort,
+                effort_explicit=explicit in allowed,
+                now=now,
+                ledger_path=ledger_path,
+            )
+            if with_tiers
+            else {}
+        )
+        if tier_view:
+            profile.update(tier_view)
+            profile["selection_reason"] = f"{reason};{tier_view.get('model_tier_reason')}"
+        return profile
 
     if normalized_agent == "claude":
         claude = matrix["claude"]
@@ -374,6 +452,57 @@ def _apply_recycle_escalation(
         "capped": selected_index == len(tiers) - 1,
     }
     return adjusted, escalation
+
+
+def _reapply_codex_tier(
+    agent: str,
+    task_type: str,
+    payload: dict[str, Any],
+    invocation: dict[str, Any] | None,
+    policy: dict[str, Any],
+    *,
+    now: dt.datetime | None = None,
+) -> dict[str, Any] | None:
+    """Re-map the model tier after the effort class was escalated."""
+    if invocation is None or str(agent or "").lower() != "codex":
+        return invocation
+    if not codex_model_tiers.tiers_enabled() or not invocation.get("model_tier"):
+        return invocation
+    view = _codex_tier_view(
+        policy["model_matrix"]["codex"],
+        payload,
+        task_type,
+        str(invocation.get("reasoning_effort") or ""),
+        effort_explicit=True,
+        now=now,
+    )
+    if not view:
+        return invocation
+    merged = dict(invocation)
+    merged.update(view)
+    return merged
+
+
+def _codex_tier_block(agent: str, invocation: dict[str, Any] | None) -> dict[str, Any] | None:
+    """Structured spawn refusal from the tier contract, or ``None``.
+
+    Doctrine 2026-09-04 section 5: an unknown tier fails closed, an exhausted
+    5h window refuses with `codex_tier_window_exhausted` (tier/model/count/
+    budget travel in the invocation so the router and the headroom summary can
+    show WHY without re-deriving it).
+    """
+    if str(agent or "").lower() != "codex" or not invocation:
+        return None
+    error = invocation.get("model_tier_error")
+    if isinstance(error, dict):
+        return {"reason": str(error.get("code") or codex_model_tiers.UNKNOWN_TIER_REASON), "detail": error}
+    refusal = invocation.get("model_tier_refusal")
+    if isinstance(refusal, dict):
+        return {
+            "reason": str(refusal.get("code") or codex_model_tiers.WINDOW_EXHAUSTED_REASON),
+            "detail": refusal,
+        }
+    return None
 
 
 def _decision(
@@ -494,12 +623,28 @@ def evaluate_spawn(
 
     task_class, class_policy = _classify(task_type, policy)
     task_payload = payload or {}
-    invocation = invocation_profile(normalized_agent, task_type, task_payload, policy=policy)
+    invocation = invocation_profile(
+        normalized_agent,
+        task_type,
+        task_payload,
+        policy=policy,
+        now=now,
+    )
     invocation, tier_escalation = _apply_recycle_escalation(
         normalized_agent,
         task_payload,
         invocation,
         policy,
+    )
+    # A recycle escalation raises the effort CLASS; the model tier follows it
+    # (doctrine 2026-09-04 section 2 maps max/high/medium to sol/terra/luna).
+    invocation = _reapply_codex_tier(
+        normalized_agent,
+        task_type,
+        task_payload,
+        invocation,
+        policy,
+        now=now,
     )
     # OWNER burn window (quota_governor._burn_authorized, fail-closed flag
     # contract): while a valid CODEX/CLAUDE_BURN_AUTHORIZED.flag is present,
@@ -522,6 +667,29 @@ def evaluate_spawn(
             reason=f"owner_burn_authorization_active:{burn_why}",
             task_class=task_class,
             state_status="burn_bypass",
+            policy_schema=schema,
+            invocation=invocation,
+            tier_escalation=tier_escalation,
+        )
+        if write_summary:
+            record_gate_decision(result, state_path=state_path, summary_path=summary_path)
+        return result
+
+    # Model-tier window refusal (doctrine 2026-09-04 section 3.1). Placed AFTER
+    # the OWNER burn bypass on purpose: the 5h message budget is our own
+    # conservative planning figure, and an explicit OWNER burn authorization
+    # still outranks it, exactly like the weekly/5h quota caps above.
+    tier_block = _codex_tier_block(normalized_agent, invocation)
+    if tier_block is not None:
+        result = _decision(
+            allowed=False,
+            agent=normalized_agent,
+            task_type=task_type,
+            priority=priority,
+            reason=str(tier_block["reason"]),
+            task_class=task_class,
+            state_status="model_tier_window",
+            violations=[str(tier_block["reason"])],
             policy_schema=schema,
             invocation=invocation,
             tier_escalation=tier_escalation,
@@ -731,6 +899,262 @@ def record_gate_decision(
             "write_error": f"{type(exc).__name__}:{exc}",
             "last_gate": compact,
         }
+
+
+def record_codex_dispatch(
+    *,
+    task_id: str,
+    contract: dict[str, Any] | None,
+    config_path: Path | None = None,
+    ledger_path: Path | None = None,
+    now: dt.datetime | None = None,
+) -> dict[str, Any]:
+    """Append one real Codex dispatch to the rolling 5h model ledger.
+
+    Doctrine 2026-09-04 section 3.1. Called at the actual CLI spawn (never for
+    a dry run and never for a merely suggested command), so the window count
+    reflects messages that were really spent. No-op under
+    ``QM_CODEX_MODEL_TIERS=0`` and never raises into the dispatch path.
+    """
+    invocation = contract or {}
+    if not codex_model_tiers.tiers_enabled():
+        return {"recorded": False, "reason": "codex_model_tiers_disabled"}
+    policy, _error = load_policy(config_path)
+    if policy is None:
+        # An unresolvable policy means an UNCOUNTED message. Surfaced instead of
+        # silently skipped so the ledger gap is visible in the spawn payload.
+        return {"recorded": False, "reason": f"policy_unavailable:{_error}"}
+    codex_matrix = ((policy or {}).get("model_matrix") or {}).get("codex") or {}
+    # Fix round 2026-09-04: the booking is the fail-closed choke point, so it
+    # gets the WHOLE fallback chain. Between the preview and this call another
+    # slot may have filled the preferred model; the commit then lands one tier
+    # lower instead of dispatching over budget. For the scalpel tier the chain
+    # is a single entry, so an exhausted Astra window still refuses (hold).
+    chain = invocation.get("model_tier_chain_detail")
+    if not isinstance(chain, list):
+        chain = None
+    return codex_model_tiers.record_dispatch(
+        task_id=str(task_id or ""),
+        tier=str(invocation.get("model_tier") or ""),
+        model=str(invocation.get("model") or ""),
+        path=ledger_path,
+        now=now,
+        codex_matrix=codex_matrix,
+        chain=chain,
+    )
+
+
+def release_codex_dispatch(
+    ledger_result: dict[str, Any] | None,
+    *,
+    ledger_path: Path | None = None,
+    now: dt.datetime | None = None,
+) -> dict[str, Any]:
+    """Give a booked message back when the spawn it was booked for failed.
+
+    Doctrine 2026-09-04 section 3.1. Booking happens BEFORE the launch (that is
+    what makes the budget fail-closed), so a launch that never happened must be
+    refunded or the window would drift shut on phantom messages.
+    """
+    result = ledger_result or {}
+    if not result.get("recorded"):
+        return {"released": False, "reason": "nothing_recorded"}
+    record = result.get("record") or {}
+    target = Path(ledger_path) if ledger_path is not None else Path(str(result.get("path") or ""))
+    try:
+        return codex_model_tiers.release_dispatch(
+            record_id=str(result.get("record_id") or record.get("id") or ""),
+            path=target,
+            task_id=str(record.get("task_id") or ""),
+            model=str(record.get("model") or ""),
+            now=now,
+        )
+    except Exception as exc:  # pragma: no cover - dispatch must never break
+        return {"released": False, "reason": f"release_error:{type(exc).__name__}"}
+
+
+def codex_invocation_flags(
+    task_type: str,
+    payload: dict[str, Any] | None = None,
+    *,
+    config_path: Path | None = None,
+    now: dt.datetime | None = None,
+    ledger_path: Path | None = None,
+) -> tuple[list[str], dict[str, Any]]:
+    """``(argv flags, invocation)`` for one real ``codex exec`` command line.
+
+    Model routing doctrine 2026-09-04 section 5: EVERY Codex spawn site uses
+    this one contract instead of the account default, so the model id that is
+    dispatched is the model id the 5h ledger then counts. The flag order and
+    quoting are identical to ``run_agent_orchestration_task.command_for``.
+
+    PREVIEW ONLY - it books nothing. A real spawn site must use
+    :func:`codex_spawn_contract` instead; this wrapper stays for rendered
+    command strings and tests, and marks a refusing invocation with
+    ``model_tier_spawn_refused`` so a caller that ignores the contract emits no
+    model flag at all rather than the wrong one.
+
+    Never raises into a dispatch path: on any failure the caller gets empty
+    flags, i.e. today's flag-free command and the account default.
+
+    CEO decision D2 (round 3, 2026-09-04): under ``QM_CODEX_MODEL_TIERS=0`` the
+    rollback must restore the EXACT pre-patch command line at every spawn and
+    render site, so no flags are emitted at all.
+    """
+    if not codex_model_tiers.tiers_enabled():
+        return [], {}
+    try:
+        invocation = (
+            invocation_profile(
+                "codex",
+                task_type,
+                payload or {},
+                config_path=config_path,
+                now=now,
+                ledger_path=ledger_path,
+            )
+            or {}
+        )
+    except Exception:  # pragma: no cover - dispatch must never break on this
+        return [], {}
+    block = _codex_tier_block("codex", invocation)
+    if block is not None:
+        refused = dict(invocation)
+        refused["model_tier_spawn_refused"] = True
+        refused["model_tier_spawn_refusal_reason"] = str(block["reason"])
+        return [], refused
+    return _flags_for(invocation), invocation
+
+
+def _flags_for(invocation: dict[str, Any]) -> list[str]:
+    """`-m <model>` + `-c model_reasoning_effort="<effort>"` for a command line."""
+    model = str(invocation.get("model") or "").strip()
+    effort = str(invocation.get("reasoning_effort") or "").strip()
+    flags: list[str] = []
+    if model:
+        flags += ["-m", model]
+    if effort:
+        flags += ["-c", f'model_reasoning_effort="{effort}"']
+    return flags
+
+
+def codex_spawn_contract(
+    task_type: str,
+    payload: dict[str, Any] | None = None,
+    *,
+    task_id: str = "",
+    config_path: Path | None = None,
+    now: dt.datetime | None = None,
+    ledger_path: Path | None = None,
+    commit: bool = True,
+) -> dict[str, Any]:
+    """The ONE contract a real ``codex exec`` spawn site must use.
+
+    Fix round 2026-09-04: ``codex_invocation_flags`` returned the tier fields
+    but no caller looked at ``model_tier_refusal`` / ``model_tier_hold`` /
+    ``model_tier_error``, so an exhausted window still dispatched - and then
+    wrote the ledger line that pushed the count further past budget. This
+    function makes the refusal the RESULT, not a side-band field, and books the
+    message atomically BEFORE the launch:
+
+    ``{"allowed": bool, "flags": [...], "invocation": {...},
+    "refusal": {...} | None, "ledger": {...}}``
+
+    On ``allowed is False`` the caller must not spawn. When a spawn that was
+    booked then fails, the caller refunds with :func:`release_codex_dispatch`.
+    ``commit=False`` yields a pure preview (no ledger write) for rendered
+    command strings and dry runs.
+    """
+    try:
+        invocation = (
+            invocation_profile(
+                "codex",
+                task_type,
+                payload or {},
+                config_path=config_path,
+                now=now,
+                ledger_path=ledger_path,
+            )
+            or {}
+        )
+    except Exception as exc:  # pragma: no cover - dispatch must never break
+        # Fail CLOSED on an unusable contract while the tier contract is
+        # active; under the rollback the previous flag-free behaviour stands.
+        if codex_model_tiers.tiers_enabled():
+            return {
+                "allowed": False,
+                "flags": [],
+                "invocation": {},
+                "refusal": {"reason": f"model_contract_error:{type(exc).__name__}", "detail": {}},
+                "ledger": {"recorded": False, "reason": "contract_unavailable"},
+            }
+        return {"allowed": True, "flags": [], "invocation": {}, "refusal": None, "ledger": {}}
+    block = _codex_tier_block("codex", invocation)
+    if block is not None:
+        return {
+            "allowed": False,
+            "flags": [],
+            "invocation": invocation,
+            "refusal": block,
+            "ledger": {"recorded": False, "reason": str(block["reason"])},
+        }
+    if not codex_model_tiers.tiers_enabled():
+        # CEO decision D2 (round 3, 2026-09-04): the rollback restores the EXACT
+        # pre-patch argv at every spawn site, which for farmctl/pacer/mailbox
+        # and the rendered build command means NO model flags at all (they took
+        # the account default, or - for the mailbox intake - its own previously
+        # hardcoded pair, which that module restores itself).
+        return {
+            "allowed": True,
+            "flags": [],
+            "invocation": invocation,
+            "refusal": None,
+            "ledger": {"recorded": False, "reason": "codex_model_tiers_disabled"},
+        }
+    if not commit:
+        return {
+            "allowed": True,
+            "flags": _flags_for(invocation),
+            "invocation": invocation,
+            "refusal": None,
+            "ledger": {"recorded": False, "reason": "preview_only"},
+        }
+    ledger = record_codex_dispatch(
+        task_id=task_id or task_type,
+        contract=invocation,
+        config_path=config_path,
+        ledger_path=ledger_path,
+        now=now,
+    )
+    if not ledger.get("recorded"):
+        # CEO decision D4 (round 3, 2026-09-04): ledger I/O fails CLOSED. The
+        # previous version treated `codex_ledger_write_error:*` and
+        # `policy_unavailable:*` as "not a budget refusal" and dispatched with
+        # full flags, so while `D:/QM/reports/state` was unavailable every Codex
+        # spawn proceeded unbounded AND uncounted - and the Astra hold
+        # evaporated with it. A message that cannot be booked is not spent.
+        reason = str(ledger.get("reason") or "") or "codex_dispatch_unbooked"
+        return {
+            "allowed": False,
+            "flags": [],
+            "invocation": invocation,
+            "refusal": {"reason": reason, "detail": ledger.get("refusal") or ledger},
+            "ledger": ledger,
+        }
+    booked = dict(invocation)
+    # The commit may have landed one tier lower than the preview.
+    if ledger.get("model"):
+        booked["model"] = str(ledger["model"])
+        booked["model_tier"] = str(ledger.get("tier") or booked.get("model_tier") or "")
+        if ledger.get("downgraded_from"):
+            booked["model_tier_downgraded_from"] = str(ledger["downgraded_from"])
+    return {
+        "allowed": True,
+        "flags": _flags_for(booked),
+        "invocation": booked,
+        "refusal": None,
+        "ledger": ledger,
+    }
 
 
 def read_headroom_summary(path: Path | None = None) -> dict[str, Any] | None:

@@ -5,6 +5,17 @@ This module is intentionally not an AI orchestrator. It owns the ticket state
 machine and chooses an available worker from declared capabilities, budgets,
 and guardrails. Agents execute assigned tickets and write artifacts; the QM
 pipeline remains the approval authority for EAs.
+
+Rollback scope (CEO decision D2, round 3, 2026-09-04): ``QM_CODEX_MODEL_TIERS=0``
+rolls back the Codex MODEL-TIER layer only (tier resolution, the 5h ledger and
+its refusals). The routing changes in this module ship UNCONDITIONALLY and are
+not part of that rollback, because they are defect fixes rather than a new
+policy: decision-bound lane pinning (``decision_bound_agent`` /
+``owner_decision``, after three claude-lane ``ops_issue`` rows were routed to
+codex by cost rank on 2026-09-04 01:00Z), the payload ``required_capabilities``
+union in ``route_once`` and ``enqueue_task`` (routing-flapping ticket
+2026-08-21), the ``strategy_mechanize_source`` capability entry, and the
+persisted ``router_decision_bound_hold`` / ``router_model_window_hold`` markers.
 """
 
 from __future__ import annotations
@@ -99,6 +110,11 @@ TASK_TYPE_CAPABILITIES: dict[str, list[str]] = {
     "triage_failure": ["ops", "review"],
     "ops_issue": ["ops", "code"],
     "agent_learn": ["research"],
+    # Model routing doctrine 2026-09-04 section 2: the SCALPEL class task type.
+    # Without this entry `enqueue_task` raised KeyError, so the doctrine's own
+    # scalpel task type was unreachable and Astra could only be selected via a
+    # payload marker.
+    "strategy_mechanize_source": ["research", "strategy"],
 }
 
 # Minimum eligibility contract per lane.  Task-type requirements are kept as
@@ -126,6 +142,21 @@ AGENT_EXTRA_REQUIRED_CAPABILITIES: dict[str, set[str]] = {
 # cannot do the work. It is held, marked, and surfaced — see
 # `_human_lane_holder` and the `awaiting_human_lane` routing decision.
 HUMAN_LANES: frozenset[str] = frozenset({"owner"})
+
+# Decision-bound work (model routing doctrine 2026-09-04 section 5; standing
+# authorization "OWNER-Entscheid -> Umsetzung", OWNER 2026-08-24). A task that
+# carries an OWNER decision receipt belongs to ONE lane and must never be
+# re-routed by cost rank: on 2026-09-04 01:00Z three `ops_issue` rows reserved
+# for the claude lane (payload `owner_decision` + `allowed_actions`) were routed
+# to codex because it is the cheaper seat. `decision_bound_agent` pins the lane
+# explicitly; a bare `owner_decision` payload defaults to the claude lane.
+DECISION_BOUND_PAYLOAD_FIELD = "decision_bound_agent"
+OWNER_DECISION_PAYLOAD_FIELD = "owner_decision"
+DEFAULT_DECISION_BOUND_AGENT = "claude"
+# Sentinel lane id for a pin that exists but cannot be read (a list, a dict, a
+# number). No registry row can ever match it, so the task waits instead of
+# being routed by cost rank.
+DECISION_BOUND_INVALID = "__decision_bound_invalid__"
 
 # Task types deliberately removed from the agent lane. `pipeline_run` required
 # capability `pipeline`, which no enabled agent declares — so it was
@@ -705,6 +736,70 @@ def sync_default_registry(root: Path = DEFAULT_ROOT, claude_disabled_flag: Path 
     }
 
 
+def payload_required_capabilities(payload: dict[str, Any] | None) -> list[str]:
+    """Capabilities declared INSIDE the payload (routing-flapping defect).
+
+    Ticket "routing flapping" 2026-08-21: `enqueue` accepted a payload that
+    named `required_capabilities` and then silently ignored it, so the row was
+    stored with the generic task-type defaults and routed by cost rank. The
+    payload declaration is now honoured at enqueue time and again at routing.
+    """
+    raw = (payload or {}).get("required_capabilities")
+    if not isinstance(raw, (list, tuple, set)):
+        return []
+    return sorted({str(item).strip() for item in raw if str(item).strip()})
+
+
+def decision_bound_pin(payload: dict[str, Any] | None) -> dict[str, Any]:
+    """``{"agent": str|None, "invalid": bool, "raw": ...}`` for one payload.
+
+    Fix round 2026-09-04: the first version pinned only on
+    ``isinstance(explicit, str)``, so ``["claude"]``, ``{"agent": "claude"}``,
+    ``1`` and ``True`` fell through to free routing by cost rank - a malformed
+    pin UN-pinned the row (an ops_issue with ``decision_bound_agent: ["claude"]``
+    routed to codex end-to-end). A pin that cannot be read is now held, never
+    ignored. ``owner_decision`` pins on KEY PRESENCE, so ``0`` / ``False`` /
+    ``None`` are decision receipts too.
+
+    CEO decision D5 (round 3, 2026-09-04) fixes the contract explicitly:
+
+    * ``{"decision_bound_agent": null}`` with NO ``owner_decision`` means
+      UNPINNED - an explicit JSON null is "no pin", not a broken one.
+    * ``{"decision_bound_agent": null, "owner_decision": ...}`` pins to the
+      default decision lane (``claude``), because the receipt itself is the pin.
+    * Any other non-string value (a list, a dict, a number, ``True``, ``""``)
+      is INVALID and holds the row; it never falls through to cost rank.
+    """
+    task_payload = payload or {}
+    if DECISION_BOUND_PAYLOAD_FIELD in task_payload:
+        explicit = task_payload.get(DECISION_BOUND_PAYLOAD_FIELD)
+        if isinstance(explicit, str) and explicit.strip():
+            return {"agent": explicit.strip().lower(), "invalid": False, "raw": explicit}
+        if explicit is not None:
+            return {"agent": None, "invalid": True, "raw": explicit}
+    if OWNER_DECISION_PAYLOAD_FIELD in task_payload:
+        return {
+            "agent": DEFAULT_DECISION_BOUND_AGENT,
+            "invalid": False,
+            "raw": task_payload.get(OWNER_DECISION_PAYLOAD_FIELD),
+        }
+    return {"agent": None, "invalid": False, "raw": None}
+
+
+def decision_bound_agent(payload: dict[str, Any] | None) -> str | None:
+    """Lane a task is pinned to, or ``None`` when routing is free to choose.
+
+    A MALFORMED pin returns the sentinel ``DECISION_BOUND_INVALID`` rather than
+    ``None``: no lane carries that id, so every consumer (router selection and
+    the orchestration lane candidates alike) holds the row instead of routing
+    it freely.
+    """
+    pin = decision_bound_pin(payload)
+    if pin["invalid"]:
+        return DECISION_BOUND_INVALID
+    return pin["agent"]
+
+
 def enqueue_task(
     root: Path,
     task_type: str,
@@ -717,6 +812,7 @@ def enqueue_task(
     parent_id: str | None = None,
     artifact_path: str | None = None,
     payload: dict[str, Any] | None = None,
+    assigned_agent: str | None = None,
 ) -> dict[str, Any]:
     if task_type in REMOVED_TASK_TYPES:
         raise ValueError(REMOVED_TASK_TYPES[task_type])
@@ -727,11 +823,37 @@ def enqueue_task(
     dir_err = _directory_artifact_error(artifact_path)
     if dir_err is not None:
         raise ValueError(f"{dir_err['reason']}: {dir_err['artifact_path']}")
-    capabilities = required_capabilities or TASK_TYPE_CAPABILITIES[task_type]
+    task_payload = dict(payload or {})
+    if assigned_agent:
+        # Persisted in the payload (not the assigned_agent column, which the
+        # router owns for the IN_PROGRESS claim) so the pin survives every
+        # requeue/recycle transition.
+        task_payload[DECISION_BOUND_PAYLOAD_FIELD] = str(assigned_agent).strip().lower()
     skills = required_skills or []
     task_id = str(uuid.uuid4())
     now = farmctl.utc_now()
     with closing(connect(root)) as conn:
+        # Payload-declared capabilities are honoured (routing-flapping defect,
+        # ticket 2026-08-21) but ONLY where some lane declares them - the exact
+        # same intersection `route_once` applies. Writing the raw payload label
+        # into the column instead would let a descriptive string ("needs a
+        # careful reviewer") make the row permanently unroutable, which is a
+        # worse failure than the flapping it fixes.
+        declared = _declared_registry_capabilities(conn) | _governed_routing_capabilities()
+        payload_caps = {
+            capability
+            for capability in payload_required_capabilities(task_payload)
+            if capability in declared
+        }
+        # CEO decision D7 (round 3, 2026-09-04): UNION, never a bare
+        # replacement. `route_once` and `_quota_lane_candidates` union the
+        # payload capabilities onto the stored column; writing only the payload
+        # set here made the two selectors disagree about the very rows the
+        # flapping defect produced. Restricted to capabilities some lane
+        # declares (exactly the routing-side intersection), so a descriptive
+        # label can never make a row permanently unroutable.
+        base_caps = list(required_capabilities or TASK_TYPE_CAPABILITIES[task_type])
+        capabilities = base_caps + sorted(payload_caps - set(base_caps))
         conn.execute(
             """
             INSERT INTO agent_tasks(
@@ -751,7 +873,7 @@ def enqueue_task(
                 budget_class,
                 parent_id,
                 artifact_path,
-                _json(payload or {}),
+                _json(task_payload),
                 now,
                 now,
             ),
@@ -1104,6 +1226,57 @@ def _record_human_lane_hold(
     _record_lease_event(conn, task["id"], "routing_awaiting_human_lane", hold)
 
 
+def _record_model_window_hold(
+    conn: sqlite3.Connection,
+    task: sqlite3.Row,
+    hold: dict[str, Any],
+) -> None:
+    """Persist one visible model-window hold without touching queue age.
+
+    Mirror of `_record_human_lane_hold` for the scalpel tier (model routing
+    doctrine 2026-09-04 section 2): an Astra task waits for its 5h window
+    instead of being silently downgraded to a weaker model.
+    """
+    try:
+        payload = json.loads(task["payload_json"] or "{}")
+    except (TypeError, json.JSONDecodeError):
+        payload = {}
+    if payload.get("router_model_window_hold") == hold:
+        return
+    payload["router_model_window_hold"] = hold
+    conn.execute(
+        "UPDATE agent_tasks SET payload_json=? WHERE id=? AND state IN ('BACKLOG', 'TODO')",
+        (_json(payload), task["id"]),
+    )
+    _record_lease_event(conn, task["id"], "routing_awaiting_model_window", hold)
+
+
+def _record_decision_bound_hold(
+    conn: sqlite3.Connection,
+    task: sqlite3.Row,
+    hold: dict[str, Any],
+) -> None:
+    """Persist a pinned-but-unstaffed row the way human-lane holds are persisted.
+
+    Fix round 2026-09-04: `awaiting_decision_bound_agent` existed only as a
+    transient `RouteDecision` reason and only when nothing else routed, so a
+    permanently pinned row was invisible in the DB - exactly the failure mode
+    the human-lane marker was introduced to prevent.
+    """
+    try:
+        payload = json.loads(task["payload_json"] or "{}")
+    except (TypeError, json.JSONDecodeError):
+        payload = {}
+    if payload.get("router_decision_bound_hold") == hold:
+        return
+    payload["router_decision_bound_hold"] = hold
+    conn.execute(
+        "UPDATE agent_tasks SET payload_json=? WHERE id=? AND state IN ('BACKLOG', 'TODO')",
+        (_json(payload), task["id"]),
+    )
+    _record_lease_event(conn, task["id"], "routing_awaiting_decision_bound_agent", hold)
+
+
 def _eligible_agents(conn: sqlite3.Connection, required: set[str], root: Path = DEFAULT_ROOT) -> list[sqlite3.Row]:
     rows = conn.execute(
         """
@@ -1191,10 +1364,24 @@ def route_once(
         skipped: list[str] = []
         capability_gaps: list[tuple[sqlite3.Row, dict[str, Any]]] = []
         human_lane_holds: list[tuple[sqlite3.Row, dict[str, Any]]] = []
+        model_window_holds: list[tuple[sqlite3.Row, dict[str, Any]]] = []
+        decision_bound_waits: list[tuple[sqlite3.Row, str]] = []
         selected: tuple[sqlite3.Row, sqlite3.Row, set[str], dict[str, Any]] | None = None
         quota_blocked: list[dict[str, Any]] = []
         for task in tasks:
             required = set(json.loads(task["required_capabilities_json"] or "[]"))
+            try:
+                task_payload = json.loads(task["payload_json"] or "{}")
+            except (TypeError, json.JSONDecodeError):
+                task_payload = {}
+            # Routing-flapping defect (ticket 2026-08-21): a payload that names
+            # required_capabilities must gate routing too, not just the column
+            # written at enqueue time. Restricted to capabilities some lane
+            # declares, exactly like the required_skills handling below, so a
+            # descriptive label never makes a task unroutable.
+            required |= set(payload_required_capabilities(task_payload)) & (
+                declared_caps | governed_caps
+            )
             # required_skills gate routing too — for capabilities governed by
             # defaults even if the live registry has drifted (e.g. Gemini's
             # video_analysis). Routing was
@@ -1213,6 +1400,25 @@ def route_once(
                 skipped.append(task["id"])
                 continue
             agents = _eligible_agents(conn, required, root)
+            pin = decision_bound_pin(task_payload)
+            pinned = DECISION_BOUND_INVALID if pin["invalid"] else pin["agent"]
+            if pinned is not None:
+                # Decision-bound: the reserved lane or nobody. A pinned task
+                # waits for its own seat rather than executing elsewhere, and a
+                # pin that cannot be parsed waits too (fail closed).
+                agents = [row for row in agents if str(row["agent_id"]) == pinned]
+                if not agents:
+                    hold = {
+                        "schema": "qm.router_decision_bound_hold.v1",
+                        "agent": pinned,
+                        "invalid_pin": bool(pin["invalid"]),
+                        "raw": pin["raw"] if isinstance(pin["raw"], (str, int, float, bool)) else str(pin["raw"]),
+                        "held_at": now,
+                    }
+                    _record_decision_bound_hold(conn, task, hold)
+                    decision_bound_waits.append((task, pinned))
+                    skipped.append(task["id"])
+                    continue
             if not agents:
                 holder = _human_lane_holder(conn, required)
                 if holder is not None:
@@ -1248,6 +1454,13 @@ def route_once(
                     "quota_gate_blocked",
                     {key: value for key, value in gate.items() if key != "metrics"},
                 )
+                # Model routing doctrine 2026-09-04: a scalpel-tier task whose
+                # 5h window is spent is HELD and reported as such, never
+                # downgraded — the `awaiting_human_lane:owner` pattern.
+                hold = (gate.get("invocation") or {}).get("model_tier_hold")
+                if isinstance(hold, dict):
+                    _record_model_window_hold(conn, task, hold)
+                    model_window_holds.append((task, hold))
             if chosen_agent is None or chosen_gate is None:
                 skipped.append(task["id"])
                 continue
@@ -1277,6 +1490,32 @@ def route_once(
                     None,
                     f"awaiting_human_lane:{hold['lane']}",
                 )
+            if model_window_holds:
+                # Reported ahead of the generic quota_gate_blocked so a spent
+                # Astra window never reads as "the weekly quota is out".
+                window_task, window_hold = model_window_holds[0]
+                # CEO decision D5: an invalid `scalpel` marker is a config
+                # defect, not a spent budget, so it carries its own reason
+                # (`invalid_scalpel_marker`) instead of being misreported as
+                # `awaiting_model_window:astra`.
+                window_reason = str(
+                    window_hold.get("route_reason")
+                    or f"awaiting_model_window:{window_hold.get('tier')}"
+                )
+                return RouteDecision(
+                    window_task["id"],
+                    window_task["task_type"],
+                    None,
+                    window_reason,
+                )
+            if decision_bound_waits:
+                wait_task, wait_agent = decision_bound_waits[0]
+                return RouteDecision(
+                    wait_task["id"],
+                    wait_task["task_type"],
+                    None,
+                    f"awaiting_decision_bound_agent:{wait_agent}",
+                )
             first = tasks[0]
             reason = "quota_gate_blocked" if quota_blocked else "no_available_agent"
             return RouteDecision(first["id"], first["task_type"], None, reason)
@@ -1284,6 +1523,8 @@ def route_once(
         payload = json.loads(task["payload_json"] or "{}")
         payload.pop("router_capability_warning", None)
         payload.pop("router_human_lane_hold", None)
+        payload.pop("router_model_window_hold", None)
+        payload.pop("router_decision_bound_hold", None)
         payload["routed_at"] = now
         payload["required_capabilities"] = sorted(required)
         if gate.get("enforced"):
@@ -2657,6 +2898,16 @@ def main(argv: list[str] | None = None) -> int:
     enqueue.add_argument("--state", default="TODO", choices=sorted(TASK_STATES))
     enqueue.add_argument("--payload-json", default="{}")
     enqueue.add_argument("--skills", help="Comma-separated list of required skills")
+    enqueue.add_argument(
+        "--assigned-agent",
+        dest="assigned_agent",
+        help="Pin the task to exactly this lane (decision-bound work; never re-routed by cost rank)",
+    )
+    enqueue.add_argument(
+        "--decision-bound-agent",
+        dest="decision_bound_agent",
+        help="Alias of --assigned-agent for OWNER-decision-bound orders (doctrine 2026-09-04)",
+    )
     sub.add_parser("enqueue-friday-smoke")
     sub.add_parser("route-once")
     close = sub.add_parser("close-review")
@@ -2731,6 +2982,7 @@ def main(argv: list[str] | None = None) -> int:
             priority=args.priority,
             required_skills=skills,
             payload=json.loads(args.payload_json),
+            assigned_agent=args.assigned_agent or args.decision_bound_agent,
         )
     elif args.command == "enqueue-friday-smoke":
         result = enqueue_friday_smoke_tasks(args.root)

@@ -1077,6 +1077,101 @@ def _codex_env() -> dict[str, str]:
     return env
 
 
+# Model routing doctrine 2026-09-04 section 5: this pump helper is one of the
+# REAL Codex spawn sites (g0_review / research / ea_review / codex_review /
+# build). It used to omit -m entirely and take the account default, so its
+# messages were invisible to the rolling 5h ledger. `purpose` is the pump's own
+# vocabulary; map it onto the `agent_tasks` task types the quota gate classifies.
+_CODEX_PURPOSE_TASK_TYPES: dict[str, str] = {
+    "g0_review": "review_strategy",
+    "research": "research_strategy",
+    "ea_review": "review_ea",
+    "codex_review": "review_ea",
+    "build": "build_ea",
+}
+
+
+class CodexModelWindowRefused(ManagedCodexError):
+    """The 5h model contract refused this spawn (doctrine 2026-09-04 §3.1).
+
+    A `ManagedCodexError` subclass on purpose: every pump call site already
+    treats that as "no process was started, report and move on", which is
+    exactly the required behaviour. `_managed_spawn_failure_reason` keeps the
+    reported reason honest.
+    """
+
+    def __init__(self, refusal: dict[str, Any] | None) -> None:
+        self.refusal = dict(refusal or {})
+        super().__init__(str(self.refusal.get("reason") or "codex_model_window_refused"))
+
+
+def _managed_spawn_failure_reason(exc: BaseException) -> str:
+    """Accurate `spawned: False` reason for a refused vs. a failed spawn."""
+    if isinstance(exc, CodexModelWindowRefused):
+        return str(exc.refusal.get("reason") or "codex_model_window_refused")
+    return "managed_codex_registration_failed"
+
+
+def _codex_routing_payload(
+    metadata: dict[str, Any] | None,
+    task_payload: dict[str, Any] | None,
+) -> dict[str, Any]:
+    """Payload the tier contract is resolved from.
+
+    Fix round 2026-09-04: the pump used to hand the contract its own
+    `metadata` dict (`{"cards": [...]}`, `{"review_task_id": ...}`), which can
+    never carry `codex_model_tier` or `scalpel: true`. An Astra-designated item
+    executed through the pump was therefore silently resolved by effort class
+    to terra/sol. The stored task payload wins over the pump's metadata.
+    """
+    merged = dict(metadata or {})
+    merged.update(dict(task_payload or {}))
+    return merged
+
+
+def _codex_spawn_contract(
+    purpose: str,
+    metadata: dict[str, Any] | None = None,
+    task_payload: dict[str, Any] | None = None,
+    *,
+    task_id: str = "",
+    commit: bool = True,
+) -> dict[str, Any]:
+    """Governed spawn contract for one real pump spawn; never raises.
+
+    Returns `quota_spawn_gate.codex_spawn_contract`'s dict
+    (`allowed`/`flags`/`invocation`/`refusal`/`ledger`). `allowed is False`
+    means DO NOT SPAWN.
+    """
+    try:
+        try:
+            from tools.strategy_farm import quota_spawn_gate  # noqa: PLC0415
+        except ModuleNotFoundError:  # pragma: no cover - direct script execution
+            import quota_spawn_gate  # type: ignore # noqa: PLC0415
+
+        return quota_spawn_gate.codex_spawn_contract(
+            _CODEX_PURPOSE_TASK_TYPES.get(str(purpose), "ops_issue"),
+            _codex_routing_payload(metadata, task_payload),
+            task_id=task_id,
+            commit=commit,
+        )
+    except Exception:  # pragma: no cover - dispatch must never break on this
+        return {"allowed": True, "flags": [], "invocation": {}, "refusal": None, "ledger": {}}
+
+
+def _release_codex_spawn_message(ledger: dict[str, Any] | None) -> dict[str, Any]:
+    """Refund a booked message when the launch it was booked for failed."""
+    try:
+        try:
+            from tools.strategy_farm import quota_spawn_gate  # noqa: PLC0415
+        except ModuleNotFoundError:  # pragma: no cover - direct script execution
+            import quota_spawn_gate  # type: ignore # noqa: PLC0415
+
+        return quota_spawn_gate.release_codex_dispatch(ledger)
+    except Exception as exc:  # pragma: no cover - dispatch must never break
+        return {"released": False, "reason": f"release_error:{type(exc).__name__}"}
+
+
 def _spawn_owned_codex(
     root: Path,
     prompt_path: Path | str,
@@ -1086,35 +1181,68 @@ def _spawn_owned_codex(
     dedupe_key: str,
     metadata: dict[str, Any],
     max_age_minutes: int = 60,
+    task_payload: dict[str, Any] | None = None,
 ) -> tuple[subprocess.Popen[Any], dict[str, Any]]:
     """Launch one headless Codex tree and atomically establish farm ownership."""
 
-    command = [
-        _resolve_codex(),
-        "exec",
-        "-s",
-        "danger-full-access",
-        "--cd",
-        str(REPO_ROOT),
-    ]
+    # Same governed contract as `run_agent_orchestration_task.command_for`
+    # (model routing doctrine 2026-09-04 section 5). The contract BOOKS the
+    # message before the launch and refuses when the 5h window is spent or the
+    # requested tier is unknown - the first implementation read the contract
+    # and ignored its refusal, so an exhausted window still dispatched and the
+    # ledger line it then wrote pushed the count further past budget.
+    contract = _codex_spawn_contract(
+        purpose,
+        metadata,
+        task_payload,
+        task_id=str(metadata.get("task_id") or dedupe_key or purpose),
+    )
+    if not contract.get("allowed", True):
+        raise CodexModelWindowRefused(contract.get("refusal"))
+    model_flags = list(contract.get("flags") or [])
+    invocation = dict(contract.get("invocation") or {})
+    ledger = dict(contract.get("ledger") or {})
     creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
-    with open(prompt_path, "rb") as stdin_f, open(live_log, "wb") as stdout_f:
-        return spawn_managed_codex(
-            root,
-            command,
-            purpose=purpose,
-            cwd=REPO_ROOT,
-            max_age_minutes=max_age_minutes,
-            dedupe_key=dedupe_key,
-            metadata={**metadata, "live_log": str(live_log)},
-            stdin=stdin_f,
-            stdout=stdout_f,
-            stderr=subprocess.STDOUT,
-            env=_codex_env(),
-            shell=True,
-            creationflags=creationflags,
-            close_fds=True,
-        )
+    # Everything after the booking runs under the refund guard.
+    try:
+        command = [
+            _resolve_codex(),
+            "exec",
+            *model_flags,
+            "-s",
+            "danger-full-access",
+            "--cd",
+            str(REPO_ROOT),
+        ]
+        with open(prompt_path, "rb") as stdin_f, open(live_log, "wb") as stdout_f:
+            proc, lease = spawn_managed_codex(
+                root,
+                command,
+                purpose=purpose,
+                cwd=REPO_ROOT,
+                max_age_minutes=max_age_minutes,
+                dedupe_key=dedupe_key,
+                metadata={
+                    **metadata,
+                    "live_log": str(live_log),
+                    "model": invocation.get("model"),
+                    "model_tier": invocation.get("model_tier"),
+                },
+                stdin=stdin_f,
+                stdout=stdout_f,
+                stderr=subprocess.STDOUT,
+                env=_codex_env(),
+                shell=True,
+                creationflags=creationflags,
+                close_fds=True,
+            )
+    except BaseException:
+        # The message was booked before the launch (that is what makes the
+        # budget fail-closed); a launch that never happened is refunded.
+        _release_codex_spawn_message(ledger)
+        raise
+    lease["model_window_ledger"] = ledger
+    return proc, lease
 
 
 def _resolve_gemini_command() -> tuple[list[str], bool]:
@@ -13657,7 +13785,7 @@ def _spawn_codex_for_g0_batch(root: Path) -> dict[str, Any]:
     except ManagedCodexError as exc:
         return {
             "spawned": False,
-            "reason": "managed_codex_registration_failed",
+            "reason": _managed_spawn_failure_reason(exc),
             "error": repr(exc),
             "cards": [f.stem for f in batch],
         }
@@ -13942,7 +14070,7 @@ def _claim_research_source_codex(root: Path) -> dict[str, Any]:
     except ManagedCodexError as exc:
         return {
             "spawned": False,
-            "reason": "managed_codex_registration_failed",
+            "reason": _managed_spawn_failure_reason(exc),
             "error": repr(exc),
             "source_id": src_id,
         }
@@ -14003,6 +14131,7 @@ def _spawn_codex_for_review(root: Path, build_task_row: sqlite3.Row) -> dict[str
                 "build_task_id": build_task_id,
                 "ea_id": rendered.get("ea_id"),
             },
+            task_payload=json.loads(build_task_row["payload_json"] or "{}"),
         )
     except ManagedCodexError as exc:
         with connect(root) as conn:
@@ -14013,7 +14142,7 @@ def _spawn_codex_for_review(root: Path, build_task_row: sqlite3.Row) -> dict[str
             conn.commit()
         return {
             "spawned": False,
-            "reason": "managed_codex_registration_failed",
+            "reason": _managed_spawn_failure_reason(exc),
             "error": repr(exc),
             "review_task_id": review_task_id,
             "pending_task_removed": bool(cleanup),
@@ -14162,6 +14291,9 @@ def enqueue_compile_repair_successor(
                 "build_task_id": build_task_id,
                 "ea_id": payload_build.get("ea_id"),
             },
+            # The originating build payload carries `codex_model_tier` /
+            # `scalpel` when the work was designated for a specific tier.
+            task_payload=payload_build,
         )
     except ManagedCodexError as exc:
         with connect(root) as conn:
@@ -14172,7 +14304,7 @@ def enqueue_compile_repair_successor(
             conn.commit()
         return {
             "spawned": False,
-            "reason": "managed_codex_registration_failed",
+            "reason": _managed_spawn_failure_reason(exc),
             "error": repr(exc),
             "codex_review_task_id": review_task_id,
             "pending_task_removed": bool(cleanup),
@@ -15337,6 +15469,8 @@ def _spawn_codex_for_build_claimed(root: Path, task_row: sqlite3.Row) -> dict[st
             purpose="build",
             dedupe_key=f"build:{task_row['id']}",
             metadata={"task_id": task_row["id"], "ea_id": ea_id},
+            # The stored payload is where `codex_model_tier` / `scalpel` live.
+            task_payload=payload,
         )
     except ManagedCodexError as exc:
         return {
@@ -15344,7 +15478,7 @@ def _spawn_codex_for_build_claimed(root: Path, task_row: sqlite3.Row) -> dict[st
             "agent": "codex",
             "task_id": task_row["id"],
             "ea_id": ea_id,
-            "reason": "managed_codex_registration_failed",
+            "reason": _managed_spawn_failure_reason(exc),
             "error": repr(exc),
         }
     _record_build_dispatch(
@@ -29556,6 +29690,55 @@ def dispatch_tick(
     }
 
 
+def _codex_dispatch_model_args(
+    task_type: str,
+    payload: dict[str, Any] | None = None,
+) -> tuple[str, str, dict[str, Any]]:
+    """`-m <model> ` / `-c ... ` / contract for a RENDERED codex exec line.
+
+    Model routing doctrine 2026-09-04 section 5: every Codex dispatch site uses
+    the same governed contract instead of the account default. This one only
+    renders a suggested command (`commit=False`, so no message is booked); when
+    the contract refuses - unknown tier, spent window - it emits NO model flag
+    and hands the refusal back so the caller can show it, rather than quietly
+    printing a command for a model the budget did not grant. Imported lazily so
+    farmctl keeps starting even if the gate policy module is unavailable.
+    """
+    try:
+        try:
+            from tools.strategy_farm import quota_spawn_gate  # noqa: PLC0415
+        except ModuleNotFoundError:  # pragma: no cover - direct script execution
+            import quota_spawn_gate  # type: ignore # noqa: PLC0415
+
+        contract = quota_spawn_gate.codex_spawn_contract(
+            task_type, payload or {}, commit=False
+        )
+    except Exception:  # pragma: no cover - dispatch text must never break
+        return "", "", {}
+    if not contract.get("allowed", True):
+        return "", "", contract
+    # CEO decision D2 (round 3, 2026-09-04): render EXACTLY the flags the spawn
+    # contract grants, never a second derivation of them. Under the
+    # QM_CODEX_MODEL_TIERS=0 rollback that list is empty, so the suggested
+    # command line is byte-identical to the pre-doctrine one instead of pinning
+    # the account default onto an explicit model.
+    flags = [str(flag) for flag in (contract.get("flags") or [])]
+    model = ""
+    effort = ""
+    for index, flag in enumerate(flags):
+        if index + 1 >= len(flags):
+            break
+        if flag == "-m":
+            model = flags[index + 1]
+        elif flag == "-c":
+            effort = flags[index + 1]
+    return (
+        f"-m {model} " if model else "",
+        f"-c {effort} " if effort else "",
+        contract,
+    )
+
+
 def render_codex_build_prompt(root: Path, card_path_str: str, out_path: str | None) -> dict[str, Any]:
     """Validate an APPROVED card, create a build_ea task, render the Codex prompt."""
     init_db(root)
@@ -29631,9 +29814,19 @@ def render_codex_build_prompt(root: Path, card_path_str: str, out_path: str | No
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(prompt, encoding="utf-8", newline="\n")
 
+    model_args, effort_args, model_contract = _codex_dispatch_model_args(
+        "build_ea", {"ea_id": ea_id, "slug": slug}
+    )
     return {
         "written": True,
         "task_id": task_id,
+        # Visible refusal instead of a silently model-less suggested command.
+        "model_contract": {
+            "allowed": bool(model_contract.get("allowed", True)),
+            "model": (model_contract.get("invocation") or {}).get("model"),
+            "model_tier": (model_contract.get("invocation") or {}).get("model_tier"),
+            "refusal": model_contract.get("refusal"),
+        },
         "ea_id": ea_id,
         "ea_dir": str(ea_dir),
         "prompt_path": str(target),
@@ -29653,7 +29846,12 @@ def render_codex_build_prompt(root: Path, card_path_str: str, out_path: str | No
             # delivers (observed 2026-05-16: 18 min hang, codex CPU=0s).
             # Output is tee'd to a per-build live log so OWNER can Get-Content -Wait
             # without depending on the buffered wake session log.
-            f"cat '{target}' | codex exec -s danger-full-access --cd \"{REPO_ROOT}\" 2>&1 "
+            # Model/effort come from the SAME governed contract as the headless
+            # orchestration dispatcher (model routing doctrine 2026-09-04 §5):
+            # this site used to omit -m and silently take the account default.
+            # No ledger line is written here - this is a SUGGESTED command that
+            # may never be run; the 5h window is counted at the real spawn.
+            f"cat '{target}' | codex exec {model_args}{effort_args}-s danger-full-access --cd \"{REPO_ROOT}\" 2>&1 "
             f"| tee 'D:/QM/strategy_farm/logs/codex_build_{task_id}.live.log'"
         ),
     }

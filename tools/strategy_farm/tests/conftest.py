@@ -24,6 +24,21 @@ def pytest_configure(config):
 
 
 @pytest.fixture(autouse=True)
+def _isolated_codex_model_ledger(tmp_path, monkeypatch):
+    """Never let a test touch the PRODUCTION 5h Codex model ledger.
+
+    Model routing doctrine 2026-09-04 section 3.1: every real Codex spawn site
+    now appends one line to `D:/QM/reports/state/codex_model_window_ledger.jsonl`.
+    Suites that exercise those dispatch functions with a mocked `spawn_managed_codex`
+    (test_mailbox_source_intake, ...) would otherwise write phantom messages into
+    the live window and later READ it, so a busy production window could change a
+    model id or produce a `codex_tier_window_exhausted` deny inside a unit test.
+    Redirect the env override suite-wide; individual tests still set their own.
+    """
+    monkeypatch.setenv("QM_CODEX_MODEL_LEDGER_PATH", str(tmp_path / "codex_model_window_ledger.jsonl"))
+
+
+@pytest.fixture(autouse=True)
 def _zero_claim_spacing(monkeypatch):
     # Import lazily at fixture time, never at conftest collection time: a
     # collection-time import establishes a second flat import graph before

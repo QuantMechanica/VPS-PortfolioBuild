@@ -338,6 +338,59 @@ def _chunk_leads(
     return [leads[start : start + chunk_size] for start in range(0, len(leads), chunk_size)]
 
 
+# CEO decision D2 (round 3, 2026-09-04): under QM_CODEX_MODEL_TIERS=0 this site
+# must emit its EXACT pre-doctrine argv - which here was not "no flags" but this
+# hardcoded pair, appended after --cd. Note the unquoted value: restoring the
+# rollback byte-for-byte means keeping it unquoted.
+_ROLLBACK_MODEL_ARGS: list[str] = ["-m", "gpt-5.6-sol", "-c", "model_reasoning_effort=high"]
+
+
+def _codex_model_tiers_enabled() -> bool:
+    """False only under the QM_CODEX_MODEL_TIERS=0 rollback; never raises."""
+    try:
+        try:
+            from tools.strategy_farm import codex_model_tiers  # noqa: PLC0415
+        except ModuleNotFoundError:  # pragma: no cover - direct script execution
+            import codex_model_tiers  # type: ignore # noqa: PLC0415
+
+        return bool(codex_model_tiers.tiers_enabled())
+    except Exception:  # pragma: no cover - dispatch must never break on this
+        return False
+
+
+def _codex_spawn_contract(task_id: str = "mailbox_source_intake") -> dict:
+    """Governed spawn contract (`allowed`/`flags`/`invocation`/`refusal`).
+
+    Model routing doctrine 2026-09-04 section 5. The contract books the message
+    before the launch and REFUSES when the 5h window is spent; `allowed is
+    False` means do not spawn. Never raises into the spawn path.
+    """
+    try:
+        try:
+            from tools.strategy_farm import quota_spawn_gate  # noqa: PLC0415
+        except ModuleNotFoundError:  # pragma: no cover - direct script execution
+            import quota_spawn_gate  # type: ignore # noqa: PLC0415
+
+        return quota_spawn_gate.codex_spawn_contract(
+            "research_strategy", {"purpose": "mailbox_source_intake"}, task_id=task_id
+        )
+    except Exception:  # pragma: no cover - dispatch must never break on this
+        return {"allowed": True, "flags": [], "invocation": {}, "refusal": None, "ledger": {}}
+
+
+def _release_codex_spawn_message(ledger: dict | None) -> dict:
+    """Refund a booked message when the launch it was booked for failed."""
+    try:
+        try:
+            from tools.strategy_farm import quota_spawn_gate  # noqa: PLC0415
+        except ModuleNotFoundError:  # pragma: no cover - direct script execution
+            import quota_spawn_gate  # type: ignore # noqa: PLC0415
+
+        return quota_spawn_gate.release_codex_dispatch(ledger)
+    except Exception as exc:  # pragma: no cover - dispatch must never break
+        return {"released": False, "reason": f"release_error:{type(exc).__name__}"}
+
+
 def dispatch_analyst(
     prompt: str,
     timeout_seconds: int | None = None,
@@ -379,6 +432,8 @@ def dispatch_analyst(
     log_path = PROMPT_OUT_DIR / f"analyst_{stamp}.log"
     proc = None
     lease: dict | None = None
+    # Booked message of the 5h model window, refunded when no process starts.
+    ledger: dict = {}
     try:
         prompt_path.write_text(prompt, encoding="utf-8")
         env = os.environ.copy()
@@ -387,6 +442,25 @@ def dispatch_analyst(
         # profile used by every other managed Strategy Farm Codex spawn.
         env["CODEX_HOME"] = CODEX_HOME
         env["QM_AGENT_ID"] = "codex"
+        # Model routing doctrine 2026-09-04 section 5: the model id used to be
+        # hardcoded here, which bypassed the governed contract entirely and
+        # left the dispatch invisible to the rolling 5h ledger (3.1). A refused
+        # contract (spent window / unknown tier) means: do not spawn.
+        contract = _codex_spawn_contract()
+        if not contract.get("allowed", True):
+            refusal = contract.get("refusal") or {}
+            return {
+                "ok": False,
+                "spawned": False,
+                "reason": str(refusal.get("reason") or "codex_model_window_refused"),
+                "model_tier_refusal": refusal,
+            }
+        model_flags = list(contract.get("flags") or [])
+        if not _codex_model_tiers_enabled():
+            # Rollback (D2): exact pre-doctrine argv, no ledger, no refusal.
+            model_flags = list(_ROLLBACK_MODEL_ARGS)
+        invocation = dict(contract.get("invocation") or {})
+        ledger = dict(contract.get("ledger") or {})
         command = [
             CODEX_CMD,
             "exec",
@@ -394,10 +468,7 @@ def dispatch_analyst(
             "danger-full-access",
             "--cd",
             str(REPO_ROOT),
-            "-m",
-            "gpt-5.6-sol",
-            "-c",
-            "model_reasoning_effort=high",
+            *model_flags,
         ]
         with prompt_path.open("rb") as stdin_f, log_path.open("wb") as stdout_f:
             proc, lease = spawn_managed_codex(
@@ -420,6 +491,9 @@ def dispatch_analyst(
                 creationflags=CREATE_NO_WINDOW,
                 close_fds=True,
             )
+        # The message was already booked by the contract above (before the
+        # launch), so the rolling window is fail-closed rather than after the
+        # fact (model routing doctrine 2026-09-04 section 3.1).
         returncode = proc.wait(timeout=timeout_seconds)
         release_managed_codex_process(FARM_ROOT, lease_id=str(lease["lease_id"]))
         has_log = log_path.exists() and log_path.stat().st_size > 0
@@ -432,6 +506,8 @@ def dispatch_analyst(
             "log": str(log_path),
             "lease_id": lease["lease_id"],
             "timeout_seconds": timeout_seconds,
+            "model": invocation.get("model"),
+            "model_window_ledger": ledger,
         }
         if not ok:
             out["reason"] = (
@@ -455,6 +531,8 @@ def dispatch_analyst(
         }
     except Exception as exc:
         cleanup = None
+        if proc is None:
+            _release_codex_spawn_message(ledger)
         if proc is not None and lease is not None:
             if proc.poll() is None:
                 cleanup = _terminate_and_confirm(proc)

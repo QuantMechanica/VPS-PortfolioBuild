@@ -21,6 +21,107 @@
         "max"
       ],
       "explicit_payload_field": "codex_reasoning_effort",
+      "_tiers_doc": "Model routing doctrine 2026-09-04 section 5. five_hour_messages = LOW end of the OWNER message table per plan tier; the budget actually spent is floor(value * window_safety_factor), the remainder is the interactive OWNER reserve. plan_tier stays 'plus' until OWNER states the active plan (doctrine section 6). Rollback: QM_CODEX_MODEL_TIERS=0 restores the single 'model' above.",
+      "_tier_selection_doc": "Precedence (doctrine section 2): explicit payload codex_model_tier > scalpel:true / strategy_mechanize_source -> astra > effort class max->sol, high->terra, medium->luna > default_tier. The effort-class step is OPT-IN behind effort_class_tier_mapping_enabled (CEO decision D1, round 3, 2026-09-04): with the flag false a task that names no codex_model_tier resolves to default_tier 'sol' and KEEPS its existing effort class, i.e. the dispatched command line is byte-identical to the pre-doctrine one. Set the flag to true only with an explicit OWNER/orchestrator acknowledgement that every ordinary Codex build then runs gpt-5.6-terra and every bulk task gpt-5.6-luna.",
+      "_effort_class_tier_mapping_doc": "false = untiered tasks keep today's model (gpt-5.6-sol) with their existing max/high/medium effort. true = doctrine section 2 mapping max->sol, high->terra, medium->luna. Explicit codex_model_tier, scalpel:true and task type strategy_mechanize_source resolve to their tiers in BOTH settings.",
+      "plan_tier": "plus",
+      "allowed_plan_tiers": [
+        "plus",
+        "pro_5x",
+        "pro_20x"
+      ],
+      "explicit_tier_payload_field": "codex_model_tier",
+      "effort_class_tier_mapping_enabled": false,
+      "default_tier": "sol",
+      "window_safety_factor": 0.8,
+      "five_hour_window_minutes": 300,
+      "window_ledger_path": "D:/QM/reports/state/codex_model_window_ledger.jsonl",
+      "tiers": {
+        "astra": {
+          "model": "gpt-6-astra",
+          "role": "scalpel: hardest single problems; held, never downgraded",
+          "five_hour_messages": {
+            "plus": 3,
+            "pro_5x": 15,
+            "pro_20x": 60
+          },
+          "fallback_tier": null,
+          "legacy_fallback_tier": null,
+          "default_reasoning_effort": "max"
+        },
+        "sol": {
+          "model": "gpt-5.6-sol",
+          "role": "deep implementation, fail-closed contracts",
+          "five_hour_messages": {
+            "plus": 10,
+            "pro_5x": 50,
+            "pro_20x": 200
+          },
+          "fallback_tier": "terra",
+          "legacy_fallback_tier": "gpt55",
+          "default_reasoning_effort": "max"
+        },
+        "terra": {
+          "model": "gpt-5.6-terra",
+          "role": "standard implementation with tests",
+          "five_hour_messages": {
+            "plus": 25,
+            "pro_5x": 125,
+            "pro_20x": 500
+          },
+          "fallback_tier": "luna",
+          "legacy_fallback_tier": "gpt54",
+          "default_reasoning_effort": "high"
+        },
+        "luna": {
+          "model": "gpt-5.6-luna",
+          "role": "bulk mechanical edits, mirrors",
+          "five_hour_messages": {
+            "plus": 250,
+            "pro_5x": 1250,
+            "pro_20x": 5000
+          },
+          "fallback_tier": null,
+          "legacy_fallback_tier": "gpt54mini",
+          "default_reasoning_effort": "medium"
+        },
+        "gpt55": {
+          "model": "gpt-5.5",
+          "role": "legacy second-level fallback for sol",
+          "five_hour_messages": {
+            "plus": 15,
+            "pro_5x": 75,
+            "pro_20x": 300
+          },
+          "fallback_tier": null,
+          "legacy_fallback_tier": null,
+          "default_reasoning_effort": "max"
+        },
+        "gpt54": {
+          "model": "gpt-5.4",
+          "role": "legacy second-level fallback for terra",
+          "five_hour_messages": {
+            "plus": 20,
+            "pro_5x": 100,
+            "pro_20x": 400
+          },
+          "fallback_tier": null,
+          "legacy_fallback_tier": null,
+          "default_reasoning_effort": "high"
+        },
+        "gpt54mini": {
+          "model": "gpt-5.4-mini",
+          "role": "legacy second-level fallback for luna",
+          "five_hour_messages": {
+            "plus": 60,
+            "pro_5x": 300,
+            "pro_20x": 1200
+          },
+          "fallback_tier": null,
+          "legacy_fallback_tier": null,
+          "default_reasoning_effort": "medium"
+        }
+      },
       "max": {
         "description": "contracts / fail-closed logic, ANY change to runtime-decision-bound files, root-cause forensics, adjudications",
         "task_types": [

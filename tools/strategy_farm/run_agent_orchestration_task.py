@@ -116,7 +116,16 @@ CLAUDE_BUDGET_POLICY = FARM_ROOT / "CLAUDE_BUDGET_POLICY.json"
 # OWNER-approved 2026-08-03 5x-plan matrix: task class sets Codex effort
 # (max/high/medium), Claude remains Sonnet unless a task deliberately selects
 # Opus, and quota pressure may defer volume but never lower the selected tier.
-_DEFAULT_CODEX_INVOCATION = quota_spawn_gate.invocation_profile("codex", "build_ea") or {}
+# `with_tiers=False`: these are IMPORT-TIME fallbacks. A tier profile is only
+# valid for the instant its rolling 5h window was measured (model routing
+# doctrine 2026-09-04 section 3.1), so freezing one for the lifetime of the
+# process would dispatch at/above budget forever and would also read the
+# ledger on every import. The tier is resolved freshly in
+# `headless_model_contract` instead; the constants below stay the
+# pre-doctrine single-model contract (`model_matrix.codex.model`).
+_DEFAULT_CODEX_INVOCATION = (
+    quota_spawn_gate.invocation_profile("codex", "build_ea", with_tiers=False) or {}
+)
 _DEFAULT_CLAUDE_INVOCATION = quota_spawn_gate.invocation_profile("claude", "build_ea") or {}
 _CODEX_MODEL_ENV_OVERRIDE = os.environ.get("QM_CODEX_HEADLESS_MODEL", "").strip()
 _CLAUDE_MODEL_ENV_OVERRIDE = os.environ.get("QM_CLAUDE_HEADLESS_MODEL", "").strip()
@@ -384,10 +393,19 @@ def command_for(
     cwd: Path,
     prompt_path: Path | None = None,
     model_contract: dict[str, Any] | None = None,
-) -> list[str]:
+) -> list[str] | None:
+    """Argv for one headless agent launch; ``None`` for a REFUSED Codex contract.
+
+    CEO decision D3 (round 3, 2026-09-04): a refused contract (spent 5h window,
+    unknown tier, invalid scalpel marker) must not render a model flag at all -
+    the caller skips instead. `run_agent_slot` returns `skipped` before reaching
+    here, so the `None` is the belt to that braces.
+    """
     cli = resolve_cli(agent)
     if agent == "codex":
         contract = headless_model_contract(agent, model_contract)
+        if contract.get("model_tier_refused"):
+            return None
         model = str(contract.get("model") or "")
         effort = str(contract.get("reasoning_effort") or CODEX_HEADLESS_EFFORT)
         model_args = ["-m", model] if model else []
@@ -467,12 +485,38 @@ def headless_model_contract(
     agent: str,
     selected: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Observable enforcement point: quota pacing changes volume, not depth."""
+    """Observable enforcement point: quota pacing changes volume, not depth.
+
+    For Codex the invocation carries the model id resolved from the tier
+    contract (model routing doctrine 2026-09-04 §5); `command_for` emits it as
+    `-m <model>`. When the caller supplies no invocation (e.g. the
+    `lane_db_unavailable_ops_continuity` branch of `_quota_lane_check`, which
+    returns no `allowed_invocations`) the tier is resolved FRESHLY here rather
+    than taken from a frozen import-time snapshot, and an exhausted 5h window
+    is carried through as `model_tier_refused` so the spawn can fail closed
+    instead of silently spending a message over budget. The env override stays
+    the manual OWNER escape hatch.
+    """
     if agent == "codex":
-        contract = dict(selected or _DEFAULT_CODEX_INVOCATION)
+        if selected:
+            contract = dict(selected)
+        else:
+            contract = dict(
+                quota_spawn_gate.invocation_profile("codex", "build_ea") or _DEFAULT_CODEX_INVOCATION
+            )
+            contract["model_contract_source"] = "resolved_at_dispatch"
+        # `select_dispatch` reports an exhausted window / unknown tier as a
+        # side-band field; neither is a model id, so make it a first-class flag.
+        if contract.get("model_tier_refusal") or contract.get("model_tier_error"):
+            contract["model_tier_refused"] = True
+        if contract.get("model_tier_hold"):
+            contract["model_tier_refused"] = True
         if _CODEX_MODEL_ENV_OVERRIDE:
             contract["model"] = _CODEX_MODEL_ENV_OVERRIDE
             contract["model_override_source"] = "QM_CODEX_HEADLESS_MODEL"
+            # An explicit OWNER model override outranks our own conservative
+            # planning budget (same authority order as the burn flag).
+            contract["model_tier_refused"] = False
         return contract
     if agent == "claude":
         contract = dict(selected or _DEFAULT_CLAUDE_INVOCATION)
@@ -692,7 +736,13 @@ def run_agent_slot(
     _write_lane_heartbeat(agent, slot=slot)
 
     model_contract = headless_model_contract(agent, invocation_profile)
-    cmd = command_for(agent, cwd, prompt_path, model_contract)
+    # CEO decision D3 (round 3, 2026-09-04): BOOK FIRST, RENDER SECOND. The argv
+    # used to be frozen here from the PREVIEW tier and never reconciled with
+    # what `commit_dispatch` actually booked, so a commit that landed one tier
+    # lower still launched the preview model (over its budget) while the lower
+    # tier was charged a message it never spent. For codex the command line is
+    # therefore built from the COMMITTED contract below.
+    cmd = None if agent == "codex" else command_for(agent, cwd, prompt_path, model_contract)
     payload: dict[str, Any] = {
         "agent": agent,
         "execution_backend": "agy" if agent == "gemini" else agent,
@@ -709,10 +759,104 @@ def run_agent_slot(
     managed_lease_id: str | None = None
     managed_pid: int | None = None
     managed_process_finished = False
+    # Booked message of the 5h model window, refunded if the launch never
+    # happens (model routing doctrine 2026-09-04 §3.1).
+    codex_ledger: dict[str, Any] | None = None
     try:
         if dry_run:
+            if agent == "codex" and cmd is None and not model_contract.get("model_tier_refused"):
+                # A dry run books nothing, so this argv is the PREVIEW tier and
+                # is marked as such - never the authority for a real spawn.
+                cmd = command_for(agent, cwd, prompt_path, model_contract)
+                payload["command"] = cmd
+                payload["command_preview_only"] = True
             payload.update({"ok": True, "returncode": 0, "dry_run_verified": True})
             return payload
+        if agent == "codex" and model_contract.get("model_tier_refused"):
+            # Model routing doctrine 2026-09-04 §3.1: the rolling 5h allowance
+            # of the selected model is spent (or the requested tier is
+            # unknown). Refuse the spawn rather than dispatch over budget - the
+            # quota gate normally catches this upstream, but the ops-continuity
+            # fail-open branch reaches here with no gate invocation at all.
+            payload.update(
+                {
+                    "ok": True,
+                    "skipped": True,
+                    "returncode": 0,
+                    "reason": "codex_tier_window_exhausted",
+                    "model_tier_refusal": model_contract.get("model_tier_refusal")
+                    or model_contract.get("model_tier_error")
+                    or model_contract.get("model_tier_hold"),
+                }
+            )
+            return payload
+        if agent == "codex":
+            # One real dispatch = one message of the selected model's rolling
+            # 5h allowance (model routing doctrine 2026-09-04 §3.1). Booked
+            # BEFORE the launch and under the ledger lock, so two slots cannot
+            # both pass the same remaining slot; refunded below if the launch
+            # itself fails. Never for a dry run (returned above).
+            codex_ledger = quota_spawn_gate.record_codex_dispatch(
+                task_id=str(
+                    (invocation_profile or {}).get("task_id")
+                    or f"orchestration:{agent}:slot{slot}"
+                ),
+                contract=model_contract,
+            )
+            payload["model_window_ledger"] = codex_ledger
+            booking_reason = str(codex_ledger.get("reason") or "")
+            if codex_ledger.get("recorded"):
+                # CEO decision D3: reconcile the contract with what was really
+                # booked. The commit may have landed one tier LOWER than the
+                # preview (another spawner filled the preferred model in
+                # between); the argv must then carry that lower tier's model id,
+                # which is also the tier the ledger just charged.
+                booked_model = str(codex_ledger.get("model") or "")
+                if booked_model and not model_contract.get("model_override_source"):
+                    model_contract = dict(model_contract)
+                    model_contract["model"] = booked_model
+                    model_contract["model_tier"] = str(
+                        codex_ledger.get("tier") or model_contract.get("model_tier") or ""
+                    )
+                    if codex_ledger.get("downgraded_from"):
+                        model_contract["model_tier_downgraded_from"] = str(
+                            codex_ledger["downgraded_from"]
+                        )
+                    model_contract["model_contract_source"] = "committed_ledger_booking"
+                    payload["model_contract"] = model_contract
+            elif booking_reason != "codex_model_tiers_disabled":
+                # CEO decision D4: a message that could not be BOOKED is not
+                # spent - an exhausted window, an unusable tier, an unreadable
+                # or unwritable ledger and an unresolvable policy all refuse.
+                payload.update(
+                    {
+                        "ok": True,
+                        "skipped": True,
+                        "returncode": 0,
+                        "reason": booking_reason or "codex_dispatch_unbooked",
+                        "model_tier_refusal": codex_ledger.get("refusal") or codex_ledger,
+                    }
+                )
+                return payload
+        if agent == "codex":
+            cmd = command_for(agent, cwd, prompt_path, model_contract)
+            payload["command"] = cmd
+            if cmd is None:
+                # Booked but never launched: refund so the window does not
+                # drift shut on a phantom message.
+                if codex_ledger and codex_ledger.get("recorded"):
+                    payload["model_window_ledger_release"] = (
+                        quota_spawn_gate.release_codex_dispatch(codex_ledger)
+                    )
+                payload.update(
+                    {
+                        "ok": True,
+                        "skipped": True,
+                        "returncode": 0,
+                        "reason": "codex_model_contract_refused",
+                    }
+                )
+                return payload
         creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
         with open(prompt_path, "rb") as stdin_f, open(live_log, "wb") as stdout_f:
             popen_kwargs = {
@@ -791,6 +935,12 @@ def run_agent_slot(
         return payload
     except Exception as exc:
         payload.update({"ok": False, "returncode": 1, "error": repr(exc)})
+        if codex_ledger and codex_ledger.get("recorded") and not payload.get("pid"):
+            # The message was booked but no process was ever launched: refund
+            # it so the window does not drift shut on a phantom dispatch.
+            payload["model_window_ledger_release"] = quota_spawn_gate.release_codex_dispatch(
+                codex_ledger
+            )
         return payload
     finally:
         # A lease may be removed only after the exact registered process is
@@ -1009,15 +1159,28 @@ def _quota_lane_candidates(agent: str) -> tuple[list[dict[str, Any]], str]:
         for row in rows:
             required = set(json.loads(row["required_capabilities_json"] or "[]"))
             skills = set(json.loads(row["required_skills_json"] or "[]"))
+            row_payload = json.loads(row["payload_json"] or "{}")
             # Match agent_router.route_once exactly: declared/governed skills
             # are binding capabilities, while undeclared skill labels remain
             # descriptive metadata and do not strand otherwise-routable work.
             required |= skills & (declared_caps | governed_caps)
+            # Same for payload-declared capabilities (routing-flapping defect,
+            # ticket 2026-08-21). Without this union the two selectors disagreed
+            # for every row written before the doctrine patch or outside
+            # `enqueue_task`, i.e. exactly the rows the defect produced.
+            required |= set(agent_router.payload_required_capabilities(row_payload)) & (
+                declared_caps | governed_caps
+            )
             assigned = str(row["assigned_agent"] or "")
             # A human-owned task is never offered to an automated lane, even
             # if a stale assignment or registry drift says otherwise.
             human_holder = agent_router._human_lane_holder(con, required)
             if human_holder is not None and human_holder != agent:
+                continue
+            # Decision-bound rows belong to one lane only (doctrine
+            # 2026-09-04 §5); they must not make another lane spawn either.
+            pinned_agent = agent_router.decision_bound_agent(row_payload)
+            if pinned_agent is not None and pinned_agent != agent:
                 continue
             if capabilities is not None and not required.issubset(capabilities):
                 continue
@@ -1029,7 +1192,7 @@ def _quota_lane_candidates(agent: str) -> tuple[list[dict[str, Any]], str]:
                     "assigned": bool(assigned),
                     "budget_class": str(row["budget_class"] or "standard"),
                     "required_capabilities": sorted(required),
-                    "payload": json.loads(row["payload_json"] or "{}"),
+                    "payload": row_payload,
                 }
             )
         return candidates, "ok"
@@ -1111,8 +1274,10 @@ def _quota_lane_check(
         },
         "selected_decision": selected_pair[1],
         "allowed_invocations": [
-            decision.get("invocation")
-            for _candidate, decision in allowed
+            # Carry the row id with the invocation so the 5h model ledger can
+            # name WHICH task spent the message (doctrine 2026-09-04 §3.1).
+            {"task_id": str(candidate.get("task_id") or ""), **(decision.get("invocation") or {})}
+            for candidate, decision in allowed
             if decision.get("invocation")
         ],
     }

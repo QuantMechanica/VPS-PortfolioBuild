@@ -251,6 +251,40 @@ def _release_spawn_lock(lock: FactoryMutationLock | None) -> None:
     lock.__exit__(None, None, None)
 
 
+def _codex_spawn_contract(task_id: str = "fleet_pacer") -> dict:
+    """Governed spawn contract (`allowed`/`flags`/`invocation`/`refusal`).
+
+    Model routing doctrine 2026-09-04 section 5. The contract books the message
+    before the launch and REFUSES when the 5h window is spent; `allowed is
+    False` means do not spawn. Never raises into the spawn path.
+    """
+    try:
+        try:
+            from tools.strategy_farm import quota_spawn_gate  # noqa: PLC0415
+        except ModuleNotFoundError:  # pragma: no cover - direct script execution
+            import quota_spawn_gate  # type: ignore # noqa: PLC0415
+
+        return quota_spawn_gate.codex_spawn_contract(
+            "ops_issue", {"purpose": "fleet_pacer"}, task_id=task_id
+        )
+    except Exception as exc:  # pragma: no cover - dispatch must never break
+        _log(f"model_contract_unavailable err={exc!r}")
+        return {"allowed": True, "flags": [], "invocation": {}, "refusal": None, "ledger": {}}
+
+
+def _release_codex_spawn_message(ledger: dict | None) -> dict:
+    """Refund a booked message when the launch it was booked for failed."""
+    try:
+        try:
+            from tools.strategy_farm import quota_spawn_gate  # noqa: PLC0415
+        except ModuleNotFoundError:  # pragma: no cover - direct script execution
+            import quota_spawn_gate  # type: ignore # noqa: PLC0415
+
+        return quota_spawn_gate.release_codex_dispatch(ledger)
+    except Exception as exc:  # pragma: no cover - dispatch must never break
+        return {"released": False, "reason": f"release_error:{type(exc).__name__}"}
+
+
 def _spawn_agent(prompt_name: str) -> int | None:
     prompt = PROMPT_DIR / prompt_name
     if not prompt.exists():
@@ -267,8 +301,31 @@ def _spawn_agent(prompt_name: str) -> int | None:
     live_log = LOG_DIR / f"agent_{stamp}_{prompt_name.split('.')[0]}.live.log"
     live_log.parent.mkdir(parents=True, exist_ok=True)
     creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
+    ledger: dict = {}
     try:
-        command = [_resolve_codex(), "exec", "-s", "danger-full-access", "--cd", str(REPO_ROOT)]
+        # Model routing doctrine 2026-09-04 section 5: a REAL Codex spawn goes
+        # through the same governed contract as every other dispatch site, and
+        # counts one message against the model's rolling 5h window (3.1).
+        # A refused contract means the window is spent - do not spawn.
+        contract = _codex_spawn_contract(f"fleet_pacer:{prompt_name}")
+        if not contract.get("allowed", True):
+            _log(
+                f"spawn refused prompt={prompt_name} "
+                f"reason={(contract.get('refusal') or {}).get('reason')}"
+            )
+            return None
+        model_flags = list(contract.get("flags") or [])
+        invocation = dict(contract.get("invocation") or {})
+        ledger = dict(contract.get("ledger") or {})
+        command = [
+            _resolve_codex(),
+            "exec",
+            *model_flags,
+            "-s",
+            "danger-full-access",
+            "--cd",
+            str(REPO_ROOT),
+        ]
         with prompt.open("rb") as stdin_f, live_log.open("wb") as stdout_f:
             proc, lease = spawn_managed_codex(
                 FARM_ROOT,
@@ -276,7 +333,12 @@ def _spawn_agent(prompt_name: str) -> int | None:
                 purpose="fleet_pacer",
                 cwd=REPO_ROOT,
                 max_age_minutes=60,
-                metadata={"prompt": prompt_name, "live_log": str(live_log)},
+                metadata={
+                    "prompt": prompt_name,
+                    "live_log": str(live_log),
+                    "model": invocation.get("model"),
+                    "model_tier": invocation.get("model_tier"),
+                },
                 stdin=stdin_f,
                 stdout=stdout_f,
                 stderr=subprocess.STDOUT,
@@ -284,10 +346,14 @@ def _spawn_agent(prompt_name: str) -> int | None:
             )
         _log(
             f"spawned agent pid={proc.pid} lease={lease['lease_id']} "
-            f"prompt={prompt_name} log={live_log.name}"
+            f"prompt={prompt_name} log={live_log.name} "
+            f"model={invocation.get('model') or 'account_default'} "
+            f"ledger={ledger.get('recorded')}"
         )
         return proc.pid
     except Exception as exc:
+        # A booked message whose launch never happened is refunded.
+        _release_codex_spawn_message(ledger)
         _log(f"spawn_failed prompt={prompt_name} err={exc}")
         return None
     finally:
