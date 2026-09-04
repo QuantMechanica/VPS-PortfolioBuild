@@ -194,3 +194,14 @@ NEVER: propose ML, propose parameters without a grid, claim numbers not in the t
 - 2026-09-04 05:10Z — v1 written (inventory measured, protocol, five hypotheses, tooling
   spec, Astra template). Next: commission `edge_lab_stats.py` (Sonnet/Terra) and the
   EDGE-1 / EDGE-3 tables.
+
+## 8. Measurement log
+
+### 2026-09-05 00:50Z — edge_lab_stats.py r2 (workflow wf_35b7e0ed, task 315041f7)
+
+- Tool: `tools/strategy_farm/research/edge_lab_stats.py` (deterministic CLI; DST rules qm.dst_rule.us.v1 / uk.v1 ported from QM_DSTAware.mqh; Stage-0 tick-volume timestamp calibration + Stage-0b per-event voiding; sealed cluster rank map; frozen-IS holdouts). Tests: `tools/strategy_farm/tests/test_edge_lab_stats.py` (79). Two adversarial r1 reviews returned FAIL (4 blockers, 10 majors); all addressed in r2; r2 itself awaits an independent verify before any number here is cited outside this log.
+- Outputs (compact copies): `docs/research/edge_lab/20260904T2045Z_r2/EDGE-1/` and `EDGE-3/` (the 24 MB `fix_baseline.csv`, 6.5 MB `fix_days.csv` stay in the session scratchpad; regenerate with the manifest invocation).
+- **EDGE-1 (news surprise drift): UNDERPOWERED, not refuted, not supported.** Primary cell (|z|>=1, entry +5 min, hold 90 min): effect +0.218 sigma vs 0.40 floor on 12 independent clusters (floor 300), t = 0.94; holdout 2024-25 empty (no NFP print at |z|>=1). Sign is aggregation-rule dependent (+3.8 bp sealed rank / -0.2 bp row-mean / -4.9 bp unanimous). Tradeable entries 2.0/yr per symbol (< Q02 floor 5). Binding constraint is the calendar, not the market: only 3 of 124 high-impact groups yield a verifiable release instant; Stage-0b voids 24 % of those events.
+- **EDGE-3 (London fix): XAUUSD 15:00 arm DEAD_DECAY (doc-literal R_FIX basis); 10:30 negative control ~0 (pipeline not manufacturing reversion); WM/R 16:00 arm see summary.json.** R_EXCESS is confounded with time of day (declared deviation).
+- **Data finding (P0, escalated separately, `docs/ops/evidence/2026-09-05_news_calendar_timestamp_defect.md`):** both production calendar files store US 08:30-ET releases ~17 h early for 78 % of 2018-2025 rows (NFP/Retail Sales/Unemployment Rate 100 %); coverage hole 2025-05..2026-06. 2026 rows correct.
+- Caveats unchanged: M5 BID bars only, gross numbers, no intrabar stops, `sealed_before_measurement=false` (dirty tree) — no seal claimed.

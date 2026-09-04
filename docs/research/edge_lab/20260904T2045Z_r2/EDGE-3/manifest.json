@@ -1,0 +1,204 @@
+{
+  "code": {
+    "code_version": "qm.edge_lab_stats.v1",
+    "file_sha256": "2ae0171c261012718c82cbb572a5e8f9b717d4ca3f47f19771f91876e321bc5c",
+    "file_sha256_lf": "2ae0171c261012718c82cbb572a5e8f9b717d4ca3f47f19771f91876e321bc5c",
+    "git_commit": "3510a48eb7e144d86380f78ce07a231f73b7d212",
+    "git_dirty": true,
+    "path": "tools/strategy_farm/research/edge_lab_stats.py"
+  },
+  "constraints_honoured": {
+    "no_ml": true,
+    "raw_ticks_in_model_context": false,
+    "read_only_factory": true,
+    "registry_unmodified": true,
+    "t_live_untouched": true
+  },
+  "determinism": {
+    "csv_encoding": "utf-8",
+    "csv_newline": "\\n",
+    "float_format": "%.10g",
+    "reproducible": "re-running with identical input shas and the same --now-utc must reproduce identical output shas",
+    "rng_seed": null,
+    "rng_used": false
+  },
+  "dst_rules": [
+    {
+      "end": "06:00 UTC 1st Sunday of November",
+      "id": "qm.dst_rule.us.v1",
+      "offset_dst_h": 3,
+      "offset_std_h": 2,
+      "source": "framework/include/QM/QM_DSTAware.mqh:4-141",
+      "start": "07:00 UTC 2nd Sunday of March"
+    },
+    {
+      "end": "01:00 UTC last Sunday of October",
+      "id": "qm.dst_rule.uk.v1",
+      "offset_dst_h": 1,
+      "offset_std_h": 0,
+      "start": "01:00 UTC last Sunday of March"
+    }
+  ],
+  "generated_utc": "2026-09-05T00:00:00Z",
+  "host": {
+    "invocation": "python -X utf8 tools/strategy_farm/research/edge_lab_stats.py --hypothesis both --out C:/Users/ADMINI~1/AppData/Local/Temp/3/claude/C--QM-repo/bf445003-6640-4617-ac2f-e2e705bd7988/scratchpad/edge_lab_20260904T2045Z_r2 --now-utc 2026-09-05T00:00:00Z",
+    "python": "3.11.9",
+    "repo_root": "C:/QM/repo/.claude/worktrees/wf_35b7e0ed-8f2-3"
+  },
+  "hypothesis_id": "EDGE-3",
+  "inputs": [
+    {
+      "bytes": 29189964,
+      "path": "D:/QM/mt5/T_Export/MQL5/Files/EURUSD.DWX_M5.csv",
+      "period_first_broker": "2017-10-02T00:05:00",
+      "period_first_utc": "2017-10-01T21:05:00Z",
+      "period_last_broker": "2025-12-31T23:55:00",
+      "period_last_utc": "2025-12-31T21:55:00Z",
+      "price_side": "bid",
+      "producer": "SecretMission/EXPORT_DWX_FX_M5.mq5 | EXPORT_DWX_XAU_M5.mq5 (not in repo)",
+      "role": "bars",
+      "rows": 608564,
+      "sha256": "b7ec4fae50b0e257832cb3e1217a34236f2a1e212844f9ee35b0cc7b86ce91f9",
+      "symbol": "EURUSD.DWX",
+      "time_base": "broker_naive_epoch (Darwinex NY-close, GMT+2/+3 US-DST)",
+      "timeframe": "M5"
+    },
+    {
+      "bytes": 29258180,
+      "path": "D:/QM/mt5/T_Export/MQL5/Files/GBPUSD.DWX_M5.csv",
+      "period_first_broker": "2017-10-02T00:05:00",
+      "period_first_utc": "2017-10-01T21:05:00Z",
+      "period_last_broker": "2025-12-31T23:55:00",
+      "period_last_utc": "2025-12-31T21:55:00Z",
+      "price_side": "bid",
+      "producer": "SecretMission/EXPORT_DWX_FX_M5.mq5 | EXPORT_DWX_XAU_M5.mq5 (not in repo)",
+      "role": "bars",
+      "rows": 608594,
+      "sha256": "e483e548e28f611b0d53143eb1e329eff9a568f7d8a7076afc4ce59a8aba31bc",
+      "symbol": "GBPUSD.DWX",
+      "time_base": "broker_naive_epoch (Darwinex NY-close, GMT+2/+3 US-DST)",
+      "timeframe": "M5"
+    },
+    {
+      "bytes": 29251573,
+      "path": "D:/QM/mt5/T_Export/MQL5/Files/USDJPY.DWX_M5.csv",
+      "period_first_broker": "2017-10-02T00:05:00",
+      "period_first_utc": "2017-10-01T21:05:00Z",
+      "period_last_broker": "2025-12-31T23:55:00",
+      "period_last_utc": "2025-12-31T21:55:00Z",
+      "price_side": "bid",
+      "producer": "SecretMission/EXPORT_DWX_FX_M5.mq5 | EXPORT_DWX_XAU_M5.mq5 (not in repo)",
+      "role": "bars",
+      "rows": 608798,
+      "sha256": "27d1dc7569385978ef42ae33dfcbbe1b36ed162f06ed031692a157b196159dd4",
+      "symbol": "USDJPY.DWX",
+      "time_base": "broker_naive_epoch (Darwinex NY-close, GMT+2/+3 US-DST)",
+      "timeframe": "M5"
+    },
+    {
+      "bytes": 28128925,
+      "path": "D:/QM/mt5/T_Export/MQL5/Files/XAUUSD.DWX_M5.csv",
+      "period_first_broker": "2017-10-02T23:55:00",
+      "period_first_utc": "2017-10-02T20:55:00Z",
+      "period_last_broker": "2025-12-31T23:55:00",
+      "period_last_utc": "2025-12-31T21:55:00Z",
+      "price_side": "bid",
+      "producer": "SecretMission/EXPORT_DWX_FX_M5.mq5 | EXPORT_DWX_XAU_M5.mq5 (not in repo)",
+      "role": "bars",
+      "rows": 582412,
+      "sha256": "a0785d25e7ef7811e95509f3e009703617f3996eb8f5d4f0f1acf945d3522c4f",
+      "symbol": "XAUUSD.DWX",
+      "time_base": "broker_naive_epoch (Darwinex NY-close, GMT+2/+3 US-DST)",
+      "timeframe": "M5"
+    },
+    {
+      "bytes": 4355642,
+      "datetime_eet_used": false,
+      "defect_note": "DateTime_UTC displaces a large class of US 08:30-ET releases, and the displacement is NOT a constant: raw USD NFP stamps sit at Thu 19:30Z Apr-Sep and Thu 20:30Z Oct-Mar, so the -17h/-16h split follows a DST rule of its own.  Stage 0 recovers ONE offset per (currency, event) group; Stage 0b then verifies every individual instant against its group's modal home wall-clock time and its own local tickvol peak, and VOIDS the rows the constant misplaces.  Neither stage ever falls back to the raw timestamp and neither re-fits an offset per event",
+      "known_at_utc_available": false,
+      "path": "D:/QM/data/news_calendar/forex_factory_calendar_clean.csv",
+      "period_first": "2015-01-01",
+      "period_last": "2026-09-04",
+      "role": "calendar",
+      "rows": 48636,
+      "sha256": "9bcdb5b02df2a57581fea8be3fe0e931bfaba8ca246aaa88a735e1ac0559c699",
+      "timestamp_column_used": "DateTime_UTC + Stage-0 calibration offset",
+      "timestamps_calibrated": true
+    },
+    {
+      "bytes": 1654,
+      "hash_note": "sha256 is the on-disk bytes of THIS checkout; sha256_lf is CRLF-normalised and is the value to compare across checkouts",
+      "path": "framework/registry/live_commission.json",
+      "role": "cost_registry",
+      "sha256": "e9f3c23ae44e5b11c57bb874d4d4bec8cf1dc9987777f5c9ef3add6e2bb43eea",
+      "sha256_lf": "119f795cefce2f819f0c7aae3bddb87affbffa771f596df48d182cf89989e197"
+    }
+  ],
+  "outputs": [
+    {
+      "path": "C:/Users/ADMINI~1/AppData/Local/Temp/3/claude/C--QM-repo/bf445003-6640-4617-ac2f-e2e705bd7988/scratchpad/edge_lab_20260904T2045Z_r2/EDGE-3/fix_baseline.csv",
+      "rows": 123891,
+      "sha256": "3b50865ee8814dff4e305c0791cb8acacc2013c19fe028971afb2d22358efc10"
+    },
+    {
+      "path": "C:/Users/ADMINI~1/AppData/Local/Temp/3/claude/C--QM-repo/bf445003-6640-4617-ac2f-e2e705bd7988/scratchpad/edge_lab_20260904T2045Z_r2/EDGE-3/fix_baseline_cells.csv",
+      "rows": 1080,
+      "sha256": "620f569df65d7aa4ba9d7f16a398b19a564e7f4b6a3e7292454da6b77477a982"
+    },
+    {
+      "path": "C:/Users/ADMINI~1/AppData/Local/Temp/3/claude/C--QM-repo/bf445003-6640-4617-ac2f-e2e705bd7988/scratchpad/edge_lab_20260904T2045Z_r2/EDGE-3/fix_baseline_hours.csv",
+      "rows": 1296,
+      "sha256": "abadfd618ffe628c6f12dbb4de15c7519b7f68f912ff05e93202aac55e3fd5b1"
+    },
+    {
+      "path": "C:/Users/ADMINI~1/AppData/Local/Temp/3/claude/C--QM-repo/bf445003-6640-4617-ac2f-e2e705bd7988/scratchpad/edge_lab_20260904T2045Z_r2/EDGE-3/fix_days.csv",
+      "rows": 18792,
+      "sha256": "ae36e0e9b509bade42c0ae68c64ab1470c470ab8994ef4f72191a88ab78d2ccc"
+    },
+    {
+      "path": "C:/Users/ADMINI~1/AppData/Local/Temp/3/claude/C--QM-repo/bf445003-6640-4617-ac2f-e2e705bd7988/scratchpad/edge_lab_20260904T2045Z_r2/EDGE-3/summary.json",
+      "rows": null,
+      "sha256": "5bd953b0cf42325837e11cfb0422a211da7348203690b255130d70fd188739c8"
+    }
+  ],
+  "params": {
+    "calib_era_split_year": 2022,
+    "calib_max_offset_min": 1560,
+    "calib_min_obs": 20,
+    "calib_year_hi": 2025,
+    "calib_year_lo": 2018,
+    "edge1_include_gbpjpy": false,
+    "edge3_diagnostics": false,
+    "emit_baseline_rows": true,
+    "surprise_min_history": 12
+  },
+  "period": {
+    "decay_subsample": [
+      "2022-01-01",
+      "2023-12-31"
+    ],
+    "is_end": "2023-12-31",
+    "is_start": "2018-01-01",
+    "oos_end": "2025-12-31",
+    "oos_start": "2024-01-01"
+  },
+  "rule_seal": {
+    "cluster_direction_rule": "primary_event_rank",
+    "cluster_rank_map_sha256": "8f20395da29728d529a90d737d49723a7fd4efefe64050cf0052a5a0bb9ec4ec",
+    "declared_trial_count": 108,
+    "doc_path": "C:/QM/repo/docs/research/EDGE_DISCOVERY_PROGRAM_V1_2026-09-04.md",
+    "doc_resolved_from": "canonical_repo",
+    "doc_sha256": "cee886356945e38a7b56b482df3bcf3cc3d6b40a0e02b9d1e375d0296e311b37",
+    "doc_sha256_lf": "cee886356945e38a7b56b482df3bcf3cc3d6b40a0e02b9d1e375d0296e311b37",
+    "polarity_map_sha256": null,
+    "primary_cell": {
+      "holding_min": 45,
+      "prefix_window_min": 30,
+      "threshold_atr": 0.6
+    },
+    "seal_note": "git_dirty=true forces sealed_before_measurement=false",
+    "sealed_before_measurement": false,
+    "trials_schema": "qm.edge-lab.trials.v1"
+  },
+  "schema_version": "qm.edge_lab.manifest.v1"
+}

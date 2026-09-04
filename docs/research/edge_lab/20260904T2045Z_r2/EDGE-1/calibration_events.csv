@@ -1,0 +1,265 @@
+currency,event,raw_datetime_utc,applied_offset_min,release_utc,home_tz,home_local_hhmm,modal_home_local_hhmm,local_peak_offset_min,local_peak_ratio,local_prominent,instant_verified,void_reason
+USD,Average Hourly Earnings m/m,2018.01.04 20:30,1020,2018-01-05T13:30:00Z,America/New_York,08:30,08:30,0,7.006705784,1,1,
+USD,Average Hourly Earnings m/m,2018.02.02 13:30,1020,2018-02-03T06:30:00Z,America/New_York,01:30,08:30,,,0,0,home_clock_mismatch
+USD,Average Hourly Earnings m/m,2018.03.08 20:30,1020,2018-03-09T13:30:00Z,America/New_York,08:30,08:30,0,5.586597452,1,1,
+USD,Average Hourly Earnings m/m,2018.04.05 19:30,1020,2018-04-06T12:30:00Z,America/New_York,08:30,08:30,0,5.710208031,1,1,
+USD,Average Hourly Earnings m/m,2018.05.04 12:30,1020,2018-05-05T05:30:00Z,America/New_York,01:30,08:30,,,0,0,home_clock_mismatch
+USD,Average Hourly Earnings m/m,2018.06.01 12:30,1020,2018-06-02T05:30:00Z,America/New_York,01:30,08:30,,,0,0,home_clock_mismatch
+USD,Average Hourly Earnings m/m,2018.07.05 19:30,1020,2018-07-06T12:30:00Z,America/New_York,08:30,08:30,0,2.409836066,1,1,
+USD,Average Hourly Earnings m/m,2018.08.02 19:30,1020,2018-08-03T12:30:00Z,America/New_York,08:30,08:30,0,1.941018767,1,1,
+USD,Average Hourly Earnings m/m,2018.09.06 19:30,1020,2018-09-07T12:30:00Z,America/New_York,08:30,08:30,0,2.429487179,1,1,
+USD,Average Hourly Earnings m/m,2018.10.04 20:30,1020,2018-10-05T13:30:00Z,America/New_York,09:30,08:30,-60,1.878640777,1,0,home_clock_mismatch
+USD,Average Hourly Earnings m/m,2018.11.01 20:30,1020,2018-11-02T13:30:00Z,America/New_York,09:30,08:30,-60,1.98,1,0,home_clock_mismatch
+USD,Average Hourly Earnings m/m,2018.12.06 20:30,1020,2018-12-07T13:30:00Z,America/New_York,08:30,08:30,0,4.369142033,1,1,
+USD,Average Hourly Earnings m/m,2019.01.03 20:30,1020,2019-01-04T13:30:00Z,America/New_York,08:30,08:30,0,5.063180828,1,1,
+USD,Average Hourly Earnings m/m,2019.02.01 13:30,1020,2019-02-02T06:30:00Z,America/New_York,01:30,08:30,,,0,0,home_clock_mismatch
+USD,Average Hourly Earnings m/m,2019.03.07 20:30,1020,2019-03-08T13:30:00Z,America/New_York,08:30,08:30,0,6.44673913,1,1,
+USD,Average Hourly Earnings m/m,2019.04.04 19:30,1020,2019-04-05T12:30:00Z,America/New_York,08:30,08:30,0,5.136929461,1,1,
+USD,Average Hourly Earnings m/m,2019.05.03 12:30,1020,2019-05-04T05:30:00Z,America/New_York,01:30,08:30,,,0,0,home_clock_mismatch
+USD,Average Hourly Earnings m/m,2019.06.06 19:30,1020,2019-06-07T12:30:00Z,America/New_York,08:30,08:30,0,8.622722401,1,1,
+USD,Average Hourly Earnings m/m,2019.07.04 19:30,1020,2019-07-05T12:30:00Z,America/New_York,08:30,08:30,0,5.41954708,1,1,
+USD,Average Hourly Earnings m/m,2019.08.01 19:30,1020,2019-08-02T12:30:00Z,America/New_York,08:30,08:30,30,3.641152263,1,0,local_peak_elsewhere
+USD,Average Hourly Earnings m/m,2019.09.05 19:30,1020,2019-09-06T12:30:00Z,America/New_York,08:30,08:30,0,4.540983607,1,1,
+USD,Average Hourly Earnings m/m,2019.10.03 20:30,1020,2019-10-04T13:30:00Z,America/New_York,09:30,08:30,-60,5.402810304,1,0,home_clock_mismatch
+USD,Average Hourly Earnings m/m,2019.11.01 12:30,1020,2019-11-02T05:30:00Z,America/New_York,01:30,08:30,,,0,0,home_clock_mismatch
+USD,Average Hourly Earnings m/m,2019.12.05 20:30,1020,2019-12-06T13:30:00Z,America/New_York,08:30,08:30,0,9.646919431,1,1,
+USD,Average Hourly Earnings m/m,2020.01.09 20:30,1020,2020-01-10T13:30:00Z,America/New_York,08:30,08:30,0,4.539383562,1,1,
+USD,Average Hourly Earnings m/m,2020.02.06 20:30,1020,2020-02-07T13:30:00Z,America/New_York,08:30,08:30,0,4.311270125,1,1,
+USD,Average Hourly Earnings m/m,2020.03.05 20:30,1020,2020-03-06T13:30:00Z,America/New_York,08:30,08:30,0,2.009880028,1,1,
+USD,Average Hourly Earnings m/m,2020.04.03 12:30,1020,2020-04-04T05:30:00Z,America/New_York,01:30,08:30,,,0,0,home_clock_mismatch
+USD,Average Hourly Earnings m/m,2020.05.07 19:30,1020,2020-05-08T12:30:00Z,America/New_York,08:30,08:30,0,4.233287858,1,1,
+USD,Average Hourly Earnings m/m,2020.06.04 19:30,1020,2020-06-05T12:30:00Z,America/New_York,08:30,08:30,0,3.673569482,1,1,
+USD,Average Hourly Earnings m/m,2020.07.01 19:30,1020,2020-07-02T12:30:00Z,America/New_York,08:30,08:30,0,3.374379345,1,1,
+USD,Average Hourly Earnings m/m,2020.08.06 19:30,1020,2020-08-07T12:30:00Z,America/New_York,08:30,08:30,0,2.668815944,1,1,
+USD,Average Hourly Earnings m/m,2020.09.03 19:30,1020,2020-09-04T12:30:00Z,America/New_York,08:30,08:30,0,3.352308665,1,1,
+USD,Average Hourly Earnings m/m,2020.10.02 12:30,1020,2020-10-03T05:30:00Z,America/New_York,01:30,08:30,,,0,0,home_clock_mismatch
+USD,Average Hourly Earnings m/m,2020.11.05 20:30,1020,2020-11-06T13:30:00Z,America/New_York,08:30,08:30,0,2.546070461,1,1,
+USD,Average Hourly Earnings m/m,2020.12.03 20:30,1020,2020-12-04T13:30:00Z,America/New_York,08:30,08:30,15,2.648826979,1,0,local_peak_elsewhere
+USD,Average Hourly Earnings m/m,2021.01.07 20:30,1020,2021-01-08T13:30:00Z,America/New_York,08:30,08:30,0,4.033450704,1,1,
+USD,Average Hourly Earnings m/m,2021.02.04 20:30,1020,2021-02-05T13:30:00Z,America/New_York,08:30,08:30,0,3.712945591,1,1,
+USD,Average Hourly Earnings m/m,2021.03.04 20:30,1020,2021-03-05T13:30:00Z,America/New_York,08:30,08:30,0,3.039816233,1,1,
+USD,Average Hourly Earnings m/m,2021.04.02 12:30,1020,2021-04-03T05:30:00Z,America/New_York,01:30,08:30,,,0,0,home_clock_mismatch
+USD,Average Hourly Earnings m/m,2021.05.06 19:30,1020,2021-05-07T12:30:00Z,America/New_York,08:30,08:30,0,5.589723926,1,1,
+USD,Average Hourly Earnings m/m,2021.06.03 19:30,1020,2021-06-04T12:30:00Z,America/New_York,08:30,08:30,0,8.211779449,1,1,
+USD,Average Hourly Earnings m/m,2021.07.01 19:30,1020,2021-07-02T12:30:00Z,America/New_York,08:30,08:30,0,4.514797508,1,1,
+USD,Average Hourly Earnings m/m,2021.08.05 19:30,1020,2021-08-06T12:30:00Z,America/New_York,08:30,08:30,0,7.848020434,1,1,
+USD,Average Hourly Earnings m/m,2021.09.02 19:30,1020,2021-09-03T12:30:00Z,America/New_York,08:30,08:30,5,5.893147503,1,1,
+USD,Average Hourly Earnings m/m,2021.10.07 20:30,1020,2021-10-08T13:30:00Z,America/New_York,09:30,08:30,-60,4.394981413,1,0,home_clock_mismatch
+USD,Average Hourly Earnings m/m,2021.11.04 20:30,1020,2021-11-05T13:30:00Z,America/New_York,09:30,08:30,-60,4.063564132,1,0,home_clock_mismatch
+USD,Average Hourly Earnings m/m,2021.12.02 20:30,1020,2021-12-03T13:30:00Z,America/New_York,08:30,08:30,0,3.502606106,1,1,
+USD,Average Hourly Earnings m/m,2022.01.06 20:30,1020,2022-01-07T13:30:00Z,America/New_York,08:30,08:30,0,4.691879867,1,1,
+USD,Average Hourly Earnings m/m,2022.02.03 20:30,1020,2022-02-04T13:30:00Z,America/New_York,08:30,08:30,0,2.711916462,1,1,
+USD,Average Hourly Earnings m/m,2022.03.03 20:30,1020,2022-03-04T13:30:00Z,America/New_York,08:30,08:30,0,1.888579387,1,1,
+USD,Average Hourly Earnings m/m,2022.04.01 12:30,1020,2022-04-02T05:30:00Z,America/New_York,01:30,08:30,,,0,0,home_clock_mismatch
+USD,Average Hourly Earnings m/m,2022.05.05 19:30,1020,2022-05-06T12:30:00Z,America/New_York,08:30,08:30,0,2.119817768,1,1,
+USD,Average Hourly Earnings m/m,2022.06.02 19:30,1020,2022-06-03T12:30:00Z,America/New_York,08:30,08:30,0,2.729411765,1,1,
+USD,Average Hourly Earnings m/m,2022.07.07 19:30,1020,2022-07-08T12:30:00Z,America/New_York,08:30,08:30,0,2.087421945,1,1,
+USD,Average Hourly Earnings m/m,2022.08.04 19:30,1020,2022-08-05T12:30:00Z,America/New_York,08:30,08:30,0,2.104901118,1,1,
+USD,Average Hourly Earnings m/m,2022.09.01 19:30,1020,2022-09-02T12:30:00Z,America/New_York,08:30,08:30,0,2.281188119,1,1,
+USD,Average Hourly Earnings m/m,2022.10.06 20:30,1020,2022-10-07T13:30:00Z,America/New_York,09:30,08:30,-60,1.528301887,1,0,home_clock_mismatch
+USD,Average Hourly Earnings m/m,2022.11.03 20:30,1020,2022-11-04T13:30:00Z,America/New_York,09:30,08:30,-30,1.274220033,0,0,home_clock_mismatch
+USD,Average Hourly Earnings m/m,2022.12.01 20:30,1020,2022-12-02T13:30:00Z,America/New_York,08:30,08:30,0,1.886002886,1,1,
+USD,Average Hourly Earnings m/m,2023.01.05 20:30,1020,2023-01-06T13:30:00Z,America/New_York,08:30,08:30,90,2.014742015,1,0,local_peak_elsewhere
+USD,Average Hourly Earnings m/m,2023.02.03 13:30,1020,2023-02-04T06:30:00Z,America/New_York,01:30,08:30,,,0,0,home_clock_mismatch
+USD,Average Hourly Earnings m/m,2023.03.09 20:30,1020,2023-03-10T13:30:00Z,America/New_York,08:30,08:30,0,1.720028715,1,1,
+USD,Average Hourly Earnings m/m,2023.04.07 11:30,1020,2023-04-08T04:30:00Z,America/New_York,00:30,08:30,,,0,0,home_clock_mismatch
+USD,Average Hourly Earnings m/m,2023.05.04 19:30,1020,2023-05-05T12:30:00Z,America/New_York,08:30,08:30,0,3.312865497,1,1,
+USD,Average Hourly Earnings m/m,2023.06.02 11:30,1020,2023-06-03T04:30:00Z,America/New_York,00:30,08:30,,,0,0,home_clock_mismatch
+USD,Average Hourly Earnings m/m,2023.07.06 19:30,1020,2023-07-07T12:30:00Z,America/New_York,08:30,08:30,0,2.970501475,1,1,
+USD,Average Hourly Earnings m/m,2023.08.03 19:30,1020,2023-08-04T12:30:00Z,America/New_York,08:30,08:30,0,3.547511312,1,1,
+USD,Average Hourly Earnings m/m,2023.08.31 19:30,1020,2023-09-01T12:30:00Z,America/New_York,08:30,08:30,0,2.71253406,1,1,
+USD,Average Hourly Earnings m/m,2023.10.05 20:30,1020,2023-10-06T13:30:00Z,America/New_York,09:30,08:30,-60,2.37586548,1,0,home_clock_mismatch
+USD,Average Hourly Earnings m/m,2023.11.02 20:30,1020,2023-11-03T13:30:00Z,America/New_York,09:30,08:30,-60,2.226152197,1,0,home_clock_mismatch
+USD,Average Hourly Earnings m/m,2023.12.07 20:30,1020,2023-12-08T13:30:00Z,America/New_York,08:30,08:30,0,3.683333333,1,1,
+USD,Average Hourly Earnings m/m,2024.01.04 20:30,1020,2024-01-05T13:30:00Z,America/New_York,08:30,08:30,0,2.893316195,1,1,
+USD,Average Hourly Earnings m/m,2024.02.02 13:30,1020,2024-02-03T06:30:00Z,America/New_York,01:30,08:30,,,0,0,home_clock_mismatch
+USD,Average Hourly Earnings m/m,2024.03.07 20:30,1020,2024-03-08T13:30:00Z,America/New_York,08:30,08:30,0,3.569277108,1,1,
+USD,Average Hourly Earnings m/m,2024.04.04 19:30,1020,2024-04-05T12:30:00Z,America/New_York,08:30,08:30,0,5.170731707,1,1,
+USD,Average Hourly Earnings m/m,2024.05.03 11:30,1020,2024-05-04T04:30:00Z,America/New_York,00:30,08:30,,,0,0,home_clock_mismatch
+USD,Average Hourly Earnings m/m,2024.06.06 19:30,1020,2024-06-07T12:30:00Z,America/New_York,08:30,08:30,0,4.347740668,1,1,
+USD,Average Hourly Earnings m/m,2024.07.04 19:30,1020,2024-07-05T12:30:00Z,America/New_York,08:30,08:30,0,4.160164271,1,1,
+USD,Average Hourly Earnings m/m,2024.08.02 11:30,1020,2024-08-03T04:30:00Z,America/New_York,00:30,08:30,,,0,0,home_clock_mismatch
+USD,Average Hourly Earnings m/m,2024.09.05 19:30,1020,2024-09-06T12:30:00Z,America/New_York,08:30,08:30,0,2.620535714,1,1,
+USD,Average Hourly Earnings m/m,2024.10.04 12:30,1020,2024-10-05T05:30:00Z,America/New_York,01:30,08:30,,,0,0,home_clock_mismatch
+USD,Average Hourly Earnings m/m,2024.11.01 12:30,1020,2024-11-02T05:30:00Z,America/New_York,01:30,08:30,,,0,0,home_clock_mismatch
+USD,Average Hourly Earnings m/m,2024.12.05 20:30,1020,2024-12-06T13:30:00Z,America/New_York,08:30,08:30,0,2.985987261,1,1,
+USD,Average Hourly Earnings m/m,2025.01.09 20:30,1020,2025-01-10T13:30:00Z,America/New_York,08:30,08:30,0,2.826859046,1,1,
+USD,Average Hourly Earnings m/m,2025.02.06 20:30,1020,2025-02-07T13:30:00Z,America/New_York,08:30,08:30,0,3.8544,1,1,
+USD,Average Hourly Earnings m/m,2025.03.06 20:30,1020,2025-03-07T13:30:00Z,America/New_York,08:30,08:30,0,2.29258517,1,1,
+USD,Average Hourly Earnings m/m,2025.04.03 19:30,1020,2025-04-04T12:30:00Z,America/New_York,08:30,08:30,0,1.450755287,0,1,
+USD,Non-Farm Employment Change,2018.01.04 20:30,1020,2018-01-05T13:30:00Z,America/New_York,08:30,08:30,0,7.006705784,1,1,
+USD,Non-Farm Employment Change,2018.02.01 20:30,1020,2018-02-02T13:30:00Z,America/New_York,08:30,08:30,0,4.43943347,1,1,
+USD,Non-Farm Employment Change,2018.03.08 20:30,1020,2018-03-09T13:30:00Z,America/New_York,08:30,08:30,0,5.586597452,1,1,
+USD,Non-Farm Employment Change,2018.04.05 19:30,1020,2018-04-06T12:30:00Z,America/New_York,08:30,08:30,0,5.710208031,1,1,
+USD,Non-Farm Employment Change,2018.05.03 19:30,1020,2018-05-04T12:30:00Z,America/New_York,08:30,08:30,0,4.70990023,1,1,
+USD,Non-Farm Employment Change,2018.05.31 19:30,1020,2018-06-01T12:30:00Z,America/New_York,08:30,08:30,0,1.662946429,1,1,
+USD,Non-Farm Employment Change,2018.07.05 19:30,1020,2018-07-06T12:30:00Z,America/New_York,08:30,08:30,0,2.409836066,1,1,
+USD,Non-Farm Employment Change,2018.08.02 19:30,1020,2018-08-03T12:30:00Z,America/New_York,08:30,08:30,0,1.941018767,1,1,
+USD,Non-Farm Employment Change,2018.09.06 19:30,1020,2018-09-07T12:30:00Z,America/New_York,08:30,08:30,0,2.429487179,1,1,
+USD,Non-Farm Employment Change,2018.10.04 20:30,1020,2018-10-05T13:30:00Z,America/New_York,09:30,08:30,-60,1.878640777,1,0,home_clock_mismatch
+USD,Non-Farm Employment Change,2018.11.01 20:30,1020,2018-11-02T13:30:00Z,America/New_York,09:30,08:30,-60,1.98,1,0,home_clock_mismatch
+USD,Non-Farm Employment Change,2018.12.06 20:30,1020,2018-12-07T13:30:00Z,America/New_York,08:30,08:30,0,4.369142033,1,1,
+USD,Non-Farm Employment Change,2019.01.03 20:30,1020,2019-01-04T13:30:00Z,America/New_York,08:30,08:30,0,5.063180828,1,1,
+USD,Non-Farm Employment Change,2019.01.31 20:30,1020,2019-02-01T13:30:00Z,America/New_York,08:30,08:30,0,4.563245823,1,1,
+USD,Non-Farm Employment Change,2019.03.07 20:30,1020,2019-03-08T13:30:00Z,America/New_York,08:30,08:30,0,6.44673913,1,1,
+USD,Non-Farm Employment Change,2019.04.04 19:30,1020,2019-04-05T12:30:00Z,America/New_York,08:30,08:30,0,5.136929461,1,1,
+USD,Non-Farm Employment Change,2019.05.02 19:30,1020,2019-05-03T12:30:00Z,America/New_York,08:30,08:30,0,6.369930762,1,1,
+USD,Non-Farm Employment Change,2019.06.06 19:30,1020,2019-06-07T12:30:00Z,America/New_York,08:30,08:30,0,8.622722401,1,1,
+USD,Non-Farm Employment Change,2019.07.04 19:30,1020,2019-07-05T12:30:00Z,America/New_York,08:30,08:30,0,5.41954708,1,1,
+USD,Non-Farm Employment Change,2019.08.01 19:30,1020,2019-08-02T12:30:00Z,America/New_York,08:30,08:30,30,3.641152263,1,0,local_peak_elsewhere
+USD,Non-Farm Employment Change,2019.09.05 19:30,1020,2019-09-06T12:30:00Z,America/New_York,08:30,08:30,0,4.540983607,1,1,
+USD,Non-Farm Employment Change,2019.10.03 20:30,1020,2019-10-04T13:30:00Z,America/New_York,09:30,08:30,-60,5.402810304,1,0,home_clock_mismatch
+USD,Non-Farm Employment Change,2019.10.31 20:30,1020,2019-11-01T13:30:00Z,America/New_York,09:30,08:30,-60,4.6875,1,0,home_clock_mismatch
+USD,Non-Farm Employment Change,2019.12.05 20:30,1020,2019-12-06T13:30:00Z,America/New_York,08:30,08:30,0,9.646919431,1,1,
+USD,Non-Farm Employment Change,2020.01.09 20:30,1020,2020-01-10T13:30:00Z,America/New_York,08:30,08:30,0,4.539383562,1,1,
+USD,Non-Farm Employment Change,2020.02.06 20:30,1020,2020-02-07T13:30:00Z,America/New_York,08:30,08:30,0,4.311270125,1,1,
+USD,Non-Farm Employment Change,2020.03.05 20:30,1020,2020-03-06T13:30:00Z,America/New_York,08:30,08:30,0,2.009880028,1,1,
+USD,Non-Farm Employment Change,2020.04.02 19:30,1020,2020-04-03T12:30:00Z,America/New_York,08:30,08:30,0,2.791200597,1,1,
+USD,Non-Farm Employment Change,2020.05.07 19:30,1020,2020-05-08T12:30:00Z,America/New_York,08:30,08:30,0,4.233287858,1,1,
+USD,Non-Farm Employment Change,2020.06.04 19:30,1020,2020-06-05T12:30:00Z,America/New_York,08:30,08:30,0,3.673569482,1,1,
+USD,Non-Farm Employment Change,2020.07.01 19:30,1020,2020-07-02T12:30:00Z,America/New_York,08:30,08:30,0,3.374379345,1,1,
+USD,Non-Farm Employment Change,2020.08.06 19:30,1020,2020-08-07T12:30:00Z,America/New_York,08:30,08:30,0,2.668815944,1,1,
+USD,Non-Farm Employment Change,2020.09.03 19:30,1020,2020-09-04T12:30:00Z,America/New_York,08:30,08:30,0,3.352308665,1,1,
+USD,Non-Farm Employment Change,2020.10.01 20:30,1020,2020-10-02T13:30:00Z,America/New_York,09:30,08:30,5,1.829662261,1,0,home_clock_mismatch
+USD,Non-Farm Employment Change,2020.11.05 20:30,1020,2020-11-06T13:30:00Z,America/New_York,08:30,08:30,0,2.546070461,1,1,
+USD,Non-Farm Employment Change,2020.12.03 20:30,1020,2020-12-04T13:30:00Z,America/New_York,08:30,08:30,15,2.648826979,1,0,local_peak_elsewhere
+USD,Non-Farm Employment Change,2021.01.07 20:30,1020,2021-01-08T13:30:00Z,America/New_York,08:30,08:30,0,4.033450704,1,1,
+USD,Non-Farm Employment Change,2021.02.04 20:30,1020,2021-02-05T13:30:00Z,America/New_York,08:30,08:30,0,3.712945591,1,1,
+USD,Non-Farm Employment Change,2021.03.04 20:30,1020,2021-03-05T13:30:00Z,America/New_York,08:30,08:30,0,3.039816233,1,1,
+USD,Non-Farm Employment Change,2021.04.01 19:30,1020,2021-04-02T12:30:00Z,America/New_York,08:30,08:30,0,7.033333333,1,1,
+USD,Non-Farm Employment Change,2021.05.06 19:30,1020,2021-05-07T12:30:00Z,America/New_York,08:30,08:30,0,5.589723926,1,1,
+USD,Non-Farm Employment Change,2021.06.03 19:30,1020,2021-06-04T12:30:00Z,America/New_York,08:30,08:30,0,8.211779449,1,1,
+USD,Non-Farm Employment Change,2021.07.01 19:30,1020,2021-07-02T12:30:00Z,America/New_York,08:30,08:30,0,4.514797508,1,1,
+USD,Non-Farm Employment Change,2021.08.05 19:30,1020,2021-08-06T12:30:00Z,America/New_York,08:30,08:30,0,7.848020434,1,1,
+USD,Non-Farm Employment Change,2021.09.02 19:30,1020,2021-09-03T12:30:00Z,America/New_York,08:30,08:30,5,5.893147503,1,1,
+USD,Non-Farm Employment Change,2021.10.07 20:30,1020,2021-10-08T13:30:00Z,America/New_York,09:30,08:30,-60,4.394981413,1,0,home_clock_mismatch
+USD,Non-Farm Employment Change,2021.11.04 20:30,1020,2021-11-05T13:30:00Z,America/New_York,09:30,08:30,-60,4.063564132,1,0,home_clock_mismatch
+USD,Non-Farm Employment Change,2021.12.02 20:30,1020,2021-12-03T13:30:00Z,America/New_York,08:30,08:30,0,3.502606106,1,1,
+USD,Non-Farm Employment Change,2022.01.06 20:30,1020,2022-01-07T13:30:00Z,America/New_York,08:30,08:30,0,4.691879867,1,1,
+USD,Non-Farm Employment Change,2022.02.03 20:30,1020,2022-02-04T13:30:00Z,America/New_York,08:30,08:30,0,2.711916462,1,1,
+USD,Non-Farm Employment Change,2022.03.03 20:30,1020,2022-03-04T13:30:00Z,America/New_York,08:30,08:30,0,1.888579387,1,1,
+USD,Non-Farm Employment Change,2022.03.31 19:30,1020,2022-04-01T12:30:00Z,America/New_York,08:30,08:30,0,3.305936073,1,1,
+USD,Non-Farm Employment Change,2022.05.05 19:30,1020,2022-05-06T12:30:00Z,America/New_York,08:30,08:30,0,2.119817768,1,1,
+USD,Non-Farm Employment Change,2022.06.02 19:30,1020,2022-06-03T12:30:00Z,America/New_York,08:30,08:30,0,2.729411765,1,1,
+USD,Non-Farm Employment Change,2022.07.07 19:30,1020,2022-07-08T12:30:00Z,America/New_York,08:30,08:30,0,2.087421945,1,1,
+USD,Non-Farm Employment Change,2022.08.04 19:30,1020,2022-08-05T12:30:00Z,America/New_York,08:30,08:30,0,2.104901118,1,1,
+USD,Non-Farm Employment Change,2022.09.01 19:30,1020,2022-09-02T12:30:00Z,America/New_York,08:30,08:30,0,2.281188119,1,1,
+USD,Non-Farm Employment Change,2022.10.06 20:30,1020,2022-10-07T13:30:00Z,America/New_York,09:30,08:30,-60,1.528301887,1,0,home_clock_mismatch
+USD,Non-Farm Employment Change,2022.11.03 20:30,1020,2022-11-04T13:30:00Z,America/New_York,09:30,08:30,-30,1.274220033,0,0,home_clock_mismatch
+USD,Non-Farm Employment Change,2022.12.01 20:30,1020,2022-12-02T13:30:00Z,America/New_York,08:30,08:30,0,1.886002886,1,1,
+USD,Non-Farm Employment Change,2023.01.05 20:30,1020,2023-01-06T13:30:00Z,America/New_York,08:30,08:30,90,2.014742015,1,0,local_peak_elsewhere
+USD,Non-Farm Employment Change,2023.02.02 20:30,1020,2023-02-03T13:30:00Z,America/New_York,08:30,08:30,0,2.377034358,1,1,
+USD,Non-Farm Employment Change,2023.03.09 20:30,1020,2023-03-10T13:30:00Z,America/New_York,08:30,08:30,0,1.720028715,1,1,
+USD,Non-Farm Employment Change,2023.04.06 19:30,1020,2023-04-07T12:30:00Z,America/New_York,08:30,08:30,0,9.198757764,1,1,
+USD,Non-Farm Employment Change,2023.05.04 19:30,1020,2023-05-05T12:30:00Z,America/New_York,08:30,08:30,0,3.312865497,1,1,
+USD,Non-Farm Employment Change,2023.06.01 19:30,1020,2023-06-02T12:30:00Z,America/New_York,08:30,08:30,0,3.886690647,1,1,
+USD,Non-Farm Employment Change,2023.07.06 19:30,1020,2023-07-07T12:30:00Z,America/New_York,08:30,08:30,0,2.970501475,1,1,
+USD,Non-Farm Employment Change,2023.08.03 19:30,1020,2023-08-04T12:30:00Z,America/New_York,08:30,08:30,0,3.547511312,1,1,
+USD,Non-Farm Employment Change,2023.08.31 19:30,1020,2023-09-01T12:30:00Z,America/New_York,08:30,08:30,0,2.71253406,1,1,
+USD,Non-Farm Employment Change,2023.10.05 20:30,1020,2023-10-06T13:30:00Z,America/New_York,09:30,08:30,-60,2.37586548,1,0,home_clock_mismatch
+USD,Non-Farm Employment Change,2023.11.02 20:30,1020,2023-11-03T13:30:00Z,America/New_York,09:30,08:30,-60,2.226152197,1,0,home_clock_mismatch
+USD,Non-Farm Employment Change,2023.12.07 20:30,1020,2023-12-08T13:30:00Z,America/New_York,08:30,08:30,0,3.683333333,1,1,
+USD,Non-Farm Employment Change,2024.01.04 20:30,1020,2024-01-05T13:30:00Z,America/New_York,08:30,08:30,0,2.893316195,1,1,
+USD,Non-Farm Employment Change,2024.02.01 20:30,1020,2024-02-02T13:30:00Z,America/New_York,08:30,08:30,0,3.140350877,1,1,
+USD,Non-Farm Employment Change,2024.03.07 20:30,1020,2024-03-08T13:30:00Z,America/New_York,08:30,08:30,0,3.569277108,1,1,
+USD,Non-Farm Employment Change,2024.04.04 19:30,1020,2024-04-05T12:30:00Z,America/New_York,08:30,08:30,0,5.170731707,1,1,
+USD,Non-Farm Employment Change,2024.05.02 19:30,1020,2024-05-03T12:30:00Z,America/New_York,08:30,08:30,90,2.841075795,1,0,local_peak_elsewhere
+USD,Non-Farm Employment Change,2024.06.06 19:30,1020,2024-06-07T12:30:00Z,America/New_York,08:30,08:30,0,4.347740668,1,1,
+USD,Non-Farm Employment Change,2024.07.04 19:30,1020,2024-07-05T12:30:00Z,America/New_York,08:30,08:30,0,4.160164271,1,1,
+USD,Non-Farm Employment Change,2024.08.01 19:30,1020,2024-08-02T12:30:00Z,America/New_York,08:30,08:30,0,3.085314685,1,1,
+USD,Non-Farm Employment Change,2024.09.05 19:30,1020,2024-09-06T12:30:00Z,America/New_York,08:30,08:30,0,2.620535714,1,1,
+USD,Non-Farm Employment Change,2024.10.03 20:30,1020,2024-10-04T13:30:00Z,America/New_York,09:30,08:30,-60,3.311248074,1,0,home_clock_mismatch
+USD,Non-Farm Employment Change,2024.10.31 20:30,1020,2024-11-01T13:30:00Z,America/New_York,09:30,08:30,-60,3.025682183,1,0,home_clock_mismatch
+USD,Non-Farm Employment Change,2024.12.05 20:30,1020,2024-12-06T13:30:00Z,America/New_York,08:30,08:30,0,2.985987261,1,1,
+USD,Non-Farm Employment Change,2025.01.09 20:30,1020,2025-01-10T13:30:00Z,America/New_York,08:30,08:30,0,2.826859046,1,1,
+USD,Non-Farm Employment Change,2025.02.06 20:30,1020,2025-02-07T13:30:00Z,America/New_York,08:30,08:30,0,3.8544,1,1,
+USD,Non-Farm Employment Change,2025.03.06 20:30,1020,2025-03-07T13:30:00Z,America/New_York,08:30,08:30,0,2.29258517,1,1,
+USD,Non-Farm Employment Change,2025.04.03 19:30,1020,2025-04-04T12:30:00Z,America/New_York,08:30,08:30,0,1.450755287,0,1,
+USD,Unemployment Rate,2018.01.04 20:30,1020,2018-01-05T13:30:00Z,America/New_York,08:30,08:30,0,7.006705784,1,1,
+USD,Unemployment Rate,2018.02.01 20:30,1020,2018-02-02T13:30:00Z,America/New_York,08:30,08:30,0,4.43943347,1,1,
+USD,Unemployment Rate,2018.03.08 20:30,1020,2018-03-09T13:30:00Z,America/New_York,08:30,08:30,0,5.586597452,1,1,
+USD,Unemployment Rate,2018.04.05 19:30,1020,2018-04-06T12:30:00Z,America/New_York,08:30,08:30,0,5.710208031,1,1,
+USD,Unemployment Rate,2018.05.03 19:30,1020,2018-05-04T12:30:00Z,America/New_York,08:30,08:30,0,4.70990023,1,1,
+USD,Unemployment Rate,2018.05.31 19:30,1020,2018-06-01T12:30:00Z,America/New_York,08:30,08:30,0,1.662946429,1,1,
+USD,Unemployment Rate,2018.07.05 19:30,1020,2018-07-06T12:30:00Z,America/New_York,08:30,08:30,0,2.409836066,1,1,
+USD,Unemployment Rate,2018.08.02 19:30,1020,2018-08-03T12:30:00Z,America/New_York,08:30,08:30,0,1.941018767,1,1,
+USD,Unemployment Rate,2018.09.06 19:30,1020,2018-09-07T12:30:00Z,America/New_York,08:30,08:30,0,2.429487179,1,1,
+USD,Unemployment Rate,2018.10.04 20:30,1020,2018-10-05T13:30:00Z,America/New_York,09:30,08:30,-60,1.878640777,1,0,home_clock_mismatch
+USD,Unemployment Rate,2018.11.01 20:30,1020,2018-11-02T13:30:00Z,America/New_York,09:30,08:30,-60,1.98,1,0,home_clock_mismatch
+USD,Unemployment Rate,2018.12.06 20:30,1020,2018-12-07T13:30:00Z,America/New_York,08:30,08:30,0,4.369142033,1,1,
+USD,Unemployment Rate,2019.01.03 20:30,1020,2019-01-04T13:30:00Z,America/New_York,08:30,08:30,0,5.063180828,1,1,
+USD,Unemployment Rate,2019.01.31 20:30,1020,2019-02-01T13:30:00Z,America/New_York,08:30,08:30,0,4.563245823,1,1,
+USD,Unemployment Rate,2019.03.07 20:30,1020,2019-03-08T13:30:00Z,America/New_York,08:30,08:30,0,6.44673913,1,1,
+USD,Unemployment Rate,2019.04.04 19:30,1020,2019-04-05T12:30:00Z,America/New_York,08:30,08:30,0,5.136929461,1,1,
+USD,Unemployment Rate,2019.05.02 19:30,1020,2019-05-03T12:30:00Z,America/New_York,08:30,08:30,0,6.369930762,1,1,
+USD,Unemployment Rate,2019.06.06 19:30,1020,2019-06-07T12:30:00Z,America/New_York,08:30,08:30,0,8.622722401,1,1,
+USD,Unemployment Rate,2019.07.04 19:30,1020,2019-07-05T12:30:00Z,America/New_York,08:30,08:30,0,5.41954708,1,1,
+USD,Unemployment Rate,2019.08.01 19:30,1020,2019-08-02T12:30:00Z,America/New_York,08:30,08:30,30,3.641152263,1,0,local_peak_elsewhere
+USD,Unemployment Rate,2019.09.05 19:30,1020,2019-09-06T12:30:00Z,America/New_York,08:30,08:30,0,4.540983607,1,1,
+USD,Unemployment Rate,2019.10.03 20:30,1020,2019-10-04T13:30:00Z,America/New_York,09:30,08:30,-60,5.402810304,1,0,home_clock_mismatch
+USD,Unemployment Rate,2019.10.31 20:30,1020,2019-11-01T13:30:00Z,America/New_York,09:30,08:30,-60,4.6875,1,0,home_clock_mismatch
+USD,Unemployment Rate,2019.12.05 20:30,1020,2019-12-06T13:30:00Z,America/New_York,08:30,08:30,0,9.646919431,1,1,
+USD,Unemployment Rate,2020.01.09 20:30,1020,2020-01-10T13:30:00Z,America/New_York,08:30,08:30,0,4.539383562,1,1,
+USD,Unemployment Rate,2020.02.06 20:30,1020,2020-02-07T13:30:00Z,America/New_York,08:30,08:30,0,4.311270125,1,1,
+USD,Unemployment Rate,2020.03.05 20:30,1020,2020-03-06T13:30:00Z,America/New_York,08:30,08:30,0,2.009880028,1,1,
+USD,Unemployment Rate,2020.04.02 19:30,1020,2020-04-03T12:30:00Z,America/New_York,08:30,08:30,0,2.791200597,1,1,
+USD,Unemployment Rate,2020.05.07 19:30,1020,2020-05-08T12:30:00Z,America/New_York,08:30,08:30,0,4.233287858,1,1,
+USD,Unemployment Rate,2020.06.04 19:30,1020,2020-06-05T12:30:00Z,America/New_York,08:30,08:30,0,3.673569482,1,1,
+USD,Unemployment Rate,2020.07.01 19:30,1020,2020-07-02T12:30:00Z,America/New_York,08:30,08:30,0,3.374379345,1,1,
+USD,Unemployment Rate,2020.08.06 19:30,1020,2020-08-07T12:30:00Z,America/New_York,08:30,08:30,0,2.668815944,1,1,
+USD,Unemployment Rate,2020.09.03 19:30,1020,2020-09-04T12:30:00Z,America/New_York,08:30,08:30,0,3.352308665,1,1,
+USD,Unemployment Rate,2020.10.01 20:30,1020,2020-10-02T13:30:00Z,America/New_York,09:30,08:30,5,1.829662261,1,0,home_clock_mismatch
+USD,Unemployment Rate,2020.11.05 20:30,1020,2020-11-06T13:30:00Z,America/New_York,08:30,08:30,0,2.546070461,1,1,
+USD,Unemployment Rate,2020.12.03 20:30,1020,2020-12-04T13:30:00Z,America/New_York,08:30,08:30,15,2.648826979,1,0,local_peak_elsewhere
+USD,Unemployment Rate,2021.01.07 20:30,1020,2021-01-08T13:30:00Z,America/New_York,08:30,08:30,0,4.033450704,1,1,
+USD,Unemployment Rate,2021.02.04 20:30,1020,2021-02-05T13:30:00Z,America/New_York,08:30,08:30,0,3.712945591,1,1,
+USD,Unemployment Rate,2021.03.04 20:30,1020,2021-03-05T13:30:00Z,America/New_York,08:30,08:30,0,3.039816233,1,1,
+USD,Unemployment Rate,2021.04.01 19:30,1020,2021-04-02T12:30:00Z,America/New_York,08:30,08:30,0,7.033333333,1,1,
+USD,Unemployment Rate,2021.05.06 19:30,1020,2021-05-07T12:30:00Z,America/New_York,08:30,08:30,0,5.589723926,1,1,
+USD,Unemployment Rate,2021.06.03 19:30,1020,2021-06-04T12:30:00Z,America/New_York,08:30,08:30,0,8.211779449,1,1,
+USD,Unemployment Rate,2021.07.01 19:30,1020,2021-07-02T12:30:00Z,America/New_York,08:30,08:30,0,4.514797508,1,1,
+USD,Unemployment Rate,2021.08.05 19:30,1020,2021-08-06T12:30:00Z,America/New_York,08:30,08:30,0,7.848020434,1,1,
+USD,Unemployment Rate,2021.09.02 19:30,1020,2021-09-03T12:30:00Z,America/New_York,08:30,08:30,5,5.893147503,1,1,
+USD,Unemployment Rate,2021.10.07 20:30,1020,2021-10-08T13:30:00Z,America/New_York,09:30,08:30,-60,4.394981413,1,0,home_clock_mismatch
+USD,Unemployment Rate,2021.11.04 20:30,1020,2021-11-05T13:30:00Z,America/New_York,09:30,08:30,-60,4.063564132,1,0,home_clock_mismatch
+USD,Unemployment Rate,2021.12.02 20:30,1020,2021-12-03T13:30:00Z,America/New_York,08:30,08:30,0,3.502606106,1,1,
+USD,Unemployment Rate,2022.01.06 20:30,1020,2022-01-07T13:30:00Z,America/New_York,08:30,08:30,0,4.691879867,1,1,
+USD,Unemployment Rate,2022.02.03 20:30,1020,2022-02-04T13:30:00Z,America/New_York,08:30,08:30,0,2.711916462,1,1,
+USD,Unemployment Rate,2022.03.03 20:30,1020,2022-03-04T13:30:00Z,America/New_York,08:30,08:30,0,1.888579387,1,1,
+USD,Unemployment Rate,2022.03.31 19:30,1020,2022-04-01T12:30:00Z,America/New_York,08:30,08:30,0,3.305936073,1,1,
+USD,Unemployment Rate,2022.05.05 19:30,1020,2022-05-06T12:30:00Z,America/New_York,08:30,08:30,0,2.119817768,1,1,
+USD,Unemployment Rate,2022.06.02 19:30,1020,2022-06-03T12:30:00Z,America/New_York,08:30,08:30,0,2.729411765,1,1,
+USD,Unemployment Rate,2022.07.07 19:30,1020,2022-07-08T12:30:00Z,America/New_York,08:30,08:30,0,2.087421945,1,1,
+USD,Unemployment Rate,2022.08.04 19:30,1020,2022-08-05T12:30:00Z,America/New_York,08:30,08:30,0,2.104901118,1,1,
+USD,Unemployment Rate,2022.09.01 19:30,1020,2022-09-02T12:30:00Z,America/New_York,08:30,08:30,0,2.281188119,1,1,
+USD,Unemployment Rate,2022.10.06 20:30,1020,2022-10-07T13:30:00Z,America/New_York,09:30,08:30,-60,1.528301887,1,0,home_clock_mismatch
+USD,Unemployment Rate,2022.11.03 20:30,1020,2022-11-04T13:30:00Z,America/New_York,09:30,08:30,-30,1.274220033,0,0,home_clock_mismatch
+USD,Unemployment Rate,2022.12.01 20:30,1020,2022-12-02T13:30:00Z,America/New_York,08:30,08:30,0,1.886002886,1,1,
+USD,Unemployment Rate,2023.01.05 20:30,1020,2023-01-06T13:30:00Z,America/New_York,08:30,08:30,90,2.014742015,1,0,local_peak_elsewhere
+USD,Unemployment Rate,2023.02.02 20:30,1020,2023-02-03T13:30:00Z,America/New_York,08:30,08:30,0,2.377034358,1,1,
+USD,Unemployment Rate,2023.03.09 20:30,1020,2023-03-10T13:30:00Z,America/New_York,08:30,08:30,0,1.720028715,1,1,
+USD,Unemployment Rate,2023.04.06 19:30,1020,2023-04-07T12:30:00Z,America/New_York,08:30,08:30,0,9.198757764,1,1,
+USD,Unemployment Rate,2023.05.04 19:30,1020,2023-05-05T12:30:00Z,America/New_York,08:30,08:30,0,3.312865497,1,1,
+USD,Unemployment Rate,2023.06.01 19:30,1020,2023-06-02T12:30:00Z,America/New_York,08:30,08:30,0,3.886690647,1,1,
+USD,Unemployment Rate,2023.07.06 19:30,1020,2023-07-07T12:30:00Z,America/New_York,08:30,08:30,0,2.970501475,1,1,
+USD,Unemployment Rate,2023.08.03 19:30,1020,2023-08-04T12:30:00Z,America/New_York,08:30,08:30,0,3.547511312,1,1,
+USD,Unemployment Rate,2023.08.31 19:30,1020,2023-09-01T12:30:00Z,America/New_York,08:30,08:30,0,2.71253406,1,1,
+USD,Unemployment Rate,2023.10.05 20:30,1020,2023-10-06T13:30:00Z,America/New_York,09:30,08:30,-60,2.37586548,1,0,home_clock_mismatch
+USD,Unemployment Rate,2023.11.02 20:30,1020,2023-11-03T13:30:00Z,America/New_York,09:30,08:30,-60,2.226152197,1,0,home_clock_mismatch
+USD,Unemployment Rate,2023.12.07 20:30,1020,2023-12-08T13:30:00Z,America/New_York,08:30,08:30,0,3.683333333,1,1,
+USD,Unemployment Rate,2024.01.04 20:30,1020,2024-01-05T13:30:00Z,America/New_York,08:30,08:30,0,2.893316195,1,1,
+USD,Unemployment Rate,2024.02.01 20:30,1020,2024-02-02T13:30:00Z,America/New_York,08:30,08:30,0,3.140350877,1,1,
+USD,Unemployment Rate,2024.03.07 20:30,1020,2024-03-08T13:30:00Z,America/New_York,08:30,08:30,0,3.569277108,1,1,
+USD,Unemployment Rate,2024.04.04 19:30,1020,2024-04-05T12:30:00Z,America/New_York,08:30,08:30,0,5.170731707,1,1,
+USD,Unemployment Rate,2024.05.02 19:30,1020,2024-05-03T12:30:00Z,America/New_York,08:30,08:30,90,2.841075795,1,0,local_peak_elsewhere
+USD,Unemployment Rate,2024.06.06 19:30,1020,2024-06-07T12:30:00Z,America/New_York,08:30,08:30,0,4.347740668,1,1,
+USD,Unemployment Rate,2024.07.04 19:30,1020,2024-07-05T12:30:00Z,America/New_York,08:30,08:30,0,4.160164271,1,1,
+USD,Unemployment Rate,2024.08.01 19:30,1020,2024-08-02T12:30:00Z,America/New_York,08:30,08:30,0,3.085314685,1,1,
+USD,Unemployment Rate,2024.09.05 19:30,1020,2024-09-06T12:30:00Z,America/New_York,08:30,08:30,0,2.620535714,1,1,
+USD,Unemployment Rate,2024.10.03 20:30,1020,2024-10-04T13:30:00Z,America/New_York,09:30,08:30,-60,3.311248074,1,0,home_clock_mismatch
+USD,Unemployment Rate,2024.10.31 20:30,1020,2024-11-01T13:30:00Z,America/New_York,09:30,08:30,-60,3.025682183,1,0,home_clock_mismatch
+USD,Unemployment Rate,2024.12.05 20:30,1020,2024-12-06T13:30:00Z,America/New_York,08:30,08:30,0,2.985987261,1,1,
+USD,Unemployment Rate,2025.01.09 20:30,1020,2025-01-10T13:30:00Z,America/New_York,08:30,08:30,0,2.826859046,1,1,
+USD,Unemployment Rate,2025.02.06 20:30,1020,2025-02-07T13:30:00Z,America/New_York,08:30,08:30,0,3.8544,1,1,
+USD,Unemployment Rate,2025.03.06 20:30,1020,2025-03-07T13:30:00Z,America/New_York,08:30,08:30,0,2.29258517,1,1,
+USD,Unemployment Rate,2025.04.03 19:30,1020,2025-04-04T12:30:00Z,America/New_York,08:30,08:30,0,1.450755287,0,1,
