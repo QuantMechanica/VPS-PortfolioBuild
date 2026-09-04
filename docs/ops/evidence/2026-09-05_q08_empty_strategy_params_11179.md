@@ -1,7 +1,9 @@
 # Q08 8.5 `empty_strategy_params` — QM5_11179 / USDJPY.DWX
 
-Date: 2026-09-05  
-Task: `683f82ca-59c4-4f34-8cfc-681279905840`  
+Date: 2026-09-05
+
+Task: `683f82ca-59c4-4f34-8cfc-681279905840`
+
 Scope: read-only database classification plus a behavior-identical set-file repair; no verdict rewrite or queue mutation
 
 ## Result
