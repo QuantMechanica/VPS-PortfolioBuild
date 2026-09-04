@@ -13,5 +13,6 @@
 | 6 | FTMO NO-BUY, trigger re-anchored to positive OOS/live evidence | "ja, wann kommen wir aber auf FTMO?" | Park stays; timeline answer in the CEO status. |
 
 | 7 | Bundle rule = census rule for Q08 FAIL_SOFT (Vorlage 2026-09-04 D3) | "Bundle Regel an Census Regel angleichen, ja." (2026-09-04 ~16:45Z) | `OWNER-DEC-BUNDLE-Q08-PASSCLASS-20260904` = YES; exactly one decision-bound Claude task: assemble_stream_bundle.py accepts the Q08 PASS-class of the census (PASS, FAIL_SOFT per GATE_SCOPED_PASS), test, dry-run 8/8. D1/D2 of the same Vorlage remain open. |
+| 8 | News-calendar timestamp defect (Vorlage 2026-09-05: E1 repair option A/B/C, E2 re-adjudication scope, E3 standard runs, E4 OOS-2026 apply, E5 DL-090) | PENDING (Vorlage submitted 22:54Z 2026-09-05; ROT — no Auffangregel) | Containment under standing authorization: 11 Q10_NEWS holds NEWS_CALENDAR_TIMESTAMP_DEFECT, OOS-2026 --apply deferred, Codex 72e5884d sizing + 0f61815f detectors (report-only). Evidence docs/ops/evidence/2026-09-05_news_calendar_timestamp_defect.md. |
 
 Standing order (verbatim): "Weitermachen, bis Portfolio steht, mit Loop kontrollieren und Fabrik am Laufen halten!"
