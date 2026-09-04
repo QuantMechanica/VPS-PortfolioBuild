@@ -190,6 +190,16 @@ def test_new_long_run_rows_blocked_while_open_claim_path():
         assert not tw._drain_blocks_new_long_run({"id": "S", "phase": phase}, "IDX1")
 
 
+def test_legacy_lane_names_are_long_runs_for_the_drain():
+    """2026-09-04: Q09_NEWS (v3 storage name, manifest rank -1) and *_PORTFOLIO
+    lanes are long runs; an open drain refuses them as NEW rows."""
+    for phase in ("Q09_NEWS", "Q09_PORTFOLIO", "Q10_NEWS"):
+        assert tw._drain_phase_is_long_run(phase)
+        assert tw._drain_blocks_new_long_run({"id": "L", "phase": phase}, "IDX1")
+    for phase in ("Q02", "OPT_CENSUS"):
+        assert not tw._drain_phase_is_long_run(phase)
+
+
 # --- state machine: open only after the trigger age ----------------------
 
 def test_drain_opens_only_after_trigger_age():

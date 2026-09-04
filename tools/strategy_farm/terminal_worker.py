@@ -1551,7 +1551,16 @@ def _drain_phase_is_long_run(phase: object) -> bool:
     renumbering flows through unchanged.  Q07 is the first full-history gate;
     Q02-Q06 single-symbol gates, OPT_CENSUS cells and COMPILE_EA rows (manifest
     rank -1) are short and release their RAM inside the window.
+
+    2026-09-04 07:50Z (CEO): rows still stored under a LEGACY lane name
+    (``Q09_NEWS`` from the v3 contract, ``*_PORTFOLIO``) have manifest rank -1
+    and were treated as short rows, so they were claimed inside an open drain
+    and then abandoned it (12580 basket, 07:30-07:42Z).  Any ``*_NEWS`` or
+    ``*_PORTFOLIO`` lane is a long run regardless of the contract version.
     """
+    phase_upper = str(phase or "").strip().upper()
+    if phase_upper.endswith("_NEWS") or phase_upper.endswith("_PORTFOLIO"):
+        return True
     try:
         rank = int(farmctl.phase_rank(str(phase or "").strip().upper()))
         longrun_floor = int(farmctl.phase_rank(_Q07_PHASE))

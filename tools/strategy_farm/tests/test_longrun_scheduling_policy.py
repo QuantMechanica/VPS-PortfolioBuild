@@ -522,5 +522,42 @@ class ExpandedNewsRamGatedCapTests(unittest.TestCase):
         self.assertEqual(detail["fleet_cap"], policy.TOTAL_NEWS_PARENT_FLEET_CAP)
 
 
+class LegacyNewsLaneTests(unittest.TestCase):
+    """2026-09-04: rows stored under the v3 lane name Q09_NEWS must count as
+    news-class long runs for classification and for the active counts."""
+
+    def test_legacy_news_lane_classified_as_news(self) -> None:
+        self.assertEqual(
+            policy.classify_longrun_candidate("Q09_NEWS", {}, news_phase=NEWS_PHASE),
+            policy.TOTAL_NEWS_PARENT_CLASS,
+        )
+        self.assertEqual(
+            policy.classify_longrun_candidate(
+                "Q09_NEWS", {"force_expanded_news_matrix": True}, news_phase=NEWS_PHASE
+            ),
+            policy.EXPANDED_NEWS_PARENT_CLASS,
+        )
+        self.assertIsNone(policy.classify_longrun_candidate("Q06", {}, news_phase=NEWS_PHASE))
+
+    def test_legacy_news_rows_counted_in_active_counts(self) -> None:
+        import sqlite3 as _sqlite3
+        conn = _sqlite3.connect(":memory:")
+        conn.row_factory = _sqlite3.Row
+        conn.execute("CREATE TABLE work_items(id TEXT, phase TEXT, status TEXT, payload_json TEXT)")
+        rows = [
+            ("a", "Q09_NEWS", "active", "{}"),
+            ("b", "Q09_NEWS", "active", '{"force_expanded_news_matrix": true}'),
+            ("c", NEWS_PHASE, "active", "{}"),
+            ("d", "Q07", "active", "{}"),
+            ("e", "Q09_NEWS", "pending", "{}"),
+            ("f", "SOMETHING_NEWSY", "active", "{}"),
+        ]
+        conn.executemany("INSERT INTO work_items VALUES(?,?,?,?)", rows)
+        counts = policy.active_longrun_counts(conn, news_phase=NEWS_PHASE)
+        self.assertEqual(counts[policy.TOTAL_NEWS_PARENT_CLASS], 3)
+        self.assertEqual(counts[policy.EXPANDED_NEWS_PARENT_CLASS], 1)
+        self.assertEqual(counts[policy.Q07_Q08_LONGRUN_CLASS], 1)
+
+
 if __name__ == "__main__":
     unittest.main()

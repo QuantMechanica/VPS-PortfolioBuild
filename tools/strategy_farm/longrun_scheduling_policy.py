@@ -74,6 +74,20 @@ def _payload_dict(payload_json: Any) -> dict[str, Any]:
     return parsed if isinstance(parsed, dict) else {}
 
 
+def _is_news_lane(phase: object, news_phase: str) -> bool:
+    """True for the resolved news phase AND any legacy-named news lane.
+
+    2026-09-04 (CEO): rows minted under the v3 storage name ``Q09_NEWS`` are
+    still pending/active in the live DB; an exact match against the resolved
+    v4 name let them bypass the news caps and the drain window.  Any
+    ``*_NEWS`` lane counts as the news class.
+    """
+    phase_upper = str(phase or "").strip().upper()
+    if phase_upper == str(news_phase or "").strip().upper():
+        return True
+    return phase_upper.endswith("_NEWS")
+
+
 def classify_longrun_candidate(
     phase: object,
     payload: Any,
@@ -89,7 +103,7 @@ def classify_longrun_candidate(
     renumbering instead of hardcoding a Qxx literal for the news role.
     """
     phase_upper = str(phase or "").strip().upper()
-    if phase_upper == str(news_phase or "").strip().upper():
+    if _is_news_lane(phase_upper, news_phase):
         payload_dict = _payload_dict(payload)
         if payload_dict.get("force_expanded_news_matrix") is True:
             return EXPANDED_NEWS_PARENT_CLASS
@@ -148,14 +162,14 @@ def active_longrun_counts(
     }
     rows = conn.execute(
         "SELECT phase, payload_json FROM work_items WHERE status='active' "
-        "AND phase IN (?, ?, ?)",
+        "AND (phase IN (?, ?, ?) OR upper(phase) LIKE '%\\_NEWS' ESCAPE '\\')",
         (news_phase, q07_phase, q08_phase),
     ).fetchall()
     for row in rows:
         phase = row["phase"] if isinstance(row, sqlite3.Row) else row[0]
         payload_json = row["payload_json"] if isinstance(row, sqlite3.Row) else row[1]
         phase_upper = str(phase or "").strip().upper()
-        if phase_upper == str(news_phase or "").strip().upper():
+        if _is_news_lane(phase_upper, news_phase):
             counts[TOTAL_NEWS_PARENT_CLASS] += 1
             if _payload_dict(payload_json).get("force_expanded_news_matrix") is True:
                 counts[EXPANDED_NEWS_PARENT_CLASS] += 1
