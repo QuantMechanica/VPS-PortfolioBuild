@@ -1,0 +1,137 @@
+{
+  "compositions": [
+    {
+      "id": "DATA_CHAIN_10706:GBPUSD",
+      "sleeves": [
+        {
+          "sleeve_id": "10706:GBPUSD",
+          "weight": 1.0
+        }
+      ]
+    },
+    {
+      "id": "DATA_CHAIN_11421:EURUSD",
+      "sleeves": [
+        {
+          "sleeve_id": "11421:EURUSD",
+          "weight": 1.0
+        }
+      ]
+    },
+    {
+      "id": "DATA_CHAIN_11422:USDCAD",
+      "sleeves": [
+        {
+          "sleeve_id": "11422:USDCAD",
+          "weight": 1.0
+        }
+      ]
+    },
+    {
+      "id": "DATA_CHAIN_11910:NZDUSD",
+      "sleeves": [
+        {
+          "sleeve_id": "11910:NZDUSD",
+          "weight": 1.0
+        }
+      ]
+    },
+    {
+      "id": "DATA_CHAIN_13054:XTIUSD",
+      "sleeves": [
+        {
+          "sleeve_id": "13054:XTIUSD",
+          "weight": 1.0
+        }
+      ]
+    },
+    {
+      "id": "DATA_CHAIN_1537:XAGUSD",
+      "sleeves": [
+        {
+          "sleeve_id": "1537:XAGUSD",
+          "weight": 1.0
+        }
+      ]
+    },
+    {
+      "id": "DATA_CHAIN_20048:XTIUSD",
+      "sleeves": [
+        {
+          "sleeve_id": "20048:XTIUSD",
+          "weight": 1.0
+        }
+      ]
+    },
+    {
+      "id": "DATA_CHAIN_21505:XAGUSD",
+      "sleeves": [
+        {
+          "sleeve_id": "21505:XAGUSD",
+          "weight": 1.0
+        }
+      ]
+    }
+  ],
+  "ftmo_cost_snapshot_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-07-30_ftmo_book3_symbol_cost_snapshot.json",
+  "fund_scores_path": "D:\\QM\\scratch\\astra_ftmo_book_analysis_20260904\\fund_scores.json",
+  "inventory_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-04_astra_ftmo_qualification.json",
+  "streams": [
+    {
+      "ftmo_code": "GBPUSD",
+      "path": "D:\\QM\\scratch\\astra_ftmo_book_analysis_20260904\\streams\\QM\\q08_trades\\10706_GBPUSD_DWX.jsonl",
+      "sleeve_id": "10706:GBPUSD",
+      "stream_schema": "DXZ_Q08_TRADES_V1",
+      "symbol": "GBPUSD"
+    },
+    {
+      "ftmo_code": "EURUSD",
+      "path": "D:\\QM\\scratch\\astra_ftmo_book_analysis_20260904\\streams\\QM\\q08_trades\\11421_EURUSD_DWX.jsonl",
+      "sleeve_id": "11421:EURUSD",
+      "stream_schema": "DXZ_Q08_TRADES_V1",
+      "symbol": "EURUSD"
+    },
+    {
+      "ftmo_code": "USDCAD",
+      "path": "D:\\QM\\scratch\\astra_ftmo_book_analysis_20260904\\streams\\QM\\q08_trades\\11422_USDCAD_DWX.jsonl",
+      "sleeve_id": "11422:USDCAD",
+      "stream_schema": "DXZ_Q08_TRADES_V1",
+      "symbol": "USDCAD"
+    },
+    {
+      "ftmo_code": "NZDUSD",
+      "path": "D:\\QM\\scratch\\astra_ftmo_book_analysis_20260904\\streams\\QM\\q08_trades\\11910_NZDUSD_DWX.jsonl",
+      "sleeve_id": "11910:NZDUSD",
+      "stream_schema": "DXZ_Q08_TRADES_V1",
+      "symbol": "NZDUSD"
+    },
+    {
+      "ftmo_code": "USOIL.cash",
+      "path": "D:\\QM\\scratch\\astra_ftmo_book_analysis_20260904\\streams\\QM\\q08_trades\\13054_XTIUSD_DWX.jsonl",
+      "sleeve_id": "13054:XTIUSD",
+      "stream_schema": "DXZ_Q08_TRADES_V1",
+      "symbol": "XTIUSD"
+    },
+    {
+      "ftmo_code": "XAGUSD",
+      "path": "D:\\QM\\scratch\\astra_ftmo_book_analysis_20260904\\streams\\QM\\q08_trades\\1537_XAGUSD_DWX.jsonl",
+      "sleeve_id": "1537:XAGUSD",
+      "stream_schema": "DXZ_Q08_TRADES_V1",
+      "symbol": "XAGUSD"
+    },
+    {
+      "ftmo_code": "USOIL.cash",
+      "path": "D:\\QM\\scratch\\astra_ftmo_book_analysis_20260904\\streams\\QM\\q08_trades\\20048_XTIUSD_DWX.jsonl",
+      "sleeve_id": "20048:XTIUSD",
+      "stream_schema": "DXZ_Q08_TRADES_V1",
+      "symbol": "XTIUSD"
+    },
+    {
+      "ftmo_code": "XAGUSD",
+      "path": "D:\\QM\\scratch\\astra_ftmo_book_analysis_20260904\\streams\\QM\\q08_trades\\21505_XAGUSD_DWX.jsonl",
+      "sleeve_id": "21505:XAGUSD",
+      "stream_schema": "DXZ_Q08_TRADES_V1",
+      "symbol": "XAGUSD"
+    }
+  ]
+}

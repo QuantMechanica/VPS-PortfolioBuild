@@ -1,0 +1,15 @@
+{
+  "command": [
+    "C:\\Python311\\python.exe",
+    "-X",
+    "utf8",
+    "C:\\QM\\repo\\tools\\strategy_farm\\assemble_stream_bundle.py",
+    "--out",
+    "D:\\QM\\scratch\\astra_ftmo_book_analysis_20260904\\streams"
+  ],
+  "cwd": "C:\\QM\\repo",
+  "exit_code": 0,
+  "started_utc": "2026-09-04T21:11:20.866866+00:00",
+  "stderr": "",
+  "stdout": "bundle root : D:\\QM\\scratch\\astra_ftmo_book_analysis_20260904\\streams\nmanifest    : D:\\QM\\scratch\\astra_ftmo_book_analysis_20260904\\streams\\bundle_manifest.json\nbound       : 8   refused: 0\nloader      : True\n  BOUND    QM5_10706:GBPUSD.DWX  <- D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10706_GBPUSD_DWX.jsonl\n  BOUND    QM5_11421:EURUSD.DWX  <- D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11421_EURUSD_DWX.jsonl\n  BOUND    QM5_11422:USDCAD.DWX  <- D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11422_USDCAD_DWX.jsonl\n  BOUND    QM5_11910:NZDUSD.DWX  <- D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11910_NZDUSD_DWX.jsonl\n  BOUND    QM5_13054:XTIUSD.DWX  <- D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13054_XTIUSD_DWX.jsonl\n  BOUND    QM5_1537:XAGUSD.DWX  <- D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\1537_XAGUSD_DWX.jsonl\n  BOUND    QM5_20048:XTIUSD.DWX  <- D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\20048_XTIUSD_DWX.jsonl\n  BOUND    QM5_21505:XAGUSD.DWX  <- D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\21505_XAGUSD_DWX.jsonl\n"
+}

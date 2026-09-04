@@ -1,0 +1,14 @@
+{
+  "command": [
+    "C:\\Python311\\python.exe",
+    "-X",
+    "utf8",
+    "C:\\QM\\repo\\tools\\strategy_farm\\risk_freeze.py",
+    "status"
+  ],
+  "cwd": "C:\\QM\\repo",
+  "exit_code": 0,
+  "started_utc": "2026-09-04T21:11:52.556778+00:00",
+  "stderr": "",
+  "stdout": "OWNER-DEC-RISK-FREEZE  status=ACTIVE  armed=2026-08-31T05:12:17.7290629Z\n  total RISK_PERCENT   baseline 9.7499  now 9.7499\n  freeze held          YES\n  lift conditions:\n    [SP-A1/A2-DEPLOY-POINTER] live_deployment_pointer.json is signed and its consumers read authenticated instead of UNKNOWN\n        blocked by: The 10-preset repair provenance is now archive/receipt verified (task 58b96908), but the live deployment pointer and authenticated consumer rollout remain separately unsigned/uncompleted.\n    [NEWS-CONTRACT-V2] news impact taxonomy implemented under qm.news_impact_mapping.v1\n        blocked by: router task 84c988e6 -- OWNER half decided 2026-08-22 (clean canonical); still gated on Q09 rerun completion\n    [GOVERNOR-HARDENING] account/portfolio governor hardened AND actually enforcing\n        blocked by: SP-C1 is approved and dry-run-proven at commit 593c9ddca, but its v2 monitor deploy and action adapter remain OWNER/ROT-gated and are not live\n"
+}

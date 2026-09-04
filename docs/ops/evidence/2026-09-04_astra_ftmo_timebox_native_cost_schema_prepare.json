@@ -1,0 +1,18 @@
+{
+  "command": [
+    "C:\\Python311\\python.exe",
+    "-X",
+    "utf8",
+    "C:\\QM\\repo\\tools\\strategy_farm\\portfolio\\ftmo_timebox_eval.py",
+    "prepare-config",
+    "--spec",
+    "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-04_astra_ftmo_timebox_native_cost_schema_spec.json",
+    "--output",
+    "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-04_astra_ftmo_timebox_native_cost_schema_config.json"
+  ],
+  "cwd": "C:\\QM\\repo",
+  "exit_code": 0,
+  "started_utc": "2026-09-04T21:17:20.591333+00:00",
+  "stderr": "",
+  "stdout": "{\"status\": \"PREPARED\", \"path\": \"C:\\\\QM\\\\repo\\\\docs\\\\ops\\\\evidence\\\\2026-09-04_astra_ftmo_timebox_native_cost_schema_config.json\", \"sha256\": \"43bcc170e6d2ae62a7c3921628163360682adacbb40bd834d64a858b3901a7c3\"}\n"
+}

@@ -1,0 +1,1363 @@
+{
+  "builder_screen_only": {
+    "assessments": [
+      {
+        "ea_id": 1537,
+        "eligible": false,
+        "fund_score": null,
+        "reason": "FUND_SCORE_UNSCORABLE",
+        "symbol": "XAGUSD.DWX"
+      },
+      {
+        "ea_id": 10706,
+        "eligible": false,
+        "fund_score": 0.13164296579026033,
+        "reason": "FUND_SCORE_BELOW_1",
+        "symbol": "GBPUSD.DWX"
+      },
+      {
+        "ea_id": 11421,
+        "eligible": false,
+        "fund_score": 0.027250963395423777,
+        "reason": "FUND_SCORE_BELOW_1",
+        "symbol": "EURUSD.DWX"
+      },
+      {
+        "ea_id": 11422,
+        "eligible": false,
+        "fund_score": null,
+        "reason": "FUND_SCORE_UNSCORABLE",
+        "symbol": "USDCAD.DWX"
+      },
+      {
+        "ea_id": 11910,
+        "eligible": false,
+        "fund_score": null,
+        "reason": "FUND_SCORE_UNSCORABLE",
+        "symbol": "NZDUSD.DWX"
+      },
+      {
+        "ea_id": 13054,
+        "eligible": false,
+        "fund_score": null,
+        "reason": "FUND_SCORE_UNSCORABLE",
+        "symbol": "XTIUSD.DWX"
+      },
+      {
+        "ea_id": 20048,
+        "eligible": false,
+        "fund_score": null,
+        "reason": "FUND_SCORE_UNSCORABLE",
+        "symbol": "XTIUSD.DWX"
+      },
+      {
+        "ea_id": 21505,
+        "eligible": false,
+        "fund_score": null,
+        "reason": "FUND_SCORE_UNSCORABLE",
+        "symbol": "XAGUSD.DWX"
+      }
+    ],
+    "control": {
+      "account_weight_budget": 10.0,
+      "account_weight_budget_ratification": {
+        "decision": "OWNER-DEC-BOOK-V2V4V6-EPOCH-20260904",
+        "ratified_value": 10.0,
+        "receipt": "decisions/2026-09-04_owner_receipts_briefing_2_4.md",
+        "status": "OWNER_RATIFIED"
+      },
+      "account_weight_budget_status": "OWNER_RATIFIED",
+      "admitted_pairs": [],
+      "admitted_weight": 0.0,
+      "excluded": [],
+      "max_admitted_pairwise_correlation": null,
+      "max_pairwise_correlation": 0.5,
+      "max_pairwise_correlation_ratification": {
+        "decision": "OWNER-DEC-BOOK-V2V4V6-EPOCH-20260904",
+        "ratified_value": 0.5,
+        "receipt": "decisions/2026-09-04_owner_receipts_briefing_2_4.md",
+        "status": "OWNER_RATIFIED"
+      },
+      "max_pairwise_correlation_status": "OWNER_RATIFIED",
+      "policy": "AGGREGATE_CORRELATION_CLUSTER_AND_ACCOUNT_RISK_BUDGET",
+      "unit_weight": 1.0
+    },
+    "selected": []
+  },
+  "correlation_diagnostic": {
+    "basis": "DXZ reported net; exogenous weekday zeros; common exit-date support; NO certification",
+    "days": 1591,
+    "end": "2024-12-06",
+    "max_abs_pearson": 0.14701339718494422,
+    "max_abs_stress_pearson": 0.16762215619276624,
+    "pairs": [
+      {
+        "a": "10706:GBPUSD",
+        "b": "11421:EURUSD",
+        "both_negative_days": 1,
+        "both_nonzero_days": 10,
+        "pearson": 0.006730411798807103,
+        "stress_pearson": 0.008222778124404357
+      },
+      {
+        "a": "10706:GBPUSD",
+        "b": "11422:USDCAD",
+        "both_negative_days": 4,
+        "both_nonzero_days": 19,
+        "pearson": -0.012815368460804756,
+        "stress_pearson": -0.015502521475565311
+      },
+      {
+        "a": "10706:GBPUSD",
+        "b": "11910:NZDUSD",
+        "both_negative_days": 2,
+        "both_nonzero_days": 5,
+        "pearson": 0.01080560783562533,
+        "stress_pearson": 0.00986842344635872
+      },
+      {
+        "a": "10706:GBPUSD",
+        "b": "13054:XTIUSD",
+        "both_negative_days": 0,
+        "both_nonzero_days": 6,
+        "pearson": 0.007438805606974356,
+        "stress_pearson": 0.004434964034708608
+      },
+      {
+        "a": "10706:GBPUSD",
+        "b": "1537:XAGUSD",
+        "both_negative_days": 3,
+        "both_nonzero_days": 10,
+        "pearson": -0.01793838487642876,
+        "stress_pearson": -0.025947168532804446
+      },
+      {
+        "a": "10706:GBPUSD",
+        "b": "20048:XTIUSD",
+        "both_negative_days": 2,
+        "both_nonzero_days": 3,
+        "pearson": 0.014117741755274422,
+        "stress_pearson": 0.0697118299065617
+      },
+      {
+        "a": "10706:GBPUSD",
+        "b": "21505:XAGUSD",
+        "both_negative_days": 1,
+        "both_nonzero_days": 6,
+        "pearson": -0.0052229850008882125,
+        "stress_pearson": -0.008023873555982457
+      },
+      {
+        "a": "11421:EURUSD",
+        "b": "11422:USDCAD",
+        "both_negative_days": 6,
+        "both_nonzero_days": 22,
+        "pearson": 0.033467358058171415,
+        "stress_pearson": 0.03565234687917885
+      },
+      {
+        "a": "11421:EURUSD",
+        "b": "11910:NZDUSD",
+        "both_negative_days": 1,
+        "both_nonzero_days": 7,
+        "pearson": -0.03151582438925165,
+        "stress_pearson": -0.0330318255122139
+      },
+      {
+        "a": "11421:EURUSD",
+        "b": "13054:XTIUSD",
+        "both_negative_days": 1,
+        "both_nonzero_days": 9,
+        "pearson": -0.0234167468234587,
+        "stress_pearson": -0.025263709415571836
+      },
+      {
+        "a": "11421:EURUSD",
+        "b": "1537:XAGUSD",
+        "both_negative_days": 1,
+        "both_nonzero_days": 10,
+        "pearson": 0.027416134095364336,
+        "stress_pearson": 0.032831068315431026
+      },
+      {
+        "a": "11421:EURUSD",
+        "b": "20048:XTIUSD",
+        "both_negative_days": 0,
+        "both_nonzero_days": 0,
+        "pearson": -0.0002552314619334191,
+        "stress_pearson": 0.0009567534053149382
+      },
+      {
+        "a": "11421:EURUSD",
+        "b": "21505:XAGUSD",
+        "both_negative_days": 3,
+        "both_nonzero_days": 14,
+        "pearson": -0.017202319346644658,
+        "stress_pearson": -0.015140546820069442
+      },
+      {
+        "a": "11422:USDCAD",
+        "b": "11910:NZDUSD",
+        "both_negative_days": 1,
+        "both_nonzero_days": 16,
+        "pearson": 0.12715018825325122,
+        "stress_pearson": 0.1302709793814786
+      },
+      {
+        "a": "11422:USDCAD",
+        "b": "13054:XTIUSD",
+        "both_negative_days": 4,
+        "both_nonzero_days": 17,
+        "pearson": 0.013780318679839148,
+        "stress_pearson": 0.013959524403733433
+      },
+      {
+        "a": "11422:USDCAD",
+        "b": "1537:XAGUSD",
+        "both_negative_days": 3,
+        "both_nonzero_days": 21,
+        "pearson": 0.03012022586851907,
+        "stress_pearson": 0.02919108958685875
+      },
+      {
+        "a": "11422:USDCAD",
+        "b": "20048:XTIUSD",
+        "both_negative_days": 0,
+        "both_nonzero_days": 1,
+        "pearson": -0.0033881217619863204,
+        "stress_pearson": -0.017153093312212236
+      },
+      {
+        "a": "11422:USDCAD",
+        "b": "21505:XAGUSD",
+        "both_negative_days": 4,
+        "both_nonzero_days": 29,
+        "pearson": -0.00891404465209541,
+        "stress_pearson": -0.011086800245088903
+      },
+      {
+        "a": "11910:NZDUSD",
+        "b": "13054:XTIUSD",
+        "both_negative_days": 1,
+        "both_nonzero_days": 8,
+        "pearson": -0.02859785733748021,
+        "stress_pearson": -0.03322526927937082
+      },
+      {
+        "a": "11910:NZDUSD",
+        "b": "1537:XAGUSD",
+        "both_negative_days": 5,
+        "both_nonzero_days": 8,
+        "pearson": 0.028057746279246412,
+        "stress_pearson": 0.028069094129906928
+      },
+      {
+        "a": "11910:NZDUSD",
+        "b": "20048:XTIUSD",
+        "both_negative_days": 0,
+        "both_nonzero_days": 0,
+        "pearson": 3.915933495755526e-06,
+        "stress_pearson": -0.001204315197122328
+      },
+      {
+        "a": "11910:NZDUSD",
+        "b": "21505:XAGUSD",
+        "both_negative_days": 1,
+        "both_nonzero_days": 5,
+        "pearson": 0.009144590649267944,
+        "stress_pearson": 0.008019005261292554
+      },
+      {
+        "a": "13054:XTIUSD",
+        "b": "1537:XAGUSD",
+        "both_negative_days": 0,
+        "both_nonzero_days": 9,
+        "pearson": -0.027303584732737023,
+        "stress_pearson": -0.04007621440530445
+      },
+      {
+        "a": "13054:XTIUSD",
+        "b": "20048:XTIUSD",
+        "both_negative_days": 0,
+        "both_nonzero_days": 4,
+        "pearson": -0.0048143078712085206,
+        "stress_pearson": -0.008176416225920507
+      },
+      {
+        "a": "13054:XTIUSD",
+        "b": "21505:XAGUSD",
+        "both_negative_days": 3,
+        "both_nonzero_days": 15,
+        "pearson": 0.005855513907365853,
+        "stress_pearson": 0.012019765654105771
+      },
+      {
+        "a": "1537:XAGUSD",
+        "b": "20048:XTIUSD",
+        "both_negative_days": 0,
+        "both_nonzero_days": 1,
+        "pearson": -0.003544608255776553,
+        "stress_pearson": -0.02313071972493985
+      },
+      {
+        "a": "1537:XAGUSD",
+        "b": "21505:XAGUSD",
+        "both_negative_days": 5,
+        "both_nonzero_days": 21,
+        "pearson": 0.14701339718494422,
+        "stress_pearson": 0.16762215619276624
+      },
+      {
+        "a": "20048:XTIUSD",
+        "b": "21505:XAGUSD",
+        "both_negative_days": 0,
+        "both_nonzero_days": 0,
+        "pearson": -0.0007738943167583793,
+        "stress_pearson": -0.0036449087049019615
+      }
+    ],
+    "start": "2018-11-02",
+    "stress_days": 398,
+    "stress_definition": "top quartile of sum(abs(sleeve daily net)); not a venue volatility series"
+  },
+  "cost_binding": {
+    "mtime_utc": "2026-07-30T01:02:30.006072+00:00",
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-07-30_ftmo_book3_symbol_cost_snapshot.json",
+    "sha256": "7eab3bf8c97373fcb44e36aca39dd679fbd3e093783cd6eacd9cb171190b3280"
+  },
+  "cost_normalization": [
+    {
+      "commission_model": "flat_round_trip_per_target_lot_usd",
+      "commission_percent_per_side": 0,
+      "derive_profit_currency_rate_from_pnl": true,
+      "digits": 3,
+      "dwx_symbol": "USDJPY.DWX",
+      "flat_round_trip_commission_per_lot": 5,
+      "profit_currency_to_account_rate": 0.0066666667,
+      "provider_symbol": "USD/JPY",
+      "source_contract_size": 100000,
+      "swap_long_points": 0.92,
+      "swap_short_points": -19.78,
+      "target_contract_size": 100000,
+      "triple_weekday": 2
+    },
+    {
+      "commission_model": "percent_of_notional_per_side",
+      "commission_percent_per_side": 0.0014,
+      "derive_profit_currency_rate_from_pnl": false,
+      "digits": 2,
+      "dwx_symbol": "XAUUSD.DWX",
+      "flat_round_trip_commission_per_lot": 0,
+      "profit_currency_to_account_rate": 1,
+      "provider_symbol": "XAU/USD",
+      "source_contract_size": 100,
+      "swap_long_points": -66.21,
+      "swap_short_points": -23.55,
+      "target_contract_size": 100,
+      "triple_weekday": 2
+    },
+    {
+      "commission_model": "commission_free",
+      "commission_percent_per_side": 0,
+      "derive_profit_currency_rate_from_pnl": false,
+      "digits": 3,
+      "dwx_symbol": "XTIUSD.DWX",
+      "equivalent_target_volume_formula": "source_volume * 1000 / 100",
+      "flat_round_trip_commission_per_lot": 0,
+      "profit_currency_to_account_rate": 1,
+      "provider_symbol": "USOIL.cash",
+      "source_contract_size": 1000,
+      "swap_long_points": 4.22,
+      "swap_short_points": -26.8,
+      "target_contract_size": 100,
+      "triple_weekday": 2
+    }
+  ],
+  "db_query_only": 1,
+  "distinct_eas": 8,
+  "fund_scores_binding": {
+    "mtime_utc": "2026-09-04T21:00:34.273638+00:00",
+    "path": "D:\\QM\\strategy_farm\\artifacts\\portfolio\\fund_scores.json",
+    "sha256": "5593ecd3381d75248691a4681a14e447b7ef34e73fa087f7a3cf109888c494f7"
+  },
+  "literal_builder_defaults": {
+    "account_weight_budget": 10.0,
+    "as_of": "2026-08-12",
+    "fund_score_floor": 1.0,
+    "max_pairwise_correlation": 0.5,
+    "roster": "D:\\QM\\reports\\portfolio\\portfolio_manifest_live_24sleeve_20260724.json",
+    "stream_root": "D:\\QM\\reports\\portfolio\\dxz_final_20260719"
+  },
+  "observed_at_utc": "2026-09-04T21:12:18.814361+00:00",
+  "official_rules_binding": {
+    "mtime_utc": "2026-09-04T03:17:50.652919+00:00",
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-04_ftmo_official_rules_snapshot.json",
+    "sha256": "c199b8f5f528cce5a93f4751f63394de63e5fe832483ac9c4b9d0314732d2905"
+  },
+  "oos_confirmation": {
+    "count": 55,
+    "receipt_binding": {
+      "mtime_utc": "2026-09-02T10:10:43.419200+00:00",
+      "path": "D:\\QM\\strategy_farm\\artifacts\\oos_2026_confirmation_v1\\enqueue_receipt.json",
+      "sha256": "380f564ccc0faa823d6175d6355ce5bc52d98a1d6710040ff1006519b8fe6b4f"
+    },
+    "rows": [
+      {
+        "ea_id": "QM5_12567",
+        "evidence_path": null,
+        "id": "004eda49-6ba3-5a9d-8979-cfc7517948e2",
+        "phase": "Q09_NEWS",
+        "status": "pending",
+        "symbol": "XAUUSD.DWX",
+        "updated_at": "2026-09-02T10:10:35.641002+00:00",
+        "verdict": null
+      },
+      {
+        "ea_id": "QM5_20048",
+        "evidence_path": null,
+        "id": "03279258-a3d1-5137-ae8e-8e937e6c909f",
+        "phase": "Q09_NEWS",
+        "status": "pending",
+        "symbol": "XTIUSD.DWX",
+        "updated_at": "2026-09-02T10:10:35.641002+00:00",
+        "verdict": null
+      },
+      {
+        "ea_id": "QM5_13128",
+        "evidence_path": null,
+        "id": "033e7bc3-715e-5c71-b368-c00ea2594598",
+        "phase": "Q09_NEWS",
+        "status": "pending",
+        "symbol": "NDX.DWX",
+        "updated_at": "2026-09-02T10:10:35.641002+00:00",
+        "verdict": null
+      },
+      {
+        "ea_id": "QM5_11422",
+        "evidence_path": null,
+        "id": "055cdabb-da68-5328-80b8-9012f291d466",
+        "phase": "Q09_NEWS",
+        "status": "pending",
+        "symbol": "USDCAD.DWX",
+        "updated_at": "2026-09-02T10:10:35.641002+00:00",
+        "verdict": null
+      },
+      {
+        "ea_id": "QM5_10911",
+        "evidence_path": null,
+        "id": "0d112806-ee2a-5d0a-9382-33a353cf8efe",
+        "phase": "Q09_NEWS",
+        "status": "pending",
+        "symbol": "GDAXI.DWX",
+        "updated_at": "2026-09-02T10:10:35.641002+00:00",
+        "verdict": null
+      },
+      {
+        "ea_id": "QM5_1567",
+        "evidence_path": "D:\\QM\\reports\\work_items\\0db8ceec-7339-557c-9e14-951e52cebe71\\QM5_1567\\20260904_073243\\summary.json",
+        "id": "0db8ceec-7339-557c-9e14-951e52cebe71",
+        "phase": "Q09_NEWS",
+        "status": "done",
+        "symbol": "EURUSD.DWX",
+        "updated_at": "2026-09-04T07:35:46+00:00",
+        "verdict": "REVIEW_REQUIRED"
+      },
+      {
+        "ea_id": "QM5_10706",
+        "evidence_path": "D:\\QM\\reports\\work_items\\12772e52-a69f-5b6f-83d0-ac0feb87e9b8\\QM5_10706\\20260904_074221\\summary.json",
+        "id": "12772e52-a69f-5b6f-83d0-ac0feb87e9b8",
+        "phase": "Q09_NEWS",
+        "status": "done",
+        "symbol": "GBPUSD.DWX",
+        "updated_at": "2026-09-04T07:45:52+00:00",
+        "verdict": "REVIEW_REQUIRED"
+      },
+      {
+        "ea_id": "QM5_11881",
+        "evidence_path": null,
+        "id": "15d41b29-d3ac-5774-804f-f3f3981696e9",
+        "phase": "Q09_NEWS",
+        "status": "pending",
+        "symbol": "GBPUSD.DWX",
+        "updated_at": "2026-09-02T10:10:35.641002+00:00",
+        "verdict": null
+      },
+      {
+        "ea_id": "QM5_13301",
+        "evidence_path": null,
+        "id": "1ab6156f-dfc1-5e03-aae7-db461d025b5c",
+        "phase": "Q09_NEWS",
+        "status": "pending",
+        "symbol": "GDAXI.DWX",
+        "updated_at": "2026-09-02T10:10:35.641002+00:00",
+        "verdict": null
+      },
+      {
+        "ea_id": "QM5_10939",
+        "evidence_path": null,
+        "id": "1ffcb576-bf27-5063-a384-685355910c3a",
+        "phase": "Q09_NEWS",
+        "status": "pending",
+        "symbol": "GBPUSD.DWX",
+        "updated_at": "2026-09-02T10:10:35.641002+00:00",
+        "verdict": null
+      },
+      {
+        "ea_id": "QM5_9641",
+        "evidence_path": null,
+        "id": "20127f25-36d0-54ac-ad55-567dbbee9b49",
+        "phase": "Q09_NEWS",
+        "status": "pending",
+        "symbol": "WS30.DWX",
+        "updated_at": "2026-09-02T10:10:35.641002+00:00",
+        "verdict": null
+      },
+      {
+        "ea_id": "QM5_12778",
+        "evidence_path": null,
+        "id": "24acc5d4-3e34-526e-a7a8-12640a2e759f",
+        "phase": "Q09_NEWS",
+        "status": "pending",
+        "symbol": "AUDUSD.DWX",
+        "updated_at": "2026-09-02T22:44:57+00:00",
+        "verdict": null
+      },
+      {
+        "ea_id": "QM5_11421",
+        "evidence_path": null,
+        "id": "33b3bb40-f4e9-5bc4-a873-5e6a04069ca3",
+        "phase": "Q09_NEWS",
+        "status": "pending",
+        "symbol": "EURUSD.DWX",
+        "updated_at": "2026-09-02T10:10:35.641002+00:00",
+        "verdict": null
+      },
+      {
+        "ea_id": "QM5_13117",
+        "evidence_path": "D:\\QM\\reports\\work_items\\379f7fa2-8282-5e04-a541-0f0f1289f91c\\QM5_13117\\20260904_074138\\summary.json",
+        "id": "379f7fa2-8282-5e04-a541-0f0f1289f91c",
+        "phase": "Q09_NEWS",
+        "status": "done",
+        "symbol": "EURGBP.DWX",
+        "updated_at": "2026-09-04T07:56:00+00:00",
+        "verdict": "REVIEW_REQUIRED"
+      },
+      {
+        "ea_id": "QM5_10513",
+        "evidence_path": "D:\\QM\\reports\\work_items\\3c1c84db-766a-5605-91c1-4ae4bf01ef44\\QM5_10513\\20260904_073656\\summary.json",
+        "id": "3c1c84db-766a-5605-91c1-4ae4bf01ef44",
+        "phase": "Q09_NEWS",
+        "status": "done",
+        "symbol": "XAUUSD.DWX",
+        "updated_at": "2026-09-04T07:42:54+00:00",
+        "verdict": "REVIEW_REQUIRED"
+      },
+      {
+        "ea_id": "QM5_13036",
+        "evidence_path": null,
+        "id": "421b36a2-c904-59c5-b747-cabe8da1909b",
+        "phase": "Q09_NEWS",
+        "status": "pending",
+        "symbol": "GDAXI.DWX",
+        "updated_at": "2026-09-02T10:10:35.641002+00:00",
+        "verdict": null
+      },
+      {
+        "ea_id": "QM5_41161",
+        "evidence_path": null,
+        "id": "44a48aa1-6dfb-53cc-a97f-dcdb8fd3cd86",
+        "phase": "Q09_NEWS",
+        "status": "pending",
+        "symbol": "GBPUSD.DWX",
+        "updated_at": "2026-09-02T10:10:35.641002+00:00",
+        "verdict": null
+      },
+      {
+        "ea_id": "QM5_11165",
+        "evidence_path": "D:\\QM\\reports\\work_items\\57dcceb8-6696-566f-b7bf-ce3a8cd35f8e\\QM5_11165\\20260904_024215\\summary.json",
+        "id": "57dcceb8-6696-566f-b7bf-ce3a8cd35f8e",
+        "phase": "Q09_NEWS",
+        "status": "done",
+        "symbol": "AUDCAD.DWX",
+        "updated_at": "2026-09-04T02:47:36+00:00",
+        "verdict": "REVIEW_REQUIRED"
+      },
+      {
+        "ea_id": "QM5_11294",
+        "evidence_path": null,
+        "id": "5e308792-a65e-5b7a-a608-78381c18201e",
+        "phase": "Q09_NEWS",
+        "status": "pending",
+        "symbol": "GDAXI.DWX",
+        "updated_at": "2026-09-02T10:10:35.641002+00:00",
+        "verdict": null
+      },
+      {
+        "ea_id": "QM5_13013",
+        "evidence_path": null,
+        "id": "6607ae07-b581-586f-9374-ec2673ad42b8",
+        "phase": "Q09_NEWS",
+        "status": "pending",
+        "symbol": "NDX.DWX",
+        "updated_at": "2026-09-02T10:10:35.641002+00:00",
+        "verdict": null
+      },
+      {
+        "ea_id": "QM5_20266",
+        "evidence_path": null,
+        "id": "7459c6d4-d6be-5606-8ed4-aeb72f0be504",
+        "phase": "Q09_NEWS",
+        "status": "pending",
+        "symbol": "XTIUSD.DWX",
+        "updated_at": "2026-09-02T10:10:35.641002+00:00",
+        "verdict": null
+      },
+      {
+        "ea_id": "QM5_12623",
+        "evidence_path": null,
+        "id": "78d6e7f9-4355-59a8-8d37-9bb317ca86d8",
+        "phase": "Q09_NEWS",
+        "status": "pending",
+        "symbol": "XAUUSD.DWX",
+        "updated_at": "2026-09-02T10:10:35.641002+00:00",
+        "verdict": null
+      },
+      {
+        "ea_id": "QM5_10183",
+        "evidence_path": null,
+        "id": "7db96266-f85e-55a7-b299-31b94028ae7b",
+        "phase": "Q09_NEWS",
+        "status": "pending",
+        "symbol": "XAUUSD.DWX",
+        "updated_at": "2026-09-02T10:10:35.641002+00:00",
+        "verdict": null
+      },
+      {
+        "ea_id": "QM5_11421",
+        "evidence_path": "D:\\QM\\reports\\work_items\\809e6347-8c76-5263-9e62-9e861ac2f7db\\QM5_11421\\20260904_055718\\summary.json",
+        "id": "809e6347-8c76-5263-9e62-9e861ac2f7db",
+        "phase": "Q09_NEWS",
+        "status": "done",
+        "symbol": "EURUSD.DWX",
+        "updated_at": "2026-09-04T06:00:25+00:00",
+        "verdict": "REVIEW_REQUIRED"
+      },
+      {
+        "ea_id": "QM5_10513",
+        "evidence_path": null,
+        "id": "890a117c-e5be-5e03-bcae-027ede31f478",
+        "phase": "Q09_NEWS",
+        "status": "pending",
+        "symbol": "XAUUSD.DWX",
+        "updated_at": "2026-09-02T10:10:35.641002+00:00",
+        "verdict": null
+      },
+      {
+        "ea_id": "QM5_11288",
+        "evidence_path": null,
+        "id": "896259f9-eb2a-52ba-ad93-5d152eaf990b",
+        "phase": "Q09_NEWS",
+        "status": "pending",
+        "symbol": "USDJPY.DWX",
+        "updated_at": "2026-09-02T10:10:35.641002+00:00",
+        "verdict": null
+      },
+      {
+        "ea_id": "QM5_12567",
+        "evidence_path": "D:\\QM\\reports\\work_items\\8d88ebda-af7a-51cc-a55c-0b2a56132c9a\\QM5_12567\\20260904_073806\\summary.json",
+        "id": "8d88ebda-af7a-51cc-a55c-0b2a56132c9a",
+        "phase": "Q09_NEWS",
+        "status": "done",
+        "symbol": "XNGUSD.DWX",
+        "updated_at": "2026-09-04T07:40:36+00:00",
+        "verdict": "REVIEW_REQUIRED"
+      },
+      {
+        "ea_id": "QM5_13054",
+        "evidence_path": null,
+        "id": "9202acef-e841-5fea-a695-a95437ceb807",
+        "phase": "Q09_NEWS",
+        "status": "pending",
+        "symbol": "XTIUSD.DWX",
+        "updated_at": "2026-09-02T10:10:35.641002+00:00",
+        "verdict": null
+      },
+      {
+        "ea_id": "QM5_13213",
+        "evidence_path": null,
+        "id": "92efae73-ade2-550b-a8d0-5268718db42c",
+        "phase": "Q09_NEWS",
+        "status": "pending",
+        "symbol": "USDJPY.DWX",
+        "updated_at": "2026-09-02T10:10:35.641002+00:00",
+        "verdict": null
+      },
+      {
+        "ea_id": "QM5_21505",
+        "evidence_path": null,
+        "id": "95d49279-e099-5589-a112-750fe5d534b8",
+        "phase": "Q09_NEWS",
+        "status": "pending",
+        "symbol": "XAGUSD.DWX",
+        "updated_at": "2026-09-02T10:10:35.641002+00:00",
+        "verdict": null
+      },
+      {
+        "ea_id": "QM5_11881",
+        "evidence_path": null,
+        "id": "9de7b79c-ed84-5ebe-a4dc-4670e86b4976",
+        "phase": "Q09_NEWS",
+        "status": "pending",
+        "symbol": "SP500.DWX",
+        "updated_at": "2026-09-02T10:10:35.641002+00:00",
+        "verdict": null
+      },
+      {
+        "ea_id": "QM5_10919",
+        "evidence_path": "D:\\QM\\reports\\work_items\\a257b4e9-3984-55b9-98cb-add4591e04fa\\QM5_10919\\20260904_023826\\summary.json",
+        "id": "a257b4e9-3984-55b9-98cb-add4591e04fa",
+        "phase": "Q09_NEWS",
+        "status": "done",
+        "symbol": "XTIUSD.DWX",
+        "updated_at": "2026-09-04T02:41:03+00:00",
+        "verdict": "REVIEW_REQUIRED"
+      },
+      {
+        "ea_id": "QM5_1556",
+        "evidence_path": null,
+        "id": "a61f1a02-f630-5f1f-a9d7-ef1af84627f8",
+        "phase": "Q09_NEWS",
+        "status": "pending",
+        "symbol": "XAUUSD.DWX",
+        "updated_at": "2026-09-02T10:10:35.641002+00:00",
+        "verdict": null
+      },
+      {
+        "ea_id": "QM5_11132",
+        "evidence_path": null,
+        "id": "a800efb5-e0db-5f99-b982-9b2bf49108b5",
+        "phase": "Q09_NEWS",
+        "status": "pending",
+        "symbol": "SP500.DWX",
+        "updated_at": "2026-09-02T10:10:35.641002+00:00",
+        "verdict": null
+      },
+      {
+        "ea_id": "QM5_13213",
+        "evidence_path": "D:\\QM\\reports\\work_items\\a8b55d1c-9add-5015-a9a0-58dedd0f2894\\QM5_13213\\20260904_023538\\summary.json",
+        "id": "a8b55d1c-9add-5015-a9a0-58dedd0f2894",
+        "phase": "Q09_NEWS",
+        "status": "done",
+        "symbol": "USDJPY.DWX",
+        "updated_at": "2026-09-04T02:41:55+00:00",
+        "verdict": "REVIEW_REQUIRED"
+      },
+      {
+        "ea_id": "QM5_10706",
+        "evidence_path": "D:\\QM\\reports\\work_items\\a96cf5c2-9c3f-5bac-8f41-0c695f5f5953\\QM5_10706\\20260904_073311\\summary.json",
+        "id": "a96cf5c2-9c3f-5bac-8f41-0c695f5f5953",
+        "phase": "Q09_NEWS",
+        "status": "done",
+        "symbol": "GBPUSD.DWX",
+        "updated_at": "2026-09-04T07:36:08+00:00",
+        "verdict": "REVIEW_REQUIRED"
+      },
+      {
+        "ea_id": "QM5_12969",
+        "evidence_path": "D:\\QM\\reports\\work_items\\acb3592c-3f31-5efe-bc12-344213600f1c\\QM5_12969\\20260904_073344\\summary.json",
+        "id": "acb3592c-3f31-5efe-bc12-344213600f1c",
+        "phase": "Q09_NEWS",
+        "status": "done",
+        "symbol": "USDJPY.DWX",
+        "updated_at": "2026-09-04T07:36:53+00:00",
+        "verdict": "REVIEW_REQUIRED"
+      },
+      {
+        "ea_id": "QM5_1537",
+        "evidence_path": null,
+        "id": "af09850e-2c55-59dc-9744-19716b3c4e2d",
+        "phase": "Q09_NEWS",
+        "status": "pending",
+        "symbol": "XAGUSD.DWX",
+        "updated_at": "2026-09-02T10:10:35.641002+00:00",
+        "verdict": null
+      },
+      {
+        "ea_id": "QM5_21501",
+        "evidence_path": null,
+        "id": "b685a457-d784-55a5-b037-5e76803e63fd",
+        "phase": "Q09_NEWS",
+        "status": "pending",
+        "symbol": "USDJPY.DWX",
+        "updated_at": "2026-09-02T10:10:35.641002+00:00",
+        "verdict": null
+      },
+      {
+        "ea_id": "QM5_10128",
+        "evidence_path": null,
+        "id": "b8bedf49-a8c7-5373-b2e5-950d5367cb74",
+        "phase": "Q09_NEWS",
+        "status": "pending",
+        "symbol": "XAUUSD.DWX",
+        "updated_at": "2026-09-02T10:10:35.641002+00:00",
+        "verdict": null
+      },
+      {
+        "ea_id": "QM5_11708",
+        "evidence_path": "D:\\QM\\reports\\work_items\\bbe69845-0075-5268-9296-fff69d9d9dab\\QM5_11708\\20260904_055932\\summary.json",
+        "id": "bbe69845-0075-5268-9296-fff69d9d9dab",
+        "phase": "Q09_NEWS",
+        "status": "done",
+        "symbol": "EURUSD.DWX",
+        "updated_at": "2026-09-04T06:02:42+00:00",
+        "verdict": "REVIEW_REQUIRED"
+      },
+      {
+        "ea_id": "QM5_10146",
+        "evidence_path": null,
+        "id": "bfd0e872-b4dc-5e2b-8948-8ebe18d14251",
+        "phase": "Q09_NEWS",
+        "status": "pending",
+        "symbol": "AUDUSD.DWX",
+        "updated_at": "2026-09-02T10:10:35.641002+00:00",
+        "verdict": null
+      },
+      {
+        "ea_id": "QM5_20188",
+        "evidence_path": null,
+        "id": "ca876575-d5ae-56b9-ba3b-5b5e9f6f7320",
+        "phase": "Q09_NEWS",
+        "status": "pending",
+        "symbol": "USDJPY.DWX",
+        "updated_at": "2026-09-02T10:10:35.641002+00:00",
+        "verdict": null
+      },
+      {
+        "ea_id": "QM5_10403",
+        "evidence_path": "D:\\QM\\reports\\work_items\\ccc5ea5b-e3bf-56c2-985b-bcb5387a6942\\QM5_10403\\20260904_073639\\summary.json",
+        "id": "ccc5ea5b-e3bf-56c2-985b-bcb5387a6942",
+        "phase": "Q09_NEWS",
+        "status": "done",
+        "symbol": "XAUUSD.DWX",
+        "updated_at": "2026-09-04T07:42:43+00:00",
+        "verdict": "REVIEW_REQUIRED"
+      },
+      {
+        "ea_id": "QM5_12849",
+        "evidence_path": null,
+        "id": "d1729472-6047-5906-a8e6-1b51d8845d30",
+        "phase": "Q09_NEWS",
+        "status": "pending",
+        "symbol": "XTIUSD.DWX",
+        "updated_at": "2026-09-02T10:10:35.641002+00:00",
+        "verdict": null
+      },
+      {
+        "ea_id": "QM5_10123",
+        "evidence_path": null,
+        "id": "d6532bee-4c7b-560c-b4b8-add78fe6f364",
+        "phase": "Q09_NEWS",
+        "status": "pending",
+        "symbol": "XAUUSD.DWX",
+        "updated_at": "2026-09-02T10:10:35.641002+00:00",
+        "verdict": null
+      },
+      {
+        "ea_id": "QM5_12989",
+        "evidence_path": null,
+        "id": "d6601d01-e9fa-5996-b73e-d52da5e9f78a",
+        "phase": "Q09_NEWS",
+        "status": "pending",
+        "symbol": "XAUUSD.DWX",
+        "updated_at": "2026-09-02T10:10:35.641002+00:00",
+        "verdict": null
+      },
+      {
+        "ea_id": "QM5_12855",
+        "evidence_path": null,
+        "id": "d9541e3a-9afc-594d-881e-dc2b13a5f95d",
+        "phase": "Q09_NEWS",
+        "status": "pending",
+        "symbol": "XTIUSD.DWX",
+        "updated_at": "2026-09-02T10:10:35.641002+00:00",
+        "verdict": null
+      },
+      {
+        "ea_id": "QM5_11421",
+        "evidence_path": "D:\\QM\\reports\\work_items\\e6e4eebe-49e2-54a7-866c-1290279b3daf\\QM5_11421\\20260904_055616\\summary.json",
+        "id": "e6e4eebe-49e2-54a7-866c-1290279b3daf",
+        "phase": "Q09_NEWS",
+        "status": "done",
+        "symbol": "AUDUSD.DWX",
+        "updated_at": "2026-09-04T05:58:58+00:00",
+        "verdict": "REVIEW_REQUIRED"
+      },
+      {
+        "ea_id": "QM5_10142",
+        "evidence_path": null,
+        "id": "eaf6fe05-7807-5e13-9031-5b6b01019aaa",
+        "phase": "Q09_NEWS",
+        "status": "pending",
+        "symbol": "SP500.DWX",
+        "updated_at": "2026-09-02T10:10:35.641002+00:00",
+        "verdict": null
+      },
+      {
+        "ea_id": "QM5_11165",
+        "evidence_path": "D:\\QM\\reports\\work_items\\f4310f9a-0b8a-5017-bc22-5be3e484d6af\\QM5_11165\\20260904_055630\\summary.json",
+        "id": "f4310f9a-0b8a-5017-bc22-5be3e484d6af",
+        "phase": "Q09_NEWS",
+        "status": "done",
+        "symbol": "EURUSD.DWX",
+        "updated_at": "2026-09-04T06:00:56+00:00",
+        "verdict": "REVIEW_REQUIRED"
+      },
+      {
+        "ea_id": "QM5_12708",
+        "evidence_path": null,
+        "id": "f67de388-706f-5c01-9d51-b2274bbb4dd8",
+        "phase": "Q09_NEWS",
+        "status": "pending",
+        "symbol": "XAUUSD.DWX",
+        "updated_at": "2026-09-02T10:10:35.641002+00:00",
+        "verdict": null
+      },
+      {
+        "ea_id": "QM5_10440",
+        "evidence_path": null,
+        "id": "f8f75276-2256-5e06-a58b-2756e5c1ebe0",
+        "phase": "Q09_NEWS",
+        "status": "pending",
+        "symbol": "NDX.DWX",
+        "updated_at": "2026-09-02T10:10:35.641002+00:00",
+        "verdict": null
+      },
+      {
+        "ea_id": "QM5_13128",
+        "evidence_path": null,
+        "id": "fe1b3e6b-eaf5-5d3b-9a3c-7f49d07c5360",
+        "phase": "Q09_NEWS",
+        "status": "pending",
+        "symbol": "NDX.DWX",
+        "updated_at": "2026-09-02T10:10:35.641002+00:00",
+        "verdict": null
+      },
+      {
+        "ea_id": "QM5_10145",
+        "evidence_path": null,
+        "id": "ffd9ef4d-0946-5671-93c0-d9047ebd3270",
+        "phase": "Q09_NEWS",
+        "status": "pending",
+        "symbol": "XAUUSD.DWX",
+        "updated_at": "2026-09-02T10:10:35.641002+00:00",
+        "verdict": null
+      }
+    ],
+    "status_counts": {
+      "done": 15,
+      "pending": 40
+    }
+  },
+  "pairs": [
+    {
+      "binding": {
+        "mtime_utc": "2026-09-04T05:23:27.244267+00:00",
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10706_GBPUSD_DWX.jsonl",
+        "sha256": "71fb35b8f8539356f511609a4d1dfb06571f85b19b60de6647e907ec891e34f7"
+      },
+      "ea_id": "QM5_10706",
+      "entry_time_records": 360,
+      "exit_days": 360,
+      "first_close_day_label": "2017-10-10",
+      "fund_score_row": {
+        "active_days_per_60d": 8.0,
+        "active_days_per_60d_detail": {
+          "active_days_total": 575,
+          "active_definition": "challenge_book_60d.active (entry, close, every held day)",
+          "max": 22.0,
+          "mean": 11.53,
+          "median": 11.0,
+          "min": 6.0,
+          "p10": 8.0,
+          "p20": 9.0,
+          "span_days": 3003,
+          "statistic": "p10",
+          "window_anchoring": "calendar_grid_step_1d",
+          "window_days": 60,
+          "windows": 2945
+        },
+        "denominator": 5.989229999999999,
+        "fund_score": 0.13164296579026033,
+        "med60_1x": 0.7884400000000007,
+        "screening_only": true,
+        "sleeve": "10706:GBPUSD",
+        "status": "SCORED",
+        "wdd_p90_1x": 5.989229999999999,
+        "worst_day_1x": 2.40972
+      },
+      "last_close_day_label": "2025-12-30",
+      "net_dxz": 69101.93000000001,
+      "normalized_ftmo_cost_covered": false,
+      "open_days": 360,
+      "overnight_trades_day_labels": 165,
+      "sealed_receipt": {
+        "action": "skip",
+        "ea_id": "QM5_10706",
+        "identity_ex5_sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb",
+        "identity_status": "BOUND_STREAM_BUILD_SETFILE_SOURCE_AND_REPORT",
+        "q08_evidence_path": "D:\\QM\\reports\\work_items\\a2e1aba6-45ea-4dcf-af98-1f679ebeb64f\\QM5_10706\\Q08\\GBPUSD_DWX\\aggregate.json",
+        "q08_work_item_id": "a2e1aba6-45ea-4dcf-af98-1f679ebeb64f",
+        "q14_evidence_path": "D:\\QM\\reports\\optimization_fork\\b5e18759-1377-5af7-9634-9f66bd293d0c\\receipt.json",
+        "q14_verdict": "KEEP_INCUMBENT",
+        "q14_work_item_id": "b5e18759-1377-5af7-9634-9f66bd293d0c",
+        "reason": "stream_already_bound",
+        "recorded_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10706_GBPUSD_DWX.jsonl",
+        "seal_content_sha256": "71fb35b8f8539356f511609a4d1dfb06571f85b19b60de6647e907ec891e34f7",
+        "source_artifact_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\10706_GBPUSD_DWX.jsonl",
+        "symbol": "GBPUSD.DWX"
+      },
+      "sleeve_id": "10706:GBPUSD",
+      "swap_dxz": 0.0,
+      "symbol": "GBPUSD.DWX",
+      "trades": 360,
+      "warning": "Broker timestamp day labels only; not certified Prague intraday equity or FTMO execution."
+    },
+    {
+      "binding": {
+        "mtime_utc": "2026-09-02T19:37:38.350776+00:00",
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11421_EURUSD_DWX.jsonl",
+        "sha256": "e9d0a9ef831f156f0f67e5bf1140d7e57702c3923a4ff47b5548847957d7c0c1"
+      },
+      "ea_id": "QM5_11421",
+      "entry_time_records": 91,
+      "exit_days": 91,
+      "first_close_day_label": "2018-05-11",
+      "fund_score_row": {
+        "active_days_per_60d": 0.0,
+        "active_days_per_60d_detail": {
+          "active_days_total": 201,
+          "active_definition": "challenge_book_60d.active (entry, close, every held day)",
+          "max": 12.0,
+          "mean": 4.304,
+          "median": 4.0,
+          "min": 0.0,
+          "p10": 0.0,
+          "p20": 1.0,
+          "span_days": 2772,
+          "statistic": "p10",
+          "window_anchoring": "calendar_grid_step_1d",
+          "window_days": 60,
+          "windows": 2714
+        },
+        "denominator": 2.2472600000000003,
+        "fund_score": 0.027250963395423777,
+        "med60_1x": 0.061240000000000044,
+        "screening_only": true,
+        "sleeve": "11421:EURUSD",
+        "status": "SCORED",
+        "wdd_p90_1x": 1.5819699999999999,
+        "worst_day_1x": 1.1236300000000001
+      },
+      "last_close_day_label": "2025-12-11",
+      "net_dxz": 4162.830000000001,
+      "normalized_ftmo_cost_covered": false,
+      "open_days": 91,
+      "overnight_trades_day_labels": 67,
+      "sealed_receipt": {
+        "action": "skip",
+        "ea_id": "QM5_11421",
+        "identity_ex5_sha256": "9dd7facd1da7e2c6564929b92a2e4a62e65bc40b99a03edd729030f72d18924b",
+        "identity_status": "BOUND_STREAM_BUILD_SETFILE_SOURCE_AND_REPORT",
+        "q08_evidence_path": "D:\\QM\\reports\\work_items\\c93263aa-a707-45ea-a915-204ec59df077\\QM5_11421\\Q08\\EURUSD_DWX\\aggregate.json",
+        "q08_work_item_id": "c93263aa-a707-45ea-a915-204ec59df077",
+        "q14_evidence_path": "D:\\QM\\reports\\optimization_fork\\ff733cf6-52a1-5aad-9bff-4f8c31ef4dc6\\receipt.json",
+        "q14_verdict": "KEEP_INCUMBENT",
+        "q14_work_item_id": "ff733cf6-52a1-5aad-9bff-4f8c31ef4dc6",
+        "reason": "stream_already_bound",
+        "recorded_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11421_EURUSD_DWX.jsonl",
+        "seal_content_sha256": "e9d0a9ef831f156f0f67e5bf1140d7e57702c3923a4ff47b5548847957d7c0c1",
+        "source_artifact_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\11421_EURUSD_DWX.jsonl",
+        "symbol": "EURUSD.DWX"
+      },
+      "sleeve_id": "11421:EURUSD",
+      "swap_dxz": -785.0099999999999,
+      "symbol": "EURUSD.DWX",
+      "trades": 91,
+      "warning": "Broker timestamp day labels only; not certified Prague intraday equity or FTMO execution."
+    },
+    {
+      "binding": {
+        "mtime_utc": "2026-09-04T06:23:12.208496+00:00",
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11422_USDCAD_DWX.jsonl",
+        "sha256": "7ce6cc3ec2f1279c18e8601119e3319375d5d3fa1ce4cf95cf33e05eefc33198"
+      },
+      "ea_id": "QM5_11422",
+      "entry_time_records": 195,
+      "exit_days": 195,
+      "first_close_day_label": "2018-03-02",
+      "fund_score_row": {
+        "entry_time_records": 195,
+        "reason": "challenge_engine_ineligible",
+        "records": 195,
+        "sleeve": "11422:USDCAD",
+        "status": "UNSCORABLE"
+      },
+      "last_close_day_label": "2025-12-26",
+      "net_dxz": 18310.479999999992,
+      "normalized_ftmo_cost_covered": false,
+      "open_days": 195,
+      "overnight_trades_day_labels": 154,
+      "sealed_receipt": {
+        "action": "skip",
+        "ea_id": "QM5_11422",
+        "identity_ex5_sha256": "2b98e9e902313148be78d88513fcbda2476150b1a7605eb15a50b2cca6b32d66",
+        "identity_status": "BOUND_STREAM_BUILD_SETFILE_SOURCE_AND_REPORT",
+        "q08_evidence_path": "D:\\QM\\reports\\work_items\\2bd0f95c-6c62-4a53-92cf-04f0d39fbb48\\QM5_11422\\Q08\\USDCAD_DWX\\aggregate.json",
+        "q08_work_item_id": "2bd0f95c-6c62-4a53-92cf-04f0d39fbb48",
+        "q14_evidence_path": "D:\\QM\\reports\\optimization_fork\\3078ad67-9a19-56cb-a252-0a112596343a\\receipt.json",
+        "q14_verdict": "KEEP_INCUMBENT",
+        "q14_work_item_id": "3078ad67-9a19-56cb-a252-0a112596343a",
+        "reason": "stream_already_bound",
+        "recorded_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11422_USDCAD_DWX.jsonl",
+        "seal_content_sha256": "7ce6cc3ec2f1279c18e8601119e3319375d5d3fa1ce4cf95cf33e05eefc33198",
+        "source_artifact_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\11422_USDCAD_DWX.jsonl",
+        "symbol": "USDCAD.DWX"
+      },
+      "sleeve_id": "11422:USDCAD",
+      "swap_dxz": 0.0,
+      "symbol": "USDCAD.DWX",
+      "trades": 195,
+      "warning": "Broker timestamp day labels only; not certified Prague intraday equity or FTMO execution."
+    },
+    {
+      "binding": {
+        "mtime_utc": "2026-09-04T16:05:03.483860+00:00",
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11910_NZDUSD_DWX.jsonl",
+        "sha256": "555bbee205432c62f06da96a0a291d14028dc5c88e3fa8b2792ad62bc5d885b0"
+      },
+      "ea_id": "QM5_11910",
+      "entry_time_records": 63,
+      "exit_days": 63,
+      "first_close_day_label": "2018-03-23",
+      "fund_score_row": {
+        "entry_time_records": 63,
+        "reason": "challenge_engine_ineligible",
+        "records": 63,
+        "sleeve": "11910:NZDUSD",
+        "status": "UNSCORABLE"
+      },
+      "last_close_day_label": "2025-06-05",
+      "net_dxz": 2425.1900000000005,
+      "normalized_ftmo_cost_covered": false,
+      "open_days": 63,
+      "overnight_trades_day_labels": 53,
+      "sealed_receipt": {
+        "action": "skip",
+        "ea_id": "QM5_11910",
+        "identity_ex5_sha256": "e18d477e63c40cb1002aa4d93d8efcc3ec6fddf1081fb73ad9df1b0a7a3042de",
+        "identity_status": "BOUND_STREAM_BUILD_SETFILE_SOURCE_AND_REPORT",
+        "q08_evidence_path": "D:\\QM\\reports\\work_items\\977a478e-1f23-4297-ac76-656bb497e2ec\\QM5_11910\\Q08\\NZDUSD_DWX\\aggregate.json",
+        "q08_work_item_id": "977a478e-1f23-4297-ac76-656bb497e2ec",
+        "q14_evidence_path": "D:\\QM\\reports\\optimization_fork\\e21567f4-e6f9-51e4-8c9a-c3b4ccef3272\\receipt.json",
+        "q14_verdict": "KEEP_INCUMBENT",
+        "q14_work_item_id": "e21567f4-e6f9-51e4-8c9a-c3b4ccef3272",
+        "reason": "stream_already_bound",
+        "recorded_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11910_NZDUSD_DWX.jsonl",
+        "seal_content_sha256": "555bbee205432c62f06da96a0a291d14028dc5c88e3fa8b2792ad62bc5d885b0",
+        "source_artifact_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\11910_NZDUSD_DWX.jsonl",
+        "symbol": "NZDUSD.DWX"
+      },
+      "sleeve_id": "11910:NZDUSD",
+      "swap_dxz": -252.27000000000004,
+      "symbol": "NZDUSD.DWX",
+      "trades": 63,
+      "warning": "Broker timestamp day labels only; not certified Prague intraday equity or FTMO execution."
+    },
+    {
+      "binding": {
+        "mtime_utc": "2026-09-04T06:15:53.625646+00:00",
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13054_XTIUSD_DWX.jsonl",
+        "sha256": "67d4fe2cef067e041f01d10e5e6c98312a32b43683eee2da3d0bfa9af296955b"
+      },
+      "ea_id": "QM5_13054",
+      "entry_time_records": 82,
+      "exit_days": 82,
+      "first_close_day_label": "2018-03-02",
+      "fund_score_row": {
+        "entry_time_records": 82,
+        "reason": "challenge_engine_ineligible",
+        "records": 82,
+        "sleeve": "13054:XTIUSD",
+        "status": "UNSCORABLE"
+      },
+      "last_close_day_label": "2025-12-30",
+      "net_dxz": 4831.279999999997,
+      "normalized_ftmo_cost_covered": true,
+      "open_days": 82,
+      "overnight_trades_day_labels": 71,
+      "sealed_receipt": {
+        "action": "skip",
+        "ea_id": "QM5_13054",
+        "identity_ex5_sha256": "2e65488fccdbd985f78318861a223a305d820a4fce3d2ebdcafae6ce956fd96d",
+        "identity_status": "BOUND_STREAM_BUILD_SETFILE_SOURCE_AND_REPORT",
+        "q08_evidence_path": "D:\\QM\\reports\\work_items\\21dd6839-4d77-4228-b5ba-5dd86aeb0cdb\\QM5_13054\\Q08\\XTIUSD_DWX\\aggregate.json",
+        "q08_work_item_id": "21dd6839-4d77-4228-b5ba-5dd86aeb0cdb",
+        "q14_evidence_path": "D:\\QM\\reports\\optimization_fork\\4aaa524d-c11a-5725-8de7-f1d00d51eca9\\receipt.json",
+        "q14_verdict": "KEEP_INCUMBENT",
+        "q14_work_item_id": "4aaa524d-c11a-5725-8de7-f1d00d51eca9",
+        "reason": "stream_already_bound",
+        "recorded_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13054_XTIUSD_DWX.jsonl",
+        "seal_content_sha256": "67d4fe2cef067e041f01d10e5e6c98312a32b43683eee2da3d0bfa9af296955b",
+        "source_artifact_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\13054_XTIUSD_DWX.jsonl",
+        "symbol": "XTIUSD.DWX"
+      },
+      "sleeve_id": "13054:XTIUSD",
+      "swap_dxz": 0.0,
+      "symbol": "XTIUSD.DWX",
+      "trades": 82,
+      "warning": "Broker timestamp day labels only; not certified Prague intraday equity or FTMO execution."
+    },
+    {
+      "binding": {
+        "mtime_utc": "2026-09-04T05:12:27.624955+00:00",
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\1537_XAGUSD_DWX.jsonl",
+        "sha256": "1885c21e4c895827c79ff3d55849308ab4ee5c0db96a7d576cd652dc3eff8658"
+      },
+      "ea_id": "QM5_1537",
+      "entry_time_records": 96,
+      "exit_days": 96,
+      "first_close_day_label": "2018-11-02",
+      "fund_score_row": {
+        "entry_time_records": 96,
+        "reason": "challenge_engine_ineligible",
+        "records": 96,
+        "sleeve": "1537:XAGUSD",
+        "status": "UNSCORABLE"
+      },
+      "last_close_day_label": "2024-12-06",
+      "net_dxz": 3647.6099999999997,
+      "normalized_ftmo_cost_covered": false,
+      "open_days": 96,
+      "overnight_trades_day_labels": 80,
+      "sealed_receipt": {
+        "action": "skip",
+        "ea_id": "QM5_1537",
+        "identity_ex5_sha256": "142a019e773a493def0640722efb9d591d094650b35a69d5de39f6af3a048106",
+        "identity_status": "BOUND_STREAM_BUILD_SETFILE_SOURCE_AND_REPORT",
+        "q08_evidence_path": "D:\\QM\\reports\\work_items\\f62fe6b3-f734-466e-95dd-d7ca76294729\\QM5_1537\\Q08\\XAGUSD_DWX\\aggregate.json",
+        "q08_work_item_id": "f62fe6b3-f734-466e-95dd-d7ca76294729",
+        "q14_evidence_path": "D:\\QM\\reports\\optimization_fork\\18859f02-5371-5094-a7a5-b63619482545\\receipt.json",
+        "q14_verdict": "KEEP_INCUMBENT",
+        "q14_work_item_id": "18859f02-5371-5094-a7a5-b63619482545",
+        "reason": "stream_already_bound",
+        "recorded_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\1537_XAGUSD_DWX.jsonl",
+        "seal_content_sha256": "1885c21e4c895827c79ff3d55849308ab4ee5c0db96a7d576cd652dc3eff8658",
+        "source_artifact_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\1537_XAGUSD_DWX.jsonl",
+        "symbol": "XAGUSD.DWX"
+      },
+      "sleeve_id": "1537:XAGUSD",
+      "swap_dxz": 0.0,
+      "symbol": "XAGUSD.DWX",
+      "trades": 96,
+      "warning": "Broker timestamp day labels only; not certified Prague intraday equity or FTMO execution."
+    },
+    {
+      "binding": {
+        "mtime_utc": "2026-09-04T06:53:50.460516+00:00",
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\20048_XTIUSD_DWX.jsonl",
+        "sha256": "a792e2635250bcd6df5aa4a290359b54e6d5ffe8fbe10e34d143b74dfe0e8d55"
+      },
+      "ea_id": "QM5_20048",
+      "entry_time_records": 60,
+      "exit_days": 60,
+      "first_close_day_label": "2018-04-02",
+      "fund_score_row": {
+        "entry_time_records": 60,
+        "reason": "challenge_engine_ineligible",
+        "records": 60,
+        "sleeve": "20048:XTIUSD",
+        "status": "UNSCORABLE"
+      },
+      "last_close_day_label": "2025-12-26",
+      "net_dxz": 1164.2800000000002,
+      "normalized_ftmo_cost_covered": true,
+      "open_days": 60,
+      "overnight_trades_day_labels": 60,
+      "sealed_receipt": {
+        "action": "skip",
+        "ea_id": "QM5_20048",
+        "identity_ex5_sha256": "1312391ad7e654812244e48a6df92d5bd323dba7d32ddae60c54adc464527f00",
+        "identity_status": "BOUND_STREAM_BUILD_SETFILE_SOURCE_AND_REPORT",
+        "q08_evidence_path": "D:\\QM\\reports\\work_items\\a43559cd-b084-4c0e-8bc3-2c7b6fc1a5ea\\QM5_20048\\Q08\\XTIUSD_DWX\\aggregate.json",
+        "q08_work_item_id": "a43559cd-b084-4c0e-8bc3-2c7b6fc1a5ea",
+        "q14_evidence_path": "D:\\QM\\reports\\optimization_fork\\aefddcb5-3ff1-5b19-a0ef-e188555edf37\\receipt.json",
+        "q14_verdict": "KEEP_INCUMBENT",
+        "q14_work_item_id": "aefddcb5-3ff1-5b19-a0ef-e188555edf37",
+        "reason": "stream_already_bound",
+        "recorded_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\20048_XTIUSD_DWX.jsonl",
+        "seal_content_sha256": "a792e2635250bcd6df5aa4a290359b54e6d5ffe8fbe10e34d143b74dfe0e8d55",
+        "source_artifact_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\20048_XTIUSD_DWX.jsonl",
+        "symbol": "XTIUSD.DWX"
+      },
+      "sleeve_id": "20048:XTIUSD",
+      "swap_dxz": 0.0,
+      "symbol": "XTIUSD.DWX",
+      "trades": 60,
+      "warning": "Broker timestamp day labels only; not certified Prague intraday equity or FTMO execution."
+    },
+    {
+      "binding": {
+        "mtime_utc": "2026-09-04T06:06:47.876581+00:00",
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\21505_XAGUSD_DWX.jsonl",
+        "sha256": "243804faaf0050f5482b9a4aac8f9eb0dcd552de1c2c139a486f0bcfa46b94c1"
+      },
+      "ea_id": "QM5_21505",
+      "entry_time_records": 116,
+      "exit_days": 116,
+      "first_close_day_label": "2018-07-27",
+      "fund_score_row": {
+        "entry_time_records": 116,
+        "reason": "challenge_engine_ineligible",
+        "records": 116,
+        "sleeve": "21505:XAGUSD",
+        "status": "UNSCORABLE"
+      },
+      "last_close_day_label": "2025-09-26",
+      "net_dxz": 7223.850000000002,
+      "normalized_ftmo_cost_covered": false,
+      "open_days": 116,
+      "overnight_trades_day_labels": 116,
+      "sealed_receipt": {
+        "action": "skip",
+        "ea_id": "QM5_21505",
+        "identity_ex5_sha256": "395c4747832acbcdf8a68d8598e53abe5786bdc6c538767c400884cd82b2aea1",
+        "identity_status": "BOUND_STREAM_BUILD_SETFILE_SOURCE_AND_REPORT",
+        "q08_evidence_path": "D:\\QM\\reports\\work_items\\15c1ec7b-5821-4944-81a7-86d23754565d\\QM5_21505\\Q08\\XAGUSD_DWX\\aggregate.json",
+        "q08_work_item_id": "15c1ec7b-5821-4944-81a7-86d23754565d",
+        "q14_evidence_path": "D:\\QM\\reports\\optimization_fork\\aecfbf06-63ef-520b-8943-48b5b1d3769e\\receipt.json",
+        "q14_verdict": "KEEP_INCUMBENT",
+        "q14_work_item_id": "aecfbf06-63ef-520b-8943-48b5b1d3769e",
+        "reason": "stream_already_bound",
+        "recorded_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\21505_XAGUSD_DWX.jsonl",
+        "seal_content_sha256": "243804faaf0050f5482b9a4aac8f9eb0dcd552de1c2c139a486f0bcfa46b94c1",
+        "source_artifact_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\21505_XAGUSD_DWX.jsonl",
+        "symbol": "XAGUSD.DWX"
+      },
+      "sleeve_id": "21505:XAGUSD",
+      "swap_dxz": 0.0,
+      "symbol": "XAGUSD.DWX",
+      "trades": 116,
+      "warning": "Broker timestamp day labels only; not certified Prague intraday equity or FTMO execution."
+    }
+  ],
+  "qualified_pairs": 8,
+  "rulepack_binding": {
+    "mtime_utc": "2026-09-04T03:17:50.674975+00:00",
+    "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+    "sha256": "298ef1285eca49ea7f010ebc0a9353b5a821fccb40a025be129f5ca5314fd992"
+  },
+  "vault_status": {
+    "available": false,
+    "error": "[WinError 5] Access is denied: 'G:\\\\My Drive\\\\QuantMechanica - Company Reference\\\\08 Current State\\\\Current Operating State.md'"
+  }
+}

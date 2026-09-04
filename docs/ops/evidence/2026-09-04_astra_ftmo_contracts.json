@@ -1,0 +1,1258 @@
+{
+  "campaign": {
+    "mtime_utc": "2026-09-02T10:06:16.468114+00:00",
+    "path": "D:\\QM\\strategy_farm\\artifacts\\oos_2026_confirmation_v1\\campaign_plan.json",
+    "sha256": "6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad"
+  },
+  "completed_reviewed": 15,
+  "declared_window": [
+    "2026-01-01T00:00:00Z",
+    "2026-04-06T23:59:59Z"
+  ],
+  "four_day_reproducer": {
+    "actual": {
+      "days_elapsed": 1,
+      "end_index": 0,
+      "outcome": "PASS"
+    },
+    "function": "ftmo_timebox_eval.evaluate_phase",
+    "input": "one flat day, one trade, net return 0.101, low 0, initial 1",
+    "official_expectation": "Cannot pass before four separate CE(S)T opening days",
+    "production_file": {
+      "mtime_utc": "2026-08-04T04:58:45.401489+00:00",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\portfolio\\ftmo_timebox_eval.py",
+      "sha256": "b4bd1af997da7bb92125aee9171a359e19a6d3693b3dc72a4c027de358038869"
+    }
+  },
+  "matching_expected_window": 0,
+  "observed_at_utc": "2026-09-04T21:16:58.398956+00:00",
+  "rows": [
+    {
+      "ea_id": "QM5_1567",
+      "expected_2026_window_matches": false,
+      "input_manifest": {
+        "mtime_utc": "2026-09-02T10:05:52.299508+00:00",
+        "path": "D:\\QM\\strategy_farm\\artifacts\\oos_2026_confirmation_v1\\03_live_QM5_1567_EURUSD\\input_manifest.json",
+        "sha256": "e27fd5492ba1ba3c97dcf6ba619bb6329f98922560013c0541e483e49310a0dc"
+      },
+      "input_windows": {
+        "complete_months": 3,
+        "full_from_utc": "2026-01-01T00:00:00Z",
+        "full_to_utc": "2026-04-06T23:59:59Z",
+        "holdout_complete_months": 3,
+        "holdout_from_utc": "2026-01-01T00:00:00Z",
+        "holdout_sealed": false,
+        "holdout_to_utc": "2026-04-06T23:59:59Z",
+        "selection_from_utc": "2026-01-01T00:00:00Z",
+        "selection_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "payload_expected_from_date": "2024.01.01",
+      "payload_expected_to_date": "2024.12.31",
+      "report_from_date": "2024.01.01",
+      "report_to_date": "2024.12.31",
+      "run_plan": {
+        "mtime_utc": "2026-09-02T10:05:52.327299+00:00",
+        "path": "D:\\QM\\strategy_farm\\artifacts\\oos_2026_confirmation_v1\\03_live_QM5_1567_EURUSD\\run_plan.json",
+        "sha256": "5aa1958aafc061c302cc48547aa34af1309c59d34d39bf6fe601cef36666ebb3"
+      },
+      "summary": {
+        "mtime_utc": "2026-09-04T07:35:46.972369+00:00",
+        "path": "D:\\QM\\reports\\work_items\\0db8ceec-7339-557c-9e14-951e52cebe71\\QM5_1567\\20260904_073243\\summary.json",
+        "sha256": "0506aa4ea65263874a8365eb1eb78f4745fa15251b8fa9bc38783339c2d4b0cc"
+      },
+      "summary_schema": "run_smoke/v2",
+      "symbol": "EURUSD.DWX",
+      "tester_ini_bindings": [
+        {
+          "binding": {
+            "mtime_utc": "2026-09-04T07:32:43.584447+00:00",
+            "path": "D:\\QM\\reports\\work_items\\0db8ceec-7339-557c-9e14-951e52cebe71\\QM5_1567\\20260904_073243\\raw\\run_01\\tester.ini",
+            "sha256": "73e05610c61b9506f41707e55835fc6dbfeb56d34e09f527769d2e212ee9e598"
+          },
+          "reported": {
+            "expert": "QM\\QM5_1567_demark-td-reverse-sequential-h4",
+            "expert_parameters": "inputs.set",
+            "from_date": "2024.01.01",
+            "model": 4,
+            "path": "D:\\QM\\reports\\work_items\\0db8ceec-7339-557c-9e14-951e52cebe71\\QM5_1567\\20260904_073243\\raw\\run_01\\tester.ini",
+            "period": "H4",
+            "run": "run_01",
+            "sha256": "73e05610c61b9506f41707e55835fc6dbfeb56d34e09f527769d2e212ee9e598",
+            "size_bytes": 428,
+            "symbol": "EURUSD.DWX",
+            "to_date": "2024.12.31"
+          }
+        },
+        {
+          "binding": {
+            "mtime_utc": "2026-09-04T07:34:05.948746+00:00",
+            "path": "D:\\QM\\reports\\work_items\\0db8ceec-7339-557c-9e14-951e52cebe71\\QM5_1567\\20260904_073243\\raw\\run_02\\tester.ini",
+            "sha256": "95b81cc32bc737fed090e5ec54f9571cd1d8e0a5ee0d4c8102594022704a5ca8"
+          },
+          "reported": {
+            "expert": "QM\\QM5_1567_demark-td-reverse-sequential-h4",
+            "expert_parameters": "inputs.set",
+            "from_date": "2024.01.01",
+            "model": 4,
+            "path": "D:\\QM\\reports\\work_items\\0db8ceec-7339-557c-9e14-951e52cebe71\\QM5_1567\\20260904_073243\\raw\\run_02\\tester.ini",
+            "period": "H4",
+            "run": "run_02",
+            "sha256": "95b81cc32bc737fed090e5ec54f9571cd1d8e0a5ee0d4c8102594022704a5ca8",
+            "size_bytes": 428,
+            "symbol": "EURUSD.DWX",
+            "to_date": "2024.12.31"
+          }
+        }
+      ],
+      "window_source": "oos_2026",
+      "work_item_id": "0db8ceec-7339-557c-9e14-951e52cebe71"
+    },
+    {
+      "ea_id": "QM5_10706",
+      "expected_2026_window_matches": false,
+      "input_manifest": {
+        "mtime_utc": "2026-09-02T10:05:59.532824+00:00",
+        "path": "D:\\QM\\strategy_farm\\artifacts\\oos_2026_confirmation_v1\\27_frontier_QM5_10706_GBPUSD\\input_manifest.json",
+        "sha256": "a381b715d2fe83dc998a89fb038217110bf04a0a0388c57b02e18acb34656df4"
+      },
+      "input_windows": {
+        "complete_months": 3,
+        "full_from_utc": "2026-01-01T00:00:00Z",
+        "full_to_utc": "2026-04-06T23:59:59Z",
+        "holdout_complete_months": 3,
+        "holdout_from_utc": "2026-01-01T00:00:00Z",
+        "holdout_sealed": false,
+        "holdout_to_utc": "2026-04-06T23:59:59Z",
+        "selection_from_utc": "2026-01-01T00:00:00Z",
+        "selection_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "payload_expected_from_date": "2024.01.01",
+      "payload_expected_to_date": "2024.12.31",
+      "report_from_date": "2024.01.01",
+      "report_to_date": "2024.12.31",
+      "run_plan": {
+        "mtime_utc": "2026-09-02T10:05:59.802450+00:00",
+        "path": "D:\\QM\\strategy_farm\\artifacts\\oos_2026_confirmation_v1\\27_frontier_QM5_10706_GBPUSD\\run_plan.json",
+        "sha256": "b4f4d4cab641e12c39da65cd2fa9a1cf63fa35a2edd302f403f0a3fcc395928b"
+      },
+      "summary": {
+        "mtime_utc": "2026-09-04T07:45:52.832377+00:00",
+        "path": "D:\\QM\\reports\\work_items\\12772e52-a69f-5b6f-83d0-ac0feb87e9b8\\QM5_10706\\20260904_074221\\summary.json",
+        "sha256": "6004a94439c1f6094e9a0098ff75fe6265f12d63e63856f9cc9e7e037a4cdafc"
+      },
+      "summary_schema": "run_smoke/v2",
+      "symbol": "GBPUSD.DWX",
+      "tester_ini_bindings": [
+        {
+          "binding": {
+            "mtime_utc": "2026-09-04T07:42:22.231334+00:00",
+            "path": "D:\\QM\\reports\\work_items\\12772e52-a69f-5b6f-83d0-ac0feb87e9b8\\QM5_10706\\20260904_074221\\raw\\run_01\\tester.ini",
+            "sha256": "8a6ffa81517c62e62e2e0be641de48d2c2391fe972728706837f0b487691ee7f"
+          },
+          "reported": {
+            "expert": "QM\\QM5_10706_tv-mon-ls",
+            "expert_parameters": "inputs.set",
+            "from_date": "2024.01.01",
+            "model": 4,
+            "path": "D:\\QM\\reports\\work_items\\12772e52-a69f-5b6f-83d0-ac0feb87e9b8\\QM5_10706\\20260904_074221\\raw\\run_01\\tester.ini",
+            "period": "D1",
+            "run": "run_01",
+            "sha256": "8a6ffa81517c62e62e2e0be641de48d2c2391fe972728706837f0b487691ee7f",
+            "size_bytes": 408,
+            "symbol": "GBPUSD.DWX",
+            "to_date": "2024.12.31"
+          }
+        },
+        {
+          "binding": {
+            "mtime_utc": "2026-09-04T07:43:46.823237+00:00",
+            "path": "D:\\QM\\reports\\work_items\\12772e52-a69f-5b6f-83d0-ac0feb87e9b8\\QM5_10706\\20260904_074221\\raw\\run_02\\tester.ini",
+            "sha256": "ee2e76cf5bc7271162a971e230c9237e19a447f74fce12a85ee69ee2f7dbcd4d"
+          },
+          "reported": {
+            "expert": "QM\\QM5_10706_tv-mon-ls",
+            "expert_parameters": "inputs.set",
+            "from_date": "2024.01.01",
+            "model": 4,
+            "path": "D:\\QM\\reports\\work_items\\12772e52-a69f-5b6f-83d0-ac0feb87e9b8\\QM5_10706\\20260904_074221\\raw\\run_02\\tester.ini",
+            "period": "D1",
+            "run": "run_02",
+            "sha256": "ee2e76cf5bc7271162a971e230c9237e19a447f74fce12a85ee69ee2f7dbcd4d",
+            "size_bytes": 408,
+            "symbol": "GBPUSD.DWX",
+            "to_date": "2024.12.31"
+          }
+        }
+      ],
+      "window_source": "oos_2026",
+      "work_item_id": "12772e52-a69f-5b6f-83d0-ac0feb87e9b8"
+    },
+    {
+      "ea_id": "QM5_13117",
+      "expected_2026_window_matches": false,
+      "input_manifest": {
+        "mtime_utc": "2026-09-02T10:05:58.679316+00:00",
+        "path": "D:\\QM\\strategy_farm\\artifacts\\oos_2026_confirmation_v1\\24_live_QM5_13117_EURGBP\\input_manifest.json",
+        "sha256": "a00d69139db452a436d321eb9dccefcbb07859903cabf642be3e22d2b73c7805"
+      },
+      "input_windows": {
+        "complete_months": 3,
+        "full_from_utc": "2026-01-01T00:00:00Z",
+        "full_to_utc": "2026-04-06T23:59:59Z",
+        "holdout_complete_months": 3,
+        "holdout_from_utc": "2026-01-01T00:00:00Z",
+        "holdout_sealed": false,
+        "holdout_to_utc": "2026-04-06T23:59:59Z",
+        "selection_from_utc": "2026-01-01T00:00:00Z",
+        "selection_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "payload_expected_from_date": "2024.01.01",
+      "payload_expected_to_date": "2024.12.31",
+      "report_from_date": "2024.01.01",
+      "report_to_date": "2024.12.31",
+      "run_plan": {
+        "mtime_utc": "2026-09-02T10:05:58.681321+00:00",
+        "path": "D:\\QM\\strategy_farm\\artifacts\\oos_2026_confirmation_v1\\24_live_QM5_13117_EURGBP\\run_plan.json",
+        "sha256": "6974d3831139c015b1e98aaff41744a490d6433a79bf45707630a1ec183add10"
+      },
+      "summary": {
+        "mtime_utc": "2026-09-04T07:56:00.143023+00:00",
+        "path": "D:\\QM\\reports\\work_items\\379f7fa2-8282-5e04-a541-0f0f1289f91c\\QM5_13117\\20260904_074138\\summary.json",
+        "sha256": "e403bdca2321340c557d5894c16e9c74c465862254ee2ddbe52848b1694d3e6a"
+      },
+      "summary_schema": "run_smoke/v2",
+      "symbol": "EURGBP.DWX",
+      "tester_ini_bindings": [
+        {
+          "binding": {
+            "mtime_utc": "2026-09-04T07:41:38.926801+00:00",
+            "path": "D:\\QM\\reports\\work_items\\379f7fa2-8282-5e04-a541-0f0f1289f91c\\QM5_13117\\20260904_074138\\raw\\run_01\\tester.ini",
+            "sha256": "f4bfc2aa8d5647e8522d4dc044baec1382e50726dfff834698f6d848100a07ca"
+          },
+          "reported": {
+            "expert": "QM\\QM5_13117_eurgbp-audjpy",
+            "expert_parameters": "inputs.set",
+            "from_date": "2024.01.01",
+            "model": 4,
+            "path": "D:\\QM\\reports\\work_items\\379f7fa2-8282-5e04-a541-0f0f1289f91c\\QM5_13117\\20260904_074138\\raw\\run_01\\tester.ini",
+            "period": "D1",
+            "run": "run_01",
+            "sha256": "f4bfc2aa8d5647e8522d4dc044baec1382e50726dfff834698f6d848100a07ca",
+            "size_bytes": 412,
+            "symbol": "EURGBP.DWX",
+            "to_date": "2024.12.31"
+          }
+        },
+        {
+          "binding": {
+            "mtime_utc": "2026-09-04T07:48:41.784359+00:00",
+            "path": "D:\\QM\\reports\\work_items\\379f7fa2-8282-5e04-a541-0f0f1289f91c\\QM5_13117\\20260904_074138\\raw\\run_02\\tester.ini",
+            "sha256": "40e147ff4b73b767fcc38481a83e1c0200fde34ce391062539110d1cd1d60bbd"
+          },
+          "reported": {
+            "expert": "QM\\QM5_13117_eurgbp-audjpy",
+            "expert_parameters": "inputs.set",
+            "from_date": "2024.01.01",
+            "model": 4,
+            "path": "D:\\QM\\reports\\work_items\\379f7fa2-8282-5e04-a541-0f0f1289f91c\\QM5_13117\\20260904_074138\\raw\\run_02\\tester.ini",
+            "period": "D1",
+            "run": "run_02",
+            "sha256": "40e147ff4b73b767fcc38481a83e1c0200fde34ce391062539110d1cd1d60bbd",
+            "size_bytes": 412,
+            "symbol": "EURGBP.DWX",
+            "to_date": "2024.12.31"
+          }
+        }
+      ],
+      "window_source": "oos_2026",
+      "work_item_id": "379f7fa2-8282-5e04-a541-0f0f1289f91c"
+    },
+    {
+      "ea_id": "QM5_10513",
+      "expected_2026_window_matches": false,
+      "input_manifest": {
+        "mtime_utc": "2026-09-02T10:05:57.642420+00:00",
+        "path": "D:\\QM\\strategy_farm\\artifacts\\oos_2026_confirmation_v1\\19_live_QM5_10513_XAUUSD\\input_manifest.json",
+        "sha256": "883c8d12e01cef077b8173ad5eb8a24afdc5599f782ff539b9dcd208658bee80"
+      },
+      "input_windows": {
+        "complete_months": 3,
+        "full_from_utc": "2026-01-01T00:00:00Z",
+        "full_to_utc": "2026-04-06T23:59:59Z",
+        "holdout_complete_months": 3,
+        "holdout_from_utc": "2026-01-01T00:00:00Z",
+        "holdout_sealed": false,
+        "holdout_to_utc": "2026-04-06T23:59:59Z",
+        "selection_from_utc": "2026-01-01T00:00:00Z",
+        "selection_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "payload_expected_from_date": "2024.01.01",
+      "payload_expected_to_date": "2024.12.31",
+      "report_from_date": "2024.01.01",
+      "report_to_date": "2024.12.31",
+      "run_plan": {
+        "mtime_utc": "2026-09-02T10:05:57.644424+00:00",
+        "path": "D:\\QM\\strategy_farm\\artifacts\\oos_2026_confirmation_v1\\19_live_QM5_10513_XAUUSD\\run_plan.json",
+        "sha256": "01db290222ce46d0a79bb84a04c3de97e90d8d64c91e829860c4dee0ff6d4c16"
+      },
+      "summary": {
+        "mtime_utc": "2026-09-04T07:42:54.645218+00:00",
+        "path": "D:\\QM\\reports\\work_items\\3c1c84db-766a-5605-91c1-4ae4bf01ef44\\QM5_10513\\20260904_073656\\summary.json",
+        "sha256": "0809531b49f19b20b2cfdefbab2816a058b5478a83bd27c4da55e40fcfe619d5"
+      },
+      "summary_schema": "run_smoke/v2",
+      "symbol": "XAUUSD.DWX",
+      "tester_ini_bindings": [
+        {
+          "binding": {
+            "mtime_utc": "2026-09-04T07:36:57.070947+00:00",
+            "path": "D:\\QM\\reports\\work_items\\3c1c84db-766a-5605-91c1-4ae4bf01ef44\\QM5_10513\\20260904_073656\\raw\\run_01\\tester.ini",
+            "sha256": "3ca07d8c024da74ad5235dd513b3e5f2b81533ac45e739f1a31f6f88a6a04f65"
+          },
+          "reported": {
+            "expert": "QM\\QM5_10513_mql5-ichimoku",
+            "expert_parameters": "inputs.set",
+            "from_date": "2024.01.01",
+            "model": 4,
+            "path": "D:\\QM\\reports\\work_items\\3c1c84db-766a-5605-91c1-4ae4bf01ef44\\QM5_10513\\20260904_073656\\raw\\run_01\\tester.ini",
+            "period": "D1",
+            "run": "run_01",
+            "sha256": "3ca07d8c024da74ad5235dd513b3e5f2b81533ac45e739f1a31f6f88a6a04f65",
+            "size_bytes": 412,
+            "symbol": "XAUUSD.DWX",
+            "to_date": "2024.12.31"
+          }
+        },
+        {
+          "binding": {
+            "mtime_utc": "2026-09-04T07:39:44.876827+00:00",
+            "path": "D:\\QM\\reports\\work_items\\3c1c84db-766a-5605-91c1-4ae4bf01ef44\\QM5_10513\\20260904_073656\\raw\\run_02\\tester.ini",
+            "sha256": "1150a2b2e1f4df87ab5af852fd3165dcf51342281fb7d28f7c6e3669aa73061f"
+          },
+          "reported": {
+            "expert": "QM\\QM5_10513_mql5-ichimoku",
+            "expert_parameters": "inputs.set",
+            "from_date": "2024.01.01",
+            "model": 4,
+            "path": "D:\\QM\\reports\\work_items\\3c1c84db-766a-5605-91c1-4ae4bf01ef44\\QM5_10513\\20260904_073656\\raw\\run_02\\tester.ini",
+            "period": "D1",
+            "run": "run_02",
+            "sha256": "1150a2b2e1f4df87ab5af852fd3165dcf51342281fb7d28f7c6e3669aa73061f",
+            "size_bytes": 412,
+            "symbol": "XAUUSD.DWX",
+            "to_date": "2024.12.31"
+          }
+        }
+      ],
+      "window_source": "oos_2026",
+      "work_item_id": "3c1c84db-766a-5605-91c1-4ae4bf01ef44"
+    },
+    {
+      "ea_id": "QM5_11165",
+      "expected_2026_window_matches": false,
+      "input_manifest": {
+        "mtime_utc": "2026-09-02T10:05:52.614614+00:00",
+        "path": "D:\\QM\\strategy_farm\\artifacts\\oos_2026_confirmation_v1\\05_live_QM5_11165_AUDCAD\\input_manifest.json",
+        "sha256": "330f4aa5fb968f9681b1b38fd9784c0d897843e8a75582978b8d34c41a8a3002"
+      },
+      "input_windows": {
+        "complete_months": 3,
+        "full_from_utc": "2026-01-01T00:00:00Z",
+        "full_to_utc": "2026-04-06T23:59:59Z",
+        "holdout_complete_months": 3,
+        "holdout_from_utc": "2026-01-01T00:00:00Z",
+        "holdout_sealed": false,
+        "holdout_to_utc": "2026-04-06T23:59:59Z",
+        "selection_from_utc": "2026-01-01T00:00:00Z",
+        "selection_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "payload_expected_from_date": "2024.01.01",
+      "payload_expected_to_date": "2024.12.31",
+      "report_from_date": "2024.01.01",
+      "report_to_date": "2024.12.31",
+      "run_plan": {
+        "mtime_utc": "2026-09-02T10:05:52.617622+00:00",
+        "path": "D:\\QM\\strategy_farm\\artifacts\\oos_2026_confirmation_v1\\05_live_QM5_11165_AUDCAD\\run_plan.json",
+        "sha256": "fff3fe94e41fc4190a2091955339cc0a45b982bdd342329e8eefc6d46a71827a"
+      },
+      "summary": {
+        "mtime_utc": "2026-09-04T02:47:36.500511+00:00",
+        "path": "D:\\QM\\reports\\work_items\\57dcceb8-6696-566f-b7bf-ce3a8cd35f8e\\QM5_11165\\20260904_024215\\summary.json",
+        "sha256": "f62b4038b0956da728409eb5492c70ebe4702340699c2ef4a9e5a1ad3ca11e17"
+      },
+      "summary_schema": "run_smoke/v2",
+      "symbol": "AUDCAD.DWX",
+      "tester_ini_bindings": [
+        {
+          "binding": {
+            "mtime_utc": "2026-09-04T02:42:16.199737+00:00",
+            "path": "D:\\QM\\reports\\work_items\\57dcceb8-6696-566f-b7bf-ce3a8cd35f8e\\QM5_11165\\20260904_024215\\raw\\run_01\\tester.ini",
+            "sha256": "463bb213ae19b8169eaf072750cc518b3801b6556d9633e1126cb77fbe75642e"
+          },
+          "reported": {
+            "expert": "QM\\QM5_11165_weiss-rsi-ma",
+            "expert_parameters": "inputs.set",
+            "from_date": "2024.01.01",
+            "model": 4,
+            "path": "D:\\QM\\reports\\work_items\\57dcceb8-6696-566f-b7bf-ce3a8cd35f8e\\QM5_11165\\20260904_024215\\raw\\run_01\\tester.ini",
+            "period": "H1",
+            "run": "run_01",
+            "sha256": "463bb213ae19b8169eaf072750cc518b3801b6556d9633e1126cb77fbe75642e",
+            "size_bytes": 411,
+            "symbol": "AUDCAD.DWX",
+            "to_date": "2024.12.31"
+          }
+        },
+        {
+          "binding": {
+            "mtime_utc": "2026-09-04T02:44:52.238229+00:00",
+            "path": "D:\\QM\\reports\\work_items\\57dcceb8-6696-566f-b7bf-ce3a8cd35f8e\\QM5_11165\\20260904_024215\\raw\\run_02\\tester.ini",
+            "sha256": "8ac4ac554c99f4fecd3631307423a946b4aa82ff561599b0eda7c885932bd13f"
+          },
+          "reported": {
+            "expert": "QM\\QM5_11165_weiss-rsi-ma",
+            "expert_parameters": "inputs.set",
+            "from_date": "2024.01.01",
+            "model": 4,
+            "path": "D:\\QM\\reports\\work_items\\57dcceb8-6696-566f-b7bf-ce3a8cd35f8e\\QM5_11165\\20260904_024215\\raw\\run_02\\tester.ini",
+            "period": "H1",
+            "run": "run_02",
+            "sha256": "8ac4ac554c99f4fecd3631307423a946b4aa82ff561599b0eda7c885932bd13f",
+            "size_bytes": 411,
+            "symbol": "AUDCAD.DWX",
+            "to_date": "2024.12.31"
+          }
+        }
+      ],
+      "window_source": "oos_2026",
+      "work_item_id": "57dcceb8-6696-566f-b7bf-ce3a8cd35f8e"
+    },
+    {
+      "ea_id": "QM5_11421",
+      "expected_2026_window_matches": false,
+      "input_manifest": {
+        "mtime_utc": "2026-09-02T10:05:52.903182+00:00",
+        "path": "D:\\QM\\strategy_farm\\artifacts\\oos_2026_confirmation_v1\\09_live_QM5_11421_EURUSD\\input_manifest.json",
+        "sha256": "59c07527fe6c4df427eed9ad57df51a03a33b7e513fd096bfc84200bbe03bb5f"
+      },
+      "input_windows": {
+        "complete_months": 3,
+        "full_from_utc": "2026-01-01T00:00:00Z",
+        "full_to_utc": "2026-04-06T23:59:59Z",
+        "holdout_complete_months": 3,
+        "holdout_from_utc": "2026-01-01T00:00:00Z",
+        "holdout_sealed": false,
+        "holdout_to_utc": "2026-04-06T23:59:59Z",
+        "selection_from_utc": "2026-01-01T00:00:00Z",
+        "selection_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "payload_expected_from_date": "2024.01.01",
+      "payload_expected_to_date": "2024.12.31",
+      "report_from_date": "2024.01.01",
+      "report_to_date": "2024.12.31",
+      "run_plan": {
+        "mtime_utc": "2026-09-02T10:05:52.906190+00:00",
+        "path": "D:\\QM\\strategy_farm\\artifacts\\oos_2026_confirmation_v1\\09_live_QM5_11421_EURUSD\\run_plan.json",
+        "sha256": "e429a2707817a0069cc982c4f819692a0fe2cb8405bed5e183d004ef344bd490"
+      },
+      "summary": {
+        "mtime_utc": "2026-09-04T06:00:25.943491+00:00",
+        "path": "D:\\QM\\reports\\work_items\\809e6347-8c76-5263-9e62-9e861ac2f7db\\QM5_11421\\20260904_055718\\summary.json",
+        "sha256": "cd475d5a291c4ea68c769649bf7fd1c2535ad51320ec5146c4164bfc0aa6dbb7"
+      },
+      "summary_schema": "run_smoke/v2",
+      "symbol": "EURUSD.DWX",
+      "tester_ini_bindings": [
+        {
+          "binding": {
+            "mtime_utc": "2026-09-04T05:57:19.401498+00:00",
+            "path": "D:\\QM\\reports\\work_items\\809e6347-8c76-5263-9e62-9e861ac2f7db\\QM5_11421\\20260904_055718\\raw\\run_01\\tester.ini",
+            "sha256": "9100df49a65ee3246d2ef69e687fa20c108f5ec9379ee99204af78d0293f6016"
+          },
+          "reported": {
+            "expert": "QM\\QM5_11421_ohlc-daily-squeeze-reversal-d1",
+            "expert_parameters": "inputs.set",
+            "from_date": "2024.01.01",
+            "model": 4,
+            "path": "D:\\QM\\reports\\work_items\\809e6347-8c76-5263-9e62-9e861ac2f7db\\QM5_11421\\20260904_055718\\raw\\run_01\\tester.ini",
+            "period": "D1",
+            "run": "run_01",
+            "sha256": "9100df49a65ee3246d2ef69e687fa20c108f5ec9379ee99204af78d0293f6016",
+            "size_bytes": 429,
+            "symbol": "EURUSD.DWX",
+            "to_date": "2024.12.31"
+          }
+        },
+        {
+          "binding": {
+            "mtime_utc": "2026-09-04T05:58:37.769943+00:00",
+            "path": "D:\\QM\\reports\\work_items\\809e6347-8c76-5263-9e62-9e861ac2f7db\\QM5_11421\\20260904_055718\\raw\\run_02\\tester.ini",
+            "sha256": "950ecfa9d2b1131a0f576c43338ffdc74b71abe3f710cfd7c26dcbf49be5d505"
+          },
+          "reported": {
+            "expert": "QM\\QM5_11421_ohlc-daily-squeeze-reversal-d1",
+            "expert_parameters": "inputs.set",
+            "from_date": "2024.01.01",
+            "model": 4,
+            "path": "D:\\QM\\reports\\work_items\\809e6347-8c76-5263-9e62-9e861ac2f7db\\QM5_11421\\20260904_055718\\raw\\run_02\\tester.ini",
+            "period": "D1",
+            "run": "run_02",
+            "sha256": "950ecfa9d2b1131a0f576c43338ffdc74b71abe3f710cfd7c26dcbf49be5d505",
+            "size_bytes": 429,
+            "symbol": "EURUSD.DWX",
+            "to_date": "2024.12.31"
+          }
+        }
+      ],
+      "window_source": "oos_2026",
+      "work_item_id": "809e6347-8c76-5263-9e62-9e861ac2f7db"
+    },
+    {
+      "ea_id": "QM5_12567",
+      "expected_2026_window_matches": false,
+      "input_manifest": {
+        "mtime_utc": "2026-09-02T10:05:58.505418+00:00",
+        "path": "D:\\QM\\strategy_farm\\artifacts\\oos_2026_confirmation_v1\\23_live_QM5_12567_XNGUSD\\input_manifest.json",
+        "sha256": "73e25b0caa60c1aa5eb7fddfe4fdc86bbe06bba1b39aa16ac8a18558745d6ffa"
+      },
+      "input_windows": {
+        "complete_months": 3,
+        "full_from_utc": "2026-01-01T00:00:00Z",
+        "full_to_utc": "2026-04-06T23:59:59Z",
+        "holdout_complete_months": 3,
+        "holdout_from_utc": "2026-01-01T00:00:00Z",
+        "holdout_sealed": false,
+        "holdout_to_utc": "2026-04-06T23:59:59Z",
+        "selection_from_utc": "2026-01-01T00:00:00Z",
+        "selection_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "payload_expected_from_date": "2024.01.01",
+      "payload_expected_to_date": "2024.12.31",
+      "report_from_date": "2024.01.01",
+      "report_to_date": "2024.12.31",
+      "run_plan": {
+        "mtime_utc": "2026-09-02T10:05:58.565656+00:00",
+        "path": "D:\\QM\\strategy_farm\\artifacts\\oos_2026_confirmation_v1\\23_live_QM5_12567_XNGUSD\\run_plan.json",
+        "sha256": "a447e51c84598929a3b10de8a8a10aed63b9486d2addc0541e6aab43675ce913"
+      },
+      "summary": {
+        "mtime_utc": "2026-09-04T07:40:36.352396+00:00",
+        "path": "D:\\QM\\reports\\work_items\\8d88ebda-af7a-51cc-a55c-0b2a56132c9a\\QM5_12567\\20260904_073806\\summary.json",
+        "sha256": "d9828f65694a0f9cfd79c0d5f49194a2c70eabea6363ad9e0254bdc26a02a498"
+      },
+      "summary_schema": "run_smoke/v2",
+      "symbol": "XNGUSD.DWX",
+      "tester_ini_bindings": [
+        {
+          "binding": {
+            "mtime_utc": "2026-09-04T07:38:06.782863+00:00",
+            "path": "D:\\QM\\reports\\work_items\\8d88ebda-af7a-51cc-a55c-0b2a56132c9a\\QM5_12567\\20260904_073806\\raw\\run_01\\tester.ini",
+            "sha256": "0f94a5fbc07df7c1da4f33938831bbb6ee5d316f457201e61561fab09145a277"
+          },
+          "reported": {
+            "expert": "QM\\QM5_12567_cum-rsi2-commodity",
+            "expert_parameters": "inputs.set",
+            "from_date": "2024.01.01",
+            "model": 4,
+            "path": "D:\\QM\\reports\\work_items\\8d88ebda-af7a-51cc-a55c-0b2a56132c9a\\QM5_12567\\20260904_073806\\raw\\run_01\\tester.ini",
+            "period": "D1",
+            "run": "run_01",
+            "sha256": "0f94a5fbc07df7c1da4f33938831bbb6ee5d316f457201e61561fab09145a277",
+            "size_bytes": 417,
+            "symbol": "XNGUSD.DWX",
+            "to_date": "2024.12.31"
+          }
+        },
+        {
+          "binding": {
+            "mtime_utc": "2026-09-04T07:39:13.845041+00:00",
+            "path": "D:\\QM\\reports\\work_items\\8d88ebda-af7a-51cc-a55c-0b2a56132c9a\\QM5_12567\\20260904_073806\\raw\\run_02\\tester.ini",
+            "sha256": "f42f39553758785f3eed0ed18ff2b0923d0530f712993d5d68661d8672056481"
+          },
+          "reported": {
+            "expert": "QM\\QM5_12567_cum-rsi2-commodity",
+            "expert_parameters": "inputs.set",
+            "from_date": "2024.01.01",
+            "model": 4,
+            "path": "D:\\QM\\reports\\work_items\\8d88ebda-af7a-51cc-a55c-0b2a56132c9a\\QM5_12567\\20260904_073806\\raw\\run_02\\tester.ini",
+            "period": "D1",
+            "run": "run_02",
+            "sha256": "f42f39553758785f3eed0ed18ff2b0923d0530f712993d5d68661d8672056481",
+            "size_bytes": 417,
+            "symbol": "XNGUSD.DWX",
+            "to_date": "2024.12.31"
+          }
+        }
+      ],
+      "window_source": "oos_2026",
+      "work_item_id": "8d88ebda-af7a-51cc-a55c-0b2a56132c9a"
+    },
+    {
+      "ea_id": "QM5_10919",
+      "expected_2026_window_matches": false,
+      "input_manifest": {
+        "mtime_utc": "2026-09-02T10:05:52.498515+00:00",
+        "path": "D:\\QM\\strategy_farm\\artifacts\\oos_2026_confirmation_v1\\04_live_QM5_10919_XTIUSD\\input_manifest.json",
+        "sha256": "8256d9f56daaf1f5ce69ed9d3db3d256e3826dfbf9895c050c45dde19def3924"
+      },
+      "input_windows": {
+        "complete_months": 3,
+        "full_from_utc": "2026-01-01T00:00:00Z",
+        "full_to_utc": "2026-04-06T23:59:59Z",
+        "holdout_complete_months": 3,
+        "holdout_from_utc": "2026-01-01T00:00:00Z",
+        "holdout_sealed": false,
+        "holdout_to_utc": "2026-04-06T23:59:59Z",
+        "selection_from_utc": "2026-01-01T00:00:00Z",
+        "selection_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "payload_expected_from_date": "2024.01.01",
+      "payload_expected_to_date": "2024.12.31",
+      "report_from_date": "2024.01.01",
+      "report_to_date": "2024.12.31",
+      "run_plan": {
+        "mtime_utc": "2026-09-02T10:05:52.530883+00:00",
+        "path": "D:\\QM\\strategy_farm\\artifacts\\oos_2026_confirmation_v1\\04_live_QM5_10919_XTIUSD\\run_plan.json",
+        "sha256": "78f285408e679751312d823f784ae754f5a252caef52340dc6ccf103c29c2d54"
+      },
+      "summary": {
+        "mtime_utc": "2026-09-04T02:41:03.809766+00:00",
+        "path": "D:\\QM\\reports\\work_items\\a257b4e9-3984-55b9-98cb-add4591e04fa\\QM5_10919\\20260904_023826\\summary.json",
+        "sha256": "0053a031f327f8f0da1c5562f102ba4b2b0fb3a564fb49f2f0312c907350cf71"
+      },
+      "summary_schema": "run_smoke/v2",
+      "symbol": "XTIUSD.DWX",
+      "tester_ini_bindings": [
+        {
+          "binding": {
+            "mtime_utc": "2026-09-04T02:38:26.738232+00:00",
+            "path": "D:\\QM\\reports\\work_items\\a257b4e9-3984-55b9-98cb-add4591e04fa\\QM5_10919\\20260904_023826\\raw\\run_01\\tester.ini",
+            "sha256": "9d4bee17a6f76bdca475452d057d0d474c50e4269a531d147eace0342a45a633"
+          },
+          "reported": {
+            "expert": "QM\\QM5_10919_grimes-overshoot",
+            "expert_parameters": "inputs.set",
+            "from_date": "2024.01.01",
+            "model": 4,
+            "path": "D:\\QM\\reports\\work_items\\a257b4e9-3984-55b9-98cb-add4591e04fa\\QM5_10919\\20260904_023826\\raw\\run_01\\tester.ini",
+            "period": "H4",
+            "run": "run_01",
+            "sha256": "9d4bee17a6f76bdca475452d057d0d474c50e4269a531d147eace0342a45a633",
+            "size_bytes": 415,
+            "symbol": "XTIUSD.DWX",
+            "to_date": "2024.12.31"
+          }
+        },
+        {
+          "binding": {
+            "mtime_utc": "2026-09-04T02:39:42.195961+00:00",
+            "path": "D:\\QM\\reports\\work_items\\a257b4e9-3984-55b9-98cb-add4591e04fa\\QM5_10919\\20260904_023826\\raw\\run_02\\tester.ini",
+            "sha256": "0fb5f4bbfbfd0adceb3e598e33235517c1397e618152220bcd4b2f68ca079fad"
+          },
+          "reported": {
+            "expert": "QM\\QM5_10919_grimes-overshoot",
+            "expert_parameters": "inputs.set",
+            "from_date": "2024.01.01",
+            "model": 4,
+            "path": "D:\\QM\\reports\\work_items\\a257b4e9-3984-55b9-98cb-add4591e04fa\\QM5_10919\\20260904_023826\\raw\\run_02\\tester.ini",
+            "period": "H4",
+            "run": "run_02",
+            "sha256": "0fb5f4bbfbfd0adceb3e598e33235517c1397e618152220bcd4b2f68ca079fad",
+            "size_bytes": 415,
+            "symbol": "XTIUSD.DWX",
+            "to_date": "2024.12.31"
+          }
+        }
+      ],
+      "window_source": "oos_2026",
+      "work_item_id": "a257b4e9-3984-55b9-98cb-add4591e04fa"
+    },
+    {
+      "ea_id": "QM5_13213",
+      "expected_2026_window_matches": false,
+      "input_manifest": {
+        "mtime_utc": "2026-09-02T10:05:52.172081+00:00",
+        "path": "D:\\QM\\strategy_farm\\artifacts\\oos_2026_confirmation_v1\\02_live_QM5_13213_USDJPY\\input_manifest.json",
+        "sha256": "afa49655ab25a9315dd99d307d1642fb992ff1140a2bbebd444c686a712ef177"
+      },
+      "input_windows": {
+        "complete_months": 3,
+        "full_from_utc": "2026-01-01T00:00:00Z",
+        "full_to_utc": "2026-04-06T23:59:59Z",
+        "holdout_complete_months": 3,
+        "holdout_from_utc": "2026-01-01T00:00:00Z",
+        "holdout_sealed": false,
+        "holdout_to_utc": "2026-04-06T23:59:59Z",
+        "selection_from_utc": "2026-01-01T00:00:00Z",
+        "selection_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "payload_expected_from_date": "2024.01.01",
+      "payload_expected_to_date": "2024.12.31",
+      "report_from_date": "2024.01.01",
+      "report_to_date": "2024.12.31",
+      "run_plan": {
+        "mtime_utc": "2026-09-02T10:05:52.207171+00:00",
+        "path": "D:\\QM\\strategy_farm\\artifacts\\oos_2026_confirmation_v1\\02_live_QM5_13213_USDJPY\\run_plan.json",
+        "sha256": "0763b1e5fdfd5026e5da3637bad0fc3df81d9438f1732eb3cb8492502ee76fe3"
+      },
+      "summary": {
+        "mtime_utc": "2026-09-04T02:41:55.192385+00:00",
+        "path": "D:\\QM\\reports\\work_items\\a8b55d1c-9add-5015-a9a0-58dedd0f2894\\QM5_13213\\20260904_023538\\summary.json",
+        "sha256": "c5720f845b5b622afe28edf8a060e12afecf3fcf4c7738b6ec3c94d8a9cc6f0b"
+      },
+      "summary_schema": "run_smoke/v2",
+      "symbol": "USDJPY.DWX",
+      "tester_ini_bindings": [
+        {
+          "binding": {
+            "mtime_utc": "2026-09-04T02:35:38.997755+00:00",
+            "path": "D:\\QM\\reports\\work_items\\a8b55d1c-9add-5015-a9a0-58dedd0f2894\\QM5_13213\\20260904_023538\\raw\\run_01\\tester.ini",
+            "sha256": "41036d724a0b2788677ecb9506c96bee279b387da99dd4b810c494756c9b9294"
+          },
+          "reported": {
+            "expert": "QM\\QM5_13213_balke-gmt3-range-breakout",
+            "expert_parameters": "inputs.set",
+            "from_date": "2024.01.01",
+            "model": 4,
+            "path": "D:\\QM\\reports\\work_items\\a8b55d1c-9add-5015-a9a0-58dedd0f2894\\QM5_13213\\20260904_023538\\raw\\run_01\\tester.ini",
+            "period": "H1",
+            "run": "run_01",
+            "sha256": "41036d724a0b2788677ecb9506c96bee279b387da99dd4b810c494756c9b9294",
+            "size_bytes": 424,
+            "symbol": "USDJPY.DWX",
+            "to_date": "2024.12.31"
+          }
+        },
+        {
+          "binding": {
+            "mtime_utc": "2026-09-04T02:38:51.983504+00:00",
+            "path": "D:\\QM\\reports\\work_items\\a8b55d1c-9add-5015-a9a0-58dedd0f2894\\QM5_13213\\20260904_023538\\raw\\run_02\\tester.ini",
+            "sha256": "56032313f26567c02f8b7984a218b5b9bfc0197188109febabc9cb30c1dc2644"
+          },
+          "reported": {
+            "expert": "QM\\QM5_13213_balke-gmt3-range-breakout",
+            "expert_parameters": "inputs.set",
+            "from_date": "2024.01.01",
+            "model": 4,
+            "path": "D:\\QM\\reports\\work_items\\a8b55d1c-9add-5015-a9a0-58dedd0f2894\\QM5_13213\\20260904_023538\\raw\\run_02\\tester.ini",
+            "period": "H1",
+            "run": "run_02",
+            "sha256": "56032313f26567c02f8b7984a218b5b9bfc0197188109febabc9cb30c1dc2644",
+            "size_bytes": 424,
+            "symbol": "USDJPY.DWX",
+            "to_date": "2024.12.31"
+          }
+        }
+      ],
+      "window_source": "oos_2026",
+      "work_item_id": "a8b55d1c-9add-5015-a9a0-58dedd0f2894"
+    },
+    {
+      "ea_id": "QM5_10706",
+      "expected_2026_window_matches": false,
+      "input_manifest": {
+        "mtime_utc": "2026-09-02T10:05:54.330635+00:00",
+        "path": "D:\\QM\\strategy_farm\\artifacts\\oos_2026_confirmation_v1\\11_live_QM5_10706_GBPUSD\\input_manifest.json",
+        "sha256": "9612d87efc493402eeeb6e7ff489b41e3eda81c40a7e028508b973b208cd65d8"
+      },
+      "input_windows": {
+        "complete_months": 3,
+        "full_from_utc": "2026-01-01T00:00:00Z",
+        "full_to_utc": "2026-04-06T23:59:59Z",
+        "holdout_complete_months": 3,
+        "holdout_from_utc": "2026-01-01T00:00:00Z",
+        "holdout_sealed": false,
+        "holdout_to_utc": "2026-04-06T23:59:59Z",
+        "selection_from_utc": "2026-01-01T00:00:00Z",
+        "selection_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "payload_expected_from_date": "2024.01.01",
+      "payload_expected_to_date": "2024.12.31",
+      "report_from_date": "2024.01.01",
+      "report_to_date": "2024.12.31",
+      "run_plan": {
+        "mtime_utc": "2026-09-02T10:05:54.391789+00:00",
+        "path": "D:\\QM\\strategy_farm\\artifacts\\oos_2026_confirmation_v1\\11_live_QM5_10706_GBPUSD\\run_plan.json",
+        "sha256": "eb2b1f64e1e3e9e10d20c72a944c77486cc284a9d68343b56cbb3b6086791212"
+      },
+      "summary": {
+        "mtime_utc": "2026-09-04T07:36:08.721802+00:00",
+        "path": "D:\\QM\\reports\\work_items\\a96cf5c2-9c3f-5bac-8f41-0c695f5f5953\\QM5_10706\\20260904_073311\\summary.json",
+        "sha256": "555574800f0a80b8e86647dd0a3bc3613be6e6daf28e61abfdaa32f74765f6f4"
+      },
+      "summary_schema": "run_smoke/v2",
+      "symbol": "GBPUSD.DWX",
+      "tester_ini_bindings": [
+        {
+          "binding": {
+            "mtime_utc": "2026-09-04T07:33:12.291076+00:00",
+            "path": "D:\\QM\\reports\\work_items\\a96cf5c2-9c3f-5bac-8f41-0c695f5f5953\\QM5_10706\\20260904_073311\\raw\\run_01\\tester.ini",
+            "sha256": "17b41d49bb4f967f2cf93ffbbf9e755065a12656ceed1125eed9c68eac566ba0"
+          },
+          "reported": {
+            "expert": "QM\\QM5_10706_tv-mon-ls",
+            "expert_parameters": "inputs.set",
+            "from_date": "2024.01.01",
+            "model": 4,
+            "path": "D:\\QM\\reports\\work_items\\a96cf5c2-9c3f-5bac-8f41-0c695f5f5953\\QM5_10706\\20260904_073311\\raw\\run_01\\tester.ini",
+            "period": "H1",
+            "run": "run_01",
+            "sha256": "17b41d49bb4f967f2cf93ffbbf9e755065a12656ceed1125eed9c68eac566ba0",
+            "size_bytes": 408,
+            "symbol": "GBPUSD.DWX",
+            "to_date": "2024.12.31"
+          }
+        },
+        {
+          "binding": {
+            "mtime_utc": "2026-09-04T07:34:36.073332+00:00",
+            "path": "D:\\QM\\reports\\work_items\\a96cf5c2-9c3f-5bac-8f41-0c695f5f5953\\QM5_10706\\20260904_073311\\raw\\run_02\\tester.ini",
+            "sha256": "4dfa407affd4a4a350f1943b1efa5fb41ee5483d3a9d311ae66959ab8695ffca"
+          },
+          "reported": {
+            "expert": "QM\\QM5_10706_tv-mon-ls",
+            "expert_parameters": "inputs.set",
+            "from_date": "2024.01.01",
+            "model": 4,
+            "path": "D:\\QM\\reports\\work_items\\a96cf5c2-9c3f-5bac-8f41-0c695f5f5953\\QM5_10706\\20260904_073311\\raw\\run_02\\tester.ini",
+            "period": "H1",
+            "run": "run_02",
+            "sha256": "4dfa407affd4a4a350f1943b1efa5fb41ee5483d3a9d311ae66959ab8695ffca",
+            "size_bytes": 408,
+            "symbol": "GBPUSD.DWX",
+            "to_date": "2024.12.31"
+          }
+        }
+      ],
+      "window_source": "oos_2026",
+      "work_item_id": "a96cf5c2-9c3f-5bac-8f41-0c695f5f5953"
+    },
+    {
+      "ea_id": "QM5_12969",
+      "expected_2026_window_matches": false,
+      "input_manifest": {
+        "mtime_utc": "2026-09-02T10:05:56.029113+00:00",
+        "path": "D:\\QM\\strategy_farm\\artifacts\\oos_2026_confirmation_v1\\17_live_QM5_12969_USDJPY\\input_manifest.json",
+        "sha256": "0e10a7d85b25d5b98cd7fa98fb934ae930442362d3b30bf01e99668b03de5264"
+      },
+      "input_windows": {
+        "complete_months": 3,
+        "full_from_utc": "2026-01-01T00:00:00Z",
+        "full_to_utc": "2026-04-06T23:59:59Z",
+        "holdout_complete_months": 3,
+        "holdout_from_utc": "2026-01-01T00:00:00Z",
+        "holdout_sealed": false,
+        "holdout_to_utc": "2026-04-06T23:59:59Z",
+        "selection_from_utc": "2026-01-01T00:00:00Z",
+        "selection_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "payload_expected_from_date": "2024.01.01",
+      "payload_expected_to_date": "2024.12.31",
+      "report_from_date": "2024.01.01",
+      "report_to_date": "2024.12.31",
+      "run_plan": {
+        "mtime_utc": "2026-09-02T10:05:56.346265+00:00",
+        "path": "D:\\QM\\strategy_farm\\artifacts\\oos_2026_confirmation_v1\\17_live_QM5_12969_USDJPY\\run_plan.json",
+        "sha256": "90709a0d379c185c5c8d0c03e9708e814de5d2a2dafd413263a745b5d1e696d8"
+      },
+      "summary": {
+        "mtime_utc": "2026-09-04T07:36:53.836341+00:00",
+        "path": "D:\\QM\\reports\\work_items\\acb3592c-3f31-5efe-bc12-344213600f1c\\QM5_12969\\20260904_073344\\summary.json",
+        "sha256": "9e5c2879cf245ae562e0f96e210dab7bdcd866858d4f2e88077c649a292df241"
+      },
+      "summary_schema": "run_smoke/v2",
+      "symbol": "USDJPY.DWX",
+      "tester_ini_bindings": [
+        {
+          "binding": {
+            "mtime_utc": "2026-09-04T07:33:45.068272+00:00",
+            "path": "D:\\QM\\reports\\work_items\\acb3592c-3f31-5efe-bc12-344213600f1c\\QM5_12969\\20260904_073344\\raw\\run_01\\tester.ini",
+            "sha256": "78bbf3675dd9092439460144852315cbb43909fcadc92e6569a187f2cdd8d2c0"
+          },
+          "reported": {
+            "expert": "QM\\QM5_12969_usdjpy-gotobi-nakane-fix",
+            "expert_parameters": "inputs.set",
+            "from_date": "2024.01.01",
+            "model": 4,
+            "path": "D:\\QM\\reports\\work_items\\acb3592c-3f31-5efe-bc12-344213600f1c\\QM5_12969\\20260904_073344\\raw\\run_01\\tester.ini",
+            "period": "M30",
+            "run": "run_01",
+            "sha256": "78bbf3675dd9092439460144852315cbb43909fcadc92e6569a187f2cdd8d2c0",
+            "size_bytes": 424,
+            "symbol": "USDJPY.DWX",
+            "to_date": "2024.12.31"
+          }
+        },
+        {
+          "binding": {
+            "mtime_utc": "2026-09-04T07:35:17.601138+00:00",
+            "path": "D:\\QM\\reports\\work_items\\acb3592c-3f31-5efe-bc12-344213600f1c\\QM5_12969\\20260904_073344\\raw\\run_02\\tester.ini",
+            "sha256": "35f2b6af69cb4e071122cfdd5d6bca89ae5de31c2661e40b64b399c80132979d"
+          },
+          "reported": {
+            "expert": "QM\\QM5_12969_usdjpy-gotobi-nakane-fix",
+            "expert_parameters": "inputs.set",
+            "from_date": "2024.01.01",
+            "model": 4,
+            "path": "D:\\QM\\reports\\work_items\\acb3592c-3f31-5efe-bc12-344213600f1c\\QM5_12969\\20260904_073344\\raw\\run_02\\tester.ini",
+            "period": "M30",
+            "run": "run_02",
+            "sha256": "35f2b6af69cb4e071122cfdd5d6bca89ae5de31c2661e40b64b399c80132979d",
+            "size_bytes": 424,
+            "symbol": "USDJPY.DWX",
+            "to_date": "2024.12.31"
+          }
+        }
+      ],
+      "window_source": "oos_2026",
+      "work_item_id": "acb3592c-3f31-5efe-bc12-344213600f1c"
+    },
+    {
+      "ea_id": "QM5_11708",
+      "expected_2026_window_matches": false,
+      "input_manifest": {
+        "mtime_utc": "2026-09-02T10:05:53.204327+00:00",
+        "path": "D:\\QM\\strategy_farm\\artifacts\\oos_2026_confirmation_v1\\10_live_QM5_11708_EURUSD\\input_manifest.json",
+        "sha256": "1ac1ec04f35fbe7154f531fa6a73b4feac6c884cdd0d7fff1dba1c3bf77e0e98"
+      },
+      "input_windows": {
+        "complete_months": 3,
+        "full_from_utc": "2026-01-01T00:00:00Z",
+        "full_to_utc": "2026-04-06T23:59:59Z",
+        "holdout_complete_months": 3,
+        "holdout_from_utc": "2026-01-01T00:00:00Z",
+        "holdout_sealed": false,
+        "holdout_to_utc": "2026-04-06T23:59:59Z",
+        "selection_from_utc": "2026-01-01T00:00:00Z",
+        "selection_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "payload_expected_from_date": "2024.01.01",
+      "payload_expected_to_date": "2024.12.31",
+      "report_from_date": "2024.01.01",
+      "report_to_date": "2024.12.31",
+      "run_plan": {
+        "mtime_utc": "2026-09-02T10:05:53.645635+00:00",
+        "path": "D:\\QM\\strategy_farm\\artifacts\\oos_2026_confirmation_v1\\10_live_QM5_11708_EURUSD\\run_plan.json",
+        "sha256": "b3ee5f7db8e631a2c36f490ae83651a70db35f7619387510c3d5359b794a575d"
+      },
+      "summary": {
+        "mtime_utc": "2026-09-04T06:02:42.593236+00:00",
+        "path": "D:\\QM\\reports\\work_items\\bbe69845-0075-5268-9296-fff69d9d9dab\\QM5_11708\\20260904_055932\\summary.json",
+        "sha256": "838ea0b2a08952a8fa80c4b716e13ff380caf51747189aed8346c7460edcccc2"
+      },
+      "summary_schema": "run_smoke/v2",
+      "symbol": "EURUSD.DWX",
+      "tester_ini_bindings": [
+        {
+          "binding": {
+            "mtime_utc": "2026-09-04T05:59:33.379073+00:00",
+            "path": "D:\\QM\\reports\\work_items\\bbe69845-0075-5268-9296-fff69d9d9dab\\QM5_11708\\20260904_055932\\raw\\run_01\\tester.ini",
+            "sha256": "675011f74f5ac7383c775340ec2d5c93e6a2669c07740d8c828877f8426196b9"
+          },
+          "reported": {
+            "expert": "QM\\QM5_11708_anon-market-squeeze-d1",
+            "expert_parameters": "inputs.set",
+            "from_date": "2024.01.01",
+            "model": 4,
+            "path": "D:\\QM\\reports\\work_items\\bbe69845-0075-5268-9296-fff69d9d9dab\\QM5_11708\\20260904_055932\\raw\\run_01\\tester.ini",
+            "period": "D1",
+            "run": "run_01",
+            "sha256": "675011f74f5ac7383c775340ec2d5c93e6a2669c07740d8c828877f8426196b9",
+            "size_bytes": 421,
+            "symbol": "EURUSD.DWX",
+            "to_date": "2024.12.31"
+          }
+        },
+        {
+          "binding": {
+            "mtime_utc": "2026-09-04T06:01:07.064363+00:00",
+            "path": "D:\\QM\\reports\\work_items\\bbe69845-0075-5268-9296-fff69d9d9dab\\QM5_11708\\20260904_055932\\raw\\run_02\\tester.ini",
+            "sha256": "92b3a5cbc12b1d8672708268633ffa349c82d1cdc243d5b284f09887572ae3a0"
+          },
+          "reported": {
+            "expert": "QM\\QM5_11708_anon-market-squeeze-d1",
+            "expert_parameters": "inputs.set",
+            "from_date": "2024.01.01",
+            "model": 4,
+            "path": "D:\\QM\\reports\\work_items\\bbe69845-0075-5268-9296-fff69d9d9dab\\QM5_11708\\20260904_055932\\raw\\run_02\\tester.ini",
+            "period": "D1",
+            "run": "run_02",
+            "sha256": "92b3a5cbc12b1d8672708268633ffa349c82d1cdc243d5b284f09887572ae3a0",
+            "size_bytes": 421,
+            "symbol": "EURUSD.DWX",
+            "to_date": "2024.12.31"
+          }
+        }
+      ],
+      "window_source": "oos_2026",
+      "work_item_id": "bbe69845-0075-5268-9296-fff69d9d9dab"
+    },
+    {
+      "ea_id": "QM5_10403",
+      "expected_2026_window_matches": false,
+      "input_manifest": {
+        "mtime_utc": "2026-09-02T10:05:56.695650+00:00",
+        "path": "D:\\QM\\strategy_farm\\artifacts\\oos_2026_confirmation_v1\\18_live_QM5_10403_XAUUSD\\input_manifest.json",
+        "sha256": "a82934e112624a7ad1133a8929d90cba53a914202b9e4aa1fb6cc236f2a82fdd"
+      },
+      "input_windows": {
+        "complete_months": 3,
+        "full_from_utc": "2026-01-01T00:00:00Z",
+        "full_to_utc": "2026-04-06T23:59:59Z",
+        "holdout_complete_months": 3,
+        "holdout_from_utc": "2026-01-01T00:00:00Z",
+        "holdout_sealed": false,
+        "holdout_to_utc": "2026-04-06T23:59:59Z",
+        "selection_from_utc": "2026-01-01T00:00:00Z",
+        "selection_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "payload_expected_from_date": "2024.01.01",
+      "payload_expected_to_date": "2024.12.31",
+      "report_from_date": "2024.01.01",
+      "report_to_date": "2024.12.31",
+      "run_plan": {
+        "mtime_utc": "2026-09-02T10:05:56.863129+00:00",
+        "path": "D:\\QM\\strategy_farm\\artifacts\\oos_2026_confirmation_v1\\18_live_QM5_10403_XAUUSD\\run_plan.json",
+        "sha256": "1e3aa6947223555e0a34c0800fd67f709c169f3395092063d777b3792bdfacbf"
+      },
+      "summary": {
+        "mtime_utc": "2026-09-04T07:42:43.585305+00:00",
+        "path": "D:\\QM\\reports\\work_items\\ccc5ea5b-e3bf-56c2-985b-bcb5387a6942\\QM5_10403\\20260904_073639\\summary.json",
+        "sha256": "8988841bd9080c5f36dadc7af66b57c771345d76c12c2acd1d8ab533c5c7e571"
+      },
+      "summary_schema": "run_smoke/v2",
+      "symbol": "XAUUSD.DWX",
+      "tester_ini_bindings": [
+        {
+          "binding": {
+            "mtime_utc": "2026-09-04T07:36:40.012617+00:00",
+            "path": "D:\\QM\\reports\\work_items\\ccc5ea5b-e3bf-56c2-985b-bcb5387a6942\\QM5_10403\\20260904_073639\\raw\\run_01\\tester.ini",
+            "sha256": "62d6c94d94569c101b33f930ffbc494635bec6ac41f5a4487fa7c00600607e3d"
+          },
+          "reported": {
+            "expert": "QM\\QM5_10403_et-turtle20x",
+            "expert_parameters": "inputs.set",
+            "from_date": "2024.01.01",
+            "model": 4,
+            "path": "D:\\QM\\reports\\work_items\\ccc5ea5b-e3bf-56c2-985b-bcb5387a6942\\QM5_10403\\20260904_073639\\raw\\run_01\\tester.ini",
+            "period": "D1",
+            "run": "run_01",
+            "sha256": "62d6c94d94569c101b33f930ffbc494635bec6ac41f5a4487fa7c00600607e3d",
+            "size_bytes": 411,
+            "symbol": "XAUUSD.DWX",
+            "to_date": "2024.12.31"
+          }
+        },
+        {
+          "binding": {
+            "mtime_utc": "2026-09-04T07:39:35.360976+00:00",
+            "path": "D:\\QM\\reports\\work_items\\ccc5ea5b-e3bf-56c2-985b-bcb5387a6942\\QM5_10403\\20260904_073639\\raw\\run_02\\tester.ini",
+            "sha256": "e790d011e4329c2bc4e30521edaf30efe17aaea00f0cd7ad96312d1399534687"
+          },
+          "reported": {
+            "expert": "QM\\QM5_10403_et-turtle20x",
+            "expert_parameters": "inputs.set",
+            "from_date": "2024.01.01",
+            "model": 4,
+            "path": "D:\\QM\\reports\\work_items\\ccc5ea5b-e3bf-56c2-985b-bcb5387a6942\\QM5_10403\\20260904_073639\\raw\\run_02\\tester.ini",
+            "period": "D1",
+            "run": "run_02",
+            "sha256": "e790d011e4329c2bc4e30521edaf30efe17aaea00f0cd7ad96312d1399534687",
+            "size_bytes": 411,
+            "symbol": "XAUUSD.DWX",
+            "to_date": "2024.12.31"
+          }
+        }
+      ],
+      "window_source": "oos_2026",
+      "work_item_id": "ccc5ea5b-e3bf-56c2-985b-bcb5387a6942"
+    },
+    {
+      "ea_id": "QM5_11421",
+      "expected_2026_window_matches": false,
+      "input_manifest": {
+        "mtime_utc": "2026-09-02T10:05:52.745430+00:00",
+        "path": "D:\\QM\\strategy_farm\\artifacts\\oos_2026_confirmation_v1\\07_live_QM5_11421_AUDUSD\\input_manifest.json",
+        "sha256": "02b941bdd7a25666da90e56f1f7c172b85feee7e283290097610b380b776e575"
+      },
+      "input_windows": {
+        "complete_months": 3,
+        "full_from_utc": "2026-01-01T00:00:00Z",
+        "full_to_utc": "2026-04-06T23:59:59Z",
+        "holdout_complete_months": 3,
+        "holdout_from_utc": "2026-01-01T00:00:00Z",
+        "holdout_sealed": false,
+        "holdout_to_utc": "2026-04-06T23:59:59Z",
+        "selection_from_utc": "2026-01-01T00:00:00Z",
+        "selection_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "payload_expected_from_date": "2024.01.01",
+      "payload_expected_to_date": "2024.12.31",
+      "report_from_date": "2024.01.01",
+      "report_to_date": "2024.12.31",
+      "run_plan": {
+        "mtime_utc": "2026-09-02T10:05:52.749441+00:00",
+        "path": "D:\\QM\\strategy_farm\\artifacts\\oos_2026_confirmation_v1\\07_live_QM5_11421_AUDUSD\\run_plan.json",
+        "sha256": "89dc933753c0fef0aeede38e9a4d6dbcef4c390d0698d32766abb2b14f38c1b4"
+      },
+      "summary": {
+        "mtime_utc": "2026-09-04T05:58:58.345055+00:00",
+        "path": "D:\\QM\\reports\\work_items\\e6e4eebe-49e2-54a7-866c-1290279b3daf\\QM5_11421\\20260904_055616\\summary.json",
+        "sha256": "1b698f008a8b9a0b5c164b144697c314abb5350a2b26d2e121a0c6616528475d"
+      },
+      "summary_schema": "run_smoke/v2",
+      "symbol": "AUDUSD.DWX",
+      "tester_ini_bindings": [
+        {
+          "binding": {
+            "mtime_utc": "2026-09-04T05:56:17.432704+00:00",
+            "path": "D:\\QM\\reports\\work_items\\e6e4eebe-49e2-54a7-866c-1290279b3daf\\QM5_11421\\20260904_055616\\raw\\run_01\\tester.ini",
+            "sha256": "922573204597efa5fb67c63758108cd1101131ede356cc37cd7a8471490d6da1"
+          },
+          "reported": {
+            "expert": "QM\\QM5_11421_ohlc-daily-squeeze-reversal-d1",
+            "expert_parameters": "inputs.set",
+            "from_date": "2024.01.01",
+            "model": 4,
+            "path": "D:\\QM\\reports\\work_items\\e6e4eebe-49e2-54a7-866c-1290279b3daf\\QM5_11421\\20260904_055616\\raw\\run_01\\tester.ini",
+            "period": "D1",
+            "run": "run_01",
+            "sha256": "922573204597efa5fb67c63758108cd1101131ede356cc37cd7a8471490d6da1",
+            "size_bytes": 429,
+            "symbol": "AUDUSD.DWX",
+            "to_date": "2024.12.31"
+          }
+        },
+        {
+          "binding": {
+            "mtime_utc": "2026-09-04T05:57:38.133158+00:00",
+            "path": "D:\\QM\\reports\\work_items\\e6e4eebe-49e2-54a7-866c-1290279b3daf\\QM5_11421\\20260904_055616\\raw\\run_02\\tester.ini",
+            "sha256": "6a2750ff7f3b7ad4167f5a5710975b20fe0c8404b68cd92510deedf791abef3d"
+          },
+          "reported": {
+            "expert": "QM\\QM5_11421_ohlc-daily-squeeze-reversal-d1",
+            "expert_parameters": "inputs.set",
+            "from_date": "2024.01.01",
+            "model": 4,
+            "path": "D:\\QM\\reports\\work_items\\e6e4eebe-49e2-54a7-866c-1290279b3daf\\QM5_11421\\20260904_055616\\raw\\run_02\\tester.ini",
+            "period": "D1",
+            "run": "run_02",
+            "sha256": "6a2750ff7f3b7ad4167f5a5710975b20fe0c8404b68cd92510deedf791abef3d",
+            "size_bytes": 429,
+            "symbol": "AUDUSD.DWX",
+            "to_date": "2024.12.31"
+          }
+        }
+      ],
+      "window_source": "oos_2026",
+      "work_item_id": "e6e4eebe-49e2-54a7-866c-1290279b3daf"
+    },
+    {
+      "ea_id": "QM5_11165",
+      "expected_2026_window_matches": false,
+      "input_manifest": {
+        "mtime_utc": "2026-09-02T10:05:52.807561+00:00",
+        "path": "D:\\QM\\strategy_farm\\artifacts\\oos_2026_confirmation_v1\\08_live_QM5_11165_EURUSD\\input_manifest.json",
+        "sha256": "49de08b3cecb4bc6d0be206b21dc6f389bafd20aceec3a6fd7d24d491384f862"
+      },
+      "input_windows": {
+        "complete_months": 3,
+        "full_from_utc": "2026-01-01T00:00:00Z",
+        "full_to_utc": "2026-04-06T23:59:59Z",
+        "holdout_complete_months": 3,
+        "holdout_from_utc": "2026-01-01T00:00:00Z",
+        "holdout_sealed": false,
+        "holdout_to_utc": "2026-04-06T23:59:59Z",
+        "selection_from_utc": "2026-01-01T00:00:00Z",
+        "selection_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "payload_expected_from_date": "2024.01.01",
+      "payload_expected_to_date": "2024.12.31",
+      "report_from_date": "2024.01.01",
+      "report_to_date": "2024.12.31",
+      "run_plan": {
+        "mtime_utc": "2026-09-02T10:05:52.832626+00:00",
+        "path": "D:\\QM\\strategy_farm\\artifacts\\oos_2026_confirmation_v1\\08_live_QM5_11165_EURUSD\\run_plan.json",
+        "sha256": "f8c036143895197afe3dd17296d9b3b619d228fba7841af5104fd6361c0cde36"
+      },
+      "summary": {
+        "mtime_utc": "2026-09-04T06:00:56.016037+00:00",
+        "path": "D:\\QM\\reports\\work_items\\f4310f9a-0b8a-5017-bc22-5be3e484d6af\\QM5_11165\\20260904_055630\\summary.json",
+        "sha256": "94cc3e22b26e82f3336f9af18cf79ad80d7a1d3b7cb1cd1e682d2d7898778588"
+      },
+      "summary_schema": "run_smoke/v2",
+      "symbol": "EURUSD.DWX",
+      "tester_ini_bindings": [
+        {
+          "binding": {
+            "mtime_utc": "2026-09-04T05:56:31.051529+00:00",
+            "path": "D:\\QM\\reports\\work_items\\f4310f9a-0b8a-5017-bc22-5be3e484d6af\\QM5_11165\\20260904_055630\\raw\\run_01\\tester.ini",
+            "sha256": "610aa0984dabb2e233bb98093a8e102904222c551cf97ff8335d4cefd375b660"
+          },
+          "reported": {
+            "expert": "QM\\QM5_11165_weiss-rsi-ma",
+            "expert_parameters": "inputs.set",
+            "from_date": "2024.01.01",
+            "model": 4,
+            "path": "D:\\QM\\reports\\work_items\\f4310f9a-0b8a-5017-bc22-5be3e484d6af\\QM5_11165\\20260904_055630\\raw\\run_01\\tester.ini",
+            "period": "H1",
+            "run": "run_01",
+            "sha256": "610aa0984dabb2e233bb98093a8e102904222c551cf97ff8335d4cefd375b660",
+            "size_bytes": 411,
+            "symbol": "EURUSD.DWX",
+            "to_date": "2024.12.31"
+          }
+        },
+        {
+          "binding": {
+            "mtime_utc": "2026-09-04T05:58:26.464840+00:00",
+            "path": "D:\\QM\\reports\\work_items\\f4310f9a-0b8a-5017-bc22-5be3e484d6af\\QM5_11165\\20260904_055630\\raw\\run_02\\tester.ini",
+            "sha256": "8d9637f06954cd6e89f7b8e582daf3abafcb734e18f36fdc589d7077b18c060d"
+          },
+          "reported": {
+            "expert": "QM\\QM5_11165_weiss-rsi-ma",
+            "expert_parameters": "inputs.set",
+            "from_date": "2024.01.01",
+            "model": 4,
+            "path": "D:\\QM\\reports\\work_items\\f4310f9a-0b8a-5017-bc22-5be3e484d6af\\QM5_11165\\20260904_055630\\raw\\run_02\\tester.ini",
+            "period": "H1",
+            "run": "run_02",
+            "sha256": "8d9637f06954cd6e89f7b8e582daf3abafcb734e18f36fdc589d7077b18c060d",
+            "size_bytes": 411,
+            "symbol": "EURUSD.DWX",
+            "to_date": "2024.12.31"
+          }
+        }
+      ],
+      "window_source": "oos_2026",
+      "work_item_id": "f4310f9a-0b8a-5017-bc22-5be3e484d6af"
+    }
+  ],
+  "timebox_correlation": {
+    "effective_correlation": "MAX_FULL_AND_HIGH_VOL_PAIRWISE_ABSOLUTE_PEARSON",
+    "high_volatility_quantile": 0.75,
+    "maximum_budget_exclusive": 0.4,
+    "minimum_shared_calendar_days": 20,
+    "strong_budget_exclusive": 0.15
+  },
+  "timebox_rules": {
+    "breach_operator": "STRICTLY_BELOW",
+    "broker_day": "NY_CLOSE_GMT_PLUS_2_OR_3",
+    "censoring": "RIGHT_CENSORED_IS_TIMEOUT_NON_PASS",
+    "daily_floor": "BROKER_MIDNIGHT_BALANCE_MINUS_FIXED_INITIAL_EQUITY_0P05",
+    "design_bar_p1": 0.8,
+    "initial_equity": 1.0,
+    "maximum_daily_loss_fraction": 0.05,
+    "maximum_total_loss_fraction": 0.1,
+    "phase1_horizon_calendar_days": 60,
+    "phase1_target_fraction": 0.1,
+    "phase2_horizon_calendar_days": 30,
+    "phase2_target_fraction": 0.05,
+    "phase_transition": "RESET_TO_INITIAL_EQUITY_NEXT_BROKER_DAY_AFTER_P1_PASS",
+    "rolling_start": "EVERY_ELIGIBLE_BROKER_CALENDAR_DAY",
+    "target_operator": "AT_OR_ABOVE_WHILE_FLAT",
+    "timezone": "Europe/Prague",
+    "total_floor": "INITIAL_EQUITY_TIMES_0P90"
+  },
+  "verdict": "EVIDENCE_GAPS; NO_PIPELINE_VERDICT; NO_REPAIR_APPLIED"
+}

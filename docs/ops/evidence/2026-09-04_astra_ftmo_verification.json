@@ -1,0 +1,175 @@
+{
+  "bundle_receipt": {
+    "mtime_utc": "2026-09-04T21:11:29.429783+00:00",
+    "path": "D:\\QM\\scratch\\astra_ftmo_book_analysis_20260904\\streams\\bundle_manifest.json",
+    "sha256": "bf32a0257b2a83213b944c014ed8c44c9965fcc3577351dc9378c73e0d6d9aa0"
+  },
+  "checks": {
+    "all_15_oos_reports_are_wrong_window": true,
+    "all_8_stream_hashes_still_match_seals": true,
+    "builder_created_no_manifest": true,
+    "farm_db_mutated_by_analysis": false,
+    "first_passage_rates_match_existing_ev": true,
+    "legacy_24_fingerprint_and_numeric_anchors_reproduced": true,
+    "normalized_cost_coverage_2_of_8": true,
+    "production_code_changed": false,
+    "raw_tester_inis_confirm_all_15_wrong_windows": true,
+    "timebox_all_8_refused": true,
+    "zero_fund_score_selected": true
+  },
+  "code_bindings": [
+    {
+      "mtime_utc": "2026-09-04T01:44:33.466883+00:00",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\portfolio\\build_book_ftmo.py",
+      "sha256": "255322de5e4d47cc1dde7a0424101e4d3bb28e939c4e60ea48334a71c3dc7bc5"
+    },
+    {
+      "mtime_utc": "2026-08-18T06:57:57.444242+00:00",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\portfolio\\fund_score.py",
+      "sha256": "8934c1fe7bcaf13e5bbe652e0cfba5ea2733e288ab85042139dd9cdf70135b22"
+    },
+    {
+      "mtime_utc": "2026-07-27T08:55:42.302125+00:00",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\portfolio\\sleeve_improvement_targets.py",
+      "sha256": "88bfe0d019cd40153022db645727c6cede7b9f137df97d2a2b76f64af77f93d0"
+    },
+    {
+      "mtime_utc": "2026-09-02T09:26:37.767140+00:00",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\portfolio\\challenge_book_60d.py",
+      "sha256": "6c47fb63c2f9717148668e51e4e3b514c75f6188bdf1cec177a5df8dd9487eaf"
+    },
+    {
+      "mtime_utc": "2026-08-04T04:58:45.401489+00:00",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\portfolio\\ftmo_timebox_eval.py",
+      "sha256": "b4bd1af997da7bb92125aee9171a359e19a6d3693b3dc72a4c027de358038869"
+    },
+    {
+      "mtime_utc": "2026-07-20T20:23:45.698155+00:00",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\portfolio\\ftmo_p1_mc.py",
+      "sha256": "5bf86b203a0559388b3624cbf44b0d679fa8d9854b44df767474733ced6e8061"
+    },
+    {
+      "mtime_utc": "2026-09-02T09:28:37.480033+00:00",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\portfolio\\audit_ev_funded_account.py",
+      "sha256": "4203e8aa9fb471ee83a530f416d16f07a4c11f227a85c86c77cf8af66ba39264"
+    },
+    {
+      "mtime_utc": "2026-09-04T01:44:34.233883+00:00",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\portfolio\\portfolio_correlation.py",
+      "sha256": "fb7cc3b4074259fff138cf19eb4829489ed4264c81b9963ed2c724ee4716532c"
+    },
+    {
+      "mtime_utc": "2026-08-22T12:06:15.313695+00:00",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\portfolio\\book_builder_common.py",
+      "sha256": "d3519f0d551e84f3c7ab3018c859e65ac765f38b9f87fc26905871300184f1fb"
+    },
+    {
+      "mtime_utc": "2026-09-04T01:44:34.232880+00:00",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\portfolio\\portfolio_common.py",
+      "sha256": "0261ff866d580bb6a35ae479b5e491c714c00742c87e50b9eee36f9c7121b774"
+    },
+    {
+      "mtime_utc": "2026-09-04T01:44:34.234886+00:00",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\q15_fit_report.py",
+      "sha256": "6c1c01ca68ab00849f6682b322581dd385f6029636e2c3442ebc9cf69e5520fb"
+    },
+    {
+      "mtime_utc": "2026-09-04T20:24:15.424293+00:00",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\assemble_stream_bundle.py",
+      "sha256": "37b03fa657ccff37fa4e27d0c91ccf7a58baf353c0bac591b039f8a0ffa9f625"
+    },
+    {
+      "mtime_utc": "2026-07-29T19:28:36.756454+00:00",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\target_rulepacks.py",
+      "sha256": "d3dd3aba8764260a16824dfc448f27e481ff70efa019b5df4f0c59a3cb9a2119"
+    }
+  ],
+  "current_vs_legacy_scoring_streams": [
+    {
+      "current": {
+        "mtime_utc": "2026-09-04T21:11:25.823770+00:00",
+        "path": "D:\\QM\\scratch\\astra_ftmo_book_analysis_20260904\\streams\\QM\\q08_trades\\10706_GBPUSD_DWX.jsonl",
+        "sha256": "71fb35b8f8539356f511609a4d1dfb06571f85b19b60de6647e907ec891e34f7"
+      },
+      "legacy_score_source": {
+        "mtime_utc": "2026-07-12T06:24:49.229043+00:00",
+        "path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\10706_GBPUSD_DWX.jsonl",
+        "sha256": "3649e35f89030017e5e5fc07517bed476244dd22ca2534766cb8e8c25364d9a7"
+      },
+      "sleeve": "10706_GBPUSD_DWX.jsonl"
+    },
+    {
+      "current": {
+        "mtime_utc": "2026-09-04T21:11:26.764573+00:00",
+        "path": "D:\\QM\\scratch\\astra_ftmo_book_analysis_20260904\\streams\\QM\\q08_trades\\11421_EURUSD_DWX.jsonl",
+        "sha256": "e9d0a9ef831f156f0f67e5bf1140d7e57702c3923a4ff47b5548847957d7c0c1"
+      },
+      "legacy_score_source": {
+        "mtime_utc": "2026-07-12T16:59:18.097757+00:00",
+        "path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\11421_EURUSD_DWX.jsonl",
+        "sha256": "7ad106530db79e93ac24a136a451c856a3660823f5d99c0c7130a20df90d3902"
+      },
+      "sleeve": "11421_EURUSD_DWX.jsonl"
+    },
+    {
+      "current": {
+        "mtime_utc": "2026-09-04T21:11:27.204221+00:00",
+        "path": "D:\\QM\\scratch\\astra_ftmo_book_analysis_20260904\\streams\\QM\\q08_trades\\11422_USDCAD_DWX.jsonl",
+        "sha256": "7ce6cc3ec2f1279c18e8601119e3319375d5d3fa1ce4cf95cf33e05eefc33198"
+      },
+      "legacy_score_source": null,
+      "sleeve": "11422_USDCAD_DWX.jsonl"
+    },
+    {
+      "current": {
+        "mtime_utc": "2026-09-04T21:11:27.614791+00:00",
+        "path": "D:\\QM\\scratch\\astra_ftmo_book_analysis_20260904\\streams\\QM\\q08_trades\\11910_NZDUSD_DWX.jsonl",
+        "sha256": "555bbee205432c62f06da96a0a291d14028dc5c88e3fa8b2792ad62bc5d885b0"
+      },
+      "legacy_score_source": null,
+      "sleeve": "11910_NZDUSD_DWX.jsonl"
+    },
+    {
+      "current": {
+        "mtime_utc": "2026-09-04T21:11:28.000060+00:00",
+        "path": "D:\\QM\\scratch\\astra_ftmo_book_analysis_20260904\\streams\\QM\\q08_trades\\13054_XTIUSD_DWX.jsonl",
+        "sha256": "67d4fe2cef067e041f01d10e5e6c98312a32b43683eee2da3d0bfa9af296955b"
+      },
+      "legacy_score_source": null,
+      "sleeve": "13054_XTIUSD_DWX.jsonl"
+    },
+    {
+      "current": {
+        "mtime_utc": "2026-09-04T21:11:28.418151+00:00",
+        "path": "D:\\QM\\scratch\\astra_ftmo_book_analysis_20260904\\streams\\QM\\q08_trades\\1537_XAGUSD_DWX.jsonl",
+        "sha256": "1885c21e4c895827c79ff3d55849308ab4ee5c0db96a7d576cd652dc3eff8658"
+      },
+      "legacy_score_source": null,
+      "sleeve": "1537_XAGUSD_DWX.jsonl"
+    },
+    {
+      "current": {
+        "mtime_utc": "2026-09-04T21:11:28.978609+00:00",
+        "path": "D:\\QM\\scratch\\astra_ftmo_book_analysis_20260904\\streams\\QM\\q08_trades\\20048_XTIUSD_DWX.jsonl",
+        "sha256": "a792e2635250bcd6df5aa4a290359b54e6d5ffe8fbe10e34d143b74dfe0e8d55"
+      },
+      "legacy_score_source": null,
+      "sleeve": "20048_XTIUSD_DWX.jsonl"
+    },
+    {
+      "current": {
+        "mtime_utc": "2026-09-04T21:11:29.400707+00:00",
+        "path": "D:\\QM\\scratch\\astra_ftmo_book_analysis_20260904\\streams\\QM\\q08_trades\\21505_XAGUSD_DWX.jsonl",
+        "sha256": "243804faaf0050f5482b9a4aac8f9eb0dcd552de1c2c139a486f0bcfa46b94c1"
+      },
+      "legacy_score_source": null,
+      "sleeve": "21505_XAGUSD_DWX.jsonl"
+    }
+  ],
+  "legacy_mc_input_and_output": {
+    "mtime_utc": "2026-09-04T21:16:59.077222+00:00",
+    "path": "D:\\QM\\scratch\\astra_ftmo_book_analysis_20260904\\legacy_mc\\results.json",
+    "sha256": "207b0a4db73f3debba5d22794d4b6c72d7cd4ebdf81bfef62f3bb7dcacb81328"
+  },
+  "verified_at_utc": "2026-09-04T21:19:44.967266+00:00"
+}

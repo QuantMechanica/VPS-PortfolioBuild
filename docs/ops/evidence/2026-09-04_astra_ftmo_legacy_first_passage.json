@@ -1,0 +1,624 @@
+{
+  "claim": "FROZEN_24_DXZ_DIAGNOSTIC; NOT_CURRENT_8; NOT_FTMO_MONEY_EVIDENCE",
+  "fingerprint": "e50e8f891c34f838e576f00c4b4d85e0815bd358c20028ac55dd294369b81759",
+  "limitations": [
+    "close/MAE proxy; no synchronized intraday equity",
+    "DXZ costs, not FTMO-adjusted",
+    "legacy stage counts close days, not opening days; flat state not enforced",
+    "fixed dollar scaling, not verified live RISK_PERCENT anchor",
+    "time means conditional on passing; no finite unconditional expected target time claimed",
+    "50 grid starts are not 50 independent complete two-stage paths; no selection-sealed OOS claim"
+  ],
+  "rows": [
+    {
+      "basis": "close",
+      "joint_days_conditional_on_pass": {
+        "count": 5,
+        "mean": 70.2,
+        "median": 74
+      },
+      "joint_pass": 0.1,
+      "multiplier": 0.44,
+      "stage1_days_conditional_on_pass": {
+        "count": 10,
+        "mean": 42.5,
+        "median": 44.5
+      },
+      "stage1_outcomes": {
+        "breach": 1,
+        "expired": 39,
+        "pass": 10
+      },
+      "stage1_pass": 0.2,
+      "stage2_days_conditional_on_pass": {
+        "count": 5,
+        "mean": 21.8,
+        "median": 20
+      },
+      "stage2_given_stage1": 0.5,
+      "stage2_scale": 1.0,
+      "starts": 50
+    },
+    {
+      "basis": "close",
+      "joint_days_conditional_on_pass": {
+        "count": 2,
+        "mean": 73.5,
+        "median": 73.5
+      },
+      "joint_pass": 0.04,
+      "multiplier": 0.44,
+      "stage1_days_conditional_on_pass": {
+        "count": 10,
+        "mean": 42.5,
+        "median": 44.5
+      },
+      "stage1_outcomes": {
+        "breach": 1,
+        "expired": 39,
+        "pass": 10
+      },
+      "stage1_pass": 0.2,
+      "stage2_days_conditional_on_pass": {
+        "count": 2,
+        "mean": 23,
+        "median": 23.0
+      },
+      "stage2_given_stage1": 0.2,
+      "stage2_scale": 0.75,
+      "starts": 50
+    },
+    {
+      "basis": "close",
+      "joint_days_conditional_on_pass": {
+        "count": 6,
+        "mean": 68.33333333333333,
+        "median": 71.5
+      },
+      "joint_pass": 0.12,
+      "multiplier": 0.5,
+      "stage1_days_conditional_on_pass": {
+        "count": 15,
+        "mean": 42.86666666666667,
+        "median": 39
+      },
+      "stage1_outcomes": {
+        "breach": 1,
+        "expired": 34,
+        "pass": 15
+      },
+      "stage1_pass": 0.3,
+      "stage2_days_conditional_on_pass": {
+        "count": 6,
+        "mean": 18.5,
+        "median": 16.0
+      },
+      "stage2_given_stage1": 0.4,
+      "stage2_scale": 1.0,
+      "starts": 50
+    },
+    {
+      "basis": "close",
+      "joint_days_conditional_on_pass": {
+        "count": 3,
+        "mean": 61.666666666666664,
+        "median": 62
+      },
+      "joint_pass": 0.06,
+      "multiplier": 0.5,
+      "stage1_days_conditional_on_pass": {
+        "count": 15,
+        "mean": 42.86666666666667,
+        "median": 39
+      },
+      "stage1_outcomes": {
+        "breach": 1,
+        "expired": 34,
+        "pass": 15
+      },
+      "stage1_pass": 0.3,
+      "stage2_days_conditional_on_pass": {
+        "count": 3,
+        "mean": 19,
+        "median": 20
+      },
+      "stage2_given_stage1": 0.2,
+      "stage2_scale": 0.75,
+      "starts": 50
+    },
+    {
+      "basis": "close",
+      "joint_days_conditional_on_pass": {
+        "count": 11,
+        "mean": 56.27272727272727,
+        "median": 62
+      },
+      "joint_pass": 0.22,
+      "multiplier": 0.6,
+      "stage1_days_conditional_on_pass": {
+        "count": 18,
+        "mean": 36.5,
+        "median": 38.5
+      },
+      "stage1_outcomes": {
+        "breach": 3,
+        "expired": 29,
+        "pass": 18
+      },
+      "stage1_pass": 0.36,
+      "stage2_days_conditional_on_pass": {
+        "count": 11,
+        "mean": 16.545454545454547,
+        "median": 16
+      },
+      "stage2_given_stage1": 0.6111111111111112,
+      "stage2_scale": 1.0,
+      "starts": 50
+    },
+    {
+      "basis": "close",
+      "joint_days_conditional_on_pass": {
+        "count": 8,
+        "mean": 55.5,
+        "median": 58.0
+      },
+      "joint_pass": 0.16,
+      "multiplier": 0.6,
+      "stage1_days_conditional_on_pass": {
+        "count": 18,
+        "mean": 36.5,
+        "median": 38.5
+      },
+      "stage1_outcomes": {
+        "breach": 3,
+        "expired": 29,
+        "pass": 18
+      },
+      "stage1_pass": 0.36,
+      "stage2_days_conditional_on_pass": {
+        "count": 8,
+        "mean": 17,
+        "median": 16.0
+      },
+      "stage2_given_stage1": 0.4444444444444444,
+      "stage2_scale": 0.75,
+      "starts": 50
+    },
+    {
+      "basis": "close",
+      "joint_days_conditional_on_pass": {
+        "count": 13,
+        "mean": 43.38461538461539,
+        "median": 40
+      },
+      "joint_pass": 0.26,
+      "multiplier": 0.85,
+      "stage1_days_conditional_on_pass": {
+        "count": 29,
+        "mean": 27.379310344827587,
+        "median": 26
+      },
+      "stage1_outcomes": {
+        "breach": 4,
+        "expired": 17,
+        "pass": 29
+      },
+      "stage1_pass": 0.58,
+      "stage2_days_conditional_on_pass": {
+        "count": 13,
+        "mean": 15.846153846153847,
+        "median": 18
+      },
+      "stage2_given_stage1": 0.4482758620689655,
+      "stage2_scale": 1.0,
+      "starts": 50
+    },
+    {
+      "basis": "close",
+      "joint_days_conditional_on_pass": {
+        "count": 13,
+        "mean": 47.07692307692308,
+        "median": 45
+      },
+      "joint_pass": 0.26,
+      "multiplier": 0.85,
+      "stage1_days_conditional_on_pass": {
+        "count": 29,
+        "mean": 27.379310344827587,
+        "median": 26
+      },
+      "stage1_outcomes": {
+        "breach": 4,
+        "expired": 17,
+        "pass": 29
+      },
+      "stage1_pass": 0.58,
+      "stage2_days_conditional_on_pass": {
+        "count": 13,
+        "mean": 19.53846153846154,
+        "median": 21
+      },
+      "stage2_given_stage1": 0.4482758620689655,
+      "stage2_scale": 0.75,
+      "starts": 50
+    },
+    {
+      "basis": "close",
+      "joint_days_conditional_on_pass": {
+        "count": 20,
+        "mean": 39.2,
+        "median": 40.0
+      },
+      "joint_pass": 0.4,
+      "multiplier": 1.0,
+      "stage1_days_conditional_on_pass": {
+        "count": 34,
+        "mean": 25.176470588235293,
+        "median": 26.0
+      },
+      "stage1_outcomes": {
+        "breach": 4,
+        "expired": 12,
+        "pass": 34
+      },
+      "stage1_pass": 0.68,
+      "stage2_days_conditional_on_pass": {
+        "count": 20,
+        "mean": 14.05,
+        "median": 11.5
+      },
+      "stage2_given_stage1": 0.5882352941176471,
+      "stage2_scale": 1.0,
+      "starts": 50
+    },
+    {
+      "basis": "close",
+      "joint_days_conditional_on_pass": {
+        "count": 16,
+        "mean": 43.6875,
+        "median": 44.0
+      },
+      "joint_pass": 0.32,
+      "multiplier": 1.0,
+      "stage1_days_conditional_on_pass": {
+        "count": 34,
+        "mean": 25.176470588235293,
+        "median": 26.0
+      },
+      "stage1_outcomes": {
+        "breach": 4,
+        "expired": 12,
+        "pass": 34
+      },
+      "stage1_pass": 0.68,
+      "stage2_days_conditional_on_pass": {
+        "count": 16,
+        "mean": 17.0625,
+        "median": 20.5
+      },
+      "stage2_given_stage1": 0.47058823529411764,
+      "stage2_scale": 0.75,
+      "starts": 50
+    },
+    {
+      "basis": "overlap_floor",
+      "joint_days_conditional_on_pass": {
+        "count": 5,
+        "mean": 70.2,
+        "median": 74
+      },
+      "joint_pass": 0.1,
+      "multiplier": 0.44,
+      "stage1_days_conditional_on_pass": {
+        "count": 10,
+        "mean": 42.5,
+        "median": 44.5
+      },
+      "stage1_outcomes": {
+        "breach": 1,
+        "expired": 39,
+        "pass": 10
+      },
+      "stage1_pass": 0.2,
+      "stage2_days_conditional_on_pass": {
+        "count": 5,
+        "mean": 21.8,
+        "median": 20
+      },
+      "stage2_given_stage1": 0.5,
+      "stage2_scale": 1.0,
+      "starts": 50
+    },
+    {
+      "basis": "overlap_floor",
+      "joint_days_conditional_on_pass": {
+        "count": 2,
+        "mean": 73.5,
+        "median": 73.5
+      },
+      "joint_pass": 0.04,
+      "multiplier": 0.44,
+      "stage1_days_conditional_on_pass": {
+        "count": 10,
+        "mean": 42.5,
+        "median": 44.5
+      },
+      "stage1_outcomes": {
+        "breach": 1,
+        "expired": 39,
+        "pass": 10
+      },
+      "stage1_pass": 0.2,
+      "stage2_days_conditional_on_pass": {
+        "count": 2,
+        "mean": 23,
+        "median": 23.0
+      },
+      "stage2_given_stage1": 0.2,
+      "stage2_scale": 0.75,
+      "starts": 50
+    },
+    {
+      "basis": "overlap_floor",
+      "joint_days_conditional_on_pass": {
+        "count": 6,
+        "mean": 68.33333333333333,
+        "median": 71.5
+      },
+      "joint_pass": 0.12,
+      "multiplier": 0.5,
+      "stage1_days_conditional_on_pass": {
+        "count": 15,
+        "mean": 42.86666666666667,
+        "median": 39
+      },
+      "stage1_outcomes": {
+        "breach": 2,
+        "expired": 33,
+        "pass": 15
+      },
+      "stage1_pass": 0.3,
+      "stage2_days_conditional_on_pass": {
+        "count": 6,
+        "mean": 18.5,
+        "median": 16.0
+      },
+      "stage2_given_stage1": 0.4,
+      "stage2_scale": 1.0,
+      "starts": 50
+    },
+    {
+      "basis": "overlap_floor",
+      "joint_days_conditional_on_pass": {
+        "count": 3,
+        "mean": 61.666666666666664,
+        "median": 62
+      },
+      "joint_pass": 0.06,
+      "multiplier": 0.5,
+      "stage1_days_conditional_on_pass": {
+        "count": 15,
+        "mean": 42.86666666666667,
+        "median": 39
+      },
+      "stage1_outcomes": {
+        "breach": 2,
+        "expired": 33,
+        "pass": 15
+      },
+      "stage1_pass": 0.3,
+      "stage2_days_conditional_on_pass": {
+        "count": 3,
+        "mean": 19,
+        "median": 20
+      },
+      "stage2_given_stage1": 0.2,
+      "stage2_scale": 0.75,
+      "starts": 50
+    },
+    {
+      "basis": "overlap_floor",
+      "joint_days_conditional_on_pass": {
+        "count": 11,
+        "mean": 56.27272727272727,
+        "median": 62
+      },
+      "joint_pass": 0.22,
+      "multiplier": 0.6,
+      "stage1_days_conditional_on_pass": {
+        "count": 18,
+        "mean": 36.5,
+        "median": 38.5
+      },
+      "stage1_outcomes": {
+        "breach": 3,
+        "expired": 29,
+        "pass": 18
+      },
+      "stage1_pass": 0.36,
+      "stage2_days_conditional_on_pass": {
+        "count": 11,
+        "mean": 16.545454545454547,
+        "median": 16
+      },
+      "stage2_given_stage1": 0.6111111111111112,
+      "stage2_scale": 1.0,
+      "starts": 50
+    },
+    {
+      "basis": "overlap_floor",
+      "joint_days_conditional_on_pass": {
+        "count": 8,
+        "mean": 55.5,
+        "median": 58.0
+      },
+      "joint_pass": 0.16,
+      "multiplier": 0.6,
+      "stage1_days_conditional_on_pass": {
+        "count": 18,
+        "mean": 36.5,
+        "median": 38.5
+      },
+      "stage1_outcomes": {
+        "breach": 3,
+        "expired": 29,
+        "pass": 18
+      },
+      "stage1_pass": 0.36,
+      "stage2_days_conditional_on_pass": {
+        "count": 8,
+        "mean": 17,
+        "median": 16.0
+      },
+      "stage2_given_stage1": 0.4444444444444444,
+      "stage2_scale": 0.75,
+      "starts": 50
+    },
+    {
+      "basis": "overlap_floor",
+      "joint_days_conditional_on_pass": {
+        "count": 13,
+        "mean": 43.38461538461539,
+        "median": 40
+      },
+      "joint_pass": 0.26,
+      "multiplier": 0.85,
+      "stage1_days_conditional_on_pass": {
+        "count": 29,
+        "mean": 27.379310344827587,
+        "median": 26
+      },
+      "stage1_outcomes": {
+        "breach": 7,
+        "expired": 14,
+        "pass": 29
+      },
+      "stage1_pass": 0.58,
+      "stage2_days_conditional_on_pass": {
+        "count": 13,
+        "mean": 15.846153846153847,
+        "median": 18
+      },
+      "stage2_given_stage1": 0.4482758620689655,
+      "stage2_scale": 1.0,
+      "starts": 50
+    },
+    {
+      "basis": "overlap_floor",
+      "joint_days_conditional_on_pass": {
+        "count": 13,
+        "mean": 47.07692307692308,
+        "median": 45
+      },
+      "joint_pass": 0.26,
+      "multiplier": 0.85,
+      "stage1_days_conditional_on_pass": {
+        "count": 29,
+        "mean": 27.379310344827587,
+        "median": 26
+      },
+      "stage1_outcomes": {
+        "breach": 7,
+        "expired": 14,
+        "pass": 29
+      },
+      "stage1_pass": 0.58,
+      "stage2_days_conditional_on_pass": {
+        "count": 13,
+        "mean": 19.53846153846154,
+        "median": 21
+      },
+      "stage2_given_stage1": 0.4482758620689655,
+      "stage2_scale": 0.75,
+      "starts": 50
+    },
+    {
+      "basis": "overlap_floor",
+      "joint_days_conditional_on_pass": {
+        "count": 14,
+        "mean": 37.857142857142854,
+        "median": 37.0
+      },
+      "joint_pass": 0.28,
+      "multiplier": 1.0,
+      "stage1_days_conditional_on_pass": {
+        "count": 30,
+        "mean": 22.6,
+        "median": 23.5
+      },
+      "stage1_outcomes": {
+        "breach": 15,
+        "expired": 5,
+        "pass": 30
+      },
+      "stage1_pass": 0.6,
+      "stage2_days_conditional_on_pass": {
+        "count": 14,
+        "mean": 13.428571428571429,
+        "median": 11.0
+      },
+      "stage2_given_stage1": 0.4666666666666667,
+      "stage2_scale": 1.0,
+      "starts": 50
+    },
+    {
+      "basis": "overlap_floor",
+      "joint_days_conditional_on_pass": {
+        "count": 14,
+        "mean": 41.5,
+        "median": 37.0
+      },
+      "joint_pass": 0.28,
+      "multiplier": 1.0,
+      "stage1_days_conditional_on_pass": {
+        "count": 30,
+        "mean": 22.6,
+        "median": 23.5
+      },
+      "stage1_outcomes": {
+        "breach": 15,
+        "expired": 5,
+        "pass": 30
+      },
+      "stage1_pass": 0.6,
+      "stage2_days_conditional_on_pass": {
+        "count": 14,
+        "mean": 17.214285714285715,
+        "median": 20.5
+      },
+      "stage2_given_stage1": 0.4666666666666667,
+      "stage2_scale": 0.75,
+      "starts": 50
+    }
+  ],
+  "selftest": {
+    "anchors_expected": {
+      "close_days_le_5pct": 2,
+      "mae_days_le_5pct": 19,
+      "pass_all_1x": 34,
+      "pass_complete_1x": 0,
+      "pass_first_half_1x": 15,
+      "pass_second_half_1x": 19,
+      "sleeves": 24,
+      "span_calendar_days": 3004,
+      "trading_days": 2028,
+      "worst_close_pct": -6.21,
+      "worst_mae_pct": -7.93
+    },
+    "anchors_got": {
+      "close_days_le_5pct": 2,
+      "mae_days_le_5pct": 19,
+      "pass_all_1x": 34,
+      "pass_complete_1x": 0,
+      "pass_first_half_1x": 15,
+      "pass_second_half_1x": 19,
+      "sleeves": 24,
+      "span_calendar_days": 3004,
+      "trading_days": 2028,
+      "worst_close_pct": -6.21,
+      "worst_mae_pct": -7.93
+    },
+    "mismatch": {},
+    "reproduced": true
+  }
+}

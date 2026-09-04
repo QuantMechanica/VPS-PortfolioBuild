@@ -1,0 +1,23 @@
+{
+  "command": [
+    "C:\\Python311\\python.exe",
+    "-X",
+    "utf8",
+    "C:\\QM\\repo\\tools\\strategy_farm\\portfolio\\ftmo_p1_mc.py",
+    "--out-dir",
+    "D:\\QM\\scratch\\astra_ftmo_book_analysis_20260904\\legacy_mc",
+    "--paths",
+    "2000",
+    "--horizon",
+    "43",
+    "--seed",
+    "20260904",
+    "--compositions",
+    "a_motor_solo_050,a_motor_solo_100"
+  ],
+  "cwd": "C:\\QM\\repo",
+  "exit_code": 0,
+  "started_utc": "2026-09-04T21:16:58.699238+00:00",
+  "stderr": "",
+  "stdout": "a_motor_solo_050: pass=0.0% p50_days=None dailyDD=0.0% totalDD=0.0% hist_pass=0.0%\na_motor_solo_100: pass=0.0% p50_days=None dailyDD=0.0% totalDD=0.0% hist_pass=0.0%\nwrote D:\\QM\\scratch\\astra_ftmo_book_analysis_20260904\\legacy_mc\\results.json\nwrote D:\\QM\\scratch\\astra_ftmo_book_analysis_20260904\\legacy_mc\\summary.md\n"
+}

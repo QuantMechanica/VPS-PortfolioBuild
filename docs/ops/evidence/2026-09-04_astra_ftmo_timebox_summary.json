@@ -1,0 +1,31 @@
+{
+  "actual_book_admitted": false,
+  "cost_projection": {
+    "mtime_utc": "2026-09-04T21:17:20.589329+00:00",
+    "path": "D:\\QM\\scratch\\astra_ftmo_book_analysis_20260904\\selected_provider_rows.json",
+    "sha256": "af1bf7857a664e2388ebfa8642f0352aed40137960306f5e5c39edf3233b23b5"
+  },
+  "expected_time_to_target_days": null,
+  "joint_probability": null,
+  "p1_probability": null,
+  "p2_conditional_probability": null,
+  "projection_source": {
+    "mtime_utc": "2026-07-30T01:02:30.006072+00:00",
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-07-30_ftmo_book3_symbol_cost_snapshot.json",
+    "sha256": "7eab3bf8c97373fcb44e36aca39dd679fbd3e093783cd6eacd9cb171190b3280"
+  },
+  "qualification_ready": 0,
+  "reason": "No admitted or cost-certified composition; null is not zero probability.",
+  "runs": [
+    {
+      "exit_code": 2,
+      "label": "native_cost_schema",
+      "stdout": "{\"status\": \"REFUSED\", \"error\": \"ftmo_cost_snapshot: expected non-empty instrument list\"}\n"
+    },
+    {
+      "exit_code": 0,
+      "label": "exact_cost_projection",
+      "stdout": "{\"status\": \"EVALUATION_WRITTEN\", \"path\": \"C:\\\\QM\\\\repo\\\\docs\\\\ops\\\\evidence\\\\2026-09-04_astra_ftmo_timebox_exact_cost_projection_result.json\", \"sha256\": \"7e77935a402bd08223c90d05336c9959fa89b53e9d8f6936dfd40fd7012fd648\", \"evaluation_status\": \"NO_ADMISSIBLE_COMPOSITION\"}\n"
+    }
+  ]
+}

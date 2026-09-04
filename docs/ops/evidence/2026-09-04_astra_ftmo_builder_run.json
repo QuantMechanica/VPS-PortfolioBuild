@@ -1,0 +1,17 @@
+{
+  "command": [
+    "C:\\Python311\\python.exe",
+    "-X",
+    "utf8",
+    "C:\\QM\\repo\\tools\\strategy_farm\\portfolio\\build_book_ftmo.py",
+    "--as-of",
+    "2026-09-04",
+    "--out-dir",
+    "D:\\QM\\scratch\\astra_ftmo_book_analysis_20260904\\builder"
+  ],
+  "cwd": "C:\\QM\\repo",
+  "exit_code": 2,
+  "started_utc": "2026-09-04T21:11:20.464317+00:00",
+  "stderr": "",
+  "stdout": "{\n  \"allowed\": false,\n  \"distinct_eas\": 8,\n  \"order_artifact\": null,\n  \"qualified_pairs\": 8,\n  \"reason\": \"qualified_pairs_below_minimum: 8 < 25; owner_order_missing: venue=ftmo order_dir=C:\\\\QM\\\\repo\\\\decisions\",\n  \"reasons\": [\n    \"qualified_pairs_below_minimum: 8 < 25\",\n    \"owner_order_missing: venue=ftmo order_dir=C:\\\\QM\\\\repo\\\\decisions\"\n  ],\n  \"status\": \"BOOK_BUILD_REFUSED\",\n  \"strategy_families\": 8\n}\n"
+}

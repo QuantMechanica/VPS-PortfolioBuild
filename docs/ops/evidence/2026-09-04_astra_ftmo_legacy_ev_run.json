@@ -1,0 +1,15 @@
+{
+  "command": [
+    "C:\\Python311\\python.exe",
+    "-X",
+    "utf8",
+    "C:\\QM\\repo\\tools\\strategy_farm\\portfolio\\audit_ev_funded_account.py",
+    "--json-out",
+    "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-04_astra_ftmo_legacy_ev.json"
+  ],
+  "cwd": "C:\\QM\\repo",
+  "exit_code": 0,
+  "started_utc": "2026-09-04T21:11:21.175669+00:00",
+  "stderr": "",
+  "stdout": "         basis  mult     P1  funded  E[att]  breach  surv med d surv mean d    geo d  payout mean $\n         close  0.44    20%     10%   10.00     26%         778         951     3000         77,270\n         close  0.50    30%     12%    8.33     36%         685         810     3000         77,547\n         close  0.60    36%     22%    4.55     58%         534         630     1000         67,880\n         close  0.85    58%     26%    3.85     86%         271         279      600         37,842\n         close  1.00    68%     40%    2.50     96%         216         255      500         42,495\n overlap_floor  0.44    20%     10%   10.00     30%         774         908     3000         73,517\n overlap_floor  0.50    30%     12%    8.33     52%         621         673     1500         62,091\n overlap_floor  0.60    36%     22%    4.55     78%         442         455     1000         42,890\n overlap_floor  0.85    58%     26%    3.85    100%         165         184      375         23,952\n overlap_floor  1.00    60%     28%    3.57    100%          62          85      125         10,173\n\nbreak-even fee per attempt (payout_mean / expected_attempts):\n           close 0.44x         7,727\n           close 0.50x         9,306\n           close 0.60x        14,934\n           close 0.85x         9,839\n           close 1.00x        16,998\n   overlap_floor 0.44x         7,352\n   overlap_floor 0.50x         7,451\n   overlap_floor 0.60x         9,436\n   overlap_floor 0.85x         6,228\n   overlap_floor 1.00x         2,849\n"
+}
