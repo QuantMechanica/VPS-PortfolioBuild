@@ -56,20 +56,29 @@ P1_LOWER_BOUND_FLOOR = 0.80
 # --- Aggregate concentration control (FTMO lane) -------------------------------
 # Ratified design (Vault '03 Pipeline/Q11 Portfolio Construction', FTMO lane, OWNER
 # 2026-08-21): the FTMO book MAY run multiple EAs/strategies on the same symbol. Risk
-# is controlled at the AGGREGATE level — pairwise correlation/cluster control plus an
-# account-wide risk budget — NOT via a per-symbol cap.
+# is controlled at the AGGREGATE level -- pairwise correlation/cluster control plus an
+# account-wide risk budget -- NOT via a per-symbol cap.
 #
-# WORKING DEFAULTS — OPEN OWNER ITEMS (not yet ratified as FTMO-lane numbers):
+# OWNER_RATIFIED numbers (OWNER-DEC-BOOK-V2V4V6-EPOCH-20260904, receipt
+# decisions/2026-09-04_owner_receipts_briefing_2_4.md): OWNER ratified both working
+# defaults AS-IS (V2 (a)), together with the SP-C3 caps (symbol 40 / asset-class 60 /
+# family 50 percent of the 2.5 percent stop-risk budget, concentration_tail_limits.v1.json)
+# and the Q15 hard caps (family <= 3, symbol <= 2, 10-15 EAs).
 #   * WORKING_DEFAULT_MAX_PAIRWISE_CORRELATION mirrors book_reoptimizer's greedy
 #     pairwise-correlation selection constraint (<=0.50, OWNER 2026-07-15). DL-083
-#     sets the Q09 marginal-eval reject at 0.40. Neither is pinned to the FTMO book.
+#     sets the Q09 marginal-eval reject at 0.40.
 #   * WORKING_DEFAULT_ACCOUNT_WEIGHT_BUDGET caps the sum of admitted unit weights
-#     (each admitted sleeve carries weight 1.0). No ratified FTMO account-wide unit
-#     count exists; 10.0 is a non-binding working ceiling pending OWNER ratification.
-# Both are overridable via CLI and must be ratified before any book is constructed.
+#     (each admitted sleeve carries weight 1.0); 10.0 is the ratified account-wide ceiling.
+# The numeric values below are byte-identical to the ratified defaults; both stay
+# CLI-overridable, and any override is a NON-ratified value that the manifest stamps
+# WORKING_DEFAULT_OPEN_OWNER_ITEM (the refusal path for genuinely unratified items).
 WORKING_DEFAULT_MAX_PAIRWISE_CORRELATION = 0.50
 WORKING_DEFAULT_ACCOUNT_WEIGHT_BUDGET = 10.0
 SLEEVE_UNIT_WEIGHT = 1.0
+
+# OWNER ratification of the two aggregate thresholds above (values unchanged).
+AGGREGATE_THRESHOLD_RATIFICATION_DECISION = "OWNER-DEC-BOOK-V2V4V6-EPOCH-20260904"
+AGGREGATE_THRESHOLD_RATIFICATION_RECEIPT = "decisions/2026-09-04_owner_receipts_briefing_2_4.md"
 
 
 def _score_key(value: Any) -> tuple[int, str] | None:
@@ -176,6 +185,28 @@ def _pair_correlation(
     b: tuple[int, str],
 ) -> float | None:
     return correlation.get(frozenset({a, b}))
+
+
+def _threshold_ratification(value: float, ratified_value: float) -> dict[str, Any]:
+    """Stamp OWNER ratification for one aggregate threshold.
+
+    OWNER-DEC-BOOK-V2V4V6-EPOCH-20260904 (receipt
+    decisions/2026-09-04_owner_receipts_briefing_2_4.md) ratified both working defaults
+    AS-IS. A threshold left at (or explicitly set to) its ratified value carries
+    OWNER_RATIFIED with the receipt/decision reference; any other CLI-overridden value
+    stays a genuinely unratified WORKING_DEFAULT_OPEN_OWNER_ITEM.
+    """
+    if value == ratified_value:
+        return {
+            "status": "OWNER_RATIFIED",
+            "decision": AGGREGATE_THRESHOLD_RATIFICATION_DECISION,
+            "receipt": AGGREGATE_THRESHOLD_RATIFICATION_RECEIPT,
+            "ratified_value": ratified_value,
+        }
+    return {
+        "status": "WORKING_DEFAULT_OPEN_OWNER_ITEM",
+        "ratified_value": ratified_value,
+    }
 
 
 def select_under_aggregate_control(
@@ -285,12 +316,20 @@ def select_under_aggregate_control(
             })
             if corr is not None and (max_admitted is None or corr > max_admitted):
                 max_admitted = corr
+    max_pairwise_correlation_ratification = _threshold_ratification(
+        max_pairwise_correlation, WORKING_DEFAULT_MAX_PAIRWISE_CORRELATION
+    )
+    account_weight_budget_ratification = _threshold_ratification(
+        account_weight_budget, WORKING_DEFAULT_ACCOUNT_WEIGHT_BUDGET
+    )
     control_summary = {
         "policy": "AGGREGATE_CORRELATION_CLUSTER_AND_ACCOUNT_RISK_BUDGET",
         "max_pairwise_correlation": max_pairwise_correlation,
-        "max_pairwise_correlation_status": "WORKING_DEFAULT_OPEN_OWNER_ITEM",
+        "max_pairwise_correlation_status": max_pairwise_correlation_ratification["status"],
+        "max_pairwise_correlation_ratification": max_pairwise_correlation_ratification,
         "account_weight_budget": account_weight_budget,
-        "account_weight_budget_status": "WORKING_DEFAULT_OPEN_OWNER_ITEM",
+        "account_weight_budget_status": account_weight_budget_ratification["status"],
+        "account_weight_budget_ratification": account_weight_budget_ratification,
         "unit_weight": unit_weight,
         "admitted_weight": admitted_weight,
         "admitted_pairs": admitted_pairs,
@@ -590,9 +629,9 @@ def parser() -> argparse.ArgumentParser:
     ap.add_argument("--bootstrap-result", type=Path)
     ap.add_argument("--correlation", type=Path, help="Q11 pairwise daily-PnL correlation artifact (portfolio_correlation.py output).")
     ap.add_argument("--max-pairwise-correlation", type=float, default=WORKING_DEFAULT_MAX_PAIRWISE_CORRELATION,
-                    help="WORKING DEFAULT (OPEN OWNER ITEM) — aggregate cluster-correlation reject threshold.")
+                    help="OWNER_RATIFIED default (OWNER-DEC-BOOK-V2V4V6-EPOCH-20260904); a non-default override is a non-ratified aggregate cluster-correlation reject threshold.")
     ap.add_argument("--account-weight-budget", type=float, default=WORKING_DEFAULT_ACCOUNT_WEIGHT_BUDGET,
-                    help="WORKING DEFAULT (OPEN OWNER ITEM) — account-wide sum-of-unit-weights budget.")
+                    help="OWNER_RATIFIED default (OWNER-DEC-BOOK-V2V4V6-EPOCH-20260904); a non-default override is a non-ratified account-wide sum-of-unit-weights budget.")
     ap.add_argument("--stream-root", type=Path, default=DEFAULT_STREAM_ROOT,
                     help="sealed OOS q08 stream bundle used by SP-C3 concentration/tail checks")
     ap.add_argument("--starting-capital", type=float, default=100_000.0)

@@ -250,3 +250,37 @@ def test_manifest_validator_rejects_any_action_surface() -> None:
     }
     with pytest.raises(BookBuildError, match="cannot emit deployment"):
         validate_dual_book_manifest(manifest)
+
+def test_ftmo_aggregate_thresholds_ratified_defaults_stamp_owner_ratified() -> None:
+    # OWNER-DEC-BOOK-V2V4V6-EPOCH-20260904 (receipt
+    # decisions/2026-09-04_owner_receipts_briefing_2_4.md) ratified
+    # max_pairwise_correlation=0.50 and account_weight_budget=10.0 AS-IS. With the
+    # ratified defaults the control summary stamps OWNER_RATIFIED and carries the
+    # receipt path + decision id for both thresholds.
+    roster = [(1, "EURUSD.DWX")]
+    scores = {roster[0]: {"status": "SCORED", "fund_score": 1.2}}
+    _selected, _rows, control = select_under_aggregate_control(roster, scores, {})
+    assert control["max_pairwise_correlation"] == 0.50
+    assert control["account_weight_budget"] == 10.0
+    assert control["max_pairwise_correlation_status"] == "OWNER_RATIFIED"
+    assert control["account_weight_budget_status"] == "OWNER_RATIFIED"
+    for field in ("max_pairwise_correlation_ratification", "account_weight_budget_ratification"):
+        assert control[field]["status"] == "OWNER_RATIFIED"
+        assert control[field]["decision"] == "OWNER-DEC-BOOK-V2V4V6-EPOCH-20260904"
+        assert control[field]["receipt"] == "decisions/2026-09-04_owner_receipts_briefing_2_4.md"
+
+
+def test_ftmo_aggregate_thresholds_unratified_override_stays_open_owner_item() -> None:
+    # The refusal path for genuinely unratified items is intact: any CLI override to a
+    # NON-ratified value is never stamped OWNER_RATIFIED. It stays
+    # WORKING_DEFAULT_OPEN_OWNER_ITEM and carries no ratification decision/receipt.
+    roster = [(1, "EURUSD.DWX")]
+    scores = {roster[0]: {"status": "SCORED", "fund_score": 1.2}}
+    _selected, _rows, control = select_under_aggregate_control(
+        roster, scores, {}, max_pairwise_correlation=0.40, account_weight_budget=8.0,
+    )
+    assert control["max_pairwise_correlation_status"] == "WORKING_DEFAULT_OPEN_OWNER_ITEM"
+    assert control["account_weight_budget_status"] == "WORKING_DEFAULT_OPEN_OWNER_ITEM"
+    assert "decision" not in control["max_pairwise_correlation_ratification"]
+    assert "decision" not in control["account_weight_budget_ratification"]
+    assert "receipt" not in control["account_weight_budget_ratification"]

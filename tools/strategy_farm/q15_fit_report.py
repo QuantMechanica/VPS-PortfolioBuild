@@ -479,6 +479,33 @@ def correlation_cap_block(corr: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
+def sparse_orthogonality_block(
+    streams: Mapping[tuple[int, str], Any],
+    min_overlap_days: int,
+) -> dict[str, Any]:
+    """Two-layer sparse-D1 orthogonality screen (Q15 supplement).
+
+    Layer A (ZK-SBB) certifies on the Q15 estimand with a fail-closed abstain;
+    Layer B (COS) flags co-timing / redundancy.  Fills the gap where
+    ``portfolio_correlation.correlation_matrix`` silently returns ``None`` below
+    the 60-day co-active exit-day floor (the sparse-D1 regime).  Standard:
+    ``docs/research/SPARSE_D1_ORTHOGONALITY_STANDARD_2026-09-03.md`` (authority
+    OWNER-DEC-BOOK-V2V4V6-EPOCH-20260904).  Read-only, analytic; every threshold
+    other than the |r| < 0.50 hard rule is a WORKING_DEFAULT_OPEN_OWNER_ITEM.
+    """
+    try:
+        return portfolio_correlation.evaluate_sparse_orthogonality(
+            dict(streams), min_overlap_days=min_overlap_days
+        )
+    except Exception as exc:  # pragma: no cover - numpy guard / degenerate pool
+        return {
+            "status": "UNAVAILABLE",
+            "reason": f"{type(exc).__name__}: {exc}",
+            "pairs": [],
+            "status_counts": {"CERTIFIED": 0, "ABSTAIN": 0, "FLAGGED": 0},
+        }
+
+
 def book_size_block(n: int) -> dict[str, Any]:
     if n > BOOK_MAX:
         status = "BREACH"
@@ -513,6 +540,9 @@ def build_report(
     corr = correlation_block(series_by_key, min_overlap_days)
     enb = compute_enb(corr["matrix"])
     sharpe = marginal_sharpe_block(series_by_key)
+    sparse = sparse_orthogonality_block(
+        {k: streams[k] for k in present_keys}, min_overlap_days
+    )
     family_of = resolve_families(present_keys)
     asset_of = resolve_asset_classes(present_keys)
     coverage = coverage_block(present_keys, family_of, asset_of)
@@ -563,6 +593,7 @@ def build_report(
         },
         "per_series": per_series,
         "correlation": corr_public,
+        "sparse_orthogonality": sparse,
         "enb": enb,
         "marginal_sharpe": sharpe,
         "coverage": coverage,
@@ -685,6 +716,69 @@ def render_markdown(report: Mapping[str, Any]) -> str:
         lines.append("- NOT_EVALUABLE pairs (overlap days):")
         for pair in corr["not_evaluable_pairs"]:
             lines.append(f"  - {pair['pair'][0]} x {pair['pair'][1]}: `{pair['overlap_days']}` days")
+    lines.append("")
+
+    # Sparse-D1 two-layer orthogonality screen
+    sparse = report.get("sparse_orthogonality") or {}
+    lines.append("## 2b - Sparse-D1 two-layer orthogonality screen (below the 60-day floor)")
+    lines.append("")
+    lines.append(
+        "Layer A (ZK-SBB): zeros-kept daily-return Pearson on the common-support "
+        "Mon-Fri grid with a stationary block-bootstrap 95% CI (Politis-Romano 1994; "
+        "block length Politis-White 2004 / PPW 2009) -- CERTIFY only if the CI lies "
+        "inside `|r| < 0.50` (Vault Q15 hard rule), else ABSTAIN. Layer B (COS): "
+        "trade-level open-position co-occupancy with the exact circular-shift null "
+        "(FFT) and BH-FDR, plus the notional-weighted signed concordance as a flag. "
+        "Standard `docs/research/SPARSE_D1_ORTHOGONALITY_STANDARD_2026-09-03.md` "
+        "(OWNER-DEC-BOOK-V2V4V6-EPOCH-20260904). Every threshold except the 0.50 "
+        "rule is a WORKING_DEFAULT_OPEN_OWNER_ITEM (open until OWNER-ratified)."
+    )
+    lines.append("")
+    if sparse.get("status") == "UNAVAILABLE":
+        lines.append(f"- Screen UNAVAILABLE: {sparse.get('reason')}.")
+    elif not sparse.get("pairs"):
+        lines.append("- No pairs to screen.")
+    else:
+        counts = sparse.get("status_counts", {})
+        lines.append(
+            f"- Combined verdicts: CERTIFIED `{counts.get('CERTIFIED', 0)}`, "
+            f"ABSTAIN `{counts.get('ABSTAIN', 0)}`, FLAGGED `{counts.get('FLAGGED', 0)}` "
+            f"across `{sparse.get('n_pairs', 0)}` pairs (ring `{sparse.get('ring_T_days')}` days)."
+        )
+        wd = sparse.get("working_defaults_open_owner_item", {})
+        if wd:
+            lines.append(
+                f"- WORKING defaults: alpha=`{wd.get('alpha')}`, "
+                f"lambda*=`{wd.get('lambda_star')}`, caution_band=`{wd.get('caution_band')}`, "
+                f"E_ab>=`{wd.get('cos_min_expected_overlap')}` & n_s>=`{wd.get('cos_min_occupancy_days')}`, "
+                f"B=`{wd.get('bootstrap_B')}` (seed `{wd.get('bootstrap_seed')}`)."
+            )
+        lines.append("")
+        lines.append(
+            "| Pair | status | Layer A verdict | r | 95% CI | overlap days | block len | Layer B | Lambda | p_upper (BH) |"
+        )
+        lines.append("|---|---|---|---:|---|---:|---:|---|---:|---:|")
+        for p in sparse["pairs"]:
+            la = p["layer_a"]
+            lb = p["layer_b"]
+            ci = (
+                f"[{_fmt(la['ci_lo'])}, {_fmt(la['ci_hi'])}]"
+                if la.get("ci_lo") is not None
+                else "n/a"
+            )
+            lines.append(
+                f"| {p['pair'][0]} x {p['pair'][1]} | {p['status']} | {la['verdict']} | "
+                f"{_fmt(la['r_hat'])} | {ci} | {p['overlap_days']} | {_fmt(la['block_len'])} | "
+                f"{lb['status']} | {_fmt(lb['lambda'])} | {_fmt(lb['p_upper'])} ({_fmt(lb.get('p_upper_bh'))}) |"
+            )
+        lines.append("")
+        lines.append(
+            "- CERTIFIED = Layer A CI inside +/-0.5 and Layer B not flagged (screening "
+            "prior). ABSTAIN = CI reaches +/-0.5 or sits in the caution band (data-starved; "
+            "needs more Q14-terminal overlap). FLAGGED = temporally concentrated / redundant "
+            "despite low daily-r -> escalate to family/tail caps. The `|r| < 0.5` equity-curve "
+            "rule stays decisive above 60 co-active exit-days; Layer B is advisory there."
+        )
     lines.append("")
 
     # ENB
@@ -865,6 +959,7 @@ def main(argv: list[str] | None = None) -> int:
 
     print(json.dumps({
         "qualified_pairs": report["pool"]["qualified_pairs"],
+        "sparse_orthogonality_status_counts": report["sparse_orthogonality"].get("status_counts"),
         "enb_status": report["enb"]["status"],
         "correlation_cap_status": report["cap_checks"]["correlation"]["status"],
         "family_cap_status": report["cap_checks"]["family"]["status"],

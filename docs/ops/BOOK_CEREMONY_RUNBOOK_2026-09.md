@@ -202,6 +202,7 @@ frame); V0/V6 are added for the ceremony.
   and the Vault Q15 hard caps (**family ≤ 3, symbol ≤ 2, 10–15 EAs**) as the binding concentration
   controls; revisit once a real ≥ 25 pool exists. **Cost of waiting:** none today (no book); the builder
   refuses on unratified thresholds, so this must be settled before Buch 2 is constructed.
+  **DECIDED (OWNER 2026-09-04, receipt `decisions/2026-09-04_owner_receipts_briefing_2_4.md`, `OWNER-DEC-BOOK-V2V4V6-EPOCH-20260904`):** Option (a) — `max_pairwise_correlation = 0.50` and `account_weight_budget = 10.0` become `OWNER_RATIFIED`, together with the OWNER-ratified SP-C3 caps and the Vault Q15 hard caps (family ≤ 3, symbol ≤ 2, 10–15 EAs) as the binding concentration controls; the FTMO builder status moves to `OWNER_RATIFIED` referencing this receipt.
 - **V3 — Venue targeting.** Options: (a) DXZ-only; (b) FTMO-only; (c) both. **Rec: (a) DXZ-first** —
   slow D1 density fits an uptime/fund book, not a 60-day sprint; FTMO after density *Veredelung*
   (DL-089 pattern filter). The order artifact's venue token binds this (`<dxz|ftmo|both>`, §1.2).
@@ -212,6 +213,7 @@ frame); V0/V6 are added for the ceremony.
   (`portfolio_correlation.py:build_artifact`), and existing streams fail it (dossier §3c). Vault Q15
   hard rule: **|r| < 0.5** between any two EAs' Q10 equity curves. **Cost of waiting:** correlation
   truth deferred until the first Q14-terminal cohort produces bound streams.
+  **DECIDED (OWNER 2026-09-04, receipt `decisions/2026-09-04_owner_receipts_briefing_2_4.md`, `OWNER-DEC-BOOK-V2V4V6-EPOCH-20260904`):** Option (c) — adopt the two-stage sparse-D1 orthogonality standard as the method now (ZK-SBB certify/abstain + COS flag); the numeric thresholds stay `WORKING_DEFAULT_OPEN_OWNER_ITEM` until calibrated on the first SHA-frozen Q14 cohort. Standard: `docs/research/SPARSE_D1_ORTHOGONALITY_STANDARD_2026-09-03.md`.
 - **V5 — News-calendar binding before FTMO.** Options: (a) require a bound current-calendar hash +
   terminal Q10_NEWS per member; (b) evaluate pre-news. **Rec: (a) for FTMO** (145-cell compliance
   matrix), pre-news acceptable only for DXZ screening. **Cost of waiting:** FTMO evaluation blocked
@@ -221,6 +223,7 @@ frame); V0/V6 are added for the ceremony.
   significantly better book number exists** (the deferral logic in
   `T_LIVE_DEPLOYMENT_RUNBOOK_TOTALRISK12_2026-07-26.md`). **Cost of waiting:** none; a raise scales
   uncapped sleeves and must be re-justified against decay/swap.
+  **DECIDED (OWNER 2026-09-04, receipt `decisions/2026-09-04_owner_receipts_briefing_2_4.md`, `OWNER-DEC-BOOK-V2V4V6-EPOCH-20260904`):** Option (a) — hold book risk at 9.75% (no code change).
 
 ---
 
