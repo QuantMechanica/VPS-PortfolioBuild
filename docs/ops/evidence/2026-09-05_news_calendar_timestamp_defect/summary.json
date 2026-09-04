@@ -1,0 +1,263 @@
+{
+ "files": {
+  "ff_clean": {
+   "path": "D:\\QM\\data\\news_calendar\\forex_factory_calendar_clean.csv",
+   "sha256": "9bcdb5b02df2a57581fea8be3fe0e931bfaba8ca246aaa88a735e1ac0559c699",
+   "rows": 48636
+  },
+  "primary": {
+   "path": "D:\\QM\\data\\news_calendar\\news_calendar_2015_2025.csv",
+   "sha256": "c158b5b4167fe23e4eb11a6ae4b922ffd90ff9f39f99abd7107acc912d555def",
+   "rows": 48627
+  },
+  "native_usd": {
+   "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_USD_HIGH_2018_2025_NATIVE.csv",
+   "rows": 4189
+  }
+ },
+ "native_join_usd": {
+  "matched": 2440,
+  "unmatched_by_event": {
+   "Advance GDP q/q": 2,
+   "Prelim GDP q/q": 2,
+   "Crude Oil Inventories": 7,
+   "Unemployment Claims": 7,
+   "Core Durable Goods Orders m/m": 2,
+   "CB Consumer Confidence": 2,
+   "Federal Funds Rate": 1,
+   "FOMC Press Conference": 1,
+   "Core PCE Price Index m/m": 2,
+   "ISM Manufacturing PMI": 2,
+   "JOLTS Job Openings": 2,
+   "ADP Non-Farm Employment Change": 2,
+   "ISM Services PMI": 2,
+   "Average Hourly Earnings m/m": 2,
+   "Non-Farm Employment Change": 2,
+   "Unemployment Rate": 2,
+   "Core CPI m/m": 1,
+   "CPI m/m": 1,
+   "CPI y/y": 1,
+   "PPI m/m": 1,
+   "Core Retail Sales m/m": 1,
+   "Retail Sales m/m": 1,
+   "Philly Fed Manufacturing Index": 1
+  }
+ },
+ "delta_buckets_all": {
+  "exact": 959,
+  "shift_-16_-17h": 1188,
+  "other": 118,
+  "within_1h": 175
+ },
+ "delta_buckets_et0830": {
+  "shift_-16_-17h": 1176,
+  "exact": 276,
+  "within_1h": 56,
+  "other": 2
+ },
+ "delta_buckets_other": {
+  "exact": 683,
+  "other": 116,
+  "shift_-16_-17h": 12,
+  "within_1h": 119
+ },
+ "per_event": {
+  "ADP Non-Farm Employment Change": {
+   "exact": 71,
+   "shift_-16_-17h": 1,
+   "within_1h": 14
+  },
+  "Advance GDP q/q": {
+   "shift_-16_-17h": 5,
+   "exact": 18,
+   "within_1h": 5
+  },
+  "Average Hourly Earnings m/m": {
+   "shift_-16_-17h": 70,
+   "exact": 14,
+   "within_1h": 4
+  },
+  "CB Consumer Confidence": {
+   "exact": 66,
+   "other": 8,
+   "shift_-16_-17h": 1,
+   "within_1h": 12
+  },
+  "CPI m/m": {
+   "shift_-16_-17h": 86,
+   "exact": 1
+  },
+  "CPI y/y": {
+   "shift_-16_-17h": 81,
+   "exact": 4,
+   "within_1h": 2
+  },
+  "Core CPI m/m": {
+   "exact": 46,
+   "shift_-16_-17h": 32,
+   "within_1h": 9
+  },
+  "Core Durable Goods Orders m/m": {
+   "shift_-16_-17h": 50,
+   "exact": 34,
+   "within_1h": 3
+  },
+  "Core PCE Price Index m/m": {
+   "exact": 21,
+   "shift_-16_-17h": 59,
+   "other": 2,
+   "within_1h": 5
+  },
+  "Core Retail Sales m/m": {
+   "shift_-16_-17h": 60,
+   "exact": 25,
+   "within_1h": 2
+  },
+  "Crude Oil Inventories": {
+   "exact": 297,
+   "other": 39,
+   "within_1h": 43
+  },
+  "FOMC Press Conference": {
+   "exact": 46,
+   "within_1h": 9
+  },
+  "Federal Funds Rate": {
+   "exact": 37,
+   "within_1h": 10,
+   "other": 12
+  },
+  "Final GDP q/q": {
+   "exact": 16,
+   "shift_-16_-17h": 9,
+   "within_1h": 4
+  },
+  "ISM Manufacturing PMI": {
+   "exact": 70,
+   "other": 4,
+   "within_1h": 13,
+   "shift_-16_-17h": 1
+  },
+  "ISM Services PMI": {
+   "other": 16,
+   "exact": 60,
+   "shift_-16_-17h": 1,
+   "within_1h": 11
+  },
+  "JOLTS Job Openings": {
+   "exact": 36,
+   "other": 37,
+   "shift_-16_-17h": 8,
+   "within_1h": 7
+  },
+  "Non-Farm Employment Change": {
+   "shift_-16_-17h": 88
+  },
+  "PPI m/m": {
+   "shift_-16_-17h": 73,
+   "exact": 14
+  },
+  "Philly Fed Manufacturing Index": {
+   "shift_-16_-17h": 72,
+   "within_1h": 4,
+   "exact": 11
+  },
+  "Prelim GDP q/q": {
+   "shift_-16_-17h": 15,
+   "exact": 10,
+   "within_1h": 2
+  },
+  "Retail Sales m/m": {
+   "shift_-16_-17h": 87
+  },
+  "Unemployment Claims": {
+   "shift_-16_-17h": 301,
+   "exact": 62,
+   "within_1h": 16
+  },
+  "Unemployment Rate": {
+   "shift_-16_-17h": 88
+  }
+ },
+ "per_year_et0830": {
+  "2018": {
+   "shift_-16_-17h": 169,
+   "exact": 37,
+   "within_1h": 1,
+   "other": 1
+  },
+  "2019": {
+   "exact": 41,
+   "shift_-16_-17h": 166
+  },
+  "2020": {
+   "exact": 43,
+   "shift_-16_-17h": 162,
+   "within_1h": 3,
+   "other": 1
+  },
+  "2021": {
+   "shift_-16_-17h": 155,
+   "exact": 50,
+   "within_1h": 3
+  },
+  "2022": {
+   "shift_-16_-17h": 152,
+   "exact": 55,
+   "within_1h": 1
+  },
+  "2023": {
+   "shift_-16_-17h": 165,
+   "exact": 20,
+   "within_1h": 23
+  },
+  "2024": {
+   "exact": 22,
+   "shift_-16_-17h": 160,
+   "within_1h": 24
+  },
+  "2025": {
+   "exact": 8,
+   "shift_-16_-17h": 47,
+   "within_1h": 1
+  }
+ },
+ "coverage_zero_months": {
+  "ff_clean": [
+   "2025-05",
+   "2025-06",
+   "2025-07",
+   "2025-08",
+   "2025-09",
+   "2025-10",
+   "2025-11",
+   "2025-12",
+   "2026-01",
+   "2026-02",
+   "2026-03",
+   "2026-04",
+   "2026-05",
+   "2026-06"
+  ],
+  "primary": [
+   "2025-05",
+   "2025-06",
+   "2025-07",
+   "2025-08",
+   "2025-09",
+   "2025-10",
+   "2025-11",
+   "2025-12",
+   "2026-01",
+   "2026-02",
+   "2026-03",
+   "2026-04",
+   "2026-05",
+   "2026-06"
+  ]
+ },
+ "primary_rows_with_identical_ff_instant": {
+  "n": 46331,
+  "of": 48627
+ }
+}
