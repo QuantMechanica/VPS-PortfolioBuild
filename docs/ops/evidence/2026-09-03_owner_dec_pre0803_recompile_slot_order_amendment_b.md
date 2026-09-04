@@ -558,3 +558,8 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
 
 - QM5_21505/XAGUSD terminal: Q12 `540eadc0` NO_FILTER_CHANGE 04:29Z -> Q13 NO_PARAMETER_CHANGE 04:39Z -> Q14 KEEP_INCUMBENT 04:49Z; `book_build_guard --status --venue both` qualified_pairs = 6.
 - Q08 sealed-stream reruns enqueued from `docs/ops/evidence/2026-09-03_q08_stream_reemission_packet.md` section 4 after re-running the section 5 pre-flight (all four PASS): `f62fe6b3` (QM5_1537/XAGUSD, rerun of 262514ac), `a2e1aba6` (QM5_10706/GBPUSD, rerun of 7855588a), `2bd0f95c` (QM5_11422/USDCAD, rerun of d3907c1a), `21dd6839` (QM5_13054/XTIUSD, rerun of d62d792e). Scratch: `q08_rerun_result.json`.
+
+## 05:41Z 2026-09-04 - Q08 seals reproduced, sixth-pair rerun
+
+- Reruns f62fe6b3 (QM5_1537) and a2e1aba6 (QM5_10706) finished PASS; re-emitted `portfolio_stream.content_sha256` equals the recorded seals byte-for-byte. `assemble_stream_bundle.py --out <scratch>/stream_bundle_0540`: bound 3 / refused 3.
+- QM5_21505/XAGUSD (terminal 04:49Z) had the same missing-bytes gap; enqueued `15c1ec7b` (Q08, from Q07 `b837549a`, rerun of `9c51f7eb`, expected ex5 395c4747...) as an extension of the same Auffangregel class after the identical pre-flight.
