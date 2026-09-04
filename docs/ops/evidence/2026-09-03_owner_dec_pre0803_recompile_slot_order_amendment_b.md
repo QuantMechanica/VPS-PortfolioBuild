@@ -583,3 +583,8 @@ the gate key) are unaffected. Blast radius: claim order only; verified by
 
 - Merge a769c2f5b8 (round 4, D8-D12); machine env `QM_CODEX_MODEL_TIERS` removed 06:56Z; fresh-process probe with `QM_CODEX_MODEL_LEDGER_PATH` on scratch: tiers enabled, observe mode, 3 dispatches recorded, argv unchanged, live ledger untouched.
 - Residual enforce-mode findings tracked as router task `453b8edf` (precondition for `window_enforcement_mode=enforce`, after the OWNER names the Codex plan tier).
+
+## 07:30Z 2026-09-04 - bundle 7/7
+
+- Q08 rerun `a43559cd` (QM5_20048/XTIUSD) done/PASS; re-emitted seal equals the recorded `a792e263...`; `assemble_stream_bundle.py --out <scratch>/stream_bundle_0730`: bound 7 / refused 0, loader True.
+- Pace decision: no new Opus workflows while the Claude weekly projection exceeds 150 % (07:23Z: 15 % used at 5.6 % elapsed); open router tasks cfce4d87 / 315041f7 / 453b8edf stay TODO.
