@@ -1,0 +1,32 @@
+{
+  "observed_at_utc": "2026-09-04T21:27:52.531416+00:00",
+  "db_uri": "file:D:/QM/strategy_farm/state/farm_state.sqlite?mode=ro",
+  "query_only": 1,
+  "status_counts": [
+    {
+      "status": "done",
+      "count": 286
+    },
+    {
+      "status": "failed",
+      "count": 1
+    },
+    {
+      "status": "pending",
+      "count": 1
+    }
+  ],
+  "open_rows": [
+    {
+      "id": "a0a0128f-a245-4fab-959f-c4941585dd62",
+      "ea_id": "QM5_10260",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "pending",
+      "verdict": null,
+      "created_at": "2026-09-02T10:12:57+00:00",
+      "updated_at": "2026-09-02T10:12:57+00:00",
+      "hold_fields": {}
+    }
+  ]
+}
