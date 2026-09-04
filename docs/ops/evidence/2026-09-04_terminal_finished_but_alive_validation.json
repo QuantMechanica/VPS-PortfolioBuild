@@ -1,0 +1,24 @@
+{
+  "argv": [
+    "C:\\Python311\\python.exe",
+    "-m",
+    "pytest",
+    "tools/strategy_farm/tests/test_finished_terminal.py",
+    "tools/strategy_farm/tests/test_monitor_budget.py",
+    "tools/strategy_farm/tests/test_terminal_worker_adoption.py",
+    "tools/strategy_farm/tests/test_summary_missing_classification.py",
+    "-q"
+  ],
+  "returncode": 0,
+  "stdout": "........................................................................ [ 86%]\n...........                                                              [100%]\n83 passed in 13.05s\n",
+  "stderr": "",
+  "code_base": "14e65476a1bb313f2f10cdb9169d009c65a66573",
+  "code_hashes": {
+    "tools/strategy_farm/finished_terminal.py": "28bf5adb6fa383c19c6571b9cf62a29151e9f461932f189fe7dcda2b2c0d649e",
+    "tools/strategy_farm/terminal_worker.py": "55b432fabb7f10d95ec15b5adc9a54a9e81b602a4d81c1755234ef2b19ff0baf",
+    "tools/strategy_farm/health.py": "bb0e231a00381d917961474634b414b33a2c617ba6593bbfd7383a2acea65a0c",
+    "tools/strategy_farm/tests/test_finished_terminal.py": "3a5365bde8e85ef9b389981d10f5a2bebfaf1b9ee2a138c0ccaabe94f92c507e"
+  },
+  "process_kills_in_tests": "fake handles/PIDs only",
+  "required_filetime_key": 134329896001234567
+}

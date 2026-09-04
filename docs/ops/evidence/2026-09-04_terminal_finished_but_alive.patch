@@ -1,0 +1,496 @@
+diff --git a/tools/strategy_farm/finished_terminal.py b/tools/strategy_farm/finished_terminal.py
+new file mode 100644
+index 0000000000..0f5df799fd
+--- /dev/null
++++ b/tools/strategy_farm/finished_terminal.py
+@@ -0,0 +1,179 @@
++"""Recover an owned terminal after completed testing, without stopping its runner.
++
++Read probes are bounded; time spent continuously observing a finished run must
++exceed five minutes. Native process termination uses an identity-checked handle.
++"""
++from __future__ import annotations
++
++import ctypes
++import hashlib
++import json
++import os
++import re
++import sys
++from datetime import datetime, timezone
++from pathlib import Path
++
++GRACE_SECONDS = 300.0
++POLL_SECONDS = 30.0
++TAIL_BYTES = 2 * 1024 * 1024
++_SPAWN = re.compile(r"run_smoke\.stage=terminal_spawn_confirmed terminal_pid=(\d+) start_time='([^']+)'")
++_START = re.compile(r"run_smoke\.stage=terminal_start exe='([^']+)' args='[^']*?/config:([^']+)'")
++_CONFIG = re.compile(r'(?:successfully initialized from start config "|launched with )([^\r\n"]+tester\.ini)', re.I)
++_LOG_TIME = re.compile(r"^\S+\t\d+\t(\d{2}:\d{2}:\d{2}\.\d+)\t", re.M)
++_TEST_START = re.compile(r"testing of Experts|agent process started|MetaTester 5 started", re.I)
++
++
++def _normal(path) -> str:
++    return os.path.normcase(str(Path(path).resolve()))
++
++
++def _tail(path: Path) -> str:
++    with path.open("rb") as stream:
++        size = path.stat().st_size
++        start = max(0, size - TAIL_BYTES)
++        start += start % 2  # retain UTF-16 alignment
++        stream.seek(start)
++        raw = stream.read(TAIL_BYTES)
++    sample = raw[:512]
++    return raw.decode("utf-16-le" if sample.count(0) > len(sample) // 4 else "utf-8-sig", errors="replace")
++
++
++def _daily_logs(directory: Path) -> list[tuple[Path, str]]:
++    paths = sorted(p for p in directory.glob("*.log") if re.fullmatch(r"\d{8}\.log", p.name))
++    return [(p, _tail(p)) for p in paths[-3:]]
++
++
++def windows_creation_key(start_time: str) -> str:
++    """Preserve all seven .NET fractional digits; no floating timestamp match."""
++    stamp = datetime.fromisoformat(start_time)
++    if stamp.tzinfo is None: raise ValueError("spawn time must include offset")
++    fraction = re.search(r"T\d{2}:\d{2}:\d{2}\.(\d{1,7})(?:Z|[+-]\d{2}:\d{2})$", start_time)
++    fractional_ticks = int(fraction.group(1).ljust(7, "0")) if fraction else 0
++    delta = stamp.astimezone(timezone.utc).replace(microsecond=0) - datetime(1970, 1, 1, tzinfo=timezone.utc)
++    ticks = 116444736000000000 + (delta.days * 86400 + delta.seconds) * 10000000 + fractional_ticks
++    return f"windows-filetime:{ticks}"
++
++
++def inspect_candidate(item_id: str, terminal: str, payload: dict, mt5_root: Path,
++                      identity_provider, *, now_utc: datetime | None = None) -> dict | None:
++    """Require the last spawn, exact startup INI, current finish and no report."""
++    if not re.fullmatch(r"T(?:[1-9]|10)", terminal): return None
++    if not payload.get("log_path") or not payload.get("report_root"): return None
++    try:
++        runner_log = _tail(Path(payload["log_path"]))
++        starts, spawns = list(_START.finditer(runner_log)), list(_SPAWN.finditer(runner_log))
++        if not starts or not spawns: return None
++        start, spawn = starts[-1], spawns[-1]
++        if spawn.start() < start.start(): return None
++        after_spawn = runner_log[spawn.end():]
++        if any(token in after_spawn for token in ("run_smoke.stage=terminal_exit", "run_smoke.stage=valid_report_latched",
++                                                  "run_smoke.stage=terminal_start", "run_smoke.stage=start_terminal",
++                                                  "run_smoke.stage=ini_written")):
++            return None
++        terminal_dir = mt5_root / terminal
++        expected_image = terminal_dir / "terminal64.exe"
++        if _normal(start.group(1)) != _normal(expected_image): return None
++        ini_path = Path(start.group(2).strip().strip('"')).resolve()
++        report_root = Path(payload["report_root"]).resolve()
++        if not ini_path.is_relative_to(report_root) or item_id.lower() not in str(ini_path).lower(): return None
++        raw_dir = ini_path.parent
++        if not re.fullmatch(r"run_\d+", raw_dir.name) or raw_dir.parent.name != "raw": return None
++        if any(raw_dir.glob("*.htm")) or any(raw_dir.glob("*.html")): return None
++        settings = {}
++        for line in _tail(ini_path).splitlines():
++            if "=" in line:
++                key, value = line.split("=", 1); settings[key.strip().lower()] = value.strip()
++        if settings.get("optimization") != "0" or settings.get("shutdownterminal") != "1": return None
++        report_name = settings.get("report", "")
++        if not report_name or Path(report_name).name != report_name or Path(report_name).is_absolute(): return None
++        source_report = terminal_dir / report_name
++        candidates = [raw_dir / "report.htm", raw_dir / "report.html", source_report,
++                      source_report.with_suffix(".htm"), source_report.with_suffix(".html")]
++        if any(path.exists() for path in candidates): return None
++        pid, started_at = int(spawn.group(1)), spawn.group(2)
++        expected_key = windows_creation_key(started_at)
++        identity = identity_provider(pid)
++        if not identity or not identity.get("is_running") or identity.get("creation_key") != expected_key:
++            return None
++        if _normal(identity.get("image_path", "")) != _normal(expected_image): return None
++        terminal_logs = _daily_logs(terminal_dir / "logs")
++        config_matches = [(path, match) for path, text in terminal_logs for match in _CONFIG.finditer(text)]
++        if not config_matches or _normal(config_matches[-1][1].group(1)) != _normal(ini_path): return None
++        tester_logs = _daily_logs(terminal_dir / "Tester/logs")
++        last_finish = None
++        for path, text in tester_logs:
++            for line in text.splitlines():
++                if _TEST_START.search(line): last_finish = None
++                if "automatic testing finished" in line.lower():
++                    stamp = _LOG_TIME.match(line)
++                    if not stamp: return None
++                    civil = datetime.strptime(path.stem + " " + stamp.group(1), "%Y%m%d %H:%M:%S.%f")
++                    last_finish = (path, line, civil)
++        if last_finish is None: return None
++        path, finish_line, finish_civil = last_finish
++        start_dt = datetime.fromisoformat(started_at)
++        current = now_utc or datetime.now(timezone.utc)
++        if not start_dt.replace(tzinfo=None) <= finish_civil <= current.astimezone(start_dt.tzinfo).replace(tzinfo=None):
++            return None
++        fingerprint = hashlib.sha256(json.dumps([item_id, pid, expected_key, str(ini_path), str(path), finish_line]).encode()).hexdigest()
++        return {"fingerprint": fingerprint, "item_id": item_id, "terminal": terminal,
++                "terminal_pid": pid, "terminal_creation_key": expected_key, "terminal_image": str(expected_image),
++                "terminal_started_at": started_at, "tester_finished_at_local": finish_civil.isoformat(),
++                "tester_log_path": str(path), "tester_finish_line": finish_line,
++                "ini_path": str(ini_path), "raw_run_dir": str(raw_dir), "source_report": str(source_report),
++                "report_absent_paths": [str(p) for p in candidates]}
++    except (OSError, ValueError, TypeError, OverflowError):
++        return None
++
++
++def terminate_verified_terminal(candidate: dict) -> bool:
++    """Terminate exactly the terminal handle whose immutable identity matches.
++
++    Called only by its owning terminal worker after completion/grace checks.
++    The controller's disabled generic PID-kill capability remains unchanged.
++    """
++    if sys.platform != "win32": return False
++    import process_identity as pi
++    from ctypes import wintypes
++    kernel = pi._windows_kernel32()
++    pi._configure_windows_process_api(kernel)
++    kernel.TerminateProcess.argtypes = [wintypes.HANDLE, wintypes.UINT]
++    kernel.TerminateProcess.restype = wintypes.BOOL
++    handle = kernel.OpenProcess(0x1000 | 0x0001, False, int(candidate["terminal_pid"]))
++    if not handle: return False
++    try:
++        identity = pi._windows_identity_from_handle(kernel, handle, candidate["terminal_pid"])
++        if (not identity.get("is_running") or identity.get("creation_key") != candidate["terminal_creation_key"]
++                or _normal(identity.get("image_path", "")) != _normal(candidate["terminal_image"])):
++            return False
++        return bool(kernel.TerminateProcess(handle, 1))
++    except OSError:
++        return False
++    finally:
++        kernel.CloseHandle(handle)
++
++
++def poll(item_id: str, terminal: str, payload: dict, mt5_root: Path, state: dict,
++         now_monotonic: float, identity_provider, terminate=terminate_verified_terminal,
++         *, now_utc: datetime | None = None) -> dict | None:
++    if now_monotonic - state.get("last_poll", -1e30) < POLL_SECONDS: return None
++    state["last_poll"] = now_monotonic
++    candidate = inspect_candidate(item_id, terminal, payload, mt5_root, identity_provider, now_utc=now_utc)
++    if candidate is None:
++        state.pop("fingerprint", None); state.pop("first_seen", None)
++        return None
++    key = candidate["fingerprint"]
++    if state.get("fingerprint") != key:
++        state.update(fingerprint=key, first_seen=now_monotonic, first_seen_at_utc=(now_utc or datetime.now(timezone.utc)).isoformat())
++        return None
++    elapsed = now_monotonic - state["first_seen"]
++    if elapsed <= GRACE_SECONDS or state.get("acted") == key: return None
++    # Report/identity/config checks repeat immediately before opening the handle.
++    fresh = inspect_candidate(item_id, terminal, payload, mt5_root, identity_provider, now_utc=now_utc)
++    if not fresh or fresh["fingerprint"] != key: return None
++    state["acted"] = key
++    stopped = terminate(fresh)
++    return {"event": "terminal_finished_but_alive", **fresh, "terminal_stopped": bool(stopped),
++            "observed_finished_seconds": elapsed, "first_seen_at_utc": state["first_seen_at_utc"],
++            "acted_at_utc": (now_utc or datetime.now(timezone.utc)).isoformat()}
+diff --git a/tools/strategy_farm/health.py b/tools/strategy_farm/health.py
+index a880e69092..c15f0e4fa8 100644
+--- a/tools/strategy_farm/health.py
++++ b/tools/strategy_farm/health.py
+@@ -3932,6 +3932,23 @@ def chk_pending_tail_age(con) -> dict:
+     return _check("pending_tail_age", "WARN", old, PENDING_TAIL_FAIL_TOTAL, detail, hint)
+ 
+ 
++def chk_terminal_finished_but_alive(con) -> dict:
++    cutoff = (_utc_now() - dt.timedelta(hours=24)).isoformat()
++    rows = con.execute(
++        "SELECT date(ts) AS day,COUNT(*) AS n,"
++        "SUM(CASE WHEN json_extract(detail_json,'$.terminal_stopped')=1 THEN 1 ELSE 0 END) AS stopped "
++        "FROM events WHERE event='terminal_finished_but_alive' "
++        "AND julianday(ts)>=julianday(?) GROUP BY date(ts)", (cutoff,),
++    ).fetchall()
++    days = {r["day"]: int(r["n"]) for r in rows}
++    count, stopped = sum(days.values()), sum(int(r["stopped"]) for r in rows)
++    result = _check("terminal_finished_but_alive", "WARN" if count else "OK", count, 1,
++                    f"finished-but-alive detections in 24h={count}; terminated={stopped}; UTC days={days}",
++                    "Inspect bound run/config and report evidence for recurring post-test terminal hangs.")
++    result.update({"by_utc_day": days, "terminated": stopped})
++    return result
++
++
+ def chk_monitor_budget_exhausted(con) -> dict:
+     """Count monitor kills per UTC day; budget-review retries remain visible."""
+     cutoff = (_utc_now() - dt.timedelta(hours=24)).isoformat()
+@@ -4525,6 +4542,7 @@ ALL_CHECKS = [
+     ("pending_tail_age", chk_pending_tail_age, True),
+     ("q02_summary_missing_unclassified", chk_q02_summary_missing_unclassified, True),
+     ("monitor_budget_exhausted", chk_monitor_budget_exhausted, True),
++    ("terminal_finished_but_alive", chk_terminal_finished_but_alive, True),
+     ("q09_sealed_plan_hold_age", chk_q09_sealed_plan_hold_age, True),
+     ("q10_long_cell_breaker_holds", chk_q10_long_cell_breaker_holds, True),
+     ("q09_autoseal_hold_census", chk_q09_autoseal_hold_census, True),
+diff --git a/tools/strategy_farm/terminal_worker.py b/tools/strategy_farm/terminal_worker.py
+index 546d3af21b..4a427d3a7f 100644
+--- a/tools/strategy_farm/terminal_worker.py
++++ b/tools/strategy_farm/terminal_worker.py
+@@ -50,6 +50,7 @@ import dl089_scheduling
+ import longrun_scheduling_policy
+ import next_cell_prestage
+ import monitor_budget
++import finished_terminal
+ import opt_census_pruning
+ import opt_census_select
+ from framework.scripts._phase_utils import cold_cache_summary_signature
+@@ -8610,6 +8611,26 @@ def _record_monitor_budget_kill(root, item, terminal, spawn, payload, runtime_se
+     return marker
+ 
+ 
++def _recover_finished_terminal(root, item, terminal, spawn, payload, state, now_monotonic):
++    if root.resolve() != farmctl.DEFAULT_ROOT.resolve():
++        return None
++    result = finished_terminal.poll(
++        str(item["id"]), terminal, {**spawn, **payload}, farmctl.MT5_ROOT,
++        state, now_monotonic, farmctl.get_process_identity,
++    )
++    if result is None:
++        return None
++    result["runner_pid"] = spawn["pid"]
++    print(json.dumps(result, sort_keys=True), flush=True)
++    try:
++        with farmctl.connect(root) as conn:
++            farmctl.event(conn, "work_item", item["id"], "terminal_finished_but_alive", result)
++            conn.commit()
++    except sqlite3.Error as exc:
++        print(json.dumps({"event": "terminal_finished_but_alive_event_write_failed", "item_id": item["id"], "error": str(exc)}), flush=True)
++    return result
++
++
+ def _monitor_spawned_work_item(
+     root: Path,
+     item: dict[str, Any],
+@@ -8635,6 +8656,8 @@ def _monitor_spawned_work_item(
+     adopted_start = _parse_utc_iso(payload.get("started_at_iso") or payload.get("claimed_at_iso")) if adopted else None
+     elapsed_before_adoption = max(0.0, (datetime.now(timezone.utc) - adopted_start).total_seconds()) if adopted_start else 0.0
+     monitor_kill = None
++    finished_terminal_state = {}
++    finished_terminal_recoveries = []
+     log_bomb_path: str | None = None
+     _lb_iter = 0
+     _lb_sizes: dict = {}
+@@ -8689,6 +8712,11 @@ def _monitor_spawned_work_item(
+                 "terminal_stopped": terminal_stopped,
+                 **ownership,
+             }
++        if child_alive:
++            recovery = _recover_finished_terminal(root, item, terminal, spawn, payload,
++                                                   finished_terminal_state, time.monotonic())
++            if recovery is not None:
++                finished_terminal_recoveries.append(recovery)
+         stalled_grace_seconds = _smoke_terminal_exit_stall_grace_seconds(item, payload)
+         if stalled_grace_seconds is not None:
+             post_exit_watchdog = {
+@@ -8815,6 +8843,7 @@ def _monitor_spawned_work_item(
+         not child_alive
+         and not terminal_alive_after_child_exit
+         and ran_seconds >= LAUNCH_FAULT_MIN_SECONDS
++        and not any(r.get("terminal_stopped") for r in finished_terminal_recoveries)
+         and not _work_item_has_summary_data(root, item["id"])
+     ):
+         return _defer_runner_death_or_hold(
+@@ -8910,6 +8939,8 @@ def _monitor_spawned_work_item(
+             ),
+         )
+     runtime_updates = dict(post_exit_watchdog or {})
++    if finished_terminal_recoveries:
++        runtime_updates["terminal_finished_recoveries"] = finished_terminal_recoveries
+     if monitor_kill:
+         runtime_updates.update({"monitor_kill": monitor_kill, "worker_exit_record": monitor_kill})
+     if not runtime_updates:
+diff --git a/tools/strategy_farm/tests/test_finished_terminal.py b/tools/strategy_farm/tests/test_finished_terminal.py
+new file mode 100644
+index 0000000000..4da67af681
+--- /dev/null
++++ b/tools/strategy_farm/tests/test_finished_terminal.py
+@@ -0,0 +1,192 @@
++import json
++import sqlite3
++import sys
++from datetime import datetime
++from pathlib import Path
++from types import SimpleNamespace
++from unittest.mock import Mock, patch
++
++import pytest
++
++sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
++import finished_terminal as ft
++import health
++import process_identity as pi
++import terminal_worker as worker
++
++START = "2026-09-04T12:00:00.1234567+02:00"
++NOW = datetime.fromisoformat("2026-09-04T12:10:00+02:00")
++
++
++@pytest.fixture
++def fixture(tmp_path):
++    item = "wi-finished"
++    mt5 = tmp_path / "mt5"
++    terminal_dir = mt5 / "T2"
++    (terminal_dir / "Tester/logs").mkdir(parents=True)
++    (terminal_dir / "logs").mkdir()
++    reports = tmp_path / "reports" / item
++    raw = reports / "EA/20260904_100000/raw/run_01"; raw.mkdir(parents=True)
++    ini = raw / "tester.ini"
++    ini.write_text("[Tester]\nOptimization=0\nShutdownTerminal=1\nReport=bound_report.htm\n")
++    image = terminal_dir / "terminal64.exe"
++    runner = tmp_path / "work_item.log"
++    runner.write_text(f"run_smoke.stage=terminal_start exe='{image}' args='/portable /config:{ini}' timeout_seconds=7200\n"
++                      f"run_smoke.stage=terminal_spawn_confirmed terminal_pid=4242 start_time='{START}'\n")
++    native = terminal_dir / "logs/20260904.log"
++    native.write_text(f'AA\t0\t12:00:01.000\tStartup\tsuccessfully initialized from start config "{ini}"\n', encoding="utf-16")
++    tester = terminal_dir / "Tester/logs/20260904.log"
++    tester.write_text("AA\t0\t12:00:10.000\tTester\tEURUSD: testing of Experts\\EA.ex5\n"
++                      "BB\t0\t12:02:00.000\tTester\tautomatic testing finished\n", encoding="utf-16")
++    identity = {"is_running": True, "creation_key": ft.windows_creation_key(START), "image_path": str(image)}
++    return SimpleNamespace(item=item, mt5=mt5, terminal_dir=terminal_dir, raw=raw, ini=ini, runner=runner,
++                           native=native, tester=tester, identity=identity,
++                           payload={"log_path": str(runner), "report_root": str(reports)})
++
++
++def inspect(f, terminal="T2", identity=None):
++    return ft.inspect_candidate(f.item, terminal, f.payload, f.mt5,
++                                lambda _: f.identity if identity is None else identity, now_utc=NOW)
++
++
++def test_exact_seven_digit_creation_key():
++    # Independently checked with DateTimeOffset.UtcDateTime.ToFileTimeUtc().
++    assert ft.windows_creation_key(START) == "windows-filetime:134329896001234567"
++    assert ft.windows_creation_key(START.replace("1234567", "1234568")) == "windows-filetime:134329896001234568"
++    assert ft.windows_creation_key("2026-09-04T10:00:00.1234567+00:00") == ft.windows_creation_key(START)
++
++
++@pytest.mark.parametrize("elapsed,expected", [(299, False), (300, False), (301, True)])
++def test_strict_five_minute_observation_and_single_exact_pid(fixture, elapsed, expected):
++    f, state, stop = fixture, {}, Mock(return_value=True)
++    args = (f.item, "T2", f.payload, f.mt5, state)
++    assert ft.poll(*args, 0, lambda _: f.identity, stop, now_utc=NOW) is None
++    result = ft.poll(*args, elapsed, lambda _: f.identity, stop, now_utc=NOW)
++    assert (result is not None) is expected
++    if expected:
++        assert result["terminal_pid"] == 4242 and result["terminal_stopped"] is True
++        assert result["observed_finished_seconds"] == 301
++        assert ft.poll(*args, 400, lambda _: f.identity, stop, now_utc=NOW) is None
++    assert stop.call_count == int(expected)
++
++
++@pytest.mark.parametrize("where", ["raw", "source", "source_html", "other_raw"])
++def test_even_empty_report_prevents_recovery(fixture, where):
++    f = fixture
++    path = {"raw": f.raw / "report.htm", "source": f.terminal_dir / "bound_report.htm",
++            "source_html": f.terminal_dir / "bound_report.html", "other_raw": f.raw / "other.html"}[where]
++    path.touch()
++    assert inspect(f) is None
++
++
++def test_report_appears_during_grace(fixture):
++    f, state, stop = fixture, {}, Mock()
++    ft.poll(f.item, "T2", f.payload, f.mt5, state, 0, lambda _: f.identity, stop, now_utc=NOW)
++    (f.raw / "report.htm").write_text("arrived")
++    assert ft.poll(f.item, "T2", f.payload, f.mt5, state, 301, lambda _: f.identity, stop, now_utc=NOW) is None
++    stop.assert_not_called()
++
++
++@pytest.mark.parametrize("change", ["reused_pid", "different_image", "exited", "no_identity"])
++def test_identity_refusals(fixture, change):
++    identity = dict(fixture.identity)
++    if change == "reused_pid": identity["creation_key"] = "windows-filetime:999"
++    if change == "different_image": identity["image_path"] = "D:/QM/mt5/T_Live/terminal64.exe"
++    if change == "exited": identity["is_running"] = False
++    if change == "no_identity": identity = {}
++    assert inspect(fixture, identity=identity) is None
++
++
++@pytest.mark.parametrize("terminal", ["T_Live", "T11", "T0", "T2/../T_Live"])
++def test_only_factory_t1_through_t10(fixture, terminal):
++    assert inspect(fixture, terminal=terminal) is None
++
++
++@pytest.mark.parametrize("suffix", ["run_smoke.stage=terminal_exit", "run_smoke.stage=valid_report_latched",
++                                  "run_smoke.stage=terminal_start exe='new' args='/config:new'",
++                                  "run_smoke.stage=start_terminal terminal=T2 run=run_02"])
++def test_runner_progress_invalidates_old_spawn(fixture, suffix):
++    with fixture.runner.open("a") as stream: stream.write(suffix + "\n")
++    assert inspect(fixture) is None
++
++
++def test_new_test_after_finish_does_not_kill_active_backtest(fixture):
++    with fixture.tester.open("a", encoding="utf-16-le") as stream:
++        stream.write("CC\t0\t12:03:00.000\tTester\tEURUSD: testing of Experts\\EA.ex5\n")
++    assert inspect(fixture) is None
++
++
++def test_finish_before_current_process_is_stale(fixture):
++    fixture.tester.write_text("AA\t0\t11:59:59.000\tTester\tautomatic testing finished\n", encoding="utf-16")
++    assert inspect(fixture) is None
++
++
++def test_different_terminal_config_is_not_current_run(fixture):
++    with fixture.native.open("a", encoding="utf-16-le") as stream:
++        stream.write('AA\t0\t12:03:00.000\tStartup\tsuccessfully initialized from start config "D:/other/tester.ini"\n')
++    assert inspect(fixture) is None
++
++
++@pytest.mark.parametrize("match", [True, False])
++def test_terminate_checks_same_open_handle_and_never_process_tree(fixture, match):
++    candidate = inspect(fixture)
++    kernel = SimpleNamespace(OpenProcess=Mock(return_value=77), TerminateProcess=Mock(return_value=True), CloseHandle=Mock())
++    observed = dict(fixture.identity)
++    if not match: observed["creation_key"] = "reused"
++    with patch.object(pi, "_windows_kernel32", return_value=kernel), patch.object(pi, "_configure_windows_process_api"), \
++         patch.object(pi, "_windows_identity_from_handle", return_value=observed) as get_identity:
++        assert ft.terminate_verified_terminal(candidate) is match
++    get_identity.assert_called_once_with(kernel, 77, 4242)
++    assert kernel.TerminateProcess.call_count == int(match)
++    if match: kernel.TerminateProcess.assert_called_once_with(77, 1)
++    kernel.CloseHandle.assert_called_once_with(77)
++
++
++def test_worker_records_event_and_health_count_without_killing_runner(fixture, tmp_path):
++    f = fixture
++    conn = sqlite3.connect(":memory:"); conn.row_factory = sqlite3.Row
++    conn.execute("CREATE TABLE events(ts,entity_type,entity_id,event,detail_json)")
++    evidence = {"event": "terminal_finished_but_alive", "terminal_stopped": True, "terminal_pid": 4242,
++                "item_id": f.item, "terminal": "T2", "tester_finished_at_local": "2026-09-04T12:02:00"}
++    with patch.object(worker.farmctl, "DEFAULT_ROOT", tmp_path), patch.object(worker.farmctl, "connect", return_value=conn), \
++         patch.object(ft, "poll", return_value=evidence), patch.object(worker.farmctl, "_stop_pid_tree") as stop_runner:
++        result = worker._recover_finished_terminal(tmp_path, {"id": f.item}, "T2", {"pid": 123}, f.payload, {}, 301)
++    assert result["runner_pid"] == 123
++    stop_runner.assert_not_called()
++    check = health.chk_terminal_finished_but_alive(conn)
++    assert check["value"] == 1 and check["terminated"] == 1
++    assert conn.execute("SELECT event FROM events").fetchone()[0] == "terminal_finished_but_alive"
++    conn.close()
++
++
++def test_identity_changes_on_final_recheck_refuses_termination(fixture):
++    f, state, stop = fixture, {}, Mock()
++    identities = iter([f.identity, f.identity, {**f.identity, "creation_key": "reused"}])
++    provider = lambda _: next(identities)
++    assert ft.poll(f.item, "T2", f.payload, f.mt5, state, 0, provider, stop, now_utc=NOW) is None
++    assert ft.poll(f.item, "T2", f.payload, f.mt5, state, 301, provider, stop, now_utc=NOW) is None
++    stop.assert_not_called()
++
++
++def test_recovered_terminal_leaves_runner_and_uses_normal_finish(tmp_path):
++    recovery = {"terminal_stopped": True, "terminal_pid": 4242}
++    moments = iter([0, 301, 301, 301, 302, 302])
++    with (patch.object(worker.time, "monotonic", side_effect=lambda: next(moments)),
++          patch.object(worker.time, "sleep"),
++          patch.object(worker, "_monitor_deadline_monotonic", return_value=1000),
++          patch.object(worker, "_monitor_timeout_seconds", return_value=1000),
++          patch.object(worker, "_bound_runner_identity", side_effect=[{"alive": True}, {"alive": False}, {"alive": False}]),
++          patch.object(worker, "_terminal_slot_running", return_value=False),
++          patch.object(worker, "_work_item_ownership", return_value={"owned": True}),
++          patch.object(worker, "_recover_finished_terminal", return_value=recovery),
++          patch.object(worker, "_smoke_terminal_exit_stall_grace_seconds", return_value=None),
++          patch.object(worker, "_work_item_has_summary_data", return_value=False),
++          patch.object(worker, "_sample_tester_memory"),
++          patch.object(worker, "_verify_and_record_staged_ex5"),
++          patch.object(worker, "_defer_runner_death_or_hold") as defer,
++          patch.object(worker.farmctl, "_stop_pid_tree") as kill_runner,
++          patch.object(worker, "_finish_work_item", return_value={"finished": True}) as finish):
++        result = worker._monitor_spawned_work_item(tmp_path, {"id": "x", "phase": "Q04"}, "T2", {"pid": 123}, {}, 1000)
++    defer.assert_not_called(); kill_runner.assert_not_called()
++    assert finish.call_args.kwargs["runtime_payload_updates"]["terminal_finished_recoveries"] == [recovery]
++    assert result["finished"] is True

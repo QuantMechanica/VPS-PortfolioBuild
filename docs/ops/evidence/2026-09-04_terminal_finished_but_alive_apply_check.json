@@ -1,0 +1,54 @@
+{
+  "canonical_head": "afa52e4a2bc3ee1b5873ab5e72aceaed7e5ac723",
+  "isolated_temporary_index": true,
+  "working_tree_modified": false,
+  "prerequisite_patch": "2026-09-04_monitor_budget.patch",
+  "runs": [
+    {
+      "argv": [
+        "git",
+        "read-tree",
+        "HEAD"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "apply",
+        "--cached",
+        "--whitespace=nowarn",
+        "C:/QM/repo/docs/ops/evidence/2026-09-04_monitor_budget.patch"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "apply",
+        "--cached",
+        "--whitespace=nowarn",
+        "C:/QM/repo/docs/ops/evidence/2026-09-04_terminal_finished_but_alive.patch"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--cached",
+        "--check"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "passed": true
+}

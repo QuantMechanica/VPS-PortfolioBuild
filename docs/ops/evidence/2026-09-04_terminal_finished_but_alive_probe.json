@@ -1,0 +1,78 @@
+{
+  "checked_at_utc": "2026-09-04T20:55:46.941530+00:00",
+  "read_only": true,
+  "process_termination_called": false,
+  "active_rows": [
+    {
+      "item_id": "f9a6e516-9fe2-47b3-ac5f-d9724fcc667a",
+      "terminal": "T6",
+      "candidate": null
+    },
+    {
+      "item_id": "dd485706-0d7b-4cd4-b954-c2a9a18136ce",
+      "terminal": "T10",
+      "candidate": null
+    },
+    {
+      "item_id": "847937f7-7142-4c03-9423-73004667fd0c",
+      "terminal": "T9",
+      "candidate": null
+    },
+    {
+      "item_id": "badcc381-a4ac-5a02-a492-3e28e14047a0",
+      "terminal": "T4",
+      "candidate": null
+    },
+    {
+      "item_id": "b5553eb4-d6f5-55b6-a7d2-4b09aeba6409",
+      "terminal": "T3",
+      "candidate": null
+    },
+    {
+      "item_id": "f654273d-0736-4e6e-8946-87cd5251ee36",
+      "terminal": "T8",
+      "candidate": null
+    },
+    {
+      "item_id": "e7b7067b-f247-41d4-b3ab-d911f323b649",
+      "terminal": "T2",
+      "candidate": null
+    }
+  ],
+  "health": {
+    "name": "terminal_finished_but_alive",
+    "status": "OK",
+    "value": 0,
+    "threshold": 1,
+    "detail": "finished-but-alive detections in 24h=0; terminated=0; UTC days={}",
+    "action_hint": "Inspect bound run/config and report evidence for recurring post-test terminal hangs.",
+    "by_utc_day": {},
+    "terminated": 0
+  },
+  "historical_finish_lines": [
+    {
+      "line": 249808,
+      "text": "OL\t0\t14:52:44.496\tTester\tautomatic testing finished"
+    }
+  ],
+  "historical_tester_log_path": "D:\\QM\\mt5\\T2\\Tester\\logs\\20260904.log",
+  "historical_terminal_log_path": "D:\\QM\\mt5\\T2\\logs\\20260904.log",
+  "historical_config_lines": [
+    {
+      "line": 1679,
+      "text": "FR\t0\t14:48:21.073\tStartup\tsuccessfully initialized from start config \"D:\\QM\\reports\\work_items\\b7b1fb26-6947-54ed-82b8-3c276212d7c2\\QM5_41198\\20260904_124816\\raw\\run_01\\tester.ini\""
+    },
+    {
+      "line": 1683,
+      "text": "ON\t0\t14:48:21.229\tTerminal\tlaunched with D:\\QM\\reports\\work_items\\b7b1fb26-6947-54ed-82b8-3c276212d7c2\\QM5_41198\\20260904_124816\\raw\\run_01\\tester.ini"
+    },
+    {
+      "line": 1693,
+      "text": "QH\t0\t16:45:22.280\tStartup\tsuccessfully initialized from start config \"D:\\QM\\reports\\work_items\\b7b1fb26-6947-54ed-82b8-3c276212d7c2\\QM5_41198\\20260904_124816\\raw\\run_02\\tester.ini\""
+    },
+    {
+      "line": 1697,
+      "text": "JD\t0\t16:45:23.459\tTerminal\tlaunched with D:\\QM\\reports\\work_items\\b7b1fb26-6947-54ed-82b8-3c276212d7c2\\QM5_41198\\20260904_124816\\raw\\run_02\\tester.ini"
+    }
+  ]
+}
