@@ -1,0 +1,65 @@
+--- a/tools/strategy_farm/assemble_stream_bundle.py
++++ b/tools/strategy_farm/assemble_stream_bundle.py
+@@ -158,7 +158,7 @@
+     rows = con.execute(
+         "SELECT id, verdict, ex5_sha256, payload_json, evidence_path, updated_at "
+         "FROM work_items WHERE ea_id=? AND symbol=? AND phase='Q14' AND status='done' "
+-        "ORDER BY updated_at DESC",
++        "ORDER BY julianday(updated_at) DESC, updated_at DESC, id DESC",
+         (ea_label, symbol),
+     ).fetchall()
+     for row in rows:
+@@ -199,7 +199,7 @@
+         "SELECT id, verdict, evidence_path, updated_at FROM work_items "
+         "WHERE ea_id=? AND symbol=? AND phase='Q08' AND status='done' "
+         f"AND verdict IN ({placeholders}) "
+-        "ORDER BY updated_at DESC",
++        "ORDER BY julianday(updated_at) DESC, updated_at DESC, id DESC",
+         (ea_label, symbol, *verdicts),
+     ).fetchall()
+     for row in rows:
+@@ -303,7 +303,7 @@
+             "outcome": "refused",
+             "reason": "no_q08_stream_bound_to_identity",
+             "detail": (
+-                "no Q08 done/PASS aggregate.json portfolio_stream whose source_ex5_sha256 "
++                "no Q08 done/PASS-class (PASS, FAIL_SOFT) aggregate.json portfolio_stream whose source_ex5_sha256 "
+                 f"== current identity {identity['identity_ex5_sha256']}"
+             ),
+         }
+--- a/tools/strategy_farm/tests/test_assemble_stream_bundle.py
++++ b/tools/strategy_farm/tests/test_assemble_stream_bundle.py
+@@ -340,7 +340,33 @@
+     assert soft["outcome"] == "bound"
+     assert soft["q08_work_item_id"] == "q08_soft"
+     assert soft["sha256"] == sha_soft
++    assert manifest["loader_verification"]["verified"] is True
+     hard = items["QM5_9011:AUDUSD.DWX"]
+     assert hard["outcome"] == "refused"
+     assert hard["reason"] == "no_q08_stream_bound_to_identity"
+ 
++
++@pytest.mark.parametrize("older_verdict,newer_verdict", [("PASS", "FAIL_SOFT"), ("FAIL_SOFT", "PASS")])
++@pytest.mark.parametrize("reverse", [False, True])
++@pytest.mark.parametrize("older_ts", ["2026-09-04T09:30:00Z", "2026-09-04T11:30:00+02:00"])
++def test_q08_mixed_pass_class_uses_newest_instant(tmp_path, older_verdict, newer_verdict, reverse, older_ts):
++    db = tmp_path / "mixed.sqlite"
++    con = _make_db(db)
++    identity = "a" * 64
++    rows = [("older", older_verdict, older_ts), ("newer", newer_verdict, "2026-09-04T10:00:00Z")]
++    if reverse:
++        rows.reverse()
++    for wid, verdict, timestamp in rows:
++        stream = tmp_path / wid / "9001_EURUSD_DWX.jsonl"
++        sha = _write_stream(stream, "EURUSD.DWX")
++        aggregate = tmp_path / wid / "aggregate.json"
++        _aggregate(aggregate, source_ex5=identity, content_sha=sha, stream_path=stream)
++        _q08(con, wid, "QM5_9001", "EURUSD.DWX", aggregate, timestamp, verdict)
++    con.commit()
++    con.close()
++    con = asb.open_ro(db)
++    try:
++        bound = asb.find_bound_q08(con, "QM5_9001", "EURUSD.DWX", identity)
++        assert bound["q08_work_item_id"] == "newer"
++    finally:
++        con.close()

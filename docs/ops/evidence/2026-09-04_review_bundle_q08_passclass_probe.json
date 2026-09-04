@@ -1,0 +1,89 @@
+{
+  "review_task": "348af875-69f2-4aa9-998b-bd1836bbe4cd",
+  "result": "KNOWN_ORDERING_DEFECT_REPRODUCED",
+  "controls_passed": 4,
+  "mixed_offset_defects_reproduced": 4,
+  "loader_checks_passed": 8,
+  "cases": [
+    {
+      "older_verdict": "PASS",
+      "newer_verdict": "FAIL_SOFT",
+      "reverse_insertion": false,
+      "mixed_offsets": false,
+      "expected": "newer",
+      "actual": "newer",
+      "newest_instant_selected": true,
+      "loader_verified": true
+    },
+    {
+      "older_verdict": "PASS",
+      "newer_verdict": "FAIL_SOFT",
+      "reverse_insertion": true,
+      "mixed_offsets": false,
+      "expected": "newer",
+      "actual": "newer",
+      "newest_instant_selected": true,
+      "loader_verified": true
+    },
+    {
+      "older_verdict": "FAIL_SOFT",
+      "newer_verdict": "PASS",
+      "reverse_insertion": false,
+      "mixed_offsets": false,
+      "expected": "newer",
+      "actual": "newer",
+      "newest_instant_selected": true,
+      "loader_verified": true
+    },
+    {
+      "older_verdict": "FAIL_SOFT",
+      "newer_verdict": "PASS",
+      "reverse_insertion": true,
+      "mixed_offsets": false,
+      "expected": "newer",
+      "actual": "newer",
+      "newest_instant_selected": true,
+      "loader_verified": true
+    },
+    {
+      "older_verdict": "PASS",
+      "newer_verdict": "FAIL_SOFT",
+      "reverse_insertion": false,
+      "mixed_offsets": true,
+      "expected": "newer",
+      "actual": "older",
+      "newest_instant_selected": false,
+      "loader_verified": true
+    },
+    {
+      "older_verdict": "PASS",
+      "newer_verdict": "FAIL_SOFT",
+      "reverse_insertion": true,
+      "mixed_offsets": true,
+      "expected": "newer",
+      "actual": "older",
+      "newest_instant_selected": false,
+      "loader_verified": true
+    },
+    {
+      "older_verdict": "FAIL_SOFT",
+      "newer_verdict": "PASS",
+      "reverse_insertion": false,
+      "mixed_offsets": true,
+      "expected": "newer",
+      "actual": "older",
+      "newest_instant_selected": false,
+      "loader_verified": true
+    },
+    {
+      "older_verdict": "FAIL_SOFT",
+      "newer_verdict": "PASS",
+      "reverse_insertion": true,
+      "mixed_offsets": true,
+      "expected": "newer",
+      "actual": "older",
+      "newest_instant_selected": false,
+      "loader_verified": true
+    }
+  ]
+}
