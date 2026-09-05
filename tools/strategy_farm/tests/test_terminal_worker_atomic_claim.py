@@ -2981,12 +2981,16 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                 terminal_worker._acquire_launch_slot = lambda _terminal: None
                 terminal_worker.time.sleep = lambda _seconds: None
 
-                result = terminal_worker._run_claimed_item(
-                    root,
-                    {"id": "wi-launch-fault"},
-                    "T4",
-                    timeout_seconds=30,
-                )
+                # This monitor test never stages a real EA into a host terminal.
+                with patch.object(terminal_worker, "_prepare_staged_ex5", return_value={
+                    "required_sha256": "a" * 64, "source_path": "fixture.ex5"
+                }):
+                    result = terminal_worker._run_claimed_item(
+                        root,
+                        {"id": "wi-launch-fault"},
+                        "T4",
+                        timeout_seconds=30,
+                    )
             finally:
                 terminal_worker.farmctl._spawn_work_item_runner = old_spawn
                 terminal_worker.farmctl._pid_tree_exists = old_pid_tree_exists
@@ -3590,12 +3594,15 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                 terminal_worker.farmctl._stop_terminal_slot = lambda terminal: stopped_terminals.append(terminal) or True
                 terminal_worker._work_item_preflight_failure = lambda _row: None
 
-                result = terminal_worker._run_claimed_item(
-                    root,
-                    {"id": "wi-external-release"},
-                    "T5",
-                    timeout_seconds=30,
-                )
+                with patch.object(terminal_worker, "_prepare_staged_ex5", return_value={
+                    "required_sha256": "a" * 64, "source_path": "fixture.ex5"
+                }):
+                    result = terminal_worker._run_claimed_item(
+                        root,
+                        {"id": "wi-external-release"},
+                        "T5",
+                        timeout_seconds=30,
+                    )
             finally:
                 terminal_worker.farmctl._spawn_work_item_runner = old_spawn
                 terminal_worker.farmctl._pid_exists = old_pid_exists

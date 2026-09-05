@@ -56,6 +56,7 @@ import opt_census_pruning
 import opt_census_select
 from framework.scripts._phase_utils import cold_cache_summary_signature
 from factory_mutation_lock import FactoryMutationLock, path_for_factory_flag
+from claim_wait_turn import ClaimWaitTurn
 from mutation_lock_observation import observe_lock_owner
 try:
     from sqlite_busy import (
@@ -120,7 +121,7 @@ CUSTOM_HISTORY_GATE_DEFER_ACTIONS = frozenset(
     }
 )
 FACTORY_ADMISSION_LOCK_TIMEOUT_SECONDS = 5.0
-FACTORY_ADMISSION_LOCK_POLL_SECONDS = 0.01
+FACTORY_ADMISSION_LOCK_POLL_SECONDS = 0.05
 # DL-089 claim-boundary pruning may parse and hash multi-gigabyte native
 # reports.  Serialize that backstop on its own lock so one worker performs the
 # expensive check while peers remain free to claim non-census work.  This lock
@@ -4471,6 +4472,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
         ],
     ] = {}
     skip_unchecked_history = False
+    pending_order_snapshot = None
 
     # Prime the most likely candidate before the first global-lock acquisition.
     # This keeps the common one-row claim path to a single OFF-check/write
@@ -4483,7 +4485,8 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
             # claim_atomic.  execute_pending_claim_order returns the exact
             # rows _priority_pending_query() would, and the head row is the
             # fetchone this prime needs.
-            _primed_order = farmctl.execute_pending_claim_order(_preflight_conn)
+            pending_order_snapshot = farmctl.prepare_pending_claim_snapshot(_preflight_conn)
+            _primed_order = pending_order_snapshot["rows"]
             initial_candidate_row = _primed_order[0] if _primed_order else None
     except sqlite3.Error:
         initial_candidate_row = None
@@ -4871,7 +4874,9 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                 census_cells_claimable: bool | None = None
                 # claim-order memo (2026-09-03): byte-identical rows, reused while
                 # PRAGMA data_version proves the DB unchanged (see farmctl).
-                ordered_candidates = farmctl.execute_pending_claim_order(conn)
+                if not farmctl.pending_claim_snapshot_valid(conn, pending_order_snapshot):
+                    return {"claimed": False, "reason": "claim_order_snapshot_stale"}
+                ordered_candidates = pending_order_snapshot["rows"]
                 # The canonical queue is program/year agnostic. Under L=2 it
                 # can therefore put a later year of an otherwise-free arm
                 # ahead of that arm's actual head. Do the cheap database-only
@@ -5459,18 +5464,22 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
     # file/process/report probe above is complete before this helper; while held
     # we only re-read OFF and execute one bounded SQLite claim attempt.
     mutation_lock_path = path_for_factory_flag(factory_off_flag)
+    # A cold preflight can cause up to eight re-entries. Give the whole cycle
+    # one acquisition-wait budget, rather than up to eight fresh five-second
+    # waits. Time doing work while holding the lock is measured separately.
+    claim_admission_wait_remaining = FACTORY_ADMISSION_LOCK_TIMEOUT_SECONDS
 
-    def _claim_under_factory_lock() -> dict[str, Any]:
-        admission_deadline = (
-            time.monotonic() + FACTORY_ADMISSION_LOCK_TIMEOUT_SECONDS
-        )
+    def _claim_with_fifo_turn(turn: ClaimWaitTurn, admission_deadline: float) -> dict[str, Any]:
         while True:
             mutation_lock = FactoryMutationLock(
                 mutation_lock_path,
                 owner=f"terminal_worker.claim_atomic:{terminal}",
             )
             try:
+                if not turn.is_head():
+                    raise RuntimeError("earlier claim waiter has admission priority")
                 mutation_lock.__enter__()
+                turn.acquired_at = time.monotonic()
                 break
             except RuntimeError:
                 # Re-probe OFF on every contention retry so an asserted
@@ -5548,12 +5557,49 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
         finally:
             mutation_lock.__exit__(None, None, None)
 
+    def _claim_under_factory_lock() -> dict[str, Any]:
+        nonlocal claim_admission_wait_remaining, pending_order_snapshot
+        # Cache misses and full queue sorts stay outside FACTORY_MUTATION.lock.
+        # Recheck the proof inside _claim before using any prepared row.
+        try:
+            with farmctl.connect(root) as snapshot_conn:
+                if not farmctl.pending_claim_snapshot_valid(snapshot_conn, pending_order_snapshot):
+                    pending_order_snapshot = farmctl.prepare_pending_claim_snapshot(snapshot_conn)
+        except sqlite3.OperationalError as exc:
+            if _is_sqlite_locked(exc):
+                return {"claimed": False, "reason": "sqlite_locked"}
+            raise
+        if claim_admission_wait_remaining <= 0:
+            return {"claimed": False, "reason": "factory_mutation_lock_busy",
+                    "lock": str(mutation_lock_path), "wait_budget_exhausted": True}
+        started = time.monotonic()
+        turn = ClaimWaitTurn(mutation_lock_path, started + claim_admission_wait_remaining)
+        try:
+            with turn:
+                result = _claim_with_fifo_turn(turn, turn.deadline)
+        except OSError as exc:
+            result = {"claimed": False, "reason": "factory_admission_interlock_error",
+                      "lock": str(mutation_lock_path), "error": str(exc)}
+        finally:
+            waited = (turn.acquired_at if turn.acquired_at is not None else time.monotonic()) - started
+            claim_admission_wait_remaining = max(0.0, claim_admission_wait_remaining - max(0.0, waited))
+        result["factory_admission_wait_seconds"] = round(
+            FACTORY_ADMISSION_LOCK_TIMEOUT_SECONDS - claim_admission_wait_remaining, 3)
+        return result
+
     claim_result = _claim_under_factory_lock()
     lane_preflights: list[dict[str, Any]] = []
     pruning_preflights: list[dict[str, Any]] = []
     history_preflights: list[dict[str, Any]] = []
     for _preflight_index in range(CLAIM_PREFLIGHT_MAX_CANDIDATES):
         reason = claim_result.get("reason")
+        if reason == "claim_order_snapshot_stale":
+            # Another claim (or our stale-claim recovery) committed after the
+            # preparation. Rebuild outside the interlock with the same bounded
+            # acquisition budget, sharing the existing eight-retry ceiling.
+            pending_order_snapshot = None
+            claim_result = _claim_under_factory_lock()
+            continue
         if reason == "opt_census_lane_preflight_required":
             candidate = dict(claim_result["candidate"])
             payload = _json_loads(candidate.get("payload_json"))

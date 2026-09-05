@@ -2908,6 +2908,36 @@ def execute_pending_claim_order(
     return rows
 
 
+def prepare_pending_claim_snapshot(conn: sqlite3.Connection) -> dict[str, Any]:
+    """Materialize exact queue order before acquiring the global mutation lock.
+
+    A persistent data_version poller proves the snapshot unchanged at use time.
+    Age-boundary expiry and SQL identity preserve the selector's ordering rules.
+    A racing commit causes a cheap refusal, never a rebuild under the lock.
+    """
+    key = _claim_order_conn_key(conn)
+    version = _claim_order_data_version(key) if key else None
+    started, wall = time.monotonic(), time.time()
+    sql = pending_claim_order_sql()
+    rows = execute_pending_claim_order(conn)
+    flip = _seconds_to_earliest_age_flip(rows, wall)
+    lifetime = min(5.0, flip) if flip is not None else 5.0
+    return {"db_file": key, "data_version": version, "sql": sql,
+            "poller": _CLAIM_ORDER_POLLERS.get((key, threading.get_ident())),
+            "expires_monotonic": started + lifetime, "rows": rows}
+
+
+def pending_claim_snapshot_valid(conn: sqlite3.Connection, snapshot: dict[str, Any] | None) -> bool:
+    if not snapshot or snapshot.get("data_version") is None:
+        return False
+    key = _claim_order_conn_key(conn)
+    return bool(key and key == snapshot["db_file"]
+                and time.monotonic() < snapshot["expires_monotonic"]
+                and pending_claim_order_sql() == snapshot["sql"]
+                and _claim_order_data_version(key) == snapshot["data_version"]
+                and snapshot.get("poller") is _CLAIM_ORDER_POLLERS.get((key, threading.get_ident())))
+
+
 def recovery_claim_allowed(conn: sqlite3.Connection) -> bool:
     """Durable rolling idle-cap check. MUST be called inside the claim transaction.
 
@@ -3383,6 +3413,22 @@ def _init_db_once(root: Path) -> None:
 
             CREATE INDEX IF NOT EXISTS idx_work_items_status_kind
                 ON work_items(status, kind);
+            -- Exact expression/partial indexes for the census ordering probes.
+            -- Keep the existing case/NULL/JSON semantics and ordering unchanged.
+            CREATE INDEX IF NOT EXISTS idx_work_items_census_earlier
+                ON work_items(
+                    json_extract(payload_json, '$.program_id'),
+                    json_extract(payload_json, '$.arm'),
+                    CAST(json_extract(payload_json, '$.year') AS INTEGER)
+                )
+                WHERE lower(COALESCE(status, '')) IN ('pending', 'active')
+                  AND upper(COALESCE(phase, ''))='OPT_CENSUS'
+                  AND json_valid(payload_json)=1;
+            CREATE INDEX IF NOT EXISTS idx_work_items_census_active_program
+                ON work_items(json_extract(payload_json, '$.program_id'))
+                WHERE lower(status)='active'
+                  AND upper(COALESCE(phase, ''))='OPT_CENSUS'
+                  AND json_valid(payload_json)=1;
             CREATE INDEX IF NOT EXISTS idx_work_items_parent
                 ON work_items(parent_task_id);
             CREATE INDEX IF NOT EXISTS idx_work_items_ea_phase
