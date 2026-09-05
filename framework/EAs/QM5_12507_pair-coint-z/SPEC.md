@@ -94,9 +94,8 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 ## Current Funnel State
 
 The 2026-07-09 forex fallback pass found no unbuilt, approved/card-worthy FX
-cointegration pair left in the documented scan frontier. `QM5_12507` was the
-existing forex fallback, and its EURUSD/GBPUSD sleeve has now reached a
-terminal Q04 outcome:
+cointegration pair left in the documented scan frontier. The original
+per-symbol EURUSD/GBPUSD evaluation reached terminal Q04 outcomes:
 
 - Q02 EURUSD.DWX: PASS, work item `ff64c149-ba52-48b1-a024-59d910212583`.
 - Q02 GBPUSD.DWX: PASS, work item `b2cad7df-8f5c-44d6-8fa6-33c26dbc8a15`.
@@ -106,9 +105,21 @@ terminal Q04 outcome:
 - Q04 GBPUSD.DWX: FAIL / low-frequency invalid with zero pooled trades, work
   item `f6242187-0a9c-46aa-8319-fd7aee20617c`.
 
-Do not create duplicate Q02 or Q04 rows for the EURUSD/GBPUSD forex sleeve.
-The NDX.DWX/WS30.DWX rows are non-forex companion rows and were left outside
-the forex portfolio mission scope.
+Those rows predate the OWNER-approved custom-history archive requalification
+and evaluate individual chart symbols, not the current logical basket. The
+requalification path subsequently produced authenticated logical-basket Q01
+PASS work item `7d1a179d-4d25-5d37-a69a-3a52fd78ae63` with 632 observed leg
+trades. Its unique logical Q02 successor is
+`547c4fd3-f3fd-4c59-b9dc-654e96521251` on
+`QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1`.
+
+As reconciled on 2026-09-05, that successor is pending, unclaimed, attempt
+zero, and already carries `priority_track=true`, `RISK_FIXED=1000`,
+`RISK_PERCENT=0`, and the approved custom-history archive binding. It is the
+only governed continuation. Do not insert another Q02 row, force-claim it out
+of canonical queue order, or revive either historical Q04 row. The
+NDX.DWX/WS30.DWX symbols remain the card-authorized companion pair and history
+scope, not an additional forex sleeve.
 
 ---
 
@@ -120,3 +131,4 @@ the forex portfolio mission scope.
 | v2 | 2026-07-03 | Q02 infrastructure repair | Repaired pair entry to open both registered legs through `QM_BasketOpenPosition`, split fixed risk 50/50, preserved zero-spread `.DWX` behavior, and made P2 setfiles carry explicit card defaults before requeue. |
 | v3 | 2026-07-08 | FX Q02 basket-manifest repair | Added `basket_manifest.json` for the four symbols warmed by the EA and priority-marked only the existing EURUSD/GBPUSD Q02 rows for the forex sleeve. |
 | v4 | 2026-07-09 | FX Q04 verdict recorded | Existing fallback advanced through Q04: EURUSD valid-fold PF failure and GBPUSD low-frequency zero-trade invalid failure; no duplicate work items or manual MT5 dispatch. |
+| v5 | 2026-09-05 | Logical-basket requalification reconciliation | Recorded the authenticated Q01 PASS and the unique already-prioritized logical Q02 successor; preserved append-only history and the no-duplicate queue boundary. |
