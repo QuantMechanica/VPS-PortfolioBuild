@@ -118,6 +118,58 @@ Two renderers:
    (EUR/USD session model, XAU/USD PO3, US100 indicators) keep their concepts, drawn by this
    renderer with annotation layers (session boxes, swing markers) in `--c-text-3`.
 
+### 4a. Revision 2026-09-05 — light "terminal" charts (OWNER request)
+
+OWNER 2026-09-05: the price-action renderer "sieht immer noch komplett unecht aus"; charts
+should look like TradingView / the MT5 light profile and have a **white background**. Engine
+v2 (`Website/scripts/qm-charts.js`, `QMCharts.version = '2.0.0'`) replaces the v1 spec above
+where they differ:
+
+- **Themes.** `theme: 'light'` is the default: TradingView light profile on white (ground
+  `#ffffff`, grid `#f0f3fa`, scale border `#e0e3eb`, scale text `#131722` / `#787b86`,
+  candles up `#26a69a` / down `#ef5350`, volume at 45 % alpha, EMA 20 `#2962ff`, EMA 50
+  `#ff6d00`, Bollinger `#2962ff` with 5 % fill). `theme: 'mt5'` reproduces the MetaTrader 5
+  "Black on White" profile (hollow bull candles with black border, black bear candles, black
+  wicks, dotted grey grid, green volume). `theme: 'dark'` stays as the legacy black panel.
+  Both index sections that hold charts moved from `.panel--dark` to the light `.panel`; the
+  canvases sit in `.chart--frame` (white, hairline border, 12 px radius) so each chart reads
+  as a terminal window on the light card.
+- **Terminal layout.** Legend top-left like a terminal (`EUR/USD · 1h`, then
+  `O H L C` of the last bar in the candle colour, change and percentage; overlay row with
+  EMA / BB values; rows wrap or drop the change figure on narrow panes and are clipped to the
+  pane). Right price scale with a 1 px border, labels at nice steps, the neighbouring label
+  suppressed under the **last-price tag** (filled chip in the candle colour, dashed last-price
+  line across the pane). Time scale with border, major labels (month / day) in text colour and
+  minor labels (Mondays / 06:00-18:00) in dim colour, vertical grid lines only at placed labels.
+  Volume in the lower 20 % of the pane behind the candles (TradingView placement). Candles:
+  odd body width from the slot (28 % gap), 1 px wick, 1 px border + fill, doji as a 1 px line.
+- **Generator v2.** Per bar an intra-bar random path (16 sub-steps) gives open/high/low/close
+  with natural body-to-wick proportions instead of a drawn body fraction; GARCH(1,1) variance;
+  AR(1) drift regime (trends and ranges); occasional fat-tailed jump; opening gaps only where
+  the market has them (indices most days, gold sometimes, FX only over the weekend); the
+  visible window is re-anchored so the last close sits at the instrument's reference level
+  (EUR/USD 1.1608, XAU/USD 3418.00, US 100 23540.0 — illustrative levels near current
+  markets). A 60-bar warm-up prefix is generated so EMA 50 and Bollinger exist from the first
+  visible bar. Timeframes: `tf: 'H1'` (FX 24×5 clock, closed Fri 21:00–Sun 21:00 UTC,
+  hourly volatility and volume profile Asia → London → New York) and `tf: 'D1'`.
+- **Sessions and annotations.** Intraday `sessions: [{label, short, from, to, color}]` draw
+  one box per day per session automatically from the bar timestamps (London 07–16 UTC, New
+  York 12–21 UTC on the EUR/USD widget), labelled per row, short label on narrow boxes.
+  Markers accept `at: 'max' | 'min'` with a `range` so swing labels sit on the actual extreme
+  of the generated series (SH / SL, Sweep); bands and hlines as before.
+- **Widgets.** EUR/USD session model = 60 × H1 bars with EMA 20/50 and session boxes; XAU/USD
+  power of three = 56 daily bars, accumulation / manipulation (sweep on the range low) /
+  distribution; US 100 regime indicators = 64 daily bars with EMA 20/50, Bollinger 20·2 and
+  swing markers. Bar counts were reduced from 120/96/140 so the candle spacing matches a
+  terminal at the widget width (v1 drew ~2 px slots, which was the main "unecht" signal).
+  Captions keep "Illustrative price action (synthetic, calibrated)".
+- **Equity renderer** on the same light palette: white ground, light grid, brand-green line and
+  area, drawdown shading, scale borders and a last-value tag.
+- Evidence (headless-Chrome renders of the local preview, before/after):
+  `docs/ops/evidence/2026-09-05_website_light_charts/` (`before_dark.png`, `after_light.png`,
+  `after_mt5.png`, `final_light.png`, `final_mobile.png`). Deploy worktree commit on
+  `refresh/apple-2026-09` — local preview only, no push / Netlify deploy (OWNER reviews first).
+
 Static SVG on strategy pages is replaced by a **gate-journey strip** (18 dots Q00–Q17,
 pass/fail/pending) — no equity, no metrics (disclosure level unchanged).
 
