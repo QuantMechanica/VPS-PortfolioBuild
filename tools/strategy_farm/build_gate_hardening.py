@@ -28,6 +28,15 @@ SYMBOL_TOKEN = re.compile(
     r"(?i)(?<![A-Z0-9])([A-Z0-9]+\.DWX)(?![A-Z0-9.])"
 )
 CURRENT_MAGIC_STATUSES = {"active", "reserved"}
+# Strategy Cards can predate the canonical DWX symbol namespace.  These are
+# explicit build-policy ports, not fuzzy aliases: a phantom in an executable
+# artifact still fails D11, while the canonical target is accepted by D17 when
+# the approved card names the corresponding legacy symbol.
+CARD_SYMBOL_PORTS: dict[str, str] = {
+    "DAX40.DWX": "GDAXI.DWX",
+    "DE30.DWX": "GDAXI.DWX",
+    "GER40.DWX": "GDAXI.DWX",
+}
 TIMEFRAME_MINUTES = {
     "M1": 1,
     "M5": 5,
@@ -1703,12 +1712,23 @@ def check_build_symbols(
     card_text, card_error = _card_text(card_path)
     if card_text is not None:
         card_symbols = parse_card_target_symbols(card_text)
-    for symbol in sorted(set(observations) - card_symbols if card_symbols else set()):
+    authorized_card_symbols = set(card_symbols)
+    authorized_card_symbols.update(
+        CARD_SYMBOL_PORTS[symbol]
+        for symbol in card_symbols
+        if symbol in CARD_SYMBOL_PORTS
+    )
+    for symbol in sorted(
+        set(observations) - authorized_card_symbols
+        if authorized_card_symbols
+        else set()
+    ):
         origins = sorted(observations[symbol])
         failures.append(
             "EA_SYMBOL_NOT_IN_CARD_UNIVERSE: "
             f"{ea_dir.name} uses {symbol} from {', '.join(origins)}, but the explicit "
-            f"card target_symbols contract contains only {', '.join(sorted(card_symbols))}."
+            "card target_symbols contract (including documented canonical ports) "
+            f"contains only {', '.join(sorted(authorized_card_symbols))}."
         )
 
     return {
@@ -1720,6 +1740,7 @@ def check_build_symbols(
         "symbols": rows,
         "card_path": str(card_path) if card_path else None,
         "card_target_symbols": sorted(card_symbols),
+        "card_authorized_symbols": sorted(authorized_card_symbols),
         "card_error": card_error,
         "failures": failures,
     }

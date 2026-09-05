@@ -581,6 +581,36 @@ def test_d17_explicit_card_universe_pass_and_extra_symbol_fail(tmp_path: Path) -
     assert "EA_SYMBOL_NOT_IN_DWX_MATRIX" not in failure_codes(failing)
 
 
+def test_d17_legacy_dax_card_authorizes_only_canonical_gdaxi_build(tmp_path: Path) -> None:
+    legacy_card = CARD + "\n- Target symbols: EURUSD.DWX, GER40.DWX.\n"
+    write_fixture(tmp_path, PASSING_SOURCE, legacy_card)
+    (tmp_path / "framework" / "registry" / "dwx_symbol_matrix.csv").write_text(
+        "symbol,canonical_name_verified\nEURUSD.DWX,true\nGDAXI.DWX,true\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "framework" / "registry" / "magic_numbers.csv").write_text(
+        "ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status\n"
+        "99001,gate-fixture,0,GDAXI.DWX,990010000,2026-08-22,pytest,active\n",
+        encoding="utf-8",
+    )
+    setfile = tmp_path / "framework" / "EAs" / LABEL / "sets" / f"{LABEL}_EURUSD.DWX_H1_backtest.set"
+    setfile.rename(setfile.with_name(f"{LABEL}_GDAXI.DWX_H1_backtest.set"))
+    gdaxi_setfile = setfile.with_name(f"{LABEL}_GDAXI.DWX_H1_backtest.set")
+    gdaxi_setfile.write_text("symbol=GDAXI.DWX\n", encoding="utf-8")
+
+    result = gate.analyze(tmp_path, LABEL)
+
+    assert "EA_SYMBOL_NOT_IN_CARD_UNIVERSE" not in failure_codes(result)
+    assert "EA_SYMBOL_NOT_IN_DWX_MATRIX" not in failure_codes(result)
+    symbol_check = result["build_symbol_checks"][0]
+    assert symbol_check["card_target_symbols"] == ["EURUSD.DWX", "GER40.DWX"]
+    assert symbol_check["card_authorized_symbols"] == [
+        "EURUSD.DWX",
+        "GDAXI.DWX",
+        "GER40.DWX",
+    ]
+
+
 def test_d18_descending_append_ordering_pass_and_impossible_guard_fail(
     tmp_path: Path,
 ) -> None:
