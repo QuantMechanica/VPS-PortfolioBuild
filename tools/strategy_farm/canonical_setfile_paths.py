@@ -65,11 +65,28 @@ def pending_successor_proposal(row: dict, repo_root: Path = CANONICAL_REPO) -> d
                 'Retain non-path holds; never bypass existing approval, registry or phase gates']}
 
 
-def main():
+def main(argv=None):
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command',choices=['preview'])
-    parser.add_argument('--work-item-id',required=True)
-    args=parser.parse_args()
+    parser.add_argument('command',choices=['preview','apply'])
+    selector=parser.add_mutually_exclusive_group(required=True)
+    selector.add_argument('--work-item-id')
+    selector.add_argument('--all-previewed',action='store_true')
+    parser.add_argument('--apply',action='store_true',help='Explicit mutation flag; apply command otherwise only plans')
+    parser.add_argument('--receipt-path',type=Path)
+    args=parser.parse_args(argv)
+    if args.command=='apply':
+        try:
+            from . import canonical_setfile_apply as repair
+        except ImportError:
+            import canonical_setfile_apply as repair
+        if args.apply and Path(__file__).resolve().parents[2]!=CANONICAL_REPO.resolve():
+            parser.error('Mutation requires the canonical checkout after reviewed integration')
+        ids=sorted(repair.PREVIEW_HASHES) if args.all_previewed else [args.work_item_id]
+        result=repair.run(ids,apply=args.apply,receipt_path=args.receipt_path)
+        print(json.dumps(result,indent=2))
+        return 0 if result['eligible'] else 2
+    if args.all_previewed or args.apply or args.receipt_path:
+        parser.error('preview accepts only --work-item-id')
     with sqlite3.connect('file:'+DATABASE.as_posix()+'?mode=ro',uri=True) as conn:
         conn.row_factory=sqlite3.Row;conn.execute('PRAGMA query_only=ON')
         row=conn.execute('SELECT * FROM work_items WHERE id=?',(args.work_item_id,)).fetchone()
@@ -77,4 +94,4 @@ def main():
         print(json.dumps(pending_successor_proposal(dict(row)),indent=2))
 
 
-if __name__=='__main__':main()
+if __name__=='__main__':raise SystemExit(main())
