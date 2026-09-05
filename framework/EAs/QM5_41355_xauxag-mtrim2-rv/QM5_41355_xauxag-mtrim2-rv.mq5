@@ -181,9 +181,22 @@ bool Strategy_IsHostChart()
            qm_magic_slot_offset == 0);
   }
 
+bool Strategy_DoubleInputsFinite()
+  {
+   return (MathIsValidNumber(RISK_PERCENT) &&
+           MathIsValidNumber(RISK_FIXED) &&
+           MathIsValidNumber(PORTFOLIO_WEIGHT) &&
+           MathIsValidNumber(qm_stress_reject_probability) &&
+           MathIsValidNumber(strategy_signal_epsilon) &&
+           MathIsValidNumber(strategy_atr_sl_mult) &&
+           MathIsValidNumber(strategy_notional_ratio) &&
+           MathIsValidNumber(strategy_max_notional_mismatch_fraction));
+  }
+
 bool Strategy_InputsValid()
   {
-   return (g_leg_xau == "XAUUSD.DWX" &&
+   return (Strategy_DoubleInputsFinite() &&
+            g_leg_xau == "XAUUSD.DWX" &&
             g_leg_xag == "XAGUSD.DWX" &&
             g_leg_xau != g_leg_xag &&
             qm_ea_id == 41355 && qm_magic_slot_offset == 0 &&

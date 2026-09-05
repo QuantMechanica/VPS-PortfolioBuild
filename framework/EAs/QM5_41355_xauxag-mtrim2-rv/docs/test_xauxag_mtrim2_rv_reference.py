@@ -85,6 +85,14 @@ class XauXagTrim2Reference(unittest.TestCase):
         self.assertIn('g_leg_xag == "XAGUSD.DWX"', source)
         self.assertIn("g_leg_xau != g_leg_xag", source)
 
+    def test_locked_double_inputs_require_finite_values(self):
+        source = EA_SOURCE.read_text(encoding="utf-8")
+        self.assertIn("bool Strategy_DoubleInputsFinite()", source)
+        self.assertIn("MathIsValidNumber(RISK_FIXED)", source)
+        self.assertIn("MathIsValidNumber(strategy_signal_epsilon)", source)
+        self.assertIn("MathIsValidNumber(strategy_atr_sl_mult)", source)
+        self.assertIn("Strategy_DoubleInputsFinite() &&", source)
+
     def test_exact_two_per_tail_trim(self):
         returns = [12.0, 1.0, 8.0, 2.0, 11.0, 3.0,
                    10.0, 4.0, 9.0, 5.0, 7.0, 6.0]
