@@ -1,0 +1,79 @@
+{
+  "candidate": {
+    "author": "OpenAI Codex; U.S. Energy Information Administration; David L. Villar; Michael Ramberg; John E. Parsons; Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen",
+    "mechanic": "monthly xtixng thirteen synchronized completed-month oil-minus-gas log-ratio endpoints twelve adjacent returns fixed two-per-tail winsorized mean sign contrarian equal-notional basket",
+    "slug": "xtixng-mwinsor2-rv",
+    "strategy_id": "AI-CODEX-XTIXNG-MWINSOR2-RV-20260906_S01"
+  },
+  "error": null,
+  "exit_code": 3,
+  "generated_at_utc": "2026-09-05T22:32:31+00:00",
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41356_xauxag-mwinsor2-rv_card.md",
+      "score": 0.9047619047619048,
+      "slug": "xauxag-mwinsor2-rv",
+      "source": "card",
+      "strategy_id": "AI-CODEX-XAUXAG-MWINSOR2-RV-20260905_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41355_xauxag-mtrim2-rv_card.md",
+      "score": 0.8181818181818182,
+      "slug": "xauxag-mtrim2-rv",
+      "source": "card",
+      "strategy_id": "AI-CODEX-XAUXAG-MTRIM2-RV-20260905_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41341_xauxag-mbisquare-rv_card.md",
+      "score": 0.7619047619047619,
+      "slug": "xauxag-mbisquare-rv",
+      "source": "card",
+      "strategy_id": "AI-CODEX-XAUXAG-MBISQUARE-RV-20260905_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41348_xauxag-mhampel-rv_card.md",
+      "score": 0.6818181818181818,
+      "slug": "xauxag-mhampel-rv",
+      "source": "card",
+      "strategy_id": "AI-CODEX-XAUXAG-MHAMPEL-RV-20260905_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41282_xauxag-mvdw-rv_card.md",
+      "score": 0.5517241379310345,
+      "slug": "xauxag-mvdw-rv",
+      "source": "card",
+      "strategy_id": "AI-CODEX-XAUXAG-MVDW-RV-20260902_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4837,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1450,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "FUZZY_MATCH"
+}
