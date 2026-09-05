@@ -155,7 +155,10 @@ def arm_frontier(
 
     if conn is not None:
         try:
-            from tools.strategy_farm.dl089_prescreen_retro import project_row
+            try:
+                from tools.strategy_farm.dl089_prescreen_retro import project_row
+            except ModuleNotFoundError:
+                from dl089_prescreen_retro import project_row  # script-style import
         except ModuleNotFoundError:
             from dl089_prescreen_retro import project_row  # script-style import (sys.path = tools/strategy_farm)
         rows = [project_row(conn, row) for row in rows]
@@ -203,7 +206,10 @@ def arm_frontier(
     missing = sorted(set(declared_by_id) - set(by_id))
     extras = sorted(set(by_id) - set(declared_by_id))
     try:
-        from tools.strategy_farm.dl089_prescreen import staged_keys
+        try:
+            from tools.strategy_farm.dl089_prescreen import staged_keys
+        except ModuleNotFoundError:
+            from dl089_prescreen import staged_keys  # script-style import
         admitted = staged_keys(dict(sealed_ledger))
     except (ValueError, TypeError, KeyError) as exc:
         raise SchedulingError(f"staged admission invalid: {exc}") from exc
