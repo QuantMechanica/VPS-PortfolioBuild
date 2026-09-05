@@ -1,0 +1,14 @@
+{
+  "original_path": "C:\\QM\\repo\\framework\\scripts\\mt5_diagnostics\\QM_M1_SpreadHarvest.mq5",
+  "original_sha256": "8285bd69325dd1a1dd98e8d63ad53fb4e038b871101abaf4051565143fff4e70",
+  "candidate_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_m08b_dxz_harvest\\QM_M1_SpreadHarvest.mq5",
+  "candidate_sha256": "c791f50daeea832cc652db1541231203a3d5e4ec29cc7c312e21475936af29e0",
+  "window_server": [
+    "2026-05-26T00:00:00",
+    "2026-09-05T00:00:00"
+  ],
+  "declared_offset_minutes": 180,
+  "validation": "DECLARED_NOT_EMPIRICALLY_VALIDATED",
+  "canonical_harvester_source_modified": false,
+  "executed_binary_sha256": "b889fff3cbf374f5bdc1079be815747ee6e1405802981a50d39a4fd1fe06908b"
+}

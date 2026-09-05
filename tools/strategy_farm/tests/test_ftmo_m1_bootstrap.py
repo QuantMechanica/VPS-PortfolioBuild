@@ -446,8 +446,9 @@ def test_startup_files_keep_experts_disabled_and_bind_script_parameters(tmp_path
     assert "Enabled=1" not in ini
 
 
+@pytest.mark.parametrize("explicit_source", [False, True])
 def test_compile_boundary_uses_lane_metaeditor_and_requires_zero_errors_warnings(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, explicit_source: bool
 ) -> None:
     terminal_root = tmp_path / "FTMO_STREAM1"
     terminal_root.mkdir()
@@ -467,7 +468,13 @@ def test_compile_boundary_uses_lane_metaeditor_and_requires_zero_errors_warnings
         return SimpleNamespace(returncode=1, stdout="", stderr="")
 
     monkeypatch.setattr(bootstrap.subprocess, "run", fake_run)
-    result = bootstrap.compile_harvest_script(terminal_root, run_root)
+    candidate = tmp_path / "QM_M1_SpreadHarvest.mq5"
+    candidate.write_bytes(bootstrap.SCRIPT_SOURCE.read_bytes() + b"\n// Review-bound source fixture\n")
+    kwargs = {"source_path": candidate} if explicit_source else {}
+    result = bootstrap.compile_harvest_script(terminal_root, run_root, **kwargs)
+    expected_source = candidate if explicit_source else bootstrap.SCRIPT_SOURCE
+    assert result["source"]["sha256"] == bootstrap.sha256_file(expected_source)
+    assert result["staged_source"]["sha256"] == result["source"]["sha256"]
 
     assert captured["command"][0] == str((terminal_root / "MetaEditor64.exe").resolve())
     assert result["errors"] == 0

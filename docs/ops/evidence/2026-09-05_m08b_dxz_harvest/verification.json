@@ -1,0 +1,14 @@
+{
+  "tests_passed": 23,
+  "compile_0E_0W": true,
+  "source_binary_attested": true,
+  "gzip_receipts_verified": 7,
+  "ftmo_inputs_verified": 6,
+  "reservation_released": true,
+  "factory_seconds_including_compile": 58.297,
+  "source_sha256": "c791f50daeea832cc652db1541231203a3d5e4ec29cc7c312e21475936af29e0",
+  "binary_sha256": "b889fff3cbf374f5bdc1079be815747ee6e1405802981a50d39a4fd1fe06908b",
+  "matched_minutes_all_six": 0,
+  "frozen_raw_bar_exports": 0,
+  "frozen_empty_coverage_exports": 6
+}

@@ -851,8 +851,10 @@ def _read_text_auto(path: Path) -> str:
     raise BootstrapError(f"cannot decode text artifact: {path}")
 
 
-def compile_harvest_script(terminal_root: Path, run_root: Path) -> dict[str, Any]:
-    source_binding = validate_mql_source()
+def compile_harvest_script(terminal_root: Path, run_root: Path,
+                           *, source_path: Path | None = None) -> dict[str, Any]:
+    source_path = SCRIPT_SOURCE if source_path is None else source_path.expanduser().resolve()
+    source_binding = validate_mql_source(source_path)
     terminal_root = terminal_root.expanduser().resolve()
     metaeditor = terminal_root / "MetaEditor64.exe"
     file_binding(metaeditor)
@@ -869,7 +871,7 @@ def compile_harvest_script(terminal_root: Path, run_root: Path) -> dict[str, Any
         stale_backup = staged_source.with_suffix(f".stale_{utc_now().replace(':', '')}.mq5")
         shutil.move(str(staged_source), str(stale_backup))
     if not staged_source.exists():
-        shutil.copyfile(SCRIPT_SOURCE, staged_source)
+        shutil.copyfile(source_path, staged_source)
     if sha256_file(staged_source) != source_binding["sha256"]:
         raise BootstrapError("staged MQL5 source hash mismatch")
     compile_log = run_root / "compile.log"

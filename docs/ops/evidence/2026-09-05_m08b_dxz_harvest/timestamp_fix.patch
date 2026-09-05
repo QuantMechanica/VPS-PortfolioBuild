@@ -1,0 +1,142 @@
+--- framework/scripts/mt5_diagnostics/QM_M1_SpreadHarvest.mq5
++++ framework/scripts/mt5_diagnostics/QM_M1_SpreadHarvest.mq5
+@@ -7,6 +7,12 @@
+ 
+ input string InpSymbols   = "XAUUSD";
+ input string InpOutputTag = "FTMO_STREAM1";
++// Fixed offset is declared for this bounded summer window, not inferred from
++// TimeTradeServer (which is not historical timezone evidence).
++input int InpServerUtcOffsetMinutes = 180;
++input datetime InpFromServer = D'2026.05.26 00:00';
++input datetime InpToServer = D'2026.09.05 00:00';
++input bool InpObserveTicks = false;
+ 
+ #define QM_HARVEST_FROM D'2026.01.01 00:00'
+ #define QM_BAR_CHUNK_DAYS 7
+@@ -19,7 +25,7 @@
+ 
+ const string QM_HARVEST_DIRECTORY = "QM\\m1_harvest";
+ const string QM_EXTRACTION_METHOD = "MQL5_COPYRATES_PERIOD_M1_SPREAD";
+-const string QM_COVERAGE_SCHEMA = "qm.m1-spread-harvest-coverage/v1";
++const string QM_COVERAGE_SCHEMA = "qm.m1-spread-harvest-coverage/v2";
+ 
+ string Trimmed(string value)
+   {
+@@ -55,16 +61,32 @@
+    return value;
+   }
+ 
+-string IsoMinute(const datetime value)
++string IsoServerMinute(const datetime value)
+   {
+    MqlDateTime parts = {0};
+    TimeToStruct(value, parts);
+-   return StringFormat("%04d-%02d-%02dT%02d:%02d:00Z",
++   return StringFormat("%04d-%02d-%02dT%02d:%02d:00",
+                        parts.year,
+                        parts.mon,
+                        parts.day,
+                        parts.hour,
+                        parts.min);
++  }
++
++string IsoMinute(const datetime value)
++  {
++   return IsoServerMinute(value - InpServerUtcOffsetMinutes * 60) + "Z";
++  }
++
++bool WriteEmptyCoverage(const string symbol, const string output_tag,
++                         const string coverage_path, const datetime cached_last,
++                         const string reason)
++  {
++   int handle=FileOpen(coverage_path,FILE_WRITE|FILE_TXT|FILE_ANSI|FILE_SHARE_READ);
++   if(handle==INVALID_HANDLE) return false;
++   string row=StringFormat("{\"schema\":\"qm.m1-spread-harvest-coverage/v2\",\"status\":\"EMPTY\",\"symbol\":\"%s\",\"output_tag\":\"%s\",\"bar_count\":0,\"reason\":\"%s\",\"last_cached_server\":\"%s\",\"server_utc_offset_minutes\":%d,\"requested_from_server\":\"%s\",\"requested_to_server\":\"%s\",\"clock_validation\":\"DECLARED_NOT_EMPIRICALLY_VALIDATED\"}",symbol,output_tag,reason,IsoServerMinute(cached_last),InpServerUtcOffsetMinutes,IsoServerMinute(InpFromServer),IsoServerMinute(InpToServer));
++   bool ok=FileWriteString(handle,row+"\n")>0;
++   FileFlush(handle); FileClose(handle); return ok;
+   }
+ 
+ bool RetryableHistoryError(const int error)
+@@ -203,8 +225,12 @@
+             break;
+            }
+          const string row = StringFormat(
+-            "{\"ts\":\"%s\",\"open\":%s,\"high\":%s,\"low\":%s,\"close\":%s,\"tick_volume\":%I64d,\"spread\":%d}",
++            "{\"ts\":\"%s\",\"ts_utc\":\"%s\",\"ts_server\":\"%s\",\"server_utc_offset_minutes\":%d,\"timestamp_basis\":\"DECLARED_FIXED_OFFSET_WINDOW\",\"point_size\":%.10f,\"open\":%s,\"high\":%s,\"low\":%s,\"close\":%s,\"tick_volume\":%I64d,\"spread\":%d}",
+             IsoMinute(rates[index].time),
++            IsoMinute(rates[index].time),
++            IsoServerMinute(rates[index].time),
++            InpServerUtcOffsetMinutes,
++            SymbolInfoDouble(symbol, SYMBOL_POINT),
+             DoubleToString(rates[index].open, digits),
+             DoubleToString(rates[index].high, digits),
+             DoubleToString(rates[index].low, digits),
+@@ -300,7 +326,7 @@
+    const string tick_first_json = tick_first > 0 ? "\"" + IsoMinute(tick_first) + "\"" : "null";
+    const string tick_last_json = tick_last > 0 ? "\"" + IsoMinute(tick_last) + "\"" : "null";
+    const string payload = StringFormat(
+-      "{\"schema\":\"%s\",\"status\":\"COMPLETE\",\"extraction_method\":\"%s\",\"output_tag\":\"%s\",\"symbol\":\"%s\",\"first_bar\":\"%s\",\"last_bar\":\"%s\",\"bar_count\":%I64d,\"depth_days\":%s,\"tick_first\":%s,\"tick_last\":%s}\n",
++      "{\"schema\":\"%s\",\"status\":\"COMPLETE\",\"extraction_method\":\"%s\",\"output_tag\":\"%s\",\"symbol\":\"%s\",\"first_bar\":\"%s\",\"last_bar\":\"%s\",\"bar_count\":%I64d,\"depth_days\":%s,\"tick_first\":%s,\"tick_last\":%s,\"first_bar_server\":\"%s\",\"last_bar_server\":\"%s\",\"server_utc_offset_minutes\":%d,\"clock_validation\":\"DECLARED_NOT_EMPIRICALLY_VALIDATED\"}\n",
+       QM_COVERAGE_SCHEMA,
+       QM_EXTRACTION_METHOD,
+       output_tag,
+@@ -310,7 +336,10 @@
+       bar_count,
+       DoubleToString(depth_days, 6),
+       tick_first_json,
+-      tick_last_json);
++      tick_last_json,
++      IsoServerMinute(first_bar),
++      IsoServerMinute(last_bar),
++      InpServerUtcOffsetMinutes);
+    const bool wrote = FileWriteString(handle, payload) > 0;
+    FileFlush(handle);
+    FileClose(handle);
+@@ -363,7 +392,7 @@
+       PrintFormat("QM_M1_HARVEST_SELECT_FAIL symbol=%s error=%d", symbol, GetLastError());
+       return false;
+      }
+-   datetime end_time = TimeTradeServer();
++   datetime end_time = InpToServer;
+    if(end_time <= 0)
+       end_time = TimeCurrent();
+    end_time = (end_time / 60) * 60 - 60;
+@@ -394,7 +423,11 @@
+    long bar_count = 0;
+    datetime first_bar = 0;
+    datetime last_bar = 0;
+-   const datetime start_time = ResolveHistoryStart(symbol);
++   const datetime available_start = ResolveHistoryStart(symbol);
++   const datetime cached_last = (datetime)SeriesInfoInteger(symbol, PERIOD_M1, SERIES_LASTBAR_DATE);
++   if(cached_last < InpFromServer)
++      return WriteEmptyCoverage(symbol,output_tag,coverage_path,cached_last,"NO_CACHED_M1_IN_REQUESTED_WINDOW");
++   const datetime start_time = available_start > InpFromServer ? available_start : InpFromServer;
+    if(start_time <= 0 || start_time > end_time)
+      {
+       PrintFormat("QM_M1_HARVEST_SYNC_FAIL symbol=%s start=%s end=%s",
+@@ -402,11 +435,11 @@
+       return false;
+      }
+    if(!WriteRawBars(symbol, raw_path, start_time, end_time, bar_count, first_bar, last_bar))
+-      return false;
++      return WriteEmptyCoverage(symbol,output_tag,coverage_path,cached_last,"COPYRATES_OR_EMPTY_WINDOW_FAILURE");
+ 
+    datetime tick_first = 0;
+    datetime tick_last = 0;
+-   if(!ObserveTickWindow(symbol, start_time, end_time, tick_first, tick_last))
++   if(InpObserveTicks && !ObserveTickWindow(symbol, start_time, end_time, tick_first, tick_last))
+      {
+       // Tick coverage is evidence, not a bar-harvest precondition: the
+       // coverage contract accepts null ticks (with_ticks=false path). Never
+@@ -454,6 +487,11 @@
+ 
+ void OnStart()
+   {
++   // Both US and EU summer intervals contain this entire permitted window.
++   // A different season requires a per-interval declaration; fail closed here.
++   if(InpFromServer < D'2026.03.29 04:00' || InpToServer > D'2026.10.25 03:00'
++      || InpFromServer >= InpToServer || InpServerUtcOffsetMinutes != 180)
++     { Print("QM_M1_HARVEST_CLOCK_DECLARATION_INVALID"); return; }
+    const string output_tag = Trimmed(InpOutputTag);
+    if(!SafeToken(output_tag))
+      {

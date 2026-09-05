@@ -1,0 +1,298 @@
+{
+  "schema": "qm.m08b-matched-minute/v1",
+  "rows": [
+    {
+      "symbol": "GBPUSD.DWX",
+      "dxz_last_cached_server": "2026-04-24T23:54:00",
+      "requested_window": [
+        "2026-05-26T00:00:00",
+        "2026-09-05T00:00:00"
+      ],
+      "matched_minutes": 0,
+      "reason": "NO_CACHED_M1_IN_REQUESTED_WINDOW",
+      "spread_delta_price_units_p50": null,
+      "spread_delta_price_units_p90": null,
+      "sessions": {
+        "00-06": {
+          "matched_minutes": 0,
+          "p50": null,
+          "p90": null
+        },
+        "06-12": {
+          "matched_minutes": 0,
+          "p50": null,
+          "p90": null
+        },
+        "12-18": {
+          "matched_minutes": 0,
+          "p50": null,
+          "p90": null
+        },
+        "18-24": {
+          "matched_minutes": 0,
+          "p50": null,
+          "p90": null
+        }
+      },
+      "dst_transition_week_in_requested_window": false,
+      "empirical_clock_validation": "UNAVAILABLE",
+      "coverage": {
+        "original_path": "D:\\QM\\mt5\\T3\\MQL5\\Files\\QM\\m1_harvest\\M08B_20260905T182301Z_GBPUSD_DWX_coverage.json",
+        "frozen_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_m08b_dxz_harvest\\run_182301\\M08B_20260905T182301Z_GBPUSD_DWX_coverage.json.gz",
+        "raw_sha256": "fe8ac3ecdf47e24e9929df2629ac5da4aa71636af0e28d5fc5630fab666f6d5c",
+        "stored_sha256": "8ba2a5fd3b2f21337bd9ffcf45a92e88681a3414b3a83c7ce71d3fdf757693c0",
+        "raw_bytes": 402
+      }
+    },
+    {
+      "symbol": "EURUSD.DWX",
+      "dxz_last_cached_server": "2026-04-06T02:59:00",
+      "requested_window": [
+        "2026-05-26T00:00:00",
+        "2026-09-05T00:00:00"
+      ],
+      "matched_minutes": 0,
+      "reason": "NO_CACHED_M1_IN_REQUESTED_WINDOW",
+      "spread_delta_price_units_p50": null,
+      "spread_delta_price_units_p90": null,
+      "sessions": {
+        "00-06": {
+          "matched_minutes": 0,
+          "p50": null,
+          "p90": null
+        },
+        "06-12": {
+          "matched_minutes": 0,
+          "p50": null,
+          "p90": null
+        },
+        "12-18": {
+          "matched_minutes": 0,
+          "p50": null,
+          "p90": null
+        },
+        "18-24": {
+          "matched_minutes": 0,
+          "p50": null,
+          "p90": null
+        }
+      },
+      "dst_transition_week_in_requested_window": false,
+      "empirical_clock_validation": "UNAVAILABLE",
+      "coverage": {
+        "original_path": "D:\\QM\\mt5\\T3\\MQL5\\Files\\QM\\m1_harvest\\M08B_20260905T182301Z_EURUSD_DWX_coverage.json",
+        "frozen_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_m08b_dxz_harvest\\run_182301\\M08B_20260905T182301Z_EURUSD_DWX_coverage.json.gz",
+        "raw_sha256": "f404f5d2cecf6eb22df7f822e8d22cee8fa3946290ee25426af86f8592525817",
+        "stored_sha256": "e6fc0b8a62372f70031ff534d724d237b9ac2f44dc00e1aecae65b80d44f0bc1",
+        "raw_bytes": 402
+      }
+    },
+    {
+      "symbol": "USDCAD.DWX",
+      "dxz_last_cached_server": "2025-12-31T23:59:00",
+      "requested_window": [
+        "2026-05-26T00:00:00",
+        "2026-09-05T00:00:00"
+      ],
+      "matched_minutes": 0,
+      "reason": "NO_CACHED_M1_IN_REQUESTED_WINDOW",
+      "spread_delta_price_units_p50": null,
+      "spread_delta_price_units_p90": null,
+      "sessions": {
+        "00-06": {
+          "matched_minutes": 0,
+          "p50": null,
+          "p90": null
+        },
+        "06-12": {
+          "matched_minutes": 0,
+          "p50": null,
+          "p90": null
+        },
+        "12-18": {
+          "matched_minutes": 0,
+          "p50": null,
+          "p90": null
+        },
+        "18-24": {
+          "matched_minutes": 0,
+          "p50": null,
+          "p90": null
+        }
+      },
+      "dst_transition_week_in_requested_window": false,
+      "empirical_clock_validation": "UNAVAILABLE",
+      "coverage": {
+        "original_path": "D:\\QM\\mt5\\T3\\MQL5\\Files\\QM\\m1_harvest\\M08B_20260905T182301Z_USDCAD_DWX_coverage.json",
+        "frozen_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_m08b_dxz_harvest\\run_182301\\M08B_20260905T182301Z_USDCAD_DWX_coverage.json.gz",
+        "raw_sha256": "c121acbf6ee52db2fad05f27fef2c02ac3bcfecf2e02c44ad947d3eaac072817",
+        "stored_sha256": "630a1ef987f3e97ada7278c3a1cfe80a2bdf4fae527b4be014af825664ac2549",
+        "raw_bytes": 402
+      }
+    },
+    {
+      "symbol": "NZDUSD.DWX",
+      "dxz_last_cached_server": "2025-12-31T23:58:00",
+      "requested_window": [
+        "2026-05-26T00:00:00",
+        "2026-09-05T00:00:00"
+      ],
+      "matched_minutes": 0,
+      "reason": "NO_CACHED_M1_IN_REQUESTED_WINDOW",
+      "spread_delta_price_units_p50": null,
+      "spread_delta_price_units_p90": null,
+      "sessions": {
+        "00-06": {
+          "matched_minutes": 0,
+          "p50": null,
+          "p90": null
+        },
+        "06-12": {
+          "matched_minutes": 0,
+          "p50": null,
+          "p90": null
+        },
+        "12-18": {
+          "matched_minutes": 0,
+          "p50": null,
+          "p90": null
+        },
+        "18-24": {
+          "matched_minutes": 0,
+          "p50": null,
+          "p90": null
+        }
+      },
+      "dst_transition_week_in_requested_window": false,
+      "empirical_clock_validation": "UNAVAILABLE",
+      "coverage": {
+        "original_path": "D:\\QM\\mt5\\T3\\MQL5\\Files\\QM\\m1_harvest\\M08B_20260905T182301Z_NZDUSD_DWX_coverage.json",
+        "frozen_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_m08b_dxz_harvest\\run_182301\\M08B_20260905T182301Z_NZDUSD_DWX_coverage.json.gz",
+        "raw_sha256": "b1359ce951236f7966bbf9db1f6b6332205150620452961876cdbdceaf201337",
+        "stored_sha256": "190b10bcc4c89b48588a6afa831c03cd9d4f9ad0874d77a5148cd2839d7bf2c6",
+        "raw_bytes": 402
+      }
+    },
+    {
+      "symbol": "XTIUSD.DWX",
+      "dxz_last_cached_server": "2025-12-31T23:59:00",
+      "requested_window": [
+        "2026-05-26T00:00:00",
+        "2026-09-05T00:00:00"
+      ],
+      "matched_minutes": 0,
+      "reason": "NO_CACHED_M1_IN_REQUESTED_WINDOW",
+      "spread_delta_price_units_p50": null,
+      "spread_delta_price_units_p90": null,
+      "sessions": {
+        "00-06": {
+          "matched_minutes": 0,
+          "p50": null,
+          "p90": null
+        },
+        "06-12": {
+          "matched_minutes": 0,
+          "p50": null,
+          "p90": null
+        },
+        "12-18": {
+          "matched_minutes": 0,
+          "p50": null,
+          "p90": null
+        },
+        "18-24": {
+          "matched_minutes": 0,
+          "p50": null,
+          "p90": null
+        }
+      },
+      "dst_transition_week_in_requested_window": false,
+      "empirical_clock_validation": "UNAVAILABLE",
+      "coverage": {
+        "original_path": "D:\\QM\\mt5\\T3\\MQL5\\Files\\QM\\m1_harvest\\M08B_20260905T182301Z_XTIUSD_DWX_coverage.json",
+        "frozen_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_m08b_dxz_harvest\\run_182301\\M08B_20260905T182301Z_XTIUSD_DWX_coverage.json.gz",
+        "raw_sha256": "fe239ba4c5ec5939cf060dcd92d797111cf157b716b98ffb6ff54ee0dd048dc1",
+        "stored_sha256": "8275ff0795b58684b0624d28b74fc746207abf4fd84d3e565a355ea2cbd63d1e",
+        "raw_bytes": 402
+      }
+    },
+    {
+      "symbol": "XAGUSD.DWX",
+      "dxz_last_cached_server": "2025-12-31T23:58:00",
+      "requested_window": [
+        "2026-05-26T00:00:00",
+        "2026-09-05T00:00:00"
+      ],
+      "matched_minutes": 0,
+      "reason": "NO_CACHED_M1_IN_REQUESTED_WINDOW",
+      "spread_delta_price_units_p50": null,
+      "spread_delta_price_units_p90": null,
+      "sessions": {
+        "00-06": {
+          "matched_minutes": 0,
+          "p50": null,
+          "p90": null
+        },
+        "06-12": {
+          "matched_minutes": 0,
+          "p50": null,
+          "p90": null
+        },
+        "12-18": {
+          "matched_minutes": 0,
+          "p50": null,
+          "p90": null
+        },
+        "18-24": {
+          "matched_minutes": 0,
+          "p50": null,
+          "p90": null
+        }
+      },
+      "dst_transition_week_in_requested_window": false,
+      "empirical_clock_validation": "UNAVAILABLE",
+      "coverage": {
+        "original_path": "D:\\QM\\mt5\\T3\\MQL5\\Files\\QM\\m1_harvest\\M08B_20260905T182301Z_XAGUSD_DWX_coverage.json",
+        "frozen_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_m08b_dxz_harvest\\run_182301\\M08B_20260905T182301Z_XAGUSD_DWX_coverage.json.gz",
+        "raw_sha256": "661dd2c7a20f676e490b3f737d7419eee40f4d11733dcbdd1a477aa7fd2171b8",
+        "stored_sha256": "918dc8d2b4177d51c143c7de1ec0ee70b4741a83f44bd8d06db767dc1e8dbd09",
+        "raw_bytes": 402
+      }
+    }
+  ],
+  "ftmo_frozen_inputs_verified": [
+    {
+      "symbol": "GBPUSD",
+      "raw_sha256": "5e9a417e0f514cc02d2899dfdee73c7d4464f2a5c55b5304debd45fa15ad44f9",
+      "frozen_sha256": "6ce5da93017f8e6c3c5650be13f83d2dabeb11da5acea8bf52613e15d0529d16"
+    },
+    {
+      "symbol": "EURUSD",
+      "raw_sha256": "0ba126087d814967e5c61a2e6ddc92ef88fefc3e2f35ca14576a21ee89a7b975",
+      "frozen_sha256": "54555906a8397cb0f181346edf7a60d3a58ddbc064be2b1403671e7698a4916e"
+    },
+    {
+      "symbol": "USDCAD",
+      "raw_sha256": "c2378dd0cfdbfb9deeaa709ef07dae441ba619872b1c15d77016c68098c7a9ab",
+      "frozen_sha256": "b890900608d0cdb6e16590ee9194f51f6c3d6121d6b04b26b1fe538a12c75891"
+    },
+    {
+      "symbol": "NZDUSD",
+      "raw_sha256": "96659c7034371abe89914b4cd02d7298115ed58c65c5bdfe5e3d332795f794c6",
+      "frozen_sha256": "c63442812a5c1285bd3d28ecc313c185699f1dc1688315fd095a2505cb91de69"
+    },
+    {
+      "symbol": "XTIUSD",
+      "raw_sha256": "3fb0807c418e9e157b213d33daf6ce524d96144e088c9c6540fbaa3a75f0bb03",
+      "frozen_sha256": "4adee93cfc93e7e377835c632a4c27321c330052704689d8932588f3af49ad4e"
+    },
+    {
+      "symbol": "XAGUSD",
+      "raw_sha256": "106ee5f54679274ff546390445f0aaf8b72f1e62635d5a784eef23f5ebdc3a8e",
+      "frozen_sha256": "47d213f44cce5626b39a7650de0782ccf6b5b210db3392572c7691482af4e65e"
+    }
+  ],
+  "ftmo_clock_validation": "LEGACY_LITERAL_Z_UNVERIFIED",
+  "admissible_cost_change": false,
+  "note": "No DXZ bars exist in the requested interval; intersections are empty independently of any offset assumption. Session quantiles must remain null. Native custom symbols are archived comparators, not current broker downloads."
+}
