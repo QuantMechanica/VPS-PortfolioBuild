@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import atexit
+from collections import Counter
 from contextlib import contextmanager
 import errno
 import faulthandler
@@ -124,6 +125,7 @@ FACTORY_ADMISSION_LOCK_POLL_SECONDS = 0.01
 # expensive check while peers remain free to claim non-census work.  This lock
 # is deliberately distinct from FACTORY_MUTATION.lock.
 CLAIM_PREFLIGHT_MAX_CANDIDATES = 8
+DL089_PREFLIGHT_REFUSALS_PER_PROGRAM = 1
 Q09_CELL_SHARDING_FLAG = "Q09_CELL_SHARDING_ENABLED"
 Q09_CELL_SHARDING_MAX_TERMINALS_FLAG = "Q09_CELL_SHARDING_MAX_TERMINALS"
 Q09_CELL_SHARDING_DEFAULT_MAX_TERMINALS = 4
@@ -4426,6 +4428,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
     opt_census_lane_tokens: dict[str, dict[str, Any]] = {}
     pruning_deferred_candidates: set[tuple[str, str]] = set()
     pruning_attempted_lanes: set[tuple[str, str]] = set()
+    lane_preflight_refusals_by_program: Counter[str] = Counter()
     opt_census_worker_count = len(farmctl.worker_policy_terminals())
     history_preflight_cache: dict[
         str,
@@ -4836,7 +4839,33 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                 census_cells_claimable: bool | None = None
                 # claim-order memo (2026-09-03): byte-identical rows, reused while
                 # PRAGMA data_version proves the DB unchanged (see farmctl).
-                for item in farmctl.execute_pending_claim_order(conn):
+                ordered_candidates = farmctl.execute_pending_claim_order(conn)
+                # The canonical queue is program/year agnostic. Under L=2 it
+                # can therefore put a later year of an otherwise-free arm
+                # ahead of that arm's actual head. Do the cheap database-only
+                # frontier reduction before any cold ledger/hash preflight.
+                pending_arm_frontiers: dict[tuple[str, str], tuple[int, str]] = {}
+                for pending_row in ordered_candidates:
+                    if str(pending_row["phase"] or "").upper() != "OPT_CENSUS":
+                        continue
+                    pending_payload = _json_loads(pending_row["payload_json"])
+                    if not _is_governed_dl089_census_payload(pending_payload):
+                        continue
+                    pending_lane = dl089_scheduling.lane_id(
+                        pending_payload,
+                        ea_id=pending_row["ea_id"],
+                        symbol=pending_row["symbol"],
+                    )
+                    try:
+                        pending_year = int(pending_payload.get("year"))
+                    except (TypeError, ValueError):
+                        continue
+                    current_frontier = pending_arm_frontiers.get(pending_lane)
+                    candidate_frontier = (pending_year, str(pending_row["id"]))
+                    if current_frontier is None or candidate_frontier < current_frontier:
+                        pending_arm_frontiers[pending_lane] = candidate_frontier
+
+                for item in ordered_candidates:
                     preclaim_payload_sha256 = next_cell_prestage.sha256_text(
                         item["payload_json"] or "{}"
                     )
@@ -5013,6 +5042,33 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                                 "reason": "PROGRAM_LANE_WAIT",
                             })
                             continue
+                        if governed_opt_census:
+                            try:
+                                candidate_year = int(payload.get("year"))
+                            except (TypeError, ValueError):
+                                candidate_year = -1
+                            if pending_arm_frontiers.get(opt_lane) != (
+                                candidate_year,
+                                str(item["id"]),
+                            ):
+                                skipped_opt_census_slots.append({
+                                    "item_id": item["id"],
+                                    "program_id": opt_program,
+                                    "arm": opt_arm,
+                                    "reason": "PROGRAM_ARM_FRONTIER_WAIT",
+                                })
+                                continue
+                            if (
+                                lane_preflight_refusals_by_program[opt_program]
+                                >= DL089_PREFLIGHT_REFUSALS_PER_PROGRAM
+                            ):
+                                skipped_opt_census_slots.append({
+                                    "item_id": item["id"],
+                                    "program_id": opt_program,
+                                    "reason": "PROGRAM_PREFLIGHT_SUPPRESSED",
+                                    "refusals": lane_preflight_refusals_by_program[opt_program],
+                                })
+                                continue
 
                     # Compute this before the duplicate-pair exception: basket
                     # rows are never eligible for same-program concurrency.
@@ -5482,6 +5538,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                     candidate.get("payload_json") or "{}"
                 )
             else:
+                lane_preflight_refusals_by_program[lane[0]] += 1
                 pruning_attempted_lanes.add(lane)
                 pruning_deferred_candidates.add(
                     (str(candidate["id"]), str(candidate.get("payload_json") or "{}"))

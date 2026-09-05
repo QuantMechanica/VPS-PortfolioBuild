@@ -739,6 +739,108 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             self.assertTrue(result.get("claimed"), result)
             self.assertEqual(result["item"]["id"], "arm-b-head")
 
+    def test_l2_skips_later_year_and_preflights_actual_arm_frontier(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            base = {
+                "schema": "qm.opt-census.v1",
+                "program_id": "program-a",
+                "cell_key": "active:2019",
+                "arm": "active-arm",
+                "year": 2019,
+                "ledger_path": "sealed-ledger.json",
+                "q12_work_item_id": "q12-a",
+                "q12_declaration_sha256": "fixture-sha256",
+            }
+            self._insert_work_item(
+                root, "active", "EURUSD.DWX", phase="OPT_CENSUS",
+                status="active", claimed_by="T1", ea_id="QM5_A", payload=base,
+            )
+            later = {**base, "cell_key": "sell:2020", "arm": "sell-arm", "year": 2020}
+            head = {**base, "cell_key": "sell:2019", "arm": "sell-arm", "year": 2019}
+            self._insert_work_item(
+                root, "sell-later", "EURUSD.DWX", phase="OPT_CENSUS",
+                ea_id="QM5_A", payload=later,
+            )
+            self._insert_work_item(
+                root, "sell-head", "EURUSD.DWX", phase="OPT_CENSUS",
+                ea_id="QM5_A", payload=head,
+            )
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                conn.execute("UPDATE work_items SET updated_at='2026-01-01T00:00:00Z' WHERE id='sell-later'")
+                conn.execute("UPDATE work_items SET updated_at='2026-01-02T00:00:00Z' WHERE id='sell-head'")
+                conn.commit()
+
+            def preflight(_root, _terminal, candidate, **_kwargs):
+                self.assertEqual(candidate["id"], "sell-head")
+                return {
+                    "status": "checked",
+                    "candidate_pending": True,
+                    "token": {"item_id": "sell-head"},
+                }
+
+            with (
+                patch.dict(os.environ, {
+                    "DL089_PROGRAM_SLOTS": "2",
+                    "DL089_LANES_PER_PROGRAM": "2",
+                    "DL089_CELL_SLOTS": "3",
+                    "DL089_SAME_PROGRAM_PARALLEL_ALLOWLIST": "program-a",
+                }, clear=True),
+                patch.object(terminal_worker.opt_census_pruning, "pruning_enabled", return_value=False),
+                patch.object(terminal_worker.farmctl, "_news_calendar_preflight", return_value={"ok": True}),
+                patch.object(terminal_worker, "_opt_census_lane_preflight_outside_factory_lock", side_effect=preflight) as lane_preflight,
+                patch.object(terminal_worker, "_opt_census_token_matches", side_effect=lambda _c, item, _p, token: bool(token) and item["id"] == "sell-head"),
+            ):
+                result = terminal_worker.claim_atomic(root, "T2")
+
+            self.assertTrue(result.get("claimed"), result)
+            self.assertEqual(result["item"]["id"], "sell-head")
+            lane_preflight.assert_called_once()
+
+    def test_l2_suppresses_program_after_one_lane_preflight_refusal(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            governed = {
+                "schema": "qm.opt-census.v1",
+                "program_id": "program-a",
+                "cell_key": "active:2019",
+                "arm": "active-arm",
+                "year": 2019,
+                "ledger_path": "sealed-ledger.json",
+                "q12_work_item_id": "q12-a",
+                "q12_declaration_sha256": "fixture-sha256",
+            }
+            self._insert_work_item(
+                root, "active", "EURUSD.DWX", phase="OPT_CENSUS",
+                status="active", claimed_by="T1", ea_id="QM5_A", payload=governed,
+            )
+            for arm in ("arm-b", "arm-c", "arm-d"):
+                self._insert_work_item(
+                    root, arm, "EURUSD.DWX", phase="OPT_CENSUS", ea_id="QM5_A",
+                    payload={**governed, "cell_key": f"{arm}:2019", "arm": arm},
+                )
+            self._insert_work_item(root, "ordinary", "GBPUSD.DWX", phase="P2", ea_id="QM5_B")
+            with (
+                patch.dict(os.environ, {
+                    "DL089_PROGRAM_SLOTS": "2",
+                    "DL089_LANES_PER_PROGRAM": "2",
+                    "DL089_CELL_SLOTS": "3",
+                    "DL089_SAME_PROGRAM_PARALLEL_ALLOWLIST": "program-a",
+                }, clear=True),
+                patch.object(terminal_worker.opt_census_pruning, "pruning_enabled", return_value=False),
+                patch.object(terminal_worker.farmctl, "_news_calendar_preflight", return_value={"ok": True}),
+                patch.object(
+                    terminal_worker,
+                    "_opt_census_lane_preflight_outside_factory_lock",
+                    return_value={"status": "ineligible", "reason": "candidate_not_arm_frontier"},
+                ) as lane_preflight,
+            ):
+                result = terminal_worker.claim_atomic(root, "T2")
+
+            self.assertTrue(result.get("claimed"), result)
+            self.assertEqual(result["item"]["id"], "ordinary")
+            lane_preflight.assert_called_once()
+
     def test_idle_program_head_claims_before_running_program_second_lane(self) -> None:
         with self._root() as tmp:
             root = Path(tmp) / "farm"
