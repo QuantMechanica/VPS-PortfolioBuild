@@ -1,0 +1,58 @@
+{
+  "schema_version": "qm.commodity-sleeve-build-handoff/v1",
+  "mission": "new commodity/energy sleeve edge build and Q02 enqueue",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41349",
+  "ea_label": "QM5_41349_wti-adf-sampen-agree-tr",
+  "mechanic": "monthly WTI lag-one ADF and raw-magnitude sample-entropy agreement-gated twelve-month continuation",
+  "carrier": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "source_build_commit": "947e74f89e",
+  "mq5_sha256": "ec99ef12b459ba1d67d41286550e459ca44d361df0b2c6a89c7a3999aba6499a",
+  "approved_card_sha256": "b1041362d6d0e525ce39b96eb1c20d8b184c069f618f64ae64540e3ce6bd3228",
+  "setfile_sha256": "990dc5da6df0f899c05046f43a08c36365e17e13ef0eb2fcb5644ebf6f00bf1d",
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "reference_validation": {
+    "command": "python -m pytest -q framework/EAs/QM5_41349_wti-adf-sampen-agree-tr/docs/test_wti_adf_sampen_agree_reference.py",
+    "passed": 4,
+    "failed": 0
+  },
+  "cpu_admission": {
+    "threshold_percent": 97,
+    "rule": "average and maximum must both be strictly below threshold",
+    "samples": [
+      {"sampled_at_utc": "2026-09-05T08:16:19.4130000Z", "cpu_percent": 88.0875},
+      {"sampled_at_utc": "2026-09-05T08:16:20.4150000Z", "cpu_percent": 76.2396},
+      {"sampled_at_utc": "2026-09-05T08:16:21.4160000Z", "cpu_percent": 75.5034},
+      {"sampled_at_utc": "2026-09-05T08:16:22.4160000Z", "cpu_percent": 72.5616},
+      {"sampled_at_utc": "2026-09-05T08:16:23.4170000Z", "cpu_percent": 76.4767}
+    ],
+    "average_percent": 77.7738,
+    "maximum_percent": 88.0875,
+    "admitted": true
+  },
+  "compile": {
+    "work_item_id": "58f2abcf-00c1-4d8e-a928-9a25dde9e1c9",
+    "source_hash_matched_at_release": true,
+    "activation_hold_released": true,
+    "priority_track": true,
+    "status_at_handoff": "pending",
+    "verdict": null,
+    "ex5_exists": false
+  },
+  "q02": {
+    "status": "NOT_ENQUEUED_Q01_PENDING",
+    "reason": "No strict COMPILE_OK evidence or current EX5 exists; enqueue must remain fail-closed."
+  },
+  "safety": {
+    "manual_backtest_run": false,
+    "terminal_controlled": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false
+  }
+}

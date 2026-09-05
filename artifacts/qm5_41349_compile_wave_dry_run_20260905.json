@@ -1,0 +1,19 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "ec99ef12b459ba1d67d41286550e459ca44d361df0b2c6a89c7a3999aba6499a",
+      "ea_id": "QM5_41349",
+      "ea_label": "QM5_41349_wti-adf-sampen-agree-tr",
+      "expected_mq5_sha256": "ec99ef12b459ba1d67d41286550e459ca44d361df0b2c6a89c7a3999aba6499a",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41349_wti-adf-sampen-agree-tr\\QM5_41349_wti-adf-sampen-agree-tr.mq5",
+      "work_item_id": "58f2abcf-00c1-4d8e-a928-9a25dde9e1c9"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "58f2abcf-00c1-4d8e-a928-9a25dde9e1c9"
+}

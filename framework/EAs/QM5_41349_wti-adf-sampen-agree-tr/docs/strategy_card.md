@@ -71,7 +71,7 @@ news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
 pipeline_phase: Q01
-q01_status: NOT_BUILT
+q01_status: SOURCE_BUILT_COMPILE_PENDING
 q02_status: NOT_ENQUEUED_Q01_PENDING
 force_build: true
 review_focus: "Falsify direct-WTI monthly ADF/sample-entropy agreement outside the certified XAU/SP500/NDX/XNG book. Verify shared endpoints, ADF arithmetic, exact template matching/counts, inclusive gates, disagreement abstention, twelve-month side, consumed month, fixed risk, frozen stop, and next-month lifecycle. Q09 alone may establish decorrelation."
@@ -261,7 +261,7 @@ manifests, `T_Live`, AutoTrading, and live use.
 
 | version | date | reason | gate | verdict |
 |---|---|---|---|---|
-| v1 | 2026-09-05 | initial ADF/sample-entropy agreement card | G0 | APPROVED; build pending |
+| v1 | 2026-09-05 | initial ADF/sample-entropy agreement card | G0 | APPROVED; source built; governed compile pending |
 
 ## Pipeline Phase Status
 
@@ -269,5 +269,5 @@ manifests, `T_Live`, AutoTrading, and live use.
 |---|---|---|---|
 | G0 Source Approval | 2026-09-05 | APPROVED_SOURCE | source approval decision |
 | G0 Research Intake | 2026-09-05 | APPROVED | G0 decision |
-| Q01 Build | TBD | PENDING | TBD |
-| Q02 Baseline | TBD | NOT_ENQUEUED | TBD |
+| Q01 Build | 2026-09-05 | SOURCE_BUILT; COMPILE_PENDING | commit `947e74f89e`; compile item `58f2abcf-00c1-4d8e-a928-9a25dde9e1c9` |
+| Q02 Baseline | 2026-09-05 | NOT_ENQUEUED_Q01_PENDING | strict compile/EX5 prerequisite not yet available |
