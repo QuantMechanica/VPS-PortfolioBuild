@@ -1,0 +1,122 @@
+{
+  "verified_at": "2026-09-05T08:01:10.495770+00:00",
+  "ea_id": "QM5_41345",
+  "bound_work_item_id": "fb0b6989-719b-5697-998c-82fb0045cd27",
+  "classification": "ENTRY_HOOK_UNRESOLVED_SYMBOL_SPECIFIC",
+  "cause_proven": false,
+  "harness": {
+    "actual_from": "2018.07.02",
+    "actual_to": "2022.12.31",
+    "model": 4,
+    "real_ticks_marker": true,
+    "symbol": "XAUUSD.DWX",
+    "period": "D1",
+    "terminal": "T2",
+    "execution_identity": {
+      "expert_binary": {
+        "deployed": {
+          "last_write_utc": "2026-09-05T07:24:04.1715160Z",
+          "path": "D:\\QM\\mt5\\T2\\MQL5\\Experts\\QM\\QM5_41345_xau-weekly-tsmom-opt.ex5",
+          "sha256": "3a8968fc2d66a9a52ed9d58b8bdf5532be808ed8a82a94434ad5b79ae3aa6bf3",
+          "size_bytes": 428210
+        },
+        "observed_after": {
+          "last_write_utc": "2026-09-05T07:24:04.1715160Z",
+          "path": "D:\\QM\\mt5\\T2\\MQL5\\Experts\\QM\\QM5_41345_xau-weekly-tsmom-opt.ex5",
+          "sha256": "3a8968fc2d66a9a52ed9d58b8bdf5532be808ed8a82a94434ad5b79ae3aa6bf3",
+          "size_bytes": 428210
+        },
+        "pre_dispatch_verified": true,
+        "required_sha256": "3a8968fc2d66a9a52ed9d58b8bdf5532be808ed8a82a94434ad5b79ae3aa6bf3",
+        "source": null,
+        "source_matches_deployed": null,
+        "stable_during_run": true
+      },
+      "mq5_source": {
+        "last_write_utc": "2026-09-05T06:48:55.5317611Z",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41345_xau-weekly-tsmom-opt\\QM5_41345_xau-weekly-tsmom-opt.mq5",
+        "sha256": "9e82102aa6739e8dff39dde19fe0bdcb6f30363c340878a5dd045f04ffd8b6ec",
+        "size_bytes": 19216
+      },
+      "run_smoke": {
+        "last_write_utc": "2026-09-03T20:57:53.7466670Z",
+        "path": "C:\\QM\\repo\\framework\\scripts\\run_smoke.ps1",
+        "sha256": "f7bc53215f7042b018f324307f120c90ef505c929fb27fee8f8740244b53e97d",
+        "size_bytes": 164681
+      },
+      "setfile": {
+        "deployed": {
+          "last_write_utc": "2026-09-05T07:29:30.9264491Z",
+          "path": "D:\\QM\\mt5\\T2\\MQL5\\Profiles\\Tester\\QM5_41345_xau-weekly-tsmom-opt_XAUUSD.DWX_D1_04f877708023eccf.set",
+          "sha256": "04f877708023eccffdd014597808d7426caeb1e8fccf6eee8e743022c0e1605b",
+          "size_bytes": 1041
+        },
+        "observed_after": {
+          "last_write_utc": "2026-09-05T07:29:30.9264491Z",
+          "path": "D:\\QM\\mt5\\T2\\MQL5\\Profiles\\Tester\\QM5_41345_xau-weekly-tsmom-opt_XAUUSD.DWX_D1_04f877708023eccf.set",
+          "sha256": "04f877708023eccffdd014597808d7426caeb1e8fccf6eee8e743022c0e1605b",
+          "size_bytes": 1041
+        },
+        "source": {
+          "last_write_utc": "2026-09-05T07:29:30.9264491Z",
+          "path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_21502_XAUUSD_DWX_2019_2025\\base_setfiles\\QM5_41345_xau-weekly-tsmom-opt_XAUUSD.DWX_D1_04f877708023eccf.set",
+          "sha256": "04f877708023eccffdd014597808d7426caeb1e8fccf6eee8e743022c0e1605b",
+          "size_bytes": 1041
+        },
+        "source_matches_deployed": true,
+        "stable_during_run": true
+      },
+      "stable_during_run": true
+    },
+    "report_size_bytes": 34188
+  },
+  "setup": {
+    "oninit_failure": false,
+    "calendar_status": "OK",
+    "calendar_age_hours": 4
+  },
+  "event_counts": {
+    "SYMBOL_GUARD_INIT": 1,
+    "NEWS_TESTER_CALENDAR_SELFTEST": 1,
+    "NEWS_CALENDAR_LOADED": 1,
+    "KILL_SWITCH_INIT": 1,
+    "INIT": 1,
+    "INIT_OK": 1,
+    "FRIDAY_CLOSE": 222,
+    "DEINIT": 2,
+    "PP_CENSUS_SUMMARY": 1,
+    "CHART_UI_SHUTDOWN": 1
+  },
+  "permission_summary": [
+    {
+      "sv": 1,
+      "ts_utc": "2022-12-30T23:54:59.437Z",
+      "ts_broker": "2022-12-30T23:54:59",
+      "level": "INFO",
+      "ea_id": 41345,
+      "slug": "ea-41345",
+      "symbol": "XAUUSD.DWX",
+      "tf": "D1",
+      "magic": 413450000,
+      "event": "PP_CENSUS_SUMMARY",
+      "payload": {
+        "profile_key": "DL089_OPT|0|16408|1|B|S",
+        "enabled": false,
+        "days_evaluated": 0,
+        "fire_count": 0,
+        "legs_suppressed": 0,
+        "invalid_days": 0
+      }
+    }
+  ],
+  "trades": 0,
+  "evidence_hashes": {
+    "D:\\QM\\reports\\work_items\\fb0b6989-719b-5697-998c-82fb0045cd27\\QM5_41345\\20260905_073003\\summary.json": "1a56eadfd0873ceed73a03ae1b477592d597858d57fb68e400e324a3435f2e14",
+    "D:\\QM\\reports\\work_items\\fb0b6989-719b-5697-998c-82fb0045cd27\\QM5_41345\\20260905_073003\\logger_sample.jsonl": "ff59c957e376b02e3dd8f3148ba6e57703a966ea6f3337398a388445fc52884d",
+    "D:\\QM\\reports\\work_items\\fb0b6989-719b-5697-998c-82fb0045cd27\\QM5_41345\\20260905_073003\\raw\\run_01\\report.htm": "736dbc9cb34cdc29cd3b9af861b26eb3f00bf130e3346eb39d2d434638528e56",
+    "D:\\QM\\reports\\work_items\\fb0b6989-719b-5697-998c-82fb0045cd27\\QM5_41345\\20260905_073003\\raw\\run_01\\tester.ini": "7df81c94f186df027691523ad62fa1fa4c2bb47046470f96ab9c400767ae493d",
+    "D:\\QM\\reports\\work_items\\fb0b6989-719b-5697-998c-82fb0045cd27\\QM5_41345\\20260905_073003\\raw\\run_01\\20260905.log": "a84ca85c156b1760fd3c88c7e35f03a0802a50eef039553d987bb44cb211790b"
+  },
+  "repair_applied": false,
+  "remaining_gap": "No candidate reached Pattern_AllowsRequest; the available logs do not attribute the earlier strategy rejection. No deterministic defect proven, no strategy mechanics changed, no new run started."
+}

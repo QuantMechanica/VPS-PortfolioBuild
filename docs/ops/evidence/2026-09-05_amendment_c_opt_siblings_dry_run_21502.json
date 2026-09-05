@@ -1,0 +1,49 @@
+{
+  "captured_at": "2026-09-05T08:02:24.540643+00:00",
+  "command": [
+    "python",
+    "C:\\QM\\repo\\tools\\strategy_farm\\farmctl.py",
+    "service-dl089-matrix",
+    "--work-item-id",
+    "264c5715-dfea-503f-9c98-0315624dfffc"
+  ],
+  "result": {
+    "active_opt_census_cells": 2,
+    "applied": false,
+    "capacity_waits": [],
+    "cell_slots_configured": 6,
+    "cell_slots_effective": 6,
+    "deferred": [
+      {
+        "ea_id": "QM5_21502",
+        "machine_reason": "measurement Q02 is terminal non-PASS: fb0b6989-719b-5697-998c-82fb0045cd27 done/ZERO_TRADES",
+        "symbol": "XAUUSD.DWX",
+        "work_item_id": "264c5715-dfea-503f-9c98-0315624dfffc"
+      }
+    ],
+    "lanes_per_program_configured": 2,
+    "lanes_per_program_effective": 2,
+    "maintained": [],
+    "materialized": [],
+    "matrix_runner_revision": "dl089-matrix-runner-v2",
+    "pair_mode": "BOUNDED_PROGRAMS",
+    "priority_window_cap": 8,
+    "program_slots": 8,
+    "program_slots_configured": 8,
+    "program_slots_effective": 8,
+    "q02_prerequisites": [
+      {
+        "created": false,
+        "measurement_ea_id": "QM5_41345",
+        "q12_work_item_id": "264c5715-dfea-503f-9c98-0315624dfffc",
+        "status": "done",
+        "verdict": "ZERO_TRADES",
+        "work_item_id": "fb0b6989-719b-5697-998c-82fb0045cd27"
+      }
+    ],
+    "recoveries": [],
+    "schema": "qm.dl089-matrix-service/v1",
+    "slot_owners": [],
+    "worker_count": 10
+  }
+}

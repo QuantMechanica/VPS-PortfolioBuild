@@ -1,0 +1,307 @@
+{
+  "verified_at": "2026-09-05T07:57:56.364039+00:00",
+  "all_six_verified": true,
+  "focused_tests": "test_pattern_permission_framework_wiring.py: 5 passed; six guardrail PASS; six SPEC PASS",
+  "results": [
+    {
+      "parent_ea_id": "QM5_11708",
+      "ea_id": "QM5_41342",
+      "ea_label": "QM5_41342_anon-market-squeeze-d1-opt",
+      "compile_work_item_id": "f0dc12bc-7da4-47b0-a3f5-7ee69cc0f8bf",
+      "compile_receipt_path": "D:\\QM\\reports\\work_items\\f0dc12bc-7da4-47b0-a3f5-7ee69cc0f8bf\\QM5_41342\\COMPILE_EA\\compile_evidence.json",
+      "compile_receipt_sha256": "5dc0df5f87d5fd2821cbd357b89760d0afd304025ffbb2ff766261b9a1a40351",
+      "compile_errors": 0,
+      "compile_warnings": 0,
+      "build_check_result": "PASS",
+      "mq5_sha256": "a9a2ef6ece187cff628ceddde987a535245a3fef97424bdabbe26c9eb6cf8aee",
+      "ex5_sha256": "70341a9abc97ca8e05581f3249959bd4573b080d04bd8cb4217caaa4583424c5",
+      "card_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41342_anon-market-squeeze-d1-opt\\docs\\strategy_card.md",
+      "approved_card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41342_anon-market-squeeze-d1-opt.md",
+      "card_sha256": "00c57ffb29704de7abf2e576e3f6cb747d4de67c0928f674dd9a3e488396dabc",
+      "magic": {
+        "ea_id": "41342",
+        "ea_slug": "anon-market-squeeze-d1-opt",
+        "symbol_slot": "0",
+        "symbol": "EURUSD.DWX",
+        "magic": "413420000",
+        "reserved_at": "2026-09-05",
+        "reserved_by": "Codex governed allocator",
+        "status": "active"
+      },
+      "registry_row": {
+        "ea_id": "41342",
+        "slug": "anon-market-squeeze-d1-opt",
+        "strategy_id": "bd9505ce-17cd-4873-9f6f-5032c1a537a6",
+        "status": "active",
+        "owner": "Codex-board-advisor",
+        "created_at": "2026-09-05",
+        "retired_at": "",
+        "retired_reason": "",
+        "retired_evidence": ""
+      },
+      "setfiles": [
+        {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41342_anon-market-squeeze-d1-opt\\sets\\QM5_41342_anon-market-squeeze-d1-opt_EURUSD.DWX_D1_backtest.set",
+          "current_sha256": "9c215e950d378050c0ada88a85f49db5c4a6d94a0afb8c82d8e8c172eddda542",
+          "generation_sha256": "7ef2106ebdef2ce4d1dada6b112265b52a128984756225714a9f00e376a7dd40",
+          "generation_preimage_reproduced": true,
+          "generation_newlines": [
+            "LF"
+          ],
+          "build_hash": "32da5fd8a32016092442ac6c1da3d9052e45c29110606cabb74f2c69c223b967",
+          "build_check_rewrite_reproduced": true
+        }
+      ]
+    },
+    {
+      "parent_ea_id": "QM5_20086",
+      "ea_id": "QM5_41343",
+      "ea_label": "QM5_41343_connors-multi-day-high-low-h4-r1-recovery-opt",
+      "compile_work_item_id": "07db9119-79a3-4d5a-bafe-4cd7577d187a",
+      "compile_receipt_path": "D:\\QM\\reports\\work_items\\07db9119-79a3-4d5a-bafe-4cd7577d187a\\QM5_41343\\COMPILE_EA\\compile_evidence.json",
+      "compile_receipt_sha256": "cc8180afecdb28393d6aad8713feb9a8a3e8ce9a6d6e4bac3da4a9825e1c7a37",
+      "compile_errors": 0,
+      "compile_warnings": 0,
+      "build_check_result": "PASS",
+      "mq5_sha256": "b0ccc07e0682eec6406312c8ba86ee4c56d00448c0a76ba99257204e32632498",
+      "ex5_sha256": "bd00d55ab937654d307179ecf3b36065e1552c30b303feeca1def48633c34cf1",
+      "card_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41343_connors-multi-day-high-low-h4-r1-recovery-opt\\docs\\strategy_card.md",
+      "approved_card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41343_connors-multi-day-high-low-h4-r1-recovery-opt.md",
+      "card_sha256": "5c02edf0f8243cb3f7e0a2f6e2d390137a33534ad8d6126f8aaef08f4df5402f",
+      "magic": {
+        "ea_id": "41343",
+        "ea_slug": "connors-multi-day-high-low-h4-r1-recovery-opt",
+        "symbol_slot": "0",
+        "symbol": "EURUSD.DWX",
+        "magic": "413430000",
+        "reserved_at": "2026-09-05",
+        "reserved_by": "Codex governed allocator",
+        "status": "active"
+      },
+      "registry_row": {
+        "ea_id": "41343",
+        "slug": "connors-multi-day-high-low-h4-r1-recovery-opt",
+        "strategy_id": "bd9505ce-17cd-4873-9f6f-5032c1a537a6",
+        "status": "active",
+        "owner": "Codex-board-advisor",
+        "created_at": "2026-09-05",
+        "retired_at": "",
+        "retired_reason": "",
+        "retired_evidence": ""
+      },
+      "setfiles": [
+        {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41343_connors-multi-day-high-low-h4-r1-recovery-opt\\sets\\QM5_41343_connors-multi-day-high-low-h4-r1-recovery-opt_EURUSD.DWX_H4_backtest.set",
+          "current_sha256": "211af1b75bda9370738997bc14fafc8e958294324a7d4ea3c8f80e466744c466",
+          "generation_sha256": "35b9126f5396df59962d014c55f1b9b317901205a4a8742b8c39e34d38893c39",
+          "generation_preimage_reproduced": true,
+          "generation_newlines": [
+            "LF"
+          ],
+          "build_hash": "86a52479bb7095726be97fe9a0aca20c99d49756038a26cb90d3885ea4368249",
+          "build_check_rewrite_reproduced": true
+        }
+      ]
+    },
+    {
+      "parent_ea_id": "QM5_41221",
+      "ea_id": "QM5_41344",
+      "ea_label": "QM5_41344_ohlc-daily-squeeze-reversal-d1-requal8-opt",
+      "compile_work_item_id": "31b31c43-740d-44d8-bf0a-bc4fec6b0b43",
+      "compile_receipt_path": "D:\\QM\\reports\\work_items\\31b31c43-740d-44d8-bf0a-bc4fec6b0b43\\QM5_41344\\COMPILE_EA\\compile_evidence.json",
+      "compile_receipt_sha256": "f177e694601c276217a06fb249b0a0e4c0565ec086fa07e05ea6a0570ef97f73",
+      "compile_errors": 0,
+      "compile_warnings": 0,
+      "build_check_result": "PASS",
+      "mq5_sha256": "da134dbfc0332465b1f2ee3eb093ab8312cde308aa4bffd57575b2214c799b61",
+      "ex5_sha256": "334411cc192775eb3fe52167af9c4c236f18a4d0a908eddebd027fa0ea29e3fe",
+      "card_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41344_ohlc-daily-squeeze-reversal-d1-requal8-opt\\docs\\strategy_card.md",
+      "approved_card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41344_ohlc-daily-squeeze-reversal-d1-requal8-opt.md",
+      "card_sha256": "b4671e4ad13acdc473d9960591ec519ec92fa83a97de0cba07ed23c38146282d",
+      "magic": {
+        "ea_id": "41344",
+        "ea_slug": "ohlc-daily-squeeze-reversal-d1-requal8-opt",
+        "symbol_slot": "0",
+        "symbol": "EURUSD.DWX",
+        "magic": "413440000",
+        "reserved_at": "2026-09-05",
+        "reserved_by": "Codex governed allocator",
+        "status": "active"
+      },
+      "registry_row": {
+        "ea_id": "41344",
+        "slug": "ohlc-daily-squeeze-reversal-d1-requal8-opt",
+        "strategy_id": "bd9505ce-17cd-4873-9f6f-5032c1a537a6",
+        "status": "active",
+        "owner": "Codex-board-advisor",
+        "created_at": "2026-09-05",
+        "retired_at": "",
+        "retired_reason": "",
+        "retired_evidence": ""
+      },
+      "setfiles": [
+        {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41344_ohlc-daily-squeeze-reversal-d1-requal8-opt\\sets\\QM5_41344_ohlc-daily-squeeze-reversal-d1-requal8-opt_EURUSD.DWX_D1_backtest.set",
+          "current_sha256": "ddcef84d51a2328bc3fb5894c971a56812e6fb2611b49657c389d7f69cbf812f",
+          "generation_sha256": "ad17bc03341a14251dedf3d95cd74106702f5854cf07ea66c3062df74279c1b5",
+          "generation_preimage_reproduced": true,
+          "generation_newlines": [
+            "LF"
+          ],
+          "build_hash": "e6e97cc6a8d400f24c814e28e9f9a163db3482bf2320793dbfc6a4a67d62e905",
+          "build_check_rewrite_reproduced": true
+        }
+      ]
+    },
+    {
+      "parent_ea_id": "QM5_21502",
+      "ea_id": "QM5_41345",
+      "ea_label": "QM5_41345_xau-weekly-tsmom-opt",
+      "compile_work_item_id": "2ce7a9da-42ef-432e-939e-ec7af7a31646",
+      "compile_receipt_path": "D:\\QM\\reports\\work_items\\2ce7a9da-42ef-432e-939e-ec7af7a31646\\QM5_41345\\COMPILE_EA\\compile_evidence.json",
+      "compile_receipt_sha256": "38477db604e7ec8dd3c12a09010f5174590a7d47550dab020c9b09629cdb726c",
+      "compile_errors": 0,
+      "compile_warnings": 0,
+      "build_check_result": "PASS",
+      "mq5_sha256": "9e82102aa6739e8dff39dde19fe0bdcb6f30363c340878a5dd045f04ffd8b6ec",
+      "ex5_sha256": "3a8968fc2d66a9a52ed9d58b8bdf5532be808ed8a82a94434ad5b79ae3aa6bf3",
+      "card_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41345_xau-weekly-tsmom-opt\\docs\\strategy_card.md",
+      "approved_card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41345_xau-weekly-tsmom-opt.md",
+      "card_sha256": "1aef3708c9902ce8267441112c512e71be331ce6c437ebc61bb9afe01451a490",
+      "magic": {
+        "ea_id": "41345",
+        "ea_slug": "xau-weekly-tsmom-opt",
+        "symbol_slot": "0",
+        "symbol": "XAUUSD.DWX",
+        "magic": "413450000",
+        "reserved_at": "2026-09-05",
+        "reserved_by": "Codex governed allocator",
+        "status": "active"
+      },
+      "registry_row": {
+        "ea_id": "41345",
+        "slug": "xau-weekly-tsmom-opt",
+        "strategy_id": "bd9505ce-17cd-4873-9f6f-5032c1a537a6",
+        "status": "active",
+        "owner": "Codex-board-advisor",
+        "created_at": "2026-09-05",
+        "retired_at": "",
+        "retired_reason": "",
+        "retired_evidence": ""
+      },
+      "setfiles": [
+        {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41345_xau-weekly-tsmom-opt\\sets\\QM5_41345_xau-weekly-tsmom-opt_XAUUSD.DWX_D1_backtest.set",
+          "current_sha256": "9fb15f7ef965dba8acb861f8fc7087c34e28d0c31d3bf159225a2efc11e1962d",
+          "generation_sha256": "ee22d6a6356cfe2a112d10350f365c9afa4ea7d5ae16af0c99b8624ac703f50b",
+          "generation_preimage_reproduced": true,
+          "generation_newlines": [
+            "LF"
+          ],
+          "build_hash": "7563d6c7aacb59ff528557221b4a4bfc854f2a86a99049a795120d50f5a0bcd5",
+          "build_check_rewrite_reproduced": true
+        }
+      ]
+    },
+    {
+      "parent_ea_id": "QM5_41219",
+      "ea_id": "QM5_41346",
+      "ea_label": "QM5_41346_cum-rsi2-commodity-requal8-opt",
+      "compile_work_item_id": "2a5ffbfc-95d6-4004-ad24-5f1b1eb43cd7",
+      "compile_receipt_path": "D:\\QM\\reports\\work_items\\2a5ffbfc-95d6-4004-ad24-5f1b1eb43cd7\\QM5_41346\\COMPILE_EA\\compile_evidence.json",
+      "compile_receipt_sha256": "e06e04277e9e2b729f0e8d8254e8ce8851bf86423ace4c7ecbca71d75cf19b4c",
+      "compile_errors": 0,
+      "compile_warnings": 0,
+      "build_check_result": "PASS",
+      "mq5_sha256": "e237fd733314c983aae69a391622132a3cdb1e41f713470121130ed7b04e6f1a",
+      "ex5_sha256": "78dbe67baf1918f7f66f3677768a92162c1c3ac11aa858ff1c7c4e162ea92705",
+      "card_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41346_cum-rsi2-commodity-requal8-opt\\docs\\strategy_card.md",
+      "approved_card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41346_cum-rsi2-commodity-requal8-opt.md",
+      "card_sha256": "7560882b6d6ec45b866b2f1100acf22c64d020caf423560874dfbfac92fe9fa4",
+      "magic": {
+        "ea_id": "41346",
+        "ea_slug": "cum-rsi2-commodity-requal8-opt",
+        "symbol_slot": "0",
+        "symbol": "XAUUSD.DWX",
+        "magic": "413460000",
+        "reserved_at": "2026-09-05",
+        "reserved_by": "Codex governed allocator",
+        "status": "active"
+      },
+      "registry_row": {
+        "ea_id": "41346",
+        "slug": "cum-rsi2-commodity-requal8-opt",
+        "strategy_id": "bd9505ce-17cd-4873-9f6f-5032c1a537a6",
+        "status": "active",
+        "owner": "Codex-board-advisor",
+        "created_at": "2026-09-05",
+        "retired_at": "",
+        "retired_reason": "",
+        "retired_evidence": ""
+      },
+      "setfiles": [
+        {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41346_cum-rsi2-commodity-requal8-opt\\sets\\QM5_41346_cum-rsi2-commodity-requal8-opt_XAUUSD.DWX_D1_backtest.set",
+          "current_sha256": "ab1749ea8ff9269ad3112a2924dc09912c7605bb8ad7a23e306f2bd0dad26245",
+          "generation_sha256": "bf72441b5605d0d8ed27d2ee0e5a7383a254b1f19d8d993d6c2ef14a1888f16d",
+          "generation_preimage_reproduced": true,
+          "generation_newlines": [
+            "LF"
+          ],
+          "build_hash": "57061df0199ed367788ff85a826bc85231ea41585541c1fd9785406b73260bb2",
+          "build_check_rewrite_reproduced": true
+        }
+      ]
+    },
+    {
+      "parent_ea_id": "QM5_11294",
+      "ea_id": "QM5_41347",
+      "ea_label": "QM5_41347_cs-ichi-cloud-opt",
+      "compile_work_item_id": "245ee112-e9b1-4346-a5b0-82ae91cd039c",
+      "compile_receipt_path": "D:\\QM\\reports\\work_items\\245ee112-e9b1-4346-a5b0-82ae91cd039c\\QM5_41347\\COMPILE_EA\\compile_evidence.json",
+      "compile_receipt_sha256": "c145705bffd2bf61b3e92c4d7e5d4828b33bd3bd0978645e2f6c12893b17e76e",
+      "compile_errors": 0,
+      "compile_warnings": 0,
+      "build_check_result": "PASS",
+      "mq5_sha256": "64f3369a67fa212629f3bec4cc6b7a84e81ee6b44a2c80119f2cc6ed97d0ac2f",
+      "ex5_sha256": "3e475c8b7b6bf1596233768fc6b5852c0881f5c020d6ca08ec9b6f55abaa517d",
+      "card_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41347_cs-ichi-cloud-opt\\docs\\strategy_card.md",
+      "approved_card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41347_cs-ichi-cloud-opt.md",
+      "card_sha256": "2b778f6d1705a01183f88626722ab2616afb91bfd49c62a29bb40a23b340c350",
+      "magic": {
+        "ea_id": "41347",
+        "ea_slug": "cs-ichi-cloud-opt",
+        "symbol_slot": "0",
+        "symbol": "XAUUSD.DWX",
+        "magic": "413470000",
+        "reserved_at": "2026-09-05",
+        "reserved_by": "Codex governed allocator",
+        "status": "active"
+      },
+      "registry_row": {
+        "ea_id": "41347",
+        "slug": "cs-ichi-cloud-opt",
+        "strategy_id": "bd9505ce-17cd-4873-9f6f-5032c1a537a6",
+        "status": "active",
+        "owner": "Codex-board-advisor",
+        "created_at": "2026-09-05",
+        "retired_at": "",
+        "retired_reason": "",
+        "retired_evidence": ""
+      },
+      "setfiles": [
+        {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41347_cs-ichi-cloud-opt\\sets\\QM5_41347_cs-ichi-cloud-opt_XAUUSD.DWX_H4_backtest.set",
+          "current_sha256": "fa7f647225a5f330b2d9b3d4b7adf626fa34808966ce0ead9ca8b1e093761883",
+          "generation_sha256": "902fa5da968bb2d6f849080ffc7365e0e2a24a0a756841fe13319a8e1d7507e8",
+          "generation_preimage_reproduced": true,
+          "generation_newlines": [
+            "LF"
+          ],
+          "build_hash": "acd61dba9dade9d13769c8dea0fa10b236ad283f510ecda7808d9687e3b48165",
+          "build_check_rewrite_reproduced": true
+        }
+      ]
+    }
+  ]
+}

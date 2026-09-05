@@ -1,0 +1,60 @@
+{
+  "captured_at": "2026-09-05T08:02:30.900252+00:00",
+  "command": [
+    "python",
+    "C:\\QM\\repo\\tools\\strategy_farm\\farmctl.py",
+    "service-dl089-matrix",
+    "--work-item-id",
+    "5dec5753-feb0-5e6f-97d8-5393f9595eff"
+  ],
+  "result": {
+    "active_opt_census_cells": 3,
+    "applied": false,
+    "capacity_waits": [],
+    "cell_slots_configured": 6,
+    "cell_slots_effective": 6,
+    "deferred": [],
+    "lanes_per_program_configured": 2,
+    "lanes_per_program_effective": 2,
+    "maintained": [],
+    "materialized": [
+      {
+        "measurement_ea_id": "QM5_41347",
+        "program_id": "DL089_QM5_11294_XAUUSD_DWX_2019_2025",
+        "work_item_id": "5dec5753-feb0-5e6f-97d8-5393f9595eff",
+        "would_materialize": true
+      }
+    ],
+    "matrix_runner_revision": "dl089-matrix-runner-v2",
+    "pair_mode": "BOUNDED_PROGRAMS",
+    "priority_window_cap": 8,
+    "program_slots": 8,
+    "program_slots_configured": 8,
+    "program_slots_effective": 8,
+    "q02_prerequisites": [
+      {
+        "created": false,
+        "measurement_ea_id": "QM5_41347",
+        "q12_work_item_id": "5dec5753-feb0-5e6f-97d8-5393f9595eff",
+        "status": "done",
+        "verdict": "PASS",
+        "work_item_id": "05834faf-c348-5db5-a457-e379170c0901"
+      }
+    ],
+    "recoveries": [],
+    "schema": "qm.dl089-matrix-service/v1",
+    "slot_owners": [
+      {
+        "action": "would_materialize",
+        "active_lane_ids": [],
+        "boosted_lane_ids": [],
+        "measurement_ea_id": "QM5_41347",
+        "program_id": "DL089_QM5_11294_XAUUSD_DWX_2019_2025",
+        "slot": 1,
+        "symbol": "XAUUSD.DWX",
+        "work_item_id": "5dec5753-feb0-5e6f-97d8-5393f9595eff"
+      }
+    ],
+    "worker_count": 10
+  }
+}
