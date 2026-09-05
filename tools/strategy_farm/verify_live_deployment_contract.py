@@ -68,6 +68,7 @@ import shutil
 import subprocess
 import sys
 from dataclasses import dataclass, field, asdict
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 # Shared, ASCII, side-effect-free deploy-pointer authentication rules -- the SAME
@@ -669,11 +670,24 @@ def _resolve_pointer_binding(args, manifest) -> dict:
         return block
 
     block["applicable"] = True
+    identity_options = {}
+    if getattr(args, "allow_attested_current_identity", False):
+        try:
+            from . import live_identity_consumer as identity
+        except ImportError:
+            import live_identity_consumer as identity
+        try:
+            context = identity.load_context(
+                Path(args.identity_proposal), args.identity_attestation_receipt_id)
+        except (OSError, ValueError, TypeError, KeyError, AttributeError) as exc:
+            context = {"load_error": str(exc)}
+        identity_options = {"identity_exception_enabled": True, "identity_context": context}
+        block["label"] = "Current-book identity: OWNER attestation exception; freeze remains ACTIVE"
     res = pointer_auth.authenticate_deploy_stamp(
         ptr, "runtime_stamp",
         manifest_sha_actual=(manifest.file_sha256 or ""),
         manifest_status=manifest.declared_status,
-        manifest_book=manifest.book)
+        manifest_book=manifest.book, **identity_options)
     block["auth_rank"] = res.rank
     block["auth_reasons"] = [{"code": r.code, "rank": r.rank, "detail": r.detail}
                              for r in res.reasons]
@@ -1603,6 +1617,11 @@ def build_arg_parser() -> argparse.ArgumentParser:
                    help="OWNER-signed runtime deploy pointer JSON; resolves expected "
                         "server/phase/epoch/binary-fingerprint when it AUTHENTICATES this "
                         "manifest (morning_brief rules). Pass '' to disable the read.")
+    p.add_argument("--allow-attested-current-identity", action="store_true",
+                   help="default off: recognize only an OWNER-attested unchanged identity; no freeze lift")
+    p.add_argument("--identity-proposal", default=None, help="inert proposal JSON bound by the OWNER receipt")
+    p.add_argument("--identity-attestation-receipt-id", default=None,
+                   help="exact separate attestation receipt ID in Mission Control")
     p.add_argument("--terminal-mql5-dir", default=None,
                    help="MQL5 root for resolving chart binary paths (default: inferred from --profile-dir)")
     p.add_argument("--module", default=DEFAULT_MODULE,

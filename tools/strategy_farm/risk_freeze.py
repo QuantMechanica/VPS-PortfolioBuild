@@ -432,6 +432,8 @@ def assert_live_book_mutation_allowed(
     *,
     state_path: Path | None = None,
     presets_dir: Path | None = None,
+    identity_exception_enabled: bool = False,
+    identity_context: dict | None = None,
 ) -> dict:
     """Fail closed unless a durable state records an explicit OWNER lift.
 
@@ -441,6 +443,25 @@ def assert_live_book_mutation_allowed(
     permission.  This guard has no effect on backtests, T1-T10, gates, builds,
     reviews, or research because only live-book mutation entrypoints call it.
     """
+    if identity_exception_enabled is True:
+        # Recognizing condition 1 is never permission to mutate an ACTIVE book.
+        # This metadata-only branch performs no deployed preset/binary reads.
+        try:
+            from . import live_identity_consumer as identity
+        except ImportError:
+            import live_identity_consumer as identity
+        condition = identity.evaluate(identity_context, enabled=True)
+        conditions = [dict(c) for c in LIFT_CONDITIONS]
+        if condition["accepted"]:
+            conditions[0].update(status="SATISFIED", blocked_by=None,
+                                 identity_attestation_receipt_id=condition["receipt_id"],
+                                 proposal_sha256=condition["proposal_sha256"])
+        blocked = {"status": condition.get("freeze_status") or "STATE_UNVERIFIED",
+                   "held": condition.get("freeze_status") == "ACTIVE", "allowed": False,
+                   "operation": operation, "condition_1": condition,
+                   "lift_conditions": conditions}
+        raise RiskFreezeBlocked(_blocked_message(operation, blocked), blocked)
+
     result = diff_against_baseline(state_path=state_path, presets_dir=presets_dir)
     status = result.get("status")
     if status in INACTIVE_STATUSES:

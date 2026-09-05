@@ -142,6 +142,8 @@ def authenticate_deploy_stamp(
     manifest_sha_actual: Union[str, None, Callable[[], Optional[str]]],
     manifest_status: Optional[str],
     manifest_book: Optional[str],
+    identity_exception_enabled: bool = False,
+    identity_context: Optional[dict] = None,
 ) -> DeployAuthResult:
     """Apply the deploy-stamp authentication rules to ``stamp``.
 
@@ -177,6 +179,28 @@ def authenticate_deploy_stamp(
     DeployAuthResult
         ``clean`` iff authentic. ``has_conflict`` iff a hard MISMATCH fired.
     """
+    if identity_exception_enabled is True:
+        try:
+            from . import live_identity_consumer as identity
+        except ImportError:
+            import live_identity_consumer as identity
+        recognized = identity.evaluate(identity_context, enabled=True)
+        if recognized["accepted"]:
+            actual = manifest_sha_actual() if callable(manifest_sha_actual) else manifest_sha_actual
+            files = identity_context["files"]
+            current_pointer = identity.strict_json(files["pointer"])
+            current_manifest = identity.strict_json(files["manifest"])
+            if (src == "runtime_stamp" and stamp == current_pointer
+                    and actual == identity.attest.raw_sha(files["manifest"])
+                    and manifest_status == current_manifest.get("status")
+                    and manifest_book == current_manifest.get("book")):
+                return DeployAuthResult(RANK_OK, [Reason(
+                    "OWNER_ATTESTED_CURRENT_IDENTITY", RANK_OK,
+                    "unchanged identity only; freeze remains ACTIVE; no activation authority")])
+            recognized = {"reason": "ATTESTATION_CONSUMER_INPUT_DRIFT"}
+        return DeployAuthResult(RANK_CONFLICT, [Reason(
+            recognized["reason"], RANK_CONFLICT, recognized.get("detail", recognized["reason"]))])
+
     reasons: List[Reason] = []
 
     if src == "repo_default":
