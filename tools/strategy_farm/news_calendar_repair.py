@@ -23,8 +23,14 @@ try:
     import news_calendar_gate as gate
     from research.quantify_news_calendar_defect import NAME_MAP_USD, ET_0830_CLASS, broker_epoch_to_utc
 except ModuleNotFoundError:
-    from tools.strategy_farm import news_calendar_diagnose as diagnose, news_calendar_gate as gate
-    from tools.strategy_farm.research.quantify_news_calendar_defect import NAME_MAP_USD, ET_0830_CLASS, broker_epoch_to_utc
+    try:
+        from tools.strategy_farm import news_calendar_diagnose as diagnose, news_calendar_gate as gate
+    except ModuleNotFoundError:
+        import news_calendar_diagnose as diagnose, news_calendar_gate as gate  # script-style import
+    try:
+        from tools.strategy_farm.research.quantify_news_calendar_defect import NAME_MAP_USD, ET_0830_CLASS, broker_epoch_to_utc
+    except ModuleNotFoundError:
+        from research.quantify_news_calendar_defect import NAME_MAP_USD, ET_0830_CLASS, broker_epoch_to_utc  # script-style import
 
 UTC = timezone.utc
 SCHEMA = "qm.news-calendar-repair-e1a/v1"
