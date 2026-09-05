@@ -1,6 +1,6 @@
 {
   "schema_version": "qm.owner-decisions/v2",
-  "revision": 1,
+  "revision": 2,
   "maintainer": "Mission Control decision store; OWNER answers are receipts, not execution authority.",
   "updated_at_utc": "2026-09-02T17:47:14Z",
   "items": [
@@ -124,6 +124,60 @@
       "due": "2026-09-06",
       "severity": "high",
       "created_at_utc": "2026-09-02T17:47:14Z"
+    },
+    {
+      "category": "FTMO/Trigger",
+      "cost_of_wait": "Solange nicht ratifiziert, darf kein Trial-/OOS-Ergebnis als Bestaetigung zaehlen; jeder Tag ohne Ratifizierung verschiebt den fruehesten FTMO-Trigger.",
+      "created_at_utc": "2026-09-05T10:01:40Z",
+      "depends_on": [],
+      "due": null,
+      "evidence": [
+        "docs/ops/OWNER_VORLAGE_2026-09-05_ftmo_positive_evidence_test.md",
+        "docs/ops/evidence/2026-09-05_review4_ftmo_positive_evidence_test.md",
+        "docs/ops/FTMO_PROBABILITY_CORRELATION_CONTRACT_V1_2026-09-05.md"
+      ],
+      "id": "OWNER-DEC-FTMO-ACCEPTANCE-TEST-R5-20260905",
+      "no_effect": "Der Test bleibt Entwurf; jede spaetere Messung waere nicht vordeklariert und als Bestaetigung unzulaessig.",
+      "question": "Den vordeklarierten FTMO-Positiv-Evidenz-Akzeptanztest (Vorlage r5, Commit d9fa021091, LF-SHA de549514...) als versiegelten Test ratifizieren, BEVOR irgendein Auswertungsstrom geoeffnet wird? (Frueher 'Receipt 18' im Chat.)",
+      "recommendation": "JA. Vier unabhaengige Codex-Reviews, die letzte (2b25f7a4) = RATIFIZIERBAR als vordeklarierter Test. Die Ratifizierung hebt NO-BUY NICHT auf: Breach-/Joint-Gates bleiben inert bis zum C-6-Estimator, die Power-Regel braucht eine versiegelte OOS-Spanne. Sie schuetzt den Test vor nachtraeglicher Anpassung an Ergebnisse.",
+      "severity": "action",
+      "status": "OPEN",
+      "yes_effect": "Genau EIN Claude-Auftrag: Ratifizierungs-Receipt und Siegel-Digests im Test und im Contract V1 eintragen, Status RATIFIED; Auswertungsstroeme bleiben versiegelt, bis die Ergebnis-Oeffnung separat freigegeben wird. Kein Kauf, kein Live-Effekt."
+    },
+    {
+      "category": "FTMO/Trigger",
+      "cost_of_wait": "Kritischer Pfad zum FTMO-Ziel: ohne Estimator bleiben Breach- und Joint-Gates dauerhaft inert; jeder Tag verschiebt den Estimator-Bau (2-3 Codex-Tage).",
+      "created_at_utc": "2026-09-05T10:01:40Z",
+      "depends_on": [],
+      "due": null,
+      "evidence": [
+        "docs/ops/OWNER_VORLAGE_2026-09-05_c6_breach_joint_estimator.md"
+      ],
+      "id": "OWNER-DEC-C6-ESTIMATOR-20260905",
+      "no_effect": "Breach-/Joint-Wahrscheinlichkeiten bleiben ohne zulaessiges Verfahren; der Akzeptanztest kann NO-BUY nie aufheben.",
+      "question": "C-6-Estimator-Methode festlegen: C6-1 Methode C6-A (worst-of aus Moving-Block-Bootstrap + exaktem Guard auf der buchweiten M5/Prag-Tag-Pfadspur aus Exact-Profile-Trial-Telemetrie), C6-2 Mindestzahlen 36 Breach-Gauntlets / 23 P2-Paesse / 9 Joint, C6-3 Closed-P&L-Stroeme fuer Breach/Joint unzulaessig, C6-4 Block-Ursprung = erster versiegelter Prag-Tag? (Frueher 'Receipt 20' im Chat.)",
+      "recommendation": "JA zu C6-1 bis C6-4 (Astra-Entwurf, synthetischer Selbsttest PASS). Gates bleiben inert, bis Fixtures bestanden sind UND Du die Aktivierung separat freigibst.",
+      "severity": "action",
+      "status": "OPEN",
+      "yes_effect": "Genau EIN Claude-Auftrag: Codex implementiert den Estimator in ftmo_timebox_eval.py hinter den INERT-Flags des Contract V1 (Fixtures, keine Aktivierung). Aktivierung der Gates = separater OWNER-Entscheid."
+    },
+    {
+      "category": "Website",
+      "cost_of_wait": "Kein Betriebsrisiko; die oeffentliche Seite zeigt weiter alte Zahlen und die dunklen v1-Charts.",
+      "created_at_utc": "2026-09-05T10:01:40Z",
+      "depends_on": [],
+      "due": null,
+      "evidence": [
+        "docs/ops/WEBSITE_DESIGN_REFRESH_APPLE_2026-09-02.md",
+        "docs/ops/evidence/2026-09-05_website_light_charts/final_light.png"
+      ],
+      "id": "OWNER-DEC-WEBSITE-DEPLOY-20260905",
+      "no_effect": "Website bleibt auf dem alten Stand; die Vorschau bleibt lokal im Deploy-Worktree.",
+      "question": "quantmechanica.com Website-Refresh (Apple-Sprache, helle TradingView-Charts per Receipt 21, aktuelle Zahlen) veroeffentlichen: Push refresh/apple-2026-09 + Netlify-Deploy?",
+      "recommendation": "JA nach Deiner lokalen Sichtpruefung unter http://127.0.0.1:8770/ (auf dem VPS). Rein oeffentliche Darstellung, kein Handels- oder Live-Bezug; Rollback = vorheriger Deploy-Stand.",
+      "severity": "action",
+      "status": "OPEN",
+      "yes_effect": "Genau EIN Claude-Auftrag: Push des Branches refresh/apple-2026-09 nach origin, Netlify-Deploy gemaess netlify.toml, Live-Sichtpruefung, Eintrag im Deploy-Log. Keine Aenderung an Fabrik, T_Live oder Repo-main."
     }
   ]
 }

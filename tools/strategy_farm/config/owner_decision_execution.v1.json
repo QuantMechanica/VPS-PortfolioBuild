@@ -612,6 +612,99 @@
           ]
         }
       }
+    },
+    {
+      "id": "OWNER-DEC-FTMO-ACCEPTANCE-TEST-R5-20260905",
+      "todo_id": "QM-TODO-20260905-FTMO-ACCEPTANCE-R5",
+      "priority": 88,
+      "choices": {
+        "YES": {
+          "mode": "DOCUMENT_AND_VERIFY",
+          "objective": "Record the OWNER ratification of the predeclared FTMO positive-evidence acceptance test r5 (commit d9fa021091, LF sha256 de549514fd75e68adb6f972a39451c89b43d7f7e35961e6e3da197903bfa923d): set the test status to RATIFIED with the receipt id and the seal digests, mirror the status into FTMO_PROBABILITY_CORRELATION_CONTRACT_V1_2026-09-05.md and decisions/2026-09-02_owner_receipts_ceo_asks.md row 18; open no evaluation stream; NO-BUY unchanged.",
+          "allowed_actions": [
+            "Edit the three documents named in the objective (status, receipt id, digests)",
+            "Re-verify the seal digests against the current tree before writing them",
+            "Commit with explicit pathspecs"
+          ],
+          "acceptance": [
+            "Test document carries status RATIFIED + receipt id + unchanged r5 digests",
+            "Contract V1 status mirrors the ratification; no gate/threshold changed",
+            "No trial or OOS evaluation stream opened; NO-BUY unchanged"
+          ]
+        },
+        "NO": {
+          "mode": "DOCUMENT_AND_VERIFY",
+          "objective": "Record the rejection; the test stays a draft and later measurements are ineligible as confirmation.",
+          "allowed_actions": [
+            "Document in OPEN_ITEMS_STATUS.md and the receipts file"
+          ],
+          "acceptance": [
+            "No status change beyond the record"
+          ]
+        }
+      }
+    },
+    {
+      "id": "OWNER-DEC-C6-ESTIMATOR-20260905",
+      "todo_id": "QM-TODO-20260905-C6-ESTIMATOR",
+      "priority": 86,
+      "choices": {
+        "YES": {
+          "mode": "APPLY_AND_VERIFY",
+          "objective": "Commission exactly one Codex implementation of the C-6 breach/joint estimator (method C6-A: worst-of moving-block bootstrap + exact guard on the book-wide M5/Prague-day path trace from exact-profile trial telemetry; floors 36 breach gauntlets / 23 P2 passes / 9 joint; closed-P&L streams inadmissible; block origin = first sealed Prague day) in ftmo_timebox_eval.py BEHIND the contract V1 INERT flags, with fixtures; review and integrate it; gates stay inert.",
+          "allowed_actions": [
+            "Enqueue, review and integrate the Codex implementation task (tests + fixtures)",
+            "Update docs/ops/FTMO_PROBABILITY_CORRELATION_CONTRACT_V1_2026-09-05.md with the adopted method text (status of the gates stays INERT)",
+            "Commit with explicit pathspecs"
+          ],
+          "acceptance": [
+            "Estimator passes its synthetic fixtures (known breach probability recovered within the declared tolerance)",
+            "Contract V1 gates C-6 remain INERT; no threshold or activation flag changed",
+            "Evidence doc with fixture results; OWNER activation remains a separate decision"
+          ]
+        },
+        "NO": {
+          "mode": "DOCUMENT_AND_VERIFY",
+          "objective": "Record the rejection; breach/joint gates stay inert and the acceptance test cannot lift NO-BUY.",
+          "allowed_actions": [
+            "Document in OPEN_ITEMS_STATUS.md and the receipts file"
+          ],
+          "acceptance": [
+            "No code change"
+          ]
+        }
+      }
+    },
+    {
+      "id": "OWNER-DEC-WEBSITE-DEPLOY-20260905",
+      "todo_id": "QM-TODO-20260905-WEBSITE-DEPLOY",
+      "priority": 70,
+      "choices": {
+        "YES": {
+          "mode": "APPLY_AND_VERIFY",
+          "objective": "Publish the website refresh: push branch refresh/apple-2026-09 of C:/QM/deploy/qm-ops-refresh (tip 3979561 or its reviewed successor) to origin, trigger the Netlify deploy per netlify.toml, verify the live pages (index, strategies, blog sample) render the light charts and current figures, and record the deploy in the deploy log.",
+          "allowed_actions": [
+            "git push of the deploy-repo branch; Netlify deploy per the repository configuration",
+            "Read-only live verification (HTTP fetch / screenshot) after deploy",
+            "Deploy-log entry in the deploy repository and OPEN_ITEMS_STATUS.md"
+          ],
+          "acceptance": [
+            "Live site serves qm-charts.js version 2.0.0 and the light chart panels",
+            "No factory, T_Live, registry or C:/QM/repo main change",
+            "Rollback documented: previous Netlify deploy id"
+          ]
+        },
+        "NO": {
+          "mode": "DOCUMENT_AND_VERIFY",
+          "objective": "Record the rejection; the site stays on the previous deploy and the refresh stays local.",
+          "allowed_actions": [
+            "Document in OPEN_ITEMS_STATUS.md"
+          ],
+          "acceptance": [
+            "No push, no deploy"
+          ]
+        }
+      }
     }
   ]
 }
