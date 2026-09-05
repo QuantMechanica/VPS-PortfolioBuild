@@ -1,0 +1,226 @@
+# FTMO Readiness — Part 2: Deployment-Pointer Closure Pack & Exact-Profile Shadow/Trial Design (2026-09-05)
+
+Task 7dceadd0 (Claude lane) · Drafter scout report bound · READ-ONLY evidence pass · No purchase, no T_Live write/start/stop, no AutoTrading toggle, no pointer signing.
+Successor of Part 1 (`docs/ops/evidence/2026-09-05_ftmo_readiness_part1.md`). Part 1 established the governed identity basis and candidate feasibility; **Part 2 is the closure pack the OWNER needs to sign the live deployment pointer and to lift or keep the risk freeze**, plus the exact-profile shadow/trial design for the 8 sealed FTMO candidates. Every value below carries a file path; where no source exists the cell is marked **MISSING** or **UNVERIFIED** and is never invented. This is a drafter's pack — it changes no state, signs nothing, and lifts no freeze.
+
+---
+
+## Zusammenfassung (Deutsch, eine Seite)
+
+**Zweck.** Alles zusammenstellen, was du am 06.09 brauchst, um (1) den 24-Sleeve-Deploy-Pointer zu **signieren** und (2) den Risk-Freeze bewusst zu **heben oder zu halten** — und getrennt davon (3) den exakten Profil-Schatten-/Trial-Lauf zu entwerfen, der die eine fehlende Sorte Evidenz liefert (echte M5-Equity, Positionen, Pending-Orders), die kein Backtest liefern kann.
+
+**(1) Signieren = eine ROT-Handlung, nur OWNER.** Der Pointer `D:/QM/reports/state/live_deployment_pointer.json` ist heute **`signed=false`, `approved_by=null`, `approval_evidence=null`** (Zeilen 464/3/2 der Datei; Schema `qm.live_deployment_pointer.v1`, `generator.task_id=SP-A1`). Das Werkzeug `tools/strategy_farm/generate_live_deployment_pointer.py` schreibt `signed=true` **nur**, wenn der Aufrufer `--signed` UND `--approved-by` UND `--approval-evidence` (Pfad auf einen existierenden OWNER-Freigabe-Record) übergibt (build_pointer:155-162 wirft `SystemExit` sonst). Ein echter (kein `--dry-run`) signierter Mint ruft `risk_freeze.assert_live_book_mutation_allowed(...)` (Zeilen 215-218) — **das Signieren ist selbst eine Freeze-Grenze**: es geht nur, wenn der OWNER-Lift es begleitet.
+
+**(2) Freeze-Lift braucht DREI Bedingungen + schriftlichen OWNER-Lift.** Der Freeze (`decisions/2026-08-22_owner_dec_risk_freeze_executed.md`, Status ACTIVE seit 31.08., `D:/QM/reports/state/live_risk_freeze.json`, `docs/ops/evidence/2026-09-04_astra_ftmo_risk_freeze.json`) hat drei Lift-Bedingungen, **keine davon MET** (Quell-Status verbatim aus `risk_freeze.py:47-67`): [SP-A1/A2-DEPLOY-POINTER] signierter Pointer + authentifizierte Konsumenten — Status **BLOCKED**; [NEWS-CONTRACT-V2] `qm.news_impact_mapping.v1` (Router-Task 84c988e6, an Q09-Rerun gebunden) — Status **PARTIAL** (OWNER-Hälfte 22.08. entschieden); [GOVERNOR-HARDENING] SP-C1 v2 Monitor + Action-Adapter (OWNER/ROT-gated, nicht live) — Status **PARTIAL** (SP-C1 approved + dry-run-proven @593c9ddca). Lift-Regel wörtlich: *„All three conditions met AND an explicit written OWNER lift. No AI seat lifts this freeze."* **Konsequenz: Signieren allein hebt den Freeze NICHT** — es schließt nur Bedingung 1. Solange NEWS-CONTRACT-V2 und GOVERNOR-HARDENING offen sind, bleibt der Freeze gehalten, selbst nach der Signatur (offene Frage 6). Das ist kein Widerspruch: der signierte Pointer kann als *authentifizierte Identität* stehen, während der Freeze als *Risk-Mutations-Sperre* bewusst gehalten wird.
+
+**(3) Shadow/Trial = der einzige Weg zu echter M5-Telemetrie.** Acceptance-Test und Tail-Zertifizierung sind heute beide **ABSTAIN**, weil die Quelldaten keine synchronisierte Intraday-Mark-to-Market-Minima, keine Endpoint-Equity und keinen Pending-Order-Zensus enthalten (`docs/ops/evidence/2026-09-05_interval_equity_export.md`, `docs/ops/evidence/2026-09-05_ftmo_v4_tail_certification.md`). Diese Daten können **nur** aus einem lebenden Demo-/Free-Trial-Ausführungsstrom kommen. Das Go-Kriterium ist `ftmo_free_trial_gate` (Rulepack Zeilen 494-499): *„At least one exact-profile Free Trial or shadow run completes without a rule, governor, identity, or execution defect and remains inside preregistered prediction bands"*, `operational_defects_allowed=0`.
+
+**Vier harte Realitäten, die den Trial heute noch blocken (nicht kaschiert):**
+- **Set-File-Widerspruch:** `ftmo_lane_runner.py` verlangt `RISK_FIXED>0 / RISK_PERCENT=0` (Backtest-Modus, validate_set_guardrails:531-547), aber ein live-ähnlicher Trial braucht `ENV=live / RISK_FIXED=0 / RISK_PERCENT` (Q16-Schritt 5). **Kein Werkzeug auf Platte erzeugt ein Live-Modus-FTMO-Trial-Set** → neuer Set-Generierungs-Pfad muss kommissioniert werden (offene Frage 1).
+- **Symbol-Abdeckung:** `ftmo_lane_runner.NATIVE_SYMBOLS = (XAUUSD, GER40.cash)` — **keiner** der 8 Kandidaten (GBPUSD/EURUSD/USDCAD/NZDUSD/XTIUSD×2/XAGUSD×2) ist darin (offene Frage 2).
+- **Acceptance-Test nicht ratifiziert:** die Positive-Evidence-Vorlage ist FAIL mit 3 BLOCKERn (`docs/ops/evidence/2026-09-05_review_ftmo_positive_evidence_test.md`) → das Scoring-Vertrag für den Trial existiert noch nicht (offene Frage 4).
+- **Kein Telemetrie-Kollektor (die wichtigste Lücke):** kein Werkzeug auf Platte persistiert eine dauerhafte, Prag-Mitternacht-verschlüsselte M5-Equity-Serie mit Intervall-Minima + Positions-/Pending-Zensus. Der einzige Live-Instrument (`QM_AccountMonitor.mq5`) überschreibt seinen Snapshot alle 60s; der einzige Leser (`ftmo_trial_pulse.py`, 30 min) liest nur den letzten. Der FTMO-Tages-Exporter (`export_ftmo_daily_stream`) liefert nur eine MAE-rekonstruierte Tages-Intraday-Low, keinen M5-Strom. **Ein for-record defektfreier Trial ist auf einen NEU zu kommissionierenden Kollektor blockiert** — zusätzlich zur Set-Pfad- und Symbol-Lücke (offene Frage 7).
+
+**Der ehrliche Zustand:** Der 06.09-Signierakt und der Trial-Lauf sind **zwei getrennte Dinge**. Signieren authentifiziert die 24-Sleeve-DXZ-Identität. Der Trial ist ein FTMO-Vorhaben mit eigenem (noch nicht existentem) Manifest/Pointer und braucht OWNER-Kontoerstellung + Login, einen neuen Live-Modus-Set-Pfad, einen EXPECTED_STATE-Flip von PARKED auf RUNNING, und einen ratifizierten Scoring-Vertrag. **Kauf bleibt ausgeschlossen** (Blanket-Release 2026-09-05 „Alles, bis auf den Kauf, freigegeben").
+
+---
+
+## A. Closure pack — the deployment-pointer signing decision
+
+### A.0 The authenticated live identity (what "signed" means here)
+
+The governed live book is the **24-sleeve** roster carried by `D:/QM/reports/state/live_deployment_pointer.json` (account **4000090541**, environment `T_Live/DXZ`, server `Darwinex-Live`, phase `DXZ_LIVE`, deployment epoch `2026-07-24T06:42:00+00:00`, written `2026-08-22T10:06:38Z`). Magic = `ea_id*10000 + slot`. The signed-pointer schema is `qm.live_deployment_pointer.v1` — there is **no separate schema doc file**; the schema is defined by `generate_live_deployment_pointer.py build_pointer` (keys: `schema_version, environment, expected_account, expected_server, expected_phase, manifest_path, manifest_sha256, manifest_declared_status, manifest_declared_approved_by, deployment_epoch_utc, signed, approved_by, approval_evidence, expected_sleeves{count,identity_sha256,roster[]}, binary_setfile_fingerprint{fingerprint_sha256,n_sleeves,n_binary_missing,per_sleeve[]}, generator, written_at_utc`).
+
+**Bound manifest:** `D:/QM/reports/portfolio/portfolio_manifest_live_24sleeve_20260724.json`, `manifest_sha256=8c719b080e18d30d83432f0999d694f699f2859cef72c0ce7738631fb084eab6`.
+**Identity fingerprints (already computed, embedded in the pointer):** `expected_sleeves.identity_sha256=9aa10411d99adf81861503a0023832874873de39eeaacfa880bfc4368fcf84d0`; `binary_setfile_fingerprint.fingerprint_sha256=8e476e5b807450cbaea92f12b92fcaa285e372a47533b5071996d114a3116035`; `n_binary_missing=0` (all 24 `.ex5` present, every sleeve `ex5_status=OK`).
+
+**The red flag:** `signed=false`, `approved_by=null`, `approval_evidence=null`. `manifest_declared_status="LIVE"` and `manifest_declared_approved_by="OWNER (Fabian) 2026-07-24 … countersigned via chat … content sha256 a766b5ba…; record: decisions/2026-07-24_owner_approvals_audit_package.md"` **exist** — an OWNER chat countersignature is on record — but the pointer artifact itself is **not cryptographically signed**. Authenticating consumers therefore read the book as **not-authenticated** today (see A.2). Signing is exactly the OWNER action reserved for the 06.09 session (Part 1 receipt row 3 = "ja").
+
+### A.1 Each freeze item, its closure evidence, and its OWNER action
+
+The interim live-risk freeze (`decisions/2026-08-22_owner_dec_risk_freeze_executed.md`, direct OWNER order *"Führ den Risk-Freeze jetzt aus"*) freezes the live book, not the pipeline. State: `D:/QM/reports/state/live_risk_freeze.json` (baseline `sleeve_count=24`, `total RISK_PERCENT=9.7499`, `roster_sha256=a98bfdeb…`). Live status captured 2026-09-04 (`docs/ops/evidence/2026-09-04_astra_ftmo_risk_freeze.json`): **status=ACTIVE**, armed `2026-08-31T05:12:17Z`, held=YES.
+
+| Freeze item (what is frozen) | Closure evidence on disk | Status | OWNER action to close |
+|---|---|---|---|
+| per-sleeve `RISK_PERCENT` on the T_Live DXZ book | baseline captured `live_risk_freeze.json` total 9.7499; `risk_freeze.py verify` re-measures & diffs, non-zero exit on any drift | **HELD** (unchanged since arming) | none to *change* — a signed pointer + written lift is what releases the roster to future edits |
+| the sleeve roster — no add/remove | `roster_sha256=a98bfdeb…`; pointer `expected_sleeves.count=24` matches | **HELD** | written lift (below) |
+| deployed preset bytes + bound binaries | `binary_setfile_fingerprint.fingerprint_sha256=8e476e5b…`, `n_binary_missing=0`, per-sleeve `ex5_sha256` all OK | **HELD** | written lift (below) |
+| all new live promotions | fail-closed at `build_book_dxz.py` / `build_book_ftmo.py` / `deploy_tlive_book.py:129,213` (`LIVE_RISK_FREEZE_BLOCKED`) / signed pointer mint (generate_live_deployment_pointer.py:215-218) | **HELD** | written lift (below) |
+| **Lift condition 1 — [SP-A1/A2-DEPLOY-POINTER]** "pointer is signed and its consumers read authenticated instead of UNKNOWN" | pointer `signed=false` (A.0); consumers still read DEGRADED/UNKNOWN (A.2) | **BLOCKED** (source `risk_freeze.py:47-52`) → cannot-lift | **SIGN the pointer** (A.3) + roll out authenticated consumers |
+| **Lift condition 2 — [NEWS-CONTRACT-V2]** `qm.news_impact_mapping.v1` | router task `84c988e6`, gated on Q09 rerun (per `2026-09-04_astra_ftmo_risk_freeze.json`) | **PARTIAL** (source `risk_freeze.py:53-58`; OWNER half decided, in-progress not blocked) → cannot-lift | not closable by the signing act alone (open question 6) |
+| **Lift condition 3 — [GOVERNOR-HARDENING]** SP-C1 v2 monitor deploy + action adapter | OWNER/ROT-gated, not live | **PARTIAL** (source `risk_freeze.py:59-64`; SP-C1 approved + dry-run-proven @593c9ddca, v2 deploy pending) → cannot-lift | not closable by the signing act alone (open question 6) |
+| **The lift itself** | `risk_freeze.py LIFT_CONDITIONS` (verbatim): *"All three conditions met AND an explicit written OWNER lift. No AI seat lifts this freeze, and no seat lifts it by inference from a condition merely being satisfied."* | **BLOCKED** on all three + written lift | **explicit written OWNER lift** — and only after all three conditions are met |
+
+**The critical read for the 06.09 session:** signing the pointer discharges **condition 1 only** — the hard-**BLOCKED** SP-A1/A2 item. The other two are **PARTIAL, not blocked**: NEWS-CONTRACT-V2 (OWNER half decided 22.08., gated only on the Q09 rerun) and GOVERNOR-HARDENING (SP-C1 approved + dry-run-proven @593c9ddca, only the v2 deploy pending). They are in-progress, not stuck — but neither is **MET**, so the lift rule (all three MET) still cannot fire even after signing. The correct 06.09 outcome is therefore **sign-and-hold**: **pointer signed, freeze deliberately kept** (an authenticated identity under a still-active risk-mutation lock). Sign-and-lift only becomes available once both PARTIAL conditions are driven to MET in the same session — which is not expected on 06.09. This is a coherent, intended state, not a failure — the pointer authenticates *who is deployed*; the freeze governs *whether the composition may change*.
+
+### A.2 The verification the CEO (Claude) runs — what "authenticated" checks
+
+Signing is minted by `generate_live_deployment_pointer.py`; **verification** is a separate tool the CEO runs and morning-brief consumes:
+
+- **`tools/strategy_farm/verify_live_deployment_contract.py`** (WS-E3) imports the shared rules from **`tools/strategy_farm/live_deployment_pointer_auth.py`**. `authenticate_deploy_stamp` (auth:138) returns four ranks: `RANK_OK=0` (GRÜN), `RANK_DEGRADED=1` (GELB — a required auth field missing), `RANK_UNCORROBORATED=2` (UNBEKANNT — manifest carries no bindable account), `RANK_CONFLICT=3` (ROT — sha/account MISMATCH). `CONFLICT_CODES={MANIFEST_SHA_MISMATCH, ACCOUNT_MISMATCH}` (auth:65).
+- **Today's exact rank:** reason `SIGNED_NOT_TRUE` → `RANK_DEGRADED` fires at auth:199-200 when `stamp.get('signed')` is not True. **This is the current state.** A signed pointer moves the rank to OK provided the sha/account/roster all bind.
+- **What the contract checks** (`verify_live_deployment_contract.py`): DISK-PROFILE (`.chr`) truth vs RUNTIME truth vs manifest; per-sleeve `ex5_sha256`; magic `= ea_id*10000 + slot` (lines 247-259); `RISK_PERCENT` with `RISK_TOL=1e-4` (line 104). It emits a `--deploy-stamp-out` contract (`render_deploy_stamp_contract:1391`, `main:1649`).
+- **Second consumer:** `morning_brief.py` Deploy lamp, kept in lockstep by `tests/test_verify_pointer_binding.py` (parity test).
+
+Mapping to the CLAUDE.md T_Live workflow — the CEO verifies, before OWNER flips anything: **(a) SHA256 match factory→T_Live** (per-sleeve `ex5_sha256` in the pointer vs the deployed `.ex5`), **(b) magic-registry consistency** (`ea_id*10000+slot`, no collision), **(c) set-file ENV/risk-mode** (`ENV=live, RISK_FIXED=0, RISK_PERCENT` set; sum RISK_PERCENT = manifest total ±1e-6), **(d) news calendar present + current** (native MT5 calendar for LIVE per DL-080; `news_calendar_max_age_hours=336`).
+
+### A.3 The signing procedure (what the OWNER runs, what the CEO verifies)
+
+Exact ceremony command (`docs/ops/BOOK_CEREMONY_RUNBOOK_2026-09.md` step 4, and `generate_live_deployment_pointer.py main:195-208`):
+
+```powershell
+cd C:/QM/repo
+python tools/strategy_farm/generate_live_deployment_pointer.py `
+  --manifest D:/QM/reports/portfolio/portfolio_manifest_live_24sleeve_20260724.json `
+  --deployment-epoch-utc 2026-07-24T06:42:00+00:00 `
+  --written-at-utc <now> `
+  --signed `
+  --approved-by "OWNER (Fabian)" `
+  --approval-evidence decisions/2026-07-24_owner_approvals_audit_package.md `
+  --out D:/QM/reports/state/live_deployment_pointer.json
+```
+
+- `--signed` is honored **only** when `--approved-by` and `--approval-evidence` are both present and the evidence path exists (build_pointer:155-162 raises `SystemExit` otherwise). **Provenance note:** the command above shows `decisions/2026-07-24_owner_approvals_audit_package.md` — the record backing the *manifest* — as a working fallback, but the tool only checks the path exists (build_pointer:155-162), so `--approval-evidence` should point at the **freshest applicable OWNER record for the 06.09 act**: the same-day lift decision the ceremony mints (`decisions/YYYY-MM-DD_owner_risk_freeze_lift.md`, `BOOK_CEREMONY_RUNBOOK_2026-09.md` step 4), with the 2026-07-24 audit package as the manifest-backing fallback. Do not sign against a stale provenance path by copy-paste. The docstring (lines 19-25) is explicit: *"Signing is a separate, gated action … an AI seat runs this tool ONLY in unsigned (draft/GELB) mode. Producing a signed=true pointer is an OWNER/ROT action."*
+- A real (non-`--dry-run`) `--signed` mint calls `risk_freeze.assert_live_book_mutation_allowed('mint a signed T_Live deployment pointer')` (lines 215-218) — **so the signed mint is itself gated by the very freeze it helps lift.** The written OWNER lift must accompany the signed mint (ceremony step 4). Practically: the OWNER's written lift + the signed-mint command are one atomic OWNER act; an AI seat can run the tool only in `--dry-run` to pre-verify the argument shape.
+- **CEO verification after the mint** (before any AutoTrading): run `verify_live_deployment_contract.py` and confirm the deploy stamp comes back `RANK_OK` (not `SIGNED_NOT_TRUE`); confirm the four CLAUDE.md checks in A.2 (a-d); record the result under `decisions/YYYY-MM-DD_t_live_<ea>_<symbol>.md`.
+
+### A.4 Rollback
+
+- **Signing rollback (before any live effect):** the pointer is a state file; a signed mint that fails CEO verification is rolled back by regenerating the **unsigned** pointer (drop `--signed/--approved-by/--approval-evidence`) — no T_Live bytes were touched by the mint, so there is nothing to restore on the terminal. The pre-existing unsigned pointer content is reproducible from the same manifest.
+- **Deploy rollback (only relevant if a book is later deployed, per `deploy_tlive_book.py`):** `--apply` requires `--backup-dir` **outside** `C:/QM/mt5/T_Live`; Presets restore from that backup dir (deployed SHA256 recorded in the staging report), binaries restore from the dated `Live EAs\` backup. **Rollback is by restoring prior bytes then OWNER re-verifying — NEVER by toggling AutoTrading mid-session** (`BOOK_CEREMONY_RUNBOOK_2026-09.md §5`).
+- **Abort-the-ceremony triggers** (`§5`): `book_build_guard allowed:false` / `qualified_pool_unavailable` / freeze ACTIVE+unlifted / concentration policy ≠ `OWNER_RATIFIED` / DXZ builder `CONCENTRATION_CAP_BREACH` or `NOT_WORSE_BAR_NOT_MET` / any Q16 not GREEN / SHA256 mismatch or magic collision or ENV-risk mismatch or stale-absent news calendar.
+
+**Scope note (open question 3):** the unsigned pointer binds the **24-sleeve DXZ** book, distinct from the 8 FTMO candidates (only 10706/GBPUSD and 11421/EURUSD overlap). Signing it lifts DXZ freeze condition 1. The FTMO book has **no manifest/pointer yet** (needs its own `build_book_ftmo` run + a census ≥25 — `book_build_guard.py:28 MIN_QUALIFIED_PAIRS=25`; live census 2026-09-03 = `qualified_pairs=5`). The 06.09 signing act is a **DXZ** act; a separate FTMO deployment pointer is future work, not in this scope.
+
+---
+
+## B. Exact-profile shadow/trial design (the 8 sealed candidates)
+
+### B.0 Why the trial exists (what only it can supply)
+
+Two certifications are **ABSTAIN today**, both for the same reason:
+- `docs/ops/evidence/2026-09-05_interval_equity_export.md`: `interval_equity_export.py` reconstructs balance/occupancy from Q08 `TRADE_CLOSED` + `EQUITY_SNAPSHOT` events, but `interval_min_equity` and `pending_orders` remain **NULL** (not in artifacts). Jan-2024 worked run → `status=ABSTAIN`, `daily_loss=ABSTAIN_MISSING_INTERVAL_MIN_EQUITY`, `flat_at_target=ABSTAIN_MISSING_PENDING_ORDERS_AND_ENDPOINT_EQUITY`. All 8 candidates: 0 exact daily endpoints, endpoint equity "partial event-time only", interval minimum + pending orders Missing.
+- `docs/ops/evidence/2026-09-05_ftmo_v4_tail_certification.md`: portfolio verdict **ABSTAIN** for all 8 sleeves. Correlation Layer A CERTIFIED (all 28 pairwise 95% bootstrap intervals inside `|r|<0.50`) but portfolio certification UNAVAILABLE because *"source data do not contain synchronized intraday mark-to-market minima, endpoint equity, or a pending-order census."*
+
+The FTMO official rules are all measured on **intraday equity including open PnL** at a **Prague midnight** anchor (`ftmo_2s_max_daily_loss`: `tested_quantity=EQUITY_INCLUDING_OPEN_PNL_SWAPS_COMMISSIONS`, `reset_local_time=00:00:00 Europe/Prague`). A closed-PnL daily proxy is **explicitly forbidden** for the complete-MTM go-criterion (`ftmo_complete_mtm_evidence`: `closed_pnl_daily_proxy_allowed:false, intratrade_equity_required:true`). **Conclusion: real M5 equity / positions / pending orders can only come from a live demo/free-trial execution stream — that is the exact reason the trial is needed.**
+
+### B.1 The gate the trial satisfies
+
+`ftmo_free_trial_gate` (`FTMO_2S_100K_SWING_V2.json:494-499`, classification `INTERNAL_DECISION_CRITERION`): *"At least one exact-profile Free Trial or shadow run completes without a rule, governor, identity, or execution defect and remains inside preregistered prediction bands."* Parameters: `minimum_runs=1`, `must_reach_profit_target=false`, `operational_defects_allowed=0`. Separate gate `ftmo_owner_purchase_gate` (`:500-505`): `owner_signature_required=true`, `automatic_purchase_allowed=false`. **The trial does not require hitting the profit target — it requires a defect-free, prediction-band-faithful run.** It is also named in `q08_evidence_policy.compensation_requirements`: *"free-trial execution validation before a paid challenge."*
+
+### B.2 Runner tooling on disk (and its three hard limits)
+
+- **`tools/strategy_farm/ftmo_lane_runner.py`** — fail-closed provisioning + isolated runner for two FTMO research lanes (`FTMO_STREAM1/2` at `D:/QM/mt5/FTMO_STREAM1|2`). Does **not** use the farm DB or T1-T10 queues; `MAX_FTMO_CONCURRENT=2`; preserves ≥8 factory slots. Execution model `REAL_TICKS` (mt5 model 4, evidence `FTMO_REAL_TICKS`) or `M1_MODELLED` (model 1) — no fallback; the FTMO daily exporter accepts only `REAL_TICKS`. Provisioning requires an FTMO-Demo profile: `_safe_profile_identity` checks `profile['server']=='FTMO-Demo'`, company-contains-FTMO, **experts DISABLED at provision** (lines 390-395, 464-467). `derive_ftmo_set:550` + `validate_set_guardrails:531`.
+- **`tools/strategy_farm/ftmo_m1_bootstrap.py`** — fail-closed FTMO/DXZ M1 spread-harvest (read-only `QM_M1_SpreadHarvest` script, never touches T_Live/AutoTrading).
+
+**Hard limit 1 — set-file risk-mode contradiction (open question 1).** `validate_set_guardrails` (lines 531-547) **requires** `RISK_FIXED>0 and RISK_PERCENT=0` (raises `FtmoLaneError` otherwise, line 539) and `qm_news_stale_max_hours ≤ 336`. That is the **backtest** risk mode (Hard Rule: `RISK_FIXED` for backtest). A live-executing demo trial per Q16 step-5 needs `ENV=live / RISK_FIXED=0 / RISK_PERCENT` set. **No tool on disk generates a live-mode FTMO trial set-file.** The existing runner is built for *backtest-style research replays on FTMO-Demo history*, not for a live-executing demo trial with live risk mode. **→ A new live-mode set-generation path must be commissioned before a live trial can run for-record.** This is UNVERIFIED/GAP, not a solved design.
+
+**Hard limit 2 — symbol coverage (open question 2).** `NATIVE_SYMBOLS = ('XAUUSD','GER40.cash')` with `FTMO_CODES` XAU/USD, GER40.cash. The 8 sealed candidates are GBPUSD / EURUSD / USDCAD / NZDUSD / XTIUSD (×2) / XAGUSD (×2) — **none** in the runner's native set. Running the actual 8 candidates requires either a new FTMO lane per candidate symbol (with FTMO symbol-code mapping for each) or an explicit decision to rehearse only the 2 native symbols first. **Unresolved on disk.**
+
+**Hard limit 3 — no on-disk tool persists a durable, Prague-midnight-keyed M5 equity series with interval minima and a per-interval position/pending-order census (the single most important gap, because the trial exists precisely to produce that telemetry).** Three distinct tools each fail a different part of it:
+- **The FTMO daily exporter** — `export_ftmo_daily_stream` (`tools/strategy_farm/portfolio/ftmo_daily_net_export.py`, invoked by `ftmo_lane_runner.py:942-1010`) — emits **DAILY** rows only, and its intraday low is **RECONSTRUCTED, not measured**: `intraday_low_basis=DAY_START_BALANCE_PLUS_SUM_OF_ALL_OVERLAPPING_TRADE_MAE` (`ftmo_daily_net_export.py:678`), `intraday_low_conservatism=ALL_OVERLAPPING_TRADE_MAE_ASSUMED_SIMULTANEOUS` (`:679`), built from Q08 closed trades + `EQUITY_SNAPSHOT` daily reconciliation (`load_equity_snapshots:501-556`). This is the same reconstruction §B.0 criticizes — it cannot produce a real M5 interval minimum and carries no pending-order/position census.
+- **The live-terminal instrumentation that DOES capture the right fields** — equity incl. floating PnL (`QM_AccountMonitor.mq5:712`), per-position profit+swap (`:727`), pending-order count (`:749 OrdersTotal()`) — is **`framework/monitor/QM_AccountMonitor.mq5`**. But its header docstring (`:14`) states `account_snapshot.json overwritten each timer tick`; default cadence `InpTimerSeconds=60` (`:42`), written via `WriteAllAtomic` **replacing** the file (`:800`). It is a **single point-in-time snapshot, NOT a durable series**.
+- **The only reader** — `ftmo_trial_pulse.py` — runs every 30 min and consumes only the **latest** snapshot (`read_monitor_snapshot:452`, `MONITOR_SNAPSHOT=journal/account_snapshot.json:448`) with instantaneous `daily_loss`/`total_dd` checks (`:485-491`); it persists no series and computes no interval minimum.
+
+Net: a 60s-overwritten snapshot sampled by a 30-min pulse systematically **misses the intraday equity trough** between Prague-midnight anchors — exactly the daily-loss (`EQUITY_INCLUDING_OPEN_PNL`) quantity and the tail-cert ABSTAIN reason. **Following the existing tooling still yields NO Prague-day-keyed interval-minimum series, even from a live demo.** → A **new collector must be commissioned**: append each `QM_AccountMonitor` snapshot (or an EA-side running-minimum field) to a durable **jsonl keyed to the Europe/Prague trading day**, at a cadence (or with EA-side running-minimum tracking) that **bounds the interval minimum**, plus a per-interval pending/position census. Until that collector exists the interval-minimum daily-loss quantity and the tail-cert intraday minima are **unobtainable** — so a **for-record defect-free trial is blocked on this collector in addition to the set-path (limit 1) and symbol (limit 2) gaps.** This is UNVERIFIED/GAP, not a solved design.
+
+### B.3 The live-like set-file profile the trial needs (design, pending commissioning)
+
+Per Q16 step-5 live semantics (`BOOK_CEREMONY_RUNBOOK_2026-09.md §4`), a live-executing demo-trial set-file must carry:
+
+| set-file key | required value | source / rationale | status |
+|---|---|---|---|
+| `ENV` | `live` | live execution semantics (not `backtest`) | design target — runner forbids today (B.2 limit 1) |
+| `RISK_FIXED` | `0.0` | Hard Rule: `RISK_PERCENT` for live | **conflicts with runner guardrail** |
+| `RISK_PERCENT` | per-sleeve, sums to manifest total ±1e-6 | Q16 step-5; matches the frozen roster values (pointer per-sleeve `RISK_PERCENT`) | design target |
+| news filter (temporal OFF) | **NONE** provider blackout to model | Swing has no news/weekend restriction (`ftmo_swing_news`, `ftmo_swing_weekend` both `restricted=false`; RE_CONFIRMED HTTP 200 2026-09-04) | verified |
+| `qm_ftmo_midnight_entry_window` | block new entries 23:50-00:10 Europe/Prague | QM internal guardrail (`:384-398`), classification `INTERNAL_QM_POLICY_NOT_PROVIDER_RULE`, status `PROPOSED_FOR_CALIBRATION` | **not yet enforced** — a trial is where it would be calibrated |
+| execution model | `REAL_TICKS` (mt5 model 4) | FTMO daily exporter accepts only `REAL_TICKS` (ftmo_lane_runner) | verified |
+| account profile | `server=FTMO-Demo`, company-contains-FTMO | `_safe_profile_identity` (ftmo_lane_runner:390-395) | OWNER creates the account/profile |
+
+**Leverage/margin the set must respect (UNVERIFIED):** FTMO Swing 1:30 FX / 1:15 metals+oil (`ftmo_swing_leverage`, rulepack) — but Part 1 flags this **UNVERIFIED** (source URL `ftmo.com/en/trading-symbols/` returned HTTP 404 on 2026-09-04, `CARRIED_OVER`; corroborated only by `docs/ops/evidence/2026-07-30_ftmo_book3_symbol_cost_snapshot.json`). Swap for XAGUSD and the 4 FX candidates is **MISSING** (Part 1 §B.3). These must be OWNER-confirmed in the FTMO client area before a for-record run.
+
+### B.4 Telemetry schema — what the acceptance test and tail cert must capture
+
+The trial's purpose is to produce, for each sleeve and for the book, the mark-to-market series the artifacts cannot supply. This is the **required** stream (what a defect-free trial must persist), not one any current tool captures — the fields exist in `QM_AccountMonitor.mq5` but nothing on disk persists them as a durable series (B.2 hard limit 3). Field source and per-field capture status:
+
+| field | granularity | consumed by | why the backtest can't supply it |
+|---|---|---|---|
+| `equity` (incl. open PnL, swaps, commissions) | **M5** (≤5 min), and the interval **minimum** between anchors | `ftmo_2s_max_daily_loss` daily test; tail cert intraday minima | artifacts hold `EQUITY_SNAPSHOT` events only, no interval minimum (`interval_equity_export.md`) |
+| `balance` | per closed deal + Prague-midnight anchor | daily-loss limit basis `MIDNIGHT_BALANCE_MINUS_FIXED_AMOUNT` | closed-PnL proxy forbidden (`ftmo_complete_mtm_evidence`) |
+| open `positions` (count, magic, volume, unrealized PnL) | M5 snapshot | governor/identity defect check; occupancy | not in artifacts |
+| `pending_orders` census | M5 snapshot + at target/endpoint | `ftmo_2s_pass_condition` (`positions_open=0`); `flat_at_target` | `interval_equity_export` returns NULL pending orders |
+| endpoint equity (exact daily close, Prague) | daily | `flat_at_target`, phase-pass detection | "partial event-time only" today (all 8 candidates) |
+| server request count (`TM_OPEN/CLOSE/MODIFY/REMOVE_PENDING`) | daily | `ftmo_ea_server_limits` (≤2000/day; hyperactive above) | not a backtest concept |
+| Prague day boundary crossings | event | daily-reset correctness, midnight-window guardrail | backtest has no wall-clock midnight semantics |
+
+**Capture authority (corrected).** No single existing tool feeds this stream. (1) The **field source** is `framework/monitor/QM_AccountMonitor.mq5` — it already emits equity incl. floating PnL (`:712`), per-position profit+swap (`:727`), and pending-order count (`:749`) — but only as a 60s-overwritten point-in-time `account_snapshot.json` (`:14,:42,:800`), **not a series**. (2) The **FTMO daily exporter** `export_ftmo_daily_stream` (`ftmo_daily_net_export.py`, NOT the runner) produces only a per-sleeve **DAILY** net stream whose intraday low is **MAE-reconstructed** (`:678-679`) — it is **not** the live M5 stream and has no position/pending census. (3) The `ftmo_lane_runner` FTMO daily exporter accepts only `REAL_TICKS` for its execution model, but that only governs how ticks are modelled, not whether an M5 interval-minimum series is persisted. **→ The new collector (B.2 hard limit 3) is the missing capture authority**: it must append `QM_AccountMonitor` snapshots (or an EA-side running-minimum) to a durable Europe/Prague-day-keyed jsonl with a per-interval position/pending census. The **book-level** mark-to-market and first-passage validation named in `q08_evidence_policy.compensation_requirements` ("exact book-level mark-to-market and first-passage validation") is precisely what that collected stream must feed — and cannot today.
+
+### B.5 Park-aware monitoring (MNT-004) — a parked alarm is not a rehearsal
+
+`tools/strategy_farm/ftmo_trial_pulse.py` (scheduled `QM_FTMO_TrialPulse`, 30 min; exit 0=OK/WARN, 1=ALARM). Tri-state `assess_expected_state` (line 136): `RUNNING` / `PARKED` / `MAINTENANCE`, **observation-only** — never starts/stops a process, never closes a position (permanent "one-authority tombstone": the only armed money-control authority is the governor EA `QM5_13206` against a signed manifest; this pulse never writes a halt/kill/liquidation signal).
+
+- **Current contract:** `EXPECTED_STATE='PARKED'` (line 51), decision `OWNER-DEC-FTMO-PARK-UNTIL-25-20260825` (`decisions/2026-08-25_owner_hma_requal_ftmo_park_q02_dead16.md`), review trigger `qualified_pairs>=25`. PARKED contract: `EXPECTED_PARKED_POSITION_COUNT=1`, `EXPECTED_PARKED_POSITION_IDS={527674048}`, `EXPECTED_PARKED_POSITION_MAGICS={107060001}` (= 10706/GBPUSD slot 1). Precedence: `contract_expired` wins fail-closed, then MAINTENANCE, then PARKED position/magic probes. `MAINTENANCE_FLAG=D:/QM/reports/state/LIVE_UPTIME_MAINTENANCE.flag`.
+- **MNT-004 design intent** (`docs/ops/CODEX_BRIEF_mnt_review_corrections_2026-07-28.md`): PARKED+OFF=OK, RUNNING+OFF=ALARM, stop the relaunch loop for PARKED, single escalated alarm after N identical failures. `MNT_CONVERGENCE_LEDGER.md:44` = MNT-004 ~92% converged.
+- **The point (open question 5):** a **parked-account alarm is not a successful rehearsal.** A genuine trial requires flipping `EXPECTED_STATE` from `PARKED` to `RUNNING`, with the position contract changed from "one held position (id 527674048)" to live telemetry. That flip is baked into the pulse source (constants at module head, tied to an OWNER decision id). **Who flips it — OWNER decision or AI ops edit under standing auth — is unresolved.** Because the current PARKED state was itself set by an OWNER receipt (2026-08-25/26), the safe reading is that flipping to RUNNING is an **OWNER decision** (it authorizes a live-executing FTMO demo), and the code edit that implements the flip is the AI follow-through of that decision.
+
+### B.6 Defect-free acceptance criteria & the scoring-contract prerequisite
+
+`ftmo_free_trial_gate` scores a run as pass iff **0 operational defects** (rule/governor/identity/execution) **and** the run stays inside **preregistered prediction bands**. Those prediction bands and the strict go-criteria set are **not ratified yet**:
+
+- `docs/ops/evidence/2026-09-05_review_ftmo_positive_evidence_test.md` = **FAIL** on `docs/ops/OWNER_VORLAGE_2026-09-05_ftmo_positive_evidence_test.md`, three BLOCKERs: **F1** §D drops the stricter P1 lower-bound (operative uses `lower-95>=0.70` but the ratified builder constant is `P1_LOWER_BOUND_FLOOR=0.80`, `build_book_ftmo.py:53-54`, `ftmo_timebox_eval.py:69-91 design_bar_p1=0.80`); **F2** declared trial count 154 is not the DSR `selection_trial_count` (explicit 154 → effective 522, `q08_davey/sub_8_2_dsr_mc_fdr.py`); **F3** "powered holdout" has no predeclared power rule. **F4/F5** HIGH: the "strictest go-criteria set" omits 4 rulepack criteria **including `ftmo_free_trial_gate`**; the evaluator source is not sealed.
+- **Consequence (open question 4):** the exact-profile shadow run has **no ratified scoring contract yet**. Two coherent sequencings: (a) **capture-only trial** — run the demo to record the B.4 telemetry stream, defer *scoring* until the acceptance test is ratified (the telemetry is durable, the scoring is applied later); or (b) **ratify first, then run for-record**. The rulepack does not force (b): `ftmo_free_trial_gate` needs the bands *to score*, not *to record*. Recommendation to OWNER: capture-only is a legitimate GRÜN-adjacent measurement (no purchase, no live money), and it de-risks the ratification by giving it real data to calibrate the bands against — but the **for-record** defect-free verdict must wait for the ratified contract.
+
+### B.7 Restart / race / midnight (Prague) evidence
+
+- The daily-loss reset is `Europe/Prague 00:00:00` (`ftmo_2s_max_daily_loss.reset_local_time`). QM's own optional `qm_ftmo_midnight_entry_window` blocks new entries 23:50-00:10 Prague around that anchor (`:384-398`, `PROPOSED_FOR_CALIBRATION`, not enforced).
+- **No live restart/race/midnight-boundary execution evidence exists on disk, and no capture artifact would record it today.** The interval export cannot supply intraday min-equity around the Prague midnight boundary (`interval_equity_export.md` — MISSING). **A real demo trial is the only source** for restart-recovery, race, and midnight-reset behavior — but a trial alone is **not sufficient**: it inherits B.2 hard limit 3, because the only live instrument (`QM_AccountMonitor.mq5`) overwrites its snapshot every 60s and the 30-min `ftmo_trial_pulse.py` reads only the latest. **A midnight-crossing equity trough or a restart-window race would fall between samples and leave no durable record.** So this evidence is MISSING/UNVERIFIED until BOTH a trial runs AND the new Prague-day-keyed interval-minimum collector (B.2 hard limit 3) exists to persist it. The trial design must then explicitly exercise, with that collector armed: (i) a terminal restart mid-session (recovery of open-position/pending-order state), (ii) a Prague-midnight crossing with an open position (daily-anchor re-baselining), (iii) the 23:50-00:10 entry-window guardrail (calibration).
+
+### B.8 OWNER-only vs AI-commissionable — clean separation
+
+| step | who | authority basis |
+|---|---|---|
+| SIGN the deploy pointer (`--signed --approved-by --approval-evidence`) | **OWNER only (ROT)** | generate_live_deployment_pointer.py docstring; freeze boundary |
+| adjudicate the 4 drift magics `[104760004,106920005,107150004,109400003]` | **OWNER only** | Part 1 §A.4/C.1 |
+| confirm FTMO client-area terms (Swing leverage, current symbol list, margin/swap XAGUSD + 4 FX) | **OWNER only** (login-gated; public URL 404) | Part 1 §C.1(3) |
+| **create the FTMO demo / Free-Trial account + terminal login** | **OWNER only** | ftmo_lane_runner requires a pre-existing `FTMO-Demo` server profile; account creation + login are OWNER acts |
+| flip `EXPECTED_STATE` PARKED→RUNNING (authorize a live-executing demo) | **OWNER decision** (AI implements the code edit) | pulse contract tied to OWNER decision id (B.5) |
+| flip AutoTrading on the demo terminal | **OWNER only (ROT)** | Hard Rule: AutoTrading = OWNER only |
+| **PURCHASE a paid Challenge** | **excluded** | 2026-09-05 blanket release "Alles, bis auf den Kauf, freigegeben"; `ftmo_owner_purchase_gate` |
+| commission a **live-mode FTMO set-generation path** (new tool) | AI-commissionable (build task) | fills B.2 limit 1 gap; standing auth (build lane) |
+| commission a **Prague-day-keyed M5 interval-minimum + position/pending collector** (new tool) | AI-commissionable (build task) | fills B.2 limit 3 gap (`QM_AccountMonitor` snapshots → durable jsonl); standing auth (build lane) |
+| ratify the positive-evidence acceptance test (bands + strict go-criteria) | OWNER ratification of an AI-drafted Vorlage | review `2026-09-05_review_...md` FAIL → re-draft |
+| T1 swap-export (fill `venue_cost_model` swap gap) | AI-commissionable (GRÜN, ≤1h factory) | Part 1 §C.2 |
+| fresh live-deals export / audit_live_book re-run | AI-commissionable (GRÜN, read-only) | Part 1 §C.2 |
+
+---
+
+## Evidence index
+
+- `D:/QM/reports/state/live_deployment_pointer.json` — 24-sleeve pointer, `signed=false`, `approved_by=null`, `approval_evidence=null`; `manifest_sha256=8c719b08…`; `identity_sha256=9aa10411…`; `fingerprint_sha256=8e476e5b…`; `expected_account=4000090541`
+- `tools/strategy_farm/generate_live_deployment_pointer.py` — mint tool; `build_pointer:155-162` (signed gate), `main:195-208` (CLI), `215-218` (freeze assertion on signed mint)
+- `tools/strategy_farm/live_deployment_pointer_auth.py` — `authenticate_deploy_stamp:138`; ranks OK/DEGRADED/UNCORROBORATED/CONFLICT; `SIGNED_NOT_TRUE:199-200`; `CONFLICT_CODES:65`
+- `tools/strategy_farm/verify_live_deployment_contract.py` — CEO verification; magic `247-259`; `RISK_TOL=1e-4:104`; `render_deploy_stamp_contract:1391`, `main:1649`
+- `tools/strategy_farm/risk_freeze.py` — `assert_live_book_mutation_allowed`; `LIFT_CONDITIONS` (verbatim lift rule); status/verify/arm
+- `decisions/2026-08-22_owner_dec_risk_freeze_executed.md` — freeze EXECUTED; frozen set; baseline 24 / 9.7499 / `roster_sha256=a98bfdeb…`
+- `D:/QM/reports/state/live_risk_freeze.json` — freeze state
+- `docs/ops/evidence/2026-09-04_astra_ftmo_risk_freeze.json` — status ACTIVE, armed 2026-08-31T05:12:17Z, three lift conditions all UNMET
+- `docs/ops/BOOK_CEREMONY_RUNBOOK_2026-09.md` — ceremony §2/§4 (Q16 11 checks) / §5 (rollback + abort triggers); guard trigger `qualified_pairs>=25`
+- `tools/strategy_farm/deploy_tlive_book.py` — `:129`, `main:213` (`LIVE_RISK_FREEZE_BLOCKED`); `--apply` requires `--backup-dir` outside T_Live
+- `tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_SWING_V2.json` — official rules (phase targets, daily/max loss, min days, pass condition); `ftmo_free_trial_gate:494-499`; `ftmo_owner_purchase_gate:500-505`; `ftmo_complete_mtm_evidence`; `qm_ftmo_midnight_entry_window:384-398`; `deployment_boundary` NOT_IMPLEMENTED/OWNER_ONLY
+- `tools/strategy_farm/ftmo_lane_runner.py` — `validate_set_guardrails:531-547` (RISK_FIXED>0/RISK_PERCENT=0); `NATIVE_SYMBOLS=(XAUUSD,GER40.cash)`; `_safe_profile_identity:390-395,464-467`; REAL_TICKS only
+- `tools/strategy_farm/ftmo_m1_bootstrap.py` — read-only M1 spread harvest
+- `tools/strategy_farm/ftmo_trial_pulse.py` — `EXPECTED_STATE='PARKED'`; PARKED position contract (id 527674048, magic 107060001); one-authority tombstone; `assess_expected_state:136`
+- `docs/ops/evidence/2026-09-05_interval_equity_export.md` (+ `..._spec.json`) — interval_min_equity/pending_orders NULL; all 8 ABSTAIN
+- `docs/ops/evidence/2026-09-05_ftmo_v4_tail_certification.md` — portfolio ABSTAIN; correlation Layer A CERTIFIED, portfolio cert unavailable (no synchronized intraday minima)
+- `docs/ops/evidence/2026-09-05_review_ftmo_positive_evidence_test.md` — acceptance test FAIL, 3 BLOCKERs (F1/F2/F3) + F4/F5
+- `docs/ops/OWNER_VORLAGE_2026-09-05_ftmo_positive_evidence_test.md` — the Vorlage under review
+- `decisions/2026-08-25_owner_hma_requal_ftmo_park_q02_dead16.md` — PARK-UNTIL-25 decision
+- `docs/ops/CODEX_BRIEF_mnt_review_corrections_2026-07-28.md` / `docs/ops/MNT_CONVERGENCE_LEDGER.md:44` — MNT-004 design intent / ~92% converged
+- `docs/ops/evidence/2026-09-04_ftmo_official_rules_snapshot.json` — trading-symbols URL 404, leverage CARRIED_OVER; news/weekend RE_CONFIRMED HTTP 200
+- `docs/ops/evidence/2026-07-30_ftmo_book3_symbol_cost_snapshot.json` — leverage/swap corroboration (3 symbols)
+- `decisions/2026-09-02_owner_receipts_ceo_asks.md` — 2026-09-05 blanket release (this task = row 16); NO-BUY re-anchor
+- `docs/ops/evidence/2026-09-05_ftmo_readiness_part1.md` — predecessor (governed attribution + candidate feasibility)
+- `docs/ops/FTMO_STAGE_TRANSITION_RUNBOOK_2026-09.md` — companion runbook (deliverable 3)
+
+*Drafter: Claude (Factory CEO lane), task 7dceadd0. Read-only pass; no purchase, no T_Live action, no AutoTrading toggle, no pointer signing.*
