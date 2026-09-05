@@ -67,7 +67,8 @@ r1_track_record: PASS_WITH_GOVERNED_COMPLETE_PARENT_EVIDENCE
 r1_reasoning: "Complete approved ADF and BDS records plus a complete peer-reviewed WTI continuation record provide exact hashes, adverse interpretation limits, and explicit non-transfer boundaries."
 r2_mechanical: PASS
 r2_reasoning: "Month clock, sixty-one endpoints, both locked arithmetic paths, inclusive thresholds, conjunction, twelve-month side, consumed attempt, fixed risk, stop, spread, and lifecycle are deterministic."
-r3_data_available: PASS_WITH_CONTINUOUS_CFD_BASIS_RISK
+r3_data_available: PASS
+r3_qualification: CONTINUOUS_CFD_BASIS_RISK
 r3_reasoning: "Registered native XTIUSD.DWX D1 history and MT5 state supply every runtime input; continuous-CFD roll, basis, financing, gaps, and broker-month labels remain material risks."
 r4_ml_forbidden: PASS
 r4_reasoning: "Only timestamps, completed prices, logarithms, bounded OLS, bounded pair comparisons and sums, ATR risk, quotes, positions, deals, and persistent state are used."

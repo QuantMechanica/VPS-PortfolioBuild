@@ -263,3 +263,4 @@ AutoTrading, terminal control, or live use.
 | G0 Research Intake | 2026-09-05 | APPROVED | `decisions/2026-09-05_qm5_41351_wti_monthly_adf_bds_agreement_trend_g0.md` |
 | Q01 Build & Spec | 2026-09-05 | SOURCE_BUILT; COMPILE_PENDING | governed compile required |
 | Q02 Baseline | 2026-09-05 | NOT_ENQUEUED_Q01_PENDING | strict compile/EX5 prerequisite |
+
