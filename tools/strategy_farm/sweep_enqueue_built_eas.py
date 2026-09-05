@@ -147,6 +147,7 @@ sys.path.insert(0, str(REPO_ROOT / "tools" / "strategy_farm"))
 import farmctl  # staging helpers (_stage_q02_setfiles, _record_q02_deferral)
 from q08_recovery_lineage import build_q08_recovery_lineage
 from review_entry_gate import build_index as build_review_entry_index, blocked as review_blocked
+from canonical_setfile_paths import validate_enqueue_setfile
 REQUEUE_EXCLUDED_EAS = farmctl.load_requeue_excluded_eas()
 
 # 2026-07-19 (Q08 INFRA_FAIL storm RCA): a deterministic setgen defect in the
@@ -283,6 +284,14 @@ def insert_wi(
             "phase": phase,
             "symbol": symbol,
             "setfile": Path(setfile).name,
+        })
+        return None
+    try:
+        setfile = validate_enqueue_setfile(setfile, REPO_ROOT)
+    except (ValueError, OSError) as exc:
+        report.setdefault("noncanonical_setfile_refused", []).append({
+            "ea_id": ea_id, "phase": phase, "symbol": symbol,
+            "setfile": str(setfile), "reason": str(exc),
         })
         return None
     # OWNER directive 2026-06-20: only ever enqueue .DWX custom symbols. Bare
@@ -629,10 +638,13 @@ for phase in STRANDED_INFRA_PHASES:
     for ea_id, symbol, setfile, _ts, infra_attempts in stranded_rows:
         if part2_count >= MAX_PART2_PER_RUN:
             break
+        # The verdict/date index scans the fleet's failure history once per
+        # stranded pair (52.35 s / 352 lookups in the frozen profile). Restrict
+        # by the existing canonical EA/phase index before the unchanged sort.
         source = cur.execute(
             """
             SELECT id,status,payload_json,updated_at
-            FROM work_items
+            FROM work_items INDEXED BY idx_work_items_ea_phase
             WHERE ea_id=? AND phase=? AND symbol=?
               AND ifnull(setfile_path, '')=ifnull(?, '')
               AND status IN ('done','failed') AND verdict='INFRA_FAIL'
@@ -1199,6 +1211,9 @@ if APPLY:
             cohort_size=cohort_size,
             canary_symbols=canary_symbols,
         )
+    # All guarded DB/sidecar mutations are durable. Report serialization and
+    # console output must not extend the fleet-wide claim exclusion window.
+    _release_mutation_lock()
 EVIDENCE.write_text(json.dumps(report, indent=1), encoding="utf-8")
 
 p1, p2 = report["part1_never_tested"], report["part2_stranded"]

@@ -10,7 +10,7 @@ from __future__ import annotations
 import argparse
 import atexit
 from collections import Counter
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 import errno
 import faulthandler
 import hashlib
@@ -2439,6 +2439,8 @@ def _drain_active_ram_facts(
     *,
     multisym_ids: frozenset,
     armed_item_id: str | None,
+    process_snapshot: tuple | None = None,
+    connection: sqlite3.Connection | None = None,
 ) -> dict[str, Any]:
     """Read-only fleet-occupancy facts for the drain winnability decision.
 
@@ -2459,8 +2461,10 @@ def _drain_active_ram_facts(
       * ``armed_row_pending`` -- whether the armed row (when given) is still a
         pending work item; False means it was claimed / finished elsewhere.
 
-    Runs OUTSIDE the claim transaction on a short read connection, mirroring the
-    existing _drain_scan_candidate preflight.  Any failure fails open to the
+    Ordinary callers run outside the claim transaction on a short read connection.
+    The claim selector supplies its pre-lock OS snapshot and existing read
+    connection, avoiding a second process census or connection under the lock.
+    Any failure fails open to the
     benign defaults (no long-run seen, nothing releasable, armed row present).
     """
     armed = str(armed_item_id) if armed_item_id is not None else None
@@ -2473,11 +2477,13 @@ def _drain_active_ram_facts(
         "long_run_ram_gb": 0.0,
     }
     try:
-        snap_children, snap_private, snap_alive = _process_private_snapshot()
+        snap_children, snap_private, snap_alive = (
+            _process_private_snapshot() if process_snapshot is None else process_snapshot
+        )
     except Exception:
         snap_children, snap_private, snap_alive = {}, {}, set()
     try:
-        with farmctl.connect(root) as conn:
+        with (farmctl.connect(root) if connection is None else nullcontext(connection)) as conn:
             conn.row_factory = sqlite3.Row
             for row in conn.execute(
                 "SELECT id, ea_id, phase, symbol, payload_json FROM work_items "
@@ -4986,7 +4992,9 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                         try:
                             longrun_ram_gb_snapshot = float(
                                 _drain_active_ram_facts(
-                                    root, multisym_ids=multisym_ids, armed_item_id=drain_item_id
+                                    root, multisym_ids=multisym_ids, armed_item_id=drain_item_id,
+                                    process_snapshot=process_snapshot,
+                                    connection=conn,
                                 ).get("long_run_ram_gb", 0.0)
                             )
                         except Exception:

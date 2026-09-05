@@ -125,6 +125,42 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
         self.assertIn('Join-Path $stateDir "disabled_terminals.txt"', source)
         self.assertIn("$_ -notin $disabledTerminals", source)
 
+    def test_longrun_ram_probe_reuses_prelock_process_snapshot(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(root, "wi-snapshot", "EURUSD.DWX", phase="Q03")
+            state, tracking = self._tracking_factory_lock()
+            calls = []
+
+            def process_snapshot():
+                calls.append(state["global_active"])
+                self.assertFalse(state["global_active"], "OS process census inside global lock")
+                return {}, {}, set()
+
+            with patch.object(terminal_worker, "FactoryMutationLock", tracking), patch.object(
+                terminal_worker, "_process_private_snapshot", side_effect=process_snapshot
+            ):
+                result = terminal_worker.claim_atomic(root, "T1")
+            self.assertTrue(result.get("claimed"), result)
+            self.assertEqual(result["item"]["id"], "wi-snapshot")
+            self.assertTrue(calls)
+            self.assertFalse(any(calls))
+
+    def test_longrun_ram_facts_supplied_snapshot_preserves_results(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(root, "wi-long", "EURUSD.DWX", phase="Q08", status="active", claimed_by="T2")
+            snapshot = ({}, {}, set())
+            with patch.object(terminal_worker, "_process_private_snapshot", return_value=snapshot):
+                expected = terminal_worker._drain_active_ram_facts(root, multisym_ids=frozenset(), armed_item_id=None)
+            with farmctl.connect(root) as conn, patch.object(
+                terminal_worker, "_process_private_snapshot", side_effect=AssertionError("unexpected OS probe")
+            ), patch.object(farmctl, "connect", side_effect=AssertionError("unexpected nested connection")):
+                actual = terminal_worker._drain_active_ram_facts(root, multisym_ids=frozenset(), armed_item_id=None,
+                    process_snapshot=snapshot, connection=conn)
+                self.assertEqual(actual, expected)
+                self.assertEqual(conn.execute("SELECT COUNT(*) FROM work_items").fetchone()[0], 1)
+
     def test_two_workers_race_claim_same_work_item_only_one_wins(self) -> None:
         with self._root() as tmp:
             root = Path(tmp) / "farm"

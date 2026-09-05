@@ -7,6 +7,7 @@ import os
 import sqlite3
 import subprocess
 import sys
+import pytest
 from pathlib import Path
 
 from tools.strategy_farm import agent_router, farmctl
@@ -279,8 +280,9 @@ def test_apply_preserves_new_deferral_when_sidecar_was_already_nonempty(
     assert deferred_state[ea_id]["canary_symbols"] == ["EURUSD.DWX"]
 
 
+@pytest.mark.parametrize("canonical", [True, False])
 def test_heterogeneous_canaries_release_deferred_symbol_in_apply_mode(
-    tmp_path: Path,
+    tmp_path: Path, canonical: bool,
 ) -> None:
     farm_root = tmp_path / "farm"
     repo_root = tmp_path / "repo"
@@ -289,12 +291,14 @@ def test_heterogeneous_canaries_release_deferred_symbol_in_apply_mode(
     eas_dir = repo_root / "framework" / "EAs"
     registry = repo_root / "framework" / "registry" / "ea_id_registry.csv"
     deferred_setfile = (
-        tmp_path / "QM5_9005_multisym_USDJPY.DWX_D1_backtest.set"
+        (repo_root / "framework/EAs/QM5_9005_multisym/sets" if canonical else tmp_path)
+        / "QM5_9005_multisym_USDJPY.DWX_D1_backtest.set"
     )
     eas_dir.mkdir(parents=True)
     registry.parent.mkdir(parents=True)
     report_root.joinpath("state").mkdir(parents=True)
     registry.write_text("ea_id,slug,status\n", encoding="utf-8")
+    deferred_setfile.parent.mkdir(parents=True, exist_ok=True)
     deferred_setfile.write_text("RISK_FIXED=1000\nRISK_PERCENT=0\n", encoding="utf-8")
 
     _init_test_db(farm_root)
@@ -372,6 +376,12 @@ def test_heterogeneous_canaries_release_deferred_symbol_in_apply_mode(
             "WHERE ea_id=? AND status='pending'",
             (ea_id,),
         ).fetchone()
+    if not canonical:
+        assert promoted is None
+        report = json.loads((report_root / "state/claude_sweep_enqueue_2026-06-10.json").read_text())
+        assert report["noncanonical_setfile_refused"][0]["reason"] == "SETFILE_PATH_NOT_CANONICAL"
+        assert json.loads(deferred_file.read_text())[ea_id]["setfiles"]
+        return
     assert promoted is not None
     assert promoted[0] == "USDJPY.DWX"
     promoted_payload = json.loads(promoted[1])
@@ -913,7 +923,8 @@ def test_mixed_cohort_null_promotes_gold_before_stop_in_apply_mode(
     ea_id = "QM5_9006"
     farm_root, report_root, env = _canary_apply_env(tmp_path, ea_id)
     build_task_id = "build-9006"
-    gold_setfile = tmp_path / f"{ea_id}_XAUUSD.DWX_D1_backtest.set"
+    gold_setfile = Path(env["QM_CANONICAL_REPO_ROOT"]) / f"framework/EAs/{ea_id}_fixture/sets/{ea_id}_XAUUSD.DWX_D1_backtest.set"
+    gold_setfile.parent.mkdir(parents=True, exist_ok=True)
     gold_setfile.write_text("RISK_FIXED=1000\nRISK_PERCENT=0\n", encoding="utf-8")
 
     with sqlite3.connect(farm_root / farmctl.DB_REL) as conn:
@@ -981,7 +992,8 @@ def test_deterministic_defect_canary_stops_cohort_in_apply_mode(
     ea_id = "QM5_9007"
     farm_root, report_root, env = _canary_apply_env(tmp_path, ea_id)
     build_task_id = "build-9007"
-    deferred_setfile = tmp_path / f"{ea_id}_USDJPY.DWX_D1_backtest.set"
+    deferred_setfile = Path(env["QM_CANONICAL_REPO_ROOT"]) / f"framework/EAs/{ea_id}_fixture/sets/{ea_id}_USDJPY.DWX_D1_backtest.set"
+    deferred_setfile.parent.mkdir(parents=True, exist_ok=True)
     deferred_setfile.write_text("RISK_FIXED=1000\nRISK_PERCENT=0\n", encoding="utf-8")
 
     with sqlite3.connect(farm_root / farmctl.DB_REL) as conn:
@@ -1094,7 +1106,8 @@ def test_stopped_cohort_unstops_on_later_pass_in_apply_mode(
     farm_root, report_root, env = _canary_apply_env(tmp_path, ea_id)
     build_task_id = "build-9009"
     canary_setfile = str(tmp_path / "EURUSD.DWX.set")
-    deferred_setfile = tmp_path / f"{ea_id}_USDJPY.DWX_D1_backtest.set"
+    deferred_setfile = Path(env["QM_CANONICAL_REPO_ROOT"]) / f"framework/EAs/{ea_id}_fixture/sets/{ea_id}_USDJPY.DWX_D1_backtest.set"
+    deferred_setfile.parent.mkdir(parents=True, exist_ok=True)
     deferred_setfile.write_text("RISK_FIXED=1000\nRISK_PERCENT=0\n", encoding="utf-8")
 
     with sqlite3.connect(farm_root / farmctl.DB_REL) as conn:
