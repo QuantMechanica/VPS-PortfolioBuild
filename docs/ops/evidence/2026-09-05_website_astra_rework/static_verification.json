@@ -1,0 +1,186 @@
+{
+  "html_count": 3428,
+  "missing_links": [],
+  "bad_fragments": [],
+  "exposure": [],
+  "metadata_errors": [],
+  "numeric_prose_inventory": [
+    {
+      "page": "404.html",
+      "text": "404 Page not found"
+    },
+    {
+      "page": "about.html",
+      "text": "Planned MQL5 Marketplace EAs Selected tools, with documented behavior and limitations"
+    },
+    {
+      "page": "disclaimer.html",
+      "text": "Prop Firm Disclaimer References to prop firms (FTMO, DarwinexZero, The5ers, and others) are for informational purposes only"
+    },
+    {
+      "page": "disclaimer.html",
+      "text": "Last updated: March 22, 2026 \u2014 QuantMechanica, Europe"
+    },
+    {
+      "page": "impressum.html",
+      "text": "Betreiber der Website QuantMechanica Europe Kontakt E-Mail: info@quantmechanica.com Unternehmensgegenstand Entwicklung, Validierung und Vertrieb algorithmischer Handelsstrategien (Expert Advisors) f\u00fcr MetaTrader 5"
+    },
+    {
+      "page": "impressum.html",
+      "text": "Letzte Aktualisierung: 25"
+    },
+    {
+      "page": "impressum.html",
+      "text": "M\u00e4rz 2026"
+    },
+    {
+      "page": "index.html",
+      "text": "Validation Q00\u2013Q08 Specify the idea and examine its historical behavior"
+    },
+    {
+      "page": "index.html",
+      "text": "Requalification Q09\u2013Q14 Compare changes against a fixed reference"
+    },
+    {
+      "page": "index.html",
+      "text": "Portfolio & operations Q15\u2013Q17 Assess the combined book and its operating readiness"
+    },
+    {
+      "page": "index.html",
+      "text": "EUR/USD \u00b7 Session model Illustrative price action (synthetic, calibrated) \u00b7 1h bars \u00b7 EMA20/EMA50 \u00b7 London / New York sessions \u00b7 measured 2026-09-02 XAU/USD \u00b7 Power of three Illustrative price action (synthetic, calibrated) \u00b7 daily bars \u00b7 accumulation / manipulation / distribution phases \u00b7 measured 2026-09-02 US 100 \u00b7 Regime indicators Illustrative price action (synthetic, calibrated) \u00b7 daily bars \u00b7 EMA20/EMA50 \u00b7 Bollinger bands \u00b7 swing markers \u00b7 measured 2026-09-02 Where the research could lead Products have to earn their place"
+    },
+    {
+      "page": "index.html",
+      "text": "Planned MQL5 Marketplace EAs Selected tools, with documented behavior and limitations"
+    },
+    {
+      "page": "pipeline.html",
+      "text": "Q00 Research Intake Checks that a strategy idea has a real, citable source, is mechanical, is testable on our instruments, and uses no machine learning"
+    },
+    {
+      "page": "pipeline.html",
+      "text": "Q01 Build & Spec Builds the mechanical idea into an Expert Advisor with a written specification"
+    },
+    {
+      "page": "pipeline.html",
+      "text": "Q02 Baseline Screening Screens each market for a profitable, active baseline signal on in-sample history before any deeper testing"
+    },
+    {
+      "page": "pipeline.html",
+      "text": "Q03 Parameter Sweep Tests whether the result holds across a stable band of settings, not just one tuned value"
+    },
+    {
+      "page": "pipeline.html",
+      "text": "Q04 Walk-Forward + Commission Runs anchored walk-forward on unseen out-of-sample years with realistic ECN commission applied"
+    },
+    {
+      "page": "pipeline.html",
+      "text": "Q05 Gross Full-History Robustness Replays the robust settings across the entire available history to see if the edge survives every regime"
+    },
+    {
+      "page": "pipeline.html",
+      "text": "Q06 Stress HARSH Examines how the result changes when some intended fills do not execute"
+    },
+    {
+      "page": "pipeline.html",
+      "text": "Q07 Multi-Seed Repeats the test with different random seeds to inspect sensitivity to execution ordering"
+    },
+    {
+      "page": "pipeline.html",
+      "text": "Q08 Davey Statistical Validation Reviews statistical and robustness evidence, including sample size and selection effects"
+    },
+    {
+      "page": "pipeline.html",
+      "text": "Q09 Baseline Full Run Freezes a full-history, pre-news baseline as the fixed reference for the later sealed comparison"
+    },
+    {
+      "page": "pipeline.html",
+      "text": "Q10 News Impact + FTMO Recommendation Compares news-handling and venue-compliance settings across the relevant settings, then seals one locked configuration for the two programs we target \u2014 Darwinex Zero and FTMO-style prop challenges"
+    },
+    {
+      "page": "pipeline.html",
+      "text": "Q11 Incumbent Full-History Confirmation Re-confirms the locked configuration over each symbol's full available history with realistic costs"
+    },
+    {
+      "page": "pipeline.html",
+      "text": "Q12 Pattern Filter Selection Considers a small, preregistered set of pattern filters; selecting none is a valid outcome"
+    },
+    {
+      "page": "pipeline.html",
+      "text": "Q13 Parameter Optimization & Freeze Re-optimises parameters on development data only, then freezes the result as a new challenger identity"
+    },
+    {
+      "page": "pipeline.html",
+      "text": "What can stop progress: The frozen challenger cannot clear its own fresh Q02-Q11 cascade as a new EA"
+    },
+    {
+      "page": "pipeline.html",
+      "text": "Q14 Best-Settings Head-to-Head + Holdout Compares the frozen challenger against its baseline and incumbent on sealed out-of-sample and holdout windows; keeping the incumbent is a valid terminal result"
+    },
+    {
+      "page": "pipeline.html",
+      "text": "Q15 Final Portfolio Construction Admits survivors as portfolio members under correlation, family and symbol caps; entered only via the book trigger"
+    },
+    {
+      "page": "pipeline.html",
+      "text": "Q16 Operational Readiness Checks the release artifact, execution configuration and operational safeguards"
+    },
+    {
+      "page": "pipeline.html",
+      "text": "Q17 Live Burn-In DXZ Observes execution under the approved burn-in plan before any scaling decision"
+    },
+    {
+      "page": "privacy.html",
+      "text": "1"
+    },
+    {
+      "page": "privacy.html",
+      "text": "Data Controller The data controller for this website is: QuantMechanica Europe Contact: info@quantmechanica.com 2"
+    },
+    {
+      "page": "privacy.html",
+      "text": "2.1 Website Analytics This website uses local assets and system fonts"
+    },
+    {
+      "page": "privacy.html",
+      "text": "2.2 Newsletter Newsletter signup is not active"
+    },
+    {
+      "page": "privacy.html",
+      "text": "2.3 Contact via Email If you contact us via email, we store your email address and message content for the purpose of responding to your inquiry"
+    },
+    {
+      "page": "privacy.html",
+      "text": "2.4 MQL5 Marketplace Purchases Marketplace products are planned"
+    },
+    {
+      "page": "privacy.html",
+      "text": "3"
+    },
+    {
+      "page": "privacy.html",
+      "text": "4"
+    },
+    {
+      "page": "privacy.html",
+      "text": "5"
+    },
+    {
+      "page": "privacy.html",
+      "text": "6"
+    },
+    {
+      "page": "privacy.html",
+      "text": "7"
+    },
+    {
+      "page": "privacy.html",
+      "text": "8"
+    },
+    {
+      "page": "privacy.html",
+      "text": "Last updated: April 13, 2026 \u2014 QuantMechanica, Europe"
+    }
+  ],
+  "source_website_unchanged": true
+}

@@ -1,0 +1,118 @@
+{
+  "renders": [
+    {
+      "page": "index",
+      "viewport": 1400,
+      "status": 200,
+      "render": "index_1400.png",
+      "width": 1400,
+      "scroll": 1400,
+      "title": "Trading research, made inspectable | QuantMechanica",
+      "h1": "Trading ideas.\nThe evidence behind them."
+    },
+    {
+      "page": "pipeline",
+      "viewport": 1400,
+      "status": 200,
+      "render": "pipeline_1400.png",
+      "width": 1400,
+      "scroll": 1400,
+      "title": "The research pipeline | QuantMechanica",
+      "h1": "Every test has\na specific question."
+    },
+    {
+      "page": "strategies",
+      "viewport": 1400,
+      "status": 200,
+      "render": "strategies_1400.png",
+      "width": 1400,
+      "scroll": 1400,
+      "title": "Strategy archive | QuantMechanica",
+      "h1": "The idea.\nThen the evidence."
+    },
+    {
+      "page": "strategies/_template",
+      "viewport": 1400,
+      "status": 200,
+      "render": "strategies__template_1400.png",
+      "width": 1400,
+      "scroll": 1400,
+      "title": "Cs Ichi Cloud | QuantMechanica",
+      "h1": "Cs Ichi Cloud"
+    },
+    {
+      "page": "performance",
+      "viewport": 1400,
+      "status": 200,
+      "render": "performance_1400.png",
+      "width": 1400,
+      "scroll": 1400,
+      "title": "Observed performance | QuantMechanica",
+      "h1": "The result.\nAs it stands."
+    },
+    {
+      "page": "index",
+      "viewport": 800,
+      "status": 200,
+      "render": "index_800.png",
+      "width": 800,
+      "scroll": 800,
+      "title": "Trading research, made inspectable | QuantMechanica",
+      "h1": "Trading ideas.\nThe evidence behind them."
+    },
+    {
+      "page": "pipeline",
+      "viewport": 800,
+      "status": 200,
+      "render": "pipeline_800.png",
+      "width": 800,
+      "scroll": 800,
+      "title": "The research pipeline | QuantMechanica",
+      "h1": "Every test has\na specific question."
+    },
+    {
+      "page": "strategies",
+      "viewport": 800,
+      "status": 200,
+      "render": "strategies_800.png",
+      "width": 800,
+      "scroll": 800,
+      "title": "Strategy archive | QuantMechanica",
+      "h1": "The idea.\nThen the evidence."
+    },
+    {
+      "page": "strategies/_template",
+      "viewport": 800,
+      "status": 200,
+      "render": "strategies__template_800.png",
+      "width": 800,
+      "scroll": 800,
+      "title": "Cs Ichi Cloud | QuantMechanica",
+      "h1": "Cs Ichi Cloud"
+    },
+    {
+      "page": "performance",
+      "viewport": 800,
+      "status": 200,
+      "render": "performance_800.png",
+      "width": 800,
+      "scroll": 800,
+      "title": "Observed performance | QuantMechanica",
+      "h1": "The result.\nAs it stands."
+    },
+    {
+      "page": "strategies",
+      "viewport": 390,
+      "width": 390,
+      "scroll": 390,
+      "filter_empty_market_tests": true,
+      "keyboard_menu_escape": true
+    },
+    {
+      "page": "performance",
+      "data_unavailable_state": true
+    }
+  ],
+  "javascript_errors": [],
+  "server_stopped": true
+}

@@ -1,0 +1,526 @@
+[
+  {
+    "page": "404.html",
+    "title": "QuantMechanica \u2014 Page Not Found",
+    "h1": "Page not found.",
+    "h1_line": 68,
+    "hidden_mobile_control_line": 50,
+    "canonical_present": false,
+    "external_loads": [
+      "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+      "https://plausible.io/js/script.js"
+    ],
+    "number_claims": []
+  },
+  {
+    "page": "about.html",
+    "title": "QuantMechanica \u2014 About",
+    "h1": "One engineer. A multi-agent quant engine.",
+    "h1_line": 69,
+    "hidden_mobile_control_line": 50,
+    "canonical_present": false,
+    "external_loads": [
+      "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+      "https://plausible.io/js/script.js"
+    ],
+    "number_claims": [
+      {
+        "line": 106,
+        "excerpt": "Sets investment criteria, oversees the pipeline, and holds exclusive authority over live risk and the live account\u2019s AutoTrading switch."
+      }
+    ]
+  },
+  {
+    "page": "blog-3-agent-ai-factory.html",
+    "title": "QuantMechanica \u2014 The 3-agent AI factory behind QuantMechanica",
+    "h1": "The 3-agent AI factory behind QuantMechanica",
+    "h1_line": 53,
+    "hidden_mobile_control_line": 36,
+    "canonical_present": false,
+    "external_loads": [
+      "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+      "https://plausible.io/js/script.js"
+    ],
+    "number_claims": []
+  },
+  {
+    "page": "blog-97-percent-failures.html",
+    "title": "QuantMechanica \u2014 Why 97% of My Trading Strategies Failed",
+    "h1": "Why 97% of My Trading Strategies Failed \u2014 And Why That's a Good Thing",
+    "h1_line": 53,
+    "hidden_mobile_control_line": 36,
+    "canonical_present": false,
+    "external_loads": [
+      "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+      "https://plausible.io/js/script.js"
+    ],
+    "number_claims": [
+      {
+        "line": 6,
+        "excerpt": "QuantMechanica \u2014 Why 97% of My Trading Strategies Failed"
+      },
+      {
+        "line": 7,
+        "excerpt": ""
+      },
+      {
+        "line": 8,
+        "excerpt": ""
+      },
+      {
+        "line": 9,
+        "excerpt": ""
+      },
+      {
+        "line": 53,
+        "excerpt": "Why 97% of My Trading Strategies Failed \u2014 And Why That's a Good Thing"
+      },
+      {
+        "line": 58,
+        "excerpt": "If you tell a hiring manager that you fail at your primary task 97% of the time, they will probably show you the door. If you tell an investor that only four out of every hundred projects survive, they may assume the system is broken."
+      },
+      {
+        "line": 59,
+        "excerpt": "In quantitative trading, the opposite is true. A 97% failure rate is not proof of incompetence. It is often the clearest proof that the filter is doing real work."
+      }
+    ]
+  },
+  {
+    "page": "blog-ai-factory.html",
+    "title": "QuantMechanica \u2014 How I Built a Trading Factory",
+    "h1": "How I Built a Trading Factory: 100 Tasks in One Day with 3 AI Agents",
+    "h1_line": 53,
+    "hidden_mobile_control_line": 36,
+    "canonical_present": false,
+    "external_loads": [
+      "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+      "https://plausible.io/js/script.js"
+    ],
+    "number_claims": [
+      {
+        "line": 53,
+        "excerpt": "How I Built a Trading Factory: 100 Tasks in One Day with 3 AI Agents"
+      },
+      {
+        "line": 78,
+        "excerpt": "What 100 Tasks Actually Means"
+      }
+    ]
+  },
+  {
+    "page": "blog-deflated-sharpe-ratio.html",
+    "title": "QuantMechanica \u2014 Deflated Sharpe Ratio",
+    "h1": "Deflated Sharpe Ratio",
+    "h1_line": 53,
+    "hidden_mobile_control_line": 36,
+    "canonical_present": false,
+    "external_loads": [
+      "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+      "https://plausible.io/js/script.js"
+    ],
+    "number_claims": []
+  },
+  {
+    "page": "blog-fixed-risk-story.html",
+    "title": "QuantMechanica \u2014 Fixed Risk vs Percent Risk",
+    "h1": "Fixed Risk vs Percent Risk: Why Honest Backtests Matter",
+    "h1_line": 53,
+    "hidden_mobile_control_line": 36,
+    "canonical_present": false,
+    "external_loads": [
+      "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+      "https://plausible.io/js/script.js"
+    ],
+    "number_claims": [
+      {
+        "line": 82,
+        "excerpt": "Why 97% failed"
+      }
+    ]
+  },
+  {
+    "page": "blog-monte-carlo-explained.html",
+    "title": "QuantMechanica \u2014 Monte Carlo explained for traders",
+    "h1": "Monte Carlo explained for traders",
+    "h1_line": 53,
+    "hidden_mobile_control_line": 36,
+    "canonical_present": false,
+    "external_loads": [
+      "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+      "https://plausible.io/js/script.js"
+    ],
+    "number_claims": []
+  },
+  {
+    "page": "blog-monte-carlo-simulation.html",
+    "title": "QuantMechanica \u2014 Monte Carlo Simulation for Trading",
+    "h1": "Monte Carlo simulation for trading",
+    "h1_line": 53,
+    "hidden_mobile_control_line": 36,
+    "canonical_present": false,
+    "external_loads": [
+      "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+      "https://plausible.io/js/script.js"
+    ],
+    "number_claims": []
+  },
+  {
+    "page": "blog-multi-seed-testing.html",
+    "title": "QuantMechanica \u2014 Multi-Seed Testing",
+    "h1": "Multi-seed testing",
+    "h1_line": 53,
+    "hidden_mobile_control_line": 36,
+    "canonical_present": false,
+    "external_loads": [
+      "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+      "https://plausible.io/js/script.js"
+    ],
+    "number_claims": [
+      {
+        "line": 58,
+        "excerpt": "Gate Q07 (Multi-Seed) exists to catch strategies that only work because history happened in one favorable order. If slight seed changes cause a large Profit Factor swing, the edge is too thin. The 20% rule I compare Profit Factor across five seeds. If the variance is too wide, the strategy is out. Stable logic should not collapse because of microscopic path changes. Who usually fails here High-frequency scalpers, fragile news strategies, and over-optimized systems are the usual casualties. They "
+      }
+    ]
+  },
+  {
+    "page": "blog-prop-firm-compatibility.html",
+    "title": "QuantMechanica \u2014 Prop Firm Compatibility",
+    "h1": "Prop firm compatibility",
+    "h1_line": 53,
+    "hidden_mobile_control_line": 36,
+    "canonical_present": false,
+    "external_loads": [
+      "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+      "https://plausible.io/js/script.js"
+    ],
+    "number_claims": []
+  },
+  {
+    "page": "blog-session-trading.html",
+    "title": "QuantMechanica \u2014 Session Trading",
+    "h1": "Session Trading: Why London Open and NY Close Are Not Created Equal",
+    "h1_line": 53,
+    "hidden_mobile_control_line": 36,
+    "canonical_present": false,
+    "external_loads": [
+      "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+      "https://plausible.io/js/script.js"
+    ],
+    "number_claims": [
+      {
+        "line": 85,
+        "excerpt": "Why 97% failed"
+      }
+    ]
+  },
+  {
+    "page": "blog-sm124-gotobi-deep-dive.html",
+    "title": "QuantMechanica \u2014 The Gotobi effect: inside a calendar-settlement family",
+    "h1": "The Gotobi effect: inside a calendar-settlement family",
+    "h1_line": 53,
+    "hidden_mobile_control_line": 36,
+    "canonical_present": false,
+    "external_loads": [
+      "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+      "https://plausible.io/js/script.js"
+    ],
+    "number_claims": []
+  },
+  {
+    "page": "blog-sm124-gotobi-story.html",
+    "title": "QuantMechanica \u2014 The Tokyo Fix: how the Gotobi settlement flow actually works",
+    "h1": "The Tokyo Fix: how the Gotobi settlement flow actually works",
+    "h1_line": 53,
+    "hidden_mobile_control_line": 36,
+    "canonical_present": false,
+    "external_loads": [
+      "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+      "https://plausible.io/js/script.js"
+    ],
+    "number_claims": []
+  },
+  {
+    "page": "blog-sm186-asian-drift.html",
+    "title": "QuantMechanica \u2014 The Asian session drift: inside a mechanical FX-and-metals family",
+    "h1": "The Asian session drift: inside a mechanical FX-and-metals family",
+    "h1_line": 53,
+    "hidden_mobile_control_line": 36,
+    "canonical_present": false,
+    "external_loads": [
+      "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+      "https://plausible.io/js/script.js"
+    ],
+    "number_claims": []
+  },
+  {
+    "page": "blog-symbol-selection.html",
+    "title": "QuantMechanica \u2014 How I Select Symbols for Each EA",
+    "h1": "How I select symbols for each EA",
+    "h1_line": 53,
+    "hidden_mobile_control_line": 36,
+    "canonical_present": false,
+    "external_loads": [
+      "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+      "https://plausible.io/js/script.js"
+    ],
+    "number_claims": []
+  },
+  {
+    "page": "blog-walk-forward.html",
+    "title": "QuantMechanica \u2014 Walk-Forward Validation",
+    "h1": "Walk-Forward Validation: The Test That Separates Signal From Noise",
+    "h1_line": 53,
+    "hidden_mobile_control_line": 36,
+    "canonical_present": false,
+    "external_loads": [
+      "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+      "https://plausible.io/js/script.js"
+    ],
+    "number_claims": [
+      {
+        "line": 86,
+        "excerpt": "Why 97% failed"
+      }
+    ]
+  },
+  {
+    "page": "blog-why-mql5-eas-use-martingale.html",
+    "title": "QuantMechanica \u2014 Why Most MQL5 EAs Use Martingale",
+    "h1": "Why most Expert Advisors on MQL5 marketplace use Martingale",
+    "h1_line": 53,
+    "hidden_mobile_control_line": 36,
+    "canonical_present": false,
+    "external_loads": [
+      "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+      "https://plausible.io/js/script.js"
+    ],
+    "number_claims": []
+  },
+  {
+    "page": "blog-zero-correlation-portfolio.html",
+    "title": "QuantMechanica \u2014 How we build toward a zero-correlation portfolio",
+    "h1": "How we build toward a zero-correlation portfolio",
+    "h1_line": 53,
+    "hidden_mobile_control_line": 36,
+    "canonical_present": false,
+    "external_loads": [
+      "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+      "https://plausible.io/js/script.js"
+    ],
+    "number_claims": [
+      {
+        "line": 58,
+        "excerpt": "Correlation is the quiet way portfolios become fragile. Three profitable trend systems can still behave like one oversized trade if they all lose at the same time. A book is not a pile of good strategies; it is a set of strategies chosen so their weaknesses do not line up. How we diversify Symbol caps prevent one market from dominating the risk budget. Family caps prevent one strategy type from owning the whole book. Timeframe diversification reduces shared noise and simultaneous whipsaws. Pairw"
+      }
+    ]
+  },
+  {
+    "page": "blog.html",
+    "title": "QuantMechanica \u2014 Blog",
+    "h1": "Logbook",
+    "h1_line": 52,
+    "hidden_mobile_control_line": 36,
+    "canonical_present": false,
+    "external_loads": [
+      "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+      "https://plausible.io/js/script.js"
+    ],
+    "number_claims": [
+      {
+        "line": 92,
+        "excerpt": "Why 97% of My Trading Strategies Failed"
+      },
+      {
+        "line": 93,
+        "excerpt": "Why a 97% failure rate is not a weakness in quantitative trading research but the clearest sign that the filter is doing its job."
+      }
+    ]
+  },
+  {
+    "page": "disclaimer.html",
+    "title": "QuantMechanica \u2014 Risk Disclaimer",
+    "h1": "Risk Disclaimer",
+    "h1_line": 68,
+    "hidden_mobile_control_line": 50,
+    "canonical_present": false,
+    "external_loads": [
+      "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+      "https://plausible.io/js/script.js"
+    ],
+    "number_claims": [
+      {
+        "line": 97,
+        "excerpt": "Where live performance data is displayed, for example via Myfxbook, this represents real trading results on a specific account type under specific conditions."
+      },
+      {
+        "line": 136,
+        "excerpt": "Last updated: March 22, 2026 \u2014 QuantMechanica, Europe"
+      }
+    ]
+  },
+  {
+    "page": "faq.html",
+    "title": "QuantMechanica \u2014 FAQ",
+    "h1": "Frequently asked questions .",
+    "h1_line": 69,
+    "hidden_mobile_control_line": 50,
+    "canonical_present": false,
+    "external_loads": [
+      "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+      "https://plausible.io/js/script.js"
+    ],
+    "number_claims": [
+      {
+        "line": 86,
+        "excerpt": "Less than 2%. Out of 4,801 strategies built and over 122,267 backtests, only 21 strategy-symbol candidates currently sit in the qualified pool, and 9 have cleared full-history confirmation. We publish every failure so anyone can examine why strategies fail."
+      },
+      {
+        "line": 101,
+        "excerpt": "A deterministic capability router assigns each task to the seat best suited to it. Codex handles MQL5 code and pipeline engineering; Antigravity researches literature and video transcripts and mechanizes hypotheses into Strategy Cards; Claude orchestrates the backtest factory, enforces the Hard Rules and reviews evidence. The human founder holds sole authority over capital deployment and the live AutoTrading switch."
+      }
+    ]
+  },
+  {
+    "page": "impressum.html",
+    "title": "QuantMechanica \u2014 Impressum",
+    "h1": "Impressum",
+    "h1_line": 68,
+    "hidden_mobile_control_line": 50,
+    "canonical_present": false,
+    "external_loads": [
+      "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+      "https://plausible.io/js/script.js"
+    ],
+    "number_claims": [
+      {
+        "line": 78,
+        "excerpt": "QuantMechanica Europe"
+      }
+    ]
+  },
+  {
+    "page": "index.html",
+    "title": "QuantMechanica \u2014 The Quantitative Edge",
+    "h1": "The Quantitative Edge.",
+    "h1_line": 70,
+    "hidden_mobile_control_line": 51,
+    "canonical_present": false,
+    "external_loads": [
+      "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+      "https://plausible.io/js/script.js"
+    ],
+    "number_claims": [
+      {
+        "line": 128,
+        "excerpt": "Illustrative combined backtest of the current portfolio sleeve set, RISK_FIXED-normalised \u2014 not live \u00b7 measured 2026-09-02 ."
+      }
+    ]
+  },
+  {
+    "page": "performance.html",
+    "title": "QuantMechanica \u2014 Performance",
+    "h1": "Going live, in the open .",
+    "h1_line": 69,
+    "hidden_mobile_control_line": 50,
+    "canonical_present": false,
+    "external_loads": [
+      "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+      "https://plausible.io/js/script.js"
+    ],
+    "number_claims": [
+      {
+        "line": 8,
+        "excerpt": ""
+      },
+      {
+        "line": 12,
+        "excerpt": ""
+      },
+      {
+        "line": 70,
+        "excerpt": "Our first live book is in a monitored burn-in on Darwinex Zero. We are building an independently verifiable track record on Myfxbook \u2014 it is early, and we will show it as it grows rather than wait for a flattering start."
+      },
+      {
+        "line": 77,
+        "excerpt": "<!-- Dark evidence panel: Myfxbook burn-in widget with a styled skeleton"
+      },
+      {
+        "line": 84,
+        "excerpt": "Live burn-in \u00b7 Darwinex Zero on Myfxbook"
+      },
+      {
+        "line": 87,
+        "excerpt": ""
+      },
+      {
+        "line": 89,
+        "excerpt": "Live burn-in on Darwinex Zero, tracked on Myfxbook \u00b7 early track record, independent verification in progress \u00b7 updated live. This is the burn-in/demo track \u2014 we will point this widget at the funded book once it stands on its own."
+      },
+      {
+        "line": 126,
+        "excerpt": "The AutoTrading switch on the live account is reserved exclusively for the human owner. No AI seat may enable live trading or alter a live risk parameter \u2014 the automation stops at the door of the live account, by design."
+      },
+      {
+        "line": 128,
+        "excerpt": "Tracking is provided by an independent third party. The record above is published by Myfxbook directly from the burn-in account \u2014 independent verification is still in progress \u2014 and the full dashboard is open for anyone to inspect ."
+      }
+    ]
+  },
+  {
+    "page": "pipeline.html",
+    "title": "QuantMechanica \u2014 The 18-gate pipeline (Q00\u2013Q17)",
+    "h1": "Eighteen gates between an idea and live capital.",
+    "h1_line": 69,
+    "hidden_mobile_control_line": 50,
+    "canonical_present": false,
+    "external_loads": [
+      "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+      "https://plausible.io/js/script.js"
+    ],
+    "number_claims": []
+  },
+  {
+    "page": "privacy.html",
+    "title": "QuantMechanica \u2014 Privacy Policy",
+    "h1": "Privacy Policy",
+    "h1_line": 68,
+    "hidden_mobile_control_line": 50,
+    "canonical_present": false,
+    "external_loads": [
+      "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+      "https://plausible.io/js/script.js"
+    ],
+    "number_claims": [
+      {
+        "line": 79,
+        "excerpt": "QuantMechanica Europe"
+      },
+      {
+        "line": 108,
+        "excerpt": "Myfxbook \u2014 embedded widget for live performance tracking. Myfxbook may set cookies when the widget loads. Myfxbook Privacy Policy"
+      },
+      {
+        "line": 135,
+        "excerpt": "Last updated: April 13, 2026 \u2014 QuantMechanica, Europe"
+      }
+    ]
+  },
+  {
+    "page": "strategies.html",
+    "title": "QuantMechanica \u2014 Strategy Archive",
+    "h1": "Every strategy we test, including the failures.",
+    "h1_line": 69,
+    "hidden_mobile_control_line": 50,
+    "canonical_present": false,
+    "external_loads": [
+      "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+      "https://plausible.io/js/script.js"
+    ],
+    "number_claims": [
+      {
+        "line": 111,
+        "excerpt": "Each row is one strategy-symbol candidate. The strip shows Q00 \u2192 Q17: filled = passed, hollow = failed, faint = never reached. A single failed gate retires the candidate."
+      }
+    ]
+  }
+]
