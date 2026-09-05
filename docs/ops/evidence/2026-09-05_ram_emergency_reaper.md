@@ -452,3 +452,289 @@ with `_process_private_snapshot` and `_query_full_process_image_path` stubbed:
    production, the reaper silently degrades to the old scope; the refusal reason
    is in the event, so this is observable -- but it has not yet been exercised
    live (no automated reap has occurred at all).
+
+---
+
+## 8. Phase RAM floor (2026-09-05)
+
+Outcome: `IMPLEMENTED; TESTS GREEN; APPEND-ONLY`. Admission-side reservation
+only. No gate threshold, contract criterion, verdict, trade stream, candidate
+pool, containment scope, or T_Live surface is touched; backtests are not
+throttled. Sections 1-7 above stay valid -- the reaper is unchanged and is
+deliberately excluded from the floor (8.5).
+
+### 8.1 Why the measured path could not cover this
+
+Section 3 gives Q05/Q06/Q07 rows a measured reservation once the ledger has one:
+the asset-class key needs `n >= TESTER_MEMORY_MIN_SAMPLES` (3) and the per-EA key
+needs at least one COMPLETED run. Both conditions fail exactly where the host is
+at risk:
+
+- a run that balloons and is killed never writes a ledger row (the reaper now
+  synthesizes one, but as of this patch it has never fired -- 7.6);
+- the workload-scaled gates have single-digit sample counts per
+  `symbol_class|timeframe|run_kind` key, so the class key rarely reaches n=3.
+
+Three Q05 JPY-cross runs therefore reserved the flat 8 GB `ordinary` commit class
+and then took 20-27 GB of the 63 GB host shared with T_Live:
+
+| when (UTC) | EA | symbol | phase | peak | reserved | free RAM |
+|---|---|---|---|---|---|---|
+| 2026-09-04 08:09Z | QM5_10395 | EURJPY.DWX | Q05 | 27.0 GB | 8 GB | < 4 GB (min 0.4 GB, S1) |
+| 2026-09-04 23:45Z | QM5_11165 | EURJPY.DWX | Q05 | 20.8 GB | 8 GB | < 4 GB (1.6 GB, S7.1) |
+| 2026-09-05 01:32Z | QM5_10691 | GBPJPY.DWX | Q05 | 23.0 GB | 8 GB | < 4 GB |
+
+None of the three is in the ledger. They are cited from the incident record, not
+from `tester_memory_ledger.jsonl`.
+
+### 8.2 Ledger derivation (read-only)
+
+Source: `D:/QM/reports/state/tester_memory_ledger.jsonl`
+(schema `qm.tester_memory_ledger/v1`, 2265 rows, read 2026-09-05).
+
+Rule, per `(phase, symbol_class)`:
+`floor = max( PHASE_RAM_FLOOR_MIN_GB , roundup2( max( p95(peak_subtree_working_set_gb) , ceil(largest COMPLETED run) ) ) )`
+where `roundup2` rounds up to the next 2 GB and `PHASE_RAM_FLOOR_MIN_GB = 12.0`.
+
+| phase | class | n | max GB | p95 GB | max completed GB | ceil | max(p95, ceil) | -> next 2 GB | **floor** |
+|---|---|---|---|---|---|---|---|---|---|
+| Q05 | energy | 1 | 4.48 | 4.48 | 4.48 | 5 | 5.00 | 6 | **12** (min) |
+| Q05 | fx_cross | 1 | 18.48 | 18.48 | 18.48 | 19 | 19.00 | 20 | **24** (incidents) |
+| Q05 | fx_major | 6 | 15.52 | 15.51 | 15.52 | 16 | 16.00 | 16 | **16** |
+| Q05 | metal | 5 | 12.01 | 11.99 | 12.01 | 13 | 13.00 | 14 | **14** |
+| Q06 | energy | 1 | 4.47 | 4.47 | 4.47 | 5 | 5.00 | 6 | **12** (min) |
+| Q06 | fx_major | 4 | 15.51 | 15.50 | 15.51 | 16 | 16.00 | 16 | **16** |
+| Q06 | metal | 4 | 12.00 | 11.99 | 12.00 | 12 | 12.00 | 12 | **12** |
+| Q07 | fx_major | 15 | 15.54 | 15.40 | 15.54 | 16 | 16.00 | 16 | **16** |
+| Q07 | metal | 12 | 12.02 | 11.97 | 11.92 | 12 | 12.00 | 12 | **12** |
+
+Two entries are not a straight read of that table and are called out as such:
+
+- **(Q05, fx_cross) = 24 GB.** The ledger's single completed Q05 fx_cross run
+  (QM5_10295 / CHFJPY.DWX D1, 2026-09-04 21:39Z) peaked at 18.48 GB, which would
+  derive 20 GB. The three balloons in 8.1 peaked at 20.8 / 23.0 / 27.0 GB and are
+  absent from the ledger. 24 GB clears the middle two; the 27 GB outlier is
+  covered by its per-EA measured expectation once a row for it exists (8.4).
+- **(Q06, fx_cross) and (Q07, fx_cross) = 20 GB.** No rows exist at all. The
+  value is carried from the completed Q05 fx_cross run, justified by the ledger's
+  own Q05/Q06 pairs for the same EA differing by <= 0.1 GB
+  (QM5_11179 15.52/15.51, QM5_10978 15.35/15.35, QM5_10928 11.94/11.93), i.e. the
+  same full-history workload is re-run at each workload-scaled gate.
+
+Classes with no rows in a phase (`fx_exotic` everywhere, `energy` in Q07,
+`other` everywhere) take the 12 GB minimum. `other` is included because it is the
+fallback bucket a not-yet-classified symbol lands in, and a floor can only ever
+raise a reservation.
+
+### 8.3 The table as shipped
+
+`tools/strategy_farm/terminal_worker.py`, `PHASE_RAM_FLOOR_GB`:
+
+| symbol_class | Q05 | Q06 | Q07 |
+|---|---|---|---|
+| fx_cross | 24 | 20 | 20 |
+| fx_major | 16 | 16 | 16 |
+| metal | 14 | 12 | 12 |
+| energy | 12 | 12 | 12 |
+| fx_exotic | 12 | 12 | 12 |
+| other | 12 | 12 | 12 |
+
+Deliberately absent, so the flat class is kept unchanged: `index` (already the
+44 GB `single_index_tick` class -- a floor could only lower it, which `max()`
+forbids), `basket2` / `basket3_9` / `basket10+` (their own multisymbol commit
+classes), every phase other than Q05-Q07 (`OPT_CENSUS` cells measure 1-4 GB and
+keep the dedicated 4 GB class; `COMPILE_EA`; Q02-Q04, whose measured peaks are
+0.9-8.1 GB).
+
+Properties pinned by test: every value is an even GB multiple, `>= 12` and
+`<= 44`; `fx_cross >= fx_major >= metal` within each phase; and per class the
+sequence Q05 >= Q06 >= Q07 is monotone non-increasing.
+
+### 8.4 Where it is applied
+
+`_ram_reservation_detail_for_candidate` (the new full resolver;
+`_ram_reservation_for_candidate` is now a thin wrapper over it, keeping the
+`(ram_class, gb)` return shape and the single seam every existing call site and
+test fake uses) resolves
+
+```
+reservation = max( flat commit class , measured expectation (unchanged rule) , phase floor )
+```
+
+via the pure `_resolve_ram_reservation(...) -> (gb, source)`. `max()` throughout,
+so no rule can ever lower a reservation. The measured rule is untouched: it still
+only applies to single-symbol rows whose measured peak exceeds
+`TESTER_MEMORY_HEAVY_GB`. A measured expectation ABOVE the floor wins (the 27 GB
+QM5_10395 per-EA key beats the 24 GB floor); the floor is the reservation only
+while nothing has been measured yet.
+
+`source` is a facts-only label (`flat` / `measured` / `phase_floor`) recorded
+beside `reservation_gb` in the skip, drain and reaper facts
+(`skipped_ram_class`, `skipped_census_lane_protection`,
+`_drain_candidate_from_row`, the reaper candidate). It is never read by a
+decision. On an exact tie between a measured expectation and the floor the label
+says `phase_floor`, because the floor alone would have produced that number.
+
+### 8.5 Admission consequence -- which existing checks now see the larger number
+
+Confirmed by reading every call site of `_ram_reservation_for_candidate`:
+
+1. **Post-reservation RAM floor** (claim loop, `post_reservation_free_gb <
+   _ram_floor_for_class(ram_class)`, `RAM_MIN_FREE_GB = 14`). A Q05 fx_cross row
+   now needs `24 + 14 = 38 GB` free instead of `8 + 14 = 22 GB`; Q0x fx_major
+   `16 + 14 = 30 GB`; a 12 GB floor `26 GB`. The 14/20 GB latch itself is a
+   global hysteresis and is unchanged.
+2. **CENSUS-FIRST heavy deferral** (`ram_reservation_gb >= HEAVY_RUN_RAM_GB`,
+   10 GB). Every floored row is now heavy where an unmeasured Q05/Q06/Q07 row was
+   not. While census cells are claimable, such a row is deferred unless free RAM
+   minus its reservation clears `_census_first_protected_band_gb()` = 16 GB, i.e.
+   a 24 GB Q05 fx_cross needs **40 GB free**. This is the strictest new
+   constraint and the intended serialization.
+3. **Long-run RAM ceiling** (`_drain_active_ram_facts` -> `long_run_ram_gb`,
+   `lr_floor = max(reservation, DRAIN_LONG_RUN_FLOOR_GB=8)`). An unmeasured
+   active Q07 row now counts 12-20 GB instead of 8 GB. This feeds two consumers:
+   `_drain_candidate_is_winnable`'s `long_run_ceiling` refusal, and
+   `longrun_scheduling_policy.LONG_RUN_RAM_CAP_GB = 26.0` -- **two** active Q07
+   fx_major long runs (2 x 16 = 32) now reach the cap and refuse a third long run
+   of any class, where three unmeasured rows previously summed to 24 < 26.
+4. **Releasable short RAM** (`_drain_active_ram_facts`,
+   `min(reservation, measured)`). Active Q05/Q06 rows now contribute up to their
+   true measured working set rather than being capped at 8 GB, so a drain is more
+   often judged winnable -- correct, that RAM really is released.
+5. **Drain arming** (`_drain_row_is_qualifying`,
+   `DRAIN_WINDOW_MIN_RESERVATION_GB = 24`). A 24 GB Q05 fx_cross row now exactly
+   meets the arming minimum, so a **priority-tracked** Q05 fx_cross row can open
+   a drain window for the first time (`24 + 4 = 28 <= 63.1 - 10`). Bounded by the
+   existing `payload.priority_track is True` precondition; ordinary rows cannot
+   arm.
+6. **Drained-fleet armed-row floor** (`DRAIN_ARMED_ROW_FLOOR_GB = 4`): the armed
+   Q05 fx_cross row clears at `24 + 4 = 28 GB` free.
+
+Explicitly **not** changed:
+
+- **The RAM emergency reaper (sections 1-7).** Its threshold is
+  `reservation * RAM_EMERGENCY_WS_RESERVATION_MULTIPLE (2.0)`. Feeding it the
+  floor would raise the Q05 fx_cross kill threshold from 16 GB to **48 GB** on a
+  63 GB host -- disarming the reaper on precisely the incident class that
+  motivated it (the three balloons peaked at 20.8-27.0 GB and would all have
+  survived). The reaper therefore reads the new floor-free
+  `_ram_reap_reference_reservation_gb` = `max(flat, measured)`, i.e. its
+  behaviour is byte-for-byte the pre-patch behaviour. The floor is an admission
+  safety margin; the reaper judges the overrun. The candidate facts record both
+  numbers (`reservation_gb` = reap reference, `admission_reservation_gb`).
+- **The tester-memory ledger.** `_record_tester_memory` still writes the FLAT
+  class `reservation_gb`, so the schema and the aggregation that feeds section 3
+  are untouched.
+- **`_ram_latch_opt_census_bypass_available`**, which only enumerates pending
+  OPT_CENSUS rows -- excluded from the floor, so unchanged.
+- Q02-Q04, COMPILE_EA, multisymbol/basket and index rows, per 8.3.
+
+### 8.6 Tests
+
+New: `tools/strategy_farm/tests/test_terminal_worker_phase_ram_floor.py`
+(32 tests) -- table shape (bounded, even multiples, monotone across phases,
+`fx_cross >= fx_major >= metal`, index/baskets absent, Q02-Q04/OPT_CENSUS/
+COMPILE_EA absent), lookup (normalization, unknown keys, both rollbacks), the
+pure resolver (floor raises flat; measured above floor wins; floor never lowers a
+heavier class; multisymbol/census ignore it; the 3-positional pre-patch call
+still resolves unchanged), candidate end-to-end for every floored and excluded
+class, and the source label including its fail-open.
+
+Updated fixtures (behaviour change, not a repair):
+`test_terminal_worker_drain_window.py` -- four cases encoded the pre-patch 8 GB
+estimate for an unmeasured Q07 long run. `long_run_ram_gb` for Q07/EURUSD is now
+16 GB and for Q07/XAUUSD 12 GB; the two `_drain_run_postprocess` arithmetic cases
+move `host_total_gb` 84 -> 100 so the long-run ceiling is not the binding
+constraint and each test still exercises the branch it was written for. One
+assertion that a measured 11.5 GB beats the floor now uses 14.0 GB (11.5 sits
+under the new 12 GB floor), with the sub-floor case kept as an added assertion.
+
+```
+python -X utf8 -m pytest   tools/strategy_farm/tests/test_terminal_worker_phase_ram_floor.py   tools/strategy_farm/tests/test_tester_memory_admission.py   tools/strategy_farm/tests/test_tester_memory_per_ea_expectations.py   tools/strategy_farm/tests/test_terminal_worker_ram_emergency_reaper.py   tools/strategy_farm/tests/test_terminal_worker_drain_window.py   tools/strategy_farm/tests/test_terminal_worker_census_first_ram_priority.py   tools/strategy_farm/tests/test_longrun_scheduling_policy.py   -q -p no:cacheprovider
+=> 196 passed
+```
+
+Adjacent suites that assert directly on reservations, run as a regression check:
+`test_terminal_worker_atomic_claim.py`, `test_tester_memory_ledger.py`,
+`test_terminal_worker_ram_compile_bypass.py` => 102 passed, unchanged.
+
+### 8.7 Live resolution check (read-only)
+
+Unit tests use synthetic rows.  To confirm the classification and the exclusions
+against REAL payload shapes, every distinct `(phase, symbol_class, multisymbol)`
+combination present in `D:/QM/strategy_farm/state/farm_state.sqlite`
+(`work_items`, read-only `mode=ro`, all statuses) was resolved through the
+patched `_ram_reservation_detail_for_candidate` and through the reaper's
+floor-free `_ram_reap_reference_reservation_gb`.  47 combinations resolved;
+abridged:
+
+| phase | class | multi | example row | ram_class | GB | source | reap ref |
+|---|---|---|---|---|---|---|---|
+| Q02 | fx_cross | no | QM5_1099 / AUDCAD.DWX | ordinary | 8.0 | flat | 8.0 |
+| Q02 | index | no | QM5_10020 / NDX.DWX | single_index_tick | 44.0 | flat | 44.0 |
+| Q03 | fx_cross | no | QM5_10048 / GBPJPY.DWX | ordinary | 8.0 | flat | 8.0 |
+| Q04 | fx_cross | no | QM5_10048 / GBPJPY.DWX | ordinary | 18.5 | measured | 18.5 |
+| Q04 | metal | no | QM5_10038 / XAUUSD.DWX | ordinary | 11.9 | measured | 11.9 |
+| **Q05** | **fx_cross** | no | QM5_10569 / EURJPY.DWX | ordinary | **24.0** | **phase_floor** | 8.0 |
+| Q05 | fx_major | no | QM5_10558 / EURUSD.DWX | ordinary | 16.0 | phase_floor | 8.0 |
+| Q05 | energy | no | QM5_10300 / XTIUSD.DWX | ordinary | 12.0 | phase_floor | 8.0 |
+| Q05 | metal | no | QM5_10069 / XAUUSD.DWX | ordinary | 15.5 | measured | 15.5 |
+| Q05 | index | no | QM5_10115 / GDAXI.DWX | single_index_tick | 44.0 | flat | 44.0 |
+| Q05 | basket3_9 | yes | QM5_12712 cointegration | multi_leg_fx_basket | 32.0 | flat | 32.0 |
+| Q06 | fx_cross | no | QM5_10569 / EURJPY.DWX | ordinary | 20.0 | phase_floor | 8.0 |
+| Q07 | fx_cross | no | QM5_10569 / EURJPY.DWX | ordinary | 20.0 | phase_floor | 8.0 |
+| Q07 | fx_major | no | QM5_11421 / EURUSD.DWX | ordinary | 16.0 | phase_floor | 14.3 |
+| Q07 | metal | no | QM5_10069 / XAUUSD.DWX | ordinary | 15.5 | measured | 15.5 |
+| OPT_CENSUS | fx_major | no | QM5_41097 / USDJPY.DWX | opt_census_cell | 4.0 | flat | 4.0 |
+| COMPILE_EA | other | no | QM5_1009 | ordinary | 8.0 | flat | 8.0 |
+
+What this confirms beyond the unit tests:
+
+- Q02/Q03, OPT_CENSUS, COMPILE_EA, index and every basket class resolve to their
+  pre-patch numbers with `source=flat`, on real payloads.
+- **Q04 is not floored but the measured rule still fires there** (QM5_10048
+  GBPJPY at 18.5 GB, QM5_10038 XAUUSD at 11.9 GB) -- the exclusion removes the
+  a-priori floor from Q02-Q04, it does not disable the measured path.
+- **A measured expectation above the floor wins on live rows**: Q05/Q06/Q07
+  XAUUSD (QM5_10069) resolves to the measured 15.5 GB, above the 12-14 GB metal
+  floor, and Q07 QM5_11421 keeps a 14.3 GB reap reference under a 16 GB
+  admission reservation.
+- The reap reference column stays at the pre-patch value for every floored row,
+  which is the property 8.5 depends on.
+
+Incidental, pre-existing and untouched: the same basket EA can carry a different
+multisymbol commit class in different phases (QM5_12781 resolves
+`heavy_or_unknown_multisymbol` 44 GB at Q06 but `two_leg_fx_pair` 8 GB at Q07),
+because `_multisymbol_commit_class` reads the row's payload.  Not caused by this
+patch and not addressed here; noted for a later look.
+
+### 8.8 Risks / rollback
+
+**Rollback: empty the table** -- `PHASE_RAM_FLOOR_GB = {}` -- or set
+`QM_PHASE_RAM_FLOOR=0`, then idle-reload the workers. Either restores the exact
+pre-patch reservations; both are covered by a test. Nothing else has to be
+reverted, because the floor is a `max()` term and nothing reads it.
+
+Risk: **throughput cost on the floored classes.** A 24 GB Q05 fx_cross needs
+40 GB free while census cells are claimable (8.5 item 2), which on a 63 GB host
+shared with T_Live effectively serializes those rows against the census. That is
+the intended trade against three host-endangering incidents in 18 hours, but if
+Q05 fx_cross throughput collapses the graduated lever is to lower
+`PHASE_RAM_FLOOR_GB["Q05"]["fx_cross"]` to the ledger-derived 20 GB before
+reaching for the kill switch.
+
+### 8.9 Open questions
+
+1. `(Q06, fx_cross)` and `(Q07, fx_cross)` = 20 GB are carried from a single
+   completed Q05 run, not measured in those phases. The first completed Q06/Q07
+   fx_cross rows should be checked against 20 GB and the table re-derived.
+2. The three balloons are cited from the incident record, not from the ledger.
+   Once the reaper fires and synthesizes a row (7.6: it never has), the per-EA
+   expectation should overtake the floor for QM5_10395 at 27 GB, and the derived
+   `(Q05, fx_cross)` value should be re-checked against real data.
+3. A priority-tracked Q05 fx_cross row can now arm a drain window (8.5 item 5).
+   That is arithmetically sound but has never been exercised; the first such
+   arming should be watched.
+4. `PHASE_RAM_FLOOR_MIN_GB = 12` is applied to classes with no rows at all
+   (`fx_exotic`, `other`). It can only raise a reservation, but it is an
+   assumption, not a measurement.

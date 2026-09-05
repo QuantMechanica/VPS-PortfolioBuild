@@ -315,6 +315,76 @@ INDEX_TICK_SYMBOL_BASES = frozenset({"GDAXI", "SP500", "WS30", "NDX", "UK100"})
 TESTER_MEMORY_SAMPLE_SECONDS = 20.0
 TESTER_MEMORY_HEAVY_GB = 10.0
 TESTER_MEMORY_MIN_SAMPLES = 3
+# --- Deterministic PHASE RAM FLOOR (2026-09-05, CEO; host-safety patch) ------
+# The measured path above only fires once a cohort HAS a measurement: the class
+# key needs n >= TESTER_MEMORY_MIN_SAMPLES and the per-EA key needs a completed
+# run.  Both conditions failed exactly where the host was at risk -- a run that
+# balloons and is killed never writes a ledger row, and the workload-scaled
+# gates have single-digit sample counts per (class, timeframe, kind) key.  Three
+# Q05 JPY-cross runs therefore reserved the flat 8 GB "ordinary" class and then
+# took 20-27 GB of a 63 GB host shared with T_Live:
+#   2026-09-04 08:09Z QM5_10395 EURJPY 27.0 GB
+#   2026-09-04 23:45Z QM5_11165 EURJPY 20.8 GB
+#   2026-09-05 01:32Z QM5_10691 GBPJPY 23.0 GB
+# each driving free RAM below 4 GB.  This table is the a-priori floor a
+# workload-scaled phase reserves BEFORE any measurement exists.  It only ever
+# RAISES a reservation (max() against the flat class and the measured
+# expectation); it can never lower one, and it never touches a gate threshold,
+# a verdict, a budget or a cap.
+#
+# Derivation (read-only from D:/QM/reports/state/tester_memory_ledger.jsonl,
+# 2265 rows, 2026-09-05; full table in
+# docs/ops/evidence/2026-09-05_ram_emergency_reaper.md):
+# per (phase, symbol_class) take max(p95(peak_subtree_working_set_gb),
+# ceil(largest COMPLETED run)), round up to the next 2 GB, then apply a
+# PHASE_RAM_FLOOR_MIN_GB minimum.  (Q05, fx_cross) is set to 24 GB from the
+# three incidents above, which are NOT in the ledger -- they died before a row
+# was written.  (Q06/Q07, fx_cross) carry the ledger-derived 20 GB from the one
+# completed Q05 fx_cross run (18.5 GB): the ledger's own Q05/Q06 pairs for the
+# same EA differ by <= 0.1 GB, so the Q05 evidence transfers to the later
+# full-history gates.  Classes with no rows in a phase take the minimum.
+#
+# NOT floored, deliberately: OPT_CENSUS cells (measured 1-4 GB, own 4 GB class),
+# COMPILE_EA, multisymbol/basket rows (their own commit classes), Q02-Q04
+# (measured peaks 0.9-8.1 GB), and "index" (already the 44 GB
+# single_index_tick class -- a floor here could only lower it, which max()
+# forbids, so it is simply absent).
+#
+# Rollback: empty the table (PHASE_RAM_FLOOR_GB = {}) or set the env kill switch
+# QM_PHASE_RAM_FLOOR=0, then idle-reload the workers.  Either restores the exact
+# pre-patch reservations.
+PHASE_RAM_FLOOR_MIN_GB = 12.0
+PHASE_RAM_FLOOR_GB: dict[str, dict[str, float]] = {
+    "Q05": {
+        "fx_cross": 24.0,   # 3 incidents (20.8/23.0/27.0 GB); ledger max 18.5
+        "fx_major": 16.0,   # n=6, max 15.52, p95 15.51
+        "fx_exotic": 12.0,  # no rows -> minimum
+        "metal": 14.0,      # n=5, max 12.01, p95 11.99
+        "energy": 12.0,     # n=1, max 4.48 -> minimum
+        "other": 12.0,      # unclassified single symbol -> minimum
+    },
+    "Q06": {
+        "fx_cross": 20.0,   # carried from the completed Q05 fx_cross run
+        "fx_major": 16.0,   # n=4, max 15.51, p95 15.50
+        "fx_exotic": 12.0,
+        "metal": 12.0,      # n=4, max 12.00, p95 11.99
+        "energy": 12.0,     # n=1, max 4.47 -> minimum
+        "other": 12.0,
+    },
+    "Q07": {
+        "fx_cross": 20.0,   # carried from the completed Q05 fx_cross run
+        "fx_major": 16.0,   # n=15, max 15.54, p95 15.40
+        "fx_exotic": 12.0,
+        "metal": 12.0,      # n=12, max completed 11.92, p95 11.97
+        "energy": 12.0,     # no rows -> minimum
+        "other": 12.0,
+    },
+}
+# Facts-only labels for WHICH rule produced a reservation.  Recorded next to
+# reservation_gb in the skip / drain / reaper facts; never read by a decision.
+RAM_RESERVATION_SOURCE_FLAT = "flat"
+RAM_RESERVATION_SOURCE_MEASURED = "measured"
+RAM_RESERVATION_SOURCE_PHASE_FLOOR = "phase_floor"
 # Classification-only currency/symbol sets: they never touch _FX_CURRENCIES or
 # the reservation classes, only the ledger's lookup-key bucketing.
 _TESTER_MEMORY_FX_MAJOR_BASES = frozenset({
@@ -1281,40 +1351,113 @@ def _measured_ram_expectation_gb(
         return None
 
 
+def _phase_ram_floor_gb(phase: object, symbol_class: object) -> float | None:
+    """A-priori RAM floor (GB) for one (phase, symbol_class), or None.
+
+    Pure table lookup over PHASE_RAM_FLOOR_GB -- no I/O, no DB, no clock, so the
+    same row always resolves to the same floor.  Returns None (no floor at all)
+    for every phase or class the table does not name, for a non-finite or
+    non-positive entry, and while the QM_PHASE_RAM_FLOOR=0 kill switch is set.
+    Fail-open None on any error: the caller then keeps today's reservation.
+    """
+    try:
+        if os.environ.get("QM_PHASE_RAM_FLOOR") == "0":
+            return None
+        table = PHASE_RAM_FLOOR_GB.get(str(phase or "").strip().upper())
+        if not table:
+            return None
+        raw = table.get(str(symbol_class or "").strip())
+        if raw is None:
+            return None
+        floor = float(raw)
+        if not math.isfinite(floor) or floor <= 0.0:
+            return None
+        return floor
+    except Exception:
+        return None
+
+
+def _resolve_ram_reservation(
+    ram_class: str,
+    flat_gb: float,
+    measured_gb: float | None,
+    phase_floor_gb: float | None = None,
+    *,
+    multisymbol: bool,
+) -> tuple[float, str]:
+    """Pure admission-reservation resolver (the unit-test target).
+
+    reservation = max(flat commit class, measured expectation, phase floor).
+
+      * flat -- today's commit class for the row.
+      * measured -- the ledger expectation, but only for heavy single-symbol
+        runs (measured peak > TESTER_MEMORY_HEAVY_GB), exactly as before.
+      * phase floor -- the deterministic a-priori PHASE_RAM_FLOOR_GB value for
+        (phase, symbol_class); None for every excluded row (OPT_CENSUS,
+        COMPILE_EA, multisymbol/basket, Q02-Q04, index).
+
+    max() throughout, so no rule can ever LOWER a reservation.  The second
+    element is a facts-only label of which rule produced the number; on a tie
+    between the measured expectation and the floor the floor is named, because
+    the floor alone would have produced the same reservation.
+    """
+    if multisymbol:
+        return float(flat_gb), RAM_RESERVATION_SOURCE_FLAT
+    if ram_class == RAM_CLASS_OPT_CENSUS_CELL:
+        return float(flat_gb), RAM_RESERVATION_SOURCE_FLAT
+    chosen = float(flat_gb)
+    source = RAM_RESERVATION_SOURCE_FLAT
+    if measured_gb is not None:
+        measured = float(measured_gb)
+        if measured > TESTER_MEMORY_HEAVY_GB and measured > chosen:
+            chosen = measured
+            source = RAM_RESERVATION_SOURCE_MEASURED
+    if phase_floor_gb is not None:
+        floor = float(phase_floor_gb)
+        if math.isfinite(floor) and floor >= chosen and floor > float(flat_gb):
+            chosen = floor
+            source = RAM_RESERVATION_SOURCE_PHASE_FLOOR
+    return chosen, source
+
+
 def _resolve_ram_reservation_gb(
     ram_class: str,
     flat_gb: float,
     measured_gb: float | None,
+    phase_floor_gb: float | None = None,
     *,
     multisymbol: bool,
 ) -> float:
-    """Pure admission-reservation resolver (the unit-test target).
-
-    Heavy single-symbol runs (measured peak > TESTER_MEMORY_HEAVY_GB) reserve
-    their measured peak; everything else keeps today's flat class.  max() so a
-    class is never lowered below its flat default.
-    """
-    if multisymbol:
-        return flat_gb
-    if ram_class == RAM_CLASS_OPT_CENSUS_CELL:
-        return flat_gb
-    if measured_gb is None:
-        return flat_gb
-    if measured_gb <= TESTER_MEMORY_HEAVY_GB:
-        return flat_gb
-    return max(flat_gb, float(measured_gb))
+    """Reservation only (back-compatible wrapper over _resolve_ram_reservation)."""
+    return _resolve_ram_reservation(
+        ram_class, flat_gb, measured_gb, phase_floor_gb, multisymbol=multisymbol
+    )[0]
 
 
-def _ram_reservation_for_candidate(
+def _ram_reservation_detail_for_candidate(
     item: sqlite3.Row | dict[str, Any],
     payload: dict[str, Any],
     multisymbol: bool,
-) -> tuple[str, float]:
-    """Return the conservative physical-RAM class and launch reservation."""
+    *,
+    apply_phase_floor: bool = True,
+) -> tuple[str, float, str]:
+    """Physical-RAM class, launch reservation, and the rule that produced it.
+
+    ``apply_phase_floor=False`` resolves the pre-patch reservation
+    (max(flat class, measured expectation)) with no a-priori floor.  Exactly one
+    caller wants that: the RAM emergency reaper, whose "over-reserved" predicate
+    must keep measuring a balloon against what its cohort actually NEEDS, not
+    against the safety margin admission reserved on top -- see
+    _ram_reap_reference_reservation_gb.
+    """
 
     phase_upper = str(_work_item_value(item, "phase", "") or "").upper()
     if not multisymbol and phase_upper == "OPT_CENSUS":
-        return RAM_CLASS_OPT_CENSUS_CELL, OPT_CENSUS_RAM_RESERVATION_GB
+        return (
+            RAM_CLASS_OPT_CENSUS_CELL,
+            OPT_CENSUS_RAM_RESERVATION_GB,
+            RAM_RESERVATION_SOURCE_FLAT,
+        )
     # OQ-SIBLING-SEED-RANK-20260902 follow-through (CEO 2026-09-02): a DL-089
     # measurement-sibling Q02 prerequisite seed runs the same program window
     # on the same symbol as the census cells it unlocks (single symbol, D1/H1
@@ -1327,20 +1470,101 @@ def _ram_reservation_for_candidate(
         and str((payload or {}).get("schema") or "")
         == "qm.dl089-measurement-q02-prerequisite/v1"
     ):
-        return RAM_CLASS_OPT_CENSUS_CELL, OPT_CENSUS_RAM_RESERVATION_GB
+        return (
+            RAM_CLASS_OPT_CENSUS_CELL,
+            OPT_CENSUS_RAM_RESERVATION_GB,
+            RAM_RESERVATION_SOURCE_FLAT,
+        )
     ram_class = _multisymbol_commit_class(item, payload, multisymbol)
     flat_gb = float(_commit_reservation_gb(ram_class))
     measured_gb = None
-    if not multisymbol and _tester_memory_admission_active():
-        measured_gb = _measured_ram_expectation_gb(
-            _tester_memory_symbol_class(item, payload, multisymbol),
-            _normalize_timeframe(item, payload),
-            _tester_memory_run_kind(item, payload),
-            ea_id=str(_work_item_value(item, "ea_id", "") or "") or None,
+    phase_floor_gb = None
+    if not multisymbol:
+        # Both the measured lookup and the phase floor key off the same coarse
+        # symbol class; classify once, and only when at least one of them is
+        # live (a cheap dict membership keeps the hot claim path unchanged for
+        # OPT_CENSUS / COMPILE_EA / Q02-Q04 rows, which name no floor).
+        memory_active = _tester_memory_admission_active()
+        phase_floored = (
+            apply_phase_floor
+            and os.environ.get("QM_PHASE_RAM_FLOOR") != "0"
+            and phase_upper in PHASE_RAM_FLOOR_GB
         )
-    return ram_class, _resolve_ram_reservation_gb(
-        ram_class, flat_gb, measured_gb, multisymbol=multisymbol
+        if memory_active or phase_floored:
+            symbol_class = _tester_memory_symbol_class(item, payload, multisymbol)
+            if phase_floored:
+                phase_floor_gb = _phase_ram_floor_gb(phase_upper, symbol_class)
+            if memory_active:
+                measured_gb = _measured_ram_expectation_gb(
+                    symbol_class,
+                    _normalize_timeframe(item, payload),
+                    _tester_memory_run_kind(item, payload),
+                    ea_id=str(_work_item_value(item, "ea_id", "") or "") or None,
+                )
+    reservation_gb, source = _resolve_ram_reservation(
+        ram_class, flat_gb, measured_gb, phase_floor_gb, multisymbol=multisymbol
     )
+    return ram_class, reservation_gb, source
+
+
+def _ram_reservation_for_candidate(
+    item: sqlite3.Row | dict[str, Any],
+    payload: dict[str, Any],
+    multisymbol: bool,
+) -> tuple[str, float]:
+    """Return the conservative physical-RAM class and launch reservation.
+
+    Unchanged return shape and the single seam every admission / drain / reaper
+    call site (and their test fakes) uses; the rule label lives on the detail
+    function next to it.
+    """
+    ram_class, reservation_gb, _source = _ram_reservation_detail_for_candidate(
+        item, payload, multisymbol
+    )
+    return ram_class, reservation_gb
+
+
+def _ram_reap_reference_reservation_gb(
+    item: sqlite3.Row | dict[str, Any],
+    payload: dict[str, Any],
+    multisymbol: bool,
+) -> tuple[str, float]:
+    """Reservation the RAM emergency reaper measures a balloon against.
+
+    2026-09-05: the phase floor is an ADMISSION safety margin, not a needs
+    estimate.  Feeding it to the reaper would multiply straight into
+    ``threshold_gb = reservation * RAM_EMERGENCY_WS_RESERVATION_MULTIPLE`` and
+    disarm the reaper on exactly the class it was built for: a Q05 fx_cross
+    would have to exceed 2 x 24 = 48 GB on a 63 GB host shared with T_Live
+    before it could be reaped, where the three incidents that motivated the
+    floor peaked at 20.8-27.0 GB.  The reaper therefore keeps the pre-patch
+    reference -- max(flat commit class, measured expectation) -- so the 8 GB
+    ordinary class still trips at 16 GB and a measured cohort still trips at
+    twice its own measured peak.  Admission reserves the floor; the emergency
+    reaper judges the overrun.
+    """
+    ram_class, reservation_gb, _source = _ram_reservation_detail_for_candidate(
+        item, payload, multisymbol, apply_phase_floor=False
+    )
+    return ram_class, reservation_gb
+
+
+def _ram_reservation_source_label(
+    item: sqlite3.Row | dict[str, Any],
+    payload: dict[str, Any],
+    multisymbol: bool,
+) -> str:
+    """Facts-only label of which rule set a candidate's reservation.
+
+    Recorded beside reservation_gb in the skip / drain / reaper facts so a later
+    audit can tell a 24 GB phase-floor reservation from a 24 GB measured one.
+    Never read by an admission decision; computed only on those cold paths.
+    Fail-open to "flat".
+    """
+    try:
+        return _ram_reservation_detail_for_candidate(item, payload, multisymbol)[2]
+    except Exception:
+        return RAM_RESERVATION_SOURCE_FLAT
 
 
 def _census_first_ram_priority_enabled() -> bool:
@@ -1800,6 +2024,9 @@ def _drain_candidate_from_row(
             "phase": str(_work_item_value(item, "phase", "") or "").upper(),
             "ram_class": ram_class,
             "reservation_gb": round(float(reservation_gb), 1),
+            "ram_reservation_source": _ram_reservation_source_label(
+                item, payload, multisymbol
+            ),
             "floor_gb": round(float(floor_gb), 1),
         }
     except Exception:
@@ -4853,6 +5080,11 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                                     "ea_id": item["ea_id"],
                                     "ram_class": ram_class,
                                     "reservation_gb": ram_reservation_gb,
+                                    "ram_reservation_source": (
+                                        _ram_reservation_source_label(
+                                            item, payload, item_is_multisym
+                                        )
+                                    ),
                                     "free_ram_gb": round(
                                         multisym_free_ram_snapshot, 1
                                     ),
@@ -4899,6 +5131,9 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                             "ea_id": item["ea_id"],
                             "ram_class": ram_class,
                             "reservation_gb": ram_reservation_gb,
+                            "ram_reservation_source": _ram_reservation_source_label(
+                                item, payload, item_is_multisym
+                            ),
                             "free_ram_gb": round(multisym_free_ram_snapshot, 1),
                             "post_reservation_free_gb": round(
                                 post_reservation_free_gb, 1
@@ -8536,7 +8771,13 @@ def _run_ram_emergency_reap(
             except Exception:
                 multisymbol = False
             try:
-                ram_class, reservation_gb = _ram_reservation_for_candidate(
+                # Floor-free reference on purpose: the phase floor is an
+                # admission margin and must not raise the emergency kill
+                # threshold (_ram_reap_reference_reservation_gb).
+                ram_class, reservation_gb = _ram_reap_reference_reservation_gb(
+                    item, payload, multisymbol
+                )
+                _acls, admission_reservation_gb = _ram_reservation_for_candidate(
                     item, payload, multisymbol
                 )
             except Exception:
@@ -8556,6 +8797,12 @@ def _run_ram_emergency_reap(
                 "phase": item.get("phase"),
                 "ram_class": ram_class,
                 "reservation_gb": round(reservation_gb, 3),
+                "admission_reservation_gb": round(
+                    float(admission_reservation_gb), 3
+                ),
+                "ram_reservation_source": _ram_reservation_source_label(
+                    item, payload, multisymbol
+                ),
                 "threshold_gb": round(threshold_gb, 3),
                 "subtree_ws_gb": round(subtree_ws_gb, 3),
                 "subtree_ws_bytes": int(tester.get("subtree_ws_bytes") or 0),

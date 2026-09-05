@@ -932,8 +932,11 @@ def test_active_ram_facts_detects_long_run_and_sums_short(tmp_path, monkeypatch)
     assert facts["releasable_short_ram_gb"] == pytest.approx(8.0 + 1.5)
     assert facts["releasable_measured_rows"] == 2
     assert facts["releasable_unmeasured_rows"] == 0
-    # l1 (Q07) carries no worker pid -> unmeasured long run counts its reservation (8 GB).
-    assert facts["long_run_ram_gb"] == pytest.approx(8.0)
+    # l1 (Q07) carries no worker pid -> unmeasured long run counts its
+    # reservation.  2026-09-05: PHASE_RAM_FLOOR_GB["Q07"]["fx_major"] = 16 GB
+    # (ledger n=15, max 15.54 GB), so the ceiling now sees the honest 16 GB a
+    # Q07 EURUSD full-history run really holds, not the flat 8 GB class.
+    assert facts["long_run_ram_gb"] == pytest.approx(16.0)
     assert facts["armed_row_pending"] is True
 
 
@@ -1051,10 +1054,14 @@ def test_postprocess_arms_beside_long_runs_when_arithmetic_ok(tmp_path, capsys, 
         "tracker": {"idx": {"first_skipped_epoch": now - trig - 10.0}},
     })
     monkeypatch.setattr(tw, "_process_private_snapshot", lambda: _q_rows_snapshot(5))
-    # 2026-09-04: two long runs at the 8 GB floor + 14 GB baseline leave 84-14-16 = 54 >= 51.
+    # 2026-09-05: the long runs are Q07/EURUSD and Q10_NEWS/GBPUSD.  Q07
+    # fx_major now carries the 16 GB phase floor (Q10_NEWS is not a floored
+    # phase and stays at 8), so the long-run ceiling costs 24 GB instead of 16
+    # and the host total moves with it: 100-14-24 = 62 >= need 51.  Releasable
+    # is unchanged (Q02 is not floored): free 12 + 5 * 8 = 52 >= 51.
     tw._drain_run_postprocess(
         root, "T1", {"claimed": False},
-        now_epoch=now, free_ram_gb=12.0, host_total_gb=84.0, multisym_ids=_FZ,
+        now_epoch=now, free_ram_gb=12.0, host_total_gb=100.0, multisym_ids=_FZ,
     )
     after = tw._load_drain_state(root)
     assert after["active"] is not None
@@ -1089,10 +1096,12 @@ def test_postprocess_not_armed_beside_long_runs_when_arithmetic_short(
         "cooldown_until_epoch": 0.0,
         "tracker": {"idx": {"first_skipped_epoch": now - trig - 10.0}},
     })
-    # 2026-09-04: two long runs at the 8 GB floor + 14 GB baseline leave 84-14-16 = 54 >= 51.
+    # 2026-09-05: same host total as the arming test above so the long-run
+    # ceiling (100-14-24 = 62 >= 51) is NOT the binding constraint -- this test
+    # is about releasable RAM: free 12 + 3 * 8 = 36 < need 51.
     tw._drain_run_postprocess(
         root, "T1", {"claimed": False},
-        now_epoch=now, free_ram_gb=12.0, host_total_gb=84.0, multisym_ids=_FZ,
+        now_epoch=now, free_ram_gb=12.0, host_total_gb=100.0, multisym_ids=_FZ,
     )
     after = tw._load_drain_state(root)
     assert after["active"] is None
@@ -1335,11 +1344,19 @@ def test_facts_count_a_long_run_at_least_at_its_floor(tmp_path, monkeypatch):
     monkeypatch.setattr(tw, "_process_private_snapshot", lambda: _q_rows_snapshot(1, gb_each=1.5))
     facts = tw._drain_active_ram_facts(root, multisym_ids=_FZ, armed_item_id=None)
     assert facts["long_run_active_ids"] == ["l1"]
-    assert facts["long_run_ram_gb"] == pytest.approx(8.0)
-    # a measured working set above the floor is what counts
+    # 2026-09-05: PHASE_RAM_FLOOR_GB["Q07"]["metal"] = 12 GB (ledger n=12, max
+    # completed 11.92 GB) now floors the row instead of the flat 8 GB class --
+    # which is what this test was always arguing for, one patch earlier.
+    assert facts["long_run_ram_gb"] == pytest.approx(12.0)
+    # a measured working set above the floor is still what counts (14 GB is
+    # above the 12 GB Q07/metal phase floor; 11.5 GB would now sit under it)
+    monkeypatch.setattr(tw, "_process_private_snapshot", lambda: _q_rows_snapshot(1, gb_each=14.0))
+    facts = tw._drain_active_ram_facts(root, multisym_ids=_FZ, armed_item_id=None)
+    assert facts["long_run_ram_gb"] == pytest.approx(14.0)
+    # ... and a measurement BELOW the floor never lowers the row
     monkeypatch.setattr(tw, "_process_private_snapshot", lambda: _q_rows_snapshot(1, gb_each=11.5))
     facts = tw._drain_active_ram_facts(root, multisym_ids=_FZ, armed_item_id=None)
-    assert facts["long_run_ram_gb"] == pytest.approx(11.5)
+    assert facts["long_run_ram_gb"] == pytest.approx(12.0)
 
 
 def test_postprocess_abandons_an_open_window_that_stays_unwinnable(tmp_path, capsys, monkeypatch):
