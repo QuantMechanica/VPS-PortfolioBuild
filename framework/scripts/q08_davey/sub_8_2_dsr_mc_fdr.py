@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import math
 import statistics
+import os
 
 from .common import make_result, trade_timestamp
 
@@ -177,7 +178,10 @@ def _effective_candidate_count(selection_trial_count) -> tuple[int, str, int | N
 
 
 def run(trades: list[dict], *, portfolio: list[dict] | None = None,
-        selection_trial_count: int | None = None, **_) -> dict:
+        selection_trial_count: int | None = None, dsr_context=None, **_) -> dict:
+    if os.environ.get("QM_DSR_V2") == "1":
+        from .dsr_v2 import evaluate
+        return evaluate(trades, binding=dsr_context, ea_id=_.get("ea_id"), symbol=_.get("symbol"))
     returns = _trade_returns_per_day(trades)
     if len(returns) < 60:  # ~3 months of trading days
         # Genuine infrastructure / data gap — INVALID is correct here (re-runnable).

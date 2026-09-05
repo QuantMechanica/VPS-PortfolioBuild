@@ -10152,6 +10152,11 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
                 "--recovery-lineage-manifest", str(lineage_manifest),
                 "--expected-recovery-lineage-sha256", lineage_manifest_sha,
             ])
+        if os.environ.get("QM_DSR_V2") == "1":
+            dsr_context = payload.get("dsr_context")
+            if isinstance(dsr_context, dict) and dsr_context.get("path") and dsr_context.get("sha256"):
+                cmd.extend(["--dsr-context", str(dsr_context["path"]),
+                            "--expected-dsr-context-sha256", str(dsr_context["sha256"])])
     elif phase == _NEWS_PHASE:
         # Q09 executes its immutable cell plan inside this already-reserved
         # factory slot. Binding is content-addressed and performed separately;

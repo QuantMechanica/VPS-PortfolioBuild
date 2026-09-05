@@ -1556,6 +1556,17 @@ def _aggregate_verdict(sub_results: list[dict], trades: list[dict] | None = None
         name = str(result.get("name") or "unknown")
         status = str(result.get("status") or "").upper()
         detail_lower = _detail_text(result).lower()
+        if (os.environ.get("QM_DSR_V2") == "1" and name.startswith("8.2")
+                and (result.get("evidence") or {}).get("engine") == "QM_DSR_V2"
+                and (result.get("evidence") or {}).get("statistical_status") == "low_sample"):
+            classification[name] = "LOW_SAMPLE"
+            continue
+        if (os.environ.get("QM_DSR_V2") == "1" and name.startswith("8.2")
+                and (result.get("evidence") or {}).get("engine") == "QM_DSR_V2"
+                and (result.get("evidence") or {}).get("statistical_status") == "uncorrected_selection"):
+            classification[name] = "UNCORRECTED_SELECTION"
+            blocking_invalid = True
+            continue
         if status == "PASS":
             classification[name] = "PASS"
             continue
@@ -1740,7 +1751,7 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
             baseline_setfile: Path | None = None,
             neighborhood_max_params: int | None = None,
             recovery_lineage: dict | None = None,
-            selection_trial_count: int | None = None) -> dict:
+            selection_trial_count: int | None = None, dsr_context=None) -> dict:
     log_path = Path(log_path)
     # EQUITY_SNAPSHOT account values are tagged with the physical chart symbol,
     # which differs from the logical work-item symbol for basket EAs. Resolve
@@ -1893,6 +1904,7 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
                 # every ordinary run; sub-gates that do not consume it absorb it
                 # through their **_ catch-all, so behaviour is unchanged.
                 selection_trial_count=selection_trial_count,
+                dsr_context=dsr_context,
             )
         except Exception as exc:
             res = common.make_result(
@@ -2034,6 +2046,8 @@ def main() -> int:
                     help="append-only retry artifact bindings written by farmctl")
     ap.add_argument("--expected-recovery-lineage-sha256",
                     help="required SHA256 pin for --recovery-lineage-manifest")
+    ap.add_argument("--dsr-context", help="Sealed research/selection evidence for inactive DSR V2")
+    ap.add_argument("--expected-dsr-context-sha256")
     ap.add_argument("--discover", action="store_true",
                     help="walk Q07-PASS pairs in farm DB and run Q08 on each (TODO)")
     args = ap.parse_args()
@@ -2064,6 +2078,7 @@ def main() -> int:
         baseline_setfile=args.baseline_setfile,
         neighborhood_max_params=args.neighborhood_max_params,
         recovery_lineage=recovery_lineage,
+        dsr_context={"path": args.dsr_context, "sha256": args.expected_dsr_context_sha256},
     )
     _print_summary(agg)
     return 0 if agg["verdict"] == "PASS" else (1 if agg["verdict"] == "FAIL" else 3)
