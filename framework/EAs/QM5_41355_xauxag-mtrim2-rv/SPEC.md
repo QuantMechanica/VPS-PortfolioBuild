@@ -1,11 +1,13 @@
-# QM5_41355_xauxag-mtrim2-rv - Strategy Spec
+# QM5_41355 — XAU/XAG Monthly Fixed-Trim Reversion
 
-**Status:** G0 APPROVED; non-live build only  
-**Slug:** `xauxag-mtrim2-rv`  
-**Strategy ID:** `AI-CODEX-XAUXAG-MTRIM2-RV-20260905_S01`  
-**Card:** `strategy-seeds/cards/approved/QM5_41355_xauxag-mtrim2-rv_card.md`
+**EA ID:** QM5_41355
 
-## Mechanic
+**Strategy:** `AI-CODEX-XAUXAG-MTRIM2-RV-20260905_S01`
+
+**Carrier:** logical basket `QM5_41355_XAU_XAG_MTRIM2_RV_D1`, hosted on
+`XAUUSD.DWX` D1; slot 0 magic `413550000`, slot 1 magic `413550001`
+
+## 1. Strategy Logic
 
 On the first synchronized executable D1 bar of a broker month, collect the
 latest common XAUUSD.DWX/XAGUSD.DWX completed close in each of the immediately
@@ -17,13 +19,60 @@ indexes `2..9` over exactly eight. Fade the sign outside `1e-12`:
 - negative middle-eight mean: buy XAU, sell XAG;
 - otherwise: consume the month flat.
 
-Open only an equal-target-notional opposed pair. Divide one
-`RISK_FIXED=1000` aggregate frozen-stop budget across `3.5*ATR(20,D1)` stops,
-hold to the next broker month, and repair after forty elapsed days or any
-malformed package state. No retry, single-leg fallback, target, trailing,
-scale-in, grid, martingale, pyramid, optimization, or external runtime data.
+Open only an equal-target-notional opposed pair. Hold to the next broker month,
+and repair after forty elapsed days or any malformed package state.
 
-## Framework alignment
+## 2. Parameters
+
+- 13 synchronized completed month-end ratio endpoints and 12 adjacent returns.
+- Ascending sort; delete indexes `0,1,10,11`; average indexes `2..9` over 8.
+- Sign epsilon `1e-12`; history scan 1,200 D1 bars; freshness 10 days.
+- Month-entry grace 180 minutes; one persistent consumed attempt per month.
+- `RISK_FIXED=1000`, `RISK_PERCENT=0`, `PORTFOLIO_WEIGHT=1`.
+- Per-leg frozen `3.5*ATR(20,D1)` hard stops and no targets.
+- Equal target notionals with a 20% live-notional mismatch ceiling.
+- XAU/XAG spread caps 1,500/500 points; stale repair after 40 days.
+- No retry, fallback, trail, scale-in, grid, martingale, or optimization.
+
+## 3. Symbol Universe
+
+Trade exactly registered native `XAUUSD.DWX` in slot zero and `XAGUSD.DWX` in
+slot one as one opposed logical basket. XAU is the host only; neither leg may
+trade alone or serve as an absolute-direction fallback.
+
+## 4. Timeframe
+
+Attach and test on XAU D1. Decisions occur only on the first synchronized
+executable D1 bar of a new broker month and use completed prior-month data.
+
+## 5. Expected Behaviour
+
+Fail closed on missing or nonconsecutive months, unsynchronized endpoints,
+nonpositive closes, nonfinite arithmetic, a near-zero trimmed mean, invalid
+quotes/ATR/sizing/margin/stops, foreign exposure, or malformed package state.
+Consume the month before fallible entry gates and never retry it. Open or close
+the pair atomically where possible; defensive management removes orphan,
+duplicate, wrong-side, stopless, or materially mismatched exposure.
+
+## 6. Source Citation
+
+Approved composite `AI-CODEX-XAUXAG-MTRIM2-RV-20260905`, grounded in
+Schweikert (2018), *Journal of Banking & Finance* 88, DOI
+`10.1016/j.jbankfin.2017.11.010`; CME Group's Gold & Silver Ratio Spread; and
+Moskowitz, Ooi, and Pedersen (2012), *JFE* 104(2), DOI
+`10.1016/j.jfineco.2011.11.003`. No source validates this exact conjunction,
+continuous-CFD transport, profitability, or book decorrelation.
+
+## 7. Risk Model
+
+The sole Q02 baseline divides one aggregate fixed USD 1,000 frozen-stop budget
+across the two `3.5*ATR(20,D1)` stops, with percent risk zero and portfolio
+weight one. Equal target notionals reduce first-order metal beta but do not
+prove market neutrality. Legging, financing, gap, spread, roll/basis,
+synchronization, and residual metal-factor risks remain material. Signal
+magnitude never changes size, and Q09 alone determines realized correlation.
+
+## Framework Alignment
 
 | Contract | Implementation |
 |---|---|
@@ -32,12 +81,18 @@ scale-in, grid, martingale, pyramid, optimization, or external runtime data.
 | management | pair integrity, expected side, notional tolerance, original hard stops |
 | close | next-month, forty-day stale, malformed-pair, and framework kill-switch closure |
 
-## Validation
+## Validation And Safety
 
 `docs/test_xauxag_mtrim2_rv_reference.py` independently pins sorting, retained
 indexes, sign/reflection, degeneracy, synchronized ratio returns, and the
 side-disagreement fixture versus the nearest Hampel and bisquare EAs.
 
 This build does not establish profitability or decorrelation. Q02 owns baseline
-economics; Q09 alone owns realized book overlap. Portfolio gates, deploy/live
-manifests, `T_Live`, and AutoTrading remain outside scope.
+economics and retires on zero trades, fewer than five completed packages in a
+full scored post-warm-up year, nonpositive economics, or contract failure. Q09
+alone owns realized book overlap. Portfolio gates, deploy/live manifests,
+`T_Live`, AutoTrading, and terminal control remain outside scope.
+
+## Revision
+
+2026-09-05: governed Q01 implementation from the approved card; Q02 pending.
