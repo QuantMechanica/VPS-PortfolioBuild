@@ -1,0 +1,613 @@
+diff --git a/tools/strategy_farm/dl089_matrix_service.py b/tools/strategy_farm/dl089_matrix_service.py
+index c37c1e3a67..6dba76621a 100644
+--- a/tools/strategy_farm/dl089_matrix_service.py
++++ b/tools/strategy_farm/dl089_matrix_service.py
+@@ -872,11 +872,19 @@ def _program_binding_guard(
+                 f"cell_declaration={sorted(declaration_bindings | extra_declaration_bindings)}"
+             )
+         if row_ids != expected_ids or row_keys != expected_keys:
+-            raise MatrixServiceError(
+-                "PROGRAM_CELL_IDENTITY_MISMATCH: "
+-                f"program={program_id} rows={len(row_ids)} expected={len(expected_ids)} "
+-                f"reruns={len(rerun_rows)} derived={len(derived_rows)}"
+-            )
++            from tools.strategy_farm.dl089_prescreen import staged_keys
++            staged_path = artifact_root / program_id / "ledger.json"
++            staged = json.loads(staged_path.read_text()) if staged_path.exists() else {}
++            admitted = staged_keys(staged)
++            admitted_ids = {str(c["work_item_id"]) for c in declared_cells if c["cell_key"] in (admitted or set())}
++            if (admitted is None or row_keys != admitted or row_ids != admitted_ids
++                    or staged.get("q12_work_item_id") != q12_id
++                    or staged.get("q12_declaration_sha256") != declaration_sha):
++                raise MatrixServiceError(
++                    "PROGRAM_CELL_IDENTITY_MISMATCH: "
++                    f"program={program_id} rows={len(row_ids)} expected={len(expected_ids)} "
++                    f"reruns={len(rerun_rows)} derived={len(derived_rows)}"
++                )
+ 
+     ledger_path = artifact_root / program_id / "ledger.json"
+     ledger_q12 = None
+@@ -1040,7 +1048,7 @@ def _finalize_from_terminal_ledger(
+                 "cell_key": _payload(row).get("cell_key"),
+             }
+         )
+-    resolved_verdicts = {selector.census_measured_verdict(), pruning.SKIPPED_VERDICT}
++    resolved_verdicts = {selector.census_measured_verdict(), pruning.SKIPPED_VERDICT, "SKIPPED_PRESCREEN"}
+     if not evidence_rows or any(
+         str(item["status"]).lower() != "done"
+         or str(item["verdict"]).upper() not in resolved_verdicts
+@@ -1119,6 +1127,11 @@ def _service_existing_matrix(
+     ledger_path = program_dir / "ledger.json"
+     if not ledger_path.is_file():
+         raise MatrixServiceError(f"matrix rows exist without ledger: {q12_row['id']}")
++    staged_ledger = json.loads(ledger_path.read_text())
++    if apply and staged_ledger.get("prescreen_contract"):
++        census.enqueue(staged_ledger,db_path=db_path,ledger_path=ledger_path,
++            q02_ea_id=staged_ledger["ea_id"],parent_work_item_id=str(q12_row["id"]),
++            declaration_sha256=str(declaration["declaration_sha256"]),runner_revision=RUNNER_REVISION)
+     boost = (
+         census.boost(
+             ledger_path=ledger_path,
+diff --git a/tools/strategy_farm/dl089_prescreen.py b/tools/strategy_farm/dl089_prescreen.py
+new file mode 100644
+index 0000000000..3f53bdb75c
+--- /dev/null
++++ b/tools/strategy_farm/dl089_prescreen.py
+@@ -0,0 +1,300 @@
++"""OWNER-declared B5/B2 staging. No database writes outside census.enqueue.
++
++The full 154-arm/seven-year declaration survives. Receipts are unmeasured
++dispositions; existing rows and their evidence are never rewritten.
++"""
++from __future__ import annotations
++
++import datetime as dt
++from decimal import Decimal
++import hashlib
++import json
++import os
++from pathlib import Path
++import sqlite3
++
++SCHEMA = "qm.dl089-prescreen/v1"
++RECEIPT_SCHEMA = "qm.dl089-skipped-prescreen/v1"
++VERDICT = "SKIPPED_PRESCREEN"
++DECISION = "OWNER-DEC-D1-PRESCREEN-20260905"
++YEARS = (2019, 2020)
++THRESHOLD = 5
++ROOT = Path(__file__).resolve().parents[2]
++BAR_ROOT = Path("D:/QM/mt5/T_Export/MQL5/Files")
++MANIFEST_ROOT = Path("D:/QM/reports/dl089_prescreen")
++AUTHORITY = ROOT / "decisions/2026-09-02_owner_receipts_ceo_asks.md"
++
++
++def enabled() -> bool:
++    # Deployment is a CEO-reviewed opt-in; 0 always restores legacy enqueue.
++    return os.environ.get("QM_DL089_PRESCREEN", "0").strip() == "1"
++
++
++def digest(value) -> str:
++    return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
++
++
++def sha(path: Path) -> str:
++    return hashlib.sha256(path.read_bytes()).hexdigest()
++
++
++def create_contract(symbol: str, protected_years=(), *, bars_root=BAR_ROOT,
++                    manifest_root=MANIFEST_ROOT, authority=AUTHORITY) -> dict:
++    if not any(DECISION in line and "| 13 |" in line for line in authority.read_text(encoding="utf-8-sig").splitlines()):
++        raise ValueError("prescreen OWNER receipt missing")
++    if not symbol.endswith(".DWX") or any(c in symbol for c in "/\\:"):
++        raise ValueError("invalid D1 export symbol")
++    bars = Path(bars_root) / (symbol + "_D1.csv")
++    manifest = {"schema": SCHEMA, "decision_id": DECISION, "safe_to_skip": True,
++                "timestamp_basis": "MT5_SERVER_CIVIL_TIME", "symbol": symbol,
++                "bars_path": str(bars.resolve()), "bars_sha256": sha(bars),
++                "counter_sha256": sha(ROOT / "tools/strategy_farm/research/pattern_fire_count.py"),
++                "authority_path": str(authority.resolve()), "authority_sha256": sha(authority)}
++    manifest_root = Path(manifest_root); manifest_root.mkdir(parents=True, exist_ok=True)
++    stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
++    path = manifest_root / f"manifest_{stamp}.json"
++    with path.open("x", encoding="utf-8") as f:
++        json.dump(manifest, f, indent=2); f.write("\n")
++    contract = {"schema": SCHEMA, "decision_id": DECISION, "stage1_years": list(YEARS),
++                "threshold": THRESHOLD, "net_profit_relative_uplift": "0.05",
++                "relative_base_rule": "STRICTLY_POSITIVE_BASELINE_AS_EXISTING_SELECTOR",
++                "declared_trial_count": 154, "protected_years": sorted(set(protected_years)),
++                "manifest_path": str(path.resolve()), "manifest_sha256": sha(path)}
++    contract["contract_sha256"] = digest(contract)
++    return contract
++
++
++def validate_contract_shape(contract: dict) -> None:
++    unsigned = {k:v for k,v in contract.items() if k != "contract_sha256"}
++    if (contract.get("schema") != SCHEMA or contract.get("decision_id") != DECISION
++            or contract.get("stage1_years") != list(YEARS) or contract.get("threshold") != THRESHOLD
++            or contract.get("declared_trial_count") != 154
++            or contract.get("net_profit_relative_uplift") != "0.05"
++            or contract.get("relative_base_rule") != "STRICTLY_POSITIVE_BASELINE_AS_EXISTING_SELECTOR"
++            or not isinstance(contract.get("protected_years"), list)
++            or any(type(y) is not int or y not in range(2019,2026) for y in contract.get("protected_years", []))
++            or not isinstance(contract.get("manifest_path"),str)
++            or len(str(contract.get("manifest_sha256", ""))) != 64
++            or digest(unsigned) != contract.get("contract_sha256")):
++        raise ValueError("prescreen contract mismatch")
++
++
++def validate_contract(contract: dict, *, verify_bars: bool = True) -> dict:
++    validate_contract_shape(contract)
++    path = Path(contract["manifest_path"])
++    if sha(path) != contract["manifest_sha256"]:
++        raise ValueError("prescreen manifest hash mismatch")
++    manifest = json.loads(path.read_text(encoding="utf-8"))
++    if manifest.get("safe_to_skip") is not True or manifest.get("decision_id") != DECISION:
++        raise ValueError("prescreen manifest lacks skip authority")
++    if verify_bars and sha(Path(manifest["bars_path"])) != manifest["bars_sha256"]:
++        raise ValueError("D1 export changed after manifest")
++    if verify_bars and sha(ROOT / "tools/strategy_farm/research/pattern_fire_count.py") != manifest["counter_sha256"]:
++        raise ValueError("counter changed after manifest")
++    return manifest
++
++
++def staged_keys(ledger: dict) -> set[str] | None:
++    if not ledger.get("prescreen_contract"):
++        return None
++    # Claim/scheduling paths validate the sealed small contract, without D1 I/O.
++    c = ledger["prescreen_contract"]
++    validate_contract_shape(c)
++    keys = ledger.get("prescreen_admitted_cell_keys")
++    if not isinstance(keys, list) or len(keys) != len(set(keys)):
++        raise ValueError("staged admission keys invalid")
++    declared = ledger.get("cells") or []
++    key_set = set(keys)
++    if key_set - {cell["cell_key"] for cell in declared}:
++        raise ValueError("staged admission contains undeclared keys")
++    for arm in {cell["arm"] for cell in declared}:
++        gap = False
++        for cell in sorted((c for c in declared if c["arm"] == arm),key=lambda c:c["year"]):
++            if cell["cell_key"] not in key_set: gap = True
++            elif gap: raise ValueError("staged admission skips an earlier year")
++    return set(keys)
++
++
++def measured(row) -> dict | None:
++    if not row or row["status"] != "done" or row["verdict"] != "MEASURED":
++        return None
++    path = Path(row["evidence_path"]); summary = json.loads(path.read_text(encoding="utf-8-sig"))
++    runs = [r for r in summary.get("runs", []) if r.get("status") == "OK"]
++    if len(runs) != 1:
++        raise ValueError("prescreen needs exactly one native baseline/arm run")
++    run = runs[0]; report = Path(run["report_canonical_path"])
++    if sha(report) != run["report_sha256"]:
++        raise ValueError("prescreen native report hash mismatch")
++    net = Decimal(str(run["net_profit"]))
++    if not net.is_finite():
++        raise ValueError("nonfinite prescreen net profit")
++    return {"work_item_id": row["id"], "summary_path": str(path), "summary_sha256": sha(path),
++            "report_path": str(report), "report_sha256": sha(report), "net_profit": str(net)}
++
++
++def qualifies(arm: dict | None, baseline: dict | None) -> bool:
++    if not arm or not baseline:
++        return False
++    b, a = Decimal(baseline["net_profit"]), Decimal(arm["net_profit"])
++    return b > 0 and a - b >= Decimal("0.05") * b
++
++
++def plan_admission(plan: dict, conn: sqlite3.Connection, contract: dict, *, counts_reader=None, ledger=None) -> dict:
++    manifest = validate_contract(contract, verify_bars=enabled())
++    if manifest["symbol"] != plan["symbol"]:
++        raise ValueError("prescreen manifest symbol mismatch")
++    if counts_reader is None:
++        try:
++            from research import pattern_fire_count as counter
++        except ModuleNotFoundError:
++            from tools.strategy_farm.research import pattern_fire_count as counter
++        def counts_reader(year, baseline):
++            result = counter.count_program(plan["program_id"], plan["symbol"],
++                {year:Path(baseline["report_path"])}, Path(manifest["bars_path"]))
++            return result["counts_by_year"][str(year)]
++    cells = plan["cells"]; by = {(int(c["year"]),c["arm"]):c for c in cells}
++    rows = {}; metrics = {}; reruns = ((ledger or {}).get("driver") or {}).get("reruns") or {}
++    for cell in cells:
++        row = conn.execute("SELECT id,status,verdict,evidence_path,payload_json FROM work_items WHERE id=?",(cell["work_item_id"],)).fetchone()
++        if row:
++            value = dict(zip(("id","status","verdict","evidence_path","payload_json"),row)); rows[cell["cell_key"]] = value
++            for wid in reruns.get(cell["cell_key"], []):
++                newer = conn.execute("SELECT id,status,verdict,evidence_path,payload_json FROM work_items WHERE id=?",(wid,)).fetchone()
++                if newer:value = dict(zip(("id","status","verdict","evidence_path","payload_json"),newer))
++            metrics[(cell["year"],cell["arm"])] = value
++    stage1_complete = all(metrics.get(k,{}).get("status") == "done" and metrics[k].get("verdict") in {"MEASURED","SKIPPED_EXCLUDED",VERDICT}
++                          for k in by if k[0] in YEARS)
++    metric_cache = {}
++    def metric(key):
++        if key not in metric_cache: metric_cache[key] = measured(metrics.get(key))
++        return metric_cache[key]
++    counts = {}; output = []
++    for cell in cells:
++        year, arm = int(cell["year"]), cell["arm"]
++        action, reason, proof, fire = "WAIT", "BASELINE_PENDING", [], None
++        if cell["cell_key"] in rows:
++            action, reason = "EXISTING", "IMMUTABLE_EXISTING_ROW"
++        elif year in contract["protected_years"] or not enabled():
++            action, reason = "ENQUEUE", "LEGACY_OR_KILL_SWITCH"
++        elif year not in YEARS and not stage1_complete:
++            reason = "STAGE1_PENDING"
++        elif arm == "baseline":
++            action, reason = "ENQUEUE", "ANNUAL_BASELINE"
++        else:
++            if year not in YEARS:
++                pairs = [(metric((y,arm)),metric((y,"baseline"))) for y in YEARS]
++                proof = [m for pair in pairs for m in pair if m]
++                if not all(qualifies(a,b) for a,b in pairs):
++                    action, reason = "SKIP", "B2_NOT_QUALIFIED"
++            if action != "SKIP":
++                baseline = metric((year,"baseline"))
++                if baseline:
++                    if year not in counts: counts[year] = counts_reader(year,baseline)
++                    raw = counts[year].get(arm)
++                    if type(raw) is not int or raw < 0: raise ValueError("missing/invalid fire count")
++                    fire = raw; proof = [*proof,baseline]
++                    action, reason = ("SKIP","B5_BELOW_THRESHOLD") if fire < THRESHOLD else ("ENQUEUE","B5_ADMITTED")
++        output.append({"cell":cell,"action":action,"reason":reason,"fire_count":fire,"proof":proof})
++    return {"stage1_complete":stage1_complete,"manifest":manifest,"decisions":output}
++
++
++def skip_receipt(decision: dict, plan: dict, contract: dict, manifest: dict) -> dict:
++    cell = decision["cell"]
++    return {"schema":RECEIPT_SCHEMA,"decision_id":DECISION,"disposition":"unmeasured_prescreen",
++            "program_id":plan["program_id"],"cell_key":cell["cell_key"],"work_item_id":cell["work_item_id"],
++            "year":cell["year"],"arm":cell["arm"],"declared_trial_count":154,
++            "reason":decision["reason"],"fire_count":decision["fire_count"],"threshold":THRESHOLD,
++            "tool_version":SCHEMA,"tool_sha256":sha(Path(__file__)),"manifest_path":contract["manifest_path"],
++            "counter_sha256":manifest["counter_sha256"],
++            "manifest_sha256":contract["manifest_sha256"],"bars_sha256":manifest["bars_sha256"],
++            "contract_sha256":contract["contract_sha256"],"proof":decision["proof"]}
++
++
++def validate_receipt(path: Path, payload: dict) -> dict:
++    binding = payload["skipped_prescreen"]
++    if sha(path) != binding["receipt_sha256"]: raise ValueError("prescreen receipt hash mismatch")
++    r = json.loads(path.read_text())
++    if (r.get("schema") != RECEIPT_SCHEMA or r.get("decision_id") != DECISION
++            or r.get("cell_key") != payload["cell_key"] or r.get("program_id") != payload["program_id"]
++            or r.get("declared_trial_count") != 154 or r.get("threshold") != THRESHOLD
++            or r.get("disposition") != "unmeasured_prescreen"):
++        raise ValueError("prescreen receipt identity mismatch")
++    if r["reason"] == "B5_BELOW_THRESHOLD":
++        if type(r.get("fire_count")) is not int or not 0 <= r["fire_count"] < THRESHOLD:
++            raise ValueError("invalid B5 count proof")
++    elif r["reason"] != "B2_NOT_QUALIFIED": raise ValueError("unknown prescreen reason")
++    return r
++
++
++def enqueue_staged(census, plan: dict, *, db_path: Path, ledger_path: Path,
++                   harness_id: str, q02_ea_id=None, parent_work_item_id=None,
++                   declaration_sha256=None, runner_revision=None) -> dict:
++    conn = sqlite3.connect(db_path, timeout=60)
++    try:
++        harness = census._harness_pass(conn,harness_id)
++        q02 = census._q02_pass(conn,q02_ea_id or plan["ea_id"])
++        old = json.loads(ledger_path.read_text()) if ledger_path.exists() else {}
++        if old and (old.get("program_id") != plan["program_id"]
++                    or old.get("q12_work_item_id") != parent_work_item_id
++                    or old.get("q12_declaration_sha256") != declaration_sha256):
++            raise ValueError("staged enqueue cannot rebind program owner")
++        existing = {}
++        for cell in plan["cells"]:
++            row = conn.execute("SELECT phase,ea_id,symbol,setfile_path,payload_json FROM work_items WHERE id=?",(cell["work_item_id"],)).fetchone()
++            if row:
++                payload = json.loads(row[4]); expected = (census.PHASE,plan["ea_id"],plan["symbol"],cell["setfile_path"],cell["cell_key"])
++                if (*row[:4],payload.get("cell_key")) != expected:
++                    raise ValueError("staged enqueue identity collision")
++                existing[cell["cell_key"]] = cell
++        contract = old.get("prescreen_contract") or plan.get("prescreen_contract")
++        if not contract:
++            contract = create_contract(plan["symbol"],{c["year"] for c in existing.values()})
++        admission = plan_admission(plan,conn,contract,ledger=old)
++        ledger = {**plan,**old,"prescreen_contract":contract,"cells":plan["cells"],
++                  "q12_work_item_id":parent_work_item_id,"q12_declaration_sha256":declaration_sha256,
++                  "matrix_runner_revision":runner_revision,"harness_evidence":harness,"q02_precondition":q02}
++        inserted = skipped = 0; now = dt.datetime.now(dt.timezone.utc).isoformat()
++        conn.execute("BEGIN IMMEDIATE")
++        for choice in admission["decisions"]:
++            action,cell = choice["action"],choice["cell"]
++            if action in {"WAIT","EXISTING"}: continue
++            payload = {"schema":census.SCHEMA,"program_id":plan["program_id"],
++                       **{k:cell[k] for k in ("cell_key","year","arm","direction","predicate_id","from_date","to_date")},
++                       "host_timeframe":plan["timeframe"],"opt_census_pool":True,"declared_trial_count":154,
++                       "planned_trials":1085,"ledger_path":str(ledger_path.resolve()),
++                       "q12_work_item_id":parent_work_item_id,"q12_declaration_sha256":declaration_sha256,
++                       "matrix_runner_revision":runner_revision}
++            payload["prescreen_admission"] = {
++                "decision_id":DECISION,"contract_sha256":contract["contract_sha256"],
++                "manifest_sha256":contract["manifest_sha256"],"reason":choice["reason"],
++                "fire_count":choice["fire_count"],"threshold":THRESHOLD,"proof":choice["proof"]}
++            evidence = None
++            if action == "SKIP":
++                receipt = skip_receipt(choice,plan,contract,admission["manifest"])
++                path = ledger_path.parent / "prescreen_receipts" / (cell["work_item_id"] + ".json")
++                path.parent.mkdir(parents=True,exist_ok=True)
++                content = json.dumps(receipt,sort_keys=True,indent=2)+"\n"
++                if path.exists():
++                    if path.read_text() != content: raise ValueError("prescreen receipt overwrite refused")
++                else:
++                    with path.open("x",encoding="utf-8") as f:f.write(content)
++                evidence = str(path.resolve());payload["skipped_prescreen"]={"receipt_sha256":sha(path)}
++            else:
++                census._atomic_write(Path(cell["setfile_path"]),census._render_cell_setfile(Path(plan["base_setfile_path"]),cell))
++            cur = conn.execute("""INSERT OR IGNORE INTO work_items
++                (id,kind,phase,ea_id,symbol,setfile_path,status,verdict,attempt_count,parent_task_id,evidence_path,claimed_by,payload_json,created_at,updated_at)
++                VALUES (?,?,?,?,?,?,?,?,0,?,?,NULL,?,?,?)""",
++                (cell["work_item_id"],"backtest",census.PHASE,plan["ea_id"],plan["symbol"],cell["setfile_path"],
++                 "done" if action=="SKIP" else "pending",VERDICT if action=="SKIP" else None,
++                 parent_work_item_id,evidence,json.dumps(payload,sort_keys=True),now,now))
++            inserted += cur.rowcount;skipped += cur.rowcount if action=="SKIP" else 0
++        conn.commit()
++        admitted = [c["cell_key"] for c in plan["cells"] if conn.execute("SELECT 1 FROM work_items WHERE id=?",(c["work_item_id"],)).fetchone()]
++        ledger.update(status="ENQUEUED",prescreen_admitted_cell_keys=admitted,
++                      prescreen_last_admission={"inserted":inserted,"skipped":skipped,"stage1_complete":admission["stage1_complete"]})
++        census._atomic_write(ledger_path,json.dumps(ledger,sort_keys=True,indent=2)+"\n")
++        return {"inserted":inserted,"existing":len(existing),"planned":1085,"skipped":skipped,
++                "deferred":1085-len(admitted),"ledger_path":str(ledger_path.resolve())}
++    except Exception:
++        conn.rollback();raise
++    finally:conn.close()
+diff --git a/tools/strategy_farm/dl089_scheduling.py b/tools/strategy_farm/dl089_scheduling.py
+index 34cd3f4439..7c95cceba3 100644
+--- a/tools/strategy_farm/dl089_scheduling.py
++++ b/tools/strategy_farm/dl089_scheduling.py
+@@ -195,11 +195,19 @@ def arm_frontier(
+         by_id[work_item_id] = row
+     missing = sorted(set(declared_by_id) - set(by_id))
+     extras = sorted(set(by_id) - set(declared_by_id))
+-    if missing or extras:
++    try:
++        from tools.strategy_farm.dl089_prescreen import staged_keys
++        admitted = staged_keys(dict(sealed_ledger))
++    except (ValueError, TypeError, KeyError) as exc:
++        raise SchedulingError(f"staged admission invalid: {exc}") from exc
++    expected_present = {wid for wid,c in declared_by_id.items() if admitted is None or c["cell_key"] in admitted}
++    if extras or (missing and admitted is None) or (admitted is not None and set(by_id) != expected_present):
+         raise SchedulingError(f"matrix row coverage mismatch missing={missing} extras={extras}")
+ 
+     ordered_rows: dict[str, list[Mapping[str, Any]]] = defaultdict(list)
+     for work_item_id, declared in declared_by_id.items():
++        if work_item_id not in by_id:
++            continue
+         row = by_id[work_item_id]
+         payload = _row_payload(row)
+         for key in ("program_id", "cell_key", "arm", "year", "direction", "predicate_id"):
+diff --git a/tools/strategy_farm/farmctl.py b/tools/strategy_farm/farmctl.py
+index 5628b06a92..c14907b4d9 100644
+--- a/tools/strategy_farm/farmctl.py
++++ b/tools/strategy_farm/farmctl.py
+@@ -12375,6 +12375,7 @@ CANONICAL_PARENT_CHILD_VERDICTS = frozenset({
+     # excluded by an authenticated earlier-year activity-floor breach. Like
+     # MEASURED, this resolves a census row but is never a gate pass.
+     "SKIPPED_EXCLUDED",
++    "SKIPPED_PRESCREEN",
+ })
+ PHYSICALLY_TERMINAL_WORK_ITEM_STATUSES = frozenset({"done", "failed"})
+ PARENT_PROGRESSION_MAP = {
+diff --git a/tools/strategy_farm/opt_census.py b/tools/strategy_farm/opt_census.py
+index 950f78e900..0eb51b20ad 100644
+--- a/tools/strategy_farm/opt_census.py
++++ b/tools/strategy_farm/opt_census.py
+@@ -501,6 +501,12 @@ def enqueue(plan: dict[str, Any], *, db_path: Path, ledger_path: Path,
+             runner_revision: str | None = None) -> dict[str, Any]:
+     if plan.get("schema") != SCHEMA or plan.get("planned_trials") != 1085:
+         raise CensusError("invalid or incomplete census plan")
++    from tools.strategy_farm import dl089_prescreen as prescreen
++    previous = json.loads(ledger_path.read_text()) if ledger_path.is_file() else {}
++    if plan.get("prescreen_contract") or previous.get("prescreen_contract") or (prescreen.enabled() and parent_work_item_id):
++        return prescreen.enqueue_staged(sys.modules[__name__],plan,db_path=db_path,ledger_path=ledger_path,
++            harness_id=harness_id,q02_ea_id=q02_ea_id,parent_work_item_id=parent_work_item_id,
++            declaration_sha256=declaration_sha256,runner_revision=runner_revision)
+     conn = sqlite3.connect(db_path, timeout=60)
+     try:
+         harness = _harness_pass(conn, harness_id)
+diff --git a/tools/strategy_farm/opt_census_select.py b/tools/strategy_farm/opt_census_select.py
+index fcbdf3a70a..73810eecab 100644
+--- a/tools/strategy_farm/opt_census_select.py
++++ b/tools/strategy_farm/opt_census_select.py
+@@ -436,6 +436,13 @@ def _default_metric_reader(conn: sqlite3.Connection) -> Callable[[str], tuple[st
+         status, verdict, evidence, payload_json = row
+         if verdict == "INFRA_FAIL":
+             return ("INFRA", None)
++        if status == "done" and verdict == "SKIPPED_PRESCREEN":
++            try:
++                from tools.strategy_farm import dl089_prescreen as prescreen
++                receipt = prescreen.validate_receipt(Path(evidence), json.loads(payload_json or "{}"))
++            except (OSError, ValueError, TypeError, KeyError) as exc:
++                raise CensusError(f"{work_item_id}: invalid prescreen receipt: {exc}") from exc
++            return ("SKIPPED_EXCLUDED", {"receipt": receipt})
+         if status == "done" and verdict == pruning.SKIPPED_VERDICT:
+             if not evidence:
+                 raise CensusError(f"{work_item_id}: skip receipt path missing")
+diff --git a/tools/strategy_farm/tests/test_dl089_prescreen.py b/tools/strategy_farm/tests/test_dl089_prescreen.py
+new file mode 100644
+index 0000000000..4f04554b2d
+--- /dev/null
++++ b/tools/strategy_farm/tests/test_dl089_prescreen.py
+@@ -0,0 +1,136 @@
++from __future__ import annotations
++import json
++import sqlite3
++from pathlib import Path
++
++import pytest
++from tools.strategy_farm import dl089_prescreen as p, opt_census as census, opt_census_select as selector, dl089_scheduling as scheduling
++from tools.strategy_farm.tests.test_opt_census import _plan, _db
++
++
++def setup(tmp_path, monkeypatch):
++    monkeypatch.setenv("QM_DL089_PRESCREEN","1")
++    plan = _plan(tmp_path); db = _db(tmp_path/"db.sqlite"); ledger = tmp_path/"ledger.json"
++    bars = tmp_path/"USDJPY.DWX_D1.csv"; bars.write_text("fixture bars\n")
++    auth = tmp_path/"authority.md";auth.write_text("| 13 | "+p.DECISION+" | released |")
++    plan["prescreen_contract"] = p.create_contract(plan["symbol"],bars_root=tmp_path,manifest_root=tmp_path/"manifests",authority=auth)
++    original = p.plan_admission
++    counts = lambda year,baseline:{c["arm"]:(5 if c["arm"]=="buy_003" else 0) for c in plan["cells"] if c["arm"]!="baseline"}
++    monkeypatch.setattr(p,"plan_admission",lambda *args,**kwargs:original(*args,counts_reader=counts,**kwargs))
++    return plan,db,ledger
++
++
++def measure(db,plan,year,arm,net,tmp_path):
++    cell=next(c for c in plan["cells"] if c["year"]==year and c["arm"]==arm)
++    report=tmp_path/(str(year)+arm+".htm");report.write_text("native fixture")
++    summary=report.with_suffix(".json");summary.write_text(json.dumps({"runs":[{"status":"OK","report_canonical_path":str(report),"report_sha256":p.sha(report),"net_profit":net}]}))
++    with sqlite3.connect(db) as c:c.execute("UPDATE work_items SET status='done',verdict='MEASURED',evidence_path=? WHERE id=?",(str(summary),cell["work_item_id"]))
++
++
++def test_staged_enqueue_receipts_and_154_trial_reconciliation(tmp_path,monkeypatch):
++    plan,db,ledger=setup(tmp_path,monkeypatch)
++    assert census.enqueue(plan,db_path=db,ledger_path=ledger)["inserted"]==2
++    for year in p.YEARS:measure(db,plan,year,"baseline",100,tmp_path)
++    result=census.enqueue(plan,db_path=db,ledger_path=ledger)
++    assert result["inserted"]==308 and result["skipped"]==306
++    with sqlite3.connect(db) as c:
++        ids=[r[0] for r in c.execute("SELECT id FROM work_items WHERE verdict=?",(p.VERDICT,))]
++        read=selector._default_metric_reader(c)
++        assert all(read(i)[0]=="SKIPPED_EXCLUDED" for i in ids)
++    for year in p.YEARS:measure(db,plan,year,"buy_003",105,tmp_path)
++    result=census.enqueue(plan,db_path=db,ledger_path=ledger)
++    assert result["inserted"]==770 and result["skipped"]==765 # five baselines, one surviving arm still awaits each
++    for year in range(2021,2026):measure(db,plan,year,"baseline",100,tmp_path)
++    assert census.enqueue(plan,db_path=db,ledger_path=ledger)["inserted"]==5
++    assert census.enqueue(plan,db_path=db,ledger_path=ledger)["inserted"]==0
++    saved=json.loads(ledger.read_text());assert saved["declared_trial_count"]==154 and len(saved["cells"])==1085
++    with sqlite3.connect(db) as c:
++        assert c.execute("SELECT COUNT(*) FROM work_items WHERE phase='OPT_CENSUS'").fetchone()[0]==1085
++        assert c.execute("SELECT COUNT(*) FROM work_items WHERE verdict=?",(p.VERDICT,)).fetchone()[0]==1071
++
++
++def test_second_screening_year_must_also_beat_positive_baseline():
++    assert p.qualifies({"net_profit":"105"},{"net_profit":"100"})
++    assert not p.qualifies({"net_profit":"104.99"},{"net_profit":"100"})
++    assert not p.qualifies({"net_profit":"0"},{"net_profit":"-100"})
++    assert not p.qualifies({"net_profit":"1"},{"net_profit":"0"})
++    assert not p.qualifies(None,{"net_profit":"100"})
++
++
++def test_kill_switch_preserves_receipts_and_existing_running_rows(tmp_path,monkeypatch):
++    plan,db,ledger=setup(tmp_path,monkeypatch);census.enqueue(plan,db_path=db,ledger_path=ledger)
++    for year in p.YEARS:measure(db,plan,year,"baseline",100,tmp_path)
++    census.enqueue(plan,db_path=db,ledger_path=ledger)
++    with sqlite3.connect(db) as c:
++        c.execute("UPDATE work_items SET status='active',claimed_by='T1' WHERE phase='OPT_CENSUS' AND verdict IS NULL")
++        before=c.execute("SELECT * FROM work_items ORDER BY id").fetchall()
++    monkeypatch.setenv("QM_DL089_PRESCREEN","0")
++    (tmp_path/"USDJPY.DWX_D1.csv").unlink() # rollback does not need the old mutable export
++    census.enqueue(plan,db_path=db,ledger_path=ledger)
++    with sqlite3.connect(db) as c:
++        after={r[0]:r for r in c.execute("SELECT * FROM work_items")}
++    assert all(after[r[0]]==r for r in before)
++    assert len(after)==1087 # 1085 annual + two prerequisite fixtures
++
++
++def test_manifest_tamper_fails_before_any_enqueue(tmp_path,monkeypatch):
++    plan,db,ledger=setup(tmp_path,monkeypatch)
++    (tmp_path/"USDJPY.DWX_D1.csv").write_text("changed")
++    with pytest.raises(ValueError,match="D1 export changed"):census.enqueue(plan,db_path=db,ledger_path=ledger)
++    with sqlite3.connect(db) as c:assert c.execute("SELECT COUNT(*) FROM work_items WHERE phase='OPT_CENSUS'").fetchone()[0]==0
++
++
++def test_staged_frontier_allows_only_explicit_admissions(tmp_path,monkeypatch):
++    plan,db,ledger=setup(tmp_path,monkeypatch);census.enqueue(plan,db_path=db,ledger_path=ledger)
++    with sqlite3.connect(db) as c:
++        c.row_factory=sqlite3.Row;rows=[dict(r) for r in c.execute("SELECT * FROM work_items WHERE phase='OPT_CENSUS'")]
++    saved=json.loads(ledger.read_text());heads=scheduling.arm_frontier(rows,saved)
++    assert len(heads)==1 # baseline 2019 precedes baseline 2020
++    saved["prescreen_admitted_cell_keys"].pop()
++    with pytest.raises(scheduling.SchedulingError,match="coverage"):scheduling.arm_frontier(rows,saved)
++
++
++def test_protected_year_keeps_all_legacy_arms(tmp_path,monkeypatch):
++    plan,db,ledger=setup(tmp_path,monkeypatch)
++    contract=plan["prescreen_contract"];contract["protected_years"]=[2019]
++    contract["contract_sha256"]=p.digest({k:v for k,v in contract.items() if k!="contract_sha256"})
++    assert census.enqueue(plan,db_path=db,ledger_path=ledger)["inserted"]==156 # 155 legacy + 2020 baseline
++
++
++def test_stage2_rejects_arm_missing_second_year_uplift(tmp_path,monkeypatch):
++    plan,db,ledger=setup(tmp_path,monkeypatch);census.enqueue(plan,db_path=db,ledger_path=ledger)
++    for year in p.YEARS:measure(db,plan,year,"baseline",100,tmp_path)
++    census.enqueue(plan,db_path=db,ledger_path=ledger)
++    measure(db,plan,2019,"buy_003",150,tmp_path);measure(db,plan,2020,"buy_003",104.99,tmp_path)
++    result=census.enqueue(plan,db_path=db,ledger_path=ledger)
++    assert result["skipped"]==770 # every future arm; baselines still measured
++
++
++def test_receipt_tamper_cannot_be_counted_as_resolved(tmp_path,monkeypatch):
++    plan,db,ledger=setup(tmp_path,monkeypatch);census.enqueue(plan,db_path=db,ledger_path=ledger)
++    for year in p.YEARS:measure(db,plan,year,"baseline",100,tmp_path)
++    census.enqueue(plan,db_path=db,ledger_path=ledger)
++    with sqlite3.connect(db) as c:
++        wid,path=c.execute("SELECT id,evidence_path FROM work_items WHERE verdict=? LIMIT 1",(p.VERDICT,)).fetchone()
++        Path(path).write_text('{}')
++        with pytest.raises(census.CensusError,match="receipt hash"):selector._default_metric_reader(c)(wid)
++
++
++def test_matrix_binding_allows_partial_only_with_matching_staged_owner(tmp_path,monkeypatch):
++    from tools.strategy_farm.tests.test_dl089_matrix_service import _program_binding_fixture, _guard
++    monkeypatch.setenv("QM_DL089_PRESCREEN","0")
++    root,db,artifacts,template=_program_binding_fixture(tmp_path)
++    path=next(artifacts.glob('*/ledger.json'));ledger=json.loads(path.read_text())
++    contract={"schema":p.SCHEMA,"decision_id":p.DECISION,"stage1_years":[2019,2020],"threshold":5,
++              "declared_trial_count":154,"net_profit_relative_uplift":"0.05","protected_years":[],
++              "relative_base_rule":"STRICTLY_POSITIVE_BASELINE_AS_EXISTING_SELECTOR",
++              "manifest_path":"fixture","manifest_sha256":"a"*64};contract['contract_sha256']=p.digest(contract)
++    ledger['prescreen_contract']=contract
++    kept=[c for c in ledger['cells'] if c['arm']=='baseline' and c['year'] in p.YEARS]
++    ledger['prescreen_admitted_cell_keys']=[c['cell_key'] for c in kept];path.write_text(json.dumps(ledger))
++    with sqlite3.connect(db) as c:
++        c.execute("DELETE FROM work_items WHERE phase='OPT_CENSUS' AND id NOT IN (?,?)",tuple(c['work_item_id'] for c in kept))
++    assert _guard(root,artifacts)['declared_cell_count']==2
++    ledger['q12_work_item_id']='foreign';path.write_text(json.dumps(ledger))
++    from tools.strategy_farm.dl089_matrix_service import MatrixServiceError
++    with pytest.raises(MatrixServiceError,match="IDENTITY_MISMATCH"):_guard(root,artifacts)
+diff --git a/tools/strategy_farm/work_item_clean_view.py b/tools/strategy_farm/work_item_clean_view.py
+index f3028dfc73..b761bf8dd2 100644
+--- a/tools/strategy_farm/work_item_clean_view.py
++++ b/tools/strategy_farm/work_item_clean_view.py
+@@ -141,7 +141,7 @@ def verdict_taxonomy(status: Any, verdict: Any) -> str:
+         return "invalid"
+     if token == "DRAFT_DEFECT":
+         return "draft_defect"
+-    if token in {"MEASURED", "SKIPPED_EXCLUDED"}:
++    if token in {"MEASURED", "SKIPPED_EXCLUDED", "SKIPPED_PRESCREEN"}:
+         # DL-089 measurement family and Amendment-1 exclusion disposition —
+         # their own taxonomy, never 'strategy'.
+         return "measurement"
+@@ -440,7 +440,7 @@ def install_clean_view(connection: sqlite3.Connection) -> None:
+           WHEN {token} = 'INFRA_FAIL' THEN 'infra'
+           WHEN {token} LIKE 'INVALID%' THEN 'invalid'
+           WHEN {token} = 'DRAFT_DEFECT' THEN 'draft_defect'
+-          WHEN {token} IN ('MEASURED','SKIPPED_EXCLUDED') THEN 'measurement'
++          WHEN {token} IN ('MEASURED','SKIPPED_EXCLUDED','SKIPPED_PRESCREEN') THEN 'measurement'
+           WHEN {token} LIKE 'PASS%' OR {token} LIKE 'FAIL%'
+             OR {token} LIKE 'ZERO%' OR {token} LIKE 'RETIR%'
+             OR {token} IN ('AUTO_PASS','CONFIG_LOCKED','MODE_SELECTED',
+@@ -460,7 +460,7 @@ def install_clean_view(connection: sqlite3.Connection) -> None:
+             OR {token} LIKE 'SUPERSEDED%' OR {token} LIKE 'CANCELLED%'
+             OR {token} LIKE 'BLOCKED%' OR {token} LIKE 'OBSOLETE%' THEN 'failed'
+           WHEN {token} = 'DRAFT_DEFECT'
+-            OR {token} IN ('MEASURED','SKIPPED_EXCLUDED')
++            OR {token} IN ('MEASURED','SKIPPED_EXCLUDED','SKIPPED_PRESCREEN')
+             OR {token} LIKE 'PASS%' OR {token} LIKE 'FAIL%'
+             OR {token} LIKE 'ZERO%' OR {token} LIKE 'RETIR%'
+             OR {token} LIKE 'REVIEW%' OR {token} LIKE 'NEED_%'
+diff --git a/tools/strategy_farm/work_item_lifecycle_v2.py b/tools/strategy_farm/work_item_lifecycle_v2.py
+index 0df5d49aec..81b8cb08ad 100644
+--- a/tools/strategy_farm/work_item_lifecycle_v2.py
++++ b/tools/strategy_farm/work_item_lifecycle_v2.py
+@@ -55,6 +55,7 @@ SUCCEEDED_VERDICTS = frozenset(
+         # earlier-year activity-floor breach is terminally resolved, but is not
+         # a gate pass or an economic result.
+         "SKIPPED_EXCLUDED",
++        "SKIPPED_PRESCREEN",
+     }
+ )
+ WAITING_INPUT_VERDICTS = frozenset(
