@@ -1,0 +1,52 @@
+{
+  "schema": "qm.paced-fleet-cpu-stop/v1",
+  "captured_at_utc": "2026-09-05T03:00:58.6635212Z",
+  "farm_snapshot_at_utc": "2026-09-05T03:01:29.350511+00:00",
+  "branch": "agents/board-advisor",
+  "observation_base": "9aba19bd1f308db15de38daf968cdb19952534ed",
+  "mission": "diversity_funnel_throughput",
+  "status": "STOPPED_CPU_CEILING_BEFORE_CLAIM",
+  "cpu_ceiling_percent": 97.0,
+  "admission_rule": "both the five-sample average and maximum must be strictly below the ceiling",
+  "cpu_samples_percent": [98.634, 98.929, 93.952, 86.824, 94.827],
+  "cpu_average_percent": 94.633,
+  "cpu_maximum_percent": 98.929,
+  "binding_dimensions": ["maximum"],
+  "farm_state": {
+    "active_work_items": 8,
+    "active_phase_counts": {
+      "Q06": 1,
+      "Q08": 2,
+      "OPT_CENSUS": 5
+    },
+    "active_terminals": ["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T10"],
+    "build_tasks_active": 6,
+    "build_tasks_pending": 83,
+    "mt5_factory_terminals_observed": ["T1", "T2", "T4", "T5", "T6", "T10"],
+    "mt5_transition_note": "T3 and T7 retained active farm claims but had no terminal64 process in the path-anchored factory scan; no stale-claim inference or mutation was made."
+  },
+  "coordination": {
+    "candidate_claim_attempted": false,
+    "reason": "The capacity gate is evaluated before selecting or claiming priority-1, priority-2, or priority-3 work.",
+    "duplicate_avoidance": "No build task, source, EA, or work item was claimed or advanced."
+  },
+  "actions": {
+    "farm_claim_created": false,
+    "farm_db_mutated": false,
+    "source_modified": false,
+    "card_modified": false,
+    "registry_modified": false,
+    "resolver_modified": false,
+    "compile_attempted": false,
+    "smoke_attempted": false,
+    "q02_enqueued": false,
+    "dispatch_requested": false,
+    "terminal_control": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "live_manifest_touched": false
+  },
+  "continuation": "On a later paced wake, take a fresh five-sample whole-host CPU window. Proceed only if its average and maximum are both strictly below 97 percent; then re-read the farm DB and atomically claim one distinct highest-diversity eligible unit before changing repository artifacts.",
+  "evidence_markdown": "docs/research/DIVERSITY_FUNNEL_CPU_CEILING_STOP_2026-09-05_030058Z.md"
+}
