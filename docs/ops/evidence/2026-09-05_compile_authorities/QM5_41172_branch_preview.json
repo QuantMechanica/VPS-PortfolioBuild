@@ -1,0 +1,74 @@
+{
+  "selected_source_predicate_authorized": true,
+  "candidate": {
+    "ea_label": "QM5_41172_wti-mpettitt-shift-tr",
+    "ea_id": "QM5_41172",
+    "numeric_ea_id": "41172",
+    "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41172_wti-mpettitt-shift-tr",
+    "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41172_wti-mpettitt-shift-tr\\QM5_41172_wti-mpettitt-shift-tr.mq5",
+    "mq5_sha256": "9318ee56cadbd0a2c2449b9239e0ce77f068a5860c645763efff3522ed88ba09",
+    "eligible": true,
+    "reason": "ELIGIBLE",
+    "reasons": [],
+    "symbols": [
+      "XTIUSD.DWX"
+    ],
+    "unsupported_symbols": [],
+    "active_magic_row_count": 1,
+    "bound_setfile_hashes": [
+      {
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41172_wti-mpettitt-shift-tr\\sets\\QM5_41172_wti-mpettitt-shift-tr_XTIUSD.DWX_D1_backtest.set",
+        "build_hash": "26301cbfde7df2fa5c6b374994aa27aef3398e3270912ab4c70f130ccce23cbc"
+      }
+    ],
+    "timeframe": {
+      "timeframe": "D1",
+      "source": "existing_setfiles",
+      "candidates": [
+        "D1"
+      ]
+    },
+    "build_task_binding": {
+      "contract_version": "qm.compile-ea-build-task-binding/v1",
+      "requested": false,
+      "authorized": false,
+      "build_task_id": null,
+      "reason": "BUILD_TASK_BINDING_NOT_REQUESTED"
+    },
+    "build_task_binding_authorized": false,
+    "sanctioned_predecessor_ids": [],
+    "force_rebuild_authorized": false,
+    "force_rebuild_waived_reasons": [],
+    "source_repair_authorized": true,
+    "source_repair_authority": "router_ops_issue:74b400f5-6b98-45f1-8f3a-09aeda91f3e8:QM5_41172",
+    "source_repair_contract_version": "qm.compile-ea-source-repair/v1",
+    "source_repair_waived_reasons": [
+      "BOUND_SETFILE_HASH_EXISTS",
+      "BUILD_TASK_EXISTS",
+      "WORK_ITEMS_EXIST"
+    ],
+    "source_repair_predecessor_work_item_ids": [
+      "8fd59f9d-96d1-4a13-b820-f2960886822d"
+    ],
+    "source_repair_superseded_predecessor_work_item_ids": [],
+    "source_repair_stale_open_work_item_ids": [],
+    "sibling_rebind_authorized": false,
+    "sibling_rebind_contract_version": null,
+    "sibling_rebind_current_setfile_path": null,
+    "sibling_rebind_current_setfile_sha256": null,
+    "sibling_rebind_historical_setfiles": [
+      {
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41172_wti-mpettitt-shift-tr\\sets\\QM5_41172_wti-mpettitt-shift-tr_XTIUSD.DWX_D1_backtest.set",
+        "build_hash": "26301cbfde7df2fa5c6b374994aa27aef3398e3270912ab4c70f130ccce23cbc"
+      }
+    ],
+    "sibling_rebind_findings": [],
+    "source_repair_artifact_bindings": [
+      {
+        "path": "docs/ops/evidence/2026-09-05_compile_backlog_source_repair.md",
+        "sha256": "eb4d4a8727d8405852c3f17aafcca1ff6e4c2d6ff6c07079660746f19f1824b3"
+      }
+    ],
+    "current_compile_ok_work_item_ids": []
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "command": [
+    "C:\\Python311\\python.exe",
+    "C:\\QM\\repo\\tools\\strategy_farm\\farmctl.py",
+    "enqueue-compile",
+    "--from-file",
+    "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_compile_authorities\\QM5_1538_compile_request.txt",
+    "--source-repair-authority",
+    "router_ops_issue:74b400f5-6b98-45f1-8f3a-09aeda91f3e8:QM5_1538"
+  ],
+  "exit_code": 0,
+  "stdout": {
+    "activation_held_count": 0,
+    "batch_form": true,
+    "build_task_id": null,
+    "candidate_classification": [
+      {
+        "ea_id": "QM5_1538",
+        "ea_label": "QM5_1538_aa-tsmom-1-3-12",
+        "eligible": false,
+        "idempotent_open": true,
+        "reason": "OPEN_COMPILE_EA_EXISTS",
+        "work_item_ids": [
+          "674da780-53ef-4e37-993c-b02ca4f0a243",
+          "550b62ec-516d-4fba-b845-e0b1d61e9437"
+        ]
+      }
+    ],
+    "eligible_count": 0,
+    "enqueued": [],
+    "enqueued_count": 0,
+    "idempotent_open": [
+      {
+        "ea_id": "QM5_1538",
+        "ea_label": "QM5_1538_aa-tsmom-1-3-12",
+        "eligible": false,
+        "idempotent_open": true,
+        "reason": "OPEN_COMPILE_EA_EXISTS",
+        "work_item_ids": [
+          "674da780-53ef-4e37-993c-b02ca4f0a243",
+          "550b62ec-516d-4fba-b845-e0b1d61e9437"
+        ]
+      }
+    ],
+    "idempotent_open_count": 1,
+    "input_metadata": {
+      "from_file": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_compile_authorities\\QM5_1538_compile_request.txt",
+      "from_file_sha256": "b991e0ec69252851561a3e02b3cbe8d71a6a0ea19e18f44b6dcf8facada5ce5b",
+      "requested_count": 1
+    },
+    "mode": "dry_run",
+    "no_gate_verdict": true,
+    "ok": true,
+    "refused": [],
+    "refused_count": 0,
+    "requested_count": 1,
+    "source_repair_authority": "router_ops_issue:74b400f5-6b98-45f1-8f3a-09aeda91f3e8:QM5_1538"
+  },
+  "stderr": ""
+}

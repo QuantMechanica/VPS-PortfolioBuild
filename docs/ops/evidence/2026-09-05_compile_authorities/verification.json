@@ -1,0 +1,106 @@
+{
+  "schema": "qm.compile-authority-review/v1",
+  "no_apply": true,
+  "canonical_policy_integration": "PENDING_CEO_REVIEW",
+  "registrations": [
+    {
+      "ea_id": "QM5_1538",
+      "selected_source_predicate_authorized": true,
+      "working_source_matches_selected": false,
+      "branch_preview_reason": "OPEN_COMPILE_EA_EXISTS",
+      "branch_eligible": false,
+      "canonical_exit_code": 0,
+      "canonical_dry_run": "QM5_1538_canonical_dry_run.json"
+    },
+    {
+      "ea_id": "QM5_41142",
+      "selected_source_predicate_authorized": true,
+      "working_source_matches_selected": true,
+      "branch_preview_reason": "USABLE_CURRENT_COMPILE_VERDICT_EXISTS",
+      "branch_eligible": false,
+      "canonical_exit_code": 0,
+      "canonical_dry_run": "QM5_41142_canonical_dry_run.json"
+    },
+    {
+      "ea_id": "QM5_41176",
+      "selected_source_predicate_authorized": true,
+      "working_source_matches_selected": true,
+      "branch_preview_reason": "ELIGIBLE",
+      "branch_eligible": true,
+      "canonical_exit_code": 0,
+      "canonical_dry_run": "QM5_41176_canonical_dry_run.json"
+    },
+    {
+      "ea_id": "QM5_41179",
+      "selected_source_predicate_authorized": true,
+      "working_source_matches_selected": true,
+      "branch_preview_reason": "ELIGIBLE",
+      "branch_eligible": true,
+      "canonical_exit_code": 0,
+      "canonical_dry_run": "QM5_41179_canonical_dry_run.json"
+    },
+    {
+      "ea_id": "QM5_41189",
+      "selected_source_predicate_authorized": true,
+      "working_source_matches_selected": true,
+      "branch_preview_reason": "ELIGIBLE",
+      "branch_eligible": true,
+      "canonical_exit_code": 0,
+      "canonical_dry_run": "QM5_41189_canonical_dry_run.json"
+    },
+    {
+      "ea_id": "QM5_41192",
+      "selected_source_predicate_authorized": true,
+      "working_source_matches_selected": true,
+      "branch_preview_reason": "USABLE_CURRENT_COMPILE_VERDICT_EXISTS",
+      "branch_eligible": false,
+      "canonical_exit_code": 0,
+      "canonical_dry_run": "QM5_41192_canonical_dry_run.json"
+    },
+    {
+      "ea_id": "QM5_41352",
+      "selected_source_predicate_authorized": true,
+      "working_source_matches_selected": true,
+      "branch_preview_reason": "USABLE_CURRENT_COMPILE_VERDICT_EXISTS",
+      "branch_eligible": false,
+      "canonical_exit_code": 0,
+      "canonical_dry_run": "QM5_41352_canonical_dry_run.json"
+    },
+    {
+      "ea_id": "QM5_41164",
+      "selected_source_predicate_authorized": true,
+      "working_source_matches_selected": true,
+      "branch_preview_reason": "ELIGIBLE",
+      "branch_eligible": true,
+      "canonical_exit_code": 2,
+      "canonical_dry_run": "QM5_41164_canonical_dry_run.json"
+    },
+    {
+      "ea_id": "QM5_41165",
+      "selected_source_predicate_authorized": true,
+      "working_source_matches_selected": true,
+      "branch_preview_reason": "ELIGIBLE",
+      "branch_eligible": true,
+      "canonical_exit_code": 2,
+      "canonical_dry_run": "QM5_41165_canonical_dry_run.json"
+    },
+    {
+      "ea_id": "QM5_41166",
+      "selected_source_predicate_authorized": true,
+      "working_source_matches_selected": true,
+      "branch_preview_reason": "ELIGIBLE",
+      "branch_eligible": true,
+      "canonical_exit_code": 2,
+      "canonical_dry_run": "QM5_41166_canonical_dry_run.json"
+    },
+    {
+      "ea_id": "QM5_41172",
+      "selected_source_predicate_authorized": true,
+      "working_source_matches_selected": true,
+      "branch_preview_reason": "ELIGIBLE",
+      "branch_eligible": true,
+      "canonical_exit_code": 2,
+      "canonical_dry_run": "QM5_41172_canonical_dry_run.json"
+    }
+  ]
+}

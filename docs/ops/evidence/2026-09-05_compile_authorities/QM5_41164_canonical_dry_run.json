@@ -1,0 +1,206 @@
+{
+  "command": [
+    "C:\\Python311\\python.exe",
+    "C:\\QM\\repo\\tools\\strategy_farm\\farmctl.py",
+    "enqueue-compile",
+    "--from-file",
+    "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_compile_authorities\\QM5_41164_compile_request.txt",
+    "--source-repair-authority",
+    "router_ops_issue:74b400f5-6b98-45f1-8f3a-09aeda91f3e8:QM5_41164"
+  ],
+  "exit_code": 2,
+  "stdout": {
+    "activation_held_count": 0,
+    "batch_form": true,
+    "build_task_id": null,
+    "candidate_classification": [
+      {
+        "active_magic_row_count": 2,
+        "bound_setfile_hashes": [
+          {
+            "build_hash": "ece19a2467abdd0aab125a246a951a545346f652407f2295e46ffad31f6c9512",
+            "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41164_xauxag-mrepmedian-rv\\sets\\QM5_41164_xauxag-mrepmedian-rv_QM5_41164_XAU_XAG_MREPMEDIAN_RV_D1_D1_backtest.set"
+          },
+          {
+            "build_hash": "a095ceb4306cf155a9b3bc486680e39949f7f2455d480552728dac798248c865",
+            "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41164_xauxag-mrepmedian-rv\\sets\\QM5_41164_xauxag-mrepmedian-rv_XAGUSD.DWX_D1_backtest.set"
+          },
+          {
+            "build_hash": "35c4b358b652cc8e45006ab8cb7cf4934201495aa049973a6237ef1fb78947bc",
+            "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41164_xauxag-mrepmedian-rv\\sets\\QM5_41164_xauxag-mrepmedian-rv_XAUUSD.DWX_D1_backtest.set"
+          }
+        ],
+        "build_task_binding": {
+          "authorized": false,
+          "build_task_id": null,
+          "contract_version": "qm.compile-ea-build-task-binding/v1",
+          "reason": "BUILD_TASK_BINDING_NOT_REQUESTED",
+          "requested": false
+        },
+        "build_task_binding_authorized": false,
+        "current_compile_ok_work_item_ids": [],
+        "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41164_xauxag-mrepmedian-rv",
+        "ea_id": "QM5_41164",
+        "ea_label": "QM5_41164_xauxag-mrepmedian-rv",
+        "eligible": false,
+        "force_rebuild_authorized": false,
+        "force_rebuild_waived_reasons": [],
+        "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41164_xauxag-mrepmedian-rv\\QM5_41164_xauxag-mrepmedian-rv.mq5",
+        "mq5_sha256": "e63f2177cec4333e4bd93915d8a06587373318d974e3c0d1178d6f0d89d5380e",
+        "numeric_ea_id": "41164",
+        "reason": "SOURCE_REPAIR_AUTHORITY_INVALID",
+        "reasons": [
+          "SOURCE_REPAIR_AUTHORITY_INVALID",
+          "WORK_ITEMS_EXIST",
+          "BUILD_TASK_EXISTS",
+          "BOUND_SETFILE_HASH_EXISTS"
+        ],
+        "sanctioned_predecessor_ids": [],
+        "sibling_rebind_authorized": false,
+        "sibling_rebind_contract_version": null,
+        "sibling_rebind_current_setfile_path": null,
+        "sibling_rebind_current_setfile_sha256": null,
+        "sibling_rebind_findings": [],
+        "sibling_rebind_historical_setfiles": [
+          {
+            "build_hash": "ece19a2467abdd0aab125a246a951a545346f652407f2295e46ffad31f6c9512",
+            "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41164_xauxag-mrepmedian-rv\\sets\\QM5_41164_xauxag-mrepmedian-rv_QM5_41164_XAU_XAG_MREPMEDIAN_RV_D1_D1_backtest.set"
+          },
+          {
+            "build_hash": "a095ceb4306cf155a9b3bc486680e39949f7f2455d480552728dac798248c865",
+            "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41164_xauxag-mrepmedian-rv\\sets\\QM5_41164_xauxag-mrepmedian-rv_XAGUSD.DWX_D1_backtest.set"
+          },
+          {
+            "build_hash": "35c4b358b652cc8e45006ab8cb7cf4934201495aa049973a6237ef1fb78947bc",
+            "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41164_xauxag-mrepmedian-rv\\sets\\QM5_41164_xauxag-mrepmedian-rv_XAUUSD.DWX_D1_backtest.set"
+          }
+        ],
+        "source_repair_artifact_bindings": [],
+        "source_repair_authority": "router_ops_issue:74b400f5-6b98-45f1-8f3a-09aeda91f3e8:QM5_41164",
+        "source_repair_authorized": false,
+        "source_repair_contract_version": "qm.compile-ea-source-repair/v1",
+        "source_repair_predecessor_work_item_ids": [
+          "059d4860-337e-4833-91f3-5fdf81b55603",
+          "6dd83b82-1f24-448c-862d-956677219498"
+        ],
+        "source_repair_stale_open_work_item_ids": [],
+        "source_repair_waived_reasons": [],
+        "symbols": [
+          "XAGUSD.DWX",
+          "XAUUSD.DWX"
+        ],
+        "timeframe": {
+          "candidates": [
+            "D1"
+          ],
+          "source": "existing_setfiles",
+          "timeframe": "D1"
+        },
+        "unsupported_symbols": []
+      }
+    ],
+    "eligible_count": 0,
+    "enqueued": [],
+    "enqueued_count": 0,
+    "idempotent_open": [],
+    "idempotent_open_count": 0,
+    "input_metadata": {
+      "from_file": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_compile_authorities\\QM5_41164_compile_request.txt",
+      "from_file_sha256": "5ea27881728b4d7f64805c91d4be7efa070f61d563e5e7fec93fa5872c20cbdc",
+      "requested_count": 1
+    },
+    "mode": "dry_run",
+    "no_gate_verdict": true,
+    "ok": false,
+    "refused": [
+      {
+        "active_magic_row_count": 2,
+        "bound_setfile_hashes": [
+          {
+            "build_hash": "ece19a2467abdd0aab125a246a951a545346f652407f2295e46ffad31f6c9512",
+            "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41164_xauxag-mrepmedian-rv\\sets\\QM5_41164_xauxag-mrepmedian-rv_QM5_41164_XAU_XAG_MREPMEDIAN_RV_D1_D1_backtest.set"
+          },
+          {
+            "build_hash": "a095ceb4306cf155a9b3bc486680e39949f7f2455d480552728dac798248c865",
+            "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41164_xauxag-mrepmedian-rv\\sets\\QM5_41164_xauxag-mrepmedian-rv_XAGUSD.DWX_D1_backtest.set"
+          },
+          {
+            "build_hash": "35c4b358b652cc8e45006ab8cb7cf4934201495aa049973a6237ef1fb78947bc",
+            "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41164_xauxag-mrepmedian-rv\\sets\\QM5_41164_xauxag-mrepmedian-rv_XAUUSD.DWX_D1_backtest.set"
+          }
+        ],
+        "build_task_binding": {
+          "authorized": false,
+          "build_task_id": null,
+          "contract_version": "qm.compile-ea-build-task-binding/v1",
+          "reason": "BUILD_TASK_BINDING_NOT_REQUESTED",
+          "requested": false
+        },
+        "build_task_binding_authorized": false,
+        "current_compile_ok_work_item_ids": [],
+        "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41164_xauxag-mrepmedian-rv",
+        "ea_id": "QM5_41164",
+        "ea_label": "QM5_41164_xauxag-mrepmedian-rv",
+        "eligible": false,
+        "force_rebuild_authorized": false,
+        "force_rebuild_waived_reasons": [],
+        "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41164_xauxag-mrepmedian-rv\\QM5_41164_xauxag-mrepmedian-rv.mq5",
+        "mq5_sha256": "e63f2177cec4333e4bd93915d8a06587373318d974e3c0d1178d6f0d89d5380e",
+        "numeric_ea_id": "41164",
+        "reason": "SOURCE_REPAIR_AUTHORITY_INVALID",
+        "reasons": [
+          "SOURCE_REPAIR_AUTHORITY_INVALID",
+          "WORK_ITEMS_EXIST",
+          "BUILD_TASK_EXISTS",
+          "BOUND_SETFILE_HASH_EXISTS"
+        ],
+        "sanctioned_predecessor_ids": [],
+        "sibling_rebind_authorized": false,
+        "sibling_rebind_contract_version": null,
+        "sibling_rebind_current_setfile_path": null,
+        "sibling_rebind_current_setfile_sha256": null,
+        "sibling_rebind_findings": [],
+        "sibling_rebind_historical_setfiles": [
+          {
+            "build_hash": "ece19a2467abdd0aab125a246a951a545346f652407f2295e46ffad31f6c9512",
+            "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41164_xauxag-mrepmedian-rv\\sets\\QM5_41164_xauxag-mrepmedian-rv_QM5_41164_XAU_XAG_MREPMEDIAN_RV_D1_D1_backtest.set"
+          },
+          {
+            "build_hash": "a095ceb4306cf155a9b3bc486680e39949f7f2455d480552728dac798248c865",
+            "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41164_xauxag-mrepmedian-rv\\sets\\QM5_41164_xauxag-mrepmedian-rv_XAGUSD.DWX_D1_backtest.set"
+          },
+          {
+            "build_hash": "35c4b358b652cc8e45006ab8cb7cf4934201495aa049973a6237ef1fb78947bc",
+            "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41164_xauxag-mrepmedian-rv\\sets\\QM5_41164_xauxag-mrepmedian-rv_XAUUSD.DWX_D1_backtest.set"
+          }
+        ],
+        "source_repair_artifact_bindings": [],
+        "source_repair_authority": "router_ops_issue:74b400f5-6b98-45f1-8f3a-09aeda91f3e8:QM5_41164",
+        "source_repair_authorized": false,
+        "source_repair_contract_version": "qm.compile-ea-source-repair/v1",
+        "source_repair_predecessor_work_item_ids": [
+          "059d4860-337e-4833-91f3-5fdf81b55603",
+          "6dd83b82-1f24-448c-862d-956677219498"
+        ],
+        "source_repair_stale_open_work_item_ids": [],
+        "source_repair_waived_reasons": [],
+        "symbols": [
+          "XAGUSD.DWX",
+          "XAUUSD.DWX"
+        ],
+        "timeframe": {
+          "candidates": [
+            "D1"
+          ],
+          "source": "existing_setfiles",
+          "timeframe": "D1"
+        },
+        "unsupported_symbols": []
+      }
+    ],
+    "refused_count": 1,
+    "requested_count": 1,
+    "source_repair_authority": "router_ops_issue:74b400f5-6b98-45f1-8f3a-09aeda91f3e8:QM5_41164"
+  },
+  "stderr": ""
+}

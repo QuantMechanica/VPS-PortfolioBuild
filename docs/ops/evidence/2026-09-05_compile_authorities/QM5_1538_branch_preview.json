@@ -1,0 +1,14 @@
+{
+  "selected_source_predicate_authorized": true,
+  "candidate": {
+    "ea_label": "QM5_1538_aa-tsmom-1-3-12",
+    "ea_id": "QM5_1538",
+    "eligible": false,
+    "idempotent_open": true,
+    "reason": "OPEN_COMPILE_EA_EXISTS",
+    "work_item_ids": [
+      "674da780-53ef-4e37-993c-b02ca4f0a243",
+      "550b62ec-516d-4fba-b845-e0b1d61e9437"
+    ]
+  }
+}

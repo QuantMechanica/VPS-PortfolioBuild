@@ -1,0 +1,65 @@
+{
+  "selected_source_predicate_authorized": true,
+  "candidate": {
+    "ea_label": "QM5_41179_xtixng-mcoxstuart-rv",
+    "ea_id": "QM5_41179",
+    "numeric_ea_id": "41179",
+    "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41179_xtixng-mcoxstuart-rv",
+    "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41179_xtixng-mcoxstuart-rv\\QM5_41179_xtixng-mcoxstuart-rv.mq5",
+    "mq5_sha256": "5e373104ee5bf0f0428c5c277e0d8ecea10e83fcae80386d27ddb74b58a1e6be",
+    "eligible": true,
+    "reason": "ELIGIBLE",
+    "reasons": [],
+    "symbols": [
+      "XNGUSD.DWX",
+      "XTIUSD.DWX"
+    ],
+    "unsupported_symbols": [],
+    "active_magic_row_count": 2,
+    "bound_setfile_hashes": [],
+    "timeframe": {
+      "timeframe": "D1",
+      "source": "existing_setfiles",
+      "candidates": [
+        "D1"
+      ]
+    },
+    "build_task_binding": {
+      "contract_version": "qm.compile-ea-build-task-binding/v1",
+      "requested": false,
+      "authorized": false,
+      "build_task_id": null,
+      "reason": "BUILD_TASK_BINDING_NOT_REQUESTED"
+    },
+    "build_task_binding_authorized": false,
+    "sanctioned_predecessor_ids": [],
+    "force_rebuild_authorized": false,
+    "force_rebuild_waived_reasons": [],
+    "source_repair_authorized": true,
+    "source_repair_authority": "router_ops_issue:74b400f5-6b98-45f1-8f3a-09aeda91f3e8:QM5_41179",
+    "source_repair_contract_version": "qm.compile-ea-source-repair/v1",
+    "source_repair_waived_reasons": [
+      "WORK_ITEMS_EXIST"
+    ],
+    "source_repair_predecessor_work_item_ids": [
+      "9ced0252-9ceb-4fe7-a2c5-d7a8d0b30a82"
+    ],
+    "source_repair_superseded_predecessor_work_item_ids": [],
+    "source_repair_stale_open_work_item_ids": [
+      "9ced0252-9ceb-4fe7-a2c5-d7a8d0b30a82"
+    ],
+    "sibling_rebind_authorized": false,
+    "sibling_rebind_contract_version": null,
+    "sibling_rebind_current_setfile_path": null,
+    "sibling_rebind_current_setfile_sha256": null,
+    "sibling_rebind_historical_setfiles": [],
+    "sibling_rebind_findings": [],
+    "source_repair_artifact_bindings": [
+      {
+        "path": "docs/ops/evidence/2026-09-05_compile_backlog_source_repair.md",
+        "sha256": "eb4d4a8727d8405852c3f17aafcca1ff6e4c2d6ff6c07079660746f19f1824b3"
+      }
+    ],
+    "current_compile_ok_work_item_ids": []
+  }
+}

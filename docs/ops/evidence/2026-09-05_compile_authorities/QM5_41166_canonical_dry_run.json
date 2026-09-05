@@ -1,0 +1,206 @@
+{
+  "command": [
+    "C:\\Python311\\python.exe",
+    "C:\\QM\\repo\\tools\\strategy_farm\\farmctl.py",
+    "enqueue-compile",
+    "--from-file",
+    "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_compile_authorities\\QM5_41166_compile_request.txt",
+    "--source-repair-authority",
+    "router_ops_issue:74b400f5-6b98-45f1-8f3a-09aeda91f3e8:QM5_41166"
+  ],
+  "exit_code": 2,
+  "stdout": {
+    "activation_held_count": 0,
+    "batch_form": true,
+    "build_task_id": null,
+    "candidate_classification": [
+      {
+        "active_magic_row_count": 2,
+        "bound_setfile_hashes": [
+          {
+            "build_hash": "2592a76083f35c02576c4fec4c53e6834daaad7c260c17e538004e03ca91a9cb",
+            "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41166_xauxag-mrobust3-agree-rv\\sets\\QM5_41166_xauxag-mrobust3-agree-rv_QM5_41166_XAU_XAG_MROBUST3_AGREE_RV_D1_D1_backtest.set"
+          },
+          {
+            "build_hash": "33d3f4e6512d62df593408948f12c3c491a8e51d69278a3e9ff1ac2588b10441",
+            "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41166_xauxag-mrobust3-agree-rv\\sets\\QM5_41166_xauxag-mrobust3-agree-rv_XAGUSD.DWX_D1_backtest.set"
+          },
+          {
+            "build_hash": "b639803fe55a2f81a90dad10990c538f06c1ed8fa15d3833942a08a6b24c9c41",
+            "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41166_xauxag-mrobust3-agree-rv\\sets\\QM5_41166_xauxag-mrobust3-agree-rv_XAUUSD.DWX_D1_backtest.set"
+          }
+        ],
+        "build_task_binding": {
+          "authorized": false,
+          "build_task_id": null,
+          "contract_version": "qm.compile-ea-build-task-binding/v1",
+          "reason": "BUILD_TASK_BINDING_NOT_REQUESTED",
+          "requested": false
+        },
+        "build_task_binding_authorized": false,
+        "current_compile_ok_work_item_ids": [],
+        "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41166_xauxag-mrobust3-agree-rv",
+        "ea_id": "QM5_41166",
+        "ea_label": "QM5_41166_xauxag-mrobust3-agree-rv",
+        "eligible": false,
+        "force_rebuild_authorized": false,
+        "force_rebuild_waived_reasons": [],
+        "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41166_xauxag-mrobust3-agree-rv\\QM5_41166_xauxag-mrobust3-agree-rv.mq5",
+        "mq5_sha256": "217d7f59a6f271941bc5d5e5419bd94b397498ff7df4782fd56effd8faa05268",
+        "numeric_ea_id": "41166",
+        "reason": "SOURCE_REPAIR_AUTHORITY_INVALID",
+        "reasons": [
+          "SOURCE_REPAIR_AUTHORITY_INVALID",
+          "WORK_ITEMS_EXIST",
+          "BUILD_TASK_EXISTS",
+          "BOUND_SETFILE_HASH_EXISTS"
+        ],
+        "sanctioned_predecessor_ids": [],
+        "sibling_rebind_authorized": false,
+        "sibling_rebind_contract_version": null,
+        "sibling_rebind_current_setfile_path": null,
+        "sibling_rebind_current_setfile_sha256": null,
+        "sibling_rebind_findings": [],
+        "sibling_rebind_historical_setfiles": [
+          {
+            "build_hash": "2592a76083f35c02576c4fec4c53e6834daaad7c260c17e538004e03ca91a9cb",
+            "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41166_xauxag-mrobust3-agree-rv\\sets\\QM5_41166_xauxag-mrobust3-agree-rv_QM5_41166_XAU_XAG_MROBUST3_AGREE_RV_D1_D1_backtest.set"
+          },
+          {
+            "build_hash": "33d3f4e6512d62df593408948f12c3c491a8e51d69278a3e9ff1ac2588b10441",
+            "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41166_xauxag-mrobust3-agree-rv\\sets\\QM5_41166_xauxag-mrobust3-agree-rv_XAGUSD.DWX_D1_backtest.set"
+          },
+          {
+            "build_hash": "b639803fe55a2f81a90dad10990c538f06c1ed8fa15d3833942a08a6b24c9c41",
+            "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41166_xauxag-mrobust3-agree-rv\\sets\\QM5_41166_xauxag-mrobust3-agree-rv_XAUUSD.DWX_D1_backtest.set"
+          }
+        ],
+        "source_repair_artifact_bindings": [],
+        "source_repair_authority": "router_ops_issue:74b400f5-6b98-45f1-8f3a-09aeda91f3e8:QM5_41166",
+        "source_repair_authorized": false,
+        "source_repair_contract_version": "qm.compile-ea-source-repair/v1",
+        "source_repair_predecessor_work_item_ids": [
+          "b70236ad-6e36-4f8f-9116-2f72786638ef",
+          "c495527e-9058-41e9-a63f-d791c25d7554"
+        ],
+        "source_repair_stale_open_work_item_ids": [],
+        "source_repair_waived_reasons": [],
+        "symbols": [
+          "XAGUSD.DWX",
+          "XAUUSD.DWX"
+        ],
+        "timeframe": {
+          "candidates": [
+            "D1"
+          ],
+          "source": "existing_setfiles",
+          "timeframe": "D1"
+        },
+        "unsupported_symbols": []
+      }
+    ],
+    "eligible_count": 0,
+    "enqueued": [],
+    "enqueued_count": 0,
+    "idempotent_open": [],
+    "idempotent_open_count": 0,
+    "input_metadata": {
+      "from_file": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_compile_authorities\\QM5_41166_compile_request.txt",
+      "from_file_sha256": "518b94173e1e91cd48c10d8463309728c7fe47771b2f5c982ec491da650698a3",
+      "requested_count": 1
+    },
+    "mode": "dry_run",
+    "no_gate_verdict": true,
+    "ok": false,
+    "refused": [
+      {
+        "active_magic_row_count": 2,
+        "bound_setfile_hashes": [
+          {
+            "build_hash": "2592a76083f35c02576c4fec4c53e6834daaad7c260c17e538004e03ca91a9cb",
+            "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41166_xauxag-mrobust3-agree-rv\\sets\\QM5_41166_xauxag-mrobust3-agree-rv_QM5_41166_XAU_XAG_MROBUST3_AGREE_RV_D1_D1_backtest.set"
+          },
+          {
+            "build_hash": "33d3f4e6512d62df593408948f12c3c491a8e51d69278a3e9ff1ac2588b10441",
+            "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41166_xauxag-mrobust3-agree-rv\\sets\\QM5_41166_xauxag-mrobust3-agree-rv_XAGUSD.DWX_D1_backtest.set"
+          },
+          {
+            "build_hash": "b639803fe55a2f81a90dad10990c538f06c1ed8fa15d3833942a08a6b24c9c41",
+            "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41166_xauxag-mrobust3-agree-rv\\sets\\QM5_41166_xauxag-mrobust3-agree-rv_XAUUSD.DWX_D1_backtest.set"
+          }
+        ],
+        "build_task_binding": {
+          "authorized": false,
+          "build_task_id": null,
+          "contract_version": "qm.compile-ea-build-task-binding/v1",
+          "reason": "BUILD_TASK_BINDING_NOT_REQUESTED",
+          "requested": false
+        },
+        "build_task_binding_authorized": false,
+        "current_compile_ok_work_item_ids": [],
+        "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41166_xauxag-mrobust3-agree-rv",
+        "ea_id": "QM5_41166",
+        "ea_label": "QM5_41166_xauxag-mrobust3-agree-rv",
+        "eligible": false,
+        "force_rebuild_authorized": false,
+        "force_rebuild_waived_reasons": [],
+        "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41166_xauxag-mrobust3-agree-rv\\QM5_41166_xauxag-mrobust3-agree-rv.mq5",
+        "mq5_sha256": "217d7f59a6f271941bc5d5e5419bd94b397498ff7df4782fd56effd8faa05268",
+        "numeric_ea_id": "41166",
+        "reason": "SOURCE_REPAIR_AUTHORITY_INVALID",
+        "reasons": [
+          "SOURCE_REPAIR_AUTHORITY_INVALID",
+          "WORK_ITEMS_EXIST",
+          "BUILD_TASK_EXISTS",
+          "BOUND_SETFILE_HASH_EXISTS"
+        ],
+        "sanctioned_predecessor_ids": [],
+        "sibling_rebind_authorized": false,
+        "sibling_rebind_contract_version": null,
+        "sibling_rebind_current_setfile_path": null,
+        "sibling_rebind_current_setfile_sha256": null,
+        "sibling_rebind_findings": [],
+        "sibling_rebind_historical_setfiles": [
+          {
+            "build_hash": "2592a76083f35c02576c4fec4c53e6834daaad7c260c17e538004e03ca91a9cb",
+            "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41166_xauxag-mrobust3-agree-rv\\sets\\QM5_41166_xauxag-mrobust3-agree-rv_QM5_41166_XAU_XAG_MROBUST3_AGREE_RV_D1_D1_backtest.set"
+          },
+          {
+            "build_hash": "33d3f4e6512d62df593408948f12c3c491a8e51d69278a3e9ff1ac2588b10441",
+            "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41166_xauxag-mrobust3-agree-rv\\sets\\QM5_41166_xauxag-mrobust3-agree-rv_XAGUSD.DWX_D1_backtest.set"
+          },
+          {
+            "build_hash": "b639803fe55a2f81a90dad10990c538f06c1ed8fa15d3833942a08a6b24c9c41",
+            "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41166_xauxag-mrobust3-agree-rv\\sets\\QM5_41166_xauxag-mrobust3-agree-rv_XAUUSD.DWX_D1_backtest.set"
+          }
+        ],
+        "source_repair_artifact_bindings": [],
+        "source_repair_authority": "router_ops_issue:74b400f5-6b98-45f1-8f3a-09aeda91f3e8:QM5_41166",
+        "source_repair_authorized": false,
+        "source_repair_contract_version": "qm.compile-ea-source-repair/v1",
+        "source_repair_predecessor_work_item_ids": [
+          "b70236ad-6e36-4f8f-9116-2f72786638ef",
+          "c495527e-9058-41e9-a63f-d791c25d7554"
+        ],
+        "source_repair_stale_open_work_item_ids": [],
+        "source_repair_waived_reasons": [],
+        "symbols": [
+          "XAGUSD.DWX",
+          "XAUUSD.DWX"
+        ],
+        "timeframe": {
+          "candidates": [
+            "D1"
+          ],
+          "source": "existing_setfiles",
+          "timeframe": "D1"
+        },
+        "unsupported_symbols": []
+      }
+    ],
+    "refused_count": 1,
+    "requested_count": 1,
+    "source_repair_authority": "router_ops_issue:74b400f5-6b98-45f1-8f3a-09aeda91f3e8:QM5_41166"
+  },
+  "stderr": ""
+}

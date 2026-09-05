@@ -1,0 +1,88 @@
+{
+  "selected_source_predicate_authorized": true,
+  "candidate": {
+    "ea_label": "QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow",
+    "ea_id": "QM5_41142",
+    "numeric_ea_id": "41142",
+    "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow",
+    "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow.mq5",
+    "mq5_sha256": "cb33049fcc851c1bd83762abe1aee72768bf38d55d73097de08e48c1ba177d9a",
+    "eligible": false,
+    "reason": "USABLE_CURRENT_COMPILE_VERDICT_EXISTS",
+    "reasons": [
+      "USABLE_CURRENT_COMPILE_VERDICT_EXISTS",
+      "EX5_ALREADY_PRESENT",
+      "WORK_ITEMS_EXIST",
+      "BUILD_TASK_EXISTS",
+      "BOUND_SETFILE_HASH_EXISTS"
+    ],
+    "symbols": [
+      "EURUSD.DWX"
+    ],
+    "unsupported_symbols": [],
+    "active_magic_row_count": 1,
+    "bound_setfile_hashes": [
+      {
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow\\sets\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow_EURUSD.DWX_M15_backtest.set",
+        "build_hash": "07f522cede58a555933643042b9437de7a18d371562181490e98447261cdeb97"
+      },
+      {
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow\\sets\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow_QM5_41142_EURUSD_MONTHEND_FIX_M15_M15_backtest.set",
+        "build_hash": "07f522cede58a555933643042b9437de7a18d371562181490e98447261cdeb97"
+      }
+    ],
+    "timeframe": {
+      "timeframe": "M15",
+      "source": "existing_setfiles",
+      "candidates": [
+        "M15"
+      ]
+    },
+    "build_task_binding": {
+      "contract_version": "qm.compile-ea-build-task-binding/v1",
+      "requested": false,
+      "authorized": false,
+      "build_task_id": null,
+      "reason": "BUILD_TASK_BINDING_NOT_REQUESTED"
+    },
+    "build_task_binding_authorized": false,
+    "sanctioned_predecessor_ids": [],
+    "force_rebuild_authorized": false,
+    "force_rebuild_waived_reasons": [],
+    "source_repair_authorized": false,
+    "source_repair_authority": "router_ops_issue:74b400f5-6b98-45f1-8f3a-09aeda91f3e8:QM5_41142",
+    "source_repair_contract_version": "qm.compile-ea-source-repair/v1",
+    "source_repair_waived_reasons": [],
+    "source_repair_predecessor_work_item_ids": [
+      "07a09214-86ba-4946-9e0b-c9e7baa8b6fc"
+    ],
+    "source_repair_superseded_predecessor_work_item_ids": [],
+    "source_repair_stale_open_work_item_ids": [
+      "07a09214-86ba-4946-9e0b-c9e7baa8b6fc"
+    ],
+    "sibling_rebind_authorized": false,
+    "sibling_rebind_contract_version": null,
+    "sibling_rebind_current_setfile_path": null,
+    "sibling_rebind_current_setfile_sha256": null,
+    "sibling_rebind_historical_setfiles": [
+      {
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow\\sets\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow_EURUSD.DWX_M15_backtest.set",
+        "build_hash": "07f522cede58a555933643042b9437de7a18d371562181490e98447261cdeb97"
+      },
+      {
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow\\sets\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow_QM5_41142_EURUSD_MONTHEND_FIX_M15_M15_backtest.set",
+        "build_hash": "07f522cede58a555933643042b9437de7a18d371562181490e98447261cdeb97"
+      }
+    ],
+    "sibling_rebind_findings": [],
+    "source_repair_artifact_bindings": [
+      {
+        "path": "docs/ops/evidence/2026-09-05_compile_backlog_source_repair.md",
+        "sha256": "eb4d4a8727d8405852c3f17aafcca1ff6e4c2d6ff6c07079660746f19f1824b3"
+      }
+    ],
+    "current_compile_ok_work_item_ids": [
+      "9adcc3f5-939f-48bd-a5c7-03c08c1c0d85"
+    ]
+  }
+}

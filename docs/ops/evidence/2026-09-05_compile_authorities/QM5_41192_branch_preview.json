@@ -1,0 +1,97 @@
+{
+  "selected_source_predicate_authorized": true,
+  "candidate": {
+    "ea_label": "QM5_41192_xtixng-mdaily-hl-rv",
+    "ea_id": "QM5_41192",
+    "numeric_ea_id": "41192",
+    "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41192_xtixng-mdaily-hl-rv",
+    "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41192_xtixng-mdaily-hl-rv\\QM5_41192_xtixng-mdaily-hl-rv.mq5",
+    "mq5_sha256": "fec27056d36dc5738a327e4340f189d924201380864e3c3bd05488e3f20534aa",
+    "eligible": false,
+    "reason": "USABLE_CURRENT_COMPILE_VERDICT_EXISTS",
+    "reasons": [
+      "USABLE_CURRENT_COMPILE_VERDICT_EXISTS",
+      "EX5_ALREADY_PRESENT",
+      "WORK_ITEMS_EXIST",
+      "BUILD_TASK_EXISTS",
+      "BOUND_SETFILE_HASH_EXISTS"
+    ],
+    "symbols": [
+      "XNGUSD.DWX",
+      "XTIUSD.DWX"
+    ],
+    "unsupported_symbols": [],
+    "active_magic_row_count": 2,
+    "bound_setfile_hashes": [
+      {
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41192_xtixng-mdaily-hl-rv\\sets\\QM5_41192_xtixng-mdaily-hl-rv_QM5_41192_XTI_XNG_MDAILY_HL_RV_D1_D1_backtest.set",
+        "build_hash": "6e9efeb094510a4b4bfdf4786d80746324c377e0d237591612c7b1f725339e49"
+      },
+      {
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41192_xtixng-mdaily-hl-rv\\sets\\QM5_41192_xtixng-mdaily-hl-rv_XNGUSD.DWX_D1_backtest.set",
+        "build_hash": "f182b27633f2de9797de4c3b5e899d2a2b5056dae3b0dfc48399870acaca3feb"
+      },
+      {
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41192_xtixng-mdaily-hl-rv\\sets\\QM5_41192_xtixng-mdaily-hl-rv_XTIUSD.DWX_D1_backtest.set",
+        "build_hash": "57a8fb70654a718cd9d79d5ccb7093b22720ad15bf8161fe650fff522ef17397"
+      }
+    ],
+    "timeframe": {
+      "timeframe": "D1",
+      "source": "existing_setfiles",
+      "candidates": [
+        "D1"
+      ]
+    },
+    "build_task_binding": {
+      "contract_version": "qm.compile-ea-build-task-binding/v1",
+      "requested": false,
+      "authorized": false,
+      "build_task_id": null,
+      "reason": "BUILD_TASK_BINDING_NOT_REQUESTED"
+    },
+    "build_task_binding_authorized": false,
+    "sanctioned_predecessor_ids": [],
+    "force_rebuild_authorized": false,
+    "force_rebuild_waived_reasons": [],
+    "source_repair_authorized": false,
+    "source_repair_authority": "router_ops_issue:74b400f5-6b98-45f1-8f3a-09aeda91f3e8:QM5_41192",
+    "source_repair_contract_version": "qm.compile-ea-source-repair/v1",
+    "source_repair_waived_reasons": [],
+    "source_repair_predecessor_work_item_ids": [
+      "0d00bf54-535c-4049-ad7f-fde0c6b13f12"
+    ],
+    "source_repair_superseded_predecessor_work_item_ids": [],
+    "source_repair_stale_open_work_item_ids": [
+      "0d00bf54-535c-4049-ad7f-fde0c6b13f12"
+    ],
+    "sibling_rebind_authorized": false,
+    "sibling_rebind_contract_version": null,
+    "sibling_rebind_current_setfile_path": null,
+    "sibling_rebind_current_setfile_sha256": null,
+    "sibling_rebind_historical_setfiles": [
+      {
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41192_xtixng-mdaily-hl-rv\\sets\\QM5_41192_xtixng-mdaily-hl-rv_QM5_41192_XTI_XNG_MDAILY_HL_RV_D1_D1_backtest.set",
+        "build_hash": "6e9efeb094510a4b4bfdf4786d80746324c377e0d237591612c7b1f725339e49"
+      },
+      {
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41192_xtixng-mdaily-hl-rv\\sets\\QM5_41192_xtixng-mdaily-hl-rv_XNGUSD.DWX_D1_backtest.set",
+        "build_hash": "f182b27633f2de9797de4c3b5e899d2a2b5056dae3b0dfc48399870acaca3feb"
+      },
+      {
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41192_xtixng-mdaily-hl-rv\\sets\\QM5_41192_xtixng-mdaily-hl-rv_XTIUSD.DWX_D1_backtest.set",
+        "build_hash": "57a8fb70654a718cd9d79d5ccb7093b22720ad15bf8161fe650fff522ef17397"
+      }
+    ],
+    "sibling_rebind_findings": [],
+    "source_repair_artifact_bindings": [
+      {
+        "path": "docs/ops/evidence/2026-09-05_compile_backlog_source_repair.md",
+        "sha256": "eb4d4a8727d8405852c3f17aafcca1ff6e4c2d6ff6c07079660746f19f1824b3"
+      }
+    ],
+    "current_compile_ok_work_item_ids": [
+      "dd43dd1a-ad01-473c-80a7-b9c92ac0da65"
+    ]
+  }
+}

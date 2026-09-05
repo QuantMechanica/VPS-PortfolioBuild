@@ -1,0 +1,58 @@
+{
+  "command": [
+    "C:\\Python311\\python.exe",
+    "C:\\QM\\repo\\tools\\strategy_farm\\farmctl.py",
+    "enqueue-compile",
+    "--from-file",
+    "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_compile_authorities\\QM5_41142_compile_request.txt",
+    "--source-repair-authority",
+    "router_ops_issue:74b400f5-6b98-45f1-8f3a-09aeda91f3e8:QM5_41142"
+  ],
+  "exit_code": 0,
+  "stdout": {
+    "activation_held_count": 0,
+    "batch_form": true,
+    "build_task_id": null,
+    "candidate_classification": [
+      {
+        "ea_id": "QM5_41142",
+        "ea_label": "QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow",
+        "eligible": false,
+        "idempotent_open": true,
+        "reason": "OPEN_COMPILE_EA_EXISTS",
+        "work_item_ids": [
+          "07a09214-86ba-4946-9e0b-c9e7baa8b6fc"
+        ]
+      }
+    ],
+    "eligible_count": 0,
+    "enqueued": [],
+    "enqueued_count": 0,
+    "idempotent_open": [
+      {
+        "ea_id": "QM5_41142",
+        "ea_label": "QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow",
+        "eligible": false,
+        "idempotent_open": true,
+        "reason": "OPEN_COMPILE_EA_EXISTS",
+        "work_item_ids": [
+          "07a09214-86ba-4946-9e0b-c9e7baa8b6fc"
+        ]
+      }
+    ],
+    "idempotent_open_count": 1,
+    "input_metadata": {
+      "from_file": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_compile_authorities\\QM5_41142_compile_request.txt",
+      "from_file_sha256": "852cc9f2deef74d36a8c79a9bea2310802b323c91654f3e6788dd6227d716b82",
+      "requested_count": 1
+    },
+    "mode": "dry_run",
+    "no_gate_verdict": true,
+    "ok": true,
+    "refused": [],
+    "refused_count": 0,
+    "requested_count": 1,
+    "source_repair_authority": "router_ops_issue:74b400f5-6b98-45f1-8f3a-09aeda91f3e8:QM5_41142"
+  },
+  "stderr": ""
+}
