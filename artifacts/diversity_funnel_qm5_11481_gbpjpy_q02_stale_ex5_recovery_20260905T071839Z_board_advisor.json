@@ -1,0 +1,108 @@
+{
+  "schema": "qm_diversity_funnel_infra_recovery/v1",
+  "recorded_at_utc": "2026-09-05T07:18:39Z",
+  "branch": "agents/board-advisor",
+  "observation_base": "d9fa02109159781ae5256315d25f33ca5fece6f4",
+  "unit_of_work": "QM5_11481 GBPJPY current-binary Q02 infrastructure requalification",
+  "selection": {
+    "priority": 2,
+    "ea_id": "QM5_11481",
+    "ea_slug": "carter-t-ny-open-box-m5",
+    "symbol": "GBPJPY.DWX",
+    "timeframe": "M5",
+    "structural": true,
+    "bounded_session_attempts_per_day": 1,
+    "ml_or_banned_indicator_used": false,
+    "approved_card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_11481_carter-t-ny-open-box-m5.md",
+    "card_g0_status": "APPROVED",
+    "card_r_gates": {
+      "r1_track_record": "PASS",
+      "r2_mechanical": "PASS",
+      "r3_data_available": "PASS",
+      "r4_ml_forbidden": "PASS"
+    },
+    "source_citation": "Thomas Carter, 20 Forex Trading Strategies (5 Minute Time Frame), System #7 (2014)",
+    "priority_1_disposition": "No collision-free eligible unbuilt diversity card: the rates card required unavailable Treasury/bond inputs and leading forex task rows already had committed MQ5/EX5 builds."
+  },
+  "capacity_admission": {
+    "ceiling_percent_strict": 97.0,
+    "samples_percent": [74.7092, 86.91, 83.4961, 79.6083, 96.2896],
+    "average_percent": 84.2026,
+    "maximum_percent": 96.2896,
+    "admitted": true,
+    "factory_terminals_seen_before_selection": ["T3", "T4", "T5", "T6"],
+    "t_live_excluded": true
+  },
+  "predecessor": {
+    "work_item_id": "afb12fd5-d0d0-42fa-80ad-212b3a89e4d2",
+    "phase": "Q02",
+    "status": "done",
+    "verdict": "INFRA_FAIL",
+    "verdict_reason": "run_smoke_fail:BARS_ZERO;INCOMPLETE_RUNS",
+    "updated_at_utc": "2026-07-10T11:28:09+00:00",
+    "p2_prescreen_verdict": "PASS",
+    "execution_binding_hashes": null,
+    "payload_sha256": "2235884ddde26e6ad63d61c69d37349752ca3f7c2f1d228d00e94b903ed6b6dc",
+    "historical_row_preserved": true
+  },
+  "repair_diagnosis": {
+    "classification": "stale_ex5_generation_after_pre_binding_infra_failure",
+    "economic_override": false,
+    "mechanics_changed": false,
+    "post_failure_ex5_commit": "0e962aec1573068bdc0c736d9654a3e7abd1c132",
+    "post_failure_ex5_commit_at": "2026-07-14T23:10:32+02:00",
+    "old_ex5_size_bytes": 274496,
+    "current_ex5_size_bytes": 325702,
+    "old_ex5_git_blob": "90c641c54bf4be55e9aee911a7a8bb0ba4ab7cc2",
+    "current_ex5_git_blob": "6479faddf72c6ea6adffaf01533adaffb31095cb",
+    "no_exact_pair_pending_or_active_before_enqueue": true,
+    "no_exact_pair_economic_q02_q03_verdict_before_enqueue": true,
+    "no_exact_pair_later_gate_before_enqueue": true
+  },
+  "current_artifact_identity": {
+    "mq5_sha256": "b45b9045e26ef3cc61fd1d371f5da0ac744bd3982a0269d901e9849fc008c701",
+    "ex5_sha256": "a2269a3144891410c2e81c9168743aa09aa1f7e86e42af02b2d0afe9bdaf05d1",
+    "setfile_sha256": "ff726269b5e8542650d502ba52d9d46a92db154da453bf1bb98380d4339cebcc",
+    "setfile_path": "C:/QM/repo/framework/EAs/QM5_11481_carter-t-ny-open-box-m5/sets/QM5_11481_carter-t-ny-open-box-m5_GBPJPY.DWX_M5_backtest.set",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0
+  },
+  "history_binding": {
+    "from_date": "2018.07.02",
+    "to_date": "2022.12.31",
+    "history_first_year": 2017,
+    "history_last_year": 2025,
+    "archive_status": "ACTIVE",
+    "archive_activation_sha256": "61c8c72ccb0cb8038ae6ece7b89aa68f602b1637d8bc6b6c866f38492139134e",
+    "owner_approved_manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06"
+  },
+  "enqueue": {
+    "command": "python tools/strategy_farm/farmctl.py seed-fresh-q02 --ea QM5_11481 --old-work-item-id afb12fd5-d0d0-42fa-80ad-212b3a89e4d2 --requal-reason post_failure_ex5_replacement_after_pre_binding_bars_zero_infra... --expected-current-ex5-sha256 a2269a3144891410c2e81c9168743aa09aa1f7e86e42af02b2d0afe9bdaf05d1",
+    "enqueued": true,
+    "created_count": 1,
+    "work_item_id": "2f7da8d4-ca6c-4722-a6ad-e3b7dede2e64",
+    "event_id": 384938,
+    "event": "fresh_q02_pre_binding_seed_enqueued",
+    "gate_contract_version": "v4",
+    "sh3_enforced": true,
+    "first_readback": {
+      "status": "active",
+      "claimed_by": "T3",
+      "attempt_count": 0,
+      "updated_at_utc": "2026-09-05T07:19:08+00:00"
+    },
+    "manual_dispatch_called": false,
+    "terminal_control_called": false,
+    "manual_backtest_launched": false
+  },
+  "safety": {
+    "ea_files_changed": false,
+    "registry_changed": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "deploy_or_live_manifest_touched": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "unrelated_worktree_changes_preserved": true
+  }
+}
