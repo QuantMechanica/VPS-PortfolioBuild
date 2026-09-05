@@ -518,6 +518,26 @@ def test_enqueue_repair_successor_binds_explicit_task_when_predecessor_unbound(
     assert successor_payload[
         "compile_build_task_binding_contract_version"
     ] == compile_work_items.BUILD_TASK_BINDING_CONTRACT_VERSION
+    inventory = compile_work_items._inventory(root, repo)
+    sanctioned = compile_work_items._sanctioned_compile_predecessor_ids(
+        successor_payload,
+        inventory,
+        "1001",
+        current_work_item_id=applied["successor_work_item_id"],
+    )
+    assert sanctioned == {"failed-unbound"}
+    worker_recheck = compile_work_items.classify_candidate(
+        root,
+        repo,
+        label,
+        inventory,
+        current_work_item_id=applied["successor_work_item_id"],
+        sanctioned_predecessor_ids=sanctioned,
+        source_repair_authority=compile_work_items.REPAIR_SUCCESSOR_AUTHORITY,
+        bound_build_task_id="build-1",
+    )
+    assert worker_recheck["eligible"] is True
+    assert worker_recheck["source_repair_authorized"] is True
 
 
 def test_recheck_successor_rebinds_unchanged_source_and_fails_closed_on_evidence_tamper(

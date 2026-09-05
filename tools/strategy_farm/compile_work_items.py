@@ -3774,6 +3774,20 @@ def _sanctioned_compile_predecessor_ids(
         predecessor = _work_row_by_id(inventory, ea_id, predecessor_id)
         predecessor_payload = _json_object(predecessor.get("payload_json")) if predecessor else {}
         old_sha = str(predecessor_payload.get("mq5_sha256") or "").lower()
+        predecessor_build_task_id = str(
+            predecessor_payload.get("bound_build_task_id") or ""
+        )
+        successor_build_task_id = str(payload.get("bound_build_task_id") or "")
+        build_task_lineage_valid = bool(
+            successor_build_task_id == predecessor_build_task_id
+            or (
+                not predecessor_build_task_id
+                and successor_build_task_id
+                and payload.get("compile_build_task_binding_contract_version")
+                == BUILD_TASK_BINDING_CONTRACT_VERSION
+                and payload.get("bound_build_task_ea_id") == f"QM5_{ea_id}"
+            )
+        )
         if (
             predecessor_id
             and predecessor_id not in seen
@@ -3785,8 +3799,7 @@ def _sanctioned_compile_predecessor_ids(
             and _BOUND_HASH_RE.fullmatch(old_sha)
             and old_sha != source_sha
             and payload.get("repair_predecessor_mq5_sha256") == old_sha
-            and str(payload.get("bound_build_task_id") or "")
-            == str(predecessor_payload.get("bound_build_task_id") or "")
+            and build_task_lineage_valid
             and str(current_work_item_id)
             in inventory.get("superseded_by", {}).get(predecessor_id, set())
         ):
