@@ -6555,7 +6555,7 @@ def _next_cell_prestage_dl089_snapshot(
         ea_id=candidate.get("ea_id"),
         symbol=candidate.get("symbol"),
     )
-    frontier = dl089_scheduling.arm_frontier(matrix_rows, lane_ledger).get(
+    frontier = dl089_scheduling.arm_frontier(matrix_rows, lane_ledger, conn=conn).get(
         (program, arm)
     )
     candidate_is_frontier = bool(
@@ -9540,7 +9540,7 @@ def _opt_census_lane_preflight_outside_factory_lock(
                         f"SELECT * FROM work_items WHERE id IN ({marks})", ids
                     ).fetchall()
                 ]
-                frontier = dl089_scheduling.arm_frontier(matrix_rows, lane_ledger)
+                frontier = dl089_scheduling.arm_frontier(matrix_rows, lane_ledger, conn=conn)
                 frontier_row = frontier.get((program, arm))
                 if frontier_row is None or str(frontier_row["id"]) != str(candidate["id"]):
                     return {

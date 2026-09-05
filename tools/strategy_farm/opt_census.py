@@ -804,6 +804,7 @@ def boost(
                 frontier = scheduling.arm_frontier(
                     [dict(row) for row in rows],
                     ledger,
+                    conn=conn,
                 )
             except scheduling.SchedulingError as exc:
                 raise CensusError(f"DL-089 frontier authentication failed: {exc}") from exc

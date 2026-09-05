@@ -434,6 +434,11 @@ def _default_metric_reader(conn: sqlite3.Connection) -> Callable[[str], tuple[st
         if row is None:
             return ("MISSING", None)
         status, verdict, evidence, payload_json = row
+        if status == 'pending':
+            from tools.strategy_farm.dl089_prescreen_retro import disposition
+            held = disposition(conn, {'id':work_item_id,'status':status,'verdict':verdict,'payload_json':payload_json})
+            if held:
+                return ('SKIPPED_EXCLUDED', {'receipt':held, 'unmeasured':True})
         if verdict == "INFRA_FAIL":
             return ("INFRA", None)
         if status == "done" and verdict == "SKIPPED_PRESCREEN":

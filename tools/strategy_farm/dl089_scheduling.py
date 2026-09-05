@@ -144,6 +144,7 @@ def _row_payload(row: Mapping[str, Any]) -> dict[str, Any]:
 def arm_frontier(
     rows: Sequence[Mapping[str, Any]],
     sealed_ledger: Mapping[str, Any],
+    *, conn=None,
 ) -> dict[tuple[str, str], Mapping[str, Any]]:
     """Authenticate a complete annual matrix and return one head per arm.
 
@@ -152,6 +153,9 @@ def arm_frontier(
     non-terminal row fail closed instead of creating claim permission.
     """
 
+    if conn is not None:
+        from tools.strategy_farm.dl089_prescreen_retro import project_row
+        rows = [project_row(conn, row) for row in rows]
     program = str(sealed_ledger.get("program_id") or "").strip()
     cells = sealed_ledger.get("cells")
     years_raw = sealed_ledger.get("years")

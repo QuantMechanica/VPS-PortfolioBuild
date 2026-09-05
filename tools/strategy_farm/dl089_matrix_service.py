@@ -1037,6 +1037,8 @@ def _finalize_from_terminal_ledger(
                 }
             )
             continue
+        from tools.strategy_farm.dl089_prescreen_retro import project_row
+        row = project_row(conn, row)
         path = Path(str(row["evidence_path"] or ""))
         evidence_rows.append(
             {

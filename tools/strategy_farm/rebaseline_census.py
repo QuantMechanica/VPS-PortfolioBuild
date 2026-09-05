@@ -563,6 +563,13 @@ def compute(con: sqlite3.Connection, limit: int | None) -> dict:
                                    r["setfile_hash"], GATE_ORDINAL.get(r["gate"], 99)))
 
     summary = build_summary(pair_rows, finer_rows)
+    # An authenticated annual-cell hold is resolved/unmeasured, never a
+    # Q-gate PASS. Keep pair contiguity and all qualifying-pair counters intact.
+    try:
+        from tools.strategy_farm.dl089_prescreen_retro import progress_snapshot
+    except ModuleNotFoundError:
+        from dl089_prescreen_retro import progress_snapshot
+    summary['opt_census_prescreen'] = progress_snapshot(con)
     total_rows = int(con.execute("SELECT COUNT(*) FROM work_items").fetchone()[0])
     if _has_column(con, "work_items", "ex5_sha256"):
         typed = int(con.execute(
