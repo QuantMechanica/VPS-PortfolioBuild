@@ -1,0 +1,41 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "b3f8e831-9a0f-44cf-b7dd-d50b44304fd8"
+  ],
+  "backup": {
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260905T184050Z_8d5c5d7b.sqlite",
+    "reused": false,
+    "sha256": "f4e261199f68e4bcd957574f29420ba4f1cd0de3d79e5524d5ce98422ad96510"
+  },
+  "backup_reuse_max_age_minutes": 0.0,
+  "backup_timeout_seconds": 60.0,
+  "backup_write_guard": {
+    "attempts": 1,
+    "transaction": "BEGIN IMMEDIATE / validated / backed up / released / COMMIT",
+    "wait_seconds": 0.0
+  },
+  "deferred": [],
+  "factory_mutation_lock": {
+    "path": "D:\\QM\\strategy_farm\\state\\FACTORY_MUTATION.lock",
+    "release_status": "released"
+  },
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "b1f24be5cde52f631447647a15b467551745684201f2f8dca5b898b81d2eff51",
+      "ea_id": "QM5_41355",
+      "ea_label": "QM5_41355_xauxag-mtrim2-rv",
+      "expected_mq5_sha256": "b1f24be5cde52f631447647a15b467551745684201f2f8dca5b898b81d2eff51",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41355_xauxag-mtrim2-rv\\QM5_41355_xauxag-mtrim2-rv.mq5",
+      "work_item_id": "b3f8e831-9a0f-44cf-b7dd-d50b44304fd8"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-09-05T18:41:05+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "b3f8e831-9a0f-44cf-b7dd-d50b44304fd8"
+}
