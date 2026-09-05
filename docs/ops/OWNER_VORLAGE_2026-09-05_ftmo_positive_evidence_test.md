@@ -1,20 +1,9 @@
 # OWNER-Vorlage 2026-09-05 — FTMO Positive-Evidence-Abnahmetest
 
 Status: PENDING (OWNER-Ratifizierung). Klasse: **ROT** (kauf-nah), **kein Auffangregel**.
-Autor: Claude (Factory CEO). Bindet: `decisions/2026-09-02_owner_receipts_ceo_asks.md` Zeile 6 (FTMO NO-BUY, `:13`); dieser Test wird als nächste freie Zeile (row 9) angehängt, PENDING.
+Autor: Claude (Factory CEO). Bindet: `decisions/2026-09-02_owner_receipts_ceo_asks.md` Zeile 6 (FTMO NO-BUY, `:13`); dieser Test ist Receipt-Zeile 18 (PENDING), PENDING.
 
-> **Cross-Branch-Provenienz (vor Ratifizierung lesen).** Drei zitierte Belegdateien sind
-> **Schwester-Deliverables anderer paralleler Aufträge und liegen auf diesem Branch noch
-> nicht im Baum**: `docs/ops/evidence/2026-09-04_astra_ftmo_book_analysis.md`,
-> `docs/ops/evidence/2026-09-05_news_calendar_timestamp_defect.md`,
-> `docs/ops/evidence/2026-09-04_fund_score_current_population.md`. Ebenso enthält
-> `decisions/2026-09-02_owner_receipts_ceo_asks.md` auf diesem Branch nur die Zeilen 1–6
-> (endet an Zeile 15); die hier referenzierten Zeilen 7–8 stammen aus Schwester-Vorlagen
-> (Kalender E1/E4 = row 8). **Ihre internen Zeilennummern sind daher provisorisch und MÜSSEN
-> beim Siegel-Schritt auf dem Integrations-Branch, der diese Dateien und die Zeilen 1–8
-> tatsächlich enthält, neu verifiziert werden.** Alle Zahlen aus Dateien, die auf *diesem*
-> Branch liegen (Rulepack, Builder, Engines, FUND_SCORE, Konzentration, CEO_AUDIT, Q08-8.2-DSR,
-> opt_census), sind zeilengenau geprüft und stehen unten.
+> **Integrationsstand (CEO, 2026-09-05):** Die im Entwurf als „Schwester-Deliverables“ markierten Belegdateien (`docs/ops/evidence/2026-09-04_astra_ftmo_book_analysis.md`, `2026-09-05_news_calendar_timestamp_defect.md`, `2026-09-04_fund_score_current_population.md`) und die Receipt-Zeilen 1–17 liegen auf `agents/board-advisor` vor; dieser Test ist Receipt-Zeile **18** (PENDING). Die Zeilennummern der Belege wurden beim Integrations-Commit nicht neu verifiziert und werden im Siegel-Schritt (§E) vor dem ersten Ergebnis erneut geprüft.
 
 ---
 
