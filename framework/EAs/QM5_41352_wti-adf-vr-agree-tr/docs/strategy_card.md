@@ -79,9 +79,9 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: G0
-q01_status: PENDING
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q02
+q01_status: COMPILE_OK
+q02_status: ENQUEUED_PENDING
 force_build: true
 review_focus: "Falsify direct-WTI monthly ADF/robust-VR agreement outside the certified XAU/SP500/NDX/XNG book. Verify shared endpoints, ADF arithmetic, q4 robust weights, positive-persistence-only boundary, disagreement abstention, twelve-month side, consumed month, fixed risk, frozen stop, and next-month lifecycle. Q09 alone may establish decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -251,9 +251,9 @@ and setfile.
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Source Approval | 2026-09-05 | APPROVED_SOURCE | `decisions/2026-09-05_wti_monthly_adf_variance_ratio_agreement_trend_source_approval.md` |
-| G0 Research Intake | 2026-09-05 | PENDING | this card |
-| Q01 Build & Spec | TBD | PENDING | TBD |
-| Q02 Baseline | TBD | NOT_ENQUEUED | TBD |
+| G0 Research Intake | 2026-09-05 | APPROVED | `decisions/2026-09-05_qm5_41352_wti_monthly_adf_variance_ratio_agreement_trend_g0.md` |
+| Q01 Build & Spec | 2026-09-05 | COMPILE_OK; BUILD_CHECK_PASS | `D:\\QM\\reports\\work_items\\d3b585c0-f23b-4b02-9f72-413e91b74964\\QM5_41352\\COMPILE_EA\\compile_evidence.json` |
+| Q02 Baseline | 2026-09-05 | ENQUEUED_PENDING | work item `e001ff07-3e79-4cb2-a2de-e623cbb6f0f4` |
 
 ## 16. Lessons Captured
 
