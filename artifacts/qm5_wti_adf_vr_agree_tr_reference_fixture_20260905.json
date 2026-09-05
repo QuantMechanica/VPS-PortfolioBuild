@@ -1,0 +1,50 @@
+{
+  "schema": "qm.wti-adf-vr-agreement-reference/v1",
+  "ea_id": "QM5_41352",
+  "fixtures": [
+    {
+      "generator": "persistent_up",
+      "adf_t": -0.36016068469282697,
+      "variance_ratio": 1.8128203309434223,
+      "robust_variance": 0.10997537120057366,
+      "vr_z": 2.451019913634225,
+      "momentum_12": 0.03751537658058446,
+      "adf_qualified": true,
+      "vr_qualified": true,
+      "direction": 1
+    },
+    {
+      "generator": "persistent_down",
+      "adf_t": -0.36016068469305773,
+      "variance_ratio": 1.8128203309434225,
+      "robust_variance": 0.1099753712005736,
+      "vr_z": 2.451019913634226,
+      "momentum_12": -0.03751537658058357,
+      "adf_qualified": true,
+      "vr_qualified": true,
+      "direction": -1
+    },
+    {
+      "generator": "adf_only",
+      "adf_t": -0.28754973622603336,
+      "variance_ratio": 1.15712151976643,
+      "robust_variance": 0.07951470749522938,
+      "vr_z": 0.5572010656725933,
+      "momentum_12": 0.12845800868758506,
+      "adf_qualified": true,
+      "vr_qualified": false,
+      "direction": 0
+    },
+    {
+      "generator": "vr_only",
+      "adf_t": -32.508096212950704,
+      "variance_ratio": 1.9854415912372143,
+      "robust_variance": 0.0969793772882895,
+      "vr_z": 3.1643986637281003,
+      "momentum_12": -0.12492476263545171,
+      "adf_qualified": false,
+      "vr_qualified": true,
+      "direction": 0
+    }
+  ]
+}
