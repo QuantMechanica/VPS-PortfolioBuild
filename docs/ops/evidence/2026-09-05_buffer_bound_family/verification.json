@@ -1,0 +1,19 @@
+{
+  "checked_at": "2026-09-05T16:45:17.922076+00:00",
+  "test_commit": "1240b069d540d611cd6e92c2e4e115ec743844a1",
+  "test_result": "14 passed, 1 warning in 1.81s",
+  "production_predicate_changed": false,
+  "ea_source_changed": false,
+  "compile_successors_created": 0,
+  "task_branch": "false-positive predicate-fix proposal",
+  "hashes_rechecked": 10,
+  "sha256": {
+    "proposal_tests.patch": "afce9f74dce8dd6ea9ed2529cd578a03dcb2fc52cae6ecbb2b2bd69bf5dcd003",
+    "successor_census.json": "5799f518be535d114d21036c13db4dc4e4ee17feefca5526d3048d3467776eb5",
+    "triage.json": "c32f16555f56367828c24ba4877e09eccbf2cc8d985e5b35b56e49c1629000e9",
+    "fixtures\\QM5_41186_xtixng-median-runs-rv.mq5": "2ae7f7b27f98ed76ea026557565445b3bf1dffddf2921171286bfcca9616b7bc",
+    "fixtures\\QM5_41187_xauxag-mks-rv.mq5": "ec8b6afbd1ff01f77c7b0a1d8996dab22f7cc53e3d4fe14611089aff98e7fa56",
+    "fixtures\\QM5_41188_xtixng-mrepmedian-rv.mq5": "753c3f330e6920ce56824388ce451647e36c2df2a5cbc1441c8c22f120177329",
+    "fixtures\\QM5_41190_xtixng-mtheilsen-rv.mq5": "4cae626a3637fceedbf042f0b4b558c56f6fcd890c418ea839c2113e0ac2ff0c"
+  }
+}

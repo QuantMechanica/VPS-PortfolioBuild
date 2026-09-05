@@ -1,0 +1,119 @@
+{
+  "schema": "qm.buffer-bound-triage/v1",
+  "task_id": "258d8fa0-bcf4-4c84-a8ed-b483ce12f460",
+  "captured_at": "2026-09-05T16:07:16.292752+00:00",
+  "production_mutation": false,
+  "rows": [
+    {
+      "id": "78d5f43e-d805-4748-923d-c36c33370b78",
+      "ea_id": "QM5_41186",
+      "status": "failed",
+      "verdict": "COMPILE_FAIL",
+      "evidence_path": "D:\\QM\\reports\\work_items\\78d5f43e-d805-4748-923d-c36c33370b78\\QM5_41186\\COMPILE_EA\\compile_evidence.json",
+      "source": "C:\\QM\\repo\\framework\\EAs\\QM5_41186_xtixng-median-runs-rv\\QM5_41186_xtixng-median-runs-rv.mq5",
+      "source_sha256": "2ae7f7b27f98ed76ea026557565445b3bf1dffddf2921171286bfcca9616b7bc",
+      "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260905_134255.json",
+      "build_check_report_sha256": "2f714c40196786e2b77a192bd6e8742cdd63b26ef6366302a356334868464e15",
+      "compile_result": "PASS",
+      "compile_errors": "0",
+      "compile_warnings": "0",
+      "findings": [
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41186_xtixng-median-runs-rv.mq5:840 accesses dynamic numeric buffer newest_first_ratios[reverse_index] without a loop bound tied to strategy_endpoint_count or an explicit ArraySize guard.",
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41186_xtixng-median-runs-rv.mq5:935 accesses dynamic numeric buffer signs[index] without a loop bound tied to strategy_endpoint_count-1 or an explicit ArraySize guard."
+      ],
+      "classification": "PREDICATE_FALSE_POSITIVE_BOUNDED_PATTERN",
+      "fixture": "fixtures\\QM5_41186_xtixng-median-runs-rv.mq5"
+    },
+    {
+      "id": "37dbc847-cf01-47cf-b89d-9ab761262f8c",
+      "ea_id": "QM5_41187",
+      "status": "failed",
+      "verdict": "COMPILE_FAIL",
+      "evidence_path": "D:\\QM\\reports\\work_items\\37dbc847-cf01-47cf-b89d-9ab761262f8c\\QM5_41187\\COMPILE_EA\\compile_evidence.json",
+      "source": "C:\\QM\\repo\\framework\\EAs\\QM5_41187_xauxag-mks-rv\\QM5_41187_xauxag-mks-rv.mq5",
+      "source_sha256": "ec8b6afbd1ff01f77c7b0a1d8996dab22f7cc53e3d4fe14611089aff98e7fa56",
+      "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260905_135408.json",
+      "build_check_report_sha256": "e02078819dd4edf1fbfd34be9f4cc2c8ec9fb51c0ef3e8273ca37fe34f0515af",
+      "compile_result": "PASS",
+      "compile_errors": "0",
+      "compile_warnings": "0",
+      "findings": [
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41187_xauxag-mks-rv.mq5:840 accesses dynamic numeric buffer newest_first_ratios[reverse_index] without a loop bound tied to strategy_endpoint_count or an explicit ArraySize guard.",
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41187_xauxag-mks-rv.mq5:888 accesses dynamic numeric buffer sorted_ratios[cursor] without a loop bound tied to strategy_endpoint_count or an explicit ArraySize guard.",
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41187_xauxag-mks-rv.mq5:891 accesses dynamic numeric buffer sorted_labels[cursor] without a loop bound tied to strategy_endpoint_count or an explicit ArraySize guard."
+      ],
+      "classification": "PREDICATE_FALSE_POSITIVE_BOUNDED_PATTERN",
+      "fixture": "fixtures\\QM5_41187_xauxag-mks-rv.mq5"
+    },
+    {
+      "id": "e4e80a23-5cee-4bf1-b06d-b542ea886cb4",
+      "ea_id": "QM5_41188",
+      "status": "failed",
+      "verdict": "COMPILE_FAIL",
+      "evidence_path": "D:\\QM\\reports\\work_items\\e4e80a23-5cee-4bf1-b06d-b542ea886cb4\\QM5_41188\\COMPILE_EA\\compile_evidence.json",
+      "source": "C:\\QM\\repo\\framework\\EAs\\QM5_41188_xtixng-mrepmedian-rv\\QM5_41188_xtixng-mrepmedian-rv.mq5",
+      "source_sha256": "753c3f330e6920ce56824388ce451647e36c2df2a5cbc1441c8c22f120177329",
+      "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260905_135629.json",
+      "build_check_report_sha256": "7041a25d1e2352db28984eaebf7d4f54bd5946744bada652705a8fe3a21725fa",
+      "compile_result": "PASS",
+      "compile_errors": "0",
+      "compile_warnings": "0",
+      "findings": [
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41188_xtixng-mrepmedian-rv.mq5:804 accesses dynamic numeric buffer newest_first_ratios[month_count] without a loop bound tied to strategy_month_end_count or an explicit ArraySize guard.",
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41188_xtixng-mrepmedian-rv.mq5:868 accesses dynamic numeric buffer chronological_ratios[upper] without a loop bound tied to strategy_month_end_count or an explicit ArraySize guard.",
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41188_xtixng-mrepmedian-rv.mq5:910 accesses dynamic numeric buffer pivot_medians[index] without a loop bound tied to strategy_month_end_count or an explicit ArraySize guard.",
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41188_xtixng-mrepmedian-rv.mq5:891 accesses dynamic numeric buffer pivot_slopes[center_low_index] without a loop bound tied to slopes_per_pivot or an explicit ArraySize guard."
+      ],
+      "classification": "PREDICATE_FALSE_POSITIVE_BOUNDED_PATTERN",
+      "fixture": "fixtures\\QM5_41188_xtixng-mrepmedian-rv.mq5"
+    },
+    {
+      "id": "5b6a9525-e988-4b0f-a7ec-b9f879adbb49",
+      "ea_id": "QM5_41190",
+      "status": "failed",
+      "verdict": "COMPILE_FAIL",
+      "evidence_path": "D:\\QM\\reports\\work_items\\5b6a9525-e988-4b0f-a7ec-b9f879adbb49\\QM5_41190\\COMPILE_EA\\compile_evidence.json",
+      "source": "C:\\QM\\repo\\framework\\EAs\\QM5_41190_xtixng-mtheilsen-rv\\QM5_41190_xtixng-mtheilsen-rv.mq5",
+      "source_sha256": "4cae626a3637fceedbf042f0b4b558c56f6fcd890c418ea839c2113e0ac2ff0c",
+      "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260905_135649.json",
+      "build_check_report_sha256": "5b00a1b40bc2979518f940ebdfc1800a91cf1701376c9834c828c0acce03071a",
+      "compile_result": "PASS",
+      "compile_errors": "0",
+      "compile_warnings": "0",
+      "findings": [
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41190_xtixng-mtheilsen-rv.mq5:802 accesses dynamic numeric buffer newest_first_ratios[month_count] without a loop bound tied to strategy_month_end_count or an explicit ArraySize guard.",
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41190_xtixng-mtheilsen-rv.mq5:852 accesses dynamic numeric buffer chronological_ratios[i] without a loop bound tied to strategy_month_end_count or an explicit ArraySize guard.",
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41190_xtixng-mtheilsen-rv.mq5:874 accesses dynamic numeric buffer slopes[median_left_index] without a loop bound tied to expected_slope_count or an explicit ArraySize guard."
+      ],
+      "classification": "PREDICATE_FALSE_POSITIVE_BOUNDED_PATTERN",
+      "fixture": "fixtures\\QM5_41190_xtixng-mtheilsen-rv.mq5"
+    },
+    {
+      "id": "37e3b310-7384-48df-8d3a-92eb4f80c0da",
+      "ea_id": "QM5_41193",
+      "status": "failed",
+      "verdict": "COMPILE_FAIL",
+      "evidence_path": "D:\\QM\\reports\\work_items\\37e3b310-7384-48df-8d3a-92eb4f80c0da\\QM5_41193\\COMPILE_EA\\compile_evidence.json",
+      "source": "C:\\QM\\repo\\framework\\EAs\\QM5_41193_xtixng-fracd-rv\\QM5_41193_xtixng-fracd-rv.mq5",
+      "source_sha256": "8e3fb9d1a459712026bf9afe91ed8ae0a9da32f4a360a6b9dece20c4af40b7eb",
+      "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260905_140057.json",
+      "build_check_report_sha256": "73ea483851c847acd0d91d3ae0ec7cd502b648fefcb4fedb3cb38910901915e7",
+      "compile_result": "PASS",
+      "compile_errors": "0",
+      "compile_warnings": "0",
+      "findings": [
+        "EA_ML_FORBIDDEN: C:\\QM\\repo\\framework\\EAs\\QM5_41193_xtixng-fracd-rv\\QM5_41193_xtixng-fracd-rv.mq5:746 contains 'weights['.",
+        "EA_ML_FORBIDDEN: C:\\QM\\repo\\framework\\EAs\\QM5_41193_xtixng-fracd-rv\\QM5_41193_xtixng-fracd-rv.mq5:840 contains 'weights['.",
+        "EA_ML_FORBIDDEN: C:\\QM\\repo\\framework\\EAs\\QM5_41193_xtixng-fracd-rv\\QM5_41193_xtixng-fracd-rv.mq5:844 contains 'weights['.",
+        "EA_ML_FORBIDDEN: C:\\QM\\repo\\framework\\EAs\\QM5_41193_xtixng-fracd-rv\\QM5_41193_xtixng-fracd-rv.mq5:845 contains 'weights['.",
+        "EA_ML_FORBIDDEN: C:\\QM\\repo\\framework\\EAs\\QM5_41193_xtixng-fracd-rv\\QM5_41193_xtixng-fracd-rv.mq5:847 contains 'weights['.",
+        "EA_ML_FORBIDDEN: C:\\QM\\repo\\framework\\EAs\\QM5_41193_xtixng-fracd-rv\\QM5_41193_xtixng-fracd-rv.mq5:852 contains 'weights['.",
+        "EA_ML_FORBIDDEN: C:\\QM\\repo\\framework\\EAs\\QM5_41193_xtixng-fracd-rv\\QM5_41193_xtixng-fracd-rv.mq5:853 contains 'weights['.",
+        "EA_ML_FORBIDDEN: C:\\QM\\repo\\framework\\EAs\\QM5_41193_xtixng-fracd-rv\\QM5_41193_xtixng-fracd-rv.mq5:867 contains 'weights['."
+      ],
+      "classification": "DIFFERENT_PREDICATE_EA_ML_FORBIDDEN"
+    }
+  ],
+  "build_gate_hardening.py_sha256": "84296e7b2bd323cc7a25490b056c4047363d20e547ab1495a1138b4fc56a07b8",
+  "compile_work_items.py_sha256": "8869130a90c57b228e5053ef9e25f8c75717090d6e60d86d38c9fadbf69b6647"
+}
