@@ -1,0 +1,23 @@
+{
+  "schema": "qm.source-composition-receipt/v1",
+  "generated_at": "2026-09-05",
+  "new_public_retrieval": false,
+  "complete_bounded_parents": [
+    {
+      "path": "strategy-seeds/sources/AI-CODEX-WTI-MADF-PERSIST-TREND-20260903/source.md",
+      "sha256": "576505363DE9DCA4F8E0CB4047D30DE630FB76CBC754F3F9FE3805CDA33507EC",
+      "role": "lag-one intercept-only ADF arithmetic and non-rejection boundary"
+    },
+    {
+      "path": "strategy-seeds/sources/AI-CODEX-WTI-MPP-PERSIST-TREND-20260903/source.md",
+      "sha256": "C8ED6052ADDA9F6978ACADA8F34F54C2F6502316762AF30AC16DF0F6325329A2",
+      "role": "lag-zero Phillips-Perron eleven-lag Bartlett HAC Z-tau arithmetic and non-rejection boundary"
+    },
+    {
+      "path": "strategy-seeds/sources/MOP-TSMOM-2012/source.md",
+      "sha256": "C8B07ECD62C1D5EF9E3D7975EEE6A3B6C46C1C566D0B20B42237613D9B3A7042",
+      "role": "monthly own-return continuation and explicit WTI carrier"
+    }
+  ],
+  "claim_boundary": "The parents define ADF, Phillips-Perron, and WTI continuation separately. None tests the dual-non-rejection conjunction, the locked thresholds on continuous WTI CFD data, activity, economics, or portfolio fit."
+}
