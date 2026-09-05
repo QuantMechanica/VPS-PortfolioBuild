@@ -208,7 +208,7 @@ def test_candidate_run_is_deterministic_fail_closed_and_input_immutable(tmp_path
         r=repair.run_repair(pp,sp,native_dir,native_dir,out,canonical_root=root,staging_root=tmp_path/"staging",coverage_end="2026-06")
         assert r["exit_code"]==2 and not r["publishable"]
         # E1-B2 (93198a4d2d) generalised the fail-closed message: the run is not publishable while any verification input is unresolved
-    assert "NOT_PUBLISHABLE" in r["message"]
+        assert "NOT_PUBLISHABLE" in r["message"]
         assert r["gates"]["6.6_no_row_loss"]["pass"]
         assert r["gates"]["6.8_schema"]["pass"]
         assert r["gates"]["6.3_cross_file_identity"]["pass"]
