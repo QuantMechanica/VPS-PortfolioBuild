@@ -1,0 +1,258 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "37e3b310-7384-48df-8d3a-92eb4f80c0da"
+  ],
+  "backup": {
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260905T133631Z_19801654.sqlite",
+    "reused": false,
+    "sha256": "085a853bf75b3d5d7a6010f2e56b086472a8f8ca98cf33dfebf4057f0d004327"
+  },
+  "backup_reuse_max_age_minutes": 60.0,
+  "backup_timeout_seconds": 60.0,
+  "backup_write_guard": {
+    "attempts": 1,
+    "transaction": "BEGIN IMMEDIATE / validated / backed up / released / COMMIT",
+    "wait_seconds": 0.0
+  },
+  "deferred": [
+    {
+      "actual_mq5_sha256": "f2d1a3023857657feb208553e0f6e8c5e23ecd0eaf643ad5e04fbc79db07bad6",
+      "ea_id": "QM5_41176",
+      "ea_label": "QM5_41176_wti-mwilcoxon-shift-tr",
+      "expected_mq5_sha256": "23ca6f5cef5bbbb0dc1151cdfc4dfc857e752f8b1707697490d8105e5b2244c2",
+      "reason": "SOURCE_SHA_STALE_OR_MISSING",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41176_wti-mwilcoxon-shift-tr\\QM5_41176_wti-mwilcoxon-shift-tr.mq5",
+      "work_item_id": "f89d82e9-f4e2-4567-b8f2-464d4997ce09"
+    },
+    {
+      "actual_mq5_sha256": "5e373104ee5bf0f0428c5c277e0d8ecea10e83fcae80386d27ddb74b58a1e6be",
+      "ea_id": "QM5_41179",
+      "ea_label": "QM5_41179_xtixng-mcoxstuart-rv",
+      "expected_mq5_sha256": "74e7f100f5d59c4e089971a4ddb1392ed219eb1be942d9a444bf2a133ddd27d3",
+      "reason": "SOURCE_SHA_STALE_OR_MISSING",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41179_xtixng-mcoxstuart-rv\\QM5_41179_xtixng-mcoxstuart-rv.mq5",
+      "work_item_id": "9ced0252-9ceb-4fe7-a2c5-d7a8d0b30a82"
+    },
+    {
+      "actual_mq5_sha256": "e401421c63ff2c5933099b834835469faddabe3cf8efe756a94a6eb8d16a54b2",
+      "ea_id": "QM5_41189",
+      "ea_label": "QM5_41189_xtixng-mlad-rv",
+      "expected_mq5_sha256": "3d0ba8910acab5ac7b206184912c3a95b935a28ea520975c95f9a606be8048c1",
+      "reason": "SOURCE_SHA_STALE_OR_MISSING",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41189_xtixng-mlad-rv\\QM5_41189_xtixng-mlad-rv.mq5",
+      "work_item_id": "e5505264-01c4-4102-b3cd-9a275a6839ee"
+    },
+    {
+      "actual_mq5_sha256": "e63f2177cec4333e4bd93915d8a06587373318d974e3c0d1178d6f0d89d5380e",
+      "ea_id": "QM5_41164",
+      "ea_label": "QM5_41164_xauxag-mrepmedian-rv",
+      "expected_mq5_sha256": "e63f2177cec4333e4bd93915d8a06587373318d974e3c0d1178d6f0d89d5380e",
+      "reason": "LATER_WAVE",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41164_xauxag-mrepmedian-rv\\QM5_41164_xauxag-mrepmedian-rv.mq5",
+      "work_item_id": "059d4860-337e-4833-91f3-5fdf81b55603"
+    },
+    {
+      "actual_mq5_sha256": "cf2a09f42cd62af22c8bc52da71042852ca6c3689dfa82794156e78c12aade80",
+      "ea_id": "QM5_41165",
+      "ea_label": "QM5_41165_wti-mrobust3-agree-tr",
+      "expected_mq5_sha256": "cf2a09f42cd62af22c8bc52da71042852ca6c3689dfa82794156e78c12aade80",
+      "reason": "LATER_WAVE",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41165_wti-mrobust3-agree-tr\\QM5_41165_wti-mrobust3-agree-tr.mq5",
+      "work_item_id": "c71f00bd-1f15-4db5-b4e8-20d73936a092"
+    },
+    {
+      "actual_mq5_sha256": "217d7f59a6f271941bc5d5e5419bd94b397498ff7df4782fd56effd8faa05268",
+      "ea_id": "QM5_41166",
+      "ea_label": "QM5_41166_xauxag-mrobust3-agree-rv",
+      "expected_mq5_sha256": "217d7f59a6f271941bc5d5e5419bd94b397498ff7df4782fd56effd8faa05268",
+      "reason": "LATER_WAVE",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41166_xauxag-mrobust3-agree-rv\\QM5_41166_xauxag-mrobust3-agree-rv.mq5",
+      "work_item_id": "c495527e-9058-41e9-a63f-d791c25d7554"
+    },
+    {
+      "actual_mq5_sha256": "9318ee56cadbd0a2c2449b9239e0ce77f068a5860c645763efff3522ed88ba09",
+      "ea_id": "QM5_41172",
+      "ea_label": "QM5_41172_wti-mpettitt-shift-tr",
+      "expected_mq5_sha256": "9318ee56cadbd0a2c2449b9239e0ce77f068a5860c645763efff3522ed88ba09",
+      "reason": "LATER_WAVE",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41172_wti-mpettitt-shift-tr\\QM5_41172_wti-mpettitt-shift-tr.mq5",
+      "work_item_id": "8fd59f9d-96d1-4a13-b820-f2960886822d"
+    },
+    {
+      "actual_mq5_sha256": "1b082c829da4707d7860f553ffb2e52b22e5f7ce10fe1182ee9e69923975fdf2",
+      "ea_id": "QM5_41168",
+      "ea_label": "QM5_41168_xauxag-mcoxstuart-rv",
+      "expected_mq5_sha256": "1b082c829da4707d7860f553ffb2e52b22e5f7ce10fe1182ee9e69923975fdf2",
+      "reason": "LATER_WAVE",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41168_xauxag-mcoxstuart-rv\\QM5_41168_xauxag-mcoxstuart-rv.mq5",
+      "work_item_id": "a543f9c8-cdd1-4e9e-8c2a-30d19c2259ca"
+    },
+    {
+      "actual_mq5_sha256": "9fa2683395d762fe3a1260f957003d419167e8717a42ee9e3ad1247e5778b007",
+      "ea_id": "QM5_41105",
+      "ea_label": "QM5_41105_wti-mclose-location-mom",
+      "expected_mq5_sha256": "9fa2683395d762fe3a1260f957003d419167e8717a42ee9e3ad1247e5778b007",
+      "reason": "LATER_WAVE",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41105_wti-mclose-location-mom\\QM5_41105_wti-mclose-location-mom.mq5",
+      "work_item_id": "72e08081-b13c-4168-8988-8b790fa0340c"
+    },
+    {
+      "actual_mq5_sha256": "ffbfc3e4845ccbc87c73adb6e6ddf6f8a1cd8e4ecec78b6382c96fd920b8812a",
+      "ea_id": "QM5_41207",
+      "ea_label": "QM5_41207_xauxag-corrbreak-rv",
+      "expected_mq5_sha256": "ffbfc3e4845ccbc87c73adb6e6ddf6f8a1cd8e4ecec78b6382c96fd920b8812a",
+      "reason": "LATER_WAVE",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41207_xauxag-corrbreak-rv\\QM5_41207_xauxag-corrbreak-rv.mq5",
+      "work_item_id": "7628b4c2-f7de-4532-912f-aed19c367100"
+    },
+    {
+      "actual_mq5_sha256": "fede16790ec29627b6c38415f6db95ec0146c9a312789ff5645240014769b2d5",
+      "ea_id": "QM5_41224",
+      "ea_label": "QM5_41224_wti-samecal-regimeshift",
+      "expected_mq5_sha256": "fede16790ec29627b6c38415f6db95ec0146c9a312789ff5645240014769b2d5",
+      "reason": "LATER_WAVE",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41224_wti-samecal-regimeshift\\QM5_41224_wti-samecal-regimeshift.mq5",
+      "work_item_id": "7b947ba4-f327-4eb2-af86-a0333e27de6a"
+    },
+    {
+      "actual_mq5_sha256": "f4d84bdfac61ad54b02e305c9f1f75b8f82ab0f0228ad156ef9f65acdd17e889",
+      "ea_id": "QM5_1538",
+      "ea_label": "QM5_1538_aa-tsmom-1-3-12",
+      "expected_mq5_sha256": "0bbcf752c7b5e7c03832e411529f03bd972564f10e75630e393020428357ff47",
+      "reason": "SOURCE_SHA_STALE_OR_MISSING",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1538_aa-tsmom-1-3-12\\QM5_1538_aa-tsmom-1-3-12.mq5",
+      "work_item_id": "674da780-53ef-4e37-993c-b02ca4f0a243"
+    },
+    {
+      "actual_mq5_sha256": "f4d84bdfac61ad54b02e305c9f1f75b8f82ab0f0228ad156ef9f65acdd17e889",
+      "ea_id": "QM5_1538",
+      "ea_label": "QM5_1538_aa-tsmom-1-3-12",
+      "expected_mq5_sha256": "78c02c2f7342cdf1b8af0e88ae05dadbd0e1c765ff9a801f9e89b5ef7054f7f7",
+      "reason": "SOURCE_SHA_STALE_OR_MISSING",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1538_aa-tsmom-1-3-12\\QM5_1538_aa-tsmom-1-3-12.mq5",
+      "work_item_id": "550b62ec-516d-4fba-b845-e0b1d61e9437"
+    },
+    {
+      "actual_mq5_sha256": "fec27056d36dc5738a327e4340f189d924201380864e3c3bd05488e3f20534aa",
+      "ea_id": "QM5_41192",
+      "ea_label": "QM5_41192_xtixng-mdaily-hl-rv",
+      "expected_mq5_sha256": "630cf4a9c18a2ec5ff4d86b04df000a48a4ecf793e09d8d028f3d094a7cf238d",
+      "reason": "SOURCE_SHA_STALE_OR_MISSING",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41192_xtixng-mdaily-hl-rv\\QM5_41192_xtixng-mdaily-hl-rv.mq5",
+      "work_item_id": "0d00bf54-535c-4049-ad7f-fde0c6b13f12"
+    },
+    {
+      "actual_mq5_sha256": "1be16d1d56e2d03a18d5654ef35484df6ebe44650ac9250d8c48800905433c13",
+      "ea_id": "QM5_41268",
+      "ea_label": "QM5_41268_wti-mepps-shift-tr",
+      "expected_mq5_sha256": "1be16d1d56e2d03a18d5654ef35484df6ebe44650ac9250d8c48800905433c13",
+      "reason": "LATER_WAVE",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41268_wti-mepps-shift-tr\\QM5_41268_wti-mepps-shift-tr.mq5",
+      "work_item_id": "7f224c84-9ae2-446e-a905-cb386e9695cc"
+    },
+    {
+      "actual_mq5_sha256": "94954df95dc79b7bc2c653df9b4980428295af1a7f05566d58f8a03548519f43",
+      "ea_id": "QM5_41285",
+      "ea_label": "QM5_41285_xauxag-mjt-rv",
+      "expected_mq5_sha256": "94954df95dc79b7bc2c653df9b4980428295af1a7f05566d58f8a03548519f43",
+      "reason": "LATER_WAVE",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41285_xauxag-mjt-rv\\QM5_41285_xauxag-mjt-rv.mq5",
+      "work_item_id": "e23cfbc8-3f6d-4b27-b369-c6061a6b44a5"
+    },
+    {
+      "actual_mq5_sha256": "96c6fd5a23bcc77af501d55c0402a6096df19a00bc3be40d6bc513f2c20d63fd",
+      "ea_id": "QM5_41308",
+      "ea_label": "QM5_41308_wti-mordinal-entropy-tr",
+      "expected_mq5_sha256": "96c6fd5a23bcc77af501d55c0402a6096df19a00bc3be40d6bc513f2c20d63fd",
+      "reason": "LATER_WAVE",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41308_wti-mordinal-entropy-tr\\QM5_41308_wti-mordinal-entropy-tr.mq5",
+      "work_item_id": "bfc98851-3477-4f05-bf48-9636ed10da47"
+    },
+    {
+      "actual_mq5_sha256": "354ce0c1a52d1615b0db4ef4c4aa0e00bcf24bd70c6b7dc5e93ca5a84a65614d",
+      "ea_id": "QM5_41312",
+      "ea_label": "QM5_41312_wti-mspectral-entropy-tr",
+      "expected_mq5_sha256": "354ce0c1a52d1615b0db4ef4c4aa0e00bcf24bd70c6b7dc5e93ca5a84a65614d",
+      "reason": "LATER_WAVE",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41312_wti-mspectral-entropy-tr\\QM5_41312_wti-mspectral-entropy-tr.mq5",
+      "work_item_id": "f57662e7-6e12-4d96-b109-f0c437d6ce7f"
+    },
+    {
+      "actual_mq5_sha256": "cb33049fcc851c1bd83762abe1aee72768bf38d55d73097de08e48c1ba177d9a",
+      "ea_id": "QM5_41142",
+      "ea_label": "QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow",
+      "expected_mq5_sha256": "1bb336bbbd3b9e06730ea830b94a7c3bff9c4387f88920c43754757be5fe3c0f",
+      "reason": "SOURCE_SHA_STALE_OR_MISSING",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow.mq5",
+      "work_item_id": "07a09214-86ba-4946-9e0b-c9e7baa8b6fc"
+    },
+    {
+      "actual_mq5_sha256": "b13f136a3358e3b3ec3b11374993d86d2be27c388fb6dd729c7b42c89c806f70",
+      "ea_id": "QM5_41319",
+      "ea_label": "QM5_41319_wti-madf-persist-tr",
+      "expected_mq5_sha256": "b13f136a3358e3b3ec3b11374993d86d2be27c388fb6dd729c7b42c89c806f70",
+      "reason": "LATER_WAVE",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41319_wti-madf-persist-tr\\QM5_41319_wti-madf-persist-tr.mq5",
+      "work_item_id": "74fb5a2d-a4cd-43e3-bc12-e7dbeac67ac1"
+    },
+    {
+      "actual_mq5_sha256": "a44763ce85b4f471f4e2f5c96e782780406c78e7ecb883d2e61898a235b6f7a2",
+      "ea_id": "QM5_41336",
+      "ea_label": "QM5_41336_wti-adf-kpss-agree-tr",
+      "expected_mq5_sha256": "a44763ce85b4f471f4e2f5c96e782780406c78e7ecb883d2e61898a235b6f7a2",
+      "reason": "LATER_WAVE",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41336_wti-adf-kpss-agree-tr\\QM5_41336_wti-adf-kpss-agree-tr.mq5",
+      "work_item_id": "0a80a328-3b81-4125-aa48-ed5686b7a962"
+    },
+    {
+      "actual_mq5_sha256": "405202f5fa354429f767ed54c5d2a51d020a31a2e1be876a1d2dfa0826a98ad5",
+      "ea_id": "QM5_41338",
+      "ea_label": "QM5_41338_wti-adf-vn-agree-tr",
+      "expected_mq5_sha256": "405202f5fa354429f767ed54c5d2a51d020a31a2e1be876a1d2dfa0826a98ad5",
+      "reason": "LATER_WAVE",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41338_wti-adf-vn-agree-tr\\QM5_41338_wti-adf-vn-agree-tr.mq5",
+      "work_item_id": "779b4e98-8ef6-4918-8903-07d074a8c523"
+    },
+    {
+      "actual_mq5_sha256": "95a9c04867100145d7d937ef5d99269c56079877db58ee783fa097f3711e59ab",
+      "ea_id": "QM5_41339",
+      "ea_label": "QM5_41339_wti-adf-lz-agree-tr",
+      "expected_mq5_sha256": "95a9c04867100145d7d937ef5d99269c56079877db58ee783fa097f3711e59ab",
+      "reason": "LATER_WAVE",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41339_wti-adf-lz-agree-tr\\QM5_41339_wti-adf-lz-agree-tr.mq5",
+      "work_item_id": "d79fa1aa-f91e-4d47-ac34-58633ce5eddf"
+    },
+    {
+      "actual_mq5_sha256": "0456910232ece6387f19b18fe6dd8a5263aff7d159f67ebb772d43cdfd46c0ca",
+      "ea_id": "QM5_41351",
+      "ea_label": "QM5_41351_wti-adf-bds-agree-tr",
+      "expected_mq5_sha256": "0456910232ece6387f19b18fe6dd8a5263aff7d159f67ebb772d43cdfd46c0ca",
+      "reason": "LATER_WAVE",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41351_wti-adf-bds-agree-tr\\QM5_41351_wti-adf-bds-agree-tr.mq5",
+      "work_item_id": "427f9ace-5677-4fe5-8241-73e8261f990e"
+    }
+  ],
+  "factory_mutation_lock": {
+    "path": "D:\\QM\\strategy_farm\\state\\FACTORY_MUTATION.lock",
+    "release_status": "released"
+  },
+  "held_pending_count": 25,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "8e3fb9d1a459712026bf9afe91ed8ae0a9da32f4a360a6b9dece20c4af40b7eb",
+      "ea_id": "QM5_41193",
+      "ea_label": "QM5_41193_xtixng-fracd-rv",
+      "expected_mq5_sha256": "8e3fb9d1a459712026bf9afe91ed8ae0a9da32f4a360a6b9dece20c4af40b7eb",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41193_xtixng-fracd-rv\\QM5_41193_xtixng-fracd-rv.mq5",
+      "work_item_id": "37e3b310-7384-48df-8d3a-92eb4f80c0da"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-09-05T13:36:41+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": null
+}
