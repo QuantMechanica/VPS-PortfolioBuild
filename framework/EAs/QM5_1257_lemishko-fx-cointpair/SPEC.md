@@ -5,7 +5,7 @@
 **Slug:** `lemishko-fx-cointpair`
 
 **Source:** `afab7a6f-c3c8-51ae-a609-f376744beb8e`
-**Last revised:** 2026-09-02
+**Last revised:** 2026-09-05
 
 ## 1. Strategy Logic
 
@@ -40,7 +40,7 @@ learning, grid, martingale, or intramonth parameter adaptation.
 | `strategy_half_life_min` | `2.0` | Minimum admitted residual half-life in days. |
 | `strategy_half_life_max` | `30.0` | Maximum admitted residual half-life in days. |
 | `strategy_max_hold_days` | `10` | Package time stop. |
-| `strategy_r_stop` | `1.5` | Card-required combined-pair risk-stop multiplier; the current source declares but does not enforce it. |
+| `strategy_r_stop` | `1.5` | Card-required combined-pair risk-stop multiplier, enforced every tick against aggregate pair profit plus swap. |
 | `strategy_max_leg_weight` | `0.70` | Maximum gross-notional share assigned to either leg. |
 | `strategy_atr_period` | `14` | D1 ATR period used for per-leg protective stops and sizing. |
 | `strategy_atr_stop_mult` | `3.0` | D1 ATR stop multiplier. |
@@ -97,28 +97,27 @@ split by the absolute frozen OLS weights, capped so neither leg exceeds 70% of
 gross notional. Each leg receives a D1 ATR protective stop, and a failed second
 leg triggers immediate rollback of the first.
 
-The approved card additionally requires a combined-pair stop at 1.5R. The
-current source declares `strategy_r_stop=1.5` but does not reference it after
-declaration, so it does not yet enforce that package-level loss boundary. This
-is a card-fidelity blocker, not permission to alter the approved risk contract.
+The approved card additionally requires a combined-pair stop at 1.5R. The EA
+now sums profit and swap across both owned legs on every tick and flattens the
+package when the loss reaches `strategy_r_stop` times the framework risk-money
+budget. The fixed-risk backtest contract therefore stops the package at
+`-1.5 * RISK_FIXED` (subject to the framework portfolio-weight rail).
 
 This specification documents non-live pipeline execution only. It does not
 authorize T_Live, AutoTrading, deployment, or portfolio admission.
 
-## 8. Current Preflight Blockers
+## 8. Build-Fidelity Notes
 
-- Strict build hardening reports `EA_Q08_MAE_HOOK_MISSING`: the framework-
-  managed `OnTick()` does not call `QM_FrameworkTrackOpenPositionMae()` as its
-  first action.
-- The card-required combined-pair 1.5R stop is not enforced because
-  `strategy_r_stop` is declaration-only in the current source.
-- `strategy_coint_exit_p` is also declaration-only; the approved card defines
-  mean crossing, time, daily-residual, and combined-risk exits, not a separate
-  0.10 cointegration-exit rule.
-- Pending Q03 work item `162a6230-d6fa-424c-a539-b873cc9a5559` is bound to the
-  current MQ5, EX5, and setfile hashes. A source repair therefore requires a
-  governed rebuild and fresh append-only execution identity; editing the MQ5
-  alone would make the pending row stale.
+- `QM_FrameworkTrackOpenPositionMae()` is the first action in `OnTick()`, as
+  required by strict build hardening.
+- The card-required combined-pair 1.5R stop is enforced in the per-tick trade-
+  management hook; it does not add a signal or alter the frozen hedge model.
+- `strategy_coint_exit_p` remains a legacy compatibility input. The approved
+  card defines mean crossing, time, daily-residual, and combined-risk exits,
+  not a separate 0.10 cointegration-exit rule.
+- Historical Q02-Q04 receipts remain immutable evidence for their exact source
+  and binary hashes. This repair requires a fresh append-only execution
+  identity before any new pipeline verdict can be attributed to it.
 
 ## Revision History
 
@@ -126,3 +125,4 @@ authorize T_Live, AutoTrading, deployment, or portfolio admission.
 |---|---|---|---|
 | v1 | 2026-05-18 | Initial approved build lineage | Existing OWNER-approved Lemishko/Landi/Caicedo card and registered EA identity. |
 | v2 | 2026-09-02 | Current-spec localization | Added the missing repository `SPEC.md`, recorded the exact slot-8 V4 Q03 rebaseline contract, and documented the two current source blockers; no strategy, source, binary, setfile, manifest, or risk change. |
+| v3 | 2026-09-05 | Card-fidelity repair | Enforced the approved 1.5R aggregate package stop and restored the mandatory first-action MAE hook; no entry, hedge, filter, or parameter change. |

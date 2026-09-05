@@ -426,6 +426,20 @@ bool HasPairPosition()
    return false;
 }
 
+double PairFloatingPnl()
+{
+   double pnl = 0.0;
+   for (int i = 0; i < PositionsTotal(); ++i)
+   {
+      const ulong ticket = PositionGetTicket(i);
+      if (ticket == 0 || !PositionSelectByTicket(ticket)) continue;
+      if (!IsPairPosition()) continue;
+      pnl += PositionGetDouble(POSITION_PROFIT);
+      pnl += PositionGetDouble(POSITION_SWAP);
+   }
+   return pnl;
+}
+
 datetime OldestPairOpenTime()
 {
    datetime oldest = 0;
@@ -630,6 +644,27 @@ int ActivePairDirection()
 
 void Strategy_ManageOpenPosition()
 {
+   if (!HasPairPosition() || strategy_r_stop <= 0.0)
+      return;
+
+   const double risk_money = QM_RiskSizerRiskMoney(AccountInfoDouble(ACCOUNT_EQUITY));
+   if (risk_money <= 0.0)
+      return;
+
+   const double open_pnl = PairFloatingPnl();
+   const double stop_threshold = -strategy_r_stop * risk_money;
+   if (open_pnl <= stop_threshold)
+   {
+      QM_LogEvent(QM_WARN,
+                  "PAIR_R_STOP",
+                  StringFormat("{\"pair_slot\":%d,\"open_pnl\":%.2f,\"risk_money\":%.2f,\"stop_r\":%.2f,\"threshold\":%.2f}",
+                               strategy_pair_slot,
+                               open_pnl,
+                               risk_money,
+                               strategy_r_stop,
+                               stop_threshold));
+      ClosePair(QM_EXIT_KILLSWITCH);
+   }
 }
 
 bool Strategy_ExitSignal()
@@ -742,6 +777,8 @@ void OnDeinit(const int reason)
 
 void OnTick()
 {
+   QM_FrameworkTrackOpenPositionMae();
+
    if (!QM_KillSwitchCheck())
       return;
 
