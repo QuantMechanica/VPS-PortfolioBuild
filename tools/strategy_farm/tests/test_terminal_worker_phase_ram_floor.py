@@ -24,7 +24,7 @@ import pytest  # noqa: E402
 
 import terminal_worker as tw  # noqa: E402
 
-FLOORED_PHASES = ("Q05", "Q06", "Q07")
+FLOORED_PHASES = ("Q05", "Q06", "Q07", "Q08", "Q09")  # Q08/Q09 added 2026-09-05 (ledger: fx_cross 16.8, fx_major 15.6/15.2)
 # Exactly the labels _tester_memory_symbol_class can emit.
 SYMBOL_CLASSES = frozenset({
     "index", "metal", "energy", "fx_major", "fx_cross", "fx_exotic",
