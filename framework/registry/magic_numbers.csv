@@ -18245,3 +18245,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41345,xau-weekly-tsmom-opt,0,XAUUSD.DWX,413450000,2026-09-05,Codex governed allocator,active
 41346,cum-rsi2-commodity-requal8-opt,0,XAUUSD.DWX,413460000,2026-09-05,Codex governed allocator,active
 41347,cs-ichi-cloud-opt,0,XAUUSD.DWX,413470000,2026-09-05,Codex governed allocator,active
+41348,xauxag-mhampel-rv,0,XAUUSD.DWX,413480000,2026-09-05,Codex governed allocator,active
+41348,xauxag-mhampel-rv,1,XAGUSD.DWX,413480001,2026-09-05,Codex governed allocator,active
