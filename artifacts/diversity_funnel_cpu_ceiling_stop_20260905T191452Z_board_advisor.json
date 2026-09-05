@@ -1,0 +1,79 @@
+{
+  "schema": "qm.diversity-funnel.cpu-ceiling-stop/v1",
+  "observed_at_utc": "2026-09-05T19:14:52.3948967Z",
+  "branch": "agents/board-advisor",
+  "observation_base": "b1dcf2e93fd54113f584144d6590d380175ca02b",
+  "admission_rule": {
+    "sample_count": 5,
+    "average_cpu_must_be_below_pct": 97.0,
+    "maximum_cpu_must_be_below_pct": 97.0
+  },
+  "cpu_samples_pct": [
+    73.746,
+    74.710,
+    72.464,
+    82.922,
+    99.316
+  ],
+  "average_cpu_pct": 80.632,
+  "maximum_cpu_pct": 99.316,
+  "admission": false,
+  "binding_dimension": "maximum_cpu_pct",
+  "farm_snapshot": {
+    "db": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "active_work_items": [
+      {
+        "id": "c0b34889-5345-526e-89f0-4045dbc122d2",
+        "phase": "OPT_CENSUS",
+        "ea_id": "QM5_41307",
+        "symbol": "XTIUSD.DWX",
+        "claimed_by": "T3"
+      },
+      {
+        "id": "719fa345-b52f-5d58-bacd-82a078bf72ae",
+        "phase": "OPT_CENSUS",
+        "ea_id": "QM5_41333",
+        "symbol": "XAUUSD.DWX",
+        "claimed_by": "T5"
+      },
+      {
+        "id": "99d49812-0ba5-5dd6-a817-ca36caef4b4e",
+        "phase": "OPT_CENSUS",
+        "ea_id": "QM5_41342",
+        "symbol": "EURUSD.DWX",
+        "claimed_by": "T6"
+      },
+      {
+        "id": "460a0647-6a2e-4217-866e-3cccdb14c409",
+        "phase": "Q07",
+        "ea_id": "QM5_11172",
+        "symbol": "XAUUSD.DWX",
+        "claimed_by": "T8"
+      }
+    ],
+    "farmctl_build_ea_tasks": {
+      "active": 4,
+      "pending": 84
+    },
+    "running_factory_terminals": [
+      "T5",
+      "T6",
+      "T8"
+    ],
+    "mt5_slots_scanned_at": "2026-09-05T19:14:37+00:00"
+  },
+  "mutation_result": {
+    "task_claimed": false,
+    "work_item_enqueued": false,
+    "build_started": false,
+    "compile_started": false,
+    "smoke_started": false,
+    "backtest_started": false,
+    "factory_control_changed": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false
+  },
+  "outcome": "STOP_CPU_CEILING"
+}
