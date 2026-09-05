@@ -1,0 +1,1115 @@
+{
+  "schema": "qm.mutation-lock-attribution/v1",
+  "window_start_utc": "2026-09-05T06:17:07.774588+00:00",
+  "window_end_utc": "2026-09-05T08:17:07.774588+00:00",
+  "window_hours": 2.0,
+  "busy_event_count": 110,
+  "owner_table": [
+    {
+      "owner": "UNKNOWN",
+      "count": 47,
+      "median_age_seconds": null,
+      "pids": [],
+      "methods": [
+        "unattributed"
+      ]
+    },
+    {
+      "owner": "terminal_worker.claim_atomic:T6",
+      "count": 13,
+      "median_age_seconds": 1.423828,
+      "pids": [
+        19320
+      ],
+      "methods": [
+        "historical_hold_interval_inference"
+      ]
+    },
+    {
+      "owner": "terminal_worker.claim_atomic:T7",
+      "count": 8,
+      "median_age_seconds": 3.125479,
+      "pids": [
+        6132
+      ],
+      "methods": [
+        "historical_hold_interval_inference"
+      ]
+    },
+    {
+      "owner": "terminal_worker.claim_atomic:T10",
+      "count": 7,
+      "median_age_seconds": 4.302105,
+      "pids": [
+        22912
+      ],
+      "methods": [
+        "historical_hold_interval_inference"
+      ]
+    },
+    {
+      "owner": "terminal_worker.claim_atomic:T4",
+      "count": 7,
+      "median_age_seconds": 2.46287,
+      "pids": [
+        29244
+      ],
+      "methods": [
+        "historical_hold_interval_inference"
+      ]
+    },
+    {
+      "owner": "terminal_worker.claim_atomic:T1",
+      "count": 6,
+      "median_age_seconds": 3.443933,
+      "pids": [
+        7536
+      ],
+      "methods": [
+        "historical_hold_interval_inference"
+      ]
+    },
+    {
+      "owner": "dl089_matrix_service:40e69c26-1ddb-5728-99a1-02b08f83c284",
+      "count": 4,
+      "median_age_seconds": 0.812736,
+      "pids": [
+        19776
+      ],
+      "methods": [
+        "historical_hold_interval_inference"
+      ]
+    },
+    {
+      "owner": "terminal_worker.claim_atomic:T3",
+      "count": 4,
+      "median_age_seconds": 3.426092,
+      "pids": [
+        24408
+      ],
+      "methods": [
+        "historical_hold_interval_inference"
+      ]
+    },
+    {
+      "owner": "dl089_matrix_service:d824e8cb-8397-5aa3-b6fa-fec9b0c375eb",
+      "count": 3,
+      "median_age_seconds": 3.449188,
+      "pids": [
+        26084
+      ],
+      "methods": [
+        "historical_hold_interval_inference"
+      ]
+    },
+    {
+      "owner": "terminal_worker.claim_atomic:T2",
+      "count": 3,
+      "median_age_seconds": 1.940062,
+      "pids": [
+        26424
+      ],
+      "methods": [
+        "historical_hold_interval_inference"
+      ]
+    },
+    {
+      "owner": "dl089_matrix_service:a8b2dd82-ab11-5df9-a68b-f6da871d2995",
+      "count": 2,
+      "median_age_seconds": 2.480856,
+      "pids": [
+        888,
+        30952
+      ],
+      "methods": [
+        "historical_hold_interval_inference"
+      ]
+    },
+    {
+      "owner": "release_compile_wave.apply",
+      "count": 2,
+      "median_age_seconds": 9.654542,
+      "pids": [
+        14904,
+        23940
+      ],
+      "methods": [
+        "historical_hold_interval_inference"
+      ]
+    },
+    {
+      "owner": "terminal_worker.claim_atomic:T5",
+      "count": 2,
+      "median_age_seconds": 4.636105,
+      "pids": [
+        31392
+      ],
+      "methods": [
+        "historical_hold_interval_inference"
+      ]
+    },
+    {
+      "owner": "dl089_matrix_service:5c1085ce-b76a-594d-973e-6080e27711b1",
+      "count": 1,
+      "median_age_seconds": 2.940279,
+      "pids": [
+        888
+      ],
+      "methods": [
+        "historical_hold_interval_inference"
+      ]
+    },
+    {
+      "owner": "dl089_matrix_service:9102ff97-a450-5cd3-8e13-0f61144ffa5d",
+      "count": 1,
+      "median_age_seconds": 3.02761,
+      "pids": [
+        8688
+      ],
+      "methods": [
+        "historical_hold_interval_inference"
+      ]
+    }
+  ],
+  "observations": [
+    {
+      "at_utc": "2026-09-05T06:18:22.253524+00:00",
+      "terminal": "T3",
+      "owner": "terminal_worker.claim_atomic:T10",
+      "pid": 22912,
+      "age_seconds": 4.636961,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T06:19:26.324575+00:00",
+      "terminal": "T7",
+      "owner": "terminal_worker.claim_atomic:T3",
+      "pid": 24408,
+      "age_seconds": 5.042933,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T06:19:29.921231+00:00",
+      "terminal": "T9",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T06:19:31.789790+00:00",
+      "terminal": "T4",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T06:20:51.555540+00:00",
+      "terminal": "T10",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T06:21:04.859140+00:00",
+      "terminal": "T4",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T06:21:05.262399+00:00",
+      "terminal": "T6",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T06:21:05.310524+00:00",
+      "terminal": "T1",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T06:21:05.372686+00:00",
+      "terminal": "T7",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T06:21:06.398364+00:00",
+      "terminal": "T5",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T06:22:29.368961+00:00",
+      "terminal": "T4",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T06:23:05.016534+00:00",
+      "terminal": "T3",
+      "owner": "terminal_worker.claim_atomic:T7",
+      "pid": 6132,
+      "age_seconds": 3.274522,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T06:23:06.132964+00:00",
+      "terminal": "T5",
+      "owner": "terminal_worker.claim_atomic:T7",
+      "pid": 6132,
+      "age_seconds": 4.390952,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T06:24:20.183949+00:00",
+      "terminal": "T3",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T06:26:53.801959+00:00",
+      "terminal": "T6",
+      "owner": "terminal_worker.claim_atomic:T7",
+      "pid": 6132,
+      "age_seconds": 0.059145,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T06:29:51.918009+00:00",
+      "terminal": "T4",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T06:31:01.092845+00:00",
+      "terminal": "T4",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T06:40:31.658528+00:00",
+      "terminal": "T10",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T06:45:22.480786+00:00",
+      "terminal": "T5",
+      "owner": "terminal_worker.claim_atomic:T4",
+      "pid": 29244,
+      "age_seconds": 1.249383,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T06:45:29.885773+00:00",
+      "terminal": "T1",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T06:47:12.215197+00:00",
+      "terminal": "T2",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T06:48:16.219178+00:00",
+      "terminal": "T1",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T06:48:17.542132+00:00",
+      "terminal": "T3",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T06:51:17.932190+00:00",
+      "terminal": "T1",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T06:51:22.776029+00:00",
+      "terminal": "T4",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T06:53:11.745807+00:00",
+      "terminal": "T6",
+      "owner": "release_compile_wave.apply",
+      "pid": 14904,
+      "age_seconds": 18.764466,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T06:53:20.143735+00:00",
+      "terminal": "T10",
+      "owner": "release_compile_wave.apply",
+      "pid": 23940,
+      "age_seconds": 0.544619,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T06:54:04.431247+00:00",
+      "terminal": "T5",
+      "owner": "terminal_worker.claim_atomic:T10",
+      "pid": 22912,
+      "age_seconds": 3.1176,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T06:54:40.596887+00:00",
+      "terminal": "T6",
+      "owner": "terminal_worker.claim_atomic:T2",
+      "pid": 26424,
+      "age_seconds": 1.940062,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T06:54:44.669480+00:00",
+      "terminal": "T10",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T06:54:55.982248+00:00",
+      "terminal": "T4",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T06:57:41.180859+00:00",
+      "terminal": "T10",
+      "owner": "terminal_worker.claim_atomic:T1",
+      "pid": 7536,
+      "age_seconds": 2.305357,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T06:59:34.386102+00:00",
+      "terminal": "T5",
+      "owner": "terminal_worker.claim_atomic:T6",
+      "pid": 19320,
+      "age_seconds": 3.483402,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T07:00:30.367911+00:00",
+      "terminal": "T3",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T07:00:34.183843+00:00",
+      "terminal": "T1",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T07:01:21.417095+00:00",
+      "terminal": "T10",
+      "owner": "terminal_worker.claim_atomic:T3",
+      "pid": 24408,
+      "age_seconds": 4.592044,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T07:01:26.992906+00:00",
+      "terminal": "T5",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T07:02:13.917246+00:00",
+      "terminal": "T7",
+      "owner": "terminal_worker.claim_atomic:T4",
+      "pid": 29244,
+      "age_seconds": 2.135957,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T07:02:14.389331+00:00",
+      "terminal": "T1",
+      "owner": "terminal_worker.claim_atomic:T4",
+      "pid": 29244,
+      "age_seconds": 2.608042,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T07:03:15.076178+00:00",
+      "terminal": "T1",
+      "owner": "terminal_worker.claim_atomic:T7",
+      "pid": 6132,
+      "age_seconds": 2.010251,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T07:03:20.364833+00:00",
+      "terminal": "T10",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T07:04:51.687914+00:00",
+      "terminal": "T5",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T07:07:38.040053+00:00",
+      "terminal": "T10",
+      "owner": "terminal_worker.claim_atomic:T7",
+      "pid": 6132,
+      "age_seconds": 4.65099,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T07:07:38.622708+00:00",
+      "terminal": "T5",
+      "owner": "terminal_worker.claim_atomic:T7",
+      "pid": 6132,
+      "age_seconds": 5.233645,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T07:09:29.960140+00:00",
+      "terminal": "T1",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T07:10:11.668172+00:00",
+      "terminal": "T3",
+      "owner": "terminal_worker.claim_atomic:T1",
+      "pid": 7536,
+      "age_seconds": 3.091469,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T07:10:13.114951+00:00",
+      "terminal": "T2",
+      "owner": "terminal_worker.claim_atomic:T1",
+      "pid": 7536,
+      "age_seconds": 4.538248,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T07:10:20.201656+00:00",
+      "terminal": "T10",
+      "owner": "terminal_worker.claim_atomic:T1",
+      "pid": 7536,
+      "age_seconds": 3.771145,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T07:12:36.339396+00:00",
+      "terminal": "T3",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T07:13:25.559481+00:00",
+      "terminal": "T2",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T07:17:00.362207+00:00",
+      "terminal": "T5",
+      "owner": "terminal_worker.claim_atomic:T1",
+      "pid": 7536,
+      "age_seconds": 3.116721,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T07:18:39.502744+00:00",
+      "terminal": "T6",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T07:22:35.440631+00:00",
+      "terminal": "T4",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T07:22:37.087078+00:00",
+      "terminal": "T7",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T07:25:17.481559+00:00",
+      "terminal": "T7",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T07:25:19.158753+00:00",
+      "terminal": "T2",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T07:28:21.647883+00:00",
+      "terminal": "T10",
+      "owner": "terminal_worker.claim_atomic:T6",
+      "pid": 19320,
+      "age_seconds": 0.121502,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T07:28:30.598246+00:00",
+      "terminal": "T3",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T07:29:27.423571+00:00",
+      "terminal": "T10",
+      "owner": "dl089_matrix_service:5c1085ce-b76a-594d-973e-6080e27711b1",
+      "pid": 888,
+      "age_seconds": 2.940279,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T07:29:30.142890+00:00",
+      "terminal": "T4",
+      "owner": "dl089_matrix_service:a8b2dd82-ab11-5df9-a68b-f6da871d2995",
+      "pid": 888,
+      "age_seconds": 2.449664,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T07:30:23.103563+00:00",
+      "terminal": "T5",
+      "owner": "terminal_worker.claim_atomic:T6",
+      "pid": 19320,
+      "age_seconds": 1.367996,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T07:31:15.176203+00:00",
+      "terminal": "T4",
+      "owner": "terminal_worker.claim_atomic:T5",
+      "pid": 31392,
+      "age_seconds": 4.183361,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T07:33:27.040379+00:00",
+      "terminal": "T10",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T07:34:20.591398+00:00",
+      "terminal": "T4",
+      "owner": "dl089_matrix_service:9102ff97-a450-5cd3-8e13-0f61144ffa5d",
+      "pid": 8688,
+      "age_seconds": 3.02761,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T07:35:10.591987+00:00",
+      "terminal": "T5",
+      "owner": "terminal_worker.claim_atomic:T4",
+      "pid": 29244,
+      "age_seconds": 5.282063,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T07:37:37.038569+00:00",
+      "terminal": "T4",
+      "owner": "terminal_worker.claim_atomic:T5",
+      "pid": 31392,
+      "age_seconds": 5.08885,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T07:38:22.383067+00:00",
+      "terminal": "T7",
+      "owner": "terminal_worker.claim_atomic:T4",
+      "pid": 29244,
+      "age_seconds": 0.566992,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T07:39:16.167049+00:00",
+      "terminal": "T2",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T07:43:06.529885+00:00",
+      "terminal": "T10",
+      "owner": "terminal_worker.claim_atomic:T6",
+      "pid": 19320,
+      "age_seconds": 4.514793,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T07:43:06.939939+00:00",
+      "terminal": "T2",
+      "owner": "terminal_worker.claim_atomic:T6",
+      "pid": 19320,
+      "age_seconds": 0.263689,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T07:43:10.856591+00:00",
+      "terminal": "T5",
+      "owner": "terminal_worker.claim_atomic:T6",
+      "pid": 19320,
+      "age_seconds": 0.290758,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T07:44:08.356555+00:00",
+      "terminal": "T10",
+      "owner": "dl089_matrix_service:a8b2dd82-ab11-5df9-a68b-f6da871d2995",
+      "pid": 30952,
+      "age_seconds": 2.512049,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T07:45:19.505339+00:00",
+      "terminal": "T10",
+      "owner": "terminal_worker.claim_atomic:T6",
+      "pid": 19320,
+      "age_seconds": 2.806121,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T07:45:22.277091+00:00",
+      "terminal": "T7",
+      "owner": "terminal_worker.claim_atomic:T6",
+      "pid": 19320,
+      "age_seconds": 5.577873,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T07:45:22.523236+00:00",
+      "terminal": "T5",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T07:45:23.163908+00:00",
+      "terminal": "T1",
+      "owner": "terminal_worker.claim_atomic:T6",
+      "pid": 19320,
+      "age_seconds": 0.384502,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T07:45:25.383366+00:00",
+      "terminal": "T2",
+      "owner": "terminal_worker.claim_atomic:T6",
+      "pid": 19320,
+      "age_seconds": 2.60396,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T07:48:57.859386+00:00",
+      "terminal": "T1",
+      "owner": "dl089_matrix_service:40e69c26-1ddb-5728-99a1-02b08f83c284",
+      "pid": 19776,
+      "age_seconds": 0.317943,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T07:48:58.335630+00:00",
+      "terminal": "T5",
+      "owner": "dl089_matrix_service:40e69c26-1ddb-5728-99a1-02b08f83c284",
+      "pid": 19776,
+      "age_seconds": 0.794187,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T07:48:58.372727+00:00",
+      "terminal": "T7",
+      "owner": "dl089_matrix_service:40e69c26-1ddb-5728-99a1-02b08f83c284",
+      "pid": 19776,
+      "age_seconds": 0.831284,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T07:48:59.239737+00:00",
+      "terminal": "T6",
+      "owner": "dl089_matrix_service:40e69c26-1ddb-5728-99a1-02b08f83c284",
+      "pid": 19776,
+      "age_seconds": 1.698294,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T07:50:29.780753+00:00",
+      "terminal": "T1",
+      "owner": "terminal_worker.claim_atomic:T2",
+      "pid": 26424,
+      "age_seconds": 2.620954,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T07:50:33.004338+00:00",
+      "terminal": "T6",
+      "owner": "terminal_worker.claim_atomic:T4",
+      "pid": 29244,
+      "age_seconds": 2.46287,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T07:51:29.481000+00:00",
+      "terminal": "T10",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T07:51:29.737668+00:00",
+      "terminal": "T2",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T07:53:26.703737+00:00",
+      "terminal": "T3",
+      "owner": "terminal_worker.claim_atomic:T10",
+      "pid": 22912,
+      "age_seconds": 4.302105,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T07:55:00.309983+00:00",
+      "terminal": "T3",
+      "owner": "terminal_worker.claim_atomic:T10",
+      "pid": 22912,
+      "age_seconds": 18.729774,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T07:55:13.180487+00:00",
+      "terminal": "T2",
+      "owner": "terminal_worker.claim_atomic:T10",
+      "pid": 22912,
+      "age_seconds": 10.425644,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T07:57:34.645788+00:00",
+      "terminal": "T6",
+      "owner": "terminal_worker.claim_atomic:T1",
+      "pid": 7536,
+      "age_seconds": 20.850791,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T07:57:43.680012+00:00",
+      "terminal": "T7",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T07:59:44.206454+00:00",
+      "terminal": "T3",
+      "owner": "terminal_worker.claim_atomic:T6",
+      "pid": 19320,
+      "age_seconds": 3.281862,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T07:59:50.348845+00:00",
+      "terminal": "T2",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T08:02:22.414784+00:00",
+      "terminal": "T2",
+      "owner": "terminal_worker.claim_atomic:T10",
+      "pid": 22912,
+      "age_seconds": 2.739048,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T08:02:22.729144+00:00",
+      "terminal": "T6",
+      "owner": "terminal_worker.claim_atomic:T10",
+      "pid": 22912,
+      "age_seconds": 3.053408,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T08:02:29.462485+00:00",
+      "terminal": "T4",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T08:03:32.984217+00:00",
+      "terminal": "T5",
+      "owner": "terminal_worker.claim_atomic:T6",
+      "pid": 19320,
+      "age_seconds": 1.423828,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T08:03:37.797756+00:00",
+      "terminal": "T4",
+      "owner": "terminal_worker.claim_atomic:T2",
+      "pid": 26424,
+      "age_seconds": 1.459811,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T08:04:19.242859+00:00",
+      "terminal": "T6",
+      "owner": "dl089_matrix_service:d824e8cb-8397-5aa3-b6fa-fec9b0c375eb",
+      "pid": 26084,
+      "age_seconds": 3.425625,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T08:04:19.266422+00:00",
+      "terminal": "T1",
+      "owner": "dl089_matrix_service:d824e8cb-8397-5aa3-b6fa-fec9b0c375eb",
+      "pid": 26084,
+      "age_seconds": 3.449188,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T08:04:19.325986+00:00",
+      "terminal": "T3",
+      "owner": "dl089_matrix_service:d824e8cb-8397-5aa3-b6fa-fec9b0c375eb",
+      "pid": 26084,
+      "age_seconds": 3.508752,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T08:05:56.328747+00:00",
+      "terminal": "T4",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T08:06:59.705205+00:00",
+      "terminal": "T4",
+      "owner": "terminal_worker.claim_atomic:T7",
+      "pid": 6132,
+      "age_seconds": 2.569817,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T08:07:48.679196+00:00",
+      "terminal": "T5",
+      "owner": "terminal_worker.claim_atomic:T3",
+      "pid": 24408,
+      "age_seconds": 0.966528,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T08:07:58.763760+00:00",
+      "terminal": "T1",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T08:09:14.119986+00:00",
+      "terminal": "T4",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T08:09:16.496536+00:00",
+      "terminal": "T5",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T08:09:39.449203+00:00",
+      "terminal": "T10",
+      "owner": "terminal_worker.claim_atomic:T7",
+      "pid": 6132,
+      "age_seconds": 2.976437,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T08:10:12.519610+00:00",
+      "terminal": "T3",
+      "owner": "terminal_worker.claim_atomic:T4",
+      "pid": 29244,
+      "age_seconds": 4.523965,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T08:11:21.768238+00:00",
+      "terminal": "T5",
+      "owner": "terminal_worker.claim_atomic:T3",
+      "pid": 24408,
+      "age_seconds": 2.260139,
+      "method": "historical_hold_interval_inference"
+    },
+    {
+      "at_utc": "2026-09-05T08:15:27.120060+00:00",
+      "terminal": "T10",
+      "owner": "terminal_worker.claim_atomic:T6",
+      "pid": 19320,
+      "age_seconds": 0.004012,
+      "method": "historical_hold_interval_inference"
+    }
+  ],
+  "post_deployment_window_proven": false,
+  "limits": "Legacy claim_declined was throttled at 60s per reason per process. Counts are logged declines, not all attempts. Interval joins are inference. Deployment and log coverage require separate receipts.",
+  "sources": [
+    {
+      "path": "D:\\QM\\reports\\state\\factory_mutation_lock_holds.jsonl",
+      "sha256_of_bytes_read": "20b496dc20a87a9f69eab1f6cd80c1d4f6c15f72acc1fc110f24129e9887c817",
+      "non_json_lines": 13
+    },
+    {
+      "path": "D:\\QM\\strategy_farm\\logs\\terminal_worker_T1.log",
+      "sha256_of_bytes_read": "227ae59e9d57a2e054f1b09ca829839e7821904540b4bf93427d31e2d49ea415",
+      "non_json_lines": 0
+    },
+    {
+      "path": "D:\\QM\\strategy_farm\\logs\\terminal_worker_T10.log",
+      "sha256_of_bytes_read": "1568fab6f3c06cf63d4b11e4b56909bb53782f5ef569b43d6fb865208f160275",
+      "non_json_lines": 0
+    },
+    {
+      "path": "D:\\QM\\strategy_farm\\logs\\terminal_worker_T2.log",
+      "sha256_of_bytes_read": "5a94bb00a35dd75b4767b6dbbc3c1d4014d4f1cc0b880dde9ae64cf2e3ef2686",
+      "non_json_lines": 0
+    },
+    {
+      "path": "D:\\QM\\strategy_farm\\logs\\terminal_worker_T3.log",
+      "sha256_of_bytes_read": "abd81a41dc5709e9627b9966e407fbbd099d469065f1a265b55329cb8970c63a",
+      "non_json_lines": 0
+    },
+    {
+      "path": "D:\\QM\\strategy_farm\\logs\\terminal_worker_T4.log",
+      "sha256_of_bytes_read": "4b64eb1c96bbf47f81f849cd1394c66d7392555b465289cbec2df017530d9492",
+      "non_json_lines": 0
+    },
+    {
+      "path": "D:\\QM\\strategy_farm\\logs\\terminal_worker_T5.log",
+      "sha256_of_bytes_read": "185e9754f19eb08e3bfaf141e47ebbe74070ec37fc26655aac4b12356953aac5",
+      "non_json_lines": 0
+    },
+    {
+      "path": "D:\\QM\\strategy_farm\\logs\\terminal_worker_T6.log",
+      "sha256_of_bytes_read": "4e31f206bea5ba634c93d58383b807912f4b093e5eb88888028a2da433a14d5c",
+      "non_json_lines": 0
+    },
+    {
+      "path": "D:\\QM\\strategy_farm\\logs\\terminal_worker_T7.log",
+      "sha256_of_bytes_read": "c4e1b0aa8488afd8b871c94b9f6f5ea1e21f9d806fcd541dd92b3c06bc75aedd",
+      "non_json_lines": 0
+    },
+    {
+      "path": "D:\\QM\\strategy_farm\\logs\\terminal_worker_T8.log",
+      "sha256_of_bytes_read": "745632592c846171a4c7826536d116f25d00237b26923d23ff4e8c1d00e6e68d",
+      "non_json_lines": 0
+    },
+    {
+      "path": "D:\\QM\\strategy_farm\\logs\\terminal_worker_T9.log",
+      "sha256_of_bytes_read": "e946d669d0d90f87c991278c6640e086de1bb30e62e5ffb7ece20fbb0b44372b",
+      "non_json_lines": 0
+    }
+  ]
+}

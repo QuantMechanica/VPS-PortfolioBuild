@@ -1,0 +1,544 @@
+diff --git a/tools/strategy_farm/factory_mutation_lock.py b/tools/strategy_farm/factory_mutation_lock.py
+index 0856681900..7d267526ac 100644
+--- a/tools/strategy_farm/factory_mutation_lock.py
++++ b/tools/strategy_farm/factory_mutation_lock.py
+@@ -15,6 +15,7 @@ import hashlib
+ import json
+ import os
+ from pathlib import Path
++import sys
+ import time
+ import uuid
+ 
+@@ -512,6 +513,7 @@ class FactoryMutationLock:
+         self.release_status: str | None = None
+         self.reap_status: str | None = None
+         self.telemetry_error: str | None = None
++        self._owner_metadata: dict[str, object] = {}
+ 
+     @property
+     def release_succeeded(self) -> bool:
+@@ -541,7 +543,13 @@ class FactoryMutationLock:
+             "owner": self.owner,
+             "nonce": self.nonce,
+             "created_at": _utc_now().isoformat(),
++            "exe": Path(sys.executable).name,
++            "argv0": Path(sys.argv[0]).name if sys.argv else "",
++            "stage": _PUMP_STAGE.get() or self.owner.split(":", 1)[0],
++            "reason": self.owner,
+         }
++        record["acquired_at"] = record["created_at"]
++        self._owner_metadata = {key: record[key] for key in ("exe", "argv0", "stage", "reason")}
+         self._record_bytes = (json.dumps(record, sort_keys=True) + "\n").encode("utf-8")
+         try:
+             _write_all(self._fd, self._record_bytes)
+@@ -576,6 +584,7 @@ class FactoryMutationLock:
+             "hold_seconds": round(max(0.0, hold_seconds), 3),
+             "critical_hold_seconds": self.critical_hold_seconds,
+         }
++        payload.update(self._owner_metadata)
+         if self._acquired_at is not None:
+             payload["acquired_at_utc"] = self._acquired_at.isoformat()
+         if self.release_status is not None:
+diff --git a/tools/strategy_farm/mutation_lock_attribution.py b/tools/strategy_farm/mutation_lock_attribution.py
+new file mode 100644
+index 0000000000..56c8a445c9
+--- /dev/null
++++ b/tools/strategy_farm/mutation_lock_attribution.py
+@@ -0,0 +1,131 @@
++"""Read-only busy-claim attribution over a frozen UTC observation window.
++
++Historical declines are joined to recorded hold intervals, explicitly as an
++inference. New claim_lock_busy observations take precedence over the companion
++throttled claim_declined lines, so the same attempt is not counted twice.
++"""
++from __future__ import annotations
++
++import argparse
++from bisect import bisect_right
++import datetime as dt
++import hashlib
++import json
++import os
++from pathlib import Path
++import statistics
++
++
++def timestamp(value):
++    try:
++        result = dt.datetime.fromisoformat(str(value).replace("Z", "+00:00"))
++        return result.astimezone(dt.UTC) if result.tzinfo else None
++    except (ValueError, TypeError):
++        return None
++
++
++def read_rows(path):
++    digest = hashlib.sha256()
++    rows = []
++    malformed = 0
++    with path.open("rb") as handle:
++        for raw in handle:
++            digest.update(raw)
++            try:
++                row = json.loads(raw)
++                if isinstance(row, dict):
++                    rows.append(row)
++            except (ValueError, UnicodeError):
++                malformed += 1
++    return rows, {"path": str(path), "sha256_of_bytes_read": digest.hexdigest(),
++                  "non_json_lines": malformed}
++
++
++def summarize(holds, events, *, start, end):
++    acquisitions, releases = {}, {}
++    for row in holds:
++        nonce = row.get("nonce")
++        at = timestamp(row.get("timestamp_utc"))
++        if not nonce or at is None:
++            continue
++        if row.get("event") == "ACQUIRED":
++            acquisitions[nonce] = (timestamp(row.get("acquired_at_utc")) or at, row)
++        elif row.get("event") == "RELEASED":
++            releases[nonce] = at
++    intervals = sorted(((at, releases.get(nonce), row) for nonce, (at, row) in acquisitions.items()), key=lambda item: item[0])
++    starts = [item[0] for item in intervals]
++    window_events = [(timestamp(r.get("at_utc")), r) for r in events
++                     if r.get("event") == "claim_lock_busy" or
++                     (r.get("event") == "claim_declined" and r.get("reason") == "factory_mutation_lock_busy")]
++    window_events = [(at, r) for at, r in window_events if at is not None and start <= at < end]
++    upgraded = {}
++    for at, row in window_events:
++        if row["event"] == "claim_lock_busy":
++            terminal = row.get("terminal")
++            upgraded[terminal] = min(at, upgraded.get(terminal, at))
++    groups, details = {}, []
++    for at, row in sorted(window_events, key=lambda x: x[0]):
++        if row["event"] == "claim_declined" and at >= upgraded.get(row.get("terminal"), end):
++            continue
++        observed = row.get("lock_owner") or {}
++        owner, age = observed.get("owner"), observed.get("age_seconds")
++        method = "direct_busy_observation" if owner else "unattributed"
++        pid = observed.get("pid")
++        # An unknown new observation remains unknown; do not convert a
++        # timed-out read into a claimed measurement after the fact.
++        if not owner and row["event"] == "claim_declined":
++            lock_path = row.get("lock")
++            candidates = [(begin, record) for begin, finish, record in intervals[:bisect_right(starts, at)]
++                          if finish is not None and at < finish and
++                          (not lock_path or os.path.normcase(str(record.get("lock_path"))) == os.path.normcase(str(lock_path)))]
++            if len(candidates) == 1:
++                begin, record = candidates[0]
++                owner, pid = record.get("owner"), record.get("pid")
++                age = (at - begin).total_seconds()
++                method = "historical_hold_interval_inference"
++        owner = str(owner or "UNKNOWN")
++        group = groups.setdefault(owner, {"owner": owner, "count": 0, "ages": [], "pids": set(), "methods": set()})
++        group["count"] += 1
++        if isinstance(age, (int, float)):
++            group["ages"].append(age)
++        if pid is not None:
++            group["pids"].add(pid)
++        group["methods"].add(method)
++        details.append({"at_utc": at.isoformat(), "terminal": row.get("terminal"),
++                        "owner": owner, "pid": pid, "age_seconds": age, "method": method})
++    table = [{"owner": g["owner"], "count": g["count"],
++              "median_age_seconds": round(statistics.median(g["ages"]), 6) if g["ages"] else None,
++              "pids": sorted(g["pids"]), "methods": sorted(g["methods"])} for g in groups.values()]
++    return {"schema": "qm.mutation-lock-attribution/v1", "window_start_utc": start.isoformat(),
++            "window_end_utc": end.isoformat(), "window_hours": (end-start).total_seconds()/3600,
++            "busy_event_count": len(details), "owner_table": sorted(table, key=lambda x: (-x["count"], x["owner"])),
++            "observations": details, "post_deployment_window_proven": False,
++            "limits": "Legacy claim_declined was throttled at 60s per reason per process. Counts are logged declines, not all attempts. Interval joins are inference. Deployment and log coverage require separate receipts."}
++
++
++def main():
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument("--holds", type=Path, default=Path("D:/QM/reports/state/factory_mutation_lock_holds.jsonl"))
++    parser.add_argument("--logs-dir", type=Path, default=Path("D:/QM/strategy_farm/logs"))
++    parser.add_argument("--hours", type=float, default=2)
++    parser.add_argument("--end-utc", default=dt.datetime.now(dt.UTC).isoformat())
++    parser.add_argument("--output", type=Path, required=True)
++    args = parser.parse_args()
++    end = timestamp(args.end_utc)
++    if end is None or not 0 < args.hours <= 24:
++        parser.error("timezone-aware end and 0 < hours <= 24 required")
++    holds, receipt = read_rows(args.holds)
++    sources, events = [receipt], []
++    for path in sorted(args.logs_dir.glob("terminal_worker_T*.log")):
++        rows, receipt = read_rows(path)
++        events.extend(rows)
++        sources.append(receipt)
++    result = summarize(holds, events, start=end-dt.timedelta(hours=args.hours), end=end)
++    result["sources"] = sources
++    args.output.parent.mkdir(parents=True, exist_ok=True)
++    args.output.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
++    print(json.dumps({k: v for k, v in result.items() if k not in ("observations", "sources")}, indent=2))
++
++
++if __name__ == "__main__":
++    main()
+diff --git a/tools/strategy_farm/mutation_lock_observation.py b/tools/strategy_farm/mutation_lock_observation.py
+new file mode 100644
+index 0000000000..6aded7737b
+--- /dev/null
++++ b/tools/strategy_farm/mutation_lock_observation.py
+@@ -0,0 +1,107 @@
++"""Bounded diagnostic reads; never an input to lock or claim decisions.
++
++The Windows lock denies sharing. Its existing ACQUIRED/RELEASED journal is a
++best-effort fallback, explicitly labeled as an observation, not current-owner
++proof. One daemon reader per process prevents a slow filesystem from queuing
++threads or making the claim path wait for I/O without a deadline.
++"""
++from __future__ import annotations
++
++import datetime as dt
++import json
++import os
++from pathlib import Path
++import threading
++import time
++
++from factory_mutation_lock import DEFAULT_PATH, DEFAULT_HOLD_TELEMETRY_PATH
++
++MAX_TAIL_BYTES = 64 * 1024
++READ_BUDGET_SECONDS = 0.035
++_IN_FLIGHT = threading.Lock()
++
++
++def _identity(path: str | Path) -> str:
++    return os.path.normcase(os.path.abspath(path))
++
++
++def _owner(record: dict, source: str) -> dict:
++    stamp = record.get("acquired_at") or record.get("created_at") or record.get("acquired_at_utc")
++    at = dt.datetime.fromisoformat(str(stamp).replace("Z", "+00:00"))
++    if at.tzinfo is None or not isinstance(record.get("owner"), str):
++        raise ValueError("unusable owner marker")
++    if type(record.get("pid")) is not int or record["pid"] <= 0:
++        raise ValueError("unusable pid")
++    return {
++        "status": "observed", "source": source, "diagnostic_only": True,
++        "pid": record["pid"], "owner": record["owner"][:512],
++        "nonce": str(record.get("nonce") or "")[:64],
++        "exe": record.get("exe"), "argv0": record.get("argv0"),
++        "stage": record.get("stage"), "reason": record.get("reason"),
++        "acquired_at": at.isoformat(),
++        "age_seconds": round(max(0.0, (dt.datetime.now(dt.UTC) - at).total_seconds()), 6),
++    }
++
++
++def _read_owner(path: Path) -> dict:
++    try:
++        with path.open("rb") as handle:
++            raw = handle.read(4097)
++        if len(raw) <= 4096:
++            return _owner(json.loads(raw), "lock_record")
++    except FileNotFoundError:
++        return {"status": "lock_absent", "diagnostic_only": True}
++    except (OSError, ValueError, TypeError, AttributeError):
++        pass
++    journal = (DEFAULT_HOLD_TELEMETRY_PATH if path.parent == DEFAULT_PATH.parent
++               else path.with_name(path.name + ".holds.jsonl"))
++    with journal.open("rb") as handle:
++        handle.seek(0, os.SEEK_END)
++        offset = max(0, handle.tell() - MAX_TAIL_BYTES)
++        handle.seek(offset)
++        lines = handle.read(MAX_TAIL_BYTES).splitlines()
++    if offset:
++        lines = lines[1:]
++    released: set[str] = set()
++    for line in reversed(lines):
++        try:
++            record = json.loads(line)
++            if _identity(record.get("lock_path", "")) != _identity(path):
++                continue
++            nonce = record.get("nonce")
++            if not isinstance(nonce, str) or not nonce:
++                continue
++            if record.get("event") == "RELEASED":
++                released.add(nonce)
++            elif record.get("event") == "ACQUIRED" and nonce not in released:
++                return _owner(record, "unreleased_hold_journal_receipt")
++        except (ValueError, TypeError, AttributeError):
++            continue
++    return {"status": "no_owner_in_bounded_tail", "diagnostic_only": True}
++
++
++def observe_lock_owner(path: str | Path = DEFAULT_PATH) -> dict:
++    """Wait at most 35 ms for one capped read; no queue and no process probes."""
++    started = time.monotonic()
++    if not _IN_FLIGHT.acquire(blocking=False):
++        return {"status": "reader_busy", "diagnostic_only": True}
++    done = threading.Event()
++    result: dict = {}
++
++    def read() -> None:
++        try:
++            result.update(_read_owner(Path(path)))
++        except Exception as exc:
++            result.update(status="unavailable", error=type(exc).__name__, diagnostic_only=True)
++        finally:
++            _IN_FLIGHT.release()
++            done.set()
++
++    try:
++        threading.Thread(target=read, name="qm-lock-observer", daemon=True).start()
++    except Exception as exc:
++        _IN_FLIGHT.release()
++        return {"status": "reader_start_failed", "error": type(exc).__name__, "diagnostic_only": True}
++    if not done.wait(max(0.0, READ_BUDGET_SECONDS - (time.monotonic() - started))):
++        return {"status": "read_timeout", "diagnostic_only": True, "budget_ms": 35}
++    return {**result, "read_elapsed_ms": round((time.monotonic() - started) * 1000, 3)}
+diff --git a/tools/strategy_farm/terminal_worker.py b/tools/strategy_farm/terminal_worker.py
+index 046d6767ad..248a1a291f 100644
+--- a/tools/strategy_farm/terminal_worker.py
++++ b/tools/strategy_farm/terminal_worker.py
+@@ -56,6 +56,7 @@ import opt_census_pruning
+ import opt_census_select
+ from framework.scripts._phase_utils import cold_cache_summary_signature
+ from factory_mutation_lock import FactoryMutationLock, path_for_factory_flag
++from mutation_lock_observation import observe_lock_owner
+ try:
+     from sqlite_busy import (
+         BUSY_TIMEOUT_MS,
+@@ -5449,6 +5450,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
+                         "claimed": False,
+                         "reason": "factory_mutation_lock_busy",
+                         "lock": str(mutation_lock_path),
++                        "lock_owner": observe_lock_owner(mutation_lock_path),
+                     }
+                 time.sleep(FACTORY_ADMISSION_LOCK_POLL_SECONDS)
+             except OSError as exc:
+@@ -5467,6 +5469,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
+                             "claimed": False,
+                             "reason": "factory_mutation_lock_busy",
+                             "lock": str(mutation_lock_path),
++                            "lock_owner": observe_lock_owner(mutation_lock_path),
+                         }
+                     time.sleep(FACTORY_ADMISSION_LOCK_POLL_SECONDS)
+                     continue
+@@ -7202,6 +7205,7 @@ def _reserve_q09_helper_terminals(
+             "enabled": True,
+             "helper_terminals": [],
+             "reason": "factory_mutation_lock_busy",
++            "lock_owner": observe_lock_owner(lock_path),
+         }
+     try:
+         if (root / "state" / "FACTORY_OFF.flag").exists():
+@@ -7345,6 +7349,7 @@ def _release_q09_helper_terminals(root: Path, lease: dict[str, Any] | None) -> N
+                         {
+                             "event": "q09_helper_release_deferred",
+                             "reason": "factory_mutation_lock_busy",
++                            "lock_owner": observe_lock_owner(lock_path),
+                             "terminals": lease.get("helper_terminals"),
+                         },
+                         sort_keys=True,
+@@ -10773,6 +10778,18 @@ def _pause_after_unclaimed(claim: dict[str, Any], terminal: str) -> None:
+         time.sleep(POLL_SLEEP_SECONDS + random.uniform(0, 5))
+         return
+     reason = str(claim.get("reason") or "unknown")
++    lock_owner = claim.get("lock_owner")
++    if reason == "factory_mutation_lock_busy":
++        if lock_owner is None:
++            lock_owner = observe_lock_owner(claim["lock"]) if claim.get("lock") else {
++                "status": "lock_path_missing", "diagnostic_only": True,
++            }
++        # JSONL event for every busy claim, independent of the existing
++        # human-log throttle. No SQLite write while its mutation lock is busy.
++        print(json.dumps({
++            "event": "claim_lock_busy", "at_utc": datetime.now(timezone.utc).isoformat(),
++            "terminal": terminal, "lock": claim.get("lock"), "lock_owner": lock_owner,
++        }), flush=True)
+     now_mono = time.monotonic()
+     interval = 300.0 if reason == "no_pending_claimable" else 60.0
+     if now_mono - _UNCLAIMED_DECLINE_LOG_LAST.get(reason, 0.0) >= interval:
+@@ -10783,6 +10800,7 @@ def _pause_after_unclaimed(claim: dict[str, Any], terminal: str) -> None:
+             "terminal": terminal,
+             "reason": reason,
+             "lock": claim.get("lock"),
++            "lock_owner": lock_owner,
+             "history_skipped": len(claim.get("history_skipped") or []),
+             "launch_cooldown_skipped": len(claim.get("launch_cooldown_skipped") or []),
+         }), flush=True)
+diff --git a/tools/strategy_farm/tests/test_mutation_lock_attribution.py b/tools/strategy_farm/tests/test_mutation_lock_attribution.py
+new file mode 100644
+index 0000000000..1f8e30f256
+--- /dev/null
++++ b/tools/strategy_farm/tests/test_mutation_lock_attribution.py
+@@ -0,0 +1,40 @@
++import datetime as dt
++from pathlib import Path
++import sys
++
++sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
++from mutation_lock_attribution import summarize
++
++
++def test_historical_intervals_unknowns_and_new_event_deduplication():
++    start = dt.datetime(2026, 9, 5, tzinfo=dt.UTC)
++    stamp = lambda seconds: (start + dt.timedelta(seconds=seconds)).isoformat()
++    holds = [
++        {"event": "ACQUIRED", "timestamp_utc": stamp(0), "nonce": "a", "owner": "worker:T3", "pid": 3},
++        {"event": "RELEASED", "timestamp_utc": stamp(10), "nonce": "a"},
++    ]
++    events = [
++        {"event": "claim_declined", "reason": "factory_mutation_lock_busy", "at_utc": stamp(2), "terminal": "T1"},
++        {"event": "claim_declined", "reason": "factory_mutation_lock_busy", "at_utc": stamp(11), "terminal": "T1"},
++        {"event": "claim_lock_busy", "at_utc": stamp(20), "terminal": "T1", "lock_owner": {"owner": "purge", "age_seconds": 4, "pid": 2}},
++        {"event": "claim_declined", "reason": "factory_mutation_lock_busy", "at_utc": stamp(20), "terminal": "T1"},
++        {"event": "claim_lock_busy", "at_utc": stamp(21), "terminal": "T1", "lock_owner": {"status": "read_timeout"}},
++    ]
++    result = summarize(holds, events, start=start, end=start+dt.timedelta(hours=2))
++    assert result["busy_event_count"] == 4
++    table = {row["owner"]: row for row in result["owner_table"]}
++    assert table["worker:T3"]["count"] == 1
++    assert table["worker:T3"]["median_age_seconds"] == 2
++    assert table["UNKNOWN"]["count"] == 2
++    assert table["purge"]["count"] == 1
++    assert result["post_deployment_window_proven"] is False
++
++
++def test_ambiguous_overlapping_holders_remain_unknown():
++    start = dt.datetime(2026, 9, 5, tzinfo=dt.UTC)
++    holds = [{"event": event, "timestamp_utc": (start+dt.timedelta(seconds=seconds)).isoformat(),
++              "nonce": nonce, "owner": nonce, "pid": 1}
++             for nonce in ("a", "b") for event, seconds in (("ACQUIRED", 0), ("RELEASED", 10))]
++    event = {"event": "claim_declined", "reason": "factory_mutation_lock_busy", "at_utc": (start+dt.timedelta(seconds=5)).isoformat()}
++    result = summarize(holds, [event], start=start, end=start+dt.timedelta(hours=2))
++    assert result["owner_table"][0]["owner"] == "UNKNOWN"
+diff --git a/tools/strategy_farm/tests/test_mutation_lock_observation.py b/tools/strategy_farm/tests/test_mutation_lock_observation.py
+new file mode 100644
+index 0000000000..1ccfd4095a
+--- /dev/null
++++ b/tools/strategy_farm/tests/test_mutation_lock_observation.py
+@@ -0,0 +1,129 @@
++from __future__ import annotations
++
++import datetime as dt
++import json
++import os
++from pathlib import Path
++import sys
++import threading
++import time
++
++import pytest
++
++sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
++import factory_mutation_lock as locks
++import mutation_lock_observation as observer
++
++
++def marker(owner="fixture", nonce="a"):
++    return {"owner": owner, "pid": os.getpid(), "nonce": nonce,
++            "created_at": dt.datetime.now(dt.UTC).isoformat()}
++
++
++def test_live_exclusive_lock_has_readable_diagnostic_fallback(tmp_path):
++    path = tmp_path / "FACTORY_MUTATION.lock"
++    with locks.pump_stage("dispatch_tick"):
++        with locks.FactoryMutationLock(path, owner="fixture:claim") as lock:
++            record = json.loads(lock._record_bytes)
++            assert record["stage"] == "dispatch_tick"
++            assert record["reason"] == "fixture:claim"
++            assert record["exe"] == Path(sys.executable).name
++            assert record["argv0"] == Path(sys.argv[0]).name
++            assert record["acquired_at"] == record["created_at"]
++            result = observer.observe_lock_owner(path)
++            assert result["status"] == "observed", result
++            assert result["owner"] == "fixture:claim"
++            assert result["nonce"] == lock.nonce
++            if os.name == "nt":
++                assert result["source"] == "unreleased_hold_journal_receipt"
++            with pytest.raises((RuntimeError, OSError)):
++                with locks.FactoryMutationLock(path, owner="competitor"):
++                    pytest.fail("diagnostics must not permit a competing owner")
++    assert observer.observe_lock_owner(path)["status"] == "lock_absent"
++
++
++def test_late_release_of_previous_owner_does_not_hide_successor(tmp_path):
++    path = tmp_path / "FACTORY_MUTATION.lock"
++    path.write_text("invalid", encoding="utf-8")
++    journal = path.with_name(path.name + ".holds.jsonl")
++    old, new = marker("old", "a"), marker("new", "b")
++    records = [{**old, "event": "ACQUIRED"}, {**new, "event": "ACQUIRED"},
++               {**old, "event": "RELEASED"}]
++    journal.write_text("\n".join(json.dumps({**r, "lock_path": str(path)}) for r in records))
++    result = observer.observe_lock_owner(path)
++    assert result["owner"] == "new"
++    assert result["diagnostic_only"] is True
++
++
++def test_released_or_other_lock_is_not_attributed(tmp_path):
++    path = tmp_path / "FACTORY_MUTATION.lock"
++    path.write_text("invalid")
++    journal = path.with_name(path.name + ".holds.jsonl")
++    m = {**marker(), "lock_path": str(path)}
++    rows = [{**m, "event": "ACQUIRED"}, {**m, "event": "RELEASED"},
++            {**marker("other", "b"), "event": "ACQUIRED", "lock_path": str(tmp_path / "other")}]
++    journal.write_text("\n".join(map(json.dumps, rows)))
++    assert observer.observe_lock_owner(path)["status"] == "no_owner_in_bounded_tail"
++
++
++def test_oversized_and_corrupt_tail_is_bounded_and_nonfatal(tmp_path):
++    path = tmp_path / "FACTORY_MUTATION.lock"
++    path.write_text("x" * 5000)
++    journal = path.with_name(path.name + ".holds.jsonl")
++    row = {**marker(), "event": "ACQUIRED", "lock_path": str(path)}
++    journal.write_text("x" * (observer.MAX_TAIL_BYTES * 2) + "\n" + json.dumps(row) + "\n{")
++    assert observer.observe_lock_owner(path)["owner"] == "fixture"
++
++
++def test_slow_filesystem_does_not_queue_readers_or_block_claim_path(monkeypatch):
++    release = threading.Event()
++    finished = threading.Event()
++    calls = []
++
++    def slow(path):
++        calls.append(path)
++        release.wait(2)
++        finished.set()
++        return {"status": "late"}
++
++    monkeypatch.setattr(observer, "_read_owner", slow)
++    started = time.perf_counter()
++    try:
++        result = observer.observe_lock_owner("fixture")
++        elapsed = time.perf_counter() - started
++        assert result["status"] == "read_timeout"
++        assert elapsed < 0.05
++        assert observer.observe_lock_owner("fixture")["status"] == "reader_busy"
++        assert len(calls) == 1
++    finally:
++        release.set()
++        assert finished.wait(2)
++        # The daemon releases its single-flight slot immediately after read.
++        assert observer._IN_FLIGHT.acquire(timeout=2)
++        observer._IN_FLIGHT.release()
++
++
++def test_reader_failure_is_diagnostic_only(monkeypatch):
++    def fail(path):
++        raise PermissionError("fixture")
++    monkeypatch.setattr(observer, "_read_owner", fail)
++    result = observer.observe_lock_owner("fixture")
++    assert result["status"] == "unavailable"
++    assert result["error"] == "PermissionError"
++
++
++def test_every_busy_attempt_emits_event_without_changing_backoff(monkeypatch, capsys):
++    import terminal_worker as worker
++    sleeps = []
++    monkeypatch.setattr(worker.time, "sleep", sleeps.append)
++    monkeypatch.setattr(worker.random, "uniform", lambda a, b: 0)
++    monkeypatch.setattr(worker, "_UNCLAIMED_DECLINE_LOG_LAST", {})
++    owner = {"status": "observed", "owner": "fixture", "pid": 7}
++    claim = {"reason": "factory_mutation_lock_busy", "lock": "fixture", "lock_owner": owner}
++    worker._pause_after_unclaimed(claim, "T3")
++    worker._pause_after_unclaimed(claim, "T3")
++    records = [json.loads(line) for line in capsys.readouterr().out.splitlines()]
++    assert sum(r["event"] == "claim_lock_busy" for r in records) == 2
++    assert sum(r["event"] == "claim_declined" for r in records) == 1
++    assert all(r["lock_owner"] == owner for r in records)
++    assert sleeps == [worker.COMMIT_GUARD_SLEEP_SECONDS] * 2
