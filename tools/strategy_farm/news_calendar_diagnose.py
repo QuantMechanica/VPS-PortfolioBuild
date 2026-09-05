@@ -173,9 +173,9 @@ def _parse_secondary(path: Path) -> tuple[list[CalendarRow], list[dict[str, obje
     with path.open(encoding="utf-8-sig", errors="replace", newline="") as handle:
         for line_number, raw in enumerate(csv.DictReader(handle), 2):
             try:
-                instant = datetime.strptime(raw["DateTime_UTC"], "%Y.%m.%d %H:%M").replace(
-                    tzinfo=timezone.utc
-                )
+                value = raw["DateTime_UTC"]
+                fmt = "%Y.%m.%d %H:%M:%S" if len(value.strip()) == 19 else "%Y.%m.%d %H:%M"
+                instant = datetime.strptime(value, fmt).replace(tzinfo=timezone.utc)
             except (KeyError, ValueError) as exc:
                 parse_errors.append({"line": line_number, "error": str(exc)})
                 continue
@@ -256,6 +256,44 @@ def diagnose_anchors(rows: Iterable[CalendarRow]) -> tuple[list[dict[str, object
                 "share_within_5_minutes": round(counts["PASS"] / total, 6) if total else None,
             }
         )
+    return detail, summary
+
+
+def diagnose_native_anchors(rows: Iterable[CalendarRow], catalog: dict) -> tuple[list[dict], list[dict]]:
+    """Explicit native/official truth mode for E1-A; never infer a release date.
+
+    Every USD HIGH class in 2018..2026 is scored, including unmapped classes.
+    Missing anchors count as failed/unverified, not as a clean detector pass.
+    Non-USD scope gaps are reported by the repair completeness inventory.
+    """
+    if catalog.get("expectation_basis") != "NATIVE_OR_PINNED_OFFICIAL_INSTANTS_ONLY":
+        raise ValueError("unsupported native anchor catalog")
+    index = defaultdict(list)
+    for item in catalog["events"]:
+        instant = datetime.fromisoformat(item["utc"].replace("Z", "+00:00"))
+        if instant.tzinfo is None:
+            raise ValueError("native anchor lacks timezone")
+        index[(item["currency"], item["event"].casefold())].append(instant.astimezone(timezone.utc))
+    detail = []; grouped = defaultdict(Counter)
+    for row in rows:
+        if row.currency != "USD" or row.impact != "high" or not 2018 <= row.instant.year <= 2026:
+            continue
+        candidates = [t for t in index.get((row.currency, row.event.casefold()), ()) if abs(t-row.instant) <= timedelta(hours=36)]
+        expected = min(candidates, key=lambda t: abs(t-row.instant)) if candidates else None
+        delta = int((row.instant-expected).total_seconds()/60) if expected else None
+        ok = expected is not None and abs((row.instant-expected).total_seconds()) <= 300
+        status = "PASS" if ok else "FAIL"
+        grouped[(row.source,row.event,row.instant.year)][status] += 1
+        detail.append({"source":row.source,"currency":row.currency,"event":row.event,"class":row.event,
+                       "year":row.instant.year,"stored_utc":row.instant.isoformat(),
+                       "expected_utc":expected.isoformat() if expected else "",
+                       "delta_minutes":delta,"within_5_minutes":ok,"schedule_rule_ok":"NOT_USED_NATIVE_TRUTH",
+                       "status":status})
+    summary = []
+    for (source,event,year), counts in sorted(grouped.items()):
+        total = sum(counts.values())
+        summary.append({"source":source,"class":event,"year":year,"within_anchor":counts["PASS"],
+                        "total":total,"share_within_5_minutes":counts["PASS"]/total})
     return detail, summary
 
 
@@ -477,9 +515,11 @@ def _markdown(summary: dict[str, object]) -> str:
         f"- Native matches: {native['matched']}; per-currency buckets: `{json.dumps(native['per_currency'], sort_keys=True)}`.",
         f"- Zero months: `{json.dumps(coverage['zero_months'], sort_keys=True)}`.",
         "",
-        "## Scheduled-anchor assertions",
+        "## Native/official anchor assertions" if summary.get("anchor_mode", "").startswith("NATIVE") else "## Scheduled-anchor assertions",
         "",
-        "Expected UTC is computed from `qm.dst_rule.us.v1`: US DST starts at 07:00Z on the second Sunday of March and ends at 06:00Z on the first Sunday of November. NFP must also occur on the first Friday. All shares use a ±5 minute tolerance.",
+        ("Expected UTC comes only from the supplied native/official catalog. Every USD HIGH class in 2018–2026 is checked within ±5 minutes; missing anchors fail. No first-Friday rule is applied to rescheduled releases."
+         if summary.get("anchor_mode", "").startswith("NATIVE") else
+         "Expected UTC is computed from `qm.dst_rule.us.v1`: US DST starts at 07:00Z on the second Sunday of March and ends at 06:00Z on the first Sunday of November. NFP must also occur on the first Friday. All shares use a ±5 minute tolerance."),
         "",
         "| source | class | year | within ±5m | total | share |",
         "|---|---|---:|---:|---:|---:|",
@@ -533,11 +573,15 @@ def run_diagnostics(
     *,
     coverage_start: str | None = None,
     coverage_end: str | None = None,
+    native_anchor_catalog: dict | None = None,
 ) -> dict[str, object]:
     out_dir.mkdir(parents=True, exist_ok=True)
     primary, primary_parse_errors = _parse_primary(primary_path)
     secondary, secondary_parse_errors = _parse_secondary(secondary_path)
-    anchor_detail, anchor_summary = diagnose_anchors([*primary, *secondary])
+    anchor_detail, anchor_summary = (
+        diagnose_native_anchors([*primary, *secondary], native_anchor_catalog)
+        if native_anchor_catalog is not None else diagnose_anchors([*primary, *secondary])
+    )
     derived_detail, derived_summary = diagnose_primary_columns(primary)
     cross_detail, cross_summary = compare_cross_file(primary, secondary)
     native_detail, native_summary, native_files = compare_native(secondary, native_dir)
@@ -552,6 +596,7 @@ def run_diagnostics(
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "report_dir": str(out_dir),
         "report_only": True,
+        "anchor_mode": "NATIVE_OFFICIAL_ALL_USD_HIGH_2018_2026" if native_anchor_catalog is not None else "LEGACY_SCHEDULE_RULE",
         "inputs": {
             "primary": {"path": str(primary_path), "sha256": _sha256(primary_path), "rows": len(primary)},
             "secondary": {"path": str(secondary_path), "sha256": _sha256(secondary_path), "rows": len(secondary)},
@@ -614,6 +659,7 @@ def main() -> int:
     parser.add_argument("--no-evidence-copy", action="store_true")
     parser.add_argument("--coverage-start")
     parser.add_argument("--coverage-end")
+    parser.add_argument("--native-anchor-catalog", type=Path, help="E1-A native/official expectation JSON; report-only")
     args = parser.parse_args()
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     out_dir = args.out or DEFAULT_REPORT_ROOT / f"diagnose_{stamp}"
@@ -624,6 +670,8 @@ def main() -> int:
         out_dir,
         coverage_start=args.coverage_start,
         coverage_end=args.coverage_end,
+        native_anchor_catalog=(json.loads(args.native_anchor_catalog.read_text(encoding="utf-8-sig"))
+                               if args.native_anchor_catalog else None),
     )
     if not args.no_evidence_copy:
         args.evidence_copy.parent.mkdir(parents=True, exist_ok=True)

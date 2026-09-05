@@ -21,7 +21,11 @@ param(
   [string]$FeedPath = '',
   [int]$CoverageDays = 2,
   [datetime]$NowUtc = [DateTime]::UtcNow,
-  [switch]$ReconciliationPlanOnly
+  [switch]$ReconciliationPlanOnly,
+  [Alias('candidate-pair')][string]$CandidatePair = '',
+  [Alias('candidate-manifest-sha256')][string]$CandidateManifestSha256 = '',
+  [ValidateSet('OWNER-DEC-CALENDAR-REPIN','OWNER-DEC-CALENDAR-E1A-20260905')]
+  [string]$OwnerDecisionId = 'OWNER-DEC-CALENDAR-REPIN'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -111,6 +115,11 @@ function New-MultiPlanArguments(
       '--generated-at', $nowUtcValue.ToString('yyyy-MM-ddTHH:mm:ssZ'))) {
     $arguments.Add([string]$value)
   }
+  if (-not [string]::IsNullOrWhiteSpace($CandidatePair)) {
+    foreach ($value in @('--candidate-pair',$CandidatePair,'--candidate-manifest-sha256',$CandidateManifestSha256)) {
+      $arguments.Add([string]$value)
+    }
+  }
   return @($arguments.ToArray())
 }
 
@@ -196,6 +205,21 @@ function Get-MondayZeroDay([datetime]$Date) {
   return (([int]$Date.DayOfWeek + 6) % 7)
 }
 
+$candidateMode = -not [string]::IsNullOrWhiteSpace($CandidatePair)
+if ($candidateMode -ne (-not [string]::IsNullOrWhiteSpace($CandidateManifestSha256))) {
+  throw 'CandidatePair and CandidateManifestSha256 must be supplied together'
+}
+if ($candidateMode) {
+  if ($OwnerDecisionId -cne 'OWNER-DEC-CALENDAR-E1A-20260905') {
+    throw 'verified repair ingress requires OWNER-DEC-CALENDAR-E1A-20260905'
+  }
+  $candidateValidation = Invoke-NewsCalendarGate @('candidate-ingress','--candidate-pair',$CandidatePair,
+    '--candidate-manifest-sha256',$CandidateManifestSha256)
+  if ($ReconciliationPlanOnly) { Write-Output $candidateValidation; return }
+}
+elseif ($OwnerDecisionId -cne 'OWNER-DEC-CALENDAR-REPIN') {
+  throw 'E1-A authority requires the verified candidate-pair ingress'
+}
 if ($ReconciliationPlanOnly) {
   $planArguments = New-MultiPlanArguments $activePrimaryPath $activeSecondaryPath
   $planJson = Invoke-NewsCalendarGate $planArguments
@@ -213,7 +237,7 @@ if (-not $seedsValid) {
   return
 }
 
-if ($seedsValid) {
+if ($seedsValid -and -not $candidateMode) {
   try {
     if (-not [string]::IsNullOrWhiteSpace($FeedPath)) {
       $feedJson = [IO.File]::ReadAllText($FeedPath)
@@ -246,9 +270,19 @@ $primaryPath = Join-Path $stagingDir 'news_calendar_2015_2025.csv'
 $secondaryPath = Join-Path $stagingDir 'forex_factory_calendar_clean.csv'
 
 try {
-New-Item -ItemType Directory -Path $stagingDir -ErrorAction Stop | Out-Null
-[IO.File]::WriteAllBytes($primaryPath, [IO.File]::ReadAllBytes($activePrimaryPath))
-[IO.File]::WriteAllBytes($secondaryPath, [IO.File]::ReadAllBytes($activeSecondaryPath))
+if ($candidateMode) {
+  $candidateStaged = Invoke-NewsCalendarGate @('candidate-ingress','--candidate-pair',$CandidatePair,
+    '--candidate-manifest-sha256',$CandidateManifestSha256,'--staging-dir',$stagingDir,'--apply')
+  $candidateStagedObject = ConvertFrom-Json -InputObject $candidateStaged -ErrorAction Stop
+  if ([string]$candidateStagedObject.status -cne 'STAGED' -or -not $candidateStagedObject.applied) {
+    throw 'verified candidate ingress did not return STAGED'
+  }
+}
+else {
+  New-Item -ItemType Directory -Path $stagingDir -ErrorAction Stop | Out-Null
+  [IO.File]::WriteAllBytes($primaryPath, [IO.File]::ReadAllBytes($activePrimaryPath))
+  [IO.File]::WriteAllBytes($secondaryPath, [IO.File]::ReadAllBytes($activeSecondaryPath))
+}
 $appendedPrimary = 0
 $appendedSecondary = 0
 if ($seedsValid -and $events.Count -gt 0) {
@@ -426,6 +460,7 @@ if ($operationId -notmatch '^[0-9a-f]{64}$') {
 }
 $savedParentProof = $env:QM_NEWS_CALENDAR_REFRESH_PARENT_PID
 $savedOperationProof = $env:QM_NEWS_CALENDAR_REFRESH_OPERATION_ID
+$repinReason = if ($candidateMode) { 'verified_candidate_repair:' + $CandidateManifestSha256 } else { 'scheduled_news_calendar_refresh' }
 try {
   $env:QM_NEWS_CALENDAR_REFRESH_PARENT_PID = [string]$PID
   $env:QM_NEWS_CALENDAR_REFRESH_OPERATION_ID = $operationId
@@ -440,7 +475,8 @@ try {
     '--refresh-script', $PSCommandPath,
     '--lock', $repinLock,
     '--operation-id', $operationId,
-    '--reason', 'scheduled_news_calendar_refresh'
+    '--owner-decision-id', $OwnerDecisionId,
+    '--reason', $repinReason
   )
   $repinJson = Invoke-NewsCalendarRepin $repinArguments
 }

@@ -26,6 +26,7 @@ import io
 import json
 import os
 import re
+import sys
 import threading
 import time
 import uuid
@@ -1856,6 +1857,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
 
+    ingress = subparsers.add_parser("candidate-ingress")
+    ingress.add_argument("--candidate-pair", type=Path, required=True)
+    ingress.add_argument("--candidate-manifest-sha256", required=True)
+    ingress.add_argument("--staging-dir", type=Path)
+    ingress.add_argument("--apply", action="store_true")
+
     check = subparsers.add_parser("preflight")
     check.add_argument("--source-dir", type=Path)
     check.add_argument("--common-dir", type=Path)
@@ -1871,6 +1878,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     multi_plan.add_argument("--secondary-candidate", type=Path, required=True)
     multi_plan.add_argument("--generated-at")
     multi_plan.add_argument("--output", type=Path)
+    multi_plan.add_argument("--candidate-pair", type=Path)
+    multi_plan.add_argument("--candidate-manifest-sha256")
 
     multi_publish = subparsers.add_parser("multi-publish")
     multi_publish.add_argument("--plan", type=Path, required=True)
@@ -1884,6 +1893,12 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     args = parser.parse_args(argv)
     try:
+        if args.command == "candidate-ingress":
+            import news_calendar_candidate_ingress as candidate_ingress
+            result = candidate_ingress.prepare(sys.modules[__name__], args.candidate_pair,
+                args.candidate_manifest_sha256, staging_dir=args.staging_dir, apply=args.apply)
+            print(json.dumps(result, indent=2, sort_keys=True))
+            return 0
         if args.command == "preflight":
             result = preflight_news_calendar(
                 args.source_dir,
@@ -1902,12 +1917,22 @@ def main(argv: Sequence[str] | None = None) -> int:
             return 0
         if args.command == "multi-plan":
             policy = _validated_policy(_PRODUCTION_POLICY)
+            if bool(args.candidate_pair) != bool(args.candidate_manifest_sha256):
+                raise NewsCalendarError("candidate-pair and candidate-manifest-sha256 must be supplied together")
+            candidate_proof = None
+            if args.candidate_pair:
+                import news_calendar_candidate_ingress as candidate_ingress
+                candidate_proof = candidate_ingress.prepare(sys.modules[__name__], args.candidate_pair,
+                    args.candidate_manifest_sha256, policy=policy)
             result = build_multi_principal_publication_plan(
                 args.primary_candidate,
                 args.secondary_candidate,
                 generated_at=args.generated_at,
                 _policy=policy,
             )
+            if candidate_proof and [(r["name"],r["sha256"]) for r in result["candidates"]] != [
+                    (r["name"],r["sha256"]) for r in candidate_proof["files"]]:
+                raise NewsCalendarError("planned candidates differ from verified repair manifest")
             if args.output is not None:
                 output = _validate_evidence_output(args.output, policy, kind="plan")
                 _write_json_atomic_output(output, result)

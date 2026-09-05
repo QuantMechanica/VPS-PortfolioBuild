@@ -35,6 +35,10 @@ CALENDAR_NAMES = (PRIMARY_NAME, SECONDARY_NAME)
 REFRESH_TASK_NAME = "QM_NewsCalendar_Refresh"
 OWNER_DECISION_ID = "OWNER-DEC-CALENDAR-REPIN"
 OWNER_DECISION_REF = "decisions/2026-08-22_owner_decisions_evening_batch.md#8-owner-dec-calendar-repin"
+REGISTERED_OWNER_DECISIONS = {
+    OWNER_DECISION_ID: OWNER_DECISION_REF,
+    "OWNER-DEC-CALENDAR-E1A-20260905": "decisions/2026-09-02_owner_receipts_ceo_asks.md#row-9-e1-a",
+}
 DEFAULT_CALENDAR = Path(r"D:\QM\data\news_calendar\news_calendar_2015_2025.csv")
 DEFAULT_REGISTRY = Path(r"C:\QM\repo\framework\registry\dxz23_execution_contracts.json")
 DEFAULT_RECEIPT_DIR = Path(r"D:\QM\reports\news_calendar\repin_receipts")
@@ -568,7 +572,7 @@ def _validate_receipt_shape(receipt: Mapping[str, Any], *, path: Path) -> None:
         raise RepinError(f"invalid receipt timestamp: {path}")
     _receipt_source_transitions(receipt, path=path)
     authority = receipt.get("authority")
-    if not isinstance(authority, dict) or authority.get("decision_id") != OWNER_DECISION_ID:
+    if not isinstance(authority, dict) or authority.get("decision_id") not in REGISTERED_OWNER_DECISIONS:
         raise RepinError(f"receipt lacks OWNER decision binding: {path}")
     signer = receipt.get("signer")
     if not isinstance(signer, dict) or signer.get("kind") != "scheduled-refresh-script":
@@ -792,7 +796,10 @@ def record_repin(
     lock_path: Path,
     expected_operation_id: str,
     reason: str,
+    owner_decision_id: str = OWNER_DECISION_ID,
 ) -> dict[str, Any]:
+    if owner_decision_id not in REGISTERED_OWNER_DECISIONS:
+        raise RepinError("unregistered OWNER decision for calendar repin")
     if not reason or reason != reason.strip():
         raise RepinError("repin reason must be a non-blank trimmed string")
     descriptor = _acquire_lock(lock_path)
@@ -949,8 +956,8 @@ def record_repin(
             },
             "authority": {
                 "authority": "OWNER",
-                "decision_id": OWNER_DECISION_ID,
-                "decision_ref": OWNER_DECISION_REF,
+                "decision_id": owner_decision_id,
+                "decision_ref": REGISTERED_OWNER_DECISIONS[owner_decision_id],
                 "authorized_scope": "calendar_dependency_identity_repin_only",
             },
             "signer": {
@@ -1035,6 +1042,7 @@ def build_parser() -> argparse.ArgumentParser:
     record.add_argument("--lock", type=Path, default=DEFAULT_LOCK)
     record.add_argument("--operation-id", required=True)
     record.add_argument("--reason", required=True)
+    record.add_argument("--owner-decision-id", choices=sorted(REGISTERED_OWNER_DECISIONS), default=OWNER_DECISION_ID)
 
     verify = subparsers.add_parser("verify", help="verify the receipt chain read-only")
     verify.add_argument("--calendar", type=Path, default=DEFAULT_CALENDAR)
@@ -1065,6 +1073,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 lock_path=args.lock,
                 expected_operation_id=args.operation_id,
                 reason=args.reason,
+                owner_decision_id=args.owner_decision_id,
             )
         print(json.dumps(result, indent=2, sort_keys=True))
         return 0
