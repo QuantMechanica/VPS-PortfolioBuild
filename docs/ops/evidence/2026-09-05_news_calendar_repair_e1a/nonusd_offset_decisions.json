@@ -1,0 +1,48 @@
+[
+  {
+    "confirmed": false,
+    "currency": "EUR",
+    "nonrate_footprint_pass": true,
+    "passed_footprints": 2,
+    "selected_offsets_hours": [
+      -3
+    ],
+    "selected_rows": 0
+  },
+  {
+    "confirmed": true,
+    "currency": "GBP",
+    "nonrate_footprint_pass": true,
+    "passed_footprints": 3,
+    "selected_offsets_hours": [
+      -3
+    ],
+    "selected_rows": 66
+  },
+  {
+    "confirmed": false,
+    "currency": "JPY",
+    "nonrate_footprint_pass": false,
+    "passed_footprints": 1,
+    "selected_offsets_hours": [
+      0
+    ],
+    "selected_rows": 0
+  },
+  {
+    "confirmed": false,
+    "currency": "AUD",
+    "nonrate_footprint_pass": false,
+    "passed_footprints": 0,
+    "selected_offsets_hours": [],
+    "selected_rows": 0
+  },
+  {
+    "confirmed": false,
+    "currency": "CAD",
+    "nonrate_footprint_pass": false,
+    "passed_footprints": 0,
+    "selected_offsets_hours": [],
+    "selected_rows": 0
+  }
+]

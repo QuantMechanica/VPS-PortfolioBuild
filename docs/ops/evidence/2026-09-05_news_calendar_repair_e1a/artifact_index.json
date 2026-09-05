@@ -1,0 +1,244 @@
+{
+  "schema": "qm.e1a-artifact-index/v1",
+  "candidate_dir": "D:\\QM\\reports\\news_calendar\\repair_e1a\\20260905T094500Z",
+  "artifacts": [
+    {
+      "relative_path": "baseline.json",
+      "sha256": "aaddcfdc6b9fbc8f58531c0ca950edbc5ca6fea2551f1e15a6bad4f28a92be85",
+      "bytes": 698
+    },
+    {
+      "relative_path": "diagnose/anchor_detail.csv",
+      "sha256": "75bbceb2e36e51b0037e4abc683d8132b36defe76317583959049c89fe8eb235",
+      "bytes": 876699
+    },
+    {
+      "relative_path": "diagnose/anchor_summary.csv",
+      "sha256": "4dddd5308a7f9361ec49266ee088208cb698de3693661972033c3bc019081d70",
+      "bytes": 35066
+    },
+    {
+      "relative_path": "diagnose/cross_file_comparison.csv",
+      "sha256": "e0ac9675d4d913821881a9320230fcbba5fe70da0b69e361623db1b3a2fae08d",
+      "bytes": 4202345
+    },
+    {
+      "relative_path": "diagnose/monthly_coverage.csv",
+      "sha256": "1f5b61f78d52a5477d3e05e04e873e2952efb741aa3a7a4b24454ed6b001338d",
+      "bytes": 7872
+    },
+    {
+      "relative_path": "diagnose/native_comparison.csv",
+      "sha256": "cbb7b8d0c01eaa44ed66a6d024ad1a68cde0685b6e96a8f3cf95f5f6396b6e2c",
+      "bytes": 268996
+    },
+    {
+      "relative_path": "diagnose/primary_derived_mismatches.csv",
+      "sha256": "7f9b4c6cdeffd0076228c570759f981b356157ba81a8193ee05c4371c0d85f2b",
+      "bytes": 49
+    },
+    {
+      "relative_path": "diagnose/report.md",
+      "sha256": "5ad367d4d8dba02964e031ab0b6d8b829c75772ecdc85f8df545521095f3df15",
+      "bytes": 51129
+    },
+    {
+      "relative_path": "diagnose/summary.json",
+      "sha256": "9b3ac39a2010ecffc7f7813f4ab65431f1b27398f54b890d2010a1879e2e8de1",
+      "bytes": 166372
+    },
+    {
+      "relative_path": "e2_e4_gap_inventory.csv",
+      "sha256": "c9d79068b95dce9f893631a6d6a20d8604a93c5ff48ea4935717ef9c42b82659",
+      "bytes": 199259
+    },
+    {
+      "relative_path": "EXPORT_T_EXPORT_HIGH_2026H1.ex5",
+      "sha256": "93f4119cfe3756d3a807c9bfc6ad2f210d7f9a93e20c28b0d275cfd25dab7b72",
+      "bytes": 13048
+    },
+    {
+      "relative_path": "EXPORT_T_EXPORT_HIGH_2026H1.mq5",
+      "sha256": "41c5633a54f61e9fe479688794cfded33912073ddb72da12d4955509fddc3bee",
+      "bytes": 3258
+    },
+    {
+      "relative_path": "exporter_compile.log",
+      "sha256": "0c3bb3e5a85f63a2123a83d707a2b4c4b44885356516f9698ad78a16df42f3b1",
+      "bytes": 3196
+    },
+    {
+      "relative_path": "footprint_summary.json",
+      "sha256": "b4bbb1a562697651562832af5b33dfe90f8fdcf07ce5c5892570c4e7f2de4ae2",
+      "bytes": 15252
+    },
+    {
+      "relative_path": "footprints/anchor_007.csv",
+      "sha256": "f02c1284e2405ea618e1860930f5c155ae7ed3626f03d1103561224010c9a01c",
+      "bytes": 6463
+    },
+    {
+      "relative_path": "footprints/anchor_008.csv",
+      "sha256": "d31eee5aa4332b950a46dc94374c8ddb19d01e174146706ede566a911ec937fc",
+      "bytes": 59
+    },
+    {
+      "relative_path": "footprints/anchor_009.csv",
+      "sha256": "a4d169920b59da1261a7de2fd1380dcefb69ddb27dbc419307cac60f23252b71",
+      "bytes": 6482
+    },
+    {
+      "relative_path": "footprints/anchor_010.csv",
+      "sha256": "d95626329d9773f65ad4811329ffc80f902147805567108997ec1874e5ef6f49",
+      "bytes": 6477
+    },
+    {
+      "relative_path": "footprints/anchor_011.csv",
+      "sha256": "caf1003b5df103dd4460f0031be7d0f046f5117761ce17f422d26668bd2b0101",
+      "bytes": 6472
+    },
+    {
+      "relative_path": "footprints/anchor_012.csv",
+      "sha256": "d31eee5aa4332b950a46dc94374c8ddb19d01e174146706ede566a911ec937fc",
+      "bytes": 59
+    },
+    {
+      "relative_path": "footprints/anchor_013.csv",
+      "sha256": "f5a7b2c6ead68941caaa7c8e3166f2c88601600e5d7cdec80aeaeb637c16ad0c",
+      "bytes": 6412
+    },
+    {
+      "relative_path": "footprints/anchor_014.csv",
+      "sha256": "4b61e82e650172ee97912459cde80e4844336003b9d8956c02941be6621b4093",
+      "bytes": 6477
+    },
+    {
+      "relative_path": "footprints/anchor_015.csv",
+      "sha256": "d31eee5aa4332b950a46dc94374c8ddb19d01e174146706ede566a911ec937fc",
+      "bytes": 59
+    },
+    {
+      "relative_path": "footprints/anchor_016.csv",
+      "sha256": "9f497c14ae1f8f0c9a97afe05746682822f356a4f1a9b0ad51b318ff45bfdcd6",
+      "bytes": 6457
+    },
+    {
+      "relative_path": "footprints/anchor_017.csv",
+      "sha256": "c1805ca7afeaf0b023327a6167251f85b48bf5acac6b1d7b155e9e3b994e5dae",
+      "bytes": 6469
+    },
+    {
+      "relative_path": "footprints/anchor_018.csv",
+      "sha256": "621c829987288f4fcaeb728281fb9772b3c4c59d845d46cc68fdfbefbf40bd9f",
+      "bytes": 6465
+    },
+    {
+      "relative_path": "footprints/anchor_019.csv",
+      "sha256": "559b6bf27209cc7fc60076f783db91e0dbe5b1aae22170e6409ede9fbc20dcd4",
+      "bytes": 6463
+    },
+    {
+      "relative_path": "footprints/anchor_023.csv",
+      "sha256": "78202297beb07c6847bac08b8ba57bc839e5667dd0f2dbe211b33ceefa5a9d16",
+      "bytes": 6467
+    },
+    {
+      "relative_path": "forex_factory_calendar_clean.csv",
+      "sha256": "76e22d47ef4de26f39a7887bee33310a1c48f857d3f99902195d7756a6585c44",
+      "bytes": 4626926
+    },
+    {
+      "relative_path": "fresh_export_anchor_checks.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "bytes": 3
+    },
+    {
+      "relative_path": "manifest.json",
+      "sha256": "29ce8215f98de53e800937292d8fa8e6b6ffabe7d941f28065556abb4ffa0dde",
+      "bytes": 5018
+    },
+    {
+      "relative_path": "native_anchor_expectations.json",
+      "sha256": "1625ef619d3bf31b031e1d6a15d22b7f704f9ad0b464d3f295d93e0588e96a87",
+      "bytes": 746336
+    },
+    {
+      "relative_path": "native_monthly_coverage.csv",
+      "sha256": "c371bf5f9e204f5b351d76551f53be0240758367a4fcb1c000d6330eb4c47a66",
+      "bytes": 84662
+    },
+    {
+      "relative_path": "news_calendar_2015_2025.csv",
+      "sha256": "d936e680b69446f3b19b15aa498d6ac6f616db06cb6a34fc93275f6dc07df151",
+      "bytes": 4465361
+    },
+    {
+      "relative_path": "nonusd_completeness.csv",
+      "sha256": "cdd804d7eda2909e0803090bc8fa1d7c25d937b00978e12e79e61f1694ecd50c",
+      "bytes": 1569
+    },
+    {
+      "relative_path": "nonusd_offset_decisions.json",
+      "sha256": "ba6e7ab79bba17b126cdbe1301773ba5de66c93da1215cbb3d7c8fda8d4d6a29",
+      "bytes": 932
+    },
+    {
+      "relative_path": "owner_approval_receipt.template.json",
+      "sha256": "790631b6b8e5bdf2b800c532f1ee3175c98e84daa0ebbbc447dc00adbb5ffc3e",
+      "bytes": 434
+    },
+    {
+      "relative_path": "per_class_transforms.json",
+      "sha256": "7f22c61f5a183e5ac1a3d66765ec16095b633c17c6f44e1cac7c687d9d2329fc",
+      "bytes": 284218
+    },
+    {
+      "relative_path": "repair_gaps.json",
+      "sha256": "d1d2e44f9dc1e455f90b7875ed5481b13f089242e90738a636ec9c6b7fe1f83e",
+      "bytes": 7261482
+    },
+    {
+      "relative_path": "reseal_admission.json",
+      "sha256": "9b027760b3691b7f17a22ea8c8d0d7b191f12c8cb7f2453baeff277cc2b906ee",
+      "bytes": 578
+    },
+    {
+      "relative_path": "rollback_snapshot/dxz23_execution_contracts.json",
+      "sha256": "e0e8a8d77cc11ca8b90515cd548bde272a5c00471b85a54b5e4dd1b906dba0da",
+      "bytes": 113427
+    },
+    {
+      "relative_path": "rollback_snapshot/production_manifest.json",
+      "sha256": "6f748252d4bd4e33b627203f5f57a7b9a087144a0dacafbbe81a816f89990237",
+      "bytes": 831
+    },
+    {
+      "relative_path": "rollback_snapshot/q09_parent_manifest.json",
+      "sha256": "b204d1ab9fe40fe32afc254ae4284ed6c1df112829df07483912e5ed54527461",
+      "bytes": 1216
+    },
+    {
+      "relative_path": "row_transform.csv",
+      "sha256": "38b24c7b449a0ab295d08faec63d5548f095bbd61a4695f80022e36372076341",
+      "bytes": 11829640
+    },
+    {
+      "relative_path": "verification.json",
+      "sha256": "46c3d5bd58ba1c2727afb30ebbc12fc9adbe31bef214d6e815c889ec47b50124",
+      "bytes": 81920
+    }
+  ],
+  "tests": {
+    "command": "python -m pytest -q tools/strategy_farm/tests/test_news_calendar_repair.py tools/strategy_farm/tests/test_news_calendar_diagnose.py",
+    "passed": 14,
+    "seconds": 1.02
+  },
+  "exporter_compile": {
+    "errors": 0,
+    "warnings": 0,
+    "elapsed_ms": 731,
+    "metaeditor_process_exit_code": 1,
+    "verdict_source": "exporter_compile.log final Result line"
+  },
+  "code_commit": "b88ea75f4838438c5f8fe3916da64c29abd98878"
+}

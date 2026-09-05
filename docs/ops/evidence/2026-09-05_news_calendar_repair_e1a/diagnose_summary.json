@@ -1,0 +1,6506 @@
+{
+  "anchor_mode": "NATIVE_OFFICIAL_ALL_USD_HIGH_2018_2026",
+  "anchors": {
+    "failed": 2772,
+    "passed": 3576,
+    "per_class_year": [
+      {
+        "class": "10-Year Note Auction",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2025
+      },
+      {
+        "class": "10-y Bond Auction",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "30-Year Bond Auction",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2025
+      },
+      {
+        "class": "30-y Bond Auction",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 3,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "ADP Non-Farm Employment Change",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2018
+      },
+      {
+        "class": "ADP Non-Farm Employment Change",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2019
+      },
+      {
+        "class": "ADP Non-Farm Employment Change",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2020
+      },
+      {
+        "class": "ADP Non-Farm Employment Change",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2021
+      },
+      {
+        "class": "ADP Non-Farm Employment Change",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 10,
+        "within_anchor": 10,
+        "year": 2022
+      },
+      {
+        "class": "ADP Non-Farm Employment Change",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2023
+      },
+      {
+        "class": "ADP Non-Farm Employment Change",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2024
+      },
+      {
+        "class": "ADP Non-Farm Employment Change",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2025
+      },
+      {
+        "class": "ADP Nonfarm Employment Change",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 7,
+        "within_anchor": 7,
+        "year": 2025
+      },
+      {
+        "class": "Advance GDP Price Index q/q",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 0,
+        "year": 2018
+      },
+      {
+        "class": "Advance GDP Price Index q/q",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 0,
+        "year": 2019
+      },
+      {
+        "class": "Advance GDP Price Index q/q",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 0,
+        "year": 2020
+      },
+      {
+        "class": "Advance GDP Price Index q/q",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 0,
+        "year": 2021
+      },
+      {
+        "class": "Advance GDP Price Index q/q",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 0,
+        "year": 2022
+      },
+      {
+        "class": "Advance GDP Price Index q/q",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "Advance GDP Price Index q/q",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "Advance GDP Price Index q/q",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "Advance GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2018
+      },
+      {
+        "class": "Advance GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2019
+      },
+      {
+        "class": "Advance GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2020
+      },
+      {
+        "class": "Advance GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2021
+      },
+      {
+        "class": "Advance GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2022
+      },
+      {
+        "class": "Advance GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2023
+      },
+      {
+        "class": "Advance GDP q/q",
+        "share_within_5_minutes": 0.75,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 3,
+        "year": 2024
+      },
+      {
+        "class": "Advance GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 1,
+        "year": 2025
+      },
+      {
+        "class": "Advance GDP q/q",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2026
+      },
+      {
+        "class": "Average Hourly Earnings m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2018
+      },
+      {
+        "class": "Average Hourly Earnings m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2019
+      },
+      {
+        "class": "Average Hourly Earnings m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2020
+      },
+      {
+        "class": "Average Hourly Earnings m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2021
+      },
+      {
+        "class": "Average Hourly Earnings m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2022
+      },
+      {
+        "class": "Average Hourly Earnings m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2023
+      },
+      {
+        "class": "Average Hourly Earnings m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2024
+      },
+      {
+        "class": "Average Hourly Earnings m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 11,
+        "within_anchor": 11,
+        "year": 2025
+      },
+      {
+        "class": "Average Hourly Earnings m/m",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2026
+      },
+      {
+        "class": "Building Permits",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 7,
+        "within_anchor": 0,
+        "year": 2018
+      },
+      {
+        "class": "Business Employment Dynamics Q1 2025",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 1,
+        "year": 2025
+      },
+      {
+        "class": "CB Consumer Confidence Index",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2025
+      },
+      {
+        "class": "CPI",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 7,
+        "within_anchor": 7,
+        "year": 2025
+      },
+      {
+        "class": "CPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2018
+      },
+      {
+        "class": "CPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2019
+      },
+      {
+        "class": "CPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2020
+      },
+      {
+        "class": "CPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2021
+      },
+      {
+        "class": "CPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2022
+      },
+      {
+        "class": "CPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2023
+      },
+      {
+        "class": "CPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2024
+      },
+      {
+        "class": "CPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 10,
+        "within_anchor": 10,
+        "year": 2025
+      },
+      {
+        "class": "CPI m/m",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2026
+      },
+      {
+        "class": "CPI y/y",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2018
+      },
+      {
+        "class": "CPI y/y",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2019
+      },
+      {
+        "class": "CPI y/y",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2020
+      },
+      {
+        "class": "CPI y/y",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2021
+      },
+      {
+        "class": "CPI y/y",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2022
+      },
+      {
+        "class": "CPI y/y",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2023
+      },
+      {
+        "class": "CPI y/y",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2024
+      },
+      {
+        "class": "CPI y/y",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 10,
+        "within_anchor": 10,
+        "year": 2025
+      },
+      {
+        "class": "CPI y/y",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2026
+      },
+      {
+        "class": "Cleveland Fed Inflation Expectations",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 3,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "Cleveland Fed Inflation Expectations",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "Cleveland Fed Inflation Expectations",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "Congressional Elections",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2018
+      },
+      {
+        "class": "Congressional Elections",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2020
+      },
+      {
+        "class": "Congressional Elections",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2022
+      },
+      {
+        "class": "Congressional Elections",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "Core CPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2018
+      },
+      {
+        "class": "Core CPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2019
+      },
+      {
+        "class": "Core CPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2020
+      },
+      {
+        "class": "Core CPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2021
+      },
+      {
+        "class": "Core CPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2022
+      },
+      {
+        "class": "Core CPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2023
+      },
+      {
+        "class": "Core CPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2024
+      },
+      {
+        "class": "Core CPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 10,
+        "within_anchor": 10,
+        "year": 2025
+      },
+      {
+        "class": "Core CPI m/m",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2026
+      },
+      {
+        "class": "Core CPI n.s.a. m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 7,
+        "within_anchor": 7,
+        "year": 2025
+      },
+      {
+        "class": "Core CPI y/y",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2026
+      },
+      {
+        "class": "Core PCE Price Index m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 6,
+        "within_anchor": 6,
+        "year": 2021
+      },
+      {
+        "class": "Core PCE Price Index m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2022
+      },
+      {
+        "class": "Core PCE Price Index m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2023
+      },
+      {
+        "class": "Core PCE Price Index m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2024
+      },
+      {
+        "class": "Core PCE Price Index m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 9,
+        "within_anchor": 9,
+        "year": 2025
+      },
+      {
+        "class": "Core PCE Price Index m/m",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2026
+      },
+      {
+        "class": "Core PCE Price Index y/y",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 6,
+        "within_anchor": 6,
+        "year": 2025
+      },
+      {
+        "class": "Core PPI m/m",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2022
+      },
+      {
+        "class": "Core PPI m/m",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "Core PPI m/m",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "Core PPI m/m",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 3,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "Core PPI m/m",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2026
+      },
+      {
+        "class": "Core Retail Sales m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2018
+      },
+      {
+        "class": "Core Retail Sales m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2019
+      },
+      {
+        "class": "Core Retail Sales m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2020
+      },
+      {
+        "class": "Core Retail Sales m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2021
+      },
+      {
+        "class": "Core Retail Sales m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2022
+      },
+      {
+        "class": "Core Retail Sales m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2023
+      },
+      {
+        "class": "Core Retail Sales m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2024
+      },
+      {
+        "class": "Core Retail Sales m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 10,
+        "within_anchor": 10,
+        "year": 2025
+      },
+      {
+        "class": "Crude Oil Inventories",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 39,
+        "within_anchor": 39,
+        "year": 2018
+      },
+      {
+        "class": "Crude Oil Inventories",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2019
+      },
+      {
+        "class": "Crude Oil Inventories",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 1,
+        "year": 2020
+      },
+      {
+        "class": "Durable Goods Orders m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 7,
+        "within_anchor": 7,
+        "year": 2025
+      },
+      {
+        "class": "EIA Crude Oil Stocks Change",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 35,
+        "within_anchor": 35,
+        "year": 2025
+      },
+      {
+        "class": "Employment Cost Index Q3 2025",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 1,
+        "year": 2025
+      },
+      {
+        "class": "Employment Cost Index q/q",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 3,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "Employment Cost Index q/q",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "Employment Cost Index q/q",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "Employment Situation September 2025",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 1,
+        "year": 2025
+      },
+      {
+        "class": "Existing Home Sales",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2025
+      },
+      {
+        "class": "FOMC Economic Projections",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2018
+      },
+      {
+        "class": "FOMC Economic Projections",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2019
+      },
+      {
+        "class": "FOMC Economic Projections",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 3,
+        "within_anchor": 3,
+        "year": 2020
+      },
+      {
+        "class": "FOMC Economic Projections",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2021
+      },
+      {
+        "class": "FOMC Economic Projections",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2022
+      },
+      {
+        "class": "FOMC Economic Projections",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2023
+      },
+      {
+        "class": "FOMC Economic Projections",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2024
+      },
+      {
+        "class": "FOMC Economic Projections",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 1,
+        "year": 2025
+      },
+      {
+        "class": "FOMC Financial Stability Report",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2018
+      },
+      {
+        "class": "FOMC Financial Stability Report",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2019
+      },
+      {
+        "class": "FOMC Financial Stability Report",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2020
+      },
+      {
+        "class": "FOMC Financial Stability Report",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2021
+      },
+      {
+        "class": "FOMC Financial Stability Report",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2022
+      },
+      {
+        "class": "FOMC Financial Stability Report",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "FOMC Financial Stability Report",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "FOMC Meeting Minutes",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 0,
+        "year": 2018
+      },
+      {
+        "class": "FOMC Meeting Minutes",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 0,
+        "year": 2019
+      },
+      {
+        "class": "FOMC Meeting Minutes",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 0,
+        "year": 2020
+      },
+      {
+        "class": "FOMC Meeting Minutes",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 0,
+        "year": 2021
+      },
+      {
+        "class": "FOMC Meeting Minutes",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 0,
+        "year": 2022
+      },
+      {
+        "class": "FOMC Meeting Minutes",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "FOMC Meeting Minutes",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "FOMC Meeting Minutes",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "FOMC Meeting Minutes",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2026
+      },
+      {
+        "class": "FOMC Member Barkin Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 3,
+        "within_anchor": 0,
+        "year": 2018
+      },
+      {
+        "class": "FOMC Member Barkin Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 13,
+        "within_anchor": 0,
+        "year": 2021
+      },
+      {
+        "class": "FOMC Member Barkin Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "FOMC Member Barkin Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 27,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "FOMC Member Barkin Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 11,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "FOMC Member Barr Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 5,
+        "within_anchor": 0,
+        "year": 2022
+      },
+      {
+        "class": "FOMC Member Barr Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 26,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "FOMC Member Barr Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 22,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "FOMC Member Barr Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 7,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "FOMC Member Bostic Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 38,
+        "within_anchor": 0,
+        "year": 2018
+      },
+      {
+        "class": "FOMC Member Bostic Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 43,
+        "within_anchor": 0,
+        "year": 2021
+      },
+      {
+        "class": "FOMC Member Bostic Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "FOMC Member Bostic Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 38,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "FOMC Member Bostic Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 7,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "FOMC Member Bowman Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 0,
+        "year": 2019
+      },
+      {
+        "class": "FOMC Member Bowman Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 5,
+        "within_anchor": 0,
+        "year": 2020
+      },
+      {
+        "class": "FOMC Member Bowman Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2021
+      },
+      {
+        "class": "FOMC Member Bowman Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2022
+      },
+      {
+        "class": "FOMC Member Bowman Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 18,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "FOMC Member Bowman Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 35,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "FOMC Member Bowman Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "FOMC Member Brainard Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 13,
+        "within_anchor": 0,
+        "year": 2018
+      },
+      {
+        "class": "FOMC Member Brainard Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 14,
+        "within_anchor": 0,
+        "year": 2019
+      },
+      {
+        "class": "FOMC Member Brainard Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 13,
+        "within_anchor": 0,
+        "year": 2020
+      },
+      {
+        "class": "FOMC Member Brainard Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 14,
+        "within_anchor": 0,
+        "year": 2021
+      },
+      {
+        "class": "FOMC Member Brainard Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 14,
+        "within_anchor": 0,
+        "year": 2022
+      },
+      {
+        "class": "FOMC Member Brainard Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "FOMC Member Bullard Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 21,
+        "within_anchor": 0,
+        "year": 2019
+      },
+      {
+        "class": "FOMC Member Bullard Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 25,
+        "within_anchor": 0,
+        "year": 2022
+      },
+      {
+        "class": "FOMC Member Clarida Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 3,
+        "within_anchor": 0,
+        "year": 2018
+      },
+      {
+        "class": "FOMC Member Clarida Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 22,
+        "within_anchor": 0,
+        "year": 2019
+      },
+      {
+        "class": "FOMC Member Clarida Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 10,
+        "within_anchor": 0,
+        "year": 2020
+      },
+      {
+        "class": "FOMC Member Clarida Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 14,
+        "within_anchor": 0,
+        "year": 2021
+      },
+      {
+        "class": "FOMC Member Collins Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 3,
+        "within_anchor": 0,
+        "year": 2022
+      },
+      {
+        "class": "FOMC Member Collins Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "FOMC Member Collins Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "FOMC Member Cook Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 6,
+        "within_anchor": 0,
+        "year": 2022
+      },
+      {
+        "class": "FOMC Member Cook Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 17,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "FOMC Member Cook Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 17,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "FOMC Member Cook Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "FOMC Member Daly Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2018
+      },
+      {
+        "class": "FOMC Member Daly Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 21,
+        "within_anchor": 0,
+        "year": 2021
+      },
+      {
+        "class": "FOMC Member Daly Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 20,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "FOMC Member Daly Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 5,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "FOMC Member Dudley Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 10,
+        "within_anchor": 0,
+        "year": 2018
+      },
+      {
+        "class": "FOMC Member Evans Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 20,
+        "within_anchor": 0,
+        "year": 2019
+      },
+      {
+        "class": "FOMC Member Evans Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 23,
+        "within_anchor": 0,
+        "year": 2021
+      },
+      {
+        "class": "FOMC Member George Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 10,
+        "within_anchor": 0,
+        "year": 2019
+      },
+      {
+        "class": "FOMC Member George Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 0,
+        "year": 2022
+      },
+      {
+        "class": "FOMC Member Goolsbee Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 23,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "FOMC Member Goolsbee Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 18,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "FOMC Member Goolsbee Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "FOMC Member Hammack Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 5,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "FOMC Member Hammack Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "FOMC Member Harker Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2020
+      },
+      {
+        "class": "FOMC Member Harker Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 22,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "FOMC Member Harker Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 6,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "FOMC Member Harker Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "FOMC Member Jefferson Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 3,
+        "within_anchor": 0,
+        "year": 2022
+      },
+      {
+        "class": "FOMC Member Jefferson Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "FOMC Member Jefferson Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 7,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "FOMC Member Jefferson Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 5,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "FOMC Member Kaplan Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 17,
+        "within_anchor": 0,
+        "year": 2020
+      },
+      {
+        "class": "FOMC Member Kashkari Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 13,
+        "within_anchor": 0,
+        "year": 2020
+      },
+      {
+        "class": "FOMC Member Kashkari Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 14,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "FOMC Member Kashkari Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 9,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "FOMC Member Kashkari Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "FOMC Member Kugler Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 13,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "FOMC Member Kugler Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "FOMC Member Logan Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "FOMC Member Logan Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 7,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "FOMC Member Logan Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 3,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "FOMC Member Mester Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 13,
+        "within_anchor": 0,
+        "year": 2018
+      },
+      {
+        "class": "FOMC Member Mester Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 16,
+        "within_anchor": 0,
+        "year": 2020
+      },
+      {
+        "class": "FOMC Member Mester Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 24,
+        "within_anchor": 0,
+        "year": 2022
+      },
+      {
+        "class": "FOMC Member Mester Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 11,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "FOMC Member Musalem Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 7,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "FOMC Member Musalem Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "FOMC Member Quarles Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 21,
+        "within_anchor": 0,
+        "year": 2018
+      },
+      {
+        "class": "FOMC Member Quarles Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 20,
+        "within_anchor": 0,
+        "year": 2019
+      },
+      {
+        "class": "FOMC Member Quarles Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 16,
+        "within_anchor": 0,
+        "year": 2020
+      },
+      {
+        "class": "FOMC Member Quarles Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 14,
+        "within_anchor": 0,
+        "year": 2021
+      },
+      {
+        "class": "FOMC Member Rosengren Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2019
+      },
+      {
+        "class": "FOMC Member Schmid Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "FOMC Member Schmid Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 3,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "FOMC Member Waller Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 0,
+        "year": 2021
+      },
+      {
+        "class": "FOMC Member Waller Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 18,
+        "within_anchor": 0,
+        "year": 2022
+      },
+      {
+        "class": "FOMC Member Waller Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 19,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "FOMC Member Waller Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 19,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "FOMC Member Waller Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 6,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "FOMC Member Williams Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 19,
+        "within_anchor": 0,
+        "year": 2018
+      },
+      {
+        "class": "FOMC Member Williams Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 27,
+        "within_anchor": 0,
+        "year": 2019
+      },
+      {
+        "class": "FOMC Member Williams Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 25,
+        "within_anchor": 0,
+        "year": 2020
+      },
+      {
+        "class": "FOMC Member Williams Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 28,
+        "within_anchor": 0,
+        "year": 2021
+      },
+      {
+        "class": "FOMC Member Williams Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 25,
+        "within_anchor": 0,
+        "year": 2022
+      },
+      {
+        "class": "FOMC Member Williams Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 20,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "FOMC Member Williams Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 26,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "FOMC Member Williams Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 7,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "FOMC Press Conference",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2018
+      },
+      {
+        "class": "FOMC Press Conference",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2019
+      },
+      {
+        "class": "FOMC Press Conference",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 9,
+        "within_anchor": 9,
+        "year": 2020
+      },
+      {
+        "class": "FOMC Press Conference",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2021
+      },
+      {
+        "class": "FOMC Press Conference",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2022
+      },
+      {
+        "class": "FOMC Press Conference",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2023
+      },
+      {
+        "class": "FOMC Press Conference",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2024
+      },
+      {
+        "class": "FOMC Press Conference",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2025
+      },
+      {
+        "class": "FOMC Press Conference",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2026
+      },
+      {
+        "class": "FOMC Statement",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2018
+      },
+      {
+        "class": "FOMC Statement",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2019
+      },
+      {
+        "class": "FOMC Statement",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 9,
+        "within_anchor": 9,
+        "year": 2020
+      },
+      {
+        "class": "FOMC Statement",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2021
+      },
+      {
+        "class": "FOMC Statement",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2022
+      },
+      {
+        "class": "FOMC Statement",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2023
+      },
+      {
+        "class": "FOMC Statement",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2024
+      },
+      {
+        "class": "FOMC Statement",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 2,
+        "within_anchor": 2,
+        "year": 2025
+      },
+      {
+        "class": "FOMC Statement",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2026
+      },
+      {
+        "class": "Fed Announcement",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 14,
+        "within_anchor": 0,
+        "year": 2020
+      },
+      {
+        "class": "Fed Announcement",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2021
+      },
+      {
+        "class": "Fed Announcement",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "Fed Chair Powell Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 14,
+        "within_anchor": 0,
+        "year": 2018
+      },
+      {
+        "class": "Fed Chair Powell Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 21,
+        "within_anchor": 0,
+        "year": 2019
+      },
+      {
+        "class": "Fed Chair Powell Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2020
+      },
+      {
+        "class": "Fed Chair Powell Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 17,
+        "within_anchor": 0,
+        "year": 2021
+      },
+      {
+        "class": "Fed Chair Powell Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2022
+      },
+      {
+        "class": "Fed Chair Powell Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 14,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "Fed Chair Powell Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 13,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "Fed Chair Powell Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "Fed Chair Powell Speech",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 10,
+        "within_anchor": 10,
+        "year": 2025
+      },
+      {
+        "class": "Fed Chair Powell Testifies",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 0,
+        "year": 2018
+      },
+      {
+        "class": "Fed Chair Powell Testifies",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 6,
+        "within_anchor": 0,
+        "year": 2019
+      },
+      {
+        "class": "Fed Chair Powell Testifies",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 11,
+        "within_anchor": 0,
+        "year": 2020
+      },
+      {
+        "class": "Fed Chair Powell Testifies",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 11,
+        "within_anchor": 0,
+        "year": 2021
+      },
+      {
+        "class": "Fed Chair Powell Testifies",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 5,
+        "within_anchor": 0,
+        "year": 2022
+      },
+      {
+        "class": "Fed Chair Powell Testifies",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "Fed Chair Powell Testifies",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "Fed Chair Powell Testifies",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "Fed Chair Powell Testimony",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 2,
+        "within_anchor": 2,
+        "year": 2025
+      },
+      {
+        "class": "Fed Chairman Warsh Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2026
+      },
+      {
+        "class": "Fed Interest Rate Decision",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 6,
+        "within_anchor": 6,
+        "year": 2025
+      },
+      {
+        "class": "Fed Monetary Policy Report",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2018
+      },
+      {
+        "class": "Fed Monetary Policy Report",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2019
+      },
+      {
+        "class": "Fed Monetary Policy Report",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2020
+      },
+      {
+        "class": "Fed Monetary Policy Report",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2021
+      },
+      {
+        "class": "Fed Monetary Policy Report",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2022
+      },
+      {
+        "class": "Fed Monetary Policy Report",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "Fed Monetary Policy Report",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "Fed Monetary Policy Report",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "Federal Funds Rate",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2018
+      },
+      {
+        "class": "Federal Funds Rate",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2019
+      },
+      {
+        "class": "Federal Funds Rate",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2020
+      },
+      {
+        "class": "Federal Funds Rate",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 2,
+        "within_anchor": 2,
+        "year": 2021
+      },
+      {
+        "class": "Federal Funds Rate",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2022
+      },
+      {
+        "class": "Federal Funds Rate",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2023
+      },
+      {
+        "class": "Federal Funds Rate",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2024
+      },
+      {
+        "class": "Federal Funds Rate",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 2,
+        "within_anchor": 2,
+        "year": 2025
+      },
+      {
+        "class": "Federal Funds Rate",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2026
+      },
+      {
+        "class": "Final GDP Price Index q/q",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 0,
+        "year": 2018
+      },
+      {
+        "class": "Final GDP Price Index q/q",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 0,
+        "year": 2019
+      },
+      {
+        "class": "Final GDP Price Index q/q",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 0,
+        "year": 2020
+      },
+      {
+        "class": "Final GDP Price Index q/q",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 0,
+        "year": 2021
+      },
+      {
+        "class": "Final GDP Price Index q/q",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 0,
+        "year": 2022
+      },
+      {
+        "class": "Final GDP Price Index q/q",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "Final GDP Price Index q/q",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "Final GDP Price Index q/q",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "Final GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2018
+      },
+      {
+        "class": "Final GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2019
+      },
+      {
+        "class": "Final GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2020
+      },
+      {
+        "class": "Final GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2021
+      },
+      {
+        "class": "Final GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2022
+      },
+      {
+        "class": "Final GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2023
+      },
+      {
+        "class": "Final GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2024
+      },
+      {
+        "class": "Final GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 1,
+        "year": 2025
+      },
+      {
+        "class": "GDP Sales q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 6,
+        "within_anchor": 6,
+        "year": 2025
+      },
+      {
+        "class": "GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 6,
+        "within_anchor": 6,
+        "year": 2025
+      },
+      {
+        "class": "Goods Trade Balance",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 11,
+        "within_anchor": 0,
+        "year": 2018
+      },
+      {
+        "class": "Goods Trade Balance",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 10,
+        "within_anchor": 0,
+        "year": 2019
+      },
+      {
+        "class": "Goods Trade Balance",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2020
+      },
+      {
+        "class": "Goods Trade Balance",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2021
+      },
+      {
+        "class": "Goods Trade Balance",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2022
+      },
+      {
+        "class": "Goods Trade Balance",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "Goods Trade Balance",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "Goods Trade Balance",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 3,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "ISM Manufacturing PMI",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2025
+      },
+      {
+        "class": "ISM Manufacturing PMI",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2026
+      },
+      {
+        "class": "ISM Manufacturing Prices Paid",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2025
+      },
+      {
+        "class": "ISM Non-Manufacturing PMI",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2025
+      },
+      {
+        "class": "ISM Non-Manufacturing Prices Paid",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2025
+      },
+      {
+        "class": "Import and Export Prices September 2025",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 1,
+        "year": 2025
+      },
+      {
+        "class": "Initial Jobless Claims",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 29,
+        "within_anchor": 29,
+        "year": 2025
+      },
+      {
+        "class": "JOLTS Job Openings",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 1,
+        "year": 2021
+      },
+      {
+        "class": "JOLTS Job Openings",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2022
+      },
+      {
+        "class": "JOLTS Job Openings",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2023
+      },
+      {
+        "class": "JOLTS Job Openings",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2024
+      },
+      {
+        "class": "JOLTS Job Openings",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 10,
+        "within_anchor": 10,
+        "year": 2025
+      },
+      {
+        "class": "JOLTS October 2025",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 1,
+        "year": 2025
+      },
+      {
+        "class": "MNI Chicago Business Barometer",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2025
+      },
+      {
+        "class": "New Home Sales",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 1,
+        "year": 2024
+      },
+      {
+        "class": "New Home Sales",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 5,
+        "within_anchor": 5,
+        "year": 2025
+      },
+      {
+        "class": "Non-Farm Employment Change",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2018
+      },
+      {
+        "class": "Non-Farm Employment Change",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2019
+      },
+      {
+        "class": "Non-Farm Employment Change",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2020
+      },
+      {
+        "class": "Non-Farm Employment Change",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2021
+      },
+      {
+        "class": "Non-Farm Employment Change",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2022
+      },
+      {
+        "class": "Non-Farm Employment Change",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2023
+      },
+      {
+        "class": "Non-Farm Employment Change",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2024
+      },
+      {
+        "class": "Non-Farm Employment Change",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2025
+      },
+      {
+        "class": "Non-Farm Employment Change",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2026
+      },
+      {
+        "class": "Nonfarm Payrolls",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 7,
+        "within_anchor": 7,
+        "year": 2025
+      },
+      {
+        "class": "PPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 11,
+        "within_anchor": 11,
+        "year": 2018
+      },
+      {
+        "class": "PPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 7,
+        "within_anchor": 7,
+        "year": 2019
+      },
+      {
+        "class": "PPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 7,
+        "within_anchor": 7,
+        "year": 2021
+      },
+      {
+        "class": "PPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2022
+      },
+      {
+        "class": "PPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2023
+      },
+      {
+        "class": "PPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2024
+      },
+      {
+        "class": "PPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 9,
+        "within_anchor": 9,
+        "year": 2025
+      },
+      {
+        "class": "PPI m/m",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2026
+      },
+      {
+        "class": "Pending Home Sales m/m",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2020
+      },
+      {
+        "class": "Pending Home Sales m/m",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 5,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "Personal Spending m/m",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2019
+      },
+      {
+        "class": "Philadelphia Fed Manufacturing Index",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2025
+      },
+      {
+        "class": "Prelim Benchmark Payrolls Revision",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2026
+      },
+      {
+        "class": "Prelim GDP Price Index q/q",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 0,
+        "year": 2018
+      },
+      {
+        "class": "Prelim GDP Price Index q/q",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 3,
+        "within_anchor": 0,
+        "year": 2019
+      },
+      {
+        "class": "Prelim GDP Price Index q/q",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 0,
+        "year": 2020
+      },
+      {
+        "class": "Prelim GDP Price Index q/q",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 0,
+        "year": 2021
+      },
+      {
+        "class": "Prelim GDP Price Index q/q",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 0,
+        "year": 2022
+      },
+      {
+        "class": "Prelim GDP Price Index q/q",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "Prelim GDP Price Index q/q",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "Prelim GDP Price Index q/q",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "Prelim GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2018
+      },
+      {
+        "class": "Prelim GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 3,
+        "within_anchor": 3,
+        "year": 2019
+      },
+      {
+        "class": "Prelim GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2020
+      },
+      {
+        "class": "Prelim GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2021
+      },
+      {
+        "class": "Prelim GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2022
+      },
+      {
+        "class": "Prelim GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2023
+      },
+      {
+        "class": "Prelim GDP q/q",
+        "share_within_5_minutes": 0.75,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 3,
+        "year": 2024
+      },
+      {
+        "class": "Prelim GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 1,
+        "year": 2025
+      },
+      {
+        "class": "Prelim GDP q/q",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2026
+      },
+      {
+        "class": "Prelim UoM Consumer Sentiment",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2020
+      },
+      {
+        "class": "Prelim UoM Consumer Sentiment",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 7,
+        "within_anchor": 0,
+        "year": 2022
+      },
+      {
+        "class": "Prelim UoM Consumer Sentiment",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "Prelim UoM Consumer Sentiment",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 7,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "Prelim UoM Consumer Sentiment",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "Prelim UoM Inflation Expectations",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 11,
+        "within_anchor": 0,
+        "year": 2018
+      },
+      {
+        "class": "Prelim UoM Inflation Expectations",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2019
+      },
+      {
+        "class": "Prelim UoM Inflation Expectations",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2020
+      },
+      {
+        "class": "Prelim UoM Inflation Expectations",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2021
+      },
+      {
+        "class": "Prelim UoM Inflation Expectations",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2022
+      },
+      {
+        "class": "Prelim UoM Inflation Expectations",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "Prelim UoM Inflation Expectations",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "Prelim UoM Inflation Expectations",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 3,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "President Biden Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 5,
+        "within_anchor": 0,
+        "year": 2021
+      },
+      {
+        "class": "President Trump Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 7,
+        "within_anchor": 0,
+        "year": 2018
+      },
+      {
+        "class": "President Trump Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 5,
+        "within_anchor": 0,
+        "year": 2019
+      },
+      {
+        "class": "President Trump Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 45,
+        "within_anchor": 0,
+        "year": 2020
+      },
+      {
+        "class": "President Trump Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 19,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "Presidential Election",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2020
+      },
+      {
+        "class": "Presidential Election",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "Producer Price Index September 2025",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 1,
+        "year": 2025
+      },
+      {
+        "class": "Real Earnings September 2025",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 1,
+        "year": 2025
+      },
+      {
+        "class": "Retail Sales m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2018
+      },
+      {
+        "class": "Retail Sales m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2019
+      },
+      {
+        "class": "Retail Sales m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2020
+      },
+      {
+        "class": "Retail Sales m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2021
+      },
+      {
+        "class": "Retail Sales m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2022
+      },
+      {
+        "class": "Retail Sales m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2023
+      },
+      {
+        "class": "Retail Sales m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2024
+      },
+      {
+        "class": "Retail Sales m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 10,
+        "within_anchor": 10,
+        "year": 2025
+      },
+      {
+        "class": "Revised UoM Consumer Sentiment",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 6,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "Revised UoM Consumer Sentiment",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 5,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "Revised UoM Inflation Expectations",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 13,
+        "within_anchor": 0,
+        "year": 2018
+      },
+      {
+        "class": "Revised UoM Inflation Expectations",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2019
+      },
+      {
+        "class": "Revised UoM Inflation Expectations",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2020
+      },
+      {
+        "class": "Revised UoM Inflation Expectations",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2021
+      },
+      {
+        "class": "Revised UoM Inflation Expectations",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2022
+      },
+      {
+        "class": "Revised UoM Inflation Expectations",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "Revised UoM Inflation Expectations",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "Revised UoM Inflation Expectations",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 3,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "S&P Global Manufacturing PMI",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2025
+      },
+      {
+        "class": "S&P Global Services PMI",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2025
+      },
+      {
+        "class": "S&P/CS Composite-20 HPI y/y",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "State Employment September 2025",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 1,
+        "year": 2025
+      },
+      {
+        "class": "Trade Balance",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2018
+      },
+      {
+        "class": "Trade Balance",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2019
+      },
+      {
+        "class": "Trade Balance",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2020
+      },
+      {
+        "class": "Trade Balance",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2021
+      },
+      {
+        "class": "Trade Balance",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2022
+      },
+      {
+        "class": "Trade Balance",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "Trade Balance",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "Trade Balance",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 4,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "Treasury Currency Report",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2021
+      },
+      {
+        "class": "Treasury Currency Report",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2022
+      },
+      {
+        "class": "Treasury Currency Report",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "Treasury Currency Report",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "Treasury Sec Mnuchin Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 3,
+        "within_anchor": 0,
+        "year": 2020
+      },
+      {
+        "class": "Treasury Sec Yellen Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 3,
+        "within_anchor": 0,
+        "year": 2021
+      },
+      {
+        "class": "Unemployment Claims",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 1,
+        "year": 2018
+      },
+      {
+        "class": "Unemployment Claims",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 7,
+        "within_anchor": 7,
+        "year": 2020
+      },
+      {
+        "class": "Unemployment Claims",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 41,
+        "within_anchor": 41,
+        "year": 2023
+      },
+      {
+        "class": "Unemployment Claims",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 52,
+        "within_anchor": 52,
+        "year": 2024
+      },
+      {
+        "class": "Unemployment Claims",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 14,
+        "within_anchor": 14,
+        "year": 2025
+      },
+      {
+        "class": "Unemployment Rate",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2018
+      },
+      {
+        "class": "Unemployment Rate",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2019
+      },
+      {
+        "class": "Unemployment Rate",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2020
+      },
+      {
+        "class": "Unemployment Rate",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2021
+      },
+      {
+        "class": "Unemployment Rate",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2022
+      },
+      {
+        "class": "Unemployment Rate",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2023
+      },
+      {
+        "class": "Unemployment Rate",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2024
+      },
+      {
+        "class": "Unemployment Rate",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 11,
+        "within_anchor": 11,
+        "year": 2025
+      },
+      {
+        "class": "Unemployment Rate",
+        "share_within_5_minutes": 0.0,
+        "source": "primary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2026
+      },
+      {
+        "class": "Usual Weekly Earnings Q3 2025",
+        "share_within_5_minutes": 1.0,
+        "source": "primary",
+        "total": 1,
+        "within_anchor": 1,
+        "year": 2025
+      },
+      {
+        "class": "10-Year Note Auction",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2025
+      },
+      {
+        "class": "10-y Bond Auction",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "30-Year Bond Auction",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2025
+      },
+      {
+        "class": "30-y Bond Auction",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 3,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "ADP Non-Farm Employment Change",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 9,
+        "within_anchor": 9,
+        "year": 2018
+      },
+      {
+        "class": "ADP Non-Farm Employment Change",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 6,
+        "within_anchor": 6,
+        "year": 2019
+      },
+      {
+        "class": "ADP Non-Farm Employment Change",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2020
+      },
+      {
+        "class": "ADP Non-Farm Employment Change",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 6,
+        "within_anchor": 6,
+        "year": 2021
+      },
+      {
+        "class": "ADP Non-Farm Employment Change",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 10,
+        "within_anchor": 10,
+        "year": 2022
+      },
+      {
+        "class": "ADP Non-Farm Employment Change",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2023
+      },
+      {
+        "class": "ADP Non-Farm Employment Change",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2024
+      },
+      {
+        "class": "ADP Non-Farm Employment Change",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2025
+      },
+      {
+        "class": "ADP Nonfarm Employment Change",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 7,
+        "within_anchor": 7,
+        "year": 2025
+      },
+      {
+        "class": "Advance GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2018
+      },
+      {
+        "class": "Advance GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2019
+      },
+      {
+        "class": "Advance GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2020
+      },
+      {
+        "class": "Advance GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2021
+      },
+      {
+        "class": "Advance GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2022
+      },
+      {
+        "class": "Advance GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2023
+      },
+      {
+        "class": "Advance GDP q/q",
+        "share_within_5_minutes": 0.75,
+        "source": "secondary",
+        "total": 4,
+        "within_anchor": 3,
+        "year": 2024
+      },
+      {
+        "class": "Advance GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 1,
+        "year": 2025
+      },
+      {
+        "class": "Advance GDP q/q",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2026
+      },
+      {
+        "class": "Average Hourly Earnings m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2018
+      },
+      {
+        "class": "Average Hourly Earnings m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2019
+      },
+      {
+        "class": "Average Hourly Earnings m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2020
+      },
+      {
+        "class": "Average Hourly Earnings m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2021
+      },
+      {
+        "class": "Average Hourly Earnings m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2022
+      },
+      {
+        "class": "Average Hourly Earnings m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2023
+      },
+      {
+        "class": "Average Hourly Earnings m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2024
+      },
+      {
+        "class": "Average Hourly Earnings m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 11,
+        "within_anchor": 11,
+        "year": 2025
+      },
+      {
+        "class": "Average Hourly Earnings m/m",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2026
+      },
+      {
+        "class": "Building Permits",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 7,
+        "within_anchor": 0,
+        "year": 2018
+      },
+      {
+        "class": "Business Employment Dynamics Q1 2025",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 1,
+        "year": 2025
+      },
+      {
+        "class": "CB Consumer Confidence",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 11,
+        "within_anchor": 11,
+        "year": 2018
+      },
+      {
+        "class": "CB Consumer Confidence",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 11,
+        "within_anchor": 11,
+        "year": 2019
+      },
+      {
+        "class": "CB Consumer Confidence",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2020
+      },
+      {
+        "class": "CB Consumer Confidence",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 1,
+        "year": 2021
+      },
+      {
+        "class": "CB Consumer Confidence",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 7,
+        "within_anchor": 7,
+        "year": 2022
+      },
+      {
+        "class": "CB Consumer Confidence",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2023
+      },
+      {
+        "class": "CB Consumer Confidence",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 11,
+        "within_anchor": 11,
+        "year": 2024
+      },
+      {
+        "class": "CB Consumer Confidence",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 1,
+        "year": 2025
+      },
+      {
+        "class": "CB Consumer Confidence Index",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2025
+      },
+      {
+        "class": "CPI",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 7,
+        "within_anchor": 7,
+        "year": 2025
+      },
+      {
+        "class": "CPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2018
+      },
+      {
+        "class": "CPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2019
+      },
+      {
+        "class": "CPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 7,
+        "within_anchor": 7,
+        "year": 2020
+      },
+      {
+        "class": "CPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 11,
+        "within_anchor": 11,
+        "year": 2021
+      },
+      {
+        "class": "CPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2022
+      },
+      {
+        "class": "CPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2023
+      },
+      {
+        "class": "CPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2024
+      },
+      {
+        "class": "CPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 10,
+        "within_anchor": 10,
+        "year": 2025
+      },
+      {
+        "class": "CPI m/m",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2026
+      },
+      {
+        "class": "CPI y/y",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2018
+      },
+      {
+        "class": "CPI y/y",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2019
+      },
+      {
+        "class": "CPI y/y",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2020
+      },
+      {
+        "class": "CPI y/y",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2021
+      },
+      {
+        "class": "CPI y/y",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2022
+      },
+      {
+        "class": "CPI y/y",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2023
+      },
+      {
+        "class": "CPI y/y",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2024
+      },
+      {
+        "class": "CPI y/y",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 10,
+        "within_anchor": 10,
+        "year": 2025
+      },
+      {
+        "class": "CPI y/y",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2026
+      },
+      {
+        "class": "Chicago PMI",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2019
+      },
+      {
+        "class": "Congressional Elections",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2018
+      },
+      {
+        "class": "Congressional Elections",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2020
+      },
+      {
+        "class": "Congressional Elections",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2022
+      },
+      {
+        "class": "Congressional Elections",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "Core CPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2018
+      },
+      {
+        "class": "Core CPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2019
+      },
+      {
+        "class": "Core CPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 7,
+        "within_anchor": 7,
+        "year": 2020
+      },
+      {
+        "class": "Core CPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 10,
+        "within_anchor": 10,
+        "year": 2021
+      },
+      {
+        "class": "Core CPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2022
+      },
+      {
+        "class": "Core CPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2023
+      },
+      {
+        "class": "Core CPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2024
+      },
+      {
+        "class": "Core CPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 10,
+        "within_anchor": 10,
+        "year": 2025
+      },
+      {
+        "class": "Core CPI m/m",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2026
+      },
+      {
+        "class": "Core CPI n.s.a. m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 7,
+        "within_anchor": 7,
+        "year": 2025
+      },
+      {
+        "class": "Core CPI y/y",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2026
+      },
+      {
+        "class": "Core Durable Goods Orders m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2018
+      },
+      {
+        "class": "Core Durable Goods Orders m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 9,
+        "within_anchor": 9,
+        "year": 2019
+      },
+      {
+        "class": "Core Durable Goods Orders m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 1,
+        "year": 2020
+      },
+      {
+        "class": "Core PCE Price Index m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 6,
+        "within_anchor": 6,
+        "year": 2021
+      },
+      {
+        "class": "Core PCE Price Index m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2022
+      },
+      {
+        "class": "Core PCE Price Index m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2023
+      },
+      {
+        "class": "Core PCE Price Index m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2024
+      },
+      {
+        "class": "Core PCE Price Index m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 9,
+        "within_anchor": 9,
+        "year": 2025
+      },
+      {
+        "class": "Core PCE Price Index m/m",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2026
+      },
+      {
+        "class": "Core PCE Price Index y/y",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 6,
+        "within_anchor": 6,
+        "year": 2025
+      },
+      {
+        "class": "Core PPI m/m",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2022
+      },
+      {
+        "class": "Core PPI m/m",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "Core PPI m/m",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "Core PPI m/m",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 3,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "Core PPI m/m",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2026
+      },
+      {
+        "class": "Core Retail Sales m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2018
+      },
+      {
+        "class": "Core Retail Sales m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2019
+      },
+      {
+        "class": "Core Retail Sales m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2020
+      },
+      {
+        "class": "Core Retail Sales m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2021
+      },
+      {
+        "class": "Core Retail Sales m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2022
+      },
+      {
+        "class": "Core Retail Sales m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2023
+      },
+      {
+        "class": "Core Retail Sales m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2024
+      },
+      {
+        "class": "Core Retail Sales m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 10,
+        "within_anchor": 10,
+        "year": 2025
+      },
+      {
+        "class": "Crude Oil Inventories",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 39,
+        "within_anchor": 39,
+        "year": 2018
+      },
+      {
+        "class": "Crude Oil Inventories",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2019
+      },
+      {
+        "class": "Crude Oil Inventories",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 1,
+        "year": 2020
+      },
+      {
+        "class": "Durable Goods Orders m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 1,
+        "year": 2024
+      },
+      {
+        "class": "Durable Goods Orders m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 7,
+        "within_anchor": 7,
+        "year": 2025
+      },
+      {
+        "class": "EIA Crude Oil Stocks Change",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 35,
+        "within_anchor": 35,
+        "year": 2025
+      },
+      {
+        "class": "Empire State Manufacturing Index",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 4,
+        "within_anchor": 0,
+        "year": 2022
+      },
+      {
+        "class": "Empire State Manufacturing Index",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "Empire State Manufacturing Index",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 7,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "Employment Cost Index Q3 2025",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 1,
+        "year": 2025
+      },
+      {
+        "class": "Employment Cost Index q/q",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 3,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "Employment Cost Index q/q",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 4,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "Employment Cost Index q/q",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "Employment Situation September 2025",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 1,
+        "year": 2025
+      },
+      {
+        "class": "Existing Home Sales",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2025
+      },
+      {
+        "class": "FOMC Economic Projections",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2018
+      },
+      {
+        "class": "FOMC Economic Projections",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2019
+      },
+      {
+        "class": "FOMC Economic Projections",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 3,
+        "within_anchor": 3,
+        "year": 2020
+      },
+      {
+        "class": "FOMC Economic Projections",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2021
+      },
+      {
+        "class": "FOMC Economic Projections",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2022
+      },
+      {
+        "class": "FOMC Economic Projections",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2023
+      },
+      {
+        "class": "FOMC Economic Projections",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2024
+      },
+      {
+        "class": "FOMC Economic Projections",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 1,
+        "year": 2025
+      },
+      {
+        "class": "FOMC Meeting Minutes",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 8,
+        "within_anchor": 0,
+        "year": 2018
+      },
+      {
+        "class": "FOMC Meeting Minutes",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 8,
+        "within_anchor": 0,
+        "year": 2019
+      },
+      {
+        "class": "FOMC Meeting Minutes",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 4,
+        "within_anchor": 0,
+        "year": 2020
+      },
+      {
+        "class": "FOMC Meeting Minutes",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 6,
+        "within_anchor": 0,
+        "year": 2021
+      },
+      {
+        "class": "FOMC Meeting Minutes",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 8,
+        "within_anchor": 0,
+        "year": 2022
+      },
+      {
+        "class": "FOMC Meeting Minutes",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 8,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "FOMC Meeting Minutes",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 8,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "FOMC Meeting Minutes",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "FOMC Meeting Minutes",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2026
+      },
+      {
+        "class": "FOMC Member Bullard Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2022
+      },
+      {
+        "class": "FOMC Member Evans Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2019
+      },
+      {
+        "class": "FOMC Member Waller Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "FOMC Member Williams Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "FOMC Press Conference",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2018
+      },
+      {
+        "class": "FOMC Press Conference",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2019
+      },
+      {
+        "class": "FOMC Press Conference",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 9,
+        "within_anchor": 9,
+        "year": 2020
+      },
+      {
+        "class": "FOMC Press Conference",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2021
+      },
+      {
+        "class": "FOMC Press Conference",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2022
+      },
+      {
+        "class": "FOMC Press Conference",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2023
+      },
+      {
+        "class": "FOMC Press Conference",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2024
+      },
+      {
+        "class": "FOMC Press Conference",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2025
+      },
+      {
+        "class": "FOMC Press Conference",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2026
+      },
+      {
+        "class": "FOMC Statement",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2018
+      },
+      {
+        "class": "FOMC Statement",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2019
+      },
+      {
+        "class": "FOMC Statement",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 9,
+        "within_anchor": 9,
+        "year": 2020
+      },
+      {
+        "class": "FOMC Statement",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2021
+      },
+      {
+        "class": "FOMC Statement",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2022
+      },
+      {
+        "class": "FOMC Statement",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2023
+      },
+      {
+        "class": "FOMC Statement",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2024
+      },
+      {
+        "class": "FOMC Statement",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 2,
+        "within_anchor": 2,
+        "year": 2025
+      },
+      {
+        "class": "FOMC Statement",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2026
+      },
+      {
+        "class": "Fed Announcement",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 14,
+        "within_anchor": 0,
+        "year": 2020
+      },
+      {
+        "class": "Fed Announcement",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2021
+      },
+      {
+        "class": "Fed Announcement",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "Fed Chair Powell Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 14,
+        "within_anchor": 0,
+        "year": 2018
+      },
+      {
+        "class": "Fed Chair Powell Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 21,
+        "within_anchor": 0,
+        "year": 2019
+      },
+      {
+        "class": "Fed Chair Powell Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2020
+      },
+      {
+        "class": "Fed Chair Powell Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 17,
+        "within_anchor": 0,
+        "year": 2021
+      },
+      {
+        "class": "Fed Chair Powell Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2022
+      },
+      {
+        "class": "Fed Chair Powell Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 14,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "Fed Chair Powell Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 13,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "Fed Chair Powell Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "Fed Chair Powell Speech",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 10,
+        "within_anchor": 10,
+        "year": 2025
+      },
+      {
+        "class": "Fed Chair Powell Testifies",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 4,
+        "within_anchor": 0,
+        "year": 2018
+      },
+      {
+        "class": "Fed Chair Powell Testifies",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 6,
+        "within_anchor": 0,
+        "year": 2019
+      },
+      {
+        "class": "Fed Chair Powell Testifies",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 11,
+        "within_anchor": 0,
+        "year": 2020
+      },
+      {
+        "class": "Fed Chair Powell Testifies",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 11,
+        "within_anchor": 0,
+        "year": 2021
+      },
+      {
+        "class": "Fed Chair Powell Testifies",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 5,
+        "within_anchor": 0,
+        "year": 2022
+      },
+      {
+        "class": "Fed Chair Powell Testifies",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 4,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "Fed Chair Powell Testifies",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 4,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "Fed Chair Powell Testifies",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "Fed Chair Powell Testimony",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 2,
+        "within_anchor": 2,
+        "year": 2025
+      },
+      {
+        "class": "Fed Chairman Warsh Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2026
+      },
+      {
+        "class": "Fed Interest Rate Decision",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 6,
+        "within_anchor": 6,
+        "year": 2025
+      },
+      {
+        "class": "Federal Funds Rate",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2018
+      },
+      {
+        "class": "Federal Funds Rate",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2019
+      },
+      {
+        "class": "Federal Funds Rate",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2020
+      },
+      {
+        "class": "Federal Funds Rate",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 2,
+        "within_anchor": 2,
+        "year": 2021
+      },
+      {
+        "class": "Federal Funds Rate",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2022
+      },
+      {
+        "class": "Federal Funds Rate",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2023
+      },
+      {
+        "class": "Federal Funds Rate",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2024
+      },
+      {
+        "class": "Federal Funds Rate",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 2,
+        "within_anchor": 2,
+        "year": 2025
+      },
+      {
+        "class": "Federal Funds Rate",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2026
+      },
+      {
+        "class": "Final GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2018
+      },
+      {
+        "class": "Final GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 2,
+        "within_anchor": 2,
+        "year": 2019
+      },
+      {
+        "class": "Final GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2023
+      },
+      {
+        "class": "Final GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2024
+      },
+      {
+        "class": "Final GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 1,
+        "year": 2025
+      },
+      {
+        "class": "Final Manufacturing PMI",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "Flash Manufacturing PMI",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2019
+      },
+      {
+        "class": "Flash Manufacturing PMI",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 6,
+        "within_anchor": 0,
+        "year": 2020
+      },
+      {
+        "class": "Flash Manufacturing PMI",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2021
+      },
+      {
+        "class": "Flash Manufacturing PMI",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 10,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "Flash Manufacturing PMI",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "Flash Manufacturing PMI",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 3,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "Flash Services PMI",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2021
+      },
+      {
+        "class": "Flash Services PMI",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 6,
+        "within_anchor": 0,
+        "year": 2022
+      },
+      {
+        "class": "Flash Services PMI",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "Flash Services PMI",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "Flash Services PMI",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 3,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "GDP Sales q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 6,
+        "within_anchor": 6,
+        "year": 2025
+      },
+      {
+        "class": "GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 6,
+        "within_anchor": 6,
+        "year": 2025
+      },
+      {
+        "class": "Housing Starts",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "ISM Manufacturing PMI",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2018
+      },
+      {
+        "class": "ISM Manufacturing PMI",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2019
+      },
+      {
+        "class": "ISM Manufacturing PMI",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 11,
+        "within_anchor": 11,
+        "year": 2020
+      },
+      {
+        "class": "ISM Manufacturing PMI",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 9,
+        "within_anchor": 9,
+        "year": 2021
+      },
+      {
+        "class": "ISM Manufacturing PMI",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2022
+      },
+      {
+        "class": "ISM Manufacturing PMI",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2023
+      },
+      {
+        "class": "ISM Manufacturing PMI",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2024
+      },
+      {
+        "class": "ISM Manufacturing PMI",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2025
+      },
+      {
+        "class": "ISM Manufacturing PMI",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2026
+      },
+      {
+        "class": "ISM Manufacturing Prices Paid",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2025
+      },
+      {
+        "class": "ISM Non-Manufacturing PMI",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2025
+      },
+      {
+        "class": "ISM Non-Manufacturing Prices Paid",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2025
+      },
+      {
+        "class": "ISM Services PMI",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2018
+      },
+      {
+        "class": "ISM Services PMI",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 9,
+        "within_anchor": 9,
+        "year": 2019
+      },
+      {
+        "class": "ISM Services PMI",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 10,
+        "within_anchor": 10,
+        "year": 2020
+      },
+      {
+        "class": "ISM Services PMI",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 7,
+        "within_anchor": 7,
+        "year": 2021
+      },
+      {
+        "class": "ISM Services PMI",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 9,
+        "within_anchor": 9,
+        "year": 2022
+      },
+      {
+        "class": "ISM Services PMI",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2023
+      },
+      {
+        "class": "ISM Services PMI",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2024
+      },
+      {
+        "class": "ISM Services PMI",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2025
+      },
+      {
+        "class": "Import and Export Prices September 2025",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 1,
+        "year": 2025
+      },
+      {
+        "class": "Initial Jobless Claims",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 29,
+        "within_anchor": 29,
+        "year": 2025
+      },
+      {
+        "class": "JOLTS Job Openings",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 1,
+        "year": 2021
+      },
+      {
+        "class": "JOLTS Job Openings",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2022
+      },
+      {
+        "class": "JOLTS Job Openings",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2023
+      },
+      {
+        "class": "JOLTS Job Openings",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2024
+      },
+      {
+        "class": "JOLTS Job Openings",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 10,
+        "within_anchor": 10,
+        "year": 2025
+      },
+      {
+        "class": "JOLTS October 2025",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 1,
+        "year": 2025
+      },
+      {
+        "class": "MNI Chicago Business Barometer",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2025
+      },
+      {
+        "class": "New Home Sales",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 1,
+        "year": 2024
+      },
+      {
+        "class": "New Home Sales",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 5,
+        "within_anchor": 5,
+        "year": 2025
+      },
+      {
+        "class": "Non-Farm Employment Change",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2018
+      },
+      {
+        "class": "Non-Farm Employment Change",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2019
+      },
+      {
+        "class": "Non-Farm Employment Change",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2020
+      },
+      {
+        "class": "Non-Farm Employment Change",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2021
+      },
+      {
+        "class": "Non-Farm Employment Change",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2022
+      },
+      {
+        "class": "Non-Farm Employment Change",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2023
+      },
+      {
+        "class": "Non-Farm Employment Change",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2024
+      },
+      {
+        "class": "Non-Farm Employment Change",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2025
+      },
+      {
+        "class": "Non-Farm Employment Change",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2026
+      },
+      {
+        "class": "Nonfarm Payrolls",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 7,
+        "within_anchor": 7,
+        "year": 2025
+      },
+      {
+        "class": "PPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 11,
+        "within_anchor": 11,
+        "year": 2018
+      },
+      {
+        "class": "PPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 7,
+        "within_anchor": 7,
+        "year": 2019
+      },
+      {
+        "class": "PPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 7,
+        "within_anchor": 7,
+        "year": 2021
+      },
+      {
+        "class": "PPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2022
+      },
+      {
+        "class": "PPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2023
+      },
+      {
+        "class": "PPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2024
+      },
+      {
+        "class": "PPI m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 9,
+        "within_anchor": 9,
+        "year": 2025
+      },
+      {
+        "class": "PPI m/m",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2026
+      },
+      {
+        "class": "Pending Home Sales m/m",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2020
+      },
+      {
+        "class": "Pending Home Sales m/m",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 5,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "Personal Spending m/m",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2019
+      },
+      {
+        "class": "Philadelphia Fed Manufacturing Index",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2025
+      },
+      {
+        "class": "Philly Fed Manufacturing Index",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 3,
+        "within_anchor": 3,
+        "year": 2019
+      },
+      {
+        "class": "Philly Fed Manufacturing Index",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 3,
+        "within_anchor": 3,
+        "year": 2022
+      },
+      {
+        "class": "Prelim Benchmark Payrolls Revision",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2026
+      },
+      {
+        "class": "Prelim GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2018
+      },
+      {
+        "class": "Prelim GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 2,
+        "within_anchor": 2,
+        "year": 2019
+      },
+      {
+        "class": "Prelim GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 1,
+        "year": 2020
+      },
+      {
+        "class": "Prelim GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 3,
+        "within_anchor": 3,
+        "year": 2021
+      },
+      {
+        "class": "Prelim GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2022
+      },
+      {
+        "class": "Prelim GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 4,
+        "within_anchor": 4,
+        "year": 2023
+      },
+      {
+        "class": "Prelim GDP q/q",
+        "share_within_5_minutes": 0.75,
+        "source": "secondary",
+        "total": 4,
+        "within_anchor": 3,
+        "year": 2024
+      },
+      {
+        "class": "Prelim GDP q/q",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 1,
+        "year": 2025
+      },
+      {
+        "class": "Prelim GDP q/q",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2026
+      },
+      {
+        "class": "Prelim UoM Consumer Sentiment",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2020
+      },
+      {
+        "class": "Prelim UoM Consumer Sentiment",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 7,
+        "within_anchor": 0,
+        "year": 2022
+      },
+      {
+        "class": "Prelim UoM Consumer Sentiment",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "Prelim UoM Consumer Sentiment",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 7,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "Prelim UoM Consumer Sentiment",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "Prelim UoM Inflation Expectations",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "President Biden Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 5,
+        "within_anchor": 0,
+        "year": 2021
+      },
+      {
+        "class": "President Trump Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 7,
+        "within_anchor": 0,
+        "year": 2018
+      },
+      {
+        "class": "President Trump Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 5,
+        "within_anchor": 0,
+        "year": 2019
+      },
+      {
+        "class": "President Trump Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 45,
+        "within_anchor": 0,
+        "year": 2020
+      },
+      {
+        "class": "President Trump Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 19,
+        "within_anchor": 0,
+        "year": 2025
+      },
+      {
+        "class": "Presidential Election",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2020
+      },
+      {
+        "class": "Presidential Election",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "Producer Price Index September 2025",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 1,
+        "year": 2025
+      },
+      {
+        "class": "Real Earnings September 2025",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 1,
+        "year": 2025
+      },
+      {
+        "class": "Retail Sales m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2018
+      },
+      {
+        "class": "Retail Sales m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2019
+      },
+      {
+        "class": "Retail Sales m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 11,
+        "within_anchor": 11,
+        "year": 2020
+      },
+      {
+        "class": "Retail Sales m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2021
+      },
+      {
+        "class": "Retail Sales m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2022
+      },
+      {
+        "class": "Retail Sales m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2023
+      },
+      {
+        "class": "Retail Sales m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2024
+      },
+      {
+        "class": "Retail Sales m/m",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 10,
+        "within_anchor": 10,
+        "year": 2025
+      },
+      {
+        "class": "Revised UoM Consumer Sentiment",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 6,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "Revised UoM Consumer Sentiment",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 5,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "S&P Global Manufacturing PMI",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2025
+      },
+      {
+        "class": "S&P Global Services PMI",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 8,
+        "within_anchor": 8,
+        "year": 2025
+      },
+      {
+        "class": "S&P/CS Composite-20 HPI y/y",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "State Employment September 2025",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 1,
+        "year": 2025
+      },
+      {
+        "class": "Treasury Currency Report",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2021
+      },
+      {
+        "class": "Treasury Currency Report",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2022
+      },
+      {
+        "class": "Treasury Currency Report",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2023
+      },
+      {
+        "class": "Treasury Currency Report",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 0,
+        "year": 2024
+      },
+      {
+        "class": "Treasury Sec Mnuchin Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 3,
+        "within_anchor": 0,
+        "year": 2020
+      },
+      {
+        "class": "Treasury Sec Yellen Speaks",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 3,
+        "within_anchor": 0,
+        "year": 2021
+      },
+      {
+        "class": "Unemployment Claims",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 1,
+        "year": 2018
+      },
+      {
+        "class": "Unemployment Claims",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 7,
+        "within_anchor": 7,
+        "year": 2020
+      },
+      {
+        "class": "Unemployment Claims",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 41,
+        "within_anchor": 41,
+        "year": 2023
+      },
+      {
+        "class": "Unemployment Claims",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 52,
+        "within_anchor": 52,
+        "year": 2024
+      },
+      {
+        "class": "Unemployment Claims",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 14,
+        "within_anchor": 14,
+        "year": 2025
+      },
+      {
+        "class": "Unemployment Rate",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2018
+      },
+      {
+        "class": "Unemployment Rate",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2019
+      },
+      {
+        "class": "Unemployment Rate",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2020
+      },
+      {
+        "class": "Unemployment Rate",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2021
+      },
+      {
+        "class": "Unemployment Rate",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2022
+      },
+      {
+        "class": "Unemployment Rate",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2023
+      },
+      {
+        "class": "Unemployment Rate",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 12,
+        "within_anchor": 12,
+        "year": 2024
+      },
+      {
+        "class": "Unemployment Rate",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 11,
+        "within_anchor": 11,
+        "year": 2025
+      },
+      {
+        "class": "Unemployment Rate",
+        "share_within_5_minutes": 0.0,
+        "source": "secondary",
+        "total": 2,
+        "within_anchor": 0,
+        "year": 2026
+      },
+      {
+        "class": "Usual Weekly Earnings Q3 2025",
+        "share_within_5_minutes": 1.0,
+        "source": "secondary",
+        "total": 1,
+        "within_anchor": 1,
+        "year": 2025
+      }
+    ],
+    "total": 6348
+  },
+  "coverage": {
+    "end": "2026-09",
+    "start": "2015-01",
+    "zero_months": {
+      "primary": [
+        "2026-01",
+        "2026-02",
+        "2026-03",
+        "2026-04",
+        "2026-05",
+        "2026-06"
+      ],
+      "secondary": [
+        "2026-01",
+        "2026-02",
+        "2026-03",
+        "2026-04",
+        "2026-05",
+        "2026-06"
+      ]
+    }
+  },
+  "cross_file": {
+    "delta_histogram_minutes": {
+      "0": 46676,
+      "1": 2278
+    },
+    "identical_instant": 46676,
+    "matched": 48954,
+    "unmatched_primary_rows": 0
+  },
+  "dst_rule_version": "qm.dst_rule.us.v1",
+  "generated_at_utc": "2026-09-05T09:40:13.839165+00:00",
+  "inputs": {
+    "native": [
+      {
+        "currency": "USD",
+        "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_USD_HIGH_2018_2025_NATIVE.csv",
+        "rows": 4189,
+        "sha256": "c1554e52d3456575f51d044cd0097e18b960c7f12485e9b45a07e36536b9ab3b"
+      },
+      {
+        "currency": "EUR",
+        "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_EUR_HIGH_2018_2025_NATIVE.csv",
+        "rows": 1054,
+        "sha256": "f619007af0a0126f665afe247b6828e21c36a642ca4e6714f962ae7573bf8137"
+      },
+      {
+        "currency": "GBP",
+        "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_GBP_HIGH_2018_2025_NATIVE.csv",
+        "rows": 603,
+        "sha256": "8b4291bae1e41911c66fb683b994baece4910c3623feffaa3d43f2c970c1bee4"
+      },
+      {
+        "currency": "JPY",
+        "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_JPY_HIGH_2018_2025_NATIVE.csv",
+        "rows": 537,
+        "sha256": "680b5cd69ef84a37523cce2b39ed6533eb73a322c18ef42da258feb50307dcf6"
+      }
+    ],
+    "primary": {
+      "path": "D:\\QM\\reports\\news_calendar\\repair_e1a\\20260905T094500Z\\news_calendar_2015_2025.csv",
+      "rows": 48954,
+      "sha256": "d936e680b69446f3b19b15aa498d6ac6f616db06cb6a34fc93275f6dc07df151"
+    },
+    "secondary": {
+      "path": "D:\\QM\\reports\\news_calendar\\repair_e1a\\20260905T094500Z\\forex_factory_calendar_clean.csv",
+      "rows": 48963,
+      "sha256": "76e22d47ef4de26f39a7887bee33310a1c48f857d3f99902195d7756a6585c44"
+    }
+  },
+  "native_comparison": {
+    "delta_histogram_minutes": {
+      "-1": 3,
+      "-1000": 1,
+      "-1050": 1,
+      "-1080": 1,
+      "-1095": 2,
+      "-1125": 2,
+      "-1140": 1,
+      "-1155": 29,
+      "-1170": 2,
+      "-1185": 16,
+      "-120": 2,
+      "-1200": 16,
+      "-1230": 3,
+      "-1245": 1,
+      "-1260": 1,
+      "-1290": 2,
+      "-1305": 1,
+      "-1395": 1,
+      "-140": 1,
+      "-145": 1,
+      "-150": 3,
+      "-165": 4,
+      "-17": 1,
+      "-172": 1,
+      "-176": 1,
+      "-179": 1,
+      "-180": 392,
+      "-181": 1,
+      "-183": 1,
+      "-190": 1,
+      "-195": 1,
+      "-2": 1,
+      "-210": 1,
+      "-225": 2,
+      "-238": 1,
+      "-240": 53,
+      "-242": 1,
+      "-255": 2,
+      "-285": 3,
+      "-30": 2,
+      "-345": 4,
+      "-355": 1,
+      "-360": 1,
+      "-368": 1,
+      "-370": 1,
+      "-376": 1,
+      "-378": 2,
+      "-380": 1,
+      "-382": 1,
+      "-389": 1,
+      "-391": 5,
+      "-398": 1,
+      "-399": 1,
+      "-402": 1,
+      "-404": 1,
+      "-413": 2,
+      "-417": 2,
+      "-420": 3,
+      "-422": 1,
+      "-442": 1,
+      "-445": 1,
+      "-447": 1,
+      "-451": 2,
+      "-453": 1,
+      "-454": 1,
+      "-477": 1,
+      "-478": 1,
+      "-5": 2,
+      "-50": 1,
+      "-506": 2,
+      "-510": 2,
+      "-513": 1,
+      "-60": 10,
+      "-660": 2,
+      "-7": 1,
+      "-75": 1,
+      "-750": 5,
+      "-810": 19,
+      "-88": 1,
+      "-930": 3,
+      "-960": 8,
+      "-985": 1,
+      "-990": 4,
+      "0": 1608,
+      "1": 4,
+      "10": 1,
+      "1049": 7,
+      "135": 1,
+      "2": 2,
+      "210": 1,
+      "510": 1,
+      "6": 1,
+      "66": 1,
+      "989": 2
+    },
+    "matched": 2292,
+    "per_currency": {
+      "EUR": {
+        "other": 243
+      },
+      "GBP": {
+        "other": 378
+      },
+      "JPY": {
+        "exact": 49,
+        "other": 51,
+        "within_5m": 12
+      },
+      "USD": {
+        "exact": 1559
+      }
+    },
+    "per_event": {
+      "EUR:CPI Flash Estimate y/y": {
+        "other": 9
+      },
+      "EUR:ECB President Draghi Speaks": {
+        "other": 30
+      },
+      "EUR:ECB President Lagarde Speaks": {
+        "other": 22
+      },
+      "EUR:ECB Press Conference": {
+        "other": 58
+      },
+      "EUR:EU Economic Forecasts": {
+        "other": 1
+      },
+      "EUR:EU Economic Summit": {
+        "other": 12
+      },
+      "EUR:Euro Summit": {
+        "other": 4
+      },
+      "EUR:Main Refinancing Rate": {
+        "other": 49
+      },
+      "EUR:Monetary Policy Statement": {
+        "other": 58
+      },
+      "GBP:Annual Budget Release": {
+        "other": 2
+      },
+      "GBP:Autumn Forecast Statement": {
+        "other": 1
+      },
+      "GBP:BOE Gov Bailey Speaks": {
+        "other": 74
+      },
+      "GBP:BOE Gov Carney Speaks": {
+        "other": 51
+      },
+      "GBP:CPI y/y": {
+        "other": 72
+      },
+      "GBP:GDP m/m": {
+        "other": 49
+      },
+      "GBP:Monetary Policy Report Hearings": {
+        "other": 7
+      },
+      "GBP:Monetary Policy Summary": {
+        "other": 60
+      },
+      "GBP:Official Bank Rate": {
+        "other": 49
+      },
+      "GBP:Prelim GDP q/q": {
+        "other": 11
+      },
+      "GBP:Second Estimate GDP q/q": {
+        "other": 2
+      },
+      "JPY:BOJ Gov Kuroda Speaks": {
+        "exact": 8,
+        "other": 3,
+        "within_5m": 2
+      },
+      "JPY:BOJ Policy Rate": {
+        "exact": 3,
+        "other": 9
+      },
+      "JPY:BOJ Press Conference": {
+        "exact": 24,
+        "other": 8,
+        "within_5m": 5
+      },
+      "JPY:Monetary Policy Statement": {
+        "exact": 14,
+        "other": 30,
+        "within_5m": 5
+      },
+      "JPY:Tokyo Core CPI y/y": {
+        "other": 1
+      },
+      "USD:ADP Non-Farm Employment Change": {
+        "exact": 67
+      },
+      "USD:Advance GDP q/q": {
+        "exact": 28
+      },
+      "USD:Average Hourly Earnings m/m": {
+        "exact": 95
+      },
+      "USD:CB Consumer Confidence": {
+        "exact": 58
+      },
+      "USD:CPI m/m": {
+        "exact": 88
+      },
+      "USD:CPI y/y": {
+        "exact": 94
+      },
+      "USD:Core CPI m/m": {
+        "exact": 87
+      },
+      "USD:Core Durable Goods Orders m/m": {
+        "exact": 22
+      },
+      "USD:Core PCE Price Index m/m": {
+        "exact": 51
+      },
+      "USD:Core Retail Sales m/m": {
+        "exact": 94
+      },
+      "USD:Crude Oil Inventories": {
+        "exact": 48
+      },
+      "USD:FOMC Press Conference": {
+        "exact": 61
+      },
+      "USD:Federal Funds Rate": {
+        "exact": 48
+      },
+      "USD:Final GDP q/q": {
+        "exact": 15
+      },
+      "USD:ISM Manufacturing PMI": {
+        "exact": 92
+      },
+      "USD:ISM Services PMI": {
+        "exact": 75
+      },
+      "USD:JOLTS Job Openings": {
+        "exact": 47
+      },
+      "USD:Non-Farm Employment Change": {
+        "exact": 88
+      },
+      "USD:PPI m/m": {
+        "exact": 70
+      },
+      "USD:Philly Fed Manufacturing Index": {
+        "exact": 6
+      },
+      "USD:Prelim GDP q/q": {
+        "exact": 22
+      },
+      "USD:Retail Sales m/m": {
+        "exact": 93
+      },
+      "USD:Unemployment Claims": {
+        "exact": 115
+      },
+      "USD:Unemployment Rate": {
+        "exact": 95
+      }
+    },
+    "unmatched_by_event": {
+      "EUR:ECB President Draghi Speaks": 1,
+      "EUR:ECB President Lagarde Speaks": 1,
+      "EUR:EU Economic Forecasts": 1,
+      "EUR:Euro Summit": 2,
+      "GBP:Annual Budget Release": 7,
+      "GBP:BOE Gov Bailey Speaks": 40,
+      "GBP:BOE Gov Carney Speaks": 6,
+      "GBP:Monetary Policy Report Hearings": 13,
+      "JPY:BOJ Gov Kuroda Speaks": 1,
+      "USD:Advance GDP q/q": 1,
+      "USD:Prelim GDP q/q": 1
+    },
+    "unmatched_mapped_rows": 74
+  },
+  "parse_errors": {
+    "primary": [],
+    "secondary": []
+  },
+  "primary_derived_columns": {
+    "mismatch_count": 0,
+    "mismatches_by_field": {},
+    "rows_checked": 48954
+  },
+  "report_dir": "D:\\QM\\reports\\news_calendar\\repair_e1a\\20260905T094500Z\\diagnose",
+  "report_only": true,
+  "schema_version": "qm.news-calendar-semantic-diagnose/v1"
+}

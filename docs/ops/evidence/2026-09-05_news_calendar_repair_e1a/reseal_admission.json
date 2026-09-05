@@ -1,0 +1,15 @@
+{
+  "command": [
+    "python",
+    "C:/QM/repo/tools/strategy_farm/news_calendar_gate.py",
+    "multi-plan",
+    "--primary-candidate",
+    "D:\\QM\\reports\\news_calendar\\repair_e1a\\20260905T094500Z\\news_calendar_2015_2025.csv",
+    "--secondary-candidate",
+    "D:\\QM\\reports\\news_calendar\\repair_e1a\\20260905T094500Z\\forex_factory_calendar_clean.csv"
+  ],
+  "exit_code": 2,
+  "stdout": "{\"error\": \"production candidates must be the exact D source pair or one canonical state staging pair\", \"ok\": false}\n",
+  "stderr": "",
+  "read_only": true
+}

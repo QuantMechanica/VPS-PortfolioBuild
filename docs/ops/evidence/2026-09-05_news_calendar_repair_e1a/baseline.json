@@ -1,0 +1,25 @@
+{
+  "cross_file": {
+    "delta_histogram_minutes": {
+      "0": 46352,
+      "1": 2278
+    },
+    "identical_instant": 46352,
+    "matched": 48630,
+    "unmatched_primary_rows": 0
+  },
+  "inputs": [
+    {
+      "path": "D:\\QM\\data\\news_calendar\\news_calendar_2015_2025.csv",
+      "sha256": "75ab4b425ce379b2ca43ce2d2a53e2b7f33d439fd9537f8869b8a97b968d914f"
+    },
+    {
+      "path": "D:\\QM\\data\\news_calendar\\forex_factory_calendar_clean.csv",
+      "sha256": "126c268b783d2d5861e69786bce325e9a64dc9893718e02342dcc8be769a389a"
+    }
+  ],
+  "primary_rows": 48630,
+  "primary_rows_with_identical_ff_instant": 46352,
+  "schema": "qm.news-calendar-repair-e1a/v1",
+  "secondary_rows": 48639
+}

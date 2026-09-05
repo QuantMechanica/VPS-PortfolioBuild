@@ -1,0 +1,112 @@
+{
+  "baseline_sha256": "aaddcfdc6b9fbc8f58531c0ca950edbc5ca6fea2551f1e15a6bad4f28a92be85",
+  "candidate_status": "INCOMPLETE_CANDIDATES_NOT_PUBLISHABLE; awaiting 2026-H1 export and unresolved verification inputs",
+  "decision_id": "OWNER-DEC-CALENDAR-E1A-20260905",
+  "eet_display_rule": "EU last-Sunday March/October at 01:00Z; UTC+2 standard / UTC+3 summer; display only",
+  "files": [
+    {
+      "first_event_utc": "2015-01-01T01:00:00Z",
+      "last_event_utc": "2026-09-04T14:00:00Z",
+      "name": "news_calendar_2015_2025.csv",
+      "row_count": 48954,
+      "sha256": "d936e680b69446f3b19b15aa498d6ac6f616db06cb6a34fc93275f6dc07df151"
+    },
+    {
+      "first_event_utc": "2015-01-01T01:00:00Z",
+      "last_event_utc": "2026-09-04T14:00:00Z",
+      "name": "forex_factory_calendar_clean.csv",
+      "row_count": 48963,
+      "sha256": "76e22d47ef4de26f39a7887bee33310a1c48f857d3f99902195d7756a6585c44"
+    }
+  ],
+  "gap_count": 26917,
+  "gap_list_sha256": "d1d2e44f9dc1e455f90b7875ed5481b13f089242e90738a636ec9c6b7fe1f83e",
+  "input_files": [
+    {
+      "path": "D:\\QM\\data\\news_calendar\\news_calendar_2015_2025.csv",
+      "sha256": "75ab4b425ce379b2ca43ce2d2a53e2b7f33d439fd9537f8869b8a97b968d914f"
+    },
+    {
+      "path": "D:\\QM\\data\\news_calendar\\forex_factory_calendar_clean.csv",
+      "sha256": "126c268b783d2d5861e69786bce325e9a64dc9893718e02342dcc8be769a389a"
+    },
+    {
+      "path": "C:\\QM\\repo\\decisions\\2026-09-02_owner_receipts_ceo_asks.md",
+      "sha256": "5bee84ade13b31e8ecf042f1f307950523aca072e36839b5bd43c2737066afe1"
+    },
+    {
+      "path": "C:\\QM\\repo\\.private\\secret_strategy_lab\\native_calendar_multicurrency\\build_validated_supplement.py",
+      "sha256": "4fd5d4ce0b413faf8ff8a42db2b9e5954236a63907001ffd150001cdfaf60981"
+    },
+    {
+      "path": "C:\\QM\\repo\\.private\\secret_strategy_lab\\xau_breadth_tuesday_rebound_ftmo\\build_native_usd_calendar.py",
+      "sha256": "22904ab80400004efc8da3cc031dedf993c806c087f20bf28761b3055c21f0a6"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_USD_HIGH_2018_2025_NATIVE.csv",
+      "role": "AUTHORITATIVE_NATIVE",
+      "rows": 4189,
+      "sha256": "c1554e52d3456575f51d044cd0097e18b960c7f12485e9b45a07e36536b9ab3b"
+    },
+    {
+      "delta_seconds_from_full_export": {
+        "10800": 480
+      },
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_USD_HIGH_2025_NATIVE.csv",
+      "role": "CROSSCHECK_ONLY_EXCLUDED_FROM_TRUTH",
+      "rows": 480,
+      "sha256": "2d4b10a1ad9859d23aa5f13f115d0db84bc236226dd3de071be4ed26d3633684",
+      "unmatched_rows": 0
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_EUR_HIGH_2018_2025_NATIVE.csv",
+      "role": "AUTHORITATIVE_NATIVE",
+      "rows": 1054,
+      "sha256": "f619007af0a0126f665afe247b6828e21c36a642ca4e6714f962ae7573bf8137"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_GBP_HIGH_2018_2025_NATIVE.csv",
+      "role": "AUTHORITATIVE_NATIVE",
+      "rows": 603,
+      "sha256": "8b4291bae1e41911c66fb683b994baece4910c3623feffaa3d43f2c970c1bee4"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_JPY_HIGH_2018_2025_NATIVE.csv",
+      "role": "AUTHORITATIVE_NATIVE",
+      "rows": 537,
+      "sha256": "680b5cd69ef84a37523cce2b39ed6533eb73a322c18ef42da258feb50307dcf6"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_AUD_HIGH_2018_2025_NATIVE.csv",
+      "role": "AUTHORITATIVE_NATIVE",
+      "rows": 167,
+      "sha256": "e08d35bbe409410c29ba19b322e3075528fb15c38c5955e5aa5f09dffb5bf3f8"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_CAD_HIGH_2018_2025_NATIVE.csv",
+      "role": "AUTHORITATIVE_NATIVE",
+      "rows": 191,
+      "sha256": "e7ac95686e41f19e9835364e7f247fc460951526a7f0e5232b3639b838bc7676"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\EURUSD.DWX_M5.csv",
+      "sha256": "b7ec4fae50b0e257832cb3e1217a34236f2a1e212844f9ee35b0cc7b86ce91f9"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\GBPUSD.DWX_M5.csv",
+      "sha256": "e483e548e28f611b0d53143eb1e329eff9a568f7d8a7076afc4ce59a8aba31bc"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\USDJPY.DWX_M5.csv",
+      "sha256": "27d1dc7569385978ef42ae33dfcbbe1b36ed162f06ed031692a157b196159dd4"
+    }
+  ],
+  "m5_rule": "qm.dst_rule.us.v1 broker wall epoch -> UTC before comparison; 15-minute band peak >= 1.5x same-slot control median",
+  "production_write": false,
+  "publishable": false,
+  "schema": "qm.news-calendar-repair-e1a/v1",
+  "timestamp_policy": "USD native/official instants; non-USD confirmed rate offsets only; unresolved rows retained as declared gaps; no stored-date reconstruction",
+  "tool_sha256": "726167129d270fdeba101551c75919b73fff242d45c68b771817e95bfddfb087",
+  "transform_counts_sha256": "7f22c61f5a183e5ac1a3d66765ec16095b633c17c6f44e1cac7c687d9d2329fc",
+  "verification_sha256": "46c3d5bd58ba1c2727afb30ebbc12fc9adbe31bef214d6e815c889ec47b50124"
+}

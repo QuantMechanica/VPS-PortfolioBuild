@@ -1,0 +1,943 @@
+diff --git a/tools/strategy_farm/news_calendar_diagnose.py b/tools/strategy_farm/news_calendar_diagnose.py
+index de42eaf64f..4457898e40 100644
+--- a/tools/strategy_farm/news_calendar_diagnose.py
++++ b/tools/strategy_farm/news_calendar_diagnose.py
+@@ -173,9 +173,9 @@ def _parse_secondary(path: Path) -> tuple[list[CalendarRow], list[dict[str, obje
+     with path.open(encoding="utf-8-sig", errors="replace", newline="") as handle:
+         for line_number, raw in enumerate(csv.DictReader(handle), 2):
+             try:
+-                instant = datetime.strptime(raw["DateTime_UTC"], "%Y.%m.%d %H:%M").replace(
+-                    tzinfo=timezone.utc
+-                )
++                value = raw["DateTime_UTC"]
++                fmt = "%Y.%m.%d %H:%M:%S" if len(value.strip()) == 19 else "%Y.%m.%d %H:%M"
++                instant = datetime.strptime(value, fmt).replace(tzinfo=timezone.utc)
+             except (KeyError, ValueError) as exc:
+                 parse_errors.append({"line": line_number, "error": str(exc)})
+                 continue
+@@ -259,6 +259,44 @@ def diagnose_anchors(rows: Iterable[CalendarRow]) -> tuple[list[dict[str, object
+     return detail, summary
+ 
+ 
++def diagnose_native_anchors(rows: Iterable[CalendarRow], catalog: dict) -> tuple[list[dict], list[dict]]:
++    """Explicit native/official truth mode for E1-A; never infer a release date.
++
++    Every USD HIGH class in 2018..2026 is scored, including unmapped classes.
++    Missing anchors count as failed/unverified, not as a clean detector pass.
++    Non-USD scope gaps are reported by the repair completeness inventory.
++    """
++    if catalog.get("expectation_basis") != "NATIVE_OR_PINNED_OFFICIAL_INSTANTS_ONLY":
++        raise ValueError("unsupported native anchor catalog")
++    index = defaultdict(list)
++    for item in catalog["events"]:
++        instant = datetime.fromisoformat(item["utc"].replace("Z", "+00:00"))
++        if instant.tzinfo is None:
++            raise ValueError("native anchor lacks timezone")
++        index[(item["currency"], item["event"].casefold())].append(instant.astimezone(timezone.utc))
++    detail = []; grouped = defaultdict(Counter)
++    for row in rows:
++        if row.currency != "USD" or row.impact != "high" or not 2018 <= row.instant.year <= 2026:
++            continue
++        candidates = [t for t in index.get((row.currency, row.event.casefold()), ()) if abs(t-row.instant) <= timedelta(hours=36)]
++        expected = min(candidates, key=lambda t: abs(t-row.instant)) if candidates else None
++        delta = int((row.instant-expected).total_seconds()/60) if expected else None
++        ok = expected is not None and abs((row.instant-expected).total_seconds()) <= 300
++        status = "PASS" if ok else "FAIL"
++        grouped[(row.source,row.event,row.instant.year)][status] += 1
++        detail.append({"source":row.source,"currency":row.currency,"event":row.event,"class":row.event,
++                       "year":row.instant.year,"stored_utc":row.instant.isoformat(),
++                       "expected_utc":expected.isoformat() if expected else "",
++                       "delta_minutes":delta,"within_5_minutes":ok,"schedule_rule_ok":"NOT_USED_NATIVE_TRUTH",
++                       "status":status})
++    summary = []
++    for (source,event,year), counts in sorted(grouped.items()):
++        total = sum(counts.values())
++        summary.append({"source":source,"class":event,"year":year,"within_anchor":counts["PASS"],
++                        "total":total,"share_within_5_minutes":counts["PASS"]/total})
++    return detail, summary
++
++
+ def diagnose_primary_columns(rows: Iterable[CalendarRow]) -> tuple[list[dict[str, object]], dict[str, object]]:
+     mismatches: list[dict[str, object]] = []
+     field_counts: Counter[str] = Counter()
+@@ -477,9 +515,11 @@ def _markdown(summary: dict[str, object]) -> str:
+         f"- Native matches: {native['matched']}; per-currency buckets: `{json.dumps(native['per_currency'], sort_keys=True)}`.",
+         f"- Zero months: `{json.dumps(coverage['zero_months'], sort_keys=True)}`.",
+         "",
+-        "## Scheduled-anchor assertions",
++        "## Native/official anchor assertions" if summary.get("anchor_mode", "").startswith("NATIVE") else "## Scheduled-anchor assertions",
+         "",
+-        "Expected UTC is computed from `qm.dst_rule.us.v1`: US DST starts at 07:00Z on the second Sunday of March and ends at 06:00Z on the first Sunday of November. NFP must also occur on the first Friday. All shares use a ±5 minute tolerance.",
++        ("Expected UTC comes only from the supplied native/official catalog. Every USD HIGH class in 2018–2026 is checked within ±5 minutes; missing anchors fail. No first-Friday rule is applied to rescheduled releases."
++         if summary.get("anchor_mode", "").startswith("NATIVE") else
++         "Expected UTC is computed from `qm.dst_rule.us.v1`: US DST starts at 07:00Z on the second Sunday of March and ends at 06:00Z on the first Sunday of November. NFP must also occur on the first Friday. All shares use a ±5 minute tolerance."),
+         "",
+         "| source | class | year | within ±5m | total | share |",
+         "|---|---|---:|---:|---:|---:|",
+@@ -533,11 +573,15 @@ def run_diagnostics(
+     *,
+     coverage_start: str | None = None,
+     coverage_end: str | None = None,
++    native_anchor_catalog: dict | None = None,
+ ) -> dict[str, object]:
+     out_dir.mkdir(parents=True, exist_ok=True)
+     primary, primary_parse_errors = _parse_primary(primary_path)
+     secondary, secondary_parse_errors = _parse_secondary(secondary_path)
+-    anchor_detail, anchor_summary = diagnose_anchors([*primary, *secondary])
++    anchor_detail, anchor_summary = (
++        diagnose_native_anchors([*primary, *secondary], native_anchor_catalog)
++        if native_anchor_catalog is not None else diagnose_anchors([*primary, *secondary])
++    )
+     derived_detail, derived_summary = diagnose_primary_columns(primary)
+     cross_detail, cross_summary = compare_cross_file(primary, secondary)
+     native_detail, native_summary, native_files = compare_native(secondary, native_dir)
+@@ -552,6 +596,7 @@ def run_diagnostics(
+         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+         "report_dir": str(out_dir),
+         "report_only": True,
++        "anchor_mode": "NATIVE_OFFICIAL_ALL_USD_HIGH_2018_2026" if native_anchor_catalog is not None else "LEGACY_SCHEDULE_RULE",
+         "inputs": {
+             "primary": {"path": str(primary_path), "sha256": _sha256(primary_path), "rows": len(primary)},
+             "secondary": {"path": str(secondary_path), "sha256": _sha256(secondary_path), "rows": len(secondary)},
+@@ -614,6 +659,7 @@ def main() -> int:
+     parser.add_argument("--no-evidence-copy", action="store_true")
+     parser.add_argument("--coverage-start")
+     parser.add_argument("--coverage-end")
++    parser.add_argument("--native-anchor-catalog", type=Path, help="E1-A native/official expectation JSON; report-only")
+     args = parser.parse_args()
+     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+     out_dir = args.out or DEFAULT_REPORT_ROOT / f"diagnose_{stamp}"
+@@ -624,6 +670,8 @@ def main() -> int:
+         out_dir,
+         coverage_start=args.coverage_start,
+         coverage_end=args.coverage_end,
++        native_anchor_catalog=(json.loads(args.native_anchor_catalog.read_text(encoding="utf-8-sig"))
++                               if args.native_anchor_catalog else None),
+     )
+     if not args.no_evidence_copy:
+         args.evidence_copy.parent.mkdir(parents=True, exist_ok=True)
+diff --git a/tools/strategy_farm/news_calendar_repair.py b/tools/strategy_farm/news_calendar_repair.py
+new file mode 100644
+index 0000000000..e6f9278869
+--- /dev/null
++++ b/tools/strategy_farm/news_calendar_repair.py
+@@ -0,0 +1,540 @@
++"""E1-A offline candidate builder. Always staging-only; exit 2 on any failed gate.
++
++Incomplete candidates preserve unresolved source rows for audit continuity. They
++are explicitly NOT publishable. No stored-date wall-clock reconstruction, rate
++offset guesses, impact relabeling, terminal operation or production writer exists.
++"""
++from __future__ import annotations
++
++import argparse
++import ast
++import calendar
++from collections import Counter, defaultdict
++import csv
++from dataclasses import replace
++from datetime import datetime, timedelta, timezone
++import hashlib
++import json
++from pathlib import Path
++import statistics
++
++try:
++    import news_calendar_diagnose as diagnose
++    import news_calendar_gate as gate
++    from research.quantify_news_calendar_defect import NAME_MAP_USD, ET_0830_CLASS, broker_epoch_to_utc
++except ModuleNotFoundError:
++    from tools.strategy_farm import news_calendar_diagnose as diagnose, news_calendar_gate as gate
++    from tools.strategy_farm.research.quantify_news_calendar_defect import NAME_MAP_USD, ET_0830_CLASS, broker_epoch_to_utc
++
++UTC = timezone.utc
++SCHEMA = "qm.news-calendar-repair-e1a/v1"
++DECISION = "OWNER-DEC-CALENDAR-E1A-20260905"
++STAGING = Path("D:/QM/reports/news_calendar/repair_e1a")
++CANONICAL = Path("C:/QM/repo")
++NATIVE_DIR = Path("D:/QM/mt5/T_Export/MQL5/Files")
++PRIMARY_FIELDS = "datetime,currency,event_name,impact,actual,forecast,previous,impact_numeric,is_high_impact,is_nfp,is_fomc,is_ecb,is_boe,is_gdp,is_cpi,is_pmi,day_of_week,hour,day,is_first_friday".split(",")
++SECONDARY_FIELDS = "Date,DateTime_UTC,DateTime_EET,Currency,Impact,Event,Actual,Forecast,Previous".split(",")
++CCYS = ("USD", "EUR", "GBP", "JPY", "AUD", "CAD")
++EXTENDED_USD = {**NAME_MAP_USD,
++    "FOMC Statement": "Fed Interest Rate Decision",
++    "FOMC Economic Projections": "Fed Interest Rate Decision",
++    "Core PPI m/m": "Core PPI m/m",
++    "Empire State Manufacturing Index": "NY Empire State Manufacturing Index",
++    "Building Permits": "Building Permits",
++    "Trade Balance": "Trade Balance"}
++RATE_CODES = {"EUR":"ecb-interest-rate-decision", "GBP":"boe-interest-rate-decision",
++              "JPY":"boj-interest-rate-decision", "AUD":"rba-interest-rate-decision",
++              "CAD":"boc-interest-rate-decision"}
++M5_SYMBOLS = {"USD":"EURUSD", "EUR":"EURUSD", "GBP":"GBPUSD", "JPY":"USDJPY", "AUD":"AUDUSD", "CAD":"USDCAD"}
++NONUSD_MAP = {ccy:dict(mapping) for ccy,mapping in diagnose.NATIVE_NAME_MAP.items() if ccy != "USD"}
++NONUSD_MAP.update(AUD={"Cash Rate":"RBA Interest Rate Decision", "RBA Rate Statement":"RBA Interest Rate Decision"},
++                  CAD={"Overnight Rate":"BoC Interest Rate Decision", "BOC Rate Statement":"BoC Interest Rate Decision"})
++ZERO_TOLERANCE = {"non-farm employment change", "nonfarm payrolls", "retail sales m/m", "unemployment rate", "cpi m/m"}
++HOLE_START = datetime(2025,5,1,tzinfo=UTC)
++HOLE_END = datetime(2026,7,1,tzinfo=UTC)
++
++
++def sha(path: Path) -> str:
++    h = hashlib.sha256()
++    with path.open("rb") as f:
++        for chunk in iter(lambda:f.read(1<<20),b""): h.update(chunk)
++    return h.hexdigest()
++
++
++def stamp(value: str) -> datetime:
++    result = datetime.fromisoformat(value.replace("Z","+00:00"))
++    if result.tzinfo is None: raise ValueError("official anchor must carry UTC offset")
++    return result.astimezone(UTC)
++
++
++def write_json(path: Path, value) -> None:
++    with path.open("x",encoding="utf-8",newline="\n") as f:
++        json.dump(value,f,indent=2,sort_keys=True,ensure_ascii=False); f.write("\n")
++
++
++def write_csv(path: Path, rows: list[dict], fields=None) -> None:
++    with path.open("x",encoding="utf-8",newline="") as f:
++        writer=csv.DictWriter(f,fieldnames=fields or list(rows[0]),lineterminator="\n")
++        writer.writeheader();writer.writerows(rows)
++
++
++def output_guard(out: Path, staging_root=STAGING) -> Path:
++    root=Path(staging_root).resolve();out=out.resolve()
++    if out == root or root not in out.parents:
++        raise ValueError(f"outputs must be in a NEW child of {root}")
++    if out.exists(): raise ValueError("existing output directory: overwrite refused")
++    return out
++
++
++def literal_assignment(path: Path, name: str):
++    for node in ast.parse(path.read_text(encoding="utf-8-sig")).body:
++        if isinstance(node,ast.Assign) and any(isinstance(t,ast.Name) and t.id==name for t in node.targets):
++            return ast.literal_eval(node.value)
++    raise ValueError(f"missing literal {name} in {path}")
++
++
++def lab_policy(root: Path) -> dict:
++    """Read data literals, never execute private builders or their pandas imports."""
++    nonusd=root/".private/secret_strategy_lab/native_calendar_multicurrency/build_validated_supplement.py"
++    usd=root/".private/secret_strategy_lab/xau_breadth_tuesday_rebound_ftmo/build_native_usd_calendar.py"
++    fan={}
++    for node in ast.parse(nonusd.read_text(encoding="utf-8-sig")).body:
++        if isinstance(node,ast.Assign) and any(isinstance(t,ast.Name) and t.id=="OFFSETS" for t in node.targets):
++            for key,value in zip(node.value.keys,node.value.values):
++                offsets=[]
++                for call in value.elts:
++                    if not isinstance(call,ast.Call) or not isinstance(call.func,ast.Attribute) or call.func.attr != "Timedelta":
++                        raise ValueError("unrecognized lab offset expression")
++                    if call.args:
++                        if len(call.args)!=1 or ast.literal_eval(call.args[0])!=0: raise ValueError("invalid zero offset")
++                        offsets.append(0)
++                    else:
++                        if len(call.keywords)!=1 or call.keywords[0].arg!="hours": raise ValueError("invalid hour offset")
++                        offsets.append(ast.literal_eval(call.keywords[0].value))
++                fan[ast.literal_eval(key)]=offsets
++    if set(fan)!=set(RATE_CODES): raise ValueError("lab offset currencies changed")
++    anchors=[{"currency":c,"event_code":code,"utc":utc,"source":str(nonusd),"kind":"rate" if code==RATE_CODES[c] else "nonrate"}
++             for c,code,utc in sorted(literal_assignment(nonusd,"ANCHORS"))]
++    anchors += [{"currency":"USD","event_code":code,"utc":utc,"source":str(usd),"kind":"usd"}
++                for code,utc in sorted(literal_assignment(usd,"ANCHORS"))]
++    return {"offsets":fan,"anchors":anchors,"official_usd_revised":literal_assignment(usd,"OFFICIAL_2025_REVISED"),
++            "inputs":[{"path":str(p),"sha256":sha(p)} for p in (nonusd,usd)]}
++
++
++def load_native(native_dir: Path, policy: dict) -> tuple[list[dict],list[dict],dict]:
++    result=[];inputs=[];fresh={};seen=set()
++    for ccy in CCYS:
++        paths=[native_dir/f"T_EXPORT_{ccy}_HIGH_2018_2025_NATIVE.csv"]
++        if ccy=="USD": paths.append(native_dir/"T_EXPORT_USD_HIGH_2025_NATIVE.csv")
++        sidecars=sorted(set(native_dir.glob(f"T_EXPORT_{ccy}_HIGH_*2026H1*_NATIVE.csv")))
++        paths += [p for p in sidecars if p not in paths]
++        fresh_rows=[];fresh_errors=[]
++        for path in paths:
++            if not path.exists():
++                if path.name.endswith("HIGH_2025_NATIVE.csv"): continue
++                raise ValueError(f"native input missing: {path}")
++            input_hash=sha(path)
++            with path.open(encoding="utf-8-sig",newline="") as f:
++                reader=csv.DictReader(f)
++                if not {"broker_time","event_id","event_code","event_name","importance"} <= set(reader.fieldnames or []):
++                    raise ValueError(f"native schema invalid: {path}")
++                rows=list(reader)
++            if sha(path)!=input_hash:raise ValueError(f"native changed while reading: {path}")
++            input_record={"path":str(path.resolve()),"sha256":input_hash,"rows":len(rows),"role":"AUTHORITATIVE_NATIVE"}
++            inputs.append(input_record)
++            if ccy=="USD" and path.name=="T_EXPORT_USD_HIGH_2025_NATIVE.csv":
++                # The separate range export is a CROSS-CHECK, never a second
++                # truth stream. Its actual 480 rows are all +3h vs the full
++                # export. Importing that union would recreate bad blackouts.
++                deltas=Counter();unmatched=0
++                for r in rows:
++                    t=datetime.fromtimestamp(int(r["broker_time"]),UTC)
++                    candidates=[n for n in result if n["currency"]==ccy and n["code"]==r["event_code"]]
++                    match=nearest(t,candidates)
++                    if match:deltas[str(int((t-match["instant"]).total_seconds()))]+=1
++                    else:unmatched+=1
++                input_record.update(role="CROSSCHECK_ONLY_EXCLUDED_FROM_TRUTH",
++                                    delta_seconds_from_full_export=dict(sorted(deltas.items())),unmatched_rows=unmatched)
++                continue
++            prior=None;local_seen=set()
++            for r in rows:
++                instant=datetime.fromtimestamp(int(r["broker_time"]),UTC)
++                key=(ccy,r["event_id"],int(r["broker_time"]))
++                if path in sidecars:
++                    # event_id identifies a recurring class; value_id identifies a release.
++                    release_key=r.get("value_id") or (r["event_id"],r["broker_time"])
++                    if release_key in local_seen:fresh_errors.append("duplicate_release_identity")
++                    if prior and instant<prior:fresh_errors.append("nonmonotonic_broker_time")
++                    if not datetime(2026,1,1,tzinfo=UTC)<=instant<HOLE_END:fresh_errors.append("sidecar_outside_2026_H1")
++                    local_seen.add(release_key);prior=instant;fresh_rows.append(r)
++                if key in seen:continue
++                seen.add(key)
++                if r["importance"].lower()!="high":raise ValueError(f"non-high row in high export: {path}")
++                result.append({"currency":ccy,"event":r["event_name"],"code":r["event_code"],"instant":instant,
++                               "event_id":r["event_id"],"source":str(path.resolve()),"kind":"native"})
++        fresh[ccy]={"present":bool(sidecars),"rows":len(fresh_rows),"errors":sorted(set(fresh_errors)),
++                    "monthly_rows":dict(sorted(Counter(datetime.fromtimestamp(int(r["broker_time"]),UTC).strftime("%Y-%m") for r in fresh_rows).items()))}
++    for index,(code,name,utc) in enumerate(policy.get("official_usd_revised",[])):
++        instant=stamp(utc)
++        if any(n["currency"]=="USD" and n["code"]==code and n["instant"]==instant for n in result):continue
++        result.append({"currency":"USD","event":name,"code":code,"instant":instant,"event_id":f"official-{index}",
++                       "source":"lab pinned official BLS revised-release literals","kind":"official"})
++    return sorted(result,key=lambda n:(n["instant"],n["currency"],n["event_id"])),inputs,fresh
++
++
++def assert_native_names(native: list[dict]) -> None:
++    names={n["event"] for n in native if n["currency"]=="USD"}
++    missing=sorted(set(EXTENDED_USD.values())-names)
++    if missing:raise ValueError("NATIVE_TARGET_NAMES_MISSING: "+", ".join(missing))
++
++
++def nearest(instant: datetime, rows: list[dict], *, hours=36, key="instant"):
++    values=[r for r in rows if abs((r[key]-instant).total_seconds())<=hours*3600]
++    if not values:return None
++    values.sort(key=lambda r:(abs((r[key]-instant).total_seconds()),r[key]))
++    if len(values)>1 and abs(values[0][key]-instant)==abs(values[1][key]-instant) and values[0][key]!=values[1][key]:return None
++    return values[0]
++
++
++def footprint_checks(anchors: list[dict], native: list[dict], m5_dir: Path, out: Path) -> list[dict]:
++    """Stream only anchor/control windows. Volume confirms; it never selects an offset."""
++    checks=[];requests=defaultdict(list)
++    for i,anchor in enumerate(anchors):
++        a={**anchor,"id":f"anchor_{i:03d}","status":"MISSING_M5"}
++        if not a.get("utc"):
++            a["status"]="MISSING_OFFICIAL_INSTANT";checks.append(a);continue
++        t=stamp(a["utc"]);a["instant"]=t
++        raw=nearest(t,[n for n in native if n["currency"]==a["currency"] and n["code"]==a["event_code"]])
++        a["raw_native_utc"]=raw["instant"].isoformat() if raw else None
++        path=m5_dir/(M5_SYMBOLS[a["currency"]]+".DWX_M5.csv");a["m5_path"]=str(path)
++        checks.append(a)
++        if path.exists():requests[path].append(a)
++    for path,group in requests.items():
++        path_hash=sha(path)
++        # Collect only +/- 3 days of each official date, after broker->UTC conversion.
++        days=set()
++        for a in group:
++            days.update((a["instant"]+timedelta(days=d)).date() for d in range(-3,4))
++        selected=[]
++        with path.open(encoding="utf-8-sig",newline="") as f:
++            for row in csv.DictReader(f):
++                raw=int(row["time"])
++                # Cheap coarse date reject does not decide the event instant.
++                if datetime.fromtimestamp(raw,UTC).date() not in days:continue
++                t=broker_epoch_to_utc(raw)
++                if t.date() in days:selected.append((t,int(row["tickvol"]),raw))
++        for a in group:
++            t=a["instant"]; band=[v for u,v,r in selected if abs(u-t)<=timedelta(minutes=15)]
++            controls=[v for u,v,r in selected if u.date()!=t.date() and abs((u.hour*60+u.minute)-(t.hour*60+t.minute))<=15]
++            pre=stamp(a["raw_native_utc"]) if a["raw_native_utc"] else None
++            pre_band=[v for u,v,r in selected if pre and abs(u-pre)<=timedelta(minutes=15)] if pre!=t else []
++            median=statistics.median(controls) if controls else None
++            peak=max(band) if band else None;pre_peak=max(pre_band) if pre_band else None
++            elevated=bool(median and peak and peak>=1.5*median)
++            quiet=(pre_peak<peak) if pre_peak is not None and peak is not None else None
++            a.update(m5_sha256=path_hash,control_median=median,corrected_peak=peak,raw_encoded_peak=pre_peak,
++                     peak_to_control=round(peak/median,4) if median and peak else None,
++                     raw_encoded_quieter=quiet,
++                     status="PASS" if elevated and quiet is not False else "FAIL_FOOTPRINT")
++            # Actual raw native time is a comparison, not an invented pre-repair CSV row.
++            rows=[{"broker_epoch":r,"utc":u.isoformat(),"tick_volume":v,
++                   "official_band":abs(u-t)<=timedelta(minutes=15),
++                   "raw_native_band":bool(pre and abs(u-pre)<=timedelta(minutes=15))}
++                  for u,v,r in selected if abs(u-t)<=timedelta(hours=5)]
++            write_csv(out/(a["id"]+".csv"),rows,["broker_epoch","utc","tick_volume","official_band","raw_native_band"])
++    for a in checks:a.pop("instant",None)
++    return checks
++
++
++def select_nonusd(native: list[dict], policy: dict, footprints: list[dict]) -> tuple[list[dict],list[dict]]:
++    selected=[];decisions=[]
++    for ccy,code in RATE_CODES.items():
++        anchor_rows=[a for a in footprints if a["currency"]==ccy]
++        passed=list({(a["event_code"],a.get("utc")):a for a in anchor_rows if a["status"]=="PASS"}.values())
++        currency_ok=len(passed)>=3 and any(a["kind"]=="nonrate" for a in passed)
++        offsets=set();official_by_day={}
++        for a in passed:
++            if a["event_code"]!=code:continue
++            t=stamp(a["utc"]);raw=nearest(t,[n for n in native if n["currency"]==ccy and n["code"]==code])
++            if not raw:continue
++            matches=[h for h in policy["offsets"][ccy] if abs(raw["instant"]+timedelta(hours=h)-t)<=timedelta(minutes=15)]
++            if len(matches)==1: offsets.add(matches[0]);official_by_day[t.date()]=t
++            elif ccy=="CAD" and t==datetime(2025,1,29,14,45,tzinfo=UTC):official_by_day[t.date()]=t
++        # A varying fan (AUD) has no proved seasonal selector: only individually anchored dates can be used.
++        for n in native:
++            if n["currency"]!=ccy or n["code"]!=code:continue
++            corrected=None;reason="UNCONFIRMED_CURRENCY_FOOTPRINT"
++            if currency_ok and n["instant"].date() in official_by_day:
++                corrected=official_by_day[n["instant"].date()];reason="INDIVIDUAL_OFFICIAL_ANCHOR"
++            elif currency_ok and len(offsets)==1:
++                corrected=n["instant"]+timedelta(hours=next(iter(offsets)));reason="CLASS_ANCHOR_SELECTED_OFFSET"
++            elif currency_ok:reason="AMBIGUOUS_OFFSET_FAN"
++            if corrected:selected.append({**n,"instant":corrected,"raw_instant":n["instant"],"correction":reason})
++        decisions.append({"currency":ccy,"passed_footprints":len(passed),"nonrate_footprint_pass":any(a["kind"]=="nonrate" for a in passed),
++                          "confirmed":currency_ok,"selected_offsets_hours":sorted(offsets),
++                          "selected_rows":sum(n["currency"]==ccy for n in selected)})
++    return selected,decisions
++
++
++def utc_to_eet(t: datetime) -> datetime:
++    last_sunday=lambda month:max(w[calendar.SUNDAY] for w in calendar.monthcalendar(t.year,month))
++    start=datetime(t.year,3,last_sunday(3),1,tzinfo=UTC);end=datetime(t.year,10,last_sunday(10),1,tzinfo=UTC)
++    return t+timedelta(hours=3 if start<=t<end else 2)
++
++
++def project(row: diagnose.CalendarRow, t: datetime) -> dict:
++    r=dict(row.raw);name=row.event.lower()
++    if row.source=="primary":
++        r.update(datetime=t.strftime("%Y-%m-%d %H:%M:%S"),day_of_week=str(t.weekday()),hour=str(t.hour),day=str(t.day),
++                 is_first_friday=str(int(t.weekday()==4 and t.day<=7)),
++                 impact_numeric=str({"high":3,"medium":2}.get(row.impact,1)),is_high_impact=str(int(row.impact=="high")))
++        needles={"is_nfp":("non-farm","nonfarm"),"is_fomc":("fomc","federal funds"),"is_ecb":("ecb","main refinancing"),
++                 "is_boe":("boe","mpc","official bank rate"),"is_gdp":("gdp",),"is_cpi":("cpi",),"is_pmi":("pmi",)}
++        r.update({key:str(int(any(v in name for v in values))) for key,values in needles.items()})
++    else:
++        r.update(Date=t.strftime("%Y.%m.%d"),DateTime_UTC=t.strftime("%Y.%m.%d %H:%M:%S"),
++                 DateTime_EET=utc_to_eet(t).strftime("%Y.%m.%d %H:%M:%S"))
++    return r
++
++
++def transform(primary,secondary,native,selected_nonusd):
++    truth=[n for n in native if n["currency"]=="USD"]+selected_nonusd
++    by_name=defaultdict(list)
++    for n in truth:by_name[(n["currency"],n["event"].casefold())].append(n)
++    # One time decision for the same event/instant, independent of per-file impact labels.
++    cache={};out={"primary":[],"secondary":[]};audit=[];gaps=[];transforms=Counter()
++    for row in [*primary,*secondary]:
++        key=(row.currency,row.event,row.instant)
++        mapping=EXTENDED_USD if row.currency=="USD" else NONUSD_MAP.get(row.currency,{})
++        target=mapping.get(row.event,row.event)
++        if key not in cache:
++            match=nearest(row.instant,by_name.get((row.currency,target.casefold()),[]))
++            cache[key]=(match["instant"],match) if match else (row.instant,None)
++        t,match=cache[key]
++        reason=("A_NATIVE_REPLACED" if t!=row.instant else "A_NATIVE_IDEMPOTENT") if match else (
++                "DECLARED_HIGH_GAP" if row.impact=="high" else "D_INERT_UNVERIFIED" if row.currency=="USD" and row.event in ET_0830_CLASS else "E_PRESERVED_UNVERIFIED")
++        if match and row.currency!="USD":reason="NONUSD_ANCHORED_RATE"
++        if not match and row.impact=="high":
++            gaps.append({"source":row.source,"currency":row.currency,"event":row.event,"month":row.instant.strftime("%Y-%m"),
++                         "reason":"NO_NATIVE_OR_OFFICIAL_DATE" if row.currency=="USD" else "NONUSD_UNANCHORED_CLASS",
++                         "retained_unverified_row":True,"stored_utc":row.instant.isoformat()})
++        projected=project(row,t)
++        out[row.source].append(replace(row,instant=t,raw=projected))
++        audit.append({"source":row.source,"currency":row.currency,"event":row.event,"stored_utc":row.instant.isoformat(),
++                      "corrected_utc":t.isoformat(),"reason":reason,"native_source":match["source"] if match else "",
++                      "delta_minutes":int((t-row.instant).total_seconds()/60),"impact":row.impact})
++        transforms[(row.source,row.currency,row.event,reason)]+=1
++    backfill=Counter()
++    present={s:{(r.currency,r.event,r.instant) for r in rows} for s,rows in out.items()}
++    for n in truth:
++        if not HOLE_START<=n["instant"]<HOLE_END:continue
++        for source,fields in (("primary",PRIMARY_FIELDS),("secondary",SECONDARY_FIELDS)):
++            if (n["currency"],n["event"],n["instant"]) in present[source]:continue
++            raw=dict.fromkeys(fields,"")
++            if source=="primary":raw.update(currency=n["currency"],event_name=n["event"],impact="high")
++            else:raw.update(Currency=n["currency"],Event=n["event"],Impact="High")
++            row=diagnose.CalendarRow(source,n["instant"],n["currency"],"high",n["event"],raw)
++            out[source].append(replace(row,raw=project(row,row.instant)));backfill[source]+=1
++            present[source].add((n["currency"],n["event"],n["instant"]))
++            transforms[(source,n["currency"],n["event"],"HOLE_BACKFILL_NATIVE_OR_OFFICIAL")]+=1
++            audit.append({"source":source,"currency":n["currency"],"event":n["event"],"stored_utc":"",
++                          "corrected_utc":n["instant"].isoformat(),"reason":"HOLE_BACKFILL_NATIVE_OR_OFFICIAL",
++                          "native_source":n["source"],"delta_minutes":0,"impact":"high"})
++    for source in out:out[source].sort(key=lambda r:(r.instant,r.currency,r.event,json.dumps(r.raw,sort_keys=True)))
++    return out,audit,gaps,[{"source":s,"currency":c,"event":e,"transform":r,"rows":n} for (s,c,e,r),n in sorted(transforms.items())],dict(backfill),truth
++
++
++def expectation_catalog(truth: list[dict]) -> dict:
++    events=set()
++    for n in truth:
++        names={n["event"]}
++        mapping=EXTENDED_USD if n["currency"]=="USD" else NONUSD_MAP.get(n["currency"],{})
++        names.update(k for k,v in mapping.items() if v.casefold()==n["event"].casefold())
++        for name in names:events.add((n["currency"],name,n["instant"].isoformat()))
++    return {"schema":SCHEMA,"expectation_basis":"NATIVE_OR_PINNED_OFFICIAL_INSTANTS_ONLY",
++            "events":[{"currency":c,"event":e,"utc":t} for c,e,t in sorted(events)]}
++
++
++def plan_spots() -> list[dict]:
++    # Explicitly incomplete official-instant requests stay visible; do not guess
++    # announcement minutes from the variable-time BoJ raw feed or a stored date.
++    entries=[("EUR","ecb-interest-rate-decision","2024-09-12",None,"rate"),
++             ("EUR","consumer-price-index-yy","2025-02",None,"nonrate"),
++             ("GBP","boe-interest-rate-decision","2024-08-01",None,"rate"),
++             ("GBP","consumer-price-index-yy","2025-01-15","2025-01-15T07:00:00+00:00","nonrate"),
++             ("JPY","boj-interest-rate-decision","2024-07-31",None,"rate"),
++             ("JPY","boj-interest-rate-decision","2025-01-24",None,"rate"),
++             ("JPY","tokyo-cpi-excl-food-energy-yy","2025-01",None,"nonrate"),
++             ("AUD","rba-interest-rate-decision","2024-11-05",None,"rate"),
++             ("AUD","consumer-price-index-qq","2025-01-29",None,"nonrate"),
++             ("CAD","consumer-price-index-yy","2025-01-21",None,"nonrate")]
++    return [{"currency":c,"event_code":code,"requested_date":day,"utc":utc,"kind":kind,
++             "source":"NEWS_CALENDAR_REPAIR_PLAN_2026-09-05 section 3.4; exact instant required where null"}
++            for c,code,day,utc,kind in entries]
++
++
++def run_repair(primary_path: Path,secondary_path: Path,native_dir: Path,m5_dir: Path,out: Path,*,
++               canonical_root=CANONICAL,extra_anchors=None,staging_root=STAGING,coverage_end=None) -> dict:
++    out=output_guard(out,staging_root);out.mkdir(parents=True)
++    footprints_dir=out/"footprints";footprints_dir.mkdir()
++    input_records=[{"path":str(p.resolve()),"sha256":sha(p)} for p in (primary_path,secondary_path)]
++    primary,errors_p=diagnose._parse_primary(primary_path);secondary,errors_s=diagnose._parse_secondary(secondary_path)
++    if errors_p or errors_s:raise ValueError("source parse errors: no row loss allowed")
++    for path,fields in ((primary_path,PRIMARY_FIELDS),(secondary_path,SECONDARY_FIELDS)):
++        with path.open(encoding="utf-8-sig",newline="") as f:
++            if next(csv.reader(f))!=fields:raise ValueError(f"exact source schema required: {path}")
++    _,cross_before=diagnose.compare_cross_file(primary,secondary)
++    if any(sha(Path(p["path"]))!=p["sha256"] for p in input_records):raise ValueError("source changed while capturing baseline")
++    baseline={"schema":SCHEMA,"primary_rows":len(primary),"secondary_rows":len(secondary),
++              "primary_rows_with_identical_ff_instant":cross_before["identical_instant"],"cross_file":cross_before,"inputs":input_records}
++    write_json(out/"baseline.json",baseline)
++    authority=Path(canonical_root)/"decisions/2026-09-02_owner_receipts_ceo_asks.md"
++    if not any("| 9 | E1:" in line and "YES" in line for line in authority.read_text(encoding="utf-8-sig").splitlines()):
++        raise ValueError("E1-A OWNER receipt row 9 missing")
++    input_records.append({"path":str(authority.resolve()),"sha256":sha(authority)})
++    policy=lab_policy(Path(canonical_root))
++    if extra_anchors:
++        extra=json.loads(Path(extra_anchors).read_text(encoding="utf-8-sig"))
++        if extra.get("decision_id")!=DECISION or not extra.get("approved_by") or not extra.get("approved_at"):
++            raise ValueError("extra official anchors require E1-A OWNER receipt fields")
++        stamp(extra["approved_at"])
++        for a in extra["anchors"]:
++            stamp(a["utc"])
++            if not a.get("source") or a["currency"] not in CCYS:raise ValueError("invalid extra official anchor")
++        policy["anchors"]+=extra["anchors"]
++        input_records.append({"path":str(Path(extra_anchors).resolve()),"sha256":sha(Path(extra_anchors))})
++    input_records+=policy["inputs"]
++    native,native_inputs,fresh=load_native(native_dir,policy);input_records+=native_inputs
++    name_error=None
++    try:assert_native_names(native)
++    except ValueError as exc:name_error=str(exc)
++    spots=[a for a in policy["anchors"] if not a["utc"].startswith("2026-")]+plan_spots()
++    # Extra official anchors can satisfy otherwise unresolved dated requests.
++    for spot in spots:
++        if spot.get("utc") is None:
++            candidates=[a for a in policy["anchors"] if a["currency"]==spot["currency"] and a["event_code"]==spot["event_code"] and a["utc"].startswith(spot["requested_date"])]
++            if len(candidates)==1:spot.update(utc=candidates[0]["utc"],source=candidates[0]["source"])
++    footprints=footprint_checks(spots,native,m5_dir,footprints_dir)
++    input_records += [{"path":p,"sha256":h} for p,h in sorted({(a["m5_path"],a["m5_sha256"]) for a in footprints if a.get("m5_sha256")})]
++    selected,offsets=select_nonusd(native,policy,footprints)
++    corrected,audit,gaps,transforms,backfill,truth=transform(primary,secondary,native,selected)
++    for source,name,fields in (("primary",gate.PRIMARY_NAME,PRIMARY_FIELDS),("secondary",gate.SECONDARY_NAME,SECONDARY_FIELDS)):
++        write_csv(out/name,[r.raw for r in corrected[source]],fields)
++    write_csv(out/"row_transform.csv",audit)
++    write_json(out/"per_class_transforms.json",transforms)
++    write_json(out/"footprint_summary.json",footprints)
++    write_json(out/"nonusd_offset_decisions.json",offsets)
++    catalog=expectation_catalog(truth);write_json(out/"native_anchor_expectations.json",catalog)
++    # Report-only diagnostic, with a new explicit native-truth mode. Legacy rule
++    # mode remains available and is never used to synthesize corrected dates.
++    diag=diagnose.run_diagnostics(out/gate.PRIMARY_NAME,out/gate.SECONDARY_NAME,native_dir,out/"diagnose",
++        coverage_start="2015-01",coverage_end=coverage_end,native_anchor_catalog=catalog)
++    groups=diag["anchors"]["per_class_year"]
++    anchor_fail=[r for r in groups if r["share_within_5_minutes"] < (1.0 if r["class"].casefold() in ZERO_TOLERANCE else .99)]
++    months=diag["coverage"]["zero_months"]
++    for ccy in CCYS:
++        for month in diagnose._month_range("2025-05","2026-06"):
++            gaps.append({"source":"both","currency":ccy,"event":"ALL_MEDIUM_LOW","month":month,
++                         "reason":"HIGH_ONLY_NATIVE_SOURCE","retained_unverified_row":False})
++        if not fresh[ccy]["present"]:
++            for month in diagnose._month_range("2026-01","2026-06"):
++                gaps.append({"source":"both","currency":ccy,"event":"ALL_HIGH","month":month,
++                             "reason":"AWAITING_2026_H1_EXPORT","retained_unverified_row":False})
++    completeness=[];inventory=[]
++    for ccy in RATE_CODES:
++        for year in sorted({n["instant"].year for n in native if n["currency"]==ccy}):
++            annual=[n for n in native if n["currency"]==ccy and n["instant"].year==year]
++            rate=[n for n in annual if n["code"]==RATE_CODES[ccy]]
++            accepted=[n for n in selected if n["currency"]==ccy and n["instant"].year==year]
++            completeness.append({"currency":ccy,"year":year,"native_high_rows":len(annual),"rate_rows":len(rate),
++                                 "rate_fraction":len(rate)/len(annual),"confirmed_rows":len(accepted),"unconfirmed_rows":len(annual)-len(accepted)})
++            for n in annual:
++                if not any(a["event_id"]==n["event_id"] and a.get("raw_instant")==n["instant"] for a in accepted):
++                    inventory.append({"currency":ccy,"event":n["event"],"month":n["instant"].strftime("%Y-%m"),
++                        "reason":"UNCONFIRMED_RATE" if n["code"]==RATE_CODES[ccy] else "NONRATE_SCOPE_GAP",
++                        "affected_symbol_examples":{"EUR":"GDAXI;EURUSD","GBP":"UK100;GBPUSD;GBPJPY","JPY":"USDJPY;GBPJPY","AUD":"AUDUSD;AUDCAD","CAD":"USDCAD;AUDCAD"}[ccy],
++                        "pre30_post30_potential_underblock_minutes_upper_bound":60,"followup":"E2_AND_E4"})
++    gaps.extend({**r,"source":"native","retained_unverified_row":False} for r in inventory)
++    write_json(out/"repair_gaps.json",{"schema":SCHEMA,"decision_id":DECISION,"gaps":gaps})
++    write_csv(out/"nonusd_completeness.csv",completeness)
++    write_csv(out/"e2_e4_gap_inventory.csv",inventory,["currency","event","month","reason","affected_symbol_examples","pre30_post30_potential_underblock_minutes_upper_bound","followup"])
++    _,cross_after=diagnose.compare_cross_file(corrected["primary"],corrected["secondary"])
++    parsed=[];schema_errors=[]
++    for name in gate.CALENDAR_NAMES:
++        try:
++            p=gate._parse_calendar_file(out/name,name)
++            parsed.append({"name":name,"sha256":p.sha256,"row_count":p.row_count,"first_event_utc":p.first_event_utc,"last_event_utc":p.last_event_utc})
++        except gate.CalendarParseError as exc:schema_errors.append(str(exc))
++    declared_months={g["month"] for g in gaps if g["reason"]=="AWAITING_2026_H1_EXPORT"}
++    unexplained={s:[m for m in missing if m not in declared_months] for s,missing in months.items()}
++    fresh_ok=all(v["present"] and v["rows"]>0 and not v["errors"] for v in fresh.values())
++    fresh_ok=fresh_ok and all(fresh["USD"]["monthly_rows"].get(m,0)>0 for m in diagnose._month_range("2026-01","2026-06"))
++    fresh_anchor_results=[]
++    for a in policy["anchors"]:
++        if not a["utc"].startswith("2026-"):continue
++        expected=stamp(a["utc"])
++        actual=nearest(expected,[n for n in truth if n["currency"]==a["currency"] and n["code"]==a["event_code"]])
++        ok=actual is not None and abs(actual["instant"]-expected)<=timedelta(minutes=5 if a["currency"]=="USD" else 15)
++        fresh_anchor_results.append({**a,"pass":ok})
++    fresh_anchor_ccys={a["currency"] for a in fresh_anchor_results if a["pass"]}
++    write_json(out/"fresh_export_anchor_checks.json",fresh_anchor_results)
++    native_monthly=Counter((n["currency"],n["instant"].strftime("%Y-%m")) for n in native)
++    corrected_monthly=Counter((r.currency,r.instant.strftime("%Y-%m")) for r in corrected["primary"] if r.impact=="high")
++    monthly=[{"currency":c,"month":m,"native_high_rows":native_monthly[(c,m)],
++              "candidate_primary_high_rows":corrected_monthly[(c,m)],
++              "usd_40_50_band":40<=native_monthly[(c,m)]<=50 if c=="USD" else "NOT_APPLICABLE",
++              "count_basis":"NATIVE_OBSERVED_NO_SCHEDULE_SYNTHESIS"}
++             for c,m in sorted(set(native_monthly)|set(corrected_monthly))]
++    write_csv(out/"native_monthly_coverage.csv",monthly)
++    row_loss=all(len(corrected[s])>=baseline[s+"_rows"]+backfill.get(s,0) for s in corrected)
++    input_changes=[v["path"] for v in input_records if sha(Path(v["path"]))!=v["sha256"]]
++    gates={
++        "6.1_anchor_shares":{"pass":not anchor_fail and not name_error,"failed_groups":anchor_fail,"native_name_error":name_error},
++        "6.2_coverage":{"pass":not any(unexplained.values()) and fresh_ok and fresh_anchor_ccys==set(CCYS),
++                        "zero_months":months,"unexplained_zero_months":unexplained,"fresh_exports":fresh,
++                        "fresh_currencies_with_confirmed_official_anchor":sorted(fresh_anchor_ccys)},
++        "6.3_cross_file_identity":{"pass":cross_after["identical_instant"]>=baseline["primary_rows_with_identical_ff_instant"] and cross_after["matched"]==cross_after["identical_instant"],
++                                   "before":cross_before,"after":cross_after},
++        "6.4_nonusd_completeness":{"pass":len(completeness)>0,"currency_years":len(completeness),"gap_inventory_rows":len(inventory)},
++        "6.5_tick_footprints":{"pass":all(a["status"]=="PASS" for a in footprints) and all(o["confirmed"] for o in offsets),
++                               "checks":len(footprints),"status_counts":dict(Counter(a["status"] for a in footprints))},
++        "6.6_no_row_loss":{"pass":row_loss,"backfill_rows":backfill,"declared_drops":0},
++        "6.7_detector_clean":{"pass":diag["anchors"]["failed"]==0 and not any(unexplained.values()) and not input_changes,
++                               "failed_or_unverified_high_rows":diag["anchors"]["failed"],"input_changes":input_changes},
++        "6.8_schema":{"pass":not schema_errors,"errors":schema_errors}}
++    success=all(g["pass"] for g in gates.values())
++    verification={"schema":SCHEMA,"decision_id":DECISION,"status":"PASS" if success else "FAIL",
++                  "publishable":success,"exit_code":0 if success else 2,"gates":gates,
++                  "message":"READY_FOR_CEO_REVIEW" if success else "INCOMPLETE_CANDIDATES_NOT_PUBLISHABLE; awaiting 2026-H1 export and unresolved verification inputs"}
++    write_json(out/"verification.json",verification)
++    manifest={"schema":SCHEMA,"decision_id":DECISION,"candidate_status":verification["message"],"publishable":success,
++              "input_files":input_records,"files":parsed,"baseline_sha256":sha(out/"baseline.json"),
++              "verification_sha256":sha(out/"verification.json"),"gap_list_sha256":sha(out/"repair_gaps.json"),
++              "transform_counts_sha256":sha(out/"per_class_transforms.json"),"tool_sha256":sha(Path(__file__)),
++              "timestamp_policy":"USD native/official instants; non-USD confirmed rate offsets only; unresolved rows retained as declared gaps; no stored-date reconstruction",
++              "eet_display_rule":"EU last-Sunday March/October at 01:00Z; UTC+2 standard / UTC+3 summer; display only",
++              "m5_rule":"qm.dst_rule.us.v1 broker wall epoch -> UTC before comparison; 15-minute band peak >= 1.5x same-slot control median",
++              "gap_count":len(gaps),"production_write":False}
++    write_json(out/"manifest.json",manifest)
++    return {"output":str(out),"manifest_sha256":sha(out/"manifest.json"),**verification}
++
++
++def main() -> int:
++    parser=argparse.ArgumentParser(description=__doc__)
++    parser.add_argument("--primary",type=Path,default=gate.DEFAULT_SOURCE_DIR/gate.PRIMARY_NAME)
++    parser.add_argument("--secondary",type=Path,default=gate.DEFAULT_SOURCE_DIR/gate.SECONDARY_NAME)
++    parser.add_argument("--native-dir",type=Path,default=NATIVE_DIR)
++    parser.add_argument("--m5-dir",type=Path,default=NATIVE_DIR)
++    parser.add_argument("--canonical-root",type=Path,default=CANONICAL)
++    parser.add_argument("--extra-anchors",type=Path)
++    parser.add_argument("--out",type=Path,default=STAGING/datetime.now(UTC).strftime("%Y%m%dT%H%M%S%fZ"))
++    args=parser.parse_args()
++    try:
++        result=run_repair(args.primary,args.secondary,args.native_dir,args.m5_dir,args.out,
++                          canonical_root=args.canonical_root,extra_anchors=args.extra_anchors)
++    except (OSError,ValueError,KeyError) as exc:
++        print(json.dumps({"status":"FAIL","publishable":False,"error":str(exc)},indent=2));return 2
++    print(json.dumps({k:v for k,v in result.items() if k!="gates"},indent=2));return result["exit_code"]
++
++
++if __name__=="__main__":raise SystemExit(main())
+diff --git a/tools/strategy_farm/research/EXPORT_T_EXPORT_HIGH_2026H1.mq5 b/tools/strategy_farm/research/EXPORT_T_EXPORT_HIGH_2026H1.mq5
+new file mode 100644
+index 0000000000..85d9b06933
+--- /dev/null
++++ b/tools/strategy_farm/research/EXPORT_T_EXPORT_HIGH_2026H1.mq5
+@@ -0,0 +1,69 @@
++// Prepared from the private-lab multi-currency exporter for E1-A.
++// OWNER/CEO runs this manually in T_Export, once per currency. Never an EA.
++#property script_show_inputs
++#property strict
++input string InpCurrency="USD";
++
++bool ExportCurrency(const string currency)
++  {
++   const datetime from=D'2026.01.01 00:00';
++   const datetime to=D'2026.07.01 00:00';
++   MqlCalendarValue values[];
++   ResetLastError();
++   const int count=CalendarValueHistory(values,from,to,"",currency);
++   if(count<=0)
++     {
++      PrintFormat("CALENDAR_QUERY_FAILED currency=%s count=%d err=%d; retry this currency only (5401 timeout)",currency,count,GetLastError());
++      return false;
++     }
++   int order[];
++   string codes[], names[];
++   ArrayResize(order,count); ArrayResize(codes,count); ArrayResize(names,count);
++   int selected=0;
++   for(int i=0;i<count;i++)
++     {
++      MqlCalendarEvent event;
++      if(!CalendarEventById(values[i].event_id,event))
++        {
++         PrintFormat("CALENDAR_EVENT_LOOKUP_FAILED id=%I64u err=%d; no file written",values[i].event_id,GetLastError());
++         return false;
++        }
++      if(event.importance!=CALENDAR_IMPORTANCE_HIGH || values[i].time<from || values[i].time>=to)
++         continue;
++      codes[i]=event.event_code; names[i]=event.name;
++      int j=selected;
++      while(j>0 && (values[order[j-1]].time>values[i].time ||
++            (values[order[j-1]].time==values[i].time && values[order[j-1]].id>values[i].id)))
++        { order[j]=order[j-1]; j--; }
++      order[j]=i; selected++;
++     }
++   if(selected==0) { Print("NO_HIGH_ROWS; no file written"); return false; }
++   const string filename="T_EXPORT_"+currency+"_HIGH_2026H1_NATIVE.csv";
++   if(FileIsExist(filename))
++     { PrintFormat("EXISTING_EXPORT_REFUSED file=%s; retain it and have OWNER resolve retries",filename); return false; }
++   const int handle=FileOpen(filename,FILE_WRITE|FILE_CSV|FILE_ANSI,',',CP_UTF8);
++   if(handle==INVALID_HANDLE) { PrintFormat("FILE_OPEN_FAIL err=%d",GetLastError()); return false; }
++   FileWrite(handle,"broker_time","event_id","event_code","event_name","importance","value_id");
++   for(int j=0;j<selected;j++)
++     {
++      const int i=order[j];
++      if(FileWrite(handle,(long)values[i].time,(long)values[i].event_id,codes[i],names[i],"high",(long)values[i].id)==0)
++        { PrintFormat("FILE_WRITE_FAIL file=%s row=%d; incomplete file must not be ingested",filename,j); FileClose(handle); return false; }
++     }
++   FileFlush(handle); FileClose(handle);
++   PrintFormat("E1A_2026H1_EXPORT_COMPLETE currency=%s rows=%d first=%s last=%s file=%s; raw encoding still requires official-anchor verification",
++               currency,selected,TimeToString(values[order[0]].time,TIME_DATE|TIME_MINUTES),
++               TimeToString(values[order[selected-1]].time,TIME_DATE|TIME_MINUTES),filename);
++   return true;
++  }
++
++void OnStart()
++  {
++   const string terminal_path=TerminalInfoString(TERMINAL_PATH);
++   if(StringFind(terminal_path,"T_Export")<0)
++     { PrintFormat("HARD_FAIL_WRONG_TERMINAL path=%s",terminal_path); return; }
++   const string allowed="|USD|EUR|GBP|JPY|AUD|CAD|";
++   if(StringFind(allowed,"|"+InpCurrency+"|")<0)
++     { Print("INVALID_CURRENCY; choose USD EUR GBP JPY AUD CAD"); return; }
++   ExportCurrency(InpCurrency);
++  }
+diff --git a/tools/strategy_farm/tests/test_news_calendar_repair.py b/tools/strategy_farm/tests/test_news_calendar_repair.py
+new file mode 100644
+index 0000000000..d2e3b28137
+--- /dev/null
++++ b/tools/strategy_farm/tests/test_news_calendar_repair.py
+@@ -0,0 +1,198 @@
++from __future__ import annotations
++import csv
++from datetime import datetime, timedelta, timezone
++import json
++from pathlib import Path
++
++import pytest
++from tools.strategy_farm import news_calendar_repair as repair
++from tools.strategy_farm import news_calendar_diagnose as diagnose
++
++UTC=timezone.utc
++
++
++def row(source,utc,event,ccy="USD",impact="high"):
++    t=repair.stamp(utc)
++    raw=dict.fromkeys(repair.PRIMARY_FIELDS if source=="primary" else repair.SECONDARY_FIELDS,"")
++    if source=="primary":raw.update(currency=ccy,event_name=event,impact=impact,actual="1.20",forecast="1.0",previous="1.1")
++    else:raw.update(Currency=ccy,Event=event,Impact=impact.title(),Actual="1.20",Forecast="1.0",Previous="1.1")
++    r=diagnose.CalendarRow(source,t,ccy,impact,event,raw)
++    return diagnose.CalendarRow(source,t,ccy,impact,event,repair.project(r,t))
++
++
++def native(utc,event,ccy="USD",code="nfp",eid="1"):
++    return {"currency":ccy,"event":event,"instant":repair.stamp(utc),"event_id":eid,"code":code,"source":"synthetic_native_fixture","kind":"native"}
++
++
++def test_shift_seam_fomc_and_impact_identity():
++    data=[("2024-02-01T20:30Z","Non-Farm Employment Change","2024-02-02T13:30Z","Nonfarm Payrolls"),
++          ("2024-03-15T11:30Z","CPI m/m","2024-03-15T12:30Z","CPI m/m"),
++          ("2024-03-19T19:00Z","FOMC Statement","2024-03-20T18:00Z","Fed Interest Rate Decision")]
++    p=[row("primary",old,event) for old,event,new,name in data]
++    s=[row("secondary",old,event,impact="medium") for old,event,new,name in data]
++    n=[native(new,name,eid=str(i)) for i,(old,event,new,name) in enumerate(data)]
++    out,*_=repair.transform(p,s,n,[])
++    assert [r.instant for r in out["primary"]]==[repair.stamp(v[2]) for v in data]
++    assert [r.instant for r in out["primary"]]==[r.instant for r in out["secondary"]]
++    assert out["primary"][0].raw["day_of_week"]=="4"
++    assert out["primary"][0].raw["is_first_friday"]=="1"
++    assert out["primary"][0].raw["actual"]=="1.20"
++    assert out["secondary"][0].raw["Impact"]=="Medium"
++    assert out["primary"][2].raw["is_fomc"]=="1"
++    assert all(r.raw["is_high_impact"]=="1" for r in out["primary"])
++
++
++def test_shutdown_native_anchor_and_hole_backfill_are_not_calendar_rules():
++    n=[native("2025-11-20T13:30Z","Nonfarm Payrolls")]
++    p=[row("primary","2025-11-19T20:30Z","Non-Farm Employment Change")]
++    out,audit,gaps,counts,backfill,truth=repair.transform(p,[],n,[])
++    corrected=out["primary"][0]
++    assert corrected.instant==repair.stamp("2025-11-20T13:30Z")
++    assert corrected.raw["day_of_week"]=="3" and corrected.raw["is_first_friday"]=="0"
++    details,_=diagnose.diagnose_native_anchors(out["primary"],repair.expectation_catalog(truth))
++    assert all(v["status"]=="PASS" for v in details)
++    assert backfill=={"primary":1,"secondary":1}
++    assert any(v["transform"]=="HOLE_BACKFILL_NATIVE_OR_OFFICIAL" for v in counts)
++
++
++def test_eu_display_and_us_broker_rules_are_separate():
++    t=repair.stamp("2024-03-15T12:30Z")
++    assert repair.utc_to_eet(t).hour==14
++    assert repair.broker_epoch_to_utc(int((t+timedelta(hours=3)).timestamp()))==t
++    assert repair.utc_to_eet(repair.stamp("2024-04-05T12:30Z")).hour==15
++    assert repair.utc_to_eet(repair.stamp("2024-11-01T12:30Z")).hour==14
++
++
++def test_unanchored_high_is_declared_and_never_guessed_or_relabelled():
++    p=[row("primary","2024-02-01T20:30Z","Core PPI m/m"),row("primary","2024-02-01T10:00Z","CPI y/y","EUR")]
++    out,audit,gaps,*_=repair.transform(p,[],[],[])
++    assert sorted(r.instant for r in out["primary"])==sorted(r.instant for r in p)
++    assert len(gaps)==2 and all(g["retained_unverified_row"] for g in gaps)
++    assert all(a["reason"]=="DECLARED_HIGH_GAP" for a in audit)
++    assert all(r.impact=="high" for r in out["primary"])
++    with pytest.raises(ValueError,match="NATIVE_TARGET_NAMES_MISSING.*Building Permits"):
++        repair.assert_native_names([])
++
++
++def test_class_offset_needs_three_distinct_confirmations_and_a_nonrate():
++    native_rows=[];footprints=[]
++    for i,utc in enumerate(["2025-02-06T12:00Z","2025-08-07T11:00Z","2025-12-18T12:00Z"]):
++        t=repair.stamp(utc)
++        native_rows.append(native((t+timedelta(hours=3)).isoformat(),"BoE Interest Rate Decision","GBP",repair.RATE_CODES["GBP"],str(i)))
++        footprints.append({"currency":"GBP","event_code":repair.RATE_CODES["GBP"],"utc":t.isoformat(),"kind":"rate","status":"PASS"})
++    policy={"offsets":{"GBP":[0,-3]}}
++    selected,_=repair.select_nonusd(native_rows,policy,footprints)
++    assert selected==[]
++    footprints.append({"currency":"GBP","event_code":"cpi","utc":"2025-01-15T07:00Z","kind":"nonrate","status":"PASS"})
++    selected,decisions=repair.select_nonusd(native_rows,policy,footprints)
++    assert len(selected)==3
++    assert all(r["raw_instant"]-r["instant"]==timedelta(hours=3) for r in selected)
++    duplicate=[footprints[0]]*3
++    assert repair.select_nonusd(native_rows,policy,duplicate)[0]==[]
++
++
++def test_varying_offset_fan_never_creates_an_unproved_seasonal_selector():
++    nr=[];fp=[]
++    for i,(utc,h) in enumerate([("2025-02-18T03:30Z",3),("2025-08-12T04:30Z",4),("2025-12-09T03:30Z",3)]):
++        t=repair.stamp(utc)
++        nr.append(native((t+timedelta(hours=h)).isoformat(),"RBA Interest Rate Decision","AUD",repair.RATE_CODES["AUD"],str(i)))
++        fp.append({"currency":"AUD","event_code":repair.RATE_CODES["AUD"],"utc":t.isoformat(),"kind":"rate","status":"PASS"})
++    nr.append(native("2025-05-20T07:30Z","RBA Interest Rate Decision","AUD",repair.RATE_CODES["AUD"],"unanchored"))
++    fp.append({"currency":"AUD","event_code":"cpi","utc":"2025-01-29T00:30Z","kind":"nonrate","status":"PASS"})
++    selected,_=repair.select_nonusd(nr,{"offsets":{"AUD":[0,-3,-4]}},fp)
++    assert len(selected)==3 and not any(n["event_id"]=="unanchored" for n in selected)
++
++
++def test_native_mode_detects_unknown_high_and_retained_hour_seam():
++    rows=[row("primary","2024-03-15T11:30Z","CPI m/m"),row("primary","2024-03-15T12:30Z","Unknown HIGH")]
++    cat=repair.expectation_catalog([native("2024-03-15T12:30Z","CPI m/m")])
++    details,_=diagnose.diagnose_native_anchors(rows,cat)
++    assert details[0]["delta_minutes"]==-60 and details[0]["status"]=="FAIL"
++    assert details[1]["expected_utc"]=="" and details[1]["status"]=="FAIL"
++
++
++def export_fixtures(path):
++    for ccy in repair.CCYS:
++        code=repair.RATE_CODES.get(ccy,"nfp")
++        name="Nonfarm Payrolls" if ccy=="USD" else "Rate fixture"
++        rows=[{"broker_time":int(repair.stamp("2025-06-06T12:30Z").timestamp()),"event_id":"1","event_code":code,"event_name":name,"importance":"high"}]
++        repair.write_csv(path/f"T_EXPORT_{ccy}_HIGH_2018_2025_NATIVE.csv",rows)
++
++
++def test_fresh_loader_uses_release_identity_not_recurring_event_id(tmp_path):
++    export_fixtures(tmp_path)
++    path=tmp_path/"T_EXPORT_USD_HIGH_2026H1_NATIVE.csv"
++    rows=[{"broker_time":int(repair.stamp(t).timestamp()),"event_id":"same_class","event_code":"nfp","event_name":"Nonfarm Payrolls","importance":"high","value_id":str(i)}
++          for i,t in enumerate(["2026-01-09T13:30Z","2026-02-06T13:30Z"])]
++    repair.write_csv(path,rows)
++    _,_,fresh=repair.load_native(tmp_path,{})
++    assert fresh["USD"]["present"] and fresh["USD"]["errors"]==[]
++    # Fixture mutation only: duplicate value identities must be rejected by the gate.
++    rows[1]["value_id"]=rows[0]["value_id"]
++    with path.open("w",newline="") as f:
++        writer=csv.DictWriter(f,fieldnames=list(rows[0]));writer.writeheader();writer.writerows(rows)
++    assert "duplicate_release_identity" in repair.load_native(tmp_path,{})[2]["USD"]["errors"]
++
++
++def test_separate_2025_export_is_crosscheck_only_even_when_shifted(tmp_path):
++    export_fixtures(tmp_path)
++    path=tmp_path/"T_EXPORT_USD_HIGH_2025_NATIVE.csv"
++    repair.write_csv(path,[{"broker_time":int(repair.stamp("2025-06-06T15:30Z").timestamp()),
++                           "event_id":"1","event_code":"nfp","event_name":"Nonfarm Payrolls","importance":"high"}])
++    rows,inputs,_=repair.load_native(tmp_path,{})
++    assert len([r for r in rows if r["currency"]=="USD"])==1
++    proof=next(r for r in inputs if r["path"]==str(path.resolve()))
++    assert proof["role"]=="CROSSCHECK_ONLY_EXCLUDED_FROM_TRUTH"
++    assert proof["delta_seconds_from_full_export"]=={"10800":1}
++
++
++def test_footprint_converts_broker_time_before_comparing(tmp_path):
++    utc=repair.stamp("2025-06-06T12:30Z");raw_time=utc+timedelta(hours=3)
++    rows=[]
++    for day in range(-3,4):
++        for minute in range(-15,196,5):
++            t=utc+timedelta(days=day,minutes=minute)
++            rows.append({"time":int((t+timedelta(hours=3)).timestamp()),"tickvol":400 if day==0 and minute==0 else 100})
++    repair.write_csv(tmp_path/"EURUSD.DWX_M5.csv",rows)
++    out=tmp_path/"out";out.mkdir()
++    anchors=[{"currency":"USD","event_code":"nfp","utc":utc.isoformat(),"kind":"usd","source":"fixture"}]
++    checks=repair.footprint_checks(anchors,[native(raw_time.isoformat(),"Nonfarm Payrolls")],tmp_path,out)
++    assert checks[0]["status"]=="PASS" and checks[0]["corrected_peak"]==400
++    assert checks[0]["raw_encoded_peak"]==100
++    with (out/"anchor_000.csv").open() as f: evidence=list(csv.DictReader(f))
++    assert any(r["utc"]==utc.isoformat() and r["tick_volume"]=="400" for r in evidence)
++
++
++def test_candidate_run_is_deterministic_fail_closed_and_input_immutable(tmp_path,monkeypatch):
++    source=tmp_path/"source";source.mkdir();native_dir=tmp_path/"native";native_dir.mkdir()
++    root=tmp_path/"repo";(root/"decisions").mkdir(parents=True)
++    (root/"decisions/2026-09-02_owner_receipts_ceo_asks.md").write_text("| 9 | E1: fixture | YES |\n")
++    export_fixtures(native_dir)
++    p=row("primary","2025-06-05T19:30Z","Non-Farm Employment Change")
++    s=row("secondary","2025-06-05T19:30Z","Non-Farm Employment Change")
++    pp=source/repair.gate.PRIMARY_NAME;sp=source/repair.gate.SECONDARY_NAME
++    repair.write_csv(pp,[p.raw],repair.PRIMARY_FIELDS);repair.write_csv(sp,[s.raw],repair.SECONDARY_FIELDS)
++    monkeypatch.setattr(repair,"lab_policy",lambda _: {"anchors":[],"offsets":{c:[0,-3] for c in repair.RATE_CODES},"inputs":[]})
++    before={f:repair.sha(f) for f in [pp,sp,*native_dir.glob("*.csv")]}
++    results=[]
++    for name in ["first","second"]:
++        out=tmp_path/"staging"/name
++        r=repair.run_repair(pp,sp,native_dir,native_dir,out,canonical_root=root,staging_root=tmp_path/"staging",coverage_end="2026-06")
++        assert r["exit_code"]==2 and not r["publishable"]
++        assert "awaiting 2026-H1 export" in r["message"]
++        assert r["gates"]["6.6_no_row_loss"]["pass"]
++        assert r["gates"]["6.8_schema"]["pass"]
++        assert r["gates"]["6.3_cross_file_identity"]["pass"]
++        results.append(out)
++    assert repair.sha(results[0]/repair.gate.PRIMARY_NAME)==repair.sha(results[1]/repair.gate.PRIMARY_NAME)
++    assert repair.sha(results[0]/repair.gate.SECONDARY_NAME)==repair.sha(results[1]/repair.gate.SECONDARY_NAME)
++    assert before=={f:repair.sha(f) for f in before}
++    assert len(json.loads((results[0]/"repair_gaps.json").read_text())["gaps"])>0
++
++
++def test_output_path_and_overwrite_guards(tmp_path):
++    with pytest.raises(ValueError,match="NEW child"):
++        repair.output_guard(tmp_path/"production",tmp_path/"staging")
++    existing=tmp_path/"staging"/"prior";existing.mkdir(parents=True)
++    with pytest.raises(ValueError,match="overwrite refused"):
++        repair.output_guard(existing,tmp_path/"staging")
