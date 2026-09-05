@@ -1178,6 +1178,13 @@ def _quota_lane_candidates(agent: str) -> tuple[list[dict[str, Any]], str]:
             required |= agent_router.scalpel_routing_capabilities(
                 row["task_type"], row_payload
             )
+            # Round-4 residual finding (2026-09-05): an INVALID scalpel marker is
+            # a HELD config defect (route_once records it as a model-window
+            # hold), so it must never be offered to ANY executing lane here -
+            # not codex, not claude. Skip it so this selector agrees with
+            # route_once that nothing runs the malformed row.
+            if agent_router.invalid_scalpel_marker_hold(row_payload) is not None:
+                continue
             assigned = str(row["assigned_agent"] or "")
             # A human-owned task is never offered to an automated lane, even
             # if a stale assignment or registry drift says otherwise.

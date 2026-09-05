@@ -107,6 +107,12 @@ ENFORCEMENT_OBSERVE = "observe"
 ENFORCEMENT_ENFORCE = "enforce"
 DEFAULT_ENFORCEMENT_MODE = ENFORCEMENT_OBSERVE
 ENFORCEMENT_MODES = frozenset({ENFORCEMENT_OBSERVE, ENFORCEMENT_ENFORCE})
+# Round-4 residual finding (2026-09-05): the OWNER may pin which enforcement
+# modes are loadable at all. `validate_matrix` rejects `window_enforcement_mode`
+# fail-closed unless it is a member of this list, so pinning the list to
+# `["observe"]` makes `enforce` UN-loadable (a MATRIX_INCOMPLETE error) until
+# OWNER widens it - the config key existed since round 4 but nothing read it.
+ALLOWED_ENFORCEMENT_MODES_FIELD = "allowed_window_enforcement_modes"
 # CEO decision D11 (round 4): a ledger lock that cannot be taken fails CLOSED in
 # enforce mode. Round-3 finding F5: `_ledger_lock` yields `unavailable:...` and
 # `commit_dispatch` counted-and-appended anyway, reopening the exact double-book
@@ -374,6 +380,31 @@ def validate_matrix(codex_matrix: dict[str, Any]) -> str | None:
             or raw_mode.strip().lower() not in ENFORCEMENT_MODES
         ):
             return f"{MATRIX_INCOMPLETE}:{ENFORCEMENT_MODE_FIELD}_invalid:{raw_mode}"
+    # Round-4 residual finding (2026-09-05): the allowed-modes allow-list is now
+    # consulted. Every entry must itself be a known mode (typo protection), and
+    # the active `window_enforcement_mode` (its default included when the key is
+    # absent) must be a member - so OWNER can pin the list to `["observe"]` and
+    # make `enforce` un-loadable until this task is APPROVED. Fail-closed.
+    if ALLOWED_ENFORCEMENT_MODES_FIELD in codex_matrix:
+        allowed_modes_raw = codex_matrix.get(ALLOWED_ENFORCEMENT_MODES_FIELD)
+        if not isinstance(allowed_modes_raw, list) or not allowed_modes_raw:
+            return (
+                f"{MATRIX_INCOMPLETE}:{ALLOWED_ENFORCEMENT_MODES_FIELD}_not_a_list:"
+                f"{allowed_modes_raw}"
+            )
+        allowed_modes: set[str] = set()
+        for item in allowed_modes_raw:
+            if not isinstance(item, str) or item.strip().lower() not in ENFORCEMENT_MODES:
+                return f"{MATRIX_INCOMPLETE}:{ALLOWED_ENFORCEMENT_MODES_FIELD}_unknown:{item}"
+            allowed_modes.add(item.strip().lower())
+        active_mode = str(
+            codex_matrix.get(ENFORCEMENT_MODE_FIELD) or DEFAULT_ENFORCEMENT_MODE
+        ).strip().lower()
+        if active_mode not in allowed_modes:
+            return (
+                f"{MATRIX_INCOMPLETE}:{ENFORCEMENT_MODE_FIELD}_not_allowed:"
+                f"{active_mode}:{sorted(allowed_modes)}"
+            )
     if EFFORT_MAPPING_FIELD in codex_matrix and not isinstance(
         codex_matrix.get(EFFORT_MAPPING_FIELD), bool
     ):
@@ -564,24 +595,28 @@ def _parse_time(value: Any) -> dt.datetime | None:
     return parsed.astimezone(dt.UTC)
 
 
-def read_ledger(path: Path) -> tuple[list[dict[str, Any]], dict[str, Any]]:
-    """``(records, integrity)``. Corrupt lines are COUNTED, not swallowed.
+def _scan_ledger(path: Path) -> dict[str, Any]:
+    """One position-aware pass over the ledger.
 
-    Fix round 2026-09-04: an interleaved partial JSONL line used to vanish from
-    the window count with no signal anywhere. Up to five Codex processes append
-    to this file, so a torn line is a real class - it is now reported through
-    ``model_window.ledger_integrity`` into the spawn payload. (Appends are also
-    serialised by ``_ledger_lock`` now, so a torn line means something outside
-    this module wrote the file.)
+    Returns ``{records, positions, corrupt_positions, read_error}`` where
+    ``positions[i]`` is the physical position (index among NON-empty lines, in
+    append order) of ``records[i]`` and ``corrupt_positions`` holds the physical
+    positions of unparseable / non-dict lines. Position is the append-order
+    anchor the round-4 residual fix uses to bound a corrupt or ts-less line in
+    TIME without depending on the file's mtime.
     """
     records: list[dict[str, Any]] = []
-    corrupt = 0
+    positions: list[int] = []
+    corrupt_positions: list[int] = []
     try:
         handle = open(path, "r", encoding="utf-8")
     except FileNotFoundError:
-        return records, {"corrupt_lines": 0, "read_error": None}
+        return {"records": records, "positions": positions,
+                "corrupt_positions": corrupt_positions, "read_error": None}
     except (OSError, ValueError) as exc:
-        return records, {"corrupt_lines": 0, "read_error": f"{type(exc).__name__}"}
+        return {"records": records, "positions": positions,
+                "corrupt_positions": corrupt_positions, "read_error": f"{type(exc).__name__}"}
+    physical = -1
     with handle:
         # CEO decision D8 (round 4, 2026-09-04): the DECODE happens here, not in
         # `open()`. Round-3 finding F2: one invalid UTF-8 byte in the middle of
@@ -595,21 +630,63 @@ def read_ledger(path: Path) -> tuple[list[dict[str, Any]], dict[str, Any]]:
                 stripped = line.strip()
                 if not stripped:
                     continue
+                physical += 1
                 try:
                     record = json.loads(stripped)
                 except (json.JSONDecodeError, ValueError):
-                    corrupt += 1
+                    corrupt_positions.append(physical)
                     continue
                 if isinstance(record, dict):
                     records.append(record)
+                    positions.append(physical)
                 else:
-                    corrupt += 1
+                    corrupt_positions.append(physical)
         except (OSError, ValueError) as exc:
             # Partial records travel with the error so OBSERVE mode can still
             # report a count; every ENFORCE-mode consumer checks `read_error`
             # first and refuses.
-            return records, {"corrupt_lines": corrupt, "read_error": f"{type(exc).__name__}"}
-    return records, {"corrupt_lines": corrupt, "read_error": None}
+            return {"records": records, "positions": positions,
+                    "corrupt_positions": corrupt_positions,
+                    "read_error": f"{type(exc).__name__}"}
+    return {"records": records, "positions": positions,
+            "corrupt_positions": corrupt_positions, "read_error": None}
+
+
+def _max_position_at_or_before_cutoff(
+    records: list[dict[str, Any]],
+    positions: list[int],
+    cutoff: dt.datetime,
+) -> int:
+    """Highest physical position of a valid record whose ``ts`` <= ``cutoff``.
+
+    ``-1`` when no such record exists. The ledger is append-ordered, so a
+    corrupt or ts-less line at a physical position BELOW this value is provably
+    older than a record that has already left the window - it can be released
+    without ever handing back a message the window is still charging for.
+    """
+    maxpos = -1
+    for record, position in zip(records, positions):
+        stamp = _parse_time(record.get("ts"))
+        if stamp is not None and stamp <= cutoff and position > maxpos:
+            maxpos = position
+    return maxpos
+
+
+def read_ledger(path: Path) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """``(records, integrity)``. Corrupt lines are COUNTED, not swallowed.
+
+    Fix round 2026-09-04: an interleaved partial JSONL line used to vanish from
+    the window count with no signal anywhere. Up to five Codex processes append
+    to this file, so a torn line is a real class - it is now reported through
+    ``model_window.ledger_integrity`` into the spawn payload. (Appends are also
+    serialised by ``_ledger_lock`` now, so a torn line means something outside
+    this module wrote the file.)
+    """
+    scan = _scan_ledger(path)
+    return scan["records"], {
+        "corrupt_lines": len(scan["corrupt_positions"]),
+        "read_error": scan["read_error"],
+    }
 
 
 def iter_ledger(path: Path) -> Iterator[dict[str, Any]]:
@@ -649,41 +726,69 @@ def scan_window(
     CEO decision D12 (round 4) bounds that rule in TIME. Round-3 finding F4: a
     corrupt line had no timestamp, so it was charged forever - two torn lines
     dated 2020 held `gpt-6-astra` permanently shut at count=2/budget=2 with no
-    way back except manual file surgery. A corrupt line now counts only while
-    the ledger FILE's mtime is inside the window (nothing can have been written
-    to it more recently than that); outside the window it is still reported as
-    ``integrity.corrupt_lines`` / ``corrupt_lines_outside_window``.
+    way back except manual file surgery.
+
+    Round-4 residual finding (2026-09-05): the D12 bound depended on the FILE's
+    mtime alone, so any append refreshed it and re-charged every corrupt line as
+    long as the ledger kept being written - a busy file below the 500-line
+    rotation floor charged its corrupt lines forever. The bound is now TWO
+    necessary conditions: (a) the file mtime is inside the window (the coarse
+    anchor for a degenerate all-corrupt file with no timestamped neighbour), AND
+    (b) the corrupt line is not provably older by POSITION - i.e. no valid
+    timestamped record APPENDED AFTER it has itself already left the window.
+    Since the ledger is append-ordered, such a later-but-already-old record
+    proves the earlier corrupt line is older still. This releases a stale
+    corrupt line while fresh dispatches keep flowing, without depending on mtime
+    to do the whole job.
 
     D12 also makes a JSON-valid record with a missing or unparseable ``ts``
-    count CONSERVATIVELY (as if inside the window) instead of being dropped -
-    round-3 finding F6, the one fail-OPEN asymmetry left in the arithmetic.
+    count CONSERVATIVELY (round-3 finding F6, the one fail-OPEN asymmetry) -
+    now bounded by the SAME position rule so a ts-less foreign line cannot
+    become a permanent charge either.
     """
     cutoff = now - dt.timedelta(minutes=float(minutes))
-    records, integrity = read_ledger(path)
+    scan = _scan_ledger(path)
+    records = scan["records"]
+    positions = scan["positions"]
+    corrupt_positions = scan["corrupt_positions"]
+    integrity = {"corrupt_lines": len(corrupt_positions), "read_error": scan["read_error"]}
     released = {
         str(record.get("release_of") or "")
         for record in records
         if str(record.get("kind") or "") == RECORD_KIND_RELEASE
     }
     released.discard("")
+    # Append-order anchor: the highest position of a valid record that has
+    # already left the window. A corrupt / ts-less line below it is provably
+    # older and no longer counts (see docstring).
+    maxpos_old = _max_position_at_or_before_cutoff(records, positions, cutoff)
     count = 0
-    for record in records:
+    for record, position in zip(records, positions):
         if str(record.get("kind") or RECORD_KIND_DISPATCH) != RECORD_KIND_DISPATCH:
             continue
         if str(record.get("model") or "") != str(model):
             continue
         stamp = _parse_time(record.get("ts"))
-        # D12/F6: an unreadable `ts` counts (conservative), a readable one that
-        # has left the window does not.
-        if stamp is not None and stamp <= cutoff:
+        if stamp is not None:
+            # A readable ts that has left the window does not count.
+            if stamp <= cutoff:
+                continue
+        elif position < maxpos_old:
+            # F6/round-4: a ts-less record proven older by position has left the
+            # window too, instead of counting conservatively forever.
             continue
         if str(record.get("id") or "") in released:
             continue
         count += 1
-    corrupt = int(integrity.get("corrupt_lines") or 0)
+    corrupt = len(corrupt_positions)
     mtime = ledger_mtime(path)
-    corrupt_in_window = bool(corrupt) and (mtime is None or mtime > cutoff)
-    counted_corrupt = corrupt if corrupt_in_window else 0
+    mtime_in_window = mtime is None or mtime > cutoff
+    counted_corrupt = 0
+    if mtime_in_window:
+        for position in corrupt_positions:
+            if position < maxpos_old:
+                continue
+            counted_corrupt += 1
     integrity = dict(integrity)
     integrity["counted_corrupt_lines"] = counted_corrupt
     integrity["corrupt_lines_outside_window"] = corrupt - counted_corrupt
@@ -773,6 +878,31 @@ def _append_record(path: Path, record: dict[str, Any]) -> str | None:
     return None
 
 
+def _cheap_line_count(path: Path) -> int | None:
+    """Newline count via a raw binary scan; ``None`` when the file is absent or
+    unreadable (the caller then falls through to the full decode).
+
+    Round-4 residual finding (2026-09-05): :func:`rotate_ledger` used to
+    ``read_text`` (a full decode + ``splitlines``) BEFORE the ``min_lines``
+    gate, so every dispatch fully re-read the ledger even in the common
+    below-threshold case. This counts ``\\n`` bytes without decoding, so the
+    below-threshold fast path stays ``stat``-sized as the docstring promised.
+    """
+    try:
+        count = 0
+        with open(path, "rb") as handle:
+            while True:
+                chunk = handle.read(1 << 20)
+                if not chunk:
+                    break
+                count += chunk.count(b"\n")
+        return count
+    except FileNotFoundError:
+        return None
+    except OSError:
+        return None
+
+
 def rotate_ledger(
     path: Path,
     *,
@@ -789,13 +919,29 @@ def rotate_ledger(
     line stayed charged forever.
 
     BOUNDED on purpose: below ``min_lines`` the file is left alone, so the
-    common case adds one ``stat``-sized read and no rewrite at all. Called from
-    :func:`commit_dispatch` while the exclusive ledger lock is held - never
-    concurrently with an append. Records whose ``ts`` cannot be read are KEPT,
-    matching the conservative counting rule, so rotation can never hand back a
-    message the window arithmetic is still charging for. Never raises.
+    common case adds one ``stat``-sized read and no rewrite at all (round-4
+    residual fix: a raw newline count now gates the full decode instead of
+    reading the whole file first). Called from :func:`commit_dispatch` while the
+    exclusive ledger lock is held - never concurrently with an append.
+
+    A record whose ``ts`` cannot be read, and a corrupt line, are dropped ONLY
+    when provably older by POSITION (an already-expired valid record was
+    appended after them), matching :func:`scan_window` exactly so rotation can
+    never hand back a message the window arithmetic is still charging for. A
+    record stamped in the FUTURE is KEPT (explicit guard symmetric with
+    ``scan_window``'s future-record rule: a wall-clock jump must not let
+    rotation drop a record the window still counts). Never raises.
     """
     target = Path(path)
+    # Stat-only fast path: below the threshold, do not decode the file at all.
+    cheap = _cheap_line_count(target)
+    if cheap is not None and cheap < int(min_lines):
+        return {
+            "rotated": False,
+            "reason": "below_rotation_threshold",
+            "lines": cheap,
+            "min_lines": int(min_lines),
+        }
     try:
         raw_lines = target.read_text(encoding="utf-8").splitlines()
     except FileNotFoundError:
@@ -810,25 +956,53 @@ def rotate_ledger(
             "min_lines": int(min_lines),
         }
     cutoff = now.astimezone(dt.UTC) - dt.timedelta(minutes=float(minutes) * float(keep_factor))
-    kept: list[str] = []
-    dropped = 0
-    dropped_corrupt = 0
+    # First pass: classify every non-empty line by physical (append) position
+    # and find the append-order anchor - the highest position of a valid record
+    # already past the rotation cutoff. A corrupt / ts-less line below it is
+    # provably older and may be dropped; at or above it, it is still charged.
+    parsed: list[tuple[int, str, dict[str, Any] | None]] = []
+    physical = -1
+    valid_positions: list[int] = []
+    valid_records: list[dict[str, Any]] = []
     for line in raw_lines:
         stripped = line.strip()
         if not stripped:
             continue
+        physical += 1
         try:
             record = json.loads(stripped)
         except (json.JSONDecodeError, ValueError):
-            dropped += 1
-            dropped_corrupt += 1
+            parsed.append((physical, stripped, None))
             continue
         if not isinstance(record, dict):
-            dropped += 1
-            dropped_corrupt += 1
+            parsed.append((physical, stripped, None))
+            continue
+        parsed.append((physical, stripped, record))
+        valid_positions.append(physical)
+        valid_records.append(record)
+    maxpos_old = _max_position_at_or_before_cutoff(valid_records, valid_positions, cutoff)
+    kept: list[str] = []
+    dropped = 0
+    dropped_corrupt = 0
+    for position, stripped, record in parsed:
+        if record is None:
+            # Corrupt / non-dict: drop only when provably older by position.
+            if position < maxpos_old:
+                dropped += 1
+                dropped_corrupt += 1
+                continue
+            kept.append(stripped)
             continue
         stamp = _parse_time(record.get("ts"))
-        if stamp is not None and stamp <= cutoff:
+        if stamp is not None:
+            # A readable ts <= cutoff expired; a FUTURE stamp is kept (guard).
+            if stamp <= cutoff:
+                dropped += 1
+                continue
+            kept.append(stripped)
+            continue
+        # ts-less: drop only when provably older by position (mirrors scan).
+        if position < maxpos_old:
             dropped += 1
             continue
         kept.append(stripped)

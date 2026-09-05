@@ -505,6 +505,34 @@ def _codex_tier_block(agent: str, invocation: dict[str, Any] | None) -> dict[str
     return None
 
 
+def _codex_tier_hold_block(agent: str, invocation: dict[str, Any] | None) -> dict[str, Any] | None:
+    """A HOLD-class tier refusal that must outrank the OWNER burn bypass.
+
+    Round-4 residual finding (2026-09-05): the OWNER burn bypass returned
+    ``allowed=True`` BEFORE :func:`_codex_tier_block`, so a valid
+    ``CODEX_BURN_AUTHORIZED.flag`` let a scalpel task whose Astra window is spent
+    (or one carrying an invalid ``scalpel`` marker) SPAWN instead of being held.
+    The scalpel tier is HELD, never downgraded (doctrine section 3.2): a burn
+    flag may suspend the ordinary 5h/weekly caps and the ordinary-tier window
+    refusals (which merely walk DOWN the fallback chain), but it must not turn a
+    HELD Astra row into a spawn. A hold is present iff the invocation carries
+    ``model_tier_hold`` - set both for the spent-Astra window and for an invalid
+    scalpel marker. In OBSERVE mode ``select_dispatch`` emits no such hold from a
+    spent window (it takes the first entry), so this stays inert there; the
+    caller additionally gates it to enforce mode to keep observe byte-identical.
+    """
+    if str(agent or "").lower() != "codex" or not invocation:
+        return None
+    if not isinstance(invocation.get("model_tier_hold"), dict):
+        return None
+    block = _codex_tier_block(agent, invocation)
+    if block is not None:
+        return block
+    hold = invocation["model_tier_hold"]
+    return {"reason": str(hold.get("route_reason") or hold.get("code") or "model_tier_hold"),
+            "detail": hold}
+
+
 def _decision(
     *,
     allowed: bool,
@@ -652,6 +680,34 @@ def evaluate_spawn(
     # OWNER 2026-08-22: "Codex derzeit ohne Ruecksicht auf Token oder 5h oder
     # Wochenlimit einfach nutzen". Lazy import avoids a module cycle
     # (quota_governor imports this module at top level).
+    # Round-4 residual finding (2026-09-05): the Astra HOLD is evaluated BEFORE
+    # the burn bypass, but only in ENFORCE mode. The scalpel tier is held, never
+    # downgraded, so an OWNER burn flag must not spawn a held Astra row; ordinary
+    # window refusals (below) still sit behind the bypass because they only
+    # downgrade. In OBSERVE mode a spent window emits no hold, so this branch is
+    # never taken and observe behaviour is byte-identical.
+    codex_matrix = (policy.get("model_matrix") or {}).get(normalized_agent) or {}
+    active_window_mode = codex_model_tiers.enforcement_mode(codex_matrix)
+    if active_window_mode == codex_model_tiers.ENFORCEMENT_ENFORCE:
+        hold_block = _codex_tier_hold_block(normalized_agent, invocation)
+        if hold_block is not None:
+            result = _decision(
+                allowed=False,
+                agent=normalized_agent,
+                task_type=task_type,
+                priority=priority,
+                reason=str(hold_block["reason"]),
+                task_class=task_class,
+                state_status="model_tier_window",
+                violations=[str(hold_block["reason"])],
+                policy_schema=schema,
+                invocation=invocation,
+                tier_escalation=tier_escalation,
+            )
+            if write_summary:
+                record_gate_decision(result, state_path=state_path, summary_path=summary_path)
+            return result
+
     try:
         from tools.strategy_farm.quota_governor import _burn_authorized
     except ModuleNotFoundError:  # pragma: no cover - direct script execution

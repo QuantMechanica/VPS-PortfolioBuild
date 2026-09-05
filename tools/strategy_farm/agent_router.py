@@ -135,6 +135,40 @@ TASK_TYPE_CAPABILITIES: dict[str, list[str]] = {
 SCALPEL_ROUTING_CAPABILITY = "scalpel_mechanization"
 SCALPEL_PAYLOAD_FIELD = "scalpel"
 SCALPEL_TASK_TYPES: frozenset[str] = frozenset({"strategy_mechanize_source"})
+# Mirror of `codex_model_tiers` (the two modules deliberately do not import each
+# other; the constant STRINGS are the contract). An invalid `scalpel` marker is
+# a config defect that must be HELD at the router with its own reason, never
+# routed to an executing lane - the codex tier gate only holds it on the codex
+# lane, so a claude/gemini fallback would otherwise execute or misroute it.
+SCALPEL_TIER = "astra"
+INVALID_SCALPEL_REASON = "invalid_scalpel_marker"
+HOLD_CODE_INVALID_SCALPEL = "ROUTER_INVALID_SCALPEL_MARKER"
+
+
+def invalid_scalpel_marker_hold(payload: dict[str, Any] | None) -> dict[str, Any] | None:
+    """A router hold for a `scalpel` marker present but not JSON true/false/null.
+
+    ``None`` when the marker is absent or a valid boolean/null. The hold is
+    lane-independent: the codex model-tier contract surfaces the same defect
+    only on the codex lane, so without this a claude fallback would execute the
+    malformed row and a gemini fallback (cheapest, ungated) would run it on the
+    weakest seat. Held at the router, the config defect is visible and nothing
+    runs until it is fixed. Routing decision - independent of the 5h window's
+    observe/enforce mode.
+    """
+    task_payload = payload or {}
+    if SCALPEL_PAYLOAD_FIELD not in task_payload:
+        return None
+    raw = task_payload.get(SCALPEL_PAYLOAD_FIELD)
+    if raw is True or raw is False or raw is None:
+        return None
+    return {
+        "code": HOLD_CODE_INVALID_SCALPEL,
+        "route_reason": INVALID_SCALPEL_REASON,
+        "tier": SCALPEL_TIER,
+        "payload_field": SCALPEL_PAYLOAD_FIELD,
+        "raw": raw if isinstance(raw, (str, int, float, bool)) else str(raw),
+    }
 
 
 def scalpel_routing_capabilities(
@@ -144,16 +178,35 @@ def scalpel_routing_capabilities(
     """``{SCALPEL_ROUTING_CAPABILITY}`` for scalpel-class work, else ``set()``.
 
     Mirrors `codex_model_tiers.resolve_tier`: the task type, or a payload
-    `scalpel` marker that is JSON `true`. A non-boolean marker is deliberately
-    NOT treated as scalpel here - it is a config defect that the tier contract
-    holds with `invalid_scalpel_marker`; adding the capability for it would only
-    change which lane reports the same defect.
+    `scalpel` marker that is JSON `true`.
+
+    Round-4 residual finding (2026-09-05): an INVALID scalpel marker (present
+    but not JSON ``true`` / ``false`` / ``null`` - e.g. the string ``"true"``,
+    ``1``, ``"yes"``) is also gated to the scalpel lane. The doctrine holds such
+    a row with ``invalid_scalpel_marker``, but that hold only fires on a
+    quota-gated lane (codex / claude): `quota_spawn_gate.GATED_AGENTS` is
+    ``{codex, claude}`` and the tier contract runs only there. Left ungated the
+    invalid-marker row carried NO lane capability, so it fell to gemini - the
+    cheapest lane, which is neither quota-gated nor tier-aware - and Astra-class
+    work executed silently on the weakest seat with the config defect never
+    surfaced. Routing it to a scalpel lane is what makes the hold actually
+    fire. A valid ``false`` / ``null`` marker means "not scalpel" and adds
+    nothing. This is a routing decision, independent of the 5h window's
+    observe/enforce mode.
     """
     if str(task_type or "").strip().lower() in SCALPEL_TASK_TYPES:
         return {SCALPEL_ROUTING_CAPABILITY}
-    if (payload or {}).get(SCALPEL_PAYLOAD_FIELD) is True:
+    task_payload = payload or {}
+    if SCALPEL_PAYLOAD_FIELD not in task_payload:
+        return set()
+    raw = task_payload.get(SCALPEL_PAYLOAD_FIELD)
+    if raw is True:
         return {SCALPEL_ROUTING_CAPABILITY}
-    return set()
+    if raw is False or raw is None:
+        return set()
+    # Present but not a JSON boolean/null: a config defect the tier contract
+    # HOLDS. Gate it to a lane that runs that contract instead of gemini.
+    return {SCALPEL_ROUTING_CAPABILITY}
 
 # Minimum eligibility contract per lane.  Task-type requirements are kept as
 # the source of truth; lane-specific capabilities cover governed specialist
@@ -1454,6 +1507,18 @@ def route_once(
             # well as at enqueue so a row written outside `enqueue_task` (or
             # before this patch) cannot fall to the cheapest lane.
             required |= scalpel_routing_capabilities(task["task_type"], task_payload)
+            # Round-4 residual finding (2026-09-05): an INVALID scalpel marker is
+            # HELD at the router before any per-lane gating. The codex tier gate
+            # only surfaces the defect on the codex lane, so a claude fallback
+            # (also declares the scalpel capability) would otherwise execute the
+            # malformed row. The hold is lane-independent and carries the same
+            # `invalid_scalpel_marker` reason the codex gate would.
+            scalpel_hold = invalid_scalpel_marker_hold(task_payload)
+            if scalpel_hold is not None:
+                _record_model_window_hold(conn, task, scalpel_hold)
+                model_window_holds.append((task, scalpel_hold))
+                skipped.append(task["id"])
+                continue
             # required_skills gate routing too — for capabilities governed by
             # defaults even if the live registry has drifted (e.g. Gemini's
             # video_analysis). Routing was
