@@ -191,6 +191,13 @@ def build_pointer(args: argparse.Namespace) -> dict:
 
 
 def main(argv: list[str] | None = None) -> int:
+    arguments = list(sys.argv[1:] if argv is None else argv)
+    if '--attest-current' in arguments:
+        # Explicit INERT proposal mode has its own parser: no legacy --signed
+        # or runtime --out option is accepted, and no live-book writer is called.
+        from tools.strategy_farm import live_identity_attest
+        arguments.remove('--attest-current')
+        return live_identity_attest.main(arguments)
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--manifest", required=True, help="path to the signed portfolio manifest JSON")
     ap.add_argument("--environment", default="T_Live/DXZ", help="deployment environment label")
