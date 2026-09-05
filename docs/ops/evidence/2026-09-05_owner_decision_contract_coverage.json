@@ -1,0 +1,12 @@
+{
+  "active_card_count": 2,
+  "contract_decision_count": 18,
+  "contract_error": null,
+  "contract_sha256": "3eb705d6b39463a1ac99a45b504e4c624cc00ced4eec5eb7c773ff3608cb219c",
+  "feed_sha256": "24f4d3876b45184ea72cf58778266210dda5e5dad45c6406c45550dc956a6971",
+  "missing_plans": [],
+  "ok": true,
+  "read_only": true,
+  "ready_card_count": 2,
+  "schema": "qm.owner-decision-execution-coverage/v1"
+}

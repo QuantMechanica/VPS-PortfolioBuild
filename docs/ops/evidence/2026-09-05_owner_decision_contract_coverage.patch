@@ -1,0 +1,109 @@
+diff --git a/tools/strategy_farm/owner_decision_execution.py b/tools/strategy_farm/owner_decision_execution.py
+index 2089c34be8..395237aac7 100644
+--- a/tools/strategy_farm/owner_decision_execution.py
++++ b/tools/strategy_farm/owner_decision_execution.py
+@@ -537,6 +537,37 @@ def project_feed_executions(con: sqlite3.Connection, feed: Mapping[str, Any]) ->
+     return sorted(output, key=lambda row: str(row.get("decided_at_utc") or ""), reverse=True)
+ 
+ 
++def coverage_report(
++    feed_path: Path = store.DEFAULT_FEED, contract_path: Path = DEFAULT_CONTRACT,
++) -> dict[str, Any]:
++    """Read-only coverage of actionable cards, using one validated contract snapshot."""
++    feed = store.load_feed(feed_path)
++    active = [item for item in feed["items"] if item["status"] in {"OPEN", "DEFERRED"}]
++    error = None
++    contract = None
++    ready_ids: set[str] = set()
++    try:
++        contract = load_contract(contract_path)
++        for item in contract["decisions"]:
++            _decision_plan_binding_from_contract(contract, item["id"])
++            ready_ids.add(item["id"])
++    except (ExecutionContractError, KeyError, TypeError, ValueError) as exc:
++        error = str(exc)
++        ready_ids.clear()
++    missing = [{"decision_id": item["id"], "status": item["status"],
++                "reason": error or "execution_plan_missing"}
++               for item in active if item["id"] not in ready_ids]
++    return {
++        "schema": "qm.owner-decision-execution-coverage/v1",
++        "ok": not missing and error is None, "read_only": True,
++        "active_card_count": len(active), "ready_card_count": len(active) - len(missing),
++        "contract_decision_count": len(contract["decisions"]) if contract else 0,
++        "missing_plans": missing, "contract_error": error,
++        "feed_sha256": store.sha256_bytes(store.canonical_bytes(feed)),
++        "contract_sha256": contract_sha256(contract) if contract else None,
++    }
++
++
+ def main(argv: list[str] | None = None) -> int:
+     parser = argparse.ArgumentParser(description=__doc__)
+     parser.add_argument("--root", type=Path, default=DEFAULT_ROOT)
+@@ -544,7 +575,14 @@ def main(argv: list[str] | None = None) -> int:
+     parser.add_argument("--receipts", type=Path, default=store.DEFAULT_RECEIPTS)
+     parser.add_argument("--contract", type=Path, default=DEFAULT_CONTRACT)
+     parser.add_argument("--apply", action="store_true", help="Insert missing tasks; default is dry-run")
++    parser.add_argument("--coverage", action="store_true", help="Read-only plan coverage for OPEN/DEFERRED cards")
+     args = parser.parse_args(argv)
++    if args.coverage:
++        if args.apply:
++            parser.error("--coverage is read-only and cannot be combined with --apply")
++        result = coverage_report(args.feed, args.contract)
++        print(json.dumps(result, indent=2, sort_keys=True))
++        return 0 if result["ok"] else 2
+     result = reconcile_receipts(
+         root=args.root,
+         feed_path=args.feed,
+diff --git a/tools/strategy_farm/tests/test_owner_decision_execution.py b/tools/strategy_farm/tests/test_owner_decision_execution.py
+index 76d15b361c..d9c41d659a 100644
+--- a/tools/strategy_farm/tests/test_owner_decision_execution.py
++++ b/tools/strategy_farm/tests/test_owner_decision_execution.py
+@@ -45,8 +45,8 @@ def test_execution_contract_covers_every_bootstrap_decision_and_both_choices() -
+     feed = store.load_feed(store.DEFAULT_SEED)
+     contract = execution.load_contract()
+     contract_ids = {row["id"] for row in contract["decisions"]}
+-    assert contract_ids == {row["id"] for row in feed["items"]}
+-    for item in feed["items"]:
++    assert {row["id"] for row in feed["items"]} <= contract_ids
++    for item in contract["decisions"]:
+         summary = execution.plan_summary(item["id"])
+         assert summary["ready"] is True
+         assert summary["agent"] == "claude"
+@@ -58,6 +58,36 @@ def test_execution_contract_covers_every_bootstrap_decision_and_both_choices() -
+         }
+ 
+ 
++def test_live_coverage_requires_ready_plans_for_open_and_deferred_cards(tmp_path: Path) -> None:
++    feed, contract = tmp_path / "feed.json", tmp_path / "contract.json"
++    _feed(feed)
++    _contract(contract)
++    assert execution.coverage_report(feed, contract)["ok"] is True
++    payload = json.loads(feed.read_text())
++    for status in ("OPEN", "DEFERRED", "DECIDED"):
++        payload["items"].append({**payload["items"][0], "id": "MISSING-" + status, "status": status})
++    feed.write_text(json.dumps(payload), encoding="utf-8")
++    before = (feed.read_bytes(), contract.read_bytes())
++    result = execution.coverage_report(feed, contract)
++    assert result["ok"] is False
++    assert result["active_card_count"] == 3
++    assert {row["decision_id"] for row in result["missing_plans"]} == {"MISSING-OPEN", "MISSING-DEFERRED"}
++    assert (feed.read_bytes(), contract.read_bytes()) == before
++
++
++def test_coverage_cli_fails_closed_without_a_valid_both_choice_contract(tmp_path: Path, capsys) -> None:
++    feed, contract = tmp_path / "feed.json", tmp_path / "contract.json"
++    _feed(feed)
++    _contract(contract)
++    payload = json.loads(contract.read_text())
++    del payload["decisions"][0]["choices"]["NO"]
++    contract.write_text(json.dumps(payload), encoding="utf-8")
++    assert execution.main(["--coverage", "--feed", str(feed), "--contract", str(contract)]) == 2
++    result = json.loads(capsys.readouterr().out)
++    assert not result["ok"] and result["ready_card_count"] == 0
++    assert "must map YES and NO" in result["contract_error"]
++
++
+ def _contract(path: Path) -> None:
+     path.write_text(
+         json.dumps(
