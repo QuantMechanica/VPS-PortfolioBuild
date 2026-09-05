@@ -18247,3 +18247,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41347,cs-ichi-cloud-opt,0,XAUUSD.DWX,413470000,2026-09-05,Codex governed allocator,active
 41348,xauxag-mhampel-rv,0,XAUUSD.DWX,413480000,2026-09-05,Codex governed allocator,active
 41348,xauxag-mhampel-rv,1,XAGUSD.DWX,413480001,2026-09-05,Codex governed allocator,active
+41349,wti-adf-sampen-agree-tr,0,XTIUSD.DWX,413490000,2026-09-05,Codex governed allocator,active
