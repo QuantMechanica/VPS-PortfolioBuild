@@ -1,0 +1,160 @@
+{
+  "schema": "qm.m09b-readiness-install/v1",
+  "created_at_utc": "2026-09-05T15:07:24.477235+00:00",
+  "task_id": "7cc4ab4c-ae16-4eb7-9409-4ce5ff179d77",
+  "mode": "INSTALLED",
+  "manifest_path": "D:\\QM\\reports\\ftmo_trial\\sets_20260905_055750\\manifest.json",
+  "manifest_sha256": "db442c0095b7a9bbac7cdcbf898036486a6f2e4d3af90f057660fbca3430b94c",
+  "lane": "D:\\QM\\mt5\\FTMO_STREAM1",
+  "account_config_unchanged": true,
+  "protected_hashes": {
+    "D:\\QM\\mt5\\FTMO_STREAM1\\Config\\common.ini": "f524cf4d8aff087839d74676c37d1a15a8235ab7557e575e1df8fc7b7a42059a",
+    "D:\\QM\\mt5\\FTMO_STREAM1\\Config\\accounts.dat": "2b3b677dbe239db96cfe2262652de5853f58a160b482a99e797ac1ee66d89d21",
+    "D:\\QM\\mt5\\FTMO_STREAM1\\Config\\servers.dat": "fa5ee9711e7aaf865d0f26785fcfcbf84ce90e38c8d6f1f5536d55abaa4f85a9"
+  },
+  "files": [
+    {
+      "kind": "candidate",
+      "ea_id": 10706,
+      "source": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\QM5_10706_tv-mon-ls.ex5",
+      "destination": "D:\\QM\\mt5\\FTMO_STREAM1\\MQL5\\Experts\\QM\\M09B\\QM5_10706_tv-mon-ls.ex5",
+      "sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb",
+      "verified_installed": true
+    },
+    {
+      "kind": "trial_set",
+      "ea_id": 10706,
+      "source": "D:\\QM\\reports\\ftmo_trial\\sets_20260905_055750\\QM5_10706_tv-mon-ls_GBPUSD_H1_trial.set",
+      "destination": "D:\\QM\\mt5\\FTMO_STREAM1\\MQL5\\Profiles\\Presets\\M09B\\QM5_10706_tv-mon-ls_GBPUSD_H1_trial.set",
+      "sha256": "a52b04db02972f5f56c121d739fdbecc72efcd74f0e41c248a1b420a176fbdaa",
+      "verified_installed": true
+    },
+    {
+      "kind": "candidate",
+      "ea_id": 11421,
+      "source": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\QM5_11421_ohlc-daily-squeeze-reversal-d1.ex5",
+      "destination": "D:\\QM\\mt5\\FTMO_STREAM1\\MQL5\\Experts\\QM\\M09B\\QM5_11421_ohlc-daily-squeeze-reversal-d1.ex5",
+      "sha256": "9dd7facd1da7e2c6564929b92a2e4a62e65bc40b99a03edd729030f72d18924b",
+      "verified_installed": true
+    },
+    {
+      "kind": "trial_set",
+      "ea_id": 11421,
+      "source": "D:\\QM\\reports\\ftmo_trial\\sets_20260905_055750\\QM5_11421_ohlc-daily-squeeze-reversal-d1_EURUSD_D1_trial.set",
+      "destination": "D:\\QM\\mt5\\FTMO_STREAM1\\MQL5\\Profiles\\Presets\\M09B\\QM5_11421_ohlc-daily-squeeze-reversal-d1_EURUSD_D1_trial.set",
+      "sha256": "598be7770ba182040b892745ab32ec7dc118ea676b5c6a9a4cb4773a06c04b51",
+      "verified_installed": true
+    },
+    {
+      "kind": "candidate",
+      "ea_id": 11422,
+      "source": "C:\\QM\\repo\\framework\\EAs\\QM5_11422_williams-18ma-outside-bar-entry-d1\\QM5_11422_williams-18ma-outside-bar-entry-d1.ex5",
+      "destination": "D:\\QM\\mt5\\FTMO_STREAM1\\MQL5\\Experts\\QM\\M09B\\QM5_11422_williams-18ma-outside-bar-entry-d1.ex5",
+      "sha256": "2b98e9e902313148be78d88513fcbda2476150b1a7605eb15a50b2cca6b32d66",
+      "verified_installed": true
+    },
+    {
+      "kind": "trial_set",
+      "ea_id": 11422,
+      "source": "D:\\QM\\reports\\ftmo_trial\\sets_20260905_055750\\QM5_11422_williams-18ma-outside-bar-entry-d1_USDCAD_D1_trial.set",
+      "destination": "D:\\QM\\mt5\\FTMO_STREAM1\\MQL5\\Profiles\\Presets\\M09B\\QM5_11422_williams-18ma-outside-bar-entry-d1_USDCAD_D1_trial.set",
+      "sha256": "517ae6803f541d5bc3807a461e3cfc3cc491a2ef3b9ef51948f334858c45c474",
+      "verified_installed": true
+    },
+    {
+      "kind": "candidate",
+      "ea_id": 11910,
+      "source": "C:\\QM\\repo\\framework\\EAs\\QM5_11910_larry-williams-18ma-2outside-bars-d1\\QM5_11910_larry-williams-18ma-2outside-bars-d1.ex5",
+      "destination": "D:\\QM\\mt5\\FTMO_STREAM1\\MQL5\\Experts\\QM\\M09B\\QM5_11910_larry-williams-18ma-2outside-bars-d1.ex5",
+      "sha256": "e18d477e63c40cb1002aa4d93d8efcc3ec6fddf1081fb73ad9df1b0a7a3042de",
+      "verified_installed": true
+    },
+    {
+      "kind": "trial_set",
+      "ea_id": 11910,
+      "source": "D:\\QM\\reports\\ftmo_trial\\sets_20260905_055750\\QM5_11910_larry-williams-18ma-2outside-bars-d1_NZDUSD_D1_trial.set",
+      "destination": "D:\\QM\\mt5\\FTMO_STREAM1\\MQL5\\Profiles\\Presets\\M09B\\QM5_11910_larry-williams-18ma-2outside-bars-d1_NZDUSD_D1_trial.set",
+      "sha256": "bc81b20a42c898f610be4a9c7fb20e8785d214f440c2cf35b5af31e5b4b9001d",
+      "verified_installed": true
+    },
+    {
+      "kind": "candidate",
+      "ea_id": 13054,
+      "source": "C:\\QM\\repo\\framework\\EAs\\QM5_13054_brent-tom-mom\\QM5_13054_brent-tom-mom.ex5",
+      "destination": "D:\\QM\\mt5\\FTMO_STREAM1\\MQL5\\Experts\\QM\\M09B\\QM5_13054_brent-tom-mom.ex5",
+      "sha256": "2e65488fccdbd985f78318861a223a305d820a4fce3d2ebdcafae6ce956fd96d",
+      "verified_installed": true
+    },
+    {
+      "kind": "trial_set",
+      "ea_id": 13054,
+      "source": "D:\\QM\\reports\\ftmo_trial\\sets_20260905_055750\\QM5_13054_brent-tom-mom_USOIL.cash_D1_trial.set",
+      "destination": "D:\\QM\\mt5\\FTMO_STREAM1\\MQL5\\Profiles\\Presets\\M09B\\QM5_13054_brent-tom-mom_USOIL.cash_D1_trial.set",
+      "sha256": "61be577a444356e81570ad9e5416c3599f227a0eca9bdca59276ed811f64d908",
+      "verified_installed": true
+    },
+    {
+      "kind": "candidate",
+      "ea_id": 1537,
+      "source": "C:\\QM\\repo\\framework\\EAs\\QM5_1537_aa-vol-sma10\\QM5_1537_aa-vol-sma10.ex5",
+      "destination": "D:\\QM\\mt5\\FTMO_STREAM1\\MQL5\\Experts\\QM\\M09B\\QM5_1537_aa-vol-sma10.ex5",
+      "sha256": "142a019e773a493def0640722efb9d591d094650b35a69d5de39f6af3a048106",
+      "verified_installed": true
+    },
+    {
+      "kind": "trial_set",
+      "ea_id": 1537,
+      "source": "D:\\QM\\reports\\ftmo_trial\\sets_20260905_055750\\QM5_1537_aa-vol-sma10_XAGUSD_D1_trial.set",
+      "destination": "D:\\QM\\mt5\\FTMO_STREAM1\\MQL5\\Profiles\\Presets\\M09B\\QM5_1537_aa-vol-sma10_XAGUSD_D1_trial.set",
+      "sha256": "7c083e70a003b5c86d49332875cf2c45786d058450b7fde2c1039d96cbb241a9",
+      "verified_installed": true
+    },
+    {
+      "kind": "candidate",
+      "ea_id": 20048,
+      "source": "C:\\QM\\repo\\framework\\EAs\\QM5_20048_wti-preholiday\\QM5_20048_wti-preholiday.ex5",
+      "destination": "D:\\QM\\mt5\\FTMO_STREAM1\\MQL5\\Experts\\QM\\M09B\\QM5_20048_wti-preholiday.ex5",
+      "sha256": "1312391ad7e654812244e48a6df92d5bd323dba7d32ddae60c54adc464527f00",
+      "verified_installed": true
+    },
+    {
+      "kind": "trial_set",
+      "ea_id": 20048,
+      "source": "D:\\QM\\reports\\ftmo_trial\\sets_20260905_055750\\QM5_20048_wti-preholiday_USOIL.cash_D1_trial.set",
+      "destination": "D:\\QM\\mt5\\FTMO_STREAM1\\MQL5\\Profiles\\Presets\\M09B\\QM5_20048_wti-preholiday_USOIL.cash_D1_trial.set",
+      "sha256": "5a6ddcba67eb2bc9540b1b3e47deabdca6e53cefe9cb0e5980a8ed20af61ffa8",
+      "verified_installed": true
+    },
+    {
+      "kind": "candidate",
+      "ea_id": 21505,
+      "source": "C:\\QM\\repo\\framework\\EAs\\QM5_21505_xag-weekly-lowvol-momentum\\QM5_21505_xag-weekly-lowvol-momentum.ex5",
+      "destination": "D:\\QM\\mt5\\FTMO_STREAM1\\MQL5\\Experts\\QM\\M09B\\QM5_21505_xag-weekly-lowvol-momentum.ex5",
+      "sha256": "395c4747832acbcdf8a68d8598e53abe5786bdc6c538767c400884cd82b2aea1",
+      "verified_installed": true
+    },
+    {
+      "kind": "trial_set",
+      "ea_id": 21505,
+      "source": "D:\\QM\\reports\\ftmo_trial\\sets_20260905_055750\\QM5_21505_xag-weekly-lowvol-momentum_XAGUSD_D1_trial.set",
+      "destination": "D:\\QM\\mt5\\FTMO_STREAM1\\MQL5\\Profiles\\Presets\\M09B\\QM5_21505_xag-weekly-lowvol-momentum_XAGUSD_D1_trial.set",
+      "sha256": "8e1bcb2235770b3418fc09423fae202a5aac8dc797f5df2bf3eb9a2f0cfc3d6f",
+      "verified_installed": true
+    }
+  ],
+  "collector_compiled": false,
+  "terminal_started": false,
+  "autotrading_touched": false,
+  "exact_binaries_recompiled": false,
+  "native_scenario_execution": false,
+  "native_testable_count": 0,
+  "native_untestable_count": 8,
+  "pipeline_verdict": null,
+  "blockers": [
+    "GOVERNED_COLLECTOR_COMPILE_EA_LABEL_INVALID",
+    "EXACT_BINARIES_HAVE_NO_NEW_RESERVATION_EVENT_INSTRUMENTATION",
+    "BOUND_SHARED_ACCOUNT_SCENARIO_ADAPTER_ABSENT",
+    "EXACT_PROFILE_ACCOUNT_UNPROVEN",
+    "NATIVE_EXECUTION_FORBIDDEN_IN_THIS_SCHEDULED_CYCLE"
+  ]
+}

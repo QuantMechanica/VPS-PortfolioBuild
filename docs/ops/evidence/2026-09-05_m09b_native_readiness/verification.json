@@ -1,0 +1,21 @@
+{
+  "schema": "qm.m09b-verification/v1",
+  "task_id": "7cc4ab4c-ae16-4eb7-9409-4ce5ff179d77",
+  "tests": {
+    "chunk_id": "550b29",
+    "wall_time_seconds": 2.6718835,
+    "exit_code": 0,
+    "original_token_count": 366,
+    "output": "                    \"source_sha256\": expected,\r\n                }\r\n            )\r\n    return file_binding(observation_path)\r\n\r\n\r\ndef scan_terminal_processes() -> list[dict[str, Any]]:\r\n    command = (\r\n        \"Get-CimInstance Win32_Process -Filter \\\"Name='terminal64.exe'\\\" | \"\r\n        \"Select-Object ProcessId,ExecutablePath,CommandLine | ConvertTo-Json -Depth 3\"\r\n    )\r\n    try:\r\n        result = subprocess.run(\r\n            [\"powershell.exe\", \"-NoProfile\", \"-Command\", command],\r\n            capture_output=True,\r\n            text=True,\r\n            timeout=15,\r\n            creationflags=(subprocess.CREATE_NO_WINDOW if sys.platform == \"win32\" else 0),\r\n        )\r\n    except Exception as exc:\r\n        raise FtmoLaneError(f\"cannot inspect terminal capacity: {exc}\") from exc\r\n    if result.returncode != 0:\r\n        raise FtmoLaneError(\"terminal capacity scan failed\")\r\n    if not result.stdout.strip():\r\n        return []\r\n    try:\r\n        value = json.loads(result.stdout)\r\n    except json.JSONDecodeError as exc:\r\n        raise FtmoLaneError(\"terminal capacity scan returned invalid JSON\") from exc\r\n    rows = value if isinstance(value, list) else [value]\r\n    return [dict(row) for row in rows if isinstance(row, Mapping)]\r\n\r\n\r\ndef capacity_observation(process_rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:\r\n    factory: list[int] = []\r\n..............                                                           [100%]\r\n14 passed in 1.05s\r\n"
+  },
+  "compile_attempt": {
+    "command": "python C:/QM/repo/tools/strategy_farm/farmctl.py enqueue-compile QM_FTMO_TrialTelemetry",
+    "exit_code": 1,
+    "refused_count": 1,
+    "enqueued_count": 0,
+    "reason": "EA_LABEL_INVALID"
+  },
+  "native_tests_executed": false,
+  "instrumentation_implemented": false,
+  "scenario_adapter_implemented": false
+}
