@@ -14,6 +14,31 @@ REPO = Path(__file__).resolve().parents[3]
 PURGE_SCRIPT = REPO / "tools" / "strategy_farm" / "tester_cache_purge.ps1"
 
 
+def test_research_dependencies_include_versioned_frontier_and_declared_program(tmp_path):
+    db = tmp_path / "research.sqlite"
+    c = sqlite3.connect(db)
+    c.execute("CREATE TABLE work_items(ea_id,symbol,phase,gate_contract_version,verdict,status)")
+    c.executemany("INSERT INTO work_items VALUES(?,?,?,?,?,?)", [
+        ("QM5_11", "EURUSD.DWX", "Q11", "v4", "PASS", "done"),
+        ("QM5_12", "GBPUSD.DWX", "Q10", "v3", "PASS", "done"),
+        ("QM5_13", "AUDUSD.DWX", "Q11", "v4", "FAIL", "done"),
+    ])
+    c.commit(); c.close()
+    root = tmp_path / "census"; (root / "program").mkdir(parents=True)
+    (root / "program/ledger.json").write_text(json.dumps({"program_id":"DL089_fixture", "subject_ea_id":14,"ea_id":15,"symbol":"XAUUSD.DWX"}))
+    before = db.read_bytes()
+    assert guard._read_research_pairs(db, root) == {("11","EURUSD"),("12","GBPUSD"),("14","XAUUSD"),("15","XAUUSD")}
+    assert db.read_bytes() == before
+    (root / "program/ledger.json").write_text("broken")
+    with pytest.raises(guard.GuardError, match="unreadable"):
+        guard._read_research_pairs(db, root)
+
+
+def test_missing_research_registry_fails_closed(tmp_path):
+    with pytest.raises(guard.GuardError, match="research_census_root_missing"):
+        guard._read_research_pairs(tmp_path / "db", tmp_path / "missing")
+
+
 def _write_sources(
     root: Path,
     *,
@@ -114,6 +139,7 @@ def test_db_and_live_union_exempts_only_matching_gate_targets(tmp_path: Path) ->
     assert plan["counts"] == {
         "portfolio_candidate_pairs": 1,
         "live_manifest_pairs": 1,
+        "research_dependency_pairs": 0,
         "protected_union_pairs": 2,
         "purge_targets_scanned": 4,
         "gate_evidence_artifacts_scanned": 3,

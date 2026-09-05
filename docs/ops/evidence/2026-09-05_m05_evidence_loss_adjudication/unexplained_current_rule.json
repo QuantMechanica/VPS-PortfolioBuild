@@ -1,0 +1,629 @@
+{
+  "limits": "Current rule eligibility is not a historical deletion receipt; all remain UNEXPLAINED.",
+  "rows": [
+    {
+      "work_item_id": "b37c01d6-3762-4f7d-9463-0272d444c007",
+      "current_rule_class": "AGE_OUT"
+    },
+    {
+      "work_item_id": "e317cb4a-0486-4a4e-a47b-660162844345",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "aff01074-1dcb-4ea4-9a09-021f8e94fd54",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "dd400099-7183-4f7a-bfa3-5ff166a3a42b",
+      "current_rule_class": "AGE_OUT"
+    },
+    {
+      "work_item_id": "c9dad40f-0730-42a4-a660-948d763482d8",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "66cad5cd-d6cf-4e9a-be5f-2246d3400236",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "1aa0dc84-63e6-4237-a300-245d3ac16af4",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "28504443-4cd4-4aea-a340-fccf4d148119",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "9e8962b2-8c03-4a64-a39f-f1676249716c",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "46f9c2a3-ae2e-4db0-8186-a7baf72709db",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "c5ef8c23-8b74-4662-be5a-80f0b2f5dceb",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "3bd6b8df-4828-4982-8d1c-e0f16603ec1b",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "3ec1b968-d62c-431c-8cc7-a0ec8e1ed663",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "0479e04e-5538-4051-ae97-f8995cd9f79c",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "b9cfe883-5d5a-432e-9f6e-40f002a7ac36",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "0a2e72a2-d906-4343-b073-742a5e0213d3",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "bd7e02fa-7e16-4e47-965b-4822703d304e",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "7be7dd45-3881-4c5c-9e2e-59786fca60a7",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "ff941851-8f4d-4d8b-aa96-90622908bdca",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "c786739a-478d-4bdb-aa59-4d8a1fb72f11",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "22eb9bae-e796-4bc8-bd2f-42b85bb913bf",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "c21a27ff-e834-4a00-94ed-a3a180932c17",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "d34ab488-c2d5-44aa-913e-9322ca5f4efa",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "3b597143-37ab-4eb5-888d-4f8d32f1947f",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "5f3d6d60-2b7f-4da8-ac3b-e22c4d6faef5",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "b687ee5f-f5ee-4b3b-af8f-4b31bddb4a2b",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "ab23177b-ccb6-45b8-98fc-f05a2731371d",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "e5b4182d-3ff3-4465-9aba-45d7a5ecc1ba",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "f0bc3285-8a0e-4267-a303-1a0594e65c80",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "a2b5f6e2-1e61-44a8-8a20-73e732f2f966",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "7f97c304-1463-4428-be54-96ceb0a3389a",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "5c26a7fe-57ac-4292-a7b8-15d8a0451588",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "fa7744b8-3251-45b5-a9e6-6905c6bf50b5",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "2e87055c-b145-451a-9a89-cdda98f76f65",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "dd897938-1476-4900-9347-baddf3723c0c",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "b9e0b1c6-673f-40d0-bfe8-6040af48afe5",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "d2e7bb77-ab42-4d54-9d1a-a6e6d7eef38d",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "ee1459b8-55ed-4d2c-a6e9-b2f6d41d2855",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "f0161372-0097-4001-9b18-92bcadbfaf66",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "a20349ae-d7bd-496e-9cfc-905194d2537f",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "9c447ec4-e756-403c-a25a-03d0f61e14c3",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "e2982893-962d-4550-b719-acea0d0514ef",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "238aee95-e7f8-4a8b-98a5-7796c33b1e12",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "b2517e88-d797-4fec-9be0-21ae63f03152",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "2ac36af6-f3b4-42d3-9b4e-fcaec0fe000e",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "7607aaa2-9957-427e-9639-18d171d04f9b",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "112c2fae-54d5-45f9-a074-4c684f37e26f",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "3468ad6d-b7b1-4b1d-a0bb-8379f136d338",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "6e665ae6-03a3-4727-aff9-123322c23471",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "2a8d7315-ce11-4160-9f25-f91d97265f12",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "40ae2243-b38c-4832-9ae7-05267f070086",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "55e05a5f-0e06-41d0-8037-f3cd1d3b135d",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "df2221ea-b67f-439f-9de6-8b0b1018d6d9",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "5a1961e4-6372-4910-a99e-61efffe1a9e4",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "d73d488d-8b6c-48b3-a1bc-b098dec373d5",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "8a179030-5b28-444b-ae9c-80df5ad8f8ee",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "e5ab8071-1441-470b-9261-b9cbc1ce7318",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "4acff9b5-524c-40fb-ac81-64d99db497ec",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "699076c4-dad6-4424-bd2d-22db89de10ff",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "bfc0f719-ca25-4a31-81ee-7e56f0c164f3",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "2ead7b60-2f3e-480c-ab0f-5d101bf81464",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "65c80cc5-271b-44dd-bda2-3e533e2e905b",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "bb744247-e424-44e2-8364-4beb48678cf7",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "1d207268-0af6-4ad9-bd87-e957cb8beb1a",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "cfc0c5dd-105f-4009-9227-c1fba6e7bdac",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "b31c070b-6179-4393-986d-2f2a2a832729",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "58f6c917-f82c-4991-9bf6-7c855c585cad",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "4dab9ede-095c-4309-85a9-5bc87f6e5a80",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "c0e96e8b-b0eb-4e55-a0cb-29ab145007f6",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "98d333b9-4914-4ef5-b59a-2bb9f492447e",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "1a079d9e-f9a3-4813-8356-2a0fe5e4d899",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "6037af9d-de74-4532-8ca8-824aaab94264",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "0cb2cb11-9637-46c0-9382-2753e62a0bab",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "c08d9490-c752-4f13-b4d0-ef4d6997e033",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "056e4b68-6e68-436e-8bae-683938c8100b",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "e11d7616-0da5-4ffd-bca1-565f15b215a9",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "3e056bbe-5345-40b4-91c6-2815c95cea66",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "1c529230-6c0b-4bb0-9976-27f236bf3a2d",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "c99ad850-2737-42a7-8ace-10b891421515",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "e2dabe2a-54a6-41b4-b6a7-ef5ddc5e6394",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "0df3b874-0517-4b72-83b0-5ad63a5efecd",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "00f37313-423e-4a51-b7e0-d17ec88fe10c",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "de0b3333-efb0-4ac3-a24b-9e6bad52ebdf",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "f814ba0f-ec03-4baa-be4e-7f1779536f3d",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "fb1d2d8f-abeb-40ea-af00-2d8a522bb8da",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "13bcc25b-7429-47da-8644-5f617e42d3f3",
+      "current_rule_class": "AGE_OUT"
+    },
+    {
+      "work_item_id": "8ceb9ea6-9566-4c60-a832-93ee1e8e39d1",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "4e0079c8-3938-4da8-8094-a7adfe35b9da",
+      "current_rule_class": "AGE_OUT"
+    },
+    {
+      "work_item_id": "6851fdb9-eb03-4314-84da-0ed41f1e0791",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "48818ee3-44ed-4607-9e9c-518554d4bcff",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "26e48fb7-cff7-422a-8215-ac8481ffbecc",
+      "current_rule_class": "AGE_OUT"
+    },
+    {
+      "work_item_id": "3ea588c2-aaf5-4a22-8e5d-6d2675efc50a",
+      "current_rule_class": "AGE_OUT"
+    },
+    {
+      "work_item_id": "aaf0eb3b-3aae-4fe5-b910-63206fed78f0",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "2f69970b-739c-4694-a47c-90a5c2eda0f4",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "1f5f3f42-d9b2-4ee1-baed-f49962b65ec1",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "2a3c9631-88a8-4b93-86b5-d1d841b1ff37",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "d5cfee22-f362-4153-927e-f47e6e96f94f",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "603a318d-cad2-47d5-888b-b767f8536849",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "4fa5e455-232a-4448-acb1-885cbb3a809c",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "67a14190-95aa-47be-9208-0c00473a0eb6",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "49935c6b-7822-4d23-81c8-eff823910d9c",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "90309abd-e61c-49b8-8683-46f452f5570c",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "5841ab49-8978-4216-8014-f768556d7650",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "7b538677-f387-46bb-b8c9-b1ceb0a28717",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "c733b18d-17f0-424b-9374-51250130f259",
+      "current_rule_class": "AGE_OUT"
+    },
+    {
+      "work_item_id": "d31f4935-d8e4-40d9-a295-cdafbcbc406c",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "ca9fcbc3-83ca-4831-87df-f85feba2f46b",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "cf0d4810-6ba2-4fc3-81ae-80f453b12472",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "0c79372c-ab3b-40b6-8174-45a59aad7981",
+      "current_rule_class": "AGE_OUT"
+    },
+    {
+      "work_item_id": "4b41302f-b63e-44e8-be26-046b4a131e96",
+      "current_rule_class": "AGE_OUT"
+    },
+    {
+      "work_item_id": "ebd5b796-c008-4b33-a16f-e3450173776e",
+      "current_rule_class": "AGE_OUT"
+    },
+    {
+      "work_item_id": "31e38d56-7ef9-4f01-94d2-10eaaee3d439",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "0fb10d0b-ec7c-4128-b835-3b568613290f",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "320f0e5c-ef2a-48ed-a3b1-ac2e2ff58328",
+      "current_rule_class": "AGE_OUT"
+    },
+    {
+      "work_item_id": "f760e655-622e-40a8-a70a-f7cd9f929078",
+      "current_rule_class": "AGE_OUT"
+    },
+    {
+      "work_item_id": "c23d9375-4ea2-482e-a336-a505edd99baf",
+      "current_rule_class": "AGE_OUT"
+    },
+    {
+      "work_item_id": "f871ea28-889e-4a43-9b48-e077495d01fc",
+      "current_rule_class": "AGE_OUT"
+    },
+    {
+      "work_item_id": "88806c7a-2733-4fb0-b19e-f8e360015c6a",
+      "current_rule_class": "AGE_OUT"
+    },
+    {
+      "work_item_id": "3666ab03-57af-4651-98cc-c304bff56e8d",
+      "current_rule_class": "AGE_OUT"
+    },
+    {
+      "work_item_id": "ccd0b2a0-7ba9-4290-b2ac-5e2d549071cb",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "7e9dd76e-0224-44fc-b116-7db5530778e2",
+      "current_rule_class": "AGE_OUT"
+    },
+    {
+      "work_item_id": "11f00c06-1d60-44ec-a0d8-53e24c8de116",
+      "current_rule_class": "AGE_OUT"
+    },
+    {
+      "work_item_id": "225f6f37-1d4e-4707-b4ef-9b67a9bf66bd",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "a45099e5-6ee7-4f0d-a2aa-bf47989f6bdd",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "6308d005-c6c4-42e7-8e4f-22842e524c9c",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "798fb698-6c37-43b9-a23f-43967819826e",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "01968fe0-6486-45d0-acbf-66a71c805f82",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "6ea9bebc-91ce-411a-b995-373245a72b17",
+      "current_rule_class": "AGE_OUT"
+    },
+    {
+      "work_item_id": "64ffdffe-01d7-456f-aaed-9a05a3174ebb",
+      "current_rule_class": "AGE_OUT"
+    },
+    {
+      "work_item_id": "d05273f0-4c53-4a79-9749-f1323bd0a130",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "7afe03cc-712d-4809-8541-5461fb287c4f",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "dac6d395-ff84-41e2-8cd0-35b5a65773cd",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "c864ba5e-12d0-4ea1-b3a9-d6fc5eec6ac1",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "72d25c97-eafd-4bcf-ad6b-bf225cd9ba40",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "ddadffd6-92e9-4d0c-99e2-0730fb954586",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "fd3c1f85-6c3d-4ce0-9599-5d07544c084f",
+      "current_rule_class": "AGE_OUT"
+    },
+    {
+      "work_item_id": "8de196e8-c547-4e7d-9090-783f917cfa8e",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "bc64f305-1a7a-4198-aeae-b474084ab94d",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "31e19c25-1edd-4516-86dc-86d78529250f",
+      "current_rule_class": "AGE_OUT"
+    },
+    {
+      "work_item_id": "3eeab0ff-13ce-4367-ad6e-b57060ffd005",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "06ba4eb3-f343-4ef6-a99d-414fceca6d39",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "149571f2-e81c-4923-bb4f-d2ff42692704",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "58ab6fb5-a61d-4469-bcaa-f02bcb447735",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "be5ffa78-fdfb-4718-af89-5f7fc7e8dee3",
+      "current_rule_class": "AGE_OUT"
+    },
+    {
+      "work_item_id": "86b2e92c-22c2-4270-a5d7-0cd86bd2bd36",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "175f0fd4-78b6-437d-81df-6478f0ed0b7e",
+      "current_rule_class": "AGE_OUT"
+    },
+    {
+      "work_item_id": "dff4fc81-7b2b-42de-8d0c-9ed191552bf2",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "4bbdeeab-112c-4c85-8fdd-4fbe847f1740",
+      "current_rule_class": "AGE_OUT"
+    },
+    {
+      "work_item_id": "8ea23880-abf7-448a-b7d4-d2d6567ee48d",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "2be7f414-bd70-499f-a528-d478be0d9708",
+      "current_rule_class": "KEEP"
+    },
+    {
+      "work_item_id": "fcda5ce6-e487-49b6-9f8c-88f0b2473402",
+      "current_rule_class": "AGE_OUT"
+    },
+    {
+      "work_item_id": "fdba6a1c-13d2-4759-a2b8-46d106692699",
+      "current_rule_class": "AGE_OUT"
+    },
+    {
+      "work_item_id": "6f4fff24-3a6d-40e3-aaca-773b5195f6d2",
+      "current_rule_class": "AGE_OUT"
+    },
+    {
+      "work_item_id": "a4c3b222-0ecf-4c3a-8497-0b4766a1e291",
+      "current_rule_class": "AGE_OUT"
+    },
+    {
+      "work_item_id": "40e9d58d-bcb8-45bd-a294-4270d74c9440",
+      "current_rule_class": "AGE_OUT"
+    },
+    {
+      "work_item_id": "ae2610d3-f028-4554-a101-29d638fd4a50",
+      "current_rule_class": "KEEP"
+    }
+  ]
+}

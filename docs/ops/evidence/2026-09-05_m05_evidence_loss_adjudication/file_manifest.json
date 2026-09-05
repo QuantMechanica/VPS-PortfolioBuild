@@ -1,0 +1,129 @@
+{
+  "files": [
+    {
+      "path": ".gitattributes",
+      "sha256": "8b9c3028d6467ff3be7c793141927841d70f47f52d0590677438f488ca154992",
+      "bytes": 9
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "874eaeb3a2b6d77b6d6e8bee727315051de69a1ca536513cc20d18f5baee0be6",
+      "bytes": 30
+    },
+    {
+      "path": "audit.py",
+      "sha256": "773a19a04a4a89901f75c1994068cf7eaaad076ffa07db0db8fdd2296e2348d9",
+      "bytes": 11176
+    },
+    {
+      "path": "exclusion_harness_dryrun.json",
+      "sha256": "3efa40383469cfbef4695ed7d335e82e5dfcd43ebde1d616bc1b8b130240abfe",
+      "bytes": 1397
+    },
+    {
+      "path": "exclusion_proposal_dryrun.json",
+      "sha256": "4c034d96b70ad00941a8583eacdace6d00f7224b5694a715fafc5967803cd7b6",
+      "bytes": 2083
+    },
+    {
+      "path": "protective_change_receipt.json",
+      "sha256": "3886f34349b28352ed6e513b399402ee0446a0a3adce8bba72505a75b58f17d0",
+      "bytes": 1583
+    },
+    {
+      "path": "purge_guard_after.json",
+      "sha256": "eef331d546fa3ecd7a33870ed401e34cba6842acdcdf4f694bb52b649dde3b45",
+      "bytes": 26153
+    },
+    {
+      "path": "purge_guard_dryrun.json",
+      "sha256": "94cb1e424f9c5cf2c04593935181bb8df6e22bf42ac218d5f7c608aefd7a513c",
+      "bytes": 21407
+    },
+    {
+      "path": "purge_guard_final.json",
+      "sha256": "76c9dd1e0f0d3d1f169dfeb5eb4f4b6dd6080dc639a03a7cb39ec8f308183d95",
+      "bytes": 29489
+    },
+    {
+      "path": "test_audit.py",
+      "sha256": "f269a549816610f6766bb3d461eddf79041ac83fb69238c4c4804c2c6f2f8eb4",
+      "bytes": 1408
+    },
+    {
+      "path": "unexplained_current_rule.json",
+      "sha256": "890f93794bfe3c1b7d29cd6cf9ecca1bb08a41516c6331cdeef0a160441b9ec5",
+      "bytes": 18000
+    },
+    {
+      "path": "snapshot\\baseline_snapshot.json",
+      "sha256": "c1dae9b376f66299a4264ea9bc247848fc271aa0f23a5b4dec2c9cecb7200d21",
+      "bytes": 5009636
+    },
+    {
+      "path": "snapshot\\inventory.json",
+      "sha256": "b9acc6a5a29af87fe6025c530426fb2fbede2d2db5737e417ebaefd85c31cbba",
+      "bytes": 25463065
+    },
+    {
+      "path": "snapshot\\recovery_manifest.json",
+      "sha256": "86d0d3c7588406292c974109bc6ab06a2a6150224d7ecb01dd6c60bcbc7d3230",
+      "bytes": 814592
+    },
+    {
+      "path": "snapshot\\reports_log_purge.log",
+      "sha256": "95c317e03ec30884c0854a8857f66ce26df9b3153362939eb6d5297a824c1e9a",
+      "bytes": 150387
+    },
+    {
+      "path": "snapshot\\report_retention.log",
+      "sha256": "d17b36dde196cbbdb1bfa3f16d4f4bca4336d74dfc52bd8e02b1b4539df554e9",
+      "bytes": 11921
+    },
+    {
+      "path": "snapshot\\report_retention_purge.log",
+      "sha256": "63b1afd1203e10afd6ee334488fd8eebf60159dbb6a363219b21815f3618545e",
+      "bytes": 329
+    },
+    {
+      "path": "snapshot\\tester_cache_purge.log",
+      "sha256": "4ed33ac11c69e00c57176acdbdfe2854ed9505ba965d4b8089372b87a84055e7",
+      "bytes": 15671773
+    },
+    {
+      "path": "snapshot_final\\baseline_snapshot.json",
+      "sha256": "c1dae9b376f66299a4264ea9bc247848fc271aa0f23a5b4dec2c9cecb7200d21",
+      "bytes": 5009636
+    },
+    {
+      "path": "snapshot_final\\inventory.json",
+      "sha256": "21c427738e49b507fa870d48c955dd19ac9ffd885e89902a088c1aceb0df0ce3",
+      "bytes": 27772473
+    },
+    {
+      "path": "snapshot_final\\recovery_manifest.json",
+      "sha256": "86d0d3c7588406292c974109bc6ab06a2a6150224d7ecb01dd6c60bcbc7d3230",
+      "bytes": 814592
+    },
+    {
+      "path": "snapshot_final\\reports_log_purge.log",
+      "sha256": "95c317e03ec30884c0854a8857f66ce26df9b3153362939eb6d5297a824c1e9a",
+      "bytes": 150387
+    },
+    {
+      "path": "snapshot_final\\report_retention.log",
+      "sha256": "d17b36dde196cbbdb1bfa3f16d4f4bca4336d74dfc52bd8e02b1b4539df554e9",
+      "bytes": 11921
+    },
+    {
+      "path": "snapshot_final\\report_retention_purge.log",
+      "sha256": "63b1afd1203e10afd6ee334488fd8eebf60159dbb6a363219b21815f3618545e",
+      "bytes": 329
+    },
+    {
+      "path": "snapshot_final\\tester_cache_purge.log",
+      "sha256": "add5b71b1c196882da554d9ec7d468ad96c784a70af89a75ab7dbaff9387d844",
+      "bytes": 15674397
+    }
+  ]
+}

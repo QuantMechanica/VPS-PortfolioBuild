@@ -29,6 +29,7 @@ SCHEMA = "qm.tester-cache-purge-guard/v1"
 DEFAULT_DB = Path(r"D:/QM/strategy_farm/state/farm_state.sqlite")
 DEFAULT_LIVE_PULSE = Path(r"D:/QM/reports/state/live_book_pulse.json")
 DEFAULT_MT5_ROOT = Path(r"D:/QM/mt5")
+DEFAULT_RESEARCH_CENSUS_ROOT = Path(r"D:/QM/strategy_farm/artifacts/opt_census")
 DEFAULT_CAMPAIGN_PLAN = Path(
     r"D:/QM/strategy_farm/artifacts/oos_2026_confirmation_v1/campaign_plan.json"
 )
@@ -184,6 +185,46 @@ def _manifest_pairs(rows: Any, label: str) -> set[Pair]:
             pairs.add(canonical_pair(row.get("ea_id"), row.get("symbol")))
         except GuardError as exc:
             raise GuardError(f"{label}_sleeve_invalid:{index}:{exc}") from exc
+    return pairs
+
+
+def _read_research_pairs(db_path: Path, census_root: Path) -> set[Pair]:
+    """Protect historical Q11 successes and declared DL-089 dependencies too.
+
+    A cache purge cannot adjudicate whether an old successful witness will be
+    needed again. Extra protection is conservative; it grants no gate authority.
+    """
+    try:
+        from tools.strategy_farm import rebaseline_census as census
+    except ModuleNotFoundError:
+        import rebaseline_census as census
+    if not census_root.is_dir():
+        raise GuardError(f"research_census_root_missing:{census_root}")
+    connection = sqlite3.connect(db_path.resolve().as_uri() + "?mode=ro", uri=True, timeout=10)
+    try:
+        rows = connection.execute(
+            "SELECT ea_id,symbol,phase,gate_contract_version,verdict FROM work_items "
+            "WHERE status='done' AND ea_id IS NOT NULL AND symbol IS NOT NULL"
+        ).fetchall()
+    except sqlite3.Error as exc:
+        raise GuardError(f"research_frontier_unreadable:{exc}") from exc
+    finally:
+        connection.close()
+    pairs: set[Pair] = set()
+    resolved: dict[tuple, str | None] = {}
+    for ea, symbol, phase, version, verdict in rows:
+        key = (phase, version)
+        if key not in resolved:
+            resolved[key] = census.canonical_gate(phase, version)
+        gate = resolved[key]
+        if gate == "Q11" and census.vclass(verdict, gate) == "PASS":
+            pairs.add(canonical_pair(ea, symbol))
+    for path in sorted(census_root.glob("*/ledger.json")):
+        ledger = _load_json(path, "research_census_ledger")
+        if not isinstance(ledger, dict) or not ledger.get("program_id"):
+            raise GuardError(f"research_census_ledger_invalid:{path}")
+        pairs.add(canonical_pair(ledger.get("subject_ea_id") or ledger.get("ea_id"), ledger.get("symbol")))
+        pairs.add(canonical_pair(ledger.get("ea_id"), ledger.get("symbol")))
     return pairs
 
 
@@ -463,6 +504,7 @@ def build_plan(
     terminals: Iterable[str] = TERMINALS,
     campaign_plan: Path | None = None,
     native_export_root: Path | None = None,
+    research_census_root: Path | None = None,
 ) -> dict[str, Any]:
     db_path = db_path.resolve()
     live_pulse_path = live_pulse_path.resolve()
@@ -474,11 +516,15 @@ def build_plan(
         live_pulse_path
     )
     protected_pairs = db_pairs | live_pairs
+    research_pairs = _read_research_pairs(db_path, research_census_root) if research_census_root is not None else set()
+    protected_pairs |= research_pairs
     sources: dict[Pair, set[str]] = defaultdict(set)
     for pair in db_pairs:
         sources[pair].add("portfolio_candidates")
     for pair in live_pairs:
         sources[pair].add("live_manifest")
+    for pair in research_pairs:
+        sources[pair].add("Q11_or_DL089_dependency")
 
     targets = _purge_targets(mt5_root, selected_terminals)
     protected_targets: list[dict[str, Any]] = []
@@ -516,6 +562,7 @@ def build_plan(
         "counts": {
             "portfolio_candidate_pairs": len(db_pairs),
             "live_manifest_pairs": len(live_pairs),
+            "research_dependency_pairs": len(research_pairs),
             "protected_union_pairs": len(protected_pairs),
             "purge_targets_scanned": len(targets),
             "gate_evidence_artifacts_scanned": evidence_artifacts_scanned,
@@ -544,6 +591,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--mt5-root", type=Path, default=DEFAULT_MT5_ROOT)
     parser.add_argument("--campaign-plan", type=Path, default=DEFAULT_CAMPAIGN_PLAN)
     parser.add_argument("--native-export-root", type=Path, default=DEFAULT_NATIVE_EXPORT_ROOT)
+    parser.add_argument("--research-census-root", type=Path, default=DEFAULT_RESEARCH_CENSUS_ROOT)
     parser.add_argument("--terminal", action="append", choices=TERMINALS)
     return parser
 
@@ -558,6 +606,7 @@ def main(argv: list[str] | None = None) -> int:
             args.terminal or TERMINALS,
             args.campaign_plan,
             args.native_export_root,
+            args.research_census_root,
         )
     except Exception as exc:
         error = {

@@ -1,0 +1,129 @@
+{
+  "schema": "qm.purge-exclusion-proposal/v1",
+  "recorded_at_utc": "2026-09-05T12:38:34.391655+00:00",
+  "mode": "DRY_RUN_NO_DELETE_NO_PROCESS_CONTROL",
+  "existing_union": 40,
+  "research_pairs": 54,
+  "add_pairs": [
+    [
+      "10123",
+      "XAUUSD"
+    ],
+    [
+      "10128",
+      "XAUUSD"
+    ],
+    [
+      "10142",
+      "SP500"
+    ],
+    [
+      "10145",
+      "XAUUSD"
+    ],
+    [
+      "10183",
+      "XAUUSD"
+    ],
+    [
+      "10938",
+      "GDAXI"
+    ],
+    [
+      "11294",
+      "XAUUSD"
+    ],
+    [
+      "11660",
+      "NDX"
+    ],
+    [
+      "11881",
+      "GBPUSD"
+    ],
+    [
+      "12849",
+      "XTIUSD"
+    ],
+    [
+      "12855",
+      "XTIUSD"
+    ],
+    [
+      "13013",
+      "NDX"
+    ],
+    [
+      "13036",
+      "GDAXI"
+    ],
+    [
+      "13054",
+      "XTIUSD"
+    ],
+    [
+      "1328",
+      "EURJPY"
+    ],
+    [
+      "1537",
+      "XAGUSD"
+    ],
+    [
+      "20048",
+      "XTIUSD"
+    ],
+    [
+      "20086",
+      "EURUSD"
+    ],
+    [
+      "20086",
+      "NDX"
+    ],
+    [
+      "20266",
+      "XTIUSD"
+    ],
+    [
+      "21501",
+      "USDJPY"
+    ],
+    [
+      "21502",
+      "XAUUSD"
+    ],
+    [
+      "21505",
+      "XAGUSD"
+    ],
+    [
+      "21507",
+      "XAUUSD"
+    ],
+    [
+      "41219",
+      "XAUUSD"
+    ],
+    [
+      "41221",
+      "EURUSD"
+    ],
+    [
+      "9641",
+      "WS30"
+    ]
+  ],
+  "proposed_union": 67,
+  "existing_target_scan": {
+    "gate_evidence_artifacts_scanned": 0,
+    "live_manifest_pairs": 24,
+    "portfolio_candidate_pairs": 38,
+    "protected_targets": 33,
+    "protected_union_pairs": 40,
+    "purge_targets_scanned": 90,
+    "retention_source_targets": 33,
+    "unprotected_targets": 90
+  },
+  "scope": "Add Q11 PASS history and declared DL089 programs to dynamic gate-evidence pair exclusions; missing registry/read errors fail closed. No targets found with gate JSON in this observation, therefore immediate additional excluded cache targets=0."
+}

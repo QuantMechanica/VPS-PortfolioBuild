@@ -1,0 +1,735 @@
+{
+  "counts": {
+    "gate_evidence_artifacts_scanned": 0,
+    "live_manifest_pairs": 24,
+    "portfolio_candidate_pairs": 38,
+    "protected_targets": 33,
+    "protected_union_pairs": 40,
+    "purge_targets_scanned": 90,
+    "retention_source_targets": 33,
+    "unprotected_targets": 90
+  },
+  "db_path": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+  "generated_at_utc": "2026-09-05T12:36:40.535597+00:00",
+  "live_manifest_path": "D:\\QM\\reports\\portfolio\\portfolio_manifest_live_24sleeve_20260724.json",
+  "live_manifest_sha256": "8c719b080e18d30d83432f0999d694f699f2859cef72c0ce7738631fb084eab6",
+  "live_pulse_path": "D:\\QM\\reports\\state\\live_book_pulse.json",
+  "live_pulse_sha256": "29b04592cc148c9621cf5739b7a6a9432f9049954f204e752fb6482f2d68ff51",
+  "mt5_root": "D:\\QM\\mt5",
+  "protected_pairs": [
+    {
+      "ea_id": "QM5_1556",
+      "sources": [
+        "live_manifest",
+        "portfolio_candidates"
+      ],
+      "symbol": "XAUUSD.DWX"
+    },
+    {
+      "ea_id": "QM5_1567",
+      "sources": [
+        "live_manifest",
+        "portfolio_candidates"
+      ],
+      "symbol": "EURUSD.DWX"
+    },
+    {
+      "ea_id": "QM5_1567",
+      "sources": [
+        "portfolio_candidates"
+      ],
+      "symbol": "XAGUSD.DWX"
+    },
+    {
+      "ea_id": "QM5_10403",
+      "sources": [
+        "live_manifest",
+        "portfolio_candidates"
+      ],
+      "symbol": "XAUUSD.DWX"
+    },
+    {
+      "ea_id": "QM5_10440",
+      "sources": [
+        "live_manifest",
+        "portfolio_candidates"
+      ],
+      "symbol": "NDX.DWX"
+    },
+    {
+      "ea_id": "QM5_10476",
+      "sources": [
+        "portfolio_candidates"
+      ],
+      "symbol": "USDCAD.DWX"
+    },
+    {
+      "ea_id": "QM5_10513",
+      "sources": [
+        "live_manifest",
+        "portfolio_candidates"
+      ],
+      "symbol": "XAUUSD.DWX"
+    },
+    {
+      "ea_id": "QM5_10692",
+      "sources": [
+        "portfolio_candidates"
+      ],
+      "symbol": "NDX.DWX"
+    },
+    {
+      "ea_id": "QM5_10700",
+      "sources": [
+        "portfolio_candidates"
+      ],
+      "symbol": "XAUUSD.DWX"
+    },
+    {
+      "ea_id": "QM5_10706",
+      "sources": [
+        "live_manifest",
+        "portfolio_candidates"
+      ],
+      "symbol": "GBPUSD.DWX"
+    },
+    {
+      "ea_id": "QM5_10715",
+      "sources": [
+        "portfolio_candidates"
+      ],
+      "symbol": "USDJPY.DWX"
+    },
+    {
+      "ea_id": "QM5_10815",
+      "sources": [
+        "portfolio_candidates"
+      ],
+      "symbol": "EURUSD.DWX"
+    },
+    {
+      "ea_id": "QM5_10815",
+      "sources": [
+        "portfolio_candidates"
+      ],
+      "symbol": "GDAXI.DWX"
+    },
+    {
+      "ea_id": "QM5_10911",
+      "sources": [
+        "live_manifest",
+        "portfolio_candidates"
+      ],
+      "symbol": "GDAXI.DWX"
+    },
+    {
+      "ea_id": "QM5_10919",
+      "sources": [
+        "live_manifest",
+        "portfolio_candidates"
+      ],
+      "symbol": "XTIUSD.DWX"
+    },
+    {
+      "ea_id": "QM5_10939",
+      "sources": [
+        "live_manifest",
+        "portfolio_candidates"
+      ],
+      "symbol": "GBPUSD.DWX"
+    },
+    {
+      "ea_id": "QM5_10940",
+      "sources": [
+        "portfolio_candidates"
+      ],
+      "symbol": "XAUUSD.DWX"
+    },
+    {
+      "ea_id": "QM5_11132",
+      "sources": [
+        "live_manifest",
+        "portfolio_candidates"
+      ],
+      "symbol": "SP500.DWX"
+    },
+    {
+      "ea_id": "QM5_11165",
+      "sources": [
+        "live_manifest",
+        "portfolio_candidates"
+      ],
+      "symbol": "AUDCAD.DWX"
+    },
+    {
+      "ea_id": "QM5_11165",
+      "sources": [
+        "live_manifest",
+        "portfolio_candidates"
+      ],
+      "symbol": "EURUSD.DWX"
+    },
+    {
+      "ea_id": "QM5_11421",
+      "sources": [
+        "live_manifest",
+        "portfolio_candidates"
+      ],
+      "symbol": "AUDUSD.DWX"
+    },
+    {
+      "ea_id": "QM5_11421",
+      "sources": [
+        "live_manifest",
+        "portfolio_candidates"
+      ],
+      "symbol": "EURUSD.DWX"
+    },
+    {
+      "ea_id": "QM5_11422",
+      "sources": [
+        "portfolio_candidates"
+      ],
+      "symbol": "USDCAD.DWX"
+    },
+    {
+      "ea_id": "QM5_11708",
+      "sources": [
+        "live_manifest",
+        "portfolio_candidates"
+      ],
+      "symbol": "EURUSD.DWX"
+    },
+    {
+      "ea_id": "QM5_11910",
+      "sources": [
+        "portfolio_candidates"
+      ],
+      "symbol": "NZDUSD.DWX"
+    },
+    {
+      "ea_id": "QM5_12474",
+      "sources": [
+        "portfolio_candidates"
+      ],
+      "symbol": "GBPUSD.DWX"
+    },
+    {
+      "ea_id": "QM5_12567",
+      "sources": [
+        "live_manifest",
+        "portfolio_candidates"
+      ],
+      "symbol": "XAUUSD.DWX"
+    },
+    {
+      "ea_id": "QM5_12567",
+      "sources": [
+        "live_manifest",
+        "portfolio_candidates"
+      ],
+      "symbol": "XNGUSD.DWX"
+    },
+    {
+      "ea_id": "QM5_12580",
+      "sources": [
+        "portfolio_candidates"
+      ],
+      "symbol": "AUDUSD.DWX"
+    },
+    {
+      "ea_id": "QM5_12710",
+      "sources": [
+        "portfolio_candidates"
+      ],
+      "symbol": "XTIUSD.DWX"
+    },
+    {
+      "ea_id": "QM5_12778",
+      "sources": [
+        "live_manifest"
+      ],
+      "symbol": "AUDUSD.DWX"
+    },
+    {
+      "ea_id": "QM5_12778",
+      "sources": [
+        "portfolio_candidates"
+      ],
+      "symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1"
+    },
+    {
+      "ea_id": "QM5_12966",
+      "sources": [
+        "portfolio_candidates"
+      ],
+      "symbol": "GDAXI.DWX"
+    },
+    {
+      "ea_id": "QM5_12969",
+      "sources": [
+        "live_manifest",
+        "portfolio_candidates"
+      ],
+      "symbol": "USDJPY.DWX"
+    },
+    {
+      "ea_id": "QM5_12989",
+      "sources": [
+        "live_manifest",
+        "portfolio_candidates"
+      ],
+      "symbol": "XAUUSD.DWX"
+    },
+    {
+      "ea_id": "QM5_13117",
+      "sources": [
+        "live_manifest"
+      ],
+      "symbol": "EURGBP.DWX"
+    },
+    {
+      "ea_id": "QM5_13117",
+      "sources": [
+        "portfolio_candidates"
+      ],
+      "symbol": "QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1"
+    },
+    {
+      "ea_id": "QM5_13128",
+      "sources": [
+        "live_manifest",
+        "portfolio_candidates"
+      ],
+      "symbol": "NDX.DWX"
+    },
+    {
+      "ea_id": "QM5_13213",
+      "sources": [
+        "live_manifest",
+        "portfolio_candidates"
+      ],
+      "symbol": "USDJPY.DWX"
+    },
+    {
+      "ea_id": "QM5_13301",
+      "sources": [
+        "live_manifest",
+        "portfolio_candidates"
+      ],
+      "symbol": "GDAXI.DWX"
+    }
+  ],
+  "protected_targets": [
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\AUDJPY.DWX_D1.csv",
+      "reasons": [
+        {
+          "artifact": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\AUDJPY.DWX_D1.csv",
+          "pairs": [],
+          "reason": "dl090_native_bar_export",
+          "sha256": "1dc1618d5ef0947cbd3c0111fa6e532e4702577c875c3bfd91ff7efe00804f22"
+        }
+      ],
+      "terminal": "DL090_RETENTION_SOURCE"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\AUDUSD.DWX_D1.csv",
+      "reasons": [
+        {
+          "artifact": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\AUDUSD.DWX_D1.csv",
+          "pairs": [],
+          "reason": "dl090_native_bar_export",
+          "sha256": "77a4ac94a899d7005834fa7aa5be133d9d042a13982e6acc1545d9b294d58b51"
+        }
+      ],
+      "terminal": "DL090_RETENTION_SOURCE"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\EURAUD.DWX_D1.csv",
+      "reasons": [
+        {
+          "artifact": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\EURAUD.DWX_D1.csv",
+          "pairs": [],
+          "reason": "dl090_native_bar_export",
+          "sha256": "fa479535220d5797e3f95ef1d40e20cc7b4577e9a2ee755806de9b0e8b825df6"
+        }
+      ],
+      "terminal": "DL090_RETENTION_SOURCE"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\EURGBP.DWX_D1.csv",
+      "reasons": [
+        {
+          "artifact": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\EURGBP.DWX_D1.csv",
+          "pairs": [],
+          "reason": "dl090_native_bar_export",
+          "sha256": "30138eca97277c2ac2565ce2699ac86d6797c15c401deca70d45c5a09e4ed61f"
+        }
+      ],
+      "terminal": "DL090_RETENTION_SOURCE"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\EURJPY.DWX_D1.csv",
+      "reasons": [
+        {
+          "artifact": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\EURJPY.DWX_D1.csv",
+          "pairs": [],
+          "reason": "dl090_native_bar_export",
+          "sha256": "415a6975b4f37dc189d2b5c73dbad8e8918e1c8879f669041b0460deefc65e20"
+        }
+      ],
+      "terminal": "DL090_RETENTION_SOURCE"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\EURUSD.DWX_D1.csv",
+      "reasons": [
+        {
+          "artifact": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\EURUSD.DWX_D1.csv",
+          "pairs": [],
+          "reason": "dl090_native_bar_export",
+          "sha256": "7ecdc7c45678de73cb9fbe9390b563ee88d3dddd876feace489e3b4add653d0f"
+        }
+      ],
+      "terminal": "DL090_RETENTION_SOURCE"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\EURUSD.DWX_M5.csv",
+      "reasons": [
+        {
+          "artifact": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\EURUSD.DWX_M5.csv",
+          "pairs": [],
+          "reason": "dl090_native_bar_export",
+          "sha256": "b7ec4fae50b0e257832cb3e1217a34236f2a1e212844f9ee35b0cc7b86ce91f9"
+        }
+      ],
+      "terminal": "DL090_RETENTION_SOURCE"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\GBPJPY.DWX_D1.csv",
+      "reasons": [
+        {
+          "artifact": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\GBPJPY.DWX_D1.csv",
+          "pairs": [],
+          "reason": "dl090_native_bar_export",
+          "sha256": "5af9da911474229cbc367b5e6305fb6d370b40be181c11b3c3eb4f6328c11859"
+        }
+      ],
+      "terminal": "DL090_RETENTION_SOURCE"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\GBPJPY.DWX_M5.csv",
+      "reasons": [
+        {
+          "artifact": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\GBPJPY.DWX_M5.csv",
+          "pairs": [],
+          "reason": "dl090_native_bar_export",
+          "sha256": "756faa43b25d97b235f44aa97fa2a0f5b548b5aed8a64c1c1514cd785aa8869b"
+        }
+      ],
+      "terminal": "DL090_RETENTION_SOURCE"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\GBPUSD.DWX_D1.csv",
+      "reasons": [
+        {
+          "artifact": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\GBPUSD.DWX_D1.csv",
+          "pairs": [],
+          "reason": "dl090_native_bar_export",
+          "sha256": "c354b33f801382b8cc508180238c1d4d04e1d743d5d76f1ce7f0634f3ce5b5ea"
+        }
+      ],
+      "terminal": "DL090_RETENTION_SOURCE"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\GBPUSD.DWX_M5.csv",
+      "reasons": [
+        {
+          "artifact": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\GBPUSD.DWX_M5.csv",
+          "pairs": [],
+          "reason": "dl090_native_bar_export",
+          "sha256": "e483e548e28f611b0d53143eb1e329eff9a568f7d8a7076afc4ce59a8aba31bc"
+        }
+      ],
+      "terminal": "DL090_RETENTION_SOURCE"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\GDAXI.DWX_D1.csv",
+      "reasons": [
+        {
+          "artifact": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\GDAXI.DWX_D1.csv",
+          "pairs": [],
+          "reason": "dl090_native_bar_export",
+          "sha256": "0b790d26ffbaf2687eded7414bf1e70b0398935f0b9c583499ce07a5b91ea5e8"
+        }
+      ],
+      "terminal": "DL090_RETENTION_SOURCE"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\NDX.DWX_D1.csv",
+      "reasons": [
+        {
+          "artifact": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\NDX.DWX_D1.csv",
+          "pairs": [],
+          "reason": "dl090_native_bar_export",
+          "sha256": "b0529d748e1351446922e2d14992ee5ef4b1f50d5ef6f237715238119e123536"
+        }
+      ],
+      "terminal": "DL090_RETENTION_SOURCE"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\NZDUSD.DWX_D1.csv",
+      "reasons": [
+        {
+          "artifact": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\NZDUSD.DWX_D1.csv",
+          "pairs": [],
+          "reason": "dl090_native_bar_export",
+          "sha256": "1f0bdca2a5ab7252e1d23e3e5f9874f0068f3d727b537ef32cecf3fd01948745"
+        }
+      ],
+      "terminal": "DL090_RETENTION_SOURCE"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\SP500.DWX_D1.csv",
+      "reasons": [
+        {
+          "artifact": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\SP500.DWX_D1.csv",
+          "pairs": [],
+          "reason": "dl090_native_bar_export",
+          "sha256": "ae3c0c52233558b22fb02e58dff7e475b0e400984e5707da67e995211a2fe2e4"
+        }
+      ],
+      "terminal": "DL090_RETENTION_SOURCE"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_AUD_HIGH_2018_2025_NATIVE.csv",
+      "reasons": [
+        {
+          "artifact": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_AUD_HIGH_2018_2025_NATIVE.csv",
+          "pairs": [],
+          "reason": "dl090_native_calendar_export",
+          "sha256": "e08d35bbe409410c29ba19b322e3075528fb15c38c5955e5aa5f09dffb5bf3f8"
+        }
+      ],
+      "terminal": "DL090_RETENTION_SOURCE"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_CAD_HIGH_2018_2025_NATIVE.csv",
+      "reasons": [
+        {
+          "artifact": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_CAD_HIGH_2018_2025_NATIVE.csv",
+          "pairs": [],
+          "reason": "dl090_native_calendar_export",
+          "sha256": "e7ac95686e41f19e9835364e7f247fc460951526a7f0e5232b3639b838bc7676"
+        }
+      ],
+      "terminal": "DL090_RETENTION_SOURCE"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_EUR_HIGH_2018_2025_NATIVE.csv",
+      "reasons": [
+        {
+          "artifact": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_EUR_HIGH_2018_2025_NATIVE.csv",
+          "pairs": [],
+          "reason": "dl090_native_calendar_export",
+          "sha256": "f619007af0a0126f665afe247b6828e21c36a642ca4e6714f962ae7573bf8137"
+        }
+      ],
+      "terminal": "DL090_RETENTION_SOURCE"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_GBP_HIGH_2018_2025_NATIVE.csv",
+      "reasons": [
+        {
+          "artifact": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_GBP_HIGH_2018_2025_NATIVE.csv",
+          "pairs": [],
+          "reason": "dl090_native_calendar_export",
+          "sha256": "8b4291bae1e41911c66fb683b994baece4910c3623feffaa3d43f2c970c1bee4"
+        }
+      ],
+      "terminal": "DL090_RETENTION_SOURCE"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_JPY_HIGH_2018_2025_NATIVE.csv",
+      "reasons": [
+        {
+          "artifact": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_JPY_HIGH_2018_2025_NATIVE.csv",
+          "pairs": [],
+          "reason": "dl090_native_calendar_export",
+          "sha256": "680b5cd69ef84a37523cce2b39ed6533eb73a322c18ef42da258feb50307dcf6"
+        }
+      ],
+      "terminal": "DL090_RETENTION_SOURCE"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_USD_HIGH_2018_2025_NATIVE.csv",
+      "reasons": [
+        {
+          "artifact": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_USD_HIGH_2018_2025_NATIVE.csv",
+          "pairs": [],
+          "reason": "dl090_native_calendar_export",
+          "sha256": "c1554e52d3456575f51d044cd0097e18b960c7f12485e9b45a07e36536b9ab3b"
+        }
+      ],
+      "terminal": "DL090_RETENTION_SOURCE"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\UK100.DWX_D1.csv",
+      "reasons": [
+        {
+          "artifact": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\UK100.DWX_D1.csv",
+          "pairs": [],
+          "reason": "dl090_native_bar_export",
+          "sha256": "045bd0f258ac2e1e669ed813daa212e771b2132e82a1d161325913edb5ff37ba"
+        }
+      ],
+      "terminal": "DL090_RETENTION_SOURCE"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\USDCAD.DWX_D1.csv",
+      "reasons": [
+        {
+          "artifact": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\USDCAD.DWX_D1.csv",
+          "pairs": [],
+          "reason": "dl090_native_bar_export",
+          "sha256": "b2231559c1ffd5ea35d8aad80ee6c84e1399c948b838ac011167daab559efbeb"
+        }
+      ],
+      "terminal": "DL090_RETENTION_SOURCE"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\USDCHF.DWX_D1.csv",
+      "reasons": [
+        {
+          "artifact": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\USDCHF.DWX_D1.csv",
+          "pairs": [],
+          "reason": "dl090_native_bar_export",
+          "sha256": "8566143c2b11feb8438266adc81ed398ef3fb88e4ae09fbcd3cac3bb3f304ed5"
+        }
+      ],
+      "terminal": "DL090_RETENTION_SOURCE"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\USDJPY.DWX_D1.csv",
+      "reasons": [
+        {
+          "artifact": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\USDJPY.DWX_D1.csv",
+          "pairs": [],
+          "reason": "dl090_native_bar_export",
+          "sha256": "f52a8b96eac15d12085878d324742f261c599d7d74d01383072296b7d5a283bb"
+        }
+      ],
+      "terminal": "DL090_RETENTION_SOURCE"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\USDJPY.DWX_M5.csv",
+      "reasons": [
+        {
+          "artifact": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\USDJPY.DWX_M5.csv",
+          "pairs": [],
+          "reason": "dl090_native_bar_export",
+          "sha256": "27d1dc7569385978ef42ae33dfcbbe1b36ed162f06ed031692a157b196159dd4"
+        }
+      ],
+      "terminal": "DL090_RETENTION_SOURCE"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\WS30.DWX_D1.csv",
+      "reasons": [
+        {
+          "artifact": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\WS30.DWX_D1.csv",
+          "pairs": [],
+          "reason": "dl090_native_bar_export",
+          "sha256": "f719a46e527e19ecbabc1b1428ef703e926f1c0e0cfce0650fe520132aa995b5"
+        }
+      ],
+      "terminal": "DL090_RETENTION_SOURCE"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\XAGUSD.DWX_D1.csv",
+      "reasons": [
+        {
+          "artifact": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\XAGUSD.DWX_D1.csv",
+          "pairs": [],
+          "reason": "dl090_native_bar_export",
+          "sha256": "680876d71982619dabbde5b87e62e32b6275bc0cedac688c670f1a8e84ffdf20"
+        }
+      ],
+      "terminal": "DL090_RETENTION_SOURCE"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\XAUUSD.DWX_D1.csv",
+      "reasons": [
+        {
+          "artifact": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\XAUUSD.DWX_D1.csv",
+          "pairs": [],
+          "reason": "dl090_native_bar_export",
+          "sha256": "105aa27a6d0aff0818b9b76b0eb081d917ea8fb90ec077b599a33ea65ab12f13"
+        }
+      ],
+      "terminal": "DL090_RETENTION_SOURCE"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\XAUUSD.DWX_M5.csv",
+      "reasons": [
+        {
+          "artifact": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\XAUUSD.DWX_M5.csv",
+          "pairs": [],
+          "reason": "dl090_native_bar_export",
+          "sha256": "a0785d25e7ef7811e95509f3e009703617f3996eb8f5d4f0f1acf945d3522c4f"
+        }
+      ],
+      "terminal": "DL090_RETENTION_SOURCE"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\XNGUSD.DWX_D1.csv",
+      "reasons": [
+        {
+          "artifact": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\XNGUSD.DWX_D1.csv",
+          "pairs": [],
+          "reason": "dl090_native_bar_export",
+          "sha256": "a2a4f5bcae9a47765b6245fc693e5d69479442089e9cd74f2f9de681f55f108c"
+        }
+      ],
+      "terminal": "DL090_RETENTION_SOURCE"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\XTIUSD.DWX_D1.csv",
+      "reasons": [
+        {
+          "artifact": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\XTIUSD.DWX_D1.csv",
+          "pairs": [],
+          "reason": "dl090_native_bar_export",
+          "sha256": "b892dd634214578ed7275f29a477ae239996d4670ede479268cb66745e81f211"
+        }
+      ],
+      "terminal": "DL090_RETENTION_SOURCE"
+    },
+    {
+      "path": "D:\\QM\\strategy_farm\\artifacts\\oos_2026_confirmation_v1\\campaign_plan.json",
+      "reasons": [
+        {
+          "artifact": "D:\\QM\\strategy_farm\\artifacts\\oos_2026_confirmation_v1\\campaign_plan.json",
+          "pairs": [],
+          "reason": "dl090_campaign_plan_spawn_binding",
+          "sha256": "6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad"
+        }
+      ],
+      "terminal": "DL090_RETENTION_SOURCE"
+    }
+  ],
+  "schema": "qm.tester-cache-purge-guard/v1",
+  "status": "PASS",
+  "terminals": [
+    "T1",
+    "T2",
+    "T3",
+    "T4",
+    "T5",
+    "T6",
+    "T7",
+    "T8",
+    "T9",
+    "T10"
+  ]
+}

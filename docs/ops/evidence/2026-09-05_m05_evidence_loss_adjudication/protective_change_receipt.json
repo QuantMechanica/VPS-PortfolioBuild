@@ -1,0 +1,39 @@
+{
+  "schema": "qm.protective-change-receipt/v1",
+  "recorded_at_utc": "2026-09-05T12:44:43.267895+00:00",
+  "change": "Dynamic Q11 and DL089 subject/harness evidence pair exclusions",
+  "prior_dryrun_paths": [
+    "exclusion_proposal_dryrun.json",
+    "exclusion_harness_dryrun.json"
+  ],
+  "prior_dryrun_sha256": {
+    "exclusion_proposal_dryrun.json": "4c034d96b70ad00941a8583eacdace6d00f7224b5694a715fafc5967803cd7b6",
+    "exclusion_harness_dryrun.json": "3efa40383469cfbef4695ed7d335e82e5dfcd43ebde1d616bc1b8b130240abfe"
+  },
+  "guard_source_sha256": "aab73160cb18137b95643a3d51f395ace9296436714d081404abd28d3622cd18",
+  "after_counts": {
+    "gate_evidence_artifacts_scanned": 0,
+    "live_manifest_pairs": 24,
+    "portfolio_candidate_pairs": 38,
+    "protected_targets": 33,
+    "protected_union_pairs": 91,
+    "purge_targets_scanned": 91,
+    "research_dependency_pairs": 78,
+    "retention_source_targets": 33,
+    "unprotected_targets": 91
+  },
+  "tests": {
+    "command": [
+      "python",
+      "-m",
+      "pytest",
+      "tools/strategy_farm/tests/test_tester_cache_purge_guard.py",
+      "tools/strategy_farm/tests/test_tester_cache_purge_owner_state.py",
+      "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_m05_evidence_loss_adjudication\\test_audit.py",
+      "-q"
+    ],
+    "exit_code": 0,
+    "stdout": "...............                                                          [100%]\n15 passed in 3.34s\n"
+  },
+  "mutation_scope": "guard code only; no purge, no delete, no move, no terminal or scheduled-task command"
+}
