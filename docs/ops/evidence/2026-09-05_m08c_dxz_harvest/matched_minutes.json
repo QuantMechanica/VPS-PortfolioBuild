@@ -1,0 +1,507 @@
+{
+  "schema": "qm.m08c-native-matched-minute/v1",
+  "result": "REVIEW",
+  "clock_basis": "DECLARED_SAME_SUMMER_SERVER_OFFSET_PLUS_180_MINUTES; NOT_EMPIRICALLY_VALIDATED",
+  "delta_units": "FTMO_MINUS_DXZ_QUOTE_PRICE_UNITS; spread only, excludes commissions and swaps",
+  "elapsed_factory_seconds": 126.03099999999999,
+  "rows": [
+    {
+      "symbol": "GBPUSD",
+      "ftmo_symbol": "GBPUSD",
+      "dxz_symbol": "GBPUSD",
+      "comparator": "NATIVE_BROKER_NOT_DWX_ARCHIVE",
+      "coverage": {
+        "schema": "qm.m1-spread-harvest-coverage/v2",
+        "status": "COMPLETE",
+        "extraction_method": "MQL5_COPYRATES_PERIOD_M1_SPREAD",
+        "output_tag": "M08C_20260905T211015Z",
+        "symbol": "GBPUSD",
+        "first_bar": "2026-05-19T21:04:00Z",
+        "last_bar": "2026-09-04T20:54:00Z",
+        "bar_count": 111714,
+        "depth_days": 107.993056,
+        "tick_first": null,
+        "tick_last": null,
+        "first_bar_server": "2026-05-20T00:04:00",
+        "last_bar_server": "2026-09-04T23:54:00",
+        "server_utc_offset_minutes": 180,
+        "clock_validation": "DECLARED_NOT_EMPIRICALLY_VALIDATED"
+      },
+      "download": {
+        "schema": "qm.m08c-native-download/v1",
+        "symbol": "GBPUSD",
+        "is_custom": 0,
+        "before_last_server": "2026-09-04T23:54:00",
+        "server_first": "1993-05-12T00:00:00",
+        "cache_last_server": "2026-09-04T23:54:00",
+        "window_start_server": "2026-05-20T00:00:00",
+        "window_end_server": "2026-09-05T00:00:00",
+        "point_size": 1e-05,
+        "attempts": [
+          {
+            "attempt": 1,
+            "copied": 111714,
+            "error": 0,
+            "first_server": "2026-05-20T00:04:00",
+            "last_server": "2026-09-04T23:54:00",
+            "connected": 1
+          }
+        ]
+      },
+      "matched_minutes": 99907,
+      "first_matched_server": "2026-05-29T14:57:00",
+      "last_matched_server": "2026-09-04T23:54:00",
+      "cache_reaches_2026_09_04": true,
+      "cache_reaches_window_start_day": true,
+      "delta_ftmo_minus_dxz_price_units_p50": -2e-05,
+      "delta_ftmo_minus_dxz_price_units_p90": 2e-05,
+      "ftmo_point_size_from_frozen_digits": 1e-05,
+      "sessions": {
+        "00-06_declared_UTC": {
+          "matched_minutes": 25200,
+          "p50": -2e-05,
+          "p90": 1e-05
+        },
+        "06-12_declared_UTC": {
+          "matched_minutes": 25203,
+          "p50": -2e-05,
+          "p90": 1e-05
+        },
+        "12-18_declared_UTC": {
+          "matched_minutes": 25557,
+          "p50": -1e-05,
+          "p90": 2e-05
+        },
+        "18-24_declared_UTC": {
+          "matched_minutes": 23947,
+          "p50": -2e-05,
+          "p90": 0.0001
+        }
+      },
+      "ftmo_input_sha256": "5e9a417e0f514cc02d2899dfdee73c7d4464f2a5c55b5304debd45fa15ad44f9",
+      "dxz_coverage_binding": {
+        "original_path": "D:\\QM\\mt5\\T2\\MQL5\\Files\\QM\\m1_harvest\\M08C_20260905T211015Z_GBPUSD_coverage.json",
+        "frozen_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_m08c_dxz_harvest\\run_211015\\M08C_20260905T211015Z_GBPUSD_coverage.json.gz",
+        "raw_sha256": "0c86343822c273bce105cc2cafdd049cefda91dfa0329aef163eedaa3399e38d",
+        "stored_sha256": "d9c4a2a1389185a1c78ba5034c3fef44bcfcca318296a8aa4c36e4f6bf087d0a",
+        "raw_bytes": 492
+      }
+    },
+    {
+      "symbol": "EURUSD",
+      "ftmo_symbol": "EURUSD",
+      "dxz_symbol": "EURUSD",
+      "comparator": "NATIVE_BROKER_NOT_DWX_ARCHIVE",
+      "coverage": {
+        "schema": "qm.m1-spread-harvest-coverage/v2",
+        "status": "COMPLETE",
+        "extraction_method": "MQL5_COPYRATES_PERIOD_M1_SPREAD",
+        "output_tag": "M08C_20260905T211015Z",
+        "symbol": "EURUSD",
+        "first_bar": "2026-05-19T21:04:00Z",
+        "last_bar": "2026-09-04T20:54:00Z",
+        "bar_count": 111761,
+        "depth_days": 107.993056,
+        "tick_first": null,
+        "tick_last": null,
+        "first_bar_server": "2026-05-20T00:04:00",
+        "last_bar_server": "2026-09-04T23:54:00",
+        "server_utc_offset_minutes": 180,
+        "clock_validation": "DECLARED_NOT_EMPIRICALLY_VALIDATED"
+      },
+      "download": {
+        "schema": "qm.m08c-native-download/v1",
+        "symbol": "EURUSD",
+        "is_custom": 0,
+        "before_last_server": "2026-09-04T23:54:00",
+        "server_first": "1971-01-04T00:00:00",
+        "cache_last_server": "2026-09-04T23:54:00",
+        "window_start_server": "2026-05-20T00:00:00",
+        "window_end_server": "2026-09-05T00:00:00",
+        "point_size": 1e-05,
+        "attempts": [
+          {
+            "attempt": 1,
+            "copied": 111761,
+            "error": 0,
+            "first_server": "2026-05-20T00:04:00",
+            "last_server": "2026-09-04T23:54:00",
+            "connected": 1
+          }
+        ]
+      },
+      "matched_minutes": 99944,
+      "first_matched_server": "2026-05-29T11:52:00",
+      "last_matched_server": "2026-09-04T23:54:00",
+      "cache_reaches_2026_09_04": true,
+      "cache_reaches_window_start_day": true,
+      "delta_ftmo_minus_dxz_price_units_p50": -1e-05,
+      "delta_ftmo_minus_dxz_price_units_p90": 0.0,
+      "ftmo_point_size_from_frozen_digits": 1e-05,
+      "sessions": {
+        "00-06_declared_UTC": {
+          "matched_minutes": 25200,
+          "p50": -2e-05,
+          "p90": 0.0
+        },
+        "06-12_declared_UTC": {
+          "matched_minutes": 25388,
+          "p50": -1e-05,
+          "p90": 0.0
+        },
+        "12-18_declared_UTC": {
+          "matched_minutes": 25560,
+          "p50": -1e-05,
+          "p90": 0.0
+        },
+        "18-24_declared_UTC": {
+          "matched_minutes": 23796,
+          "p50": -1e-05,
+          "p90": 7e-05
+        }
+      },
+      "ftmo_input_sha256": "0ba126087d814967e5c61a2e6ddc92ef88fefc3e2f35ca14576a21ee89a7b975",
+      "dxz_coverage_binding": {
+        "original_path": "D:\\QM\\mt5\\T2\\MQL5\\Files\\QM\\m1_harvest\\M08C_20260905T211015Z_EURUSD_coverage.json",
+        "frozen_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_m08c_dxz_harvest\\run_211015\\M08C_20260905T211015Z_EURUSD_coverage.json.gz",
+        "raw_sha256": "4165871756ba617f044be456cd34ca85e38a08b3a9c76c612242bc5d34e47c95",
+        "stored_sha256": "8b9e6954f2fa1c9e2a5d73ad34cdb64d029aaa3e9b04eaf84e0b2d6d5481875f",
+        "raw_bytes": 492
+      }
+    },
+    {
+      "symbol": "USDCAD",
+      "ftmo_symbol": "USDCAD",
+      "dxz_symbol": "USDCAD",
+      "comparator": "NATIVE_BROKER_NOT_DWX_ARCHIVE",
+      "coverage": {
+        "schema": "qm.m1-spread-harvest-coverage/v2",
+        "status": "COMPLETE",
+        "extraction_method": "MQL5_COPYRATES_PERIOD_M1_SPREAD",
+        "output_tag": "M08C_20260905T211015Z",
+        "symbol": "USDCAD",
+        "first_bar": "2026-05-19T21:04:00Z",
+        "last_bar": "2026-09-04T20:54:00Z",
+        "bar_count": 111478,
+        "depth_days": 107.993056,
+        "tick_first": null,
+        "tick_last": null,
+        "first_bar_server": "2026-05-20T00:04:00",
+        "last_bar_server": "2026-09-04T23:54:00",
+        "server_utc_offset_minutes": 180,
+        "clock_validation": "DECLARED_NOT_EMPIRICALLY_VALIDATED"
+      },
+      "download": {
+        "schema": "qm.m08c-native-download/v1",
+        "symbol": "USDCAD",
+        "is_custom": 0,
+        "before_last_server": "2026-09-04T23:54:00",
+        "server_first": "1993-04-28T00:00:00",
+        "cache_last_server": "2026-09-04T23:54:00",
+        "window_start_server": "2026-05-20T00:00:00",
+        "window_end_server": "2026-09-05T00:00:00",
+        "point_size": 1e-05,
+        "attempts": [
+          {
+            "attempt": 1,
+            "copied": 111478,
+            "error": 0,
+            "first_server": "2026-05-20T00:04:00",
+            "last_server": "2026-09-04T23:54:00",
+            "connected": 1
+          }
+        ]
+      },
+      "matched_minutes": 99840,
+      "first_matched_server": "2026-05-29T10:01:00",
+      "last_matched_server": "2026-09-04T23:54:00",
+      "cache_reaches_2026_09_04": true,
+      "cache_reaches_window_start_day": true,
+      "delta_ftmo_minus_dxz_price_units_p50": -2e-05,
+      "delta_ftmo_minus_dxz_price_units_p90": 2e-05,
+      "ftmo_point_size_from_frozen_digits": 1e-05,
+      "sessions": {
+        "00-06_declared_UTC": {
+          "matched_minutes": 25199,
+          "p50": -2e-05,
+          "p90": 1e-05
+        },
+        "06-12_declared_UTC": {
+          "matched_minutes": 25499,
+          "p50": -2e-05,
+          "p90": 0.0
+        },
+        "12-18_declared_UTC": {
+          "matched_minutes": 25560,
+          "p50": -1e-05,
+          "p90": 2e-05
+        },
+        "18-24_declared_UTC": {
+          "matched_minutes": 23582,
+          "p50": -1e-05,
+          "p90": 6e-05
+        }
+      },
+      "ftmo_input_sha256": "c2378dd0cfdbfb9deeaa709ef07dae441ba619872b1c15d77016c68098c7a9ab",
+      "dxz_coverage_binding": {
+        "original_path": "D:\\QM\\mt5\\T2\\MQL5\\Files\\QM\\m1_harvest\\M08C_20260905T211015Z_USDCAD_coverage.json",
+        "frozen_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_m08c_dxz_harvest\\run_211015\\M08C_20260905T211015Z_USDCAD_coverage.json.gz",
+        "raw_sha256": "034d6d1d3469476caedb83f545ff7c47b3ed190f23912e3ac12bc7e052b3fadb",
+        "stored_sha256": "eb95b897003ffe0fff622be670861bd5eed3c9f6dec7db9cbb5ba72fbf6c661f",
+        "raw_bytes": 492
+      }
+    },
+    {
+      "symbol": "NZDUSD",
+      "ftmo_symbol": "NZDUSD",
+      "dxz_symbol": "NZDUSD",
+      "comparator": "NATIVE_BROKER_NOT_DWX_ARCHIVE",
+      "coverage": {
+        "schema": "qm.m1-spread-harvest-coverage/v2",
+        "status": "COMPLETE",
+        "extraction_method": "MQL5_COPYRATES_PERIOD_M1_SPREAD",
+        "output_tag": "M08C_20260905T211015Z",
+        "symbol": "NZDUSD",
+        "first_bar": "2026-05-19T21:05:00Z",
+        "last_bar": "2026-09-04T20:54:00Z",
+        "bar_count": 111582,
+        "depth_days": 107.992361,
+        "tick_first": null,
+        "tick_last": null,
+        "first_bar_server": "2026-05-20T00:05:00",
+        "last_bar_server": "2026-09-04T23:54:00",
+        "server_utc_offset_minutes": 180,
+        "clock_validation": "DECLARED_NOT_EMPIRICALLY_VALIDATED"
+      },
+      "download": {
+        "schema": "qm.m08c-native-download/v1",
+        "symbol": "NZDUSD",
+        "is_custom": 0,
+        "before_last_server": "2026-09-04T23:54:00",
+        "server_first": "1994-02-01T00:00:00",
+        "cache_last_server": "2026-09-04T23:54:00",
+        "window_start_server": "2026-05-20T00:00:00",
+        "window_end_server": "2026-09-05T00:00:00",
+        "point_size": 1e-05,
+        "attempts": [
+          {
+            "attempt": 1,
+            "copied": 111582,
+            "error": 0,
+            "first_server": "2026-05-20T00:05:00",
+            "last_server": "2026-09-04T23:54:00",
+            "connected": 1
+          }
+        ]
+      },
+      "matched_minutes": 99863,
+      "first_matched_server": "2026-05-29T10:31:00",
+      "last_matched_server": "2026-09-04T23:54:00",
+      "cache_reaches_2026_09_04": true,
+      "cache_reaches_window_start_day": true,
+      "delta_ftmo_minus_dxz_price_units_p50": -1e-05,
+      "delta_ftmo_minus_dxz_price_units_p90": 2e-05,
+      "ftmo_point_size_from_frozen_digits": 1e-05,
+      "sessions": {
+        "00-06_declared_UTC": {
+          "matched_minutes": 25200,
+          "p50": -1e-05,
+          "p90": 2e-05
+        },
+        "06-12_declared_UTC": {
+          "matched_minutes": 25469,
+          "p50": -2e-05,
+          "p90": 1e-05
+        },
+        "12-18_declared_UTC": {
+          "matched_minutes": 25555,
+          "p50": -1e-05,
+          "p90": 2e-05
+        },
+        "18-24_declared_UTC": {
+          "matched_minutes": 23639,
+          "p50": -1e-05,
+          "p90": 9e-05
+        }
+      },
+      "ftmo_input_sha256": "96659c7034371abe89914b4cd02d7298115ed58c65c5bdfe5e3d332795f794c6",
+      "dxz_coverage_binding": {
+        "original_path": "D:\\QM\\mt5\\T2\\MQL5\\Files\\QM\\m1_harvest\\M08C_20260905T211015Z_NZDUSD_coverage.json",
+        "frozen_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_m08c_dxz_harvest\\run_211015\\M08C_20260905T211015Z_NZDUSD_coverage.json.gz",
+        "raw_sha256": "d952ce4b7771e3243031eb4a96597da7850bd42e7507cabf2a38f92ed0157c5f",
+        "stored_sha256": "6764e719632038abf340d53f76aeaf248d728c901bb7f42ba3b2586b28ee4f7b",
+        "raw_bytes": 492
+      }
+    },
+    {
+      "symbol": "XTIUSD",
+      "ftmo_symbol": "USOIL.cash",
+      "dxz_symbol": "XTIUSD",
+      "comparator": "NATIVE_BROKER_NOT_DWX_ARCHIVE",
+      "coverage": {
+        "schema": "qm.m1-spread-harvest-coverage/v2",
+        "status": "COMPLETE",
+        "extraction_method": "MQL5_COPYRATES_PERIOD_M1_SPREAD",
+        "output_tag": "M08C_20260905T211015Z",
+        "symbol": "XTIUSD",
+        "first_bar": "2026-05-19T22:00:00Z",
+        "last_bar": "2026-09-04T20:54:00Z",
+        "bar_count": 106394,
+        "depth_days": 107.954167,
+        "tick_first": null,
+        "tick_last": null,
+        "first_bar_server": "2026-05-20T01:00:00",
+        "last_bar_server": "2026-09-04T23:54:00",
+        "server_utc_offset_minutes": 180,
+        "clock_validation": "DECLARED_NOT_EMPIRICALLY_VALIDATED"
+      },
+      "download": {
+        "schema": "qm.m08c-native-download/v1",
+        "symbol": "XTIUSD",
+        "is_custom": 0,
+        "before_last_server": "2026-09-04T23:54:00",
+        "server_first": "2010-05-02T00:00:00",
+        "cache_last_server": "2026-09-04T23:54:00",
+        "window_start_server": "2026-05-20T00:00:00",
+        "window_end_server": "2026-09-05T00:00:00",
+        "point_size": 0.01,
+        "attempts": [
+          {
+            "attempt": 1,
+            "copied": 106394,
+            "error": 0,
+            "first_server": "2026-05-20T01:00:00",
+            "last_server": "2026-09-04T23:54:00",
+            "connected": 1
+          }
+        ]
+      },
+      "matched_minutes": 99682,
+      "first_matched_server": "2026-05-26T03:16:00",
+      "last_matched_server": "2026-09-04T23:49:00",
+      "cache_reaches_2026_09_04": true,
+      "cache_reaches_window_start_day": true,
+      "delta_ftmo_minus_dxz_price_units_p50": 0.038,
+      "delta_ftmo_minus_dxz_price_units_p90": 0.062,
+      "ftmo_point_size_from_frozen_digits": 0.001,
+      "sessions": {
+        "00-06_declared_UTC": {
+          "matched_minutes": 26541,
+          "p50": 0.028,
+          "p90": 0.038
+        },
+        "06-12_declared_UTC": {
+          "matched_minutes": 26640,
+          "p50": 0.038,
+          "p90": 0.06
+        },
+        "12-18_declared_UTC": {
+          "matched_minutes": 26515,
+          "p50": 0.048,
+          "p90": 0.068
+        },
+        "18-24_declared_UTC": {
+          "matched_minutes": 19986,
+          "p50": 0.038,
+          "p90": 0.051
+        }
+      },
+      "ftmo_input_sha256": "3fb0807c418e9e157b213d33daf6ce524d96144e088c9c6540fbaa3a75f0bb03",
+      "dxz_coverage_binding": {
+        "original_path": "D:\\QM\\mt5\\T2\\MQL5\\Files\\QM\\m1_harvest\\M08C_20260905T211015Z_XTIUSD_coverage.json",
+        "frozen_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_m08c_dxz_harvest\\run_211015\\M08C_20260905T211015Z_XTIUSD_coverage.json.gz",
+        "raw_sha256": "fb74a0450e4e3b056bb5b23839ca795df7f43c3968b2741318733deef07fa77e",
+        "stored_sha256": "84667cac15301bf92b1c7bc652f74b154d6c944a82a6ed159272c17e3c137e43",
+        "raw_bytes": 492
+      }
+    },
+    {
+      "symbol": "XAGUSD",
+      "ftmo_symbol": "XAGUSD",
+      "dxz_symbol": "XAGUSD",
+      "comparator": "NATIVE_BROKER_NOT_DWX_ARCHIVE",
+      "coverage": {
+        "schema": "qm.m1-spread-harvest-coverage/v2",
+        "status": "COMPLETE",
+        "extraction_method": "MQL5_COPYRATES_PERIOD_M1_SPREAD",
+        "output_tag": "M08C_20260905T211015Z",
+        "symbol": "XAGUSD",
+        "first_bar": "2026-05-19T22:00:00Z",
+        "last_bar": "2026-09-04T20:54:00Z",
+        "bar_count": 106883,
+        "depth_days": 107.954167,
+        "tick_first": null,
+        "tick_last": null,
+        "first_bar_server": "2026-05-20T01:00:00",
+        "last_bar_server": "2026-09-04T23:54:00",
+        "server_utc_offset_minutes": 180,
+        "clock_validation": "DECLARED_NOT_EMPIRICALLY_VALIDATED"
+      },
+      "download": {
+        "schema": "qm.m08c-native-download/v1",
+        "symbol": "XAGUSD",
+        "is_custom": 0,
+        "before_last_server": "2026-09-04T23:54:00",
+        "server_first": "2002-09-15T00:00:00",
+        "cache_last_server": "2026-09-04T23:54:00",
+        "window_start_server": "2026-05-20T00:00:00",
+        "window_end_server": "2026-09-05T00:00:00",
+        "point_size": 0.001,
+        "attempts": [
+          {
+            "attempt": 1,
+            "copied": 106883,
+            "error": 0,
+            "first_server": "2026-05-20T01:00:00",
+            "last_server": "2026-09-04T23:54:00",
+            "connected": 1
+          }
+        ]
+      },
+      "matched_minutes": 99990,
+      "first_matched_server": "2026-05-26T10:12:00",
+      "last_matched_server": "2026-09-04T23:49:00",
+      "cache_reaches_2026_09_04": true,
+      "cache_reaches_window_start_day": true,
+      "delta_ftmo_minus_dxz_price_units_p50": 0.035,
+      "delta_ftmo_minus_dxz_price_units_p90": 0.053,
+      "ftmo_point_size_from_frozen_digits": 0.001,
+      "sessions": {
+        "00-06_declared_UTC": {
+          "matched_minutes": 26280,
+          "p50": 0.037,
+          "p90": 0.056
+        },
+        "06-12_declared_UTC": {
+          "matched_minutes": 26568,
+          "p50": 0.034,
+          "p90": 0.05
+        },
+        "12-18_declared_UTC": {
+          "matched_minutes": 26516,
+          "p50": 0.036,
+          "p90": 0.053
+        },
+        "18-24_declared_UTC": {
+          "matched_minutes": 20626,
+          "p50": 0.034,
+          "p90": 0.051
+        }
+      },
+      "ftmo_input_sha256": "106ee5f54679274ff546390445f0aaf8b72f1e62635d5a784eef23f5ebdc3a8e",
+      "dxz_coverage_binding": {
+        "original_path": "D:\\QM\\mt5\\T2\\MQL5\\Files\\QM\\m1_harvest\\M08C_20260905T211015Z_XAGUSD_coverage.json",
+        "frozen_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_m08c_dxz_harvest\\run_211015\\M08C_20260905T211015Z_XAGUSD_coverage.json.gz",
+        "raw_sha256": "820967487475dbcbb8d2bf8162c7ccfa9d9db11d5de1fdc980d9c25b4217098e",
+        "stored_sha256": "799c767012a7a578c5e36e86ac31c9bc7995242a721dbeeff07a45e8501e45db",
+        "raw_bytes": 492
+      }
+    }
+  ],
+  "receipt_tags": [
+    "M08C_20260905T210754Z",
+    "M08C_20260905T211015Z"
+  ],
+  "economic_adoption": false,
+  "q_verdict": null
+}

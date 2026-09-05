@@ -1,0 +1,292 @@
+{
+  "schema": "qm.m08c-measurement/v1",
+  "tag": "M08C_20260905T210754Z",
+  "started_utc": "2026-09-05T21:07:54Z",
+  "timeout_seconds": 1800,
+  "maximum_factory_budget_seconds": 31800,
+  "symbols": [
+    "GBPUSD",
+    "EURUSD",
+    "USDCAD",
+    "NZDUSD",
+    "XTIUSD",
+    "XAGUSD"
+  ],
+  "source": {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_m08c_dxz_harvest\\QM_M1_SpreadHarvest.mq5",
+    "size_bytes": 21255,
+    "sha256": "354562a0b1cf6d189fb87ce0b4b4109eea0242d5107e7dd461a27d5ea9d09053"
+  },
+  "helper": {
+    "path": "C:\\QM\\repo\\tools\\strategy_farm\\ftmo_m1_bootstrap.py",
+    "size_bytes": 66786,
+    "sha256": "ba8f43e848277d2c962058b58726520c32d1b9ada678171c05702ae540ef090d"
+  },
+  "artifacts": [
+    {
+      "original_path": "D:\\QM\\mt5\\T2\\MQL5\\Files\\QM\\m1_harvest\\M08C_20260905T210754Z_GBPUSD_M1.jsonl",
+      "frozen_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_m08c_dxz_harvest\\run_210754\\M08C_20260905T210754Z_GBPUSD_M1.jsonl.gz",
+      "raw_sha256": "38e2b15562c2fc348b427c67ed65a5152436cfd502104f0e0ebfbea7279377a0",
+      "stored_sha256": "a411296a0f4dd4627afe1026cee0d4717e7a7abb948d3651df178a96d21cc098",
+      "raw_bytes": 29232293
+    },
+    {
+      "original_path": "D:\\QM\\mt5\\T2\\MQL5\\Files\\QM\\m1_harvest\\M08C_20260905T210754Z_GBPUSD_coverage.json",
+      "frozen_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_m08c_dxz_harvest\\run_210754\\M08C_20260905T210754Z_GBPUSD_coverage.json.gz",
+      "raw_sha256": "7200a39a2c34d5874596ee00ef70c2059df34d344364a83be26639bb1bccb879",
+      "stored_sha256": "a8330996cd8346695d118eb1117f2995f2bed00f516d6da5613fe3b8d90649bd",
+      "raw_bytes": 491
+    },
+    {
+      "original_path": "D:\\QM\\mt5\\T2\\MQL5\\Files\\QM\\m1_harvest\\M08C_20260905T210754Z_EURUSD_M1.jsonl",
+      "frozen_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_m08c_dxz_harvest\\run_210754\\M08C_20260905T210754Z_EURUSD_M1.jsonl.gz",
+      "raw_sha256": "d9724ededcde2a43a5a819bd537e880b8256c867753deb91f1b4f1772ba4f679",
+      "stored_sha256": "1b92bdbf8118044fbd189cafe3cdae30d62eea1e3a5e7ed59edfba592e5fa1c8",
+      "raw_bytes": 29206779
+    },
+    {
+      "original_path": "D:\\QM\\mt5\\T2\\MQL5\\Files\\QM\\m1_harvest\\M08C_20260905T210754Z_EURUSD_coverage.json",
+      "frozen_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_m08c_dxz_harvest\\run_210754\\M08C_20260905T210754Z_EURUSD_coverage.json.gz",
+      "raw_sha256": "e3e1987f7d7282b33d8c08555c2d326e5f34018f9d914bb1f9c37f3394e8b242",
+      "stored_sha256": "7efc896e84020ff7fd6680bb666f1dc6fede6a11e52550ee9cc5d28ffb8d5b9e",
+      "raw_bytes": 491
+    },
+    {
+      "original_path": "D:\\QM\\mt5\\T2\\MQL5\\Files\\QM\\m1_harvest\\M08C_20260905T210754Z_USDCAD_M1.jsonl",
+      "frozen_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_m08c_dxz_harvest\\run_210754\\M08C_20260905T210754Z_USDCAD_M1.jsonl.gz",
+      "raw_sha256": "267de7ad8fee9842b331c2f5c37ef1457ff5f3ba595e083bba56306dd2d78dcd",
+      "stored_sha256": "d807b2052fc6646a1b58589c020372dd65ac90e464a8a038fa30f3406b2ef141",
+      "raw_bytes": 29217796
+    },
+    {
+      "original_path": "D:\\QM\\mt5\\T2\\MQL5\\Files\\QM\\m1_harvest\\M08C_20260905T210754Z_USDCAD_coverage.json",
+      "frozen_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_m08c_dxz_harvest\\run_210754\\M08C_20260905T210754Z_USDCAD_coverage.json.gz",
+      "raw_sha256": "6bfbf7240fa4f949858c07b3ad253e8abc7216a95b7f49ce033cfa302b7496b4",
+      "stored_sha256": "7bbaea0e136b2e55d14df9df5bdc067b07a74e604adc7eb092e802788a84a240",
+      "raw_bytes": 491
+    },
+    {
+      "original_path": "D:\\QM\\mt5\\T2\\MQL5\\Files\\QM\\m1_harvest\\M08C_20260905T210754Z_NZDUSD_M1.jsonl",
+      "frozen_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_m08c_dxz_harvest\\run_210754\\M08C_20260905T210754Z_NZDUSD_M1.jsonl.gz",
+      "raw_sha256": "08dd35a065374600cd829d2e310362110418f9e101e3cb4dbeca67f3884b0fd6",
+      "stored_sha256": "5678605328baac1978018a901941f30da9f329ac74cfbd052ea13726bd178cca",
+      "raw_bytes": 29207924
+    },
+    {
+      "original_path": "D:\\QM\\mt5\\T2\\MQL5\\Files\\QM\\m1_harvest\\M08C_20260905T210754Z_NZDUSD_coverage.json",
+      "frozen_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_m08c_dxz_harvest\\run_210754\\M08C_20260905T210754Z_NZDUSD_coverage.json.gz",
+      "raw_sha256": "7650b99e461feed3881e8fbdee94a2cd1d338c2e7a548061bf3be8d8c12882e0",
+      "stored_sha256": "c150440f2220cbee36f8b948f93869f01cac9fc4c919735fa124be438525558f",
+      "raw_bytes": 491
+    },
+    {
+      "original_path": "D:\\QM\\mt5\\T2\\MQL5\\Files\\QM\\m1_harvest\\M08C_20260905T210754Z_XTIUSD_M1.jsonl",
+      "frozen_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_m08c_dxz_harvest\\run_210754\\M08C_20260905T210754Z_XTIUSD_M1.jsonl.gz",
+      "raw_sha256": "43631296eb28e1ab2ff4591bfe7b2f68384208ca854a67fff43a1dbc64a17a9d",
+      "stored_sha256": "f5e2b9eae46aeb4717f82715ae1c6294b440dbbe6c30da690f9fce11396d06da",
+      "raw_bytes": 28393247
+    },
+    {
+      "original_path": "D:\\QM\\mt5\\T2\\MQL5\\Files\\QM\\m1_harvest\\M08C_20260905T210754Z_XTIUSD_coverage.json",
+      "frozen_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_m08c_dxz_harvest\\run_210754\\M08C_20260905T210754Z_XTIUSD_coverage.json.gz",
+      "raw_sha256": "641ee8035f44ad2a60ff6b7cea6309409b00671ae95bd15da1fbe3c976fba905",
+      "stored_sha256": "dc36c97b5546c3802ce071ef8412c67ccc36a3f23bfcc93e7adc414596832b6f",
+      "raw_bytes": 492
+    },
+    {
+      "original_path": "D:\\QM\\mt5\\T2\\MQL5\\Files\\QM\\m1_harvest\\M08C_20260905T210754Z_XAGUSD_M1.jsonl",
+      "frozen_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_m08c_dxz_harvest\\run_210754\\M08C_20260905T210754Z_XAGUSD_M1.jsonl.gz",
+      "raw_sha256": "c6c2f655f1860bc84817ec78481c1e99422b9f976dff7a325bce771914f0f1aa",
+      "stored_sha256": "89b45ac7d346715a237f8cb5c7fb230ad819987ffb1b11e025ba6cc6cbc970f0",
+      "raw_bytes": 28952077
+    },
+    {
+      "original_path": "D:\\QM\\mt5\\T2\\MQL5\\Files\\QM\\m1_harvest\\M08C_20260905T210754Z_XAGUSD_coverage.json",
+      "frozen_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_m08c_dxz_harvest\\run_210754\\M08C_20260905T210754Z_XAGUSD_coverage.json.gz",
+      "raw_sha256": "1ad7e417b6ae26100813e7ca0850e53873949f664120b1771cafc7d579746f2c",
+      "stored_sha256": "c2ee595c0b5a9faa0223893972507d270c5d11a4fa1ac82d4e4fee77b5c10b95",
+      "raw_bytes": 492
+    },
+    {
+      "original_path": "D:\\QM\\mt5\\T2\\MQL5\\Files\\QM\\m1_harvest\\M08C_20260905T210754Z_EURUSD_download.json",
+      "frozen_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_m08c_dxz_harvest\\run_210754\\M08C_20260905T210754Z_EURUSD_download.json.gz",
+      "raw_sha256": "1c4da899a74786de0907cf506427a21846ad4f9b781f45dfc9796c335fd4df9f",
+      "stored_sha256": "654bc54a89f628f12eff09b62aed16e39e31a1f78a7a52060708e25183cc8cae",
+      "raw_bytes": 1082
+    },
+    {
+      "original_path": "D:\\QM\\mt5\\T2\\MQL5\\Files\\QM\\m1_harvest\\M08C_20260905T210754Z_GBPUSD_download.json",
+      "frozen_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_m08c_dxz_harvest\\run_210754\\M08C_20260905T210754Z_GBPUSD_download.json.gz",
+      "raw_sha256": "21211305b7286212d42342854118601d3fb14b4d6140915d61c3da0e75fb37cf",
+      "stored_sha256": "ed46b7560c7c013cb5f74b48545fe1f44f1d851367db5f243e48400fe0efbea0",
+      "raw_bytes": 1082
+    },
+    {
+      "original_path": "D:\\QM\\mt5\\T2\\MQL5\\Files\\QM\\m1_harvest\\M08C_20260905T210754Z_NZDUSD_download.json",
+      "frozen_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_m08c_dxz_harvest\\run_210754\\M08C_20260905T210754Z_NZDUSD_download.json.gz",
+      "raw_sha256": "e0ea4bb9e9ee5682d739a716ffc850165661320b8be8afa56157ab88dc8dba29",
+      "stored_sha256": "41447069d0fd09043acdfff5bafa4a30a707b9dd7ce8d01534786d1eee8f74bb",
+      "raw_bytes": 1082
+    },
+    {
+      "original_path": "D:\\QM\\mt5\\T2\\MQL5\\Files\\QM\\m1_harvest\\M08C_20260905T210754Z_USDCAD_download.json",
+      "frozen_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_m08c_dxz_harvest\\run_210754\\M08C_20260905T210754Z_USDCAD_download.json.gz",
+      "raw_sha256": "57ca9095ed0bd1ed0afcc2eecfd418b4569b50c852891481591f76a3c860136f",
+      "stored_sha256": "328928f186f7817ce10343307dcf16e654695e90a3fa4a09e8a318c5439cb925",
+      "raw_bytes": 1082
+    },
+    {
+      "original_path": "D:\\QM\\mt5\\T2\\MQL5\\Files\\QM\\m1_harvest\\M08C_20260905T210754Z_XAGUSD_download.json",
+      "frozen_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_m08c_dxz_harvest\\run_210754\\M08C_20260905T210754Z_XAGUSD_download.json.gz",
+      "raw_sha256": "96b60430c993d1d491647b2219ca8902b217573a89eea34eb036470ad20e677f",
+      "stored_sha256": "bff39433c2778ff8e2866a5688ab814d0524cc3e7134f7e7e475d2e7d460169c",
+      "raw_bytes": 1082
+    },
+    {
+      "original_path": "D:\\QM\\mt5\\T2\\MQL5\\Files\\QM\\m1_harvest\\M08C_20260905T210754Z_XTIUSD_download.json",
+      "frozen_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_m08c_dxz_harvest\\run_210754\\M08C_20260905T210754Z_XTIUSD_download.json.gz",
+      "raw_sha256": "16bd74da884291d0e018b5038b3ae889b22f49dd6ed98ac60fdf786cf8e30406",
+      "stored_sha256": "49bb0df5c69d5f7feb93b61f82e9ca1ccbf5919b427bb806cabba5ab48f06e94",
+      "raw_bytes": 1082
+    }
+  ],
+  "preflight": {
+    "terminal": "T2",
+    "active_claims": [
+      "T1",
+      "T7",
+      "T9"
+    ],
+    "reserved_terminals": [],
+    "factory_process_counts": {
+      "T1": 0,
+      "T2": 0,
+      "T3": 0,
+      "T4": 0,
+      "T5": 0,
+      "T6": 0,
+      "T7": 0,
+      "T8": 0,
+      "T9": 0,
+      "T10": 0
+    }
+  },
+  "reservation": {
+    "created_at_utc": "2026-09-05T21:07:57.088569+00:00",
+    "reason": "FTMO/DXZ M1 spread harvest; process-free slot only",
+    "reserved_by": "ftmo_m1_bootstrap:M08C_20260905T210754Z",
+    "terminal": "T2",
+    "until_utc": "2026-09-05T21:47:57.088569+00:00"
+  },
+  "compile": {
+    "source": {
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_m08c_dxz_harvest\\QM_M1_SpreadHarvest.mq5",
+      "size_bytes": 21255,
+      "sha256": "354562a0b1cf6d189fb87ce0b4b4109eea0242d5107e7dd461a27d5ea9d09053",
+      "read_only_static_check": "PASS",
+      "forbidden_trading_tokens": []
+    },
+    "staged_source": {
+      "path": "D:\\QM\\mt5\\T2\\MQL5\\Scripts\\QM\\m1_harvest\\QM_M1_SpreadHarvest.mq5",
+      "size_bytes": 21255,
+      "sha256": "354562a0b1cf6d189fb87ce0b4b4109eea0242d5107e7dd461a27d5ea9d09053"
+    },
+    "ex5": {
+      "path": "D:\\QM\\mt5\\T2\\MQL5\\Scripts\\QM\\m1_harvest\\QM_M1_SpreadHarvest.ex5",
+      "size_bytes": 30848,
+      "sha256": "6ba57ddf5bc6efbf1bdd2824829a11e8ab8763861068dfe03dccf5a172624d64"
+    },
+    "metaeditor": {
+      "path": "D:\\QM\\mt5\\T2\\MetaEditor64.exe",
+      "size_bytes": 116791384,
+      "sha256": "05718f3fa55f3f59fd2f024d8c433b457fbd58fcf39e947a16ccdad00a614ec7"
+    },
+    "compile_log": {
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_m08c_dxz_harvest\\run_210754\\compile.log",
+      "size_bytes": 3018,
+      "sha256": "15107ca1a614a1230433fae57d1f9b12b36a6e7c73de7c41ea54dd7372d96379"
+    },
+    "errors": 0,
+    "warnings": 0,
+    "exit_code": 1
+  },
+  "compiled_binary": {
+    "original_path": "D:\\QM\\mt5\\T2\\MQL5\\Scripts\\QM\\m1_harvest\\QM_M1_SpreadHarvest.ex5",
+    "frozen_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_m08c_dxz_harvest\\run_210754\\QM_M1_SpreadHarvest.ex5.gz",
+    "raw_sha256": "6ba57ddf5bc6efbf1bdd2824829a11e8ab8763861068dfe03dccf5a172624d64",
+    "stored_sha256": "80f34925dbf8ad6dc06222dc3a4ebbbb90c0e2b9de3cf4d0ca8ee4246fe26156",
+    "raw_bytes": 30848
+  },
+  "startup_bindings": {
+    "preset": {
+      "path": "D:\\QM\\mt5\\T2\\MQL5\\Presets\\QM_M1_SpreadHarvest_M08C_20260905T210754Z.set",
+      "size_bytes": 88,
+      "sha256": "35b5eead735bd94c582eb03f36f2db0f98b7e4c8eb3197a0b6627e0ac661588a"
+    },
+    "startup_ini": {
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_m08c_dxz_harvest\\run_210754\\startup.ini",
+      "size_bytes": 321,
+      "sha256": "b6bfef47541304477872d3de8245883c6a884970dc0c4f775df24cea1a389d52"
+    },
+    "script_relative_path": "QM\\m1_harvest\\QM_M1_SpreadHarvest",
+    "symbols": [
+      "GBPUSD",
+      "EURUSD",
+      "USDCAD",
+      "NZDUSD",
+      "XTIUSD",
+      "XAGUSD"
+    ],
+    "output_tag": "M08C_20260905T210754Z",
+    "experts_enabled": false,
+    "allow_live_trading": false
+  },
+  "execution": {
+    "started_at": "2026-09-05T21:08:05Z",
+    "finished_at": "2026-09-05T21:09:32Z",
+    "command_contract": [
+      "terminal64.exe",
+      "/portable",
+      "/config:<absolute-startup-ini>"
+    ],
+    "terminal": {
+      "path": "D:\\QM\\mt5\\T2\\terminal64.exe",
+      "size_bytes": 121845984,
+      "sha256": "86c563c8c113e4af8802dc91241ecd51fc06caf92cc86fc40026dd8046e526ed"
+    },
+    "process_identity": {
+      "pid": 13272,
+      "executable_path": "D:\\QM\\mt5\\T2\\terminal64.exe",
+      "creation_date_utc": "2026-09-05T21:08:05Z"
+    },
+    "termination": {
+      "status": "TERMINATED",
+      "pid": 13272,
+      "executable_path": "D:\\QM\\mt5\\T2\\terminal64.exe",
+      "creation_date_utc": "2026-09-05T21:08:05Z"
+    },
+    "challenge_identity": {
+      "pid": 9288,
+      "executable_path": "C:\\Program Files\\FTMO Global Markets MT5 Terminal\\terminal64.exe",
+      "creation_date_utc": "2026-08-23T08:29:31Z"
+    },
+    "autotrading_touched": false
+  },
+  "status": "MEASUREMENT_FINISHED",
+  "reservation_release": {
+    "released": true,
+    "reservation": {
+      "created_at_utc": "2026-09-05T21:07:57.088569+00:00",
+      "reason": "FTMO/DXZ M1 spread harvest; process-free slot only",
+      "reserved_by": "ftmo_m1_bootstrap:M08C_20260905T210754Z",
+      "terminal": "T2",
+      "until_utc": "2026-09-05T21:47:57.088569+00:00"
+    },
+    "terminal": "T2"
+  },
+  "elapsed_seconds": 101.359,
+  "finished_utc": "2026-09-05T21:09:36Z",
+  "q_verdict": null,
+  "economic_adoption": false,
+  "active_backtests_interrupted": false
+}

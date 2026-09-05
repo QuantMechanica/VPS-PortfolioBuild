@@ -1,0 +1,11 @@
+{
+  "result": "PASS",
+  "all_frozen_hashes_verified": true,
+  "symbol_count": 6,
+  "all_six_have_matches": true,
+  "all_six_reach_2026_09_04": true,
+  "all_six_reach_window_start_day": true,
+  "factory_cost_seconds": 126.03099999999999,
+  "one_terminal": "T2",
+  "bootstrap_tests_passed": 23
+}

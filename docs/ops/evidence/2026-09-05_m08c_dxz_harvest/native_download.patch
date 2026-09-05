@@ -1,0 +1,143 @@
+--- M08B/QM_M1_SpreadHarvest.mq5
++++ M08C/QM_M1_SpreadHarvest.mq5
+@@ -10,14 +10,14 @@
+ // Fixed offset is declared for this bounded summer window, not inferred from
+ // TimeTradeServer (which is not historical timezone evidence).
+ input int InpServerUtcOffsetMinutes = 180;
+-input datetime InpFromServer = D'2026.05.26 00:00';
++input datetime InpFromServer = D'2026.05.20 00:00';
+ input datetime InpToServer = D'2026.09.05 00:00';
+ input bool InpObserveTicks = false;
+ 
+ #define QM_HARVEST_FROM D'2026.01.01 00:00'
+ #define QM_BAR_CHUNK_DAYS 7
+ #define QM_TICK_CHUNK_DAYS 1
+-#define QM_COPY_ATTEMPTS 40
++#define QM_COPY_ATTEMPTS 3
+ #define QM_CONNECT_WAIT_SECONDS 180
+ #define QM_SYNC_ATTEMPTS 90
+ #define QM_ERR_HISTORY_NOT_FOUND 4401
+@@ -197,7 +197,7 @@
+       ArrayResize(rates, 0);
+       ArraySetAsSeries(rates, false);
+       ResetLastError();
+-      copied = CopyRates(symbol, PERIOD_M1, 0, 2000000, rates);
++      copied = CopyRates(symbol, PERIOD_M1, start_time, end_time, rates);
+       if(copied > 0)
+          break;
+       PrintFormat("QM_M1_HARVEST_POSITION_RETRY symbol=%s attempt=%d copied=%d error=%d",
+@@ -349,49 +349,38 @@
+   }
+ 
+ 
+-datetime ResolveHistoryStart(const string symbol)
+-  {
+-   // A fresh terminal backfills M1 from the server progressively BACKWARD
+-   // from now; deep time-window CopyRates return 4401 until that depth is
+-   // local (proven live 2026-08-08). Position-based requests trigger the
+-   // backfill; SERIES_FIRSTDATE tells us the honestly available depth.
+-   datetime first_seen = 0;
+-   int stable = 0;
+-   for(int attempt = 0; attempt < QM_SYNC_ATTEMPTS && !IsStopped(); ++attempt)
+-     {
+-      MqlRates warm[];
+-      ArraySetAsSeries(warm, false);
++datetime ResolveHistoryStart(const string symbol, const string output_tag)
++  {
++   const string path=QM_HARVEST_DIRECTORY+"\\"+output_tag+"_"+SafeSymbolToken(symbol)+"_download.json";
++   const int handle=FileOpen(path,FILE_WRITE|FILE_TXT|FILE_ANSI|FILE_SHARE_READ);
++   if(handle==INVALID_HANDLE) return 0;
++   const ulong deadline=GetTickCount64()+240000;
++   datetime first=0,last=0;
++   string attempts="";
++   const datetime before=(datetime)SeriesInfoInteger(symbol,PERIOD_M1,SERIES_LASTBAR_DATE);
++   for(int attempt=0;attempt<6 && GetTickCount64()<deadline && !IsStopped();++attempt)
++     {
++      MqlRates rates[];
++      ArraySetAsSeries(rates,false);
+       ResetLastError();
+-      const int copied = CopyRates(symbol, PERIOD_M1, 0, 500000, warm);
+-      const datetime probe = (datetime)SeriesInfoInteger(symbol, PERIOD_M1, SERIES_FIRSTDATE);
+-      if(attempt % 5 == 0 || (probe > 0 && probe != first_seen))
+-         PrintFormat("QM_M1_HARVEST_SYNC symbol=%s attempt=%d copied=%d error=%d first=%s",
+-                     symbol, attempt + 1, copied, GetLastError(), IsoMinute(probe));
+-      if(probe > 0 && probe == first_seen)
+-        {
+-         if(++stable >= 3)
+-            break;
+-        }
+-      else
+-         stable = 0;
+-      first_seen = probe;
++      // A date-bounded native request initiates server downloading (MQL5 CopyRates contract).
++      const int copied=CopyRates(symbol,PERIOD_M1,InpFromServer,InpToServer-60,rates);
++      const int error=GetLastError();
++      if(copied>0) { first=rates[0].time; last=rates[copied-1].time; }
++      if(attempt>0) attempts+=",";
++      attempts+=StringFormat("{\"attempt\":%d,\"copied\":%d,\"error\":%d,\"first_server\":\"%s\",\"last_server\":\"%s\",\"connected\":%d}",attempt+1,copied,error,IsoServerMinute(first),IsoServerMinute(last),(int)TerminalInfoInteger(TERMINAL_CONNECTED));
++      FileFlush(handle);
++      if(first>0 && first<InpFromServer+86400 && last>=D'2026.09.04 00:00') break;
+       Sleep(2000);
+      }
+-   if(first_seen <= 0)
+-      return 0;
+-   datetime start = first_seen;
+-   if(start < QM_HARVEST_FROM)
+-      start = QM_HARVEST_FROM;
+-   return (start / 60) * 60;
+-  }
++   string payload=StringFormat("{\"schema\":\"qm.m08c-native-download/v1\",\"symbol\":\"%s\",\"is_custom\":%d,\"before_last_server\":\"%s\",\"server_first\":\"%s\",\"cache_last_server\":\"%s\",\"window_start_server\":\"%s\",\"window_end_server\":\"%s\",\"point_size\":%.10f,\"attempts\":[%s]}",symbol,(int)SymbolInfoInteger(symbol,SYMBOL_CUSTOM),IsoServerMinute(before),IsoServerMinute((datetime)SeriesInfoInteger(symbol,PERIOD_M1,SERIES_SERVER_FIRSTDATE)),IsoServerMinute((datetime)SeriesInfoInteger(symbol,PERIOD_M1,SERIES_LASTBAR_DATE)),IsoServerMinute(InpFromServer),IsoServerMinute(InpToServer),SymbolInfoDouble(symbol,SYMBOL_POINT),attempts);
++   FileWriteString(handle,payload+"\n"); FileFlush(handle); FileClose(handle);
++   return first;
++  }
++
+ 
+ bool HarvestSymbol(const string symbol, const string output_tag)
+   {
+-   if(!SymbolSelect(symbol, true))
+-     {
+-      PrintFormat("QM_M1_HARVEST_SELECT_FAIL symbol=%s error=%d", symbol, GetLastError());
+-      return false;
+-     }
+    datetime end_time = InpToServer;
+    if(end_time <= 0)
+       end_time = TimeCurrent();
+@@ -420,19 +409,26 @@
+       return false;
+      }
+ 
++   bool is_custom=false;
++   if(!SymbolExist(symbol,is_custom))
++      return WriteEmptyCoverage(symbol,output_tag,coverage_path,0,"NATIVE_SYMBOL_NOT_OFFERED_BY_CONNECTED_BROKER");
++   if(is_custom)
++      return WriteEmptyCoverage(symbol,output_tag,coverage_path,0,"CUSTOM_ARCHIVE_HAS_NO_BROKER_DOWNLOAD");
++   if(!SymbolSelect(symbol,true))
++      return WriteEmptyCoverage(symbol,output_tag,coverage_path,0,"BROKER_SYMBOL_SELECT_FAILED");
+    long bar_count = 0;
+    datetime first_bar = 0;
+    datetime last_bar = 0;
+-   const datetime available_start = ResolveHistoryStart(symbol);
++   const datetime available_start = ResolveHistoryStart(symbol,output_tag);
+    const datetime cached_last = (datetime)SeriesInfoInteger(symbol, PERIOD_M1, SERIES_LASTBAR_DATE);
+    if(cached_last < InpFromServer)
+-      return WriteEmptyCoverage(symbol,output_tag,coverage_path,cached_last,"NO_CACHED_M1_IN_REQUESTED_WINDOW");
++      return WriteEmptyCoverage(symbol,output_tag,coverage_path,cached_last,"BROKER_HISTORY_WINDOW_UNAVAILABLE_AFTER_BOUNDED_REQUEST");
+    const datetime start_time = available_start > InpFromServer ? available_start : InpFromServer;
+    if(start_time <= 0 || start_time > end_time)
+      {
+       PrintFormat("QM_M1_HARVEST_SYNC_FAIL symbol=%s start=%s end=%s",
+                   symbol, IsoMinute(start_time), IsoMinute(end_time));
+-      return false;
++      return WriteEmptyCoverage(symbol,output_tag,coverage_path,cached_last,"BOUNDED_DOWNLOAD_NO_REQUESTED_BARS");
+      }
+    if(!WriteRawBars(symbol, raw_path, start_time, end_time, bar_count, first_bar, last_bar))
+       return WriteEmptyCoverage(symbol,output_tag,coverage_path,cached_last,"COPYRATES_OR_EMPTY_WINDOW_FAILURE");
+@@ -516,7 +512,7 @@
+       if(symbol == "" || !HarvestSymbol(symbol, output_tag))
+         {
+          PrintFormat("QM_M1_HARVEST_FAILED index=%d symbol=%s", index, symbol);
+-         return;
++         continue;
+         }
+      }
+    PrintFormat("QM_M1_HARVEST_ALL_COMPLETE tag=%s symbols=%d", output_tag, count);
