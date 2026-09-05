@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "checks": [
+    "25 unique rows",
+    "21 held rows match independent wave survey",
+    "8 source-drift rows assigned to separate authority ticket",
+    "all 25 current source hashes match captured bytes",
+    "4 unchanged-source successor dry-runs refuse remaining lineage/setfile blockers",
+    "collector rejects --apply",
+    "canonical DB is ro + query_only"
+  ],
+  "census_sha256": "6ef9d320f56196016ab04a9886427a40a818fc5f77a201438cdcc09cecbb8ca8"
+}
