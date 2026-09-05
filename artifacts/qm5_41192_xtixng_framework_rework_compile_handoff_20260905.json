@@ -1,0 +1,105 @@
+{
+  "schema_version": "qm.paced-fleet.framework-rework-compile-handoff/v1",
+  "generated_at_utc": "2026-09-05T01:29:11Z",
+  "agent": "board-advisor",
+  "branch": "agents/board-advisor",
+  "unit_count": 1,
+  "ea_id": "QM5_41192",
+  "ea_label": "QM5_41192_xtixng-mdaily-hl-rv",
+  "slug": "xtixng-mdaily-hl-rv",
+  "selection_reason": "Approved low-frequency XTI/XNG relative-value sleeve with a pending logical Q02 basket row and no canonical EX5; deterministic review had isolated two framework-corset defects.",
+  "diversity": {
+    "markets": [
+      "energy",
+      "crude_oil",
+      "natural_gas"
+    ],
+    "style": "monthly market-neutral-style relative value",
+    "expected_completed_packages_per_year": "10-12",
+    "target_symbols": [
+      "XTIUSD.DWX",
+      "XNGUSD.DWX"
+    ]
+  },
+  "authority": {
+    "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_41192_xtixng-mdaily-hl-rv.md",
+    "card_sha256": "b4ce1be6b9fd9caffee3141be8e478150135096051247f23ca95601de17f3820",
+    "g0_status": "APPROVED",
+    "execution_contract_status": "APPROVED",
+    "build_task_id": "905946e6-fad0-456d-920c-64c466e7ba59",
+    "review_task_id": "228ab736-1a3a-49ce-9a48-2a609104dfbd",
+    "source_repair_authority": "router_ops_issue:000bb713-5f0f-4e2e-b4bf-558fcbc86d7c"
+  },
+  "registry_precheck": {
+    "ready": true,
+    "classification": "ready",
+    "identity_registry_rows": 1,
+    "active_magic_rows": 2,
+    "active_magics": [
+      411920000,
+      411920001
+    ],
+    "invalid_target_symbols": []
+  },
+  "repair": {
+    "rejected_mq5_sha256": "630cf4a9c18a2ec5ff4d86b04df000a48a4ecf793e09d8d028f3d094a7cf238d",
+    "repaired_mq5_sha256": "f17da32273967f364f00e37239f249a0f225a1fda6691365d45ee0f65458a11b",
+    "spec_sha256": "16f4c1c1f2aba465bbb05a5fea7eebd072e11c41ad591db5bfde78e8d3691c37",
+    "changes": [
+      "Replaced the monthly decision and restart-boundary iTime/Strategy_MonthKey cadence with QM_CalendarPeriodKey(PERIOD_MN1, XTI, shift).",
+      "Routed the on-chart XTI first leg through QM_TM_OpenPosition while preserving its computed share of the aggregate package risk; the foreign XNG leg remains on QM_BasketOpenPosition.",
+      "Updated SPEC.md to record the canonical host/foreign order surfaces."
+    ],
+    "strategy_mechanics_changed": false,
+    "entry_order": [
+      "XTIUSD.DWX",
+      "XNGUSD.DWX"
+    ],
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1,
+      "scope": "aggregate two-leg package"
+    }
+  },
+  "validation": {
+    "validate_spec_doc": "PASS",
+    "magic_allocation_precheck": "PASS",
+    "git_diff_check": "PASS",
+    "strict_compile": "DEFERRED_GOVERNED_QUEUE",
+    "strict_compile_refusal_class": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+    "strict_compile_retry_attempted": false,
+    "strict_compile_log": "C:/QM/repo/framework/build/compile/20260905_012703/QM5_41192_xtixng-mdaily-hl-rv.compile.log",
+    "strict_compile_summary": "D:/QM/reports/compile/20260905_012703/summary.csv",
+    "ex5_exists": false,
+    "smoke_or_backtest_run": false
+  },
+  "governed_compile_handoff": {
+    "work_item_id": "93d4606c-4375-4ab9-844e-61f8adb6af58",
+    "status": "pending",
+    "mq5_sha256": "f17da32273967f364f00e37239f249a0f225a1fda6691365d45ee0f65458a11b",
+    "supersedes_source_stale_work_item_id": "0d00bf54-535c-4049-ad7f-fde0c6b13f12",
+    "activation_hold_code": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "hold_release_attempted": false,
+    "hold_release_reason": "Release is a fleet-wide reviewed-worker ceremony and is outside this one-EA unit."
+  },
+  "q02_handoff": {
+    "work_item_id": "06e46647-e8b6-4148-8d51-586cb8114acd",
+    "status": "pending",
+    "phase": "Q02",
+    "portfolio_scope": "basket",
+    "logical_symbol": "QM5_41192_XTI_XNG_MDAILY_HL_RV_D1",
+    "logical_setfile_path": "C:/QM/repo/framework/EAs/QM5_41192_xtixng-mdaily-hl-rv/sets/QM5_41192_xtixng-mdaily-hl-rv_QM5_41192_XTI_XNG_MDAILY_HL_RV_D1_D1_backtest.set",
+    "logical_setfile_sha256": "ec71135e05f7de648c3d37b5c36d1baaede967c2580a412a1e409df7ac6569a5",
+    "duplicate_q02_row_created": false,
+    "blocked_until": "governed current-source compile produces a canonical EX5"
+  },
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "deploy_or_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "pipeline_phase_executed": false,
+    "banned_indicators_or_ml_added": false
+  }
+}

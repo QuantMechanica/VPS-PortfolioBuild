@@ -592,6 +592,64 @@ bool Strategy_OpenLeg(const string symbol,
    const int slot = Strategy_SlotForSymbol(symbol);
    if(slot < 0 || lots <= 0.0 || stop <= 0.0)
       return false;
+
+   // Keep the on-chart XTI leg on the mandatory Trade Manager surface. Scale
+   // only its package risk share, then restore the full basket risk context
+   // before routing the foreign XNG leg through the basket helper.
+   if(symbol == _Symbol)
+     {
+      if(slot != qm_magic_slot_offset)
+         return false;
+      const double entry = QM_OrderTypeIsBuy(type)
+                           ? SymbolInfoDouble(symbol, SYMBOL_ASK)
+                           : SymbolInfoDouble(symbol, SYMBOL_BID);
+      const double point = SymbolInfoDouble(symbol, SYMBOL_POINT);
+      if(entry <= 0.0 || point <= 0.0)
+         return false;
+      const double stop_points = MathAbs(entry - stop) / point;
+      const double full_lots = QM_LotsForRisk(symbol, stop_points);
+      if(full_lots <= 0.0 || lots > full_lots + 1.0e-8)
+         return false;
+
+      QM_EntryRequest host_request;
+      host_request.type = type;
+      host_request.price = 0.0;
+      host_request.sl = stop;
+      host_request.tp = 0.0;
+      host_request.reason = "QM5_41192_XTIXNG_MDAILY_HL_RV";
+      host_request.symbol_slot = slot;
+      host_request.expiration_seconds = 0;
+
+      const QM_RiskMode prior_mode = g_qm_risk_mode;
+      const double prior_percent = g_qm_risk_percent;
+      const double prior_fixed = g_qm_risk_fixed;
+      const double prior_weight = g_qm_risk_portfolio_weight;
+      const double prior_cap = g_qm_risk_per_trade_cap_money;
+      const double host_weight = prior_weight * lots / full_lots;
+      if(host_weight <= 0.0 || host_weight > prior_weight + 1.0e-8 ||
+         !QM_RiskSizerConfigure(prior_mode,
+                                prior_percent,
+                                prior_fixed,
+                                host_weight,
+                                prior_cap))
+         return false;
+
+      ulong ticket = 0;
+      const bool opened = QM_TM_OpenPosition(host_request, ticket);
+      const bool restored = QM_RiskSizerConfigure(prior_mode,
+                                                   prior_percent,
+                                                   prior_fixed,
+                                                   prior_weight,
+                                                   prior_cap);
+      if(!restored)
+        {
+         if(opened)
+            Strategy_CloseAllOwned(QM_EXIT_STRATEGY);
+         return false;
+        }
+      return opened;
+     }
+
    QM_BasketOrderRequest request;
    request.symbol = symbol;
    request.type = type;
@@ -900,16 +958,15 @@ bool Strategy_DecisionClockReady(int &month_key,
       Strategy_DayKey(g_current_host_bar) != Strategy_DayKey(broker_now))
       return false;
 
-   month_key = Strategy_MonthKey(broker_now);
+   month_key = QM_CalendarPeriodKey(PERIOD_MN1, g_leg_xti, 0);
    if(month_key <= 0 ||
-      Strategy_MonthKey(g_current_host_bar) != month_key ||
       month_key == g_last_attempt_month_key)
       return false;
 
-   const datetime newest_completed =
-      iTime(g_leg_xti, PERIOD_D1, 1); // perf-allowed: one monthly decision-clock endpoint.
+   const int newest_completed_month =
+      QM_CalendarPeriodKey(PERIOD_MN1, g_leg_xti, 1);
    late = (!Strategy_WithinEntryGrace(broker_now) ||
-           Strategy_MonthKey(newest_completed) == month_key);
+           newest_completed_month == month_key);
    return true;
   }
 
@@ -1030,16 +1087,15 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 bool Strategy_PrimeLateSignalAttach()
   {
    const datetime broker_now = TimeCurrent();
-   const int month_key = Strategy_MonthKey(broker_now);
+   const int month_key =
+      QM_CalendarPeriodKey(PERIOD_MN1, g_leg_xti, 0);
    if(month_key <= 0 || g_current_host_bar <= 0)
       return false;
 
-   const datetime newest_completed =
-      iTime(g_leg_xti, PERIOD_D1, 1); // perf-allowed: restart month-boundary classification.
-   const int completed_month = Strategy_MonthKey(newest_completed);
+   const int completed_month =
+      QM_CalendarPeriodKey(PERIOD_MN1, g_leg_xti, 1);
    const bool on_time_boundary =
       (Strategy_DayKey(g_current_host_bar) == Strategy_DayKey(broker_now) &&
-       Strategy_MonthKey(g_current_host_bar) == month_key &&
        Strategy_WithinEntryGrace(broker_now) &&
        completed_month > 0 &&
        Strategy_NextMonthKey(completed_month) == month_key);

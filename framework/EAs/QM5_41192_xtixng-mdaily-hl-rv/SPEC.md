@@ -108,12 +108,13 @@ rounding tolerance. One aggregate `RISK_FIXED=1000` budget is split across the
 two legs using frozen `3.5*ATR(20,D1)` broker stops. Backtest presets lock
 `RISK_PERCENT=0` and `PORTFOLIO_WEIGHT=1`.
 
-XTI is submitted first and XNG second through the basket-order helper. If the
-companion leg fails or the final package is malformed, the EA immediately
-flattens owned exposure and does not retry that month. Stops are never widened
-or removed. The framework kill switch and account controls remain
-authoritative. News axes and Friday close are disabled because the approved
-card defines neither as an entry or exit rule.
+XTI is submitted first through the framework Trade Manager and XNG second
+through the foreign-symbol basket helper. If the companion leg fails or the
+final package is malformed, the EA immediately flattens owned exposure and
+does not retry that month. Stops are never widened or removed. The framework
+kill switch and account controls remain authoritative. News axes and Friday
+close are disabled because the approved card defines neither as an entry or
+exit rule.
 
 This is a Q01 build and Q02 research handoff only. It creates no live, demo,
 shadow, optimization, stress, deploy, or portfolio authorization. It does not
@@ -127,3 +128,4 @@ break-even move, partial exit, or discretionary input.
 |---|---|---|
 | v1 | 2026-08-29 | Initial OWNER-approved basket implementation |
 | v2 | 2026-08-29 | Align Q01 SPEC headings and identity marker with the current validator |
+| v3 | 2026-09-05 | Route the host leg and month cadence through canonical framework helpers |
