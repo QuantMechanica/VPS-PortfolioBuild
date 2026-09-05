@@ -1,0 +1,161 @@
+{
+  "aggregate_identity_sha256": "cf01d2f9db8f6c2c2f0b4661b719326b3e36db4b72961f3b3d88185edcb4684f",
+  "commission_basis": [
+    "venue_dxz_stream"
+  ],
+  "commission_model": "venue_cost_model.json[dxz] (DL-082 \u00a72)",
+  "commission_per_lot_round_trip_fallback": 7.0,
+  "commission_per_lot_used": 5.85,
+  "cost_variant": "dxz",
+  "ea": "QM5_11072_binario-ma-band",
+  "ea_id": 11072,
+  "evidence_key": "4e0079c8-3938-4da8-8094-a7adfe35b9da",
+  "evidence_leaf": "EURUSD.DWX__4e0079c8-3938-4da8-8094-a7adfe35b9da",
+  "evidence_schema": "q04_aggregate/v2",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11072_binario-ma-band\\QM5_11072_binario-ma-band.ex5",
+  "ex5_sha256": "49c608e38eb52c0f606102220227c06fe0e638cd199b184f2cad57bf9190f23f",
+  "fold_count": 3,
+  "folds": [
+    {
+      "commission_basis": "venue_dxz_stream",
+      "commission_per_lot_used": 5.85,
+      "cost_variant": "dxz",
+      "dev_end": "2022-12-31",
+      "dev_start": "2017-01-01",
+      "exit_code": 0,
+      "gross_total": -2553.97,
+      "id": "F1",
+      "invalid_reason": null,
+      "log_path": "D:\\QM\\reports\\work_items\\4e0079c8-3938-4da8-8094-a7adfe35b9da\\QM5_11072\\Q04\\EURUSD.DWX__4e0079c8-3938-4da8-8094-a7adfe35b9da\\F1\\run_smoke.log",
+      "oos_end": "2023-12-31",
+      "oos_start": "2023-01-01",
+      "pf_net": 0.5830524053697475,
+      "preflight": {
+        "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11072_binario-ma-band\\QM5_11072_binario-ma-band.ex5",
+        "ex5_sha256": "49c608e38eb52c0f606102220227c06fe0e638cd199b184f2cad57bf9190f23f",
+        "history_paths": [
+          "D:\\QM\\mt5\\T7\\Bases\\Custom\\history\\EURUSD.DWX\\2023.hcc"
+        ],
+        "history_symbols": [
+          "EURUSD.DWX"
+        ],
+        "history_years": [
+          2023,
+          2023
+        ],
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11072_binario-ma-band\\sets\\QM5_11072_binario-ma-band_EURUSD.DWX_D1_backtest.set",
+        "setfile_sha256": "4e2e49b66c61fcaf50b636bd9391c6adaed895d715ccb046639d912e4cb7b920"
+      },
+      "report_guard_reason": null,
+      "report_pf": 0.58,
+      "report_trades": 17,
+      "sim_commission_total": 82.62,
+      "source_report_path": "D:\\QM\\reports\\work_items\\4e0079c8-3938-4da8-8094-a7adfe35b9da\\QM5_11072\\20260729_041128\\raw\\run_01\\report.htm",
+      "source_report_sha256": "a68712515440beaff2f184a452f0cd2e6def08adec09c9088db65dd7b8936cec",
+      "source_summary_path": "D:\\QM\\reports\\work_items\\4e0079c8-3938-4da8-8094-a7adfe35b9da\\QM5_11072\\20260729_041128\\summary.json",
+      "source_summary_sha256": "00029aa7337b2781dd7912548ebc980b67d51b6bbb7cf070c8b1550adb2f2944",
+      "status": "OK",
+      "summary_path": "D:\\QM\\reports\\pipeline\\QM5_11072\\Q04\\EURUSD.DWX__4e0079c8-3938-4da8-8094-a7adfe35b9da\\folds\\F1\\summary.json",
+      "trades": 17,
+      "verdict_reason": "STRATEGY_PF_AT_OR_BELOW_FLOOR"
+    },
+    {
+      "commission_basis": "venue_dxz_stream",
+      "commission_per_lot_used": 5.85,
+      "cost_variant": "dxz",
+      "dev_end": "2023-12-31",
+      "dev_start": "2017-01-01",
+      "exit_code": 0,
+      "gross_total": -1599.48,
+      "id": "F2",
+      "invalid_reason": null,
+      "log_path": "D:\\QM\\reports\\work_items\\4e0079c8-3938-4da8-8094-a7adfe35b9da\\QM5_11072\\Q04\\EURUSD.DWX__4e0079c8-3938-4da8-8094-a7adfe35b9da\\F2\\run_smoke.log",
+      "oos_end": "2024-12-31",
+      "oos_start": "2024-01-01",
+      "pf_net": 0.7765051192785256,
+      "preflight": {
+        "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11072_binario-ma-band\\QM5_11072_binario-ma-band.ex5",
+        "ex5_sha256": "49c608e38eb52c0f606102220227c06fe0e638cd199b184f2cad57bf9190f23f",
+        "history_paths": [
+          "D:\\QM\\mt5\\T7\\Bases\\Custom\\history\\EURUSD.DWX\\2024.hcc"
+        ],
+        "history_symbols": [
+          "EURUSD.DWX"
+        ],
+        "history_years": [
+          2024,
+          2024
+        ],
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11072_binario-ma-band\\sets\\QM5_11072_binario-ma-band_EURUSD.DWX_D1_backtest.set",
+        "setfile_sha256": "4e2e49b66c61fcaf50b636bd9391c6adaed895d715ccb046639d912e4cb7b920"
+      },
+      "report_guard_reason": null,
+      "report_pf": 0.78,
+      "report_trades": 26,
+      "sim_commission_total": 161.9869,
+      "source_report_path": "D:\\QM\\reports\\work_items\\4e0079c8-3938-4da8-8094-a7adfe35b9da\\QM5_11072\\20260729_041325\\raw\\run_01\\report.htm",
+      "source_report_sha256": "f31d0c1dfb082b4aee49f504c6527299fdc0510acc0b9ae69351908cd3b0b2a0",
+      "source_summary_path": "D:\\QM\\reports\\work_items\\4e0079c8-3938-4da8-8094-a7adfe35b9da\\QM5_11072\\20260729_041325\\summary.json",
+      "source_summary_sha256": "87f95cc36ae33cb409f7728a60cea2f6d0fff5c8f4414abec4c5f2bb54057f16",
+      "status": "OK",
+      "summary_path": "D:\\QM\\reports\\pipeline\\QM5_11072\\Q04\\EURUSD.DWX__4e0079c8-3938-4da8-8094-a7adfe35b9da\\folds\\F2\\summary.json",
+      "trades": 26,
+      "verdict_reason": "STRATEGY_PF_AT_OR_BELOW_FLOOR"
+    },
+    {
+      "commission_basis": "venue_dxz_stream",
+      "commission_per_lot_used": 5.85,
+      "cost_variant": "dxz",
+      "dev_end": "2024-12-31",
+      "dev_start": "2017-01-01",
+      "exit_code": 1,
+      "gross_total": 1325.18,
+      "id": "F3",
+      "invalid_reason": null,
+      "log_path": "D:\\QM\\reports\\work_items\\4e0079c8-3938-4da8-8094-a7adfe35b9da\\QM5_11072\\Q04\\EURUSD.DWX__4e0079c8-3938-4da8-8094-a7adfe35b9da\\F3\\run_smoke.log",
+      "oos_end": "2025-12-31",
+      "oos_start": "2025-01-01",
+      "pf_net": 4.173415356506672,
+      "preflight": {
+        "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11072_binario-ma-band\\QM5_11072_binario-ma-band.ex5",
+        "ex5_sha256": "49c608e38eb52c0f606102220227c06fe0e638cd199b184f2cad57bf9190f23f",
+        "history_paths": [
+          "D:\\QM\\mt5\\T7\\Bases\\Custom\\history\\EURUSD.DWX\\2025.hcc"
+        ],
+        "history_symbols": [
+          "EURUSD.DWX"
+        ],
+        "history_years": [
+          2025,
+          2025
+        ],
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11072_binario-ma-band\\sets\\QM5_11072_binario-ma-band_EURUSD.DWX_D1_backtest.set",
+        "setfile_sha256": "4e2e49b66c61fcaf50b636bd9391c6adaed895d715ccb046639d912e4cb7b920"
+      },
+      "report_guard_reason": null,
+      "report_pf": 4.11,
+      "report_trades": 4,
+      "sim_commission_total": 21.796,
+      "source_report_path": "D:\\QM\\reports\\work_items\\4e0079c8-3938-4da8-8094-a7adfe35b9da\\QM5_11072\\20260729_041510\\raw\\run_01\\report.htm",
+      "source_report_sha256": "dba69b4e8428d87844755e4470b51c4b06f43faf11388bede710c86045d0ae31",
+      "source_summary_path": "D:\\QM\\reports\\work_items\\4e0079c8-3938-4da8-8094-a7adfe35b9da\\QM5_11072\\20260729_041510\\summary.json",
+      "source_summary_sha256": "fbeff3aa4ffeb85b2c008979800062addcf06f5293bd9ade25c32f8789bfafa4",
+      "status": "FAIL",
+      "summary_path": "D:\\QM\\reports\\pipeline\\QM5_11072\\Q04\\EURUSD.DWX__4e0079c8-3938-4da8-8094-a7adfe35b9da\\folds\\F3\\summary.json",
+      "trades": 4,
+      "verdict_reason": "STRATEGY_MIN_TRADES_NOT_MET"
+    }
+  ],
+  "generated_at_utc": "2026-07-29T04:16:59+00:00",
+  "lowfreq_reason": null,
+  "lowfreq_verdict": null,
+  "phase": "Q04",
+  "reason": "F1:pf_net=0.583;F2:pf_net=0.777;F3:pf_net=4.173",
+  "runner_symbol": "EURUSD.DWX",
+  "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11072_binario-ma-band\\sets\\QM5_11072_binario-ma-band_EURUSD.DWX_D1_backtest.set",
+  "setfile_sha256": "4e2e49b66c61fcaf50b636bd9391c6adaed895d715ccb046639d912e4cb7b920",
+  "source": "venue_cost_model.json 2026-07-19",
+  "symbol": "EURUSD.DWX",
+  "verdict": "FAIL",
+  "verdict_reason": "F1:pf_net=0.583;F2:pf_net=0.777;F3:pf_net=4.173"
+}

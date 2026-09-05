@@ -1,0 +1,228 @@
+{
+  "schema": "qm.evidence-recovery-forensics/v1",
+  "observed_at_utc": "2026-09-05T14:33:22.747587+00:00",
+  "counts": {
+    "RECOVERED_COPY": 27,
+    "REGENERATED": 0,
+    "IRRECOVERABLE": 129,
+    "STILL_UNEXPLAINED": 0
+  },
+  "verified_receipt_files": 155,
+  "source_content_hash_at_original_baseline": false,
+  "classification_by_current_rule": {
+    "AGE_OUT:IRRECOVERABLE": 3,
+    "KEEP:IRRECOVERABLE": 126,
+    "AGE_OUT:RECOVERED_COPY": 27
+  },
+  "no_in_place_writes": true,
+  "special_1328": {
+    "work_item_id": "312d2888-9381-4866-9701-ad99ccb611c3",
+    "ea_id": "QM5_1328",
+    "symbol": "EURJPY.DWX",
+    "original_path": "D:\\QM\\reports\\work_items\\312d2888-9381-4866-9701-ad99ccb611c3\\QM5_1328\\Q10\\EURJPY_DWX\\aggregate.json",
+    "within_156": false,
+    "current_rule_class": null,
+    "last_seen_literal_bound_utc": null,
+    "first_missing_literal_utc": null,
+    "original_parent_mtime_utc": "2026-08-31T15:20:39.576338+00:00",
+    "siblings": [
+      {
+        "path": "D:\\QM\\reports\\work_items\\312d2888-9381-4866-9701-ad99ccb611c3\\QM5_1328",
+        "is_file": false,
+        "mtime_utc": "2026-07-26T15:32:30.370673+00:00",
+        "ctime_utc": "2026-07-26T15:19:00.505324+00:00",
+        "size": null
+      },
+      {
+        "path": "D:\\QM\\reports\\work_items\\312d2888-9381-4866-9701-ad99ccb611c3\\QM5_1328\\20260726_151900",
+        "is_file": false,
+        "mtime_utc": "2026-08-31T15:20:39.575332+00:00",
+        "ctime_utc": "2026-07-26T15:19:00.505324+00:00",
+        "size": null
+      },
+      {
+        "path": "D:\\QM\\reports\\work_items\\312d2888-9381-4866-9701-ad99ccb611c3\\QM5_1328\\Q10",
+        "is_file": false,
+        "mtime_utc": "2026-07-26T15:32:30.370673+00:00",
+        "ctime_utc": "2026-07-26T15:32:30.370673+00:00",
+        "size": null
+      },
+      {
+        "path": "D:\\QM\\reports\\work_items\\312d2888-9381-4866-9701-ad99ccb611c3\\QM5_1328\\20260726_151900\\raw",
+        "is_file": false,
+        "mtime_utc": "2026-07-26T15:19:00.706849+00:00",
+        "ctime_utc": "2026-07-26T15:19:00.515350+00:00",
+        "size": null
+      },
+      {
+        "path": "D:\\QM\\reports\\work_items\\312d2888-9381-4866-9701-ad99ccb611c3\\QM5_1328\\20260726_151900\\raw\\run_01",
+        "is_file": false,
+        "mtime_utc": "2026-08-31T15:20:39.575332+00:00",
+        "ctime_utc": "2026-07-26T15:19:00.706849+00:00",
+        "size": null
+      },
+      {
+        "path": "D:\\QM\\reports\\work_items\\312d2888-9381-4866-9701-ad99ccb611c3\\QM5_1328\\Q10\\EURJPY_DWX",
+        "is_file": false,
+        "mtime_utc": "2026-08-31T15:20:39.576338+00:00",
+        "ctime_utc": "2026-07-26T15:32:30.370673+00:00",
+        "size": null
+      }
+    ],
+    "surviving_primary_files": 0,
+    "exact_target_events": [
+      {
+        "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0061_delete.json",
+        "exact_paths": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0061_delete_exact_paths.jsonl.gz",
+        "line": 400,
+        "batch_completed_at": "2026-08-31T15:21:09+00:00",
+        "batch_action": "DELETE_VIA_QUARANTINE",
+        "targets": [
+          "312d2888-9381-4866-9701-ad99ccb611c3"
+        ],
+        "entry": {
+          "detail": "verified_quarantine_then_unlink",
+          "disposition": "DELETE_NONRETAINED",
+          "inode": 1125899907390096,
+          "mtime_ns": 1787711024023799600,
+          "quarantine": "D:\\QM\\reports\\maintenance\\retention_quarantine_20260831T1506Z_4c0a5ae7_resume1\\D_REPORTS\\d6\\d68e3f4b3bd18ae491bf71719e58b11893aad10b645ccd8742425cdae49dce69.json.gz",
+          "quarantine_inode": 1125899907390096,
+          "relative": "work_items/312d2888-9381-4866-9701-ad99ccb611c3/QM5_1328/Q10/EURJPY_DWX/aggregate.json.gz",
+          "scope": "D_REPORTS",
+          "size": 1210,
+          "source": "D:\\QM\\reports\\work_items\\312d2888-9381-4866-9701-ad99ccb611c3\\QM5_1328\\Q10\\EURJPY_DWX\\aggregate.json.gz",
+          "status": "DELETED"
+        }
+      }
+    ],
+    "related_receipt_count": 4,
+    "other_identity_candidates": [],
+    "exact_purge_log_hits": [],
+    "classification": "IRRECOVERABLE",
+    "reason": "Exact target or its gzip copy has a verified DELETED receipt; all primary run inputs are absent and no exact-identity retained copy was located in the enumerated local sources. No deterministic aggregate reconstruction is possible from these inputs. This is a local-source finding, not a claim about unavailable backups or disk recovery.",
+    "strongest_cause": "OWNER_BACKUP_RETENTION_PHASE2_DELETE_NONRETAINED",
+    "deletion_completed_by_utc": "2026-08-31T15:21:09+00:00",
+    "deleted_representation": [
+      "gzip"
+    ],
+    "tester_cache_91_pair_guard_prevents_this_path": false,
+    "guard_reason": "The backup-retention executor uses its own classification and does not invoke tester_cache_purge_guard. Adding a pair to that separate guard does not protect this deletion path."
+  },
+  "special_13128": {
+    "work_item_id": "6f4fff24-3a6d-40e3-aaca-773b5195f6d2",
+    "ea_id": "QM5_13128",
+    "symbol": "NDX.DWX",
+    "original_path": "D:\\QM\\reports\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2\\QM5_13128\\Q08\\NDX_DWX\\aggregate.json",
+    "within_156": true,
+    "current_rule_class": "AGE_OUT",
+    "last_seen_literal_bound_utc": "2026-08-23T02:20:04Z",
+    "first_missing_literal_utc": "2026-08-24T02:20:03Z",
+    "original_parent_mtime_utc": "2026-08-23T12:23:17.264839+00:00",
+    "siblings": [
+      {
+        "path": "D:\\QM\\reports\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2\\QM5_13128",
+        "is_file": false,
+        "mtime_utc": "2026-07-18T23:30:06.463102+00:00",
+        "ctime_utc": "2026-07-18T23:30:06.463102+00:00",
+        "size": null
+      },
+      {
+        "path": "D:\\QM\\reports\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2\\QM5_13128\\Q08",
+        "is_file": false,
+        "mtime_utc": "2026-07-18T23:30:06.463102+00:00",
+        "ctime_utc": "2026-07-18T23:30:06.463102+00:00",
+        "size": null
+      },
+      {
+        "path": "D:\\QM\\reports\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2\\QM5_13128\\Q08\\NDX_DWX",
+        "is_file": false,
+        "mtime_utc": "2026-08-23T12:23:17.264839+00:00",
+        "ctime_utc": "2026-07-18T23:30:06.463102+00:00",
+        "size": null
+      }
+    ],
+    "surviving_primary_files": 0,
+    "exact_target_events": [
+      {
+        "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0064_compress.json",
+        "exact_paths": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0064_compress_exact_paths.jsonl.gz",
+        "line": 3249,
+        "batch_completed_at": "2026-08-31T15:21:24+00:00",
+        "batch_action": "NTFS_COMPRESS",
+        "targets": [
+          "6f4fff24-3a6d-40e3-aaca-773b5195f6d2"
+        ],
+        "entry": {
+          "allocated_after": 8192,
+          "allocated_before": 8192,
+          "detail": "already_ntfs_compressed",
+          "disposition": "COMPRESS_KEEP_COMPLETE_CHAIN",
+          "inode": 1125899908571721,
+          "mtime_ns": 1784417406464104800,
+          "relative": "retention_quarantine/20260823T122231Z/work_items/6f4fff24-3a6d-40e3-aaca-773b5195f6d2/QM5_13128/Q08/NDX_DWX/aggregate.json",
+          "scope": "C_RELOCATED",
+          "size": 9802,
+          "source": "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2\\QM5_13128\\Q08\\NDX_DWX\\aggregate.json",
+          "status": "COMPRESSED"
+        }
+      }
+    ],
+    "related_receipt_count": 12,
+    "other_identity_candidates": [
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2\\QM5_13128\\Q08\\NDX_DWX\\aggregate.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2\\QM5_13128\\Q08\\NDX_DWX\\8_9_runs_test.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2\\QM5_13128\\Q08\\NDX_DWX\\8_8_edge_decay.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2\\QM5_13128\\Q08\\NDX_DWX\\8_7_pbo.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2\\QM5_13128\\Q08\\NDX_DWX\\8_6_chopping_block.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2\\QM5_13128\\Q08\\NDX_DWX\\8_5_neighborhood.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2\\QM5_13128\\Q08\\NDX_DWX\\8_4_seasonal.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2\\QM5_13128\\Q08\\NDX_DWX\\8_3_tail_dependence.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2\\QM5_13128\\Q08\\NDX_DWX\\8_2_dsr_mc_fdr.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2\\QM5_13128\\Q08\\NDX_DWX\\8_1_correlation.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2\\QM5_13128\\Q08\\NDX_DWX\\8_11_mc_shuffle_dd.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2\\QM5_13128\\Q08\\NDX_DWX\\8_10_regime_crisis.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_repair\\QM5_13128\\Q08\\NDX_DWX\\aggregate.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_repair\\QM5_13128\\Q08\\NDX_DWX\\8_9_runs_test.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_repair\\QM5_13128\\Q08\\NDX_DWX\\8_8_edge_decay.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_repair\\QM5_13128\\Q08\\NDX_DWX\\8_7_pbo.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_repair\\QM5_13128\\Q08\\NDX_DWX\\8_6_chopping_block.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_repair\\QM5_13128\\Q08\\NDX_DWX\\8_5_neighborhood.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_repair\\QM5_13128\\Q08\\NDX_DWX\\8_4_seasonal.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_repair\\QM5_13128\\Q08\\NDX_DWX\\8_3_tail_dependence.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_repair\\QM5_13128\\Q08\\NDX_DWX\\8_2_dsr_mc_fdr.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_repair\\QM5_13128\\Q08\\NDX_DWX\\8_1_correlation.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_repair\\QM5_13128\\Q08\\NDX_DWX\\8_11_mc_shuffle_dd.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_repair\\QM5_13128\\Q08\\NDX_DWX\\8_10_regime_crisis.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_fullrepair\\QM5_13128\\Q08\\NDX_DWX\\aggregate.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_fullrepair\\QM5_13128\\Q08\\NDX_DWX\\8_9_runs_test.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_fullrepair\\QM5_13128\\Q08\\NDX_DWX\\8_8_edge_decay.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_fullrepair\\QM5_13128\\Q08\\NDX_DWX\\8_7_pbo.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_fullrepair\\QM5_13128\\Q08\\NDX_DWX\\8_6_chopping_block.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_fullrepair\\QM5_13128\\Q08\\NDX_DWX\\8_5_neighborhood.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_fullrepair\\QM5_13128\\Q08\\NDX_DWX\\8_4_seasonal.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_fullrepair\\QM5_13128\\Q08\\NDX_DWX\\8_3_tail_dependence.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_fullrepair\\QM5_13128\\Q08\\NDX_DWX\\8_2_dsr_mc_fdr.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_fullrepair\\QM5_13128\\Q08\\NDX_DWX\\8_1_correlation.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_fullrepair\\QM5_13128\\Q08\\NDX_DWX\\8_11_mc_shuffle_dd.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_fullrepair\\QM5_13128\\Q08\\NDX_DWX\\8_10_regime_crisis.json"
+    ],
+    "exact_purge_log_hits": [],
+    "classification": "RECOVERED_COPY",
+    "reason": "Relocated retained file found with receipt-bound path, logical size and NTFS identity; copied without changing source.",
+    "restoration": {
+      "source_path": "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2\\QM5_13128\\Q08\\NDX_DWX\\aggregate.json",
+      "source_sha256": "17ab2512bde3d95c661e560d435c3e883a4fac607de383733e9285ee2ba396cb",
+      "source_mtime_utc": "2026-07-18T23:30:06.464105+00:00",
+      "source_inode": 1125899908571721,
+      "receipt_inode_match": true,
+      "receipt_size_match": true,
+      "output_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_m05_recovery\\restored\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2\\aggregate.json",
+      "output_sha256": "17ab2512bde3d95c661e560d435c3e883a4fac607de383733e9285ee2ba396cb",
+      "original_pre_loss_content_hash": "not recorded",
+      "command": "python C:/QM/repo/docs/ops/evidence/2026-09-05_m05_recovery/recover.py"
+    },
+    "strongest_cause": "DL090_QUARANTINE_THEN_C_RELOCATION; data survived; original path became absent",
+    "tester_cache_91_pair_guard_prevents_this_path": false,
+    "guard_reason": "The backup-retention executor uses its own classification and does not invoke tester_cache_purge_guard. Adding a pair to that separate guard does not protect this deletion path."
+  }
+}

@@ -1,0 +1,158 @@
+{
+  "evidence_schema": "run_smoke/v2",
+  "timestamp_utc": "2026-07-24T21:40:29.4697136Z",
+  "run_tag": "20260724_213929",
+  "result": "FAIL",
+  "reason_classes": [
+    "MIN_TRADES_NOT_MET"
+  ],
+  "ea_id": 9404,
+  "ea_label": "QM5_9404",
+  "expert": "QM\\QM5_9404_chande-vr-rsi-mr-composite-h4",
+  "symbol": "GDAXI.DWX",
+  "year": 2022,
+  "requested_year": 2024,
+  "from_date": "2022.07.01",
+  "to_date": "2022.12.31",
+  "test_window": {
+    "from_date": "2022.07.01",
+    "to_date": "2022.12.31",
+    "source": "generated_tester_ini",
+    "tester_ini_files": [
+      {
+        "path": "D:\\QM\\reports\\work_items\\0c79372c-ab3b-40b6-8174-45a59aad7981\\QM5_9404\\20260724_213929\\raw\\run_01\\tester.ini",
+        "size_bytes": 478,
+        "sha256": "24c0a92670c584b7c82d4be838e688f1ab63db5cef88897da8fe7bb596810e66",
+        "expert": "QM\\QM5_9404_chande-vr-rsi-mr-composite-h4",
+        "expert_parameters": "QM5_9404_chande-vr-rsi-mr-composite-h4_GDAXI.DWX_H4_backtest.set",
+        "symbol": "GDAXI.DWX",
+        "period": "H4",
+        "model": 4,
+        "from_date": "2022.07.01",
+        "to_date": "2022.12.31",
+        "run": "run_01"
+      }
+    ]
+  },
+  "execution_identity": {
+    "expert_binary": {
+      "source": {
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_9404_chande-vr-rsi-mr-composite-h4\\QM5_9404_chande-vr-rsi-mr-composite-h4.ex5",
+        "size_bytes": 291942,
+        "sha256": "20b8892df1f70c1443b9d9a954faa66c6900abe6502febc44effc863dcdd8555",
+        "last_write_utc": "2026-07-01T06:32:44.0271831Z"
+      },
+      "deployed": {
+        "path": "D:\\QM\\mt5\\T8\\MQL5\\Experts\\QM\\QM5_9404_chande-vr-rsi-mr-composite-h4.ex5",
+        "size_bytes": 291942,
+        "sha256": "20b8892df1f70c1443b9d9a954faa66c6900abe6502febc44effc863dcdd8555",
+        "last_write_utc": "2026-07-01T06:32:44.0271831Z"
+      },
+      "source_matches_deployed": true,
+      "observed_after": {
+        "path": "D:\\QM\\mt5\\T8\\MQL5\\Experts\\QM\\QM5_9404_chande-vr-rsi-mr-composite-h4.ex5",
+        "size_bytes": 291942,
+        "sha256": "20b8892df1f70c1443b9d9a954faa66c6900abe6502febc44effc863dcdd8555",
+        "last_write_utc": "2026-07-01T06:32:44.0271831Z"
+      },
+      "stable_during_run": true
+    },
+    "mq5_source": {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_9404_chande-vr-rsi-mr-composite-h4\\QM5_9404_chande-vr-rsi-mr-composite-h4.mq5",
+      "size_bytes": 11413,
+      "sha256": "2cb1f65d119b9daa53273f8ec6aa223f7e2e6810899b4004f6b5be0d1e650d8a",
+      "last_write_utc": "2026-07-01T05:01:31.9333684Z"
+    },
+    "setfile": {
+      "source": {
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_9404_chande-vr-rsi-mr-composite-h4\\sets\\QM5_9404_chande-vr-rsi-mr-composite-h4_GDAXI.DWX_H4_backtest.set",
+        "size_bytes": 1601,
+        "sha256": "1aa9a168d6a656cba0c5aad802e342b6d105797a9543d29c5a0e5fad7fe2769f",
+        "last_write_utc": "2026-07-01T06:32:11.7265980Z"
+      },
+      "deployed": {
+        "path": "D:\\QM\\mt5\\T8\\MQL5\\Profiles\\Tester\\QM5_9404_chande-vr-rsi-mr-composite-h4_GDAXI.DWX_H4_backtest.set",
+        "size_bytes": 1601,
+        "sha256": "1aa9a168d6a656cba0c5aad802e342b6d105797a9543d29c5a0e5fad7fe2769f",
+        "last_write_utc": "2026-07-01T06:32:11.7265980Z"
+      },
+      "source_matches_deployed": true,
+      "observed_after": {
+        "path": "D:\\QM\\mt5\\T8\\MQL5\\Profiles\\Tester\\QM5_9404_chande-vr-rsi-mr-composite-h4_GDAXI.DWX_H4_backtest.set",
+        "size_bytes": 1601,
+        "sha256": "1aa9a168d6a656cba0c5aad802e342b6d105797a9543d29c5a0e5fad7fe2769f",
+        "last_write_utc": "2026-07-01T06:32:11.7265980Z"
+      },
+      "stable_during_run": true
+    },
+    "run_smoke": {
+      "path": "C:\\QM\\repo\\framework\\scripts\\run_smoke.ps1",
+      "size_bytes": 128169,
+      "sha256": "30e5b5363deb759b340bac1206b951674c562835a2fee9bacf69bd57262c1fb8",
+      "last_write_utc": "2026-07-24T12:44:44.5511290Z"
+    },
+    "stable_during_run": true
+  },
+  "terminal": "T8",
+  "model": 4,
+  "period": "H4",
+  "requested_runs": 1,
+  "max_run_attempts": 3,
+  "attempted_runs": 1,
+  "non_ok_attempts": 0,
+  "min_trades_required": 5,
+  "deterministic": true,
+  "oninit_failure_detected": false,
+  "log_bomb_detected": false,
+  "model4_log_marker_detected": true,
+  "report_dir": "D:\\QM\\reports\\work_items\\0c79372c-ab3b-40b6-8174-45a59aad7981\\QM5_9404\\20260724_213929",
+  "report_export_mode": "relative_with_absolute_fallback",
+  "logger_sample_path": null,
+  "logger_sample": null,
+  "commission_group": {
+    "commission_per_lot": 0.0,
+    "commission_per_side_native": 0.0,
+    "commission_matcher": null,
+    "commission_mode": null,
+    "injected_sha256": "25314333af81faf48e2afe2db5d52beea640cc74ec33a85a46b7c43aadb921dd",
+    "canonical_sha256": "25314333af81faf48e2afe2db5d52beea640cc74ec33a85a46b7c43aadb921dd",
+    "restored_sha256": "25314333af81faf48e2afe2db5d52beea640cc74ec33a85a46b7c43aadb921dd",
+    "restored_to_canonical": true
+  },
+  "news_calendar": {
+    "status": "OK",
+    "base_dir": "D:\\QM\\data\\news_calendar",
+    "primary_path": "D:\\QM\\data\\news_calendar\\news_calendar_2015_2025.csv",
+    "secondary_path": "D:\\QM\\data\\news_calendar\\forex_factory_calendar_clean.csv",
+    "missing_paths": [],
+    "latest_modified_utc": "2026-07-24T03:30:02.3073962Z",
+    "age_hours": 18,
+    "max_age_hours": 336
+  },
+  "runs": [
+    {
+      "run": "run_01",
+      "status": "OK",
+      "exit_code": 0,
+      "report_source_path": "D:\\QM\\mt5\\T8\\QM5_9404_GDAXI_DWX_20260724_213929_run_01.htm",
+      "report_canonical_path": "D:\\QM\\reports\\work_items\\0c79372c-ab3b-40b6-8174-45a59aad7981\\QM5_9404\\20260724_213929\\raw\\run_01\\report.htm",
+      "report_size_bytes": 33694,
+      "tester_log_path": "D:\\QM\\reports\\work_items\\0c79372c-ab3b-40b6-8174-45a59aad7981\\QM5_9404\\20260724_213929\\raw\\run_01\\20260724.log",
+      "oninit_failure": false,
+      "real_ticks_marker": true,
+      "total_trades": 0,
+      "total_trades_raw": "0",
+      "profit_factor": 0.0,
+      "profit_factor_raw": "0.00",
+      "drawdown": 0.0,
+      "drawdown_raw": "0.00 (0.00%)",
+      "net_profit": 0.0,
+      "net_profit_raw": "0.00",
+      "tester_ini_path": "D:\\QM\\reports\\work_items\\0c79372c-ab3b-40b6-8174-45a59aad7981\\QM5_9404\\20260724_213929\\raw\\run_01\\tester.ini",
+      "tester_ini_sha256": "24c0a92670c584b7c82d4be838e688f1ab63db5cef88897da8fe7bb596810e66",
+      "from_date": "2022.07.01",
+      "to_date": "2022.12.31",
+      "report_sha256": "20d0ee9d1063f49127593b5ccd7e7d97a4315ee16f5aef536550480f139b9a18"
+    }
+  ]
+}

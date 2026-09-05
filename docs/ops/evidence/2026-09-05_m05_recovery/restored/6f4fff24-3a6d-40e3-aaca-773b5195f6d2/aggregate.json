@@ -1,0 +1,335 @@
+{
+  "ea_id": 13128,
+  "symbol": "NDX.DWX",
+  "phase": "Q08",
+  "verdict": "FAIL_SOFT",
+  "verdict_classification": {
+    "8.1_correlation": "PASS",
+    "8.2_dsr_mc_fdr": "LOW_SAMPLE",
+    "8.3_tail_dependence": "PASS",
+    "8.4_seasonal": "EDGE_SOFT",
+    "8.5_neighborhood": "PASS",
+    "8.6_chopping_block": "PASS",
+    "8.7_pbo": "PASS",
+    "8.8_edge_decay": "PASS",
+    "8.9_runs_test": "PASS",
+    "8.10_regime_crisis": "PASS",
+    "8.11_mc_shuffle_dd": "PASS",
+    "cost_cushion": "PASS"
+  },
+  "verdict_calibration": {
+    "N_SEASON": 3,
+    "CHOP_SOFT": 0.9,
+    "PBO_HARD": 55.0,
+    "PBO_MIN_SPLITS": 10,
+    "PBO_HARD_CONFIG_SOURCE": "Q03",
+    "PBO_NEIGHBORHOOD_FALLBACK_MAX_TIER": "EDGE_SOFT",
+    "PBO_UNKNOWN_SOURCE_POLICY": "EDGE_HARD",
+    "EDGE_DECAY_HARD_PF_LAST": 1.2
+  },
+  "generated_at_utc": "2026-07-18T23:30:06.463102+00:00",
+  "n_trades": 57,
+  "n_equity_snapshots": 1922,
+  "commission_basis": "worst_case_dxz_ftmo",
+  "commission_model": {
+    "registry_path": "C:\\QM\\repo\\framework\\registry\\live_commission.json",
+    "default_class": "forex",
+    "degraded": false,
+    "degraded_symbols": [],
+    "unknown_symbols": []
+  },
+  "commission_total": 93.737691,
+  "gross_total": 4515.13,
+  "cost_cushion": 48.1677,
+  "cost_cushion_tier": "PASS",
+  "sub_gates": [
+    {
+      "name": "8.1_correlation",
+      "status": "PASS",
+      "passed": true,
+      "value": 0,
+      "threshold": 0.5,
+      "detail": "portfolio_empty_first_entry_trivial_pass",
+      "evidence": {
+        "portfolio_size": 0
+      }
+    },
+    {
+      "name": "8.2_dsr_mc_fdr",
+      "status": "INVALID",
+      "passed": false,
+      "value": 57,
+      "threshold": 60,
+      "detail": "insufficient_daily_returns:got=57:need>=60",
+      "evidence": {}
+    },
+    {
+      "name": "8.3_tail_dependence",
+      "status": "PASS",
+      "passed": true,
+      "value": 0,
+      "threshold": 0,
+      "detail": "no_portfolio_peers_trivial_pass",
+      "evidence": {
+        "portfolio_size": 0
+      }
+    },
+    {
+      "name": "8.4_seasonal",
+      "status": "FAIL",
+      "passed": false,
+      "value": 11,
+      "threshold": 12,
+      "detail": "months_with_no_trades:covered=11:need=12",
+      "evidence": {
+        "monthly_net": {
+          "9": 327.015623,
+          "12": 562.9238465000001,
+          "1": -143.82944700000004,
+          "3": 220.8688079999999,
+          "5": -185.08831799999996,
+          "6": 1049.5271260000002,
+          "7": 1215.8349805,
+          "10": -43.2654895,
+          "4": 263.0585689999999,
+          "11": 1108.5934035,
+          "2": 45.7532065
+        },
+        "trades_counted": 57
+      }
+    },
+    {
+      "name": "8.5_neighborhood",
+      "status": "PASS",
+      "passed": true,
+      "value": 3,
+      "threshold": 2,
+      "detail": "all_3_valid_perturbations_within_plateau:invalid_dropped=1",
+      "evidence": {
+        "baseline_pf": 2.29,
+        "baseline_dd": 1248.54,
+        "invalid_perturbations": [
+          {
+            "param": "strategy_entry_hour",
+            "delta": "+1step",
+            "pf": null,
+            "dd": null,
+            "trades": 0,
+            "reason": "summary_missing_or_identity_mismatch"
+          }
+        ],
+        "n_valid_perturbations": 3,
+        "n_invalid_perturbations": 1,
+        "n_perturbations_tested": 4
+      }
+    },
+    {
+      "name": "8.6_chopping_block",
+      "status": "PASS",
+      "passed": true,
+      "value": 1.9279,
+      "threshold": 1.0,
+      "detail": "pf_after_top5pct_removal=1.928:floor=1.0",
+      "evidence": {
+        "pf_full": 2.294943854325254,
+        "n_total": 57,
+        "n_removed": 2,
+        "trades_kept": 55
+      }
+    },
+    {
+      "name": "8.7_pbo",
+      "status": "PASS",
+      "passed": true,
+      "value": 20.0,
+      "threshold": 40.0,
+      "detail": "PBO=20.00%:max=40%:splits=35:overfit=7:source=Q08.5_neighborhood",
+      "evidence": {
+        "n_configs": 4,
+        "n_common_slices": 8,
+        "splits_evaluated": 35,
+        "overfit_splits": 7,
+        "scores_path": "D:\\QM\\reports\\pipeline\\QM5_13128\\Q08\\pbo\\NDX_DWX\\scores.csv",
+        "config_source": "Q08.5_neighborhood",
+        "q03_candidate_configs": 0,
+        "neighborhood_candidate_configs": 4
+      }
+    },
+    {
+      "name": "8.8_edge_decay",
+      "status": "PASS",
+      "passed": true,
+      "value": 0.73,
+      "threshold": 40.0,
+      "detail": "pf_decline_first=2.304_last=2.287_pct=0.7_mode=swing_half_vs_half",
+      "evidence": {
+        "pf_first": 2.3037,
+        "pf_last": 2.2868,
+        "decay_mode": "swing_half_vs_half",
+        "n_trades": 57,
+        "months_covered": 57,
+        "first_half_yyyymm": [
+          201809,
+          202205
+        ],
+        "second_half_yyyymm": [
+          202206,
+          202512
+        ]
+      }
+    },
+    {
+      "name": "8.9_runs_test",
+      "status": "PASS",
+      "passed": true,
+      "value": {
+        "runs_p_value": 0.31053,
+        "top_pct_share": 50.6
+      },
+      "threshold": {
+        "runs_p_min": 0.05,
+        "top_pct_max": 70.0
+      },
+      "detail": "runs_p=0.311>0.05;top20pct_share=50.6<70.0",
+      "evidence": {
+        "n_wins": 36,
+        "n_losses": 21,
+        "n_runs": 24,
+        "monthly_count": 57,
+        "top_n_months": 8
+      }
+    },
+    {
+      "name": "8.10_regime_crisis",
+      "status": "PASS",
+      "passed": true,
+      "value": {
+        "low": 788.26,
+        "normal": 2472.73,
+        "high": 955.82
+      },
+      "threshold": {
+        "low": ">0 P&L",
+        "normal": ">0 P&L",
+        "high": ">0 P&L"
+      },
+      "detail": "all_3_atr_regimes_profitable",
+      "evidence": {
+        "regime_pnl": {
+          "low": 788.26,
+          "normal": 2472.73,
+          "high": 955.82
+        },
+        "regime_count": {
+          "high": 14,
+          "low": 8,
+          "normal": 34
+        },
+        "unclassified_trades": 1,
+        "crisis_informational": {
+          "COVID_2020": {
+            "net": 374.11,
+            "trades": 1
+          },
+          "UKRAINE_2022": {
+            "net": 346.02,
+            "trades": 1
+          },
+          "INFLATION_2022": {
+            "net": 1396.99,
+            "trades": 8
+          }
+        }
+      }
+    },
+    {
+      "name": "8.11_mc_shuffle_dd",
+      "status": "PASS",
+      "passed": true,
+      "value": 1378.24,
+      "threshold": 10000.0,
+      "detail": "mc_maxdd_p95=1378.24:as_realized_maxdd=909.60:threshold=10000.00:ratio=1.515226:seed=8112026:permutations=1000",
+      "evidence": {
+        "method": "trade_order_shuffle_without_replacement",
+        "starting_capital": 100000.0,
+        "n_permutations": 1000,
+        "seed": 8112026,
+        "n_trades": 57,
+        "terminal_pnl": 4421.39,
+        "as_realized_maxdd": 909.6,
+        "as_realized_maxdd_pct": 0.9096,
+        "mc_maxdd_median": 863.0,
+        "mc_maxdd_median_pct": 0.863,
+        "mc_maxdd_p95": 1378.24,
+        "mc_maxdd_p95_pct": 1.3782,
+        "mc_maxdd_p95_over_as_realized_maxdd": 1.515226,
+        "threshold": 10000.0,
+        "threshold_pct": 10.0
+      }
+    }
+  ],
+  "sub_gate_input_runs": {
+    "8_5_neighborhood": {
+      "reused": true,
+      "artifact": "D:\\QM\\reports\\pipeline\\QM5_13128\\Q08\\neighborhood\\NDX_DWX\\perturbations.json",
+      "reuse_check": "exact_baseline_lineage_with_invalid_cells",
+      "artifact_reusable_after": true,
+      "reuse_check_after": "exact_baseline_lineage_with_invalid_cells"
+    },
+    "8_7_pbo": {
+      "exit_code": 0,
+      "artifact_now_exists": true,
+      "stdout_tail": "Q08.7 wrote 32 rows to D:\\QM\\reports\\pipeline\\QM5_13128\\Q08\\pbo\\NDX_DWX\\scores.csv; status=VALID source=Q08.5_neighborhood configs=4 common=8\n",
+      "stderr_tail": "Could not find platform independent libraries <prefix>\n",
+      "artifact_reusable_after": true,
+      "reuse_check_after": "fresh_current_lineage"
+    }
+  },
+  "baseline_run": {
+    "exit_code": 0,
+    "expert": "QM\\QM5_13128_pre-fomc-drift-ndx",
+    "period": "H1",
+    "test_symbol": "NDX.DWX",
+    "baseline_summary_path": "D:\\QM\\reports\\pipeline\\QM5_13128\\Q08\\_baseline\\QM5_13128\\20260718_231400\\summary.json",
+    "baseline_result": "PASS",
+    "baseline_reason_classes": [
+      "OK"
+    ],
+    "baseline_report_path": "D:\\QM\\reports\\pipeline\\QM5_13128\\Q08\\_baseline\\QM5_13128\\20260718_231400\\raw\\run_01\\report.htm",
+    "baseline_total_trades": 0,
+    "baseline_profit_factor": 0.0,
+    "structured_log_path": "D:\\QM\\mt5\\T5\\Tester\\Agent-127.0.0.1-3000\\MQL5\\Files\\QM\\QM5_13128_ea-13128.log"
+  },
+  "summary": {
+    "n_pass": 9,
+    "n_fail": 1,
+    "n_invalid": 1
+  },
+  "mc_shuffle_dd": {
+    "method": "trade_order_shuffle_without_replacement",
+    "starting_capital": 100000.0,
+    "n_permutations": 1000,
+    "seed": 8112026,
+    "n_trades": 57,
+    "terminal_pnl": 4421.39,
+    "as_realized_maxdd": 909.6,
+    "as_realized_maxdd_pct": 0.9096,
+    "mc_maxdd_median": 863.0,
+    "mc_maxdd_median_pct": 0.863,
+    "mc_maxdd_p95": 1378.24,
+    "mc_maxdd_p95_pct": 1.3782,
+    "mc_maxdd_p95_over_as_realized_maxdd": 1.515226,
+    "threshold": 10000.0,
+    "threshold_pct": 10.0
+  },
+  "mc_maxdd_p95": 1378.24,
+  "mc_maxdd_p95_pct": 1.3782,
+  "mc_maxdd_p95_over_as_realized_maxdd": 1.515226,
+  "portfolio_stream": {
+    "persisted": true,
+    "source": "common_copy",
+    "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13128_NDX_DWX.jsonl",
+    "n": 57,
+    "host_copy": null
+  }
+}

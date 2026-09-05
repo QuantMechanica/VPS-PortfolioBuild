@@ -1,0 +1,158 @@
+{
+  "evidence_schema": "run_smoke/v2",
+  "timestamp_utc": "2026-07-25T23:17:40.4832135Z",
+  "run_tag": "20260725_231549",
+  "result": "FAIL",
+  "reason_classes": [
+    "MIN_TRADES_NOT_MET"
+  ],
+  "ea_id": 9454,
+  "ea_label": "QM5_9454",
+  "expert": "QM\\QM5_9454_williams-pro-go-go-trigger-h4",
+  "symbol": "USDJPY.DWX",
+  "year": 2022,
+  "requested_year": 2024,
+  "from_date": "2022.07.01",
+  "to_date": "2022.12.31",
+  "test_window": {
+    "from_date": "2022.07.01",
+    "to_date": "2022.12.31",
+    "source": "generated_tester_ini",
+    "tester_ini_files": [
+      {
+        "path": "D:\\QM\\reports\\work_items\\c733b18d-17f0-424b-9374-51250130f259\\QM5_9454\\20260725_231549\\raw\\run_01\\tester.ini",
+        "size_bytes": 481,
+        "sha256": "572070498827ae3fe815bfa13a40ede4f6a81aae357e7bb1607240a5640e4415",
+        "expert": "QM\\QM5_9454_williams-pro-go-go-trigger-h4",
+        "expert_parameters": "QM5_9454_williams-pro-go-go-trigger-h4_USDJPY.DWX_H4_backtest.set",
+        "symbol": "USDJPY.DWX",
+        "period": "H4",
+        "model": 4,
+        "from_date": "2022.07.01",
+        "to_date": "2022.12.31",
+        "run": "run_01"
+      }
+    ]
+  },
+  "execution_identity": {
+    "expert_binary": {
+      "source": {
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_9454_williams-pro-go-go-trigger-h4\\QM5_9454_williams-pro-go-go-trigger-h4.ex5",
+        "size_bytes": 278856,
+        "sha256": "587362c8c6ff128b569e2667a941e272e7a869e4feac7a51422ccd9507623443",
+        "last_write_utc": "2026-06-23T18:49:09.4326827Z"
+      },
+      "deployed": {
+        "path": "D:\\QM\\mt5\\T8\\MQL5\\Experts\\QM\\QM5_9454_williams-pro-go-go-trigger-h4.ex5",
+        "size_bytes": 278856,
+        "sha256": "587362c8c6ff128b569e2667a941e272e7a869e4feac7a51422ccd9507623443",
+        "last_write_utc": "2026-06-23T18:49:09.4326827Z"
+      },
+      "source_matches_deployed": true,
+      "observed_after": {
+        "path": "D:\\QM\\mt5\\T8\\MQL5\\Experts\\QM\\QM5_9454_williams-pro-go-go-trigger-h4.ex5",
+        "size_bytes": 278856,
+        "sha256": "587362c8c6ff128b569e2667a941e272e7a869e4feac7a51422ccd9507623443",
+        "last_write_utc": "2026-06-23T18:49:09.4326827Z"
+      },
+      "stable_during_run": true
+    },
+    "mq5_source": {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_9454_williams-pro-go-go-trigger-h4\\QM5_9454_williams-pro-go-go-trigger-h4.mq5",
+      "size_bytes": 11218,
+      "sha256": "d0682b8e4e3d0124f2ec35d710275e824a81060a2103d765671f4ab860308a4e",
+      "last_write_utc": "2026-06-23T18:12:36.7207728Z"
+    },
+    "setfile": {
+      "source": {
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_9454_williams-pro-go-go-trigger-h4\\sets\\QM5_9454_williams-pro-go-go-trigger-h4_USDJPY.DWX_H4_backtest.set",
+        "size_bytes": 1179,
+        "sha256": "bd139a5cdcae77f4eed370b2caf369518ecc9c526f7b8651a7e9e7014e8c0a78",
+        "last_write_utc": "2026-06-23T18:49:13.8652398Z"
+      },
+      "deployed": {
+        "path": "D:\\QM\\mt5\\T8\\MQL5\\Profiles\\Tester\\QM5_9454_williams-pro-go-go-trigger-h4_USDJPY.DWX_H4_backtest.set",
+        "size_bytes": 1179,
+        "sha256": "bd139a5cdcae77f4eed370b2caf369518ecc9c526f7b8651a7e9e7014e8c0a78",
+        "last_write_utc": "2026-06-23T18:49:13.8652398Z"
+      },
+      "source_matches_deployed": true,
+      "observed_after": {
+        "path": "D:\\QM\\mt5\\T8\\MQL5\\Profiles\\Tester\\QM5_9454_williams-pro-go-go-trigger-h4_USDJPY.DWX_H4_backtest.set",
+        "size_bytes": 1179,
+        "sha256": "bd139a5cdcae77f4eed370b2caf369518ecc9c526f7b8651a7e9e7014e8c0a78",
+        "last_write_utc": "2026-06-23T18:49:13.8652398Z"
+      },
+      "stable_during_run": true
+    },
+    "run_smoke": {
+      "path": "C:\\QM\\repo\\framework\\scripts\\run_smoke.ps1",
+      "size_bytes": 128169,
+      "sha256": "30e5b5363deb759b340bac1206b951674c562835a2fee9bacf69bd57262c1fb8",
+      "last_write_utc": "2026-07-24T12:44:44.5511290Z"
+    },
+    "stable_during_run": true
+  },
+  "terminal": "T8",
+  "model": 4,
+  "period": "H4",
+  "requested_runs": 1,
+  "max_run_attempts": 3,
+  "attempted_runs": 1,
+  "non_ok_attempts": 0,
+  "min_trades_required": 5,
+  "deterministic": true,
+  "oninit_failure_detected": false,
+  "log_bomb_detected": false,
+  "model4_log_marker_detected": true,
+  "report_dir": "D:\\QM\\reports\\work_items\\c733b18d-17f0-424b-9374-51250130f259\\QM5_9454\\20260725_231549",
+  "report_export_mode": "relative_with_absolute_fallback",
+  "logger_sample_path": null,
+  "logger_sample": null,
+  "commission_group": {
+    "commission_per_lot": 0.0,
+    "commission_per_side_native": 0.0,
+    "commission_matcher": null,
+    "commission_mode": null,
+    "injected_sha256": "25314333af81faf48e2afe2db5d52beea640cc74ec33a85a46b7c43aadb921dd",
+    "canonical_sha256": "25314333af81faf48e2afe2db5d52beea640cc74ec33a85a46b7c43aadb921dd",
+    "restored_sha256": "25314333af81faf48e2afe2db5d52beea640cc74ec33a85a46b7c43aadb921dd",
+    "restored_to_canonical": true
+  },
+  "news_calendar": {
+    "status": "OK",
+    "base_dir": "D:\\QM\\data\\news_calendar",
+    "primary_path": "D:\\QM\\data\\news_calendar\\news_calendar_2015_2025.csv",
+    "secondary_path": "D:\\QM\\data\\news_calendar\\forex_factory_calendar_clean.csv",
+    "missing_paths": [],
+    "latest_modified_utc": "2026-07-25T03:30:02.5355486Z",
+    "age_hours": 19,
+    "max_age_hours": 336
+  },
+  "runs": [
+    {
+      "run": "run_01",
+      "status": "OK",
+      "exit_code": 0,
+      "report_source_path": "D:\\QM\\mt5\\T8\\QM5_9454_USDJPY_DWX_20260725_231549_run_01.htm",
+      "report_canonical_path": "D:\\QM\\reports\\work_items\\c733b18d-17f0-424b-9374-51250130f259\\QM5_9454\\20260725_231549\\raw\\run_01\\report.htm",
+      "report_size_bytes": 34602,
+      "tester_log_path": "D:\\QM\\reports\\work_items\\c733b18d-17f0-424b-9374-51250130f259\\QM5_9454\\20260725_231549\\raw\\run_01\\20260726.log",
+      "oninit_failure": false,
+      "real_ticks_marker": true,
+      "total_trades": 1,
+      "total_trades_raw": "1",
+      "profit_factor": 0.0,
+      "profit_factor_raw": "0.00",
+      "drawdown": 355.81,
+      "drawdown_raw": "355.81 (0.36%)",
+      "net_profit": -143.12,
+      "net_profit_raw": "-143.12",
+      "tester_ini_path": "D:\\QM\\reports\\work_items\\c733b18d-17f0-424b-9374-51250130f259\\QM5_9454\\20260725_231549\\raw\\run_01\\tester.ini",
+      "tester_ini_sha256": "572070498827ae3fe815bfa13a40ede4f6a81aae357e7bb1607240a5640e4415",
+      "from_date": "2022.07.01",
+      "to_date": "2022.12.31",
+      "report_sha256": "9271c4efc568f8d0965ecbf6048e39736f9bcb47a84f30d5e8bdd0586f953b15"
+    }
+  ]
+}

@@ -1,0 +1,161 @@
+{
+  "evidence_schema": "run_smoke/v2",
+  "timestamp_utc": "2026-07-28T21:48:59.8527247Z",
+  "run_tag": "20260728_214434",
+  "result": "FAIL",
+  "reason_classes": [
+    "MIN_TRADES_NOT_MET"
+  ],
+  "ea_id": 10281,
+  "ea_label": "QM5_10281",
+  "expert": "QM\\QM5_10281_jstm-shootstar",
+  "symbol": "NDX.DWX",
+  "year": null,
+  "requested_year": 2024,
+  "from_date": "2021.01.01",
+  "to_date": "2022.12.31",
+  "test_window": {
+    "from_date": "2021.01.01",
+    "to_date": "2022.12.31",
+    "source": "generated_tester_ini",
+    "tester_ini_files": [
+      {
+        "path": "D:\\QM\\reports\\work_items\\26e48fb7-cff7-422a-8215-ac8481ffbecc\\QM5_10281\\20260728_214434\\raw\\run_01\\tester.ini",
+        "size_bytes": 445,
+        "sha256": "7dffe8b043b2044abe0c1985ed06112e49f8a246b667733a2d042efa8367250c",
+        "expert": "QM\\QM5_10281_jstm-shootstar",
+        "expert_parameters": "QM5_10281_jstm-shootstar_NDX.DWX_D1_backtest.set",
+        "symbol": "NDX.DWX",
+        "period": "D1",
+        "model": 4,
+        "from_date": "2021.01.01",
+        "to_date": "2022.12.31",
+        "run": "run_01"
+      }
+    ]
+  },
+  "execution_identity": {
+    "expert_binary": {
+      "source": {
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10281_jstm-shootstar\\QM5_10281_jstm-shootstar.ex5",
+        "size_bytes": 218886,
+        "sha256": "4935653a97a4e4dae9626fb23682376a0c550a94b0e80ed92627c7be852ee91e",
+        "last_write_utc": "2026-06-12T03:41:14.8240196Z"
+      },
+      "deployed": {
+        "path": "D:\\QM\\mt5\\T6\\MQL5\\Experts\\QM\\QM5_10281_jstm-shootstar.ex5",
+        "size_bytes": 218886,
+        "sha256": "4935653a97a4e4dae9626fb23682376a0c550a94b0e80ed92627c7be852ee91e",
+        "last_write_utc": "2026-06-12T03:41:14.8240196Z"
+      },
+      "source_matches_deployed": true,
+      "observed_after": {
+        "path": "D:\\QM\\mt5\\T6\\MQL5\\Experts\\QM\\QM5_10281_jstm-shootstar.ex5",
+        "size_bytes": 218886,
+        "sha256": "4935653a97a4e4dae9626fb23682376a0c550a94b0e80ed92627c7be852ee91e",
+        "last_write_utc": "2026-06-12T03:41:14.8240196Z"
+      },
+      "stable_during_run": true
+    },
+    "mq5_source": {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10281_jstm-shootstar\\QM5_10281_jstm-shootstar.mq5",
+      "size_bytes": 14376,
+      "sha256": "d393c4f4c2868f4e25b42b84680f2eac7162f36b56bb8a8e27d4f3e861cbb5fb",
+      "last_write_utc": "2026-06-12T03:40:00.7437072Z"
+    },
+    "setfile": {
+      "source": {
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10281_jstm-shootstar\\sets\\QM5_10281_jstm-shootstar_NDX.DWX_D1_backtest.set",
+        "size_bytes": 902,
+        "sha256": "51165d984227b667153c0cf618b6889b4ff8f34af879c17c6800b5a6a6b9418d",
+        "last_write_utc": "2026-07-03T05:25:28.6700752Z"
+      },
+      "deployed": {
+        "path": "D:\\QM\\mt5\\T6\\MQL5\\Profiles\\Tester\\QM5_10281_jstm-shootstar_NDX.DWX_D1_backtest.set",
+        "size_bytes": 902,
+        "sha256": "51165d984227b667153c0cf618b6889b4ff8f34af879c17c6800b5a6a6b9418d",
+        "last_write_utc": "2026-07-03T05:25:28.6700752Z"
+      },
+      "source_matches_deployed": true,
+      "observed_after": {
+        "path": "D:\\QM\\mt5\\T6\\MQL5\\Profiles\\Tester\\QM5_10281_jstm-shootstar_NDX.DWX_D1_backtest.set",
+        "size_bytes": 902,
+        "sha256": "51165d984227b667153c0cf618b6889b4ff8f34af879c17c6800b5a6a6b9418d",
+        "last_write_utc": "2026-07-03T05:25:28.6700752Z"
+      },
+      "stable_during_run": true
+    },
+    "run_smoke": {
+      "path": "C:\\QM\\repo\\framework\\scripts\\run_smoke.ps1",
+      "size_bytes": 129967,
+      "sha256": "c08a5d219aad37135ebc17b477f770fb147dc589f992da8ef27c26acf1a5ef2d",
+      "last_write_utc": "2026-07-28T10:14:18.0646489Z"
+    },
+    "stable_during_run": true
+  },
+  "terminal": "T6",
+  "model": 4,
+  "period": "D1",
+  "requested_runs": 1,
+  "max_run_attempts": 3,
+  "attempted_runs": 1,
+  "non_ok_attempts": 0,
+  "min_trades_required": 10,
+  "deterministic": true,
+  "oninit_failure_detected": false,
+  "log_bomb_detected": false,
+  "model4_log_marker_detected": true,
+  "report_dir": "D:\\QM\\reports\\work_items\\26e48fb7-cff7-422a-8215-ac8481ffbecc\\QM5_10281\\20260728_214434",
+  "report_export_mode": "relative_with_absolute_fallback",
+  "logger_sample_path": null,
+  "logger_sample": null,
+  "commission_group": {
+    "commission_per_lot": 0.0,
+    "commission_per_side_native": 0.0,
+    "commission_matcher": null,
+    "commission_mode": null,
+    "injected_sha256": "25314333af81faf48e2afe2db5d52beea640cc74ec33a85a46b7c43aadb921dd",
+    "canonical_sha256": "25314333af81faf48e2afe2db5d52beea640cc74ec33a85a46b7c43aadb921dd",
+    "restored_sha256": "25314333af81faf48e2afe2db5d52beea640cc74ec33a85a46b7c43aadb921dd",
+    "restored_to_canonical": true
+  },
+  "news_calendar": {
+    "status": "OK",
+    "source_dir": "D:\\QM\\data\\news_calendar",
+    "common_dir": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files",
+    "primary_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\news_calendar_2015_2025.csv",
+    "secondary_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\forex_factory_calendar_clean.csv",
+    "missing_source_paths": [],
+    "missing_common_paths": [],
+    "mismatches": [],
+    "latest_modified_utc": "2026-07-28T03:30:05.2491509Z",
+    "age_hours": 18,
+    "max_age_hours": 336
+  },
+  "runs": [
+    {
+      "run": "run_01",
+      "status": "OK",
+      "exit_code": 0,
+      "report_source_path": "D:\\QM\\mt5\\T6\\QM5_10281_NDX_DWX_20260728_214434_run_01.htm",
+      "report_canonical_path": "D:\\QM\\reports\\work_items\\26e48fb7-cff7-422a-8215-ac8481ffbecc\\QM5_10281\\20260728_214434\\raw\\run_01\\report.htm",
+      "report_size_bytes": 31566,
+      "tester_log_path": "D:\\QM\\reports\\work_items\\26e48fb7-cff7-422a-8215-ac8481ffbecc\\QM5_10281\\20260728_214434\\raw\\run_01\\20260728.log",
+      "oninit_failure": false,
+      "real_ticks_marker": true,
+      "total_trades": 0,
+      "total_trades_raw": "0",
+      "profit_factor": 0.0,
+      "profit_factor_raw": "0.00",
+      "drawdown": 0.0,
+      "drawdown_raw": "0.00 (0.00%)",
+      "net_profit": 0.0,
+      "net_profit_raw": "0.00",
+      "tester_ini_path": "D:\\QM\\reports\\work_items\\26e48fb7-cff7-422a-8215-ac8481ffbecc\\QM5_10281\\20260728_214434\\raw\\run_01\\tester.ini",
+      "tester_ini_sha256": "7dffe8b043b2044abe0c1985ed06112e49f8a246b667733a2d042efa8367250c",
+      "from_date": "2021.01.01",
+      "to_date": "2022.12.31",
+      "report_sha256": "9d7cf094b3e57b624c92185234f33db88dfb989d9da0b063c137b5c62852d210"
+    }
+  ]
+}

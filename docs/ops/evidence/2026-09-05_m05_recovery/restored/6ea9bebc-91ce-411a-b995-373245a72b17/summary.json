@@ -1,0 +1,70 @@
+{
+  "timestamp_utc": "2026-07-21T23:08:39.6785718Z",
+  "run_tag": "20260721_230107",
+  "result": "FAIL",
+  "reason_classes": [
+    "MIN_TRADES_NOT_MET"
+  ],
+  "ea_id": 12977,
+  "ea_label": "QM5_12977",
+  "expert": "QM\\QM5_12977_wti-propane-draw",
+  "symbol": "XTIUSD.DWX",
+  "year": 2024,
+  "terminal": "T7",
+  "model": 4,
+  "period": "D1",
+  "requested_runs": 1,
+  "max_run_attempts": 3,
+  "attempted_runs": 1,
+  "non_ok_attempts": 0,
+  "min_trades_required": 25,
+  "deterministic": true,
+  "oninit_failure_detected": false,
+  "log_bomb_detected": false,
+  "model4_log_marker_detected": true,
+  "report_dir": "D:\\QM\\reports\\work_items\\6ea9bebc-91ce-411a-b995-373245a72b17\\QM5_12977\\20260721_230107",
+  "report_export_mode": "relative_with_absolute_fallback",
+  "logger_sample_path": null,
+  "logger_sample": null,
+  "commission_group": {
+    "commission_per_lot": 0.0,
+    "commission_per_side_native": 0.0,
+    "commission_matcher": null,
+    "commission_mode": null,
+    "injected_sha256": "25314333af81faf48e2afe2db5d52beea640cc74ec33a85a46b7c43aadb921dd",
+    "canonical_sha256": "25314333af81faf48e2afe2db5d52beea640cc74ec33a85a46b7c43aadb921dd",
+    "restored_sha256": "25314333af81faf48e2afe2db5d52beea640cc74ec33a85a46b7c43aadb921dd",
+    "restored_to_canonical": true
+  },
+  "news_calendar": {
+    "status": "OK",
+    "base_dir": "D:\\QM\\data\\news_calendar",
+    "primary_path": "D:\\QM\\data\\news_calendar\\news_calendar_2015_2025.csv",
+    "secondary_path": "D:\\QM\\data\\news_calendar\\forex_factory_calendar_clean.csv",
+    "missing_paths": [],
+    "latest_modified_utc": "2026-07-21T03:30:01.4477447Z",
+    "age_hours": 19,
+    "max_age_hours": 336
+  },
+  "runs": [
+    {
+      "run": "run_01",
+      "status": "OK",
+      "exit_code": 0,
+      "report_source_path": "D:\\QM\\mt5\\T7\\QM5_12977_XTIUSD_DWX_20260721_230107_run_01.htm",
+      "report_canonical_path": "D:\\QM\\reports\\work_items\\6ea9bebc-91ce-411a-b995-373245a72b17\\QM5_12977\\20260721_230107\\raw\\run_01\\report.htm",
+      "report_size_bytes": 36118,
+      "tester_log_path": "D:\\QM\\reports\\work_items\\6ea9bebc-91ce-411a-b995-373245a72b17\\QM5_12977\\20260721_230107\\raw\\run_01\\20260722.log",
+      "oninit_failure": false,
+      "real_ticks_marker": true,
+      "total_trades": 1,
+      "total_trades_raw": "1",
+      "profit_factor": 0.0,
+      "profit_factor_raw": "0.00",
+      "drawdown": 642.4,
+      "drawdown_raw": "642.40 (0.64%)",
+      "net_profit": -180.42,
+      "net_profit_raw": "-180.42"
+    }
+  ]
+}

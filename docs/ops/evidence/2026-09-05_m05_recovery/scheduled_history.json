@@ -1,0 +1,60 @@
+{
+  "event_log_coverage": [
+    {
+      "log": "Microsoft-Windows-TaskScheduler/Operational",
+      "oldest_retained_utc": "2026-09-05T05:40:02.0008450Z",
+      "records": 19095,
+      "enabled": true
+    },
+    {
+      "log": "Microsoft-Windows-PowerShell/Operational",
+      "oldest_retained_utc": "2026-09-05T14:28:09.9991532Z",
+      "records": 594,
+      "enabled": true
+    }
+  ],
+  "tasks": [
+    {
+      "task": "QM_EvidenceCohortWatch_Daily_0420",
+      "execute": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+      "arguments": "\"C:\\QM\\repo\\tools\\strategy_farm\\evidence_cohort_watch.py\"",
+      "last_run": "2026-09-05T02:20:20.0000000Z",
+      "last_result": 3,
+      "state": "Ready"
+    },
+    {
+      "task": "QM_StrategyFarm_ContinuousRetention_45min",
+      "execute": "C:\\Python311\\python.exe",
+      "arguments": "\"C:\\QM\\repo\\tools\\strategy_farm\\continuous_retention_runner.py\" --apply",
+      "last_run": "2026-09-05T14:19:19.0000000Z",
+      "last_result": 0,
+      "state": "Ready"
+    },
+    {
+      "task": "QM_StrategyFarm_ReportRetention_Daily",
+      "execute": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+      "arguments": "\"C:\\QM\\repo\\tools\\strategy_farm\\report_retention.py\" --apply",
+      "last_run": "2026-09-05T02:20:20.0000000Z",
+      "last_result": 0,
+      "state": "Ready"
+    },
+    {
+      "task": "QM_StrategyFarm_ReportsLogPurge_12h",
+      "execute": "powershell.exe",
+      "arguments": "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File \"C:\\QM\\repo\\tools\\strategy_farm\\reports_log_purge.ps1\" -RetentionHours 12 -MaxTreeGB 8",
+      "last_run": "2026-09-05T14:17:17.0000000Z",
+      "last_result": 0,
+      "state": "Ready"
+    },
+    {
+      "task": "QM_StrategyFarm_TesterCachePurge",
+      "execute": "powershell.exe",
+      "arguments": "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File \"C:\\QM\\repo\\tools\\strategy_farm\\tester_cache_purge.ps1\" -LowWaterGB 60",
+      "last_run": "2026-09-05T14:30:30.0000000Z",
+      "last_result": 0,
+      "state": "Ready"
+    }
+  ],
+  "matching_retention_events_in_window": 0,
+  "examined_window": "2026-08-31 15:10..15:30 UTC"
+}

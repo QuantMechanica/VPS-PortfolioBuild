@@ -1,0 +1,58 @@
+{
+  "timestamp_utc": "2026-07-18T22:50:17.0570432Z",
+  "run_tag": "20260718_224839",
+  "result": "FAIL",
+  "reason_classes": [
+    "MIN_TRADES_NOT_MET"
+  ],
+  "ea_id": 10854,
+  "ea_label": "QM5_10854",
+  "expert": "QM\\QM5_10854_tv-liq-entry",
+  "symbol": "GDAXI.DWX",
+  "year": 2024,
+  "terminal": "T6",
+  "model": 4,
+  "period": "M5",
+  "requested_runs": 1,
+  "max_run_attempts": 3,
+  "attempted_runs": 1,
+  "non_ok_attempts": 0,
+  "min_trades_required": 15,
+  "deterministic": true,
+  "oninit_failure_detected": false,
+  "log_bomb_detected": false,
+  "model4_log_marker_detected": true,
+  "report_dir": "D:\\QM\\reports\\work_items\\40e9d58d-bcb8-45bd-a294-4270d74c9440\\QM5_10854\\20260718_224839",
+  "report_export_mode": "relative_with_absolute_fallback",
+  "news_calendar": {
+    "status": "OK",
+    "base_dir": "D:\\QM\\data\\news_calendar",
+    "primary_path": "D:\\QM\\data\\news_calendar\\news_calendar_2015_2025.csv",
+    "secondary_path": "D:\\QM\\data\\news_calendar\\forex_factory_calendar_clean.csv",
+    "missing_paths": [],
+    "latest_modified_utc": "2026-07-18T03:30:02.0260396Z",
+    "age_hours": 19,
+    "max_age_hours": 336
+  },
+  "runs": [
+    {
+      "run": "run_01",
+      "status": "OK",
+      "exit_code": 0,
+      "report_source_path": "D:\\QM\\mt5\\T6\\QM5_10854_GDAXI_DWX_20260718_224839_run_01.htm",
+      "report_canonical_path": "D:\\QM\\reports\\work_items\\40e9d58d-bcb8-45bd-a294-4270d74c9440\\QM5_10854\\20260718_224839\\raw\\run_01\\report.htm",
+      "report_size_bytes": 35170,
+      "tester_log_path": "D:\\QM\\reports\\work_items\\40e9d58d-bcb8-45bd-a294-4270d74c9440\\QM5_10854\\20260718_224839\\raw\\run_01\\20260719.log",
+      "oninit_failure": false,
+      "real_ticks_marker": true,
+      "total_trades": 0,
+      "total_trades_raw": "0",
+      "profit_factor": 0.0,
+      "profit_factor_raw": "0.00",
+      "drawdown": 0.0,
+      "drawdown_raw": "0.00 (0.00%)",
+      "net_profit": 0.0,
+      "net_profit_raw": "0.00"
+    }
+  ]
+}

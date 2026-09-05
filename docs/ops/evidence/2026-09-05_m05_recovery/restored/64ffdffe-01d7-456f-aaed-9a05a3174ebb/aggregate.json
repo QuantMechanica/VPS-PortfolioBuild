@@ -1,0 +1,350 @@
+{
+  "ea_id": 9403,
+  "symbol": "GDAXI.DWX",
+  "phase": "Q08",
+  "verdict": "FAIL_SOFT",
+  "verdict_classification": {
+    "8.1_correlation": "PASS",
+    "8.2_dsr_mc_fdr": "PASS",
+    "8.3_tail_dependence": "PASS",
+    "8.4_seasonal": "EDGE_SOFT",
+    "8.5_neighborhood": "PASS",
+    "8.6_chopping_block": "EDGE_SOFT",
+    "8.7_pbo": "EDGE_SOFT",
+    "8.8_edge_decay": "PASS",
+    "8.9_runs_test": "PASS",
+    "8.10_regime_crisis": "EDGE_SOFT",
+    "8.11_mc_shuffle_dd": "EDGE_SOFT",
+    "cost_cushion": "PASS"
+  },
+  "verdict_calibration": {
+    "N_SEASON": 3,
+    "CHOP_SOFT": 0.9,
+    "PBO_HARD": 55.0,
+    "PBO_MIN_SPLITS": 10,
+    "PBO_HARD_CONFIG_SOURCE": "Q03",
+    "PBO_NEIGHBORHOOD_FALLBACK_MAX_TIER": "EDGE_SOFT",
+    "PBO_UNKNOWN_SOURCE_POLICY": "EDGE_HARD",
+    "EDGE_DECAY_HARD_PF_LAST": 1.2,
+    "DL082_ALLOWANCE_SOFT_GATES": [
+      "8.4",
+      "8.6",
+      "8.10",
+      "8.11"
+    ],
+    "DL082_PASS_ALLOWANCE_LABELS": [
+      "PASS",
+      "INFORMATIONAL",
+      "LOW_SAMPLE",
+      "EDGE_SOFT(8.4/8.6/8.10/8.11)"
+    ],
+    "DL082_DEGENERATE_BASELINE_OUTCOME": "INFRA_RECYCLE"
+  },
+  "generated_at_utc": "2026-07-21T23:03:59.385815+00:00",
+  "n_trades": 351,
+  "n_equity_snapshots": 1875,
+  "commission_basis": "worst_case_dxz_ftmo",
+  "commission_model": {
+    "registry_path": "C:\\QM\\repo\\framework\\registry\\live_commission.json",
+    "default_class": "forex",
+    "degraded": false,
+    "degraded_symbols": [],
+    "unknown_symbols": []
+  },
+  "commission_total": 3518.963851,
+  "gross_total": 28340.69,
+  "cost_cushion": 8.0537,
+  "cost_cushion_tier": "PASS",
+  "sub_gates": [
+    {
+      "name": "8.1_correlation",
+      "status": "PASS",
+      "passed": true,
+      "value": 0,
+      "threshold": 0.5,
+      "detail": "portfolio_empty_first_entry_trivial_pass",
+      "evidence": {
+        "portfolio_size": 0
+      }
+    },
+    {
+      "name": "8.2_dsr_mc_fdr",
+      "status": "PASS",
+      "passed": true,
+      "value": 0,
+      "threshold": 0.05,
+      "detail": "no_candidate_cohort_first_entry_trivial_pass:sr=1.048; DSR deflation deferred until >=1 peer(s)",
+      "evidence": {
+        "sharpe": 1.0484,
+        "skew": 0.3401,
+        "excess_kurtosis": -0.8949,
+        "n_obs_days": 292,
+        "n_peers": 0,
+        "tier": "standalone_pending_cohort"
+      }
+    },
+    {
+      "name": "8.3_tail_dependence",
+      "status": "PASS",
+      "passed": true,
+      "value": 0,
+      "threshold": 0,
+      "detail": "no_portfolio_peers_trivial_pass",
+      "evidence": {
+        "portfolio_size": 0
+      }
+    },
+    {
+      "name": "8.4_seasonal",
+      "status": "FAIL",
+      "passed": false,
+      "value": 6,
+      "threshold": 12,
+      "detail": "losing_months:[1, 7, 8, 9, 10, 11]",
+      "evidence": {
+        "monthly_net": {
+          "8": -1269.35,
+          "11": -1638.93,
+          "1": -140.33,
+          "2": 5545.91,
+          "3": 6399.22,
+          "7": -8252.69,
+          "10": -2506.41,
+          "12": 15218.29,
+          "4": 4484.01,
+          "5": 9179.42,
+          "6": 1794.22,
+          "9": -3991.64
+        },
+        "losing_months": [
+          1,
+          7,
+          8,
+          9,
+          10,
+          11
+        ]
+      }
+    },
+    {
+      "name": "8.5_neighborhood",
+      "status": "PASS",
+      "passed": true,
+      "value": 4,
+      "threshold": 2,
+      "detail": "all_4_valid_perturbations_within_plateau:invalid_dropped=0",
+      "evidence": {
+        "baseline_pf": 1.16,
+        "baseline_dd": 10436.85,
+        "invalid_perturbations": [],
+        "n_valid_perturbations": 4,
+        "n_invalid_perturbations": 0,
+        "n_perturbations_tested": 4
+      }
+    },
+    {
+      "name": "8.6_chopping_block",
+      "status": "FAIL",
+      "passed": false,
+      "value": 0.9123,
+      "threshold": 1.0,
+      "detail": "pf_after_top5pct_removal=0.912:floor=1.0",
+      "evidence": {
+        "pf_full": 1.1550380761311743,
+        "n_total": 351,
+        "n_removed": 17,
+        "trades_kept": 334
+      }
+    },
+    {
+      "name": "8.7_pbo",
+      "status": "FAIL",
+      "passed": false,
+      "value": 62.857,
+      "threshold": 40.0,
+      "detail": "PBO=62.86%:max=40%:splits=35:overfit=22:source=Q08.5_neighborhood",
+      "evidence": {
+        "n_configs": 5,
+        "n_common_slices": 8,
+        "splits_evaluated": 35,
+        "overfit_splits": 22,
+        "scores_path": "D:\\QM\\reports\\pipeline\\QM5_9403\\Q08\\pbo\\GDAXI_DWX\\scores.csv",
+        "config_source": "Q08.5_neighborhood",
+        "q03_candidate_configs": 1,
+        "neighborhood_candidate_configs": 5
+      }
+    },
+    {
+      "name": "8.8_edge_decay",
+      "status": "PASS",
+      "passed": true,
+      "value": -2.91,
+      "threshold": 40.0,
+      "detail": "pf_decline_first=0.949_last=0.977_pct=-2.9_mode=rolling_12mo",
+      "evidence": {
+        "pf_first": 0.9495,
+        "pf_last": 0.9771,
+        "decay_mode": "rolling_12mo",
+        "n_trades": 351,
+        "months_covered": 78,
+        "first_window_end_yyyymm": 202004,
+        "last_window_end_yyyymm": 202512
+      }
+    },
+    {
+      "name": "8.9_runs_test",
+      "status": "PASS",
+      "passed": true,
+      "value": {
+        "runs_p_value": 0.4564,
+        "top_pct_share": 47.97
+      },
+      "threshold": {
+        "runs_p_min": 0.05,
+        "top_pct_max": 70.0
+      },
+      "detail": "runs_p=0.456>0.05;top20pct_share=48.0<70.0",
+      "evidence": {
+        "n_wins": 140,
+        "n_losses": 211,
+        "n_runs": 176,
+        "monthly_count": 78,
+        "top_n_months": 9
+      }
+    },
+    {
+      "name": "8.10_regime_crisis",
+      "status": "FAIL",
+      "passed": false,
+      "value": {
+        "low": -2105.57,
+        "normal": 25070.08,
+        "high": 826.77
+      },
+      "threshold": {
+        "low": ">0 P&L",
+        "normal": ">0 P&L",
+        "high": ">0 P&L"
+      },
+      "detail": "unprofitable_regimes:['low']",
+      "evidence": {
+        "regime_pnl": {
+          "low": -2105.57,
+          "normal": 25070.08,
+          "high": 826.77
+        },
+        "regime_count": {
+          "normal": 242,
+          "low": 50,
+          "high": 55
+        },
+        "crisis_informational": {
+          "COVID_2020": {
+            "net": 1740.49,
+            "trades": 4
+          },
+          "UKRAINE_2022": {
+            "net": 177.61,
+            "trades": 6
+          },
+          "INFLATION_2022": {
+            "net": 8731.83,
+            "trades": 50
+          }
+        }
+      }
+    },
+    {
+      "name": "8.11_mc_shuffle_dd",
+      "status": "FAIL",
+      "passed": false,
+      "value": 25882.42,
+      "threshold": 18761.81,
+      "detail": "mc_maxdd_p95=25882.42:as_realized_maxdd=9380.90:threshold=18761.81:ratio=2.759055:seed=8112026:permutations=1000",
+      "evidence": {
+        "method": "trade_order_shuffle_without_replacement",
+        "starting_capital": 100000.0,
+        "n_permutations": 1000,
+        "seed": 8112026,
+        "n_trades": 351,
+        "terminal_pnl": 24821.73,
+        "as_realized_maxdd": 9380.9,
+        "as_realized_maxdd_pct": 9.3809,
+        "mc_maxdd_median": 16429.72,
+        "mc_maxdd_median_pct": 16.4297,
+        "mc_maxdd_p95": 25882.42,
+        "mc_maxdd_p95_pct": 25.8824,
+        "mc_maxdd_p95_over_as_realized_maxdd": 2.759055,
+        "threshold": 18761.81,
+        "threshold_pct": 18.7618
+      }
+    }
+  ],
+  "sub_gate_input_runs": {
+    "8_5_neighborhood": {
+      "reuse_check": "artifact_missing",
+      "archived_stale_artifact": null,
+      "exit_code": 0,
+      "artifact_now_exists": true,
+      "stdout_tail": "Q08.5 QM5_9403 GDAXI.DWX: 2/9 eligible params; tester=GDAXI.DWX H4 2018.07.02..2025.12.31\n  baseline -> status=VALID PF=1.16 DD=10436.85 trades=351\n  perturb strategy_atr_period=13 (-10pct)...\n    -> status=VALID PF=1.1 DD=13465.54 trades=350\n  perturb strategy_atr_period=15 (+10pct)...\n    -> status=VALID PF=1.16 DD=11451.68 trades=352\n  perturb strategy_max_extension_atr=1.35 (-10pct)...\n    -> status=VALID PF=1.16 DD=10476.41 trades=319\n  perturb strategy_max_extension_atr=1.65 (+10pct)...\n    -> status=VALID PF=1.13 DD=12728.78 trades=375\nQ08.5 wrote D:\\QM\\reports\\pipeline\\QM5_9403\\Q08\\neighborhood\\GDAXI_DWX\\perturbations.json (VALID)\n",
+      "stderr_tail": "Could not find platform independent libraries <prefix>\n",
+      "artifact_reusable_after": true,
+      "reuse_check_after": "exact_baseline_lineage"
+    },
+    "8_7_pbo": {
+      "exit_code": 0,
+      "artifact_now_exists": true,
+      "stdout_tail": "Q08.7 wrote 40 rows to D:\\QM\\reports\\pipeline\\QM5_9403\\Q08\\pbo\\GDAXI_DWX\\scores.csv; status=VALID source=Q08.5_neighborhood configs=5 common=8\n",
+      "stderr_tail": "Could not find platform independent libraries <prefix>\n",
+      "artifact_reusable_after": true,
+      "reuse_check_after": "fresh_current_lineage"
+    }
+  },
+  "baseline_run": {
+    "exit_code": 0,
+    "expert": "QM\\QM5_9403_williams-pro-go-h4",
+    "period": "H4",
+    "test_symbol": "GDAXI.DWX",
+    "baseline_summary_path": "D:\\QM\\reports\\pipeline\\QM5_9403\\Q08\\_baseline\\QM5_9403\\20260721_222909\\summary.json",
+    "baseline_result": "PASS",
+    "baseline_reason_classes": [
+      "OK"
+    ],
+    "baseline_report_path": "D:\\QM\\reports\\pipeline\\QM5_9403\\Q08\\_baseline\\QM5_9403\\20260721_222909\\raw\\run_01\\report.htm",
+    "baseline_total_trades": 351,
+    "baseline_profit_factor": 1.16,
+    "structured_log_path": "D:\\QM\\mt5\\T6\\Tester\\Agent-127.0.0.1-3002\\MQL5\\Files\\QM\\QM5_9403_ea-9403.log"
+  },
+  "summary": {
+    "n_pass": 6,
+    "n_fail": 5,
+    "n_invalid": 0
+  },
+  "mc_shuffle_dd": {
+    "method": "trade_order_shuffle_without_replacement",
+    "starting_capital": 100000.0,
+    "n_permutations": 1000,
+    "seed": 8112026,
+    "n_trades": 351,
+    "terminal_pnl": 24821.73,
+    "as_realized_maxdd": 9380.9,
+    "as_realized_maxdd_pct": 9.3809,
+    "mc_maxdd_median": 16429.72,
+    "mc_maxdd_median_pct": 16.4297,
+    "mc_maxdd_p95": 25882.42,
+    "mc_maxdd_p95_pct": 25.8824,
+    "mc_maxdd_p95_over_as_realized_maxdd": 2.759055,
+    "threshold": 18761.81,
+    "threshold_pct": 18.7618
+  },
+  "mc_maxdd_p95": 25882.42,
+  "mc_maxdd_p95_pct": 25.8824,
+  "mc_maxdd_p95_over_as_realized_maxdd": 2.759055,
+  "portfolio_stream": {
+    "persisted": true,
+    "source": "common_copy",
+    "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\9403_GDAXI_DWX.jsonl",
+    "n": 351,
+    "host_copy": null
+  }
+}

@@ -1,0 +1,433 @@
+{
+  "roots": [
+    "D:\\QM\\reports\\pipeline_evidence_archive",
+    "D:\\QM\\reports\\_retention_quarantine",
+    "D:\\QM\\reports\\_purge_quarantine_20260724",
+    "D:\\QM\\reports\\recovery",
+    "D:\\QM\\reports\\zero_trades_recovery",
+    "D:\\QM\\exports",
+    "D:\\QM\\strategy_farm\\artifacts",
+    "C:\\QM\\backups_relocated",
+    "C:\\QM\\repo\\artifacts"
+  ],
+  "existing_roots": [
+    "D:\\QM\\reports\\pipeline_evidence_archive",
+    "D:\\QM\\reports\\_retention_quarantine",
+    "D:\\QM\\reports\\_purge_quarantine_20260724",
+    "D:\\QM\\reports\\recovery",
+    "D:\\QM\\reports\\zero_trades_recovery",
+    "D:\\QM\\exports",
+    "D:\\QM\\strategy_farm\\artifacts",
+    "C:\\QM\\backups_relocated",
+    "C:\\QM\\repo\\artifacts"
+  ],
+  "indexed_files": 304520,
+  "rg_stderr": "",
+  "identity_path_candidates": {
+    "13bcc25b-7429-47da-8644-5f617e42d3f3": [
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260828T190250Z\\work_items\\13bcc25b-7429-47da-8644-5f617e42d3f3\\QM5_12406\\20260729_064005\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260828T190250Z\\work_items\\13bcc25b-7429-47da-8644-5f617e42d3f3\\QM5_12406\\20260729_064005\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260828T190250Z\\work_items\\13bcc25b-7429-47da-8644-5f617e42d3f3\\QM5_12406\\20260729_064005\\raw\\run_01\\report.htm"
+    ],
+    "4e0079c8-3938-4da8-8094-a7adfe35b9da": [
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260828T190250Z\\pipeline\\QM5_11072\\Q04\\EURUSD.DWX__4e0079c8-3938-4da8-8094-a7adfe35b9da\\folds\\F3\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260828T190250Z\\pipeline\\QM5_11072\\Q04\\EURUSD.DWX__4e0079c8-3938-4da8-8094-a7adfe35b9da\\folds\\F2\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260828T190250Z\\pipeline\\QM5_11072\\Q04\\EURUSD.DWX__4e0079c8-3938-4da8-8094-a7adfe35b9da\\folds\\F1\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260828T190250Z\\pipeline\\QM5_11072\\Q04\\EURUSD.DWX__4e0079c8-3938-4da8-8094-a7adfe35b9da\\aggregate.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260828T190250Z\\work_items\\4e0079c8-3938-4da8-8094-a7adfe35b9da\\QM5_11072\\Q04\\EURUSD.DWX__4e0079c8-3938-4da8-8094-a7adfe35b9da\\F3\\QM5_11072_binario-ma-band_EURUSD.DWX_D1_backtest_q04comm.set",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260828T190250Z\\work_items\\4e0079c8-3938-4da8-8094-a7adfe35b9da\\QM5_11072\\Q04\\EURUSD.DWX__4e0079c8-3938-4da8-8094-a7adfe35b9da\\F2\\QM5_11072_binario-ma-band_EURUSD.DWX_D1_backtest_q04comm.set",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260828T190250Z\\work_items\\4e0079c8-3938-4da8-8094-a7adfe35b9da\\QM5_11072\\Q04\\EURUSD.DWX__4e0079c8-3938-4da8-8094-a7adfe35b9da\\F1\\QM5_11072_binario-ma-band_EURUSD.DWX_D1_backtest_q04comm.set",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260828T190250Z\\work_items\\4e0079c8-3938-4da8-8094-a7adfe35b9da\\QM5_11072\\20260729_041510\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260828T190250Z\\work_items\\4e0079c8-3938-4da8-8094-a7adfe35b9da\\QM5_11072\\20260729_041510\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260828T190250Z\\work_items\\4e0079c8-3938-4da8-8094-a7adfe35b9da\\QM5_11072\\20260729_041510\\raw\\run_01\\report.htm",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260828T190250Z\\work_items\\4e0079c8-3938-4da8-8094-a7adfe35b9da\\QM5_11072\\20260729_041325\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260828T190250Z\\work_items\\4e0079c8-3938-4da8-8094-a7adfe35b9da\\QM5_11072\\20260729_041325\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260828T190250Z\\work_items\\4e0079c8-3938-4da8-8094-a7adfe35b9da\\QM5_11072\\20260729_041325\\raw\\run_01\\report.htm",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260828T190250Z\\work_items\\4e0079c8-3938-4da8-8094-a7adfe35b9da\\QM5_11072\\20260729_041128\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260828T190250Z\\work_items\\4e0079c8-3938-4da8-8094-a7adfe35b9da\\QM5_11072\\20260729_041128\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260828T190250Z\\work_items\\4e0079c8-3938-4da8-8094-a7adfe35b9da\\QM5_11072\\20260729_041128\\raw\\run_01\\report.htm"
+    ],
+    "3ea588c2-aaf5-4a22-8e5d-6d2675efc50a": [
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260828T022002Z\\work_items\\3ea588c2-aaf5-4a22-8e5d-6d2675efc50a\\QM5_10992\\20260728_211952\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260828T022002Z\\work_items\\3ea588c2-aaf5-4a22-8e5d-6d2675efc50a\\QM5_10992\\20260728_211952\\raw\\run_03\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260828T022002Z\\work_items\\3ea588c2-aaf5-4a22-8e5d-6d2675efc50a\\QM5_10992\\20260728_211952\\raw\\run_03\\report.htm",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260828T022002Z\\work_items\\3ea588c2-aaf5-4a22-8e5d-6d2675efc50a\\QM5_10992\\20260728_211952\\raw\\run_02\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260828T022002Z\\work_items\\3ea588c2-aaf5-4a22-8e5d-6d2675efc50a\\QM5_10992\\20260728_211952\\raw\\run_02\\report.htm",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260828T022002Z\\work_items\\3ea588c2-aaf5-4a22-8e5d-6d2675efc50a\\QM5_10992\\20260728_211952\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260828T022002Z\\work_items\\3ea588c2-aaf5-4a22-8e5d-6d2675efc50a\\QM5_10992\\20260728_211952\\raw\\run_01\\report.htm",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260828T022002Z\\work_items\\3ea588c2-aaf5-4a22-8e5d-6d2675efc50a\\QM5_10992\\20260728_183618\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260828T022002Z\\work_items\\3ea588c2-aaf5-4a22-8e5d-6d2675efc50a\\QM5_10992\\20260728_183618\\raw\\run_01\\report.htm",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260825T022001Z\\work_items\\3ea588c2-aaf5-4a22-8e5d-6d2675efc50a.requeued_20260727T1835030000\\QM5_10992\\20260725_091224\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260825T022001Z\\work_items\\3ea588c2-aaf5-4a22-8e5d-6d2675efc50a.requeued_20260727T1835030000\\QM5_10992\\20260725_091224\\raw\\run_03\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260825T022001Z\\work_items\\3ea588c2-aaf5-4a22-8e5d-6d2675efc50a.requeued_20260727T1835030000\\QM5_10992\\20260725_091224\\raw\\run_03\\report.htm",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260825T022001Z\\work_items\\3ea588c2-aaf5-4a22-8e5d-6d2675efc50a.requeued_20260727T1835030000\\QM5_10992\\20260725_091224\\raw\\run_02\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260825T022001Z\\work_items\\3ea588c2-aaf5-4a22-8e5d-6d2675efc50a.requeued_20260727T1835030000\\QM5_10992\\20260725_091224\\raw\\run_02\\report.htm",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260825T022001Z\\work_items\\3ea588c2-aaf5-4a22-8e5d-6d2675efc50a.requeued_20260727T1835030000\\QM5_10992\\20260725_091224\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260825T022001Z\\work_items\\3ea588c2-aaf5-4a22-8e5d-6d2675efc50a.requeued_20260727T1835030000\\QM5_10992\\20260725_091224\\raw\\run_01\\report.htm"
+    ],
+    "26e48fb7-cff7-422a-8215-ac8481ffbecc": [
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260828T022002Z\\work_items\\26e48fb7-cff7-422a-8215-ac8481ffbecc\\QM5_10281\\20260728_214434\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260828T022002Z\\work_items\\26e48fb7-cff7-422a-8215-ac8481ffbecc\\QM5_10281\\20260728_214434\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260828T022002Z\\work_items\\26e48fb7-cff7-422a-8215-ac8481ffbecc\\QM5_10281\\20260728_214434\\raw\\run_01\\report.htm",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260828T022002Z\\work_items\\26e48fb7-cff7-422a-8215-ac8481ffbecc\\QM5_10281\\20260728_185156\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260828T022002Z\\work_items\\26e48fb7-cff7-422a-8215-ac8481ffbecc\\QM5_10281\\20260728_185156\\raw\\run_03\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260828T022002Z\\work_items\\26e48fb7-cff7-422a-8215-ac8481ffbecc\\QM5_10281\\20260728_185156\\raw\\run_03\\report.htm",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260828T022002Z\\work_items\\26e48fb7-cff7-422a-8215-ac8481ffbecc\\QM5_10281\\20260728_185156\\raw\\run_02\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260828T022002Z\\work_items\\26e48fb7-cff7-422a-8215-ac8481ffbecc\\QM5_10281\\20260728_185156\\raw\\run_02\\report.htm",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260828T022002Z\\work_items\\26e48fb7-cff7-422a-8215-ac8481ffbecc\\QM5_10281\\20260728_185156\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260828T022002Z\\work_items\\26e48fb7-cff7-422a-8215-ac8481ffbecc\\QM5_10281\\20260728_185156\\raw\\run_01\\report.htm",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\26e48fb7-cff7-422a-8215-ac8481ffbecc.requeued_20260727T1835030000\\QM5_10281\\20260723_022739\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\26e48fb7-cff7-422a-8215-ac8481ffbecc.requeued_20260727T1835030000\\QM5_10281\\20260723_022739\\raw\\run_03\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\26e48fb7-cff7-422a-8215-ac8481ffbecc.requeued_20260727T1835030000\\QM5_10281\\20260723_022739\\raw\\run_03\\report.htm",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\26e48fb7-cff7-422a-8215-ac8481ffbecc.requeued_20260727T1835030000\\QM5_10281\\20260723_022739\\raw\\run_02\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\26e48fb7-cff7-422a-8215-ac8481ffbecc.requeued_20260727T1835030000\\QM5_10281\\20260723_022739\\raw\\run_02\\report.htm",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\26e48fb7-cff7-422a-8215-ac8481ffbecc.requeued_20260727T1835030000\\QM5_10281\\20260723_022739\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\26e48fb7-cff7-422a-8215-ac8481ffbecc.requeued_20260727T1835030000\\QM5_10281\\20260723_022739\\raw\\run_01\\report.htm",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\26e48fb7-cff7-422a-8215-ac8481ffbecc.requeued_20260727T1835030000\\QM5_10281\\20260722_164419\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\26e48fb7-cff7-422a-8215-ac8481ffbecc.requeued_20260727T1835030000\\QM5_10281\\20260722_111443\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\26e48fb7-cff7-422a-8215-ac8481ffbecc.requeued_20260727T1835030000\\QM5_10281\\20260721_195431\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\26e48fb7-cff7-422a-8215-ac8481ffbecc.requeued_20260727T1835030000\\QM5_10281\\20260722_004135\\raw\\run_01\\tester.ini"
+    ],
+    "ff941851-8f4d-4d8b-aa96-90622908bdca": [
+      "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\ff941851-8f4d-4d8b-aa96-90622908bdca_T5.json"
+    ],
+    "fa7744b8-3251-45b5-a9e6-6905c6bf50b5": [
+      "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\fa7744b8-3251-45b5-a9e6-6905c6bf50b5_T10.json"
+    ],
+    "f0bc3285-8a0e-4267-a303-1a0594e65c80": [
+      "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\f0bc3285-8a0e-4267-a303-1a0594e65c80_T3.json"
+    ],
+    "f0161372-0097-4001-9b18-92bcadbfaf66": [
+      "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\f0161372-0097-4001-9b18-92bcadbfaf66_T7.json"
+    ],
+    "ee1459b8-55ed-4d2c-a6e9-b2f6d41d2855": [
+      "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\ee1459b8-55ed-4d2c-a6e9-b2f6d41d2855_T2.json"
+    ],
+    "e5b4182d-3ff3-4465-9aba-45d7a5ecc1ba": [
+      "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\e5b4182d-3ff3-4465-9aba-45d7a5ecc1ba_T9.json"
+    ],
+    "e317cb4a-0486-4a4e-a47b-660162844345": [
+      "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\e317cb4a-0486-4a4e-a47b-660162844345_T6.json"
+    ],
+    "dd897938-1476-4900-9347-baddf3723c0c": [
+      "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\dd897938-1476-4900-9347-baddf3723c0c_T10.json"
+    ],
+    "dd400099-7183-4f7a-bfa3-5ff166a3a42b": [
+      "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\dd400099-7183-4f7a-bfa3-5ff166a3a42b_T4.json"
+    ],
+    "d34ab488-c2d5-44aa-913e-9322ca5f4efa": [
+      "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\d34ab488-c2d5-44aa-913e-9322ca5f4efa_T7.json"
+    ],
+    "d2e7bb77-ab42-4d54-9d1a-a6e6d7eef38d": [
+      "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\d2e7bb77-ab42-4d54-9d1a-a6e6d7eef38d_T10.json"
+    ],
+    "c9dad40f-0730-42a4-a660-948d763482d8": [
+      "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\c9dad40f-0730-42a4-a660-948d763482d8_T1.json"
+    ],
+    "c786739a-478d-4bdb-aa59-4d8a1fb72f11": [
+      "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\c786739a-478d-4bdb-aa59-4d8a1fb72f11_T5.json"
+    ],
+    "c5ef8c23-8b74-4662-be5a-80f0b2f5dceb": [
+      "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\c5ef8c23-8b74-4662-be5a-80f0b2f5dceb_T6.json"
+    ],
+    "c21a27ff-e834-4a00-94ed-a3a180932c17": [
+      "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\c21a27ff-e834-4a00-94ed-a3a180932c17_T1.json"
+    ],
+    "bd7e02fa-7e16-4e47-965b-4822703d304e": [
+      "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\bd7e02fa-7e16-4e47-965b-4822703d304e_T1.json"
+    ],
+    "b9e0b1c6-673f-40d0-bfe8-6040af48afe5": [
+      "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\b9e0b1c6-673f-40d0-bfe8-6040af48afe5_T7.json"
+    ],
+    "b9cfe883-5d5a-432e-9f6e-40f002a7ac36": [
+      "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\b9cfe883-5d5a-432e-9f6e-40f002a7ac36_T1.json"
+    ],
+    "b687ee5f-f5ee-4b3b-af8f-4b31bddb4a2b": [
+      "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\b687ee5f-f5ee-4b3b-af8f-4b31bddb4a2b_T5.json"
+    ],
+    "b37c01d6-3762-4f7d-9463-0272d444c007": [
+      "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\b37c01d6-3762-4f7d-9463-0272d444c007_T2.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260826T022002Z\\work_items\\b37c01d6-3762-4f7d-9463-0272d444c007.requeued_20260817T0858410000\\QM5_1116\\20260726_131943\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260826T022002Z\\work_items\\b37c01d6-3762-4f7d-9463-0272d444c007.requeued_20260817T0858410000\\QM5_1116\\20260726_131943\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260826T022002Z\\work_items\\b37c01d6-3762-4f7d-9463-0272d444c007.requeued_20260817T0858410000\\QM5_1116\\20260726_131943\\raw\\run_01\\report.htm",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260826T022002Z\\work_items\\b37c01d6-3762-4f7d-9463-0272d444c007.requeued_20260817T0858410000\\QM5_1116\\20260726_130129\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260826T022002Z\\work_items\\b37c01d6-3762-4f7d-9463-0272d444c007.requeued_20260817T0858410000\\QM5_1116\\20260726_130129\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260826T022002Z\\work_items\\b37c01d6-3762-4f7d-9463-0272d444c007.requeued_20260817T0858410000\\QM5_1116\\20260726_130129\\raw\\run_01\\report.htm",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260826T022002Z\\work_items\\b37c01d6-3762-4f7d-9463-0272d444c007.requeued_20260817T0858410000\\QM5_1116\\20260726_124303\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260826T022002Z\\work_items\\b37c01d6-3762-4f7d-9463-0272d444c007.requeued_20260817T0858410000\\QM5_1116\\20260726_124303\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260826T022002Z\\work_items\\b37c01d6-3762-4f7d-9463-0272d444c007.requeued_20260817T0858410000\\QM5_1116\\20260726_124303\\raw\\run_01\\report.htm",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260826T022002Z\\work_items\\b37c01d6-3762-4f7d-9463-0272d444c007.requeued_20260817T0858410000\\QM5_1116\\20260726_122321\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260826T022002Z\\work_items\\b37c01d6-3762-4f7d-9463-0272d444c007.requeued_20260817T0858410000\\QM5_1116\\20260726_122321\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260826T022002Z\\work_items\\b37c01d6-3762-4f7d-9463-0272d444c007.requeued_20260817T0858410000\\QM5_1116\\20260726_122321\\raw\\run_01\\report.htm",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260826T022002Z\\work_items\\b37c01d6-3762-4f7d-9463-0272d444c007.requeued_20260817T0858410000\\QM5_1116\\20260726_120229\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260826T022002Z\\work_items\\b37c01d6-3762-4f7d-9463-0272d444c007.requeued_20260817T0858410000\\QM5_1116\\20260726_120229\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260826T022002Z\\work_items\\b37c01d6-3762-4f7d-9463-0272d444c007.requeued_20260817T0858410000\\QM5_1116\\20260726_120229\\raw\\run_01\\report.htm",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\b37c01d6-3762-4f7d-9463-0272d444c007.requeued_20260726T1038300000\\QM5_1116\\20260718_114910\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\b37c01d6-3762-4f7d-9463-0272d444c007.requeued_20260726T1038300000\\QM5_1116\\20260718_113004\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\b37c01d6-3762-4f7d-9463-0272d444c007.requeued_20260726T1038300000\\QM5_1116\\20260718_113004\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\b37c01d6-3762-4f7d-9463-0272d444c007.requeued_20260726T1038300000\\QM5_1116\\20260718_113004\\raw\\run_01\\report.htm",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\b37c01d6-3762-4f7d-9463-0272d444c007.requeued_20260726T1038300000\\QM5_1116\\20260718_114243\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\b37c01d6-3762-4f7d-9463-0272d444c007.requeued_20260726T1038300000\\QM5_1116\\20260718_114910\\raw\\run_02\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\b37c01d6-3762-4f7d-9463-0272d444c007.requeued_20260726T1038300000\\QM5_1116\\20260718_114910\\raw\\run_02\\report.htm",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\b37c01d6-3762-4f7d-9463-0272d444c007.requeued_20260726T1038300000\\QM5_1116\\20260718_114910\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\b37c01d6-3762-4f7d-9463-0272d444c007.requeued_20260726T1038300000\\QM5_1116\\20260718_114910\\raw\\run_01\\report.htm"
+    ],
+    "aff01074-1dcb-4ea4-9a09-021f8e94fd54": [
+      "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\aff01074-1dcb-4ea4-9a09-021f8e94fd54_T4.json"
+    ],
+    "ab23177b-ccb6-45b8-98fc-f05a2731371d": [
+      "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\ab23177b-ccb6-45b8-98fc-f05a2731371d_T4.json"
+    ],
+    "a2b5f6e2-1e61-44a8-8a20-73e732f2f966": [
+      "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\a2b5f6e2-1e61-44a8-8a20-73e732f2f966_T3.json"
+    ],
+    "a20349ae-d7bd-496e-9cfc-905194d2537f": [
+      "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\a20349ae-d7bd-496e-9cfc-905194d2537f_T2.json"
+    ],
+    "9e8962b2-8c03-4a64-a39f-f1676249716c": [
+      "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\9e8962b2-8c03-4a64-a39f-f1676249716c_T5.json"
+    ],
+    "9c447ec4-e756-403c-a25a-03d0f61e14c3": [
+      "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\9c447ec4-e756-403c-a25a-03d0f61e14c3_T2.json"
+    ],
+    "7f97c304-1463-4428-be54-96ceb0a3389a": [
+      "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\7f97c304-1463-4428-be54-96ceb0a3389a_T9.json"
+    ],
+    "7be7dd45-3881-4c5c-9e2e-59786fca60a7": [
+      "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\7be7dd45-3881-4c5c-9e2e-59786fca60a7_T7.json"
+    ],
+    "66cad5cd-d6cf-4e9a-be5f-2246d3400236": [
+      "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\66cad5cd-d6cf-4e9a-be5f-2246d3400236_T8.json"
+    ],
+    "5f3d6d60-2b7f-4da8-ac3b-e22c4d6faef5": [
+      "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\5f3d6d60-2b7f-4da8-ac3b-e22c4d6faef5_T9.json",
+      "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\5f3d6d60-2b7f-4da8-ac3b-e22c4d6faef5_T4.json"
+    ],
+    "5c26a7fe-57ac-4292-a7b8-15d8a0451588": [
+      "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\5c26a7fe-57ac-4292-a7b8-15d8a0451588_T10.json"
+    ],
+    "46f9c2a3-ae2e-4db0-8186-a7baf72709db": [
+      "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\46f9c2a3-ae2e-4db0-8186-a7baf72709db_T6.json"
+    ],
+    "3ec1b968-d62c-431c-8cc7-a0ec8e1ed663": [
+      "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\3ec1b968-d62c-431c-8cc7-a0ec8e1ed663_T1.json"
+    ],
+    "3bd6b8df-4828-4982-8d1c-e0f16603ec1b": [
+      "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\3bd6b8df-4828-4982-8d1c-e0f16603ec1b_T10.json"
+    ],
+    "3b597143-37ab-4eb5-888d-4f8d32f1947f": [
+      "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\3b597143-37ab-4eb5-888d-4f8d32f1947f_T6.json"
+    ],
+    "2e87055c-b145-451a-9a89-cdda98f76f65": [
+      "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\2e87055c-b145-451a-9a89-cdda98f76f65_T5.json"
+    ],
+    "28504443-4cd4-4aea-a340-fccf4d148119": [
+      "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\28504443-4cd4-4aea-a340-fccf4d148119_T6.json"
+    ],
+    "22eb9bae-e796-4bc8-bd2f-42b85bb913bf": [
+      "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\22eb9bae-e796-4bc8-bd2f-42b85bb913bf_T1.json"
+    ],
+    "1aa0dc84-63e6-4237-a300-245d3ac16af4": [
+      "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\1aa0dc84-63e6-4237-a300-245d3ac16af4_T4.json"
+    ],
+    "0a2e72a2-d906-4343-b073-742a5e0213d3": [
+      "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\0a2e72a2-d906-4343-b073-742a5e0213d3_T8.json"
+    ],
+    "0479e04e-5538-4051-ae97-f8995cd9f79c": [
+      "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\0479e04e-5538-4051-ae97-f8995cd9f79c_T10.json"
+    ],
+    "c733b18d-17f0-424b-9374-51250130f259": [
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260825T022001Z\\work_items\\c733b18d-17f0-424b-9374-51250130f259\\QM5_9454\\20260725_231549\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260825T022001Z\\work_items\\c733b18d-17f0-424b-9374-51250130f259\\QM5_9454\\20260725_231549\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260825T022001Z\\work_items\\c733b18d-17f0-424b-9374-51250130f259\\QM5_9454\\20260725_231549\\raw\\run_01\\report.htm"
+    ],
+    "f871ea28-889e-4a43-9b48-e077495d01fc": [
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260824T022002Z\\work_items\\f871ea28-889e-4a43-9b48-e077495d01fc\\QM5_9454\\20260724_210003\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260824T022002Z\\work_items\\f871ea28-889e-4a43-9b48-e077495d01fc\\QM5_9454\\20260724_210003\\raw\\run_02\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260824T022002Z\\work_items\\f871ea28-889e-4a43-9b48-e077495d01fc\\QM5_9454\\20260724_210003\\raw\\run_02\\report.htm",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260824T022002Z\\work_items\\f871ea28-889e-4a43-9b48-e077495d01fc\\QM5_9454\\20260724_210003\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260824T022002Z\\work_items\\f871ea28-889e-4a43-9b48-e077495d01fc\\QM5_9454\\20260724_210003\\raw\\run_01\\report.htm"
+    ],
+    "f760e655-622e-40a8-a70a-f7cd9f929078": [
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260824T022002Z\\work_items\\f760e655-622e-40a8-a70a-f7cd9f929078\\QM5_9454\\20260724_210222\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260824T022002Z\\work_items\\f760e655-622e-40a8-a70a-f7cd9f929078\\QM5_9454\\20260724_210222\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260824T022002Z\\work_items\\f760e655-622e-40a8-a70a-f7cd9f929078\\QM5_9454\\20260724_210222\\raw\\run_01\\report.htm"
+    ],
+    "ebd5b796-c008-4b33-a16f-e3450173776e": [
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260824T022002Z\\work_items\\ebd5b796-c008-4b33-a16f-e3450173776e\\QM5_12599\\20260724_211619\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260824T022002Z\\work_items\\ebd5b796-c008-4b33-a16f-e3450173776e\\QM5_12599\\20260724_211619\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260824T022002Z\\work_items\\ebd5b796-c008-4b33-a16f-e3450173776e\\QM5_12599\\20260724_211619\\raw\\run_01\\report.htm"
+    ],
+    "c23d9375-4ea2-482e-a336-a505edd99baf": [
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260824T022002Z\\work_items\\c23d9375-4ea2-482e-a336-a505edd99baf\\QM5_9454\\20260724_210132\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260824T022002Z\\work_items\\c23d9375-4ea2-482e-a336-a505edd99baf\\QM5_9454\\20260724_210132\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260824T022002Z\\work_items\\c23d9375-4ea2-482e-a336-a505edd99baf\\QM5_9454\\20260724_210132\\raw\\run_01\\report.htm"
+    ],
+    "88806c7a-2733-4fb0-b19e-f8e360015c6a": [
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260824T022002Z\\work_items\\88806c7a-2733-4fb0-b19e-f8e360015c6a\\QM5_9454\\20260724_210020\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260824T022002Z\\work_items\\88806c7a-2733-4fb0-b19e-f8e360015c6a\\QM5_9454\\20260724_210020\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260824T022002Z\\work_items\\88806c7a-2733-4fb0-b19e-f8e360015c6a\\QM5_9454\\20260724_210020\\raw\\run_01\\report.htm"
+    ],
+    "0c79372c-ab3b-40b6-8174-45a59aad7981": [
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260824T022002Z\\work_items\\0c79372c-ab3b-40b6-8174-45a59aad7981\\QM5_9404\\20260724_213929\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260824T022002Z\\work_items\\0c79372c-ab3b-40b6-8174-45a59aad7981\\QM5_9404\\20260724_213929\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260824T022002Z\\work_items\\0c79372c-ab3b-40b6-8174-45a59aad7981\\QM5_9404\\20260724_213929\\raw\\run_01\\report.htm"
+    ],
+    "7e9dd76e-0224-44fc-b116-7db5530778e2": [
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260824T022002Z\\work_items\\7e9dd76e-0224-44fc-b116-7db5530778e2\\QM5_9454\\20260724_204427\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260824T022002Z\\work_items\\7e9dd76e-0224-44fc-b116-7db5530778e2\\QM5_9454\\20260724_204427\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260824T022002Z\\work_items\\7e9dd76e-0224-44fc-b116-7db5530778e2\\QM5_9454\\20260724_204427\\raw\\run_01\\report.htm"
+    ],
+    "4b41302f-b63e-44e8-be26-046b4a131e96": [
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260824T022002Z\\work_items\\4b41302f-b63e-44e8-be26-046b4a131e96\\QM5_9404\\20260724_212955\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260824T022002Z\\work_items\\4b41302f-b63e-44e8-be26-046b4a131e96\\QM5_9404\\20260724_212955\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260824T022002Z\\work_items\\4b41302f-b63e-44e8-be26-046b4a131e96\\QM5_9404\\20260724_212955\\raw\\run_01\\report.htm"
+    ],
+    "3666ab03-57af-4651-98cc-c304bff56e8d": [
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260824T022002Z\\work_items\\3666ab03-57af-4651-98cc-c304bff56e8d\\QM5_13133\\20260724_205156\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260824T022002Z\\work_items\\3666ab03-57af-4651-98cc-c304bff56e8d\\QM5_13133\\20260724_205156\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260824T022002Z\\work_items\\3666ab03-57af-4651-98cc-c304bff56e8d\\QM5_13133\\20260724_205156\\raw\\run_01\\report.htm"
+    ],
+    "320f0e5c-ef2a-48ed-a3b1-ac2e2ff58328": [
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260824T022002Z\\work_items\\320f0e5c-ef2a-48ed-a3b1-ac2e2ff58328\\QM5_9454\\20260724_210245\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260824T022002Z\\work_items\\320f0e5c-ef2a-48ed-a3b1-ac2e2ff58328\\QM5_9454\\20260724_210245\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260824T022002Z\\work_items\\320f0e5c-ef2a-48ed-a3b1-ac2e2ff58328\\QM5_9454\\20260724_210245\\raw\\run_01\\report.htm"
+    ],
+    "fdba6a1c-13d2-4759-a2b8-46d106692699": [
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\fdba6a1c-13d2-4759-a2b8-46d106692699\\QM5_10762\\Q04\\XAUUSD.DWX\\aggregate.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\fdba6a1c-13d2-4759-a2b8-46d106692699\\QM5_10762\\Q04\\F3\\QM5_10762_tv-trend-brk_XAUUSD.DWX_M15_backtest_q04comm.set",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\fdba6a1c-13d2-4759-a2b8-46d106692699\\QM5_10762\\Q04\\F2\\QM5_10762_tv-trend-brk_XAUUSD.DWX_M15_backtest_q04comm.set",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\fdba6a1c-13d2-4759-a2b8-46d106692699\\QM5_10762\\Q04\\F1\\QM5_10762_tv-trend-brk_XAUUSD.DWX_M15_backtest_q04comm.set",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\fdba6a1c-13d2-4759-a2b8-46d106692699\\QM5_10762\\20260718_233153\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\fdba6a1c-13d2-4759-a2b8-46d106692699\\QM5_10762\\20260718_233153\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\fdba6a1c-13d2-4759-a2b8-46d106692699\\QM5_10762\\20260718_233153\\raw\\run_01\\report.htm",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\fdba6a1c-13d2-4759-a2b8-46d106692699\\QM5_10762\\20260718_233015\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\fdba6a1c-13d2-4759-a2b8-46d106692699\\QM5_10762\\20260718_233015\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\fdba6a1c-13d2-4759-a2b8-46d106692699\\QM5_10762\\20260718_233015\\raw\\run_01\\report.htm",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\fdba6a1c-13d2-4759-a2b8-46d106692699\\QM5_10762\\20260718_232855\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\fdba6a1c-13d2-4759-a2b8-46d106692699\\QM5_10762\\20260718_232855\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\fdba6a1c-13d2-4759-a2b8-46d106692699\\QM5_10762\\20260718_232855\\raw\\run_01\\report.htm"
+    ],
+    "fd3c1f85-6c3d-4ce0-9599-5d07544c084f": [
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\fd3c1f85-6c3d-4ce0-9599-5d07544c084f\\QM5_12913\\20260721_223031\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\fd3c1f85-6c3d-4ce0-9599-5d07544c084f\\QM5_12913\\20260721_223031\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\fd3c1f85-6c3d-4ce0-9599-5d07544c084f\\QM5_12913\\20260721_223031\\raw\\run_01\\report.htm"
+    ],
+    "fcda5ce6-e487-49b6-9f8c-88f0b2473402": [
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\fcda5ce6-e487-49b6-9f8c-88f0b2473402\\QM5_10251\\Q04\\XAUUSD.DWX\\aggregate.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\fcda5ce6-e487-49b6-9f8c-88f0b2473402\\QM5_10251\\Q04\\F3\\QM5_10251_tv-nova-rev_XAUUSD.DWX_M30_backtest_q04comm.set",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\fcda5ce6-e487-49b6-9f8c-88f0b2473402\\QM5_10251\\Q04\\F2\\QM5_10251_tv-nova-rev_XAUUSD.DWX_M30_backtest_q04comm.set",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\fcda5ce6-e487-49b6-9f8c-88f0b2473402\\QM5_10251\\Q04\\F1\\QM5_10251_tv-nova-rev_XAUUSD.DWX_M30_backtest_q04comm.set",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\fcda5ce6-e487-49b6-9f8c-88f0b2473402\\QM5_10251\\20260718_234314\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\fcda5ce6-e487-49b6-9f8c-88f0b2473402\\QM5_10251\\20260718_234314\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\fcda5ce6-e487-49b6-9f8c-88f0b2473402\\QM5_10251\\20260718_234314\\raw\\run_01\\report.htm",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\fcda5ce6-e487-49b6-9f8c-88f0b2473402\\QM5_10251\\20260718_234147\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\fcda5ce6-e487-49b6-9f8c-88f0b2473402\\QM5_10251\\20260718_234147\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\fcda5ce6-e487-49b6-9f8c-88f0b2473402\\QM5_10251\\20260718_234147\\raw\\run_01\\report.htm",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\fcda5ce6-e487-49b6-9f8c-88f0b2473402\\QM5_10251\\20260718_234019\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\fcda5ce6-e487-49b6-9f8c-88f0b2473402\\QM5_10251\\20260718_234019\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\fcda5ce6-e487-49b6-9f8c-88f0b2473402\\QM5_10251\\20260718_234019\\raw\\run_01\\report.htm"
+    ],
+    "11f00c06-1d60-44ec-a0d8-53e24c8de116": [
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\11f00c06-1d60-44ec-a0d8-53e24c8de116\\QM5_1506\\20260723_234845\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\11f00c06-1d60-44ec-a0d8-53e24c8de116\\QM5_1506\\20260723_234845\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\11f00c06-1d60-44ec-a0d8-53e24c8de116\\QM5_1506\\20260723_234845\\raw\\run_01\\report.htm"
+    ],
+    "31e19c25-1edd-4516-86dc-86d78529250f": [
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\31e19c25-1edd-4516-86dc-86d78529250f\\QM5_20016\\20260720_232426\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\31e19c25-1edd-4516-86dc-86d78529250f\\QM5_20016\\20260720_232426\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\31e19c25-1edd-4516-86dc-86d78529250f\\QM5_20016\\20260720_232426\\raw\\run_01\\report.htm"
+    ],
+    "40e9d58d-bcb8-45bd-a294-4270d74c9440": [
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\40e9d58d-bcb8-45bd-a294-4270d74c9440\\QM5_10854\\20260718_224839\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\40e9d58d-bcb8-45bd-a294-4270d74c9440\\QM5_10854\\20260718_224839\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\40e9d58d-bcb8-45bd-a294-4270d74c9440\\QM5_10854\\20260718_224839\\raw\\run_01\\report.htm"
+    ],
+    "4bbdeeab-112c-4c85-8fdd-4fbe847f1740": [
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\4bbdeeab-112c-4c85-8fdd-4fbe847f1740\\QM5_10778\\Q04\\F3\\QM5_10778_tv-atr-t3_EURUSD.DWX_H12_backtest_ablation_02_q04comm.set",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\4bbdeeab-112c-4c85-8fdd-4fbe847f1740\\QM5_10778\\Q04\\F2\\QM5_10778_tv-atr-t3_EURUSD.DWX_H12_backtest_ablation_02_q04comm.set",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\4bbdeeab-112c-4c85-8fdd-4fbe847f1740\\QM5_10778\\Q04\\F1\\QM5_10778_tv-atr-t3_EURUSD.DWX_H12_backtest_ablation_02_q04comm.set",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\4bbdeeab-112c-4c85-8fdd-4fbe847f1740\\QM5_10778\\Q04\\EURUSD.DWX\\aggregate.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\4bbdeeab-112c-4c85-8fdd-4fbe847f1740\\QM5_10778\\20260719_225720\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\4bbdeeab-112c-4c85-8fdd-4fbe847f1740\\QM5_10778\\20260719_225720\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\4bbdeeab-112c-4c85-8fdd-4fbe847f1740\\QM5_10778\\20260719_225720\\raw\\run_01\\report.htm",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\4bbdeeab-112c-4c85-8fdd-4fbe847f1740\\QM5_10778\\20260719_225607\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\4bbdeeab-112c-4c85-8fdd-4fbe847f1740\\QM5_10778\\20260719_225607\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\4bbdeeab-112c-4c85-8fdd-4fbe847f1740\\QM5_10778\\20260719_225607\\raw\\run_01\\report.htm",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\4bbdeeab-112c-4c85-8fdd-4fbe847f1740\\QM5_10778\\20260719_225459\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\4bbdeeab-112c-4c85-8fdd-4fbe847f1740\\QM5_10778\\20260719_225459\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\4bbdeeab-112c-4c85-8fdd-4fbe847f1740\\QM5_10778\\20260719_225459\\raw\\run_01\\report.htm"
+    ],
+    "64ffdffe-01d7-456f-aaed-9a05a3174ebb": [
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\64ffdffe-01d7-456f-aaed-9a05a3174ebb\\QM5_9403\\Q08\\GDAXI_DWX\\aggregate.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\64ffdffe-01d7-456f-aaed-9a05a3174ebb\\QM5_9403\\Q08\\GDAXI_DWX\\8_9_runs_test.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\64ffdffe-01d7-456f-aaed-9a05a3174ebb\\QM5_9403\\Q08\\GDAXI_DWX\\8_8_edge_decay.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\64ffdffe-01d7-456f-aaed-9a05a3174ebb\\QM5_9403\\Q08\\GDAXI_DWX\\8_7_pbo.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\64ffdffe-01d7-456f-aaed-9a05a3174ebb\\QM5_9403\\Q08\\GDAXI_DWX\\8_6_chopping_block.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\64ffdffe-01d7-456f-aaed-9a05a3174ebb\\QM5_9403\\Q08\\GDAXI_DWX\\8_5_neighborhood.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\64ffdffe-01d7-456f-aaed-9a05a3174ebb\\QM5_9403\\Q08\\GDAXI_DWX\\8_4_seasonal.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\64ffdffe-01d7-456f-aaed-9a05a3174ebb\\QM5_9403\\Q08\\GDAXI_DWX\\8_3_tail_dependence.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\64ffdffe-01d7-456f-aaed-9a05a3174ebb\\QM5_9403\\Q08\\GDAXI_DWX\\8_2_dsr_mc_fdr.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\64ffdffe-01d7-456f-aaed-9a05a3174ebb\\QM5_9403\\Q08\\GDAXI_DWX\\8_1_correlation.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\64ffdffe-01d7-456f-aaed-9a05a3174ebb\\QM5_9403\\Q08\\GDAXI_DWX\\8_11_mc_shuffle_dd.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\64ffdffe-01d7-456f-aaed-9a05a3174ebb\\QM5_9403\\Q08\\GDAXI_DWX\\8_10_regime_crisis.json"
+    ],
+    "6ea9bebc-91ce-411a-b995-373245a72b17": [
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6ea9bebc-91ce-411a-b995-373245a72b17\\QM5_12977\\20260721_230107\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6ea9bebc-91ce-411a-b995-373245a72b17\\QM5_12977\\20260721_230107\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6ea9bebc-91ce-411a-b995-373245a72b17\\QM5_12977\\20260721_230107\\raw\\run_01\\report.htm"
+    ],
+    "6f4fff24-3a6d-40e3-aaca-773b5195f6d2": [
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2\\QM5_13128\\Q08\\NDX_DWX\\aggregate.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2\\QM5_13128\\Q08\\NDX_DWX\\8_9_runs_test.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2\\QM5_13128\\Q08\\NDX_DWX\\8_8_edge_decay.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2\\QM5_13128\\Q08\\NDX_DWX\\8_7_pbo.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2\\QM5_13128\\Q08\\NDX_DWX\\8_6_chopping_block.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2\\QM5_13128\\Q08\\NDX_DWX\\8_5_neighborhood.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2\\QM5_13128\\Q08\\NDX_DWX\\8_4_seasonal.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2\\QM5_13128\\Q08\\NDX_DWX\\8_3_tail_dependence.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2\\QM5_13128\\Q08\\NDX_DWX\\8_2_dsr_mc_fdr.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2\\QM5_13128\\Q08\\NDX_DWX\\8_1_correlation.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2\\QM5_13128\\Q08\\NDX_DWX\\8_11_mc_shuffle_dd.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2\\QM5_13128\\Q08\\NDX_DWX\\8_10_regime_crisis.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_repair\\QM5_13128\\Q08\\NDX_DWX\\aggregate.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_repair\\QM5_13128\\Q08\\NDX_DWX\\8_9_runs_test.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_repair\\QM5_13128\\Q08\\NDX_DWX\\8_8_edge_decay.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_repair\\QM5_13128\\Q08\\NDX_DWX\\8_7_pbo.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_repair\\QM5_13128\\Q08\\NDX_DWX\\8_6_chopping_block.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_repair\\QM5_13128\\Q08\\NDX_DWX\\8_5_neighborhood.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_repair\\QM5_13128\\Q08\\NDX_DWX\\8_4_seasonal.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_repair\\QM5_13128\\Q08\\NDX_DWX\\8_3_tail_dependence.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_repair\\QM5_13128\\Q08\\NDX_DWX\\8_2_dsr_mc_fdr.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_repair\\QM5_13128\\Q08\\NDX_DWX\\8_1_correlation.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_repair\\QM5_13128\\Q08\\NDX_DWX\\8_11_mc_shuffle_dd.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_repair\\QM5_13128\\Q08\\NDX_DWX\\8_10_regime_crisis.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_fullrepair\\QM5_13128\\Q08\\NDX_DWX\\aggregate.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_fullrepair\\QM5_13128\\Q08\\NDX_DWX\\8_9_runs_test.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_fullrepair\\QM5_13128\\Q08\\NDX_DWX\\8_8_edge_decay.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_fullrepair\\QM5_13128\\Q08\\NDX_DWX\\8_7_pbo.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_fullrepair\\QM5_13128\\Q08\\NDX_DWX\\8_6_chopping_block.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_fullrepair\\QM5_13128\\Q08\\NDX_DWX\\8_5_neighborhood.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_fullrepair\\QM5_13128\\Q08\\NDX_DWX\\8_4_seasonal.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_fullrepair\\QM5_13128\\Q08\\NDX_DWX\\8_3_tail_dependence.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_fullrepair\\QM5_13128\\Q08\\NDX_DWX\\8_2_dsr_mc_fdr.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_fullrepair\\QM5_13128\\Q08\\NDX_DWX\\8_1_correlation.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_fullrepair\\QM5_13128\\Q08\\NDX_DWX\\8_11_mc_shuffle_dd.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2.requeued_post_ndx_fullrepair\\QM5_13128\\Q08\\NDX_DWX\\8_10_regime_crisis.json"
+    ],
+    "a4c3b222-0ecf-4c3a-8497-0b4766a1e291": [
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\a4c3b222-0ecf-4c3a-8497-0b4766a1e291\\QM5_10854\\20260718_225020\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\a4c3b222-0ecf-4c3a-8497-0b4766a1e291\\QM5_10854\\20260718_225020\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\a4c3b222-0ecf-4c3a-8497-0b4766a1e291\\QM5_10854\\20260718_225020\\raw\\run_01\\report.htm"
+    ],
+    "be5ffa78-fdfb-4718-af89-5f7fc7e8dee3": [
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\be5ffa78-fdfb-4718-af89-5f7fc7e8dee3\\QM5_13205\\20260720_221818\\summary.json",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\be5ffa78-fdfb-4718-af89-5f7fc7e8dee3\\QM5_13205\\20260720_221818\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\be5ffa78-fdfb-4718-af89-5f7fc7e8dee3\\QM5_13205\\20260720_221818\\raw\\run_01\\report.htm",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\be5ffa78-fdfb-4718-af89-5f7fc7e8dee3\\QM5_13205\\20260720_025502\\raw\\run_01\\tester.ini",
+      "C:\\QM\\backups_relocated\\retention_quarantine\\20260823T122231Z\\work_items\\be5ffa78-fdfb-4718-af89-5f7fc7e8dee3\\QM5_13205\\20260720_025502\\raw\\run_01\\report.htm"
+    ]
+  },
+  "zip_member_hits": [],
+  "scope_limit": "Identity/path search over listed local roots, not a forensic scan of unallocated disk or unavailable off-host backups."
+}

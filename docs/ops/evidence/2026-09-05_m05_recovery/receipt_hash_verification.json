@@ -1,0 +1,1242 @@
+[
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0001_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "9d977b18201e212f3bcf2077d5ebb306b258752c8b4275047cc3318ddac476fa",
+    "canonical_sha256": "23485b6f5ded8a3f6188fd98820b88630954c4bd8bdbc660a651ee9ec54da2d3",
+    "records": 166,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0001_delete.json",
+    "batch_sha256": "27ea917543d4321d11d4732ea5134bd9105bd3600f31786624e35c590f6592c4"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0002_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "f446243db43c15b0b0523afa65099096b86bcbcf214068e31b09f0747b6ac0a2",
+    "canonical_sha256": "4ccaaaf4576066a83a9353d54a76a92880db12a0f994e77eafd8a7a777bd0684",
+    "records": 120,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0002_delete.json",
+    "batch_sha256": "713400dd23c069b2cdb179752069cab6ebe17c1f3f3e241fe5d6017d6a47a69d"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0003_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "ce115b8797a53a2b05feca8b59ea63582c8b8bcea6a8bb4a259433d83e16382b",
+    "canonical_sha256": "626c97ca0574d4b0cca65a6e12368894b4caee8a7576e6c7a5b2efbf7a4085fc",
+    "records": 132,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0003_delete.json",
+    "batch_sha256": "f6c5c9f6293b8777de2f6fd9a2486132cd720b378296310e1616ec7caef71321"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0004_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "1851a0308c2c5a64f622779f2e5de32476615d3e9949393042b7ea2864456fb8",
+    "canonical_sha256": "e7f95e608eb8bf15061f94674413e540d69d93baf95beb7dffce3c7543f68f35",
+    "records": 142,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0004_delete.json",
+    "batch_sha256": "d4b92f60fd4368310d9f20bc93d6824996b5da3070509a49d27c8a9ed65ce02c"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0005_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "9e16fdff13ae7a1ad048549e6819da42cccac9b5c609b5423054d9eebddb1d6b",
+    "canonical_sha256": "dbbfe0c7963e6ce93643dd55630562acd7d1450ff98f801e1e15648ca463934b",
+    "records": 128,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0005_delete.json",
+    "batch_sha256": "48e0992a0d8efcadbcf101c3c1197a6a2de555b1799959b913dda732a1c5ba78"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0006_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "67db0b0de6cc20f380001584e6c047a6aa624900fb4705af8b61b04633caaf9f",
+    "canonical_sha256": "0ff08b196373d1a857d1b195e1886cb14692d11766f823fcd428d0734f3da927",
+    "records": 146,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0006_delete.json",
+    "batch_sha256": "50097988305c6ae93d35742f7d9d758efd706ae89add471194d588e49154a045"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0007_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "218f854ebb1f2a70f7490a7bda587856194e2a851d44752bf4fab9ed362eace0",
+    "canonical_sha256": "4ef403338af1f5c99118d356fcf3217c46dfeb822305c8208512d0179cc83776",
+    "records": 212,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0007_delete.json",
+    "batch_sha256": "70204df2b40454bf7f377c27bf69b10387f365207cc144c24ffaa9b42804415e"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0008_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "27725a88c2bef6bc6e238f975945bbb68a5d8519aaf8da455e652007f015d9d1",
+    "canonical_sha256": "dd78814663d16f7e61e7659104132580d92567eb09a26661839b4e8a26f86602",
+    "records": 276,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0008_delete.json",
+    "batch_sha256": "e99af7d5dab28af7aa61469bfa3e4a3ca1bcc990d99d5d88894cb8699791bd38"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0009_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "c430c3309b1fb7d292276755557563d763b6bce33313d9cab9d2a526cc59b39f",
+    "canonical_sha256": "c6145c1debc322b988bcef8de975c9698e034449ee119ecf09494331dec2f5a1",
+    "records": 111,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0009_delete.json",
+    "batch_sha256": "06090071fb8acb13cd6a3cec117b4b16f711aa68d2c0692d95ece0b550ee22db"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0010_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "172e12df35e8a33e444322bd38cd4582c675ca0eebcc8ae60d7ada6b8a7c5202",
+    "canonical_sha256": "70c836c55352a3539aeab484ced15a33357e73ab0bfac755733dd46e630a152c",
+    "records": 107,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0010_delete.json",
+    "batch_sha256": "460bc45078962537a71deb3778a2941647b9835ebc5f31648e955cccfeb1dc5f"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0011_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "3ee66c6e0beed23b274bacb31c56890f7f35394de8c02c5dde68671671348ab9",
+    "canonical_sha256": "ae3b43696f5973b29aa0f9c16ae63016815796432420b451bf7147e66e4a124c",
+    "records": 130,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0011_delete.json",
+    "batch_sha256": "b80a9662477d026c30d980289d42a50506e6cb8d8e9dbcfcbcde4d9bba1b80cf"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0012_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "81c231f506e1a9490149d671b32d22f1c2fbb96ef1d30ea12ae7da2beb4f2b15",
+    "canonical_sha256": "bcceede07992114c6813386334bf09c6037f7487236306e866aac3d6f6dc6e35",
+    "records": 85,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0012_delete.json",
+    "batch_sha256": "ef43e64f0c17340f5fd8e61c8d8ce86327fbd833f72450a603a2cada0097e532"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0013_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "510f12c23406dc4fad0bc069e856be416a166d1ba79e0f27575597025901cfb2",
+    "canonical_sha256": "313cc329dce3d86d5e9895e5ce49523c71b7d24486a21ae8ffee693d13466d9a",
+    "records": 133,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0013_delete.json",
+    "batch_sha256": "d6b49c03ec4edd4e57edfee66c881e64bc7e9bc91adcde243c2109f01551cad9"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0014_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "d87573efeded6b4db5f950f871ccca268f568462992e4bdeb77c5ca9ee6e0f6b",
+    "canonical_sha256": "0f826c3cebb608c913f68d5255767de7b794afb604ae7cf0b3bdc781df620c3e",
+    "records": 119,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0014_delete.json",
+    "batch_sha256": "fa65dd310b72c9aad81a1304033cec800764192698aeea83be99b73bf15c38b0"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0015_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "3dc7ee651b782b6eb9da84d0bb151dacd9aa4ef9bd2bcb178b4af4de1e533475",
+    "canonical_sha256": "f6d3ee5ab2564dcfc4af70b1a884f35dfcee73427ae046e19749f2556c9062e1",
+    "records": 183,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0015_delete.json",
+    "batch_sha256": "0f292a4776bca74a19ebd97e435d7596a18cbb4a8b7ae6fd2049285a702a1c5f"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0016_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "0245bc40ae4947e646c4c4d571acf20ba56422c248a4e10bc4dfadf3609ea5ab",
+    "canonical_sha256": "202f5c91666447586b671c384d590aae6693c10b78b75a539dd3011a66462e36",
+    "records": 1670,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0016_delete.json",
+    "batch_sha256": "669f1651a8bd4731b7eb633b0c99beaa90a1e7e681d0ea16c062179b825898ec"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0017_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "d2116e48d75ae7a9c465babc6138b63fe284c70a9dee8914312d8aa3961617e7",
+    "canonical_sha256": "6c4911a4eabe96c83af4a08d52e028fcb0b830b5b0caafc4cb060b8b938f0120",
+    "records": 21,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0017_delete.json",
+    "batch_sha256": "e2f343dc3cf4ff992b934f68783d9919c95851f123e758ee01140b1c5fad8dce"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0018_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "7ffba90a880eefee75f24cecd31e45099e71edf93508b8d6a5c1b6f7d843f6aa",
+    "canonical_sha256": "5e82450c35278a1156a04eb46cc8c312aff966a6b5c9146477800678af6ef049",
+    "records": 2725,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0018_delete.json",
+    "batch_sha256": "113bf3af7116f0cce6ac3acc578318c45c6c3c59ab243452595683631d3abbe9"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0019_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "c4bb830d2ae7b9ab92dd39f200262e20d1da41caaf4a777cd0868923e5a4f871",
+    "canonical_sha256": "d2c8574ef9edee2a7da8ee73beffa15d6987889f026f7802d37b167568b927ca",
+    "records": 132,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0019_delete.json",
+    "batch_sha256": "327e81ea2044bc46f37caac10104c276f4c619e5834909790e08043f8d9b2efa"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0020_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "fbac01746e7bf8191fab82b7241e5a65c2a0d62166d4552f2854f27025270d4c",
+    "canonical_sha256": "dd3eec264878f40a905b8d793fed3d605a7e4ba92b031a44b07de8f5c5e4886a",
+    "records": 76,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0020_delete.json",
+    "batch_sha256": "06251cd686be9e71f84f08f1475b9e314422504028e6941bfaa6b8a6fc1e5525"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0021_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "97aeb6f2dad770972b9007f7feb89d49a7a6bec706edca411ca435c1f74cf33d",
+    "canonical_sha256": "11f2dde3eaa732ed22ce6a6526e331d144c2d32201b6b1a5f2908190295e9381",
+    "records": 72,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0021_delete.json",
+    "batch_sha256": "2009c5ced4acaf5ae44b1e2ba911fa4af4bef88a5603147b7272e674e368a385"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0022_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "7aa0e0521fc058a8ec753758b114bdafc9763b2f60e32a0dab6ce83a53e02b6f",
+    "canonical_sha256": "eb59a08bc645b0b25c44d7df1817c25f3110eaebc5a49d10e4e06a01d2ee0f1a",
+    "records": 43,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0022_delete.json",
+    "batch_sha256": "f2043bad99d4c62a2218b280c665de770ea9082d865c2ac602ee5a554bd2d6ca"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0023_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "1bb35e0e03f9bce9e477cb4f42d5910de60c593c7518c7187fe162702054b3b0",
+    "canonical_sha256": "50c821812645442e53c3fb5aaf29468388d2ccf69b5364ef13adf3e81f0c8d5b",
+    "records": 81,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0023_delete.json",
+    "batch_sha256": "5053bc01909e6aae0cd73ff1222fc376a8fa8b9a0dd89744d1a1f92094761d17"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0024_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "edeef908c95ac90fb03730f9cc2d4b875689663b4e135a0e81cf8a07c70d1de3",
+    "canonical_sha256": "fb9c9a66b3295b83ae6a7c4c847c596d11c6fee1f8b457702df33e89bdd542d1",
+    "records": 2,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0024_delete.json",
+    "batch_sha256": "7be902581245206b6d022b04cc10d7a64a03992d10aef1a3265051543a11cd44"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0025_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "23c0e8b6650460d37736c12f0af7c5bb5e9b9492dc1d237a9abbebbb4dde404c",
+    "canonical_sha256": "715671f0f1ca05e21447c57df9a0f9d16d77ff40d57a435103bc9d1a21765ac9",
+    "records": 1,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0025_delete.json",
+    "batch_sha256": "6c4865e595d81f43a6c2ca08458727a4351d9bc5559c6e629faae1b404989572"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0026_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "565943c00afbe9b271e30fb31f570267c736d534edc311e824fe175e10e98f6f",
+    "canonical_sha256": "c38222ca7263dc1c143db06c6873889090710d87d09d16c01414db63d061a1d2",
+    "records": 2903,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0026_delete.json",
+    "batch_sha256": "0df1d2fd1ea67fb279025a949eaa015ebccfc2943b2160462cf0cd3be33a136c"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0027_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "f41633a71f63b7d5223b67a522c21ab2cb03e08386ffd73e0bcf4c2a3e313f88",
+    "canonical_sha256": "467d0e455fe0496d9536b7023a557a744e625933ec7cbdc13fca1f602a2f6e78",
+    "records": 2,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0027_delete.json",
+    "batch_sha256": "d3011159b0b0b291a42d044ddf82d613508d57a8de527c40df37417bcd03a413"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0028_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "cd1b795a2bd3422915921a20c78e5caf220e4aba13bb51216e45d7e9c27d3439",
+    "canonical_sha256": "30504b9309af923ba9a81a5828ac7a6bf06946fbf238180c3aa7bc92b84b32c7",
+    "records": 2,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0028_delete.json",
+    "batch_sha256": "e7b8ffcb4ce9df2003d098f2d592bde95feb0dc5782cf7b4b95b48efb6ab44ff"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0029_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "0e0a9c0b5d0fcb2c0ab3dd590573b950ade2fa688df6d06e56ee0610b19a64f6",
+    "canonical_sha256": "257d58434895124826b2a127b47261b10f27b3329e0e6ca5004b7a715990bc15",
+    "records": 1,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0029_delete.json",
+    "batch_sha256": "3f4a5172d7e970f9db5674619d5601e32ba657946fabd7ffe1b69c3dda2eb8c5"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0030_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "8a384086ec1455c8fa73c3887d24bfe4bf7da778e7a971dc367f03a6bb83b4f0",
+    "canonical_sha256": "e57bc8fb349c838c0ff42dd2c96f27b062e3989bdd0e4299dca31dbac3a506e3",
+    "records": 291,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0030_delete.json",
+    "batch_sha256": "ff7d2610b3b1acce7bfa92dd82d8473bb88603632e11a9db42c845527df6855d"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0031_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "8c1f6fda46583da8baabaa842e856162c834784ed3ccc58ceec608c8723702d9",
+    "canonical_sha256": "a33dcb2b03a158ea3df50da9dcf8fa658f9610c152c92b18bf8cc831dc1721a0",
+    "records": 54,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0031_delete.json",
+    "batch_sha256": "9e9f1067630d1a9b5f001485de4e31eba121f47ac0cd46a74e670d9c05c28d79"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0032_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "add4719187db8073206a513bbb41c212a3f5f9e4953edcb815eb55597f6b905a",
+    "canonical_sha256": "23d6aee544f6d6422be82bc2019bfcbe8b0dc1924ba8e55b595b179c6d86ae14",
+    "records": 95,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0032_delete.json",
+    "batch_sha256": "56d6d2e6c28b8e6c87d1215001b30eb58fe9774106c344022de664301c522eb7"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0033_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "0f88e3c08701a7198b65a0a84c8f9ceaa0bb48a740c2ea2c4e2fc2e918b95950",
+    "canonical_sha256": "938d4261bab003090e934d3f322c8c7fe708e8df98455f0cda5555f8b451f4b2",
+    "records": 144,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0033_delete.json",
+    "batch_sha256": "d7e2e65d0bef8727472856972acaa72849c15208dfc56eaec9d29e002f3df01a"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0034_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "6d1d2110dbb38a952feef628c21910f33da7c47bcd4178a6b2c794792c7d22e6",
+    "canonical_sha256": "76b4fa411d0ab07e3f1f43dc3713a71fe49f5c9c134cfcc630d3e853060358b7",
+    "records": 7,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0034_delete.json",
+    "batch_sha256": "962815851cb0a401fec7b4dc2003d5b15a795fb0006abc2e560b14668a15f374"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0035_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "a1e58bffcd4ee0cac45855d8b789d9d0384f1c74f163a8166586b3b142c88da1",
+    "canonical_sha256": "72c2eafd907bf55345d4ceff0980a3ee36dbb29504bdb9832690164a61218028",
+    "records": 8,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0035_delete.json",
+    "batch_sha256": "ff79e8496c88f6ef5432124bf10f74df9509d078a231fa5b0d0683f4a2f3f08c"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0036_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "6b8398eb311e4c6b84327f51bd96e5a43e26ba327084ed3c2d074fd826813079",
+    "canonical_sha256": "6bcd92d7fa71594ea77abc2d15be38b674a3bad8ba72e4673b40eb159a64671f",
+    "records": 2,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0036_delete.json",
+    "batch_sha256": "8c35d3ff26063232eed43e8899a24bbbcde8711428d4c02364d7a686fde5c8f6"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0037_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "1325c550401c15af61e8a65b9154e97177d9aa81513c5a1efedaf87308602925",
+    "canonical_sha256": "e1b0a4929ca7960808a2e164802801a00dab6ea0b8634292e60cf65865b1bee5",
+    "records": 8,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0037_delete.json",
+    "batch_sha256": "d54690d7e91685f97f57a936559abd79eab3ce59b7d643e103507901175eb95a"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0038_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "35f46f7f9fbd6004b0fc92ddca732e8ea42b6917569525fe2b0d28ea20a8b5e4",
+    "canonical_sha256": "8aa3ee0ef160400413295c1ad8accd79917f47ac213e7c17815f03889727b46e",
+    "records": 326,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0038_delete.json",
+    "batch_sha256": "d3474eb0347346f7e683da4b24ab4c6cc82f11d68b0dcf8a5238beb5d67aba63"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0039_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "73388df45a9207b6d811534e196a7c362c406ef3b010d052e0e31ab19bb597f0",
+    "canonical_sha256": "0147b491a5f015a3b2f07d570e82fbd88fbcd0875bfd0d19f726cfe61b33ce01",
+    "records": 854,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\batch_0039_delete.json",
+    "batch_sha256": "5bc4ed07c922f9a7d6f4fcc66fbaeef8005ad3fd879fc270251dea3d52a8678e"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\recovery_legacy_quarantine_exact_paths.jsonl.gz",
+    "gzip_sha256": "ade06c0afe893980b74b87ea0de445ccf019795922ce820917a7ea9c36779b14",
+    "canonical_sha256": "c472785a03aaa0aaec76933ee6d0f79690c9aa4363e7b75280e9296b4bb2f30a",
+    "records": 483,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts\\recovery_legacy_quarantine.json",
+    "batch_sha256": "f5f5866dac1c4a1823c95ed9286910ef23848c5654cdbf189c139f4054d5aece"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0001_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "14442a823f9c340cfa6fbc1acd3294f951382b417ea3d7fb3e86e4201f8e3f47",
+    "canonical_sha256": "a7efc9ce926b7438c7e12e6f07181bc01d64713ba0b6996088e201ea3552f9cc",
+    "records": 703,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0001_delete.json",
+    "batch_sha256": "d6e0103a1bd1365f06ac57eeb4d71a317b3a764df726ee76a55fb4b5654e4a42"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0002_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "2fbda29f957b84e26a68d0bc0eb4eea7df7e480c2b1cd59f97c4ca84faf1a443",
+    "canonical_sha256": "a3b55bcf5fc3f16c239e3e6360337ab00c186d79b1668b36d7923d9f6366e0c1",
+    "records": 318,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0002_delete.json",
+    "batch_sha256": "0a1f52245c93d1c058d73456a54c8f130d5f840c90872181f088e04be4a5533c"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0003_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "ddb99a80bcece574f0f30d6b1cee68674f72f758da74aa54caa1ea38947725c0",
+    "canonical_sha256": "66dd7b25f0b6989e1445bc723fd78298b1085cbf425f7db76a7ef659ea64654c",
+    "records": 637,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0003_delete.json",
+    "batch_sha256": "ff80e91c320630124fce33ad776be38517d433319ed401691307cafdc9a577c7"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0004_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "62a9cf48ab142bc323d2069bb91b976767806269ca341f7ed188db0d7673b56f",
+    "canonical_sha256": "1724d9dec2a5400007bc7798b163d8272615d4d5cfb2fbdcb1ec42a977bf35b6",
+    "records": 311,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0004_delete.json",
+    "batch_sha256": "8932e2c41bc2b589c125ddcc37c8d0175a5e8418066619b9b4ca9c3ef25b1373"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0005_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "41e334d47767ace5ac2ca0f06f6823a768f1b9845ed75c259d4b20ec7de9a904",
+    "canonical_sha256": "39a7097de207b09e563b311d27c5da9acf98728d6cb8ae40e1dcb8f7421bf314",
+    "records": 1,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0005_delete.json",
+    "batch_sha256": "cbb93d492084c2a3bbd962792dfeadfaf7fa9dc5c080c23502021dabb41daff2"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0006_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "0108c2fc931b5e3ea34ddce4264f82e9e03e5ef06de10e8af93808602aed5bb0",
+    "canonical_sha256": "ae4c3b64381ca79dafd0f7961ab88f97612729c0edf29e3e0dfcf22121b9fa02",
+    "records": 1,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0006_delete.json",
+    "batch_sha256": "a68e50b6e18cb709700f07cd461f4dd93cab9af614882b164aa94cc4796b510e"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0007_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "619d07872977a08c21b1072ca9dcd226e226108110ee72196086d4c67cd951f6",
+    "canonical_sha256": "02de59bbbbf775cef39bbbb7ae178ae0f3dce9d0a04d357fb9dfb6c3e0e838c1",
+    "records": 564,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0007_delete.json",
+    "batch_sha256": "f944671bfe82afb21cb63e412658ff5d0eee3d7626bfce5c1933152cabd977a4"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0008_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "d888e4d7b9aa32420a8d60f67b5b2a9a9603cbb93f824f27aaedc7973856a58a",
+    "canonical_sha256": "80750f58f216374790b40f151553a07c863c51d18c8418843d97629b0381ba95",
+    "records": 562,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0008_delete.json",
+    "batch_sha256": "edd05bdc4101ae6d74766af4b4d446480f6897206da592e90ba0ed26490ce9fc"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0009_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "a8e21d113e814ef0f689a98999a742a48a26bcef7e2552618c0f503903d151fa",
+    "canonical_sha256": "f1a7e6eee427d6b5dfd4239e27c484fada58cb5783da1d15cff2c5144ab5f1cf",
+    "records": 165,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0009_delete.json",
+    "batch_sha256": "2edadb0869537ed150fc1684dadc75b7dbee647b014828179b35cd12bf357152"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0010_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "3ce8781e09401da53602a82871e3d3eb83f87e732bb29733e27f6469fdcc0170",
+    "canonical_sha256": "8fc2e83e9e2d2040d412f8494a5663a75abe42fb4028f56b59b4f8129506455e",
+    "records": 729,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0010_delete.json",
+    "batch_sha256": "1062885c5e6956d2a8b1eb7bf071dbd54e54dd5e89f9c31403c15bd73e72906a"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0011_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "bd3f37c099fc16a56f52b614b98b91e49e7b9210613c1a04083e47303b9e4697",
+    "canonical_sha256": "2efb0c0ced0a1c237cf63edf1ad25a61a33d7655dd687e775a5c31525a6a4d8f",
+    "records": 738,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0011_delete.json",
+    "batch_sha256": "0d38c99b4bda752fd5a65d1b27ecedf2c77dea0eb8a2ced676cdf98de34f9e06"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0012_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "72ced0147814fb13364db43dd556a328c5dd76d6123025e45f0e369380bc03fb",
+    "canonical_sha256": "fa86746273f5e17de2b76b2d51253e9ea43d091d4afe58fd918180fc7223e112",
+    "records": 512,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0012_delete.json",
+    "batch_sha256": "b782ab2e3b3c6380e0df32affd54f458eb86af3650d459c7bf072b72fba07a68"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0013_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "a3f293f04bd94731b14be6ea717ec3fcfea08f502a8c825fcc165b789235c17a",
+    "canonical_sha256": "0223d2be75af4d004a7fa8dfb64b10265a7f0eacb3ba79e8d2f125078e6f683a",
+    "records": 374,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0013_delete.json",
+    "batch_sha256": "fed7f37e73929902d22dddd429dafa60645bcf1ff2540b05e6c35cdd2dfd0d24"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0014_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "f1cb5988d1f8cd085705a642306c01e4a8d031c760e043c94a84c38fba7e313a",
+    "canonical_sha256": "34d04f683ee86e77cbdd06a53af228e61b5883b33ccc002199decb265e59822a",
+    "records": 758,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0014_delete.json",
+    "batch_sha256": "6fb09294a609b3f916b31b9874b0f965e6f9824782084ea88ce5083c48530367"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0015_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "6f7c29af9fec1c8787d5f17c3f313650dff024639ed97dc9d508b57181f5395f",
+    "canonical_sha256": "a4b9fe308e4b1223fbfa4acb537d622d0983b9de092174e298da4f0e0185a9a0",
+    "records": 254,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0015_delete.json",
+    "batch_sha256": "953bc0141d09c91df465e2159316847d9c56854a1a8cdf1f9ba99ae36bce0229"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0016_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "46a365ae4ff3c5ebc0dfcbbde4ef4a131b6a3ec5ea7a4af8fe23906210a6dc35",
+    "canonical_sha256": "27962a466db285117ed99539866ebd087805ec5cfe5ecf1b2e1ac01b2dcffd14",
+    "records": 311,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0016_delete.json",
+    "batch_sha256": "760eaf2895691f5c05d87a0e7aa4bc74a6b523c78393db82624bc4efbb6e0f02"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0017_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "02e5bed3f682dc6bc09484d3240e990f6da07d44d4466986d543300dfc567b53",
+    "canonical_sha256": "568b65b87b7070d3617f16a7de88e7a6388ff37500d3e8ee03441dc9280d3afc",
+    "records": 4,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0017_delete.json",
+    "batch_sha256": "3e386d2f5d79139721b0ab5f1af5545c32702d5e03ef4fa7a38406cdf1bc5e0f"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0018_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "2edabadb7f41dd5496f56cdce16b5328c3eba54fcb18178a63cbf2c4abef81c4",
+    "canonical_sha256": "b69eb749ce78c0de7590e25ce36bea9bfe795a80339eaefd14b814df6ee9de61",
+    "records": 411,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0018_delete.json",
+    "batch_sha256": "c54d5550657939fa64933068fc63db2f7a15a86c6f480bf5b0239e550137d25e"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0019_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "9264c7b6c17695065214e7254ba084ec9273544f6ddfe05610ea45315ed7b74e",
+    "canonical_sha256": "31ea63d77bf92d54111fa36c421c09c3230585c87991469e5681915b01ec26a9",
+    "records": 283,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0019_delete.json",
+    "batch_sha256": "2f659281034cf8fe4928ffa1c454c480cd36310adc9e2906517cabaf98c7847a"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0020_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "40c271b4bb87e28268593e51ccf84f8b5d49bccb45a94948ee075ae10f165647",
+    "canonical_sha256": "20d92063cb70c41e71a262dc2fd3fb99c1d755b865a438454bbb194ea9687853",
+    "records": 956,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0020_delete.json",
+    "batch_sha256": "1e5e925a2ea689f7e235af533ebbfe11db74e34de506a5249e0fe74541cda216"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0021_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "391d81e99a5a7438d29ad685a50c39a8d5d935daedb406abd240b191d0c5840d",
+    "canonical_sha256": "5b37e1e0f66a8b5ccc484ae27d94e1e6827b9b38e3d9e91e4658ccf2f428dafb",
+    "records": 470,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0021_delete.json",
+    "batch_sha256": "3f975e21fe7e1b57d7f4e533a6f9ed81a5fbe7edacda9ea9d790b2b82861379a"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0022_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "6000b104b935a8ba9e4377c926416425aaffd97224de483a62cea1847617ff4d",
+    "canonical_sha256": "4cf1ef2a0ccbfc0e31903bbdaa185cfc971f4f2b9a99621fed60e4a47a4a6fe1",
+    "records": 4,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0022_delete.json",
+    "batch_sha256": "53ce8e822eacb1c3fa2832839b262bfc3976128c93bc03ae190e9378d04b47b3"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0023_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "963bee3537fee23d3b93ed17568bada2369781a8896032ebbff2aa9ee85053ba",
+    "canonical_sha256": "b0a499ba07c65d1f3eea3b23effa9af575693a07e75be55452bcb22e98832c17",
+    "records": 1,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0023_delete.json",
+    "batch_sha256": "4e92b01adcb96955671ae62edf1769a9cee0c99c709904559320702f2a6eacf6"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0024_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "4b59d21aadc909983a17ca7e6eb7396e55e7c0bec93e65982adb6dc8a6cb67da",
+    "canonical_sha256": "a03bdd07845a6f728f6e2ee84d8fda1666f1e8a70cda7607227526f51b28653b",
+    "records": 141,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0024_delete.json",
+    "batch_sha256": "3a50e55e471a7cad52c137974d7370b5011cb316ca9d15f74bdf6c44b2edf9a9"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0025_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "d76a5e87f851ffa1f526149464a99a9e1c0b3fc1485a30d06689154378e1254f",
+    "canonical_sha256": "0f1d0f46ca6255e54917433ff2bd6d418c40404c168bd691cb340219f0f78691",
+    "records": 582,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0025_delete.json",
+    "batch_sha256": "3d621b6ae28e0c99aa0eb8c9ea7e279f199fb1132e1910b42ae9b6752bc18365"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0026_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "8e5a0971773276ce90bd0551011d0653ceab62f12545ff001b8c371117201a7a",
+    "canonical_sha256": "37de2e8b228cf105a5a58df980bea03ff505862424f4bb39b38c0dbf85824ca0",
+    "records": 601,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0026_delete.json",
+    "batch_sha256": "acbb50f578f88ce6080ac895cd4bcdc91447f48f61ea6ba71e36885538f45987"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0027_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "137c2e0a9a989fad6d7064344dd151381c7fe522d27226008e1e1fe8586b7089",
+    "canonical_sha256": "da40a42557f0b7341d957481aa3e5e40d00cfb40077c92c9006617dbd79dc679",
+    "records": 610,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0027_delete.json",
+    "batch_sha256": "097c1e8b12999b589639611d13eaa665818c6e281405f0195e56ed9769cf34f6"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0028_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "555c5b7ee52d58e0a9294f6aa67c4420f94ce8aad416f6f0fb2ba1fc215cfcf3",
+    "canonical_sha256": "01126d4244265e863a12457c6568a34cff81ebeb871505a5590cceb491b6fe08",
+    "records": 485,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0028_delete.json",
+    "batch_sha256": "d3370287fe8884e3a2f67ebc67e4a549aa7d745b1fd29354fde6e97bb42388c3"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0029_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "5e4da0e277edcbfc49fe0dc96df6fcf1ad91d43d01d4a18ed3fa945d6ab1ed16",
+    "canonical_sha256": "43440cd25147b5e6b52fae87bb22c1ead7a990a7c5c192a6c6a54b3c78522c2f",
+    "records": 215,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0029_delete.json",
+    "batch_sha256": "229b92fcf864500cd7b1f3534df8b46fb253ea14c3f1e9e3fc70c5580eaa9099"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0030_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "e10198194e6a6d31dc7bedbfcc6347ef6b3446e3aca3b3e00d0b51207c67f20e",
+    "canonical_sha256": "1f759223563a46845dce37f2540a0bc9b17aad5a4d7751aa76db2f1528444095",
+    "records": 170,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0030_delete.json",
+    "batch_sha256": "1d2c7bcc0bd73b697602070ed8ce0ab57cda65127c5c9becda8e8184472bb4cc"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0031_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "107e875faf0b7e8cc068e6a28a6b7b7189a59089f25aba9b7f943424e95e8d1a",
+    "canonical_sha256": "b99119033e6e5553da7edde1cc15795be952b515c84c1a236e75850c95ce08c4",
+    "records": 1,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0031_delete.json",
+    "batch_sha256": "d7247b8668af96c714f7123dde3962c9aa8aef823a63b180b68fe80e8f4e1f67"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0032_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "eef62fc21b13424b9cc69ee450e8ab11a0d8ef263e7df314c82381dc61771845",
+    "canonical_sha256": "112f174b128551e057f7567836543e034d04635aea5b22ed17a76f89a1a93cc1",
+    "records": 1,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0032_delete.json",
+    "batch_sha256": "79bf7172764171bc1cc00ad274761fd3c63b65f673900838d594867660f96bc3"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0033_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "51fea00e46d6b18a70e3d61e68e0fd43e57d20f937ccac4e83cde5c05a8dfab2",
+    "canonical_sha256": "252b1ac9a7da9b569bc85394f6129b516a183687d39a25ee6520de4c3ea3b30c",
+    "records": 824,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0033_delete.json",
+    "batch_sha256": "5ab8bcb752c6c504a7abd1f5787500c938c6be49409d6afb37376eb5b9fe65d7"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0034_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "415eecd04147089f924f9b6a5ca0e78d484509d7d071129d21f26a66f1c49da8",
+    "canonical_sha256": "28c96cf80987f44cc519c3217a0cd66b2a0878c7bedccaeaee7f2c6b4cb4879c",
+    "records": 682,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0034_delete.json",
+    "batch_sha256": "94165205f480c4b6a0839c897b1160a488c3fda189cef2dcb0577d85ce52fb6a"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0035_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "9d027a412a577cea53412b36a2f1ac1058208db6134fb049a51a255ae041a443",
+    "canonical_sha256": "9fa072a4967b86ffbe33d9bce418f08e524ec624d7ad0e7078a7426ac55ca084",
+    "records": 688,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0035_delete.json",
+    "batch_sha256": "907ac317ebb62b421d2c045431ca8a2f024261ff9ec4f061eb5075863f004217"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0036_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "e385d31d4c03f7c047aca9ca9f8727965a2f428bcf7fab3d4928b8904a349393",
+    "canonical_sha256": "7e893f37867e47c51334607d0088aab39ffb11b488acae82798299ed8a9b2e57",
+    "records": 530,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0036_delete.json",
+    "batch_sha256": "c5641d09e136a8cd1c2ec7a391b29ae480e899574664afde6b227d3c4ab1a9bb"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0037_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "b808993220592971ce3d89b44ff606477b6da70d7415f73e4c930ee6cf5eaa70",
+    "canonical_sha256": "5745ce807c6aa27ae8bceb543be044e04b4e9c72e74f6a19457574b88cf1ef4d",
+    "records": 333,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0037_delete.json",
+    "batch_sha256": "e780c75634b00fce4962097acd8d98af84c315ef6a0bdd060eaf9ea0f152b81d"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0038_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "ca32fd4c07fd620f775ba4f7f5b9c32dfa6a65174e2928b63684ea6d30e3722e",
+    "canonical_sha256": "bed4f0e1ea140dcf046e96f8120373b8b09e3eb7928da3f7a069f1d360887aaf",
+    "records": 30,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0038_delete.json",
+    "batch_sha256": "0a6a3493017ce470e52dde61f79d382eda173e56dad908a3e8b7dc103fd22717"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0039_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "48fe5ea2a6da67a51acd8deb5d868d49990a8b1d6735297912ba6b1904a0ba12",
+    "canonical_sha256": "e90101970637ed4503fda92c8a8c72045d2419a37c9cc0f0e335d297ac4b362c",
+    "records": 7,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0039_delete.json",
+    "batch_sha256": "92c87d245493e226172bcc12a3e449883752d028100e789b65e1fe20522b9b39"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0040_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "e80bcf63c40dc31240603fa3a8fdc90d55b33401a4dff3608625ff4722bdc949",
+    "canonical_sha256": "a99dc8fdd9956f01d31304a380d002240f401476a17e2eef642a4de02e730a6d",
+    "records": 7,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0040_delete.json",
+    "batch_sha256": "4a5cbb825870baa02dd02b21ad6234bd878e6e3a779b58bc543c8eadfee76b71"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0041_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "2abadebde8a54b937c776fb72832acca19a66fa892685f9ac0fd94f2e7e20be1",
+    "canonical_sha256": "b96a83d477fb62009e39a3b97aca22c0c6cf67afaeef41ca6dfacdcce4882b38",
+    "records": 7,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0041_delete.json",
+    "batch_sha256": "8ef49734d98078a7c57aa58086bea851af6601a93977ae9e247fc4c44ec82eb8"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0042_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "67e45b3068b17b669c756f45abea5a64769bed1fb1861d48fd5d230d2cf05bd8",
+    "canonical_sha256": "4e55c8a2f6354ca58814552f4405092b841d69cabc4fc35e3e5e5cd9b531c2db",
+    "records": 7,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0042_delete.json",
+    "batch_sha256": "2495bae10ff2ff6d41e8b18de20047bc9f9f39b7e7beddff7c2807ddf1767bdd"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0043_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "db922ace87d77ef19d698f309062ca025d4a88d566e30e8a80b07b4b998ab873",
+    "canonical_sha256": "46b9bbb6ca456d7b2e70a650e8ca1f02dd6cf7f76c68ebc76474396172a984cc",
+    "records": 7,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0043_delete.json",
+    "batch_sha256": "58fccba4d69c90286c01dc5b5a7183723198aa73dda9da528e0fe4b2b57cde60"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0044_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "39d45076d25097a817631df9f64498fa2f51f72d869ce451af3cd37b2fc3b292",
+    "canonical_sha256": "aaf6deef3b79867f16e942758d7982d3cc410a75f6b5761f1d14f7b282d8f88b",
+    "records": 7,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0044_delete.json",
+    "batch_sha256": "a873abc78d2f2ac82f3c53cde28396d12c725f1dbddf2c2828e0612a6472a68a"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0045_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "9ba3c04952fb5096b683cb8f10d21def16143db85ea5f90e914ba75ec8bebaad",
+    "canonical_sha256": "1b8cf3a82f1ab6452cd26f2c721fb2929015ec46f9f4265ca5877a405dbc8b4b",
+    "records": 7,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0045_delete.json",
+    "batch_sha256": "e1dc23003a4af129cce2cfe535ee45b1b885b5cfc7b6e58ab0f6132a15e03607"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0046_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "e53bad97b9546512b04288f57018e6d0fc1ce87b876b946338d7ee541720e70c",
+    "canonical_sha256": "4ad42f8bc9721f8d4f35619a65a8af8a394e6aba5f846a6960c985ac7933771a",
+    "records": 7,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0046_delete.json",
+    "batch_sha256": "6166ab57d25540964beb5172160c7be07f4e6044a73617cb816dc4b29c26486c"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0047_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "56b965577d0ee5eb4a5cf3a4ea365641085b8e986f17d43b431dddb13eeb03a2",
+    "canonical_sha256": "e0cce73e03a88c77c3e3b9a5a1a48997f2a3216e9de45313f7c9944369850918",
+    "records": 7,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0047_delete.json",
+    "batch_sha256": "adab15dcad163bd3ca8f8794f625a86387fe8e9ddfa61f2014260bc0abf8084a"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0048_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "cfe1646671932e27927e2f6e2c8f32e4286b1d73c982f8642da36a804f24903b",
+    "canonical_sha256": "120a10bb4218621f9e6d2671558ac3011a0e7a91ac24de393e24901fa648d5f5",
+    "records": 1,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0048_delete.json",
+    "batch_sha256": "86ebd4868c16bf1139a81b5ef3ef7f7f6320453830b6a94c7c97753de8c70121"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0049_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "491db45ddf291e9027c4bd1a2397251bca94fa46ca2869fc7a9895d98c685082",
+    "canonical_sha256": "cf5d2775723791f6a31273f5da97cf42c8ee92aa8f48339f66be2d0bed67fd86",
+    "records": 3,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0049_delete.json",
+    "batch_sha256": "d5421d6e0c6364860830f74c1f9c7c6e8c41e07c683c76df480eecbc61cc4c78"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0050_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "1405fff5713290f5aa5687ba1fd54e2259d08117f33c94f07bf4dd4b378ae15b",
+    "canonical_sha256": "cc7b36147a16d826c46aee48b32e5ff61820c4c107dcac6a10ea42e3bc2cb039",
+    "records": 1,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0050_delete.json",
+    "batch_sha256": "c93f123171c599249037ab0ee2ff9d11263e00c76a92bb86611d34ad6a100aa2"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0051_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "555c9b9e89b10743417a4c63f8f8996a5c222c74678688645a7ec01bb33e3686",
+    "canonical_sha256": "f6987d26e862121613f0eaef6de67c2e3a403177be07123257fb811de0385c76",
+    "records": 3,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0051_delete.json",
+    "batch_sha256": "84c8735d65e964bfb9d032067f346f09e0838bc152dc5c2439476e9fa923169b"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0052_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "f43bbb706895811d1733756f397570fbe6c326ecc12ad3559215a76416b22b42",
+    "canonical_sha256": "4f4303e0ed1dc24d19e9b8015218d84eeada886270b62978719856a367b77fe6",
+    "records": 1,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0052_delete.json",
+    "batch_sha256": "a71c6591dd922e2194b6d5cbcae22bab02aa6bfcdc02e9ccb3d8418fd7d90281"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0053_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "9bd1b919ebc5b7f13f9f6a51f34a0afa48745e62bf1f5142211382ad1eec839c",
+    "canonical_sha256": "6094158313f34cf3545a4b24e8ba09715db4c9c53b2e12c01bf95895fb4d43ad",
+    "records": 3,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0053_delete.json",
+    "batch_sha256": "7f8e85d7af56ec33f8a19572813e80fbba3e041dd51f2374c83a9cc7c94db1be"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0054_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "91a06933d371969866f85207c839eae2e219ef8ae4db379bcaa0602a54864254",
+    "canonical_sha256": "a98f7c3cf082b10351f00d19e7ab1309ffd19f6d0f9465e81850c21cba13ac25",
+    "records": 1,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0054_delete.json",
+    "batch_sha256": "92917e062cb17bfc83cab5ab2bf7d431289274df17bd781ce8989a63414e320c"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0055_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "e84fef49a687ea48bad4f18768a098a986f06ebe9603db099dfc3cb926ae1740",
+    "canonical_sha256": "2dd60c10b3c5de5e7533ef164d9be95e34bbae5490811ba43025887a9e8188f5",
+    "records": 20,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0055_delete.json",
+    "batch_sha256": "46793a9f5f20d40c693e8931e42a275141983ad4fa453bd4a82658e205a02832"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0056_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "b0b6fdc0d6b0125d1f46a69fa67b11e2da5239c1701de94e522f45d293493f74",
+    "canonical_sha256": "42b944111d16a5ce63b131c38ff763401ef164e47f65dc86c303e5c7b5cef4ed",
+    "records": 7,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0056_delete.json",
+    "batch_sha256": "97eb7063b3d687694cc6063102a9a09403816cd991fb4895177359371ed3ca4f"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0057_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "55dbd0ef3a49db063c089207457e1bc96976b2a6aa87c4d4c6b305db34bdebb0",
+    "canonical_sha256": "566cee6a52c0c25cedf1bfa0b14c6af3397005f109e6a80473695172d03ad045",
+    "records": 81,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0057_delete.json",
+    "batch_sha256": "a4afd2886d161536fb89a13ac0d7080baae069a1ac4b6879d711b24eb4d79886"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0058_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "41886b1bec27a60a669c8481398bb355bc92f233c150f14ebc7acc662e62ec78",
+    "canonical_sha256": "1c48727f0fbd7bf6078739905f8a6ac41b22bd3572a686422e6cbd33c3a8c40e",
+    "records": 719,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0058_delete.json",
+    "batch_sha256": "d64fa6e295dce26410bb12c17e4e9e76aedf9a9ed658174dd243bc85adadb8a8"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0059_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "e41c466f656671947ef40dd8dd8a8160a1a177c23dbce12a48ce33bf6bbc1287",
+    "canonical_sha256": "d58c58ae61e440b73ba04de7325bfbd6c8da5af685055ca3bbee180c28110f55",
+    "records": 2916,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0059_delete.json",
+    "batch_sha256": "f18302ae66f7962add98da52320490267a1a310497eb3deccef500a408d93e87"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0060_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "ebe3eddc2426ae1e22f1126191d6aa62ca88020ae9372a6def4668e8cb7b7ecc",
+    "canonical_sha256": "c8380378ed3a9eba9e140ee53861b789a32bd846dba13944f3f35abc0b081360",
+    "records": 5000,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0060_delete.json",
+    "batch_sha256": "a9699fb599ef4595da52a0e738405e32ea65585cfb026403e89f3af45671b6bf"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0061_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "ce7523187876fa3ae54a22b0495b19e803a8ecefa1a9d96bb79683a9c21a337f",
+    "canonical_sha256": "9ede61ed41995cbae805f7f99a53eaa4e29500c319fa06de3ac0c1f4da390315",
+    "records": 5000,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0061_delete.json",
+    "batch_sha256": "bb0d114bea13853cd1dd41401d44353608324b805c4cef3ad8a4196d188df31c"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0062_delete_exact_paths.jsonl.gz",
+    "gzip_sha256": "10db7af6f6218adb61a4575a6c921cd739d0ec8c93b40074b3bf35ac33743716",
+    "canonical_sha256": "8918c1af5a85bd361128dce54e2fa085520167555f7625e79e4d9629203e38cf",
+    "records": 2918,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0062_delete.json",
+    "batch_sha256": "df5aedd86bf6d079dce4a60bc55dca2a446d2e0a7944a682edfb8b0a47b7e687"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0063_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "2cd39a1f054e3b880b64105618ffa99c73f4670d3dea9ccb7800408faf21917c",
+    "canonical_sha256": "4c25804bfdfb3618fdaa67b060f9fe8e72e29323423560e6112d55405aeb99a1",
+    "records": 5000,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0063_compress.json",
+    "batch_sha256": "1bfbc47d423d08fa02f1947f99f5deba5782cea97d131e802b902f60b2682f61"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0064_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "5ef1fa4466c467c44981e03782dc4e8cad19b8365030eec3711240fdbf46bc62",
+    "canonical_sha256": "87e541432530a2b02ba6a7a090a9caef84d869f9eefde08c5b968cf6051ea726",
+    "records": 5000,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0064_compress.json",
+    "batch_sha256": "0c486b057d4616904acbb1d4e317743e86e1e4148162da742a22a86048d3771f"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0065_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "03ededfddf11e30bd5f46b626f127e30f4e540814be8812a4a0d1c9589e5f614",
+    "canonical_sha256": "f71c3b6debf9445813e695b2a2b81307fea4a2d3ecf1458ce6c24215cf2467ed",
+    "records": 5000,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0065_compress.json",
+    "batch_sha256": "306200079379bb28b221382a39b69bbaec26d3b262d4349ec66a7b85f8d29e55"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0066_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "9fc6de995db07aca8a48a8f7c669df717231edfed3d0486d4fc58e0551f45c85",
+    "canonical_sha256": "9fb2384b3544a655f015481deda2d76c63a6fa4a6bafe5d67dfe8d5143e1b0a1",
+    "records": 5000,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0066_compress.json",
+    "batch_sha256": "6958e4843ea26a72b9ff7a69cb09613125f1afe0ae677c0798d39b042dd8fa57"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0067_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "c7be4835171ca4a44efab9e676010c2168f05b4da4261a05c0f76677b15d62da",
+    "canonical_sha256": "cdc6dae1f080a3ddd1def077df659d68e929061c74a35d44ba7e65ed544b14eb",
+    "records": 5000,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0067_compress.json",
+    "batch_sha256": "9ae128be590c72623bd3b54305a0cb81231c40cd446db22bf492f987425b036f"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0068_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "a4a93a166ac66b4a6e8c215a7cfb701b42c784de9823d27688e29a77e2cac8f3",
+    "canonical_sha256": "c37045b0215c5157a94bdcbcd586a29bbb30e66de219a1ca149b1db831cf49ae",
+    "records": 5000,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0068_compress.json",
+    "batch_sha256": "e381552380c82b9a02e3d0a724435ee4a899f716c90f99997e9010d610907f99"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0069_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "473595ec41ffce41c905d8074395ba0a8b52b5617c896c1497610448cf95c729",
+    "canonical_sha256": "88ed4f86408242ee7c8d855a3c7dd8fbc60898115f3aba973c046c07031970a0",
+    "records": 5000,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0069_compress.json",
+    "batch_sha256": "f52e95d2471e68182e452e3bfc730ca52e7bc96a4aea4221b2a408774fe9259e"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0070_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "362525d3e918317321b1d795777e4c0459f75508a85659822afdf1d61b9f5229",
+    "canonical_sha256": "f6d5111b5a985c0a5043219dcf72dcc7c1f4db11a8e6eb1fafa4caddba1a82bc",
+    "records": 5000,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0070_compress.json",
+    "batch_sha256": "9fd68430ee4fcd46d14505797a2353524bcf3bf492ac65ad9c000178653777b1"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0071_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "50027651069273166e8d69f99a30a5543122dafc8a267481c0f90a69ed86e9e6",
+    "canonical_sha256": "524d79e902b36a3d38344b739904c52865b9b341770d4910d003655c91faf920",
+    "records": 5000,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0071_compress.json",
+    "batch_sha256": "5ef7dba3a896d381e3473c380221c21c5ee7ae8165db55ebdd878049488e0e33"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0072_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "59c16612c6fb8f6eaf548e0c4bac8067a8ae967b8ceb9c87d952d9210e133502",
+    "canonical_sha256": "6bfb2061be3e47d9f37c3ae07930af75e1aab2da313a92125d42e349ac05ad79",
+    "records": 5000,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0072_compress.json",
+    "batch_sha256": "8fffd408afc4f3632f77e805236c9070ecff477dcff5e234fd79a751838c7854"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0073_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "bca9e9a16544995ff06f4e4a7589be1b59d462f629ddf2aa2e46054f69855051",
+    "canonical_sha256": "bfa2e3f73a4f24dd2847e189517b5d13457ec42554f55dc6a7f4a2bb931a877b",
+    "records": 5000,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0073_compress.json",
+    "batch_sha256": "8f15e45978d8374b6ee10e493c54c49a31ddcad527c55e9cd340fa1fd3c743da"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0074_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "7e8174c2b82d73359bf4a616478a129b12aaf4526290923844c427400f94aa5e",
+    "canonical_sha256": "756e3ccfca9b40b78d1688627d580cb0f62ecb4a05992ef19aabca962fd85a83",
+    "records": 5000,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0074_compress.json",
+    "batch_sha256": "a23d1410cd54d3f3ccdcb3c81186080f77fc5ac02f8aff05bca0e2ff21ff5761"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0075_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "fa303f5ca6796f92bf55bf467f7ae777c888c0a22af43f5a20c4b06aea80160d",
+    "canonical_sha256": "ec0872488a93f1a36fc257adfcb2bcf0d584647ac178537c07c868e30cfdf123",
+    "records": 5000,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0075_compress.json",
+    "batch_sha256": "310dbc29c8ae20385376d535a379ce3d145d7bc2eeecf6be4cb590c9c3199215"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0076_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "5b2ffa9c7e81ed8d2e75c1a22ba830c9c5d8012b1e190d8cabcb78c3aac20dc8",
+    "canonical_sha256": "2b2766f85e65999ab60d36f7728df5e3d8ed06e98c9b51bb40870d6f7d2f31a6",
+    "records": 5000,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0076_compress.json",
+    "batch_sha256": "729d1a32eec3aedab4a70e8382f2a55a9399af670106045b21f36939d7b5d1da"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0077_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "f96649c5b0965342bdfb04b91577479c00bd896ce70c4a80b66acaac3312e2a4",
+    "canonical_sha256": "06b86e67165b365f3cac296744121547a494dc6344d418ebfd733d612909efc2",
+    "records": 5000,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0077_compress.json",
+    "batch_sha256": "3e8fd1ae5ab7d14e759295f5edccd4ed61d677d936eef46a28d101244d955e69"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0078_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "09f62b78ccf175841f0d9218de062597eeaddaf0c5224843df245fe4bbdae471",
+    "canonical_sha256": "cab544d284c28618f8561501cddf81525ed0f95d2058db5300678bbfd86fb783",
+    "records": 5000,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0078_compress.json",
+    "batch_sha256": "82b836fc70f26b55115a2c94c8f62f9270e19b1ee7fb52938405156fdba9d138"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0079_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "004006806a141352b4ec1f511d7c55e490f40445d33ca676d2d3c257f0bc7a22",
+    "canonical_sha256": "2957e173c326aba6d08194029521b03a63add6781ab1a2150db957d720b7b1e2",
+    "records": 5000,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0079_compress.json",
+    "batch_sha256": "4930d321227b9569a92de007ba6891ff0e5d7124bd56918e081a65bac586b425"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0080_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "8ea4a2c9ece617c17c14dcdbe1651d64d891d6a0268d0c6b0725dbd5b1776529",
+    "canonical_sha256": "a4c4f019f970d15e418fb0fff5667720fb74478699c5871572a1472167a9e3d2",
+    "records": 4415,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0080_compress.json",
+    "batch_sha256": "a13e2134e60e55e8fca9814a051daeaef155baf4707912f15a6db6a456d83586"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0081_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "2086fa058291b7ba5a9e310d2c6a6b17e86acc83aac7cb5047a925259d03ca6a",
+    "canonical_sha256": "359675ada4bfd76542578b6810fa830579e9f6de547fdcec6053491ed1ef9305",
+    "records": 5000,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0081_compress.json",
+    "batch_sha256": "30a59b7fdceea4e7724ccf132a9855fe40d9e23da6e8305ba20d1ea98f8ad661"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0082_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "e65bb2c8da78058329111dd38a72cf87c20eef7f3ab1a1408042e18ec940457f",
+    "canonical_sha256": "0ce8b695a5583044cec35233122888c8bcf24b7bd919284c87c32e8dfe95853d",
+    "records": 4884,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0082_compress.json",
+    "batch_sha256": "5dc4b6ffeebb48f91cff7fce90b735d3a2445d84812ab1080b5e68611cd7d7e6"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0083_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "e7ca4f74ccdbe60546f1c555cf22a85f9b7bdecd2a5634abcd0de8ce96673ee8",
+    "canonical_sha256": "848f9723d5567d89eba0986e7cf85f3df24ab670cdfef82f08e268fd04a5e906",
+    "records": 5000,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0083_compress.json",
+    "batch_sha256": "43ecb03de2ecec2f812ccdb23aecfd2dad04dc18fd131f03d3e74379cdcd0c99"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0084_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "b90b0d3e8d7e478f80fbbc6339adb5e05dcd662b5a3ac09aa403c881deabed4e",
+    "canonical_sha256": "45c5fabd96811b39b641e5a8139e886111efd1642289da89f73f3ad68a6a0015",
+    "records": 5000,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0084_compress.json",
+    "batch_sha256": "dc27b641cfab933cc6857675a85874c50f83d0957c18c46a74bed5ae71f467da"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0085_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "4d4d507c4089d1b3701ff807c6acef0329cced8350e7aabb70844864d0d193a5",
+    "canonical_sha256": "85ed5ad0becee4b40b737a5ce7547c82cffba6c96d5e86df686cec11b1cf6fcc",
+    "records": 2930,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0085_compress.json",
+    "batch_sha256": "0dcd65a0b3ddc05f0ad3d4f1513e31ca5713e1028c429a335540dbb676e59331"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0086_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "8e2a9c67678cf47818d5bf809594e4f0ab9c5490bc7e5ec60919a5860eac64ec",
+    "canonical_sha256": "2d61c637cb37e737bae0bf569dbec262359084bb303b4be541982e1a48681ec1",
+    "records": 1061,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0086_compress.json",
+    "batch_sha256": "2ae65e14685775b8dc24413704364e24ecc80c5491ec2c7178179b03c8f53dac"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0087_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "7c52850805a8901c48287be9aa515e65e5df25ddad172da70502d1d6c3115b77",
+    "canonical_sha256": "b5c9685e3f8c97afe024900abf59f1b353ad3251e8ae116896e704721f28199a",
+    "records": 1505,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0087_compress.json",
+    "batch_sha256": "031ba2d9d9dfb7c598a169b95e1b0c88648683103129a4e1c1556daa70c9fd54"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0088_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "b344726d0549522525512ac24a59f82ed04592ecfe71954377152dbe27bfd780",
+    "canonical_sha256": "4ca32374169aeaf834280ff4ad41d21a4b750c8d1375eb6b6505b7184e9423c3",
+    "records": 5000,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0088_compress.json",
+    "batch_sha256": "53677d931cd5291efa1584b822b4f51f307b64dcd26495823659c05ae9be3207"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0089_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "cbdeeeb1566b75a51a3ea8c637bd6431115a352d68c833f5526f1029338e5e19",
+    "canonical_sha256": "ab41d59e2211c778cb564f40172ce9e33cfba1f3b3a01713b5220a07532b6b24",
+    "records": 5000,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0089_compress.json",
+    "batch_sha256": "68d9b6fcbfcd763b0cfee937f464683da1cd14403d26b140c0b9237f7328091b"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0090_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "da06ec36f6bd730b8da6ff20889027623b2ef65cce0ce92227435bc95ab13104",
+    "canonical_sha256": "4dc513c61897ccca3b6340322a8c59445366c0a491ed602c97d83a7785b9dc1b",
+    "records": 5000,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0090_compress.json",
+    "batch_sha256": "1f6476f59d1ae8dd7160b8e1deb11d597dfea29ea764c8ff882c271f4f47a545"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0091_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "bb3f9cf96accab42841237adb3ac464f0e17bc3da3e4223fe7858f5ce6de8a64",
+    "canonical_sha256": "dc980bbe0a5a74c1622c7f58ef9683d90732ead38edbbb40243fd0241b509a82",
+    "records": 4406,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0091_compress.json",
+    "batch_sha256": "92c9e9cc0e434556b04468773be42570a27f97a2b9a6143cf60a21afa2f4f6b6"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0092_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "e2a0f5eb3b158dcfda6dbf53c4b9072e5eecd7c6e4df36466bf52638f2b2c6f1",
+    "canonical_sha256": "46e6da18d882ace9c3e76960444fa5d0f09348b382071e2ff8c8cee039bfe22c",
+    "records": 5000,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0092_compress.json",
+    "batch_sha256": "69bc59d97ac8bf678d82e77a9a20734c0d18a572987c8544fde50d8e3c3bdc62"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0093_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "7ea379280d517c718a7441801fef9d455bc4f319ddb14fa3f72cb485ee2ef862",
+    "canonical_sha256": "a25c41c506ef624385a3224317316f6b2f6ac9936137e14e435369ba6499a069",
+    "records": 5000,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0093_compress.json",
+    "batch_sha256": "3d5bf67b4962f7d5ec0f63baee0ad7a4232cd175a66a79e99334273962fe070a"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0094_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "123dfca381348ed10b950d55d01aef1858216a973a7472c8ba59c01b74010bda",
+    "canonical_sha256": "e2e3a058d84a3f5c16b04b199b1cf54bb1d6f4e6ab9b3f8aab3580668b8a46e0",
+    "records": 5000,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0094_compress.json",
+    "batch_sha256": "f58775d6f8d464df7b87c015a66ee111b58214d097d54cb2be6e432142ab8ef8"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0095_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "3956d52e3543f016735b235f84dc578b5208967c730ea8dbae6768079e158868",
+    "canonical_sha256": "617d579d76931fc03304899aeacffa1bd617e027ed812ab05c434c11f65aae34",
+    "records": 5000,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0095_compress.json",
+    "batch_sha256": "c1d3f8e98dd5c7c333bfe8e7dde940ac4918142af5490aa494e79a6ddec53f8d"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0096_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "12670f297e437b1727b3104358791cd853e446b802b3d64d691203bfdd3f291f",
+    "canonical_sha256": "6898d0944d8f41094dd6a0a5792855c116cfa4a2e6ec49c2d02a25b006f56f11",
+    "records": 5000,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0096_compress.json",
+    "batch_sha256": "5508ce3ea5d132865cdaf61971559b42fc6c47b55fe2d580366130c36b87cbea"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0097_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "ef375fc63bebe447adf55302400b7aae431851548b7c9f9e3e9d7cd914662925",
+    "canonical_sha256": "12f5ee39b7757011ed7930a4033858441c1c3fc06709e6bf48d240542a36a232",
+    "records": 5000,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0097_compress.json",
+    "batch_sha256": "64d4b7bfda1488b3999487c864d7ee6c983db9b38c798fd82a71c46cf19aec8b"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0098_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "5b54322896c569c55720c73e86083990d6e420a2b841856c6b1c65ad7948271f",
+    "canonical_sha256": "960173f7f893bd51a3890045d3dcdcf4897217904588f3ac53f6b7f85832c965",
+    "records": 5000,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0098_compress.json",
+    "batch_sha256": "1ba0679699c6d0574d1fc8cd6f3e4a6148623e0e9fe5dc3b5a45f14dc0771aac"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0099_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "8a1a75e136eca62bcbb38a8d064de1f1c3ef4f32407d8cbee93925a08a771edd",
+    "canonical_sha256": "1cf85332275f076c642080e134919eed47814dd623840f40460df9baf87dba71",
+    "records": 5000,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0099_compress.json",
+    "batch_sha256": "238d9e2bb5bdb235e6b10b416314c8b122dbadb30259f74373786a3cc3890e4f"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0100_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "6567d657bb6b5e4ad7d3e32fa30aa802439db6653565db0460b1d470ca51b1eb",
+    "canonical_sha256": "0c0b83d9afe6f56075340edf7c084abf0c6a2f57b4c5df2e810ee294030636d8",
+    "records": 5000,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0100_compress.json",
+    "batch_sha256": "8c9815f7249d77b77d298aa0098e66bc0ddea356bfadbb514aea7968c6b96131"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0101_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "fa9ffb90db4d05e3c5226d62a1a85e29945304ed5f3d8f0d09142c9ea95884e6",
+    "canonical_sha256": "016e9a6b99b66be19099e08f8bbdaf8a87f8db7f83877d59d295fab1b351dbb5",
+    "records": 5000,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0101_compress.json",
+    "batch_sha256": "af70ce9481674f9fc7e161ae88205f028cd68ec15a4bcb46320454e84b50bdc1"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0102_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "74fbd92685a358de13e2cca8386b441a56831d8ab8e70e170293ce40f3ce4d58",
+    "canonical_sha256": "8580ec4c2346ea39550efa7af518b406d260e59e0be76546513d50a97588b62e",
+    "records": 5000,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0102_compress.json",
+    "batch_sha256": "b287ca6387d284ab06b891014c3473a8f27e1344846344c4609084582533efe5"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0103_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "19af72348b9e1d9f04f284c01e731d79cef172c39f2f74d037a9fd6108c0935b",
+    "canonical_sha256": "9003e8e63513096c8ded8e97a7462c229e51d37849eba2ba8cc5583fe5ebe88b",
+    "records": 5000,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0103_compress.json",
+    "batch_sha256": "cce03f419366c1a69e490f5887c0e698ee3cfd8ffd0968bb750a9160c4476963"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0104_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "c3624491b291fb8551199c4db2d66384832e85f52d9fcaf43356bae0f69d0978",
+    "canonical_sha256": "9109dc2c626526a9352d6d457e7ec8be6872d0b964df8fd1823396f5d347ad93",
+    "records": 5000,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0104_compress.json",
+    "batch_sha256": "d1f145e554c89a7a8ef5379e804e6e0a8198b1c06af79f1c9ba39e72440548a1"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0105_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "81d37f743c5c0abc4df999d6a0c5960f66bdc5034112a61c00d36a52f5f48599",
+    "canonical_sha256": "1ac055409ddbdf19d005cfbb51e3d52d0de865e10a92ca6dbb08aa6f32d09841",
+    "records": 5000,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0105_compress.json",
+    "batch_sha256": "8117686547fac0bb4510f9865e5016e7477dde84201cca7b4b5cccb45138e424"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0106_compress_exact_paths.jsonl.gz",
+    "gzip_sha256": "a2a133489985a4d7087224d9f4613b9b75409c6013c2e7874154d71a8e94620b",
+    "canonical_sha256": "794cebd10c33a6e0110f03e7061e8bbb6239e2d50af9582bab4077223ab69dc2",
+    "records": 1964,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0106_compress.json",
+    "batch_sha256": "b452bc00a6c1a9a72f075c57eb1de82af4c60fb4d8351066c4ef520b996434dd"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0107_db_rotation_exact_paths.jsonl.gz",
+    "gzip_sha256": "8d7836c41aab4bbbc51517c2e9148363c9e1cc9093b0e81b566784d7467cce9d",
+    "canonical_sha256": "4e77c9b9fb78e46638a124bae8e394393d79b40345683ccf66fc1fd3f6bafb8e",
+    "records": 1,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0107_db_rotation.json",
+    "batch_sha256": "d0d63c5cf28f3e529d37d34560c4324283f96d082f805bd40eefd890078cef39"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0108_db_rotation_exact_paths.jsonl.gz",
+    "gzip_sha256": "4df3825b4da0d3fa2a109d967de1a2a49b471cd9da2d28c584773d54931e454d",
+    "canonical_sha256": "6c631b0f6e02f95328786b49f528fddfa7a2d8ae8481287b98d7b9caf620f14f",
+    "records": 1,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0108_db_rotation.json",
+    "batch_sha256": "be6c88f614eb94e375959b054041555cdb9828a1e13962afee2cc733172ec532"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0109_db_rotation_exact_paths.jsonl.gz",
+    "gzip_sha256": "a1625807c48154fd0ab53b74968ad916da703319fdc11e9cd3bfaf29a282457b",
+    "canonical_sha256": "cc4fb25aa56bd48d9249a157c55e850dcca21b581358c2a14b07626251146793",
+    "records": 1,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0109_db_rotation.json",
+    "batch_sha256": "6429e720428b884cab43fb37a9a773d1298b05f84b7b68a69d64663c50554eb4"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0110_db_rotation_exact_paths.jsonl.gz",
+    "gzip_sha256": "6598fb154cb13dcf9e79e026841f56725801bb984921c34c10ad924e246c5004",
+    "canonical_sha256": "737b359f1337e85b66a1f713c373d739b9a5599bef6020b88962d038af816c0a",
+    "records": 1,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0110_db_rotation.json",
+    "batch_sha256": "583282deffefa50cf20b25421778ec1a28c4f2dc5872dbadc158d2f678bf2c46"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0111_db_rotation_exact_paths.jsonl.gz",
+    "gzip_sha256": "fa549ebec8c9df72c577658e14bb69dca5161c96bb2ce4d5b11ab1af472a723f",
+    "canonical_sha256": "1efe9d1c54baab76804be72b4715c6e597d7c26ac88d20005907b8d029dd679a",
+    "records": 1,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0111_db_rotation.json",
+    "batch_sha256": "bbfa046297c7496ddc110625cf72755690fdfd12d65e0ed4b59ec97417ad0e68"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0112_db_rotation_exact_paths.jsonl.gz",
+    "gzip_sha256": "ecd1a3114d04b126e3c4d4e136603e08c37eeb3900bee8efe36566ee7cea865b",
+    "canonical_sha256": "aa0e730e71630d4c79c3271c9b417c03d2bfd064fca41520b7254fa2f0e986dc",
+    "records": 1,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0112_db_rotation.json",
+    "batch_sha256": "aef987473d1285b80cd8d0e7e3873fa5634d870fb0b8184932ddba623a0468b0"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0113_db_rotation_exact_paths.jsonl.gz",
+    "gzip_sha256": "7d7135a044dc7cd5016e9229582dc92a810298748854fa49de3890ebcf271473",
+    "canonical_sha256": "d236a6932b0137be576ca09a5883a1d3798e38c83e21214964fe9cd3203d9f96",
+    "records": 1,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0113_db_rotation.json",
+    "batch_sha256": "3078c4f158aa8e6b8e73e1bd247be0527720078798491cd0a8813ea77bfa24d4"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0114_db_rotation_exact_paths.jsonl.gz",
+    "gzip_sha256": "aef93ff45a07539b2cdc4ef6e04cedad0e8fa92fb9d34ffe4f0079b48e95cf2a",
+    "canonical_sha256": "a75bcef4be70fdde3f4d599ec85e40dc59fb83191cae5b0e62bb20ed1a89ba19",
+    "records": 1,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\batch_0114_db_rotation.json",
+    "batch_sha256": "c7b159def404060f32f1b256f150e17f2e89a7d9274dabe1e87a79b81e5a4569"
+  },
+  {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\recovery_flat_quarantine_exact_paths.jsonl.gz",
+    "gzip_sha256": "e83c6db5e4c24d3e1f6dac718c7d1b7118817d2423ab54710f4f03148918d461",
+    "canonical_sha256": "18986bce5164d6a9036a28c69010866073433fdf8d26e4195ad7370080d98a49",
+    "records": 35,
+    "batch_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-31_4c0a5ae7_backup_retention_phase2_receipts_resume1\\recovery_flat_quarantine.json",
+    "batch_sha256": "f208db36ad20c33d9871155758594d9ea415a5a11c11c56648e67ea2b5102f9b"
+  }
+]

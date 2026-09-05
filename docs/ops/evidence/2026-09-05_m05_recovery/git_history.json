@@ -1,0 +1,17 @@
+{
+  "command": [
+    "git",
+    "log",
+    "--all",
+    "--format=%H %aI %s",
+    "-n",
+    "16",
+    "--",
+    "docs/ops/evidence/*4c0a5ae7*",
+    "tools/strategy_farm/build_backup_retention_manifest.py",
+    "tools/strategy_farm/execute_backup_retention_phase2.py"
+  ],
+  "exit_code": 0,
+  "output": "09877afd0c9402e386d711f1b10276448d4aff85 2026-09-05T06:18:30+02:00 fix: retain DL-090 native source bindings\n99143f421feccc325778dce4ef685b3c9616e6db 2026-08-31T17:58:27+02:00 ops: execute sealed backup retention\n225e9d20374064396fd3d473cff98fcd32d73da5 2026-08-31T09:49:22+02:00 ops: seal backup retention phase 1 manifest\n",
+  "stderr": ""
+}

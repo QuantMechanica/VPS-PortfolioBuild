@@ -1,0 +1,173 @@
+{
+  "restored_files_verified": 27,
+  "checks": [
+    {
+      "id": "13bcc25b-7429-47da-8644-5f617e42d3f3",
+      "source_hash_match": true,
+      "output_hash_match": true,
+      "json_valid": true
+    },
+    {
+      "id": "4e0079c8-3938-4da8-8094-a7adfe35b9da",
+      "source_hash_match": true,
+      "output_hash_match": true,
+      "json_valid": true
+    },
+    {
+      "id": "26e48fb7-cff7-422a-8215-ac8481ffbecc",
+      "source_hash_match": true,
+      "output_hash_match": true,
+      "json_valid": true
+    },
+    {
+      "id": "3ea588c2-aaf5-4a22-8e5d-6d2675efc50a",
+      "source_hash_match": true,
+      "output_hash_match": true,
+      "json_valid": true
+    },
+    {
+      "id": "c733b18d-17f0-424b-9374-51250130f259",
+      "source_hash_match": true,
+      "output_hash_match": true,
+      "json_valid": true
+    },
+    {
+      "id": "0c79372c-ab3b-40b6-8174-45a59aad7981",
+      "source_hash_match": true,
+      "output_hash_match": true,
+      "json_valid": true
+    },
+    {
+      "id": "4b41302f-b63e-44e8-be26-046b4a131e96",
+      "source_hash_match": true,
+      "output_hash_match": true,
+      "json_valid": true
+    },
+    {
+      "id": "ebd5b796-c008-4b33-a16f-e3450173776e",
+      "source_hash_match": true,
+      "output_hash_match": true,
+      "json_valid": true
+    },
+    {
+      "id": "320f0e5c-ef2a-48ed-a3b1-ac2e2ff58328",
+      "source_hash_match": true,
+      "output_hash_match": true,
+      "json_valid": true
+    },
+    {
+      "id": "f760e655-622e-40a8-a70a-f7cd9f929078",
+      "source_hash_match": true,
+      "output_hash_match": true,
+      "json_valid": true
+    },
+    {
+      "id": "c23d9375-4ea2-482e-a336-a505edd99baf",
+      "source_hash_match": true,
+      "output_hash_match": true,
+      "json_valid": true
+    },
+    {
+      "id": "f871ea28-889e-4a43-9b48-e077495d01fc",
+      "source_hash_match": true,
+      "output_hash_match": true,
+      "json_valid": true
+    },
+    {
+      "id": "88806c7a-2733-4fb0-b19e-f8e360015c6a",
+      "source_hash_match": true,
+      "output_hash_match": true,
+      "json_valid": true
+    },
+    {
+      "id": "3666ab03-57af-4651-98cc-c304bff56e8d",
+      "source_hash_match": true,
+      "output_hash_match": true,
+      "json_valid": true
+    },
+    {
+      "id": "7e9dd76e-0224-44fc-b116-7db5530778e2",
+      "source_hash_match": true,
+      "output_hash_match": true,
+      "json_valid": true
+    },
+    {
+      "id": "11f00c06-1d60-44ec-a0d8-53e24c8de116",
+      "source_hash_match": true,
+      "output_hash_match": true,
+      "json_valid": true
+    },
+    {
+      "id": "6ea9bebc-91ce-411a-b995-373245a72b17",
+      "source_hash_match": true,
+      "output_hash_match": true,
+      "json_valid": true
+    },
+    {
+      "id": "64ffdffe-01d7-456f-aaed-9a05a3174ebb",
+      "source_hash_match": true,
+      "output_hash_match": true,
+      "json_valid": true
+    },
+    {
+      "id": "fd3c1f85-6c3d-4ce0-9599-5d07544c084f",
+      "source_hash_match": true,
+      "output_hash_match": true,
+      "json_valid": true
+    },
+    {
+      "id": "31e19c25-1edd-4516-86dc-86d78529250f",
+      "source_hash_match": true,
+      "output_hash_match": true,
+      "json_valid": true
+    },
+    {
+      "id": "be5ffa78-fdfb-4718-af89-5f7fc7e8dee3",
+      "source_hash_match": true,
+      "output_hash_match": true,
+      "json_valid": true
+    },
+    {
+      "id": "4bbdeeab-112c-4c85-8fdd-4fbe847f1740",
+      "source_hash_match": true,
+      "output_hash_match": true,
+      "json_valid": true
+    },
+    {
+      "id": "fcda5ce6-e487-49b6-9f8c-88f0b2473402",
+      "source_hash_match": true,
+      "output_hash_match": true,
+      "json_valid": true
+    },
+    {
+      "id": "fdba6a1c-13d2-4759-a2b8-46d106692699",
+      "source_hash_match": true,
+      "output_hash_match": true,
+      "json_valid": true
+    },
+    {
+      "id": "6f4fff24-3a6d-40e3-aaca-773b5195f6d2",
+      "source_hash_match": true,
+      "output_hash_match": true,
+      "json_valid": true
+    },
+    {
+      "id": "a4c3b222-0ecf-4c3a-8497-0b4766a1e291",
+      "source_hash_match": true,
+      "output_hash_match": true,
+      "json_valid": true
+    },
+    {
+      "id": "40e9d58d-bcb8-45bd-a294-4270d74c9440",
+      "source_hash_match": true,
+      "output_hash_match": true,
+      "json_valid": true
+    }
+  ],
+  "no_exact_named_alternative_for_deleted_targets": true,
+  "cohort_unique_count": 156,
+  "special_1328_outside_156": true,
+  "all_primary_roots_empty": true,
+  "no_original_paths_written": true,
+  "original_baseline_hash_unchanged": true
+}
