@@ -1,6 +1,6 @@
 {
   "schema_version": "qm.owner-decisions/v2",
-  "revision": 2,
+  "revision": 3,
   "maintainer": "Mission Control decision store; OWNER answers are receipts, not execution authority.",
   "updated_at_utc": "2026-09-02T17:47:14Z",
   "items": [
@@ -178,6 +178,25 @@
       "severity": "action",
       "status": "OPEN",
       "yes_effect": "Genau EIN Claude-Auftrag: Push des Branches refresh/apple-2026-09 nach origin, Netlify-Deploy gemaess netlify.toml, Live-Sichtpruefung, Eintrag im Deploy-Log. Keine Aenderung an Fabrik, T_Live oder Repo-main."
+    },
+    {
+      "category": "Live-Buch/Governance",
+      "cost_of_wait": "Solange Bedingung 1 (authentifizierter Pointer) nur durch einen signierten Mint erfuellbar ist, den der aktive Freeze blockiert, bleibt der Freeze-Kreis geschlossen: keine saubere Identitaetsbeglaubigung des laufenden Buchs, Burn-in-Abschluss und jede spaetere Buchaenderung haengen daran (Audit M06, Priority 0).",
+      "created_at_utc": "2026-09-05T12:16:23Z",
+      "depends_on": [],
+      "due": null,
+      "evidence": [
+        "docs/ops/evidence/2026-09-05_m06_live_identity_attest.md",
+        "docs/ops/evidence/2026-09-05_m06_identity_attest_proposal/reviewed/proposal.json",
+        "docs/ops/CEO_AUDIT_INTEGRATION_2026-09-05.md"
+      ],
+      "id": "OWNER-DEC-LIVE-IDENTITY-ATTEST-20260905",
+      "no_effect": "Der Freeze-Kreis bleibt: Bedingung 1 ist nur ueber den signierten Mint erfuellbar, den der aktive Freeze verweigert; das laufende Buch bleibt ohne beglaubigte Identitaet.",
+      "question": "Darf die Identitaet des UNVERAENDERTEN Live-Buchs (exakt gleiche Roster-, Binaer-, Setfile- und Risiko-Hashes) durch einen von Dir beglaubigten Attest-Vorschlag (`--attest-current`, inert implementiert 8a483f5558) als Freeze-Bedingung 1 gelten, waehrend der Freeze AKTIV bleibt? Aktivierung einer neuen Version bleibt die volle Zeremonie; ein Risiko-, Binaer- oder Setfile-Wechsel wird weiterhin verweigert.",
+      "recommendation": "JA. Das ist die technische Aufloesung des Freeze-Kreises aus dem Audit: Beglaubigung der bestehenden Identitaet ohne Risikoaenderung, Freeze bleibt bis zu seinen echten Schutzbedingungen aktiv. Der Attest-Pfad signiert nichts und schreibt keinen Runtime-Pointer; Negativtests verweigern jede versteckte Aenderung.",
+      "severity": "action",
+      "status": "OPEN",
+      "yes_effect": "Genau EIN Claude-Auftrag: (1) CEO erfasst eine frische Read-only-Beobachtung des Live-Buchs (risk_freeze.measure, <= 300 s alt), erzeugt den unsignierten Attest-Vorschlag und legt ihn Dir zur Beglaubigung vor; (2) Codex implementiert die Consumer-Ausnahme hinter Flag: ein OWNER-beglaubigter Attest-Vorschlag der unveraenderten Identitaet erfuellt Bedingung 1, Freeze bleibt AKTIV; (3) Deine Beglaubigung selbst ist ein separater Klick/Receipt in Mission Control. Kein AutoTrading-, Risiko- oder Deployment-Effekt."
     }
   ]
 }

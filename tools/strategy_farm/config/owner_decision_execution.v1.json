@@ -705,6 +705,38 @@
           ]
         }
       }
+    },
+    {
+      "id": "OWNER-DEC-LIVE-IDENTITY-ATTEST-20260905",
+      "todo_id": "QM-TODO-20260905-LIVE-IDENTITY-ATTEST",
+      "priority": 87,
+      "choices": {
+        "YES": {
+          "mode": "APPLY_AND_VERIFY",
+          "objective": "Resolve the freeze circle for the UNCHANGED live book: capture a fresh read-only observation (risk_freeze.measure, <= 300 s), generate the unsigned attest-current proposal for OWNER review, and commission the flag-guarded consumer exception under which an OWNER-attested identity proposal of the byte-identical book satisfies freeze condition 1 while the freeze stays ACTIVE; a version/risk/binary/setfile change is still refused and still needs the full activation ceremony.",
+          "allowed_actions": [
+            "Read-only observation of the live book (never a write to C:/QM/mt5/T_Live, never AutoTrading)",
+            "Generate and record the unsigned attest-current proposal + receipt under docs/ops/evidence/",
+            "Enqueue, review and integrate the Codex consumer-exception implementation (flag default off; negative tests for any hash drift)",
+            "Prepare the OWNER attestation ceremony as a Mission-Control receipt step; commit with explicit pathspecs"
+          ],
+          "acceptance": [
+            "Proposal ELIGIBLE_FOR_OWNER_REVIEW with all hashes byte-identical to the deployed book; refusal on any drift proven by tests",
+            "Consumer exception implemented behind a flag, default off; freeze state ACTIVE unchanged; no runtime pointer written",
+            "OWNER attestation recorded as a separate receipt before the exception is enabled"
+          ]
+        },
+        "NO": {
+          "mode": "DOCUMENT_AND_VERIFY",
+          "objective": "Record the rejection; the freeze circle stays and the running book remains without an authenticated identity until a signed mint becomes possible by other means.",
+          "allowed_actions": [
+            "Document in OPEN_ITEMS_STATUS.md and the receipts file"
+          ],
+          "acceptance": [
+            "No code activation, no ceremony"
+          ]
+        }
+      }
     }
   ]
 }
