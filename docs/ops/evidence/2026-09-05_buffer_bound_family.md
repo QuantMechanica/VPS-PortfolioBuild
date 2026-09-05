@@ -25,7 +25,7 @@ QM5_41193 is a **different predicate finding**, `EA_ML_FORBIDDEN`, triggered by 
 
 ## Predicate-fix proposal for review
 
-The current implementation is `tools/strategy_farm/build_gate_hardening.py:433` (`_prior_bound_guard`), `:461` (`_loop_proves_bound`) and `:516` (`check_indicator_buffer_bounds`). The guard uses `[^)]*` across conditions containing `ArraySize(...)`, so it cannot reliably parse nested parentheses. The loop proof recognizes only a narrow forward `for` header and matching textual bound. It does not derive the finite bounds shown above.
+The current implementation is `tools/strategy_farm/build_gate_hardening.py:433` (`_prior_bound_guard`), `:464` (`_loop_proves_bound`) and `:516` (`check_indicator_buffer_bounds`). The guard uses `[^)]*` across conditions containing `ArraySize(...)`, so it cannot reliably parse nested parentheses. The loop proof recognizes only a narrow forward `for` header and matching textual bound. It does not derive the finite bounds shown above.
 
 The proposed change is a restricted, fail-closed local proof pass, with these acceptance conditions:
 
