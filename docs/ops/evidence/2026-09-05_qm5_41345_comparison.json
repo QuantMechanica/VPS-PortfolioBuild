@@ -1,0 +1,322 @@
+[
+  {
+    "ea": "QM5_21502",
+    "work_item_id": "14c3ff76-eded-40cf-b857-5e761a042e0e",
+    "verdict": "PASS",
+    "summary_path": "D:\\QM\\reports\\work_items\\14c3ff76-eded-40cf-b857-5e761a042e0e\\QM5_21502\\20260817_182837\\summary.json",
+    "summary_sha256": "77d43add090cd92edbe2ec451245f3575b154039432f1516644e2d6a76a9984b",
+    "symbol": "XAUUSD.DWX",
+    "period": "D1",
+    "model": 4,
+    "from_date": "2018.07.02",
+    "to_date": "2022.12.31",
+    "trades": 200,
+    "oninit_failure": false,
+    "report_sha256_matches": true,
+    "expected_mq5_sha256": "dd505e2c0dcdc10cc2cf87e049f8bf5a33c7b8d6c7e1faab1200c3545f05577f",
+    "expected_ex5_sha256": "ae50c4cdbac3382f427060f09962a78d8620148f2b5c4c6bee8d85c67aa7cec4",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_21502_xau-weekly-tsmom\\sets\\QM5_21502_xau-weekly-tsmom_XAUUSD.DWX_D1_backtest.set",
+    "setfile_sha256": "a7fbf7bd5596ed2fbb16cbfd3880e66e67aebd6e251abdbc6aa048c92b656a45",
+    "logger_path": "D:\\QM\\reports\\work_items\\14c3ff76-eded-40cf-b857-5e761a042e0e\\QM5_21502\\20260817_182837\\logger_sample.jsonl",
+    "logger_exists": false,
+    "logger_sha256": null,
+    "event_counts": {},
+    "event_samples": [],
+    "tester_log_path": "D:\\QM\\reports\\work_items\\14c3ff76-eded-40cf-b857-5e761a042e0e\\QM5_21502\\20260817_182837\\raw\\run_01\\20260817.log",
+    "tester_log_exists": false,
+    "native_input_lines": []
+  },
+  {
+    "ea": "QM5_41345",
+    "work_item_id": "fb0b6989-719b-5697-998c-82fb0045cd27",
+    "verdict": "ZERO_TRADES",
+    "summary_path": "D:\\QM\\reports\\work_items\\fb0b6989-719b-5697-998c-82fb0045cd27\\QM5_41345\\20260905_073003\\summary.json",
+    "summary_sha256": "1a56eadfd0873ceed73a03ae1b477592d597858d57fb68e400e324a3435f2e14",
+    "symbol": "XAUUSD.DWX",
+    "period": "D1",
+    "model": 4,
+    "from_date": "2018.07.02",
+    "to_date": "2022.12.31",
+    "trades": 0,
+    "oninit_failure": false,
+    "report_sha256_matches": true,
+    "expected_mq5_sha256": "9e82102aa6739e8dff39dde19fe0bdcb6f30363c340878a5dd045f04ffd8b6ec",
+    "expected_ex5_sha256": "3a8968fc2d66a9a52ed9d58b8bdf5532be808ed8a82a94434ad5b79ae3aa6bf3",
+    "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_21502_XAUUSD_DWX_2019_2025\\base_setfiles\\QM5_41345_xau-weekly-tsmom-opt_XAUUSD.DWX_D1_04f877708023eccf.set",
+    "setfile_sha256": "04f877708023eccffdd014597808d7426caeb1e8fccf6eee8e743022c0e1605b",
+    "logger_path": "D:\\QM\\reports\\work_items\\fb0b6989-719b-5697-998c-82fb0045cd27\\QM5_41345\\20260905_073003\\logger_sample.jsonl",
+    "logger_exists": true,
+    "logger_sha256": "ff59c957e376b02e3dd8f3148ba6e57703a966ea6f3337398a388445fc52884d",
+    "event_counts": {
+      "SYMBOL_GUARD_INIT": 1,
+      "NEWS_TESTER_CALENDAR_SELFTEST": 1,
+      "NEWS_CALENDAR_LOADED": 1,
+      "KILL_SWITCH_INIT": 1,
+      "INIT": 1,
+      "INIT_OK": 1,
+      "FRIDAY_CLOSE": 222,
+      "DEINIT": 2,
+      "PP_CENSUS_SUMMARY": 1,
+      "CHART_UI_SHUTDOWN": 1
+    },
+    "event_samples": [
+      {
+        "line": 6,
+        "event": {
+          "sv": 1,
+          "ts_utc": "2018-07-02T00:00:00.125Z",
+          "ts_broker": "2018-07-02T00:00:00",
+          "level": "INFO",
+          "ea_id": 41345,
+          "slug": "ea-41345",
+          "symbol": "XAUUSD.DWX",
+          "tf": "D1",
+          "magic": 413450000,
+          "event": "INIT_OK",
+          "payload": {
+            "card": "QM5_41345",
+            "ea": "xau-weekly-tsmom-opt",
+            "signal": "weekly_return_sign_tsmom"
+          }
+        }
+      },
+      {
+        "line": 230,
+        "event": {
+          "sv": 1,
+          "ts_utc": "2022-12-30T23:54:59.437Z",
+          "ts_broker": "2022-12-30T23:54:59",
+          "level": "INFO",
+          "ea_id": 41345,
+          "slug": "ea-41345",
+          "symbol": "XAUUSD.DWX",
+          "tf": "D1",
+          "magic": 413450000,
+          "event": "PP_CENSUS_SUMMARY",
+          "payload": {
+            "profile_key": "DL089_OPT|0|16408|1|B|S",
+            "enabled": false,
+            "days_evaluated": 0,
+            "fire_count": 0,
+            "legs_suppressed": 0,
+            "invalid_days": 0
+          }
+        }
+      }
+    ],
+    "tester_log_path": "D:\\QM\\reports\\work_items\\fb0b6989-719b-5697-998c-82fb0045cd27\\QM5_41345\\20260905_073003\\raw\\run_01\\20260905.log",
+    "tester_log_exists": true,
+    "native_input_lines": [
+      {
+        "line": 33686,
+        "text": "CS\t0\t09:30:14.616\tTester\t  qm_ea_id=41345"
+      },
+      {
+        "line": 33690,
+        "text": "CS\t0\t09:30:14.616\tTester\t  RISK_PERCENT=0"
+      },
+      {
+        "line": 33691,
+        "text": "CS\t0\t09:30:14.616\tTester\t  RISK_FIXED=1000"
+      },
+      {
+        "line": 33696,
+        "text": "CS\t0\t09:30:14.616\tTester\t  qm_news_stale_max_hours=336"
+      },
+      {
+        "line": 33705,
+        "text": "CS\t0\t09:30:14.616\tTester\t  strategy_lookback_bars=5"
+      },
+      {
+        "line": 33706,
+        "text": "CS\t0\t09:30:14.616\tTester\t  strategy_atr_period=14"
+      },
+      {
+        "line": 33707,
+        "text": "CS\t0\t09:30:14.616\tTester\t  strategy_atr_sl_mult=2.5"
+      },
+      {
+        "line": 33708,
+        "text": "CS\t0\t09:30:14.616\tTester\t  strategy_max_hold_bars=15"
+      },
+      {
+        "line": 33709,
+        "text": "CS\t0\t09:30:14.616\tTester\t  strategy_max_spread_points=300"
+      },
+      {
+        "line": 33711,
+        "text": "CS\t0\t09:30:14.616\tTester\t  opt_pp_buy1=0"
+      },
+      {
+        "line": 33712,
+        "text": "CS\t0\t09:30:14.616\tTester\t  opt_pp_buy2=0"
+      },
+      {
+        "line": 33713,
+        "text": "CS\t0\t09:30:14.616\tTester\t  opt_pp_buy3=0"
+      },
+      {
+        "line": 33714,
+        "text": "CS\t0\t09:30:14.616\tTester\t  opt_pp_sell1=0"
+      },
+      {
+        "line": 33715,
+        "text": "CS\t0\t09:30:14.616\tTester\t  opt_pp_sell2=0"
+      },
+      {
+        "line": 33716,
+        "text": "CS\t0\t09:30:14.616\tTester\t  opt_pp_sell3=0"
+      }
+    ],
+    "tester_log_sha256": "a84ca85c156b1760fd3c88c7e35f03a0802a50eef039553d987bb44cb211790b"
+  },
+  {
+    "ea": "QM5_41347",
+    "work_item_id": "05834faf-c348-5db5-a457-e379170c0901",
+    "verdict": "PASS",
+    "summary_path": "D:\\QM\\reports\\work_items\\05834faf-c348-5db5-a457-e379170c0901\\QM5_41347\\20260905_075003\\summary.json",
+    "summary_sha256": "9df33e8d59c98b3efafc8f337d36c274849067d15d083eb7db4318bdc493f05c",
+    "symbol": "XAUUSD.DWX",
+    "period": "H4",
+    "model": 4,
+    "from_date": "2018.07.02",
+    "to_date": "2022.12.31",
+    "trades": 267,
+    "oninit_failure": false,
+    "report_sha256_matches": true,
+    "expected_mq5_sha256": "64f3369a67fa212629f3bec4cc6b7a84e81ee6b44a2c80119f2cc6ed97d0ac2f",
+    "expected_ex5_sha256": "3e475c8b7b6bf1596233768fc6b5852c0881f5c020d6ca08ec9b6f55abaa517d",
+    "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11294_XAUUSD_DWX_2019_2025\\base_setfiles\\QM5_41347_cs-ichi-cloud-opt_XAUUSD.DWX_H4_ca8f355d8391fe59.set",
+    "setfile_sha256": "ca8f355d8391fe5925b97278f9882e4943c6de422709fb98d683e249da04b2f3",
+    "logger_path": "D:\\QM\\reports\\work_items\\05834faf-c348-5db5-a457-e379170c0901\\QM5_41347\\20260905_075003\\logger_sample.jsonl",
+    "logger_exists": true,
+    "logger_sha256": "7bff4de5de9e8f0d7b91697cda0779a9887da49b5062b9f660743e5f91dbdb75",
+    "event_counts": {
+      "SYMBOL_GUARD_INIT": 1,
+      "NEWS_TESTER_CALENDAR_SELFTEST": 1,
+      "NEWS_CALENDAR_LOADED": 1,
+      "KILL_SWITCH_INIT": 1,
+      "INIT": 1,
+      "INIT_OK": 1,
+      "BROKER_OTHER": 11,
+      "ENTRY_REJECTED": 11,
+      "TM_OPEN": 278,
+      "ENTRY_ACCEPTED": 267,
+      "EQUITY_SNAPSHOT": 1162,
+      "TM_CLOSE": 191,
+      "FRIDAY_CLOSE": 222,
+      "DEINIT": 2,
+      "PP_CENSUS_SUMMARY": 1,
+      "CHART_UI_SHUTDOWN": 1
+    },
+    "event_samples": [
+      {
+        "line": 6,
+        "event": {
+          "sv": 1,
+          "ts_utc": "2018-07-02T00:00:00.171Z",
+          "ts_broker": "2018-07-02T00:00:00",
+          "level": "INFO",
+          "ea_id": 41347,
+          "slug": "ea-41347",
+          "symbol": "XAUUSD.DWX",
+          "tf": "H4",
+          "magic": 413470000,
+          "event": "INIT_OK",
+          "payload": {
+            "card": "QM5_41347",
+            "tf": "H4"
+          }
+        }
+      },
+      {
+        "line": 2150,
+        "event": {
+          "sv": 1,
+          "ts_utc": "2022-12-30T23:54:59.218Z",
+          "ts_broker": "2022-12-30T23:54:59",
+          "level": "INFO",
+          "ea_id": 41347,
+          "slug": "ea-41347",
+          "symbol": "XAUUSD.DWX",
+          "tf": "H4",
+          "magic": 413470000,
+          "event": "PP_CENSUS_SUMMARY",
+          "payload": {
+            "profile_key": "DL089_OPT|0|16408|1|B|S",
+            "enabled": false,
+            "days_evaluated": 278,
+            "fire_count": 0,
+            "legs_suppressed": 0,
+            "invalid_days": 0
+          }
+        }
+      }
+    ],
+    "tester_log_path": "D:\\QM\\reports\\work_items\\05834faf-c348-5db5-a457-e379170c0901\\QM5_41347\\20260905_075003\\raw\\run_01\\20260905.log",
+    "tester_log_exists": true,
+    "native_input_lines": [
+      {
+        "line": 80484,
+        "text": "CS\t0\t09:50:12.566\tTester\t  qm_ea_id=41347"
+      },
+      {
+        "line": 80489,
+        "text": "CS\t0\t09:50:12.566\tTester\t  RISK_PERCENT=0"
+      },
+      {
+        "line": 80490,
+        "text": "CS\t0\t09:50:12.566\tTester\t  RISK_FIXED=1000"
+      },
+      {
+        "line": 80495,
+        "text": "CS\t0\t09:50:12.566\tTester\t  qm_news_stale_max_hours=336"
+      },
+      {
+        "line": 80502,
+        "text": "CS\t0\t09:50:12.566\tTester\t  strategy_tenkan_period=9"
+      },
+      {
+        "line": 80503,
+        "text": "CS\t0\t09:50:12.566\tTester\t  strategy_kijun_period=26"
+      },
+      {
+        "line": 80504,
+        "text": "CS\t0\t09:50:12.566\tTester\t  strategy_senkou_b_period=52"
+      },
+      {
+        "line": 80505,
+        "text": "CS\t0\t09:50:12.566\tTester\t  strategy_atr_period=14"
+      },
+      {
+        "line": 80506,
+        "text": "CS\t0\t09:50:12.566\tTester\t  strategy_atr_sl_mult=3.0"
+      },
+      {
+        "line": 80508,
+        "text": "CS\t0\t09:50:12.566\tTester\t  opt_pp_buy1=0"
+      },
+      {
+        "line": 80509,
+        "text": "CS\t0\t09:50:12.566\tTester\t  opt_pp_buy2=0"
+      },
+      {
+        "line": 80510,
+        "text": "CS\t0\t09:50:12.566\tTester\t  opt_pp_buy3=0"
+      },
+      {
+        "line": 80511,
+        "text": "CS\t0\t09:50:12.566\tTester\t  opt_pp_sell1=0"
+      },
+      {
+        "line": 80512,
+        "text": "CS\t0\t09:50:12.566\tTester\t  opt_pp_sell2=0"
+      },
+      {
+        "line": 80513,
+        "text": "CS\t0\t09:50:12.566\tTester\t  opt_pp_sell3=0"
+      }
+    ],
+    "tester_log_sha256": "27a84953054b2a29952c53f465b0df9247a0b38c7baa6b4af01952c3eb2a8e61"
+  }
+]

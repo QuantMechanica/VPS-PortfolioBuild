@@ -1,0 +1,13 @@
+diff --git a/framework/EAs/QM5_41345_xau-weekly-tsmom-opt/QM5_41345_xau-weekly-tsmom-opt.mq5 b/framework/EAs/QM5_41345_xau-weekly-tsmom-opt/QM5_41345_xau-weekly-tsmom-opt.mq5
+index 8954b2d2ee..dc23fec968 100644
+--- a/framework/EAs/QM5_41345_xau-weekly-tsmom-opt/QM5_41345_xau-weekly-tsmom-opt.mq5
++++ b/framework/EAs/QM5_41345_xau-weekly-tsmom-opt/QM5_41345_xau-weekly-tsmom-opt.mq5
+@@ -237,7 +237,7 @@ bool Strategy_NoTradeFilter()
+   {
+    if(!Strategy_IsExpectedHost())
+       return true;
+-   if(qm_ea_id != 21502 || qm_magic_slot_offset != 0)
++   if(qm_ea_id != 41345 || qm_magic_slot_offset != 0)
+       return true;
+    if(strategy_lookback_bars < 1 || strategy_lookback_bars > 60)
+       return true;
