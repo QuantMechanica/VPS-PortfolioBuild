@@ -1,0 +1,38 @@
+{
+  "schema": "qm.source-retrieval-evidence/v1",
+  "source_id": "AI-CODEX-WTI-ADF-VN-AGREE-TREND-20260905",
+  "retrieved_at_utc": "2026-09-05T00:00:00Z",
+  "routes": [
+    {
+      "role": "lag_one_adf_state",
+      "status": "OK_EXISTING_GOVERNED_RECORD",
+      "method": "complete_local_approved_source_read",
+      "local_record": "strategy-seeds/sources/AI-CODEX-WTI-MADF-PERSIST-TREND-20260903/source.md",
+      "local_record_sha256": "576505363DE9DCA4F8E0CB4047D30DE630FB76CBC754F3F9FE3805CDA33507EC",
+      "citation": "Chan, E. P. (2013). Algorithmic Trading: Winning Strategies and Their Rationale. Wiley Trading.",
+      "claim_boundary": "Supplies the locked lag-one, intercept/no-time-trend ADF arithmetic and displayed -2.594 boundary lineage; it does not validate WTI continuation, the von Neumann state, or the conjunction."
+    },
+    {
+      "role": "raw_von_neumann_state",
+      "status": "OK_EXISTING_GOVERNED_RECORD",
+      "method": "complete_local_approved_source_read",
+      "local_record": "strategy-seeds/sources/AI-CODEX-WTI-MVNRATIO-TREND-20260902/source.md",
+      "local_record_sha256": "C30EAC1402E532BEB68AC95B408A7559A355710914AD3E46991821B508529797",
+      "citation": "NIST/SEMATECH Mean Successive Differences Test; von Neumann et al. (1941), Annals of Mathematical Statistics 12(4), DOI 10.1214/aoms/1177731677.",
+      "claim_boundary": "Supplies the raw successive-difference ratio formula, null mean, low-ratio trend interpretation, and original provenance; it does not validate WTI trading or the conjunction."
+    },
+    {
+      "role": "monthly_wti_continuation",
+      "status": "OK_EXISTING_GOVERNED_RECORD",
+      "method": "complete_local_approved_source_read",
+      "local_record": "strategy-seeds/sources/MOP-TSMOM-2012/source.md",
+      "local_record_sha256": "C8B07ECD62C1D5EF9E3D7975EEE6A3B6C46C1C566D0B20B42237613D9B3A7042",
+      "citation": "Moskowitz, T. J., Ooi, Y. H., and Pedersen, L. H. (2012). Time Series Momentum. Journal of Financial Economics 104(2), 228-250.",
+      "doi": "10.1016/j.jfineco.2011.11.003",
+      "claim_boundary": "Supplies monthly own-return continuation and explicit NYMEX WTI membership; it does not test either state gate or the continuous CFD."
+    }
+  ],
+  "new_external_retrieval": false,
+  "access_control_bypass_attempted": false,
+  "third_party_code_executed": false
+}

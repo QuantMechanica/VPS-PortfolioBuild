@@ -1,0 +1,79 @@
+{
+  "candidate": {
+    "author": "OpenAI Codex; Ernest P. Chan; John von Neumann; Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen",
+    "mechanic": "monthly WTI sixty completed log price levels lag-one intercept ADF t at least -2.594 plus newest twenty log returns raw von Neumann eta strictly below two agreement gated twelve-month return sign continuation",
+    "slug": "wti-adf-vn-agree-tr",
+    "strategy_id": "AI-CODEX-WTI-ADF-VN-AGREE-TREND-20260905_S01"
+  },
+  "error": "MISSING_ROOT:strategy_wiki:G:\\My Drive\\09 Strategy Wiki\\strategies",
+  "exit_code": 3,
+  "generated_at_utc": "2026-09-05T01:02:37+00:00",
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41336_wti-adf-kpss-agree-tr_card.md",
+      "score": 0.75,
+      "slug": "wti-adf-kpss-agree-tr",
+      "source": "card",
+      "strategy_id": "AI-CODEX-WTI-ADF-KPSS-AGREE-TREND-20260904_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41337_wti-adf-specent-agree-tr_card.md",
+      "score": 0.75,
+      "slug": "wti-adf-specent-agree-tr",
+      "source": "card",
+      "strategy_id": "AI-CODEX-WTI-ADF-SPECENT-AGREE-TREND-20260905_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41310_wti-mvnratio-tr_card.md",
+      "score": 0.6666666666666666,
+      "slug": "wti-mvnratio-tr",
+      "source": "card",
+      "strategy_id": "AI-CODEX-WTI-MVNRATIO-TREND-20260902_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41320_wti-mpp-persist-tr_card.md",
+      "score": 0.6666666666666666,
+      "slug": "wti-mpp-persist-tr",
+      "source": "card",
+      "strategy_id": "AI-CODEX-WTI-MPP-PERSIST-TREND-20260903_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41319_wti-madf-persist-tr_card.md",
+      "score": 0.5714285714285714,
+      "slug": "wti-madf-persist-tr",
+      "source": "card",
+      "strategy_id": "AI-CODEX-WTI-MADF-PERSIST-TREND-20260903_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4818,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1437,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\09 Strategy Wiki\\strategies",
+      "count": null,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "MISSING_ROOT"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "FUZZY_MATCH"
+}
