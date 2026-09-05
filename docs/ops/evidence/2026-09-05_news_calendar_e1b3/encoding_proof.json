@@ -1,0 +1,123 @@
+[
+  {
+    "official_anchor_count": 9,
+    "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_USD_HIGH_2026H1_NATIVE.csv",
+    "role": "AUTHORITATIVE_NATIVE",
+    "rows": 256,
+    "sha256": "fdf66947d3e96315066742d096f5f56ddf22238d829a718362cf69cd15f085c2",
+    "utc_offset_seconds": -10800
+  },
+  {
+    "official_anchor_count": 3,
+    "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_USD_ALL_BUILDING_PERMITS_2018_2025_NATIVE.csv",
+    "role": "AUTHORITATIVE_NATIVE",
+    "rows": 93,
+    "sha256": "d2f1695b38034fbc8446b5c3215ffe406cd129608d402e73232acf5e38aa6d78",
+    "utc_offset_seconds": 0
+  },
+  {
+    "official_anchor_count": 3,
+    "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_USD_ALL_BUILDING_PERMITS_2026H1_NATIVE.csv",
+    "role": "AUTHORITATIVE_NATIVE",
+    "rows": 9,
+    "sha256": "160a79492cfa420cacb192b02b4b8887d942e313b1cb5b1b2b49cbc092a4f010",
+    "utc_offset_seconds": 0
+  },
+  {
+    "official_anchor_count": 3,
+    "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_USD_ALL_CORE_PPI_2018_2025_NATIVE.csv",
+    "role": "AUTHORITATIVE_NATIVE",
+    "rows": 94,
+    "sha256": "a18a444683e52b113d509e34fa501e42060109830395349ac547e74c31a37869",
+    "utc_offset_seconds": 0
+  },
+  {
+    "official_anchor_count": 3,
+    "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_USD_ALL_CORE_PPI_2026H1_NATIVE.csv",
+    "role": "AUTHORITATIVE_NATIVE",
+    "rows": 7,
+    "sha256": "86ce260daed15787880a2e02645a97be305b80364f895d73657c9899c0e4c28d",
+    "utc_offset_seconds": 0
+  },
+  {
+    "official_anchor_count": 3,
+    "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_USD_ALL_EMPIRE_STATE_2018_2025_NATIVE.csv",
+    "role": "AUTHORITATIVE_NATIVE",
+    "rows": 96,
+    "sha256": "5bf93456ebc9b9d04dd39eadf549fba1b33e2f70dc805f5945cf7414fbe5d315",
+    "utc_offset_seconds": 0
+  },
+  {
+    "official_anchor_count": 3,
+    "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_USD_ALL_EMPIRE_STATE_2026H1_NATIVE.csv",
+    "role": "AUTHORITATIVE_NATIVE",
+    "rows": 6,
+    "sha256": "acbd725301d26607999dfa7e5b0117a1fd7fa02cdfab91f45c78418006bb2f2a",
+    "utc_offset_seconds": 0
+  },
+  {
+    "official_anchor_count": 3,
+    "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_USD_ALL_TRADE_BALANCE_2018_2025_NATIVE.csv",
+    "role": "AUTHORITATIVE_NATIVE",
+    "rows": 95,
+    "sha256": "24d6d748a703c911225b0ad477284f6ce66bc2390af62613fd808233b6df3b62",
+    "utc_offset_seconds": 0
+  },
+  {
+    "official_anchor_count": 3,
+    "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_USD_ALL_TRADE_BALANCE_2026H1_NATIVE.csv",
+    "role": "AUTHORITATIVE_NATIVE",
+    "rows": 7,
+    "sha256": "4cdcd2286d518da090d616e7dbd39edb0634ad63daf7aed5a3373017636070b6",
+    "utc_offset_seconds": 0
+  },
+  {
+    "official_anchor_count": 3,
+    "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_EUR_HIGH_2026H1_NATIVE.csv",
+    "role": "AUTHORITATIVE_NATIVE",
+    "rows": 75,
+    "sha256": "a85f188e46e85814bfc134147940011bd3fd8ad67a4167a37942cf12886394d6",
+    "utc_offset_seconds": -10800
+  },
+  {
+    "observed_offsets_seconds": [
+      -10800,
+      -10800,
+      -10800,
+      -7200
+    ],
+    "official_anchor_count": 4,
+    "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_GBP_HIGH_2026H1_NATIVE.csv",
+    "role": "UNVERIFIED_TIMESTAMP_EXCLUDED_FROM_TRUTH",
+    "rows": 38,
+    "sha256": "37b945c429ebd1bf8050487f0f5262eab39c8eba8df892573a427059e204659d"
+  },
+  {
+    "official_anchor_count": 3,
+    "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_JPY_HIGH_2026H1_NATIVE.csv",
+    "role": "AUTHORITATIVE_NATIVE",
+    "rows": 30,
+    "sha256": "0fcc2ee25ac1b0813ced4d0a8799efac3f499a0e302c2d8063ef80e58d5c052b",
+    "utc_offset_seconds": -10800
+  },
+  {
+    "observed_offsets_seconds": [
+      -14400,
+      -14400,
+      -10800
+    ],
+    "official_anchor_count": 3,
+    "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_AUD_HIGH_2026H1_NATIVE.csv",
+    "role": "UNVERIFIED_TIMESTAMP_EXCLUDED_FROM_TRUTH",
+    "rows": 4,
+    "sha256": "e4947aa1e22391e7fd3bfc633aea90c9938597aec4b8cd4326d8947031161061"
+  },
+  {
+    "official_anchor_count": 3,
+    "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_CAD_HIGH_2026H1_NATIVE.csv",
+    "role": "AUTHORITATIVE_NATIVE",
+    "rows": 5,
+    "sha256": "f08c81110a41a5fdf1a2c29593e7929127463de315f56f56e17363580857bdae",
+    "utc_offset_seconds": -10800
+  }
+]

@@ -1,0 +1,30 @@
+[
+  {
+    "url": "https://www.newyorkfed.org/research/calendars/i-jan25.html",
+    "sha256": "4caea6db5a36e749ea28f3a12f42243aaf3c34920e4e6e7d0c238a3200bee30d"
+  },
+  {
+    "url": "https://www.newyorkfed.org/research/calendars/i-feb25.html",
+    "sha256": "1edfcd30f83a0771d4b223ff2805e72abe5fbb0e116dcfec595b43a247043562"
+  },
+  {
+    "url": "https://www.newyorkfed.org/research/calendars/i-mar25.html",
+    "sha256": "4bbd34c960fdde57c6b3ed1565d0a01eae32003ece43926fa72d022e55a2f099"
+  },
+  {
+    "url": "https://www.newyorkfed.org/research/calendars/i-jan26.html",
+    "sha256": "ec7939a756dca7ebb78354cb7ef09bd0132cb21f5aa01ce9531870deefce5ed5"
+  },
+  {
+    "url": "https://www.newyorkfed.org/research/calendars/i-feb26.html",
+    "sha256": "cf33610a340f0afff5abfd7273552a53c224b729de6aa47e538697bafe5b825a"
+  },
+  {
+    "url": "https://www.newyorkfed.org/research/calendars/i-mar26.html",
+    "sha256": "0668228589dd9d6216b674e589b844da2fe4ca1750eff7e12822b767c2abe746"
+  },
+  {
+    "url": "https://www.stat.go.jp/english/data/cpi/1582.html",
+    "sha256": "09bad0238470a50763a480c56910d642496902956682268e3122ffd3537d1262"
+  }
+]

@@ -1,0 +1,98 @@
+{
+  "bootstrap": {
+    "path": "C:\\QM\\repo\\tools\\strategy_farm\\ftmo_m1_bootstrap.py",
+    "sha256": "efc9c8d414a4ad9fa19616e6e1c8677b168ac0884f0395d42a68997f75ca809c",
+    "size_bytes": 66619
+  },
+  "compile": {
+    "errors": 0,
+    "ex5": {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Scripts\\QM\\news_e1b2\\20260905T112000Z_e1b3_export\\QM_NewsCalendar_E1B2_Export.ex5",
+      "sha256": "02c04771d32d61ecd0bf300b8e45d8dd401b245eaec4f202d5d672b173fbe222",
+      "size_bytes": 22864
+    },
+    "exit_code": 1,
+    "log": {
+      "path": "D:\\QM\\reports\\news_calendar\\repair_e1a\\20260905T112000Z_e1b3_export\\compile.log",
+      "sha256": "959af47320784d42c2fe782bb1ec485a8ff1c3d383324152fcd9e074f190df4a",
+      "size_bytes": 3186
+    },
+    "warnings": 0
+  },
+  "completion": "successes=4 failures=0",
+  "exports": [
+    {
+      "event_names": [
+        "Core PPI m/m"
+      ],
+      "first_raw": 1768397400,
+      "last_raw": 1781181000,
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_USD_ALL_CORE_PPI_2026H1_NATIVE.csv",
+      "rows": 7,
+      "sha256": "86ce260daed15787880a2e02645a97be305b80364f895d73657c9899c0e4c28d",
+      "size_bytes": 680,
+      "timestamp_encoding": "UNVERIFIED_MT5_SERVER_CIVIL"
+    },
+    {
+      "event_names": [
+        "NY Fed Empire State Manufacturing Index"
+      ],
+      "first_raw": 1768483800,
+      "last_raw": 1781526600,
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_USD_ALL_EMPIRE_STATE_2026H1_NATIVE.csv",
+      "rows": 6,
+      "sha256": "acbd725301d26607999dfa7e5b0117a1fd7fa02cdfab91f45c78418006bb2f2a",
+      "size_bytes": 736,
+      "timestamp_encoding": "UNVERIFIED_MT5_SERVER_CIVIL"
+    },
+    {
+      "event_names": [
+        "Building Permits"
+      ],
+      "first_raw": 1767965400,
+      "last_raw": 1781613000,
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_USD_ALL_BUILDING_PERMITS_2026H1_NATIVE.csv",
+      "rows": 9,
+      "sha256": "160a79492cfa420cacb192b02b4b8887d942e313b1cb5b1b2b49cbc092a4f010",
+      "size_bytes": 694,
+      "timestamp_encoding": "UNVERIFIED_MT5_SERVER_CIVIL"
+    },
+    {
+      "event_names": [
+        "Trade Balance"
+      ],
+      "first_raw": 1767879000,
+      "last_raw": 1781008200,
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_USD_ALL_TRADE_BALANCE_2026H1_NATIVE.csv",
+      "rows": 7,
+      "sha256": "4cdcd2286d518da090d616e7dbd39edb0634ad63daf7aed5a3373017636070b6",
+      "size_bytes": 512,
+      "timestamp_encoding": "UNVERIFIED_MT5_SERVER_CIVIL"
+    }
+  ],
+  "launched_pid": 23924,
+  "mechanism": "ftmo_m1_bootstrap StartUp; exact T_Export extension",
+  "process_identity": {
+    "creation_date_utc": "2026-09-05T11:16:57Z",
+    "executable_path": "D:\\QM\\mt5\\T_Export\\terminal64.exe",
+    "pid": 23924
+  },
+  "production_write": false,
+  "schema": "qm.news-native-export-e1b2/v1",
+  "source": {
+    "path": "C:\\QM\\worktrees\\codex-lock-attribution-20260905\\framework\\scripts\\mt5_diagnostics\\QM_NewsCalendar_E1B2_Export.mq5",
+    "sha256": "0f0ef1b4baaeaf8a9771eba94bd24535fa9b27f49559a56650a1ed25e2fb79e4",
+    "size_bytes": 6476
+  },
+  "startup_ini": {
+    "path": "D:\\QM\\reports\\news_calendar\\repair_e1a\\20260905T112000Z_e1b3_export\\startup.ini",
+    "sha256": "af5e429b9cade86159b6416f1f4821c857c2b3573282fb8e44934896a4cbf266",
+    "size_bytes": 288
+  },
+  "status": "PASS",
+  "terminated_owned_pid": 23924,
+  "termination": {
+    "pid": 23924,
+    "terminated": true
+  }
+}

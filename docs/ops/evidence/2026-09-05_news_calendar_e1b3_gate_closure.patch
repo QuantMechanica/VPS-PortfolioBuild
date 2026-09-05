@@ -1,0 +1,381 @@
+commit 51c75174cbd83ff24e975c59f38b07d8a741f8d7
+Author:     r <r@r>
+AuthorDate: Sat Sep 5 13:26:36 2026 +0200
+Commit:     r <r@r>
+CommitDate: Sat Sep 5 13:26:36 2026 +0200
+
+    Bound E1-B3 unresolved calendar ranges and export H1 ALL targets
+
+diff --git a/framework/scripts/mt5_diagnostics/QM_NewsCalendar_E1B2_Export.mq5 b/framework/scripts/mt5_diagnostics/QM_NewsCalendar_E1B2_Export.mq5
+index 88c8af9f7a..f3c8e231f3 100644
+--- a/framework/scripts/mt5_diagnostics/QM_NewsCalendar_E1B2_Export.mq5
++++ b/framework/scripts/mt5_diagnostics/QM_NewsCalendar_E1B2_Export.mq5
+@@ -9,6 +9,7 @@ input string InpEventName="";
+ input string InpOutput="T_EXPORT_USD_HIGH_2026H1_NATIVE.csv";
+ input bool InpBatch=false;
+ input bool InpCatalogOnly=false;
++input bool InpCatalogH1=false;
+ input string InpCompletion="E1B2_EXPORT_COMPLETE.txt";
+ 
+ bool ExportOne(const string currency,const datetime from,const datetime to,
+@@ -107,8 +108,9 @@ void OnStart()
+       string names[]={"Core PPI m/m","NY Empire State Manufacturing Index","Building Permits","Trade Balance"};
+       string tags[]={"CORE_PPI","EMPIRE_STATE","BUILDING_PERMITS","TRADE_BALANCE"};
+       for(int i=0;i<4;i++)
+-        if(ExportOne("USD",D'2018.01.01',D'2026.01.01',ALL_IMPACTS,names[i],
+-                     "T_EXPORT_USD_ALL_"+tags[i]+"_2018_2025_NATIVE.csv")) successes++; else failures++;
++        if(ExportOne("USD",InpCatalogH1 ? D'2026.01.01' : D'2018.01.01',
++                     InpCatalogH1 ? D'2026.07.01' : D'2026.01.01',ALL_IMPACTS,names[i],
++                     "T_EXPORT_USD_ALL_"+tags[i]+(InpCatalogH1 ? "_2026H1_NATIVE.csv" : "_2018_2025_NATIVE.csv"))) successes++; else failures++;
+      }
+    int h=FileOpen(InpCompletion,FILE_WRITE|FILE_TXT|FILE_ANSI,0,CP_UTF8);
+    if(h!=INVALID_HANDLE)
+diff --git a/framework/scripts/mt5_diagnostics/news_calendar_export_e1b2.py b/framework/scripts/mt5_diagnostics/news_calendar_export_e1b2.py
+index 2686235356..7334db9825 100644
+--- a/framework/scripts/mt5_diagnostics/news_calendar_export_e1b2.py
++++ b/framework/scripts/mt5_diagnostics/news_calendar_export_e1b2.py
+@@ -23,7 +23,9 @@ CCYS = ("USD", "EUR", "GBP", "JPY", "AUD", "CAD")
+ TAGS = ("CORE_PPI", "EMPIRE_STATE", "BUILDING_PERMITS", "TRADE_BALANCE")
+ 
+ 
+-def expected_names():
++def expected_names(catalog_h1=False):
++    if catalog_h1:
++        return [f"T_EXPORT_USD_ALL_{t}_2026H1_NATIVE.csv" for t in TAGS]
+     return [*(f"T_EXPORT_{c}_HIGH_2026H1_NATIVE.csv" for c in CCYS),
+             *(f"T_EXPORT_USD_ALL_{t}_2018_2025_NATIVE.csv" for t in TAGS)]
+ 
+@@ -70,7 +72,7 @@ if ($r.ReturnValue -ne 0) {{ throw 'Owned export termination failed' }}
+ """)
+ 
+ 
+-def run(out: Path, timeout: int, catalog_only=False, empire_only=False):
++def run(out: Path, timeout: int, catalog_only=False, empire_only=False, catalog_h1=False):
+     out = out.resolve()
+     boot._safe_tag(out.name)
+     if not 60<=timeout<=900:
+@@ -81,7 +83,9 @@ def run(out: Path, timeout: int, catalog_only=False, empire_only=False):
+     rows = boot.scan_terminal_processes()
+     if boot._exact_process_for_path(rows, terminal):
+         raise ValueError("T_Export already active; defer without interruption")
+-    requested=[expected_names()[7]] if empire_only else expected_names()[6 if catalog_only else 0:]
++    if catalog_h1 and (catalog_only or empire_only):
++        raise ValueError('catalog-h1 is a separate export profile')
++    requested=expected_names(True) if catalog_h1 else ([expected_names()[7]] if empire_only else expected_names()[6 if catalog_only else 0:])
+     for name in requested:
+         if (ROOT / "MQL5/Files" / name).exists():
+             raise ValueError("existing export refused: " + name)
+@@ -116,7 +120,7 @@ def run(out: Path, timeout: int, catalog_only=False, empire_only=False):
+         tag = out.name
+         complete = f"E1B2_EXPORT_COMPLETE_{tag}.txt"
+         preset = ROOT / "MQL5/Presets" / f"E1B2_{tag}.set"
+-        settings=f"InpBatch=true\nInpCatalogOnly={'true' if catalog_only else 'false'}\nInpCompletion={complete}\n"
++        settings=f"InpBatch=true\nInpCatalogOnly={'true' if catalog_only or catalog_h1 else 'false'}\nInpCatalogH1={'true' if catalog_h1 else 'false'}\nInpCompletion={complete}\n"
+         if empire_only:
+             settings=f"InpBatch=false\nInpCompletion={complete}\nInpCurrency=USD\nInpFrom=1514764800\nInpTo=1767225600\nInpImpact=1\nInpEventName=NY Empire State Manufacturing Index\nInpOutput={requested[0]}\n"
+         boot.atomic_write_text(preset, settings)
+@@ -164,7 +168,7 @@ def run(out: Path, timeout: int, catalog_only=False, empire_only=False):
+                     result["cleanup_error"]=str(exc)
+             result["process_identity"] = identity
+             result["exports"] = []
+-            for name in expected_names():
++            for name in expected_names(catalog_h1):
+                 path = ROOT / "MQL5/Files" / name
+                 try:
+                     result["exports"].append(validate_output(path))
+@@ -182,7 +186,8 @@ if __name__ == "__main__":
+     parser.add_argument("--timeout", type=int, default=420)
+     parser.add_argument("--catalog-only", action="store_true")
+     parser.add_argument("--empire-only", action="store_true")
++    parser.add_argument("--catalog-h1", action="store_true")
+     args = parser.parse_args()
+-    result = run(args.out, args.timeout, args.catalog_only, args.empire_only)
++    result = run(args.out, args.timeout, args.catalog_only, args.empire_only, args.catalog_h1)
+     print(json.dumps({"status": result["status"], "exports": len(result["exports"]), "receipt": str(args.out / "export_receipt.json")}))
+     raise SystemExit(0 if result["status"] == "PASS" else 2)
+diff --git a/tools/strategy_farm/news_calendar_candidate_ingress.py b/tools/strategy_farm/news_calendar_candidate_ingress.py
+index f008256378..c93a32549e 100644
+--- a/tools/strategy_farm/news_calendar_candidate_ingress.py
++++ b/tools/strategy_farm/news_calendar_candidate_ingress.py
+@@ -31,6 +31,8 @@ def prepare(gate, directory: Path, expected_sha256: str, *, staging_dir=None, ap
+     if hashlib.sha256(raw_manifest).hexdigest()!=expected_sha256:
+         raise ValueError("candidate manifest SHA256 mismatch")
+     manifest=strict_json(raw_manifest)
++    if manifest.get('declared_inadmissible_ranges') or manifest.get('scoped_review_only'):
++        raise ValueError('scoped calendar candidate has inadmissible ranges; full-scope publication refused')
+     verification_path=gate._canonical_target(source/"verification.json",label="candidate verification")
+     raw_verification=verification_path.read_bytes()
+     if hashlib.sha256(raw_verification).hexdigest()!=manifest.get("verification_sha256"):
+diff --git a/tools/strategy_farm/news_calendar_repair.py b/tools/strategy_farm/news_calendar_repair.py
+index 8e6d5ff17d..2510f46c87 100644
+--- a/tools/strategy_farm/news_calendar_repair.py
++++ b/tools/strategy_farm/news_calendar_repair.py
+@@ -128,7 +128,8 @@ def load_native(native_dir: Path, policy: dict) -> tuple[list[dict],list[dict],d
+         if ccy=="USD": paths.append(native_dir/"T_EXPORT_USD_HIGH_2025_NATIVE.csv")
+         sidecars=sorted(set(native_dir.glob(f"T_EXPORT_{ccy}_HIGH_*2026H1*_NATIVE.csv")))
+         paths += [p for p in sidecars if p not in paths]
+-        catalog_paths=sorted(native_dir.glob("T_EXPORT_USD_ALL_*_2018_2025_NATIVE.csv")) if ccy=="USD" else []
++        catalog_paths=sorted(set(native_dir.glob("T_EXPORT_USD_ALL_*_2018_2025_NATIVE.csv")) |
++                             set(native_dir.glob("T_EXPORT_USD_ALL_*_2026H1_NATIVE.csv"))) if ccy=="USD" else []
+         paths += catalog_paths
+         fresh_rows=[];fresh_errors=[]
+         for path in paths:
+@@ -158,9 +159,9 @@ def load_native(native_dir: Path, policy: dict) -> tuple[list[dict],list[dict],d
+                     if anchor_key in anchor_keys:continue
+                     anchor_keys.add(anchor_key)
+                     expected=stamp(anchor["utc"])
+-                    matches=[datetime.fromtimestamp(int(r["broker_time"]),UTC) for r in rows
++                    matches=sorted({datetime.fromtimestamp(int(r["broker_time"]),UTC) for r in rows
+                              if r["event_code"]==anchor["event_code"]
+-                             and abs(datetime.fromtimestamp(int(r["broker_time"]),UTC)-expected)<timedelta(days=2)]
++                             and abs(datetime.fromtimestamp(int(r["broker_time"]),UTC)-expected)<timedelta(days=2)})
+                     if len(matches)==1:offsets.append(int((expected-matches[0]).total_seconds()))
+                 if len(offsets)>=3 and len(set(offsets))==1 and offsets[0]%3600==0 and abs(offsets[0])<=12*3600:
+                     offset=offsets[0]
+@@ -425,7 +426,8 @@ def plan_spots() -> list[dict]:
+ 
+ 
+ def run_repair(primary_path: Path,secondary_path: Path,native_dir: Path,m5_dir: Path,out: Path,*,
+-               canonical_root=CANONICAL,extra_anchors=None,staging_root=STAGING,coverage_end=None) -> dict:
++               canonical_root=CANONICAL,extra_anchors=None,staging_root=STAGING,coverage_end=None,
++               declare_inadmissible=False) -> dict:
+     out=output_guard(out,staging_root);out.mkdir(parents=True)
+     footprints_dir=out/"footprints";footprints_dir.mkdir()
+     input_records=[{"path":str(p.resolve()),"sha256":sha(p)} for p in (primary_path,secondary_path)]
+@@ -556,6 +558,14 @@ def run_repair(primary_path: Path,secondary_path: Path,native_dir: Path,m5_dir:
+                                "unverified_native_exports":[i["path"] for i in input_records if i.get("role")=="UNVERIFIED_TIMESTAMP_EXCLUDED_FROM_TRUTH"]},
+         "6.8_schema":{"pass":not schema_errors,"errors":schema_errors}}
+     success=all(g["pass"] for g in gates.values())
++    declarations=[]
++    if declare_inadmissible:
++        try:
++            from tools.strategy_farm.news_calendar_scope import declare_scope
++        except ModuleNotFoundError:
++            from news_calendar_scope import declare_scope
++        declarations=declare_scope(gates,gaps,footprints,offsets,native_inputs,native_dir)
++        write_json(out/'declared_inadmissible_ranges.json',declarations)
+     verification={"schema":SCHEMA,"decision_id":DECISION,"status":"PASS" if success else "FAIL",
+                   "publishable":success,"exit_code":0 if success else 2,"gates":gates,
+                   "message":"READY_FOR_CEO_REVIEW" if success else "INCOMPLETE_CANDIDATES_NOT_PUBLISHABLE; unresolved verification inputs and native timestamp anchors"}
+@@ -568,6 +578,10 @@ def run_repair(primary_path: Path,secondary_path: Path,native_dir: Path,m5_dir:
+               "eet_display_rule":"EU last-Sunday March/October at 01:00Z; UTC+2 standard / UTC+3 summer; display only",
+               "m5_rule":"qm.dst_rule.us.v1 broker wall epoch -> UTC before comparison; 15-minute band peak >= 1.5x same-slot control median",
+               "gap_count":len(gaps),"production_write":False}
++    if declare_inadmissible:
++        manifest.update(declared_inadmissible_ranges=declarations,
++                        declared_inadmissible_ranges_sha256=sha(out/'declared_inadmissible_ranges.json'),
++                        scoped_review_only=True)
+     write_json(out/"manifest.json",manifest)
+     return {"output":str(out),"manifest_sha256":sha(out/"manifest.json"),**verification}
+ 
+@@ -580,11 +594,13 @@ def main() -> int:
+     parser.add_argument("--m5-dir",type=Path,default=NATIVE_DIR)
+     parser.add_argument("--canonical-root",type=Path,default=CANONICAL)
+     parser.add_argument("--extra-anchors",type=Path)
++    parser.add_argument("--declare-inadmissible-ranges",action="store_true")
+     parser.add_argument("--out",type=Path,default=STAGING/datetime.now(UTC).strftime("%Y%m%dT%H%M%S%fZ"))
+     args=parser.parse_args()
+     try:
+         result=run_repair(args.primary,args.secondary,args.native_dir,args.m5_dir,args.out,
+-                          canonical_root=args.canonical_root,extra_anchors=args.extra_anchors)
++                          canonical_root=args.canonical_root,extra_anchors=args.extra_anchors,
++                          declare_inadmissible=args.declare_inadmissible_ranges)
+     except (OSError,ValueError,KeyError) as exc:
+         print(json.dumps({"status":"FAIL","publishable":False,"error":str(exc)},indent=2));return 2
+     print(json.dumps({k:v for k,v in result.items() if k!="gates"},indent=2));return result["exit_code"]
+diff --git a/tools/strategy_farm/news_calendar_scope.py b/tools/strategy_farm/news_calendar_scope.py
+new file mode 100644
+index 0000000000..6c6297eecc
+--- /dev/null
++++ b/tools/strategy_farm/news_calendar_scope.py
+@@ -0,0 +1,81 @@
++"""E1-B3 explicit scope accounting. Declarations never turn measured FAIL into PASS."""
++import csv
++from datetime import datetime, timezone
++import hashlib
++import json
++from collections import defaultdict
++from pathlib import Path
++
++
++def declare_scope(gates, gaps, footprints, offsets, native_inputs, native_dir):
++    records={}
++    def add(gate, currency, event, months, reason, evidence):
++        months=sorted(set(months))
++        if not currency or not event or not months or any(len(m)!=7 or m[4]!='-' for m in months):
++            raise ValueError('inadmissibility requires explicit currency/class/month bounds')
++        record={'gate':gate,'currency':currency,'event_class':event,'months':months,
++                'reason':reason,'required_evidence':evidence,'usage':'INADMISSIBLE',
++                'production_use_permitted':False}
++        key=hashlib.sha256(json.dumps(record,sort_keys=True).encode()).hexdigest()
++        records[key]={'id':'E1B3-'+key[:16],**record}
++
++    for group in gates['6.1_anchor_shares'].get('failed_groups',[]):
++        for gate in ['6.1_anchor_shares','6.7_detector_clean']:
++            add(gate,'USD',group['class'],[f"{group['year']}-{m:02d}" for m in range(1,13)],
++                'CLASS_YEAR_ANCHOR_SHARE_BELOW_EXISTING_REQUIREMENT',f"diagnose anchor group {group['source']}/{group['class']}/{group['year']}")
++    missing=gates['6.1_anchor_shares'].get('native_name_error')
++    if missing:
++        for event in missing.split(': ',1)[-1].split(', '):
++            add('6.1_anchor_shares','USD',event,[f'{y}-{m:02d}' for y in range(2018,2027) for m in range(1,13) if y<2026 or m<=6],
++                'REQUIRED_NATIVE_NAME_NOT_ANCHORED','native target catalog')
++    # Every existing unresolved currency/class/month remains unavailable for use.
++    for gap in gaps:
++        month=gap.get('month') or str(gap.get('original_utc') or gap.get('utc') or '')[:7]
++        if month:
++            add('6.7_detector_clean',gap.get('currency','USD'),gap.get('event') or 'ALL_UNRESOLVED',
++                [month],gap['reason'],'repair_gaps.json')
++    for currency in ['USD','EUR','GBP','JPY','AUD','CAD']:
++        fresh=gates['6.2_coverage']['fresh_exports'][currency]
++        if (currency not in gates['6.2_coverage']['fresh_currencies_with_confirmed_official_anchor']
++                or not fresh['present'] or not fresh['rows'] or fresh['errors']
++                or (currency=='USD' and any(not fresh['monthly_rows'].get(f'2026-{m:02d}') for m in range(1,7)))):
++            add('6.2_coverage',currency,'ALL_HIGH',[f'2026-{m:02d}' for m in range(1,7)],
++                'H1_COVERAGE_OR_OFFICIAL_ANCHOR_UNCONFIRMED','fresh_export_anchor_checks.json; native_monthly_coverage.csv')
++    for source, months in gates['6.2_coverage']['unexplained_zero_months'].items():
++        if months:
++            for gate in ['6.2_coverage','6.7_detector_clean']:
++                add(gate,'USD','ALL_HIGH',months,'ZERO_MONTH_'+source.upper(),'diagnose coverage.json')
++    for check in footprints:
++        if check['status']=='PASS':continue
++        month=str(check.get('utc') or check.get('requested_date') or '')[:7]
++        add('6.5_tick_footprints',check['currency'],check['event_code'],[month],check['status'],
++            check.get('m5_path') or check.get('source') or 'official timestamp and M5 window required')
++    for decision in offsets:
++        if decision.get('confirmed'):continue
++        currency=decision['currency']
++        months=sorted({datetime.fromtimestamp(int(r['broker_time']),timezone.utc).strftime('%Y-%m')
++                       for p in Path(native_dir).glob(f'T_EXPORT_{currency}_HIGH_*_NATIVE.csv')
++                       for r in csv.DictReader(p.open(encoding='utf-8-sig'))})
++        add('6.5_tick_footprints',currency,'ALL_RATE_AND_NONRATE',months,
++            'CURRENCY_FOOTPRINT_SELECTOR_UNCONFIRMED','nonusd_offset_decisions.json')
++    for item in native_inputs:
++        if item.get('role')!='UNVERIFIED_TIMESTAMP_EXCLUDED_FROM_TRUTH':continue
++        path=Path(item['path']);groups=defaultdict(set)
++        with path.open(encoding='utf-8-sig') as stream:
++            for row in csv.DictReader(stream):
++                groups[row['event_name']].add(datetime.fromtimestamp(int(row['broker_time']),timezone.utc).strftime('%Y-%m'))
++        currency=path.name.split('_')[2]
++        for event,months in groups.items():
++            add('6.7_detector_clean',currency,event,months,'FILE_TIMESTAMP_ENCODING_UNVERIFIED',str(path))
++            if currency=='USD' and gates['6.1_anchor_shares'].get('native_name_error'):
++                add('6.1_anchor_shares',currency,event,months,'TARGET_EXPORT_NOT_ANCHORED',str(path))
++    result=sorted(records.values(),key=lambda r:(r['gate'],r['currency'],r['event_class'],r['months'],r['id']))
++    # Explicitly separate scoped accounting from full-envelope publication.
++    for name,gate in gates.items():
++        relevant=[r['id'] for r in result if r['gate']==name]
++        gate['scope_status']='MEASURED_PASS' if gate['pass'] else ('COVERED_BY_DECLARATION' if relevant else 'UNRESOLVED')
++        if name=='6.7_detector_clean' and gate.get('input_changes'):
++            gate['scope_status']='UNRESOLVED_INPUT_MUTATION'
++        gate['inadmissible_range_ids']=relevant
++        gate['declaration_is_measured_pass']=False
++    return result
+diff --git a/tools/strategy_farm/tests/test_news_calendar_candidate_ingress.py b/tools/strategy_farm/tests/test_news_calendar_candidate_ingress.py
+index d89965a6f4..77b8a4b0e1 100644
+--- a/tools/strategy_farm/tests/test_news_calendar_candidate_ingress.py
++++ b/tools/strategy_farm/tests/test_news_calendar_candidate_ingress.py
+@@ -40,6 +40,17 @@ def test_dry_run_is_read_only_and_staging_is_exact_create_only(tmp_path):
+         ingress.prepare(gate,source,sha,staging_dir=target,apply=True,policy=policy)
+ 
+ 
++def test_scoped_candidate_cannot_publish_even_with_eight_true_booleans(tmp_path):
++    source,_,policy=fixture(tmp_path)
++    path=source/'manifest.json';manifest=json.loads(path.read_text())
++    manifest['declared_inadmissible_ranges']=[{'currency':'AUD','months':['2026-02']}]
++    path.write_text(json.dumps(manifest))
++    before=_snapshot(tmp_path)
++    with pytest.raises(ValueError,match='full-scope publication refused'):
++        ingress.prepare(gate,source,hashlib.sha256(path.read_bytes()).hexdigest(),policy=policy)
++    assert before==_snapshot(tmp_path)
++
++
+ @pytest.mark.parametrize("failure",["manifest","verification","file","gate","destination"])
+ def test_refusal_precedes_any_write(tmp_path,failure):
+     source,sha,policy=fixture(tmp_path,failed=ingress.GATES[0] if failure=="gate" else None)
+diff --git a/tools/strategy_farm/tests/test_news_calendar_export_e1b2.py b/tools/strategy_farm/tests/test_news_calendar_export_e1b2.py
+index 253a704a59..860b46ce97 100644
+--- a/tools/strategy_farm/tests/test_news_calendar_export_e1b2.py
++++ b/tools/strategy_farm/tests/test_news_calendar_export_e1b2.py
+@@ -48,3 +48,10 @@ def test_process_handoff_requires_config_path_and_fresh_identity():
+     assert exporter.owned_match({**row,"CommandLine":"/portable /config:foreign.ini"},ini,start) is None
+     assert exporter.owned_match({**row,"ExecutablePath":"C:/QM/mt5/T_Live/terminal64.exe"},ini,start) is None
+     assert exporter.owned_match({**row,"CreationDate":"2026-09-05T09:00:00Z"},ini,start) is None
++
++
++def test_h1_profile_is_four_new_all_impact_targets_and_legacy_names_unchanged():
++    assert len(exporter.expected_names())==10
++    assert len(exporter.expected_names(True))==4
++    assert all('_ALL_' in name and '_2026H1_' in name for name in exporter.expected_names(True))
++    assert set(exporter.expected_names()).isdisjoint(exporter.expected_names(True))
+diff --git a/tools/strategy_farm/tests/test_news_calendar_repair.py b/tools/strategy_farm/tests/test_news_calendar_repair.py
+index 371594d4ee..bb58820655 100644
+--- a/tools/strategy_farm/tests/test_news_calendar_repair.py
++++ b/tools/strategy_farm/tests/test_news_calendar_repair.py
+@@ -225,3 +225,23 @@ def test_output_path_and_overwrite_guards(tmp_path):
+     existing=tmp_path/"staging"/"prior";existing.mkdir(parents=True)
+     with pytest.raises(ValueError,match="overwrite refused"):
+         repair.output_guard(existing,tmp_path/"staging")
++
++
++@pytest.mark.parametrize('conflict',[False,True])
++def test_h1_catalog_uses_unique_official_instants_and_refuses_conflicting_encoding(tmp_path,conflict):
++    export_fixtures(tmp_path)
++    path=tmp_path/'T_EXPORT_USD_ALL_CORE_PPI_2026H1_NATIVE.csv';rows=[];anchors=[]
++    for i,date in enumerate(['2026-01-30T13:30Z','2026-02-27T13:30Z','2026-03-18T12:30Z']):
++        t=repair.stamp(date)
++        anchors.append({'currency':'USD','event_code':'producer-price-index-ex-food-energy-mm','utc':date})
++        rows.append({'broker_time':int(t.timestamp()),'event_id':'2','event_code':anchors[-1]['event_code'],
++                     'event_name':'Core PPI m/m','importance':'medium','value_id':str(i)})
++    rows.append({**rows[-1],'value_id':'another-period-same-instant'})
++    if conflict:rows[0]['broker_time']+=3600
++    repair.write_csv(path,rows)
++    native,inputs,_=repair.load_native(tmp_path,{'anchors':anchors})
++    proof=next(i for i in inputs if i['path']==str(path.resolve()))
++    assert proof['official_anchor_count']==3
++    assert (proof['role']=='AUTHORITATIVE_NATIVE') is (not conflict)
++    if not conflict:assert proof['utc_offset_seconds']==0
++    assert any(n['event']=='Core PPI m/m' for n in native) is (not conflict)
+diff --git a/tools/strategy_farm/tests/test_news_calendar_scope.py b/tools/strategy_farm/tests/test_news_calendar_scope.py
+new file mode 100644
+index 0000000000..f697e9422f
+--- /dev/null
++++ b/tools/strategy_farm/tests/test_news_calendar_scope.py
+@@ -0,0 +1,38 @@
++from copy import deepcopy
++import json
++import pytest
++from tools.strategy_farm.news_calendar_scope import declare_scope
++
++
++def gates():
++    return {
++        '6.1_anchor_shares':{'pass':False,'failed_groups':[{'class':'CPI m/m','year':2025,'source':'primary'}],'native_name_error':'NATIVE_TARGET_NAMES_MISSING: Core PPI m/m'},
++        '6.2_coverage':{'pass':False,'fresh_currencies_with_confirmed_official_anchor':[],
++                       'fresh_exports':{c:{'present':False,'rows':0,'errors':[],'monthly_rows':{}} for c in ['USD','EUR','GBP','JPY','AUD','CAD']},
++                       'unexplained_zero_months':{'primary':['2026-01'],'secondary':[]}},
++        '6.3_cross_file_identity':{'pass':True},'6.4_nonusd_completeness':{'pass':True},
++        '6.5_tick_footprints':{'pass':False},'6.6_no_row_loss':{'pass':True},
++        '6.7_detector_clean':{'pass':False,'input_changes':[]},'6.8_schema':{'pass':True}}
++
++
++def test_every_failed_basis_gets_bounded_declarations_without_a_pass(tmp_path):
++    actual=gates(); original=deepcopy(actual)
++    records=declare_scope(actual,[{'currency':'USD','event':'CPI m/m','month':'2025-02','reason':'UNANCHORED'}],
++        [{'currency':'AUD','event_code':'rba-interest-rate-decision','utc':'2025-02-18T03:30Z','status':'MISSING_M5'}],[],[],tmp_path)
++    assert {k:v['pass'] for k,v in actual.items()}=={k:v['pass'] for k,v in original.items()}
++    assert all(v['scope_status'] in ['MEASURED_PASS','COVERED_BY_DECLARATION'] for v in actual.values())
++    assert all(r['currency'] and r['event_class'] and r['months'] and not r['production_use_permitted'] for r in records)
++    assert len({r['id'] for r in records})==len(records)
++    assert all(len(m)==7 for r in records for m in r['months'])
++
++
++def test_input_mutation_cannot_be_scoped_away(tmp_path):
++    actual=gates();actual['6.7_detector_clean']['input_changes']=['source.csv']
++    declare_scope(actual,[],[],[],[],tmp_path)
++    assert actual['6.7_detector_clean']['scope_status']=='UNRESOLVED_INPUT_MUTATION'
++    assert not actual['6.7_detector_clean']['pass']
++
++
++def test_undated_footprint_cannot_silently_be_declared(tmp_path):
++    with pytest.raises(ValueError,match='bounds'):
++        declare_scope(gates(),[],[{'currency':'AUD','event_code':'rate','status':'MISSING_OFFICIAL_INSTANT'}],[],[],tmp_path)

@@ -1,0 +1,243 @@
+{
+  "code_commit": "51c75174cbd83ff24e975c59f38b07d8a741f8d7",
+  "tests_passed": 37,
+  "manifest_sha256": "b33d0a3def6b19dfd78b977cfd13593806eb85f4b483143a5ca42980c2f4eb99",
+  "all_failed_anchor_groups_declared": true,
+  "all_failed_footprints_declared": true,
+  "all_unverified_exports_declared": true,
+  "input_csv_bytes_unchanged": [
+    {
+      "path": "D:\\QM\\data\\news_calendar\\news_calendar_2015_2025.csv",
+      "expected_sha256": "75ab4b425ce379b2ca43ce2d2a53e2b7f33d439fd9537f8869b8a97b968d914f",
+      "observed_sha256": "75ab4b425ce379b2ca43ce2d2a53e2b7f33d439fd9537f8869b8a97b968d914f"
+    },
+    {
+      "path": "D:\\QM\\data\\news_calendar\\forex_factory_calendar_clean.csv",
+      "expected_sha256": "126c268b783d2d5861e69786bce325e9a64dc9893718e02342dcc8be769a389a",
+      "observed_sha256": "126c268b783d2d5861e69786bce325e9a64dc9893718e02342dcc8be769a389a"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_USD_HIGH_2018_2025_NATIVE.csv",
+      "expected_sha256": "c1554e52d3456575f51d044cd0097e18b960c7f12485e9b45a07e36536b9ab3b",
+      "observed_sha256": "c1554e52d3456575f51d044cd0097e18b960c7f12485e9b45a07e36536b9ab3b"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_USD_HIGH_2025_NATIVE.csv",
+      "expected_sha256": "2d4b10a1ad9859d23aa5f13f115d0db84bc236226dd3de071be4ed26d3633684",
+      "observed_sha256": "2d4b10a1ad9859d23aa5f13f115d0db84bc236226dd3de071be4ed26d3633684"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_USD_HIGH_2026H1_NATIVE.csv",
+      "expected_sha256": "fdf66947d3e96315066742d096f5f56ddf22238d829a718362cf69cd15f085c2",
+      "observed_sha256": "fdf66947d3e96315066742d096f5f56ddf22238d829a718362cf69cd15f085c2"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_USD_ALL_BUILDING_PERMITS_2018_2025_NATIVE.csv",
+      "expected_sha256": "d2f1695b38034fbc8446b5c3215ffe406cd129608d402e73232acf5e38aa6d78",
+      "observed_sha256": "d2f1695b38034fbc8446b5c3215ffe406cd129608d402e73232acf5e38aa6d78"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_USD_ALL_BUILDING_PERMITS_2026H1_NATIVE.csv",
+      "expected_sha256": "160a79492cfa420cacb192b02b4b8887d942e313b1cb5b1b2b49cbc092a4f010",
+      "observed_sha256": "160a79492cfa420cacb192b02b4b8887d942e313b1cb5b1b2b49cbc092a4f010"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_USD_ALL_CORE_PPI_2018_2025_NATIVE.csv",
+      "expected_sha256": "a18a444683e52b113d509e34fa501e42060109830395349ac547e74c31a37869",
+      "observed_sha256": "a18a444683e52b113d509e34fa501e42060109830395349ac547e74c31a37869"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_USD_ALL_CORE_PPI_2026H1_NATIVE.csv",
+      "expected_sha256": "86ce260daed15787880a2e02645a97be305b80364f895d73657c9899c0e4c28d",
+      "observed_sha256": "86ce260daed15787880a2e02645a97be305b80364f895d73657c9899c0e4c28d"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_USD_ALL_EMPIRE_STATE_2018_2025_NATIVE.csv",
+      "expected_sha256": "5bf93456ebc9b9d04dd39eadf549fba1b33e2f70dc805f5945cf7414fbe5d315",
+      "observed_sha256": "5bf93456ebc9b9d04dd39eadf549fba1b33e2f70dc805f5945cf7414fbe5d315"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_USD_ALL_EMPIRE_STATE_2026H1_NATIVE.csv",
+      "expected_sha256": "acbd725301d26607999dfa7e5b0117a1fd7fa02cdfab91f45c78418006bb2f2a",
+      "observed_sha256": "acbd725301d26607999dfa7e5b0117a1fd7fa02cdfab91f45c78418006bb2f2a"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_USD_ALL_TRADE_BALANCE_2018_2025_NATIVE.csv",
+      "expected_sha256": "24d6d748a703c911225b0ad477284f6ce66bc2390af62613fd808233b6df3b62",
+      "observed_sha256": "24d6d748a703c911225b0ad477284f6ce66bc2390af62613fd808233b6df3b62"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_USD_ALL_TRADE_BALANCE_2026H1_NATIVE.csv",
+      "expected_sha256": "4cdcd2286d518da090d616e7dbd39edb0634ad63daf7aed5a3373017636070b6",
+      "observed_sha256": "4cdcd2286d518da090d616e7dbd39edb0634ad63daf7aed5a3373017636070b6"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_EUR_HIGH_2018_2025_NATIVE.csv",
+      "expected_sha256": "f619007af0a0126f665afe247b6828e21c36a642ca4e6714f962ae7573bf8137",
+      "observed_sha256": "f619007af0a0126f665afe247b6828e21c36a642ca4e6714f962ae7573bf8137"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_EUR_HIGH_2026H1_NATIVE.csv",
+      "expected_sha256": "a85f188e46e85814bfc134147940011bd3fd8ad67a4167a37942cf12886394d6",
+      "observed_sha256": "a85f188e46e85814bfc134147940011bd3fd8ad67a4167a37942cf12886394d6"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_GBP_HIGH_2018_2025_NATIVE.csv",
+      "expected_sha256": "8b4291bae1e41911c66fb683b994baece4910c3623feffaa3d43f2c970c1bee4",
+      "observed_sha256": "8b4291bae1e41911c66fb683b994baece4910c3623feffaa3d43f2c970c1bee4"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_GBP_HIGH_2026H1_NATIVE.csv",
+      "expected_sha256": "37b945c429ebd1bf8050487f0f5262eab39c8eba8df892573a427059e204659d",
+      "observed_sha256": "37b945c429ebd1bf8050487f0f5262eab39c8eba8df892573a427059e204659d"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_JPY_HIGH_2018_2025_NATIVE.csv",
+      "expected_sha256": "680b5cd69ef84a37523cce2b39ed6533eb73a322c18ef42da258feb50307dcf6",
+      "observed_sha256": "680b5cd69ef84a37523cce2b39ed6533eb73a322c18ef42da258feb50307dcf6"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_JPY_HIGH_2026H1_NATIVE.csv",
+      "expected_sha256": "0fcc2ee25ac1b0813ced4d0a8799efac3f499a0e302c2d8063ef80e58d5c052b",
+      "observed_sha256": "0fcc2ee25ac1b0813ced4d0a8799efac3f499a0e302c2d8063ef80e58d5c052b"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_AUD_HIGH_2018_2025_NATIVE.csv",
+      "expected_sha256": "e08d35bbe409410c29ba19b322e3075528fb15c38c5955e5aa5f09dffb5bf3f8",
+      "observed_sha256": "e08d35bbe409410c29ba19b322e3075528fb15c38c5955e5aa5f09dffb5bf3f8"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_AUD_HIGH_2026H1_NATIVE.csv",
+      "expected_sha256": "e4947aa1e22391e7fd3bfc633aea90c9938597aec4b8cd4326d8947031161061",
+      "observed_sha256": "e4947aa1e22391e7fd3bfc633aea90c9938597aec4b8cd4326d8947031161061"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_CAD_HIGH_2018_2025_NATIVE.csv",
+      "expected_sha256": "e7ac95686e41f19e9835364e7f247fc460951526a7f0e5232b3639b838bc7676",
+      "observed_sha256": "e7ac95686e41f19e9835364e7f247fc460951526a7f0e5232b3639b838bc7676"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_CAD_HIGH_2026H1_NATIVE.csv",
+      "expected_sha256": "f08c81110a41a5fdf1a2c29593e7929127463de315f56f56e17363580857bdae",
+      "observed_sha256": "f08c81110a41a5fdf1a2c29593e7929127463de315f56f56e17363580857bdae"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\EURUSD.DWX_M5.csv",
+      "expected_sha256": "b7ec4fae50b0e257832cb3e1217a34236f2a1e212844f9ee35b0cc7b86ce91f9",
+      "observed_sha256": "b7ec4fae50b0e257832cb3e1217a34236f2a1e212844f9ee35b0cc7b86ce91f9"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\GBPUSD.DWX_M5.csv",
+      "expected_sha256": "e483e548e28f611b0d53143eb1e329eff9a568f7d8a7076afc4ce59a8aba31bc",
+      "observed_sha256": "e483e548e28f611b0d53143eb1e329eff9a568f7d8a7076afc4ce59a8aba31bc"
+    },
+    {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\USDJPY.DWX_M5.csv",
+      "expected_sha256": "27d1dc7569385978ef42ae33dfcbbe1b36ed162f06ed031692a157b196159dd4",
+      "observed_sha256": "27d1dc7569385978ef42ae33dfcbbe1b36ed162f06ed031692a157b196159dd4"
+    }
+  ],
+  "scope_counts": {
+    "6.1_anchor_shares": 345,
+    "6.2_coverage": 5,
+    "6.5_tick_footprints": 27,
+    "6.7_detector_clean": 17902
+  },
+  "archive_bindings": [
+    {
+      "source": "D:\\QM\\reports\\news_calendar\\repair_e1a\\20260905T112500Z_e1b3_candidates\\manifest.json",
+      "sha256": "b33d0a3def6b19dfd78b977cfd13593806eb85f4b483143a5ca42980c2f4eb99",
+      "archive": "manifest.json.gz",
+      "archive_sha256": "44c754bf29b9b453d7fb720e936f1c0b1d5aa8878e732645650fe924710aa182"
+    },
+    {
+      "source": "D:\\QM\\reports\\news_calendar\\repair_e1a\\20260905T112500Z_e1b3_candidates\\declared_inadmissible_ranges.json",
+      "sha256": "554cdf23524c9085bdd7aee546f454efd86d3f5063cd106916fe90b528dda2ff",
+      "archive": "declared_inadmissible_ranges.json.gz",
+      "archive_sha256": "dd3c81e226ecd16da5c3b994c3c0c9a398ec696ff83f92769b425ca63006257d"
+    },
+    {
+      "source": "D:\\QM\\reports\\news_calendar\\repair_e1a\\20260905T112500Z_e1b3_candidates\\verification.json",
+      "sha256": "1cfdfcd1de985ca6e88bade688c7f00425d5c4e896a9ebaeaad4f52802c5803c",
+      "archive": "verification.json.gz",
+      "archive_sha256": "19cc46fb5859103ce32bbfb06c57d88c7371883fadcf9bf850d62989f8b14152"
+    },
+    {
+      "source": "D:\\QM\\reports\\news_calendar\\repair_e1a\\20260905T112500Z_e1b3_candidates\\repair_gaps.json",
+      "sha256": "399916accc713ac2d777af21726fe364fe5ccf15eec1d8d754c577d47a3fb095",
+      "archive": "repair_gaps.json.gz",
+      "archive_sha256": "a51f511bc86ba5d09bd4369f152fb7fa8e980b1e0818466c4d54a48004fbfb80"
+    },
+    {
+      "source": "D:\\QM\\reports\\news_calendar\\repair_e1a\\20260905T112500Z_e1b3_candidates\\footprint_summary.json",
+      "sha256": "fffd6bbace4fec97c1a098b76d34c9189a6be15601498d173e823c5e421db65b",
+      "archive": "footprint_summary.json.gz",
+      "archive_sha256": "febf740db442d2e70a49be933fe5f9663a54d639d91ed9ea392716935e89e91a"
+    },
+    {
+      "source": "D:\\QM\\reports\\news_calendar\\repair_e1a\\20260905T112500Z_e1b3_candidates\\fresh_export_anchor_checks.json",
+      "sha256": "b1e3d5d0e759463796d131ff3245eff73a9f1adc0b5dc565c05dcbc5c0e0883f",
+      "archive": "fresh_export_anchor_checks.json.gz",
+      "archive_sha256": "3d02d06d570958c2c545b0f9cbd54cec2f6cb6daf22c5d8e4cd97523afc8bc61"
+    },
+    {
+      "source": "D:\\QM\\reports\\news_calendar\\repair_e1a\\20260905T112500Z_e1b3_candidates\\native_monthly_coverage.csv",
+      "sha256": "94b1cbaf7d2ef5d7a7cec2ed084ebefcc6c89bec10fe45b469c620afa7cc5205",
+      "archive": "native_monthly_coverage.csv.gz",
+      "archive_sha256": "38ee492064168c0d91d49861d95427c7f2d35ddc2d2121037354ebc232858b3c"
+    },
+    {
+      "source": "D:\\QM\\reports\\news_calendar\\repair_e1a\\20260905T112500Z_e1b3_candidates\\e2_e4_gap_inventory.csv",
+      "sha256": "0419b04e5930d20873c5357fe86ad05b43de72561b5d83a5f5f5e366bc648214",
+      "archive": "e2_e4_gap_inventory.csv.gz",
+      "archive_sha256": "93c46bb40f96a66862f604ecc16c68c08debc0ba777514d6d5dc5ce5f1937e7c"
+    },
+    {
+      "source": "D:\\QM\\reports\\news_calendar\\repair_e1a\\20260905T112500Z_e1b3_candidates\\news_calendar_2015_2025.csv",
+      "sha256": "fe26a482e7317b7c3e64b2a6ee1a6fc7a22ed711a220a76a219e5cbf7c2365a0",
+      "archive": "news_calendar_2015_2025.csv.gz",
+      "archive_sha256": "0a0dbdc4a1154b92fcaf28ca04addce83f2aff248ed44e6655d7d30ffead4821"
+    },
+    {
+      "source": "D:\\QM\\reports\\news_calendar\\repair_e1a\\20260905T112500Z_e1b3_candidates\\forex_factory_calendar_clean.csv",
+      "sha256": "0317ef8511b249aa34e1bcd003b88f2675e8abb2d1dceff2acd3150ce03d876a",
+      "archive": "forex_factory_calendar_clean.csv.gz",
+      "archive_sha256": "9cd4e9bb0d2f20b70f2822afe25e7948244471967e5b303a43df771c44da0e4b"
+    }
+  ],
+  "gate_table": {
+    "6.1_anchor_shares": {
+      "measured_pass": false,
+      "scope_status": "COVERED_BY_DECLARATION"
+    },
+    "6.2_coverage": {
+      "measured_pass": false,
+      "scope_status": "COVERED_BY_DECLARATION"
+    },
+    "6.3_cross_file_identity": {
+      "measured_pass": true,
+      "scope_status": "MEASURED_PASS"
+    },
+    "6.4_nonusd_completeness": {
+      "measured_pass": true,
+      "scope_status": "MEASURED_PASS"
+    },
+    "6.5_tick_footprints": {
+      "measured_pass": false,
+      "scope_status": "COVERED_BY_DECLARATION"
+    },
+    "6.6_no_row_loss": {
+      "measured_pass": true,
+      "scope_status": "MEASURED_PASS"
+    },
+    "6.7_detector_clean": {
+      "measured_pass": false,
+      "scope_status": "COVERED_BY_DECLARATION"
+    },
+    "6.8_schema": {
+      "measured_pass": true,
+      "scope_status": "MEASURED_PASS"
+    }
+  },
+  "publication_authorized": false
+}

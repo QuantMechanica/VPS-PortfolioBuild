@@ -1,0 +1,454 @@
+{
+  "schema": "qm.official-anchor-catalog/e1b3-v1",
+  "decision_id": "OWNER-DEC-CALENDAR-E1A-20260905",
+  "approved_by": "codex source adjudication under CEO-routed E1-B3 task 41e3ee1c-266f-4523-9a66-b175d271b0e2; no publication approval",
+  "approved_at": "2026-09-05T11:23:19.367725+00:00",
+  "anchors": [
+    {
+      "currency": "USD",
+      "event_code": "consumer-price-index-mm",
+      "utc": "2026-01-13T13:30:00+00:00",
+      "source": "https://www.bls.gov/schedule/2026/home.htm",
+      "kind": "usd",
+      "source_local": "2026-01-13T08:30:00-05:00",
+      "timezone_rule": "America/New_York"
+    },
+    {
+      "currency": "USD",
+      "event_code": "consumer-price-index-mm",
+      "utc": "2026-02-13T13:30:00+00:00",
+      "source": "https://www.bls.gov/schedule/2026/home.htm",
+      "kind": "usd",
+      "source_local": "2026-02-13T08:30:00-05:00",
+      "timezone_rule": "America/New_York"
+    },
+    {
+      "currency": "USD",
+      "event_code": "consumer-price-index-mm",
+      "utc": "2026-03-11T12:30:00+00:00",
+      "source": "https://www.bls.gov/schedule/2026/home.htm",
+      "kind": "usd",
+      "source_local": "2026-03-11T08:30:00-04:00",
+      "timezone_rule": "America/New_York"
+    },
+    {
+      "currency": "USD",
+      "event_code": "nonfarm-payrolls",
+      "utc": "2026-01-09T13:30:00+00:00",
+      "source": "https://www.bls.gov/schedule/2026/home.htm",
+      "kind": "usd",
+      "source_local": "2026-01-09T08:30:00-05:00",
+      "timezone_rule": "America/New_York"
+    },
+    {
+      "currency": "USD",
+      "event_code": "nonfarm-payrolls",
+      "utc": "2026-02-11T13:30:00+00:00",
+      "source": "https://www.bls.gov/schedule/2026/home.htm",
+      "kind": "usd",
+      "source_local": "2026-02-11T08:30:00-05:00",
+      "timezone_rule": "America/New_York"
+    },
+    {
+      "currency": "USD",
+      "event_code": "nonfarm-payrolls",
+      "utc": "2026-03-06T13:30:00+00:00",
+      "source": "https://www.bls.gov/schedule/2026/home.htm",
+      "kind": "usd",
+      "source_local": "2026-03-06T08:30:00-05:00",
+      "timezone_rule": "America/New_York"
+    },
+    {
+      "currency": "USD",
+      "event_code": "producer-price-index-mm",
+      "utc": "2026-01-30T13:30:00+00:00",
+      "source": "https://www.bls.gov/schedule/2026/home.htm",
+      "kind": "usd",
+      "source_local": "2026-01-30T08:30:00-05:00",
+      "timezone_rule": "America/New_York"
+    },
+    {
+      "currency": "USD",
+      "event_code": "producer-price-index-mm",
+      "utc": "2026-02-27T13:30:00+00:00",
+      "source": "https://www.bls.gov/schedule/2026/home.htm",
+      "kind": "usd",
+      "source_local": "2026-02-27T08:30:00-05:00",
+      "timezone_rule": "America/New_York"
+    },
+    {
+      "currency": "USD",
+      "event_code": "producer-price-index-mm",
+      "utc": "2026-03-18T12:30:00+00:00",
+      "source": "https://www.bls.gov/schedule/2026/home.htm",
+      "kind": "usd",
+      "source_local": "2026-03-18T08:30:00-04:00",
+      "timezone_rule": "America/New_York"
+    },
+    {
+      "currency": "USD",
+      "event_code": "producer-price-index-ex-food-energy-mm",
+      "utc": "2026-01-30T13:30:00+00:00",
+      "source": "https://www.bls.gov/schedule/2026/home.htm",
+      "kind": "usd",
+      "source_local": "2026-01-30T08:30:00-05:00",
+      "timezone_rule": "America/New_York"
+    },
+    {
+      "currency": "USD",
+      "event_code": "producer-price-index-ex-food-energy-mm",
+      "utc": "2026-02-27T13:30:00+00:00",
+      "source": "https://www.bls.gov/schedule/2026/home.htm",
+      "kind": "usd",
+      "source_local": "2026-02-27T08:30:00-05:00",
+      "timezone_rule": "America/New_York"
+    },
+    {
+      "currency": "USD",
+      "event_code": "producer-price-index-ex-food-energy-mm",
+      "utc": "2026-03-18T12:30:00+00:00",
+      "source": "https://www.bls.gov/schedule/2026/home.htm",
+      "kind": "usd",
+      "source_local": "2026-03-18T08:30:00-04:00",
+      "timezone_rule": "America/New_York"
+    },
+    {
+      "currency": "USD",
+      "event_code": "producer-price-index-ex-food-energy-mm",
+      "utc": "2025-01-14T13:30:00+00:00",
+      "source": "https://www.bls.gov/schedule/2025/home.htm",
+      "kind": "usd",
+      "source_local": "2025-01-14T08:30:00-05:00",
+      "timezone_rule": "America/New_York"
+    },
+    {
+      "currency": "USD",
+      "event_code": "producer-price-index-ex-food-energy-mm",
+      "utc": "2025-02-13T13:30:00+00:00",
+      "source": "https://www.bls.gov/schedule/2025/home.htm",
+      "kind": "usd",
+      "source_local": "2025-02-13T08:30:00-05:00",
+      "timezone_rule": "America/New_York"
+    },
+    {
+      "currency": "USD",
+      "event_code": "producer-price-index-ex-food-energy-mm",
+      "utc": "2025-03-13T12:30:00+00:00",
+      "source": "https://www.bls.gov/schedule/2025/home.htm",
+      "kind": "usd",
+      "source_local": "2025-03-13T08:30:00-04:00",
+      "timezone_rule": "America/New_York"
+    },
+    {
+      "currency": "USD",
+      "event_code": "ny-empire-state-manufacturing-index",
+      "utc": "2025-01-15T13:30:00+00:00",
+      "source": "https://www.newyorkfed.org/research/calendars/i-jan25.html",
+      "kind": "usd",
+      "source_local": "2025-01-15T08:30:00-05:00",
+      "timezone_rule": "America/New_York"
+    },
+    {
+      "currency": "USD",
+      "event_code": "ny-empire-state-manufacturing-index",
+      "utc": "2025-02-18T13:30:00+00:00",
+      "source": "https://www.newyorkfed.org/research/calendars/i-feb25.html",
+      "kind": "usd",
+      "source_local": "2025-02-18T08:30:00-05:00",
+      "timezone_rule": "America/New_York"
+    },
+    {
+      "currency": "USD",
+      "event_code": "ny-empire-state-manufacturing-index",
+      "utc": "2025-03-17T12:30:00+00:00",
+      "source": "https://www.newyorkfed.org/research/calendars/i-mar25.html",
+      "kind": "usd",
+      "source_local": "2025-03-17T08:30:00-04:00",
+      "timezone_rule": "America/New_York"
+    },
+    {
+      "currency": "USD",
+      "event_code": "ny-empire-state-manufacturing-index",
+      "utc": "2026-01-15T13:30:00+00:00",
+      "source": "https://www.newyorkfed.org/research/calendars/i-jan26.html",
+      "kind": "usd",
+      "source_local": "2026-01-15T08:30:00-05:00",
+      "timezone_rule": "America/New_York"
+    },
+    {
+      "currency": "USD",
+      "event_code": "ny-empire-state-manufacturing-index",
+      "utc": "2026-02-17T13:30:00+00:00",
+      "source": "https://www.newyorkfed.org/research/calendars/i-feb26.html",
+      "kind": "usd",
+      "source_local": "2026-02-17T08:30:00-05:00",
+      "timezone_rule": "America/New_York"
+    },
+    {
+      "currency": "USD",
+      "event_code": "ny-empire-state-manufacturing-index",
+      "utc": "2026-03-16T12:30:00+00:00",
+      "source": "https://www.newyorkfed.org/research/calendars/i-mar26.html",
+      "kind": "usd",
+      "source_local": "2026-03-16T08:30:00-04:00",
+      "timezone_rule": "America/New_York"
+    },
+    {
+      "currency": "USD",
+      "event_code": "building-permits",
+      "utc": "2025-01-17T13:30:00+00:00",
+      "source": "https://www.newyorkfed.org/research/calendars/i-jan25.html",
+      "kind": "usd",
+      "source_local": "2025-01-17T08:30:00-05:00",
+      "timezone_rule": "America/New_York"
+    },
+    {
+      "currency": "USD",
+      "event_code": "building-permits",
+      "utc": "2025-02-19T13:30:00+00:00",
+      "source": "https://www.newyorkfed.org/research/calendars/i-feb25.html",
+      "kind": "usd",
+      "source_local": "2025-02-19T08:30:00-05:00",
+      "timezone_rule": "America/New_York"
+    },
+    {
+      "currency": "USD",
+      "event_code": "building-permits",
+      "utc": "2025-03-18T12:30:00+00:00",
+      "source": "https://www.newyorkfed.org/research/calendars/i-mar25.html",
+      "kind": "usd",
+      "source_local": "2025-03-18T08:30:00-04:00",
+      "timezone_rule": "America/New_York"
+    },
+    {
+      "currency": "USD",
+      "event_code": "trade-balance",
+      "utc": "2025-01-07T13:30:00+00:00",
+      "source": "https://www.newyorkfed.org/research/calendars/i-jan25.html",
+      "kind": "usd",
+      "source_local": "2025-01-07T08:30:00-05:00",
+      "timezone_rule": "America/New_York"
+    },
+    {
+      "currency": "USD",
+      "event_code": "trade-balance",
+      "utc": "2025-02-05T13:30:00+00:00",
+      "source": "https://www.newyorkfed.org/research/calendars/i-feb25.html",
+      "kind": "usd",
+      "source_local": "2025-02-05T08:30:00-05:00",
+      "timezone_rule": "America/New_York"
+    },
+    {
+      "currency": "USD",
+      "event_code": "trade-balance",
+      "utc": "2025-03-06T13:30:00+00:00",
+      "source": "https://www.newyorkfed.org/research/calendars/i-mar25.html",
+      "kind": "usd",
+      "source_local": "2025-03-06T08:30:00-05:00",
+      "timezone_rule": "America/New_York"
+    },
+    {
+      "currency": "USD",
+      "event_code": "building-permits",
+      "utc": "2026-01-09T13:30:00+00:00",
+      "source": "https://www.census.gov/economic-indicators/calendar-listview.html",
+      "kind": "usd",
+      "source_local": "2026-01-09T08:30:00-05:00",
+      "timezone_rule": "America/New_York"
+    },
+    {
+      "currency": "USD",
+      "event_code": "building-permits",
+      "utc": "2026-02-18T13:30:00+00:00",
+      "source": "https://www.census.gov/economic-indicators/calendar-listview.html",
+      "kind": "usd",
+      "source_local": "2026-02-18T08:30:00-05:00",
+      "timezone_rule": "America/New_York"
+    },
+    {
+      "currency": "USD",
+      "event_code": "building-permits",
+      "utc": "2026-03-12T12:30:00+00:00",
+      "source": "https://www.census.gov/economic-indicators/calendar-listview.html",
+      "kind": "usd",
+      "source_local": "2026-03-12T08:30:00-04:00",
+      "timezone_rule": "America/New_York"
+    },
+    {
+      "currency": "USD",
+      "event_code": "trade-balance",
+      "utc": "2026-01-08T13:30:00+00:00",
+      "source": "https://www.census.gov/foreign-trade/schedule.html",
+      "kind": "usd",
+      "source_local": "2026-01-08T08:30:00-05:00",
+      "timezone_rule": "America/New_York"
+    },
+    {
+      "currency": "USD",
+      "event_code": "trade-balance",
+      "utc": "2026-01-29T13:30:00+00:00",
+      "source": "https://www.census.gov/foreign-trade/schedule.html",
+      "kind": "usd",
+      "source_local": "2026-01-29T08:30:00-05:00",
+      "timezone_rule": "America/New_York"
+    },
+    {
+      "currency": "USD",
+      "event_code": "trade-balance",
+      "utc": "2026-02-19T13:30:00+00:00",
+      "source": "https://www.census.gov/foreign-trade/schedule.html",
+      "kind": "usd",
+      "source_local": "2026-02-19T08:30:00-05:00",
+      "timezone_rule": "America/New_York"
+    },
+    {
+      "currency": "EUR",
+      "event_code": "ecb-interest-rate-decision",
+      "utc": "2026-02-05T13:15:00+00:00",
+      "source": "https://www.ecb.europa.eu/press/govcdec/mopo/html/index.sq.html",
+      "kind": "rate",
+      "source_local": "2026-02-05T14:15:00+01:00",
+      "timezone_rule": "Europe/Berlin"
+    },
+    {
+      "currency": "EUR",
+      "event_code": "ecb-interest-rate-decision",
+      "utc": "2026-03-19T13:15:00+00:00",
+      "source": "https://www.ecb.europa.eu/press/govcdec/mopo/html/index.sq.html",
+      "kind": "rate",
+      "source_local": "2026-03-19T14:15:00+01:00",
+      "timezone_rule": "Europe/Berlin"
+    },
+    {
+      "currency": "EUR",
+      "event_code": "ecb-interest-rate-decision",
+      "utc": "2026-04-30T12:15:00+00:00",
+      "source": "https://www.ecb.europa.eu/press/govcdec/mopo/html/index.sq.html",
+      "kind": "rate",
+      "source_local": "2026-04-30T14:15:00+02:00",
+      "timezone_rule": "Europe/Berlin"
+    },
+    {
+      "currency": "GBP",
+      "event_code": "boe-interest-rate-decision",
+      "utc": "2026-02-05T12:00:00+00:00",
+      "source": "https://www.bankofengland.co.uk/news/2024/december/mpc-dates-for-2026 ; https://www.bankofengland.co.uk/monetary-policy",
+      "kind": "rate",
+      "source_local": "2026-02-05T12:00:00+00:00",
+      "timezone_rule": "Europe/London"
+    },
+    {
+      "currency": "GBP",
+      "event_code": "boe-interest-rate-decision",
+      "utc": "2026-03-19T12:00:00+00:00",
+      "source": "https://www.bankofengland.co.uk/news/2024/december/mpc-dates-for-2026 ; https://www.bankofengland.co.uk/monetary-policy",
+      "kind": "rate",
+      "source_local": "2026-03-19T12:00:00+00:00",
+      "timezone_rule": "Europe/London"
+    },
+    {
+      "currency": "GBP",
+      "event_code": "boe-interest-rate-decision",
+      "utc": "2026-04-30T11:00:00+00:00",
+      "source": "https://www.bankofengland.co.uk/news/2024/december/mpc-dates-for-2026 ; https://www.bankofengland.co.uk/monetary-policy",
+      "kind": "rate",
+      "source_local": "2026-04-30T12:00:00+01:00",
+      "timezone_rule": "Europe/London"
+    },
+    {
+      "currency": "GBP",
+      "event_code": "cpi-yy",
+      "utc": "2026-02-18T07:00:00+00:00",
+      "source": "https://www.ons.gov.uk/releases/consumerpriceinflationukjanuary2026",
+      "kind": "nonrate",
+      "source_local": "2026-02-18T07:00:00+00:00",
+      "timezone_rule": "Europe/London"
+    },
+    {
+      "currency": "JPY",
+      "event_code": "tokyo-consumer-price-index-ex-food-energy-yy",
+      "utc": "2026-01-29T23:30:00+00:00",
+      "source": "https://www.stat.go.jp/english/data/cpi/1582.html ; https://www.stat.go.jp/data/guide/3.html",
+      "kind": "nonrate",
+      "source_local": "2026-01-30T08:30:00+09:00",
+      "timezone_rule": "Asia/Tokyo"
+    },
+    {
+      "currency": "JPY",
+      "event_code": "tokyo-consumer-price-index-ex-food-energy-yy",
+      "utc": "2026-02-26T23:30:00+00:00",
+      "source": "https://www.stat.go.jp/english/data/cpi/1582.html ; https://www.stat.go.jp/data/guide/3.html",
+      "kind": "nonrate",
+      "source_local": "2026-02-27T08:30:00+09:00",
+      "timezone_rule": "Asia/Tokyo"
+    },
+    {
+      "currency": "JPY",
+      "event_code": "tokyo-consumer-price-index-ex-food-energy-yy",
+      "utc": "2026-03-30T23:30:00+00:00",
+      "source": "https://www.stat.go.jp/english/data/cpi/1582.html ; https://www.stat.go.jp/data/guide/3.html",
+      "kind": "nonrate",
+      "source_local": "2026-03-31T08:30:00+09:00",
+      "timezone_rule": "Asia/Tokyo"
+    },
+    {
+      "currency": "AUD",
+      "event_code": "rba-interest-rate-decision",
+      "utc": "2026-02-03T03:30:00+00:00",
+      "source": "https://www.rba.gov.au/schedules-events/calendar/",
+      "kind": "rate",
+      "source_local": "2026-02-03T14:30:00+11:00",
+      "timezone_rule": "Australia/Sydney"
+    },
+    {
+      "currency": "AUD",
+      "event_code": "rba-interest-rate-decision",
+      "utc": "2026-03-17T03:30:00+00:00",
+      "source": "https://www.rba.gov.au/schedules-events/calendar/",
+      "kind": "rate",
+      "source_local": "2026-03-17T14:30:00+11:00",
+      "timezone_rule": "Australia/Sydney"
+    },
+    {
+      "currency": "AUD",
+      "event_code": "rba-interest-rate-decision",
+      "utc": "2026-05-05T04:30:00+00:00",
+      "source": "https://www.rba.gov.au/schedules-events/calendar/",
+      "kind": "rate",
+      "source_local": "2026-05-05T14:30:00+10:00",
+      "timezone_rule": "Australia/Sydney"
+    },
+    {
+      "currency": "CAD",
+      "event_code": "boc-interest-rate-decision",
+      "utc": "2026-01-28T14:45:00+00:00",
+      "source": "https://www.bankofcanada.ca/2025/08/bank-canada-publishes-2026-schedule-policy-interest-rate-announcements-other-major-publications/",
+      "kind": "rate",
+      "source_local": "2026-01-28T09:45:00-05:00",
+      "timezone_rule": "America/New_York"
+    },
+    {
+      "currency": "CAD",
+      "event_code": "boc-interest-rate-decision",
+      "utc": "2026-03-18T13:45:00+00:00",
+      "source": "https://www.bankofcanada.ca/2025/08/bank-canada-publishes-2026-schedule-policy-interest-rate-announcements-other-major-publications/",
+      "kind": "rate",
+      "source_local": "2026-03-18T09:45:00-04:00",
+      "timezone_rule": "America/New_York"
+    },
+    {
+      "currency": "CAD",
+      "event_code": "boc-interest-rate-decision",
+      "utc": "2026-04-29T13:45:00+00:00",
+      "source": "https://www.bankofcanada.ca/2025/08/bank-canada-publishes-2026-schedule-policy-interest-rate-announcements-other-major-publications/",
+      "kind": "rate",
+      "source_local": "2026-04-29T09:45:00-04:00",
+      "timezone_rule": "America/New_York"
+    }
+  ],
+  "publication_authorized": false,
+  "source_notes": [
+    "BLS/Census actual revised 2026 schedules supersede stale New York Fed cross-agency dates; NY Fed used for its own Empire releases and 2025 cross-checks.",
+    "UTC instants are inferred using the named civil timezone; no native-file timestamp was used to choose the official clock time."
+  ]
+}
