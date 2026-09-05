@@ -1,0 +1,44 @@
+{
+  "schema_version": "qm.q02-cpu-admission-stop/v1",
+  "recorded_at": "2026-09-05T18:46:47.8887127Z",
+  "ea_id": "QM5_41355",
+  "ea_label": "QM5_41355_xauxag-mtrim2-rv",
+  "task_id": "8c04e456-4522-4bd4-a289-4fe6a50577ef",
+  "compile_work_item_id": "b3f8e831-9a0f-44cf-b7dd-d50b44304fd8",
+  "compile_status": "COMPILE_OK",
+  "ex5_sha256": "48e6a413a3629ce0020c5a9bc97da80dedf92ad370787b969af4253d72d7b967",
+  "requested_next_phase": "Q02",
+  "sampling_method": "Win32_PerfFormattedData_PerfOS_Processor Name=_Total",
+  "sample_interval_seconds": 2,
+  "sample_window_utc": {
+    "started_at": "2026-09-05T18:46:33.7033958Z",
+    "ended_at": "2026-09-05T18:46:47.8887127Z"
+  },
+  "cpu_samples_percent": [
+    72.0,
+    69.0,
+    81.0,
+    98.0,
+    85.0
+  ],
+  "cpu_average_percent": 81.0,
+  "cpu_maximum_percent": 98.0,
+  "cpu_ceiling_percent": 97.0,
+  "admission_rule": "Admit only when both the five-sample average and maximum are strictly below 97 percent.",
+  "admitted": false,
+  "stop_reason": "CPU_MAXIMUM_REACHED_OR_EXCEEDED_CEILING",
+  "actions_not_taken": [
+    "farmctl record-build",
+    "Q02 enqueue",
+    "manual backtest",
+    "manual dispatch"
+  ],
+  "safety": {
+    "autotrading_toggled": false,
+    "deploy_manifest_touched": false,
+    "manual_backtest_launched": false,
+    "manual_dispatch_requested": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false
+  }
+}
