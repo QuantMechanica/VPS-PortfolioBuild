@@ -537,6 +537,37 @@ def project_feed_executions(con: sqlite3.Connection, feed: Mapping[str, Any]) ->
     return sorted(output, key=lambda row: str(row.get("decided_at_utc") or ""), reverse=True)
 
 
+def coverage_report(
+    feed_path: Path = store.DEFAULT_FEED, contract_path: Path = DEFAULT_CONTRACT,
+) -> dict[str, Any]:
+    """Read-only coverage of actionable cards, using one validated contract snapshot."""
+    feed = store.load_feed(feed_path)
+    active = [item for item in feed["items"] if item["status"] in {"OPEN", "DEFERRED"}]
+    error = None
+    contract = None
+    ready_ids: set[str] = set()
+    try:
+        contract = load_contract(contract_path)
+        for item in contract["decisions"]:
+            _decision_plan_binding_from_contract(contract, item["id"])
+            ready_ids.add(item["id"])
+    except (ExecutionContractError, KeyError, TypeError, ValueError) as exc:
+        error = str(exc)
+        ready_ids.clear()
+    missing = [{"decision_id": item["id"], "status": item["status"],
+                "reason": error or "execution_plan_missing"}
+               for item in active if item["id"] not in ready_ids]
+    return {
+        "schema": "qm.owner-decision-execution-coverage/v1",
+        "ok": not missing and error is None, "read_only": True,
+        "active_card_count": len(active), "ready_card_count": len(active) - len(missing),
+        "contract_decision_count": len(contract["decisions"]) if contract else 0,
+        "missing_plans": missing, "contract_error": error,
+        "feed_sha256": store.sha256_bytes(store.canonical_bytes(feed)),
+        "contract_sha256": contract_sha256(contract) if contract else None,
+    }
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=DEFAULT_ROOT)
@@ -544,7 +575,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--receipts", type=Path, default=store.DEFAULT_RECEIPTS)
     parser.add_argument("--contract", type=Path, default=DEFAULT_CONTRACT)
     parser.add_argument("--apply", action="store_true", help="Insert missing tasks; default is dry-run")
+    parser.add_argument("--coverage", action="store_true", help="Read-only plan coverage for OPEN/DEFERRED cards")
     args = parser.parse_args(argv)
+    if args.coverage:
+        if args.apply:
+            parser.error("--coverage is read-only and cannot be combined with --apply")
+        result = coverage_report(args.feed, args.contract)
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return 0 if result["ok"] else 2
     result = reconcile_receipts(
         root=args.root,
         feed_path=args.feed,

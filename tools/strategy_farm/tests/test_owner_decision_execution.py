@@ -45,8 +45,8 @@ def test_execution_contract_covers_every_bootstrap_decision_and_both_choices() -
     feed = store.load_feed(store.DEFAULT_SEED)
     contract = execution.load_contract()
     contract_ids = {row["id"] for row in contract["decisions"]}
-    assert contract_ids == {row["id"] for row in feed["items"]}
-    for item in feed["items"]:
+    assert {row["id"] for row in feed["items"]} <= contract_ids
+    for item in contract["decisions"]:
         summary = execution.plan_summary(item["id"])
         assert summary["ready"] is True
         assert summary["agent"] == "claude"
@@ -56,6 +56,36 @@ def test_execution_contract_covers_every_bootstrap_decision_and_both_choices() -
         assert summary["no_mode"] in {
             "APPLY_AND_VERIFY", "DOCUMENT_AND_VERIFY", "PREPARE_FOLLOWUP_ONLY"
         }
+
+
+def test_live_coverage_requires_ready_plans_for_open_and_deferred_cards(tmp_path: Path) -> None:
+    feed, contract = tmp_path / "feed.json", tmp_path / "contract.json"
+    _feed(feed)
+    _contract(contract)
+    assert execution.coverage_report(feed, contract)["ok"] is True
+    payload = json.loads(feed.read_text())
+    for status in ("OPEN", "DEFERRED", "DECIDED"):
+        payload["items"].append({**payload["items"][0], "id": "MISSING-" + status, "status": status})
+    feed.write_text(json.dumps(payload), encoding="utf-8")
+    before = (feed.read_bytes(), contract.read_bytes())
+    result = execution.coverage_report(feed, contract)
+    assert result["ok"] is False
+    assert result["active_card_count"] == 3
+    assert {row["decision_id"] for row in result["missing_plans"]} == {"MISSING-OPEN", "MISSING-DEFERRED"}
+    assert (feed.read_bytes(), contract.read_bytes()) == before
+
+
+def test_coverage_cli_fails_closed_without_a_valid_both_choice_contract(tmp_path: Path, capsys) -> None:
+    feed, contract = tmp_path / "feed.json", tmp_path / "contract.json"
+    _feed(feed)
+    _contract(contract)
+    payload = json.loads(contract.read_text())
+    del payload["decisions"][0]["choices"]["NO"]
+    contract.write_text(json.dumps(payload), encoding="utf-8")
+    assert execution.main(["--coverage", "--feed", str(feed), "--contract", str(contract)]) == 2
+    result = json.loads(capsys.readouterr().out)
+    assert not result["ok"] and result["ready_card_count"] == 0
+    assert "must map YES and NO" in result["contract_error"]
 
 
 def _contract(path: Path) -> None:
