@@ -18242,3 +18242,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41342,anon-market-squeeze-d1-opt,0,EURUSD.DWX,413420000,2026-09-05,Codex governed allocator,active
 41343,connors-multi-day-high-low-h4-r1-recovery-opt,0,EURUSD.DWX,413430000,2026-09-05,Codex governed allocator,active
 41344,ohlc-daily-squeeze-reversal-d1-requal8-opt,0,EURUSD.DWX,413440000,2026-09-05,Codex governed allocator,active
+41345,xau-weekly-tsmom-opt,0,XAUUSD.DWX,413450000,2026-09-05,Codex governed allocator,active
