@@ -462,7 +462,97 @@ def test_postprocess_closes_drain_on_armed_claim(tmp_path, capsys):
 def test_scan_candidate_fails_open_without_db(tmp_path):
     assert tw._drain_scan_candidate(
         tmp_path, free_ram_gb=18.0, host_total_gb=80.0, multisym_ids=_FZ
-    ) is None
+    ) == (None, False, "scan_failed")
+
+
+def test_scan_skips_unwinnable_heavy_head_for_lighter_priority_row(tmp_path):
+    """A 44 GB head must not monopolize the drain when the next 32 GB row fits."""
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    with farmctl.connect(root) as conn:
+        _insert_wi(
+            conn,
+            "heavy",
+            "Q02",
+            symbol="GDAXI.DWX",
+            status="pending",
+            payload={"priority_track": True},
+        )
+        _insert_wi(
+            conn,
+            "lighter",
+            "Q02",
+            symbol="FX_BASKET_D1",
+            status="pending",
+            payload={
+                "priority_track": True,
+                "basket_symbol_count": 3,
+                "basket_symbols": [
+                    "EURUSD.DWX",
+                    "GBPUSD.DWX",
+                    "AUDUSD.DWX",
+                ],
+            },
+        )
+        conn.commit()
+
+    candidate, winnable, reason = tw._drain_scan_candidate(
+        root,
+        free_ram_gb=18.0,
+        host_total_gb=63.1,
+        multisym_ids=_FZ,
+        releasable_short_ram_gb=22.0,
+        long_run_ram_gb=10.0,
+        now_epoch=20_000_000.0,
+    )
+    assert candidate is not None
+    assert candidate["item_id"] == "lighter"
+    assert candidate["reservation_gb"] == 32.0
+    assert (winnable, reason) == (True, "")
+
+
+def test_scan_keeps_first_qualifying_row_when_none_is_winnable(tmp_path):
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    with farmctl.connect(root) as conn:
+        _insert_wi(
+            conn,
+            "heavy",
+            "Q02",
+            symbol="GDAXI.DWX",
+            status="pending",
+            payload={"priority_track": True},
+        )
+        _insert_wi(
+            conn,
+            "lighter",
+            "Q02",
+            symbol="FX_BASKET_D1",
+            status="pending",
+            payload={
+                "priority_track": True,
+                "basket_symbol_count": 3,
+                "basket_symbols": [
+                    "EURUSD.DWX",
+                    "GBPUSD.DWX",
+                    "AUDUSD.DWX",
+                ],
+            },
+        )
+        conn.commit()
+
+    candidate, winnable, reason = tw._drain_scan_candidate(
+        root,
+        free_ram_gb=18.0,
+        host_total_gb=63.1,
+        multisym_ids=_FZ,
+        releasable_short_ram_gb=22.0,
+        long_run_ram_gb=30.0,
+        now_epoch=20_000_000.0,
+    )
+    assert candidate is not None
+    assert candidate["item_id"] == "heavy"
+    assert (winnable, reason) == (False, "long_run_ceiling")
 
 
 # --- fleet-drained probe (real DB) ---------------------------------------

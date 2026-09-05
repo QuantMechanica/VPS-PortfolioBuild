@@ -2314,13 +2314,27 @@ def _drain_scan_candidate(
     free_ram_gb: float,
     host_total_gb: float,
     multisym_ids: frozenset,
-) -> dict[str, Any] | None:
-    """Read-only scan for the top qualifying priority heavy row; None if none.
+    releasable_short_ram_gb: float | None = None,
+    long_run_ram_gb: float = 0.0,
+    plateau_memory: dict[str, Any] | None = None,
+    now_epoch: float | None = None,
+) -> tuple[dict[str, Any] | None, bool, str]:
+    """Read-only scan for the first winnable priority heavy row.
 
     Priority-tracked rows sort first in the canonical claim order, so the scan
     stops at the first non-priority row.  Runs OUTSIDE the claim transaction on a
     short read connection, mirroring the existing candidate preflight.
+
+    A heavier head can be qualifying yet temporarily unwinnable beside active
+    long runs.  The ordinary claim loop already falls through such a RAM-skipped
+    row to lighter work; the drain selector must do the same or the heavier row
+    monopolizes the single tracker and prevents a lower-reservation priority row
+    from ever opening a winnable drain.  If no candidate is winnable, return the
+    first qualifying row and its refusal reason so it remains tracked and can arm
+    as soon as the fleet picture changes.
     """
+    first_qualifying: dict[str, Any] | None = None
+    first_reason = ""
     try:
         with farmctl.connect(root) as conn:
             conn.row_factory = sqlite3.Row
@@ -2331,11 +2345,29 @@ def _drain_scan_candidate(
                 candidate = _drain_candidate_from_row(
                     item, payload, free_ram_gb, host_total_gb, multisym_ids
                 )
-                if candidate is not None:
-                    return candidate
+                if candidate is None:
+                    continue
+                if releasable_short_ram_gb is None:
+                    return candidate, True, ""
+                winnable, reason = _drain_candidate_is_winnable(
+                    candidate,
+                    free_ram_gb=free_ram_gb,
+                    releasable_short_ram_gb=releasable_short_ram_gb,
+                    long_run_ram_gb=long_run_ram_gb,
+                    host_total_gb=host_total_gb,
+                    plateau_memory=plateau_memory,
+                    now_epoch=now_epoch,
+                )
+                if first_qualifying is None:
+                    first_qualifying = candidate
+                    first_reason = reason
+                if winnable:
+                    return candidate, True, ""
     except Exception:
-        return None
-    return None
+        return None, False, "scan_failed"
+    if first_qualifying is not None:
+        return first_qualifying, False, first_reason
+    return None, False, "no_qualifying_candidate"
 
 
 def _drain_measured_subtree_gb(
@@ -2640,23 +2672,18 @@ def _drain_run_postprocess(
                         for event in events:
                             event["arithmetic"] = dict(memory)
             else:
-                qualifying = _drain_scan_candidate(
+                qualifying, winnable, winnable_reason = _drain_scan_candidate(
                     root,
                     free_ram_gb=free_ram_gb,
                     host_total_gb=host_total_gb,
                     multisym_ids=multisym_ids,
+                    releasable_short_ram_gb=facts["releasable_short_ram_gb"],
+                    long_run_ram_gb=facts.get("long_run_ram_gb", 0.0),
+                    plateau_memory=state.get("plateau_memory"),
+                    now_epoch=now_epoch,
                 )
                 decision_facts: dict[str, Any] | None = None
                 if qualifying is not None:
-                    winnable, winnable_reason = _drain_candidate_is_winnable(
-                        qualifying,
-                        free_ram_gb=free_ram_gb,
-                        releasable_short_ram_gb=facts["releasable_short_ram_gb"],
-                        long_run_ram_gb=facts.get("long_run_ram_gb", 0.0),
-                        host_total_gb=host_total_gb,
-                        plateau_memory=state.get("plateau_memory"),
-                        now_epoch=now_epoch,
-                    )
                     try:
                         q_need = (
                             float(qualifying.get("reservation_gb") or 0.0)
@@ -2683,8 +2710,6 @@ def _drain_run_postprocess(
                         }
                     except (TypeError, ValueError):
                         decision_facts = None
-                else:
-                    winnable, winnable_reason = True, ""
                 new_state, events = _drain_evaluate(
                     state,
                     now_epoch=now_epoch,
