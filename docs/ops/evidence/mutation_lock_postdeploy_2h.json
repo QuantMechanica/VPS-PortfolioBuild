@@ -1,0 +1,1598 @@
+{
+  "schema": "qm.mutation-lock-attribution/v1",
+  "window_start_utc": "2026-09-05T11:25:20+00:00",
+  "window_end_utc": "2026-09-05T13:25:20+00:00",
+  "window_hours": 2.0,
+  "busy_event_count": 165,
+  "owner_table": [
+    {
+      "owner": "terminal_worker.claim_atomic:T10",
+      "count": 29,
+      "median_age_seconds": 63.08127,
+      "pids": [
+        9980,
+        16100
+      ],
+      "methods": [
+        "direct_busy_observation"
+      ]
+    },
+    {
+      "owner": "terminal_worker.claim_atomic:T5",
+      "count": 19,
+      "median_age_seconds": 1.658129,
+      "pids": [
+        5448,
+        18064
+      ],
+      "methods": [
+        "direct_busy_observation"
+      ]
+    },
+    {
+      "owner": "terminal_worker.claim_atomic:T9",
+      "count": 18,
+      "median_age_seconds": 1.793937,
+      "pids": [
+        12860
+      ],
+      "methods": [
+        "direct_busy_observation"
+      ]
+    },
+    {
+      "owner": "terminal_worker.claim_atomic:T8",
+      "count": 17,
+      "median_age_seconds": 2.05772,
+      "pids": [
+        25340
+      ],
+      "methods": [
+        "direct_busy_observation"
+      ]
+    },
+    {
+      "owner": "terminal_worker.claim_atomic:T3",
+      "count": 14,
+      "median_age_seconds": 1.730841,
+      "pids": [
+        25364
+      ],
+      "methods": [
+        "direct_busy_observation"
+      ]
+    },
+    {
+      "owner": "terminal_worker.claim_atomic:T7",
+      "count": 11,
+      "median_age_seconds": 2.687249,
+      "pids": [
+        33448
+      ],
+      "methods": [
+        "direct_busy_observation"
+      ]
+    },
+    {
+      "owner": "terminal_worker.claim_atomic:T1",
+      "count": 10,
+      "median_age_seconds": 1.904238,
+      "pids": [
+        37260
+      ],
+      "methods": [
+        "direct_busy_observation"
+      ]
+    },
+    {
+      "owner": "sweep_enqueue_built_eas",
+      "count": 8,
+      "median_age_seconds": 58.035254,
+      "pids": [
+        1248,
+        21140
+      ],
+      "methods": [
+        "direct_busy_observation"
+      ]
+    },
+    {
+      "owner": "terminal_worker.claim_atomic:T2",
+      "count": 7,
+      "median_age_seconds": 1.949183,
+      "pids": [
+        3428,
+        34688
+      ],
+      "methods": [
+        "direct_busy_observation"
+      ]
+    },
+    {
+      "owner": "terminal_worker.claim_atomic:T6",
+      "count": 7,
+      "median_age_seconds": 1.532183,
+      "pids": [
+        7852
+      ],
+      "methods": [
+        "direct_busy_observation"
+      ]
+    },
+    {
+      "owner": "dl089_matrix_service:a8b2dd82-ab11-5df9-a68b-f6da871d2995",
+      "count": 6,
+      "median_age_seconds": 1.211785,
+      "pids": [
+        6084,
+        14368,
+        18368,
+        33460
+      ],
+      "methods": [
+        "direct_busy_observation"
+      ]
+    },
+    {
+      "owner": "terminal_worker.claim_atomic:T4",
+      "count": 4,
+      "median_age_seconds": 2.650664,
+      "pids": [
+        14332
+      ],
+      "methods": [
+        "direct_busy_observation"
+      ]
+    },
+    {
+      "owner": "dl089_matrix_service:40e69c26-1ddb-5728-99a1-02b08f83c284",
+      "count": 3,
+      "median_age_seconds": 2.061342,
+      "pids": [
+        16944,
+        18368,
+        33084
+      ],
+      "methods": [
+        "direct_busy_observation"
+      ]
+    },
+    {
+      "owner": "dl089_matrix_service:9102ff97-a450-5cd3-8e13-0f61144ffa5d",
+      "count": 3,
+      "median_age_seconds": 2.763127,
+      "pids": [
+        6084,
+        33084
+      ],
+      "methods": [
+        "direct_busy_observation"
+      ]
+    },
+    {
+      "owner": "dl089_matrix_service:e0ab6e2a-87d2-5528-bb57-f35a67299d5c",
+      "count": 3,
+      "median_age_seconds": 2.661423,
+      "pids": [
+        6084,
+        18368
+      ],
+      "methods": [
+        "direct_busy_observation"
+      ]
+    },
+    {
+      "owner": "UNKNOWN",
+      "count": 2,
+      "median_age_seconds": null,
+      "pids": [],
+      "methods": [
+        "unattributed"
+      ]
+    },
+    {
+      "owner": "dl089_matrix_service:d8739ae2-1ce4-553a-9b59-1335e582614c",
+      "count": 2,
+      "median_age_seconds": 5.023461,
+      "pids": [
+        3812,
+        14368
+      ],
+      "methods": [
+        "direct_busy_observation"
+      ]
+    },
+    {
+      "owner": "release_compile_wave.apply",
+      "count": 2,
+      "median_age_seconds": 18.42247,
+      "pids": [
+        29224
+      ],
+      "methods": [
+        "direct_busy_observation"
+      ]
+    }
+  ],
+  "observations": [
+    {
+      "at_utc": "2026-09-05T11:27:31.332472+00:00",
+      "terminal": "T7",
+      "owner": "terminal_worker.claim_atomic:T8",
+      "pid": 25340,
+      "age_seconds": 2.077906,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:30:43.610200+00:00",
+      "terminal": "T1",
+      "owner": "terminal_worker.claim_atomic:T4",
+      "pid": 14332,
+      "age_seconds": 2.934329,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:30:46.372735+00:00",
+      "terminal": "T10",
+      "owner": "terminal_worker.claim_atomic:T4",
+      "pid": 14332,
+      "age_seconds": 2.367,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:32:02.300259+00:00",
+      "terminal": "T9",
+      "owner": "terminal_worker.claim_atomic:T3",
+      "pid": 25364,
+      "age_seconds": 1.745024,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:32:50.357509+00:00",
+      "terminal": "T7",
+      "owner": "terminal_worker.claim_atomic:T6",
+      "pid": 7852,
+      "age_seconds": 0.893401,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:32:53.842682+00:00",
+      "terminal": "T9",
+      "owner": "terminal_worker.claim_atomic:T5",
+      "pid": 18064,
+      "age_seconds": 1.083135,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:33:01.056753+00:00",
+      "terminal": "T5",
+      "owner": "terminal_worker.claim_atomic:T6",
+      "pid": 7852,
+      "age_seconds": 2.344587,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:33:58.997459+00:00",
+      "terminal": "T7",
+      "owner": "terminal_worker.claim_atomic:T5",
+      "pid": 18064,
+      "age_seconds": 1.658129,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:34:12.648552+00:00",
+      "terminal": "T9",
+      "owner": "terminal_worker.claim_atomic:T3",
+      "pid": 25364,
+      "age_seconds": 1.501686,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:34:15.017135+00:00",
+      "terminal": "T5",
+      "owner": "terminal_worker.claim_atomic:T8",
+      "pid": 25340,
+      "age_seconds": 0.072189,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:35:14.198215+00:00",
+      "terminal": "T1",
+      "owner": "terminal_worker.claim_atomic:T9",
+      "pid": 12860,
+      "age_seconds": 1.16097,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:35:22.561131+00:00",
+      "terminal": "T9",
+      "owner": "terminal_worker.claim_atomic:T8",
+      "pid": 25340,
+      "age_seconds": 1.682139,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:37:29.906167+00:00",
+      "terminal": "T10",
+      "owner": "terminal_worker.claim_atomic:T6",
+      "pid": 7852,
+      "age_seconds": 1.532183,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:38:49.477872+00:00",
+      "terminal": "T6",
+      "owner": "terminal_worker.claim_atomic:T10",
+      "pid": 9980,
+      "age_seconds": 2.916247,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:38:55.613938+00:00",
+      "terminal": "T10",
+      "owner": "terminal_worker.claim_atomic:T3",
+      "pid": 25364,
+      "age_seconds": 1.881015,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:40:45.710469+00:00",
+      "terminal": "T4",
+      "owner": "terminal_worker.claim_atomic:T8",
+      "pid": 25340,
+      "age_seconds": 0.545497,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:40:50.243381+00:00",
+      "terminal": "T9",
+      "owner": "terminal_worker.claim_atomic:T8",
+      "pid": 25340,
+      "age_seconds": 1.763761,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:42:23.808015+00:00",
+      "terminal": "T4",
+      "owner": "terminal_worker.claim_atomic:T7",
+      "pid": 33448,
+      "age_seconds": 1.92306,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:43:18.910148+00:00",
+      "terminal": "T4",
+      "owner": "terminal_worker.claim_atomic:T8",
+      "pid": 25340,
+      "age_seconds": 5.083618,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:49:16.505831+00:00",
+      "terminal": "T7",
+      "owner": "terminal_worker.claim_atomic:T10",
+      "pid": 9980,
+      "age_seconds": 3.190502,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:49:35.833623+00:00",
+      "terminal": "T5",
+      "owner": "dl089_matrix_service:d8739ae2-1ce4-553a-9b59-1335e582614c",
+      "pid": 14368,
+      "age_seconds": 7.214047,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:50:18.989740+00:00",
+      "terminal": "T7",
+      "owner": "dl089_matrix_service:a8b2dd82-ab11-5df9-a68b-f6da871d2995",
+      "pid": 14368,
+      "age_seconds": 4.103681,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:50:38.406104+00:00",
+      "terminal": "T6",
+      "owner": "terminal_worker.claim_atomic:T5",
+      "pid": 18064,
+      "age_seconds": 5.006738,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:51:03.518399+00:00",
+      "terminal": "T8",
+      "owner": "terminal_worker.claim_atomic:T5",
+      "pid": 18064,
+      "age_seconds": 0.770145,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:51:08.026519+00:00",
+      "terminal": "T9",
+      "owner": "terminal_worker.claim_atomic:T5",
+      "pid": 18064,
+      "age_seconds": 4.447595,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:51:43.395956+00:00",
+      "terminal": "T6",
+      "owner": "terminal_worker.claim_atomic:T1",
+      "pid": 37260,
+      "age_seconds": 5.001432,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:51:51.161259+00:00",
+      "terminal": "T1",
+      "owner": "terminal_worker.claim_atomic:T7",
+      "pid": 33448,
+      "age_seconds": 5.020138,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:51:58.645288+00:00",
+      "terminal": "T7",
+      "owner": "terminal_worker.claim_atomic:T8",
+      "pid": 25340,
+      "age_seconds": 5.008107,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:52:09.254255+00:00",
+      "terminal": "T8",
+      "owner": "terminal_worker.claim_atomic:T9",
+      "pid": 12860,
+      "age_seconds": 5.006707,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:52:24.120571+00:00",
+      "terminal": "T3",
+      "owner": "terminal_worker.claim_atomic:T9",
+      "pid": 12860,
+      "age_seconds": 2.862103,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:52:50.200948+00:00",
+      "terminal": "T6",
+      "owner": "terminal_worker.claim_atomic:T1",
+      "pid": 37260,
+      "age_seconds": 5.019722,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:53:01.302066+00:00",
+      "terminal": "T8",
+      "owner": "terminal_worker.claim_atomic:T1",
+      "pid": 37260,
+      "age_seconds": 3.055844,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:53:22.857223+00:00",
+      "terminal": "T7",
+      "owner": "sweep_enqueue_built_eas",
+      "pid": 21140,
+      "age_seconds": 13.041566,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:53:41.345404+00:00",
+      "terminal": "T3",
+      "owner": "sweep_enqueue_built_eas",
+      "pid": 21140,
+      "age_seconds": 32.897731,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:53:47.911167+00:00",
+      "terminal": "T6",
+      "owner": "sweep_enqueue_built_eas",
+      "pid": 21140,
+      "age_seconds": 39.009662,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:54:00.995577+00:00",
+      "terminal": "T8",
+      "owner": "sweep_enqueue_built_eas",
+      "pid": 21140,
+      "age_seconds": 51.820164,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:54:17.919740+00:00",
+      "terminal": "T7",
+      "owner": "sweep_enqueue_built_eas",
+      "pid": 21140,
+      "age_seconds": 66.711356,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:54:28.281712+00:00",
+      "terminal": "T10",
+      "owner": "sweep_enqueue_built_eas",
+      "pid": 21140,
+      "age_seconds": 79.425181,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:54:35.315525+00:00",
+      "terminal": "T3",
+      "owner": "terminal_worker.claim_atomic:T5",
+      "pid": 18064,
+      "age_seconds": 1.181005,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:55:26.336687+00:00",
+      "terminal": "T10",
+      "owner": "terminal_worker.claim_atomic:T8",
+      "pid": 25340,
+      "age_seconds": 0.030078,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:55:29.810030+00:00",
+      "terminal": "T6",
+      "owner": "terminal_worker.claim_atomic:T8",
+      "pid": 25340,
+      "age_seconds": 2.466726,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:55:29.867179+00:00",
+      "terminal": "T3",
+      "owner": "terminal_worker.claim_atomic:T8",
+      "pid": 25340,
+      "age_seconds": 2.543428,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:55:31.937890+00:00",
+      "terminal": "T7",
+      "owner": "terminal_worker.claim_atomic:T8",
+      "pid": 25340,
+      "age_seconds": 5.595494,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:56:16.863854+00:00",
+      "terminal": "T6",
+      "owner": "terminal_worker.claim_atomic:T9",
+      "pid": 12860,
+      "age_seconds": 1.383416,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:56:17.048335+00:00",
+      "terminal": "T10",
+      "owner": "terminal_worker.claim_atomic:T9",
+      "pid": 12860,
+      "age_seconds": 1.568059,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:57:29.002320+00:00",
+      "terminal": "T10",
+      "owner": "terminal_worker.claim_atomic:T7",
+      "pid": 33448,
+      "age_seconds": 3.135975,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:57:29.444673+00:00",
+      "terminal": "T6",
+      "owner": "terminal_worker.claim_atomic:T7",
+      "pid": 33448,
+      "age_seconds": 3.432758,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:58:23.067171+00:00",
+      "terminal": "T6",
+      "owner": "terminal_worker.claim_atomic:T10",
+      "pid": 9980,
+      "age_seconds": 2.783927,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:58:52.737994+00:00",
+      "terminal": "T8",
+      "owner": "terminal_worker.claim_atomic:T9",
+      "pid": 12860,
+      "age_seconds": 1.153061,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:58:53.746759+00:00",
+      "terminal": "T7",
+      "owner": "terminal_worker.claim_atomic:T9",
+      "pid": 12860,
+      "age_seconds": 2.019814,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T11:59:06.255858+00:00",
+      "terminal": "T3",
+      "owner": "dl089_matrix_service:d8739ae2-1ce4-553a-9b59-1335e582614c",
+      "pid": 3812,
+      "age_seconds": 2.832875,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:00:39.972058+00:00",
+      "terminal": "T1",
+      "owner": "terminal_worker.claim_atomic:T3",
+      "pid": 25364,
+      "age_seconds": 3.584065,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:00:41.153632+00:00",
+      "terminal": "T7",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T12:00:45.716542+00:00",
+      "terminal": "T3",
+      "owner": "terminal_worker.claim_atomic:T10",
+      "pid": 9980,
+      "age_seconds": 5.952024,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:01:28.900818+00:00",
+      "terminal": "T1",
+      "owner": "terminal_worker.claim_atomic:T9",
+      "pid": 12860,
+      "age_seconds": 2.157579,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:02:09.944997+00:00",
+      "terminal": "T7",
+      "owner": "terminal_worker.claim_atomic:T5",
+      "pid": 18064,
+      "age_seconds": 0.74534,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:02:14.216961+00:00",
+      "terminal": "T8",
+      "owner": "terminal_worker.claim_atomic:T5",
+      "pid": 18064,
+      "age_seconds": 2.820058,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:02:15.221590+00:00",
+      "terminal": "T3",
+      "owner": "terminal_worker.claim_atomic:T5",
+      "pid": 18064,
+      "age_seconds": 5.52062,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:02:25.549962+00:00",
+      "terminal": "T1",
+      "owner": "terminal_worker.claim_atomic:T5",
+      "pid": 18064,
+      "age_seconds": 3.197905,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:05:39.700699+00:00",
+      "terminal": "T5",
+      "owner": "terminal_worker.claim_atomic:T3",
+      "pid": 25364,
+      "age_seconds": 1.649959,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:05:39.742809+00:00",
+      "terminal": "T2",
+      "owner": "terminal_worker.claim_atomic:T3",
+      "pid": 25364,
+      "age_seconds": 1.660988,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:05:40.913878+00:00",
+      "terminal": "T7",
+      "owner": "terminal_worker.claim_atomic:T3",
+      "pid": 25364,
+      "age_seconds": 2.778402,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:08:46.959170+00:00",
+      "terminal": "T3",
+      "owner": "terminal_worker.claim_atomic:T1",
+      "pid": 37260,
+      "age_seconds": 1.010659,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:08:58.081310+00:00",
+      "terminal": "T1",
+      "owner": "terminal_worker.claim_atomic:T9",
+      "pid": 12860,
+      "age_seconds": 0.22108,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:09:41.797979+00:00",
+      "terminal": "T3",
+      "owner": "terminal_worker.claim_atomic:T2",
+      "pid": 34688,
+      "age_seconds": 5.710132,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:10:00.054823+00:00",
+      "terminal": "T7",
+      "owner": "terminal_worker.claim_atomic:T5",
+      "pid": 18064,
+      "age_seconds": 1.331539,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:10:11.273411+00:00",
+      "terminal": "T1",
+      "owner": "terminal_worker.claim_atomic:T5",
+      "pid": 18064,
+      "age_seconds": 5.737798,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:10:16.231326+00:00",
+      "terminal": "T8",
+      "owner": "terminal_worker.claim_atomic:T5",
+      "pid": 18064,
+      "age_seconds": 5.625256,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:13:09.999803+00:00",
+      "terminal": "T9",
+      "owner": "terminal_worker.claim_atomic:T3",
+      "pid": 25364,
+      "age_seconds": 2.139688,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:20:13.839045+00:00",
+      "terminal": "T1",
+      "owner": "dl089_matrix_service:40e69c26-1ddb-5728-99a1-02b08f83c284",
+      "pid": 33084,
+      "age_seconds": 5.123841,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:20:20.419051+00:00",
+      "terminal": "T9",
+      "owner": "dl089_matrix_service:9102ff97-a450-5cd3-8e13-0f61144ffa5d",
+      "pid": 33084,
+      "age_seconds": 4.821063,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:21:11.016711+00:00",
+      "terminal": "T1",
+      "owner": "terminal_worker.claim_atomic:T9",
+      "pid": 12860,
+      "age_seconds": 1.069506,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:21:12.699532+00:00",
+      "terminal": "T7",
+      "owner": "terminal_worker.claim_atomic:T9",
+      "pid": 12860,
+      "age_seconds": 2.936284,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:21:14.738329+00:00",
+      "terminal": "T10",
+      "owner": "terminal_worker.claim_atomic:T2",
+      "pid": 34688,
+      "age_seconds": 0.557634,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:22:35.762074+00:00",
+      "terminal": "T1",
+      "owner": "terminal_worker.claim_atomic:T10",
+      "pid": 9980,
+      "age_seconds": 5.313854,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:22:38.311933+00:00",
+      "terminal": "T8",
+      "owner": "terminal_worker.claim_atomic:T7",
+      "pid": 33448,
+      "age_seconds": 1.391836,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:22:38.925243+00:00",
+      "terminal": "T2",
+      "owner": "terminal_worker.claim_atomic:T7",
+      "pid": 33448,
+      "age_seconds": 1.785256,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:22:40.938034+00:00",
+      "terminal": "T10",
+      "owner": "terminal_worker.claim_atomic:T7",
+      "pid": 33448,
+      "age_seconds": 5.588893,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:23:28.473588+00:00",
+      "terminal": "T1",
+      "owner": "terminal_worker.claim_atomic:T3",
+      "pid": 25364,
+      "age_seconds": 0.677148,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:23:28.711906+00:00",
+      "terminal": "T8",
+      "owner": "terminal_worker.claim_atomic:T3",
+      "pid": 25364,
+      "age_seconds": 1.027264,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:23:30.839217+00:00",
+      "terminal": "T2",
+      "owner": "terminal_worker.claim_atomic:T3",
+      "pid": 25364,
+      "age_seconds": 2.950388,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:24:21.372054+00:00",
+      "terminal": "T2",
+      "owner": "terminal_worker.claim_atomic:T1",
+      "pid": 37260,
+      "age_seconds": 2.28636,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:25:32.678020+00:00",
+      "terminal": "T1",
+      "owner": "terminal_worker.claim_atomic:T9",
+      "pid": 12860,
+      "age_seconds": 0.040105,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:27:13.783095+00:00",
+      "terminal": "T7",
+      "owner": "terminal_worker.claim_atomic:T1",
+      "pid": 37260,
+      "age_seconds": 0.682281,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:29:29.697200+00:00",
+      "terminal": "T3",
+      "owner": "dl089_matrix_service:a8b2dd82-ab11-5df9-a68b-f6da871d2995",
+      "pid": 33460,
+      "age_seconds": 0.081212,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:30:49.903512+00:00",
+      "terminal": "T8",
+      "owner": "terminal_worker.claim_atomic:T6",
+      "pid": 7852,
+      "age_seconds": 1.800774,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:30:50.257450+00:00",
+      "terminal": "T9",
+      "owner": "terminal_worker.claim_atomic:T6",
+      "pid": 7852,
+      "age_seconds": 2.098589,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:32:30.385317+00:00",
+      "terminal": "T1",
+      "owner": "terminal_worker.claim_atomic:T9",
+      "pid": 12860,
+      "age_seconds": 0.755216,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:33:15.783941+00:00",
+      "terminal": "T9",
+      "owner": "terminal_worker.claim_atomic:T10",
+      "pid": 9980,
+      "age_seconds": 2.41153,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:33:19.407640+00:00",
+      "terminal": "T1",
+      "owner": "terminal_worker.claim_atomic:T2",
+      "pid": 34688,
+      "age_seconds": 3.05583,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:34:20.903273+00:00",
+      "terminal": "T10",
+      "owner": "terminal_worker.claim_atomic:T1",
+      "pid": 37260,
+      "age_seconds": 2.428648,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:34:24.012881+00:00",
+      "terminal": "T9",
+      "owner": "terminal_worker.claim_atomic:T7",
+      "pid": 33448,
+      "age_seconds": 2.687249,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:39:30.485080+00:00",
+      "terminal": "T8",
+      "owner": "terminal_worker.claim_atomic:T1",
+      "pid": 37260,
+      "age_seconds": 0.332368,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:47:50.671410+00:00",
+      "terminal": "T2",
+      "owner": "terminal_worker.claim_atomic:T3",
+      "pid": 25364,
+      "age_seconds": 1.937332,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:54:09.458609+00:00",
+      "terminal": "T7",
+      "owner": "sweep_enqueue_built_eas",
+      "pid": 1248,
+      "age_seconds": 64.250344,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:54:09.647602+00:00",
+      "terminal": "T9",
+      "owner": "sweep_enqueue_built_eas",
+      "pid": 1248,
+      "age_seconds": 64.447513,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:54:28.436057+00:00",
+      "terminal": "T1",
+      "owner": "dl089_matrix_service:40e69c26-1ddb-5728-99a1-02b08f83c284",
+      "pid": 18368,
+      "age_seconds": 0.590675,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:54:38.637475+00:00",
+      "terminal": "T10",
+      "owner": "dl089_matrix_service:a8b2dd82-ab11-5df9-a68b-f6da871d2995",
+      "pid": 18368,
+      "age_seconds": 1.128464,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:54:50.049006+00:00",
+      "terminal": "T7",
+      "owner": "dl089_matrix_service:e0ab6e2a-87d2-5528-bb57-f35a67299d5c",
+      "pid": 18368,
+      "age_seconds": 2.661423,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:54:51.998711+00:00",
+      "terminal": "T2",
+      "owner": "dl089_matrix_service:e0ab6e2a-87d2-5528-bb57-f35a67299d5c",
+      "pid": 18368,
+      "age_seconds": 3.966916,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:54:53.732030+00:00",
+      "terminal": "T3",
+      "owner": "terminal_worker.claim_atomic:T9",
+      "pid": 12860,
+      "age_seconds": 0.501919,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:55:40.131659+00:00",
+      "terminal": "T7",
+      "owner": "UNKNOWN",
+      "pid": null,
+      "age_seconds": null,
+      "method": "unattributed"
+    },
+    {
+      "at_utc": "2026-09-05T12:56:17.907996+00:00",
+      "terminal": "T3",
+      "owner": "terminal_worker.claim_atomic:T8",
+      "pid": 25340,
+      "age_seconds": 1.606456,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T12:57:32.091828+00:00",
+      "terminal": "T7",
+      "owner": "terminal_worker.claim_atomic:T8",
+      "pid": 25340,
+      "age_seconds": 2.050791,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:01:20.214613+00:00",
+      "terminal": "T10",
+      "owner": "terminal_worker.claim_atomic:T6",
+      "pid": 7852,
+      "age_seconds": 1.33002,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:02:10.193340+00:00",
+      "terminal": "T6",
+      "owner": "terminal_worker.claim_atomic:T10",
+      "pid": 9980,
+      "age_seconds": 5.142999,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:02:18.283484+00:00",
+      "terminal": "T2",
+      "owner": "terminal_worker.claim_atomic:T10",
+      "pid": 9980,
+      "age_seconds": 1.859815,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:02:50.950665+00:00",
+      "terminal": "T7",
+      "owner": "dl089_matrix_service:40e69c26-1ddb-5728-99a1-02b08f83c284",
+      "pid": 16944,
+      "age_seconds": 2.061342,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:02:58.891141+00:00",
+      "terminal": "T2",
+      "owner": "terminal_worker.claim_atomic:T6",
+      "pid": 7852,
+      "age_seconds": 1.029441,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:04:27.994259+00:00",
+      "terminal": "T3",
+      "owner": "terminal_worker.claim_atomic:T9",
+      "pid": 12860,
+      "age_seconds": 2.192184,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:04:28.817393+00:00",
+      "terminal": "T2",
+      "owner": "terminal_worker.claim_atomic:T1",
+      "pid": 37260,
+      "age_seconds": 0.10277,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:04:33.668417+00:00",
+      "terminal": "T9",
+      "owner": "terminal_worker.claim_atomic:T1",
+      "pid": 37260,
+      "age_seconds": 1.522116,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:05:16.419628+00:00",
+      "terminal": "T3",
+      "owner": "terminal_worker.claim_atomic:T2",
+      "pid": 34688,
+      "age_seconds": 5.822768,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:06:28.186318+00:00",
+      "terminal": "T10",
+      "owner": "terminal_worker.claim_atomic:T9",
+      "pid": 12860,
+      "age_seconds": 2.670418,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:11:21.091562+00:00",
+      "terminal": "T1",
+      "owner": "terminal_worker.claim_atomic:T10",
+      "pid": 9980,
+      "age_seconds": 63.08127,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:11:21.183802+00:00",
+      "terminal": "T2",
+      "owner": "terminal_worker.claim_atomic:T10",
+      "pid": 9980,
+      "age_seconds": 63.146133,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:11:21.424428+00:00",
+      "terminal": "T10",
+      "owner": "terminal_worker.claim_atomic:T10",
+      "pid": 9980,
+      "age_seconds": 63.298548,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:11:21.564793+00:00",
+      "terminal": "T6",
+      "owner": "terminal_worker.claim_atomic:T10",
+      "pid": 9980,
+      "age_seconds": 63.364504,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:11:22.014967+00:00",
+      "terminal": "T8",
+      "owner": "terminal_worker.claim_atomic:T10",
+      "pid": 9980,
+      "age_seconds": 63.877829,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:11:22.089160+00:00",
+      "terminal": "T5",
+      "owner": "terminal_worker.claim_atomic:T10",
+      "pid": 9980,
+      "age_seconds": 64.097375,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:11:23.060100+00:00",
+      "terminal": "T3",
+      "owner": "terminal_worker.claim_atomic:T10",
+      "pid": 9980,
+      "age_seconds": 66.957006,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:11:47.732537+00:00",
+      "terminal": "T7",
+      "owner": "terminal_worker.claim_atomic:T10",
+      "pid": 9980,
+      "age_seconds": 92.710658,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:12:01.175601+00:00",
+      "terminal": "T2",
+      "owner": "terminal_worker.claim_atomic:T10",
+      "pid": 9980,
+      "age_seconds": 104.024581,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:12:02.552860+00:00",
+      "terminal": "T10",
+      "owner": "terminal_worker.claim_atomic:T10",
+      "pid": 9980,
+      "age_seconds": 105.584844,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:12:06.231908+00:00",
+      "terminal": "T5",
+      "owner": "terminal_worker.claim_atomic:T10",
+      "pid": 9980,
+      "age_seconds": 111.624847,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:12:09.439046+00:00",
+      "terminal": "T6",
+      "owner": "terminal_worker.claim_atomic:T10",
+      "pid": 9980,
+      "age_seconds": 114.00614,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:12:10.715294+00:00",
+      "terminal": "T1",
+      "owner": "terminal_worker.claim_atomic:T10",
+      "pid": 9980,
+      "age_seconds": 114.928296,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:12:10.842127+00:00",
+      "terminal": "T8",
+      "owner": "terminal_worker.claim_atomic:T10",
+      "pid": 9980,
+      "age_seconds": 115.071171,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:12:11.385550+00:00",
+      "terminal": "T3",
+      "owner": "terminal_worker.claim_atomic:T10",
+      "pid": 9980,
+      "age_seconds": 115.853154,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:12:52.776427+00:00",
+      "terminal": "T3",
+      "owner": "terminal_worker.claim_atomic:T5",
+      "pid": 5448,
+      "age_seconds": 0.074886,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:13:25.998705+00:00",
+      "terminal": "T6",
+      "owner": "terminal_worker.claim_atomic:T9",
+      "pid": 12860,
+      "age_seconds": 2.184739,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:13:26.638439+00:00",
+      "terminal": "T8",
+      "owner": "terminal_worker.claim_atomic:T9",
+      "pid": 12860,
+      "age_seconds": 2.560355,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:13:28.747815+00:00",
+      "terminal": "T1",
+      "owner": "terminal_worker.claim_atomic:T10",
+      "pid": 16100,
+      "age_seconds": 2.558055,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:14:03.181894+00:00",
+      "terminal": "T3",
+      "owner": "dl089_matrix_service:9102ff97-a450-5cd3-8e13-0f61144ffa5d",
+      "pid": 6084,
+      "age_seconds": 1.812066,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:14:03.792181+00:00",
+      "terminal": "T10",
+      "owner": "dl089_matrix_service:9102ff97-a450-5cd3-8e13-0f61144ffa5d",
+      "pid": 6084,
+      "age_seconds": 2.763127,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:14:09.476805+00:00",
+      "terminal": "T8",
+      "owner": "dl089_matrix_service:a8b2dd82-ab11-5df9-a68b-f6da871d2995",
+      "pid": 6084,
+      "age_seconds": 0.647194,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:14:10.260852+00:00",
+      "terminal": "T6",
+      "owner": "dl089_matrix_service:a8b2dd82-ab11-5df9-a68b-f6da871d2995",
+      "pid": 6084,
+      "age_seconds": 1.295107,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:14:11.349697+00:00",
+      "terminal": "T1",
+      "owner": "dl089_matrix_service:a8b2dd82-ab11-5df9-a68b-f6da871d2995",
+      "pid": 6084,
+      "age_seconds": 2.638394,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:14:20.093384+00:00",
+      "terminal": "T7",
+      "owner": "dl089_matrix_service:e0ab6e2a-87d2-5528-bb57-f35a67299d5c",
+      "pid": 6084,
+      "age_seconds": 2.426874,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:15:22.988105+00:00",
+      "terminal": "T6",
+      "owner": "terminal_worker.claim_atomic:T8",
+      "pid": 25340,
+      "age_seconds": 1.477699,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:15:23.707763+00:00",
+      "terminal": "T1",
+      "owner": "terminal_worker.claim_atomic:T8",
+      "pid": 25340,
+      "age_seconds": 2.140937,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:15:23.807218+00:00",
+      "terminal": "T10",
+      "owner": "terminal_worker.claim_atomic:T8",
+      "pid": 25340,
+      "age_seconds": 2.05772,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:15:26.110234+00:00",
+      "terminal": "T9",
+      "owner": "terminal_worker.claim_atomic:T2",
+      "pid": 3428,
+      "age_seconds": 0.468226,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:15:34.428714+00:00",
+      "terminal": "T2",
+      "owner": "terminal_worker.claim_atomic:T8",
+      "pid": 25340,
+      "age_seconds": 2.582032,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:16:18.304754+00:00",
+      "terminal": "T4",
+      "owner": "terminal_worker.claim_atomic:T10",
+      "pid": 16100,
+      "age_seconds": 5.067091,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:16:28.775872+00:00",
+      "terminal": "T2",
+      "owner": "terminal_worker.claim_atomic:T10",
+      "pid": 16100,
+      "age_seconds": 2.099619,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:18:08.362212+00:00",
+      "terminal": "T7",
+      "owner": "terminal_worker.claim_atomic:T3",
+      "pid": 25364,
+      "age_seconds": 1.684393,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:18:08.585295+00:00",
+      "terminal": "T6",
+      "owner": "terminal_worker.claim_atomic:T3",
+      "pid": 25364,
+      "age_seconds": 1.716658,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:18:12.235547+00:00",
+      "terminal": "T9",
+      "owner": "terminal_worker.claim_atomic:T5",
+      "pid": 5448,
+      "age_seconds": 1.198619,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:19:14.953314+00:00",
+      "terminal": "T9",
+      "owner": "terminal_worker.claim_atomic:T10",
+      "pid": 16100,
+      "age_seconds": 1.54365,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:19:16.201679+00:00",
+      "terminal": "T8",
+      "owner": "terminal_worker.claim_atomic:T7",
+      "pid": 33448,
+      "age_seconds": 0.065675,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:19:17.848988+00:00",
+      "terminal": "T5",
+      "owner": "terminal_worker.claim_atomic:T7",
+      "pid": 33448,
+      "age_seconds": 1.65623,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:19:19.017858+00:00",
+      "terminal": "T6",
+      "owner": "terminal_worker.claim_atomic:T7",
+      "pid": 33448,
+      "age_seconds": 2.788461,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:19:19.700893+00:00",
+      "terminal": "T2",
+      "owner": "terminal_worker.claim_atomic:T10",
+      "pid": 16100,
+      "age_seconds": 0.293765,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:20:49.537226+00:00",
+      "terminal": "T2",
+      "owner": "terminal_worker.claim_atomic:T5",
+      "pid": 5448,
+      "age_seconds": 1.744545,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:22:33.657344+00:00",
+      "terminal": "T4",
+      "owner": "terminal_worker.claim_atomic:T10",
+      "pid": 16100,
+      "age_seconds": 1.470784,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:23:21.062499+00:00",
+      "terminal": "T3",
+      "owner": "terminal_worker.claim_atomic:T5",
+      "pid": 5448,
+      "age_seconds": 5.036846,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:23:27.069662+00:00",
+      "terminal": "T4",
+      "owner": "terminal_worker.claim_atomic:T5",
+      "pid": 5448,
+      "age_seconds": 1.459626,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:23:31.520377+00:00",
+      "terminal": "T2",
+      "owner": "terminal_worker.claim_atomic:T5",
+      "pid": 5448,
+      "age_seconds": 1.336852,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:24:14.527124+00:00",
+      "terminal": "T5",
+      "owner": "terminal_worker.claim_atomic:T4",
+      "pid": 14332,
+      "age_seconds": 0.372132,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:24:19.031730+00:00",
+      "terminal": "T3",
+      "owner": "terminal_worker.claim_atomic:T2",
+      "pid": 3428,
+      "age_seconds": 1.186259,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:24:23.498831+00:00",
+      "terminal": "T4",
+      "owner": "terminal_worker.claim_atomic:T2",
+      "pid": 3428,
+      "age_seconds": 1.949183,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:24:59.683368+00:00",
+      "terminal": "T9",
+      "owner": "release_compile_wave.apply",
+      "pid": 29224,
+      "age_seconds": 17.661683,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:25:01.461233+00:00",
+      "terminal": "T5",
+      "owner": "release_compile_wave.apply",
+      "pid": 29224,
+      "age_seconds": 19.183257,
+      "method": "direct_busy_observation"
+    },
+    {
+      "at_utc": "2026-09-05T13:25:12.252381+00:00",
+      "terminal": "T3",
+      "owner": "terminal_worker.claim_atomic:T4",
+      "pid": 14332,
+      "age_seconds": 4.779926,
+      "method": "direct_busy_observation"
+    }
+  ],
+  "post_deployment_window_proven": false,
+  "limits": "Legacy claim_declined was throttled at 60s per reason per process. Counts are logged declines, not all attempts. Interval joins are inference. Deployment and log coverage require separate receipts.",
+  "sources": [
+    {
+      "path": "D:\\QM\\reports\\state\\factory_mutation_lock_holds.jsonl",
+      "sha256_of_bytes_read": "fa31900c869753802fb11959b7114e91eb090d6997383fb1b126ec43e7eba8b3",
+      "non_json_lines": 14
+    },
+    {
+      "path": "D:\\QM\\strategy_farm\\logs\\terminal_worker_T1.log",
+      "sha256_of_bytes_read": "8316f3740412379f1c860cab176fe0bf886d5bd45de6901c99068ceaa86ac209",
+      "non_json_lines": 0
+    },
+    {
+      "path": "D:\\QM\\strategy_farm\\logs\\terminal_worker_T10.log",
+      "sha256_of_bytes_read": "225f7b003d3c5a94de53abee4124270c54fed868f62a1bd7e4d301c6a8d29927",
+      "non_json_lines": 0
+    },
+    {
+      "path": "D:\\QM\\strategy_farm\\logs\\terminal_worker_T2.log",
+      "sha256_of_bytes_read": "6d3932c801427f317cde818ed20f6336e7e7c89b844b74e1d31484e539bd87eb",
+      "non_json_lines": 0
+    },
+    {
+      "path": "D:\\QM\\strategy_farm\\logs\\terminal_worker_T3.log",
+      "sha256_of_bytes_read": "38b755e6f2a59c397f75c15b775d9db621909578cfe915c0a8a697758384a927",
+      "non_json_lines": 0
+    },
+    {
+      "path": "D:\\QM\\strategy_farm\\logs\\terminal_worker_T4.log",
+      "sha256_of_bytes_read": "ccfe17a132dcc687f0a3d6830167960d2901c986fc81bb88fa50d28eff33cb52",
+      "non_json_lines": 0
+    },
+    {
+      "path": "D:\\QM\\strategy_farm\\logs\\terminal_worker_T5.log",
+      "sha256_of_bytes_read": "86368c82c5ad77e8749c9df8dc375e277eb090e504e3cc5bc414788243aeb9aa",
+      "non_json_lines": 0
+    },
+    {
+      "path": "D:\\QM\\strategy_farm\\logs\\terminal_worker_T6.log",
+      "sha256_of_bytes_read": "9f6534be6e1df5ef6c10775ee5cf2bc5916c7685a749cc39d27b21353c9a0939",
+      "non_json_lines": 0
+    },
+    {
+      "path": "D:\\QM\\strategy_farm\\logs\\terminal_worker_T7.log",
+      "sha256_of_bytes_read": "cbdb022b5e972b86c3f06db7d1da0f51487451b857a355839be8c7877925a9f7",
+      "non_json_lines": 0
+    },
+    {
+      "path": "D:\\QM\\strategy_farm\\logs\\terminal_worker_T8.log",
+      "sha256_of_bytes_read": "eb1a3e24c92fdb1f701f536a624dee9884b84b4f25c356c640da81d5d671e9fb",
+      "non_json_lines": 0
+    },
+    {
+      "path": "D:\\QM\\strategy_farm\\logs\\terminal_worker_T9.log",
+      "sha256_of_bytes_read": "b3c454efe6480b5f1af448c754b1876a9cc4e663a22e37c68515d4aa78d10d7d",
+      "non_json_lines": 0
+    }
+  ]
+}
