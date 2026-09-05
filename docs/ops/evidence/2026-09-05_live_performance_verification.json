@@ -1,0 +1,45 @@
+{
+  "reconciliation": {
+    "expected": {
+      "net_actual": -472.96,
+      "closed_trades": 65,
+      "active_close_days": 24
+    },
+    "actual": {
+      "net_actual": -472.96,
+      "closed_trades": 65,
+      "active_close_days": 24
+    },
+    "pass": true
+  },
+  "epoch_totals": {
+    "net_pnl": -1436.59,
+    "closes": 85,
+    "active_days": 30,
+    "last_deal_utc": "2026-09-04T18:00:00Z"
+  },
+  "source_hashes": [
+    {
+      "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\journal\\live_deals_normalized.csv",
+      "sha256": "9a4cc7ba454767e36714d61dc9cd93e1ef6059ec9afaa3e1377091c6892966c7",
+      "matches_validation_input": true
+    },
+    {
+      "path": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+      "sha256": "f5f23f3c597f07217ef4406a34f929a2cb50e580986007eefe758d4e27b1704a",
+      "matches_validation_input": true
+    }
+  ],
+  "tests": "18 passed in 1.49s",
+  "cli_stdout_parity": true,
+  "schema_positive_negative": true,
+  "powershell_parse": true,
+  "live_source_unchanged": true,
+  "published": false,
+  "caveats": [
+    "Earlier validation buckets UTC; this producer uses Europe/Prague. All included closes have identical day labels in this input.",
+    "Index uses USD 100000 reference capital, not opening mark-to-market equity; first point is the close of the epoch day.",
+    "Roster pointer signed flag is false, preserved as the existing attribution reference; no new deploy authorization inferred.",
+    "Last-deal timestamp is the last included governed close; full export is read through its final observed day."
+  ]
+}

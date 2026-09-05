@@ -236,6 +236,7 @@ try {
         'public-snapshot.json', 'process-roadmap.json',
         'strategy-archive.json', 'strategy-archive-v3.json', 'company-operating-model.json', 'stats.json',
         'hero-equity.json'
+        'live-performance.json'
     )) {
         $source = Join-Path $snapshotStageDir $name
         if (-not (Test-Path -LiteralPath $source -PathType Leaf)) {
@@ -288,6 +289,7 @@ try {
             'public-data/company-operating-model.json',
             'public-data/stats.json',
             'public-data/hero-equity.json'
+            'public-data/live-performance.json'
         )
         $gitAddRun = Invoke-BoundedProcess -FilePath 'git.exe' `
             -ArgumentList (@('-C', $RepoRoot, 'add', '--') + $publicPaths) `

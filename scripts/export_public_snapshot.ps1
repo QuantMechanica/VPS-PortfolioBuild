@@ -210,6 +210,12 @@ function Validate-JsonAgainstSchema {
             }
             if ($Object.phases -ne 18) { throw "Invalid Q-gate count in $Name." }
         }
+        "live-performance" {
+            foreach ($key in @("schema_version", "generated_at", "basis", "account_currency", "epoch", "darwin_url", "series", "totals")) {
+                if (-not (Test-ObjectHasKey -Target $Object -Key $key)) { throw "Missing key in $Name." }
+            }
+            if ($Object.schema_version -ne 1 -or $Object.account_currency -ne "USD" -or $Object.epoch -ne "2026-07-24") { throw "Invalid live performance metadata." }
+        }
         "hero-equity" {
             foreach ($key in @("schema_version", "generated_at", "basis", "sleeves", "series")) {
                 if (-not (Test-ObjectHasKey -Target $Object -Key $key)) { throw "Missing key '$key' in $Name." }
@@ -546,6 +552,12 @@ $heroEquity = Invoke-PythonJsonRecord `
     -ScriptArgs @('--stdout') `
     -Label 'public hero equity'
 
+$livePerformance = Invoke-PythonJsonRecord `
+    -PythonPath $PythonExe `
+    -ScriptPath (Join-Path $RepoRoot "tools\strategy_farm\build_public_live_performance.py") `
+    -ScriptArgs @('--stdout') `
+    -Label 'public live performance'
+
 $publicSnapshot = [ordered]@{
     schema_version = $SchemaVersionV2
     generated_at = [datetime]::UtcNow.ToString("o")
@@ -593,6 +605,7 @@ $archiveV3SchemaPath = Join-Path $PublicDataDir "strategy-archive.schema.v3.json
 $companyModelSchemaPath = Join-Path $PublicDataDir "company-operating-model.schema.json"
 $statsSchemaPath = Join-Path $PublicDataDir "public-stats.schema.json"
 $heroEquitySchemaPath = Join-Path $PublicDataDir "hero-equity.schema.json"
+$livePerformanceSchemaPath = Join-Path $PublicDataDir "live-performance.schema.json"
 $companyModelPath = Join-Path $PublicDataDir "company-operating-model.json"
 $companyOperatingModel = Read-JsonFile -Path $companyModelPath
 if ($null -eq $companyOperatingModel) {
@@ -612,6 +625,7 @@ Validate-JsonAgainstSchema -Object $strategyArchiveV3 -SchemaPath $archiveV3Sche
 Validate-JsonAgainstSchema -Object $companyOperatingModel -SchemaPath $companyModelSchemaPath -Name "company-operating-model"
 Validate-JsonAgainstSchema -Object $publicStats -SchemaPath $statsSchemaPath -Name "public-stats"
 Validate-JsonAgainstSchema -Object $heroEquity -SchemaPath $heroEquitySchemaPath -Name "hero-equity"
+Validate-JsonAgainstSchema -Object $livePerformance -SchemaPath $livePerformanceSchemaPath -Name "live-performance"
 
 $changedFiles = New-Object System.Collections.Generic.List[string]
 
@@ -622,6 +636,7 @@ $archiveV3Path = Join-Path $effectiveOutputDir "strategy-archive-v3.json"
 $companyModelOutputPath = Join-Path $effectiveOutputDir "company-operating-model.json"
 $statsPath = Join-Path $effectiveOutputDir "stats.json"
 $heroEquityPath = Join-Path $effectiveOutputDir "hero-equity.json"
+$livePerformancePath = Join-Path $effectiveOutputDir "live-performance.json"
 
 if ($DryRun) {
     Write-Host "[DryRun] Would write public-snapshot:"
@@ -644,6 +659,7 @@ if (Write-JsonIfChanged -Path $archiveV3Path -Object $strategyArchiveV3) { $chan
 if (Write-JsonIfChanged -Path $companyModelOutputPath -Object $companyOperatingModel) { $changedFiles.Add($companyModelOutputPath) }
 if (Write-JsonIfChanged -Path $statsPath -Object $publicStats) { $changedFiles.Add($statsPath) }
 if (Write-JsonIfChanged -Path $heroEquityPath -Object $heroEquity) { $changedFiles.Add($heroEquityPath) }
+if (Write-JsonIfChanged -Path $livePerformancePath -Object $livePerformance) { $changedFiles.Add($livePerformancePath) }
 
 if ($changedFiles.Count -eq 0) {
     Write-Host "No snapshot changes."
@@ -666,7 +682,7 @@ if ($NoGit -or -not $resolvedOutputDir.Equals(
 
 Push-Location $RepoRoot
 try {
-    git add public-data/public-snapshot.json public-data/process-roadmap.json public-data/strategy-archive.json public-data/strategy-archive-v3.json public-data/company-operating-model.json public-data/stats.json public-data/hero-equity.json
+    git add public-data/public-snapshot.json public-data/process-roadmap.json public-data/strategy-archive.json public-data/strategy-archive-v3.json public-data/company-operating-model.json public-data/stats.json public-data/hero-equity.json public-data/live-performance.json
     $diff = git diff --cached --name-only
     if (-not $diff) {
         Write-Host "No git-staged snapshot diff."

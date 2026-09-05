@@ -73,6 +73,15 @@ if (Test-Path -LiteralPath (Join-Path $publicDataDir 'strategy-archive-v3.json')
     }
 }
 
+if (Test-Path -LiteralPath (Join-Path $publicDataDir 'live-performance.json')) {
+    $targets += @{
+        Name = 'live-performance'
+        Schema = Join-Path $schemaDir 'live-performance.schema.json'
+        Data = Join-Path $publicDataDir 'live-performance.json'
+        Negative = Join-Path $fixturesDir 'live-performance.invalid.private.json'
+    }
+}
+
 foreach ($target in $targets) {
     foreach ($path in @($target.Schema, $target.Data, $target.Negative)) {
         if (-not (Test-Path -LiteralPath $path)) {

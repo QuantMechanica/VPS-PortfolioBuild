@@ -1,0 +1,92 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "account_currency",
+    "basis",
+    "darwin_url",
+    "epoch",
+    "generated_at",
+    "schema_version",
+    "series",
+    "totals"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "basis": {
+      "const": "Darwinex Zero strategy-attributed closed-position net P&L in USD, including lifecycle costs; Europe/Prague close days; excludes manual positions, cashflows and floating P&L. Index starts at 100 before the epoch day and uses USD 100,000 reference capital; daily points are closing values, not account equity or DARWIN investor returns."
+    },
+    "account_currency": {
+      "const": "USD"
+    },
+    "epoch": {
+      "const": "2026-07-24"
+    },
+    "darwin_url": {
+      "const": "https://www.darwinexzero.com/darwin/KQDS/performance"
+    },
+    "series": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "array",
+        "minItems": 5,
+        "maxItems": 5,
+        "items": [
+          {
+            "type": "string",
+            "format": "date"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "integer",
+            "minimum": 0
+          }
+        ],
+        "additionalItems": false
+      }
+    },
+    "totals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "active_days",
+        "closes",
+        "last_deal_utc",
+        "net_pnl"
+      ],
+      "properties": {
+        "net_pnl": {
+          "type": "number"
+        },
+        "closes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "active_days": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "last_deal_utc": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}
