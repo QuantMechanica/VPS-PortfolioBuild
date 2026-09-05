@@ -1,0 +1,102 @@
+{
+  "schema_version": "1.0",
+  "recorded_at_utc": "2026-09-05T11:27:46Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "8a483f555864abd7204c882e0127a1e2ac636528",
+  "mission": "fx_cointegration_portfolio_growth",
+  "outcome": "STOP_NO_NON_DUPLICATE_MUTATION",
+  "decision_delta": "The raw QM5_12778 row still says RUNNABLE_BOUND, but the canonical claim-order surface excludes it because an active NEWS_CALENDAR_TIMESTAMP_DEFECT hold was re-applied. Earlier raw-row audits therefore no longer describe an executable continuation.",
+  "frontier": {
+    "scan_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "fixed_pair_count": 66,
+    "approved_identity_count": 123,
+    "matching_ea_directory_count": 123,
+    "approved_unbuilt_count": 0,
+    "new_pair_build_skipped_as_duplicate": true
+  },
+  "anchors": {
+    "QM5_12532": {
+      "relationship": "AUDUSD.DWX/NZDUSD.DWX",
+      "logical_q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "logical_q02": "PASS",
+      "terminal_chain": "Q04_PASS_Q05_FAIL"
+    },
+    "QM5_12533": {
+      "relationship": "EURJPY.DWX/GBPJPY.DWX",
+      "logical_q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "logical_q02": "PASS",
+      "terminal_chain": "Q04_FAIL"
+    }
+  },
+  "rejected_manifest_candidate": {
+    "ea_id": "QM5_13020",
+    "identity": "AUDNZD.DWX",
+    "reason": "The approved card and SPEC explicitly require single_symbol_only; it is not a missing-manifest two-leg basket, and its logical chain already reached Q02 PASS then Q03/Q04 FAIL."
+  },
+  "hold_aware_existing_continuation": {
+    "ea_id": "QM5_12778",
+    "relationship": "AUDUSD.DWX/EURJPY.DWX",
+    "work_item_id": "24acc5d4-3e34-526e-a7a8-12640a2e759f",
+    "phase": "Q09_NEWS",
+    "row_status": "pending",
+    "claimed_by": null,
+    "attempt_count": 0,
+    "payload_activation_state": "RUNNABLE_BOUND",
+    "active_hold": true,
+    "hold_code": "NEWS_CALENDAR_TIMESTAMP_DEFECT",
+    "hold_reason": "News-calendar timestamp defect (CEO 2026-09-05, E2 chained behind E1): held until the calendar repair lands; reversible via farmctl release-hold.",
+    "hold_updated_at_utc": "2026-09-05T06:28:12+00:00",
+    "present_in_canonical_claim_order": false,
+    "hold_released": false
+  },
+  "selected_existing_fallback": {
+    "ea_id": "QM5_12507",
+    "relationship": "EURUSD.DWX/GBPUSD.DWX",
+    "logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+    "work_item_id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+    "phase": "Q02",
+    "status": "pending",
+    "claimed_by": null,
+    "attempt_count": 0,
+    "priority_track": true,
+    "canonical_claim_order_rank": 141,
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "basket_manifest": "framework/EAs/QM5_12507_pair-coint-z/basket_manifest.json",
+    "duplicate_work_item_created": false,
+    "queue_mutated": false,
+    "manual_dispatch_started": false,
+    "reason": "This is the unique governed first logical Q02 for the concrete pair. It already follows an authenticated 632-trade Q01 PASS and was previously priority-tagged; another seed or forced claim would be duplicate or bypass paced ownership."
+  },
+  "capacity": {
+    "cpu_ceiling_percent": 97.0,
+    "cpu_samples_percent": [81.446, 79.9, 83.134, 80.487, 75.444],
+    "cpu_average_percent": 80.082,
+    "cpu_maximum_percent": 83.134,
+    "cpu_ceiling_hit": false,
+    "active_work_item_count_observed": 7,
+    "factory_terminal_processes_observed": ["T3", "T4", "T6", "T9"],
+    "factory_worker_slots_observed": 10,
+    "duplicate_terminal_workers": 0,
+    "orphaned_terminal_processes": 0,
+    "claim_order_head": [
+      {"rank": 1, "ea_id": "QM5_10718", "phase": "Q02"},
+      {"rank": 2, "ea_id": "QM5_10717", "phase": "Q02"}
+    ]
+  },
+  "mutations": {
+    "card": false,
+    "ea": false,
+    "registry": false,
+    "queue": false,
+    "priority": false,
+    "hold": false,
+    "worker_claim": false,
+    "terminal_dispatch": false,
+    "backtest": false,
+    "portfolio_gate": false,
+    "t_live": false,
+    "autotrading": false
+  },
+  "resume_contract": "Let the ordinary paced fleet own the already-open QM5_12507 Q02. Reconsider QM5_12778 only after the governed calendar repair is published and the exact active hold is explicitly released; never infer claimability from payload activation state alone and never append a duplicate row."
+}
