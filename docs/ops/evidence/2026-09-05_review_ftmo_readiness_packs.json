@@ -1,0 +1,1355 @@
+{
+  "schema": "qm.ftmo-readiness-review/v1",
+  "observed_at_utc": "2026-09-05T08:43:40.356347+00:00",
+  "anchors": [
+    {
+      "group": "part1",
+      "path": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+      "json_path": "/signed",
+      "value": false,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "part1",
+      "path": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+      "json_path": "/approved_by",
+      "value": null,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "part1",
+      "path": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+      "json_path": "/expected_account",
+      "value": "4000090541",
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "part1",
+      "path": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+      "json_path": "/deployment_epoch_utc",
+      "value": "2026-07-24T06:42:00+00:00",
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "part1",
+      "path": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+      "json_path": "/manifest_sha256",
+      "value": "8c719b080e18d30d83432f0999d694f699f2859cef72c0ce7738631fb084eab6",
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "part1",
+      "path": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+      "json_path": "/expected_sleeves/roster/0/magic_number",
+      "value": 15560004,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "part1",
+      "path": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+      "json_path": "/expected_sleeves/roster/1/magic_number",
+      "value": 15670007,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "part1",
+      "path": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+      "json_path": "/expected_sleeves/roster/2/magic_number",
+      "value": 104030002,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "part1",
+      "path": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+      "json_path": "/expected_sleeves/roster/3/magic_number",
+      "value": 104400003,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "part1",
+      "path": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+      "json_path": "/expected_sleeves/roster/4/magic_number",
+      "value": 105130003,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "part1",
+      "path": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+      "json_path": "/expected_sleeves/roster/5/magic_number",
+      "value": 107060001,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "part1",
+      "path": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+      "json_path": "/expected_sleeves/roster/6/magic_number",
+      "value": 109110003,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "part1",
+      "path": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+      "json_path": "/expected_sleeves/roster/7/magic_number",
+      "value": 109190001,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "part1",
+      "path": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+      "json_path": "/expected_sleeves/roster/8/magic_number",
+      "value": 109390001,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "part1",
+      "path": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+      "json_path": "/expected_sleeves/roster/9/magic_number",
+      "value": 111320000,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "part1",
+      "path": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+      "json_path": "/expected_sleeves/roster/10/magic_number",
+      "value": 111650000,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "part1",
+      "path": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+      "json_path": "/expected_sleeves/roster/11/magic_number",
+      "value": 111650002,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "part1",
+      "path": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+      "json_path": "/expected_sleeves/roster/12/magic_number",
+      "value": 114210000,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "part1",
+      "path": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+      "json_path": "/expected_sleeves/roster/13/magic_number",
+      "value": 114210003,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "part1",
+      "path": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+      "json_path": "/expected_sleeves/roster/14/magic_number",
+      "value": 117080000,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "part1",
+      "path": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+      "json_path": "/expected_sleeves/roster/15/magic_number",
+      "value": 125670002,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "part1",
+      "path": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+      "json_path": "/expected_sleeves/roster/16/magic_number",
+      "value": 125670003,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "part1",
+      "path": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+      "json_path": "/expected_sleeves/roster/17/magic_number",
+      "value": 127780000,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "part1",
+      "path": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+      "json_path": "/expected_sleeves/roster/18/magic_number",
+      "value": 129690000,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "part1",
+      "path": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+      "json_path": "/expected_sleeves/roster/19/magic_number",
+      "value": 129890003,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "part1",
+      "path": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+      "json_path": "/expected_sleeves/roster/20/magic_number",
+      "value": 131170000,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "part1",
+      "path": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+      "json_path": "/expected_sleeves/roster/21/magic_number",
+      "value": 131280000,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "part1",
+      "path": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+      "json_path": "/expected_sleeves/roster/22/magic_number",
+      "value": 132130000,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "part1",
+      "path": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+      "json_path": "/expected_sleeves/roster/23/magic_number",
+      "value": 133010010,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "profile",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_readiness_part1_validation.json",
+      "json_path": "/holding_periods/10706:GBPUSD/trade_count",
+      "value": 360,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "profile",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_readiness_part1_validation.json",
+      "json_path": "/holding_periods/10706:GBPUSD/median_holding_hours",
+      "value": 7.428333,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "profile",
+      "path": "D:\\QM\\reports\\pipeline\\QM5_10706\\Q08\\_baseline\\QM5_10706\\20260904_051342\\raw\\run_01\\report.htm",
+      "exists": true,
+      "sha256": "85dd26cd8c56b9098b7c794949f0f6b4a122f57bb1b6c2c4a84aef41e0124b82",
+      "matches_receipt": true
+    },
+    {
+      "group": "profile",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_readiness_part1_validation.json",
+      "json_path": "/holding_periods/11421:EURUSD/trade_count",
+      "value": 91,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "profile",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_readiness_part1_validation.json",
+      "json_path": "/holding_periods/11421:EURUSD/median_holding_hours",
+      "value": 24.853333,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "profile",
+      "path": "D:\\QM\\reports\\pipeline\\QM5_11421\\Q08\\_baseline\\QM5_11421\\20260902_193230\\raw\\run_01\\report.htm",
+      "exists": true,
+      "sha256": "7b56e1682561b9aa6ae4ddc311ac83e785f1d033e3b90d80db342fa4a96c8071",
+      "matches_receipt": true
+    },
+    {
+      "group": "profile",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_readiness_part1_validation.json",
+      "json_path": "/holding_periods/11422:USDCAD/trade_count",
+      "value": 195,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "profile",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_readiness_part1_validation.json",
+      "json_path": "/holding_periods/11422:USDCAD/median_holding_hours",
+      "value": 40.978889,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "profile",
+      "path": "D:\\QM\\reports\\pipeline\\QM5_11422\\Q08\\_baseline\\QM5_11422\\20260904_061656\\raw\\run_01\\report.htm",
+      "exists": true,
+      "sha256": "9b12636e15e8c0cee89d551eeda98c6f524798a0e3e38fde02e17ce36ede0411",
+      "matches_receipt": true
+    },
+    {
+      "group": "profile",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_readiness_part1_validation.json",
+      "json_path": "/holding_periods/11910:NZDUSD/trade_count",
+      "value": 63,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "profile",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_readiness_part1_validation.json",
+      "json_path": "/holding_periods/11910:NZDUSD/median_holding_hours",
+      "value": 116.916389,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "profile",
+      "path": "D:\\QM\\reports\\pipeline\\QM5_11910\\Q08\\_baseline\\QM5_11910\\20260904_160009\\raw\\run_01\\report.htm",
+      "exists": true,
+      "sha256": "27a89a85a968c3e55380e3b66e7bab0bc794ca45a135def3a79dc224867d2684",
+      "matches_receipt": true
+    },
+    {
+      "group": "profile",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_readiness_part1_validation.json",
+      "json_path": "/holding_periods/13054:XTIUSD/trade_count",
+      "value": 82,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "profile",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_readiness_part1_validation.json",
+      "json_path": "/holding_periods/13054:XTIUSD/median_holding_hours",
+      "value": 69.999306,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "profile",
+      "path": "D:\\QM\\reports\\pipeline\\QM5_13054\\Q08\\_baseline\\QM5_13054\\20260904_061139\\raw\\run_01\\report.htm",
+      "exists": true,
+      "sha256": "6c578a7287c6aa6ab0369eed9fe842511a031843dd0176dc0ad372224d2da2ea",
+      "matches_receipt": true
+    },
+    {
+      "group": "profile",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_readiness_part1_validation.json",
+      "json_path": "/holding_periods/1537:XAGUSD/trade_count",
+      "value": 96,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "profile",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_readiness_part1_validation.json",
+      "json_path": "/holding_periods/1537:XAGUSD/median_holding_hours",
+      "value": 47.997222,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "profile",
+      "path": "D:\\QM\\reports\\pipeline\\QM5_1537\\Q08\\_baseline\\QM5_1537\\20260904_050325\\raw\\run_01\\report.htm",
+      "exists": true,
+      "sha256": "38f6c7d981173cfdfbf3806871bfa39545025aa83b890d95f34cd5d2c2494f7d",
+      "matches_receipt": true
+    },
+    {
+      "group": "profile",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_readiness_part1_validation.json",
+      "json_path": "/holding_periods/20048:XTIUSD/trade_count",
+      "value": 60,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "profile",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_readiness_part1_validation.json",
+      "json_path": "/holding_periods/20048:XTIUSD/median_holding_hours",
+      "value": 71.999444,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "profile",
+      "path": "D:\\QM\\reports\\pipeline\\QM5_20048\\Q08\\_baseline\\QM5_20048\\20260904_065008\\raw\\run_01\\report.htm",
+      "exists": true,
+      "sha256": "057d568c055c65922dd7a9e2273004728bc871fbb3dd2000a9756e16c8237977",
+      "matches_receipt": true
+    },
+    {
+      "group": "profile",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_readiness_part1_validation.json",
+      "json_path": "/holding_periods/21505:XAGUSD/trade_count",
+      "value": 116,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "profile",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_readiness_part1_validation.json",
+      "json_path": "/holding_periods/21505:XAGUSD/median_holding_hours",
+      "value": 115.999722,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "profile",
+      "path": "D:\\QM\\reports\\pipeline\\QM5_21505\\Q08\\_baseline\\QM5_21505\\20260904_060120\\raw\\run_01\\report.htm",
+      "exists": true,
+      "sha256": "911154341b07528d3ea7cecb5e0e4664503a1f64b1c2b3749a4bb233b64a0535",
+      "matches_receipt": true
+    },
+    {
+      "group": "profile",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+      "json_path": "/symbols/0/provider/leverageSwing",
+      "value": 30,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "profile",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+      "json_path": "/symbols/0/provider/swapLong",
+      "value": -6.7,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "profile",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+      "json_path": "/symbols/0/provider/swapShort",
+      "value": -5.2,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "profile",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+      "json_path": "/symbols/1/provider/leverageSwing",
+      "value": 30,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "profile",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+      "json_path": "/symbols/1/provider/swapLong",
+      "value": -13.29,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "profile",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+      "json_path": "/symbols/1/provider/swapShort",
+      "value": 0.17,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "profile",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+      "json_path": "/symbols/2/provider/leverageSwing",
+      "value": 30,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "profile",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+      "json_path": "/symbols/2/provider/swapLong",
+      "value": 0.71,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "profile",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+      "json_path": "/symbols/2/provider/swapShort",
+      "value": -12,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "profile",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+      "json_path": "/symbols/3/provider/leverageSwing",
+      "value": 30,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "profile",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+      "json_path": "/symbols/3/provider/swapLong",
+      "value": -4.82,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "profile",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+      "json_path": "/symbols/3/provider/swapShort",
+      "value": -1.36,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "profile",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+      "json_path": "/symbols/4/provider/leverageSwing",
+      "value": 15,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "profile",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+      "json_path": "/symbols/4/provider/swapLong",
+      "value": -23.05,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "profile",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+      "json_path": "/symbols/4/provider/swapShort",
+      "value": 0.32,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "profile",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+      "json_path": "/symbols/5/provider/leverageSwing",
+      "value": 15,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "profile",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+      "json_path": "/symbols/5/provider/swapLong",
+      "value": 5.83,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "profile",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+      "json_path": "/symbols/5/provider/swapShort",
+      "value": -35.11,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "part1",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_readiness_part1_validation.json",
+      "json_path": "/live_attribution/audit_reconciliation_window/net_actual",
+      "value": -472.96,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "part1",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_readiness_part1_validation.json",
+      "json_path": "/live_attribution/audit_reconciliation_window/closed_trades",
+      "value": 65,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "part1",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_readiness_part1_validation.json",
+      "json_path": "/live_attribution/audit_reconciliation_window/active_close_days",
+      "value": 24,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "part1",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_readiness_part1_validation.json",
+      "json_path": "/live_attribution/audit_reconciliation_window/start",
+      "value": "2026-08-01",
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "part1",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_readiness_part1_validation.json",
+      "json_path": "/live_attribution/audit_reconciliation_window/end",
+      "value": "2026-09-04",
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "part2",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\generate_live_deployment_pointer.py",
+      "needle": "--signed requires --approved-by",
+      "line": 157,
+      "exists": true
+    },
+    {
+      "group": "part2",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\generate_live_deployment_pointer.py",
+      "needle": "--signed requires --approval-evidence",
+      "line": 159,
+      "exists": true
+    },
+    {
+      "group": "part2",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\generate_live_deployment_pointer.py",
+      "needle": "if args.signed and not args.dry_run:",
+      "line": 215,
+      "exists": true
+    },
+    {
+      "group": "part2",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\generate_live_deployment_pointer.py",
+      "needle": "\"--expected-server\", default=None",
+      "line": 198,
+      "exists": true
+    },
+    {
+      "group": "part2",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\generate_live_deployment_pointer.py",
+      "needle": "\"--expected-phase\", default=None",
+      "line": 199,
+      "exists": true
+    },
+    {
+      "group": "part2",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\generate_live_deployment_pointer.py",
+      "needle": "\"signed\": bool(args.signed)",
+      "line": 178,
+      "exists": true
+    },
+    {
+      "group": "part2",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\risk_freeze.py",
+      "needle": "SP-A1/A2-DEPLOY-POINTER",
+      "line": 49,
+      "exists": true
+    },
+    {
+      "group": "part2",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\risk_freeze.py",
+      "needle": "NEWS-CONTRACT-V2",
+      "line": 55,
+      "exists": true
+    },
+    {
+      "group": "part2",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\risk_freeze.py",
+      "needle": "GOVERNOR-HARDENING",
+      "line": 61,
+      "exists": true
+    },
+    {
+      "group": "part2",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\risk_freeze.py",
+      "needle": "if status in INACTIVE_STATUSES:",
+      "line": 446,
+      "exists": true
+    },
+    {
+      "group": "part2",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\risk_freeze.py",
+      "needle": "if result.get(\"lift_authority\") and result.get(\"lifted_at_utc\")",
+      "line": 447,
+      "exists": true
+    },
+    {
+      "group": "part2",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\ftmo_lane_runner.py",
+      "needle": "NATIVE_SYMBOLS",
+      "line": 72,
+      "exists": true
+    },
+    {
+      "group": "part2",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\ftmo_lane_runner.py",
+      "needle": "def validate_set_guardrails",
+      "line": 555,
+      "exists": true
+    },
+    {
+      "group": "part2",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\ftmo_lane_runner.py",
+      "needle": "RISK_FIXED",
+      "line": 558,
+      "exists": true
+    },
+    {
+      "group": "part2",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\ftmo_lane_runner.py",
+      "needle": "RISK_PERCENT",
+      "line": 559,
+      "exists": true
+    },
+    {
+      "group": "part2",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\ftmo_lane_runner.py",
+      "needle": "336",
+      "line": 570,
+      "exists": true
+    },
+    {
+      "group": "part2",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\ftmo_lane_runner.py",
+      "needle": "def _safe_profile_identity",
+      "line": 217,
+      "exists": true
+    },
+    {
+      "group": "part2",
+      "path": "C:\\QM\\repo\\framework\\monitor\\QM_AccountMonitor.mq5",
+      "needle": "InpTimerSeconds",
+      "line": 42,
+      "exists": true
+    },
+    {
+      "group": "part2",
+      "path": "C:\\QM\\repo\\framework\\monitor\\QM_AccountMonitor.mq5",
+      "needle": "WriteAllAtomic",
+      "line": 472,
+      "exists": true
+    },
+    {
+      "group": "part2",
+      "path": "C:\\QM\\repo\\framework\\monitor\\QM_AccountMonitor.mq5",
+      "needle": "OrdersTotal()",
+      "line": 439,
+      "exists": true
+    },
+    {
+      "group": "part2",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\ftmo_trial_pulse.py",
+      "needle": "EXPECTED_STATE",
+      "line": 51,
+      "exists": true
+    },
+    {
+      "group": "part2",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\ftmo_trial_pulse.py",
+      "needle": "EXPECTED_PARKED_POSITION_IDS",
+      "line": 63,
+      "exists": true
+    },
+    {
+      "group": "part2",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\ftmo_trial_pulse.py",
+      "needle": "EXPECTED_PARKED_POSITION_MAGICS",
+      "line": 64,
+      "exists": true
+    },
+    {
+      "group": "part2",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\ftmo_trial_pulse.py",
+      "needle": "def read_monitor_snapshot",
+      "line": 452,
+      "exists": true
+    },
+    {
+      "group": "part2",
+      "path": "C:\\QM\\repo\\docs\\ops\\EDGE_LAB_CHARTER_2026-05-22.md",
+      "needle": "**News blackout:** mandatory.",
+      "line": 28,
+      "exists": true
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/0/parameters/percent_of_initial_simulated_capital",
+      "value": "10",
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/0/parameters/amount_usd",
+      "value": "10000",
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/0/parameters/balance_usd",
+      "value": "110000",
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/1/parameters/percent_of_initial_simulated_capital",
+      "value": "5",
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/1/parameters/amount_usd",
+      "value": "5000",
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/1/parameters/balance_usd",
+      "value": "105000",
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/2/parameters/percent_of_initial_simulated_capital",
+      "value": "5",
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/2/parameters/amount_usd",
+      "value": "5000",
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/2/parameters/timezone",
+      "value": "Europe/Prague",
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/2/parameters/reset_local_time",
+      "value": "00:00:00",
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/2/parameters/limit_basis",
+      "value": "MIDNIGHT_BALANCE_MINUS_FIXED_AMOUNT",
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/2/parameters/tested_quantity",
+      "value": "EQUITY_INCLUDING_OPEN_PNL_SWAPS_COMMISSIONS",
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/2/parameters/breach_operator",
+      "value": "STRICTLY_BELOW_LIMIT",
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/3/parameters/model",
+      "value": "STATIC_INITIAL",
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/3/parameters/percent_of_initial_simulated_capital",
+      "value": "10",
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/3/parameters/amount_usd",
+      "value": "10000",
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/3/parameters/floor_usd",
+      "value": "90000",
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/3/parameters/tested_quantity",
+      "value": "EQUITY_INCLUDING_OPEN_PNL_SWAPS_COMMISSIONS",
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/3/parameters/breach_operator",
+      "value": "STRICTLY_BELOW_LIMIT",
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/4/parameters/days",
+      "value": 4,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/4/parameters/timezone",
+      "value": "Europe/Prague",
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/4/parameters/qualifying_action",
+      "value": "POSITION_OPENED",
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/5/parameters/maximum_trading_period_days",
+      "value": null,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/6/parameters/balance_operator",
+      "value": "STRICTLY_GREATER_THAN_TARGET",
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/6/parameters/positions_open",
+      "value": 0,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/7/parameters/evaluation_restricted",
+      "value": false,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/7/parameters/ftmo_account_swing_restricted",
+      "value": false,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/8/parameters/evaluation_restricted",
+      "value": false,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/8/parameters/ftmo_account_swing_restricted",
+      "value": false,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/9/parameters/ea_allowed",
+      "value": true,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/9/parameters/simultaneous_orders",
+      "value": 200,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/9/parameters/positions_per_day",
+      "value": 2000,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/9/parameters/server_requests_per_day_hyperactive_above",
+      "value": 2000,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/10/parameters/latency_or_feed_exploitation_allowed",
+      "value": false,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/10/parameters/server_manipulation_allowed",
+      "value": false,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/10/parameters/non_replicable_risk_allowed",
+      "value": false,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/11/parameters/list_fee_usd",
+      "value": "540",
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/11/parameters/fee_type",
+      "value": "ONE_TIME_REFUNDABLE_AFTER_SUCCESS",
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/12/parameters/refund_percent",
+      "value": "100",
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/12/parameters/trigger",
+      "value": "FIRST_REWARD",
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/13/parameters/base_percent",
+      "value": "80",
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/13/parameters/maximum_percent",
+      "value": "90",
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/14/parameters/fx",
+      "value": "1:30",
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/14/parameters/metals",
+      "value": "1:15",
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/14/parameters/oil",
+      "value": "1:15",
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/15/parameters/balance_increase_percent",
+      "value": "25",
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/15/parameters/minimum_months",
+      "value": 4,
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "runbook",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "json_path": "/official_rules/15/parameters/reward_split_percent",
+      "value": "90",
+      "exists": true,
+      "matches": null
+    },
+    {
+      "group": "part2",
+      "path": "C:\\QM\\repo\\docs\\ops\\OWNER_VORLAGE_2026-09-05_ftmo_positive_evidence_test.md",
+      "needle": "Revision R5",
+      "line": 1,
+      "exists": true
+    },
+    {
+      "group": "part2",
+      "path": "C:\\QM\\repo\\docs\\ops\\OWNER_VORLAGE_2026-09-05_ftmo_positive_evidence_test.md",
+      "needle": "R-2b",
+      "line": 60,
+      "exists": true
+    },
+    {
+      "group": "part2",
+      "path": "C:\\QM\\repo\\docs\\ops\\OWNER_VORLAGE_2026-09-05_ftmo_positive_evidence_test.md",
+      "needle": "P1_lower_95",
+      "line": 172,
+      "exists": true
+    },
+    {
+      "group": "part2",
+      "path": "C:\\QM\\repo\\docs\\ops\\OWNER_VORLAGE_2026-09-05_ftmo_positive_evidence_test.md",
+      "needle": "Ratify this contract text verbatim before any evaluation stream is opened.",
+      "line": 73,
+      "exists": true
+    }
+  ],
+  "anchor_counts": {
+    "part1": 34,
+    "part2": 29,
+    "profile": 42,
+    "runbook": 48
+  },
+  "missing_anchors": [],
+  "input_checks": [
+    {
+      "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\journal\\live_deals_normalized.csv",
+      "exists": true,
+      "matches_receipt": true,
+      "sha256": "9a4cc7ba454767e36714d61dc9cd93e1ef6059ec9afaa3e1377091c6892966c7"
+    },
+    {
+      "path": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+      "exists": true,
+      "matches_receipt": true,
+      "sha256": "f5f23f3c597f07217ef4406a34f929a2cb50e580986007eefe758d4e27b1704a"
+    },
+    {
+      "path": "C:\\QM\\repo\\artifacts\\audit_live_book_inventory_20260819.json",
+      "exists": true,
+      "matches_receipt": true,
+      "sha256": "7b7c4caebcdfa28a6670b8cfefdcbebbc1d50f001b7098adb7e43d6d9447a8ec"
+    },
+    {
+      "path": "C:\\QM\\repo\\framework\\registry\\venue_cost_model.json",
+      "exists": true,
+      "matches_receipt": true,
+      "sha256": "7dfafe53749e5c45be0cb37568b6e3491c109f546fafaf799f6ea82efdb688d7"
+    },
+    {
+      "path": "C:\\QM\\repo\\framework\\registry\\live_commission.json",
+      "exists": true,
+      "matches_receipt": true,
+      "sha256": "119f795cefce2f819f0c7aae3bddb87affbffa771f596df48d182cf89989e197"
+    },
+    {
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-07-30_ftmo_book3_symbol_cost_snapshot.json",
+      "exists": true,
+      "matches_receipt": true,
+      "sha256": "7eab3bf8c97373fcb44e36aca39dd679fbd3e093783cd6eacd9cb171190b3280"
+    },
+    {
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+      "exists": true,
+      "matches_receipt": true,
+      "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+    },
+    {
+      "path": "D:\\QM\\reports\\pipeline\\QM5_10706\\Q08\\_baseline\\QM5_10706\\20260904_051342\\raw\\run_01\\report.htm",
+      "exists": true,
+      "matches_receipt": true,
+      "sha256": "85dd26cd8c56b9098b7c794949f0f6b4a122f57bb1b6c2c4a84aef41e0124b82"
+    },
+    {
+      "path": "D:\\QM\\reports\\pipeline\\QM5_11421\\Q08\\_baseline\\QM5_11421\\20260902_193230\\raw\\run_01\\report.htm",
+      "exists": true,
+      "matches_receipt": true,
+      "sha256": "7b56e1682561b9aa6ae4ddc311ac83e785f1d033e3b90d80db342fa4a96c8071"
+    },
+    {
+      "path": "D:\\QM\\reports\\pipeline\\QM5_11422\\Q08\\_baseline\\QM5_11422\\20260904_061656\\raw\\run_01\\report.htm",
+      "exists": true,
+      "matches_receipt": true,
+      "sha256": "9b12636e15e8c0cee89d551eeda98c6f524798a0e3e38fde02e17ce36ede0411"
+    },
+    {
+      "path": "D:\\QM\\reports\\pipeline\\QM5_11910\\Q08\\_baseline\\QM5_11910\\20260904_160009\\raw\\run_01\\report.htm",
+      "exists": true,
+      "matches_receipt": true,
+      "sha256": "27a89a85a968c3e55380e3b66e7bab0bc794ca45a135def3a79dc224867d2684"
+    },
+    {
+      "path": "D:\\QM\\reports\\pipeline\\QM5_13054\\Q08\\_baseline\\QM5_13054\\20260904_061139\\raw\\run_01\\report.htm",
+      "exists": true,
+      "matches_receipt": true,
+      "sha256": "6c578a7287c6aa6ab0369eed9fe842511a031843dd0176dc0ad372224d2da2ea"
+    },
+    {
+      "path": "D:\\QM\\reports\\pipeline\\QM5_1537\\Q08\\_baseline\\QM5_1537\\20260904_050325\\raw\\run_01\\report.htm",
+      "exists": true,
+      "matches_receipt": true,
+      "sha256": "38f6c7d981173cfdfbf3806871bfa39545025aa83b890d95f34cd5d2c2494f7d"
+    },
+    {
+      "path": "D:\\QM\\reports\\pipeline\\QM5_20048\\Q08\\_baseline\\QM5_20048\\20260904_065008\\raw\\run_01\\report.htm",
+      "exists": true,
+      "matches_receipt": true,
+      "sha256": "057d568c055c65922dd7a9e2273004728bc871fbb3dd2000a9756e16c8237977"
+    },
+    {
+      "path": "D:\\QM\\reports\\pipeline\\QM5_21505\\Q08\\_baseline\\QM5_21505\\20260904_060120\\raw\\run_01\\report.htm",
+      "exists": true,
+      "matches_receipt": true,
+      "sha256": "911154341b07528d3ea7cecb5e0e4664503a1f64b1c2b3749a4bb233b64a0535"
+    }
+  ],
+  "per_sleeve_net_sum": -472.96,
+  "files": {
+    "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_readiness_part1.md": {
+      "sha256": "b41476a87146ccaae92ef0547534debea9a64d72fe7500750408a418be153508",
+      "bytes": 32198
+    },
+    "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_readiness_part2.md": {
+      "sha256": "8e1cdb600441e042ccce9ab9fe7ad4b34d8a89d888285c439eaed02cd36b0777",
+      "bytes": 42570
+    },
+    "C:\\QM\\repo\\docs\\ops\\FTMO_STAGE_TRANSITION_RUNBOOK_2026-09.md": {
+      "sha256": "9b6cdbc3d55b11dccb0163df36ccd22dca0a6bfcb3a61427c424d8e9d537babb",
+      "bytes": 16865
+    },
+    "C:\\QM\\repo\\docs\\ops\\FTMO_PROBABILITY_CORRELATION_CONTRACT_V1_2026-09-05.md": {
+      "sha256": "72407aae7d20d939af11d998c417aa7b7dd67e9edbcc3f002fd180e3b34a7637",
+      "bytes": 47594
+    },
+    "C:\\QM\\repo\\docs\\ops\\OWNER_VORLAGE_2026-09-05_ftmo_positive_evidence_test.md": {
+      "sha256": "a220324e7a4697d9799d82938d453c6171b809fdf6217b9522f6930a51e998a4",
+      "bytes": 95094
+    },
+    "D:\\QM\\reports\\state\\live_deployment_pointer.json": {
+      "sha256": "f5f23f3c597f07217ef4406a34f929a2cb50e580986007eefe758d4e27b1704a",
+      "bytes": 18103
+    },
+    "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_readiness_part1_validation.json": {
+      "sha256": "dfb996ad6987a8378d7f97d9e105d0e9c2129710153d38cb2b0343354a7baf3c",
+      "bytes": 35248
+    },
+    "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json": {
+      "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e",
+      "bytes": 15416
+    },
+    "C:\\QM\\repo\\tools\\strategy_farm\\generate_live_deployment_pointer.py": {
+      "sha256": "5a4f8b44e3d43902a222f8dac4bd890becba0d8a79133f1726b7893f8aa0ae8f",
+      "bytes": 10231
+    },
+    "C:\\QM\\repo\\tools\\strategy_farm\\risk_freeze.py": {
+      "sha256": "df6d44e06c6fe5e8aecab82507341f25a36d31710ddb1c442e46bc8413fe7fa5",
+      "bytes": 21555
+    },
+    "C:\\QM\\repo\\tools\\strategy_farm\\ftmo_lane_runner.py": {
+      "sha256": "8d82c0612b61e87a49795409056fe959cd5889b41fe530d0733e3f54f973522f",
+      "bytes": 58648
+    },
+    "C:\\QM\\repo\\framework\\monitor\\QM_AccountMonitor.mq5": {
+      "sha256": "9b45983b994955c5afcf66ad5e451d2aa29a116c1d861a18ae1b75ff5ac1d961",
+      "bytes": 35094
+    },
+    "C:\\QM\\repo\\tools\\strategy_farm\\ftmo_trial_pulse.py": {
+      "sha256": "9a7772f4cd23607c11b4a62847b4e340f9b17372013212993c5a7a9aadbc31e7",
+      "bytes": 34607
+    },
+    "C:\\QM\\repo\\docs\\ops\\EDGE_LAB_CHARTER_2026-05-22.md": {
+      "sha256": "5e11723c16ed01ff5e777ddf709795281882d66e2ba0e14cf4b7607fea42061e",
+      "bytes": 4040
+    },
+    "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json": {
+      "sha256": "298ef1285eca49ea7f010ebc0a9353b5a821fccb40a025be129f5ca5314fd992",
+      "bytes": 24646
+    }
+  }
+}
