@@ -1,0 +1,19 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "427db325800a8f28d4f6ae4e7a5580b695875d4813f40139640cbec1cb8c76a4",
+      "ea_id": "QM5_41345",
+      "ea_label": "QM5_41345_xau-weekly-tsmom-opt",
+      "expected_mq5_sha256": "427db325800a8f28d4f6ae4e7a5580b695875d4813f40139640cbec1cb8c76a4",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41345_xau-weekly-tsmom-opt\\QM5_41345_xau-weekly-tsmom-opt.mq5",
+      "work_item_id": "5055a5ca-a196-4c5a-b183-921265d2119a"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "5055a5ca-a196-4c5a-b183-921265d2119a"
+}
