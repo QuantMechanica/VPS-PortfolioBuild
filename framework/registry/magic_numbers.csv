@@ -18244,3 +18244,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41344,ohlc-daily-squeeze-reversal-d1-requal8-opt,0,EURUSD.DWX,413440000,2026-09-05,Codex governed allocator,active
 41345,xau-weekly-tsmom-opt,0,XAUUSD.DWX,413450000,2026-09-05,Codex governed allocator,active
 41346,cum-rsi2-commodity-requal8-opt,0,XAUUSD.DWX,413460000,2026-09-05,Codex governed allocator,active
+41347,cs-ichi-cloud-opt,0,XAUUSD.DWX,413470000,2026-09-05,Codex governed allocator,active
