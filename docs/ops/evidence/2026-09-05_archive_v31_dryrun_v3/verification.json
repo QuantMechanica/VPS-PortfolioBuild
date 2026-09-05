@@ -1,0 +1,24 @@
+{
+  "before": {
+    "families": 3339,
+    "contradictory_cell_families": 273,
+    "overlapping_chip_families": 299,
+    "duplicate_cells": 740,
+    "retest_observations": 0,
+    "unknown_timeframe_families": 16,
+    "unknown_timeframe_markets": 88,
+    "families_without_markets": 359
+  },
+  "after": {
+    "families": 3340,
+    "contradictory_cell_families": 0,
+    "overlapping_chip_families": 0,
+    "duplicate_cells": 0,
+    "retest_observations": 49890,
+    "unknown_timeframe_families": 13,
+    "unknown_timeframe_markets": 79,
+    "families_without_markets": 359
+  },
+  "runtime_whitelist": "PASS",
+  "schema_field_contract": "PASS"
+}

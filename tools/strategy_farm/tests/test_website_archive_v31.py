@@ -104,7 +104,7 @@ def test_historical_pass_and_fail_are_both_visible_without_inventing_aggregate_p
     item = next(x for x in result["items"] if x["public_id"] == pid)
     gate = item["gate_journey"][0]["gates"][0]
     assert gate["outcome"] == "mixed"
-    assert gate["passed_symbols"] == ["EURUSD"] and gate["failed_symbols"] == ["GBPUSD"]
+    assert gate["passed_symbols"] == ["EURUSD / H1"] and gate["failed_symbols"] == ["GBPUSD / H1"]
 
 
 @pytest.mark.parametrize("field", ["parameters", "source", "profit_factor", "drawdown", "return", "work_item_id", "magic", "trade_count"])
@@ -156,3 +156,66 @@ def test_schema_and_runtime_whitelist_have_same_public_fields():
 def test_ordinary_prose_cannot_be_misread_as_a_rotation_code():
     entry = archive.name_entry("Price acts as a reference in a FOMC cycle drift strategy.")
     assert entry["name"] == "Policy Cycle Drift"
+
+
+@pytest.mark.parametrize("latest", ["PASS", "FAIL"])
+def test_retests_use_latest_instant_and_preserve_dates_without_metrics(tmp_path, latest):
+    db, farm, repo = fixture(tmp_path)
+    with sqlite3.connect(db) as con:
+        con.execute("UPDATE work_items SET verdict=?, updated_at='2026-08-23T09:00:00Z' WHERE id='b-q02'",
+                    ("FAIL" if latest == "PASS" else "PASS",))
+        con.execute("INSERT INTO work_items SELECT 'retest',kind,phase,ea_id,symbol,setfile_path,status,?,attempt_count,parent_task_id,evidence_path,claimed_by,payload_json,created_at,'2026-08-23T12:00:00+02:00',gate_contract_version FROM work_items WHERE id='b-q02'", (latest,))
+        # A newer infrastructure failure must not replace an economic verdict.
+        con.execute("INSERT INTO work_items SELECT 'infra',kind,phase,ea_id,symbol,setfile_path,'failed','INFRA_FAIL',attempt_count,parent_task_id,evidence_path,claimed_by,payload_json,created_at,'2026-08-24T00:00:00Z',gate_contract_version FROM work_items WHERE id='b-q02'")
+    result, _, audit = archive.build(db, farm, repo)
+    pid = next(x["public_id"] for x in audit if x["members"] == ["QM5_9002"])
+    gate = next(g for x in result["items"] if x["public_id"] == pid for p in x["gate_journey"] for g in p["gates"] if g["gate"] == "Q02")
+    assert len(gate["backtests"]) == 1
+    bt = gate["backtests"][0]
+    assert bt["verdict"] == latest
+    assert bt["retests"] == [{"recorded_at": "2026-08-23", "verdict": "FAIL" if latest == "PASS" else "PASS"},
+                             {"recorded_at": "2026-08-23", "verdict": latest}]
+    assert not set(gate["passed_symbols"]) & set(gate["failed_symbols"])
+
+
+def test_timeframe_cells_remain_distinct_and_equal_instants_fail_conservatively():
+    observations = [{"id": "z", "updated_at": "2026-09-05T12:00:00Z", "verdict": "PASS"},
+                    {"id": "a", "updated_at": "2026-09-05T14:00:00+02:00", "verdict": "FAIL"}]
+    cells = {("EURUSD", "H1"): observations, ("EURUSD", "H4"): observations[:1]}
+    result = archive.collapse_retests(cells)
+    assert result == archive.collapse_retests({key: list(reversed(value)) for key, value in cells.items()})
+    assert result[0]["verdict"] == "FAIL" and result[1]["verdict"] == "PASS"
+    assert archive.market_chips(result, "FAIL") == ["EURUSD / H1"]
+    assert archive.market_chips(result, "PASS") == ["EURUSD / H4"]
+
+
+@pytest.mark.parametrize("source", ["host_timeframe", "missing_set_filename"])
+def test_historical_timeframe_does_not_require_present_set_file(tmp_path, source):
+    db, farm, repo = fixture(tmp_path)
+    for path in (repo / "framework/EAs/QM5_9002_demo/sets").glob("*.set"):
+        path.unlink()
+    with sqlite3.connect(db) as con:
+        con.execute("UPDATE work_items SET payload_json=?,setfile_path=? WHERE ea_id='QM5_9002'",
+                    (json.dumps({"host_timeframe": "D1"}) if source == "host_timeframe" else "{}",
+                     str(repo / "absent_EURUSD.DWX_D1_backtest.set") if source == "missing_set_filename" else None))
+    result, _, audit = archive.build(db, farm, repo)
+    pid = next(x["public_id"] for x in audit if x["members"] == ["QM5_9002"])
+    item = next(x for x in result["items"] if x["public_id"] == pid)
+    assert item["markets"] == [{"symbol_public": "EURUSD", "timeframe": "D1"}]
+
+
+@pytest.mark.parametrize("mutation", ["metrics", "timestamp", "verdict", "duplicate"])
+def test_retest_whitelist_and_unique_cells_are_enforced(tmp_path, mutation):
+    result, _, _ = build(tmp_path)
+    gate = next(g for item in result["items"] for phase in item["gate_journey"] for g in phase["gates"])
+    bt = gate["backtests"][0]
+    if mutation == "metrics":
+        bt["retests"][0]["profit_factor"] = 99
+    elif mutation == "timestamp":
+        bt["retests"][0]["recorded_at"] = "2026-09-05T00:00:00Z"
+    elif mutation == "verdict":
+        bt["retests"][-1]["verdict"] = "FAIL" if bt["verdict"] == "PASS" else "PASS"
+    else:
+        gate["backtests"].append(dict(bt))
+    with pytest.raises(archive.legacy.PublicSnapshotContractError):
+        archive.validate(result)

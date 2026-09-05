@@ -31,7 +31,7 @@ SCOPE = "Historical evidence; current release and live operation require separat
 ID_RE = re.compile(r"^strategy_[0-9a-f]{16}$")
 REVISION_SUFFIX = re.compile(r"(?:-(?:r\d+(?:-recovery)?|requal\d*|opt|recovery|v\d+))+$", re.I)
 TF_RE = re.compile(r"(?<![A-Z0-9])(?:PERIOD_)?(MN1|M[1-9][0-9]?|H[1-9][0-9]?|D1|W1)(?![A-Z0-9])", re.I)
-TF_KEYS = ("period", "timeframe", "timeframes", "execution_timeframe", "signal_timeframe")
+TF_KEYS = ("period", "timeframe", "timeframes", "execution_timeframe", "signal_timeframe", "host_timeframe")
 
 # Editorial vocabulary: predicates inspect section one and the card summary/title.
 # Numbers, private identifiers and source text never enter the generated copy.
@@ -204,6 +204,38 @@ def read_set_timeframes(path: Path) -> set[str]:
     return found
 
 
+def recorded_time(row: dict) -> dt.datetime:
+    # Compare full instants before reducing the public history to dates. A date
+    # string alone loses the ordering of opposite results recorded on one day.
+    for key in ("updated_at", "created_at"):
+        try:
+            value = dt.datetime.fromisoformat(str(row.get(key) or "").replace("Z", "+00:00"))
+            return value.replace(tzinfo=value.tzinfo or dt.timezone.utc).astimezone(dt.timezone.utc)
+        except ValueError:
+            pass
+    return dt.datetime.min.replace(tzinfo=dt.timezone.utc)
+
+
+def collapse_retests(cells: dict) -> list[dict]:
+    result = []
+    for (symbol, timeframe), observations in sorted(cells.items()):
+        # Same-instant contradictions have no recoverable temporal winner.
+        # Resolve those conservatively to FAIL, with the private id used only
+        # for stable ordering. Never publish it or any performance metrics.
+        ordered = sorted(observations, key=lambda x: (recorded_time(x), x["verdict"] == "FAIL", str(x.get("id") or "")))
+        result.append({"symbol_public": symbol, "timeframe": timeframe,
+                       "verdict": ordered[-1]["verdict"],
+                       "retests": [{"recorded_at": v3.day(recorded_time(x).isoformat()) if recorded_time(x).year > 1 else None,
+                                    "verdict": x["verdict"]} for x in ordered]})
+    return result
+
+
+def market_chips(backtests: list[dict], verdict: str) -> list[str]:
+    # A market cell includes its timeframe. Symbol-only summaries would still
+    # contradict each other when H1 passes and H4 fails, even after retest collapse.
+    return sorted({f'{b["symbol_public"]} / {b["timeframe"]}' for b in backtests if b["verdict"] == verdict})
+
+
 def build(db_path: Path, farm_root: Path, repo_root: Path, *, generated_at=None, previous_ledger=None):
     cards = load_cards(farm_root)
     grouped = families(cards)
@@ -224,7 +256,7 @@ def build(db_path: Path, farm_root: Path, repo_root: Path, *, generated_at=None,
         summaries = {k: summarise_pair(v) for k, v in pairs.items()}
         book_states = legacy._phase_three_pair_states(con, summaries)
         columns = {r[1] for r in con.execute("PRAGMA table_info(work_items)")}
-        fields = ["ea_id", "symbol", "phase", "gate_contract_version", "status", "verdict", "created_at", "updated_at", "payload_json", "setfile_path"]
+        fields = ["id", "ea_id", "symbol", "phase", "gate_contract_version", "status", "verdict", "created_at", "updated_at", "payload_json", "setfile_path"]
         select = ",".join(k if k in columns else "NULL AS " + k for k in fields)
         rows = [dict(r) for r in con.execute("SELECT " + select + " FROM work_items WHERE ea_id IS NOT NULL")]
     finally:
@@ -274,7 +306,7 @@ def build(db_path: Path, farm_root: Path, repo_root: Path, *, generated_at=None,
             proposed = prior
         entries[pid] = proposed
         markets = defaultdict(set)
-        cells = defaultdict(set)
+        cells = defaultdict(lambda: defaultdict(list))
         unresolved = []
         for ea in members:
             for c in by_ea[ea]:
@@ -300,17 +332,20 @@ def build(db_path: Path, farm_root: Path, repo_root: Path, *, generated_at=None,
                 p = Path(str(set_path))
                 if not p.is_absolute():
                     p = repo_root / p
-                if p.is_file():
-                    tfs.update(read_set_timeframes(p))
-                    if not tfs:
-                        unresolved.append(str(p))
+                # The recorded set filename remains evidence of its timeframe
+                # even when that historical file is no longer on disk.
+                tfs.update(read_set_timeframes(p))
+                if not tfs:
+                    unresolved.append(str(p))
             if not tfs:
                 tfs = set_tfs[(r["ea_id"], symbol)] or card_tfs[r["ea_id"]] or ea_set_tfs[r["ea_id"]]
             markets[symbol].update(tfs)
             state = vclass(r["verdict"], r["gate"])
             concluded = str(r["status"]).lower() == "done" or (str(r["status"]).lower() == "failed" and state == "ECON_FAIL")
             if r["gate"] and concluded and state in ("PASS", "ECON_FAIL"):
-                cells[r["gate"]].add((symbol, combine_timeframes(tfs), "PASS" if state == "PASS" else "FAIL"))
+                cells[r["gate"]][(symbol, combine_timeframes(tfs))].append(
+                    {"id": r["id"], "updated_at": r["updated_at"], "created_at": r["created_at"],
+                     "verdict": "PASS" if state == "PASS" else "FAIL"})
         # Ensure card markets with no direct rows still resolve from symbol sets.
         for ea in members:
             for (owner, symbol), tfs in list(set_tfs.items()):
@@ -334,15 +369,15 @@ def build(db_path: Path, farm_root: Path, repo_root: Path, *, generated_at=None,
         for phase_id, phase_name, gates in PHASES:
             gate_rows = []
             for gate in gates:
-                values = sorted(cells[gate])
+                values = collapse_retests(cells[gate])
                 if not values:
                     continue
-                passed = sorted({s for s, _, v in values if v == "PASS"})
-                failed = sorted({s for s, _, v in values if v == "FAIL"})
+                passed = market_chips(values, "PASS")
+                failed = market_chips(values, "FAIL")
                 gate_rows.append({"gate": gate, "purpose": legacy.PUBLIC_GATE_PURPOSES[gate],
                                   "outcome": "mixed" if passed and failed else "passed" if passed else "failed",
                                   "passed_symbols": passed, "failed_symbols": failed,
-                                  "backtests": [{"symbol_public": s, "timeframe": tf, "verdict": v} for s, tf, v in values]})
+                                  "backtests": values})
             journey.append({"phase": phase_id, "name": phase_name, "gates": gate_rows})
         dates = [v3.day(r["created_at"]) for r in current_rows if r["gate"]]
         updates = [v3.day(r["updated_at"]) for r in current_rows]
@@ -372,11 +407,23 @@ def validate(archive):
         if not isinstance(value, str) or not value or v3.PRIVATE.search(value) or re.search(r"\d", value) or v3.NUMBER_WORDS.search(value) or legacy.scrub_text(value) != value or legacy.REDACTED in value:
             raise fail("archive v3.1 unsafe prose")
     def market(row, verdict=False):
-        exact(row, "symbol_public timeframe" + (" verdict" if verdict else ""))
+        exact(row, "symbol_public timeframe" + (" verdict retests" if verdict else ""))
         if v3.market(row["symbol_public"]) != row["symbol_public"] or (row["timeframe"] != "multi" and not v3.TIMEFRAME.fullmatch(row["timeframe"])):
             raise fail("archive v3.1 market")
         if verdict and row["verdict"] not in ("PASS", "FAIL"):
             raise fail("archive v3.1 result")
+        if verdict:
+            if not isinstance(row["retests"], list) or not row["retests"]:
+                raise fail("archive v3.1 retest history")
+            dates = []
+            for retest in row["retests"]:
+                exact(retest, "recorded_at verdict")
+                date = retest["recorded_at"]
+                if (date is not None and v3.day(date) != date) or retest["verdict"] not in ("PASS", "FAIL"):
+                    raise fail("archive v3.1 retest disclosure")
+                dates.append(date or "")
+            if dates != sorted(dates) or row["verdict"] != row["retests"][-1]["verdict"]:
+                raise fail("archive v3.1 latest retest")
     exact(archive, "schema_version $schema_id generated_at gate_contract_version disclosure total items")
     if archive["schema_version"] != "3.1" or archive["$schema_id"] != SCHEMA or archive["disclosure"] != DISCLOSURE or archive["gate_contract_version"] != "v4":
         raise fail("archive v3.1 root")
@@ -421,8 +468,11 @@ def validate(archive):
                 seen_gates.add(g["gate"])
                 for b in g["backtests"]:
                     market(b, True)
-                passed = sorted({b["symbol_public"] for b in g["backtests"] if b["verdict"] == "PASS"})
-                failed = sorted({b["symbol_public"] for b in g["backtests"] if b["verdict"] == "FAIL"})
+                keys = [(b["symbol_public"], b["timeframe"]) for b in g["backtests"]]
+                if len(keys) != len(set(keys)):
+                    raise fail("archive v3.1 repeated market cell")
+                passed = market_chips(g["backtests"], "PASS")
+                failed = market_chips(g["backtests"], "FAIL")
                 outcome = "mixed" if passed and failed else "passed" if passed else "failed"
                 if not g["backtests"] or g["passed_symbols"] != passed or g["failed_symbols"] != failed or g["outcome"] != outcome:
                     raise fail("archive v3.1 invented outcome")
