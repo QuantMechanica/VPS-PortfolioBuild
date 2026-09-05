@@ -170,6 +170,28 @@ where they differ:
   `after_mt5.png`, `final_light.png`, `final_mobile.png`). Deploy worktree commit on
   `refresh/apple-2026-09` — local preview only, no push / Netlify deploy (OWNER reviews first).
 
+### 4b. Revision 2026-09-05 (2) — named archive, detail pages, live DarwinexZero performance (OWNER)
+
+OWNER 2026-09-05 ~12:20Z: "Das Archiv braucht klingende Strategie Bezeichnungen, dann muessen Informationen wie Strategie Kurzbeschreibung etc. rein. Dann brauchts eine Strategie Detailseite, wo alles nochmal im Detail erklaert wird, wo welche Backtests erfolgreich waren, welche nicht, etc. Nur den Quellcode geben wir nicht an genauso wenig wie die Parameter! Statt dem Graph Combined backtest equity brauchen wir die tatsaechliche Performance aus DARWINEXZERO und verlinken auch das Portfolio (https://www.darwinexzero.com/darwin/KQDS/performance)"
+
+Consequences (decided, `OWNER-DEC-WEBSITE-DISCLOSURE-20260905`):
+
+- **Archive disclosure v3** (`named_gate_journey_without_metrics`): every item carries a public
+  display name, family, a short summary, the markets/timeframes tested, and the gate journey with
+  a public reason per gate and PASS/FAIL per backtest (symbol × timeframe). Still no source code,
+  no parameters (names or values), no magic numbers, no set values, no per-strategy performance
+  metrics. Producer: `website_archive_contract.py` v3 + hourly snapshot (task 0b895b78).
+- **Strategy detail page** per item (`/strategies/<slug>`), generated statically in the deploy repo
+  from the v3 JSON: name, summary, family, markets, the full gate journey with reasons, the
+  per-backtest table, an honest "what we do not publish and why" note, last update.
+- **Live performance instead of the combined backtest equity**: the homepage and performance page
+  show the real DarwinexZero account series (daily net P&L and index, governed deal export, manual
+  trades excluded, epoch 2026-07-24) with a link to the DARWIN page
+  https://www.darwinexzero.com/darwin/KQDS/performance (linked, not scraped). Producer task 00eae593.
+  The combined-backtest chart may remain as a secondary "research" figure, clearly labelled.
+- Site work (list, detail generator, performance panel) follows once the two producers deliver
+  their dry runs; a naming-quality pass polishes weak display names before the first deploy of v3.
+
 Static SVG on strategy pages is replaced by a **gate-journey strip** (18 dots Q00–Q17,
 pass/fail/pending) — no equity, no metrics (disclosure level unchanged).
 
