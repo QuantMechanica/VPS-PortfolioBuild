@@ -1,0 +1,118 @@
+{
+  "artifact_type": "fx_cointegration_existing_sleeve_hold_release",
+  "schema_version": "qm.fx-cointegration-existing-sleeve-hold-release/v1",
+  "generated_at_utc": "2026-09-05T23:23:16.5283105Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "d9346821447291869bde13e6566b7ea764753336",
+  "mission": "grow_certified_v5_portfolio_new_forex_sleeves",
+  "outcome": "STALE_HOLD_RELEASED_THEN_HARD_CPU_CEILING_STOP",
+  "frontier": {
+    "research_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "unordered_relationship_count": 66,
+    "unbuilt_scan_relationship_found": false,
+    "new_card_or_build_created": false,
+    "reason": "The durable sign-aware frontier reconciliation accounts for every frozen-scan relationship; a new identity would duplicate governed work."
+  },
+  "preferred_anchor_state": [
+    {
+      "ea_id": "QM5_12532",
+      "logical_q02_verdict": "PASS",
+      "downstream_terminal": "Q05 FAIL",
+      "current_q02_oninit_or_no_history_blocker": false
+    },
+    {
+      "ea_id": "QM5_12533",
+      "logical_q02_verdict": "PASS",
+      "downstream_terminal": "Q04 FAIL",
+      "current_q02_oninit_or_no_history_blocker": false
+    }
+  ],
+  "selected_existing_forex_continuation": {
+    "ea_id": "QM5_12778",
+    "relationship": [
+      "AUDUSD.DWX",
+      "EURJPY.DWX"
+    ],
+    "logical_symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+    "work_item_id": "24acc5d4-3e34-526e-a7a8-12640a2e759f",
+    "phase": "Q09_NEWS",
+    "status_after_repair": "pending",
+    "verdict": null,
+    "claimed_by": null,
+    "attempt_count": 0,
+    "open_same_identity_count": 1,
+    "priority_track": true,
+    "diagnostic_non_admission": true,
+    "risk_contract": {
+      "RISK_FIXED": 1000.0,
+      "RISK_PERCENT": 0.0
+    },
+    "q09_binding": {
+      "version": "q09-news-dispatch-binding/v1",
+      "run_plan_path": "D:\\QM\\strategy_farm\\artifacts\\oos_2026_confirmation_v1\\06_live_QM5_12778_AUDUSD\\run_plan.json",
+      "run_plan_file_sha256": "160704d47dd7adc40d36917cef5e459fd21177db6b89b0479467a9731e9ea7bf",
+      "dispatch_binding_sha256": "2f89837a826c2779abc7d2f60f8deb0e44670a578f9271bbd92b8369cf11a2fc"
+    }
+  },
+  "hold_repair": {
+    "hold_code": "NEWS_CALENDAR_TIMESTAMP_DEFECT",
+    "before": {
+      "active": 1,
+      "released_at": "2026-09-04T22:49:53+00:00",
+      "defect": "released_at and a release note were populated, but active remained 1 and the canonical claim selector excluded the row"
+    },
+    "dry_run_would_release": true,
+    "command": "python tools/strategy_farm/farmctl.py release-hold --work-item-id 24acc5d4-3e34-526e-a7a8-12640a2e759f --expected-hold-code NEWS_CALENDAR_TIMESTAMP_DEFECT --release-note <recorded-note>",
+    "after": {
+      "active": 0,
+      "released_at": "2026-09-05T23:22:04+00:00",
+      "release_note": "Repair stale active bit: prior OOS-window release populated released_at and binding evidence but left active=1; restore canonical claimability without queue duplication.",
+      "canonical_claim_rank_one_based": 149,
+      "canonical_eligible_row_count": 9739
+    },
+    "backup": {
+      "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_hold_release_20260905T232204_823047Z.sqlite",
+      "sha256": "60b7f8bba7bca146fa784f55130e2a75ff12f468635fcbc7dc68a63a47335559"
+    },
+    "event_id": 386111,
+    "ledger_idempotency_key": "hold_release:24acc5d4-3e34-526e-a7a8-12640a2e759f:NEWS_CALENDAR_TIMESTAMP_DEFECT:2026-09-05T23:22:04+00:00"
+  },
+  "capacity_after_repair": {
+    "sampling_method": "Win32_Processor LoadPercentage, five one-second samples",
+    "samples_percent": [
+      94.0,
+      91.0,
+      91.0,
+      93.0,
+      100.0
+    ],
+    "average_percent": 93.8,
+    "maximum_percent": 100.0,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_binding": true,
+    "free_physical_memory_gib": 27.904,
+    "total_physical_memory_gib": 63.12,
+    "active_work_item_count": 5,
+    "pending_work_item_count": 12880
+  },
+  "actions": {
+    "stale_hold_released": true,
+    "work_item_created": false,
+    "duplicate_work_item_created": false,
+    "queue_payload_changed": false,
+    "priority_changed": false,
+    "work_item_claimed": false,
+    "compile_started": false,
+    "backtest_or_terminal_started": false
+  },
+  "protected_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_files": false,
+    "autotrading": false
+  },
+  "resume_contract": "Leave the unique priority-bound Q09_NEWS row to the resident paced worker after CPU capacity recovers. Do not append a duplicate, rewrite its sealed diagnostic order, or manually dispatch while the 97 percent ceiling binds."
+}
