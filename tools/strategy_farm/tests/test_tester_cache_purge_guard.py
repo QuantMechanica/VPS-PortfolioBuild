@@ -118,6 +118,7 @@ def test_db_and_live_union_exempts_only_matching_gate_targets(tmp_path: Path) ->
         "purge_targets_scanned": 4,
         "gate_evidence_artifacts_scanned": 3,
         "protected_targets": 2,
+        "retention_source_targets": 0,
         "unprotected_targets": 2,
     }
     protected = {Path(row["path"]) for row in plan["protected_targets"]}
@@ -161,6 +162,36 @@ def test_manifest_hash_drift_fails_closed(tmp_path: Path) -> None:
 
     with pytest.raises(guard.GuardError, match="live_manifest_hash_mismatch"):
         guard.build_plan(db_path, pulse_path, tmp_path / "mt5", ["T1"])
+
+
+def test_campaign_plan_and_native_exports_are_hash_bound_protected_targets(tmp_path: Path) -> None:
+    db_path, pulse_path, _ = _write_sources(
+        tmp_path, db_pairs=[], live_pairs=[(13301, "GDAXI.DWX")]
+    )
+    campaign = tmp_path / "artifacts" / "campaign_plan.json"
+    _write_json(campaign, {"campaign_id": "fixture"})
+    exports = tmp_path / "exports"
+    exports.mkdir()
+    source_paths = [
+        exports / "T_EXPORT_USD_HIGH_2018_2025_NATIVE.csv",
+        exports / "EURUSD.DWX_M5.csv",
+        exports / "EURUSD.DWX_D1.csv",
+    ]
+    for index, path in enumerate(source_paths):
+        path.write_bytes(f"fixture-{index}".encode())
+
+    plan = guard.build_plan(
+        db_path, pulse_path, tmp_path / "mt5", ["T1"], campaign, exports
+    )
+
+    protected = {
+        Path(row["path"]): row for row in plan["protected_targets"]
+        if row["terminal"] == "DL090_RETENTION_SOURCE"
+    }
+    assert set(protected) == {campaign.resolve(), *(path.resolve() for path in source_paths)}
+    assert plan["counts"]["retention_source_targets"] == 4
+    for path, row in protected.items():
+        assert row["reasons"][0]["sha256"] == hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def test_missing_database_fails_closed(tmp_path: Path) -> None:

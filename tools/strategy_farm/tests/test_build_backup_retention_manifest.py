@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime as dt
+import hashlib
 import importlib.util
 import sys
 from pathlib import Path
@@ -80,3 +81,36 @@ def test_db_rotation_is_union_of_newest_and_14_day_window(tmp_path: Path) -> Non
     assert dispositions["KEEP_DB_ROTATION"] == 15
     assert dispositions["DELETE_DB_ROTATION"] == 1
     assert summary["file_count"] == 16
+
+
+def test_campaign_plan_and_native_exports_are_explicit_keep_rows(tmp_path: Path) -> None:
+    reports = tmp_path / "reports"
+    logs = tmp_path / "logs"
+    relocated = tmp_path / "relocated"
+    reports.mkdir()
+    logs.mkdir()
+    relocated.mkdir()
+    campaign = tmp_path / "campaign_plan.json"
+    campaign.write_bytes(b"campaign")
+    exports = tmp_path / "exports"
+    exports.mkdir()
+    native = [
+        exports / "T_EXPORT_USD_HIGH_2018_2025_NATIVE.csv",
+        exports / "EURUSD.DWX_M5.csv",
+        exports / "EURUSD.DWX_D1.csv",
+    ]
+    for index, path in enumerate(native):
+        path.write_bytes(f"native-{index}".encode())
+
+    protected = mod.discover_protected_sources(campaign, exports)
+    rows, summary = mod.build_inventory(
+        _snapshot(), reports, logs, relocated,
+        dt.datetime(2026, 9, 5, tzinfo=dt.UTC), protected,
+    )
+
+    keep = [row for row in rows if row["disposition"] == "KEEP_DL090_NATIVE_SOURCE"]
+    assert {Path(str(row["source_path"])) for row in keep} == set(protected)
+    assert summary["protected_source_count"] == 4
+    for row in keep:
+        path = Path(str(row["source_path"]))
+        assert row["sha256"] == hashlib.sha256(path.read_bytes()).hexdigest()

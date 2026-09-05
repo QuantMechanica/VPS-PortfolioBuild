@@ -34,6 +34,15 @@ DEFAULT_DB = Path("D:/QM/strategy_farm/state/farm_state.sqlite")
 DEFAULT_REPORTS = Path("D:/QM/reports")
 DEFAULT_LOGS = Path("D:/QM/strategy_farm/logs")
 DEFAULT_RELOCATED = Path("C:/QM/backups_relocated")
+DEFAULT_CAMPAIGN_PLAN = Path(
+    "D:/QM/strategy_farm/artifacts/oos_2026_confirmation_v1/campaign_plan.json"
+)
+DEFAULT_NATIVE_EXPORT_ROOT = Path("D:/QM/mt5/T_Export/MQL5/Files")
+NATIVE_EXPORT_PATTERNS = (
+    "T_EXPORT_*_HIGH_2018_2025_NATIVE.csv",
+    "*.DWX_M5.csv",
+    "*.DWX_D1.csv",
+)
 
 OPEN_STATUSES = {"pending", "active", "claimed", "in_progress"}
 PASS_PREFIX = "PASS"
@@ -298,6 +307,7 @@ def build_inventory(
     logs_root: Path,
     relocated_root: Path,
     now: dt.datetime,
+    protected_sources: Iterable[Path] = (),
 ) -> tuple[list[dict[str, object]], dict[str, object]]:
     groups: dict[tuple[str, str, str, str, str, str], Aggregate] = defaultdict(Aggregate)
     roots = [str(reports_root), str(logs_root), str(relocated_root)]
@@ -398,6 +408,31 @@ def build_inventory(
             "bytes": agg.bytes,
             "projected_free_bytes": agg.projected_free_bytes,
             "compression_candidate_bytes": agg.compression_candidate_bytes,
+            "source_path": "",
+            "sha256": "",
+        })
+    protected_bindings: list[dict[str, object]] = []
+    for source in sorted((path.resolve() for path in protected_sources), key=lambda path: str(path).lower()):
+        if not source.is_file():
+            raise FileNotFoundError(f"DL-090 protected source missing: {source}")
+        size = source.stat().st_size
+        digest = _sha256(source)
+        binding = {"path": str(source), "sha256": digest, "bytes": size}
+        protected_bindings.append(binding)
+        rows.append({
+            "scope": "DL090_PROTECTED_SOURCE",
+            "ea_id": "",
+            "symbol": "",
+            "phase": "SOURCE_BINDING",
+            "pair_class": "NON_REGENERABLE",
+            "disposition": "KEEP_DL090_NATIVE_SOURCE",
+            "reason": "campaign spawn binding or native calendar/bar ground truth",
+            "file_count": 1,
+            "bytes": size,
+            "projected_free_bytes": 0,
+            "compression_candidate_bytes": 0,
+            "source_path": str(source),
+            "sha256": digest,
         })
     summary = {
         "roots": roots,
@@ -409,6 +444,8 @@ def build_inventory(
         "path_to_25_pair_count": len(snap.path_pairs),
         "db_quick_check": snap.db_quick_check,
         "db_max_work_item_updated_at": snap.db_max_updated_at,
+        "protected_source_count": len(protected_bindings),
+        "protected_source_bindings": protected_bindings,
     }
     return rows, summary
 
@@ -419,6 +456,22 @@ def _sha256(path: Path) -> str:
         for block in iter(lambda: fh.read(1024 * 1024), b""):
             h.update(block)
     return h.hexdigest()
+
+
+def discover_protected_sources(campaign_plan: Path, native_export_root: Path) -> list[Path]:
+    campaign = campaign_plan.resolve()
+    root = native_export_root.resolve()
+    if not campaign.is_file():
+        raise FileNotFoundError(f"DL-090 campaign plan missing: {campaign}")
+    if not root.is_dir():
+        raise FileNotFoundError(f"DL-090 native export root missing: {root}")
+    sources = {campaign}
+    for pattern in NATIVE_EXPORT_PATTERNS:
+        matches = {path.resolve() for path in root.glob(pattern) if path.is_file()}
+        if not matches:
+            raise FileNotFoundError(f"DL-090 native export class missing: {root}/{pattern}")
+        sources.update(matches)
+    return sorted(sources, key=lambda path: str(path).lower())
 
 
 def write_outputs(
@@ -433,6 +486,7 @@ def write_outputs(
     fields = [
         "scope", "ea_id", "symbol", "phase", "pair_class", "disposition", "reason",
         "file_count", "bytes", "projected_free_bytes", "compression_candidate_bytes",
+        "source_path", "sha256",
     ]
     with csv_path.open("w", encoding="utf-8", newline="") as fh:
         writer = csv.DictWriter(fh, fieldnames=fields, lineterminator="\n")
@@ -467,6 +521,7 @@ def write_outputs(
         f"- Projected deletable bytes: {summary['projected_free_bytes']:,} ({int(summary['projected_free_bytes']) / 1024**3:.2f} GiB)",
         f"- Retained bytes eligible for compression: {summary['compression_candidate_bytes']:,} ({int(summary['compression_candidate_bytes']) / 1024**3:.2f} GiB)",
         f"- Mechanically protected path-to-25 pairs: {summary['path_to_25_pair_count']:,}",
+        f"- DL-090 protected campaign/native sources: {summary['protected_source_count']:,}",
         f"- Live farm DB `PRAGMA quick_check`: `{summary['db_quick_check']}`",
         f"- Snapshot max `work_items.updated_at`: `{summary['db_max_work_item_updated_at']}`",
         "",
@@ -496,6 +551,12 @@ def write_outputs(
         "",
     ]
     lines.extend(f"- `{root}`" for root in summary["roots"])
+    if summary["protected_source_bindings"]:
+        lines += ["", "## DL-090 protected source bindings", ""]
+        lines.extend(
+            f"- `KEEP_DL090_NATIVE_SOURCE` `{item['path']}` — {item['bytes']:,} bytes; SHA-256 `{item['sha256']}`"
+            for item in summary["protected_source_bindings"]
+        )
     md_path.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
     md_sha = _sha256(md_path)
     seal_path.write_text(
@@ -520,6 +581,8 @@ def main() -> int:
     parser.add_argument("--reports-root", type=Path, default=DEFAULT_REPORTS)
     parser.add_argument("--logs-root", type=Path, default=DEFAULT_LOGS)
     parser.add_argument("--relocated-root", type=Path, default=DEFAULT_RELOCATED)
+    parser.add_argument("--campaign-plan", type=Path, default=DEFAULT_CAMPAIGN_PLAN)
+    parser.add_argument("--native-export-root", type=Path, default=DEFAULT_NATIVE_EXPORT_ROOT)
     parser.add_argument("--csv", type=Path, required=True)
     parser.add_argument("--markdown", type=Path, required=True)
     parser.add_argument("--seal", type=Path, required=True)
@@ -527,7 +590,10 @@ def main() -> int:
     args = parser.parse_args()
     now = _parse_now(args.now)
     snap = load_snapshot(args.db)
-    rows, summary = build_inventory(snap, args.reports_root, args.logs_root, args.relocated_root, now)
+    protected_sources = discover_protected_sources(args.campaign_plan, args.native_export_root)
+    rows, summary = build_inventory(
+        snap, args.reports_root, args.logs_root, args.relocated_root, now, protected_sources
+    )
     write_outputs(rows, summary, args.csv, args.markdown, args.seal, now)
     print(json.dumps({**summary, "csv_sha256": _sha256(args.csv), "markdown_sha256": _sha256(args.markdown)}, indent=2))
     return 0

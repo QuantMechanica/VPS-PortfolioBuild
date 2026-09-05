@@ -29,10 +29,19 @@ SCHEMA = "qm.tester-cache-purge-guard/v1"
 DEFAULT_DB = Path(r"D:/QM/strategy_farm/state/farm_state.sqlite")
 DEFAULT_LIVE_PULSE = Path(r"D:/QM/reports/state/live_book_pulse.json")
 DEFAULT_MT5_ROOT = Path(r"D:/QM/mt5")
+DEFAULT_CAMPAIGN_PLAN = Path(
+    r"D:/QM/strategy_farm/artifacts/oos_2026_confirmation_v1/campaign_plan.json"
+)
+DEFAULT_NATIVE_EXPORT_ROOT = Path(r"D:/QM/mt5/T_Export/MQL5/Files")
 TERMINALS = tuple(f"T{number}" for number in range(1, 11))
 EA_PATTERN = re.compile(r"(?i)QM5[_-]?(\d+)(?!\d)")
 Q_PHASE_PATTERN = re.compile(r"(?i)(?:^|[\\/_.-])Q(?:0\d|1[0-6])(?:$|[\\/_.-])")
 MAX_JSON_BYTES = 32 * 1024 * 1024
+NATIVE_EXPORT_PATTERNS = (
+    "T_EXPORT_*_HIGH_2018_2025_NATIVE.csv",
+    "*.DWX_M5.csv",
+    "*.DWX_D1.csv",
+)
 
 
 Pair = tuple[str, str]
@@ -48,6 +57,39 @@ def _sha256(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _retention_source_targets(campaign_plan: Path, native_export_root: Path) -> list[dict[str, Any]]:
+    """Bind non-regenerable DL-090 sources into every purge exclusion plan."""
+    campaign = campaign_plan.resolve()
+    export_root = native_export_root.resolve()
+    if not campaign.is_file():
+        raise GuardError(f"campaign_plan_missing:{campaign}")
+    if not export_root.is_dir():
+        raise GuardError(f"native_export_root_missing:{export_root}")
+    discovered: dict[Path, str] = {campaign: "dl090_campaign_plan_spawn_binding"}
+    for pattern in NATIVE_EXPORT_PATTERNS:
+        matches = sorted(path.resolve() for path in export_root.glob(pattern) if path.is_file())
+        if not matches:
+            raise GuardError(f"native_export_class_missing:{export_root}:{pattern}")
+        reason = (
+            "dl090_native_calendar_export"
+            if pattern.startswith("T_EXPORT_")
+            else "dl090_native_bar_export"
+        )
+        for path in matches:
+            discovered[path] = reason
+    return [
+        {
+            "terminal": "DL090_RETENTION_SOURCE",
+            "path": str(path),
+            "reasons": [{
+                "artifact": str(path), "reason": reason, "pairs": [],
+                "sha256": _sha256(path),
+            }],
+        }
+        for path, reason in sorted(discovered.items(), key=lambda item: str(item[0]).lower())
+    ]
 
 
 def _load_json(path: Path, label: str) -> Any:
@@ -419,6 +461,8 @@ def build_plan(
     live_pulse_path: Path,
     mt5_root: Path,
     terminals: Iterable[str] = TERMINALS,
+    campaign_plan: Path | None = None,
+    native_export_root: Path | None = None,
 ) -> dict[str, Any]:
     db_path = db_path.resolve()
     live_pulse_path = live_pulse_path.resolve()
@@ -451,6 +495,13 @@ def build_plan(
                 }
             )
 
+    retention_sources: list[dict[str, Any]] = []
+    if campaign_plan is not None or native_export_root is not None:
+        if campaign_plan is None or native_export_root is None:
+            raise GuardError("retention_source_configuration_incomplete")
+        retention_sources = _retention_source_targets(campaign_plan, native_export_root)
+        protected_targets.extend(retention_sources)
+
     return {
         "schema": SCHEMA,
         "status": "PASS",
@@ -469,7 +520,8 @@ def build_plan(
             "purge_targets_scanned": len(targets),
             "gate_evidence_artifacts_scanned": evidence_artifacts_scanned,
             "protected_targets": len(protected_targets),
-            "unprotected_targets": len(targets) - len(protected_targets),
+            "retention_source_targets": len(retention_sources),
+            "unprotected_targets": len(targets) - (len(protected_targets) - len(retention_sources)),
         },
         "protected_pairs": [
             {
@@ -490,6 +542,8 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--db-path", type=Path, default=DEFAULT_DB)
     parser.add_argument("--live-pulse", type=Path, default=DEFAULT_LIVE_PULSE)
     parser.add_argument("--mt5-root", type=Path, default=DEFAULT_MT5_ROOT)
+    parser.add_argument("--campaign-plan", type=Path, default=DEFAULT_CAMPAIGN_PLAN)
+    parser.add_argument("--native-export-root", type=Path, default=DEFAULT_NATIVE_EXPORT_ROOT)
     parser.add_argument("--terminal", action="append", choices=TERMINALS)
     return parser
 
@@ -502,6 +556,8 @@ def main(argv: list[str] | None = None) -> int:
             args.live_pulse,
             args.mt5_root,
             args.terminal or TERMINALS,
+            args.campaign_plan,
+            args.native_export_root,
         )
     except Exception as exc:
         error = {
