@@ -128,7 +128,8 @@ def load_native(native_dir: Path, policy: dict) -> tuple[list[dict],list[dict],d
         if ccy=="USD": paths.append(native_dir/"T_EXPORT_USD_HIGH_2025_NATIVE.csv")
         sidecars=sorted(set(native_dir.glob(f"T_EXPORT_{ccy}_HIGH_*2026H1*_NATIVE.csv")))
         paths += [p for p in sidecars if p not in paths]
-        catalog_paths=sorted(native_dir.glob("T_EXPORT_USD_ALL_*_2018_2025_NATIVE.csv")) if ccy=="USD" else []
+        catalog_paths=sorted(set(native_dir.glob("T_EXPORT_USD_ALL_*_2018_2025_NATIVE.csv")) |
+                             set(native_dir.glob("T_EXPORT_USD_ALL_*_2026H1_NATIVE.csv"))) if ccy=="USD" else []
         paths += catalog_paths
         fresh_rows=[];fresh_errors=[]
         for path in paths:
@@ -158,9 +159,9 @@ def load_native(native_dir: Path, policy: dict) -> tuple[list[dict],list[dict],d
                     if anchor_key in anchor_keys:continue
                     anchor_keys.add(anchor_key)
                     expected=stamp(anchor["utc"])
-                    matches=[datetime.fromtimestamp(int(r["broker_time"]),UTC) for r in rows
+                    matches=sorted({datetime.fromtimestamp(int(r["broker_time"]),UTC) for r in rows
                              if r["event_code"]==anchor["event_code"]
-                             and abs(datetime.fromtimestamp(int(r["broker_time"]),UTC)-expected)<timedelta(days=2)]
+                             and abs(datetime.fromtimestamp(int(r["broker_time"]),UTC)-expected)<timedelta(days=2)})
                     if len(matches)==1:offsets.append(int((expected-matches[0]).total_seconds()))
                 if len(offsets)>=3 and len(set(offsets))==1 and offsets[0]%3600==0 and abs(offsets[0])<=12*3600:
                     offset=offsets[0]
@@ -425,7 +426,8 @@ def plan_spots() -> list[dict]:
 
 
 def run_repair(primary_path: Path,secondary_path: Path,native_dir: Path,m5_dir: Path,out: Path,*,
-               canonical_root=CANONICAL,extra_anchors=None,staging_root=STAGING,coverage_end=None) -> dict:
+               canonical_root=CANONICAL,extra_anchors=None,staging_root=STAGING,coverage_end=None,
+               declare_inadmissible=False) -> dict:
     out=output_guard(out,staging_root);out.mkdir(parents=True)
     footprints_dir=out/"footprints";footprints_dir.mkdir()
     input_records=[{"path":str(p.resolve()),"sha256":sha(p)} for p in (primary_path,secondary_path)]
@@ -556,6 +558,14 @@ def run_repair(primary_path: Path,secondary_path: Path,native_dir: Path,m5_dir: 
                                "unverified_native_exports":[i["path"] for i in input_records if i.get("role")=="UNVERIFIED_TIMESTAMP_EXCLUDED_FROM_TRUTH"]},
         "6.8_schema":{"pass":not schema_errors,"errors":schema_errors}}
     success=all(g["pass"] for g in gates.values())
+    declarations=[]
+    if declare_inadmissible:
+        try:
+            from tools.strategy_farm.news_calendar_scope import declare_scope
+        except ModuleNotFoundError:
+            from news_calendar_scope import declare_scope
+        declarations=declare_scope(gates,gaps,footprints,offsets,native_inputs,native_dir)
+        write_json(out/'declared_inadmissible_ranges.json',declarations)
     verification={"schema":SCHEMA,"decision_id":DECISION,"status":"PASS" if success else "FAIL",
                   "publishable":success,"exit_code":0 if success else 2,"gates":gates,
                   "message":"READY_FOR_CEO_REVIEW" if success else "INCOMPLETE_CANDIDATES_NOT_PUBLISHABLE; unresolved verification inputs and native timestamp anchors"}
@@ -568,6 +578,10 @@ def run_repair(primary_path: Path,secondary_path: Path,native_dir: Path,m5_dir: 
               "eet_display_rule":"EU last-Sunday March/October at 01:00Z; UTC+2 standard / UTC+3 summer; display only",
               "m5_rule":"qm.dst_rule.us.v1 broker wall epoch -> UTC before comparison; 15-minute band peak >= 1.5x same-slot control median",
               "gap_count":len(gaps),"production_write":False}
+    if declare_inadmissible:
+        manifest.update(declared_inadmissible_ranges=declarations,
+                        declared_inadmissible_ranges_sha256=sha(out/'declared_inadmissible_ranges.json'),
+                        scoped_review_only=True)
     write_json(out/"manifest.json",manifest)
     return {"output":str(out),"manifest_sha256":sha(out/"manifest.json"),**verification}
 
@@ -580,11 +594,13 @@ def main() -> int:
     parser.add_argument("--m5-dir",type=Path,default=NATIVE_DIR)
     parser.add_argument("--canonical-root",type=Path,default=CANONICAL)
     parser.add_argument("--extra-anchors",type=Path)
+    parser.add_argument("--declare-inadmissible-ranges",action="store_true")
     parser.add_argument("--out",type=Path,default=STAGING/datetime.now(UTC).strftime("%Y%m%dT%H%M%S%fZ"))
     args=parser.parse_args()
     try:
         result=run_repair(args.primary,args.secondary,args.native_dir,args.m5_dir,args.out,
-                          canonical_root=args.canonical_root,extra_anchors=args.extra_anchors)
+                          canonical_root=args.canonical_root,extra_anchors=args.extra_anchors,
+                          declare_inadmissible=args.declare_inadmissible_ranges)
     except (OSError,ValueError,KeyError) as exc:
         print(json.dumps({"status":"FAIL","publishable":False,"error":str(exc)},indent=2));return 2
     print(json.dumps({k:v for k,v in result.items() if k!="gates"},indent=2));return result["exit_code"]

@@ -31,6 +31,8 @@ def prepare(gate, directory: Path, expected_sha256: str, *, staging_dir=None, ap
     if hashlib.sha256(raw_manifest).hexdigest()!=expected_sha256:
         raise ValueError("candidate manifest SHA256 mismatch")
     manifest=strict_json(raw_manifest)
+    if manifest.get('declared_inadmissible_ranges') or manifest.get('scoped_review_only'):
+        raise ValueError('scoped calendar candidate has inadmissible ranges; full-scope publication refused')
     verification_path=gate._canonical_target(source/"verification.json",label="candidate verification")
     raw_verification=verification_path.read_bytes()
     if hashlib.sha256(raw_verification).hexdigest()!=manifest.get("verification_sha256"):

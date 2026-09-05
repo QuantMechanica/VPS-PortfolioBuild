@@ -9,6 +9,7 @@ input string InpEventName="";
 input string InpOutput="T_EXPORT_USD_HIGH_2026H1_NATIVE.csv";
 input bool InpBatch=false;
 input bool InpCatalogOnly=false;
+input bool InpCatalogH1=false;
 input string InpCompletion="E1B2_EXPORT_COMPLETE.txt";
 
 bool ExportOne(const string currency,const datetime from,const datetime to,
@@ -107,8 +108,9 @@ void OnStart()
       string names[]={"Core PPI m/m","NY Empire State Manufacturing Index","Building Permits","Trade Balance"};
       string tags[]={"CORE_PPI","EMPIRE_STATE","BUILDING_PERMITS","TRADE_BALANCE"};
       for(int i=0;i<4;i++)
-        if(ExportOne("USD",D'2018.01.01',D'2026.01.01',ALL_IMPACTS,names[i],
-                     "T_EXPORT_USD_ALL_"+tags[i]+"_2018_2025_NATIVE.csv")) successes++; else failures++;
+        if(ExportOne("USD",InpCatalogH1 ? D'2026.01.01' : D'2018.01.01',
+                     InpCatalogH1 ? D'2026.07.01' : D'2026.01.01',ALL_IMPACTS,names[i],
+                     "T_EXPORT_USD_ALL_"+tags[i]+(InpCatalogH1 ? "_2026H1_NATIVE.csv" : "_2018_2025_NATIVE.csv"))) successes++; else failures++;
      }
    int h=FileOpen(InpCompletion,FILE_WRITE|FILE_TXT|FILE_ANSI,0,CP_UTF8);
    if(h!=INVALID_HANDLE)

@@ -40,6 +40,17 @@ def test_dry_run_is_read_only_and_staging_is_exact_create_only(tmp_path):
         ingress.prepare(gate,source,sha,staging_dir=target,apply=True,policy=policy)
 
 
+def test_scoped_candidate_cannot_publish_even_with_eight_true_booleans(tmp_path):
+    source,_,policy=fixture(tmp_path)
+    path=source/'manifest.json';manifest=json.loads(path.read_text())
+    manifest['declared_inadmissible_ranges']=[{'currency':'AUD','months':['2026-02']}]
+    path.write_text(json.dumps(manifest))
+    before=_snapshot(tmp_path)
+    with pytest.raises(ValueError,match='full-scope publication refused'):
+        ingress.prepare(gate,source,hashlib.sha256(path.read_bytes()).hexdigest(),policy=policy)
+    assert before==_snapshot(tmp_path)
+
+
 @pytest.mark.parametrize("failure",["manifest","verification","file","gate","destination"])
 def test_refusal_precedes_any_write(tmp_path,failure):
     source,sha,policy=fixture(tmp_path,failed=ingress.GATES[0] if failure=="gate" else None)

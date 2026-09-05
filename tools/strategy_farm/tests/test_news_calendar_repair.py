@@ -225,3 +225,23 @@ def test_output_path_and_overwrite_guards(tmp_path):
     existing=tmp_path/"staging"/"prior";existing.mkdir(parents=True)
     with pytest.raises(ValueError,match="overwrite refused"):
         repair.output_guard(existing,tmp_path/"staging")
+
+
+@pytest.mark.parametrize('conflict',[False,True])
+def test_h1_catalog_uses_unique_official_instants_and_refuses_conflicting_encoding(tmp_path,conflict):
+    export_fixtures(tmp_path)
+    path=tmp_path/'T_EXPORT_USD_ALL_CORE_PPI_2026H1_NATIVE.csv';rows=[];anchors=[]
+    for i,date in enumerate(['2026-01-30T13:30Z','2026-02-27T13:30Z','2026-03-18T12:30Z']):
+        t=repair.stamp(date)
+        anchors.append({'currency':'USD','event_code':'producer-price-index-ex-food-energy-mm','utc':date})
+        rows.append({'broker_time':int(t.timestamp()),'event_id':'2','event_code':anchors[-1]['event_code'],
+                     'event_name':'Core PPI m/m','importance':'medium','value_id':str(i)})
+    rows.append({**rows[-1],'value_id':'another-period-same-instant'})
+    if conflict:rows[0]['broker_time']+=3600
+    repair.write_csv(path,rows)
+    native,inputs,_=repair.load_native(tmp_path,{'anchors':anchors})
+    proof=next(i for i in inputs if i['path']==str(path.resolve()))
+    assert proof['official_anchor_count']==3
+    assert (proof['role']=='AUTHORITATIVE_NATIVE') is (not conflict)
+    if not conflict:assert proof['utc_offset_seconds']==0
+    assert any(n['event']=='Core PPI m/m' for n in native) is (not conflict)

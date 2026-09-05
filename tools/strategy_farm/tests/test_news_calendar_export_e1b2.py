@@ -48,3 +48,10 @@ def test_process_handoff_requires_config_path_and_fresh_identity():
     assert exporter.owned_match({**row,"CommandLine":"/portable /config:foreign.ini"},ini,start) is None
     assert exporter.owned_match({**row,"ExecutablePath":"C:/QM/mt5/T_Live/terminal64.exe"},ini,start) is None
     assert exporter.owned_match({**row,"CreationDate":"2026-09-05T09:00:00Z"},ini,start) is None
+
+
+def test_h1_profile_is_four_new_all_impact_targets_and_legacy_names_unchanged():
+    assert len(exporter.expected_names())==10
+    assert len(exporter.expected_names(True))==4
+    assert all('_ALL_' in name and '_2026H1_' in name for name in exporter.expected_names(True))
+    assert set(exporter.expected_names()).isdisjoint(exporter.expected_names(True))

@@ -23,7 +23,9 @@ CCYS = ("USD", "EUR", "GBP", "JPY", "AUD", "CAD")
 TAGS = ("CORE_PPI", "EMPIRE_STATE", "BUILDING_PERMITS", "TRADE_BALANCE")
 
 
-def expected_names():
+def expected_names(catalog_h1=False):
+    if catalog_h1:
+        return [f"T_EXPORT_USD_ALL_{t}_2026H1_NATIVE.csv" for t in TAGS]
     return [*(f"T_EXPORT_{c}_HIGH_2026H1_NATIVE.csv" for c in CCYS),
             *(f"T_EXPORT_USD_ALL_{t}_2018_2025_NATIVE.csv" for t in TAGS)]
 
@@ -70,7 +72,7 @@ if ($r.ReturnValue -ne 0) {{ throw 'Owned export termination failed' }}
 """)
 
 
-def run(out: Path, timeout: int, catalog_only=False, empire_only=False):
+def run(out: Path, timeout: int, catalog_only=False, empire_only=False, catalog_h1=False):
     out = out.resolve()
     boot._safe_tag(out.name)
     if not 60<=timeout<=900:
@@ -81,7 +83,9 @@ def run(out: Path, timeout: int, catalog_only=False, empire_only=False):
     rows = boot.scan_terminal_processes()
     if boot._exact_process_for_path(rows, terminal):
         raise ValueError("T_Export already active; defer without interruption")
-    requested=[expected_names()[7]] if empire_only else expected_names()[6 if catalog_only else 0:]
+    if catalog_h1 and (catalog_only or empire_only):
+        raise ValueError('catalog-h1 is a separate export profile')
+    requested=expected_names(True) if catalog_h1 else ([expected_names()[7]] if empire_only else expected_names()[6 if catalog_only else 0:])
     for name in requested:
         if (ROOT / "MQL5/Files" / name).exists():
             raise ValueError("existing export refused: " + name)
@@ -116,7 +120,7 @@ def run(out: Path, timeout: int, catalog_only=False, empire_only=False):
         tag = out.name
         complete = f"E1B2_EXPORT_COMPLETE_{tag}.txt"
         preset = ROOT / "MQL5/Presets" / f"E1B2_{tag}.set"
-        settings=f"InpBatch=true\nInpCatalogOnly={'true' if catalog_only else 'false'}\nInpCompletion={complete}\n"
+        settings=f"InpBatch=true\nInpCatalogOnly={'true' if catalog_only or catalog_h1 else 'false'}\nInpCatalogH1={'true' if catalog_h1 else 'false'}\nInpCompletion={complete}\n"
         if empire_only:
             settings=f"InpBatch=false\nInpCompletion={complete}\nInpCurrency=USD\nInpFrom=1514764800\nInpTo=1767225600\nInpImpact=1\nInpEventName=NY Empire State Manufacturing Index\nInpOutput={requested[0]}\n"
         boot.atomic_write_text(preset, settings)
@@ -164,7 +168,7 @@ def run(out: Path, timeout: int, catalog_only=False, empire_only=False):
                     result["cleanup_error"]=str(exc)
             result["process_identity"] = identity
             result["exports"] = []
-            for name in expected_names():
+            for name in expected_names(catalog_h1):
                 path = ROOT / "MQL5/Files" / name
                 try:
                     result["exports"].append(validate_output(path))
@@ -182,7 +186,8 @@ if __name__ == "__main__":
     parser.add_argument("--timeout", type=int, default=420)
     parser.add_argument("--catalog-only", action="store_true")
     parser.add_argument("--empire-only", action="store_true")
+    parser.add_argument("--catalog-h1", action="store_true")
     args = parser.parse_args()
-    result = run(args.out, args.timeout, args.catalog_only, args.empire_only)
+    result = run(args.out, args.timeout, args.catalog_only, args.empire_only, args.catalog_h1)
     print(json.dumps({"status": result["status"], "exports": len(result["exports"]), "receipt": str(args.out / "export_receipt.json")}))
     raise SystemExit(0 if result["status"] == "PASS" else 2)
