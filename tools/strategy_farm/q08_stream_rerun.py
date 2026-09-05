@@ -1,12 +1,13 @@
 """Append-only Q08 stream recovery after a terminal Q14 identity (task ccea329e).
 
-The CLI is read-only. Only the canonical pump calls service(apply=True), under
-the factory mutation lock. Bundle binding and Q08 verdict policies are unchanged.
+The CLI is read-only. Only the canonical pump calls service(apply=True).
+Discovery is outside the factory mutation lock; each exact trigger is
+reverified and written under its own short hold. Bundle binding and Q08 verdict
+policies are unchanged.
 """
 from __future__ import annotations
 
 import argparse
-import contextlib
 import datetime as dt
 import json
 import os
@@ -144,84 +145,126 @@ def service(root: Path, *, apply: bool = False, limit: int = 16,
         raise ValueError("limit must be positive")
     if apply:
         farm._assert_canonical_checkout()
-    lock = FactoryMutationLock(root / "state" / "FACTORY_MUTATION.lock", owner="q08_stream_auto_rerun")
+        if (root / "FACTORY_OFF.flag").exists():
+            return {**result, "applied": False, "reason": "factory_off"}
     try:
-        with lock if apply else contextlib.nullcontext():
-            # Check OFF while holding the same boundary as Factory_OFF/ON.
-            if (root / "FACTORY_OFF.flag").exists():
-                return {**result, "applied": False, "reason": "factory_off"}
-            state = _read_state(state_path)
-            highwater = _cursor(state["updated_at"], state["q14_work_item_id"])
-            retry = set(state["retry_q14_ids"])
-            retry_order = list(dict.fromkeys(state["retry_q14_ids"]))
-            result["watermark_before"] = dict(state)
-            con = bundle.open_ro(root / "state" / "farm_state.sqlite")
-            try:
-                verdicts = tuple(sorted(bundle.TERMINAL_PASS_VERDICTS))
-                rows = [dict(row) for row in con.execute(
-                    "SELECT id, ea_id, symbol, updated_at FROM work_items WHERE phase='Q14' "
-                    "AND status='done' AND verdict IN (" + ",".join("?" for _ in verdicts) + ")",
-                    verdicts,
-                )]
-                new_rows = sorted((row for row in rows if
-                    _cursor(row["updated_at"], row["id"]) > highwater),
-                    key=lambda row: _cursor(row["updated_at"], row["id"]))
-                by_id = {row["id"]: row for row in rows}
-                retry_rows = [by_id[wid] for wid in retry_order if wid in by_id and
-                    _cursor(by_id[wid]["updated_at"], wid) <= highwater]
-                retry_limit = min(len(retry_rows), limit // 2 if new_rows else limit)
-                rows = retry_rows[:retry_limit] + new_rows[:limit - retry_limit]
-                for trigger in rows:
-                    if deadline_monotonic is not None and time.monotonic() >= deadline_monotonic:
-                        result["budget_exhausted"] = True
-                        break
+        # Full discovery and bundle checks are read-only and intentionally run
+        # outside FACTORY_MUTATION.lock.  The apply path re-reads each exact
+        # primary key while holding the lock before it writes.
+        state = _read_state(state_path)
+        highwater = _cursor(state["updated_at"], state["q14_work_item_id"])
+        retry_order = list(dict.fromkeys(state["retry_q14_ids"]))
+        result["watermark_before"] = dict(state)
+        con = bundle.open_ro(root / "state" / "farm_state.sqlite")
+        try:
+            verdicts = tuple(sorted(bundle.TERMINAL_PASS_VERDICTS))
+            rows = [dict(row) for row in con.execute(
+                "SELECT id, ea_id, symbol, updated_at FROM work_items WHERE phase='Q14' "
+                "AND status='done' AND verdict IN (" + ",".join("?" for _ in verdicts) + ")",
+                verdicts,
+            )]
+            new_rows = sorted((row for row in rows if
+                _cursor(row["updated_at"], row["id"]) > highwater),
+                key=lambda row: _cursor(row["updated_at"], row["id"]))
+            by_id = {row["id"]: row for row in rows}
+            retry_rows = [by_id[wid] for wid in retry_order if wid in by_id and
+                _cursor(by_id[wid]["updated_at"], wid) <= highwater]
+            retry_limit = min(len(retry_rows), limit // 2 if new_rows else limit)
+            rows = retry_rows[:retry_limit] + new_rows[:limit - retry_limit]
+            planned = [(trigger, inspect_trigger(con, trigger, farm)) for trigger in rows]
+        finally:
+            con.close()
+
+        for trigger, planned_item in planned:
+            if deadline_monotonic is not None and time.monotonic() >= deadline_monotonic:
+                result["budget_exhausted"] = True
+                break
+            if not apply:
+                item = planned_item
+            else:
+                lock = FactoryMutationLock(
+                    root / "state" / "FACTORY_MUTATION.lock",
+                    owner=f"q08_stream_auto_rerun:{trigger['id']}",
+                )
+                with lock:
                     if os.environ.get(DISABLE_ENV) == "1" or (root / "FACTORY_OFF.flag").exists():
                         result["stopped_before_next_trigger"] = True
                         break
-                    item = inspect_trigger(con, trigger, farm)
+                    exact = bundle.open_ro(root / "state" / "farm_state.sqlite")
+                    try:
+                        current = exact.execute(
+                            "SELECT id,ea_id,symbol,updated_at FROM work_items "
+                            "WHERE id=? AND phase='Q14' AND status='done' AND verdict IN ("
+                            + ",".join("?" for _ in verdicts) + ")",
+                            (trigger["id"], *verdicts),
+                        ).fetchone()
+                        if current is None or dict(current) != trigger:
+                            item = {**planned_item, "action": "defer",
+                                "reason": "trigger_changed_after_classification"}
+                        else:
+                            item = inspect_trigger(exact, trigger, farm)
+                    finally:
+                        exact.close()
                     if item["action"] == "would_enqueue":
                         result["would_enqueue_count"] += 1
-                        if apply:
-                            answer = farm.enqueue_cascade_backtest_for_ea(root, **item["enqueue_kwargs"])
-                            item["enqueue_result"] = answer
-                            created = answer.get("created", [])
-                            if len(created) == 1 and not answer.get("requeued"):
-                                item.update(action="enqueued", new_q08_work_item_id=created[0]["id"])
-                                result["created_count"] += 1
-                                with farm.connect(root) as writer:
-                                    farm.event(writer, "work_item", created[0]["id"],
-                                        "q08_stream_rerun_auto_minted", {
-                                            "ea_id": trigger["ea_id"], "symbol": trigger["symbol"],
-                                            "q14_work_item_id": trigger["id"],
-                                            "q07_work_item_id": item["enqueue_kwargs"]["predecessor_work_item_id"],
-                                            "q08_rerun_of_work_item_id": item["enqueue_kwargs"]["append_only_rerun_of"],
-                                            "new_q08_work_item_id": created[0]["id"],
-                                            "expected_current_ex5_sha256": item["identity_ex5_sha256"],
-                                        })
-                                    writer.commit()
-                            else:
-                                # farmctl can report enqueued=True for a refusal;
-                                # only an actual created row counts as delivery.
-                                item.update(action="defer", reason="governed_enqueue_created_no_single_row")
-                    result["items"].append(item)
-                    if trigger["id"] in retry_order:
-                        retry_order.remove(trigger["id"])
+                        answer = farm.enqueue_cascade_backtest_for_ea(root, **item["enqueue_kwargs"])
+                        item["enqueue_result"] = answer
+                        created = answer.get("created", [])
+                        if len(created) == 1 and not answer.get("requeued"):
+                            item.update(action="enqueued", new_q08_work_item_id=created[0]["id"])
+                            result["created_count"] += 1
+                            with farm.connect(root) as writer:
+                                farm.event(writer, "work_item", created[0]["id"],
+                                    "q08_stream_rerun_auto_minted", {
+                                        "ea_id": trigger["ea_id"], "symbol": trigger["symbol"],
+                                        "q14_work_item_id": trigger["id"],
+                                        "q07_work_item_id": item["enqueue_kwargs"]["predecessor_work_item_id"],
+                                        "q08_rerun_of_work_item_id": item["enqueue_kwargs"]["append_only_rerun_of"],
+                                        "new_q08_work_item_id": created[0]["id"],
+                                        "expected_current_ex5_sha256": item["identity_ex5_sha256"],
+                                    })
+                                writer.commit()
+                        else:
+                            item.update(action="defer", reason="governed_enqueue_created_no_single_row")
+
+                    current_state = _read_state(state_path)
+                    current_retry_order = list(dict.fromkeys(current_state["retry_q14_ids"]))
+                    current_retry = set(current_retry_order)
+                    if trigger["id"] in current_retry_order:
+                        current_retry_order.remove(trigger["id"])
                     if item["action"] == "defer":
-                        retry.add(trigger["id"])
-                        retry_order.append(trigger["id"])
+                        current_retry.add(trigger["id"])
+                        current_retry_order.append(trigger["id"])
                     else:
-                        retry.discard(trigger["id"])
+                        current_retry.discard(trigger["id"])
+                    current_highwater = _cursor(
+                        current_state["updated_at"], current_state["q14_work_item_id"]
+                    )
                     cursor = _cursor(trigger["updated_at"], trigger["id"])
-                    if cursor > highwater:
-                        highwater = cursor
-                        state.update(updated_at=trigger["updated_at"], q14_work_item_id=trigger["id"])
-                    state["retry_q14_ids"] = retry_order.copy()
-                    if apply:
-                        _write_state(state_path, state)
-            finally:
-                con.close()
-            result["watermark_after" if apply else "proposed_watermark"] = state
-            return result
+                    if cursor > current_highwater:
+                        current_state.update(
+                            updated_at=trigger["updated_at"], q14_work_item_id=trigger["id"]
+                        )
+                    current_state["retry_q14_ids"] = current_retry_order
+                    _write_state(state_path, current_state)
+                    state = current_state
+
+            if not apply and item["action"] == "would_enqueue":
+                result["would_enqueue_count"] += 1
+            result["items"].append(item)
+            if not apply:
+                if trigger["id"] in retry_order:
+                    retry_order.remove(trigger["id"])
+                if item["action"] == "defer":
+                    retry_order.append(trigger["id"])
+                cursor = _cursor(trigger["updated_at"], trigger["id"])
+                if cursor > highwater:
+                    highwater = cursor
+                    state.update(updated_at=trigger["updated_at"], q14_work_item_id=trigger["id"])
+                state["retry_q14_ids"] = retry_order.copy()
+        result["watermark_after" if apply else "proposed_watermark"] = state
+        result["lock_scope"] = "DISCOVERY_OUTSIDE_EXACT_TRIGGER_WRITES_INSIDE"
+        return result
     except (OSError, RuntimeError, ValueError, KeyError, sqlite3.Error) as exc:
         return {**result, "error": f"{type(exc).__name__}: {exc}", "reason": "q08_stream_service_deferred"}
 

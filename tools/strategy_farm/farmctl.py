@@ -21001,6 +21001,46 @@ PUMP_OPT_FORK_SERVICE_BUDGET_SECONDS = 15.0
 PUMP_MEASUREMENT_SIBLING_HOLD_BUDGET_SECONDS = 15.0
 
 
+def _finalize_pump_stage_timings(
+    root: Path, result: dict[str, Any], cycle_budget: PumpCycleBudget
+) -> None:
+    """Expose timings in the pump JSON and append one structured DB event."""
+
+    snapshot = cycle_budget.snapshot()
+    result["stage_timings"] = snapshot  # compatibility with existing consumers
+    result["pump_stage_timings"] = snapshot
+    detail = {
+        "schema": "qm.pump-stage-timings/v1",
+        "pumped_at": result.get("pumped_at"),
+        **snapshot,
+    }
+    lock = FactoryMutationLock(
+        path_for_factory_flag(factory_off_flag_path(root)),
+        owner="pump_stage_timing_event",
+    )
+    try:
+        lock.__enter__()
+    except RuntimeError as exc:
+        result["pump_stage_timing_event"] = {
+            "recorded": False,
+            "reason": f"factory_mutation_lock_busy:{exc}",
+        }
+        return
+    try:
+        with connect_short_under_mutation_lock(root) as conn:
+            event(conn, "pump", str(result.get("pumped_at") or utc_now()),
+                  "pump_stage_timings", detail)
+            conn.commit()
+        result["pump_stage_timing_event"] = {"recorded": True}
+    except sqlite3.Error as exc:
+        result["pump_stage_timing_event"] = {
+            "recorded": False,
+            "reason": f"sqlite_error:{exc}",
+        }
+    finally:
+        lock.__exit__(None, None, None)
+
+
 def auto_enqueue_q08_stream_reruns(
     root: Path, *, deadline_monotonic: float | None = None
 ) -> dict[str, Any]:
@@ -21237,7 +21277,7 @@ def _pump_unlocked(
             "skipped": "cycle_budget_exhausted",
             "remaining_seconds": cycle_budget.remaining_seconds,
         }
-        result["stage_timings"] = cycle_budget.snapshot()
+        _finalize_pump_stage_timings(root, result, cycle_budget)
         return result
     # OQ-SIBLING-CASCADE-20260903: resolve the measurement-sibling population
     # ONCE and share it with every minting site below.  Placed AFTER the budget
@@ -22147,7 +22187,7 @@ def _pump_unlocked(
     )
     if cycle_budget.remaining_seconds <= 15.0:
         result["build_dispatch"] = {"skipped": "cycle_budget_exhausted"}
-        result["stage_timings"] = cycle_budget.snapshot()
+        _finalize_pump_stage_timings(root, result, cycle_budget)
         return result
     build_stage_started = time.monotonic()
     # 3. Codex builds for up to MAX_PARALLEL_CODEX pending build_ea tasks.
@@ -22693,7 +22733,7 @@ def _pump_unlocked(
     )
     if cycle_budget.remaining_seconds <= 15.0:
         result["review_stage"] = {"skipped": "cycle_budget_exhausted"}
-        result["stage_timings"] = cycle_budget.snapshot()
+        _finalize_pump_stage_timings(root, result, cycle_budget)
         return result
     review_stage_started = time.monotonic()
     # 5a. CODEX pre-review for done build_ea without codex_review yet.
@@ -23042,7 +23082,7 @@ def _pump_unlocked(
     )
     if cycle_budget.remaining_seconds <= 15.0:
         result["pre_promotion_stage"] = {"skipped": "cycle_budget_exhausted"}
-        result["stage_timings"] = cycle_budget.snapshot()
+        _finalize_pump_stage_timings(root, result, cycle_budget)
         return result
     # Newly created and previously parked news rows become runnable in the same
     # pump cycle.  Each row is independently fail-closed, so one bad lineage
@@ -23066,7 +23106,7 @@ def _pump_unlocked(
             "skipped": "cycle_budget_exhausted",
             "remaining_seconds": cycle_budget.remaining_seconds,
         }
-        result["stage_timings"] = cycle_budget.snapshot()
+        _finalize_pump_stage_timings(root, result, cycle_budget)
         return result
 
     # §10d Synthetic variants for proven winners — EAs with ≥3 P2-PASSes
@@ -23156,7 +23196,7 @@ def _pump_unlocked(
         "reason": "disabled_by_owner_2026_05_22; one-shot ping email channel retired",
     }
 
-    result["stage_timings"] = cycle_budget.snapshot()
+    _finalize_pump_stage_timings(root, result, cycle_budget)
     return result
 
 
@@ -32799,11 +32839,91 @@ def service_dl089_matrix(
         "receipt_limit": receipt_limit,
     }
     if apply:
-        def _apply_with_fresh_connection() -> dict[str, Any]:
-            with connect(root) as conn:
-                return service.service_pending(conn, **kwargs)
+        # Classify the whole candidate population without the fleet mutation
+        # lock.  Only exact, snapshot-selected primary keys enter the write
+        # section below.  This keeps K/L/G and queue order identical to the
+        # unchunked service while releasing the global lock between programs.
+        uri = f"file:{database.as_posix()}?mode=ro"
+        with sqlite3.connect(uri, uri=True, timeout=30) as plan_conn:
+            plan_conn.row_factory = sqlite3.Row
+            plan_conn.execute("PRAGMA query_only=ON")
+            plan = service.service_pending(plan_conn, **{**kwargs, "apply": False})
 
-        return _with_sqlite_write_retry(_apply_with_fresh_connection)
+        selected: list[str] = []
+        selected_set: set[str] = set()
+        for row in plan.get("slot_owners", []):
+            work_item_id = str(row.get("work_item_id") or "")
+            if work_item_id and work_item_id not in selected_set:
+                selected.append(work_item_id)
+                selected_set.add(work_item_id)
+        # Preserve the historical prerequisite behavior: rows that still need
+        # their measurement Q02 seed are written, but already-PASS candidates
+        # beyond the K-sized selected window are not accidentally materialized.
+        for row in plan.get("q02_prerequisites", []):
+            if str(row.get("status") or "").lower() != "done" or str(
+                row.get("verdict") or ""
+            ).upper() != "PASS":
+                work_item_id = str(row.get("q12_work_item_id") or "")
+                if work_item_id and work_item_id not in selected_set:
+                    selected.append(work_item_id)
+                    selected_set.add(work_item_id)
+
+        chunks: list[dict[str, Any]] = []
+        recovery_ids = [str(value) for value in recover_work_item_ids or ()]
+        chunk_specs = [
+            ([], [recovery_id]) for recovery_id in recovery_ids
+        ] + [([work_item_id], []) for work_item_id in selected]
+        for target_ids, recovery_chunk in chunk_specs:
+            lock = FactoryMutationLock(
+                path_for_factory_flag(factory_off_flag_path(root)),
+                owner=(
+                    "dl089_matrix_service:"
+                    + (target_ids[0] if target_ids else f"recovery:{recovery_chunk[0]}")
+                ),
+            )
+            try:
+                lock.__enter__()
+            except RuntimeError as exc:
+                chunks.append({
+                    "applied": False,
+                    "deferred": [{
+                        "work_item_id": target_ids[0] if target_ids else recovery_chunk[0],
+                        "machine_reason": f"FACTORY_MUTATION_LOCK_BUSY:{exc}",
+                    }],
+                })
+                continue
+            try:
+                def _apply_exact() -> dict[str, Any]:
+                    with connect(root) as conn:
+                        return service.service_pending(
+                            conn,
+                            **{
+                                **kwargs,
+                                "apply": True,
+                                "q12_work_item_ids": target_ids,
+                                "recover_work_item_ids": recovery_chunk,
+                            },
+                        )
+
+                chunks.append(_with_sqlite_write_retry(_apply_exact))
+            finally:
+                lock.__exit__(None, None, None)
+
+        merged = dict(plan)
+        merged["applied"] = True
+        merged["lock_scope"] = "CLASSIFY_OUTSIDE_EXACT_PROGRAM_WRITES_INSIDE"
+        merged["program_write_chunks"] = len(chunk_specs)
+        for key in (
+            "recoveries", "q02_prerequisites", "materialized", "maintained",
+            "capacity_waits", "deferred",
+        ):
+            merged[key] = [
+                item for chunk in chunks for item in chunk.get(key, [])
+            ]
+        merged["slot_owners"] = [
+            item for chunk in chunks for item in chunk.get("slot_owners", [])
+        ]
+        return merged
     uri = f"file:{database.as_posix()}?mode=ro"
     with sqlite3.connect(uri, uri=True, timeout=30) as conn:
         conn.row_factory = sqlite3.Row

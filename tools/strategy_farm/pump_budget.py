@@ -40,6 +40,11 @@ class PumpCycleBudget:
         self._started = clock()
         self._first_stage = first_stage
         self._timings: list[StageTiming] = []
+        try:
+            from factory_mutation_lock import reset_pump_lock_accounting
+        except ModuleNotFoundError:
+            from tools.strategy_farm.factory_mutation_lock import reset_pump_lock_accounting
+        reset_pump_lock_accounting()
 
     @property
     def elapsed_seconds(self) -> float:
@@ -75,7 +80,12 @@ class PumpCycleBudget:
             ))
             return {"skipped": "cycle_budget_exhausted"}
         started = self._clock()
-        value = operation()
+        try:
+            from factory_mutation_lock import pump_stage
+        except ModuleNotFoundError:
+            from tools.strategy_farm.factory_mutation_lock import pump_stage
+        with pump_stage(name):
+            value = operation()
         elapsed = max(0.0, self._clock() - started)
         self._timings.append(StageTiming(
             name=name,
@@ -101,6 +111,11 @@ class PumpCycleBudget:
         ))
 
     def snapshot(self) -> dict[str, Any]:
+        try:
+            from factory_mutation_lock import pump_lock_accounting_snapshot
+        except ModuleNotFoundError:
+            from tools.strategy_farm.factory_mutation_lock import pump_lock_accounting_snapshot
+        lock_rows = pump_lock_accounting_snapshot()
         return {
             "total_budget_seconds": self.total_seconds,
             "elapsed_seconds": round(self.elapsed_seconds, 6),
@@ -113,7 +128,15 @@ class PumpCycleBudget:
                     "skipped": row.skipped,
                     "over_budget": row.over_budget,
                     "skip_reason": row.skip_reason,
+                    **lock_rows.get(row.name, {
+                        "lock_held_seconds": 0.0,
+                        "lock_acquisitions": 0,
+                        "lock_owners": [],
+                    }),
                 }
                 for row in self._timings
             ],
+            "lock_held_seconds": round(sum(
+                float(row.get("lock_held_seconds", 0.0)) for row in lock_rows.values()
+            ), 6),
         }

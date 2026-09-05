@@ -9,12 +9,62 @@ identity check; every other existing record remains fail-closed.
 from __future__ import annotations
 
 import datetime as dt
+import contextlib
+import contextvars
 import hashlib
 import json
 import os
 from pathlib import Path
 import time
 import uuid
+
+
+_PUMP_STAGE = contextvars.ContextVar("qm_pump_stage", default=None)
+_PUMP_LOCK_ACCOUNTING = contextvars.ContextVar("qm_pump_lock_accounting", default=None)
+
+
+def reset_pump_lock_accounting() -> None:
+    """Start process-local lock accounting for one pump cycle."""
+
+    _PUMP_LOCK_ACCOUNTING.set({})
+
+
+@contextlib.contextmanager
+def pump_stage(name: str):
+    """Attribute FactoryMutationLock holds to the active pump stage."""
+
+    token = _PUMP_STAGE.set(str(name))
+    try:
+        yield
+    finally:
+        _PUMP_STAGE.reset(token)
+
+
+def pump_lock_accounting_snapshot() -> dict[str, dict[str, object]]:
+    rows = _PUMP_LOCK_ACCOUNTING.get() or {}
+    return {
+        name: {
+            "lock_held_seconds": round(float(row["lock_held_seconds"]), 6),
+            "lock_acquisitions": int(row["lock_acquisitions"]),
+            "lock_owners": sorted(row["lock_owners"]),
+        }
+        for name, row in rows.items()
+    }
+
+
+def _account_pump_hold(owner: str, path: Path, hold_seconds: float) -> None:
+    stage = _PUMP_STAGE.get()
+    rows = _PUMP_LOCK_ACCOUNTING.get()
+    if not stage or rows is None or Path(path).name.upper() != "FACTORY_MUTATION.LOCK":
+        return
+    row = rows.setdefault(stage, {
+        "lock_held_seconds": 0.0,
+        "lock_acquisitions": 0,
+        "lock_owners": set(),
+    })
+    row["lock_held_seconds"] += max(0.0, float(hold_seconds))
+    row["lock_acquisitions"] += 1
+    row["lock_owners"].add(str(owner))
 
 if os.name == "nt":
     import ctypes
@@ -634,6 +684,7 @@ class FactoryMutationLock:
             self.release_status = self._unlink_if_owned()
 
         self._emit_hold_telemetry("RELEASED", hold_seconds=hold_seconds)
+        _account_pump_hold(self.owner, self.path, hold_seconds)
 
         # Never raise a new error after a guarded database transaction may have
         # committed: callers could misread that as a retryable mutation failure
