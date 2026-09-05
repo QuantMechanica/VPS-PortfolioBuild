@@ -737,6 +737,38 @@
           ]
         }
       }
+    },
+    {
+      "id": "OWNER-DEC-CALENDAR-SCOPED-CONSUMER-20260905",
+      "todo_id": "QM-TODO-20260905-CALENDAR-SCOPED-CONSUMER",
+      "priority": 89,
+      "choices": {
+        "YES": {
+          "mode": "APPLY_AND_VERIFY",
+          "objective": "Commission exactly one Codex Astra implementation of the E1-C option-B consumer contract, INERT: bundle/consumer/evaluator binding with enforced validity ranges (BLACKOUT_UNKNOWN for unknown relevant periods, UNCONFIRMED projection for Q09/Q10 attempts touching a boundary, refusal of legacy consumers and of missing/tampered scope data), negative tests, no new binaries in the active inventory, no reseal, no hold release; record the ingress/reseal ordering from the Vorlage as the future activation checklist.",
+          "allowed_actions": [
+            "Enqueue, review and integrate the Codex implementation on an isolated branch (flag default off; byte-identical behaviour when inert)",
+            "Record the activation checklist (ingress and reseal ordering) under docs/ops/ for the later activation card",
+            "Keep the CEO calendar-taint hold on new news-gate claims; touch no verdict, no hold, no gate criterion",
+            "Commit with explicit pathspecs"
+          ],
+          "acceptance": [
+            "Consumer contract implemented behind a flag, default off; negative tests green; no active-inventory binary changed",
+            "No hold released, no reseal, no gate/threshold/counting-rule change, NO-BUY unchanged",
+            "Activation checklist recorded; activation and per-hold release remain separate OWNER cards"
+          ]
+        },
+        "NO": {
+          "mode": "DOCUMENT_AND_VERIFY",
+          "objective": "Record the rejection; option A stays, the 13 holds, E2 and E4 stay open until a full remeasurement of the calendar is possible; the CEO taint hold on new news-gate claims stays.",
+          "allowed_actions": [
+            "Document in OPEN_ITEMS_STATUS.md and the receipts file"
+          ],
+          "acceptance": [
+            "No implementation, no activation"
+          ]
+        }
+      }
     }
   ]
 }

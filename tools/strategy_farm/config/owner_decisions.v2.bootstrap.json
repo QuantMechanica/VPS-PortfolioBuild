@@ -1,6 +1,6 @@
 {
   "schema_version": "qm.owner-decisions/v2",
-  "revision": 3,
+  "revision": 4,
   "maintainer": "Mission Control decision store; OWNER answers are receipts, not execution authority.",
   "updated_at_utc": "2026-09-02T17:47:14Z",
   "items": [
@@ -197,6 +197,25 @@
       "severity": "action",
       "status": "OPEN",
       "yes_effect": "Genau EIN Claude-Auftrag: (1) CEO erfasst eine frische Read-only-Beobachtung des Live-Buchs (risk_freeze.measure, <= 300 s alt), erzeugt den unsignierten Attest-Vorschlag und legt ihn Dir zur Beglaubigung vor; (2) Codex implementiert die Consumer-Ausnahme hinter Flag: ein OWNER-beglaubigter Attest-Vorschlag der unveraenderten Identitaet erfuellt Bedingung 1, Freeze bleibt AKTIV; (3) Deine Beglaubigung selbst ist ein separater Klick/Receipt in Mission Control. Kein AutoTrading-, Risiko- oder Deployment-Effekt."
+    },
+    {
+      "category": "Evidenz/News-Kalender",
+      "cost_of_wait": "Solange nur Option A (volle Messung abwarten) gilt, bleiben 13 News-Gate-Holds, die E2-Nachmessung (63 exponierte Phase-Paare, inkl. 10706/GBPUSD im Zaehler) und E4 (Jan-Apr 2026) unbegrenzt blockiert; neue Q10_NEWS-Laeufe auf dem heutigen Bundle sind kalender-tainted (Diagnose 04.09.: 2.700 von 3.242 Anker-Checks FAIL im Gate-Fenster 2019-2023) und werden per CEO-Hold zurueckgehalten. Der Zaehler-Pfad ueber die News-Gates steht still, bis B existiert oder eine belastbare Neuversiegelung von A moeglich ist (Wartezeit nicht schaetzbar).",
+      "created_at_utc": "2026-09-05T15:31:03Z",
+      "depends_on": [],
+      "due": null,
+      "evidence": [
+        "docs/ops/evidence/OWNER_VORLAGE_2026-09-05_calendar_scoped_consumer.md",
+        "docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+        "docs/ops/evidence/2026-09-05_news_calendar_e1b2_data_completion.md"
+      ],
+      "id": "OWNER-DEC-CALENDAR-SCOPED-CONSUMER-20260905",
+      "no_effect": "Nur Option A: Kalendervertrag bleibt wie heute; Holds, E2 und E4 bleiben offen, bis offizielle Zeitanker, widerspruchsfreie Kodierung und M5-Fenster nachgemessen sind (Zeit nicht schaetzbar). Der CEO-Taint-Hold fuer neue News-Gate-Claims bleibt bestehen.",
+      "question": "Darf Option B - der Kalender-Verbraucher mit ERZWUNGENEN Geltungsgrenzen (unbekannter relevanter Zeitraum sperrt Einstiege = BLACKOUT_UNKNOWN; Q09/Q10-Versuche, deren Pruefffenster eine Grenze beruehrt, erhalten in einer Zusatzprojektion UNCONFIRMED, nie PASS oder Auswahlgutschrift; alte Verbraucher duerfen das Paket nicht lesen) - als INAKTIVE Implementierung beauftragt werden, waehrend Option A (heutiger Kalendervertrag) im Betrieb bleibt? Keine Neuversiegelung, keine Hold-Aufhebung, keine Aktivierung, keine Zaehlregel-Aenderung.",
+      "recommendation": "JA fuer B als inaktive Implementierung, A bleibt im Betrieb (Empfehlung der Vorlage). Der Kandidat besteht 4 von 8 Messpruefungen, die uebrigen 4 sind nur durch 18.279 Ausschlusserklaerungen abgedeckt (USD in allen 144 Monaten 2015-2026) - eine Erklaerung ist kein bestandener Test, daher heute 0 von 13 Holds freigebbar. B macht saubere Teilnutzung technisch moeglich; Aktivierung und Neuversiegelung sind spaetere eigene OWNER-Freigaben.",
+      "severity": "action",
+      "status": "OPEN",
+      "yes_effect": "Genau EIN Claude-Auftrag: Codex Astra implementiert den B-Verbrauchervertrag INAKTIV nach der Vorlage (Paket-/Verbraucher-/Auswerterbindung, BLACKOUT_UNKNOWN, UNCONFIRMED-Projektion, Negativtests fuer fehlende oder manipulierte Geltungsdaten, Verweigerung alter Verbraucher); keine neuen Binaerdateien im aktiven Inventar, keine Neuversiegelung, keine Hold-Aufhebung, kein Kauf, kein Live-/AutoTrading-Effekt. Aktivierung und die Freigabe einzelner Holds sind separate Karten nach nachgewiesener Nutzbarkeit."
     }
   ]
 }
