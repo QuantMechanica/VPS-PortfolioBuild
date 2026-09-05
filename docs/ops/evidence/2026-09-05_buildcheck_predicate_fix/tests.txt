@@ -1,0 +1,29 @@
+..............F...............................................           [100%]
+================================== FAILURES ===================================
+__________ test_qm5_411xx_sources_have_no_unbounded_numeric_buffers ___________
+
+    def test_qm5_411xx_sources_have_no_unbounded_numeric_buffers() -> None:
+        failures: list[str] = []
+        sources = sorted((REPO_ROOT / "framework" / "EAs").glob("QM5_411*/*.mq5"))
+    
+        assert sources
+        for source_path in sources:
+            raw = gate.read_text_compatible(source_path)
+            source = gate.SourceFile(
+                path=source_path,
+                raw=raw,
+                code=gate.strip_comments_preserve_lines(raw),
+            )
+            failures.extend(gate.check_indicator_buffer_bounds(source))
+    
+>       assert failures == []
+E       AssertionError: assert ['EA_INDICATO... guard.', ...] == []
+E         
+E         Left contains 70 more items, first extra item: 'EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41111_wti-mdaybreadth-mom.mq5:525 accesses dynamic numeric buffer newest_closes[month_counts[bucket]] without a loop bound tied to strategy_max_month_sessions or an explicit ArraySize guard.'
+E         Use -v to get more diff
+
+tools\strategy_farm\tests\test_build_gate_hardening.py:404: AssertionError
+=========================== short test summary info ===========================
+FAILED tools/strategy_farm/tests/test_build_gate_hardening.py::test_qm5_411xx_sources_have_no_unbounded_numeric_buffers
+1 failed, 61 passed in 128.37s (0:02:08)
+

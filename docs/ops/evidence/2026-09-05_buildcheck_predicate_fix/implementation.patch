@@ -1,0 +1,627 @@
+diff --git a/framework/scripts/build_check.ps1 b/framework/scripts/build_check.ps1
+index 6262ec1114..b299668a6d 100644
+--- a/framework/scripts/build_check.ps1
++++ b/framework/scripts/build_check.ps1
+@@ -885,12 +885,24 @@ function Invoke-ForbiddenScan {
+         return
+     }
+ 
+-    $mlPattern = '(?i)\b(tensorflow|torch|pytorch|sklearn|keras|onnx|xgboost|lightgbm|catboost|mlpack|dlib)\b|\.onnx\b|\.pb\b|\.pt\b|\.pth\b|\bweights\s*\['
++    $mlIncludePattern = '(?im)^\s*#(?:include|import|resource)\s*[<"][^>"\r\n]*(?:tensorflow|torch|pytorch|sklearn|keras|onnx|xgboost|lightgbm|catboost|mlpack|dlib|neural|perceptron|\bML[/\\.])[^>"\r\n]*[>"]'
++    $mlLearningPattern = '(?i)\b(?:Onnx\w+|Backpropagate|Backpropagation|TrainModel|FitModel|UpdateWeights|LearnOnline)\s*\(|\b(?:weights|biases?|coefficients)\s*\[[^\]]+\]\s*(?:[+-]=|=(?!=))\s*[^;]*(?:learning_?rate|gradient|loss|error|target|reward)\b'
+     $externalPattern = '(?i)\bWebRequest\s*\(|https?://'
+ 
+-    $mlHits = Select-String -Path $mqlFiles.ToArray() -Pattern $mlPattern
+-    foreach ($hit in $mlHits) {
+-        Add-Failure "EA_ML_FORBIDDEN: $($hit.Path):$($hit.LineNumber) contains '$($hit.Matches[0].Value)'."
++    foreach ($mqlFile in $mqlFiles) {
++        $rawMl = Get-Content -LiteralPath $mqlFile -Raw
++        # Preserve line positions; prose and string examples cannot be learning code.
++        $commentFree = [regex]::Replace($rawMl, '(?s)/\*.*?\*/|(?m)//[^\r\n]*', {
++            param($m) [regex]::Replace($m.Value, '[^\r\n]', ' ')
++        })
++        $codeMl = [regex]::Replace($commentFree, '"(?:\\.|[^"\\])*"', {
++            param($m) [regex]::Replace($m.Value, '[^\r\n]', ' ')
++        })
++        $mlHits = @([regex]::Matches($commentFree, $mlIncludePattern)) + @([regex]::Matches($codeMl, $mlLearningPattern))
++        foreach ($hit in $mlHits) {
++            $lineNumber = 1 + ([regex]::Matches($commentFree.Substring(0, $hit.Index), "`n")).Count
++            Add-Failure "EA_ML_FORBIDDEN: ${mqlFile}:$lineNumber contains a model include or learning operation '$($hit.Value.Trim())'."
++        }
+     }
+ 
+     $externalHits = Select-String -Path $mqlFiles.ToArray() -Pattern $externalPattern
+diff --git a/tools/strategy_farm/bounded_arrays.py b/tools/strategy_farm/bounded_arrays.py
+new file mode 100644
+index 0000000000..2ff6cc4251
+--- /dev/null
++++ b/tools/strategy_farm/bounded_arrays.py
+@@ -0,0 +1,287 @@
++"""Conservative local integer-interval proofs for MQL numeric-array accesses.
++
++No EA names or source hashes occur here. Unknown expressions/effects yield no
++proof. This supplements the existing structural CopyBuffer/loop checks.
++"""
++from __future__ import annotations
++import ast
++from functools import lru_cache
++from dataclasses import dataclass
++import re
++
++VAR = r'[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*'
++PURE = {'ArraySize','ArrayResize','ArraySort','ArraySetAsSeries','MathIsValidNumber',
++        'MathAbs','MathMin','MathMax','StringFormat','Print','PrintFormat'}
++
++
++def end_delimiter(text, opening, left='(', right=')'):
++    depth = 0
++    for pos in range(opening, len(text)):
++        if text[pos] == left: depth += 1
++        elif text[pos] == right:
++            depth -= 1
++            if depth == 0: return pos
++    return None
++
++
++def compact(text):
++    return re.sub(r'\s+', '', text)
++
++
++def unwrap(text):
++    text = text.strip()
++    while text.startswith('(') and end_delimiter(text, 0) == len(text)-1:
++        text = text[1:-1].strip()
++    return text
++
++
++def split_boolean(text, token):
++    text = unwrap(text)
++    depth = 0; start = 0; parts = []; i = 0
++    while i < len(text):
++        char = text[i]
++        if char == '(': depth += 1
++        elif char == ')': depth -= 1
++        if depth == 0 and text.startswith(token, i):
++            parts.append(text[start:i]); start = i + len(token); i += len(token); continue
++        i += 1
++    parts.append(text[start:])
++    return parts
++
++
++@dataclass
++class Control:
++    kind: str
++    start: int
++    condition: str
++    condition_end: int
++    body_start: int
++    body_end: int
++    end: int
++
++
++class Proof:
++    def __init__(self, body):
++        self.body = body
++        self.controls = []
++        for match in re.finditer(r'\b(if|for|while)\s*\(', body):
++            opening = body.find('(', match.start())
++            close = end_delimiter(body, opening)
++            if close is None: continue
++            start = close + 1
++            while start < len(body) and body[start].isspace(): start += 1
++            if start < len(body) and body[start] == '{':
++                finish = end_delimiter(body,start,'{','}')
++                if finish is None: continue
++                bstart, bend, end = start+1, finish, finish+1
++            else:
++                finish = body.find(';',start)
++                if finish < 0: continue
++                bstart, bend, end = start, finish+1, finish+1
++            self.controls.append(Control(match[1],match.start(),body[opening+1:close],close,bstart,bend,end))
++
++    def contains(self, control, pos):
++        return control.body_start <= pos < control.body_end
++
++    def dominates(self, start, end, pos):
++        return end <= pos and all(not self.contains(c,start) or self.contains(c,pos) for c in self.controls)
++
++    def changed(self, name, start, end, *, ignore_steps=False):
++        text = self.body[start:end]
++        escaped = re.escape(name)
++        patterns = [rf'(?<![\w.]){escaped}\s*(?:=(?!=)|[+*/%-]=)']
++        if not ignore_steps:
++            patterns += [rf'(?:\+\+|--)\s*{escaped}\b', rf'\b{escaped}\s*(?:\+\+|--)']
++        if any(re.search(p,text) for p in patterns): return True
++        for match in re.finditer(r'\b([A-Za-z_]\w*)\s*\(',text):
++            name_of_call = match[1]
++            opening = text.find('(',match.start()); close=end_delimiter(text,opening)
++            if name_of_call in {'ArrayResize','ArrayFree','ArrayCopy','ZeroMemory'} and close is not None:
++                first=text[opening+1:close].split(',')[0].strip()
++                if first==name or (name.startswith(first+'.') and first):return True
++            if name_of_call in PURE or name_of_call in {'if','while','for'}: continue
++            if close is not None and re.search(rf'(?<![\w.]){escaped}(?![\w.])',text[opening+1:close]):
++                return True
++        return False
++
++    def guards(self, pos):
++        for c in self.controls:
++            opening=self.body.find('(',c.start,c.condition_end)
++            if opening < pos < c.condition_end:
++                prefix=self.body[opening+1:pos]
++                stack=[]
++                for i,char in enumerate(prefix):
++                    if char=='(':stack.append(i+1)
++                    elif char==')' and stack:stack.pop()
++                for start in [0,*stack]:
++                    local=prefix[start:]
++                    if len(split_boolean(local,'||'))==1:
++                        for part in split_boolean(local,'&&')[:-1]:
++                            yield unwrap(part),True,opening+1+start
++            if c.kind == 'if' and self.dominates(c.start,c.end,pos):
++                # A true failure arm must exit the function. An unrelated
++                # nested guard or conditional break is not a dominating fact.
++                arm = self.body[c.body_start:c.body_end].strip()
++                if re.fullmatch(r'return\b[^;]*;\s*',arm,re.S):
++                    for part in split_boolean(c.condition,'||'):
++                        if len(split_boolean(part,'&&')) == 1:
++                            yield unwrap(part), False, c.end
++            if self.contains(c,pos):
++                condition = c.condition.split(';')[1] if c.kind == 'for' and c.condition.count(';')==2 else c.condition
++                for part in split_boolean(condition,'&&'):
++                    if len(split_boolean(part,'||'))==1:
++                        variable=re.match(rf'\s*({VAR})\s*(?:<=|>=|<|>)',unwrap(part))
++                        if variable:
++                            name=variable[1]
++                            if c.kind=='for' and self.changed(name,c.body_start,c.body_end):continue
++                            stable=True
++                            for inner in self.controls:
++                                if inner.kind not in ('for','while') or inner.start<=c.start or not self.contains(inner,pos):continue
++                                if not self.changed(name,inner.body_start,inner.body_end):continue
++                                # An outer while condition is not rechecked by
++                                # an inner loop. A changed counter must exit the
++                                # inner loop unconditionally before iterating.
++                                writes=list(re.finditer(rf'(?:\+\+|--)\s*{re.escape(name)}\b|\b{re.escape(name)}\s*(?:\+\+|--)',self.body[pos:inner.body_end]))
++                                if len(writes)!=1:stable=False;break
++                                tail=self.body[pos+writes[0].end():inner.body_end]
++                                if not re.fullmatch(r'\s*;(?:\s*(?:\+\+\w+|\w+\+\+|[\w.]+\s*=\s*\w+)\s*;)*\s*break\s*;\s*',tail):stable=False;break
++                            if not stable:continue
++                        yield unwrap(part), True, c.body_start
++
++    def interval(self, expression, pos, seen=()):
++        expression = unwrap(expression)
++        if len(seen)>14: return None
++        # The union of the two branches is safe without assuming its predicate.
++        ternary = re.fullmatch(r'.*\?\s*([^?:]+)\s*:\s*([^?:]+)',expression,re.S)
++        if ternary:
++            a,b=(self.interval(ternary[i],pos,seen) for i in (1,2))
++            return (min(a[0],b[0]),max(a[1],b[1])) if a and b else None
++        expression = re.sub(r'\((?:int|long|uint|short)\)', '', expression)
++        try: node=ast.parse(expression,mode='eval').body
++        except (ValueError,SyntaxError): return None
++        def walk(n):
++            if isinstance(n,ast.Constant) and type(n.value) is int: return n.value,n.value
++            if isinstance(n,(ast.Name,ast.Attribute)):
++                name=ast.unparse(n)
++                return self.variable(name,pos,seen) if name not in seen else None
++            if isinstance(n,ast.UnaryOp) and isinstance(n.op,(ast.USub,ast.UAdd)):
++                v=walk(n.operand)
++                return (-v[1],-v[0]) if v and isinstance(n.op,ast.USub) else v
++            if isinstance(n,ast.Call) and isinstance(n.func,ast.Name) and n.func.id=='ArraySize' and len(n.args)==1:
++                return self.capacity(ast.unparse(n.args[0]),pos,seen)
++            if isinstance(n,ast.BinOp):
++                a,b=walk(n.left),walk(n.right)
++                if a is None or b is None:return None
++                if isinstance(n.op,ast.Add):return a[0]+b[0],a[1]+b[1]
++                if isinstance(n.op,ast.Sub):return a[0]-b[1],a[1]-b[0]
++                if isinstance(n.op,ast.Mult):
++                    values=[x*y for x in a for y in b];return min(values),max(values)
++                if isinstance(n.op,(ast.Div,ast.FloorDiv)) and a[0]>=0 and b[0]>0:
++                    return a[0]//b[1],a[1]//b[0]
++            return None
++        value=walk(node)
++        return value if value and max(abs(x) for x in value)<2**31 else None
++
++    def variable(self,name,pos,seen):
++        seen=(*seen,name); low=None; high=None
++        assignments=list(re.finditer(rf'(?<![\w.]){re.escape(name)}\s*=(?!=)\s*([^;]+);',self.body[:pos]))
++        assignment=next((a for a in reversed(assignments) if self.dominates(a.start(),a.end(),pos)),None)
++        if assignment:
++            value=self.interval(assignment[1],assignment.start(),seen)
++            if value and not self.changed(name,assignment.end(),pos):low,high=value
++            elif value and not self.changed(name,assignment.end(),pos,ignore_steps=True):
++                tail=self.body[assignment.end():pos]
++                up=bool(re.search(rf'(?:\+\+\s*{re.escape(name)}\b|\b{re.escape(name)}\s*\+\+)',tail))
++                down=bool(re.search(rf'(?:--\s*{re.escape(name)}\b|\b{re.escape(name)}\s*--)',tail))
++                if not down:low=value[0]
++                if not up:high=value[1]
++            for c in self.controls:
++                if c.kind not in ('for','while') or not self.contains(c,pos) or assignment.end()>c.start:continue
++                if not self.changed(name,c.body_start,c.body_end):continue
++                if self.changed(name,c.body_start,c.body_end,ignore_steps=True):
++                    low=high=None;continue
++                text=self.body[c.body_start:c.body_end]
++                if re.search(rf'(?:\+\+\s*{re.escape(name)}\b|\b{re.escape(name)}\s*\+\+)',text):high=None
++                if re.search(rf'(?:--\s*{re.escape(name)}\b|\b{re.escape(name)}\s*--)',text):low=None
++        for c in self.controls:
++            if c.kind=='for' and self.contains(c,pos) and c.condition.count(';')==2:
++                init,condition,step=c.condition.split(';')
++                m=re.fullmatch(rf'\s*(?:int\s+)?{re.escape(name)}\s*=\s*(.+)',init,re.S)
++                if m and compact(step) in ('++'+name,name+'++') and not self.changed(name,c.body_start,pos):
++                    value=self.interval(m[1],c.start,seen)
++                    if value:low=value[0] if low is None else max(low,value[0])
++            # A unit-step descending cursor cannot finish below -1 when
++            # guarded by >=0. This also applies to cursor+1 after insertion.
++            if c.kind=='while' and c.end<=pos and self.dominates(c.start,c.end,pos):
++                cond=compact(c.condition)
++                arm=self.body[c.body_start:c.body_end]
++                decrement=rf'(?:--\s*{re.escape(name)}\b|\b{re.escape(name)}\s*--)'
++                if cond.startswith(name+'>=0') and len(re.findall(decrement,arm))==1:
++                    if not self.changed(name,c.body_start,c.body_end,ignore_steps=True) and not self.changed(name,c.end,pos):
++                        low=-1 if low is None else max(low,-1)
++        for condition,truth,origin in self.guards(pos):
++            m=re.fullmatch(rf'\s*({VAR})\s*(==|!=|<=|>=|<|>)\s*(.+)',condition,re.S)
++            if not m or m[1]!=name or self.changed(name,origin,pos):continue
++            value=self.interval(m[3],origin,seen)
++            if not value:continue
++            op=m[2]
++            if not truth:op={'!=':'==','==':'!=','<':'>=','>':'<=','<=':'>','>=':'<'}[op]
++            if op in ('==','>=','>'):
++                candidate=value[0]+(op=='>');low=candidate if low is None else max(low,candidate)
++            if op in ('==','<=','<'):
++                candidate=value[1]-(op=='<');high=candidate if high is None else min(high,candidate)
++        return (low,high) if low is not None and high is not None and low<=high else None
++
++    def capacity(self,name,pos,seen=()):
++        # No fact survives a later resize or an escape to an unknown function.
++        calls=list(re.finditer(rf'\bArrayResize\s*\(\s*{re.escape(name)}\s*,',self.body[:pos]))
++        if not calls:return None
++        call=calls[-1];opening=self.body.find('(',call.start());close=end_delimiter(self.body,opening)
++        if close is None:return None
++        expression=self.body[call.end():close].split(',')[0].strip()
++        if self.changed(name,close+1,pos):return None
++        approved=False
++        for condition,truth,origin in self.guards(pos):
++            expected='ArrayResize('+name+','+compact(expression)+')!='+compact(expression)
++            if not truth and compact(condition)==expected and call.start()<origin:
++                approved=True;break
++            prefix='ArrayResize('+name+','+compact(expression)+')!='
++            if not truth and compact(condition).startswith(prefix) and call.start()<origin:
++                requested=self.interval(expression,call.start(),seen)
++                returned=self.interval(compact(condition)[len(prefix):],call.start(),seen)
++                if requested and returned and requested[0]==requested[1]==returned[0]==returned[1]:
++                    approved=True;break
++        if not approved:return None
++        return self.interval(expression,call.start(),seen)
++
++    def bounded(self,name,index,pos):
++        size=self.capacity(name,pos)
++        interval=self.interval(index,pos)
++        return bool(size and interval and 0<=interval[0]<=interval[1]<size[0])
++
++    def explicit_guard(self,name,index,pos,size_expression=None):
++        lower = bool(re.fullmatch(r'\d+',compact(index)))
++        upper = False
++        targets = {compact('ArraySize('+name+')')}
++        if size_expression: targets.add(compact(size_expression))
++        for condition,truth,origin in self.guards(pos):
++            if self.changed(index,origin,pos) or self.changed(name,origin,pos):continue
++            text=compact(condition)
++            if not truth:
++                if text in {index+'<0',index+'<=-1'}:lower=True
++                if any(text==index+'>='+target for target in targets):upper=True
++            else:
++                if text in {index+'>=0',index+'>-1'}:lower=True
++                if any(text==index+'<'+target for target in targets):upper=True
++        interval=self.interval(index,pos)
++        lower=lower or bool(interval and interval[0]>=0)
++        return lower and upper
++
++
++@lru_cache(maxsize=128)
++def proof_for(body):
++    return Proof(body)
++
++
++def proves(body,array,index,pos):
++    return proof_for(body).bounded(array,index,pos)
+diff --git a/tools/strategy_farm/build_gate_hardening.py b/tools/strategy_farm/build_gate_hardening.py
+index 1ff2ade543..1778a8fc9c 100644
+--- a/tools/strategy_farm/build_gate_hardening.py
++++ b/tools/strategy_farm/build_gate_hardening.py
+@@ -394,6 +394,9 @@ class LoopRange:
+     variable: str
+     operator: str
+     bound: str
++    initial: str
++    step: str
++    start: int
+     body_start: int
+     body_end: int
+ 
+@@ -402,8 +405,8 @@ def loop_ranges(body: str) -> list[LoopRange]:
+     loops: list[LoopRange] = []
+     header = re.compile(
+         r"\bfor\s*\(\s*(?:int\s+)?(?P<variable>[A-Za-z_][A-Za-z0-9_]*)\s*="
+-        r"[^;]+;\s*(?P=variable)\s*(?P<operator><=|<)\s*(?P<bound>[^;]+);"
+-        r"[^)]*\)\s*(?P<brace>\{)?"
++        r"(?P<initial>[^;]+);\s*(?P=variable)\s*(?P<operator><=|<)\s*(?P<bound>[^;]+);"
++        r"(?P<step>[^)]*)\)\s*(?P<brace>\{)?"
+     )
+     for match in header.finditer(body):
+         if match.group("brace"):
+@@ -423,6 +426,9 @@ def loop_ranges(body: str) -> list[LoopRange]:
+                 variable=match.group("variable"),
+                 operator=match.group("operator"),
+                 bound=match.group("bound"),
++                initial=match.group("initial"),
++                step=match.group("step"),
++                start=match.start(),
+                 body_start=loop_body_start,
+                 body_end=loop_body_end,
+             )
+@@ -437,28 +443,12 @@ def _prior_bound_guard(
+     index: str,
+     size_expression: str | None,
+ ) -> bool:
+-    """Recognize explicit fail-fast bounds, without attempting symbolic algebra."""
+-    before = body[:access_offset]
+-    array_size = rf"ArraySize\s*\(\s*{re.escape(array_name)}\s*\)"
+-    index_pattern = re.escape(index)
+-    if re.search(
+-        rf"\bif\s*\([^)]*(?:{index_pattern}\s*(?:>=|>)\s*{array_size}|"
+-        rf"{array_size}\s*(?:<=|<)\s*{index_pattern})[^)]*\)\s*"
+-        r"(?:\{\s*)?(?:return|break|continue)\b",
+-        before,
+-        re.DOTALL,
+-    ):
+-        return True
+-    if size_expression:
+-        size = re.escape(normalize_expression(size_expression))
+-        compact = normalize_expression(before)
+-        if re.search(
+-            rf"if\([^)]*(?:{index_pattern}(?:>=|>){size}|{size}(?:<=|<){index_pattern})"
+-            r"[^)]*\)(?:\{)?(?:return|break|continue)",
+-            compact,
+-        ):
+-            return True
+-    return False
++    """Only a dominating, balanced fail-fast bound is evidence."""
++    try:
++        from .bounded_arrays import proof_for
++    except ImportError:
++        from bounded_arrays import proof_for
++    return proof_for(body).explicit_guard(array_name, index, access_offset, size_expression)
+ 
+ 
+ def _loop_proves_bound(
+@@ -481,6 +471,20 @@ def _loop_proves_bound(
+     if not candidates:
+         return False
+     loop = max(candidates, key=lambda item: item.body_start)
++    try:
++        from .bounded_arrays import proof_for
++    except ImportError:
++        from bounded_arrays import proof_for
++    proof = proof_for(body)
++    initial = proof.interval(loop.initial, loop.start)
++    if initial is None or initial[0] < 0:
++        return False
++    if normalize_expression(loop.step) not in {"++" + loop.variable, loop.variable + "++"}:
++        return False
++    if proof.changed(loop.variable, loop.body_start, loop.body_end):
++        return False
++    if proof.changed(array_name, loop.body_start, access_offset):
++        return False
+     bound = normalize_expression(loop.bound)
+     array_size = normalize_expression(f"ArraySize({array_name})")
+     if loop.operator == "<" and bound == array_size:
+@@ -513,11 +517,39 @@ def _literal_access_is_bounded(index: str, size_expression: str | None) -> bool:
+     return int(normalized_index) < int(normalized_size)
+ 
+ 
++@dataclass(frozen=True)
++class ArrayAccess:
++    offset: int
++    index: str
++
++    def start(self) -> int:
++        return self.offset
++
++    def group(self, name: str) -> str:
++        assert name == "index"
++        return self.index
++
++
++def array_accesses(body: str, name: str) -> list[ArrayAccess]:
++    accesses = []
++    for match in re.finditer(rf"\b{re.escape(name)}\s*\[", body):
++        opening = body.find("[", match.start(), match.end())
++        closing = matching_delimiter(body, opening, "[", "]")
++        if closing is not None and body[opening + 1:closing].strip():
++            accesses.append(ArrayAccess(match.start(), body[opening + 1:closing]))
++    return accesses
++
++
+ def check_indicator_buffer_bounds(source: SourceFile) -> list[str]:
+     """Require a local mechanical bound proof for dynamic numeric buffers."""
++    try:
++        from .bounded_arrays import proof_for
++    except ImportError:
++        from bounded_arrays import proof_for
+     code = strip_literals_preserve_lines(source.code)
+     failures: list[str] = []
+     for _, (body_start, _, body) in function_bodies(code).items():
++        proof = proof_for(body)
+         loops = loop_ranges(body)
+         const_ints = {
+             name: expression
+@@ -540,22 +572,17 @@ def check_indicator_buffer_bounds(source: SourceFile) -> list[str]:
+                 resize_sizes[name] = resize.group(1)
+ 
+         for name, size_expression in resize_sizes.items():
+-            access_pattern = re.compile(
+-                rf"\b{re.escape(name)}\s*\[\s*(?P<index>[^\]]+)\s*\]"
+-            )
+             resize_call = re.search(
+                 rf"\bArrayResize\s*\(\s*{re.escape(name)}\s*,", body
+             )
+             resize_offset = resize_call.start() if resize_call else -1
+-            for access in access_pattern.finditer(body):
++            for access in array_accesses(body, name):
+                 if access.start() <= resize_offset:
+                     continue
+                 index = access.group("index")
+-                if _literal_access_is_bounded(index, size_expression):
++                if proof.bounded(name, index, access.start()):
+                     continue
+-                if not re.fullmatch(
+-                    r"[A-Za-z_][A-Za-z0-9_]*", normalize_expression(index)
+-                ):
++                if _literal_access_is_bounded(index, size_expression):
+                     continue
+                 normalized_size = normalize_expression(size_expression)
+                 resolved_size = const_ints.get(normalized_size)
+@@ -606,11 +633,8 @@ def check_indicator_buffer_bounds(source: SourceFile) -> list[str]:
+                 r"(?:const\s+)?int\s+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*$", prefix
+             )
+             copied_name = assigned.group(1) if assigned else None
+-            access_pattern = re.compile(
+-                rf"\b{re.escape(target)}\s*\[\s*(?P<index>[^\]]+)\s*\]"
+-            )
+             access = next(
+-                (match for match in access_pattern.finditer(body) if match.start() > call_offset),
++                (match for match in array_accesses(body, target) if match.start() > call_offset),
+                 None,
+             )
+             if access is None:
+diff --git a/tools/strategy_farm/tests/test_buffer_bound_family_proposal.py b/tools/strategy_farm/tests/test_buffer_bound_family_proposal.py
+index 3c456a3245..2e57dfbf4a 100644
+--- a/tools/strategy_farm/tests/test_buffer_bound_family_proposal.py
++++ b/tools/strategy_farm/tests/test_buffer_bound_family_proposal.py
+@@ -1,7 +1,7 @@
+-"""Reproduce the current predicate defect and verify the family's finite bounds.
++"""Regression coverage for the frozen predicate defect and finite bounds.
+ 
+-These are diagnostic/proposal tests, not an assertion that the gate is fixed.
+-No production predicate, EA, verdict or compile queue is mutated.
++The immutable triage receipt retains original failure counts. The corrected
++predicate must clear the exact frozen sources without changing an EA.
+ """
+ import hashlib
+ import json
+@@ -23,19 +23,17 @@ def findings(raw):
+ 
+ 
+ @pytest.mark.parametrize('ea,count', [(41186, 2), (41187, 3), (41188, 4), (41190, 3)])
+-def test_frozen_source_reproduces_reported_buffer_findings(ea, count):
++def test_frozen_source_clears_reported_buffer_findings(ea, count):
+     manifest = json.loads((ROOT / 'triage.json').read_text(encoding='utf-8-sig'))
+     row = next(r for r in manifest['rows'] if r['ea_id'] == f'QM5_{ea}')
+     path = ROOT / Path(row['fixture'])
+     assert hashlib.sha256(path.read_bytes()).hexdigest() == row['source_sha256']
+     result = findings(path.read_text(encoding='utf-8-sig'))
+-    assert len(result) == count
+-    actual = [r.split(' accesses ', 1)[1] for r in result]
+-    expected = [r.split(' accesses ', 1)[1] for r in row['findings']]
+-    assert actual == expected
++    assert len(row['findings']) == count
++    assert result == []
+ 
+ 
+-def test_compound_arraysize_guard_is_currently_missed():
++def test_compound_arraysize_guard_is_recognized():
+     raw = '''double F(int i) {
+       double a[]; ArrayResize(a,13);
+       double b[]; ArrayResize(b,13);
+@@ -43,7 +41,7 @@ def test_compound_arraysize_guard_is_currently_missed():
+       return a[i] + b[i];
+     }'''
+     # Balanced parentheses are necessary: [^)]* stops at the first ArraySize.
+-    assert findings(raw)
++    assert not findings(raw)
+     for i in range(-100, 101):
+         if i < 0 or i >= 13 or i >= 13:
+             continue
+diff --git a/tools/strategy_farm/tests/test_buildcheck_predicate_fix.py b/tools/strategy_farm/tests/test_buildcheck_predicate_fix.py
+new file mode 100644
+index 0000000000..cc5b0acf02
+--- /dev/null
++++ b/tools/strategy_farm/tests/test_buildcheck_predicate_fix.py
+@@ -0,0 +1,77 @@
++from pathlib import Path
++import json
++import subprocess
++import sys
++import pytest
++
++ROOT=Path(__file__).resolve().parents[3]
++sys.path.insert(0,str(ROOT/'tools/strategy_farm'))
++import build_gate_hardening as gate
++from bounded_arrays import Proof
++
++
++def findings(code):
++    return gate.check_indicator_buffer_bounds(gate.SourceFile(Path('test.mq5'),code,
++                                     gate.strip_comments_preserve_lines(code)))
++
++
++@pytest.mark.parametrize('code',[
++    'double F(int i,bool b){double a[];ArrayResize(a,4);if(i<0 || i>=ArraySize(a) && b)return 0;return a[i];}',
++    'double F(int i,bool b){double a[];ArrayResize(a,4);if(b){if(i<0||i>=ArraySize(a))return 0;}return a[i];}',
++    'double F(int i){double a[];ArrayResize(a,4);if(i<0||i>=ArraySize(a))return 0;i=5;return a[i];}',
++    'double F(int i){double a[];ArrayResize(a,4);if(i<0||i>=ArraySize(a))return 0;ArrayResize(a,1);return a[i];}',
++    'double F(){double a[];if(ArrayResize(a,4)!=4)return 0;return a[4];}',
++    'double F(){double a[];if(ArrayResize(a,4)!=4)return 0;for(int i=0;i<4;++i){a[i+1]=0;}return 0;}',
++    'double F(int i){double a[];if(ArrayResize(a,4)!=4)return 0;return a[i*2];}',
++    'double F(){double a[];if(ArrayResize(a,4)!=4)return 0;int k=0;while(k<4){while(true){a[k]=0;++k;}}return 0;}',
++    'double F(){double a[];if(ArrayResize(a,4)!=4)return 0;int k=0;while(k<4){++k;a[k]=0;}return 0;}',
++    'double F(int i){double a[];if(ArrayResize(a,4)!=4)return 0;if(i<0||i>=4)return 0;Mutate(i);return a[i];}',
++    'double F(){double a[];ArrayResize(a,4);for(int i=-1;i<4;++i){a[i]=0;}return 0;}',
++    'double F(){double a[];ArrayResize(a,4);for(int i=0;i<4;--i){a[i]=0;}return 0;}',
++    'double F(){double a[];ArrayResize(a,4);for(int i=0;i<4;++i){i=7;a[i]=0;}return 0;}',
++])
++def test_unsafe_or_nondominating_bounds_still_fail(code):
++    assert findings(code)
++
++
++def test_bounded_nested_counter_requires_inner_exit():
++    code='double F(){double a[];if(ArrayResize(a,4)!=4)return 0;int k=0;while(k<4){while(true){a[k]=0;++k;break;}}return 0;}'
++    assert not findings(code)
++
++
++def test_genuinely_unbounded_growth_is_not_proven_safe():
++    code='double F(){double a[];int count=0;while(true){++count;if(ArrayResize(a,count)!=count)return 0;a[count-1]=0;}return 0;}'
++    assert findings(code)
++
++
++def test_parser_no_scalar_default_assumption():
++    body='int n=4; if(flag){n=10;} double a[]; if(ArrayResize(a,4)!=4)return 0; return a[n-1];'
++    assert not Proof(body).bounded('a','n-1',body.index('a[n-1]'))
++
++
++def test_nested_index_keeps_balanced_expression():
++    assert gate.array_accesses('a[counts[bucket[i]]-1]', 'a')[0].index == 'counts[bucket[i]]-1'
++
++
++def test_power_shell_ml_scoping_with_real_frozen_and_negative_inputs(tmp_path):
++    ea_root=tmp_path/'framework/EAs';ea_root.mkdir(parents=True)
++    include_root=tmp_path/'framework/include';include_root.mkdir(parents=True)
++    sources={
++      'coefficients.mq5':'void F(){double weights[4];weights[0]=1;for(int k=1;k<4;++k)weights[k]=-weights[k-1]*(.3-k+1)/k;}',
++      'comment.mq5':'// tensorflow weights[i]+=learning_rate*error;\nvoid F(){Print("weights[i]+=learning_rate*error;");}',
++      'include.mq5':'#include <ML/NeuralNetwork.mqh>\nvoid F(){}',
++      'root_include.mq5':'#include <ML.mqh>\nvoid F(){}',
++      'online.mq5':'void OnTick(){weights[i] +=\n learning_rate * (target-prediction);}',
++      'onnx.mq5':'void F(){OnnxRun(handle,0,features);}',
++    }
++    for name,code in sources.items():(ea_root/name).write_text(code,encoding='utf-8')
++    source=(ROOT/'framework/scripts/build_check.ps1').read_text(encoding='utf-8-sig')
++    function=source[source.index('function Invoke-ForbiddenScan {'):source.index('function Invoke-InputGroupCheck {')]
++    harness=tmp_path/'scan.ps1'
++    harness.write_text("$ErrorActionPreference='Stop'\n$EALabel=$null\n$script:found=New-Object 'System.Collections.Generic.List[string]'\nfunction Add-Failure {param([string]$Message) $script:found.Add($Message)}\nfunction Add-Warning {param([string]$Message)}\n"+function+"\nInvoke-ForbiddenScan -ResolvedRepoRoot '"+str(tmp_path).replace("'","''")+"'\nConvertTo-Json -InputObject @($script:found) -Compress\n",encoding='utf-8')
++    run=subprocess.run(['powershell','-NoProfile','-NonInteractive','-File',str(harness)],capture_output=True,text=True)
++    assert run.returncode==0,run.stderr
++    result=json.loads(run.stdout)
++    assert len(result)==4,result
++    assert all('EA_ML_FORBIDDEN' in x for x in result)
++    assert not any('coefficients.mq5' in x or 'comment.mq5' in x for x in result)

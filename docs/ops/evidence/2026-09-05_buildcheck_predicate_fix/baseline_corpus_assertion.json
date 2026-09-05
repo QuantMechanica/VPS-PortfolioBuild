@@ -1,0 +1,138 @@
+{
+  "base_commit": "1240b069d540d611cd6e92c2e4e115ec743844a1",
+  "assertion": "test_qm5_411xx_sources_have_no_unbounded_numeric_buffers",
+  "findings": 47,
+  "rows": [
+    {
+      "path": "framework\\EAs\\QM5_41157_xauxag-mtheilsen-rv\\QM5_41157_xauxag-mtheilsen-rv.mq5",
+      "sha256": "ed2b7187a44254cb2720aee6aefeb2de0ef104288e74f67bf7a7ad12a2956446",
+      "findings": [
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41157_xauxag-mtheilsen-rv.mq5:802 accesses dynamic numeric buffer newest_first_ratios[month_count] without a loop bound tied to strategy_month_end_count or an explicit ArraySize guard.",
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41157_xauxag-mtheilsen-rv.mq5:852 accesses dynamic numeric buffer chronological_ratios[i] without a loop bound tied to strategy_month_end_count or an explicit ArraySize guard.",
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41157_xauxag-mtheilsen-rv.mq5:874 accesses dynamic numeric buffer slopes[median_left_index] without a loop bound tied to expected_slope_count or an explicit ArraySize guard."
+      ]
+    },
+    {
+      "path": "framework\\EAs\\QM5_41158_wti-repmedian-tr\\QM5_41158_wti-repmedian-tr.mq5",
+      "sha256": "349abdd49d6f191efb2938e8601fdedf9ed71d7d203ca4db7cf1af21c2f0396d",
+      "findings": [
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41158_wti-repmedian-tr.mq5:489 accesses dynamic numeric buffer reverse_closes[endpoint_count] without a loop bound tied to strategy_price_points or an explicit ArraySize guard.",
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41158_wti-repmedian-tr.mq5:491 accesses dynamic numeric buffer reverse_month_keys[endpoint_count] without a loop bound tied to strategy_price_points or an explicit ArraySize guard.",
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41158_wti-repmedian-tr.mq5:604 accesses dynamic numeric buffer log_prices[upper] without a loop bound tied to point_count or an explicit ArraySize guard.",
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41158_wti-repmedian-tr.mq5:647 accesses dynamic numeric buffer pivot_medians[index] without a loop bound tied to point_count or an explicit ArraySize guard.",
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41158_wti-repmedian-tr.mq5:629 accesses dynamic numeric buffer pivot_slopes[center_low_index] without a loop bound tied to slopes_per_pivot or an explicit ArraySize guard."
+      ]
+    },
+    {
+      "path": "framework\\EAs\\QM5_41159_wti-lad-tr\\QM5_41159_wti-lad-tr.mq5",
+      "sha256": "c03a5c738986a799802e2de69c9b9357889591321712254138c4bdfef4182e20",
+      "findings": [
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41159_wti-lad-tr.mq5:492 accesses dynamic numeric buffer reverse_closes[endpoint_count] without a loop bound tied to strategy_price_points or an explicit ArraySize guard.",
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41159_wti-lad-tr.mq5:494 accesses dynamic numeric buffer reverse_month_keys[endpoint_count] without a loop bound tied to strategy_price_points or an explicit ArraySize guard.",
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41159_wti-lad-tr.mq5:605 accesses dynamic numeric buffer log_prices[older] without a loop bound tied to point_count or an explicit ArraySize guard.",
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41159_wti-lad-tr.mq5:622 accesses dynamic numeric buffer candidate_slopes[candidate] without a loop bound tied to expected_candidates or an explicit ArraySize guard.",
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41159_wti-lad-tr.mq5:662 accesses dynamic numeric buffer candidate_losses[candidate] without a loop bound tied to expected_candidates or an explicit ArraySize guard.",
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41159_wti-lad-tr.mq5:644 accesses dynamic numeric buffer residuals[intercept_index] without a loop bound tied to point_count or an explicit ArraySize guard.",
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41159_wti-lad-tr.mq5:694 accesses dynamic numeric buffer minimizers[index] without a loop bound tied to expected_candidates or an explicit ArraySize guard."
+      ]
+    },
+    {
+      "path": "framework\\EAs\\QM5_41160_xauxag-mlad-rv\\QM5_41160_xauxag-mlad-rv.mq5",
+      "sha256": "716c8825a37cbc34df01b8d4e0546439ca9ad7a5241cce4937cb2c47c5918fb4",
+      "findings": [
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41160_xauxag-mlad-rv.mq5:810 accesses dynamic numeric buffer newest_first_ratios[month_count] without a loop bound tied to strategy_month_end_count or an explicit ArraySize guard.",
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41160_xauxag-mlad-rv.mq5:863 accesses dynamic numeric buffer chronological_ratios[older] without a loop bound tied to strategy_month_end_count or an explicit ArraySize guard.",
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41160_xauxag-mlad-rv.mq5:881 accesses dynamic numeric buffer candidate_slopes[candidate] without a loop bound tied to expected_candidate_count or an explicit ArraySize guard.",
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41160_xauxag-mlad-rv.mq5:924 accesses dynamic numeric buffer candidate_losses[candidate] without a loop bound tied to expected_candidate_count or an explicit ArraySize guard.",
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41160_xauxag-mlad-rv.mq5:905 accesses dynamic numeric buffer residuals[intercept_index] without a loop bound tied to strategy_month_end_count or an explicit ArraySize guard.",
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41160_xauxag-mlad-rv.mq5:957 accesses dynamic numeric buffer minimizers[index] without a loop bound tied to expected_candidate_count or an explicit ArraySize guard."
+      ]
+    },
+    {
+      "path": "framework\\EAs\\QM5_41170_wti-bartels-rank-tr\\QM5_41170_wti-bartels-rank-tr.mq5",
+      "sha256": "66bcd35d5c125a749680d2c673126444bc4fe0f0449e9f2732ff1ebada4b3619",
+      "findings": [
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41170_wti-bartels-rank-tr.mq5:612 accesses dynamic numeric buffer ranks[index] without a loop bound tied to strategy_endpoint_count or an explicit ArraySize guard."
+      ]
+    },
+    {
+      "path": "framework\\EAs\\QM5_41179_xtixng-mcoxstuart-rv\\QM5_41179_xtixng-mcoxstuart-rv.mq5",
+      "sha256": "bcbfd67655f2a29328ba6aad169c7087f7befe87384c8111b24baa93aa918ce5",
+      "findings": [
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41179_xtixng-mcoxstuart-rv.mq5:804 accesses dynamic numeric buffer newest_first_ratios[month_count] without a loop bound tied to strategy_endpoint_count or an explicit ArraySize guard.",
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41179_xtixng-mcoxstuart-rv.mq5:859 accesses dynamic numeric buffer chronological_ratios[newer] without a loop bound tied to strategy_endpoint_count or an explicit ArraySize guard."
+      ]
+    },
+    {
+      "path": "framework\\EAs\\QM5_41181_xauxag-mkendall-rv\\QM5_41181_xauxag-mkendall-rv.mq5",
+      "sha256": "ab763e3ef79d3c722c25626c5a76c1907656cc6838f8e37d2734d30667339271",
+      "findings": [
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41181_xauxag-mkendall-rv.mq5:855 accesses dynamic numeric buffer chronological_ratios[older] without a loop bound tied to strategy_endpoint_count or an explicit ArraySize guard."
+      ]
+    },
+    {
+      "path": "framework\\EAs\\QM5_41182_wti-median-runs-tr\\QM5_41182_wti-median-runs-tr.mq5",
+      "sha256": "86c6887a7995dafa888370a19dd42c82d7cf1b38aa5007b94c18bda35065d63b",
+      "findings": [
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41182_wti-median-runs-tr.mq5:656 accesses dynamic numeric buffer signs[index] without a loop bound tied to strategy_endpoint_count-1 or an explicit ArraySize guard."
+      ]
+    },
+    {
+      "path": "framework\\EAs\\QM5_41184_wti-mww-runs-shift-tr\\QM5_41184_wti-mww-runs-shift-tr.mq5",
+      "sha256": "49aa0602aac444261f262a90493a361437c243f1b56e3b350ed766b8c740e42a",
+      "findings": [
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41184_wti-mww-runs-shift-tr.mq5:497 accesses dynamic numeric buffer reverse_closes[endpoint_count] without a loop bound tied to strategy_endpoint_count or an explicit ArraySize guard.",
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41184_wti-mww-runs-shift-tr.mq5:499 accesses dynamic numeric buffer reverse_month_keys[endpoint_count] without a loop bound tied to strategy_endpoint_count or an explicit ArraySize guard.",
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41184_wti-mww-runs-shift-tr.mq5:621 accesses dynamic numeric buffer older[index] without a loop bound tied to strategy_block_size or an explicit ArraySize guard."
+      ]
+    },
+    {
+      "path": "framework\\EAs\\QM5_41186_xtixng-median-runs-rv\\QM5_41186_xtixng-median-runs-rv.mq5",
+      "sha256": "7c4cb16a07ce39e7ea075266b7d171838c188ae4ea89f5de9314306e1003f71a",
+      "findings": [
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41186_xtixng-median-runs-rv.mq5:840 accesses dynamic numeric buffer newest_first_ratios[reverse_index] without a loop bound tied to strategy_endpoint_count or an explicit ArraySize guard.",
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41186_xtixng-median-runs-rv.mq5:935 accesses dynamic numeric buffer signs[index] without a loop bound tied to strategy_endpoint_count-1 or an explicit ArraySize guard."
+      ]
+    },
+    {
+      "path": "framework\\EAs\\QM5_41187_xauxag-mks-rv\\QM5_41187_xauxag-mks-rv.mq5",
+      "sha256": "e83f77ef1c500d23f0106b8b5861a81484c4f6cab0eff7fc34abdf9595c22ede",
+      "findings": [
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41187_xauxag-mks-rv.mq5:840 accesses dynamic numeric buffer newest_first_ratios[reverse_index] without a loop bound tied to strategy_endpoint_count or an explicit ArraySize guard.",
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41187_xauxag-mks-rv.mq5:888 accesses dynamic numeric buffer sorted_ratios[cursor] without a loop bound tied to strategy_endpoint_count or an explicit ArraySize guard.",
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41187_xauxag-mks-rv.mq5:891 accesses dynamic numeric buffer sorted_labels[cursor] without a loop bound tied to strategy_endpoint_count or an explicit ArraySize guard."
+      ]
+    },
+    {
+      "path": "framework\\EAs\\QM5_41188_xtixng-mrepmedian-rv\\QM5_41188_xtixng-mrepmedian-rv.mq5",
+      "sha256": "f266954c229eda46a4d82f69cea90e42a632956a4e263f6e23d8cb7e42a06539",
+      "findings": [
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41188_xtixng-mrepmedian-rv.mq5:804 accesses dynamic numeric buffer newest_first_ratios[month_count] without a loop bound tied to strategy_month_end_count or an explicit ArraySize guard.",
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41188_xtixng-mrepmedian-rv.mq5:868 accesses dynamic numeric buffer chronological_ratios[upper] without a loop bound tied to strategy_month_end_count or an explicit ArraySize guard.",
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41188_xtixng-mrepmedian-rv.mq5:910 accesses dynamic numeric buffer pivot_medians[index] without a loop bound tied to strategy_month_end_count or an explicit ArraySize guard.",
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41188_xtixng-mrepmedian-rv.mq5:891 accesses dynamic numeric buffer pivot_slopes[center_low_index] without a loop bound tied to slopes_per_pivot or an explicit ArraySize guard."
+      ]
+    },
+    {
+      "path": "framework\\EAs\\QM5_41189_xtixng-mlad-rv\\QM5_41189_xtixng-mlad-rv.mq5",
+      "sha256": "b141096024b04c904d0a45f5270432e6dfdb248cc9ddb89655293af3fab68845",
+      "findings": [
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41189_xtixng-mlad-rv.mq5:810 accesses dynamic numeric buffer newest_first_ratios[month_count] without a loop bound tied to strategy_month_end_count or an explicit ArraySize guard.",
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41189_xtixng-mlad-rv.mq5:863 accesses dynamic numeric buffer chronological_ratios[older] without a loop bound tied to strategy_month_end_count or an explicit ArraySize guard.",
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41189_xtixng-mlad-rv.mq5:881 accesses dynamic numeric buffer candidate_slopes[candidate] without a loop bound tied to expected_candidate_count or an explicit ArraySize guard.",
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41189_xtixng-mlad-rv.mq5:924 accesses dynamic numeric buffer candidate_losses[candidate] without a loop bound tied to expected_candidate_count or an explicit ArraySize guard.",
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41189_xtixng-mlad-rv.mq5:905 accesses dynamic numeric buffer residuals[intercept_index] without a loop bound tied to strategy_month_end_count or an explicit ArraySize guard.",
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41189_xtixng-mlad-rv.mq5:957 accesses dynamic numeric buffer minimizers[index] without a loop bound tied to expected_candidate_count or an explicit ArraySize guard."
+      ]
+    },
+    {
+      "path": "framework\\EAs\\QM5_41190_xtixng-mtheilsen-rv\\QM5_41190_xtixng-mtheilsen-rv.mq5",
+      "sha256": "a644c511502e82f73fa5eaac18ad2e48070f6a06d09334130dc1ff0b3c914650",
+      "findings": [
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41190_xtixng-mtheilsen-rv.mq5:802 accesses dynamic numeric buffer newest_first_ratios[month_count] without a loop bound tied to strategy_month_end_count or an explicit ArraySize guard.",
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41190_xtixng-mtheilsen-rv.mq5:852 accesses dynamic numeric buffer chronological_ratios[i] without a loop bound tied to strategy_month_end_count or an explicit ArraySize guard.",
+        "EA_INDICATOR_BUFFER_UNBOUNDED: QM5_41190_xtixng-mtheilsen-rv.mq5:874 accesses dynamic numeric buffer slopes[median_left_index] without a loop bound tied to expected_slope_count or an explicit ArraySize guard."
+      ]
+    }
+  ]
+}
