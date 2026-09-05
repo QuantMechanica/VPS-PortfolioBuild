@@ -36,10 +36,22 @@ try:
         _pattern_measurement_readiness,
     )
 except ModuleNotFoundError:
-    from tools.strategy_farm import dl089_scheduling as scheduling
-    from tools.strategy_farm import opt_census as census
-    from tools.strategy_farm import opt_census_pruning as pruning
-    from tools.strategy_farm import opt_census_select as selector
+    try:
+        from tools.strategy_farm import dl089_scheduling as scheduling
+    except ModuleNotFoundError:
+        import dl089_scheduling as scheduling  # script-style import (cwd/sys.path = tools/strategy_farm)
+    try:
+        from tools.strategy_farm import opt_census as census
+    except ModuleNotFoundError:
+        import opt_census as census  # script-style import (cwd/sys.path = tools/strategy_farm)
+    try:
+        from tools.strategy_farm import opt_census_pruning as pruning
+    except ModuleNotFoundError:
+        import opt_census_pruning as pruning  # script-style import (cwd/sys.path = tools/strategy_farm)
+    try:
+        from tools.strategy_farm import opt_census_select as selector
+    except ModuleNotFoundError:
+        import opt_census_select as selector  # script-style import (cwd/sys.path = tools/strategy_farm)
     from tools.strategy_farm.optimization_fork_driver import (
         PATTERN_DECLARATION_REVISION,
         _pattern_measurement_readiness,
@@ -1519,7 +1531,10 @@ def service_pending(
     try:
         import farmctl
     except ModuleNotFoundError:
-        from tools.strategy_farm import farmctl
+        try:
+            from tools.strategy_farm import farmctl as farmctl
+        except ModuleNotFoundError:
+            import farmctl as farmctl  # script-style import (cwd/sys.path = tools/strategy_farm)
 
     worker_count = len(farmctl.worker_policy_terminals())
     configured_k = program_slots()

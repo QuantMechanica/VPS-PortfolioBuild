@@ -25,7 +25,10 @@ from typing import Any, Iterable
 try:
     import dl089_scheduling as scheduling
 except ModuleNotFoundError:
-    from tools.strategy_farm import dl089_scheduling as scheduling
+    try:
+        from tools.strategy_farm import dl089_scheduling as scheduling
+    except ModuleNotFoundError:
+        import dl089_scheduling as scheduling  # script-style import (cwd/sys.path = tools/strategy_farm)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -501,7 +504,10 @@ def enqueue(plan: dict[str, Any], *, db_path: Path, ledger_path: Path,
             runner_revision: str | None = None) -> dict[str, Any]:
     if plan.get("schema") != SCHEMA or plan.get("planned_trials") != 1085:
         raise CensusError("invalid or incomplete census plan")
-    from tools.strategy_farm import dl089_prescreen as prescreen
+    try:
+        from tools.strategy_farm import dl089_prescreen as prescreen
+    except ModuleNotFoundError:
+        import dl089_prescreen as prescreen  # script-style import (cwd/sys.path = tools/strategy_farm)
     previous = json.loads(ledger_path.read_text()) if ledger_path.is_file() else {}
     if plan.get("prescreen_contract") or previous.get("prescreen_contract") or (prescreen.enabled() and parent_work_item_id):
         return prescreen.enqueue_staged(sys.modules[__name__],plan,db_path=db_path,ledger_path=ledger_path,
@@ -999,7 +1005,10 @@ def main(argv: list[str] | None = None) -> int:
                 # Invoked as a script (python tools/strategy_farm/opt_census.py):
                 # the repo root is not on sys.path, so the package import fails.
                 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-                from tools.strategy_farm import opt_census_select as driver
+                try:
+                    from tools.strategy_farm import opt_census_select as driver
+                except ModuleNotFoundError:
+                    import opt_census_select as driver  # script-style import (cwd/sys.path = tools/strategy_farm)
             if args.command == "advance":
                 result = driver.advance(
                     ledger_path=args.ledger, db_path=args.db,

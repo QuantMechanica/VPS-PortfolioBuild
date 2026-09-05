@@ -48,7 +48,10 @@ from typing import Any, Callable, Iterable, Optional
 
 try:
     from tools.strategy_farm import opt_census as census
-    from tools.strategy_farm import opt_census_pruning as pruning
+    try:
+        from tools.strategy_farm import opt_census_pruning as pruning
+    except ModuleNotFoundError:
+        import opt_census_pruning as pruning  # script-style import (cwd/sys.path = tools/strategy_farm)
     from tools.strategy_farm.opt_census import CensusError
 except ModuleNotFoundError:
     import opt_census as census
