@@ -25,4 +25,6 @@
 | 16 | P7b: §7 Kontoprofil: zweistufiges Swing-Ziel beibehalten; Machbarkeit (Blackout, Margin, Swap) verifizieren | "Alles, bis auf den Kauf, freigegeben, das uns dem Ziel näher bringt!" (03:53Z 2026-09-05) | YES (blanket release, purchase excluded). Exactly one decision-bound Claude task: 4bdf845e. |
 | 17 | CAN: Same-Program-Canary L=2: nur nach Root-Cause-Fix des Lane-Preflight-Decline-Loops, dann kontrolliert (ein Programm, 60 min, Rollback = Env löschen) | "Alles, bis auf den Kauf, freigegeben, das uns dem Ziel näher bringt!" (03:53Z 2026-09-05) | YES (blanket release, purchase excluded). Exactly one decision-bound Claude task: 0adb4d61. |
 
+| 18 | Ratify the predeclared FTMO positive-evidence acceptance test (docs/ops/OWNER_VORLAGE_2026-09-05_ftmo_positive_evidence_test.md) incl. OQ-2: admissible population = single corrected diagnostic window vs. a powered sealed holdout | PENDING (Vorlage submitted 04:02Z 2026-09-05; ratification before any result is opened) | Seal procedure runs only after YES; Codex review c11c6a9f in flight. |
+
 Standing order (verbatim): "Weitermachen, bis Portfolio steht, mit Loop kontrollieren und Fabrik am Laufen halten!"
