@@ -118,6 +118,11 @@ docs/ops/evidence/ftmo_fetch_20260904/*.html -text
 # (exactly the trap the LF-blob Pin-SHA rule exists for).  Keep the bytes as-is.
 docs/research/EDGE_DISCOVERY_PROGRAM_V1_2026-09-04.md -text
 
+# The FTMO probability contract is a raw-byte contract, while its loader stamps
+# an LF-normalised identity for checkout portability and records the raw digest
+# beside it for forensic provenance.  Prevent autocrlf from silently smudging it.
+tools/strategy_farm/config/ftmo_probability_contract.v1.json -text
+
 # EDGE-lab evidence tables are hash-bound the same way: every manifest records
 # the sha256 of the LF bytes the tool wrote, so a CRLF checkout makes the
 # committed evidence fail its own manifest (it did, for the r2 copies).

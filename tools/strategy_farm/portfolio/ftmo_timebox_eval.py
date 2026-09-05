@@ -1480,6 +1480,7 @@ def evaluate_config(config: Mapping[str, Any], config_sha256: str) -> dict[str, 
         "probability_contract": {
             "schema": PROBABILITY_CONTRACT.payload["schema"],
             "sha256": PROBABILITY_CONTRACT.sha256,
+            "raw_sha256": PROBABILITY_CONTRACT.raw_sha256,
             "authoritative_role": PROBABILITY["authoritative_engine"]["role"],
             "inert_gates": INERT_C6_GATES,
             "note": "breach/P2/joint cannot pass or fail this result until C-6 is OWNER-approved",

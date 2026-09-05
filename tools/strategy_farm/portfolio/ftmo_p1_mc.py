@@ -922,6 +922,7 @@ def main(argv: list[str] | None = None) -> int:
         "decision_role": DIAGNOSTIC_ROLE,
         "horizon_bias_note": HORIZON_BIAS_NOTE,
         "probability_contract_sha256": PROBABILITY_CONTRACT.sha256,
+        "probability_contract_raw_sha256": PROBABILITY_CONTRACT.raw_sha256,
         "generated_at_utc": dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat(),
         "label": "backtest-derived, gross-of-slippage",
         "cost_basis": {

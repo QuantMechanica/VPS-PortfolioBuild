@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -42,6 +43,25 @@ def test_contract_loader_rejects_schema_and_parity_drift(tmp_path: Path) -> None
     duplicate.write_text('{"schema":"a","schema":"b"}', encoding="utf-8")
     with pytest.raises(FtmoProbabilityContractError, match="duplicate JSON key"):
         load_probability_contract(duplicate)
+
+
+def test_contract_digest_is_lf_normalized_and_raw_digest_is_retained(
+    tmp_path: Path,
+) -> None:
+    lf_raw = DEFAULT_CONTRACT_PATH.read_bytes().replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    crlf_raw = lf_raw.replace(b"\n", b"\r\n")
+    lf_path = tmp_path / "contract-lf.json"
+    crlf_path = tmp_path / "contract-crlf.json"
+    lf_path.write_bytes(lf_raw)
+    crlf_path.write_bytes(crlf_raw)
+
+    lf_contract = load_probability_contract(lf_path)
+    crlf_contract = load_probability_contract(crlf_path)
+    expected_portable = hashlib.sha256(lf_raw).hexdigest()
+    assert lf_contract.sha256 == crlf_contract.sha256 == expected_portable
+    assert lf_contract.raw_sha256 == expected_portable
+    assert crlf_contract.raw_sha256 == hashlib.sha256(crlf_raw).hexdigest()
+    assert crlf_contract.raw_sha256 != crlf_contract.sha256
 
 
 def test_binding_thresholds_are_identical_across_engines() -> None:

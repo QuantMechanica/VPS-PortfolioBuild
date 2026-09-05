@@ -270,6 +270,7 @@ def make_cfg(k, lev, ds, dr):
 
 print(f"{DIAGNOSTIC_ROLE}: {HORIZON_BIAS_NOTE}.")
 print(f"probability_contract_sha256={PROBABILITY_CONTRACT.sha256}")
+print(f"probability_contract_raw_sha256={PROBABILITY_CONTRACT.raw_sha256}")
 print("FTMO Phase 1 as a first-passage problem: +10% balance before -5% daily / -10% total")
 print("No deadline (FTMO dropped it in 2024). Target tested on END-OF-DAY balance.")
 print(f"Minimum trading days enforced: {MIN_TRADING_DAYS}. Unresolved starts counted as FAIL.")

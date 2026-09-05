@@ -55,6 +55,7 @@ EXPECTED_COST_SNAPSHOT_SHA256 = "7eab3bf8c97373fcb44e36aca39dd679fbd3e093783cd6e
 M1_BOOTSTRAP_LINEAGE_COMMIT = "ae5331f67"
 PROBABILITY_CONTRACT = load_probability_contract()
 PROBABILITY_CONTRACT_SHA256 = PROBABILITY_CONTRACT.sha256
+PROBABILITY_CONTRACT_RAW_SHA256 = PROBABILITY_CONTRACT.raw_sha256
 FUND_SCORE_FLOOR = 1.0
 P1_LOWER_BOUND_FLOOR = float(
     PROBABILITY_CONTRACT.probability["gates"]["p1_pass"]["lower_95_min"]
@@ -485,6 +486,7 @@ def _bootstrap(
         "passed": passed,
         "engine_lineage": dict(lineage),
         "probability_contract_sha256": PROBABILITY_CONTRACT_SHA256,
+        "probability_contract_raw_sha256": PROBABILITY_CONTRACT_RAW_SHA256,
         "inert_c6_gates": {
             name: PROBABILITY_CONTRACT.probability["gates"][name]["enforcement_status"]
             for name in ("breach", "two_phase")

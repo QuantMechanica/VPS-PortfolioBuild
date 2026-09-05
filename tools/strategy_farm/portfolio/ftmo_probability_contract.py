@@ -28,6 +28,7 @@ class FtmoProbabilityContractError(ValueError):
 class FtmoProbabilityContract:
     path: Path
     sha256: str
+    raw_sha256: str
     payload: Mapping[str, Any]
 
     @property
@@ -45,6 +46,11 @@ class FtmoProbabilityContract:
 
 def _reject_constant(token: str) -> None:
     raise FtmoProbabilityContractError(f"non-finite JSON constant: {token}")
+
+
+def _lf_normalize(raw: bytes) -> bytes:
+    """Return a checkout-portable byte representation without altering content."""
+    return raw.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
 
 
 def _no_duplicates(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -144,6 +150,7 @@ def load_probability_contract(
 
     return FtmoProbabilityContract(
         path=contract_path,
-        sha256=hashlib.sha256(raw).hexdigest(),
+        sha256=hashlib.sha256(_lf_normalize(raw)).hexdigest(),
+        raw_sha256=hashlib.sha256(raw).hexdigest(),
         payload=payload,
     )
