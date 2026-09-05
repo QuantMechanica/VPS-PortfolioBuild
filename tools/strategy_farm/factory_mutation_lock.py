@@ -15,6 +15,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import sys
 import time
 import uuid
 
@@ -512,6 +513,7 @@ class FactoryMutationLock:
         self.release_status: str | None = None
         self.reap_status: str | None = None
         self.telemetry_error: str | None = None
+        self._owner_metadata: dict[str, object] = {}
 
     @property
     def release_succeeded(self) -> bool:
@@ -541,7 +543,13 @@ class FactoryMutationLock:
             "owner": self.owner,
             "nonce": self.nonce,
             "created_at": _utc_now().isoformat(),
+            "exe": Path(sys.executable).name,
+            "argv0": Path(sys.argv[0]).name if sys.argv else "",
+            "stage": _PUMP_STAGE.get() or self.owner.split(":", 1)[0],
+            "reason": self.owner,
         }
+        record["acquired_at"] = record["created_at"]
+        self._owner_metadata = {key: record[key] for key in ("exe", "argv0", "stage", "reason")}
         self._record_bytes = (json.dumps(record, sort_keys=True) + "\n").encode("utf-8")
         try:
             _write_all(self._fd, self._record_bytes)
@@ -576,6 +584,7 @@ class FactoryMutationLock:
             "hold_seconds": round(max(0.0, hold_seconds), 3),
             "critical_hold_seconds": self.critical_hold_seconds,
         }
+        payload.update(self._owner_metadata)
         if self._acquired_at is not None:
             payload["acquired_at_utc"] = self._acquired_at.isoformat()
         if self.release_status is not None:

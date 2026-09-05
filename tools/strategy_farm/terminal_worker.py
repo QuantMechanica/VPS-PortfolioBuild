@@ -56,6 +56,7 @@ import opt_census_pruning
 import opt_census_select
 from framework.scripts._phase_utils import cold_cache_summary_signature
 from factory_mutation_lock import FactoryMutationLock, path_for_factory_flag
+from mutation_lock_observation import observe_lock_owner
 try:
     from sqlite_busy import (
         BUSY_TIMEOUT_MS,
@@ -5449,6 +5450,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                         "claimed": False,
                         "reason": "factory_mutation_lock_busy",
                         "lock": str(mutation_lock_path),
+                        "lock_owner": observe_lock_owner(mutation_lock_path),
                     }
                 time.sleep(FACTORY_ADMISSION_LOCK_POLL_SECONDS)
             except OSError as exc:
@@ -5467,6 +5469,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                             "claimed": False,
                             "reason": "factory_mutation_lock_busy",
                             "lock": str(mutation_lock_path),
+                            "lock_owner": observe_lock_owner(mutation_lock_path),
                         }
                     time.sleep(FACTORY_ADMISSION_LOCK_POLL_SECONDS)
                     continue
@@ -7202,6 +7205,7 @@ def _reserve_q09_helper_terminals(
             "enabled": True,
             "helper_terminals": [],
             "reason": "factory_mutation_lock_busy",
+            "lock_owner": observe_lock_owner(lock_path),
         }
     try:
         if (root / "state" / "FACTORY_OFF.flag").exists():
@@ -7345,6 +7349,7 @@ def _release_q09_helper_terminals(root: Path, lease: dict[str, Any] | None) -> N
                         {
                             "event": "q09_helper_release_deferred",
                             "reason": "factory_mutation_lock_busy",
+                            "lock_owner": observe_lock_owner(lock_path),
                             "terminals": lease.get("helper_terminals"),
                         },
                         sort_keys=True,
@@ -10773,6 +10778,18 @@ def _pause_after_unclaimed(claim: dict[str, Any], terminal: str) -> None:
         time.sleep(POLL_SLEEP_SECONDS + random.uniform(0, 5))
         return
     reason = str(claim.get("reason") or "unknown")
+    lock_owner = claim.get("lock_owner")
+    if reason == "factory_mutation_lock_busy":
+        if lock_owner is None:
+            lock_owner = observe_lock_owner(claim["lock"]) if claim.get("lock") else {
+                "status": "lock_path_missing", "diagnostic_only": True,
+            }
+        # JSONL event for every busy claim, independent of the existing
+        # human-log throttle. No SQLite write while its mutation lock is busy.
+        print(json.dumps({
+            "event": "claim_lock_busy", "at_utc": datetime.now(timezone.utc).isoformat(),
+            "terminal": terminal, "lock": claim.get("lock"), "lock_owner": lock_owner,
+        }), flush=True)
     now_mono = time.monotonic()
     interval = 300.0 if reason == "no_pending_claimable" else 60.0
     if now_mono - _UNCLAIMED_DECLINE_LOG_LAST.get(reason, 0.0) >= interval:
@@ -10783,6 +10800,7 @@ def _pause_after_unclaimed(claim: dict[str, Any], terminal: str) -> None:
             "terminal": terminal,
             "reason": reason,
             "lock": claim.get("lock"),
+            "lock_owner": lock_owner,
             "history_skipped": len(claim.get("history_skipped") or []),
             "launch_cooldown_skipped": len(claim.get("launch_cooldown_skipped") or []),
         }), flush=True)
