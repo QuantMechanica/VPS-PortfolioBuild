@@ -769,6 +769,38 @@
           ]
         }
       }
+    },
+    {
+      "id": "OWNER-DEC-DSR-V2-ACTIVATION-20260905",
+      "todo_id": "QM-TODO-20260905-DSR-V2-ACTIVATION",
+      "priority": 90,
+      "choices": {
+        "YES": {
+          "mode": "APPLY_AND_VERIFY",
+          "objective": "Activate DSR V2 for NEW Q08 runs only (machine-scope QM_DSR_V2=1 reaching the Q08 child processes after a staggered idle-only worker reload), keep every stored verdict untouched, and produce a read-only V2 projection of the 31 current Q11 PASS pairs and the 28 latest Q08 PASS artifacts as evidence for a later re-adjudication card.",
+          "allowed_actions": [
+            "Set QM_DSR_V2=1 at machine scope; staggered idle-only worker reload (never the fleet launcher)",
+            "Run the read-only projection command from the M04 evidence on the existing artifacts; write docs/ops/evidence/",
+            "Verify one NEW Q08 run carries dsr_context and a V2 result (or UNCORRECTED_SELECTION) in its artifact",
+            "Commit with explicit pathspecs; update the audit integration doc and OPEN_ITEMS"
+          ],
+          "acceptance": [
+            "Environment active and observed in a new Q08 child process; existing verdicts byte-identical",
+            "Projection document lists all 31 + 28 entries with their V2 outcome and reasons",
+            "No re-adjudication, no deletion, no gate threshold change"
+          ]
+        },
+        "NO": {
+          "mode": "DOCUMENT_AND_VERIFY",
+          "objective": "Record the rejection; DSR stays deferred; the M04 finding remains open in the audit integration doc.",
+          "allowed_actions": [
+            "Document in OPEN_ITEMS_STATUS.md and the receipts file"
+          ],
+          "acceptance": [
+            "No activation"
+          ]
+        }
+      }
     }
   ]
 }

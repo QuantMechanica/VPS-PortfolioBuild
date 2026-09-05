@@ -1,6 +1,6 @@
 {
   "schema_version": "qm.owner-decisions/v2",
-  "revision": 4,
+  "revision": 5,
   "maintainer": "Mission Control decision store; OWNER answers are receipts, not execution authority.",
   "updated_at_utc": "2026-09-02T17:47:14Z",
   "items": [
@@ -216,6 +216,24 @@
       "severity": "action",
       "status": "OPEN",
       "yes_effect": "Genau EIN Claude-Auftrag: Codex Astra implementiert den B-Verbrauchervertrag INAKTIV nach der Vorlage (Paket-/Verbraucher-/Auswerterbindung, BLACKOUT_UNKNOWN, UNCONFIRMED-Projektion, Negativtests fuer fehlende oder manipulierte Geltungsdaten, Verweigerung alter Verbraucher); keine neuen Binaerdateien im aktiven Inventar, keine Neuversiegelung, keine Hold-Aufhebung, kein Kauf, kein Live-/AutoTrading-Effekt. Aktivierung und die Freigabe einzelner Holds sind separate Karten nach nachgewiesener Nutzbarkeit."
+    },
+    {
+      "category": "Gate-Statistik/Zaehler",
+      "cost_of_wait": "Jeder neue Q08-PASS entsteht weiter mit AUFGESCHOBENER DSR (26 der letzten 28 Q08-PASS-Artefakte deferred, 2 mit zu wenigen aktiven Tagen): der Zaehler waechst auf statistisch unkorrigierter Selektion. Alle 31 aktuellen Q11-PASS-Paare fuehren ueber einen Q08 mit aufgeschobener DSR; unter der korrekten V2-Rechnung (Peer-Kohorte + deklarierte 154 Trials) waeren alle 31 und alle 28 juengsten UNCORRECTED_SELECTION. Ohne Aktivierung bleibt die Frontier-Statistik eine Behauptung; mit Aktivierung nur fuer NEUE Laeufe waechst der Zaehler ab jetzt sauber, waehrend der Bestand per Projektion sichtbar wird.",
+      "created_at_utc": "2026-09-05T18:28:41Z",
+      "depends_on": [],
+      "due": null,
+      "evidence": [
+        "docs/ops/evidence/2026-09-05_m04_dsr_wiring.md",
+        "docs/ops/CEO_AUDIT_INTEGRATION_2026-09-05.md"
+      ],
+      "id": "OWNER-DEC-DSR-V2-ACTIVATION-20260905",
+      "no_effect": "DSR bleibt im aufgeschobenen Modus: neue Q08-PASS entstehen weiter ohne Peer-Kohorte/Trial-Korrektur; die 31 Frontier-Paare bleiben statistisch unvalidiert; der Audit-Befund M04 bleibt offen.",
+      "question": "Darf die korrigierte Q08-DSR (V2: Peer-Kohorte inkl. Verlierer + deklarierte Trial-Zahl 154, Ergebnis UNCORRECTED_SELECTION statt stillem PASS, wenn die Kohorte fehlt) fuer ALLE NEUEN Q08-Laeufe aktiviert werden (Maschinen-Umgebungsvariable QM_DSR_V2=1 fuer die Q08-Kindprozesse), waehrend bestehende Verdikte unangetastet bleiben und die 31 Frontier-Paare zunaechst nur READ-ONLY unter V2 projiziert werden (keine Umstufung, keine Loeschung; Readjudikation = spaetere eigene Karte)?",
+      "recommendation": "JA. Der Audit-Befund ist eindeutig: die DSR wurde bisher aufgeschoben, nicht gerechnet. V2 fuer neue Laeufe stoppt das Wachstum auf unkorrigierter Selektion sofort und kostet nichts ausser ehrlicheren Verdikten; die Frontier-Projektion zeigt Dir vor jeder Umstufung, was der Zaehler wirklich traegt. Bestand bleibt append-only erhalten.",
+      "severity": "action",
+      "status": "OPEN",
+      "yes_effect": "Genau EIN Claude-Auftrag: (1) V2-Code bleibt integriert und inert bis zur Umgebungsvariable; QM_DSR_V2=1 wird auf Maschinenebene gesetzt und per gestaffeltem Worker-Reload wirksam (nur neue Q08-Kindprozesse); (2) Read-only V2-Projektion der 31 Q11-PASS-Paare und der 28 juengsten Q08-PASS-Artefakte als Evidenzdokument (keine Verdikt-Aenderung); (3) Nachtrag im Audit-Integrationsdokument und OPEN_ITEMS; Readjudikation des Bestands = separate Karte mit dieser Projektion als Grundlage. Kein Live-, Kauf- oder AutoTrading-Effekt."
     }
   ]
 }
