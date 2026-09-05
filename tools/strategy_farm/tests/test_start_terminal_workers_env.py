@@ -27,7 +27,9 @@ def test_merge_fills_missing_machine_qm_vars_and_keeps_process_values():
 def test_machine_environment_reader_returns_mapping():
     values = launcher.machine_qm_environment()
     assert isinstance(values, dict)
-    assert all(str(k).upper().startswith("QM_") for k in values)
+    from tools.strategy_farm.start_terminal_workers import _is_machine_factory_var
+
+    assert all(_is_machine_factory_var(k) for k in values)
 
 
 def test_merge_carries_machine_dl089_scheduling_caps():
@@ -35,10 +37,17 @@ def test_merge_carries_machine_dl089_scheduling_caps():
     from tools.strategy_farm.start_terminal_workers import merge_machine_qm_env
 
     process = {"PATH": "x"}
-    machine = {"DL089_PROGRAM_SLOTS": "8", "DL089_CELL_SLOTS": "6", "QM_ENABLE_DL089_PRUNING": "1", "PATHEXT": ".EXE"}
+    machine = {
+        "DL089_PROGRAM_SLOTS": "8",
+        "DL089_LANES_PER_PROGRAM": "2",  # rolled-back canary value: must stay machine-only
+        "DL089_SAME_PROGRAM_PARALLEL_ALLOWLIST": "DL089_X",
+        "QM_ENABLE_DL089_PRUNING": "1",
+        "PATHEXT": ".EXE",
+    }
     merged = merge_machine_qm_env(process, machine)
     assert merged["DL089_PROGRAM_SLOTS"] == "8"
-    assert merged["DL089_CELL_SLOTS"] == "6"
     assert merged["QM_ENABLE_DL089_PRUNING"] == "1"
+    assert "DL089_LANES_PER_PROGRAM" not in merged
+    assert "DL089_SAME_PROGRAM_PARALLEL_ALLOWLIST" not in merged
     assert "PATHEXT" not in merged  # unrelated machine vars are still not merged
 

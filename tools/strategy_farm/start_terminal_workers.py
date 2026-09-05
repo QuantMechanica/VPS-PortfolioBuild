@@ -168,11 +168,18 @@ def _load_existing(pid_file: Path) -> dict[str, int]:
 # (DL089_PROGRAM_SLOTS=8 since 2026-09-02). The merge only carried QM_* keys, so every
 # worker restarted from an interactive session (reload chunks 33-41) silently fell back
 # to the code default of 4 program slots and starved the fifth admitted census program.
-MACHINE_FACTORY_ENV_PREFIXES = ("QM_", "DL089_")
+# Only the program cap is carried. The machine scope also still holds the T11/T12
+# canary values (DL089_LANES_PER_PROGRAM=2, DL089_SAME_PROGRAM_PARALLEL_ALLOWLIST) whose
+# activation reproduced the lane-preflight decline loop (~88->21 cells/h) and was rolled
+# back on 2026-09-02; those stay machine-only until an OWNER decision re-activates them.
+MACHINE_FACTORY_ENV_PREFIXES = ("QM_",)
+MACHINE_FACTORY_ENV_EXACT = frozenset({"DL089_PROGRAM_SLOTS"})
 
 
 def _is_machine_factory_var(name: object) -> bool:
     upper = str(name).upper()
+    if upper in MACHINE_FACTORY_ENV_EXACT:
+        return True
     return any(upper.startswith(prefix) for prefix in MACHINE_FACTORY_ENV_PREFIXES)
 
 
