@@ -234,21 +234,21 @@ APIs, forecasts, optimizer output, portfolio state, or trained artifacts.
 | parameter | default | authorized values | role |
 |---|---:|---|---|
 | `strategy_level_count` | 60 | [60] | completed month-end log levels |
-| `strategy_adf_observations` | 58 | [58] | lag-one ADF regression rows |
-| `strategy_adf_residual_dof` | 55 | [55] | residual variance divisor |
+| `strategy_regression_observations` | 58 | [58] | lag-one ADF regression rows |
+| `strategy_residual_dof` | 55 | [55] | residual variance divisor |
 | `strategy_adf_t_min` | -2.594 | [-2.594] | inclusive ADF state boundary |
 | `strategy_vn_return_count` | 20 | [20] | newest monthly return slice |
 | `strategy_vn_eta_max` | 2.0 | [2.0] | exclusive raw ratio boundary |
-| `strategy_variance_floor` | 1e-18 | [1e-18] | ADF/V energy floor |
+| `strategy_energy_floor` | 1e-18 | [1e-18] | ADF/V energy floor |
 | `strategy_determinant_relative_floor` | 1e-12 | [1e-12] | ADF singularity guard |
 | `strategy_momentum_months` | 12 | [12] | direction interval |
 | `strategy_direction_epsilon` | 1e-12 | [1e-12] | neutral direction band |
-| `strategy_history_bars_d1` | 1800 | [1800] | bounded endpoint scan |
+| `strategy_history_bars` | 1800 | [1800] | bounded endpoint scan |
 | `strategy_entry_grace_minutes` | 180 | [180] | month-entry window |
 | `strategy_endpoint_stale_days` | 10 | [10] | newest endpoint ceiling |
-| `strategy_atr_period_d1` | 20 | [20] | completed stop estimator |
+| `strategy_atr_period` | 20 | [20] | completed stop estimator |
 | `strategy_atr_sl_mult` | 3.5 | [3.5] | frozen hard-stop multiple |
-| `strategy_max_hold_days` | 40 | [40] | stale repair ceiling |
+| `strategy_stale_days` | 40 | [40] | stale repair ceiling |
 | `strategy_max_spread_points` | 1500 | [1500] | entry spread ceiling |
 
 ## Risk
