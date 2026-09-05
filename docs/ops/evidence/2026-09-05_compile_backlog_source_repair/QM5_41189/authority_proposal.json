@@ -1,0 +1,27 @@
+{
+  "schema": "qm.compile-source-repair-proposal/v1",
+  "status": "PROPOSED_NOT_REGISTERED",
+  "router_task_id": "fd5e3ce3-9f48-497d-9c2f-3b6be0f2eac8",
+  "authority_key": "router_ops_issue:fd5e3ce3-9f48-497d-9c2f-3b6be0f2eac8",
+  "ea_id": "QM5_41189",
+  "ea_label": "QM5_41189_xtixng-mlad-rv",
+  "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41189_xtixng-mlad-rv\\QM5_41189_xtixng-mlad-rv.mq5",
+  "source_sha256": "e401421c63ff2c5933099b834835469faddabe3cf8efe756a94a6eb8d16a54b2",
+  "predecessors": [
+    {
+      "work_item_id": "e5505264-01c4-4102-b3cd-9a275a6839ee",
+      "created_at": "2026-08-27T23:14:24+00:00",
+      "expected_sha256": "3d0ba8910acab5ac7b206184912c3a95b935a28ea520975c95f9a606be8048c1",
+      "expected_git_commit": null,
+      "evidence_path": null,
+      "evidence_sha256": null
+    }
+  ],
+  "source_review_evidence": {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_compile_backlog_source_repair\\QM5_41189\\source_review.json",
+    "sha256": "bb77a98c17b11c353d6224a3d8c9812f35b2b8e8a6ae23edad044e8cf00fd1f4"
+  },
+  "admission_authorized": false,
+  "note": "The current source-repair API accepts registered authority keys; it has no generic JSON-authority-file loader.",
+  "review_disposition": "UNKNOWN_DELTA; do not call this cosmetic or approve current mechanics from a missing baseline."
+}

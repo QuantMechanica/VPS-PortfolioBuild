@@ -1,0 +1,63 @@
+[
+  {
+    "ea_id": "QM5_1538",
+    "additional_matches": [],
+    "commits": [
+      "6d5151742bbf5be1e09096403f42adabcc7f8d2f",
+      "23ea1fbde29f93ea808528fec4cefd06eae69267",
+      "ceceadd569450383cf99f754ee8da0d221ece5e9"
+    ]
+  },
+  {
+    "ea_id": "QM5_41142",
+    "additional_matches": [],
+    "commits": [
+      "beeca818e34e59f1c62ac591f2c877afa0173ba7",
+      "87263acbab8ee737ebba8cd66eccd8ce01b9509e"
+    ]
+  },
+  {
+    "ea_id": "QM5_41176",
+    "additional_matches": [
+      {
+        "work_item_id": "f89d82e9-f4e2-4567-b8f2-464d4997ce09",
+        "commit": "26e35b754dbf5396e6605c730e5506dadbeb1d3a",
+        "encoding_variant": true
+      }
+    ],
+    "commits": [
+      "64baaec4ee574941af7d9c8b704f2a76db95d839",
+      "26e35b754dbf5396e6605c730e5506dadbeb1d3a"
+    ]
+  },
+  {
+    "ea_id": "QM5_41179",
+    "additional_matches": [],
+    "commits": [
+      "ecebbc466282ebbb62b2d310aff127be85feba44"
+    ]
+  },
+  {
+    "ea_id": "QM5_41189",
+    "additional_matches": [],
+    "commits": [
+      "dc1dac060ccba14ad5d88a9bb2432cacdcdcf38a"
+    ]
+  },
+  {
+    "ea_id": "QM5_41192",
+    "additional_matches": [],
+    "commits": [
+      "8b64f2b0f48b13374b44230ed7ff8eb1fb6e3a2b",
+      "45aab56862b5145f5066f56f70844236210ddebd",
+      "c3cee19438f558e995b2fde6dfdffb967e564fa7"
+    ]
+  },
+  {
+    "ea_id": "QM5_41352",
+    "additional_matches": [],
+    "commits": [
+      "fa4f891a032725684db914e3ee6876f7735632b7"
+    ]
+  }
+]

@@ -1,0 +1,10 @@
+{
+  "ea_id": "QM5_1538",
+  "reviewed_source_sha256": "f4d84bdfac61ad54b02e305c9f1f75b8f82ab0f0228ad156ef9f65acdd17e889",
+  "commits_explaining_move": "6d5151742b",
+  "why_source_moved": "Post-enqueue repair follows 23ea1fbde2: changes monthly boundary/entry and exit scheduling, pooled indicator access, ATR stop construction and news/management ordering; two held predecessors remain.",
+  "current_source_intent_assessment": "MATERIAL_IMPLEMENTATION_CHANGE in committed history; exact two queued snapshots are not recoverable, so behavioral equivalence is unproven.",
+  "executable_token_equivalence": null,
+  "authority_decision": "CEO_REQUIRED",
+  "read_only": true
+}

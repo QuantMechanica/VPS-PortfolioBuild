@@ -1,0 +1,57 @@
+{
+  "command": [
+    "python",
+    "C:\\QM\\repo\\tools\\strategy_farm\\farmctl.py",
+    "enqueue-compile",
+    "--from-file",
+    "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_compile_backlog_source_repair\\QM5_41189\\compile_request.txt",
+    "--source-repair-authority",
+    "router_ops_issue:fd5e3ce3-9f48-497d-9c2f-3b6be0f2eac8"
+  ],
+  "exit_code": 0,
+  "result": {
+    "activation_held_count": 0,
+    "batch_form": true,
+    "build_task_id": null,
+    "candidate_classification": [
+      {
+        "ea_id": "QM5_41189",
+        "ea_label": "QM5_41189_xtixng-mlad-rv",
+        "eligible": false,
+        "idempotent_open": true,
+        "reason": "OPEN_COMPILE_EA_EXISTS",
+        "work_item_ids": [
+          "e5505264-01c4-4102-b3cd-9a275a6839ee"
+        ]
+      }
+    ],
+    "eligible_count": 0,
+    "enqueued": [],
+    "enqueued_count": 0,
+    "idempotent_open": [
+      {
+        "ea_id": "QM5_41189",
+        "ea_label": "QM5_41189_xtixng-mlad-rv",
+        "eligible": false,
+        "idempotent_open": true,
+        "reason": "OPEN_COMPILE_EA_EXISTS",
+        "work_item_ids": [
+          "e5505264-01c4-4102-b3cd-9a275a6839ee"
+        ]
+      }
+    ],
+    "idempotent_open_count": 1,
+    "input_metadata": {
+      "from_file": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_compile_backlog_source_repair\\QM5_41189\\compile_request.txt",
+      "from_file_sha256": "ecec1a9fa9b6e251e7df4f724d7bae319905059f25b9b6d10678eef1aac9fd70",
+      "requested_count": 1
+    },
+    "mode": "dry_run",
+    "no_gate_verdict": true,
+    "ok": true,
+    "refused": [],
+    "refused_count": 0,
+    "requested_count": 1,
+    "source_repair_authority": "router_ops_issue:fd5e3ce3-9f48-497d-9c2f-3b6be0f2eac8"
+  }
+}

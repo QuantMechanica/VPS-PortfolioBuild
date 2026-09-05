@@ -1,0 +1,19 @@
+{
+  "ea_id": "QM5_41189",
+  "ea_label": "QM5_41189_xtixng-mlad-rv",
+  "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41189_xtixng-mlad-rv\\QM5_41189_xtixng-mlad-rv.mq5",
+  "source_sha256": "e401421c63ff2c5933099b834835469faddabe3cf8efe756a94a6eb8d16a54b2",
+  "predecessors": [
+    {
+      "work_item_id": "e5505264-01c4-4102-b3cd-9a275a6839ee",
+      "created_at": "2026-08-27T23:14:24+00:00",
+      "expected_sha256": "3d0ba8910acab5ac7b206184912c3a95b935a28ea520975c95f9a606be8048c1",
+      "expected_git_commit": null,
+      "evidence_path": null,
+      "evidence_sha256": null
+    }
+  ],
+  "history_basis": "All refs, max 100 source commits; expected hash matches raw/LF/CRLF variants.",
+  "candidate_intent": "PENDING_SOURCE_DIFF_REVIEW",
+  "recorded_at": "2026-09-05T18:29:06.908740+00:00"
+}

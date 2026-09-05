@@ -1,0 +1,10 @@
+{
+  "ea_id": "QM5_41179",
+  "reviewed_source_sha256": "5e373104ee5bf0f0428c5c277e0d8ecea10e83fcae80386d27ddb74b58a1e6be",
+  "commits_explaining_move": "ecebbc4662",
+  "why_source_moved": "The first committed source appears four minutes after enqueue. The expected raw hash is absent from all reachable source versions, including LF/CRLF/BOM variants.",
+  "current_source_intent_assessment": "UNKNOWN_DELTA; current Cox-Stuart basket is committed, but exact pre-enqueue source and intention cannot be certified.",
+  "executable_token_equivalence": null,
+  "authority_decision": "CEO_REQUIRED",
+  "read_only": true
+}

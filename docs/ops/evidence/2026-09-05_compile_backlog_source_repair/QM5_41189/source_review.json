@@ -1,0 +1,10 @@
+{
+  "ea_id": "QM5_41189",
+  "reviewed_source_sha256": "e401421c63ff2c5933099b834835469faddabe3cf8efe756a94a6eb8d16a54b2",
+  "commits_explaining_move": "dc1dac060c",
+  "why_source_moved": "The first committed LAD-basket source appears about five minutes after enqueue. No reachable committed version reproduces the expected raw hash.",
+  "current_source_intent_assessment": "UNKNOWN_DELTA; do not call this cosmetic or approve current mechanics from a missing baseline.",
+  "executable_token_equivalence": null,
+  "authority_decision": "CEO_REQUIRED",
+  "read_only": true
+}

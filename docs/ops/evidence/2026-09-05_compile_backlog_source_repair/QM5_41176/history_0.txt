@@ -1,0 +1,1 @@
+64baaec4ee574941af7d9c8b704f2a76db95d839 2026-08-27T04:05:52+02:00 fix(energy): align QM5 41176 build contract

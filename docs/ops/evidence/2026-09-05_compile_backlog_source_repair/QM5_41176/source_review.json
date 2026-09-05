@@ -1,0 +1,10 @@
+{
+  "ea_id": "QM5_41176",
+  "reviewed_source_sha256": "f2d1a3023857657feb208553e0f6e8c5e23ecd0eaf643ad5e04fbc79db07bad6",
+  "commits_explaining_move": "64baaec4ee",
+  "why_source_moved": "Matched expected version 26e35b754d to current: one performance-comment word and indentation only. Executable tokens are identical.",
+  "current_source_intent_assessment": "TOKEN_EQUIVALENT; current source is consistent with the recorded contract-alignment intent; CEO still selects the authoritative hash.",
+  "executable_token_equivalence": true,
+  "authority_decision": "CEO_REQUIRED",
+  "read_only": true
+}

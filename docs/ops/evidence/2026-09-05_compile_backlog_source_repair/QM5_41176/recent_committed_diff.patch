@@ -1,0 +1,20 @@
+--- 26e35b754dbf5396e6605c730e5506dadbeb1d3a:framework/EAs/QM5_41176_wti-mwilcoxon-shift-tr/QM5_41176_wti-mwilcoxon-shift-tr.mq5
++++ current:framework/EAs/QM5_41176_wti-mwilcoxon-shift-tr/QM5_41176_wti-mwilcoxon-shift-tr.mq5
+@@ -432,7 +432,7 @@
+    MqlRates bars[];
+    ArraySetAsSeries(bars, true);
+    const int copied =
+-      CopyRates(_Symbol, // perf-allowed: one bounded thirteen-month scan behind a consumed monthly attempt or monthly restart validation.
++      CopyRates(_Symbol, // perf-allowed: one bounded twelve-month scan behind a consumed monthly attempt or monthly restart validation.
+                 PERIOD_D1,
+                 1,
+                 strategy_history_bars_d1,
+@@ -970,7 +970,7 @@
+ int OnInit()
+   {
+    if(!SymbolSelect(g_symbol, true) ||
+-       !Strategy_IsHostChart() || qm_ea_id != 41176 ||
++      !Strategy_IsHostChart() || qm_ea_id != 41176 ||
+       qm_magic_slot_offset != 0)
+       return INIT_PARAMETERS_INCORRECT;
+ 

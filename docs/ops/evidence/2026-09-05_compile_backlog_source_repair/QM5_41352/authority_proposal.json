@@ -1,0 +1,27 @@
+{
+  "schema": "qm.compile-source-repair-proposal/v1",
+  "status": "PROPOSED_NOT_REGISTERED",
+  "router_task_id": "fd5e3ce3-9f48-497d-9c2f-3b6be0f2eac8",
+  "authority_key": "router_ops_issue:fd5e3ce3-9f48-497d-9c2f-3b6be0f2eac8",
+  "ea_id": "QM5_41352",
+  "ea_label": "QM5_41352_wti-adf-vr-agree-tr",
+  "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41352_wti-adf-vr-agree-tr\\QM5_41352_wti-adf-vr-agree-tr.mq5",
+  "source_sha256": "85042318f9b0efe123bf63288c59f08dc473d8a2e7b6fe1c52aaa1ea96a0884b",
+  "predecessors": [
+    {
+      "work_item_id": "494b3cf3-1f24-4e33-bccf-673c7b3b5f64",
+      "created_at": "2026-09-05T14:18:40+00:00",
+      "expected_sha256": "8f30b07b7f29445e6264d14be4b54e8aad516cbc2cf68c1e741d300b7c68b99a",
+      "expected_git_commit": null,
+      "evidence_path": null,
+      "evidence_sha256": null
+    }
+  ],
+  "source_review_evidence": {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_compile_backlog_source_repair\\QM5_41352\\source_review.json",
+    "sha256": "6789efe0eec69b8cc9ef9a12dac8e3b178d9f789dd06058b0a04f785f55581ec"
+  },
+  "admission_authorized": false,
+  "note": "The current source-repair API accepts registered authority keys; it has no generic JSON-authority-file loader.",
+  "review_disposition": "UNKNOWN_DELTA; committed implementation does not establish which uncommitted snapshot the CEO intended."
+}

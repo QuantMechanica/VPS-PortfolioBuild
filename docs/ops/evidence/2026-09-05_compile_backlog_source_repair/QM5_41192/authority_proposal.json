@@ -1,0 +1,27 @@
+{
+  "schema": "qm.compile-source-repair-proposal/v1",
+  "status": "PROPOSED_NOT_REGISTERED",
+  "router_task_id": "fd5e3ce3-9f48-497d-9c2f-3b6be0f2eac8",
+  "authority_key": "router_ops_issue:fd5e3ce3-9f48-497d-9c2f-3b6be0f2eac8",
+  "ea_id": "QM5_41192",
+  "ea_label": "QM5_41192_xtixng-mdaily-hl-rv",
+  "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41192_xtixng-mdaily-hl-rv\\QM5_41192_xtixng-mdaily-hl-rv.mq5",
+  "source_sha256": "fec27056d36dc5738a327e4340f189d924201380864e3c3bd05488e3f20534aa",
+  "predecessors": [
+    {
+      "work_item_id": "0d00bf54-535c-4049-ad7f-fde0c6b13f12",
+      "created_at": "2026-09-01T01:51:58+00:00",
+      "expected_sha256": "630cf4a9c18a2ec5ff4d86b04df000a48a4ecf793e09d8d028f3d094a7cf238d",
+      "expected_git_commit": null,
+      "evidence_path": null,
+      "evidence_sha256": null
+    }
+  ],
+  "source_review_evidence": {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_compile_backlog_source_repair\\QM5_41192\\source_review.json",
+    "sha256": "edd3f7334cd96d5b905edac8b575dc7f2e7aa59a756efd781b81c86559b110e3"
+  },
+  "admission_authorized": false,
+  "note": "The current source-repair API accepts registered authority keys; it has no generic JSON-authority-file loader.",
+  "review_disposition": "MATERIAL_EXECUTION_CHANGE in history; latest initialization is mechanical, but entire queued-to-current equivalence is unproven."
+}

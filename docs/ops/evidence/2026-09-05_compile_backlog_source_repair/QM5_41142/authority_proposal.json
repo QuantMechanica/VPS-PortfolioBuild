@@ -1,0 +1,27 @@
+{
+  "schema": "qm.compile-source-repair-proposal/v1",
+  "status": "PROPOSED_NOT_REGISTERED",
+  "router_task_id": "fd5e3ce3-9f48-497d-9c2f-3b6be0f2eac8",
+  "authority_key": "router_ops_issue:fd5e3ce3-9f48-497d-9c2f-3b6be0f2eac8",
+  "ea_id": "QM5_41142",
+  "ea_label": "QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow",
+  "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow.mq5",
+  "source_sha256": "cb33049fcc851c1bd83762abe1aee72768bf38d55d73097de08e48c1ba177d9a",
+  "predecessors": [
+    {
+      "work_item_id": "07a09214-86ba-4946-9e0b-c9e7baa8b6fc",
+      "created_at": "2026-09-02T16:45:26+00:00",
+      "expected_sha256": "1bb336bbbd3b9e06730ea830b94a7c3bff9c4387f88920c43754757be5fe3c0f",
+      "expected_git_commit": null,
+      "evidence_path": null,
+      "evidence_sha256": null
+    }
+  ],
+  "source_review_evidence": {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_compile_backlog_source_repair\\QM5_41142\\source_review.json",
+    "sha256": "93a2781365f9b7106a5019e86859fce6c68e052807efc0359d18e0ac4e136060"
+  },
+  "admission_authorized": false,
+  "note": "The current source-repair API accepts registered authority keys; it has no generic JSON-authority-file loader.",
+  "review_disposition": "MATERIAL_STRATEGY_IMPLEMENTATION in committed history; that is not proof that the queued uncommitted source was still the skeleton. CEO source choice required."
+}

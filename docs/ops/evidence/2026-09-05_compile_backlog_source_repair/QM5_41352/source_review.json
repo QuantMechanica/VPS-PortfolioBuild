@@ -1,0 +1,10 @@
+{
+  "ea_id": "QM5_41352",
+  "reviewed_source_sha256": "85042318f9b0efe123bf63288c59f08dc473d8a2e7b6fe1c52aaa1ea96a0884b",
+  "commits_explaining_move": "fa4f891a03",
+  "why_source_moved": "The first committed ADF/variance-ratio EA appears about three minutes after enqueue. The expected queued hash is absent from reachable source versions.",
+  "current_source_intent_assessment": "UNKNOWN_DELTA; committed implementation does not establish which uncommitted snapshot the CEO intended.",
+  "executable_token_equivalence": null,
+  "authority_decision": "CEO_REQUIRED",
+  "read_only": true
+}

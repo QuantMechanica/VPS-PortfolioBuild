@@ -1,0 +1,10 @@
+--- 45aab56862b5145f5066f56f70844236210ddebd:framework/EAs/QM5_41192_xtixng-mdaily-hl-rv/QM5_41192_xtixng-mdaily-hl-rv.mq5
++++ current:framework/EAs/QM5_41192_xtixng-mdaily-hl-rv/QM5_41192_xtixng-mdaily-hl-rv.mq5
+@@ -612,6 +612,7 @@
+          return false;
+ 
+       QM_EntryRequest host_request;
++      ZeroMemory(host_request);
+       host_request.type = type;
+       host_request.price = 0.0;
+       host_request.sl = stop;

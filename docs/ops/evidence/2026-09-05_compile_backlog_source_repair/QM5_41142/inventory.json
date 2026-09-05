@@ -1,0 +1,19 @@
+{
+  "ea_id": "QM5_41142",
+  "ea_label": "QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow",
+  "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow.mq5",
+  "source_sha256": "cb33049fcc851c1bd83762abe1aee72768bf38d55d73097de08e48c1ba177d9a",
+  "predecessors": [
+    {
+      "work_item_id": "07a09214-86ba-4946-9e0b-c9e7baa8b6fc",
+      "created_at": "2026-09-02T16:45:26+00:00",
+      "expected_sha256": "1bb336bbbd3b9e06730ea830b94a7c3bff9c4387f88920c43754757be5fe3c0f",
+      "expected_git_commit": null,
+      "evidence_path": null,
+      "evidence_sha256": null
+    }
+  ],
+  "history_basis": "All refs, max 100 source commits; expected hash matches raw/LF/CRLF variants.",
+  "candidate_intent": "PENDING_SOURCE_DIFF_REVIEW",
+  "recorded_at": "2026-09-05T18:28:54.910917+00:00"
+}

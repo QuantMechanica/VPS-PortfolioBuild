@@ -1,0 +1,57 @@
+{
+  "command": [
+    "python",
+    "C:\\QM\\repo\\tools\\strategy_farm\\farmctl.py",
+    "enqueue-compile",
+    "--from-file",
+    "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_compile_backlog_source_repair\\QM5_41176\\compile_request.txt",
+    "--source-repair-authority",
+    "router_ops_issue:fd5e3ce3-9f48-497d-9c2f-3b6be0f2eac8"
+  ],
+  "exit_code": 0,
+  "result": {
+    "activation_held_count": 0,
+    "batch_form": true,
+    "build_task_id": null,
+    "candidate_classification": [
+      {
+        "ea_id": "QM5_41176",
+        "ea_label": "QM5_41176_wti-mwilcoxon-shift-tr",
+        "eligible": false,
+        "idempotent_open": true,
+        "reason": "OPEN_COMPILE_EA_EXISTS",
+        "work_item_ids": [
+          "f89d82e9-f4e2-4567-b8f2-464d4997ce09"
+        ]
+      }
+    ],
+    "eligible_count": 0,
+    "enqueued": [],
+    "enqueued_count": 0,
+    "idempotent_open": [
+      {
+        "ea_id": "QM5_41176",
+        "ea_label": "QM5_41176_wti-mwilcoxon-shift-tr",
+        "eligible": false,
+        "idempotent_open": true,
+        "reason": "OPEN_COMPILE_EA_EXISTS",
+        "work_item_ids": [
+          "f89d82e9-f4e2-4567-b8f2-464d4997ce09"
+        ]
+      }
+    ],
+    "idempotent_open_count": 1,
+    "input_metadata": {
+      "from_file": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_compile_backlog_source_repair\\QM5_41176\\compile_request.txt",
+      "from_file_sha256": "adb2dd375a32bf25e0efd4114cee5974623dd3250fdacae8eab1fdaac4823a90",
+      "requested_count": 1
+    },
+    "mode": "dry_run",
+    "no_gate_verdict": true,
+    "ok": true,
+    "refused": [],
+    "refused_count": 0,
+    "requested_count": 1,
+    "source_repair_authority": "router_ops_issue:fd5e3ce3-9f48-497d-9c2f-3b6be0f2eac8"
+  }
+}

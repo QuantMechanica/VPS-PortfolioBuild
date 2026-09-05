@@ -1,0 +1,19 @@
+{
+  "ea_id": "QM5_41179",
+  "ea_label": "QM5_41179_xtixng-mcoxstuart-rv",
+  "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41179_xtixng-mcoxstuart-rv\\QM5_41179_xtixng-mcoxstuart-rv.mq5",
+  "source_sha256": "5e373104ee5bf0f0428c5c277e0d8ecea10e83fcae80386d27ddb74b58a1e6be",
+  "predecessors": [
+    {
+      "work_item_id": "9ced0252-9ceb-4fe7-a2c5-d7a8d0b30a82",
+      "created_at": "2026-08-27T04:16:17+00:00",
+      "expected_sha256": "74e7f100f5d59c4e089971a4ddb1392ed219eb1be942d9a444bf2a133ddd27d3",
+      "expected_git_commit": null,
+      "evidence_path": null,
+      "evidence_sha256": null
+    }
+  ],
+  "history_basis": "All refs, max 100 source commits; expected hash matches raw/LF/CRLF variants.",
+  "candidate_intent": "PENDING_SOURCE_DIFF_REVIEW",
+  "recorded_at": "2026-09-05T18:29:05.639938+00:00"
+}

@@ -1,0 +1,1 @@
+dc1dac060ccba14ad5d88a9bb2432cacdcdcf38a 2026-08-28T01:19:09+02:00 build(energy): add QM5 41189 LAD basket

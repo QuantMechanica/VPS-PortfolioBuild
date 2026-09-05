@@ -1,0 +1,10 @@
+{
+  "ea_id": "QM5_41192",
+  "reviewed_source_sha256": "fec27056d36dc5738a327e4340f189d924201380864e3c3bd05488e3f20534aa",
+  "commits_explaining_move": "45aab56862 + 8b64f2b0f4",
+  "why_source_moved": "Post-enqueue history routes the energy basket through the framework; the latest follow-up adds ZeroMemory(host_request). The old expected hash is not recoverable.",
+  "current_source_intent_assessment": "MATERIAL_EXECUTION_CHANGE in history; latest initialization is mechanical, but entire queued-to-current equivalence is unproven.",
+  "executable_token_equivalence": null,
+  "authority_decision": "CEO_REQUIRED",
+  "read_only": true
+}

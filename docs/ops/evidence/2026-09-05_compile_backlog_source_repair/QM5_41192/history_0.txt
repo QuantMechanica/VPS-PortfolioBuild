@@ -1,0 +1,2 @@
+8b64f2b0f48b13374b44230ed7ff8eb1fb6e3a2b 2026-09-05T08:12:46+02:00 fix(QM5_41192): recover diverse Q02 binary
+45aab56862b5145f5066f56f70844236210ddebd 2026-09-05T03:30:42+02:00 fix(QM5_41192): route energy basket through framework

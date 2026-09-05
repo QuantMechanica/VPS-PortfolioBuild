@@ -1,0 +1,10 @@
+{
+  "ea_id": "QM5_41142",
+  "reviewed_source_sha256": "cb33049fcc851c1bd83762abe1aee72768bf38d55d73097de08e48c1ba177d9a",
+  "commits_explaining_move": "beeca818e3",
+  "why_source_moved": "Post-enqueue commit replaces a previously committed generic skeleton with the London month-end/GDAXI signal, calendar/news guards, timed EURUSD execution and exits. Exact queued source hash is absent.",
+  "current_source_intent_assessment": "MATERIAL_STRATEGY_IMPLEMENTATION in committed history; that is not proof that the queued uncommitted source was still the skeleton. CEO source choice required.",
+  "executable_token_equivalence": null,
+  "authority_decision": "CEO_REQUIRED",
+  "read_only": true
+}
