@@ -1,0 +1,213 @@
+{
+  "meta": {
+    "csv_path": "C:/QM/repo/docs/ops/evidence/2026-09-05_census_prescreen_retro/after/census_2026-09-05.csv",
+    "date": "2026-09-05",
+    "db_path": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "finer_csv_path": "C:/QM/repo/docs/ops/evidence/2026-09-05_census_prescreen_retro/after/census_finer_2026-09-05.csv",
+    "gate_chain": [
+      "Q02",
+      "Q03",
+      "Q04",
+      "Q05",
+      "Q06",
+      "Q07",
+      "Q08",
+      "Q09",
+      "Q10",
+      "Q11",
+      "Q12",
+      "Q13",
+      "Q14"
+    ],
+    "generated_at": "2026-09-05T12:54:00",
+    "json_path": "C:/QM/repo/docs/ops/evidence/2026-09-05_census_prescreen_retro/after/census_2026-09-05.json",
+    "limit": null
+  },
+  "summary": {
+    "by_disposition": {
+      "ECONOMIC_FAIL": 7555,
+      "INVALID": 1530,
+      "MISSING": 126,
+      "REUSABLE": 5451,
+      "STALE": 94
+    },
+    "by_earliest_missing_prerequisite": {
+      "NONE": 8,
+      "Q02": 7703,
+      "Q03": 5147,
+      "Q04": 1493,
+      "Q05": 139,
+      "Q06": 19,
+      "Q07": 68,
+      "Q08": 81,
+      "Q09": 14,
+      "Q10": 65,
+      "Q11": 1,
+      "Q12": 18
+    },
+    "by_frontier_class": {
+      "COMPLETE": 8,
+      "ECON_FAIL": 7555,
+      "INFRA": 1249,
+      "INVALID": 596,
+      "MISSING": 4921,
+      "OTHER": 314,
+      "STALE": 113
+    },
+    "by_highest_contiguous_valid_gate": {
+      "NONE": 7703,
+      "Q02": 5147,
+      "Q03": 1493,
+      "Q04": 139,
+      "Q05": 19,
+      "Q06": 68,
+      "Q07": 81,
+      "Q08": 14,
+      "Q09": 65,
+      "Q10": 1,
+      "Q11": 18,
+      "Q14": 8
+    },
+    "by_highest_observed_gate": {
+      "NONE": 2,
+      "Q02": 7726,
+      "Q03": 3,
+      "Q04": 6294,
+      "Q05": 358,
+      "Q06": 39,
+      "Q07": 85,
+      "Q08": 101,
+      "Q09": 3,
+      "Q10": 87,
+      "Q11": 22,
+      "Q12": 27,
+      "Q13": 1,
+      "Q14": 8
+    },
+    "by_macro_phase": {
+      "0_NONE": 2,
+      "1_STRATEGIEBEWEIS": 14746,
+      "2_OPTIMIERUNG": 8
+    },
+    "identity_coverage": {
+      "coverage_pct": 12.204,
+      "rows": 135729,
+      "rows_with_ex5_identity": 16564,
+      "source": "typed_columns"
+    },
+    "infra_vs_economic": {
+      "economic_fail_pairs": 7555,
+      "infra_blocked_frontier_pairs": 1249,
+      "invalid_disposition_pairs": 1530,
+      "non_reusable_pairs": 9305
+    },
+    "opt_census_prescreen": {
+      "gate_contiguity_changed": false,
+      "programs": {
+        "DL089_QM5_10145_XAUUSD_DWX_2019_2025": {
+          "MEASURED": 199,
+          "SKIPPED_EXCLUDED_UNMEASURED": 215,
+          "pending": 671
+        },
+        "DL089_QM5_10403_XAUUSD_DWX_2019_2025": {
+          "MEASURED": 79,
+          "pending": 1006
+        },
+        "DL089_QM5_10513_XAUUSD_DWX_2019_2025": {
+          "MEASURED": 168,
+          "SKIPPED_EXCLUDED": 130,
+          "SKIPPED_EXCLUDED_UNMEASURED": 50,
+          "pending": 737
+        },
+        "DL089_QM5_10700_XAUUSD_DWX_2019_2025": {
+          "MEASURED": 153,
+          "pending": 932
+        },
+        "DL089_QM5_10706_GBPUSD_DWX_2019_2025": {
+          "MEASURED": 342,
+          "SKIPPED_EXCLUDED_UNMEASURED": 650,
+          "pending": 93
+        },
+        "DL089_QM5_11421_EURUSD_DWX_2019_2025": {
+          "MEASURED": 237,
+          "SKIPPED_EXCLUDED": 924
+        },
+        "DL089_QM5_11422_USDCAD_DWX_2019_2025": {
+          "MEASURED": 254,
+          "SKIPPED_EXCLUDED_UNMEASURED": 490,
+          "pending": 341
+        },
+        "DL089_QM5_11708_EURUSD_DWX_2019_2025": {
+          "MEASURED": 38,
+          "active": 1,
+          "pending": 1046
+        },
+        "DL089_QM5_11881_GBPUSD_DWX_2019_2025": {
+          "MEASURED": 287,
+          "SKIPPED_EXCLUDED": 18,
+          "SKIPPED_EXCLUDED_UNMEASURED": 655,
+          "pending": 125
+        },
+        "DL089_QM5_11910_NZDUSD_DWX_2019_2025": {
+          "MEASURED": 165,
+          "SKIPPED_EXCLUDED": 924
+        },
+        "DL089_QM5_12710_XTIUSD_DWX_2019_2025": {
+          "MEASURED": 693,
+          "SKIPPED_EXCLUDED": 309,
+          "SKIPPED_EXCLUDED_UNMEASURED": 83
+        },
+        "DL089_QM5_12849_XTIUSD_DWX_2019_2025": {
+          "MEASURED": 16,
+          "pending": 1069
+        },
+        "DL089_QM5_12855_XTIUSD_DWX_2019_2025": {
+          "pending": 1085
+        },
+        "DL089_QM5_13054_XTIUSD_DWX_2019_2025": {
+          "MEASURED": 449,
+          "SKIPPED_EXCLUDED": 640
+        },
+        "DL089_QM5_1537_XAGUSD_DWX_2019_2025": {
+          "INFRA_FAIL": 2,
+          "MEASURED": 612,
+          "SKIPPED_EXCLUDED": 477
+        },
+        "DL089_QM5_20048_XTIUSD_DWX_2019_2025": {
+          "MEASURED": 165,
+          "SKIPPED_EXCLUDED": 924
+        },
+        "DL089_QM5_20266_XTIUSD_DWX_2019_2025": {
+          "MEASURED": 938,
+          "SKIPPED_EXCLUDED_UNMEASURED": 146,
+          "pending": 1
+        },
+        "DL089_QM5_21501_USDJPY_DWX_2019_2025": {
+          "pending": 1085
+        },
+        "DL089_QM5_21505_XAGUSD_DWX_2019_2025": {
+          "MEASURED": 165,
+          "SKIPPED_EXCLUDED": 924
+        },
+        "DL089_QM5_21507_XAUUSD_DWX_2019_2025": {
+          "MEASURED": 1036,
+          "SKIPPED_EXCLUDED_UNMEASURED": 48,
+          "active": 1
+        },
+        "DL089_QM5_41097_USDJPY_DWX_2019_2025": {
+          "MEASURED": 856,
+          "SKIPPED_EXCLUDED_UNMEASURED": 218,
+          "active": 1,
+          "pending": 10
+        }
+      },
+      "valid_held_cells": 2555
+    },
+    "pairs_valid_at_least_Q08": 106,
+    "pairs_valid_at_least_Q10": 26,
+    "pairs_valid_at_least_Q16": 8,
+    "total_finer_keys": 5717,
+    "total_finer_rows": 6701,
+    "total_pairs": 14756
+  }
+}

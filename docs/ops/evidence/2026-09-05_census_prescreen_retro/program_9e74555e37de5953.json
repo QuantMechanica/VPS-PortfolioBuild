@@ -1,0 +1,1437 @@
+{
+  "arm_decisions": {
+    "buy_003": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_004": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_005": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_006": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_007": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_008": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_009": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_010": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_011": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_012": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_013": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_014": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_015": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_016": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_017": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_018": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_019": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_020": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_021": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_022": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_023": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_024": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_025": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_026": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_027": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_028": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_029": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_030": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_031": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_032": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_033": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_034": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_035": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_036": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_037": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_038": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_039": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_040": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_041": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_042": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_043": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_044": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_045": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_046": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_047": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_048": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_049": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_050": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_051": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_052": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_053": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_054": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_055": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_056": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_057": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_058": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_059": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_060": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_077": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_078": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_079": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_080": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_081": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_082": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_083": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_084": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_087": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_088": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_089": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_090": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_091": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_092": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_093": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_094": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_098": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_099": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_100": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_003": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_004": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_005": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_006": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_007": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_008": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_009": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_010": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_011": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_012": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_013": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_014": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_015": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_016": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_017": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_018": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_019": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_020": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_021": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_022": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_023": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_024": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_025": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_026": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_027": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_028": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_029": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_030": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_031": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_032": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_033": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_034": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_035": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_036": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_037": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_038": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_039": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_040": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_041": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_042": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_043": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_044": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_045": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_046": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_047": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_048": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_049": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_050": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_051": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_052": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_053": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_054": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_055": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_056": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_057": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_058": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_059": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_060": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_077": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_078": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_079": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_080": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_081": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_082": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_083": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_084": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_087": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_088": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_089": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_090": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_091": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_092": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_093": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_094": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_098": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_099": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_100": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        null,
+        null
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    }
+  },
+  "backup": {
+    "canonical_hold_backend_sha256": "bf54e7343f33de18ac2a92490f16ab0ca0f8153dbdd5048b35bf9c9613e64ecd",
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\prescreen_retro\\farm_state_before_governed_hold_20260905T104944Z.sqlite",
+    "plan_sha256": "dc85616ca80a5890c0b5459682240c6aa95ec628ca11bfcd776e25c9c9c236bc",
+    "sha256": "ad450b372069e66c70d8120a8f152bb7380048d58456d5bdb55e1e9502cde75c"
+  },
+  "candidate_holds": 0,
+  "classification_counts": {
+    "UNKNOWN": 154
+  },
+  "contract": {
+    "contract_sha256": "04c6f1ffd45d12a20178a3a00c13763e97331f31c9ff48f2b11f4578941d32c7",
+    "decision_id": "OWNER-DEC-D1-PRESCREEN-20260905",
+    "declared_trial_count": 154,
+    "manifest_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_census_prescreen_retro\\contracts\\manifest_20260905T104023404611Z.json",
+    "manifest_sha256": "81077d31d26a2f0e2a7edfefb6355b616b14125c47d1b6153cf3319245e10aba",
+    "net_profit_relative_uplift": "0.05",
+    "protected_years": [],
+    "relative_base_rule": "STRICTLY_POSITIVE_BASELINE_AS_EXISTING_SELECTOR",
+    "schema": "qm.dl089-prescreen/v1",
+    "stage1_years": [
+      2019,
+      2020
+    ],
+    "threshold": 5
+  },
+  "count_error": null,
+  "created_at": "2026-09-05T10:52:49.162201+00:00",
+  "decision_id": "OWNER-DEC-D1-PRESCREEN-20260905",
+  "declaration_sha256": "495a31e7ad50a07f26b87d55ec120a239a2b6e59b9caa0e336ea1fc0e597e7f4",
+  "declared_trial_count": 154,
+  "ea_id": "QM5_41305",
+  "estimated_hours_saved": 0.0,
+  "evidence_errors": {},
+  "held_targets": [],
+  "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_12855_XTIUSD_DWX_2019_2025\\ledger.json",
+  "pending_annual_rows": 1085,
+  "plan_sha256": "dc85616ca80a5890c0b5459682240c6aa95ec628ca11bfcd776e25c9c9c236bc",
+  "program_id": "DL089_QM5_12855_XTIUSD_DWX_2019_2025",
+  "raced_targets_preserved": [],
+  "release_on_restart": false,
+  "schema": "qm.dl089-prescreen-retro/v1",
+  "symbol": "XTIUSD.DWX",
+  "task_id": "c3779c25-3795-4535-a3bf-66ee862d72b9",
+  "tool_sha256": "a543d163cc2bc59987372b800dcbf495f64f8ff613f1cafe5870917332037324",
+  "unmeasured": true,
+  "work_items_before_sha256": "c12276145e7eda6cbe4f6baaff19baf9d64630172efd7d3ebf5e41fa913d4182"
+}

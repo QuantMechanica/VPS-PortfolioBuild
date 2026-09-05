@@ -1,0 +1,111 @@
+{
+  "meta": {
+    "csv_path": "C:/QM/repo/docs/ops/evidence/2026-09-05_census_prescreen_retro/before/census_2026-09-05.csv",
+    "date": "2026-09-05",
+    "db_path": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "finer_csv_path": "C:/QM/repo/docs/ops/evidence/2026-09-05_census_prescreen_retro/before/census_finer_2026-09-05.csv",
+    "gate_chain": [
+      "Q02",
+      "Q03",
+      "Q04",
+      "Q05",
+      "Q06",
+      "Q07",
+      "Q08",
+      "Q09",
+      "Q10",
+      "Q11",
+      "Q12",
+      "Q13",
+      "Q14"
+    ],
+    "generated_at": "2026-09-05T12:47:44",
+    "json_path": "C:/QM/repo/docs/ops/evidence/2026-09-05_census_prescreen_retro/before/census_2026-09-05.json",
+    "limit": null
+  },
+  "summary": {
+    "by_disposition": {
+      "ECONOMIC_FAIL": 7555,
+      "INVALID": 1530,
+      "MISSING": 126,
+      "REUSABLE": 5451,
+      "STALE": 94
+    },
+    "by_earliest_missing_prerequisite": {
+      "NONE": 8,
+      "Q02": 7703,
+      "Q03": 5147,
+      "Q04": 1493,
+      "Q05": 139,
+      "Q06": 19,
+      "Q07": 68,
+      "Q08": 81,
+      "Q09": 14,
+      "Q10": 65,
+      "Q11": 1,
+      "Q12": 18
+    },
+    "by_frontier_class": {
+      "COMPLETE": 8,
+      "ECON_FAIL": 7555,
+      "INFRA": 1249,
+      "INVALID": 596,
+      "MISSING": 4921,
+      "OTHER": 314,
+      "STALE": 113
+    },
+    "by_highest_contiguous_valid_gate": {
+      "NONE": 7703,
+      "Q02": 5147,
+      "Q03": 1493,
+      "Q04": 139,
+      "Q05": 19,
+      "Q06": 68,
+      "Q07": 81,
+      "Q08": 14,
+      "Q09": 65,
+      "Q10": 1,
+      "Q11": 18,
+      "Q14": 8
+    },
+    "by_highest_observed_gate": {
+      "NONE": 2,
+      "Q02": 7726,
+      "Q03": 3,
+      "Q04": 6294,
+      "Q05": 358,
+      "Q06": 39,
+      "Q07": 85,
+      "Q08": 101,
+      "Q09": 3,
+      "Q10": 87,
+      "Q11": 22,
+      "Q12": 27,
+      "Q13": 1,
+      "Q14": 8
+    },
+    "by_macro_phase": {
+      "0_NONE": 2,
+      "1_STRATEGIEBEWEIS": 14746,
+      "2_OPTIMIERUNG": 8
+    },
+    "identity_coverage": {
+      "coverage_pct": 12.199,
+      "rows": 135728,
+      "rows_with_ex5_identity": 16557,
+      "source": "typed_columns"
+    },
+    "infra_vs_economic": {
+      "economic_fail_pairs": 7555,
+      "infra_blocked_frontier_pairs": 1249,
+      "invalid_disposition_pairs": 1530,
+      "non_reusable_pairs": 9305
+    },
+    "pairs_valid_at_least_Q08": 106,
+    "pairs_valid_at_least_Q10": 26,
+    "pairs_valid_at_least_Q16": 8,
+    "total_finer_keys": 5715,
+    "total_finer_rows": 6699,
+    "total_pairs": 14756
+  }
+}

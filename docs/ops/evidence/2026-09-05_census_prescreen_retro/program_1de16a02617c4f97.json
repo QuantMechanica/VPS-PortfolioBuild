@@ -1,0 +1,2285 @@
+{
+  "arm_decisions": {
+    "buy_003": {
+      "disposition": "SKIP",
+      "fire_counts": [
+        0,
+        2
+      ],
+      "proof": [
+        {
+          "net_profit": "1377.92",
+          "report_path": "D:\\QM\\reports\\work_items\\bf2f8113-2976-5c6d-b473-e573a2db27df\\QM5_41302\\20260902_194658\\raw\\run_01\\report.htm",
+          "report_sha256": "83d490927758665ae91bcdca338225011d939e4c0f5460e50d5de03d1817941c",
+          "summary_path": "D:\\QM\\reports\\work_items\\bf2f8113-2976-5c6d-b473-e573a2db27df\\QM5_41302\\20260902_194658\\summary.json",
+          "summary_sha256": "9c929c85c747870715c7c7db1a741ba6c624cd870a810e50e4a5e203f5d6a3a1",
+          "work_item_id": "bf2f8113-2976-5c6d-b473-e573a2db27df"
+        },
+        {
+          "net_profit": "1377.92",
+          "report_path": "D:\\QM\\reports\\work_items\\acf2adae-026f-5877-8f81-b97e002e8bab\\QM5_41302\\20260902_194241\\raw\\run_01\\report.htm",
+          "report_sha256": "ce3765219623ec967d6bb8eebea64cfc86af70cbba786e7f406b539f66c189d7",
+          "summary_path": "D:\\QM\\reports\\work_items\\acf2adae-026f-5877-8f81-b97e002e8bab\\QM5_41302\\20260902_194241\\summary.json",
+          "summary_sha256": "433225cc003197af472a57e98471a23b1bb46d2c3fc586acb4803297eb12bda5",
+          "work_item_id": "acf2adae-026f-5877-8f81-b97e002e8bab"
+        },
+        {
+          "net_profit": "1360.16",
+          "report_path": "D:\\QM\\reports\\work_items\\f1ccf4b7-29f8-5286-87fc-7a6588e71468\\QM5_41302\\20260903_224137\\raw\\run_01\\report.htm",
+          "report_sha256": "2931501bb943467ccb9619780966676358bd62ed28aa2feae0f4fe771a09bb9e",
+          "summary_path": "D:\\QM\\reports\\work_items\\f1ccf4b7-29f8-5286-87fc-7a6588e71468\\QM5_41302\\20260903_224137\\summary.json",
+          "summary_sha256": "25d00a2f57ffacf5e02e135479ebc6de9ffa7ede3a19901ee6f01a79e1d7a367",
+          "work_item_id": "f1ccf4b7-29f8-5286-87fc-7a6588e71468"
+        },
+        {
+          "net_profit": "3139.52",
+          "report_path": "D:\\QM\\reports\\work_items\\d087258d-e23a-5301-8fd9-b0b088af3ec4\\QM5_41302\\20260903_213623\\raw\\run_01\\report.htm",
+          "report_sha256": "62f3394b1e5f7265477e70c8592cd1e904169e39d9339c3012b16da47997046f",
+          "summary_path": "D:\\QM\\reports\\work_items\\d087258d-e23a-5301-8fd9-b0b088af3ec4\\QM5_41302\\20260903_213623\\summary.json",
+          "summary_sha256": "e12f3dd98915a683e17fca681d5c5e20e8526634f721b85fc26707cf1e1914fa",
+          "work_item_id": "d087258d-e23a-5301-8fd9-b0b088af3ec4"
+        }
+      ],
+      "reason": "B5_BELOW_THRESHOLD"
+    },
+    "buy_004": {
+      "disposition": "SKIP",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [
+        {
+          "net_profit": "1377.92",
+          "report_path": "D:\\QM\\reports\\work_items\\8d8e463a-03b0-57fd-9b7a-cc9a8c15a15d\\QM5_41302\\20260902_195011\\raw\\run_01\\report.htm",
+          "report_sha256": "1ed8bd51d383cd2e106949c10ce5ddf9260b228b84a298ee995953c532cfdc24",
+          "summary_path": "D:\\QM\\reports\\work_items\\8d8e463a-03b0-57fd-9b7a-cc9a8c15a15d\\QM5_41302\\20260902_195011\\summary.json",
+          "summary_sha256": "bb7cad41a83096218f79d8257fe8b8a6b3beae99e39925103278355cd1316d68",
+          "work_item_id": "8d8e463a-03b0-57fd-9b7a-cc9a8c15a15d"
+        },
+        {
+          "net_profit": "1377.92",
+          "report_path": "D:\\QM\\reports\\work_items\\acf2adae-026f-5877-8f81-b97e002e8bab\\QM5_41302\\20260902_194241\\raw\\run_01\\report.htm",
+          "report_sha256": "ce3765219623ec967d6bb8eebea64cfc86af70cbba786e7f406b539f66c189d7",
+          "summary_path": "D:\\QM\\reports\\work_items\\acf2adae-026f-5877-8f81-b97e002e8bab\\QM5_41302\\20260902_194241\\summary.json",
+          "summary_sha256": "433225cc003197af472a57e98471a23b1bb46d2c3fc586acb4803297eb12bda5",
+          "work_item_id": "acf2adae-026f-5877-8f81-b97e002e8bab"
+        },
+        {
+          "net_profit": "3139.52",
+          "report_path": "D:\\QM\\reports\\work_items\\06533ac5-23c5-50ba-9f84-49c3808e8a8a\\QM5_41302\\20260903_230128\\raw\\run_01\\report.htm",
+          "report_sha256": "0216ac8ff893f1688fee3ce8c85307096d1974624450e7782debced1a1461151",
+          "summary_path": "D:\\QM\\reports\\work_items\\06533ac5-23c5-50ba-9f84-49c3808e8a8a\\QM5_41302\\20260903_230128\\summary.json",
+          "summary_sha256": "aca6d64e9e747f3727e2cc4192f30f526dd6c7058beffe69572e4e27d286a58e",
+          "work_item_id": "06533ac5-23c5-50ba-9f84-49c3808e8a8a"
+        },
+        {
+          "net_profit": "3139.52",
+          "report_path": "D:\\QM\\reports\\work_items\\d087258d-e23a-5301-8fd9-b0b088af3ec4\\QM5_41302\\20260903_213623\\raw\\run_01\\report.htm",
+          "report_sha256": "62f3394b1e5f7265477e70c8592cd1e904169e39d9339c3012b16da47997046f",
+          "summary_path": "D:\\QM\\reports\\work_items\\d087258d-e23a-5301-8fd9-b0b088af3ec4\\QM5_41302\\20260903_213623\\summary.json",
+          "summary_sha256": "e12f3dd98915a683e17fca681d5c5e20e8526634f721b85fc26707cf1e1914fa",
+          "work_item_id": "d087258d-e23a-5301-8fd9-b0b088af3ec4"
+        }
+      ],
+      "reason": "B5_BELOW_THRESHOLD"
+    },
+    "buy_005": {
+      "disposition": "SKIP",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [
+        {
+          "net_profit": "1377.92",
+          "report_path": "D:\\QM\\reports\\work_items\\7a44fd8e-cb39-5f01-add9-4e5fff9ec5b1\\QM5_41302\\20260902_195447\\raw\\run_01\\report.htm",
+          "report_sha256": "3a80b6f516fc5f8010c46d5a4bfcffa946166cb78b5ce29ce0a902800ffe91b3",
+          "summary_path": "D:\\QM\\reports\\work_items\\7a44fd8e-cb39-5f01-add9-4e5fff9ec5b1\\QM5_41302\\20260902_195447\\summary.json",
+          "summary_sha256": "83255a6edd08f8911d7981777a8328020f38acb2498ac1bf23e4b6dab972e17e",
+          "work_item_id": "7a44fd8e-cb39-5f01-add9-4e5fff9ec5b1"
+        },
+        {
+          "net_profit": "1377.92",
+          "report_path": "D:\\QM\\reports\\work_items\\acf2adae-026f-5877-8f81-b97e002e8bab\\QM5_41302\\20260902_194241\\raw\\run_01\\report.htm",
+          "report_sha256": "ce3765219623ec967d6bb8eebea64cfc86af70cbba786e7f406b539f66c189d7",
+          "summary_path": "D:\\QM\\reports\\work_items\\acf2adae-026f-5877-8f81-b97e002e8bab\\QM5_41302\\20260902_194241\\summary.json",
+          "summary_sha256": "433225cc003197af472a57e98471a23b1bb46d2c3fc586acb4803297eb12bda5",
+          "work_item_id": "acf2adae-026f-5877-8f81-b97e002e8bab"
+        },
+        {
+          "net_profit": "3139.52",
+          "report_path": "D:\\QM\\reports\\work_items\\2cf7e7af-c9ea-55cc-b3ad-c881d83a10e4\\QM5_41302\\20260903_230714\\raw\\run_01\\report.htm",
+          "report_sha256": "be0e086f7f4516300231e1288379b72a9f98198e6762a41a10b2a1b27717f96b",
+          "summary_path": "D:\\QM\\reports\\work_items\\2cf7e7af-c9ea-55cc-b3ad-c881d83a10e4\\QM5_41302\\20260903_230714\\summary.json",
+          "summary_sha256": "d61bee83d67461c3735867f62e5b45230f81034b6a831c1c48d0f75565ddbb3b",
+          "work_item_id": "2cf7e7af-c9ea-55cc-b3ad-c881d83a10e4"
+        },
+        {
+          "net_profit": "3139.52",
+          "report_path": "D:\\QM\\reports\\work_items\\d087258d-e23a-5301-8fd9-b0b088af3ec4\\QM5_41302\\20260903_213623\\raw\\run_01\\report.htm",
+          "report_sha256": "62f3394b1e5f7265477e70c8592cd1e904169e39d9339c3012b16da47997046f",
+          "summary_path": "D:\\QM\\reports\\work_items\\d087258d-e23a-5301-8fd9-b0b088af3ec4\\QM5_41302\\20260903_213623\\summary.json",
+          "summary_sha256": "e12f3dd98915a683e17fca681d5c5e20e8526634f721b85fc26707cf1e1914fa",
+          "work_item_id": "d087258d-e23a-5301-8fd9-b0b088af3ec4"
+        }
+      ],
+      "reason": "B5_BELOW_THRESHOLD"
+    },
+    "buy_006": {
+      "disposition": "SKIP",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [
+        {
+          "net_profit": "1377.92",
+          "report_path": "D:\\QM\\reports\\work_items\\c54b8465-00f2-59e5-af2e-0f52d0667aa6\\QM5_41302\\20260902_195812\\raw\\run_01\\report.htm",
+          "report_sha256": "0a11cbb97d5565be239c077423b611181d51135d35e69438e820b6add199b780",
+          "summary_path": "D:\\QM\\reports\\work_items\\c54b8465-00f2-59e5-af2e-0f52d0667aa6\\QM5_41302\\20260902_195812\\summary.json",
+          "summary_sha256": "5754ee94017f5c9286a0686ac3dc6c902f637baf9f8d52dd012cb63baf9122b8",
+          "work_item_id": "c54b8465-00f2-59e5-af2e-0f52d0667aa6"
+        },
+        {
+          "net_profit": "1377.92",
+          "report_path": "D:\\QM\\reports\\work_items\\acf2adae-026f-5877-8f81-b97e002e8bab\\QM5_41302\\20260902_194241\\raw\\run_01\\report.htm",
+          "report_sha256": "ce3765219623ec967d6bb8eebea64cfc86af70cbba786e7f406b539f66c189d7",
+          "summary_path": "D:\\QM\\reports\\work_items\\acf2adae-026f-5877-8f81-b97e002e8bab\\QM5_41302\\20260902_194241\\summary.json",
+          "summary_sha256": "433225cc003197af472a57e98471a23b1bb46d2c3fc586acb4803297eb12bda5",
+          "work_item_id": "acf2adae-026f-5877-8f81-b97e002e8bab"
+        },
+        {
+          "net_profit": "3139.52",
+          "report_path": "D:\\QM\\reports\\work_items\\79095ff0-e308-59e2-850a-2209948acaca\\QM5_41302\\20260903_232254\\raw\\run_01\\report.htm",
+          "report_sha256": "011f2ea71c248a7ad061d60cb3fb301bce83583d96c3b93015ff826d3dc43e94",
+          "summary_path": "D:\\QM\\reports\\work_items\\79095ff0-e308-59e2-850a-2209948acaca\\QM5_41302\\20260903_232254\\summary.json",
+          "summary_sha256": "56a627e560304c1fe53e15cab9aea9e234c5063c9008959b447f20048df23cc3",
+          "work_item_id": "79095ff0-e308-59e2-850a-2209948acaca"
+        },
+        {
+          "net_profit": "3139.52",
+          "report_path": "D:\\QM\\reports\\work_items\\d087258d-e23a-5301-8fd9-b0b088af3ec4\\QM5_41302\\20260903_213623\\raw\\run_01\\report.htm",
+          "report_sha256": "62f3394b1e5f7265477e70c8592cd1e904169e39d9339c3012b16da47997046f",
+          "summary_path": "D:\\QM\\reports\\work_items\\d087258d-e23a-5301-8fd9-b0b088af3ec4\\QM5_41302\\20260903_213623\\summary.json",
+          "summary_sha256": "e12f3dd98915a683e17fca681d5c5e20e8526634f721b85fc26707cf1e1914fa",
+          "work_item_id": "d087258d-e23a-5301-8fd9-b0b088af3ec4"
+        }
+      ],
+      "reason": "B5_BELOW_THRESHOLD"
+    },
+    "buy_007": {
+      "disposition": "SKIP",
+      "fire_counts": [
+        1,
+        0
+      ],
+      "proof": [
+        {
+          "net_profit": "794.41",
+          "report_path": "D:\\QM\\reports\\work_items\\08a540b7-56fb-5d53-ae44-9cf046edf8cc\\QM5_41302\\20260902_200144\\raw\\run_01\\report.htm",
+          "report_sha256": "ede77d906d712b4d5faeef3dc589870d9aa6c82944a724dc5fd6dc891f55e563",
+          "summary_path": "D:\\QM\\reports\\work_items\\08a540b7-56fb-5d53-ae44-9cf046edf8cc\\QM5_41302\\20260902_200144\\summary.json",
+          "summary_sha256": "7e9d2dad9af6d611647a347174510f354f72ceb37efce19a5b26c3295b6b002c",
+          "work_item_id": "08a540b7-56fb-5d53-ae44-9cf046edf8cc"
+        },
+        {
+          "net_profit": "1377.92",
+          "report_path": "D:\\QM\\reports\\work_items\\acf2adae-026f-5877-8f81-b97e002e8bab\\QM5_41302\\20260902_194241\\raw\\run_01\\report.htm",
+          "report_sha256": "ce3765219623ec967d6bb8eebea64cfc86af70cbba786e7f406b539f66c189d7",
+          "summary_path": "D:\\QM\\reports\\work_items\\acf2adae-026f-5877-8f81-b97e002e8bab\\QM5_41302\\20260902_194241\\summary.json",
+          "summary_sha256": "433225cc003197af472a57e98471a23b1bb46d2c3fc586acb4803297eb12bda5",
+          "work_item_id": "acf2adae-026f-5877-8f81-b97e002e8bab"
+        },
+        {
+          "net_profit": "3139.52",
+          "report_path": "D:\\QM\\reports\\work_items\\e21d8f06-7cba-5965-8196-af4b863239c8\\QM5_41302\\20260903_233329\\raw\\run_01\\report.htm",
+          "report_sha256": "d963b034020076889143ab15418fa3941177e7bcc42d4789ed9928e944e86b95",
+          "summary_path": "D:\\QM\\reports\\work_items\\e21d8f06-7cba-5965-8196-af4b863239c8\\QM5_41302\\20260903_233329\\summary.json",
+          "summary_sha256": "f148cfeba2f741ab42d94cf9a6beef05c7724d90e6c70808290bdbfdfe1e4318",
+          "work_item_id": "e21d8f06-7cba-5965-8196-af4b863239c8"
+        },
+        {
+          "net_profit": "3139.52",
+          "report_path": "D:\\QM\\reports\\work_items\\d087258d-e23a-5301-8fd9-b0b088af3ec4\\QM5_41302\\20260903_213623\\raw\\run_01\\report.htm",
+          "report_sha256": "62f3394b1e5f7265477e70c8592cd1e904169e39d9339c3012b16da47997046f",
+          "summary_path": "D:\\QM\\reports\\work_items\\d087258d-e23a-5301-8fd9-b0b088af3ec4\\QM5_41302\\20260903_213623\\summary.json",
+          "summary_sha256": "e12f3dd98915a683e17fca681d5c5e20e8526634f721b85fc26707cf1e1914fa",
+          "work_item_id": "d087258d-e23a-5301-8fd9-b0b088af3ec4"
+        }
+      ],
+      "reason": "B5_BELOW_THRESHOLD"
+    },
+    "buy_008": {
+      "disposition": "SKIP",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [
+        {
+          "net_profit": "1377.92",
+          "report_path": "D:\\QM\\reports\\work_items\\2017f5fb-2dba-5ee3-9560-790b2f521d0a\\QM5_41302\\20260902_200620\\raw\\run_01\\report.htm",
+          "report_sha256": "4281f83ca5f597e5e71ac1caa84cb869e1a8d7f74179090e3ffd9f69979a9769",
+          "summary_path": "D:\\QM\\reports\\work_items\\2017f5fb-2dba-5ee3-9560-790b2f521d0a\\QM5_41302\\20260902_200620\\summary.json",
+          "summary_sha256": "bafc629611bc598dcf77e11b59ec868d96b17b83e0bf7dd6c128947345e36922",
+          "work_item_id": "2017f5fb-2dba-5ee3-9560-790b2f521d0a"
+        },
+        {
+          "net_profit": "1377.92",
+          "report_path": "D:\\QM\\reports\\work_items\\acf2adae-026f-5877-8f81-b97e002e8bab\\QM5_41302\\20260902_194241\\raw\\run_01\\report.htm",
+          "report_sha256": "ce3765219623ec967d6bb8eebea64cfc86af70cbba786e7f406b539f66c189d7",
+          "summary_path": "D:\\QM\\reports\\work_items\\acf2adae-026f-5877-8f81-b97e002e8bab\\QM5_41302\\20260902_194241\\summary.json",
+          "summary_sha256": "433225cc003197af472a57e98471a23b1bb46d2c3fc586acb4803297eb12bda5",
+          "work_item_id": "acf2adae-026f-5877-8f81-b97e002e8bab"
+        },
+        {
+          "net_profit": "3139.52",
+          "report_path": "D:\\QM\\reports\\work_items\\7bdf21fa-3bc2-576c-a620-00ebee59fcc4\\QM5_41302\\20260903_235008\\raw\\run_01\\report.htm",
+          "report_sha256": "014eb24108c4588cfd14c7ce29e095d9308e6015b8327e00a0a6dc18fe90b1e2",
+          "summary_path": "D:\\QM\\reports\\work_items\\7bdf21fa-3bc2-576c-a620-00ebee59fcc4\\QM5_41302\\20260903_235008\\summary.json",
+          "summary_sha256": "4bf340e533ac5da276aae44b87c72d682521d344ec7da9da36ff8a3d02af607c",
+          "work_item_id": "7bdf21fa-3bc2-576c-a620-00ebee59fcc4"
+        },
+        {
+          "net_profit": "3139.52",
+          "report_path": "D:\\QM\\reports\\work_items\\d087258d-e23a-5301-8fd9-b0b088af3ec4\\QM5_41302\\20260903_213623\\raw\\run_01\\report.htm",
+          "report_sha256": "62f3394b1e5f7265477e70c8592cd1e904169e39d9339c3012b16da47997046f",
+          "summary_path": "D:\\QM\\reports\\work_items\\d087258d-e23a-5301-8fd9-b0b088af3ec4\\QM5_41302\\20260903_213623\\summary.json",
+          "summary_sha256": "e12f3dd98915a683e17fca681d5c5e20e8526634f721b85fc26707cf1e1914fa",
+          "work_item_id": "d087258d-e23a-5301-8fd9-b0b088af3ec4"
+        }
+      ],
+      "reason": "B5_BELOW_THRESHOLD"
+    },
+    "buy_009": {
+      "disposition": "SKIP",
+      "fire_counts": [
+        1,
+        0
+      ],
+      "proof": [
+        {
+          "net_profit": "794.41",
+          "report_path": "D:\\QM\\reports\\work_items\\0ffbcbc5-ffec-572d-9442-5395a65a0a06\\QM5_41302\\20260902_201251\\raw\\run_01\\report.htm",
+          "report_sha256": "743bb244fe27ae2b9782d66ba0cccf686d757b035b8bb5d6c093f3930501622f",
+          "summary_path": "D:\\QM\\reports\\work_items\\0ffbcbc5-ffec-572d-9442-5395a65a0a06\\QM5_41302\\20260902_201251\\summary.json",
+          "summary_sha256": "28acee5f404df3f87e75ce773536e77b4336563d2da7c0b75989be42fcb0ea06",
+          "work_item_id": "0ffbcbc5-ffec-572d-9442-5395a65a0a06"
+        },
+        {
+          "net_profit": "1377.92",
+          "report_path": "D:\\QM\\reports\\work_items\\acf2adae-026f-5877-8f81-b97e002e8bab\\QM5_41302\\20260902_194241\\raw\\run_01\\report.htm",
+          "report_sha256": "ce3765219623ec967d6bb8eebea64cfc86af70cbba786e7f406b539f66c189d7",
+          "summary_path": "D:\\QM\\reports\\work_items\\acf2adae-026f-5877-8f81-b97e002e8bab\\QM5_41302\\20260902_194241\\summary.json",
+          "summary_sha256": "433225cc003197af472a57e98471a23b1bb46d2c3fc586acb4803297eb12bda5",
+          "work_item_id": "acf2adae-026f-5877-8f81-b97e002e8bab"
+        },
+        {
+          "net_profit": "3139.52",
+          "report_path": "D:\\QM\\reports\\work_items\\0fa0ffc7-7f05-5790-b44b-95fc6336178f\\QM5_41302\\20260904_004506\\raw\\run_01\\report.htm",
+          "report_sha256": "470f9f0b4f86194d27f4c7ae5ff1fae0df1330fe55359d38b71140e86191c0a3",
+          "summary_path": "D:\\QM\\reports\\work_items\\0fa0ffc7-7f05-5790-b44b-95fc6336178f\\QM5_41302\\20260904_004506\\summary.json",
+          "summary_sha256": "bf20ac9b9d1b4f649a9e28e217bd2ecc81fbe39d12649a47cefe8764b776cbd8",
+          "work_item_id": "0fa0ffc7-7f05-5790-b44b-95fc6336178f"
+        },
+        {
+          "net_profit": "3139.52",
+          "report_path": "D:\\QM\\reports\\work_items\\d087258d-e23a-5301-8fd9-b0b088af3ec4\\QM5_41302\\20260903_213623\\raw\\run_01\\report.htm",
+          "report_sha256": "62f3394b1e5f7265477e70c8592cd1e904169e39d9339c3012b16da47997046f",
+          "summary_path": "D:\\QM\\reports\\work_items\\d087258d-e23a-5301-8fd9-b0b088af3ec4\\QM5_41302\\20260903_213623\\summary.json",
+          "summary_sha256": "e12f3dd98915a683e17fca681d5c5e20e8526634f721b85fc26707cf1e1914fa",
+          "work_item_id": "d087258d-e23a-5301-8fd9-b0b088af3ec4"
+        }
+      ],
+      "reason": "B5_BELOW_THRESHOLD"
+    },
+    "buy_010": {
+      "disposition": "SKIP",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [
+        {
+          "net_profit": "1377.92",
+          "report_path": "D:\\QM\\reports\\work_items\\d0f69701-955d-52f0-9f15-3dcae6c8e747\\QM5_41302\\20260902_201802\\raw\\run_01\\report.htm",
+          "report_sha256": "ea60766d421ec29095c37007f2f01ec4f7d0662e7a74951b8685700b35e6babf",
+          "summary_path": "D:\\QM\\reports\\work_items\\d0f69701-955d-52f0-9f15-3dcae6c8e747\\QM5_41302\\20260902_201802\\summary.json",
+          "summary_sha256": "031749dfb49a12cae060c0ed8c5e8e6b46299bbba5c70a95f4d4c1a41ba48e72",
+          "work_item_id": "d0f69701-955d-52f0-9f15-3dcae6c8e747"
+        },
+        {
+          "net_profit": "1377.92",
+          "report_path": "D:\\QM\\reports\\work_items\\acf2adae-026f-5877-8f81-b97e002e8bab\\QM5_41302\\20260902_194241\\raw\\run_01\\report.htm",
+          "report_sha256": "ce3765219623ec967d6bb8eebea64cfc86af70cbba786e7f406b539f66c189d7",
+          "summary_path": "D:\\QM\\reports\\work_items\\acf2adae-026f-5877-8f81-b97e002e8bab\\QM5_41302\\20260902_194241\\summary.json",
+          "summary_sha256": "433225cc003197af472a57e98471a23b1bb46d2c3fc586acb4803297eb12bda5",
+          "work_item_id": "acf2adae-026f-5877-8f81-b97e002e8bab"
+        },
+        {
+          "net_profit": "3139.52",
+          "report_path": "D:\\QM\\reports\\work_items\\30c213b2-f6b5-54cd-9e0a-e6779e72e6b7\\QM5_41302\\20260904_010731\\raw\\run_01\\report.htm",
+          "report_sha256": "2888208e55970c3d5e1c8df7bd3e05b4f3ff6e5ede76f248981b177f890bc393",
+          "summary_path": "D:\\QM\\reports\\work_items\\30c213b2-f6b5-54cd-9e0a-e6779e72e6b7\\QM5_41302\\20260904_010731\\summary.json",
+          "summary_sha256": "c85362740422203fb789eb2c8b66f843e7cb21d34dd1ebcefa76b25bb64593e8",
+          "work_item_id": "30c213b2-f6b5-54cd-9e0a-e6779e72e6b7"
+        },
+        {
+          "net_profit": "3139.52",
+          "report_path": "D:\\QM\\reports\\work_items\\d087258d-e23a-5301-8fd9-b0b088af3ec4\\QM5_41302\\20260903_213623\\raw\\run_01\\report.htm",
+          "report_sha256": "62f3394b1e5f7265477e70c8592cd1e904169e39d9339c3012b16da47997046f",
+          "summary_path": "D:\\QM\\reports\\work_items\\d087258d-e23a-5301-8fd9-b0b088af3ec4\\QM5_41302\\20260903_213623\\summary.json",
+          "summary_sha256": "e12f3dd98915a683e17fca681d5c5e20e8526634f721b85fc26707cf1e1914fa",
+          "work_item_id": "d087258d-e23a-5301-8fd9-b0b088af3ec4"
+        }
+      ],
+      "reason": "B5_BELOW_THRESHOLD"
+    },
+    "buy_011": {
+      "disposition": "SKIP",
+      "fire_counts": [
+        1,
+        0
+      ],
+      "proof": [
+        {
+          "net_profit": "794.41",
+          "report_path": "D:\\QM\\reports\\work_items\\d33b0079-cf6e-51b2-9e5c-2ee5317671a9\\QM5_41302\\20260902_202138\\raw\\run_01\\report.htm",
+          "report_sha256": "2c7b8586c313b548059223045161ac779eebb18928d56a8b39008a2b0b46a71d",
+          "summary_path": "D:\\QM\\reports\\work_items\\d33b0079-cf6e-51b2-9e5c-2ee5317671a9\\QM5_41302\\20260902_202138\\summary.json",
+          "summary_sha256": "43fa76ae9854eb411440064074d0847d67e9d15e69aa637fac8ad6ffa61dc09e",
+          "work_item_id": "d33b0079-cf6e-51b2-9e5c-2ee5317671a9"
+        },
+        {
+          "net_profit": "1377.92",
+          "report_path": "D:\\QM\\reports\\work_items\\acf2adae-026f-5877-8f81-b97e002e8bab\\QM5_41302\\20260902_194241\\raw\\run_01\\report.htm",
+          "report_sha256": "ce3765219623ec967d6bb8eebea64cfc86af70cbba786e7f406b539f66c189d7",
+          "summary_path": "D:\\QM\\reports\\work_items\\acf2adae-026f-5877-8f81-b97e002e8bab\\QM5_41302\\20260902_194241\\summary.json",
+          "summary_sha256": "433225cc003197af472a57e98471a23b1bb46d2c3fc586acb4803297eb12bda5",
+          "work_item_id": "acf2adae-026f-5877-8f81-b97e002e8bab"
+        },
+        {
+          "net_profit": "3139.52",
+          "report_path": "D:\\QM\\reports\\work_items\\ad3d1bb0-8cea-504c-8a17-2c40bc87c3e5\\QM5_41302\\20260904_012401\\raw\\run_01\\report.htm",
+          "report_sha256": "8ad4b75aaf5bc4813e9f5513566b4b325c7bc9184c413a593d00c727b77d5182",
+          "summary_path": "D:\\QM\\reports\\work_items\\ad3d1bb0-8cea-504c-8a17-2c40bc87c3e5\\QM5_41302\\20260904_012401\\summary.json",
+          "summary_sha256": "e28b4c6ff9151ecac4c5068f064c3bf146236fbfe136881d0b59733a42828187",
+          "work_item_id": "ad3d1bb0-8cea-504c-8a17-2c40bc87c3e5"
+        },
+        {
+          "net_profit": "3139.52",
+          "report_path": "D:\\QM\\reports\\work_items\\d087258d-e23a-5301-8fd9-b0b088af3ec4\\QM5_41302\\20260903_213623\\raw\\run_01\\report.htm",
+          "report_sha256": "62f3394b1e5f7265477e70c8592cd1e904169e39d9339c3012b16da47997046f",
+          "summary_path": "D:\\QM\\reports\\work_items\\d087258d-e23a-5301-8fd9-b0b088af3ec4\\QM5_41302\\20260903_213623\\summary.json",
+          "summary_sha256": "e12f3dd98915a683e17fca681d5c5e20e8526634f721b85fc26707cf1e1914fa",
+          "work_item_id": "d087258d-e23a-5301-8fd9-b0b088af3ec4"
+        }
+      ],
+      "reason": "B5_BELOW_THRESHOLD"
+    },
+    "buy_012": {
+      "disposition": "SKIP",
+      "fire_counts": [
+        0,
+        1
+      ],
+      "proof": [
+        {
+          "net_profit": "1377.92",
+          "report_path": "D:\\QM\\reports\\work_items\\566ef9d2-8da2-520d-86d5-a4e7ebf76f6a\\QM5_41302\\20260902_203008\\raw\\run_01\\report.htm",
+          "report_sha256": "3bb1bacf88525d7237256fd5d34c66da784d4ae23c66b6fbeaa5843017d44a1f",
+          "summary_path": "D:\\QM\\reports\\work_items\\566ef9d2-8da2-520d-86d5-a4e7ebf76f6a\\QM5_41302\\20260902_203008\\summary.json",
+          "summary_sha256": "6f9e1cc30e42543cd1f7a544d7b941686884c173211c986a7837716f6230adb1",
+          "work_item_id": "566ef9d2-8da2-520d-86d5-a4e7ebf76f6a"
+        },
+        {
+          "net_profit": "1377.92",
+          "report_path": "D:\\QM\\reports\\work_items\\acf2adae-026f-5877-8f81-b97e002e8bab\\QM5_41302\\20260902_194241\\raw\\run_01\\report.htm",
+          "report_sha256": "ce3765219623ec967d6bb8eebea64cfc86af70cbba786e7f406b539f66c189d7",
+          "summary_path": "D:\\QM\\reports\\work_items\\acf2adae-026f-5877-8f81-b97e002e8bab\\QM5_41302\\20260902_194241\\summary.json",
+          "summary_sha256": "433225cc003197af472a57e98471a23b1bb46d2c3fc586acb4803297eb12bda5",
+          "work_item_id": "acf2adae-026f-5877-8f81-b97e002e8bab"
+        },
+        {
+          "net_profit": "2746.76",
+          "report_path": "D:\\QM\\reports\\work_items\\4c99ddc0-7be0-5a2f-b937-f88b0c3e6616\\QM5_41302\\20260904_041625\\raw\\run_01\\report.htm",
+          "report_sha256": "497d810b1bdb098436bf301b9d3eae4c144d20ba53d1ec2355b61cbf64114064",
+          "summary_path": "D:\\QM\\reports\\work_items\\4c99ddc0-7be0-5a2f-b937-f88b0c3e6616\\QM5_41302\\20260904_041625\\summary.json",
+          "summary_sha256": "957b3088ace5fc459db123ec11f20016def68a0d75e869a21bc4c70224cd5089",
+          "work_item_id": "4c99ddc0-7be0-5a2f-b937-f88b0c3e6616"
+        },
+        {
+          "net_profit": "3139.52",
+          "report_path": "D:\\QM\\reports\\work_items\\d087258d-e23a-5301-8fd9-b0b088af3ec4\\QM5_41302\\20260903_213623\\raw\\run_01\\report.htm",
+          "report_sha256": "62f3394b1e5f7265477e70c8592cd1e904169e39d9339c3012b16da47997046f",
+          "summary_path": "D:\\QM\\reports\\work_items\\d087258d-e23a-5301-8fd9-b0b088af3ec4\\QM5_41302\\20260903_213623\\summary.json",
+          "summary_sha256": "e12f3dd98915a683e17fca681d5c5e20e8526634f721b85fc26707cf1e1914fa",
+          "work_item_id": "d087258d-e23a-5301-8fd9-b0b088af3ec4"
+        }
+      ],
+      "reason": "B5_BELOW_THRESHOLD"
+    },
+    "buy_013": {
+      "disposition": "SKIP",
+      "fire_counts": [
+        1,
+        0
+      ],
+      "proof": [
+        {
+          "net_profit": "794.41",
+          "report_path": "D:\\QM\\reports\\work_items\\fab22e76-9021-52c8-a57a-295cea6d3ff1\\QM5_41302\\20260902_203550\\raw\\run_01\\report.htm",
+          "report_sha256": "622b191939801ce99676b95233b70715db6e1136ca109a1ae09904d5c1aa97c3",
+          "summary_path": "D:\\QM\\reports\\work_items\\fab22e76-9021-52c8-a57a-295cea6d3ff1\\QM5_41302\\20260902_203550\\summary.json",
+          "summary_sha256": "b0ad2e829d8d259330567509c6f3c48baf551d264a16427c3e241227ce7ce835",
+          "work_item_id": "fab22e76-9021-52c8-a57a-295cea6d3ff1"
+        },
+        {
+          "net_profit": "1377.92",
+          "report_path": "D:\\QM\\reports\\work_items\\acf2adae-026f-5877-8f81-b97e002e8bab\\QM5_41302\\20260902_194241\\raw\\run_01\\report.htm",
+          "report_sha256": "ce3765219623ec967d6bb8eebea64cfc86af70cbba786e7f406b539f66c189d7",
+          "summary_path": "D:\\QM\\reports\\work_items\\acf2adae-026f-5877-8f81-b97e002e8bab\\QM5_41302\\20260902_194241\\summary.json",
+          "summary_sha256": "433225cc003197af472a57e98471a23b1bb46d2c3fc586acb4803297eb12bda5",
+          "work_item_id": "acf2adae-026f-5877-8f81-b97e002e8bab"
+        },
+        {
+          "net_profit": "3139.52",
+          "report_path": "D:\\QM\\reports\\work_items\\d34fd62b-cf4c-5013-9dcc-2175d4a63632\\QM5_41302\\20260904_214247\\raw\\run_01\\report.htm",
+          "report_sha256": "0317d25b5547204b195c58f34ec4cfe5fa041eeaf34368c88c466149a73e78e9",
+          "summary_path": "D:\\QM\\reports\\work_items\\d34fd62b-cf4c-5013-9dcc-2175d4a63632\\QM5_41302\\20260904_214247\\summary.json",
+          "summary_sha256": "6e311882d1abaa6dd9087dccc810254f5495c29dd79bf8c91a425559b983f003",
+          "work_item_id": "d34fd62b-cf4c-5013-9dcc-2175d4a63632"
+        },
+        {
+          "net_profit": "3139.52",
+          "report_path": "D:\\QM\\reports\\work_items\\d087258d-e23a-5301-8fd9-b0b088af3ec4\\QM5_41302\\20260903_213623\\raw\\run_01\\report.htm",
+          "report_sha256": "62f3394b1e5f7265477e70c8592cd1e904169e39d9339c3012b16da47997046f",
+          "summary_path": "D:\\QM\\reports\\work_items\\d087258d-e23a-5301-8fd9-b0b088af3ec4\\QM5_41302\\20260903_213623\\summary.json",
+          "summary_sha256": "e12f3dd98915a683e17fca681d5c5e20e8526634f721b85fc26707cf1e1914fa",
+          "work_item_id": "d087258d-e23a-5301-8fd9-b0b088af3ec4"
+        }
+      ],
+      "reason": "B5_BELOW_THRESHOLD"
+    },
+    "buy_014": {
+      "disposition": "SKIP",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [
+        {
+          "net_profit": "1377.92",
+          "report_path": "D:\\QM\\reports\\work_items\\dddc6dd5-868a-5224-97ea-a43e0c6d5004\\QM5_41302\\20260902_204028\\raw\\run_01\\report.htm",
+          "report_sha256": "4ac021ba14ec4e43e52c1d1eb1c10fbe9b2de0958a22ef9e15a5da880a745d43",
+          "summary_path": "D:\\QM\\reports\\work_items\\dddc6dd5-868a-5224-97ea-a43e0c6d5004\\QM5_41302\\20260902_204028\\summary.json",
+          "summary_sha256": "2a5f1f9ae543ba4f1b89e7d6ef0956908f4dab814ca2e6a57e3166cc88c04c15",
+          "work_item_id": "dddc6dd5-868a-5224-97ea-a43e0c6d5004"
+        },
+        {
+          "net_profit": "1377.92",
+          "report_path": "D:\\QM\\reports\\work_items\\acf2adae-026f-5877-8f81-b97e002e8bab\\QM5_41302\\20260902_194241\\raw\\run_01\\report.htm",
+          "report_sha256": "ce3765219623ec967d6bb8eebea64cfc86af70cbba786e7f406b539f66c189d7",
+          "summary_path": "D:\\QM\\reports\\work_items\\acf2adae-026f-5877-8f81-b97e002e8bab\\QM5_41302\\20260902_194241\\summary.json",
+          "summary_sha256": "433225cc003197af472a57e98471a23b1bb46d2c3fc586acb4803297eb12bda5",
+          "work_item_id": "acf2adae-026f-5877-8f81-b97e002e8bab"
+        },
+        {
+          "net_profit": "3139.52",
+          "report_path": "D:\\QM\\reports\\work_items\\3b728450-d536-503a-8720-0e432b2688a3\\QM5_41302\\20260905_060434\\raw\\run_01\\report.htm",
+          "report_sha256": "4361b21f58eacf66f8ad679b38f493ad4edf176e36e5226c23b416a49ef65740",
+          "summary_path": "D:\\QM\\reports\\work_items\\3b728450-d536-503a-8720-0e432b2688a3\\QM5_41302\\20260905_060434\\summary.json",
+          "summary_sha256": "ffa1d9cc8b8d2401f755f54c4544c4ec6086b4e2cdbc75ce490b8b2151e31885",
+          "work_item_id": "3b728450-d536-503a-8720-0e432b2688a3"
+        },
+        {
+          "net_profit": "3139.52",
+          "report_path": "D:\\QM\\reports\\work_items\\d087258d-e23a-5301-8fd9-b0b088af3ec4\\QM5_41302\\20260903_213623\\raw\\run_01\\report.htm",
+          "report_sha256": "62f3394b1e5f7265477e70c8592cd1e904169e39d9339c3012b16da47997046f",
+          "summary_path": "D:\\QM\\reports\\work_items\\d087258d-e23a-5301-8fd9-b0b088af3ec4\\QM5_41302\\20260903_213623\\summary.json",
+          "summary_sha256": "e12f3dd98915a683e17fca681d5c5e20e8526634f721b85fc26707cf1e1914fa",
+          "work_item_id": "d087258d-e23a-5301-8fd9-b0b088af3ec4"
+        }
+      ],
+      "reason": "B5_BELOW_THRESHOLD"
+    },
+    "buy_015": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_016": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        1,
+        5
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_017": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_018": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_019": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        1
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_020": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_021": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_022": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        1,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_023": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_024": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_025": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_026": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_027": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_028": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_029": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        1,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_030": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_031": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_032": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_033": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        1
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_034": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_035": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_036": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_037": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_038": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_039": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_040": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_041": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        1,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_042": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        2
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_043": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        1
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_044": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        3,
+        4
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_045": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_046": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_047": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_048": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_049": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_050": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_051": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        4,
+        7
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_052": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        1
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_053": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        2,
+        3
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_054": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        1
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_055": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        4,
+        5
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_056": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_057": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        2
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_058": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        5,
+        4
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_059": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        1
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_060": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        3,
+        4
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_077": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        1,
+        5
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_078": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        4,
+        3
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_079": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        1,
+        1
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_080": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        1,
+        1
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_081": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_082": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        1,
+        2
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_083": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        1,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_084": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        1,
+        2
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_087": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        4,
+        2
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_088": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        2,
+        3
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_089": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_090": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        4,
+        1
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_091": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_092": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        1
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_093": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        2,
+        3
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_094": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        1
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_098": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_099": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        2
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "buy_100": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_003": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_004": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_005": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_006": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_007": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_008": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_009": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_010": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        2,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_011": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_012": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        2,
+        1
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_013": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_014": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_015": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_016": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_017": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_018": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_019": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_020": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        1
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_021": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        1,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_022": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_023": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_024": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_025": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_026": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        1,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_027": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_028": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        1,
+        1
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_029": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_030": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        1,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_031": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_032": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_033": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_034": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        1
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_035": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_036": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_037": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_038": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_039": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        1,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_040": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_041": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        1
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_042": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_043": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_044": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        1,
+        2
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_045": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_046": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_047": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_048": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_049": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_050": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_051": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_052": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        5,
+        1
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_053": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_054": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        1,
+        1
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_055": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_056": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        4,
+        1
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_057": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_058": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        1,
+        2
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_059": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_060": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        1
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_077": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_078": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        2,
+        1
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_079": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        2,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_080": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        4,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_081": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        2,
+        1
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_082": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        2
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_083": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        2
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_084": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        1,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_087": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        2,
+        1
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_088": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_089": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_090": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        2
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_091": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_092": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_093": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_094": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        1,
+        2
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_098": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_099": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    },
+    "sell_100": {
+      "disposition": "UNKNOWN",
+      "fire_counts": [
+        0,
+        0
+      ],
+      "proof": [],
+      "reason": "STAGE1_NOT_MEASURED"
+    }
+  },
+  "backup": {
+    "canonical_hold_backend_sha256": "bf54e7343f33de18ac2a92490f16ab0ca0f8153dbdd5048b35bf9c9613e64ecd",
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\prescreen_retro\\farm_state_before_governed_hold_20260905T104944Z.sqlite",
+    "plan_sha256": "dc85616ca80a5890c0b5459682240c6aa95ec628ca11bfcd776e25c9c9c236bc",
+    "sha256": "ad450b372069e66c70d8120a8f152bb7380048d58456d5bdb55e1e9502cde75c"
+  },
+  "candidate_holds": 50,
+  "classification_counts": {
+    "SKIP": 12,
+    "UNKNOWN": 142
+  },
+  "contract": {
+    "contract_sha256": "76168e15d7ae2c9ea9517a0001a7b6f9cc0d5f35d007f2c5e1d0e0520d463a77",
+    "decision_id": "OWNER-DEC-D1-PRESCREEN-20260905",
+    "declared_trial_count": 154,
+    "manifest_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_census_prescreen_retro\\contracts\\manifest_20260905T104011780732Z.json",
+    "manifest_sha256": "7d6da7ffef3b5b0b03ad5e97af973a4a44859dfdc2b4eb12c0547d7d53d12213",
+    "net_profit_relative_uplift": "0.05",
+    "protected_years": [],
+    "relative_base_rule": "STRICTLY_POSITIVE_BASELINE_AS_EXISTING_SELECTOR",
+    "schema": "qm.dl089-prescreen/v1",
+    "stage1_years": [
+      2019,
+      2020
+    ],
+    "threshold": 5
+  },
+  "count_error": null,
+  "created_at": "2026-09-05T10:50:09.598701+00:00",
+  "decision_id": "OWNER-DEC-D1-PRESCREEN-20260905",
+  "declaration_sha256": "707a882f884037adc47612520077923a8dda67e7041d98b74d0409c72ee7caae",
+  "declared_trial_count": 154,
+  "ea_id": "QM5_41302",
+  "estimated_hours_saved": 0.5154639175257731,
+  "evidence_errors": {},
+  "held_targets": [
+    {
+      "arm": "buy_004",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2021:buy_004",
+      "direction": "BUY",
+      "id": "5c5dde4d-c591-5b42-900b-2d32d56b7fd1",
+      "predicate_id": 4,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2021_buy_004.set",
+      "year": 2021
+    },
+    {
+      "arm": "buy_004",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2022:buy_004",
+      "direction": "BUY",
+      "id": "e6d24be1-d6ec-5f18-bb25-07e12c9d85b4",
+      "predicate_id": 4,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2022_buy_004.set",
+      "year": 2022
+    },
+    {
+      "arm": "buy_004",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2023:buy_004",
+      "direction": "BUY",
+      "id": "f94c756e-26ca-53d5-88e1-bb329e398d0d",
+      "predicate_id": 4,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2023_buy_004.set",
+      "year": 2023
+    },
+    {
+      "arm": "buy_004",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2024:buy_004",
+      "direction": "BUY",
+      "id": "c4f58f1c-7b62-5f48-a88c-09ddb9cb64f1",
+      "predicate_id": 4,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2024_buy_004.set",
+      "year": 2024
+    },
+    {
+      "arm": "buy_004",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2025:buy_004",
+      "direction": "BUY",
+      "id": "036b213d-114a-5192-a16e-54f54d4161b4",
+      "predicate_id": 4,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2025_buy_004.set",
+      "year": 2025
+    },
+    {
+      "arm": "buy_005",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2021:buy_005",
+      "direction": "BUY",
+      "id": "3540fd46-dd2d-57c3-8c30-042b3fdeb826",
+      "predicate_id": 5,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2021_buy_005.set",
+      "year": 2021
+    },
+    {
+      "arm": "buy_005",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2022:buy_005",
+      "direction": "BUY",
+      "id": "68edf20d-22dd-5b74-a4fa-c204de5c7cc4",
+      "predicate_id": 5,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2022_buy_005.set",
+      "year": 2022
+    },
+    {
+      "arm": "buy_005",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2023:buy_005",
+      "direction": "BUY",
+      "id": "a85fc85a-d875-5df7-a3a1-a4b63c87d7e9",
+      "predicate_id": 5,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2023_buy_005.set",
+      "year": 2023
+    },
+    {
+      "arm": "buy_005",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2024:buy_005",
+      "direction": "BUY",
+      "id": "5e89c749-446b-5ea9-b198-c8ec64f456d3",
+      "predicate_id": 5,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2024_buy_005.set",
+      "year": 2024
+    },
+    {
+      "arm": "buy_005",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2025:buy_005",
+      "direction": "BUY",
+      "id": "6f810427-2058-56b2-9326-5d3542831185",
+      "predicate_id": 5,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2025_buy_005.set",
+      "year": 2025
+    },
+    {
+      "arm": "buy_006",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2021:buy_006",
+      "direction": "BUY",
+      "id": "65e68ca6-c16e-5048-9b6f-8a8ec0a7c876",
+      "predicate_id": 6,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2021_buy_006.set",
+      "year": 2021
+    },
+    {
+      "arm": "buy_006",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2022:buy_006",
+      "direction": "BUY",
+      "id": "5852b065-06d0-5020-9959-932dca64aed0",
+      "predicate_id": 6,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2022_buy_006.set",
+      "year": 2022
+    },
+    {
+      "arm": "buy_006",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2023:buy_006",
+      "direction": "BUY",
+      "id": "55ec2876-6e4c-5f4f-906a-1912de1354cf",
+      "predicate_id": 6,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2023_buy_006.set",
+      "year": 2023
+    },
+    {
+      "arm": "buy_006",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2024:buy_006",
+      "direction": "BUY",
+      "id": "adf62332-56ba-5786-b855-876a84a26349",
+      "predicate_id": 6,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2024_buy_006.set",
+      "year": 2024
+    },
+    {
+      "arm": "buy_006",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2025:buy_006",
+      "direction": "BUY",
+      "id": "b5037236-7ff6-5e83-9222-2778fd4f0432",
+      "predicate_id": 6,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2025_buy_006.set",
+      "year": 2025
+    },
+    {
+      "arm": "buy_007",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2021:buy_007",
+      "direction": "BUY",
+      "id": "ced84396-c714-5c30-9d52-d008b2b7b80a",
+      "predicate_id": 7,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2021_buy_007.set",
+      "year": 2021
+    },
+    {
+      "arm": "buy_007",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2022:buy_007",
+      "direction": "BUY",
+      "id": "8e7489bb-d577-566d-9a7b-d25896295db6",
+      "predicate_id": 7,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2022_buy_007.set",
+      "year": 2022
+    },
+    {
+      "arm": "buy_007",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2023:buy_007",
+      "direction": "BUY",
+      "id": "99ebfb88-62cf-5947-9bac-ad869bf7c471",
+      "predicate_id": 7,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2023_buy_007.set",
+      "year": 2023
+    },
+    {
+      "arm": "buy_007",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2024:buy_007",
+      "direction": "BUY",
+      "id": "ab14eb42-ef7a-5a08-ab6f-c185ebf7e00b",
+      "predicate_id": 7,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2024_buy_007.set",
+      "year": 2024
+    },
+    {
+      "arm": "buy_007",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2025:buy_007",
+      "direction": "BUY",
+      "id": "7d3549cc-6b43-5d26-9c5a-0fec37eb9e99",
+      "predicate_id": 7,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2025_buy_007.set",
+      "year": 2025
+    },
+    {
+      "arm": "buy_008",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2021:buy_008",
+      "direction": "BUY",
+      "id": "2099536a-2a77-57ba-aced-578c833f99b0",
+      "predicate_id": 8,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2021_buy_008.set",
+      "year": 2021
+    },
+    {
+      "arm": "buy_008",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2022:buy_008",
+      "direction": "BUY",
+      "id": "177462c9-7d30-53d0-9e08-f31daf9e5474",
+      "predicate_id": 8,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2022_buy_008.set",
+      "year": 2022
+    },
+    {
+      "arm": "buy_008",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2023:buy_008",
+      "direction": "BUY",
+      "id": "81e93d81-66fd-5c17-8868-35a87886f51a",
+      "predicate_id": 8,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2023_buy_008.set",
+      "year": 2023
+    },
+    {
+      "arm": "buy_008",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2024:buy_008",
+      "direction": "BUY",
+      "id": "222de1b4-ac0c-5891-bbf3-85b2111d4669",
+      "predicate_id": 8,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2024_buy_008.set",
+      "year": 2024
+    },
+    {
+      "arm": "buy_008",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2025:buy_008",
+      "direction": "BUY",
+      "id": "95fe725c-c297-590f-8e7d-0d75e23b19e2",
+      "predicate_id": 8,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2025_buy_008.set",
+      "year": 2025
+    },
+    {
+      "arm": "buy_009",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2021:buy_009",
+      "direction": "BUY",
+      "id": "a9bcf534-83ab-537c-ac65-79cdfc436638",
+      "predicate_id": 9,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2021_buy_009.set",
+      "year": 2021
+    },
+    {
+      "arm": "buy_009",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2022:buy_009",
+      "direction": "BUY",
+      "id": "cd062840-d78f-5f6d-b379-b1198af41f5e",
+      "predicate_id": 9,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2022_buy_009.set",
+      "year": 2022
+    },
+    {
+      "arm": "buy_009",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2023:buy_009",
+      "direction": "BUY",
+      "id": "3136e367-75d0-5236-91e6-4a1bf48f6097",
+      "predicate_id": 9,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2023_buy_009.set",
+      "year": 2023
+    },
+    {
+      "arm": "buy_009",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2024:buy_009",
+      "direction": "BUY",
+      "id": "ccec1e92-db6b-504c-8a1d-dee182e3e43d",
+      "predicate_id": 9,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2024_buy_009.set",
+      "year": 2024
+    },
+    {
+      "arm": "buy_009",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2025:buy_009",
+      "direction": "BUY",
+      "id": "f5bb20d9-8561-527e-a1c5-55005b8bd243",
+      "predicate_id": 9,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2025_buy_009.set",
+      "year": 2025
+    },
+    {
+      "arm": "buy_010",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2021:buy_010",
+      "direction": "BUY",
+      "id": "b3e06dc1-cee7-5eee-93a4-9c378fd0abf8",
+      "predicate_id": 10,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2021_buy_010.set",
+      "year": 2021
+    },
+    {
+      "arm": "buy_010",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2022:buy_010",
+      "direction": "BUY",
+      "id": "6a4010a5-59db-5d17-b2e3-0cf7d281d564",
+      "predicate_id": 10,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2022_buy_010.set",
+      "year": 2022
+    },
+    {
+      "arm": "buy_010",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2023:buy_010",
+      "direction": "BUY",
+      "id": "b794d0aa-56fd-590c-af10-5a2b40e1cce7",
+      "predicate_id": 10,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2023_buy_010.set",
+      "year": 2023
+    },
+    {
+      "arm": "buy_010",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2024:buy_010",
+      "direction": "BUY",
+      "id": "3817a097-6132-5f7e-85df-2583b6b4a33d",
+      "predicate_id": 10,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2024_buy_010.set",
+      "year": 2024
+    },
+    {
+      "arm": "buy_010",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2025:buy_010",
+      "direction": "BUY",
+      "id": "cf819ed3-f67f-50d1-93ff-4086c773d854",
+      "predicate_id": 10,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2025_buy_010.set",
+      "year": 2025
+    },
+    {
+      "arm": "buy_011",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2021:buy_011",
+      "direction": "BUY",
+      "id": "34c2c675-230e-5829-9aa4-5f480be68d22",
+      "predicate_id": 11,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2021_buy_011.set",
+      "year": 2021
+    },
+    {
+      "arm": "buy_011",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2022:buy_011",
+      "direction": "BUY",
+      "id": "adcc8f24-b802-50d7-bf53-3107ffcee1d3",
+      "predicate_id": 11,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2022_buy_011.set",
+      "year": 2022
+    },
+    {
+      "arm": "buy_011",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2023:buy_011",
+      "direction": "BUY",
+      "id": "a1ae1cb2-39ba-5693-83e6-4f577407d945",
+      "predicate_id": 11,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2023_buy_011.set",
+      "year": 2023
+    },
+    {
+      "arm": "buy_011",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2024:buy_011",
+      "direction": "BUY",
+      "id": "2675ab57-55d3-5b3d-ae1e-417c34e0b19d",
+      "predicate_id": 11,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2024_buy_011.set",
+      "year": 2024
+    },
+    {
+      "arm": "buy_011",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2025:buy_011",
+      "direction": "BUY",
+      "id": "512c6d8a-fdbc-5f2d-b285-01197c2d2803",
+      "predicate_id": 11,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2025_buy_011.set",
+      "year": 2025
+    },
+    {
+      "arm": "buy_013",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2021:buy_013",
+      "direction": "BUY",
+      "id": "4c60af2e-8582-525c-9492-0ffc64dad81d",
+      "predicate_id": 13,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2021_buy_013.set",
+      "year": 2021
+    },
+    {
+      "arm": "buy_013",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2022:buy_013",
+      "direction": "BUY",
+      "id": "8c96bb00-f5ac-50ea-bf42-97604886346c",
+      "predicate_id": 13,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2022_buy_013.set",
+      "year": 2022
+    },
+    {
+      "arm": "buy_013",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2023:buy_013",
+      "direction": "BUY",
+      "id": "94fa68ba-d723-514b-9d4e-71dc5b9644fb",
+      "predicate_id": 13,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2023_buy_013.set",
+      "year": 2023
+    },
+    {
+      "arm": "buy_013",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2024:buy_013",
+      "direction": "BUY",
+      "id": "b3b30d91-ced9-5a73-aabf-7c047ac7d6e7",
+      "predicate_id": 13,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2024_buy_013.set",
+      "year": 2024
+    },
+    {
+      "arm": "buy_013",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2025:buy_013",
+      "direction": "BUY",
+      "id": "6f084ac7-63fe-5430-b537-51c6dff28800",
+      "predicate_id": 13,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2025_buy_013.set",
+      "year": 2025
+    },
+    {
+      "arm": "buy_014",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2021:buy_014",
+      "direction": "BUY",
+      "id": "75542e0f-385a-5ec0-b398-76234eb54c47",
+      "predicate_id": 14,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2021_buy_014.set",
+      "year": 2021
+    },
+    {
+      "arm": "buy_014",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2022:buy_014",
+      "direction": "BUY",
+      "id": "3bae6a2c-6398-539a-9e82-acb3f333b23a",
+      "predicate_id": 14,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2022_buy_014.set",
+      "year": 2022
+    },
+    {
+      "arm": "buy_014",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2023:buy_014",
+      "direction": "BUY",
+      "id": "c16c2a7e-a436-5a17-bea6-7889a2749c3c",
+      "predicate_id": 14,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2023_buy_014.set",
+      "year": 2023
+    },
+    {
+      "arm": "buy_014",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2024:buy_014",
+      "direction": "BUY",
+      "id": "215443e6-caba-55ad-8841-b677da681ed2",
+      "predicate_id": 14,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2024_buy_014.set",
+      "year": 2024
+    },
+    {
+      "arm": "buy_014",
+      "cell_key": "DL089_QM5_10513_XAUUSD_DWX_2019_2025:2025:buy_014",
+      "direction": "BUY",
+      "id": "edea72ec-3330-5190-8cf6-f8468992cd69",
+      "predicate_id": 14,
+      "setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_opt_census_2025_buy_014.set",
+      "year": 2025
+    }
+  ],
+  "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\ledger.json",
+  "pending_annual_rows": 787,
+  "plan_sha256": "dc85616ca80a5890c0b5459682240c6aa95ec628ca11bfcd776e25c9c9c236bc",
+  "program_id": "DL089_QM5_10513_XAUUSD_DWX_2019_2025",
+  "raced_targets_preserved": [],
+  "release_on_restart": false,
+  "schema": "qm.dl089-prescreen-retro/v1",
+  "symbol": "XAUUSD.DWX",
+  "task_id": "c3779c25-3795-4535-a3bf-66ee862d72b9",
+  "tool_sha256": "a543d163cc2bc59987372b800dcbf495f64f8ff613f1cafe5870917332037324",
+  "unmeasured": true,
+  "work_items_before_sha256": "f84de92e071d5d304a9db367ed52b141329ecaf67a5148d4270c2f9ba5436d30"
+}

@@ -1,0 +1,182 @@
+{
+  "backup": {
+    "canonical_hold_backend_sha256": "bf54e7343f33de18ac2a92490f16ab0ca0f8153dbdd5048b35bf9c9613e64ecd",
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\prescreen_retro\\farm_state_before_governed_hold_20260905T104944Z.sqlite",
+    "plan_sha256": "dc85616ca80a5890c0b5459682240c6aa95ec628ca11bfcd776e25c9c9c236bc",
+    "sha256": "ad450b372069e66c70d8120a8f152bb7380048d58456d5bdb55e1e9502cde75c"
+  },
+  "inserted": 1150,
+  "plan_sha256": "dc85616ca80a5890c0b5459682240c6aa95ec628ca11bfcd776e25c9c9c236bc",
+  "programs": [
+    {
+      "already_held": 215,
+      "inserted": 0,
+      "program_id": "DL089_QM5_10145_XAUUSD_DWX_2019_2025",
+      "receipt": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_census_prescreen_retro\\program_0d67613c19c5a11c.json"
+    },
+    {
+      "already_held": 0,
+      "inserted": 0,
+      "program_id": "DL089_QM5_10403_XAUUSD_DWX_2019_2025",
+      "receipt": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_census_prescreen_retro\\program_e37c47bb77c0322a.json"
+    },
+    {
+      "already_held": 50,
+      "inserted": 0,
+      "program_id": "DL089_QM5_10513_XAUUSD_DWX_2019_2025",
+      "receipt": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_census_prescreen_retro\\program_1de16a02617c4f97.json"
+    },
+    {
+      "already_held": 0,
+      "inserted": 0,
+      "program_id": "DL089_QM5_10700_XAUUSD_DWX_2019_2025",
+      "receipt": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_census_prescreen_retro\\program_664760f98522c25a.json"
+    },
+    {
+      "already_held": 650,
+      "inserted": 0,
+      "program_id": "DL089_QM5_10706_GBPUSD_DWX_2019_2025",
+      "receipt": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_census_prescreen_retro\\program_62af7ae50e76998f.json"
+    },
+    {
+      "already_held": 490,
+      "inserted": 0,
+      "program_id": "DL089_QM5_11422_USDCAD_DWX_2019_2025",
+      "receipt": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_census_prescreen_retro\\program_639194028bf74541.json"
+    },
+    {
+      "all_program_work_items_unchanged": true,
+      "already_held": 0,
+      "declaration_unchanged": true,
+      "inserted": 0,
+      "program_id": "DL089_QM5_11708_EURUSD_DWX_2019_2025",
+      "raced": [],
+      "receipt": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_census_prescreen_retro\\program_3f3b6bb1a73d7941.json"
+    },
+    {
+      "all_program_work_items_unchanged": true,
+      "already_held": 0,
+      "declaration_unchanged": true,
+      "inserted": 655,
+      "program_id": "DL089_QM5_11881_GBPUSD_DWX_2019_2025",
+      "raced": [],
+      "receipt": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_census_prescreen_retro\\program_3d828c160c5a8de4.json"
+    },
+    {
+      "all_program_work_items_unchanged": true,
+      "already_held": 0,
+      "declaration_unchanged": true,
+      "inserted": 83,
+      "program_id": "DL089_QM5_12710_XTIUSD_DWX_2019_2025",
+      "raced": [
+        {
+          "id": "14a13ace-849a-5c94-a4bc-9107257d95ea",
+          "reason": "NO_LONGER_PENDING_UNCLAIMED"
+        },
+        {
+          "id": "f65bd38c-a201-5747-96d8-782ae70ef54c",
+          "reason": "NO_LONGER_PENDING_UNCLAIMED"
+        }
+      ],
+      "receipt": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_census_prescreen_retro\\program_5a211ff081f015f0.json"
+    },
+    {
+      "all_program_work_items_unchanged": true,
+      "already_held": 0,
+      "declaration_unchanged": true,
+      "inserted": 0,
+      "program_id": "DL089_QM5_12849_XTIUSD_DWX_2019_2025",
+      "raced": [],
+      "receipt": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_census_prescreen_retro\\program_fbcc5982eae7ef8a.json"
+    },
+    {
+      "all_program_work_items_unchanged": true,
+      "already_held": 0,
+      "declaration_unchanged": true,
+      "inserted": 0,
+      "program_id": "DL089_QM5_12855_XTIUSD_DWX_2019_2025",
+      "raced": [],
+      "receipt": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_census_prescreen_retro\\program_9e74555e37de5953.json"
+    },
+    {
+      "all_program_work_items_unchanged": true,
+      "already_held": 0,
+      "declaration_unchanged": true,
+      "inserted": 146,
+      "program_id": "DL089_QM5_20266_XTIUSD_DWX_2019_2025",
+      "raced": [
+        {
+          "id": "b910a6ca-0ffc-56ac-8568-06fea58afe45",
+          "reason": "NO_LONGER_PENDING_UNCLAIMED"
+        },
+        {
+          "id": "4225e73f-84f2-5ce9-be90-61f0c0aa92d3",
+          "reason": "NO_LONGER_PENDING_UNCLAIMED"
+        },
+        {
+          "id": "d596f199-64f6-5cb4-933a-b3ba3d23b392",
+          "reason": "NO_LONGER_PENDING_UNCLAIMED"
+        }
+      ],
+      "receipt": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_census_prescreen_retro\\program_8f99428a1a102791.json"
+    },
+    {
+      "all_program_work_items_unchanged": true,
+      "already_held": 0,
+      "declaration_unchanged": true,
+      "inserted": 0,
+      "program_id": "DL089_QM5_21501_USDJPY_DWX_2019_2025",
+      "raced": [],
+      "receipt": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_census_prescreen_retro\\program_a9885d208bc56fb4.json"
+    },
+    {
+      "all_program_work_items_unchanged": true,
+      "already_held": 0,
+      "declaration_unchanged": true,
+      "inserted": 48,
+      "program_id": "DL089_QM5_21507_XAUUSD_DWX_2019_2025",
+      "raced": [
+        {
+          "id": "6337d8d4-fc2d-53ce-8c17-3ab036d2da47",
+          "reason": "NO_LONGER_PENDING_UNCLAIMED"
+        },
+        {
+          "id": "8175971b-37a9-5c10-b80c-c7dbd1025b1c",
+          "reason": "NO_LONGER_PENDING_UNCLAIMED"
+        },
+        {
+          "id": "9420cf26-1faf-5952-9e70-fd9aeee066c7",
+          "reason": "NO_LONGER_PENDING_UNCLAIMED"
+        }
+      ],
+      "receipt": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_census_prescreen_retro\\program_ddeff217bb5cf7ef.json"
+    },
+    {
+      "all_program_work_items_unchanged": true,
+      "already_held": 0,
+      "declaration_unchanged": true,
+      "inserted": 218,
+      "program_id": "DL089_QM5_41097_USDJPY_DWX_2019_2025",
+      "raced": [
+        {
+          "id": "32b975e1-5cb0-583f-84d6-98b5c756a0a5",
+          "reason": "NO_LONGER_PENDING_UNCLAIMED"
+        },
+        {
+          "id": "3070739c-c375-5da6-8e48-bcb60e97c1a1",
+          "reason": "NO_LONGER_PENDING_UNCLAIMED"
+        },
+        {
+          "id": "1f30c2ff-7f5b-5a9f-970d-356e4916f473",
+          "reason": "NO_LONGER_PENDING_UNCLAIMED"
+        },
+        {
+          "id": "6711767e-e5d1-5dec-be30-1c2270fadd4c",
+          "reason": "NO_LONGER_PENDING_UNCLAIMED"
+        }
+      ],
+      "receipt": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_census_prescreen_retro\\program_442e46a8a1bba829.json"
+    }
+  ],
+  "schema": "qm.dl089-prescreen-retro/v1"
+}
