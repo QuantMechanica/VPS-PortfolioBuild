@@ -54,11 +54,19 @@ from zoneinfo import ZoneInfo
 
 try:
     from tools.strategy_farm.portfolio.ftmo_rule_contract import load_two_step_contract
+    from tools.strategy_farm.portfolio.ftmo_probability_contract import load_probability_contract
 except ModuleNotFoundError:  # pragma: no cover - direct script execution
     from ftmo_rule_contract import load_two_step_contract
+    from ftmo_probability_contract import load_probability_contract
 
 STREAMS = Path(r"D:\QM\reports\portfolio\sleeve_streams\QM\q08_trades")
 RULES = load_two_step_contract()
+PROBABILITY_CONTRACT = load_probability_contract()
+DIAGNOSTIC_ROLE = "DIAGNOSTIC_ONLY"
+HORIZON_BIAS_NOTE = (
+    "unlimited-horizon first passage is not the authoritative 60-calendar-day P1 "
+    "estimand; stages 1-2 are in-sample-selected and cannot override timebox credit"
+)
 PRAGUE = ZoneInfo(RULES.timezone)
 ACCOUNT = float(RULES.initial_equity)
 TARGET = float(RULES.phase1_target_fraction)
@@ -260,6 +268,8 @@ def make_cfg(k, lev, ds, dr):
     return {"lev": lev, "ds": ds, "dr": dr, "scale": scale}
 
 
+print(f"{DIAGNOSTIC_ROLE}: {HORIZON_BIAS_NOTE}.")
+print(f"probability_contract_sha256={PROBABILITY_CONTRACT.sha256}")
 print("FTMO Phase 1 as a first-passage problem: +10% balance before -5% daily / -10% total")
 print("No deadline (FTMO dropped it in 2024). Target tested on END-OF-DAY balance.")
 print(f"Minimum trading days enforced: {MIN_TRADING_DAYS}. Unresolved starts counted as FAIL.")

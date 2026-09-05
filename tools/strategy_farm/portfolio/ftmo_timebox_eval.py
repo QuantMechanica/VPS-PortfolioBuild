@@ -34,8 +34,12 @@ try:
         DEFAULT_RULEPACK_PATH,
         load_two_step_contract,
     )
+    from tools.strategy_farm.portfolio.ftmo_probability_contract import (
+        load_probability_contract,
+    )
 except ModuleNotFoundError:  # pragma: no cover - direct script execution
     from ftmo_rule_contract import DEFAULT_RULEPACK_PATH, load_two_step_contract
+    from ftmo_probability_contract import load_probability_contract
 
 try:
     from .ftmo_q09_admission import ADMITTED_REASON, EVIDENCE_MISSING
@@ -65,13 +69,16 @@ REFUSED_QUALIFICATION_NOT_READY = "FTMO_QUALIFICATION_NOT_CHALLENGE_READY"
 SHA_RE = re.compile(r"^[0-9a-f]{64}$")
 
 RULE_CONTRACT = load_two_step_contract()
+PROBABILITY_CONTRACT = load_probability_contract()
+PROBABILITY = PROBABILITY_CONTRACT.probability
+CORRELATION_CONTRACT = PROBABILITY_CONTRACT.correlation
 PRAGUE = ZoneInfo(RULE_CONTRACT.timezone)
 DEFAULT_RULES: dict[str, Any] = {
     "initial_equity": 1.0,
     "phase1_target_fraction": float(RULE_CONTRACT.phase1_target_fraction),
-    "phase1_horizon_calendar_days": 60,
+    "phase1_horizon_calendar_days": int(PROBABILITY["horizon"]["phase1_calendar_days"]),
     "phase2_target_fraction": float(RULE_CONTRACT.phase2_target_fraction),
-    "phase2_horizon_calendar_days": 30,
+    "phase2_horizon_calendar_days": int(PROBABILITY["horizon"]["phase2_calendar_days"]),
     "maximum_daily_loss_fraction": float(RULE_CONTRACT.maximum_daily_loss_fraction),
     "maximum_total_loss_fraction": float(RULE_CONTRACT.maximum_total_loss_fraction),
     "minimum_trading_days": RULE_CONTRACT.minimum_trading_days,
@@ -87,23 +94,34 @@ DEFAULT_RULES: dict[str, Any] = {
     "censoring": "RIGHT_CENSORED_IS_TIMEOUT_NON_PASS",
     "phase_transition": "RESET_TO_INITIAL_EQUITY_NEXT_PRAGUE_DAY_AFTER_P1_PASS",
     "live_equity_compounding_allowed": RULE_CONTRACT.live_equity_compounding_allowed,
-    "design_bar_p1": 0.80,
+    "design_bar_p1": float(PROBABILITY["gates"]["p1_pass"]["lower_95_min"]),
 }
 
 DEFAULT_BOOTSTRAP: dict[str, Any] = {
-    "replicates": 2_000,
-    "seed": 20_260_802,
-    "alpha": 0.05,
-    "block_calendar_days": 60,
-    "ci": "TWO_SIDED_PERCENTILE_95",
+    "replicates": int(PROBABILITY["bootstrap"]["replicates"]),
+    "seed": int(PROBABILITY["bootstrap"]["seed"]),
+    "alpha": float(PROBABILITY["bootstrap"]["alpha"]),
+    "block_calendar_days": int(PROBABILITY["bootstrap"]["block_calendar_days"]),
+    "ci": str(PROBABILITY["bootstrap"]["ci"]),
 }
 
 DEFAULT_CORRELATION: dict[str, Any] = {
-    "strong_budget_exclusive": 0.15,
-    "maximum_budget_exclusive": 0.40,
+    "strong_budget_exclusive": float(
+        CORRELATION_CONTRACT["caps_absolute_layered"]["timebox_strong_warning"]["value"]
+    ),
+    "maximum_budget_exclusive": float(
+        CORRELATION_CONTRACT["caps_absolute_layered"]["q09_marginal_timebox_reject"]["value"]
+    ),
     "high_volatility_quantile": 0.75,
-    "minimum_shared_calendar_days": 20,
-    "effective_correlation": "MAX_FULL_AND_HIGH_VOL_PAIRWISE_ABSOLUTE_PEARSON",
+    "minimum_shared_calendar_days": int(
+        CORRELATION_CONTRACT["effective_correlation"]["min_shared_calendar_days"]
+    ),
+    "effective_correlation": str(CORRELATION_CONTRACT["effective_correlation"]["definition"]),
+}
+
+INERT_C6_GATES: dict[str, str] = {
+    name: str(PROBABILITY["gates"][name]["enforcement_status"])
+    for name in ("breach", "two_phase")
 }
 
 DEFAULT_COST_ADJUSTED_DECLARATION: dict[str, Any] = {
@@ -303,8 +321,11 @@ def _validate_bootstrap(bootstrap: Any) -> None:
     if set(bootstrap) != required:
         raise TimeboxEvaluationError("bootstrap: unexpected fields")
     _positive_int(bootstrap["replicates"], "bootstrap.replicates")
-    if bootstrap["replicates"] < 100:
-        raise TimeboxEvaluationError("bootstrap.replicates: minimum is 100")
+    replicate_floor = int(PROBABILITY["bootstrap"]["replicates_floor"])
+    if bootstrap["replicates"] < replicate_floor:
+        raise TimeboxEvaluationError(
+            f"bootstrap.replicates: minimum is {replicate_floor}"
+        )
     if isinstance(bootstrap["seed"], bool) or not isinstance(bootstrap["seed"], int):
         raise TimeboxEvaluationError("bootstrap.seed: expected integer")
     alpha = _finite(bootstrap["alpha"], "bootstrap.alpha")
@@ -1451,10 +1472,17 @@ def evaluate_config(config: Mapping[str, Any], config_sha256: str) -> dict[str, 
             "best_bootstrap_lower_bound_p1": lower,
             "decision_spread_charge_multiplier": decision_multiplier,
             "evidence_credited_lower_bound_p1": credited,
-            "design_bar_p1": 0.80,
-            "gap_to_design_bar": max(0.0, 0.80 - credited),
+            "design_bar_p1": float(DEFAULT_RULES["design_bar_p1"]),
+            "gap_to_design_bar": max(0.0, float(DEFAULT_RULES["design_bar_p1"]) - credited),
             "binding_dimension": _binding_dimension(composition_results),
             "book_ready": False,
+        },
+        "probability_contract": {
+            "schema": PROBABILITY_CONTRACT.payload["schema"],
+            "sha256": PROBABILITY_CONTRACT.sha256,
+            "authoritative_role": PROBABILITY["authoritative_engine"]["role"],
+            "inert_gates": INERT_C6_GATES,
+            "note": "breach/P2/joint cannot pass or fail this result until C-6 is OWNER-approved",
         },
     }
     return result

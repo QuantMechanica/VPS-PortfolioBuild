@@ -1,0 +1,47 @@
+{
+  "schema": "qm.ftmo-probability-correlation-contract/v1",
+  "status": "PENDING_OWNER_RATIFICATION",
+  "class": "ROT",
+  "auffangregel": false,
+  "supersedes": null,
+  "binds_vorlage": "docs/ops/OWNER_VORLAGE_2026-09-05_ftmo_positive_evidence_test.md",
+  "construction_rule": "STRICTEST_EXISTING_RATIFIED_VALUE_BINDS; ratified-vs-proposed => ratified binds, proposed carried as declared-not-sealed additive gate; ratified-vs-ratified conflict => OWNER_CHOICE",
+  "probability": {
+    "authoritative_engine": {"module": "tools/strategy_farm/portfolio/ftmo_timebox_eval.py", "role": "AUTHORITATIVE_DECISION", "selection_sealed": true, "refuses_mutable_inputs": true, "cost_attested": true},
+    "diagnostic_engines": [
+      {"module": "tools/strategy_farm/portfolio/ftmo_p1_mc.py", "role": "DIAGNOSTIC_ONLY", "note": "independent sleeve resample breaks cross-correlation; breach is a LOWER bound"},
+      {"module": "tools/strategy_farm/portfolio/challenge_firstpassage.py", "role": "DIAGNOSTIC_ONLY", "note": "unlimited-horizon first-passage; stages 1-2 in-sample-selected"}
+    ],
+    "bootstrap": {"method": "MOVING_BLOCK", "replicates": 2000, "replicates_floor": 100, "seed": 20260802, "alpha": 0.05, "block_calendar_days": 60, "ci": "TWO_SIDED_PERCENTILE_95", "source": "ftmo_timebox_eval.py:94-98,1010-1012"},
+    "horizon": {"phase1_calendar_days": 60, "phase2_calendar_days": 30, "authoritative": "TIMEBOX_60_30_CALENDAR", "diagnostic_conventions": {"mc_trading_days": 90, "firstpassage": "UNLIMITED"}, "source": "ftmo_timebox_eval.py:72,74; ftmo_p1_mc.py:79; challenge_firstpassage.py:263"},
+    "lower_bound_convention": "MOVING_BLOCK_BOOTSTRAP_LOWER, never raw rate",
+    "gates": {
+      "p1_pass": {"binding_gate": "lower_95_min", "lower_95_min": 0.80, "lower_95_status": "RATIFIED", "lower_95_source": "build_book_ftmo.py:54; ftmo_timebox_eval.py:90", "point_min": 0.80, "point_status": "NON_ADDITIVE_DOMINATED", "point_source": "FTMO_2S_100K_SWING_V2.json:480", "subsumption": "lower<=point is guaranteed (ftmo_timebox_eval.py:1008-1010; build_book_ftmo.py:447 enforces 0<=lower<=estimate<=1), so lower_95>=0.80 implies point>=0.80 AND dominates the rulepack's weaker lower>=0.70; the whole rulepack P1 gate is subsumed", "owner_choice": "C-1 resolved by construction: single binding gate lower_95>=0.80; no OWNER arbitration required; point>=0.80 kept as documentation only, never additive"},
+      "breach": {"upper_95_max": 0.10, "status": "PROPOSED", "enforcement_status": "INERT_UNTIL_C6_ENGINE_OWNER_APPROVED", "source": "FTMO_2S_100K_SWING_V2.json:486", "enforcement_gap": "C-6: MC breach is a LOWER bound; no engine estimates an admissible UPPER bound and no estimator method is yet defined; INERT (cannot pass or fail a book) until OWNER scopes + Codex builds + OWNER approves the C-6 engine; status identical to Vorlage inert-§D"},
+      "two_phase": {"p2_conditional_min": 0.85, "joint_min": 0.65, "status": "PROPOSED", "enforcement_status": "INERT_UNTIL_C6_ENGINE_OWNER_APPROVED", "source": "FTMO_2S_100K_SWING_V2.json:492", "enforcement_gap": "C-6: timebox computes joint_rate/P2 leg but credits only p1 lower (:1412); no joint-credit formula specified; INERT until the C-6 engine exists and is OWNER-approved; status identical to Vorlage inert-§D"},
+      "snapshot_freshness_days_max": {"value": 7, "status": "PROPOSED", "source": "FTMO_2S_100K_SWING_V2.json:462"},
+      "shadow_run": {"minimum_runs": 1, "operational_defects_allowed": 0, "status": "PROPOSED", "source": "FTMO_2S_100K_SWING_V2.json:498"}
+    },
+    "dsr_correction": {"engine": "framework/scripts/q08_davey/sub_8_2_dsr_mc_fdr.py", "role": "NECESSARY_SEPARATE_GATE", "dsr_p_min": 0.05, "dsr_prob_min": 0.95, "expected_max_sr": "sqrt(2 ln N)", "fleet_default_trial_count_N": 369, "optimization_track_expansion": "N + selection_trial_count - 1 when selection_trial_count>=2 (sub_8_2_dsr_mc_fdr.py:168-178)", "trial_count_override": "sealed per-identity selection_trial_count where present", "note_154": "154 (opt_census.py:36) is the opt-census DECLARATION count (census measurement, 'not selection', sub_8_2_dsr_mc_fdr.py:42-45); NOT the DSR selection pool", "status": "RATIFIED", "source": "sub_8_2_dsr_mc_fdr.py:34,168-178; opt_census.py:36"},
+    "sample_size": {"opening_days_floor_per_phase": 4, "effective_n": "HAC_ESS for overlapping starts; report ESS not raw count", "min_power_floor": "single 13-week diagnostic window = UNDER_POWERED / NON_LIFTING", "abstention": "fail-closed: NO_ADMISSIBLE_COMPOSITION / CLUSTER_CORRELATION_UNVERIFIED / ABSTAIN block, never pass", "source": "FTMO_2S_100K_SWING_V2.json:151-160; ftmo_timebox_eval.py:306,927,1424; build_book_ftmo.py:278-282"}
+  },
+  "correlation": {
+    "estimator": {"standard": "V4_SPARSE_D1_TWO_LAYER", "layer_a": {"name": "ZK-SBB", "method": "ZEROS_KEPT_MONFRI_GRID_PEARSON_BLOCK_BOOTSTRAP_CI", "decision": "CERTIFY_A iff whole CI < 0.50 (absolute) else ABSTAIN; PROVISIONAL in caution band"}, "layer_b": {"name": "COS", "role": "SUPPLEMENTARY_FLAG_ONLY"}, "caution_band": 0.05, "source": "portfolio_correlation.py:57-77,87; docs/research/SPARSE_D1_ORTHOGONALITY_STANDARD_2026-09-03.md", "migration_note": "builder currently consumes zeros-DROPPED point Pearson (:184-197); migrate to Layer-A certified CI"},
+    "caps_absolute_layered": {"hard_book_admission": {"value": 0.50, "status": "ROT_SEALED", "source": "portfolio_correlation.py:77 (Q15); build_book_ftmo.py:75"}, "q09_marginal_timebox_reject": {"value": 0.40, "status": "RATIFIED", "enforced_in": "ftmo_timebox_eval.py:103 (DEFAULT_CORRELATION.maximum_budget_exclusive), applied :1092", "provenance_comment_only": "build_book_ftmo.py:68-69 (DL-083) is a comment; the builder enforces only the 0.50 cap, not 0.40", "source": "ftmo_timebox_eval.py:103,1092"}, "timebox_strong_warning": {"value": 0.15, "status": "ADVISORY", "source": "ftmo_timebox_eval.py:102"}, "signed_vs_absolute": "ALL ABSOLUTE; builder must migrate from raw-signed (:283) to absolute"},
+    "effective_correlation": {"definition": "MAX(full_window, high_vol_subset q0.75) pairwise ABSOLUTE Pearson", "min_shared_calendar_days": 20, "source": "ftmo_timebox_eval.py:104-106"}
+  },
+  "tail": {
+    "authoritative": "concentration_tail_limits.v1.json",
+    "status": "OWNER_RATIFIED",
+    "orthogonal_layers": {
+      "stop_risk_budget_pct": {"value": 2.5, "caps_pct_of_budget": {"symbol": 40, "asset_class": 60, "family": 50, "session_warn": 60, "session": 70}, "tail": {"per_sleeve_worst_fraction": 0.05, "joint_sleeve_divisor": 3, "venue_daily_loss_limit_pct": 5.0, "maximum_fraction_of_daily_limit": 0.8}, "source": "concentration_tail_limits.v1.json:5-17"},
+      "account_weight_budget": {"value": 10.0, "sleeve_unit_weight": 1.0, "dimension": "SLEEVE_COUNT_CEILING (<=10 unit-weight sleeves)", "source": "build_book_ftmo.py:76,77"},
+      "q15_discrete_count_caps": {"family_max": 3, "symbol_max": 2, "ea_target_range": [10, 15], "status": "OWNER_RATIFIED", "decision": "OWNER-DEC-BOOK-V2V4V6-EPOCH-20260904", "dimension": "DISCRETE_COUNT", "unreconciled_tension_OQ9": "10.0 unit-weight budget admits <=10 sleeves but Q15 targets 10-15 EAs; consistent only if sleeve != EA; OWNER must clarify sleeve-vs-EA unit before both bind; no new number proposed", "source": "build_book_ftmo.py:60,66"},
+      "rulepack_internal_guardrails": {"status": "SUSPENDED_PROPOSED", "note": "concentration_tail_limits.v1.json supersedes for tail dimension until OWNER ratifies", "source": "FTMO_2S_100K_SWING_V2.json:299-350"}
+    },
+    "application_authority": "OWNER_ONLY",
+    "deployment_action": "NONE"
+  },
+  "change_control": {"class": "ROT", "version_bump_requires": "dated OWNER decision", "no_silent_reclassification": true, "thresholds_imported_by_reference": true},
+  "open_owner_choices": ["C-1", "C-2", "C-3", "C-4", "C-5", "C-6"]
+}

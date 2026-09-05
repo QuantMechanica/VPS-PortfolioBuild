@@ -56,8 +56,10 @@ import numpy as np
 
 try:
     from tools.strategy_farm.portfolio.ftmo_rule_contract import load_two_step_contract
+    from tools.strategy_farm.portfolio.ftmo_probability_contract import load_probability_contract
 except ModuleNotFoundError:  # pragma: no cover - direct script execution
     from ftmo_rule_contract import load_two_step_contract
+    from ftmo_probability_contract import load_probability_contract
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 VENUE_COST_MODEL_PATH = REPO_ROOT / "framework" / "registry" / "venue_cost_model.json"
@@ -71,12 +73,21 @@ COMMON_STREAM_DIR = Path(
 )
 
 RULES = load_two_step_contract()
+PROBABILITY_CONTRACT = load_probability_contract()
 PRAGUE = ZoneInfo(RULES.timezone)
 DEFAULT_CAPITAL = float(RULES.initial_equity)
 DEFAULT_TARGET_PCT = float(RULES.phase1_target_fraction * 100)
 DEFAULT_DAILY_LIMIT_PCT = float(RULES.maximum_daily_loss_fraction * 100)
 DEFAULT_TOTAL_LIMIT_PCT = float(RULES.maximum_total_loss_fraction * 100)
-DEFAULT_HORIZON_TRADING_DAYS = 90
+DEFAULT_HORIZON_TRADING_DAYS = int(
+    PROBABILITY_CONTRACT.probability["horizon"]["diagnostic_conventions"]["mc_trading_days"]
+)
+DIAGNOSTIC_ROLE = "DIAGNOSTIC_ONLY"
+HORIZON_BIAS_NOTE = (
+    "90 trading days is roughly 126 calendar days versus the authoritative "
+    "60-calendar-day P1 estimand; the longer window structurally biases pass "
+    "probability upward and never overrides the timebox lower bound"
+)
 DEFAULT_PATHS = 10_000
 DEFAULT_SEED = 20260720
 MIN_TRADING_DAYS = RULES.minimum_trading_days
@@ -700,6 +711,8 @@ def write_summary_md(
     add = lines.append
     add("# FTMO Phase-1 Monte-Carlo — candidate book compositions (2026-07-20)")
     add("")
+    add(f"**{DIAGNOSTIC_ROLE}.** {HORIZON_BIAS_NOTE}.")
+    add("")
     add(
         "**Label: backtest-derived, gross-of-slippage.** Per-trade net = tester "
         "profit (spread-inclusive .DWX real ticks) + tester swap (DXZ-derived proxy; "
@@ -906,6 +919,9 @@ def main(argv: list[str] | None = None) -> int:
     out_dir.mkdir(parents=True, exist_ok=True)
     artifact = {
         "artifact": "ftmo_p1_mc",
+        "decision_role": DIAGNOSTIC_ROLE,
+        "horizon_bias_note": HORIZON_BIAS_NOTE,
+        "probability_contract_sha256": PROBABILITY_CONTRACT.sha256,
         "generated_at_utc": dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat(),
         "label": "backtest-derived, gross-of-slippage",
         "cost_basis": {

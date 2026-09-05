@@ -17,6 +17,7 @@ from tools.strategy_farm.portfolio.build_book_ftmo import (
     M1_BOOTSTRAP_LINEAGE_COMMIT,
     _bootstrap,
     _cost_coverage,
+    load_correlation,
     load_fund_scores,
     select_under_aggregate_control,
 )
@@ -155,6 +156,43 @@ def test_ftmo_aggregate_control_excludes_high_corr_ea_with_explicit_reason() -> 
     assert excluded[(1, "EURUSD.DWX")]["reason"] == "CLUSTER_CORRELATION_EXCLUDED"
     assert excluded[(1, "EURUSD.DWX")]["aggregate_control"]["correlation"] == 0.92
     assert control["excluded"][0]["reason"] == "CLUSTER_CORRELATION_EXCLUDED"
+
+
+def test_ftmo_aggregate_control_rejects_high_negative_absolute_correlation() -> None:
+    roster = [(1, "EURUSD.DWX"), (2, "GBPUSD.DWX")]
+    scores = {
+        roster[0]: {"status": "SCORED", "fund_score": 1.4},
+        roster[1]: {"status": "SCORED", "fund_score": 1.2},
+    }
+    correlation = {frozenset(roster): -0.92}
+    selected, rows, _control = select_under_aggregate_control(roster, scores, correlation)
+    assert selected == [roster[0]]
+    assert next(row for row in rows if row["ea_id"] == 2)["reason"] == "CLUSTER_CORRELATION_EXCLUDED"
+
+
+def test_ftmo_correlation_loader_consumes_only_v4_layer_a_certified_ci(tmp_path: Path) -> None:
+    artifact = {
+        "keys": ["1:EURUSD.DWX", "2:GBPUSD.DWX", "3:USDJPY.DWX"],
+        "correlation": [[1.0, -0.99, 0.0], [-0.99, 1.0, 0.0], [0.0, 0.0, 1.0]],
+        "sparse_orthogonality": {
+            "standard": "SPARSE_D1_ORTHOGONALITY_STANDARD_2026-09-03",
+            "pairs": [
+                {"pair": ["1:EURUSD.DWX", "2:GBPUSD.DWX"], "status": "FLAGGED", "layer_a": {"verdict": "CERTIFY_A", "r_hat": -0.3, "abs_upper": 0.41}},
+                {"pair": ["1:EURUSD.DWX", "3:USDJPY.DWX"], "status": "ABSTAIN", "layer_a": {"verdict": "PROVISIONAL", "r_hat": 0.2, "abs_upper": 0.47}},
+            ],
+        },
+    }
+    path = _write(tmp_path / "correlation.json", artifact)
+    lookup, provenance = load_correlation(path)
+    assert lookup == {frozenset({(1, "EURUSD.DWX"), (2, "GBPUSD.DWX")}): 0.41}
+    assert provenance["n_pairs_certified"] == 1
+    assert provenance["verdict_counts"]["PROVISIONAL"] == 1
+
+
+def test_ftmo_correlation_loader_refuses_raw_matrix_without_v4_ci(tmp_path: Path) -> None:
+    path = _write(tmp_path / "raw.json", {"keys": ["1:A", "2:B"], "correlation": [[1, 0], [0, 1]]})
+    with pytest.raises(BookBuildError, match="lacks V4 sparse_orthogonality"):
+        load_correlation(path)
 
 
 def test_ftmo_aggregate_control_fails_closed_on_missing_correlation() -> None:

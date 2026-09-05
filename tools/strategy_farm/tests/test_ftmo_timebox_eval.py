@@ -346,6 +346,11 @@ def test_valid_ftmo_attested_stream_is_evaluated(tmp_path: Path) -> None:
     assert evaluated["statistics"]["p1_bootstrap"]["lower"] >= 0.0
     assert result["decision"]["label"] == ftmo.DECISION_LABEL
     assert result["decision"]["book_ready"] is False
+    assert result["probability_contract"]["authoritative_role"] == "AUTHORITATIVE_DECISION"
+    assert result["probability_contract"]["inert_gates"] == {
+        "breach": "INERT_UNTIL_C6_ENGINE_OWNER_APPROVED",
+        "two_phase": "INERT_UNTIL_C6_ENGINE_OWNER_APPROVED",
+    }
 
 
 def test_cost_attestation_mismatch_is_refused_not_silently_degraded(tmp_path: Path) -> None:

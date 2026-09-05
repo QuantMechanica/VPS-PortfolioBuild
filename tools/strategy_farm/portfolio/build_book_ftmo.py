@@ -35,6 +35,9 @@ from tools.strategy_farm.portfolio.book_builder_common import (
     write_text,
 )
 from tools.strategy_farm.portfolio import concentration_tail
+from tools.strategy_farm.portfolio.ftmo_probability_contract import (
+    load_probability_contract,
+)
 from tools.strategy_farm.portfolio.portfolio_common import load_streams
 from tools.strategy_farm import book_build_guard, risk_freeze
 
@@ -50,8 +53,12 @@ DEFAULT_CONCENTRATION_POLICY = concentration_tail.DEFAULT_POLICY_PATH
 DEFAULT_SYMBOL_MATRIX = concentration_tail.DEFAULT_SYMBOL_MATRIX
 EXPECTED_COST_SNAPSHOT_SHA256 = "7eab3bf8c97373fcb44e36aca39dd679fbd3e093783cd6eacd9cb171190b3280"
 M1_BOOTSTRAP_LINEAGE_COMMIT = "ae5331f67"
+PROBABILITY_CONTRACT = load_probability_contract()
+PROBABILITY_CONTRACT_SHA256 = PROBABILITY_CONTRACT.sha256
 FUND_SCORE_FLOOR = 1.0
-P1_LOWER_BOUND_FLOOR = 0.80
+P1_LOWER_BOUND_FLOOR = float(
+    PROBABILITY_CONTRACT.probability["gates"]["p1_pass"]["lower_95_min"]
+)
 
 # --- Aggregate concentration control (FTMO lane) -------------------------------
 # Ratified design (Vault '03 Pipeline/Q11 Portfolio Construction', FTMO lane, OWNER
@@ -72,9 +79,17 @@ P1_LOWER_BOUND_FLOOR = 0.80
 # The numeric values below are byte-identical to the ratified defaults; both stay
 # CLI-overridable, and any override is a NON-ratified value that the manifest stamps
 # WORKING_DEFAULT_OPEN_OWNER_ITEM (the refusal path for genuinely unratified items).
-WORKING_DEFAULT_MAX_PAIRWISE_CORRELATION = 0.50
-WORKING_DEFAULT_ACCOUNT_WEIGHT_BUDGET = 10.0
-SLEEVE_UNIT_WEIGHT = 1.0
+WORKING_DEFAULT_MAX_PAIRWISE_CORRELATION = float(
+    PROBABILITY_CONTRACT.correlation["caps_absolute_layered"]
+    ["hard_book_admission"]["value"]
+)
+WORKING_DEFAULT_ACCOUNT_WEIGHT_BUDGET = float(
+    PROBABILITY_CONTRACT.tail["orthogonal_layers"]["account_weight_budget"]["value"]
+)
+SLEEVE_UNIT_WEIGHT = float(
+    PROBABILITY_CONTRACT.tail["orthogonal_layers"]["account_weight_budget"]
+    ["sleeve_unit_weight"]
+)
 
 # OWNER ratification of the two aggregate thresholds above (values unchanged).
 AGGREGATE_THRESHOLD_RATIFICATION_DECISION = "OWNER-DEC-BOOK-V2V4V6-EPOCH-20260904"
@@ -131,51 +146,61 @@ def load_fund_scores(path: Path) -> tuple[dict[tuple[int, str], dict[str, Any]],
 def load_correlation(
     path: Path | None,
 ) -> tuple[dict[frozenset[tuple[int, str]], float], dict[str, Any]]:
-    """Load the Q11 pairwise daily-PnL correlation artifact (or none).
+    """Load only V4 Layer-A CI-certified pair estimates.
 
-    Reuses the artifact emitted by ``portfolio_correlation.py`` — keys are
-    ``"ea_id:symbol"`` labels and ``correlation`` is a symmetric matrix aligned to
-    ``keys``. Returns a symmetric ``{frozenset({key_a, key_b}): value}`` lookup and a
-    provenance record. Missing/insufficient-overlap pairs are simply absent from the
-    lookup (treated fail-closed as UNVERIFIED by the selector).
+    Raw signed/zeros-dropped matrices are intentionally ignored.  A pair enters the
+    lookup only when Layer A says CERTIFY_A. Layer-B FLAGGED remains the contract's
+    supplementary review flag and cannot override Layer A; PROVISIONAL, ABSTAIN,
+    malformed, or absent pairs remain fail-closed UNVERIFIED.
+    The conservative consumed value is ``abs_upper`` rather than the point estimate.
     """
     if path is None:
         return {}, {"status": "MISSING", "note": "no correlation artifact supplied"}
     payload = load_json(path)
     if not isinstance(payload, Mapping):
         raise BookBuildError("correlation artifact must be an object")
-    labels = payload.get("keys")
-    matrix = payload.get("correlation")
-    if not isinstance(labels, list) or not isinstance(matrix, list):
-        raise BookBuildError("correlation artifact lacks keys/correlation")
-    parsed: list[tuple[int, str] | None] = []
-    for label in labels:
-        key = _score_key(label)
-        parsed.append(key)
+    sparse = payload.get("sparse_orthogonality")
+    if not isinstance(sparse, Mapping):
+        raise BookBuildError("correlation artifact lacks V4 sparse_orthogonality")
+    if sparse.get("standard") != "SPARSE_D1_ORTHOGONALITY_STANDARD_2026-09-03":
+        raise BookBuildError("unsupported V4 correlation standard")
+    pairs = sparse.get("pairs")
+    if not isinstance(pairs, list):
+        raise BookBuildError("V4 correlation artifact lacks pair records")
     lookup: dict[frozenset[tuple[int, str]], float] = {}
-    for i, key_i in enumerate(parsed):
-        if key_i is None:
+    verdict_counts = {"CERTIFY_A": 0, "PROVISIONAL": 0, "ABSTAIN": 0, "MALFORMED": 0}
+    for row in pairs:
+        if not isinstance(row, Mapping):
+            verdict_counts["MALFORMED"] += 1
             continue
-        row = matrix[i] if i < len(matrix) else None
-        if not isinstance(row, list):
+        labels = row.get("pair")
+        layer_a = row.get("layer_a")
+        if not isinstance(labels, list) or len(labels) != 2 or not isinstance(layer_a, Mapping):
+            verdict_counts["MALFORMED"] += 1
             continue
-        for j, key_j in enumerate(parsed):
-            if j <= i or key_j is None or key_i == key_j:
-                continue
-            if j >= len(row):
-                continue
-            value = row[j]
-            if value is None:
-                continue
-            try:
-                lookup[frozenset({key_i, key_j})] = float(value)
-            except (TypeError, ValueError):
-                continue
+        key_a, key_b = _score_key(labels[0]), _score_key(labels[1])
+        verdict = str(layer_a.get("verdict") or "")
+        verdict_counts[verdict if verdict in verdict_counts else "MALFORMED"] += 1
+        if verdict != "CERTIFY_A":
+            continue
+        if key_a is None or key_b is None or key_a == key_b:
+            verdict_counts["MALFORMED"] += 1
+            continue
+        try:
+            value = abs(float(layer_a["abs_upper"]))
+        except (KeyError, TypeError, ValueError):
+            verdict_counts["MALFORMED"] += 1
+            continue
+        if not math.isfinite(value) or value >= WORKING_DEFAULT_MAX_PAIRWISE_CORRELATION:
+            continue
+        lookup[frozenset({key_a, key_b})] = value
     return lookup, {
         "status": "LOADED",
         "input": file_binding(path),
-        "n_series": len(labels),
-        "n_pairs_with_correlation": len(lookup),
+        "estimator": "V4_LAYER_A_ZEROS_KEPT_BLOCK_BOOTSTRAP_CI_ABS_UPPER",
+        "n_pairs": len(pairs),
+        "n_pairs_certified": len(lookup),
+        "verdict_counts": verdict_counts,
     }
 
 
@@ -273,14 +298,15 @@ def select_under_aggregate_control(
             if corr is None:
                 unverified_peer = peer
                 break
-            if worst is None or corr > worst[0]:
-                worst = (corr, peer)
+            abs_corr = abs(corr)
+            if worst is None or abs_corr > worst[0]:
+                worst = (abs_corr, peer)
         if unverified_peer is not None:
             decisions[key] = (False, "CLUSTER_CORRELATION_UNVERIFIED", {
                 "peer": f"{unverified_peer[0]}:{unverified_peer[1]}",
             })
             continue
-        if worst is not None and worst[0] > max_pairwise_correlation:
+        if worst is not None and worst[0] >= max_pairwise_correlation:
             decisions[key] = (False, "CLUSTER_CORRELATION_EXCLUDED", {
                 "peer": f"{worst[1][0]}:{worst[1][1]}",
                 "correlation": worst[0],
@@ -444,7 +470,8 @@ def _bootstrap(
         replicates = int(payload["replicates"])
     except (KeyError, TypeError, ValueError) as exc:
         raise BookBuildError("bootstrap result lacks probability/lower-bound fields") from exc
-    if not (0 <= lower <= estimate <= 1) or replicates < 100:
+    replicate_floor = int(PROBABILITY_CONTRACT.probability["bootstrap"]["replicates_floor"])
+    if not (0 <= lower <= estimate <= 1) or replicates < replicate_floor:
         raise BookBuildError("bootstrap result probabilities or replicate count are invalid")
     passed = lower >= P1_LOWER_BOUND_FLOOR
     return {
@@ -457,6 +484,11 @@ def _bootstrap(
         "measured_gap": round(max(0.0, P1_LOWER_BOUND_FLOOR - lower), 8),
         "passed": passed,
         "engine_lineage": dict(lineage),
+        "probability_contract_sha256": PROBABILITY_CONTRACT_SHA256,
+        "inert_c6_gates": {
+            name: PROBABILITY_CONTRACT.probability["gates"][name]["enforcement_status"]
+            for name in ("breach", "two_phase")
+        },
     }
 
 
@@ -547,7 +579,7 @@ def build_ftmo_manifest(
     fund_pass = bool(selected) and all(row["fund_score"] >= FUND_SCORE_FLOOR for row in bindings)
     admitted_pair_corrs = [p["correlation"] for p in aggregate_control["admitted_pairs"]]
     aggregate_control_pass = bool(selected) and all(
-        c is not None and c <= max_pairwise_correlation for c in admitted_pair_corrs
+        c is not None and abs(c) < max_pairwise_correlation for c in admitted_pair_corrs
     ) and aggregate_control["admitted_weight"] <= account_weight_budget + 1e-9
     aggregate_control["passed"] = aggregate_control_pass
     checks = {
