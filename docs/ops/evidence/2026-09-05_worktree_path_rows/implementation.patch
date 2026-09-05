@@ -1,0 +1,255 @@
+diff --git a/tools/strategy_farm/canonical_setfile_paths.py b/tools/strategy_farm/canonical_setfile_paths.py
+new file mode 100644
+index 0000000000..d1ff9d73f5
+--- /dev/null
++++ b/tools/strategy_farm/canonical_setfile_paths.py
+@@ -0,0 +1,80 @@
++"""Canonical enqueue-path validation and read-only pending-successor proposals."""
++from __future__ import annotations
++from pathlib import Path
++import argparse
++import hashlib
++import json
++import sqlite3
++import uuid
++
++CANONICAL_REPO=Path('C:/QM/repo')
++DATABASE=Path('D:/QM/strategy_farm/state/farm_state.sqlite')
++
++
++def validate_enqueue_setfile(path: str | Path, repo_root: Path = CANONICAL_REPO) -> Path:
++    """Refuse, rather than silently rewrite, foreign or escaped paths."""
++    supplied=Path(path)
++    if not supplied.is_absolute():raise ValueError('SETFILE_PATH_NOT_ABSOLUTE')
++    root=repo_root.resolve(strict=True)/'framework/EAs'
++    resolved=supplied.resolve(strict=True)
++    try:relative=resolved.relative_to(root)
++    except ValueError as exc:raise ValueError('SETFILE_PATH_NOT_CANONICAL') from exc
++    if len(relative.parts)!=3 or relative.parts[1].casefold()!='sets' or resolved.suffix.casefold()!='.set':
++        raise ValueError('SETFILE_PATH_NOT_CANONICAL_EA_SET')
++    if not resolved.is_file():raise ValueError('SETFILE_PATH_NOT_FILE')
++    return resolved
++
++
++def digest(path: Path):
++    return hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() else None
++
++
++def pending_successor_proposal(row: dict, repo_root: Path = CANONICAL_REPO) -> dict:
++    """No authority, enqueue, or supersession is created by this function."""
++    old=Path(row['setfile_path']);ea_dir=old.parent.parent.name
++    if old.parent.name.casefold()!='sets' or not ea_dir.startswith(str(row['ea_id'])+'_'):
++        raise ValueError('SOURCE_PATH_EA_IDENTITY_MISMATCH')
++    canonical=repo_root/'framework/EAs'/ea_dir/'sets'/old.name
++    ex5=canonical.parent.parent/(ea_dir+'.ex5')
++    raw_payload=row.get('payload_json') or '{}'
++    blockers=[]
++    if row['status']!='pending' or row.get('claimed_by') is not None:blockers.append('PREDECESSOR_NOT_UNCLAIMED_PENDING')
++    try:validate_enqueue_setfile(canonical,repo_root)
++    except (ValueError,OSError) as exc:blockers.append(str(exc))
++    if not ex5.is_file():blockers.append('CANONICAL_EX5_MISSING')
++    old_sha=digest(old);canonical_sha=digest(canonical)
++    if old_sha is None:blockers.append('ORIGINAL_SETFILE_UNAVAILABLE_EQUIVALENCE_UNPROVEN')
++    elif old_sha!=canonical_sha:blockers.append('SETFILE_BYTES_DIFFER_SOURCE_REVIEW_REQUIRED')
++    identity=f"{row['id']}|{canonical.as_posix()}|{canonical_sha}|{digest(ex5)}"
++    return {'schema':'qm.pending-canonical-path-proposal/v1','dry_run':True,'apply_supported':False,
++            'source_work_item_id':row['id'],'source_row_sha256':hashlib.sha256(json.dumps(row,sort_keys=True).encode()).hexdigest(),
++            'source_payload_sha256':hashlib.sha256(raw_payload.encode()).hexdigest(),
++            'ea_id':row['ea_id'],'phase':row['phase'],'symbol':row['symbol'],
++            'old_setfile_path':str(old),'old_setfile_sha256':old_sha,
++            'canonical_setfile_path':str(canonical),'canonical_setfile_sha256':canonical_sha,
++            'canonical_ex5_path':str(ex5),'canonical_ex5_sha256':digest(ex5),
++            'proposed_successor_id':str(uuid.uuid5(uuid.NAMESPACE_URL,identity)),
++            'blockers':blockers,'authority_status':'PROPOSED_NOT_APPROVED',
++            'required_apply_contract':[
++                'OWNER-approved path-repair authority bound to this exact predecessor and both artifact hashes',
++                'Factory mutation lock plus fresh OFF check and one BEGIN IMMEDIATE transaction',
++                'Revalidate predecessor status, claimed_by and exact row/payload digest; no active predecessor',
++                'Validate current canonical build, fixed-risk setfile and original phase/parent lineage',
++                'Refuse any existing successor or competing pending/active canonical pair',
++                'Append one canonical successor and one work_item_supersedes record atomically; preserve predecessor bytes/verdict',
++                'Retain non-path holds; never bypass existing approval, registry or phase gates']}
++
++
++def main():
++    parser=argparse.ArgumentParser(description=__doc__)
++    parser.add_argument('command',choices=['preview'])
++    parser.add_argument('--work-item-id',required=True)
++    args=parser.parse_args()
++    with sqlite3.connect('file:'+DATABASE.as_posix()+'?mode=ro',uri=True) as conn:
++        conn.row_factory=sqlite3.Row;conn.execute('PRAGMA query_only=ON')
++        row=conn.execute('SELECT * FROM work_items WHERE id=?',(args.work_item_id,)).fetchone()
++        if row is None:raise SystemExit('source work item missing')
++        print(json.dumps(pending_successor_proposal(dict(row)),indent=2))
++
++
++if __name__=='__main__':main()
+diff --git a/tools/strategy_farm/sweep_enqueue_built_eas.py b/tools/strategy_farm/sweep_enqueue_built_eas.py
+index 6854006294..4ecc43b4f1 100644
+--- a/tools/strategy_farm/sweep_enqueue_built_eas.py
++++ b/tools/strategy_farm/sweep_enqueue_built_eas.py
+@@ -147,6 +147,7 @@ sys.path.insert(0, str(REPO_ROOT / "tools" / "strategy_farm"))
+ import farmctl  # staging helpers (_stage_q02_setfiles, _record_q02_deferral)
+ from q08_recovery_lineage import build_q08_recovery_lineage
+ from review_entry_gate import build_index as build_review_entry_index, blocked as review_blocked
++from canonical_setfile_paths import validate_enqueue_setfile
+ REQUEUE_EXCLUDED_EAS = farmctl.load_requeue_excluded_eas()
+ 
+ # 2026-07-19 (Q08 INFRA_FAIL storm RCA): a deterministic setgen defect in the
+@@ -285,6 +286,14 @@ def insert_wi(
+             "setfile": Path(setfile).name,
+         })
+         return None
++    try:
++        setfile = validate_enqueue_setfile(setfile, REPO_ROOT)
++    except (ValueError, OSError) as exc:
++        report.setdefault("noncanonical_setfile_refused", []).append({
++            "ea_id": ea_id, "phase": phase, "symbol": symbol,
++            "setfile": str(setfile), "reason": str(exc),
++        })
++        return None
+     # OWNER directive 2026-06-20: only ever enqueue .DWX custom symbols. Bare
+     # broker symbols have no local history -> the tester fails history sync with
+     # "file opening or reading error [32]" and the item INFRA_FAILs without ever
+diff --git a/tools/strategy_farm/tests/test_canonical_setfile_paths.py b/tools/strategy_farm/tests/test_canonical_setfile_paths.py
+new file mode 100644
+index 0000000000..af1440e931
+--- /dev/null
++++ b/tools/strategy_farm/tests/test_canonical_setfile_paths.py
+@@ -0,0 +1,54 @@
++from pathlib import Path
++import importlib.util
++import json
++import sys
++import pytest
++
++ROOT=Path(__file__).resolve().parents[3]
++sys.path.insert(0,str(ROOT/'tools/strategy_farm'))
++from canonical_setfile_paths import validate_enqueue_setfile,pending_successor_proposal
++
++
++def fixture(tmp_path):
++    repo=tmp_path/'repo';path=repo/'framework/EAs/QM5_9900_example/sets/example.set'
++    path.parent.mkdir(parents=True);path.write_text('RISK_FIXED=1000\nRISK_PERCENT=0\n')
++    return repo,path
++
++
++def test_canonical_path_and_traversal_resolution(tmp_path):
++    repo,path=fixture(tmp_path)
++    assert validate_enqueue_setfile(path,repo)==path.resolve()
++    foreign=tmp_path/'worktrees/old/framework/EAs/QM5_9900_example/sets/example.set'
++    foreign.parent.mkdir(parents=True);foreign.write_text(path.read_text())
++    with pytest.raises(ValueError,match='NOT_CANONICAL'):validate_enqueue_setfile(foreign,repo)
++    with pytest.raises(ValueError,match='NOT_ABSOLUTE'):validate_enqueue_setfile(Path('example.set'),repo)
++    with pytest.raises(FileNotFoundError):validate_enqueue_setfile(path.with_name('missing.set'),repo)
++
++
++def test_existing_directory_or_non_set_refused(tmp_path):
++    repo,path=fixture(tmp_path)
++    with pytest.raises(ValueError):validate_enqueue_setfile(path.parent,repo)
++    binary=path.with_suffix('.ex5');binary.write_bytes(b'compile')
++    with pytest.raises(ValueError):validate_enqueue_setfile(binary,repo)
++
++
++def test_junction_or_symlink_escape_refused(tmp_path):
++    repo,path=fixture(tmp_path);foreign=tmp_path/'foreign';foreign.mkdir();(foreign/'escape.set').write_text('x')
++    link=path.parent/'escape'
++    try:link.symlink_to(foreign,target_is_directory=True)
++    except OSError:pytest.skip('symlink creation unavailable')
++    with pytest.raises(ValueError,match='NOT_CANONICAL'):validate_enqueue_setfile(link/'escape.set',repo)
++
++
++def test_proposal_preserves_predecessor_and_refuses_unproven_equivalence(tmp_path):
++    repo,path=fixture(tmp_path);old=tmp_path/'worktrees/old/framework/EAs/QM5_9900_example/sets/example.set'
++    row={'id':'old','ea_id':'QM5_9900','phase':'Q04','symbol':'EURUSD.DWX','status':'pending','claimed_by':None,'setfile_path':str(old),'payload_json':'{}'}
++    before=json.dumps(row,sort_keys=True);proposal=pending_successor_proposal(row,repo)
++    assert json.dumps(row,sort_keys=True)==before
++    assert 'ORIGINAL_SETFILE_UNAVAILABLE_EQUIVALENCE_UNPROVEN' in proposal['blockers']
++    assert not proposal['apply_supported']
++    old.parent.mkdir(parents=True);old.write_bytes(path.read_bytes())
++    ex5=path.parent.parent/'QM5_9900_example.ex5';ex5.write_bytes(b'test')
++    proposal=pending_successor_proposal(row,repo);assert not proposal['blockers']
++    assert proposal['authority_status']=='PROPOSED_NOT_APPROVED'
++    old.write_text('changed');assert 'SETFILE_BYTES_DIFFER_SOURCE_REVIEW_REQUIRED' in pending_successor_proposal(row,repo)['blockers']
+diff --git a/tools/strategy_farm/tests/test_sweep_enqueue_built_eas.py b/tools/strategy_farm/tests/test_sweep_enqueue_built_eas.py
+index 13e4356514..8a1a68f01c 100644
+--- a/tools/strategy_farm/tests/test_sweep_enqueue_built_eas.py
++++ b/tools/strategy_farm/tests/test_sweep_enqueue_built_eas.py
+@@ -7,6 +7,7 @@ import os
+ import sqlite3
+ import subprocess
+ import sys
++import pytest
+ from pathlib import Path
+ 
+ from tools.strategy_farm import agent_router, farmctl
+@@ -279,8 +280,9 @@ def test_apply_preserves_new_deferral_when_sidecar_was_already_nonempty(
+     assert deferred_state[ea_id]["canary_symbols"] == ["EURUSD.DWX"]
+ 
+ 
++@pytest.mark.parametrize("canonical", [True, False])
+ def test_heterogeneous_canaries_release_deferred_symbol_in_apply_mode(
+-    tmp_path: Path,
++    tmp_path: Path, canonical: bool,
+ ) -> None:
+     farm_root = tmp_path / "farm"
+     repo_root = tmp_path / "repo"
+@@ -289,12 +291,14 @@ def test_heterogeneous_canaries_release_deferred_symbol_in_apply_mode(
+     eas_dir = repo_root / "framework" / "EAs"
+     registry = repo_root / "framework" / "registry" / "ea_id_registry.csv"
+     deferred_setfile = (
+-        tmp_path / "QM5_9005_multisym_USDJPY.DWX_D1_backtest.set"
++        (repo_root / "framework/EAs/QM5_9005_multisym/sets" if canonical else tmp_path)
++        / "QM5_9005_multisym_USDJPY.DWX_D1_backtest.set"
+     )
+     eas_dir.mkdir(parents=True)
+     registry.parent.mkdir(parents=True)
+     report_root.joinpath("state").mkdir(parents=True)
+     registry.write_text("ea_id,slug,status\n", encoding="utf-8")
++    deferred_setfile.parent.mkdir(parents=True, exist_ok=True)
+     deferred_setfile.write_text("RISK_FIXED=1000\nRISK_PERCENT=0\n", encoding="utf-8")
+ 
+     _init_test_db(farm_root)
+@@ -372,6 +376,12 @@ def test_heterogeneous_canaries_release_deferred_symbol_in_apply_mode(
+             "WHERE ea_id=? AND status='pending'",
+             (ea_id,),
+         ).fetchone()
++    if not canonical:
++        assert promoted is None
++        report = json.loads((report_root / "state/claude_sweep_enqueue_2026-06-10.json").read_text())
++        assert report["noncanonical_setfile_refused"][0]["reason"] == "SETFILE_PATH_NOT_CANONICAL"
++        assert json.loads(deferred_file.read_text())[ea_id]["setfiles"]
++        return
+     assert promoted is not None
+     assert promoted[0] == "USDJPY.DWX"
+     promoted_payload = json.loads(promoted[1])
+@@ -913,7 +923,8 @@ def test_mixed_cohort_null_promotes_gold_before_stop_in_apply_mode(
+     ea_id = "QM5_9006"
+     farm_root, report_root, env = _canary_apply_env(tmp_path, ea_id)
+     build_task_id = "build-9006"
+-    gold_setfile = tmp_path / f"{ea_id}_XAUUSD.DWX_D1_backtest.set"
++    gold_setfile = Path(env["QM_CANONICAL_REPO_ROOT"]) / f"framework/EAs/{ea_id}_fixture/sets/{ea_id}_XAUUSD.DWX_D1_backtest.set"
++    gold_setfile.parent.mkdir(parents=True, exist_ok=True)
+     gold_setfile.write_text("RISK_FIXED=1000\nRISK_PERCENT=0\n", encoding="utf-8")
+ 
+     with sqlite3.connect(farm_root / farmctl.DB_REL) as conn:
+@@ -981,7 +992,8 @@ def test_deterministic_defect_canary_stops_cohort_in_apply_mode(
+     ea_id = "QM5_9007"
+     farm_root, report_root, env = _canary_apply_env(tmp_path, ea_id)
+     build_task_id = "build-9007"
+-    deferred_setfile = tmp_path / f"{ea_id}_USDJPY.DWX_D1_backtest.set"
++    deferred_setfile = Path(env["QM_CANONICAL_REPO_ROOT"]) / f"framework/EAs/{ea_id}_fixture/sets/{ea_id}_USDJPY.DWX_D1_backtest.set"
++    deferred_setfile.parent.mkdir(parents=True, exist_ok=True)
+     deferred_setfile.write_text("RISK_FIXED=1000\nRISK_PERCENT=0\n", encoding="utf-8")
+ 
+     with sqlite3.connect(farm_root / farmctl.DB_REL) as conn:
+@@ -1094,7 +1106,8 @@ def test_stopped_cohort_unstops_on_later_pass_in_apply_mode(
+     farm_root, report_root, env = _canary_apply_env(tmp_path, ea_id)
+     build_task_id = "build-9009"
+     canary_setfile = str(tmp_path / "EURUSD.DWX.set")
+-    deferred_setfile = tmp_path / f"{ea_id}_USDJPY.DWX_D1_backtest.set"
++    deferred_setfile = Path(env["QM_CANONICAL_REPO_ROOT"]) / f"framework/EAs/{ea_id}_fixture/sets/{ea_id}_USDJPY.DWX_D1_backtest.set"
++    deferred_setfile.parent.mkdir(parents=True, exist_ok=True)
+     deferred_setfile.write_text("RISK_FIXED=1000\nRISK_PERCENT=0\n", encoding="utf-8")
+ 
+     with sqlite3.connect(farm_root / farmctl.DB_REL) as conn:

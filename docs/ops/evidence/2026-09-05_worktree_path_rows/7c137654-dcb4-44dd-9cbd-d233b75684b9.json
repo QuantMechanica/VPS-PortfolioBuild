@@ -1,0 +1,47 @@
+{
+  "schema": "qm.pending-canonical-path-proposal/v1",
+  "dry_run": true,
+  "apply_supported": false,
+  "source_work_item_id": "7c137654-dcb4-44dd-9cbd-d233b75684b9",
+  "source_row_sha256": "c0317d9000ff3101d5b29ddb99e2c49e72b227346b703ee8ec09f6db1340ba90",
+  "source_payload_sha256": "b9e7720134f2dc3a2ac37b5547776931165fccee9874266f563b3f80b966ccb5",
+  "ea_id": "QM5_10481",
+  "phase": "Q04",
+  "symbol": "CADCHF.DWX",
+  "old_setfile_path": "C:\\QM\\worktrees\\claude-orchestration-3\\framework\\EAs\\QM5_10481_mql5-exec-ao\\sets\\QM5_10481_mql5-exec-ao_CADCHF.DWX_M15_backtest.set",
+  "old_setfile_sha256": "77cc72adf05829084909b1cf851d0b02499e2b62df82bb01bd32ed7d8aeeb694",
+  "canonical_setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10481_mql5-exec-ao\\sets\\QM5_10481_mql5-exec-ao_CADCHF.DWX_M15_backtest.set",
+  "canonical_setfile_sha256": "77cc72adf05829084909b1cf851d0b02499e2b62df82bb01bd32ed7d8aeeb694",
+  "canonical_ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10481_mql5-exec-ao\\QM5_10481_mql5-exec-ao.ex5",
+  "canonical_ex5_sha256": "9485d89a40218bc2e58cfb5dc6dd88cb96787e48fc1f77ade2cdac5e695adb21",
+  "proposed_successor_id": "be0d6f2e-b961-5ba7-ad93-4d0e76d9c6a9",
+  "blockers": [],
+  "authority_status": "PROPOSED_NOT_APPROVED",
+  "required_apply_contract": [
+    "OWNER-approved path-repair authority bound to this exact predecessor and both artifact hashes",
+    "Factory mutation lock plus fresh OFF check and one BEGIN IMMEDIATE transaction",
+    "Revalidate predecessor status, claimed_by and exact row/payload digest; no active predecessor",
+    "Validate current canonical build, fixed-risk setfile and original phase/parent lineage",
+    "Refuse any existing successor or competing pending/active canonical pair",
+    "Append one canonical successor and one work_item_supersedes record atomically; preserve predecessor bytes/verdict",
+    "Retain non-path holds; never bypass existing approval, registry or phase gates"
+  ],
+  "canonical_ex5_mtime_utc": "2026-07-14T20:46:39.748672+00:00",
+  "mtime_is_not_compile_receipt": true,
+  "fixed_risk_contract": [
+    true,
+    {
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10481_mql5-exec-ao\\sets\\QM5_10481_mql5-exec-ao_CADCHF.DWX_M15_backtest.set",
+      "risk_fixed": 1000.0,
+      "risk_percent": 0.0
+    }
+  ],
+  "holds": [],
+  "existing_successors": [],
+  "latest_compile_rows": [],
+  "preview_command": "python C:/QM/repo/tools/strategy_farm/canonical_setfile_paths.py preview --work-item-id 7c137654-dcb4-44dd-9cbd-d233b75684b9",
+  "command_availability": "PROPOSAL_BRANCH_ONLY_UNTIL_INTEGRATED",
+  "text_equal_ignoring_bom_newlines": true,
+  "delta_class": "EXACT_BYTES",
+  "text_diff": ""
+}

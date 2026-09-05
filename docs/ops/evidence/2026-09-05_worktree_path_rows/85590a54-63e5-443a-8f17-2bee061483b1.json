@@ -1,0 +1,49 @@
+{
+  "schema": "qm.pending-canonical-path-proposal/v1",
+  "dry_run": true,
+  "apply_supported": false,
+  "source_work_item_id": "85590a54-63e5-443a-8f17-2bee061483b1",
+  "source_row_sha256": "57e6eb68cbbc9d431edef33ca2108dab1c9e73c4e7c7d66e87f966ce9296e2ea",
+  "source_payload_sha256": "caf500f246fb7bc0a2f0135ba8b213e788cb3962042e67b5014ac81a6ecd5229",
+  "ea_id": "QM5_10141",
+  "phase": "Q04",
+  "symbol": "EURUSD.DWX",
+  "old_setfile_path": "C:\\QM\\worktrees\\claude-orchestration-2\\framework\\EAs\\QM5_10141_rsi-meanrev\\sets\\QM5_10141_rsi-meanrev_EURUSD.DWX_D1_backtest.set",
+  "old_setfile_sha256": "de3138076161083bf65bc86c72e2223517d78369dc64864adcd7a48b166d10c4",
+  "canonical_setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10141_rsi-meanrev\\sets\\QM5_10141_rsi-meanrev_EURUSD.DWX_D1_backtest.set",
+  "canonical_setfile_sha256": "3f0336595f840d58b0555cf52958d2fbe780f749115dfd0cf4d89ff88baae077",
+  "canonical_ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10141_rsi-meanrev\\QM5_10141_rsi-meanrev.ex5",
+  "canonical_ex5_sha256": "917a93f0595c96ab1fb5a084e122969ea087f4e3a3b940b22471b389e4604f36",
+  "proposed_successor_id": "9bfd6370-a917-521a-8b5f-258b02294fbb",
+  "blockers": [
+    "SETFILE_BYTES_DIFFER_SOURCE_REVIEW_REQUIRED"
+  ],
+  "authority_status": "PROPOSED_NOT_APPROVED",
+  "required_apply_contract": [
+    "OWNER-approved path-repair authority bound to this exact predecessor and both artifact hashes",
+    "Factory mutation lock plus fresh OFF check and one BEGIN IMMEDIATE transaction",
+    "Revalidate predecessor status, claimed_by and exact row/payload digest; no active predecessor",
+    "Validate current canonical build, fixed-risk setfile and original phase/parent lineage",
+    "Refuse any existing successor or competing pending/active canonical pair",
+    "Append one canonical successor and one work_item_supersedes record atomically; preserve predecessor bytes/verdict",
+    "Retain non-path holds; never bypass existing approval, registry or phase gates"
+  ],
+  "canonical_ex5_mtime_utc": "2026-07-14T20:34:08.885169+00:00",
+  "mtime_is_not_compile_receipt": true,
+  "fixed_risk_contract": [
+    true,
+    {
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10141_rsi-meanrev\\sets\\QM5_10141_rsi-meanrev_EURUSD.DWX_D1_backtest.set",
+      "risk_fixed": 1000.0,
+      "risk_percent": 0.0
+    }
+  ],
+  "holds": [],
+  "existing_successors": [],
+  "latest_compile_rows": [],
+  "preview_command": "python C:/QM/repo/tools/strategy_farm/canonical_setfile_paths.py preview --work-item-id 85590a54-63e5-443a-8f17-2bee061483b1",
+  "command_availability": "PROPOSAL_BRANCH_ONLY_UNTIL_INTEGRATED",
+  "text_equal_ignoring_bom_newlines": true,
+  "delta_class": "ENCODING_OR_NEWLINES_ONLY",
+  "text_diff": ""
+}

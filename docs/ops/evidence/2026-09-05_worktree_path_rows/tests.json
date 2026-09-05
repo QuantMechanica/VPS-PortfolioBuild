@@ -1,0 +1,13 @@
+{
+  "command": [
+    "python",
+    "-m",
+    "pytest",
+    "tools/strategy_farm/tests/test_canonical_setfile_paths.py",
+    "tools/strategy_farm/tests/test_sweep_enqueue_built_eas.py",
+    "-q"
+  ],
+  "exit_code": 0,
+  "stdout": ".................                                                        [100%]\n17 passed in 8.24s\n",
+  "stderr": ""
+}

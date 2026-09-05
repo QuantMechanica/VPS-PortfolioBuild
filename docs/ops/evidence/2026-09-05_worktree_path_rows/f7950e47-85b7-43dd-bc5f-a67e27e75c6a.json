@@ -1,0 +1,59 @@
+{
+  "schema": "qm.pending-canonical-path-proposal/v1",
+  "dry_run": true,
+  "apply_supported": false,
+  "source_work_item_id": "f7950e47-85b7-43dd-bc5f-a67e27e75c6a",
+  "source_row_sha256": "197570079afd27438f00c5c726e6fc838c620fd044662cffb12b3f0dc7a5db66",
+  "source_payload_sha256": "94946f942c77488fe8412959d3b319678eba55a448cf2076197d53eb61b8538d",
+  "ea_id": "QM5_10151",
+  "phase": "Q02",
+  "symbol": "XAUUSD.DWX",
+  "old_setfile_path": "C:\\QM\\worktrees\\gemini-orchestration-1\\framework\\EAs\\QM5_10151_tv-ema-vwap-scalp\\sets\\QM5_10151_tv-ema-vwap-scalp_XAUUSD.DWX_M5_backtest.set",
+  "old_setfile_sha256": "29dabc60b93166be168cd84721f1b3e2a7553b1e095535e8598a4bbb42840499",
+  "canonical_setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10151_tv-ema-vwap-scalp\\sets\\QM5_10151_tv-ema-vwap-scalp_XAUUSD.DWX_M5_backtest.set",
+  "canonical_setfile_sha256": "50b8fde258a74f4696528a688e7ed7b03dafdc76ef86342ef2fb601421dfa456",
+  "canonical_ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10151_tv-ema-vwap-scalp\\QM5_10151_tv-ema-vwap-scalp.ex5",
+  "canonical_ex5_sha256": "9cab68ef1e781ba5fa6fc52abb099e3066fe0a9991238d3ee97853236f667361",
+  "proposed_successor_id": "f9a25af3-5482-562b-a4c3-e11c31df4efa",
+  "blockers": [
+    "SETFILE_BYTES_DIFFER_SOURCE_REVIEW_REQUIRED"
+  ],
+  "authority_status": "PROPOSED_NOT_APPROVED",
+  "required_apply_contract": [
+    "OWNER-approved path-repair authority bound to this exact predecessor and both artifact hashes",
+    "Factory mutation lock plus fresh OFF check and one BEGIN IMMEDIATE transaction",
+    "Revalidate predecessor status, claimed_by and exact row/payload digest; no active predecessor",
+    "Validate current canonical build, fixed-risk setfile and original phase/parent lineage",
+    "Refuse any existing successor or competing pending/active canonical pair",
+    "Append one canonical successor and one work_item_supersedes record atomically; preserve predecessor bytes/verdict",
+    "Retain non-path holds; never bypass existing approval, registry or phase gates"
+  ],
+  "canonical_ex5_mtime_utc": "2026-06-16T07:54:58.398558+00:00",
+  "mtime_is_not_compile_receipt": true,
+  "fixed_risk_contract": [
+    true,
+    {
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10151_tv-ema-vwap-scalp\\sets\\QM5_10151_tv-ema-vwap-scalp_XAUUSD.DWX_M5_backtest.set",
+      "risk_fixed": 1000.0,
+      "risk_percent": 0.0
+    }
+  ],
+  "holds": [],
+  "existing_successors": [
+    {
+      "work_item_id": "f7950e47-85b7-43dd-bc5f-a67e27e75c6a",
+      "superseded_by_work_item_id": "79549a3d-afd6-44da-8f6c-139dbd430909",
+      "reason": "july_cohort_retire: prior_verdict=FAIL for QM5_10151/XAUUSD.DWX/Q02, prior terminal row 79549a3d-afd6-44da-8f6c-139dbd430909 (created 2026-06-27T08:52:58+00:00). RETIRE: pending row would only re-confirm an already-settled economic failure (genuine no-signal/fail/invalid results are never requalified). Classification: 2093b38e-8eb4-4bcd-931b-25c50ada861f; execution: c9a1bdab-b40b-443b-9b12-2063958c7311.",
+      "source_encoding": "router:july-cohort-retire:c9a1bdab-b40b-443b-9b12-2063958c7311",
+      "evidence_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-02_2093b38e_july_cohort_zombie_queue_disposition.md",
+      "recorded_by": "claude",
+      "recorded_at": "2026-09-02T17:42:04+00:00"
+    }
+  ],
+  "latest_compile_rows": [],
+  "preview_command": "python C:/QM/repo/tools/strategy_farm/canonical_setfile_paths.py preview --work-item-id f7950e47-85b7-43dd-bc5f-a67e27e75c6a",
+  "command_availability": "PROPOSAL_BRANCH_ONLY_UNTIL_INTEGRATED",
+  "text_equal_ignoring_bom_newlines": false,
+  "delta_class": "SETFILE_CONTENT_CHANGED",
+  "text_diff": "--- worktree\n+++ canonical\n@@ -7,14 +7,14 @@\n ; symbol:       XAUUSD.DWX\n ; timeframe:    M5\n ; environment:  backtest\n-; magic_slot:   5\n+; magic_slot:   34\n ; risk_mode:    FIXED\n ; portfolio_weight: 1\n-; build_hash:   pending\n+; build_hash:   8924c7704b168c485dd2681db41c2ee7db79b27b1391d58b751de3559fe9dd6c\n ; author:       Development\n ; date:         2026-05-25\n ;==========================================================\n-qm_magic_slot_offset=5\n+qm_magic_slot_offset=34\n RISK_FIXED=1000\n RISK_PERCENT=0\n PORTFOLIO_WEIGHT=1\n"
+}
