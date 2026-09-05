@@ -612,6 +612,7 @@ bool Strategy_OpenLeg(const string symbol,
          return false;
 
       QM_EntryRequest host_request;
+      ZeroMemory(host_request);
       host_request.type = type;
       host_request.price = 0.0;
       host_request.sl = stop;

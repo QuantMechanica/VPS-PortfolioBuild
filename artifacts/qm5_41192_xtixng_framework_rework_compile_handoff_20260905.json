@@ -1,6 +1,7 @@
 {
   "schema_version": "qm.paced-fleet.framework-rework-compile-handoff/v1",
   "generated_at_utc": "2026-09-05T01:29:11Z",
+  "updated_at_utc": "2026-09-05T06:10:28Z",
   "agent": "board-advisor",
   "branch": "agents/board-advisor",
   "unit_count": 1,
@@ -83,6 +84,24 @@
     "hold_release_attempted": false,
     "hold_release_reason": "Release is a fleet-wide reviewed-worker ceremony and is outside this one-EA unit."
   },
+  "binary_recovery": {
+    "stale_predecessor_work_item_id": "0d00bf54-535c-4049-ad7f-fde0c6b13f12",
+    "canonical_supersession_recorded": true,
+    "first_current_source_work_item_id": "93d4606c-4375-4ab9-844e-61f8adb6af58",
+    "first_current_source_verdict": "COMPILE_FAIL",
+    "first_current_source_failure_class": "EA_TRADE_REQUEST_UNINITIALIZED",
+    "repair": "Zero-initialize the host QM_EntryRequest before assigning its fields and passing it to QM_TM_OpenPosition.",
+    "strategy_mechanics_changed": false,
+    "repaired_mq5_sha256": "fec27056d36dc5738a327e4340f189d924201380864e3c3bd05488e3f20534aa",
+    "repair_successor_work_item_id": "dd43dd1a-ad01-473c-80a7-b9c92ac0da65",
+    "repair_successor_verdict": "COMPILE_OK",
+    "build_check_result": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "ex5_sha256": "562b670be340f5454612bef39db306b59211540ca3a2861559c76a5073c9c689",
+    "compile_evidence_path": "D:/QM/reports/work_items/dd43dd1a-ad01-473c-80a7-b9c92ac0da65/QM5_41192/COMPILE_EA/compile_evidence.json",
+    "setfile_count": 3
+  },
   "q02_handoff": {
     "work_item_id": "06e46647-e8b6-4148-8d51-586cb8114acd",
     "status": "pending",
@@ -90,9 +109,13 @@
     "portfolio_scope": "basket",
     "logical_symbol": "QM5_41192_XTI_XNG_MDAILY_HL_RV_D1",
     "logical_setfile_path": "C:/QM/repo/framework/EAs/QM5_41192_xtixng-mdaily-hl-rv/sets/QM5_41192_xtixng-mdaily-hl-rv_QM5_41192_XTI_XNG_MDAILY_HL_RV_D1_D1_backtest.set",
-    "logical_setfile_sha256": "ec71135e05f7de648c3d37b5c36d1baaede967c2580a412a1e409df7ac6569a5",
+    "logical_setfile_sha256": "3809b0da1cbfed714e0b2d17a011050f0a37c7dd5e85fa6e261e6a9bd1edc4e2",
     "duplicate_q02_row_created": false,
-    "blocked_until": "governed current-source compile produces a canonical EX5"
+    "blocked_until": null,
+    "current_binary_ready": true,
+    "current_binary_sha256": "562b670be340f5454612bef39db306b59211540ca3a2861559c76a5073c9c689",
+    "fresh_seed_attempt": "not_applicable_existing_row_is_pending_not_terminal",
+    "queue_disposition": "preserve the single priority-track pending logical-basket row; do not duplicate"
   },
   "safety": {
     "t_live_touched": false,

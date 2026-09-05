@@ -3,39 +3,31 @@
 ; ea_id:        41192
 ; ea_slug:      xtixng-mdaily-hl-rv
 ; ea_version:   v5.0
-; set_version:  s20260829-001
+; set_version:  s20260905-001
 ; symbol:       XNGUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   e3d2506695799e74bbac120c188385cab5dc2fc8157a727825912bf83e46a452
+; build_hash:   f182b27633f2de9797de4c3b5e899d2a2b5056dae3b0dfc48399870acaca3feb
 ; author:       Development
-; date:         2026-08-29
+; date:         2026-09-05
 ;==========================================================
 qm_ea_id=41192
 qm_magic_slot_offset=1
-qm_rng_seed=42
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; Non-gating registered-leg diagnostic; logical basket Q02 only.
-qm_news_temporal=0
-qm_news_compliance=0
-qm_news_stale_max_hours=336
-qm_news_min_impact=high
-qm_news_mode_legacy=0
-qm_friday_close_enabled=false
-qm_friday_close_hour_broker=21
-qm_stress_reject_probability=0.0
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_41192_xtixng-mdaily-hl-rv.md
 strategy_xng_symbol=XNGUSD.DWX
 strategy_history_bars_d1=45
 strategy_min_month_sessions=17
 strategy_max_month_sessions=23
 strategy_entry_grace_minutes=180
 strategy_max_pair_count=276
-strategy_numerical_tolerance=1.0e-10
+strategy_numerical_tolerance=0.0000000001
 strategy_atr_period_d1=20
 strategy_atr_sl_mult=3.5
 strategy_notional_ratio=1.0
