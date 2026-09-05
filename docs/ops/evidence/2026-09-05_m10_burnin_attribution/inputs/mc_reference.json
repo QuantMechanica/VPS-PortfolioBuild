@@ -1,0 +1,31 @@
+{
+  "_basis": "sum_of_sleeves_flat_risk_calendar_daily",
+  "_provenance": {
+    "block_days": 5,
+    "cap": 100000.0,
+    "generated_at_utc": "2026-07-01T09:36:23Z",
+    "live_risk_pct_per_trade": 0.75,
+    "missing_streams": [],
+    "n_sleeves": 13,
+    "note": "MaxDD p95 over a 42-calendar-day window on the DEPLOYED SUM-at-flat-risk book. This is the correct DD reference for the live burn-in (the manifest mc_p95 is weighted-avg + full-history). If the live per-trade risk differs from live_risk_pct, p95 scales ~linearly.",
+    "runs": 20000,
+    "seed": 1,
+    "stream_scale_factor": 0.75,
+    "stream_span": [
+      "2018-03-28",
+      "2025-12-30"
+    ],
+    "window_days": 42
+  },
+  "block_bootstrap": {
+    "max_drawdown_pct": {
+      "mean": 2.93488,
+      "p50": 2.632749,
+      "p95": 6.020091,
+      "p99": 7.884501
+    }
+  },
+  "max_drawdown_pct": {
+    "p95": 6.020091
+  }
+}

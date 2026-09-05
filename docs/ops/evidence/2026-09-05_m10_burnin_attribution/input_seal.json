@@ -1,0 +1,18 @@
+{
+  "capture.json": "9cbe5530afb7d57ac115b10bea8e1be3862be238bf781fd88b5496e7717f1abb",
+  "inputs/QM_EquityStream.mqh": "535da9dc1a0fd016fddeea0ee2c49c14ff01af99288ff9d2f2603548ce01a7ce",
+  "inputs/config.json": "d2d37fd30c239089609cadb50ced53c730da1a5be59721c97c74d3d54a09b35e",
+  "inputs/deals.csv": "9a4cc7ba454767e36714d61dc9cd93e1ef6059ec9afaa3e1377091c6892966c7",
+  "inputs/events.jsonl": "ff32939695b0e9cdb132e39925cce8940adab591707fc395fb597008133c5455",
+  "inputs/manifest.json": "8c719b080e18d30d83432f0999d694f699f2859cef72c0ce7738631fb084eab6",
+  "inputs/mc_reference.json": "881a0a409cfb7658d1e23e152f812dabd2794594ae35a8d560c344f40bc2f3aa",
+  "inputs/pointer.json": "f5f23f3c597f07217ef4406a34f929a2cb50e580986007eefe758d4e27b1704a",
+  "inputs/previous_burnin.json": "f881abe589c82c690738d8762cd2d69faff7b139149ecdbafd475cf6b7894014",
+  "inputs/pulse.json": "b3a50b8a82833681d6f3543ad956181373c01520b2e5dafec76d0980d1a106ee",
+  "inputs/source_10440.mq5": "0895a8e80a4477baa86e86d95f61312ed42ad0b248f99688f812b022cdb9f6c7",
+  "inputs/source_12778.mq5": "132a501d94685f013cc62a8b3c2de111d0a8b1e616a8656d2c61b061a754c146",
+  "inputs/source_12969.mq5": "4e9503fd61e960de689128ebda343d7e078feb24dd42a25605c246f196ddfb86",
+  "inputs/source_13117.mq5": "14ddccb7ac7fe8b1c1e9cec4c6a59c7045481de99f15e1728fb38a76cfe6bcd1",
+  "inputs/source_1567.mq5": "a9531d333dbbe067270811e696e235483d12d2604e86c974feea411066649f8c",
+  "inputs/source_checks.json": "aeefec66ea9feed297b8c245f56ee04f0719cc7059fad848d46f4a3fe1f1437d"
+}

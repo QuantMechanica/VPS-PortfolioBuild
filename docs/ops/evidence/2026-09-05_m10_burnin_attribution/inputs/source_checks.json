@@ -1,0 +1,2161 @@
+{
+  "sources": [
+    {
+      "ea_id": 1567,
+      "source": "C:\\QM\\repo\\framework\\EAs\\QM5_1567_demark-td-reverse-sequential-h4\\QM5_1567_demark-td-reverse-sequential-h4.mq5",
+      "source_sha256": "a9531d333dbbe067270811e696e235483d12d2604e86c974feea411066649f8c",
+      "canonical_binary_sha256": "aee0eb60798ef7ada09e49df6e9a339dd8199f810de56dab8a25957cb26fba31",
+      "deployed_binary_sha256": "71c2f84b3e694210176e928fcaf688eff3f59c7efacdb275511e474c35a9e45c",
+      "deployed_binary": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_1567_demark-td-reverse-sequential-h4.ex5",
+      "source_to_binary_build_attestation": "NOT_ESTABLISHED"
+    },
+    {
+      "ea_id": 12778,
+      "source": "C:\\QM\\repo\\framework\\EAs\\QM5_12778_edgelab-audusd-eurjpy-cointegration\\QM5_12778_edgelab-audusd-eurjpy-cointegration.mq5",
+      "source_sha256": "132a501d94685f013cc62a8b3c2de111d0a8b1e616a8656d2c61b061a754c146",
+      "canonical_binary_sha256": "2a105cfbb364142c96c552136bb450162c142845665ce3366d0c045248c17a01",
+      "deployed_binary_sha256": "2c470706016952a809fb0059e532f8e27445c5ccc37cd6f14fb00a91b2235e3b",
+      "deployed_binary": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_12778_edgelab-audusd-eurjpy-cointegration.ex5",
+      "source_to_binary_build_attestation": "NOT_ESTABLISHED"
+    },
+    {
+      "ea_id": 12969,
+      "source": "C:\\QM\\repo\\framework\\EAs\\QM5_12969_usdjpy-gotobi-nakane-fix\\QM5_12969_usdjpy-gotobi-nakane-fix.mq5",
+      "source_sha256": "4e9503fd61e960de689128ebda343d7e078feb24dd42a25605c246f196ddfb86",
+      "canonical_binary_sha256": "938a35aa6b6dff54ec0e94a4a253a71730e63f9347b91877da786ec395715f06",
+      "deployed_binary_sha256": "933d63c036a154725df1376e22ca74cb419860588f0313fc986fc3ead7673be4",
+      "deployed_binary": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_12969_usdjpy-gotobi-nakane-fix.ex5",
+      "source_to_binary_build_attestation": "NOT_ESTABLISHED"
+    },
+    {
+      "ea_id": 13117,
+      "source": "C:\\QM\\repo\\framework\\EAs\\QM5_13117_eurgbp-audjpy\\QM5_13117_eurgbp-audjpy.mq5",
+      "source_sha256": "14ddccb7ac7fe8b1c1e9cec4c6a59c7045481de99f15e1728fb38a76cfe6bcd1",
+      "canonical_binary_sha256": "7ce7613ac7c95cb767fe5f169184e8aeff83f6b4603eb0d37db54e6582a91512",
+      "deployed_binary_sha256": "adfa1ba617a845088381f4160e31047da6d4068451911060e0e54481d9712752",
+      "deployed_binary": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_13117_eurgbp-audjpy.ex5",
+      "source_to_binary_build_attestation": "NOT_ESTABLISHED"
+    },
+    {
+      "ea_id": 10440,
+      "source": "C:\\QM\\repo\\framework\\EAs\\QM5_10440_mql5-ohlc-mtf\\QM5_10440_mql5-ohlc-mtf.mq5",
+      "source_sha256": "0895a8e80a4477baa86e86d95f61312ed42ad0b248f99688f812b022cdb9f6c7",
+      "canonical_binary_sha256": "70872f040f4072593b89511a9de6c00708d6dbb9bca487d17a90097303adc3d5",
+      "deployed_binary_sha256": "b71d302997ecdb661f1627e12b9e5e766e9679c780461b82fa018db7f2078a6a",
+      "deployed_binary": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_10440_mql5-ohlc-mtf.ex5",
+      "source_to_binary_build_attestation": "NOT_ESTABLISHED"
+    }
+  ],
+  "q10440": [
+    {
+      "id": "f8f75276-2256-5e06-a58b-2756e5c1ebe0",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q09_NEWS",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-09-02T10:10:35.641002+00:00",
+      "evidence_path": null
+    },
+    {
+      "id": "dae1c1e5-e682-4206-bb9f-553ef45ec3f1",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q09",
+      "status": "done",
+      "verdict": "FAIL",
+      "updated_at": "2026-08-27T01:55:30+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\dae1c1e5-e682-4206-bb9f-553ef45ec3f1\\QM5_10440\\Q09\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "d9052d4e-b704-408a-aee3-99513c0039db",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q09",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-08-26T17:05:36+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\d9052d4e-b704-408a-aee3-99513c0039db\\QM5_10440\\Q09\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "596bbb44-caf1-4a84-9e4b-bd8c66bfa5d3",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q09",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-08-26T16:47:16+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\596bbb44-caf1-4a84-9e4b-bd8c66bfa5d3\\QM5_10440\\Q09\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "77431aa5-f02b-431f-90ec-c695a9c7201b",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q09",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-08-26T15:38:44+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\77431aa5-f02b-431f-90ec-c695a9c7201b\\QM5_10440\\Q09\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "939cb446-51d3-4995-8722-5502472245cf",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q09",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-08-26T15:18:15+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\939cb446-51d3-4995-8722-5502472245cf\\QM5_10440\\Q09\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "f3f7816e-6671-4724-b174-4838d783f36b",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q02",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-08-21T17:14:46+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\f3f7816e-6671-4724-b174-4838d783f36b\\QM5_10440\\20260821_171053\\summary.json"
+    },
+    {
+      "id": "ace3f877-e9b4-574f-abae-c90eb983aab0",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q09_NEWS",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-08-07T09:04:33+00:00",
+      "evidence_path": null
+    },
+    {
+      "id": "2b792348-db4a-500f-a221-c26595ca3c83",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q09_NEWS",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-08-06T22:54:06+00:00",
+      "evidence_path": null
+    },
+    {
+      "id": "8f2a0a29-f8fd-57ad-a180-2b732a418eb9",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q09_NEWS",
+      "status": "done",
+      "verdict": "REVIEW_REQUIRED",
+      "updated_at": "2026-08-06T02:58:19+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\8f2a0a29-f8fd-57ad-a180-2b732a418eb9\\QM5_10440\\Q09_NEWS\\NDX_DWX\\summary.json"
+    },
+    {
+      "id": "81266750-d7d7-446f-91e1-6eb95bb0e62f",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q02",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-08-05T19:15:18+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\81266750-d7d7-446f-91e1-6eb95bb0e62f\\QM5_10440\\20260805_190834\\summary.json"
+    },
+    {
+      "id": "036ab55b-3323-5458-a0d5-3a1ec116939a",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q09_NEWS",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-08-05T15:40:35+00:00",
+      "evidence_path": null
+    },
+    {
+      "id": "e9af192f-d525-42b0-8727-4b260aaeaf51",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-08-03T10:32:28+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\e9af192f-d525-42b0-8727-4b260aaeaf51\\QM5_10440\\20260803_102932\\summary.json"
+    },
+    {
+      "id": "0b2bfb03-063c-49b2-b779-6c5c160730e6",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q02",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-08-03T04:59:09+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\0b2bfb03-063c-49b2-b779-6c5c160730e6\\QM5_10440\\20260803_045533\\summary.json"
+    },
+    {
+      "id": "baacab92-8cc5-4c8a-a629-8b8e23dc0926",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q05",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-29T12:18:03+00:00",
+      "evidence_path": null
+    },
+    {
+      "id": "4c93db2d-32bd-4a41-8e1a-2a2be709ad89",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q05",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-29T12:18:03+00:00",
+      "evidence_path": null
+    },
+    {
+      "id": "5b533de7-089d-41ba-a7a9-6aa917c8e55f",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q05",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-29T12:18:03+00:00",
+      "evidence_path": null
+    },
+    {
+      "id": "1a4c87bd-411e-4003-bb14-1c50947775dc",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q05",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-29T12:18:03+00:00",
+      "evidence_path": null
+    },
+    {
+      "id": "483245fa-9f78-470c-a46d-61f2decfc3fa",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q05",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-29T12:18:03+00:00",
+      "evidence_path": null
+    },
+    {
+      "id": "994b0afc-5172-46ff-ac5d-0cb61f7ac334",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q05",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-29T12:18:03+00:00",
+      "evidence_path": null
+    },
+    {
+      "id": "751edfc0-4b30-4a0b-8857-cf51b51c9907",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q05",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-29T12:18:03+00:00",
+      "evidence_path": null
+    },
+    {
+      "id": "c73f1d74-123e-4fee-be6c-ac678ad15142",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q05",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-29T12:18:03+00:00",
+      "evidence_path": null
+    },
+    {
+      "id": "749b93e5-284c-4766-9e52-339331b3f54e",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q05",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-29T12:18:03+00:00",
+      "evidence_path": null
+    },
+    {
+      "id": "11272098-52e8-4eb5-8a69-1f1ba9d36f7e",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q05",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-29T12:18:03+00:00",
+      "evidence_path": null
+    },
+    {
+      "id": "700375ca-1d64-4250-b2bd-5171cc28c393",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q05",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-29T12:18:03+00:00",
+      "evidence_path": null
+    },
+    {
+      "id": "7f66fbf5-9e8c-4458-af84-70f3b30eeee8",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q05",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-29T12:18:03+00:00",
+      "evidence_path": null
+    },
+    {
+      "id": "4b4b52af-a0e7-4bd5-905d-559afc8f7a76",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q05",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-29T12:18:03+00:00",
+      "evidence_path": null
+    },
+    {
+      "id": "bc9010aa-d461-4458-a0d7-b7ba5fe67cb3",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q05",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-29T12:18:03+00:00",
+      "evidence_path": null
+    },
+    {
+      "id": "6b3b42a8-0c3f-4735-a5ed-2b094ea858bf",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q05",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-29T12:18:03+00:00",
+      "evidence_path": null
+    },
+    {
+      "id": "e4bf172a-14cd-46ed-83ae-2e0b5ec5e858",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q05",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-29T12:18:03+00:00",
+      "evidence_path": null
+    },
+    {
+      "id": "f91f7975-163f-4c46-9121-b5a82c40ac65",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q05",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-29T12:18:03+00:00",
+      "evidence_path": null
+    },
+    {
+      "id": "93e04ff0-815f-443d-b77d-ba30704dc25f",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q05",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-29T12:18:03+00:00",
+      "evidence_path": null
+    },
+    {
+      "id": "fcde2acb-515d-49da-bd2b-3ddddf72cdf2",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q05",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-29T12:18:03+00:00",
+      "evidence_path": null
+    },
+    {
+      "id": "dc89ff47-60c9-4995-807c-34f4ec9363f9",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q05",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-29T12:18:03+00:00",
+      "evidence_path": null
+    },
+    {
+      "id": "0d2a910a-0ea9-4928-92a9-8246ed47dfa6",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q05",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-29T12:18:03+00:00",
+      "evidence_path": null
+    },
+    {
+      "id": "777ee101-e4c3-4f29-9288-267fc0a614e4",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q05",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-29T12:18:03+00:00",
+      "evidence_path": null
+    },
+    {
+      "id": "19930f65-6a1c-4c45-8e2b-57aa6294396e",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q05",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-29T12:18:03+00:00",
+      "evidence_path": null
+    },
+    {
+      "id": "4ccaed9a-d846-434c-8721-44dc841018b0",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q05",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-29T12:18:03+00:00",
+      "evidence_path": null
+    },
+    {
+      "id": "e5491a8a-ae40-488e-a034-d1c09ba38d95",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q05",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-29T12:18:03+00:00",
+      "evidence_path": null
+    },
+    {
+      "id": "ced0db65-1fa8-43ae-b503-61c8c9147088",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q05",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-29T12:18:03+00:00",
+      "evidence_path": null
+    },
+    {
+      "id": "1fcb7dc7-982b-4e65-8f5e-8d59ad978e9a",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q05",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-29T12:18:03+00:00",
+      "evidence_path": null
+    },
+    {
+      "id": "48563786-d3e4-4f1b-83db-af15847ddbc4",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q05",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-29T12:18:03+00:00",
+      "evidence_path": null
+    },
+    {
+      "id": "b71a5d9a-9705-439c-a28e-2840048182b2",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q05",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-29T12:18:03+00:00",
+      "evidence_path": null
+    },
+    {
+      "id": "82250661-2b45-4e41-94b1-6c2aed5105a0",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q05",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-29T12:18:03+00:00",
+      "evidence_path": null
+    },
+    {
+      "id": "2c79ecda-38ac-40cc-b85f-00fcde5bdf0e",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q05",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-29T12:18:03+00:00",
+      "evidence_path": null
+    },
+    {
+      "id": "c22fb394-0bb5-4f82-8e5e-dfcf5be3fdd5",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q05",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-29T12:18:03+00:00",
+      "evidence_path": null
+    },
+    {
+      "id": "207c9c3e-e16d-461b-9d6b-750d2f2425f6",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q05",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-29T12:18:03+00:00",
+      "evidence_path": null
+    },
+    {
+      "id": "3320228c-49dc-4b9d-9fdd-ff21d555b655",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q05",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-29T12:18:03+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\3320228c-49dc-4b9d-9fdd-ff21d555b655.requeued_20260715T0634120000\\QM5_10440\\Q05\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "b3802ef1-4222-4007-9509-cce468375b9d",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q08",
+      "status": "done",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-27T16:19:05+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\b3802ef1-4222-4007-9509-cce468375b9d\\QM5_10440\\Q08\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "f0f5364a-0a18-468f-b902-86bead18bb92",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q08",
+      "status": "done",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-27T15:07:59+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\f0f5364a-0a18-468f-b902-86bead18bb92\\QM5_10440\\Q08\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "d64a2951-be65-4f24-af45-2106b81d4607",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q08",
+      "status": "done",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-27T14:22:42+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\d64a2951-be65-4f24-af45-2106b81d4607\\QM5_10440\\Q08\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "858afb0c-ba54-4dc7-b620-f86e8e558fb7",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q08",
+      "status": "done",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-27T13:01:40+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\858afb0c-ba54-4dc7-b620-f86e8e558fb7\\QM5_10440\\Q08\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "4edb8d87-8d3d-4f06-a851-7245d0d70b06",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q08",
+      "status": "done",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-27T12:27:26+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\4edb8d87-8d3d-4f06-a851-7245d0d70b06\\QM5_10440\\Q08\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "11c5ad73-ae6a-4fa3-8935-e1cac1221d72",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q08",
+      "status": "done",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-27T10:30:15+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\11c5ad73-ae6a-4fa3-8935-e1cac1221d72\\QM5_10440\\Q08\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "1929b613-cba6-420e-9e3c-381e142c8396",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q08",
+      "status": "done",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-27T09:52:43+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\1929b613-cba6-420e-9e3c-381e142c8396\\QM5_10440\\Q08\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "c962db09-12fb-4310-8213-24ee1989145f",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q08",
+      "status": "done",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-27T07:36:48+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\c962db09-12fb-4310-8213-24ee1989145f\\QM5_10440\\Q08\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "458019a3-01c1-4542-ae4a-f92ed8b85e8b",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q08",
+      "status": "done",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-27T05:23:56+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\458019a3-01c1-4542-ae4a-f92ed8b85e8b\\QM5_10440\\Q08\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "6f9b773d-5763-4fb3-ba48-eca505ae8163",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q08",
+      "status": "done",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-27T02:04:21+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\6f9b773d-5763-4fb3-ba48-eca505ae8163\\QM5_10440\\Q08\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "0cc4a981-724d-4083-b524-bd6049b78828",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q08",
+      "status": "done",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-26T22:54:33+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\0cc4a981-724d-4083-b524-bd6049b78828\\QM5_10440\\Q08\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "86f6cfa3-7092-41e1-83cc-4b43c1ad83e8",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q08",
+      "status": "done",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-26T14:52:46+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\86f6cfa3-7092-41e1-83cc-4b43c1ad83e8\\QM5_10440\\Q08\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "22602b0b-841d-4804-b040-e32ea691996e",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q07",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-26T12:12:45+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\22602b0b-841d-4804-b040-e32ea691996e\\QM5_10440\\Q07\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "bdfdd179-3801-492c-b3c0-2a5a163d16a4",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q10",
+      "status": "done",
+      "verdict": "FAIL",
+      "updated_at": "2026-07-25T19:45:35+00:00",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_10440\\Q10\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "48d7c7c8-bfb5-4bad-bf61-14f480f54585",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q08",
+      "status": "done",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-19T03:51:34+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\48d7c7c8-bfb5-4bad-bf61-14f480f54585\\QM5_10440\\Q08\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "2eb091ca-9533-4f16-a8b2-e83de27194f7",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q08",
+      "status": "done",
+      "verdict": "FAIL_SOFT",
+      "updated_at": "2026-07-19T03:39:04+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\2eb091ca-9533-4f16-a8b2-e83de27194f7\\QM5_10440\\Q08\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "3518abfd-8620-49ef-8504-179e8cfda9fc",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q08",
+      "status": "done",
+      "verdict": "FAIL_HARD",
+      "updated_at": "2026-07-18T12:05:03+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\3518abfd-8620-49ef-8504-179e8cfda9fc\\QM5_10440\\Q08\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "5ae284a7-689b-4ecc-98a0-8f628293cf37",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q08",
+      "status": "done",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-18T08:46:18+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\5ae284a7-689b-4ecc-98a0-8f628293cf37\\QM5_10440\\Q08\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "9f48e82d-e3d9-40ba-8f8e-f5c15295a2da",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q08",
+      "status": "done",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-18T02:32:04+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\9f48e82d-e3d9-40ba-8f8e-f5c15295a2da\\QM5_10440\\Q08\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "be6fcaf6-8ad2-46c4-8412-c80fbdfe4496",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q08",
+      "status": "done",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-18 05:57:59",
+      "evidence_path": null
+    },
+    {
+      "id": "9b6c3259-82e7-4de6-b558-5194a7fbb619",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q08",
+      "status": "done",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-07-17T21:50:28+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\9b6c3259-82e7-4de6-b558-5194a7fbb619\\QM5_10440\\Q08\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "dbd7a3ef-7a7b-4d91-828e-699f86b04642",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "PASS_SOFT",
+      "updated_at": "2026-07-07T21:22:41+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\dbd7a3ef-7a7b-4d91-828e-699f86b04642\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "b1adfe17-625c-425d-a1d9-46135f35ae15",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-07T21:07:07+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\b1adfe17-625c-425d-a1d9-46135f35ae15\\QM5_10440\\20260707_210351\\summary.json"
+    },
+    {
+      "id": "3969e217-d815-48ae-ac9e-534203ff9226",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q02",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-07T20:42:44+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\3969e217-d815-48ae-ac9e-534203ff9226\\QM5_10440\\20260707_203319\\summary.json"
+    },
+    {
+      "id": "9f35484e-c8d6-4ebc-909a-1a2692e85a89",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q06",
+      "status": "done",
+      "verdict": "FAIL",
+      "updated_at": "2026-07-03T07:46:52+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\9f35484e-c8d6-4ebc-909a-1a2692e85a89\\QM5_10440\\Q06\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "7a4a0346-f71d-4ca3-afd3-815eb2ff8f30",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q06",
+      "status": "done",
+      "verdict": "FAIL",
+      "updated_at": "2026-07-03T07:39:57+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\7a4a0346-f71d-4ca3-afd3-815eb2ff8f30\\QM5_10440\\Q06\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "f3b4acbc-080a-4d2d-842c-c7482deaab16",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q06",
+      "status": "done",
+      "verdict": "FAIL",
+      "updated_at": "2026-07-03T07:17:22+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\f3b4acbc-080a-4d2d-842c-c7482deaab16\\QM5_10440\\Q06\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "e930539a-e9ad-456b-b6fc-167bd7926402",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q06",
+      "status": "done",
+      "verdict": "FAIL",
+      "updated_at": "2026-07-03T07:10:54+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\e930539a-e9ad-456b-b6fc-167bd7926402\\QM5_10440\\Q06\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "ab41bdc1-3335-452f-ad26-e25c4fe9cc5d",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q06",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-02T08:31:08+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\ab41bdc1-3335-452f-ad26-e25c4fe9cc5d\\QM5_10440\\Q06\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "bd10acbc-80d8-45ff-95d3-66cdb0b5a3ce",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-02T08:02:20+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\bd10acbc-80d8-45ff-95d3-66cdb0b5a3ce\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "6ebac677-e8b2-4d30-a809-15fc2fad7a01",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-02T07:49:18+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\6ebac677-e8b2-4d30-a809-15fc2fad7a01\\QM5_10440\\20260702_074805\\summary.json"
+    },
+    {
+      "id": "325fe8c4-1044-4476-80b8-73d92dc02fbf",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q02",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-02T07:36:04+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\325fe8c4-1044-4476-80b8-73d92dc02fbf\\QM5_10440\\20260702_072401\\summary.json"
+    },
+    {
+      "id": "83f9e108-bca9-4fd8-aad3-0c4e57c19905",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "PASS_SOFT",
+      "updated_at": "2026-06-28T06:40:57+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\83f9e108-bca9-4fd8-aad3-0c4e57c19905\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "c66ff189-a57b-40d8-a7e2-85734bf90683",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-28T06:26:23+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\c66ff189-a57b-40d8-a7e2-85734bf90683\\QM5_10440\\20260628_062507\\summary.json"
+    },
+    {
+      "id": "15567a71-05ab-4a9f-b222-ba74efbcb6b5",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "FAIL",
+      "updated_at": "2026-06-28T02:47:12+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\15567a71-05ab-4a9f-b222-ba74efbcb6b5\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "50eaa009-4b54-469d-9def-eb3a9fa72fbc",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-28T02:37:45+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\50eaa009-4b54-469d-9def-eb3a9fa72fbc\\QM5_10440\\20260628_023049\\summary.json"
+    },
+    {
+      "id": "23db1caf-5f49-430d-ba02-68bb2582a556",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q08",
+      "status": "done",
+      "verdict": "FAIL_SOFT",
+      "updated_at": "2026-06-26T23:02:52+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\23db1caf-5f49-430d-ba02-68bb2582a556\\QM5_10440\\Q08\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "8839298e-824c-49e9-8195-b6a04f17cace",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q08",
+      "status": "done",
+      "verdict": "FAIL_SOFT",
+      "updated_at": "2026-06-26T22:55:10+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\8839298e-824c-49e9-8195-b6a04f17cace\\QM5_10440\\Q08\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "5270b1e0-70cb-4a21-af0a-df9faa63678c",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q08",
+      "status": "done",
+      "verdict": "FAIL_SOFT",
+      "updated_at": "2026-06-26T22:48:56+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\5270b1e0-70cb-4a21-af0a-df9faa63678c\\QM5_10440\\Q08\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "43e02b08-7b96-4bd1-ac3e-78410839b06c",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q08",
+      "status": "done",
+      "verdict": "FAIL_SOFT",
+      "updated_at": "2026-06-26T22:16:43+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\43e02b08-7b96-4bd1-ac3e-78410839b06c\\QM5_10440\\Q08\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "9799d0aa-4a75-4925-b58c-fdaa62f823ca",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q09_PORTFOLIO",
+      "status": "done",
+      "verdict": "PASS_PORTFOLIO",
+      "updated_at": "2026-06-26T07:32:28+00:00",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_10440\\Q09_PORTFOLIO\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "6bfae338-5332-4bc4-8708-4de740e9a070",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "PASS_SOFT",
+      "updated_at": "2026-06-23T00:00:01Z",
+      "evidence_path": "D:\\QM\\reports\\work_items\\6bfae338-5332-4bc4-8708-4de740e9a070\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "fc5a669c-39c4-4750-adfa-f3bb398ef49f",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q02",
+      "status": "done",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-06-18T19:01:14+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\fc5a669c-39c4-4750-adfa-f3bb398ef49f\\QM5_10440\\20260615_144903\\summary.json"
+    },
+    {
+      "id": "8cf19eec-b5c0-4d15-a845-4dbb125e412a",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q02",
+      "status": "done",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-06-18T19:01:12+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\8cf19eec-b5c0-4d15-a845-4dbb125e412a\\QM5_10440\\20260615_134559\\summary.json"
+    },
+    {
+      "id": "5cb043ef-53c3-49b7-ba55-c748b32b9331",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q02",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-17T20:07:41+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\5cb043ef-53c3-49b7-ba55-c748b32b9331\\QM5_10440\\20260617_200057\\summary.json"
+    },
+    {
+      "id": "85b5aa17-4a6d-4b8d-af38-0cfc44d65970",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-06-15T14:52:47+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\85b5aa17-4a6d-4b8d-af38-0cfc44d65970\\QM5_10440\\20260615_145056\\summary.json"
+    },
+    {
+      "id": "a1b330bd-6aef-4dd4-a4d6-514e23d9bddc",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q02",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-15T14:49:02+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\a1b330bd-6aef-4dd4-a4d6-514e23d9bddc\\QM5_10440\\20260615_144045\\summary.json"
+    },
+    {
+      "id": "e7765e47-191e-4bf5-bd0c-75ab5fef39e4",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-15T14:20:11+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\e7765e47-191e-4bf5-bd0c-75ab5fef39e4\\QM5_10440\\20260615_141607\\summary.json"
+    },
+    {
+      "id": "4bb9d325-2916-4907-a906-b07d94e6a87c",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-15T14:16:06+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\4bb9d325-2916-4907-a906-b07d94e6a87c\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "fb53f683-4e9d-4975-8a65-9eed6e0db79f",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q02",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-15T14:00:17+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\fb53f683-4e9d-4975-8a65-9eed6e0db79f\\QM5_10440\\20260615_135133\\summary.json"
+    },
+    {
+      "id": "f1378889-1436-4e06-b177-58457be866d5",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-15T13:51:32+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\f1378889-1436-4e06-b177-58457be866d5\\QM5_10440\\20260615_134753\\summary.json"
+    },
+    {
+      "id": "5388978a-8fdf-4520-91a4-d2feab84678f",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q02",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-15T13:45:58+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\5388978a-8fdf-4520-91a4-d2feab84678f\\QM5_10440\\20260615_133742\\summary.json"
+    },
+    {
+      "id": "cf326718-4290-4e59-a909-acafc0bc92a3",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "FAIL",
+      "updated_at": "2026-06-13T17:06:24+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\cf326718-4290-4e59-a909-acafc0bc92a3\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "8c86a135-22aa-41f6-a80c-4260fd3766b6",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-13T16:48:27+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\8c86a135-22aa-41f6-a80c-4260fd3766b6\\QM5_10440\\20260613_164343\\summary.json"
+    },
+    {
+      "id": "898e939a-110c-45de-a223-5ac194ed30e1",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "FAIL",
+      "updated_at": "2026-06-09T16:28:07+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\898e939a-110c-45de-a223-5ac194ed30e1\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "68aaf69b-3dfb-4024-bb60-ba6db3617fd3",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "FAIL",
+      "updated_at": "2026-06-09T16:15:52+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\68aaf69b-3dfb-4024-bb60-ba6db3617fd3\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "87ad753c-199c-4207-9e7b-33e465bd64df",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-09T16:02:10+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\87ad753c-199c-4207-9e7b-33e465bd64df\\QM5_10440\\20260609_155717\\summary.json"
+    },
+    {
+      "id": "9d671175-6e77-4a10-ae59-a0fa02013eb8",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-09T15:57:16+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\9d671175-6e77-4a10-ae59-a0fa02013eb8\\QM5_10440\\20260609_155314\\summary.json"
+    },
+    {
+      "id": "baa6b915-399a-43bb-be3c-81e61684b9e9",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "FAIL",
+      "updated_at": "2026-06-09T15:53:13+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\baa6b915-399a-43bb-be3c-81e61684b9e9\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "9692de42-1679-488f-b27b-c4dad088a79a",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-09T15:30:48+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\9692de42-1679-488f-b27b-c4dad088a79a\\QM5_10440\\20260609_152647\\summary.json"
+    },
+    {
+      "id": "a56ae011-ba11-4efb-81ed-d5ffd03535ad",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-09T15:26:46+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\a56ae011-ba11-4efb-81ed-d5ffd03535ad\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "fb399ee8-7e4d-4e31-8d2f-f57ee9129e63",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "FAIL",
+      "updated_at": "2026-06-09T15:14:49+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\fb399ee8-7e4d-4e31-8d2f-f57ee9129e63\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "d2156421-3aeb-476f-afd7-da24bc54236e",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-09T15:01:44+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\d2156421-3aeb-476f-afd7-da24bc54236e\\QM5_10440\\20260609_145738\\summary.json"
+    },
+    {
+      "id": "de611420-6452-4831-bd0b-74d185e8cbde",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-09T14:57:37+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\de611420-6452-4831-bd0b-74d185e8cbde\\QM5_10440\\20260609_145235\\summary.json"
+    },
+    {
+      "id": "ad1663b1-c1d4-4cd8-adc8-d1f92dcebca0",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-06-09T12:56:16+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\ad1663b1-c1d4-4cd8-adc8-d1f92dcebca0\\QM5_10440\\20260609_125256\\summary.json"
+    },
+    {
+      "id": "97615343-f275-4ce7-9bc6-866903c220bc",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "FAIL",
+      "updated_at": "2026-06-09T12:52:55+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\97615343-f275-4ce7-9bc6-866903c220bc\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "da6a6eae-72cb-4b7d-aac2-4e5c052e66b9",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-09T12:31:20+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\da6a6eae-72cb-4b7d-aac2-4e5c052e66b9\\QM5_10440\\20260609_122717\\summary.json"
+    },
+    {
+      "id": "d55ab380-a750-474d-ab2a-d0fb5f9e1b9b",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-09T12:27:16+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\d55ab380-a750-474d-ab2a-d0fb5f9e1b9b\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "24ed4b5a-1a49-4993-b2f0-f75179fbdd9e",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-09T12:04:08+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\24ed4b5a-1a49-4993-b2f0-f75179fbdd9e\\QM5_10440\\20260609_115948\\summary.json"
+    },
+    {
+      "id": "50158efd-fc33-4501-b84e-af2975b39680",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-09T11:59:47+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\50158efd-fc33-4501-b84e-af2975b39680\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "7c9591f0-72ba-4827-928e-742966640fed",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-09T11:36:31+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\7c9591f0-72ba-4827-928e-742966640fed\\QM5_10440\\20260609_113226\\summary.json"
+    },
+    {
+      "id": "aa6bc134-ae8a-4054-a247-10dada04514b",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-09T11:32:25+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\aa6bc134-ae8a-4054-a247-10dada04514b\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "652fe1c6-31b6-4abf-8fe5-67ed2411c7cb",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-09T11:06:17+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\652fe1c6-31b6-4abf-8fe5-67ed2411c7cb\\QM5_10440\\20260609_110244\\summary.json"
+    },
+    {
+      "id": "8b0c893d-287f-41ac-951a-2ee82399c7b0",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "PASS_SOFT",
+      "updated_at": "2026-06-09T07:33:13Z",
+      "evidence_path": "D:\\QM\\reports\\work_items\\8b0c893d-287f-41ac-951a-2ee82399c7b0\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "17c61d9b-e996-44c8-adbf-34590c47ae1d",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-07T21:10:41+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\17c61d9b-e996-44c8-adbf-34590c47ae1d\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "6f3d8d68-3288-42de-acbe-c5f3d2968a35",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-07T20:56:41+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\6f3d8d68-3288-42de-acbe-c5f3d2968a35\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "c2cc3125-7eac-4b79-8c3d-d422e0eed944",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-07T20:21:27+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\c2cc3125-7eac-4b79-8c3d-d422e0eed944\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "5b274de4-e203-4838-8fa4-593de7bed4db",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-07T20:08:00+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\5b274de4-e203-4838-8fa4-593de7bed4db\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "38fd4b59-d5e8-46df-800b-5135f5ae3a69",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-07T19:36:02+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\38fd4b59-d5e8-46df-800b-5135f5ae3a69\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "936f9ce4-f1ea-44a9-af05-2369ac5a8fb9",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-07T19:23:05+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\936f9ce4-f1ea-44a9-af05-2369ac5a8fb9\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "ba48822a-7795-4085-bf26-a1b00655cfa9",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-07T18:51:28+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\ba48822a-7795-4085-bf26-a1b00655cfa9\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "b1a7058e-ccb9-418c-9bc1-aca0d2bef0bc",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-07T18:38:54+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\b1a7058e-ccb9-418c-9bc1-aca0d2bef0bc\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "16d8210c-d96b-49ff-8cd5-2eea4dedb6ab",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q07",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-07T18:06:52+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\16d8210c-d96b-49ff-8cd5-2eea4dedb6ab\\QM5_10440\\Q07\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "5a63eba8-eb34-4a41-9663-8b114bc11bb9",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q07",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-07T17:18:55+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\5a63eba8-eb34-4a41-9663-8b114bc11bb9\\QM5_10440\\Q07\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "d89d1a42-479c-4ebb-b912-f2e631f93d91",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q06",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-07T16:31:15+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\d89d1a42-479c-4ebb-b912-f2e631f93d91\\QM5_10440\\Q06\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "0e157646-4e0a-430e-9d27-ce6a71391785",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q06",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-07T16:21:39+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\0e157646-4e0a-430e-9d27-ce6a71391785\\QM5_10440\\Q06\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "98d47eb1-be7d-46ae-917d-5921bd7279d3",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-07T15:52:34+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\98d47eb1-be7d-46ae-917d-5921bd7279d3\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "c463e9bc-9f22-431b-94d3-a253b07468d4",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-07T15:39:55+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\c463e9bc-9f22-431b-94d3-a253b07468d4\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "7ed8b4e0-aed7-4cd6-8938-9eff74e36bae",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q07",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-07T14:58:40+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\7ed8b4e0-aed7-4cd6-8938-9eff74e36bae\\QM5_10440\\Q07\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "9161140a-cb95-471e-8975-d4f6700ef5ca",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q07",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-07T14:11:28+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\9161140a-cb95-471e-8975-d4f6700ef5ca\\QM5_10440\\Q07\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "37565ab1-ecaa-4769-ae99-b19d3209fdb5",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q06",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-07T13:24:17+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\37565ab1-ecaa-4769-ae99-b19d3209fdb5\\QM5_10440\\Q06\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "23769d8e-5461-44f6-8f2c-b44562946ce6",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q06",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-07T13:15:11+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\23769d8e-5461-44f6-8f2c-b44562946ce6\\QM5_10440\\Q06\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "a1f204b4-7169-4dee-b172-6e874f253704",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-07T12:45:34+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\a1f204b4-7169-4dee-b172-6e874f253704\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "02159500-f397-4add-bb02-ba8eee28b990",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-07T12:32:43+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\02159500-f397-4add-bb02-ba8eee28b990\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "a75be1b4-1497-4cec-b238-8f72d89c2ae0",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "FAIL",
+      "updated_at": "2026-06-07T12:19:03+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\a75be1b4-1497-4cec-b238-8f72d89c2ae0\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "c3d65089-3efe-4ce4-a2e9-b59ba85d44ad",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "FAIL",
+      "updated_at": "2026-06-07T12:09:50+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\c3d65089-3efe-4ce4-a2e9-b59ba85d44ad\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "6228c3fc-b9d7-431e-9cba-8ef366fde4f7",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "FAIL",
+      "updated_at": "2026-06-06T02:43:21+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\6228c3fc-b9d7-431e-9cba-8ef366fde4f7\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "0b2a22f3-1e52-4ee8-b622-fb4bd8e2ef97",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "FAIL",
+      "updated_at": "2026-06-06T02:22:45+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\0b2a22f3-1e52-4ee8-b622-fb4bd8e2ef97\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "ad961f8c-dc77-4aa3-88a9-1342712c480e",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-06T02:10:47+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\ad961f8c-dc77-4aa3-88a9-1342712c480e\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "3ef00bfe-dea8-410e-aa7d-70dd64bd0879",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "FAIL",
+      "updated_at": "2026-06-06T01:55:31+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\3ef00bfe-dea8-410e-aa7d-70dd64bd0879\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "eb87ba07-9680-43fd-9922-8dc3c9800d73",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-06T01:46:35+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\eb87ba07-9680-43fd-9922-8dc3c9800d73\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "749932c8-ffe9-4bec-bc3f-6e91ed6743f4",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "FAIL",
+      "updated_at": "2026-06-05T17:51:16+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\749932c8-ffe9-4bec-bc3f-6e91ed6743f4\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "f378eda1-4f81-4e51-bb50-c1506b3ea745",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "FAIL",
+      "updated_at": "2026-06-05T17:45:26+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\f378eda1-4f81-4e51-bb50-c1506b3ea745\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "9b0a6003-8f34-410a-a5af-854829d57cd9",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "FAIL",
+      "updated_at": "2026-06-05T17:39:52+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\9b0a6003-8f34-410a-a5af-854829d57cd9\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "391b0ff7-3361-488c-9714-042362c01a04",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "FAIL",
+      "updated_at": "2026-06-05T17:01:10+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\391b0ff7-3361-488c-9714-042362c01a04\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "9d2790e2-cc4b-410e-bd83-995d7e182bec",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-05T16:36:48+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\9d2790e2-cc4b-410e-bd83-995d7e182bec\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "8b28ef29-ad44-4340-8c00-7bd86864350b",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-06-05T16:23:53+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\8b28ef29-ad44-4340-8c00-7bd86864350b\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "eb365e3d-10e3-4546-a420-aefb7e2c4398",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-05T15:56:59+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\eb365e3d-10e3-4546-a420-aefb7e2c4398\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "306b240f-09c0-4806-b35a-aa1ee6d38e38",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-05T15:44:19+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\306b240f-09c0-4806-b35a-aa1ee6d38e38\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "b14a32f4-0690-407a-bc8e-69d007016d7e",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-06-05T15:31:15+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\b14a32f4-0690-407a-bc8e-69d007016d7e\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "5e7e6015-6494-4659-b649-8aabde2d09c8",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "INFRA_FAIL",
+      "updated_at": "2026-06-05T15:18:21+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\5e7e6015-6494-4659-b649-8aabde2d09c8\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "062a34c3-a665-4da5-9b47-670c1f8c4731",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-05T02:36:28+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\062a34c3-a665-4da5-9b47-670c1f8c4731\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "68f62ecc-22cc-4ee8-9f74-fe96befc7018",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "FAIL",
+      "updated_at": "2026-06-05T02:22:15+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\68f62ecc-22cc-4ee8-9f74-fe96befc7018\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "1651957d-987b-4af4-9d70-4884763d5880",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-05T01:52:24+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\1651957d-987b-4af4-9d70-4884763d5880\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "c8697ce8-6a5e-421e-ba56-e0e8b6aefd88",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-05T01:38:11+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\c8697ce8-6a5e-421e-ba56-e0e8b6aefd88\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "e94b40a2-78dd-4ff5-a6be-3eee9220c02a",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-05T01:03:47+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\e94b40a2-78dd-4ff5-a6be-3eee9220c02a\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "a6ecd266-f7bc-4deb-89da-5d1b0aab83a9",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-05T00:49:13+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\a6ecd266-f7bc-4deb-89da-5d1b0aab83a9\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "54637ef3-e0f4-472c-bb86-cd21b4801755",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "FAIL",
+      "updated_at": "2026-06-05T00:34:53+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\54637ef3-e0f4-472c-bb86-cd21b4801755\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "657ec06c-190b-4401-895a-a18331ee286f",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "FAIL",
+      "updated_at": "2026-06-05T00:21:06+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\657ec06c-190b-4401-895a-a18331ee286f\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "4848384a-4e91-4f6d-8457-afb8d51a49d3",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-04T18:27:36+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\4848384a-4e91-4f6d-8457-afb8d51a49d3\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "21d7efe7-2cff-4be4-874a-762d55345779",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q07",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-29T13:39:24+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\21d7efe7-2cff-4be4-874a-762d55345779\\QM5_10440\\Q07\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "622b8f9b-fcfc-4e7d-bb9c-94604d6f9867",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q06",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-29T12:47:31+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\622b8f9b-fcfc-4e7d-bb9c-94604d6f9867\\QM5_10440\\Q06\\NDX_DWX\\aggregate.json"
+    },
+    {
+      "id": "b409f49f-2d33-478c-a693-cdf4e5066a7f",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-29T12:14:49+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\b409f49f-2d33-478c-a693-cdf4e5066a7f\\QM5_10440\\Q04\\NDX.DWX\\aggregate.json"
+    },
+    {
+      "id": "cd28175c-aa0c-4534-99a5-4acceae23f81",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-28T22:50:40+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\cd28175c-aa0c-4534-99a5-4acceae23f81\\QM5_10440\\20260528_224702\\summary.json"
+    },
+    {
+      "id": "f8813c3b-9ce2-4958-a112-c79943808f9c",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-28T22:46:54+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\f8813c3b-9ce2-4958-a112-c79943808f9c\\QM5_10440\\20260528_224303\\summary.json"
+    },
+    {
+      "id": "118344a8-2ae4-41c8-a2b8-fc32a7387448",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-28T22:42:55+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\118344a8-2ae4-41c8-a2b8-fc32a7387448\\QM5_10440\\20260528_223651\\summary.json"
+    },
+    {
+      "id": "6c71c713-b339-4c78-8ffa-0986d259438d",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-28T22:36:49+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\6c71c713-b339-4c78-8ffa-0986d259438d\\QM5_10440\\20260528_223240\\summary.json"
+    },
+    {
+      "id": "2f05b569-ba38-402d-8329-57bfd61190f5",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-28T22:19:11+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\2f05b569-ba38-402d-8329-57bfd61190f5\\QM5_10440\\20260528_221510\\summary.json"
+    },
+    {
+      "id": "1c3f058c-64f6-4449-976d-20032a03f3ae",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-28T22:15:03+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\1c3f058c-64f6-4449-976d-20032a03f3ae\\QM5_10440\\20260528_221121\\summary.json"
+    },
+    {
+      "id": "aed099fa-362a-463a-9477-19feed029924",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-28T22:11:13+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\aed099fa-362a-463a-9477-19feed029924\\QM5_10440\\20260528_220730\\summary.json"
+    },
+    {
+      "id": "37803bfb-d819-4f93-856d-21db224ee3eb",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-28T22:07:29+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\37803bfb-d819-4f93-856d-21db224ee3eb\\QM5_10440\\20260528_220338\\summary.json"
+    },
+    {
+      "id": "37445197-afc7-4b60-88a4-a8114707bd25",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-28T21:59:20+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\37445197-afc7-4b60-88a4-a8114707bd25\\QM5_10440\\20260528_215516\\summary.json"
+    },
+    {
+      "id": "d72a2ec9-7a36-46b6-b57d-8e4c1d291119",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-28T21:55:02+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\d72a2ec9-7a36-46b6-b57d-8e4c1d291119\\QM5_10440\\20260528_215056\\summary.json"
+    },
+    {
+      "id": "7837eb3c-8a78-4183-a123-11149e99ac26",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-28T21:50:49+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\7837eb3c-8a78-4183-a123-11149e99ac26\\QM5_10440\\20260528_214447\\summary.json"
+    },
+    {
+      "id": "5f154ab4-15b8-49d5-82ca-5a589b54292a",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-28T21:44:46+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\5f154ab4-15b8-49d5-82ca-5a589b54292a\\QM5_10440\\20260528_214041\\summary.json"
+    },
+    {
+      "id": "3aecce0a-3c71-415a-b028-6001289bf74e",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-28T21:36:26+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\3aecce0a-3c71-415a-b028-6001289bf74e\\QM5_10440\\20260528_213120\\summary.json"
+    },
+    {
+      "id": "c1871590-05e4-4eb9-9c4a-23b1c8a92a1e",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-28T21:31:18+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\c1871590-05e4-4eb9-9c4a-23b1c8a92a1e\\QM5_10440\\20260528_212438\\summary.json"
+    },
+    {
+      "id": "502b2dba-571a-454e-b249-28f78a6dacb3",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-28T21:24:37+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\502b2dba-571a-454e-b249-28f78a6dacb3\\QM5_10440\\20260528_212015\\summary.json"
+    },
+    {
+      "id": "85869939-f1ac-4f63-8413-0ed3b8425887",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-28T21:20:14+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\85869939-f1ac-4f63-8413-0ed3b8425887\\QM5_10440\\20260528_211529\\summary.json"
+    },
+    {
+      "id": "9d704a8e-0597-43ec-921f-0f75da739128",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-28T21:15:27+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\9d704a8e-0597-43ec-921f-0f75da739128\\QM5_10440\\20260528_210833\\summary.json"
+    },
+    {
+      "id": "01c3b099-5b04-494f-afa4-b88df9590d27",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-28T21:08:32+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\01c3b099-5b04-494f-afa4-b88df9590d27\\QM5_10440\\20260528_210352\\summary.json"
+    },
+    {
+      "id": "96f7f59d-6915-43ff-a48a-44623b40c883",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-28T21:01:40+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\96f7f59d-6915-43ff-a48a-44623b40c883\\QM5_10440\\20260528_205420\\summary.json"
+    },
+    {
+      "id": "c593ee62-d8c5-409d-ba57-28f279c0a80e",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-28T20:54:18+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\c593ee62-d8c5-409d-ba57-28f279c0a80e\\QM5_10440\\20260528_204851\\summary.json"
+    },
+    {
+      "id": "a82b1525-f4de-4e6a-9d7a-0b934def3501",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-28T20:48:09+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\a82b1525-f4de-4e6a-9d7a-0b934def3501\\QM5_10440\\20260528_204256\\summary.json"
+    },
+    {
+      "id": "d91a2213-366f-4efa-928b-45462e4f278b",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-28T20:42:55+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\d91a2213-366f-4efa-928b-45462e4f278b\\QM5_10440\\20260528_203808\\summary.json"
+    },
+    {
+      "id": "823c68e2-f9bb-41c1-8d05-c6e9e91509cb",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-28T20:38:07+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\823c68e2-f9bb-41c1-8d05-c6e9e91509cb\\QM5_10440\\20260528_203335\\summary.json"
+    },
+    {
+      "id": "ef619d6c-229f-4a4c-90e7-64f82f0e8ec5",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-28T20:33:34+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\ef619d6c-229f-4a4c-90e7-64f82f0e8ec5\\QM5_10440\\20260528_202826\\summary.json"
+    },
+    {
+      "id": "6316d49e-deba-44d6-870b-fe969a55bd10",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-28T20:10:44+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\6316d49e-deba-44d6-870b-fe969a55bd10\\QM5_10440\\20260528_200603\\summary.json"
+    },
+    {
+      "id": "07232fa6-fa0d-432f-b1ff-cfed1dfd019c",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-28T20:06:02+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\07232fa6-fa0d-432f-b1ff-cfed1dfd019c\\QM5_10440\\20260528_200039\\summary.json"
+    },
+    {
+      "id": "9fafd69a-2560-4f20-ab21-08b7733186ee",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-28T20:00:30+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\9fafd69a-2560-4f20-ab21-08b7733186ee\\QM5_10440\\20260528_195258\\summary.json"
+    },
+    {
+      "id": "5e4bb1dc-be50-42f4-a2b9-21bf70607c53",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-28T19:52:57+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\5e4bb1dc-be50-42f4-a2b9-21bf70607c53\\QM5_10440\\20260528_194812\\summary.json"
+    },
+    {
+      "id": "b31a56f3-311f-4824-8014-e82c9c21eba2",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-28T19:48:11+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\b31a56f3-311f-4824-8014-e82c9c21eba2\\QM5_10440\\20260528_194317\\summary.json"
+    },
+    {
+      "id": "ce91d049-b15f-47ec-9f79-ff3b695ae341",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-28T19:43:15+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\ce91d049-b15f-47ec-9f79-ff3b695ae341\\QM5_10440\\20260528_193834\\summary.json"
+    },
+    {
+      "id": "1c34b5df-06c6-4cf2-8769-4b90edb824e7",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-28T19:24:13+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\1c34b5df-06c6-4cf2-8769-4b90edb824e7\\QM5_10440\\20260528_191927\\summary.json"
+    },
+    {
+      "id": "1751805d-b37b-4dd0-b87b-790697f857fd",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-28T19:19:26+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\1751805d-b37b-4dd0-b87b-790697f857fd\\QM5_10440\\20260528_191219\\summary.json"
+    },
+    {
+      "id": "abf73f05-c8e5-4074-a610-c84129b349b3",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-28T19:12:18+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\abf73f05-c8e5-4074-a610-c84129b349b3\\QM5_10440\\20260528_190733\\summary.json"
+    },
+    {
+      "id": "76dd5251-2a1f-42f0-9ccb-094d17aa8d8b",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-28T19:07:32+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\76dd5251-2a1f-42f0-9ccb-094d17aa8d8b\\QM5_10440\\20260528_190246\\summary.json"
+    },
+    {
+      "id": "0feaf042-afd1-43e7-89a6-91d58376b89e",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-28T19:02:44+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\0feaf042-afd1-43e7-89a6-91d58376b89e\\QM5_10440\\20260528_185549\\summary.json"
+    },
+    {
+      "id": "ae5698b5-4eca-4020-bef3-f47bf344be19",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-28T18:55:38+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\ae5698b5-4eca-4020-bef3-f47bf344be19\\QM5_10440\\20260528_185044\\summary.json"
+    },
+    {
+      "id": "efaccadb-44db-49f0-bc59-dfb9464864c4",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-28T18:50:43+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\efaccadb-44db-49f0-bc59-dfb9464864c4\\QM5_10440\\20260528_184557\\summary.json"
+    },
+    {
+      "id": "e2720dbe-f235-4c74-83b4-68521092b164",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-28T18:45:56+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\e2720dbe-f235-4c74-83b4-68521092b164\\QM5_10440\\20260528_184123\\summary.json"
+    },
+    {
+      "id": "39fbaa27-6407-45ba-8476-1ab6a3f3e6ee",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-28T18:41:22+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\39fbaa27-6407-45ba-8476-1ab6a3f3e6ee\\QM5_10440\\20260528_183744\\summary.json"
+    },
+    {
+      "id": "9c7700c3-45df-42cc-8476-e37a7ef3adc3",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-05-28T18:04:59.809769Z",
+      "evidence_path": "D:\\QM\\reports\\work_items\\9c7700c3-45df-42cc-8476-e37a7ef3adc3\\QM5_10440\\20260528_175754\\summary.json"
+    }
+  ]
+}

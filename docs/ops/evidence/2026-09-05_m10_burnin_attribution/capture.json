@@ -1,0 +1,459 @@
+{
+  "captured_at_utc": "2026-09-05T11:55:27.599768+00:00",
+  "bindings": [
+    {
+      "source": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+      "frozen": "inputs/pointer.json",
+      "sha256": "f5f23f3c597f07217ef4406a34f929a2cb50e580986007eefe758d4e27b1704a",
+      "size": 18103
+    },
+    {
+      "source": "D:\\QM\\reports\\portfolio\\portfolio_manifest_live_24sleeve_20260724.json",
+      "frozen": "inputs/manifest.json",
+      "sha256": "8c719b080e18d30d83432f0999d694f699f2859cef72c0ce7738631fb084eab6",
+      "size": 16508
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\journal\\live_deals_normalized.csv",
+      "frozen": "inputs/deals.csv",
+      "sha256": "9a4cc7ba454767e36714d61dc9cd93e1ef6059ec9afaa3e1377091c6892966c7",
+      "size": 38405
+    },
+    {
+      "source": "D:\\QM\\reports\\state\\live_book_pulse.json",
+      "frozen": "inputs/pulse.json",
+      "sha256": "b3a50b8a82833681d6f3543ad956181373c01520b2e5dafec76d0980d1a106ee",
+      "size": 323507
+    },
+    {
+      "source": "D:\\QM\\reports\\portfolio\\live_burnin\\portfolio_live_burnin_report.json",
+      "frozen": "inputs/previous_burnin.json",
+      "sha256": "f881abe589c82c690738d8762cd2d69faff7b139149ecdbafd475cf6b7894014",
+      "size": 38831
+    },
+    {
+      "source": "D:\\QM\\reports\\portfolio\\live_burnin\\mc_reference_d2c_42d.json",
+      "frozen": "inputs/mc_reference.json",
+      "sha256": "881a0a409cfb7658d1e23e152f812dabd2794594ae35a8d560c344f40bc2f3aa",
+      "size": 923
+    },
+    {
+      "source": "C:\\QM\\repo\\framework\\registry\\portfolio_burnin.json",
+      "frozen": "inputs/config.json",
+      "sha256": "d2d37fd30c239089609cadb50ced53c730da1a5be59721c97c74d3d54a09b35e",
+      "size": 1764
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "sha256": "727daa42159a392ea5979f601cd9e6d4feeb691c554c833400daa7dfc7f63427",
+      "size": 86899,
+      "selected_events_only": true
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_10403_ea-10403.log",
+      "sha256": "5f317e9367e4dc17e5cb9e7f84302814eab8f7edc98a679acab0a3bdd8939415",
+      "size": 140084,
+      "selected_events_only": true
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_10440_ea-10440.log",
+      "sha256": "07495545b648a34969d8486857018ece384ff4248e7fab07ff2396e068371f26",
+      "size": 129933,
+      "selected_events_only": true
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_10476_ea-10476.log",
+      "sha256": "66650108befb18206d132bc0625ce4330b7fd9ab7df64de79b30c1b5f3f48c89",
+      "size": 20689,
+      "selected_events_only": true
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_10513_ea-10513.log",
+      "sha256": "1ddacc68c535d77d35f129f063bf329ed0684e6849c6ecf3740e637ab3bd120b",
+      "size": 130426,
+      "selected_events_only": true
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_10692_ea-10692.log",
+      "sha256": "b6158f689554c6bfe3c501ce117432650bcd9578544bd1a8f7f6c278291345aa",
+      "size": 39480,
+      "selected_events_only": true
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_10706_ea-10706.log",
+      "sha256": "e93fb8bc43e238be41eb4639a7de22d47c310ff9840f77d9616b5e318aad6988",
+      "size": 27291254,
+      "selected_events_only": true
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_10715_ea-10715.log",
+      "sha256": "5794c92d0a34167df77e7a6851206e3bb61095c7b923be0f35051b5c4d6a9c68",
+      "size": 34335,
+      "selected_events_only": true
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_10911_ea-10911.log",
+      "sha256": "6d02b08df1b063c5d865449fb00a9e49d5b77e5ca24c9103d903fc91ea42bc85",
+      "size": 151702,
+      "selected_events_only": true
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_10919_ea-10919.log",
+      "sha256": "636bf4ad4bf8ea94e0723b952525ae88912893938fae1a3ef55b5c3cf9cb543a",
+      "size": 98709,
+      "selected_events_only": true
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_10939_ea-10939.log",
+      "sha256": "645c378baaa41838539ec187b6f38d678d69ccd10b89adcae10368e5d6206add",
+      "size": 138835,
+      "selected_events_only": true
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_10940_ea-10940.log",
+      "sha256": "9cfa4caeb4b6cf40b9bda419b77cf1bbfc6c6c8606aa06bdb534316a8bfcffad",
+      "size": 16414,
+      "selected_events_only": true
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_11132_ea-11132.log",
+      "sha256": "9093082e8fcee04fd880c6ae969033ef58dba6e081b00dd3825bd0073e3eda8d",
+      "size": 141803,
+      "selected_events_only": true
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_11165_ea-11165.log",
+      "sha256": "32ac60db421502d73e09f6fa0ec16856255f403736026788e492673560e6477e",
+      "size": 239202,
+      "selected_events_only": true
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_11421_ea-11421.log",
+      "sha256": "a21cba5c8e93ad643dabc8cf06d1657ab7be8c2515e655249dd0569041f54e87",
+      "size": 307959,
+      "selected_events_only": true
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_11708_ea-11708.log",
+      "sha256": "f6a0565e0a79e478fbfcc47d9b164135bb2e869b3b225d7e8656a543031e6e7a",
+      "size": 119262,
+      "selected_events_only": true
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_12567_ea-12567.log",
+      "sha256": "580c99333aca330e06e291b27ec18ca9810a95c39655ffdd24cc84007e6cfa18",
+      "size": 273996,
+      "selected_events_only": true
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_12778_ea-12778.log",
+      "sha256": "ed7480f6c364870cb83c9716908a0655c60c581c872202fc20048154daa4df33",
+      "size": 97756,
+      "selected_events_only": true
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_12969_ea-12969.log",
+      "sha256": "007a8753a7de1fe758fd13cc63378c03b053d1f2b804868c1b3b3c038724eb59",
+      "size": 83441,
+      "selected_events_only": true
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_12989_ea-12989.log",
+      "sha256": "afc02ff2786453684d7bc4de95b46249eb156ecfe7339f64c4e12729cd33e901",
+      "size": 121174,
+      "selected_events_only": true
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_13117_ea-13117.log",
+      "sha256": "caf76bfe57dbabf14242c3a23fd28d630d44b45bb8495ef5fc9436e2420a5185",
+      "size": 92285,
+      "selected_events_only": true
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_13128_ea-13128.log",
+      "sha256": "9dfa4c35449adc15d0d5a5dc8be1e0e4caca3d516cd56f9cfdab5d02376976c7",
+      "size": 96023,
+      "selected_events_only": true
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_13213_ea-13213.log",
+      "sha256": "61b1104f282ad0d2f98db9c62388f8dd27aa43006925bfa8e4090ec0c247ba2f",
+      "size": 164724,
+      "selected_events_only": true
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_13301_ea-13301.log",
+      "sha256": "c7a5926ce4b2b35013c0ce22333cbf6941f64d3163110954a20d9fdd17cddde6",
+      "size": 119908,
+      "selected_events_only": true
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_1556_ea-1556.log",
+      "sha256": "8e72644628008eadbf14e9b94521abf7fe6fd6cad5176dc569c363ba36548a32",
+      "size": 125481,
+      "selected_events_only": true
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_1567_ea-1567.log",
+      "sha256": "ec4230278fc3641b23aee519765cc52001511aaa88f61ccdd1a22821e8e7a783",
+      "size": 80174,
+      "selected_events_only": true
+    },
+    {
+      "source": "C:\\QM\\repo\\framework\\EAs\\QM5_1567_demark-td-reverse-sequential-h4\\QM5_1567_demark-td-reverse-sequential-h4.mq5",
+      "frozen": "inputs/source_1567.mq5",
+      "sha256": "a9531d333dbbe067270811e696e235483d12d2604e86c974feea411066649f8c",
+      "size": 15261
+    },
+    {
+      "source": "C:\\QM\\repo\\framework\\EAs\\QM5_12778_edgelab-audusd-eurjpy-cointegration\\QM5_12778_edgelab-audusd-eurjpy-cointegration.mq5",
+      "frozen": "inputs/source_12778.mq5",
+      "sha256": "132a501d94685f013cc62a8b3c2de111d0a8b1e616a8656d2c61b061a754c146",
+      "size": 19127
+    },
+    {
+      "source": "C:\\QM\\repo\\framework\\EAs\\QM5_12969_usdjpy-gotobi-nakane-fix\\QM5_12969_usdjpy-gotobi-nakane-fix.mq5",
+      "frozen": "inputs/source_12969.mq5",
+      "sha256": "4e9503fd61e960de689128ebda343d7e078feb24dd42a25605c246f196ddfb86",
+      "size": 10659
+    },
+    {
+      "source": "C:\\QM\\repo\\framework\\EAs\\QM5_13117_eurgbp-audjpy\\QM5_13117_eurgbp-audjpy.mq5",
+      "frozen": "inputs/source_13117.mq5",
+      "sha256": "14ddccb7ac7fe8b1c1e9cec4c6a59c7045481de99f15e1728fb38a76cfe6bcd1",
+      "size": 14871
+    },
+    {
+      "source": "C:\\QM\\repo\\framework\\EAs\\QM5_10440_mql5-ohlc-mtf\\QM5_10440_mql5-ohlc-mtf.mq5",
+      "frozen": "inputs/source_10440.mq5",
+      "sha256": "0895a8e80a4477baa86e86d95f61312ed42ad0b248f99688f812b022cdb9f6c7",
+      "size": 12442
+    },
+    {
+      "source": "C:\\QM\\repo\\framework\\include\\QM\\QM_EquityStream.mqh",
+      "frozen": "inputs/QM_EquityStream.mqh",
+      "sha256": "535da9dc1a0fd016fddeea0ee2c49c14ff01af99288ff9d2f2603548ce01a7ce",
+      "size": 12286
+    }
+  ],
+  "selected_event_rows": 5404,
+  "parse_errors": [
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 5
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 7
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 12
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 23
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 36
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 45
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 47
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 52
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 64
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 103
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 106
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 108
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 109
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 142
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 150
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 152
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 156
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 157
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 159
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 162
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 164
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 166
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 170
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 172
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 180
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 189
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 190
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 192
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 193
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 194
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 198
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 258
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 277
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 278
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 280
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 281
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 284
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 288
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 290
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 358
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 387
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 388
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 389
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 392
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 403
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 423
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 424
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 450
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 451
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_0000_unconfigured.log",
+      "line": 461
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_11165_ea-11165.log",
+      "line": 786
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_11165_ea-11165.log",
+      "line": 796
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_11421_ea-11421.log",
+      "line": 59
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_11421_ea-11421.log",
+      "line": 135
+    }
+  ],
+  "mode": "read_only_capture"
+}

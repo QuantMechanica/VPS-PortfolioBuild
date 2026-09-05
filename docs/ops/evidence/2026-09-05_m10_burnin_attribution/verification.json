@@ -1,0 +1,38 @@
+{
+  "task_id": "b94b61c5-0629-4626-8077-5bd35491eb44",
+  "tests": {
+    "command": "python -m pytest C:/QM/repo/docs/ops/evidence/2026-09-05_m10_burnin_attribution/test_reproduce.py -q -p no:cacheprovider",
+    "passed": 9,
+    "failed": 0
+  },
+  "replay_equal": true,
+  "result_sha256": "8ba7d62818808ef93c457776325ec77c63db909d7aa63c4e646d01ffc490417d",
+  "runtime_inputs_unchanged": [
+    {
+      "source": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+      "unchanged_since_capture": true
+    },
+    {
+      "source": "D:\\QM\\reports\\portfolio\\portfolio_manifest_live_24sleeve_20260724.json",
+      "unchanged_since_capture": true
+    },
+    {
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\journal\\live_deals_normalized.csv",
+      "unchanged_since_capture": true
+    },
+    {
+      "source": "D:\\QM\\reports\\portfolio\\live_burnin\\portfolio_live_burnin_report.json",
+      "unchanged_since_capture": true
+    },
+    {
+      "source": "D:\\QM\\reports\\portfolio\\live_burnin\\mc_reference_d2c_42d.json",
+      "unchanged_since_capture": true
+    },
+    {
+      "source": "C:\\QM\\repo\\framework\\registry\\portfolio_burnin.json",
+      "unchanged_since_capture": true
+    }
+  ],
+  "branch": "agents/board-advisor",
+  "precommit_head": "fed72a6ded00f16a27e59593f1c1f24770c913ed"
+}

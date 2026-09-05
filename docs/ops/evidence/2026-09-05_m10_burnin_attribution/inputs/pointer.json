@@ -1,0 +1,466 @@
+{
+  "approval_evidence": null,
+  "approved_by": null,
+  "binary_setfile_fingerprint": {
+    "fingerprint_sha256": "8e476e5b807450cbaea92f12b92fcaa285e372a47533b5071996d114a3116035",
+    "n_binary_missing": 0,
+    "n_sleeves": 24,
+    "per_sleeve": [
+      {
+        "deployed_preset": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\22_XAUUSD_D1_QM5_1556_aa-zak-mom12.set",
+        "ex5_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_1556_aa-zak-mom12.ex5",
+        "ex5_sha256": "9371a8a03008e2fd8a3fc9dbec75586f7ade71ea857e9ff8f9c3fd0fd95cb3cb",
+        "ex5_status": "OK",
+        "magic_number": 15560004,
+        "set_file_expectation": {
+          "ENV": "live",
+          "PORTFOLIO_WEIGHT": 1.0,
+          "RISK_FIXED": 0.0,
+          "RISK_PERCENT": 0.6017
+        }
+      },
+      {
+        "deployed_preset": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\03_EURUSD_H4_QM5_1567_demark-td-reverse-sequential-h4.set",
+        "ex5_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_1567_demark-td-reverse-sequential-h4.ex5",
+        "ex5_sha256": "71c2f84b3e694210176e928fcaf688eff3f59c7efacdb275511e474c35a9e45c",
+        "ex5_status": "OK",
+        "magic_number": 15670007,
+        "set_file_expectation": {
+          "ENV": "live",
+          "PORTFOLIO_WEIGHT": 1.0,
+          "RISK_FIXED": 0.0,
+          "RISK_PERCENT": 0.1791
+        }
+      },
+      {
+        "deployed_preset": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\18_XAUUSD_D1_QM5_10403_et-turtle20x.set",
+        "ex5_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_10403_et-turtle20x.ex5",
+        "ex5_sha256": "b6c194d928b678cb31646dc81216c6d9f3215727354aeecdbb61bbcca99ef2b6",
+        "ex5_status": "OK",
+        "magic_number": 104030002,
+        "set_file_expectation": {
+          "ENV": "live",
+          "PORTFOLIO_WEIGHT": 1.0,
+          "RISK_FIXED": 0.0,
+          "RISK_PERCENT": 0.2204
+        }
+      },
+      {
+        "deployed_preset": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\15_NDX_H1_QM5_10440_mql5-ohlc-mtf.set",
+        "ex5_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_10440_mql5-ohlc-mtf.ex5",
+        "ex5_sha256": "b71d302997ecdb661f1627e12b9e5e766e9679c780461b82fa018db7f2078a6a",
+        "ex5_status": "OK",
+        "magic_number": 104400003,
+        "set_file_expectation": {
+          "ENV": "live",
+          "PORTFOLIO_WEIGHT": 1.0,
+          "RISK_FIXED": 0.0,
+          "RISK_PERCENT": 0.0577
+        }
+      },
+      {
+        "deployed_preset": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\19_XAUUSD_D1_QM5_10513_mql5-ichimoku.set",
+        "ex5_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_10513_mql5-ichimoku.ex5",
+        "ex5_sha256": "04b62af28c6466e01741aacaa915d9a68714cd7c23288ae277615ae068d63898",
+        "ex5_status": "OK",
+        "magic_number": 105130003,
+        "set_file_expectation": {
+          "ENV": "live",
+          "PORTFOLIO_WEIGHT": 1.0,
+          "RISK_FIXED": 0.0,
+          "RISK_PERCENT": 0.305
+        }
+      },
+      {
+        "deployed_preset": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\11_GBPUSD_H1_QM5_10706_tv-mon-ls.set",
+        "ex5_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_10706_tv-mon-ls.ex5",
+        "ex5_sha256": "01e34b2059de6ed505d445ce9fcbac7da0eb10d51e5cbcbbd18d38a968916078",
+        "ex5_status": "OK",
+        "magic_number": 107060001,
+        "set_file_expectation": {
+          "ENV": "live",
+          "PORTFOLIO_WEIGHT": 1.0,
+          "RISK_FIXED": 0.0,
+          "RISK_PERCENT": 0.053
+        }
+      },
+      {
+        "deployed_preset": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\13_GDAXI_H1_QM5_10911_grimes-complex-pb.set",
+        "ex5_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_10911_grimes-complex-pb.ex5",
+        "ex5_sha256": "a815c73da991736d25a02c027bbcfb23f68615adb66b7325cc2efcdc52344158",
+        "ex5_status": "OK",
+        "magic_number": 109110003,
+        "set_file_expectation": {
+          "ENV": "live",
+          "PORTFOLIO_WEIGHT": 1.0,
+          "RISK_FIXED": 0.0,
+          "RISK_PERCENT": 0.1276
+        }
+      },
+      {
+        "deployed_preset": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\04_XTIUSD_H4_QM5_10919_grimes-overshoot.set",
+        "ex5_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_10919_grimes-overshoot.ex5",
+        "ex5_sha256": "57e0db8401616a5fb10c68557c24e8b7a7e98254cb8ddf57245fc178aa3a4691",
+        "ex5_status": "OK",
+        "magic_number": 109190001,
+        "set_file_expectation": {
+          "ENV": "live",
+          "PORTFOLIO_WEIGHT": 1.0,
+          "RISK_FIXED": 0.0,
+          "RISK_PERCENT": 0.9181
+        }
+      },
+      {
+        "deployed_preset": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\12_GBPUSD_H4_QM5_10939_grimes-context-pb.set",
+        "ex5_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_10939_grimes-context-pb.ex5",
+        "ex5_sha256": "308604a3546c44fc8bfb40ecff36801e5479bf33887847b8b6e5650943312aac",
+        "ex5_status": "OK",
+        "magic_number": 109390001,
+        "set_file_expectation": {
+          "ENV": "live",
+          "PORTFOLIO_WEIGHT": 1.0,
+          "RISK_FIXED": 0.0,
+          "RISK_PERCENT": 0.1887
+        }
+      },
+      {
+        "deployed_preset": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\16_SP500_D1_QM5_11132_tm-cum-rsi2.set",
+        "ex5_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_11132_tm-cum-rsi2.ex5",
+        "ex5_sha256": "25b68c44d9724d9915298ad6b632e9c4db77133526e8c441fa82adc2a0474152",
+        "ex5_status": "OK",
+        "magic_number": 111320000,
+        "set_file_expectation": {
+          "ENV": "live",
+          "PORTFOLIO_WEIGHT": 1.0,
+          "RISK_FIXED": 0.0,
+          "RISK_PERCENT": 0.4562
+        }
+      },
+      {
+        "deployed_preset": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\08_EURUSD_H1_QM5_11165_weiss-rsi-ma.set",
+        "ex5_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_11165_weiss-rsi-ma.ex5",
+        "ex5_sha256": "8f6d33a3dfb05f7f9167c96d7a7069cb11d8c05f7137be008530d9e12df941e4",
+        "ex5_status": "OK",
+        "magic_number": 111650000,
+        "set_file_expectation": {
+          "ENV": "live",
+          "PORTFOLIO_WEIGHT": 1.0,
+          "RISK_FIXED": 0.0,
+          "RISK_PERCENT": 0.4127
+        }
+      },
+      {
+        "deployed_preset": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\05_AUDCAD_H1_QM5_11165_weiss-rsi-ma.set",
+        "ex5_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_11165_weiss-rsi-ma.ex5",
+        "ex5_sha256": "8f6d33a3dfb05f7f9167c96d7a7069cb11d8c05f7137be008530d9e12df941e4",
+        "ex5_status": "OK",
+        "magic_number": 111650002,
+        "set_file_expectation": {
+          "ENV": "live",
+          "PORTFOLIO_WEIGHT": 1.0,
+          "RISK_FIXED": 0.0,
+          "RISK_PERCENT": 0.523
+        }
+      },
+      {
+        "deployed_preset": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\09_EURUSD_D1_QM5_11421_ohlc-daily-squeeze-reversal-d1.set",
+        "ex5_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1.ex5",
+        "ex5_sha256": "0f7c8ff9ad91c43f275aacbfb366f06f17aeda0f1d567c83936af7d8dca69ca7",
+        "ex5_status": "OK",
+        "magic_number": 114210000,
+        "set_file_expectation": {
+          "ENV": "live",
+          "PORTFOLIO_WEIGHT": 1.0,
+          "RISK_FIXED": 0.0,
+          "RISK_PERCENT": 0.3364
+        }
+      },
+      {
+        "deployed_preset": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\07_AUDUSD_D1_QM5_11421_ohlc-daily-squeeze-reversal-d1.set",
+        "ex5_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1.ex5",
+        "ex5_sha256": "0f7c8ff9ad91c43f275aacbfb366f06f17aeda0f1d567c83936af7d8dca69ca7",
+        "ex5_status": "OK",
+        "magic_number": 114210003,
+        "set_file_expectation": {
+          "ENV": "live",
+          "PORTFOLIO_WEIGHT": 1.0,
+          "RISK_FIXED": 0.0,
+          "RISK_PERCENT": 0.3614
+        }
+      },
+      {
+        "deployed_preset": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\10_EURUSD_D1_QM5_11708_anon-market-squeeze-d1.set",
+        "ex5_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_11708_anon-market-squeeze-d1.ex5",
+        "ex5_sha256": "de06fb032c9b47ef0b50c6f36b257a1462b2f5259a482c294dfcfa0f9763a38d",
+        "ex5_status": "OK",
+        "magic_number": 117080000,
+        "set_file_expectation": {
+          "ENV": "live",
+          "PORTFOLIO_WEIGHT": 1.0,
+          "RISK_FIXED": 0.0,
+          "RISK_PERCENT": 0.508
+        }
+      },
+      {
+        "deployed_preset": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\23_XNGUSD_D1_QM5_12567_cum-rsi2-commodity.set",
+        "ex5_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_12567_cum-rsi2-commodity.ex5",
+        "ex5_sha256": "5d5be334288e76a582349dac8351a95700222b91bbd28e1921e9d4aa6e3b10f9",
+        "ex5_status": "OK",
+        "magic_number": 125670002,
+        "set_file_expectation": {
+          "ENV": "live",
+          "PORTFOLIO_WEIGHT": 1.0,
+          "RISK_FIXED": 0.0,
+          "RISK_PERCENT": 0.9797
+        }
+      },
+      {
+        "deployed_preset": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\20_XAUUSD_D1_QM5_12567_cum-rsi2-commodity.set",
+        "ex5_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_12567_cum-rsi2-commodity.ex5",
+        "ex5_sha256": "5d5be334288e76a582349dac8351a95700222b91bbd28e1921e9d4aa6e3b10f9",
+        "ex5_status": "OK",
+        "magic_number": 125670003,
+        "set_file_expectation": {
+          "ENV": "live",
+          "PORTFOLIO_WEIGHT": 1.0,
+          "RISK_FIXED": 0.0,
+          "RISK_PERCENT": 0.7465
+        }
+      },
+      {
+        "deployed_preset": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\06_AUDUSD_D1_QM5_12778_edgelab-audusd-eurjpy-cointegration.set",
+        "ex5_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_12778_edgelab-audusd-eurjpy-cointegration.ex5",
+        "ex5_sha256": "2c470706016952a809fb0059e532f8e27445c5ccc37cd6f14fb00a91b2235e3b",
+        "ex5_status": "OK",
+        "magic_number": 127780000,
+        "set_file_expectation": {
+          "ENV": "live",
+          "PORTFOLIO_WEIGHT": 1.0,
+          "RISK_FIXED": 0.0,
+          "RISK_PERCENT": 0.4905
+        }
+      },
+      {
+        "deployed_preset": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\17_USDJPY_M30_QM5_12969_usdjpy-gotobi-nakane-fix.set",
+        "ex5_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_12969_usdjpy-gotobi-nakane-fix.ex5",
+        "ex5_sha256": "933d63c036a154725df1376e22ca74cb419860588f0313fc986fc3ead7673be4",
+        "ex5_status": "OK",
+        "magic_number": 129690000,
+        "set_file_expectation": {
+          "ENV": "live",
+          "PORTFOLIO_WEIGHT": 1.0,
+          "RISK_FIXED": 0.0,
+          "RISK_PERCENT": 0.51
+        }
+      },
+      {
+        "deployed_preset": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\21_XAUUSD_H4_QM5_12989_grimes-nested-pb-v2.set",
+        "ex5_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_12989_grimes-nested-pb-v2.ex5",
+        "ex5_sha256": "7f2c298f4a8b4395480e47f20f9cefb8d5c53083bd63f7ea9ef1db067f52c4d2",
+        "ex5_status": "OK",
+        "magic_number": 129890003,
+        "set_file_expectation": {
+          "ENV": "live",
+          "PORTFOLIO_WEIGHT": 1.0,
+          "RISK_FIXED": 0.0,
+          "RISK_PERCENT": 0.242
+        }
+      },
+      {
+        "deployed_preset": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\24_EURGBP_D1_QM5_13117_eurgbp-audjpy.set",
+        "ex5_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_13117_eurgbp-audjpy.ex5",
+        "ex5_sha256": "adfa1ba617a845088381f4160e31047da6d4068451911060e0e54481d9712752",
+        "ex5_status": "OK",
+        "magic_number": 131170000,
+        "set_file_expectation": {
+          "ENV": "live",
+          "PORTFOLIO_WEIGHT": 1.0,
+          "RISK_FIXED": 0.0,
+          "RISK_PERCENT": 0.4199
+        }
+      },
+      {
+        "deployed_preset": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\14_NDX_H1_QM5_13128_pre-fomc-drift-ndx.set",
+        "ex5_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_13128_pre-fomc-drift-ndx.ex5",
+        "ex5_sha256": "364867a9fe8d58478ade5526aad19deb377a35b313cfdac29763bb2eb82d273b",
+        "ex5_status": "OK",
+        "magic_number": 131280000,
+        "set_file_expectation": {
+          "ENV": "live",
+          "PORTFOLIO_WEIGHT": 1.0,
+          "RISK_FIXED": 0.0,
+          "RISK_PERCENT": 1.0
+        }
+      },
+      {
+        "deployed_preset": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\02_USDJPY_H1_QM5_13213_balke-gmt3-range-breakout.set",
+        "ex5_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_13213_balke-gmt3-range-breakout.ex5",
+        "ex5_sha256": "321b1dca0064686100ee85d0ba614b0bcf0cd3096ca1bf9d5380ddade8a9ad4a",
+        "ex5_status": "OK",
+        "magic_number": 132130000,
+        "set_file_expectation": {
+          "ENV": "live",
+          "PORTFOLIO_WEIGHT": 1.0,
+          "RISK_FIXED": 0.0,
+          "RISK_PERCENT": 0.0431
+        }
+      },
+      {
+        "deployed_preset": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\01_GDAXI_M5_QM5_13301_balke-minute-range-breakout.set",
+        "ex5_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_13301_balke-minute-range-breakout.ex5",
+        "ex5_sha256": "d7f10a684bdb007d9cb5b55e894a8e3b26192e38d3015e80550b9fa317e26483",
+        "ex5_status": "OK",
+        "magic_number": 133010010,
+        "set_file_expectation": {
+          "ENV": "live",
+          "PORTFOLIO_WEIGHT": 1.0,
+          "RISK_FIXED": 0.0,
+          "RISK_PERCENT": 0.0692
+        }
+      }
+    ]
+  },
+  "deployment_epoch_utc": "2026-07-24T06:42:00+00:00",
+  "environment": "T_Live/DXZ",
+  "expected_account": "4000090541",
+  "expected_phase": "DXZ_LIVE",
+  "expected_server": "Darwinex-Live",
+  "expected_sleeves": {
+    "count": 24,
+    "identity_sha256": "9aa10411d99adf81861503a0023832874873de39eeaacfa880bfc4368fcf84d0",
+    "roster": [
+      {
+        "ea_id": 1556,
+        "magic_number": 15560004,
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "ea_id": 1567,
+        "magic_number": 15670007,
+        "symbol": "EURUSD.DWX"
+      },
+      {
+        "ea_id": 10403,
+        "magic_number": 104030002,
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "ea_id": 10440,
+        "magic_number": 104400003,
+        "symbol": "NDX.DWX"
+      },
+      {
+        "ea_id": 10513,
+        "magic_number": 105130003,
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "ea_id": 10706,
+        "magic_number": 107060001,
+        "symbol": "GBPUSD.DWX"
+      },
+      {
+        "ea_id": 10911,
+        "magic_number": 109110003,
+        "symbol": "GDAXI.DWX"
+      },
+      {
+        "ea_id": 10919,
+        "magic_number": 109190001,
+        "symbol": "XTIUSD.DWX"
+      },
+      {
+        "ea_id": 10939,
+        "magic_number": 109390001,
+        "symbol": "GBPUSD.DWX"
+      },
+      {
+        "ea_id": 11132,
+        "magic_number": 111320000,
+        "symbol": "SP500.DWX"
+      },
+      {
+        "ea_id": 11165,
+        "magic_number": 111650000,
+        "symbol": "EURUSD.DWX"
+      },
+      {
+        "ea_id": 11165,
+        "magic_number": 111650002,
+        "symbol": "AUDCAD.DWX"
+      },
+      {
+        "ea_id": 11421,
+        "magic_number": 114210000,
+        "symbol": "EURUSD.DWX"
+      },
+      {
+        "ea_id": 11421,
+        "magic_number": 114210003,
+        "symbol": "AUDUSD.DWX"
+      },
+      {
+        "ea_id": 11708,
+        "magic_number": 117080000,
+        "symbol": "EURUSD.DWX"
+      },
+      {
+        "ea_id": 12567,
+        "magic_number": 125670002,
+        "symbol": "XNGUSD.DWX"
+      },
+      {
+        "ea_id": 12567,
+        "magic_number": 125670003,
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "ea_id": 12778,
+        "magic_number": 127780000,
+        "symbol": "AUDUSD.DWX"
+      },
+      {
+        "ea_id": 12969,
+        "magic_number": 129690000,
+        "symbol": "USDJPY.DWX"
+      },
+      {
+        "ea_id": 12989,
+        "magic_number": 129890003,
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "ea_id": 13117,
+        "magic_number": 131170000,
+        "symbol": "EURGBP.DWX"
+      },
+      {
+        "ea_id": 13128,
+        "magic_number": 131280000,
+        "symbol": "NDX.DWX"
+      },
+      {
+        "ea_id": 13213,
+        "magic_number": 132130000,
+        "symbol": "USDJPY.DWX"
+      },
+      {
+        "ea_id": 13301,
+        "magic_number": 133010010,
+        "symbol": "GDAXI.DWX"
+      }
+    ]
+  },
+  "generator": {
+    "task_id": "SP-A1",
+    "tool": "generate_live_deployment_pointer",
+    "version": "1.0"
+  },
+  "manifest_declared_approved_by": "OWNER (Fabian) 2026-07-24 - countersigned via chat ('1 bestaetigt ... alles freigegeben') + vault NEEDS_FABIAN checkbox; countersigned content sha256 a766b5baed6075decaf26617a3871c413e6879f6286fa498d7b1b01de3db6908; record: decisions/2026-07-24_owner_approvals_audit_package.md",
+  "manifest_declared_status": "LIVE",
+  "manifest_path": "D:\\QM\\reports\\portfolio\\portfolio_manifest_live_24sleeve_20260724.json",
+  "manifest_sha256": "8c719b080e18d30d83432f0999d694f699f2859cef72c0ce7738631fb084eab6",
+  "schema_version": "qm.live_deployment_pointer.v1",
+  "signed": false,
+  "written_at_utc": "2026-08-22T10:06:38Z"
+}

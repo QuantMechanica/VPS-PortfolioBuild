@@ -1,0 +1,1259 @@
+{
+  "comparator": "portfolio_live_forward_from_logs (E4' repaired sampling contract)",
+  "cost_basis": {
+    "asymmetry": "SWAP: both sides carry swap. The residual is the difference between the HISTORICAL .DWX swap already embedded in the streams and the CURRENT live broker swap rates (which may differ and are UNKNOWN without a logged-in capture). Tracked by WS-D: like-for-like replacement of stream swap by current native-report swap on the attributed sleeves is small (~+$28.55, not +$333); whole-book current-rate materiality remains UNKNOWN/INCOMPLETE. Do not read a small live-vs-book gap as edge decay before the current-rate swap reconciliation closes.",
+    "book_side": "sleeve streams net_of_cost; row net = profit + swap + commission, so each trade CARRIES its .DWX broker-history swap (NON-zero for overnight-held sleeves) \u2014 swap is NOT $0.",
+    "live_side": "T_Live ACCOUNT_EQUITY \u2014 real fills incl broker commission, spread, and overnight swap at CURRENT broker rates."
+  },
+  "dd_reference": {
+    "available": false,
+    "basis": null,
+    "mc_p95_max_drawdown_pct": null,
+    "provenance": {},
+    "reason": "--mc-artifact is not bound to this book: fingerprint/manifest_sha mismatch (artifact fp=None, expected e8bc34e619a0c530bfd5c0156e27aef27abd41cff43f79f633b25c148672a07c). Refusing to compare against a reference built for a different composition/weighting."
+  },
+  "forward_equity": {
+    "basis": "identity_filtered_ts_utc_windowed_three_state",
+    "daily_pnl": [
+      -1639.18,
+      -289.0,
+      -322.14,
+      114.08,
+      0.41,
+      -46.61,
+      15.68,
+      -62.17,
+      -170.05,
+      -307.36,
+      16.34,
+      396.51,
+      -91.58,
+      -32.58,
+      213.06,
+      -137.11,
+      -50.27,
+      95.82,
+      -41.99,
+      194.95,
+      -206.32,
+      -170.18,
+      -22.72,
+      98.89,
+      48.35,
+      -33.68,
+      -457.57,
+      -117.46,
+      -17.48,
+      23.91,
+      33.15,
+      545.02,
+      9.09,
+      -183.93,
+      28.19
+    ],
+    "dates": [
+      "2026-07-26",
+      "2026-07-27",
+      "2026-07-28",
+      "2026-07-29",
+      "2026-07-30",
+      "2026-07-31",
+      "2026-08-02",
+      "2026-08-03",
+      "2026-08-04",
+      "2026-08-05",
+      "2026-08-06",
+      "2026-08-07",
+      "2026-08-09",
+      "2026-08-10",
+      "2026-08-11",
+      "2026-08-12",
+      "2026-08-13",
+      "2026-08-14",
+      "2026-08-16",
+      "2026-08-17",
+      "2026-08-18",
+      "2026-08-19",
+      "2026-08-20",
+      "2026-08-21",
+      "2026-08-23",
+      "2026-08-24",
+      "2026-08-25",
+      "2026-08-26",
+      "2026-08-27",
+      "2026-08-28",
+      "2026-08-30",
+      "2026-08-31",
+      "2026-09-01",
+      "2026-09-02",
+      "2026-09-03",
+      "2026-09-04"
+    ],
+    "equity_curve": [
+      101538.78,
+      99899.6,
+      99610.6,
+      99288.46,
+      99402.54,
+      99402.95,
+      99356.34,
+      99372.02,
+      99309.85,
+      99139.8,
+      98832.44,
+      98848.78,
+      99245.29,
+      99153.71,
+      99121.13,
+      99334.19,
+      99197.08,
+      99146.81,
+      99242.63,
+      99200.64,
+      99395.59,
+      99189.27,
+      99019.09,
+      98996.37,
+      99095.26,
+      99143.61,
+      99109.93,
+      98652.36,
+      98534.9,
+      98517.42,
+      98541.33,
+      98574.48,
+      99119.5,
+      99128.59,
+      98944.66,
+      98972.85
+    ],
+    "identity_coverage": {
+      "attached_in_book": [
+        15560004,
+        15670007,
+        104030002,
+        104400003,
+        105130003,
+        107060001,
+        109110003,
+        109190001,
+        109390001,
+        111320000,
+        111650000,
+        111650002,
+        114210000,
+        114210003,
+        117080000,
+        125670002,
+        125670003,
+        127780000,
+        129690000,
+        129890003,
+        131170000,
+        131280000,
+        132130000,
+        133010010
+      ],
+      "attachment_defect": [],
+      "coverage_basis": "attachment lifecycle (INIT_OK/DEINIT) + foreign in-window emitters; telemetry silence is reported separately and is NOT an identity/attachment defect",
+      "expected_magics": [
+        15560004,
+        15670007,
+        104030002,
+        104400003,
+        105130003,
+        107060001,
+        109110003,
+        109190001,
+        109390001,
+        111320000,
+        111650000,
+        111650002,
+        114210000,
+        114210003,
+        117080000,
+        125670002,
+        125670003,
+        127780000,
+        129690000,
+        129890003,
+        131170000,
+        131280000,
+        132130000,
+        133010010
+      ],
+      "expected_sleeves": 24,
+      "identities_match": true,
+      "telemetry_silent": [
+        15670007,
+        127780000,
+        129690000,
+        131170000
+      ],
+      "unexpected_magics_emitting": []
+    },
+    "log_dir": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM",
+    "n_days": 36,
+    "n_snapshot_rows_in_book": 852,
+    "n_snapshot_rows_in_window": 581,
+    "sleeve_states": [
+      {
+        "activity": {
+          "closes_in_window": 5,
+          "opens_in_window": 6,
+          "state": "TRADING"
+        },
+        "attachment": {
+          "last_deinit_utc": "2026-08-22T14:02:51.609Z",
+          "last_init_ok_utc": "2026-08-23T08:32:26.375Z",
+          "last_lifecycle_event": "INIT_OK",
+          "last_lifecycle_utc": "2026-08-23T08:32:26.375000+00:00",
+          "n_deinit": 28,
+          "n_init_ok": 30,
+          "state": "ATTACHED"
+        },
+        "base_symbol": "XAUUSD",
+        "ea_id": 1556,
+        "magic": 15560004,
+        "symbol": "XAUUSD.DWX",
+        "telemetry": {
+          "detail": "in_window_snapshots",
+          "first_in_window_utc": "2026-07-26T22:01:00.609Z",
+          "last_in_window_utc": "2026-09-03T22:01:00.296Z",
+          "snapshots_all_time": 38,
+          "snapshots_in_window": 29,
+          "state": "EMITTING"
+        }
+      },
+      {
+        "activity": {
+          "closes_in_window": 0,
+          "opens_in_window": 2,
+          "state": "TRADING"
+        },
+        "attachment": {
+          "last_deinit_utc": "2026-08-22T14:02:51.296Z",
+          "last_init_ok_utc": "2026-08-23T08:33:04.781Z",
+          "last_lifecycle_event": "INIT_OK",
+          "last_lifecycle_utc": "2026-08-23T08:33:04.781000+00:00",
+          "n_deinit": 26,
+          "n_init_ok": 27,
+          "state": "ATTACHED"
+        },
+        "base_symbol": "EURUSD",
+        "ea_id": 1567,
+        "magic": 15670007,
+        "symbol": "EURUSD.DWX",
+        "telemetry": {
+          "detail": "never_emitted",
+          "first_in_window_utc": null,
+          "last_in_window_utc": null,
+          "snapshots_all_time": 0,
+          "snapshots_in_window": 0,
+          "state": "SILENT"
+        }
+      },
+      {
+        "activity": {
+          "closes_in_window": 4,
+          "opens_in_window": 62,
+          "state": "TRADING"
+        },
+        "attachment": {
+          "last_deinit_utc": "2026-08-22T14:02:51.453Z",
+          "last_init_ok_utc": "2026-08-23T08:32:57.718Z",
+          "last_lifecycle_event": "INIT_OK",
+          "last_lifecycle_utc": "2026-08-23T08:32:57.718000+00:00",
+          "n_deinit": 28,
+          "n_init_ok": 30,
+          "state": "ATTACHED"
+        },
+        "base_symbol": "XAUUSD",
+        "ea_id": 10403,
+        "magic": 104030002,
+        "symbol": "XAUUSD.DWX",
+        "telemetry": {
+          "detail": "in_window_snapshots",
+          "first_in_window_utc": "2026-07-26T22:01:00.687Z",
+          "last_in_window_utc": "2026-09-03T22:01:00.312Z",
+          "snapshots_all_time": 38,
+          "snapshots_in_window": 29,
+          "state": "EMITTING"
+        }
+      },
+      {
+        "activity": {
+          "closes_in_window": 0,
+          "opens_in_window": 10,
+          "state": "TRADING"
+        },
+        "attachment": {
+          "last_deinit_utc": "2026-08-22T14:02:51.265Z",
+          "last_init_ok_utc": "2026-08-23T08:34:26.578Z",
+          "last_lifecycle_event": "INIT_OK",
+          "last_lifecycle_utc": "2026-08-23T08:34:26.578000+00:00",
+          "n_deinit": 32,
+          "n_init_ok": 41,
+          "state": "ATTACHED"
+        },
+        "base_symbol": "NDX",
+        "ea_id": 10440,
+        "magic": 104400003,
+        "symbol": "NDX.DWX",
+        "telemetry": {
+          "detail": "in_window_snapshots",
+          "first_in_window_utc": "2026-07-26T22:00:01.062Z",
+          "last_in_window_utc": "2026-09-03T22:00:01.265Z",
+          "snapshots_all_time": 48,
+          "snapshots_in_window": 29,
+          "state": "EMITTING"
+        }
+      },
+      {
+        "activity": {
+          "closes_in_window": 0,
+          "opens_in_window": 6,
+          "state": "TRADING"
+        },
+        "attachment": {
+          "last_deinit_utc": "2026-08-22T14:02:51.296Z",
+          "last_init_ok_utc": "2026-08-23T08:32:56.593Z",
+          "last_lifecycle_event": "INIT_OK",
+          "last_lifecycle_utc": "2026-08-23T08:32:56.593000+00:00",
+          "n_deinit": 32,
+          "n_init_ok": 41,
+          "state": "ATTACHED"
+        },
+        "base_symbol": "XAUUSD",
+        "ea_id": 10513,
+        "magic": 105130003,
+        "symbol": "XAUUSD.DWX",
+        "telemetry": {
+          "detail": "in_window_snapshots",
+          "first_in_window_utc": "2026-07-26T22:01:12.234Z",
+          "last_in_window_utc": "2026-09-03T22:01:00.296Z",
+          "snapshots_all_time": 48,
+          "snapshots_in_window": 29,
+          "state": "EMITTING"
+        }
+      },
+      {
+        "activity": {
+          "closes_in_window": 0,
+          "opens_in_window": 12,
+          "state": "TRADING"
+        },
+        "attachment": {
+          "last_deinit_utc": "2026-08-22T14:02:51.296Z",
+          "last_init_ok_utc": "2026-08-23T08:32:58.296Z",
+          "last_lifecycle_event": "INIT_OK",
+          "last_lifecycle_utc": "2026-08-23T08:32:58.296000+00:00",
+          "n_deinit": 28,
+          "n_init_ok": 30,
+          "state": "ATTACHED"
+        },
+        "base_symbol": "GBPUSD",
+        "ea_id": 10706,
+        "magic": 107060001,
+        "symbol": "GBPUSD.DWX",
+        "telemetry": {
+          "detail": "in_window_snapshots",
+          "first_in_window_utc": "2026-07-26T21:05:03.312Z",
+          "last_in_window_utc": "2026-09-03T21:04:01.328Z",
+          "snapshots_all_time": 39,
+          "snapshots_in_window": 30,
+          "state": "EMITTING"
+        }
+      },
+      {
+        "activity": {
+          "closes_in_window": 6,
+          "opens_in_window": 22,
+          "state": "TRADING"
+        },
+        "attachment": {
+          "last_deinit_utc": "2026-08-22T14:02:51.171Z",
+          "last_init_ok_utc": "2026-08-23T08:33:02.843Z",
+          "last_lifecycle_event": "INIT_OK",
+          "last_lifecycle_utc": "2026-08-23T08:33:02.843000+00:00",
+          "n_deinit": 32,
+          "n_init_ok": 41,
+          "state": "ATTACHED"
+        },
+        "base_symbol": "GDAXI",
+        "ea_id": 10911,
+        "magic": 109110003,
+        "symbol": "GDAXI.DWX",
+        "telemetry": {
+          "detail": "in_window_snapshots",
+          "first_in_window_utc": "2026-07-27T00:30:01.718Z",
+          "last_in_window_utc": "2026-09-04T00:30:01.328Z",
+          "snapshots_all_time": 48,
+          "snapshots_in_window": 29,
+          "state": "EMITTING"
+        }
+      },
+      {
+        "activity": {
+          "closes_in_window": 0,
+          "opens_in_window": 0,
+          "state": "FLAT"
+        },
+        "attachment": {
+          "last_deinit_utc": "2026-08-22T14:02:51.296Z",
+          "last_init_ok_utc": "2026-08-23T08:32:57.953Z",
+          "last_lifecycle_event": "INIT_OK",
+          "last_lifecycle_utc": "2026-08-23T08:32:57.953000+00:00",
+          "n_deinit": 26,
+          "n_init_ok": 29,
+          "state": "ATTACHED"
+        },
+        "base_symbol": "XTIUSD",
+        "ea_id": 10919,
+        "magic": 109190001,
+        "symbol": "XTIUSD.DWX",
+        "telemetry": {
+          "detail": "in_window_snapshots",
+          "first_in_window_utc": "2026-07-26T22:04:42.718Z",
+          "last_in_window_utc": "2026-09-03T22:00:13.671Z",
+          "snapshots_all_time": 37,
+          "snapshots_in_window": 29,
+          "state": "EMITTING"
+        }
+      },
+      {
+        "activity": {
+          "closes_in_window": 1,
+          "opens_in_window": 4,
+          "state": "TRADING"
+        },
+        "attachment": {
+          "last_deinit_utc": "2026-08-22T14:02:53.953Z",
+          "last_init_ok_utc": "2026-08-23T08:32:32.140Z",
+          "last_lifecycle_event": "INIT_OK",
+          "last_lifecycle_utc": "2026-08-23T08:32:32.140000+00:00",
+          "n_deinit": 32,
+          "n_init_ok": 41,
+          "state": "ATTACHED"
+        },
+        "base_symbol": "GBPUSD",
+        "ea_id": 10939,
+        "magic": 109390001,
+        "symbol": "GBPUSD.DWX",
+        "telemetry": {
+          "detail": "in_window_snapshots",
+          "first_in_window_utc": "2026-07-26T21:05:03.312Z",
+          "last_in_window_utc": "2026-09-03T21:04:01.328Z",
+          "snapshots_all_time": 49,
+          "snapshots_in_window": 30,
+          "state": "EMITTING"
+        }
+      },
+      {
+        "activity": {
+          "closes_in_window": 1,
+          "opens_in_window": 5,
+          "state": "TRADING"
+        },
+        "attachment": {
+          "last_deinit_utc": "2026-08-22T14:02:53.046Z",
+          "last_init_ok_utc": "2026-08-23T08:32:30.406Z",
+          "last_lifecycle_event": "INIT_OK",
+          "last_lifecycle_utc": "2026-08-23T08:32:30.406000+00:00",
+          "n_deinit": 32,
+          "n_init_ok": 41,
+          "state": "ATTACHED"
+        },
+        "base_symbol": "SP500",
+        "ea_id": 11132,
+        "magic": 111320000,
+        "symbol": "SP500.DWX",
+        "telemetry": {
+          "detail": "in_window_snapshots",
+          "first_in_window_utc": "2026-07-26T22:00:01.250Z",
+          "last_in_window_utc": "2026-09-03T22:00:01.281Z",
+          "snapshots_all_time": 48,
+          "snapshots_in_window": 29,
+          "state": "EMITTING"
+        }
+      },
+      {
+        "activity": {
+          "closes_in_window": 3,
+          "opens_in_window": 6,
+          "state": "TRADING"
+        },
+        "attachment": {
+          "last_deinit_utc": "2026-08-22T14:02:51.296Z",
+          "last_init_ok_utc": "2026-08-23T08:32:29.453Z",
+          "last_lifecycle_event": "INIT_OK",
+          "last_lifecycle_utc": "2026-08-23T08:32:29.453000+00:00",
+          "n_deinit": 26,
+          "n_init_ok": 30,
+          "state": "ATTACHED"
+        },
+        "base_symbol": "EURUSD",
+        "ea_id": 11165,
+        "magic": 111650000,
+        "symbol": "EURUSD.DWX",
+        "telemetry": {
+          "detail": "in_window_snapshots",
+          "first_in_window_utc": "2026-07-26T21:05:03.328Z",
+          "last_in_window_utc": "2026-09-02T21:04:01.921Z",
+          "snapshots_all_time": 36,
+          "snapshots_in_window": 27,
+          "state": "EMITTING"
+        }
+      },
+      {
+        "activity": {
+          "closes_in_window": 4,
+          "opens_in_window": 8,
+          "state": "TRADING"
+        },
+        "attachment": {
+          "last_deinit_utc": "2026-08-22T14:02:53.109Z",
+          "last_init_ok_utc": "2026-08-23T08:32:50.593Z",
+          "last_lifecycle_event": "INIT_OK",
+          "last_lifecycle_utc": "2026-08-23T08:32:50.593000+00:00",
+          "n_deinit": 29,
+          "n_init_ok": 41,
+          "state": "ATTACHED"
+        },
+        "base_symbol": "AUDCAD",
+        "ea_id": 11165,
+        "magic": 111650002,
+        "symbol": "AUDCAD.DWX",
+        "telemetry": {
+          "detail": "in_window_snapshots",
+          "first_in_window_utc": "2026-07-26T21:05:03.437Z",
+          "last_in_window_utc": "2026-09-03T21:04:01.328Z",
+          "snapshots_all_time": 49,
+          "snapshots_in_window": 30,
+          "state": "EMITTING"
+        }
+      },
+      {
+        "activity": {
+          "closes_in_window": 2,
+          "opens_in_window": 22,
+          "state": "TRADING"
+        },
+        "attachment": {
+          "last_deinit_utc": "2026-08-22T14:02:51.984Z",
+          "last_init_ok_utc": "2026-08-23T08:33:03.421Z",
+          "last_lifecycle_event": "INIT_OK",
+          "last_lifecycle_utc": "2026-08-23T08:33:03.421000+00:00",
+          "n_deinit": 29,
+          "n_init_ok": 41,
+          "state": "ATTACHED"
+        },
+        "base_symbol": "EURUSD",
+        "ea_id": 11421,
+        "magic": 114210000,
+        "symbol": "EURUSD.DWX",
+        "telemetry": {
+          "detail": "in_window_snapshots",
+          "first_in_window_utc": "2026-07-26T21:05:03.312Z",
+          "last_in_window_utc": "2026-09-03T21:04:01.328Z",
+          "snapshots_all_time": 47,
+          "snapshots_in_window": 30,
+          "state": "EMITTING"
+        }
+      },
+      {
+        "activity": {
+          "closes_in_window": 1,
+          "opens_in_window": 16,
+          "state": "TRADING"
+        },
+        "attachment": {
+          "last_deinit_utc": "2026-08-22T14:02:51.968Z",
+          "last_init_ok_utc": "2026-08-23T08:34:28.234Z",
+          "last_lifecycle_event": "INIT_OK",
+          "last_lifecycle_utc": "2026-08-23T08:34:28.234000+00:00",
+          "n_deinit": 27,
+          "n_init_ok": 41,
+          "state": "ATTACHED"
+        },
+        "base_symbol": "AUDUSD",
+        "ea_id": 11421,
+        "magic": 114210003,
+        "symbol": "AUDUSD.DWX",
+        "telemetry": {
+          "detail": "in_window_snapshots",
+          "first_in_window_utc": "2026-07-26T21:05:03.312Z",
+          "last_in_window_utc": "2026-09-03T21:04:01.328Z",
+          "snapshots_all_time": 45,
+          "snapshots_in_window": 26,
+          "state": "EMITTING"
+        }
+      },
+      {
+        "activity": {
+          "closes_in_window": 1,
+          "opens_in_window": 12,
+          "state": "TRADING"
+        },
+        "attachment": {
+          "last_deinit_utc": "2026-08-22T14:02:51.484Z",
+          "last_init_ok_utc": "2026-08-23T08:33:04.031Z",
+          "last_lifecycle_event": "INIT_OK",
+          "last_lifecycle_utc": "2026-08-23T08:33:04.031000+00:00",
+          "n_deinit": 34,
+          "n_init_ok": 33,
+          "state": "ATTACHED"
+        },
+        "base_symbol": "EURUSD",
+        "ea_id": 11708,
+        "magic": 117080000,
+        "symbol": "EURUSD.DWX",
+        "telemetry": {
+          "detail": "in_window_snapshots",
+          "first_in_window_utc": "2026-07-26T21:05:03.312Z",
+          "last_in_window_utc": "2026-09-03T21:04:01.328Z",
+          "snapshots_all_time": 39,
+          "snapshots_in_window": 30,
+          "state": "EMITTING"
+        }
+      },
+      {
+        "activity": {
+          "closes_in_window": 0,
+          "opens_in_window": 0,
+          "state": "FLAT"
+        },
+        "attachment": {
+          "last_deinit_utc": "2026-08-22T14:02:51.234Z",
+          "last_init_ok_utc": "2026-08-23T08:33:03.625Z",
+          "last_lifecycle_event": "INIT_OK",
+          "last_lifecycle_utc": "2026-08-23T08:33:03.625000+00:00",
+          "n_deinit": 33,
+          "n_init_ok": 43,
+          "state": "ATTACHED"
+        },
+        "base_symbol": "XNGUSD",
+        "ea_id": 12567,
+        "magic": 125670002,
+        "symbol": "XNGUSD.DWX",
+        "telemetry": {
+          "detail": "in_window_snapshots",
+          "first_in_window_utc": "2026-07-26T22:00:11.859Z",
+          "last_in_window_utc": "2026-09-03T22:00:13.640Z",
+          "snapshots_all_time": 45,
+          "snapshots_in_window": 29,
+          "state": "EMITTING"
+        }
+      },
+      {
+        "activity": {
+          "closes_in_window": 0,
+          "opens_in_window": 0,
+          "state": "FLAT"
+        },
+        "attachment": {
+          "last_deinit_utc": "2026-08-22T14:02:51.281Z",
+          "last_init_ok_utc": "2026-08-23T08:34:28.421Z",
+          "last_lifecycle_event": "INIT_OK",
+          "last_lifecycle_utc": "2026-08-23T08:34:28.421000+00:00",
+          "n_deinit": 30,
+          "n_init_ok": 41,
+          "state": "ATTACHED"
+        },
+        "base_symbol": "XAUUSD",
+        "ea_id": 12567,
+        "magic": 125670003,
+        "symbol": "XAUUSD.DWX",
+        "telemetry": {
+          "detail": "in_window_snapshots",
+          "first_in_window_utc": "2026-07-26T22:01:13.359Z",
+          "last_in_window_utc": "2026-09-03T22:01:00.328Z",
+          "snapshots_all_time": 48,
+          "snapshots_in_window": 29,
+          "state": "EMITTING"
+        }
+      },
+      {
+        "activity": {
+          "closes_in_window": 0,
+          "opens_in_window": 0,
+          "state": "FLAT"
+        },
+        "attachment": {
+          "last_deinit_utc": "2026-08-22T14:02:51.140Z",
+          "last_init_ok_utc": "2026-08-23T08:29:07.265Z",
+          "last_lifecycle_event": "INIT_OK",
+          "last_lifecycle_utc": "2026-08-23T08:29:07.265000+00:00",
+          "n_deinit": 28,
+          "n_init_ok": 31,
+          "state": "ATTACHED"
+        },
+        "base_symbol": "AUDUSD",
+        "ea_id": 12778,
+        "magic": 127780000,
+        "symbol": "AUDUSD.DWX",
+        "telemetry": {
+          "detail": "never_emitted",
+          "first_in_window_utc": null,
+          "last_in_window_utc": null,
+          "snapshots_all_time": 0,
+          "snapshots_in_window": 0,
+          "state": "SILENT"
+        }
+      },
+      {
+        "activity": {
+          "closes_in_window": 0,
+          "opens_in_window": 0,
+          "state": "FLAT"
+        },
+        "attachment": {
+          "last_deinit_utc": "2026-08-22T14:02:51.203Z",
+          "last_init_ok_utc": "2026-08-23T08:33:04.390Z",
+          "last_lifecycle_event": "INIT_OK",
+          "last_lifecycle_utc": "2026-08-23T08:33:04.390000+00:00",
+          "n_deinit": 28,
+          "n_init_ok": 30,
+          "state": "ATTACHED"
+        },
+        "base_symbol": "USDJPY",
+        "ea_id": 12969,
+        "magic": 129690000,
+        "symbol": "USDJPY.DWX",
+        "telemetry": {
+          "detail": "never_emitted",
+          "first_in_window_utc": null,
+          "last_in_window_utc": null,
+          "snapshots_all_time": 0,
+          "snapshots_in_window": 0,
+          "state": "SILENT"
+        }
+      },
+      {
+        "activity": {
+          "closes_in_window": 0,
+          "opens_in_window": 0,
+          "state": "FLAT"
+        },
+        "attachment": {
+          "last_deinit_utc": "2026-08-22T14:02:53.921Z",
+          "last_init_ok_utc": "2026-08-23T08:34:28.546Z",
+          "last_lifecycle_event": "INIT_OK",
+          "last_lifecycle_utc": "2026-08-23T08:34:28.546000+00:00",
+          "n_deinit": 30,
+          "n_init_ok": 35,
+          "state": "ATTACHED"
+        },
+        "base_symbol": "XAUUSD",
+        "ea_id": 12989,
+        "magic": 129890003,
+        "symbol": "XAUUSD.DWX",
+        "telemetry": {
+          "detail": "in_window_snapshots",
+          "first_in_window_utc": "2026-07-26T22:01:00.609Z",
+          "last_in_window_utc": "2026-09-03T22:01:00.328Z",
+          "snapshots_all_time": 43,
+          "snapshots_in_window": 29,
+          "state": "EMITTING"
+        }
+      },
+      {
+        "activity": {
+          "closes_in_window": 0,
+          "opens_in_window": 0,
+          "state": "FLAT"
+        },
+        "attachment": {
+          "last_deinit_utc": "2026-08-22T14:02:51.343Z",
+          "last_init_ok_utc": "2026-08-23T08:29:07.265Z",
+          "last_lifecycle_event": "INIT_OK",
+          "last_lifecycle_utc": "2026-08-23T08:29:07.265000+00:00",
+          "n_deinit": 28,
+          "n_init_ok": 29,
+          "state": "ATTACHED"
+        },
+        "base_symbol": "EURGBP",
+        "ea_id": 13117,
+        "magic": 131170000,
+        "symbol": "EURGBP.DWX",
+        "telemetry": {
+          "detail": "never_emitted",
+          "first_in_window_utc": null,
+          "last_in_window_utc": null,
+          "snapshots_all_time": 0,
+          "snapshots_in_window": 0,
+          "state": "SILENT"
+        }
+      },
+      {
+        "activity": {
+          "closes_in_window": 0,
+          "opens_in_window": 0,
+          "state": "FLAT"
+        },
+        "attachment": {
+          "last_deinit_utc": "2026-08-22T14:02:53.031Z",
+          "last_init_ok_utc": "2026-08-23T08:29:07.265Z",
+          "last_lifecycle_event": "INIT_OK",
+          "last_lifecycle_utc": "2026-08-23T08:29:07.265000+00:00",
+          "n_deinit": 28,
+          "n_init_ok": 31,
+          "state": "ATTACHED"
+        },
+        "base_symbol": "NDX",
+        "ea_id": 13128,
+        "magic": 131280000,
+        "symbol": "NDX.DWX",
+        "telemetry": {
+          "detail": "in_window_snapshots",
+          "first_in_window_utc": "2026-07-26T22:00:01.937Z",
+          "last_in_window_utc": "2026-09-03T22:00:01.203Z",
+          "snapshots_all_time": 38,
+          "snapshots_in_window": 29,
+          "state": "EMITTING"
+        }
+      },
+      {
+        "activity": {
+          "closes_in_window": 12,
+          "opens_in_window": 88,
+          "state": "TRADING"
+        },
+        "attachment": {
+          "last_deinit_utc": "2026-08-22T14:02:51.562Z",
+          "last_init_ok_utc": "2026-08-23T08:32:32.281Z",
+          "last_lifecycle_event": "INIT_OK",
+          "last_lifecycle_utc": "2026-08-23T08:32:32.281000+00:00",
+          "n_deinit": 26,
+          "n_init_ok": 27,
+          "state": "ATTACHED"
+        },
+        "base_symbol": "USDJPY",
+        "ea_id": 13213,
+        "magic": 132130000,
+        "symbol": "USDJPY.DWX",
+        "telemetry": {
+          "detail": "in_window_snapshots",
+          "first_in_window_utc": "2026-07-26T21:10:01.531Z",
+          "last_in_window_utc": "2026-09-03T21:04:01.328Z",
+          "snapshots_all_time": 35,
+          "snapshots_in_window": 30,
+          "state": "EMITTING"
+        }
+      },
+      {
+        "activity": {
+          "closes_in_window": 9,
+          "opens_in_window": 40,
+          "state": "TRADING"
+        },
+        "attachment": {
+          "last_deinit_utc": "2026-08-22T14:02:51.609Z",
+          "last_init_ok_utc": "2026-08-23T08:34:28.375Z",
+          "last_lifecycle_event": "INIT_OK",
+          "last_lifecycle_utc": "2026-08-23T08:34:28.375000+00:00",
+          "n_deinit": 26,
+          "n_init_ok": 27,
+          "state": "ATTACHED"
+        },
+        "base_symbol": "GDAXI",
+        "ea_id": 13301,
+        "magic": 133010010,
+        "symbol": "GDAXI.DWX",
+        "telemetry": {
+          "detail": "in_window_snapshots",
+          "first_in_window_utc": "2026-07-27T00:30:01.718Z",
+          "last_in_window_utc": "2026-09-04T00:30:01.343Z",
+          "snapshots_all_time": 34,
+          "snapshots_in_window": 29,
+          "state": "EMITTING"
+        }
+      }
+    ],
+    "sleeves": {},
+    "source": "t_live_per_ea_logs",
+    "starting_capital": 100000.0,
+    "three_state_coverage": {
+      "activity": {
+        "flat": [
+          109190001,
+          125670002,
+          125670003,
+          127780000,
+          129690000,
+          129890003,
+          131170000,
+          131280000
+        ],
+        "trading": [
+          15560004,
+          15670007,
+          104030002,
+          104400003,
+          105130003,
+          107060001,
+          109110003,
+          109390001,
+          111320000,
+          111650000,
+          111650002,
+          114210000,
+          114210003,
+          117080000,
+          132130000,
+          133010010
+        ]
+      },
+      "attachment": {
+        "attached": [
+          15560004,
+          15670007,
+          104030002,
+          104400003,
+          105130003,
+          107060001,
+          109110003,
+          109190001,
+          109390001,
+          111320000,
+          111650000,
+          111650002,
+          114210000,
+          114210003,
+          117080000,
+          125670002,
+          125670003,
+          127780000,
+          129690000,
+          129890003,
+          131170000,
+          131280000,
+          132130000,
+          133010010
+        ],
+        "detached": [],
+        "no_lifecycle": []
+      },
+      "expected_magics": [
+        15560004,
+        15670007,
+        104030002,
+        104400003,
+        105130003,
+        107060001,
+        109110003,
+        109190001,
+        109390001,
+        111320000,
+        111650000,
+        111650002,
+        114210000,
+        114210003,
+        117080000,
+        125670002,
+        125670003,
+        127780000,
+        129690000,
+        129890003,
+        131170000,
+        131280000,
+        132130000,
+        133010010
+      ],
+      "expected_sleeves": 24,
+      "foreign_emitting_in_window": [],
+      "note": "Three INDEPENDENT per-sleeve states; NEVER collapsed into one heartbeat. ATTACHMENT = lifecycle INIT_OK/DEINIT (all-time, current attachment); TELEMETRY = EQUITY_SNAPSHOT emission in-window; ACTIVITY = trade events in-window. A telemetry-SILENT sleeve with a healthy ATTACHED lifecycle is an equity-instrumentation gap, NOT an unattached/absent sleeve.",
+      "telemetry": {
+        "emitting": [
+          15560004,
+          104030002,
+          104400003,
+          105130003,
+          107060001,
+          109110003,
+          109190001,
+          109390001,
+          111320000,
+          111650000,
+          111650002,
+          114210000,
+          114210003,
+          117080000,
+          125670002,
+          125670003,
+          129890003,
+          131280000,
+          132130000,
+          133010010
+        ],
+        "silent": [
+          15670007,
+          127780000,
+          129690000,
+          131170000
+        ],
+        "silent_never_emitted": [
+          15670007,
+          127780000,
+          129690000,
+          131170000
+        ]
+      }
+    },
+    "trades_by_sleeve": {
+      "10403:XAUUSD": {
+        "closes": 4,
+        "opens": 62
+      },
+      "10440:NDX": {
+        "closes": 0,
+        "opens": 10
+      },
+      "10513:XAUUSD": {
+        "closes": 0,
+        "opens": 6
+      },
+      "10706:GBPUSD": {
+        "closes": 0,
+        "opens": 12
+      },
+      "10911:GDAXI": {
+        "closes": 6,
+        "opens": 22
+      },
+      "10939:GBPUSD": {
+        "closes": 1,
+        "opens": 4
+      },
+      "11132:SP500": {
+        "closes": 1,
+        "opens": 5
+      },
+      "11165:AUDCAD": {
+        "closes": 4,
+        "opens": 8
+      },
+      "11165:EURUSD": {
+        "closes": 3,
+        "opens": 6
+      },
+      "11421:AUDUSD": {
+        "closes": 1,
+        "opens": 16
+      },
+      "11421:EURUSD": {
+        "closes": 2,
+        "opens": 22
+      },
+      "11708:EURUSD": {
+        "closes": 1,
+        "opens": 12
+      },
+      "13213:USDJPY": {
+        "closes": 12,
+        "opens": 88
+      },
+      "13301:GDAXI": {
+        "closes": 9,
+        "opens": 40
+      },
+      "1556:XAUUSD": {
+        "closes": 5,
+        "opens": 6
+      },
+      "1567:EURUSD": {
+        "closes": 0,
+        "opens": 2
+      }
+    },
+    "window": {
+      "deployment_epoch_utc": "2026-07-24T06:42:00+00:00",
+      "first_observed_utc_date": "2026-07-26",
+      "last_observed_utc_date": "2026-09-04",
+      "n_days_observed": 36,
+      "time_basis": "ts_utc (wall-clock); day_key intentionally NOT used (it pins to the last completed D1 bar over weekends and cannot be matched to an epoch)."
+    }
+  },
+  "generated_at_utc": "2026-09-05T04:15:06Z",
+  "manifest_binding": {
+    "book": "DXZ_4000090541",
+    "book_fingerprint": "e8bc34e619a0c530bfd5c0156e27aef27abd41cff43f79f633b25c148672a07c",
+    "deployment_epoch_utc": "2026-07-24T06:42:00+00:00",
+    "manifest_path": "D:\\QM\\reports\\portfolio\\portfolio_manifest_live_24sleeve_20260724.json",
+    "manifest_sha256": "8c719b080e18d30d83432f0999d694f699f2859cef72c0ce7738631fb084eab6",
+    "manifest_status": "LIVE",
+    "n_sleeves": 24,
+    "signature": {
+      "approved_by": "OWNER (Fabian) 2026-07-24 - countersigned via chat ('1 bestaetigt ... alles freigegeben') + vault NEEDS_FABIAN checkbox; countersigned content sha256 a766b5baed6075decaf26617a3871c413e6879f6286fa498d7b1b01de3db6908; record: decisions/2026-07-24_owner_approvals_audit_package.md",
+      "criteria": "SIGNED iff status in {LIVE,APPROVED,SIGNED,DEPLOYED} AND (signed=true OR approved_by present); a DRAFT bound only by SHA is NOT signed.",
+      "deployment_epoch_in_manifest": null,
+      "has_approver": true,
+      "manifest_status": "LIVE",
+      "signature_label": "SIGNED",
+      "signed": true,
+      "signed_flag_present": false
+    },
+    "starting_capital": 100000.0,
+    "total_risk_pct": 9.7499
+  },
+  "maturity": {
+    "binding": false,
+    "burnin_window_days": 42,
+    "immature": true,
+    "n_days_observed": 36,
+    "note": "Window not yet filled; verdict advisory-only and NOT binding until n_days >= 42."
+  },
+  "realised": {
+    "max_drawdown_pct": 3.02136,
+    "n_days": 35,
+    "n_sleeves": 24,
+    "sharpe": -3.5537619741,
+    "total_net_of_cost_profit": -2565.93
+  },
+  "source": "t_live_per_ea_logs",
+  "status": "EVIDENCE_FOR_OWNER",
+  "verdict": {
+    "advisory_only": true,
+    "binding": false,
+    "checks": {
+      "account_identity": {
+        "expected": null,
+        "observed": 4000090541,
+        "status": "MATCH"
+      },
+      "activity_coverage": {
+        "flat": [
+          109190001,
+          125670002,
+          125670003,
+          127780000,
+          129690000,
+          129890003,
+          131170000,
+          131280000
+        ],
+        "note": "Trade events per sleeve in-window. FLAT may be legitimate (no signal / low-frequency sleeve), so this is informational, not a defect on its own.",
+        "status": "INFO",
+        "trading": [
+          15560004,
+          15670007,
+          104030002,
+          104400003,
+          105130003,
+          107060001,
+          109110003,
+          109390001,
+          111320000,
+          111650000,
+          111650002,
+          114210000,
+          114210003,
+          117080000,
+          132130000,
+          133010010
+        ]
+      },
+      "attachment_coverage": {
+        "attached": [
+          15560004,
+          15670007,
+          104030002,
+          104400003,
+          105130003,
+          107060001,
+          109110003,
+          109190001,
+          109390001,
+          111320000,
+          111650000,
+          111650002,
+          114210000,
+          114210003,
+          117080000,
+          125670002,
+          125670003,
+          127780000,
+          129690000,
+          129890003,
+          131170000,
+          131280000,
+          132130000,
+          133010010
+        ],
+        "detached": [],
+        "no_lifecycle": [],
+        "note": "Lifecycle per sleeve. DETACHED = last event DEINIT (e.g. lost/zero-byte chart); NO_LIFECYCLE = no INIT_OK/DEINIT observed. This is the attachment state, reported independently of telemetry and activity.",
+        "status": "PASS"
+      },
+      "drawdown_vs_mc": {
+        "note": "No manifest-bound SUM-of-sleeves MC. NO placeholder is substituted.",
+        "reason": "--mc-artifact is not bound to this book: fingerprint/manifest_sha mismatch (artifact fp=None, expected e8bc34e619a0c530bfd5c0156e27aef27abd41cff43f79f633b25c148672a07c). Refusing to compare against a reference built for a different composition/weighting.",
+        "status": "UNKNOWN"
+      },
+      "foreign_identity": {
+        "status": "PASS",
+        "unexpected_magics_emitting": []
+      },
+      "manifest_signature": {
+        "approved_by": "OWNER (Fabian) 2026-07-24 - countersigned via chat ('1 bestaetigt ... alles freigegeben') + vault NEEDS_FABIAN checkbox; countersigned content sha256 a766b5baed6075decaf26617a3871c413e6879f6286fa498d7b1b01de3db6908; record: decisions/2026-07-24_owner_approvals_audit_package.md",
+        "manifest_status": "LIVE",
+        "note": "SIGNED iff status in {LIVE,APPROVED,SIGNED,DEPLOYED} AND (signed=true OR approved_by present); a DRAFT bound only by SHA is NOT signed.",
+        "signature_label": "SIGNED",
+        "status": "PASS"
+      },
+      "sharpe_band": {
+        "reason": "manifest backtest Sharpe missing",
+        "status": "UNKNOWN"
+      },
+      "telemetry_coverage": {
+        "emitting": [
+          15560004,
+          104030002,
+          104400003,
+          105130003,
+          107060001,
+          109110003,
+          109190001,
+          109390001,
+          111320000,
+          111650000,
+          111650002,
+          114210000,
+          114210003,
+          117080000,
+          125670002,
+          125670003,
+          129890003,
+          131280000,
+          132130000,
+          133010010
+        ],
+        "note": "EQUITY_SNAPSHOT emission per sleeve. A SILENT sleeve with a healthy ATTACHED lifecycle is an equity-instrumentation gap (missing/failing QM_EquityStreamOnNewBar emit), NOT an unattached sleeve; the account equity curve is built from the emitting sleeves and remains valid.",
+        "silent": [
+          15670007,
+          127780000,
+          129690000,
+          131170000
+        ],
+        "silent_never_emitted": [
+          15670007,
+          127780000,
+          129690000,
+          131170000
+        ],
+        "status": "WARN"
+      }
+    },
+    "reasons": [
+      "drawdown reference UNKNOWN: --mc-artifact is not bound to this book: fingerprint/manifest_sha mismatch (artifact fp=None, expected e8bc34e619a0c530bfd5c0156e27aef27abd41cff43f79f633b25c148672a07c). Refusing to compare against a reference built for a different composition/weighting.",
+      "manifest backtest Sharpe missing",
+      "telemetry gap (equity-snapshot SILENT; attachment reported separately): [15670007, 127780000, 129690000, 131170000]"
+    ],
+    "tier0_safety": {
+      "autotrading_action": "NONE",
+      "note": "Read-only evidence; T_Live trading-state control remains OWNER+Claude manual.",
+      "tlive_action": "NONE"
+    },
+    "verdict": "UNKNOWN"
+  }
+}
