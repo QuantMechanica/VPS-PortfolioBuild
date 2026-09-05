@@ -1,0 +1,35 @@
+{
+  "url": "http://127.0.0.1:8771/",
+  "viewports": [
+    {
+      "width": 1400,
+      "overflow": false,
+      "gate_rows": 18,
+      "mechanics_charts": 3
+    },
+    {
+      "width": 800,
+      "overflow": false,
+      "gate_rows": 18,
+      "mechanics_charts": 3
+    },
+    {
+      "width": 390,
+      "overflow": false,
+      "gate_rows": 18,
+      "mechanics_charts": 3
+    }
+  ],
+  "errors": [],
+  "normal_motion_changed_pixels_2s": 1337,
+  "host_frame_timing_ms": {
+    "median": 16.699999999999818,
+    "p95": 16.800000000000182,
+    "frames": 120,
+    "scope": "Headless review host, not a laptop performance certification"
+  },
+  "keyboard_pause_persists_reload": true,
+  "reduced_motion_funnel_static": true,
+  "reduced_motion_hero_static": true,
+  "exposure_scan": "PASS"
+}

@@ -1,0 +1,26 @@
+/* The new homepage instrument sections; existing shell remains shared. */
+.hero.qm-hero{padding:0;position:relative;overflow:hidden;text-align:left;background:#f4f6f8}
+.qm-hero #hero-bg{position:absolute;inset:0;width:100%;height:100%;opacity:.19;pointer-events:none}
+.qm-hero .hero__inner{position:relative;max-width:1180px;padding:104px 32px 112px;text-align:left}
+.qm-hero .hero__title{max-width:900px;text-align:left;line-height:1.02;letter-spacing:-.055em;font-size:clamp(52px,7vw,94px);color:#0f1720}
+.qm-hero .hero__lead{max-width:630px;margin:28px 0;color:#3a4653}
+.qm-hero .hero__cta{justify-content:flex-start}
+.qm-hero .accent,.qm-home .eyebrow{color:#2954d4}
+.qm-home{background:#f4f6f8;color:#0f1720}
+.qm-home .wrap{max-width:1180px}
+.qm-home .h2{text-wrap:balance;max-width:840px;font-size:clamp(32px,4vw,50px);letter-spacing:-.035em}
+.qm-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px;margin-top:40px}
+.qm-stat{border-top:1px solid #8995a5;padding-top:20px;display:grid;align-content:start;gap:10px}
+.qm-stat strong{font:500 clamp(30px,3.4vw,46px)/1.15 'IBM Plex Mono',Consolas,monospace;font-variant-numeric:tabular-nums;letter-spacing:-.045em}
+.qm-stat span{font-size:15px;color:#3a4653}
+.qm-stamp{font-size:13px;color:#3a4653;margin-top:24px}
+.qm-mechanics{display:grid;gap:0;margin-top:40px}
+.qm-mechanic{display:grid;grid-template-columns:4fr 7fr;gap:48px;align-items:center;padding:40px 0;border-top:1px solid #aeb8c6}
+.qm-mechanic h3{font-size:28px;line-height:1.2;letter-spacing:-.025em;text-wrap:balance;margin:12px 0 16px}
+.qm-mechanic p{font-size:16px;color:#3a4653}
+.qm-mechanic .chart--frame{border-radius:3px;border:1px solid #aeb8c6;box-shadow:none;background:#fff}
+.qm-mechanic canvas{display:block;width:100%;height:300px}
+.qm-mechanic figcaption{font-size:12px;line-height:1.5;color:#4b5869;margin-top:10px}
+.qm-mechanic figure{margin:0;min-width:0}
+@media(max-width:800px){.qm-hero .hero__inner{padding:80px 24px}.qm-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.qm-mechanic{grid-template-columns:1fr;gap:20px}.qm-mechanic h3{max-width:600px}}
+@media(prefers-reduced-motion:reduce){.qm-hero *{animation:none!important;transition:none!important}}

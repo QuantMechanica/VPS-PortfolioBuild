@@ -1,0 +1,379 @@
+--- a/index.html
++++ b/index.html
+@@ -1,11 +1,11 @@
+ <!doctype html>
+ <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+-<title>Trading research, made inspectable | QuantMechanica</title><meta name="description" content="Explore named mechanical strategies, their tests and their limitations. Read the research archive and the observed Darwinex Zero record.">
+-<meta property="og:title" content="Trading research, made inspectable | QuantMechanica"><meta property="og:description" content="Explore named mechanical strategies, their tests and their limitations. Read the research archive and the observed Darwinex Zero record."><meta property="og:type" content="website"><meta property="og:url" content="https://quantmechanica.com/"><meta property="og:image" content="https://quantmechanica.com/assets/og-image.png">
++<title>The Quantitative Edge. | QuantMechanica</title><meta name="description" content="Explore named mechanical strategies, their tests and their limitations. Read the research archive and the observed Darwinex Zero record.">
++<meta property="og:title" content="The Quantitative Edge. | QuantMechanica"><meta property="og:description" content="Explore named mechanical strategies, their tests and their limitations. Read the research archive and the observed Darwinex Zero record."><meta property="og:type" content="website"><meta property="og:url" content="https://quantmechanica.com/"><meta property="og:image" content="https://quantmechanica.com/assets/og-image.png">
+ <link rel="canonical" href="https://quantmechanica.com/"><link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="/style.css">
+ 
+ <script defer src="/scripts/stats-loader.js"></script><script defer src="/scripts/qm-charts.js"></script><script defer src="/scripts/review-site.js"></script>
+-</head><body><a class="skip-link" href="#main">Skip to content</a><nav aria-label="Primary" class="nav">
++<link rel="stylesheet" href="/review-home.css"><script defer src="/scripts/homepage-v4.js"></script><script defer src="/scripts/qm-funnel.js"></script></head><body><a class="skip-link" href="#main">Skip to content</a><nav aria-label="Primary" class="nav">
+ <a aria-label="QuantMechanica home" class="nav__brand" href="/">QuantMechanica</a>
+ <div class="nav__links">
+ <a class="nav__link" href="/pipeline">Pipeline</a>
+@@ -25,39 +25,18 @@
+ <a href="/about">About</a>
+ <a href="/faq">FAQ</a>
+ </div>
+-</nav><main id="main"><section class="hero"><div class="hero__inner"><p class="eyebrow">Research, made inspectable</p><h1 class="hero__title">Trading ideas.<br><span class="accent">The evidence behind them.</span></h1><p class="hero__lead">We turn mechanical trading ideas into tests, then publish what those tests found. Follow the names, the markets and the gate results in our strategy archive.</p><div class="hero__cta"><a class="btn btn--primary" href="/strategies">Explore the strategy archive</a><a class="btn btn--secondary" href="/pipeline">Understand the tests</a></div></div></section><section class="section section--alt"><div class="wrap cols cols-2"><div class="stack"><p class="eyebrow">Start with the archive</p><h2 class="h2">A result is more useful<br>with its history.</h2><p class="lead">Read the idea, then trace its tests. Passing and failed results sit in the same record, with a plain-language explanation of what each gate checked.</p><a class="btn btn--secondary" href="/strategies">Open the research record</a></div><div class="panel archive-preview"><p class="eyebrow">Inside every record</p><div class="preview-line"><strong>The idea</strong><span>Name, mechanism and short description</span></div><div class="preview-line"><strong>The tests</strong><span>Market, timeframe and gate result</span></div><div class="preview-line"><strong>The limits</strong><span>What a result does and does not establish</span></div><p class="caption">The archive counts card revisions. It does not count live strategies.</p></div></div></section><section class="section"><div class="wrap"><p class="eyebrow">How the evidence develops</p><h2 class="h2">An idea. A comparison. An operating record.</h2><div class="phase-band"><div class="phase-band__col"><h3 class="h3">Validation</h3><p>Q00–Q08</p><p>Specify the idea and examine its historical behavior.</p></div><div class="phase-band__col"><h3 class="h3">Requalification</h3><p>Q09–Q14</p><p>Compare changes against a fixed reference.</p></div><div class="phase-band__col"><h3 class="h3">Portfolio &amp; operations</h3><p>Q15–Q17</p><p>Assess the combined book and its operating readiness.</p></div></div><a class="btn btn--secondary" href="/pipeline">Read each gate</a></div></section><section class="section section--tight"><div class="wrap"><div class="panel performance-panel"><div class="panel__head"><div><p class="eyebrow">Live account on Darwinex Zero</p><h2 class="h3">The record so far.</h2></div><a class="btn btn--secondary" href="https://www.darwinexzero.com/darwin/KQDS/performance" rel="noopener">View the DARWIN record ↗</a></div>
++</nav><main id="main">
++<section class="hero qm-hero"><canvas id="hero-bg" aria-hidden="true"></canvas><div class="hero__inner"><p class="eyebrow">Mechanical trading. Open research.</p><h1 class="hero__title">The Quantitative<br><span class="accent">Edge.</span></h1><p class="hero__lead">An idea is the beginning. The evidence is the work. Explore the strategies, the tests they faced, and the results that survived scrutiny.</p><div class="hero__cta"><a class="btn btn--primary" href="/strategies">Explore the research archive</a><a class="btn btn--secondary" href="/pipeline">Follow the testing process</a></div></div></section>
++<section class="section qm-home"><div class="wrap"><p class="eyebrow">The record, in numbers</p><h2 class="h2">A lot of ideas.<br>A much smaller qualified set.</h2><div class="qm-stats">
++<div class="qm-stat"><strong data-funnel-stat="strategies_tested">3,097</strong><span>Distinct strategies tested</span></div>
++<div class="qm-stat"><strong data-funnel-stat="backtests_completed">124,145</strong><span>Completed backtests</span></div>
++<div class="qm-stat"><strong data-funnel-stat="gates_total">18</strong><span>Research and operating gates</span></div>
++<div class="qm-stat"><strong data-funnel-stat="qualified_pairs_current">8</strong><span>Currently qualified market/timeframe pairs</span></div>
++</div><p class="qm-stamp" data-funnel-stamp>Snapshot 2026-09-05. Distinct strategies, completed backtests and qualified pairs count different things. The current pair target is 25.</p><a class="btn btn--secondary" href="/strategies">Read the records behind the numbers</a></div></section>
++<section class="section qm-home"><div class="wrap"><p class="eyebrow">Selection is the work</p><h2 class="h2">Every claim meets a gate.</h2><p class="lead measure">From the first test to an operating record, each stage asks a harder question.</p><div id="gate-funnel" data-qm-funnel data-src="/public-data/funnel-stats.json"><p>Three phases: Validation Q00–Q08, Requalification Q09–Q14, Portfolio &amp; operations Q15–Q17. Gate counts require the public data snapshot.</p></div><a class="btn btn--secondary" href="/pipeline">What each gate checks</a></div></section>
++<section class="section section--tight"><div class="wrap"><div class="panel performance-panel"><div class="panel__head"><div><p class="eyebrow">Live account on Darwinex Zero</p><h2 class="h3">The record so far.</h2></div><a class="btn btn--secondary" href="https://www.darwinexzero.com/darwin/KQDS/performance" rel="noopener">View the DARWIN record ↗</a></div>
+ <p>Strategy-attributed closed-position P&amp;L. Losses are part of the record.</p><div class="figure-grid figure-grid--2"><div class="figure"><div class="figure__num" data-live-net>—</div><div class="figure__cap">Net closed P&amp;L since the epoch · USD</div></div><div class="figure"><div class="figure__num" data-live-closes>—</div><div class="figure__cap">Closed positions</div></div></div>
+-<div class="chart chart--frame live-chart" data-live-chart role="img" aria-label="Closed-position P and L index"><p>Loading the observed series.</p></div><p class="panel__cap" data-live-caption>Data has not loaded. The external DARWIN record remains available above.</p><details><summary>What this chart includes</summary><p data-live-basis></p><p>The DARWIN page reports its own return methodology. It is a separate record from this closed-position series.</p><a href="/public-data/live-performance.json">Download the aggregate daily series</a></details></div></div></section><section class="section section--tight">
+-<div class="wrap">
+-<div class="panel">
+-<div class="panel__head">
+-<div>
+-<p class="eyebrow">The mechanics we model</p>
+-<h2 class="h3">The kinds of market behavior we investigate.</h2>
+-</div>
+-<span class="eyebrow">Illustrative</span>
+-</div>
+-<p class="panel__cap">Session handoffs, calendar-settlement flows and regime shifts — the repeatable structure behind the families in the archive. Charts are illustrative, calibrated to real market statistics, not live.</p>
+-<div class="cols cols-3" style="margin-top:var(--s-4)">
+-<div>
+-<p class="eyebrow">EUR/USD · Session model</p>
+-<div class="chart chart--frame"><canvas id="w-eurusd" style="width:100%;height:300px"></canvas></div>
+-<p class="panel__cap">Illustrative price action (synthetic, calibrated) · 1h bars · EMA20/EMA50 · London / New York sessions · measured <span data-stat-date="">2026-09-02</span></p>
+-</div>
+-<div>
+-<p class="eyebrow">XAU/USD · Power of three</p>
+-<div class="chart chart--frame"><canvas id="w-xauusd" style="width:100%;height:300px"></canvas></div>
+-<p class="panel__cap">Illustrative price action (synthetic, calibrated) · daily bars · accumulation / manipulation / distribution phases · measured <span data-stat-date="">2026-09-02</span></p>
+-</div>
+-<div>
+-<p class="eyebrow">US 100 · Regime indicators</p>
+-<div class="chart chart--frame"><canvas id="w-us100" style="width:100%;height:300px"></canvas></div>
+-<p class="panel__cap">Illustrative price action (synthetic, calibrated) · daily bars · EMA20/EMA50 · Bollinger bands · swing markers · measured <span data-stat-date="">2026-09-02</span></p>
+-</div>
+-</div>
+-</div>
+-</div>
+-</section><section class="section"><div class="wrap"><p class="eyebrow">Where the research could lead</p><h2 class="h2">Products have to earn their place.</h2><p class="lead measure">We are exploring channels for strategies that build enough evidence. Each remains subject to further testing and a separate release decision.</p><div class="roadmap-row"><span class="roadmap-row__label">Copy-trading accounts</span><span class="roadmap-row__body">A possible route after an inspectable operating record.</span><span class="badge">Planned</span></div><div class="roadmap-row"><span class="roadmap-row__label">MQL5 Marketplace EAs</span><span class="roadmap-row__body">Selected tools, with documented behavior and limitations.</span><span class="badge">Planned</span></div><div class="roadmap-row"><span class="roadmap-row__label">Allocation and prop evaluation</span><span class="roadmap-row__body">Research for Darwinex Zero and FTMO targets, with their own admission tests.</span><span class="badge">Under evaluation</span></div></div></section></main><section class="section section--alt contact-panel" aria-labelledby="contact-title"><div class="wrap cols cols-2">
++<div class="chart chart--frame live-chart" data-live-chart role="img" aria-label="Closed-position P and L index"><p>Loading the observed series.</p></div><p class="panel__cap" data-live-caption>Data has not loaded. The external DARWIN record remains available above.</p><details><summary>What this chart includes</summary><p data-live-basis></p><p>The DARWIN page reports its own return methodology. It is a separate record from this closed-position series.</p><a href="/public-data/live-performance.json">Download the aggregate daily series</a></details></div></div></section><section class="section qm-home"><div class="wrap"><p class="eyebrow">The mechanics we model</p><h2 class="h2">Different hypotheses.<br>The same demand for evidence.</h2><div class="qm-mechanics"><article class="qm-mechanic"><div><p class="eyebrow">01 / SESSION STRUCTURE</p><h3>Liquidity around the handoff.</h3><p>ICT / SMT session models examine how related markets take liquidity around a session change. The hypothesis is relative confirmation, followed by a mechanically defined response.</p></div><figure><div class="chart chart--frame"><canvas id="w-eurusd" role="img" aria-label="Synthetic illustrative candlestick chart for EUR/USD · Session illustration" style="width:100%;height:300px"></canvas></div><figcaption>EUR/USD · Session illustration. Synthetic prices for explanation; this is not a model result or a live feed.</figcaption></figure></article><article class="qm-mechanic"><div><p class="eyebrow">02 / INDICATOR REGIME</p><h3>When direction becomes persistent.</h3><p>Regime models ask whether a market is trending or rotating. Indicators describe that state; the strategy still needs a repeatable entry, exit and cost-aware test.</p></div><figure><div class="chart chart--frame"><canvas id="w-us100" role="img" aria-label="Synthetic illustrative candlestick chart for US 100 · Regime illustration" style="width:100%;height:300px"></canvas></div><figcaption>US 100 · Regime illustration. Synthetic prices for explanation; this is not a model result or a live feed.</figcaption></figure></article><article class="qm-mechanic"><div><p class="eyebrow">03 / CALENDAR & RELATIVE VALUE</p><h3>A different rhythm near the calendar turn.</h3><p>Calendar models investigate recurring settlement and month-end behavior. Relative-value versions compare related exposures to test whether the pattern persists beyond one market.</p></div><figure><div class="chart chart--frame"><canvas id="w-xauusd" role="img" aria-label="Synthetic illustrative candlestick chart for XAU/USD · Calendar illustration" style="width:100%;height:300px"></canvas></div><figcaption>XAU/USD · Calendar illustration. Synthetic prices for explanation; this is not a model result or a live feed.</figcaption></figure></article></div></div></section><section class="section"><div class="wrap"><p class="eyebrow">Where the research could lead</p><h2 class="h2">Products have to earn their place.</h2><p class="lead measure">We are exploring channels for strategies that build enough evidence. Each remains subject to further testing and a separate release decision.</p><div class="roadmap-row"><span class="roadmap-row__label">Copy-trading accounts</span><span class="roadmap-row__body">A possible route after an inspectable operating record.</span><span class="badge">Planned</span></div><div class="roadmap-row"><span class="roadmap-row__label">MQL5 Marketplace EAs</span><span class="roadmap-row__body">Selected tools, with documented behavior and limitations.</span><span class="badge">Planned</span></div><div class="roadmap-row"><span class="roadmap-row__label">Allocation and prop evaluation</span><span class="roadmap-row__body">Research for Darwinex Zero and FTMO targets, with their own admission tests.</span><span class="badge">Under evaluation</span></div></div></section></main><section class="section section--alt contact-panel" aria-labelledby="contact-title"><div class="wrap cols cols-2">
+ <div class="stack"><p class="eyebrow">Keep the conversation open</p><h2 class="h2" id="contact-title">A question. A source. A better test.</h2><p>Share a research idea or ask about a result in the archive.</p><a class="btn btn--secondary" href="mailto:info@quantmechanica.com">Contact QuantMechanica</a></div>
+ <div class="stack"><h3 class="h3">Research notes, when they are ready.</h3><p>Newsletter signup is coming soon. You can contact us by email in the meantime.</p><label for="newsletter-email">Email address</label><input id="newsletter-email" type="email" disabled placeholder="Signup is not open yet"><button class="btn btn--primary" disabled>Newsletter coming soon</button><p class="caption">This form does not collect or send information.</p></div></div></section><footer class="footer">
+ <div class="footer__inner">
+--- /dev/null
++++ b/review-home.css
+@@ -0,0 +1,26 @@
++/* The new homepage instrument sections; existing shell remains shared. */
++.hero.qm-hero{padding:0;position:relative;overflow:hidden;text-align:left;background:#f4f6f8}
++.qm-hero #hero-bg{position:absolute;inset:0;width:100%;height:100%;opacity:.19;pointer-events:none}
++.qm-hero .hero__inner{position:relative;max-width:1180px;padding:104px 32px 112px;text-align:left}
++.qm-hero .hero__title{max-width:900px;text-align:left;line-height:1.02;letter-spacing:-.055em;font-size:clamp(52px,7vw,94px);color:#0f1720}
++.qm-hero .hero__lead{max-width:630px;margin:28px 0;color:#3a4653}
++.qm-hero .hero__cta{justify-content:flex-start}
++.qm-hero .accent,.qm-home .eyebrow{color:#2954d4}
++.qm-home{background:#f4f6f8;color:#0f1720}
++.qm-home .wrap{max-width:1180px}
++.qm-home .h2{text-wrap:balance;max-width:840px;font-size:clamp(32px,4vw,50px);letter-spacing:-.035em}
++.qm-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px;margin-top:40px}
++.qm-stat{border-top:1px solid #8995a5;padding-top:20px;display:grid;align-content:start;gap:10px}
++.qm-stat strong{font:500 clamp(30px,3.4vw,46px)/1.15 'IBM Plex Mono',Consolas,monospace;font-variant-numeric:tabular-nums;letter-spacing:-.045em}
++.qm-stat span{font-size:15px;color:#3a4653}
++.qm-stamp{font-size:13px;color:#3a4653;margin-top:24px}
++.qm-mechanics{display:grid;gap:0;margin-top:40px}
++.qm-mechanic{display:grid;grid-template-columns:4fr 7fr;gap:48px;align-items:center;padding:40px 0;border-top:1px solid #aeb8c6}
++.qm-mechanic h3{font-size:28px;line-height:1.2;letter-spacing:-.025em;text-wrap:balance;margin:12px 0 16px}
++.qm-mechanic p{font-size:16px;color:#3a4653}
++.qm-mechanic .chart--frame{border-radius:3px;border:1px solid #aeb8c6;box-shadow:none;background:#fff}
++.qm-mechanic canvas{display:block;width:100%;height:300px}
++.qm-mechanic figcaption{font-size:12px;line-height:1.5;color:#4b5869;margin-top:10px}
++.qm-mechanic figure{margin:0;min-width:0}
++@media(max-width:800px){.qm-hero .hero__inner{padding:80px 24px}.qm-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.qm-mechanic{grid-template-columns:1fr;gap:20px}.qm-mechanic h3{max-width:600px}}
++@media(prefers-reduced-motion:reduce){.qm-hero *{animation:none!important;transition:none!important}}
+--- /dev/null
++++ b/scripts/qm-funnel.js
+@@ -0,0 +1,89 @@
++/* QuantMechanica filter instrument. Independent gate totals, never cohort pass rates. */
++(() => {
++  'use strict';
++  const CSS = `.qm-filter{--q-ink:#0f1720;--q-steel:#2954d4;color:var(--q-ink);position:relative;width:100%}.qm-filter *{box-sizing:border-box}.qm-filter .qf-head{display:flex;align-items:center;justify-content:space-between;gap:16px;border-top:1px solid #b9c1cd;padding:18px 0}.qm-filter .qf-head p{margin:0;font:12px/1.5 'IBM Plex Mono',Consolas,monospace;letter-spacing:.08em;text-transform:uppercase}.qm-filter .qf-toggle{font:13px/1.4 'IBM Plex Mono',Consolas,monospace;background:transparent;color:#0f1720;border:1px solid #8995a5;border-radius:3px;padding:8px 14px;cursor:pointer;flex-shrink:0}.qm-filter .qf-toggle:focus-visible,.qm-filter summary:focus-visible{outline:2px solid #2954d4;outline-offset:4px}.qm-filter .qf-phases{display:grid;grid-template-columns:9fr 6fr 5fr;gap:12px}.qm-filter .qf-phase{border-top:2px solid #0f1720;padding-top:12px;display:grid;gap:4px}.qm-filter .qf-phase strong{font:500 clamp(12px,1.3vw,17px)/1.35 'IBM Plex Sans',system-ui,sans-serif}.qm-filter .qf-phase span{font:11px/1.5 'IBM Plex Mono',Consolas,monospace;color:#4b5869}.qm-filter .qf-stage{width:100%;height:330px;display:block}.qm-filter .qf-note{font:13px/1.6 'IBM Plex Sans',system-ui,sans-serif;color:#3a4653;max-width:78ch;margin:4px 0 18px}.qm-filter .qf-ledger{border-top:1px solid #b9c1cd;padding-top:14px}.qm-filter summary{cursor:pointer;font:14px/1.5 'IBM Plex Sans',system-ui,sans-serif;padding-bottom:12px}.qm-filter .qf-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:0;list-style:none;margin:0;padding:0}.qm-filter .qf-grid li{border-top:1px solid #d3d9e1;padding:12px 8px 12px 0;display:grid;align-content:start;gap:5px}.qm-filter .qf-grid b{font:500 12px/1.4 'IBM Plex Mono',Consolas,monospace}.qm-filter .qf-grid span{font:12px/1.4 'IBM Plex Sans',system-ui,sans-serif;color:#3a4653}.qm-filter .qf-grid em{font:500 20px/1.3 'IBM Plex Mono',Consolas,monospace;font-style:normal}.qm-filter .visually-hidden{display:block!important;position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}.qm-filter .qf-status{font:13px/1.6 system-ui,sans-serif}@media(max-width:600px){.qm-filter .qf-stage{height:260px}.qm-filter .qf-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.qm-filter .qf-head p{font-size:10px}.qm-filter .qf-phases{gap:8px}.qm-filter .qf-note{font-size:12px}}`;
++  const fmt = n => n.toLocaleString('en-US');
++  const el = (tag, cls, text) => { const n=document.createElement(tag); if(cls)n.className=cls; if(text!==undefined)n.textContent=text; return n; };
++  function valid(d) {
++    return d && d.schema==='qm.public-funnel-stats/v1' && Number.isInteger(d.strategies_tested) && d.strategies_tested>0 &&
++      d.gates_total===18 && Array.isArray(d.gates) && d.gates.length===18 && Array.isArray(d.phases) && d.phases.length===3 &&
++      d.gates.every((g,i)=>g.id==='Q'+String(i).padStart(2,'0') && typeof g.label==='string' && Number.isInteger(g.strategies_cleared) && g.strategies_cleared>=0 && g.strategies_cleared<=d.strategies_tested);
++  }
++  function mount(host,d) {
++    host.classList.add('qm-filter');
++    host.replaceChildren();
++    const head=el('div','qf-head');head.append(el('p','','Research filter / '+fmt(d.strategies_tested)+' strategies tested'));
++    const button=el('button','qf-toggle','Pause');button.type='button';head.append(button);
++    const phases=el('div','qf-phases');
++    d.phases.forEach(p=>{const n=el('div','qf-phase');n.append(el('strong','',p.name),el('span','',p.gates[0]+'–'+p.gates.at(-1)));phases.append(n);});
++    const canvas=el('canvas','qf-stage');canvas.setAttribute('role','img');
++    const sentence=`A left-to-right filter with three phases and eighteen gates. ${fmt(d.strategies_tested)} distinct strategies tested. Gate totals are independent censuses, not one cohort or conditional pass rates. ${d.gates.map(g=>g.id+': '+fmt(g.strategies_cleared)+' cleared').join('; ')}. ${d.qualified_pairs_current} qualified market/timeframe pairs are a separate current count.`;
++    canvas.setAttribute('aria-label',sentence);
++    const note=el('p','qf-note','Each gate shows its recorded total. These are different cohorts, so the moving traces illustrate selection rather than a measured survival rate. An empty outlet reflects no recorded clearances at the final gates.');
++    const details=el('details','qf-ledger');details.append(el('summary','','Read all 18 gate counts'));
++    const grid=el('ol','qf-grid');
++    d.gates.forEach(g=>{const li=el('li');li.append(el('b','',g.id),el('span','',g.label),el('em','',fmt(g.strategies_cleared)));grid.append(li);});details.append(grid);
++    const table=el('table','visually-hidden');table.setAttribute('role','table');table.append(el('caption','','Recorded distinct strategies cleared at each gate; independent cohorts.'));
++    const tr=el('tr');['Gate','Phase','Recorded clearances'].forEach(s=>{const th=el('th','',s);th.scope='col';tr.append(th);});const thd=el('thead');thd.append(tr);table.append(thd);
++    const tbody=el('tbody');d.gates.forEach(g=>{const r=el('tr');r.append(el('td','',g.id+' '+g.label),el('td','',d.phases.find(p=>p.id===g.phase)?.name||g.phase),el('td','',String(g.strategies_cleared)));tbody.append(r);});table.append(tbody);
++    host.append(head,phases,canvas,note,details,table);
++    const ctx=canvas.getContext('2d');if(!ctx)return;
++    const media=matchMedia('(prefers-reduced-motion: reduce)');
++    // Astra defaults static; the v4 content-animation brief explicitly opts into calm motion.
++    const calmAllowed=host.dataset.reducedMotion==='calm';
++    let paused=false;try{paused=localStorage.getItem('qm-funnel-paused')==='true';}catch{}
++    let visible=true,raf=0,last=0,clock=0,w=0,h=0,back=null;
++    const running=()=>!paused && (!media.matches||calmAllowed) && visible && !document.hidden;
++    const heightAt=t=>t<.79 ? 101-(101-15)*(t/.79) : 15;
++    function geometry(){const left=w*.075,right=w*.95,span=right-left,cy=h*.51,scale=h/330;return {left,right,span,cy,scale};}
++    function base(c) {
++      const {left,right,span,cy,scale}=geometry(), neck=left+span*.79, top=101*scale, small=15*scale;
++      c.clearRect(0,0,w,h);
++      c.save();c.lineWidth=1;c.strokeStyle='#d8dfe8';c.setLineDash([3,6]);c.beginPath();c.moveTo(left-20,cy);c.lineTo(right+12,cy);c.stroke();c.setLineDash([]);
++      c.fillStyle='rgba(41,84,212,.035)';c.beginPath();c.moveTo(left,cy-top);c.lineTo(neck,cy-small);c.lineTo(right,cy-small);c.lineTo(right,cy+small);c.lineTo(neck,cy+small);c.lineTo(left,cy+top);c.closePath();c.fill();
++      c.strokeStyle='#566577';c.lineWidth=1.5;c.beginPath();c.moveTo(left,cy-top);c.lineTo(neck,cy-small);c.lineTo(right,cy-small);c.moveTo(left,cy+top);c.lineTo(neck,cy+small);c.lineTo(right,cy+small);c.stroke();
++      c.beginPath();c.ellipse(left,cy,Math.max(8,w*.019),top,0,0,Math.PI*2);c.stroke();c.beginPath();c.ellipse(right,cy,4,small,0,0,Math.PI*2);c.stroke();
++      d.gates.forEach((g,i)=>{
++        const t=.065+i*.0525,x=left+span*t,hh=heightAt(t)*scale;
++        c.strokeStyle=(i===9||i===15)?'#0f1720':'rgba(15,23,32,.27)';c.lineWidth=(i===9||i===15)?1.5:1;
++        c.beginPath();c.moveTo(x,cy-hh);c.lineTo(x,cy+hh);c.stroke();
++        c.strokeStyle='rgba(15,23,32,.15)';for(let y=cy-hh+7;y<cy+hh;y+=9){c.beginPath();c.moveTo(x-3,y-2);c.lineTo(x+3,y+2);c.stroke();}
++        if(w>=600){c.fillStyle='#3a4653';c.font="11px 'IBM Plex Mono',Consolas,monospace";c.textAlign='center';c.fillText(g.id,x,h-40);c.fillStyle='#0f1720';c.fillText(fmt(g.strategies_cleared),x,h-21);}
++      });
++      c.textAlign='left';c.fillStyle='#3a4653';c.font="11px 'IBM Plex Mono',Consolas,monospace";c.fillText('OBSERVATIONS',Math.max(0,left-18),18);
++      c.textAlign='right';c.fillText('RECORDED CLEARANCES',right,18);
++      if(w<600){c.textAlign='center';c.fillText('18 GATES · COUNTS BELOW',w/2,h-10);}
++      c.restore();
++    }
++    function resize(){const rect=canvas.getBoundingClientRect();w=rect.width;h=rect.height;if(!w||!h)return;const dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);back=document.createElement('canvas');back.width=canvas.width;back.height=canvas.height;const b=back.getContext('2d');b.setTransform(dpr,0,0,dpr,0,0);base(b);draw();}
++    function draw(){if(!back)return;ctx.clearRect(0,0,w,h);ctx.drawImage(back,0,0,w,h);const {left,span,cy,scale}=geometry();ctx.lineCap='round';
++      // Each station is an independent sample density, with a deterministic fractional token.
++      // No transition divides one gate by its predecessor, and zero draws no trace.
++      d.gates.forEach((g,i)=>{const density=g.strategies_cleared/d.strategies_tested*30;const n=Math.ceil(density);for(let j=0;j<n;j++){
++        const fraction=Math.min(1,density-j);const phase=(clock*.13+(j*.618033+i*.173))%1;
++        const t=.014+i*.0525+phase*.047,x=left+span*t;
++        const lane=Math.sin((j+1)*127.1+(i+1)*31.7)*.79;
++        const y=cy+lane*heightAt(t)*scale;const fade=Math.sin(Math.PI*phase);
++        ctx.strokeStyle=`rgba(41,84,212,${(.25+.65*fade)*fraction})`;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x-3.8,y);ctx.lineTo(x,y);ctx.stroke();
++      }});
++    }
++    function state(){button.textContent=paused?'Play':media.matches&&!calmAllowed?'Play motion':'Pause';button.setAttribute('aria-label',paused?'Play funnel animation':media.matches&&!calmAllowed?'Enable funnel motion':'Pause funnel animation');button.setAttribute('aria-pressed',String(paused));host.dataset.motion=running()?'running':paused?'paused':'static';}
++    let explicitMotion=false;
++    // Explicit Play may override the static preference; automatic reduced motion never does.
++    const isRunning=()=>!paused && ((!media.matches||calmAllowed)||explicitMotion) && visible && !document.hidden;
++    function frame(now){raf=0;if(!isRunning()){last=0;state();return;}if(last)clock+=Math.min((now-last)/1000,.05)*(media.matches?.45:1);last=now;draw();host.dataset.motion='running';raf=requestAnimationFrame(frame);}
++    function sync(){if(raf)cancelAnimationFrame(raf);raf=0;last=0;state();draw();if(isRunning())raf=requestAnimationFrame(frame);}
++    button.addEventListener('click',()=>{if(media.matches&&!calmAllowed&&!explicitMotion&&!paused){explicitMotion=true;}else paused=!paused;try{localStorage.setItem('qm-funnel-paused',String(paused));}catch{}sync();});
++    media.addEventListener('change',()=>{explicitMotion=false;sync();});document.addEventListener('visibilitychange',sync);
++    if('IntersectionObserver' in window)new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;sync();},{rootMargin:'80px'}).observe(host);
++    if('ResizeObserver' in window)new ResizeObserver(resize).observe(canvas);else addEventListener('resize',resize);
++    resize();sync();host.dataset.ready='true';
++    return {canvas,data:d,redraw:resize,get motion(){return isRunning();}};
++  }
++  const style=el('style');style.textContent=CSS;document.head.append(style);
++  window.QMFunnel={version:'3.0.0',mount,instances:[]};
++  document.querySelectorAll('[data-qm-funnel],#gate-funnel').forEach(async host=>{
++    try{const response=await fetch(host.dataset.src||'/public-data/funnel-stats.json',{cache:'no-store'});if(!response.ok)throw Error('Unavailable');const d=await response.json();if(!valid(d))throw Error('Invalid contract');const instance=mount(host,d);QMFunnel.instances.push(instance);document.dispatchEvent(new CustomEvent('qm:funnel-data',{detail:d}));}
++    catch{host.replaceChildren(el('p','qf-status','Gate data is currently unavailable. Read the pipeline description for the research process.'));host.dataset.ready='error';}
++  });
++})();
+--- /dev/null
++++ b/scripts/homepage-v4.js
+@@ -0,0 +1,15 @@
++/* Local review enhancement: supplied public counters and decorative candle field. */
++(() => {
++  'use strict';
++  document.addEventListener('qm:funnel-data',({detail:d})=>{
++    document.querySelectorAll('[data-funnel-stat]').forEach(n=>{const v=d[n.dataset.funnelStat];if(Number.isFinite(v))n.textContent=v.toLocaleString('en-US');});
++    const stamp=document.querySelector('[data-funnel-stamp]');if(stamp)stamp.textContent='Snapshot '+d.snapshot_utc.slice(0,10)+'. Distinct strategies, completed backtests and qualified pairs count different things. The current pair target is '+d.qualified_pairs_target+'.';
++  });
++  const canvas=document.getElementById('hero-bg');if(!canvas)return;
++  const ctx=canvas.getContext('2d'),media=matchMedia('(prefers-reduced-motion: reduce)');let w=0,h=0,last=0,t=0,raf=0,visible=true;
++  function draw(){ctx.clearRect(0,0,w,h);const dx=22;for(let i=-2;i<Math.ceil(w/dx)+3;i++){const x=i*dx-(t*5)%dx,base=h*.56+Math.sin(i*.21)*h*.13+Math.sin(i*.63)*h*.04,delta=Math.sin(i*2.87)*21;ctx.strokeStyle=delta>0?'#4b6c91':'#9a6e65';ctx.fillStyle=ctx.strokeStyle;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,base-30);ctx.lineTo(x,base+30);ctx.stroke();ctx.fillRect(x-4,base-Math.abs(delta)/2,8,Math.max(3,Math.abs(delta)));}}
++  function resize(){const r=canvas.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2);w=r.width;h=r.height;canvas.width=w*d;canvas.height=h*d;ctx.setTransform(d,0,0,d,0,0);draw();}
++  function tick(now){raf=0;if(media.matches||document.hidden||!visible){last=0;return;}if(last)t+=Math.min((now-last)/1000,.05);last=now;draw();raf=requestAnimationFrame(tick);}
++  function sync(){cancelAnimationFrame(raf);last=0;draw();if(!media.matches&&visible&&!document.hidden)raf=requestAnimationFrame(tick);}
++  new ResizeObserver(resize).observe(canvas);new IntersectionObserver(e=>{visible=e[0].isIntersecting;sync();}).observe(canvas);media.addEventListener('change',sync);document.addEventListener('visibilitychange',sync);resize();sync();
++})();
+--- /dev/null
++++ b/public-data/funnel-stats.json
+@@ -0,0 +1,169 @@
++{
++  "schema": "qm.public-funnel-stats/v1",
++  "snapshot_utc": "2026-09-05T16:26:41Z",
++  "basis": "Read-only census of the research database at snapshot time. Counts are distinct strategies (EA identities), not card revisions; a strategy counts as cleared at a gate when at least one of its market/timeframe tests passed that gate. Requalification gates apply to subsets, so their counts are not a strict subset chain.",
++  "strategies_tested": 3097,
++  "strategy_cards_approved": 3408,
++  "backtests_completed": 124145,
++  "optimization_census_cells_measured": 7461,
++  "gates_total": 18,
++  "phases": [
++    {
++      "id": "validation",
++      "name": "Validation",
++      "blurb": "The strategy proves itself",
++      "gates": [
++        "Q00",
++        "Q01",
++        "Q02",
++        "Q03",
++        "Q04",
++        "Q05",
++        "Q06",
++        "Q07",
++        "Q08"
++      ]
++    },
++    {
++      "id": "requalification",
++      "name": "Requalification",
++      "blurb": "The strategy is optimized and requalified",
++      "gates": [
++        "Q09",
++        "Q10",
++        "Q11",
++        "Q12",
++        "Q13",
++        "Q14"
++      ]
++    },
++    {
++      "id": "portfolio",
++      "name": "Portfolio & operations",
++      "blurb": "The strategy is assessed as part of the book",
++      "gates": [
++        "Q15",
++        "Q16",
++        "Q17"
++      ]
++    }
++  ],
++  "gates": [
++    {
++      "id": "Q00",
++      "label": "Research Intake",
++      "phase": "validation",
++      "strategies_cleared": 0
++    },
++    {
++      "id": "Q01",
++      "label": "Build & Spec",
++      "phase": "validation",
++      "strategies_cleared": 3
++    },
++    {
++      "id": "Q02",
++      "label": "Baseline Screening",
++      "phase": "validation",
++      "strategies_cleared": 2018
++    },
++    {
++      "id": "Q03",
++      "label": "Parameter Sweep",
++      "phase": "validation",
++      "strategies_cleared": 1002
++    },
++    {
++      "id": "Q04",
++      "label": "Walk-Forward + Commission",
++      "phase": "validation",
++      "strategies_cleared": 501
++    },
++    {
++      "id": "Q05",
++      "label": "Gross Full-History Robustness",
++      "phase": "validation",
++      "strategies_cleared": 277
++    },
++    {
++      "id": "Q06",
++      "label": "Stress HARSH",
++      "phase": "validation",
++      "strategies_cleared": 251
++    },
++    {
++      "id": "Q07",
++      "label": "Multi-Seed",
++      "phase": "validation",
++      "strategies_cleared": 190
++    },
++    {
++      "id": "Q08",
++      "label": "Davey Statistical Validation",
++      "phase": "validation",
++      "strategies_cleared": 50
++    },
++    {
++      "id": "Q09",
++      "label": "Baseline Full Run",
++      "phase": "requalification",
++      "strategies_cleared": 101
++    },
++    {
++      "id": "Q10",
++      "label": "News Impact + FTMO Recommendation",
++      "phase": "requalification",
++      "strategies_cleared": 32
++    },
++    {
++      "id": "Q11",
++      "label": "Incumbent Full-History Confirmation",
++      "phase": "requalification",
++      "strategies_cleared": 51
++    },
++    {
++      "id": "Q12",
++      "label": "Pattern Filter Selection",
++      "phase": "requalification",
++      "strategies_cleared": 2
++    },
++    {
++      "id": "Q13",
++      "label": "Parameter Optimization & Freeze",
++      "phase": "requalification",
++      "strategies_cleared": 0
++    },
++    {
++      "id": "Q14",
++      "label": "Best-Settings Head-to-Head",
++      "phase": "requalification",
++      "strategies_cleared": 11
++    },
++    {
++      "id": "Q15",
++      "label": "Final Portfolio Construction",
++      "phase": "portfolio",
++      "strategies_cleared": 0
++    },
++    {
++      "id": "Q16",
++      "label": "Operational Readiness",
++      "phase": "portfolio",
++      "strategies_cleared": 0
++    },
++    {
++      "id": "Q17",
++      "label": "Live Burn-In DXZ",
++      "phase": "portfolio",
++      "strategies_cleared": 0
++    }
++  ],
++  "qualified_pairs_current": 8,
++  "qualified_pairs_target": 25,
++  "live": {
++    "venue": "Darwinex Zero",
++    "since": "2026-07-24",
++    "closed_positions": 85,
++    "darwin_url": "https://www.darwinexzero.com/darwin/KQDS/performance"
++  }
++}

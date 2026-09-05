@@ -1,0 +1,27 @@
+[
+  {
+    "path": "index.html",
+    "sha256": "d242d35e388526bddd0bf1d2f878c97e382f2d12b961f18bd2ae08d297c420ad",
+    "bytes": 11306
+  },
+  {
+    "path": "review-home.css",
+    "sha256": "8146c1e2586e30a9c94916a56bd32ce977757806c855269f2ce0aa29bf4119dd",
+    "bytes": 2215
+  },
+  {
+    "path": "scripts/qm-funnel.js",
+    "sha256": "368111788982c28963958e7d17c083435747909b446fa7cf70f13ab0d82a893a",
+    "bytes": 11854
+  },
+  {
+    "path": "scripts/homepage-v4.js",
+    "sha256": "a512f5738cf4f720ea3c07815a35f16912df9d4a6874241d01f55fad4cd7276d",
+    "bytes": 1990
+  },
+  {
+    "path": "public-data/funnel-stats.json",
+    "sha256": "13d0f7d8f2406af59c9d3a1ec5da6041cfc9363864ce1e44f4d2a61b55307cb0",
+    "bytes": 4179
+  }
+]

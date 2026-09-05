@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trading research, made inspectable | QuantMechanica</title><meta name="description" content="Explore named mechanical strategies, their tests and their limitations. Read the research archive and the observed Darwinex Zero record.">
+<meta property="og:title" content="Trading research, made inspectable | QuantMechanica"><meta property="og:description" content="Explore named mechanical strategies, their tests and their limitations. Read the research archive and the observed Darwinex Zero record."><meta property="og:type" content="website"><meta property="og:url" content="https://quantmechanica.com/"><meta property="og:image" content="https://quantmechanica.com/assets/og-image.png">
+<link rel="canonical" href="https://quantmechanica.com/"><link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="/style.css">
+
+<script defer src="/scripts/stats-loader.js"></script><script defer src="/scripts/qm-charts.js"></script><script defer src="/scripts/review-site.js"></script>
+</head><body><a class="skip-link" href="#main">Skip to content</a><nav aria-label="Primary" class="nav">
+<a aria-label="QuantMechanica home" class="nav__brand" href="/">QuantMechanica</a>
+<div class="nav__links">
+<a class="nav__link" href="/pipeline">Pipeline</a>
+<a class="nav__link" href="/strategies">Strategies</a>
+<a class="nav__link" href="/performance">Performance</a>
+<a class="nav__link" href="/blog">Blog</a>
+<a class="nav__link" href="/about">About</a>
+<a class="nav__link" href="/faq">FAQ</a>
+</div>
+
+<button aria-controls="mobile-menu" aria-expanded="false" aria-label="Open navigation" class="nav__burger" type="button"><span></span></button>
+<div class="nav__mobile" id="mobile-menu">
+<a href="/pipeline">Pipeline</a>
+<a href="/strategies">Strategies</a>
+<a href="/performance">Performance</a>
+<a href="/blog">Blog</a>
+<a href="/about">About</a>
+<a href="/faq">FAQ</a>
+</div>
+</nav><main id="main"><section class="hero"><div class="hero__inner"><p class="eyebrow">Research, made inspectable</p><h1 class="hero__title">Trading ideas.<br><span class="accent">The evidence behind them.</span></h1><p class="hero__lead">We turn mechanical trading ideas into tests, then publish what those tests found. Follow the names, the markets and the gate results in our strategy archive.</p><div class="hero__cta"><a class="btn btn--primary" href="/strategies">Explore the strategy archive</a><a class="btn btn--secondary" href="/pipeline">Understand the tests</a></div></div></section><section class="section section--alt"><div class="wrap cols cols-2"><div class="stack"><p class="eyebrow">Start with the archive</p><h2 class="h2">A result is more useful<br>with its history.</h2><p class="lead">Read the idea, then trace its tests. Passing and failed results sit in the same record, with a plain-language explanation of what each gate checked.</p><a class="btn btn--secondary" href="/strategies">Open the research record</a></div><div class="panel archive-preview"><p class="eyebrow">Inside every record</p><div class="preview-line"><strong>The idea</strong><span>Name, mechanism and short description</span></div><div class="preview-line"><strong>The tests</strong><span>Market, timeframe and gate result</span></div><div class="preview-line"><strong>The limits</strong><span>What a result does and does not establish</span></div><p class="caption">The archive counts card revisions. It does not count live strategies.</p></div></div></section><section class="section"><div class="wrap"><p class="eyebrow">How the evidence develops</p><h2 class="h2">An idea. A comparison. An operating record.</h2><div class="phase-band"><div class="phase-band__col"><h3 class="h3">Validation</h3><p>Q00–Q08</p><p>Specify the idea and examine its historical behavior.</p></div><div class="phase-band__col"><h3 class="h3">Requalification</h3><p>Q09–Q14</p><p>Compare changes against a fixed reference.</p></div><div class="phase-band__col"><h3 class="h3">Portfolio &amp; operations</h3><p>Q15–Q17</p><p>Assess the combined book and its operating readiness.</p></div></div><a class="btn btn--secondary" href="/pipeline">Read each gate</a></div></section><section class="section section--tight"><div class="wrap"><div class="panel performance-panel"><div class="panel__head"><div><p class="eyebrow">Live account on Darwinex Zero</p><h2 class="h3">The record so far.</h2></div><a class="btn btn--secondary" href="https://www.darwinexzero.com/darwin/KQDS/performance" rel="noopener">View the DARWIN record ↗</a></div>
+<p>Strategy-attributed closed-position P&amp;L. Losses are part of the record.</p><div class="figure-grid figure-grid--2"><div class="figure"><div class="figure__num" data-live-net>—</div><div class="figure__cap">Net closed P&amp;L since the epoch · USD</div></div><div class="figure"><div class="figure__num" data-live-closes>—</div><div class="figure__cap">Closed positions</div></div></div>
+<div class="chart chart--frame live-chart" data-live-chart role="img" aria-label="Closed-position P and L index"><p>Loading the observed series.</p></div><p class="panel__cap" data-live-caption>Data has not loaded. The external DARWIN record remains available above.</p><details><summary>What this chart includes</summary><p data-live-basis></p><p>The DARWIN page reports its own return methodology. It is a separate record from this closed-position series.</p><a href="/public-data/live-performance.json">Download the aggregate daily series</a></details></div></div></section><section class="section section--tight">
+<div class="wrap">
+<div class="panel">
+<div class="panel__head">
+<div>
+<p class="eyebrow">The mechanics we model</p>
+<h2 class="h3">The kinds of market behavior we investigate.</h2>
+</div>
+<span class="eyebrow">Illustrative</span>
+</div>
+<p class="panel__cap">Session handoffs, calendar-settlement flows and regime shifts — the repeatable structure behind the families in the archive. Charts are illustrative, calibrated to real market statistics, not live.</p>
+<div class="cols cols-3" style="margin-top:var(--s-4)">
+<div>
+<p class="eyebrow">EUR/USD · Session model</p>
+<div class="chart chart--frame"><canvas id="w-eurusd" style="width:100%;height:300px"></canvas></div>
+<p class="panel__cap">Illustrative price action (synthetic, calibrated) · 1h bars · EMA20/EMA50 · London / New York sessions · measured <span data-stat-date="">2026-09-02</span></p>
+</div>
+<div>
+<p class="eyebrow">XAU/USD · Power of three</p>
+<div class="chart chart--frame"><canvas id="w-xauusd" style="width:100%;height:300px"></canvas></div>
+<p class="panel__cap">Illustrative price action (synthetic, calibrated) · daily bars · accumulation / manipulation / distribution phases · measured <span data-stat-date="">2026-09-02</span></p>
+</div>
+<div>
+<p class="eyebrow">US 100 · Regime indicators</p>
+<div class="chart chart--frame"><canvas id="w-us100" style="width:100%;height:300px"></canvas></div>
+<p class="panel__cap">Illustrative price action (synthetic, calibrated) · daily bars · EMA20/EMA50 · Bollinger bands · swing markers · measured <span data-stat-date="">2026-09-02</span></p>
+</div>
+</div>
+</div>
+</div>
+</section><section class="section"><div class="wrap"><p class="eyebrow">Where the research could lead</p><h2 class="h2">Products have to earn their place.</h2><p class="lead measure">We are exploring channels for strategies that build enough evidence. Each remains subject to further testing and a separate release decision.</p><div class="roadmap-row"><span class="roadmap-row__label">Copy-trading accounts</span><span class="roadmap-row__body">A possible route after an inspectable operating record.</span><span class="badge">Planned</span></div><div class="roadmap-row"><span class="roadmap-row__label">MQL5 Marketplace EAs</span><span class="roadmap-row__body">Selected tools, with documented behavior and limitations.</span><span class="badge">Planned</span></div><div class="roadmap-row"><span class="roadmap-row__label">Allocation and prop evaluation</span><span class="roadmap-row__body">Research for Darwinex Zero and FTMO targets, with their own admission tests.</span><span class="badge">Under evaluation</span></div></div></section></main><section class="section section--alt contact-panel" aria-labelledby="contact-title"><div class="wrap cols cols-2">
+<div class="stack"><p class="eyebrow">Keep the conversation open</p><h2 class="h2" id="contact-title">A question. A source. A better test.</h2><p>Share a research idea or ask about a result in the archive.</p><a class="btn btn--secondary" href="mailto:info@quantmechanica.com">Contact QuantMechanica</a></div>
+<div class="stack"><h3 class="h3">Research notes, when they are ready.</h3><p>Newsletter signup is coming soon. You can contact us by email in the meantime.</p><label for="newsletter-email">Email address</label><input id="newsletter-email" type="email" disabled placeholder="Signup is not open yet"><button class="btn btn--primary" disabled>Newsletter coming soon</button><p class="caption">This form does not collect or send information.</p></div></div></section><footer class="footer">
+<div class="footer__inner">
+<div class="footer__brand">
+<a href="/">QuantMechanica</a>
+<p class="footer__tag">Systematic trading, tested openly.</p>
+</div>
+<div class="footer__col">
+<h4>Site</h4>
+<a href="/pipeline">Pipeline</a>
+<a href="/strategies">Strategies</a>
+<a href="/performance">Performance</a>
+<a href="/blog">Blog</a>
+</div>
+<div class="footer__col">
+<h4>Legal</h4>
+<a href="/impressum">Impressum</a>
+<a href="/disclaimer">Risk Disclaimer</a>
+<a href="/privacy">Privacy Policy</a>
+</div>
+<div class="footer__col">
+<h4>Contact</h4>
+<a href="mailto:info@quantmechanica.com">info@quantmechanica.com</a>
+<a href="mailto:info@quantmechanica.com?subject=Strategy%20Proposal">Propose a strategy</a>
+<a href="/faq">FAQ</a>
+<a href="/about">About</a>
+</div>
+</div>
+<div class="footer__bottom">
+<span>© 2026 QuantMechanica. All rights reserved.</span>
+<span class="num">Systematic algorithmic research</span>
+</div>
+<div class="footer__risk">
+<div class="footer__risk-inner">
+<h5>Risk Disclosure</h5>
+<p>CFDs are complex instruments and come with a high risk of losing money rapidly due to leverage. The majority of retail investor accounts lose money when trading CFDs. Consider whether you understand how CFDs work and whether you can afford to take the high risk of losing your money. Past performance is not a reliable indicator of future results. Automated trading tools do not guarantee profits.</p>
+</div>
+</div>
+</footer></body></html>
