@@ -49,8 +49,28 @@ LANE_ROOTS: dict[str, Path] = {
     "FTMO_STREAM1": Path("D:/QM/mt5/FTMO_STREAM1"),
     "FTMO_STREAM2": Path("D:/QM/mt5/FTMO_STREAM2"),
 }
-NATIVE_SYMBOLS = ("XAUUSD", "GER40.cash")
-FTMO_CODES = {"XAUUSD": "XAU/USD", "GER40.cash": "GER40.cash"}
+# A target lot must represent the same underlying quantity as the source lot.
+# ``target_lots_per_source_lot`` is therefore source contract size divided by
+# target contract size.  This is 10 for WTI (DXZ 1,000 bbl versus FTMO 100 bbl)
+# and 1 for the remaining current-pool instruments.
+SYMBOL_LANES: dict[str, dict[str, Any]] = {
+    # Existing research-lane coverage retained for reproducibility.
+    "XAUUSD": {"evaluator_symbol": "XAUUSD", "source_symbol": "XAUUSD.DWX", "ftmo_code": "XAU/USD", "source_contract_size": 100.0, "target_contract_size": 100.0, "pool_status": "LEGACY"},
+    "GER40.cash": {"evaluator_symbol": "GDAXI", "source_symbol": "GDAXI.DWX", "ftmo_code": "GER40.cash", "source_contract_size": 1.0, "target_contract_size": 1.0, "pool_status": "LEGACY"},
+    # 2026-09-05 sealed eight-sleeve current pool (six unique symbols).
+    "GBPUSD": {"evaluator_symbol": "GBPUSD", "source_symbol": "GBPUSD.DWX", "ftmo_code": "GBP/USD", "source_contract_size": 100000.0, "target_contract_size": 100000.0, "pool_status": "CURRENT_8_SLEEVE_POOL"},
+    "EURUSD": {"evaluator_symbol": "EURUSD", "source_symbol": "EURUSD.DWX", "ftmo_code": "EUR/USD", "source_contract_size": 100000.0, "target_contract_size": 100000.0, "pool_status": "CURRENT_8_SLEEVE_POOL"},
+    "USDCAD": {"evaluator_symbol": "USDCAD", "source_symbol": "USDCAD.DWX", "ftmo_code": "USD/CAD", "source_contract_size": 100000.0, "target_contract_size": 100000.0, "pool_status": "CURRENT_8_SLEEVE_POOL"},
+    "NZDUSD": {"evaluator_symbol": "NZDUSD", "source_symbol": "NZDUSD.DWX", "ftmo_code": "NZD/USD", "source_contract_size": 100000.0, "target_contract_size": 100000.0, "pool_status": "CURRENT_8_SLEEVE_POOL"},
+    "USOIL.cash": {"evaluator_symbol": "XTIUSD", "source_symbol": "XTIUSD.DWX", "ftmo_code": "USOIL.cash", "source_contract_size": 1000.0, "target_contract_size": 100.0, "pool_status": "CURRENT_8_SLEEVE_POOL"},
+    "XAGUSD": {"evaluator_symbol": "XAGUSD", "source_symbol": "XAGUSD.DWX", "ftmo_code": "XAG/USD", "source_contract_size": 5000.0, "target_contract_size": 5000.0, "pool_status": "CURRENT_8_SLEEVE_POOL"},
+}
+for _lane_definition in SYMBOL_LANES.values():
+    _lane_definition["target_lots_per_source_lot"] = (
+        _lane_definition["source_contract_size"] / _lane_definition["target_contract_size"]
+    )
+NATIVE_SYMBOLS = tuple(SYMBOL_LANES)
+FTMO_CODES = {symbol: row["ftmo_code"] for symbol, row in SYMBOL_LANES.items()}
 EXECUTION_MODELS: dict[str, dict[str, Any]] = {
     "REAL_TICKS": {"mt5_model": 4, "evidence_class": "FTMO_REAL_TICKS"},
     "M1_MODELLED": {"mt5_model": 1, "evidence_class": "FTMO_M1_MODELLED"},
@@ -59,7 +79,7 @@ MAX_FTMO_CONCURRENT = 2
 NORMAL_FACTORY_SLOTS = 10
 MIN_NORMAL_FACTORY_SLOTS_PRESERVED = 8
 EXPECTED_COST_SNAPSHOT_SHA256 = (
-    "7309310ad92f794407d25452127c38e7db175b841be0f70b82b201b841b932da"
+    "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
 )
 SHA_RE = re.compile(r"^[0-9a-f]{64}$")
 
@@ -274,9 +294,13 @@ def _apply_history_observation(
     if observation.get("lane") != lane or Path(str(observation.get("lane_root", ""))).resolve() != root:
         raise FtmoLaneError("history observation is bound to a different lane/root")
     symbols = observation.get("symbols")
-    if not isinstance(symbols, Mapping) or set(symbols) != set(NATIVE_SYMBOLS):
-        raise FtmoLaneError("history observation must cover exactly XAUUSD and GER40.cash")
-    for symbol in NATIVE_SYMBOLS:
+    if (
+        not isinstance(symbols, Mapping)
+        or not symbols
+        or not set(symbols).issubset(set(NATIVE_SYMBOLS))
+    ):
+        raise FtmoLaneError("history observation contains no supported native symbols")
+    for symbol in symbols:
         item = symbols[symbol]
         if not isinstance(item, Mapping) or set(item) != {"real_ticks", "m1_bars"}:
             raise FtmoLaneError(f"history observation {symbol}: unexpected fields")
@@ -555,6 +579,13 @@ def derive_ftmo_set(
     native_symbol: str,
     replace: bool = False,
 ) -> dict[str, Any]:
+    if native_symbol not in SYMBOL_LANES:
+        raise FtmoLaneError(f"unsupported native symbol: {native_symbol}")
+    lane_definition = SYMBOL_LANES[native_symbol]
+    if source_symbol != lane_definition["source_symbol"]:
+        raise FtmoLaneError(
+            f"source/native mapping mismatch: {source_symbol} -> {native_symbol}"
+        )
     source = source.expanduser().resolve()
     destination = destination.expanduser().resolve()
     if source == destination:
@@ -583,6 +614,12 @@ def derive_ftmo_set(
         "source_symbol": source_symbol,
         "native_symbol": native_symbol,
         "ftmo_code": FTMO_CODES[native_symbol],
+        "contract_normalization": {
+            "source_contract_size": lane_definition["source_contract_size"],
+            "target_contract_size": lane_definition["target_contract_size"],
+            "target_lots_per_source_lot": lane_definition["target_lots_per_source_lot"],
+            "formula": "source_lots * source_contract_size / target_contract_size",
+        },
         "strategy_inputs_identical": True,
         "source": file_binding(source),
         "derived": file_binding(destination),
@@ -735,6 +772,13 @@ def prepare_job(
     _ea_directory(repo_root.expanduser().resolve(), ea_id, ex5_path)
     if sleeve_id != f"{ea_id}:{evaluator_symbol}":
         raise FtmoLaneError("sleeve identity does not match EA/evaluator symbol")
+    lane_definition = SYMBOL_LANES.get(native_symbol)
+    if lane_definition is None:
+        raise FtmoLaneError("unsupported native symbol")
+    if evaluator_symbol != lane_definition["evaluator_symbol"]:
+        raise FtmoLaneError("evaluator/native symbol mapping mismatch")
+    if source_symbol != lane_definition["source_symbol"]:
+        raise FtmoLaneError("source/native symbol mapping mismatch")
     cost_snapshot_path = cost_snapshot_path.expanduser().resolve()
     expected_cost = _assert_sha(expected_cost_sha256, "expected_cost_sha256")
     if expected_cost != EXPECTED_COST_SNAPSHOT_SHA256 or sha256_file(cost_snapshot_path) != expected_cost:
@@ -765,6 +809,7 @@ def prepare_job(
         "evaluator_symbol": evaluator_symbol,
         "source_symbol": source_symbol,
         "native_symbol": native_symbol,
+        "symbol_lane": dict(lane_definition),
         "timeframe": timeframe,
         "window": {"from": from_date.isoformat(), "to": to_date.isoformat()},
         "execution_model": {"name": execution_model, "mt5_model": model["mt5_model"]},

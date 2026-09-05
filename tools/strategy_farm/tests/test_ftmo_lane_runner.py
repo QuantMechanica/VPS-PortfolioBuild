@@ -182,6 +182,66 @@ def test_symbol_rebinding_preserves_build_guardrails(tmp_path: Path) -> None:
         )
 
 
+@pytest.mark.parametrize(
+    ("native", "evaluator", "source", "code", "source_size", "target_size", "factor"),
+    [
+        ("GBPUSD", "GBPUSD", "GBPUSD.DWX", "GBP/USD", 100000, 100000, 1),
+        ("EURUSD", "EURUSD", "EURUSD.DWX", "EUR/USD", 100000, 100000, 1),
+        ("USDCAD", "USDCAD", "USDCAD.DWX", "USD/CAD", 100000, 100000, 1),
+        ("NZDUSD", "NZDUSD", "NZDUSD.DWX", "NZD/USD", 100000, 100000, 1),
+        ("USOIL.cash", "XTIUSD", "XTIUSD.DWX", "USOIL.cash", 1000, 100, 10),
+        ("XAGUSD", "XAGUSD", "XAGUSD.DWX", "XAG/USD", 5000, 5000, 1),
+    ],
+)
+def test_current_pool_symbol_lane_contracts(
+    native: str,
+    evaluator: str,
+    source: str,
+    code: str,
+    source_size: float,
+    target_size: float,
+    factor: float,
+) -> None:
+    lane = runner.SYMBOL_LANES[native]
+    assert lane["pool_status"] == "CURRENT_8_SLEEVE_POOL"
+    assert lane["evaluator_symbol"] == evaluator
+    assert lane["source_symbol"] == source
+    assert lane["ftmo_code"] == code
+    assert lane["source_contract_size"] == source_size
+    assert lane["target_contract_size"] == target_size
+    assert lane["target_lots_per_source_lot"] == factor
+
+
+def test_symbol_rebinding_records_oil_contract_normalization(tmp_path: Path) -> None:
+    source = tmp_path / "oil.set"
+    source.write_text(
+        "; symbol: XTIUSD.DWX\nRISK_FIXED=1000\nRISK_PERCENT=0\n",
+        encoding="utf-8",
+    )
+    receipt = runner.derive_ftmo_set(
+        source,
+        tmp_path / "oil-ftmo.set",
+        source_symbol="XTIUSD.DWX",
+        native_symbol="USOIL.cash",
+    )
+    assert receipt["contract_normalization"]["target_lots_per_source_lot"] == 10
+
+
+def test_symbol_rebinding_refuses_crossed_lane_mapping(tmp_path: Path) -> None:
+    source = tmp_path / "crossed.set"
+    source.write_text(
+        "; symbol: EURUSD.DWX\nRISK_FIXED=1000\nRISK_PERCENT=0\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(runner.FtmoLaneError, match="mapping mismatch"):
+        runner.derive_ftmo_set(
+            source,
+            tmp_path / "bad.set",
+            source_symbol="EURUSD.DWX",
+            native_symbol="GBPUSD",
+        )
+
+
 def test_runner_binding_rehashes_every_bound_input_and_model_class(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
