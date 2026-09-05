@@ -1,0 +1,114 @@
+{
+  "command": [
+    "C:\\Python311\\python.exe",
+    "C:\\QM\\worktrees\\codex-canonical-paths-apply-20260905\\tools\\strategy_farm\\canonical_setfile_paths.py",
+    "apply",
+    "--work-item-id",
+    "b7189709-abe5-4bff-ab28-d4f6a4fdd1e6"
+  ],
+  "exit_code": 0,
+  "result": {
+    "schema": "qm.canonical-setfile-apply/v1",
+    "authority": "router_ops_issue:a3ec5b69-ae8f-475c-b939-2c9b04224761",
+    "dry_run": true,
+    "applied": false,
+    "targets": [
+      "b7189709-abe5-4bff-ab28-d4f6a4fdd1e6"
+    ],
+    "rows": [
+      {
+        "id": "b7189709-abe5-4bff-ab28-d4f6a4fdd1e6",
+        "eligible": true,
+        "source": {
+          "id": "b7189709-abe5-4bff-ab28-d4f6a4fdd1e6",
+          "kind": "backtest",
+          "phase": "Q02",
+          "ea_id": "QM5_10141",
+          "symbol": "XAUUSD.DWX",
+          "setfile_path": "C:\\QM\\worktrees\\claude-orchestration-2\\framework\\EAs\\QM5_10141_rsi-meanrev\\sets\\QM5_10141_rsi-meanrev_XAUUSD.DWX_D1_backtest.set",
+          "status": "pending",
+          "verdict": null,
+          "attempt_count": 0,
+          "parent_task_id": null,
+          "evidence_path": null,
+          "claimed_by": null,
+          "payload_json": "{\"enqueued_at_utc\": \"2026-07-06T09:52:58+00:00\", \"enqueued_by\": \"claude_sweep_enqueue_2026-06-10.stranded_infra_fail\", \"host_symbol\": \"XAUUSD.DWX\", \"recovery_batch\": \"ultracode_recovery_20260726\", \"recovery_class\": \"stranded_infra_fail\", \"recovery_pre_image_sha256\": \"981de7e34088f35a60a63959ba2e450b57da85383a87c93e5f57b11be1a11417\", \"recovery_tagged_at_utc\": \"2026-07-26T10:38:55+00:00\"}",
+          "created_at": "2026-07-06T09:52:58+00:00",
+          "updated_at": "2026-07-26T10:38:56+00:00",
+          "verdict_taxonomy_stored": "open",
+          "clean_status_stored": "pending",
+          "gate_contract_version": "legacy",
+          "ex5_sha256": null,
+          "setfile_sha256": null,
+          "mq5_sha256": null,
+          "include_closure_sha256": null,
+          "build_id": null,
+          "data_window_start": null,
+          "data_window_end": null,
+          "news_calendar_sha256": null,
+          "verdict_taxonomy": "open",
+          "sh3_enforced": 0
+        },
+        "proposal": {
+          "schema": "qm.pending-canonical-path-proposal/v1",
+          "dry_run": true,
+          "apply_supported": true,
+          "source_work_item_id": "b7189709-abe5-4bff-ab28-d4f6a4fdd1e6",
+          "source_row_sha256": "3504ef41c88a6e5a93ddc9e9a7fccc84c6b40df26d24cd8973d6137834584abb",
+          "source_payload_sha256": "2c6b7bd8c5601f318d47e79771d3c557e4f1d245d723b1aa9d47a3bdfadd5ac3",
+          "ea_id": "QM5_10141",
+          "phase": "Q02",
+          "symbol": "XAUUSD.DWX",
+          "old_setfile_path": "C:\\QM\\worktrees\\claude-orchestration-2\\framework\\EAs\\QM5_10141_rsi-meanrev\\sets\\QM5_10141_rsi-meanrev_XAUUSD.DWX_D1_backtest.set",
+          "old_setfile_sha256": "063975d7f1c29cce57c59f180f38816b8518179a15ec9bb82b3324e5228c346d",
+          "canonical_setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10141_rsi-meanrev\\sets\\QM5_10141_rsi-meanrev_XAUUSD.DWX_D1_backtest.set",
+          "canonical_setfile_sha256": "dc53df40a852afccca6d22af8eafb2ced2026441f37d87cdc5394ba19ee10f92",
+          "canonical_ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10141_rsi-meanrev\\QM5_10141_rsi-meanrev.ex5",
+          "canonical_ex5_sha256": "917a93f0595c96ab1fb5a084e122969ea087f4e3a3b940b22471b389e4604f36",
+          "proposed_successor_id": "c2f82430-34ce-51fd-9afc-c89a96209316",
+          "blockers": [],
+          "authority_status": "CANONICAL_BYTES_SELECTED_BY_TASK",
+          "required_apply_contract": [
+            "OWNER-approved path-repair authority bound to this exact predecessor and both artifact hashes",
+            "Factory mutation lock plus fresh OFF check and one BEGIN IMMEDIATE transaction",
+            "Revalidate predecessor status, claimed_by and exact row/payload digest; no active predecessor",
+            "Validate current canonical build, fixed-risk setfile and original phase/parent lineage",
+            "Refuse any existing successor or competing pending/active canonical pair",
+            "Append one canonical successor and one work_item_supersedes record atomically; preserve predecessor bytes/verdict",
+            "Retain non-path holds; never bypass existing approval, registry or phase gates"
+          ],
+          "reviewed_byte_difference": true
+        },
+        "holds": [],
+        "gates": {
+          "failures": [],
+          "fixed_risk": {
+            "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10141_rsi-meanrev\\sets\\QM5_10141_rsi-meanrev_XAUUSD.DWX_D1_backtest.set",
+            "risk_fixed": 1000.0,
+            "risk_percent": 0.0
+          },
+          "build_guardrails": {
+            "checked_at": "2026-09-05T21:37:17.197101Z",
+            "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10141_rsi-meanrev",
+            "files_checked": 38,
+            "max_news_stale_hours": 336,
+            "entry_grace_margin_minutes": 5.0,
+            "session_offset_registry_path": "C:\\QM\\repo\\framework\\registry\\session_offset_minutes.csv",
+            "verdict": "PASS",
+            "findings": []
+          },
+          "parent_task_id_preserved": null,
+          "requeue_source_preserved": null,
+          "recheck_file_hashes": {
+            "C:\\QM\\repo\\framework\\EAs\\QM5_10141_rsi-meanrev\\QM5_10141_rsi-meanrev.mq5": "d97146ebe11820108b8c7f12f5fa722f35026d570fd7ef91b4d7de76c6436403",
+            "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv": "b78ae9bcd4f2b45a4d4b6fcddd5c6f7370f5d3895738de0c7fbe07ceaa19b6f4",
+            "C:\\QM\\repo\\framework\\registry\\magic_numbers.csv": "2b892c67047e9be8f45dc3c28c210ebf4caede832369476214899c57aebfcdb7",
+            "C:\\QM\\repo\\framework\\registry\\session_offset_minutes.csv": "63f9f8890f90028f18961953f5c622aa44bc6f69a57cb92f5c8cdb3672316943"
+          }
+        },
+        "authority": "router_ops_issue:a3ec5b69-ae8f-475c-b939-2c9b04224761"
+      }
+    ],
+    "eligible": true
+  }
+}

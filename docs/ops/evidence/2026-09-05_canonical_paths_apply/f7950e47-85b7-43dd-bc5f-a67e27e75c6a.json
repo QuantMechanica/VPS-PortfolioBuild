@@ -1,0 +1,27 @@
+{
+  "command": [
+    "C:\\Python311\\python.exe",
+    "C:\\QM\\worktrees\\codex-canonical-paths-apply-20260905\\tools\\strategy_farm\\canonical_setfile_paths.py",
+    "apply",
+    "--work-item-id",
+    "f7950e47-85b7-43dd-bc5f-a67e27e75c6a"
+  ],
+  "exit_code": 2,
+  "result": {
+    "schema": "qm.canonical-setfile-apply/v1",
+    "authority": "router_ops_issue:a3ec5b69-ae8f-475c-b939-2c9b04224761",
+    "dry_run": true,
+    "applied": false,
+    "targets": [
+      "f7950e47-85b7-43dd-bc5f-a67e27e75c6a"
+    ],
+    "rows": [
+      {
+        "id": "f7950e47-85b7-43dd-bc5f-a67e27e75c6a",
+        "eligible": false,
+        "reason": "EXISTING_SUPERSESSION"
+      }
+    ],
+    "eligible": false
+  }
+}

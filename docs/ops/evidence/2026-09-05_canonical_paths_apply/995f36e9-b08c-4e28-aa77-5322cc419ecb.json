@@ -1,0 +1,119 @@
+{
+  "command": [
+    "C:\\Python311\\python.exe",
+    "C:\\QM\\worktrees\\codex-canonical-paths-apply-20260905\\tools\\strategy_farm\\canonical_setfile_paths.py",
+    "apply",
+    "--work-item-id",
+    "995f36e9-b08c-4e28-aa77-5322cc419ecb"
+  ],
+  "exit_code": 0,
+  "result": {
+    "schema": "qm.canonical-setfile-apply/v1",
+    "authority": "router_ops_issue:a3ec5b69-ae8f-475c-b939-2c9b04224761",
+    "dry_run": true,
+    "applied": false,
+    "targets": [
+      "995f36e9-b08c-4e28-aa77-5322cc419ecb"
+    ],
+    "rows": [
+      {
+        "id": "995f36e9-b08c-4e28-aa77-5322cc419ecb",
+        "eligible": true,
+        "source": {
+          "id": "995f36e9-b08c-4e28-aa77-5322cc419ecb",
+          "kind": "backtest",
+          "phase": "Q04",
+          "ea_id": "QM5_10481",
+          "symbol": "CADJPY.DWX",
+          "setfile_path": "C:\\QM\\worktrees\\claude-orchestration-3\\framework\\EAs\\QM5_10481_mql5-exec-ao\\sets\\QM5_10481_mql5-exec-ao_CADJPY.DWX_M15_backtest.set",
+          "status": "pending",
+          "verdict": null,
+          "attempt_count": 0,
+          "parent_task_id": null,
+          "evidence_path": null,
+          "claimed_by": null,
+          "payload_json": "{\"host_symbol\": \"CADJPY.DWX\", \"enqueued_by\": \"claude_sweep_enqueue_2026-06-10.stranded_infra_fail\", \"enqueued_at_utc\": \"2026-09-05T04:52:58+00:00\", \"requeue_source\": {\"work_item_id\": \"434303d7-81bf-492b-b465-8e2eb18ac7c0\", \"status\": \"done\", \"verdict\": \"INFRA_FAIL\", \"updated_at\": \"2026-09-05T03:30:24+00:00\"}, \"custom_history_archive_admission\": {\"status\": \"ACTIVE\", \"activation_sha256\": \"61c8c72ccb0cb8038ae6ece7b89aa68f602b1637d8bc6b6c866f38492139134e\", \"manifest_path\": \"D:\\\\QM\\\\strategy_farm\\\\artifacts\\\\ops\\\\custom_history_custom_history_variant_a_20260809\\\\archive_manifest_owner_approved.json\", \"manifest_sha256\": \"fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06\", \"selected_symbols\": [\"CADJPY.DWX\"], \"selected_archive_rows\": 108}}",
+          "created_at": "2026-09-05T04:52:58+00:00",
+          "updated_at": "2026-09-05T04:52:58+00:00",
+          "verdict_taxonomy_stored": "open",
+          "clean_status_stored": "pending",
+          "gate_contract_version": "v4",
+          "ex5_sha256": null,
+          "setfile_sha256": null,
+          "mq5_sha256": null,
+          "include_closure_sha256": null,
+          "build_id": null,
+          "data_window_start": null,
+          "data_window_end": null,
+          "news_calendar_sha256": null,
+          "verdict_taxonomy": null,
+          "sh3_enforced": 1
+        },
+        "proposal": {
+          "schema": "qm.pending-canonical-path-proposal/v1",
+          "dry_run": true,
+          "apply_supported": true,
+          "source_work_item_id": "995f36e9-b08c-4e28-aa77-5322cc419ecb",
+          "source_row_sha256": "18b37acb28e9a3be5809d79d9e68bb9cad703c0591d0f5bc7ee1909bef86747f",
+          "source_payload_sha256": "73e2610cc75081d1dec0ec89dcc1781bfc6c82a8eec385192721152156f2f56f",
+          "ea_id": "QM5_10481",
+          "phase": "Q04",
+          "symbol": "CADJPY.DWX",
+          "old_setfile_path": "C:\\QM\\worktrees\\claude-orchestration-3\\framework\\EAs\\QM5_10481_mql5-exec-ao\\sets\\QM5_10481_mql5-exec-ao_CADJPY.DWX_M15_backtest.set",
+          "old_setfile_sha256": "7e1a2415223855acd012b975111ebb19512c32f29254c2fe5a1643d202f9b95f",
+          "canonical_setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10481_mql5-exec-ao\\sets\\QM5_10481_mql5-exec-ao_CADJPY.DWX_M15_backtest.set",
+          "canonical_setfile_sha256": "7e1a2415223855acd012b975111ebb19512c32f29254c2fe5a1643d202f9b95f",
+          "canonical_ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10481_mql5-exec-ao\\QM5_10481_mql5-exec-ao.ex5",
+          "canonical_ex5_sha256": "9485d89a40218bc2e58cfb5dc6dd88cb96787e48fc1f77ade2cdac5e695adb21",
+          "proposed_successor_id": "bd20b800-de1e-542e-828d-d07e9f1c42b5",
+          "blockers": [],
+          "authority_status": "CANONICAL_BYTES_SELECTED_BY_TASK",
+          "required_apply_contract": [
+            "OWNER-approved path-repair authority bound to this exact predecessor and both artifact hashes",
+            "Factory mutation lock plus fresh OFF check and one BEGIN IMMEDIATE transaction",
+            "Revalidate predecessor status, claimed_by and exact row/payload digest; no active predecessor",
+            "Validate current canonical build, fixed-risk setfile and original phase/parent lineage",
+            "Refuse any existing successor or competing pending/active canonical pair",
+            "Append one canonical successor and one work_item_supersedes record atomically; preserve predecessor bytes/verdict",
+            "Retain non-path holds; never bypass existing approval, registry or phase gates"
+          ],
+          "reviewed_byte_difference": false
+        },
+        "holds": [],
+        "gates": {
+          "failures": [],
+          "fixed_risk": {
+            "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10481_mql5-exec-ao\\sets\\QM5_10481_mql5-exec-ao_CADJPY.DWX_M15_backtest.set",
+            "risk_fixed": 1000.0,
+            "risk_percent": 0.0
+          },
+          "build_guardrails": {
+            "checked_at": "2026-09-05T21:37:16.249611Z",
+            "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10481_mql5-exec-ao",
+            "files_checked": 38,
+            "max_news_stale_hours": 336,
+            "entry_grace_margin_minutes": 5.0,
+            "session_offset_registry_path": "C:\\QM\\repo\\framework\\registry\\session_offset_minutes.csv",
+            "verdict": "PASS",
+            "findings": []
+          },
+          "parent_task_id_preserved": null,
+          "requeue_source_preserved": {
+            "work_item_id": "434303d7-81bf-492b-b465-8e2eb18ac7c0",
+            "status": "done",
+            "verdict": "INFRA_FAIL",
+            "updated_at": "2026-09-05T03:30:24+00:00"
+          },
+          "recheck_file_hashes": {
+            "C:\\QM\\repo\\framework\\EAs\\QM5_10481_mql5-exec-ao\\QM5_10481_mql5-exec-ao.mq5": "c94227505c52907c3776365ae804110038d134a6b58bc8eac29ed32403989125",
+            "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv": "b78ae9bcd4f2b45a4d4b6fcddd5c6f7370f5d3895738de0c7fbe07ceaa19b6f4",
+            "C:\\QM\\repo\\framework\\registry\\magic_numbers.csv": "2b892c67047e9be8f45dc3c28c210ebf4caede832369476214899c57aebfcdb7",
+            "C:\\QM\\repo\\framework\\registry\\session_offset_minutes.csv": "63f9f8890f90028f18961953f5c622aa44bc6f69a57cb92f5c8cdb3672316943"
+          }
+        },
+        "authority": "router_ops_issue:a3ec5b69-ae8f-475c-b939-2c9b04224761"
+      }
+    ],
+    "eligible": true
+  }
+}

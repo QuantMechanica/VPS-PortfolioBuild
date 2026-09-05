@@ -1,0 +1,64 @@
+{
+  "result": "PASS",
+  "read_only_rows_unchanged": true,
+  "before": {
+    "work_items": "1cd8847c03002413ee3d4b654eef7f424c5b8d6f8d02bb123bf1d78d4c3007f9",
+    "work_item_holds": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "work_item_supersedes": "66eca20c086cac0c18a8f5abb3ba1a629d5e8def4424a13d95602e363865aac8"
+  },
+  "after": {
+    "work_items": "1cd8847c03002413ee3d4b654eef7f424c5b8d6f8d02bb123bf1d78d4c3007f9",
+    "work_item_holds": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "work_item_supersedes": "66eca20c086cac0c18a8f5abb3ba1a629d5e8def4424a13d95602e363865aac8"
+  },
+  "individual_dry_runs": [
+    {
+      "id": "0ff05819-1aab-42ff-a517-58724492c77b",
+      "eligible": true,
+      "reason": null
+    },
+    {
+      "id": "1821432a-2f41-4417-b680-e3947b1c4ef7",
+      "eligible": true,
+      "reason": null
+    },
+    {
+      "id": "7c137654-dcb4-44dd-9cbd-d233b75684b9",
+      "eligible": true,
+      "reason": null
+    },
+    {
+      "id": "85590a54-63e5-443a-8f17-2bee061483b1",
+      "eligible": true,
+      "reason": null
+    },
+    {
+      "id": "995f36e9-b08c-4e28-aa77-5322cc419ecb",
+      "eligible": true,
+      "reason": null
+    },
+    {
+      "id": "adda1ec6-cc3e-4f60-b51f-2b566033adcb",
+      "eligible": true,
+      "reason": null
+    },
+    {
+      "id": "b1384ee3-e582-46ce-8432-193b4865a854",
+      "eligible": true,
+      "reason": null
+    },
+    {
+      "id": "b7189709-abe5-4bff-ab28-d4f6a4fdd1e6",
+      "eligible": true,
+      "reason": null
+    },
+    {
+      "id": "f7950e47-85b7-43dd-bc5f-a67e27e75c6a",
+      "eligible": false,
+      "reason": "EXISTING_SUPERSESSION"
+    }
+  ],
+  "total": 9,
+  "eligible": 8,
+  "canonical_apply_executed": false
+}
