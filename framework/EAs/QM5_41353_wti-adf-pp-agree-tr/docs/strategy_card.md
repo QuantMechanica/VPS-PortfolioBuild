@@ -76,9 +76,9 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: G0
-q01_status: PENDING
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q01
+q01_status: COMPILE_OK
+q02_status: NOT_ENQUEUED_CPU_CEILING
 force_build: true
 review_focus: "Falsify direct-WTI monthly ADF/PP agreement outside the XAU/SP500/NDX/XNG book. Verify distinct regressions, HAC correction, inclusive boundaries, disagreement abstention, twelve-month side, consumed month, fixed risk, frozen stop, and next-month lifecycle. Q09 alone may establish decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -246,8 +246,8 @@ disagreement, direction, mirror, registry, and setfile.
 |---|---|---|---|
 | G0 Source Approval | 2026-09-05 | APPROVED_SOURCE | `decisions/2026-09-05_wti_monthly_adf_phillips_perron_agreement_trend_source_approval.md` |
 | G0 Research Intake | 2026-09-05 | APPROVED | `decisions/2026-09-05_qm5_41353_wti_monthly_adf_phillips_perron_agreement_trend_g0.md` |
-| Q01 Build & Spec | TBD | PENDING | TBD |
-| Q02 Baseline | TBD | NOT_ENQUEUED | TBD |
+| Q01 Build & Spec | 2026-09-05 | COMPILE_OK; BUILD_CHECK_PASS | `D:\\QM\\reports\\work_items\\6b38739d-6a70-4014-bf15-af5c0e586984\\QM5_41353\\COMPILE_EA\\compile_evidence.json` |
+| Q02 Baseline | 2026-09-05 | NOT_ENQUEUED_CPU_CEILING | five CPU samples 97.9505%-99.4142%, average 98.77059%, threshold 97% |
 
 ## 16. Lessons Captured
 
