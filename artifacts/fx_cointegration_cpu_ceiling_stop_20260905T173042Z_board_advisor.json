@@ -1,0 +1,111 @@
+{
+  "artifact_type": "fx_cointegration_cpu_ceiling_stop",
+  "schema_version": "qm.fx-cointegration-cpu-ceiling-stop/v1",
+  "generated_at_utc": "2026-09-05T17:30:42.761Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "c65450df1f52c75e485037d26e654c127ebf60d4",
+  "mission": "grow_certified_v5_portfolio_new_forex_sleeves",
+  "outcome": "HARD_CPU_CEILING_STOP_NO_QUEUE_MUTATION",
+  "frontier": {
+    "research_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "unordered_relationship_count": 66,
+    "strict_positive_hedge_survivors": [
+      "QM5_12533",
+      "QM5_12532"
+    ],
+    "unbuilt_strict_positive_hedge_survivor_found": false,
+    "new_card_or_build_created": false,
+    "reason": "The frozen scan published only two strict survivors and both are already built; minting another identity from it would duplicate governed work."
+  },
+  "preferred_anchor_state": [
+    {
+      "ea_id": "QM5_12532",
+      "relationship": [
+        "AUDUSD.DWX",
+        "NZDUSD.DWX"
+      ],
+      "logical_q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "logical_q02_verdict": "PASS",
+      "downstream_terminal": "Q05 FAIL",
+      "current_q02_oninit_or_no_history_blocker": false
+    },
+    {
+      "ea_id": "QM5_12533",
+      "relationship": [
+        "EURJPY.DWX",
+        "GBPJPY.DWX"
+      ],
+      "logical_q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "logical_q02_verdict": "PASS",
+      "downstream_terminal": "Q04 FAIL",
+      "current_q02_oninit_or_no_history_blocker": false
+    }
+  ],
+  "selected_existing_forex_continuation": {
+    "ea_id": "QM5_12507",
+    "relationship": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX"
+    ],
+    "logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+    "timeframe": "H1",
+    "work_item_id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+    "phase": "Q02",
+    "status": "pending",
+    "verdict": null,
+    "claimed_by": null,
+    "attempt_count": 0,
+    "active_holds": [],
+    "matching_pending_or_active_rows": 1,
+    "priority_track": true,
+    "q01_work_item_id": "7d1a179d-4d25-5d37-a69a-3a52fd78ae63",
+    "q01_verdict": "PASS",
+    "q01_observed_leg_trades": 632,
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "basket_manifest": "framework/EAs/QM5_12507_pair-coint-z/basket_manifest.json",
+    "logical_backtest_setfile": "framework/EAs/QM5_12507_pair-coint-z/sets/QM5_12507_pair-coint-z_QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1_H1_backtest.set",
+    "dispatch_decision": "Do not dispatch, claim, or append while the measured host CPU exceeds the explicit hard ceiling; preserve the unique row for the ordinary paced fleet."
+  },
+  "capacity": {
+    "sampling_method": "Get-Counter Processor(_Total) % Processor Time, five one-second samples",
+    "samples_percent": [
+      90.341,
+      89.365,
+      91.602,
+      94.346,
+      99.322
+    ],
+    "average_percent": 92.995,
+    "maximum_percent": 99.322,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_binding": true,
+    "free_physical_memory_gib": 21.369,
+    "total_physical_memory_gib": 63.120,
+    "active_work_item_count_at_queue_snapshot": 9,
+    "active_work_item_count_at_exact_row_audit": 7
+  },
+  "actions": {
+    "new_card_or_ea_created": false,
+    "work_item_created": false,
+    "duplicate_work_item_created": false,
+    "queue_payload_changed": false,
+    "priority_changed": false,
+    "work_item_claimed": false,
+    "backtest_or_terminal_started": false,
+    "stop_receipt_recorded": true
+  },
+  "protected_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_files": false,
+    "autotrading": false
+  },
+  "resume_contract": "Re-read work item 547c4fd3-f3fd-4c59-b9dc-654e96521251 and sample whole-host CPU on the next paced wake. If it remains uniquely pending, unheld, and unclaimed and all admission ceilings clear, leave it to the governed terminal-worker claim order; never append a duplicate Q02 row."
+}
