@@ -45,8 +45,14 @@ except ModuleNotFoundError:
     from tools.strategy_farm import opt_census_select as selector
     from tools.strategy_farm import optimization_fork_driver as fork_driver
     from tools.strategy_farm import terminal_worker
-    from tools.strategy_farm.factory_mutation_lock import FactoryMutationLock
-    from tools.strategy_farm.phase_ids import ACTIVE_GATE_MANIFEST
+    try:
+        from tools.strategy_farm.factory_mutation_lock import FactoryMutationLock
+    except ModuleNotFoundError:
+        from factory_mutation_lock import FactoryMutationLock  # script-style import (sys.path = tools/strategy_farm)
+    try:
+        from tools.strategy_farm.phase_ids import ACTIVE_GATE_MANIFEST
+    except ModuleNotFoundError:
+        from phase_ids import ACTIVE_GATE_MANIFEST  # script-style import (sys.path = tools/strategy_farm)
 
 
 SCHEMA = "qm.dl089-legacy-census-recovery/v1"

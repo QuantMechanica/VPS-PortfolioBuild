@@ -63,7 +63,10 @@ except ModuleNotFoundError:
 try:
     from process_identity import get_process_identity
 except ModuleNotFoundError:
-    from tools.strategy_farm.process_identity import get_process_identity
+    try:
+        from tools.strategy_farm.process_identity import get_process_identity
+    except ModuleNotFoundError:
+        from process_identity import get_process_identity  # script-style import (sys.path = tools/strategy_farm)
 
 try:
     import quota_spawn_gate

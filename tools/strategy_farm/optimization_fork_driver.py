@@ -37,10 +37,22 @@ try:
     from sqlite_timestamp import normalized_timestamp_sql
     from throughput_telemetry import EXECUTION_VERDICT_EXCLUSION_SQL
 except ModuleNotFoundError:
-    from tools.strategy_farm.gate_manifest import GateManifest
-    from tools.strategy_farm.phase_ids import ACTIVE_GATE_MANIFEST
-    from tools.strategy_farm.sqlite_timestamp import normalized_timestamp_sql
-    from tools.strategy_farm.throughput_telemetry import EXECUTION_VERDICT_EXCLUSION_SQL
+    try:
+        from tools.strategy_farm.gate_manifest import GateManifest
+    except ModuleNotFoundError:
+        from gate_manifest import GateManifest  # script-style import (sys.path = tools/strategy_farm)
+    try:
+        from tools.strategy_farm.phase_ids import ACTIVE_GATE_MANIFEST
+    except ModuleNotFoundError:
+        from phase_ids import ACTIVE_GATE_MANIFEST  # script-style import (sys.path = tools/strategy_farm)
+    try:
+        from tools.strategy_farm.sqlite_timestamp import normalized_timestamp_sql
+    except ModuleNotFoundError:
+        from sqlite_timestamp import normalized_timestamp_sql  # script-style import (sys.path = tools/strategy_farm)
+    try:
+        from tools.strategy_farm.throughput_telemetry import EXECUTION_VERDICT_EXCLUSION_SQL
+    except ModuleNotFoundError:
+        from throughput_telemetry import EXECUTION_VERDICT_EXCLUSION_SQL  # script-style import (sys.path = tools/strategy_farm)
 
 UPDATED_AT_SQL = normalized_timestamp_sql("updated_at")
 

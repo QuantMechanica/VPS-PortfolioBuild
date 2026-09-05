@@ -154,7 +154,10 @@ def arm_frontier(
     """
 
     if conn is not None:
-        from tools.strategy_farm.dl089_prescreen_retro import project_row
+        try:
+            from tools.strategy_farm.dl089_prescreen_retro import project_row
+        except ModuleNotFoundError:
+            from dl089_prescreen_retro import project_row  # script-style import (sys.path = tools/strategy_farm)
         rows = [project_row(conn, row) for row in rows]
     program = str(sealed_ledger.get("program_id") or "").strip()
     cells = sealed_ledger.get("cells")

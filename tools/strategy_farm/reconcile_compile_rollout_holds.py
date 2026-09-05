@@ -23,7 +23,10 @@ from typing import Any
 try:
     from work_item_supersedes import ensure_schema
 except ModuleNotFoundError:
-    from tools.strategy_farm.work_item_supersedes import ensure_schema
+    try:
+        from tools.strategy_farm.work_item_supersedes import ensure_schema
+    except ModuleNotFoundError:
+        from work_item_supersedes import ensure_schema  # script-style import (sys.path = tools/strategy_farm)
 
 
 DEFAULT_DB = Path(r"D:\QM\strategy_farm\state\farm_state.sqlite")

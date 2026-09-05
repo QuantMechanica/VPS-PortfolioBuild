@@ -20,7 +20,10 @@ from typing import Any, Mapping, Sequence
 try:
     from phase_ids import ACTIVE_GATE_MANIFEST
 except ModuleNotFoundError:
-    from tools.strategy_farm.phase_ids import ACTIVE_GATE_MANIFEST
+    try:
+        from tools.strategy_farm.phase_ids import ACTIVE_GATE_MANIFEST
+    except ModuleNotFoundError:
+        from phase_ids import ACTIVE_GATE_MANIFEST  # script-style import (sys.path = tools/strategy_farm)
 
 try:
     from q09_news_contract import (
@@ -38,7 +41,10 @@ except ModuleNotFoundError:
         canonical_json_bytes,
         sha256_file,
     )
-    from tools.strategy_farm.q09_news_calendar import CalendarBundleError, verify_bundle
+    try:
+        from tools.strategy_farm.q09_news_calendar import CalendarBundleError, verify_bundle
+    except ModuleNotFoundError:
+        from q09_news_calendar import CalendarBundleError, verify_bundle  # script-style import (sys.path = tools/strategy_farm)
     from tools.strategy_farm.q09_news_schema import (
         Q10DependencyGate,
         SchemaError,

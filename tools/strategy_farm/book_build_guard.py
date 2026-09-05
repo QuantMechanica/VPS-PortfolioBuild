@@ -21,7 +21,10 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from tools.strategy_farm import gate_manifest, rebaseline_census
-from tools.strategy_farm.portfolio import concentration_tail
+try:
+    from tools.strategy_farm.portfolio import concentration_tail
+except ModuleNotFoundError:
+    from portfolio import concentration_tail  # script-style import (sys.path = tools/strategy_farm)
 from tools.strategy_farm.portfolio.portfolio_common import _coerce_ea_int
 
 

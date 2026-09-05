@@ -25,7 +25,10 @@ from typing import Any, Iterator, Mapping, Sequence
 try:
     from phase_ids import ACTIVE_GATE_MANIFEST
 except ModuleNotFoundError:
-    from tools.strategy_farm.phase_ids import ACTIVE_GATE_MANIFEST
+    try:
+        from tools.strategy_farm.phase_ids import ACTIVE_GATE_MANIFEST
+    except ModuleNotFoundError:
+        from phase_ids import ACTIVE_GATE_MANIFEST  # script-style import (sys.path = tools/strategy_farm)
 
 try:
     from q09_news_contract import (

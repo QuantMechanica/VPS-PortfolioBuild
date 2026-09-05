@@ -46,7 +46,10 @@ except ModuleNotFoundError:
         _inventory,
         _qm5_41245_setfile_unbind_predecessor_authorized,
     )
-    from tools.strategy_farm.factory_mutation_lock import FactoryMutationLock
+    try:
+        from tools.strategy_farm.factory_mutation_lock import FactoryMutationLock
+    except ModuleNotFoundError:
+        from factory_mutation_lock import FactoryMutationLock  # script-style import (sys.path = tools/strategy_farm)
 
 
 DEFAULT_ROOT = Path(r"D:\QM\strategy_farm")

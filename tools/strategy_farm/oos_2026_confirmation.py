@@ -14,7 +14,10 @@ from pathlib import Path
 from typing import Any
 
 from tools.strategy_farm import farmctl, q09_news_contract as contract, q09_news_runner as q09
-from tools.strategy_farm.factory_mutation_lock import FactoryMutationLock
+try:
+    from tools.strategy_farm.factory_mutation_lock import FactoryMutationLock
+except ModuleNotFoundError:
+    from factory_mutation_lock import FactoryMutationLock  # script-style import (sys.path = tools/strategy_farm)
 
 FARM_ROOT = Path(r"D:\QM\strategy_farm")
 REPO_ROOT = Path(r"C:\QM\repo")

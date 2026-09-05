@@ -41,7 +41,10 @@ except ModuleNotFoundError:
 try:
     from sqlite_timestamp import normalized_timestamp_sql
 except ModuleNotFoundError:
-    from tools.strategy_farm.sqlite_timestamp import normalized_timestamp_sql
+    try:
+        from tools.strategy_farm.sqlite_timestamp import normalized_timestamp_sql
+    except ModuleNotFoundError:
+        from sqlite_timestamp import normalized_timestamp_sql  # script-style import (sys.path = tools/strategy_farm)
 
 UPDATED_AT_SQL = normalized_timestamp_sql("updated_at")
 try:
@@ -75,7 +78,10 @@ except ModuleNotFoundError:
 try:
     from gate_manifest import load_gate_manifest
 except ModuleNotFoundError:
-    from tools.strategy_farm.gate_manifest import load_gate_manifest
+    try:
+        from tools.strategy_farm.gate_manifest import load_gate_manifest
+    except ModuleNotFoundError:
+        from gate_manifest import load_gate_manifest  # script-style import (sys.path = tools/strategy_farm)
 try:
     from phase_ids import ACTIVE_GATE_MANIFEST, ORDINARY_RUNTIME_PHASES, advancement_table, phase_rank
 except ModuleNotFoundError:
@@ -1161,7 +1167,10 @@ def chk_custom_history_repairs() -> dict:
     try:
         from custom_history_master import count_recent_repairs
     except ImportError:  # pragma: no cover
-        from tools.strategy_farm.custom_history_master import count_recent_repairs
+        try:
+            from tools.strategy_farm.custom_history_master import count_recent_repairs
+        except ModuleNotFoundError:
+            from custom_history_master import count_recent_repairs  # script-style import (sys.path = tools/strategy_farm)
     try:
         count = count_recent_repairs(ROOT, hours=24.0)
     except Exception as exc:

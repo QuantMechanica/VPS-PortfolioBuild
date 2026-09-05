@@ -34,7 +34,10 @@ import uuid
 try:
     from custom_history_contract import sha256_file
 except ImportError:  # pragma: no cover - package import path
-    from tools.strategy_farm.custom_history_contract import sha256_file
+    try:
+        from tools.strategy_farm.custom_history_contract import sha256_file
+    except ModuleNotFoundError:
+        from custom_history_contract import sha256_file  # script-style import (sys.path = tools/strategy_farm)
 
 
 MASTER_STATE_SCHEMA = "qm.custom-history-master-root/v1"

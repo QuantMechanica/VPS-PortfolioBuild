@@ -2506,7 +2506,10 @@ def _task_artifact_path(root: Path, row: sqlite3.Row, artifact_path: str | None)
 try:
     from validate_build_guardrails import validate_path as _validate_build_guardrails
 except ImportError:  # imported as a package (tools.strategy_farm.agent_router)
-    from tools.strategy_farm.validate_build_guardrails import validate_path as _validate_build_guardrails
+    try:
+        from tools.strategy_farm.validate_build_guardrails import validate_path as _validate_build_guardrails
+    except ModuleNotFoundError:
+        from validate_build_guardrails import validate_path as _validate_build_guardrails  # script-style import (sys.path = tools/strategy_farm)
 
 
 def _close_review_task_once(

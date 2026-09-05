@@ -41,7 +41,10 @@ except ModuleNotFoundError:  # pragma: no cover - package import path
         custom_history_gate,
         farmctl,
     )
-    from tools.strategy_farm.include_mirror import running_terminal_names
+    try:
+        from tools.strategy_farm.include_mirror import running_terminal_names
+    except ModuleNotFoundError:
+        from include_mirror import running_terminal_names  # script-style import (sys.path = tools/strategy_farm)
 
 
 CONTRACT_VERSION = "qm.qm5-35005-pattern-include-equivalence/v1"

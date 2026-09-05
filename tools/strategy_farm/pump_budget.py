@@ -43,7 +43,10 @@ class PumpCycleBudget:
         try:
             from factory_mutation_lock import reset_pump_lock_accounting
         except ModuleNotFoundError:
-            from tools.strategy_farm.factory_mutation_lock import reset_pump_lock_accounting
+            try:
+                from tools.strategy_farm.factory_mutation_lock import reset_pump_lock_accounting
+            except ModuleNotFoundError:
+                from factory_mutation_lock import reset_pump_lock_accounting  # script-style import (sys.path = tools/strategy_farm)
         reset_pump_lock_accounting()
 
     @property
@@ -83,7 +86,10 @@ class PumpCycleBudget:
         try:
             from factory_mutation_lock import pump_stage
         except ModuleNotFoundError:
-            from tools.strategy_farm.factory_mutation_lock import pump_stage
+            try:
+                from tools.strategy_farm.factory_mutation_lock import pump_stage
+            except ModuleNotFoundError:
+                from factory_mutation_lock import pump_stage  # script-style import (sys.path = tools/strategy_farm)
         with pump_stage(name):
             value = operation()
         elapsed = max(0.0, self._clock() - started)
@@ -114,7 +120,10 @@ class PumpCycleBudget:
         try:
             from factory_mutation_lock import pump_lock_accounting_snapshot
         except ModuleNotFoundError:
-            from tools.strategy_farm.factory_mutation_lock import pump_lock_accounting_snapshot
+            try:
+                from tools.strategy_farm.factory_mutation_lock import pump_lock_accounting_snapshot
+            except ModuleNotFoundError:
+                from factory_mutation_lock import pump_lock_accounting_snapshot  # script-style import (sys.path = tools/strategy_farm)
         lock_rows = pump_lock_accounting_snapshot()
         return {
             "total_budget_seconds": self.total_seconds,

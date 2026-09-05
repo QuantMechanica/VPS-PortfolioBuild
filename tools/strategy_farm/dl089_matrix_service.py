@@ -884,7 +884,10 @@ def _program_binding_guard(
                 f"cell_declaration={sorted(declaration_bindings | extra_declaration_bindings)}"
             )
         if row_ids != expected_ids or row_keys != expected_keys:
-            from tools.strategy_farm.dl089_prescreen import staged_keys
+            try:
+                from tools.strategy_farm.dl089_prescreen import staged_keys
+            except ModuleNotFoundError:
+                from dl089_prescreen import staged_keys  # script-style import (sys.path = tools/strategy_farm)
             staged_path = artifact_root / program_id / "ledger.json"
             staged = json.loads(staged_path.read_text()) if staged_path.exists() else {}
             admitted = staged_keys(staged)
@@ -1049,7 +1052,10 @@ def _finalize_from_terminal_ledger(
                 }
             )
             continue
-        from tools.strategy_farm.dl089_prescreen_retro import project_row
+        try:
+            from tools.strategy_farm.dl089_prescreen_retro import project_row
+        except ModuleNotFoundError:
+            from dl089_prescreen_retro import project_row  # script-style import (sys.path = tools/strategy_farm)
         row = project_row(conn, row)
         path = Path(str(row["evidence_path"] or ""))
         evidence_rows.append(

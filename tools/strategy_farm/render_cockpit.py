@@ -40,7 +40,10 @@ from pathlib import Path
 
 try:  # package import in tests and module consumers
     from tools.strategy_farm.pipeline_books_dashboard_status import program_status_snapshot
-    from tools.strategy_farm.sqlite_timestamp import normalized_timestamp_sql
+    try:
+        from tools.strategy_farm.sqlite_timestamp import normalized_timestamp_sql
+    except ModuleNotFoundError:
+        from sqlite_timestamp import normalized_timestamp_sql  # script-style import (sys.path = tools/strategy_farm)
 except ModuleNotFoundError:  # direct ``python tools/strategy_farm/render_cockpit.py``
     from pipeline_books_dashboard_status import program_status_snapshot
     from sqlite_timestamp import normalized_timestamp_sql

@@ -14,8 +14,14 @@ try:  # direct ``python tools/strategy_farm/<script>.py`` imports
     from sqlite_timestamp import normalized_timestamp_sql
     from throughput_telemetry import EXECUTION_VERDICT_EXCLUSION_SQL
 except ModuleNotFoundError:  # package imports (tests, module consumers)
-    from tools.strategy_farm.sqlite_timestamp import normalized_timestamp_sql
-    from tools.strategy_farm.throughput_telemetry import EXECUTION_VERDICT_EXCLUSION_SQL
+    try:
+        from tools.strategy_farm.sqlite_timestamp import normalized_timestamp_sql
+    except ModuleNotFoundError:
+        from sqlite_timestamp import normalized_timestamp_sql  # script-style import (sys.path = tools/strategy_farm)
+    try:
+        from tools.strategy_farm.throughput_telemetry import EXECUTION_VERDICT_EXCLUSION_SQL
+    except ModuleNotFoundError:
+        from throughput_telemetry import EXECUTION_VERDICT_EXCLUSION_SQL  # script-style import (sys.path = tools/strategy_farm)
 
 UPDATED_AT_SQL = normalized_timestamp_sql("updated_at")
 

@@ -52,7 +52,10 @@ try:
         from tools.strategy_farm import opt_census_pruning as pruning
     except ModuleNotFoundError:
         import opt_census_pruning as pruning  # script-style import (cwd/sys.path = tools/strategy_farm)
-    from tools.strategy_farm.opt_census import CensusError
+    try:
+        from tools.strategy_farm.opt_census import CensusError
+    except ModuleNotFoundError:
+        from opt_census import CensusError  # script-style import (sys.path = tools/strategy_farm)
 except ModuleNotFoundError:
     import opt_census as census
     import opt_census_pruning as pruning
@@ -438,7 +441,10 @@ def _default_metric_reader(conn: sqlite3.Connection) -> Callable[[str], tuple[st
             return ("MISSING", None)
         status, verdict, evidence, payload_json = row
         if status == 'pending':
-            from tools.strategy_farm.dl089_prescreen_retro import disposition
+            try:
+                from tools.strategy_farm.dl089_prescreen_retro import disposition
+            except ModuleNotFoundError:
+                from dl089_prescreen_retro import disposition  # script-style import (sys.path = tools/strategy_farm)
             held = disposition(conn, {'id':work_item_id,'status':status,'verdict':verdict,'payload_json':payload_json})
             if held:
                 return ('SKIPPED_EXCLUDED', {'receipt':held, 'unmeasured':True})

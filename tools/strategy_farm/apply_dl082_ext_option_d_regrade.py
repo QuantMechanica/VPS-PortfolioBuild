@@ -29,11 +29,17 @@ if str(REPO_ROOT) not in sys.path:
 try:
     from factory_mutation_lock import FactoryMutationLock
 except ModuleNotFoundError:  # pragma: no cover - package import in tests
-    from tools.strategy_farm.factory_mutation_lock import FactoryMutationLock
+    try:
+        from tools.strategy_farm.factory_mutation_lock import FactoryMutationLock
+    except ModuleNotFoundError:
+        from factory_mutation_lock import FactoryMutationLock  # script-style import (sys.path = tools/strategy_farm)
 
 from framework.scripts.q08_davey import aggregate as q08_aggregate
 from tools.strategy_farm import farmctl
-from tools.strategy_farm.phase_ids import ACTIVE_GATE_CONTRACT_VERSION, next_phase
+try:
+    from tools.strategy_farm.phase_ids import ACTIVE_GATE_CONTRACT_VERSION, next_phase
+except ModuleNotFoundError:
+    from phase_ids import ACTIVE_GATE_CONTRACT_VERSION, next_phase  # script-style import (sys.path = tools/strategy_farm)
 
 
 DEFAULT_DB = Path(r"D:\QM\strategy_farm\state\farm_state.sqlite")

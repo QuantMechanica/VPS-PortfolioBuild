@@ -26,7 +26,10 @@ try:
     from factory_mutation_lock import FactoryMutationLock
     import farmctl
 except ModuleNotFoundError:  # pragma: no cover - package import in tests
-    from tools.strategy_farm.factory_mutation_lock import FactoryMutationLock
+    try:
+        from tools.strategy_farm.factory_mutation_lock import FactoryMutationLock
+    except ModuleNotFoundError:
+        from factory_mutation_lock import FactoryMutationLock  # script-style import (sys.path = tools/strategy_farm)
     from tools.strategy_farm import farmctl
 
 

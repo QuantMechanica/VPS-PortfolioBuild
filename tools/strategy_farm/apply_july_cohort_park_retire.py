@@ -62,7 +62,10 @@ from typing import Any
 try:
     from factory_mutation_lock import FactoryMutationLock
 except ModuleNotFoundError:  # pragma: no cover - direct script execution
-    from tools.strategy_farm.factory_mutation_lock import FactoryMutationLock
+    try:
+        from tools.strategy_farm.factory_mutation_lock import FactoryMutationLock
+    except ModuleNotFoundError:
+        from factory_mutation_lock import FactoryMutationLock  # script-style import (sys.path = tools/strategy_farm)
 
 try:
     from work_item_supersedes import ensure_schema as ensure_work_item_supersedes_schema

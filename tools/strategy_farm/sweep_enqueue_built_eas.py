@@ -38,7 +38,10 @@ from pathlib import Path
 try:
     from factory_mutation_lock import FactoryMutationLock
 except ModuleNotFoundError:
-    from tools.strategy_farm.factory_mutation_lock import FactoryMutationLock
+    try:
+        from tools.strategy_farm.factory_mutation_lock import FactoryMutationLock
+    except ModuleNotFoundError:
+        from factory_mutation_lock import FactoryMutationLock  # script-style import (sys.path = tools/strategy_farm)
 try:
     from phase_ids import PHASE_ORDER, advancement_table, phase_qid, phase_rank
 except ModuleNotFoundError:

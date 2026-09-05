@@ -14,7 +14,10 @@ import time
 
 try:
     from tools.strategy_farm import dl089_prescreen as prescreen
-    from tools.strategy_farm.research import pattern_fire_count as counter
+    try:
+        from tools.strategy_farm.research import pattern_fire_count as counter
+    except ModuleNotFoundError:
+        from research import pattern_fire_count as counter  # script-style import (sys.path = tools/strategy_farm)
 except ModuleNotFoundError:
     import dl089_prescreen as prescreen
     from research import pattern_fire_count as counter

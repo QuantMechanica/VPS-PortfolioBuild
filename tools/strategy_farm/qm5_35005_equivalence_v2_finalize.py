@@ -28,7 +28,10 @@ if str(REPO_IMPORT_ROOT) not in sys.path:
 
 from tools.strategy_farm import qm5_35005_equivalence as exact
 from tools.strategy_farm import qm5_35005_equivalence_v2 as v2
-from tools.strategy_farm.include_mirror import running_terminal_names
+try:
+    from tools.strategy_farm.include_mirror import running_terminal_names
+except ModuleNotFoundError:
+    from include_mirror import running_terminal_names  # script-style import (sys.path = tools/strategy_farm)
 
 
 FINALIZER_SCHEMA = "qm.qm5-35005-pattern-include-equivalence-finalizer/v1"

@@ -55,7 +55,10 @@ try:
         retry_sqlite_busy,
     )
 except ModuleNotFoundError:
-    from tools.strategy_farm.pump_budget import PumpCycleBudget
+    try:
+        from tools.strategy_farm.pump_budget import PumpCycleBudget
+    except ModuleNotFoundError:
+        from pump_budget import PumpCycleBudget  # script-style import (sys.path = tools/strategy_farm)
     from tools.strategy_farm.sqlite_busy import (
         BUSY_TIMEOUT_MS,
         configure_connection as configure_sqlite_connection,
@@ -66,7 +69,10 @@ except ModuleNotFoundError:
 try:
     from cache_audit import has_ea_history_window, has_history_window
 except ModuleNotFoundError:
-    from tools.strategy_farm.cache_audit import has_ea_history_window, has_history_window
+    try:
+        from tools.strategy_farm.cache_audit import has_ea_history_window, has_history_window
+    except ModuleNotFoundError:
+        from cache_audit import has_ea_history_window, has_history_window  # script-style import (sys.path = tools/strategy_farm)
 
 try:
     from phase_ids import (
@@ -104,7 +110,10 @@ except ModuleNotFoundError:
 try:
     from q08_recovery_lineage import validate_q08_recovery_lineage
 except ModuleNotFoundError:
-    from tools.strategy_farm.q08_recovery_lineage import validate_q08_recovery_lineage
+    try:
+        from tools.strategy_farm.q08_recovery_lineage import validate_q08_recovery_lineage
+    except ModuleNotFoundError:
+        from q08_recovery_lineage import validate_q08_recovery_lineage  # script-style import (sys.path = tools/strategy_farm)
 
 try:
     from managed_codex import (
@@ -126,7 +135,10 @@ except ModuleNotFoundError:
 try:
     from process_identity import get_process_identity
 except ModuleNotFoundError:
-    from tools.strategy_farm.process_identity import get_process_identity
+    try:
+        from tools.strategy_farm.process_identity import get_process_identity
+    except ModuleNotFoundError:
+        from process_identity import get_process_identity  # script-style import (sys.path = tools/strategy_farm)
 
 try:
     from raw_mq5_quarantine import check_source_path as check_raw_mq5_source_path
@@ -138,7 +150,10 @@ except ModuleNotFoundError:
 try:
     from card_heading_language import check_card_heading_language
 except ModuleNotFoundError:
-    from tools.strategy_farm.card_heading_language import check_card_heading_language
+    try:
+        from tools.strategy_farm.card_heading_language import check_card_heading_language
+    except ModuleNotFoundError:
+        from card_heading_language import check_card_heading_language  # script-style import (sys.path = tools/strategy_farm)
 
 try:
     from defect_block_taint_view import taint_record as defect_block_taint_record
@@ -6819,7 +6834,10 @@ def classify_summary_missing_run(
     try:
         from monitor_budget import classify as classify_monitor_budget
     except ModuleNotFoundError:
-        from tools.strategy_farm.monitor_budget import classify as classify_monitor_budget
+        try:
+            from tools.strategy_farm.monitor_budget import classify as classify_monitor_budget
+        except ModuleNotFoundError:
+            from monitor_budget import classify as classify_monitor_budget  # script-style import (sys.path = tools/strategy_farm)
     monitor_classification = classify_monitor_budget(payload)
     if monitor_classification is not None:
         return monitor_classification

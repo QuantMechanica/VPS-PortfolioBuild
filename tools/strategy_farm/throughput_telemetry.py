@@ -40,8 +40,14 @@ try:  # direct ``python tools/strategy_farm/<script>.py`` imports
     from sqlite_timestamp import normalized_timestamp_sql
 except ModuleNotFoundError:  # package imports (tests, module consumers)
     from tools.strategy_farm import q10_long_cell_breaker
-    from tools.strategy_farm.phase_ids import phase_qid
-    from tools.strategy_farm.sqlite_timestamp import normalized_timestamp_sql
+    try:
+        from tools.strategy_farm.phase_ids import phase_qid
+    except ModuleNotFoundError:
+        from phase_ids import phase_qid  # script-style import (sys.path = tools/strategy_farm)
+    try:
+        from tools.strategy_farm.sqlite_timestamp import normalized_timestamp_sql
+    except ModuleNotFoundError:
+        from sqlite_timestamp import normalized_timestamp_sql  # script-style import (sys.path = tools/strategy_farm)
 
 
 UPDATED_AT_SQL = normalized_timestamp_sql("updated_at")

@@ -35,7 +35,10 @@ from factory_mutation_lock import FactoryMutationLock, path_for_factory_flag
 try:
     from process_identity import get_process_identity
 except ModuleNotFoundError:
-    from tools.strategy_farm.process_identity import get_process_identity
+    try:
+        from tools.strategy_farm.process_identity import get_process_identity
+    except ModuleNotFoundError:
+        from process_identity import get_process_identity  # script-style import (sys.path = tools/strategy_farm)
 
 try:
     from windows_job_object import (

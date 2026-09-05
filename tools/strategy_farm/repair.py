@@ -80,7 +80,10 @@ import farmctl
 try:
     from phase_ids import ACTIVE_GATE_MANIFEST, advancement_table
 except ModuleNotFoundError:
-    from tools.strategy_farm.phase_ids import ACTIVE_GATE_MANIFEST, advancement_table
+    try:
+        from tools.strategy_farm.phase_ids import ACTIVE_GATE_MANIFEST, advancement_table
+    except ModuleNotFoundError:
+        from phase_ids import ACTIVE_GATE_MANIFEST, advancement_table  # script-style import (sys.path = tools/strategy_farm)
 
 # Basket q08 streams are keyed by the resolved HOST symbol, not the logical
 # basket work-item name. Resolve through the shared portfolio choke point so

@@ -44,7 +44,10 @@ except ImportError:  # pragma: no cover - package import path
         _read_open_descriptor,
         _write_all,
     )
-    from tools.strategy_farm.process_identity import get_process_identity
+    try:
+        from tools.strategy_farm.process_identity import get_process_identity
+    except ModuleNotFoundError:
+        from process_identity import get_process_identity  # script-style import (sys.path = tools/strategy_farm)
 
 
 MODE_SCHEMA = "qm.custom-history-containment-mode/v1"

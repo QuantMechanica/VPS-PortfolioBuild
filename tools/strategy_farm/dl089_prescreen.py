@@ -147,7 +147,10 @@ def plan_admission(plan: dict, conn: sqlite3.Connection, contract: dict, *, coun
         try:
             from research import pattern_fire_count as counter
         except ModuleNotFoundError:
-            from tools.strategy_farm.research import pattern_fire_count as counter
+            try:
+                from tools.strategy_farm.research import pattern_fire_count as counter
+            except ModuleNotFoundError:
+                from research import pattern_fire_count as counter  # script-style import (sys.path = tools/strategy_farm)
         def counts_reader(year, baseline):
             result = counter.count_program(plan["program_id"], plan["symbol"],
                 {year:Path(baseline["report_path"])}, Path(manifest["bars_path"]))

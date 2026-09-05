@@ -46,7 +46,10 @@ from typing import Any, Iterable, Mapping, Sequence
 
 try:
     from tools.strategy_farm import dl089_matrix_service as matrix_service
-    from tools.strategy_farm.sqlite_busy import retry_sqlite_busy
+    try:
+        from tools.strategy_farm.sqlite_busy import retry_sqlite_busy
+    except ModuleNotFoundError:
+        from sqlite_busy import retry_sqlite_busy  # script-style import (sys.path = tools/strategy_farm)
 except ModuleNotFoundError:  # pragma: no cover - direct script execution
     import dl089_matrix_service as matrix_service  # type: ignore
     from sqlite_busy import retry_sqlite_busy  # type: ignore

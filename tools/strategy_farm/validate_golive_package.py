@@ -16,7 +16,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from tools.strategy_farm.validate_build_guardrails import validate_path
+try:
+    from tools.strategy_farm.validate_build_guardrails import validate_path
+except ModuleNotFoundError:
+    from validate_build_guardrails import validate_path  # script-style import (sys.path = tools/strategy_farm)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]

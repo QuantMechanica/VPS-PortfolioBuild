@@ -54,7 +54,10 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from tools.strategy_farm import book_build_guard, gate_manifest
-from tools.strategy_farm.portfolio import concentration_tail, portfolio_correlation
+try:
+    from tools.strategy_farm.portfolio import concentration_tail, portfolio_correlation
+except ModuleNotFoundError:
+    from portfolio import concentration_tail, portfolio_correlation  # script-style import (sys.path = tools/strategy_farm)
 from tools.strategy_farm.portfolio.commission import describe_model, load_model
 from tools.strategy_farm.portfolio.portfolio_common import (
     DEFAULT_COMMON_DIR,

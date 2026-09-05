@@ -27,7 +27,10 @@ from pathlib import Path
 
 try:  # package import in tests and module consumers
     from tools.strategy_farm.operator_surfaces import build_operator_snapshot
-    from tools.strategy_farm.sqlite_timestamp import normalized_timestamp_sql
+    try:
+        from tools.strategy_farm.sqlite_timestamp import normalized_timestamp_sql
+    except ModuleNotFoundError:
+        from sqlite_timestamp import normalized_timestamp_sql  # script-style import (sys.path = tools/strategy_farm)
 except ModuleNotFoundError:  # direct ``python tools/strategy_farm/heartbeat_snapshot.py``
     from operator_surfaces import build_operator_snapshot
     from sqlite_timestamp import normalized_timestamp_sql

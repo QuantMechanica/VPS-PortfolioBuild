@@ -16,7 +16,10 @@ from pathlib import Path
 try:
     from farmctl import _summary_recovered_stats
 except ModuleNotFoundError:
-    from tools.strategy_farm.farmctl import _summary_recovered_stats
+    try:
+        from tools.strategy_farm.farmctl import _summary_recovered_stats
+    except ModuleNotFoundError:
+        from farmctl import _summary_recovered_stats  # script-style import (sys.path = tools/strategy_farm)
 
 
 DB = Path(r"D:\QM\strategy_farm\state\farm_state.sqlite")

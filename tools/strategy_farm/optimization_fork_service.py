@@ -42,7 +42,10 @@ try:
         SCHEMA as ROUTING_SCHEMA,
     )
 except ModuleNotFoundError:
-    from tools.strategy_farm.gate_manifest import GateManifest
+    try:
+        from tools.strategy_farm.gate_manifest import GateManifest
+    except ModuleNotFoundError:
+        from gate_manifest import GateManifest  # script-style import (sys.path = tools/strategy_farm)
     from tools.strategy_farm.optimization_fork_driver import (
         HARNESS_GREEN_VERDICTS,
         PARAM_SUCCESS_VERDICTS,

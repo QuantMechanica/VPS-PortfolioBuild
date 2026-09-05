@@ -70,7 +70,10 @@ def _default_send_mail(subject: str, body: str) -> dict[str, Any]:
     try:
         from gmail_alarm import _send_mail
     except ModuleNotFoundError:
-        from tools.strategy_farm.gmail_alarm import _send_mail
+        try:
+            from tools.strategy_farm.gmail_alarm import _send_mail
+        except ModuleNotFoundError:
+            from gmail_alarm import _send_mail  # script-style import (sys.path = tools/strategy_farm)
     return _send_mail(subject, body)
 
 

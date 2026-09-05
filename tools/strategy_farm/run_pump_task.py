@@ -17,7 +17,10 @@ from pathlib import Path
 try:
     from process_identity import get_process_identity
 except ModuleNotFoundError:  # package import in tests
-    from tools.strategy_farm.process_identity import get_process_identity
+    try:
+        from tools.strategy_farm.process_identity import get_process_identity
+    except ModuleNotFoundError:
+        from process_identity import get_process_identity  # script-style import (sys.path = tools/strategy_farm)
 
 
 REPO_ROOT = Path(r"C:\QM\repo")

@@ -16,7 +16,10 @@ from typing import Any
 try:
     from phase_ids import ACTIVE_GATE_MANIFEST
 except ModuleNotFoundError:
-    from tools.strategy_farm.phase_ids import ACTIVE_GATE_MANIFEST
+    try:
+        from tools.strategy_farm.phase_ids import ACTIVE_GATE_MANIFEST
+    except ModuleNotFoundError:
+        from phase_ids import ACTIVE_GATE_MANIFEST  # script-style import (sys.path = tools/strategy_farm)
 
 NEWS_PHASE = ACTIVE_GATE_MANIFEST.storage_phase_for_role("NEWS", "NEWS")
 

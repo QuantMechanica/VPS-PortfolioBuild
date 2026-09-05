@@ -18,12 +18,18 @@ from typing import Any, Iterable
 try:
     from artifact_identity import extract_identity, identity_update_clause
 except ModuleNotFoundError:
-    from tools.strategy_farm.artifact_identity import extract_identity, identity_update_clause
+    try:
+        from tools.strategy_farm.artifact_identity import extract_identity, identity_update_clause
+    except ModuleNotFoundError:
+        from artifact_identity import extract_identity, identity_update_clause  # script-style import (sys.path = tools/strategy_farm)
 
 try:
     from include_mirror import running_terminal_names
 except ModuleNotFoundError:
-    from tools.strategy_farm.include_mirror import running_terminal_names
+    try:
+        from tools.strategy_farm.include_mirror import running_terminal_names
+    except ModuleNotFoundError:
+        from include_mirror import running_terminal_names  # script-style import (sys.path = tools/strategy_farm)
 
 
 COMPILE_WORK_ITEM_KIND = "compile"

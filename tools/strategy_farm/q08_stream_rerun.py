@@ -22,7 +22,10 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from tools.strategy_farm import assemble_stream_bundle as bundle
-from tools.strategy_farm.factory_mutation_lock import FactoryMutationLock
+try:
+    from tools.strategy_farm.factory_mutation_lock import FactoryMutationLock
+except ModuleNotFoundError:
+    from factory_mutation_lock import FactoryMutationLock  # script-style import (sys.path = tools/strategy_farm)
 
 SCHEMA = "qm.q08-stream-auto-rerun/v1"
 STATE_NAME = "q08_stream_auto_rerun_watermark.json"

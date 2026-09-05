@@ -27,7 +27,10 @@ try:
     )
     from factory_mutation_lock import FactoryMutationLock, path_for_factory_flag
 except ModuleNotFoundError:
-    from tools.strategy_farm.q09_news_contract import canonical_json_bytes, sha256_file
+    try:
+        from tools.strategy_farm.q09_news_contract import canonical_json_bytes, sha256_file
+    except ModuleNotFoundError:
+        from q09_news_contract import canonical_json_bytes, sha256_file  # script-style import (sys.path = tools/strategy_farm)
     from tools.strategy_farm.q09_news_schema import (
         CONTRACT_VERSION,
         append_qualification,
