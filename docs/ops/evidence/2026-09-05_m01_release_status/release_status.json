@@ -1,0 +1,2540 @@
+{
+  "book_guard": {
+    "allowed": false,
+    "distinct_eas": 8,
+    "order_artifact": null,
+    "qualified_pairs": 8,
+    "reasons": [
+      "qualified_pairs_below_minimum: 8 < 25",
+      "owner_order_missing: venue=ftmo order_dir=C:\\QM\\repo\\decisions"
+    ],
+    "strategy_families": 8
+  },
+  "contract": "qm.contiguity/v1",
+  "counts": {
+    "builder_qualified_pairs": 8,
+    "bundle_bound_pairs": 8,
+    "diagnostic_without_q08_soft_pairs": 7,
+    "fast_qualified_pairs": 8,
+    "reference_qualified_pairs": 8,
+    "terminal_distinct_pairs": 8,
+    "terminal_pass_rows": 9
+  },
+  "db_path": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+  "fund_scores_path": "D:\\QM\\strategy_farm\\artifacts\\portfolio\\fund_scores.json",
+  "fund_scores_sha256": "60c039441283a8a9c33d04e640dda99df6bce19a746273db759805543ebeb93b",
+  "gate_chain": [
+    "Q02",
+    "Q03",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08",
+    "Q09",
+    "Q10",
+    "Q11",
+    "Q12",
+    "Q13",
+    "Q14"
+  ],
+  "gate_contract_version": "v4",
+  "limits": [
+    "Historical contiguity is not a bound release chain.",
+    "Disk files can change outside the SQLite read snapshot; hashes record the observed bytes.",
+    "Screening scores do not establish FTMO release economics.",
+    "This report grants no build, gate, purchase, or deployment authority."
+  ],
+  "observed_at_utc": "2026-09-05T12:29:58.586479+00:00",
+  "pairs": [
+    {
+      "blocker": {
+        "missing_historical_gate": null,
+        "score_status": "CURRENT_SCREENING_ONLY",
+        "separate_release_requirements": [
+          "book_guard",
+          "exact_chain_attestation",
+          "venue_economic_acceptance",
+          "native_operational_proof"
+        ],
+        "stream_status": "BOUND",
+        "unavailable_witness_gates": [
+          "Q03",
+          "Q04",
+          "Q05",
+          "Q06"
+        ],
+        "unmatched_binary_gates": [
+          "Q03",
+          "Q04",
+          "Q05",
+          "Q06"
+        ]
+      },
+      "data_version": {
+        "archive_admission": {
+          "activation_sha256": "61c8c72ccb0cb8038ae6ece7b89aa68f602b1637d8bc6b6c866f38492139134e",
+          "manifest_path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_custom_history_variant_a_20260809\\archive_manifest_owner_approved.json",
+          "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+          "selected_archive_rows": 108,
+          "selected_symbols": [
+            "GBPUSD.DWX"
+          ],
+          "status": "ACTIVE"
+        },
+        "archive_manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+        "artifact_identity": {
+          "data_window_end": "2022",
+          "data_window_start": "2020",
+          "ex5_sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb",
+          "mq5_sha256": "909327914d7fd65301751c38421c5dec3cddf8e96864d45c26f4db7a1f8fe27c",
+          "setfile_sha256": "056f2c12c1be81119e6ff86e7d2e3521905cacf938cffea19ff910e79752fb49"
+        },
+        "status": "DECLARED_NOT_REHASHED",
+        "window_end": "2022",
+        "window_start": "2020"
+      },
+      "ea_id": "QM5_10706",
+      "economic_result": {
+        "fund_score": 0.10690102503120302,
+        "release_economics": "NOT_ESTABLISHED",
+        "score_record": {
+          "active_days_per_60d": 8.0,
+          "active_days_per_60d_detail": {
+            "active_days_total": 555,
+            "active_definition": "challenge_book_60d.active (entry, close, every held day)",
+            "max": 20.0,
+            "mean": 11.111,
+            "median": 11.0,
+            "min": 5.0,
+            "p10": 8.0,
+            "p20": 9.0,
+            "span_days": 3003,
+            "statistic": "p10",
+            "window_anchoring": "calendar_grid_step_1d",
+            "window_days": 60,
+            "windows": 2945
+          },
+          "denominator": 6.105180000000001,
+          "formula": "med60_1x/max(2.0,2.0*abs(worst_day_1x),wdd_p90_1x)",
+          "formula_inputs": {
+            "daily_loss_multiplier": 2.0,
+            "denominator": 6.105180000000001,
+            "floor": 2.0,
+            "med60_1x": 0.6526500000000002,
+            "wdd_p90_1x": 6.105180000000001,
+            "worst_day_1x_abs": 2.44194
+          },
+          "fund_score": 0.10690102503120302,
+          "input_stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10706_GBPUSD_DWX.jsonl",
+          "input_stream_sha256": "71fb35b8f8539356f511609a4d1dfb06571f85b19b60de6647e907ec891e34f7",
+          "med60_1x": 0.6526500000000002,
+          "screening_only": true,
+          "sleeve": "10706:GBPUSD",
+          "status": "SCORED",
+          "wdd_p90_1x": 6.105180000000001,
+          "worst_day_1x": 2.44194
+        },
+        "source_matches_bound_stream": true,
+        "status": "CURRENT_SCREENING_ONLY"
+      },
+      "execution_readiness": "NOT_AUTHORIZED_BY_THIS_PROJECTION",
+      "historical_contiguity": {
+        "missing_link": null,
+        "reference_highest": "Q14",
+        "valid_gates": [
+          "Q02",
+          "Q03",
+          "Q04",
+          "Q05",
+          "Q06",
+          "Q07",
+          "Q08",
+          "Q09",
+          "Q10",
+          "Q11",
+          "Q12",
+          "Q13",
+          "Q14"
+        ],
+        "witnesses": [
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\bb234ab2-499b-4cfe-8de1-d2ef52be6a27\\QM5_10706\\20260821_174117\\summary.json",
+            "evidence_sha256_observed": "cdd05b5af26f38829155bb6b1e38db9c9a0417bfe9f7c6fdc8e800ee3d8598ab",
+            "gate": "Q02",
+            "identity": {
+              "ex5_sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb",
+              "mq5_sha256": "909327914d7fd65301751c38421c5dec3cddf8e96864d45c26f4db7a1f8fe27c",
+              "setfile_sha256": "e39ea2ffa324177f347bc20ec84acaf1846e61def5c0ac2c6d89a27980270118"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "bb234ab2-499b-4cfe-8de1-d2ef52be6a27"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\0d27da24-4808-439e-8808-ccc0c455a7de\\QM5_10706\\20260718_113113\\summary.json",
+            "evidence_sha256_observed": null,
+            "gate": "Q03",
+            "identity": {
+              "ex5_sha256": null,
+              "mq5_sha256": null,
+              "setfile_sha256": null
+            },
+            "same_terminal_binary": false,
+            "verdict": "PASS",
+            "work_item_id": "0d27da24-4808-439e-8808-ccc0c455a7de"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_10706\\Q04\\GBPUSD.DWX__09d352af-6736-4e8b-a276-107f3ffbfba2\\aggregate.json",
+            "evidence_sha256_observed": null,
+            "gate": "Q04",
+            "identity": {
+              "ex5_sha256": null,
+              "mq5_sha256": null,
+              "setfile_sha256": null
+            },
+            "same_terminal_binary": false,
+            "verdict": "PASS",
+            "work_item_id": "09d352af-6736-4e8b-a276-107f3ffbfba2"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\ca1a9ea9-f677-4255-80e4-ad39142ff2ad\\QM5_10706\\Q05\\GBPUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": null,
+            "gate": "Q05",
+            "identity": {
+              "ex5_sha256": null,
+              "mq5_sha256": null,
+              "setfile_sha256": null
+            },
+            "same_terminal_binary": false,
+            "verdict": "PASS",
+            "work_item_id": "ca1a9ea9-f677-4255-80e4-ad39142ff2ad"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\b450f8ec-0e6c-4354-8280-57890eae8016\\QM5_10706\\Q06\\GBPUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": null,
+            "gate": "Q06",
+            "identity": {
+              "ex5_sha256": null,
+              "mq5_sha256": null,
+              "setfile_sha256": null
+            },
+            "same_terminal_binary": false,
+            "verdict": "PASS",
+            "work_item_id": "b450f8ec-0e6c-4354-8280-57890eae8016"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\81cd341c-a2c1-4c18-9ec6-6b85f0226080\\QM5_10706\\Q07\\GBPUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "5d218c2faa3e1327154d7c9fd6d136c7bd597e7e01b8118686db63fa46bdecd1",
+            "gate": "Q07",
+            "identity": {
+              "ex5_sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb",
+              "mq5_sha256": "909327914d7fd65301751c38421c5dec3cddf8e96864d45c26f4db7a1f8fe27c",
+              "setfile_sha256": "1efbfd257afb6af52829b94cc87ab1954f6465b47a16d1cae6f954f3a7786ee8"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "81cd341c-a2c1-4c18-9ec6-6b85f0226080"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\a2e1aba6-45ea-4dcf-af98-1f679ebeb64f\\QM5_10706\\Q08\\GBPUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "7c5015c81684ff58a78fc5ae417b5bc713028291a24c6e341bf124ff249c8455",
+            "gate": "Q08",
+            "identity": {
+              "ex5_sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb",
+              "mq5_sha256": "909327914d7fd65301751c38421c5dec3cddf8e96864d45c26f4db7a1f8fe27c",
+              "setfile_sha256": "056f2c12c1be81119e6ff86e7d2e3521905cacf938cffea19ff910e79752fb49"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "a2e1aba6-45ea-4dcf-af98-1f679ebeb64f"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\a56206f0-f83c-42d5-87cf-5c86a20265f2\\QM5_10706\\Q09\\GBPUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "cf0d9972d90d77a42deefbfc062467f788db8de0a229ed20847df1e6af5c1bfb",
+            "gate": "Q09",
+            "identity": {
+              "ex5_sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb",
+              "mq5_sha256": "909327914d7fd65301751c38421c5dec3cddf8e96864d45c26f4db7a1f8fe27c",
+              "setfile_sha256": "17c76659c61cc98e9fe0b57a8150c7fb514883b6b2e944a09bd1bf9345295a7f"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "a56206f0-f83c-42d5-87cf-5c86a20265f2"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\9c7db9b2-c594-4b50-8006-f891f7b5c44b\\QM5_10706\\Q10_NEWS\\GBPUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "a619968d0608c1ed9bda70f263f95c12db5671c1cf96bd9939409559bcdf2bac",
+            "gate": "Q10",
+            "identity": {
+              "ex5_sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb",
+              "mq5_sha256": null,
+              "setfile_sha256": "056f2c12c1be81119e6ff86e7d2e3521905cacf938cffea19ff910e79752fb49"
+            },
+            "same_terminal_binary": true,
+            "verdict": "CONFIG_LOCKED",
+            "work_item_id": "9c7db9b2-c594-4b50-8006-f891f7b5c44b"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\795d3f16-228b-4a76-b512-62ef6fd1ec11\\QM5_10706\\Q11\\GBPUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "e6cc7b9aacbe1c2902113abea270a5d5044b682f964e7a9dd08e3ed0dbe15761",
+            "gate": "Q11",
+            "identity": {
+              "ex5_sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb",
+              "mq5_sha256": "909327914d7fd65301751c38421c5dec3cddf8e96864d45c26f4db7a1f8fe27c",
+              "setfile_sha256": "17c76659c61cc98e9fe0b57a8150c7fb514883b6b2e944a09bd1bf9345295a7f"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "795d3f16-228b-4a76-b512-62ef6fd1ec11"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\dfca24fa-28df-5f5e-818f-8dcf53611822\\QM5_10706\\20260826_102346\\summary.json",
+            "evidence_sha256_observed": "a5210a2d5fdccc8ea910f5026b949aa94c1d93d4c5ae187a12a769200812cefb",
+            "gate": "Q12",
+            "identity": {
+              "ex5_sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb",
+              "mq5_sha256": "909327914d7fd65301751c38421c5dec3cddf8e96864d45c26f4db7a1f8fe27c",
+              "setfile_sha256": "b458a1b3367c8ff18414efee3ec9586dace370872082dbf0f7f7972e63a6469d"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "dfca24fa-28df-5f5e-818f-8dcf53611822"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\optimization_fork\\7bacc182-40f4-5232-ba7f-9e517d2abf75\\receipt.json",
+            "evidence_sha256_observed": "00805faf99a256d3ad34faacf2a544b16549a01b740a4a46e4925edc0a1268b0",
+            "gate": "Q13",
+            "identity": {
+              "ex5_sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb",
+              "mq5_sha256": "909327914d7fd65301751c38421c5dec3cddf8e96864d45c26f4db7a1f8fe27c",
+              "setfile_sha256": "b458a1b3367c8ff18414efee3ec9586dace370872082dbf0f7f7972e63a6469d"
+            },
+            "same_terminal_binary": true,
+            "verdict": "NO_PARAMETER_CHANGE",
+            "work_item_id": "7bacc182-40f4-5232-ba7f-9e517d2abf75"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\optimization_fork\\b5e18759-1377-5af7-9634-9f66bd293d0c\\receipt.json",
+            "evidence_sha256_observed": "5d39d3696f8411ff667ad9171a0c12227d0ee71ea47011f0f75e738062e57212",
+            "gate": "Q14",
+            "identity": {
+              "ex5_sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb",
+              "mq5_sha256": "909327914d7fd65301751c38421c5dec3cddf8e96864d45c26f4db7a1f8fe27c",
+              "setfile_sha256": "275e66e9e6151277ba180b4d7c3a786804a9a7346687dd034ee6d9c8d3e444ac"
+            },
+            "same_terminal_binary": true,
+            "verdict": "KEEP_INCUMBENT",
+            "work_item_id": "b5e18759-1377-5af7-9634-9f66bd293d0c"
+          }
+        ]
+      },
+      "identity": {
+        "ex5_sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb",
+        "mq5_sha256": "909327914d7fd65301751c38421c5dec3cddf8e96864d45c26f4db7a1f8fe27c",
+        "setfile_sha256": "275e66e9e6151277ba180b4d7c3a786804a9a7346687dd034ee6d9c8d3e444ac",
+        "terminal_evidence_sha256_observed": "5d39d3696f8411ff667ad9171a0c12227d0ee71ea47011f0f75e738062e57212",
+        "terminal_verdict": "KEEP_INCUMBENT",
+        "terminal_work_item_id": "b5e18759-1377-5af7-9634-9f66bd293d0c"
+      },
+      "next_step": "Review recorded identities and missing evidence; use the existing book guard and venue acceptance process.",
+      "owner": "Pipeline-Operator: evidence; Codex: review; OWNER: authorization",
+      "sealed_stream": {
+        "checked_existing_paths": [
+          "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10706_GBPUSD_DWX.jsonl"
+        ],
+        "identity_status": "BOUND_STREAM_BUILD_SETFILE_SOURCE_AND_REPORT",
+        "located_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10706_GBPUSD_DWX.jsonl",
+        "q08_evidence_path": "D:\\QM\\reports\\work_items\\a2e1aba6-45ea-4dcf-af98-1f679ebeb64f\\QM5_10706\\Q08\\GBPUSD_DWX\\aggregate.json",
+        "q08_work_item_id": "a2e1aba6-45ea-4dcf-af98-1f679ebeb64f",
+        "recorded_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10706_GBPUSD_DWX.jsonl",
+        "seal_content_sha256": "71fb35b8f8539356f511609a4d1dfb06571f85b19b60de6647e907ec891e34f7",
+        "source_artifact_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\10706_GBPUSD_DWX.jsonl",
+        "status": "BOUND"
+      },
+      "symbol": "GBPUSD.DWX",
+      "uncertainty_flags": [
+        "EXACT_CHAIN_LINEAGE_NOT_ATTESTED",
+        "CHAIN_BINARY_IDENTITY_MISSING_OR_MIXED",
+        "CHAIN_EVIDENCE_BYTES_UNAVAILABLE",
+        "Q08_STREAM_RESEALED_AFTER_TERMINAL_CLOSURE",
+        "DATA_ARCHIVE_BYTES_NOT_REVALIDATED"
+      ]
+    },
+    {
+      "blocker": {
+        "missing_historical_gate": null,
+        "score_status": "CURRENT_SCREENING_ONLY",
+        "separate_release_requirements": [
+          "book_guard",
+          "exact_chain_attestation",
+          "venue_economic_acceptance",
+          "native_operational_proof"
+        ],
+        "stream_status": "BOUND",
+        "unavailable_witness_gates": [
+          "Q02",
+          "Q03",
+          "Q04",
+          "Q05",
+          "Q06"
+        ],
+        "unmatched_binary_gates": [
+          "Q03",
+          "Q04",
+          "Q05",
+          "Q06"
+        ]
+      },
+      "data_version": {
+        "archive_admission": {
+          "activation_sha256": "61c8c72ccb0cb8038ae6ece7b89aa68f602b1637d8bc6b6c866f38492139134e",
+          "manifest_path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_custom_history_variant_a_20260809\\archive_manifest_owner_approved.json",
+          "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+          "selected_archive_rows": 108,
+          "selected_symbols": [
+            "EURUSD.DWX"
+          ],
+          "status": "ACTIVE"
+        },
+        "archive_manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+        "artifact_identity": {
+          "ex5_sha256": "9dd7facd1da7e2c6564929b92a2e4a62e65bc40b99a03edd729030f72d18924b",
+          "mq5_sha256": "b5dfd159b46281cdb30dae3ae12a12fd67cdf810941b82a4a5f7e11a9dce6a15",
+          "setfile_sha256": "7b87dbf2a4a6b6e6d8cea39e9123ebf9e06f61e53e2215eed24afde7923d74cf"
+        },
+        "status": "DECLARED_NOT_REHASHED",
+        "window_end": null,
+        "window_start": null
+      },
+      "ea_id": "QM5_11421",
+      "economic_result": {
+        "fund_score": 0.015577180672231636,
+        "release_economics": "NOT_ESTABLISHED",
+        "score_record": {
+          "active_days_per_60d": 0.0,
+          "active_days_per_60d_detail": {
+            "active_days_total": 201,
+            "active_definition": "challenge_book_60d.active (entry, close, every held day)",
+            "max": 12.0,
+            "mean": 4.304,
+            "median": 4.0,
+            "min": 0.0,
+            "p10": 0.0,
+            "p20": 1.0,
+            "span_days": 2772,
+            "statistic": "p10",
+            "window_anchoring": "calendar_grid_step_1d",
+            "window_days": 60,
+            "windows": 2714
+          },
+          "denominator": 2.25458,
+          "formula": "med60_1x/max(2.0,2.0*abs(worst_day_1x),wdd_p90_1x)",
+          "formula_inputs": {
+            "daily_loss_multiplier": 2.0,
+            "denominator": 2.25458,
+            "floor": 2.0,
+            "med60_1x": 0.03512,
+            "wdd_p90_1x": 1.5894300000000001,
+            "worst_day_1x_abs": 1.12729
+          },
+          "fund_score": 0.015577180672231636,
+          "input_stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11421_EURUSD_DWX.jsonl",
+          "input_stream_sha256": "e9d0a9ef831f156f0f67e5bf1140d7e57702c3923a4ff47b5548847957d7c0c1",
+          "med60_1x": 0.03512,
+          "screening_only": true,
+          "sleeve": "11421:EURUSD",
+          "status": "SCORED",
+          "wdd_p90_1x": 1.5894300000000001,
+          "worst_day_1x": 1.12729
+        },
+        "source_matches_bound_stream": true,
+        "status": "CURRENT_SCREENING_ONLY"
+      },
+      "execution_readiness": "NOT_AUTHORIZED_BY_THIS_PROJECTION",
+      "historical_contiguity": {
+        "missing_link": null,
+        "reference_highest": "Q14",
+        "valid_gates": [
+          "Q02",
+          "Q03",
+          "Q04",
+          "Q05",
+          "Q06",
+          "Q07",
+          "Q08",
+          "Q09",
+          "Q10",
+          "Q11",
+          "Q12",
+          "Q13",
+          "Q14"
+        ],
+        "witnesses": [
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\eb8c046b-19ca-4867-8d85-f88aacd08a13\\QM5_11421\\20260805_190247\\summary.json",
+            "evidence_sha256_observed": null,
+            "gate": "Q02",
+            "identity": {
+              "ex5_sha256": "9dd7facd1da7e2c6564929b92a2e4a62e65bc40b99a03edd729030f72d18924b",
+              "mq5_sha256": "b5dfd159b46281cdb30dae3ae12a12fd67cdf810941b82a4a5f7e11a9dce6a15",
+              "setfile_sha256": "373138c771cefb9def3e0ff344f85589de6db26f6ec999ef9235b28f631ec415"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "eb8c046b-19ca-4867-8d85-f88aacd08a13"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\fbc1f12d-68ae-4585-8948-e5f5e4cce867\\QM5_11421\\20260726_212834\\summary.json",
+            "evidence_sha256_observed": null,
+            "gate": "Q03",
+            "identity": {
+              "ex5_sha256": "03455d533ffbf1cc35482dc8de487b04d997bea328ee8505d0f5bb0d591a7415",
+              "mq5_sha256": "184b0df165ab7273441b82928b293a947b7899fff9444218b6c139590b6d5700",
+              "setfile_sha256": "303aa04c3b4479a140a79287d20e466a3cff2986b487761821381dc34adf1e6d"
+            },
+            "same_terminal_binary": false,
+            "verdict": "PASS",
+            "work_item_id": "fbc1f12d-68ae-4585-8948-e5f5e4cce867"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_11421\\Q04\\EURUSD.DWX__c9f84942-dca6-4a7b-92d6-c8d0a94d4512\\aggregate.json",
+            "evidence_sha256_observed": null,
+            "gate": "Q04",
+            "identity": {
+              "ex5_sha256": null,
+              "mq5_sha256": null,
+              "setfile_sha256": null
+            },
+            "same_terminal_binary": false,
+            "verdict": "PASS",
+            "work_item_id": "c9f84942-dca6-4a7b-92d6-c8d0a94d4512"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\4c62aa2b-d5d5-456e-8987-e5db0d54a0a4\\QM5_11421\\Q05\\EURUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": null,
+            "gate": "Q05",
+            "identity": {
+              "ex5_sha256": null,
+              "mq5_sha256": null,
+              "setfile_sha256": null
+            },
+            "same_terminal_binary": false,
+            "verdict": "PASS",
+            "work_item_id": "4c62aa2b-d5d5-456e-8987-e5db0d54a0a4"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\84caa901-4c50-4553-b427-d6ee48a0ca18\\QM5_11421\\Q06\\EURUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": null,
+            "gate": "Q06",
+            "identity": {
+              "ex5_sha256": null,
+              "mq5_sha256": null,
+              "setfile_sha256": null
+            },
+            "same_terminal_binary": false,
+            "verdict": "PASS",
+            "work_item_id": "84caa901-4c50-4553-b427-d6ee48a0ca18"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\2556a768-d6a2-4367-9679-00f01dbc6db4\\QM5_11421\\Q07\\EURUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "96e5fdbd60034e7f3e9f61f710d2db5891fb0e8bf2d3477dc341968ef0b9ac18",
+            "gate": "Q07",
+            "identity": {
+              "ex5_sha256": "9dd7facd1da7e2c6564929b92a2e4a62e65bc40b99a03edd729030f72d18924b",
+              "mq5_sha256": "b5dfd159b46281cdb30dae3ae12a12fd67cdf810941b82a4a5f7e11a9dce6a15",
+              "setfile_sha256": "e48002e57f79910d263a2a7b4d4251acba20ad5350a419d120e0907519931006"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "2556a768-d6a2-4367-9679-00f01dbc6db4"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\c93263aa-a707-45ea-a915-204ec59df077\\QM5_11421\\Q08\\EURUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "d465366150d1e41836c5cfd4ab31b5273095f29848496a9302800dd80d2f090d",
+            "gate": "Q08",
+            "identity": {
+              "ex5_sha256": "9dd7facd1da7e2c6564929b92a2e4a62e65bc40b99a03edd729030f72d18924b",
+              "mq5_sha256": "b5dfd159b46281cdb30dae3ae12a12fd67cdf810941b82a4a5f7e11a9dce6a15",
+              "setfile_sha256": "7b87dbf2a4a6b6e6d8cea39e9123ebf9e06f61e53e2215eed24afde7923d74cf"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "c93263aa-a707-45ea-a915-204ec59df077"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\a2b39c48-4845-4b49-9e84-9e88616a5862\\QM5_11421\\Q09\\EURUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "607562e8ba682785e820eb811830e88961d10f35080df823c4e65d45dbb00fa7",
+            "gate": "Q09",
+            "identity": {
+              "ex5_sha256": "9dd7facd1da7e2c6564929b92a2e4a62e65bc40b99a03edd729030f72d18924b",
+              "mq5_sha256": "b5dfd159b46281cdb30dae3ae12a12fd67cdf810941b82a4a5f7e11a9dce6a15",
+              "setfile_sha256": "839fb74b3320e8ce62710c8765bc230c7f3d05f0f8ed9fdcae31a32e1fab5747"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "a2b39c48-4845-4b49-9e84-9e88616a5862"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\4fc0db48-71b8-4868-800e-7dccb8eaf012\\QM5_11421\\Q10_NEWS\\EURUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "e05131d5e3164690480464b1621eabe17b224cabc82a150612c14b7bad3c98ea",
+            "gate": "Q10",
+            "identity": {
+              "ex5_sha256": "9dd7facd1da7e2c6564929b92a2e4a62e65bc40b99a03edd729030f72d18924b",
+              "mq5_sha256": null,
+              "setfile_sha256": "7b87dbf2a4a6b6e6d8cea39e9123ebf9e06f61e53e2215eed24afde7923d74cf"
+            },
+            "same_terminal_binary": true,
+            "verdict": "CONFIG_LOCKED",
+            "work_item_id": "4fc0db48-71b8-4868-800e-7dccb8eaf012"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\52358e7e-2f6f-44be-b457-3cbeac84f716\\QM5_11421\\Q11\\EURUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "80319fc82f47e10f1c60fdb197cbd2ba90535d087bb4f196f888e57ea80f1e22",
+            "gate": "Q11",
+            "identity": {
+              "ex5_sha256": "9dd7facd1da7e2c6564929b92a2e4a62e65bc40b99a03edd729030f72d18924b",
+              "mq5_sha256": "b5dfd159b46281cdb30dae3ae12a12fd67cdf810941b82a4a5f7e11a9dce6a15",
+              "setfile_sha256": "839fb74b3320e8ce62710c8765bc230c7f3d05f0f8ed9fdcae31a32e1fab5747"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "52358e7e-2f6f-44be-b457-3cbeac84f716"
+          },
+          {
+            "evidence_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11421_EURUSD_DWX_2019_2025\\q12_selection_receipt.json",
+            "evidence_sha256_observed": "21d99280b1378ca09dea1c3826c685751dae062d81a854f6080498da923d1c99",
+            "gate": "Q12",
+            "identity": {
+              "ex5_sha256": "9dd7facd1da7e2c6564929b92a2e4a62e65bc40b99a03edd729030f72d18924b",
+              "mq5_sha256": "b5dfd159b46281cdb30dae3ae12a12fd67cdf810941b82a4a5f7e11a9dce6a15",
+              "setfile_sha256": "7b87dbf2a4a6b6e6d8cea39e9123ebf9e06f61e53e2215eed24afde7923d74cf"
+            },
+            "same_terminal_binary": true,
+            "verdict": "NO_FILTER_CHANGE",
+            "work_item_id": "c4bc189b-372d-54c9-be45-046ac77b245b"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\optimization_fork\\2518ae77-a149-5243-982e-90c094c55b32\\receipt.json",
+            "evidence_sha256_observed": "a0c02f124b11fa98f93c00959dba86c12321bf5252f2f1a288e4d582cf2a0c18",
+            "gate": "Q13",
+            "identity": {
+              "ex5_sha256": "9dd7facd1da7e2c6564929b92a2e4a62e65bc40b99a03edd729030f72d18924b",
+              "mq5_sha256": "b5dfd159b46281cdb30dae3ae12a12fd67cdf810941b82a4a5f7e11a9dce6a15",
+              "setfile_sha256": "7b87dbf2a4a6b6e6d8cea39e9123ebf9e06f61e53e2215eed24afde7923d74cf"
+            },
+            "same_terminal_binary": true,
+            "verdict": "NO_PARAMETER_CHANGE",
+            "work_item_id": "2518ae77-a149-5243-982e-90c094c55b32"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\optimization_fork\\ff733cf6-52a1-5aad-9bff-4f8c31ef4dc6\\receipt.json",
+            "evidence_sha256_observed": "a3222b5834a475c4c03048aebedaa32d27b036164d7dac4c1418486834a5431f",
+            "gate": "Q14",
+            "identity": {
+              "ex5_sha256": "9dd7facd1da7e2c6564929b92a2e4a62e65bc40b99a03edd729030f72d18924b",
+              "mq5_sha256": "b5dfd159b46281cdb30dae3ae12a12fd67cdf810941b82a4a5f7e11a9dce6a15",
+              "setfile_sha256": "7b87dbf2a4a6b6e6d8cea39e9123ebf9e06f61e53e2215eed24afde7923d74cf"
+            },
+            "same_terminal_binary": true,
+            "verdict": "KEEP_INCUMBENT",
+            "work_item_id": "ff733cf6-52a1-5aad-9bff-4f8c31ef4dc6"
+          }
+        ]
+      },
+      "identity": {
+        "ex5_sha256": "9dd7facd1da7e2c6564929b92a2e4a62e65bc40b99a03edd729030f72d18924b",
+        "mq5_sha256": "b5dfd159b46281cdb30dae3ae12a12fd67cdf810941b82a4a5f7e11a9dce6a15",
+        "setfile_sha256": "7b87dbf2a4a6b6e6d8cea39e9123ebf9e06f61e53e2215eed24afde7923d74cf",
+        "terminal_evidence_sha256_observed": "a3222b5834a475c4c03048aebedaa32d27b036164d7dac4c1418486834a5431f",
+        "terminal_verdict": "KEEP_INCUMBENT",
+        "terminal_work_item_id": "ff733cf6-52a1-5aad-9bff-4f8c31ef4dc6"
+      },
+      "next_step": "Review recorded identities and missing evidence; use the existing book guard and venue acceptance process.",
+      "owner": "Pipeline-Operator: evidence; Codex: review; OWNER: authorization",
+      "sealed_stream": {
+        "checked_existing_paths": [
+          "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11421_EURUSD_DWX.jsonl"
+        ],
+        "identity_status": "BOUND_STREAM_BUILD_SETFILE_SOURCE_AND_REPORT",
+        "located_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11421_EURUSD_DWX.jsonl",
+        "q08_evidence_path": "D:\\QM\\reports\\work_items\\c93263aa-a707-45ea-a915-204ec59df077\\QM5_11421\\Q08\\EURUSD_DWX\\aggregate.json",
+        "q08_work_item_id": "c93263aa-a707-45ea-a915-204ec59df077",
+        "recorded_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11421_EURUSD_DWX.jsonl",
+        "seal_content_sha256": "e9d0a9ef831f156f0f67e5bf1140d7e57702c3923a4ff47b5548847957d7c0c1",
+        "source_artifact_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\11421_EURUSD_DWX.jsonl",
+        "status": "BOUND"
+      },
+      "symbol": "EURUSD.DWX",
+      "uncertainty_flags": [
+        "EXACT_CHAIN_LINEAGE_NOT_ATTESTED",
+        "CHAIN_BINARY_IDENTITY_MISSING_OR_MIXED",
+        "CHAIN_EVIDENCE_BYTES_UNAVAILABLE",
+        "Q08_STREAM_RESEALED_AFTER_TERMINAL_CLOSURE",
+        "DATA_ARCHIVE_BYTES_NOT_REVALIDATED"
+      ]
+    },
+    {
+      "blocker": {
+        "missing_historical_gate": null,
+        "score_status": "CURRENT_SCREENING_ONLY",
+        "separate_release_requirements": [
+          "book_guard",
+          "exact_chain_attestation",
+          "venue_economic_acceptance",
+          "native_operational_proof"
+        ],
+        "stream_status": "BOUND",
+        "unavailable_witness_gates": [
+          "Q02",
+          "Q03",
+          "Q04",
+          "Q05",
+          "Q06",
+          "Q07"
+        ],
+        "unmatched_binary_gates": []
+      },
+      "data_version": {
+        "archive_admission": {
+          "activation_sha256": "61c8c72ccb0cb8038ae6ece7b89aa68f602b1637d8bc6b6c866f38492139134e",
+          "manifest_path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_custom_history_variant_a_20260809\\archive_manifest_owner_approved.json",
+          "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+          "selected_archive_rows": 108,
+          "selected_symbols": [
+            "USDCAD.DWX"
+          ],
+          "status": "ACTIVE"
+        },
+        "archive_manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+        "artifact_identity": {
+          "data_window_end": "2022",
+          "data_window_start": "2017",
+          "ex5_sha256": "2b98e9e902313148be78d88513fcbda2476150b1a7605eb15a50b2cca6b32d66",
+          "mq5_sha256": "a68b9f02372edd490f2af9ea32efa6606df7c2d8b40e30f3ddac2e2d56cab84e",
+          "setfile_sha256": "715bce2fb8762cef12dcdff86eb6c144069b6d5a487d5e39fcaa1de71248a5ff"
+        },
+        "status": "DECLARED_NOT_REHASHED",
+        "window_end": "2022",
+        "window_start": "2017"
+      },
+      "ea_id": "QM5_11422",
+      "economic_result": {
+        "fund_score": 0.15770834223088062,
+        "release_economics": "NOT_ESTABLISHED",
+        "score_record": {
+          "active_days_per_60d": 3.0,
+          "active_days_per_60d_detail": {
+            "active_days_total": 532,
+            "active_definition": "challenge_book_60d.active (entry, close, every held day)",
+            "max": 25.0,
+            "mean": 10.841,
+            "median": 11.0,
+            "min": 0.0,
+            "p10": 3.0,
+            "p20": 6.0,
+            "span_days": 2859,
+            "statistic": "p10",
+            "window_anchoring": "calendar_grid_step_1d",
+            "window_days": 60,
+            "windows": 2801
+          },
+          "denominator": 3.04391,
+          "formula": "med60_1x/max(2.0,2.0*abs(worst_day_1x),wdd_p90_1x)",
+          "formula_inputs": {
+            "daily_loss_multiplier": 2.0,
+            "denominator": 3.04391,
+            "floor": 2.0,
+            "med60_1x": 0.4800499999999998,
+            "wdd_p90_1x": 3.04391,
+            "worst_day_1x_abs": 1.2262799999999998
+          },
+          "fund_score": 0.15770834223088062,
+          "input_stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11422_USDCAD_DWX.jsonl",
+          "input_stream_sha256": "7ce6cc3ec2f1279c18e8601119e3319375d5d3fa1ce4cf95cf33e05eefc33198",
+          "med60_1x": 0.4800499999999998,
+          "screening_only": true,
+          "sleeve": "11422:USDCAD",
+          "status": "SCORED",
+          "wdd_p90_1x": 3.04391,
+          "worst_day_1x": 1.2262799999999998
+        },
+        "source_matches_bound_stream": true,
+        "status": "CURRENT_SCREENING_ONLY"
+      },
+      "execution_readiness": "NOT_AUTHORIZED_BY_THIS_PROJECTION",
+      "historical_contiguity": {
+        "missing_link": null,
+        "reference_highest": "Q14",
+        "valid_gates": [
+          "Q02",
+          "Q03",
+          "Q04",
+          "Q05",
+          "Q06",
+          "Q07",
+          "Q08",
+          "Q09",
+          "Q10",
+          "Q11",
+          "Q12",
+          "Q13",
+          "Q14"
+        ],
+        "witnesses": [
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\7922733b-c27e-4829-9f21-2c8e1e16e03e\\QM5_11422\\20260802_230626\\summary.json",
+            "evidence_sha256_observed": null,
+            "gate": "Q02",
+            "identity": {
+              "ex5_sha256": "2b98e9e902313148be78d88513fcbda2476150b1a7605eb15a50b2cca6b32d66",
+              "mq5_sha256": "a68b9f02372edd490f2af9ea32efa6606df7c2d8b40e30f3ddac2e2d56cab84e",
+              "setfile_sha256": "715bce2fb8762cef12dcdff86eb6c144069b6d5a487d5e39fcaa1de71248a5ff"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "7922733b-c27e-4829-9f21-2c8e1e16e03e"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\fcc592e5-104c-4297-832a-dada12ff8205\\QM5_11422\\20260803_090543\\summary.json",
+            "evidence_sha256_observed": null,
+            "gate": "Q03",
+            "identity": {
+              "ex5_sha256": "2b98e9e902313148be78d88513fcbda2476150b1a7605eb15a50b2cca6b32d66",
+              "mq5_sha256": "a68b9f02372edd490f2af9ea32efa6606df7c2d8b40e30f3ddac2e2d56cab84e",
+              "setfile_sha256": "715bce2fb8762cef12dcdff86eb6c144069b6d5a487d5e39fcaa1de71248a5ff"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "fcc592e5-104c-4297-832a-dada12ff8205"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_11422\\Q04\\USDCAD.DWX__fd0d448f-faf0-4ff1-a994-8ac8435e6c13\\aggregate.json",
+            "evidence_sha256_observed": null,
+            "gate": "Q04",
+            "identity": {
+              "ex5_sha256": "2b98e9e902313148be78d88513fcbda2476150b1a7605eb15a50b2cca6b32d66",
+              "mq5_sha256": null,
+              "setfile_sha256": null
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "fd0d448f-faf0-4ff1-a994-8ac8435e6c13"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\645f01d9-7ec4-43b5-af90-01eff36e393a\\QM5_11422\\Q05\\USDCAD_DWX\\aggregate.json",
+            "evidence_sha256_observed": null,
+            "gate": "Q05",
+            "identity": {
+              "ex5_sha256": "2b98e9e902313148be78d88513fcbda2476150b1a7605eb15a50b2cca6b32d66",
+              "mq5_sha256": null,
+              "setfile_sha256": null
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "645f01d9-7ec4-43b5-af90-01eff36e393a"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\6262e5b1-274e-4b55-aad5-9081d3c8f7b1\\QM5_11422\\Q06\\USDCAD_DWX\\aggregate.json",
+            "evidence_sha256_observed": null,
+            "gate": "Q06",
+            "identity": {
+              "ex5_sha256": "2b98e9e902313148be78d88513fcbda2476150b1a7605eb15a50b2cca6b32d66",
+              "mq5_sha256": null,
+              "setfile_sha256": null
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "6262e5b1-274e-4b55-aad5-9081d3c8f7b1"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\474ba0d0-00c1-4672-a14d-a465d635405f\\QM5_11422\\Q07\\USDCAD_DWX\\aggregate.json",
+            "evidence_sha256_observed": null,
+            "gate": "Q07",
+            "identity": {
+              "ex5_sha256": "2b98e9e902313148be78d88513fcbda2476150b1a7605eb15a50b2cca6b32d66",
+              "mq5_sha256": null,
+              "setfile_sha256": null
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "474ba0d0-00c1-4672-a14d-a465d635405f"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\2bd0f95c-6c62-4a53-92cf-04f0d39fbb48\\QM5_11422\\Q08\\USDCAD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "192f43834582d37ddbcbcd0f06238273ce7aa375069f0ceeb33cdaf98adc54fb",
+            "gate": "Q08",
+            "identity": {
+              "ex5_sha256": "2b98e9e902313148be78d88513fcbda2476150b1a7605eb15a50b2cca6b32d66",
+              "mq5_sha256": "a68b9f02372edd490f2af9ea32efa6606df7c2d8b40e30f3ddac2e2d56cab84e",
+              "setfile_sha256": "715bce2fb8762cef12dcdff86eb6c144069b6d5a487d5e39fcaa1de71248a5ff"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "2bd0f95c-6c62-4a53-92cf-04f0d39fbb48"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\0f23b026-2cc0-485f-8a05-e05f224134e0\\QM5_11422\\Q09\\USDCAD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "21caf28872feed940d740acb5ce6113ddf0373ea0b9138966fb3d5fffeaf7947",
+            "gate": "Q09",
+            "identity": {
+              "ex5_sha256": "2b98e9e902313148be78d88513fcbda2476150b1a7605eb15a50b2cca6b32d66",
+              "mq5_sha256": "a68b9f02372edd490f2af9ea32efa6606df7c2d8b40e30f3ddac2e2d56cab84e",
+              "setfile_sha256": "694afb11a64d3203cca5edb8a657421dc8d2a7a53986aec22e8b601134c7a9fa"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "0f23b026-2cc0-485f-8a05-e05f224134e0"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\7a300d92-3ffc-4268-abe6-6b0d53222715\\QM5_11422\\Q10_NEWS\\USDCAD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "d585e5050ff5ee54360ad03289c722058a10146812199c2e2d8eea0d3acc25f2",
+            "gate": "Q10",
+            "identity": {
+              "ex5_sha256": "2b98e9e902313148be78d88513fcbda2476150b1a7605eb15a50b2cca6b32d66",
+              "mq5_sha256": null,
+              "setfile_sha256": "715bce2fb8762cef12dcdff86eb6c144069b6d5a487d5e39fcaa1de71248a5ff"
+            },
+            "same_terminal_binary": true,
+            "verdict": "CONFIG_LOCKED",
+            "work_item_id": "7a300d92-3ffc-4268-abe6-6b0d53222715"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\74d8b0a8-fe3a-4ed9-bcb8-e940a8a911ca\\QM5_11422\\Q11\\USDCAD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "bf212d302935fe8082d09bbfcb2c28a9161b98f92e718c434d558b29a657aeec",
+            "gate": "Q11",
+            "identity": {
+              "ex5_sha256": "2b98e9e902313148be78d88513fcbda2476150b1a7605eb15a50b2cca6b32d66",
+              "mq5_sha256": "a68b9f02372edd490f2af9ea32efa6606df7c2d8b40e30f3ddac2e2d56cab84e",
+              "setfile_sha256": "694afb11a64d3203cca5edb8a657421dc8d2a7a53986aec22e8b601134c7a9fa"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "74d8b0a8-fe3a-4ed9-bcb8-e940a8a911ca"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\optimization_fork\\09c21c5c-1119-52e7-ac02-8cb3ead754c6\\receipt.json",
+            "evidence_sha256_observed": "34f49430863405277302afffcf10872c82ba03b2598340fb8f57f6a450e96722",
+            "gate": "Q12",
+            "identity": {
+              "ex5_sha256": "2b98e9e902313148be78d88513fcbda2476150b1a7605eb15a50b2cca6b32d66",
+              "mq5_sha256": "a68b9f02372edd490f2af9ea32efa6606df7c2d8b40e30f3ddac2e2d56cab84e",
+              "setfile_sha256": "715bce2fb8762cef12dcdff86eb6c144069b6d5a487d5e39fcaa1de71248a5ff"
+            },
+            "same_terminal_binary": true,
+            "verdict": "NO_FILTER_CHANGE",
+            "work_item_id": "09c21c5c-1119-52e7-ac02-8cb3ead754c6"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\optimization_fork\\b1ce8e01-5c2a-5f91-a03d-46a730baf4b9\\receipt.json",
+            "evidence_sha256_observed": "cf6977bd14e785e900c6918e168c24b3b46baeb206325d33c1f2f2f4304e0830",
+            "gate": "Q13",
+            "identity": {
+              "ex5_sha256": "2b98e9e902313148be78d88513fcbda2476150b1a7605eb15a50b2cca6b32d66",
+              "mq5_sha256": "a68b9f02372edd490f2af9ea32efa6606df7c2d8b40e30f3ddac2e2d56cab84e",
+              "setfile_sha256": "715bce2fb8762cef12dcdff86eb6c144069b6d5a487d5e39fcaa1de71248a5ff"
+            },
+            "same_terminal_binary": true,
+            "verdict": "NO_PARAMETER_CHANGE",
+            "work_item_id": "b1ce8e01-5c2a-5f91-a03d-46a730baf4b9"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\optimization_fork\\3078ad67-9a19-56cb-a252-0a112596343a\\receipt.json",
+            "evidence_sha256_observed": "197de269b326a3fc8d24c5522d8f0bf4eb48303f730e06c525c8a41dd5264c01",
+            "gate": "Q14",
+            "identity": {
+              "ex5_sha256": "2b98e9e902313148be78d88513fcbda2476150b1a7605eb15a50b2cca6b32d66",
+              "mq5_sha256": "a68b9f02372edd490f2af9ea32efa6606df7c2d8b40e30f3ddac2e2d56cab84e",
+              "setfile_sha256": "715bce2fb8762cef12dcdff86eb6c144069b6d5a487d5e39fcaa1de71248a5ff"
+            },
+            "same_terminal_binary": true,
+            "verdict": "KEEP_INCUMBENT",
+            "work_item_id": "3078ad67-9a19-56cb-a252-0a112596343a"
+          }
+        ]
+      },
+      "identity": {
+        "ex5_sha256": "2b98e9e902313148be78d88513fcbda2476150b1a7605eb15a50b2cca6b32d66",
+        "mq5_sha256": "a68b9f02372edd490f2af9ea32efa6606df7c2d8b40e30f3ddac2e2d56cab84e",
+        "setfile_sha256": "715bce2fb8762cef12dcdff86eb6c144069b6d5a487d5e39fcaa1de71248a5ff",
+        "terminal_evidence_sha256_observed": "197de269b326a3fc8d24c5522d8f0bf4eb48303f730e06c525c8a41dd5264c01",
+        "terminal_verdict": "KEEP_INCUMBENT",
+        "terminal_work_item_id": "3078ad67-9a19-56cb-a252-0a112596343a"
+      },
+      "next_step": "Review recorded identities and missing evidence; use the existing book guard and venue acceptance process.",
+      "owner": "Pipeline-Operator: evidence; Codex: review; OWNER: authorization",
+      "sealed_stream": {
+        "checked_existing_paths": [
+          "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11422_USDCAD_DWX.jsonl"
+        ],
+        "identity_status": "BOUND_STREAM_BUILD_SETFILE_SOURCE_AND_REPORT",
+        "located_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11422_USDCAD_DWX.jsonl",
+        "q08_evidence_path": "D:\\QM\\reports\\work_items\\2bd0f95c-6c62-4a53-92cf-04f0d39fbb48\\QM5_11422\\Q08\\USDCAD_DWX\\aggregate.json",
+        "q08_work_item_id": "2bd0f95c-6c62-4a53-92cf-04f0d39fbb48",
+        "recorded_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11422_USDCAD_DWX.jsonl",
+        "seal_content_sha256": "7ce6cc3ec2f1279c18e8601119e3319375d5d3fa1ce4cf95cf33e05eefc33198",
+        "source_artifact_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\11422_USDCAD_DWX.jsonl",
+        "status": "BOUND"
+      },
+      "symbol": "USDCAD.DWX",
+      "uncertainty_flags": [
+        "EXACT_CHAIN_LINEAGE_NOT_ATTESTED",
+        "CHAIN_EVIDENCE_BYTES_UNAVAILABLE",
+        "Q08_STREAM_RESEALED_AFTER_TERMINAL_CLOSURE",
+        "DATA_ARCHIVE_BYTES_NOT_REVALIDATED"
+      ]
+    },
+    {
+      "blocker": {
+        "missing_historical_gate": null,
+        "score_status": "CURRENT_SCREENING_ONLY",
+        "separate_release_requirements": [
+          "book_guard",
+          "exact_chain_attestation",
+          "venue_economic_acceptance",
+          "native_operational_proof"
+        ],
+        "stream_status": "BOUND",
+        "unavailable_witness_gates": [],
+        "unmatched_binary_gates": []
+      },
+      "data_version": {
+        "archive_admission": {
+          "activation_sha256": "61c8c72ccb0cb8038ae6ece7b89aa68f602b1637d8bc6b6c866f38492139134e",
+          "manifest_path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_custom_history_variant_a_20260809\\archive_manifest_owner_approved.json",
+          "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+          "selected_archive_rows": 108,
+          "selected_symbols": [
+            "NZDUSD.DWX"
+          ],
+          "status": "ACTIVE"
+        },
+        "archive_manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+        "artifact_identity": {
+          "data_window_end": "2022.12.31",
+          "data_window_start": "2018.07.02",
+          "ex5_sha256": "e18d477e63c40cb1002aa4d93d8efcc3ec6fddf1081fb73ad9df1b0a7a3042de",
+          "mq5_sha256": "47ccfa2c699ee25ecb55261227521ebb5f14c1996fea0b63213d8acfd8d5245d",
+          "setfile_sha256": "84b6dee70e76dea71119675c5e7372fdf3ef9deabfae3520e6c8b2922e2495c6"
+        },
+        "status": "DECLARED_NOT_REHASHED",
+        "window_end": "2022.12.31",
+        "window_start": "2018.07.02"
+      },
+      "ea_id": "QM5_11910",
+      "economic_result": {
+        "fund_score": 0.0946951231402219,
+        "release_economics": "NOT_ESTABLISHED",
+        "score_record": {
+          "active_days_per_60d": 0.0,
+          "active_days_per_60d_detail": {
+            "active_days_total": 232,
+            "active_definition": "challenge_book_60d.active (entry, close, every held day)",
+            "max": 33.0,
+            "mean": 4.853,
+            "median": 5.0,
+            "min": 0.0,
+            "p10": 0.0,
+            "p20": 0.0,
+            "span_days": 2635,
+            "statistic": "p10",
+            "window_anchoring": "calendar_grid_step_1d",
+            "window_days": 60,
+            "windows": 2577
+          },
+          "denominator": 2.05132,
+          "formula": "med60_1x/max(2.0,2.0*abs(worst_day_1x),wdd_p90_1x)",
+          "formula_inputs": {
+            "daily_loss_multiplier": 2.0,
+            "denominator": 2.05132,
+            "floor": 2.0,
+            "med60_1x": 0.19424999999999998,
+            "wdd_p90_1x": 1.02566,
+            "worst_day_1x_abs": 1.02566
+          },
+          "fund_score": 0.0946951231402219,
+          "input_stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11910_NZDUSD_DWX.jsonl",
+          "input_stream_sha256": "555bbee205432c62f06da96a0a291d14028dc5c88e3fa8b2792ad62bc5d885b0",
+          "med60_1x": 0.19424999999999998,
+          "screening_only": true,
+          "sleeve": "11910:NZDUSD",
+          "status": "SCORED",
+          "wdd_p90_1x": 1.02566,
+          "worst_day_1x": 1.02566
+        },
+        "source_matches_bound_stream": true,
+        "status": "CURRENT_SCREENING_ONLY"
+      },
+      "execution_readiness": "NOT_AUTHORIZED_BY_THIS_PROJECTION",
+      "historical_contiguity": {
+        "missing_link": null,
+        "reference_highest": "Q14",
+        "valid_gates": [
+          "Q02",
+          "Q03",
+          "Q04",
+          "Q05",
+          "Q06",
+          "Q07",
+          "Q08",
+          "Q09",
+          "Q10",
+          "Q11",
+          "Q12",
+          "Q13",
+          "Q14"
+        ],
+        "witnesses": [
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\71d1ad66-3f15-463c-ac55-76a0b09a86cd\\QM5_11910\\20260903_033419\\summary.json",
+            "evidence_sha256_observed": "e17e7e1e83c284fbd36d6206a0e784dbdfe79410ec37b98b27a3161c43caa118",
+            "gate": "Q02",
+            "identity": {
+              "ex5_sha256": "e18d477e63c40cb1002aa4d93d8efcc3ec6fddf1081fb73ad9df1b0a7a3042de",
+              "mq5_sha256": "47ccfa2c699ee25ecb55261227521ebb5f14c1996fea0b63213d8acfd8d5245d",
+              "setfile_sha256": "84b6dee70e76dea71119675c5e7372fdf3ef9deabfae3520e6c8b2922e2495c6"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "71d1ad66-3f15-463c-ac55-76a0b09a86cd"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\fa66883f-37b6-4ec9-90de-870b531ea728\\QM5_11910\\20260903_043018\\summary.json",
+            "evidence_sha256_observed": "b151e88c0d7a033e055477715fbd08c5746263cbe487013dfb3e05ce66135fa3",
+            "gate": "Q03",
+            "identity": {
+              "ex5_sha256": "e18d477e63c40cb1002aa4d93d8efcc3ec6fddf1081fb73ad9df1b0a7a3042de",
+              "mq5_sha256": "47ccfa2c699ee25ecb55261227521ebb5f14c1996fea0b63213d8acfd8d5245d",
+              "setfile_sha256": "84b6dee70e76dea71119675c5e7372fdf3ef9deabfae3520e6c8b2922e2495c6"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "fa66883f-37b6-4ec9-90de-870b531ea728"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_11910\\Q04\\NZDUSD.DWX__cdf56ffe-8bee-4157-ab5e-436b1e4fc0bd\\aggregate.json",
+            "evidence_sha256_observed": "55dae19e61978b00e63411bccc2533c803746c6ee1d138dbb2c312408dea2573",
+            "gate": "Q04",
+            "identity": {
+              "ex5_sha256": "e18d477e63c40cb1002aa4d93d8efcc3ec6fddf1081fb73ad9df1b0a7a3042de",
+              "mq5_sha256": "47ccfa2c699ee25ecb55261227521ebb5f14c1996fea0b63213d8acfd8d5245d",
+              "setfile_sha256": "84b6dee70e76dea71119675c5e7372fdf3ef9deabfae3520e6c8b2922e2495c6"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "cdf56ffe-8bee-4157-ab5e-436b1e4fc0bd"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\063eec00-41c2-4a1d-9afb-1f918a8791f0\\QM5_11910\\Q05\\NZDUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "2c6ffe14b70e4c5eb1da2066af7c20002b9e65e8485d57018b7fe9aefc691c57",
+            "gate": "Q05",
+            "identity": {
+              "ex5_sha256": "e18d477e63c40cb1002aa4d93d8efcc3ec6fddf1081fb73ad9df1b0a7a3042de",
+              "mq5_sha256": "47ccfa2c699ee25ecb55261227521ebb5f14c1996fea0b63213d8acfd8d5245d",
+              "setfile_sha256": "26f7319926183bbb44d7788424c23e0170724da063a7a2c87741e4af54c44dc1"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "063eec00-41c2-4a1d-9afb-1f918a8791f0"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\dbb6fc97-4ab1-4f52-a574-9785af9ed442\\QM5_11910\\Q06\\NZDUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "fc57942acc7bb7210b0844a686c116e0ca98f68d6ebba883bc7ea5cbc4c924e9",
+            "gate": "Q06",
+            "identity": {
+              "ex5_sha256": "e18d477e63c40cb1002aa4d93d8efcc3ec6fddf1081fb73ad9df1b0a7a3042de",
+              "mq5_sha256": "47ccfa2c699ee25ecb55261227521ebb5f14c1996fea0b63213d8acfd8d5245d",
+              "setfile_sha256": "cbbfa239c1d8eee5b563d6fbf88ef0b695826487f2a78db900f6bf05570751b6"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "dbb6fc97-4ab1-4f52-a574-9785af9ed442"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\797f03ae-173b-4c24-96f8-492f6f22930a\\QM5_11910\\Q07\\NZDUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "436fa9fcca53cb63c2faf1121eb07b5c833c8c56364c4ea6a3d603d2713e476e",
+            "gate": "Q07",
+            "identity": {
+              "ex5_sha256": "e18d477e63c40cb1002aa4d93d8efcc3ec6fddf1081fb73ad9df1b0a7a3042de",
+              "mq5_sha256": "47ccfa2c699ee25ecb55261227521ebb5f14c1996fea0b63213d8acfd8d5245d",
+              "setfile_sha256": "98c2efe88be2484ad2333695dce3b9c7ee37bc7dda64a5ac7c6e608438b7ebd2"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "797f03ae-173b-4c24-96f8-492f6f22930a"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\977a478e-1f23-4297-ac76-656bb497e2ec\\QM5_11910\\Q08\\NZDUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "3197b79318a08c48577fa3f1fb220a515bebaa0aac91392f2323f6489b0688bb",
+            "gate": "Q08",
+            "identity": {
+              "ex5_sha256": "e18d477e63c40cb1002aa4d93d8efcc3ec6fddf1081fb73ad9df1b0a7a3042de",
+              "mq5_sha256": "47ccfa2c699ee25ecb55261227521ebb5f14c1996fea0b63213d8acfd8d5245d",
+              "setfile_sha256": "84b6dee70e76dea71119675c5e7372fdf3ef9deabfae3520e6c8b2922e2495c6"
+            },
+            "same_terminal_binary": true,
+            "verdict": "FAIL_SOFT",
+            "work_item_id": "977a478e-1f23-4297-ac76-656bb497e2ec"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\859b114d-47fe-4729-9ed8-3e7a2eb214b8\\QM5_11910\\Q09\\NZDUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "0cd713d0890f3fc40ddb27b066c14a75c7d19c1a107dd60c924d7ff8ee154133",
+            "gate": "Q09",
+            "identity": {
+              "ex5_sha256": "e18d477e63c40cb1002aa4d93d8efcc3ec6fddf1081fb73ad9df1b0a7a3042de",
+              "mq5_sha256": "47ccfa2c699ee25ecb55261227521ebb5f14c1996fea0b63213d8acfd8d5245d",
+              "setfile_sha256": "d0cce4955fa552577f47cdbb721d882d9a63ac185c8b683c05b15f69a35a5047"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "859b114d-47fe-4729-9ed8-3e7a2eb214b8"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\f7264187-3b88-4216-8d0b-c6e2b9ee20ab\\QM5_11910\\Q10_NEWS\\NZDUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "3fed96e7cdfa54d8741c422033a5bf54f156d7498c555e9fecf311bc12ce5c24",
+            "gate": "Q10",
+            "identity": {
+              "ex5_sha256": "e18d477e63c40cb1002aa4d93d8efcc3ec6fddf1081fb73ad9df1b0a7a3042de",
+              "mq5_sha256": null,
+              "setfile_sha256": "84b6dee70e76dea71119675c5e7372fdf3ef9deabfae3520e6c8b2922e2495c6"
+            },
+            "same_terminal_binary": true,
+            "verdict": "CONFIG_LOCKED",
+            "work_item_id": "f7264187-3b88-4216-8d0b-c6e2b9ee20ab"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\839984e5-e25e-4cc5-83ab-dbdda6de83ea\\QM5_11910\\Q11\\NZDUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "8eff38ee151e4b58b758d2a0a60a13cfd8501924c44a2e44fe145cf336f559c2",
+            "gate": "Q11",
+            "identity": {
+              "ex5_sha256": "e18d477e63c40cb1002aa4d93d8efcc3ec6fddf1081fb73ad9df1b0a7a3042de",
+              "mq5_sha256": "47ccfa2c699ee25ecb55261227521ebb5f14c1996fea0b63213d8acfd8d5245d",
+              "setfile_sha256": "d0cce4955fa552577f47cdbb721d882d9a63ac185c8b683c05b15f69a35a5047"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "839984e5-e25e-4cc5-83ab-dbdda6de83ea"
+          },
+          {
+            "evidence_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11910_NZDUSD_DWX_2019_2025\\q12_selection_receipt.json",
+            "evidence_sha256_observed": "cc2b0d7b9c0a4926b1203811590cf9f99405cd4bdde54bee234ac001727f58e6",
+            "gate": "Q12",
+            "identity": {
+              "ex5_sha256": "e18d477e63c40cb1002aa4d93d8efcc3ec6fddf1081fb73ad9df1b0a7a3042de",
+              "mq5_sha256": "47ccfa2c699ee25ecb55261227521ebb5f14c1996fea0b63213d8acfd8d5245d",
+              "setfile_sha256": "84b6dee70e76dea71119675c5e7372fdf3ef9deabfae3520e6c8b2922e2495c6"
+            },
+            "same_terminal_binary": true,
+            "verdict": "NO_FILTER_CHANGE",
+            "work_item_id": "b764a145-feed-5f6b-a10d-6ad74656d508"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\optimization_fork\\0246037b-6a62-5e3f-a0d8-249b40c1e993\\receipt.json",
+            "evidence_sha256_observed": "2657a8da83d61ed391d8700a936dbe294518b17f685219c731ab0af727825fec",
+            "gate": "Q13",
+            "identity": {
+              "ex5_sha256": "e18d477e63c40cb1002aa4d93d8efcc3ec6fddf1081fb73ad9df1b0a7a3042de",
+              "mq5_sha256": "47ccfa2c699ee25ecb55261227521ebb5f14c1996fea0b63213d8acfd8d5245d",
+              "setfile_sha256": "84b6dee70e76dea71119675c5e7372fdf3ef9deabfae3520e6c8b2922e2495c6"
+            },
+            "same_terminal_binary": true,
+            "verdict": "NO_PARAMETER_CHANGE",
+            "work_item_id": "0246037b-6a62-5e3f-a0d8-249b40c1e993"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\optimization_fork\\e21567f4-e6f9-51e4-8c9a-c3b4ccef3272\\receipt.json",
+            "evidence_sha256_observed": "2c78f768bdccf84d312b8b9db4d6ebcf41f0b6bd2de7d914b38bcb9d9502bdab",
+            "gate": "Q14",
+            "identity": {
+              "ex5_sha256": "e18d477e63c40cb1002aa4d93d8efcc3ec6fddf1081fb73ad9df1b0a7a3042de",
+              "mq5_sha256": "47ccfa2c699ee25ecb55261227521ebb5f14c1996fea0b63213d8acfd8d5245d",
+              "setfile_sha256": "84b6dee70e76dea71119675c5e7372fdf3ef9deabfae3520e6c8b2922e2495c6"
+            },
+            "same_terminal_binary": true,
+            "verdict": "KEEP_INCUMBENT",
+            "work_item_id": "e21567f4-e6f9-51e4-8c9a-c3b4ccef3272"
+          }
+        ]
+      },
+      "identity": {
+        "ex5_sha256": "e18d477e63c40cb1002aa4d93d8efcc3ec6fddf1081fb73ad9df1b0a7a3042de",
+        "mq5_sha256": "47ccfa2c699ee25ecb55261227521ebb5f14c1996fea0b63213d8acfd8d5245d",
+        "setfile_sha256": "84b6dee70e76dea71119675c5e7372fdf3ef9deabfae3520e6c8b2922e2495c6",
+        "terminal_evidence_sha256_observed": "2c78f768bdccf84d312b8b9db4d6ebcf41f0b6bd2de7d914b38bcb9d9502bdab",
+        "terminal_verdict": "KEEP_INCUMBENT",
+        "terminal_work_item_id": "e21567f4-e6f9-51e4-8c9a-c3b4ccef3272"
+      },
+      "next_step": "Review recorded identities and missing evidence; use the existing book guard and venue acceptance process.",
+      "owner": "Pipeline-Operator: evidence; Codex: review; OWNER: authorization",
+      "sealed_stream": {
+        "checked_existing_paths": [
+          "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11910_NZDUSD_DWX.jsonl"
+        ],
+        "identity_status": "BOUND_STREAM_BUILD_SETFILE_SOURCE_AND_REPORT",
+        "located_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11910_NZDUSD_DWX.jsonl",
+        "q08_evidence_path": "D:\\QM\\reports\\work_items\\977a478e-1f23-4297-ac76-656bb497e2ec\\QM5_11910\\Q08\\NZDUSD_DWX\\aggregate.json",
+        "q08_work_item_id": "977a478e-1f23-4297-ac76-656bb497e2ec",
+        "recorded_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11910_NZDUSD_DWX.jsonl",
+        "seal_content_sha256": "555bbee205432c62f06da96a0a291d14028dc5c88e3fa8b2792ad62bc5d885b0",
+        "source_artifact_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\11910_NZDUSD_DWX.jsonl",
+        "status": "BOUND"
+      },
+      "symbol": "NZDUSD.DWX",
+      "uncertainty_flags": [
+        "EXACT_CHAIN_LINEAGE_NOT_ATTESTED",
+        "Q08_STREAM_RESEALED_AFTER_TERMINAL_CLOSURE",
+        "DATA_ARCHIVE_BYTES_NOT_REVALIDATED",
+        "Q08_FAIL_SOFT_OWNER_PASS_CLASS"
+      ]
+    },
+    {
+      "blocker": {
+        "missing_historical_gate": null,
+        "score_status": "CURRENT_SCREENING_ONLY",
+        "separate_release_requirements": [
+          "book_guard",
+          "exact_chain_attestation",
+          "venue_economic_acceptance",
+          "native_operational_proof"
+        ],
+        "stream_status": "BOUND",
+        "unavailable_witness_gates": [],
+        "unmatched_binary_gates": [
+          "Q04",
+          "Q05",
+          "Q06",
+          "Q07"
+        ]
+      },
+      "data_version": {
+        "archive_admission": {
+          "activation_sha256": "61c8c72ccb0cb8038ae6ece7b89aa68f602b1637d8bc6b6c866f38492139134e",
+          "manifest_path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_custom_history_variant_a_20260809\\archive_manifest_owner_approved.json",
+          "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+          "selected_archive_rows": 108,
+          "selected_symbols": [
+            "XTIUSD.DWX"
+          ],
+          "status": "ACTIVE"
+        },
+        "archive_manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+        "artifact_identity": {
+          "ex5_sha256": "2e65488fccdbd985f78318861a223a305d820a4fce3d2ebdcafae6ce956fd96d",
+          "mq5_sha256": "326b188c2be5160f6e5285060f821b82f64d319d1ae5595e0f6134f86cbd6be3",
+          "setfile_sha256": "d834b193a77b1d102f2108ed0d2d92af4d040e283ac272039f9e16292c87b80c"
+        },
+        "status": "DECLARED_NOT_REHASHED",
+        "window_end": null,
+        "window_start": null
+      },
+      "ea_id": "QM5_13054",
+      "economic_result": {
+        "fund_score": 0.024265000000000002,
+        "release_economics": "NOT_ESTABLISHED",
+        "score_record": {
+          "active_days_per_60d": 2.0,
+          "active_days_per_60d_detail": {
+            "active_days_total": 263,
+            "active_definition": "challenge_book_60d.active (entry, close, every held day)",
+            "max": 11.0,
+            "mean": 5.431,
+            "median": 6.0,
+            "min": 0.0,
+            "p10": 2.0,
+            "p20": 4.0,
+            "span_days": 2864,
+            "statistic": "p10",
+            "window_anchoring": "calendar_grid_step_1d",
+            "window_days": 60,
+            "windows": 2806
+          },
+          "denominator": 2.0,
+          "formula": "med60_1x/max(2.0,2.0*abs(worst_day_1x),wdd_p90_1x)",
+          "formula_inputs": {
+            "daily_loss_multiplier": 2.0,
+            "denominator": 2.0,
+            "floor": 2.0,
+            "med60_1x": 0.048530000000000004,
+            "wdd_p90_1x": 0.8125,
+            "worst_day_1x_abs": 0.96802
+          },
+          "fund_score": 0.024265000000000002,
+          "input_stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13054_XTIUSD_DWX.jsonl",
+          "input_stream_sha256": "67d4fe2cef067e041f01d10e5e6c98312a32b43683eee2da3d0bfa9af296955b",
+          "med60_1x": 0.048530000000000004,
+          "screening_only": true,
+          "sleeve": "13054:XTIUSD",
+          "status": "SCORED",
+          "wdd_p90_1x": 0.8125,
+          "worst_day_1x": 0.96802
+        },
+        "source_matches_bound_stream": true,
+        "status": "CURRENT_SCREENING_ONLY"
+      },
+      "execution_readiness": "NOT_AUTHORIZED_BY_THIS_PROJECTION",
+      "historical_contiguity": {
+        "missing_link": null,
+        "reference_highest": "Q14",
+        "valid_gates": [
+          "Q02",
+          "Q03",
+          "Q04",
+          "Q05",
+          "Q06",
+          "Q07",
+          "Q08",
+          "Q09",
+          "Q10",
+          "Q11",
+          "Q12",
+          "Q13",
+          "Q14"
+        ],
+        "witnesses": [
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\b43f34fe-53e1-4e4e-9d78-d88b6a2fdc2e\\QM5_13054\\20260812_183451\\summary.json",
+            "evidence_sha256_observed": "b858b37a3cf4be3050f2c02c4d1670ddf874e50f320dd68a6b070492512d53f2",
+            "gate": "Q02",
+            "identity": {
+              "ex5_sha256": "2e65488fccdbd985f78318861a223a305d820a4fce3d2ebdcafae6ce956fd96d",
+              "mq5_sha256": "326b188c2be5160f6e5285060f821b82f64d319d1ae5595e0f6134f86cbd6be3",
+              "setfile_sha256": "d834b193a77b1d102f2108ed0d2d92af4d040e283ac272039f9e16292c87b80c"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "b43f34fe-53e1-4e4e-9d78-d88b6a2fdc2e"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\55925bca-e522-431b-8c77-a22832ff0d6b\\QM5_13054\\20260813_155949\\summary.json",
+            "evidence_sha256_observed": "0367f9c50f8539608aba4cba06d33c13afa54920cd939402536a6f9ee20f2d55",
+            "gate": "Q03",
+            "identity": {
+              "ex5_sha256": "2e65488fccdbd985f78318861a223a305d820a4fce3d2ebdcafae6ce956fd96d",
+              "mq5_sha256": "326b188c2be5160f6e5285060f821b82f64d319d1ae5595e0f6134f86cbd6be3",
+              "setfile_sha256": "d834b193a77b1d102f2108ed0d2d92af4d040e283ac272039f9e16292c87b80c"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "55925bca-e522-431b-8c77-a22832ff0d6b"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_13054\\Q04\\XTIUSD.DWX__dbe0e4ab-2bcd-413f-a9cf-c078bab3da17\\aggregate.json",
+            "evidence_sha256_observed": "a4698b1e5b1d6ec268b985a7c5162dbcc9e1f9206aaa81c1f1da6ae54a227fac",
+            "gate": "Q04",
+            "identity": {
+              "ex5_sha256": null,
+              "mq5_sha256": null,
+              "setfile_sha256": null
+            },
+            "same_terminal_binary": false,
+            "verdict": "PASS_LOWFREQ",
+            "work_item_id": "dbe0e4ab-2bcd-413f-a9cf-c078bab3da17"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\bd50cb84-77aa-4e8d-a596-243db7c021ff\\QM5_13054\\Q05\\XTIUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "8bfd4b9fdc8a71bd1be347ebd81bac7a3ab90a36dc3b03384b49fa455fda4939",
+            "gate": "Q05",
+            "identity": {
+              "ex5_sha256": null,
+              "mq5_sha256": null,
+              "setfile_sha256": null
+            },
+            "same_terminal_binary": false,
+            "verdict": "PASS",
+            "work_item_id": "bd50cb84-77aa-4e8d-a596-243db7c021ff"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\d11bffa2-b66d-4249-9ce4-f63cd0c6db8d\\QM5_13054\\Q06\\XTIUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "7f9fe04c8e5f777b68fe24f0e9e82e119c3c7929040ef295e4a053ec69cfd220",
+            "gate": "Q06",
+            "identity": {
+              "ex5_sha256": null,
+              "mq5_sha256": null,
+              "setfile_sha256": null
+            },
+            "same_terminal_binary": false,
+            "verdict": "PASS",
+            "work_item_id": "d11bffa2-b66d-4249-9ce4-f63cd0c6db8d"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\fd882da0-8822-427f-9266-1f300154b1d1\\QM5_13054\\Q07\\XTIUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "726365a04bdd61f6048fdb0f7c6405be90dc06defc9d27030c8e880b6ce5d715",
+            "gate": "Q07",
+            "identity": {
+              "ex5_sha256": null,
+              "mq5_sha256": null,
+              "setfile_sha256": null
+            },
+            "same_terminal_binary": false,
+            "verdict": "PASS",
+            "work_item_id": "fd882da0-8822-427f-9266-1f300154b1d1"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\21dd6839-4d77-4228-b5ba-5dd86aeb0cdb\\QM5_13054\\Q08\\XTIUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "4a503d9571a5cfd76d32525783e3f799a9df7bcacf04958393cd1721ee04d95c",
+            "gate": "Q08",
+            "identity": {
+              "ex5_sha256": "2e65488fccdbd985f78318861a223a305d820a4fce3d2ebdcafae6ce956fd96d",
+              "mq5_sha256": "326b188c2be5160f6e5285060f821b82f64d319d1ae5595e0f6134f86cbd6be3",
+              "setfile_sha256": "d834b193a77b1d102f2108ed0d2d92af4d040e283ac272039f9e16292c87b80c"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "21dd6839-4d77-4228-b5ba-5dd86aeb0cdb"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\1470d160-06ff-4d20-8b6a-977e02740d03\\QM5_13054\\Q09\\XTIUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "efc4f9e769ef448adfb7e78ba1f363857f75e042564937e17ab092b18ef51a33",
+            "gate": "Q09",
+            "identity": {
+              "ex5_sha256": "2e65488fccdbd985f78318861a223a305d820a4fce3d2ebdcafae6ce956fd96d",
+              "mq5_sha256": "326b188c2be5160f6e5285060f821b82f64d319d1ae5595e0f6134f86cbd6be3",
+              "setfile_sha256": "f55625cd8bb1f3e1edef4bafd2e4da202cb3e331ef2c144a9f0635a3c978a9d9"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "1470d160-06ff-4d20-8b6a-977e02740d03"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\15c0377e-f79f-4662-a406-9cdee6496db3\\QM5_13054\\Q10_NEWS\\XTIUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "f06ee2692188b9ac4b99acde1d88eed5f9154ed168b4e0efc0cc0de9dd494d30",
+            "gate": "Q10",
+            "identity": {
+              "ex5_sha256": "2e65488fccdbd985f78318861a223a305d820a4fce3d2ebdcafae6ce956fd96d",
+              "mq5_sha256": null,
+              "setfile_sha256": "d834b193a77b1d102f2108ed0d2d92af4d040e283ac272039f9e16292c87b80c"
+            },
+            "same_terminal_binary": true,
+            "verdict": "CONFIG_LOCKED",
+            "work_item_id": "15c0377e-f79f-4662-a406-9cdee6496db3"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\13b68541-4b32-47e5-989e-3897d4e73985\\QM5_13054\\Q11\\XTIUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "784f9f67e9cc5c5a3af68a1a774dfedcf0bc500c1b11c162a0a01c9992203007",
+            "gate": "Q11",
+            "identity": {
+              "ex5_sha256": "2e65488fccdbd985f78318861a223a305d820a4fce3d2ebdcafae6ce956fd96d",
+              "mq5_sha256": "326b188c2be5160f6e5285060f821b82f64d319d1ae5595e0f6134f86cbd6be3",
+              "setfile_sha256": "f55625cd8bb1f3e1edef4bafd2e4da202cb3e331ef2c144a9f0635a3c978a9d9"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "13b68541-4b32-47e5-989e-3897d4e73985"
+          },
+          {
+            "evidence_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_13054_XTIUSD_DWX_2019_2025\\q12_selection_receipt.json",
+            "evidence_sha256_observed": "72fdfb6f6cc85169e0758dc1ed49d3c954a494aa8a911fcce850c4fc0d42f491",
+            "gate": "Q12",
+            "identity": {
+              "ex5_sha256": "2e65488fccdbd985f78318861a223a305d820a4fce3d2ebdcafae6ce956fd96d",
+              "mq5_sha256": "326b188c2be5160f6e5285060f821b82f64d319d1ae5595e0f6134f86cbd6be3",
+              "setfile_sha256": "d834b193a77b1d102f2108ed0d2d92af4d040e283ac272039f9e16292c87b80c"
+            },
+            "same_terminal_binary": true,
+            "verdict": "NO_FILTER_CHANGE",
+            "work_item_id": "a5b90e08-cf49-51ac-be59-1d4926da2363"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\optimization_fork\\83c1e21f-2b8f-5def-818f-b38a8524a8b5\\receipt.json",
+            "evidence_sha256_observed": "bce033e32beb7004d62efa3bd7703862292031a460b6183cc07fcfd91c60edc9",
+            "gate": "Q13",
+            "identity": {
+              "ex5_sha256": "2e65488fccdbd985f78318861a223a305d820a4fce3d2ebdcafae6ce956fd96d",
+              "mq5_sha256": "326b188c2be5160f6e5285060f821b82f64d319d1ae5595e0f6134f86cbd6be3",
+              "setfile_sha256": "d834b193a77b1d102f2108ed0d2d92af4d040e283ac272039f9e16292c87b80c"
+            },
+            "same_terminal_binary": true,
+            "verdict": "NO_PARAMETER_CHANGE",
+            "work_item_id": "83c1e21f-2b8f-5def-818f-b38a8524a8b5"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\optimization_fork\\4aaa524d-c11a-5725-8de7-f1d00d51eca9\\receipt.json",
+            "evidence_sha256_observed": "2d2bfe2153ed020b2cda31a3a229878061a3e91b832c5540b56d3a7b95c4080f",
+            "gate": "Q14",
+            "identity": {
+              "ex5_sha256": "2e65488fccdbd985f78318861a223a305d820a4fce3d2ebdcafae6ce956fd96d",
+              "mq5_sha256": "326b188c2be5160f6e5285060f821b82f64d319d1ae5595e0f6134f86cbd6be3",
+              "setfile_sha256": "d834b193a77b1d102f2108ed0d2d92af4d040e283ac272039f9e16292c87b80c"
+            },
+            "same_terminal_binary": true,
+            "verdict": "KEEP_INCUMBENT",
+            "work_item_id": "4aaa524d-c11a-5725-8de7-f1d00d51eca9"
+          }
+        ]
+      },
+      "identity": {
+        "ex5_sha256": "2e65488fccdbd985f78318861a223a305d820a4fce3d2ebdcafae6ce956fd96d",
+        "mq5_sha256": "326b188c2be5160f6e5285060f821b82f64d319d1ae5595e0f6134f86cbd6be3",
+        "setfile_sha256": "d834b193a77b1d102f2108ed0d2d92af4d040e283ac272039f9e16292c87b80c",
+        "terminal_evidence_sha256_observed": "2d2bfe2153ed020b2cda31a3a229878061a3e91b832c5540b56d3a7b95c4080f",
+        "terminal_verdict": "KEEP_INCUMBENT",
+        "terminal_work_item_id": "4aaa524d-c11a-5725-8de7-f1d00d51eca9"
+      },
+      "next_step": "Review recorded identities and missing evidence; use the existing book guard and venue acceptance process.",
+      "owner": "Pipeline-Operator: evidence; Codex: review; OWNER: authorization",
+      "sealed_stream": {
+        "checked_existing_paths": [
+          "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13054_XTIUSD_DWX.jsonl"
+        ],
+        "identity_status": "BOUND_STREAM_BUILD_SETFILE_SOURCE_AND_REPORT",
+        "located_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13054_XTIUSD_DWX.jsonl",
+        "q08_evidence_path": "D:\\QM\\reports\\work_items\\21dd6839-4d77-4228-b5ba-5dd86aeb0cdb\\QM5_13054\\Q08\\XTIUSD_DWX\\aggregate.json",
+        "q08_work_item_id": "21dd6839-4d77-4228-b5ba-5dd86aeb0cdb",
+        "recorded_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13054_XTIUSD_DWX.jsonl",
+        "seal_content_sha256": "67d4fe2cef067e041f01d10e5e6c98312a32b43683eee2da3d0bfa9af296955b",
+        "source_artifact_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\13054_XTIUSD_DWX.jsonl",
+        "status": "BOUND"
+      },
+      "symbol": "XTIUSD.DWX",
+      "uncertainty_flags": [
+        "EXACT_CHAIN_LINEAGE_NOT_ATTESTED",
+        "CHAIN_BINARY_IDENTITY_MISSING_OR_MIXED",
+        "Q08_STREAM_RESEALED_AFTER_TERMINAL_CLOSURE",
+        "DATA_ARCHIVE_BYTES_NOT_REVALIDATED"
+      ]
+    },
+    {
+      "blocker": {
+        "missing_historical_gate": null,
+        "score_status": "CURRENT_SCREENING_ONLY",
+        "separate_release_requirements": [
+          "book_guard",
+          "exact_chain_attestation",
+          "venue_economic_acceptance",
+          "native_operational_proof"
+        ],
+        "stream_status": "BOUND",
+        "unavailable_witness_gates": [],
+        "unmatched_binary_gates": [
+          "Q04",
+          "Q05",
+          "Q06",
+          "Q07"
+        ]
+      },
+      "data_version": {
+        "archive_admission": {
+          "activation_sha256": "61c8c72ccb0cb8038ae6ece7b89aa68f602b1637d8bc6b6c866f38492139134e",
+          "manifest_path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_custom_history_variant_a_20260809\\archive_manifest_owner_approved.json",
+          "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+          "selected_archive_rows": 108,
+          "selected_symbols": [
+            "XAGUSD.DWX"
+          ],
+          "status": "ACTIVE"
+        },
+        "archive_manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+        "artifact_identity": {
+          "data_window_end": "2022",
+          "data_window_start": "2017",
+          "ex5_sha256": "142a019e773a493def0640722efb9d591d094650b35a69d5de39f6af3a048106",
+          "mq5_sha256": "7edf9ade3dec02496e739c3cf1c653eb33bcc4339a223907877f2c78a393fc32",
+          "setfile_sha256": "4e7e56399910999c4ec6b842496efc900dcee16b0547db7625d0808fd25de211"
+        },
+        "status": "DECLARED_NOT_REHASHED",
+        "window_end": "2022",
+        "window_start": "2017"
+      },
+      "ea_id": "QM5_1537",
+      "economic_result": {
+        "fund_score": 0.13123749999999998,
+        "release_economics": "NOT_ESTABLISHED",
+        "score_record": {
+          "active_days_per_60d": 0.0,
+          "active_days_per_60d_detail": {
+            "active_days_total": 271,
+            "active_definition": "challenge_book_60d.active (entry, close, every held day)",
+            "max": 21.0,
+            "mean": 7.175,
+            "median": 8.0,
+            "min": 0.0,
+            "p10": 0.0,
+            "p20": 0.0,
+            "span_days": 2226,
+            "statistic": "p10",
+            "window_anchoring": "calendar_grid_step_1d",
+            "window_days": 60,
+            "windows": 2168
+          },
+          "denominator": 2.0,
+          "formula": "med60_1x/max(2.0,2.0*abs(worst_day_1x),wdd_p90_1x)",
+          "formula_inputs": {
+            "daily_loss_multiplier": 2.0,
+            "denominator": 2.0,
+            "floor": 2.0,
+            "med60_1x": 0.26247499999999996,
+            "wdd_p90_1x": 1.2435100000000003,
+            "worst_day_1x_abs": 0.9096500000000001
+          },
+          "fund_score": 0.13123749999999998,
+          "input_stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\1537_XAGUSD_DWX.jsonl",
+          "input_stream_sha256": "1885c21e4c895827c79ff3d55849308ab4ee5c0db96a7d576cd652dc3eff8658",
+          "med60_1x": 0.26247499999999996,
+          "screening_only": true,
+          "sleeve": "1537:XAGUSD",
+          "status": "SCORED",
+          "wdd_p90_1x": 1.2435100000000003,
+          "worst_day_1x": 0.9096500000000001
+        },
+        "source_matches_bound_stream": true,
+        "status": "CURRENT_SCREENING_ONLY"
+      },
+      "execution_readiness": "NOT_AUTHORIZED_BY_THIS_PROJECTION",
+      "historical_contiguity": {
+        "missing_link": null,
+        "reference_highest": "Q14",
+        "valid_gates": [
+          "Q02",
+          "Q03",
+          "Q04",
+          "Q05",
+          "Q06",
+          "Q07",
+          "Q08",
+          "Q09",
+          "Q10",
+          "Q11",
+          "Q12",
+          "Q13",
+          "Q14"
+        ],
+        "witnesses": [
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\e9e72e6f-4af7-44ba-97b0-6af8eed26078\\QM5_1537\\20260816_101741\\summary.json",
+            "evidence_sha256_observed": "ebaf4283e20c63009193cf8a5ddc4f5beeccc309b6189afa268a05a231d7b37d",
+            "gate": "Q02",
+            "identity": {
+              "ex5_sha256": "142a019e773a493def0640722efb9d591d094650b35a69d5de39f6af3a048106",
+              "mq5_sha256": "7edf9ade3dec02496e739c3cf1c653eb33bcc4339a223907877f2c78a393fc32",
+              "setfile_sha256": "4e7e56399910999c4ec6b842496efc900dcee16b0547db7625d0808fd25de211"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "e9e72e6f-4af7-44ba-97b0-6af8eed26078"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\0acddb26-f5be-46f4-b327-ed9e4bfb2214\\QM5_1537\\20260831_052737\\summary.json",
+            "evidence_sha256_observed": "200e1182f93dcc3405de88a98b286390a5e56ec9ad5c89daf66a7255747370b4",
+            "gate": "Q03",
+            "identity": {
+              "ex5_sha256": "142a019e773a493def0640722efb9d591d094650b35a69d5de39f6af3a048106",
+              "mq5_sha256": "7edf9ade3dec02496e739c3cf1c653eb33bcc4339a223907877f2c78a393fc32",
+              "setfile_sha256": "4e7e56399910999c4ec6b842496efc900dcee16b0547db7625d0808fd25de211"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "0acddb26-f5be-46f4-b327-ed9e4bfb2214"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1537\\Q04\\XAGUSD.DWX__ec368319-caff-46e4-9632-62ac8a907677\\aggregate.json",
+            "evidence_sha256_observed": "1e1983bf598aa1b395e3d4b98689a9c6a1de17e78dcbce033f1d753dbbd5bb32",
+            "gate": "Q04",
+            "identity": {
+              "ex5_sha256": null,
+              "mq5_sha256": null,
+              "setfile_sha256": null
+            },
+            "same_terminal_binary": false,
+            "verdict": "PASS_LOWFREQ",
+            "work_item_id": "ec368319-caff-46e4-9632-62ac8a907677"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\cab37cb4-83a7-4463-be51-eac3f6959e47\\QM5_1537\\Q05\\XAGUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "b11daf0e32d597db3ef9324186a281bf0483141fbdcd77584486f84882947876",
+            "gate": "Q05",
+            "identity": {
+              "ex5_sha256": null,
+              "mq5_sha256": null,
+              "setfile_sha256": null
+            },
+            "same_terminal_binary": false,
+            "verdict": "PASS",
+            "work_item_id": "cab37cb4-83a7-4463-be51-eac3f6959e47"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\247bfd7e-3179-4697-bd4d-1afd559cf93a\\QM5_1537\\Q06\\XAGUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "94caaf5447019e548d4db2e5f085a02e01533658d2295fbf52756fa2b6266583",
+            "gate": "Q06",
+            "identity": {
+              "ex5_sha256": null,
+              "mq5_sha256": null,
+              "setfile_sha256": null
+            },
+            "same_terminal_binary": false,
+            "verdict": "PASS",
+            "work_item_id": "247bfd7e-3179-4697-bd4d-1afd559cf93a"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\5e832838-5d29-4405-86b1-b4840eac22cf\\QM5_1537\\Q07\\XAGUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "e204628793ef361f9530053f03354db601d0ba28a0e83d9d59dbadcfc27eeae9",
+            "gate": "Q07",
+            "identity": {
+              "ex5_sha256": null,
+              "mq5_sha256": null,
+              "setfile_sha256": null
+            },
+            "same_terminal_binary": false,
+            "verdict": "PASS",
+            "work_item_id": "5e832838-5d29-4405-86b1-b4840eac22cf"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\f62fe6b3-f734-466e-95dd-d7ca76294729\\QM5_1537\\Q08\\XAGUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "9f0e9d02c2dbed74a8b5a8bbf0a86cfb57f8ca046d42845a8e9e2b5fd415490a",
+            "gate": "Q08",
+            "identity": {
+              "ex5_sha256": "142a019e773a493def0640722efb9d591d094650b35a69d5de39f6af3a048106",
+              "mq5_sha256": "7edf9ade3dec02496e739c3cf1c653eb33bcc4339a223907877f2c78a393fc32",
+              "setfile_sha256": "4e7e56399910999c4ec6b842496efc900dcee16b0547db7625d0808fd25de211"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "f62fe6b3-f734-466e-95dd-d7ca76294729"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\5d720d0c-bc97-4ab5-8802-b92c6c0679c6\\QM5_1537\\Q09\\XAGUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "186f167a27eb2f9800b7941b42a36b6de2f6d931c231b4f01a684306912c1f40",
+            "gate": "Q09",
+            "identity": {
+              "ex5_sha256": "142a019e773a493def0640722efb9d591d094650b35a69d5de39f6af3a048106",
+              "mq5_sha256": "7edf9ade3dec02496e739c3cf1c653eb33bcc4339a223907877f2c78a393fc32",
+              "setfile_sha256": "b54956d180d4163d9b0d6a42f906f26e1950b371db58653df2763d3e16d80743"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "5d720d0c-bc97-4ab5-8802-b92c6c0679c6"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\fac4d930-13b6-469e-8fe2-51ce06907f02\\QM5_1537\\Q10_NEWS\\XAGUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "939df2fc076bf4b0a292ba1444e7d4d434b424ce7f30feb9a6511b170c9dd605",
+            "gate": "Q10",
+            "identity": {
+              "ex5_sha256": "142a019e773a493def0640722efb9d591d094650b35a69d5de39f6af3a048106",
+              "mq5_sha256": null,
+              "setfile_sha256": "4e7e56399910999c4ec6b842496efc900dcee16b0547db7625d0808fd25de211"
+            },
+            "same_terminal_binary": true,
+            "verdict": "CONFIG_LOCKED",
+            "work_item_id": "fac4d930-13b6-469e-8fe2-51ce06907f02"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\a7b8d730-6e67-461d-b510-c073292117a5\\QM5_1537\\Q11\\XAGUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "928db37408773b094fc2b994cc26f373e0c4a48aff6762b23b74754fe305fff9",
+            "gate": "Q11",
+            "identity": {
+              "ex5_sha256": "142a019e773a493def0640722efb9d591d094650b35a69d5de39f6af3a048106",
+              "mq5_sha256": "7edf9ade3dec02496e739c3cf1c653eb33bcc4339a223907877f2c78a393fc32",
+              "setfile_sha256": "b54956d180d4163d9b0d6a42f906f26e1950b371db58653df2763d3e16d80743"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "a7b8d730-6e67-461d-b510-c073292117a5"
+          },
+          {
+            "evidence_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_1537_XAGUSD_DWX_2019_2025\\q12_selection_receipt.json",
+            "evidence_sha256_observed": "5db5bc0f7b6ab2a747389564550e382d6857a2e3778f8005b66c674202534661",
+            "gate": "Q12",
+            "identity": {
+              "ex5_sha256": "142a019e773a493def0640722efb9d591d094650b35a69d5de39f6af3a048106",
+              "mq5_sha256": "7edf9ade3dec02496e739c3cf1c653eb33bcc4339a223907877f2c78a393fc32",
+              "setfile_sha256": "4e7e56399910999c4ec6b842496efc900dcee16b0547db7625d0808fd25de211"
+            },
+            "same_terminal_binary": true,
+            "verdict": "NO_FILTER_CHANGE",
+            "work_item_id": "c41e2606-3af1-5766-9bb7-18de8a763a18"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\optimization_fork\\7206a7a5-1f89-5fa7-a105-0ff674ca6743\\receipt.json",
+            "evidence_sha256_observed": "3617db15728401f7595743749fdcffa9750285c45ba981c7dde40268a9f1c450",
+            "gate": "Q13",
+            "identity": {
+              "ex5_sha256": "142a019e773a493def0640722efb9d591d094650b35a69d5de39f6af3a048106",
+              "mq5_sha256": "7edf9ade3dec02496e739c3cf1c653eb33bcc4339a223907877f2c78a393fc32",
+              "setfile_sha256": "4e7e56399910999c4ec6b842496efc900dcee16b0547db7625d0808fd25de211"
+            },
+            "same_terminal_binary": true,
+            "verdict": "NO_PARAMETER_CHANGE",
+            "work_item_id": "7206a7a5-1f89-5fa7-a105-0ff674ca6743"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\optimization_fork\\18859f02-5371-5094-a7a5-b63619482545\\receipt.json",
+            "evidence_sha256_observed": "d0edd60672a1e210b5c67b8dbe54e90e279b688045a99389db6ab2e1df527748",
+            "gate": "Q14",
+            "identity": {
+              "ex5_sha256": "142a019e773a493def0640722efb9d591d094650b35a69d5de39f6af3a048106",
+              "mq5_sha256": "7edf9ade3dec02496e739c3cf1c653eb33bcc4339a223907877f2c78a393fc32",
+              "setfile_sha256": "4e7e56399910999c4ec6b842496efc900dcee16b0547db7625d0808fd25de211"
+            },
+            "same_terminal_binary": true,
+            "verdict": "KEEP_INCUMBENT",
+            "work_item_id": "18859f02-5371-5094-a7a5-b63619482545"
+          }
+        ]
+      },
+      "identity": {
+        "ex5_sha256": "142a019e773a493def0640722efb9d591d094650b35a69d5de39f6af3a048106",
+        "mq5_sha256": "7edf9ade3dec02496e739c3cf1c653eb33bcc4339a223907877f2c78a393fc32",
+        "setfile_sha256": "4e7e56399910999c4ec6b842496efc900dcee16b0547db7625d0808fd25de211",
+        "terminal_evidence_sha256_observed": "d0edd60672a1e210b5c67b8dbe54e90e279b688045a99389db6ab2e1df527748",
+        "terminal_verdict": "KEEP_INCUMBENT",
+        "terminal_work_item_id": "18859f02-5371-5094-a7a5-b63619482545"
+      },
+      "next_step": "Review recorded identities and missing evidence; use the existing book guard and venue acceptance process.",
+      "owner": "Pipeline-Operator: evidence; Codex: review; OWNER: authorization",
+      "sealed_stream": {
+        "checked_existing_paths": [
+          "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\1537_XAGUSD_DWX.jsonl"
+        ],
+        "identity_status": "BOUND_STREAM_BUILD_SETFILE_SOURCE_AND_REPORT",
+        "located_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\1537_XAGUSD_DWX.jsonl",
+        "q08_evidence_path": "D:\\QM\\reports\\work_items\\f62fe6b3-f734-466e-95dd-d7ca76294729\\QM5_1537\\Q08\\XAGUSD_DWX\\aggregate.json",
+        "q08_work_item_id": "f62fe6b3-f734-466e-95dd-d7ca76294729",
+        "recorded_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\1537_XAGUSD_DWX.jsonl",
+        "seal_content_sha256": "1885c21e4c895827c79ff3d55849308ab4ee5c0db96a7d576cd652dc3eff8658",
+        "source_artifact_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\1537_XAGUSD_DWX.jsonl",
+        "status": "BOUND"
+      },
+      "symbol": "XAGUSD.DWX",
+      "uncertainty_flags": [
+        "EXACT_CHAIN_LINEAGE_NOT_ATTESTED",
+        "CHAIN_BINARY_IDENTITY_MISSING_OR_MIXED",
+        "Q08_STREAM_RESEALED_AFTER_TERMINAL_CLOSURE",
+        "DATA_ARCHIVE_BYTES_NOT_REVALIDATED"
+      ]
+    },
+    {
+      "blocker": {
+        "missing_historical_gate": null,
+        "score_status": "CURRENT_SCREENING_ONLY",
+        "separate_release_requirements": [
+          "book_guard",
+          "exact_chain_attestation",
+          "venue_economic_acceptance",
+          "native_operational_proof"
+        ],
+        "stream_status": "BOUND",
+        "unavailable_witness_gates": [
+          "Q02",
+          "Q03",
+          "Q04",
+          "Q05",
+          "Q06"
+        ],
+        "unmatched_binary_gates": [
+          "Q06"
+        ]
+      },
+      "data_version": {
+        "archive_admission": {
+          "activation_sha256": "61c8c72ccb0cb8038ae6ece7b89aa68f602b1637d8bc6b6c866f38492139134e",
+          "manifest_path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_custom_history_variant_a_20260809\\archive_manifest_owner_approved.json",
+          "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+          "selected_archive_rows": 108,
+          "selected_symbols": [
+            "XTIUSD.DWX"
+          ],
+          "status": "ACTIVE"
+        },
+        "archive_manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+        "artifact_identity": {
+          "data_window_end": "2022",
+          "data_window_start": "2017",
+          "ex5_sha256": "1312391ad7e654812244e48a6df92d5bd323dba7d32ddae60c54adc464527f00",
+          "mq5_sha256": "9f274a1d4652e680de45551a938db5702eb4c0051ed4eb109629566ae929e031",
+          "setfile_sha256": "198f387d3bfbbf3e26435be9fcba671b0c992a2f1aacacf990b08a58d9a02e96"
+        },
+        "status": "DECLARED_NOT_REHASHED",
+        "window_end": "2022",
+        "window_start": "2017"
+      },
+      "ea_id": "QM5_20048",
+      "economic_result": {
+        "fund_score": 0.032985,
+        "release_economics": "NOT_ESTABLISHED",
+        "score_record": {
+          "active_days_per_60d": 2.0,
+          "active_days_per_60d_detail": {
+            "active_days_total": 130,
+            "active_definition": "challenge_book_60d.active (entry, close, every held day)",
+            "max": 8.0,
+            "mean": 2.668,
+            "median": 2.0,
+            "min": 0.0,
+            "p10": 2.0,
+            "p20": 2.0,
+            "span_days": 2829,
+            "statistic": "p10",
+            "window_anchoring": "calendar_grid_step_1d",
+            "window_days": 60,
+            "windows": 2771
+          },
+          "denominator": 2.0,
+          "formula": "med60_1x/max(2.0,2.0*abs(worst_day_1x),wdd_p90_1x)",
+          "formula_inputs": {
+            "daily_loss_multiplier": 2.0,
+            "denominator": 2.0,
+            "floor": 2.0,
+            "med60_1x": 0.06597,
+            "wdd_p90_1x": 0.32110000000000005,
+            "worst_day_1x_abs": 0.7896200000000001
+          },
+          "fund_score": 0.032985,
+          "input_stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\20048_XTIUSD_DWX.jsonl",
+          "input_stream_sha256": "a792e2635250bcd6df5aa4a290359b54e6d5ffe8fbe10e34d143b74dfe0e8d55",
+          "med60_1x": 0.06597,
+          "screening_only": true,
+          "sleeve": "20048:XTIUSD",
+          "status": "SCORED",
+          "wdd_p90_1x": 0.32110000000000005,
+          "worst_day_1x": 0.7896200000000001
+        },
+        "source_matches_bound_stream": true,
+        "status": "CURRENT_SCREENING_ONLY"
+      },
+      "execution_readiness": "NOT_AUTHORIZED_BY_THIS_PROJECTION",
+      "historical_contiguity": {
+        "missing_link": null,
+        "reference_highest": "Q14",
+        "valid_gates": [
+          "Q02",
+          "Q03",
+          "Q04",
+          "Q05",
+          "Q06",
+          "Q07",
+          "Q08",
+          "Q09",
+          "Q10",
+          "Q11",
+          "Q12",
+          "Q13",
+          "Q14"
+        ],
+        "witnesses": [
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\9d2d4e18-5034-442c-8de4-5eb2d25ef49b\\QM5_20048\\20260803_093421\\summary.json",
+            "evidence_sha256_observed": null,
+            "gate": "Q02",
+            "identity": {
+              "ex5_sha256": "1312391ad7e654812244e48a6df92d5bd323dba7d32ddae60c54adc464527f00",
+              "mq5_sha256": "9f274a1d4652e680de45551a938db5702eb4c0051ed4eb109629566ae929e031",
+              "setfile_sha256": "198f387d3bfbbf3e26435be9fcba671b0c992a2f1aacacf990b08a58d9a02e96"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "9d2d4e18-5034-442c-8de4-5eb2d25ef49b"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\7e04bec8-79b8-48c0-98b2-cff4106e708d\\QM5_20048\\20260803_094152\\summary.json",
+            "evidence_sha256_observed": null,
+            "gate": "Q03",
+            "identity": {
+              "ex5_sha256": "1312391ad7e654812244e48a6df92d5bd323dba7d32ddae60c54adc464527f00",
+              "mq5_sha256": "9f274a1d4652e680de45551a938db5702eb4c0051ed4eb109629566ae929e031",
+              "setfile_sha256": "198f387d3bfbbf3e26435be9fcba671b0c992a2f1aacacf990b08a58d9a02e96"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "7e04bec8-79b8-48c0-98b2-cff4106e708d"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_20048\\Q04\\XTIUSD.DWX__32248b5e-ab71-4e95-b55d-0d5eefd2a571\\aggregate.json",
+            "evidence_sha256_observed": null,
+            "gate": "Q04",
+            "identity": {
+              "ex5_sha256": "1312391ad7e654812244e48a6df92d5bd323dba7d32ddae60c54adc464527f00",
+              "mq5_sha256": null,
+              "setfile_sha256": null
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS_SOFT",
+            "work_item_id": "32248b5e-ab71-4e95-b55d-0d5eefd2a571"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\a95cc792-e400-4aa4-926f-0ccd3d766854\\QM5_20048\\Q05\\XTIUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": null,
+            "gate": "Q05",
+            "identity": {
+              "ex5_sha256": "1312391ad7e654812244e48a6df92d5bd323dba7d32ddae60c54adc464527f00",
+              "mq5_sha256": null,
+              "setfile_sha256": null
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "a95cc792-e400-4aa4-926f-0ccd3d766854"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\b1ca5246-ed70-463a-8822-426d76d52966\\QM5_20048\\Q06\\XTIUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": null,
+            "gate": "Q06",
+            "identity": {
+              "ex5_sha256": null,
+              "mq5_sha256": null,
+              "setfile_sha256": null
+            },
+            "same_terminal_binary": false,
+            "verdict": "PASS",
+            "work_item_id": "b1ca5246-ed70-463a-8822-426d76d52966"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\bf54ff43-b0c4-4e48-a290-25c3304ec28f\\QM5_20048\\Q07\\XTIUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "3665cc526b4c0e3e2dce6c932dd5ff5c6fff2fd43279979e2d52bc7e10c97a59",
+            "gate": "Q07",
+            "identity": {
+              "ex5_sha256": "1312391ad7e654812244e48a6df92d5bd323dba7d32ddae60c54adc464527f00",
+              "mq5_sha256": "9f274a1d4652e680de45551a938db5702eb4c0051ed4eb109629566ae929e031",
+              "setfile_sha256": "5b124ba21717db30a81ab76acd19c802f879dacf195a37c8095be76b20a7a8c0"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "bf54ff43-b0c4-4e48-a290-25c3304ec28f"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\a43559cd-b084-4c0e-8bc3-2c7b6fc1a5ea\\QM5_20048\\Q08\\XTIUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "2019eab225db273d6cfc0f64140902e1d6532f0befdc88aff4606db81bac70e8",
+            "gate": "Q08",
+            "identity": {
+              "ex5_sha256": "1312391ad7e654812244e48a6df92d5bd323dba7d32ddae60c54adc464527f00",
+              "mq5_sha256": "9f274a1d4652e680de45551a938db5702eb4c0051ed4eb109629566ae929e031",
+              "setfile_sha256": "198f387d3bfbbf3e26435be9fcba671b0c992a2f1aacacf990b08a58d9a02e96"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "a43559cd-b084-4c0e-8bc3-2c7b6fc1a5ea"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\a19c3ff9-4040-4565-bdf8-b0f5629ed4b1\\QM5_20048\\Q09\\XTIUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "625b4bf0a2e3a3ece78a4ae68402cbb62329e7f71505299aa6ba05e363d5066d",
+            "gate": "Q09",
+            "identity": {
+              "ex5_sha256": "1312391ad7e654812244e48a6df92d5bd323dba7d32ddae60c54adc464527f00",
+              "mq5_sha256": "9f274a1d4652e680de45551a938db5702eb4c0051ed4eb109629566ae929e031",
+              "setfile_sha256": "d88bf59cee3ff8b81f4289b7c5df892174aec090ecc1b352c9bd8f5ef59a3524"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "a19c3ff9-4040-4565-bdf8-b0f5629ed4b1"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\79e825cc-a806-49ac-9bc4-96d4c83c915d\\QM5_20048\\Q10_NEWS\\XTIUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "750c862687afa1fb4756babb710294274d7c8fbdfa0b969e743a1de89c0b2fbd",
+            "gate": "Q10",
+            "identity": {
+              "ex5_sha256": "1312391ad7e654812244e48a6df92d5bd323dba7d32ddae60c54adc464527f00",
+              "mq5_sha256": null,
+              "setfile_sha256": "198f387d3bfbbf3e26435be9fcba671b0c992a2f1aacacf990b08a58d9a02e96"
+            },
+            "same_terminal_binary": true,
+            "verdict": "CONFIG_LOCKED",
+            "work_item_id": "79e825cc-a806-49ac-9bc4-96d4c83c915d"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\785f9b9a-bd34-4d60-ac23-adb6765f9fd1\\QM5_20048\\Q11\\XTIUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "6dea665e396b2fc960513f5ace3678942f9e1bab27120a265d4784e81ad4b129",
+            "gate": "Q11",
+            "identity": {
+              "ex5_sha256": "1312391ad7e654812244e48a6df92d5bd323dba7d32ddae60c54adc464527f00",
+              "mq5_sha256": "9f274a1d4652e680de45551a938db5702eb4c0051ed4eb109629566ae929e031",
+              "setfile_sha256": "d88bf59cee3ff8b81f4289b7c5df892174aec090ecc1b352c9bd8f5ef59a3524"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "785f9b9a-bd34-4d60-ac23-adb6765f9fd1"
+          },
+          {
+            "evidence_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_20048_XTIUSD_DWX_2019_2025\\q12_selection_receipt.json",
+            "evidence_sha256_observed": "79f0401e2a15fa057075ca9082e33c00e005ab47242040fd1927f883fc814af7",
+            "gate": "Q12",
+            "identity": {
+              "ex5_sha256": "1312391ad7e654812244e48a6df92d5bd323dba7d32ddae60c54adc464527f00",
+              "mq5_sha256": "9f274a1d4652e680de45551a938db5702eb4c0051ed4eb109629566ae929e031",
+              "setfile_sha256": "198f387d3bfbbf3e26435be9fcba671b0c992a2f1aacacf990b08a58d9a02e96"
+            },
+            "same_terminal_binary": true,
+            "verdict": "NO_FILTER_CHANGE",
+            "work_item_id": "5a6d1b1c-7c40-5414-abc8-b59421eabf82"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\optimization_fork\\67ecb494-1200-53f7-aa68-01be46761d6d\\receipt.json",
+            "evidence_sha256_observed": "aa8158c3391405521d143895308784c308410bfd6648deed141b33b2b80239fc",
+            "gate": "Q13",
+            "identity": {
+              "ex5_sha256": "1312391ad7e654812244e48a6df92d5bd323dba7d32ddae60c54adc464527f00",
+              "mq5_sha256": "9f274a1d4652e680de45551a938db5702eb4c0051ed4eb109629566ae929e031",
+              "setfile_sha256": "198f387d3bfbbf3e26435be9fcba671b0c992a2f1aacacf990b08a58d9a02e96"
+            },
+            "same_terminal_binary": true,
+            "verdict": "NO_PARAMETER_CHANGE",
+            "work_item_id": "67ecb494-1200-53f7-aa68-01be46761d6d"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\optimization_fork\\aefddcb5-3ff1-5b19-a0ef-e188555edf37\\receipt.json",
+            "evidence_sha256_observed": "ba29acd8b6e3776d5be300c363e0e71678a70af3c9b59c6ecee2af1edb72192a",
+            "gate": "Q14",
+            "identity": {
+              "ex5_sha256": "1312391ad7e654812244e48a6df92d5bd323dba7d32ddae60c54adc464527f00",
+              "mq5_sha256": "9f274a1d4652e680de45551a938db5702eb4c0051ed4eb109629566ae929e031",
+              "setfile_sha256": "198f387d3bfbbf3e26435be9fcba671b0c992a2f1aacacf990b08a58d9a02e96"
+            },
+            "same_terminal_binary": true,
+            "verdict": "KEEP_INCUMBENT",
+            "work_item_id": "aefddcb5-3ff1-5b19-a0ef-e188555edf37"
+          }
+        ]
+      },
+      "identity": {
+        "ex5_sha256": "1312391ad7e654812244e48a6df92d5bd323dba7d32ddae60c54adc464527f00",
+        "mq5_sha256": "9f274a1d4652e680de45551a938db5702eb4c0051ed4eb109629566ae929e031",
+        "setfile_sha256": "198f387d3bfbbf3e26435be9fcba671b0c992a2f1aacacf990b08a58d9a02e96",
+        "terminal_evidence_sha256_observed": "ba29acd8b6e3776d5be300c363e0e71678a70af3c9b59c6ecee2af1edb72192a",
+        "terminal_verdict": "KEEP_INCUMBENT",
+        "terminal_work_item_id": "aefddcb5-3ff1-5b19-a0ef-e188555edf37"
+      },
+      "next_step": "Review recorded identities and missing evidence; use the existing book guard and venue acceptance process.",
+      "owner": "Pipeline-Operator: evidence; Codex: review; OWNER: authorization",
+      "sealed_stream": {
+        "checked_existing_paths": [
+          "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\20048_XTIUSD_DWX.jsonl"
+        ],
+        "identity_status": "BOUND_STREAM_BUILD_SETFILE_SOURCE_AND_REPORT",
+        "located_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\20048_XTIUSD_DWX.jsonl",
+        "q08_evidence_path": "D:\\QM\\reports\\work_items\\a43559cd-b084-4c0e-8bc3-2c7b6fc1a5ea\\QM5_20048\\Q08\\XTIUSD_DWX\\aggregate.json",
+        "q08_work_item_id": "a43559cd-b084-4c0e-8bc3-2c7b6fc1a5ea",
+        "recorded_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\20048_XTIUSD_DWX.jsonl",
+        "seal_content_sha256": "a792e2635250bcd6df5aa4a290359b54e6d5ffe8fbe10e34d143b74dfe0e8d55",
+        "source_artifact_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\20048_XTIUSD_DWX.jsonl",
+        "status": "BOUND"
+      },
+      "symbol": "XTIUSD.DWX",
+      "uncertainty_flags": [
+        "EXACT_CHAIN_LINEAGE_NOT_ATTESTED",
+        "CHAIN_BINARY_IDENTITY_MISSING_OR_MIXED",
+        "CHAIN_EVIDENCE_BYTES_UNAVAILABLE",
+        "Q08_STREAM_RESEALED_AFTER_TERMINAL_CLOSURE",
+        "DATA_ARCHIVE_BYTES_NOT_REVALIDATED"
+      ]
+    },
+    {
+      "blocker": {
+        "missing_historical_gate": null,
+        "score_status": "CURRENT_SCREENING_ONLY",
+        "separate_release_requirements": [
+          "book_guard",
+          "exact_chain_attestation",
+          "venue_economic_acceptance",
+          "native_operational_proof"
+        ],
+        "stream_status": "BOUND",
+        "unavailable_witness_gates": [],
+        "unmatched_binary_gates": [
+          "Q02",
+          "Q04",
+          "Q05",
+          "Q06",
+          "Q07"
+        ]
+      },
+      "data_version": {
+        "archive_admission": {
+          "activation_sha256": "61c8c72ccb0cb8038ae6ece7b89aa68f602b1637d8bc6b6c866f38492139134e",
+          "manifest_path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_custom_history_variant_a_20260809\\archive_manifest_owner_approved.json",
+          "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+          "selected_archive_rows": 108,
+          "selected_symbols": [
+            "XAGUSD.DWX"
+          ],
+          "status": "ACTIVE"
+        },
+        "archive_manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+        "artifact_identity": {
+          "data_window_end": "2022",
+          "data_window_start": "2017",
+          "ex5_sha256": "395c4747832acbcdf8a68d8598e53abe5786bdc6c538767c400884cd82b2aea1",
+          "mq5_sha256": "311deb260e57129d1fb35e5bc2875fc76f755711b2caeb95501e9bfe1bb63887",
+          "setfile_sha256": "a345970c4c597963597ad768222b8746997cf2ea0119567a9498ea90301a2397"
+        },
+        "status": "DECLARED_NOT_REHASHED",
+        "window_end": "2022",
+        "window_start": "2017"
+      },
+      "ea_id": "QM5_21505",
+      "economic_result": {
+        "fund_score": 0.12350000000000005,
+        "release_economics": "NOT_ESTABLISHED",
+        "score_record": {
+          "active_days_per_60d": 0.0,
+          "active_days_per_60d_detail": {
+            "active_days_total": 582,
+            "active_definition": "challenge_book_60d.active (entry, close, every held day)",
+            "max": 44.0,
+            "mean": 12.777,
+            "median": 5.0,
+            "min": 0.0,
+            "p10": 0.0,
+            "p20": 0.0,
+            "span_days": 2622,
+            "statistic": "p10",
+            "window_anchoring": "calendar_grid_step_1d",
+            "window_days": 60,
+            "windows": 2564
+          },
+          "denominator": 2.0,
+          "formula": "med60_1x/max(2.0,2.0*abs(worst_day_1x),wdd_p90_1x)",
+          "formula_inputs": {
+            "daily_loss_multiplier": 2.0,
+            "denominator": 2.0,
+            "floor": 2.0,
+            "med60_1x": 0.2470000000000001,
+            "wdd_p90_1x": 1.7798999999999996,
+            "worst_day_1x_abs": 0.9954
+          },
+          "fund_score": 0.12350000000000005,
+          "input_stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\21505_XAGUSD_DWX.jsonl",
+          "input_stream_sha256": "243804faaf0050f5482b9a4aac8f9eb0dcd552de1c2c139a486f0bcfa46b94c1",
+          "med60_1x": 0.2470000000000001,
+          "screening_only": true,
+          "sleeve": "21505:XAGUSD",
+          "status": "SCORED",
+          "wdd_p90_1x": 1.7798999999999996,
+          "worst_day_1x": 0.9954
+        },
+        "source_matches_bound_stream": true,
+        "status": "CURRENT_SCREENING_ONLY"
+      },
+      "execution_readiness": "NOT_AUTHORIZED_BY_THIS_PROJECTION",
+      "historical_contiguity": {
+        "missing_link": null,
+        "reference_highest": "Q14",
+        "valid_gates": [
+          "Q02",
+          "Q03",
+          "Q04",
+          "Q05",
+          "Q06",
+          "Q07",
+          "Q08",
+          "Q09",
+          "Q10",
+          "Q11",
+          "Q12",
+          "Q13",
+          "Q14"
+        ],
+        "witnesses": [
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\253f23f0-5bb7-4840-b60f-fba2f5ebde9e\\QM5_21505\\20260817_175729\\summary.json",
+            "evidence_sha256_observed": "e77044ecfb0498f7792d43bd1d3bb3cf5b89ebde999e43c336c8d4f78cea0feb",
+            "gate": "Q02",
+            "identity": {
+              "ex5_sha256": "0a292b63cfecbc46c33f0dc062b0f4b332c98b2b77e4bbcaf0f393009793a852",
+              "mq5_sha256": "aba8cc756fb2aa5d0979520a56658430349f42fb3549e0b23fdcb993db06ed78",
+              "setfile_sha256": "5385763ac80853482faaf4e3642449c036e5ce415bc63d7742c443642a028854"
+            },
+            "same_terminal_binary": false,
+            "verdict": "PASS",
+            "work_item_id": "253f23f0-5bb7-4840-b60f-fba2f5ebde9e"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\e45a1bc7-a457-4743-a45a-5c78c726aaf9\\QM5_21505\\20260819_215923\\summary.json",
+            "evidence_sha256_observed": "e945d134dc355c52ba008183702af46fa7cc62e7227deab5e3c31dd881a4d553",
+            "gate": "Q03",
+            "identity": {
+              "ex5_sha256": "395c4747832acbcdf8a68d8598e53abe5786bdc6c538767c400884cd82b2aea1",
+              "mq5_sha256": "311deb260e57129d1fb35e5bc2875fc76f755711b2caeb95501e9bfe1bb63887",
+              "setfile_sha256": "a345970c4c597963597ad768222b8746997cf2ea0119567a9498ea90301a2397"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "e45a1bc7-a457-4743-a45a-5c78c726aaf9"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_21505\\Q04\\XAGUSD.DWX__a139c3db-b9f6-46bf-bcf1-337e199a5a8d\\aggregate.json",
+            "evidence_sha256_observed": "164a043824b022e596e8328ef3e993c137e887dfda76354acaeda0858845f1d0",
+            "gate": "Q04",
+            "identity": {
+              "ex5_sha256": null,
+              "mq5_sha256": null,
+              "setfile_sha256": null
+            },
+            "same_terminal_binary": false,
+            "verdict": "PASS_LOWFREQ",
+            "work_item_id": "a139c3db-b9f6-46bf-bcf1-337e199a5a8d"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\1d4db506-6a28-4c30-a56d-996a649d45de\\QM5_21505\\Q05\\XAGUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "5a6d561a6b9a0610427262820974c5345b8c9c3f6ca7b6d095ff4d9862ff73c6",
+            "gate": "Q05",
+            "identity": {
+              "ex5_sha256": null,
+              "mq5_sha256": null,
+              "setfile_sha256": null
+            },
+            "same_terminal_binary": false,
+            "verdict": "PASS",
+            "work_item_id": "1d4db506-6a28-4c30-a56d-996a649d45de"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\b6d8c7a1-a4e4-44fc-9aa6-47b4a7e43c3f\\QM5_21505\\Q06\\XAGUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "d36527adb75992504ff5468b06a8ca851243076e295fe5782ea43b7ec7226e9a",
+            "gate": "Q06",
+            "identity": {
+              "ex5_sha256": null,
+              "mq5_sha256": null,
+              "setfile_sha256": null
+            },
+            "same_terminal_binary": false,
+            "verdict": "PASS",
+            "work_item_id": "b6d8c7a1-a4e4-44fc-9aa6-47b4a7e43c3f"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\b837549a-4871-49c2-bf38-ba1862d7cfca\\QM5_21505\\Q07\\XAGUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "c530485b3e4ccbc4969df2874505a13b246ca553e7e0fda0901dd7370af11a6e",
+            "gate": "Q07",
+            "identity": {
+              "ex5_sha256": null,
+              "mq5_sha256": null,
+              "setfile_sha256": null
+            },
+            "same_terminal_binary": false,
+            "verdict": "PASS",
+            "work_item_id": "b837549a-4871-49c2-bf38-ba1862d7cfca"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\15c1ec7b-5821-4944-81a7-86d23754565d\\QM5_21505\\Q08\\XAGUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "30828b3a57cf408b72a5c116e92e756b7c82be57b46998d686465e189430ea0e",
+            "gate": "Q08",
+            "identity": {
+              "ex5_sha256": "395c4747832acbcdf8a68d8598e53abe5786bdc6c538767c400884cd82b2aea1",
+              "mq5_sha256": "311deb260e57129d1fb35e5bc2875fc76f755711b2caeb95501e9bfe1bb63887",
+              "setfile_sha256": "a345970c4c597963597ad768222b8746997cf2ea0119567a9498ea90301a2397"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "15c1ec7b-5821-4944-81a7-86d23754565d"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\e9d7bc4d-0c25-4cdb-b013-ed00f2a23695\\QM5_21505\\Q09\\XAGUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "b57875a55e214fe47dded9c6c87201c829ad5441b97b927969376a191558a137",
+            "gate": "Q09",
+            "identity": {
+              "ex5_sha256": "395c4747832acbcdf8a68d8598e53abe5786bdc6c538767c400884cd82b2aea1",
+              "mq5_sha256": "311deb260e57129d1fb35e5bc2875fc76f755711b2caeb95501e9bfe1bb63887",
+              "setfile_sha256": "2dbabd663f4a753ec285e77a226d4c8a05ca20ee66a941963d9a0d5fce7198ec"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "e9d7bc4d-0c25-4cdb-b013-ed00f2a23695"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\49868397-5ab2-4dc9-b438-878a72c94c2b\\QM5_21505\\Q10_NEWS\\XAGUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "2bce2980665f0c9707e47e1825b6cfb615383ea0f9127c1b50f93a1cf3f8cc03",
+            "gate": "Q10",
+            "identity": {
+              "ex5_sha256": "395c4747832acbcdf8a68d8598e53abe5786bdc6c538767c400884cd82b2aea1",
+              "mq5_sha256": null,
+              "setfile_sha256": "a345970c4c597963597ad768222b8746997cf2ea0119567a9498ea90301a2397"
+            },
+            "same_terminal_binary": true,
+            "verdict": "CONFIG_LOCKED",
+            "work_item_id": "49868397-5ab2-4dc9-b438-878a72c94c2b"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\work_items\\d456a218-ceef-436c-959d-9d65b62de561\\QM5_21505\\Q11\\XAGUSD_DWX\\aggregate.json",
+            "evidence_sha256_observed": "0d39f4c657b13e51067040b3c6157750d84e29977a80d5388ebaf955e02c57d4",
+            "gate": "Q11",
+            "identity": {
+              "ex5_sha256": "395c4747832acbcdf8a68d8598e53abe5786bdc6c538767c400884cd82b2aea1",
+              "mq5_sha256": "311deb260e57129d1fb35e5bc2875fc76f755711b2caeb95501e9bfe1bb63887",
+              "setfile_sha256": "2dbabd663f4a753ec285e77a226d4c8a05ca20ee66a941963d9a0d5fce7198ec"
+            },
+            "same_terminal_binary": true,
+            "verdict": "PASS",
+            "work_item_id": "d456a218-ceef-436c-959d-9d65b62de561"
+          },
+          {
+            "evidence_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_21505_XAGUSD_DWX_2019_2025\\q12_selection_receipt.json",
+            "evidence_sha256_observed": "13266c8965f9efbb83f6f2d861a13076caff5cb16abf40a8c91aa6f92144c189",
+            "gate": "Q12",
+            "identity": {
+              "ex5_sha256": "395c4747832acbcdf8a68d8598e53abe5786bdc6c538767c400884cd82b2aea1",
+              "mq5_sha256": "311deb260e57129d1fb35e5bc2875fc76f755711b2caeb95501e9bfe1bb63887",
+              "setfile_sha256": "a345970c4c597963597ad768222b8746997cf2ea0119567a9498ea90301a2397"
+            },
+            "same_terminal_binary": true,
+            "verdict": "NO_FILTER_CHANGE",
+            "work_item_id": "540eadc0-4a99-5f0f-b69b-1601de434ab6"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\optimization_fork\\a201d805-96e0-53dc-a28c-67c44cb27182\\receipt.json",
+            "evidence_sha256_observed": "beeec2b7636a9eb03a7aebbcd20ceea41c83db904598b9b3cc629b2020d0eab1",
+            "gate": "Q13",
+            "identity": {
+              "ex5_sha256": "395c4747832acbcdf8a68d8598e53abe5786bdc6c538767c400884cd82b2aea1",
+              "mq5_sha256": "311deb260e57129d1fb35e5bc2875fc76f755711b2caeb95501e9bfe1bb63887",
+              "setfile_sha256": "a345970c4c597963597ad768222b8746997cf2ea0119567a9498ea90301a2397"
+            },
+            "same_terminal_binary": true,
+            "verdict": "NO_PARAMETER_CHANGE",
+            "work_item_id": "a201d805-96e0-53dc-a28c-67c44cb27182"
+          },
+          {
+            "evidence_path": "D:\\QM\\reports\\optimization_fork\\aecfbf06-63ef-520b-8943-48b5b1d3769e\\receipt.json",
+            "evidence_sha256_observed": "fef578ffaae7db5e6433e1427a3c0b87e58648802a8dd543d7e3737077006ac4",
+            "gate": "Q14",
+            "identity": {
+              "ex5_sha256": "395c4747832acbcdf8a68d8598e53abe5786bdc6c538767c400884cd82b2aea1",
+              "mq5_sha256": "311deb260e57129d1fb35e5bc2875fc76f755711b2caeb95501e9bfe1bb63887",
+              "setfile_sha256": "a345970c4c597963597ad768222b8746997cf2ea0119567a9498ea90301a2397"
+            },
+            "same_terminal_binary": true,
+            "verdict": "KEEP_INCUMBENT",
+            "work_item_id": "aecfbf06-63ef-520b-8943-48b5b1d3769e"
+          }
+        ]
+      },
+      "identity": {
+        "ex5_sha256": "395c4747832acbcdf8a68d8598e53abe5786bdc6c538767c400884cd82b2aea1",
+        "mq5_sha256": "311deb260e57129d1fb35e5bc2875fc76f755711b2caeb95501e9bfe1bb63887",
+        "setfile_sha256": "a345970c4c597963597ad768222b8746997cf2ea0119567a9498ea90301a2397",
+        "terminal_evidence_sha256_observed": "fef578ffaae7db5e6433e1427a3c0b87e58648802a8dd543d7e3737077006ac4",
+        "terminal_verdict": "KEEP_INCUMBENT",
+        "terminal_work_item_id": "aecfbf06-63ef-520b-8943-48b5b1d3769e"
+      },
+      "next_step": "Review recorded identities and missing evidence; use the existing book guard and venue acceptance process.",
+      "owner": "Pipeline-Operator: evidence; Codex: review; OWNER: authorization",
+      "sealed_stream": {
+        "checked_existing_paths": [
+          "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\21505_XAGUSD_DWX.jsonl"
+        ],
+        "identity_status": "BOUND_STREAM_BUILD_SETFILE_SOURCE_AND_REPORT",
+        "located_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\21505_XAGUSD_DWX.jsonl",
+        "q08_evidence_path": "D:\\QM\\reports\\work_items\\15c1ec7b-5821-4944-81a7-86d23754565d\\QM5_21505\\Q08\\XAGUSD_DWX\\aggregate.json",
+        "q08_work_item_id": "15c1ec7b-5821-4944-81a7-86d23754565d",
+        "recorded_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\21505_XAGUSD_DWX.jsonl",
+        "seal_content_sha256": "243804faaf0050f5482b9a4aac8f9eb0dcd552de1c2c139a486f0bcfa46b94c1",
+        "source_artifact_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\21505_XAGUSD_DWX.jsonl",
+        "status": "BOUND"
+      },
+      "symbol": "XAGUSD.DWX",
+      "uncertainty_flags": [
+        "EXACT_CHAIN_LINEAGE_NOT_ATTESTED",
+        "CHAIN_BINARY_IDENTITY_MISSING_OR_MIXED",
+        "Q08_STREAM_RESEALED_AFTER_TERMINAL_CLOSURE",
+        "DATA_ARCHIVE_BYTES_NOT_REVALIDATED"
+      ]
+    }
+  ],
+  "read_only": true,
+  "reconciliation": {
+    "duplicate_terminal_rows": 1,
+    "fast_component": "release_status.project_records (new parity projection; no separate legacy fast-census entrypoint located)",
+    "reference_equals_fast": true,
+    "soft_rule_added_pairs": [
+      [
+        "QM5_11910",
+        "NZDUSD.DWX"
+      ]
+    ],
+    "symmetric_difference": []
+  },
+  "schema": "qm.release-status/v1"
+}

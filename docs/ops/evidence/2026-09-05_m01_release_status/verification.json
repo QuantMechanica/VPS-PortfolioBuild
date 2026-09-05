@@ -1,0 +1,14 @@
+{
+  "test_command": [
+    "python",
+    "-m",
+    "pytest",
+    "tools/strategy_farm/tests/test_release_status.py",
+    "tools/strategy_farm/tests/test_rebaseline_census.py",
+    "-q"
+  ],
+  "exit_code": 0,
+  "stdout": "..........................                                               [100%]\n26 passed in 1.18s\n",
+  "projection_exit_code": 0,
+  "report_sha256": "b7c648afdb568e2fe9456ec8169e372f7b67203f94725697d03b0eeb617fdf1f"
+}
