@@ -1,0 +1,5 @@
+{
+  "reason": "cannot_read_exact_card:C:\\QM\\repo\\strategy-seeds\\cards\\QM5_41352_wti-adf-vr-agree-tr_card.md:[Errno 2] No such file or directory: 'C:\\\\QM\\\\repo\\\\strategy-seeds\\\\cards\\\\QM5_41352_wti-adf-vr-agree-tr_card.md'",
+  "schema": "qm.governed-magic-allocation/v1",
+  "status": "aborted"
+}
