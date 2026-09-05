@@ -659,7 +659,8 @@ bool Strategy_OpenLeg(const string symbol,
                       const double stop)
   {
    const int slot = Strategy_SlotForSymbol(symbol);
-   if(slot < 0 || lots <= 0.0 || stop <= 0.0)
+   if(slot < 0 || (type != QM_BUY && type != QM_SELL) ||
+      lots <= 0.0 || stop <= 0.0)
       return false;
    QM_BasketOrderRequest request;
    ZeroMemory(request);
