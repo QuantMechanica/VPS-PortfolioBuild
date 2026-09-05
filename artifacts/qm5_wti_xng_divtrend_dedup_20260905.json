@@ -1,0 +1,38 @@
+{
+  "candidate": {
+    "author": "Moskowitz Ooi Pedersen Villar Joutz Ramberg Parsons",
+    "mechanic": "monthly WTI twelve-month return-sign continuation gated by opposite XNG twelve-month return sign with XNG read-only",
+    "slug": "wti-xng-divtrend",
+    "strategy_id": "MOP-EIA-WTI-XNG-SIGN-DIVERGENCE-20260905_S01"
+  },
+  "error": null,
+  "exit_code": 0,
+  "generated_at_utc": "2026-09-05T03:47:28+00:00",
+  "matches": [],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4820,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1439,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "CLEAN"
+}
