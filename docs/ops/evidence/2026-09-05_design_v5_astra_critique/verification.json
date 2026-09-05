@@ -1,0 +1,82 @@
+{
+  "verified_utc": "2026-09-05T22:02:27.215624+00:00",
+  "status": "PASS",
+  "motion": {
+    "1400": {
+      "size": [
+        1116,
+        416
+      ],
+      "threshold_channel_delta": 12,
+      "changed_pixels": 2119,
+      "fraction": 0.00456429211469534,
+      "paused": {
+        "size": [
+          1116,
+          416
+        ],
+        "threshold_channel_delta": 12,
+        "changed_pixels": 0,
+        "fraction": 0.0
+      }
+    },
+    "800": {
+      "size": [
+        752,
+        416
+      ],
+      "threshold_channel_delta": 12,
+      "changed_pixels": 2232,
+      "fraction": 0.007134819967266776,
+      "paused": {
+        "size": [
+          752,
+          416
+        ],
+        "threshold_channel_delta": 12,
+        "changed_pixels": 0,
+        "fraction": 0.0
+      }
+    },
+    "supplied_ceo_probe": {
+      "size": [
+        1116,
+        416
+      ],
+      "threshold_channel_delta": 12,
+      "changed_pixels": 2095,
+      "fraction": 0.004512596498483595,
+      "reported_reduced_motion": false,
+      "funnel_band": [
+        142,
+        1874,
+        1258,
+        2290
+      ]
+    }
+  },
+  "contrast_on_paper": {
+    "#6b7785": 4.212,
+    "#5f6b78": 5.021,
+    "#b7791f": 3.361,
+    "#8a5a10": 5.459,
+    "#2954d4": 5.851
+  },
+  "js_bytes": 20404,
+  "boundary": {
+    "css_unchanged": true,
+    "html_unchanged": true,
+    "public_census_unchanged": true,
+    "deploy_repo_commit": false,
+    "deployed": false
+  },
+  "hashes": {
+    "baseline\\style.css": "f0a8b1d22f0c17afd0b18c235d01f03b7929e5a2bc526a9320ccdd17eea14122",
+    "baseline\\index.html": "267a2cd144188a6058aa1328b65c639f5adf99742f19b7367fb2ed1556b9db7b",
+    "baseline\\qm-funnel.js": "8d012f1bbc9450d94ed8782afe9ba1de17360b102cce5280e92ba3bf6abab715",
+    "qm-funnel.js": "dbe130357b768baf03af1eba82811bacd05c9047ec0272cb7e1971750fff06e6",
+    "funnel-stats.json": "13d0f7d8f2406af59c9d3a1ec5da6041cfc9363864ce1e44f4d2a61b55307cb0",
+    "refinements_unapplied.diff": "9a8abc9d8ad6ebf0f3c3df0a81770b19e4d172543f0afefcc8b70d367de0ef72",
+    "qm-funnel.diff": "1e6f69e0f33d4a42d9a663b5fc3b9da8e7cc8287716263189732de71bc79a5c2"
+  }
+}

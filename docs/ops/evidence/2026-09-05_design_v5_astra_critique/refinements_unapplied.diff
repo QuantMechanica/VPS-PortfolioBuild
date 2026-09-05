@@ -1,0 +1,105 @@
+--- a/style.css
++++ b/style.css
+@@ -793,3 +793,32 @@
+   a{color:#000;text-decoration:underline}
+   .section{padding-block:var(--s-4)}
+ }
++
++
++/* PROPOSAL ONLY — Astra v5 co-design. CEO decides which hunks to merge. */
++/* Align the hero to the record grid and let content determine its height. */
++.hero--canvas{min-height:0;padding-block:96px 104px}
++.hero--canvas .hero__inner{max-width:var(--wide);display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:24px}
++.hero--canvas :is(.hero__eyebrow,.hero__title,.hero__cta){grid-column:1/-1;margin:0}
++.hero--canvas .hero__title{font-weight:500;letter-spacing:-.02em;line-height:1.08}
++.hero--canvas .hero__lead{grid-column:1/9;max-width:60ch;margin:0}
++.hero--canvas .hero__source{grid-column:1/-1;margin:0;color:var(--ink-3);font:400 13px/1.55 var(--font-mono)}
++/* Six related observations compose one deliberate 3 x 2 instrument. */
++@media(min-width:960px){.figure-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
++/* Keep archive names expressive, with quiet, aligned evidence metadata. */
++.archive-list .archive-card{padding-block:24px;gap:32px;align-items:start}
++.archive-list .archive-card__name{font-size:24px;font-weight:500;line-height:1.2}
++.archive-list .archive-card__markets{font-family:var(--font-mono);font-size:13px;line-height:1.7;color:var(--ink-2)}
++.archive-list .archive-card__dates{font-family:var(--font-mono);font-size:13px;color:var(--ink-3)}
++.archive-list .record-link{align-self:start;margin-top:4px}
++.archive-list .archive-card:focus-within{background:var(--paper-alt)}
++.archive-toolbar[role="search"]{position:sticky;top:var(--nav-h);z-index:20;background:var(--paper);padding-block:16px;border-bottom:1px solid var(--line)}
++/* Full-width instrument rail, no shadows or decorative accent rails. */
++.mechanic-row__chart.chart--frame{border-radius:0;border-color:var(--frame)}
++.instrument-caption{padding:12px 16px;border-top:1px solid var(--line);font:400 13px/1.55 var(--font-mono);color:var(--ink-2);background:var(--paper-2)}
++@media(max-width:800px){
++  .hero--canvas{padding-block:64px 72px}
++  .hero--canvas .hero__lead{grid-column:1/-1}
++  .archive-list .archive-card{gap:20px}
++  .archive-toolbar[role="search"]{position:static}
++}
+--- a/index.html
++++ b/index.html
+@@ -37,11 +37,12 @@
+ <div class="wrap hero__inner">
+ <p class="eyebrow hero__eyebrow">Systematic · Tested openly</p>
+ <h1 class="hero__title">The Quantitative <span class="accent">Edge.</span></h1>
+-<p class="hero__lead">We build mechanical trading strategies and test them through an eighteen-gate pipeline run on real broker data. The archive is the centre — every named strategy, every test and every result is there to inspect.</p>
++<p class="hero__lead">We build mechanical trading strategies and test them through an eighteen-gate pipeline run on real broker data. Explore the named strategy families, their markets, and recorded test outcomes in the archive.</p>
+ <div class="hero__cta">
+ <a class="btn btn--primary" href="/strategies/">Explore the strategy archive</a>
+ <a class="btn btn--secondary" href="/pipeline">Understand the tests</a>
+ </div>
++<p class="hero__source">Background: illustrative price action. Observed performance is shown below.</p>
+ </div>
+ </section>
+ 
+@@ -58,7 +59,7 @@
+ <div class="figure"><p class="eyebrow">Strategies</p><div class="figure__num" data-stat="strategies_tested">3,097</div><p class="figure__cap">Distinct mechanical strategies put through at least one test.</p></div>
+ <div class="figure"><p class="eyebrow">Backtests</p><div class="figure__num" data-stat="backtests_completed">124,145</div><p class="figure__cap">Individual backtest runs executed across every strategy and market.</p></div>
+ <div class="figure"><p class="eyebrow">Census cells</p><div class="figure__num" data-stat="optimization_census_cells_measured">7,461</div><p class="figure__cap">Parameter-optimization cells measured in the requalification phase.</p></div>
+-<div class="figure"><p class="eyebrow">Gates</p><div class="figure__num" data-stat="gates_total">18</div><p class="figure__cap">Sequential test gates every strategy passes, from Q00 through Q17.</p></div>
++<div class="figure"><p class="eyebrow">Gates</p><div class="figure__num" data-stat="gates_total">18</div><p class="figure__cap">Research and operational checkpoints, from Q00 through Q17.</p></div>
+ <div class="figure"><p class="eyebrow">Q08 cleared</p><div class="figure__num" data-stat="q08_strategies_cleared">50</div><p class="figure__cap">Strategies that cleared the final validation gate, Q08 statistical validation.</p></div>
+ <div class="figure"><p class="eyebrow">Qualified pairs</p><div class="figure__num"><span data-stat="qualified_pairs_current">8</span><span class="figure__num-sub"> / <span data-stat="qualified_pairs_target">25</span></span></div><p class="figure__cap">Strategy-and-market pairs qualified today, against a target of twenty-five.</p></div>
+ </div>
+@@ -73,7 +74,7 @@
+ <span class="section__rule" aria-hidden="true"></span>
+ <p class="eyebrow">How the evidence develops</p>
+ <h2 class="h2" id="funnel-title">Ideas go in. Evidence comes out.</h2>
+-<p class="section__intro">Every strategy enters on the left and is sieved at eighteen gates. Only a few reach the right. The widths follow the real counts from the latest census.</p>
++<p class="section__intro">An idea moves through validation, requalification, and portfolio checks. The funnel illustrates selection; the gate register shows the actual census counts.</p>
+ </div>
+ <div id="gate-funnel" class="funnel" data-src="/public-data/funnel-stats.json">
+ <div class="phase-band funnel__phases">
+@@ -118,7 +119,7 @@
+ </tbody>
+ </table>
+ </div>
+-<p class="caption funnel__note">Each figure is the number of distinct strategies that cleared that gate, and the balls illustrate the measured pass ratios. Requalification gates (Q09 onward) score per market-and-timeframe subsets, so their counts are not a strict subset of the earlier validation chain — a later gate can show a higher count than an earlier one.</p>
++<p class="caption funnel__note">Gate counts record distinct strategies with at least one passing market-and-timeframe test. From Q09 onward, subset retests are not a conversion chain; counts can rise. Zero means no recorded clearance. Qualified strategy-and-market pairs are a separate measure. Shape and traces illustrate the process.</p>
+ <a class="btn btn--secondary funnel__cta" href="/pipeline">Read each gate</a>
+ </div>
+ </section>
+@@ -140,7 +141,7 @@
+ <p>This family reads the daily handoff between the Asian, London and New York sessions. It waits for liquidity to be swept beyond a prior session's high or low, then for a displacement move that confirms the turn. Entries sit against the swept liquidity, and the session that built the level defines the risk.</p>
+ <p class="caption">Illustrative price action (synthetic, calibrated) — not live.</p>
+ </div>
+-<div class="mechanic-row__chart chart chart--frame"><canvas id="w-eurusd" style="width:100%;height:300px"></canvas></div>
++<div class="mechanic-row__chart chart chart--frame"><canvas id="w-eurusd" style="width:100%;height:300px"></canvas><p class="instrument-caption">EURUSD · illustrative price action · price axis at right</p></div>
+ </article>
+ <article class="mechanic-row">
+ <div class="mechanic-row__text">
+@@ -149,7 +150,7 @@
+ <p>Here a stack of exponential moving averages sets the direction, and a Bollinger band measures whether the market is trending or ranging. The model only takes trades in the direction the moving-average stack agrees on, and stands aside when the band contracts into an undecided regime. It is a trend-follower with an explicit off-switch.</p>
+ <p class="caption">Illustrative price action (synthetic, calibrated) — not live.</p>
+ </div>
+-<div class="mechanic-row__chart chart chart--frame"><canvas id="w-us100" style="width:100%;height:300px"></canvas></div>
++<div class="mechanic-row__chart chart chart--frame"><canvas id="w-us100" style="width:100%;height:300px"></canvas><p class="instrument-caption">US 100 · illustrative price action · price axis at right</p></div>
+ </article>
+ <article class="mechanic-row">
+ <div class="mechanic-row__text">
+@@ -158,7 +159,7 @@
+ <p>Gold spends long stretches inside a range and then leaves it violently. Two complementary ideas cover both states: a Monday-range fade that sells the week's first over-extension back toward the mean, and a daily-squeeze breakout that buys the release once volatility has compressed. Each is a statistical bet on a well-documented tendency, not a prediction of one move.</p>
+ <p class="caption">Illustrative price action (synthetic, calibrated) — not live.</p>
+ </div>
+-<div class="mechanic-row__chart chart chart--frame"><canvas id="w-xauusd" style="width:100%;height:300px"></canvas></div>
++<div class="mechanic-row__chart chart chart--frame"><canvas id="w-xauusd" style="width:100%;height:300px"></canvas><p class="instrument-caption">XAUUSD · illustrative price action · price axis at right</p></div>
+ </article>
+ </div>
+ </div>

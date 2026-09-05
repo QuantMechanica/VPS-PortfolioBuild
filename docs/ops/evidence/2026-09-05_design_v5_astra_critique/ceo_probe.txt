@@ -1,0 +1,2 @@
+probe {"reducedMotion":false,"visibility":"visible","funnelCanvas":true,"funnelSize":[1116,416,1874],"heroCanvas":true,"heroSize":[1400,600],"QMFunnel":"object","QMCharts":"object","tableHidden":true}
+console: none

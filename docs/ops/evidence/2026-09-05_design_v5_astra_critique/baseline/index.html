@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trading research, made inspectable | QuantMechanica</title><meta name="description" content="Explore named mechanical strategies, their tests and their limitations. Read the research archive and the observed Darwinex Zero record.">
+<meta property="og:title" content="Trading research, made inspectable | QuantMechanica"><meta property="og:description" content="Explore named mechanical strategies, their tests and their limitations. Read the research archive and the observed Darwinex Zero record."><meta property="og:type" content="website"><meta property="og:url" content="https://quantmechanica.com/"><meta property="og:image" content="https://quantmechanica.com/assets/og-image.png">
+<link rel="canonical" href="https://quantmechanica.com/"><link rel="icon" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/review-style.css">
+
+<script defer src="/scripts/qm-charts.js"></script><script defer src="/scripts/qm-funnel.js"></script><script defer src="/scripts/qm-hero-bg.js"></script><script defer src="/scripts/review-site.js"></script>
+</head><body><a class="skip-link" href="#main">Skip to content</a><nav aria-label="Primary" class="nav">
+<a aria-label="QuantMechanica home" class="nav__brand" href="/">QuantMechanica</a>
+<div class="nav__links">
+<a class="nav__link" href="/pipeline">Pipeline</a>
+<a class="nav__link" href="/strategies/">Strategies</a>
+<a class="nav__link" href="/performance">Performance</a>
+<a class="nav__link" href="/blog">Blog</a>
+<a class="nav__link" href="/about">About</a>
+<a class="nav__link" href="/faq">FAQ</a>
+</div>
+
+<button aria-controls="mobile-menu" aria-expanded="false" aria-label="Open navigation" class="nav__burger" type="button"><span></span></button>
+<div class="nav__mobile" id="mobile-menu">
+<a href="/pipeline">Pipeline</a>
+<a href="/strategies/">Strategies</a>
+<a href="/performance">Performance</a>
+<a href="/blog">Blog</a>
+<a href="/about">About</a>
+<a href="/faq">FAQ</a>
+</div>
+</nav><main id="main">
+
+<!-- 1. HERO — left-aligned editorial, candle field behind -->
+<section class="hero hero--canvas">
+<canvas id="hero-bg" class="hero__bg" aria-hidden="true"></canvas>
+<div class="wrap hero__inner">
+<p class="eyebrow hero__eyebrow">Systematic · Tested openly</p>
+<h1 class="hero__title">The Quantitative <span class="accent">Edge.</span></h1>
+<p class="hero__lead">We build mechanical trading strategies and test them through an eighteen-gate pipeline run on real broker data. The archive is the centre — every named strategy, every test and every result is there to inspect.</p>
+<div class="hero__cta">
+<a class="btn btn--primary" href="/strategies/">Explore the strategy archive</a>
+<a class="btn btn--secondary" href="/pipeline">Understand the tests</a>
+</div>
+</div>
+</section>
+
+<!-- 2. THE RECORD, IN NUMBERS — six instrument tiles -->
+<section class="section" aria-labelledby="records-title">
+<div class="wrap">
+<div class="section__head">
+<span class="section__rule" aria-hidden="true"></span>
+<p class="eyebrow">The record, in numbers</p>
+<h2 class="h2" id="records-title">Everything the archive counts.</h2>
+<p class="section__intro">Every figure below is a count from the latest read-only census snapshot of the research database. Nothing here is rounded up, and losses stay in the record with the wins.</p>
+</div>
+<div class="figure-grid">
+<div class="figure"><p class="eyebrow">Strategies</p><div class="figure__num" data-stat="strategies_tested">3,097</div><p class="figure__cap">Distinct mechanical strategies put through at least one test.</p></div>
+<div class="figure"><p class="eyebrow">Backtests</p><div class="figure__num" data-stat="backtests_completed">124,145</div><p class="figure__cap">Individual backtest runs executed across every strategy and market.</p></div>
+<div class="figure"><p class="eyebrow">Census cells</p><div class="figure__num" data-stat="optimization_census_cells_measured">7,461</div><p class="figure__cap">Parameter-optimization cells measured in the requalification phase.</p></div>
+<div class="figure"><p class="eyebrow">Gates</p><div class="figure__num" data-stat="gates_total">18</div><p class="figure__cap">Sequential test gates every strategy passes, from Q00 through Q17.</p></div>
+<div class="figure"><p class="eyebrow">Q08 cleared</p><div class="figure__num" data-stat="q08_strategies_cleared">50</div><p class="figure__cap">Strategies that cleared the final validation gate, Q08 statistical validation.</p></div>
+<div class="figure"><p class="eyebrow">Qualified pairs</p><div class="figure__num"><span data-stat="qualified_pairs_current">8</span><span class="figure__num-sub"> / <span data-stat="qualified_pairs_target">25</span></span></div><p class="figure__cap">Strategy-and-market pairs qualified today, against a target of twenty-five.</p></div>
+</div>
+<p class="records-basis">Counts are distinct strategies — each strategy counted once, not card revisions — from a read-only snapshot of the research database. A strategy counts as cleared at a gate when at least one of its market-and-timeframe tests passed there.</p>
+</div>
+</section>
+
+<!-- 3. HOW THE EVIDENCE DEVELOPS — funnel section (funnel container untouched) -->
+<section class="section" aria-labelledby="funnel-title">
+<div class="wrap">
+<div class="section__head">
+<span class="section__rule" aria-hidden="true"></span>
+<p class="eyebrow">How the evidence develops</p>
+<h2 class="h2" id="funnel-title">Ideas go in. Evidence comes out.</h2>
+<p class="section__intro">Every strategy enters on the left and is sieved at eighteen gates. Only a few reach the right. The widths follow the real counts from the latest census.</p>
+</div>
+<div id="gate-funnel" class="funnel" data-src="/public-data/funnel-stats.json">
+<div class="phase-band funnel__phases">
+<div class="phase-band__col">
+<h3 class="h3">Validation</h3>
+<p class="caption">Q00–Q08</p>
+<p>The strategy proves itself: the idea is specified, then examined on real broker history under commissions, walk-forward, stress and multi-seed tests.</p>
+</div>
+<div class="phase-band__col">
+<h3 class="h3">Requalification</h3>
+<p class="caption">Q09–Q14</p>
+<p>The survivor is optimized and requalified against a fixed reference, with news-impact checks, pattern-filter selection and a best-settings head-to-head.</p>
+</div>
+<div class="phase-band__col">
+<h3 class="h3">Portfolio &amp; operations</h3>
+<p class="caption">Q15–Q17</p>
+<p>The strategy is assessed as part of the whole book, checked for operational readiness, and burnt in on the live account.</p>
+</div>
+</div>
+<table class="funnel__table">
+<caption>Distinct strategies that cleared each gate, latest census.</caption>
+<thead><tr><th scope="col">Gate</th><th scope="col">Name</th><th scope="col">Phase</th><th scope="col" class="funnel__num">Strategies cleared</th></tr></thead>
+<tbody>
+<tr><td>Q00</td><td>Research Intake</td><td>Validation</td><td class="funnel__num">0</td></tr>
+<tr><td>Q01</td><td>Build &amp; Spec</td><td>Validation</td><td class="funnel__num">3</td></tr>
+<tr><td>Q02</td><td>Baseline Screening</td><td>Validation</td><td class="funnel__num">2,018</td></tr>
+<tr><td>Q03</td><td>Parameter Sweep</td><td>Validation</td><td class="funnel__num">1,002</td></tr>
+<tr><td>Q04</td><td>Walk-Forward + Commission</td><td>Validation</td><td class="funnel__num">501</td></tr>
+<tr><td>Q05</td><td>Gross Full-History Robustness</td><td>Validation</td><td class="funnel__num">277</td></tr>
+<tr><td>Q06</td><td>Stress HARSH</td><td>Validation</td><td class="funnel__num">251</td></tr>
+<tr><td>Q07</td><td>Multi-Seed</td><td>Validation</td><td class="funnel__num">190</td></tr>
+<tr><td>Q08</td><td>Davey Statistical Validation</td><td>Validation</td><td class="funnel__num">50</td></tr>
+<tr><td>Q09</td><td>Baseline Full Run</td><td>Requalification</td><td class="funnel__num">101</td></tr>
+<tr><td>Q10</td><td>News Impact + FTMO Recommendation</td><td>Requalification</td><td class="funnel__num">32</td></tr>
+<tr><td>Q11</td><td>Incumbent Full-History Confirmation</td><td>Requalification</td><td class="funnel__num">51</td></tr>
+<tr><td>Q12</td><td>Pattern Filter Selection</td><td>Requalification</td><td class="funnel__num">2</td></tr>
+<tr><td>Q13</td><td>Parameter Optimization &amp; Freeze</td><td>Requalification</td><td class="funnel__num">0</td></tr>
+<tr><td>Q14</td><td>Best-Settings Head-to-Head</td><td>Requalification</td><td class="funnel__num">11</td></tr>
+<tr><td>Q15</td><td>Final Portfolio Construction</td><td>Portfolio &amp; operations</td><td class="funnel__num">0</td></tr>
+<tr><td>Q16</td><td>Operational Readiness</td><td>Portfolio &amp; operations</td><td class="funnel__num">0</td></tr>
+<tr><td>Q17</td><td>Live Burn-In DXZ</td><td>Portfolio &amp; operations</td><td class="funnel__num">0</td></tr>
+</tbody>
+</table>
+</div>
+<p class="caption funnel__note">Each figure is the number of distinct strategies that cleared that gate, and the balls illustrate the measured pass ratios. Requalification gates (Q09 onward) score per market-and-timeframe subsets, so their counts are not a strict subset of the earlier validation chain — a later gate can show a higher count than an earlier one.</p>
+<a class="btn btn--secondary funnel__cta" href="/pipeline">Read each gate</a>
+</div>
+</section>
+
+<!-- 4. THE MECHANICS WE MODEL — text left (5/12), instrument right (7/12) -->
+<section class="section" aria-labelledby="mechanics-title">
+<div class="wrap">
+<div class="section__head">
+<span class="section__rule" aria-hidden="true"></span>
+<p class="eyebrow">The mechanics we model</p>
+<h2 class="h2" id="mechanics-title">The behaviour behind the families.</h2>
+<p class="section__intro">Three repeatable structures sit under most of the archive. The charts are illustrative synthetic price action, calibrated to each instrument's real statistics — never a live quote.</p>
+</div>
+<div class="mechanics">
+<article class="mechanic-row">
+<div class="mechanic-row__text">
+<p class="eyebrow">EUR/USD · ICT / SMT session model</p>
+<h3 class="h3">Trading the handoff between sessions.</h3>
+<p>This family reads the daily handoff between the Asian, London and New York sessions. It waits for liquidity to be swept beyond a prior session's high or low, then for a displacement move that confirms the turn. Entries sit against the swept liquidity, and the session that built the level defines the risk.</p>
+<p class="caption">Illustrative price action (synthetic, calibrated) — not live.</p>
+</div>
+<div class="mechanic-row__chart chart chart--frame"><canvas id="w-eurusd" style="width:100%;height:300px"></canvas></div>
+</article>
+<article class="mechanic-row">
+<div class="mechanic-row__text">
+<p class="eyebrow">US 100 · Indicator regime</p>
+<h3 class="h3">Following the trend while the regime holds.</h3>
+<p>Here a stack of exponential moving averages sets the direction, and a Bollinger band measures whether the market is trending or ranging. The model only takes trades in the direction the moving-average stack agrees on, and stands aside when the band contracts into an undecided regime. It is a trend-follower with an explicit off-switch.</p>
+<p class="caption">Illustrative price action (synthetic, calibrated) — not live.</p>
+</div>
+<div class="mechanic-row__chart chart chart--frame"><canvas id="w-us100" style="width:100%;height:300px"></canvas></div>
+</article>
+<article class="mechanic-row">
+<div class="mechanic-row__text">
+<p class="eyebrow">XAU/USD · Mean reversion &amp; range breakout</p>
+<h3 class="h3">Fading the stretch, riding the squeeze.</h3>
+<p>Gold spends long stretches inside a range and then leaves it violently. Two complementary ideas cover both states: a Monday-range fade that sells the week's first over-extension back toward the mean, and a daily-squeeze breakout that buys the release once volatility has compressed. Each is a statistical bet on a well-documented tendency, not a prediction of one move.</p>
+<p class="caption">Illustrative price action (synthetic, calibrated) — not live.</p>
+</div>
+<div class="mechanic-row__chart chart chart--frame"><canvas id="w-xauusd" style="width:100%;height:300px"></canvas></div>
+</article>
+</div>
+</div>
+</section>
+
+<!-- 5. LIVE RECORD PANEL -->
+<section class="section" aria-labelledby="live-title">
+<div class="wrap">
+<div class="panel">
+<div class="panel__head">
+<div>
+<p class="eyebrow">Live account on Darwinex Zero</p>
+<h2 class="h2" id="live-title">The record so far.</h2>
+</div>
+<a class="record-live__link" href="https://www.darwinexzero.com/darwin/KQDS/performance" rel="noopener">View the DARWIN record ↗</a>
+</div>
+<p>Strategy-attributed closed-position P&amp;L. Losses are part of the record.</p>
+<div class="figure-grid figure-grid--2">
+<div class="figure"><div class="figure__num" data-live-net>—</div><p class="figure__cap">Net closed P&amp;L since the epoch · USD</p></div>
+<div class="figure"><div class="figure__num" data-live-closes>—</div><p class="figure__cap">Closed positions</p></div>
+</div>
+<div class="chart chart--frame live-chart" data-live-chart role="img" aria-label="Closed-position P and L index"><p>Loading the observed series.</p></div>
+<p class="records-basis" data-live-caption>Data has not loaded. The external DARWIN record remains available above.</p>
+<details><summary>What this chart includes</summary><p data-live-basis></p><p>The DARWIN page reports its own return methodology. It is a separate record from this closed-position series.</p><a href="/public-data/live-performance.json">Download the aggregate daily series</a></details>
+</div>
+</div>
+</section>
+
+<!-- 6. PRODUCTS — ledger list, no cards -->
+<section class="section" aria-labelledby="products-title">
+<div class="wrap">
+<div class="section__head">
+<span class="section__rule" aria-hidden="true"></span>
+<p class="eyebrow">Where the research could lead</p>
+<h2 class="h2" id="products-title">Products have to earn their place.</h2>
+<p class="section__intro">We are exploring channels for strategies that build enough evidence. Each remains subject to further testing and a separate release decision.</p>
+</div>
+<div class="roadmap">
+<div class="roadmap-row"><span class="roadmap-row__label">Copy-trading accounts</span><span class="roadmap-row__body">A possible route after an inspectable operating record.</span><span class="chip">Planned</span></div>
+<div class="roadmap-row"><span class="roadmap-row__label">MQL5 Marketplace EAs</span><span class="roadmap-row__body">Selected tools, with documented behavior and limitations.</span><span class="chip">Planned</span></div>
+<div class="roadmap-row"><span class="roadmap-row__label">Allocation and prop evaluation</span><span class="roadmap-row__body">Research for Darwinex Zero and FTMO targets, with their own admission tests.</span><span class="chip">Under evaluation</span></div>
+</div>
+</div>
+</section>
+</main>
+
+<!-- 7. CONTACT / NEWSLETTER -->
+<section class="section section--alt contact-panel" aria-labelledby="contact-title">
+<div class="wrap cols cols-2">
+<div class="stack">
+<p class="eyebrow">Keep the conversation open</p>
+<h2 class="h2" id="contact-title">A question. A source. A better test.</h2>
+<p>Share a research idea or ask about a result in the archive.</p>
+<a class="btn btn--secondary" href="mailto:info@quantmechanica.com">Contact QuantMechanica</a>
+</div>
+<div class="stack">
+<h3 class="h3">Research notes, when they are ready.</h3>
+<p>Newsletter signup is coming soon. You can contact us by email in the meantime.</p>
+<label for="newsletter-email">Email address</label>
+<input id="newsletter-email" type="email" disabled placeholder="Signup is not open yet">
+<button class="btn btn--primary" disabled>Newsletter coming soon</button>
+<p class="caption">This form does not collect or send information.</p>
+</div>
+</div>
+</section>
+
+<!-- 8. FOOTER — three columns -->
+<footer class="footer">
+<div class="footer__inner">
+<div class="footer__brand">
+<a href="/">QuantMechanica</a>
+<p class="footer__tag">Systematic trading, tested openly.</p>
+</div>
+<div class="footer__col">
+<h4>Site</h4>
+<a href="/pipeline">Pipeline</a>
+<a href="/strategies/">Strategies</a>
+<a href="/performance">Performance</a>
+<a href="/blog">Blog</a>
+</div>
+<div class="footer__col">
+<h4>Legal</h4>
+<a href="/impressum">Impressum</a>
+<a href="/disclaimer">Risk Disclaimer</a>
+<a href="/privacy">Privacy Policy</a>
+</div>
+<div class="footer__col">
+<h4>Contact</h4>
+<a href="mailto:info@quantmechanica.com">info@quantmechanica.com</a>
+<a href="mailto:info@quantmechanica.com?subject=Strategy%20Proposal">Propose a strategy</a>
+<a href="/faq">FAQ</a>
+<a href="/about">About</a>
+</div>
+</div>
+<div class="footer__bottom">
+<span>© 2026 QuantMechanica. All rights reserved.</span>
+<span class="num">Systematic algorithmic research</span>
+</div>
+<div class="footer__risk">
+<div class="footer__risk-inner">
+<h5>Risk Disclosure</h5>
+<p>CFDs are complex instruments and come with a high risk of losing money rapidly due to leverage. The majority of retail investor accounts lose money when trading CFDs. Consider whether you understand how CFDs work and whether you can afford to take the high risk of losing your money. Past performance is not a reliable indicator of future results. Automated trading tools do not guarantee profits.</p>
+</div>
+</div>
+</footer></body></html>

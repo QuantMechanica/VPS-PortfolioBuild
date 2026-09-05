@@ -1,0 +1,169 @@
+{
+  "schema": "qm.public-funnel-stats/v1",
+  "snapshot_utc": "2026-09-05T16:26:41Z",
+  "basis": "Read-only census of the research database at snapshot time. Counts are distinct strategies (EA identities), not card revisions; a strategy counts as cleared at a gate when at least one of its market/timeframe tests passed that gate. Requalification gates apply to subsets, so their counts are not a strict subset chain.",
+  "strategies_tested": 3097,
+  "strategy_cards_approved": 3408,
+  "backtests_completed": 124145,
+  "optimization_census_cells_measured": 7461,
+  "gates_total": 18,
+  "phases": [
+    {
+      "id": "validation",
+      "name": "Validation",
+      "blurb": "The strategy proves itself",
+      "gates": [
+        "Q00",
+        "Q01",
+        "Q02",
+        "Q03",
+        "Q04",
+        "Q05",
+        "Q06",
+        "Q07",
+        "Q08"
+      ]
+    },
+    {
+      "id": "requalification",
+      "name": "Requalification",
+      "blurb": "The strategy is optimized and requalified",
+      "gates": [
+        "Q09",
+        "Q10",
+        "Q11",
+        "Q12",
+        "Q13",
+        "Q14"
+      ]
+    },
+    {
+      "id": "portfolio",
+      "name": "Portfolio & operations",
+      "blurb": "The strategy is assessed as part of the book",
+      "gates": [
+        "Q15",
+        "Q16",
+        "Q17"
+      ]
+    }
+  ],
+  "gates": [
+    {
+      "id": "Q00",
+      "label": "Research Intake",
+      "phase": "validation",
+      "strategies_cleared": 0
+    },
+    {
+      "id": "Q01",
+      "label": "Build & Spec",
+      "phase": "validation",
+      "strategies_cleared": 3
+    },
+    {
+      "id": "Q02",
+      "label": "Baseline Screening",
+      "phase": "validation",
+      "strategies_cleared": 2018
+    },
+    {
+      "id": "Q03",
+      "label": "Parameter Sweep",
+      "phase": "validation",
+      "strategies_cleared": 1002
+    },
+    {
+      "id": "Q04",
+      "label": "Walk-Forward + Commission",
+      "phase": "validation",
+      "strategies_cleared": 501
+    },
+    {
+      "id": "Q05",
+      "label": "Gross Full-History Robustness",
+      "phase": "validation",
+      "strategies_cleared": 277
+    },
+    {
+      "id": "Q06",
+      "label": "Stress HARSH",
+      "phase": "validation",
+      "strategies_cleared": 251
+    },
+    {
+      "id": "Q07",
+      "label": "Multi-Seed",
+      "phase": "validation",
+      "strategies_cleared": 190
+    },
+    {
+      "id": "Q08",
+      "label": "Davey Statistical Validation",
+      "phase": "validation",
+      "strategies_cleared": 50
+    },
+    {
+      "id": "Q09",
+      "label": "Baseline Full Run",
+      "phase": "requalification",
+      "strategies_cleared": 101
+    },
+    {
+      "id": "Q10",
+      "label": "News Impact + FTMO Recommendation",
+      "phase": "requalification",
+      "strategies_cleared": 32
+    },
+    {
+      "id": "Q11",
+      "label": "Incumbent Full-History Confirmation",
+      "phase": "requalification",
+      "strategies_cleared": 51
+    },
+    {
+      "id": "Q12",
+      "label": "Pattern Filter Selection",
+      "phase": "requalification",
+      "strategies_cleared": 2
+    },
+    {
+      "id": "Q13",
+      "label": "Parameter Optimization & Freeze",
+      "phase": "requalification",
+      "strategies_cleared": 0
+    },
+    {
+      "id": "Q14",
+      "label": "Best-Settings Head-to-Head",
+      "phase": "requalification",
+      "strategies_cleared": 11
+    },
+    {
+      "id": "Q15",
+      "label": "Final Portfolio Construction",
+      "phase": "portfolio",
+      "strategies_cleared": 0
+    },
+    {
+      "id": "Q16",
+      "label": "Operational Readiness",
+      "phase": "portfolio",
+      "strategies_cleared": 0
+    },
+    {
+      "id": "Q17",
+      "label": "Live Burn-In DXZ",
+      "phase": "portfolio",
+      "strategies_cleared": 0
+    }
+  ],
+  "qualified_pairs_current": 8,
+  "qualified_pairs_target": 25,
+  "live": {
+    "venue": "Darwinex Zero",
+    "since": "2026-07-24",
+    "closed_positions": 85,
+    "darwin_url": "https://www.darwinexzero.com/darwin/KQDS/performance"
+  }
+}

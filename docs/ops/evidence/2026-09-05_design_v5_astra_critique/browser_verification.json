@@ -1,0 +1,632 @@
+{
+  "checked_utc": "2026-09-05T22:00:17.257Z",
+  "browser": "Headless Google Chrome",
+  "results": [
+    {
+      "width": 1400,
+      "state": {
+        "reducedMotion": true,
+        "paused": false,
+        "visible": true,
+        "canvas": [
+          1116,
+          416
+        ],
+        "css": [
+          1116,
+          416
+        ],
+        "rect": {
+          "x": 142,
+          "y": 328.46875,
+          "width": 1116,
+          "height": 416
+        },
+        "scrollY": 1546,
+        "pageWidth": 1400,
+        "viewport": 1400,
+        "tableHidden": true,
+        "table": [
+          [
+            "Q00",
+            "Research Intake",
+            "Validation",
+            "0"
+          ],
+          [
+            "Q01",
+            "Build & Spec",
+            "Validation",
+            "3"
+          ],
+          [
+            "Q02",
+            "Baseline Screening",
+            "Validation",
+            "2,018"
+          ],
+          [
+            "Q03",
+            "Parameter Sweep",
+            "Validation",
+            "1,002"
+          ],
+          [
+            "Q04",
+            "Walk-Forward + Commission",
+            "Validation",
+            "501"
+          ],
+          [
+            "Q05",
+            "Gross Full-History Robustness",
+            "Validation",
+            "277"
+          ],
+          [
+            "Q06",
+            "Stress HARSH",
+            "Validation",
+            "251"
+          ],
+          [
+            "Q07",
+            "Multi-Seed",
+            "Validation",
+            "190"
+          ],
+          [
+            "Q08",
+            "Davey Statistical Validation",
+            "Validation",
+            "50"
+          ],
+          [
+            "Q09",
+            "Baseline Full Run",
+            "Requalification",
+            "101"
+          ],
+          [
+            "Q10",
+            "News Impact + FTMO Recommendation",
+            "Requalification",
+            "32"
+          ],
+          [
+            "Q11",
+            "Incumbent Full-History Confirmation",
+            "Requalification",
+            "51"
+          ],
+          [
+            "Q12",
+            "Pattern Filter Selection",
+            "Requalification",
+            "2"
+          ],
+          [
+            "Q13",
+            "Parameter Optimization & Freeze",
+            "Requalification",
+            "0"
+          ],
+          [
+            "Q14",
+            "Best-Settings Head-to-Head",
+            "Requalification",
+            "11"
+          ],
+          [
+            "Q15",
+            "Final Portfolio Construction",
+            "Portfolio & operations",
+            "0"
+          ],
+          [
+            "Q16",
+            "Operational Readiness",
+            "Portfolio & operations",
+            "0"
+          ],
+          [
+            "Q17",
+            "Live Burn-In DXZ",
+            "Portfolio & operations",
+            "0"
+          ]
+        ],
+        "description": "QuantMechanica selection process, three phases and eighteen gates. 3,097 distinct strategies tested; Q00 Research Intake: 0 recorded clearances; Q01 Build & Spec: 3 recorded clearances; Q02 Baseline Screening: 2,018 recorded clearances; Q03 Parameter Sweep: 1,002 recorded clearances; Q04 Walk-Forward + Commission: 501 recorded clearances; Q05 Gross Full-History Robustness: 277 recorded clearances; Q06 Stress HARSH: 251 recorded clearances; Q07 Multi-Seed: 190 recorded clearances; Q08 Davey Statistical Validation: 50 recorded clearances; Q09 Baseline Full Run: 101 recorded clearances; Q10 News Impact + FTMO Recommendation: 32 recorded clearances; Q11 Incumbent Full-History Confirmation: 51 recorded clearances; Q12 Pattern Filter Selection: 2 recorded clearances; Q13 Parameter Optimization & Freeze: 0 recorded clearances; Q14 Best-Settings Head-to-Head: 11 recorded clearances; Q15 Final Portfolio Construction: 0 recorded clearances; Q16 Operational Readiness: 0 recorded clearances; Q17 Live Burn-In DXZ: 0 recorded clearances. Counts from Q09 onward refer to subsets and are not sequential conversion rates. 8 qualified strategy-and-market pairs, separate from gate counts, against a target of 25. Shape and moving traces are an aggregate process illustration.",
+        "registerItems": 18,
+        "fonts": {
+          "display": true,
+          "sans": true,
+          "mono": true
+        },
+        "styleFonts": {
+          "h1": "Fraunces, \"Fraunces 72\", Georgia, \"Times New Roman\", serif",
+          "body": "\"IBM Plex Sans\", -apple-system, BlinkMacSystemFont, \"Segoe UI\", Helvetica, Arial, sans-serif"
+        },
+        "hasPrivateText": false
+      },
+      "accessibleTable": true,
+      "pause": {
+        "paused": true,
+        "stored": "1",
+        "label": "Play funnel"
+      },
+      "keyboardPause": true,
+      "pauseReload": true,
+      "offscreen": {
+        "visible": false,
+        "raf": 0
+      },
+      "dpr": {
+        "dpr": 2,
+        "width": 2232,
+        "css": 1116,
+        "visible": true,
+        "t": 0.3985800000000001
+      },
+      "narrow": {
+        "page": 390,
+        "viewport": 390,
+        "inner": 700,
+        "outer": 350,
+        "pageWithoutFunnel": 390,
+        "overwide": [
+          {
+            "tag": "CANVAS",
+            "id": "qm-funnel-view",
+            "cls": "qm-funnel__canvas",
+            "right": 720,
+            "whiteSpace": "normal"
+          },
+          {
+            "tag": "TABLE",
+            "id": "",
+            "cls": "funnel__table visually-hidden",
+            "right": 679.90625,
+            "whiteSpace": "nowrap"
+          },
+          {
+            "tag": "CAPTION",
+            "id": "",
+            "cls": "",
+            "right": 679.90625,
+            "whiteSpace": "nowrap"
+          },
+          {
+            "tag": "THEAD",
+            "id": "",
+            "cls": "",
+            "right": 679.90625,
+            "whiteSpace": "nowrap"
+          },
+          {
+            "tag": "TR",
+            "id": "",
+            "cls": "",
+            "right": 679.90625,
+            "whiteSpace": "nowrap"
+          },
+          {
+            "tag": "TH",
+            "id": "",
+            "cls": "",
+            "right": 505.34375,
+            "whiteSpace": "nowrap"
+          },
+          {
+            "tag": "TH",
+            "id": "",
+            "cls": "",
+            "right": 679.90625,
+            "whiteSpace": "nowrap"
+          },
+          {
+            "tag": "TBODY",
+            "id": "",
+            "cls": "",
+            "right": 679.90625,
+            "whiteSpace": "nowrap"
+          },
+          {
+            "tag": "TR",
+            "id": "",
+            "cls": "",
+            "right": 679.90625,
+            "whiteSpace": "nowrap"
+          },
+          {
+            "tag": "TD",
+            "id": "",
+            "cls": "",
+            "right": 505.34375,
+            "whiteSpace": "nowrap"
+          },
+          {
+            "tag": "TD",
+            "id": "",
+            "cls": "",
+            "right": 679.90625,
+            "whiteSpace": "nowrap"
+          },
+          {
+            "tag": "TR",
+            "id": "",
+            "cls": "",
+            "right": 679.90625,
+            "whiteSpace": "nowrap"
+          },
+          {
+            "tag": "TD",
+            "id": "",
+            "cls": "",
+            "right": 505.34375,
+            "whiteSpace": "nowrap"
+          },
+          {
+            "tag": "TD",
+            "id": "",
+            "cls": "",
+            "right": 679.90625,
+            "whiteSpace": "nowrap"
+          },
+          {
+            "tag": "TR",
+            "id": "",
+            "cls": "",
+            "right": 679.90625,
+            "whiteSpace": "nowrap"
+          },
+          {
+            "tag": "TD",
+            "id": "",
+            "cls": "",
+            "right": 505.34375,
+            "whiteSpace": "nowrap"
+          },
+          {
+            "tag": "TD",
+            "id": "",
+            "cls": "",
+            "right": 679.90625,
+            "whiteSpace": "nowrap"
+          },
+          {
+            "tag": "TR",
+            "id": "",
+            "cls": "",
+            "right": 679.90625,
+            "whiteSpace": "nowrap"
+          }
+        ]
+      },
+      "remount": {
+        "oldDestroyed": true,
+        "instances": 1,
+        "controls": 1,
+        "invalidRejected": true,
+        "previousPreserved": true
+      },
+      "errors": [],
+      "warnings": [],
+      "ownChromePid": 21296,
+      "profile": "C:\\Windows\\TEMP\\qm-funnel-review-xHsuKv"
+    },
+    {
+      "width": 800,
+      "state": {
+        "reducedMotion": true,
+        "paused": false,
+        "visible": true,
+        "canvas": [
+          752,
+          416
+        ],
+        "css": [
+          752,
+          416
+        ],
+        "rect": {
+          "x": 24,
+          "y": 281.546875,
+          "width": 752,
+          "height": 416
+        },
+        "scrollY": 1586,
+        "pageWidth": 800,
+        "viewport": 800,
+        "tableHidden": true,
+        "table": [
+          [
+            "Q00",
+            "Research Intake",
+            "Validation",
+            "0"
+          ],
+          [
+            "Q01",
+            "Build & Spec",
+            "Validation",
+            "3"
+          ],
+          [
+            "Q02",
+            "Baseline Screening",
+            "Validation",
+            "2,018"
+          ],
+          [
+            "Q03",
+            "Parameter Sweep",
+            "Validation",
+            "1,002"
+          ],
+          [
+            "Q04",
+            "Walk-Forward + Commission",
+            "Validation",
+            "501"
+          ],
+          [
+            "Q05",
+            "Gross Full-History Robustness",
+            "Validation",
+            "277"
+          ],
+          [
+            "Q06",
+            "Stress HARSH",
+            "Validation",
+            "251"
+          ],
+          [
+            "Q07",
+            "Multi-Seed",
+            "Validation",
+            "190"
+          ],
+          [
+            "Q08",
+            "Davey Statistical Validation",
+            "Validation",
+            "50"
+          ],
+          [
+            "Q09",
+            "Baseline Full Run",
+            "Requalification",
+            "101"
+          ],
+          [
+            "Q10",
+            "News Impact + FTMO Recommendation",
+            "Requalification",
+            "32"
+          ],
+          [
+            "Q11",
+            "Incumbent Full-History Confirmation",
+            "Requalification",
+            "51"
+          ],
+          [
+            "Q12",
+            "Pattern Filter Selection",
+            "Requalification",
+            "2"
+          ],
+          [
+            "Q13",
+            "Parameter Optimization & Freeze",
+            "Requalification",
+            "0"
+          ],
+          [
+            "Q14",
+            "Best-Settings Head-to-Head",
+            "Requalification",
+            "11"
+          ],
+          [
+            "Q15",
+            "Final Portfolio Construction",
+            "Portfolio & operations",
+            "0"
+          ],
+          [
+            "Q16",
+            "Operational Readiness",
+            "Portfolio & operations",
+            "0"
+          ],
+          [
+            "Q17",
+            "Live Burn-In DXZ",
+            "Portfolio & operations",
+            "0"
+          ]
+        ],
+        "description": "QuantMechanica selection process, three phases and eighteen gates. 3,097 distinct strategies tested; Q00 Research Intake: 0 recorded clearances; Q01 Build & Spec: 3 recorded clearances; Q02 Baseline Screening: 2,018 recorded clearances; Q03 Parameter Sweep: 1,002 recorded clearances; Q04 Walk-Forward + Commission: 501 recorded clearances; Q05 Gross Full-History Robustness: 277 recorded clearances; Q06 Stress HARSH: 251 recorded clearances; Q07 Multi-Seed: 190 recorded clearances; Q08 Davey Statistical Validation: 50 recorded clearances; Q09 Baseline Full Run: 101 recorded clearances; Q10 News Impact + FTMO Recommendation: 32 recorded clearances; Q11 Incumbent Full-History Confirmation: 51 recorded clearances; Q12 Pattern Filter Selection: 2 recorded clearances; Q13 Parameter Optimization & Freeze: 0 recorded clearances; Q14 Best-Settings Head-to-Head: 11 recorded clearances; Q15 Final Portfolio Construction: 0 recorded clearances; Q16 Operational Readiness: 0 recorded clearances; Q17 Live Burn-In DXZ: 0 recorded clearances. Counts from Q09 onward refer to subsets and are not sequential conversion rates. 8 qualified strategy-and-market pairs, separate from gate counts, against a target of 25. Shape and moving traces are an aggregate process illustration.",
+        "registerItems": 18,
+        "fonts": {
+          "display": true,
+          "sans": true,
+          "mono": true
+        },
+        "styleFonts": {
+          "h1": "Fraunces, \"Fraunces 72\", Georgia, \"Times New Roman\", serif",
+          "body": "\"IBM Plex Sans\", -apple-system, BlinkMacSystemFont, \"Segoe UI\", Helvetica, Arial, sans-serif"
+        },
+        "hasPrivateText": false
+      },
+      "accessibleTable": true,
+      "pause": {
+        "paused": true,
+        "stored": "1",
+        "label": "Play funnel"
+      },
+      "keyboardPause": true,
+      "pauseReload": true,
+      "offscreen": {
+        "visible": false,
+        "raf": 0
+      },
+      "dpr": {
+        "dpr": 2,
+        "width": 1504,
+        "css": 752,
+        "visible": true,
+        "t": 0.3899480000000001
+      },
+      "narrow": {
+        "page": 390,
+        "viewport": 390,
+        "inner": 700,
+        "outer": 350,
+        "pageWithoutFunnel": 390,
+        "overwide": [
+          {
+            "tag": "CANVAS",
+            "id": "qm-funnel-view",
+            "cls": "qm-funnel__canvas",
+            "right": 720,
+            "whiteSpace": "normal"
+          },
+          {
+            "tag": "TABLE",
+            "id": "",
+            "cls": "funnel__table visually-hidden",
+            "right": 679.90625,
+            "whiteSpace": "nowrap"
+          },
+          {
+            "tag": "CAPTION",
+            "id": "",
+            "cls": "",
+            "right": 679.90625,
+            "whiteSpace": "nowrap"
+          },
+          {
+            "tag": "THEAD",
+            "id": "",
+            "cls": "",
+            "right": 679.90625,
+            "whiteSpace": "nowrap"
+          },
+          {
+            "tag": "TR",
+            "id": "",
+            "cls": "",
+            "right": 679.90625,
+            "whiteSpace": "nowrap"
+          },
+          {
+            "tag": "TH",
+            "id": "",
+            "cls": "",
+            "right": 505.34375,
+            "whiteSpace": "nowrap"
+          },
+          {
+            "tag": "TH",
+            "id": "",
+            "cls": "",
+            "right": 679.90625,
+            "whiteSpace": "nowrap"
+          },
+          {
+            "tag": "TBODY",
+            "id": "",
+            "cls": "",
+            "right": 679.90625,
+            "whiteSpace": "nowrap"
+          },
+          {
+            "tag": "TR",
+            "id": "",
+            "cls": "",
+            "right": 679.90625,
+            "whiteSpace": "nowrap"
+          },
+          {
+            "tag": "TD",
+            "id": "",
+            "cls": "",
+            "right": 505.34375,
+            "whiteSpace": "nowrap"
+          },
+          {
+            "tag": "TD",
+            "id": "",
+            "cls": "",
+            "right": 679.90625,
+            "whiteSpace": "nowrap"
+          },
+          {
+            "tag": "TR",
+            "id": "",
+            "cls": "",
+            "right": 679.90625,
+            "whiteSpace": "nowrap"
+          },
+          {
+            "tag": "TD",
+            "id": "",
+            "cls": "",
+            "right": 505.34375,
+            "whiteSpace": "nowrap"
+          },
+          {
+            "tag": "TD",
+            "id": "",
+            "cls": "",
+            "right": 679.90625,
+            "whiteSpace": "nowrap"
+          },
+          {
+            "tag": "TR",
+            "id": "",
+            "cls": "",
+            "right": 679.90625,
+            "whiteSpace": "nowrap"
+          },
+          {
+            "tag": "TD",
+            "id": "",
+            "cls": "",
+            "right": 505.34375,
+            "whiteSpace": "nowrap"
+          },
+          {
+            "tag": "TD",
+            "id": "",
+            "cls": "",
+            "right": 679.90625,
+            "whiteSpace": "nowrap"
+          },
+          {
+            "tag": "TR",
+            "id": "",
+            "cls": "",
+            "right": 679.90625,
+            "whiteSpace": "nowrap"
+          }
+        ]
+      },
+      "remount": {
+        "oldDestroyed": true,
+        "instances": 1,
+        "controls": 1,
+        "invalidRejected": true,
+        "previousPreserved": true
+      },
+      "errors": [],
+      "warnings": [],
+      "ownChromePid": 35352,
+      "profile": "C:\\Windows\\TEMP\\qm-funnel-review-CI57vn"
+    }
+  ]
+}
