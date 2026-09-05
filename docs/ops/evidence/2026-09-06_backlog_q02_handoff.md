@@ -1,8 +1,10 @@
 # CEO backlog compile Q02 handoff audit
 
-Date: `2026-09-05T23:06:59Z`  
-Branch: `agents/board-advisor`  
-Router task: `3c0503cc-d574-4783-af50-008ba0bd886b`  
+Date: `2026-09-05T23:06:59Z`
+
+Branch: `agents/board-advisor`
+
+Router task: `3c0503cc-d574-4783-af50-008ba0bd886b`
 Outcome: `NINE COMPILE_OK BINARIES VERIFIED; ZERO Q02 ROWS; ALL NINE DRY-RUN HANDOFFS REFUSED — NO GOVERNED FIRST-Q02 PATH`
 
 ## Scope and safety boundary
