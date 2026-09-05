@@ -662,6 +662,7 @@ bool Strategy_OpenLeg(const string symbol,
    if(slot < 0 || lots <= 0.0 || stop <= 0.0)
       return false;
    QM_BasketOrderRequest request;
+   ZeroMemory(request);
    request.symbol = symbol;
    request.type = type;
    request.price = 0.0;
