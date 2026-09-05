@@ -1,0 +1,14 @@
+{
+  "observed_at_utc": "2026-09-05T21:21:17.684061+00:00",
+  "policy_receipt_present": true,
+  "policy_receipt_id": "70ec12e4-cff9-485a-a440-ed1f113b4b5c",
+  "policy_decision": "YES",
+  "separate_hash_bound_attestation_receipts": 0,
+  "ledger_sha256": "beeaad8f4b582f46c10d7e7c4da330784ddb2c1aa5d95faf9dea5b9276d4b4b3",
+  "freeze_status": "ACTIVE",
+  "freeze_sha256": "79b6a14537a20153f5e203061d0e1b55ab60378adddb4c4c6d8d5825e659b134",
+  "pointer_sha256": "f5f23f3c597f07217ef4406a34f929a2cb50e580986007eefe758d4e27b1704a",
+  "deployed_files_read": false,
+  "runtime_writes": false,
+  "feature_enabled": false
+}

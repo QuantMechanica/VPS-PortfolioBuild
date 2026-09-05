@@ -1,0 +1,468 @@
+diff --git a/tools/strategy_farm/live_deployment_pointer_auth.py b/tools/strategy_farm/live_deployment_pointer_auth.py
+index b0ddbf22e5..dae6dc6a34 100644
+--- a/tools/strategy_farm/live_deployment_pointer_auth.py
++++ b/tools/strategy_farm/live_deployment_pointer_auth.py
+@@ -142,6 +142,8 @@ def authenticate_deploy_stamp(
+     manifest_sha_actual: Union[str, None, Callable[[], Optional[str]]],
+     manifest_status: Optional[str],
+     manifest_book: Optional[str],
++    identity_exception_enabled: bool = False,
++    identity_context: Optional[dict] = None,
+ ) -> DeployAuthResult:
+     """Apply the deploy-stamp authentication rules to ``stamp``.
+ 
+@@ -177,6 +179,28 @@ def authenticate_deploy_stamp(
+     DeployAuthResult
+         ``clean`` iff authentic. ``has_conflict`` iff a hard MISMATCH fired.
+     """
++    if identity_exception_enabled is True:
++        try:
++            from . import live_identity_consumer as identity
++        except ImportError:
++            import live_identity_consumer as identity
++        recognized = identity.evaluate(identity_context, enabled=True)
++        if recognized["accepted"]:
++            actual = manifest_sha_actual() if callable(manifest_sha_actual) else manifest_sha_actual
++            files = identity_context["files"]
++            current_pointer = identity.strict_json(files["pointer"])
++            current_manifest = identity.strict_json(files["manifest"])
++            if (src == "runtime_stamp" and stamp == current_pointer
++                    and actual == identity.attest.raw_sha(files["manifest"])
++                    and manifest_status == current_manifest.get("status")
++                    and manifest_book == current_manifest.get("book")):
++                return DeployAuthResult(RANK_OK, [Reason(
++                    "OWNER_ATTESTED_CURRENT_IDENTITY", RANK_OK,
++                    "unchanged identity only; freeze remains ACTIVE; no activation authority")])
++            recognized = {"reason": "ATTESTATION_CONSUMER_INPUT_DRIFT"}
++        return DeployAuthResult(RANK_CONFLICT, [Reason(
++            recognized["reason"], RANK_CONFLICT, recognized.get("detail", recognized["reason"]))])
++
+     reasons: List[Reason] = []
+ 
+     if src == "repo_default":
+diff --git a/tools/strategy_farm/live_identity_consumer.py b/tools/strategy_farm/live_identity_consumer.py
+new file mode 100644
+index 0000000000..a15bea06ea
+--- /dev/null
++++ b/tools/strategy_farm/live_identity_consumer.py
+@@ -0,0 +1,149 @@
++"""Default-off, read-only recognition of an OWNER-attested unchanged live book."""
++from __future__ import annotations
++
++import argparse
++import datetime as dt
++import json
++from pathlib import Path
++
++try:
++    from . import live_identity_attest as attest
++    from . import owner_decision_store as decisions
++except ImportError:
++    import live_identity_attest as attest
++    import owner_decision_store as decisions
++
++DECISION_PREFIX = "OWNER-DEC-LIVE-IDENTITY-CURRENT-"
++
++
++def attestation_effect(proposal_sha256: str) -> str:
++    """Exact OWNER-visible YES effect; notes cannot supply this authority."""
++    return f"ATTEST_CURRENT_PROPOSAL_SHA256={proposal_sha256};FREEZE=ACTIVE;NO_ACTIVATION"
++
++
++def strict_json(raw):
++    def pairs(items):
++        result = {}
++        for key, value in items:
++            if key in result:
++                raise ValueError("duplicate JSON key")
++            result[key] = value
++        return result
++
++    def constant(_):
++        raise ValueError("non-finite JSON constant")
++
++    return json.loads(raw, object_pairs_hook=pairs, parse_constant=constant)
++
++
++def load_context(proposal_path: Path, receipt_id: str) -> dict:
++    """Read metadata only; current pointer/freeze/tool paths are canonical.
++
++    Receipt authority comes exclusively from the Mission-Control ledger, never
++    from a sidecar supplied with the proposal. Paths inside the current manifest
++    and measurement are inert strings; no deployed preset or binary is opened.
++    """
++    proposal_raw = attest.safe_path(proposal_path).read_bytes()
++    proposal = strict_json(proposal_raw)
++    bindings = proposal["bindings"]
++    fixed = {"pointer": attest.POINTER, "freeze": attest.STATE, "source_tool": attest.SOURCE_TOOL}
++    files = {}
++    for role, path in fixed.items():
++        if attest.safe_path(bindings[role]["path"]) != attest.safe_path(path):
++            raise ValueError("proposal does not bind the canonical " + role)
++        files[role] = attest.safe_path(path).read_bytes()
++    pointer = strict_json(files["pointer"])
++    manifest_path = attest.safe_path(pointer["manifest_path"])
++    if attest.safe_path(bindings["manifest"]["path"]) != manifest_path:
++        raise ValueError("proposal manifest is not the current pointer manifest")
++    files["manifest"] = manifest_path.read_bytes()
++    files["observation"] = attest.safe_path(bindings["observation"]["path"]).read_bytes()
++    receipts_raw = attest.safe_path(decisions.DEFAULT_RECEIPTS).read_bytes()
++    receipts = [strict_json(line) for line in receipts_raw.splitlines() if line.strip()]
++    # Refuse drift during this metadata read as well as drift since proposal time.
++    for role, binding in bindings.items():
++        if role not in files or attest.safe_path(binding["path"]).read_bytes() != files[role]:
++            raise ValueError("input changed during identity consumption: " + role)
++    return {"proposal_raw": proposal_raw, "files": files,
++            "receipt_id": receipt_id, "receipts": receipts}
++
++
++def evaluate(context: dict | None, *, enabled: bool = False, at=None) -> dict:
++    result = {"accepted": False, "condition_1_satisfied": False,
++              "freeze_status": None, "mutation_allowed": False,
++              "runtime_pointer_write": False, "activation_authorized": False}
++    if enabled is not True:
++        return {**result, "reason": "IDENTITY_EXCEPTION_DISABLED"}
++    try:
++        if not context:
++            raise ValueError("IDENTITY_CONTEXT_MISSING")
++        if context.get("load_error"):
++            raise ValueError("IDENTITY_METADATA_REFUSED:" + context["load_error"])
++        proposal_raw = context["proposal_raw"]
++        proposal_sha = attest.raw_sha(proposal_raw)
++        proposal = strict_json(proposal_raw)
++        if proposal.get("schema") != attest.SCHEMA:
++            raise ValueError("PROPOSAL_VERSION_UNSUPPORTED")
++        files = context["files"]
++        bindings = proposal["bindings"]
++        if set(files) != {"manifest", "pointer", "freeze", "source_tool", "observation"} or set(bindings) != set(files):
++            raise ValueError("INPUT_BINDINGS_INCOMPLETE")
++        for role, raw in files.items():
++            if attest.raw_sha(raw) != bindings[role]["sha256"]:
++                raise ValueError("CURRENT_" + role.upper() + "_BYTE_DRIFT")
++        manifest, pointer, freeze, observation = [strict_json(files[k]) for k in
++                                                 ("manifest", "pointer", "freeze", "observation")]
++        result["freeze_status"] = freeze.get("status")
++        created = attest.utc(proposal["created_at_utc"])
++        now = at or dt.datetime.now(dt.timezone.utc)
++        if created > now:
++            raise ValueError("PROPOSAL_FROM_FUTURE")
++        recomputed = attest.evaluate(manifest, pointer, freeze, observation, bindings, created)
++        if recomputed["status"] != "ELIGIBLE_FOR_OWNER_REVIEW":
++            raise ValueError("PROPOSAL_REVALIDATION_REFUSED:" + ";".join(recomputed["failures"]))
++        if recomputed != proposal:
++            raise ValueError("PROPOSAL_CONTENT_DRIFT")
++        receipt_id = context["receipt_id"]
++        matches = [r for r in context["receipts"] if r.get("receipt_id") == receipt_id]
++        if not receipt_id or len(matches) != 1:
++            raise ValueError("MISSION_CONTROL_RECEIPT_MISSING_OR_DUPLICATED")
++        receipt = matches[0]
++        unsigned = {k: v for k, v in receipt.items() if k != "receipt_sha256"}
++        if receipt.get("receipt_sha256") != decisions.sha256_bytes(decisions.canonical_bytes(unsigned)):
++            raise ValueError("MISSION_CONTROL_RECEIPT_HASH_INVALID")
++        if (receipt.get("schema") != decisions.RECEIPT_SCHEMA
++                or receipt.get("decided_by") != "OWNER" or receipt.get("decision") != "YES"
++                or receipt.get("decision_id") != DECISION_PREFIX + proposal_sha
++                or receipt.get("selected_effect") != attestation_effect(proposal_sha)):
++            raise ValueError("RECEIPT_NOT_OWNER_ATTESTATION_OF_THIS_PROPOSAL")
++        if not created <= attest.utc(receipt["decided_at_utc"]) <= now:
++            raise ValueError("ATTESTATION_RECEIPT_TIME_INVALID")
++        return {**result, "accepted": True, "condition_1_satisfied": True,
++                "reason": "OWNER_ATTESTED_CURRENT_IDENTITY", "proposal_sha256": proposal_sha,
++                "receipt_id": receipt_id, "observation_age_seconds": recomputed["observation_age_seconds"]}
++    except (ValueError, TypeError, KeyError, AttributeError, OverflowError) as exc:
++        return {**result, "reason": "IDENTITY_ATTESTATION_REFUSED", "detail": str(exc)}
++
++
++def main(argv=None):
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument("--allow-attested-current-identity", action="store_true")
++    parser.add_argument("--identity-proposal", type=Path)
++    parser.add_argument("--identity-attestation-receipt-id")
++    args = parser.parse_args(argv)
++    context = None
++    if args.allow_attested_current_identity:
++        if not args.identity_proposal or not args.identity_attestation_receipt_id:
++            parser.error("enabled identity recognition requires proposal and exact attestation receipt ID")
++        try:
++            context = load_context(args.identity_proposal, args.identity_attestation_receipt_id)
++        except (OSError, ValueError, TypeError, KeyError) as exc:
++            print(json.dumps({"accepted": False, "reason": "IDENTITY_METADATA_REFUSED", "detail": str(exc)}))
++            return 2
++    result = evaluate(context, enabled=args.allow_attested_current_identity)
++    print(json.dumps(result, indent=2, sort_keys=True))
++    return 0 if result["accepted"] else 2
++
++
++if __name__ == "__main__":
++    raise SystemExit(main())
+diff --git a/tools/strategy_farm/risk_freeze.py b/tools/strategy_farm/risk_freeze.py
+index f3b8a44b9b..d25d4c61ce 100644
+--- a/tools/strategy_farm/risk_freeze.py
++++ b/tools/strategy_farm/risk_freeze.py
+@@ -432,6 +432,8 @@ def assert_live_book_mutation_allowed(
+     *,
+     state_path: Path | None = None,
+     presets_dir: Path | None = None,
++    identity_exception_enabled: bool = False,
++    identity_context: dict | None = None,
+ ) -> dict:
+     """Fail closed unless a durable state records an explicit OWNER lift.
+ 
+@@ -441,6 +443,25 @@ def assert_live_book_mutation_allowed(
+     permission.  This guard has no effect on backtests, T1-T10, gates, builds,
+     reviews, or research because only live-book mutation entrypoints call it.
+     """
++    if identity_exception_enabled is True:
++        # Recognizing condition 1 is never permission to mutate an ACTIVE book.
++        # This metadata-only branch performs no deployed preset/binary reads.
++        try:
++            from . import live_identity_consumer as identity
++        except ImportError:
++            import live_identity_consumer as identity
++        condition = identity.evaluate(identity_context, enabled=True)
++        conditions = [dict(c) for c in LIFT_CONDITIONS]
++        if condition["accepted"]:
++            conditions[0].update(status="SATISFIED", blocked_by=None,
++                                 identity_attestation_receipt_id=condition["receipt_id"],
++                                 proposal_sha256=condition["proposal_sha256"])
++        blocked = {"status": condition.get("freeze_status") or "STATE_UNVERIFIED",
++                   "held": condition.get("freeze_status") == "ACTIVE", "allowed": False,
++                   "operation": operation, "condition_1": condition,
++                   "lift_conditions": conditions}
++        raise RiskFreezeBlocked(_blocked_message(operation, blocked), blocked)
++
+     result = diff_against_baseline(state_path=state_path, presets_dir=presets_dir)
+     status = result.get("status")
+     if status in INACTIVE_STATUSES:
+diff --git a/tools/strategy_farm/tests/test_live_identity_consumer.py b/tools/strategy_farm/tests/test_live_identity_consumer.py
+new file mode 100644
+index 0000000000..3d0ebfdb83
+--- /dev/null
++++ b/tools/strategy_farm/tests/test_live_identity_consumer.py
+@@ -0,0 +1,176 @@
++"""Only fixture metadata is consumed; deployed binaries and presets stay unopened."""
++from copy import deepcopy
++import datetime as dt
++import json
++from types import SimpleNamespace
++
++import pytest
++
++from tools.strategy_farm import live_identity_attest as attest
++from tools.strategy_farm import live_identity_consumer as consumer
++from tools.strategy_farm import live_deployment_pointer_auth as auth
++from tools.strategy_farm import risk_freeze
++from tools.strategy_farm import verify_live_deployment_contract as verifier
++from tools.strategy_farm.tests.test_live_identity_attest import book
++
++
++def raw(value):
++    return (json.dumps(value, sort_keys=True, indent=2)+'\n').encode()
++
++
++def seal(context):
++    proposal_sha = attest.raw_sha(context['proposal_raw'])
++    receipt = {'schema': consumer.decisions.RECEIPT_SCHEMA,
++               'receipt_id': '1b275695-829c-480f-a59b-34b77ea8c244',
++               'decided_by': 'OWNER', 'decision': 'YES',
++               'decided_at_utc': '2026-09-05T11:01:00+00:00',
++               'decision_id': consumer.DECISION_PREFIX + proposal_sha,
++               'selected_effect': consumer.attestation_effect(proposal_sha)}
++    receipt['receipt_sha256'] = consumer.decisions.sha256_bytes(consumer.decisions.canonical_bytes(receipt))
++    context.update(receipt_id=receipt['receipt_id'], receipts=[receipt])
++
++
++@pytest.fixture
++def context(book, tmp_path):
++    manifest, pointer, freeze, observation, _, at = deepcopy(book)
++    manifest['version'] = 'unchanged-v1'
++    files = {'manifest': raw(manifest), 'freeze': raw(freeze), 'source_tool': b'# measured fixture source'}
++    pointer['manifest_sha256'] = attest.raw_sha(files['manifest'])
++    pointer['manifest_path'] = str(tmp_path/'manifest.json')
++    files['pointer'] = raw(pointer)
++    bindings = {k: {'path': str(tmp_path/(k+'.json')), 'sha256': attest.raw_sha(v)} for k,v in files.items()}
++    observation.update({k+'_sha256': b['sha256'] for k,b in bindings.items()})
++    files['observation'] = raw(observation)
++    bindings['observation'] = {'path': str(tmp_path/'observation.json'), 'sha256': attest.raw_sha(files['observation'])}
++    proposal = attest.evaluate(manifest, pointer, freeze, observation, bindings, at)
++    assert proposal['status'] == 'ELIGIBLE_FOR_OWNER_REVIEW', proposal
++    result = {'files': files, 'proposal_raw': raw(proposal)}
++    seal(result)
++    return result
++
++
++def test_flag_off_does_not_inspect_context_or_change_auth(context):
++    class Forbidden(dict):
++        def get(self, *args):
++            raise AssertionError('disabled path inspected context')
++    assert consumer.evaluate(Forbidden())['reason'] == 'IDENTITY_EXCEPTION_DISABLED'
++    pointer = json.loads(context['files']['pointer'])
++    args = dict(manifest_sha_actual=pointer['manifest_sha256'], manifest_status='LIVE', manifest_book='DXZ_12345678')
++    assert auth.authenticate_deploy_stamp(pointer, **args) == auth.authenticate_deploy_stamp(
++        pointer, **args, identity_exception_enabled=False, identity_context=Forbidden())
++
++
++def test_identical_attested_case_recognized_without_mutating_active_freeze(context, monkeypatch):
++    before = deepcopy(context)
++    result = consumer.evaluate(context, enabled=True)
++    assert result['accepted'] and result['condition_1_satisfied']
++    assert result['freeze_status'] == 'ACTIVE'
++    assert not result['mutation_allowed'] and not result['runtime_pointer_write']
++    monkeypatch.setattr(risk_freeze, 'diff_against_baseline', lambda **kw: pytest.fail('deployed tree read'))
++    with pytest.raises(risk_freeze.RiskFreezeBlocked) as caught:
++        risk_freeze.assert_live_book_mutation_allowed('generate pointer', identity_exception_enabled=True, identity_context=context)
++    assert caught.value.result['allowed'] is False
++    assert caught.value.result['lift_conditions'][0]['status'] == 'SATISFIED'
++    assert risk_freeze.LIFT_CONDITIONS[0]['status'] == 'BLOCKED'
++    assert before == context
++
++
++@pytest.mark.parametrize('role', ['manifest','pointer','freeze','source_tool','observation'])
++def test_any_bound_file_byte_drift_refused(context, role):
++    context['files'][role] += b' '
++    result = consumer.evaluate(context, enabled=True)
++    assert not result['accepted'] and 'BYTE_DRIFT' in result['detail']
++
++
++@pytest.mark.parametrize('change', ['roster','binary','setfile','risk','stale','future','version'])
++def test_recomputed_proposal_refuses_bad_observation_or_version(context, change):
++    proposal = json.loads(context['proposal_raw'])
++    observation = json.loads(context['files']['observation'])
++    sleeve = observation['measurement']['sleeves'][0]
++    if change == 'roster': sleeve['timeframe'] = 'M5'
++    if change == 'binary': sleeve['binary_sha256'] = 'b'*64
++    if change == 'setfile': sleeve['preset_sha256'] = 'c'*64
++    if change == 'risk': sleeve['RISK_PERCENT'] = 0.6
++    if change == 'stale': observation['captured_at_utc'] = '2026-09-05T10:54:59+00:00'
++    if change == 'future': observation['captured_at_utc'] = '2026-09-05T11:00:01+00:00'
++    if change == 'version': observation['schema'] = 'qm.live-identity-observation/v2'
++    context['files']['observation'] = raw(observation)
++    proposal['bindings']['observation']['sha256'] = attest.raw_sha(context['files']['observation'])
++    context['proposal_raw'] = raw(proposal)
++    seal(context)  # Even an exact matching receipt cannot bypass revalidation.
++    assert not consumer.evaluate(context, enabled=True)['accepted']
++
++
++def test_manifest_version_change_after_attestation_refused(context):
++    manifest = json.loads(context['files']['manifest'])
++    manifest['version'] = 'new-v2'
++    context['files']['manifest'] = raw(manifest)
++    assert not consumer.evaluate(context, enabled=True)['accepted']
++
++
++@pytest.mark.parametrize('age,accepted', [(300,True),(301,False)])
++def test_freshness_boundary_is_at_proposal_time(context, age, accepted):
++    proposal = json.loads(context['proposal_raw'])
++    files = context['files']
++    observation = json.loads(files['observation'])
++    created = attest.utc(proposal['created_at_utc'])
++    observation['captured_at_utc'] = (created-dt.timedelta(seconds=age)).isoformat()
++    files['observation'] = raw(observation)
++    proposal['bindings']['observation']['sha256'] = attest.raw_sha(files['observation'])
++    result = attest.evaluate(*[json.loads(files[k]) for k in ['manifest','pointer','freeze','observation']],
++                             proposal['bindings'],created)
++    context['proposal_raw'] = raw(result)
++    seal(context)
++    assert consumer.evaluate(context, enabled=True)['accepted'] is accepted
++
++
++@pytest.mark.parametrize('case', ['missing','duplicate','other_hash','policy_yes','not_owner','no','checksum','before_proposal'])
++def test_receipt_authority_negatives(context, case):
++    receipt = context['receipts'][0]
++    if case == 'missing': context['receipts'] = []
++    if case == 'duplicate': context['receipts'].append(deepcopy(receipt))
++    if case == 'other_hash': receipt['selected_effect'] = consumer.attestation_effect('d'*64)
++    if case == 'policy_yes': receipt['decision_id'] = 'OWNER-DEC-LIVE-IDENTITY-ATTEST-20260905'
++    if case == 'not_owner': receipt['decided_by'] = 'CEO'
++    if case == 'no': receipt['decision'] = 'NO'
++    if case == 'before_proposal': receipt['decided_at_utc'] = '2026-09-05T10:59:00+00:00'
++    receipt.pop('receipt_sha256')
++    receipt['receipt_sha256'] = consumer.decisions.sha256_bytes(consumer.decisions.canonical_bytes(receipt))
++    if case == 'checksum': receipt['receipt_sha256'] = 'f'*64
++    assert not consumer.evaluate(context, enabled=True)['accepted']
++
++
++def test_pointer_consumer_binds_actual_inputs_and_default_off(context):
++    pointer = json.loads(context['files']['pointer'])
++    args = dict(manifest_sha_actual=pointer['manifest_sha256'], manifest_status='LIVE', manifest_book='DXZ_12345678')
++    assert not auth.authenticate_deploy_stamp(pointer, **args).clean
++    assert auth.authenticate_deploy_stamp(pointer, **args, identity_exception_enabled=True, identity_context=context).clean
++    pointer['expected_server'] = 'different'
++    assert auth.authenticate_deploy_stamp(pointer, **args, identity_exception_enabled=True, identity_context=context).has_conflict
++
++
++def test_metadata_loader_cli_and_verifier_hook_never_read_deployed_paths(context, tmp_path, monkeypatch, capsys):
++    proposal = json.loads(context['proposal_raw'])
++    for role, data in context['files'].items():
++        (tmp_path/(role+'.json')).write_bytes(data)
++    proposal_path = tmp_path/'proposal.json'
++    proposal_path.write_bytes(context['proposal_raw'])
++    ledger = tmp_path/'receipts.jsonl'
++    ledger.write_bytes(raw(context['receipts'][0]).replace(b'\n',b'')+b'\n')
++    monkeypatch.setattr(consumer.decisions, 'DEFAULT_RECEIPTS', ledger)
++    for constant, role in [('POINTER','pointer'),('STATE','freeze'),('SOURCE_TOOL','source_tool')]:
++        monkeypatch.setattr(attest, constant, tmp_path/(role+'.json'))
++    monkeypatch.setattr(risk_freeze, 'measure', lambda *a,**kw: pytest.fail('T_Live access'))
++    original = {p:p.read_bytes() for p in tmp_path.glob('*.json*')}
++    loaded = consumer.load_context(proposal_path, context['receipt_id'])
++    assert consumer.evaluate(loaded, enabled=True)['accepted']
++    assert consumer.main(['--allow-attested-current-identity','--identity-proposal',str(proposal_path),
++                          '--identity-attestation-receipt-id',context['receipt_id']]) == 0
++    args = SimpleNamespace(pointer=str(tmp_path/'pointer.json'), manifest=str(tmp_path/'manifest.json'),
++                           allow_attested_current_identity=True, identity_proposal=str(proposal_path),
++                           identity_attestation_receipt_id=context['receipt_id'])
++    manifest = SimpleNamespace(file_sha256=proposal['bindings']['manifest']['sha256'], declared_status='LIVE', book='DXZ_12345678')
++    # Module import styles can differ; bind the already tested loader explicitly.
++    monkeypatch.setattr(verifier.pointer_auth, 'authenticate_deploy_stamp', auth.authenticate_deploy_stamp)
++    assert verifier._resolve_pointer_binding(args, manifest)['auth_status'] == 'VERIFIED'
++    assert original == {p:p.read_bytes() for p in original}
+diff --git a/tools/strategy_farm/verify_live_deployment_contract.py b/tools/strategy_farm/verify_live_deployment_contract.py
+index d2f1b503e0..3edfc3255a 100644
+--- a/tools/strategy_farm/verify_live_deployment_contract.py
++++ b/tools/strategy_farm/verify_live_deployment_contract.py
+@@ -68,6 +68,7 @@ import shutil
+ import subprocess
+ import sys
+ from dataclasses import dataclass, field, asdict
++from pathlib import Path
+ from typing import Any, Dict, List, Optional, Tuple
+ 
+ # Shared, ASCII, side-effect-free deploy-pointer authentication rules -- the SAME
+@@ -669,11 +670,24 @@ def _resolve_pointer_binding(args, manifest) -> dict:
+         return block
+ 
+     block["applicable"] = True
++    identity_options = {}
++    if getattr(args, "allow_attested_current_identity", False):
++        try:
++            from . import live_identity_consumer as identity
++        except ImportError:
++            import live_identity_consumer as identity
++        try:
++            context = identity.load_context(
++                Path(args.identity_proposal), args.identity_attestation_receipt_id)
++        except (OSError, ValueError, TypeError, KeyError, AttributeError) as exc:
++            context = {"load_error": str(exc)}
++        identity_options = {"identity_exception_enabled": True, "identity_context": context}
++        block["label"] = "Current-book identity: OWNER attestation exception; freeze remains ACTIVE"
+     res = pointer_auth.authenticate_deploy_stamp(
+         ptr, "runtime_stamp",
+         manifest_sha_actual=(manifest.file_sha256 or ""),
+         manifest_status=manifest.declared_status,
+-        manifest_book=manifest.book)
++        manifest_book=manifest.book, **identity_options)
+     block["auth_rank"] = res.rank
+     block["auth_reasons"] = [{"code": r.code, "rank": r.rank, "detail": r.detail}
+                              for r in res.reasons]
+@@ -1603,6 +1617,11 @@ def build_arg_parser() -> argparse.ArgumentParser:
+                    help="OWNER-signed runtime deploy pointer JSON; resolves expected "
+                         "server/phase/epoch/binary-fingerprint when it AUTHENTICATES this "
+                         "manifest (morning_brief rules). Pass '' to disable the read.")
++    p.add_argument("--allow-attested-current-identity", action="store_true",
++                   help="default off: recognize only an OWNER-attested unchanged identity; no freeze lift")
++    p.add_argument("--identity-proposal", default=None, help="inert proposal JSON bound by the OWNER receipt")
++    p.add_argument("--identity-attestation-receipt-id", default=None,
++                   help="exact separate attestation receipt ID in Mission Control")
+     p.add_argument("--terminal-mql5-dir", default=None,
+                    help="MQL5 root for resolving chart binary paths (default: inferred from --profile-dir)")
+     p.add_argument("--module", default=DEFAULT_MODULE,
