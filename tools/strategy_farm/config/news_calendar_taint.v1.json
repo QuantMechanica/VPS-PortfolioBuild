@@ -1,7 +1,17 @@
 {
   "schema": "qm.news-calendar-taint/v1",
-  "enabled": false,
-  "activation_evidence": null,
+  "enabled": true,
+  "activation_evidence": {
+    "declared_by": "CEO (Claude) under the standing authorization GRUEN (queue order/holds, reversible)",
+    "declared_at": "2026-09-05T17:04:29Z",
+    "evidence": [
+      "docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "docs/ops/OPEN_ITEMS_STATUS.md (Nachtrag 14:1xZ Kalender-Taint)",
+      "docs/ops/evidence/2026-09-05_news_taint_hold.md"
+    ],
+    "rollback": "set enabled=false or remove the sha entry; no verdict, hold row or gate criterion is written by this guard",
+    "lift_condition": "pinned calendar bundle sha changes to an untainted one (E1-C option B accepted and activated, or a full remeasurement seal)"
+  },
   "tainted": [
     {
       "sha256": "86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1",
