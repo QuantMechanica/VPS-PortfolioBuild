@@ -144,6 +144,27 @@ def test_execution_gate_refuses_before_runtime_work() -> None:
             timeout_seconds=60,
             replace_projections=False,
         )
+
+
+def test_current_pool_spec_declares_six_exact_pairs_and_hcc_bindings() -> None:
+    targets = bootstrap.load_calibration_targets()
+    assert {key for key in targets if key[0] == "FTMO"} == {
+        ("FTMO", symbol) for symbol in bootstrap.CURRENT_POOL_FTMO_SYMBOLS
+    }
+    assert {key for key in targets if key[0] == "DXZ"} == {
+        ("DXZ", symbol) for symbol in bootstrap.DXZ_SYMBOLS
+    }
+    for symbol in bootstrap.CURRENT_POOL_FTMO_SYMBOLS:
+        target = targets[("FTMO", symbol)]
+        assert target["hcc_paths"] == ((
+            bootstrap.LANE_ROOTS["FTMO_STREAM1"]
+            / f"Bases/FTMO-Demo/History/{symbol}/2026.hcc"
+        ).resolve(),)
+
+
+def test_ftmo_cli_requires_explicit_reviewed_symbol() -> None:
+    with pytest.raises(SystemExit):
+        bootstrap._parser().parse_args(["ftmo", "--lane", "FTMO_STREAM1", "--execute"])
     with pytest.raises(bootstrap.BootstrapError, match="requires --execute"):
         bootstrap.run_dxz_bootstrap(
             execute=False,

@@ -1,0 +1,39 @@
+{
+  "schema": "qm.ftmo-spread-calibration-spec/v1",
+  "session_bucket_minutes": 60,
+  "conservative_quantile": 0.9,
+  "minimum_matched_minutes": 60,
+  "minimum_bucket_minutes": 20,
+  "pairs": [
+    {
+      "evaluator_symbol": "GBPUSD",
+      "ftmo": {"symbol": "GBPUSD", "venue": "FTMO", "point_size": 0.00001, "m1_spread_path": "D:/QM/reports/ftmo_spread_calibration/current_pool/GBPUSD_FTMO_M1.jsonl", "source_hcc_paths": ["D:/QM/mt5/FTMO_STREAM1/Bases/FTMO-Demo/History/GBPUSD/2026.hcc"], "extraction_method": "MQL5_COPYRATES_PERIOD_M1_SPREAD"},
+      "dxz": {"symbol": "GBPUSD.DWX", "venue": "DXZ", "point_size": 0.00001, "m1_spread_path": "D:/QM/reports/ftmo_spread_calibration/current_pool/GBPUSD_DWX_M1.jsonl", "source_hcc_paths": ["D:/QM/mt5/T1/Bases/Custom/history/GBPUSD.DWX/2026.hcc"], "extraction_method": "MQL5_COPYRATES_PERIOD_M1_SPREAD"}
+    },
+    {
+      "evaluator_symbol": "EURUSD",
+      "ftmo": {"symbol": "EURUSD", "venue": "FTMO", "point_size": 0.00001, "m1_spread_path": "D:/QM/reports/ftmo_spread_calibration/current_pool/EURUSD_FTMO_M1.jsonl", "source_hcc_paths": ["D:/QM/mt5/FTMO_STREAM1/Bases/FTMO-Demo/History/EURUSD/2026.hcc"], "extraction_method": "MQL5_COPYRATES_PERIOD_M1_SPREAD"},
+      "dxz": {"symbol": "EURUSD.DWX", "venue": "DXZ", "point_size": 0.00001, "m1_spread_path": "D:/QM/reports/ftmo_spread_calibration/current_pool/EURUSD_DWX_M1.jsonl", "source_hcc_paths": ["D:/QM/mt5/T1/Bases/Custom/history/EURUSD.DWX/2026.hcc"], "extraction_method": "MQL5_COPYRATES_PERIOD_M1_SPREAD"}
+    },
+    {
+      "evaluator_symbol": "USDCAD",
+      "ftmo": {"symbol": "USDCAD", "venue": "FTMO", "point_size": 0.00001, "m1_spread_path": "D:/QM/reports/ftmo_spread_calibration/current_pool/USDCAD_FTMO_M1.jsonl", "source_hcc_paths": ["D:/QM/mt5/FTMO_STREAM1/Bases/FTMO-Demo/History/USDCAD/2026.hcc"], "extraction_method": "MQL5_COPYRATES_PERIOD_M1_SPREAD"},
+      "dxz": {"symbol": "USDCAD.DWX", "venue": "DXZ", "point_size": 0.00001, "m1_spread_path": "D:/QM/reports/ftmo_spread_calibration/current_pool/USDCAD_DWX_M1.jsonl", "source_hcc_paths": ["D:/QM/mt5/T1/Bases/Custom/history/USDCAD.DWX/2026.hcc"], "extraction_method": "MQL5_COPYRATES_PERIOD_M1_SPREAD"}
+    },
+    {
+      "evaluator_symbol": "NZDUSD",
+      "ftmo": {"symbol": "NZDUSD", "venue": "FTMO", "point_size": 0.00001, "m1_spread_path": "D:/QM/reports/ftmo_spread_calibration/current_pool/NZDUSD_FTMO_M1.jsonl", "source_hcc_paths": ["D:/QM/mt5/FTMO_STREAM1/Bases/FTMO-Demo/History/NZDUSD/2026.hcc"], "extraction_method": "MQL5_COPYRATES_PERIOD_M1_SPREAD"},
+      "dxz": {"symbol": "NZDUSD.DWX", "venue": "DXZ", "point_size": 0.00001, "m1_spread_path": "D:/QM/reports/ftmo_spread_calibration/current_pool/NZDUSD_DWX_M1.jsonl", "source_hcc_paths": ["D:/QM/mt5/T1/Bases/Custom/history/NZDUSD.DWX/2026.hcc"], "extraction_method": "MQL5_COPYRATES_PERIOD_M1_SPREAD"}
+    },
+    {
+      "evaluator_symbol": "XTIUSD",
+      "ftmo": {"symbol": "USOIL.cash", "venue": "FTMO", "point_size": 0.001, "m1_spread_path": "D:/QM/reports/ftmo_spread_calibration/current_pool/XTIUSD_FTMO_M1.jsonl", "source_hcc_paths": ["D:/QM/mt5/FTMO_STREAM1/Bases/FTMO-Demo/History/USOIL.cash/2026.hcc"], "extraction_method": "MQL5_COPYRATES_PERIOD_M1_SPREAD"},
+      "dxz": {"symbol": "XTIUSD.DWX", "venue": "DXZ", "point_size": 0.001, "m1_spread_path": "D:/QM/reports/ftmo_spread_calibration/current_pool/XTIUSD_DWX_M1.jsonl", "source_hcc_paths": ["D:/QM/mt5/T1/Bases/Custom/history/XTIUSD.DWX/2026.hcc"], "extraction_method": "MQL5_COPYRATES_PERIOD_M1_SPREAD"}
+    },
+    {
+      "evaluator_symbol": "XAGUSD",
+      "ftmo": {"symbol": "XAGUSD", "venue": "FTMO", "point_size": 0.001, "m1_spread_path": "D:/QM/reports/ftmo_spread_calibration/current_pool/XAGUSD_FTMO_M1.jsonl", "source_hcc_paths": ["D:/QM/mt5/FTMO_STREAM1/Bases/FTMO-Demo/History/XAGUSD/2026.hcc"], "extraction_method": "MQL5_COPYRATES_PERIOD_M1_SPREAD"},
+      "dxz": {"symbol": "XAGUSD.DWX", "venue": "DXZ", "point_size": 0.001, "m1_spread_path": "D:/QM/reports/ftmo_spread_calibration/current_pool/XAGUSD_DWX_M1.jsonl", "source_hcc_paths": ["D:/QM/mt5/T1/Bases/Custom/history/XAGUSD.DWX/2026.hcc"], "extraction_method": "MQL5_COPYRATES_PERIOD_M1_SPREAD"}
+    }
+  ]
+}

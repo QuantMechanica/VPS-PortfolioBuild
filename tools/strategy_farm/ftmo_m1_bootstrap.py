@@ -41,7 +41,7 @@ from typing import Any, Iterator, Mapping, Sequence
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCRIPT_SOURCE = REPO_ROOT / "framework/scripts/mt5_diagnostics/QM_M1_SpreadHarvest.mq5"
-SPEC_PATH = REPO_ROOT / "docs/ops/evidence/2026-08-02_ftmo_spread_calibration_spec.json"
+SPEC_PATH = REPO_ROOT / "docs/ops/evidence/2026-09-05_ftmo_spread_calibration_current_pool_spec.json"
 FARM_ROOT = Path("D:/QM/strategy_farm")
 FARM_DB = FARM_ROOT / "state/farm_state.sqlite"
 REPORT_ROOT = Path("D:/QM/reports/ftmo_spread_calibration")
@@ -59,6 +59,9 @@ LANE_SYMBOLS = {
     "FTMO_STREAM1": "XAUUSD",
     "FTMO_STREAM2": "GER40.cash",
 }
+CURRENT_POOL_FTMO_SYMBOLS = (
+    "GBPUSD", "EURUSD", "USDCAD", "NZDUSD", "USOIL.cash", "XAGUSD",
+)
 # Shared demo account both lanes bind (provision receipts 2026-08-03); the
 # password lives only in each lane's Config/accounts.dat.
 FTMO_DEMO_LOGIN = "1514165262"
@@ -82,7 +85,10 @@ def load_dxz_factory_login() -> tuple[str, str]:
         raise BootstrapError("dxz factory login file must bind login and server")
     return login, server
 SYMBOL_LANES = {symbol: lane for lane, symbol in LANE_SYMBOLS.items()}
-DXZ_SYMBOLS = ("XAUUSD.DWX", "GDAXI.DWX")
+DXZ_SYMBOLS = (
+    "GBPUSD.DWX", "EURUSD.DWX", "USDCAD.DWX", "NZDUSD.DWX",
+    "XTIUSD.DWX", "XAGUSD.DWX",
+)
 FACTORY_TERMINALS = tuple(f"T{index}" for index in range(1, 11))
 
 HISTORY_OBSERVATION_SCHEMA = "qm.ftmo-history-coverage/v1"
@@ -1250,6 +1256,7 @@ def _new_run_root(mode: str, identity: str, report_root: Path = REPORT_ROOT) -> 
 def run_ftmo_bootstrap(
     *,
     lane: str,
+    symbol: str | None = None,
     execute: bool,
     timeout_seconds: int,
     replace_projections: bool,
@@ -1264,7 +1271,9 @@ def run_ftmo_bootstrap(
         raise BootstrapError("FTMO bootstrap report root differs from the reviewed contract")
     if lane not in LANE_ROOTS:
         raise BootstrapError(f"unsupported FTMO lane: {lane}")
-    symbol = LANE_SYMBOLS[lane]
+    symbol = LANE_SYMBOLS[lane] if symbol is None else symbol
+    if symbol not in CURRENT_POOL_FTMO_SYMBOLS:
+        raise BootstrapError(f"unsupported current-pool FTMO symbol: {symbol}")
     targets = load_calibration_targets(spec_path)
     target = targets.get(("FTMO", symbol))
     if target is None:
@@ -1303,20 +1312,9 @@ def run_ftmo_bootstrap(
             run_binding=execution,
             replace=replace_projections,
         )
-        history_handoffs = {
-            observation_lane: build_history_handoff(
-                lane=observation_lane,
-                observation_path=(
-                    run_root / f"history_observation_{observation_lane}.json"
-                ),
-                report_root=report_root,
-            )
-            for observation_lane in sorted(LANE_ROOTS)
-        }
-        history = history_handoffs[lane]
         receipt = {
             "schema": BOOTSTRAP_RECEIPT_SCHEMA,
-            "status": "PASS" if history["status"] == "READY" else "HOLD_PARTIAL",
+            "status": "PASS",
             "created_at": utc_now(),
             "mode": "FTMO",
             "lane": lane,
@@ -1329,8 +1327,8 @@ def run_ftmo_bootstrap(
             "startup": startup,
             "execution": execution,
             "published": {symbol: published},
-            "history_handoff": history,
-            "history_handoffs": history_handoffs,
+            "history_handoff": {"status": "NOT_APPLICABLE_CURRENT_POOL_CALIBRATION"},
+            "history_handoffs": {},
             "claims": {
                 "q_pipeline_verdict": "NONE",
                 "live_authority": "NONE",
@@ -1474,6 +1472,7 @@ def _parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="command", required=True)
     ftmo = subparsers.add_parser("ftmo", help="harvest one serialized FTMO research lane")
     ftmo.add_argument("--lane", required=True, choices=sorted(LANE_ROOTS))
+    ftmo.add_argument("--symbol", required=True, choices=CURRENT_POOL_FTMO_SYMBOLS)
     ftmo.add_argument("--execute", action="store_true")
     ftmo.add_argument("--timeout-seconds", type=int, default=7200)
     ftmo.add_argument("--replace-projections", action="store_true")
@@ -1496,6 +1495,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         if args.command == "ftmo":
             result = run_ftmo_bootstrap(
                 lane=args.lane,
+                symbol=args.symbol,
                 execute=args.execute,
                 timeout_seconds=args.timeout_seconds,
                 replace_projections=args.replace_projections,
