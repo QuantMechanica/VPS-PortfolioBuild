@@ -1,0 +1,79 @@
+{
+  "candidate": {
+    "author": "OpenAI Codex; Ernest P. Chan; Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen",
+    "mechanic": "monthly WTI sixty completed log-price levels lag-one intercept ADF t at least -2.594 AND latest thirteen completed month-end Mann-Kendall all-pairs score abs at least 28 agreement directional trend",
+    "slug": "wti-adf-mkendall-agree-tr",
+    "strategy_id": "AI-CODEX-WTI-ADF-MKENDALL-AGREE-TREND-20260905_S01"
+  },
+  "error": null,
+  "exit_code": 3,
+  "generated_at_utc": "2026-09-05T16:31:06+00:00",
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41336_wti-adf-kpss-agree-tr_card.md",
+      "score": 0.75,
+      "slug": "wti-adf-kpss-agree-tr",
+      "source": "card",
+      "strategy_id": "AI-CODEX-WTI-ADF-KPSS-AGREE-TREND-20260904_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41337_wti-adf-specent-agree-tr_card.md",
+      "score": 0.75,
+      "slug": "wti-adf-specent-agree-tr",
+      "source": "card",
+      "strategy_id": "AI-CODEX-WTI-ADF-SPECENT-AGREE-TREND-20260905_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41338_wti-adf-vn-agree-tr_card.md",
+      "score": 0.75,
+      "slug": "wti-adf-vn-agree-tr",
+      "source": "card",
+      "strategy_id": "AI-CODEX-WTI-ADF-VN-AGREE-TREND-20260905_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41339_wti-adf-lz-agree-tr_card.md",
+      "score": 0.75,
+      "slug": "wti-adf-lz-agree-tr",
+      "source": "card",
+      "strategy_id": "AI-CODEX-WTI-ADF-LZ-AGREE-TREND-20260905_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41349_wti-adf-sampen-agree-tr_card.md",
+      "score": 0.75,
+      "slug": "wti-adf-sampen-agree-tr",
+      "source": "card",
+      "strategy_id": "AI-CODEX-WTI-ADF-SAMPEN-AGREE-TREND-20260905_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4834,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1447,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "FUZZY_MATCH"
+}

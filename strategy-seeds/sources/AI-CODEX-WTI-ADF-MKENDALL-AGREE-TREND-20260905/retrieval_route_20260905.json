@@ -1,0 +1,18 @@
+{
+  "schema": "qm.source-composition-receipt/v1",
+  "generated_at": "2026-09-05",
+  "new_public_retrieval": false,
+  "complete_bounded_parents": [
+    {
+      "path": "strategy-seeds/sources/AI-CODEX-WTI-MADF-PERSIST-TREND-20260903/source.md",
+      "sha256": "576505363DE9DCA4F8E0CB4047D30DE630FB76CBC754F3F9FE3805CDA33507EC",
+      "role": "lag-one intercept-only ADF arithmetic, threshold, and adverse interpretation boundary"
+    },
+    {
+      "path": "strategy-seeds/sources/MOP-WTI-RANKTREND-2026/source.md",
+      "sha256": "A5AE6AC763357307C55141495985BFDD8E8BE1E8813CE013858D829AB3ECA124",
+      "role": "thirteen-endpoint Mann-Kendall all-pairs score, fixed boundary, direction, and explicit WTI carrier lineage"
+    }
+  ],
+  "claim_boundary": "The parents define WTI ADF persistence gating and WTI Mann-Kendall direction separately. Neither tests their conjunction, continuous-CFD transport, activity, economics, or portfolio fit."
+}
