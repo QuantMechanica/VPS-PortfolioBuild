@@ -1,6 +1,6 @@
 {
   "schema_version": "qm.owner-decisions/v2",
-  "revision": 5,
+  "revision": 6,
   "maintainer": "Mission Control decision store; OWNER answers are receipts, not execution authority.",
   "updated_at_utc": "2026-09-02T17:47:14Z",
   "items": [
@@ -234,6 +234,28 @@
       "severity": "action",
       "status": "OPEN",
       "yes_effect": "Genau EIN Claude-Auftrag: (1) V2-Code bleibt integriert und inert bis zur Umgebungsvariable; QM_DSR_V2=1 wird auf Maschinenebene gesetzt und per gestaffeltem Worker-Reload wirksam (nur neue Q08-Kindprozesse); (2) Read-only V2-Projektion der 31 Q11-PASS-Paare und der 28 juengsten Q08-PASS-Artefakte als Evidenzdokument (keine Verdikt-Aenderung); (3) Nachtrag im Audit-Integrationsdokument und OPEN_ITEMS; Readjudikation des Bestands = separate Karte mit dieser Projektion als Grundlage. Kein Live-, Kauf- oder AutoTrading-Effekt."
+    },
+    {
+      "category": "Live-Buch/Governance",
+      "cost_of_wait": "Ohne Deine Beglaubigung bleibt das laufende Buch ohne beglaubigte Identitaet; die Consumer-Ausnahme (in Umsetzung) kann nichts akzeptieren und der Freeze-Kreis bleibt bis zu einem signierten Mint geschlossen. Kein Verlust durch Warten ausser dem weiter offenen Audit-Punkt M06.",
+      "created_at_utc": "2026-09-05T19:05:43Z",
+      "depends_on": [
+        "OWNER-DEC-LIVE-IDENTITY-ATTEST-20260905"
+      ],
+      "due": null,
+      "evidence": [
+        "docs/ops/evidence/2026-09-05_m06_attest_current/proposal/proposal.json",
+        "docs/ops/evidence/2026-09-05_m06_attest_current/proposal/receipt.json",
+        "docs/ops/evidence/2026-09-05_m06_attest_current/observation.json",
+        "docs/ops/evidence/2026-09-05_m06_live_identity_attest.md"
+      ],
+      "id": "OWNER-DEC-LIVE-IDENTITY-SIGN-20260905",
+      "no_effect": "Der Vorschlag verfaellt; das laufende Buch bleibt unbeglaubigt; eine neue Beobachtung + neuer Vorschlag waeren fuer einen spaeteren Anlauf noetig.",
+      "question": "Beglaubigst Du diesen unsignierten Attest-Vorschlag als Identitaet des UNVERAENDERTEN laufenden Live-Buchs? Vorschlag-SHA256 20de8acd31157cad... (Beobachtung c411e0f38885a9ae..., risk_freeze.measure read-only, Alter beim Vorschlag 15 s): 24 Sleeves, 21 Binaerdateien, Gesamtrisiko 9,7499 %, alle beobachteten Fingerabdruecke identisch mit der eingefrorenen Baseline, Freeze ACTIVE, Pointer unsigniert, keine Laufzeit-Aenderung. Dein JA ist der Beglaubigungs-Receipt, den die Consumer-Ausnahme (hinter Flag, in Umsetzung) spaeter als Freeze-Bedingung 1 akzeptieren darf. Es aktiviert nichts, aendert kein Risiko und beruehrt AutoTrading nicht.",
+      "recommendation": "JA. Die Beobachtung ist frisch, vollstaendig und byte-identisch mit der Baseline; der Vorschlag ist inert und ohne Laufzeitwirkung. Das ist die vom Audit geforderte Beglaubigung der bestehenden Identitaet ohne Risikoaenderung.",
+      "severity": "action",
+      "status": "OPEN",
+      "yes_effect": "Dokumentation: der Receipt wird als Beglaubigung an den Vorschlag gebunden (Evidenzdokument + OPEN_ITEMS); keine Code-Aktivierung, kein Pointer-Write, Freeze bleibt ACTIVE. Die Consumer-Ausnahme wird erst nach Review und einer eigenen Aktivierungs-Freigabe eingeschaltet."
     }
   ]
 }

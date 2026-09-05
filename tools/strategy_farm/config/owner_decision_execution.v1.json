@@ -801,6 +801,35 @@
           ]
         }
       }
+    },
+    {
+      "id": "OWNER-DEC-LIVE-IDENTITY-SIGN-20260905",
+      "todo_id": "QM-TODO-20260905-LIVE-IDENTITY-SIGN",
+      "priority": 86,
+      "choices": {
+        "YES": {
+          "mode": "DOCUMENT_AND_VERIFY",
+          "objective": "Bind the OWNER attestation receipt to the proposal (sha 20de8acd31157cad84c5df8b54855af7a77ea7d32bcfdc108b3b32215af4d7c3) in the evidence directory and OPEN_ITEMS; no code activation, no pointer write, freeze stays ACTIVE.",
+          "allowed_actions": [
+            "Write the receipt id + proposal sha into docs/ops/evidence/2026-09-05_m06_attest_current/attestation.json and OPEN_ITEMS",
+            "Commit with explicit pathspecs"
+          ],
+          "acceptance": [
+            "Attestation record exists and references the exact proposal sha",
+            "No runtime file under C:/QM/mt5/T_Live or D:/QM/reports/state changed"
+          ]
+        },
+        "NO": {
+          "mode": "DOCUMENT_AND_VERIFY",
+          "objective": "Record the rejection; proposal expires unused.",
+          "allowed_actions": [
+            "Document in OPEN_ITEMS_STATUS.md"
+          ],
+          "acceptance": [
+            "No activation"
+          ]
+        }
+      }
     }
   ]
 }
