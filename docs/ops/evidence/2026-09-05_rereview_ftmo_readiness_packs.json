@@ -1,0 +1,1090 @@
+{
+  "schema": "qm.ftmo-readiness-rereview/v1",
+  "task_id": "85e4d7d4-e63b-4cd4-b765-a1defb01e61e",
+  "reviewed_commit": "95343b30e9f4d5689cbcda33dad2c78bb440fe62",
+  "observed_at_utc": "2026-09-05T09:53:36.346666+00:00",
+  "documents": {
+    "part1": {
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_readiness_part1.md",
+      "sha256": "d74a0dd3c712b356bde3d499ef62f9ad959c174defac2240d23f4b958f0b1fb7",
+      "matches_reviewed_commit_lf": true
+    },
+    "part2": {
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_readiness_part2.md",
+      "sha256": "ef9830b22a30f4ce05034742e0ff7b35bb081c03cb42ddaffdd3c9e637f6709c",
+      "matches_reviewed_commit_lf": true
+    },
+    "runbook": {
+      "path": "C:\\QM\\repo\\docs\\ops\\FTMO_STAGE_TRANSITION_RUNBOOK_2026-09.md",
+      "sha256": "c621aa5a96e76c475dc5dc3830af3007ac0ed28979a5938f1bf4d8a25a49b71d",
+      "matches_reviewed_commit_lf": true
+    }
+  },
+  "anchors": [
+    {
+      "group": "part1",
+      "claim": "10706:GBPUSD trade count",
+      "document_line": 137,
+      "document_quote": "Scope note: these 8 are the Q10_NEWS-sealed FTMO-target set, **distinct** from the 24-sleeve live DXZ book (only 10706/GBPUSD and 11421/EURUSD overlap both). Pipeline status confirmed from the farm DB (`file:D:/QM/strategy_farm/state/farm_state.sqlite?mode=ro`, read 2026-09-05): Q08 `done` and Q10_NEWS `CONFIG_LOCKED` as of 2026-09-04 for all; **11910/NZDUSD Q08 = FAIL_SOFT** (scored PASS-class per census rule, receipt row 2), the other seven Q08 PASS.",
+      "source": "D:\\QM\\reports\\pipeline\\QM5_10706\\Q08\\_baseline\\QM5_10706\\20260904_051342\\raw\\run_01\\report.htm",
+      "source_sha256": "85dd26cd8c56b9098b7c794949f0f6b4a122f57bb1b6c2c4a84aef41e0124b82",
+      "source_locator": "native Deals IN/OUT lifecycles",
+      "actual": 360,
+      "expected": 360,
+      "matches": true
+    },
+    {
+      "group": "part1",
+      "claim": "10706:GBPUSD median holding hours",
+      "document_line": 152,
+      "document_quote": "**Median holding period (now measured — `docs/ops/evidence/2026-09-05_ftmo_readiness_part1_validation.json` → `holding_periods/<EA:symbol>`, derived_position_key pairing since native `report.htm` exposes no `DEAL_POSITION_ID`):** median hold **10706/GBPUSD 7.43 h (0.31 d)**, 11421/EURUSD 24.85 h (1.04 d), 11422/USDCAD 40.98 h (1.71 d), 11910/NZDUSD 116.92 h (4.87 d), 13054/XTIUSD 70.00 h (2.92 d), 1537/XAGUSD 48.00 h (2.00 d), 20048/XTIUSD 72.00 h (3.00 d), 21505/XAGUSD 116.00 h (4.83 d). **7 of 8 have a median above one day** (multi-day holds → multiple swap accruals per trade, swap-exposed for a Swing account); only 10706/GBPUSD is sub-day (H1, shortest hold), yet it still crosses ≥1 calendar midnight in 165/360 trades. The `n_trades (Q08 baseline)` column above is the same validation’s `holding_periods/<EA:symbol>/trade_count`.",
+      "source": "D:\\QM\\reports\\pipeline\\QM5_10706\\Q08\\_baseline\\QM5_10706\\20260904_051342\\raw\\run_01\\report.htm",
+      "source_sha256": "85dd26cd8c56b9098b7c794949f0f6b4a122f57bb1b6c2c4a84aef41e0124b82",
+      "source_locator": "native Deals paired close_time-open_time median",
+      "actual": 7.428333,
+      "expected": 7.428333,
+      "matches": true
+    },
+    {
+      "group": "part1",
+      "claim": "11421:EURUSD trade count",
+      "document_line": 137,
+      "document_quote": "Scope note: these 8 are the Q10_NEWS-sealed FTMO-target set, **distinct** from the 24-sleeve live DXZ book (only 10706/GBPUSD and 11421/EURUSD overlap both). Pipeline status confirmed from the farm DB (`file:D:/QM/strategy_farm/state/farm_state.sqlite?mode=ro`, read 2026-09-05): Q08 `done` and Q10_NEWS `CONFIG_LOCKED` as of 2026-09-04 for all; **11910/NZDUSD Q08 = FAIL_SOFT** (scored PASS-class per census rule, receipt row 2), the other seven Q08 PASS.",
+      "source": "D:\\QM\\reports\\pipeline\\QM5_11421\\Q08\\_baseline\\QM5_11421\\20260902_193230\\raw\\run_01\\report.htm",
+      "source_sha256": "7b56e1682561b9aa6ae4ddc311ac83e785f1d033e3b90d80db342fa4a96c8071",
+      "source_locator": "native Deals IN/OUT lifecycles",
+      "actual": 91,
+      "expected": 91,
+      "matches": true
+    },
+    {
+      "group": "part1",
+      "claim": "11421:EURUSD median holding hours",
+      "document_line": 152,
+      "document_quote": "**Median holding period (now measured — `docs/ops/evidence/2026-09-05_ftmo_readiness_part1_validation.json` → `holding_periods/<EA:symbol>`, derived_position_key pairing since native `report.htm` exposes no `DEAL_POSITION_ID`):** median hold **10706/GBPUSD 7.43 h (0.31 d)**, 11421/EURUSD 24.85 h (1.04 d), 11422/USDCAD 40.98 h (1.71 d), 11910/NZDUSD 116.92 h (4.87 d), 13054/XTIUSD 70.00 h (2.92 d), 1537/XAGUSD 48.00 h (2.00 d), 20048/XTIUSD 72.00 h (3.00 d), 21505/XAGUSD 116.00 h (4.83 d). **7 of 8 have a median above one day** (multi-day holds → multiple swap accruals per trade, swap-exposed for a Swing account); only 10706/GBPUSD is sub-day (H1, shortest hold), yet it still crosses ≥1 calendar midnight in 165/360 trades. The `n_trades (Q08 baseline)` column above is the same validation’s `holding_periods/<EA:symbol>/trade_count`.",
+      "source": "D:\\QM\\reports\\pipeline\\QM5_11421\\Q08\\_baseline\\QM5_11421\\20260902_193230\\raw\\run_01\\report.htm",
+      "source_sha256": "7b56e1682561b9aa6ae4ddc311ac83e785f1d033e3b90d80db342fa4a96c8071",
+      "source_locator": "native Deals paired close_time-open_time median",
+      "actual": 24.853333,
+      "expected": 24.853333,
+      "matches": true
+    },
+    {
+      "group": "part1",
+      "claim": "11422:USDCAD trade count",
+      "document_line": 145,
+      "document_quote": "| 11422/USDCAD | 114220004 | magic_numbers.csv | PASS | CONFIG_LOCKED | D1 (multi-day) | 195 |",
+      "source": "D:\\QM\\reports\\pipeline\\QM5_11422\\Q08\\_baseline\\QM5_11422\\20260904_061656\\raw\\run_01\\report.htm",
+      "source_sha256": "9b12636e15e8c0cee89d551eeda98c6f524798a0e3e38fde02e17ce36ede0411",
+      "source_locator": "native Deals IN/OUT lifecycles",
+      "actual": 195,
+      "expected": 195,
+      "matches": true
+    },
+    {
+      "group": "part1",
+      "claim": "11422:USDCAD median holding hours",
+      "document_line": 152,
+      "document_quote": "**Median holding period (now measured — `docs/ops/evidence/2026-09-05_ftmo_readiness_part1_validation.json` → `holding_periods/<EA:symbol>`, derived_position_key pairing since native `report.htm` exposes no `DEAL_POSITION_ID`):** median hold **10706/GBPUSD 7.43 h (0.31 d)**, 11421/EURUSD 24.85 h (1.04 d), 11422/USDCAD 40.98 h (1.71 d), 11910/NZDUSD 116.92 h (4.87 d), 13054/XTIUSD 70.00 h (2.92 d), 1537/XAGUSD 48.00 h (2.00 d), 20048/XTIUSD 72.00 h (3.00 d), 21505/XAGUSD 116.00 h (4.83 d). **7 of 8 have a median above one day** (multi-day holds → multiple swap accruals per trade, swap-exposed for a Swing account); only 10706/GBPUSD is sub-day (H1, shortest hold), yet it still crosses ≥1 calendar midnight in 165/360 trades. The `n_trades (Q08 baseline)` column above is the same validation’s `holding_periods/<EA:symbol>/trade_count`.",
+      "source": "D:\\QM\\reports\\pipeline\\QM5_11422\\Q08\\_baseline\\QM5_11422\\20260904_061656\\raw\\run_01\\report.htm",
+      "source_sha256": "9b12636e15e8c0cee89d551eeda98c6f524798a0e3e38fde02e17ce36ede0411",
+      "source_locator": "native Deals paired close_time-open_time median",
+      "actual": 40.978889,
+      "expected": 40.978889,
+      "matches": true
+    },
+    {
+      "group": "part1",
+      "claim": "11910:NZDUSD trade count",
+      "document_line": 137,
+      "document_quote": "Scope note: these 8 are the Q10_NEWS-sealed FTMO-target set, **distinct** from the 24-sleeve live DXZ book (only 10706/GBPUSD and 11421/EURUSD overlap both). Pipeline status confirmed from the farm DB (`file:D:/QM/strategy_farm/state/farm_state.sqlite?mode=ro`, read 2026-09-05): Q08 `done` and Q10_NEWS `CONFIG_LOCKED` as of 2026-09-04 for all; **11910/NZDUSD Q08 = FAIL_SOFT** (scored PASS-class per census rule, receipt row 2), the other seven Q08 PASS.",
+      "source": "D:\\QM\\reports\\pipeline\\QM5_11910\\Q08\\_baseline\\QM5_11910\\20260904_160009\\raw\\run_01\\report.htm",
+      "source_sha256": "27a89a85a968c3e55380e3b66e7bab0bc794ca45a135def3a79dc224867d2684",
+      "source_locator": "native Deals IN/OUT lifecycles",
+      "actual": 63,
+      "expected": 63,
+      "matches": true
+    },
+    {
+      "group": "part1",
+      "claim": "11910:NZDUSD median holding hours",
+      "document_line": 152,
+      "document_quote": "**Median holding period (now measured — `docs/ops/evidence/2026-09-05_ftmo_readiness_part1_validation.json` → `holding_periods/<EA:symbol>`, derived_position_key pairing since native `report.htm` exposes no `DEAL_POSITION_ID`):** median hold **10706/GBPUSD 7.43 h (0.31 d)**, 11421/EURUSD 24.85 h (1.04 d), 11422/USDCAD 40.98 h (1.71 d), 11910/NZDUSD 116.92 h (4.87 d), 13054/XTIUSD 70.00 h (2.92 d), 1537/XAGUSD 48.00 h (2.00 d), 20048/XTIUSD 72.00 h (3.00 d), 21505/XAGUSD 116.00 h (4.83 d). **7 of 8 have a median above one day** (multi-day holds → multiple swap accruals per trade, swap-exposed for a Swing account); only 10706/GBPUSD is sub-day (H1, shortest hold), yet it still crosses ≥1 calendar midnight in 165/360 trades. The `n_trades (Q08 baseline)` column above is the same validation’s `holding_periods/<EA:symbol>/trade_count`.",
+      "source": "D:\\QM\\reports\\pipeline\\QM5_11910\\Q08\\_baseline\\QM5_11910\\20260904_160009\\raw\\run_01\\report.htm",
+      "source_sha256": "27a89a85a968c3e55380e3b66e7bab0bc794ca45a135def3a79dc224867d2684",
+      "source_locator": "native Deals paired close_time-open_time median",
+      "actual": 116.916389,
+      "expected": 116.916389,
+      "matches": true
+    },
+    {
+      "group": "part1",
+      "claim": "13054:XTIUSD trade count",
+      "document_line": 147,
+      "document_quote": "| 13054/XTIUSD | 130540000 | magic_numbers.csv | PASS | CONFIG_LOCKED | D1 (multi-day) | 82 |",
+      "source": "D:\\QM\\reports\\pipeline\\QM5_13054\\Q08\\_baseline\\QM5_13054\\20260904_061139\\raw\\run_01\\report.htm",
+      "source_sha256": "6c578a7287c6aa6ab0369eed9fe842511a031843dd0176dc0ad372224d2da2ea",
+      "source_locator": "native Deals IN/OUT lifecycles",
+      "actual": 82,
+      "expected": 82,
+      "matches": true
+    },
+    {
+      "group": "part1",
+      "claim": "13054:XTIUSD median holding hours",
+      "document_line": 152,
+      "document_quote": "**Median holding period (now measured — `docs/ops/evidence/2026-09-05_ftmo_readiness_part1_validation.json` → `holding_periods/<EA:symbol>`, derived_position_key pairing since native `report.htm` exposes no `DEAL_POSITION_ID`):** median hold **10706/GBPUSD 7.43 h (0.31 d)**, 11421/EURUSD 24.85 h (1.04 d), 11422/USDCAD 40.98 h (1.71 d), 11910/NZDUSD 116.92 h (4.87 d), 13054/XTIUSD 70.00 h (2.92 d), 1537/XAGUSD 48.00 h (2.00 d), 20048/XTIUSD 72.00 h (3.00 d), 21505/XAGUSD 116.00 h (4.83 d). **7 of 8 have a median above one day** (multi-day holds → multiple swap accruals per trade, swap-exposed for a Swing account); only 10706/GBPUSD is sub-day (H1, shortest hold), yet it still crosses ≥1 calendar midnight in 165/360 trades. The `n_trades (Q08 baseline)` column above is the same validation’s `holding_periods/<EA:symbol>/trade_count`.",
+      "source": "D:\\QM\\reports\\pipeline\\QM5_13054\\Q08\\_baseline\\QM5_13054\\20260904_061139\\raw\\run_01\\report.htm",
+      "source_sha256": "6c578a7287c6aa6ab0369eed9fe842511a031843dd0176dc0ad372224d2da2ea",
+      "source_locator": "native Deals paired close_time-open_time median",
+      "actual": 69.999306,
+      "expected": 69.999306,
+      "matches": true
+    },
+    {
+      "group": "part1",
+      "claim": "1537:XAGUSD trade count",
+      "document_line": 148,
+      "document_quote": "| 1537/XAGUSD | 15370001 | magic_numbers.csv | PASS | CONFIG_LOCKED | D1 (multi-day) | 96 |",
+      "source": "D:\\QM\\reports\\pipeline\\QM5_1537\\Q08\\_baseline\\QM5_1537\\20260904_050325\\raw\\run_01\\report.htm",
+      "source_sha256": "38f6c7d981173cfdfbf3806871bfa39545025aa83b890d95f34cd5d2c2494f7d",
+      "source_locator": "native Deals IN/OUT lifecycles",
+      "actual": 96,
+      "expected": 96,
+      "matches": true
+    },
+    {
+      "group": "part1",
+      "claim": "1537:XAGUSD median holding hours",
+      "document_line": 152,
+      "document_quote": "**Median holding period (now measured — `docs/ops/evidence/2026-09-05_ftmo_readiness_part1_validation.json` → `holding_periods/<EA:symbol>`, derived_position_key pairing since native `report.htm` exposes no `DEAL_POSITION_ID`):** median hold **10706/GBPUSD 7.43 h (0.31 d)**, 11421/EURUSD 24.85 h (1.04 d), 11422/USDCAD 40.98 h (1.71 d), 11910/NZDUSD 116.92 h (4.87 d), 13054/XTIUSD 70.00 h (2.92 d), 1537/XAGUSD 48.00 h (2.00 d), 20048/XTIUSD 72.00 h (3.00 d), 21505/XAGUSD 116.00 h (4.83 d). **7 of 8 have a median above one day** (multi-day holds → multiple swap accruals per trade, swap-exposed for a Swing account); only 10706/GBPUSD is sub-day (H1, shortest hold), yet it still crosses ≥1 calendar midnight in 165/360 trades. The `n_trades (Q08 baseline)` column above is the same validation’s `holding_periods/<EA:symbol>/trade_count`.",
+      "source": "D:\\QM\\reports\\pipeline\\QM5_1537\\Q08\\_baseline\\QM5_1537\\20260904_050325\\raw\\run_01\\report.htm",
+      "source_sha256": "38f6c7d981173cfdfbf3806871bfa39545025aa83b890d95f34cd5d2c2494f7d",
+      "source_locator": "native Deals paired close_time-open_time median",
+      "actual": 47.997222,
+      "expected": 47.997222,
+      "matches": true
+    },
+    {
+      "group": "part1",
+      "claim": "20048:XTIUSD trade count",
+      "document_line": 149,
+      "document_quote": "| 20048/XTIUSD | 200480000 | magic_numbers.csv | PASS | CONFIG_LOCKED | D1 (multi-day) | 60 |",
+      "source": "D:\\QM\\reports\\pipeline\\QM5_20048\\Q08\\_baseline\\QM5_20048\\20260904_065008\\raw\\run_01\\report.htm",
+      "source_sha256": "057d568c055c65922dd7a9e2273004728bc871fbb3dd2000a9756e16c8237977",
+      "source_locator": "native Deals IN/OUT lifecycles",
+      "actual": 60,
+      "expected": 60,
+      "matches": true
+    },
+    {
+      "group": "part1",
+      "claim": "20048:XTIUSD median holding hours",
+      "document_line": 152,
+      "document_quote": "**Median holding period (now measured — `docs/ops/evidence/2026-09-05_ftmo_readiness_part1_validation.json` → `holding_periods/<EA:symbol>`, derived_position_key pairing since native `report.htm` exposes no `DEAL_POSITION_ID`):** median hold **10706/GBPUSD 7.43 h (0.31 d)**, 11421/EURUSD 24.85 h (1.04 d), 11422/USDCAD 40.98 h (1.71 d), 11910/NZDUSD 116.92 h (4.87 d), 13054/XTIUSD 70.00 h (2.92 d), 1537/XAGUSD 48.00 h (2.00 d), 20048/XTIUSD 72.00 h (3.00 d), 21505/XAGUSD 116.00 h (4.83 d). **7 of 8 have a median above one day** (multi-day holds → multiple swap accruals per trade, swap-exposed for a Swing account); only 10706/GBPUSD is sub-day (H1, shortest hold), yet it still crosses ≥1 calendar midnight in 165/360 trades. The `n_trades (Q08 baseline)` column above is the same validation’s `holding_periods/<EA:symbol>/trade_count`.",
+      "source": "D:\\QM\\reports\\pipeline\\QM5_20048\\Q08\\_baseline\\QM5_20048\\20260904_065008\\raw\\run_01\\report.htm",
+      "source_sha256": "057d568c055c65922dd7a9e2273004728bc871fbb3dd2000a9756e16c8237977",
+      "source_locator": "native Deals paired close_time-open_time median",
+      "actual": 71.999444,
+      "expected": 71.999444,
+      "matches": true
+    },
+    {
+      "group": "part1",
+      "claim": "21505:XAGUSD trade count",
+      "document_line": 150,
+      "document_quote": "| 21505/XAGUSD | 215050000 | magic_numbers.csv | PASS | CONFIG_LOCKED | D1 (multi-day) | 116 |",
+      "source": "D:\\QM\\reports\\pipeline\\QM5_21505\\Q08\\_baseline\\QM5_21505\\20260904_060120\\raw\\run_01\\report.htm",
+      "source_sha256": "911154341b07528d3ea7cecb5e0e4664503a1f64b1c2b3749a4bb233b64a0535",
+      "source_locator": "native Deals IN/OUT lifecycles",
+      "actual": 116,
+      "expected": 116,
+      "matches": true
+    },
+    {
+      "group": "part1",
+      "claim": "21505:XAGUSD median holding hours",
+      "document_line": 152,
+      "document_quote": "**Median holding period (now measured — `docs/ops/evidence/2026-09-05_ftmo_readiness_part1_validation.json` → `holding_periods/<EA:symbol>`, derived_position_key pairing since native `report.htm` exposes no `DEAL_POSITION_ID`):** median hold **10706/GBPUSD 7.43 h (0.31 d)**, 11421/EURUSD 24.85 h (1.04 d), 11422/USDCAD 40.98 h (1.71 d), 11910/NZDUSD 116.92 h (4.87 d), 13054/XTIUSD 70.00 h (2.92 d), 1537/XAGUSD 48.00 h (2.00 d), 20048/XTIUSD 72.00 h (3.00 d), 21505/XAGUSD 116.00 h (4.83 d). **7 of 8 have a median above one day** (multi-day holds → multiple swap accruals per trade, swap-exposed for a Swing account); only 10706/GBPUSD is sub-day (H1, shortest hold), yet it still crosses ≥1 calendar midnight in 165/360 trades. The `n_trades (Q08 baseline)` column above is the same validation’s `holding_periods/<EA:symbol>/trade_count`.",
+      "source": "D:\\QM\\reports\\pipeline\\QM5_21505\\Q08\\_baseline\\QM5_21505\\20260904_060120\\raw\\run_01\\report.htm",
+      "source_sha256": "911154341b07528d3ea7cecb5e0e4664503a1f64b1c2b3749a4bb233b64a0535",
+      "source_locator": "native Deals paired close_time-open_time median",
+      "actual": 115.999722,
+      "expected": 115.999722,
+      "matches": true
+    },
+    {
+      "group": "part1",
+      "claim": "dated governed net",
+      "document_line": 8,
+      "document_quote": "> - **Finding 2** — the CEO-prose “−469 / 30 active days” is no longer the maintained current basis; replaced with the reproducible dated window **−472.96 USD** (`2026-08-01..2026-09-04`, 65 closes / 24 active days) and the literal latest-30-close-day **−1,436.59 USD**; −469 retained as an older, incompletely-specified reference; holding-period medians filled from the same validation.",
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\journal\\live_deals_normalized.csv",
+      "source_sha256": "9a4cc7ba454767e36714d61dc9cd93e1ef6059ec9afaa3e1377091c6892966c7",
+      "source_locator": "governed position lifecycles closed 2026-08-01..09-04",
+      "actual": "-472.96",
+      "expected": "-472.96",
+      "matches": true
+    },
+    {
+      "group": "part1",
+      "claim": "literal latest 30 close-days net",
+      "document_line": 8,
+      "document_quote": "> - **Finding 2** — the CEO-prose “−469 / 30 active days” is no longer the maintained current basis; replaced with the reproducible dated window **−472.96 USD** (`2026-08-01..2026-09-04`, 65 closes / 24 active days) and the literal latest-30-close-day **−1,436.59 USD**; −469 retained as an older, incompletely-specified reference; holding-period medians filled from the same validation.",
+      "source": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\journal\\live_deals_normalized.csv",
+      "source_sha256": "9a4cc7ba454767e36714d61dc9cd93e1ef6059ec9afaa3e1377091c6892966c7",
+      "source_locator": "latest 30 governed close-date set",
+      "actual": "-1436.59",
+      "expected": "-1436.59",
+      "matches": true
+    },
+    {
+      "group": "part1",
+      "claim": "GBPUSD provisional swap",
+      "document_line": 160,
+      "document_quote": "| GBPUSD (10706) | **UNCONFIRMED** — `live_order_status` EMPTY (canonical_name_verified=true only), matrix line 22 | 1:30 (**UNVERIFIED**, 404; FAQ 1:30-cap corroborated 2026-09-05) | STANDARD 1 % (`marginPercent=1` = 1/leverageStandard 100, 07-30 snapshot); **Swing 3.3333 % PROVISIONAL** (2026-09-05 snapshot `swing_margin_percent`) | 100,000 (FX std) | **PROVISIONAL** long −6.70 / short −5.20 pts (2026-09-05 public-API snapshot; not adopted) | **NONE** (rulepack `ftmo_swing_news.restricted=false` + provider RE_CONFIRMED 2026-09-04 — see B.4) |",
+      "source": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+      "source_sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e",
+      "source_locator": "symbols/GBPUSD/normalized/swap",
+      "actual": [
+        -6.7,
+        -5.2
+      ],
+      "expected": [
+        -6.7,
+        -5.2
+      ],
+      "matches": true
+    },
+    {
+      "group": "part1",
+      "claim": "XAGUSD provisional swap",
+      "document_line": 165,
+      "document_quote": "| XAGUSD (1537, 21505) | **UNCONFIRMED** — EMPTY, matrix line 35 | 1:15 metals (**UNVERIFIED**) | **Swing 6.6667 % PROVISIONAL** (2026-09-05 snapshot `swing_margin_percent`; 07-30 snapshot had XAU only) | 5000 oz | **PROVISIONAL** long −23.05 / short +0.32 pts (2026-09-05 public-API snapshot; not adopted) | **NONE** (see B.4) |",
+      "source": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+      "source_sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e",
+      "source_locator": "symbols/XAGUSD/normalized/swap",
+      "actual": [
+        -23.05,
+        0.32
+      ],
+      "expected": [
+        -23.05,
+        0.32
+      ],
+      "matches": true
+    },
+    {
+      "group": "part2",
+      "claim": "signed",
+      "document_line": 41,
+      "document_quote": "The governed live book is the **24-sleeve** roster carried by `D:/QM/reports/state/live_deployment_pointer.json` (account **4000090541**, environment `T_Live/DXZ`, server `Darwinex-Live`, phase `DXZ_LIVE`, deployment epoch `2026-07-24T06:42:00+00:00`, written `2026-08-22T10:06:38Z`). Magic = `ea_id*10000 + slot`. The signed-pointer schema is `qm.live_deployment_pointer.v1` — there is **no separate schema doc file**; the schema is defined by `generate_live_deployment_pointer.py build_pointer` (keys: `schema_version, environment, expected_account, expected_server, expected_phase, manifest_path, manifest_sha256, manifest_declared_status, manifest_declared_approved_by, deployment_epoch_utc, signed, approved_by, approval_evidence, expected_sleeves{count,identity_sha256,roster[]}, binary_setfile_fingerprint{fingerprint_sha256,n_sleeves,n_binary_missing,per_sleeve[]}, generator, written_at_utc`).",
+      "source": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+      "source_sha256": "f5f23f3c597f07217ef4406a34f929a2cb50e580986007eefe758d4e27b1704a",
+      "source_locator": "/signed",
+      "actual": false,
+      "expected": false,
+      "matches": true
+    },
+    {
+      "group": "part2",
+      "claim": "expected_account",
+      "document_line": 41,
+      "document_quote": "The governed live book is the **24-sleeve** roster carried by `D:/QM/reports/state/live_deployment_pointer.json` (account **4000090541**, environment `T_Live/DXZ`, server `Darwinex-Live`, phase `DXZ_LIVE`, deployment epoch `2026-07-24T06:42:00+00:00`, written `2026-08-22T10:06:38Z`). Magic = `ea_id*10000 + slot`. The signed-pointer schema is `qm.live_deployment_pointer.v1` — there is **no separate schema doc file**; the schema is defined by `generate_live_deployment_pointer.py build_pointer` (keys: `schema_version, environment, expected_account, expected_server, expected_phase, manifest_path, manifest_sha256, manifest_declared_status, manifest_declared_approved_by, deployment_epoch_utc, signed, approved_by, approval_evidence, expected_sleeves{count,identity_sha256,roster[]}, binary_setfile_fingerprint{fingerprint_sha256,n_sleeves,n_binary_missing,per_sleeve[]}, generator, written_at_utc`).",
+      "source": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+      "source_sha256": "f5f23f3c597f07217ef4406a34f929a2cb50e580986007eefe758d4e27b1704a",
+      "source_locator": "/expected_account",
+      "actual": "4000090541",
+      "expected": "4000090541",
+      "matches": true
+    },
+    {
+      "group": "part2",
+      "claim": "expected_server",
+      "document_line": 41,
+      "document_quote": "The governed live book is the **24-sleeve** roster carried by `D:/QM/reports/state/live_deployment_pointer.json` (account **4000090541**, environment `T_Live/DXZ`, server `Darwinex-Live`, phase `DXZ_LIVE`, deployment epoch `2026-07-24T06:42:00+00:00`, written `2026-08-22T10:06:38Z`). Magic = `ea_id*10000 + slot`. The signed-pointer schema is `qm.live_deployment_pointer.v1` — there is **no separate schema doc file**; the schema is defined by `generate_live_deployment_pointer.py build_pointer` (keys: `schema_version, environment, expected_account, expected_server, expected_phase, manifest_path, manifest_sha256, manifest_declared_status, manifest_declared_approved_by, deployment_epoch_utc, signed, approved_by, approval_evidence, expected_sleeves{count,identity_sha256,roster[]}, binary_setfile_fingerprint{fingerprint_sha256,n_sleeves,n_binary_missing,per_sleeve[]}, generator, written_at_utc`).",
+      "source": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+      "source_sha256": "f5f23f3c597f07217ef4406a34f929a2cb50e580986007eefe758d4e27b1704a",
+      "source_locator": "/expected_server",
+      "actual": "Darwinex-Live",
+      "expected": "Darwinex-Live",
+      "matches": true
+    },
+    {
+      "group": "part2",
+      "claim": "expected_phase",
+      "document_line": 41,
+      "document_quote": "The governed live book is the **24-sleeve** roster carried by `D:/QM/reports/state/live_deployment_pointer.json` (account **4000090541**, environment `T_Live/DXZ`, server `Darwinex-Live`, phase `DXZ_LIVE`, deployment epoch `2026-07-24T06:42:00+00:00`, written `2026-08-22T10:06:38Z`). Magic = `ea_id*10000 + slot`. The signed-pointer schema is `qm.live_deployment_pointer.v1` — there is **no separate schema doc file**; the schema is defined by `generate_live_deployment_pointer.py build_pointer` (keys: `schema_version, environment, expected_account, expected_server, expected_phase, manifest_path, manifest_sha256, manifest_declared_status, manifest_declared_approved_by, deployment_epoch_utc, signed, approved_by, approval_evidence, expected_sleeves{count,identity_sha256,roster[]}, binary_setfile_fingerprint{fingerprint_sha256,n_sleeves,n_binary_missing,per_sleeve[]}, generator, written_at_utc`).",
+      "source": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+      "source_sha256": "f5f23f3c597f07217ef4406a34f929a2cb50e580986007eefe758d4e27b1704a",
+      "source_locator": "/expected_phase",
+      "actual": "DXZ_LIVE",
+      "expected": "DXZ_LIVE",
+      "matches": true
+    },
+    {
+      "group": "part2",
+      "claim": "sleeve count",
+      "document_line": 41,
+      "document_quote": "The governed live book is the **24-sleeve** roster carried by `D:/QM/reports/state/live_deployment_pointer.json` (account **4000090541**, environment `T_Live/DXZ`, server `Darwinex-Live`, phase `DXZ_LIVE`, deployment epoch `2026-07-24T06:42:00+00:00`, written `2026-08-22T10:06:38Z`). Magic = `ea_id*10000 + slot`. The signed-pointer schema is `qm.live_deployment_pointer.v1` — there is **no separate schema doc file**; the schema is defined by `generate_live_deployment_pointer.py build_pointer` (keys: `schema_version, environment, expected_account, expected_server, expected_phase, manifest_path, manifest_sha256, manifest_declared_status, manifest_declared_approved_by, deployment_epoch_utc, signed, approved_by, approval_evidence, expected_sleeves{count,identity_sha256,roster[]}, binary_setfile_fingerprint{fingerprint_sha256,n_sleeves,n_binary_missing,per_sleeve[]}, generator, written_at_utc`).",
+      "source": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+      "source_sha256": "f5f23f3c597f07217ef4406a34f929a2cb50e580986007eefe758d4e27b1704a",
+      "source_locator": "/expected_sleeves/count",
+      "actual": 24,
+      "expected": 24,
+      "matches": true
+    },
+    {
+      "group": "part2",
+      "claim": "missing binaries",
+      "document_line": 44,
+      "document_quote": "**Identity fingerprints (already computed, embedded in the pointer):** `expected_sleeves.identity_sha256=9aa10411d99adf81861503a0023832874873de39eeaacfa880bfc4368fcf84d0`; `binary_setfile_fingerprint.fingerprint_sha256=8e476e5b807450cbaea92f12b92fcaa285e372a47533b5071996d114a3116035`; `n_binary_missing=0` (all 24 `.ex5` present, every sleeve `ex5_status=OK`).",
+      "source": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+      "source_sha256": "f5f23f3c597f07217ef4406a34f929a2cb50e580986007eefe758d4e27b1704a",
+      "source_locator": "/binary_setfile_fingerprint/n_binary_missing",
+      "actual": 0,
+      "expected": 0,
+      "matches": true
+    },
+    {
+      "group": "part2",
+      "claim": "signed runtime guard",
+      "document_line": 98,
+      "document_quote": "- A real (non-`--dry-run`) `--signed` mint calls `risk_freeze.assert_live_book_mutation_allowed('mint a signed T_Live deployment pointer')` (lines 215-218) — **so the signed mint is itself gated by the very freeze it helps lift.** The written OWNER lift must accompany the signed mint (ceremony step 4). Practically: the OWNER's written lift + the signed-mint command are one atomic OWNER act; an AI seat can run the tool only in `--dry-run` to pre-verify the argument shape.",
+      "source": "C:\\QM\\repo\\tools\\strategy_farm\\generate_live_deployment_pointer.py",
+      "source_sha256": "5a4f8b44e3d43902a222f8dac4bd890becba0d8a79133f1726b7893f8aa0ae8f",
+      "source_locator": "main: guard before build_pointer/write",
+      "actual": true,
+      "expected": true,
+      "matches": true
+    },
+    {
+      "group": "part2",
+      "claim": "dry-run exits before write",
+      "document_line": 10,
+      "document_quote": "> - **F6** — the signing command is now a dry-run **draft** carrying `--expected-server`/`--expected-phase`, an approval-evidence placeholder for the current OWNER receipt, and `--dry-run`; \"cryptographically signed\" corrected to \"approval-bound\" (A.0/A.3).",
+      "source": "C:\\QM\\repo\\tools\\strategy_farm\\generate_live_deployment_pointer.py",
+      "source_sha256": "5a4f8b44e3d43902a222f8dac4bd890becba0d8a79133f1726b7893f8aa0ae8f",
+      "source_locator": "main: if args.dry_run return 0 before _atomic_write_json",
+      "actual": true,
+      "expected": true,
+      "matches": true
+    },
+    {
+      "group": "part2",
+      "claim": "EXPECTED_STATE = \"PARKED\"",
+      "document_line": 177,
+      "document_quote": "- **Current contract:** `EXPECTED_STATE='PARKED'` (line 51), decision `OWNER-DEC-FTMO-PARK-UNTIL-25-20260825` (`decisions/2026-08-25_owner_hma_requal_ftmo_park_q02_dead16.md`), review trigger `qualified_pairs>=25`. PARKED contract: `EXPECTED_PARKED_POSITION_COUNT=1`, `EXPECTED_PARKED_POSITION_IDS={527674048}`, `EXPECTED_PARKED_POSITION_MAGICS={107060001}` (= 10706/GBPUSD slot 1). Precedence: `contract_expired` wins fail-closed, then MAINTENANCE, then PARKED position/magic probes. `MAINTENANCE_FLAG=D:/QM/reports/state/LIVE_UPTIME_MAINTENANCE.flag`.",
+      "source": "C:\\QM\\repo\\tools\\strategy_farm\\ftmo_trial_pulse.py",
+      "source_sha256": "9a7772f4cd23607c11b4a62847b4e340f9b17372013212993c5a7a9aadbc31e7",
+      "source_locator": "source literal",
+      "actual": true,
+      "expected": true,
+      "matches": true
+    },
+    {
+      "group": "part2",
+      "claim": "EXPECTED_PARKED_POSITION_COUNT = 1",
+      "document_line": 177,
+      "document_quote": "- **Current contract:** `EXPECTED_STATE='PARKED'` (line 51), decision `OWNER-DEC-FTMO-PARK-UNTIL-25-20260825` (`decisions/2026-08-25_owner_hma_requal_ftmo_park_q02_dead16.md`), review trigger `qualified_pairs>=25`. PARKED contract: `EXPECTED_PARKED_POSITION_COUNT=1`, `EXPECTED_PARKED_POSITION_IDS={527674048}`, `EXPECTED_PARKED_POSITION_MAGICS={107060001}` (= 10706/GBPUSD slot 1). Precedence: `contract_expired` wins fail-closed, then MAINTENANCE, then PARKED position/magic probes. `MAINTENANCE_FLAG=D:/QM/reports/state/LIVE_UPTIME_MAINTENANCE.flag`.",
+      "source": "C:\\QM\\repo\\tools\\strategy_farm\\ftmo_trial_pulse.py",
+      "source_sha256": "9a7772f4cd23607c11b4a62847b4e340f9b17372013212993c5a7a9aadbc31e7",
+      "source_locator": "source literal",
+      "actual": true,
+      "expected": true,
+      "matches": true
+    },
+    {
+      "group": "part2",
+      "claim": "EXPECTED_PARKED_POSITION_IDS = {527674048}",
+      "document_line": 177,
+      "document_quote": "- **Current contract:** `EXPECTED_STATE='PARKED'` (line 51), decision `OWNER-DEC-FTMO-PARK-UNTIL-25-20260825` (`decisions/2026-08-25_owner_hma_requal_ftmo_park_q02_dead16.md`), review trigger `qualified_pairs>=25`. PARKED contract: `EXPECTED_PARKED_POSITION_COUNT=1`, `EXPECTED_PARKED_POSITION_IDS={527674048}`, `EXPECTED_PARKED_POSITION_MAGICS={107060001}` (= 10706/GBPUSD slot 1). Precedence: `contract_expired` wins fail-closed, then MAINTENANCE, then PARKED position/magic probes. `MAINTENANCE_FLAG=D:/QM/reports/state/LIVE_UPTIME_MAINTENANCE.flag`.",
+      "source": "C:\\QM\\repo\\tools\\strategy_farm\\ftmo_trial_pulse.py",
+      "source_sha256": "9a7772f4cd23607c11b4a62847b4e340f9b17372013212993c5a7a9aadbc31e7",
+      "source_locator": "source literal",
+      "actual": true,
+      "expected": true,
+      "matches": true
+    },
+    {
+      "group": "part2",
+      "claim": "replay risk contract",
+      "document_line": 28,
+      "document_quote": "- **Set-File-Widerspruch:** `ftmo_lane_runner.py` verlangt `RISK_FIXED>0 / RISK_PERCENT=0` (Backtest-Modus, validate_set_guardrails:531-547), aber ein live-ähnlicher Trial braucht `ENV=live / RISK_FIXED=0 / RISK_PERCENT` (Q16-Schritt 5). **Kein Werkzeug auf Platte erzeugt ein Live-Modus-FTMO-Trial-Set** → neuer Set-Generierungs-Pfad muss kommissioniert werden (offene Frage 1).",
+      "source": "C:\\QM\\repo\\tools\\strategy_farm\\ftmo_lane_runner.py",
+      "source_sha256": "8d82c0612b61e87a49795409056fe959cd5889b41fe530d0733e3f54f973522f",
+      "source_locator": "setfile must use RISK_FIXED > 0 and RISK_PERCENT = 0",
+      "actual": true,
+      "expected": true,
+      "matches": true
+    },
+    {
+      "group": "part2",
+      "claim": "legacy monitor snapshot overwrite",
+      "document_line": 136,
+      "document_quote": "- **The live-terminal instrumentation that DOES capture the right fields** — equity incl. floating PnL (`QM_AccountMonitor.mq5:712`), per-position profit+swap (`:727`), pending-order count (`:749 OrdersTotal()`) — is **`framework/monitor/QM_AccountMonitor.mq5`**. But its header docstring (`:14`) states `account_snapshot.json overwritten each timer tick`; default cadence `InpTimerSeconds=60` (`:42`), written via `WriteAllAtomic` **replacing** the file (`:800`). It is a **single point-in-time snapshot, NOT a durable series**.",
+      "source": "C:\\QM\\repo\\framework\\monitor\\QM_AccountMonitor.mq5",
+      "source_sha256": "9b45983b994955c5afcf66ad5e451d2aa29a116c1d861a18ae1b75ff5ac1d961",
+      "source_locator": "source header",
+      "actual": true,
+      "expected": true,
+      "matches": true
+    },
+    {
+      "group": "part2",
+      "claim": "only two native symbols claim",
+      "document_line": 132,
+      "document_quote": "**Hard limit 2 — symbol coverage (open question 2).** `NATIVE_SYMBOLS = ('XAUUSD','GER40.cash')` with `FTMO_CODES` XAU/USD, GER40.cash. The 8 sealed candidates are GBPUSD / EURUSD / USDCAD / NZDUSD / XTIUSD (×2) / XAGUSD (×2) — **none** in the runner's native set. Running the actual 8 candidates requires either a new FTMO lane per candidate symbol (with FTMO symbol-code mapping for each) or an explicit decision to rehearse only the 2 native symbols first. **Unresolved on disk.**",
+      "source": "C:\\QM\\repo\\tools\\strategy_farm\\ftmo_lane_runner.py",
+      "source_sha256": "8d82c0612b61e87a49795409056fe959cd5889b41fe530d0733e3f54f973522f",
+      "source_locator": "SYMBOL_LANES / NATIVE_SYMBOLS",
+      "actual": [
+        "XAUUSD",
+        "GER40.cash",
+        "GBPUSD",
+        "EURUSD",
+        "USDCAD",
+        "NZDUSD",
+        "USOIL.cash",
+        "XAGUSD"
+      ],
+      "expected": [
+        "XAUUSD",
+        "GER40.cash"
+      ],
+      "matches": false
+    },
+    {
+      "group": "part2",
+      "claim": "no durable collector on disk claim",
+      "document_line": 134,
+      "document_quote": "**Hard limit 3 — no on-disk tool persists a durable, Prague-midnight-keyed M5 equity series with interval minima and a per-interval position/pending-order census (the single most important gap, because the trial exists precisely to produce that telemetry).** Three distinct tools each fail a different part of it:",
+      "source": "C:\\QM\\repo\\framework\\monitor\\QM_FTMO_TrialTelemetry.mq5",
+      "source_sha256": "c2d7da59b2fe581f09b23501e3f204ef8a8ad20ac58e0871fb02a0e6ddec2a24",
+      "source_locator": "append writer and trial schema",
+      "actual": true,
+      "expected": false,
+      "matches": false
+    },
+    {
+      "group": "part2",
+      "claim": "FTMO-Demo profile",
+      "document_line": 153,
+      "document_quote": "| account profile | `server=FTMO-Demo`, company-contains-FTMO | `_safe_profile_identity` (ftmo_lane_runner:390-395) | OWNER creates the account/profile |",
+      "source": "C:\\QM\\repo\\tools\\strategy_farm\\ftmo_lane_runner.py",
+      "source_sha256": "8d82c0612b61e87a49795409056fe959cd5889b41fe530d0733e3f54f973522f",
+      "source_locator": "_safe_profile_identity",
+      "actual": true,
+      "expected": true,
+      "matches": true
+    },
+    {
+      "group": "part2",
+      "claim": "binding lower-95 gate",
+      "document_line": 30,
+      "document_quote": "- **Acceptance-Test — R5 als ratifizierbar geprüft, OWNER-Ratifizierung ausstehend:** die aktuelle Positive-Evidence-Vorlage R5 (`docs/ops/OWNER_VORLAGE_2026-09-05_ftmo_positive_evidence_test.md`, roh SHA-256 `a220324e7a4697d9799d82938d453c6171b809fdf6217b9522f6930a51e998a4`) wurde unabhängig als **RATIFIZIERBAR** geprüft (`docs/ops/evidence/2026-09-05_review4_ftmo_positive_evidence_test.md`), zusammen mit dem ausgelieferten Wahrscheinlichkeits-/Korrelations-Vertrag V1 (`docs/ops/FTMO_PROBABILITY_CORRELATION_CONTRACT_V1_2026-09-05.md`, Status `PENDING_OWNER_RATIFICATION`); das bindende P1-Gate bleibt **`lower_95 ≥ 0.80`** (Rulepack-Punkt 80 / Lower 70 dominiert). Bis zur OWNER-Ratifizierung existiert der **ratifizierte** Scoring-Vertrag für den Trial noch nicht (offene Frage 4).",
+      "source": "C:\\QM\\repo\\docs\\ops\\FTMO_PROBABILITY_CORRELATION_CONTRACT_V1_2026-09-05.md",
+      "source_sha256": "72407aae7d20d939af11d998c417aa7b7dd67e9edbcc3f002fd180e3b34a7637",
+      "source_locator": "contract single P1 lower bound",
+      "actual": true,
+      "expected": true,
+      "matches": true
+    },
+    {
+      "group": "part2",
+      "claim": "OWNER signing boundary",
+      "document_line": 197,
+      "document_quote": "| SIGN the deploy pointer (`--signed --approved-by --approval-evidence`) | **OWNER only (ROT)** | generate_live_deployment_pointer.py docstring; freeze boundary |",
+      "source": "C:\\QM\\repo\\tools\\strategy_farm\\generate_live_deployment_pointer.py",
+      "source_sha256": "5a4f8b44e3d43902a222f8dac4bd890becba0d8a79133f1726b7893f8aa0ae8f",
+      "source_locator": "module docstring",
+      "actual": true,
+      "expected": true,
+      "matches": true
+    },
+    {
+      "group": "part2",
+      "claim": "R5 LF seal",
+      "document_line": 185,
+      "document_quote": "- `docs/ops/evidence/2026-09-05_review4_ftmo_positive_evidence_test.md` = **PASS — RATIFIABLE as a predeclared positive-evidence test** on the current **R5** Vorlage `docs/ops/OWNER_VORLAGE_2026-09-05_ftmo_positive_evidence_test.md` (reviewed bytes: raw SHA-256 `a220324e7a4697d9799d82938d453c6171b809fdf6217b9522f6930a51e998a4`, LF `de549514fd75e68adb6f972a39451c89b43d7f7e35961e6e3da197903bfa923d`, commit `d9fa021091`). R5 applied Review-3's three mechanical findings correctly (F1 right-censoring: the 59 horizon-truncated starts are not forced `TIMEOUT`s and `96−37` is not the censored count; F2 seal digests recomputed; F3 the `W_min=ESS_min` coupling is an explicit conservative OWNER choice, not an independence identity). **OWNER ratification remains pending, and it does not lift NO-BUY.** The binding P1 gate is preserved as **`lower_95 ≥ 0.80` (single gate; rulepack point 80 / lower 70 dominated)** per the delivered probability/correlation contract V1 (`docs/ops/FTMO_PROBABILITY_CORRELATION_CONTRACT_V1_2026-09-05.md`, `PENDING_OWNER_RATIFICATION`), which also keeps the ESS/power adequacy guard: a single 96-day / one-window holdout is **UNDER-POWERED / NON-LIFTING**. The earlier `2026-09-05_review_ftmo_positive_evidence_test.md` FAIL (3 BLOCKERs + F4/F5) reviewed a **superseded first draft**, not R5.",
+      "source": "C:\\QM\\repo\\docs\\ops\\OWNER_VORLAGE_2026-09-05_ftmo_positive_evidence_test.md",
+      "source_sha256": "a220324e7a4697d9799d82938d453c6171b809fdf6217b9522f6930a51e998a4",
+      "source_locator": "LF-normalized SHA256",
+      "actual": "de549514fd75e68adb6f972a39451c89b43d7f7e35961e6e3da197903bfa923d",
+      "expected": "de549514fd75e68adb6f972a39451c89b43d7f7e35961e6e3da197903bfa923d",
+      "matches": true
+    },
+    {
+      "group": "part2",
+      "claim": "six current pool costs",
+      "document_line": 7,
+      "document_quote": "> - **F3** — cost evidence: the provisional 2026-09-05 current-pool cost snapshot supplies Swing leverage/margin and swap for all six instruments; the \"MISSING swap\" framing is replaced with a provisional-snapshot label; provisional figures are NOT promoted into the governed cost model (§B.3, §B.8 lookup row).",
+      "source": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+      "source_sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e",
+      "source_locator": "symbols",
+      "actual": 6,
+      "expected": 6,
+      "matches": true
+    },
+    {
+      "group": "runbook",
+      "claim": "ftmo_2s_phase1_profit_target.percent_of_initial_simulated_capital",
+      "document_line": 18,
+      "document_quote": "1. **Phase 1 (Challenge):** +10 % / $10.000 Gewinn, Kontostand $110.000, mind. 4 Prague-Tage mit ≥1 eröffneten Position, kein Zeitlimit, bestanden = Stand > Ziel bei **0 offenen Positionen**. Grenzen: Tagesverlust nie unter Prague-Mitternachts-Stand −5 %/$5.000 (Equity inkl. offenem PnL), Max-Verlust statisch $90.000.",
+      "source": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "source_sha256": "298ef1285eca49ea7f010ebc0a9353b5a821fccb40a025be129f5ca5314fd992",
+      "source_locator": "official_rules/ftmo_2s_phase1_profit_target/parameters/percent_of_initial_simulated_capital",
+      "actual": "10",
+      "expected": "10",
+      "matches": true
+    },
+    {
+      "group": "runbook",
+      "claim": "ftmo_2s_phase1_profit_target.balance_usd",
+      "document_line": 34,
+      "document_quote": "| profit target | **+10% / $10,000** → balance $110,000 (`ftmo_2s_phase1_profit_target`) | **+5% / $5,000** → balance $105,000 (`ftmo_2s_verification_profit_target`) | none (trading for reward) |",
+      "source": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "source_sha256": "298ef1285eca49ea7f010ebc0a9353b5a821fccb40a025be129f5ca5314fd992",
+      "source_locator": "official_rules/ftmo_2s_phase1_profit_target/parameters/balance_usd",
+      "actual": "110000",
+      "expected": "110000",
+      "matches": true
+    },
+    {
+      "group": "runbook",
+      "claim": "ftmo_2s_verification_profit_target.percent_of_initial_simulated_capital",
+      "document_line": 19,
+      "document_quote": "2. **Phase 2 (Verification):** +5 % / $5.000, Stand $105.000, sonst identische Verlustgrenzen, halbe Ziel-Schwelle. Ein **niedrigeres QM-Risiko-Profil** für Phase 2 ist eine **vorgeschlagene QM-Wahl, keine Provider-Vorgabe** — die Provider-Regel ist nur das halbierte Ziel bei identischen Verlustgrenzen.",
+      "source": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "source_sha256": "298ef1285eca49ea7f010ebc0a9353b5a821fccb40a025be129f5ca5314fd992",
+      "source_locator": "official_rules/ftmo_2s_verification_profit_target/parameters/percent_of_initial_simulated_capital",
+      "actual": "5",
+      "expected": "5",
+      "matches": true
+    },
+    {
+      "group": "runbook",
+      "claim": "ftmo_2s_verification_profit_target.balance_usd",
+      "document_line": 34,
+      "document_quote": "| profit target | **+10% / $10,000** → balance $110,000 (`ftmo_2s_phase1_profit_target`) | **+5% / $5,000** → balance $105,000 (`ftmo_2s_verification_profit_target`) | none (trading for reward) |",
+      "source": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "source_sha256": "298ef1285eca49ea7f010ebc0a9353b5a821fccb40a025be129f5ca5314fd992",
+      "source_locator": "official_rules/ftmo_2s_verification_profit_target/parameters/balance_usd",
+      "actual": "105000",
+      "expected": "105000",
+      "matches": true
+    },
+    {
+      "group": "runbook",
+      "claim": "ftmo_2s_max_daily_loss.percent_of_initial_simulated_capital",
+      "document_line": 18,
+      "document_quote": "1. **Phase 1 (Challenge):** +10 % / $10.000 Gewinn, Kontostand $110.000, mind. 4 Prague-Tage mit ≥1 eröffneten Position, kein Zeitlimit, bestanden = Stand > Ziel bei **0 offenen Positionen**. Grenzen: Tagesverlust nie unter Prague-Mitternachts-Stand −5 %/$5.000 (Equity inkl. offenem PnL), Max-Verlust statisch $90.000.",
+      "source": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "source_sha256": "298ef1285eca49ea7f010ebc0a9353b5a821fccb40a025be129f5ca5314fd992",
+      "source_locator": "official_rules/ftmo_2s_max_daily_loss/parameters/percent_of_initial_simulated_capital",
+      "actual": "5",
+      "expected": "5",
+      "matches": true
+    },
+    {
+      "group": "runbook",
+      "claim": "ftmo_2s_max_daily_loss.amount_usd",
+      "document_line": 18,
+      "document_quote": "1. **Phase 1 (Challenge):** +10 % / $10.000 Gewinn, Kontostand $110.000, mind. 4 Prague-Tage mit ≥1 eröffneten Position, kein Zeitlimit, bestanden = Stand > Ziel bei **0 offenen Positionen**. Grenzen: Tagesverlust nie unter Prague-Mitternachts-Stand −5 %/$5.000 (Equity inkl. offenem PnL), Max-Verlust statisch $90.000.",
+      "source": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "source_sha256": "298ef1285eca49ea7f010ebc0a9353b5a821fccb40a025be129f5ca5314fd992",
+      "source_locator": "official_rules/ftmo_2s_max_daily_loss/parameters/amount_usd",
+      "actual": "5000",
+      "expected": "5000",
+      "matches": true
+    },
+    {
+      "group": "runbook",
+      "claim": "ftmo_2s_max_daily_loss.timezone",
+      "document_line": 18,
+      "document_quote": "1. **Phase 1 (Challenge):** +10 % / $10.000 Gewinn, Kontostand $110.000, mind. 4 Prague-Tage mit ≥1 eröffneten Position, kein Zeitlimit, bestanden = Stand > Ziel bei **0 offenen Positionen**. Grenzen: Tagesverlust nie unter Prague-Mitternachts-Stand −5 %/$5.000 (Equity inkl. offenem PnL), Max-Verlust statisch $90.000.",
+      "source": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "source_sha256": "298ef1285eca49ea7f010ebc0a9353b5a821fccb40a025be129f5ca5314fd992",
+      "source_locator": "official_rules/ftmo_2s_max_daily_loss/parameters/timezone",
+      "actual": "Europe/Prague",
+      "expected": "Europe/Prague",
+      "matches": true
+    },
+    {
+      "group": "runbook",
+      "claim": "ftmo_2s_max_daily_loss.tested_quantity",
+      "document_line": 30,
+      "document_quote": "All values from `FTMO_2S_100K_SWING_V2.json official_rules`, source `docs/ops/evidence/2026-09-04_ftmo_official_rules_snapshot.json` (source_ids `ftmo_trading_objectives_official`, `ftmo_economic_terms_official`, `ftmo_news_official`, `ftmo_weekend_official`). Loss-limit tested quantity is **`EQUITY_INCLUDING_OPEN_PNL_SWAPS_COMMISSIONS`** at every stage; breach operator `STRICTLY_BELOW_LIMIT`.",
+      "source": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "source_sha256": "298ef1285eca49ea7f010ebc0a9353b5a821fccb40a025be129f5ca5314fd992",
+      "source_locator": "official_rules/ftmo_2s_max_daily_loss/parameters/tested_quantity",
+      "actual": "EQUITY_INCLUDING_OPEN_PNL_SWAPS_COMMISSIONS",
+      "expected": "EQUITY_INCLUDING_OPEN_PNL_SWAPS_COMMISSIONS",
+      "matches": true
+    },
+    {
+      "group": "runbook",
+      "claim": "ftmo_2s_max_daily_loss.breach_operator",
+      "document_line": 30,
+      "document_quote": "All values from `FTMO_2S_100K_SWING_V2.json official_rules`, source `docs/ops/evidence/2026-09-04_ftmo_official_rules_snapshot.json` (source_ids `ftmo_trading_objectives_official`, `ftmo_economic_terms_official`, `ftmo_news_official`, `ftmo_weekend_official`). Loss-limit tested quantity is **`EQUITY_INCLUDING_OPEN_PNL_SWAPS_COMMISSIONS`** at every stage; breach operator `STRICTLY_BELOW_LIMIT`.",
+      "source": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "source_sha256": "298ef1285eca49ea7f010ebc0a9353b5a821fccb40a025be129f5ca5314fd992",
+      "source_locator": "official_rules/ftmo_2s_max_daily_loss/parameters/breach_operator",
+      "actual": "STRICTLY_BELOW_LIMIT",
+      "expected": "STRICTLY_BELOW_LIMIT",
+      "matches": true
+    },
+    {
+      "group": "runbook",
+      "claim": "ftmo_2s_maximum_loss.model",
+      "document_line": 18,
+      "document_quote": "1. **Phase 1 (Challenge):** +10 % / $10.000 Gewinn, Kontostand $110.000, mind. 4 Prague-Tage mit ≥1 eröffneten Position, kein Zeitlimit, bestanden = Stand > Ziel bei **0 offenen Positionen**. Grenzen: Tagesverlust nie unter Prague-Mitternachts-Stand −5 %/$5.000 (Equity inkl. offenem PnL), Max-Verlust statisch $90.000.",
+      "source": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "source_sha256": "298ef1285eca49ea7f010ebc0a9353b5a821fccb40a025be129f5ca5314fd992",
+      "source_locator": "official_rules/ftmo_2s_maximum_loss/parameters/model",
+      "actual": "STATIC_INITIAL",
+      "expected": "STATIC_INITIAL",
+      "matches": true
+    },
+    {
+      "group": "runbook",
+      "claim": "ftmo_2s_maximum_loss.percent_of_initial_simulated_capital",
+      "document_line": 18,
+      "document_quote": "1. **Phase 1 (Challenge):** +10 % / $10.000 Gewinn, Kontostand $110.000, mind. 4 Prague-Tage mit ≥1 eröffneten Position, kein Zeitlimit, bestanden = Stand > Ziel bei **0 offenen Positionen**. Grenzen: Tagesverlust nie unter Prague-Mitternachts-Stand −5 %/$5.000 (Equity inkl. offenem PnL), Max-Verlust statisch $90.000.",
+      "source": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "source_sha256": "298ef1285eca49ea7f010ebc0a9353b5a821fccb40a025be129f5ca5314fd992",
+      "source_locator": "official_rules/ftmo_2s_maximum_loss/parameters/percent_of_initial_simulated_capital",
+      "actual": "10",
+      "expected": "10",
+      "matches": true
+    },
+    {
+      "group": "runbook",
+      "claim": "ftmo_2s_maximum_loss.floor_usd",
+      "document_line": 18,
+      "document_quote": "1. **Phase 1 (Challenge):** +10 % / $10.000 Gewinn, Kontostand $110.000, mind. 4 Prague-Tage mit ≥1 eröffneten Position, kein Zeitlimit, bestanden = Stand > Ziel bei **0 offenen Positionen**. Grenzen: Tagesverlust nie unter Prague-Mitternachts-Stand −5 %/$5.000 (Equity inkl. offenem PnL), Max-Verlust statisch $90.000.",
+      "source": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "source_sha256": "298ef1285eca49ea7f010ebc0a9353b5a821fccb40a025be129f5ca5314fd992",
+      "source_locator": "official_rules/ftmo_2s_maximum_loss/parameters/floor_usd",
+      "actual": "90000",
+      "expected": "90000",
+      "matches": true
+    },
+    {
+      "group": "runbook",
+      "claim": "ftmo_2s_minimum_trading_days.days",
+      "document_line": 18,
+      "document_quote": "1. **Phase 1 (Challenge):** +10 % / $10.000 Gewinn, Kontostand $110.000, mind. 4 Prague-Tage mit ≥1 eröffneten Position, kein Zeitlimit, bestanden = Stand > Ziel bei **0 offenen Positionen**. Grenzen: Tagesverlust nie unter Prague-Mitternachts-Stand −5 %/$5.000 (Equity inkl. offenem PnL), Max-Verlust statisch $90.000.",
+      "source": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "source_sha256": "298ef1285eca49ea7f010ebc0a9353b5a821fccb40a025be129f5ca5314fd992",
+      "source_locator": "official_rules/ftmo_2s_minimum_trading_days/parameters/days",
+      "actual": 4,
+      "expected": 4,
+      "matches": true
+    },
+    {
+      "group": "runbook",
+      "claim": "ftmo_2s_minimum_trading_days.qualifying_action",
+      "document_line": 18,
+      "document_quote": "1. **Phase 1 (Challenge):** +10 % / $10.000 Gewinn, Kontostand $110.000, mind. 4 Prague-Tage mit ≥1 eröffneten Position, kein Zeitlimit, bestanden = Stand > Ziel bei **0 offenen Positionen**. Grenzen: Tagesverlust nie unter Prague-Mitternachts-Stand −5 %/$5.000 (Equity inkl. offenem PnL), Max-Verlust statisch $90.000.",
+      "source": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "source_sha256": "298ef1285eca49ea7f010ebc0a9353b5a821fccb40a025be129f5ca5314fd992",
+      "source_locator": "official_rules/ftmo_2s_minimum_trading_days/parameters/qualifying_action",
+      "actual": "POSITION_OPENED",
+      "expected": "POSITION_OPENED",
+      "matches": true
+    },
+    {
+      "group": "runbook",
+      "claim": "ftmo_2s_pass_condition.positions_open",
+      "document_line": 39,
+      "document_quote": "| pass condition | balance `STRICTLY_GREATER_THAN_TARGET` with `positions_open=0` (`ftmo_2s_pass_condition`) | same | n/a |",
+      "source": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "source_sha256": "298ef1285eca49ea7f010ebc0a9353b5a821fccb40a025be129f5ca5314fd992",
+      "source_locator": "official_rules/ftmo_2s_pass_condition/parameters/positions_open",
+      "actual": 0,
+      "expected": 0,
+      "matches": true
+    },
+    {
+      "group": "runbook",
+      "claim": "ftmo_2s_pass_condition.balance_operator",
+      "document_line": 60,
+      "document_quote": "| **Phase 1 → Phase 2** | balance > $110,000, positions_open=0, ≥4 Prague days | AI: capture the passing equity curve + rule-compliance log; re-verify identity for the Phase-2 profile | Phase-1 pass dossier: equity series, min-equity vs daily/overall floors, trading-day count, flat-at-target proof | OWNER acknowledges FTMO's Phase-2 issuance; re-login to Phase-2 credentials; AutoTrading (ROT) |",
+      "source": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "source_sha256": "298ef1285eca49ea7f010ebc0a9353b5a821fccb40a025be129f5ca5314fd992",
+      "source_locator": "official_rules/ftmo_2s_pass_condition/parameters/balance_operator",
+      "actual": "STRICTLY_GREATER_THAN_TARGET",
+      "expected": "STRICTLY_GREATER_THAN_TARGET",
+      "matches": true
+    },
+    {
+      "group": "runbook",
+      "claim": "ftmo_2s_evaluation_fee.list_fee_usd",
+      "document_line": 20,
+      "document_quote": "3. **FTMO Account (funded):** nach beiden Phasen; Reward-Split **80 %** (bis 90 % über Scaling Plan/Premium). **Erster Reward** erstattet die $540-Gebühr zu 100 %.",
+      "source": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "source_sha256": "298ef1285eca49ea7f010ebc0a9353b5a821fccb40a025be129f5ca5314fd992",
+      "source_locator": "official_rules/ftmo_2s_evaluation_fee/parameters/list_fee_usd",
+      "actual": "540",
+      "expected": "540",
+      "matches": true
+    },
+    {
+      "group": "runbook",
+      "claim": "ftmo_2s_fee_refund.refund_percent",
+      "document_line": 20,
+      "document_quote": "3. **FTMO Account (funded):** nach beiden Phasen; Reward-Split **80 %** (bis 90 % über Scaling Plan/Premium). **Erster Reward** erstattet die $540-Gebühr zu 100 %.",
+      "source": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "source_sha256": "298ef1285eca49ea7f010ebc0a9353b5a821fccb40a025be129f5ca5314fd992",
+      "source_locator": "official_rules/ftmo_2s_fee_refund/parameters/refund_percent",
+      "actual": "100",
+      "expected": "100",
+      "matches": true
+    },
+    {
+      "group": "runbook",
+      "claim": "ftmo_2s_reward_split.base_percent",
+      "document_line": 20,
+      "document_quote": "3. **FTMO Account (funded):** nach beiden Phasen; Reward-Split **80 %** (bis 90 % über Scaling Plan/Premium). **Erster Reward** erstattet die $540-Gebühr zu 100 %.",
+      "source": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "source_sha256": "298ef1285eca49ea7f010ebc0a9353b5a821fccb40a025be129f5ca5314fd992",
+      "source_locator": "official_rules/ftmo_2s_reward_split/parameters/base_percent",
+      "actual": "80",
+      "expected": "80",
+      "matches": true
+    },
+    {
+      "group": "runbook",
+      "claim": "ftmo_swing_news.ftmo_account_swing_restricted",
+      "document_line": 40,
+      "document_quote": "| news restriction | **NONE** for Swing (`ftmo_swing_news`, `restricted=false`; RE_CONFIRMED HTTP 200 2026-09-04) | NONE | NONE |",
+      "source": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+      "source_sha256": "298ef1285eca49ea7f010ebc0a9353b5a821fccb40a025be129f5ca5314fd992",
+      "source_locator": "official_rules/ftmo_swing_news/parameters/ftmo_account_swing_restricted",
+      "actual": false,
+      "expected": false,
+      "matches": true
+    }
+  ],
+  "anchor_counts": {
+    "part1": 20,
+    "part2": 20,
+    "runbook": 20
+  },
+  "mismatching_anchors": [
+    {
+      "group": "part2",
+      "claim": "only two native symbols claim",
+      "document_line": 132,
+      "document_quote": "**Hard limit 2 — symbol coverage (open question 2).** `NATIVE_SYMBOLS = ('XAUUSD','GER40.cash')` with `FTMO_CODES` XAU/USD, GER40.cash. The 8 sealed candidates are GBPUSD / EURUSD / USDCAD / NZDUSD / XTIUSD (×2) / XAGUSD (×2) — **none** in the runner's native set. Running the actual 8 candidates requires either a new FTMO lane per candidate symbol (with FTMO symbol-code mapping for each) or an explicit decision to rehearse only the 2 native symbols first. **Unresolved on disk.**",
+      "source": "C:\\QM\\repo\\tools\\strategy_farm\\ftmo_lane_runner.py",
+      "source_sha256": "8d82c0612b61e87a49795409056fe959cd5889b41fe530d0733e3f54f973522f",
+      "source_locator": "SYMBOL_LANES / NATIVE_SYMBOLS",
+      "actual": [
+        "XAUUSD",
+        "GER40.cash",
+        "GBPUSD",
+        "EURUSD",
+        "USDCAD",
+        "NZDUSD",
+        "USOIL.cash",
+        "XAGUSD"
+      ],
+      "expected": [
+        "XAUUSD",
+        "GER40.cash"
+      ],
+      "matches": false
+    },
+    {
+      "group": "part2",
+      "claim": "no durable collector on disk claim",
+      "document_line": 134,
+      "document_quote": "**Hard limit 3 — no on-disk tool persists a durable, Prague-midnight-keyed M5 equity series with interval minima and a per-interval position/pending-order census (the single most important gap, because the trial exists precisely to produce that telemetry).** Three distinct tools each fail a different part of it:",
+      "source": "C:\\QM\\repo\\framework\\monitor\\QM_FTMO_TrialTelemetry.mq5",
+      "source_sha256": "c2d7da59b2fe581f09b23501e3f204ef8a8ad20ac58e0871fb02a0e6ddec2a24",
+      "source_locator": "append writer and trial schema",
+      "actual": true,
+      "expected": false,
+      "matches": false
+    }
+  ],
+  "input_checks": [
+    {
+      "mtime_utc": "2026-09-04T18:00:55.329720+00:00",
+      "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\journal\\live_deals_normalized.csv",
+      "sha256": "9a4cc7ba454767e36714d61dc9cd93e1ef6059ec9afaa3e1377091c6892966c7",
+      "size_bytes": 38405,
+      "actual_sha256": "9a4cc7ba454767e36714d61dc9cd93e1ef6059ec9afaa3e1377091c6892966c7",
+      "matches": true
+    },
+    {
+      "mtime_utc": "2026-08-22T10:15:44.835397+00:00",
+      "path": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+      "sha256": "f5f23f3c597f07217ef4406a34f929a2cb50e580986007eefe758d4e27b1704a",
+      "size_bytes": 18103,
+      "actual_sha256": "f5f23f3c597f07217ef4406a34f929a2cb50e580986007eefe758d4e27b1704a",
+      "matches": true
+    },
+    {
+      "mtime_utc": "2026-09-05T05:38:49.472986+00:00",
+      "path": "C:\\QM\\repo\\artifacts\\audit_live_book_inventory_20260819.json",
+      "sha256": "7b7c4caebcdfa28a6670b8cfefdcbebbc1d50f001b7098adb7e43d6d9447a8ec",
+      "size_bytes": 18070,
+      "actual_sha256": "7b7c4caebcdfa28a6670b8cfefdcbebbc1d50f001b7098adb7e43d6d9447a8ec",
+      "matches": true
+    },
+    {
+      "mtime_utc": "2026-07-19T18:32:17.516561+00:00",
+      "path": "C:\\QM\\repo\\framework\\registry\\venue_cost_model.json",
+      "sha256": "7dfafe53749e5c45be0cb37568b6e3491c109f546fafaf799f6ea82efdb688d7",
+      "size_bytes": 25272,
+      "actual_sha256": "7dfafe53749e5c45be0cb37568b6e3491c109f546fafaf799f6ea82efdb688d7",
+      "matches": true
+    },
+    {
+      "mtime_utc": "2026-06-01T08:33:32.261355+00:00",
+      "path": "C:\\QM\\repo\\framework\\registry\\live_commission.json",
+      "sha256": "119f795cefce2f819f0c7aae3bddb87affbffa771f596df48d182cf89989e197",
+      "size_bytes": 1595,
+      "actual_sha256": "119f795cefce2f819f0c7aae3bddb87affbffa771f596df48d182cf89989e197",
+      "matches": true
+    },
+    {
+      "mtime_utc": "2026-07-30T01:02:30.006072+00:00",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-07-30_ftmo_book3_symbol_cost_snapshot.json",
+      "sha256": "7eab3bf8c97373fcb44e36aca39dd679fbd3e093783cd6eacd9cb171190b3280",
+      "size_bytes": 6144,
+      "actual_sha256": "7eab3bf8c97373fcb44e36aca39dd679fbd3e093783cd6eacd9cb171190b3280",
+      "matches": true
+    },
+    {
+      "mtime_utc": "2026-09-05T04:30:53.320374+00:00",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+      "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e",
+      "size_bytes": 15416,
+      "actual_sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e",
+      "matches": true
+    },
+    {
+      "mtime_utc": "2026-09-04T05:22:42.813256+00:00",
+      "path": "D:\\QM\\reports\\pipeline\\QM5_10706\\Q08\\_baseline\\QM5_10706\\20260904_051342\\raw\\run_01\\report.htm",
+      "sha256": "85dd26cd8c56b9098b7c794949f0f6b4a122f57bb1b6c2c4a84aef41e0124b82",
+      "size_bytes": 775680,
+      "actual_sha256": "85dd26cd8c56b9098b7c794949f0f6b4a122f57bb1b6c2c4a84aef41e0124b82",
+      "matches": true
+    },
+    {
+      "mtime_utc": "2026-09-02T19:37:32.695960+00:00",
+      "path": "D:\\QM\\reports\\pipeline\\QM5_11421\\Q08\\_baseline\\QM5_11421\\20260902_193230\\raw\\run_01\\report.htm",
+      "sha256": "7b56e1682561b9aa6ae4ddc311ac83e785f1d033e3b90d80db342fa4a96c8071",
+      "size_bytes": 601766,
+      "actual_sha256": "7b56e1682561b9aa6ae4ddc311ac83e785f1d033e3b90d80db342fa4a96c8071",
+      "matches": true
+    },
+    {
+      "mtime_utc": "2026-09-04T06:23:07.758283+00:00",
+      "path": "D:\\QM\\reports\\pipeline\\QM5_11422\\Q08\\_baseline\\QM5_11422\\20260904_061656\\raw\\run_01\\report.htm",
+      "sha256": "9b12636e15e8c0cee89d551eeda98c6f524798a0e3e38fde02e17ce36ede0411",
+      "size_bytes": 617470,
+      "actual_sha256": "9b12636e15e8c0cee89d551eeda98c6f524798a0e3e38fde02e17ce36ede0411",
+      "matches": true
+    },
+    {
+      "mtime_utc": "2026-09-04T16:04:55.564886+00:00",
+      "path": "D:\\QM\\reports\\pipeline\\QM5_11910\\Q08\\_baseline\\QM5_11910\\20260904_160009\\raw\\run_01\\report.htm",
+      "sha256": "27a89a85a968c3e55380e3b66e7bab0bc794ca45a135def3a79dc224867d2684",
+      "size_bytes": 164828,
+      "actual_sha256": "27a89a85a968c3e55380e3b66e7bab0bc794ca45a135def3a79dc224867d2684",
+      "matches": true
+    },
+    {
+      "mtime_utc": "2026-09-04T06:15:47.059053+00:00",
+      "path": "D:\\QM\\reports\\pipeline\\QM5_13054\\Q08\\_baseline\\QM5_13054\\20260904_061139\\raw\\run_01\\report.htm",
+      "sha256": "6c578a7287c6aa6ab0369eed9fe842511a031843dd0176dc0ad372224d2da2ea",
+      "size_bytes": 200632,
+      "actual_sha256": "6c578a7287c6aa6ab0369eed9fe842511a031843dd0176dc0ad372224d2da2ea",
+      "matches": true
+    },
+    {
+      "mtime_utc": "2026-09-04T05:12:22.830561+00:00",
+      "path": "D:\\QM\\reports\\pipeline\\QM5_1537\\Q08\\_baseline\\QM5_1537\\20260904_050325\\raw\\run_01\\report.htm",
+      "sha256": "38f6c7d981173cfdfbf3806871bfa39545025aa83b890d95f34cd5d2c2494f7d",
+      "size_bytes": 233236,
+      "actual_sha256": "38f6c7d981173cfdfbf3806871bfa39545025aa83b890d95f34cd5d2c2494f7d",
+      "matches": true
+    },
+    {
+      "mtime_utc": "2026-09-04T06:53:46.015495+00:00",
+      "path": "D:\\QM\\reports\\pipeline\\QM5_20048\\Q08\\_baseline\\QM5_20048\\20260904_065008\\raw\\run_01\\report.htm",
+      "sha256": "057d568c055c65922dd7a9e2273004728bc871fbb3dd2000a9756e16c8237977",
+      "size_bytes": 153474,
+      "actual_sha256": "057d568c055c65922dd7a9e2273004728bc871fbb3dd2000a9756e16c8237977",
+      "matches": true
+    },
+    {
+      "mtime_utc": "2026-09-04T06:06:42.346018+00:00",
+      "path": "D:\\QM\\reports\\pipeline\\QM5_21505\\Q08\\_baseline\\QM5_21505\\20260904_060120\\raw\\run_01\\report.htm",
+      "sha256": "911154341b07528d3ea7cecb5e0e4664503a1f64b1c2b3749a4bb233b64a0535",
+      "size_bytes": 274168,
+      "actual_sha256": "911154341b07528d3ea7cecb5e0e4664503a1f64b1c2b3749a4bb233b64a0535",
+      "matches": true
+    }
+  ],
+  "recomputed_holding_stats": {
+    "10706:GBPUSD": {
+      "report": {
+        "path": "D:\\QM\\reports\\pipeline\\QM5_10706\\Q08\\_baseline\\QM5_10706\\20260904_051342\\raw\\run_01\\report.htm",
+        "sha256": "85dd26cd8c56b9098b7c794949f0f6b4a122f57bb1b6c2c4a84aef41e0124b82",
+        "size_bytes": 775680,
+        "mtime_utc": "2026-09-04T05:22:42.813256+00:00"
+      },
+      "pairing_contract": "strict_native_IN_OUT_no_overlap; derived_position_key=opening_Order (native report has no DEAL_POSITION_ID)",
+      "trade_count": 360,
+      "median_holding_hours": 7.428333,
+      "median_holding_days": 0.309514,
+      "mean_calendar_midnights_crossed_per_trade": 0.555556,
+      "trades_crossing_at_least_one_midnight": 165,
+      "trades_with_nonzero_reported_swap": 0,
+      "reported_swap_total": 0.0,
+      "lifecycle_key_unique": true
+    },
+    "11421:EURUSD": {
+      "report": {
+        "path": "D:\\QM\\reports\\pipeline\\QM5_11421\\Q08\\_baseline\\QM5_11421\\20260902_193230\\raw\\run_01\\report.htm",
+        "sha256": "7b56e1682561b9aa6ae4ddc311ac83e785f1d033e3b90d80db342fa4a96c8071",
+        "size_bytes": 601766,
+        "mtime_utc": "2026-09-02T19:37:32.695960+00:00"
+      },
+      "pairing_contract": "strict_native_IN_OUT_no_overlap; derived_position_key=opening_Order (native report has no DEAL_POSITION_ID)",
+      "trade_count": 91,
+      "median_holding_hours": 24.853333,
+      "median_holding_days": 1.035556,
+      "mean_calendar_midnights_crossed_per_trade": 1.296703,
+      "trades_crossing_at_least_one_midnight": 67,
+      "trades_with_nonzero_reported_swap": 67,
+      "reported_swap_total": -785.01,
+      "lifecycle_key_unique": true
+    },
+    "11422:USDCAD": {
+      "report": {
+        "path": "D:\\QM\\reports\\pipeline\\QM5_11422\\Q08\\_baseline\\QM5_11422\\20260904_061656\\raw\\run_01\\report.htm",
+        "sha256": "9b12636e15e8c0cee89d551eeda98c6f524798a0e3e38fde02e17ce36ede0411",
+        "size_bytes": 617470,
+        "mtime_utc": "2026-09-04T06:23:07.758283+00:00"
+      },
+      "pairing_contract": "strict_native_IN_OUT_no_overlap; derived_position_key=opening_Order (native report has no DEAL_POSITION_ID)",
+      "trade_count": 195,
+      "median_holding_hours": 40.978889,
+      "median_holding_days": 1.707454,
+      "mean_calendar_midnights_crossed_per_trade": 1.779487,
+      "trades_crossing_at_least_one_midnight": 154,
+      "trades_with_nonzero_reported_swap": 0,
+      "reported_swap_total": 0.0,
+      "lifecycle_key_unique": true
+    },
+    "11910:NZDUSD": {
+      "report": {
+        "path": "D:\\QM\\reports\\pipeline\\QM5_11910\\Q08\\_baseline\\QM5_11910\\20260904_160009\\raw\\run_01\\report.htm",
+        "sha256": "27a89a85a968c3e55380e3b66e7bab0bc794ca45a135def3a79dc224867d2684",
+        "size_bytes": 164828,
+        "mtime_utc": "2026-09-04T16:04:55.564886+00:00"
+      },
+      "pairing_contract": "strict_native_IN_OUT_no_overlap; derived_position_key=opening_Order (native report has no DEAL_POSITION_ID)",
+      "trade_count": 63,
+      "median_holding_hours": 116.916389,
+      "median_holding_days": 4.871516,
+      "mean_calendar_midnights_crossed_per_trade": 2.761905,
+      "trades_crossing_at_least_one_midnight": 53,
+      "trades_with_nonzero_reported_swap": 53,
+      "reported_swap_total": -252.27,
+      "lifecycle_key_unique": true
+    },
+    "13054:XTIUSD": {
+      "report": {
+        "path": "D:\\QM\\reports\\pipeline\\QM5_13054\\Q08\\_baseline\\QM5_13054\\20260904_061139\\raw\\run_01\\report.htm",
+        "sha256": "6c578a7287c6aa6ab0369eed9fe842511a031843dd0176dc0ad372224d2da2ea",
+        "size_bytes": 200632,
+        "mtime_utc": "2026-09-04T06:15:47.059053+00:00"
+      },
+      "pairing_contract": "strict_native_IN_OUT_no_overlap; derived_position_key=opening_Order (native report has no DEAL_POSITION_ID)",
+      "trade_count": 82,
+      "median_holding_hours": 69.999306,
+      "median_holding_days": 2.916638,
+      "mean_calendar_midnights_crossed_per_trade": 2.329268,
+      "trades_crossing_at_least_one_midnight": 71,
+      "trades_with_nonzero_reported_swap": 0,
+      "reported_swap_total": 0.0,
+      "lifecycle_key_unique": true
+    },
+    "1537:XAGUSD": {
+      "report": {
+        "path": "D:\\QM\\reports\\pipeline\\QM5_1537\\Q08\\_baseline\\QM5_1537\\20260904_050325\\raw\\run_01\\report.htm",
+        "sha256": "38f6c7d981173cfdfbf3806871bfa39545025aa83b890d95f34cd5d2c2494f7d",
+        "size_bytes": 233236,
+        "mtime_utc": "2026-09-04T05:12:22.830561+00:00"
+      },
+      "pairing_contract": "strict_native_IN_OUT_no_overlap; derived_position_key=opening_Order (native report has no DEAL_POSITION_ID)",
+      "trade_count": 96,
+      "median_holding_hours": 47.997222,
+      "median_holding_days": 1.999884,
+      "mean_calendar_midnights_crossed_per_trade": 1.875,
+      "trades_crossing_at_least_one_midnight": 80,
+      "trades_with_nonzero_reported_swap": 0,
+      "reported_swap_total": 0.0,
+      "lifecycle_key_unique": true
+    },
+    "20048:XTIUSD": {
+      "report": {
+        "path": "D:\\QM\\reports\\pipeline\\QM5_20048\\Q08\\_baseline\\QM5_20048\\20260904_065008\\raw\\run_01\\report.htm",
+        "sha256": "057d568c055c65922dd7a9e2273004728bc871fbb3dd2000a9756e16c8237977",
+        "size_bytes": 153474,
+        "mtime_utc": "2026-09-04T06:53:46.015495+00:00"
+      },
+      "pairing_contract": "strict_native_IN_OUT_no_overlap; derived_position_key=opening_Order (native report has no DEAL_POSITION_ID)",
+      "trade_count": 60,
+      "median_holding_hours": 71.999444,
+      "median_holding_days": 2.999977,
+      "mean_calendar_midnights_crossed_per_trade": 2.65,
+      "trades_crossing_at_least_one_midnight": 60,
+      "trades_with_nonzero_reported_swap": 0,
+      "reported_swap_total": 0.0,
+      "lifecycle_key_unique": true
+    },
+    "21505:XAGUSD": {
+      "report": {
+        "path": "D:\\QM\\reports\\pipeline\\QM5_21505\\Q08\\_baseline\\QM5_21505\\20260904_060120\\raw\\run_01\\report.htm",
+        "sha256": "911154341b07528d3ea7cecb5e0e4664503a1f64b1c2b3749a4bb233b64a0535",
+        "size_bytes": 274168,
+        "mtime_utc": "2026-09-04T06:06:42.346018+00:00"
+      },
+      "pairing_contract": "strict_native_IN_OUT_no_overlap; derived_position_key=opening_Order (native report has no DEAL_POSITION_ID)",
+      "trade_count": 116,
+      "median_holding_hours": 115.999722,
+      "median_holding_days": 4.833322,
+      "mean_calendar_midnights_crossed_per_trade": 4.086207,
+      "trades_crossing_at_least_one_midnight": 116,
+      "trades_with_nonzero_reported_swap": 0,
+      "reported_swap_total": 0.0,
+      "lifecycle_key_unique": true
+    }
+  },
+  "live_reconstruction": {
+    "window_net": "-472.96",
+    "window_closes": 65,
+    "window_close_days": 24,
+    "latest_30_net": "-1436.59",
+    "latest_30_closes": 85
+  },
+  "authority_boundary": {
+    "runtime_integration": "NOT_IMPLEMENTED",
+    "deploy_authorization": "OWNER_ONLY",
+    "factory_action_authorized": false,
+    "mt5_action_authorized": false,
+    "notes": [
+      "This rulepack does not modify or configure QM_PropFirm, QM_FTMOGovernorPolicy, an EA, a terminal, or AutoTrading.",
+      "Swing news and weekend facts are provider rules; every numeric safety buffer and probability gate in internal_guardrails or evaluation_profile is QuantMechanica policy.",
+      "A future runtime integration requires a new reviewed version and explicit OWNER authorization."
+    ]
+  }
+}
