@@ -18,6 +18,23 @@ source_approval: decisions/2026-09-05_wti_monthly_adf_sampen_agreement_trend_sou
 source_author: OpenAI Codex
 source_authors: OpenAI Codex; Ernest P. Chan; Jiri Tomcala; Joshua S. Richman; J. Randall Moorman; Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen
 source_citation: "Chan (2013), Algorithmic Trading, Wiley; Tomcala (2020), Entropy 22(8), DOI 10.3390/e22080863; Richman and Moorman (2000), AJP Heart 278(6), DOI 10.1152/ajpheart.2000.278.6.H2039; Moskowitz, Ooi, and Pedersen (2012), JFE 104(2), DOI 10.1016/j.jfineco.2011.11.003."
+source_citations:
+  - type: book
+    citation: "Chan, E. P. (2013). Algorithmic Trading. Wiley."
+    quality_tier: A
+    role: primary_adf_method
+  - type: paper
+    citation: "Tomcala, J. (2020). New Fast ApEn and SampEn Entropy Algorithms Implementation and Their Application to Supercomputer Power Consumption. Entropy 22(8), 863."
+    quality_tier: A
+    role: primary_sample_entropy_method
+  - type: paper
+    citation: "Richman, J. S. and Moorman, J. R. (2000). Physiological time-series analysis using approximate entropy and sample entropy. American Journal of Physiology 278(6)."
+    quality_tier: A
+    role: foundational_sample_entropy_method
+  - type: paper
+    citation: "Moskowitz, T. J., Ooi, Y. H., and Pedersen, L. H. (2012). Time Series Momentum. Journal of Financial Economics 104(2)."
+    quality_tier: A
+    role: primary_commodity_trend_premise
 strategy_mechanic: monthly-wti-sixty-one-completed-month-endpoints-newest-sixty-level-lag-one-adf-t-at-least-minus2p594-and-sixty-return-m2-r020sd-sample-entropy-at-most2p5-agreement-gated-twelve-month-return-sign-continuation
 strategy_type_flags: [commodity, energy, crude-oil, structural-trend, dual-diagnostic-agreement, augmented-dickey-fuller, sample-entropy, monthly-rebalance, atr-hard-stop, time-stop, symmetric-long-short, low-frequency]
 markets: [commodities, energy, crude_oil]
@@ -59,6 +76,7 @@ q02_status: NOT_ENQUEUED_Q01_PENDING
 force_build: true
 review_focus: "Falsify direct-WTI monthly ADF/sample-entropy agreement outside the certified XAU/SP500/NDX/XNG book. Verify shared endpoints, ADF arithmetic, exact template matching/counts, inclusive gates, disagreement abstention, twelve-month side, consumed month, fixed risk, frozen stop, and next-month lifecycle. Q09 alone may establish decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
+hard_rules_at_risk: [q02_activity_floor, enhancement_doctrine, q09_portfolio_correlation]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
 g0_approval_reasoning: "OWNER mission 2026-09-05 and G0 decision approve R1-R4 within disclosed source-synthesis and continuous-CFD risks. Corrected-root dedup found no exact identity; manual review separates raw-magnitude sample entropy from every other ADF agreement gate."
 ---
