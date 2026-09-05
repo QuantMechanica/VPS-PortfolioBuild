@@ -3669,3 +3669,90 @@ def test_qm5_41285_unbound_compile_retry_is_exact_and_append_only() -> None:
         "41285",
         current_work_item_id=successor_id,
     ) == set()
+
+
+def test_qm5_41345_identity_repair_is_source_evidence_and_predecessor_bound(
+    tmp_path, monkeypatch
+) -> None:
+    label = compile_work_items.QM5_41345_IDENTITY_REPAIR_EA_LABEL
+    predecessor_id = compile_work_items.QM5_41345_IDENTITY_REPAIR_PREDECESSOR_ID
+    evidence = tmp_path / "summary.json"
+    evidence.write_text('{"verdict": "ZERO_TRADES"}', encoding="utf-8")
+    monkeypatch.setattr(
+        compile_work_items,
+        "QM5_41345_IDENTITY_EVIDENCE_SHA256",
+        compile_work_items.sha256_file(evidence).lower(),
+    )
+    predecessor = {
+        "id": predecessor_id,
+        "phase": "Q02",
+        "status": "done",
+        "verdict": "ZERO_TRADES",
+        "evidence_path": str(evidence),
+        "payload_json": json.dumps({
+            "verdict_reason": "Q02_ZERO_TRADES",
+            "schema": "qm.dl089-measurement-q02-prerequisite/v1",
+            "ea_dir_name": label,
+            "subject_ea_id": "QM5_21502",
+            "expected_symbol": "XAUUSD.DWX",
+            "expected_period": "D1",
+            "expected_mq5_sha256": (
+                compile_work_items.QM5_41345_IDENTITY_REJECTED_SOURCE_SHA256
+            ),
+            "expected_ex5_sha256": (
+                compile_work_items.QM5_41345_IDENTITY_REJECTED_EX5_SHA256
+            ),
+            "expected_setfile_sha256": (
+                compile_work_items.QM5_41345_IDENTITY_REJECTED_SETFILE_SHA256
+            ),
+        }),
+    }
+    inventory = {"work_rows": {"41345": [predecessor]}}
+    arguments = {
+        "ea_id": "41345",
+        "source_sha": compile_work_items.QM5_41345_IDENTITY_REPAIRED_SOURCE_SHA256,
+        "inventory": inventory,
+    }
+    authority = compile_work_items.QM5_41345_IDENTITY_REPAIR_AUTHORITY
+
+    assert compile_work_items._source_repair_authorized(label, authority, **arguments)
+    assert not compile_work_items._source_repair_authorized(
+        "QM5_41347_xau-other-sibling", authority, **arguments
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label, authority, **{**arguments, "source_sha": "0" * 64}
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label, "router_ops_issue:00000000-0000-0000-0000-000000000000", **arguments
+    )
+    changed_inventory = json.loads(json.dumps(inventory))
+    changed_payload = json.loads(changed_inventory["work_rows"]["41345"][0]["payload_json"])
+    changed_payload["expected_symbol"] = "EURUSD.DWX"
+    changed_inventory["work_rows"]["41345"][0]["payload_json"] = json.dumps(changed_payload)
+    assert not compile_work_items._source_repair_authorized(
+        label, authority, **{**arguments, "inventory": changed_inventory}
+    )
+    evidence.write_text('{"verdict": "TAMPERED"}', encoding="utf-8")
+    assert not compile_work_items._source_repair_authorized(label, authority, **arguments)
+    evidence.write_text('{"verdict": "ZERO_TRADES"}', encoding="utf-8")
+
+    compile_row_id = "compile-successor"
+    current_inventory = json.loads(json.dumps(inventory))
+    current_inventory["work_rows"]["41345"].append({
+        "id": compile_row_id,
+        "phase": compile_work_items.COMPILE_EA_PHASE,
+        "payload_json": json.dumps({
+            "append_only_source_repair": True,
+            "compile_source_repair_authority": authority,
+            "mq5_sha256": compile_work_items.QM5_41345_IDENTITY_REPAIRED_SOURCE_SHA256,
+            "source_repair_predecessor_work_item_ids": [predecessor_id],
+        }),
+    })
+    assert compile_work_items._source_repair_authorized(
+        label, authority, **{**arguments, "inventory": current_inventory},
+        current_work_item_id=compile_row_id,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label, authority, **{**arguments, "inventory": current_inventory},
+        current_work_item_id="unknown-row",
+    )

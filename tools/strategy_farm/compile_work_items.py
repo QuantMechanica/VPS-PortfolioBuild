@@ -295,6 +295,39 @@ QM5_10025_Q02_ZERO_TRADE_REJECTED_SETFILE_SHA256 = (
 QM5_10025_Q02_ZERO_TRADE_EVIDENCE_SHA256 = (
     "37084386dd4a8c5e3011c8a86d9cd3c4201a5d5424bccadb29b90455393e0a09"
 )
+# Exact router-task authority for the QM5_41345 XAUUSD measurement-sibling
+# identity repair (task dc7a0989-be8c-422c-bf46-e034e99ea371).  The immutable
+# predecessor is the Amendment C measurement Q02 row that ran the sibling with
+# the parent's identity literal (21502) still inside Strategy_NoTradeFilter:
+# INIT_OK, 222 Friday-close events, zero signals, zero trades, while the parent
+# trades 200 times on the identical D1 window.  The repair changes only that
+# literal (ad41d1d25e, integrated as 019499ee94).  This authority accepts only
+# the repaired source hash below, permits one append-only COMPILE_EA successor,
+# and grants no backtest, census, gate-verdict or live-use authority; the
+# corrected binary must requalify at Q02 through an append-only rerun and the
+# zero-trade row stays as evidence.
+QM5_41345_IDENTITY_REPAIR_PREDECESSOR_ID = (
+    "fb0b6989-719b-5697-998c-82fb0045cd27"
+)
+QM5_41345_IDENTITY_REPAIR_AUTHORITY = (
+    "router_ops_issue:dc7a0989-be8c-422c-bf46-e034e99ea371"
+)
+QM5_41345_IDENTITY_REPAIR_EA_LABEL = "QM5_41345_xau-weekly-tsmom-opt"
+QM5_41345_IDENTITY_REPAIRED_SOURCE_SHA256 = (
+    "427db325800a8f28d4f6ae4e7a5580b695875d4813f40139640cbec1cb8c76a4"
+)
+QM5_41345_IDENTITY_REJECTED_SOURCE_SHA256 = (
+    "9e82102aa6739e8dff39dde19fe0bdcb6f30363c340878a5dd045f04ffd8b6ec"
+)
+QM5_41345_IDENTITY_REJECTED_EX5_SHA256 = (
+    "3a8968fc2d66a9a52ed9d58b8bdf5532be808ed8a82a94434ad5b79ae3aa6bf3"
+)
+QM5_41345_IDENTITY_REJECTED_SETFILE_SHA256 = (
+    "04f877708023eccffdd014597808d7426caeb1e8fccf6eee8e743022c0e1605b"
+)
+QM5_41345_IDENTITY_EVIDENCE_SHA256 = (
+    "1a56eadfd0873ceed73a03ae1b477592d597858d57fb68e400e324a3435f2e14"
+)
 # Exact paced-fleet authority for the post-review QM5_38002 EURUSD Q02
 # recovery.  Its existing binary predates the approved card-faithful source
 # repair, while the only Q02 attempt ended in the farm taxonomy writer before
@@ -1901,6 +1934,15 @@ def _source_repair_authorized(
             inventory=inventory,
             current_work_item_id=current_work_item_id,
         )
+    if authority == QM5_41345_IDENTITY_REPAIR_AUTHORITY:
+        return _qm5_41345_identity_repair_authorized(
+            ea_label,
+            authority,
+            ea_id=ea_id,
+            source_sha=source_sha,
+            inventory=inventory,
+            current_work_item_id=current_work_item_id,
+        )
     if authority == QM5_1538_COMPILE_FAIL_REPAIR_AUTHORITY:
         return _qm5_1538_compile_fail_repair_authorized(
             ea_label,
@@ -2544,6 +2586,89 @@ def _qm5_10025_q02_zero_trade_repair_authorized(
     )
 
 
+def _qm5_41345_identity_repair_authorized(
+    ea_label: str,
+    authority: str | None,
+    *,
+    ea_id: str | None,
+    source_sha: str | None,
+    inventory: dict[str, Any] | None,
+    current_work_item_id: str | None,
+) -> bool:
+    """Bind one identity-repair compile to the exact zero-trade sibling Q02 row."""
+    if (
+        authority != QM5_41345_IDENTITY_REPAIR_AUTHORITY
+        or ea_label != QM5_41345_IDENTITY_REPAIR_EA_LABEL
+        or ea_id != "41345"
+        or str(source_sha or "").lower()
+        != QM5_41345_IDENTITY_REPAIRED_SOURCE_SHA256
+        or inventory is None
+    ):
+        return False
+    predecessor = next(
+        (
+            row
+            for row in inventory.get("work_rows", {}).get(ea_id, [])
+            if str(row.get("id")) == QM5_41345_IDENTITY_REPAIR_PREDECESSOR_ID
+        ),
+        None,
+    )
+    if predecessor is None:
+        return False
+    payload = _json_object(predecessor.get("payload_json"))
+    evidence_path = Path(str(predecessor.get("evidence_path") or ""))
+    try:
+        evidence_valid = (
+            evidence_path.is_file()
+            and sha256_file(evidence_path).lower()
+            == QM5_41345_IDENTITY_EVIDENCE_SHA256
+        )
+    except OSError:
+        evidence_valid = False
+    if not (
+        predecessor.get("phase") == "Q02"
+        and predecessor.get("status") == "done"
+        and predecessor.get("verdict") == "ZERO_TRADES"
+        and payload.get("verdict_reason") == "Q02_ZERO_TRADES"
+        and payload.get("schema") == "qm.dl089-measurement-q02-prerequisite/v1"
+        and payload.get("ea_dir_name") == QM5_41345_IDENTITY_REPAIR_EA_LABEL
+        and payload.get("subject_ea_id") == "QM5_21502"
+        and payload.get("expected_symbol") == "XAUUSD.DWX"
+        and payload.get("expected_period") == "D1"
+        and str(payload.get("expected_mq5_sha256") or "").lower()
+        == QM5_41345_IDENTITY_REJECTED_SOURCE_SHA256
+        and str(payload.get("expected_ex5_sha256") or "").lower()
+        == QM5_41345_IDENTITY_REJECTED_EX5_SHA256
+        and str(payload.get("expected_setfile_sha256") or "").lower()
+        == QM5_41345_IDENTITY_REJECTED_SETFILE_SHA256
+        and evidence_valid
+    ):
+        return False
+    if current_work_item_id is None:
+        return True
+    current_row = next(
+        (
+            row
+            for row in inventory.get("work_rows", {}).get(ea_id, [])
+            if str(row.get("id")) == str(current_work_item_id)
+        ),
+        None,
+    )
+    current_payload = _json_object(
+        current_row.get("payload_json") if current_row else None
+    )
+    return bool(
+        current_row
+        and current_row.get("phase") == COMPILE_EA_PHASE
+        and current_payload.get("append_only_source_repair") is True
+        and current_payload.get("compile_source_repair_authority") == authority
+        and str(current_payload.get("mq5_sha256") or "").lower()
+        == QM5_41345_IDENTITY_REPAIRED_SOURCE_SHA256
+        and QM5_41345_IDENTITY_REPAIR_PREDECESSOR_ID
+        in current_payload.get("source_repair_predecessor_work_item_ids", [])
+    )
+
+
 def _active_stale_rollout_hold_ids(
     conn: sqlite3.Connection,
     *,
@@ -3066,6 +3191,13 @@ def classify_candidate(
     ):
         source_repair_predecessor_ids.add(
             QM5_10025_Q02_ZERO_TRADE_REPAIR_PREDECESSOR_ID
+        )
+    if (
+        repair_authorized
+        and source_repair_authority == QM5_41345_IDENTITY_REPAIR_AUTHORITY
+    ):
+        source_repair_predecessor_ids.add(
+            QM5_41345_IDENTITY_REPAIR_PREDECESSOR_ID
         )
     if (
         repair_authorized
