@@ -1,0 +1,77 @@
+{
+  "schema": "qm.fx-cointegration-paced-cpu-stop/v1",
+  "generated_at_utc": "2026-09-05T00:46:53.3584640Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "30943808142035e99159f01fd8be94752070d55e",
+  "mission_disposition": "STOP_CPU_CEILING",
+  "frontier": {
+    "controlling_research": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "tested_relationships": 66,
+    "unbuilt_relationships": 0,
+    "census_basis": "latest durable complete relationship-to-approved-card-and-EA reconciliation; not recomputed under the binding CPU stop"
+  },
+  "preferred_anchors": {
+    "QM5_12532": {
+      "pair": "AUDUSD~NZDUSD",
+      "logical_q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "q02_status": "done",
+      "q02_verdict": "PASS",
+      "downstream_terminal_path": "Q04_PASS_THEN_Q05_FAIL"
+    },
+    "QM5_12533": {
+      "pair": "EURJPY~GBPJPY",
+      "logical_q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "q02_status": "done",
+      "q02_verdict": "PASS",
+      "downstream_terminal_path": "Q04_FAIL"
+    }
+  },
+  "selected_existing_fallback": {
+    "ea_id": "QM5_12778",
+    "pair": "AUDUSD~EURJPY",
+    "work_item_id": "24acc5d4-3e34-526e-a7a8-12640a2e759f",
+    "phase": "Q09_NEWS",
+    "status": "pending",
+    "verdict": null,
+    "claimed_by": null,
+    "attempt_count": 0,
+    "priority_track": true,
+    "activation_state": "RUNNABLE_BOUND",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "duplicate_enqueue_performed": false
+  },
+  "cpu_preflight": {
+    "samples_pct": [99.513, 83.303, 72.110, 80.090, 88.773],
+    "average_pct": 84.758,
+    "maximum_pct": 99.513,
+    "stop_threshold_pct": 97.0,
+    "ceiling_bound": true
+  },
+  "factory_observation": {
+    "terminal64_running_count": 9,
+    "factory_terminals_running": ["T3", "T4", "T6", "T7", "T8", "T9", "T10"],
+    "factory_workers_present": 10,
+    "duplicate_terminal_workers": 0,
+    "orphaned_terminal_processes": 0,
+    "scheduled_workers_retained_dispatch_ownership": true
+  },
+  "action": {
+    "card_created": false,
+    "ea_built": false,
+    "work_item_enqueued": false,
+    "priority_mutated": false,
+    "dispatch_tick_run": false,
+    "tester_launched": false,
+    "reason": "The explicit backtest CPU ceiling was reached; the mission requires an immediate stop and summary. The only selected fallback already has a unique runnable priority-bound row."
+  },
+  "safety": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false
+  }
+}
