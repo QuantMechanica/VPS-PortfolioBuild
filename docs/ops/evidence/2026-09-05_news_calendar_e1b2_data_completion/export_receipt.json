@@ -1,0 +1,219 @@
+{
+  "bootstrap": {
+    "path": "C:\\QM\\repo\\tools\\strategy_farm\\ftmo_m1_bootstrap.py",
+    "sha256": "efc9c8d414a4ad9fa19616e6e1c8677b168ac0884f0395d42a68997f75ca809c",
+    "size_bytes": 66619
+  },
+  "compile": {
+    "errors": 0,
+    "ex5": {
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Scripts\\QM\\news_e1b2\\20260905T102100Z_export_empire\\QM_NewsCalendar_E1B2_Export.ex5",
+      "sha256": "1c52da8d401087baf40b5f37be10ceb69ebf3e32d142298070ebd6766d20304d",
+      "size_bytes": 21888
+    },
+    "exit_code": 1,
+    "log": {
+      "path": "D:\\QM\\reports\\news_calendar\\repair_e1a\\20260905T102100Z_export_empire\\compile.log",
+      "sha256": "61cd4734736c9acab0b83e5ef40807a0d45277ebb07699578d9618bd94905512",
+      "size_bytes": 3192
+    },
+    "warnings": 0
+  },
+  "completion": "successes=1 failures=0",
+  "exports": [
+    {
+      "event_names": [
+        "10-Year Note Auction",
+        "30-Year Bond Auction",
+        "ADP Nonfarm Employment Change",
+        "Average Hourly Earnings m/m",
+        "CB Consumer Confidence Index",
+        "CPI",
+        "CPI m/m",
+        "CPI y/y",
+        "Core CPI m/m",
+        "Core CPI n.s.a. m/m",
+        "Core PCE Price Index m/m",
+        "Core PCE Price Index y/y",
+        "Core Retail Sales m/m",
+        "Durable Goods Orders m/m",
+        "EIA Crude Oil Stocks Change",
+        "Existing Home Sales",
+        "FOMC Press Conference",
+        "Fed Chair Powell Speech",
+        "Fed Interest Rate Decision",
+        "GDP Sales q/q",
+        "GDP q/q",
+        "ISM Manufacturing PMI",
+        "ISM Manufacturing Prices Paid",
+        "ISM Non-Manufacturing PMI",
+        "ISM Non-Manufacturing Prices Paid",
+        "Initial Jobless Claims",
+        "JOLTS Job Openings",
+        "MNI Chicago Business Barometer",
+        "New Home Sales",
+        "Nonfarm Payrolls",
+        "PPI m/m",
+        "Philadelphia Fed Manufacturing Index",
+        "Retail Sales m/m",
+        "S&P Global Manufacturing PMI",
+        "S&P Global Services PMI",
+        "Unemployment Rate"
+      ],
+      "first_raw": 1767375900,
+      "last_raw": 1782838800,
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_USD_HIGH_2026H1_NATIVE.csv",
+      "rows": 256,
+      "sha256": "fdf66947d3e96315066742d096f5f56ddf22238d829a718362cf69cd15f085c2",
+      "size_bytes": 20399,
+      "timestamp_encoding": "UNVERIFIED_MT5_SERVER_CIVIL"
+    },
+    {
+      "event_names": [
+        "CPI y/y",
+        "Consumer Price Expectations",
+        "ECB Deposit Facility Rate Decision",
+        "ECB Interest Rate Decision",
+        "ECB Monetary Policy Press Conference",
+        "ECB President Lagarde Speech",
+        "GDP q/q"
+      ],
+      "first_raw": 1767790800,
+      "last_raw": 1782770400,
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_EUR_HIGH_2026H1_NATIVE.csv",
+      "rows": 75,
+      "sha256": "a85f188e46e85814bfc134147940011bd3fd8ad67a4167a37942cf12886394d6",
+      "size_bytes": 6526,
+      "timestamp_encoding": "UNVERIFIED_MT5_SERVER_CIVIL"
+    },
+    {
+      "event_names": [
+        "BoE Governor Bailey Speech",
+        "BoE Interest Rate Decision",
+        "CPI y/y",
+        "GDP m/m",
+        "GDP q/q",
+        "GDP y/y",
+        "Spring Forecast Statement"
+      ],
+      "first_raw": 1768305600,
+      "last_raw": 1781791200,
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_GBP_HIGH_2026H1_NATIVE.csv",
+      "rows": 38,
+      "sha256": "37b945c429ebd1bf8050487f0f5262eab39c8eba8df892573a427059e204659d",
+      "size_bytes": 2743,
+      "timestamp_encoding": "UNVERIFIED_MT5_SERVER_CIVIL"
+    },
+    {
+      "event_names": [
+        "BoJ Interest Rate Decision",
+        "BoJ L Money Stock y/y",
+        "BoJ Press Conference",
+        "GDP q/q",
+        "Retail Sales m/m",
+        "Tokyo CPI excl. Food and Energy y/y"
+      ],
+      "first_raw": 1768359000,
+      "last_raw": 1782701400,
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_JPY_HIGH_2026H1_NATIVE.csv",
+      "rows": 30,
+      "sha256": "0fcc2ee25ac1b0813ced4d0a8799efac3f499a0e302c2d8063ef80e58d5c052b",
+      "size_bytes": 2546,
+      "timestamp_encoding": "UNVERIFIED_MT5_SERVER_CIVIL"
+    },
+    {
+      "event_names": [
+        "RBA Interest Rate Decision"
+      ],
+      "first_raw": 1770103800,
+      "last_raw": 1781595000,
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_AUD_HIGH_2026H1_NATIVE.csv",
+      "rows": 4,
+      "sha256": "e4947aa1e22391e7fd3bfc633aea90c9938597aec4b8cd4326d8947031161061",
+      "size_bytes": 412,
+      "timestamp_encoding": "UNVERIFIED_MT5_SERVER_CIVIL"
+    },
+    {
+      "event_names": [
+        "BoC Governor Macklem Speech",
+        "BoC Interest Rate Decision"
+      ],
+      "first_raw": 1769622300,
+      "last_raw": 1781109900,
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_CAD_HIGH_2026H1_NATIVE.csv",
+      "rows": 5,
+      "sha256": "f08c81110a41a5fdf1a2c29593e7929127463de315f56f56e17363580857bdae",
+      "size_bytes": 506,
+      "timestamp_encoding": "UNVERIFIED_MT5_SERVER_CIVIL"
+    },
+    {
+      "event_names": [
+        "Core PPI m/m"
+      ],
+      "first_raw": 1515677400,
+      "last_raw": 1764073800,
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_USD_ALL_CORE_PPI_2018_2025_NATIVE.csv",
+      "rows": 94,
+      "sha256": "a18a444683e52b113d509e34fa501e42060109830395349ac547e74c31a37869",
+      "size_bytes": 8312,
+      "timestamp_encoding": "UNVERIFIED_MT5_SERVER_CIVIL"
+    },
+    {
+      "event_names": [
+        "NY Fed Empire State Manufacturing Index"
+      ],
+      "first_raw": 1516109400,
+      "last_raw": 1765805400,
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_USD_ALL_EMPIRE_STATE_2018_2025_NATIVE.csv",
+      "rows": 96,
+      "sha256": "5bf93456ebc9b9d04dd39eadf549fba1b33e2f70dc805f5945cf7414fbe5d315",
+      "size_bytes": 10792,
+      "timestamp_encoding": "UNVERIFIED_MT5_SERVER_CIVIL"
+    },
+    {
+      "event_names": [
+        "Building Permits"
+      ],
+      "first_raw": 1516282200,
+      "last_raw": 1758112200,
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_USD_ALL_BUILDING_PERMITS_2018_2025_NATIVE.csv",
+      "rows": 93,
+      "sha256": "d2f1695b38034fbc8446b5c3215ffe406cd129608d402e73232acf5e38aa6d78",
+      "size_bytes": 6550,
+      "timestamp_encoding": "UNVERIFIED_MT5_SERVER_CIVIL"
+    },
+    {
+      "event_names": [
+        "Trade Balance"
+      ],
+      "first_raw": 1515159000,
+      "last_raw": 1765459800,
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\T_EXPORT_USD_ALL_TRADE_BALANCE_2018_2025_NATIVE.csv",
+      "rows": 95,
+      "sha256": "24d6d748a703c911225b0ad477284f6ce66bc2390af62613fd808233b6df3b62",
+      "size_bytes": 6120,
+      "timestamp_encoding": "UNVERIFIED_MT5_SERVER_CIVIL"
+    }
+  ],
+  "launched_pid": 27816,
+  "mechanism": "ftmo_m1_bootstrap StartUp; exact T_Export extension",
+  "process_identity": {
+    "creation_date_utc": "2026-09-05T10:20:34Z",
+    "executable_path": "D:\\QM\\mt5\\T_Export\\terminal64.exe",
+    "pid": 27816
+  },
+  "production_write": false,
+  "schema": "qm.news-native-export-e1b2/v1",
+  "source": {
+    "path": "C:\\QM\\worktrees\\codex-lock-attribution-20260905\\framework\\scripts\\mt5_diagnostics\\QM_NewsCalendar_E1B2_Export.mq5",
+    "sha256": "e8fabd9457bd2e80fe5fae1e10fd362787804037074442ce7d8c2ce3d1c38c0f",
+    "size_bytes": 6207
+  },
+  "startup_ini": {
+    "path": "D:\\QM\\reports\\news_calendar\\repair_e1a\\20260905T102100Z_export_empire\\startup.ini",
+    "sha256": "c4c87c2826340368ea2e4fa399eeb8b69fcf6d37c77287ba692bc9951ae03ee1",
+    "size_bytes": 292
+  },
+  "status": "PASS",
+  "terminated_owned_pid": 27816
+}

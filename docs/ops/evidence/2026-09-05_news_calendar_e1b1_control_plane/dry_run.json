@@ -1,0 +1,40 @@
+{
+  "canonical_gate": {
+    "bytes": 76471,
+    "path": "C:\\QM\\repo\\tools\\strategy_farm\\news_calendar_gate.py",
+    "sha256": "a8622a106ba1e2af002871b43076b3258b0debec6ccc117f14e7a592236abc72"
+  },
+  "captured_at": "2026-09-05T10:28:53.530382+00:00",
+  "code_commit": "30524d22f94025c1d7ac068d5e7fdc22502adba3",
+  "dry_runs": [
+    {
+      "candidate": "D:\\QM\\reports\\news_calendar\\repair_e1a\\20260905T094500Z",
+      "input_hashes_unchanged": true,
+      "manifest_sha256": "29ce8215f98de53e800937292d8fa8e6b6ffabe7d941f28065556abb4ffa0dde",
+      "result": {
+        "error": "candidate verification FAIL: 6.1_anchor_shares, 6.2_coverage, 6.3_cross_file_identity, 6.5_tick_footprints, 6.7_detector_clean",
+        "status": "REFUSED"
+      }
+    },
+    {
+      "candidate": "D:\\QM\\reports\\news_calendar\\repair_e1a\\20260905T102700Z_e1b2_candidates",
+      "input_hashes_unchanged": true,
+      "manifest_sha256": "a3feb12a0065cc5b7d9a19ca2c4f539bdc840a4d2e9b9adc0eaac2b849e309b3",
+      "result": {
+        "error": "candidate verification FAIL: 6.1_anchor_shares, 6.2_coverage, 6.5_tick_footprints, 6.7_detector_clean",
+        "status": "REFUSED"
+      }
+    }
+  ],
+  "new_ingress": {
+    "bytes": 5186,
+    "path": "C:\\QM\\worktrees\\codex-calendar-control-20260905\\tools\\strategy_farm\\news_calendar_candidate_ingress.py",
+    "sha256": "dd56317d8523230949d4563304b22a80dfc0631f6cc3787d1516edd2ff0a35fb"
+  },
+  "production_write": false,
+  "task_id": "3e3e903d-f03d-4f70-8f51-63efcf95159d",
+  "tests": {
+    "passed": 47,
+    "powershell_ast_errors": 0
+  }
+}

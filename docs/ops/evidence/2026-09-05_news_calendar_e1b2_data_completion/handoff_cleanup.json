@@ -1,0 +1,10 @@
+{
+  "creation_utc": "2026-09-05T10:11:29.9955790Z",
+  "startup_ini": "D:\\QM\\reports\\news_calendar\\repair_e1a\\20260905T101200Z_export_catalog\\startup.ini",
+  "basis": "Exact T_Export path + unique task startup config + completion marker + launch time; MetaTrader update handoff",
+  "terminated": true,
+  "marker": "successes=3 failures=1",
+  "startup_sha256": "09477B5435F97C49E7549CE1E530B07953C28D7A02D625769B546458FE39A900",
+  "pid": 22172,
+  "executable": "D:\\QM\\mt5\\T_Export\\terminal64.exe"
+}

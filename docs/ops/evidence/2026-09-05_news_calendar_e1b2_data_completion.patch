@@ -1,0 +1,543 @@
+commit 93198a4d2d2efe9922141b3114a9acc5cb72d4dc
+Author:     r <r@r>
+AuthorDate: Sat Sep 5 12:25:25 2026 +0200
+Commit:     r <r@r>
+CommitDate: Sat Sep 5 12:25:25 2026 +0200
+
+    fix(calendar): complete native exports and reconcile candidate minutes
+
+diff --git a/framework/scripts/mt5_diagnostics/QM_NewsCalendar_E1B2_Export.mq5 b/framework/scripts/mt5_diagnostics/QM_NewsCalendar_E1B2_Export.mq5
+new file mode 100644
+index 0000000000..88c8af9f7a
+--- /dev/null
++++ b/framework/scripts/mt5_diagnostics/QM_NewsCalendar_E1B2_Export.mq5
+@@ -0,0 +1,117 @@
++// Read-only native export, restricted to the export terminal. No trading API.
++#property strict
++enum IMPACT_FILTER { HIGH_ONLY=0, ALL_IMPACTS=1 };
++input string InpCurrency="USD";
++input datetime InpFrom=D'2026.01.01';
++input datetime InpTo=D'2026.07.01';
++input IMPACT_FILTER InpImpact=HIGH_ONLY;
++input string InpEventName="";
++input string InpOutput="T_EXPORT_USD_HIGH_2026H1_NATIVE.csv";
++input bool InpBatch=false;
++input bool InpCatalogOnly=false;
++input string InpCompletion="E1B2_EXPORT_COMPLETE.txt";
++
++bool ExportOne(const string currency,const datetime from,const datetime to,
++               const IMPACT_FILTER impact,const string name,const string filename)
++  {
++   if(from>=to || from<D'2018.01.01' || to>D'2027.01.01' || StringFind(filename,"/")>=0 || StringFind(filename,"\\")>=0 ||
++      StringFind(filename,":")>=0 || FileIsExist(filename))
++     { PrintFormat("REFUSED_RANGE_OR_OUTPUT %s",filename); return false; }
++   MqlCalendarValue values[], chunk[];
++   int total=0;
++   ulong selected_event_id=0;
++   if(name!="")
++     {
++      MqlCalendarEvent catalog[];
++      int events=CalendarEventByCurrency(currency,catalog);
++      if(events<0) { PrintFormat("CATALOG_FAIL %d",GetLastError()); return false; }
++      for(int i=0;i<events;i++)
++        if(catalog[i].name==name || (name=="NY Empire State Manufacturing Index" &&
++           (StringFind(catalog[i].name,"Empire")>=0 || StringFind(catalog[i].event_code,"ny-fed-manufacturing")>=0)))
++          { if(selected_event_id!=0) { Print("AMBIGUOUS_EVENT_NAME"); return false; } selected_event_id=catalog[i].id;
++            PrintFormat("CATALOG_SELECTED id=%I64u code=%s name=%s",catalog[i].id,catalog[i].event_code,catalog[i].name); }
++      if(selected_event_id==0) { PrintFormat("CATALOG_NAME_MISSING %s",name); return false; }
++     }
++   // Annual queries avoid a single oversized eight-year Calendar request.
++   datetime start=from;
++   while(start<to)
++     {
++      MqlDateTime civil; TimeToStruct(start,civil);
++      civil.year++; civil.mon=1; civil.day=1; civil.hour=0; civil.min=0; civil.sec=0;
++      datetime end=StructToTime(civil); if(end>to) end=to;
++      ResetLastError();
++      int n=(selected_event_id!=0 ? CalendarValueHistoryByEvent(selected_event_id,chunk,start,end) :
++                                  CalendarValueHistory(chunk,start,end,"",currency));
++      if(selected_event_id!=0) PrintFormat("CATALOG_QUERY id=%I64u from=%s to=%s count=%d err=%d",selected_event_id,
++                     TimeToString(start),TimeToString(end),n,GetLastError());
++      if(n<0) { PrintFormat("QUERY_FAIL %s %d %d",currency,n,GetLastError()); return false; }
++      ArrayResize(values,total+n);
++      for(int k=0;k<n;k++) values[total+k]=chunk[k];
++      total+=n; start=end;
++     }
++   int order[]; string codes[], names[], impacts[];
++   ArrayResize(order,total); ArrayResize(codes,total); ArrayResize(names,total); ArrayResize(impacts,total);
++   int selected=0;
++   for(int i=0;i<total;i++)
++     {
++      MqlCalendarEvent event;
++      if(!CalendarEventById(values[i].event_id,event)) { Print("EVENT_LOOKUP_FAIL"); return false; }
++      if(values[i].time<from || values[i].time>=to ||
++         (impact==HIGH_ONLY && event.importance!=CALENDAR_IMPORTANCE_HIGH) ||
++         (name!="" && values[i].event_id!=selected_event_id)) continue;
++      bool duplicate=false;
++      for(int d=0;d<selected;d++) if(values[order[d]].id==values[i].id) { duplicate=true; break; }
++      if(duplicate) continue;
++      codes[i]=event.event_code; names[i]=event.name;
++      impacts[i]=(event.importance==CALENDAR_IMPORTANCE_HIGH ? "high" :
++                  event.importance==CALENDAR_IMPORTANCE_MODERATE ? "medium" :
++                  event.importance==CALENDAR_IMPORTANCE_LOW ? "low" : "none");
++      int j=selected;
++      while(j>0 && (values[order[j-1]].time>values[i].time ||
++           (values[order[j-1]].time==values[i].time && values[order[j-1]].id>values[i].id)))
++        { order[j]=order[j-1]; j--; }
++      order[j]=i; selected++;
++     }
++   if(selected==0) { PrintFormat("NO_MATCHES %s %s",currency,name); return false; }
++   int h=FileOpen(filename,FILE_WRITE|FILE_CSV|FILE_ANSI,',',CP_UTF8);
++   if(h==INVALID_HANDLE) return false;
++   FileWrite(h,"broker_time","event_id","event_code","event_name","importance","value_id");
++   for(int j=0;j<selected;j++)
++     {
++      int i=order[j];
++      if(FileWrite(h,(long)values[i].time,(long)values[i].event_id,codes[i],names[i],impacts[i],(long)values[i].id)==0)
++        { FileClose(h); return false; }
++     }
++   FileFlush(h); FileClose(h);
++   PrintFormat("E1B2_EXPORT_OK file=%s rows=%d raw_timestamp_encoding=UNVERIFIED_SERVER_CIVIL",filename,selected);
++   return true;
++  }
++
++void OnStart()
++  {
++   string root=TerminalInfoString(TERMINAL_PATH); StringReplace(root,"/","\\"); StringToLower(root);
++   if(root!="d:\\qm\\mt5\\t_export") { Print("WRONG_TERMINAL_REFUSED"); return; }
++   if(FileIsExist(InpCompletion)) { Print("COMPLETION_EXISTS_REFUSED"); return; }
++   int failures=0, successes=0;
++   if(!InpBatch)
++     {
++      if(StringFind("|USD|EUR|GBP|JPY|AUD|CAD|","|"+InpCurrency+"|")<0) return;
++      if(ExportOne(InpCurrency,InpFrom,InpTo,InpImpact,InpEventName,InpOutput)) successes++; else failures++;
++     }
++   else
++     {
++      string currencies[]={"USD","EUR","GBP","JPY","AUD","CAD"};
++      for(int i=0;i<6 && !InpCatalogOnly;i++)
++        if(ExportOne(currencies[i],D'2026.01.01',D'2026.07.01',HIGH_ONLY,"",
++                     "T_EXPORT_"+currencies[i]+"_HIGH_2026H1_NATIVE.csv")) successes++; else failures++;
++      string names[]={"Core PPI m/m","NY Empire State Manufacturing Index","Building Permits","Trade Balance"};
++      string tags[]={"CORE_PPI","EMPIRE_STATE","BUILDING_PERMITS","TRADE_BALANCE"};
++      for(int i=0;i<4;i++)
++        if(ExportOne("USD",D'2018.01.01',D'2026.01.01',ALL_IMPACTS,names[i],
++                     "T_EXPORT_USD_ALL_"+tags[i]+"_2018_2025_NATIVE.csv")) successes++; else failures++;
++     }
++   int h=FileOpen(InpCompletion,FILE_WRITE|FILE_TXT|FILE_ANSI,0,CP_UTF8);
++   if(h!=INVALID_HANDLE)
++     { FileWrite(h,StringFormat("successes=%d failures=%d",successes,failures)); FileFlush(h); FileClose(h); }
++   PrintFormat("E1B2_BATCH_COMPLETE successes=%d failures=%d",successes,failures);
++  }
+diff --git a/framework/scripts/mt5_diagnostics/news_calendar_export_e1b2.py b/framework/scripts/mt5_diagnostics/news_calendar_export_e1b2.py
+new file mode 100644
+index 0000000000..2686235356
+--- /dev/null
++++ b/framework/scripts/mt5_diagnostics/news_calendar_export_e1b2.py
+@@ -0,0 +1,188 @@
++"""Task-scoped T_Export StartUp wrapper; never launches a research/live lane."""
++from __future__ import annotations
++import argparse
++import base64
++import csv
++import datetime as dt
++import json
++from pathlib import Path
++import re
++import shutil
++import subprocess
++import sys
++import time
++
++# All reused operational helpers come from the canonical checkout.
++sys.path.insert(0, "C:/QM/repo/tools/strategy_farm")
++import ftmo_m1_bootstrap as boot
++
++ROOT = Path("D:/QM/mt5/T_Export")
++STAGING = Path("D:/QM/reports/news_calendar/repair_e1a")
++SOURCE = Path(__file__).with_name("QM_NewsCalendar_E1B2_Export.mq5")
++CCYS = ("USD", "EUR", "GBP", "JPY", "AUD", "CAD")
++TAGS = ("CORE_PPI", "EMPIRE_STATE", "BUILDING_PERMITS", "TRADE_BALANCE")
++
++
++def expected_names():
++    return [*(f"T_EXPORT_{c}_HIGH_2026H1_NATIVE.csv" for c in CCYS),
++            *(f"T_EXPORT_USD_ALL_{t}_2018_2025_NATIVE.csv" for t in TAGS)]
++
++
++def validate_output(path):
++    with path.open(encoding="utf-8-sig", newline="") as f:
++        rows = list(csv.DictReader(f))
++    if not rows:
++        raise ValueError("empty export")
++    times = [int(r["broker_time"]) for r in rows]
++    ids = [r["value_id"] for r in rows]
++    if times != sorted(times) or len(set(ids)) != len(ids):
++        raise ValueError("unsorted or duplicate native release")
++    if "_HIGH_" in path.name and any(r["importance"] != "high" for r in rows):
++        raise ValueError("non-high row in HIGH export")
++    return {**boot.file_binding(path), "rows": len(rows), "first_raw": min(times),
++            "last_raw": max(times), "event_names": sorted({r["event_name"] for r in rows}),
++            "timestamp_encoding": "UNVERIFIED_MT5_SERVER_CIVIL"}
++
++
++def owned_match(row, ini, started):
++    if boot._windows_path_key(row.get("ExecutablePath",""))!=boot._windows_path_key(ROOT/"terminal64.exe"):
++        return None
++    if str(ini).lower() not in str(row.get("CommandLine","")).lower():
++        return None
++    identity=boot.process_identity(row,"owned T_Export")
++    creation=dt.datetime.fromisoformat(identity["creation_date_utc"].replace("Z","+00:00"))
++    return identity if creation>=started-dt.timedelta(seconds=2) else None
++
++
++def terminate_owned(identity, ini):
++    encoded=base64.b64encode(str(ini).encode()).decode()
++    pid=int(identity["pid"])
++    creation=identity["creation_date_utc"]
++    return boot._powershell_json(f"""
++$expectedConfig=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('{encoded}'))
++$row=Get-CimInstance Win32_Process -Filter 'ProcessId={pid}' -ErrorAction Stop
++if ($null -eq $row -or $row.ExecutablePath -ine 'D:\\QM\\mt5\\T_Export\\terminal64.exe') {{ throw 'Owned export path drift' }}
++if ($row.CreationDate.ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ') -ne '{creation}') {{ throw 'Owned export creation drift' }}
++if (-not ([string]$row.CommandLine).ToLowerInvariant().Contains($expectedConfig.ToLowerInvariant())) {{ throw 'Owned export config drift' }}
++$r=Invoke-CimMethod -InputObject $row -MethodName Terminate -Arguments @{{Reason=0}}
++if ($r.ReturnValue -ne 0) {{ throw 'Owned export termination failed' }}
++@{{terminated=$true;pid={pid}}} | ConvertTo-Json -Compress
++""")
++
++
++def run(out: Path, timeout: int, catalog_only=False, empire_only=False):
++    out = out.resolve()
++    boot._safe_tag(out.name)
++    if not 60<=timeout<=900:
++        raise ValueError("export timeout must be 60..900 seconds")
++    if STAGING.resolve() not in out.parents or out.exists():
++        raise ValueError("run must use a new E1-A staging child")
++    terminal = ROOT / "terminal64.exe"
++    rows = boot.scan_terminal_processes()
++    if boot._exact_process_for_path(rows, terminal):
++        raise ValueError("T_Export already active; defer without interruption")
++    requested=[expected_names()[7]] if empire_only else expected_names()[6 if catalog_only else 0:]
++    for name in requested:
++        if (ROOT / "MQL5/Files" / name).exists():
++            raise ValueError("existing export refused: " + name)
++    source = SOURCE.read_text()
++    if any(re.search(p, source) for p in boot.FORBIDDEN_MQL_TOKENS):
++        raise ValueError("trading API in exporter")
++    if 'root!="d:\\\\qm\\\\mt5\\\\t_export"' not in source:
++        raise ValueError("exact T_Export MQL path guard absent")
++    out.mkdir(parents=True)
++    result = {"schema": "qm.news-native-export-e1b2/v1", "production_write": False,
++              "mechanism": "ftmo_m1_bootstrap StartUp; exact T_Export extension",
++              "bootstrap": boot.file_binding(Path(boot.__file__)), "source": boot.file_binding(SOURCE)}
++    with boot.exclusive_bootstrap_lock(STAGING / "t_export_e1b2.lock"):
++        editor = ROOT / "MetaEditor64.exe"
++        if any(boot._windows_path_key(r.get("ExecutablePath", "")) == boot._windows_path_key(editor)
++               for r in boot.scan_metaeditor_processes()):
++            raise ValueError("T_Export MetaEditor busy")
++        staged = ROOT / "MQL5/Scripts/QM/news_e1b2" / out.name / SOURCE.name
++        if staged.exists():
++            raise ValueError("staged script already exists; preserve previous run")
++        staged.parent.mkdir(parents=True, exist_ok=True)
++        shutil.copyfile(SOURCE, staged)
++        log = out / "compile.log"
++        p = subprocess.run([str(editor), f"/compile:{staged}", f"/log:{log}"],
++                           cwd=ROOT, capture_output=True, timeout=180,
++                           creationflags=subprocess.CREATE_NO_WINDOW)
++        counts = re.findall(r"(\d+) errors?, (\d+) warnings?", boot._read_text_auto(log))
++        if p.returncode not in (0, 1) or not counts or counts[-1] != ("0", "0"):
++            raise ValueError("compile did not pass 0E/0W: " + str(counts))
++        result["compile"] = {"exit_code": p.returncode, "errors": 0, "warnings": 0,
++                             "log": boot.file_binding(log), "ex5": boot.file_binding(staged.with_suffix(".ex5"))}
++        tag = out.name
++        complete = f"E1B2_EXPORT_COMPLETE_{tag}.txt"
++        preset = ROOT / "MQL5/Presets" / f"E1B2_{tag}.set"
++        settings=f"InpBatch=true\nInpCatalogOnly={'true' if catalog_only else 'false'}\nInpCompletion={complete}\n"
++        if empire_only:
++            settings=f"InpBatch=false\nInpCompletion={complete}\nInpCurrency=USD\nInpFrom=1514764800\nInpTo=1767225600\nInpImpact=1\nInpEventName=NY Empire State Manufacturing Index\nInpOutput={requested[0]}\n"
++        boot.atomic_write_text(preset, settings)
++        login, server = boot.load_dxz_factory_login()
++        ini = out / "startup.ini"
++        boot.atomic_write_text(ini, "\n".join([
++            "[Common]", f"Login={login}", f"Server={server}", "[Experts]", "Enabled=0",
++            "AllowLiveTrading=0", "AllowDllImport=0", "[StartUp]",
++            f"Script=QM\\news_e1b2\\{out.name}\\QM_NewsCalendar_E1B2_Export", f"ScriptParameters={preset.name}",
++            "Symbol=EURUSD", "Period=M1", "ShutdownTerminal=0", ""]))
++        if boot._exact_process_for_path(boot.scan_terminal_processes(), terminal):
++            raise ValueError("T_Export ceased being idle before launch")
++        started=dt.datetime.now(dt.timezone.utc)
++        process = subprocess.Popen([str(terminal), "/portable", f"/config:{ini}"], cwd=ROOT,
++                                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
++                                   creationflags=subprocess.CREATE_NO_WINDOW)
++        result["launched_pid"]=process.pid
++        result["startup_ini"]=boot.file_binding(ini)
++        identity = None
++        marker = ROOT / "MQL5/Files" / complete
++        deadline = time.monotonic() + timeout
++        try:
++            while time.monotonic() < deadline:
++                matches = [v for row in boot.scan_terminal_processes() if (v:=owned_match(row,ini,started))]
++                if matches:
++                    if len(matches) != 1:
++                        raise ValueError("owned T_Export config/path is not unique")
++                    if identity and identity != matches[0]:
++                        result.setdefault("update_handoffs",[]).append({"before":identity,"after":matches[0]})
++                    identity = matches[0]
++                if process.poll() is not None and not identity and dt.datetime.now(dt.timezone.utc)-started>dt.timedelta(seconds=20):
++                    raise ValueError("owned exporter process exited early")
++                if marker.is_file() and identity:
++                    result["completion"] = marker.read_text(encoding="utf-8-sig").strip()
++                    break
++                time.sleep(1)
++            else:
++                result["error"] = "native export timed out"
++        finally:
++            if identity:
++                try:
++                    result["termination"]=terminate_owned(identity,ini)
++                    result["terminated_owned_pid"] = identity["pid"]
++                except Exception as exc:
++                    result["cleanup_error"]=str(exc)
++            result["process_identity"] = identity
++            result["exports"] = []
++            for name in expected_names():
++                path = ROOT / "MQL5/Files" / name
++                try:
++                    result["exports"].append(validate_output(path))
++                except (OSError, ValueError, KeyError) as exc:
++                    result["exports"].append({"path": str(path), "error": str(exc)})
++            result["status"] = "PASS" if "cleanup_error" not in result and result.get("completion") == f"successes={len(requested)} failures=0" and all(
++                "error" not in r for r in result["exports"]) else "FAIL"
++            boot.atomic_write_json(out / "export_receipt.json", result)
++    return result
++
++
++if __name__ == "__main__":
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument("--out", required=True, type=Path)
++    parser.add_argument("--timeout", type=int, default=420)
++    parser.add_argument("--catalog-only", action="store_true")
++    parser.add_argument("--empire-only", action="store_true")
++    args = parser.parse_args()
++    result = run(args.out, args.timeout, args.catalog_only, args.empire_only)
++    print(json.dumps({"status": result["status"], "exports": len(result["exports"]), "receipt": str(args.out / "export_receipt.json")}))
++    raise SystemExit(0 if result["status"] == "PASS" else 2)
+diff --git a/tools/strategy_farm/news_calendar_repair.py b/tools/strategy_farm/news_calendar_repair.py
+index e6f9278869..8e6d5ff17d 100644
+--- a/tools/strategy_farm/news_calendar_repair.py
++++ b/tools/strategy_farm/news_calendar_repair.py
+@@ -39,7 +39,7 @@ EXTENDED_USD = {**NAME_MAP_USD,
+     "FOMC Statement": "Fed Interest Rate Decision",
+     "FOMC Economic Projections": "Fed Interest Rate Decision",
+     "Core PPI m/m": "Core PPI m/m",
+-    "Empire State Manufacturing Index": "NY Empire State Manufacturing Index",
++    "Empire State Manufacturing Index": "NY Fed Empire State Manufacturing Index",
+     "Building Permits": "Building Permits",
+     "Trade Balance": "Trade Balance"}
+ RATE_CODES = {"EUR":"ecb-interest-rate-decision", "GBP":"boe-interest-rate-decision",
+@@ -128,6 +128,8 @@ def load_native(native_dir: Path, policy: dict) -> tuple[list[dict],list[dict],d
+         if ccy=="USD": paths.append(native_dir/"T_EXPORT_USD_HIGH_2025_NATIVE.csv")
+         sidecars=sorted(set(native_dir.glob(f"T_EXPORT_{ccy}_HIGH_*2026H1*_NATIVE.csv")))
+         paths += [p for p in sidecars if p not in paths]
++        catalog_paths=sorted(native_dir.glob("T_EXPORT_USD_ALL_*_2018_2025_NATIVE.csv")) if ccy=="USD" else []
++        paths += catalog_paths
+         fresh_rows=[];fresh_errors=[]
+         for path in paths:
+             if not path.exists():
+@@ -142,6 +144,30 @@ def load_native(native_dir: Path, policy: dict) -> tuple[list[dict],list[dict],d
+             if sha(path)!=input_hash:raise ValueError(f"native changed while reading: {path}")
+             input_record={"path":str(path.resolve()),"sha256":input_hash,"rows":len(rows),"role":"AUTHORITATIVE_NATIVE"}
+             inputs.append(input_record)
++            # New query exports carry raw server-civil epochs. The old full-range
++            # sidecar is independently anchored UTC; its encoding cannot be
++            # inherited by a fresh query (the observed 2025 sidecar differs +3h).
++            # Preserve and hash every export, but require file-specific official
++            # anchors before allowing its instants into the candidate truth set.
++            offset=None
++            if path in sidecars or path in catalog_paths:
++                offsets=[];anchor_keys=set()
++                for anchor in policy.get("anchors",[]):
++                    if anchor["currency"]!=ccy:continue
++                    anchor_key=(anchor["event_code"],anchor["utc"])
++                    if anchor_key in anchor_keys:continue
++                    anchor_keys.add(anchor_key)
++                    expected=stamp(anchor["utc"])
++                    matches=[datetime.fromtimestamp(int(r["broker_time"]),UTC) for r in rows
++                             if r["event_code"]==anchor["event_code"]
++                             and abs(datetime.fromtimestamp(int(r["broker_time"]),UTC)-expected)<timedelta(days=2)]
++                    if len(matches)==1:offsets.append(int((expected-matches[0]).total_seconds()))
++                if len(offsets)>=3 and len(set(offsets))==1 and offsets[0]%3600==0 and abs(offsets[0])<=12*3600:
++                    offset=offsets[0]
++                    input_record.update(utc_offset_seconds=offset,official_anchor_count=len(offsets))
++                else:
++                    input_record.update(role="UNVERIFIED_TIMESTAMP_EXCLUDED_FROM_TRUTH",
++                                        official_anchor_count=len(offsets),observed_offsets_seconds=offsets)
+             if ccy=="USD" and path.name=="T_EXPORT_USD_HIGH_2025_NATIVE.csv":
+                 # The separate range export is a CROSS-CHECK, never a second
+                 # truth stream. Its actual 480 rows are all +3h vs the full
+@@ -169,9 +195,14 @@ def load_native(native_dir: Path, policy: dict) -> tuple[list[dict],list[dict],d
+                     local_seen.add(release_key);prior=instant;fresh_rows.append(r)
+                 if key in seen:continue
+                 seen.add(key)
+-                if r["importance"].lower()!="high":raise ValueError(f"non-high row in high export: {path}")
++                if path not in catalog_paths and r["importance"].lower()!="high":raise ValueError(f"non-high row in high export: {path}")
++                if path in catalog_paths and r["event_name"] not in {"Core PPI m/m","NY Fed Empire State Manufacturing Index","Building Permits","Trade Balance"}:
++                    raise ValueError(f"unrequested catalog class: {path}")
++                if input_record["role"]=="UNVERIFIED_TIMESTAMP_EXCLUDED_FROM_TRUTH":continue
++                if offset is not None:instant+=timedelta(seconds=offset)
+                 result.append({"currency":ccy,"event":r["event_name"],"code":r["event_code"],"instant":instant,
+-                               "event_id":r["event_id"],"source":str(path.resolve()),"kind":"native"})
++                               "event_id":r["event_id"],"source":str(path.resolve()),"kind":"native",
++                               "importance":r["importance"].lower()})
+         fresh[ccy]={"present":bool(sidecars),"rows":len(fresh_rows),"errors":sorted(set(fresh_errors)),
+                     "monthly_rows":dict(sorted(Counter(datetime.fromtimestamp(int(r["broker_time"]),UTC).strftime("%Y-%m") for r in fresh_rows).items()))}
+     for index,(code,name,utc) in enumerate(policy.get("official_usd_revised",[])):
+@@ -328,6 +359,7 @@ def transform(primary,secondary,native,selected_nonusd):
+     present={s:{(r.currency,r.event,r.instant) for r in rows} for s,rows in out.items()}
+     for n in truth:
+         if not HOLE_START<=n["instant"]<HOLE_END:continue
++        if n.get("importance","high")!="high":continue
+         for source,fields in (("primary",PRIMARY_FIELDS),("secondary",SECONDARY_FIELDS)):
+             if (n["currency"],n["event"],n["instant"]) in present[source]:continue
+             raw=dict.fromkeys(fields,"")
+@@ -340,6 +372,25 @@ def transform(primary,secondary,native,selected_nonusd):
+             audit.append({"source":source,"currency":n["currency"],"event":n["event"],"stored_utc":"",
+                           "corrected_utc":n["instant"].isoformat(),"reason":"HOLE_BACKFILL_NATIVE_OR_OFFICIAL",
+                           "native_source":n["source"],"delta_minutes":0,"impact":"high"})
++    # Explicit E1-B2 reconciliation: native matches were applied above. For
++    # remaining one-minute common events, retain PRIMARY's instant and align
++    # SECONDARY only when the matching PRIMARY row is unambiguous. This makes
++    # the pair consistent; it does not convert an unverified time into evidence.
++    primary_index=defaultdict(list)
++    for r in out["primary"]:primary_index[(r.currency,r.event)].append(r)
++    reconciled=[]
++    for r in out["secondary"]:
++        matches=[p for p in primary_index[(r.currency,r.event)] if abs(p.instant-r.instant)<=timedelta(minutes=1)]
++        if len(matches)==1 and matches[0].instant!=r.instant:
++            t=matches[0].instant
++            audit.append({"source":"secondary","currency":r.currency,"event":r.event,
++                          "stored_utc":r.instant.isoformat(),"corrected_utc":t.isoformat(),
++                          "reason":"COMMON_MINUTE_PRIMARY_FALLBACK_UNVERIFIED","native_source":"",
++                          "delta_minutes":int((t-r.instant).total_seconds()/60),"impact":r.impact})
++            transforms[("secondary",r.currency,r.event,"COMMON_MINUTE_PRIMARY_FALLBACK_UNVERIFIED")]+=1
++            r=replace(r,instant=t,raw=project(r,t))
++        reconciled.append(r)
++    out["secondary"]=reconciled
+     for source in out:out[source].sort(key=lambda r:(r.instant,r.currency,r.event,json.dumps(r.raw,sort_keys=True)))
+     return out,audit,gaps,[{"source":s,"currency":c,"event":e,"transform":r,"rows":n} for (s,c,e,r),n in sorted(transforms.items())],dict(backfill),truth
+ 
+@@ -499,13 +550,15 @@ def run_repair(primary_path: Path,secondary_path: Path,native_dir: Path,m5_dir:
+         "6.5_tick_footprints":{"pass":all(a["status"]=="PASS" for a in footprints) and all(o["confirmed"] for o in offsets),
+                                "checks":len(footprints),"status_counts":dict(Counter(a["status"] for a in footprints))},
+         "6.6_no_row_loss":{"pass":row_loss,"backfill_rows":backfill,"declared_drops":0},
+-        "6.7_detector_clean":{"pass":diag["anchors"]["failed"]==0 and not any(unexplained.values()) and not input_changes,
+-                               "failed_or_unverified_high_rows":diag["anchors"]["failed"],"input_changes":input_changes},
++        "6.7_detector_clean":{"pass":diag["anchors"]["failed"]==0 and not any(unexplained.values()) and not input_changes
++                               and not any(i.get("role")=="UNVERIFIED_TIMESTAMP_EXCLUDED_FROM_TRUTH" for i in input_records),
++                               "failed_or_unverified_high_rows":diag["anchors"]["failed"],"input_changes":input_changes,
++                               "unverified_native_exports":[i["path"] for i in input_records if i.get("role")=="UNVERIFIED_TIMESTAMP_EXCLUDED_FROM_TRUTH"]},
+         "6.8_schema":{"pass":not schema_errors,"errors":schema_errors}}
+     success=all(g["pass"] for g in gates.values())
+     verification={"schema":SCHEMA,"decision_id":DECISION,"status":"PASS" if success else "FAIL",
+                   "publishable":success,"exit_code":0 if success else 2,"gates":gates,
+-                  "message":"READY_FOR_CEO_REVIEW" if success else "INCOMPLETE_CANDIDATES_NOT_PUBLISHABLE; awaiting 2026-H1 export and unresolved verification inputs"}
++                  "message":"READY_FOR_CEO_REVIEW" if success else "INCOMPLETE_CANDIDATES_NOT_PUBLISHABLE; unresolved verification inputs and native timestamp anchors"}
+     write_json(out/"verification.json",verification)
+     manifest={"schema":SCHEMA,"decision_id":DECISION,"candidate_status":verification["message"],"publishable":success,
+               "input_files":input_records,"files":parsed,"baseline_sha256":sha(out/"baseline.json"),
+diff --git a/tools/strategy_farm/tests/test_news_calendar_export_e1b2.py b/tools/strategy_farm/tests/test_news_calendar_export_e1b2.py
+new file mode 100644
+index 0000000000..253a704a59
+--- /dev/null
++++ b/tools/strategy_farm/tests/test_news_calendar_export_e1b2.py
+@@ -0,0 +1,50 @@
++import csv
++import datetime as dt
++import importlib.util
++from pathlib import Path
++import pytest
++
++MODULE=Path(__file__).resolve().parents[3]/"framework/scripts/mt5_diagnostics/news_calendar_export_e1b2.py"
++spec=importlib.util.spec_from_file_location("news_export_fixture",MODULE)
++exporter=importlib.util.module_from_spec(spec)
++spec.loader.exec_module(exporter)
++
++
++def write(path, times, ids, importance="high"):
++    with path.open("w",newline="") as f:
++        w=csv.DictWriter(f,fieldnames=["broker_time","value_id","event_name","importance"])
++        w.writeheader()
++        for t,i in zip(times,ids):w.writerow(dict(broker_time=t,value_id=i,event_name="Fixture",importance=importance))
++
++
++@pytest.mark.parametrize("times,ids",[([2,1],["a","b"]),([1,2],["a","a"])])
++def test_rejects_invalid_release_sequence(tmp_path,times,ids):
++    path=tmp_path/"T_EXPORT_USD_HIGH_2026H1_NATIVE.csv"
++    write(path,times,ids)
++    with pytest.raises(ValueError,match="unsorted or duplicate"):exporter.validate_output(path)
++
++
++def test_impact_filter_preserves_catalog_low(tmp_path):
++    path=tmp_path/"T_EXPORT_USD_ALL_CORE_PPI_2018_2025_NATIVE.csv"
++    write(path,[1,2],["a","b"],"low")
++    assert exporter.validate_output(path)["rows"]==2
++    high=tmp_path/"T_EXPORT_USD_HIGH_2026H1_NATIVE.csv"
++    write(high,[1],["a"],"low")
++    with pytest.raises(ValueError,match="non-high"):exporter.validate_output(high)
++
++
++def test_outside_staging_refuses_before_process_or_write(tmp_path,monkeypatch):
++    monkeypatch.setattr(exporter.boot,"scan_terminal_processes",lambda:pytest.fail("process API reached"))
++    with pytest.raises(ValueError,match="new E1-A staging child"):exporter.run(tmp_path/"outside",60)
++    assert not (tmp_path/"outside").exists()
++
++
++def test_process_handoff_requires_config_path_and_fresh_identity():
++    ini=Path("D:/QM/reports/news_calendar/repair_e1a/task/startup.ini")
++    start=dt.datetime(2026,9,5,10,0,tzinfo=dt.timezone.utc)
++    row={"ExecutablePath":str(exporter.ROOT/"terminal64.exe"),"CommandLine":f'/portable /config:{ini}',
++         "ProcessId":999,"CreationDate":"2026-09-05T10:00:01Z"}
++    assert exporter.owned_match(row,ini,start)["pid"]==999
++    assert exporter.owned_match({**row,"CommandLine":"/portable /config:foreign.ini"},ini,start) is None
++    assert exporter.owned_match({**row,"ExecutablePath":"C:/QM/mt5/T_Live/terminal64.exe"},ini,start) is None
++    assert exporter.owned_match({**row,"CreationDate":"2026-09-05T09:00:00Z"},ini,start) is None
+diff --git a/tools/strategy_farm/tests/test_news_calendar_repair.py b/tools/strategy_farm/tests/test_news_calendar_repair.py
+index d2e3b28137..b969ac9e7c 100644
+--- a/tools/strategy_farm/tests/test_news_calendar_repair.py
++++ b/tools/strategy_farm/tests/test_news_calendar_repair.py
+@@ -134,6 +134,34 @@ def test_fresh_loader_uses_release_identity_not_recurring_event_id(tmp_path):
+     assert "duplicate_release_identity" in repair.load_native(tmp_path,{})[2]["USD"]["errors"]
+ 
+ 
++def test_fresh_and_catalog_exports_need_their_own_timestamp_proof(tmp_path):
++    export_fixtures(tmp_path)
++    path=tmp_path/"T_EXPORT_USD_ALL_CORE_PPI_2018_2025_NATIVE.csv"
++    repair.write_csv(path,[{"broker_time":int(repair.stamp("2025-02-13T16:30Z").timestamp()),
++        "event_id":"2","event_code":"core-ppi-mm","event_name":"Core PPI m/m","importance":"medium","value_id":"20"}])
++    native,inputs,_=repair.load_native(tmp_path,{})
++    assert not any(n["event"]=="Core PPI m/m" for n in native)
++    assert next(r for r in inputs if r["path"]==str(path.resolve()))["role"]=="UNVERIFIED_TIMESTAMP_EXCLUDED_FROM_TRUTH"
++
++
++def test_minute_fallback_aligns_only_unambiguous_common_event_and_preserves_impact():
++    p=[row("primary","2024-02-01T10:01Z","Unverified","EUR")]
++    s=[row("secondary","2024-02-01T10:00Z","Unverified","EUR",impact="low")]
++    out,audit,gaps,*_=repair.transform(p,s,[],[])
++    assert out["secondary"][0].instant==p[0].instant
++    assert out["secondary"][0].impact=="low"
++    assert any(a["reason"]=="COMMON_MINUTE_PRIMARY_FALLBACK_UNVERIFIED" for a in audit)
++    assert gaps and gaps[0]["retained_unverified_row"]
++    p.append(row("primary","2024-02-01T09:59Z","Unverified","EUR"))
++    assert repair.transform(p,s,[],[])[0]["secondary"][0].instant==s[0].instant
++
++
++def test_catalog_medium_instants_can_correct_existing_without_high_backfill():
++    n={**native("2025-06-12T12:30Z","Core PPI m/m"),"importance":"medium"}
++    out,_,_,_,backfill,_=repair.transform([],[],[n],[])
++    assert out=={"primary":[],"secondary":[]} and backfill=={}
++
++
+ def test_separate_2025_export_is_crosscheck_only_even_when_shifted(tmp_path):
+     export_fixtures(tmp_path)
+     path=tmp_path/"T_EXPORT_USD_HIGH_2025_NATIVE.csv"
