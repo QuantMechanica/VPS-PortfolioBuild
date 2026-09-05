@@ -1,0 +1,169 @@
+---
+card_schema_version: 2
+type: strategy
+strategy_id: AI-CODEX-WTI-ADF-LJUNGBOX-AGREE-TREND-20260905_S01
+variant_id: AI-CODEX-WTI-ADF-LJUNGBOX-AGREE-TREND-20260905_S01
+source_id: AI-CODEX-WTI-ADF-LJUNGBOX-AGREE-TREND-20260905
+ea_id: QM5_41350
+slug: wti-adf-ljungbox-agree-tr
+status: APPROVED
+execution_contract_ref: strategy-seeds/cards/approved/QM5_41350_wti-adf-ljungbox-agree-tr_card.md
+execution_contract_status: APPROVED
+created: 2026-09-05
+created_by: Research+Development
+last_updated: 2026-09-05
+g0_status: APPROVED
+g0_decision: decisions/2026-09-05_qm5_41350_wti_monthly_adf_ljungbox_agreement_trend_g0.md
+source_approval: decisions/2026-09-05_wti_monthly_adf_ljungbox_agreement_trend_source_approval.md
+source_author: OpenAI Codex
+source_authors: OpenAI Codex; Ernest P. Chan; G. M. Ljung; George E. P. Box; Esam Mahdi; Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen
+source_citation: "Chan (2013), Algorithmic Trading, Wiley; Ljung and Box (1978), Biometrika 65(2), DOI 10.1093/biomet/65.2.297; Mahdi (2016), SpringerPlus 5, DOI 10.1186/s40064-016-3167-4; Moskowitz, Ooi, and Pedersen (2012), JFE 104(2), DOI 10.1016/j.jfineco.2011.11.003."
+strategy_mechanic: monthly-wti-sixty-completed-log-price-levels-lag-one-intercept-adf-t-at-least-minus2p594-and-newest-forty-eight-log-returns-six-lag-ljung-box-q-at-least5p35-agreement-gated-twelve-month-return-sign-continuation
+strategy_type_flags: [commodity, energy, crude-oil, structural-trend, dual-diagnostic-agreement, augmented-dickey-fuller, ljung-box, monthly-rebalance, atr-hard-stop, time-stop, symmetric-long-short, low-frequency]
+markets: [commodities, energy, crude_oil]
+timeframes: [D1]
+target_symbols: [XTIUSD.DWX]
+primary_target_symbols: [XTIUSD.DWX]
+single_symbol_only: true
+logical_symbol: XTIUSD.DWX
+symbol: XTIUSD.DWX
+host_symbol: XTIUSD.DWX
+symbol_slot: 0
+symbol_slots: [0]
+magic: 413500000
+period: D1
+timeframe: D1
+execution_timeframe: D1
+signal_timeframe: D1
+direction: symmetric_long_short
+expected_trade_frequency: "Approximately five to seven completed positions per full post-warm-up year is an uncalibrated prior; Q02 must prove at least five in every full scored year or retire."
+expected_trades_per_year_per_symbol: 6
+expected_pf: 1.01
+expected_dd_pct: 35.0
+risk_class: high
+ml_required: false
+r1_track_record: PASS_WITH_GOVERNED_COMPLETE_PARENT_EVIDENCE
+r2_mechanical: PASS
+r3_data_available: PASS_WITH_CONTINUOUS_CFD_BASIS_RISK
+r4_ml_forbidden: PASS
+parameters_to_test: "Locked Q02 baseline only: 60 completed month-end closes; ADF 58 rows, lag one, intercept, residual dof 55, inclusive t>=-2.594; newest 48 adjacent returns; demean; common denominator; Ljung-Box lags 1..6, Q6=48*50*sum(rho_k^2/(48-k)), inclusive Q6>=5.35; 12-month direction; 1800 D1 bars; 180-minute grace; endpoint staleness 10 days; ATR(20)*3.5 stop; stale exit 40 days; spread ceiling 1500 points."
+risk_fixed_backtest: 1000
+risk_percent_backtest: 0
+portfolio_weight_backtest: 1
+news_temporal_mode: QM_NEWS_TEMPORAL_OFF
+news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
+friday_close_enabled: false
+pipeline_phase: Q01
+q01_status: NOT_BUILT
+q02_status: NOT_ENQUEUED_Q01_PENDING
+force_build: true
+review_focus: "Falsify direct-WTI monthly ADF/Ljung-Box agreement outside the certified XAU/SP500/NDX/XNG book. Verify shared endpoints, ADF arithmetic, demeaning, all six autocorrelations/weights, inclusive gates, disagreement abstention, twelve-month side, consumed month, fixed risk, frozen stop, and next-month lifecycle. Q09 alone may establish decorrelation."
+modules_used: [no_trade, trade_entry, trade_management, trade_close]
+target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
+g0_approval_reasoning: "OWNER mission 2026-09-05 and G0 decision approve R1-R4 within disclosed source-synthesis and continuous-CFD risks. Corrected-root dedup found no exact identity; manual review separates the raw-return six-lag portmanteau conjunction from all sibling gates."
+---
+
+# QM5_41350 WTI Monthly ADF and Ljung-Box Agreement Trend
+
+## Hypothesis
+
+WTI supplies direct physical-energy exposure outside the certified carrier
+set. The hypothesis is that the newest twelve-month WTI direction is suitable
+for one more broker month only when lag-one ADF does not show strong error
+correction and newest-48-return Ljung-Box aggregation shows nontrivial serial
+dependence. Agreement does not prove persistence, profit, or decorrelation.
+
+## Source Traceability And Non-Duplicate Decision
+
+The approved packet is
+`strategy-seeds/sources/AI-CODEX-WTI-ADF-LJUNGBOX-AGREE-TREND-20260905/source.md`.
+Its complete reputable parents define ADF, Ljung-Box, and WTI continuation
+separately. The corrected-root scan found no exact identity across 4,830
+registry rows, 1,443 cards, and 45 Wiki nodes. Existing siblings use KPSS,
+spectral entropy, von Neumann, LZ76, or sample entropy. Parent-only EAs omit
+one required gate. Shared WTI direction remains a correlation risk for Q09.
+
+## Exact Formula
+
+For chronological log month-end closes `x[0..59]`, fit
+`dx=alpha+gamma*x_lag+phi*dx_lag+error` over 58 rows using centered OLS,
+`SSE/55`, and require `gamma/se_gamma>=-2.594` with the locked energy and
+relative determinant floors.
+
+For newest returns `r[i]=x[12+i]-x[11+i]`, `i=0..47`:
+
+```text
+y[i]=r[i]-mean(r)
+den=sum(y[i]^2)
+rho[k]=sum(y[i]*y[i-k],i=k..47)/den, k=1..6
+Q6=48*50*sum(rho[k]^2/(48-k),k=1..6)
+mom12=x[59]-x[47]
+BUY  iff ADF>=-2.594 and Q6>=5.35 and mom12>+1e-12
+SELL iff ADF>=-2.594 and Q6>=5.35 and mom12<-1e-12
+FLAT otherwise
+```
+
+## Rules
+
+Use only sixty consecutive completed broker-month endpoints and exclude the
+current month. Both diagnostic gates must qualify; only twelve-month return
+sign chooses side. Consume the month before every fallible gate. Permit zero
+or one owned WTI position, attach one frozen hard stop, and never retry,
+resize, scale in, pyramid, grid, or martingale.
+
+## Entry Rules
+
+Require exact identity, WTI D1 host, slot/magic, locked inputs, and fixed risk.
+Repair malformed exposure first. On a genuine new month within 180 minutes,
+persist the attempt, reconstruct endpoints, apply both formulas, then require
+spread `[0,1500]`, quotes, completed ATR(20), sizing, and margin. Open at most
+one position with a frozen `3.5*ATR` stop and no target.
+
+## Exit Rules And Management
+
+Framework kill switch and broker stop remain authoritative. Close on the first
+later-month tick, after 40 days, or immediately for duplicate/wrong-symbol/
+wrong-side/stopless malformed exposure. There is no intramonth diagnostic
+exit, target, trail, break-even, partial close, retry, or Friday flatten.
+
+## Risk
+
+Q02-Q10 use exactly `RISK_FIXED=1000`, `RISK_PERCENT=0`, and
+`PORTFOLIO_WEIGHT=1`. WTI gaps, roll/basis/financing, small-sample diagnostic
+size, overlapping windows, shared trend direction, and stop slippage are
+material. Signal magnitude never changes size. No live risk is authorized.
+
+## Data Requirements And Framework Alignment
+
+Native `XTIUSD.DWX` D1 prices/times and ATR, broker state, quotes, metadata,
+margin, positions/deals, and terminal globals only. No external runtime data.
+No-trade helpers own identity, attempts, samples, formulas, and repair; entry
+owns conjunction, spread, stop, size, and order; management owns restart and
+monthly/stale exits; close maps framework reasons.
+
+## Validation And Kill Criteria
+
+Reference-test both formula paths, inclusive boundaries, disagreement cases,
+month rollover, card mirror, registry, and fixed-risk set. Run schema lint,
+strict Q01, and enqueue exactly one paced Q02 only under CPU admission. Retire
+on zero trades, below five per full scored post-warm-up year, nonpositive
+economics, formula/fixture mismatch, leakage, invalid risk, missing stop,
+nondeterminism, lifecycle deviation, or any downstream hard failure. No
+post-result tuning is authorized.
+
+## Safety Boundary
+
+Authorized: branch-only non-live build, reference tests, strict Q01, one
+fixed-risk backtest set, and one paced Q02 enqueue. Forbidden: manual
+backtests, optimization, live/demo/shadow/stress sets, portfolio-gate edits,
+correlation waivers, portfolio admission, deploy/live manifests, `T_Live`,
+AutoTrading, terminal control, or live use.
+
+## Pipeline Phase Status
+
+| Phase | Date | Verdict | Evidence path |
+|---|---|---|---|
+| G0 Source Approval | 2026-09-05 | APPROVED_SOURCE | `decisions/2026-09-05_wti_monthly_adf_ljungbox_agreement_trend_source_approval.md` |
+| G0 Research Intake | 2026-09-05 | APPROVED | `decisions/2026-09-05_qm5_41350_wti_monthly_adf_ljungbox_agreement_trend_g0.md` |
+| Q01 Build & Spec | TBD | PENDING | TBD |
+| Q02 Baseline | TBD | NOT_ENQUEUED | TBD |
