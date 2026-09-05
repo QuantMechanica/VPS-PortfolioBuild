@@ -892,7 +892,8 @@ bool Strategy_ADFCore(const double &levels[],
    return (StringLen(regression_path) > 0);
   }
 
-#if 0 // Superseded sibling Ljung-Box implementation retained outside the compiled unit.
+#ifdef QM5_DISABLED_LJUNGBOX_SIBLING
+// Superseded sibling implementation retained outside the compiled unit.
 bool Strategy_LjungBoxCore(const double &values[],
                            double &return_mean,
                            double &denominator,
