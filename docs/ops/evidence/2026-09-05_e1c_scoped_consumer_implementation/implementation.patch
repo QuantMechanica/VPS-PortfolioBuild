@@ -1,0 +1,906 @@
+commit bb98bc03235f7f1eead716cdd63dfffb8875d1d6
+Author:     r <r@r>
+AuthorDate: Sat Sep 5 21:57:28 2026 +0200
+Commit:     r <r@r>
+CommitDate: Sat Sep 5 21:57:28 2026 +0200
+
+    feat: add inactive scoped calendar consumer contract
+
+diff --git a/framework/include/QM/QM_NewsScopeV1.mqh b/framework/include/QM/QM_NewsScopeV1.mqh
+new file mode 100644
+index 0000000000..48557a1640
+--- /dev/null
++++ b/framework/include/QM/QM_NewsScopeV1.mqh
+@@ -0,0 +1,182 @@
++// Option B, version 1. NEW include; never included by an active inventory EA.
++// This is a scope prerequisite, not a replacement news filter. AVAILABLE only
++// permits the existing filter to run. Unknown scope never becomes healthy NONE.
++#ifndef QM_NEWS_SCOPE_V1_MQH
++#define QM_NEWS_SCOPE_V1_MQH
++
++enum QM_SCOPE_ENTRY_RESULT
++  {
++   QM_SCOPE_BLACKOUT_UNKNOWN = -1,
++   QM_SCOPE_DEFER_TO_LEGACY = 0
++  };
++enum QM_SCOPE_BOUNDARY_RESULT
++  {
++   QM_SCOPE_DATA_ERROR = -1,
++   QM_SCOPE_BOUNDARY_DEFER_TO_LEGACY = 0
++  };
++
++class QM_NewsScopeV1
++  {
++private:
++   bool m_enabled;
++   bool m_loaded;
++   bool m_available;
++   datetime m_from_utc;
++   datetime m_to_utc;
++   string m_symbols;
++   string m_declaration_ids;
++   string m_effective_identity;
++   uchar m_primary[];
++   uchar m_secondary[];
++
++   bool HashValid(const string value)
++     {
++      if(StringLen(value)!=64) return false;
++      for(int i=0;i<64;i++)
++        {
++         ushort ch=StringGetCharacter(value,i);
++         if(!((ch>='0' && ch<='9') || (ch>='a' && ch<='f'))) return false;
++        }
++      return true;
++     }
++
++   bool SafePath(const string value)
++     {
++      if(StringLen(value)==0 || StringFind(value,":")>=0 ||
++         StringFind(value,"..")>=0 || StringFind(value,"\\")>=0 ||
++         StringGetCharacter(value,0)=='/') return false;
++      return true;
++     }
++
++   bool ReadAndHash(const string relative_path,const string expected,uchar &bytes[])
++     {
++      if(!SafePath(relative_path) || !HashValid(expected)) return false;
++      int handle=FileOpen(relative_path,FILE_READ|FILE_BIN|FILE_COMMON);
++      if(handle==INVALID_HANDLE) return false;
++      ulong size=FileSize(handle);
++      if(size==0 || size>268435456)
++        { FileClose(handle); return false; }
++      if(ArrayResize(bytes,(int)size)!=(int)size)
++        { FileClose(handle); return false; }
++      uint got=FileReadArray(handle,bytes,0,(int)size);
++      FileClose(handle);
++      if(got!=(uint)size) return false;
++      uchar key[],hashed[];
++      if(CryptEncode(CRYPT_HASH_SHA256,bytes,key,hashed)!=32) return false;
++      string actual="";
++      for(int i=0;i<32;i++) actual+=StringFormat("%02x",hashed[i]);
++      return actual==expected;
++     }
++
++   bool UIntText(const string value,long &number)
++     {
++      if(StringLen(value)==0 || StringLen(value)>12) return false;
++      for(int i=0;i<StringLen(value);i++)
++        {
++         ushort ch=StringGetCharacter(value,i);
++         if(ch<'0' || ch>'9') return false;
++        }
++      number=StringToInteger(value);
++      return number>0;
++     }
++
++   bool Covered(const string symbol,const datetime utc_now)
++     {
++      if(!m_loaded || !m_available || utc_now<m_from_utc || utc_now>=m_to_utc ||
++         StringLen(symbol)==0 || StringFind(symbol,",")>=0) return false;
++      return StringFind(","+m_symbols+",",","+symbol+",")>=0;
++     }
++
++public:
++   QM_NewsScopeV1(void)
++     {
++      m_enabled=false; m_loaded=false; m_available=false;
++      m_from_utc=0; m_to_utc=0; m_symbols=""; m_declaration_ids="";
++      m_effective_identity="";
++     }
++
++   // All expected identities originate in the sealed successor run plan.
++   // The receipt is a conservative whole-experiment projection of the JSON
++   // sidecar. It binds both CSVs, source proof, sealed timezone rules, symbol
++   // exposures, full requested UTC window and the new implementation version.
++   // No receipt can authorize entry: the ordinary news/risk filters still run.
++   bool Load(const bool enabled,const string receipt_path,const string receipt_sha256,
++             const string sidecar_path,const string primary_path,const string secondary_path,
++             const string proof_path,const string timezone_path,
++             const string expected_effective_identity,const string expected_implementation_sha256)
++     {
++      m_enabled=enabled; m_loaded=false; m_available=false; m_declaration_ids="";
++      ArrayFree(m_primary); ArrayFree(m_secondary);
++      if(!m_enabled) return true; // No file read or behavior change when disabled.
++      if(!HashValid(expected_effective_identity) || !HashValid(expected_implementation_sha256)) return false;
++      uchar receipt[];
++      if(!ReadAndHash(receipt_path,receipt_sha256,receipt)) return false;
++      string text=CharArrayToString(receipt,0,ArraySize(receipt),CP_UTF8);
++      string lines[];
++      int count=StringSplit(text,'\n',lines);
++      if(count!=15 || lines[14]!="" || lines[0]!="QM_SCOPE_V1" ||
++         StringFind(lines[1],"qmscopecal-v1-")!=0 || StringLen(lines[1])!=78 ||
++         !HashValid(StringSubstr(lines[1],14)) || lines[2]!=expected_effective_identity ||
++         lines[13]!=expected_implementation_sha256) return false;
++      if(lines[10]!="AVAILABLE" && lines[10]!="UNCONFIRMED") return false;
++      if(StringLen(lines[11])==0 || StringLen(lines[12])==0) return false;
++      long first=0,last=0;
++      if(!UIntText(lines[8],first) || !UIntText(lines[9],last) || first>=last) return false;
++      uchar content[];
++      if(!ReadAndHash(sidecar_path,lines[3],content) ||
++         !ReadAndHash(primary_path,lines[4],m_primary) ||
++         !ReadAndHash(secondary_path,lines[5],m_secondary) ||
++         !ReadAndHash(proof_path,lines[6],content) ||
++         !ReadAndHash(timezone_path,lines[7],content)) return false;
++      // Re-read the receipt after all files: changed bytes invalidate the load.
++      if(!ReadAndHash(receipt_path,receipt_sha256,receipt)) return false;
++      m_from_utc=(datetime)first; m_to_utc=(datetime)last;
++      m_symbols=lines[11]; m_declaration_ids=lines[12]=="-" ? "" : lines[12];
++      m_effective_identity=lines[2]; m_available=lines[10]=="AVAILABLE";
++      if(m_available && StringLen(m_declaration_ids)>0) return false;
++      m_loaded=true;
++      return true;
++     }
++
++   // utc_now must be UTC from the sealed tester-clock adapter, never TimeCurrent
++   // interpreted as UTC. Binding that adapter requires the later cohort card.
++   QM_SCOPE_ENTRY_RESULT Entry(const string symbol,const datetime utc_now,string &declaration_ids)
++     {
++      declaration_ids=m_declaration_ids;
++      if(!m_enabled) return QM_SCOPE_DEFER_TO_LEGACY;
++      if(!Covered(symbol,utc_now)) return QM_SCOPE_BLACKOUT_UNKNOWN;
++      return QM_SCOPE_DEFER_TO_LEGACY;
++     }
++
++   QM_SCOPE_BOUNDARY_RESULT Boundary(const string symbol,const datetime from_utc,
++                                     const datetime to_utc,string &declaration_ids)
++     {
++      declaration_ids=m_declaration_ids;
++      if(!m_enabled) return QM_SCOPE_BOUNDARY_DEFER_TO_LEGACY;
++      if(from_utc>=to_utc || !Covered(symbol,from_utc) || to_utc>m_to_utc)
++         return QM_SCOPE_DATA_ERROR;
++      return QM_SCOPE_BOUNDARY_DEFER_TO_LEGACY;
++     }
++
++   bool ScopeComplianceKnown(const string symbol,const datetime utc_now)
++     {
++      return !m_enabled || Covered(symbol,utc_now);
++     }
++
++   // A future compatible CSV parser must consume these verified snapshots.
++   // Reopening mutable CSV paths after verification is not a compatible binding.
++   bool CopyCalendarBytes(const bool primary,uchar &destination[])
++     {
++      if(!m_enabled || !m_loaded) return false;
++      int size=primary ? ArraySize(m_primary) : ArraySize(m_secondary);
++      if(ArrayResize(destination,size)!=size) return false;
++      if(primary)
++         return ArrayCopy(destination,m_primary)==ArraySize(m_primary);
++      return ArrayCopy(destination,m_secondary)==ArraySize(m_secondary);
++     }
++
++   // Existing-position code must retain its normal emergency/risk-reduction
++   // protections. This include intentionally exposes no forced-close time and
++   // no order API; unknown scope cannot manufacture a safe close boundary.
++  };
++#endif
+diff --git a/tools/strategy_farm/news_calendar_scoped_consumer.py b/tools/strategy_farm/news_calendar_scoped_consumer.py
+new file mode 100644
+index 0000000000..f4d6324bdd
+--- /dev/null
++++ b/tools/strategy_farm/news_calendar_scoped_consumer.py
+@@ -0,0 +1,400 @@
++"""Inert option-B scope contract. No publication, queue, ledger or runtime writes.
++
++Legacy entry points remain unchanged and refuse this schema/prefix. Availability
++is an additive non-promoting projection, never a persisted pipeline verdict.
++"""
++from __future__ import annotations
++
++import csv
++from dataclasses import dataclass
++from datetime import datetime, timedelta, timezone
++import hashlib
++import io
++import json
++import os
++import re
++from typing import Callable, Mapping
++from zoneinfo import ZoneInfo
++
++FLAG = "QM_NEWS_SCOPED_CONSUMER_V1"
++SCHEMA = "qm.news-calendar-scoped/v1"
++CONSUMER = "qm.news-scope-consumer/v1"
++PROOF_SCHEMA = "qm.news-scope-source-proof/v1"
++MAPPING_SCHEMA = "qm.news-scope-mapping/v1"
++POLICY_SCHEMA = "qm.news-scope-window/v1"
++FILES = ("news_calendar_2015_2025.csv", "forex_factory_calendar_clean.csv")
++WILDCARDS = frozenset({"ALL", "ALL_HIGH", "ALL_UNRESOLVED", "ALL_RATE_AND_NONRATE"})
++
++
++class ScopeError(ValueError):
++    """Unknown availability; callers must deny scope-dependent authorization."""
++
++
++def sha(raw: bytes) -> str:
++    return hashlib.sha256(raw).hexdigest()
++
++
++def canonical(value) -> bytes:
++    return (json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False) + "\n").encode()
++
++
++def strict(raw: bytes) -> dict:
++    def pairs(items):
++        obj = {}
++        for key, value in items:
++            if key in obj:
++                raise ScopeError("duplicate JSON key: " + key)
++            obj[key] = value
++        return obj
++    try:
++        value = json.loads(raw.decode("utf-8"), object_pairs_hook=pairs,
++                           parse_constant=lambda s: (_ for _ in ()).throw(ScopeError("nonfinite JSON")))
++    except (UnicodeError, ValueError, TypeError) as exc:
++        raise ScopeError("invalid scope JSON: " + str(exc)) from exc
++    if not isinstance(value, dict):
++        raise ScopeError("scope JSON must be an object")
++    return value
++
++
++def require(value, message):
++    if not value:
++        raise ScopeError(message)
++
++
++def digest(value) -> str:
++    require(isinstance(value, str) and re.fullmatch("[0-9a-f]{64}", value), "invalid SHA-256")
++    return value
++
++
++def utc(value: str) -> datetime:
++    try:
++        result = datetime.fromisoformat(value.replace("Z", "+00:00"))
++        require(result.tzinfo is not None and result.utcoffset() == timedelta(0), "explicit UTC required")
++        return result.astimezone(timezone.utc)
++    except (ValueError, TypeError, AttributeError) as exc:
++        raise ScopeError("invalid UTC instant") from exc
++
++
++def interval(obj) -> tuple[datetime, datetime]:
++    require(isinstance(obj, dict), "missing interval")
++    a, b = utc(obj.get("from_utc")), utc(obj.get("to_utc"))
++    require(a < b, "empty or reversed interval")
++    return a, b
++
++
++def month(value: str) -> tuple[datetime, datetime]:
++    require(isinstance(value, str) and re.fullmatch(r"\d{4}-\d{2}", value), "explicit UTC month required")
++    try:
++        y, m = map(int, value.split("-"))
++        a = datetime(y, m, 1, tzinfo=timezone.utc)
++        b = datetime(y + (m == 12), 1 if m == 12 else m + 1, 1, tzinfo=timezone.utc)
++        return a, b
++    except ValueError as exc:
++        raise ScopeError("invalid UTC month") from exc
++
++
++def enabled(env: Mapping[str, str] | None = None) -> bool:
++    return (os.environ if env is None else env).get(FLAG) == "1"
++
++
++@dataclass(frozen=True)
++class BoundScope:
++    # Only immutable bytes are retained; no caller-owned nested dict can mutate the proof.
++    sidecar: bytes
++    primary: bytes
++    secondary: bytes
++    proof: bytes
++    tzif: bytes
++    bundle_id: str
++    bundle_sha256: str
++
++
++def load(*, sidecar: bytes, csv_bytes: Mapping[str, bytes], source_proof: bytes,
++         timezone_bytes: bytes, expected_sidecar_sha256: str,
++         consumer_version: str = CONSUMER) -> BoundScope:
++    """Verify a complete immutable in-memory package, including every raw byte.
++
++    The caller's expected sidecar hash must come from the sealed plan, not the
++    sidecar itself. No active option-A directory is read or altered here.
++    """
++    try:
++        require(isinstance(sidecar, bytes) and sidecar, "missing sidecar")
++        require(sha(sidecar) == digest(expected_sidecar_sha256), "sidecar SHA-256 mismatch")
++        s = strict(sidecar)
++        require(s.get("schema") == SCHEMA, "unknown scope schema")
++        require(consumer_version == CONSUMER and s.get("consumer_version") == consumer_version,
++                "incompatible consumer version")
++        require(set(csv_bytes) == set(FILES) and set(s.get("csv_sha256", {})) == set(FILES), "exact CSV pair required")
++        require(isinstance(source_proof, bytes) and source_proof, "missing source proof")
++        require(sha(source_proof) == digest(s.get("source_proof_sha256")), "source proof SHA-256 mismatch")
++        proof = strict(source_proof)
++        require(proof.get("schema") == PROOF_SCHEMA, "unknown source proof schema")
++        require(proof.get("measured_full_scope_pass") is False, "scoped proof cannot claim full-scope PASS")
++        envelope = interval(s.get("coverage_envelope"))
++        require(proof.get("coverage_envelope") == s.get("coverage_envelope"), "source envelope mismatch")
++        mapping = s.get("mapping", {})
++        require(mapping.get("schema") == MAPPING_SCHEMA and isinstance(mapping.get("version"), str) and mapping["version"], "mapping version required")
++        classes = mapping.get("event_classes")
++        require(isinstance(classes, dict) and classes, "empty class mapping")
++        for name, impacts in classes.items():
++            require(isinstance(name, str) and name and name not in WILDCARDS, "invalid event class")
++            require(isinstance(impacts, list) and impacts and all(i in {"HIGH", "MEDIUM", "LOW"} for i in impacts), "unknown class impact")
++        symbols = mapping.get("symbols")
++        require(isinstance(symbols, dict) and symbols, "empty symbol mapping")
++        all_ccy = set()
++        for symbol, info in symbols.items():
++            require(isinstance(symbol, str) and symbol and isinstance(info, dict), "invalid symbol mapping")
++            require(set(info) in ({"currencies"}, {"constituents"}), "ambiguous symbol mapping")
++            if "currencies" in info:
++                ccy = info["currencies"]
++                require(isinstance(ccy, list) and ccy and len(ccy) == len(set(ccy)), "empty currency exposure")
++                require(all(isinstance(c, str) and re.fullmatch("[A-Z]{3}", c) for c in ccy), "unknown currency")
++                all_ccy.update(ccy)
++            else:
++                parts = info["constituents"]
++                require(isinstance(parts, list) and parts and all(x in symbols for x in parts), "unknown basket composition")
++        def visit(symbol, trail=()):
++            require(symbol not in trail, "cyclic basket")
++            for child in symbols[symbol].get("constituents", []):
++                visit(child, (*trail, symbol))
++        for symbol in symbols:
++            visit(symbol)
++        policy = s.get("window_policy", {})
++        require(policy.get("schema") == POLICY_SCHEMA, "unknown window policy")
++        for name in ("look_back_seconds", "look_ahead_seconds"):
++            require(type(policy.get(name)) is int and 0 <= policy[name] <= 366 * 86400, "unsealed window expansion")
++        require(type(policy.get("whole_local_days")) is bool, "day policy must be explicit")
++        require(isinstance(policy.get("timezone"), str) and policy["timezone"], "timezone required")
++        require(timezone_bytes and sha(timezone_bytes) == digest(policy.get("tzif_sha256")), "timezone rule bytes mismatch")
++        ZoneInfo.from_file(io.BytesIO(timezone_bytes), key=policy["timezone"])
++        coverage = s.get("coverage_assertions")
++        require(isinstance(coverage, list) and coverage, "empty coverage never means unrestricted")
++        require(proof.get("coverage_assertions") == coverage, "coverage assertions lack bound source proof")
++        for row in coverage:
++            require(row.get("currency") in all_ccy and row.get("event_class") in classes, "unknown coverage currency/class")
++            a, b = interval(row)
++            require(envelope[0] <= a < b <= envelope[1], "coverage outside envelope")
++            require(isinstance(row.get("evidence_id"), str) and row["evidence_id"], "coverage source evidence missing")
++        declarations = s.get("declarations")
++        require(isinstance(declarations, list), "declarations must be explicit, never missing")
++        require(proof.get("declarations_sha256") == sha(canonical(declarations)), "declarations differ from source proof")
++        ids = set()
++        for row in declarations:
++            require(isinstance(row, dict), "invalid declaration")
++            for name in ("id", "gate", "reason", "required_evidence"):
++                require(isinstance(row.get(name), str) and row[name] and "\n" not in row[name] and "|" not in row[name], "declaration field missing or unsafe")
++            require(row["id"] not in ids, "duplicate declaration ID")
++            require(re.fullmatch(r"[A-Za-z0-9_-]+", row["id"]), "declaration ID must be receipt-safe ASCII")
++            ids.add(row["id"])
++            require(row.get("currency") in all_ccy | {"ALL"}, "unknown declaration currency")
++            require(row.get("event_class") in set(classes) | WILDCARDS, "unknown declaration class")
++            require(row.get("usage") == "INADMISSIBLE" and row.get("production_use_permitted") is False, "declaration cannot confer permission")
++            months = row.get("months")
++            require(isinstance(months, list) and months, "empty declaration months")
++            for item in months:
++                month(item)
++        layouts = s.get("csv_columns", {})
++        for name in FILES:
++            raw = csv_bytes[name]
++            require(isinstance(raw, bytes) and raw, "empty calendar input")
++            require(sha(raw) == digest(s["csv_sha256"][name]), "CSV SHA-256 mismatch: " + name)
++            layout = layouts.get(name, {})
++            require(set(layout) == {"time", "currency", "class", "impact"}, "CSV column roles incomplete")
++            reader = csv.DictReader(io.StringIO(raw.decode("utf-8-sig")))
++            require(reader.fieldnames and len(reader.fieldnames) == len(set(reader.fieldnames)) and set(layout.values()) <= set(reader.fieldnames), "CSV header mismatch")
++            n = 0
++            for row in reader:
++                require(None not in row and all(v is not None for v in row.values()), "malformed CSV row")
++                moment = utc(row[layout["time"]])
++                require(envelope[0] <= moment < envelope[1], "CSV event outside coverage envelope")
++                require(row[layout["currency"]] in all_ccy, "unknown CSV currency")
++                cls = row[layout["class"]]
++                require(cls in classes and row[layout["impact"]] in classes[cls], "unknown CSV class/impact")
++                n += 1
++            require(n > 0, "header-only input never means unrestricted")
++        material = {"schema": SCHEMA, "sidecar_sha256": sha(sidecar),
++                    "csv_sha256": {n: sha(csv_bytes[n]) for n in FILES},
++                    "source_proof_sha256": sha(source_proof), "tzif_sha256": sha(timezone_bytes),
++                    "consumer_version": consumer_version}
++        identity = sha(canonical(material))
++        return BoundScope(sidecar, csv_bytes[FILES[0]], csv_bytes[FILES[1]], source_proof,
++                          timezone_bytes, "qmscopecal-v1-" + identity, identity)
++    except (KeyError, TypeError, UnicodeError, ValueError, AttributeError) as exc:
++        if isinstance(exc, ScopeError):
++            raise
++        raise ScopeError("invalid scope package: " + str(exc)) from exc
++
++
++def _currencies(s: dict, requested: list[str]) -> list[str]:
++    require(isinstance(requested, list) and requested, "empty requested exposure")
++    symbols = s["mapping"]["symbols"]
++    def visit(symbol, seen=()):
++        require(symbol in symbols and symbol not in seen, "unknown symbol/basket composition")
++        entry = symbols[symbol]
++        if "currencies" in entry:
++            return set(entry["currencies"])
++        return set().union(*(visit(child, (*seen, symbol)) for child in entry["constituents"]))
++    return sorted(set().union(*(visit(symbol) for symbol in requested)))
++
++
++def expanded_window(bound: BoundScope, request: dict) -> tuple[datetime, datetime]:
++    a, b = interval(request)
++    policy = strict(bound.sidecar)["window_policy"]
++    a -= timedelta(seconds=policy["look_back_seconds"])
++    b += timedelta(seconds=policy["look_ahead_seconds"])
++    if policy["whole_local_days"]:
++        tz = ZoneInfo.from_file(io.BytesIO(bound.tzif), key=policy["timezone"])
++        first = a.astimezone(tz).date()
++        final = (b - timedelta(microseconds=1)).astimezone(tz).date() + timedelta(days=1)
++        a = datetime.combine(first, datetime.min.time(), tz).astimezone(timezone.utc)
++        b = datetime.combine(final, datetime.min.time(), tz).astimezone(timezone.utc)
++    return a, b
++
++
++def availability(bound: BoundScope, request: dict) -> dict:
++    """Conservative scope only: AVAILABLE never implies healthy news, PASS or credit."""
++    try:
++        s = strict(bound.sidecar)
++        require(request.get("consumer_version") == CONSUMER, "request consumer mismatch")
++        require(request.get("bundle_sha256") == bound.bundle_sha256, "request bundle mismatch")
++        require(request.get("window_policy_sha256") == sha(canonical(s["window_policy"])), "unsealed request policy")
++        ccy = _currencies(s, request.get("symbols"))
++        classes = s["mapping"]["event_classes"]
++        # All mapped event classes remain relevant; no unproved impact exemption.
++        a, b = expanded_window(bound, request)
++        env = interval(s["coverage_envelope"])
++        reasons = set()
++        if not (env[0] <= a < b <= env[1]):
++            reasons.add("OUTSIDE_COVERAGE_ENVELOPE")
++        matched = []
++        for row in s["declarations"]:
++            if row["currency"] in [*ccy, "ALL"] and any(a < month(m)[1] and b > month(m)[0] for m in row["months"]):
++                matched.append(row)
++                reasons.add(row["reason"])
++        missing = []
++        for currency in ccy:
++            for cls in classes:
++                spans = sorted(interval(r) for r in s["coverage_assertions"] if r["currency"] == currency and r["event_class"] == cls)
++                cursor = a
++                for lo, hi in spans:
++                    if hi <= cursor:
++                        continue
++                    if lo > cursor:
++                        break
++                    cursor = max(cursor, hi)
++                    if cursor >= b:
++                        break
++                if cursor < b:
++                    missing.append(currency + "/" + cls)
++        if missing:
++            reasons.add("INCOMPLETE_SCOPE_COVERAGE")
++        return {"availability": "UNCONFIRMED" if reasons else "AVAILABLE", "currencies": ccy,
++                "expanded_from_utc": a.isoformat(), "expanded_to_utc": b.isoformat(),
++                "declaration_ids": sorted({r["id"] for r in matched}),
++                "declaration_gates": sorted({r["gate"] for r in matched}),
++                "reasons": sorted(reasons), "missing_coverage": missing,
++                "bundle_sha256": bound.bundle_sha256, "request_sha256": sha(canonical(request)),
++                "new_release_credit": False}
++    except (ScopeError, TypeError, KeyError, OverflowError) as exc:
++        return {"availability": "UNCONFIRMED", "declaration_ids": [], "declaration_gates": [],
++                "reasons": ["SCOPE_PROOF_ERROR: " + str(exc)], "new_release_credit": False}
++
++
++def bind_run_plan(bound: BoundScope, request: dict, *, implementation_sha256: str,
++                  legacy_input_bytes: bytes) -> dict:
++    """Append-only proposal identity. No current plan or effective set is edited."""
++    assessment = availability(bound, request)
++    material = {"schema": "qm.news-scoped-run-plan/v1", "consumer_version": CONSUMER,
++                "implementation_sha256": digest(implementation_sha256),
++                "bundle_id": bound.bundle_id, "bundle_sha256": bound.bundle_sha256,
++                "sidecar_sha256": sha(bound.sidecar), "request": request,
++                "legacy_input_sha256": sha(legacy_input_bytes), "scope": assessment}
++    material["run_plan_sha256"] = sha(canonical(material))
++    material["effective_input_sha256"] = sha(canonical({"run_plan_sha256": material["run_plan_sha256"],
++                                                       "legacy_input_sha256": sha(legacy_input_bytes)}))
++    return material
++
++
++def project(consumer: str, legacy_result: dict, assessment: dict, *, env=None) -> dict:
++    """Flag off returns the original object without copying or inspecting it."""
++    if not enabled(env):
++        return legacy_result
++    require(consumer in {"ENTRY", "BOUNDARY", "POSITIONS", "Q09", "Q10", "ADMISSION"}, "unknown consumer")
++    require(isinstance(assessment, dict) and assessment.get("availability") in {"AVAILABLE", "UNCONFIRMED"}, "missing scope assessment")
++    if assessment["availability"] == "AVAILABLE":
++        return legacy_result
++    result = dict(legacy_result)
++    result["scope_projection"] = assessment
++    result["new_release_credit"] = False
++    if consumer == "ENTRY":
++        result.update(entry_authorized=False, status="BLACKOUT_UNKNOWN", declaration_ids=assessment.get("declaration_ids", []))
++    elif consumer == "BOUNDARY":
++        result.update(status="DATA_ERROR", event_time=None, safe_close_time=None)
++    elif consumer == "POSITIONS":
++        result.update(compliance_certified=False, preserve_emergency_protections=True,
++                      preserve_risk_reduction=True, scope_forced_close_time=None)
++    elif consumer in {"Q09", "Q10"}:
++        result.update(availability="UNCONFIRMED", status="UNCONFIRMED", selection_credit=False,
++                      config_locked=False, fallback_off_credit=False)
++    else:
++        result.update(availability="UNCONFIRMED", admission_credit=False)
++    return result
++
++
++def experiment(bound: BoundScope, cells: list[dict], *, expected_cells: list[dict], env=None,
++               legacy_result: dict) -> dict:
++    """The predeclared attempted denominator includes missing and zero-trade cells."""
++    if not enabled(env):
++        return legacy_result
++    require(expected_cells and len({r["id"] for r in expected_cells}) == len(expected_cells), "sealed attempted-cell roster required")
++    require(len({r["id"] for r in cells}) == len(cells), "duplicate observed cell")
++    expected = {r["id"]: r for r in expected_cells}
++    require(all(r["id"] in expected for r in cells), "unplanned cell")
++    observed = {r["id"]: r for r in cells}
++    # A caller cannot shrink one arm's requested window or remove it from the roster.
++    base_windows = {(r["request"]["from_utc"], r["request"]["to_utc"]) for r in expected_cells}
++    require(len(base_windows) == 1, "mixed control/policy requested windows")
++    outcomes = []
++    for key, plan in expected.items():
++        actual = observed.get(key)
++        scope = availability(bound, plan["request"])
++        missing = actual is None or actual.get("result") is None
++        mismatch = actual is not None and actual.get("request") != plan["request"]
++        unavailable = scope["availability"] != "AVAILABLE" or missing or mismatch
++        outcomes.append({"id": key, "availability": "UNCONFIRMED" if unavailable else "AVAILABLE",
++                         "missing": missing, "request_mismatch": mismatch, "scope": scope,
++                         "trades": actual.get("trades") if actual else None})
++    unknown = sum(r["availability"] == "UNCONFIRMED" for r in outcomes)
++    return {"availability": "UNCONFIRMED" if unknown else "AVAILABLE", "attempted_cells": len(expected),
++            "missing_cells": sum(r["missing"] for r in outcomes), "unconfirmed_cells": unknown,
++            "cells": outcomes, "selection_credit": False, "new_release_credit": False,
++            "legacy_result": legacy_result}
++
++
++def consume(*, legacy: Callable[[], dict], scoped: Callable[[], dict], env=None) -> dict:
++    """Explicit future adapter; no production caller is installed by this change."""
++    return scoped() if enabled(env) else legacy()
++
++
++def ea_receipt(bound: BoundScope, plan: dict) -> bytes:
++    """Small ASCII proof for the new EA include, pinned by effective-input hash.
++
++    The EA also hashes all five source files. A whole-window UNCONFIRMED receipt
++    denies every new entry in that experiment; it never exempts favorable days.
++    """
++    request = plan["request"]
++    expected = availability(bound, request)
++    require(plan.get("scope") == expected and plan.get("bundle_sha256") == bound.bundle_sha256, "EA receipt plan mismatch")
++    material = {k: v for k, v in plan.items() if k not in {"run_plan_sha256", "effective_input_sha256"}}
++    require(plan.get("run_plan_sha256") == sha(canonical(material)), "EA receipt plan hash mismatch")
++    require(plan.get("effective_input_sha256") == sha(canonical({"run_plan_sha256": plan["run_plan_sha256"], "legacy_input_sha256": plan["legacy_input_sha256"]})), "EA effective identity mismatch")
++    a, b = interval(request)
++    require(a.microsecond == 0 and b.microsecond == 0, "EA receipt requires whole UTC seconds")
++    symbols = request.get("symbols", [])
++    require(symbols and all(re.fullmatch(r"[A-Za-z0-9_.-]+", sym) for sym in symbols), "EA symbol encoding invalid")
++    rows = ["QM_SCOPE_V1", bound.bundle_id, plan["effective_input_sha256"],
++            sha(bound.sidecar), sha(bound.primary), sha(bound.secondary), sha(bound.proof), sha(bound.tzif),
++            str(int(a.timestamp())), str(int(b.timestamp())), expected["availability"],
++            ",".join(sorted(symbols)), ",".join(expected.get("declaration_ids", [])) or "-",
++            plan["implementation_sha256"]]
++    return ("\n".join(rows) + "\n").encode("ascii")
+diff --git a/tools/strategy_farm/tests/fixtures/news_scope_v1/QM_NewsScopeV1_CompileProbe.mq5 b/tools/strategy_farm/tests/fixtures/news_scope_v1/QM_NewsScopeV1_CompileProbe.mq5
+new file mode 100644
+index 0000000000..d8f4de0cfd
+--- /dev/null
++++ b/tools/strategy_farm/tests/fixtures/news_scope_v1/QM_NewsScopeV1_CompileProbe.mq5
+@@ -0,0 +1,13 @@
++#property strict
++#property version "1.00"
++// Non-trading compile probe. Not an inventory EA and not queued as a strategy.
++#include "../../../../../framework/include/QM/QM_NewsScopeV1.mqh"
++QM_NewsScopeV1 scope;
++int OnInit()
++  {
++   string ids="";
++   if(scope.Entry("EURUSD",D'2026.01.01',ids)!=QM_SCOPE_DEFER_TO_LEGACY)
++      return INIT_FAILED;
++   return INIT_SUCCEEDED;
++  }
++void OnTick() {}
+diff --git a/tools/strategy_farm/tests/test_news_calendar_scoped_consumer.py b/tools/strategy_farm/tests/test_news_calendar_scoped_consumer.py
+new file mode 100644
+index 0000000000..42fc6fc800
+--- /dev/null
++++ b/tools/strategy_farm/tests/test_news_calendar_scoped_consumer.py
+@@ -0,0 +1,279 @@
++"""Behavioral fixtures for inactive option B; no production paths or writes."""
++import copy
++from datetime import timedelta
++import importlib.resources
++import json
++from pathlib import Path
++import sys
++
++import pytest
++
++REPO = Path(__file__).resolve().parents[3]
++sys.path.insert(0, str(REPO / 'tools' / 'strategy_farm'))
++import news_calendar_scoped_consumer as scope
++import q09_news_calendar as legacy
++
++
++def tzbytes(name='Europe/Prague'):
++    return importlib.resources.files('tzdata.zoneinfo').joinpath(*name.split('/')).read_bytes()
++
++
++def fixture(*, declarations=None, whole_days=False, before=0, after=0):
++    env = {'from_utc': '2026-01-01T00:00:00Z', 'to_utc': '2027-01-01T00:00:00Z'}
++    currencies = ['USD', 'EUR', 'AUD', 'JPY']
++    classes = {'CPI': ['HIGH'], 'EMPLOYMENT': ['HIGH', 'MEDIUM']}
++    coverage = [{'currency': c, 'event_class': k, **env, 'evidence_id': 'SOURCE-' + c + '-' + k}
++                for c in currencies for k in classes]
++    raw = b'datetime_utc,currency,event_class,impact\n2026-02-02T13:30:00Z,USD,CPI,HIGH\n'
++    csvs = dict.fromkeys(scope.FILES, raw)
++    s = {'schema': scope.SCHEMA, 'consumer_version': scope.CONSUMER,
++         'csv_sha256': {n: scope.sha(r) for n, r in csvs.items()},
++         'csv_columns': {n: {'time': 'datetime_utc', 'currency': 'currency', 'class': 'event_class', 'impact': 'impact'} for n in scope.FILES},
++         'coverage_envelope': env, 'coverage_assertions': coverage,
++         'mapping': {'schema': scope.MAPPING_SCHEMA, 'version': 'fixture-mapping-1',
++                     'event_classes': classes,
++                     'symbols': {'EURUSD': {'currencies': ['EUR', 'USD']}, 'AUDJPY': {'currencies': ['AUD', 'JPY']},
++                                 'BASKET': {'constituents': ['EURUSD', 'AUDJPY']}}},
++         'window_policy': {'schema': scope.POLICY_SCHEMA, 'look_back_seconds': before, 'look_ahead_seconds': after,
++                           'whole_local_days': whole_days, 'timezone': 'Europe/Prague', 'tzif_sha256': scope.sha(tzbytes())},
++         'declarations': [] if declarations is None else declarations}
++    return s, csvs
++
++
++def declaration(currency='USD', months=None, cls='CPI', id='D-1', gate='6.1', reason='UNMEASURED'):
++    return {'id': id, 'currency': currency, 'months': months or ['2026-03'], 'event_class': cls,
++            'gate': gate, 'reason': reason, 'required_evidence': 'official anchors and footprint',
++            'usage': 'INADMISSIBLE', 'production_use_permitted': False}
++
++
++def package(s, csvs):
++    s = copy.deepcopy(s)
++    proof = scope.canonical({'schema': scope.PROOF_SCHEMA, 'measured_full_scope_pass': False,
++                             'coverage_envelope': s['coverage_envelope'], 'coverage_assertions': s['coverage_assertions'],
++                             'declarations_sha256': scope.sha(scope.canonical(s['declarations']))})
++    s['source_proof_sha256'] = scope.sha(proof)
++    raw = scope.canonical(s)
++    return {'sidecar': raw, 'csv_bytes': csvs, 'source_proof': proof,
++            'timezone_bytes': tzbytes(), 'expected_sidecar_sha256': scope.sha(raw)}
++
++
++def bound(**kwargs):
++    return scope.load(**package(*fixture(**kwargs)))
++
++
++def request(b, start='2026-02-03T00:00:00Z', end='2026-02-04T00:00:00Z', symbols=None):
++    return {'consumer_version': scope.CONSUMER, 'bundle_sha256': b.bundle_sha256,
++            'window_policy_sha256': scope.sha(scope.canonical(scope.strict(b.sidecar)['window_policy'])),
++            'from_utc': start, 'to_utc': end, 'symbols': ['EURUSD'] if symbols is None else symbols}
++
++
++def test_flag_off_preserves_bytes_identity_and_does_not_touch_scoped_path(monkeypatch):
++    monkeypatch.delenv(scope.FLAG, raising=False)
++    original = {'status': 'CONFIG_LOCKED', 'raw': 'literal\r\n', 'nested': {'risk': 1}}
++    raw = scope.canonical(original)
++    for value in [None, '0', 'false', '', 'TRUE', '01']:
++        env = {} if value is None else {scope.FLAG: value}
++        for consumer in ['ENTRY', 'BOUNDARY', 'POSITIONS', 'Q09', 'Q10', 'ADMISSION']:
++            out = scope.project(consumer, original, None, env=env)
++            assert out is original and scope.canonical(out) == raw
++        assert scope.consume(legacy=lambda: original, scoped=lambda: pytest.fail('scope read while off'), env=env) is original
++        assert scope.experiment(None, None, expected_cells=None, legacy_result=original, env=env) is original
++
++
++@pytest.mark.parametrize('field', ['sidecar', 'source_proof', 'timezone_bytes'])
++def test_raw_tampering_refused(field):
++    p = package(*fixture()); p[field] += b' '
++    with pytest.raises(scope.ScopeError): scope.load(**p)
++
++
++@pytest.mark.parametrize('name', scope.FILES)
++def test_each_csv_hash_bound(name):
++    p = package(*fixture()); p['csv_bytes'] = dict(p['csv_bytes']); p['csv_bytes'][name] += b'\n'
++    with pytest.raises(scope.ScopeError, match='CSV SHA-256 mismatch'): scope.load(**p)
++
++
++@pytest.mark.parametrize('field', ['sidecar', 'source_proof', 'timezone_bytes'])
++def test_missing_bytes_refused(field):
++    p = package(*fixture()); p[field] = b''
++    with pytest.raises(scope.ScopeError): scope.load(**p)
++
++
++@pytest.mark.parametrize('mutation', [
++    lambda s: s.update(schema='unknown/v4'),
++    lambda s: s.update(consumer_version='legacy/v2'),
++    lambda s: s['mapping'].update(schema='unknown/v2'),
++    lambda s: s['mapping'].update(symbols={}),
++    lambda s: s['mapping'].update(event_classes={}),
++    lambda s: s['mapping']['symbols'].update(BASKET={'constituents': []}),
++    lambda s: s['mapping']['symbols'].update(BASKET={'constituents': ['UNKNOWN']}),
++    lambda s: s['mapping']['symbols'].update(BASKET={'constituents': ['BASKET']}),
++    lambda s: s['mapping']['symbols'].update(EURUSD={'currencies': []}),
++    lambda s: s.update(coverage_assertions=[]),
++    lambda s: s['coverage_assertions'][0].update(event_class='UNKNOWN'),
++    lambda s: s['window_policy'].update(look_back_seconds=-1),
++    lambda s: s['window_policy'].update(whole_local_days=None),
++    lambda s: s.update(declarations=[declaration(cls='UNKNOWN')]),
++    lambda s: s.update(declarations=[declaration(currency='ZZZ')]),
++    lambda s: s.update(declarations=[declaration(months=['2026-13'])]),
++    lambda s: s.update(declarations=[declaration(), declaration()]),
++])
++def test_semantic_negatives_with_resealed_fixture(mutation):
++    s, csvs = fixture(); mutation(s)
++    with pytest.raises(scope.ScopeError): scope.load(**package(s, csvs))
++
++
++def test_duplicate_json_key_refused_even_with_matching_raw_hash():
++    p = package(*fixture()); p['sidecar'] = b'{"schema":"x","schema":"x"}'; p['expected_sidecar_sha256'] = scope.sha(p['sidecar'])
++    with pytest.raises(scope.ScopeError, match='duplicate'): scope.load(**p)
++
++
++@pytest.mark.parametrize('raw', [b'', b'datetime_utc,currency,event_class,impact\n',
++    b'datetime_utc,currency,event_class,impact\n2026-02-02T13:30:00Z,USD,UNKNOWN,HIGH\n',
++    b'datetime_utc,currency,event_class,impact\n2026-02-02T13:30:00Z,USD,CPI,EXTREME\n',
++    b'datetime_utc,currency,event_class,impact\n2026-02-02 13:30:00,USD,CPI,HIGH\n'])
++def test_empty_or_unknown_csv_cannot_be_resealed_into_healthy_scope(raw):
++    s, csvs = fixture(); csvs[scope.FILES[0]] = raw; s['csv_sha256'][scope.FILES[0]] = scope.sha(raw)
++    with pytest.raises(scope.ScopeError): scope.load(**package(s, csvs))
++
++
++@pytest.mark.parametrize('symbols', [[], ['UNKNOWN'], ['EURUSD', 'UNKNOWN']])
++def test_unknown_or_empty_requested_exposure_unconfirmed(symbols):
++    b = bound(); result = scope.availability(b, request(b, symbols=symbols))
++    assert result['availability'] == 'UNCONFIRMED' and not result['new_release_credit']
++
++
++def test_utc_month_half_open_and_lookback_crossing():
++    d = declaration(months=['2026-01'])
++    b = bound(declarations=[d])
++    assert scope.availability(b, request(b, '2026-02-01T00:00:00Z', '2026-02-01T00:01:00Z'))['availability'] == 'AVAILABLE'
++    b = bound(declarations=[d], before=1)
++    result = scope.availability(b, request(b, '2026-02-01T00:00:00Z', '2026-02-01T00:01:00Z'))
++    assert result['availability'] == 'UNCONFIRMED' and result['declaration_ids'] == ['D-1']
++
++
++def test_lookahead_crosses_next_month():
++    b = bound(declarations=[declaration()], after=1)
++    result = scope.availability(b, request(b, '2026-02-28T23:59:58Z', '2026-03-01T00:00:00Z'))
++    assert result['availability'] == 'UNCONFIRMED'
++
++
++@pytest.mark.parametrize('day,hours', [('2026-03-29', 23), ('2026-10-25', 25)])
++def test_dst_whole_day_uses_sealed_rule_bytes(day, hours):
++    b = bound(whole_days=True)
++    a, z = scope.expanded_window(b, request(b, day+'T10:00:00Z', day+'T11:00:00Z'))
++    assert z-a == timedelta(hours=hours)
++
++
++def test_wildcard_union_all_gates_reasons_and_nonhost_basket_exposure():
++    ds = [declaration(currency='ALL', id='ALL', reason='GLOBAL'),
++          declaration(currency='JPY', id='J', gate='6.5', reason='JAPAN', cls='ALL_HIGH'),
++          declaration(currency='AUD', id='A', gate='6.7', reason='AUSTRALIA', cls='EMPLOYMENT')]
++    b = bound(declarations=ds)
++    result = scope.availability(b, request(b, '2026-03-02T00:00:00Z', '2026-03-03T00:00:00Z', ['BASKET']))
++    assert result['currencies'] == ['AUD', 'EUR', 'JPY', 'USD']
++    assert result['declaration_ids'] == ['A', 'ALL', 'J']
++    assert result['declaration_gates'] == ['6.1', '6.5', '6.7']
++    assert result['reasons'] == ['AUSTRALIA', 'GLOBAL', 'JAPAN']
++
++
++def test_coverage_gap_and_outside_envelope_are_unknown():
++    s, csvs = fixture(); s['coverage_assertions'] = [r for r in s['coverage_assertions'] if (r['currency'],r['event_class']) != ('EUR','CPI')]
++    b = scope.load(**package(s, csvs)); r = scope.availability(b, request(b))
++    assert r['missing_coverage'] == ['EUR/CPI'] and r['availability'] == 'UNCONFIRMED'
++    b = bound(); r = scope.availability(b, request(b, '2025-12-31T23:59:59Z', '2026-01-01T00:00:01Z'))
++    assert 'OUTSIDE_COVERAGE_ENVELOPE' in r['reasons']
++
++
++def test_adjacent_assertions_cover_but_one_second_gap_does_not():
++    s, csvs = fixture(); row = s['coverage_assertions'][0]
++    half = {**row, 'from_utc': '2026-02-03T12:00:00Z'}; row['to_utc'] = half['from_utc']; s['coverage_assertions'].append(half)
++    b = scope.load(**package(s, csvs)); assert scope.availability(b, request(b))['availability'] == 'AVAILABLE'
++    half['from_utc'] = '2026-02-03T12:00:01Z'
++    b = scope.load(**package(s, csvs)); assert scope.availability(b, request(b))['availability'] == 'UNCONFIRMED'
++
++
++@pytest.mark.parametrize('consumer,status', [('ENTRY','BLACKOUT_UNKNOWN'),('BOUNDARY','DATA_ERROR'),('Q09','UNCONFIRMED'),('Q10','UNCONFIRMED')])
++def test_consumer_responses_never_healthy_none_or_selection(consumer, status):
++    b = bound(declarations=[declaration()]); assessment = scope.availability(b, request(b, '2026-03-02T00:00:00Z','2026-03-03T00:00:00Z'))
++    old = {'status': 'CONFIG_LOCKED', 'event_time': 'known', 'config_locked': True, 'fallback_off_credit': True}
++    result = scope.project(consumer, old, assessment, env={scope.FLAG:'1'})
++    assert result['status'] == status and result['new_release_credit'] is False
++    assert old['status'] == 'CONFIG_LOCKED'
++    if consumer in ['Q09','Q10']: assert not result['config_locked'] and not result['fallback_off_credit']
++    if consumer == 'BOUNDARY': assert result['event_time'] is None and result['safe_close_time'] is None
++
++
++def test_positions_and_admission_keep_protections_and_deny_credit():
++    bad = {'availability':'UNCONFIRMED','declaration_ids':['D-1']}
++    r = scope.project('POSITIONS', {'emergency_stop':'original'}, bad, env={scope.FLAG:'1'})
++    assert r['emergency_stop']=='original' and r['preserve_emergency_protections'] and r['preserve_risk_reduction']
++    assert r['scope_forced_close_time'] is None and not r['compliance_certified']
++    assert not scope.project('ADMISSION',{},bad,env={scope.FLAG:'1'})['admission_credit']
++
++
++def test_available_scope_still_defers_to_legacy_news_filter():
++    b=bound(); old={'status':'NEWS_BLACKOUT','entry_authorized':False}
++    assert scope.project('ENTRY',old,scope.availability(b,request(b)),env={scope.FLAG:'1'}) is old
++
++
++def test_zero_trades_missing_cells_and_control_policy_same_denominator():
++    b=bound(declarations=[declaration()]); req=request(b,'2026-03-02T00:00:00Z','2026-03-03T00:00:00Z')
++    roster=[{'id':arm,'request':req} for arm in ['OFF','TEMPORAL','COMPLIANCE']]
++    observed=[{**r,'trades':0,'result':{'status':'PASS'}} for r in roster[:2]]
++    r=scope.experiment(b,observed,expected_cells=roster,legacy_result={'status':'CONFIG_LOCKED'},env={scope.FLAG:'1'})
++    assert r['availability']=='UNCONFIRMED' and r['attempted_cells']==3 and r['missing_cells']==1 and r['unconfirmed_cells']==3
++    assert not r['selection_credit'] and [x['trades'] for x in r['cells']]==[0,0,None]
++
++
++def test_censoring_one_arm_cannot_gain_credit():
++    b=bound(); req=request(b); roster=[{'id':'OFF','request':req},{'id':'ON','request':req}]
++    obs=[{**r,'trades':1,'result':{'status':'PASS'}} for r in roster]
++    obs[1]['request']={**req,'from_utc':'2026-02-03T12:00:00Z'}
++    result=scope.experiment(b,obs,expected_cells=roster,legacy_result={},env={scope.FLAG:'1'})
++    assert result['availability']=='UNCONFIRMED' and result['attempted_cells']==2
++    roster[1]['request']=obs[1]['request']
++    with pytest.raises(scope.ScopeError,match='mixed'): scope.experiment(b,obs,expected_cells=roster,legacy_result={},env={scope.FLAG:'1'})
++
++
++def test_all_sidecar_bytes_and_window_changes_change_every_identity():
++    b=bound(); r=request(b); p=scope.bind_run_plan(b,r,implementation_sha256='a'*64,legacy_input_bytes=b'fixed legacy')
++    values=[b.bundle_sha256,p['run_plan_sha256'],p['effective_input_sha256']]
++    s,csvs=fixture(); s['mapping']['version']='fixture-mapping-2'; other=scope.load(**package(s,csvs))
++    q=scope.bind_run_plan(other,request(other),implementation_sha256='a'*64,legacy_input_bytes=b'fixed legacy')
++    assert all(x!=y for x,y in zip(values,[other.bundle_sha256,q['run_plan_sha256'],q['effective_input_sha256']]))
++    q=scope.bind_run_plan(b,{**r,'to_utc':'2026-02-05T00:00:00Z'},implementation_sha256='a'*64,legacy_input_bytes=b'fixed legacy')
++    assert q['run_plan_sha256']!=p['run_plan_sha256'] and q['effective_input_sha256']!=p['effective_input_sha256']
++    # Even whitespace in a valid sidecar is a different sealed input.
++    pkg=package(*fixture()); pkg['sidecar']+=b' '; pkg['expected_sidecar_sha256']=scope.sha(pkg['sidecar'])
++    assert scope.load(**pkg).bundle_sha256!=b.bundle_sha256
++
++
++def test_legacy_python_and_ea_refuse_scoped_version_before_dispatch(tmp_path):
++    b=bound(); (tmp_path/'manifest.json').write_bytes(scope.canonical({'schema_version':scope.SCHEMA,'bundle_id':b.bundle_id}))
++    with pytest.raises(legacy.CalendarBundleError,match='unsupported'): legacy.verify_bundle(tmp_path)
++    # The actual untouched EA function rejects this distinct prefix before CSV load.
++    source=(REPO/'framework/include/QM/QM_NewsFilter.mqh').read_text(encoding='utf-8')
++    a=source.index('bool QM_NewsBundleIdValid'); z=source.index('bool QM_NewsNormalizeCommonRelativePath',a)
++    assert 'StringFind(bundle_id, "Q09CAL-") != 0' in source[a:z]
++    assert not b.bundle_id.upper().startswith('Q09CAL-')
++
++
++def test_receipt_and_new_include_are_bound_without_active_ea_changes():
++    b=bound(declarations=[declaration()]); r=request(b,'2026-03-02T00:00:00Z','2026-03-03T00:00:00Z')
++    include=REPO/'framework/include/QM/QM_NewsScopeV1.mqh'
++    p=scope.bind_run_plan(b,r,implementation_sha256=scope.sha(include.read_bytes()),legacy_input_bytes=b'fixture only')
++    receipt=scope.ea_receipt(b,p); lines=receipt.decode().splitlines()
++    assert len(lines)==14 and lines[0]=='QM_SCOPE_V1' and lines[1]==b.bundle_id and lines[10]=='UNCONFIRMED' and lines[12]=='D-1'
++    p['effective_input_sha256']='b'*64
++    with pytest.raises(scope.ScopeError): scope.ea_receipt(b,p)
++    code=include.read_text(encoding='utf-8')
++    assert 'm_enabled=false' in code and 'if(!m_enabled) return true;' in code
++    assert 'QM_SCOPE_BLACKOUT_UNKNOWN' in code and 'QM_SCOPE_DATA_ERROR' in code
++    assert 'CopyCalendarBytes' in code and 'OrderSend(' not in code and 'PositionClose(' not in code
++    assert not any('QM_NewsScopeV1.mqh' in f.read_text(encoding='utf-8',errors='ignore') for f in (REPO/'framework/EAs').glob('*/*.mq5'))
++
++
++def test_fractional_utc_receipt_cannot_widen_start_by_truncation():
++    b=bound(); r=request(b,'2026-02-03T00:00:00.999Z','2026-02-04T00:00:00Z')
++    p=scope.bind_run_plan(b,r,implementation_sha256='a'*64,legacy_input_bytes=b'fixture')
++    with pytest.raises(scope.ScopeError,match='whole UTC seconds'): scope.ea_receipt(b,p)

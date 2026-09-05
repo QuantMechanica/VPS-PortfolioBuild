@@ -1,0 +1,38 @@
+[
+  {
+    "path": "tools/strategy_farm/q09_news_calendar.py",
+    "git_blob_sha256": "cac155fa6cda32c9ca381cce59281470409f7e766b349d195ffbda8d6fd9b985",
+    "working_bytes_sha256": "b3ae74a4a2136f4014eca43bf12fb97ad26e1ca1e2b8bf636e79ddbe1b1a5abc",
+    "unchanged_git_content": true
+  },
+  {
+    "path": "tools/strategy_farm/q09_news_runner.py",
+    "git_blob_sha256": "e44b0dd07997a7db5b350613c6d9b754c50ef2685b57ae5eb37e217f2eadb0c6",
+    "working_bytes_sha256": "5d332f883d4c979bc0b7194780450bb54cecfd313c8c3dbc88ac5b6b93fcce80",
+    "unchanged_git_content": true
+  },
+  {
+    "path": "tools/strategy_farm/q09_news_contract.py",
+    "git_blob_sha256": "be06bf4298edea7af6d54406b591acecb8e70750e2f51f6a3c38524aa464582b",
+    "working_bytes_sha256": "93653eb026cc83c29156a417227849ba86d47993fd93ea110c30874d9cd64611",
+    "unchanged_git_content": true
+  },
+  {
+    "path": "tools/strategy_farm/news_calendar_candidate_ingress.py",
+    "git_blob_sha256": "d3023354eeafcd50e6255dcadc735ac1215d841b3b7161279d38f8f7494bc8e4",
+    "working_bytes_sha256": "fc526d1bdfcd5dc764759831f57f9d19bbaebee0bfcd8e2b544a916c171f8690",
+    "unchanged_git_content": true
+  },
+  {
+    "path": "framework/include/QM/QM_NewsFilter.mqh",
+    "git_blob_sha256": "1a90e980a47325afa8a157f2327a9b659d3f287e3354b962c0be4eefc052572a",
+    "working_bytes_sha256": "b5ef379ade56b67a2087d0bf13f0286875b74e47a5905dd25adfaa32ae30d539",
+    "unchanged_git_content": true
+  },
+  {
+    "path": "tools/strategy_farm/news_calendar_gate.py",
+    "git_blob_sha256": "6705af9ac6fc13b8b6ddb063a7676eaeabc57884a389dcdf71a25ae6f7ea1bda",
+    "working_bytes_sha256": "57c9b9c739ccc222173135914b2f8b2ea6bb760e290755664a2de0d08fe8c883",
+    "unchanged_git_content": true
+  }
+]

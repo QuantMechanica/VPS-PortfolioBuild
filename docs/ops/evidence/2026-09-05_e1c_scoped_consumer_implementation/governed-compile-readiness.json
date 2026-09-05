@@ -1,0 +1,9 @@
+{
+  "ea_label": "QM_NewsScopeV1_CompileProbe",
+  "eligible": false,
+  "reason": "EA_LABEL_INVALID",
+  "queue_write": false,
+  "native_compile_ran": false,
+  "reason_detail": "Canonical classifier only accepts registered strategy labels and ACTIVE registry/magic rows; the unbound non-trading include probe has no such identity. No supported non-inventory compile enqueue was found.",
+  "classifier_source_sha256": "8869130a90c57b228e5053ef9e25f8c75717090d6e60d86d38c9fadbf69b6647"
+}
