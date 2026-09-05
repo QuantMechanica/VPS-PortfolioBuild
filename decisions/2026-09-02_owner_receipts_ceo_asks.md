@@ -27,4 +27,6 @@
 
 | 18 | Ratify the predeclared FTMO positive-evidence acceptance test (docs/ops/OWNER_VORLAGE_2026-09-05_ftmo_positive_evidence_test.md) incl. OQ-2: admissible population = single corrected diagnostic window vs. a powered sealed holdout | PENDING (Vorlage submitted 04:02Z 2026-09-05; ratification before any result is opened) | Seal procedure runs only after YES; Codex review c11c6a9f in flight. |
 
+| 19 | FTMO contract V1 open choices: C-2 elevate the rulepack go_criteria (breach upper-95 <= 10 %, P2 >= 85 %, joint >= 65 %, snapshot freshness 7 d) from RESEARCH_CONTRACT_ONLY to ratified-but-INERT gates; C-6 scope an admissible breach/joint estimator (timebox extension); OQ-9 concentration unit (sleeve vs EA: 10.0 unit-weight budget vs Q15 10-15 EAs) | PENDING (Vorlage = contract doc, submitted 05:05Z 2026-09-05) | Recommendation: C-2 YES as declared-but-inert; C-6 commission the timebox breach-upper/joint extension (Codex) before those gates bind; OQ-9 define sleeve = (EA, symbol) identity and keep the 10.0 budget. Implementation of the ratified parts runs now (814de468). |
+
 Standing order (verbatim): "Weitermachen, bis Portfolio steht, mit Loop kontrollieren und Fabrik am Laufen halten!"
