@@ -436,6 +436,13 @@ def _default_metric_reader(conn: sqlite3.Connection) -> Callable[[str], tuple[st
         status, verdict, evidence, payload_json = row
         if verdict == "INFRA_FAIL":
             return ("INFRA", None)
+        if status == "done" and verdict == "SKIPPED_PRESCREEN":
+            try:
+                from tools.strategy_farm import dl089_prescreen as prescreen
+                receipt = prescreen.validate_receipt(Path(evidence), json.loads(payload_json or "{}"))
+            except (OSError, ValueError, TypeError, KeyError) as exc:
+                raise CensusError(f"{work_item_id}: invalid prescreen receipt: {exc}") from exc
+            return ("SKIPPED_EXCLUDED", {"receipt": receipt})
         if status == "done" and verdict == pruning.SKIPPED_VERDICT:
             if not evidence:
                 raise CensusError(f"{work_item_id}: skip receipt path missing")

@@ -12375,6 +12375,7 @@ CANONICAL_PARENT_CHILD_VERDICTS = frozenset({
     # excluded by an authenticated earlier-year activity-floor breach. Like
     # MEASURED, this resolves a census row but is never a gate pass.
     "SKIPPED_EXCLUDED",
+    "SKIPPED_PRESCREEN",
 })
 PHYSICALLY_TERMINAL_WORK_ITEM_STATUSES = frozenset({"done", "failed"})
 PARENT_PROGRESSION_MAP = {

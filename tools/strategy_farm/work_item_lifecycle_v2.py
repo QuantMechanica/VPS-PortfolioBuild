@@ -55,6 +55,7 @@ SUCCEEDED_VERDICTS = frozenset(
         # earlier-year activity-floor breach is terminally resolved, but is not
         # a gate pass or an economic result.
         "SKIPPED_EXCLUDED",
+        "SKIPPED_PRESCREEN",
     }
 )
 WAITING_INPUT_VERDICTS = frozenset(

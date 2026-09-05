@@ -872,11 +872,19 @@ def _program_binding_guard(
                 f"cell_declaration={sorted(declaration_bindings | extra_declaration_bindings)}"
             )
         if row_ids != expected_ids or row_keys != expected_keys:
-            raise MatrixServiceError(
-                "PROGRAM_CELL_IDENTITY_MISMATCH: "
-                f"program={program_id} rows={len(row_ids)} expected={len(expected_ids)} "
-                f"reruns={len(rerun_rows)} derived={len(derived_rows)}"
-            )
+            from tools.strategy_farm.dl089_prescreen import staged_keys
+            staged_path = artifact_root / program_id / "ledger.json"
+            staged = json.loads(staged_path.read_text()) if staged_path.exists() else {}
+            admitted = staged_keys(staged)
+            admitted_ids = {str(c["work_item_id"]) for c in declared_cells if c["cell_key"] in (admitted or set())}
+            if (admitted is None or row_keys != admitted or row_ids != admitted_ids
+                    or staged.get("q12_work_item_id") != q12_id
+                    or staged.get("q12_declaration_sha256") != declaration_sha):
+                raise MatrixServiceError(
+                    "PROGRAM_CELL_IDENTITY_MISMATCH: "
+                    f"program={program_id} rows={len(row_ids)} expected={len(expected_ids)} "
+                    f"reruns={len(rerun_rows)} derived={len(derived_rows)}"
+                )
 
     ledger_path = artifact_root / program_id / "ledger.json"
     ledger_q12 = None
@@ -1040,7 +1048,7 @@ def _finalize_from_terminal_ledger(
                 "cell_key": _payload(row).get("cell_key"),
             }
         )
-    resolved_verdicts = {selector.census_measured_verdict(), pruning.SKIPPED_VERDICT}
+    resolved_verdicts = {selector.census_measured_verdict(), pruning.SKIPPED_VERDICT, "SKIPPED_PRESCREEN"}
     if not evidence_rows or any(
         str(item["status"]).lower() != "done"
         or str(item["verdict"]).upper() not in resolved_verdicts
@@ -1119,6 +1127,11 @@ def _service_existing_matrix(
     ledger_path = program_dir / "ledger.json"
     if not ledger_path.is_file():
         raise MatrixServiceError(f"matrix rows exist without ledger: {q12_row['id']}")
+    staged_ledger = json.loads(ledger_path.read_text())
+    if apply and staged_ledger.get("prescreen_contract"):
+        census.enqueue(staged_ledger,db_path=db_path,ledger_path=ledger_path,
+            q02_ea_id=staged_ledger["ea_id"],parent_work_item_id=str(q12_row["id"]),
+            declaration_sha256=str(declaration["declaration_sha256"]),runner_revision=RUNNER_REVISION)
     boost = (
         census.boost(
             ledger_path=ledger_path,

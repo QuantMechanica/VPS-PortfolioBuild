@@ -195,11 +195,19 @@ def arm_frontier(
         by_id[work_item_id] = row
     missing = sorted(set(declared_by_id) - set(by_id))
     extras = sorted(set(by_id) - set(declared_by_id))
-    if missing or extras:
+    try:
+        from tools.strategy_farm.dl089_prescreen import staged_keys
+        admitted = staged_keys(dict(sealed_ledger))
+    except (ValueError, TypeError, KeyError) as exc:
+        raise SchedulingError(f"staged admission invalid: {exc}") from exc
+    expected_present = {wid for wid,c in declared_by_id.items() if admitted is None or c["cell_key"] in admitted}
+    if extras or (missing and admitted is None) or (admitted is not None and set(by_id) != expected_present):
         raise SchedulingError(f"matrix row coverage mismatch missing={missing} extras={extras}")
 
     ordered_rows: dict[str, list[Mapping[str, Any]]] = defaultdict(list)
     for work_item_id, declared in declared_by_id.items():
+        if work_item_id not in by_id:
+            continue
         row = by_id[work_item_id]
         payload = _row_payload(row)
         for key in ("program_id", "cell_key", "arm", "year", "direction", "predicate_id"):
