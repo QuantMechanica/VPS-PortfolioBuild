@@ -1,0 +1,467 @@
+{
+  "label": "after_controlled",
+  "source_checkout": "C:\\QM\\worktrees\\codex-claim-lock-cost-20260905",
+  "snapshot_bytes": 734773248,
+  "total_seconds": 18.67177989985794,
+  "factory_lock_seconds": [
+    2.120735500007868
+  ],
+  "write_transaction_seconds": [
+    0.014198899967595935
+  ],
+  "result": {
+    "claimed": true,
+    "claim_class": "priority",
+    "claim_admission_mode": null,
+    "preclaim_payload_sha256": "957994dd62e6db1149fecf539e000a600a624b1b9d7bba2f237b3004ccba5231",
+    "claim_write_lock_ms": 14.224,
+    "ram_class_skipped": 0,
+    "census_lane_protection_skipped": 0,
+    "factory_admission_wait_seconds": 0.016
+  },
+  "claimed_item_id": "31f12573-d903-4386-a857-cad2b445d63a",
+  "sql": [
+    {
+      "sql": "PRAGMA busy_timeout=750",
+      "in_factory_lock": true,
+      "in_transaction": false,
+      "seconds": 1.910002902150154e-05,
+      "plan": []
+    },
+    {
+      "sql": "PRAGMA query_only=ON",
+      "in_factory_lock": true,
+      "in_transaction": false,
+      "seconds": 4.800036549568176e-06,
+      "plan": []
+    },
+    {
+      "sql": "SELECT * FROM work_items WHERE status='active' AND claimed_by=? LIMIT 1",
+      "in_factory_lock": true,
+      "in_transaction": false,
+      "seconds": 0.002701100194826722,
+      "plan": [
+        [
+          4,
+          0,
+          0,
+          "SEARCH work_items USING INDEX idx_work_items_status_kind (status=?)"
+        ]
+      ]
+    },
+    {
+      "sql": "SELECT MAX(claimed_at_utc) FROM claim_class_ledger",
+      "in_factory_lock": true,
+      "in_transaction": false,
+      "seconds": 0.00042099994607269764,
+      "plan": [
+        [
+          3,
+          0,
+          0,
+          "SEARCH claim_class_ledger"
+        ]
+      ]
+    },
+    {
+      "sql": "SELECT id, ea_id, symbol, payload_json FROM work_items WHERE status='active'",
+      "in_factory_lock": true,
+      "in_transaction": false,
+      "seconds": 9.530014358460903e-05,
+      "plan": [
+        [
+          3,
+          0,
+          0,
+          "SEARCH work_items USING INDEX idx_work_items_status_kind (status=?)"
+        ]
+      ]
+    },
+    {
+      "sql": "\n        SELECT ea_id, symbol\n        FROM work_items\n        WHERE status='active' AND symbol IS NOT NULL AND symbol != ''\n        ",
+      "in_factory_lock": true,
+      "in_transaction": false,
+      "seconds": 4.850002005696297e-05,
+      "plan": [
+        [
+          4,
+          0,
+          0,
+          "SEARCH work_items USING INDEX idx_work_items_status_kind (status=?)"
+        ]
+      ]
+    },
+    {
+      "sql": "SELECT id,phase,ea_id,symbol,payload_json FROM work_items WHERE status='active' AND upper(phase)='OPT_CENSUS'",
+      "in_factory_lock": true,
+      "in_transaction": false,
+      "seconds": 4.329998046159744e-05,
+      "plan": [
+        [
+          3,
+          0,
+          0,
+          "SEARCH work_items USING INDEX idx_work_items_status_kind (status=?)"
+        ]
+      ]
+    },
+    {
+      "sql": "SELECT DISTINCT ea_id FROM work_items WHERE status='active' AND phase='Q04'",
+      "in_factory_lock": true,
+      "in_transaction": false,
+      "seconds": 8.25999304652214e-05,
+      "plan": [
+        [
+          4,
+          0,
+          0,
+          "SEARCH work_items USING INDEX idx_work_items_status_kind (status=?)"
+        ],
+        [
+          17,
+          0,
+          0,
+          "USE TEMP B-TREE FOR DISTINCT"
+        ]
+      ]
+    },
+    {
+      "sql": "SELECT ea_id, payload_json FROM work_items WHERE status='active'",
+      "in_factory_lock": true,
+      "in_transaction": false,
+      "seconds": 3.120000474154949e-05,
+      "plan": [
+        [
+          3,
+          0,
+          0,
+          "SEARCH work_items USING INDEX idx_work_items_status_kind (status=?)"
+        ]
+      ]
+    },
+    {
+      "sql": "\n        SELECT w.*,\n          CASE\n            -- OWNER-DEC-13036-XAU extends the economic search universe, but\n            -- these fresh Q02 rows must never starve the rebaseline path to\n            -- 25.  Keep them below ordinary AND recovery/backfill work.\n            WHEN w.payload_json LIKE '%\"universe_expansion\": true%' THEN 1\n            ELSE 0 END AS _universe_expansion_rank,\n          CASE\n            -- Recovery-class rows (classify_recovery_pending.py marker) sort LAST so\n            -- they are only ever reached when no eligible priority/frontier row\n            -- remains (idle-only, Operating Rule 22). The claim loop applies the\n            -- durable rolling cap before actually taking one.\n            WHEN w.payload_json LIKE '%\"recovery_class\":%' THEN 1\n            ELSE 0 END AS _recovery_rank,\n          -- Amendment B (OWNER-DEC-PRE0803-RECOMPILE-SLOTORDER-AMENDB-20260903\n          -- \u00a73): an exact append-only lineage rerun that is marked\n          -- priority_track at Q03..Q09 is the critical path to a Q10 lock and\n          -- ranks ahead of every other priority-tracked row.  The column is\n          -- always projected (diagnostics read it); only the top-down ORDER BY\n          -- consumes it, so the cold order is byte-for-byte the old one.\n          CASE WHEN json_valid(w.payload_json)=1 AND (json_extract(w.payload_json, '$.append_only_rerun')=1 OR (json_extract(w.payload_json, '$.fresh_q02_seed')=1 AND COALESCE(json_extract(w.payload_json, '$.requalification_old_work_item_id'), '') <> '' AND w.phase='Q02') OR (COALESCE(json_extract(w.payload_json, '$.supersedes_held_q09_work_item'), '') <> '' AND w.phase='Q10_NEWS') OR w.phase='Q11') AND json_type(w.payload_json, '$.priority_track')='true' AND w.phase IN ('Q02', 'Q03', 'Q04', 'Q05', 'Q06', 'Q07', 'Q08', 'Q09', 'Q10_NEWS', 'Q11') AND COALESCE(json_extract(w.payload_json, '$.poison_pill_priority_override'), 0) <> 1 THEN 0 WHEN w.phase='Q10_NEWS' AND json_valid(w.payload_json)=1 AND COALESCE(json_extract(w.payload_json, '$.news_expansion_of_work_item'), '') <> '' AND json_type(w.payload_json, '$.priority_track')='true' AND COALESCE(json_extract(w.payload_json, '$.poison_pill_priority_override'), 0) <> 1 AND EXISTS (SELECT 1 FROM work_items p WHERE p.id=json_extract(w.payload_json, '$.news_expansion_of_work_item') AND json_valid(p.payload_json)=1 AND (json_extract(p.payload_json, '$.append_only_rerun')=1 OR (json_extract(p.payload_json, '$.fresh_q02_seed')=1 AND COALESCE(json_extract(p.payload_json, '$.requalification_old_work_item_id'), '') <> '' AND p.phase='Q02') OR (COALESCE(json_extract(p.payload_json, '$.supersedes_held_q09_work_item'), '') <> '' AND p.phase='Q10_NEWS') OR p.phase='Q11') AND json_type(p.payload_json, '$.priority_track')='true' AND p.phase IN ('Q02', 'Q03', 'Q04', 'Q05', 'Q06', 'Q07', 'Q08', 'Q09', 'Q10_NEWS', 'Q11') AND COALESCE(json_extract(p.payload_json, '$.poison_pill_priority_override'), 0) <> 1) THEN 0 ELSE 1 END AS _lineage_rerun_rank,\n          CASE\n            WHEN json_valid(w.payload_json) = 1 THEN\n              CASE\n                -- A released COMPILE_EA row is a seconds-cheap prerequisite\n                -- when it is bound either to an open build task or to an\n                -- separately authorized append-only source repair.  Neither\n                -- may sit behind an unbounded priority-track measurement\n                -- programme: the compile worker owns no terminal64 process and\n                -- still revalidates its task/repair authority plus source hash\n                -- before producing evidence.  Keep the exception exact so an\n                -- unbound/legacy compile row cannot acquire emergency priority.\n                WHEN lower(COALESCE(w.kind, ''))='compile'\n                 AND w.phase='COMPILE_EA'\n                 AND COALESCE(json_extract(\n                   w.payload_json, '$.compile_contract_version'\n                 ), '')='qm.compile-ea-work-item/v1'\n                 AND (\n                   length(trim(COALESCE(json_extract(\n                     w.payload_json, '$.bound_build_task_id'\n                   ), ''))) > 0\n                   OR (\n                     json_extract(\n                       w.payload_json, '$.append_only_source_repair'\n                     )=1\n                     AND COALESCE(json_extract(\n                       w.payload_json, '$.compile_source_repair_contract_version'\n                     ), '')='qm.compile-ea-source-repair/v1'\n                     AND length(trim(COALESCE(json_extract(\n                       w.payload_json, '$.compile_source_repair_authority'\n                     ), ''))) > 0\n                   )\n                 )\n                THEN -1\n                WHEN lower(COALESCE(w.kind, ''))='q01_smoke'\n                 AND COALESCE(json_extract(\n                   w.payload_json, '$.q01_smoke_contract'\n                 ), '')='qm.q01.worker_bound_basket_smoke.v1'\n                THEN -1\n                WHEN json_type(w.payload_json, '$.priority_track') = 'true'\n                 AND COALESCE(json_extract(\n                   w.payload_json, '$.poison_pill_priority_override'\n                 ), 0) <> 1 THEN 0\n                ELSE 1\n              END\n            ELSE 1 END AS _priority_track_rank,\n          CASE\n            -- Once an annual matrix resolves, its WF-combo and numeric\n            -- measurements are the bounded critical path to selection. Rank\n            -- only the earliest non-terminal row in each explicitly marked\n            -- derived lane before annual frontier refills. The derived-row\n            -- generator marks every declared year, so treating the marker as\n            -- \"this row is the head\" lets an older updated_at on year N+1 beat\n            -- year N. Claim preflight then rejects N+1 and suppresses the lane\n            -- for the rest of that cycle. Derive the serial head here from the\n            -- same program/arm/year identity that the claim preflight uses;\n            -- all annual cells retain their prior order and gates.\n            WHEN upper(COALESCE(w.phase, ''))='OPT_CENSUS'\n             AND json_valid(w.payload_json)=1\n             AND upper(COALESCE(json_extract(\n               w.payload_json, '$.opt_census_stage'\n             ), '')) IN (\n               'WF_COMBO', 'WF_COMBO_RERUN',\n               'NUMERIC_BASELINE', 'NUMERIC_BASELINE_RERUN',\n               'NUMERIC', 'NUMERIC_RERUN',\n               'FINAL_FULLWINDOW', 'FINAL_FULLWINDOW_RERUN'\n             )\n             AND json_type(w.payload_json, '$.priority_track')='true'\n             AND json_type(\n               w.payload_json, '$.opt_census_frontier_priority'\n             )='true'\n             AND NOT EXISTS (\n               SELECT 1 FROM work_items earlier_derived\n               WHERE lower(COALESCE(earlier_derived.status, ''))\n                     IN ('pending', 'active')\n                 AND upper(COALESCE(earlier_derived.phase, ''))='OPT_CENSUS'\n                 AND json_valid(earlier_derived.payload_json)=1\n                 AND json_extract(\n                   earlier_derived.payload_json, '$.program_id'\n                 )=json_extract(w.payload_json, '$.program_id')\n                 AND json_extract(\n                   earlier_derived.payload_json, '$.arm'\n                 )=json_extract(w.payload_json, '$.arm')\n                 AND CAST(json_extract(\n                   earlier_derived.payload_json, '$.year'\n                 ) AS INTEGER) < CAST(json_extract(\n                   w.payload_json, '$.year'\n                 ) AS INTEGER)\n             ) THEN 0\n            ELSE 1 END AS _opt_census_post_census_rank,\n          CASE\n            -- DL-089 may inherit a broad OWNER priority flag on every census\n            -- row. The matrix service marks only authenticated arm heads so a\n            -- real frontier is considered before older non-frontier rows,\n            -- without clearing or weakening the OWNER priority decision.\n            WHEN upper(COALESCE(w.phase, ''))='OPT_CENSUS'\n             AND json_valid(w.payload_json)=1\n             AND json_type(\n               w.payload_json, '$.opt_census_frontier_priority'\n             )='true' THEN 0\n            ELSE 1 END AS _opt_census_frontier_rank,\n          CASE\n            -- When L>1, an already-running programme's second lane must not\n            -- repeatedly beat the authenticated head of an idle programme.\n            -- Otherwise a short gap between one programme's cells can persist\n            -- indefinitely even while K/G leave capacity free.  This is only a\n            -- tie-break among queue-priority rows; the transaction-local K/L/G,\n            -- symbol, duplicate-pair, and sealed-ledger checks remain final.\n            WHEN upper(COALESCE(w.phase, ''))='OPT_CENSUS'\n             AND json_valid(w.payload_json)=1\n             AND json_type(\n               w.payload_json, '$.opt_census_frontier_priority'\n             )='true'\n             AND length(trim(COALESCE(\n               json_extract(w.payload_json, '$.program_id'), ''\n             ))) > 0\n             AND json_extract(w.payload_json, '$.program_id') NOT IN (\n               SELECT DISTINCT json_extract(\n                 active_program.payload_json, '$.program_id'\n               ) FROM work_items active_program\n               WHERE lower(active_program.status)='active'\n                 AND upper(COALESCE(active_program.phase, ''))='OPT_CENSUS'\n                 AND json_valid(active_program.payload_json)=1\n                 AND length(trim(COALESCE(json_extract(\n                   active_program.payload_json, '$.program_id'\n                 ), ''))) > 0\n             ) THEN 0\n            ELSE 1 END AS _opt_census_idle_program_rank,\n          CASE\n            -- OWNER-DEC-PRE0803-...-AMENDB-20260903 (claim-selection half):\n            -- among the K admitted DL-089 programs the spare per-cell lanes\n            -- go to the highest-priority program -- the one whose Q12 owner\n            -- row carries the earliest OWNER queue-order timestamp\n            -- (set_dl089_queue_order.py writes payload.queue_order_at onto the\n            -- pending Q12 owner; earlier sorts first).  A census cell joins its\n            -- owner by payload.q12_work_item_id.  A cell whose owner has no\n            -- explicit queue order takes the sentinel (sorts after every real\n            -- timestamp), so it keeps today's behaviour and falls through to\n            -- the age term.  Ordered ONLY under the top-down selector, AFTER\n            -- the idle-program fairness key and BEFORE the age term, so an idle\n            -- admitted program still gets its first lane.\n            WHEN upper(COALESCE(w.phase, ''))='OPT_CENSUS'\n             AND json_valid(w.payload_json)=1\n             AND length(trim(COALESCE(\n               json_extract(w.payload_json, '$.q12_work_item_id'), ''\n             ))) > 0\n            THEN COALESCE(\n              (SELECT CASE WHEN json_valid(q12_owner.payload_json)=1\n                THEN json_extract(q12_owner.payload_json, '$.queue_order_at')\n                ELSE NULL END\n               FROM work_items q12_owner\n               WHERE q12_owner.id = json_extract(\n                 w.payload_json, '$.q12_work_item_id'\n               )\n               LIMIT 1),\n              '~QM_NO_QUEUE_ORDER'\n            )\n            ELSE '~QM_NO_QUEUE_ORDER' END\n            AS _opt_census_queue_order_rank,\n          MAX(0, CAST(COALESCE(julianday('now') - julianday(w.created_at), 0) / 7 AS INTEGER))\n            AS _age_weeks,\n          CASE w.phase\n            -- Downstream phases first so work drains rather than re-pooling at the\n            -- head of the pipeline. Legacy P-keys preserved at their original ranks.\n            -- A harness is a single short diagnostic run that gates a whole\n            -- programme (the pattern-permission census cannot start until the\n            -- MQL5 fixture verdict exists). Left in the ELSE-9 bucket it can never\n            -- win the main ordering term against a deep aged backlog -- the\n            -- HARNESS_PP_FIXTURE row sat pending from 2026-08-21T08:31 behind\n            -- ~2350 rows with no hold and no defect, simply out-ranked. Harness\n            -- rows are rare and terminal, so a head-of-queue rank cannot starve\n            -- production throughput.\n            WHEN 'HARNESS_PP_FIXTURE' THEN 0\n            WHEN 'Q02' THEN 9\n            WHEN 'Q03' THEN 8\n            WHEN 'Q04' THEN 7\n            WHEN 'Q05' THEN 6\n            WHEN 'Q06' THEN 5\n            WHEN 'Q07' THEN 4\n            WHEN 'Q08' THEN 3\n            WHEN 'Q09' THEN 2\n            WHEN 'Q10_NEWS' THEN 1\n            WHEN 'Q10_PORTFOLIO' THEN 1\n            WHEN 'Q11' THEN 0\n            WHEN 'Q10' THEN 1\n            WHEN 'P2' THEN 9\n            WHEN 'P3' THEN 8\n            WHEN 'P3.5' THEN 7\n            WHEN 'P4' THEN 6\n            WHEN 'P5' THEN 5\n            WHEN 'P5b' THEN 4\n            WHEN 'P5c' THEN 3\n            WHEN 'P6' THEN 2\n            WHEN 'P7' THEN 1\n            WHEN 'P8' THEN 0\n            -- OPT_CENSUS (DL-089 \u00a73) shares Q04's tier rank on purpose: the\n            -- optimization measurement pool must INTERLEAVE with the funnel, not\n            -- run ahead of it and not starve it. Annual OPT_CENSUS rows are not\n            -- priority_track, so their effective term is 10+tier-age = a plain\n            -- Q04 row's rank; every downstream funnel phase and every\n            -- priority_track row still drains first, while measurement\n            -- interleaves with ordinary Q04 admissions and out-ages Q02. Tied\n            -- to Q04's rank via the same formula _gate_priority_rank_sql() uses\n            -- (not a hardcoded literal) so a future incumbent-phase move (e.g.\n            -- 2026-08-23 v4: Q10->Q11 incumbent shifted Q04's tier 6->7) keeps\n            -- this arm in lockstep instead of silently drifting stale. Annual\n            -- matrix rows are ordinarily not priority_track; the bounded\n            -- post-census WF combo exception is ranked separately above.\n            WHEN 'OPT_CENSUS' THEN 7\n            -- COMPILE_EA (ordering decision 2026-08-22, Systemanalyse \u00a74.2/\u00a79.3):\n            -- a compile takes seconds and unblocks a whole EA's funnel entry,\n            -- while every backtest holds a terminal for hours. In the ELSE-9\n            -- bucket a compile row can never out-rank the aged backlog, so the\n            -- queue only drains when the factory happens to idle \u2014 observed as\n            -- the 2026-08-22 canary capacity-defer. Rank 1 (harness rationale:\n            -- rare, terminal, seconds-cheap) lets any freed slot clear compile\n            -- work first without measurably starving backtest throughput.\n            WHEN 'COMPILE_EA' THEN 1\n            ELSE 9 END AS _phase_rank,\n          CASE\n            WHEN w.phase='Q02'\n             AND json_valid(w.payload_json)=1\n             AND lower(trim(COALESCE(\n               json_extract(w.payload_json, '$.portfolio_scope'), ''\n             )))='basket'\n            THEN 0\n            ELSE 1 END AS _basket_q02_rank,\n          CASE\n            -- Within an otherwise-equal downstream tier, preserve ordinary\n            -- admission/round-chain work ahead of live-book diagnostics.  The\n            -- latter carry an explicit owner weight order in their sealed payload.\n            WHEN json_valid(w.payload_json)=1\n             AND json_extract(w.payload_json, '$.diagnostic_non_admission')=1\n            THEN COALESCE(json_extract(w.payload_json, '$.diagnostic_queue_rank'), 9999) + 1\n            ELSE 0 END AS _diagnostic_queue_rank,\n          CASE WHEN EXISTS (\n            SELECT 1 FROM work_items wp\n            WHERE wp.ea_id=w.ea_id AND wp.status='done' AND wp.verdict='PASS'\n          ) THEN 0 ELSE 1 END AS _winner_rank,\n          -- Asset-class tie-break (2026-07-09): within an otherwise-equal tier prefer\n          -- the classes that survive the Q04 net/commission gate\n          -- (METAL 12.2% > INDEX 6.9% > ENERGY 2.4% > FX 1.6%). Only reorders\n          -- pre-screens; promoted Q04+ survivors always beat any Q02 via _phase_rank.\n          CASE\n            WHEN upper(w.symbol) LIKE 'XAU%' OR upper(w.symbol) LIKE 'XAG%'\n              OR upper(w.symbol) LIKE 'XPT%' OR upper(w.symbol) LIKE 'XCU%' THEN 0\n            WHEN upper(w.symbol) LIKE 'SP500%' OR upper(w.symbol) LIKE 'NDX%'\n              OR upper(w.symbol) LIKE 'WS30%' OR upper(w.symbol) LIKE 'US30%'\n              OR upper(w.symbol) LIKE 'US2000%' OR upper(w.symbol) LIKE 'GDAXI%'\n              OR upper(w.symbol) LIKE 'GER40%' OR upper(w.symbol) LIKE 'UK100%'\n              OR upper(w.symbol) LIKE 'STOXX%' OR upper(w.symbol) LIKE '%225%'\n              OR upper(w.symbol) LIKE 'DAX%' THEN 1\n            WHEN upper(w.symbol) LIKE 'XTI%' OR upper(w.symbol) LIKE 'XBR%'\n              OR upper(w.symbol) LIKE 'XNG%' OR upper(w.symbol) LIKE 'WTI%'\n              OR upper(w.symbol) LIKE 'NGAS%' OR upper(w.symbol) LIKE '%OIL%' THEN 2\n            ELSE 3 END AS _asset_rank\n        FROM work_items w\n        WHERE w.status='pending'\n          -- Governed analytic declarations are control-plane rows, not one-run\n          -- terminal jobs.  In particular a DL-089 Q12 row declares 1,089\n          -- matrix/WF cells and must be expanded by dl089_matrix_service; a\n          -- generic run_smoke claim would manufacture a false gate verdict.\n          AND NOT (\n            lower(COALESCE(w.kind,''))='analytic'\n            AND json_valid(w.payload_json)=1\n            AND COALESCE(json_extract(w.payload_json,'$.execution_lane'),'')='GOVERNED_ANALYTIC_DISPATCH'\n          )\n          AND NOT (\n            json_valid(w.payload_json)=1\n            AND COALESCE(json_extract(w.payload_json,'$.routing_revision'),'')='dl089-annual-wf-cells-v1'\n          )\n          -- A historical top-level news alias is inspection-only under v3.\n          -- and legacy rows must never be claimed/re-executed under a new contract.\n          AND w.phase<>'Q10'\n          -- A NEWS-lane row becomes executable only after bind-q09-plan writes\n          -- the complete self-hashed dispatch binding. New enqueue paths also\n          -- install a database hold so already-running workers enforce this\n          -- boundary before they are restarted onto this selector version.\n          AND (\n            w.phase<>'Q10_NEWS'\n            OR (\n              json_valid(w.payload_json)=1\n              AND json_extract(w.payload_json, '$.q09_binding_version')='q09-news-dispatch-binding/v1'\n              AND json_extract(w.payload_json, '$.q09_run_plan_path') IS NOT NULL\n              AND json_extract(w.payload_json, '$.q09_run_plan_file_sha256') IS NOT NULL\n              AND json_extract(w.payload_json, '$.q09_dispatch_binding_sha256') IS NOT NULL\n            )\n          )\n          AND NOT EXISTS (\n            SELECT 1 FROM work_item_holds h\n            WHERE h.work_item_id=w.id AND h.active=1\n          )\n          -- Canonically superseded history is never executable. A pending row\n          -- may remain immutable while its replacement proceeds; removing its\n          -- operational hold must not make the historical row claimable again.\n          AND NOT EXISTS (\n            SELECT 1 FROM work_item_supersedes s\n            WHERE s.work_item_id=w.id\n          )\n          AND NOT EXISTS (\n            SELECT 1 FROM poison_pill_quarantine q\n            WHERE q.ea_id=w.ea_id AND q.symbol=w.symbol AND q.phase=w.phase\n              AND q.active=1\n          )\n        ORDER BY _universe_expansion_rank ASC, _recovery_rank ASC, _priority_track_rank ASC, _lineage_rerun_rank ASC, CASE WHEN w.phase='Q02' AND json_valid(w.payload_json)=1 AND json_extract(w.payload_json, '$.schema')='qm.dl089-measurement-q02-prerequisite/v1' THEN -1 ELSE (CASE w.phase WHEN 'HARNESS_PP_FIXTURE' THEN 0 WHEN 'COMPILE_EA' THEN 0 WHEN 'Q12' THEN 0 WHEN 'Q13' THEN 0 WHEN 'Q14' THEN 0 WHEN 'OPT_CENSUS' THEN 0 WHEN 'Q11' THEN 1 WHEN 'Q10' THEN 2 WHEN 'Q10_NEWS' THEN 2 WHEN 'Q10_PORTFOLIO' THEN 2 WHEN 'Q02' THEN 10 WHEN 'Q03' THEN 9 WHEN 'Q04' THEN 8 WHEN 'Q05' THEN 7 WHEN 'Q06' THEN 6 WHEN 'Q07' THEN 5 WHEN 'Q08' THEN 4 WHEN 'Q09' THEN 3 WHEN 'Q10_NEWS' THEN 2 WHEN 'Q10_PORTFOLIO' THEN 2 ELSE 99 END) END ASC, _opt_census_post_census_rank ASC, _opt_census_frontier_rank ASC, _opt_census_idle_program_rank ASC, _opt_census_queue_order_rank ASC, (_phase_rank - _age_weeks) ASC, _basket_q02_rank ASC, _diagnostic_queue_rank ASC, _winner_rank ASC, _asset_rank ASC, w.updated_at ASC, w.created_at ASC\n    ",
+      "in_factory_lock": true,
+      "in_transaction": false,
+      "seconds": 1.9858969000633806,
+      "plan": [
+        [
+          4,
+          0,
+          0,
+          "SEARCH w USING INDEX idx_work_items_status_kind (status=?)"
+        ],
+        [
+          50,
+          0,
+          0,
+          "CORRELATED SCALAR SUBQUERY 6"
+        ],
+        [
+          55,
+          50,
+          0,
+          "SEARCH h USING INDEX sqlite_autoindex_work_item_holds_1 (work_item_id=?)"
+        ],
+        [
+          68,
+          0,
+          0,
+          "CORRELATED SCALAR SUBQUERY 7"
+        ],
+        [
+          72,
+          68,
+          0,
+          "SEARCH s USING COVERING INDEX sqlite_autoindex_work_item_supersedes_1 (work_item_id=?)"
+        ],
+        [
+          83,
+          0,
+          0,
+          "CORRELATED SCALAR SUBQUERY 8"
+        ],
+        [
+          88,
+          83,
+          0,
+          "SEARCH q USING INDEX sqlite_autoindex_poison_pill_quarantine_1 (ea_id=? AND symbol=? AND phase=?)"
+        ],
+        [
+          384,
+          0,
+          0,
+          "CORRELATED SCALAR SUBQUERY 1"
+        ],
+        [
+          389,
+          384,
+          0,
+          "SEARCH p USING INDEX sqlite_autoindex_work_items_1 (id=?)"
+        ],
+        [
+          600,
+          0,
+          0,
+          "CORRELATED SCALAR SUBQUERY 2"
+        ],
+        [
+          605,
+          600,
+          0,
+          "SEARCH earlier_derived USING INDEX idx_work_items_census_earlier (<expr>=? AND <expr>=? AND <expr><?)"
+        ],
+        [
+          664,
+          0,
+          0,
+          "LIST SUBQUERY 3"
+        ],
+        [
+          668,
+          664,
+          0,
+          "SCAN active_program USING INDEX idx_work_items_census_active_program"
+        ],
+        [
+          721,
+          0,
+          0,
+          "CORRELATED SCALAR SUBQUERY 4"
+        ],
+        [
+          730,
+          721,
+          0,
+          "SEARCH q12_owner USING INDEX sqlite_autoindex_work_items_1 (id=?)"
+        ],
+        [
+          871,
+          0,
+          0,
+          "CORRELATED SCALAR SUBQUERY 5"
+        ],
+        [
+          876,
+          871,
+          0,
+          "SEARCH wp USING INDEX idx_work_items_verdict_ea (verdict=? AND ea_id=?)"
+        ],
+        [
+          988,
+          0,
+          0,
+          "USE TEMP B-TREE FOR ORDER BY"
+        ]
+      ]
+    },
+    {
+      "sql": "SELECT phase, payload_json FROM work_items WHERE status='active' AND (phase IN (?, ?, ?, ?) OR upper(phase) LIKE '%\\_NEWS' ESCAPE '\\')",
+      "in_factory_lock": true,
+      "in_transaction": false,
+      "seconds": 0.00019979989156126976,
+      "plan": [
+        [
+          3,
+          0,
+          0,
+          "SEARCH work_items USING INDEX idx_work_items_status_kind (status=?)"
+        ]
+      ]
+    },
+    {
+      "sql": "SELECT id, ea_id, phase, symbol, payload_json FROM work_items WHERE status='active'",
+      "in_factory_lock": true,
+      "in_transaction": false,
+      "seconds": 6.579980254173279e-05,
+      "plan": [
+        [
+          3,
+          0,
+          0,
+          "SEARCH work_items USING INDEX idx_work_items_status_kind (status=?)"
+        ]
+      ]
+    },
+    {
+      "sql": "PRAGMA query_only=OFF",
+      "in_factory_lock": true,
+      "in_transaction": false,
+      "seconds": 1.4299992471933365e-05,
+      "plan": []
+    },
+    {
+      "sql": "BEGIN IMMEDIATE",
+      "in_factory_lock": true,
+      "in_transaction": false,
+      "seconds": 1.5399884432554245e-05,
+      "plan": []
+    },
+    {
+      "sql": "SELECT * FROM work_items WHERE id=?",
+      "in_factory_lock": true,
+      "in_transaction": true,
+      "seconds": 0.0005775997415184975,
+      "plan": [
+        [
+          3,
+          0,
+          0,
+          "SEARCH work_items USING INDEX sqlite_autoindex_work_items_1 (id=?)"
+        ]
+      ]
+    },
+    {
+      "sql": "SELECT phase FROM work_items WHERE id=?",
+      "in_factory_lock": true,
+      "in_transaction": true,
+      "seconds": 2.850010059773922e-05,
+      "plan": [
+        [
+          3,
+          0,
+          0,
+          "SEARCH work_items USING INDEX sqlite_autoindex_work_items_1 (id=?)"
+        ]
+      ]
+    },
+    {
+      "sql": "\n                        SELECT 1\n                        WHERE EXISTS (\n                            SELECT 1 FROM work_item_holds\n                            WHERE work_item_id=? AND active=1\n                        ) OR EXISTS (\n                            SELECT 1 FROM work_item_supersedes\n                            WHERE work_item_id=?\n                        )\n                        ",
+      "in_factory_lock": true,
+      "in_transaction": true,
+      "seconds": 3.740028478205204e-05,
+      "plan": [
+        [
+          1,
+          0,
+          0,
+          "SCAN CONSTANT ROW"
+        ],
+        [
+          4,
+          0,
+          0,
+          "SCALAR SUBQUERY 1"
+        ],
+        [
+          9,
+          4,
+          0,
+          "SEARCH work_item_holds USING INDEX sqlite_autoindex_work_item_holds_1 (work_item_id=?)"
+        ],
+        [
+          24,
+          0,
+          0,
+          "SCALAR SUBQUERY 2"
+        ],
+        [
+          28,
+          24,
+          0,
+          "SEARCH work_item_supersedes USING COVERING INDEX sqlite_autoindex_work_item_supersedes_1 (work_item_id=?)"
+        ]
+      ]
+    },
+    {
+      "sql": "\n                        UPDATE work_items\n                        SET status='active', claimed_by=?, payload_json=?, updated_at=?\n                        WHERE id=? AND status='pending' AND claimed_by IS NULL\n                          AND NOT EXISTS (\n                            SELECT 1 FROM work_item_holds h\n                            WHERE h.work_item_id=work_items.id AND h.active=1\n                          )\n                          AND NOT EXISTS (\n                            SELECT 1 FROM work_item_supersedes s\n                            WHERE s.work_item_id=work_items.id\n                          )\n                        ",
+      "in_factory_lock": true,
+      "in_transaction": true,
+      "seconds": 0.003364299889653921,
+      "plan": [
+        [
+          5,
+          0,
+          0,
+          "SEARCH work_items USING INDEX sqlite_autoindex_work_items_1 (id=?)"
+        ],
+        [
+          17,
+          0,
+          0,
+          "CORRELATED SCALAR SUBQUERY 1"
+        ],
+        [
+          22,
+          17,
+          0,
+          "SEARCH h USING INDEX sqlite_autoindex_work_item_holds_1 (work_item_id=?)"
+        ],
+        [
+          35,
+          0,
+          0,
+          "CORRELATED SCALAR SUBQUERY 2"
+        ],
+        [
+          39,
+          35,
+          0,
+          "SEARCH s USING COVERING INDEX sqlite_autoindex_work_item_supersedes_1 (work_item_id=?)"
+        ]
+      ]
+    },
+    {
+      "sql": "CREATE TABLE IF NOT EXISTS claim_class_ledger ( seq INTEGER PRIMARY KEY AUTOINCREMENT, claimed_at_utc TEXT NOT NULL, terminal TEXT, work_item_id TEXT, claim_class TEXT NOT NULL CHECK (claim_class in ('priority', 'recovery')))",
+      "in_factory_lock": true,
+      "in_transaction": true,
+      "seconds": 1.1699972674250603e-05,
+      "plan": []
+    },
+    {
+      "sql": "INSERT INTO claim_class_ledger (claimed_at_utc, terminal, work_item_id, claim_class) VALUES (?,?,?,?)",
+      "in_factory_lock": true,
+      "in_transaction": true,
+      "seconds": 9.820004925131798e-05,
+      "plan": []
+    },
+    {
+      "sql": "DELETE FROM claim_class_ledger WHERE seq <= (SELECT COALESCE(MAX(seq), 0) FROM claim_class_ledger) - ?",
+      "in_factory_lock": true,
+      "in_transaction": true,
+      "seconds": 3.210012800991535e-05,
+      "plan": [
+        [
+          3,
+          0,
+          0,
+          "SEARCH claim_class_ledger USING INTEGER PRIMARY KEY (rowid<?)"
+        ],
+        [
+          7,
+          0,
+          0,
+          "SCALAR SUBQUERY 1"
+        ],
+        [
+          12,
+          7,
+          0,
+          "SEARCH claim_class_ledger"
+        ]
+      ]
+    },
+    {
+      "sql": "PRAGMA query_only=ON",
+      "in_factory_lock": true,
+      "in_transaction": false,
+      "seconds": 2.4200184270739555e-05,
+      "plan": []
+    },
+    {
+      "sql": "SELECT * FROM work_items WHERE id=?",
+      "in_factory_lock": true,
+      "in_transaction": false,
+      "seconds": 0.00011890009045600891,
+      "plan": [
+        [
+          3,
+          0,
+          0,
+          "SEARCH work_items USING INDEX sqlite_autoindex_work_items_1 (id=?)"
+        ]
+      ]
+    }
+  ],
+  "scope": "Disposable snapshot; OS resources and external sealed-ledger preflights stubbed; no runner or live DB write"
+}

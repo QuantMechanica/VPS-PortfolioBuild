@@ -1,0 +1,467 @@
+diff --git a/tools/strategy_farm/claim_wait_turn.py b/tools/strategy_farm/claim_wait_turn.py
+new file mode 100644
+index 0000000000..3ab9b54362
+--- /dev/null
++++ b/tools/strategy_farm/claim_wait_turn.py
+@@ -0,0 +1,63 @@
++"""Bounded FIFO admission among worker claimants; the factory lock still owns safety."""
++from __future__ import annotations
++
++import re
++import time
++import uuid
++from pathlib import Path
++
++_TICKET = re.compile(r"^(\d{20})-(\d{20})-([0-9a-f]{32})\.ticket$")
++
++
++class ClaimWaitTurn:
++    """One acquisition turn. Expired/crashed waiters cannot obstruct later turns.
++
++    Monotonic clocks share a time base on this host. Tickets convey only queue
++    order; they never release or replace FACTORY_MUTATION.lock. Other mutators
++    retain that existing interlock and can cause a bounded acquisition refusal.
++    """
++
++    def __init__(self, lock_path: Path, deadline: float):
++        self.directory = lock_path.with_name(lock_path.name + ".claim_waiters")
++        self.deadline = deadline
++        self.path: Path | None = None
++        self.nonce = uuid.uuid4().hex
++        self.acquired_at: float | None = None
++
++    def __enter__(self):
++        self.directory.mkdir(parents=True, exist_ok=True)
++        # perf_counter has sub-millisecond resolution on Python 3.11/Windows;
++        # monotonic can share a 15 ms tick across several arriving processes.
++        self.path = self.directory / f"{time.perf_counter_ns():020d}-{int(self.deadline * 1e9):020d}-{self.nonce}.ticket"
++        with self.path.open("xb") as handle:
++            handle.write(self.nonce.encode("ascii"))
++        return self
++
++    def is_head(self) -> bool:
++        now = time.monotonic_ns()
++        if now >= int(self.deadline * 1e9) or self.path is None:
++            return False
++        live = []
++        for path in self.directory.glob("*.ticket"):
++            match = _TICKET.fullmatch(path.name)
++            if match is None:
++                continue
++            expiry = int(match[2])
++            if expiry > now:
++                live.append(path.name)
++            elif expiry < now - 60_000_000_000:
++                # Only an expired, nonce-matching coordination ticket is pruned.
++                try:
++                    if path.read_bytes() == match[3].encode("ascii"):
++                        path.unlink()
++                except OSError:
++                    pass
++        return bool(live) and self.path.name == min(live)
++
++    def __exit__(self, *args):
++        if self.path is not None:
++            try:
++                if self.path.read_bytes() == self.nonce.encode("ascii"):
++                    self.path.unlink()
++            except OSError:
++                pass
+diff --git a/tools/strategy_farm/farmctl.py b/tools/strategy_farm/farmctl.py
+index 417f7e8de9..a40b257544 100644
+--- a/tools/strategy_farm/farmctl.py
++++ b/tools/strategy_farm/farmctl.py
+@@ -2908,7 +2908,37 @@ def execute_pending_claim_order(
+     return rows
+ 
+ 
+-def recovery_claim_allowed(conn: sqlite3.Connection) -> bool:
++def prepare_pending_claim_snapshot(conn: sqlite3.Connection) -> dict[str, Any]:
++    """Materialize exact queue order before acquiring the global mutation lock.
++
++    A persistent data_version poller proves the snapshot unchanged at use time.
++    Age-boundary expiry and SQL identity preserve the selector's ordering rules.
++    A racing commit causes a cheap refusal, never a rebuild under the lock.
++    """
++    key = _claim_order_conn_key(conn)
++    version = _claim_order_data_version(key) if key else None
++    started, wall = time.monotonic(), time.time()
++    sql = pending_claim_order_sql()
++    rows = execute_pending_claim_order(conn)
++    flip = _seconds_to_earliest_age_flip(rows, wall)
++    lifetime = min(5.0, flip) if flip is not None else 5.0
++    return {"db_file": key, "data_version": version, "sql": sql,
++            "poller": _CLAIM_ORDER_POLLERS.get((key, threading.get_ident())),
++            "expires_monotonic": started + lifetime, "rows": rows}
++
++
++def pending_claim_snapshot_valid(conn: sqlite3.Connection, snapshot: dict[str, Any] | None) -> bool:
++    if not snapshot or snapshot.get("data_version") is None:
++        return False
++    key = _claim_order_conn_key(conn)
++    return bool(key and key == snapshot["db_file"]
++                and time.monotonic() < snapshot["expires_monotonic"]
++                and pending_claim_order_sql() == snapshot["sql"]
++                and _claim_order_data_version(key) == snapshot["data_version"]
++                and snapshot.get("poller") is _CLAIM_ORDER_POLLERS.get((key, threading.get_ident())))
++
++
++def recovery_claim_allowed(conn: sqlite3.Connection) -> bool:
+     """Durable rolling idle-cap check. MUST be called inside the claim transaction.
+ 
+     Returns True iff a recovery-class row may be claimed now.
+@@ -3381,8 +3411,24 @@ def _init_db_once(root: Path) -> None:
+                 FOREIGN KEY(parent_task_id) REFERENCES tasks(id)
+             );
+ 
+-            CREATE INDEX IF NOT EXISTS idx_work_items_status_kind
+-                ON work_items(status, kind);
++            CREATE INDEX IF NOT EXISTS idx_work_items_status_kind
++                ON work_items(status, kind);
++            -- Exact expression/partial indexes for the census ordering probes.
++            -- Keep the existing case/NULL/JSON semantics and ordering unchanged.
++            CREATE INDEX IF NOT EXISTS idx_work_items_census_earlier
++                ON work_items(
++                    json_extract(payload_json, '$.program_id'),
++                    json_extract(payload_json, '$.arm'),
++                    CAST(json_extract(payload_json, '$.year') AS INTEGER)
++                )
++                WHERE lower(COALESCE(status, '')) IN ('pending', 'active')
++                  AND upper(COALESCE(phase, ''))='OPT_CENSUS'
++                  AND json_valid(payload_json)=1;
++            CREATE INDEX IF NOT EXISTS idx_work_items_census_active_program
++                ON work_items(json_extract(payload_json, '$.program_id'))
++                WHERE lower(status)='active'
++                  AND upper(COALESCE(phase, ''))='OPT_CENSUS'
++                  AND json_valid(payload_json)=1;
+             CREATE INDEX IF NOT EXISTS idx_work_items_parent
+                 ON work_items(parent_task_id);
+             CREATE INDEX IF NOT EXISTS idx_work_items_ea_phase
+diff --git a/tools/strategy_farm/terminal_worker.py b/tools/strategy_farm/terminal_worker.py
+index 5d9d50b90e..8504410512 100644
+--- a/tools/strategy_farm/terminal_worker.py
++++ b/tools/strategy_farm/terminal_worker.py
+@@ -56,6 +56,7 @@ import opt_census_pruning
+ import opt_census_select
+ from framework.scripts._phase_utils import cold_cache_summary_signature
+ from factory_mutation_lock import FactoryMutationLock, path_for_factory_flag
++from claim_wait_turn import ClaimWaitTurn
+ from mutation_lock_observation import observe_lock_owner
+ try:
+     from sqlite_busy import (
+@@ -120,7 +121,7 @@ CUSTOM_HISTORY_GATE_DEFER_ACTIONS = frozenset(
+     }
+ )
+ FACTORY_ADMISSION_LOCK_TIMEOUT_SECONDS = 5.0
+-FACTORY_ADMISSION_LOCK_POLL_SECONDS = 0.01
++FACTORY_ADMISSION_LOCK_POLL_SECONDS = 0.05
+ # DL-089 claim-boundary pruning may parse and hash multi-gigabyte native
+ # reports.  Serialize that backstop on its own lock so one worker performs the
+ # expensive check while peers remain free to claim non-census work.  This lock
+@@ -4471,6 +4472,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
+         ],
+     ] = {}
+     skip_unchecked_history = False
++    pending_order_snapshot = None
+ 
+     # Prime the most likely candidate before the first global-lock acquisition.
+     # This keeps the common one-row claim path to a single OFF-check/write
+@@ -4483,7 +4485,8 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
+             # claim_atomic.  execute_pending_claim_order returns the exact
+             # rows _priority_pending_query() would, and the head row is the
+             # fetchone this prime needs.
+-            _primed_order = farmctl.execute_pending_claim_order(_preflight_conn)
++            pending_order_snapshot = farmctl.prepare_pending_claim_snapshot(_preflight_conn)
++            _primed_order = pending_order_snapshot["rows"]
+             initial_candidate_row = _primed_order[0] if _primed_order else None
+     except sqlite3.Error:
+         initial_candidate_row = None
+@@ -4871,7 +4874,9 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
+                 census_cells_claimable: bool | None = None
+                 # claim-order memo (2026-09-03): byte-identical rows, reused while
+                 # PRAGMA data_version proves the DB unchanged (see farmctl).
+-                ordered_candidates = farmctl.execute_pending_claim_order(conn)
++                if not farmctl.pending_claim_snapshot_valid(conn, pending_order_snapshot):
++                    return {"claimed": False, "reason": "claim_order_snapshot_stale"}
++                ordered_candidates = pending_order_snapshot["rows"]
+                 # The canonical queue is program/year agnostic. Under L=2 it
+                 # can therefore put a later year of an otherwise-free arm
+                 # ahead of that arm's actual head. Do the cheap database-only
+@@ -5459,18 +5464,22 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
+     # file/process/report probe above is complete before this helper; while held
+     # we only re-read OFF and execute one bounded SQLite claim attempt.
+     mutation_lock_path = path_for_factory_flag(factory_off_flag)
++    # A cold preflight can cause up to eight re-entries. Give the whole cycle
++    # one acquisition-wait budget, rather than up to eight fresh five-second
++    # waits. Time doing work while holding the lock is measured separately.
++    claim_admission_wait_remaining = FACTORY_ADMISSION_LOCK_TIMEOUT_SECONDS
+ 
+-    def _claim_under_factory_lock() -> dict[str, Any]:
+-        admission_deadline = (
+-            time.monotonic() + FACTORY_ADMISSION_LOCK_TIMEOUT_SECONDS
+-        )
++    def _claim_with_fifo_turn(turn: ClaimWaitTurn, admission_deadline: float) -> dict[str, Any]:
+         while True:
+             mutation_lock = FactoryMutationLock(
+                 mutation_lock_path,
+                 owner=f"terminal_worker.claim_atomic:{terminal}",
+             )
+             try:
++                if not turn.is_head():
++                    raise RuntimeError("earlier claim waiter has admission priority")
+                 mutation_lock.__enter__()
++                turn.acquired_at = time.monotonic()
+                 break
+             except RuntimeError:
+                 # Re-probe OFF on every contention retry so an asserted
+@@ -5548,12 +5557,49 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
+         finally:
+             mutation_lock.__exit__(None, None, None)
+ 
++    def _claim_under_factory_lock() -> dict[str, Any]:
++        nonlocal claim_admission_wait_remaining, pending_order_snapshot
++        # Cache misses and full queue sorts stay outside FACTORY_MUTATION.lock.
++        # Recheck the proof inside _claim before using any prepared row.
++        try:
++            with farmctl.connect(root) as snapshot_conn:
++                if not farmctl.pending_claim_snapshot_valid(snapshot_conn, pending_order_snapshot):
++                    pending_order_snapshot = farmctl.prepare_pending_claim_snapshot(snapshot_conn)
++        except sqlite3.OperationalError as exc:
++            if _is_sqlite_locked(exc):
++                return {"claimed": False, "reason": "sqlite_locked"}
++            raise
++        if claim_admission_wait_remaining <= 0:
++            return {"claimed": False, "reason": "factory_mutation_lock_busy",
++                    "lock": str(mutation_lock_path), "wait_budget_exhausted": True}
++        started = time.monotonic()
++        turn = ClaimWaitTurn(mutation_lock_path, started + claim_admission_wait_remaining)
++        try:
++            with turn:
++                result = _claim_with_fifo_turn(turn, turn.deadline)
++        except OSError as exc:
++            result = {"claimed": False, "reason": "factory_admission_interlock_error",
++                      "lock": str(mutation_lock_path), "error": str(exc)}
++        finally:
++            waited = (turn.acquired_at if turn.acquired_at is not None else time.monotonic()) - started
++            claim_admission_wait_remaining = max(0.0, claim_admission_wait_remaining - max(0.0, waited))
++        result["factory_admission_wait_seconds"] = round(
++            FACTORY_ADMISSION_LOCK_TIMEOUT_SECONDS - claim_admission_wait_remaining, 3)
++        return result
++
+     claim_result = _claim_under_factory_lock()
+     lane_preflights: list[dict[str, Any]] = []
+     pruning_preflights: list[dict[str, Any]] = []
+     history_preflights: list[dict[str, Any]] = []
+     for _preflight_index in range(CLAIM_PREFLIGHT_MAX_CANDIDATES):
+         reason = claim_result.get("reason")
++        if reason == "claim_order_snapshot_stale":
++            # Another claim (or our stale-claim recovery) committed after the
++            # preparation. Rebuild outside the interlock with the same bounded
++            # acquisition budget, sharing the existing eight-retry ceiling.
++            pending_order_snapshot = None
++            claim_result = _claim_under_factory_lock()
++            continue
+         if reason == "opt_census_lane_preflight_required":
+             candidate = dict(claim_result["candidate"])
+             payload = _json_loads(candidate.get("payload_json"))
+diff --git a/tools/strategy_farm/tests/test_claim_lock_cost.py b/tools/strategy_farm/tests/test_claim_lock_cost.py
+new file mode 100644
+index 0000000000..579f290a4c
+--- /dev/null
++++ b/tools/strategy_farm/tests/test_claim_lock_cost.py
+@@ -0,0 +1,146 @@
++import json
++import sys
++import time
++from concurrent.futures import ThreadPoolExecutor
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
++import farmctl
++import terminal_worker as worker
++from claim_wait_turn import ClaimWaitTurn
++from factory_mutation_lock import FactoryMutationLock
++
++
++def test_census_indexes_preserve_every_ordered_row_and_remove_correlated_scan(tmp_path):
++    farmctl.init_db(tmp_path)
++    with farmctl.connect(tmp_path) as conn:
++        for index, (program, arm, year) in enumerate((p, a, y) for p in ("one", "two") for a in ("BUY", "SELL") for y in range(2010, 2027)):
++            payload = {"program_id": program, "arm": arm, "year": year, "opt_census_stage": "WF_COMBO",
++                       "priority_track": True, "opt_census_frontier_priority": True}
++            conn.execute("INSERT INTO work_items(id,kind,phase,ea_id,symbol,setfile_path,status,payload_json,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
++                         (str(index), "backtest", "OPT_CENSUS", "QM5_9999", "EURUSD.DWX", "fixture.set", "pending", json.dumps(payload), "2026-01-01", "2026-01-01"))
++        conn.execute("INSERT INTO work_items(id,kind,phase,ea_id,symbol,setfile_path,status,payload_json,created_at,updated_at) VALUES ('malformed','backtest','Q02','QM5_9998','USDJPY.DWX','fixture.set','pending','not-json','2026-01-01','2026-01-01')")
++        sql = farmctl.pending_claim_order_sql()
++        indexed = [dict(r) for r in conn.execute(sql)]
++        plans = [r[3] for r in conn.execute("EXPLAIN QUERY PLAN " + sql)]
++        assert any("idx_work_items_census_earlier" in p for p in plans)
++        assert any("idx_work_items_census_active_program" in p for p in plans)
++        conn.execute("DROP INDEX idx_work_items_census_earlier")
++        conn.execute("DROP INDEX idx_work_items_census_active_program")
++        assert indexed == [dict(r) for r in conn.execute(sql)]
++
++
++def test_ten_contenders_follow_fifo_and_do_not_overlap(tmp_path):
++    path = tmp_path / "FACTORY_MUTATION.lock"
++    turns = [ClaimWaitTurn(path, time.monotonic() + 5).__enter__() for _ in range(10)]
++    completed = []
++
++    def serve(i):
++        turn = turns[i]
++        try:
++            while not turn.is_head():
++                assert time.monotonic() < turn.deadline
++                time.sleep(.002)
++            with FactoryMutationLock(path, owner=f"test:{i}"):
++                completed.append(i)
++                time.sleep(.002)
++        finally:
++            turn.__exit__(None, None, None)
++
++    with ThreadPoolExecutor(max_workers=10) as pool:
++        list(pool.map(serve, reversed(range(10))))
++    assert completed == list(range(10))
++    assert not list(turns[0].directory.glob("*.ticket"))
++    assert not path.exists()
++
++
++def test_expired_or_replaced_ticket_cannot_block_or_be_deleted_by_old_owner(tmp_path):
++    path = tmp_path / "FACTORY_MUTATION.lock"
++    expired = ClaimWaitTurn(path, time.monotonic() - 1).__enter__()
++    current = ClaimWaitTurn(path, time.monotonic() + 5).__enter__()
++    assert not expired.is_head()
++    assert current.is_head()
++    current.path.write_bytes(b"replacement")
++    current.__exit__(None, None, None)
++    assert current.path.read_bytes() == b"replacement"
++    expired.__exit__(None, None, None)
++
++
++def test_preflight_reentries_share_one_wait_budget(tmp_path, monkeypatch):
++    from test_terminal_worker_atomic_claim import TerminalWorkerAtomicClaimTests
++    fixture = TerminalWorkerAtomicClaimTests()
++    fixture.setUp()
++    try:
++        fixture._insert_work_item(tmp_path, "first", "EURUSD.DWX", phase="Q02")
++        fixture._insert_work_item(tmp_path, "second", "GBPUSD.DWX", phase="Q02")
++        with farmctl.connect(tmp_path) as conn:
++            conn.execute("UPDATE work_items SET created_at='2025-01-01',updated_at='2025-01-01' WHERE id='first'")
++            conn.commit()
++        entered = []
++
++        class DelayedTurn(ClaimWaitTurn):
++            def __enter__(self):
++                result = super().__enter__()
++                entered.append(self.deadline - time.monotonic())
++                time.sleep(.06)
++                return result
++
++        monkeypatch.setattr(worker, "ClaimWaitTurn", DelayedTurn)
++        monkeypatch.setattr(worker, "FACTORY_ADMISSION_LOCK_TIMEOUT_SECONDS", .10)
++        monkeypatch.setattr(worker, "FACTORY_ADMISSION_LOCK_POLL_SECONDS", .005)
++        monkeypatch.setattr(worker, "_p2_history_claimable", lambda item, *a: (item["id"] == "second", {}))
++        monkeypatch.setattr(farmctl, "_news_calendar_preflight", lambda **kw: {"ok": True})
++        result = worker.claim_atomic(tmp_path, "T1")
++        assert len(entered) == 2
++        assert entered[1] < entered[0] - .05
++        assert result["reason"] == "factory_mutation_lock_busy"
++        assert not result["claimed"]
++        assert result["factory_admission_wait_seconds"] == .1
++        with farmctl.connect(tmp_path) as conn:
++            assert conn.execute("SELECT status FROM work_items WHERE id='second'").fetchone()[0] == "pending"
++    finally:
++        fixture.tearDown()
++
++
++def test_prepared_order_refuses_a_commit_expiry_or_reopened_version_poller(tmp_path):
++    farmctl.init_db(tmp_path)
++    with farmctl.connect(tmp_path) as conn:
++        snapshot = farmctl.prepare_pending_claim_snapshot(conn)
++        assert farmctl.pending_claim_snapshot_valid(conn, snapshot)
++        with farmctl.connect(tmp_path) as other:
++            other.execute("CREATE TABLE snapshot_version_probe(value TEXT)")
++            other.commit()
++        assert not farmctl.pending_claim_snapshot_valid(conn, snapshot)
++        snapshot = farmctl.prepare_pending_claim_snapshot(conn)
++        assert farmctl.pending_claim_snapshot_valid(conn, snapshot)
++        expired = dict(snapshot, expires_monotonic=time.monotonic() - 1)
++        assert not farmctl.pending_claim_snapshot_valid(conn, expired)
++        changed_sql = dict(snapshot, sql="SELECT stale_order")
++        assert not farmctl.pending_claim_snapshot_valid(conn, changed_sql)
++        farmctl._reset_claim_order_pollers()
++        assert not farmctl.pending_claim_snapshot_valid(conn, snapshot)
++
++
++def test_queue_rebuild_never_runs_under_factory_lock(tmp_path, monkeypatch):
++    from test_terminal_worker_atomic_claim import TerminalWorkerAtomicClaimTests
++    fixture = TerminalWorkerAtomicClaimTests()
++    fixture.setUp()
++    try:
++        fixture._insert_work_item(tmp_path, "only", "EURUSD.DWX", phase="Q02")
++        state, tracking = fixture._tracking_factory_lock()
++        real = farmctl.execute_pending_claim_order
++        calls = []
++
++        def checked(conn, **kwargs):
++            assert not state["global_active"]
++            calls.append(True)
++            return real(conn, **kwargs)
++
++        monkeypatch.setattr(worker, "FactoryMutationLock", tracking)
++        monkeypatch.setattr(farmctl, "execute_pending_claim_order", checked)
++        monkeypatch.setenv("QM_CLAIM_ORDER_CACHE_TTL_MS", "0")
++        result = worker.claim_atomic(tmp_path, "T1")
++        assert result["claimed"], result
++        assert calls
++    finally:
++        fixture.tearDown()
+diff --git a/tools/strategy_farm/tests/test_terminal_worker_atomic_claim.py b/tools/strategy_farm/tests/test_terminal_worker_atomic_claim.py
+index 14905f9b34..5dc856555e 100644
+--- a/tools/strategy_farm/tests/test_terminal_worker_atomic_claim.py
++++ b/tools/strategy_farm/tests/test_terminal_worker_atomic_claim.py
+@@ -2981,12 +2981,16 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
+                 terminal_worker._acquire_launch_slot = lambda _terminal: None
+                 terminal_worker.time.sleep = lambda _seconds: None
+ 
+-                result = terminal_worker._run_claimed_item(
+-                    root,
+-                    {"id": "wi-launch-fault"},
+-                    "T4",
+-                    timeout_seconds=30,
+-                )
++                # This monitor test never stages a real EA into a host terminal.
++                with patch.object(terminal_worker, "_prepare_staged_ex5", return_value={
++                    "required_sha256": "a" * 64, "source_path": "fixture.ex5"
++                }):
++                    result = terminal_worker._run_claimed_item(
++                        root,
++                        {"id": "wi-launch-fault"},
++                        "T4",
++                        timeout_seconds=30,
++                    )
+             finally:
+                 terminal_worker.farmctl._spawn_work_item_runner = old_spawn
+                 terminal_worker.farmctl._pid_tree_exists = old_pid_tree_exists
+@@ -3590,12 +3594,15 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
+                 terminal_worker.farmctl._stop_terminal_slot = lambda terminal: stopped_terminals.append(terminal) or True
+                 terminal_worker._work_item_preflight_failure = lambda _row: None
+ 
+-                result = terminal_worker._run_claimed_item(
+-                    root,
+-                    {"id": "wi-external-release"},
+-                    "T5",
+-                    timeout_seconds=30,
+-                )
++                with patch.object(terminal_worker, "_prepare_staged_ex5", return_value={
++                    "required_sha256": "a" * 64, "source_path": "fixture.ex5"
++                }):
++                    result = terminal_worker._run_claimed_item(
++                        root,
++                        {"id": "wi-external-release"},
++                        "T5",
++                        timeout_seconds=30,
++                    )
+             finally:
+                 terminal_worker.farmctl._spawn_work_item_runner = old_spawn
+                 terminal_worker.farmctl._pid_exists = old_pid_exists

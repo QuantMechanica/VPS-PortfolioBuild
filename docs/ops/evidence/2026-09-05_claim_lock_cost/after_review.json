@@ -1,0 +1,365 @@
+{
+  "label": "after_review",
+  "source_checkout": "C:\\QM\\worktrees\\codex-claim-lock-cost-20260905",
+  "snapshot_bytes": 734773248,
+  "total_seconds": 4.0502760000526905,
+  "factory_lock_seconds": [
+    0.1889009999576956
+  ],
+  "write_transaction_seconds": [
+    0.013306899927556515
+  ],
+  "result": {
+    "claimed": true,
+    "claim_class": "priority",
+    "claim_admission_mode": null,
+    "preclaim_payload_sha256": "957994dd62e6db1149fecf539e000a600a624b1b9d7bba2f237b3004ccba5231",
+    "claim_write_lock_ms": 13.345,
+    "ram_class_skipped": 0,
+    "census_lane_protection_skipped": 0,
+    "factory_admission_wait_seconds": 0.015
+  },
+  "claimed_item_id": "31f12573-d903-4386-a857-cad2b445d63a",
+  "sql": [
+    {
+      "sql": "PRAGMA busy_timeout=750",
+      "in_factory_lock": true,
+      "in_transaction": false,
+      "seconds": 2.5700079277157784e-05,
+      "plan": []
+    },
+    {
+      "sql": "PRAGMA query_only=ON",
+      "in_factory_lock": true,
+      "in_transaction": false,
+      "seconds": 6.00004568696022e-06,
+      "plan": []
+    },
+    {
+      "sql": "SELECT * FROM work_items WHERE status='active' AND claimed_by=? LIMIT 1",
+      "in_factory_lock": true,
+      "in_transaction": false,
+      "seconds": 0.003268600208684802,
+      "plan": [
+        [
+          4,
+          0,
+          0,
+          "SEARCH work_items USING INDEX idx_work_items_status_kind (status=?)"
+        ]
+      ]
+    },
+    {
+      "sql": "SELECT MAX(claimed_at_utc) FROM claim_class_ledger",
+      "in_factory_lock": true,
+      "in_transaction": false,
+      "seconds": 8.610007353127003e-05,
+      "plan": [
+        [
+          3,
+          0,
+          0,
+          "SEARCH claim_class_ledger"
+        ]
+      ]
+    },
+    {
+      "sql": "SELECT id, ea_id, symbol, payload_json FROM work_items WHERE status='active'",
+      "in_factory_lock": true,
+      "in_transaction": false,
+      "seconds": 0.00010150019079446793,
+      "plan": [
+        [
+          3,
+          0,
+          0,
+          "SEARCH work_items USING INDEX idx_work_items_status_kind (status=?)"
+        ]
+      ]
+    },
+    {
+      "sql": "\n        SELECT ea_id, symbol\n        FROM work_items\n        WHERE status='active' AND symbol IS NOT NULL AND symbol != ''\n        ",
+      "in_factory_lock": true,
+      "in_transaction": false,
+      "seconds": 5.569984205067158e-05,
+      "plan": [
+        [
+          4,
+          0,
+          0,
+          "SEARCH work_items USING INDEX idx_work_items_status_kind (status=?)"
+        ]
+      ]
+    },
+    {
+      "sql": "SELECT id,phase,ea_id,symbol,payload_json FROM work_items WHERE status='active' AND upper(phase)='OPT_CENSUS'",
+      "in_factory_lock": true,
+      "in_transaction": false,
+      "seconds": 4.659988917410374e-05,
+      "plan": [
+        [
+          3,
+          0,
+          0,
+          "SEARCH work_items USING INDEX idx_work_items_status_kind (status=?)"
+        ]
+      ]
+    },
+    {
+      "sql": "SELECT DISTINCT ea_id FROM work_items WHERE status='active' AND phase='Q04'",
+      "in_factory_lock": true,
+      "in_transaction": false,
+      "seconds": 6.849993951618671e-05,
+      "plan": [
+        [
+          4,
+          0,
+          0,
+          "SEARCH work_items USING INDEX idx_work_items_status_kind (status=?)"
+        ],
+        [
+          17,
+          0,
+          0,
+          "USE TEMP B-TREE FOR DISTINCT"
+        ]
+      ]
+    },
+    {
+      "sql": "SELECT ea_id, payload_json FROM work_items WHERE status='active'",
+      "in_factory_lock": true,
+      "in_transaction": false,
+      "seconds": 3.200001083314419e-05,
+      "plan": [
+        [
+          3,
+          0,
+          0,
+          "SEARCH work_items USING INDEX idx_work_items_status_kind (status=?)"
+        ]
+      ]
+    },
+    {
+      "sql": "PRAGMA database_list",
+      "in_factory_lock": true,
+      "in_transaction": false,
+      "seconds": 1.300009898841381e-05,
+      "plan": []
+    },
+    {
+      "sql": "PRAGMA data_version",
+      "in_factory_lock": true,
+      "in_transaction": false,
+      "seconds": 2.119992859661579e-05,
+      "plan": []
+    },
+    {
+      "sql": "SELECT phase, payload_json FROM work_items WHERE status='active' AND (phase IN (?, ?, ?, ?) OR upper(phase) LIKE '%\\_NEWS' ESCAPE '\\')",
+      "in_factory_lock": true,
+      "in_transaction": false,
+      "seconds": 0.00018489989452064037,
+      "plan": [
+        [
+          3,
+          0,
+          0,
+          "SEARCH work_items USING INDEX idx_work_items_status_kind (status=?)"
+        ]
+      ]
+    },
+    {
+      "sql": "SELECT id, ea_id, phase, symbol, payload_json FROM work_items WHERE status='active'",
+      "in_factory_lock": true,
+      "in_transaction": false,
+      "seconds": 7.54001084715128e-05,
+      "plan": [
+        [
+          3,
+          0,
+          0,
+          "SEARCH work_items USING INDEX idx_work_items_status_kind (status=?)"
+        ]
+      ]
+    },
+    {
+      "sql": "PRAGMA query_only=OFF",
+      "in_factory_lock": true,
+      "in_transaction": false,
+      "seconds": 2.1300045773386955e-05,
+      "plan": []
+    },
+    {
+      "sql": "BEGIN IMMEDIATE",
+      "in_factory_lock": true,
+      "in_transaction": false,
+      "seconds": 2.529984340071678e-05,
+      "plan": []
+    },
+    {
+      "sql": "SELECT * FROM work_items WHERE id=?",
+      "in_factory_lock": true,
+      "in_transaction": true,
+      "seconds": 0.00017540017142891884,
+      "plan": [
+        [
+          3,
+          0,
+          0,
+          "SEARCH work_items USING INDEX sqlite_autoindex_work_items_1 (id=?)"
+        ]
+      ]
+    },
+    {
+      "sql": "SELECT phase FROM work_items WHERE id=?",
+      "in_factory_lock": true,
+      "in_transaction": true,
+      "seconds": 5.179992876946926e-05,
+      "plan": [
+        [
+          3,
+          0,
+          0,
+          "SEARCH work_items USING INDEX sqlite_autoindex_work_items_1 (id=?)"
+        ]
+      ]
+    },
+    {
+      "sql": "\n                        SELECT 1\n                        WHERE EXISTS (\n                            SELECT 1 FROM work_item_holds\n                            WHERE work_item_id=? AND active=1\n                        ) OR EXISTS (\n                            SELECT 1 FROM work_item_supersedes\n                            WHERE work_item_id=?\n                        )\n                        ",
+      "in_factory_lock": true,
+      "in_transaction": true,
+      "seconds": 0.0001246999017894268,
+      "plan": [
+        [
+          1,
+          0,
+          0,
+          "SCAN CONSTANT ROW"
+        ],
+        [
+          4,
+          0,
+          0,
+          "SCALAR SUBQUERY 1"
+        ],
+        [
+          9,
+          4,
+          0,
+          "SEARCH work_item_holds USING INDEX sqlite_autoindex_work_item_holds_1 (work_item_id=?)"
+        ],
+        [
+          24,
+          0,
+          0,
+          "SCALAR SUBQUERY 2"
+        ],
+        [
+          28,
+          24,
+          0,
+          "SEARCH work_item_supersedes USING COVERING INDEX sqlite_autoindex_work_item_supersedes_1 (work_item_id=?)"
+        ]
+      ]
+    },
+    {
+      "sql": "\n                        UPDATE work_items\n                        SET status='active', claimed_by=?, payload_json=?, updated_at=?\n                        WHERE id=? AND status='pending' AND claimed_by IS NULL\n                          AND NOT EXISTS (\n                            SELECT 1 FROM work_item_holds h\n                            WHERE h.work_item_id=work_items.id AND h.active=1\n                          )\n                          AND NOT EXISTS (\n                            SELECT 1 FROM work_item_supersedes s\n                            WHERE s.work_item_id=work_items.id\n                          )\n                        ",
+      "in_factory_lock": true,
+      "in_transaction": true,
+      "seconds": 0.0013124998658895493,
+      "plan": [
+        [
+          5,
+          0,
+          0,
+          "SEARCH work_items USING INDEX sqlite_autoindex_work_items_1 (id=?)"
+        ],
+        [
+          17,
+          0,
+          0,
+          "CORRELATED SCALAR SUBQUERY 1"
+        ],
+        [
+          22,
+          17,
+          0,
+          "SEARCH h USING INDEX sqlite_autoindex_work_item_holds_1 (work_item_id=?)"
+        ],
+        [
+          35,
+          0,
+          0,
+          "CORRELATED SCALAR SUBQUERY 2"
+        ],
+        [
+          39,
+          35,
+          0,
+          "SEARCH s USING COVERING INDEX sqlite_autoindex_work_item_supersedes_1 (work_item_id=?)"
+        ]
+      ]
+    },
+    {
+      "sql": "CREATE TABLE IF NOT EXISTS claim_class_ledger ( seq INTEGER PRIMARY KEY AUTOINCREMENT, claimed_at_utc TEXT NOT NULL, terminal TEXT, work_item_id TEXT, claim_class TEXT NOT NULL CHECK (claim_class in ('priority', 'recovery')))",
+      "in_factory_lock": true,
+      "in_transaction": true,
+      "seconds": 1.819990575313568e-05,
+      "plan": []
+    },
+    {
+      "sql": "INSERT INTO claim_class_ledger (claimed_at_utc, terminal, work_item_id, claim_class) VALUES (?,?,?,?)",
+      "in_factory_lock": true,
+      "in_transaction": true,
+      "seconds": 4.360009916126728e-05,
+      "plan": []
+    },
+    {
+      "sql": "DELETE FROM claim_class_ledger WHERE seq <= (SELECT COALESCE(MAX(seq), 0) FROM claim_class_ledger) - ?",
+      "in_factory_lock": true,
+      "in_transaction": true,
+      "seconds": 4.549999721348286e-05,
+      "plan": [
+        [
+          3,
+          0,
+          0,
+          "SEARCH claim_class_ledger USING INTEGER PRIMARY KEY (rowid<?)"
+        ],
+        [
+          7,
+          0,
+          0,
+          "SCALAR SUBQUERY 1"
+        ],
+        [
+          12,
+          7,
+          0,
+          "SEARCH claim_class_ledger"
+        ]
+      ]
+    },
+    {
+      "sql": "PRAGMA query_only=ON",
+      "in_factory_lock": true,
+      "in_transaction": false,
+      "seconds": 3.4800032153725624e-05,
+      "plan": []
+    },
+    {
+      "sql": "SELECT * FROM work_items WHERE id=?",
+      "in_factory_lock": true,
+      "in_transaction": false,
+      "seconds": 0.00016239983960986137,
+      "plan": [
+        [
+          3,
+          0,
+          0,
+          "SEARCH work_items USING INDEX sqlite_autoindex_work_items_1 (id=?)"
+        ]
+      ]
+    }
+  ],
+  "scope": "Disposable snapshot; OS resources and external sealed-ledger preflights stubbed; no runner or live DB write"
+}

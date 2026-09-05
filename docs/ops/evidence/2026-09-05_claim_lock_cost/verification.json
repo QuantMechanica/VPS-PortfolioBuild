@@ -1,0 +1,29 @@
+{
+  "result": "PASS",
+  "snapshot_bytes": 734773248,
+  "before_shared_lock_seconds": [
+    3.9483986999839544
+  ],
+  "index_only_shared_lock_seconds": [
+    2.120735500007868
+  ],
+  "after_shared_lock_seconds": [
+    0.1889009999576956
+  ],
+  "before_write_transaction_seconds": [
+    0.013644800055772066
+  ],
+  "after_write_transaction_seconds": [
+    0.013306899927556515
+  ],
+  "same_selected_item_and_payload": true,
+  "full_sort_outside_shared_lock": true,
+  "sha256": {
+    "after_controlled.json": "a758e7c4adf0dc4028bcd80f3af81d3d119c90a3e54ebc179f5a89caec350146",
+    "after_final.json": "5ea04bc137cce46dca0b7d5d247c0420fc7d516e81539c3be91d7636bfccc5b6",
+    "after_review.json": "16072dca1f15df7ebe62a10d81edf1bc0f952c7c160f6f4e5785a363a4e2d32d",
+    "after_verified.json": "fdb3ee4aaa3d51230998d9c03ccdd6eaa13805df066e6671bcaf866c36a541bf",
+    "before.json": "d1f44d2186ae5bebbe77e6a12f331a0c5a2eed35a5b3721d7ad380787d7289d4",
+    "before_controlled.json": "54ec0b7279b2afda324289fa9464f13bee0bffaca7aade2aac140040c2e2782b"
+  }
+}
