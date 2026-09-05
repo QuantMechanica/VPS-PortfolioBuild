@@ -1,0 +1,12 @@
+{
+  "schema": "qm.dl089-prescreen/v1",
+  "decision_id": "OWNER-DEC-D1-PRESCREEN-20260905",
+  "safe_to_skip": true,
+  "timestamp_basis": "MT5_SERVER_CIVIL_TIME",
+  "symbol": "USDCAD.DWX",
+  "bars_path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\USDCAD.DWX_D1.csv",
+  "bars_sha256": "b2231559c1ffd5ea35d8aad80ee6c84e1399c948b838ac011167daab559efbeb",
+  "counter_sha256": "ef516078ab5db50cc35a8dcff06f8751824eb170c4be9d59dcdcdc6ff6cd1042",
+  "authority_path": "C:\\QM\\repo\\decisions\\2026-09-02_owner_receipts_ceo_asks.md",
+  "authority_sha256": "2616579f82c52e89819bfb92e589a689c8fbe7d00a3f256710cd315291ff89b9"
+}
