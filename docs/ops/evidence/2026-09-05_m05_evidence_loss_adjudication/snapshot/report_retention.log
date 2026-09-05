@@ -1,0 +1,107 @@
+2026-08-23T12:18:11+00:00 CLASSIFY runs=111,398 keep=40,919 age_out=70,479 open=3,258 cells=25,211
+2026-08-23T12:18:11+00:00 SCAN items=19,412 unattributed_files=19,233 cutoff=2026-07-24 (30d)
+2026-08-23T12:18:11+00:00 PLAN remove=40,498 (1.53 GB) compress=28,976 (6.89 GB) keep_asis=20,200 too_young=87,128 unclassifiable_files=3 (0.00 GB)
+2026-08-23T12:18:11+00:00 DRY-RUN: nothing written
+2026-08-23T12:20:10+00:00 CLASSIFY runs=111,398 keep=40,919 age_out=70,479 open=3,257 cells=25,211
+2026-08-23T12:20:10+00:00 SCAN items=19,458 unattributed_files=12,840 cutoff=2026-07-24 (30d)
+2026-08-23T12:20:10+00:00 PLAN remove=43,049 (1.69 GB) compress=30,817 (7.32 GB) keep_asis=21,469 too_young=87,865 unclassifiable_files=3 (0.00 GB)
+2026-08-23T12:20:10+00:00 DRY-RUN: nothing written
+2026-08-23T12:23:05+00:00 CLASSIFY runs=111,398 keep=40,918 age_out=70,480 open=3,256 cells=25,211
+2026-08-23T12:23:05+00:00 SCAN items=19,458 unattributed_files=12,840 cutoff=2026-07-24 (30d)
+2026-08-23T12:23:05+00:00 PLAN remove=43,056 (1.69 GB) compress=30,819 (7.32 GB) keep_asis=21,470 too_young=87,875 unclassifiable_files=3 (0.00 GB)
+2026-08-23T12:23:32+00:00 QUARANTINED 43,056 files (1.69 GB) -> D:\QM\reports\_retention_quarantine\20260823T122231Z
+2026-08-23T12:26:27+00:00 COMPRESSED 30,819 files, saved 6.91 GB
+2026-08-23T12:26:27+00:00 DONE mode=apply elapsed=236s
+2026-08-24T02:24:04+00:00 CLASSIFY runs=112,242 keep=41,468 age_out=70,774 open=3,830 cells=25,571
+2026-08-24T02:24:04+00:00 SCAN items=15,406 unattributed_files=12,895 cutoff=2026-07-25 (30d)
+2026-08-24T02:24:04+00:00 PLAN remove=1,147 (0.02 GB) compress=1,001 (0.14 GB) keep_asis=22,161 too_young=119,443 unclassifiable_files=3 (0.00 GB)
+2026-08-24T02:24:05+00:00 QUARANTINED 1,147 files (0.02 GB) -> D:\QM\reports\_retention_quarantine\20260824T022002Z
+2026-08-24T02:24:13+00:00 COMPRESSED 1,001 files, saved 0.13 GB
+2026-08-24T02:24:13+00:00 DONE mode=apply elapsed=251s
+2026-08-25T02:21:15+00:00 CLASSIFY runs=112,309 keep=41,500 age_out=70,809 open=3,815 cells=25,587
+2026-08-25T02:21:15+00:00 SCAN items=15,363 unattributed_files=12,999 cutoff=2026-07-26 (30d)
+2026-08-25T02:21:15+00:00 PLAN remove=1,153 (0.02 GB) compress=1,357 (0.14 GB) keep_asis=22,873 too_young=121,084 unclassifiable_files=3 (0.00 GB)
+2026-08-25T02:21:16+00:00 QUARANTINED 1,153 files (0.02 GB) -> D:\QM\reports\_retention_quarantine\20260825T022001Z
+2026-08-25T02:21:26+00:00 COMPRESSED 1,357 files, saved 0.13 GB
+2026-08-25T02:21:26+00:00 DONE mode=apply elapsed=85s
+2026-08-26T02:22:34+00:00 CLASSIFY runs=112,510 keep=41,418 age_out=71,092 open=3,704 cells=25,600
+2026-08-26T02:22:34+00:00 SCAN items=15,372 unattributed_files=13,083 cutoff=2026-07-27 (30d)
+2026-08-26T02:22:34+00:00 PLAN remove=2,076 (0.09 GB) compress=2,468 (0.33 GB) keep_asis=24,330 too_young=123,352 unclassifiable_files=3 (0.00 GB)
+2026-08-26T02:22:38+00:00 QUARANTINED 2,076 files (0.09 GB) -> D:\QM\reports\_retention_quarantine\20260826T022002Z
+2026-08-26T02:24:26+00:00 COMPRESSED 2,468 files, saved 0.31 GB
+2026-08-26T02:24:26+00:00 DONE mode=apply elapsed=264s
+2026-08-27T02:22:12+00:00 CLASSIFY runs=113,640 keep=42,423 age_out=71,217 open=4,627 cells=25,617
+2026-08-27T02:22:12+00:00 SCAN items=15,447 unattributed_files=13,152 cutoff=2026-07-28 (30d)
+2026-08-27T02:22:12+00:00 PLAN remove=2,436 (0.08 GB) compress=1,396 (0.23 GB) keep_asis=25,164 too_young=124,841 unclassifiable_files=3 (0.00 GB)
+2026-08-27T02:22:21+00:00 QUARANTINED 2,436 files (0.08 GB) -> D:\QM\reports\_retention_quarantine\20260827T022002Z
+2026-08-27T02:22:38+00:00 COMPRESSED 1,396 files, saved 0.22 GB
+2026-08-27T02:22:38+00:00 DONE mode=apply elapsed=156s
+2026-08-28T02:21:37+00:00 CLASSIFY runs=113,654 keep=42,284 age_out=71,370 open=4,427 cells=25,627
+2026-08-28T02:21:37+00:00 SCAN items=15,432 unattributed_files=13,167 cutoff=2026-07-29 (30d)
+2026-08-28T02:21:37+00:00 PLAN remove=2,411 (0.12 GB) compress=2,304 (0.74 GB) keep_asis=26,559 too_young=124,844 unclassifiable_files=3 (0.00 GB)
+2026-08-28T02:21:40+00:00 QUARANTINED 2,411 files (0.12 GB) -> D:\QM\reports\_retention_quarantine\20260828T022002Z
+2026-08-28T02:22:02+00:00 COMPRESSED 2,304 files, saved 0.70 GB
+2026-08-28T02:22:02+00:00 DONE mode=apply elapsed=120s
+2026-08-28T19:03:42+00:00 CLASSIFY runs=113,664 keep=42,284 age_out=71,380 open=4,405 cells=25,636
+2026-08-28T19:03:42+00:00 SCAN items=15,198 unattributed_files=13,171 cutoff=2026-07-29 (30d)
+2026-08-28T19:03:42+00:00 PLAN remove=119 (0.00 GB) compress=208 (0.03 GB) keep_asis=26,677 too_young=127,800 unclassifiable_files=3 (0.00 GB)
+2026-08-28T19:03:42+00:00 QUARANTINED 119 files (0.00 GB) -> D:\QM\reports\_retention_quarantine\20260828T190250Z
+2026-08-28T19:03:43+00:00 COMPRESSED 208 files, saved 0.03 GB
+2026-08-28T19:03:43+00:00 DONE mode=apply elapsed=53s
+2026-08-29T02:22:36+00:00 CLASSIFY runs=113,671 keep=42,286 age_out=71,385 open=4,404 cells=25,637
+2026-08-29T02:22:36+00:00 SCAN items=15,200 unattributed_files=13,172 cutoff=2026-07-30 (30d)
+2026-08-29T02:22:36+00:00 PLAN remove=0 (0.00 GB) compress=12 (0.02 GB) keep_asis=26,683 too_young=128,233 unclassifiable_files=3 (0.00 GB)
+2026-08-29T02:22:36+00:00 QUARANTINED 0 files (0.00 GB) -> D:\QM\reports\_retention_quarantine\20260829T022001Z
+2026-08-29T02:22:36+00:00 COMPRESSED 12 files, saved 0.01 GB
+2026-08-29T02:22:36+00:00 DONE mode=apply elapsed=155s
+2026-08-29T15:03:43+00:00 CLASSIFY runs=114,892 keep=43,443 age_out=71,449 open=5,500 cells=25,747
+2026-08-29T15:03:43+00:00 SCAN items=15,324 unattributed_files=13,241 cutoff=2026-07-30 (30d)
+2026-08-29T15:03:43+00:00 PLAN remove=0 (0.00 GB) compress=4 (0.00 GB) keep_asis=26,685 too_young=130,470 unclassifiable_files=3 (0.00 GB)
+2026-08-29T15:03:43+00:00 QUARANTINED 0 files (0.00 GB) -> D:\QM\reports\_retention_quarantine\20260829T150241Z
+2026-08-29T15:03:43+00:00 COMPRESSED 4 files, saved 0.00 GB
+2026-08-29T15:03:43+00:00 DONE mode=apply elapsed=61s
+2026-08-30T02:22:13+00:00 CLASSIFY runs=118,230 keep=46,619 age_out=71,611 open=8,538 cells=25,824
+2026-08-30T02:22:13+00:00 SCAN items=15,594 unattributed_files=13,397 cutoff=2026-07-31 (30d)
+2026-08-30T02:22:13+00:00 PLAN remove=0 (0.00 GB) compress=0 (0.00 GB) keep_asis=26,685 too_young=133,534 unclassifiable_files=3 (0.00 GB)
+2026-08-30T02:22:13+00:00 QUARANTINED 0 files (0.00 GB) -> D:\QM\reports\_retention_quarantine\20260830T022001Z
+2026-08-30T02:22:13+00:00 COMPRESSED 0 files, saved 0.00 GB
+2026-08-30T02:22:13+00:00 DONE mode=apply elapsed=132s
+2026-08-31T02:23:44+00:00 CLASSIFY runs=120,561 keep=47,730 age_out=72,831 open=9,530 cells=25,906
+2026-08-31T02:23:44+00:00 SCAN items=16,460 unattributed_files=13,494 cutoff=2026-08-01 (30d)
+2026-08-31T02:23:44+00:00 PLAN remove=1,589 (0.03 GB) compress=1,428 (0.33 GB) keep_asis=27,601 too_young=135,752 unclassifiable_files=3 (0.00 GB)
+2026-08-31T02:23:46+00:00 QUARANTINED 1,589 files (0.03 GB) -> D:\QM\reports\_retention_quarantine\20260831T022001Z
+2026-08-31T02:23:58+00:00 COMPRESSED 1,428 files, saved 0.31 GB
+2026-08-31T02:23:58+00:00 DONE mode=apply elapsed=236s
+2026-09-01T02:22:21+00:00 CLASSIFY runs=121,791 keep=47,460 age_out=74,331 open=9,200 cells=26,026
+2026-09-01T02:22:21+00:00 SCAN items=15,900 unattributed_files=13,013 cutoff=2026-08-02 (30d)
+2026-09-01T02:22:21+00:00 PLAN remove=636 (0.02 GB) compress=1,169 (0.14 GB) keep_asis=26,445 too_young=133,542 unclassifiable_files=3 (0.00 GB)
+2026-09-01T02:22:22+00:00 QUARANTINED 636 files (0.02 GB) -> D:\QM\reports\_retention_quarantine\20260901T022001Z
+2026-09-01T02:22:33+00:00 COMPRESSED 1,169 files, saved 0.13 GB
+2026-09-01T02:22:33+00:00 DONE mode=apply elapsed=152s
+2026-09-02T02:35:28+00:00 CLASSIFY runs=121,972 keep=46,289 age_out=75,683 open=8,009 cells=26,095
+2026-09-02T02:35:28+00:00 SCAN items=16,699 unattributed_files=13,017 cutoff=2026-08-03 (30d)
+2026-09-02T02:35:28+00:00 PLAN remove=909 (0.01 GB) compress=1,141 (0.20 GB) keep_asis=27,108 too_young=136,405 unclassifiable_files=3 (0.00 GB)
+2026-09-02T02:35:30+00:00 QUARANTINED 909 files (0.01 GB) -> D:\QM\reports\_retention_quarantine\20260902T022001Z
+2026-09-02T02:35:40+00:00 COMPRESSED 1,141 files, saved 0.19 GB
+2026-09-02T02:35:40+00:00 DONE mode=apply elapsed=939s
+2026-09-03T02:37:39+00:00 CLASSIFY runs=126,691 keep=49,585 age_out=77,106 open=11,208 cells=26,222
+2026-09-03T02:37:39+00:00 SCAN items=17,536 unattributed_files=13,285 cutoff=2026-08-04 (30d)
+2026-09-03T02:37:39+00:00 PLAN remove=567 (0.03 GB) compress=1,013 (0.12 GB) keep_asis=27,681 too_young=145,568 unclassifiable_files=3 (0.00 GB)
+2026-09-03T02:37:40+00:00 QUARANTINED 567 files (0.03 GB) -> D:\QM\reports\_retention_quarantine\20260903T022007Z
+2026-09-03T02:38:06+00:00 COMPRESSED 1,013 files, saved 0.11 GB
+2026-09-03T02:38:06+00:00 DONE mode=apply elapsed=1080s
+2026-09-04T02:21:20+00:00 CLASSIFY runs=131,220 keep=50,914 age_out=80,306 open=12,391 cells=26,282
+2026-09-04T02:21:20+00:00 SCAN items=18,862 unattributed_files=13,454 cutoff=2026-08-05 (30d)
+2026-09-04T02:21:20+00:00 PLAN remove=1,560 (0.07 GB) compress=600 (0.04 GB) keep_asis=28,032 too_young=154,621 unclassifiable_files=3 (0.00 GB)
+2026-09-04T02:21:21+00:00 QUARANTINED 1,560 files (0.07 GB) -> D:\QM\reports\_retention_quarantine\20260904T022001Z
+2026-09-04T02:21:22+00:00 COMPRESSED 600 files, saved 0.04 GB
+2026-09-04T02:21:22+00:00 DONE mode=apply elapsed=81s
+2026-09-05T02:21:33+00:00 CLASSIFY runs=131,338 keep=48,458 age_out=82,880 open=9,639 cells=26,323
+2026-09-05T02:21:33+00:00 SCAN items=20,472 unattributed_files=13,572 cutoff=2026-08-06 (30d)
+2026-09-05T02:21:33+00:00 PLAN remove=2,759 (0.12 GB) compress=1,012 (0.10 GB) keep_asis=28,626 too_young=162,110 unclassifiable_files=3 (0.00 GB)
+2026-09-05T02:21:34+00:00 WARN move failed D:\QM\reports\work_items\9a95577b-9872-4757-8966-3af71a463224\QM5_20195\Q04\QM5_20195_NZDUSD_EURGBP_COINTEGRATION_D1__9a95577b-9872-4757-8966-3af71a463224\F1\QM5_20195_nzd-eurgbp-coint_QM5_20195_NZDUSD_EURGBP_COINTEGRATION_D1_D1_backtest_q04comm.set: [Errno 2] No such file or directory: 'D:\\QM\\reports\\_retention_quarantine\\20260905T022001Z\\work_items\\9a95577b-9872-4757-8966-3af71a463224\\QM5_20195\\Q04\\QM5_20195_NZDUSD_EURGBP_COINTEGRATION_D1__9a95577b-9872-4757-8966-3af71a463224\\F1\\QM5_20195_nzd-eurgbp-coint_QM5_20195_NZDUSD_EURGBP_COINTEGRATION_D1_D1_backtest_q04comm.set'
+2026-09-05T02:21:34+00:00 WARN move failed D:\QM\reports\work_items\9a95577b-9872-4757-8966-3af71a463224\QM5_20195\Q04\QM5_20195_NZDUSD_EURGBP_COINTEGRATION_D1__9a95577b-9872-4757-8966-3af71a463224\F2\QM5_20195_nzd-eurgbp-coint_QM5_20195_NZDUSD_EURGBP_COINTEGRATION_D1_D1_backtest_q04comm.set: [Errno 2] No such file or directory: 'D:\\QM\\reports\\_retention_quarantine\\20260905T022001Z\\work_items\\9a95577b-9872-4757-8966-3af71a463224\\QM5_20195\\Q04\\QM5_20195_NZDUSD_EURGBP_COINTEGRATION_D1__9a95577b-9872-4757-8966-3af71a463224\\F2\\QM5_20195_nzd-eurgbp-coint_QM5_20195_NZDUSD_EURGBP_COINTEGRATION_D1_D1_backtest_q04comm.set'
+2026-09-05T02:21:34+00:00 WARN move failed D:\QM\reports\work_items\9a95577b-9872-4757-8966-3af71a463224\QM5_20195\Q04\QM5_20195_NZDUSD_EURGBP_COINTEGRATION_D1__9a95577b-9872-4757-8966-3af71a463224\F3\QM5_20195_nzd-eurgbp-coint_QM5_20195_NZDUSD_EURGBP_COINTEGRATION_D1_D1_backtest_q04comm.set: [Errno 2] No such file or directory: 'D:\\QM\\reports\\_retention_quarantine\\20260905T022001Z\\work_items\\9a95577b-9872-4757-8966-3af71a463224\\QM5_20195\\Q04\\QM5_20195_NZDUSD_EURGBP_COINTEGRATION_D1__9a95577b-9872-4757-8966-3af71a463224\\F3\\QM5_20195_nzd-eurgbp-coint_QM5_20195_NZDUSD_EURGBP_COINTEGRATION_D1_D1_backtest_q04comm.set'
+2026-09-05T02:21:35+00:00 QUARANTINED 2,756 files (0.12 GB) -> D:\QM\reports\_retention_quarantine\20260905T022001Z
+2026-09-05T02:21:39+00:00 COMPRESSED 1,012 files, saved 0.09 GB
+2026-09-05T02:21:39+00:00 DONE mode=apply elapsed=98s

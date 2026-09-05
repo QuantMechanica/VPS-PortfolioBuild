@@ -1,0 +1,1717 @@
+﻿2026-06-06T11:27:49Z PURGED 0 .log older than 48h (~0GB); D: free 671.99GB -> 671.99GB
+2026-06-06T13:00:53Z PURGED 0 .log older than 48h (~0GB); D: free 648.94GB -> 648.92GB
+2026-06-07T01:00:28Z PURGED 0 .log older than 48h (~0GB); D: free 568.53GB -> 568.53GB
+2026-06-07T13:00:30Z PURGED 0 .log older than 48h (~0GB); D: free 408.27GB -> 405.21GB
+2026-06-08T01:00:23Z PURGED 0 .log older than 48h (~0GB); D: free 253.31GB -> 253.29GB
+2026-06-08T13:00:21Z PURGED 21 .log older than 48h (~0.03GB); D: free 197.05GB -> 196.99GB
+2026-06-09T01:00:22Z PURGED 9 .log older than 48h (~0.1GB); D: free 79.69GB -> 194.7GB
+2026-06-09T13:00:25Z PURGED 0 .log older than 48h (~0GB); D: free 76.3GB -> 183.04GB
+2026-06-10T01:00:22Z PURGED 8 .log older than 48h (~0.05GB); D: free 9.56GB -> 12.9GB
+2026-06-10T13:00:40Z PURGED 6 .log older than 48h (~0.22GB); D: free 117.67GB -> 117.85GB
+2026-06-10T21:08:54Z PURGED 4976 .log older than 6h (~405.26GB); D: free 7.06GB -> 396.91GB
+2026-06-10T21:10:31Z PURGED 2678 .log older than 6h (~69.88GB); D: free 389.7GB -> 452.53GB
+2026-06-10T21:19:23Z PURGED 56 .log older than 6h (~1.27GB); D: free 453.45GB -> 459.67GB
+2026-06-11T00:18:38Z PURGED 595 .log older than 6h (~16.54GB); D: free 433.28GB -> 449.81GB
+2026-06-11T03:18:15Z PURGED 849 .log older than 6h (~24.31GB); D: free 428.48GB -> 452.8GB
+2026-06-11T06:18:36Z PURGED 1274 .log older than 6h (~5.48GB); D: free 435.03GB -> 440.43GB
+2026-06-11T09:18:33Z PURGED 1065 .log older than 6h (~6.18GB); D: free 395.39GB -> 401.35GB
+2026-06-11T12:18:44Z PURGED 532 .log older than 6h (~10.6GB); D: free 274.3GB -> 283.69GB
+2026-06-11T15:19:43Z PURGED 601 .log older than 6h (~16.64GB); D: free 222.32GB -> 257.62GB
+2026-06-11T18:18:31Z PURGED 938 .log older than 6h (~32.36GB); D: free 202.67GB -> 234.73GB
+2026-06-11T21:20:25Z PURGED 698 .log older than 6h (~35.53GB); D: free 178.86GB -> 194.61GB
+2026-06-12T00:19:13Z PURGED 450 .log older than 6h (~35.09GB); D: free 195.04GB -> 229.03GB
+2026-06-12T03:18:35Z PURGED 537 .log older than 6h (~42.72GB); D: free 180.54GB -> 223.24GB
+2026-06-12T06:18:51Z PURGED 486 .log older than 6h (~18.88GB); D: free 177.31GB -> 209.96GB
+2026-06-12T09:18:56Z PURGED 572 .log older than 6h (~36.72GB); D: free 161.6GB -> 198.2GB
+2026-06-12T12:20:05Z PURGED 490 .log older than 6h (~28.07GB); D: free 124.17GB -> 150.66GB
+2026-06-12T15:19:40Z PURGED 486 .log older than 6h (~47.54GB); D: free 77.16GB -> 107.7GB
+2026-06-12T18:20:22Z PURGED 480 .log older than 6h (~51.49GB); D: free 91.53GB -> 134.59GB
+2026-06-12T21:18:23Z PURGED 4 .log older than 6h (~1.13GB); D: free 212.63GB -> 213.61GB
+2026-06-13T00:18:39Z PURGED 5 .log older than 6h (~0.97GB); D: free 169.05GB -> 170GB
+2026-06-13T03:18:27Z PURGED 121 .log older than 6h (~18.68GB); D: free 190.05GB -> 208.73GB
+2026-06-13T06:34:27Z PURGED 491 .log older than 6h (~21.09GB); D: free 405.57GB -> 157.45GB
+2026-06-13T09:18:20Z PURGED 473 .log older than 6h (~15.23GB); D: free 590.47GB -> 605.7GB
+2026-06-13T12:18:42Z PURGED 227 .log older than 6h (~9.1GB); D: free 428.96GB -> 438.05GB
+2026-06-13T15:18:47Z PURGED 115 .log older than 6h (~4.25GB); D: free 335.6GB -> 338.79GB
+2026-06-13T18:18:43Z PURGED 332 .log older than 6h (~19.25GB); D: free 129.02GB -> 146.73GB
+2026-06-13T21:18:49Z PURGED 661 .log older than 6h (~30.73GB); D: free 247.41GB -> 277.03GB
+2026-06-14T00:18:21Z PURGED 409 .log older than 6h (~30.56GB); D: free 260.66GB -> 291.2GB
+2026-06-14T03:18:16Z PURGED 419 .log older than 6h (~29.51GB); D: free 293.75GB -> 323.24GB
+2026-06-14T06:18:33Z PURGED 440 .log older than 6h (~8.59GB); D: free 272.47GB -> 281.1GB
+2026-06-14T09:18:18Z PURGED 504 .log older than 6h (~5.18GB); D: free 245.68GB -> 250.73GB
+2026-06-14T12:18:18Z PURGED 420 .log older than 6h (~21.18GB); D: free 81.01GB -> 102.18GB
+2026-06-14T15:18:20Z PURGED 379 .log older than 6h (~48.6GB); D: free 320.94GB -> 369.54GB
+2026-06-14T18:18:20Z PURGED 418 .log older than 6h (~158.62GB); D: free 369.49GB -> 528.11GB
+2026-06-14T21:19:41Z PURGED 139 .log older than 6h (~77.53GB); D: free 246.77GB -> 313.51GB
+2026-06-15T00:21:41Z PURGED 0 .log older than 6h (~0GB); D: free 57.57GB -> 47.09GB
+2026-06-15T03:19:43Z PURGED 372 .log older than 6h (~214.37GB); D: free 89.42GB -> 293.84GB
+2026-06-15T06:18:48Z PURGED 459 .log older than 6h (~76.72GB); D: free 118.6GB -> 195.17GB
+2026-06-15T09:18:41Z PURGED 315 .log older than 6h (~4.7GB); D: free 315.92GB -> 320.26GB
+2026-06-15T12:18:38Z PURGED 276 .log older than 6h (~9.17GB); D: free 303.46GB -> 312.56GB
+2026-06-15T15:18:38Z PURGED 470 .log older than 6h (~18.92GB); D: free 284.77GB -> 303.61GB
+2026-06-15T18:18:31Z PURGED 441 .log older than 6h (~24.35GB); D: free 229.44GB -> 253.79GB
+2026-06-15T21:18:34Z PURGED 375 .log older than 6h (~21.85GB); D: free 106.87GB -> 128.72GB
+2026-06-16T00:18:32Z PURGED 253 .log older than 6h (~63.56GB); D: free 75.5GB -> 138.7GB
+2026-06-16T03:18:30Z PURGED 252 .log older than 6h (~139.83GB); D: free 109.34GB -> 249.17GB
+2026-06-16T06:18:31Z PURGED 185 .log older than 6h (~42.2GB); D: free 212.15GB -> 254.31GB
+2026-06-16T09:18:18Z PURGED 174 .log older than 6h (~25.01GB); D: free 208.29GB -> 233.3GB
+2026-06-16T12:18:19Z PURGED 176 .log older than 6h (~36.23GB); D: free 182.86GB -> 219.03GB
+2026-06-16T15:18:30Z PURGED 173 .log older than 6h (~42.18GB); D: free 182.98GB -> 225.16GB
+2026-06-16T18:19:46Z PURGED 166 .log older than 6h (~40.12GB); D: free 165.26GB -> 190.15GB
+2026-06-16T21:19:45Z PURGED 143 .log older than 6h (~31.73GB); D: free 109.71GB -> 145.74GB
+2026-06-17T00:18:53Z PURGED 335 .log older than 6h (~36.66GB); D: free 122.18GB -> 162.09GB
+2026-06-17T03:19:15Z PURGED 356 .log older than 6h (~46.87GB); D: free 142.21GB -> 184.05GB
+2026-06-17T06:18:49Z PURGED 360 .log older than 6h (~13.74GB); D: free 201.75GB -> 215.43GB
+2026-06-17T09:18:58Z PURGED 429 .log older than 6h (~3.77GB); D: free 206.48GB -> 210.24GB
+2026-06-17T12:18:44Z PURGED 337 .log older than 6h (~4.89GB); D: free 190.12GB -> 194.38GB
+2026-06-17T15:18:58Z PURGED 306 .log older than 6h (~6.95GB); D: free 185.33GB -> 192.06GB
+2026-06-17T18:19:29Z PURGED 302 .log older than 6h (~10.66GB); D: free 139.38GB -> 142.96GB
+2026-06-17T21:18:46Z PURGED 318 .log older than 6h (~12.52GB); D: free 161.31GB -> 173.67GB
+2026-06-18T00:18:23Z PURGED 303 .log older than 6h (~14.65GB); D: free 171.77GB -> 186.4GB
+2026-06-18T03:19:37Z PURGED 308 .log older than 6h (~16.55GB); D: free 122.91GB -> 130.2GB
+2026-06-18T06:19:06Z PURGED 288 .log older than 6h (~6.32GB); D: free 134.43GB -> 140.62GB
+2026-06-18T09:18:26Z PURGED 389 .log older than 6h (~13.35GB); D: free 133.91GB -> 147.1GB
+2026-06-18T12:18:21Z PURGED 378 .log older than 6h (~18.01GB); D: free 110.48GB -> 128.08GB
+2026-06-18T15:20:58Z PURGED 418 .log older than 6h (~23.99GB); D: free 25.82GB -> 14.46GB
+2026-06-18T18:18:56Z PURGED 485 .log older than 6h (~34.44GB); D: free 0GB -> 34.06GB
+2026-06-18T21:18:26Z PURGED 435 .log older than 6h (~51.67GB); D: free 410.12GB -> 461.79GB
+2026-06-19T00:18:26Z PURGED 408 .log older than 6h (~62.88GB); D: free 452.49GB -> 515.36GB
+2026-06-19T03:18:28Z PURGED 806 .log older than 6h (~48.02GB); D: free 515.57GB -> 563.59GB
+2026-06-19T06:18:43Z PURGED 21 .log older than 6h (~8.78GB); D: free 546.14GB -> 554.93GB
+2026-06-19T09:19:21Z PURGED 0 .log older than 6h (~0GB); D: free 245.28GB -> 357.16GB
+2026-06-19T12:19:00Z PURGED 6 .log older than 6h (~0.08GB); D: free 0.25GB -> 3.69GB
+2026-06-19T15:18:24Z PURGED 10 .log older than 6h (~0.18GB); D: free 254.48GB -> 254.66GB
+2026-06-19T18:18:28Z PURGED 0 .log older than 6h (~0GB); D: free 542.13GB -> 542.13GB
+2026-06-19T21:29:27Z PURGED 0 .log older than 6h (~0GB); D: free 223.3GB -> 121.12GB
+2026-06-20T00:18:31Z PURGED 0 .log older than 6h (~0GB); D: free 542.58GB -> 542.58GB
+2026-06-20T03:18:31Z PURGED 0 .log older than 6h (~0GB); D: free 542.27GB -> 542.27GB
+2026-06-20T06:18:33Z PURGED 0 .log older than 6h (~0GB); D: free 542.12GB -> 542.12GB
+2026-06-20T09:21:27Z PURGED 0 .log older than 6h (~0GB); D: free 440.46GB -> 431.9GB
+2026-06-20T12:20:18Z PURGED 0 .log older than 6h (~0GB); D: free 339.97GB -> 349.94GB
+2026-06-20T15:20:48Z PURGED 95 .log older than 6h (~0.93GB); D: free 185.86GB -> 194.97GB
+2026-06-20T18:20:19Z PURGED 94 .log older than 6h (~2.1GB); D: free 198.89GB -> 200.74GB
+2026-06-20T21:19:18Z PURGED 88 .log older than 6h (~3.05GB); D: free 153.98GB -> 156.49GB
+2026-06-21T00:18:28Z PURGED 90 .log older than 6h (~4.65GB); D: free 519.9GB -> 524.54GB
+2026-06-21T03:18:28Z PURGED 86 .log older than 6h (~5.6GB); D: free 523.5GB -> 529.1GB
+2026-06-21T06:19:25Z PURGED 28 .log older than 6h (~0.19GB); D: free 506.58GB -> 506.52GB
+2026-06-21T09:18:53Z PURGED 38 .log older than 6h (~0.32GB); D: free 373.66GB -> 373.79GB
+2026-06-21T12:22:25Z PURGED 79 .log older than 6h (~0.98GB); D: free 333.72GB -> 257.71GB
+2026-06-21T15:18:31Z PURGED 67 .log older than 6h (~3.19GB); D: free 519.82GB -> 523.02GB
+2026-06-21T18:23:41Z PURGED 72 .log older than 6h (~7.23GB); D: free 296.04GB -> 283.14GB
+2026-06-21T21:19:36Z PURGED 53 .log older than 6h (~3.73GB); D: free 293.93GB -> 296.86GB
+2026-06-22T00:18:36Z PURGED 71 .log older than 6h (~10.71GB); D: free 544.86GB -> 555.58GB
+2026-06-22T03:18:31Z PURGED 60 .log older than 6h (~8.16GB); D: free 558.93GB -> 567.09GB
+2026-06-22T06:18:29Z PURGED 20 .log older than 6h (~0.61GB); D: free 494.84GB -> 495.45GB
+2026-06-22T09:18:41Z PURGED 0 .log older than 6h (~0GB); D: free 437.22GB -> 437.2GB
+2026-06-22T12:19:20Z PURGED 13 .log older than 6h (~0.08GB); D: free 369.7GB -> 416.54GB
+2026-06-22T15:19:21Z PURGED 5 .log older than 6h (~0.05GB); D: free 372.85GB -> 359.08GB
+2026-06-22T18:18:46Z PURGED 36 .log older than 6h (~1.71GB); D: free 249.3GB -> 250.97GB
+2026-06-22T21:18:28Z PURGED 16 .log older than 6h (~1.11GB); D: free 186.91GB -> 188.02GB
+2026-06-23T00:19:31Z PURGED 21 .log older than 6h (~21.31GB); D: free 322.12GB -> 337.93GB
+2026-06-23T03:18:59Z PURGED 9 .log older than 6h (~71.88GB); D: free 249.72GB -> 360.48GB
+2026-06-23T06:18:47Z PURGED 62 .log older than 6h (~0.35GB); D: free 313.87GB -> 313.55GB
+2026-06-23T09:18:36Z PURGED 133 .log older than 6h (~8.93GB); D: free 47.93GB -> 56.86GB
+2026-06-23T12:18:35Z PURGED 48 .log older than 6h (~3.81GB); D: free 451.95GB -> 455.76GB
+2026-06-23T15:18:32Z PURGED 0 .log older than 6h (~0GB); D: free 460.29GB -> 460.29GB
+2026-06-23T18:18:28Z PURGED 1 .log older than 6h (~0.32GB); D: free 373.31GB -> 373.31GB
+2026-06-23T21:18:23Z PURGED 0 .log older than 6h (~0GB); D: free 134.52GB -> 134.52GB
+2026-06-24T00:18:30Z PURGED 40 .log older than 6h (~4.17GB); D: free 303.95GB -> 308.12GB
+2026-06-24T03:18:42Z PURGED 14 .log older than 6h (~0.84GB); D: free 308.36GB -> 309.2GB
+2026-06-24T06:18:30Z PURGED 0 .log older than 6h (~0GB); D: free 326.49GB -> 326.49GB
+2026-06-24T09:19:05Z PURGED 0 .log older than 6h (~0GB); D: free 109.87GB -> 106.39GB
+2026-06-24T12:18:30Z PURGED 0 .log older than 6h (~0GB); D: free 246.79GB -> 246.79GB
+2026-06-24T15:19:55Z PURGED 0 .log older than 6h (~0GB); D: free 26.23GB -> 26.22GB
+2026-06-24T18:18:38Z PURGED 0 .log older than 6h (~0GB); D: free 144.94GB -> 144.94GB
+2026-06-24T21:18:36Z PURGED 0 .log older than 6h (~0GB); D: free 162.66GB -> 162.61GB
+2026-06-25T00:18:33Z PURGED 0 .log older than 6h (~0GB); D: free 91.73GB -> 91.73GB
+2026-06-25T03:18:30Z PURGED 0 .log older than 6h (~0GB); D: free 210.35GB -> 210.35GB
+2026-06-25T06:18:39Z PURGED 80 .log older than 6h (~3.28GB); D: free 208.42GB -> 211.7GB
+2026-06-25T09:18:37Z PURGED 116 .log older than 6h (~1.16GB); D: free 150.74GB -> 151.89GB
+2026-06-25T12:19:12Z PURGED 72 .log older than 6h (~1.63GB); D: free 176.01GB -> 163.76GB
+2026-06-25T15:18:26Z PURGED 0 .log older than 6h (~0GB); D: free 141.34GB -> 141.32GB
+2026-06-25T18:19:22Z PURGED 1 .log older than 6h (~0.02GB); D: free 116.6GB -> 109.36GB
+2026-06-25T21:18:36Z PURGED 0 .log older than 6h (~0GB); D: free 138.03GB -> 138.03GB
+2026-06-26T00:18:55Z PURGED 28 .log older than 6h (~0.86GB); D: free 128.7GB -> 133.2GB
+2026-06-26T03:18:39Z PURGED 20 .log older than 6h (~0.83GB); D: free 144.45GB -> 145.28GB
+2026-06-26T06:19:21Z PURGED 95 .log older than 6h (~0.43GB); D: free 123.3GB -> 119.89GB
+2026-06-26T09:18:37Z PURGED 121 .log older than 6h (~0.82GB); D: free 193.65GB -> 194.47GB
+2026-06-26T12:18:52Z PURGED 54 .log older than 6h (~1.85GB); D: free 161.01GB -> 162.74GB
+2026-06-26T15:19:41Z PURGED 9 .log older than 6h (~0.72GB); D: free 130.75GB -> 91.82GB
+2026-06-26T18:18:41Z PURGED 1 .log older than 6h (~0GB); D: free 99.72GB -> 99.72GB
+2026-06-26T21:19:01Z PURGED 0 .log older than 6h (~0GB); D: free 145.65GB -> 143.7GB
+2026-06-27T00:18:31Z PURGED 8 .log older than 6h (~0.65GB); D: free 141.01GB -> 141.65GB
+2026-06-27T03:19:16Z PURGED 0 .log older than 6h (~0GB); D: free 138.08GB -> 135.87GB
+2026-06-27T06:19:00Z PURGED 1 .log older than 6h (~0.01GB); D: free 125.45GB -> 123.19GB
+2026-06-27T09:18:32Z PURGED 0 .log older than 6h (~0GB); D: free 177.91GB -> 177.91GB
+2026-06-27T12:18:33Z PURGED 0 .log older than 6h (~0GB); D: free 172.32GB -> 170.67GB
+2026-06-27T15:19:29Z PURGED 18 .log older than 6h (~0.43GB); D: free 128.52GB -> 131.95GB
+2026-06-27T18:18:50Z PURGED 12 .log older than 6h (~0.44GB); D: free 124.95GB -> 125.38GB
+2026-06-27T21:18:34Z PURGED 89 .log older than 6h (~5.99GB); D: free 149.6GB -> 155.6GB
+2026-06-28T00:19:01Z PURGED 70 .log older than 6h (~7.36GB); D: free 103.84GB -> 109.09GB
+2026-06-28T03:18:47Z PURGED 15 .log older than 6h (~5.2GB); D: free 198.81GB -> 203.98GB
+2026-06-28T06:18:34Z PURGED 5 .log older than 6h (~0.26GB); D: free 176.71GB -> 176.52GB
+2026-06-28T09:18:52Z PURGED 6 .log older than 6h (~0.2GB); D: free 132.3GB -> 132.1GB
+2026-06-28T12:20:55Z PURGED 3 .log older than 6h (~0.08GB); D: free 126.77GB -> 102.84GB
+2026-06-28T15:19:05Z PURGED 4 .log older than 6h (~0GB); D: free 106.08GB -> 105.62GB
+2026-06-28T18:18:36Z PURGED 1 .log older than 6h (~0.03GB); D: free 196.25GB -> 196.28GB
+2026-06-28T21:18:45Z PURGED 0 .log older than 6h (~0GB); D: free 196.1GB -> 196.1GB
+2026-06-29T00:18:41Z PURGED 9 .log older than 6h (~1.1GB); D: free 196.38GB -> 197.48GB
+2026-06-29T03:18:37Z PURGED 0 .log older than 6h (~0GB); D: free 197.2GB -> 197.2GB
+2026-06-29T06:18:29Z PURGED 0 .log older than 6h (~0GB); D: free 198.01GB -> 198.01GB
+2026-06-29T09:18:39Z PURGED 0 .log older than 6h (~0GB); D: free 198.16GB -> 198.16GB
+2026-06-29T12:18:38Z PURGED 0 .log older than 6h (~0GB); D: free 330.1GB -> 330.08GB
+2026-06-29T15:18:58Z PURGED 0 .log older than 6h (~0GB); D: free 254.37GB -> 253.9GB
+2026-06-29T18:18:46Z PURGED 0 .log older than 6h (~0GB); D: free 263.96GB -> 263.87GB
+2026-06-29T21:18:34Z PURGED 4 .log older than 6h (~0.11GB); D: free 236.25GB -> 236.81GB
+2026-06-30T00:18:48Z PURGED 0 .log older than 6h (~0GB); D: free 386.93GB -> 386.9GB
+2026-06-30T03:18:48Z PURGED 5 .log older than 6h (~0.32GB); D: free 372.93GB -> 372.78GB
+2026-06-30T06:18:49Z PURGED 23 .log older than 6h (~1.28GB); D: free 322.89GB -> 323.63GB
+2026-06-30T09:18:36Z PURGED 2 .log older than 6h (~0.02GB); D: free 305.21GB -> 304.76GB
+2026-06-30T12:18:35Z PURGED 11 .log older than 6h (~0.56GB); D: free 275.5GB -> 276.03GB
+2026-06-30T15:18:43Z PURGED 62 .log older than 6h (~14.56GB); D: free 258.51GB -> 272.74GB
+2026-06-30T18:20:07Z PURGED 77 .log older than 6h (~17.76GB); D: free 114.26GB -> 255.2GB
+2026-06-30T21:18:49Z PURGED 85 .log older than 6h (~24.46GB); D: free 360.16GB -> 383.87GB
+2026-07-01T00:18:43Z PURGED 4 .log older than 6h (~2.1GB); D: free 410.43GB -> 412.54GB
+2026-07-01T03:18:50Z PURGED 5 .log older than 6h (~4.61GB); D: free 392GB -> 396.49GB
+2026-07-01T06:18:47Z PURGED 6 .log older than 6h (~0GB); D: free 379.17GB -> 379.17GB
+2026-07-01T09:18:56Z PURGED 15 .log older than 6h (~0.2GB); D: free 354.68GB -> 354.73GB
+2026-07-01T12:18:35Z PURGED 44 .log older than 6h (~1.43GB); D: free 340.44GB -> 341.82GB
+2026-07-01T15:19:03Z PURGED 85 .log older than 6h (~3.66GB); D: free 332.82GB -> 336.36GB
+2026-07-01T18:18:46Z PURGED 38 .log older than 6h (~2.15GB); D: free 328.98GB -> 331.13GB
+2026-07-01T21:18:40Z PURGED 22 .log older than 6h (~1.67GB); D: free 311.34GB -> 312.86GB
+2026-07-02T00:18:32Z PURGED 6 .log older than 6h (~0.68GB); D: free 329.7GB -> 330.38GB
+2026-07-02T03:18:51Z PURGED 11 .log older than 6h (~1.38GB); D: free 325.4GB -> 326.75GB
+2026-07-02T06:18:46Z PURGED 16 .log older than 6h (~0.11GB); D: free 154.3GB -> 154.4GB
+2026-07-02T09:18:55Z PURGED 32 .log older than 6h (~1.19GB); D: free 272.87GB -> 273.9GB
+2026-07-02T12:24:01Z PURGED 11 .log older than 6h (~0.46GB); D: free 306.02GB -> 201.22GB
+2026-07-02T15:18:43Z PURGED 54 .log older than 6h (~2.92GB); D: free 277.94GB -> 280.86GB
+2026-07-02T18:18:33Z PURGED 21 .log older than 6h (~0.68GB); D: free 438.15GB -> 438.83GB
+2026-07-02T21:19:30Z PURGED 20 .log older than 6h (~0.55GB); D: free 404.22GB -> 404.33GB
+2026-07-03T00:19:12Z PURGED 43 .log older than 6h (~2.93GB); D: free 401.93GB -> 404.86GB
+2026-07-03T03:20:28Z PURGED 14 .log older than 6h (~0.45GB); D: free 376.88GB -> 362.26GB
+2026-07-03T06:19:07Z PURGED 5 .log older than 6h (~0.11GB); D: free 377.09GB -> 377.19GB
+2026-07-03T09:20:41Z PURGED 3 .log older than 6h (~0.01GB); D: free 301.18GB -> 291.21GB
+2026-07-03T12:19:17Z PURGED 3 .log older than 6h (~0.15GB); D: free 291.59GB -> 290.6GB
+2026-07-03T15:19:14Z PURGED 14 .log older than 6h (~0.42GB); D: free 277.78GB -> 277.82GB
+2026-07-03T18:19:10Z PURGED 6 .log older than 6h (~0.48GB); D: free 272.82GB -> 272.21GB
+2026-07-03T21:19:17Z PURGED 2 .log older than 6h (~0.07GB); D: free 258.07GB -> 256.38GB
+2026-07-04T00:18:58Z PURGED 4 .log older than 6h (~1.53GB); D: free 324.4GB -> 325.93GB
+2026-07-05T15:18:57Z PURGED 1626 .log older than 6h (~157.06GB); D: free 83.84GB -> 239.74GB
+2026-07-05T18:18:47Z PURGED 20 .log older than 6h (~1.32GB); D: free 225.34GB -> 226.59GB
+2026-07-05T21:18:53Z PURGED 8 .log older than 6h (~0.67GB); D: free 92.21GB -> 92.89GB
+2026-07-06T00:18:55Z PURGED 51 .log older than 6h (~23.44GB); D: free 144.73GB -> 168.17GB
+2026-07-06T03:18:57Z PURGED 22 .log older than 6h (~4.13GB); D: free 165.46GB -> 169.26GB
+2026-07-06T06:18:55Z PURGED 35 .log older than 6h (~7.69GB); D: free 164.58GB -> 172.23GB
+2026-07-06T09:18:55Z PURGED 1 .log older than 6h (~0.13GB); D: free 168.86GB -> 168.95GB
+2026-07-06T12:18:57Z PURGED 23 .log older than 6h (~0.99GB); D: free 159GB -> 159.98GB
+2026-07-06T15:18:49Z PURGED 17 .log older than 6h (~2.03GB); D: free 93.92GB -> 95.78GB
+2026-07-06T18:18:46Z PURGED 20 .log older than 6h (~0.87GB); D: free 111.56GB -> 112.43GB
+2026-07-06T21:18:56Z PURGED 5 .log older than 6h (~44.82GB); D: free 108.68GB -> 153.32GB
+2026-07-07T00:19:08Z PURGED 2 .log older than 6h (~0.57GB); D: free 149.93GB -> 150.35GB
+2026-07-07T03:18:47Z PURGED 4 .log older than 6h (~0.64GB); D: free 102.99GB -> 103.58GB
+2026-07-07T06:19:07Z PURGED 3 .log older than 6h (~0.04GB); D: free 123.4GB -> 123.41GB
+2026-07-07T09:19:00Z PURGED 76 .log older than 6h (~38.06GB); D: free 106.2GB -> 144.04GB
+2026-07-07T12:18:54Z PURGED 101 .log older than 6h (~1.04GB); D: free 163.1GB -> 164.05GB
+2026-07-07T15:18:58Z PURGED 14 .log older than 6h (~0.46GB); D: free 121.48GB -> 130.92GB
+2026-07-07T18:19:17Z PURGED 81 .log older than 6h (~5.65GB); D: free 74.56GB -> 79.7GB
+2026-07-07T21:19:06Z PURGED 14 .log older than 6h (~0.99GB); D: free 143.26GB -> 143.36GB
+2026-07-08T00:19:03Z PURGED 11 .log older than 6h (~0.42GB); D: free 154.48GB -> 154.68GB
+2026-07-08T06:18:56Z PURGED 34 .log older than 6h (~1.5GB); D: free 119.01GB -> 120.45GB
+2026-07-08T09:18:42Z PURGED 43 .log older than 6h (~0.91GB); D: free 92.32GB -> 92.46GB
+2026-07-08T12:18:39Z PURGED 7 .log older than 6h (~0.82GB); D: free 59.03GB -> 59.18GB
+2026-07-08T15:18:38Z PURGED 15 .log older than 6h (~2.39GB); D: free 49.36GB -> 51.75GB
+2026-07-08T18:19:01Z PURGED 4 .log older than 6h (~2GB); D: free 90.29GB -> 90.33GB
+2026-07-08T21:18:39Z PURGED 18 .log older than 6h (~7.42GB); D: free 42.21GB -> 49.64GB
+2026-07-09T00:19:03Z PURGED 6 .log older than 6h (~2.03GB); D: free 183.38GB -> 184.36GB
+2026-07-09T03:19:05Z PURGED 7 .log older than 6h (~2.03GB); D: free 144.22GB -> 144.34GB
+2026-07-09T06:18:57Z PURGED 18 .log older than 6h (~8.93GB); D: free 77.66GB -> 85.52GB
+2026-07-09T09:19:26Z PURGED 5 .log older than 6h (~1.93GB); D: free 47.47GB -> 48.38GB
+2026-07-09T12:19:10Z PURGED 3 .log older than 6h (~0.42GB); D: free 134.85GB -> 135.27GB
+2026-07-09T15:18:58Z PURGED 32 .log older than 6h (~9.9GB); D: free 139.03GB -> 146.15GB
+2026-07-09T18:19:02Z PURGED 4 .log older than 6h (~1.29GB); D: free 53.55GB -> 51.37GB
+2026-07-09T21:18:41Z PURGED 6 .log older than 6h (~1.18GB); D: free 47.74GB -> 48.85GB
+2026-07-10T00:18:49Z PURGED 19 .log older than 6h (~37.35GB); D: free 200.61GB -> 237.91GB
+2026-07-10T03:19:02Z PURGED 11 .log older than 6h (~28.93GB); D: free 264.44GB -> 293.33GB
+2026-07-10T06:19:00Z PURGED 13 .log older than 6h (~0.05GB); D: free 263.03GB -> 263.03GB
+2026-07-10T09:19:06Z PURGED 15 .log older than 6h (~0.26GB); D: free 229.87GB -> 227.52GB
+2026-07-10T12:19:27Z PURGED 84 .log older than 6h (~2.83GB); D: free 195.46GB -> 197.44GB
+2026-07-10T15:19:29Z PURGED 105 .log older than 6h (~6.61GB); D: free 184.69GB -> 190.4GB
+2026-07-10T18:18:59Z PURGED 24 .log older than 6h (~4.19GB); D: free 195.76GB -> 196.49GB
+2026-07-10T21:19:18Z PURGED 8 .log older than 6h (~2.04GB); D: free 182.59GB -> 183.05GB
+2026-07-11T00:19:01Z PURGED 18 .log older than 6h (~2.78GB); D: free 194.97GB -> 197.76GB
+2026-07-11T03:18:40Z PURGED 43 .log older than 6h (~10GB); D: free 196.58GB -> 206.58GB
+2026-07-11T06:18:40Z PURGED 12 .log older than 6h (~3.01GB); D: free 200.96GB -> 203.98GB
+2026-07-11T09:19:07Z PURGED 4 .log older than 6h (~0GB); D: free 183.99GB -> 184GB
+2026-07-11T12:18:44Z PURGED 0 .log older than 6h (~0GB); D: free 181.49GB -> 181.49GB
+2026-07-11T15:18:42Z PURGED 0 .log older than 6h (~0GB); D: free 179.73GB -> 179.73GB
+2026-07-11T18:18:40Z PURGED 3 .log older than 6h (~0.01GB); D: free 177.93GB -> 177.94GB
+2026-07-11T21:18:36Z PURGED 3 .log older than 6h (~0GB); D: free 174.98GB -> 174.98GB
+2026-07-12T00:18:45Z PURGED 0 .log older than 6h (~0GB); D: free 171.52GB -> 171.52GB
+2026-07-12T03:18:46Z PURGED 0 .log older than 6h (~0GB); D: free 170.34GB -> 170.34GB
+2026-07-12T06:19:08Z PURGED 3 .log older than 6h (~0.63GB); D: free 164GB -> 164.69GB
+2026-07-12T09:18:46Z PURGED 2 .log older than 6h (~0GB); D: free 159.33GB -> 159.33GB
+2026-07-12T12:18:44Z PURGED 2 .log older than 6h (~0GB); D: free 153.82GB -> 153.82GB
+2026-07-12T15:20:16Z PURGED 0 .log older than 6h (~0GB); D: free 143.37GB -> 132.81GB
+2026-07-12T18:19:34Z PURGED 3 .log older than 6h (~0GB); D: free 115.48GB -> 113.22GB
+2026-07-12T21:18:50Z PURGED 8 .log older than 6h (~0.01GB); D: free 81.65GB -> 81.65GB
+2026-07-13T00:18:33Z PURGED 7 .log older than 6h (~0.01GB); D: free 198.57GB -> 198.58GB
+2026-07-13T03:18:43Z PURGED 7 .log older than 6h (~0GB); D: free 198.58GB -> 198.58GB
+2026-07-13T06:19:51Z PURGED 0 .log older than 6h (~0GB); D: free 185.2GB -> 180.24GB
+2026-07-13T09:18:37Z PURGED 0 .log older than 6h (~0GB); D: free 192.91GB -> 192.9GB
+2026-07-13T12:18:40Z PURGED 0 .log older than 6h (~0GB); D: free 183.75GB -> 183.75GB
+2026-07-13T15:18:37Z PURGED 19 .log older than 6h (~2.38GB); D: free 183.7GB -> 186.09GB
+2026-07-13T18:18:37Z PURGED 15 .log older than 6h (~2.33GB); D: free 186.2GB -> 188.53GB
+2026-07-13T21:18:41Z PURGED 4 .log older than 6h (~0.03GB); D: free 86.4GB -> 86.1GB
+2026-07-14T00:18:51Z PURGED 0 .log older than 6h (~0GB); D: free 144.37GB -> 144.3GB
+2026-07-14T03:18:41Z PURGED 2 .log older than 6h (~0GB); D: free 115.13GB -> 114.77GB
+2026-07-14T06:18:59Z PURGED 2 .log older than 6h (~0GB); D: free 113.03GB -> 112.3GB
+2026-07-14T09:19:02Z PURGED 8 .log older than 6h (~0.53GB); D: free 115.75GB -> 115.41GB
+2026-07-14T12:22:55Z PURGED 9 .log older than 6h (~0.5GB); D: free 115.59GB -> 113.93GB
+2026-07-14T15:19:03Z PURGED 2 .log older than 6h (~0GB); D: free 112.33GB -> 111.92GB
+2026-07-14T18:18:55Z PURGED 9 .log older than 6h (~0.02GB); D: free 92.02GB -> 91.9GB
+2026-07-14T21:19:17Z PURGED 18 .log older than 6h (~1.89GB); D: free 54.07GB -> 55.87GB
+2026-07-15T00:19:00Z PURGED 13 .log older than 6h (~2.09GB); D: free 152.25GB -> 154.28GB
+2026-07-15T03:19:01Z PURGED 34 .log older than 6h (~32.37GB); D: free 142.97GB -> 175.13GB
+2026-07-15T06:19:00Z PURGED 5 .log older than 6h (~7.9GB); D: free 130.03GB -> 137.95GB
+2026-07-15T09:19:01Z PURGED 0 .log older than 6h (~0GB); D: free 135.52GB -> 135.52GB
+2026-07-15T12:19:51Z PURGED 1 .log older than 6h (~0.01GB); D: free 40.02GB -> 38.06GB
+2026-07-15T15:21:22Z PURGED 0 .log older than 6h (~0GB); D: free 61.52GB -> 38.59GB
+2026-07-15T18:19:07Z PURGED 0 .log older than 6h (~0GB); D: free 55.48GB -> 53.17GB
+2026-07-15T21:18:45Z PURGED 2 .log older than 6h (~0.21GB); D: free 49.42GB -> 49.31GB
+2026-07-16T00:18:42Z PURGED 10 .log older than 6h (~0.71GB); D: free 127.19GB -> 127.88GB
+2026-07-16T03:18:51Z PURGED 4 .log older than 6h (~0.1GB); D: free 121.94GB -> 121.98GB
+2026-07-16T06:18:47Z PURGED 0 .log older than 6h (~0GB); D: free 104.74GB -> 104.27GB
+2026-07-16T09:18:44Z PURGED 5 .log older than 6h (~0GB); D: free 91.01GB -> 90.96GB
+2026-07-16T12:19:38Z PURGED 0 .log older than 6h (~0GB); D: free 77.21GB -> 77.18GB
+2026-07-16T15:18:53Z PURGED 0 .log older than 6h (~0GB); D: free 76.23GB -> 75.71GB
+2026-07-16T18:18:53Z PURGED 10 .log older than 6h (~0.24GB); D: free 66.91GB -> 66.95GB
+2026-07-16T21:19:14Z PURGED 0 .log older than 6h (~0GB); D: free 58.22GB -> 57.26GB
+2026-07-17T00:19:06Z PURGED 18 .log older than 6h (~0.08GB); D: free 106.92GB -> 106.99GB
+2026-07-17T03:19:18Z PURGED 7 .log older than 6h (~0.03GB); D: free 104.15GB -> 104.06GB
+2026-07-17T06:19:59Z PURGED 0 .log older than 6h (~0GB); D: free 85.07GB -> 84.81GB
+2026-07-17T09:18:47Z PURGED 5 .log older than 6h (~0.02GB); D: free 96.16GB -> 96.18GB
+2026-07-17T12:18:43Z PURGED 0 .log older than 6h (~0GB); D: free 94.94GB -> 94.94GB
+2026-07-17T15:20:46Z PURGED 48 .log older than 6h (~1.37GB); D: free 89.23GB -> 90.19GB
+2026-07-17T18:19:48Z PURGED 30 .log older than 6h (~0.28GB); D: free 72.93GB -> 73GB
+2026-07-17T21:19:54Z PURGED 19 .log older than 6h (~0.02GB); D: free 33.58GB -> 32.23GB
+2026-07-18T00:19:09Z PURGED 6 .log older than 6h (~0GB); D: free 61.65GB -> 61.42GB
+2026-07-18T03:19:02Z PURGED 0 .log older than 6h (~0GB); D: free 76.23GB -> 76.09GB
+2026-07-18T06:19:56Z PURGED 20 .log older than 6h (~0.03GB); D: free 72.24GB -> 53.36GB
+2026-07-18T09:18:58Z PURGED 13 .log older than 6h (~0GB); D: free 72.36GB -> 71.92GB
+2026-07-18T12:19:39Z PURGED 0 .log older than 6h (~0GB); D: free 52.49GB -> 56.19GB
+2026-07-18T15:18:49Z PURGED 0 .log older than 6h (~0GB); D: free 80.14GB -> 80.14GB
+2026-07-18T18:18:48Z PURGED 1 .log older than 6h (~0GB); D: free 76.95GB -> 76.95GB
+2026-07-18T21:18:49Z PURGED 19 .log older than 6h (~0.59GB); D: free 73.87GB -> 74.46GB
+2026-07-19T00:19:43Z PURGED 1 .log older than 6h (~0GB); D: free 53.37GB -> 40.69GB
+2026-07-19T03:19:12Z PURGED 1 .log older than 6h (~0GB); D: free 41.46GB -> 40.6GB
+2026-07-19T06:19:11Z PURGED 12 .log older than 6h (~0.12GB); D: free 45.08GB -> 44.86GB
+2026-07-19T09:19:07Z PURGED 5 .log older than 6h (~0.08GB); D: free 42.22GB -> 40.34GB
+2026-07-19T12:19:24Z PURGED 0 .log older than 6h (~0GB); D: free 21.92GB -> 22.21GB
+2026-07-19T15:18:58Z PURGED 9 .log older than 6h (~2.04GB); D: free 39.32GB -> 41.38GB
+2026-07-19T18:28:54Z PURGED 3 .log older than 6h (~0.35GB); D: free 172.09GB -> 140.13GB
+2026-07-19T21:19:28Z PURGED 13 .log older than 6h (~11.15GB); D: free 92.86GB -> 101.78GB
+2026-07-20T00:19:17Z PURGED 5 .log older than 6h (~2.83GB); D: free 134.94GB -> 137.74GB
+2026-07-20T03:18:56Z PURGED 3 .log older than 6h (~1.89GB); D: free 103.63GB -> 105.52GB
+2026-07-20T06:19:48Z PURGED 20 .log older than 6h (~33.51GB); D: free 93.03GB -> 125.04GB
+2026-07-20T09:19:14Z PURGED 16 .log older than 6h (~13.07GB); D: free 86.09GB -> 97.71GB
+2026-07-20T12:19:15Z PURGED 5 .log older than 6h (~1.49GB); D: free 57.43GB -> 57.46GB
+2026-07-20T15:19:20Z PURGED 81 .log older than 6h (~22.45GB); D: free 41.08GB -> 63.48GB
+2026-07-20T18:18:55Z PURGED 41 .log older than 6h (~35.54GB); D: free 60.21GB -> 95.6GB
+2026-07-20T21:18:47Z PURGED 9 .log older than 6h (~5.87GB); D: free 66.52GB -> 71.97GB
+2026-07-21T00:18:58Z PURGED 0 .log older than 6h (~0GB); D: free 92.34GB -> 92.33GB
+2026-07-21T03:18:54Z PURGED 18 .log older than 6h (~22.21GB); D: free 85.68GB -> 107.87GB
+2026-07-21T06:19:10Z PURGED 2 .log older than 6h (~0.25GB); D: free 83.17GB -> 81.78GB
+2026-07-21T09:18:12Z PURGED 7 .log older than 6h (~0.05GB); D: free 67.65GB -> 66.54GB
+2026-07-21T12:18:00Z PURGED 2 .log older than 6h (~0.02GB); D: free 102.53GB -> 102.55GB
+2026-07-21T15:18:02Z PURGED 20 .log older than 6h (~0.17GB); D: free 254.67GB -> 254.83GB
+2026-07-21T18:18:08Z PURGED 6 .log older than 6h (~0GB); D: free 155.28GB -> 155.28GB
+2026-07-21T21:18:02Z PURGED 9 .log older than 6h (~0GB); D: free 116.82GB -> 116.82GB
+2026-07-22T00:18:10Z PURGED 203 .log older than 6h (~1.26GB); D: free 100.08GB -> 101.28GB
+2026-07-22T03:18:03Z PURGED 268 .log older than 6h (~0.7GB); D: free 112.46GB -> 113.15GB
+2026-07-22T06:18:05Z PURGED 286 .log older than 6h (~0.33GB); D: free 99.32GB -> 99.6GB
+2026-07-22T09:18:06Z PURGED 67 .log older than 6h (~0.12GB); D: free 87.43GB -> 87.54GB
+2026-07-22T12:18:08Z PURGED 57 .log older than 6h (~0.27GB); D: free 84.64GB -> 84.91GB
+2026-07-22T15:18:12Z PURGED 1 .log older than 6h (~0GB); D: free 71.17GB -> 71.11GB
+2026-07-22T18:18:13Z PURGED 9 .log older than 6h (~0.1GB); D: free 64.95GB -> 64.59GB
+2026-07-22T19:29:57Z DRYRUN: would delete 5 .log older than 6h (~0.06GB); D: free 272.15GB
+2026-07-22T21:18:03Z PURGED 8 .log older than 6h (~0.07GB); D: free 296.01GB -> 295.99GB
+2026-07-23T00:18:05Z PURGED 14 .log older than 6h (~0.17GB); D: free 280.06GB -> 280.22GB
+2026-07-23T03:18:10Z PURGED 15 .log older than 6h (~0.13GB); D: free 261.23GB -> 261.32GB
+2026-07-23T06:18:29Z PURGED 19 .log older than 6h (~0.09GB); D: free 192.33GB -> 192.42GB
+2026-07-23T09:18:08Z PURGED 25 .log older than 6h (~0.25GB); D: free 207.76GB -> 206.84GB
+2026-07-23T12:18:11Z PURGED 18 .log older than 6h (~0.07GB); D: free 190.99GB -> 190.9GB
+2026-07-23T15:18:12Z PURGED 30 .log older than 6h (~0.41GB); D: free 124.35GB -> 124.2GB
+2026-07-23T18:18:16Z PURGED 42 .log older than 6h (~13.51GB); D: free 57.08GB -> 70.53GB
+2026-07-23T21:18:14Z PURGED 43 .log older than 6h (~46.39GB); D: free 100.92GB -> 147.68GB
+2026-07-24T00:18:18Z PURGED 58 .log older than 6h (~82.39GB); D: free 192.29GB -> 274.53GB
+2026-07-24T03:18:54Z PURGED 49 .log older than 6h (~24.99GB); D: free 235.34GB -> 260.33GB
+2026-07-24T06:18:08Z PURGED 54 .log older than 6h (~10.68GB); D: free 203.92GB -> 214.22GB
+2026-07-24T09:18:08Z PURGED 40 .log older than 6h (~4.5GB); D: free 145.28GB -> 149.78GB
+2026-07-24T12:18:07Z PURGED 41 .log older than 6h (~3.16GB); D: free 195.34GB -> 198.5GB
+2026-07-24T15:18:07Z PURGED 16 .log older than 6h (~4.67GB); D: free 174.52GB -> 178.55GB
+2026-07-24T18:18:09Z PURGED 38 .log older than 6h (~8.57GB); D: free 132.61GB -> 141.01GB
+2026-07-24T21:18:06Z PURGED 47 .log older than 6h (~8.06GB); D: free 170.08GB -> 177.34GB
+2026-07-25T00:18:03Z PURGED 61 .log older than 6h (~46.72GB); D: free 163.1GB -> 209.82GB
+2026-07-25T03:18:03Z PURGED 47 .log older than 6h (~26.77GB); D: free 207.67GB -> 234.44GB
+2026-07-25T06:22:36Z PURGED 75 .log older than 6h (~21.8GB); D: free 235.08GB -> 255.98GB
+2026-07-25T09:20:26Z PURGED 0 .log older than 6h (~0GB); D: free 225.93GB -> 215.83GB
+2026-07-25T12:18:42Z PURGED 17 .log older than 6h (~0.04GB); D: free 204.66GB -> 204.53GB
+2026-07-25T15:18:14Z PURGED 9 .log older than 6h (~0.49GB); D: free 202.94GB -> 203.31GB
+2026-07-25T18:18:06Z PURGED 8 .log older than 6h (~0.01GB); D: free 215.23GB -> 215.23GB
+2026-07-25T21:18:46Z PURGED 10 .log older than 6h (~1.31GB); D: free 201.74GB -> 203.05GB
+2026-07-26T00:18:24Z PURGED 6 .log older than 6h (~0.2GB); D: free 202.26GB -> 202.47GB
+2026-07-26T03:18:27Z PURGED 18 .log older than 6h (~0.08GB); D: free 204.12GB -> 203.35GB
+2026-07-26T06:18:28Z PURGED 75 .log older than 6h (~2.18GB); D: free 161.09GB -> 163.27GB
+2026-07-26T09:19:40Z PURGED 47 .log older than 6h (~1.79GB); D: free 150.23GB -> 150.69GB
+2026-07-26T12:18:29Z PURGED 34 .log older than 6h (~7.64GB); D: free 136.66GB -> 143.88GB
+2026-07-26T15:18:29Z PURGED 19 .log older than 6h (~9.37GB); D: free 96.82GB -> 105.34GB
+2026-07-26T18:00:38Z PURGED 395 .log older than 1h (~201.81GB); D: free 52.03GB -> 257.15GB
+2026-07-26T18:24:44Z PURGED 0 .log older than 2h (~0GB); D: free 223.13GB -> 212.18GB
+2026-07-26T19:19:31Z PURGED 29 .log older than 2h (~3.4GB); D: free 122.74GB -> 124.06GB
+2026-07-26T20:19:09Z PURGED 100 .log older than 2h (~64.61GB); D: free 37.97GB -> 139.98GB
+2026-07-26T21:19:15Z PURGED 106 .log older than 2h (~130GB); D: free 108.72GB -> 239.04GB
+2026-07-26T22:18:50Z PURGED 66 .log older than 2h (~42.61GB); D: free 199.6GB -> 242.01GB
+2026-07-26T23:18:40Z PURGED 122 .log older than 2h (~51.86GB); D: free 198.22GB -> 248.5GB
+2026-07-27T00:19:12Z PURGED 110 .log older than 2h (~31.47GB); D: free 220.09GB -> 250.25GB
+2026-07-27T01:18:40Z PURGED 125 .log older than 2h (~0.14GB); D: free 284.56GB -> 284.54GB
+2026-07-27T02:19:08Z PURGED 69 .log older than 2h (~0.33GB); D: free 271.55GB -> 271.04GB
+2026-07-27T03:18:41Z PURGED 116 .log older than 2h (~7.49GB); D: free 246.25GB -> 253.73GB
+2026-07-27T04:20:45Z PURGED 100 .log older than 2h (~9.43GB); D: free 236.78GB -> 245.46GB
+2026-07-27T05:18:29Z PURGED 62 .log older than 2h (~19.73GB); D: free 229.23GB -> 248.96GB
+2026-07-27T06:18:41Z PURGED 96 .log older than 2h (~19.91GB); D: free 231.72GB -> 251.46GB
+2026-07-27T07:18:37Z PURGED 67 .log older than 2h (~16.65GB); D: free 233.21GB -> 249.57GB
+2026-07-27T08:18:33Z PURGED 62 .log older than 2h (~11.85GB); D: free 219.67GB -> 231.41GB
+2026-07-27T09:18:23Z PURGED 75 .log older than 2h (~17.02GB); D: free 199.68GB -> 216.7GB
+2026-07-27T10:18:13Z PURGED 60 .log older than 2h (~25.37GB); D: free 189.29GB -> 212.91GB
+2026-07-27T11:18:37Z PURGED 89 .log older than 2h (~33.05GB); D: free 169.98GB -> 202.9GB
+2026-07-27T12:18:43Z PURGED 75 .log older than 2h (~25.56GB); D: free 175.33GB -> 200.22GB
+2026-07-27T13:18:26Z PURGED 88 .log older than 2h (~30.66GB); D: free 162.9GB -> 193.56GB
+2026-07-27T14:18:18Z PURGED 19 .log older than 2h (~15.78GB); D: free 197.48GB -> 213.26GB
+2026-07-27T15:18:20Z PURGED 39 .log older than 2h (~19.49GB); D: free 184.17GB -> 201.66GB
+2026-07-27T16:18:50Z PURGED 13 .log older than 2h (~17.48GB); D: free 174.48GB -> 191.64GB
+2026-07-27T17:19:46Z PURGED 28 .log older than 2h (~11.91GB); D: free 162.91GB -> 172.42GB
+2026-07-27T18:18:27Z PURGED 46 .log older than 2h (~53.6GB); D: free 127.27GB -> 180.87GB
+2026-07-27T19:18:25Z PURGED 19 .log older than 2h (~10.77GB); D: free 177.08GB -> 186.81GB
+2026-07-27T20:18:21Z PURGED 32 .log older than 2h (~43.49GB); D: free 150.47GB -> 193.96GB
+2026-07-27T21:18:44Z PURGED 33 .log older than 2h (~19.41GB); D: free 117.03GB -> 134.68GB
+2026-07-27T22:18:35Z PURGED 5 .log older than 2h (~5.35GB); D: free 193.24GB -> 198.58GB
+2026-07-27T23:18:35Z PURGED 27 .log older than 2h (~68.17GB); D: free 186.5GB -> 254.54GB
+2026-07-28T00:18:48Z PURGED 37 .log older than 2h (~26.68GB); D: free 242.43GB -> 269.1GB
+2026-07-28T01:19:01Z PURGED 34 .log older than 2h (~0.16GB); D: free 259.27GB -> 257.67GB
+2026-07-28T02:18:46Z PURGED 13 .log older than 2h (~0.04GB); D: free 255.86GB -> 255.89GB
+2026-07-28T03:18:38Z PURGED 37 .log older than 2h (~0.23GB); D: free 248.33GB -> 247.91GB
+2026-07-28T04:18:25Z PURGED 20 .log older than 2h (~0.13GB); D: free 240.31GB -> 240.21GB
+2026-07-28T05:18:28Z PURGED 16 .log older than 2h (~0.13GB); D: free 224.31GB -> 224.44GB
+2026-07-28T06:18:42Z PURGED 54 .log older than 2h (~0.5GB); D: free 218.79GB -> 219.29GB
+2026-07-28T07:18:35Z PURGED 28 .log older than 2h (~0.34GB); D: free 216.4GB -> 216.02GB
+2026-07-28T08:19:15Z PURGED 12 .log older than 2h (~0.19GB); D: free 92.92GB -> 98.47GB
+2026-07-28T09:18:34Z PURGED 52 .log older than 2h (~0.82GB); D: free 198.42GB -> 199.21GB
+2026-07-28T10:18:29Z PURGED 18 .log older than 2h (~0.3GB); D: free 195.07GB -> 195.3GB
+2026-07-28T11:18:41Z PURGED 32 .log older than 2h (~1.29GB); D: free 182.45GB -> 183.61GB
+2026-07-28T12:18:47Z PURGED 56 .log older than 2h (~1.12GB); D: free 138.2GB -> 137.92GB
+2026-07-28T13:18:34Z PURGED 12 .log older than 2h (~0.61GB); D: free 265.78GB -> 266.36GB
+2026-07-28T14:19:03Z PURGED 19 .log older than 2h (~0.51GB); D: free 127.11GB -> 127.37GB
+2026-07-28T15:18:44Z PURGED 38 .log older than 2h (~1.11GB); D: free 239.63GB -> 240.61GB
+2026-07-28T16:18:31Z PURGED 6 .log older than 2h (~0.23GB); D: free 217.24GB -> 217.24GB
+2026-07-28T17:18:32Z PURGED 32 .log older than 2h (~1.05GB); D: free 195.78GB -> 196.76GB
+2026-07-28T18:19:07Z PURGED 66 .log older than 2h (~3.71GB); D: free 174.11GB -> 177.81GB
+2026-07-28T19:18:31Z PURGED 30 .log older than 2h (~4.2GB); D: free 201.43GB -> 205.47GB
+2026-07-28T20:19:19Z PURGED 17 .log older than 2h (~2.61GB); D: free 159.4GB -> 157.56GB
+2026-07-28T21:18:25Z PURGED 43 .log older than 2h (~17.93GB); D: free 154.86GB -> 172.78GB
+2026-07-28T22:18:34Z PURGED 12 .log older than 2h (~6.97GB); D: free 172.94GB -> 183.84GB
+2026-07-28T23:18:57Z PURGED 7 .log older than 2h (~6.37GB); D: free 203.67GB -> 209.26GB
+2026-07-29T08:18:13Z PURGED 385 .log older than 2h (~55.75GB); D: free 117.17GB -> 172.93GB
+2026-07-31T06:36:21Z PURGED 33 .log older than 2h (~7.87GB); D: free 177.51GB -> 162.76GB
+2026-07-31T07:18:33Z PURGED 0 .log older than 2h (~0GB); D: free 206.77GB -> 206.77GB
+2026-07-31T08:18:35Z PURGED 4 .log older than 2h (~0GB); D: free 270.86GB -> 270.38GB
+2026-07-31T09:18:42Z PURGED 24 .log older than 2h (~0.01GB); D: free 240.05GB -> 239.8GB
+2026-07-31T10:18:17Z PURGED 10 .log older than 2h (~0.01GB); D: free 223.24GB -> 223.01GB
+2026-07-31T11:18:16Z PURGED 3 .log older than 2h (~0.01GB); D: free 254.39GB -> 254.15GB
+2026-07-31T12:18:23Z PURGED 23 .log older than 2h (~2.66GB); D: free 233.69GB -> 236.34GB
+2026-07-31T13:18:21Z PURGED 59 .log older than 2h (~8.35GB); D: free 227.9GB -> 236.08GB
+2026-07-31T14:18:21Z PURGED 39 .log older than 2h (~3.45GB); D: free 178.85GB -> 181.01GB
+2026-07-31T15:18:36Z PURGED 28 .log older than 2h (~2.49GB); D: free 266GB -> 267.71GB
+2026-07-31T16:18:24Z PURGED 24 .log older than 2h (~3.27GB); D: free 164.94GB -> 166.05GB
+2026-07-31T17:18:27Z PURGED 14 .log older than 2h (~4.91GB); D: free 206.51GB -> 210.8GB
+2026-07-31T18:18:11Z PURGED 25 .log older than 2h (~2.78GB); D: free 193.75GB -> 196.53GB
+2026-07-31T19:18:23Z PURGED 6 .log older than 2h (~2.45GB); D: free 113.33GB -> 115.71GB
+2026-07-31T20:18:11Z PURGED 12 .log older than 2h (~2.78GB); D: free 347.73GB -> 350.51GB
+2026-07-31T21:18:16Z PURGED 22 .log older than 2h (~2.51GB); D: free 336.44GB -> 337.73GB
+2026-07-31T22:18:17Z PURGED 3 .log older than 2h (~0.03GB); D: free 245.5GB -> 240.9GB
+2026-07-31T23:18:18Z PURGED 2 .log older than 2h (~0GB); D: free 288.18GB -> 288.18GB
+2026-08-01T00:18:26Z PURGED 23 .log older than 2h (~1.6GB); D: free 209.68GB -> 210.96GB
+2026-08-01T01:18:29Z PURGED 4 .log older than 2h (~0.01GB); D: free 293.42GB -> 293.42GB
+2026-08-01T02:18:29Z PURGED 0 .log older than 2h (~0GB); D: free 318.67GB -> 318.31GB
+2026-08-01T03:18:13Z PURGED 35 .log older than 2h (~0.29GB); D: free 302.57GB -> 302.86GB
+2026-08-01T04:18:13Z PURGED 0 .log older than 2h (~0GB); D: free 305.03GB -> 305.03GB
+2026-08-01T05:18:20Z PURGED 22 .log older than 2h (~2.56GB); D: free 285.02GB -> 287.58GB
+2026-08-01T06:18:19Z PURGED 10 .log older than 2h (~0.52GB); D: free 269.55GB -> 270.07GB
+2026-08-01T07:18:13Z PURGED 1 .log older than 2h (~0GB); D: free 273.17GB -> 273.17GB
+2026-08-01T08:18:28Z PURGED 0 .log older than 2h (~0GB); D: free 146.65GB -> 144.09GB
+2026-08-01T09:18:19Z PURGED 16 .log older than 2h (~5.07GB); D: free 331.89GB -> 336.96GB
+2026-08-01T10:18:20Z PURGED 4 .log older than 2h (~0.5GB); D: free 201.39GB -> 201.88GB
+2026-08-01T11:18:21Z PURGED 0 .log older than 2h (~0GB); D: free 179.62GB -> 179.56GB
+2026-08-01T12:18:19Z PURGED 2 .log older than 2h (~0GB); D: free 288.68GB -> 288.3GB
+2026-08-01T13:18:15Z PURGED 0 .log older than 2h (~0GB); D: free 281.74GB -> 281.74GB
+2026-08-01T14:20:28Z PURGED 11 .log older than 2h (~2.44GB); D: free 35.11GB -> 134GB
+2026-08-01T15:18:31Z PURGED 10 .log older than 2h (~1.08GB); D: free 125.44GB -> 124.11GB
+2026-08-01T16:18:31Z PURGED 5 .log older than 2h (~1.06GB); D: free 136.72GB -> 137.62GB
+2026-08-01T17:18:46Z PURGED 2 .log older than 2h (~0.06GB); D: free 74.42GB -> 71.23GB
+2026-08-01T18:18:24Z PURGED 47 .log older than 2h (~9.47GB); D: free 269.23GB -> 278.48GB
+2026-08-01T19:18:13Z PURGED 8 .log older than 2h (~7.66GB); D: free 202.03GB -> 209.69GB
+2026-08-01T20:18:24Z PURGED 5 .log older than 2h (~1.04GB); D: free 54.91GB -> 55.64GB
+2026-08-01T21:18:33Z PURGED 22 .log older than 2h (~11.41GB); D: free 249.4GB -> 259.08GB
+2026-08-01T22:18:17Z PURGED 8 .log older than 2h (~7.17GB); D: free 193.25GB -> 318.46GB
+2026-08-01T23:18:25Z PURGED 7 .log older than 2h (~9.15GB); D: free 280.76GB -> 289.47GB
+2026-08-02T00:18:19Z PURGED 11 .log older than 2h (~1.89GB); D: free 276.61GB -> 278.5GB
+2026-08-02T01:18:13Z PURGED 4 .log older than 2h (~0.01GB); D: free 263.66GB -> 263.67GB
+2026-08-02T02:18:25Z PURGED 1 .log older than 2h (~0GB); D: free 254.93GB -> 252.32GB
+2026-08-02T03:18:19Z PURGED 16 .log older than 2h (~0.54GB); D: free 276.25GB -> 276.78GB
+2026-08-02T04:18:14Z PURGED 4 .log older than 2h (~0.08GB); D: free 273.99GB -> 274.07GB
+2026-08-02T05:18:17Z PURGED 1 .log older than 2h (~0GB); D: free 272.24GB -> 272.24GB
+2026-08-02T06:18:18Z PURGED 9 .log older than 2h (~0GB); D: free 348.4GB -> 348.4GB
+2026-08-02T07:18:14Z PURGED 1 .log older than 2h (~0GB); D: free 216.18GB -> 216.11GB
+2026-08-02T11:18:20Z PURGED 12 .log older than 2h (~0.02GB); D: free 216.47GB -> 216.5GB
+2026-08-02T12:21:39Z PURGED 1 .log older than 2h (~0GB); D: free 315.31GB -> 314.23GB
+2026-08-02T13:18:31Z PURGED 14 .log older than 2h (~0.02GB); D: free 287.69GB -> 287.71GB
+2026-08-02T14:19:23Z PURGED 9 .log older than 2h (~0.02GB); D: free 277.77GB -> 277.34GB
+2026-08-02T16:19:16Z PURGED 9 .log older than 2h (~0.02GB); D: free 266.99GB -> 265.71GB
+2026-08-02T17:18:35Z PURGED 23 .log older than 2h (~0.54GB); D: free 253.4GB -> 253.75GB
+2026-08-02T18:18:18Z PURGED 22 .log older than 2h (~0.02GB); D: free 241.75GB -> 241.77GB
+2026-08-02T19:18:12Z PURGED 17 .log older than 2h (~0.05GB); D: free 241.59GB -> 241.64GB
+2026-08-02T20:18:20Z PURGED 12 .log older than 2h (~0.26GB); D: free 237.41GB -> 237.67GB
+2026-08-02T21:18:16Z PURGED 3 .log older than 2h (~0.01GB); D: free 233.6GB -> 233.6GB
+2026-08-02T22:23:53Z PURGED 2 .log older than 2h (~0.01GB); D: free 156.37GB -> 145.97GB
+2026-08-02T23:18:47Z PURGED 6 .log older than 2h (~0.33GB); D: free 291.28GB -> 289.77GB
+2026-08-03T00:18:36Z PURGED 19 .log older than 2h (~0.13GB); D: free 278.93GB -> 277.13GB
+2026-08-03T01:18:34Z PURGED 6 .log older than 2h (~0GB); D: free 81.29GB -> 81.22GB
+2026-08-03T02:18:22Z PURGED 6 .log older than 2h (~0.01GB); D: free 244.71GB -> 244.71GB
+2026-08-03T03:18:18Z PURGED 4 .log older than 2h (~0GB); D: free 239.62GB -> 239.63GB
+2026-08-03T04:18:12Z PURGED 5 .log older than 2h (~0GB); D: free 234.9GB -> 234.91GB
+2026-08-03T05:18:22Z PURGED 2 .log older than 2h (~0GB); D: free 226.42GB -> 226.42GB
+2026-08-03T06:18:22Z PURGED 14 .log older than 2h (~0.17GB); D: free 221.24GB -> 221.41GB
+2026-08-03T07:18:14Z PURGED 0 .log older than 2h (~0GB); D: free 216.15GB -> 216.15GB
+2026-08-03T08:18:21Z PURGED 5 .log older than 2h (~0.02GB); D: free 281.85GB -> 281.87GB
+2026-08-03T09:18:24Z PURGED 11 .log older than 2h (~0.01GB); D: free 277.85GB -> 277.77GB
+2026-08-03T10:18:16Z PURGED 1 .log older than 2h (~0GB); D: free 256.29GB -> 256.22GB
+2026-08-03T11:18:20Z PURGED 1 .log older than 2h (~0GB); D: free 262.67GB -> 262.67GB
+2026-08-03T12:19:33Z PURGED 11 .log older than 2h (~0.03GB); D: free 126.12GB -> 125.97GB
+2026-08-03T13:18:21Z PURGED 5 .log older than 2h (~0.02GB); D: free 308.65GB -> 308.57GB
+2026-08-03T14:18:22Z PURGED 6 .log older than 2h (~0.06GB); D: free 303.96GB -> 304.02GB
+2026-08-03T15:18:29Z PURGED 6 .log older than 2h (~0.13GB); D: free 174.14GB -> 173.34GB
+2026-08-03T16:18:28Z PURGED 6 .log older than 2h (~0.18GB); D: free 157.75GB -> 156.87GB
+2026-08-03T17:18:22Z PURGED 0 .log older than 2h (~0GB); D: free 254.87GB -> 254.87GB
+2026-08-03T18:18:22Z PURGED 6 .log older than 2h (~0.03GB); D: free 248.73GB -> 248.77GB
+2026-08-03T19:18:16Z PURGED 1 .log older than 2h (~0GB); D: free 322.14GB -> 322.14GB
+2026-08-03T20:18:22Z PURGED 0 .log older than 2h (~0GB); D: free 281.52GB -> 281.5GB
+2026-08-03T21:18:22Z PURGED 76 .log older than 2h (~2.48GB); D: free 312.17GB -> 314.65GB
+2026-08-03T22:18:24Z PURGED 23 .log older than 2h (~0.79GB); D: free 283.7GB -> 284.11GB
+2026-08-03T23:18:26Z PURGED 56 .log older than 2h (~1.66GB); D: free 253.98GB -> 255.65GB
+2026-08-04T00:18:16Z PURGED 12 .log older than 2h (~0.16GB); D: free 266.95GB -> 267.11GB
+2026-08-04T01:18:15Z PURGED 8 .log older than 2h (~0.01GB); D: free 264.51GB -> 264.52GB
+2026-08-04T02:18:26Z PURGED 8 .log older than 2h (~0.15GB); D: free 262.23GB -> 262.38GB
+2026-08-04T03:18:22Z PURGED 0 .log older than 2h (~0GB); D: free 264.53GB -> 264.53GB
+2026-08-04T04:18:17Z PURGED 3 .log older than 2h (~0GB); D: free 262.61GB -> 262.6GB
+2026-08-04T05:18:22Z PURGED 2 .log older than 2h (~0.05GB); D: free 259.32GB -> 259.37GB
+2026-08-04T06:18:25Z PURGED 3 .log older than 2h (~0.48GB); D: free 257.54GB -> 258.01GB
+2026-08-04T07:18:15Z PURGED 2 .log older than 2h (~0.37GB); D: free 255.99GB -> 256.3GB
+2026-08-04T08:18:22Z PURGED 3 .log older than 2h (~1.24GB); D: free 262.75GB -> 264GB
+2026-08-04T09:18:16Z PURGED 33 .log older than 2h (~1.16GB); D: free 260.38GB -> 261.46GB
+2026-08-04T10:18:20Z PURGED 103 .log older than 2h (~5.13GB); D: free 256.2GB -> 261.32GB
+2026-08-04T11:18:29Z PURGED 62 .log older than 2h (~2.92GB); D: free 248.76GB -> 251.67GB
+2026-08-04T12:18:23Z PURGED 59 .log older than 2h (~2.96GB); D: free 250.6GB -> 253.57GB
+2026-08-04T13:18:29Z PURGED 4 .log older than 2h (~0.51GB); D: free 252.46GB -> 252.97GB
+2026-08-04T14:18:26Z PURGED 3 .log older than 2h (~0.48GB); D: free 238.48GB -> 238.72GB
+2026-08-04T15:18:27Z PURGED 27 .log older than 2h (~0.78GB); D: free 235.23GB -> 236.01GB
+2026-08-04T16:18:16Z PURGED 59 .log older than 2h (~3.6GB); D: free 241.51GB -> 245.12GB
+2026-08-04T17:18:24Z PURGED 55 .log older than 2h (~3.65GB); D: free 237.65GB -> 241.29GB
+2026-08-04T18:19:04Z PURGED 61 .log older than 2h (~4.25GB); D: free 193.08GB -> 197.02GB
+2026-08-04T20:22:20Z PURGED 136 .log older than 2h (~8.16GB); D: free 315.99GB -> 285.62GB
+2026-08-04T21:18:52Z PURGED 48 .log older than 2h (~0.33GB); D: free 291.11GB -> 294.32GB
+2026-08-04T22:21:42Z PURGED 14 .log older than 2h (~0.25GB); D: free 246.12GB -> 235.43GB
+2026-08-04T23:20:35Z PURGED 10 .log older than 2h (~0.21GB); D: free 90.34GB -> 125.13GB
+2026-08-05T00:18:54Z PURGED 43 .log older than 2h (~0.7GB); D: free 151.43GB -> 176.19GB
+2026-08-05T01:18:17Z PURGED 22 .log older than 2h (~0.01GB); D: free 197.72GB -> 197.73GB
+2026-08-05T02:18:16Z PURGED 6 .log older than 2h (~0.01GB); D: free 189.7GB -> 189.71GB
+2026-08-05T03:18:43Z PURGED 53 .log older than 2h (~0.09GB); D: free 119.85GB -> 119.79GB
+2026-08-05T04:18:16Z PURGED 4 .log older than 2h (~0GB); D: free 279.37GB -> 279.37GB
+2026-08-05T05:18:26Z PURGED 3 .log older than 2h (~0GB); D: free 271.66GB -> 270.99GB
+2026-08-05T06:18:15Z PURGED 28 .log older than 2h (~0.03GB); D: free 261.13GB -> 261.16GB
+2026-08-05T07:18:29Z PURGED 34 .log older than 2h (~0.04GB); D: free 233.31GB -> 233.26GB
+2026-08-05T08:18:43Z PURGED 80 .log older than 2h (~0.2GB); D: free 156.44GB -> 155.88GB
+2026-08-05T09:18:36Z PURGED 92 .log older than 2h (~0.2GB); D: free 156.48GB -> 156.67GB
+2026-08-05T10:18:42Z PURGED 28 .log older than 2h (~0.02GB); D: free 235.01GB -> 234.49GB
+2026-08-05T11:18:31Z PURGED 33 .log older than 2h (~0.06GB); D: free 245.07GB -> 255.44GB
+2026-08-05T12:18:33Z PURGED 73 .log older than 2h (~0.09GB); D: free 316.68GB -> 316.77GB
+2026-08-05T13:18:17Z PURGED 11 .log older than 2h (~0.05GB); D: free 301.5GB -> 301.45GB
+2026-08-05T14:18:33Z PURGED 6 .log older than 2h (~0.03GB); D: free 272.07GB -> 272.09GB
+2026-08-05T15:18:39Z PURGED 27 .log older than 2h (~0.13GB); D: free 263.67GB -> 263.46GB
+2026-08-05T16:18:20Z PURGED 48 .log older than 2h (~0.09GB); D: free 259.88GB -> 260.3GB
+2026-08-05T17:18:41Z PURGED 48 .log older than 2h (~0.07GB); D: free 140.36GB -> 138.73GB
+2026-08-05T18:18:42Z PURGED 57 .log older than 2h (~0.09GB); D: free 194.03GB -> 193.61GB
+2026-08-05T19:18:25Z PURGED 5 .log older than 2h (~0.07GB); D: free 257.18GB -> 257.22GB
+2026-08-05T20:18:37Z PURGED 40 .log older than 2h (~0.54GB); D: free 163.26GB -> 163.79GB
+2026-08-05T21:18:46Z PURGED 42 .log older than 2h (~0.16GB); D: free 259.11GB -> 259.23GB
+2026-08-05T22:18:42Z PURGED 42 .log older than 2h (~0.32GB); D: free 132.14GB -> 132.46GB
+2026-08-05T23:18:41Z PURGED 52 .log older than 2h (~0.5GB); D: free 5.98GB -> 6.48GB
+2026-08-06T00:18:34Z PURGED 64 .log older than 2h (~0.32GB); D: free 282.17GB -> 282.43GB
+2026-08-06T01:18:30Z PURGED 30 .log older than 2h (~0.02GB); D: free 159.83GB -> 159.73GB
+2026-08-06T02:18:40Z PURGED 32 .log older than 2h (~0.03GB); D: free 174.93GB -> 175GB
+2026-08-06T03:18:34Z PURGED 5 .log older than 2h (~0GB); D: free 152.07GB -> 152.08GB
+2026-08-06T04:18:38Z PURGED 0 .log older than 2h (~0GB); D: free 48.29GB -> 47.77GB
+2026-08-06T05:19:17Z PURGED 0 .log older than 2h (~0GB); D: free 12.52GB -> 6.07GB
+2026-08-06T06:18:25Z PURGED 34 .log older than 2h (~11.56GB); D: free 224.94GB -> 236.43GB
+2026-08-06T07:18:30Z PURGED 3 .log older than 2h (~2.04GB); D: free 213.78GB -> 215.8GB
+2026-08-06T08:18:31Z PURGED 6 .log older than 2h (~0.03GB); D: free 205.06GB -> 205.1GB
+2026-08-06T09:18:35Z PURGED 18 .log older than 2h (~0.1GB); D: free 196.2GB -> 196.29GB
+2026-08-06T10:18:32Z PURGED 29 .log older than 2h (~0.03GB); D: free 176.98GB -> 177GB
+2026-08-06T11:18:41Z PURGED 38 .log older than 2h (~0.1GB); D: free 159.44GB -> 159.5GB
+2026-08-06T12:18:35Z PURGED 61 .log older than 2h (~0.27GB); D: free 159.36GB -> 159.62GB
+2026-08-06T13:18:22Z PURGED 48 .log older than 2h (~0.13GB); D: free 201.46GB -> 201.59GB
+2026-08-06T14:18:33Z PURGED 55 .log older than 2h (~7.72GB); D: free 186.08GB -> 193.79GB
+2026-08-06T15:18:31Z PURGED 53 .log older than 2h (~2.77GB); D: free 189.16GB -> 191.93GB
+2026-08-06T16:18:32Z PURGED 8 .log older than 2h (~3.4GB); D: free 185.27GB -> 188.66GB
+2026-08-06T17:18:32Z PURGED 1 .log older than 2h (~0GB); D: free 151.15GB -> 151.14GB
+2026-08-06T18:18:28Z PURGED 14 .log older than 2h (~0.25GB); D: free 210.71GB -> 210.96GB
+2026-08-06T19:18:30Z PURGED 0 .log older than 2h (~0GB); D: free 59.86GB -> 59.85GB
+2026-08-06T20:18:39Z PURGED 0 .log older than 2h (~0GB); D: free 215.03GB -> 215.02GB
+2026-08-06T21:19:13Z PURGED 44 .log older than 2h (~8.36GB); D: free 143.09GB -> 136.61GB
+2026-08-06T22:18:27Z PURGED 10 .log older than 2h (~0.26GB); D: free 86.39GB -> 86.65GB
+2026-08-06T23:18:35Z PURGED 55 .log older than 2h (~4.45GB); D: free 81.52GB -> 85.65GB
+2026-08-07T00:18:39Z PURGED 15 .log older than 2h (~8.79GB); D: free 126.67GB -> 135.22GB
+2026-08-07T01:18:14Z PURGED 5 .log older than 2h (~0GB); D: free 164.51GB -> 164.5GB
+2026-08-07T02:18:45Z PURGED 7 .log older than 2h (~0.01GB); D: free 144.64GB -> 141.64GB
+2026-08-07T03:18:28Z PURGED 28 .log older than 2h (~0.05GB); D: free 195.53GB -> 195.57GB
+2026-08-07T04:18:29Z PURGED 6 .log older than 2h (~0.01GB); D: free 208.43GB -> 208.44GB
+2026-08-07T05:18:42Z PURGED 8 .log older than 2h (~0.01GB); D: free 175.33GB -> 175.23GB
+2026-08-07T06:18:33Z PURGED 78 .log older than 2h (~0.22GB); D: free 182.6GB -> 182.83GB
+2026-08-07T07:18:21Z PURGED 48 .log older than 2h (~0.15GB); D: free 184.24GB -> 184.38GB
+2026-08-07T08:18:37Z PURGED 63 .log older than 2h (~0.21GB); D: free 176.24GB -> 176.44GB
+2026-08-07T09:18:36Z PURGED 106 .log older than 2h (~0.69GB); D: free 163.63GB -> 164.32GB
+2026-08-07T10:18:25Z PURGED 75 .log older than 2h (~0.26GB); D: free 160.48GB -> 160.73GB
+2026-08-07T11:18:29Z PURGED 65 .log older than 2h (~0.21GB); D: free 165.25GB -> 165.46GB
+2026-08-07T12:18:42Z PURGED 103 .log older than 2h (~0.63GB); D: free 134.35GB -> 133.97GB
+2026-08-07T13:18:28Z PURGED 48 .log older than 2h (~0.18GB); D: free 204.45GB -> 204.63GB
+2026-08-07T14:18:36Z PURGED 52 .log older than 2h (~0.3GB); D: free 192.51GB -> 192.82GB
+2026-08-07T15:18:37Z PURGED 60 .log older than 2h (~0.34GB); D: free 188.47GB -> 188.79GB
+2026-08-07T16:18:14Z PURGED 50 .log older than 2h (~0.15GB); D: free 187.31GB -> 187.45GB
+2026-08-07T17:18:29Z PURGED 70 .log older than 2h (~0.6GB); D: free 183.12GB -> 183.02GB
+2026-08-07T18:18:13Z PURGED 113 .log older than 2h (~1.18GB); D: free 180.27GB -> 181.45GB
+2026-08-07T19:18:13Z PURGED 72 .log older than 2h (~0.49GB); D: free 175.96GB -> 176.45GB
+2026-08-07T20:18:15Z PURGED 6 .log older than 2h (~0.11GB); D: free 171.72GB -> 171.83GB
+2026-08-07T21:18:35Z PURGED 15 .log older than 2h (~0.27GB); D: free 177.15GB -> 177.37GB
+2026-08-07T22:18:21Z PURGED 6 .log older than 2h (~1.09GB); D: free 172.85GB -> 173.94GB
+2026-08-07T23:18:29Z PURGED 6 .log older than 2h (~0.09GB); D: free 230.65GB -> 230.74GB
+2026-08-08T00:18:26Z PURGED 106 .log older than 2h (~2.93GB); D: free 224.61GB -> 227.32GB
+2026-08-08T01:18:14Z PURGED 67 .log older than 2h (~0.04GB); D: free 225.21GB -> 225.25GB
+2026-08-08T02:18:25Z PURGED 60 .log older than 2h (~0.13GB); D: free 223.99GB -> 223.97GB
+2026-08-08T03:18:25Z PURGED 67 .log older than 2h (~0.17GB); D: free 220.1GB -> 220.26GB
+2026-08-08T04:18:16Z PURGED 76 .log older than 2h (~0.09GB); D: free 224.62GB -> 224.71GB
+2026-08-08T05:18:13Z PURGED 64 .log older than 2h (~0.16GB); D: free 223.62GB -> 223.78GB
+2026-08-08T06:18:13Z PURGED 64 .log older than 2h (~0.22GB); D: free 222.8GB -> 223.03GB
+2026-08-08T07:18:17Z PURGED 60 .log older than 2h (~0.2GB); D: free 194.09GB -> 194.3GB
+2026-08-08T08:18:15Z PURGED 67 .log older than 2h (~0.34GB); D: free 207.71GB -> 208.05GB
+2026-08-08T09:18:15Z PURGED 78 .log older than 2h (~0.42GB); D: free 204.23GB -> 204.26GB
+2026-08-08T10:18:16Z PURGED 0 .log older than 2h (~0GB); D: free 204.95GB -> 204.95GB
+2026-08-08T11:18:16Z PURGED 0 .log older than 2h (~0GB); D: free 204.78GB -> 204.78GB
+2026-08-08T12:18:18Z PURGED 6 .log older than 2h (~0.01GB); D: free 202.25GB -> 202.26GB
+2026-08-08T13:18:26Z PURGED 2 .log older than 2h (~0GB); D: free 180.15GB -> 180.16GB
+2026-08-08T14:18:40Z PURGED 12 .log older than 2h (~0.07GB); D: free 211.64GB -> 205.59GB
+2026-08-08T15:18:24Z PURGED 11 .log older than 2h (~0.09GB); D: free 216.48GB -> 216.57GB
+2026-08-08T16:18:17Z PURGED 10 .log older than 2h (~0.08GB); D: free 210.35GB -> 210.43GB
+2026-08-08T17:18:41Z PURGED 1 .log older than 2h (~0.02GB); D: free 201.16GB -> 200.69GB
+2026-08-08T18:18:37Z PURGED 8 .log older than 2h (~0.05GB); D: free 196.38GB -> 196.42GB
+2026-08-08T19:18:24Z PURGED 12 .log older than 2h (~0.15GB); D: free 193.89GB -> 194.04GB
+2026-08-08T20:18:50Z PURGED 29 .log older than 2h (~0.5GB); D: free 211.89GB -> 212.37GB
+2026-08-08T21:18:39Z PURGED 26 .log older than 2h (~0.34GB); D: free 206.8GB -> 207.14GB
+2026-08-08T22:18:18Z PURGED 5 .log older than 2h (~0.01GB); D: free 209GB -> 209.02GB
+2026-08-08T23:18:18Z PURGED 2 .log older than 2h (~0.02GB); D: free 207.42GB -> 207.44GB
+2026-08-09T00:18:19Z PURGED 46 .log older than 2h (~0.48GB); D: free 204.61GB -> 205.08GB
+2026-08-09T01:18:21Z PURGED 0 .log older than 2h (~0GB); D: free 200.9GB -> 200.9GB
+2026-08-09T02:18:35Z PURGED 1 .log older than 2h (~0GB); D: free 138.72GB -> 137.22GB
+2026-08-09T03:18:26Z PURGED 10 .log older than 2h (~0.01GB); D: free 153.57GB -> 153.5GB
+2026-08-09T04:18:16Z PURGED 25 .log older than 2h (~0.06GB); D: free 216.31GB -> 216.37GB
+2026-08-09T05:18:24Z PURGED 41 .log older than 2h (~0.08GB); D: free 212.3GB -> 212.38GB
+2026-08-09T10:18:19Z PURGED 91 .log older than 2h (~0.44GB); D: free 191.86GB -> 192.3GB
+2026-08-09T11:18:17Z PURGED 0 .log older than 2h (~0GB); D: free 193.87GB -> 193.87GB
+2026-08-09T12:18:18Z PURGED 16 .log older than 2h (~0.01GB); D: free 193.64GB -> 193.65GB
+2026-08-09T13:18:17Z PURGED 31 .log older than 2h (~0.04GB); D: free 192.92GB -> 192.96GB
+2026-08-09T14:18:18Z PURGED 4 .log older than 2h (~0.01GB); D: free 192.95GB -> 192.97GB
+2026-08-09T15:18:19Z PURGED 3 .log older than 2h (~0GB); D: free 192.95GB -> 192.95GB
+2026-08-09T16:18:18Z PURGED 0 .log older than 2h (~0GB); D: free 192.93GB -> 192.93GB
+2026-08-09T17:18:25Z PURGED 0 .log older than 2h (~0GB); D: free 187.63GB -> 187.63GB
+2026-08-09T18:18:22Z PURGED 0 .log older than 2h (~0GB); D: free 182.79GB -> 182.79GB
+2026-08-09T19:18:28Z PURGED 0 .log older than 2h (~0GB); D: free 172.93GB -> 172.93GB
+2026-08-09T20:18:22Z PURGED 0 .log older than 2h (~0GB); D: free 171.49GB -> 171.49GB
+2026-08-09T21:18:18Z PURGED 2 .log older than 2h (~0.01GB); D: free 171.38GB -> 171.38GB
+2026-08-09T22:18:18Z PURGED 5 .log older than 2h (~0.06GB); D: free 171.42GB -> 171.49GB
+2026-08-09T23:18:22Z PURGED 1 .log older than 2h (~0.02GB); D: free 171.61GB -> 171.63GB
+2026-08-10T00:18:19Z PURGED 2 .log older than 2h (~0.03GB); D: free 170.51GB -> 170.54GB
+2026-08-10T01:18:21Z PURGED 0 .log older than 2h (~0GB); D: free 170.51GB -> 170.51GB
+2026-08-10T02:18:22Z PURGED 0 .log older than 2h (~0GB); D: free 170.52GB -> 170.52GB
+2026-08-10T03:18:22Z PURGED 0 .log older than 2h (~0GB); D: free 170.17GB -> 170.17GB
+2026-08-10T04:18:23Z PURGED 0 .log older than 2h (~0GB); D: free 170.16GB -> 170.16GB
+2026-08-10T05:18:22Z PURGED 0 .log older than 2h (~0GB); D: free 170.16GB -> 170.16GB
+2026-08-10T06:18:32Z PURGED 0 .log older than 2h (~0GB); D: free 164.72GB -> 164.72GB
+2026-08-10T07:18:21Z PURGED 0 .log older than 2h (~0GB); D: free 164.37GB -> 164.37GB
+2026-08-10T08:18:29Z PURGED 0 .log older than 2h (~0GB); D: free 164.03GB -> 164.03GB
+2026-08-10T09:22:36Z PURGED 0 .log older than 2h (~0GB); D: free 146.11GB -> 151.51GB
+2026-08-10T10:18:57Z PURGED 0 .log older than 2h (~0GB); D: free 172.82GB -> 172.81GB
+2026-08-10T11:19:19Z PURGED 0 .log older than 2h (~0GB); D: free 166.56GB -> 166.56GB
+2026-08-10T12:18:56Z PURGED 3 .log older than 2h (~0GB); D: free 155.9GB -> 155.9GB
+2026-08-10T13:18:52Z PURGED 0 .log older than 2h (~0GB); D: free 179.65GB -> 179.64GB
+2026-08-10T14:18:59Z PURGED 1 .log older than 2h (~0GB); D: free 162.74GB -> 162.74GB
+2026-08-10T15:19:00Z PURGED 7 .log older than 2h (~0GB); D: free 153.66GB -> 153.67GB
+2026-08-10T16:19:32Z PURGED 1 .log older than 2h (~0GB); D: free 170.24GB -> 168.18GB
+2026-08-10T17:19:47Z PURGED 1 .log older than 2h (~0GB); D: free 155.2GB -> 154.74GB
+2026-08-10T20:20:58Z PURGED 54 .log older than 2h (~0.07GB); D: free 138.9GB -> 140.76GB
+2026-08-10T21:19:01Z PURGED 0 .log older than 2h (~0GB); D: free 124.2GB -> 123.47GB
+2026-08-10T22:18:58Z PURGED 8 .log older than 2h (~0GB); D: free 132.48GB -> 132.49GB
+2026-08-10T23:18:58Z PURGED 0 .log older than 2h (~0GB); D: free 135.85GB -> 135.85GB
+2026-08-11T00:20:15Z PURGED 4 .log older than 2h (~0GB); D: free 122.8GB -> 122.73GB
+2026-08-11T01:19:43Z PURGED 6 .log older than 2h (~0GB); D: free 118.21GB -> 118.21GB
+2026-08-11T02:19:55Z PURGED 3 .log older than 2h (~0.01GB); D: free 115.03GB -> 113.91GB
+2026-08-11T03:19:16Z PURGED 20 .log older than 2h (~0.02GB); D: free 105.31GB -> 105.33GB
+2026-08-11T04:18:43Z PURGED 3 .log older than 2h (~0GB); D: free 118.67GB -> 118.67GB
+2026-08-11T05:19:16Z PURGED 2 .log older than 2h (~0GB); D: free 96.71GB -> 96.65GB
+2026-08-11T06:18:50Z PURGED 0 .log older than 2h (~0GB); D: free 91.45GB -> 91.44GB
+2026-08-11T07:19:22Z PURGED 1 .log older than 2h (~0GB); D: free 93GB -> 91.13GB
+2026-08-11T08:20:15Z PURGED 2 .log older than 2h (~0GB); D: free 95.64GB -> 96.35GB
+2026-08-11T09:19:25Z PURGED 12 .log older than 2h (~0GB); D: free 95.02GB -> 94.21GB
+2026-08-11T10:20:15Z PURGED 2 .log older than 2h (~0GB); D: free 88.52GB -> 88.41GB
+2026-08-11T11:19:53Z PURGED 2 .log older than 2h (~0GB); D: free 91.81GB -> 89.13GB
+2026-08-11T12:19:48Z PURGED 21 .log older than 2h (~0.01GB); D: free 83.72GB -> 83.72GB
+2026-08-11T13:19:41Z PURGED 0 .log older than 2h (~0GB); D: free 90.5GB -> 87.93GB
+2026-08-11T14:19:55Z PURGED 0 .log older than 2h (~0GB); D: free 91.44GB -> 91.38GB
+2026-08-11T15:20:12Z PURGED 14 .log older than 2h (~0.04GB); D: free 89.17GB -> 88.91GB
+2026-08-11T16:19:31Z PURGED 2 .log older than 2h (~0GB); D: free 90.5GB -> 90.5GB
+2026-08-11T17:19:44Z PURGED 3 .log older than 2h (~0GB); D: free 91GB -> 91.01GB
+2026-08-11T18:19:54Z PURGED 0 .log older than 2h (~0GB); D: free 90.67GB -> 89.13GB
+2026-08-11T19:20:00Z PURGED 2 .log older than 2h (~0GB); D: free 90.45GB -> 90.45GB
+2026-08-11T20:20:06Z PURGED 1 .log older than 2h (~0GB); D: free 90.02GB -> 89.51GB
+2026-08-11T21:19:58Z PURGED 2 .log older than 2h (~0GB); D: free 88.18GB -> 88.18GB
+2026-08-11T22:19:35Z PURGED 0 .log older than 2h (~0GB); D: free 91.35GB -> 89.88GB
+2026-08-11T23:19:03Z PURGED 1 .log older than 2h (~0GB); D: free 86.74GB -> 86.25GB
+2026-08-12T00:20:19Z PURGED 1 .log older than 2h (~0GB); D: free 93.72GB -> 95.09GB
+2026-08-12T01:20:26Z PURGED 6 .log older than 2h (~0GB); D: free 89.02GB -> 88.89GB
+2026-08-12T02:19:16Z PURGED 3 .log older than 2h (~0GB); D: free 86.43GB -> 86.41GB
+2026-08-12T03:19:46Z PURGED 2 .log older than 2h (~0GB); D: free 88.26GB -> 88.26GB
+2026-08-12T04:20:22Z PURGED 1 .log older than 2h (~0GB); D: free 90.33GB -> 90.77GB
+2026-08-12T05:20:16Z PURGED 0 .log older than 2h (~0GB); D: free 90.69GB -> 90.69GB
+2026-08-12T06:19:16Z PURGED 2 .log older than 2h (~0GB); D: free 87.71GB -> 87.7GB
+2026-08-12T07:20:12Z PURGED 3 .log older than 2h (~0GB); D: free 83.62GB -> 82.97GB
+2026-08-12T08:20:20Z PURGED 2 .log older than 2h (~0GB); D: free 86.73GB -> 87.33GB
+2026-08-12T09:20:13Z PURGED 9 .log older than 2h (~0GB); D: free 84.34GB -> 84.35GB
+2026-08-12T10:20:23Z PURGED 1 .log older than 2h (~0GB); D: free 85.38GB -> 88.86GB
+2026-08-12T11:20:15Z PURGED 5 .log older than 2h (~0.01GB); D: free 88.54GB -> 88.54GB
+2026-08-12T12:20:12Z PURGED 6 .log older than 2h (~0.02GB); D: free 83.46GB -> 83.47GB
+2026-08-12T13:20:19Z PURGED 1 .log older than 2h (~0GB); D: free 85.22GB -> 85.36GB
+2026-08-12T14:20:15Z PURGED 1 .log older than 2h (~0GB); D: free 84.92GB -> 84.92GB
+2026-08-12T15:20:17Z PURGED 8 .log older than 2h (~0GB); D: free 85.58GB -> 85.58GB
+2026-08-12T16:19:21Z PURGED 2 .log older than 2h (~0GB); D: free 83.02GB -> 83.02GB
+2026-08-12T17:23:14Z PURGED 4 .log older than 2h (~0GB); D: free 88.16GB -> 88.16GB
+2026-08-12T18:19:29Z PURGED 5 .log older than 2h (~0GB); D: free 80.92GB -> 80.57GB
+2026-08-12T19:20:02Z PURGED 0 .log older than 2h (~0GB); D: free 80.09GB -> 80.09GB
+2026-08-12T20:18:37Z PURGED 3 .log older than 2h (~0GB); D: free 80.24GB -> 80.24GB
+2026-08-12T21:18:36Z PURGED 10 .log older than 2h (~0GB); D: free 18.92GB -> 13.74GB
+2026-08-12T22:18:11Z PURGED 3 .log older than 2h (~0GB); D: free 83.18GB -> 83.19GB
+2026-08-12T23:18:09Z PURGED 0 .log older than 2h (~0GB); D: free 81.75GB -> 81.75GB
+2026-08-13T00:18:10Z PURGED 0 .log older than 2h (~0GB); D: free 81.02GB -> 81.02GB
+2026-08-13T01:18:12Z PURGED 0 .log older than 2h (~0GB); D: free 80.66GB -> 80.65GB
+2026-08-13T02:18:14Z PURGED 0 .log older than 2h (~0GB); D: free 79.96GB -> 79.96GB
+2026-08-13T03:20:18Z PURGED 0 .log older than 2h (~0GB); D: free 25.11GB -> 11.55GB
+2026-08-13T04:19:06Z PURGED 0 .log older than 2h (~0GB); D: free 62.97GB -> 62.97GB
+2026-08-13T05:19:26Z PURGED 0 .log older than 2h (~0GB); D: free 63.55GB -> 63.54GB
+2026-08-13T06:19:40Z PURGED 3 .log older than 2h (~0GB); D: free 31.17GB -> 23.45GB
+2026-08-13T07:19:40Z PURGED 0 .log older than 2h (~0GB); D: free 63.12GB -> 62.57GB
+2026-08-13T08:20:03Z PURGED 3 .log older than 2h (~0GB); D: free 25.65GB -> 24.51GB
+2026-08-13T09:18:33Z PURGED 6 .log older than 2h (~0GB); D: free 9.67GB -> 6.74GB
+2026-08-13T10:18:46Z PURGED 4 .log older than 2h (~0GB); D: free 37.77GB -> 34.59GB
+2026-08-13T11:18:24Z PURGED 6 .log older than 2h (~0GB); D: free 25.42GB -> 22.76GB
+2026-08-13T12:18:16Z PURGED 1 .log older than 2h (~0GB); D: free 201.76GB -> 198.75GB
+2026-08-13T14:19:28Z PURGED 3 .log older than 2h (~0GB); D: free 121.2GB -> 121.2GB
+2026-08-13T15:20:41Z PURGED 0 .log older than 2h (~0GB); D: free 128.03GB -> 125.38GB
+2026-08-13T16:18:29Z PURGED 1 .log older than 2h (~0.04GB); D: free 227.95GB -> 224.37GB
+2026-08-13T17:22:42Z PURGED 2 .log older than 2h (~0GB); D: free 56.65GB -> 50.23GB
+2026-08-13T18:27:31Z PURGED 12 .log older than 2h (~0.01GB); D: free 189.48GB -> 189.49GB
+2026-08-13T19:20:04Z PURGED 2 .log older than 2h (~0.01GB); D: free 190.56GB -> 190.56GB
+2026-08-14T02:45:18Z PURGED 2 .log older than 2h (~0GB); D: free 167.95GB -> 86.73GB
+2026-08-14T03:24:21Z PURGED 0 .log older than 2h (~0GB); D: free 128.94GB -> 110.94GB
+2026-08-14T04:20:32Z PURGED 0 .log older than 2h (~0GB); D: free 49.22GB -> 16.64GB
+2026-08-14T05:22:48Z PURGED 0 .log older than 2h (~0GB); D: free 205.04GB -> 205.02GB
+2026-08-14T06:21:34Z PURGED 13 .log older than 2h (~0.01GB); D: free 202.91GB -> 202.91GB
+2026-08-14T07:19:51Z PURGED 1 .log older than 2h (~0GB); D: free 77.31GB -> 60GB
+2026-08-14T08:20:56Z PURGED 0 .log older than 2h (~0GB); D: free 205.34GB -> 205.34GB
+2026-08-14T09:23:36Z PURGED 8 .log older than 2h (~0.02GB); D: free 162.36GB -> 162.38GB
+2026-08-14T10:20:07Z PURGED 0 .log older than 2h (~0GB); D: free 208.5GB -> 208.5GB
+2026-08-14T11:23:46Z PURGED 0 .log older than 2h (~0GB); D: free 54.04GB -> 39.39GB
+2026-08-14T12:26:46Z PURGED 6 .log older than 2h (~0.01GB); D: free 158.94GB -> 146.87GB
+2026-08-14T16:55:04Z PURGED 26 .log older than 2h (~0.02GB); D: free 161.7GB -> 93.33GB
+2026-08-14T17:19:23Z PURGED 0 .log older than 2h (~0GB); D: free 179.15GB -> 160.65GB
+2026-08-14T18:20:52Z PURGED 0 .log older than 2h (~0GB); D: free 98.44GB -> 186.67GB
+2026-08-14T19:22:24Z PURGED 5 .log older than 2h (~0.01GB); D: free 170.66GB -> 170.67GB
+2026-08-14T20:22:04Z PURGED 20 .log older than 2h (~0.01GB); D: free 170.29GB -> 170.29GB
+2026-08-14T22:18:18Z PURGED 0 .log older than 2h (~0GB); D: free 154.15GB -> 154.15GB
+2026-08-14T23:18:19Z PURGED 0 .log older than 2h (~0GB); D: free 154.15GB -> 154.15GB
+2026-08-15T00:18:25Z PURGED 6 .log older than 2h (~0GB); D: free 154.15GB -> 154.15GB
+2026-08-15T01:18:20Z PURGED 0 .log older than 2h (~0GB); D: free 154.15GB -> 154.15GB
+2026-08-15T02:18:20Z PURGED 0 .log older than 2h (~0GB); D: free 154.15GB -> 154.15GB
+2026-08-15T03:18:20Z PURGED 0 .log older than 2h (~0GB); D: free 154.14GB -> 154.14GB
+2026-08-15T04:18:20Z PURGED 0 .log older than 2h (~0GB); D: free 154.13GB -> 154.13GB
+2026-08-15T05:18:24Z PURGED 0 .log older than 2h (~0GB); D: free 154.13GB -> 154.13GB
+2026-08-15T06:18:25Z PURGED 0 .log older than 2h (~0GB); D: free 154.14GB -> 154.14GB
+2026-08-15T08:59:59Z PURGED 0 .log older than 2h (~0GB); D: free 156.33GB -> 115.03GB
+2026-08-15T09:24:20Z PURGED 0 .log older than 2h (~0GB); D: free 54.67GB -> 23.72GB
+2026-08-15T10:19:09Z PURGED 0 .log older than 2h (~0GB); D: free 59.87GB -> 58.4GB
+2026-08-15T11:19:45Z PURGED 10 .log older than 2h (~0GB); D: free 109.21GB -> 92.34GB
+2026-08-15T12:19:16Z PURGED 9 .log older than 2h (~0.01GB); D: free 63.04GB -> 31.93GB
+2026-08-15T13:19:33Z PURGED 3 .log older than 2h (~0GB); D: free 308.1GB -> 328.66GB
+2026-08-15T15:19:53Z PURGED 27 .log older than 2h (~0GB); D: free 302.97GB -> 302.96GB
+2026-08-15T16:31:31Z PURGED 23 .log older than 2h (~0GB); D: free 189.74GB -> 189.73GB
+2026-08-15T17:42:53Z PURGED 0 .log older than 2h (~0GB); D: free 188.3GB -> 46.17GB
+2026-08-15T18:20:56Z PURGED 4 .log older than 2h (~0GB); D: free 95.43GB -> 87.88GB
+2026-08-15T19:20:19Z PURGED 0 .log older than 2h (~0GB); D: free 136.87GB -> 127.43GB
+2026-08-15T20:09:32Z PURGED 0 .log older than 2h (~0GB); D: free 41.94GB -> 203.16GB
+2026-08-15T20:18:24Z PURGED 0 .log older than 2h (~0GB); D: free 203.17GB -> 203.17GB
+2026-08-15T21:35:52Z PURGED 11 .log older than 2h (~0.01GB); D: free 202.93GB -> 200.81GB
+2026-08-15T22:25:14Z PURGED 0 .log older than 2h (~0GB); D: free 193.35GB -> 192.72GB
+2026-08-15T23:22:15Z PURGED 0 .log older than 2h (~0GB); D: free 182.59GB -> 180.54GB
+2026-08-16T02:53:04Z PURGED 136 .log older than 2h (~0.05GB); D: free 175.04GB -> 174.74GB
+2026-08-16T03:44:59Z PURGED 2 .log older than 2h (~0.01GB); D: free 174.43GB -> 174.43GB
+2026-08-16T04:24:32Z PURGED 2 .log older than 2h (~0GB); D: free 170.04GB -> 169.67GB
+2026-08-16T05:24:01Z PURGED 0 .log older than 2h (~0GB); D: free 165.45GB -> 165.43GB
+2026-08-16T06:19:38Z PURGED 21 .log older than 2h (~0.01GB); D: free 160.73GB -> 160.34GB
+2026-08-16T07:24:39Z PURGED 25 .log older than 2h (~0.03GB); D: free 156.78GB -> 156.99GB
+2026-08-16T08:25:37Z PURGED 3 .log older than 2h (~0GB); D: free 156.72GB -> 155.51GB
+2026-08-16T09:23:44Z PURGED 15 .log older than 2h (~0.02GB); D: free 154.78GB -> 154.79GB
+2026-08-16T10:20:58Z PURGED 3 .log older than 2h (~0.01GB); D: free 154.65GB -> 154.64GB
+2026-08-16T11:20:21Z PURGED 2 .log older than 2h (~0.01GB); D: free 152GB -> 168.78GB
+2026-08-16T12:19:14Z PURGED 18 .log older than 2h (~0.04GB); D: free 157.58GB -> 157.08GB
+2026-08-16T13:23:01Z PURGED 3 .log older than 2h (~0.01GB); D: free 178.22GB -> 177.59GB
+2026-08-16T14:18:44Z PURGED 2 .log older than 2h (~0GB); D: free 164.81GB -> 164.82GB
+2026-08-16T15:24:08Z PURGED 19 .log older than 2h (~0.04GB); D: free 160.68GB -> 160.09GB
+2026-08-16T16:18:57Z PURGED 0 .log older than 2h (~0GB); D: free 153.18GB -> 153.14GB
+2026-08-16T17:18:51Z PURGED 5 .log older than 2h (~0.04GB); D: free 153.57GB -> 153.61GB
+2026-08-16T18:18:50Z PURGED 11 .log older than 2h (~0.23GB); D: free 158.04GB -> 158.27GB
+2026-08-16T19:18:47Z PURGED 0 .log older than 2h (~0GB); D: free 156.62GB -> 156.42GB
+2026-08-16T20:18:37Z PURGED 3 .log older than 2h (~0.01GB); D: free 153.42GB -> 153.43GB
+2026-08-16T21:18:57Z PURGED 1 .log older than 2h (~0GB); D: free 164.11GB -> 163.93GB
+2026-08-16T22:18:57Z PURGED 1 .log older than 2h (~0GB); D: free 167.43GB -> 167.43GB
+2026-08-16T23:18:46Z PURGED 2 .log older than 2h (~0GB); D: free 167.78GB -> 166.94GB
+2026-08-17T00:18:55Z PURGED 10 .log older than 2h (~0GB); D: free 164.06GB -> 163.75GB
+2026-08-17T01:18:49Z PURGED 0 .log older than 2h (~0GB); D: free 160.43GB -> 160.43GB
+2026-08-17T02:18:45Z PURGED 0 .log older than 2h (~0GB); D: free 152.19GB -> 152.18GB
+2026-08-17T03:22:16Z PURGED 15 .log older than 2h (~0.04GB); D: free 149.33GB -> 155.31GB
+2026-08-17T04:18:41Z PURGED 2 .log older than 2h (~0GB); D: free 151.47GB -> 151.47GB
+2026-08-17T05:18:44Z PURGED 0 .log older than 2h (~0GB); D: free 157.12GB -> 156.76GB
+2026-08-17T06:18:45Z PURGED 2 .log older than 2h (~0GB); D: free 156.21GB -> 156.21GB
+2026-08-17T07:28:39Z PURGED 1 .log older than 2h (~0GB); D: free 154.68GB -> 154.29GB
+2026-08-17T08:20:17Z PURGED 4 .log older than 2h (~0.02GB); D: free 163.1GB -> 162.45GB
+2026-08-17T09:22:10Z PURGED 10 .log older than 2h (~0.03GB); D: free 153.85GB -> 153.67GB
+2026-08-17T10:20:16Z PURGED 0 .log older than 2h (~0GB); D: free 162.76GB -> 162.1GB
+2026-08-17T11:19:06Z PURGED 0 .log older than 2h (~0GB); D: free 116.5GB -> 115GB
+2026-08-17T12:19:09Z PURGED 38 .log older than 2h (~0.11GB); D: free 135.75GB -> 132.78GB
+2026-08-17T13:18:30Z PURGED 1 .log older than 2h (~0.01GB); D: free 155.95GB -> 155.89GB
+2026-08-17T14:18:26Z PURGED 5 .log older than 2h (~0.01GB); D: free 150.76GB -> 150.76GB
+2026-08-17T15:18:30Z PURGED 11 .log older than 2h (~0GB); D: free 157.35GB -> 157.35GB
+2026-08-17T16:18:26Z PURGED 3 .log older than 2h (~0.02GB); D: free 152.13GB -> 152.15GB
+2026-08-17T16:19:20Z DRYRUN: would delete 0 .log older than 12h (~0GB); D: free 152.15GB
+2026-08-17T16:19:50Z BUDGET_OK tree 0.04GB <= 8GB after age purge; no size trim
+2026-08-17T16:20:22Z DRYRUN: would delete 0 .log older than 12h (~0GB); D: free 152.15GB
+2026-08-17T16:20:53Z BUDGET_DRYRUN would trim 5 oldest .log (~0.04GB) to fit 0.001GB; tree was 0.04GB, now 0GB
+2026-08-17T16:21:26Z DRYRUN: would delete 0 .log older than 12h (~0GB); D: free 152.14GB
+2026-08-17T16:21:58Z DRYRUN: would delete 0 .log older than 12h (~0GB); D: free 152.15GB
+2026-08-17T16:23:00Z PURGED 0 .log older than 12h (~0GB); D: free 152.15GB -> 152.15GB
+2026-08-17T16:23:33Z BUDGET_OK tree 0.04GB <= 8GB after age purge; no size trim
+2026-08-17T17:18:27Z PURGED 0 .log older than 12h (~0GB); D: free 161.89GB -> 161.87GB
+2026-08-17T17:19:01Z BUDGET_OK tree 0.15GB <= 8GB after age purge; no size trim
+2026-08-17T18:18:37Z PURGED 0 .log older than 12h (~0GB); D: free 152.78GB -> 152.77GB
+2026-08-17T18:19:16Z BUDGET_OK tree 0.19GB <= 8GB after age purge; no size trim
+2026-08-17T19:18:30Z PURGED 0 .log older than 12h (~0GB); D: free 151.25GB -> 151.25GB
+2026-08-17T19:19:01Z BUDGET_OK tree 0.04GB <= 8GB after age purge; no size trim
+2026-08-17T20:18:27Z PURGED 0 .log older than 12h (~0GB); D: free 154.82GB -> 154.82GB
+2026-08-17T20:19:01Z BUDGET_OK tree 0.21GB <= 8GB after age purge; no size trim
+2026-08-17T21:18:21Z PURGED 0 .log older than 12h (~0GB); D: free 152.21GB -> 152.21GB
+2026-08-17T21:18:47Z BUDGET_OK tree 0.42GB <= 8GB after age purge; no size trim
+2026-08-17T22:18:21Z PURGED 0 .log older than 12h (~0GB); D: free 153.51GB -> 153.51GB
+2026-08-17T22:18:47Z BUDGET_OK tree 0.05GB <= 8GB after age purge; no size trim
+2026-08-17T23:19:15Z PURGED 0 .log older than 12h (~0GB); D: free 145.94GB -> 145.9GB
+2026-08-17T23:20:35Z BUDGET_OK tree 0.11GB <= 8GB after age purge; no size trim
+2026-08-18T00:19:01Z PURGED 0 .log older than 12h (~0GB); D: free 140.56GB -> 140.56GB
+2026-08-18T00:19:49Z BUDGET_OK tree 0.19GB <= 8GB after age purge; no size trim
+2026-08-18T01:18:54Z PURGED 0 .log older than 12h (~0GB); D: free 151.39GB -> 151.39GB
+2026-08-18T01:19:42Z BUDGET_OK tree 0.16GB <= 8GB after age purge; no size trim
+2026-08-18T02:18:47Z PURGED 0 .log older than 12h (~0GB); D: free 147.93GB -> 147.93GB
+2026-08-18T02:19:28Z BUDGET_OK tree 0.23GB <= 8GB after age purge; no size trim
+2026-08-18T03:18:53Z PURGED 0 .log older than 12h (~0GB); D: free 148.87GB -> 148.87GB
+2026-08-18T03:19:54Z BUDGET_OK tree 0.26GB <= 8GB after age purge; no size trim
+2026-08-18T04:18:49Z PURGED 0 .log older than 12h (~0GB); D: free 144.42GB -> 147.92GB
+2026-08-18T04:19:29Z BUDGET_OK tree 0.28GB <= 8GB after age purge; no size trim
+2026-08-18T05:19:27Z PURGED 3 .log older than 12h (~0GB); D: free 148.64GB -> 148.64GB
+2026-08-18T05:20:14Z BUDGET_OK tree 0.28GB <= 8GB after age purge; no size trim
+2026-08-18T06:19:17Z PURGED 3 .log older than 12h (~0.03GB); D: free 139.52GB -> 139.51GB
+2026-08-18T06:20:34Z BUDGET_OK tree 0.32GB <= 8GB after age purge; no size trim
+2026-08-18T07:19:00Z PURGED 1 .log older than 12h (~0GB); D: free 136.9GB -> 136.9GB
+2026-08-18T07:19:57Z BUDGET_OK tree 0.54GB <= 8GB after age purge; no size trim
+2026-08-18T08:19:41Z PURGED 2 .log older than 12h (~0GB); D: free 150.3GB -> 150.11GB
+2026-08-18T08:20:30Z BUDGET_OK tree 1.1GB <= 8GB after age purge; no size trim
+2026-08-18T09:19:34Z PURGED 0 .log older than 12h (~0GB); D: free 136.68GB -> 142.45GB
+2026-08-18T09:20:32Z BUDGET_OK tree 1.29GB <= 8GB after age purge; no size trim
+2026-08-18T10:19:04Z PURGED 3 .log older than 12h (~0GB); D: free 145.19GB -> 144.57GB
+2026-08-18T10:20:07Z BUDGET_OK tree 0.75GB <= 8GB after age purge; no size trim
+2026-08-18T11:20:37Z PURGED 13 .log older than 12h (~0.02GB); D: free 153.08GB -> 153.1GB
+2026-08-18T11:22:35Z BUDGET_OK tree 0.85GB <= 8GB after age purge; no size trim
+2026-08-18T12:22:17Z PURGED 28 .log older than 12h (~0.07GB); D: free 151.06GB -> 150.95GB
+2026-08-18T12:27:15Z BUDGET_OK tree 0.87GB <= 8GB after age purge; no size trim
+2026-08-18T13:22:21Z PURGED 19 .log older than 12h (~0.03GB); D: free 160.66GB -> 159.77GB
+2026-08-18T13:26:31Z BUDGET_OK tree 0.86GB <= 8GB after age purge; no size trim
+2026-08-18T14:21:42Z PURGED 26 .log older than 12h (~0.06GB); D: free 157.45GB -> 157.53GB
+2026-08-18T14:27:18Z BUDGET_OK tree 0.8GB <= 8GB after age purge; no size trim
+2026-08-18T15:21:49Z PURGED 21 .log older than 12h (~0.03GB); D: free 157.08GB -> 157.1GB
+2026-08-18T15:26:54Z BUDGET_OK tree 0.77GB <= 8GB after age purge; no size trim
+2026-08-18T16:22:51Z PURGED 25 .log older than 12h (~0.02GB); D: free 156.35GB -> 156.37GB
+2026-08-18T16:26:38Z BUDGET_OK tree 0.75GB <= 8GB after age purge; no size trim
+2026-08-18T17:21:48Z PURGED 27 .log older than 12h (~0.01GB); D: free 155.98GB -> 155.98GB
+2026-08-18T17:25:46Z BUDGET_OK tree 0.74GB <= 8GB after age purge; no size trim
+2026-08-18T18:22:00Z PURGED 14 .log older than 12h (~0.07GB); D: free 155.97GB -> 156.02GB
+2026-08-18T18:25:38Z BUDGET_OK tree 0.68GB <= 8GB after age purge; no size trim
+2026-08-18T19:22:23Z PURGED 10 .log older than 12h (~0.16GB); D: free 154.11GB -> 154.26GB
+2026-08-18T19:26:55Z BUDGET_OK tree 0.52GB <= 8GB after age purge; no size trim
+2026-08-18T20:21:55Z PURGED 17 .log older than 12h (~0.17GB); D: free 152.49GB -> 155.22GB
+2026-08-18T20:25:43Z BUDGET_OK tree 0.35GB <= 8GB after age purge; no size trim
+2026-08-18T21:21:34Z PURGED 4 .log older than 12h (~0.05GB); D: free 155.22GB -> 155.99GB
+2026-08-18T21:25:11Z BUDGET_OK tree 0.31GB <= 8GB after age purge; no size trim
+2026-08-18T22:21:25Z PURGED 32 .log older than 12h (~0.06GB); D: free 155.98GB -> 155.66GB
+2026-08-18T22:25:17Z BUDGET_OK tree 0.24GB <= 8GB after age purge; no size trim
+2026-08-18T23:21:14Z PURGED 21 .log older than 12h (~0.12GB); D: free 152.14GB -> 153.74GB
+2026-08-18T23:24:57Z BUDGET_OK tree 0.13GB <= 8GB after age purge; no size trim
+2026-08-19T00:21:33Z PURGED 7 .log older than 12h (~0.09GB); D: free 153.68GB -> 155.25GB
+2026-08-19T00:25:41Z BUDGET_OK tree 0.04GB <= 8GB after age purge; no size trim
+2026-08-19T01:21:37Z PURGED 5 .log older than 12h (~0.02GB); D: free 155.25GB -> 155.64GB
+2026-08-19T01:25:23Z BUDGET_OK tree 0.01GB <= 8GB after age purge; no size trim
+2026-08-19T02:21:18Z PURGED 4 .log older than 12h (~0.01GB); D: free 155.63GB -> 156GB
+2026-08-19T02:25:22Z BUDGET_OK tree 0GB <= 8GB after age purge; no size trim
+2026-08-19T03:21:19Z PURGED 1 .log older than 12h (~0GB); D: free 155.99GB -> 155.98GB
+2026-08-19T03:25:22Z BUDGET_OK tree 0GB <= 8GB after age purge; no size trim
+2026-08-19T04:21:00Z PURGED 0 .log older than 12h (~0GB); D: free 155.58GB -> 155.58GB
+2026-08-19T04:25:12Z BUDGET_OK tree 0GB <= 8GB after age purge; no size trim
+2026-08-19T05:22:42Z PURGED 2 .log older than 12h (~0GB); D: free 155.57GB -> 155.57GB
+2026-08-19T05:28:26Z BUDGET_OK tree 0GB <= 8GB after age purge; no size trim
+2026-08-19T06:22:46Z PURGED 2 .log older than 12h (~0GB); D: free 155.55GB -> 155.55GB
+2026-08-19T06:27:56Z BUDGET_OK tree 0GB <= 8GB after age purge; no size trim
+2026-08-19T07:21:02Z PURGED 1 .log older than 12h (~0GB); D: free 154.15GB -> 154.16GB
+2026-08-19T07:25:04Z BUDGET_OK tree 0GB <= 8GB after age purge; no size trim
+2026-08-19T08:21:40Z PURGED 1 .log older than 12h (~0GB); D: free 152.05GB -> 150.31GB
+2026-08-19T08:25:33Z BUDGET_OK tree 0.02GB <= 8GB after age purge; no size trim
+2026-08-19T09:20:58Z PURGED 0 .log older than 12h (~0GB); D: free 150.25GB -> 150.25GB
+2026-08-19T09:24:59Z BUDGET_OK tree 0.03GB <= 8GB after age purge; no size trim
+2026-08-19T10:22:15Z PURGED 0 .log older than 12h (~0GB); D: free 166.06GB -> 165.66GB
+2026-08-19T10:25:56Z BUDGET_OK tree 0.02GB <= 8GB after age purge; no size trim
+2026-08-19T11:21:01Z PURGED 0 .log older than 12h (~0GB); D: free 161.3GB -> 161.31GB
+2026-08-19T11:26:28Z BUDGET_OK tree 0.04GB <= 8GB after age purge; no size trim
+2026-08-19T12:20:52Z PURGED 0 .log older than 12h (~0GB); D: free 160.9GB -> 160.68GB
+2026-08-19T12:25:17Z BUDGET_OK tree 0.09GB <= 8GB after age purge; no size trim
+2026-08-19T13:20:08Z PURGED 0 .log older than 12h (~0GB); D: free 159.09GB -> 159.11GB
+2026-08-19T13:22:09Z BUDGET_OK tree 0.06GB <= 8GB after age purge; no size trim
+2026-08-19T14:19:14Z PURGED 0 .log older than 12h (~0GB); D: free 150.07GB -> 150.06GB
+2026-08-19T14:21:19Z BUDGET_OK tree 0.13GB <= 8GB after age purge; no size trim
+2026-08-19T15:19:31Z PURGED 0 .log older than 12h (~0GB); D: free 149.96GB -> 149.96GB
+2026-08-19T15:20:55Z BUDGET_OK tree 0.25GB <= 8GB after age purge; no size trim
+2026-08-19T16:18:34Z PURGED 0 .log older than 12h (~0GB); D: free 147.1GB -> 147.1GB
+2026-08-19T16:19:11Z BUDGET_OK tree 0.06GB <= 8GB after age purge; no size trim
+2026-08-19T17:18:34Z PURGED 0 .log older than 12h (~0GB); D: free 146.06GB -> 146.06GB
+2026-08-19T17:19:12Z BUDGET_OK tree 0.13GB <= 8GB after age purge; no size trim
+2026-08-19T18:18:26Z PURGED 0 .log older than 12h (~0GB); D: free 154.85GB -> 154.85GB
+2026-08-19T18:19:02Z BUDGET_OK tree 0.16GB <= 8GB after age purge; no size trim
+2026-08-19T19:18:33Z PURGED 0 .log older than 12h (~0GB); D: free 156.27GB -> 155.61GB
+2026-08-19T19:19:15Z BUDGET_OK tree 0.09GB <= 8GB after age purge; no size trim
+2026-08-19T20:18:36Z PURGED 0 .log older than 12h (~0GB); D: free 152.28GB -> 152.28GB
+2026-08-19T20:19:15Z BUDGET_OK tree 0.23GB <= 8GB after age purge; no size trim
+2026-08-19T21:19:35Z PURGED 4 .log older than 12h (~0.01GB); D: free 152.49GB -> 152.49GB
+2026-08-19T21:21:03Z BUDGET_OK tree 0.27GB <= 8GB after age purge; no size trim
+2026-08-19T22:19:17Z PURGED 2 .log older than 12h (~0.01GB); D: free 150.46GB -> 150.47GB
+2026-08-19T22:20:58Z BUDGET_OK tree 0.16GB <= 8GB after age purge; no size trim
+2026-08-19T23:19:30Z PURGED 0 .log older than 12h (~0GB); D: free 153.82GB -> 153.64GB
+2026-08-19T23:20:46Z BUDGET_OK tree 0.19GB <= 8GB after age purge; no size trim
+2026-08-20T00:19:33Z PURGED 6 .log older than 12h (~0.04GB); D: free 147.94GB -> 147.96GB
+2026-08-20T00:20:42Z BUDGET_OK tree 0.2GB <= 8GB after age purge; no size trim
+2026-08-20T01:18:52Z PURGED 0 .log older than 12h (~0GB); D: free 142.98GB -> 142.97GB
+2026-08-20T01:19:33Z BUDGET_OK tree 0.17GB <= 8GB after age purge; no size trim
+2026-08-20T02:18:52Z PURGED 0 .log older than 12h (~0GB); D: free 150.68GB -> 150.68GB
+2026-08-20T02:19:59Z BUDGET_OK tree 0.21GB <= 8GB after age purge; no size trim
+2026-08-20T03:19:00Z PURGED 0 .log older than 12h (~0GB); D: free 138.63GB -> 137.56GB
+2026-08-20T03:19:41Z BUDGET_OK tree 0.25GB <= 8GB after age purge; no size trim
+2026-08-20T04:19:06Z PURGED 3 .log older than 12h (~0GB); D: free 104.22GB -> 103.03GB
+2026-08-20T04:20:17Z BUDGET_OK tree 0.29GB <= 8GB after age purge; no size trim
+2026-08-20T05:18:58Z PURGED 3 .log older than 12h (~0GB); D: free 135.86GB -> 135.25GB
+2026-08-20T05:20:02Z BUDGET_OK tree 0.33GB <= 8GB after age purge; no size trim
+2026-08-20T06:18:29Z PURGED 0 .log older than 12h (~0GB); D: free 149.5GB -> 149.5GB
+2026-08-20T06:19:11Z BUDGET_OK tree 0.35GB <= 8GB after age purge; no size trim
+2026-08-20T07:18:37Z PURGED 0 .log older than 12h (~0GB); D: free 150.44GB -> 150.44GB
+2026-08-20T07:19:29Z BUDGET_OK tree 0.28GB <= 8GB after age purge; no size trim
+2026-08-20T08:18:52Z PURGED 3 .log older than 12h (~0.04GB); D: free 138.43GB -> 138.47GB
+2026-08-20T08:19:58Z BUDGET_OK tree 0.28GB <= 8GB after age purge; no size trim
+2026-08-20T09:19:36Z PURGED 12 .log older than 12h (~0.01GB); D: free 147.15GB -> 147.16GB
+2026-08-20T09:20:21Z BUDGET_OK tree 0.32GB <= 8GB after age purge; no size trim
+2026-08-20T10:18:50Z PURGED 27 .log older than 12h (~0.06GB); D: free 145.71GB -> 145.77GB
+2026-08-20T10:19:43Z BUDGET_OK tree 0.29GB <= 8GB after age purge; no size trim
+2026-08-20T11:18:45Z PURGED 23 .log older than 12h (~0.01GB); D: free 149.57GB -> 149.58GB
+2026-08-20T11:19:23Z BUDGET_OK tree 0.39GB <= 8GB after age purge; no size trim
+2026-08-20T12:18:43Z PURGED 20 .log older than 12h (~0.02GB); D: free 146.68GB -> 145.99GB
+2026-08-20T12:19:23Z BUDGET_OK tree 0.42GB <= 8GB after age purge; no size trim
+2026-08-20T13:18:51Z PURGED 13 .log older than 12h (~0.01GB); D: free 146.09GB -> 146.1GB
+2026-08-20T13:19:38Z BUDGET_OK tree 0.24GB <= 8GB after age purge; no size trim
+2026-08-20T14:18:40Z PURGED 18 .log older than 12h (~0.02GB); D: free 156.46GB -> 156.48GB
+2026-08-20T14:19:25Z BUDGET_OK tree 0.24GB <= 8GB after age purge; no size trim
+2026-08-20T15:18:30Z PURGED 19 .log older than 12h (~0.02GB); D: free 152.09GB -> 152.1GB
+2026-08-20T15:19:02Z BUDGET_OK tree 0.25GB <= 8GB after age purge; no size trim
+2026-08-20T16:18:38Z PURGED 9 .log older than 12h (~0.01GB); D: free 153.21GB -> 153.17GB
+2026-08-20T16:19:16Z BUDGET_OK tree 0.08GB <= 8GB after age purge; no size trim
+2026-08-20T17:18:27Z PURGED 6 .log older than 12h (~0GB); D: free 143.4GB -> 143.41GB
+2026-08-20T17:19:03Z BUDGET_OK tree 0.09GB <= 8GB after age purge; no size trim
+2026-08-20T18:18:33Z PURGED 4 .log older than 12h (~0GB); D: free 150.31GB -> 150.31GB
+2026-08-20T18:19:16Z BUDGET_OK tree 0.1GB <= 8GB after age purge; no size trim
+2026-08-20T19:18:34Z PURGED 6 .log older than 12h (~0GB); D: free 148.59GB -> 148.59GB
+2026-08-20T19:19:14Z BUDGET_OK tree 0.09GB <= 8GB after age purge; no size trim
+2026-08-20T20:18:32Z PURGED 5 .log older than 12h (~0.01GB); D: free 155.83GB -> 155.56GB
+2026-08-20T20:19:06Z BUDGET_OK tree 0.11GB <= 8GB after age purge; no size trim
+2026-08-20T21:18:27Z PURGED 2 .log older than 12h (~0GB); D: free 154.42GB -> 154.42GB
+2026-08-20T21:19:01Z BUDGET_OK tree 0.12GB <= 8GB after age purge; no size trim
+2026-08-20T22:18:31Z PURGED 1 .log older than 12h (~0GB); D: free 152.54GB -> 152.54GB
+2026-08-20T22:19:06Z BUDGET_OK tree 0.17GB <= 8GB after age purge; no size trim
+2026-08-20T23:18:51Z PURGED 1 .log older than 12h (~0GB); D: free 149.12GB -> 149.13GB
+2026-08-20T23:19:38Z BUDGET_OK tree 0.18GB <= 8GB after age purge; no size trim
+2026-08-21T00:18:46Z PURGED 3 .log older than 12h (~0GB); D: free 151.59GB -> 151.59GB
+2026-08-21T00:19:57Z BUDGET_OK tree 0.21GB <= 8GB after age purge; no size trim
+2026-08-21T01:18:34Z PURGED 0 .log older than 12h (~0GB); D: free 144.08GB -> 144.08GB
+2026-08-21T01:19:14Z BUDGET_OK tree 0.15GB <= 8GB after age purge; no size trim
+2026-08-21T02:18:56Z PURGED 1 .log older than 12h (~0GB); D: free 148.4GB -> 148.4GB
+2026-08-21T02:19:38Z BUDGET_OK tree 0.26GB <= 8GB after age purge; no size trim
+2026-08-21T03:18:50Z PURGED 0 .log older than 12h (~0GB); D: free 150.58GB -> 150.58GB
+2026-08-21T03:19:31Z BUDGET_OK tree 0.28GB <= 8GB after age purge; no size trim
+2026-08-21T04:18:50Z PURGED 2 .log older than 12h (~0.03GB); D: free 150.95GB -> 150.2GB
+2026-08-21T04:19:37Z BUDGET_OK tree 0.05GB <= 8GB after age purge; no size trim
+2026-08-21T05:18:51Z PURGED 0 .log older than 12h (~0GB); D: free 149.23GB -> 149.23GB
+2026-08-21T05:19:50Z BUDGET_OK tree 0.09GB <= 8GB after age purge; no size trim
+2026-08-21T06:18:49Z PURGED 0 .log older than 12h (~0GB); D: free 148.22GB -> 148.22GB
+2026-08-21T06:19:44Z BUDGET_OK tree 0.1GB <= 8GB after age purge; no size trim
+2026-08-21T07:18:50Z PURGED 0 .log older than 12h (~0GB); D: free 151.68GB -> 151.67GB
+2026-08-21T07:19:27Z BUDGET_OK tree 0.08GB <= 8GB after age purge; no size trim
+2026-08-21T08:19:08Z PURGED 2 .log older than 12h (~0GB); D: free 131.91GB -> 130.53GB
+2026-08-21T08:19:47Z BUDGET_OK tree 0.1GB <= 8GB after age purge; no size trim
+2026-08-21T09:19:19Z PURGED 5 .log older than 12h (~0.01GB); D: free 145.16GB -> 145.16GB
+2026-08-21T09:20:34Z BUDGET_OK tree 0.14GB <= 8GB after age purge; no size trim
+2026-08-21T10:18:39Z PURGED 4 .log older than 12h (~0.02GB); D: free 146.15GB -> 146.17GB
+2026-08-21T10:19:20Z BUDGET_OK tree 0.11GB <= 8GB after age purge; no size trim
+2026-08-21T11:18:48Z PURGED 1 .log older than 12h (~0GB); D: free 155.82GB -> 155.81GB
+2026-08-21T11:19:30Z BUDGET_OK tree 0.19GB <= 8GB after age purge; no size trim
+2026-08-21T12:18:51Z PURGED 0 .log older than 12h (~0GB); D: free 144.74GB -> 144.74GB
+2026-08-21T12:19:31Z BUDGET_OK tree 0.21GB <= 8GB after age purge; no size trim
+2026-08-21T13:50:15Z PURGED 0 .log older than 12h (~0GB); D: free 148.53GB -> 155.47GB
+2026-08-21T13:51:01Z BUDGET_OK tree 0.3GB <= 8GB after age purge; no size trim
+2026-08-21T14:19:07Z PURGED 0 .log older than 12h (~0GB); D: free 149.33GB -> 149.33GB
+2026-08-21T14:19:57Z BUDGET_OK tree 0.31GB <= 8GB after age purge; no size trim
+2026-08-21T15:23:32Z PURGED 0 .log older than 12h (~0GB); D: free 149.65GB -> 149.58GB
+2026-08-21T15:28:37Z BUDGET_OK tree 0.42GB <= 8GB after age purge; no size trim
+2026-08-21T16:18:40Z PURGED 3 .log older than 12h (~0.01GB); D: free 142.13GB -> 142.14GB
+2026-08-21T16:19:11Z BUDGET_OK tree 0.21GB <= 8GB after age purge; no size trim
+2026-08-21T17:18:33Z PURGED 3 .log older than 12h (~0.01GB); D: free 143.46GB -> 143.47GB
+2026-08-21T17:18:58Z BUDGET_OK tree 0.53GB <= 8GB after age purge; no size trim
+2026-08-21T18:18:31Z PURGED 6 .log older than 12h (~0.01GB); D: free 143.75GB -> 143.74GB
+2026-08-21T18:18:58Z BUDGET_OK tree 0.68GB <= 8GB after age purge; no size trim
+2026-08-21T19:18:24Z PURGED 10 .log older than 12h (~0.02GB); D: free 145.18GB -> 145.2GB
+2026-08-21T19:18:57Z BUDGET_OK tree 0.28GB <= 8GB after age purge; no size trim
+2026-08-21T20:18:25Z PURGED 7 .log older than 12h (~0.01GB); D: free 139.9GB -> 139.91GB
+2026-08-21T20:18:57Z BUDGET_OK tree 0.36GB <= 8GB after age purge; no size trim
+2026-08-21T21:18:27Z PURGED 2 .log older than 12h (~0GB); D: free 141.3GB -> 141.3GB
+2026-08-21T21:18:58Z BUDGET_OK tree 0.48GB <= 8GB after age purge; no size trim
+2026-08-21T22:18:20Z PURGED 0 .log older than 12h (~0GB); D: free 144.62GB -> 144.14GB
+2026-08-21T22:18:47Z BUDGET_OK tree 0.46GB <= 8GB after age purge; no size trim
+2026-08-21T23:18:21Z PURGED 3 .log older than 12h (~0GB); D: free 147.38GB -> 147.39GB
+2026-08-21T23:18:50Z BUDGET_OK tree 0.47GB <= 8GB after age purge; no size trim
+2026-08-22T00:20:11Z PURGED 0 .log older than 12h (~0GB); D: free 143.51GB -> 142.33GB
+2026-08-22T00:21:54Z BUDGET_OK tree 0.49GB <= 8GB after age purge; no size trim
+2026-08-22T01:18:49Z PURGED 0 .log older than 12h (~0GB); D: free 136.64GB -> 136.63GB
+2026-08-22T01:19:23Z BUDGET_OK tree 0.5GB <= 8GB after age purge; no size trim
+2026-08-22T02:19:15Z PURGED 0 .log older than 12h (~0GB); D: free 132.86GB -> 132.84GB
+2026-08-22T02:20:29Z BUDGET_OK tree 0.58GB <= 8GB after age purge; no size trim
+2026-08-22T03:19:15Z PURGED 0 .log older than 12h (~0GB); D: free 137.45GB -> 137.45GB
+2026-08-22T03:20:57Z BUDGET_OK tree 0.65GB <= 8GB after age purge; no size trim
+2026-08-22T04:19:34Z PURGED 6 .log older than 12h (~0.14GB); D: free 137.52GB -> 137.56GB
+2026-08-22T04:20:53Z BUDGET_OK tree 0.47GB <= 8GB after age purge; no size trim
+2026-08-22T05:19:18Z PURGED 0 .log older than 12h (~0GB); D: free 124.98GB -> 124.48GB
+2026-08-22T05:21:47Z BUDGET_OK tree 0.49GB <= 8GB after age purge; no size trim
+2026-08-22T06:20:31Z PURGED 6 .log older than 12h (~0.08GB); D: free 132.37GB -> 132.65GB
+2026-08-22T06:22:47Z BUDGET_OK tree 0.44GB <= 8GB after age purge; no size trim
+2026-08-22T07:24:09Z PURGED 11 .log older than 12h (~0.03GB); D: free 133.19GB -> 132.91GB
+2026-08-22T07:29:35Z BUDGET_OK tree 0.4GB <= 8GB after age purge; no size trim
+2026-08-22T08:19:45Z PURGED 19 .log older than 12h (~0.07GB); D: free 127.59GB -> 127.58GB
+2026-08-22T08:22:12Z BUDGET_OK tree 0.43GB <= 8GB after age purge; no size trim
+2026-08-22T09:27:03Z PURGED 18 .log older than 12h (~0.1GB); D: free 121.48GB -> 128.32GB
+2026-08-22T09:30:25Z BUDGET_OK tree 0.35GB <= 8GB after age purge; no size trim
+2026-08-22T10:18:55Z PURGED 11 .log older than 12h (~0.03GB); D: free 130.45GB -> 130.48GB
+2026-08-22T10:19:48Z BUDGET_OK tree 0.24GB <= 8GB after age purge; no size trim
+2026-08-22T11:19:38Z PURGED 17 .log older than 12h (~0.01GB); D: free 127.78GB -> 127.74GB
+2026-08-22T11:21:07Z BUDGET_OK tree 0.31GB <= 8GB after age purge; no size trim
+2026-08-22T12:20:02Z PURGED 17 .log older than 12h (~0.01GB); D: free 127.94GB -> 127.94GB
+2026-08-22T12:22:39Z BUDGET_OK tree 0.32GB <= 8GB after age purge; no size trim
+2026-08-22T13:19:58Z PURGED 0 .log older than 12h (~0GB); D: free 128.93GB -> 128.93GB
+2026-08-22T13:22:49Z BUDGET_OK tree 0.1GB <= 8GB after age purge; no size trim
+2026-08-22T14:19:34Z PURGED 3 .log older than 12h (~0.01GB); D: free 126.31GB -> 126.32GB
+2026-08-22T14:20:29Z BUDGET_OK tree 0.16GB <= 8GB after age purge; no size trim
+2026-08-22T15:19:20Z PURGED 0 .log older than 12h (~0GB); D: free 125.54GB -> 125.15GB
+2026-08-22T15:20:46Z BUDGET_OK tree 0.2GB <= 8GB after age purge; no size trim
+2026-08-22T16:19:01Z PURGED 6 .log older than 12h (~0.01GB); D: free 120.55GB -> 120.52GB
+2026-08-22T16:20:05Z BUDGET_OK tree 0.3GB <= 8GB after age purge; no size trim
+2026-08-22T17:18:57Z PURGED 3 .log older than 12h (~0GB); D: free 121.53GB -> 121.52GB
+2026-08-22T17:19:31Z BUDGET_OK tree 0.64GB <= 8GB after age purge; no size trim
+2026-08-22T18:19:17Z PURGED 3 .log older than 12h (~0.01GB); D: free 120.11GB -> 119.72GB
+2026-08-22T18:20:41Z BUDGET_OK tree 1GB <= 8GB after age purge; no size trim
+2026-08-22T19:19:27Z PURGED 0 .log older than 12h (~0GB); D: free 120.01GB -> 114.66GB
+2026-08-22T19:21:02Z BUDGET_OK tree 1.32GB <= 8GB after age purge; no size trim
+2026-08-22T20:18:52Z PURGED 1 .log older than 12h (~0GB); D: free 125.95GB -> 125.94GB
+2026-08-22T20:19:37Z BUDGET_OK tree 1.72GB <= 8GB after age purge; no size trim
+2026-08-22T21:19:35Z PURGED 5 .log older than 12h (~0GB); D: free 131.59GB -> 131.52GB
+2026-08-22T21:21:53Z BUDGET_OK tree 1.96GB <= 8GB after age purge; no size trim
+2026-08-22T22:19:36Z PURGED 5 .log older than 12h (~0.01GB); D: free 125.57GB -> 124.87GB
+2026-08-22T22:21:13Z BUDGET_OK tree 2.07GB <= 8GB after age purge; no size trim
+2026-08-22T23:19:06Z PURGED 0 .log older than 12h (~0GB); D: free 124.34GB -> 124.33GB
+2026-08-22T23:19:54Z BUDGET_OK tree 2.16GB <= 8GB after age purge; no size trim
+2026-08-23T00:19:24Z PURGED 1 .log older than 12h (~0.01GB); D: free 123.91GB -> 123.91GB
+2026-08-23T00:21:03Z BUDGET_OK tree 2.26GB <= 8GB after age purge; no size trim
+2026-08-23T01:19:20Z PURGED 1 .log older than 12h (~0.02GB); D: free 123.43GB -> 123.44GB
+2026-08-23T01:20:42Z BUDGET_OK tree 2.39GB <= 8GB after age purge; no size trim
+2026-08-23T02:22:19Z PURGED 15 .log older than 12h (~0.01GB); D: free 122.91GB -> 122.88GB
+2026-08-23T02:24:34Z BUDGET_OK tree 2.56GB <= 8GB after age purge; no size trim
+2026-08-23T03:19:32Z PURGED 42 .log older than 12h (~0.03GB); D: free 122.06GB -> 122.08GB
+2026-08-23T03:21:21Z BUDGET_OK tree 2.69GB <= 8GB after age purge; no size trim
+2026-08-23T04:19:32Z PURGED 115 .log older than 12h (~0.13GB); D: free 121.63GB -> 121.76GB
+2026-08-23T04:20:56Z BUDGET_OK tree 2.06GB <= 8GB after age purge; no size trim
+2026-08-23T05:20:05Z PURGED 154 .log older than 12h (~0.31GB); D: free 121.25GB -> 121.54GB
+2026-08-23T05:21:39Z BUDGET_OK tree 1.97GB <= 8GB after age purge; no size trim
+2026-08-23T06:19:29Z PURGED 153 .log older than 12h (~0.23GB); D: free 122.66GB -> 122.87GB
+2026-08-23T06:21:02Z BUDGET_OK tree 1.96GB <= 8GB after age purge; no size trim
+2026-08-23T07:19:46Z PURGED 118 .log older than 12h (~0.27GB); D: free 120.79GB -> 121.05GB
+2026-08-23T07:21:28Z BUDGET_OK tree 1.73GB <= 8GB after age purge; no size trim
+2026-08-23T08:19:17Z PURGED 134 .log older than 12h (~0.27GB); D: free 122.34GB -> 122.58GB
+2026-08-23T08:20:56Z BUDGET_OK tree 1.69GB <= 8GB after age purge; no size trim
+2026-08-23T09:23:44Z PURGED 67 .log older than 12h (~0.2GB); D: free 129.5GB -> 128.63GB
+2026-08-23T09:29:25Z BUDGET_OK tree 1.53GB <= 8GB after age purge; no size trim
+2026-08-23T10:18:39Z PURGED 112 .log older than 12h (~0.05GB); D: free 122.78GB -> 122.82GB
+2026-08-23T10:19:21Z BUDGET_OK tree 1.21GB <= 8GB after age purge; no size trim
+2026-08-23T11:18:59Z PURGED 98 .log older than 12h (~0.05GB); D: free 123.21GB -> 123.19GB
+2026-08-23T11:19:52Z BUDGET_OK tree 1.72GB <= 8GB after age purge; no size trim
+2026-08-23T12:18:29Z PURGED 107 .log older than 12h (~0.06GB); D: free 122.18GB -> 122.13GB
+2026-08-23T12:19:02Z BUDGET_OK tree 2.03GB <= 8GB after age purge; no size trim
+2026-08-23T13:18:31Z PURGED 0 .log older than 12h (~0GB); D: free 132.5GB -> 132.5GB
+2026-08-23T13:19:09Z BUDGET_OK tree 0.08GB <= 8GB after age purge; no size trim
+2026-08-23T14:20:24Z PURGED 0 .log older than 12h (~0GB); D: free 126.31GB -> 126.31GB
+2026-08-23T14:22:11Z BUDGET_OK tree 0.45GB <= 8GB after age purge; no size trim
+2026-08-23T15:19:18Z PURGED 0 .log older than 12h (~0GB); D: free 127.18GB -> 127.17GB
+2026-08-23T15:20:40Z BUDGET_OK tree 0.5GB <= 8GB after age purge; no size trim
+2026-08-23T16:19:40Z PURGED 0 .log older than 12h (~0GB); D: free 130.77GB -> 130.17GB
+2026-08-23T16:20:36Z BUDGET_OK tree 0.59GB <= 8GB after age purge; no size trim
+2026-08-23T17:19:15Z PURGED 0 .log older than 12h (~0GB); D: free 143.27GB -> 143.26GB
+2026-08-23T17:20:10Z BUDGET_OK tree 0.61GB <= 8GB after age purge; no size trim
+2026-08-23T18:18:39Z PURGED 0 .log older than 12h (~0GB); D: free 142.2GB -> 142.2GB
+2026-08-23T18:19:19Z BUDGET_OK tree 0.72GB <= 8GB after age purge; no size trim
+2026-08-23T19:18:41Z PURGED 0 .log older than 12h (~0GB); D: free 139.92GB -> 139.92GB
+2026-08-23T19:19:35Z BUDGET_OK tree 1.03GB <= 8GB after age purge; no size trim
+2026-08-23T20:18:48Z PURGED 0 .log older than 12h (~0GB); D: free 139.42GB -> 139.41GB
+2026-08-23T20:19:40Z BUDGET_OK tree 1.51GB <= 8GB after age purge; no size trim
+2026-08-23T22:23:22Z PURGED 0 .log older than 12h (~0GB); D: free 140.14GB -> 141.13GB
+2026-08-23T22:27:25Z BUDGET_OK tree 1.52GB <= 8GB after age purge; no size trim
+2026-08-23T23:27:19Z PURGED 0 .log older than 12h (~0GB); D: free 142.69GB -> 137.55GB
+2026-08-23T23:34:52Z BUDGET_OK tree 1.59GB <= 8GB after age purge; no size trim
+2026-08-24T00:19:17Z PURGED 0 .log older than 12h (~0GB); D: free 138.44GB -> 137.22GB
+2026-08-24T00:20:27Z BUDGET_OK tree 1.61GB <= 8GB after age purge; no size trim
+2026-08-24T01:19:25Z PURGED 22 .log older than 12h (~0.07GB); D: free 128.11GB -> 128.17GB
+2026-08-24T01:21:24Z BUDGET_OK tree 0.31GB <= 8GB after age purge; no size trim
+2026-08-24T02:19:23Z PURGED 18 .log older than 12h (~0.13GB); D: free 139.35GB -> 137.71GB
+2026-08-24T02:21:03Z BUDGET_OK tree 0.21GB <= 8GB after age purge; no size trim
+2026-08-24T03:19:25Z PURGED 37 .log older than 12h (~0.04GB); D: free 133.31GB -> 133.34GB
+2026-08-24T03:20:41Z BUDGET_OK tree 0.23GB <= 8GB after age purge; no size trim
+2026-08-24T04:19:34Z PURGED 28 .log older than 12h (~0.06GB); D: free 136.63GB -> 136.37GB
+2026-08-24T04:20:46Z BUDGET_OK tree 0.07GB <= 8GB after age purge; no size trim
+2026-08-24T05:19:02Z PURGED 2 .log older than 12h (~0GB); D: free 134.21GB -> 134.21GB
+2026-08-24T05:19:46Z BUDGET_OK tree 0.08GB <= 8GB after age purge; no size trim
+2026-08-24T06:18:42Z PURGED 4 .log older than 12h (~0GB); D: free 129.09GB -> 128.28GB
+2026-08-24T06:19:29Z BUDGET_OK tree 0.16GB <= 8GB after age purge; no size trim
+2026-08-24T07:18:50Z PURGED 0 .log older than 12h (~0GB); D: free 134.3GB -> 134.29GB
+2026-08-24T07:19:39Z BUDGET_OK tree 0.14GB <= 8GB after age purge; no size trim
+2026-08-24T08:21:30Z PURGED 0 .log older than 12h (~0GB); D: free 132.29GB -> 132.87GB
+2026-08-24T08:25:15Z BUDGET_OK tree 0.18GB <= 8GB after age purge; no size trim
+2026-08-24T09:19:14Z PURGED 0 .log older than 12h (~0GB); D: free 133.72GB -> 133.72GB
+2026-08-24T09:20:29Z BUDGET_OK tree 0.25GB <= 8GB after age purge; no size trim
+2026-08-24T10:23:58Z PURGED 0 .log older than 12h (~0GB); D: free 135.53GB -> 133.78GB
+2026-08-24T10:28:24Z BUDGET_OK tree 0.27GB <= 8GB after age purge; no size trim
+2026-08-24T11:20:38Z PURGED 0 .log older than 12h (~0GB); D: free 132.78GB -> 132.78GB
+2026-08-24T11:23:38Z BUDGET_OK tree 0.3GB <= 8GB after age purge; no size trim
+2026-08-24T12:51:40Z PURGED 0 .log older than 12h (~0GB); D: free 132.85GB -> 134.58GB
+2026-08-24T12:58:45Z BUDGET_OK tree 0.31GB <= 8GB after age purge; no size trim
+2026-08-24T13:26:09Z PURGED 0 .log older than 12h (~0GB); D: free 135.71GB -> 135.4GB
+2026-08-24T13:52:39Z BUDGET_OK tree 0.32GB <= 8GB after age purge; no size trim
+2026-08-24T14:33:26Z PURGED 0 .log older than 12h (~0GB); D: free 134.68GB -> 134.45GB
+2026-08-24T14:48:58Z BUDGET_OK tree 0.32GB <= 8GB after age purge; no size trim
+2026-08-24T15:30:33Z PURGED 0 .log older than 12h (~0GB); D: free 133.1GB -> 131.73GB
+2026-08-24T15:33:41Z BUDGET_OK tree 0.32GB <= 8GB after age purge; no size trim
+2026-08-24T16:18:53Z PURGED 2 .log older than 12h (~0.01GB); D: free 123.52GB -> 123.52GB
+2026-08-24T16:19:43Z BUDGET_OK tree 0.36GB <= 8GB after age purge; no size trim
+2026-08-24T17:19:41Z PURGED 16 .log older than 12h (~0.01GB); D: free 124.28GB -> 124.23GB
+2026-08-24T17:20:38Z BUDGET_OK tree 0.48GB <= 8GB after age purge; no size trim
+2026-08-24T18:18:57Z PURGED 88 .log older than 12h (~0.07GB); D: free 124.24GB -> 124.19GB
+2026-08-24T18:19:42Z BUDGET_OK tree 0.47GB <= 8GB after age purge; no size trim
+2026-08-24T19:18:53Z PURGED 47 .log older than 12h (~0.02GB); D: free 118.75GB -> 118.77GB
+2026-08-24T19:19:33Z BUDGET_OK tree 0.4GB <= 8GB after age purge; no size trim
+2026-08-24T20:19:05Z PURGED 34 .log older than 12h (~0.03GB); D: free 124.46GB -> 124.5GB
+2026-08-24T20:19:49Z BUDGET_OK tree 0.41GB <= 8GB after age purge; no size trim
+2026-08-24T21:19:10Z PURGED 14 .log older than 12h (~0.06GB); D: free 121.32GB -> 121.38GB
+2026-08-24T21:19:51Z BUDGET_OK tree 0.44GB <= 8GB after age purge; no size trim
+2026-08-24T22:19:07Z PURGED 3 .log older than 12h (~0.05GB); D: free 122.32GB -> 122.37GB
+2026-08-24T22:20:09Z BUDGET_OK tree 0.16GB <= 8GB after age purge; no size trim
+2026-08-24T23:19:26Z PURGED 2 .log older than 12h (~0GB); D: free 121.24GB -> 121.24GB
+2026-08-24T23:20:17Z BUDGET_OK tree 0.19GB <= 8GB after age purge; no size trim
+2026-08-25T00:19:33Z PURGED 6 .log older than 12h (~0GB); D: free 122.97GB -> 122.97GB
+2026-08-25T00:21:09Z BUDGET_OK tree 0.21GB <= 8GB after age purge; no size trim
+2026-08-25T01:19:03Z PURGED 2 .log older than 12h (~0GB); D: free 122.94GB -> 122.93GB
+2026-08-25T01:19:50Z BUDGET_OK tree 0.14GB <= 8GB after age purge; no size trim
+2026-08-25T02:19:05Z PURGED 2 .log older than 12h (~0.01GB); D: free 124.6GB -> 124.62GB
+2026-08-25T02:19:49Z BUDGET_OK tree 0.16GB <= 8GB after age purge; no size trim
+2026-08-25T03:19:25Z PURGED 0 .log older than 12h (~0GB); D: free 123.56GB -> 123.56GB
+2026-08-25T03:20:15Z BUDGET_OK tree 0.19GB <= 8GB after age purge; no size trim
+2026-08-25T04:19:01Z PURGED 0 .log older than 12h (~0GB); D: free 122.73GB -> 122.49GB
+2026-08-25T04:19:46Z BUDGET_OK tree 0.22GB <= 8GB after age purge; no size trim
+2026-08-25T05:18:53Z PURGED 0 .log older than 12h (~0GB); D: free 123.86GB -> 123.85GB
+2026-08-25T05:19:40Z BUDGET_OK tree 0.24GB <= 8GB after age purge; no size trim
+2026-08-25T06:18:55Z PURGED 0 .log older than 12h (~0GB); D: free 122.64GB -> 122.64GB
+2026-08-25T06:19:38Z BUDGET_OK tree 0.28GB <= 8GB after age purge; no size trim
+2026-08-25T07:18:52Z PURGED 4 .log older than 12h (~0.02GB); D: free 123.32GB -> 123.34GB
+2026-08-25T07:19:37Z BUDGET_OK tree 0.27GB <= 8GB after age purge; no size trim
+2026-08-25T08:20:12Z PURGED 1 .log older than 12h (~0GB); D: free 133.84GB -> 133.45GB
+2026-08-25T08:24:05Z BUDGET_OK tree 0.29GB <= 8GB after age purge; no size trim
+2026-08-25T09:19:05Z PURGED 25 .log older than 12h (~0.01GB); D: free 123.72GB -> 123.73GB
+2026-08-25T09:20:22Z BUDGET_OK tree 0.31GB <= 8GB after age purge; no size trim
+2026-08-25T10:19:14Z PURGED 16 .log older than 12h (~0.01GB); D: free 123.36GB -> 123.02GB
+2026-08-25T10:20:28Z BUDGET_OK tree 0.19GB <= 8GB after age purge; no size trim
+2026-08-25T11:19:32Z PURGED 21 .log older than 12h (~0.01GB); D: free 119.05GB -> 119.06GB
+2026-08-25T11:20:46Z BUDGET_OK tree 0.58GB <= 8GB after age purge; no size trim
+2026-08-25T12:18:59Z PURGED 24 .log older than 12h (~0.01GB); D: free 118.28GB -> 118.29GB
+2026-08-25T12:19:42Z BUDGET_OK tree 0.6GB <= 8GB after age purge; no size trim
+2026-08-25T13:18:51Z PURGED 28 .log older than 12h (~0.01GB); D: free 119.62GB -> 119.63GB
+2026-08-25T13:19:32Z BUDGET_OK tree 0.2GB <= 8GB after age purge; no size trim
+2026-08-25T14:19:13Z PURGED 26 .log older than 12h (~0.01GB); D: free 123.11GB -> 121.29GB
+2026-08-25T14:20:01Z BUDGET_OK tree 0.2GB <= 8GB after age purge; no size trim
+2026-08-25T15:19:00Z PURGED 29 .log older than 12h (~0.01GB); D: free 123.23GB -> 122.55GB
+2026-08-25T15:19:49Z BUDGET_OK tree 0.2GB <= 8GB after age purge; no size trim
+2026-08-25T16:19:05Z PURGED 28 .log older than 12h (~0.01GB); D: free 125.94GB -> 125.95GB
+2026-08-25T16:20:15Z BUDGET_OK tree 0.21GB <= 8GB after age purge; no size trim
+2026-08-25T17:18:56Z PURGED 31 .log older than 12h (~0.01GB); D: free 126.47GB -> 126.48GB
+2026-08-25T17:20:25Z BUDGET_OK tree 0.22GB <= 8GB after age purge; no size trim
+2026-08-25T18:20:38Z PURGED 29 .log older than 12h (~0.01GB); D: free 126.12GB -> 126.14GB
+2026-08-25T18:24:07Z BUDGET_OK tree 0.23GB <= 8GB after age purge; no size trim
+2026-08-25T19:24:05Z PURGED 27 .log older than 12h (~0.01GB); D: free 122.72GB -> 122.73GB
+2026-08-25T19:29:43Z BUDGET_OK tree 0.19GB <= 8GB after age purge; no size trim
+2026-08-25T20:19:11Z PURGED 32 .log older than 12h (~0.02GB); D: free 122.81GB -> 122.21GB
+2026-08-25T20:20:19Z BUDGET_OK tree 0.2GB <= 8GB after age purge; no size trim
+2026-08-25T21:19:10Z PURGED 11 .log older than 12h (~0GB); D: free 116.04GB -> 116.03GB
+2026-08-25T21:20:33Z BUDGET_OK tree 0.27GB <= 8GB after age purge; no size trim
+2026-08-25T22:19:07Z PURGED 17 .log older than 12h (~0.01GB); D: free 115.58GB -> 115.61GB
+2026-08-25T22:20:02Z BUDGET_OK tree 0.21GB <= 8GB after age purge; no size trim
+2026-08-25T23:19:09Z PURGED 13 .log older than 12h (~0GB); D: free 118.18GB -> 117.2GB
+2026-08-25T23:19:57Z BUDGET_OK tree 0.23GB <= 8GB after age purge; no size trim
+2026-08-26T00:19:37Z PURGED 18 .log older than 12h (~0.01GB); D: free 115.17GB -> 115.17GB
+2026-08-26T00:23:00Z BUDGET_OK tree 0.24GB <= 8GB after age purge; no size trim
+2026-08-26T01:25:35Z PURGED 29 .log older than 12h (~0.05GB); D: free 118.45GB -> 119.63GB
+2026-08-26T01:26:34Z BUDGET_OK tree 0.2GB <= 8GB after age purge; no size trim
+2026-08-26T02:19:21Z PURGED 21 .log older than 12h (~0.01GB); D: free 120.4GB -> 118.66GB
+2026-08-26T02:20:28Z BUDGET_OK tree 0.2GB <= 8GB after age purge; no size trim
+2026-08-26T03:18:57Z PURGED 24 .log older than 12h (~0.01GB); D: free 111.53GB -> 111.54GB
+2026-08-26T03:19:47Z BUDGET_OK tree 0.27GB <= 8GB after age purge; no size trim
+2026-08-26T04:19:01Z PURGED 26 .log older than 12h (~0.01GB); D: free 112.79GB -> 112.81GB
+2026-08-26T04:20:07Z BUDGET_OK tree 0.29GB <= 8GB after age purge; no size trim
+2026-08-26T05:18:56Z PURGED 29 .log older than 12h (~0.01GB); D: free 111.31GB -> 111.31GB
+2026-08-26T05:19:41Z BUDGET_OK tree 0.31GB <= 8GB after age purge; no size trim
+2026-08-26T06:19:12Z PURGED 35 .log older than 12h (~0.02GB); D: free 113.96GB -> 113.98GB
+2026-08-26T06:19:59Z BUDGET_OK tree 0.32GB <= 8GB after age purge; no size trim
+2026-08-26T07:19:46Z PURGED 17 .log older than 12h (~0.01GB); D: free 113.31GB -> 113.32GB
+2026-08-26T07:21:35Z BUDGET_OK tree 0.23GB <= 8GB after age purge; no size trim
+2026-08-26T08:19:26Z PURGED 21 .log older than 12h (~0.01GB); D: free 112.11GB -> 109.61GB
+2026-08-26T08:21:01Z BUDGET_OK tree 0.24GB <= 8GB after age purge; no size trim
+2026-08-26T09:18:56Z PURGED 20 .log older than 12h (~0.02GB); D: free 111.85GB -> 111.87GB
+2026-08-26T09:19:45Z BUDGET_OK tree 0.26GB <= 8GB after age purge; no size trim
+2026-08-26T10:21:41Z PURGED 16 .log older than 12h (~0.03GB); D: free 115.83GB -> 114.63GB
+2026-08-26T10:23:40Z BUDGET_OK tree 0.2GB <= 8GB after age purge; no size trim
+2026-08-26T11:19:23Z PURGED 21 .log older than 12h (~0.01GB); D: free 113.75GB -> 113.37GB
+2026-08-26T11:20:50Z BUDGET_OK tree 0.21GB <= 8GB after age purge; no size trim
+2026-08-26T12:19:15Z PURGED 24 .log older than 12h (~0.01GB); D: free 108.77GB -> 108.6GB
+2026-08-26T12:20:11Z BUDGET_OK tree 0.25GB <= 8GB after age purge; no size trim
+2026-08-26T13:18:52Z PURGED 21 .log older than 12h (~0.01GB); D: free 109.02GB -> 109.03GB
+2026-08-26T13:19:34Z BUDGET_OK tree 0.29GB <= 8GB after age purge; no size trim
+2026-08-26T14:19:02Z PURGED 15 .log older than 12h (~0.01GB); D: free 110.29GB -> 110.29GB
+2026-08-26T14:19:52Z BUDGET_OK tree 0.33GB <= 8GB after age purge; no size trim
+2026-08-26T15:19:16Z PURGED 21 .log older than 12h (~0.07GB); D: free 104.44GB -> 104.5GB
+2026-08-26T15:20:33Z BUDGET_OK tree 0.3GB <= 8GB after age purge; no size trim
+2026-08-26T16:19:01Z PURGED 16 .log older than 12h (~0.01GB); D: free 102.65GB -> 102.49GB
+2026-08-26T16:19:50Z BUDGET_OK tree 0.34GB <= 8GB after age purge; no size trim
+2026-08-26T17:19:04Z PURGED 18 .log older than 12h (~0.01GB); D: free 96.47GB -> 96.47GB
+2026-08-26T17:19:48Z BUDGET_OK tree 0.38GB <= 8GB after age purge; no size trim
+2026-08-26T18:18:59Z PURGED 16 .log older than 12h (~0.01GB); D: free 101.99GB -> 101.99GB
+2026-08-26T18:19:44Z BUDGET_OK tree 0.43GB <= 8GB after age purge; no size trim
+2026-08-26T19:18:55Z PURGED 17 .log older than 12h (~0.01GB); D: free 101.88GB -> 99.34GB
+2026-08-26T19:19:39Z BUDGET_OK tree 0.44GB <= 8GB after age purge; no size trim
+2026-08-26T20:19:18Z PURGED 12 .log older than 12h (~0GB); D: free 100.69GB -> 98.81GB
+2026-08-26T20:20:45Z BUDGET_OK tree 0.49GB <= 8GB after age purge; no size trim
+2026-08-26T21:19:02Z PURGED 17 .log older than 12h (~0.02GB); D: free 94.72GB -> 93.44GB
+2026-08-26T21:19:43Z BUDGET_OK tree 0.5GB <= 8GB after age purge; no size trim
+2026-08-26T22:19:09Z PURGED 18 .log older than 12h (~0.03GB); D: free 103.22GB -> 103.24GB
+2026-08-26T22:20:10Z BUDGET_OK tree 0.59GB <= 8GB after age purge; no size trim
+2026-08-26T23:18:55Z PURGED 33 .log older than 12h (~0.02GB); D: free 106.35GB -> 106.37GB
+2026-08-26T23:19:40Z BUDGET_OK tree 0.61GB <= 8GB after age purge; no size trim
+2026-08-27T00:19:00Z PURGED 51 .log older than 12h (~0.05GB); D: free 107.38GB -> 107.43GB
+2026-08-27T00:19:59Z BUDGET_OK tree 0.6GB <= 8GB after age purge; no size trim
+2026-08-27T01:19:58Z PURGED 56 .log older than 12h (~0.07GB); D: free 111.78GB -> 111.83GB
+2026-08-27T01:23:15Z BUDGET_OK tree 0.6GB <= 8GB after age purge; no size trim
+2026-08-27T02:18:54Z PURGED 46 .log older than 12h (~0.05GB); D: free 104.93GB -> 104GB
+2026-08-27T02:19:37Z BUDGET_OK tree 0.58GB <= 8GB after age purge; no size trim
+2026-08-27T03:19:15Z PURGED 49 .log older than 12h (~0.03GB); D: free 117.08GB -> 116.32GB
+2026-08-27T03:20:33Z BUDGET_OK tree 0.6GB <= 8GB after age purge; no size trim
+2026-08-27T04:19:00Z PURGED 46 .log older than 12h (~0.05GB); D: free 112.63GB -> 112.67GB
+2026-08-27T04:20:22Z BUDGET_OK tree 0.6GB <= 8GB after age purge; no size trim
+2026-08-27T06:19:30Z PURGED 93 .log older than 12h (~0.09GB); D: free 115.09GB -> 114.88GB
+2026-08-27T06:21:04Z BUDGET_OK tree 0.58GB <= 8GB after age purge; no size trim
+2026-08-27T07:20:12Z PURGED 39 .log older than 12h (~0.02GB); D: free 111.06GB -> 111.06GB
+2026-08-27T07:22:40Z BUDGET_OK tree 0.6GB <= 8GB after age purge; no size trim
+2026-08-27T08:18:59Z PURGED 46 .log older than 12h (~0.06GB); D: free 111.06GB -> 110.77GB
+2026-08-27T08:19:42Z BUDGET_OK tree 0.58GB <= 8GB after age purge; no size trim
+2026-08-27T09:21:04Z PURGED 43 .log older than 12h (~0.03GB); D: free 107.91GB -> 109.67GB
+2026-08-27T09:23:47Z BUDGET_OK tree 0.59GB <= 8GB after age purge; no size trim
+2026-08-27T10:18:44Z PURGED 52 .log older than 12h (~0.11GB); D: free 109.76GB -> 109.86GB
+2026-08-27T10:19:34Z BUDGET_OK tree 0.56GB <= 8GB after age purge; no size trim
+2026-08-27T11:18:40Z PURGED 55 .log older than 12h (~0.05GB); D: free 112.07GB -> 112.11GB
+2026-08-27T11:19:27Z BUDGET_OK tree 0.61GB <= 8GB after age purge; no size trim
+2026-08-27T12:18:39Z PURGED 59 .log older than 12h (~0.04GB); D: free 119.03GB -> 119.06GB
+2026-08-27T12:19:25Z BUDGET_OK tree 0.71GB <= 8GB after age purge; no size trim
+2026-08-27T13:18:40Z PURGED 59 .log older than 12h (~0.07GB); D: free 117.2GB -> 117.26GB
+2026-08-27T13:19:24Z BUDGET_OK tree 0.66GB <= 8GB after age purge; no size trim
+2026-08-27T14:18:42Z PURGED 58 .log older than 12h (~0.04GB); D: free 116.81GB -> 116.85GB
+2026-08-27T14:19:32Z BUDGET_OK tree 0.66GB <= 8GB after age purge; no size trim
+2026-08-27T15:18:48Z PURGED 48 .log older than 12h (~0.05GB); D: free 114.57GB -> 114.6GB
+2026-08-27T15:19:43Z BUDGET_OK tree 0.66GB <= 8GB after age purge; no size trim
+2026-08-27T16:18:43Z PURGED 35 .log older than 12h (~0.05GB); D: free 117.83GB -> 117.88GB
+2026-08-27T16:19:33Z BUDGET_OK tree 0.67GB <= 8GB after age purge; no size trim
+2026-08-27T17:18:45Z PURGED 35 .log older than 12h (~0.06GB); D: free 111.01GB -> 110.5GB
+2026-08-27T17:19:37Z BUDGET_OK tree 0.69GB <= 8GB after age purge; no size trim
+2026-08-27T18:18:53Z PURGED 24 .log older than 12h (~0.02GB); D: free 110.21GB -> 110.23GB
+2026-08-27T18:19:47Z BUDGET_OK tree 0.73GB <= 8GB after age purge; no size trim
+2026-08-27T19:18:41Z PURGED 50 .log older than 12h (~0.04GB); D: free 107.15GB -> 107.12GB
+2026-08-27T19:19:26Z BUDGET_OK tree 0.88GB <= 8GB after age purge; no size trim
+2026-08-27T20:18:39Z PURGED 31 .log older than 12h (~0.04GB); D: free 103.47GB -> 103.51GB
+2026-08-27T20:19:18Z BUDGET_OK tree 2.51GB <= 8GB after age purge; no size trim
+2026-08-27T21:18:41Z PURGED 33 .log older than 12h (~0.04GB); D: free 102.39GB -> 102.42GB
+2026-08-27T21:19:29Z BUDGET_OK tree 2.93GB <= 8GB after age purge; no size trim
+2026-08-27T22:18:41Z PURGED 31 .log older than 12h (~0.07GB); D: free 102.74GB -> 102.82GB
+2026-08-27T22:19:27Z BUDGET_OK tree 2.97GB <= 8GB after age purge; no size trim
+2026-08-27T23:18:53Z PURGED 47 .log older than 12h (~0.1GB); D: free 102.21GB -> 102.31GB
+2026-08-27T23:19:40Z BUDGET_OK tree 2.95GB <= 8GB after age purge; no size trim
+2026-08-28T00:18:47Z PURGED 50 .log older than 12h (~0.14GB); D: free 104.6GB -> 104.74GB
+2026-08-28T00:19:39Z BUDGET_OK tree 2.91GB <= 8GB after age purge; no size trim
+2026-08-28T01:18:41Z PURGED 48 .log older than 12h (~0.02GB); D: free 101.5GB -> 101.52GB
+2026-08-28T01:19:19Z BUDGET_OK tree 2.95GB <= 8GB after age purge; no size trim
+2026-08-28T02:18:33Z PURGED 47 .log older than 12h (~0.03GB); D: free 99.75GB -> 99.78GB
+2026-08-28T02:19:13Z BUDGET_OK tree 2.95GB <= 8GB after age purge; no size trim
+2026-08-28T03:18:42Z PURGED 41 .log older than 12h (~0.04GB); D: free 100.84GB -> 100.56GB
+2026-08-28T03:19:23Z BUDGET_OK tree 2.92GB <= 8GB after age purge; no size trim
+2026-08-28T04:19:00Z PURGED 66 .log older than 12h (~0.07GB); D: free 102.66GB -> 102.72GB
+2026-08-28T04:20:06Z BUDGET_OK tree 2.88GB <= 8GB after age purge; no size trim
+2026-08-28T05:18:50Z PURGED 69 .log older than 12h (~0.07GB); D: free 102.24GB -> 102.31GB
+2026-08-28T05:19:40Z BUDGET_OK tree 2.83GB <= 8GB after age purge; no size trim
+2026-08-28T06:18:39Z PURGED 50 .log older than 12h (~0.06GB); D: free 101.9GB -> 101.96GB
+2026-08-28T06:19:28Z BUDGET_OK tree 2.81GB <= 8GB after age purge; no size trim
+2026-08-28T07:18:52Z PURGED 47 .log older than 12h (~0.2GB); D: free 103.02GB -> 103.22GB
+2026-08-28T07:19:38Z BUDGET_OK tree 2.64GB <= 8GB after age purge; no size trim
+2026-08-28T08:18:27Z PURGED 57 .log older than 12h (~1.66GB); D: free 104.3GB -> 105.96GB
+2026-08-28T08:19:01Z BUDGET_OK tree 0.98GB <= 8GB after age purge; no size trim
+2026-08-28T09:20:18Z PURGED 50 .log older than 12h (~0.46GB); D: free 105.16GB -> 105.62GB
+2026-08-28T09:25:07Z BUDGET_OK tree 0.52GB <= 8GB after age purge; no size trim
+2026-08-28T10:19:54Z PURGED 83 .log older than 12h (~0.1GB); D: free 103.08GB -> 103.18GB
+2026-08-28T10:24:37Z BUDGET_OK tree 0.42GB <= 8GB after age purge; no size trim
+2026-08-28T11:19:32Z PURGED 69 .log older than 12h (~0.08GB); D: free 104.77GB -> 104.85GB
+2026-08-28T11:23:43Z BUDGET_OK tree 0.35GB <= 8GB after age purge; no size trim
+2026-08-28T12:21:47Z PURGED 60 .log older than 12h (~0.09GB); D: free 102.68GB -> 102.77GB
+2026-08-28T12:24:39Z BUDGET_OK tree 0.27GB <= 8GB after age purge; no size trim
+2026-08-28T13:20:28Z PURGED 69 .log older than 12h (~0.07GB); D: free 104.29GB -> 104.98GB
+2026-08-28T13:24:39Z BUDGET_OK tree 0.21GB <= 8GB after age purge; no size trim
+2026-08-28T14:20:33Z PURGED 81 .log older than 12h (~0.03GB); D: free 102.48GB -> 102.5GB
+2026-08-28T14:24:32Z BUDGET_OK tree 0.19GB <= 8GB after age purge; no size trim
+2026-08-28T15:21:55Z PURGED 63 .log older than 12h (~0.02GB); D: free 102.55GB -> 104.71GB
+2026-08-28T15:24:55Z BUDGET_OK tree 0.2GB <= 8GB after age purge; no size trim
+2026-08-28T16:19:53Z PURGED 85 .log older than 12h (~0.02GB); D: free 105.22GB -> 105.24GB
+2026-08-28T16:25:17Z BUDGET_OK tree 0.19GB <= 8GB after age purge; no size trim
+2026-08-28T17:20:49Z PURGED 91 .log older than 12h (~0.03GB); D: free 104.53GB -> 104.56GB
+2026-08-28T17:24:49Z BUDGET_OK tree 0.18GB <= 8GB after age purge; no size trim
+2026-08-28T18:20:09Z PURGED 103 .log older than 12h (~0.04GB); D: free 102.82GB -> 102.85GB
+2026-08-28T18:24:59Z BUDGET_OK tree 0.15GB <= 8GB after age purge; no size trim
+2026-08-28T19:04:14Z PURGED 52 .log older than 12h (~0.02GB); D: free 114.68GB -> 114.7GB
+2026-08-28T19:04:41Z BUDGET_OK tree 0.14GB <= 8GB after age purge; no size trim
+2026-08-28T19:25:30Z PURGED 5 .log older than 12h (~0GB); D: free 128.1GB -> 128.1GB
+2026-08-28T19:29:42Z BUDGET_OK tree 0.14GB <= 8GB after age purge; no size trim
+2026-08-28T21:19:42Z PURGED 21 .log older than 12h (~0.01GB); D: free 127.6GB -> 127.61GB
+2026-08-28T21:21:37Z BUDGET_OK tree 0.13GB <= 8GB after age purge; no size trim
+2026-08-28T23:32:09Z PURGED 15 .log older than 12h (~0.01GB); D: free 134.41GB -> 145.59GB
+2026-08-28T23:36:27Z BUDGET_OK tree 0.12GB <= 8GB after age purge; no size trim
+2026-08-29T00:19:10Z PURGED 14 .log older than 12h (~0.01GB); D: free 144.56GB -> 144.57GB
+2026-08-29T00:20:35Z BUDGET_OK tree 0.11GB <= 8GB after age purge; no size trim
+2026-08-29T01:19:43Z PURGED 15 .log older than 12h (~0.01GB); D: free 141.71GB -> 141.72GB
+2026-08-29T01:23:05Z BUDGET_OK tree 0.1GB <= 8GB after age purge; no size trim
+2026-08-29T02:19:42Z PURGED 14 .log older than 12h (~0.01GB); D: free 140.63GB -> 140.41GB
+2026-08-29T02:21:40Z BUDGET_OK tree 0.31GB <= 8GB after age purge; no size trim
+2026-08-29T03:19:46Z PURGED 14 .log older than 12h (~0.02GB); D: free 135.69GB -> 135.71GB
+2026-08-29T03:21:30Z BUDGET_OK tree 3.52GB <= 8GB after age purge; no size trim
+2026-08-29T04:22:05Z PURGED 14 .log older than 12h (~0.01GB); D: free 125.62GB -> 125.62GB
+2026-08-29T04:24:26Z BUDGET_TRIM removed 65 oldest .log (~0.75GB) to fit 8GB; tree was 8.68GB, now 7.93GB
+2026-08-29T05:19:57Z PURGED 0 .log older than 12h (~0GB); D: free 118.19GB -> 118.01GB
+2026-08-29T05:21:45Z BUDGET_TRIM removed 34 oldest .log (~3.66GB) to fit 8GB; tree was 11.53GB, now 7.87GB
+2026-08-29T06:20:32Z PURGED 0 .log older than 12h (~0GB); D: free 117.27GB -> 117.14GB
+2026-08-29T06:22:46Z BUDGET_TRIM removed 15 oldest .log (~2.76GB) to fit 8GB; tree was 10.76GB, now 8GB
+2026-08-29T07:20:10Z PURGED 0 .log older than 12h (~0GB); D: free 108.42GB -> 108.01GB
+2026-08-29T07:23:07Z BUDGET_TRIM removed 63 oldest .log (~4.93GB) to fit 8GB; tree was 12.91GB, now 7.98GB
+2026-08-29T08:18:37Z PURGED 0 .log older than 12h (~0GB); D: free 116.27GB -> 116.27GB
+2026-08-29T08:19:10Z BUDGET_TRIM removed 6 oldest .log (~0.09GB) to fit 8GB; tree was 8GB, now 7.92GB
+2026-08-29T09:18:21Z PURGED 0 .log older than 12h (~0GB); D: free 116.19GB -> 116.19GB
+2026-08-29T09:18:51Z BUDGET_OK tree 7.98GB <= 8GB after age purge; no size trim
+2026-08-29T10:20:22Z PURGED 0 .log older than 12h (~0GB); D: free 125.67GB -> 125.38GB
+2026-08-29T10:23:42Z BUDGET_OK tree 8GB <= 8GB after age purge; no size trim
+2026-08-29T11:29:15Z PURGED 0 .log older than 12h (~0GB); D: free 122.85GB -> 122.84GB
+2026-08-29T11:40:12Z BUDGET_TRIM removed 4 oldest .log (~0.08GB) to fit 8GB; tree was 8.07GB, now 7.99GB
+2026-08-29T12:30:46Z PURGED 0 .log older than 12h (~0GB); D: free 116.78GB -> 112.34GB
+2026-08-29T12:32:27Z BUDGET_TRIM removed 5 oldest .log (~0.28GB) to fit 8GB; tree was 8.08GB, now 7.8GB
+2026-08-29T13:30:05Z PURGED 0 .log older than 12h (~0GB); D: free 92.52GB -> 84.54GB
+2026-08-29T13:32:56Z BUDGET_OK tree 7.96GB <= 8GB after age purge; no size trim
+2026-08-29T14:19:41Z PURGED 0 .log older than 12h (~0GB); D: free 83.51GB -> 82.57GB
+2026-08-29T14:23:07Z BUDGET_TRIM removed 1 oldest .log (~0.12GB) to fit 8GB; tree was 8.03GB, now 7.91GB
+2026-08-29T15:20:37Z PURGED 0 .log older than 12h (~0GB); D: free 86.58GB -> 85.03GB
+2026-08-29T15:23:05Z BUDGET_OK tree 7.98GB <= 8GB after age purge; no size trim
+2026-08-29T16:25:53Z PURGED 0 .log older than 12h (~0GB); D: free 94.04GB -> 93.81GB
+2026-08-29T16:40:02Z BUDGET_TRIM removed 6 oldest .log (~0.15GB) to fit 8GB; tree was 8.06GB, now 7.91GB
+2026-08-29T17:20:42Z PURGED 0 .log older than 12h (~0GB); D: free 95.35GB -> 95.15GB
+2026-08-29T17:25:45Z BUDGET_OK tree 7.94GB <= 8GB after age purge; no size trim
+2026-08-29T18:20:14Z PURGED 51 .log older than 12h (~2.03GB); D: free 92.46GB -> 93.79GB
+2026-08-29T18:24:05Z BUDGET_OK tree 5.94GB <= 8GB after age purge; no size trim
+2026-08-29T19:19:51Z PURGED 61 .log older than 12h (~5.24GB); D: free 87.06GB -> 89.91GB
+2026-08-29T19:21:39Z BUDGET_OK tree 0.75GB <= 8GB after age purge; no size trim
+2026-08-29T20:19:37Z PURGED 23 .log older than 12h (~0.02GB); D: free 93.83GB -> 93.84GB
+2026-08-29T20:22:58Z BUDGET_OK tree 0.84GB <= 8GB after age purge; no size trim
+2026-08-29T21:20:46Z PURGED 5 .log older than 12h (~0.06GB); D: free 89.97GB -> 89.96GB
+2026-08-29T21:22:56Z BUDGET_OK tree 0.99GB <= 8GB after age purge; no size trim
+2026-08-29T22:19:57Z PURGED 29 .log older than 12h (~0.02GB); D: free 86.27GB -> 85.7GB
+2026-08-29T22:21:02Z BUDGET_OK tree 1.17GB <= 8GB after age purge; no size trim
+2026-08-29T23:19:59Z PURGED 36 .log older than 12h (~0.05GB); D: free 70.74GB -> 77.83GB
+2026-08-29T23:32:44Z BUDGET_OK tree 1.22GB <= 8GB after age purge; no size trim
+2026-08-30T00:20:18Z PURGED 61 .log older than 12h (~0.1GB); D: free 80.84GB -> 80.94GB
+2026-08-30T00:23:11Z BUDGET_OK tree 1.13GB <= 8GB after age purge; no size trim
+2026-08-30T01:30:02Z PURGED 111 .log older than 12h (~0.11GB); D: free 80.59GB -> 78.61GB
+2026-08-30T01:35:44Z BUDGET_OK tree 1.11GB <= 8GB after age purge; no size trim
+2026-08-30T02:18:28Z PURGED 159 .log older than 12h (~0.12GB); D: free 111.94GB -> 112.06GB
+2026-08-30T02:18:59Z BUDGET_OK tree 1.06GB <= 8GB after age purge; no size trim
+2026-08-30T03:18:28Z PURGED 60 .log older than 12h (~0.07GB); D: free 110.1GB -> 110.18GB
+2026-08-30T03:18:59Z BUDGET_OK tree 1.11GB <= 8GB after age purge; no size trim
+2026-08-30T04:18:25Z PURGED 62 .log older than 12h (~0.07GB); D: free 108.86GB -> 108.93GB
+2026-08-30T04:18:58Z BUDGET_OK tree 1.14GB <= 8GB after age purge; no size trim
+2026-08-30T05:18:28Z PURGED 65 .log older than 12h (~0.04GB); D: free 102.14GB -> 102.14GB
+2026-08-30T05:19:03Z BUDGET_OK tree 1.21GB <= 8GB after age purge; no size trim
+2026-08-30T06:18:33Z PURGED 109 .log older than 12h (~0.03GB); D: free 96.74GB -> 96.76GB
+2026-08-30T06:19:14Z BUDGET_OK tree 1.44GB <= 8GB after age purge; no size trim
+2026-08-30T07:18:29Z PURGED 100 .log older than 12h (~0.05GB); D: free 97.81GB -> 97.87GB
+2026-08-30T07:19:04Z BUDGET_OK tree 1.77GB <= 8GB after age purge; no size trim
+2026-08-30T08:18:30Z PURGED 91 .log older than 12h (~0.11GB); D: free 95.75GB -> 95.84GB
+2026-08-30T08:19:05Z BUDGET_OK tree 1.84GB <= 8GB after age purge; no size trim
+2026-08-30T09:18:30Z PURGED 86 .log older than 12h (~0.21GB); D: free 88.26GB -> 88.49GB
+2026-08-30T09:19:08Z BUDGET_OK tree 1.93GB <= 8GB after age purge; no size trim
+2026-08-30T10:18:34Z PURGED 95 .log older than 12h (~0.2GB); D: free 84.65GB -> 84.85GB
+2026-08-30T10:19:15Z BUDGET_OK tree 1.85GB <= 8GB after age purge; no size trim
+2026-08-30T11:18:33Z PURGED 71 .log older than 12h (~0.1GB); D: free 87.84GB -> 87.88GB
+2026-08-30T11:19:07Z BUDGET_OK tree 1.88GB <= 8GB after age purge; no size trim
+2026-08-30T12:18:30Z PURGED 60 .log older than 12h (~0.02GB); D: free 88.03GB -> 87.71GB
+2026-08-30T12:19:11Z BUDGET_OK tree 2.05GB <= 8GB after age purge; no size trim
+2026-08-30T13:18:32Z PURGED 83 .log older than 12h (~0.08GB); D: free 79.39GB -> 79.47GB
+2026-08-30T13:19:09Z BUDGET_OK tree 2.08GB <= 8GB after age purge; no size trim
+2026-08-30T14:18:32Z PURGED 65 .log older than 12h (~0.07GB); D: free 83.34GB -> 83.32GB
+2026-08-30T14:19:14Z BUDGET_OK tree 2.2GB <= 8GB after age purge; no size trim
+2026-08-30T15:18:34Z PURGED 69 .log older than 12h (~0.13GB); D: free 82.1GB -> 82.23GB
+2026-08-30T15:19:09Z BUDGET_OK tree 2.15GB <= 8GB after age purge; no size trim
+2026-08-30T16:18:23Z PURGED 70 .log older than 12h (~0.1GB); D: free 82.01GB -> 82.09GB
+2026-08-30T16:18:54Z BUDGET_OK tree 2.33GB <= 8GB after age purge; no size trim
+2026-08-30T17:18:33Z PURGED 61 .log older than 12h (~0.1GB); D: free 78.82GB -> 78.89GB
+2026-08-30T17:19:12Z BUDGET_OK tree 2.64GB <= 8GB after age purge; no size trim
+2026-08-30T18:18:29Z PURGED 73 .log older than 12h (~0.27GB); D: free 75.99GB -> 76.27GB
+2026-08-30T18:19:05Z BUDGET_OK tree 2.93GB <= 8GB after age purge; no size trim
+2026-08-30T19:18:26Z PURGED 76 .log older than 12h (~0.38GB); D: free 83.1GB -> 83.48GB
+2026-08-30T19:18:57Z BUDGET_OK tree 2.75GB <= 8GB after age purge; no size trim
+2026-08-30T20:18:23Z PURGED 75 .log older than 12h (~0.17GB); D: free 78.14GB -> 78.11GB
+2026-08-30T20:18:54Z BUDGET_OK tree 2.65GB <= 8GB after age purge; no size trim
+2026-08-30T21:18:23Z PURGED 80 .log older than 12h (~0.31GB); D: free 77.1GB -> 77.41GB
+2026-08-30T21:18:54Z BUDGET_OK tree 2.42GB <= 8GB after age purge; no size trim
+2026-08-30T22:18:36Z PURGED 71 .log older than 12h (~0.12GB); D: free 110.2GB -> 110.22GB
+2026-08-30T22:19:20Z BUDGET_OK tree 2.43GB <= 8GB after age purge; no size trim
+2026-08-30T23:18:45Z PURGED 75 .log older than 12h (~0.13GB); D: free 107.24GB -> 107.37GB
+2026-08-30T23:19:16Z BUDGET_OK tree 2.36GB <= 8GB after age purge; no size trim
+2026-08-31T00:18:28Z PURGED 65 .log older than 12h (~0.19GB); D: free 106.42GB -> 106.57GB
+2026-08-31T00:19:12Z BUDGET_OK tree 2.23GB <= 8GB after age purge; no size trim
+2026-08-31T01:18:33Z PURGED 62 .log older than 12h (~0.1GB); D: free 103.49GB -> 103.59GB
+2026-08-31T01:19:07Z BUDGET_OK tree 2.22GB <= 8GB after age purge; no size trim
+2026-08-31T02:18:39Z PURGED 82 .log older than 12h (~0.19GB); D: free 103.58GB -> 103.76GB
+2026-08-31T02:19:24Z BUDGET_OK tree 2.08GB <= 8GB after age purge; no size trim
+2026-08-31T03:18:39Z PURGED 89 .log older than 12h (~0.08GB); D: free 100.83GB -> 100.91GB
+2026-08-31T03:19:22Z BUDGET_OK tree 2.06GB <= 8GB after age purge; no size trim
+2026-08-31T04:18:42Z PURGED 75 .log older than 12h (~0.28GB); D: free 100.66GB -> 99.2GB
+2026-08-31T04:19:27Z BUDGET_OK tree 1.87GB <= 8GB after age purge; no size trim
+2026-08-31T05:18:36Z PURGED 67 .log older than 12h (~0.42GB); D: free 96.16GB -> 96.58GB
+2026-08-31T05:19:18Z BUDGET_OK tree 1.56GB <= 8GB after age purge; no size trim
+2026-08-31T06:18:38Z PURGED 84 .log older than 12h (~0.56GB); D: free 94.92GB -> 95.43GB
+2026-08-31T06:19:24Z BUDGET_OK tree 1.13GB <= 8GB after age purge; no size trim
+2026-08-31T07:18:37Z PURGED 80 .log older than 12h (~0.21GB); D: free 95GB -> 95.2GB
+2026-08-31T07:19:19Z BUDGET_OK tree 1.05GB <= 8GB after age purge; no size trim
+2026-08-31T08:18:29Z PURGED 93 .log older than 12h (~0.07GB); D: free 97.78GB -> 97.85GB
+2026-08-31T08:19:05Z BUDGET_OK tree 1.13GB <= 8GB after age purge; no size trim
+2026-08-31T09:18:32Z PURGED 126 .log older than 12h (~0.08GB); D: free 96.14GB -> 94.78GB
+2026-08-31T09:19:15Z BUDGET_OK tree 1.23GB <= 8GB after age purge; no size trim
+2026-08-31T10:18:39Z PURGED 131 .log older than 12h (~0.14GB); D: free 88GB -> 88.08GB
+2026-08-31T10:19:24Z BUDGET_OK tree 1.29GB <= 8GB after age purge; no size trim
+2026-08-31T11:18:31Z PURGED 116 .log older than 12h (~0.05GB); D: free 87.51GB -> 87.56GB
+2026-08-31T11:19:05Z BUDGET_OK tree 1.4GB <= 8GB after age purge; no size trim
+2026-08-31T12:18:37Z PURGED 98 .log older than 12h (~0.07GB); D: free 88.5GB -> 88.38GB
+2026-08-31T12:19:19Z BUDGET_OK tree 1.46GB <= 8GB after age purge; no size trim
+2026-08-31T13:18:28Z PURGED 103 .log older than 12h (~0.09GB); D: free 93.17GB -> 93.12GB
+2026-08-31T13:19:03Z BUDGET_OK tree 1.43GB <= 8GB after age purge; no size trim
+2026-08-31T14:18:40Z PURGED 67 .log older than 12h (~0.05GB); D: free 87.87GB -> 86.04GB
+2026-08-31T14:19:19Z BUDGET_OK tree 1.4GB <= 8GB after age purge; no size trim
+2026-08-31T15:18:45Z PURGED 89 .log older than 12h (~0.06GB); D: free 88.41GB -> 88.47GB
+2026-08-31T15:19:38Z BUDGET_OK tree 1.4GB <= 8GB after age purge; no size trim
+2026-08-31T16:18:33Z PURGED 28 .log older than 12h (~0.04GB); D: free 132.35GB -> 132.35GB
+2026-08-31T16:19:12Z BUDGET_OK tree 1.17GB <= 8GB after age purge; no size trim
+2026-08-31T17:18:28Z PURGED 38 .log older than 12h (~0.05GB); D: free 126.5GB -> 126.55GB
+2026-08-31T17:19:07Z BUDGET_OK tree 1.18GB <= 8GB after age purge; no size trim
+2026-08-31T18:18:46Z PURGED 65 .log older than 12h (~0.06GB); D: free 121.06GB -> 121.11GB
+2026-08-31T18:19:23Z BUDGET_OK tree 1.18GB <= 8GB after age purge; no size trim
+2026-08-31T19:18:34Z PURGED 50 .log older than 12h (~0.09GB); D: free 121.24GB -> 121.33GB
+2026-08-31T19:19:15Z BUDGET_OK tree 1.13GB <= 8GB after age purge; no size trim
+2026-08-31T20:18:35Z PURGED 120 .log older than 12h (~0.15GB); D: free 121.84GB -> 121.87GB
+2026-08-31T20:19:21Z BUDGET_OK tree 1.04GB <= 8GB after age purge; no size trim
+2026-08-31T21:18:36Z PURGED 95 .log older than 12h (~0.17GB); D: free 119.36GB -> 119.54GB
+2026-08-31T21:19:15Z BUDGET_OK tree 0.91GB <= 8GB after age purge; no size trim
+2026-08-31T22:18:36Z PURGED 94 .log older than 12h (~0.19GB); D: free 118.12GB -> 117.88GB
+2026-08-31T22:19:18Z BUDGET_OK tree 0.77GB <= 8GB after age purge; no size trim
+2026-08-31T23:18:30Z PURGED 99 .log older than 12h (~0.17GB); D: free 119.05GB -> 119.22GB
+2026-08-31T23:19:05Z BUDGET_OK tree 0.62GB <= 8GB after age purge; no size trim
+2026-09-01T00:18:38Z PURGED 67 .log older than 12h (~0.13GB); D: free 118.64GB -> 118.77GB
+2026-09-01T00:19:22Z BUDGET_OK tree 0.51GB <= 8GB after age purge; no size trim
+2026-09-01T01:18:46Z PURGED 82 .log older than 12h (~0.05GB); D: free 116.54GB -> 116.58GB
+2026-09-01T01:19:38Z BUDGET_OK tree 0.47GB <= 8GB after age purge; no size trim
+2026-09-01T02:18:35Z PURGED 55 .log older than 12h (~0.03GB); D: free 115.99GB -> 115.91GB
+2026-09-01T02:19:13Z BUDGET_OK tree 0.45GB <= 8GB after age purge; no size trim
+2026-09-01T03:18:36Z PURGED 73 .log older than 12h (~0.07GB); D: free 112.63GB -> 112.69GB
+2026-09-01T03:19:25Z BUDGET_OK tree 0.41GB <= 8GB after age purge; no size trim
+2026-09-01T04:18:28Z PURGED 50 .log older than 12h (~0.01GB); D: free 111.79GB -> 111.8GB
+2026-09-01T04:19:00Z BUDGET_OK tree 0.45GB <= 8GB after age purge; no size trim
+2026-09-01T05:18:38Z PURGED 107 .log older than 12h (~0.06GB); D: free 111.08GB -> 111.14GB
+2026-09-01T05:19:25Z BUDGET_OK tree 0.44GB <= 8GB after age purge; no size trim
+2026-09-01T06:18:40Z PURGED 130 .log older than 12h (~0.06GB); D: free 110.06GB -> 110.12GB
+2026-09-01T06:19:30Z BUDGET_OK tree 0.44GB <= 8GB after age purge; no size trim
+2026-09-01T07:18:32Z PURGED 129 .log older than 12h (~0.05GB); D: free 109.76GB -> 109.8GB
+2026-09-01T07:19:09Z BUDGET_OK tree 0.45GB <= 8GB after age purge; no size trim
+2026-09-01T08:18:31Z PURGED 134 .log older than 12h (~0.06GB); D: free 107.36GB -> 106.89GB
+2026-09-01T08:19:07Z BUDGET_OK tree 0.44GB <= 8GB after age purge; no size trim
+2026-09-01T09:18:37Z PURGED 107 .log older than 12h (~0.05GB); D: free 102.5GB -> 102.4GB
+2026-09-01T09:19:22Z BUDGET_OK tree 0.39GB <= 8GB after age purge; no size trim
+2026-09-01T10:18:38Z PURGED 106 .log older than 12h (~0.05GB); D: free 101.51GB -> 101.46GB
+2026-09-01T10:19:23Z BUDGET_OK tree 0.35GB <= 8GB after age purge; no size trim
+2026-09-01T11:18:35Z PURGED 100 .log older than 12h (~0.02GB); D: free 93.57GB -> 93.6GB
+2026-09-01T11:19:17Z BUDGET_OK tree 0.35GB <= 8GB after age purge; no size trim
+2026-09-01T12:18:37Z PURGED 93 .log older than 12h (~0.02GB); D: free 92.01GB -> 92.03GB
+2026-09-01T12:19:22Z BUDGET_OK tree 0.36GB <= 8GB after age purge; no size trim
+2026-09-01T13:18:55Z PURGED 62 .log older than 12h (~0.01GB); D: free 95.31GB -> 94.72GB
+2026-09-01T13:19:52Z BUDGET_OK tree 0.37GB <= 8GB after age purge; no size trim
+2026-09-01T14:18:47Z PURGED 45 .log older than 12h (~0.01GB); D: free 93.51GB -> 93.52GB
+2026-09-01T14:19:43Z BUDGET_OK tree 0.4GB <= 8GB after age purge; no size trim
+2026-09-01T15:19:12Z PURGED 81 .log older than 12h (~0.03GB); D: free 90.05GB -> 90GB
+2026-09-01T15:20:10Z BUDGET_OK tree 0.48GB <= 8GB after age purge; no size trim
+2026-09-01T16:18:38Z PURGED 91 .log older than 12h (~0.04GB); D: free 79.61GB -> 79.62GB
+2026-09-01T16:19:27Z BUDGET_OK tree 0.51GB <= 8GB after age purge; no size trim
+2026-09-01T17:20:32Z PURGED 79 .log older than 12h (~0.05GB); D: free 82.28GB -> 81.83GB
+2026-09-01T17:26:26Z BUDGET_OK tree 0.47GB <= 8GB after age purge; no size trim
+2026-09-01T18:21:32Z PURGED 79 .log older than 12h (~0.06GB); D: free 90.79GB -> 90.81GB
+2026-09-01T18:24:19Z BUDGET_OK tree 0.44GB <= 8GB after age purge; no size trim
+2026-09-01T19:24:29Z PURGED 67 .log older than 12h (~0.06GB); D: free 90.35GB -> 91.86GB
+2026-09-01T19:30:59Z BUDGET_OK tree 0.39GB <= 8GB after age purge; no size trim
+2026-09-01T22:02:22Z PURGED 56 .log older than 12h (~0.05GB); D: free 92.12GB -> 98.88GB
+2026-09-01T22:14:25Z BUDGET_OK tree 0.36GB <= 8GB after age purge; no size trim
+2026-09-01T22:30:20Z PURGED 101 .log older than 12h (~0.01GB); D: free 97.06GB -> 96.96GB
+2026-09-01T22:40:20Z BUDGET_OK tree 0.34GB <= 8GB after age purge; no size trim
+2026-09-01T23:25:02Z PURGED 77 .log older than 12h (~0.01GB); D: free 97.56GB -> 98.2GB
+2026-09-01T23:30:15Z BUDGET_OK tree 0.33GB <= 8GB after age purge; no size trim
+2026-09-02T00:24:28Z PURGED 82 .log older than 12h (~0.02GB); D: free 96.22GB -> 96.92GB
+2026-09-02T00:29:44Z BUDGET_OK tree 0.31GB <= 8GB after age purge; no size trim
+2026-09-02T01:22:09Z PURGED 87 .log older than 12h (~0.03GB); D: free 93.78GB -> 93.68GB
+2026-09-02T01:27:34Z BUDGET_OK tree 0.28GB <= 8GB after age purge; no size trim
+2026-09-02T02:30:50Z PURGED 90 .log older than 12h (~0.04GB); D: free 95.06GB -> 92.1GB
+2026-09-02T02:38:30Z BUDGET_OK tree 0.24GB <= 8GB after age purge; no size trim
+2026-09-02T03:25:31Z PURGED 59 .log older than 12h (~0.11GB); D: free 93.23GB -> 93.16GB
+2026-09-02T03:30:55Z BUDGET_OK tree 0.14GB <= 8GB after age purge; no size trim
+2026-09-02T04:27:10Z PURGED 61 .log older than 12h (~0.08GB); D: free 93.14GB -> 93.85GB
+2026-09-02T04:36:07Z BUDGET_OK tree 0.06GB <= 8GB after age purge; no size trim
+2026-09-02T05:22:58Z PURGED 49 .log older than 12h (~0.01GB); D: free 95.32GB -> 95.69GB
+2026-09-02T05:47:19Z BUDGET_OK tree 0.05GB <= 8GB after age purge; no size trim
+2026-09-02T07:24:58Z PURGED 54 .log older than 12h (~0.03GB); D: free 97.05GB -> 96.37GB
+2026-09-02T07:25:38Z BUDGET_OK tree 0.04GB <= 8GB after age purge; no size trim
+2026-09-02T08:19:15Z PURGED 66 .log older than 12h (~0.01GB); D: free 91.33GB -> 91.17GB
+2026-09-02T08:20:12Z BUDGET_OK tree 0.03GB <= 8GB after age purge; no size trim
+2026-09-02T09:47:21Z PURGED 1 .log older than 12h (~0GB); D: free 90.08GB -> 90.02GB
+2026-09-02T10:30:25Z BUDGET_OK tree 0.04GB <= 8GB after age purge; no size trim
+2026-09-02T11:40:05Z PURGED 11 .log older than 12h (~0GB); D: free 82.47GB -> 76.55GB
+2026-09-02T11:56:14Z BUDGET_OK tree 0.34GB <= 8GB after age purge; no size trim
+2026-09-02T12:19:23Z PURGED 7 .log older than 12h (~0GB); D: free 72.93GB -> 72.93GB
+2026-09-02T12:20:34Z BUDGET_OK tree 0.35GB <= 8GB after age purge; no size trim
+2026-09-02T13:20:01Z PURGED 4 .log older than 12h (~0GB); D: free 63.79GB -> 63.65GB
+2026-09-02T13:21:52Z BUDGET_OK tree 0.44GB <= 8GB after age purge; no size trim
+2026-09-02T14:19:17Z PURGED 7 .log older than 12h (~0GB); D: free 67.38GB -> 65.57GB
+2026-09-02T14:25:04Z BUDGET_OK tree 0.55GB <= 8GB after age purge; no size trim
+2026-09-02T15:20:57Z PURGED 5 .log older than 12h (~0GB); D: free 61GB -> 60.9GB
+2026-09-02T15:22:49Z BUDGET_OK tree 0.74GB <= 8GB after age purge; no size trim
+2026-09-02T16:18:53Z PURGED 5 .log older than 12h (~0GB); D: free 137.47GB -> 136.99GB
+2026-09-02T16:20:04Z BUDGET_OK tree 0.95GB <= 8GB after age purge; no size trim
+2026-09-02T17:18:41Z PURGED 18 .log older than 12h (~0GB); D: free 143.36GB -> 143.24GB
+2026-09-02T17:19:44Z BUDGET_OK tree 1.32GB <= 8GB after age purge; no size trim
+2026-09-02T18:18:40Z PURGED 49 .log older than 12h (~0GB); D: free 138.44GB -> 138.43GB
+2026-09-02T18:19:23Z BUDGET_OK tree 1.79GB <= 8GB after age purge; no size trim
+2026-09-02T19:19:09Z PURGED 20 .log older than 12h (~0.01GB); D: free 131.97GB -> 131.94GB
+2026-09-02T19:19:46Z BUDGET_OK tree 2.24GB <= 8GB after age purge; no size trim
+2026-09-02T20:19:59Z PURGED 18 .log older than 12h (~0GB); D: free 128.04GB -> 128.68GB
+2026-09-02T20:21:18Z BUDGET_OK tree 2.99GB <= 8GB after age purge; no size trim
+2026-09-02T21:19:12Z PURGED 52 .log older than 12h (~0.01GB); D: free 127.36GB -> 127.35GB
+2026-09-02T21:19:56Z BUDGET_OK tree 3.63GB <= 8GB after age purge; no size trim
+2026-09-02T22:19:00Z PURGED 44 .log older than 12h (~0.01GB); D: free 136.06GB -> 135.1GB
+2026-09-02T22:19:51Z BUDGET_OK tree 4.22GB <= 8GB after age purge; no size trim
+2026-09-02T23:19:22Z PURGED 35 .log older than 12h (~0.01GB); D: free 136.12GB -> 136.11GB
+2026-09-02T23:20:16Z BUDGET_OK tree 4.39GB <= 8GB after age purge; no size trim
+2026-09-03T00:20:04Z PURGED 46 .log older than 12h (~0.3GB); D: free 130.53GB -> 130.66GB
+2026-09-03T00:20:49Z BUDGET_OK tree 4.29GB <= 8GB after age purge; no size trim
+2026-09-03T01:19:12Z PURGED 66 .log older than 12h (~0.09GB); D: free 122.42GB -> 122.38GB
+2026-09-03T01:20:48Z BUDGET_OK tree 4.43GB <= 8GB after age purge; no size trim
+2026-09-03T02:33:57Z PURGED 67 .log older than 12h (~0.11GB); D: free 118.38GB -> 118.26GB
+2026-09-03T02:35:18Z BUDGET_OK tree 4.6GB <= 8GB after age purge; no size trim
+2026-09-03T03:19:08Z PURGED 115 .log older than 12h (~0.17GB); D: free 112.27GB -> 112.31GB
+2026-09-03T03:19:46Z BUDGET_OK tree 4.62GB <= 8GB after age purge; no size trim
+2026-09-03T04:18:46Z PURGED 124 .log older than 12h (~0.23GB); D: free 109.42GB -> 109.47GB
+2026-09-03T04:20:05Z BUDGET_OK tree 4.65GB <= 8GB after age purge; no size trim
+2026-09-03T05:19:04Z PURGED 80 .log older than 12h (~0.38GB); D: free 107.83GB -> 107.93GB
+2026-09-03T05:20:17Z BUDGET_OK tree 4.59GB <= 8GB after age purge; no size trim
+2026-09-03T06:18:53Z PURGED 134 .log older than 12h (~0.47GB); D: free 109.93GB -> 110.05GB
+2026-09-03T06:19:34Z BUDGET_OK tree 4.53GB <= 8GB after age purge; no size trim
+2026-09-03T07:18:55Z PURGED 151 .log older than 12h (~0.44GB); D: free 103.97GB -> 103.51GB
+2026-09-03T07:19:45Z BUDGET_OK tree 4.47GB <= 8GB after age purge; no size trim
+2026-09-03T08:18:53Z PURGED 142 .log older than 12h (~0.75GB); D: free 101.39GB -> 101.61GB
+2026-09-03T08:19:24Z BUDGET_OK tree 4.13GB <= 8GB after age purge; no size trim
+2026-09-03T09:19:13Z PURGED 147 .log older than 12h (~0.66GB); D: free 100.2GB -> 100.37GB
+2026-09-03T09:20:20Z BUDGET_OK tree 3.98GB <= 8GB after age purge; no size trim
+2026-09-03T10:18:39Z PURGED 177 .log older than 12h (~0.62GB); D: free 100.33GB -> 100.49GB
+2026-09-03T10:19:25Z BUDGET_OK tree 3.79GB <= 8GB after age purge; no size trim
+2026-09-03T11:18:41Z PURGED 224 .log older than 12h (~0.18GB); D: free 95.01GB -> 95.06GB
+2026-09-03T11:19:28Z BUDGET_OK tree 4.09GB <= 8GB after age purge; no size trim
+2026-09-03T12:19:17Z PURGED 257 .log older than 12h (~0.18GB); D: free 93.18GB -> 93.22GB
+2026-09-03T12:20:42Z BUDGET_OK tree 4.35GB <= 8GB after age purge; no size trim
+2026-09-03T13:19:37Z PURGED 212 .log older than 12h (~0.23GB); D: free 88.98GB -> 88.3GB
+2026-09-03T13:21:28Z BUDGET_OK tree 4.41GB <= 8GB after age purge; no size trim
+2026-09-03T14:19:10Z PURGED 121 .log older than 12h (~0.23GB); D: free 90.74GB -> 90.8GB
+2026-09-03T14:20:16Z BUDGET_OK tree 4.45GB <= 8GB after age purge; no size trim
+2026-09-03T15:18:42Z PURGED 113 .log older than 12h (~0.25GB); D: free 89.66GB -> 89.72GB
+2026-09-03T15:19:32Z BUDGET_OK tree 4.54GB <= 8GB after age purge; no size trim
+2026-09-03T16:24:57Z PURGED 105 .log older than 12h (~0.25GB); D: free 87.41GB -> 81.18GB
+2026-09-03T16:27:44Z BUDGET_OK tree 4.68GB <= 8GB after age purge; no size trim
+2026-09-03T17:19:10Z PURGED 148 .log older than 12h (~0.32GB); D: free 83.67GB -> 83.61GB
+2026-09-03T17:20:18Z BUDGET_OK tree 4.83GB <= 8GB after age purge; no size trim
+2026-09-03T18:19:18Z PURGED 149 .log older than 12h (~0.41GB); D: free 82.73GB -> 81.58GB
+2026-09-03T18:19:55Z BUDGET_OK tree 5.01GB <= 8GB after age purge; no size trim
+2026-09-03T19:18:47Z PURGED 142 .log older than 12h (~0.38GB); D: free 75.6GB -> 75.67GB
+2026-09-03T19:19:32Z BUDGET_OK tree 5.38GB <= 8GB after age purge; no size trim
+2026-09-03T20:19:34Z PURGED 135 .log older than 12h (~0.4GB); D: free 73.5GB -> 73.62GB
+2026-09-03T20:20:39Z BUDGET_OK tree 5.74GB <= 8GB after age purge; no size trim
+2026-09-03T21:18:20Z PURGED 178 .log older than 12h (~0.52GB); D: free 70.73GB -> 70.89GB
+2026-09-03T21:18:46Z BUDGET_OK tree 6.16GB <= 8GB after age purge; no size trim
+2026-09-03T22:19:17Z PURGED 204 .log older than 12h (~0.43GB); D: free 72.24GB -> 72.18GB
+2026-09-03T22:20:16Z BUDGET_OK tree 6.35GB <= 8GB after age purge; no size trim
+2026-09-03T23:18:45Z PURGED 208 .log older than 12h (~0.48GB); D: free 69.92GB -> 68.77GB
+2026-09-03T23:19:30Z BUDGET_OK tree 5.93GB <= 8GB after age purge; no size trim
+2026-09-04T00:18:39Z PURGED 128 .log older than 12h (~0.45GB); D: free 62.94GB -> 63.06GB
+2026-09-04T00:19:28Z BUDGET_OK tree 5.65GB <= 8GB after age purge; no size trim
+2026-09-04T01:19:24Z PURGED 87 .log older than 12h (~0.3GB); D: free 87.02GB -> 86.96GB
+2026-09-04T01:20:36Z BUDGET_OK tree 5.45GB <= 8GB after age purge; no size trim
+2026-09-04T02:19:20Z PURGED 86 .log older than 12h (~0.25GB); D: free 90.04GB -> 90.12GB
+2026-09-04T02:20:31Z BUDGET_OK tree 5.28GB <= 8GB after age purge; no size trim
+2026-09-04T03:19:23Z PURGED 116 .log older than 12h (~0.36GB); D: free 86.32GB -> 86.25GB
+2026-09-04T03:20:18Z BUDGET_OK tree 5GB <= 8GB after age purge; no size trim
+2026-09-04T04:18:50Z PURGED 86 .log older than 12h (~0.34GB); D: free 81.86GB -> 81.98GB
+2026-09-04T04:19:39Z BUDGET_OK tree 4.74GB <= 8GB after age purge; no size trim
+2026-09-04T05:19:14Z PURGED 149 .log older than 12h (~0.51GB); D: free 79.67GB -> 79.7GB
+2026-09-04T05:19:52Z BUDGET_OK tree 4.4GB <= 8GB after age purge; no size trim
+2026-09-04T06:19:40Z PURGED 158 .log older than 12h (~0.59GB); D: free 76.76GB -> 76.58GB
+2026-09-04T06:21:11Z BUDGET_OK tree 5.85GB <= 8GB after age purge; no size trim
+2026-09-04T07:19:04Z PURGED 137 .log older than 12h (~0.72GB); D: free 71.93GB -> 72.1GB
+2026-09-04T07:19:55Z BUDGET_OK tree 6.5GB <= 8GB after age purge; no size trim
+2026-09-04T08:19:34Z PURGED 145 .log older than 12h (~0.77GB); D: free 86.94GB -> 90.51GB
+2026-09-04T08:21:49Z BUDGET_OK tree 7.2GB <= 8GB after age purge; no size trim
+2026-09-04T09:18:52Z PURGED 189 .log older than 12h (~0.97GB); D: free 89.62GB -> 89.85GB
+2026-09-04T09:19:32Z BUDGET_OK tree 7.17GB <= 8GB after age purge; no size trim
+2026-09-04T10:19:44Z PURGED 162 .log older than 12h (~0.61GB); D: free 84.88GB -> 84.76GB
+2026-09-04T10:20:54Z BUDGET_TRIM removed 481 oldest .log (~0.3GB) to fit 8GB; tree was 8.29GB, now 8GB
+2026-09-04T11:18:36Z PURGED 0 .log older than 12h (~0GB); D: free 84.01GB -> 84.01GB
+2026-09-04T11:19:20Z BUDGET_TRIM removed 533 oldest .log (~0.97GB) to fit 8GB; tree was 8.95GB, now 7.99GB
+2026-09-04T12:19:10Z PURGED 0 .log older than 12h (~0GB); D: free 81.75GB -> 81.72GB
+2026-09-04T12:19:55Z BUDGET_TRIM removed 79 oldest .log (~0.96GB) to fit 8GB; tree was 8.96GB, now 8GB
+2026-09-04T13:18:50Z PURGED 0 .log older than 12h (~0GB); D: free 80.44GB -> 80.44GB
+2026-09-04T13:19:48Z BUDGET_TRIM removed 128 oldest .log (~1.92GB) to fit 8GB; tree was 9.92GB, now 8GB
+2026-09-04T14:18:49Z PURGED 0 .log older than 12h (~0GB); D: free 79.39GB -> 79.38GB
+2026-09-04T14:21:21Z BUDGET_TRIM removed 123 oldest .log (~1.47GB) to fit 8GB; tree was 9.44GB, now 7.97GB
+2026-09-04T15:18:59Z PURGED 0 .log older than 12h (~0GB); D: free 69.63GB -> 69.62GB
+2026-09-04T15:19:45Z BUDGET_TRIM removed 200 oldest .log (~1.89GB) to fit 8GB; tree was 9.84GB, now 7.95GB
+2026-09-04T16:19:11Z PURGED 0 .log older than 12h (~0GB); D: free 65.57GB -> 65.55GB
+2026-09-04T16:19:59Z BUDGET_TRIM removed 155 oldest .log (~1.44GB) to fit 8GB; tree was 9.44GB, now 8GB
+2026-09-04T17:18:56Z PURGED 0 .log older than 12h (~0GB); D: free 84.3GB -> 84.3GB
+2026-09-04T17:19:47Z BUDGET_TRIM removed 224 oldest .log (~2.08GB) to fit 8GB; tree was 10GB, now 7.92GB
+2026-09-04T18:19:06Z PURGED 0 .log older than 12h (~0GB); D: free 83.17GB -> 83.16GB
+2026-09-04T18:20:51Z BUDGET_TRIM removed 146 oldest .log (~1.47GB) to fit 8GB; tree was 9.45GB, now 7.98GB
+2026-09-04T19:18:37Z PURGED 0 .log older than 12h (~0GB); D: free 71.98GB -> 71.98GB
+2026-09-04T19:19:16Z BUDGET_TRIM removed 70 oldest .log (~0.59GB) to fit 8GB; tree was 8.53GB, now 7.95GB
+2026-09-04T20:18:42Z PURGED 0 .log older than 12h (~0GB); D: free 67.26GB -> 67.24GB
+2026-09-04T20:19:22Z BUDGET_TRIM removed 106 oldest .log (~1.05GB) to fit 8GB; tree was 9.05GB, now 8GB
+2026-09-04T21:18:49Z PURGED 0 .log older than 12h (~0GB); D: free 63.63GB -> 63.52GB
+2026-09-04T21:19:43Z BUDGET_TRIM removed 51 oldest .log (~0.82GB) to fit 8GB; tree was 8.82GB, now 8GB
+2026-09-04T22:18:40Z PURGED 0 .log older than 12h (~0GB); D: free 91.67GB -> 91.48GB
+2026-09-04T22:19:19Z BUDGET_TRIM removed 73 oldest .log (~1.07GB) to fit 8GB; tree was 9.04GB, now 7.97GB
+2026-09-04T23:19:03Z PURGED 0 .log older than 12h (~0GB); D: free 88.88GB -> 88.58GB
+2026-09-04T23:19:51Z BUDGET_TRIM removed 1 oldest .log (~0.12GB) to fit 8GB; tree was 8.03GB, now 7.91GB
+2026-09-05T00:18:46Z PURGED 0 .log older than 12h (~0GB); D: free 83.29GB -> 83.25GB
+2026-09-05T00:19:37Z BUDGET_TRIM removed 12 oldest .log (~0.05GB) to fit 8GB; tree was 8.04GB, now 7.99GB
+2026-09-05T01:18:59Z PURGED 0 .log older than 12h (~0GB); D: free 77.42GB -> 76.83GB
+2026-09-05T01:19:52Z BUDGET_TRIM removed 42 oldest .log (~0.34GB) to fit 8GB; tree was 8.33GB, now 8GB
+2026-09-05T02:18:44Z PURGED 0 .log older than 12h (~0GB); D: free 71.91GB -> 71.88GB
+2026-09-05T02:19:21Z BUDGET_TRIM removed 22 oldest .log (~0.38GB) to fit 8GB; tree was 8.36GB, now 7.98GB
+2026-09-05T03:18:57Z PURGED 0 .log older than 12h (~0GB); D: free 67.74GB -> 67.72GB
+2026-09-05T03:19:44Z BUDGET_TRIM removed 30 oldest .log (~0.62GB) to fit 8GB; tree was 8.6GB, now 7.98GB
+2026-09-05T04:19:34Z PURGED 0 .log older than 12h (~0GB); D: free 64.08GB -> 64.05GB
+2026-09-05T04:20:49Z BUDGET_TRIM removed 37 oldest .log (~0.64GB) to fit 8GB; tree was 8.53GB, now 7.89GB
+2026-09-05T05:18:53Z PURGED 81 .log older than 12h (~0.79GB); D: free 62.95GB -> 63.15GB
+2026-09-05T05:19:36Z BUDGET_OK tree 7.61GB <= 8GB after age purge; no size trim
+2026-09-05T06:19:06Z PURGED 153 .log older than 12h (~1.49GB); D: free 50.75GB -> 50.95GB
+2026-09-05T06:19:49Z BUDGET_OK tree 7GB <= 8GB after age purge; no size trim
+2026-09-05T07:18:37Z PURGED 137 .log older than 12h (~0.59GB); D: free 85.05GB -> 85.23GB
+2026-09-05T07:19:21Z BUDGET_OK tree 6.7GB <= 8GB after age purge; no size trim
+2026-09-05T08:18:50Z PURGED 96 .log older than 12h (~1.09GB); D: free 84.79GB -> 84.1GB
+2026-09-05T08:19:30Z BUDGET_OK tree 6.03GB <= 8GB after age purge; no size trim
+2026-09-05T09:18:37Z PURGED 182 .log older than 12h (~0.83GB); D: free 78.56GB -> 78.8GB
+2026-09-05T09:19:23Z BUDGET_OK tree 5.87GB <= 8GB after age purge; no size trim
+2026-09-05T10:18:34Z PURGED 145 .log older than 12h (~1.05GB); D: free 70GB -> 70.32GB
+2026-09-05T10:19:14Z BUDGET_OK tree 5.2GB <= 8GB after age purge; no size trim
+2026-09-05T11:19:13Z PURGED 153 .log older than 12h (~0.05GB); D: free 68.32GB -> 68.02GB
+2026-09-05T11:22:02Z BUDGET_OK tree 5.75GB <= 8GB after age purge; no size trim
+2026-09-05T12:19:11Z PURGED 128 .log older than 12h (~0.13GB); D: free 62.48GB -> 62.5GB
+2026-09-05T12:20:11Z BUDGET_OK tree 6.48GB <= 8GB after age purge; no size trim
