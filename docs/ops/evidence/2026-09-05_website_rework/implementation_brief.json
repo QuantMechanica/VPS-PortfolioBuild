@@ -1,0 +1,1263 @@
+{
+ "brief": {
+  "thesis": "quantmechanica.com exists to make one claim credible to strangers — that QuantMechanica builds mechanical strategies and proves them on real data with no cherry-picking — so that the copy-trading accounts, MQL5 Marketplace EAs and Darwinex Zero fund it intends to advertise later are believed. The trust engine is the Strategy Archive (OWNER: 'das eigentliche Herzstueck'), a public pass/fail record of 3,378 evaluations sitting on an evidence-first pipeline told as three phases: Validation (Q00-Q08), Optimization & Requalification (Q09-Q14), Book build & live (Q15-Q17). The refresh under-delivers four ways and this brief corrects all four: (1) re-centre and dignify the archive as a public good rather than a utilitarian table; (2) phase-ify the pipeline with per-gate 'what it checks / what fails it' lines and explain the frozen baseline, the terminal Q14 KEEP_INCUMBENT outcome, and the fail-closed book trigger that is the honest reason almost nothing is live; (3) add an honest 'What we're building' roadmap so every future channel reads as planned-and-gated-by-evidence; (4) strip or reframe every unsupported number and fabricated live result (performance overclaims, two funded-account blog narratives, per-strategy Profit Factors, the invented $20/lot Q06 commission, the ~38 survivors figure) to the true state — live book in monitored burn-in, Myfxbook verification pending, 21 qualified candidates, 9 confirmed on full history, no funded account yet. Two OWNER-named mechanical fixes gate everything: the extensionless-link 404s ('kein Link funktioniert') and the oversized gap above Market Structure, plus a restored contact + newsletter closing section on the homepage. Read-only phase: propose, do not edit.",
+  "positioning_lines": [
+   "The Strategy Archive is the product — a public, no-cherry-picking record of every strategy and how far it got — and every other surface exists to make it credible.",
+   "The pipeline is told as three plain-English phases everywhere on the site — Validation (Q00-Q08), Optimization & Requalification (Q09-Q14), Book build & live (Q15-Q17) — and each gate carries one line of what it checks and one line of what fails it.",
+   "Almost nothing is live by design: Phase 3 opens only through the fail-closed book trigger (a critical mass of qualified survivors plus a signed OWNER book order), and that scarcity is the honesty headline, not a disclaimer.",
+   "Every future channel — Darwinex Zero allocation, FTMO-style prop challenges, MQL5 Marketplace EAs, copy-trading/signals — appears only as 'planned, gated by evidence', so it can be advertised plausibly once the pipeline earns it.",
+   "Every number traces to a public-data key via a data-stat hook or equals today's value under a 'measured <date>' caption; no invented commissions, no per-strategy metrics, no fabricated live results — evidence over claims is the product, not a slogan.",
+   "One honest current state repeated on every page: live book in monitored burn-in, Myfxbook verification in progress, 21 qualified candidates in the pool, 9 confirmed on full history, no funded account yet.",
+   "Two populations are labelled apart and never mixed: the pipeline funnel counts distinct strategy-symbol pairs from stats.json; the archive funnel/attrition counts cards derived live from strategy-archive.json."
+  ],
+  "pipeline_phases": [
+   {
+    "key": "p1_validation",
+    "title": "Phase 1 · Validation — the strategy proves itself (Q00-Q08)",
+    "gates": [
+     "Q00",
+     "Q01",
+     "Q02",
+     "Q03",
+     "Q04",
+     "Q05",
+     "Q06",
+     "Q07",
+     "Q08"
+    ],
+    "one_line": "A cited, machine-learning-free idea becomes a compiling EA, then must show a repeatable, cost-robust, statistically defensible edge on real tick data — ending in a frozen, target-neutral baseline.",
+    "what_it_proves": "A real, cost-aware edge that generalises out-of-sample and survives regimes, execution noise and an eleven-part statistical battery. Two intake gates (Q00-Q01) admit a candidate; seven automated evidence gates (Q02-Q08) decide it. Not 'nine automated gates'.",
+    "gate_lines": [
+     {
+      "gate": "Q00",
+      "name": "Research Intake",
+      "line": "Checks that a strategy idea has a real, citable source, is mechanical, is testable on our instruments, and uses no machine learning.",
+      "fails_when": "No verifiable source, purely discretionary rules, untestable on our instruments, or relies on machine learning."
+     },
+     {
+      "gate": "Q01",
+      "name": "Build & Spec",
+      "line": "Turns the idea into a deterministic Expert Advisor that compiles and trades, with a complete written specification.",
+      "fails_when": "The EA fails to compile, produces no smoke trade, or ships without a complete specification."
+     },
+     {
+      "gate": "Q02",
+      "name": "Baseline Screening",
+      "line": "Screens each market for a profitable, active baseline signal on in-sample history before any deeper testing.",
+      "fails_when": "Below the profit-factor, drawdown, or minimum-trade floor on a symbol — that pair stops here."
+     },
+     {
+      "gate": "Q03",
+      "name": "Parameter Sweep",
+      "line": "Tests whether the result holds across a stable band of settings, not just one tuned value.",
+      "fails_when": "Too few grid settings stay profitable, or no wide-enough stable parameter plateau exists."
+     },
+     {
+      "gate": "Q04",
+      "name": "Walk-Forward + Commission",
+      "line": "Runs anchored walk-forward on unseen out-of-sample years with realistic ECN commission applied.",
+      "fails_when": "Any out-of-sample year loses money once commission is charged, or in-sample data leaked."
+     },
+     {
+      "gate": "Q05",
+      "name": "Gross Full-History Robustness",
+      "line": "Replays the robust settings across the entire available history to see if the edge survives every regime.",
+      "fails_when": "Full-history profit factor falls below break-even, drawdown exceeds the ceiling, or too few trades."
+     },
+     {
+      "gate": "Q06",
+      "name": "Stress HARSH",
+      "line": "Randomly rejects a share of trades (seeded 10% rejection) to test whether the edge survives disrupted, imperfect execution.",
+      "fails_when": "Post-stress profit factor falls below break-even, drawdown breaches the ceiling, or trades fall under the floor."
+     },
+     {
+      "gate": "Q07",
+      "name": "Multi-Seed",
+      "line": "Repeats the run across five random seeds to separate a real signal from lucky execution ordering.",
+      "fails_when": "Profit-factor spread across seeds is too wide, or any single seed turns unprofitable."
+     },
+     {
+      "gate": "Q08",
+      "name": "Davey Statistical Validation",
+      "line": "Runs eleven statistical and robustness checks to produce a frozen, target-neutral evidence dossier.",
+      "fails_when": "Any one of the eleven sub-checks fails — correlation, deflated Sharpe, overfitting, decay, seasonality, and more."
+     }
+    ]
+   },
+   {
+    "key": "p2_optimization_requal",
+    "title": "Phase 2 · Optimization & Requalification (Q09-Q14)",
+    "gates": [
+     "Q09",
+     "Q10",
+     "Q11",
+     "Q12",
+     "Q13",
+     "Q14"
+    ],
+    "one_line": "The frozen baseline is confirmed under live-like conditions, a news/venue configuration is sealed, and any re-optimised challenger must beat both baseline and incumbent — or the incumbent is kept. Terminal at Q14.",
+    "what_it_proves": "A sealed news/venue configuration and a full-history-confirmed incumbent, plus the discipline that a re-optimised challenger is promoted only if it genuinely beats both baseline and incumbent. KEEP_INCUMBENT is a valid, common terminal result — we do not change a strategy just to look busy.",
+    "gate_lines": [
+     {
+      "gate": "Q09",
+      "name": "Baseline Full Run",
+      "line": "Freezes a full-history, pre-news baseline as the fixed reference for the later sealed comparison.",
+      "fails_when": "No hash-bound baseline can be reused or reproduced; the reference is never inferred from a verdict."
+     },
+     {
+      "gate": "Q10",
+      "name": "News Impact + FTMO Recommendation",
+      "line": "Compares news-handling and venue-compliance settings across two axes, then seals one locked configuration for the two programs we target — Darwinex Zero and FTMO-style prop challenges.",
+      "fails_when": "The A/B evidence is invalid or ambiguous, so no configuration can be locked."
+     },
+     {
+      "gate": "Q11",
+      "name": "Incumbent Full-History Confirmation",
+      "line": "Re-confirms the locked configuration over each symbol's full available history with realistic costs.",
+      "fails_when": "With the locked news configuration, profit factor falls below break-even or drawdown breaches the ceiling."
+     },
+     {
+      "gate": "Q12",
+      "name": "Pattern Filter Selection",
+      "line": "Considers a small, preregistered set of pattern filters; selecting none is a valid outcome.",
+      "fails_when": "Nothing kills a strategy here — zero admissible filters is a valid pass-through, not a failure."
+     },
+     {
+      "gate": "Q13",
+      "name": "Parameter Optimization & Freeze",
+      "line": "Re-optimises parameters on development data only, then freezes the result as a new challenger identity.",
+      "fails_when": "The frozen challenger cannot clear its own fresh Q02-Q11 cascade as a new EA."
+     },
+     {
+      "gate": "Q14",
+      "name": "Best-Settings Head-to-Head + Holdout",
+      "line": "Compares the frozen challenger against its baseline and incumbent on sealed out-of-sample and holdout windows; keeping the incumbent is a valid terminal result.",
+      "fails_when": "Challenger does not beat both baseline and incumbent; it is not promoted, the incumbent stays."
+     }
+    ]
+   },
+   {
+    "key": "p3_book_build_live",
+    "title": "Phase 3 · Book build & live readiness (Q15-Q17)",
+    "gates": [
+     "Q15",
+     "Q16",
+     "Q17"
+    ],
+    "one_line": "Survivors are judged as members of a correlation-capped book, cleared operationally, and watched in a monitored live burn-in — entered only through the fail-closed book trigger, which is why very few strategies are ever live at once.",
+    "what_it_proves": "That a candidate belongs in a correlation-capped book and behaves live as it did in backtest. Entry is fail-closed: at least 25 qualified candidates plus a signed OWNER book order (the exact 25 threshold is an internal criterion — surface it only with OWNER sign-off, otherwise keep it qualitative).",
+    "gate_lines": [
+     {
+      "gate": "Q15",
+      "name": "Final Portfolio Construction",
+      "line": "Admits survivors as portfolio members under correlation, family and symbol caps; entered only via the book trigger.",
+      "fails_when": "Correlation too high, or family or symbol caps exceeded — the candidate is not admitted."
+     },
+     {
+      "gate": "Q16",
+      "name": "Operational Readiness",
+      "line": "Runs the operational pre-flight — fresh compile, setfile, risk mode, timezone and kill-switch — before any live step.",
+      "fails_when": "Any pre-flight check fails; deployment stays blocked until it is fixed and re-run."
+     },
+     {
+      "gate": "Q17",
+      "name": "Live Burn-In DXZ",
+      "line": "Observes the strategy for at least fourteen days on the live Darwinex Zero account under monitoring and a kill-switch, before any scaling.",
+      "fails_when": "Live behaviour diverges from the backtest or trips the kill-switch during the monitored burn-in."
+     }
+    ]
+   }
+  ],
+  "pages": [
+   {
+    "file": "C:/QM/deploy/qm-ops-refresh/Website/index.html",
+    "changes": [
+     {
+      "section": "Overall section order (IA — prefer C)",
+      "action": "reorder",
+      "spec": "Make the archive the centrepiece by moving the 'Radical transparency' archive block up to sit directly under the hero, and demoting the illustrative panels below it. Final order: (1) Hero; (2) The archive centrepiece (elevated transparency block); (3) Combined-backtest equity evidence panel (kept, caption corrected); (4) How it works (3 steps, unchanged); (5) NEW three-phase pipeline strip (replaces the flat 18-gate teaser); (6) Market structure (demoted, section--tight, re-captioned); (7) NEW 'What we're building' roadmap; (8) NEW contact + newsletter closing section; (9) Footer. Keep the illustrative equity panel's 'illustrative / not live / RISK_FIXED-normalised' framing intact wherever it lands so it is never read as a live-return claim.",
+      "copy": ""
+     },
+     {
+      "section": "Hero lead (page-level copy — prefer A; adopt C's archive-forward framing)",
+      "action": "rewrite",
+      "spec": "Keep the H1 'The Quantitative Edge.' and the primary CTA 'Explore the archive' -> /strategies; add a secondary CTA 'See how the pipeline works' -> /pipeline. Rewrite the lead to name the archive as the centre and anchor two numbers with data-stat hooks. (Optional alternative headline for OWNER to choose, not forced: 'Most strategies fail. We publish every one.')",
+      "copy": "We engineer mechanical trading strategies and prove them through an eighteen-gate pipeline on real broker data. The Strategy Archive is the centre of it: every candidate we have tested — the handful confirmed on full history and the thousands retired along the way — each shown with the gate it reached and whether it passed or failed there. No cherry-picking, no black boxes. <span data-stat=\"archive_total\">3,378</span> strategies evaluated, <span data-stat=\"archive_passed_q10\">9</span> confirmed on full history."
+     },
+     {
+      "section": "Radical transparency block -> 'The archive is the product' (elevate)",
+      "action": "rewrite",
+      "spec": "Keep the two-column layout; sharpen copy to position the archive as a public good, and add a supported stat strip (archive_total / archive_failed / archive_passed_q10). Primary CTA stays 'Browse the strategy archive' -> /strategies. This block must read visually heavier than Market structure. Replace the stale eas_compiled hooks in this block with archive_* keys.",
+      "copy": "Eyebrow: 'The archive is the product'. Heading: 'Most shops show you their winners. This is the whole tape.' Lead: 'Every strategy we build enters a public record — its terminal gate and a pass or fail at every stage — the survivors and the far larger number that fail. Almost no one publishes their failures. We publish all of them, because the failures are the proof the filter is real.' Stat strip: <span data-stat=\"archive_total\">3,378</span> evaluations in the public record · <span data-stat=\"archive_failed\">1,297</span> retired on a failed gate · <span data-stat=\"archive_passed_q10\">9</span> cleared full-history confirmation."
+     },
+     {
+      "section": "Combined backtest equity caption (evidence error — prefer B gate-factual)",
+      "action": "rewrite",
+      "spec": "Drop the false 'Q10-passed sleeve set' cohort label (under v4 the confirmed set is Q11; the 24-sleeve cohort is not defensibly all-Q10-passed and archive_passed_q10=9). Keep the illustrative/not-live/RISK_FIXED framing.",
+      "copy": "Illustrative combined backtest of the current portfolio sleeve set, RISK_FIXED-normalised — not live · measured <span data-stat-date>2026-09-02</span>."
+     },
+     {
+      "section": "18-gate teaser -> three-phase strip (OWNER-named: phase strip on index)",
+      "action": "rewrite",
+      "spec": "Replace the single flat gate-pin row with a three-column strip naming the canonical macro-phases in the site's one phase vocabulary. Use the new .phase-band CSS (small named rule) or fall back to existing .cols-3; each column carries the phase name, that phase's gate pins (existing .gate-row / .gate-row__pin), and a one-line description. Keep the 'See the full pipeline' -> /pipeline CTA. This is the phase strip OWNER asked to see on the homepage.",
+      "copy": "Eyebrow 'The pipeline · three phases'. Col 1 — 'Validation · Q00-Q08': 'A cited, machine-learning-free idea proves a repeatable, cost-robust, statistically defensible edge on real tick data — then freezes as a target-neutral baseline.' Col 2 — 'Optimization & requalification · Q09-Q14': 'A news/venue configuration is sealed and any re-optimised challenger must beat the incumbent — or the incumbent is kept. Terminal at Q14.' Col 3 — 'Book build & live · Q15-Q17': 'Survivors are judged as a correlation-capped book and watched in a live burn-in — entered only through the fail-closed book trigger.' Caption: 'Eighteen gates, Q00 through Q17 — most candidates are retired long before the end.'"
+     },
+     {
+      "section": "Market structure section (OWNER-named spacing fix + demote)",
+      "action": "restyle",
+      "spec": "Change the wrapper from <section class=\"section\"> to <section class=\"section section--tight\">: top padding drops 96px->64px, closing the 160px gap above 'Market structure' that OWNER flagged to 128px, matching the surrounding rhythm. No new CSS (section--tight exists). Keep the three charts but re-caption so illustrative content stops out-ranking the archive; this section now sits BELOW the archive block.",
+      "copy": "Eyebrow 'The mechanics we model'. Heading 'The kinds of structure our strategies exploit.' Sub-line (new .panel__cap under head): 'Session handoffs, calendar-settlement flows and regime shifts — the repeatable structure behind the families in the archive. Charts are illustrative, calibrated to real market statistics, not live.'"
+     },
+     {
+      "section": "NEW 'What we're building' roadmap (build-in-public, insert before contact/newsletter)",
+      "action": "add",
+      "spec": "Add one .panel section with the new .roadmap-row rows so future channels read as planned-and-gated. Reuse .badge--neutral / .badge--warn — NO new colours, NO dates, NO prices, NO returns. Four rows.",
+      "copy": "Eyebrow 'Build in public'. Heading 'What we're building toward.' Intro: 'Nothing is monetised before the pipeline produces the evidence for it. Here is the honest state of each path.' Row 1 — 'Darwinex Zero allocation' [badge--warn 'In burn-in']: 'A diversified portfolio seeking third-party capital and performance fees. Our first live book is in a monitored burn-in.' Row 2 — 'Prop-firm challenges (FTMO-style)' [badge--neutral 'Planned — gated by evidence']: 'A faster cash engine via funded-account challenges. No challenge is started until the book meets its evidence bar.' Row 3 — 'MQL5 Marketplace EAs' [badge--neutral 'Planned — gated by evidence']: 'Selected survivors offered as products once they clear the full pipeline.' Row 4 — 'Copy-trading & signals' [badge--neutral 'Planned — gated by evidence']: 'Copy accounts and signals only once a verified live portfolio exists — none is open today.'"
+     },
+     {
+      "section": "NEW contact + newsletter closing section (OWNER-named: restore the bottom contact + newsletter)",
+      "action": "add",
+      "spec": "Replace the newsletter-only section with a single .panel split into two columns (.cols cols-2, stacks under ~720px) so the foot of the page again offers both, as it did pre-refresh. Left: the disabled/honest newsletter (keep the inert form, aria-disabled input+button, 'no address is stored' caption — the form must make no network post). Right: research-desk contact. Use info@quantmechanica.com (a real inbox); do not invent research@.",
+      "copy": "Left (newsletter): Eyebrow 'Stay in the loop'. Heading 'Gate-pass reports and statistical deep dives, when they ship.' Body 'The newsletter is not open yet — the form is present but inert and stores no address while it is closed.' Caption 'Newsletter launching soon — no address is stored while the form is closed.' Right (contact): Eyebrow 'Contact'. Heading 'Talk to the research desk.' Body 'Got a strategy idea, a paper worth mechanizing, or a question about allocation? Write to <a href=\"mailto:info@quantmechanica.com\">info@quantmechanica.com</a>. We read every message. We do not give individual trading advice or share per-strategy figures beyond what the archive already shows.'"
+     },
+     {
+      "section": "Static number fallbacks + OG meta",
+      "action": "rewrite",
+      "spec": "Set every hard-coded fallback equal to today's public-data value so the pre-JS paint and any fetch-failure state are truthful (data-stat hooks unchanged): eas_compiled 4,799 -> 4,801 (both figure-grid and the transparency block), backtests_total 122,248 -> 122,267. Update the og:description static content '4,799 Expert Advisors built...' -> '4,801 Expert Advisors built...' (leave the data-stat-content template as-is).",
+      "copy": ""
+     },
+     {
+      "section": "Nav 'Shop' link",
+      "action": "rewrite",
+      "spec": "Handled site-wide in the shared nav/footer/routing entry — remove or relabel 'Shop' so it never implies a live store (no QM EA is listed). Applies to this page's desktop and mobile nav identically.",
+      "copy": ""
+     }
+    ]
+   },
+   {
+    "file": "C:/QM/deploy/qm-ops-refresh/Website/pipeline.html",
+    "changes": [
+     {
+      "section": "Three stage labels -> phase names (OWNER: 'als Phasen'; prefer B/C vocabulary)",
+      "action": "rewrite",
+      "spec": "Rename the three .stage-label texts to the canonical phase vocabulary used site-wide, keeping the canonical gate names underneath. Stage 1 -> 'Phase 1 · Validation — the strategy proves itself (Q00-Q08)'. Stage 2 -> 'Phase 2 · Optimization & requalification (Q09-Q14)'. Stage 3 -> 'Phase 3 · Book build & live readiness (Q15-Q17)'.",
+      "copy": ""
+     },
+     {
+      "section": "Phase intros (pipe-stage__intro) — expand each",
+      "action": "rewrite",
+      "spec": "Expand each one-line intro to 2-3 sentences that state the phase purpose AND its terminal concept (frozen baseline; terminal Q14 / KEEP_INCUMBENT; fail-closed book trigger).",
+      "copy": "Phase 1: 'Two intake gates and seven automated evidence gates. Research intake and build/spec admit a candidate; Q02-Q08 then decide, on real broker tick data, whether it produces a repeatable, cost-robust, statistically defensible signal — or it is retired. Phase 1 ends in a frozen, target-neutral baseline, the reference everything after is measured against.' Phase 2: 'The frozen baseline is confirmed under live-like conditions, news-handling modes are compared, and any optimisation must beat the incumbent in a sealed, out-of-sample head-to-head. Phase 2 is terminal at Q14: keeping the existing configuration is a valid, common outcome — we do not change a strategy just to look busy.' Phase 3: 'Survivors are judged as members of a portfolio, not as individuals — correlation, tail behaviour and marginal contribution — then pass an operational pre-flight and a monitored live burn-in on the live account. Phase 3 opens only through a deliberate gate (below), which is why very few strategies are ever live at once.'"
+     },
+     {
+      "section": "Every gate card — add a 'fails when' line + per-gate check line (OWNER: more gate explanation)",
+      "action": "rewrite",
+      "spec": "For all 18 gate cards, keep gate-card__num and gate-card__name and set gate-card__desc to the per-gate 'line' from pipeline_phases, then add a second muted line 'Fails when: <fails_when>' (a small named .gate-card__fail rule, or reuse .caption). Use the exact line/fails_when strings in this brief's pipeline_phases. This is the deeper per-gate explanation OWNER asked for.",
+      "copy": "Use the 18 {line, fails_when} pairs verbatim from pipeline_phases above. Q10 desc append '... for the two programs we target — Darwinex Zero and FTMO-style prop challenges.' Q17 desc append '... on the live Darwinex Zero account, under monitoring and a kill-switch, before any scaling.'"
+     },
+     {
+      "section": "Q14 gate name",
+      "action": "rewrite",
+      "spec": "Restore the full canonical Vault name: 'Best-Settings Head-to-Head' -> 'Best-Settings Head-to-Head + Holdout' (Vault H1 title confirms the '+ Holdout').",
+      "copy": ""
+     },
+     {
+      "section": "Stage 1 intro 'Nine automated evidence gates' (factual error — prefer B)",
+      "action": "rewrite",
+      "spec": "Correct the count: Q00 (Research Intake, OWNER-owned) and Q01 (Build & Spec, Codex) are intake gates, not automated evidence gates. Only Q02-Q08 (seven) are automated evidence gates.",
+      "copy": "Two intake gates and seven automated evidence gates. Research intake and build/spec admit a candidate; Q02-Q08 then decide, on real broker tick data, whether it produces a repeatable, cost-robust, statistically defensible signal — or it is retired."
+     },
+     {
+      "section": "Elimination funnel — 4th figure mislabel (evidence error — prefer B)",
+      "action": "rewrite",
+      "spec": "Keep data-stat portfolio_candidates (21) but change the caption from 'Q10 confirmed' to 'Portfolio candidates', sub-caption 'distinct pairs in the qualified pool, measured <date>'. Do NOT label 21 as 'Q10 confirmed' — under v4 Q10 is News Impact and archive_passed_q10=9. portfolio_candidates=21 is the correct funnel endpoint because it feeds the book trigger.",
+      "copy": "Figure 4: number data-stat=\"portfolio_candidates\" -> caption 'Portfolio candidates' -> date-line 'distinct pairs in the qualified pool, measured <span data-stat-date>2026-09-02</span>'."
+     },
+     {
+      "section": "Elimination funnel — intro (unit shift) + static fallback",
+      "action": "rewrite",
+      "spec": "Add one clarifying line about the EA->pair unit change; update the static fallback 4,799 -> 4,801 (also 7,020 -> 7,021 on the Q02 figure). Note these are the pipeline PAIR population (stats.json), distinct from the archive's card population.",
+      "copy": "Around <span class=\"num\" data-stat=\"eas_compiled\">4,801</span> compiled strategies enter. Because one strategy is tested on many instruments, the field is measured in distinct strategy-symbol pairs from here on. Four evidence gates narrow it from thousands of pairs to the handful confirmed on full history."
+     },
+     {
+      "section": "NEW callout — 'Why Phase 3 rarely opens' / the book trigger (after Stage 3)",
+      "action": "add",
+      "spec": "Add a .panel--flat callout turning the low live count into the honest headline. No live claim, no date promise. Keep the '25' threshold qualitative unless OWNER signs off on surfacing it.",
+      "copy": "Eyebrow 'By design'. Heading 'Most strategies never reach live — and that is the point.' Body: 'Phase 3 does not open one strategy at a time. It opens only when a critical mass of qualified survivors exists AND the owner authorises building a book. Until then, confirmed strategies wait. Today the pipeline has <span class=\"num\" data-stat=\"portfolio_candidates\">21</span> qualified candidates in the pool.' (Append ', toward a book minimum of 25.' ONLY with OWNER sign-off.)"
+     },
+     {
+      "section": "NEW closing contact affordance (optional enrichment)",
+      "action": "add",
+      "spec": "Optional (OWNER's 'unten' quote is about the homepage; index carries the canonical restore). If desired, add the same disabled newsletter + research-desk contact panel at the foot of pipeline.html for parity. Lower priority than the index restore; keep the newsletter inert.",
+      "copy": "Reuse the index contact + newsletter copy verbatim."
+     },
+     {
+      "section": "Nav 'Shop' link",
+      "action": "rewrite",
+      "spec": "Handled in the shared nav/footer/routing entry; apply identically here (desktop + mobile).",
+      "copy": ""
+     }
+    ]
+   },
+   {
+    "file": "C:/QM/deploy/qm-ops-refresh/Website/strategies.html",
+    "changes": [
+     {
+      "section": "Hero lead (reposition as a public good — prefer C)",
+      "action": "rewrite",
+      "spec": "Keep the H1; strengthen the lead and add a heart-of-the-company line. Anchor archive_total with a data-stat hook.",
+      "copy": "Lead: 'This is the complete, public record of every mechanical strategy QuantMechanica has put through its gate pipeline — <span data-stat=\"archive_total\">3,378</span> evaluations, the handful that survive full-history confirmation and the far larger number that do not. We show how far each got and where it died. We do not cherry-pick, and we do not hide the failures — publishing them is the point.' Secondary line: 'Most shops show you their winners. This is the whole tape.'"
+     },
+     {
+      "section": "NEW 'How to read this archive' explainer (.panel--flat, between KPI and table)",
+      "action": "add",
+      "spec": "Add a three-column (.cols cols-3) explainer that teaches the gate journey and states the no-metrics disclosure as a choice, not a gap. Pre-empts the blog per-strategy-metric contradiction.",
+      "copy": "Col 1 — 'A journey, gate by gate': 'Each row is one strategy-symbol candidate. The strip shows Q00->Q17: filled = passed, hollow = failed, faint = never reached. A single failed gate retires the candidate.' Col 2 — 'Terminal gate = where it stopped': 'The terminal gate is the deepest gate a candidate reached. Most stop early — 611 are retired at baseline screening (Q02) alone.' Col 3 — 'No per-strategy numbers — on purpose': 'We publish pass/fail and how far each got, never per-strategy profit factors or equity curves. Marketing hides behind selective metrics; we would rather show the filter than a flattering number.'"
+     },
+     {
+      "section": "NEW 'Where strategies die' attrition-by-gate figure (after explainer, before table)",
+      "action": "add",
+      "spec": "Add a counts-only horizontal bar list of terminal-FAIL counts per gate, COMPUTED LIVE from the loaded strategy-archive.json (do NOT hardcode — extend setCounts() to tally terminal FAILs by gate into the .attrition-bar rows). Fully within terminal_pass_fail disclosure (counts only, no metrics). Reference values today (card-level, derived live): Q02 611, Q04 440, Q08 112, Q05 68, Q03 37, Q07 24, Q06 4, Q09 1, Q12 1. Use the new .attrition-bar CSS. Caption clarifies population.",
+      "copy": "Heading 'Where strategies die.' Caption: 'Count of strategies retired at each gate · terminal fails only, no metrics · card-level, derived live from the archive · measured <span data-stat-date>2026-09-02</span>.'"
+     },
+     {
+      "section": "Stage filter chips + JS BANDS (vocabulary mismatch — prefer C/B canonical phases)",
+      "action": "rewrite",
+      "spec": "Replace the five ad-hoc bands (intake 0-3 / baseline 4-8 / robustness 9-10 / portfolio 11-13 / optimization 14-17) with the three canonical macro-phase bands so /strategies and /pipeline tell one phase story. JS: BANDS = [{key:'validation',lo:0,hi:8,label:'Validation Q00-Q08'},{key:'optimization',lo:9,hi:14,label:'Optimization Q09-Q14'},{key:'bookbuild',lo:15,hi:17,label:'Book build Q15-Q17'}]. Update the three chip buttons' data-filter/label/data-count keys to match. Keep the top-level All / Passed Q10+ / Advancing / Failed chips. JS + label change only.",
+      "copy": "Sub-chipbar label 'By phase'. Chips: 'Validation Q00-Q08', 'Optimization Q09-Q14', 'Book build Q15-Q17'."
+     },
+     {
+      "section": "KPI figure + survivor label (gate-meaning error — prefer B)",
+      "action": "rewrite",
+      "spec": "Relabel 'Passed Q10 full history' so the site stops implying Q10 alone is the confirmation gate (under v4 Q10 is News Impact; confirmation is Q11). Keep the number (9) and data-stat archive_passed_q10; change wording only. Rename the 'Passed Q10+' primary chip to 'Confirmed' (or keep 'Passed Q10+' but ensure the detail/caption clarifies it means the confirmed-survivor set).",
+      "copy": "KPI caption 'Cleared full-history confirmation' with sub-note 'through Q10-Q11'. Chip label 'Passed Q10+' may stay but is captioned as the confirmed-survivor set, never a whole-pipeline pass."
+     },
+     {
+      "section": "KPI 'Retired on a failed gate' reconciliation",
+      "action": "rewrite",
+      "spec": "The page must never show a headline that contradicts its own rows: stats.json archive_failed=1,297 but the loaded archive has 1,298 items with >=1 FAIL. Interim: compute this KPI from the loaded archive (setCounts c.failed = 1,298) so headline = rows and matches the attrition strip; caption it 'derived live'. Primary/durable fix is the exporter (see exposure_checks) so stats.json archive_failed equals the archive's own FAIL count. Do not invent a third number.",
+      "copy": ""
+     },
+     {
+      "section": "Archive bottom note (disclosure stated plainly)",
+      "action": "rewrite",
+      "spec": "State the disclosure choice as a choice and stop implying richer per-item fields exist (the v2 contract carries only public_id + gate_coverage — no family/mechanism/verdict; render those in the detail block conditionally, never fabricate).",
+      "copy": "Every result is listed. Each candidate advances only by passing each gate; a single failed gate retires it. This archive shows how far each strategy got and whether it passed or failed there. It deliberately carries no per-strategy performance figures and no equity curves — that is a disclosure choice, not a data gap."
+     },
+     {
+      "section": "Nav 'Shop' link",
+      "action": "rewrite",
+      "spec": "Handled in the shared nav/footer/routing entry; apply identically (desktop + mobile).",
+      "copy": ""
+     }
+    ]
+   },
+   {
+    "file": "C:/QM/deploy/qm-ops-refresh/Website/performance.html",
+    "changes": [
+     {
+      "section": "Hero (honesty-critical overclaim — prefer A)",
+      "action": "rewrite",
+      "spec": "Reframe from 'Live, and independently verified' to the true state: an early, transparently-tracked live book in monitored burn-in, verification in progress. CTA label 'Open the burn-in dashboard' if the linked account is a demo/burn-in track (it is slugged 'darwineexzero-demo').",
+      "copy": "Eyebrow 'Live burn-in'. Heading 'Going live, in the open.' Lead: 'Our first live book is in a monitored burn-in on Darwinex Zero. We are building an independently verifiable track record on Myfxbook — it is early, and we will show it as it grows rather than wait for a flattering start.'"
+     },
+     {
+      "section": "Number surfaces (targets mislabelled as measurements — prefer A)",
+      "action": "rewrite",
+      "spec": "Keep '18 validation gates every strategy clears before it can go live'. Replace '10-15 EAs in the live sleeve (measured <date>)' with a target framed as a target: figure '10-15', caption 'target portfolio size once the first book is built (not yet live)', and REMOVE the 'measured' date (it is a plan, not a measurement). Replace '<2% reaches live deployment (measured)' with '<2%', caption 'of everything we build clears the full validation pipeline' (keep the measured date — that IS derivable from the archive). Optionally add a true figure: <span data-stat=\"portfolio_candidates\">21</span> 'qualified candidates in the pool today'.",
+      "copy": "Figure A: '18' — 'validation gates every strategy clears before it can go live'. Figure B: '10-15' — 'target portfolio size once the first book is built (not yet live)' (no date). Figure C: '<2%' — 'of everything we build clears the full validation pipeline · measured <span data-stat-date>2026-09-02</span>'. Figure D (optional): '<span data-stat=\"portfolio_candidates\">21</span>' — 'qualified candidates in the pool today'."
+     },
+     {
+      "section": "Myfxbook panel caption (demo presented as verified — prefer A)",
+      "action": "rewrite",
+      "spec": "State exactly what the widget is. The embedded portfolio is slugged/titled 'DarwineexZero Demo'; do not call it a verified deployed portfolio until it is one.",
+      "copy": "Live burn-in on Darwinex Zero, tracked on Myfxbook · early track record, independent verification in progress · updated live. This is the burn-in/demo track — we will point this widget at the funded book once it stands on its own."
+     },
+     {
+      "section": "Governance prose",
+      "action": "add",
+      "spec": "Keep the accurate T_Live-isolation / OWNER-only-AutoTrading prose verbatim (it is the honest core). Add one sentence connecting it to the honest state, turning isolation into the reason performance is modest-but-real rather than a bolted-on disclaimer.",
+      "copy": "The live book is deliberately small while it burns in — new strategies join only through the book-build gate, and only the owner can enable live trading."
+     },
+     {
+      "section": "Nav 'Shop' link",
+      "action": "rewrite",
+      "spec": "Handled in the shared nav/footer/routing entry; apply identically (desktop + mobile).",
+      "copy": ""
+     }
+    ]
+   },
+   {
+    "file": "C:/QM/deploy/qm-ops-refresh/Website/about.html",
+    "changes": [
+     {
+      "section": "NEW 'How this becomes a business' (after 'How the factory runs')",
+      "action": "add",
+      "spec": "Add an honest monetization narrative in prose, mirroring the homepage roadmap. No dates, no prices, no returns. Link to /pipeline and the homepage roadmap.",
+      "copy": "Heading 'How this becomes a business.' Body: 'Two engines, one factory. A diversified portfolio on Darwinex Zero seeks third-party capital and performance fees — the slow, scalable engine. Passing funded-account prop challenges is the faster cash engine. Selected survivors may later be offered as products on the MQL5 Marketplace, and copy-trading can follow a verified live portfolio. No channel is switched on before the pipeline produces the evidence for it — evidence over claims applies to how we make money too.'"
+     },
+     {
+      "section": "Agent roster — Claude row (label drift with FAQ)",
+      "action": "rewrite",
+      "spec": "Standardise Claude's public role with the FAQ (drop the divergent 'Governance & ops AI' vs 'CTO-DevOps'); use one label on both pages.",
+      "copy": "Claude — 'Orchestration & governance AI: runs the backtest factory, enforces the Hard Rules, reviews evidence, and paces system spend.'"
+     },
+     {
+      "section": "Agent roster — Antigravity row (overstated capability)",
+      "action": "rewrite",
+      "spec": "Soften the video claim — on-screen video analysis is the human OWNER lane (this agy build has no video tool); only caption/transcript extraction is available to the AI lane.",
+      "copy": "Antigravity — 'Broad market research: mines quant books, papers and video transcripts, and mechanizes trading hypotheses into Strategy Cards.'"
+     },
+     {
+      "section": "Noun standardisation + Shop nav",
+      "action": "rewrite",
+      "spec": "Standardise 'backtests' as the public noun (drop mixed 'work items' where 'backtests' is meant). Shop nav handled in the shared entry.",
+      "copy": ""
+     }
+    ]
+   },
+   {
+    "file": "C:/QM/deploy/qm-ops-refresh/Website/faq.html",
+    "changes": [
+     {
+      "section": "'What is HARSH Stress Testing (Q06)?' (Hard Rule: invented commission + wrong mechanic — prefer B/canonical)",
+      "action": "rewrite",
+      "spec": "Replace the wrong mechanism entirely. Canonical Q06 (Vault, as implemented in q06_stress_harsh.py) applies ONLY seeded 10% trade-rejection; the slippage/spread/commission multipliers 'waren nie implementiert' and '$20.00/lot round-trip' is an invented commission (real cost model is realistic ECN commission at Q04). Remove the 5-pip / 3x spread / $20-lot figures.",
+      "copy": "Gate Q06 stress-tests execution reliability by seeding a share of trades to be rejected — about one in ten intended fills simply does not happen. Strategies whose edge depends on every fill landing, or on fragile scalping, grid or martingale recovery, are eliminated here. Realistic ECN commission is already applied earlier at Q04; Q06 isolates fill-disruption robustness."
+     },
+     {
+      "section": "'How many strategies survive the pipeline?' (unsupported ~38 — prefer B, data-stat)",
+      "action": "rewrite",
+      "spec": "Replace the unsupported '~38' (no public-data key yields it; conflicts with archive_passed_q10=9, q08_davey_stats_pass=46, portfolio_candidates=21) with data-stat-keyed numbers.",
+      "copy": "Less than 2%. Out of <span data-stat=\"eas_compiled\">4,801</span> strategies built and over <span data-stat=\"backtests_total\">122,267</span> backtests, only <span data-stat=\"portfolio_candidates\">21</span> strategy-symbol candidates currently sit in the qualified pool, and <span data-stat=\"archive_passed_q10\">9</span> have cleared full-history confirmation. We publish every failure so anyone can examine why strategies fail."
+     },
+     {
+      "section": "'Can these Expert Advisors be used on Prop Firms?' (present-capability overclaim — prefer A)",
+      "action": "rewrite",
+      "spec": "Soften the leading 'Yes.' to an honest 'They are built for it.' Keep DXZ/FTMO advertisable without claiming a live funded record.",
+      "copy": "They are designed and tested for it. Venue constraints are checked before a strategy reaches the portfolio stage: Q10 compares news-handling modes and issues the venue recommendation, and Q15-Q17 apply target-specific rules for capital-allocation programs (Darwinex Zero) and prop challenges (FTMO-style 2-step) — daily loss limits, max-loss boundaries and news constraints. No account is funded until a strategy clears the full pipeline."
+     },
+     {
+      "section": "'How does the Multi-Agent AI system work?' (label/infra/video drift)",
+      "action": "rewrite",
+      "spec": "Align role labels with About, soften infra/video specifics (drop 'CTO-DevOps' and 'dedicated-terminal factory cluster'; 'video transcripts' not 'video analysis').",
+      "copy": "A deterministic capability router assigns each task to the seat best suited to it. Codex handles MQL5 code and pipeline engineering; Antigravity researches literature and video transcripts and mechanizes hypotheses into Strategy Cards; Claude orchestrates the backtest factory, enforces the Hard Rules and reviews evidence. The human founder holds sole authority over capital deployment and the live AutoTrading switch."
+     },
+     {
+      "section": "Pipeline answer phase vocabulary + Shop nav",
+      "action": "rewrite",
+      "spec": "Ensure the FAQ pipeline answer uses the one phase vocabulary (Validation Q00-Q08 / Optimization & requalification Q09-Q14 / Book build & live Q15-Q17). Shop nav handled in the shared entry.",
+      "copy": ""
+     }
+    ]
+   },
+   {
+    "file": "C:/QM/deploy/qm-ops-refresh/Website/blog.html",
+    "changes": [
+     {
+      "section": "Fabricated live-narrative posts (honesty-critical — prefer A)",
+      "action": "remove",
+      "spec": "Pull blog-commission-testing.html ('After one month of live trading... 0.2 pips slippage') and blog-drawdown-management.html ('Two weeks into my funded account journey... 1 win, 9 losses in a day... 1.5% portfolio drawdown... 14% win-rate floor over n=100') from the index, sitemap and any teaser until a real live record exists. Alternatively rewrite them as explicitly hypothetical/educational with a banner 'Illustrative — the live book is in burn-in; no funded-account results yet' and remove every specific fabricated live figure. A visitor who cross-checks the empty/demo Myfxbook must not catch the site in an embellishment.",
+      "copy": "If relabelled: banner text 'Illustrative — the live book is in burn-in; no funded-account results yet.' Remove: 0.2 pips slippage, 1.5% DD, 1-win/9-loss day, 14% win-rate floor over n=100."
+     },
+     {
+      "section": "Strategy deep-dives + teasers (per-strategy metrics violate disclosure — prefer A/C)",
+      "action": "rewrite",
+      "spec": "Bring blog-sm124-gotobi-deep-dive, blog-sm124-gotobi-story, blog-sm186-asian-drift and their blog.html teasers under the archive disclosure. Remove every per-strategy Profit Factor (SM_124 '6.47' AND '4.57' — self-contradictory; SM_186 '2.59') and 'X of 22 symbols passed' count. Reconcile the 6.47-vs-4.57 contradiction by removing both. Spotlight a family through its MECHANISM and gate journey, never a headline PF.",
+      "copy": "Replace PF claims with gate-journey language, e.g. 'cleared baseline screening on a broad set of instruments and earned deeper validation' instead of 'PF 4.57 on GBPJPY'. Reference families by mechanism ('the Gotobi calendar-settlement family', 'the Asian-session drift family')."
+     },
+     {
+      "section": "Internal identifiers across posts (naming-convention constraint)",
+      "action": "rewrite",
+      "spec": "Replace SM_124 / SM_186 / SM_221 and the V2.x / V4 / V5 version taxonomy with family names or plain language ('the current reset', 'the portfolio draft'). Keep naming consistent with the public archive (card_* / family names) so readers can cross-reference without hitting an internal code. Add no new internal identifiers.",
+      "copy": ""
+     },
+     {
+      "section": "'Zero Correlation 15-strategy portfolio' post (implies a completed live book)",
+      "action": "rewrite",
+      "spec": "Reframe from 'How I Built' (completed) to the method as the Q15 construction rule, with an honest note that the first book is still being assembled.",
+      "copy": "Retitle to 'How we build toward a zero-correlation portfolio — family caps, symbol caps, pairwise correlation limits', presented as the Q15 construction rule, with a note: 'The first book is still being assembled — 21 candidates are in the qualified pool today.'"
+     },
+     {
+      "section": "Post dates",
+      "action": "rewrite",
+      "spec": "Give every post one consistent full YYYY-MM-DD date; add missing dates on commission-testing / drawdown-management / sm124-gotobi-story (if those survive as illustrative). If posts are genuinely older keep true dates, but consider a fresh cadence so the logbook does not read as abandoned at ~5 months stale.",
+      "copy": ""
+     }
+    ]
+   },
+   {
+    "file": "C:/QM/deploy/qm-ops-refresh/Website/  (ALL PAGES: shared nav, footer, routing config)",
+    "changes": [
+     {
+      "section": "Routing — 'kein Link funktioniert' (critical, site-wide)",
+      "action": "add",
+      "spec": "Root cause: every internal href is extensionless (/pipeline, /strategies, /blog-*) but the files are *.html and the publish dir has no _redirects or netlify.toml, so on a plain static host and on the local 127.0.0.1:8090 preview every internal link 404s. Fix: add a Netlify pretty-URL guarantee (netlify.toml [[redirects]] or a _redirects file) mapping extensionless -> .html, and confirm the connected Netlify branch actually builds this dir (design-doc open item 9.3). For the local review, serve with a static server that rewrites extensionless -> .html (not bare python -m http.server). Fallback if host rewrites cannot be guaranteed: append .html to every internal href across all pages + sitemap. Verify by clicking every nav/footer/hero/cross link on the preview before the next OWNER review. Highest-priority fix — the site is currently un-navigable for OWNER.",
+      "copy": ""
+     },
+     {
+      "section": "Nav 'Shop' link (all pages, desktop + mobile) — future-channels rule",
+      "action": "rewrite",
+      "spec": "The 'Shop' link points at generic https://www.mql5.com/en/market, implying a live store when MQL5 productisation is only planned (no QM EA listed). Preferred: remove 'Shop' from nav until at least one QM EA is listed (the roadmap section covers it as planned). Fallback: relabel 'Shop · soon' pointing at the roadmap anchor (/#building), never the generic store. Apply identically across every page's desktop and mobile nav.",
+      "copy": ""
+     },
+     {
+      "section": "Footer Contact column (all pages)",
+      "action": "rewrite",
+      "spec": "Make the research-desk invitation explicit again in the footer Contact column (it currently lists only info@ / FAQ / About), restoring the contact affordance site-wide even before the homepage closing section is rebuilt.",
+      "copy": "Add a line under the Contact column: '<a href=\"mailto:info@quantmechanica.com\">Strategy idea or allocation enquiry</a>'."
+     },
+     {
+      "section": "Phase vocabulary (all pages)",
+      "action": "rewrite",
+      "spec": "Adopt ONE phase vocabulary everywhere: 'Validation (Q00-Q08) · Optimization & requalification (Q09-Q14) · Book build & live (Q15-Q17)'. Apply to the pipeline stage labels, the index phase strip, the strategies stage chips, and the FAQ pipeline answer. Standardise 'backtests' as the public noun except where 'work items' is genuinely meant.",
+      "copy": ""
+     }
+    ]
+   }
+  ],
+  "css_additions": [
+   {
+    "selector": ".phase-band, .phase-band__col",
+    "rule": ".phase-band{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s-3);margin-top:var(--s-4)} .phase-band__col{border:1px solid var(--c-line);border-radius:var(--r-md);padding:var(--s-4)} .phase-band__col .gate-row{margin-top:var(--s-2)} @media(max-width:720px){.phase-band{grid-template-columns:1fr}}",
+    "purpose": "Homepage three-phase strip (replaces the flat 18-gate teaser): three bordered columns, each holding a phase name, its gate pins (existing .gate-row/.gate-row__pin) and a one-line description. Existing tokens only; falls back cleanly to .cols-3 if not added."
+   },
+   {
+    "selector": ".roadmap-row, .roadmap-row__label, .roadmap-row__body",
+    "rule": ".roadmap-row{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--s-2);padding-block:var(--s-3);border-top:1px solid var(--c-line)} .roadmap-row__label{font-weight:600;min-width:200px} .roadmap-row__body{flex:1;min-width:240px;color:var(--c-text-2)}",
+    "purpose": "Build-in-public 'What we're building' status rows on index (and the About business narrative if used as rows): label · one-line · status badge, reusing .badge--neutral/.badge--warn — no new colours, no dates/prices."
+   },
+   {
+    "selector": ".attrition-bar, .attrition-bar__row, .attrition-bar__track, .attrition-bar__fill",
+    "rule": ".attrition-bar{display:grid;gap:var(--s-1);margin-top:var(--s-3)} .attrition-bar__row{display:grid;grid-template-columns:56px 1fr 3ch;align-items:center;gap:var(--s-2);font-size:var(--fs-small)} .attrition-bar__track{background:var(--c-fail-soft);border-radius:var(--r-pill);height:12px;overflow:hidden} .attrition-bar__fill{height:100%;background:var(--c-fail);border-radius:var(--r-pill)}",
+    "purpose": "Strategies-page 'Where strategies die' figure: horizontal count bars for terminal-FAIL-by-gate, widths and counts derived live from the loaded strategy-archive.json (never hardcoded), using desaturated --c-fail / --c-fail-soft tokens already in style.css."
+   }
+  ],
+  "exposure_checks": [
+   "ROUTING (critical): extensionless internal hrefs + no _redirects/netlify.toml + *.html files = every internal link 404s on a plain static host and on the 127.0.0.1:8090 preview OWNER reviews. Add host rewrites (or append .html) and click every nav/footer/hero/cross link on the preview before the next OWNER review.",
+   "FABRICATED LIVE RESULTS: remove or clearly relabel-as-illustrative the two funded-account blog narratives (blog-commission-testing '0.2 pips slippage after one month live'; blog-drawdown-management 'funded account... 1.5% DD... 1 win 9 losses'). No funded account exists; the live book is in burn-in and Myfxbook is unverified. A visitor who checks the demo Myfxbook must not catch an embellishment.",
+   "PER-STRATEGY METRICS vs DISCLOSURE (terminal_pass_fail_without_metrics): strip every per-strategy Profit Factor and symbol-pass count from blog copy/teasers (SM_124 6.47 AND 4.57 self-contradictory; SM_186 2.59; 'X of 22 symbols'). The archive withholds these by design and no public-data key supports them.",
+   "performance.html: must not assert a live, independently-verified, deployed portfolio. '10-15 EAs live sleeve (measured)' is the Q15 target not a live count; '<2% reaches live deployment' — nothing is live-deployed; the Myfxbook portfolio is slugged 'darwineexzero-demo'. Reframe to burn-in / verification-in-progress and remove 'measured' from figures that are targets.",
+   "INVENTED COMMISSION + WRONG GATE (Hard Rule): faq.html Q06 '5-pip slippage, 3x spread, $20.00/lot round-trip' is false — canonical Q06 implements ONLY seeded 10% trade-rejection; cost multipliers were never implemented; $20/lot is invented (real model is realistic ECN commission at Q04). Rewrite to the true mechanism.",
+   "UNSUPPORTED HEADLINE: faq.html '~38 strategies' has no public-data source (conflicts with 9 / 46 / 21). Replace with data-stat-keyed values (portfolio_candidates 21, archive_passed_q10 9).",
+   "MISLABELED GATE FIGURES: pipeline.html funnel labels portfolio_candidates=21 as 'Q10 confirmed' (v4 Q10 is News Impact; archive_passed_q10=9) -> relabel 'Portfolio candidates'. strategies.html 'Passed Q10 full history' attaches 'full history' to the wrong gate (confirmation is Q11) -> 'Cleared full-history confirmation (through Q10-Q11)'.",
+   "DATA-INTEGRITY DRIFT: stats.json archive_failed=1,297 but the served strategy-archive.json has 1,298 items with >=1 FAIL. The page must never show a headline that contradicts its own rows — fix the exporter (archive_failed -> 1,298) and/or compute the KPI client-side from the loaded archive. Also refresh stale static fallbacks to today's values (eas_compiled 4,799->4,801; backtests_total 122,248->122,267; q02_baseline_pass 7,020->7,021).",
+   "POPULATION LABELLING: the pipeline funnel counts distinct strategy-symbol PAIRS (stats.json: q02 7,021 / q04 336 / q08 46 / candidates 21) while the archive attrition/KPIs count CARDS (strategy-archive.json: 3,378 / Q08 pass 25 / Q10 pass 9). Never mix them under one figure; caption archive-derived counts 'card-level, derived live'.",
+   "LIVE-CLAIM NAV: the 'Shop' link (all pages) points at the generic mql5.com store, implying a live product that does not exist. Remove, relabel 'soon', or point at the roadmap — future channels only as 'planned, gated by evidence'.",
+   "INTERNAL IDENTIFIERS: SM_124 / SM_186 / SM_221 and the V2.x/V4/V5 taxonomy in blog posts clash with the public card_* convention and the 'add no new internal identifiers' constraint -> replace with family names / plain language. Also do NOT surface process-roadmap.json raw slugs (e.g. process_registry, zero_trade_v2_build_pipeline) in any 'what changed' list — leaks internal tooling.",
+   "AGGREGATE-ONLY EXPOSURE: agent counts and spend from public-snapshot.json are sanctioned but keep framing to 'AI agents' and aggregate budget; never derive terminal/worker counts, VPS host, or provider names. Publishing spend (204/1,850 EUR) at all is an OWNER decision — omit by default. The '25' book-minimum threshold is internal — surface only with OWNER sign-off, otherwise keep qualitative.",
+   "MINOR ACCURACY: Antigravity is not a video-analysis seat (no video tool in this build; captions/transcripts only) -> 'video transcripts'. Standardise Claude's public role to one label across About and FAQ (drop 'CTO-DevOps' and 'dedicated-terminal factory cluster'). Newsletter form must stay genuinely inert (no network post, no stored address) to match its 'no address is stored' caption."
+  ],
+  "rejected_ideas": [
+   "Hardcoding the attrition-by-gate counts (Q02 611, Q04 440, ...) as static HTML numbers — rejected: violates evidence-over-claims and would drift from the served archive; compute them live from the loaded strategy-archive.json instead (counts-only, still within terminal_pass_fail disclosure).",
+   "Rendering a big card-level 'narrowing funnel' on strategies.html that shows 3,378 -> 25 -> 9 next to the pipeline page's pair funnel (7,021 -> 336 -> 46 -> 21) — rejected as proposed: the two are different populations (cards vs strategy-symbol pairs) and shipping both un-labelled tells two contradictory number stories. Use the attrition-by-gate strip + optional reached/passed/failed table, captioned 'card-level, derived live'.",
+   "Surfacing the exact '25 qualified candidates' book-minimum threshold in public copy — rejected by default: it is an internal criterion (ROT-adjacent); present the book trigger qualitatively unless OWNER signs off on the number (GELB).",
+   "Publishing the spend/budget transparency tile (204 / 1,850 EUR) — rejected by default: publishing spend is an explicit OWNER decision, and only from the sanctioned aggregate field with no provider names or per-line costs.",
+   "Keeping the two funded-account blog posts with their specific figures 'because they read as build-in-public' — rejected: they narrate a live funded account that does not exist and contradict the site's entire honesty value proposition; remove or relabel as explicitly illustrative and strip the fabricated numbers.",
+   "Relabelling 'Shop' to keep pointing at mql5.com/en/market — rejected: implies a purchasable QM product that is not listed; no nav element may assert a product that does not exist.",
+   "Adding 'Family' / 'Mechanism' columns to the archive rows to look richer — rejected: the v2 contract carries neither (items = public_id + gate_coverage only); render them in the detail block conditionally and never fabricate a family or verdict.",
+   "Auto-generating a 'What changed' changelog from process-roadmap.json — rejected as-is: its titles are internal slugs that leak tooling/agent naming. Drive the 'last refreshed' line from the contract stamps only; a real changelog needs a curated additive public file before it ships.",
+   "Forcing INPUT C's punchy hero headline swap ('Most strategies fail. We publish every one.') — not rejected outright but demoted to an OWNER-choice option: hero H1 is page-level brand copy OWNER did not ask to change; keep 'The Quantitative Edge.' and foreground the archive in the lead instead.",
+   "Treating INPUT B's 'restore contact + newsletter on pipeline.html' as a hard requirement — softened: OWNER's 'gabs vorher unten' refers to the homepage foot, so the canonical restore is on index.html; a matching pipeline footer block is optional enrichment, not a named fix.",
+   "Adding a new .section--tight-top spacing rule for Market Structure — rejected as unnecessary: swapping that section's class to the existing .section--tight already closes the 160px gap to 128px with zero new CSS.",
+   "Adding any new page or a new accent hue / redesign of .panel/.section/.figure/.chart--frame — rejected: constraint keeps the v3 system and page inventory; only three small named CSS rules (.phase-band, .roadmap-row, .attrition-bar) are added, using existing tokens."
+  ]
+ },
+ "inputs": {
+  "0": {
+   "homepage_hero": {
+    "headline": "Most strategies fail. We publish every one.",
+    "lead": "QuantMechanica engineers mechanical trading strategies and proves them through an eighteen-gate pipeline on real broker data. The Strategy Archive is the centerpiece: every candidate we have tested — the handful confirmed on full history and the thousands retired along the way — each shown with the gate it reached and whether it passed or failed there. No cherry-picking, no black boxes. Anchor the two numbers in the lead with data-stat hooks: '<span data-stat=\"archive_total\">3,378</span> strategies evaluated, <span data-stat=\"archive_passed_q10\">9</span> confirmed on full history.'",
+    "primary_cta": "Explore the Strategy Archive  →  /strategies",
+    "secondary_cta": "See how the pipeline works  →  /pipeline"
+   },
+   "archive_page": [
+    {
+     "element": "Disclosure banner + 'How to read this archive' explainer (top of page, .panel--flat)",
+     "spec": "One quiet panel opening the page in plain English: 'This archive shows how far each strategy travelled through the gate pipeline and whether it passed or failed at the gate it reached. It carries no per-strategy performance figures.' Define the three cell states inline — Pass, Fail, Not reached — matching the covstrip/gate-track legend. This is the honest framing OWNER asked for and it sets expectations before any number.",
+     "data_source": "strategy-archive.json .disclosure ('terminal_pass_fail_without_metrics') and .gate_contract_version ('v4'); static explanatory copy."
+    },
+    {
+     "element": "KPI number surfaces (figure-grid, four figures)",
+     "spec": "Large tabular numerals with short captions: Strategies evaluated / Passed Q10 full history / Retired on a failed gate / Gates in the contract. Keep the existing measured-date caption beneath the grid. These are the promise made countable.",
+     "data_source": "stats.json .archive_total (3,378), .archive_passed_q10 (9), .archive_failed (1,297) via data-stat hooks; gate count = strategy-archive.json .gates.length (18); date from stats.json .generated_at."
+    },
+    {
+     "element": "Phase-grouped stage funnel (the centerpiece visual, dark evidence panel)",
+     "spec": "A narrowing funnel across the three canonical macro-phases — Validation (Strategy proves itself, Q00–Q08), Optimization & Requalification (Q09–Q14), Portfolio & Book Build (Q15–Q17) — each phase showing how many strategies reached its first gate, passed, and were retired. Tells the 3,378 → 25 → 9 story visually and answers OWNER's 'Validierung, Optimierung, Buch Build als Phasen' directly. Desaturated pass/fail only. Label each phase with its canonical name and the plain-English macro-phase description.",
+     "data_source": "Computed in-page from strategy-archive.json .items[].gate_coverage (reached = gate key present; passed/failed = its PASS/FAIL value), grouped by the macro-phase mapping in public-snapshot.json .pipeline_gates.macro_phases + .gates[].macro_phase. Reference values today: Q00 3,378 reached → Q08 25 passed → Q10 9 passed."
+    },
+    {
+     "element": "Per-gate funnel table (reached | passed | failed, Q00→Q17)",
+     "spec": "A compact, scroll-safe table under the funnel: one row per gate with reached / passed / failed derived live, plus each gate's canonical name and one-line purpose so a visitor learns what Q04 or Q08 actually tests. Honest 'reached' definition in the caption (a strategy is counted at a gate only when it has recorded evidence there).",
+     "data_source": "reached/pass/fail computed from strategy-archive.json .items[].gate_coverage (same aggregation the page's setCounts() already does); gate names + purposes from public-snapshot.json .pipeline_gates.gates[].name / .purpose."
+    },
+    {
+     "element": "Primary filter chips (All / Passed Q10+ / Advancing / Failed) with live counts",
+     "spec": "Keep the existing single-select chipbar. Tighten the labels so 'Passed Q10+' reads unmistakably as the confirmed-survivor set and 'Advancing' is captioned as 'reached and passed its latest gate, not yet confirmed on full history' — never a winner claim.",
+     "data_source": "Computed from strategy-archive.json .items[].gate_coverage: passed = Q10 PASS; failed = terminal gate is FAIL; advancing = neither."
+    },
+    {
+     "element": "Secondary 'by phase' filter chips — realigned to the canonical macro-phases",
+     "spec": "Replace the current ad-hoc stage bands (Intake 0–3 / Baseline 4–8 / Robustness 9–10 / Portfolio 11–13 / Optimization 14–17), which do NOT match the pipeline page, with the three canonical macro-phase bands (Validation Q00–Q08 / Optimization & Requalification Q09–Q14 / Portfolio & Book Build Q15–Q17). One consistent phase vocabulary across /strategies and /pipeline.",
+     "data_source": "Band boundaries from public-snapshot.json .pipeline_gates.gates[].macro_phase; filter computed on .items[].gate_coverage terminal-gate index."
+    },
+    {
+     "element": "Search by public id",
+     "spec": "Keep the debounced search over public_id with the aria-live result count. Placeholder 'Search by public id…'.",
+     "data_source": "strategy-archive.json .items[].public_id."
+    },
+    {
+     "element": "public_id semantics note (one line beside the table)",
+     "spec": "'Each strategy carries a stable, anonymous public id (card_ followed by 16 hex characters). It is deliberately not a name, symbol or account — it lets you follow one strategy across archive updates without exposing anything internal.' Explains the identifier OWNER's readers will see and reassures on exposure.",
+     "data_source": "Descriptive only, from the observed format of strategy-archive.json .items[].public_id (all 'card_' + 16 hex, length 21). No internal id or mapping is published."
+    },
+    {
+     "element": "Archive table rows: public id · gate-coverage strip · terminal gate · verdict badge",
+     "spec": "Keep the current row shape: public_id (disclosure button), an 18-cell coverage strip (pass/fail/not-reached), terminal gate, verdict badge. This is the scannable heart of the archive.",
+     "data_source": "strategy-archive.json .items[].public_id + .gate_coverage; strip columns from .gates (Q00–Q17)."
+    },
+    {
+     "element": "Per-strategy disclosure detail (expand row): full Q00→Q17 gate journey",
+     "spec": "On expand, render the full gate-track with legend, the terminal gate, a plain verdict sentence ('Passed Q10 full-history confirmation' / 'Retired at Q04 — failed' / 'Advancing — last cleared Q07'), and the archive stamp. Render Mechanism/Family rows ONLY if the contract actually carries them.",
+     "data_source": "strategy-archive.json .items[].gate_coverage. NOTE: the v2 contract carries no family/mechanism/verdict fields today — the detail block must render them conditionally and never fabricate them."
+    },
+    {
+     "element": "Terminal-gate semantics caption",
+     "spec": "A short caption clarifying that the terminal gate is the deepest gate with recorded evidence, and that a PASS at an intermediate terminal gate means 'cleared that gate, not yet advanced' — not a full-pipeline pass. Only the 'Passed Q10+' set are confirmed survivors. Prevents readers from mistaking early terminal-PASS rows for winners.",
+     "data_source": "Derived from strategy-archive.json .items[].gate_coverage; survivor anchor = stats.json .archive_passed_q10 (9)."
+    },
+    {
+     "element": "'What we do not publish — and why' honest note (.panel--flat)",
+     "spec": "A calm panel: 'We do not publish per-strategy profit, Sharpe, drawdown or equity curves; no live account or venue data; no symbol-, broker- or infrastructure-level detail. A pass/fail record proves the filter is real without turning the archive into a signals product or giving away a live edge.' This is the exposure line OWNER asked for, stated as principle, not apology.",
+     "data_source": "strategy-archive.json .disclosure; design-doc exposure rules (WEBSITE_DESIGN_REFRESH_APPLE_2026-09-02.md §7). Static copy."
+    },
+    {
+     "element": "Last-updated stamp",
+     "spec": "'Archive generated <date> · terminal pass/fail only, no per-strategy metrics' in the KPI caption and repeated in each expanded detail body, so freshness is visible without a page reload guess.",
+     "data_source": "strategy-archive.json .generated_at (2026-09-02), formatted YYYY-MM-DD."
+    },
+    {
+     "element": "Cross-links archive ↔ pipeline (fix clean-URL resolution)",
+     "spec": "Make every gate token in the explainer, funnel table and detail block link to the matching gate card on /pipeline so a visitor can learn what a gate tests. This only works once the clean-URL 404 issue (see risks) is fixed; otherwise these links are dead — exactly the 'kein Link funktioniert' complaint.",
+     "data_source": "Static internal links; gate definitions live on /pipeline, sourced from public-snapshot.json .pipeline_gates.gates[]."
+    },
+    {
+     "element": "Loading / empty / fetch-error / pager states",
+     "spec": "Keep the existing loading state, empty-view message, graceful fetch-error copy ('The archive could not be loaded right now'), and 50-per-page pager. A 3,378-row archive must degrade gracefully.",
+     "data_source": "strategy-archive.json fetch lifecycle."
+    }
+   ],
+   "build_in_public_section": {
+    "title": "Built in public",
+    "blocks": [
+     {
+      "title": "One engineer, a fleet of AI agents",
+      "copy": "QuantMechanica is a one-person quant shop run with a coordinated set of AI agents that research sources, mechanize ideas into MQL5, and drive the deterministic gate pipeline. Nothing goes live on judgment alone — the pipeline is the judge. State it as the story, with the live agent count injected rather than asserted: '<span data-stat-agents-online>4</span> AI agents active alongside one engineer.'",
+      "data_source": "public-snapshot.json .agents.online (4) / .offline (1); narrative framing from Business Model.md."
+     },
+     {
+      "title": "Where the factory stands today",
+      "copy": "A live snapshot of the pipeline: how many candidates are currently sitting at each gate, and the deepest gate any strategy has reached (the frontier). Render a small horizontal census strip (Q00→Q17) with counts, plus 'Current frontier: <span data-stat-phase>Q14</span>'. Caption it 'measured <date>' and note the census counts a strategy at its highest contiguously-valid gate.",
+      "data_source": "public-snapshot.json .pipeline.by_gate_v4 (live census), .phase ('Q14'), .public_archive.progress_metric ('highest_contiguous_valid_gate'), .generated_at."
+     },
+     {
+      "title": "The pipeline, in three phases",
+      "copy": "The eighteen gates read as three plain-English phases: Validation — the strategy proves itself (Q00–Q08); Optimization & Requalification — it is tuned and re-proven against a sealed baseline (Q09–Q14); Portfolio & Book Build — it is assessed for the live book and burn-in (Q15–Q17). Give each phase its canonical description and let each gate carry its one-line purpose. This is the deeper gate explanation OWNER asked for, and it uses the same vocabulary as the archive's phase filter.",
+      "data_source": "public-snapshot.json .pipeline_gates.macro_phases (3, verbatim names/descriptions) and .pipeline_gates.gates[].name / .purpose (18)."
+     },
+     {
+      "title": "What changed",
+      "copy": "A short, honest changelog of the operation — 'archive refreshed', 'new phase frontier reached', 'gate contract updated to v4'. Present it as a dated list. For now, drive the 'last refreshed' line from the contract stamps; a richer changelog needs a small additive public file and should ship only when that producer exists — do not hand-write entries that can drift from the data.",
+      "data_source": "strategy-archive.json .generated_at and stats.json .generated_at for the refresh line; gate_contract_version ('v4') for the contract line. A dedicated changelog.json would be additive and is not yet in the contract (gate, do not invent)."
+     },
+     {
+      "title": "What it costs to run (optional, OWNER's call)",
+      "copy": "A single transparency tile — 'run on a modest budget': spent vs. budget in EUR. Powerful build-in-public signal, but publishing spend is an OWNER decision; include only if approved, and only from the sanctioned contract field. No token-provider names, no per-line costs.",
+      "data_source": "public-snapshot.json .expenses.spent_eur (204) / .budget_eur (1,850). Gated on OWNER approval."
+     }
+    ]
+   },
+   "future_channels_block": {
+    "title": "What comes next",
+    "copy": "These channels are planned, not live. Each one opens only when the pipeline has produced the evidence to justify it. No dates, no prices, no promised returns — the same 'evidence over claims' rule that governs the archive governs how we monetize.",
+    "items": [
+     "DarwinexZero allocation — a verifiable DARWIN track record is building in live burn-in; external capital and performance fees follow only once that record stands on its own.",
+     "MQL5 Marketplace EAs — selected pipeline survivors will be productised for sale or rent; which strategies qualify is still an open decision, gated by full-pipeline evidence.",
+     "Copy-trading accounts — planned only after a proven, live-traded portfolio exists; no copy account is open today.",
+     "Signal service — planned, gated by reproducible live evidence; no signals are sold today."
+    ]
+   },
+   "contact_newsletter_section": {
+    "layout": "One panel, two columns (.cols.cols-2), restoring the contact + newsletter block OWNER noted was previously at the foot of the page. Left column: newsletter sign-up. Right column: research-desk contact. Stacks to a single column under ~720px. Placed as the final section before the footer on both the homepage and the archive page.",
+    "newsletter_copy": "Gate-pass reports and statistical deep dives, delivered when they ship. The newsletter is not open yet — the form is present but inert and stores no address while it is closed. Sign-up goes live here. Keep the input and button visibly disabled with aria-disabled, and the honest caption 'Newsletter launching soon — no address is stored while the form is closed.'",
+    "contact_copy": "Got a strategy idea, a paper worth mechanizing, or a question about the pipeline? Write to the research desk at info@quantmechanica.com (mailto link). We read every message. We do not give individual trading advice or share per-strategy figures beyond what the archive already shows."
+   },
+   "risks": [
+    "FUNCTIONAL BLOCKER — 'kein Link funktioniert': nav and CTA hrefs use extensionless clean URLs (/pipeline, /strategies) but the web root has no _redirects/netlify.toml and the files are *.html, so the local preview server (127.0.0.1:8090) 404s every link. Fix before OWNER review: add a Netlify _redirects/Pretty-URLs mapping (or serve .html) and re-test all nav, hero and cross-links in the preview, not just in production.",
+    "LAYOUT — 'Über Market Structure ist der Abstand zu groß': the homepage stacks a .section--tight (pipeline teaser) above a full .section (price-action widgets), doubling vertical padding above the 'Market structure' heading. Normalize the section rhythm (single spacing token between these two panels).",
+    "IA — the homepage currently leads with the combined-equity chart panel, not the archive. To make the archive the centerpiece OWNER wants, reorder so the archive promise (transparency + 'browse the archive' CTA) sits directly under the hero, and demote the illustrative equity panel; keep its 'illustrative / not live / synthetic-calibrated' caption intact so it is never read as a live-return claim.",
+    "EXPOSURE — process-roadmap.json titles are internal identifiers (e.g. gemini_video_extraction_contract, process_registry, zero_trade_v2_build_pipeline, numbered process slugs). Do NOT surface these raw in any 'what changed' log or process list; they leak internal tooling/agent naming. Use only curated, plain-English changelog copy.",
+    "EXPOSURE — public-snapshot.json publishes agent counts (.agents) and spend (.expenses). These are sanctioned contract fields, but keep framing to 'AI agents' and aggregate budget only; never derive or imply terminal/worker counts, VPS host, provider names or per-line costs from them. Publishing spend at all is an OWNER decision.",
+    "OVER-PROMISING — future channels (copy-trading, MQL5 EAs, signal service) and the DXZ allocation must stay 'planned / building, gated by evidence.' No dates, no prices, no return figures; 'burn-in' and 'track record building' must not read as a live-performance promise.",
+    "DISCLOSURE — the archive must stay at 'terminal_pass_fail_without_metrics': no per-strategy P&L, Sharpe, drawdown, equity curves, symbols or venues, even in expanded detail rows. The combined equity curve on the homepage is aggregate + illustrative and must never be attributable to a single public_id.",
+    "MISREADING RISK — terminal-PASS at an intermediate gate can look like a winner. Only the 9 'Passed Q10+' rows are confirmed survivors; 'Advancing' rows must be captioned as 'not yet confirmed on full history.' Guard the copy so early terminal-PASS strategies are never counted as passes of the whole pipeline.",
+    "CONTRACT DRIFT — items[] carries only public_id + gate_coverage today (no family/mechanism/verdict). The detail block must render those fields conditionally and never fabricate a family or mechanism; ship the 'family' column only if/when the contract adds it.",
+    "NUMBER CONSISTENCY — the same figure differs across sources (eas_compiled 4,801 in stats.json vs pipeline.eas_built 4,800 in public-snapshot.json; backtests_total 122,267 vs work_items_total 122,253). Pin one source per surface (stats.json for headline counts; public-snapshot for the live census) so a single page never shows two contradictory numbers. Likewise archive_failed 1,297 (stats.json) vs the client-derived FAIL total (~1,298) — display the stats.json value on the KPI and label the funnel counts as 'derived live'.",
+    "CONSISTENCY — the archive's current stage bands do not match the pipeline page's macro-phases; shipping both as-is tells two different phase stories. Realign the archive bands to the three canonical macro-phases (Q00–Q08 / Q09–Q14 / Q15–Q17) before launch.",
+    "CSS SCOPE — keep the v3 system intact: add only small named rules (e.g. .funnel, .funnel__phase, .phase-band, .changelog, .census-strip, .kpi-note, a .cols-2 newsletter/contact split) using existing tokens (--c-pass/--c-fail desaturated, --s-* spacing, --r-*). No new accent hues, no redesign of .panel/.section/.figure/.chart--frame.",
+    "PRIVACY/HONESTY — the newsletter form must be genuinely inert (no network post, no stored address) while disabled; a form that looks live but silently drops input would contradict the 'no address is stored' caption."
+   ]
+  },
+  "1": {
+   "phases": [
+    {
+     "key": "p1_intake_build",
+     "title": "Intake & Build",
+     "gates": [
+      "Q00",
+      "Q01"
+     ],
+     "one_line": "Vault Macrophase 1 (proof of edge) opens: a cited, mechanical idea becomes a compiling, testable Expert Advisor.",
+     "what_it_proves": "Proves the idea is legitimate, mechanical and machine-learning-free, and now exists as a deterministic EA with a complete spec. Kills: no real source, discretionary rules, or any ML (Q00); no compile, no smoke trade, or no spec doc (Q01).",
+     "gate_lines": [
+      {
+       "gate": "Q00",
+       "name": "Research Intake",
+       "line": "Checks that a strategy idea has a real, citable source, is mechanical, is testable on our instruments, and uses no machine learning.",
+       "fails_when": "No verifiable source, purely discretionary rules, untestable on our instruments, or relies on machine learning."
+      },
+      {
+       "gate": "Q01",
+       "name": "Build & Spec",
+       "line": "Turns the idea into a deterministic Expert Advisor that compiles and trades, with a complete written specification.",
+       "fails_when": "The EA fails to compile, produces no smoke trade, or ships without a complete specification."
+      }
+     ]
+    },
+    {
+     "key": "p2_baseline_validation",
+     "title": "Baseline & Walk-Forward Validation",
+     "gates": [
+      "Q02",
+      "Q03",
+      "Q04"
+     ],
+     "one_line": "Still Macrophase 1: the signal must be profitable in-sample, stable across settings, and hold on unseen years after commission.",
+     "what_it_proves": "Proves a real, cost-aware edge that generalises out-of-sample, judged per (EA, symbol) pair. Kills: below profit-factor / drawdown / minimum-trade floors (Q02); no stable parameter plateau (Q03); any out-of-sample fold unprofitable after commission, or in-sample data leaked (Q04).",
+     "gate_lines": [
+      {
+       "gate": "Q02",
+       "name": "Baseline Screening",
+       "line": "Screens each market for a profitable, active baseline signal on in-sample history before any deeper testing.",
+       "fails_when": "Below the profit-factor, drawdown, or minimum-trade floor on a symbol — that pair stops here."
+      },
+      {
+       "gate": "Q03",
+       "name": "Parameter Sweep",
+       "line": "Tests whether the result holds across a stable band of settings, not just one tuned value.",
+       "fails_when": "Too few grid settings stay profitable, or no wide-enough stable parameter plateau exists."
+      },
+      {
+       "gate": "Q04",
+       "name": "Walk-Forward + Commission",
+       "line": "Runs anchored walk-forward on unseen out-of-sample years with realistic ECN commission applied.",
+       "fails_when": "Any out-of-sample year loses money once commission is charged, or in-sample data leaked."
+      }
+     ]
+    },
+    {
+     "key": "p3_robustness_statistics",
+     "title": "Robustness & Statistics",
+     "gates": [
+      "Q05",
+      "Q06",
+      "Q07",
+      "Q08"
+     ],
+     "one_line": "Macrophase 1 closes: the edge is stress-tested across full history, execution noise, random seeds and an eleven-part statistical battery.",
+     "what_it_proves": "Proves the edge holds across market regimes and survives statistics, ending in a frozen, target-neutral baseline. Kills: full-history break-even or drawdown breach (Q05); breakdown under seeded trade rejection (Q06); seed instability (Q07); any of eleven Davey sub-gates (Q08).",
+     "gate_lines": [
+      {
+       "gate": "Q05",
+       "name": "Gross Full-History Robustness",
+       "line": "Replays the robust settings across the entire available history to see if the edge survives every regime.",
+       "fails_when": "Full-history profit factor falls below break-even, drawdown exceeds the ceiling, or too few trades."
+      },
+      {
+       "gate": "Q06",
+       "name": "Stress HARSH",
+       "line": "Randomly rejects a share of trades to test whether the edge survives disrupted, imperfect execution.",
+       "fails_when": "Profit factor falls below break-even, drawdown breaches the ceiling, or trades fall under the floor."
+      },
+      {
+       "gate": "Q07",
+       "name": "Multi-Seed",
+       "line": "Repeats the run across five random seeds to separate a real signal from lucky execution ordering.",
+       "fails_when": "Profit-factor spread across seeds is too wide, or any single seed turns unprofitable."
+      },
+      {
+       "gate": "Q08",
+       "name": "Davey Statistical Validation",
+       "line": "Runs eleven statistical and robustness checks to produce a frozen, target-neutral evidence dossier.",
+       "fails_when": "Any one of the eleven sub-checks fails — correlation, deflated Sharpe, overfitting, decay, seasonality, and more."
+      }
+     ]
+    },
+    {
+     "key": "p4_news_requalification",
+     "title": "News & Requalification",
+     "gates": [
+      "Q09",
+      "Q10",
+      "Q11"
+     ],
+     "one_line": "Macrophase 2 (optimisation & requalification) begins: a pre-news reference is fixed, a news/venue config is locked, and the incumbent is re-confirmed.",
+     "what_it_proves": "Proves a sealed configuration choice and a full-history-confirmed incumbent per symbol. Kills: no reproducible baseline (Q09); invalid or ambiguous A/B news evidence (Q10); break-even or drawdown breach with the locked config (Q11).",
+     "gate_lines": [
+      {
+       "gate": "Q09",
+       "name": "Baseline Full Run",
+       "line": "Freezes a full-history, pre-news baseline as the fixed reference for the later sealed comparison.",
+       "fails_when": "No hash-bound baseline can be reused or reproduced; the reference is never inferred from a verdict."
+      },
+      {
+       "gate": "Q10",
+       "name": "News Impact + FTMO Recommendation",
+       "line": "Compares news-handling and venue-compliance settings across two axes, then seals one locked configuration recommendation.",
+       "fails_when": "The A/B evidence is invalid or ambiguous, so no configuration can be locked."
+      },
+      {
+       "gate": "Q11",
+       "name": "Incumbent Full-History Confirmation",
+       "line": "Re-confirms the locked configuration over each symbol's full available history with realistic costs.",
+       "fails_when": "With the locked news configuration, profit factor falls below break-even or drawdown breaches the ceiling."
+      }
+     ]
+    },
+    {
+     "key": "p5_optimisation_branch",
+     "title": "Optimisation Branch",
+     "gates": [
+      "Q12",
+      "Q13",
+      "Q14"
+     ],
+     "one_line": "Macrophase 2 ends (terminal): preregistered filters and re-optimised parameters produce a challenger that must beat baseline and incumbent — or the incumbent is kept.",
+     "what_it_proves": "Proves any change is a genuine improvement, not overfitting; KEEP_INCUMBENT is a valid terminal result. Kills: challenger fails its own fresh Q02-Q11 cascade (Q13); challenger fails to beat baseline and incumbent (Q14). Q12 never kills — zero filters is a valid pass-through.",
+     "gate_lines": [
+      {
+       "gate": "Q12",
+       "name": "Pattern Filter Selection",
+       "line": "Considers a small, preregistered set of pattern filters; selecting none is a valid outcome.",
+       "fails_when": "Nothing kills a strategy here — zero admissible filters is a valid pass-through, not a failure."
+      },
+      {
+       "gate": "Q13",
+       "name": "Parameter Optimization & Freeze",
+       "line": "Re-optimises parameters on development data only, then freezes the result as a new challenger identity.",
+       "fails_when": "The frozen challenger cannot clear its own fresh Q02-Q11 cascade as a new EA."
+      },
+      {
+       "gate": "Q14",
+       "name": "Best-Settings Head-to-Head + Holdout",
+       "line": "Compares the frozen challenger against its baseline and incumbent on sealed out-of-sample and holdout windows.",
+       "fails_when": "Challenger does not beat both baseline and incumbent; it is not promoted, the incumbent stays."
+      }
+     ]
+    },
+    {
+     "key": "p6_portfolio_live",
+     "title": "Portfolio & Live Burn-In",
+     "gates": [
+      "Q15",
+      "Q16",
+      "Q17"
+     ],
+     "one_line": "Macrophase 3 (book build): survivors are judged as a portfolio, cleared operationally, and watched in a live burn-in — entered only via the fail-closed book trigger.",
+     "what_it_proves": "Proves a candidate belongs in a correlation-capped book and behaves live as it did in backtest. Entry is fail-closed: at least 25 qualified candidates plus a signed OWNER book order. Kills: correlation or cap violation (Q15); any failed pre-flight check (Q16); kill-switch trip or divergence in burn-in (Q17).",
+     "gate_lines": [
+      {
+       "gate": "Q15",
+       "name": "Final Portfolio Construction",
+       "line": "Admits survivors as portfolio members under correlation, family and symbol caps; entered only via the book trigger.",
+       "fails_when": "Correlation too high, or family or symbol caps exceeded — the candidate is not admitted."
+      },
+      {
+       "gate": "Q16",
+       "name": "Operational Readiness",
+       "line": "Runs the operational pre-flight — fresh compile, setfile, risk mode, timezone and kill-switch — before any live step.",
+       "fails_when": "Any pre-flight check fails; deployment stays blocked until it is fixed and re-run."
+      },
+      {
+       "gate": "Q17",
+       "name": "Live Burn-In DXZ",
+       "line": "Observes the strategy for at least fourteen days on the live Darwinex Zero account under monitoring and a kill-switch.",
+       "fails_when": "Live behaviour diverges from the backtest or trips the kill-switch during the monitored burn-in."
+      }
+     ]
+    }
+   ],
+   "source_notes": [
+    "Source order used: Vault 'G:/My Drive/QuantMechanica - Company Reference/03 Pipeline/' (Q00-Q17, gate_manifest v4, three macrophases) is canonical for gate names, order and phases; the numbers come only from public-data/*.json; filesystem read-only this phase, no files edited.",
+    "Canonical macrophase model (Vault) = 3 tiers: M1 'strategy proves itself' (Q00-Q08), M2 'optimised / requalified' (Q09-Q14), M3 'judged as a book' (Q15-Q17). The 6 reader-facing phases above nest inside these three, matching OWNER's 'Validierung / Optimierung / Buch Build' mental model without redefining the Vault.",
+    "Every number on the page must bind to a public-data key via data-stat hooks (stats-loader.js reads stats.json). Available stats.json keys (measured 2026-09-02): eas_compiled 4801, strategy_cards 3953, backtests_total 122267, phases 18, q02_baseline_pass 7021, q04_walkforward_pass 336, q08_davey_stats_pass 46, portfolio_candidates 21, archive_total 3378, archive_passed_q10 9, archive_failed 1297, symbols 275, research_sources 118. Captions use [data-stat-date] (auto-filled from stats.generated_at -> 'measured 2026-09-02'). Any figure lacking a key must carry a static 'measured <date>' caption equal to today's value and never be invented.",
+    "Strategy Archive is the heart (OWNER): build the pipeline page to hand off INTO strategy-archive.json (schema v2, gate_contract_version v4, disclosure 'terminal_pass_fail_without_metrics', gates Q00-Q17, 3378 items each = {public_id, gate_coverage: PASS/FAIL per gate}). Show gate journeys, terminal gate, pass/fail per stage, counts and families only. No per-strategy performance metrics, no per-strategy equity curves.",
+    "Reuse the v3 design system in style.css: .section/.section--alt/.section--tight, .panel/.panel--flat/.panel--dark, .cols(-2/-3), .figure-grid/.figure, .chart--frame (light TradingView charts), .pipe-stage/.stage-label/.gate-grid/.gate-card(.__num/.__name/.__desc)/.gate-row/.gate-row__pin, .badge--pass/--fail/--warn/--neutral. Propose only small named additions (e.g. a .phase-band phase header, a .gate-card__fail 'fails when' line, a .gate-card__proves tag) - not a redesign.",
+    "Future channels (copy-trading accounts, MQL5 Marketplace EAs, signal service) may appear only as 'planned, gated by evidence', tied to the pipeline: only strategies that clear Q17 live burn-in would ever be offered. No live claims, no dates, no prices, no promised returns.",
+    "Contact + newsletter (OWNER: 'gabs vorher unten'): restore a bottom section on pipeline.html carrying a contact affordance (footer already exposes mailto:info@quantmechanica.com) plus the disabled/honest newsletter block that currently lives only on index.html ('Newsletter launching soon - no address is stored while the form is closed'). Keep the newsletter disabled.",
+    "Layout note (OWNER: 'Uber Market Structure ist der Abstand zu gross'): on index.html the 'Market structure' price-action section sits under an oversized vertical gap; tighten with existing spacing tokens (e.g. section--tight / reduce the preceding stack margin) as a small CSS fix, not a redesign.",
+    "Links note (OWNER: 'kein Link funktioniert?'): internal hrefs are extensionless (/pipeline, /strategies, /performance ...) while the deployed files are *.html. If the host does not rewrite clean URLs, every internal link 404s - the likely cause of 'no link works'. Flag for the deploy step; read-only here.",
+    "Tone: English, Apple-language (short, precise, no hype, no returns); keep German only where the site already is German (impressum, legal). Every gate line above is <=25 words and every 'fails when' <=20 words, per the brief."
+   ],
+   "discrepancies_with_site": [
+    "pipeline.html Stage 1 intro claims 'Nine automated evidence gates' for Q00-Q08. Under v4 Q00 Research Intake is OWNER-owned and Q01 Build & Spec is a build/smoke gate; only Q02-Q08 (seven) are automated evidence gates. Vault Pipeline Overview: owners Q00=OWNER, Q01=Codex; rule 'Q02 -> Q14: pipeline-op automated'.",
+    "pipeline.html funnel 4th surface is labelled 'Q10 confirmed', carrying stale v3 semantics ('Q10 = full-history confirmation'). In v4 Q10 = 'News Impact + FTMO Recommendation' (not a confirmation gate); the per-(EA,symbol) full-history confirmation is Q11 'Incumbent Full-History Confirmation'. Relabel to the correct v4 gate.",
+    "pipeline.html funnel 4th number is internally inconsistent: it renders data-stat portfolio_candidates = 21, but stats.json archive_passed_q10 = 9 and the archive shows exactly 9 pairs reaching Q10/Q11 PASS. '21 Q10 confirmed' mixes two different measures under one label; pick the exact v4 gate and a matching key.",
+    "pipeline.html funnel has an unexplained unit shift: the entry lead uses eas_compiled (4,801 EAs) while every downstream surface counts distinct (EA,symbol) pairs (q02_baseline_pass 7,021 > 4,801). The funnel appears to widen; state entry as pairs screened at Q02, or make the EA->pair unit change explicit.",
+    "index.html hero-equity caption reads 'combined backtest of the Q10-passed sleeve set' - stale v3 language. Under v4 the confirmed set is Q11 (Incumbent Full-History Confirmation); reword to the correct gate or to neutral 'confirmed', keeping the existing 'illustrative / not live / RISK_FIXED-normalised' framing.",
+    "Static fallback counts are stale vs stats.json (which the loader overrides at runtime, so a no-JS view lags): eas_compiled hardcoded 4,799 vs 4,801; backtests_total 122,248 vs 122,267; q02_baseline_pass 7,020 vs 7,021. Refresh the static defaults to the measured 2026-09-02 values.",
+    "pipeline.html three-stage grouping (Stage 1 Q00-Q08 / Stage 2 Q09-Q14 / Stage 3 Q15-Q17) correctly mirrors the Vault's three macrophases but is too coarse for OWNER's ask: it gives no per-gate 'what it proves / fails when' and does not split Macrophase 2 into News & Requalification (Q09-Q11) vs Optimisation (Q12-Q14). Refinement, not a factual error.",
+    "Q14 canonical Vault name is 'Best-Settings Head-to-Head + Holdout'; pipeline.html drops '+ Holdout'. Minor naming gap - restore the full canonical name.",
+    "pipeline.html has no contact affordance and no newsletter block at the page bottom, though OWNER states both were present before. index.html has the disabled newsletter but no explicit contact form. Restore both on the pipeline page (newsletter kept disabled/honest)."
+   ]
+  },
+  "2": {
+   "site_thesis": "The site exists to make QuantMechanica's build-in-public claim credible enough that strangers will later trust the copy-trading accounts, MQL5 Marketplace EAs and DXZ fund it intends to advertise. The trust engine is the Strategy Archive — a public, no-cherry-picking record of every strategy and how far it got — sitting on an evidence-first, three-phase pipeline (Validation Q00-Q08 -> Optimization/requalification Q09-Q14 -> Book build & live Q15-Q17). The site states that thesis in the hero/transparency copy but under-delivers on it four ways: (1) the archive is presented as a utilitarian filterable table, not the centrepiece OWNER calls 'das Herzstück'; (2) the pipeline lists 18 gate names but never explains the three phases, the frozen-baseline / requalification / book-trigger logic, or why almost nothing reaches live; (3) the build-in-public business story (why nothing is live yet, DXZ fund, FTMO cash engine, MQL5 productisation, copy-trading) is absent, so the future channels cannot be 'plausibly presented'; (4) most damaging on a site whose entire value proposition is honesty, several surfaces overclaim a live/funded track record that does not yet exist (performance page 'live independently-verified deployed portfolio' over a demo Myfxbook, two blog posts narrating a funded account and a month of live trading, per-strategy Profit Factors that contradict the archive's own no-metrics disclosure). Corrective thesis: re-centre and dignify the archive; phase-ify and explain the pipeline; add an honest 'What we're building' roadmap that presents every future channel as planned-and-gated-by-evidence; strip or reframe every unsupported number and fabricated live result to match the actual state (live book in burn-in, Myfxbook verification pending, 21 of 25 candidates toward the first book, no funded account yet); restore the contact + newsletter section at the foot of the homepage; and fix the extensionless-link routing so the site is navigable at all. Evidence-over-claims is not just a Hard Rule here, it is the product.",
+   "pages": [
+    {
+     "file": "C:/QM/deploy/qm-ops-refresh/Website/index.html",
+     "current_message": "Hero: 'The Quantitative Edge' + 18-gate pipeline on real data + 'publish every result, winners and failures.' Then equity chart, 4 KPI figures, 'How it works' (Mechanize/Validate/Publish), an 18-gate teaser row, a 'Market structure' panel of 3 illustrative synthetic charts, a 'Radical transparency' archive push, and a disabled newsletter CTA. Honest and calm, but the archive is one CTA among many and there is no roadmap / no contact.",
+     "problems": [
+      "Spacing: the 'Market structure' section (line 170) is the only bare .section (padding-block 96px) in the page; it follows a .section--tight (64px bottom), so the gap above it is 64+96=160px while every neighbouring transition is 128px or symmetric — this is exactly the 'Abstand zu gross ueber Market Structure' OWNER flagged.",
+      "The 'Market structure' section occupies a prime full-bleed slot but carries the weakest payload on the page: three explicitly 'Illustrative (synthetic, calibrated)' charts that assert nothing about QuantMechanica. It out-weights the archive, which OWNER calls the heart of the site.",
+      "The archive — the declared centrepiece — is under-positioned: it appears only as a CTA in the hero and a single 'Radical transparency' block. Nothing on the homepage conveys that a public, honest, failures-included archive of 3,378 evaluations is itself the significant thing being given to the world.",
+      "No 'what we're building / how this becomes a business' section. OWNER wants build-in-public precisely so copy-trading, MQL5 EAs and the fund can later be advertised plausibly; the homepage never mentions the roadmap or the honest current state (nothing live yet, book being assembled).",
+      "The dedicated bottom contact option is gone. Pre-refresh the foot of the page had newsletter + a 'Got a strategy idea? Contact research desk' mailto; only the disabled newsletter survived. Footer 'Contact' column remains but the intentional closing contact invitation was dropped.",
+      "Nav 'Shop' links to the generic https://www.mql5.com/en/market — implying a live store when MQL5 productisation is only planned and no QM EA is listed (violates 'future channels only as planned, gated by evidence').",
+      "Equity caption 'Illustrative combined backtest of the Q10-passed sleeve set' describes 24 sleeves as 'Q10-passed' while archive_passed_q10 = 9; the cohort label overstates.",
+      "Static number fallbacks are slightly stale vs the live snapshot (q02 fallback context elsewhere; here eas_compiled hard-coded 4,799 while stats.json = 4,801) — acceptable because data-stat overrides, but fallbacks should equal today's public-data values."
+     ],
+     "proposed_changes": [
+      {
+       "section": "Price-action widgets (Market structure) — <section class=\"section\"> line 170",
+       "action": "restyle",
+       "spec": "Change the class to 'section section--tight' so top padding drops from --s-12 (96px) to --s-8 (64px), matching the rhythm of the surrounding tight sections and closing the 160px gap OWNER flagged to 128px. No new CSS rule needed (section--tight exists). If further tightening is wanted, add a small named rule .section--tight-top{padding-block-start:var(--s-6)} and apply only here — do not restyle the shared .section token."
+      },
+      {
+       "section": "Price-action widgets (Market structure) — content",
+       "action": "rewrite",
+       "spec": "Demote and re-caption so illustrative content stops out-ranking the archive. Keep the three charts but reframe the eyebrow/heading to tie them to the archive's edge families rather than standing alone. Draft: eyebrow 'The mechanics we model' -> heading 'The kinds of structure our strategies exploit.' Sub-line (new .panel__cap under head): 'Session handoffs, calendar-settlement flows and regime shifts — the repeatable structure behind the families in the archive. Charts are illustrative, calibrated to real market statistics, not live.' Consider moving this section BELOW the transparency/archive block so the archive precedes the illustrative material."
+      },
+      {
+       "section": "Radical transparency — <section class=\"section section--alt\"> line 203",
+       "action": "rewrite",
+       "spec": "Elevate to an archive centrepiece. Keep the two-column layout but sharpen the copy to position the archive as a public good. Draft heading: 'The archive is the product.' Lead: 'Every strategy we build enters a public record — its terminal gate and a pass or fail at every stage — the survivors and the far larger number that fail. Almost no one publishes their failures. We publish all of them, because the failures are the proof the filter is real.' Add a third figure or a one-line stat strip using supported keys: archive_total (3,378) 'evaluations in the public record', archive_failed 'retired on a failed gate', archive_passed_q10 'cleared full-history confirmation'. Primary CTA stays 'Browse the strategy archive'. Ensure this block sits visually heavier than Market structure."
+      },
+      {
+       "section": "NEW section — 'What we're building' roadmap (insert after Radical transparency, before newsletter)",
+       "action": "add",
+       "spec": "Add an honest build-in-public roadmap panel so future channels can be presented as planned-and-gated. Use .panel with a .cols cols-2 or a small figure/stage grid. Eyebrow 'Build in public'. Heading 'What we're building toward.' Intro: 'Nothing is monetised before the pipeline produces the evidence for it. Here is the honest state of each path.' Then 4 status rows (label + one line + a muted 'Planned — gated by evidence' / 'In burn-in' badge, NO dates, NO prices, NO returns): (1) DarwinexZero allocation — 'A diversified portfolio on Darwinex Zero seeking third-party capital and performance fees. Status: live book in monitored burn-in.' (2) Prop-firm challenges (FTMO-style) — 'Passing funded-account challenges as a faster cash engine. Status: planned — no challenge started until the book meets its evidence bar.' (3) MQL5 Marketplace EAs — 'Selected survivors offered as products once they clear the full pipeline. Status: planned — gated by evidence.' (4) Copy-trading / signals — 'Copy accounts once a verified live portfolio exists. Status: planned — gated by evidence.' This directly serves OWNER's goal of later advertising these plausibly. Reuse .badge--neutral/.badge--warn; no new colours."
+      },
+      {
+       "section": "Newsletter CTA — <section class=\"section section--tight\"> line 240",
+       "action": "add",
+       "spec": "Restore the contact option alongside the newsletter so the foot of the page again offers both (as it did pre-refresh). Keep the disabled newsletter form and its honest copy; below it add a hairline divider and a contact line. Draft: '<hr class=\"divider\"> <p class=\"caption\">Got a strategy idea, or want to talk allocation? <a href=\"mailto:research@quantmechanica.com\">Contact the research desk</a>.</p>' (use info@quantmechanica.com if research@ is not a live inbox — do not invent an address). Keep the section a single .panel so newsletter + contact read as one closing block."
+      },
+      {
+       "section": "Nav — 'Shop' link (all pages)",
+       "action": "rewrite",
+       "spec": "Stop implying a live store. Options, in order of preference: (a) remove 'Shop' from nav until at least one QM EA is listed; (b) relabel to 'Shop · soon' and point it at the new roadmap section (/#building) instead of mql5.com; (c) keep it but only once a real QM MQL5 seller page exists. Whichever: no nav element may assert a purchasable product that does not exist. Apply identically across all page navs and mobile navs."
+      },
+      {
+       "section": "Evidence panel equity caption — line ~98",
+       "action": "rewrite",
+       "spec": "Align the cohort description to something supportable. Draft: 'Illustrative combined backtest of the current portfolio sleeve set, RISK_FIXED-normalised — not live · measured <span data-stat-date>2026-09-02</span>.' Drop 'Q10-passed' unless the exact 24-sleeve cohort is defensibly all-Q10-passed; if OWNER confirms the invvol_stage1 cohort definition, cite that instead."
+      },
+      {
+       "section": "Static number fallbacks (eas_compiled etc.)",
+       "action": "rewrite",
+       "spec": "Set every hard-coded fallback equal to today's public-data value so the pre-JS paint and any fetch-failure state are truthful: eas_compiled 4,799 -> 4,801, and reconcile the OG meta 'data-stat-content' template value. Keep the data-stat hooks; only the fallback text changes."
+      }
+     ]
+    },
+    {
+     "file": "C:/QM/deploy/qm-ops-refresh/Website/pipeline.html",
+     "current_message": "Hero 'Eighteen gates between an idea and live capital.' Then an elimination funnel of 4 figures (Q02 7,020 -> Q04 336 -> Q08 46 -> 'Q10 confirmed' 21) and 18 gate cards in three stage groups (Proof of edge Q00-Q08, Optimisation & requalification Q09-Q14, Portfolio & live readiness Q15-Q17). Gate names and grouping are accurate against the canonical v4 Vault pages.",
+     "problems": [
+      "OWNER: 'The Pipeline braucht mehr Erklaerung zu den Gates (zB Validierung, Optimierung, Buch Build als Phasen?).' The page has the three phases but the intros are one sentence each and the phase identity (Validation / Optimization / Book build) is not named the way OWNER frames it, nor are the phase-boundary concepts explained: what a frozen baseline is, that Q14 is terminal and KEEP_INCUMBENT is a valid outcome, and that Phase 3 opens only via the fail-closed 'book trigger'.",
+      "Funnel mislabel / evidence error: the 4th figure uses data-stat 'portfolio_candidates' (21) but is captioned 'Q10 confirmed'. Under v4, Q10 is 'News Impact + FTMO Recommendation', not a confirmation gate, and the archive shows only 9 items with Q10 PASS (archive_passed_q10). Labelling 21 as 'Q10 confirmed' is doubly wrong.",
+      "The funnel never explains the unit shift: it opens with '4,799 compiled strategies' (EAs) then reports 7,020/336/46/21 as 'distinct pairs' (EA x symbol). Honest but confusing without a one-line note.",
+      "'Nine automated evidence gates' (Stage 1 intro) is inaccurate: Q00 (Research Intake, OWNER) and Q01 (Build & Spec, Codex) are not automated evidence gates — the automated evidence gates are Q02-Q08.",
+      "Static funnel fallback '7,020' does not equal stats.json q02_baseline_pass (7,021).",
+      "Nothing explains WHY almost nothing reaches live — the single strongest build-in-public point. The book trigger (a critical mass of qualified candidates plus an OWNER book order) is the honest reason the live book is still small; it is absent.",
+      "Gate names 'FTMO Recommendation' (Q10) and 'Live Burn-In DXZ' (Q17) expose the venue relationships. These are canonical Vault names and OWNER wants DXZ/FTMO advertised, so keep them — but consider a plain-language gloss so a lay visitor understands them."
+     ],
+     "proposed_changes": [
+      {
+       "section": "The 18 gates in three stage groups — stage labels",
+       "action": "rewrite",
+       "spec": "Rename the three stage labels to name the phases the way OWNER frames them, keeping canonical gate names underneath. Stage 1 label -> 'Phase 1 · Validation — the strategy proves itself (Q00-Q08)'. Stage 2 -> 'Phase 2 · Optimisation & requalification (Q09-Q14)'. Stage 3 -> 'Phase 3 · Book build & live readiness (Q15-Q17)'. This mirrors the canonical Makrophasen 1/2/3 and OWNER's 'Validierung, Optimierung, Buch Build'."
+      },
+      {
+       "section": "The 18 gates — phase intros (pipe-stage__intro)",
+       "action": "rewrite",
+       "spec": "Expand each one-line intro into 2-3 sentences that explain the phase's purpose AND its terminal concept. Phase 1: 'Seven automated evidence gates behind two intake gates. A strategy either produces a repeatable, cost-robust, statistically defensible signal on real tick data, or it is retired. Phase 1 ends in a frozen, target-neutral baseline — the reference everything after is measured against.' Phase 2: 'The frozen baseline is confirmed under live-like conditions, news-handling modes are compared, and any optimisation must beat the incumbent in a sealed, out-of-sample head-to-head. Phase 2 is terminal at Q14: keeping the existing configuration is a valid, common outcome — we do not change a strategy just to look busy.' Phase 3: 'Survivors are judged as members of a portfolio, not as individuals — correlation, tail behaviour and marginal contribution — then pass an operational pre-flight and a monitored live burn-in on the live account. Phase 3 opens only through a deliberate gate (see below), which is why very few strategies are ever live at once.'"
+      },
+      {
+       "section": "NEW callout — 'Why Phase 3 rarely opens' / the book trigger (after Stage 3)",
+       "action": "add",
+       "spec": "Add a short .panel--flat callout that turns the low live count into the honest headline. Draft: eyebrow 'By design' -> 'Most strategies never reach live — and that is the point.' Body: 'Phase 3 does not open one strategy at a time. It opens only when a critical mass of qualified survivors exists AND the owner authorises building a book. Until then, confirmed strategies wait. Today the pipeline has <span class=\"num\" data-stat=\"portfolio_candidates\">21</span> qualified candidates in the pool.' (If OWNER approves surfacing the exact threshold, append 'toward a book minimum of 25.' — the 25 figure is an internal criterion; present it only with OWNER sign-off, otherwise keep it qualitative.) No live claim, no date promise."
+      },
+      {
+       "section": "Elimination funnel — 4th figure",
+       "action": "rewrite",
+       "spec": "Fix the mislabel. Keep data-stat 'portfolio_candidates' (21) but change the caption from 'Q10 confirmed' to 'Portfolio candidates' with sub-caption 'distinct pairs confirmed on full history, measured <date>'. Alternatively, if the intended meaning was truly Q10, switch the hook to data-stat 'archive_passed_q10' and keep 'Q10 news-mode locked' as the label — but portfolio_candidates=21 is the better funnel endpoint because it is what feeds the book trigger. Do not present 21 under a Q10 label."
+      },
+      {
+       "section": "Elimination funnel — intro copy",
+       "action": "rewrite",
+       "spec": "Add one clarifying line about the unit. Draft: 'Around <span data-stat=\"eas_compiled\">4,801</span> compiled strategies enter. Because one strategy is tested on many instruments, the field is measured in distinct strategy-symbol pairs from here on. Four evidence gates narrow it from thousands of pairs to the handful confirmed on full history.' Update the static fallback 4,799 -> 4,801."
+      },
+      {
+       "section": "Stage 1 intro — 'Nine automated evidence gates'",
+       "action": "rewrite",
+       "spec": "Correct to: 'Two intake gates and seven automated evidence gates. Research intake and build/spec admit a candidate; Q02-Q08 then decide, on real broker tick data, whether it produces a repeatable, cost-robust, statistically defensible signal — or is retired.'"
+      },
+      {
+       "section": "Gate cards — Q10 and Q17 plain-language gloss",
+       "action": "rewrite",
+       "spec": "Keep the canonical names but make the venue terms legible. Q10 desc append: '... and issues the venue recommendation for the two trading programs we target (Darwinex Zero and FTMO-style prop challenges).' Q17 desc append: '... on the live Darwinex Zero account, under monitoring and a kill-switch, before any scaling.' This makes DXZ/FTMO advertisable per OWNER's intent without exposing anything internal."
+      }
+     ]
+    },
+    {
+     "file": "C:/QM/deploy/qm-ops-refresh/Website/strategies.html",
+     "current_message": "Hero 'Every strategy we test, including the failures.' 4 KPI figures (3,378 evaluated / 9 passed Q10 / 1,297 retired / 18 gates), then a filterable, paginated table of every card's gate journey (public_id, Q00->Q17 coverage strip, terminal gate, pass/fail verdict) with expandable per-row gate-journey detail. Disclosure is correctly terminal_pass_fail_without_metrics.",
+     "problems": [
+      "This is 'das eigentliche Herzstueck' per OWNER, but it reads as a utilitarian data table with a thin hero. Nothing frames why this archive is significant, how to read a gate journey, or why it deliberately carries no per-strategy metrics (an honesty choice, not a limitation). A first-time visitor gets a spreadsheet, not the heart of the company.",
+      "The stage-filter chips use a band mapping that contradicts both the pipeline page and the canonical phases: JS BANDS are intake Q00-Q03, baseline Q04-Q08, robustness Q09-Q10, portfolio Q11-Q13, optimization Q14-Q17. Canonical macrophases are Q00-Q08 / Q09-Q14 / Q15-Q17. So 'Portfolio' here means Q11-Q13 (actually Phase-2 confirmation/optimization gates) and 'Optimization' means Q14-Q17 (which includes the live/book gates). The vocabulary is inconsistent across the site.",
+      "'Passed Q10 full history' / chip 'Passed Q10+': under v4 Q10 is News Impact, and full-history confirmation is Q11. The survivor label attaches 'full history' to the wrong gate. archive_passed_q10=9 happens to equal Q11 PASS=9, but the label misdescribes the gate's meaning.",
+      "KPI 'Retired on a failed gate' = archive_failed = 1,297 (stats.json), but the served archive contains 1,298 items with at least one FAIL. Off-by-one between the headline stat and the data the page itself renders.",
+      "No distribution view. The single most compelling, fully-disclosure-compliant artefact the archive can show — a count of how many strategies died at each gate (Q02 611, Q04 440, Q08 112, Q05 68, Q03 37, ...) — is not surfaced. It is counts-only, no per-strategy metrics, and it makes 'the filter is real' visceral.",
+      "The template renders optional 'Mechanism' and 'Family' fields, but the archive JSON carries neither (only public_id + gate_coverage). Harmless, but it means the promised 'families if present' is currently always absent — worth stating plainly rather than implying richer data exists."
+     ],
+     "proposed_changes": [
+      {
+       "section": "Hero",
+       "action": "rewrite",
+       "spec": "Reposition the archive as a public contribution, not a table. Keep the headline, strengthen the lead. Draft lead: 'This is the complete, public record of every mechanical strategy QuantMechanica has put through its gate pipeline — <span data-stat=\"archive_total\">3,378</span> evaluations, the handful that survive full-history confirmation and the far larger number that do not. We show how far each got and where it died. We do not cherry-pick, and we do not hide the failures — publishing them is the point.' Add a secondary line positioning it as the heart: 'Most shops show you their winners. This is the whole tape.'"
+      },
+      {
+       "section": "NEW explainer panel — 'How to read this archive' (between KPI section and the table)",
+       "action": "add",
+       "spec": "Add a .panel--flat that teaches the visitor to read a gate journey and states the disclosure choice honestly. Three short columns (.cols cols-3): (1) 'A journey, gate by gate' — 'Each row is one strategy-symbol candidate. The strip shows Q00->Q17: filled = passed, hollow = failed, faint = never reached. A single failed gate retires the candidate.' (2) 'Terminal gate = where it stopped' — 'The terminal gate is the last gate a candidate reached. Most stop early — 611 at baseline screening (Q02) alone.' (3) 'No per-strategy numbers — on purpose' — 'We publish pass/fail and how far each got, never per-strategy profit factors or equity curves. Marketing hides behind selective metrics; we would rather show the filter than a flattering number.' The third column also pre-empts the blog contradiction (see blog findings)."
+      },
+      {
+       "section": "NEW figure — 'Where strategies die' attrition-by-gate (after the explainer, before the table)",
+       "action": "add",
+       "spec": "Add a counts-only bar/figure of terminal FAIL counts per gate, computed from the archive at export time (no new per-strategy data, fully within terminal_pass_fail disclosure). Values today: Q02 611, Q04 440, Q08 112, Q05 68, Q03 37, Q07 24, Q06 4, Q12 1, Q09 1. Render with the existing chart module or a simple horizontal .figure-bar list. Caption: 'Count of strategies retired at each gate · terminal fails only, no metrics · measured <date>.' Source these counts from a new additive key in stats.json or compute client-side from strategy-archive.json (the page already loads it). Add a small named CSS rule .attrition-bar{...} rather than restyling shared components."
+      },
+      {
+       "section": "Stage filter chips + JS BANDS mapping",
+       "action": "rewrite",
+       "spec": "Re-map the stage bands to the canonical three phases so the vocabulary matches the pipeline page and Vault. Replace the 5 ad-hoc bands with 3 phase chips: 'Validation Q00-Q08', 'Optimization Q09-Q14', 'Book build Q15-Q17' (BANDS: validation lo0 hi8, optimization lo9 hi14, bookbuild lo15 hi17). Keep the top-level All / Passed / Advancing / Failed chips. If finer granularity is wanted, keep sub-bands but rename to match phase membership exactly (no 'Portfolio = Q11-Q13'). This is a JS + label change only."
+      },
+      {
+       "section": "KPI figures + survivor label",
+       "action": "rewrite",
+       "spec": "Relabel 'Passed Q10 full history' to reflect the gate's actual meaning under v4. Preferred: 'Cleared full-history confirmation' keyed to archive_passed_q10 (9) with sub-caption 'through Q10-Q11'. Rename chip 'Passed Q10+' -> 'Survivors' or 'Confirmed'. Keep the number (9) and its data-stat hook; only the wording changes so the site stops implying Q10 alone is the confirmation gate."
+      },
+      {
+       "section": "Data reconciliation note (exporter, not HTML)",
+       "action": "rewrite",
+       "spec": "Flag to the export/publisher path that stats.json archive_failed (1,297) must equal the archive's own count of items with >=1 FAIL (1,298 today). The page should never show a headline count that disagrees with the rows it renders. Either fix the exporter or compute the KPI client-side from the loaded archive so they cannot diverge."
+      },
+      {
+       "section": "Archive note (bottom caption)",
+       "action": "rewrite",
+       "spec": "State the disclosure choice plainly and stop implying richer per-item fields exist. Draft: 'Every result is listed. Each candidate advances only by passing each gate; a single failed gate retires it. This archive shows how far each strategy got and whether it passed or failed there. It deliberately carries no per-strategy performance figures and no equity curves — that is a disclosure choice, not a data gap.'"
+      }
+     ]
+    },
+    {
+     "file": "C:/QM/deploy/qm-ops-refresh/Website/performance.html",
+     "current_message": "Hero 'Live, and independently verified.' 'Every deployed strategy is tracked in real time... published by Myfxbook, an independent third-party audit, not by us.' A dark panel with a Myfxbook widget (portfolio 'darwineexzero-demo'), three figures (18 gates / 10-15 EAs in the live sleeve / <2% reaches live), and governance prose about T_Live isolation and OWNER-only AutoTrading.",
+     "problems": [
+      "Overclaims a live, verified, deployed portfolio that does not yet exist. Business Model: the live book is in burn-in/build-up, 'noch keine Challenge gekauft', Myfxbook integration 'zu verifizieren'. The hero asserts 'Live, and independently verified' and 'Every deployed strategy is tracked in real time' — on a build-in-public site this is the most credibility-damaging overclaim on the site.",
+      "'10-15 expert advisors in the live portfolio sleeve — measured 2026-09-02' is false as stated: 10-15 is the Q15 TARGET portfolio size, not a measured live count, and the auto-filled 'measured' date makes a target look like an observation. There is no live 10-15 EA sleeve yet (21 candidates < the book minimum; no book built).",
+      "'<2% of everything we build reaches live deployment — measured 2026-09-02': nothing has reached live deployment (burn-in only), so 'reaches live deployment' projects a state that is not established. '<2% clear the full validation pipeline' is defensible; 'reaches live deployment' is not.",
+      "The embedded Myfxbook portfolio is slugged 'darwineexzero-demo' / titled 'DarwineexZero Demo' — a demo/burn-in track presented as 'live independently-verified deployed portfolio'. Either it is a demo (then 'live' is wrong) or a real burn-in account (then say so and state verification status).",
+      "Governance prose is accurate and strong (T_Live isolation, OWNER-only AutoTrading) — keep it; it is the honest core the rest of the page should match."
+     ],
+     "proposed_changes": [
+      {
+       "section": "Hero",
+       "action": "rewrite",
+       "spec": "Reframe to the true state: an early, transparently-tracked live book in burn-in, verification in progress. Draft eyebrow 'Live burn-in' -> heading 'Going live, in the open.' Lead: 'Our first live book is in a monitored burn-in on Darwinex Zero. We are building an independently verifiable track record on Myfxbook — it is early, and we will show it as it grows rather than wait for a flattering start.' CTA label 'Open the live dashboard' (only if the linked account is genuinely the burn-in account; if it is a demo, label it 'Open the burn-in dashboard (demo/early)')."
+      },
+      {
+       "section": "Number surfaces",
+       "action": "rewrite",
+       "spec": "Replace the two overclaiming figures with supportable ones. Keep '18 validation gates every strategy clears before it can go live'. Replace '10-15 EAs in the live sleeve (measured)' with a TARGET framed as a target: figure '10-15' caption 'target portfolio size once the first book is built (not yet live)' — remove the 'measured <date>' date on it, since it is a plan not a measurement. Replace '<2% reaches live deployment (measured)' with '<2%' caption 'of everything we build clears the full validation pipeline' keyed where possible to archive stats; keep the measured date because that IS derivable from the archive. Optionally add a true figure: portfolio_candidates (21) 'qualified candidates in the pool today'."
+      },
+      {
+       "section": "Myfxbook panel caption",
+       "action": "rewrite",
+       "spec": "State exactly what the widget is. If demo/burn-in: 'Live burn-in on Darwinex Zero, tracked on Myfxbook · early track record, independent verification in progress · updated live.' Do not call it a verified deployed portfolio until it is one. If the account is a demo, say 'demo/burn-in account' explicitly — a build-in-public audience rewards the honesty and punishes the discovery."
+      },
+      {
+       "section": "Governance prose",
+       "action": "add",
+       "spec": "Keep verbatim, and add one sentence connecting it to the honest state: 'The live book is deliberately small while it burns in — new strategies join only through the book-build gate, and only the owner can enable live trading.' This turns the isolation story into the reason performance is modest-but-real rather than a disclaimer bolted on."
+      }
+     ]
+    },
+    {
+     "file": "C:/QM/deploy/qm-ops-refresh/Website/about.html",
+     "current_message": "Hero 'One engineer. A multi-agent quant engine.' Prose: engineering-driven quant firm in Europe, pre-registered hypotheses, real tick data, failures logged; scale via a deterministic multi-agent model. An agent-roster table (Owner / Codex / Antigravity / Claude) and a 'How the factory runs' section. Accurate and well-toned.",
+     "problems": [
+      "No business / monetization story. OWNER wants build-in-public so the fund, FTMO, MQL5 and copy-trading can be advertised plausibly. About is the natural home for an honest 'how this becomes a business' narrative and it is absent.",
+      "Agent-roster accuracy drift vs FAQ: About calls Claude 'Governance & ops AI'; FAQ calls Claude 'CTO-DevOps'. Pick one public role name and use it on both pages.",
+      "Antigravity 'runs video-transcript analysis' overstates the current capability: on-screen video analysis sits on the human OWNER lane (this agy build has no video tool); only caption/transcript extraction is available to the AI lane. Soften to 'mines papers, books and video transcripts' or drop 'video' to avoid implying a capability the seat does not have.",
+      "'over 122,248 work items' is keyed to backtests_total; fine, but 'work items' and 'backtests' are used interchangeably across the site — standardise the noun."
+     ],
+     "proposed_changes": [
+      {
+       "section": "NEW section — 'How this becomes a business' (after 'How the factory runs')",
+       "action": "add",
+       "spec": "Add an honest monetization narrative mirroring the homepage roadmap but in prose. Draft heading 'How this becomes a business.' Body: 'Two engines, one factory. A diversified portfolio on Darwinex Zero seeks third-party capital and performance fees — the slow, scalable engine. Passing funded-account prop challenges is the faster cash engine. Selected survivors may later be offered as products on the MQL5 Marketplace, and copy-trading can follow a verified live portfolio. No channel is switched on before the pipeline produces the evidence for it — evidence over claims applies to how we make money too.' No dates, no prices, no returns. Link to the homepage roadmap / pipeline."
+      },
+      {
+       "section": "Agent roster — Claude row",
+       "action": "rewrite",
+       "spec": "Standardise Claude's public role with FAQ. Use one label on both pages, e.g. 'Orchestration & governance AI — runs the backtest factory, enforces the Hard Rules, reviews evidence, and paces system spend.' Remove the FAQ's 'CTO-DevOps' or adopt it in both — but do not run two different titles."
+      },
+      {
+       "section": "Agent roster — Antigravity row",
+       "action": "rewrite",
+       "spec": "Soften the video claim. Draft: 'Broad market research: mines quant books, papers and video transcripts, and mechanizes trading hypotheses into Strategy Cards.' (transcripts, not video analysis). If unsure, drop 'video' entirely."
+      }
+     ]
+    },
+    {
+     "file": "C:/QM/deploy/qm-ops-refresh/Website/faq.html",
+     "current_message": "Accordion of 6 questions: what the 18-gate pipeline is (3 stages), how many survive (<2%, '~38 strategies'), prop-firm compatibility (DXZ + FTMO 2-Step), what HARSH stress Q06 is, how the multi-agent system works, why MT5/MQL5. Mostly good, but two answers contain material inaccuracies.",
+     "problems": [
+      "Q06 answer is factually wrong vs canonical: it says Q06 applies '5-pip adverse slippage on entry and exit, 3x spread widening, and punitive commissions ($20.00/lot round-trip)'. The Vault Q06 page states the ONLY implemented stress dimension is seeded 10% trade-rejection; cost multipliers 'waren nie implementiert'. The pipeline page's own Q06 card correctly describes disrupted fills. So FAQ contradicts both the canonical gate and the sibling page.",
+      "The '$20.00/lot round-trip' is an invented commission value — Hard Rule: no invented commission/swap values. (The real cost model is $7/lot ECN at Q04.)",
+      "'~38 strategies have met every rigorous statistical, cost, and stress hurdle' — 38 is unsupported: no public-data key yields 38; it conflicts with archive_passed_q10 (9), q08_davey_stats_pass (46), portfolio_candidates (21).",
+      "'Can these Expert Advisors be used on Prop Firms? Yes.' overclaims present capability — nothing is funded/live yet. Soften to 'designed and tested for'.",
+      "Claude 'CTO-DevOps managing the dedicated-terminal factory cluster' — 'dedicated-terminal ... cluster' hints at terminal counts/infra; soften. Also inconsistent with About's role label.",
+      "Antigravity 'video transcript analysis' — same overstatement as About."
+     ],
+     "proposed_changes": [
+      {
+       "section": "Accordion — 'What is HARSH Stress Testing (Q06)?'",
+       "action": "rewrite",
+       "spec": "Replace with the canonical mechanism. Draft: 'Gate Q06 stress-tests execution reliability by seeding a share of trades to be rejected — simulating an environment where a meaningful fraction of intended fills simply do not happen. Strategies whose edge depends on every fill landing, or on fragile scalping, are eliminated here. Earlier gates already apply realistic ECN commission (Q04); Q06 isolates fill-disruption robustness.' Remove the 5-pip slippage / 3x spread / $20-lot figures entirely."
+      },
+      {
+       "section": "Accordion — 'How many strategies survive the pipeline?'",
+       "action": "rewrite",
+       "spec": "Replace the unsupported ~38 with supported numbers and hooks. Draft: 'Less than 2%. Out of <span data-stat=\"eas_compiled\">4,801</span> strategies built and over <span data-stat=\"backtests_total\">122,267</span> backtests, only <span data-stat=\"portfolio_candidates\">21</span> strategy-symbol candidates currently sit in the qualified pool, and <span data-stat=\"archive_passed_q10\">9</span> have cleared full-history confirmation. We publish every failure so anyone can examine why strategies fail.' Every number now traces to a public-data key."
+      },
+      {
+       "section": "Accordion — 'Can these Expert Advisors be used on Prop Firms?'",
+       "action": "rewrite",
+       "spec": "Soften the leading 'Yes.' to an honest 'They are built for it.' Draft opening: 'They are designed and tested for it. Venue constraints are checked before a strategy reaches the portfolio stage: Q10 compares news-handling modes and issues the venue recommendation, and Q15-Q17 apply target-specific rules for capital-allocation programs (Darwinex Zero) and prop challenges (FTMO-style 2-step) — daily loss limits, max-loss boundaries and news constraints. No account is funded until a strategy clears the full pipeline.' Keeps DXZ/FTMO advertisable without claiming a live funded record."
+      },
+      {
+       "section": "Accordion — 'How does the Multi-Agent AI system work?'",
+       "action": "rewrite",
+       "spec": "Align role labels with About and soften infra/video specifics. Draft: 'A deterministic capability router assigns each task to the seat best suited to it. Codex handles MQL5 code and pipeline engineering; Antigravity researches literature and video transcripts and mechanizes hypotheses into Strategy Cards; Claude orchestrates the backtest factory, enforces the Hard Rules and reviews evidence. The human founder holds sole authority over capital deployment and the live AutoTrading switch.' Drop 'CTO-DevOps' and 'dedicated-terminal factory cluster'."
+      }
+     ]
+    },
+    {
+     "file": "C:/QM/deploy/qm-ops-refresh/Website/blog.html",
+     "current_message": "Blog index 'Logbook — build in public.' 21 posts: strong educational pieces (Monte Carlo, walk-forward, deflated Sharpe, multi-seed, fixed-vs-percent risk, why-martingale, the 3-agent factory) plus strategy deep-dives (SM_124 Gotobi, SM_186 Asian drift) and two live-trading narratives (Implementation Gap, Psychology of Drawdown). Educational posts are excellent build-in-public material; several others contradict the site's own honesty posture.",
+     "problems": [
+      "Fabricated live/funded-account narratives contradict the actual state (no funded account; live book in burn-in; Myfxbook verification pending): blog-commission-testing 'After one month of live trading, the data is in... average slippage of 0.2 pips'; blog-drawdown-management 'Two weeks into my funded account journey... 1 win, 9 losses in a single day... total portfolio drawdown of 1.5%'. On a site whose value is honesty, a visitor who cross-checks the (empty/demo) Myfxbook will conclude the whole site is embellished.",
+      "Per-strategy Profit Factors broadcast in blog directly violate the archive disclosure posture (terminal_pass_fail_without_metrics) and are unsupported by any public-data: SM_124 '9-year Profit Factor of 6.47' (story + blog.html teaser) AND 'best baseline Profit Factor of 4.57 on GBPJPY' (deep dive) — two different numbers for the same strategy; SM_186 'Profit Factor reaching 2.59 on EURGBP'. The strategies page hides per-strategy metrics on principle while the blog headlines them.",
+      "Internal identifiers leak and clash with the public naming convention: SM_124 / SM_186 / SM_221 and version taxonomy V2.x / V4 / V5 appear throughout the blog, while the public archive names strategies card_* and shows no metrics. Constraint: keep existing public naming, add no new internal identifiers.",
+      "Post dates are stale and inconsistent: newest is 'April 7, 2026' (today is 2026-09-05, ~5 months old); several posts read 'April 2026' with no day; commission-testing, drawdown-management and sm124-gotobi-story carry no date at all. Stale/missing dates undercut a 'build in public' logbook.",
+      "'How I Built a 15-Strategy Portfolio With Zero Correlation' / 'Portfolio V4' implies a completed live 15-strategy portfolio that does not exist yet."
+     ],
+     "proposed_changes": [
+      {
+       "section": "Live-trading narrative posts (blog-commission-testing, blog-drawdown-management)",
+       "action": "remove",
+       "spec": "Pull these from the index/sitemap until a real live record exists, OR rewrite them as explicitly hypothetical/educational (e.g. 'What the implementation gap will look like — and how we model it' framed as expectation, not observed live data) with a clear banner 'Illustrative — the live book is in burn-in; no funded-account results yet.' Do not keep specific fabricated live figures (0.2 pips slippage, 1.5% DD, 1-win-9-loss day, 14% win-rate floor over n=100)."
+      },
+      {
+       "section": "Strategy deep-dives (SM_124, SM_186 posts + blog.html teasers)",
+       "action": "rewrite",
+       "spec": "Bring them under the disclosure posture. Remove every per-strategy Profit Factor (6.47, 4.57, 2.59) and 'X of 22 symbols passed' count, OR replace with gate-journey language that matches the archive: 'cleared baseline screening on a broad set of instruments and earned deeper validation' rather than 'PF 4.57 on GBPJPY'. If OWNER wants to spotlight a strategy family, do it through the mechanism (Gotobi settlement flows, Asian-session drift) and its gate journey — never a headline PF. Reconcile the SM_124 6.47-vs-4.57 contradiction by removing both."
+      },
+      {
+       "section": "Internal identifiers across posts",
+       "action": "rewrite",
+       "spec": "Replace SM_124 / SM_186 / SM_221 with either the strategy family name (e.g. 'the Gotobi calendar family', 'the Asian-session drift family') or the public archive convention, and drop the internal V2.x / V4 / V5 version taxonomy in favour of plain language ('the current reset', 'the portfolio draft'). Keep the naming consistent with the public archive so a reader can cross-reference without hitting an internal code."
+      },
+      {
+       "section": "Post dates",
+       "action": "rewrite",
+       "spec": "Give every post a real, consistent date (full YYYY date, one format) and add missing dates on commission-testing / drawdown-management / sm124-gotobi-story. If posts are genuinely older, keep true dates but consider a fresh cadence so the logbook does not look abandoned at 5 months stale."
+      },
+      {
+       "section": "'Zero Correlation 15-strategy portfolio' post",
+       "action": "rewrite",
+       "spec": "Reframe from 'How I Built' (completed) to the method, not a claimed live portfolio: 'How we build toward a zero-correlation portfolio — family caps, symbol caps, pairwise correlation limits' presented as the Q15 construction rule, with an honest note that the first book is still being assembled (21 candidates in the pool)."
+      }
+     ]
+    },
+    {
+     "file": "C:/QM/deploy/qm-ops-refresh/Website/style.css + nav/footer (ALL PAGES) + routing",
+     "current_message": "Shared v3 design system: single tokenised style.css (neutrals + one emerald accent, 8-pt spacing, .panel/.section/.cols/.figure/.chart--frame), one nav and one footer on every page, clean extensionless internal links (/pipeline, /strategies, /blog-*). Footer has Site / Legal / Contact columns + a risk block.",
+     "problems": [
+      "ROUTING — the 'kein Link funktioniert' root cause: every internal href is extensionless (/pipeline, /strategies, /blog-monte-carlo-explained) but the files are pipeline.html etc., and there is NO _redirects or netlify.toml in the publish dir. On a plain static host or the local 127.0.0.1:8090 preview OWNER is reviewing, every internal link 404s. The design doc assumes 'Netlify pretty-URL serves pipeline.html', and section 9.3 already flags that the live Netlify build/branch is unconfirmed. So the links may fail in production too.",
+      "CONTACT SECTION regression: the pre-refresh site had a dedicated bottom contact ('Got a strategy idea? Contact research desk' mailto) plus the newsletter; the refresh kept only the footer Contact column and the disabled newsletter, dropping the closing contact invitation OWNER remembers.",
+      "Site-wide vocabulary drift: 'work items' vs 'backtests'; phase names differ between pipeline (Proof of edge / Optimisation / Portfolio) and the strategies-page stage chips (intake/baseline/robustness/portfolio/optimization) and the canonical (Validation/Optimization/Book build). One phase vocabulary should be used everywhere.",
+      "Spacing tokens are fine; the only rhythm defect is the index Market-structure section (handled in index.html), which needs section--tight, not a token change."
+     ],
+     "proposed_changes": [
+      {
+       "section": "Routing config (publish dir)",
+       "action": "add",
+       "spec": "Add a Netlify pretty-URL guarantee so extensionless links resolve in production, and give OWNER a preview server that does the same. Preferred: add a netlify.toml (or _redirects) to the publish root enabling clean URLs / a catch-all that maps /pipeline -> /pipeline.html, and confirm the Netlify site's connected branch actually builds this dir (design-doc open item 9.3). For the local 8090 review, serve with a static server that rewrites extensionless -> .html (not bare python -m http.server, which 404s them). Fallback if host rewrites cannot be guaranteed: append .html to every internal href across all pages and the sitemap. Verify by clicking every nav/footer link on the preview before the next OWNER review. This is the single highest-priority fix — the site is currently un-navigable for OWNER."
+      },
+      {
+       "section": "Footer — Contact column",
+       "action": "rewrite",
+       "spec": "Keep the footer Contact column but make the research-desk invitation explicit again (it currently only lists info@ / FAQ / About). Add a line: 'Strategy idea or allocation enquiry -> research desk' linking mailto:info@quantmechanica.com (or research@ only if it is a real inbox). This restores the contact affordance site-wide even before the homepage closing section is rebuilt."
+      },
+      {
+       "section": "Phase vocabulary (all pages)",
+       "action": "rewrite",
+       "spec": "Adopt one phase vocabulary everywhere: 'Validation (Q00-Q08) · Optimization & requalification (Q09-Q14) · Book build & live (Q15-Q17)', matching the canonical Vault Makrophasen. Apply to the pipeline stage labels, the strategies-page stage chips, the FAQ pipeline answer, and any homepage teaser. Standardise 'backtests' as the public noun (drop mixed 'work items') except where 'work items' is genuinely meant."
+      },
+      {
+       "section": "New CSS (small named rules only)",
+       "action": "restyle",
+       "spec": "Add only small additive rules for the new components, never a redesign: .attrition-bar / .attrition-bar__row (horizontal count bars on the strategies page, using --c-line and --c-accent), an optional .roadmap-row for the homepage/about roadmap status rows (reuse .badge--neutral/.badge--warn for 'Planned — gated by evidence'), and if needed .section--tight-top{padding-block-start:var(--s-6)} for fine spacing. Keep tokens, .panel, .section, .cols, .figure, .chart--frame and the light chart palette unchanged."
+      }
+     ]
+    }
+   ],
+   "exposure_findings": [
+    "ROUTING / 'kein Link funktioniert' (critical, site-wide): all internal hrefs are extensionless (/pipeline, /strategies, /blog-*) but files are *.html and there is NO _redirects or netlify.toml in the publish dir. On a plain static host and on the local 127.0.0.1:8090 preview OWNER reviews, every internal link 404s. Design doc assumes Netlify pretty-URL and its own section 9.3 flags the live Netlify branch/build as unconfirmed. Fix host rewrites (netlify.toml/_redirects) or append .html to every link; verify by clicking through the preview.",
+    "FABRICATED LIVE/FUNDED RESULTS (honesty-critical): blog-commission-testing.html ('After one month of live trading... 0.2 pips slippage') and blog-drawdown-management.html ('Two weeks into my funded account journey... 1 win, 9 losses in a day... 1.5% portfolio drawdown... 14% win-rate floor over n=100') narrate a live funded account that does not exist — Business Model states no challenge purchased, live book in burn-in, Myfxbook verification pending. Pull or clearly relabel as illustrative; remove the specific fabricated figures.",
+    "PER-STRATEGY METRICS CONTRADICT DISCLOSURE (terminal_pass_fail_without_metrics): blog posts headline Profit Factors the archive deliberately withholds and that no public-data key supports — SM_124 'PF 6.47 (9-year)' AND 'PF 4.57 GBPJPY' (self-contradictory), SM_186 'PF 2.59 EURGBP', plus 'X of 22 symbols passed'. Strip per-strategy PF/metrics from all blog copy and teasers to match the archive posture.",
+    "performance.html asserts a live, independently-verified, deployed portfolio that is not real: hero 'Live, and independently verified', '10-15 EAs in the live portfolio sleeve — measured 2026-09-02' (that is the Q15 target, not a live count), '<2% reaches live deployment — measured' (nothing is live-deployed yet). The embedded Myfxbook portfolio is slugged/titled 'DarwineexZero Demo'. Reframe to burn-in / verification-in-progress and remove the false 'measured' framing on target figures.",
+    "INVENTED COMMISSION VALUE + WRONG GATE MECHANIC (Hard Rule): faq.html describes Q06 HARSH as '5-pip slippage, 3x spread, $20.00/lot round-trip commission'. Canonical Q06 (Vault) implements ONLY seeded 10% trade-rejection; cost multipliers were never implemented, and $20/lot is an invented commission (real model is $7/lot ECN at Q04). Rewrite Q06 to the true mechanism.",
+    "UNSUPPORTED HEADLINE NUMBER: faq.html '~38 strategies have met every rigorous hurdle' has no public-data source and conflicts with archive_passed_q10 (9), q08_davey_stats_pass (46), portfolio_candidates (21). Replace with data-stat-keyed values.",
+    "MISLABELED FUNNEL FIGURE: pipeline.html funnel shows data-stat portfolio_candidates (21) captioned 'Q10 confirmed'; under v4 Q10 is News Impact and archive_passed_q10 = 9. Relabel to 'Portfolio candidates'. Also strategies.html 'Passed Q10 full history' attaches 'full history' to the wrong gate (confirmation is Q11).",
+    "DATA-INTEGRITY DRIFT: stats.json archive_failed = 1,297 but the served strategy-archive.json contains 1,298 items with >=1 FAIL; index/pipeline static fallback '7,020' vs stats q02_baseline_pass 7,021; several 'measured 2026-09-02' captions are auto-filled from the snapshot date even on figures that are targets, not measurements. Reconcile the exporter so every static fallback equals today's public-data value and 'measured' only labels actual measurements.",
+    "LIVE-CLAIM NAV: the 'Shop' nav link on every page points to the generic https://www.mql5.com/en/market, implying a live store when MQL5 productisation is only planned (no QM EA listed). Remove, relabel 'soon', or point at the roadmap — future channels only as 'planned, gated by evidence'.",
+    "INTERNAL IDENTIFIERS IN BLOG: SM_124 / SM_186 / SM_221 and the V2.x / V4 / V5 version taxonomy appear across blog posts, inconsistent with the public archive's card_* naming and the constraint 'add no new internal identifiers'. Replace with family names / plain language.",
+    "MINOR ACCURACY: Antigravity is described (about + faq) as running 'video-transcript analysis' — on-screen video analysis is the human OWNER lane (this agy build has no video tool); only caption extraction is available to the AI lane. Soften to 'video transcripts'. Also Claude's public role differs between pages ('Governance & ops AI' vs 'CTO-DevOps') — standardise. No paths/hostnames/terminal-counts/account-numbers/credentials/build-tooling were found leaked in the HTML (disclaimer.html's generic 'VPS reliability' in the risk list is acceptable)."
+   ]
+  }
+ }
+}
