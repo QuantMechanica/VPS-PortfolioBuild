@@ -40,6 +40,7 @@ from tools.strategy_farm.portfolio.ftmo_probability_contract import (
 )
 from tools.strategy_farm.portfolio.portfolio_common import load_streams
 from tools.strategy_farm import book_build_guard, risk_freeze
+from tools.strategy_farm.portfolio import ftmo_cost_version
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -660,6 +661,8 @@ def parser() -> argparse.ArgumentParser:
     ap.add_argument("--roster", type=Path, default=DEFAULT_ROSTER)
     ap.add_argument("--fund-scores", type=Path, default=DEFAULT_FUND_SCORES)
     ap.add_argument("--cost-snapshot", type=Path, default=DEFAULT_COST_SNAPSHOT)
+    ap.add_argument("--inspect-cost-version", type=Path, help="read-only cost review; creates no book")
+    ap.add_argument("--expected-cost-version-sha256")
     ap.add_argument("--bootstrap-result", type=Path)
     ap.add_argument("--correlation", type=Path, help="Q11 pairwise daily-PnL correlation artifact (portfolio_correlation.py output).")
     ap.add_argument("--max-pairwise-correlation", type=float, default=WORKING_DEFAULT_MAX_PAIRWISE_CORRELATION,
@@ -682,6 +685,8 @@ def parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = parser().parse_args(argv)
+    if args.inspect_cost_version:
+        return ftmo_cost_version.emit_inspection(args.inspect_cost_version, args.expected_cost_version_sha256, "build_book_ftmo")
     try:
         book_build_guard.require_book_build_allowed("ftmo", args.book_db, args.order_dir)
     except book_build_guard.BookBuildRefused as exc:

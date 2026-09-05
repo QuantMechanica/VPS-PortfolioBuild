@@ -30,6 +30,11 @@ from typing import Any, Mapping, Sequence
 from zoneinfo import ZoneInfo
 
 try:
+    from . import ftmo_cost_version
+except ImportError:  # direct script execution
+    import ftmo_cost_version
+
+try:
     from tools.strategy_farm.portfolio.ftmo_rule_contract import (
         DEFAULT_RULEPACK_PATH,
         load_two_step_contract,
@@ -1520,6 +1525,7 @@ def write_json_atomic(path: Path, value: Any) -> str:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
+    ftmo_cost_version.add_inspection_parser(subparsers)
     prepare = subparsers.add_parser("prepare-config")
     prepare.add_argument("--spec", type=Path, required=True)
     prepare.add_argument("--output", type=Path, required=True)
@@ -1532,6 +1538,8 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    if args.command == "inspect-cost-version":
+        return ftmo_cost_version.emit_inspection(args.cost_version, args.expected_sha256, "ftmo_timebox_eval")
     try:
         if args.command == "prepare-config":
             spec = load_json(args.spec, "spec")

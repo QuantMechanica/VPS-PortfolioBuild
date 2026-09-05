@@ -1,0 +1,528 @@
+{
+  "harvests": [
+    {
+      "venue": "FTMO",
+      "symbol": "GBPUSD",
+      "raw_path": "D:\\QM\\mt5\\FTMO_STREAM1\\MQL5\\Files\\QM\\m1_harvest\\FTMO_FTMO_STREAM1_20260905T043606Z_49acd9eb_GBPUSD_M1.jsonl",
+      "raw_sha256": "5e9a417e0f514cc02d2899dfdee73c7d4464f2a5c55b5304debd45fa15ad44f9",
+      "frozen_gzip_path": "inputs/FTMO_STREAM1_FTMO_FTMO_STREAM1_20260905T043606Z_49acd9eb_GBPUSD_M1.jsonl.gz",
+      "frozen_gzip_sha256": "6ce5da93017f8e6c3c5650be13f83d2dabeb11da5acea8bf52613e15d0529d16",
+      "coverage_path": "D:\\QM\\mt5\\FTMO_STREAM1\\MQL5\\Files\\QM\\m1_harvest\\FTMO_FTMO_STREAM1_20260905T043606Z_49acd9eb_GBPUSD_coverage.json",
+      "coverage_sha256": "4a1d8f75bc6a2253ab4ad2d7bf3f0452ac4a9042ff105563e04b8f989da328df",
+      "coverage": {
+        "schema": "qm.m1-spread-harvest-coverage/v1",
+        "status": "COMPLETE",
+        "extraction_method": "MQL5_COPYRATES_PERIOD_M1_SPREAD",
+        "output_tag": "FTMO_FTMO_STREAM1_20260905T043606Z_49acd9eb",
+        "symbol": "GBPUSD",
+        "first_bar": "2026-05-29T14:57:00Z",
+        "last_bar": "2026-09-04T23:54:00Z",
+        "bar_count": 100000,
+        "depth_days": 98.372917,
+        "tick_first": "2026-05-29T14:57:00Z",
+        "tick_last": "2026-09-04T23:54:00Z"
+      },
+      "zero_spread_fraction": 0.0,
+      "recorded_clock_bands": {
+        "00:00-06:00": {
+          "n": 24219,
+          "p50": 3.0,
+          "p90": 58.0,
+          "p99": 159.0
+        },
+        "06:00-12:00": {
+          "n": 25200,
+          "p50": 3.0,
+          "p90": 4.0,
+          "p99": 9.0
+        },
+        "12:00-18:00": {
+          "n": 25383,
+          "p50": 2.0,
+          "p90": 2.0,
+          "p99": 7.0
+        },
+        "18:00-24:00": {
+          "n": 25198,
+          "p50": 2.0,
+          "p90": 5.0,
+          "p99": 12.0
+        }
+      }
+    },
+    {
+      "venue": "FTMO",
+      "symbol": "EURUSD",
+      "raw_path": "D:\\QM\\mt5\\FTMO_STREAM1\\MQL5\\Files\\QM\\m1_harvest\\FTMO_FTMO_STREAM1_20260905T043743Z_d4874d70_EURUSD_M1.jsonl",
+      "raw_sha256": "0ba126087d814967e5c61a2e6ddc92ef88fefc3e2f35ca14576a21ee89a7b975",
+      "frozen_gzip_path": "inputs/FTMO_STREAM1_FTMO_FTMO_STREAM1_20260905T043743Z_d4874d70_EURUSD_M1.jsonl.gz",
+      "frozen_gzip_sha256": "54555906a8397cb0f181346edf7a60d3a58ddbc064be2b1403671e7698a4916e",
+      "coverage_path": "D:\\QM\\mt5\\FTMO_STREAM1\\MQL5\\Files\\QM\\m1_harvest\\FTMO_FTMO_STREAM1_20260905T043743Z_d4874d70_EURUSD_coverage.json",
+      "coverage_sha256": "5a611a9e718766d0f9b3c7b141acadbed3993b346234cc2940807d24de523f28",
+      "coverage": {
+        "schema": "qm.m1-spread-harvest-coverage/v1",
+        "status": "COMPLETE",
+        "extraction_method": "MQL5_COPYRATES_PERIOD_M1_SPREAD",
+        "output_tag": "FTMO_FTMO_STREAM1_20260905T043743Z_d4874d70",
+        "symbol": "EURUSD",
+        "first_bar": "2026-05-29T11:52:00Z",
+        "last_bar": "2026-09-04T23:54:00Z",
+        "bar_count": 100000,
+        "depth_days": 98.501389,
+        "tick_first": "2026-05-29T11:52:00Z",
+        "tick_last": "2026-09-04T23:54:00Z"
+      },
+      "zero_spread_fraction": 0.82076,
+      "recorded_clock_bands": {
+        "00:00-06:00": {
+          "n": 24049,
+          "p50": 0.0,
+          "p90": 21.0,
+          "p99": 68.0
+        },
+        "06:00-12:00": {
+          "n": 25208,
+          "p50": 0.0,
+          "p90": 0.0,
+          "p99": 3.0
+        },
+        "12:00-18:00": {
+          "n": 25560,
+          "p50": 0.0,
+          "p90": 0.0,
+          "p99": 3.0
+        },
+        "18:00-24:00": {
+          "n": 25183,
+          "p50": 0.0,
+          "p90": 1.0,
+          "p99": 6.0
+        }
+      }
+    },
+    {
+      "venue": "FTMO",
+      "symbol": "USDCAD",
+      "raw_path": "D:\\QM\\mt5\\FTMO_STREAM1\\MQL5\\Files\\QM\\m1_harvest\\FTMO_FTMO_STREAM1_20260905T043941Z_f9c06cfb_USDCAD_M1.jsonl",
+      "raw_sha256": "c2378dd0cfdbfb9deeaa709ef07dae441ba619872b1c15d77016c68098c7a9ab",
+      "frozen_gzip_path": "inputs/FTMO_STREAM1_FTMO_FTMO_STREAM1_20260905T043941Z_f9c06cfb_USDCAD_M1.jsonl.gz",
+      "frozen_gzip_sha256": "b890900608d0cdb6e16590ee9194f51f6c3d6121d6b04b26b1fe538a12c75891",
+      "coverage_path": "D:\\QM\\mt5\\FTMO_STREAM1\\MQL5\\Files\\QM\\m1_harvest\\FTMO_FTMO_STREAM1_20260905T043941Z_f9c06cfb_USDCAD_coverage.json",
+      "coverage_sha256": "3ea143569012706838f53da46f7d787f19f1b27c1b761c124d71428f86a63f98",
+      "coverage": {
+        "schema": "qm.m1-spread-harvest-coverage/v1",
+        "status": "COMPLETE",
+        "extraction_method": "MQL5_COPYRATES_PERIOD_M1_SPREAD",
+        "output_tag": "FTMO_FTMO_STREAM1_20260905T043941Z_f9c06cfb",
+        "symbol": "USDCAD",
+        "first_bar": "2026-05-29T10:01:00Z",
+        "last_bar": "2026-09-04T23:54:00Z",
+        "bar_count": 100000,
+        "depth_days": 98.578472,
+        "tick_first": "2026-05-29T10:01:00Z",
+        "tick_last": "2026-09-04T23:54:00Z"
+      },
+      "zero_spread_fraction": 0.0,
+      "recorded_clock_bands": {
+        "00:00-06:00": {
+          "n": 23926,
+          "p50": 5.0,
+          "p90": 43.0,
+          "p99": 130.0
+        },
+        "06:00-12:00": {
+          "n": 25319,
+          "p50": 3.0,
+          "p90": 6.0,
+          "p99": 7.0
+        },
+        "12:00-18:00": {
+          "n": 25560,
+          "p50": 3.0,
+          "p90": 5.0,
+          "p99": 6.0
+        },
+        "18:00-24:00": {
+          "n": 25195,
+          "p50": 4.0,
+          "p90": 6.0,
+          "p99": 11.0
+        }
+      }
+    },
+    {
+      "venue": "FTMO",
+      "symbol": "NZDUSD",
+      "raw_path": "D:\\QM\\mt5\\FTMO_STREAM1\\MQL5\\Files\\QM\\m1_harvest\\FTMO_FTMO_STREAM1_20260905T044517Z_0fcba01b_NZDUSD_M1.jsonl",
+      "raw_sha256": "96659c7034371abe89914b4cd02d7298115ed58c65c5bdfe5e3d332795f794c6",
+      "frozen_gzip_path": "inputs/FTMO_STREAM1_FTMO_FTMO_STREAM1_20260905T044517Z_0fcba01b_NZDUSD_M1.jsonl.gz",
+      "frozen_gzip_sha256": "c63442812a5c1285bd3d28ecc313c185699f1dc1688315fd095a2505cb91de69",
+      "coverage_path": "D:\\QM\\mt5\\FTMO_STREAM1\\MQL5\\Files\\QM\\m1_harvest\\FTMO_FTMO_STREAM1_20260905T044517Z_0fcba01b_NZDUSD_coverage.json",
+      "coverage_sha256": "3360a5d1db63c9091c5ae118f95f46c85bbf96bdfc489f0da463f054e9ecd016",
+      "coverage": {
+        "schema": "qm.m1-spread-harvest-coverage/v1",
+        "status": "COMPLETE",
+        "extraction_method": "MQL5_COPYRATES_PERIOD_M1_SPREAD",
+        "output_tag": "FTMO_FTMO_STREAM1_20260905T044517Z_0fcba01b",
+        "symbol": "NZDUSD",
+        "first_bar": "2026-05-29T10:31:00Z",
+        "last_bar": "2026-09-04T23:54:00Z",
+        "bar_count": 100000,
+        "depth_days": 98.557639,
+        "tick_first": "2026-05-29T10:31:00Z",
+        "tick_last": "2026-09-04T23:54:00Z"
+      },
+      "zero_spread_fraction": 0.0,
+      "recorded_clock_bands": {
+        "00:00-06:00": {
+          "n": 24011,
+          "p50": 5.0,
+          "p90": 38.0,
+          "p99": 139.0
+        },
+        "06:00-12:00": {
+          "n": 25289,
+          "p50": 4.0,
+          "p90": 6.0,
+          "p99": 9.0
+        },
+        "12:00-18:00": {
+          "n": 25560,
+          "p50": 4.0,
+          "p90": 6.0,
+          "p99": 7.0
+        },
+        "18:00-24:00": {
+          "n": 25140,
+          "p50": 5.0,
+          "p90": 6.0,
+          "p99": 13.0
+        }
+      }
+    },
+    {
+      "venue": "FTMO",
+      "symbol": "XTIUSD",
+      "raw_path": "D:\\QM\\mt5\\FTMO_STREAM1\\MQL5\\Files\\QM\\m1_harvest\\FTMO_FTMO_STREAM1_20260905T044816Z_2f51b2ef_USOIL_cash_M1.jsonl",
+      "raw_sha256": "3fb0807c418e9e157b213d33daf6ce524d96144e088c9c6540fbaa3a75f0bb03",
+      "frozen_gzip_path": "inputs/FTMO_STREAM1_FTMO_FTMO_STREAM1_20260905T044816Z_2f51b2ef_USOIL_cash_M1.jsonl.gz",
+      "frozen_gzip_sha256": "4adee93cfc93e7e377835c632a4c27321c330052704689d8932588f3af49ad4e",
+      "coverage_path": "D:\\QM\\mt5\\FTMO_STREAM1\\MQL5\\Files\\QM\\m1_harvest\\FTMO_FTMO_STREAM1_20260905T044816Z_2f51b2ef_USOIL_cash_coverage.json",
+      "coverage_sha256": "b5be80eff60dacb6ee4b2787e0a38f3e596d0ab9bba6ff3d2de9bf292674d926",
+      "coverage": {
+        "schema": "qm.m1-spread-harvest-coverage/v1",
+        "status": "COMPLETE",
+        "extraction_method": "MQL5_COPYRATES_PERIOD_M1_SPREAD",
+        "output_tag": "FTMO_FTMO_STREAM1_20260905T044816Z_2f51b2ef",
+        "symbol": "USOIL.cash",
+        "first_bar": "2026-05-26T03:16:00Z",
+        "last_bar": "2026-09-04T23:49:00Z",
+        "bar_count": 100000,
+        "depth_days": 101.85625,
+        "tick_first": "2026-05-26T03:16:00Z",
+        "tick_last": "2026-09-04T23:49:00Z"
+      },
+      "zero_spread_fraction": 0.0,
+      "recorded_clock_bands": {
+        "00:00-06:00": {
+          "n": 21342,
+          "p50": 68.0,
+          "p90": 81.0,
+          "p99": 91.0
+        },
+        "06:00-12:00": {
+          "n": 26597,
+          "p50": 68.0,
+          "p90": 88.0,
+          "p99": 88.0
+        },
+        "12:00-18:00": {
+          "n": 26640,
+          "p50": 68.0,
+          "p90": 88.0,
+          "p99": 88.0
+        },
+        "18:00-24:00": {
+          "n": 25421,
+          "p50": 68.0,
+          "p90": 88.0,
+          "p99": 88.0
+        }
+      }
+    },
+    {
+      "venue": "FTMO",
+      "symbol": "XAGUSD",
+      "raw_path": "D:\\QM\\mt5\\FTMO_STREAM1\\MQL5\\Files\\QM\\m1_harvest\\FTMO_FTMO_STREAM1_20260905T045001Z_9628d0ed_XAGUSD_M1.jsonl",
+      "raw_sha256": "106ee5f54679274ff546390445f0aaf8b72f1e62635d5a784eef23f5ebdc3a8e",
+      "frozen_gzip_path": "inputs/FTMO_STREAM1_FTMO_FTMO_STREAM1_20260905T045001Z_9628d0ed_XAGUSD_M1.jsonl.gz",
+      "frozen_gzip_sha256": "47d213f44cce5626b39a7650de0782ccf6b5b210db3392572c7691482af4e65e",
+      "coverage_path": "D:\\QM\\mt5\\FTMO_STREAM1\\MQL5\\Files\\QM\\m1_harvest\\FTMO_FTMO_STREAM1_20260905T045001Z_9628d0ed_XAGUSD_coverage.json",
+      "coverage_sha256": "4e6db2120b0f8e2067302f16b1622fe05fe4a6d5019e8c08d19373eed40b5674",
+      "coverage": {
+        "schema": "qm.m1-spread-harvest-coverage/v1",
+        "status": "COMPLETE",
+        "extraction_method": "MQL5_COPYRATES_PERIOD_M1_SPREAD",
+        "output_tag": "FTMO_FTMO_STREAM1_20260905T045001Z_9628d0ed",
+        "symbol": "XAGUSD",
+        "first_bar": "2026-05-26T10:12:00Z",
+        "last_bar": "2026-09-04T23:49:00Z",
+        "bar_count": 100000,
+        "depth_days": 101.567361,
+        "tick_first": "2026-05-26T10:12:00Z",
+        "tick_last": "2026-09-04T23:49:00Z"
+      },
+      "zero_spread_fraction": 0.0,
+      "recorded_clock_bands": {
+        "00:00-06:00": {
+          "n": 21533,
+          "p50": 58.0,
+          "p90": 72.0,
+          "p99": 79.0
+        },
+        "06:00-12:00": {
+          "n": 26388,
+          "p50": 51.0,
+          "p90": 66.0,
+          "p99": 74.0
+        },
+        "12:00-18:00": {
+          "n": 26640,
+          "p50": 48.0,
+          "p90": 63.0,
+          "p99": 72.0
+        },
+        "18:00-24:00": {
+          "n": 25439,
+          "p50": 48.0,
+          "p90": 65.0,
+          "p99": 72.0
+        }
+      }
+    },
+    {
+      "venue": "DXZ",
+      "symbol": "EURUSD",
+      "raw_path": "D:\\QM\\mt5\\T1\\MQL5\\Files\\QM\\m1_harvest\\DXZ_FACTORY_20260905T045440Z_fd5816ec_EURUSD_DWX_M1.jsonl",
+      "raw_sha256": "f1a23056f78176be1f41fcc2f20a4521c9385b1d8043fa60a7ca3078a8e5ea34",
+      "frozen_gzip_path": "inputs/T1_DXZ_FACTORY_20260905T045440Z_fd5816ec_EURUSD_DWX_M1.jsonl.gz",
+      "frozen_gzip_sha256": "dcb452c35aa854a675da0578e9e0e14dbeac4c3e9a083700f0363327f59a8b89",
+      "coverage_path": "D:\\QM\\mt5\\T1\\MQL5\\Files\\QM\\m1_harvest\\DXZ_FACTORY_20260905T045440Z_fd5816ec_EURUSD_DWX_coverage.json",
+      "coverage_sha256": "1389916fdc6e2a7be5d8ba291f936001d9fa03576a484b11e418e340e306ef28",
+      "coverage": {
+        "schema": "qm.m1-spread-harvest-coverage/v1",
+        "status": "COMPLETE",
+        "extraction_method": "MQL5_COPYRATES_PERIOD_M1_SPREAD",
+        "output_tag": "DXZ_FACTORY_20260905T045440Z_fd5816ec",
+        "symbol": "EURUSD.DWX",
+        "first_bar": "2026-01-02T00:04:00Z",
+        "last_bar": "2026-04-06T02:59:00Z",
+        "bar_count": 94575,
+        "depth_days": 94.121528,
+        "tick_first": "2026-01-08T09:46:00Z",
+        "tick_last": "2026-04-06T02:59:00Z"
+      },
+      "zero_spread_fraction": 1.0,
+      "recorded_clock_bands": {
+        "00:00-06:00": {
+          "n": 23409,
+          "p50": 0.0,
+          "p90": 0.0,
+          "p99": 0.0
+        },
+        "06:00-12:00": {
+          "n": 23751,
+          "p50": 0.0,
+          "p90": 0.0,
+          "p99": 0.0
+        },
+        "12:00-18:00": {
+          "n": 23759,
+          "p50": 0.0,
+          "p90": 0.0,
+          "p99": 0.0
+        },
+        "18:00-24:00": {
+          "n": 23656,
+          "p50": 0.0,
+          "p90": 0.0,
+          "p99": 0.0
+        }
+      }
+    },
+    {
+      "venue": "DXZ",
+      "symbol": "GBPUSD",
+      "raw_path": "D:\\QM\\mt5\\T1\\MQL5\\Files\\QM\\m1_harvest\\DXZ_FACTORY_20260905T045440Z_fd5816ec_GBPUSD_DWX_M1.jsonl",
+      "raw_sha256": "0678844cb57155710e550801ce585d0ea7dcd1bbbbfda3065b8483dadd10f12d",
+      "frozen_gzip_path": "inputs/T1_DXZ_FACTORY_20260905T045440Z_fd5816ec_GBPUSD_DWX_M1.jsonl.gz",
+      "frozen_gzip_sha256": "d97650780c824a1f432a810b998d5d710c91d587499804e08aac4db628caf00a",
+      "coverage_path": "D:\\QM\\mt5\\T1\\MQL5\\Files\\QM\\m1_harvest\\DXZ_FACTORY_20260905T045440Z_fd5816ec_GBPUSD_DWX_coverage.json",
+      "coverage_sha256": "4d08ee33cc72bf11175e0421be966bf9b655a7d504b07c61cf349ed3f52818c2",
+      "coverage": {
+        "schema": "qm.m1-spread-harvest-coverage/v1",
+        "status": "COMPLETE",
+        "extraction_method": "MQL5_COPYRATES_PERIOD_M1_SPREAD",
+        "output_tag": "DXZ_FACTORY_20260905T045440Z_fd5816ec",
+        "symbol": "GBPUSD.DWX",
+        "first_bar": "2026-01-19T03:43:00Z",
+        "last_bar": "2026-04-24T23:54:00Z",
+        "bar_count": 100000,
+        "depth_days": 95.840972,
+        "tick_first": "2026-01-19T03:43:00Z",
+        "tick_last": "2026-04-24T23:53:00Z"
+      },
+      "zero_spread_fraction": 1.0,
+      "recorded_clock_bands": {
+        "00:00-06:00": {
+          "n": 24518,
+          "p50": 0.0,
+          "p90": 0.0,
+          "p99": 0.0
+        },
+        "06:00-12:00": {
+          "n": 25196,
+          "p50": 0.0,
+          "p90": 0.0,
+          "p99": 0.0
+        },
+        "12:00-18:00": {
+          "n": 25200,
+          "p50": 0.0,
+          "p90": 0.0,
+          "p99": 0.0
+        },
+        "18:00-24:00": {
+          "n": 25086,
+          "p50": 0.0,
+          "p90": 0.0,
+          "p99": 0.0
+        }
+      }
+    },
+    {
+      "venue": "DXZ",
+      "symbol": "EURUSD",
+      "raw_path": "D:\\QM\\mt5\\T7\\MQL5\\Files\\QM\\m1_harvest\\DXZ_FACTORY_20260905T050325Z_5ca3d91b_EURUSD_DWX_M1.jsonl",
+      "raw_sha256": "f1a23056f78176be1f41fcc2f20a4521c9385b1d8043fa60a7ca3078a8e5ea34",
+      "frozen_gzip_path": "inputs/T7_DXZ_FACTORY_20260905T050325Z_5ca3d91b_EURUSD_DWX_M1.jsonl.gz",
+      "frozen_gzip_sha256": "dcb452c35aa854a675da0578e9e0e14dbeac4c3e9a083700f0363327f59a8b89",
+      "coverage_path": "D:\\QM\\mt5\\T7\\MQL5\\Files\\QM\\m1_harvest\\DXZ_FACTORY_20260905T050325Z_5ca3d91b_EURUSD_DWX_coverage.json",
+      "coverage_sha256": "ff93b838505184eb89272bd3dd8d1a7dcb35ee62fe22c9b407238b14597df4e0",
+      "coverage": {
+        "schema": "qm.m1-spread-harvest-coverage/v1",
+        "status": "COMPLETE",
+        "extraction_method": "MQL5_COPYRATES_PERIOD_M1_SPREAD",
+        "output_tag": "DXZ_FACTORY_20260905T050325Z_5ca3d91b",
+        "symbol": "EURUSD.DWX",
+        "first_bar": "2026-01-02T00:04:00Z",
+        "last_bar": "2026-04-06T02:59:00Z",
+        "bar_count": 94575,
+        "depth_days": 94.121528,
+        "tick_first": "2026-01-08T09:46:00Z",
+        "tick_last": "2026-04-06T02:59:00Z"
+      },
+      "zero_spread_fraction": 1.0,
+      "recorded_clock_bands": {
+        "00:00-06:00": {
+          "n": 23409,
+          "p50": 0.0,
+          "p90": 0.0,
+          "p99": 0.0
+        },
+        "06:00-12:00": {
+          "n": 23751,
+          "p50": 0.0,
+          "p90": 0.0,
+          "p99": 0.0
+        },
+        "12:00-18:00": {
+          "n": 23759,
+          "p50": 0.0,
+          "p90": 0.0,
+          "p99": 0.0
+        },
+        "18:00-24:00": {
+          "n": 23656,
+          "p50": 0.0,
+          "p90": 0.0,
+          "p99": 0.0
+        }
+      }
+    },
+    {
+      "venue": "DXZ",
+      "symbol": "GBPUSD",
+      "raw_path": "D:\\QM\\mt5\\T7\\MQL5\\Files\\QM\\m1_harvest\\DXZ_FACTORY_20260905T050325Z_5ca3d91b_GBPUSD_DWX_M1.jsonl",
+      "raw_sha256": "0678844cb57155710e550801ce585d0ea7dcd1bbbbfda3065b8483dadd10f12d",
+      "frozen_gzip_path": "inputs/T7_DXZ_FACTORY_20260905T050325Z_5ca3d91b_GBPUSD_DWX_M1.jsonl.gz",
+      "frozen_gzip_sha256": "d97650780c824a1f432a810b998d5d710c91d587499804e08aac4db628caf00a",
+      "coverage_path": "D:\\QM\\mt5\\T7\\MQL5\\Files\\QM\\m1_harvest\\DXZ_FACTORY_20260905T050325Z_5ca3d91b_GBPUSD_DWX_coverage.json",
+      "coverage_sha256": "c5947ae6f1429c40deea96ecacc2ce2aea9e771dd2ddd7de45cd48de489da676",
+      "coverage": {
+        "schema": "qm.m1-spread-harvest-coverage/v1",
+        "status": "COMPLETE",
+        "extraction_method": "MQL5_COPYRATES_PERIOD_M1_SPREAD",
+        "output_tag": "DXZ_FACTORY_20260905T050325Z_5ca3d91b",
+        "symbol": "GBPUSD.DWX",
+        "first_bar": "2026-01-19T03:43:00Z",
+        "last_bar": "2026-04-24T23:54:00Z",
+        "bar_count": 100000,
+        "depth_days": 95.840972,
+        "tick_first": "2026-01-19T03:43:00Z",
+        "tick_last": "2026-04-24T23:53:00Z"
+      },
+      "zero_spread_fraction": 1.0,
+      "recorded_clock_bands": {
+        "00:00-06:00": {
+          "n": 24518,
+          "p50": 0.0,
+          "p90": 0.0,
+          "p99": 0.0
+        },
+        "06:00-12:00": {
+          "n": 25196,
+          "p50": 0.0,
+          "p90": 0.0,
+          "p99": 0.0
+        },
+        "12:00-18:00": {
+          "n": 25200,
+          "p50": 0.0,
+          "p90": 0.0,
+          "p99": 0.0
+        },
+        "18:00-24:00": {
+          "n": 25086,
+          "p50": 0.0,
+          "p90": 0.0,
+          "p99": 0.0
+        }
+      }
+    }
+  ],
+  "coverage": {
+    "clock_basis": "RECORDED_TIMESTAMP_ONLY_UTC_SUFFIX_NOT_INDEPENDENTLY_ATTESTED",
+    "clock_source_issue": "QM_M1_SpreadHarvest.mq5 IsoMinute formats broker CopyRates timestamps with Z without conversion; source-to-harvest-binary attestation absent.",
+    "common_ftmo_first_recorded": "2026-05-29T14:57:00Z",
+    "common_ftmo_last_recorded": "2026-09-04T23:49:00Z",
+    "common_ftmo_minutes": 94843,
+    "common_ftmo_minute_set_sha256": "70cf4a56d9aef9eb65c09dbe6e7ed9d9ffdc79806015c7dc7266648a70067174",
+    "excluded_incomplete_exports": [
+      "D:\\QM\\mt5\\FTMO_STREAM1\\MQL5\\Files\\QM\\m1_harvest\\FTMO_FTMO_STREAM1_20260905T044254Z_cdb9ab5f_NZDUSD_M1.jsonl"
+    ],
+    "matched_venue_minutes": {
+      "EURUSD": 0,
+      "GBPUSD": 0,
+      "USDCAD": 0,
+      "NZDUSD": 0,
+      "XAGUSD": 0,
+      "XTIUSD": 0
+    }
+  },
+  "source_snapshot": {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+    "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e",
+    "retrieved_at_utc": "2026-09-05T04:24:16Z"
+  }
+}

@@ -1,0 +1,1033 @@
+{
+  "consumer": "ftmo_lane_runner",
+  "cost_version_sha256": "e45ebdcce4a68e81456c78228cd042770c59bb1ce84cf1527e8dba50bc7bad79",
+  "coverage": {
+    "clock_basis": "RECORDED_TIMESTAMP_ONLY_UTC_SUFFIX_NOT_INDEPENDENTLY_ATTESTED",
+    "clock_source_issue": "QM_M1_SpreadHarvest.mq5 IsoMinute formats broker CopyRates timestamps with Z without conversion; source-to-harvest-binary attestation absent.",
+    "common_ftmo_first_recorded": "2026-05-29T14:57:00Z",
+    "common_ftmo_last_recorded": "2026-09-04T23:49:00Z",
+    "common_ftmo_minute_set_sha256": "70cf4a56d9aef9eb65c09dbe6e7ed9d9ffdc79806015c7dc7266648a70067174",
+    "common_ftmo_minutes": 94843,
+    "excluded_incomplete_exports": [
+      "D:\\QM\\mt5\\FTMO_STREAM1\\MQL5\\Files\\QM\\m1_harvest\\FTMO_FTMO_STREAM1_20260905T044254Z_cdb9ab5f_NZDUSD_M1.jsonl"
+    ],
+    "matched_venue_minutes": {
+      "EURUSD": 0,
+      "GBPUSD": 0,
+      "NZDUSD": 0,
+      "USDCAD": 0,
+      "XAGUSD": 0,
+      "XTIUSD": 0
+    }
+  },
+  "governed_adoption": false,
+  "open_items": [
+    "Overlapping same-symbol DXZ M1 bid/ask evidence for all six instruments; current EURUSD/GBPUSD windows end before FTMO starts.",
+    "Broker timestamp/DST and point-size attestation before named-session or cross-venue calibration.",
+    "Native FTMO contract evidence: lot minimum/step, triple rollover weekday, exact Swing margin and conversion currency.",
+    "Observed fill/slippage evidence separately from bar spread; CopyRates spread is not execution slippage.",
+    "Refresh provider terms and perform separate review before any governed cost-model adoption.",
+    "The OWNER-scheduled 2026-09-14 backfill must close coverage gaps; it cannot establish FTMO fills or current native symbol contracts."
+  ],
+  "schema": "qm.ftmo-cost-version-inspection/v1",
+  "status": "REVIEW_RESEARCH_ONLY",
+  "symbols": [
+    {
+      "coverage": {
+        "DXZ": {
+          "bar_count": 94575,
+          "depth_days": 94.121528,
+          "extraction_method": "MQL5_COPYRATES_PERIOD_M1_SPREAD",
+          "first_bar": "2026-01-02T00:04:00Z",
+          "last_bar": "2026-04-06T02:59:00Z",
+          "output_tag": "DXZ_FACTORY_20260905T045440Z_fd5816ec",
+          "schema": "qm.m1-spread-harvest-coverage/v1",
+          "status": "COMPLETE",
+          "symbol": "EURUSD.DWX",
+          "tick_first": "2026-01-08T09:46:00Z",
+          "tick_last": "2026-04-06T02:59:00Z"
+        },
+        "FTMO": {
+          "bar_count": 100000,
+          "depth_days": 98.501389,
+          "extraction_method": "MQL5_COPYRATES_PERIOD_M1_SPREAD",
+          "first_bar": "2026-05-29T11:52:00Z",
+          "last_bar": "2026-09-04T23:54:00Z",
+          "output_tag": "FTMO_FTMO_STREAM1_20260905T043743Z_d4874d70",
+          "schema": "qm.m1-spread-harvest-coverage/v1",
+          "status": "COMPLETE",
+          "symbol": "EURUSD",
+          "tick_first": "2026-05-29T11:52:00Z",
+          "tick_last": "2026-09-04T23:54:00Z"
+        },
+        "matched_minutes": 0,
+        "matched_spread_delta": null,
+        "status": "NO_OVERLAP"
+      },
+      "fields": {
+        "commission": {
+          "provenance": "provider-provisional",
+          "source": {
+            "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+            "retrieved_at_utc": "2026-09-05T04:24:16Z",
+            "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+          },
+          "unit": "USD_PER_TARGET_LOT_ROUND_TRIP",
+          "value": 5
+        },
+        "contract_size": {
+          "provenance": "provider-provisional",
+          "source": {
+            "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+            "retrieved_at_utc": "2026-09-05T04:24:16Z",
+            "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+          },
+          "unit": "UNDERLYING_UNITS_PER_TARGET_LOT",
+          "value": 100000
+        },
+        "fill_slippage": {
+          "provenance": "unknown",
+          "source": {
+            "basis": "No bound native contract/fill evidence in inspected snapshot/harvest artifacts."
+          },
+          "unit": "PRICE_UNITS",
+          "value": null
+        },
+        "lot_min": {
+          "provenance": "unknown",
+          "source": {
+            "basis": "No bound native contract/fill evidence in inspected snapshot/harvest artifacts."
+          },
+          "unit": "TARGET_LOTS",
+          "value": null
+        },
+        "lot_step": {
+          "provenance": "unknown",
+          "source": {
+            "basis": "No bound native contract/fill evidence in inspected snapshot/harvest artifacts."
+          },
+          "unit": "TARGET_LOTS",
+          "value": null
+        },
+        "session_spread": {
+          "provenance": "measured",
+          "source": {
+            "clock_admission": "UNVERIFIED_UTC; descriptive bands, not certified market sessions",
+            "path": "D:\\QM\\mt5\\FTMO_STREAM1\\MQL5\\Files\\QM\\m1_harvest\\FTMO_FTMO_STREAM1_20260905T043743Z_d4874d70_EURUSD_M1.jsonl",
+            "sha256": "0ba126087d814967e5c61a2e6ddc92ef88fefc3e2f35ca14576a21ee89a7b975"
+          },
+          "unit": "NATIVE_SYMBOL_POINTS_BY_RECORDED_CLOCK_BAND",
+          "value": {
+            "00:00-06:00": {
+              "n": 19960,
+              "p50": 0.0,
+              "p90": 1.0,
+              "p99": 4.0
+            },
+            "06:00-12:00": {
+              "n": 25157,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p99": 3.0
+            },
+            "12:00-18:00": {
+              "n": 25383,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p99": 3.0
+            },
+            "18:00-24:00": {
+              "n": 24343,
+              "p50": 0.0,
+              "p90": 1.0,
+              "p99": 6.0
+            }
+          }
+        },
+        "swap_long": {
+          "provenance": "provider-provisional",
+          "source": {
+            "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+            "retrieved_at_utc": "2026-09-05T04:24:16Z",
+            "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+          },
+          "unit": "POINTS_PER_TARGET_LOT_PER_ROLLOVER_UNIT",
+          "value": -13.29
+        },
+        "swap_short": {
+          "provenance": "provider-provisional",
+          "source": {
+            "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+            "retrieved_at_utc": "2026-09-05T04:24:16Z",
+            "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+          },
+          "unit": "POINTS_PER_TARGET_LOT_PER_ROLLOVER_UNIT",
+          "value": 0.17
+        },
+        "swing_margin_percent": {
+          "provenance": "provider-provisional",
+          "source": {
+            "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+            "retrieved_at_utc": "2026-09-05T04:24:16Z",
+            "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+          },
+          "unit": "PERCENT_OF_NOTIONAL",
+          "value": 3.3333333333
+        },
+        "tick_size": {
+          "provenance": "provider-provisional",
+          "source": {
+            "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+            "retrieved_at_utc": "2026-09-05T04:24:16Z",
+            "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+          },
+          "unit": "PRICE_UNITS_PER_TICK",
+          "value": 1e-05
+        },
+        "tick_value": {
+          "provenance": "provider-provisional",
+          "source": {
+            "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+            "retrieved_at_utc": "2026-09-05T04:24:16Z",
+            "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+          },
+          "unit": "PROFIT_CURRENCY_PER_TARGET_LOT_PER_TICK",
+          "value": 1
+        },
+        "triple_rollover_weekday": {
+          "provenance": "unknown",
+          "source": {
+            "basis": "Provider API omits weekday; prior Wednesday convention remains unconfirmed."
+          },
+          "unit": "WEEKDAY",
+          "value": null
+        }
+      },
+      "provider_code": "EUR/USD",
+      "symbol": "EURUSD"
+    },
+    {
+      "coverage": {
+        "DXZ": {
+          "bar_count": 100000,
+          "depth_days": 95.840972,
+          "extraction_method": "MQL5_COPYRATES_PERIOD_M1_SPREAD",
+          "first_bar": "2026-01-19T03:43:00Z",
+          "last_bar": "2026-04-24T23:54:00Z",
+          "output_tag": "DXZ_FACTORY_20260905T045440Z_fd5816ec",
+          "schema": "qm.m1-spread-harvest-coverage/v1",
+          "status": "COMPLETE",
+          "symbol": "GBPUSD.DWX",
+          "tick_first": "2026-01-19T03:43:00Z",
+          "tick_last": "2026-04-24T23:53:00Z"
+        },
+        "FTMO": {
+          "bar_count": 100000,
+          "depth_days": 98.372917,
+          "extraction_method": "MQL5_COPYRATES_PERIOD_M1_SPREAD",
+          "first_bar": "2026-05-29T14:57:00Z",
+          "last_bar": "2026-09-04T23:54:00Z",
+          "output_tag": "FTMO_FTMO_STREAM1_20260905T043606Z_49acd9eb",
+          "schema": "qm.m1-spread-harvest-coverage/v1",
+          "status": "COMPLETE",
+          "symbol": "GBPUSD",
+          "tick_first": "2026-05-29T14:57:00Z",
+          "tick_last": "2026-09-04T23:54:00Z"
+        },
+        "matched_minutes": 0,
+        "matched_spread_delta": null,
+        "status": "NO_OVERLAP"
+      },
+      "fields": {
+        "commission": {
+          "provenance": "provider-provisional",
+          "source": {
+            "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+            "retrieved_at_utc": "2026-09-05T04:24:16Z",
+            "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+          },
+          "unit": "USD_PER_TARGET_LOT_ROUND_TRIP",
+          "value": 5
+        },
+        "contract_size": {
+          "provenance": "provider-provisional",
+          "source": {
+            "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+            "retrieved_at_utc": "2026-09-05T04:24:16Z",
+            "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+          },
+          "unit": "UNDERLYING_UNITS_PER_TARGET_LOT",
+          "value": 100000
+        },
+        "fill_slippage": {
+          "provenance": "unknown",
+          "source": {
+            "basis": "No bound native contract/fill evidence in inspected snapshot/harvest artifacts."
+          },
+          "unit": "PRICE_UNITS",
+          "value": null
+        },
+        "lot_min": {
+          "provenance": "unknown",
+          "source": {
+            "basis": "No bound native contract/fill evidence in inspected snapshot/harvest artifacts."
+          },
+          "unit": "TARGET_LOTS",
+          "value": null
+        },
+        "lot_step": {
+          "provenance": "unknown",
+          "source": {
+            "basis": "No bound native contract/fill evidence in inspected snapshot/harvest artifacts."
+          },
+          "unit": "TARGET_LOTS",
+          "value": null
+        },
+        "session_spread": {
+          "provenance": "measured",
+          "source": {
+            "clock_admission": "UNVERIFIED_UTC; descriptive bands, not certified market sessions",
+            "path": "D:\\QM\\mt5\\FTMO_STREAM1\\MQL5\\Files\\QM\\m1_harvest\\FTMO_FTMO_STREAM1_20260905T043606Z_49acd9eb_GBPUSD_M1.jsonl",
+            "sha256": "5e9a417e0f514cc02d2899dfdee73c7d4464f2a5c55b5304debd45fa15ad44f9"
+          },
+          "unit": "NATIVE_SYMBOL_POINTS_BY_RECORDED_CLOCK_BAND",
+          "value": {
+            "00:00-06:00": {
+              "n": 19960,
+              "p50": 3.0,
+              "p90": 5.0,
+              "p99": 10.0
+            },
+            "06:00-12:00": {
+              "n": 25157,
+              "p50": 3.0,
+              "p90": 4.0,
+              "p99": 9.0
+            },
+            "12:00-18:00": {
+              "n": 25383,
+              "p50": 2.0,
+              "p90": 2.0,
+              "p99": 7.0
+            },
+            "18:00-24:00": {
+              "n": 24343,
+              "p50": 2.0,
+              "p90": 5.0,
+              "p99": 12.0
+            }
+          }
+        },
+        "swap_long": {
+          "provenance": "provider-provisional",
+          "source": {
+            "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+            "retrieved_at_utc": "2026-09-05T04:24:16Z",
+            "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+          },
+          "unit": "POINTS_PER_TARGET_LOT_PER_ROLLOVER_UNIT",
+          "value": -6.7
+        },
+        "swap_short": {
+          "provenance": "provider-provisional",
+          "source": {
+            "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+            "retrieved_at_utc": "2026-09-05T04:24:16Z",
+            "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+          },
+          "unit": "POINTS_PER_TARGET_LOT_PER_ROLLOVER_UNIT",
+          "value": -5.2
+        },
+        "swing_margin_percent": {
+          "provenance": "provider-provisional",
+          "source": {
+            "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+            "retrieved_at_utc": "2026-09-05T04:24:16Z",
+            "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+          },
+          "unit": "PERCENT_OF_NOTIONAL",
+          "value": 3.3333333333
+        },
+        "tick_size": {
+          "provenance": "provider-provisional",
+          "source": {
+            "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+            "retrieved_at_utc": "2026-09-05T04:24:16Z",
+            "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+          },
+          "unit": "PRICE_UNITS_PER_TICK",
+          "value": 1e-05
+        },
+        "tick_value": {
+          "provenance": "provider-provisional",
+          "source": {
+            "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+            "retrieved_at_utc": "2026-09-05T04:24:16Z",
+            "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+          },
+          "unit": "PROFIT_CURRENCY_PER_TARGET_LOT_PER_TICK",
+          "value": 1
+        },
+        "triple_rollover_weekday": {
+          "provenance": "unknown",
+          "source": {
+            "basis": "Provider API omits weekday; prior Wednesday convention remains unconfirmed."
+          },
+          "unit": "WEEKDAY",
+          "value": null
+        }
+      },
+      "provider_code": "GBP/USD",
+      "symbol": "GBPUSD"
+    },
+    {
+      "coverage": {
+        "DXZ": null,
+        "FTMO": {
+          "bar_count": 100000,
+          "depth_days": 98.578472,
+          "extraction_method": "MQL5_COPYRATES_PERIOD_M1_SPREAD",
+          "first_bar": "2026-05-29T10:01:00Z",
+          "last_bar": "2026-09-04T23:54:00Z",
+          "output_tag": "FTMO_FTMO_STREAM1_20260905T043941Z_f9c06cfb",
+          "schema": "qm.m1-spread-harvest-coverage/v1",
+          "status": "COMPLETE",
+          "symbol": "USDCAD",
+          "tick_first": "2026-05-29T10:01:00Z",
+          "tick_last": "2026-09-04T23:54:00Z"
+        },
+        "matched_minutes": 0,
+        "matched_spread_delta": null,
+        "status": "DXZ_MISSING"
+      },
+      "fields": {
+        "commission": {
+          "provenance": "provider-provisional",
+          "source": {
+            "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+            "retrieved_at_utc": "2026-09-05T04:24:16Z",
+            "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+          },
+          "unit": "USD_PER_TARGET_LOT_ROUND_TRIP",
+          "value": 5
+        },
+        "contract_size": {
+          "provenance": "provider-provisional",
+          "source": {
+            "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+            "retrieved_at_utc": "2026-09-05T04:24:16Z",
+            "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+          },
+          "unit": "UNDERLYING_UNITS_PER_TARGET_LOT",
+          "value": 100000
+        },
+        "fill_slippage": {
+          "provenance": "unknown",
+          "source": {
+            "basis": "No bound native contract/fill evidence in inspected snapshot/harvest artifacts."
+          },
+          "unit": "PRICE_UNITS",
+          "value": null
+        },
+        "lot_min": {
+          "provenance": "unknown",
+          "source": {
+            "basis": "No bound native contract/fill evidence in inspected snapshot/harvest artifacts."
+          },
+          "unit": "TARGET_LOTS",
+          "value": null
+        },
+        "lot_step": {
+          "provenance": "unknown",
+          "source": {
+            "basis": "No bound native contract/fill evidence in inspected snapshot/harvest artifacts."
+          },
+          "unit": "TARGET_LOTS",
+          "value": null
+        },
+        "session_spread": {
+          "provenance": "measured",
+          "source": {
+            "clock_admission": "UNVERIFIED_UTC; descriptive bands, not certified market sessions",
+            "path": "D:\\QM\\mt5\\FTMO_STREAM1\\MQL5\\Files\\QM\\m1_harvest\\FTMO_FTMO_STREAM1_20260905T043941Z_f9c06cfb_USDCAD_M1.jsonl",
+            "sha256": "c2378dd0cfdbfb9deeaa709ef07dae441ba619872b1c15d77016c68098c7a9ab"
+          },
+          "unit": "NATIVE_SYMBOL_POINTS_BY_RECORDED_CLOCK_BAND",
+          "value": {
+            "00:00-06:00": {
+              "n": 19960,
+              "p50": 4.0,
+              "p90": 7.0,
+              "p99": 7.0
+            },
+            "06:00-12:00": {
+              "n": 25157,
+              "p50": 3.0,
+              "p90": 6.0,
+              "p99": 7.0
+            },
+            "12:00-18:00": {
+              "n": 25383,
+              "p50": 3.0,
+              "p90": 5.0,
+              "p99": 6.0
+            },
+            "18:00-24:00": {
+              "n": 24343,
+              "p50": 4.0,
+              "p90": 6.0,
+              "p99": 10.0
+            }
+          }
+        },
+        "swap_long": {
+          "provenance": "provider-provisional",
+          "source": {
+            "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+            "retrieved_at_utc": "2026-09-05T04:24:16Z",
+            "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+          },
+          "unit": "POINTS_PER_TARGET_LOT_PER_ROLLOVER_UNIT",
+          "value": 0.71
+        },
+        "swap_short": {
+          "provenance": "provider-provisional",
+          "source": {
+            "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+            "retrieved_at_utc": "2026-09-05T04:24:16Z",
+            "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+          },
+          "unit": "POINTS_PER_TARGET_LOT_PER_ROLLOVER_UNIT",
+          "value": -12
+        },
+        "swing_margin_percent": {
+          "provenance": "provider-provisional",
+          "source": {
+            "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+            "retrieved_at_utc": "2026-09-05T04:24:16Z",
+            "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+          },
+          "unit": "PERCENT_OF_NOTIONAL",
+          "value": 3.3333333333
+        },
+        "tick_size": {
+          "provenance": "provider-provisional",
+          "source": {
+            "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+            "retrieved_at_utc": "2026-09-05T04:24:16Z",
+            "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+          },
+          "unit": "PRICE_UNITS_PER_TICK",
+          "value": 1e-05
+        },
+        "tick_value": {
+          "provenance": "provider-provisional",
+          "source": {
+            "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+            "retrieved_at_utc": "2026-09-05T04:24:16Z",
+            "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+          },
+          "unit": "PROFIT_CURRENCY_PER_TARGET_LOT_PER_TICK",
+          "value": 1
+        },
+        "triple_rollover_weekday": {
+          "provenance": "unknown",
+          "source": {
+            "basis": "Provider API omits weekday; prior Wednesday convention remains unconfirmed."
+          },
+          "unit": "WEEKDAY",
+          "value": null
+        }
+      },
+      "provider_code": "USD/CAD",
+      "symbol": "USDCAD"
+    },
+    {
+      "coverage": {
+        "DXZ": null,
+        "FTMO": {
+          "bar_count": 100000,
+          "depth_days": 98.557639,
+          "extraction_method": "MQL5_COPYRATES_PERIOD_M1_SPREAD",
+          "first_bar": "2026-05-29T10:31:00Z",
+          "last_bar": "2026-09-04T23:54:00Z",
+          "output_tag": "FTMO_FTMO_STREAM1_20260905T044517Z_0fcba01b",
+          "schema": "qm.m1-spread-harvest-coverage/v1",
+          "status": "COMPLETE",
+          "symbol": "NZDUSD",
+          "tick_first": "2026-05-29T10:31:00Z",
+          "tick_last": "2026-09-04T23:54:00Z"
+        },
+        "matched_minutes": 0,
+        "matched_spread_delta": null,
+        "status": "DXZ_MISSING"
+      },
+      "fields": {
+        "commission": {
+          "provenance": "provider-provisional",
+          "source": {
+            "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+            "retrieved_at_utc": "2026-09-05T04:24:16Z",
+            "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+          },
+          "unit": "USD_PER_TARGET_LOT_ROUND_TRIP",
+          "value": 5
+        },
+        "contract_size": {
+          "provenance": "provider-provisional",
+          "source": {
+            "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+            "retrieved_at_utc": "2026-09-05T04:24:16Z",
+            "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+          },
+          "unit": "UNDERLYING_UNITS_PER_TARGET_LOT",
+          "value": 100000
+        },
+        "fill_slippage": {
+          "provenance": "unknown",
+          "source": {
+            "basis": "No bound native contract/fill evidence in inspected snapshot/harvest artifacts."
+          },
+          "unit": "PRICE_UNITS",
+          "value": null
+        },
+        "lot_min": {
+          "provenance": "unknown",
+          "source": {
+            "basis": "No bound native contract/fill evidence in inspected snapshot/harvest artifacts."
+          },
+          "unit": "TARGET_LOTS",
+          "value": null
+        },
+        "lot_step": {
+          "provenance": "unknown",
+          "source": {
+            "basis": "No bound native contract/fill evidence in inspected snapshot/harvest artifacts."
+          },
+          "unit": "TARGET_LOTS",
+          "value": null
+        },
+        "session_spread": {
+          "provenance": "measured",
+          "source": {
+            "clock_admission": "UNVERIFIED_UTC; descriptive bands, not certified market sessions",
+            "path": "D:\\QM\\mt5\\FTMO_STREAM1\\MQL5\\Files\\QM\\m1_harvest\\FTMO_FTMO_STREAM1_20260905T044517Z_0fcba01b_NZDUSD_M1.jsonl",
+            "sha256": "96659c7034371abe89914b4cd02d7298115ed58c65c5bdfe5e3d332795f794c6"
+          },
+          "unit": "NATIVE_SYMBOL_POINTS_BY_RECORDED_CLOCK_BAND",
+          "value": {
+            "00:00-06:00": {
+              "n": 19960,
+              "p50": 5.0,
+              "p90": 7.0,
+              "p99": 9.0
+            },
+            "06:00-12:00": {
+              "n": 25157,
+              "p50": 4.0,
+              "p90": 6.0,
+              "p99": 9.0
+            },
+            "12:00-18:00": {
+              "n": 25383,
+              "p50": 4.0,
+              "p90": 6.0,
+              "p99": 7.0
+            },
+            "18:00-24:00": {
+              "n": 24343,
+              "p50": 5.0,
+              "p90": 6.0,
+              "p99": 11.0
+            }
+          }
+        },
+        "swap_long": {
+          "provenance": "provider-provisional",
+          "source": {
+            "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+            "retrieved_at_utc": "2026-09-05T04:24:16Z",
+            "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+          },
+          "unit": "POINTS_PER_TARGET_LOT_PER_ROLLOVER_UNIT",
+          "value": -4.82
+        },
+        "swap_short": {
+          "provenance": "provider-provisional",
+          "source": {
+            "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+            "retrieved_at_utc": "2026-09-05T04:24:16Z",
+            "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+          },
+          "unit": "POINTS_PER_TARGET_LOT_PER_ROLLOVER_UNIT",
+          "value": -1.36
+        },
+        "swing_margin_percent": {
+          "provenance": "provider-provisional",
+          "source": {
+            "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+            "retrieved_at_utc": "2026-09-05T04:24:16Z",
+            "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+          },
+          "unit": "PERCENT_OF_NOTIONAL",
+          "value": 3.3333333333
+        },
+        "tick_size": {
+          "provenance": "provider-provisional",
+          "source": {
+            "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+            "retrieved_at_utc": "2026-09-05T04:24:16Z",
+            "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+          },
+          "unit": "PRICE_UNITS_PER_TICK",
+          "value": 1e-05
+        },
+        "tick_value": {
+          "provenance": "provider-provisional",
+          "source": {
+            "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+            "retrieved_at_utc": "2026-09-05T04:24:16Z",
+            "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+          },
+          "unit": "PROFIT_CURRENCY_PER_TARGET_LOT_PER_TICK",
+          "value": 1
+        },
+        "triple_rollover_weekday": {
+          "provenance": "unknown",
+          "source": {
+            "basis": "Provider API omits weekday; prior Wednesday convention remains unconfirmed."
+          },
+          "unit": "WEEKDAY",
+          "value": null
+        }
+      },
+      "provider_code": "NZD/USD",
+      "symbol": "NZDUSD"
+    },
+    {
+      "coverage": {
+        "DXZ": null,
+        "FTMO": {
+          "bar_count": 100000,
+          "depth_days": 101.567361,
+          "extraction_method": "MQL5_COPYRATES_PERIOD_M1_SPREAD",
+          "first_bar": "2026-05-26T10:12:00Z",
+          "last_bar": "2026-09-04T23:49:00Z",
+          "output_tag": "FTMO_FTMO_STREAM1_20260905T045001Z_9628d0ed",
+          "schema": "qm.m1-spread-harvest-coverage/v1",
+          "status": "COMPLETE",
+          "symbol": "XAGUSD",
+          "tick_first": "2026-05-26T10:12:00Z",
+          "tick_last": "2026-09-04T23:49:00Z"
+        },
+        "matched_minutes": 0,
+        "matched_spread_delta": null,
+        "status": "DXZ_MISSING"
+      },
+      "fields": {
+        "commission": {
+          "provenance": "provider-provisional",
+          "source": {
+            "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+            "retrieved_at_utc": "2026-09-05T04:24:16Z",
+            "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+          },
+          "unit": "PERCENT_OF_NOTIONAL_PER_SIDE",
+          "value": 0.0014
+        },
+        "contract_size": {
+          "provenance": "provider-provisional",
+          "source": {
+            "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+            "retrieved_at_utc": "2026-09-05T04:24:16Z",
+            "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+          },
+          "unit": "UNDERLYING_UNITS_PER_TARGET_LOT",
+          "value": 5000
+        },
+        "fill_slippage": {
+          "provenance": "unknown",
+          "source": {
+            "basis": "No bound native contract/fill evidence in inspected snapshot/harvest artifacts."
+          },
+          "unit": "PRICE_UNITS",
+          "value": null
+        },
+        "lot_min": {
+          "provenance": "unknown",
+          "source": {
+            "basis": "No bound native contract/fill evidence in inspected snapshot/harvest artifacts."
+          },
+          "unit": "TARGET_LOTS",
+          "value": null
+        },
+        "lot_step": {
+          "provenance": "unknown",
+          "source": {
+            "basis": "No bound native contract/fill evidence in inspected snapshot/harvest artifacts."
+          },
+          "unit": "TARGET_LOTS",
+          "value": null
+        },
+        "session_spread": {
+          "provenance": "measured",
+          "source": {
+            "clock_admission": "UNVERIFIED_UTC; descriptive bands, not certified market sessions",
+            "path": "D:\\QM\\mt5\\FTMO_STREAM1\\MQL5\\Files\\QM\\m1_harvest\\FTMO_FTMO_STREAM1_20260905T045001Z_9628d0ed_XAGUSD_M1.jsonl",
+            "sha256": "106ee5f54679274ff546390445f0aaf8b72f1e62635d5a784eef23f5ebdc3a8e"
+          },
+          "unit": "NATIVE_SYMBOL_POINTS_BY_RECORDED_CLOCK_BAND",
+          "value": {
+            "00:00-06:00": {
+              "n": 19960,
+              "p50": 58.0,
+              "p90": 71.0,
+              "p99": 74.0
+            },
+            "06:00-12:00": {
+              "n": 25157,
+              "p50": 51.0,
+              "p90": 66.0,
+              "p99": 74.0
+            },
+            "12:00-18:00": {
+              "n": 25383,
+              "p50": 48.0,
+              "p90": 63.0,
+              "p99": 68.0
+            },
+            "18:00-24:00": {
+              "n": 24343,
+              "p50": 48.0,
+              "p90": 65.0,
+              "p99": 68.0
+            }
+          }
+        },
+        "swap_long": {
+          "provenance": "provider-provisional",
+          "source": {
+            "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+            "retrieved_at_utc": "2026-09-05T04:24:16Z",
+            "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+          },
+          "unit": "POINTS_PER_TARGET_LOT_PER_ROLLOVER_UNIT",
+          "value": -23.05
+        },
+        "swap_short": {
+          "provenance": "provider-provisional",
+          "source": {
+            "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+            "retrieved_at_utc": "2026-09-05T04:24:16Z",
+            "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+          },
+          "unit": "POINTS_PER_TARGET_LOT_PER_ROLLOVER_UNIT",
+          "value": 0.32
+        },
+        "swing_margin_percent": {
+          "provenance": "provider-provisional",
+          "source": {
+            "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+            "retrieved_at_utc": "2026-09-05T04:24:16Z",
+            "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+          },
+          "unit": "PERCENT_OF_NOTIONAL",
+          "value": 6.6666666667
+        },
+        "tick_size": {
+          "provenance": "provider-provisional",
+          "source": {
+            "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+            "retrieved_at_utc": "2026-09-05T04:24:16Z",
+            "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+          },
+          "unit": "PRICE_UNITS_PER_TICK",
+          "value": 0.001
+        },
+        "tick_value": {
+          "provenance": "provider-provisional",
+          "source": {
+            "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+            "retrieved_at_utc": "2026-09-05T04:24:16Z",
+            "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+          },
+          "unit": "PROFIT_CURRENCY_PER_TARGET_LOT_PER_TICK",
+          "value": 5
+        },
+        "triple_rollover_weekday": {
+          "provenance": "unknown",
+          "source": {
+            "basis": "Provider API omits weekday; prior Wednesday convention remains unconfirmed."
+          },
+          "unit": "WEEKDAY",
+          "value": null
+        }
+      },
+      "provider_code": "XAG/USD",
+      "symbol": "XAGUSD"
+    },
+    {
+      "coverage": {
+        "DXZ": null,
+        "FTMO": {
+          "bar_count": 100000,
+          "depth_days": 101.85625,
+          "extraction_method": "MQL5_COPYRATES_PERIOD_M1_SPREAD",
+          "first_bar": "2026-05-26T03:16:00Z",
+          "last_bar": "2026-09-04T23:49:00Z",
+          "output_tag": "FTMO_FTMO_STREAM1_20260905T044816Z_2f51b2ef",
+          "schema": "qm.m1-spread-harvest-coverage/v1",
+          "status": "COMPLETE",
+          "symbol": "USOIL.cash",
+          "tick_first": "2026-05-26T03:16:00Z",
+          "tick_last": "2026-09-04T23:49:00Z"
+        },
+        "matched_minutes": 0,
+        "matched_spread_delta": null,
+        "status": "DXZ_MISSING"
+      },
+      "fields": {
+        "commission": {
+          "provenance": "provider-provisional",
+          "source": {
+            "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+            "retrieved_at_utc": "2026-09-05T04:24:16Z",
+            "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+          },
+          "unit": "PERCENT_OF_NOTIONAL_PER_SIDE",
+          "value": 0
+        },
+        "contract_size": {
+          "provenance": "provider-provisional",
+          "source": {
+            "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+            "retrieved_at_utc": "2026-09-05T04:24:16Z",
+            "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+          },
+          "unit": "UNDERLYING_UNITS_PER_TARGET_LOT",
+          "value": 100
+        },
+        "fill_slippage": {
+          "provenance": "unknown",
+          "source": {
+            "basis": "No bound native contract/fill evidence in inspected snapshot/harvest artifacts."
+          },
+          "unit": "PRICE_UNITS",
+          "value": null
+        },
+        "lot_min": {
+          "provenance": "unknown",
+          "source": {
+            "basis": "No bound native contract/fill evidence in inspected snapshot/harvest artifacts."
+          },
+          "unit": "TARGET_LOTS",
+          "value": null
+        },
+        "lot_step": {
+          "provenance": "unknown",
+          "source": {
+            "basis": "No bound native contract/fill evidence in inspected snapshot/harvest artifacts."
+          },
+          "unit": "TARGET_LOTS",
+          "value": null
+        },
+        "session_spread": {
+          "provenance": "measured",
+          "source": {
+            "clock_admission": "UNVERIFIED_UTC; descriptive bands, not certified market sessions",
+            "path": "D:\\QM\\mt5\\FTMO_STREAM1\\MQL5\\Files\\QM\\m1_harvest\\FTMO_FTMO_STREAM1_20260905T044816Z_2f51b2ef_USOIL_cash_M1.jsonl",
+            "sha256": "3fb0807c418e9e157b213d33daf6ce524d96144e088c9c6540fbaa3a75f0bb03"
+          },
+          "unit": "NATIVE_SYMBOL_POINTS_BY_RECORDED_CLOCK_BAND",
+          "value": {
+            "00:00-06:00": {
+              "n": 19960,
+              "p50": 68.0,
+              "p90": 82.0,
+              "p99": 91.0
+            },
+            "06:00-12:00": {
+              "n": 25157,
+              "p50": 68.0,
+              "p90": 88.0,
+              "p99": 88.0
+            },
+            "12:00-18:00": {
+              "n": 25383,
+              "p50": 68.0,
+              "p90": 88.0,
+              "p99": 88.0
+            },
+            "18:00-24:00": {
+              "n": 24343,
+              "p50": 68.0,
+              "p90": 88.0,
+              "p99": 88.0
+            }
+          }
+        },
+        "swap_long": {
+          "provenance": "provider-provisional",
+          "source": {
+            "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+            "retrieved_at_utc": "2026-09-05T04:24:16Z",
+            "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+          },
+          "unit": "POINTS_PER_TARGET_LOT_PER_ROLLOVER_UNIT",
+          "value": 5.83
+        },
+        "swap_short": {
+          "provenance": "provider-provisional",
+          "source": {
+            "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+            "retrieved_at_utc": "2026-09-05T04:24:16Z",
+            "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+          },
+          "unit": "POINTS_PER_TARGET_LOT_PER_ROLLOVER_UNIT",
+          "value": -35.11
+        },
+        "swing_margin_percent": {
+          "provenance": "provider-provisional",
+          "source": {
+            "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+            "retrieved_at_utc": "2026-09-05T04:24:16Z",
+            "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+          },
+          "unit": "PERCENT_OF_NOTIONAL",
+          "value": 6.6666666667
+        },
+        "tick_size": {
+          "provenance": "provider-provisional",
+          "source": {
+            "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+            "retrieved_at_utc": "2026-09-05T04:24:16Z",
+            "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+          },
+          "unit": "PRICE_UNITS_PER_TICK",
+          "value": 0.001
+        },
+        "tick_value": {
+          "provenance": "provider-provisional",
+          "source": {
+            "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+            "retrieved_at_utc": "2026-09-05T04:24:16Z",
+            "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+          },
+          "unit": "PROFIT_CURRENCY_PER_TARGET_LOT_PER_TICK",
+          "value": 0.1
+        },
+        "triple_rollover_weekday": {
+          "provenance": "unknown",
+          "source": {
+            "basis": "Provider API omits weekday; prior Wednesday convention remains unconfirmed."
+          },
+          "unit": "WEEKDAY",
+          "value": null
+        }
+      },
+      "provider_code": "USOIL.cash",
+      "symbol": "XTIUSD"
+    }
+  ],
+  "version_id": "ftmo-six-symbols-2026-09-05-v1"
+}

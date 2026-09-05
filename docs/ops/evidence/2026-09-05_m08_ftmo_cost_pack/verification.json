@@ -1,0 +1,35 @@
+{
+  "tests": {
+    "args": [
+      "python",
+      "-m",
+      "pytest",
+      "tools/strategy_farm/tests/test_ftmo_cost_version.py",
+      "tools/strategy_farm/tests/test_ftmo_timebox_eval.py",
+      "tools/strategy_farm/tests/test_ftmo_lane_runner.py",
+      "tools/strategy_farm/tests/test_dual_book_builders.py",
+      "-q"
+    ],
+    "exit_code": 0,
+    "stdout": "................................................................s...     [100%]\n67 passed, 1 skipped in 3.24s\n"
+  },
+  "direct_cli_parity": true,
+  "frozen_raw_hashes_verified": [
+    "5e9a417e0f514cc02d2899dfdee73c7d4464f2a5c55b5304debd45fa15ad44f9",
+    "0ba126087d814967e5c61a2e6ddc92ef88fefc3e2f35ca14576a21ee89a7b975",
+    "c2378dd0cfdbfb9deeaa709ef07dae441ba619872b1c15d77016c68098c7a9ab",
+    "96659c7034371abe89914b4cd02d7298115ed58c65c5bdfe5e3d332795f794c6",
+    "3fb0807c418e9e157b213d33daf6ce524d96144e088c9c6540fbaa3a75f0bb03",
+    "106ee5f54679274ff546390445f0aaf8b72f1e62635d5a784eef23f5ebdc3a8e",
+    "f1a23056f78176be1f41fcc2f20a4521c9385b1d8043fa60a7ca3078a8e5ea34",
+    "0678844cb57155710e550801ce585d0ea7dcd1bbbbfda3065b8483dadd10f12d",
+    "f1a23056f78176be1f41fcc2f20a4521c9385b1d8043fa60a7ca3078a8e5ea34",
+    "0678844cb57155710e550801ce585d0ea7dcd1bbbbfda3065b8483dadd10f12d"
+  ],
+  "cost_version_sha256": "e45ebdcce4a68e81456c78228cd042770c59bb1ce84cf1527e8dba50bc7bad79",
+  "governed_pins_observed": {
+    "builder": "7eab3bf8c97373fcb44e36aca39dd679fbd3e093783cd6eacd9cb171190b3280",
+    "lane_runner": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+  },
+  "governed_adoption": false
+}

@@ -1,0 +1,1 @@
+{"schema":"qm.m1-spread-harvest-coverage/v1","status":"COMPLETE","extraction_method":"MQL5_COPYRATES_PERIOD_M1_SPREAD","output_tag":"DXZ_FACTORY_20260905T050325Z_5ca3d91b","symbol":"GBPUSD.DWX","first_bar":"2026-01-19T03:43:00Z","last_bar":"2026-04-24T23:54:00Z","bar_count":100000,"depth_days":95.840972,"tick_first":"2026-01-19T03:43:00Z","tick_last":"2026-04-24T23:53:00Z"}

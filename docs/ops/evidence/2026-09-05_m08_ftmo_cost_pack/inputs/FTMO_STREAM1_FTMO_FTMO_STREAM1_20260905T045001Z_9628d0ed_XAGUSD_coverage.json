@@ -1,0 +1,1 @@
+{"schema":"qm.m1-spread-harvest-coverage/v1","status":"COMPLETE","extraction_method":"MQL5_COPYRATES_PERIOD_M1_SPREAD","output_tag":"FTMO_FTMO_STREAM1_20260905T045001Z_9628d0ed","symbol":"XAGUSD","first_bar":"2026-05-26T10:12:00Z","last_bar":"2026-09-04T23:49:00Z","bar_count":100000,"depth_days":101.567361,"tick_first":"2026-05-26T10:12:00Z","tick_last":"2026-09-04T23:49:00Z"}

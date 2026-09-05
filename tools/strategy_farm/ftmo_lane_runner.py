@@ -32,6 +32,11 @@ import uuid
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+try:
+    from tools.strategy_farm.portfolio import ftmo_cost_version
+except ModuleNotFoundError:  # direct script execution
+    from portfolio import ftmo_cost_version
+
 
 PROVISION_RECEIPT_SCHEMA = "qm.ftmo-lane-provision-receipt/v1"
 HISTORY_OBSERVATION_SCHEMA = "qm.ftmo-history-coverage/v1"
@@ -1178,6 +1183,7 @@ def run_next(
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
+    ftmo_cost_version.add_inspection_parser(sub)
 
     provision = sub.add_parser("provision-receipt", help="inspect one dedicated lane")
     provision.add_argument("--lane", required=True, choices=sorted(LANE_ROOTS))
@@ -1220,6 +1226,8 @@ def _parser() -> argparse.ArgumentParser:
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parser().parse_args(argv)
+    if args.command == "inspect-cost-version":
+        return ftmo_cost_version.emit_inspection(args.cost_version, args.expected_sha256, "ftmo_lane_runner")
     try:
         if args.command == "provision-receipt":
             if args.out.expanduser().resolve().parent != DEFAULT_REPORT_STATE.resolve():
