@@ -1,0 +1,27 @@
+{
+  "schema": "qm.local-approved-source-reuse-evidence/v1",
+  "recorded_at_utc": "2026-09-05T05:00:00Z",
+  "new_network_retrieval_performed": false,
+  "reason": "The bounded synthesis reuses three complete governed repository source records; no new public page is represented as read.",
+  "parents": [
+    {
+      "source_id": "AI-CODEX-WTI-MADF-PERSIST-TREND-20260903",
+      "path": "strategy-seeds/sources/AI-CODEX-WTI-MADF-PERSIST-TREND-20260903/source.md",
+      "sha256": "576505363DE9DCA4F8E0CB4047D30DE630FB76CBC754F3F9FE3805CDA33507EC",
+      "role": "lag-one intercept/no-time-trend ADF arithmetic and boundary orientation"
+    },
+    {
+      "source_id": "AI-CODEX-WTI-MLZ76-TREND-20260902",
+      "path": "strategy-seeds/sources/AI-CODEX-WTI-MLZ76-TREND-20260902/source.md",
+      "sha256": "6C03347BB420026B8B5B7D607A593158BE518C4AB8AF3EC258E345D1143095CD",
+      "role": "exact finite-word LZ76 exhaustive-history definition and fixed complexity boundary"
+    },
+    {
+      "source_id": "MOP-TSMOM-2012",
+      "path": "strategy-seeds/sources/MOP-TSMOM-2012/source.md",
+      "sha256": "C8B07ECD62C1D5EF9E3D7975EEE6A3B6C46C1C566D0B20B42237613D9B3A7042",
+      "role": "peer-reviewed monthly own-return continuation and explicit WTI carrier"
+    }
+  ],
+  "claim_boundary": "The parents support ADF, LZ76, and WTI continuation separately. Their conjunction, shared sample, CFD translation, activity, economics, and portfolio fit are untested QuantMechanica hypotheses."
+}
