@@ -1,0 +1,56 @@
+{
+  "schema_version": "qm.branch-build-q02-handoff/v1",
+  "recorded_at_utc": "2026-09-05T09:56:11+00:00",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41350",
+  "ea_label": "QM5_41350_wti-adf-ljungbox-agree-tr",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "compile": {
+    "work_item_id": "fd5f531d-7d06-4bfc-b91f-e763bb68cf5f",
+    "status": "done",
+    "verdict": "COMPILE_OK",
+    "build_check_result": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "mq5_sha256": "dd76b2426211d10b58dcccfbb26d6c7ae5d94bdaf50c5748ea0d10b78623c345",
+    "ex5_sha256": "0b2772c2cb1d93a408c1fa6a5747e672e804eaf92bb0e7147727a9aede56a2e9",
+    "evidence_path": "D:\\QM\\reports\\work_items\\fd5f531d-7d06-4bfc-b91f-e763bb68cf5f\\QM5_41350\\COMPILE_EA\\compile_evidence.json"
+  },
+  "setfile": {
+    "path": "framework/EAs/QM5_41350_wti-adf-ljungbox-agree-tr/sets/QM5_41350_wti-adf-ljungbox-agree-tr_XTIUSD.DWX_D1_backtest.set",
+    "sha256": "ab533fe59734dfaa65671abf07fba032b49002afc38a28c6b77c045135e3faab",
+    "build_hash": "dd77cd97990e6b498b4c419b36b59d43e4c0052ec3aced2edcc2b499582fbe03"
+  },
+  "cpu_admission": {
+    "threshold_pct": 97.0,
+    "samples_pct": [92.0131, 86.6324, 92.5790, 69.2946, 68.2218],
+    "average_pct": 81.74818,
+    "maximum_pct": 92.5790,
+    "admitted": true
+  },
+  "factory_build_handoff": {
+    "task_id": "7037c57a-46ea-49ec-8b83-b9ce5888346a",
+    "status": "done",
+    "result_sha256": "f26493c6d1bd6cc078e48461750beb3a10e1d84d2b3cc8241dd6bd81ea35e6d8"
+  },
+  "q02": {
+    "work_item_id": "a09ca266-a672-4c9d-8d15-ead92b464596",
+    "status_at_receipt": "pending",
+    "enqueued_count": 1,
+    "skipped_count": 0
+  },
+  "safety": {
+    "manual_backtest_run": false,
+    "terminal_control_used": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}

@@ -18,6 +18,27 @@ source_approval: decisions/2026-09-05_wti_monthly_adf_ljungbox_agreement_trend_s
 source_author: OpenAI Codex
 source_authors: OpenAI Codex; Ernest P. Chan; G. M. Ljung; George E. P. Box; Esam Mahdi; Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen
 source_citation: "Chan (2013), Algorithmic Trading, Wiley; Ljung and Box (1978), Biometrika 65(2), DOI 10.1093/biomet/65.2.297; Mahdi (2016), SpringerPlus 5, DOI 10.1186/s40064-016-3167-4; Moskowitz, Ooi, and Pedersen (2012), JFE 104(2), DOI 10.1016/j.jfineco.2011.11.003."
+source_citations:
+  - type: governed_composite_source
+    citation: "OpenAI Codex (2026). WTI monthly ADF-Ljung-Box agreement trend."
+    location: strategy-seeds/sources/AI-CODEX-WTI-ADF-LJUNGBOX-AGREE-TREND-20260905/source.md
+    quality_tier: governed_source
+    role: exact_conjunction_sample_threshold_risk_and_lifecycle
+  - type: approved_adf_source
+    citation: "Chan, E. P. (2013). Algorithmic Trading: Winning Strategies and Their Rationale. Wiley Trading."
+    location: strategy-seeds/sources/AI-CODEX-WTI-MADF-PERSIST-TREND-20260903/source.md
+    quality_tier: A
+    role: lag_one_constant_no_time_trend_adf_arithmetic_and_boundary_orientation
+  - type: peer_reviewed_diagnostic_source
+    citation: "Ljung, G. M., and Box, G. E. P. (1978). On a Measure of Lack of Fit in Time Series Models. Biometrika 65(2), 297-303."
+    location: strategy-seeds/sources/LJUNGBOX-MAHDI-MOP-WTI-PORTMANTEAU-20260902/source.md
+    quality_tier: A
+    role: finite_sample_six_lag_ljung_box_portmanteau_arithmetic
+  - type: peer_reviewed_trading_paper
+    citation: "Moskowitz, T. J., Ooi, Y. H., and Pedersen, L. H. (2012). Time Series Momentum. Journal of Financial Economics 104(2), 228-250."
+    location: strategy-seeds/sources/MOP-TSMOM-2012/source.md
+    quality_tier: A
+    role: monthly_own_return_continuation_and_explicit_wti_membership
 strategy_mechanic: monthly-wti-sixty-completed-log-price-levels-lag-one-intercept-adf-t-at-least-minus2p594-and-newest-forty-eight-log-returns-six-lag-ljung-box-q-at-least5p35-agreement-gated-twelve-month-return-sign-continuation
 strategy_type_flags: [commodity, energy, crude-oil, structural-trend, dual-diagnostic-agreement, augmented-dickey-fuller, ljung-box, monthly-rebalance, atr-hard-stop, time-stop, symmetric-long-short, low-frequency]
 markets: [commodities, energy, crude_oil]
@@ -43,9 +64,14 @@ expected_dd_pct: 35.0
 risk_class: high
 ml_required: false
 r1_track_record: PASS_WITH_GOVERNED_COMPLETE_PARENT_EVIDENCE
+r1_reasoning: "Complete approved ADF and Ljung-Box method records plus a complete peer-reviewed WTI continuation record provide exact hashes, adverse interpretation limits, and explicit non-transfer boundaries."
 r2_mechanical: PASS
-r3_data_available: PASS_WITH_CONTINUOUS_CFD_BASIS_RISK
+r2_reasoning: "Month clock, sixty endpoints, both locked arithmetic paths, inclusive thresholds, conjunction, twelve-month side, consumed attempt, fixed risk, stop, spread, and lifecycle are deterministic."
+r3_data_available: PASS
+r3_qualification: CONTINUOUS_CFD_BASIS_RISK
+r3_reasoning: "Registered native XTIUSD.DWX D1 history and MT5 state supply every runtime input; continuous-CFD roll, basis, financing, gaps, and broker-month labels remain material risks."
 r4_ml_forbidden: PASS
+r4_reasoning: "Only timestamps, completed prices, logarithms, bounded OLS, autocovariance sums, fixed comparisons, ATR risk, quotes, positions, deals, and persistent state are used."
 parameters_to_test: "Locked Q02 baseline only: 60 completed month-end closes; ADF 58 rows, lag one, intercept, residual dof 55, inclusive t>=-2.594; newest 48 adjacent returns; demean; common denominator; Ljung-Box lags 1..6, Q6=48*50*sum(rho_k^2/(48-k)), inclusive Q6>=5.35; 12-month direction; 1800 D1 bars; 180-minute grace; endpoint staleness 10 days; ATR(20)*3.5 stop; stale exit 40 days; spread ceiling 1500 points."
 risk_fixed_backtest: 1000
 risk_percent_backtest: 0
@@ -54,12 +80,13 @@ news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
 pipeline_phase: Q01
-q01_status: SOURCE_BUILT_COMPILE_PENDING
-q02_status: NOT_ENQUEUED_Q01_PENDING
+q01_status: COMPILE_OK
+q02_status: ENQUEUED_PENDING
 force_build: true
 review_focus: "Falsify direct-WTI monthly ADF/Ljung-Box agreement outside the certified XAU/SP500/NDX/XNG book. Verify shared endpoints, ADF arithmetic, demeaning, all six autocorrelations/weights, inclusive gates, disagreement abstention, twelve-month side, consumed month, fixed risk, frozen stop, and next-month lifecycle. Q09 alone may establish decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
+hard_rules_at_risk: [exact_wti_carrier, first_tradable_month_bar, sixty_consecutive_completed_months, no_current_month_price, chronological_log_levels, adf_lag_one_constant_no_time_trend, adf_residual_dof_55, inclusive_adf_boundary, newest_forty_eight_returns, demeaned_ljung_box, common_autocorrelation_denominator, six_lag_finite_sample_ljung_box, inclusive_ljung_box_boundary, both_gates_required, twelve_month_return_direction, monthly_attempt_state, risk_mode_dual, hard_stop_present, friday_close_disabled, next_month_exit, q02_frequency_floor, portfolio_correlation]
 g0_approval_reasoning: "OWNER mission 2026-09-05 and G0 decision approve R1-R4 within disclosed source-synthesis and continuous-CFD risks. Corrected-root dedup found no exact identity; manual review separates the raw-return six-lag portmanteau conjunction from all sibling gates."
 ---
 
@@ -111,7 +138,7 @@ sign chooses side. Consume the month before every fallible gate. Permit zero
 or one owned WTI position, attach one frozen hard stop, and never retry,
 resize, scale in, pyramid, grid, or martingale.
 
-## Entry Rules
+## 4. Entry Rules
 
 Require exact identity, WTI D1 host, slot/magic, locked inputs, and fixed risk.
 Repair malformed exposure first. On a genuine new month within 180 minutes,
@@ -119,12 +146,26 @@ persist the attempt, reconstruct endpoints, apply both formulas, then require
 spread `[0,1500]`, quotes, completed ATR(20), sizing, and margin. Open at most
 one position with a frozen `3.5*ATR` stop and no target.
 
-## Exit Rules And Management
+## 5. Exit Rules
 
 Framework kill switch and broker stop remain authoritative. Close on the first
-later-month tick, after 40 days, or immediately for duplicate/wrong-symbol/
-wrong-side/stopless malformed exposure. There is no intramonth diagnostic
-exit, target, trail, break-even, partial close, retry, or Friday flatten.
+later-month tick or after 40 days. There is no intramonth diagnostic exit,
+target, trail, break-even, partial close, retry, or Friday flatten.
+
+## 6. Filters (No-Trade Module)
+
+Require the exact WTI carrier, D1 host, slot/magic, locked inputs, fixed-risk
+contract, first-tradable-day timing, complete fresh endpoints, both inclusive
+diagnostic gates, nonzero twelve-month direction, valid quotes and ATR, and
+spread in `[0,1500]`. Persist the monthly attempt before fallible filters so a
+missed or rejected month cannot retry.
+
+## 7. Trade Management Rules
+
+Permit only zero or one owned WTI position. On every tick, repair malformed
+exposure by immediately closing duplicates, wrong-symbol, wrong-side, or
+stopless owned positions. A valid position keeps its frozen initial stop until
+the next-month or 40-day close; signal magnitude never resizes it.
 
 ## Risk
 
@@ -165,5 +206,5 @@ AutoTrading, terminal control, or live use.
 |---|---|---|---|
 | G0 Source Approval | 2026-09-05 | APPROVED_SOURCE | `decisions/2026-09-05_wti_monthly_adf_ljungbox_agreement_trend_source_approval.md` |
 | G0 Research Intake | 2026-09-05 | APPROVED | `decisions/2026-09-05_qm5_41350_wti_monthly_adf_ljungbox_agreement_trend_g0.md` |
-| Q01 Build & Spec | 2026-09-05 | SOURCE_BUILT; COMPILE_PENDING | governed compile required |
-| Q02 Baseline | 2026-09-05 | NOT_ENQUEUED_Q01_PENDING | strict compile/EX5 prerequisite |
+| Q01 Build & Spec | 2026-09-05 | COMPILE_OK | `D:/QM/reports/work_items/fd5f531d-7d06-4bfc-b91f-e763bb68cf5f/QM5_41350/COMPILE_EA/compile_evidence.json` |
+| Q02 Baseline | 2026-09-05 | ENQUEUED_PENDING | work item `a09ca266-a672-4c9d-8d15-ead92b464596` |

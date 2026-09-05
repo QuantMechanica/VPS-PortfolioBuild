@@ -1,0 +1,41 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "fd5f531d-7d06-4bfc-b91f-e763bb68cf5f"
+  ],
+  "backup": {
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260905T094436Z_43daf31d.sqlite",
+    "reused": false,
+    "sha256": "f0479b3f70557883dda8cc88686073c161559f2ed8d05d07906329d57d1dab89"
+  },
+  "backup_reuse_max_age_minutes": 0.0,
+  "backup_timeout_seconds": 60.0,
+  "backup_write_guard": {
+    "attempts": 1,
+    "transaction": "BEGIN IMMEDIATE / validated / backed up / released / COMMIT",
+    "wait_seconds": 0.0
+  },
+  "deferred": [],
+  "factory_mutation_lock": {
+    "path": "D:\\QM\\strategy_farm\\state\\FACTORY_MUTATION.lock",
+    "release_status": "released"
+  },
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "dd76b2426211d10b58dcccfbb26d6c7ae5d94bdaf50c5748ea0d10b78623c345",
+      "ea_id": "QM5_41350",
+      "ea_label": "QM5_41350_wti-adf-ljungbox-agree-tr",
+      "expected_mq5_sha256": "dd76b2426211d10b58dcccfbb26d6c7ae5d94bdaf50c5748ea0d10b78623c345",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41350_wti-adf-ljungbox-agree-tr\\QM5_41350_wti-adf-ljungbox-agree-tr.mq5",
+      "work_item_id": "fd5f531d-7d06-4bfc-b91f-e763bb68cf5f"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-09-05T09:44:47+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "fd5f531d-7d06-4bfc-b91f-e763bb68cf5f"
+}
