@@ -18251,3 +18251,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41350,wti-adf-ljungbox-agree-tr,0,XTIUSD.DWX,413500000,2026-09-05,Codex governed allocator,active
 41351,wti-adf-bds-agree-tr,0,XTIUSD.DWX,413510000,2026-09-05,Codex governed allocator,active
 41352,wti-adf-vr-agree-tr,0,XTIUSD.DWX,413520000,2026-09-05,Codex governed allocator,active
+41353,wti-adf-pp-agree-tr,0,XTIUSD.DWX,413530000,2026-09-05,Codex governed allocator,active
