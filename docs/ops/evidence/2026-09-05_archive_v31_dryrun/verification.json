@@ -1,0 +1,21 @@
+{
+  "schema": "qm.archive-v31-verification/v1",
+  "task_id": "a847f01a-74ee-4878-9b9e-30779bcbdaa1",
+  "tests_passed": 107,
+  "powershell_test_json": true,
+  "runtime_whitelist": true,
+  "strategies": 3338,
+  "card_revisions": 3400,
+  "unknown_markets_with_sets": 0,
+  "unknown_markets_without_sets": 88,
+  "all_names_bound_to_ledger": true,
+  "all_names_require_owner_ceo_review": true,
+  "unscoped_set_families_without_public_markets": 13,
+  "spec_provenance_unavailable": 676,
+  "hashes": {
+    "strategy-archive-v31.json": "48b38808bb26b937f1673e3ba3ffd8c9f6ce361951bf2582ddb7437300082680",
+    "strategy_names.v1.json": "9da917a82e73e2f9e7b9ac0f5213e549c2d34e5376ecfb581fcaa077e5c349d4",
+    "website_archive_v31.py": "d4f7dfc2838cf0c1e5e66ccd03004d7da4274f43a70315da401f424f71a0477e",
+    "strategy-archive.schema.v31.json": "18f59e535dadf844e4b5842ce129bb6d852726b4d246a8cd6c48c30b025a628f"
+  }
+}

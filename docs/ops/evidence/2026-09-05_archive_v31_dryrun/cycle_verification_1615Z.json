@@ -1,0 +1,16 @@
+{
+  "verified_at": "2026-09-05T16:49:55.120611+00:00",
+  "task_id": "a847f01a-74ee-4878-9b9e-30779bcbdaa1",
+  "tests_passed": 107,
+  "hashes_match_original_verification": {
+    "strategy-archive-v31.json": true,
+    "strategy_names.v1.json": true,
+    "website_archive_v31.py": true,
+    "strategy-archive.schema.v31.json": true
+  },
+  "runtime_whitelist": true,
+  "editorial_sample_rows": 30,
+  "publication": false,
+  "name_duplicates_require_editorial_review": 3151,
+  "current_website_phase_labels_verified": "C:/QM/deploy/qm-ops-refresh/Website/pipeline.html lines 122,175 and book stage"
+}
