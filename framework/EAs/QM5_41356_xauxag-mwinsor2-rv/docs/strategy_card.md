@@ -90,8 +90,8 @@ news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
 pipeline_phase: Q01
-q01_status: NOT_BUILT
-q02_status: NOT_ENQUEUED_Q01_PENDING
+q01_status: COMPILE_OK
+q02_status: NOT_ENQUEUED_CPU_CEILING
 force_build: true
 review_focus: "Falsify a monthly XAU/XAG contrarian return stream whose signal is the exact fixed two-per-tail Winsorized location of synchronized ratio returns. Verify opposed legs, aggregate fixed risk, atomic lifecycle, and no absolute-metal fallback. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -265,6 +265,5 @@ manifests, `T_Live`, AutoTrading, terminal control, or live use.
 |---|---|---|---|
 | G0 Source Approval | 2026-09-05 | APPROVED_SOURCE | `decisions/2026-09-05_xauxag_monthly_winsor2_reversion_source_approval.md` |
 | G0 Research Intake | 2026-09-05 | APPROVED | `decisions/2026-09-05_qm5_41356_xauxag_monthly_winsor2_reversion_g0.md` |
-| Q01 Build & Spec | TBD | PENDING | TBD |
-| Q02 Baseline | TBD | NOT_ENQUEUED | TBD |
-
+| Q01 Build & Spec | 2026-09-05 | COMPILE_OK; BUILD_CHECK_PASS | `D:\\QM\\reports\\work_items\\d0de54f6-118f-47b7-877a-d0185ed5caa2\\QM5_41356\\COMPILE_EA\\compile_evidence.json` |
+| Q02 Baseline | 2026-09-05 | NOT_ENQUEUED_CPU_CEILING | five CPU samples 79%-99%, average 87.6%, threshold 97% |

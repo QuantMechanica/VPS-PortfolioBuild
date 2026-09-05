@@ -1,0 +1,20 @@
+{
+  "deferred": [
+    {
+      "actual_mq5_sha256": "38654686a68a119770c0e6cb24329e15cba822ca6a836d5226fab0a2bbb015f2",
+      "ea_id": "QM5_41356",
+      "ea_label": "QM5_41356_xauxag-mwinsor2-rv",
+      "expected_mq5_sha256": "9787b672b27cdc137fcf60824e2f097c09d29c2cb0650785aafb555991002e1a",
+      "reason": "SOURCE_SHA_STALE_OR_MISSING",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41356_xauxag-mwinsor2-rv\\QM5_41356_xauxag-mwinsor2-rv.mq5",
+      "work_item_id": "4b3201a2-0087-42dd-801e-497058f40900"
+    }
+  ],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [],
+  "release_count": 0,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "4b3201a2-0087-42dd-801e-497058f40900"
+}

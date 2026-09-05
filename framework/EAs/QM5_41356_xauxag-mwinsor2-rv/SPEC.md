@@ -95,4 +95,4 @@ alone owns realized book overlap. Portfolio gates, deploy/live manifests,
 
 ## Revision
 
-2026-09-05: governed Q01 implementation from the approved card; Q02 pending.
+2026-09-05: governed Q01 compile and build-check PASS; Q02 admission stopped at the 97% CPU ceiling.
