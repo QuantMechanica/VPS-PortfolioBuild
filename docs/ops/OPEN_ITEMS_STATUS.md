@@ -1,5 +1,7 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **Nachtrag 08:24Z (05.09.) — QM5_41349 neue WTI-Strukturkante source-built, Compile-Prärequisit offen:** Direkte WTI-Monatskante neu und dedupliziert: lag-one ADF `t>=-2.594` UND Raw-Return-Sample-Entropy (`m=2`, `r=0.2*sd`) `<=2.5`, danach 12-Monats-Richtung; nicht QM5_12567 und nicht die vorhandenen ADF-KPSS/VN/LZ/Spektral-Varianten. Card/G0/ID/Magic/MQ5/SPEC/fester Q02-Set (`RISK_FIXED=1000`) committed (`f711c0ffef`, `0e28f3bb0f`, `947e74f89e`), 4/4 Referenztests und beide Card-Linter PASS. CPU-Fenster 77,7738% Mittel / 88,0875% Maximum <97%. Governed Compile `58f2abcf-00c1-4d8e-a928-9a25dde9e1c9` source-hash-geprüft, Hold gelöst und priority-bound, aber weiterhin pending/unclaimed ohne EX5/COMPILE_OK; deshalb Q02 korrekt NICHT eingereiht. Fortsetzung: denselben Compile-Item abwarten, danach frisches CPU-Fenster und genau eine XTIUSD.DWX/D1-Q02-Zeile. Evidenz `docs/research/QM5_41349_WTI_ADF_SAMPEN_AGREEMENT_COMPILE_HANDOFF_2026-09-05.md`.
+
 > **CEO-Loop 2026-09-02 10:00–10:40Z (OWNER: „Sonntag 06.09. steht; Claude voll verantwortlich für Backtest-Durchsatz und Buch"):**
 > **Steuerungsebene war der Engpass, nicht die Tester.** Evidenz `docs/ops/evidence/2026-09-02_ceo_stranding_census_and_pump_control_plane.md`.
 > (1) Gate-Kaskade lief seit 01.09. in 12 von 261 Pump-Zyklen → 413 Q03-PASS, 58 Q09-PASS, 591 Q02-PASS ohne Folgezeile; Zensus-Services ebenfalls verhungert.
