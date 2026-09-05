@@ -1,0 +1,67 @@
+{
+  "schema": "qm.strategy-reference-fixture/v1",
+  "strategy_id": "AI-CODEX-WTI-ADF-VN-AGREE-TREND-20260905_S01",
+  "contract": {
+    "level_count": 60,
+    "adf_regression_observations": 58,
+    "adf_residual_degrees_of_freedom": 55,
+    "adf_t_min_inclusive": -2.594,
+    "von_neumann_return_start_level_index": 39,
+    "von_neumann_return_count": 20,
+    "von_neumann_eta_max_exclusive": 2.0,
+    "momentum_start_level_index": 47,
+    "momentum_end_level_index": 59,
+    "direction_epsilon": 1e-12
+  },
+  "generator": {
+    "rng": "python_random_mt19937_seed_0_gauss",
+    "initial_level": 4.5,
+    "rw": "x0=4.5; x[i+1]=x[i]+0.006+N(0,0.035), i=0..58",
+    "ar": "x[i]=4.5+0.25*(x[i-1]-4.5)+0.025*sin(2*pi*i/6)+N(0,0.004), x[-1]=4.5, i=0..59",
+    "up": "x0=4.5; x[i+1]=x[i]+0.007+0.018*cos(2*pi*i/12)+0.006*cos(2*pi*i/6)+N(0,0.002)",
+    "down": "x0=4.5; x[i+1]=x[i]-0.007+0.018*cos(2*pi*i/12)+0.006*cos(2*pi*i/6)+N(0,0.002)"
+  },
+  "fixtures": [
+    {
+      "name": "adf_only_high_eta",
+      "generator": "rw",
+      "adf_t": 0.2639738555833502,
+      "von_neumann_eta": 2.0999179077516827,
+      "momentum_12": 0.19562390290232656,
+      "adf_qualified": true,
+      "von_neumann_qualified": false,
+      "direction": 0
+    },
+    {
+      "name": "von_neumann_only_adf_reject",
+      "generator": "ar",
+      "adf_t": -18.085195927690275,
+      "von_neumann_eta": 1.0637434786347626,
+      "momentum_12": -0.010621365586782616,
+      "adf_qualified": false,
+      "von_neumann_qualified": true,
+      "direction": 0
+    },
+    {
+      "name": "agreement_buy",
+      "generator": "up",
+      "adf_t": -0.673182134985979,
+      "von_neumann_eta": 0.34869713978577294,
+      "momentum_12": 0.09106422302299144,
+      "adf_qualified": true,
+      "von_neumann_qualified": true,
+      "direction": 1
+    },
+    {
+      "name": "agreement_sell",
+      "generator": "down",
+      "adf_t": -2.0588538549981177,
+      "von_neumann_eta": 0.34869713978577355,
+      "momentum_12": -0.0769357769770096,
+      "adf_qualified": true,
+      "von_neumann_qualified": true,
+      "direction": -1
+    }
+  ],
+  "claim_boundary": "Synthetic deterministic arithmetic fixtures only; not market evidence, calibration, performance, or decorrelation evidence."
+}
