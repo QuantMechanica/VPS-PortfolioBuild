@@ -382,6 +382,31 @@ PHASE_RAM_FLOOR_GB: dict[str, dict[str, float]] = {
         "energy": 12.0,     # no rows -> minimum
         "other": 12.0,
     },
+    # Q08/Q09 added 2026-09-05 09:30Z (CEO, GRUEN infra): the full-history
+    # confirmation gates run the same per-symbol tick model as Q05-Q07 and the
+    # ledger shows the same footprint -- Q08 fx_cross n=1 max 16.8 (plus the
+    # 16.3-16.4 GB EURNZD Q08/Q09 runs observed live on T7/T9 today), fx_major
+    # n=7 max 15.6 / p95 15.5, metal n=11 max 12.0; Q09 fx_major n=2 max 15.2,
+    # metal n=3 max 11.9, fx_cross no rows (carried from Q08).  Without a floor
+    # two unmeasured fx_cross Q08/Q09 rows reserved the flat class and stacked
+    # 16 GB each while free RAM fell to 12.5 GB.  Same max() semantics and the
+    # same QM_PHASE_RAM_FLOOR=0 kill switch as above.
+    "Q08": {
+        "fx_cross": 18.0,   # n=1, max 16.8; live 16.3-16.4 -> next 2 GB
+        "fx_major": 16.0,   # n=7, max 15.6, p95 15.5
+        "fx_exotic": 12.0,
+        "metal": 12.0,      # n=11, max 12.0, p95 11.9
+        "energy": 12.0,     # n=2, max 4.6 -> minimum
+        "other": 12.0,
+    },
+    "Q09": {
+        "fx_cross": 18.0,   # carried from Q08; live 16.3 GB EURNZD run
+        "fx_major": 16.0,   # n=2, max 15.2
+        "fx_exotic": 12.0,
+        "metal": 12.0,      # n=3, max 11.9
+        "energy": 12.0,
+        "other": 12.0,
+    },
 }
 # Facts-only labels for WHICH rule produced a reservation.  Recorded next to
 # reservation_gb in the skip / drain / reaper facts; never read by a decision.
