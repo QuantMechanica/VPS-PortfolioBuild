@@ -968,6 +968,112 @@ def test_qm5_10718_mae_build_repair_is_source_and_predecessor_bound() -> None:
     )
 
 
+def test_qm5_1257_card_fidelity_repair_is_source_and_predecessor_bound(
+    tmp_path: Path, monkeypatch,
+) -> None:
+    label = compile_work_items.QM5_1257_CARD_FIDELITY_REPAIR_EA_LABEL
+    predecessor_id = (
+        compile_work_items.QM5_1257_CARD_FIDELITY_REPAIR_PREDECESSOR_ID
+    )
+    evidence_path = tmp_path / "summary.json"
+    evidence_path.write_text("sealed q03 evidence\n", encoding="utf-8")
+    monkeypatch.setattr(
+        compile_work_items,
+        "QM5_1257_CARD_FIDELITY_Q03_EVIDENCE_SHA256",
+        compile_work_items.sha256_file(evidence_path),
+    )
+    predecessor = {
+        "id": predecessor_id,
+        "phase": "Q03",
+        "status": "done",
+        "verdict": "PASS",
+        "evidence_path": str(evidence_path),
+        "mq5_sha256": (
+            compile_work_items.QM5_1257_CARD_FIDELITY_PREDECESSOR_SOURCE_SHA256
+        ),
+        "ex5_sha256": (
+            compile_work_items.QM5_1257_CARD_FIDELITY_PREDECESSOR_EX5_SHA256
+        ),
+        "setfile_sha256": compile_work_items.QM5_1257_CARD_FIDELITY_SETFILE_SHA256,
+        "payload_json": json.dumps({
+            "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1",
+            "portfolio_scope": "basket",
+            "host_symbol": "GBPUSD.DWX",
+            "host_timeframe": "H1",
+            "basket_symbols": ["GBPUSD.DWX", "USDJPY.DWX"],
+            "risk_fixed": 1000.0,
+            "risk_percent": 0.0,
+            "expected_setfile_sha256": (
+                compile_work_items.QM5_1257_CARD_FIDELITY_SETFILE_SHA256
+            ),
+            "ea_dir_name": label,
+            "basket_manifest": (
+                f"C:/QM/repo/framework/EAs/{label}/basket_manifest.json"
+            ),
+        }),
+    }
+    inventory = {"work_rows": {"1257": [predecessor]}}
+    arguments = {
+        "ea_id": "1257",
+        "source_sha": (
+            compile_work_items.QM5_1257_CARD_FIDELITY_REPAIRED_SOURCE_SHA256
+        ),
+        "inventory": inventory,
+    }
+
+    assert compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_1257_CARD_FIDELITY_REPAIR_AUTHORITY,
+        **arguments,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        "QM5_1258_unrelated-h1",
+        compile_work_items.QM5_1257_CARD_FIDELITY_REPAIR_AUTHORITY,
+        **arguments,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_1257_CARD_FIDELITY_REPAIR_AUTHORITY,
+        **{**arguments, "source_sha": "0" * 64},
+    )
+    changed_inventory = json.loads(json.dumps(inventory))
+    changed_payload = json.loads(
+        changed_inventory["work_rows"]["1257"][0]["payload_json"]
+    )
+    changed_payload["risk_fixed"] = 999.0
+    changed_inventory["work_rows"]["1257"][0]["payload_json"] = json.dumps(
+        changed_payload
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_1257_CARD_FIDELITY_REPAIR_AUTHORITY,
+        **{**arguments, "inventory": changed_inventory},
+    )
+
+    compile_row_id = "compile-successor"
+    current_inventory = json.loads(json.dumps(inventory))
+    current_inventory["work_rows"]["1257"].append({
+        "id": compile_row_id,
+        "phase": compile_work_items.COMPILE_EA_PHASE,
+        "payload_json": json.dumps({
+            "append_only_source_repair": True,
+            "compile_source_repair_authority": (
+                compile_work_items.QM5_1257_CARD_FIDELITY_REPAIR_AUTHORITY
+            ),
+            "mq5_sha256": (
+                compile_work_items.QM5_1257_CARD_FIDELITY_REPAIRED_SOURCE_SHA256
+            ),
+            "source_repair_predecessor_work_item_ids": [predecessor_id],
+        }),
+    })
+    assert compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_1257_CARD_FIDELITY_REPAIR_AUTHORITY,
+        **{**arguments, "inventory": current_inventory},
+        current_work_item_id=compile_row_id,
+    )
+
+
 def test_qm5_38002_q02_stale_binary_repair_authority_is_exact_label_bound() -> None:
     label = "QM5_38002_codetrading-macd-ema-trend-pullback"
 

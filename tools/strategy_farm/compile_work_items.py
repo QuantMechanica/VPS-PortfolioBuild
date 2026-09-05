@@ -181,6 +181,34 @@ QM5_10718_MAE_BUILD_REPAIR_EA_LABEL = (
 QM5_10718_MAE_BUILD_REPAIRED_SOURCE_SHA256 = (
     "92fa06a272aa4805e31c6caac4f1ad9feeaf91fec18c349a616bf2cae00f8f00"
 )
+# Exact OWNER-mission authority for the QM5_1257 FX-pair card-fidelity repair.
+# The sealed V4 Q03 PASS establishes the logical basket and fixed-risk identity,
+# while the repaired source adds only the mandatory MAE hook and the approved
+# aggregate 1.5R package stop.  This source-hash/evidence-bound authority permits
+# one append-only COMPILE_EA successor and grants no backtest, gate-verdict,
+# portfolio-admission, or live-use authority.
+QM5_1257_CARD_FIDELITY_REPAIR_PREDECESSOR_ID = (
+    "162a6230-d6fa-424c-a539-b873cc9a5559"
+)
+QM5_1257_CARD_FIDELITY_REPAIR_AUTHORITY = (
+    "owner_mission:2026-09-05:qm5_1257_card_fidelity_repair"
+)
+QM5_1257_CARD_FIDELITY_REPAIR_EA_LABEL = "QM5_1257_lemishko-fx-cointpair"
+QM5_1257_CARD_FIDELITY_REPAIRED_SOURCE_SHA256 = (
+    "1e6074d40b14771fe8bcc172e846ef27d09ddb3cbb8d43ded465f8b87d696309"
+)
+QM5_1257_CARD_FIDELITY_PREDECESSOR_SOURCE_SHA256 = (
+    "ba6e93262efd1cbd14f3c065a609c643af776f79b24e3ead08be9141ee89cdfc"
+)
+QM5_1257_CARD_FIDELITY_PREDECESSOR_EX5_SHA256 = (
+    "cc4337c6cfc05a734cc75d30f85af6a07136739017314f27efc7535eceb65516"
+)
+QM5_1257_CARD_FIDELITY_SETFILE_SHA256 = (
+    "f7efb0a2183acdaee85f0882a0858447014f970a2e5782227e1c4980e98298d4"
+)
+QM5_1257_CARD_FIDELITY_Q03_EVIDENCE_SHA256 = (
+    "aa2312ba8230266bf81a6733b6700d2faf06944bcdcab6d8cb5eb8f792059ac9"
+)
 # Exact paced-fleet authority for the QM5_10717 logical FX8 basket repair.
 # The open logical Q02 row is still unclaimed, but its immutable artifact
 # bindings predate the current hardening contract and point to a host-only
@@ -1855,6 +1883,15 @@ def _source_repair_authorized(
             inventory=inventory,
             current_work_item_id=current_work_item_id,
         )
+    if authority == QM5_1257_CARD_FIDELITY_REPAIR_AUTHORITY:
+        return _qm5_1257_card_fidelity_repair_authorized(
+            ea_label,
+            authority,
+            ea_id=ea_id,
+            source_sha=source_sha,
+            inventory=inventory,
+            current_work_item_id=current_work_item_id,
+        )
     if authority == QM5_10025_Q02_ZERO_TRADE_REPAIR_AUTHORITY:
         return _qm5_10025_q02_zero_trade_repair_authorized(
             ea_label,
@@ -2194,6 +2231,93 @@ def _qm5_10718_mae_build_repair_authorized(
         and str(current_payload.get("mq5_sha256") or "").lower()
         == QM5_10718_MAE_BUILD_REPAIRED_SOURCE_SHA256
         and QM5_10718_MAE_BUILD_REPAIR_PREDECESSOR_ID
+        in current_payload.get("source_repair_predecessor_work_item_ids", [])
+    )
+
+
+def _qm5_1257_card_fidelity_repair_authorized(
+    ea_label: str,
+    authority: str | None,
+    *,
+    ea_id: str | None,
+    source_sha: str | None,
+    inventory: dict[str, Any] | None,
+    current_work_item_id: str | None,
+) -> bool:
+    """Bind one current-build compile to the sealed logical FX-pair Q03 PASS."""
+    if (
+        authority != QM5_1257_CARD_FIDELITY_REPAIR_AUTHORITY
+        or ea_label != QM5_1257_CARD_FIDELITY_REPAIR_EA_LABEL
+        or ea_id != "1257"
+        or str(source_sha or "").lower()
+        != QM5_1257_CARD_FIDELITY_REPAIRED_SOURCE_SHA256
+        or inventory is None
+    ):
+        return False
+    predecessor = next(
+        (
+            row
+            for row in inventory.get("work_rows", {}).get(ea_id, [])
+            if str(row.get("id"))
+            == QM5_1257_CARD_FIDELITY_REPAIR_PREDECESSOR_ID
+        ),
+        None,
+    )
+    if predecessor is None:
+        return False
+    evidence_path = Path(str(predecessor.get("evidence_path") or ""))
+    if (
+        not evidence_path.is_file()
+        or sha256_file(evidence_path).lower()
+        != QM5_1257_CARD_FIDELITY_Q03_EVIDENCE_SHA256
+    ):
+        return False
+    payload = _json_object(predecessor.get("payload_json"))
+    if not (
+        predecessor.get("phase") == "Q03"
+        and predecessor.get("status") == "done"
+        and predecessor.get("verdict") == "PASS"
+        and str(predecessor.get("mq5_sha256") or "").lower()
+        == QM5_1257_CARD_FIDELITY_PREDECESSOR_SOURCE_SHA256
+        and str(predecessor.get("ex5_sha256") or "").lower()
+        == QM5_1257_CARD_FIDELITY_PREDECESSOR_EX5_SHA256
+        and str(payload.get("expected_setfile_sha256") or "").lower()
+        == QM5_1257_CARD_FIDELITY_SETFILE_SHA256
+        and payload.get("logical_symbol")
+        == "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1"
+        and payload.get("portfolio_scope") == "basket"
+        and payload.get("host_symbol") == "GBPUSD.DWX"
+        and payload.get("host_timeframe") == "H1"
+        and payload.get("basket_symbols") == ["GBPUSD.DWX", "USDJPY.DWX"]
+        and payload.get("risk_fixed") == 1000.0
+        and payload.get("risk_percent") == 0.0
+        and payload.get("ea_dir_name") == QM5_1257_CARD_FIDELITY_REPAIR_EA_LABEL
+        and str(payload.get("basket_manifest") or "").replace("\\", "/").endswith(
+            "/QM5_1257_lemishko-fx-cointpair/basket_manifest.json"
+        )
+    ):
+        return False
+    if current_work_item_id is None:
+        return True
+    current_row = next(
+        (
+            row
+            for row in inventory.get("work_rows", {}).get(ea_id, [])
+            if str(row.get("id")) == str(current_work_item_id)
+        ),
+        None,
+    )
+    current_payload = _json_object(
+        current_row.get("payload_json") if current_row else None
+    )
+    return bool(
+        current_row
+        and current_row.get("phase") == COMPILE_EA_PHASE
+        and current_payload.get("append_only_source_repair") is True
+        and current_payload.get("compile_source_repair_authority") == authority
+        and str(current_payload.get("mq5_sha256") or "").lower()
+        == QM5_1257_CARD_FIDELITY_REPAIRED_SOURCE_SHA256
+        and QM5_1257_CARD_FIDELITY_REPAIR_PREDECESSOR_ID
         in current_payload.get("source_repair_predecessor_work_item_ids", [])
     )
 
@@ -2949,6 +3073,13 @@ def classify_candidate(
     ):
         source_repair_predecessor_ids.add(
             QM5_10718_MAE_BUILD_REPAIR_PREDECESSOR_ID
+        )
+    if (
+        repair_authorized
+        and source_repair_authority == QM5_1257_CARD_FIDELITY_REPAIR_AUTHORITY
+    ):
+        source_repair_predecessor_ids.add(
+            QM5_1257_CARD_FIDELITY_REPAIR_PREDECESSOR_ID
         )
     if (
         repair_authorized
