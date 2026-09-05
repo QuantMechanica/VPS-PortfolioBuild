@@ -1,0 +1,107 @@
+{
+  "schema_version": "qm.paced-fleet-build-q02-handoff/v1",
+  "recorded_at_utc": "2026-09-05T15:42:00Z",
+  "branch": "agents/board-advisor",
+  "commit_before": "83bde759f38f6e7718b01bcb1b25e5ce65cd1277",
+  "mission_unit": {
+    "ea_id": "QM5_41142",
+    "ea_label": "QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow",
+    "family": "calendar_seasonality",
+    "mechanism": "fx_benchmark_fix_rebalancing",
+    "execution_symbol": "EURUSD.DWX",
+    "signal_only_symbol": "GDAXI.DWX",
+    "timeframe": "M15",
+    "source_tier": "TIER_A",
+    "source_citation": "Michael Melvin and John Prins (2015), Equity Hedging and Exchange Rates at the London 4 p.m. Fix, Journal of Financial Markets 22, 50-72, DOI 10.1016/j.finmar.2014.11.001",
+    "g0_status": "APPROVED"
+  },
+  "coordination": {
+    "canonical_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "build_task_id": "9d978a4c-4161-4e15-982d-0d1c56b696a7",
+    "claim_authority": "build_task:9d978a4c-4161-4e15-982d-0d1c56b696a7",
+    "claimed_branch": "agents/board-advisor",
+    "claimed_by": "codex-headless-paced-fleet",
+    "q02_open_count_before": 0,
+    "duplicate_task_created": false
+  },
+  "build_identity": {
+    "compile_work_item_id": "9adcc3f5-939f-48bd-a5c7-03c08c1c0d85",
+    "compile_result": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "mq5_sha256": "cb33049fcc851c1bd83762abe1aee72768bf38d55d73097de08e48c1ba177d9a",
+    "ex5_sha256": "f1307fe7109135252ea4daf59413406ab8f12abe31c54c4922ad29418e3b2e90",
+    "build_result_path": "D:\\QM\\strategy_farm\\artifacts\\builds\\9d978a4c-4161-4e15-982d-0d1c56b696a7.json",
+    "build_result_sha256": "aff555fdc76ecbe1dc82c22cd9f6623c9d47c1251b74c2d28e6d864c28c4271d",
+    "build_task_status_after": "done"
+  },
+  "capacity_and_smoke": {
+    "cpu_sampled_at_utc": "2026-09-05T15:37:25.3509156Z",
+    "cpu_samples_pct": [
+      82.6290821303735,
+      85.5495216627749,
+      92.1913239086819,
+      95.8042820960115,
+      92.9816749474168
+    ],
+    "cpu_average_pct": 89.83,
+    "cpu_maximum_pct": 95.80,
+    "binding_threshold_pct": 97,
+    "cpu_ceiling_binding": false,
+    "smoke_attempt_count": 1,
+    "smoke_execution_started": false,
+    "smoke_admission_result": "no_capacity",
+    "smoke_result_recorded": "deferred_p2_smoke",
+    "needs_p2_smoke_via_pump": true,
+    "terminal_admission_message": "Terminal resolution returned no terminal. status=no_capacity error_code=none message=No message."
+  },
+  "logical_basket_binding": {
+    "manifest_path": "framework/EAs/QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow/basket_manifest.json",
+    "manifest_sha256": "c41ba6eac9eb265f5b60330ef45889f44773c7b32ea3888bfe7cb892537b5727",
+    "logical_symbol": "QM5_41142_EURUSD_MONTHEND_FIX_M15",
+    "host_symbol": "EURUSD.DWX",
+    "basket_symbols": [
+      "EURUSD.DWX",
+      "GDAXI.DWX"
+    ],
+    "execution_symbols": [
+      "EURUSD.DWX"
+    ],
+    "signal_only_symbols": [
+      "GDAXI.DWX"
+    ],
+    "logical_setfile_path": "framework/EAs/QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow/sets/QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow_QM5_41142_EURUSD_MONTHEND_FIX_M15_M15_backtest.set",
+    "logical_setfile_sha256": "40eaf6815b6211ce061fd022370fada5e44c5ce0c206bdfc42acffc78b206fec",
+    "physical_host_setfile_skipped": true
+  },
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1,
+    "source": "logical_setfile"
+  },
+  "q02_handoff": {
+    "work_item_id": "2b0c6470-12f4-4d6c-8195-341449417f8a",
+    "status_at_verification": "pending",
+    "phase": "Q02",
+    "symbol": "QM5_41142_EURUSD_MONTHEND_FIX_M15",
+    "host_symbol": "EURUSD.DWX",
+    "host_timeframe": "M15",
+    "q02_cohort_size": 1,
+    "priority_track": true,
+    "gate_contract_version": "v4",
+    "open_q02_count_after": 1,
+    "enqueued_by": "record_build_result.auto_q02",
+    "auto_q02_reconciled": true
+  },
+  "verification": {
+    "spec_validation": "PASS",
+    "reference_tests": "5 PASS",
+    "factory_off_flag_present": false,
+    "live_terminal_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_run": false,
+    "backtest_result_claimed": false
+  },
+  "known_measurement_question": "The approved card frontmatter estimates 100 trades/year, while the literal last-London-business-day mechanic implies approximately 12 opportunities/year; Q02 must measure realized frequency."
+}
