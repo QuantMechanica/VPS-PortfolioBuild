@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.0",
+  "recorded_at_utc": "2026-09-05T01:45:38Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "a1de8557fcf2bee15d0f293eed047f2a8bf0cbe6",
+  "mission": "fx_cointegration_portfolio_growth",
+  "outcome": "STOP_CPU_CEILING",
+  "cpu_ceiling_percent": 97.0,
+  "cpu_samples_percent": [
+    100.0,
+    100.0,
+    99.31990331661422,
+    96.09612979927437,
+    95.22730484792866
+  ],
+  "cpu_average_percent": 98.12866759276345,
+  "cpu_maximum_percent": 100.0,
+  "frontier": {
+    "fixed_pair_count": 66,
+    "approved_identity_count": 123,
+    "matching_ea_directory_count": 123,
+    "approved_unbuilt_count": 0,
+    "new_pair_build_skipped_as_duplicate": true
+  },
+  "anchors": {
+    "QM5_12532": {
+      "relationship": "AUDUSD.DWX/NZDUSD.DWX",
+      "logical_q02": "PASS",
+      "terminal_chain": "Q04_PASS_Q05_FAIL"
+    },
+    "QM5_12533": {
+      "relationship": "EURJPY.DWX/GBPJPY.DWX",
+      "logical_q02": "PASS",
+      "terminal_chain": "Q04_FAIL"
+    }
+  },
+  "selected_existing_continuation": {
+    "ea_id": "QM5_12778",
+    "relationship": "AUDUSD.DWX/EURJPY.DWX",
+    "work_item_id": "24acc5d4-3e34-526e-a7a8-12640a2e759f",
+    "phase": "Q09_NEWS",
+    "status": "pending",
+    "claimed_by": null,
+    "attempt_count": 0,
+    "verdict": null,
+    "priority_track": true,
+    "q09_activation_state": "RUNNABLE_BOUND",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "from_date": "2026.01.01",
+    "to_date": "2026.04.06",
+    "queue_mutated": false
+  },
+  "mutations": {
+    "card": false,
+    "ea": false,
+    "registry": false,
+    "queue": false,
+    "priority": false,
+    "worker_claim": false,
+    "terminal_dispatch": false,
+    "backtest": false,
+    "portfolio_gate": false,
+    "t_live": false,
+    "autotrading": false
+  },
+  "resume": "Re-read the exact QM5_12778 row and CPU ceiling; never duplicate an open continuation."
+}
