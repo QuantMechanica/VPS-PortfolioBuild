@@ -5,6 +5,10 @@
 **Scope:** the FTMO **2-Step $100,000 Swing** profile only, as pinned in `tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_SWING_V2.json` (source snapshot `docs/ops/evidence/2026-09-04_ftmo_official_rules_snapshot.json`). Every rule value below cites its `rule_id` in that rulepack; where a value could not be re-sourced it is marked **UNVERIFIED**, and where no source exists it is marked **MISSING** — never invented.
 **Hard boundary:** `deployment_boundary` in the rulepack is explicit — `runtime_integration=NOT_IMPLEMENTED`, `deploy_authorization=OWNER_ONLY`, `factory_action_authorized=false`, `mt5_action_authorized=false`, *"A future runtime integration requires a new reviewed version and explicit OWNER authorization."* This runbook describes what each transition **is** and what evidence is captured; it authorizes nothing.
 
+> **Revision 2026-09-05 (post-review a7866405):**
+> - **F7** — replaced the stale `2026-09-05_review_ftmo_positive_evidence_test.md` FAIL / 3-BLOCKER acceptance-test references (§6 precondition 3 and the evidence index) with the current R5 state: independently reviewed `RATIFIABLE_AS_PREDECLARED_TEST` in `2026-09-05_review4_ftmo_positive_evidence_test.md`, plus the R5 seal hash and the delivered probability/correlation contract V1 — all still **PENDING OWNER ratification** (ratification cannot lift NO-BUY today; strict P1 lower-95 ≥ 0.80 and the adequacy/power guards preserved).
+> - **F8** — labeled §0 Phase-2's lower-risk verification profile as a **proposed QM choice, not a provider requirement** (the provider rule is only the halved target at identical loss limits).
+
 ---
 
 ## 0 · Zusammenfassung für OWNER (DE)
@@ -12,7 +16,7 @@
 Der FTMO-2-Step-Swing-Pfad hat drei Stufen und einen ersten Reward. **Nichts davon passiert automatisch** — jede Stufengrenze ist ein Provider-Ereignis (FTMO wertet dein Konto aus), und jede QM-seitige Handlung an der Grenze ist OWNER-only oder rein beobachtend.
 
 1. **Phase 1 (Challenge):** +10 % / $10.000 Gewinn, Kontostand $110.000, mind. 4 Prague-Tage mit ≥1 eröffneten Position, kein Zeitlimit, bestanden = Stand > Ziel bei **0 offenen Positionen**. Grenzen: Tagesverlust nie unter Prague-Mitternachts-Stand −5 %/$5.000 (Equity inkl. offenem PnL), Max-Verlust statisch $90.000.
-2. **Phase 2 (Verification):** +5 % / $5.000, Stand $105.000, sonst identische Verlustgrenzen, halbe Ziel-Schwelle → niedrigeres Risiko-Profil.
+2. **Phase 2 (Verification):** +5 % / $5.000, Stand $105.000, sonst identische Verlustgrenzen, halbe Ziel-Schwelle. Ein **niedrigeres QM-Risiko-Profil** für Phase 2 ist eine **vorgeschlagene QM-Wahl, keine Provider-Vorgabe** — die Provider-Regel ist nur das halbierte Ziel bei identischen Verlustgrenzen.
 3. **FTMO Account (funded):** nach beiden Phasen; Reward-Split **80 %** (bis 90 % über Scaling Plan/Premium). **Erster Reward** erstattet die $540-Gebühr zu 100 %.
 
 **Was OWNER/legal ist:** Kontoerstellung/Login, Kauf einer bezahlten Challenge (bleibt AUSGESCHLOSSEN — Blanket-Release „alles außer Kauf"), AutoTrading-Schalter, jede Reward/Payout-Anforderung im FTMO-Kundenbereich, jede Vertragsannahme. **Was der AI-Seat tut:** Evidenz an jeder Grenze protokollieren (Equity-Serie, Regel-Konformität, Identität), beobachtend überwachen (`ftmo_trial_pulse.py`), niemals einen Halt/Kill/Order schreiben (die einzige Geld-Kontroll-Autorität ist der Governor-EA `QM5_13206` gegen ein signiertes Manifest).
@@ -113,7 +117,7 @@ This runbook is dormant until the chain below clears. None of it is a purchase.
 
 1. **Signed deployment pointer** (Part 2 §A.3) — DXZ freeze condition 1. *OWNER.*
 2. **Freeze lift or deliberate hold** — all three conditions + written OWNER lift, or an explicit decision to keep the freeze while the pointer stands authenticated (Part 2 §A.1). *OWNER.*
-3. **Ratified positive-evidence acceptance test** — the `ftmo_free_trial_gate` prediction bands + strict go-criteria set (`2026-09-05_review_ftmo_positive_evidence_test.md` is FAIL today). *OWNER ratifies an AI re-draft.*
+3. **Ratified positive-evidence acceptance test** — the `ftmo_free_trial_gate` prediction bands + strict go-criteria set (strict P1 lower-95 ≥ 0.80 with the adequacy/power guards). Exact R5 (`docs/ops/OWNER_VORLAGE_2026-09-05_ftmo_positive_evidence_test.md`, commit `d9fa021091`, LF SHA-256 `de549514fd75e68adb6f972a39451c89b43d7f7e35961e6e3da197903bfa923d`) was independently reviewed **`RATIFIABLE_AS_PREDECLARED_TEST`** (`2026-09-05_review4_ftmo_positive_evidence_test.md`), and the probability/correlation contract V1 (`docs/ops/FTMO_PROBABILITY_CORRELATION_CONTRACT_V1_2026-09-05.md`) is delivered — both **PENDING OWNER ratification** (`no_buy_lift=false`: ratification cannot lift NO-BUY today). *OWNER ratifies.*
 4. **Live-mode FTMO set-generation path** — the runner today forbids live risk mode (Part 2 §B.2). *AI build task.*
 5. **FTMO demo / Free-Trial account** created + logged in; `EXPECTED_STATE` flipped to RUNNING. *OWNER.*
 6. **Defect-free Free-Trial run** captured and scored (`operational_defects_allowed=0`). *AI capture; OWNER-visible verdict.*
@@ -129,7 +133,8 @@ This runbook is dormant until the chain below clears. None of it is a purchase.
 - `tools/strategy_farm/ftmo_lane_runner.py` — provisioning/runner; FTMO-Demo profile requirement; REAL_TICKS; `NATIVE_SYMBOLS`
 - `tools/strategy_farm/ftmo_trial_pulse.py` — observation-only pulse; one-authority tombstone; `EXPECTED_STATE`
 - `docs/ops/evidence/2026-09-05_interval_equity_export.md` / `docs/ops/evidence/2026-09-05_ftmo_v4_tail_certification.md` — ABSTAIN: no synchronized intraday minima / endpoint equity / pending-order census
-- `docs/ops/evidence/2026-09-05_review_ftmo_positive_evidence_test.md` — acceptance test FAIL (3 BLOCKERs)
+- `docs/ops/evidence/2026-09-05_review4_ftmo_positive_evidence_test.md` — R5 acceptance test reviewed **`RATIFIABLE_AS_PREDECLARED_TEST`** (exact R5 `docs/ops/OWNER_VORLAGE_2026-09-05_ftmo_positive_evidence_test.md`, commit `d9fa021091`, LF SHA-256 `de549514fd75e68adb6f972a39451c89b43d7f7e35961e6e3da197903bfa923d`); OWNER ratification pending
+- `docs/ops/FTMO_PROBABILITY_CORRELATION_CONTRACT_V1_2026-09-05.md` — delivered probability/correlation contract V1 (PENDING OWNER ratification; strict P1 lower-95 ≥ 0.80)
 - `docs/ops/BOOK_CEREMONY_RUNBOOK_2026-09.md` — Q16 11-check list; deploy/rollback ceremony
 - `docs/ops/evidence/2026-09-05_ftmo_readiness_part1.md` / `docs/ops/evidence/2026-09-05_ftmo_readiness_part2.md` — governed attribution + candidate feasibility (Part 1); closure pack + trial design (Part 2)
 - `decisions/2026-09-02_owner_receipts_ceo_asks.md` — 2026-09-05 blanket release (purchase excluded)
