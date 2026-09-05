@@ -42,6 +42,8 @@ All values from `FTMO_2S_100K_SWING_V2.json official_rules`, source `docs/ops/ev
 | EA / server limits | EAs allowed; ≤200 simultaneous orders, ≤2000 positions/day, hyperactive above 2000 server req/day (`ftmo_ea_server_limits`) | same | same |
 | leverage (Swing) | FX 1:30, metals 1:15, oil 1:15 (`ftmo_swing_leverage`) — **UNVERIFIED** (trading-symbols URL HTTP 404 2026-09-04, `CARRIED_OVER`; corroborated only by `2026-07-30_ftmo_book3_symbol_cost_snapshot.json`) | same | same |
 
+**QM-Regel unabhängig vom Provider:** QM news blackout mandatory; preserve the approved calendar/filter contract in both research and trial (`docs/ops/EDGE_LAB_CHARTER_2026-05-22.md:28`). Die Provider-Ausnahme für Swing ist keine interne Ausnahme; die provisorischen Kostenfelder bleiben bis zur Bestätigung nicht übernommen.
+
 **Prague-midnight anchor (all stages):** the daily-loss limit re-baselines on the CE(S)T midnight balance; `timezone=Europe/Prague`, `reset_local_time=00:00:00`, `limit_basis=MIDNIGHT_BALANCE_MINUS_FIXED_AMOUNT`. QM's optional `qm_ftmo_midnight_entry_window` (`:384-398`, `INTERNAL_QM_POLICY_NOT_PROVIDER_RULE`, `PROPOSED_FOR_CALIBRATION`) blocks new entries 23:50-00:10 Prague around that anchor — **not a provider rule and not enforced today.**
 
 **Replicability constraint (all stages):** `ftmo_replicable_trading_requirement` — no latency/feed exploitation, no server manipulation, no non-replicable risk; strategies must remain replicable in real markets.
@@ -116,7 +118,7 @@ All dossiers land under `docs/ops/evidence/` and, for OWNER-signed transitions, 
 This runbook is dormant until the chain below clears. None of it is a purchase.
 
 1. **Signed deployment pointer** (Part 2 §A.3) — DXZ freeze condition 1. *OWNER.*
-2. **Freeze lift or deliberate hold** — all three conditions + written OWNER lift, or an explicit decision to keep the freeze while the pointer stands authenticated (Part 2 §A.1). *OWNER.*
+2. **Freeze lift or deliberate hold** — all three conditions + written OWNER lift, or an explicit decision to keep the freeze while the pointer stands authenticated (Part 2 §A.1). *OWNER.* **The current signed mint is blocked while the freeze is ACTIVE; this sequence starts only after the separately reviewed ceremony dependency is resolved (Part 2 §A.1).**
 3. **Ratified positive-evidence acceptance test** — the `ftmo_free_trial_gate` prediction bands + strict go-criteria set (strict P1 lower-95 ≥ 0.80 with the adequacy/power guards). Exact R5 (`docs/ops/OWNER_VORLAGE_2026-09-05_ftmo_positive_evidence_test.md`, commit `d9fa021091`, LF SHA-256 `de549514fd75e68adb6f972a39451c89b43d7f7e35961e6e3da197903bfa923d`) was independently reviewed **`RATIFIABLE_AS_PREDECLARED_TEST`** (`2026-09-05_review4_ftmo_positive_evidence_test.md`), and the probability/correlation contract V1 (`docs/ops/FTMO_PROBABILITY_CORRELATION_CONTRACT_V1_2026-09-05.md`) is delivered — both **PENDING OWNER ratification** (`no_buy_lift=false`: ratification cannot lift NO-BUY today). *OWNER ratifies.*
 4. **Live-mode FTMO set-generation path** — the runner today forbids live risk mode (Part 2 §B.2). *AI build task.*
 5. **FTMO demo / Free-Trial account** created + logged in; `EXPECTED_STATE` flipped to RUNNING. *OWNER.*
