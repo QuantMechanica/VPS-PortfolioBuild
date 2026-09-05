@@ -1,0 +1,77 @@
+{
+  "schema_version": "qm.cpu-admission-window/v1",
+  "mission": "new commodity/energy sleeve edge selection, build, and Q02 enqueue",
+  "branch": "agents/board-advisor",
+  "observed_head": "9792690cd3aec5b8b02e0d4dfb21dbe967976dde",
+  "sample_window_utc": {
+    "first": "2026-09-05T05:45:01.9018225Z",
+    "last": "2026-09-05T05:45:06.0183008Z"
+  },
+  "threshold_percent": 97,
+  "rule": "average and maximum must both be strictly below threshold",
+  "samples": [
+    {
+      "sampled_at_utc": "2026-09-05T05:45:01.9018225Z",
+      "cpu_percent": 87.6617
+    },
+    {
+      "sampled_at_utc": "2026-09-05T05:45:02.9518687Z",
+      "cpu_percent": 100.0
+    },
+    {
+      "sampled_at_utc": "2026-09-05T05:45:04.0101237Z",
+      "cpu_percent": 100.0
+    },
+    {
+      "sampled_at_utc": "2026-09-05T05:45:05.0146988Z",
+      "cpu_percent": 99.9026
+    },
+    {
+      "sampled_at_utc": "2026-09-05T05:45:06.0183008Z",
+      "cpu_percent": 100.0
+    }
+  ],
+  "average_percent": 97.5129,
+  "maximum_percent": 100.0,
+  "admitted": false,
+  "decision": "HARD_STOP_BEFORE_EDGE_SELECTION_OR_MUTATION",
+  "factory_process_snapshot": {
+    "captured_after_window": true,
+    "factory_terminals": [
+      "T2",
+      "T5",
+      "T6",
+      "T8"
+    ],
+    "factory_metatesters": [
+      "T2",
+      "T5",
+      "T6",
+      "T8"
+    ],
+    "factory_terminal_count": 4,
+    "factory_metatester_count": 4,
+    "t_live_observation_only": true,
+    "unrelated_ftmo_terminal_observation_only": true
+  },
+  "frontier": {
+    "latest_registry_identity": "QM5_41341_xauxag-mbisquare-rv",
+    "latest_identity_build_state": "COMPILE_OK",
+    "latest_identity_compile_work_item": "55c7af5e-37f0-47ee-b00c-a5e9d054ee80",
+    "latest_identity_q02_rows": 0,
+    "next_identity_selected": false
+  },
+  "mutations_excluded": [
+    "source approval",
+    "card extraction or approval",
+    "EA or magic allocation",
+    "EA source or binary build",
+    "setfile or basket manifest",
+    "compile or pipeline execution",
+    "Q02 enqueue or dispatch",
+    "queue priority or verdict",
+    "portfolio gate or admission",
+    "deploy or T_Live manifest",
+    "T_Live or AutoTrading"
+  ]
+}
