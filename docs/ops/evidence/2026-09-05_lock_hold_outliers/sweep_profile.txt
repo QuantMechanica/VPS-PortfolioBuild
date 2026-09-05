@@ -1,0 +1,58 @@
+         3617834 function calls (3573906 primitive calls) in 58.938 seconds
+
+   Ordered by: cumulative time
+   List reduced from 964 to 50 due to restriction <50>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.000    0.000   58.938   58.938 <frozen runpy>:262(run_path)
+    150/2    0.015    0.000   58.925   29.463 {built-in method builtins.exec}
+        1    0.000    0.000   58.925   58.925 <frozen runpy>:91(_run_module_code)
+        1    0.000    0.000   58.925   58.925 <frozen runpy>:65(_run_code)
+        1    0.055    0.055   58.925   58.925 sweep_enqueue_built_eas.py:1(<module>)
+     1269    0.014    0.000   55.896    0.044 profile_full_sweep.py:25(execute)
+     1269   55.881    0.044   55.881    0.044 {function TimedCursor.execute at 0x0000018236007600}
+        1    0.002    0.002    2.149    2.149 strategy_priority.py:794(compute_scores)
+        1    0.012    0.012    1.258    1.258 strategy_priority.py:849(_load_cards)
+     3403    0.289    0.000    1.205    0.000 strategy_priority.py:87(parse_frontmatter)
+        1    0.032    0.032    0.644    0.644 strategy_priority.py:639(score_cards)
+     6803    0.010    0.000    0.408    0.000 strategy_priority.py:205(bucket_of)
+     3402    0.009    0.000    0.381    0.000 strategy_priority.py:601(metrics_breakdown)
+     3408    0.009    0.000    0.366    0.000 pathlib.py:1053(read_text)
+   120292    0.085    0.000    0.339    0.000 __init__.py:163(match)
+     6803    0.071    0.000    0.270    0.000 strategy_priority.py:154(mechanism_of)
+      352    0.005    0.000    0.263    0.001 farmctl.py:24071(_q02_symbol_skip_reason)
+      345    0.036    0.000    0.258    0.001 farmctl.py:24048(_dwx_backtest_symbols)
+    87992    0.061    0.000    0.234    0.000 __init__.py:178(sub)
+   210121    0.124    0.000    0.230    0.000 __init__.py:272(_compile)
+     3402    0.010    0.000    0.228    0.000 strategy_priority.py:535(cost_component)
+        1    0.004    0.004    0.195    0.195 strategy_priority.py:816(<dictcomp>)
+     3760    0.004    0.000    0.193    0.000 pathlib.py:1036(open)
+     3760    0.156    0.000    0.189    0.000 {built-in method io.open}
+     4983    0.157    0.000    0.177    0.000 {built-in method nt.stat}
+    79/10    0.001    0.000    0.165    0.017 <frozen importlib._bootstrap>:1165(_find_and_load)
+    79/10    0.000    0.000    0.165    0.016 <frozen importlib._bootstrap>:1120(_find_and_load_unlocked)
+     1972    0.004    0.000    0.164    0.000 strategy_priority.py:542(<listcomp>)
+     4588    0.003    0.000    0.164    0.000 pathlib.py:1008(stat)
+    17947    0.054    0.000    0.163    0.000 csv.py:107(__next__)
+     7531    0.021    0.000    0.161    0.000 strategy_priority.py:481(_symbol_cost_component)
+     3408    0.141    0.000    0.160    0.000 {method 'read' of '_io.TextIOWrapper' objects}
+    77/10    0.001    0.000    0.155    0.015 <frozen importlib._bootstrap>:666(_load_unlocked)
+     59/9    0.000    0.000    0.154    0.017 <frozen importlib._bootstrap_external>:934(exec_module)
+   123453    0.151    0.000    0.151    0.000 {method 'match' of 're.Pattern' objects}
+   161/20    0.000    0.000    0.141    0.007 <frozen importlib._bootstrap>:233(_call_with_frames_removed)
+     3994    0.003    0.000    0.128    0.000 pathlib.py:1245(is_dir)
+    15086    0.049    0.000    0.125    0.000 strategy_priority.py:380(normalize_symbol)
+     6803    0.017    0.000    0.117    0.000 strategy_priority.py:188(asset_class_of)
+     3402    0.007    0.000    0.114    0.000 strategy_priority.py:556(orthogonality_component)
+    33171    0.044    0.000    0.110    0.000 {built-in method builtins.any}
+    22593    0.049    0.000    0.105    0.000 strategy_priority.py:174(_symbol_class)
+     6288    0.012    0.000    0.104    0.000 {built-in method builtins.sorted}
+        1    0.001    0.001    0.101    0.101 farmctl.py:1(<module>)
+    18312    0.088    0.000    0.094    0.000 {built-in method builtins.next}
+     6804    0.036    0.000    0.092    0.000 strategy_priority.py:452(_card_symbols)
+     7531    0.011    0.000    0.092    0.000 strategy_priority.py:469(_resolved_cost_entry)
+   326217    0.090    0.000    0.090    0.000 {built-in method builtins.isinstance}
+     3944    0.007    0.000    0.077    0.000 strategy_priority.py:192(<listcomp>)
+    87992    0.074    0.000    0.074    0.000 {method 'sub' of 're.Pattern' objects}
+
+

@@ -1,0 +1,17 @@
+{
+  "command": [
+    "python",
+    "-m",
+    "pytest",
+    "tools/strategy_farm/tests/test_terminal_worker_atomic_claim.py",
+    "tools/strategy_farm/tests/test_longrun_scheduling_policy.py",
+    "tools/strategy_farm/tests/test_sweep_source_lookup.py",
+    "tools/strategy_farm/tests/test_sweep_enqueue_built_eas.py",
+    "-q",
+    "-k",
+    "not launch_fault_defers_without and not ram_class_boundary and not run_claimed_item_stops_child_when and not policy_disabled_allows"
+  ],
+  "exit_code": 0,
+  "stdout": "........................................................................ [ 50%]\n......................................................................   [100%]\n142 passed, 5 deselected in 44.50s\n",
+  "stderr": ""
+}

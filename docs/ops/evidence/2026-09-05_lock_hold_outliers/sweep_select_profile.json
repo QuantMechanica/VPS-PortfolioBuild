@@ -1,0 +1,397 @@
+{
+  "captured_at": "2026-09-05T19:09:28.233563+00:00",
+  "readonly": true,
+  "results": [
+    {
+      "phase": "Q02",
+      "seconds": 2.937,
+      "rows": 147,
+      "error": null,
+      "plan": [
+        [
+          8,
+          0,
+          0,
+          "SEARCH x USING INDEX idx_work_items_verdict_ea (verdict=?)"
+        ],
+        [
+          19,
+          0,
+          0,
+          "CORRELATED SCALAR SUBQUERY 1"
+        ],
+        [
+          24,
+          19,
+          0,
+          "SEARCH y USING INDEX idx_work_items_ea_phase (ea_id=? AND phase=?)"
+        ],
+        [
+          50,
+          0,
+          0,
+          "CORRELATED SCALAR SUBQUERY 2"
+        ],
+        [
+          55,
+          50,
+          0,
+          "SEARCH y USING INDEX idx_work_items_ea_phase (ea_id=? AND phase=?)"
+        ],
+        [
+          85,
+          0,
+          0,
+          "CORRELATED SCALAR SUBQUERY 3"
+        ],
+        [
+          90,
+          85,
+          0,
+          "SEARCH z USING INDEX idx_work_items_ea_phase (ea_id=? AND phase=?)"
+        ],
+        [
+          161,
+          0,
+          0,
+          "USE TEMP B-TREE FOR GROUP BY"
+        ],
+        [
+          208,
+          0,
+          0,
+          "USE TEMP B-TREE FOR ORDER BY"
+        ]
+      ],
+      "sql": "\n        SELECT x.ea_id, x.symbol, x.setfile_path, MAX(x.updated_at), COUNT(*)\n        FROM work_items x\n        WHERE x.phase=?\n          AND x.status IN ('done','failed')\n          AND x.verdict='INFRA_FAIL'\n          \n          AND NOT EXISTS (\n              SELECT 1 FROM work_items y\n              WHERE y.ea_id=x.ea_id\n                AND y.phase=x.phase\n                AND y.symbol=x.symbol\n                AND ifnull(y.setfile_path, '')=ifnull(x.setfile_path, '')\n                AND y.status IN ('pending','active')\n          )\n          AND NOT EXISTS (\n              SELECT 1 FROM work_items y\n              WHERE y.ea_id=x.ea_id\n                AND y.phase=x.phase\n                AND y.symbol=x.symbol\n                AND ifnull(y.setfile_path, '')=ifnull(x.setfile_path, '')\n                AND y.status IN ('done','failed')\n                AND y.verdict IS NOT NULL\n                AND y.verdict!='INFRA_FAIL'\n          )\n          AND NOT EXISTS (SELECT 1 FROM work_items z WHERE z.ea_id=x.ea_id AND z.symbol=x.symbol AND z.phase IN (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?))\n        GROUP BY x.ea_id, x.symbol, x.setfile_path\n        ORDER BY MAX(x.updated_at) ASC\n        ",
+      "parameters": [
+        "Q02",
+        "Q03",
+        "Q04",
+        "Q05",
+        "Q06",
+        "Q07",
+        "Q08",
+        "Q09",
+        "Q10",
+        "Q11",
+        "Q12",
+        "Q13",
+        "Q14",
+        "Q15",
+        "Q16",
+        "Q17"
+      ]
+    },
+    {
+      "phase": "Q03",
+      "seconds": 0.344,
+      "rows": 0,
+      "error": null,
+      "plan": [
+        [
+          8,
+          0,
+          0,
+          "SEARCH x USING INDEX idx_work_items_verdict_ea (verdict=?)"
+        ],
+        [
+          19,
+          0,
+          0,
+          "CORRELATED SCALAR SUBQUERY 1"
+        ],
+        [
+          24,
+          19,
+          0,
+          "SEARCH y USING INDEX idx_work_items_ea_phase (ea_id=? AND phase=?)"
+        ],
+        [
+          50,
+          0,
+          0,
+          "CORRELATED SCALAR SUBQUERY 2"
+        ],
+        [
+          55,
+          50,
+          0,
+          "SEARCH y USING INDEX idx_work_items_ea_phase (ea_id=? AND phase=?)"
+        ],
+        [
+          85,
+          0,
+          0,
+          "CORRELATED SCALAR SUBQUERY 3"
+        ],
+        [
+          90,
+          85,
+          0,
+          "SEARCH z USING INDEX idx_work_items_ea_phase (ea_id=? AND phase=?)"
+        ],
+        [
+          158,
+          0,
+          0,
+          "USE TEMP B-TREE FOR GROUP BY"
+        ],
+        [
+          205,
+          0,
+          0,
+          "USE TEMP B-TREE FOR ORDER BY"
+        ]
+      ],
+      "sql": "\n        SELECT x.ea_id, x.symbol, x.setfile_path, MAX(x.updated_at), COUNT(*)\n        FROM work_items x\n        WHERE x.phase=?\n          AND x.status IN ('done','failed')\n          AND x.verdict='INFRA_FAIL'\n          \n          AND NOT EXISTS (\n              SELECT 1 FROM work_items y\n              WHERE y.ea_id=x.ea_id\n                AND y.phase=x.phase\n                AND y.symbol=x.symbol\n                AND ifnull(y.setfile_path, '')=ifnull(x.setfile_path, '')\n                AND y.status IN ('pending','active')\n          )\n          AND NOT EXISTS (\n              SELECT 1 FROM work_items y\n              WHERE y.ea_id=x.ea_id\n                AND y.phase=x.phase\n                AND y.symbol=x.symbol\n                AND ifnull(y.setfile_path, '')=ifnull(x.setfile_path, '')\n                AND y.status IN ('done','failed')\n                AND y.verdict IS NOT NULL\n                AND y.verdict!='INFRA_FAIL'\n          )\n          AND NOT EXISTS (SELECT 1 FROM work_items z WHERE z.ea_id=x.ea_id AND z.symbol=x.symbol AND z.phase IN (?,?,?,?,?,?,?,?,?,?,?,?,?,?))\n        GROUP BY x.ea_id, x.symbol, x.setfile_path\n        ORDER BY MAX(x.updated_at) ASC\n        ",
+      "parameters": [
+        "Q03",
+        "Q04",
+        "Q05",
+        "Q06",
+        "Q07",
+        "Q08",
+        "Q09",
+        "Q10",
+        "Q11",
+        "Q12",
+        "Q13",
+        "Q14",
+        "Q15",
+        "Q16",
+        "Q17"
+      ]
+    },
+    {
+      "phase": "Q04",
+      "seconds": 0.312,
+      "rows": 198,
+      "error": null,
+      "plan": [
+        [
+          8,
+          0,
+          0,
+          "SEARCH x USING INDEX idx_work_items_verdict_ea (verdict=?)"
+        ],
+        [
+          19,
+          0,
+          0,
+          "CORRELATED SCALAR SUBQUERY 1"
+        ],
+        [
+          24,
+          19,
+          0,
+          "SEARCH y USING INDEX idx_work_items_ea_phase (ea_id=? AND phase=?)"
+        ],
+        [
+          50,
+          0,
+          0,
+          "CORRELATED SCALAR SUBQUERY 2"
+        ],
+        [
+          55,
+          50,
+          0,
+          "SEARCH y USING INDEX idx_work_items_ea_phase (ea_id=? AND phase=?)"
+        ],
+        [
+          85,
+          0,
+          0,
+          "CORRELATED SCALAR SUBQUERY 3"
+        ],
+        [
+          90,
+          85,
+          0,
+          "SEARCH z USING INDEX idx_work_items_ea_phase (ea_id=? AND phase=?)"
+        ],
+        [
+          155,
+          0,
+          0,
+          "USE TEMP B-TREE FOR GROUP BY"
+        ],
+        [
+          202,
+          0,
+          0,
+          "USE TEMP B-TREE FOR ORDER BY"
+        ]
+      ],
+      "sql": "\n        SELECT x.ea_id, x.symbol, x.setfile_path, MAX(x.updated_at), COUNT(*)\n        FROM work_items x\n        WHERE x.phase=?\n          AND x.status IN ('done','failed')\n          AND x.verdict='INFRA_FAIL'\n          \n          AND NOT EXISTS (\n              SELECT 1 FROM work_items y\n              WHERE y.ea_id=x.ea_id\n                AND y.phase=x.phase\n                AND y.symbol=x.symbol\n                AND ifnull(y.setfile_path, '')=ifnull(x.setfile_path, '')\n                AND y.status IN ('pending','active')\n          )\n          AND NOT EXISTS (\n              SELECT 1 FROM work_items y\n              WHERE y.ea_id=x.ea_id\n                AND y.phase=x.phase\n                AND y.symbol=x.symbol\n                AND ifnull(y.setfile_path, '')=ifnull(x.setfile_path, '')\n                AND y.status IN ('done','failed')\n                AND y.verdict IS NOT NULL\n                AND y.verdict!='INFRA_FAIL'\n          )\n          AND NOT EXISTS (SELECT 1 FROM work_items z WHERE z.ea_id=x.ea_id AND z.symbol=x.symbol AND z.phase IN (?,?,?,?,?,?,?,?,?,?,?,?,?))\n        GROUP BY x.ea_id, x.symbol, x.setfile_path\n        ORDER BY MAX(x.updated_at) ASC\n        ",
+      "parameters": [
+        "Q04",
+        "Q05",
+        "Q06",
+        "Q07",
+        "Q08",
+        "Q09",
+        "Q10",
+        "Q11",
+        "Q12",
+        "Q13",
+        "Q14",
+        "Q15",
+        "Q16",
+        "Q17"
+      ]
+    },
+    {
+      "phase": "Q07",
+      "seconds": 0.172,
+      "rows": 5,
+      "error": null,
+      "plan": [
+        [
+          8,
+          0,
+          0,
+          "SEARCH x USING INDEX idx_work_items_verdict_ea (verdict=?)"
+        ],
+        [
+          19,
+          0,
+          0,
+          "CORRELATED SCALAR SUBQUERY 1"
+        ],
+        [
+          24,
+          19,
+          0,
+          "SEARCH y USING INDEX idx_work_items_ea_phase (ea_id=? AND phase=?)"
+        ],
+        [
+          50,
+          0,
+          0,
+          "CORRELATED SCALAR SUBQUERY 2"
+        ],
+        [
+          55,
+          50,
+          0,
+          "SEARCH y USING INDEX idx_work_items_ea_phase (ea_id=? AND phase=?)"
+        ],
+        [
+          85,
+          0,
+          0,
+          "CORRELATED SCALAR SUBQUERY 3"
+        ],
+        [
+          90,
+          85,
+          0,
+          "SEARCH z USING INDEX idx_work_items_ea_phase (ea_id=? AND phase=?)"
+        ],
+        [
+          146,
+          0,
+          0,
+          "USE TEMP B-TREE FOR GROUP BY"
+        ],
+        [
+          193,
+          0,
+          0,
+          "USE TEMP B-TREE FOR ORDER BY"
+        ]
+      ],
+      "sql": "\n        SELECT x.ea_id, x.symbol, x.setfile_path, MAX(x.updated_at), COUNT(*)\n        FROM work_items x\n        WHERE x.phase=?\n          AND x.status IN ('done','failed')\n          AND x.verdict='INFRA_FAIL'\n          \n          AND NOT EXISTS (\n              SELECT 1 FROM work_items y\n              WHERE y.ea_id=x.ea_id\n                AND y.phase=x.phase\n                AND y.symbol=x.symbol\n                AND ifnull(y.setfile_path, '')=ifnull(x.setfile_path, '')\n                AND y.status IN ('pending','active')\n          )\n          AND NOT EXISTS (\n              SELECT 1 FROM work_items y\n              WHERE y.ea_id=x.ea_id\n                AND y.phase=x.phase\n                AND y.symbol=x.symbol\n                AND ifnull(y.setfile_path, '')=ifnull(x.setfile_path, '')\n                AND y.status IN ('done','failed')\n                AND y.verdict IS NOT NULL\n                AND y.verdict!='INFRA_FAIL'\n          )\n          AND NOT EXISTS (SELECT 1 FROM work_items z WHERE z.ea_id=x.ea_id AND z.symbol=x.symbol AND z.phase IN (?,?,?,?,?,?,?,?,?,?))\n        GROUP BY x.ea_id, x.symbol, x.setfile_path\n        ORDER BY MAX(x.updated_at) ASC\n        ",
+      "parameters": [
+        "Q07",
+        "Q08",
+        "Q09",
+        "Q10",
+        "Q11",
+        "Q12",
+        "Q13",
+        "Q14",
+        "Q15",
+        "Q16",
+        "Q17"
+      ]
+    },
+    {
+      "phase": "Q08",
+      "seconds": 0.235,
+      "rows": 2,
+      "error": null,
+      "plan": [
+        [
+          8,
+          0,
+          0,
+          "SEARCH x USING INDEX idx_work_items_verdict_ea (verdict=?)"
+        ],
+        [
+          19,
+          0,
+          0,
+          "CORRELATED SCALAR SUBQUERY 1"
+        ],
+        [
+          24,
+          19,
+          0,
+          "SEARCH y USING INDEX idx_work_items_ea_phase (ea_id=? AND phase=?)"
+        ],
+        [
+          50,
+          0,
+          0,
+          "CORRELATED SCALAR SUBQUERY 2"
+        ],
+        [
+          55,
+          50,
+          0,
+          "SEARCH y USING INDEX idx_work_items_ea_phase (ea_id=? AND phase=?)"
+        ],
+        [
+          85,
+          0,
+          0,
+          "CORRELATED SCALAR SUBQUERY 3"
+        ],
+        [
+          90,
+          85,
+          0,
+          "SEARCH z USING INDEX idx_work_items_ea_phase (ea_id=? AND phase=?)"
+        ],
+        [
+          143,
+          0,
+          0,
+          "USE TEMP B-TREE FOR GROUP BY"
+        ],
+        [
+          190,
+          0,
+          0,
+          "USE TEMP B-TREE FOR ORDER BY"
+        ]
+      ],
+      "sql": "\n        SELECT x.ea_id, x.symbol, x.setfile_path, MAX(x.updated_at), COUNT(*)\n        FROM work_items x\n        WHERE x.phase=?\n          AND x.status IN ('done','failed')\n          AND x.verdict='INFRA_FAIL'\n          \n          AND NOT EXISTS (\n              SELECT 1 FROM work_items y\n              WHERE y.ea_id=x.ea_id\n                AND y.phase=x.phase\n                AND y.symbol=x.symbol\n                AND ifnull(y.setfile_path, '')=ifnull(x.setfile_path, '')\n                AND y.status IN ('pending','active')\n          )\n          AND NOT EXISTS (\n              SELECT 1 FROM work_items y\n              WHERE y.ea_id=x.ea_id\n                AND y.phase=x.phase\n                AND y.symbol=x.symbol\n                AND ifnull(y.setfile_path, '')=ifnull(x.setfile_path, '')\n                AND y.status IN ('done','failed')\n                AND y.verdict IS NOT NULL\n                AND y.verdict!='INFRA_FAIL'\n          )\n          AND NOT EXISTS (SELECT 1 FROM work_items z WHERE z.ea_id=x.ea_id AND z.symbol=x.symbol AND z.phase IN (?,?,?,?,?,?,?,?,?))\n        GROUP BY x.ea_id, x.symbol, x.setfile_path\n        ORDER BY MAX(x.updated_at) ASC\n        ",
+      "parameters": [
+        "Q08",
+        "Q09",
+        "Q10",
+        "Q11",
+        "Q12",
+        "Q13",
+        "Q14",
+        "Q15",
+        "Q16",
+        "Q17"
+      ]
+    }
+  ]
+}

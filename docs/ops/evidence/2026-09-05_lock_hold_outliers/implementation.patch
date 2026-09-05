@@ -1,0 +1,175 @@
+diff --git a/tools/strategy_farm/sweep_enqueue_built_eas.py b/tools/strategy_farm/sweep_enqueue_built_eas.py
+index 6854006294..652a1321df 100644
+--- a/tools/strategy_farm/sweep_enqueue_built_eas.py
++++ b/tools/strategy_farm/sweep_enqueue_built_eas.py
+@@ -629,10 +629,13 @@ for phase in STRANDED_INFRA_PHASES:
+     for ea_id, symbol, setfile, _ts, infra_attempts in stranded_rows:
+         if part2_count >= MAX_PART2_PER_RUN:
+             break
++        # The verdict/date index scans the fleet's failure history once per
++        # stranded pair (52.35 s / 352 lookups in the frozen profile). Restrict
++        # by the existing canonical EA/phase index before the unchanged sort.
+         source = cur.execute(
+             """
+             SELECT id,status,payload_json,updated_at
+-            FROM work_items
++            FROM work_items INDEXED BY idx_work_items_ea_phase
+             WHERE ea_id=? AND phase=? AND symbol=?
+               AND ifnull(setfile_path, '')=ifnull(?, '')
+               AND status IN ('done','failed') AND verdict='INFRA_FAIL'
+@@ -1199,6 +1202,9 @@ if APPLY:
+             cohort_size=cohort_size,
+             canary_symbols=canary_symbols,
+         )
++    # All guarded DB/sidecar mutations are durable. Report serialization and
++    # console output must not extend the fleet-wide claim exclusion window.
++    _release_mutation_lock()
+ EVIDENCE.write_text(json.dumps(report, indent=1), encoding="utf-8")
+ 
+ p1, p2 = report["part1_never_tested"], report["part2_stranded"]
+diff --git a/tools/strategy_farm/terminal_worker.py b/tools/strategy_farm/terminal_worker.py
+index 38461fe122..5d9d50b90e 100644
+--- a/tools/strategy_farm/terminal_worker.py
++++ b/tools/strategy_farm/terminal_worker.py
+@@ -10,7 +10,7 @@ from __future__ import annotations
+ import argparse
+ import atexit
+ from collections import Counter
+-from contextlib import contextmanager
++from contextlib import contextmanager, nullcontext
+ import errno
+ import faulthandler
+ import hashlib
+@@ -2439,6 +2439,8 @@ def _drain_active_ram_facts(
+     *,
+     multisym_ids: frozenset,
+     armed_item_id: str | None,
++    process_snapshot: tuple | None = None,
++    connection: sqlite3.Connection | None = None,
+ ) -> dict[str, Any]:
+     """Read-only fleet-occupancy facts for the drain winnability decision.
+ 
+@@ -2459,8 +2461,10 @@ def _drain_active_ram_facts(
+       * ``armed_row_pending`` -- whether the armed row (when given) is still a
+         pending work item; False means it was claimed / finished elsewhere.
+ 
+-    Runs OUTSIDE the claim transaction on a short read connection, mirroring the
+-    existing _drain_scan_candidate preflight.  Any failure fails open to the
++    Ordinary callers run outside the claim transaction on a short read connection.
++    The claim selector supplies its pre-lock OS snapshot and existing read
++    connection, avoiding a second process census or connection under the lock.
++    Any failure fails open to the
+     benign defaults (no long-run seen, nothing releasable, armed row present).
+     """
+     armed = str(armed_item_id) if armed_item_id is not None else None
+@@ -2473,11 +2477,13 @@ def _drain_active_ram_facts(
+         "long_run_ram_gb": 0.0,
+     }
+     try:
+-        snap_children, snap_private, snap_alive = _process_private_snapshot()
++        snap_children, snap_private, snap_alive = (
++            _process_private_snapshot() if process_snapshot is None else process_snapshot
++        )
+     except Exception:
+         snap_children, snap_private, snap_alive = {}, {}, set()
+     try:
+-        with farmctl.connect(root) as conn:
++        with (farmctl.connect(root) if connection is None else nullcontext(connection)) as conn:
+             conn.row_factory = sqlite3.Row
+             for row in conn.execute(
+                 "SELECT id, ea_id, phase, symbol, payload_json FROM work_items "
+@@ -4986,7 +4992,9 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
+                         try:
+                             longrun_ram_gb_snapshot = float(
+                                 _drain_active_ram_facts(
+-                                    root, multisym_ids=multisym_ids, armed_item_id=drain_item_id
++                                    root, multisym_ids=multisym_ids, armed_item_id=drain_item_id,
++                                    process_snapshot=process_snapshot,
++                                    connection=conn,
+                                 ).get("long_run_ram_gb", 0.0)
+                             )
+                         except Exception:
+diff --git a/tools/strategy_farm/tests/test_sweep_source_lookup.py b/tools/strategy_farm/tests/test_sweep_source_lookup.py
+new file mode 100644
+index 0000000000..0a65e8a3ec
+--- /dev/null
++++ b/tools/strategy_farm/tests/test_sweep_source_lookup.py
+@@ -0,0 +1,31 @@
++from pathlib import Path
++import ast
++import sqlite3
++
++
++def lookup_sql():
++    path=Path(__file__).resolve().parents[1]/'sweep_enqueue_built_eas.py'
++    tree=ast.parse(path.read_text())
++    return next(n.value for n in ast.walk(tree) if isinstance(n,ast.Constant) and isinstance(n.value,str)
++                and 'SELECT id,status,payload_json,updated_at' in n.value and 'INDEXED BY' in n.value)
++
++
++def test_latest_source_lookup_preserves_null_empty_ties_and_filters():
++    c=sqlite3.connect(':memory:')
++    c.execute('CREATE TABLE work_items(id TEXT,ea_id TEXT,phase TEXT,symbol TEXT,setfile_path TEXT,status TEXT,verdict TEXT,payload_json TEXT,updated_at TEXT)')
++    c.execute('CREATE INDEX idx_work_items_ea_phase ON work_items(ea_id,phase)')
++    c.execute('CREATE INDEX idx_work_items_verdict_updated ON work_items(verdict,updated_at)')
++    values=[
++        ('a','EA','Q04','USD',None,'done','INFRA_FAIL','{}','2026-01-01'),
++        ('b','EA','Q04','USD','','failed','INFRA_FAIL','{"winner":1}','2026-01-01'),
++        ('c','EA','Q04','USD','','active','INFRA_FAIL','{}','2026-02-01'),
++        ('d','EA','Q04','USD','','done','PASS','{}','2026-03-01'),
++        ('e','EA','Q03','USD','','done','INFRA_FAIL','{}','2026-04-01'),
++        ('f','OTHER','Q04','USD','','done','INFRA_FAIL','{}','2026-05-01'),
++    ]
++    c.executemany('INSERT INTO work_items VALUES(?,?,?,?,?,?,?,?,?)',values)
++    new=lookup_sql();old=new.replace(' INDEXED BY idx_work_items_ea_phase','')
++    for setfile in (None,'','present.set'):
++        args=('EA','Q04','USD',setfile)
++        assert c.execute(new,args).fetchall()==c.execute(old,args).fetchall()
++    assert c.execute(new,('EA','Q04','USD',None)).fetchone()[0]=='b'
+diff --git a/tools/strategy_farm/tests/test_terminal_worker_atomic_claim.py b/tools/strategy_farm/tests/test_terminal_worker_atomic_claim.py
+index 0d924ef90d..14905f9b34 100644
+--- a/tools/strategy_farm/tests/test_terminal_worker_atomic_claim.py
++++ b/tools/strategy_farm/tests/test_terminal_worker_atomic_claim.py
+@@ -125,6 +125,42 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
+         self.assertIn('Join-Path $stateDir "disabled_terminals.txt"', source)
+         self.assertIn("$_ -notin $disabledTerminals", source)
+ 
++    def test_longrun_ram_probe_reuses_prelock_process_snapshot(self) -> None:
++        with self._root() as tmp:
++            root = Path(tmp) / "farm"
++            self._insert_work_item(root, "wi-snapshot", "EURUSD.DWX", phase="Q03")
++            state, tracking = self._tracking_factory_lock()
++            calls = []
++
++            def process_snapshot():
++                calls.append(state["global_active"])
++                self.assertFalse(state["global_active"], "OS process census inside global lock")
++                return {}, {}, set()
++
++            with patch.object(terminal_worker, "FactoryMutationLock", tracking), patch.object(
++                terminal_worker, "_process_private_snapshot", side_effect=process_snapshot
++            ):
++                result = terminal_worker.claim_atomic(root, "T1")
++            self.assertTrue(result.get("claimed"), result)
++            self.assertEqual(result["item"]["id"], "wi-snapshot")
++            self.assertTrue(calls)
++            self.assertFalse(any(calls))
++
++    def test_longrun_ram_facts_supplied_snapshot_preserves_results(self) -> None:
++        with self._root() as tmp:
++            root = Path(tmp) / "farm"
++            self._insert_work_item(root, "wi-long", "EURUSD.DWX", phase="Q08", status="active", claimed_by="T2")
++            snapshot = ({}, {}, set())
++            with patch.object(terminal_worker, "_process_private_snapshot", return_value=snapshot):
++                expected = terminal_worker._drain_active_ram_facts(root, multisym_ids=frozenset(), armed_item_id=None)
++            with farmctl.connect(root) as conn, patch.object(
++                terminal_worker, "_process_private_snapshot", side_effect=AssertionError("unexpected OS probe")
++            ), patch.object(farmctl, "connect", side_effect=AssertionError("unexpected nested connection")):
++                actual = terminal_worker._drain_active_ram_facts(root, multisym_ids=frozenset(), armed_item_id=None,
++                    process_snapshot=snapshot, connection=conn)
++                self.assertEqual(actual, expected)
++                self.assertEqual(conn.execute("SELECT COUNT(*) FROM work_items").fetchone()[0], 1)
++
+     def test_two_workers_race_claim_same_work_item_only_one_wins(self) -> None:
+         with self._root() as tmp:
+             root = Path(tmp) / "farm"

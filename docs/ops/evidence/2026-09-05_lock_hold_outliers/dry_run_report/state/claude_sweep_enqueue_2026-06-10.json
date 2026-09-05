@@ -1,0 +1,5955 @@
+{
+ "generated_at": "2026-09-05T19:11:58+00:00",
+ "apply": false,
+ "target_eas": [],
+ "target_symbols": [],
+ "requeue_excluded_eas_count": 160,
+ "pending_at_start": 13239,
+ "queue_ceiling": 7000,
+ "wave_budget": 0,
+ "part1_never_tested": {
+  "enqueued": [],
+  "skipped": [
+   {
+    "ea_id": "QM5_30001",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11716",
+    "reason": "requeue_excluded_q02"
+   },
+   {
+    "ea_id": "QM5_11848",
+    "reason": "requeue_excluded_q02"
+   },
+   {
+    "ea_id": "QM5_11305",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11628",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1566",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_20087",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_20053",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11561",
+    "reason": "requeue_excluded_q02"
+   },
+   {
+    "ea_id": "QM5_20088",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11306",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11343",
+    "reason": "requeue_excluded_q02"
+   },
+   {
+    "ea_id": "QM5_20042",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11454",
+    "reason": "requeue_excluded_q02"
+   },
+   {
+    "ea_id": "QM5_11394",
+    "reason": "requeue_excluded_q02"
+   },
+   {
+    "ea_id": "QM5_41003",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11285",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11006",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11558",
+    "reason": "requeue_excluded_q02"
+   },
+   {
+    "ea_id": "QM5_11013",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11559",
+    "reason": "requeue_excluded_q02"
+   },
+   {
+    "ea_id": "QM5_11460",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11315",
+    "reason": "requeue_excluded_q02"
+   },
+   {
+    "ea_id": "QM5_38007",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_38004",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11443",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1157",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11066",
+    "reason": "requeue_excluded_q02"
+   },
+   {
+    "ea_id": "QM5_11001",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11432",
+    "reason": "requeue_excluded_q02"
+   },
+   {
+    "ea_id": "QM5_10798",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10321",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10320",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10843",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10870",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_40005",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10682",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_12425",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10793",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10830",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10657",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10664",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10675",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11693",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11350",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11459",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11508",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_41010",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11575",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_2079",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11719",
+    "reason": "requeue_excluded_q02"
+   },
+   {
+    "ea_id": "QM5_10652",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10669",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11330",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_36003",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11442",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11731",
+    "reason": "requeue_excluded_q02"
+   },
+   {
+    "ea_id": "QM5_2135",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11736",
+    "reason": "requeue_excluded_q02"
+   },
+   {
+    "ea_id": "QM5_34008",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10674",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10827",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10997",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10663",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10666",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10819",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1267",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1268",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11467",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1276",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1281",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1334",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1343",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1358",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9011",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9152",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10653",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10186",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_12939",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1309",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1327",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1333",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1344",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1353",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1351",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1362",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1363",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1365",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1364",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9165",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1369",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1389",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11728",
+    "reason": "requeue_excluded_q02"
+   },
+   {
+    "ea_id": "QM5_1391",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1393",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1397",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1399",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1401",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1402",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1223",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1305",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1408",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1409",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11730",
+    "reason": "requeue_excluded_q02"
+   },
+   {
+    "ea_id": "QM5_1320",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1322",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1410",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1416",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1325",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1352",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1417",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1425",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1368",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1376",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1426",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1439",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1377",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1390",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1445",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1482",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11735",
+    "reason": "requeue_excluded_q02"
+   },
+   {
+    "ea_id": "QM5_1502",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1504",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1511",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1532",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1509",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1529",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1533",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1546",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1550",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1553",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1623",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1582",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1592",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1593",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1595",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1605",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1619",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1624",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_12930",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1636",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1645",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1647",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1314",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1318",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1319",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1649",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1651",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1702",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1324",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1326",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1751",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1859",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1349",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1366",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1370",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1965",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1967",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1969",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1378",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1382",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1388",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_2021",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_2025",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_2190",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_41141",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1392",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1396",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1407",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1430",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_2241",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_2244",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_3001",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_3002",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1437",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1526",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1547",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_3003",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_3004",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_4001",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1912",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_2020",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_2187",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_4002",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_4003",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_4004",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11003",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_2297",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_5001",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_5002",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_5003",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_5004",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_5005",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_6001",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_6002",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_6003",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_6004",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_6005",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_7001",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_7002",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_7003",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_8001",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_8002",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11428",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11725",
+    "reason": "requeue_excluded_q02"
+   },
+   {
+    "ea_id": "QM5_11005",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1269",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10751",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_12923",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_12936",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_12944",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_12945",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1297",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1298",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1311",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1313",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1315",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1316",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1317",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1329",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1330",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1346",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1347",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1348",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1350",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1357",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1367",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1372",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1373",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1374",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1375",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1379",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1380",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1384",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1394",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1428",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1429",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1432",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1436",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1438",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1441",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1444",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1447",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1449",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1480",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1481",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1485",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1503",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1507",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1508",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1521",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1525",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1531",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1555",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1557",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1562",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1563",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1581",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1585",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1591",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1594",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1604",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1629",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1652",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1653",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1701",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1802",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1803",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1856",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1857",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1858",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1911",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1913",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1914",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1966",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1968",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_2022",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_2023",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_2186",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_2188",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_2189",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_2242",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_2296",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_2299",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_2300",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9167",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9168",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9182",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9183",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11495",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11720",
+    "reason": "requeue_excluded_q02"
+   },
+   {
+    "ea_id": "QM5_11438",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11276",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10797",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10822",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11473",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11322",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10673",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11371",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_36004",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_12429",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11540",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11544",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11279",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_12454",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_12494",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1524",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9282",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10662",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11573",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10479",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11365",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10783",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11576",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10650",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10831",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11815",
+    "reason": "requeue_excluded_q02"
+   },
+   {
+    "ea_id": "QM5_11530",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10812",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11490",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11488",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11825",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_39004",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11580",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10861",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11437",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11351",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11574",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11281",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11304",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11367",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1527",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11273",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11017",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11412",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11366",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9281",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10188",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1541",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11441",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_12456",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11391",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11543",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9452",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11408",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11426",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9284",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10646",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10660",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_21509",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11436",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11414",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11344",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11632",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11345",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11464",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10686",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11278",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9010",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11770",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9104",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11466",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_36001",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10655",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10862",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10475",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11413",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9177",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9273",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11448",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_2409",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9410",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11272",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10474",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_13208",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11137",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9251",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9280",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_12351",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1431",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1459",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9176",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_2351",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_20065",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11213",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11214",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_2407",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_37001",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11140",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11142",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_2243",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_2353",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_2408",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_2355",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_2410",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_2464",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_12523",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11212",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_2352",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11139",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_12525",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10875",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1643",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_2298",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9258",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10878",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10879",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_2462",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9264",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10063",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10844",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_12521",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_2354",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_12522",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1545",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_2463",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11136",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11873",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_39007",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_2406",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_2465",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9579",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9275",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11135",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11141",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_12526",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1577",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9297",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11658",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11570",
+    "reason": "requeue_excluded_q02"
+   },
+   {
+    "ea_id": "QM5_1457",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11613",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_2461",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11138",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1487",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1635",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11152",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10881",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11150",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11151",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9147",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11148",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11149",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_39002",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_12527",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1578",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9181",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11615",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_10873",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9209",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11375",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9169",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9461",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11380",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9102",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9103",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9363",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9203",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9256",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9583",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9204",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9277",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11812",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_37005",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9220",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9230",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9223",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9241",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_37002",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9208",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9224",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_38008",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9234",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9233",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11850",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_2245",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1321",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11829",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9304",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9276",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11612",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9215",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9216",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9225",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11614",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9279",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_12955",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9222",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9232",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11783",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_13211",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_12547",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9205",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9252",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11822",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11824",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_37008",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_39006",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9231",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11744",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11742",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11804",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_41006",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9196",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_12612",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11640",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1753",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9303",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11678",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11751",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_20078",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11765",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11846",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_36008",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9211",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11638",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11709",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11872",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_40008",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9521",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_12519",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_20077",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9519",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9254",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11847",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9904",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9516",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_41001",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11642",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11791",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11793",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11802",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11768",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11743",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_9721",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11784",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11801",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11851",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11835",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11639",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11675",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11769",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11834",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11836",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11845",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11865",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11672",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_20081",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11641",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_41005",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11837",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11764",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11766",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11682",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11671",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11880",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1323",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_20080",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11799",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11853",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11698",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11745",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11844",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11674",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11679",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11713",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_20175",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11790",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11800",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11705",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11867",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11680",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11685",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11643",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11759",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11662",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11789",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1528",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11676",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11688",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_20079",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11666",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11702",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11785",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11715",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11803",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1627",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11792",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11813",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1750",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1670",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11563",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11533",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1628",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11539",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11537",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1564",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11531",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1630",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11532",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11376",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1338",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1002",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1003",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1004",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1005",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1010",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1011",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11584",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11591",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_11601",
+    "reason": "requeue_excluded_q02"
+   },
+   {
+    "ea_id": "QM5_12074",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_12247",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1271",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1272",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_12720",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_12721",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1273",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1274",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1275",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1288",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1289",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1290",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1291",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_12921",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_12937",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_12941",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_12942",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1296",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_13124",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_13125",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_13127",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_13200",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_13201",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_13204",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_13206",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1622",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1648",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_1650",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_20003",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_20009",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_20058",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_20180",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_3005",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_4005",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_41117",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_41122",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_41134",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_41135",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_41138",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_41139",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_41157",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_41158",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_41159",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_41160",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_41170",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_41171",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_41178",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_41180",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_41181",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_41183",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_41184",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_41225",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_41236",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_41237",
+    "reason": "queue_ceiling_reached"
+   },
+   {
+    "ea_id": "QM5_41317",
+    "reason": "queue_ceiling_reached"
+   }
+  ]
+ },
+ "part2_stranded": {
+  "enqueued": [],
+  "skipped": [
+   {
+    "ea_id": "QM5_1049",
+    "phase": "Q02",
+    "symbol": "AUDJPY.DWX",
+    "reason": "setfile_missing"
+   },
+   {
+    "ea_id": "QM5_1047",
+    "phase": "Q02",
+    "symbol": "EURCHF.DWX",
+    "reason": "setfile_missing"
+   },
+   {
+    "ea_id": "QM5_1047",
+    "phase": "Q02",
+    "symbol": "XAUUSD.DWX",
+    "reason": "setfile_missing"
+   },
+   {
+    "ea_id": "QM5_1047",
+    "phase": "Q02",
+    "symbol": "EURJPY.DWX",
+    "reason": "setfile_missing"
+   },
+   {
+    "ea_id": "QM5_1047",
+    "phase": "Q02",
+    "symbol": "EURAUD.DWX",
+    "reason": "setfile_missing"
+   },
+   {
+    "ea_id": "QM5_1049",
+    "phase": "Q02",
+    "symbol": "EURUSD.DWX",
+    "reason": "setfile_missing"
+   },
+   {
+    "ea_id": "QM5_1047",
+    "phase": "Q02",
+    "symbol": "EURNZD.DWX",
+    "reason": "setfile_missing"
+   },
+   {
+    "ea_id": "QM5_1047",
+    "phase": "Q02",
+    "symbol": "EURUSD.DWX",
+    "reason": "setfile_missing"
+   },
+   {
+    "ea_id": "QM5_1047",
+    "phase": "Q02",
+    "symbol": "GBPCHF.DWX",
+    "reason": "setfile_missing"
+   },
+   {
+    "ea_id": "QM5_1047",
+    "phase": "Q02",
+    "symbol": "NZDJPY.DWX",
+    "reason": "setfile_missing"
+   },
+   {
+    "ea_id": "QM5_1047",
+    "phase": "Q02",
+    "symbol": "NZDUSD.DWX",
+    "reason": "setfile_missing"
+   },
+   {
+    "ea_id": "QM5_1056",
+    "phase": "Q02",
+    "symbol": "AUDNZD.DWX",
+    "reason": "setfile_missing"
+   },
+   {
+    "ea_id": "QM5_10470",
+    "phase": "Q02",
+    "symbol": "XAUUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10470",
+    "phase": "Q02",
+    "symbol": "XAUUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10470",
+    "phase": "Q02",
+    "symbol": "XAUUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_1082",
+    "phase": "Q02",
+    "symbol": "AUDCHF.DWX",
+    "reason": "setfile_missing"
+   },
+   {
+    "ea_id": "QM5_1082",
+    "phase": "Q02",
+    "symbol": "AUDJPY.DWX",
+    "reason": "setfile_missing"
+   },
+   {
+    "ea_id": "QM5_1082",
+    "phase": "Q02",
+    "symbol": "CADCHF.DWX",
+    "reason": "setfile_missing"
+   },
+   {
+    "ea_id": "QM5_1082",
+    "phase": "Q02",
+    "symbol": "CADJPY.DWX",
+    "reason": "setfile_missing"
+   },
+   {
+    "ea_id": "QM5_1082",
+    "phase": "Q02",
+    "symbol": "CHFJPY.DWX",
+    "reason": "setfile_missing"
+   },
+   {
+    "ea_id": "QM5_1082",
+    "phase": "Q02",
+    "symbol": "AUDCAD.DWX",
+    "reason": "setfile_missing"
+   },
+   {
+    "ea_id": "QM5_1082",
+    "phase": "Q02",
+    "symbol": "AUDUSD.DWX",
+    "reason": "setfile_missing"
+   },
+   {
+    "ea_id": "QM5_1234",
+    "phase": "Q02",
+    "symbol": "NZDUSD.DWX",
+    "reason": "setfile_missing"
+   },
+   {
+    "ea_id": "QM5_1219",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_1219_GER40.DWX_D1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_1219",
+    "phase": "Q02",
+    "symbol": "EURUSD.DWX",
+    "reason": "setfile_missing"
+   },
+   {
+    "ea_id": "QM5_1113",
+    "phase": "Q02",
+    "symbol": "AUS200.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_1113_AUS200.DWX_D1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_10451",
+    "phase": "Q02",
+    "symbol": "XAUUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10451",
+    "phase": "Q02",
+    "symbol": "XAUUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10451",
+    "phase": "Q02",
+    "symbol": "XAUUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_1234",
+    "phase": "Q02",
+    "symbol": "EURUSD.DWX",
+    "reason": "setfile_missing"
+   },
+   {
+    "ea_id": "QM5_1234",
+    "phase": "Q02",
+    "symbol": "NDX.DWX",
+    "reason": "setfile_missing"
+   },
+   {
+    "ea_id": "QM5_1234",
+    "phase": "Q02",
+    "symbol": "GBPUSD.DWX",
+    "reason": "setfile_missing"
+   },
+   {
+    "ea_id": "QM5_1234",
+    "phase": "Q02",
+    "symbol": "USDJPY.DWX",
+    "reason": "setfile_missing"
+   },
+   {
+    "ea_id": "QM5_1234",
+    "phase": "Q02",
+    "symbol": "XAUUSD.DWX",
+    "reason": "setfile_missing"
+   },
+   {
+    "ea_id": "QM5_1092",
+    "phase": "Q02",
+    "symbol": "USDJPY.DWX",
+    "reason": "setfile_missing"
+   },
+   {
+    "ea_id": "QM5_1092",
+    "phase": "Q02",
+    "symbol": "GBPUSD.DWX",
+    "reason": "setfile_missing"
+   },
+   {
+    "ea_id": "QM5_10113",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_10113_tv-ob-matrix_GER40.DWX_M15_backtest.set"
+   },
+   {
+    "ea_id": "QM5_10043",
+    "phase": "Q02",
+    "symbol": "AUDUSD.DWX",
+    "reason": "setfile_missing"
+   },
+   {
+    "ea_id": "QM5_11548",
+    "phase": "Q02",
+    "reason": "registry_status=pending"
+   },
+   {
+    "ea_id": "QM5_1091",
+    "phase": "Q02",
+    "symbol": "USDCAD.DWX",
+    "reason": "setfile_missing"
+   },
+   {
+    "ea_id": "QM5_11062",
+    "phase": "Q02",
+    "symbol": "AUDUSD.DWX",
+    "reason": "setfile_missing"
+   },
+   {
+    "ea_id": "QM5_11062",
+    "phase": "Q02",
+    "symbol": "NDX.DWX",
+    "reason": "setfile_missing"
+   },
+   {
+    "ea_id": "QM5_11062",
+    "phase": "Q02",
+    "symbol": "WS30.DWX",
+    "reason": "setfile_missing"
+   },
+   {
+    "ea_id": "QM5_11260",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_11260_cs-stoch-mfi_GER40.DWX_M5_backtest.set"
+   },
+   {
+    "ea_id": "QM5_1112",
+    "phase": "Q02",
+    "symbol": "AUS200.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_1112_AUS200.DWX_D1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_11062",
+    "phase": "Q02",
+    "symbol": "EURUSD.DWX",
+    "reason": "setfile_missing"
+   },
+   {
+    "ea_id": "QM5_10835",
+    "phase": "Q02",
+    "symbol": "XAUUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_1186",
+    "phase": "Q02",
+    "symbol": "XCUUSD.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_1186_XCUUSD.DWX_D1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_10209",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_10209_tv-atr-ema-session_GER40.DWX_H1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_1075",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_1075_as-accel-dualmom_GER40.DWX_D1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_10427",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_10427_et-3bar-xma_GER40.DWX_M15_backtest.set"
+   },
+   {
+    "ea_id": "QM5_11915",
+    "phase": "Q02",
+    "symbol": "GBPJPY.DWX",
+    "reason": "review_entry_gate",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "aa39fa26-d79f-45f1-bc34-7826cdab00c6",
+       "task_type": "build_ea",
+       "state": "PASSED"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_11915",
+    "phase": "Q02",
+    "symbol": "GBPUSD.DWX",
+    "reason": "review_entry_gate",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "aa39fa26-d79f-45f1-bc34-7826cdab00c6",
+       "task_type": "build_ea",
+       "state": "PASSED"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_10817",
+    "phase": "Q02",
+    "symbol": "XAUUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10678",
+    "phase": "Q02",
+    "symbol": "GBPJPY.DWX",
+    "reason": "requeue_excluded_q02"
+   },
+   {
+    "ea_id": "QM5_11358",
+    "phase": "Q02",
+    "symbol": "CHFJPY.DWX",
+    "reason": "requeue_excluded_q02"
+   },
+   {
+    "ea_id": "QM5_11002",
+    "phase": "Q02",
+    "symbol": "USDJPY.DWX",
+    "reason": "requeue_excluded_q02"
+   },
+   {
+    "ea_id": "QM5_10004",
+    "phase": "Q02",
+    "symbol": "EURJPY.DWX",
+    "reason": "requeue_excluded_q02"
+   },
+   {
+    "ea_id": "QM5_11901",
+    "phase": "Q02",
+    "symbol": "EURJPY.DWX",
+    "reason": "review_entry_gate",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "0daf10dc-cb94-499f-a82a-96d15d591135",
+       "task_type": "build_ea",
+       "state": "PASSED"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_11293",
+    "phase": "Q02",
+    "symbol": "EURJPY.DWX",
+    "reason": "requeue_excluded_q02"
+   },
+   {
+    "ea_id": "QM5_10189",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_10189_tv-piv-vwap-brk_GER40.DWX_H1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_10191",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_10191_tv-gold-vol2bar_GER40.DWX_H1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_10214",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_10214_tv-gvto-trend_GER40.DWX_H1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_10218",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_10218_tv-oops-gap_GER40.DWX_M15_backtest.set"
+   },
+   {
+    "ea_id": "QM5_10241",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_10241_tv-vwap-retest_GER40.DWX_M15_backtest.set"
+   },
+   {
+    "ea_id": "QM5_10325",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_10325_round-close_GER40.DWX_D1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_10333",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_10333_dax-loser-rev_GER40.DWX_M5_backtest.set"
+   },
+   {
+    "ea_id": "QM5_10335",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_10335_nse-vol-orb_GER40.DWX_M5_backtest.set"
+   },
+   {
+    "ea_id": "QM5_10338",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_10338_intraday-comp-mom_GER40.DWX_D1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_10346",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_10346_et-turtle-intra_GER40.DWX_H1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_10351",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_10351_et-rally-x_GER40.DWX_M1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_10352",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_10352_et-rsi-psar_GER40.DWX_M30_backtest.set"
+   },
+   {
+    "ea_id": "QM5_10353",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_10353_et-macd-r1_GER40.DWX_H1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_10354",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_10354_et-crude-orb_GER40.DWX_M15_backtest.set"
+   },
+   {
+    "ea_id": "QM5_10355",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_10355_et-session-orb_GER40.DWX_M15_backtest.set"
+   },
+   {
+    "ea_id": "QM5_10357",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_10357_et-downgap-close_GER40.DWX_D1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_10361",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_10361_et-range-offset_GER40.DWX_D1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_10383",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_10383_et-sma-rsi150_GER40.DWX_M5_backtest.set"
+   },
+   {
+    "ea_id": "QM5_10385",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_10385_et-3bar-filter_GER40.DWX_M15_backtest.set"
+   },
+   {
+    "ea_id": "QM5_10416",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_10416_et-sma-dev_GER40.DWX_M5_backtest.set"
+   },
+   {
+    "ea_id": "QM5_10418",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_10418_et-sma5-trend_GER40.DWX_M2_backtest.set"
+   },
+   {
+    "ea_id": "QM5_10419",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_10419_et-spm-macd_GER40.DWX_M5_backtest.set"
+   },
+   {
+    "ea_id": "QM5_10429",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_10429_et-rsi2-es_GER40.DWX_M5_backtest.set"
+   },
+   {
+    "ea_id": "QM5_10630",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_10630_et-ob-bos-bounce_GER40.DWX_M30_backtest.set"
+   },
+   {
+    "ea_id": "QM5_10636",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_10636_et-open-reclaim_GER40.DWX_M5_backtest.set"
+   },
+   {
+    "ea_id": "QM5_10637",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_10637_et-obv-trend_GER40.DWX_D1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_10757",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_10757_tv-sess-brk-scalp_GER40.DWX_M5_backtest.set"
+   },
+   {
+    "ea_id": "QM5_10921",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_10921_grimes-bearflag_GER40.DWX_D1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_10950",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_10950_rentech-short-trend_GER40.DWX_H4_backtest.set"
+   },
+   {
+    "ea_id": "QM5_10982",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_10982_ftmo-bos-flip_GER40.DWX_H1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_10986",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_10986_ftmo-psar-rev_GER40.DWX_H1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_10994",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_10994_ftmo-vwap-macd_GER40.DWX_M15_backtest.set"
+   },
+   {
+    "ea_id": "QM5_11092",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_11092_cvd-zero_GER40.DWX_H1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_1112",
+    "phase": "Q02",
+    "symbol": "JPN225.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_1112_JPN225.DWX_D1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_1113",
+    "phase": "Q02",
+    "symbol": "JPN225.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_1113_JPN225.DWX_D1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_11133",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_11133_tm-rsi4-week_GER40.DWX_W1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_11146",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_11146_vbt-rsi-band_GER40.DWX_M15_backtest.set"
+   },
+   {
+    "ea_id": "QM5_11178",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_11178_zip-rsi-ls_GER40.DWX_D1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_11230",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_11230_ft-obv-ema_GER40.DWX_H1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_11231",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_11231_ft-ema-ha-rsi_GER40.DWX_H1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_11236",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_11236_ft-tr-bb_GER40.DWX_H1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_11258",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_11258_cs-ema10-30_GER40.DWX_D1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_11259",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_11259_cs-macd-cross_GER40.DWX_M15_backtest.set"
+   },
+   {
+    "ea_id": "QM5_11266",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_11266_qt-ha-trend_GER40.DWX_H4_backtest.set"
+   },
+   {
+    "ea_id": "QM5_11605",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_11605_ar-supertrend_GER40.DWX_H4_backtest.set"
+   },
+   {
+    "ea_id": "QM5_11808",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_11808_fin-boll10_GER40.DWX_D1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_11809",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_11809_fin-macd-zx_GER40.DWX_D1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_11810",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_11810_fin-rsi14x_GER40.DWX_D1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_11811",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_11811_fin-wr14x_GER40.DWX_D1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_11840",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_11840_ait-rsi-bb_GER40.DWX_D1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_11842",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_11842_ait-macd-pos_GER40.DWX_D1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_11843",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_11843_ait-bb20_GER40.DWX_D1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_12369",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_12369_tmom-pivots_GER40.DWX_D1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_12372",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_12372_tmom-sector-mom_GER40.DWX_D1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_12394",
+    "phase": "Q02",
+    "symbol": "JPN225.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_12394_sector-mom12m_JPN225.DWX_H1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_12396",
+    "phase": "Q02",
+    "symbol": "JPN225.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_12396_country-bab_JPN225.DWX_H1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_12403",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_12403_stock-bab_GER40.DWX_H1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_12403",
+    "phase": "Q02",
+    "symbol": "JP225.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_12403_stock-bab_JP225.DWX_H1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_12409",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_12409_stock-st-rev_GER40.DWX_H1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_12409",
+    "phase": "Q02",
+    "symbol": "JP225.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_12409_stock-st-rev_JP225.DWX_H1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_12508",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_12508_bt-sma50-select_GER40.DWX_D1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_12571",
+    "phase": "Q02",
+    "symbol": "GER40.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_12571_ict-silver-bullet-fvg_GER40.DWX_M15_backtest.set"
+   },
+   {
+    "ea_id": "QM5_9121",
+    "phase": "Q02",
+    "symbol": "USOIL.DWX",
+    "reason": "symbol_not_in_dwx_matrix",
+    "setfile": "QM5_9121_aa-tma10-cross_USOIL.DWX_D1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_11417",
+    "phase": "Q02",
+    "symbol": "GBPJPY.DWX",
+    "reason": "requeue_excluded_q02"
+   },
+   {
+    "ea_id": "QM5_9920",
+    "phase": "Q02",
+    "symbol": "EURJPY.DWX",
+    "reason": "requeue_excluded_q02"
+   },
+   {
+    "ea_id": "QM5_11481",
+    "phase": "Q02",
+    "symbol": "USDJPY.DWX",
+    "reason": "requeue_excluded_q02"
+   },
+   {
+    "ea_id": "20022",
+    "phase": "Q02",
+    "reason": "registry_status=None"
+   },
+   {
+    "ea_id": "QM5_11440",
+    "phase": "Q02",
+    "symbol": "EURUSD.DWX",
+    "reason": "requeue_excluded_q02"
+   },
+   {
+    "ea_id": "QM5_12406",
+    "phase": "Q02",
+    "symbol": "NDX.DWX",
+    "reason": "infra_retry_cap_reached",
+    "attempts": 12
+   },
+   {
+    "ea_id": "QM5_10265",
+    "phase": "Q02",
+    "symbol": "WS30.DWX",
+    "reason": "infra_retry_cap_reached",
+    "attempts": 12
+   },
+   {
+    "ea_id": "QM5_10792",
+    "phase": "Q02",
+    "symbol": "EURUSD.DWX",
+    "reason": "infra_retry_cap_reached",
+    "attempts": 12
+   },
+   {
+    "ea_id": "QM5_11062",
+    "phase": "Q02",
+    "symbol": "GBPUSD.DWX",
+    "reason": "infra_retry_cap_reached",
+    "attempts": 12
+   },
+   {
+    "ea_id": "QM5_10255",
+    "phase": "Q02",
+    "symbol": "GDAXI.DWX",
+    "reason": "infra_retry_cap_reached",
+    "attempts": 12
+   },
+   {
+    "ea_id": "QM5_9107",
+    "phase": "Q02",
+    "symbol": "WS30.DWX",
+    "reason": "infra_retry_cap_reached",
+    "attempts": 12
+   },
+   {
+    "ea_id": "QM5_9107",
+    "phase": "Q02",
+    "symbol": "XAGUSD.DWX",
+    "reason": "infra_retry_cap_reached",
+    "attempts": 12
+   },
+   {
+    "ea_id": "QM5_9107",
+    "phase": "Q02",
+    "symbol": "XNGUSD.DWX",
+    "reason": "infra_retry_cap_reached",
+    "attempts": 12
+   },
+   {
+    "ea_id": "QM5_1233",
+    "phase": "Q02",
+    "symbol": "UK100.DWX",
+    "reason": "infra_retry_cap_reached",
+    "attempts": 12
+   },
+   {
+    "ea_id": "QM5_1233",
+    "phase": "Q02",
+    "symbol": "NDX.DWX",
+    "reason": "infra_retry_cap_reached",
+    "attempts": 12
+   },
+   {
+    "ea_id": "QM5_1251",
+    "phase": "Q02",
+    "symbol": "USDJPY.DWX",
+    "reason": "infra_retry_cap_reached",
+    "attempts": 12
+   },
+   {
+    "ea_id": "QM5_9107",
+    "phase": "Q02",
+    "symbol": "EURCHF.DWX",
+    "reason": "infra_retry_cap_reached",
+    "attempts": 12
+   },
+   {
+    "ea_id": "QM5_20178",
+    "phase": "Q02",
+    "symbol": "XAUUSD.DWX",
+    "reason": "review_entry_gate",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "4fd0c86e-654d-47d5-a8ad-053d76ea3568",
+       "task_type": "build_ea",
+       "state": "PIPELINE"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_41009",
+    "phase": "Q02",
+    "symbol": "SP500.DWX",
+    "reason": "review_entry_gate",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_fail_or_blocked",
+     "task_id": "0fd1b0a8-c415-4309-9778-4ebefa05a1cf",
+     "task_type": "build_ea",
+     "task_state": "RECYCLE",
+     "verdict": "RECYCLE: source fails approved risk/loss/GMT/execution/TP/slippage contracts and EX5 is stale; repair, then recompile via governed COMPILE_EA.",
+     "failing_tasks": 1
+    }
+   },
+   {
+    "ea_id": "QM5_12920",
+    "phase": "Q02",
+    "symbol": "SP500.DWX",
+    "reason": "review_entry_gate",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_fail_or_blocked",
+     "task_id": "19c8295f-c2aa-47b6-9e55-47e0fa465b0f",
+     "task_type": "build_ea",
+     "task_state": "RECYCLE",
+     "verdict": "RECYCLE: repair exact-once restart-safe D-5 entry and mandatory D0 exit ordering, disable Friday close, regenerate the governed setfile, then recompile via gove",
+     "failing_tasks": 1
+    }
+   },
+   {
+    "ea_id": "QM5_37006",
+    "phase": "Q02",
+    "symbol": "SP500.DWX",
+    "reason": "review_entry_gate",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_fail_or_blocked",
+     "task_id": "fc2c4254-fae3-4ad7-bd0c-c44be30334fb",
+     "task_type": "build_ea",
+     "task_state": "RECYCLE",
+     "verdict": "RECYCLE: center CUSUM by E[y_t], reset only after confirmed fill, preserve/rebuild every-bar state, wire 2/2.5/5% loss rails and 3-tick slippage, remove unappro",
+     "failing_tasks": 1
+    }
+   },
+   {
+    "ea_id": "QM5_39005",
+    "phase": "Q02",
+    "symbol": "EURUSD.DWX",
+    "reason": "review_entry_gate",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_fail_or_blocked",
+     "task_id": "57041b21-12da-464d-b275-c91cb3fa8673",
+     "task_type": "build_ea",
+     "task_state": "RECYCLE",
+     "verdict": "RECYCLE: convert the GMT rollover via QM_BrokerToUTC, make risk defaults mutually exclusive, enforce the card's 3-tick deviation, add ArraySize guards, then rec",
+     "failing_tasks": 1
+    }
+   },
+   {
+    "ea_id": "QM5_12943",
+    "phase": "Q02",
+    "symbol": "EURUSD.DWX",
+    "reason": "review_entry_gate",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_fail_or_blocked",
+     "task_id": "e3a2083b-eeb7-40e0-b865-0cc7d001997e",
+     "task_type": "build_ea",
+     "task_state": "RECYCLE",
+     "verdict": "RECYCLE: reconcile 9 active out-of-card magic rows and regenerate resolver; make spread/Asian filters entry-only so exits remain reachable; recompile current MQ",
+     "failing_tasks": 1
+    }
+   },
+   {
+    "ea_id": "QM5_37004",
+    "phase": "Q02",
+    "symbol": "XAUUSD.DWX",
+    "reason": "review_entry_gate",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_fail_or_blocked",
+     "task_id": "6d2369c0-a412-427e-afab-8c5feed10cc3",
+     "task_type": "build_ea",
+     "task_state": "BLOCKED",
+     "verdict": "BLOCKED_CARD_INCOMPLETE: Kelly p/b and exponential-momentum estimator undefined; D6 REVIEW correctly refused",
+     "failing_tasks": 1
+    }
+   },
+   {
+    "ea_id": "QM5_2013",
+    "phase": "Q04",
+    "symbol": "CADJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10566",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10566",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10566",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10566",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10566",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10566",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10596",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10596",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10596",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10596",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10596",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10006",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10592",
+    "phase": "Q04",
+    "symbol": "GBPJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_1328",
+    "phase": "Q04",
+    "symbol": "AUDUSD.DWX",
+    "reason": "review_entry_gate",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "43972be5-a95d-45e0-8564-1f0229bfcaf3",
+       "task_type": "build_ea",
+       "state": "PASSED"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_10110",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10110",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10575",
+    "phase": "Q04",
+    "symbol": "XAUUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10110",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10575",
+    "phase": "Q04",
+    "symbol": "XAUUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10592",
+    "phase": "Q04",
+    "symbol": "USDJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10592",
+    "phase": "Q04",
+    "symbol": "USDJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10575",
+    "phase": "Q04",
+    "symbol": "XAUUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10215",
+    "phase": "Q04",
+    "symbol": "GBPJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10006",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_1219",
+    "phase": "Q04",
+    "symbol": "NDX.DWX",
+    "reason": "setfile_missing"
+   },
+   {
+    "ea_id": "QM5_10491",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10491",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10558",
+    "phase": "Q04",
+    "symbol": "GBPJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10006",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10144",
+    "phase": "Q04",
+    "symbol": "USDCAD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10144",
+    "phase": "Q04",
+    "symbol": "GBPJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10491",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10144",
+    "phase": "Q04",
+    "symbol": "USDJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10596",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10038",
+    "phase": "Q04",
+    "symbol": "EURUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_12606",
+    "phase": "Q04",
+    "symbol": "QM5_12606_XTI_XAG_RATIO_D1",
+    "reason": "non_dwx_symbol",
+    "setfile": "QM5_12606_oil-silver-ratio_QM5_12606_XTI_XAG_RATIO_D1_D1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_12608",
+    "phase": "Q04",
+    "symbol": "QM5_12608_XTI_XNG_BREAKOUT_D1",
+    "reason": "non_dwx_symbol",
+    "setfile": "QM5_12608_eia-oilgas-breakout_QM5_12608_XTI_XNG_BREAKOUT_D1_D1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_10489",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_1328",
+    "phase": "Q04",
+    "symbol": "AUDUSD.DWX",
+    "reason": "review_entry_gate",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "43972be5-a95d-45e0-8564-1f0229bfcaf3",
+       "task_type": "build_ea",
+       "state": "PASSED"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_10592",
+    "phase": "Q04",
+    "symbol": "USDJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10596",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10575",
+    "phase": "Q04",
+    "symbol": "XAUUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10110",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10558",
+    "phase": "Q04",
+    "symbol": "GBPJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_1328",
+    "phase": "Q04",
+    "symbol": "AUDUSD.DWX",
+    "reason": "review_entry_gate",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "43972be5-a95d-45e0-8564-1f0229bfcaf3",
+       "task_type": "build_ea",
+       "state": "PASSED"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_10594",
+    "phase": "Q04",
+    "symbol": "USDJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10215",
+    "phase": "Q04",
+    "symbol": "GBPJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_1258",
+    "phase": "Q04",
+    "symbol": "USDJPY.DWX",
+    "reason": "review_entry_gate",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "f13ea089-7319-42db-a12d-b8771503736f",
+       "task_type": "build_ea",
+       "state": "PIPELINE"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_10161",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10773",
+    "phase": "Q04",
+    "symbol": "GDAXI.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_1328",
+    "phase": "Q04",
+    "symbol": "AUDUSD.DWX",
+    "reason": "review_entry_gate",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "43972be5-a95d-45e0-8564-1f0229bfcaf3",
+       "task_type": "build_ea",
+       "state": "PASSED"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_10588",
+    "phase": "Q04",
+    "symbol": "GBPJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10592",
+    "phase": "Q04",
+    "symbol": "USDJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10592",
+    "phase": "Q04",
+    "symbol": "GBPJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_1258",
+    "phase": "Q04",
+    "symbol": "USDJPY.DWX",
+    "reason": "review_entry_gate",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "f13ea089-7319-42db-a12d-b8771503736f",
+       "task_type": "build_ea",
+       "state": "PIPELINE"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_10163",
+    "phase": "Q04",
+    "symbol": "USDJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10773",
+    "phase": "Q04",
+    "symbol": "GDAXI.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10150",
+    "phase": "Q04",
+    "symbol": "GDAXI.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10513",
+    "phase": "Q04",
+    "symbol": "USDJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10596",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_1328",
+    "phase": "Q04",
+    "symbol": "AUDUSD.DWX",
+    "reason": "review_entry_gate",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "43972be5-a95d-45e0-8564-1f0229bfcaf3",
+       "task_type": "build_ea",
+       "state": "PASSED"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_10558",
+    "phase": "Q04",
+    "symbol": "GBPJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10125",
+    "phase": "Q04",
+    "symbol": "CHFJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10592",
+    "phase": "Q04",
+    "symbol": "USDJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_12739",
+    "phase": "Q04",
+    "symbol": "QM5_12739_GBPUSD_AUDUSD_COINTEGRATION_D1",
+    "reason": "non_dwx_symbol",
+    "setfile": "QM5_12739_edgelab-gbpusd-audusd-cointegration_QM5_12739_GBPUSD_AUDUSD_COINTEGRATION_D1_D1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_10592",
+    "phase": "Q04",
+    "symbol": "GBPJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_2012",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_12747",
+    "phase": "Q04",
+    "symbol": "QM5_12747_EURUSD_AUDUSD_COINTEGRATION_D1",
+    "reason": "non_dwx_symbol",
+    "setfile": "QM5_12747_edgelab-eurusd-audusd-cointegration_QM5_12747_EURUSD_AUDUSD_COINTEGRATION_D1_D1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_1328",
+    "phase": "Q04",
+    "symbol": "AUDUSD.DWX",
+    "reason": "review_entry_gate",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "43972be5-a95d-45e0-8564-1f0229bfcaf3",
+       "task_type": "build_ea",
+       "state": "PASSED"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_10469",
+    "phase": "Q04",
+    "symbol": "USDJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10592",
+    "phase": "Q04",
+    "symbol": "USDJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10588",
+    "phase": "Q04",
+    "symbol": "GBPJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10215",
+    "phase": "Q04",
+    "symbol": "GBPJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10110",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10592",
+    "phase": "Q04",
+    "symbol": "GBPJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_1328",
+    "phase": "Q04",
+    "symbol": "AUDUSD.DWX",
+    "reason": "review_entry_gate",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "43972be5-a95d-45e0-8564-1f0229bfcaf3",
+       "task_type": "build_ea",
+       "state": "PASSED"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_10566",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10773",
+    "phase": "Q04",
+    "symbol": "GDAXI.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10773",
+    "phase": "Q04",
+    "symbol": "GDAXI.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_1328",
+    "phase": "Q04",
+    "symbol": "AUDUSD.DWX",
+    "reason": "review_entry_gate",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "43972be5-a95d-45e0-8564-1f0229bfcaf3",
+       "task_type": "build_ea",
+       "state": "PASSED"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_10562",
+    "phase": "Q04",
+    "symbol": "EURUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_1258",
+    "phase": "Q04",
+    "symbol": "USDJPY.DWX",
+    "reason": "review_entry_gate",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "f13ea089-7319-42db-a12d-b8771503736f",
+       "task_type": "build_ea",
+       "state": "PIPELINE"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_10558",
+    "phase": "Q04",
+    "symbol": "GBPJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10215",
+    "phase": "Q04",
+    "symbol": "GBPJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10469",
+    "phase": "Q04",
+    "symbol": "USDJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_1328",
+    "phase": "Q04",
+    "symbol": "AUDUSD.DWX",
+    "reason": "review_entry_gate",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "43972be5-a95d-45e0-8564-1f0229bfcaf3",
+       "task_type": "build_ea",
+       "state": "PASSED"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_10440",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10558",
+    "phase": "Q04",
+    "symbol": "GBPJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10215",
+    "phase": "Q04",
+    "symbol": "GBPJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_1328",
+    "phase": "Q04",
+    "symbol": "AUDUSD.DWX",
+    "reason": "review_entry_gate",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "43972be5-a95d-45e0-8564-1f0229bfcaf3",
+       "task_type": "build_ea",
+       "state": "PASSED"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_10513",
+    "phase": "Q04",
+    "symbol": "USDJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10562",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10558",
+    "phase": "Q04",
+    "symbol": "GBPJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10596",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10773",
+    "phase": "Q04",
+    "symbol": "GDAXI.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_1258",
+    "phase": "Q04",
+    "symbol": "USDJPY.DWX",
+    "reason": "review_entry_gate",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "f13ea089-7319-42db-a12d-b8771503736f",
+       "task_type": "build_ea",
+       "state": "PIPELINE"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_10192",
+    "phase": "Q04",
+    "symbol": "GDAXI.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10562",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10773",
+    "phase": "Q04",
+    "symbol": "GDAXI.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10558",
+    "phase": "Q04",
+    "symbol": "GBPJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10440",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10469",
+    "phase": "Q04",
+    "symbol": "USDJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_1258",
+    "phase": "Q04",
+    "symbol": "USDJPY.DWX",
+    "reason": "review_entry_gate",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "f13ea089-7319-42db-a12d-b8771503736f",
+       "task_type": "build_ea",
+       "state": "PIPELINE"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_10773",
+    "phase": "Q04",
+    "symbol": "GDAXI.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10558",
+    "phase": "Q04",
+    "symbol": "GBPJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10773",
+    "phase": "Q04",
+    "symbol": "GDAXI.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10773",
+    "phase": "Q04",
+    "symbol": "GDAXI.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10469",
+    "phase": "Q04",
+    "symbol": "USDJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10215",
+    "phase": "Q04",
+    "symbol": "GBPJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10558",
+    "phase": "Q04",
+    "symbol": "GBPJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10562",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10596",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10773",
+    "phase": "Q04",
+    "symbol": "GDAXI.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10469",
+    "phase": "Q04",
+    "symbol": "USDJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10469",
+    "phase": "Q04",
+    "symbol": "USDJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_2012",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10215",
+    "phase": "Q04",
+    "symbol": "GBPJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_1258",
+    "phase": "Q04",
+    "symbol": "USDJPY.DWX",
+    "reason": "review_entry_gate",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "f13ea089-7319-42db-a12d-b8771503736f",
+       "task_type": "build_ea",
+       "state": "PIPELINE"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_10469",
+    "phase": "Q04",
+    "symbol": "USDJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10596",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10773",
+    "phase": "Q04",
+    "symbol": "GDAXI.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_1258",
+    "phase": "Q04",
+    "symbol": "USDJPY.DWX",
+    "reason": "review_entry_gate",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "f13ea089-7319-42db-a12d-b8771503736f",
+       "task_type": "build_ea",
+       "state": "PIPELINE"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_10558",
+    "phase": "Q04",
+    "symbol": "GBPJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10215",
+    "phase": "Q04",
+    "symbol": "GBPJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10773",
+    "phase": "Q04",
+    "symbol": "GDAXI.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10596",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10440",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10469",
+    "phase": "Q04",
+    "symbol": "USDJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10215",
+    "phase": "Q04",
+    "symbol": "GBPJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10469",
+    "phase": "Q04",
+    "symbol": "USDJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10773",
+    "phase": "Q04",
+    "symbol": "GDAXI.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10215",
+    "phase": "Q04",
+    "symbol": "GBPJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10215",
+    "phase": "Q04",
+    "symbol": "GBPJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10469",
+    "phase": "Q04",
+    "symbol": "USDJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10215",
+    "phase": "Q04",
+    "symbol": "GBPJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10215",
+    "phase": "Q04",
+    "symbol": "GBPJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10215",
+    "phase": "Q04",
+    "symbol": "GBPJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10469",
+    "phase": "Q04",
+    "symbol": "USDJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10215",
+    "phase": "Q04",
+    "symbol": "GBPJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10469",
+    "phase": "Q04",
+    "symbol": "USDJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10469",
+    "phase": "Q04",
+    "symbol": "USDJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10469",
+    "phase": "Q04",
+    "symbol": "USDJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10469",
+    "phase": "Q04",
+    "symbol": "USDJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_12850",
+    "phase": "Q04",
+    "symbol": "QM5_12850_XTI_XNG_VCB_D1",
+    "reason": "non_dwx_symbol",
+    "setfile": "QM5_12850_xti-xng-vcb_QM5_12850_XTI_XNG_VCB_D1_D1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_10718",
+    "phase": "Q04",
+    "symbol": "QM5_10718_FX8_BASKET_D1",
+    "reason": "non_dwx_symbol",
+    "setfile": "QM5_10718_edgelab-regime-filtered-carry_QM5_10718_FX8_BASKET_D1_D1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_9122",
+    "phase": "Q04",
+    "symbol": "XAUUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_9122",
+    "phase": "Q04",
+    "symbol": "XAUUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_9122",
+    "phase": "Q04",
+    "symbol": "XAUUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_9122",
+    "phase": "Q04",
+    "symbol": "XAUUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_9122",
+    "phase": "Q04",
+    "symbol": "XAUUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_11170",
+    "phase": "Q04",
+    "symbol": "SP500.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_11170",
+    "phase": "Q04",
+    "symbol": "SP500.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_1601",
+    "phase": "Q04",
+    "symbol": "SP500.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_1601",
+    "phase": "Q04",
+    "symbol": "SP500.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_11173",
+    "phase": "Q04",
+    "symbol": "XTIUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_1133",
+    "phase": "Q04",
+    "symbol": "SP500.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10804",
+    "phase": "Q04",
+    "symbol": "GDAXI.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10076",
+    "phase": "Q04",
+    "symbol": "EURUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10005",
+    "phase": "Q04",
+    "symbol": "EURUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10005",
+    "phase": "Q04",
+    "symbol": "EURUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10773",
+    "phase": "Q04",
+    "symbol": "GDAXI.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10773",
+    "phase": "Q04",
+    "symbol": "GDAXI.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10773",
+    "phase": "Q04",
+    "symbol": "GDAXI.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10443",
+    "phase": "Q04",
+    "symbol": "EURUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10554",
+    "phase": "Q04",
+    "symbol": "USDJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10554",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_1551",
+    "phase": "Q04",
+    "symbol": "GDAXI.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_1551",
+    "phase": "Q04",
+    "symbol": "GDAXI.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_1551",
+    "phase": "Q04",
+    "symbol": "GDAXI.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_11170",
+    "phase": "Q04",
+    "symbol": "EURUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_11170",
+    "phase": "Q04",
+    "symbol": "EURUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10681",
+    "phase": "Q04",
+    "symbol": "GDAXI.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10681",
+    "phase": "Q04",
+    "symbol": "GDAXI.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10681",
+    "phase": "Q04",
+    "symbol": "GDAXI.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10847",
+    "phase": "Q04",
+    "symbol": "EURUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_11063",
+    "phase": "Q04",
+    "symbol": "EURJPY.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10114",
+    "phase": "Q04",
+    "symbol": "NDX.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10114",
+    "phase": "Q04",
+    "symbol": "NDX.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10114",
+    "phase": "Q04",
+    "symbol": "NDX.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10114",
+    "phase": "Q04",
+    "symbol": "NDX.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10114",
+    "phase": "Q04",
+    "symbol": "NDX.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10123",
+    "phase": "Q04",
+    "symbol": "NDX.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10123",
+    "phase": "Q04",
+    "symbol": "NDX.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10123",
+    "phase": "Q04",
+    "symbol": "NDX.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10146",
+    "phase": "Q04",
+    "symbol": "NDX.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10146",
+    "phase": "Q04",
+    "symbol": "NDX.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_1551",
+    "phase": "Q04",
+    "symbol": "NDX.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_1551",
+    "phase": "Q04",
+    "symbol": "NDX.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_1551",
+    "phase": "Q04",
+    "symbol": "NDX.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_1551",
+    "phase": "Q04",
+    "symbol": "NDX.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_1551",
+    "phase": "Q04",
+    "symbol": "NDX.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_11194",
+    "phase": "Q04",
+    "symbol": "GDAXI.DWX",
+    "reason": "review_entry_gate",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "445c8564-8358-434c-a692-8e4ca7a4cd1b",
+       "task_type": "build_ea",
+       "state": "PASSED"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_10973",
+    "phase": "Q04",
+    "symbol": "XAUUSD.DWX",
+    "reason": "review_entry_gate",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_fail_or_blocked",
+     "task_id": "93481b8d-1a1d-4506-9064-12b0dc740c4e",
+     "task_type": "build_ea",
+     "task_state": "BLOCKED",
+     "verdict": "CLAUDE REVIEW BLOCK - host-slot magic conflation. This EA does not wire req.symbol_slot to qm_magic_slot_offset. QM_EntryRequest::symbol_slot=0 is RELATIVE (it ",
+     "failing_tasks": 1
+    }
+   },
+   {
+    "ea_id": "QM5_10681",
+    "phase": "Q04",
+    "symbol": "GDAXI.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_20161",
+    "phase": "Q04",
+    "symbol": "QM5_20161_XAUUSD_XAGUSD_OLS_D1",
+    "reason": "non_dwx_symbol",
+    "setfile": "QM5_20161_xauxag-ols-rv_XAUUSD.DWX_D1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_1312",
+    "phase": "Q04",
+    "symbol": "XAUUSD.DWX",
+    "reason": "review_entry_gate",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "525ec19f-b7ac-413d-90ee-478435ca107c",
+       "task_type": "build_ea",
+       "state": "PIPELINE"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_1312",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "reason": "review_entry_gate",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "525ec19f-b7ac-413d-90ee-478435ca107c",
+       "task_type": "build_ea",
+       "state": "PIPELINE"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_20062",
+    "phase": "Q07",
+    "reason": "registry_status=allocated"
+   },
+   {
+    "ea_id": "QM5_20085",
+    "phase": "Q07",
+    "symbol": "EURUSD.DWX",
+    "reason": "review_entry_gate",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "e0c93a7e-cd1d-4dc4-b352-406794066e79",
+       "task_type": "build_ea",
+       "state": "PASSED"
+      },
+      {
+       "task_id": "cae7c583-a48e-4975-93d0-5f8bdd59c76f",
+       "task_type": "build_ea",
+       "state": "PIPELINE"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_20085",
+    "phase": "Q07",
+    "symbol": "XAUUSD.DWX",
+    "reason": "review_entry_gate",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "e0c93a7e-cd1d-4dc4-b352-406794066e79",
+       "task_type": "build_ea",
+       "state": "PASSED"
+      },
+      {
+       "task_id": "cae7c583-a48e-4975-93d0-5f8bdd59c76f",
+       "task_type": "build_ea",
+       "state": "PIPELINE"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_20176",
+    "phase": "Q07",
+    "symbol": "USDJPY.DWX",
+    "reason": "review_entry_gate",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "48507dd0-ae58-41f1-9ad5-98616a41dbad",
+       "task_type": "build_ea",
+       "state": "PIPELINE"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_11167",
+    "phase": "Q07",
+    "symbol": "XAUUSD.DWX",
+    "reason": "existing_pending_active"
+   },
+   {
+    "ea_id": "QM5_10771",
+    "phase": "Q08",
+    "symbol": "GDAXI.DWX",
+    "reason": "deterministic_setgen_defect",
+    "defect": "empty_strategy_params",
+    "setfile": "QM5_10771_tv-trail-hunter_GDAXI.DWX_H1_backtest.set"
+   },
+   {
+    "ea_id": "QM5_10582",
+    "phase": "Q08",
+    "symbol": "XAUUSD.DWX",
+    "reason": "infra_retry_cap_reached",
+    "attempts": 15
+   }
+  ],
+  "parked": [],
+  "rate_limited": false
+ },
+ "review_entry_gate": {
+  "schema": "qm.review-entry-gate/v1",
+  "blocked_eas": 528,
+  "blocked": [
+   {
+    "ea_id": "QM5_11915",
+    "phase": "Q02",
+    "symbol": "GBPJPY.DWX",
+    "part": "part2_stranded",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "aa39fa26-d79f-45f1-bc34-7826cdab00c6",
+       "task_type": "build_ea",
+       "state": "PASSED"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_11915",
+    "phase": "Q02",
+    "symbol": "GBPUSD.DWX",
+    "part": "part2_stranded",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "aa39fa26-d79f-45f1-bc34-7826cdab00c6",
+       "task_type": "build_ea",
+       "state": "PASSED"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_11901",
+    "phase": "Q02",
+    "symbol": "EURJPY.DWX",
+    "part": "part2_stranded",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "0daf10dc-cb94-499f-a82a-96d15d591135",
+       "task_type": "build_ea",
+       "state": "PASSED"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_20178",
+    "phase": "Q02",
+    "symbol": "XAUUSD.DWX",
+    "part": "part2_stranded",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "4fd0c86e-654d-47d5-a8ad-053d76ea3568",
+       "task_type": "build_ea",
+       "state": "PIPELINE"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_41009",
+    "phase": "Q02",
+    "symbol": "SP500.DWX",
+    "part": "part2_stranded",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_fail_or_blocked",
+     "task_id": "0fd1b0a8-c415-4309-9778-4ebefa05a1cf",
+     "task_type": "build_ea",
+     "task_state": "RECYCLE",
+     "verdict": "RECYCLE: source fails approved risk/loss/GMT/execution/TP/slippage contracts and EX5 is stale; repair, then recompile via governed COMPILE_EA.",
+     "failing_tasks": 1
+    }
+   },
+   {
+    "ea_id": "QM5_12920",
+    "phase": "Q02",
+    "symbol": "SP500.DWX",
+    "part": "part2_stranded",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_fail_or_blocked",
+     "task_id": "19c8295f-c2aa-47b6-9e55-47e0fa465b0f",
+     "task_type": "build_ea",
+     "task_state": "RECYCLE",
+     "verdict": "RECYCLE: repair exact-once restart-safe D-5 entry and mandatory D0 exit ordering, disable Friday close, regenerate the governed setfile, then recompile via gove",
+     "failing_tasks": 1
+    }
+   },
+   {
+    "ea_id": "QM5_37006",
+    "phase": "Q02",
+    "symbol": "SP500.DWX",
+    "part": "part2_stranded",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_fail_or_blocked",
+     "task_id": "fc2c4254-fae3-4ad7-bd0c-c44be30334fb",
+     "task_type": "build_ea",
+     "task_state": "RECYCLE",
+     "verdict": "RECYCLE: center CUSUM by E[y_t], reset only after confirmed fill, preserve/rebuild every-bar state, wire 2/2.5/5% loss rails and 3-tick slippage, remove unappro",
+     "failing_tasks": 1
+    }
+   },
+   {
+    "ea_id": "QM5_39005",
+    "phase": "Q02",
+    "symbol": "EURUSD.DWX",
+    "part": "part2_stranded",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_fail_or_blocked",
+     "task_id": "57041b21-12da-464d-b275-c91cb3fa8673",
+     "task_type": "build_ea",
+     "task_state": "RECYCLE",
+     "verdict": "RECYCLE: convert the GMT rollover via QM_BrokerToUTC, make risk defaults mutually exclusive, enforce the card's 3-tick deviation, add ArraySize guards, then rec",
+     "failing_tasks": 1
+    }
+   },
+   {
+    "ea_id": "QM5_12943",
+    "phase": "Q02",
+    "symbol": "EURUSD.DWX",
+    "part": "part2_stranded",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_fail_or_blocked",
+     "task_id": "e3a2083b-eeb7-40e0-b865-0cc7d001997e",
+     "task_type": "build_ea",
+     "task_state": "RECYCLE",
+     "verdict": "RECYCLE: reconcile 9 active out-of-card magic rows and regenerate resolver; make spread/Asian filters entry-only so exits remain reachable; recompile current MQ",
+     "failing_tasks": 1
+    }
+   },
+   {
+    "ea_id": "QM5_37004",
+    "phase": "Q02",
+    "symbol": "XAUUSD.DWX",
+    "part": "part2_stranded",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_fail_or_blocked",
+     "task_id": "6d2369c0-a412-427e-afab-8c5feed10cc3",
+     "task_type": "build_ea",
+     "task_state": "BLOCKED",
+     "verdict": "BLOCKED_CARD_INCOMPLETE: Kelly p/b and exponential-momentum estimator undefined; D6 REVIEW correctly refused",
+     "failing_tasks": 1
+    }
+   },
+   {
+    "ea_id": "QM5_1328",
+    "phase": "Q04",
+    "symbol": "AUDUSD.DWX",
+    "part": "part2_stranded",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "43972be5-a95d-45e0-8564-1f0229bfcaf3",
+       "task_type": "build_ea",
+       "state": "PASSED"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_1328",
+    "phase": "Q04",
+    "symbol": "AUDUSD.DWX",
+    "part": "part2_stranded",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "43972be5-a95d-45e0-8564-1f0229bfcaf3",
+       "task_type": "build_ea",
+       "state": "PASSED"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_1328",
+    "phase": "Q04",
+    "symbol": "AUDUSD.DWX",
+    "part": "part2_stranded",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "43972be5-a95d-45e0-8564-1f0229bfcaf3",
+       "task_type": "build_ea",
+       "state": "PASSED"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_1258",
+    "phase": "Q04",
+    "symbol": "USDJPY.DWX",
+    "part": "part2_stranded",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "f13ea089-7319-42db-a12d-b8771503736f",
+       "task_type": "build_ea",
+       "state": "PIPELINE"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_1328",
+    "phase": "Q04",
+    "symbol": "AUDUSD.DWX",
+    "part": "part2_stranded",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "43972be5-a95d-45e0-8564-1f0229bfcaf3",
+       "task_type": "build_ea",
+       "state": "PASSED"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_1258",
+    "phase": "Q04",
+    "symbol": "USDJPY.DWX",
+    "part": "part2_stranded",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "f13ea089-7319-42db-a12d-b8771503736f",
+       "task_type": "build_ea",
+       "state": "PIPELINE"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_1328",
+    "phase": "Q04",
+    "symbol": "AUDUSD.DWX",
+    "part": "part2_stranded",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "43972be5-a95d-45e0-8564-1f0229bfcaf3",
+       "task_type": "build_ea",
+       "state": "PASSED"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_1328",
+    "phase": "Q04",
+    "symbol": "AUDUSD.DWX",
+    "part": "part2_stranded",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "43972be5-a95d-45e0-8564-1f0229bfcaf3",
+       "task_type": "build_ea",
+       "state": "PASSED"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_1328",
+    "phase": "Q04",
+    "symbol": "AUDUSD.DWX",
+    "part": "part2_stranded",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "43972be5-a95d-45e0-8564-1f0229bfcaf3",
+       "task_type": "build_ea",
+       "state": "PASSED"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_1328",
+    "phase": "Q04",
+    "symbol": "AUDUSD.DWX",
+    "part": "part2_stranded",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "43972be5-a95d-45e0-8564-1f0229bfcaf3",
+       "task_type": "build_ea",
+       "state": "PASSED"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_1258",
+    "phase": "Q04",
+    "symbol": "USDJPY.DWX",
+    "part": "part2_stranded",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "f13ea089-7319-42db-a12d-b8771503736f",
+       "task_type": "build_ea",
+       "state": "PIPELINE"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_1328",
+    "phase": "Q04",
+    "symbol": "AUDUSD.DWX",
+    "part": "part2_stranded",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "43972be5-a95d-45e0-8564-1f0229bfcaf3",
+       "task_type": "build_ea",
+       "state": "PASSED"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_1328",
+    "phase": "Q04",
+    "symbol": "AUDUSD.DWX",
+    "part": "part2_stranded",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "43972be5-a95d-45e0-8564-1f0229bfcaf3",
+       "task_type": "build_ea",
+       "state": "PASSED"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_1258",
+    "phase": "Q04",
+    "symbol": "USDJPY.DWX",
+    "part": "part2_stranded",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "f13ea089-7319-42db-a12d-b8771503736f",
+       "task_type": "build_ea",
+       "state": "PIPELINE"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_1258",
+    "phase": "Q04",
+    "symbol": "USDJPY.DWX",
+    "part": "part2_stranded",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "f13ea089-7319-42db-a12d-b8771503736f",
+       "task_type": "build_ea",
+       "state": "PIPELINE"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_1258",
+    "phase": "Q04",
+    "symbol": "USDJPY.DWX",
+    "part": "part2_stranded",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "f13ea089-7319-42db-a12d-b8771503736f",
+       "task_type": "build_ea",
+       "state": "PIPELINE"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_1258",
+    "phase": "Q04",
+    "symbol": "USDJPY.DWX",
+    "part": "part2_stranded",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "f13ea089-7319-42db-a12d-b8771503736f",
+       "task_type": "build_ea",
+       "state": "PIPELINE"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_11194",
+    "phase": "Q04",
+    "symbol": "GDAXI.DWX",
+    "part": "part2_stranded",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "445c8564-8358-434c-a692-8e4ca7a4cd1b",
+       "task_type": "build_ea",
+       "state": "PASSED"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_10973",
+    "phase": "Q04",
+    "symbol": "XAUUSD.DWX",
+    "part": "part2_stranded",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_fail_or_blocked",
+     "task_id": "93481b8d-1a1d-4506-9064-12b0dc740c4e",
+     "task_type": "build_ea",
+     "task_state": "BLOCKED",
+     "verdict": "CLAUDE REVIEW BLOCK - host-slot magic conflation. This EA does not wire req.symbol_slot to qm_magic_slot_offset. QM_EntryRequest::symbol_slot=0 is RELATIVE (it ",
+     "failing_tasks": 1
+    }
+   },
+   {
+    "ea_id": "QM5_1312",
+    "phase": "Q04",
+    "symbol": "XAUUSD.DWX",
+    "part": "part2_stranded",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "525ec19f-b7ac-413d-90ee-478435ca107c",
+       "task_type": "build_ea",
+       "state": "PIPELINE"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_1312",
+    "phase": "Q04",
+    "symbol": "GBPUSD.DWX",
+    "part": "part2_stranded",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "525ec19f-b7ac-413d-90ee-478435ca107c",
+       "task_type": "build_ea",
+       "state": "PIPELINE"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_20085",
+    "phase": "Q07",
+    "symbol": "EURUSD.DWX",
+    "part": "part2_stranded",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "e0c93a7e-cd1d-4dc4-b352-406794066e79",
+       "task_type": "build_ea",
+       "state": "PASSED"
+      },
+      {
+       "task_id": "cae7c583-a48e-4975-93d0-5f8bdd59c76f",
+       "task_type": "build_ea",
+       "state": "PIPELINE"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_20085",
+    "phase": "Q07",
+    "symbol": "XAUUSD.DWX",
+    "part": "part2_stranded",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "e0c93a7e-cd1d-4dc4-b352-406794066e79",
+       "task_type": "build_ea",
+       "state": "PASSED"
+      },
+      {
+       "task_id": "cae7c583-a48e-4975-93d0-5f8bdd59c76f",
+       "task_type": "build_ea",
+       "state": "PIPELINE"
+      }
+     ]
+    }
+   },
+   {
+    "ea_id": "QM5_20176",
+    "phase": "Q07",
+    "symbol": "USDJPY.DWX",
+    "part": "part2_stranded",
+    "detail": {
+     "gate": "qm.review-entry-gate/v1",
+     "reason": "review_not_completed",
+     "open_tasks": [
+      {
+       "task_id": "48507dd0-ae58-41f1-9ad5-98616a41dbad",
+       "task_type": "build_ea",
+       "state": "PIPELINE"
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "part3_deferred_promotion": {
+  "policy": "qm-q02-canary-fanout/v1",
+  "promoted": [],
+  "stopped": [
+   {
+    "ea_id": "QM5_37004",
+    "reason": "deterministic_canary_failure",
+    "deferred_setfiles": 3
+   }
+  ],
+  "waiting": [
+   {
+    "ea_id": "QM5_11657",
+    "reason": "queue_ceiling_reached",
+    "deferred_setfiles": 4
+   },
+   {
+    "ea_id": "QM5_12943",
+    "reason": "transient_infra_awaiting_confirmation",
+    "canary_symbols": [
+     "EURUSD.DWX"
+    ],
+    "deferred_setfiles": 3
+   },
+   {
+    "ea_id": "QM5_12947",
+    "reason": "canary_still_open",
+    "canary_symbols": [
+     "EURUSD.DWX"
+    ],
+    "deferred_setfiles": 2
+   },
+   {
+    "ea_id": "QM5_12948",
+    "reason": "queue_ceiling_reached",
+    "deferred_setfiles": 2
+   },
+   {
+    "ea_id": "QM5_36002",
+    "reason": "queue_ceiling_reached",
+    "deferred_setfiles": 3
+   },
+   {
+    "ea_id": "QM5_36005",
+    "reason": "queue_ceiling_reached",
+    "deferred_setfiles": 2
+   },
+   {
+    "ea_id": "QM5_36006",
+    "reason": "queue_ceiling_reached",
+    "deferred_setfiles": 2
+   },
+   {
+    "ea_id": "QM5_36007",
+    "reason": "queue_ceiling_reached",
+    "deferred_setfiles": 1
+   },
+   {
+    "ea_id": "QM5_37003",
+    "reason": "queue_ceiling_reached",
+    "deferred_setfiles": 2
+   },
+   {
+    "ea_id": "QM5_37006",
+    "reason": "transient_infra_awaiting_confirmation",
+    "canary_symbols": [
+     "SP500.DWX"
+    ],
+    "deferred_setfiles": 2
+   },
+   {
+    "ea_id": "QM5_38002",
+    "reason": "queue_ceiling_reached",
+    "deferred_setfiles": 2
+   },
+   {
+    "ea_id": "QM5_38003",
+    "reason": "queue_ceiling_reached",
+    "deferred_setfiles": 2
+   },
+   {
+    "ea_id": "QM5_39005",
+    "reason": "transient_infra_awaiting_confirmation",
+    "canary_symbols": [
+     "EURUSD.DWX"
+    ],
+    "deferred_setfiles": 1
+   },
+   {
+    "ea_id": "QM5_41009",
+    "reason": "transient_infra_awaiting_confirmation",
+    "canary_symbols": [
+     "SP500.DWX"
+    ],
+    "deferred_setfiles": 1
+   },
+   {
+    "ea_id": "QM5_41011",
+    "reason": "queue_ceiling_reached",
+    "deferred_setfiles": 2
+   }
+  ],
+  "kept_deferred": 38,
+  "skipped": [
+   {
+    "ea_id": "QM5_10001",
+    "reason": "requeue_excluded_q02",
+    "deferred_setfiles": 1
+   },
+   {
+    "ea_id": "QM5_11755",
+    "reason": "requeue_excluded_q02",
+    "deferred_setfiles": 3
+   }
+  ]
+ }
+}

@@ -1,0 +1,240 @@
+[
+  {
+    "sql": "\n            SELECT id,status,payload_json,updated_at\n            FROM work_items\n            WHERE ea_id=? AND phase=? AND symbol=?\n              AND ifnull(setfile_path, '')=ifnull(?, '')\n              AND status IN ('done','failed') AND verdict='INFRA_FAIL'\n            ORDER BY updated_at DESC,id DESC\n            LIMIT 1\n            ",
+    "count": 352,
+    "seconds": 52.34712680033408,
+    "example_parameters": [
+      "QM5_1049",
+      "Q02",
+      "AUDJPY.DWX",
+      "C:\\QM\\repo\\framework\\EAs\\QM5_1049_mcconnell-turn-of-month\\sets\\QM5_1049_mcconnell-turn-of-month_AUDJPY.DWX_D1_backtest.set"
+    ]
+  },
+  {
+    "sql": "\n        SELECT x.ea_id, x.symbol, x.setfile_path, MAX(x.updated_at), COUNT(*)\n        FROM work_items x\n        WHERE x.phase=?\n          AND x.status IN ('done','failed')\n          AND x.verdict='INFRA_FAIL'\n          \n          AND NOT EXISTS (\n              SELECT 1 FROM work_items y\n              WHERE y.ea_id=x.ea_id\n                AND y.phase=x.phase\n                AND y.symbol=x.symbol\n                AND ifnull(y.setfile_path, '')=ifnull(x.setfile_path, '')\n                AND y.status IN ('pending','active')\n          )\n          AND NOT EXISTS (\n              SELECT 1 FROM work_items y\n              WHERE y.ea_id=x.ea_id\n                AND y.phase=x.phase\n                AND y.symbol=x.symbol\n                AND ifnull(y.setfile_path, '')=ifnull(x.setfile_path, '')\n                AND y.status IN ('done','failed')\n                AND y.verdict IS NOT NULL\n                AND y.verdict!='INFRA_FAIL'\n          )\n          AND NOT EXISTS (SELECT 1 FROM work_items z WHERE z.ea_id=x.ea_id AND z.symbol=x.symbol AND z.phase IN (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?))\n        GROUP BY x.ea_id, x.symbol, x.setfile_path\n        ORDER BY MAX(x.updated_at) ASC\n        ",
+    "count": 1,
+    "seconds": 2.553675499977544,
+    "example_parameters": [
+      "Q02",
+      "Q03",
+      "Q04",
+      "Q05",
+      "Q06",
+      "Q07",
+      "Q08",
+      "Q09",
+      "Q10",
+      "Q11",
+      "Q12",
+      "Q13",
+      "Q14",
+      "Q15",
+      "Q16",
+      "Q17"
+    ]
+  },
+  {
+    "sql": "\n        SELECT x.ea_id, x.symbol, x.setfile_path, MAX(x.updated_at), COUNT(*)\n        FROM work_items x\n        WHERE x.phase=?\n          AND x.status IN ('done','failed')\n          AND x.verdict='INFRA_FAIL'\n          \n          AND NOT EXISTS (\n              SELECT 1 FROM work_items y\n              WHERE y.ea_id=x.ea_id\n                AND y.phase=x.phase\n                AND y.symbol=x.symbol\n                AND ifnull(y.setfile_path, '')=ifnull(x.setfile_path, '')\n                AND y.status IN ('pending','active')\n          )\n          AND NOT EXISTS (\n              SELECT 1 FROM work_items y\n              WHERE y.ea_id=x.ea_id\n                AND y.phase=x.phase\n                AND y.symbol=x.symbol\n                AND ifnull(y.setfile_path, '')=ifnull(x.setfile_path, '')\n                AND y.status IN ('done','failed')\n                AND y.verdict IS NOT NULL\n                AND y.verdict!='INFRA_FAIL'\n          )\n          AND NOT EXISTS (SELECT 1 FROM work_items z WHERE z.ea_id=x.ea_id AND z.symbol=x.symbol AND z.phase IN (?,?,?,?,?,?,?,?,?,?,?,?,?))\n        GROUP BY x.ea_id, x.symbol, x.setfile_path\n        ORDER BY MAX(x.updated_at) ASC\n        ",
+    "count": 1,
+    "seconds": 0.24013000004924834,
+    "example_parameters": [
+      "Q04",
+      "Q05",
+      "Q06",
+      "Q07",
+      "Q08",
+      "Q09",
+      "Q10",
+      "Q11",
+      "Q12",
+      "Q13",
+      "Q14",
+      "Q15",
+      "Q16",
+      "Q17"
+    ]
+  },
+  {
+    "sql": "\n        SELECT x.ea_id, x.symbol, x.setfile_path, MAX(x.updated_at), COUNT(*)\n        FROM work_items x\n        WHERE x.phase=?\n          AND x.status IN ('done','failed')\n          AND x.verdict='INFRA_FAIL'\n          \n          AND NOT EXISTS (\n              SELECT 1 FROM work_items y\n              WHERE y.ea_id=x.ea_id\n                AND y.phase=x.phase\n                AND y.symbol=x.symbol\n                AND ifnull(y.setfile_path, '')=ifnull(x.setfile_path, '')\n                AND y.status IN ('pending','active')\n          )\n          AND NOT EXISTS (\n              SELECT 1 FROM work_items y\n              WHERE y.ea_id=x.ea_id\n                AND y.phase=x.phase\n                AND y.symbol=x.symbol\n                AND ifnull(y.setfile_path, '')=ifnull(x.setfile_path, '')\n                AND y.status IN ('done','failed')\n                AND y.verdict IS NOT NULL\n                AND y.verdict!='INFRA_FAIL'\n          )\n          AND NOT EXISTS (SELECT 1 FROM work_items z WHERE z.ea_id=x.ea_id AND z.symbol=x.symbol AND z.phase IN (?,?,?,?,?,?,?,?,?,?,?,?,?,?))\n        GROUP BY x.ea_id, x.symbol, x.setfile_path\n        ORDER BY MAX(x.updated_at) ASC\n        ",
+    "count": 1,
+    "seconds": 0.22962290002033114,
+    "example_parameters": [
+      "Q03",
+      "Q04",
+      "Q05",
+      "Q06",
+      "Q07",
+      "Q08",
+      "Q09",
+      "Q10",
+      "Q11",
+      "Q12",
+      "Q13",
+      "Q14",
+      "Q15",
+      "Q16",
+      "Q17"
+    ]
+  },
+  {
+    "sql": "\n            SELECT id,status,verdict,updated_at\n            FROM work_items\n            WHERE ea_id=? AND phase=? AND symbol=?\n              AND ifnull(setfile_path, '')=ifnull(?, '')\n              AND status IN ('done','failed')\n              AND verdict IS NOT NULL AND verdict!='INFRA_FAIL'\n            ORDER BY updated_at DESC,id DESC\n            LIMIT 1\n            ",
+    "count": 352,
+    "seconds": 0.190986500820145,
+    "example_parameters": [
+      "QM5_1049",
+      "Q02",
+      "AUDJPY.DWX",
+      "C:\\QM\\repo\\framework\\EAs\\QM5_1049_mcconnell-turn-of-month\\sets\\QM5_1049_mcconnell-turn-of-month_AUDJPY.DWX_D1_backtest.set"
+    ]
+  },
+  {
+    "sql": "\n        SELECT x.ea_id, x.symbol, x.setfile_path, MAX(x.updated_at), COUNT(*)\n        FROM work_items x\n        WHERE x.phase=?\n          AND x.status IN ('done','failed')\n          AND x.verdict='INFRA_FAIL'\n          \n          AND NOT EXISTS (\n              SELECT 1 FROM work_items y\n              WHERE y.ea_id=x.ea_id\n                AND y.phase=x.phase\n                AND y.symbol=x.symbol\n                AND ifnull(y.setfile_path, '')=ifnull(x.setfile_path, '')\n                AND y.status IN ('pending','active')\n          )\n          AND NOT EXISTS (\n              SELECT 1 FROM work_items y\n              WHERE y.ea_id=x.ea_id\n                AND y.phase=x.phase\n                AND y.symbol=x.symbol\n                AND ifnull(y.setfile_path, '')=ifnull(x.setfile_path, '')\n                AND y.status IN ('done','failed')\n                AND y.verdict IS NOT NULL\n                AND y.verdict!='INFRA_FAIL'\n          )\n          AND NOT EXISTS (SELECT 1 FROM work_items z WHERE z.ea_id=x.ea_id AND z.symbol=x.symbol AND z.phase IN (?,?,?,?,?,?,?,?,?,?))\n        GROUP BY x.ea_id, x.symbol, x.setfile_path\n        ORDER BY MAX(x.updated_at) ASC\n        ",
+    "count": 1,
+    "seconds": 0.1360520999878645,
+    "example_parameters": [
+      "Q07",
+      "Q08",
+      "Q09",
+      "Q10",
+      "Q11",
+      "Q12",
+      "Q13",
+      "Q14",
+      "Q15",
+      "Q16",
+      "Q17"
+    ]
+  },
+  {
+    "sql": "\n        SELECT x.ea_id, x.symbol, x.setfile_path, MAX(x.updated_at), COUNT(*)\n        FROM work_items x\n        WHERE x.phase=?\n          AND x.status IN ('done','failed')\n          AND x.verdict='INFRA_FAIL'\n          \n          AND NOT EXISTS (\n              SELECT 1 FROM work_items y\n              WHERE y.ea_id=x.ea_id\n                AND y.phase=x.phase\n                AND y.symbol=x.symbol\n                AND ifnull(y.setfile_path, '')=ifnull(x.setfile_path, '')\n                AND y.status IN ('pending','active')\n          )\n          AND NOT EXISTS (\n              SELECT 1 FROM work_items y\n              WHERE y.ea_id=x.ea_id\n                AND y.phase=x.phase\n                AND y.symbol=x.symbol\n                AND ifnull(y.setfile_path, '')=ifnull(x.setfile_path, '')\n                AND y.status IN ('done','failed')\n                AND y.verdict IS NOT NULL\n                AND y.verdict!='INFRA_FAIL'\n          )\n          AND NOT EXISTS (SELECT 1 FROM work_items z WHERE z.ea_id=x.ea_id AND z.symbol=x.symbol AND z.phase IN (?,?,?,?,?,?,?,?,?))\n        GROUP BY x.ea_id, x.symbol, x.setfile_path\n        ORDER BY MAX(x.updated_at) ASC\n        ",
+    "count": 1,
+    "seconds": 0.13137750001624227,
+    "example_parameters": [
+      "Q08",
+      "Q09",
+      "Q10",
+      "Q11",
+      "Q12",
+      "Q13",
+      "Q14",
+      "Q15",
+      "Q16",
+      "Q17"
+    ]
+  },
+  {
+    "sql": "SELECT id,phase,status,verdict,updated_at FROM work_items WHERE ea_id=? AND symbol=? AND phase IN (?,?,?,?,?,?,?,?,?,?,?,?,?) ORDER BY updated_at DESC,id DESC LIMIT 1",
+    "count": 198,
+    "seconds": 0.02507300046272576,
+    "example_parameters": [
+      "QM5_2013",
+      "CADJPY.DWX",
+      "Q05",
+      "Q06",
+      "Q07",
+      "Q08",
+      "Q09",
+      "Q10",
+      "Q11",
+      "Q12",
+      "Q13",
+      "Q14",
+      "Q15",
+      "Q16",
+      "Q17"
+    ]
+  },
+  {
+    "sql": "SELECT id,phase,status,verdict,updated_at FROM work_items WHERE ea_id=? AND symbol=? AND phase IN (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ORDER BY updated_at DESC,id DESC LIMIT 1",
+    "count": 147,
+    "seconds": 0.018348097801208496,
+    "example_parameters": [
+      "QM5_1049",
+      "AUDJPY.DWX",
+      "Q03",
+      "Q04",
+      "Q05",
+      "Q06",
+      "Q07",
+      "Q08",
+      "Q09",
+      "Q10",
+      "Q11",
+      "Q12",
+      "Q13",
+      "Q14",
+      "Q15",
+      "Q16",
+      "Q17"
+    ]
+  },
+  {
+    "sql": "SELECT 1 FROM work_items WHERE ea_id=? AND symbol=? AND phase=? AND status IN ('pending','active') LIMIT 1",
+    "count": 187,
+    "seconds": 0.013419800903648138,
+    "example_parameters": [
+      "QM5_10470",
+      "XAUUSD.DWX",
+      "Q02"
+    ]
+  },
+  {
+    "sql": "SELECT DISTINCT ea_id FROM work_items",
+    "count": 1,
+    "seconds": 0.002935900120064616,
+    "example_parameters": []
+  },
+  {
+    "sql": "SELECT COUNT(*) FROM work_items WHERE status='pending'",
+    "count": 2,
+    "seconds": 0.002195400185883045,
+    "example_parameters": []
+  },
+  {
+    "sql": "SELECT * FROM work_items WHERE ea_id=? AND phase IN (?,?) ORDER BY updated_at,id",
+    "count": 18,
+    "seconds": 0.0020552994683384895,
+    "example_parameters": [
+      "QM5_10001",
+      "Q02",
+      "P2"
+    ]
+  },
+  {
+    "sql": "SELECT id,phase,status,verdict,updated_at FROM work_items WHERE ea_id=? AND symbol=? AND phase IN (?,?,?,?,?,?,?,?,?,?) ORDER BY updated_at DESC,id DESC LIMIT 1",
+    "count": 5,
+    "seconds": 0.00019809999503195286,
+    "example_parameters": [
+      "QM5_20062",
+      "EURUSD.DWX",
+      "Q08",
+      "Q09",
+      "Q10",
+      "Q11",
+      "Q12",
+      "Q13",
+      "Q14",
+      "Q15",
+      "Q16",
+      "Q17"
+    ]
+  },
+  {
+    "sql": "SELECT id,phase,status,verdict,updated_at FROM work_items WHERE ea_id=? AND symbol=? AND phase IN (?,?,?,?,?,?,?,?,?) ORDER BY updated_at DESC,id DESC LIMIT 1",
+    "count": 2,
+    "seconds": 0.00015069986693561077,
+    "example_parameters": [
+      "QM5_10771",
+      "GDAXI.DWX",
+      "Q09",
+      "Q10",
+      "Q11",
+      "Q12",
+      "Q13",
+      "Q14",
+      "Q15",
+      "Q16",
+      "Q17"
+    ]
+  }
+]
