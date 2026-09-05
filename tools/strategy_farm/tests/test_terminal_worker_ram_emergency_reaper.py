@@ -329,3 +329,286 @@ def test_run_loop_survives_idle_memoryerror(tmp_path, monkeypatch):
     rc = tw.run_loop(tmp_path, "T1", 60)
     assert rc == 0                # returned cleanly, did NOT propagate MemoryError
     assert calls["n"] == 1        # entered the body, caught, then stopped
+
+
+# ---- runner-tree kill scope (follow-up 2026-09-05) ---------------------
+#
+# Recurrence 2026-09-04 23:45Z/23:52Z: killing only the terminal64 subtree left
+# the phase runner (payload $.pid) alive and it re-spawned the tester in place
+# within five minutes. The reaper now kills the RUNNER tree whenever the runner
+# can be PROVEN to own the victim tester, and falls back to the old
+# terminal-only scope on every failed proof.
+
+RUNNER_PID = 21564          # python q05_stress_medium.py (payload $.pid)
+PWSH_PID = 4100             # pwsh run_smoke.ps1
+TERMINAL_PID = 900          # terminal64.exe (the old kill root)
+METATESTER_PID = 950        # metatester64.exe (the actual RAM consumer)
+WORKER_PID = 7000           # terminal_worker.py --terminal T2
+
+
+def _snapshot(children, alive=None):
+    """(children-by-ppid, private, alive) in _process_private_snapshot shape."""
+    kids = {int(k): [int(c) for c in v] for k, v in children.items()}
+    live = set(int(x) for x in alive) if alive is not None else (
+        set(kids) | {c for v in kids.values() for c in v}
+    )
+    return (kids, {}, live)
+
+
+def _full_chain():
+    """worker -> runner -> pwsh -> terminal64 -> metatester64."""
+    return _snapshot({
+        WORKER_PID: [RUNNER_PID],
+        RUNNER_PID: [PWSH_PID],
+        PWSH_PID: [TERMINAL_PID],
+        TERMINAL_PID: [METATESTER_PID],
+    })
+
+
+def _runaway_row(payload_extra=None):
+    payload = {"host_timeframe": "H1", "claimed_by_worker_pid": WORKER_PID}
+    payload.update(payload_extra or {})
+    return {"id": "wi-runner", "claimed_by": "T2", "ea_id": "QM5_11165",
+            "symbol": "EURJPY.DWX", "phase": "Q05", "payload": payload}
+
+
+def _arm(monkeypatch, tmp_path, rows, snapshot, runner_image=r"C:\Python311\python.exe"):
+    _isolate(monkeypatch, tmp_path)
+    _make_db(tmp_path, rows)
+    monkeypatch.setattr(
+        terminal_worker, "_enumerate_factory_testers",
+        lambda: [_tester("T2", TERMINAL_PID, 40.0, 100)],
+    )
+    monkeypatch.setattr(terminal_worker, "_process_private_snapshot", lambda: snapshot)
+    monkeypatch.setattr(
+        terminal_worker, "_query_full_process_image_path", lambda pid: runner_image
+    )
+    killed = []
+    monkeypatch.setattr(farmctl, "_stop_pid_tree", lambda pid: killed.append(pid) or True)
+    return killed
+
+
+def _assert_requeued(tmp_path, item_id="wi-runner"):
+    """(d): the row is re-runnable and the verdict was never touched."""
+    with sqlite3.connect(tmp_path / farmctl.DB_REL) as conn:
+        conn.row_factory = sqlite3.Row
+        row = conn.execute(
+            "SELECT * FROM work_items WHERE id=?", (item_id,)
+        ).fetchone()
+    assert (row["status"], row["verdict"], row["claimed_by"]) == ("pending", None, None)
+    payload = json.loads(row["payload_json"])
+    assert payload["prior_failure"] == "ram_emergency_reap"
+    assert payload["ram_emergency_reap_count"] == 1
+    return payload
+
+
+def test_pid_is_descendant_walks_the_runner_chain():
+    snap = _full_chain()
+    d = terminal_worker._pid_is_descendant
+    assert d(snap, RUNNER_PID, TERMINAL_PID) is True      # runner -> pwsh -> term
+    assert d(snap, RUNNER_PID, METATESTER_PID) is True    # four hops down
+    assert d(snap, PWSH_PID, TERMINAL_PID) is True
+    assert d(snap, TERMINAL_PID, RUNNER_PID) is False     # not upwards
+    assert d(snap, RUNNER_PID, RUNNER_PID) is False       # strict descendant
+    assert d(snap, 12345, TERMINAL_PID) is False          # unrelated ancestor
+    # fail-closed on unusable input
+    assert d(None, RUNNER_PID, TERMINAL_PID) is False
+    assert d(_snapshot({}), RUNNER_PID, TERMINAL_PID) is False
+    assert d(snap, None, TERMINAL_PID) is False
+    assert d(snap, RUNNER_PID, "not-a-pid") is False
+    # a cyclic ppid map terminates instead of looping forever
+    assert d(_snapshot({1: [2], 2: [1]}), 1, 999) is False
+
+
+# (a) the runner owns the tester -> the runner tree is the kill root
+def test_kills_runner_tree_when_runner_owns_the_victim(tmp_path, monkeypatch):
+    killed = _arm(
+        monkeypatch, tmp_path,
+        [_runaway_row({"pid": RUNNER_PID})],
+        _full_chain(),
+    )
+
+    facts = terminal_worker._run_ram_emergency_reap(tmp_path, "T1", [0.6, 0.6])
+
+    assert facts is not None
+    assert facts["victim_pid"] == TERMINAL_PID
+    assert facts["kill_scope"] == "runner_tree"
+    assert facts["kill_root_pid"] == RUNNER_PID
+    assert facts["runner_pid"] == RUNNER_PID
+    assert facts["runner_is_ancestor"] is True
+    assert facts["runner_scope_refused_reason"] is None
+    assert facts["killed"] is True
+    # exactly one kill, rooted at the runner: _stop_pid_tree takes
+    # pwsh + terminal64 + metatester64 with it (leaves first).
+    assert killed == [RUNNER_PID]
+    payload = _assert_requeued(tmp_path)
+    assert payload["ram_emergency_reap"]["kill_scope"] == "runner_tree"
+    assert payload["ram_emergency_reap"]["kill_root_pid"] == RUNNER_PID
+
+
+# (b) stale / unrelated payload pid -> the terminal tree stays the kill root
+def test_falls_back_to_terminal_tree_when_runner_is_not_an_ancestor(tmp_path, monkeypatch):
+    # The runner pid is alive but sits on a DIFFERENT branch: a stale $.pid from
+    # an earlier cell, or a reused pid. No proof -> no widening.
+    snapshot = _snapshot({
+        WORKER_PID: [PWSH_PID],
+        PWSH_PID: [TERMINAL_PID],
+        TERMINAL_PID: [METATESTER_PID],
+        8000: [RUNNER_PID],
+    })
+    killed = _arm(monkeypatch, tmp_path, [_runaway_row({"pid": RUNNER_PID})], snapshot)
+
+    facts = terminal_worker._run_ram_emergency_reap(tmp_path, "T1", [0.6, 0.6])
+
+    assert facts["kill_scope"] == "terminal_tree"
+    assert facts["kill_root_pid"] == TERMINAL_PID
+    assert facts["runner_pid"] == RUNNER_PID
+    assert facts["runner_is_ancestor"] is False
+    assert facts["runner_scope_refused_reason"] == "runner_not_ancestor_of_victim"
+    assert killed == [TERMINAL_PID]
+    _assert_requeued(tmp_path)
+
+
+def test_falls_back_when_runner_pid_is_dead(tmp_path, monkeypatch):
+    # The runner already exited (its pid is not in the live snapshot) but the
+    # tester tree survived it; kill only what is proven.
+    snapshot = _snapshot(
+        {PWSH_PID: [TERMINAL_PID], TERMINAL_PID: [METATESTER_PID]},
+        alive=[PWSH_PID, TERMINAL_PID, METATESTER_PID],
+    )
+    killed = _arm(monkeypatch, tmp_path, [_runaway_row({"pid": RUNNER_PID})], snapshot)
+
+    facts = terminal_worker._run_ram_emergency_reap(tmp_path, "T1", [0.6, 0.6])
+
+    assert facts["kill_scope"] == "terminal_tree"
+    assert facts["kill_root_pid"] == TERMINAL_PID
+    assert facts["runner_scope_refused_reason"] == "runner_not_alive"
+    assert killed == [TERMINAL_PID]
+    _assert_requeued(tmp_path)
+
+
+def test_falls_back_when_payload_pid_is_missing(tmp_path, monkeypatch):
+    killed = _arm(monkeypatch, tmp_path, [_runaway_row()], _full_chain())
+
+    facts = terminal_worker._run_ram_emergency_reap(tmp_path, "T1", [0.6, 0.6])
+
+    assert facts["kill_scope"] == "terminal_tree"
+    assert facts["kill_root_pid"] == TERMINAL_PID
+    assert facts["runner_pid"] is None
+    assert facts["runner_scope_refused_reason"] == "runner_pid_missing"
+    assert killed == [TERMINAL_PID]
+    _assert_requeued(tmp_path)
+
+
+# (c) the payload pid points at something the reaper must never take down
+def test_refuses_runner_scope_when_payload_pid_is_the_claiming_worker(tmp_path, monkeypatch):
+    # The terminal64 is a descendant of its own terminal_worker.py process too,
+    # so without the worker-pid refusal set this would kill the worker.
+    killed = _arm(monkeypatch, tmp_path, [_runaway_row({"pid": WORKER_PID})], _full_chain())
+
+    facts = terminal_worker._run_ram_emergency_reap(tmp_path, "T1", [0.6, 0.6])
+
+    assert facts["kill_scope"] == "terminal_tree"
+    assert facts["kill_root_pid"] == TERMINAL_PID
+    assert facts["runner_pid"] == WORKER_PID
+    assert facts["runner_is_ancestor"] is False   # refused before the proof runs
+    assert facts["runner_scope_refused_reason"] == "runner_pid_is_terminal_worker"
+    assert killed == [TERMINAL_PID]
+    _assert_requeued(tmp_path)
+
+
+def test_refuses_runner_scope_for_a_worker_in_the_worker_pid_map(tmp_path, monkeypatch):
+    # A worker whose pid is not on this row's payload is still refused via
+    # <root>/state/worker_pids.json (start_terminal_workers.py's map).
+    other_worker = 7100
+    snapshot = _snapshot({
+        other_worker: [RUNNER_PID],
+        RUNNER_PID: [PWSH_PID],
+        PWSH_PID: [TERMINAL_PID],
+        TERMINAL_PID: [METATESTER_PID],
+    })
+    killed = _arm(monkeypatch, tmp_path, [_runaway_row({"pid": other_worker})], snapshot)
+    (tmp_path / "state" / "worker_pids.json").write_text(
+        json.dumps({"T2": other_worker, "T3": 7200}), encoding="utf-8"
+    )
+
+    facts = terminal_worker._run_ram_emergency_reap(tmp_path, "T1", [0.6, 0.6])
+
+    assert facts["kill_scope"] == "terminal_tree"
+    assert facts["runner_scope_refused_reason"] == "runner_pid_is_terminal_worker"
+    assert killed == [TERMINAL_PID]
+    _assert_requeued(tmp_path)
+
+
+def test_refuses_runner_scope_when_payload_pid_is_the_reaper_itself(tmp_path, monkeypatch):
+    import os as _os
+    snapshot = _snapshot({
+        _os.getpid(): [PWSH_PID],
+        PWSH_PID: [TERMINAL_PID],
+        TERMINAL_PID: [METATESTER_PID],
+    })
+    killed = _arm(monkeypatch, tmp_path, [_runaway_row({"pid": _os.getpid()})], snapshot)
+
+    facts = terminal_worker._run_ram_emergency_reap(tmp_path, "T1", [0.6, 0.6])
+
+    assert facts["kill_scope"] == "terminal_tree"
+    assert facts["kill_root_pid"] == TERMINAL_PID
+    assert facts["runner_scope_refused_reason"] == "runner_pid_is_reaper"
+    assert killed == [TERMINAL_PID]
+    _assert_requeued(tmp_path)
+
+
+def test_refuses_runner_scope_when_runner_image_is_the_live_terminal(tmp_path, monkeypatch):
+    # Ancestry holds, but the pid resolves to C:/QM/mt5/T_Live/terminal64.exe:
+    # the live terminal is never a kill root, at any scope.
+    killed = _arm(
+        monkeypatch, tmp_path,
+        [_runaway_row({"pid": RUNNER_PID})],
+        _full_chain(),
+        runner_image=r"C:\QM\mt5\T_Live\terminal64.exe",
+    )
+
+    facts = terminal_worker._run_ram_emergency_reap(tmp_path, "T1", [0.6, 0.6])
+
+    assert facts["kill_scope"] == "terminal_tree"
+    assert facts["kill_root_pid"] == TERMINAL_PID
+    assert facts["runner_is_ancestor"] is True    # ownership held...
+    assert facts["runner_scope_refused_reason"] == "runner_image_live_terminal"
+    assert killed == [TERMINAL_PID]               # ...but the scope was refused
+    _assert_requeued(tmp_path)
+
+
+def test_refuses_runner_scope_when_runner_image_is_unresolvable(tmp_path, monkeypatch):
+    killed = _arm(
+        monkeypatch, tmp_path,
+        [_runaway_row({"pid": RUNNER_PID})],
+        _full_chain(),
+        runner_image=None,
+    )
+
+    facts = terminal_worker._run_ram_emergency_reap(tmp_path, "T1", [0.6, 0.6])
+
+    assert facts["kill_scope"] == "terminal_tree"
+    assert facts["kill_root_pid"] == TERMINAL_PID
+    assert facts["runner_scope_refused_reason"] == "runner_image_unresolvable"
+    assert killed == [TERMINAL_PID]
+    _assert_requeued(tmp_path)
+
+
+def test_terminal_worker_pids_union_of_self_claims_and_pid_map(tmp_path, monkeypatch):
+    import os as _os
+    (tmp_path / "state").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "state" / "worker_pids.json").write_text(
+        json.dumps({"T1": 111, "T2": 222, "T3": "not-a-pid", "T4": 0}), encoding="utf-8"
+    )
+    active = {
+        "T2": {"payload_json": json.dumps({"claimed_by_worker_pid": 333})},
+        "T5": {"payload_json": json.dumps({})},
+        "T6": {"payload_json": None},
+    }
+    pids = terminal_worker._terminal_worker_pids(tmp_path, active)
+    assert {_os.getpid(), 111, 222, 333} <= pids
+    assert 0 not in pids
+    # a missing pid map is fail-open, never fatal
+    (tmp_path / "state" / "worker_pids.json").unlink()
+    assert terminal_worker._terminal_worker_pids(tmp_path, active) >= {_os.getpid(), 333}

@@ -257,3 +257,198 @@ Recommended next step: after merge, one live idle pass will rebuild the v2
 expectations file from the existing ledger; the first genuine balloon that is
 reaped will seed the per-EA key and the reservation self-corrects on the next
 admission of that EA.
+
+---
+
+## 7. Follow-up 2026-09-05: runner-tree kill
+
+Outcome: `IMPLEMENTED; TESTS GREEN; APPEND-ONLY`. Same scope discipline as
+sections 1-6 -- worker code + tests only, no gate threshold, verdict, T_Live or
+containment change.
+
+### 7.1 The recurrence, and what it proved
+
+The reaper shipped in `11683160a7` (committed **2026-09-04T23:49:52Z**) between
+the two manual reaps described below, and has **never fired in production**:
+`D:/QM/strategy_farm/state/ram_emergency_reap_state.json` does not exist as of
+this write, so no automated reap has been recorded. Everything below is the
+CEO's manual reap of the same balloon class, which is exactly what the automated
+reaper would have done -- and it is the manual run that exposed the scope defect.
+
+All lines below are read-only from `D:/QM/strategy_farm/logs/` and from a
+read-only (`mode=ro`) query of `farm_state.sqlite`; line numbers are as read on
+2026-09-05 (the journals are append-only).
+
+| Time (UTC) | Observation | Evidence |
+| --- | --- | --- |
+| 23:33:36Z | T2 claims `a0b332eb-c646-4911-88e1-53a9a9cc3246` = **Q05 QM5_11165_weiss-rsi-ma / EURJPY.DWX**, reservation 8.0 GB `ordinary` | `terminal_worker_T2.log:3746-3747` |
+| 23:34:07Z | Phase runner spawned, **pid 21564**: `C:\Python311\python.exe C:\QM\repo\framework\scripts\q05_stress_medium.py --ea QM5_11165_weiss-rsi-ma --report-root D:\QM\reports\work_items\a0b332eb-... --symbol EURJPY.DWX --terminal T2 --timeout-sec 6900` | `work_item_a0b332eb-...log:2`; `terminal_worker_T2.log:3748` (`next_child_process_created`, `pid: 21564` = the payload `$.pid`) |
+| ~23:45Z | The T2 `metatester64` grows to **20.8 GB** in ~2.5 min against the 8 GB reservation; the `terminal64` processes themselves hold ~0.2 GB each -- the consumer is always the metatester agent | `docs/ops/OPEN_ITEMS_STATUS.md` addendum 23:51Z (`000dc5ddca`) |
+| 23:46:33Z-23:48:2xZ | Fleet near-OOM trough: free RAM **1.0 GB** (T1), **0.9 GB** (T4), **0.9 GB** (T8) | `terminal_worker_T1.log:7016-7019` (bracketed by `23:46:33Z` and `23:48:15Z`), `T4.log:5414-5415` (-> `23:48:20Z`), `T8.log:6336-6337` (-> `23:48:14Z`) |
+| **23:48:39Z** | **Manual reap #1** -- `_stop_pid_tree` on the **terminal64** pid: victim `T2 terminal64 pid 10776 + metatester64 pid 2268`, `working_set_gb 20.8`, host free **2.3 -> 18.2 GB**; row requeued without verdict | payload `$.ram_emergency_reap_manual` on `a0b332eb` (read-only DB query) |
+| 23:48:39Z-~23:52Z | **The runner survived.** pid 21564 was never in the kill scope, so it re-spawned the tester in place inside four minutes; the balloon re-inflated to ~11 GB and the host fell back to ~1.6 GB free | CEO observation; corroborated by the runner lifetime below |
+| ~23:52Z | **Manual reap #2** -- terminal64 subtree again, same scope, same outcome | CEO observation |
+| **23:54:11Z** | The runner finally dies. T2 logs `current_child_exit` with **`tester_runtime_seconds: 1204.0`** -- 23:34:07Z + 1204 s = 23:54:11Z, i.e. the tracked child lived across **both** terminal-only kills -- then `run_result action=runner_death_requeued reason=runner_process_died_without_summary status=pending verdict=null` | `terminal_worker_T2.log:3749-3750` |
+| 23:54:11Z+ | Host recovers only now: T2 `ram_low_pause free_ram_gb 7.6`; the last sub-2 GB samples (T9 **1.3 GB**, T10 **1.9 GB**) immediately precede events at `23:54:43Z` / `23:54:33Z` | `terminal_worker_T2.log:3751`, `T9.log:5449-5450`, `T10.log:5684` |
+| 23:54:2xZ / 23:57:27Z | T2 `worker_start pid 21308` (chunk-40 reload), next cell claimed `32213e79` -- throughput resumes | `terminal_worker_T2.log:3752, 3767-3769` |
+
+Row state after the incident (read-only): `status=pending, verdict=NULL,
+claimed_by=NULL, updated_at=2026-09-04T23:54:11+00:00`,
+`prior_failure=runner_process_died_without_summary`, with the manual marker
+`ram_emergency_reap_manual` intact. Re-runnable, no verdict written.
+
+**The load-bearing fact is `tester_runtime_seconds: 1204.0`.** The prestage
+controller tracks the child it spawned -- the phase runner, `spawn["pid"]`, the
+same value written to the payload as `$.pid`. Its measured lifetime spans
+23:34:07Z to 23:54:11Z and therefore brackets both manual terminal64 kills. Had
+either kill ended the run, `current_child_exit` would have fired at 23:48:39Z.
+
+### 7.2 Why the terminal-only scope was wrong
+
+The balloon is not one process, it is a chain, and the reaper was cutting it in
+the middle:
+
+```
+terminal_worker.py  (worker; never a kill target)
+  └─ python q05_stress_medium.py …            <- payload $.pid  (RESTARTS the tester)
+       └─ pwsh run_smoke.ps1
+            └─ terminal64.exe                 <- old kill root (~0.2 GB)
+                 └─ metatester64.exe          <- the actual RAM consumer (20.8 GB)
+```
+
+Killing the `terminal64` subtree frees the memory for as long as it takes the
+runner to launch the next tester -- measured here at under four minutes -- and
+then the host is back in the same fail-state, now with the cool-down spent. A
+second, quieter consequence: the row is requeued `pending` while its runner is
+still alive and spawning testers, so any terminal that claims it in that window
+runs it concurrently with the orphan.
+
+### 7.3 Design
+
+`_run_ram_emergency_reap` now resolves a **kill root** after the victim is chosen
+and the T_Live assertion has passed, and kills that tree instead of the
+terminal64 pid. Widening from `terminal_tree` to `runner_tree` requires positive
+proof; every failed check keeps the previous, narrower behaviour.
+
+New in `tools/strategy_farm/terminal_worker.py`:
+
+- **`_pid_is_descendant(process_snapshot, ancestor_pid, pid)`** -- walks the
+  children-by-parent-pid map already produced by `_process_private_snapshot`
+  (no new probe, no subprocess). Bounded at 4096 visited nodes so a cyclic or
+  rebased ppid map cannot loop. Fail-closed on an unusable snapshot, a
+  non-integer pid, or `ancestor == pid`.
+- **`_terminal_worker_pids(root, active)`** -- the refusal set of pids known to
+  be `terminal_worker.py` processes, from three subprocess-free sources:
+  `os.getpid()`, the `claimed_by_worker_pid` each live claim records in its
+  payload, and `<root>/state/worker_pids.json` (the map
+  `start_terminal_workers.py` maintains). This guard is load-bearing rather than
+  cosmetic: the terminal64 is a descendant of **its own worker** too, so a stale
+  or wrong `$.pid` would otherwise satisfy the ancestry proof and take a worker
+  down.
+- **`_resolve_ram_reap_kill_root(victim, worker_pids, process_snapshot=None)`**
+  -- the decision. Widen only when *all* hold:
+  1. `$.pid` present, `> 0`, and not the terminal64 pid itself;
+  2. not this reaper process, and not in the `terminal_worker.py` refusal set;
+  3. the runner pid is alive in the live process snapshot;
+  4. the terminal64 pid is a **descendant** of the runner pid -- the one check
+     that *proves* ownership instead of trusting a payload field;
+  5. the runner image path resolves (`_query_full_process_image_path`) and does
+     **not** contain the `T_LIVE` marker. An unresolvable image is refused, not
+     assumed benign.
+
+  `farmctl._stop_pid_tree` snapshots the tree and stops it leaves-first, so
+  rooting at the runner takes pwsh + terminal64 + metatester64 with it in the
+  right order; no separate terminal sweep is needed.
+
+Recorded in `facts` (and therefore in the structured `ram_emergency_reap` event
+and in the requeued row's payload): `kill_root_pid`, `kill_scope`
+(`"runner_tree"` | `"terminal_tree"`), `runner_pid`, `runner_is_ancestor`,
+plus `runner_image_path` and `runner_scope_refused_reason` for diagnosis
+(`runner_pid_missing`, `runner_pid_is_victim_terminal`, `runner_pid_is_reaper`,
+`runner_pid_is_terminal_worker`, `runner_not_alive`,
+`runner_not_ancestor_of_victim`, `runner_image_unresolvable`,
+`runner_image_live_terminal`). `killed` keeps its meaning: the result of the one
+`_stop_pid_tree` call, now on the kill root.
+
+**Requeue audit (deliverable 2).** `_defer_ram_emergency_reap` was checked and
+needs **no change**: its `SELECT`/`UPDATE` are anchored on
+`(id, status='active', claimed_by=<victim terminal>)` and never on
+`json_extract(payload_json,'$.pid')`, so widening the kill root does not touch
+the match. It still writes `status='pending', verdict=NULL, claimed_by=NULL`,
+appends `prior_failure`/`ram_emergency_reap`/`ram_emergency_reap_count`, and
+clears the stale runtime payload (`_STALE_RUNTIME_PAYLOAD_KEYS` includes `pid`,
+so the dead runner pid does not survive into the re-run). Only the docstring was
+extended to record that the clause is claim-anchored, not pid-anchored. Every
+new test asserts the requeue explicitly (deliverable 3d).
+
+### 7.4 Tests
+
+```
+python -X utf8 -m pytest \
+  tools/strategy_farm/tests/test_terminal_worker_ram_emergency_reaper.py \
+  tools/strategy_farm/tests/test_tester_memory_per_ea_expectations.py \
+  tools/strategy_farm/tests/test_terminal_worker_adoption.py \
+  tools/strategy_farm/tests/test_terminal_worker_drain_window.py \
+  -q -p no:cacheprovider
+```
+
+**109 passed** (98 pre-existing + 11 new), 0 failures.
+`test_terminal_worker_ram_emergency_reaper.py` alone: **24 passed** (13 + 11).
+
+The new cases reconstruct the chain
+`worker 7000 -> runner 21564 -> pwsh 4100 -> terminal64 900 -> metatester 950`
+with `_process_private_snapshot` and `_query_full_process_image_path` stubbed:
+
+- `test_pid_is_descendant_walks_the_runner_chain` -- multi-hop true, upward
+  false, self false, unrelated false, cyclic map terminates, fail-closed inputs.
+- (a) `test_kills_runner_tree_when_runner_owns_the_victim` -- `kill_scope
+  runner_tree`, `kill_root_pid` = runner, `runner_is_ancestor True`, exactly one
+  `_stop_pid_tree` call rooted at the runner; scope also persisted into the
+  requeued payload.
+- (b) `test_falls_back_to_terminal_tree_when_runner_is_not_an_ancestor` (stale
+  `$.pid` on another branch), `test_falls_back_when_runner_pid_is_dead`,
+  `test_falls_back_when_payload_pid_is_missing` -- all keep `terminal_tree` and
+  kill the terminal64 pid, with the refusal reason recorded.
+- (c) `test_refuses_runner_scope_when_payload_pid_is_the_claiming_worker`,
+  `..._for_a_worker_in_the_worker_pid_map`,
+  `..._when_payload_pid_is_the_reaper_itself`,
+  `..._when_runner_image_is_the_live_terminal` (ancestry holds, T_Live image
+  refuses the scope anyway), `..._when_runner_image_is_unresolvable`.
+- (d) every one of the above asserts the row came back
+  `pending / verdict NULL / claimed_by NULL` with `prior_failure` and
+  `ram_emergency_reap_count == 1`.
+- `test_terminal_worker_pids_union_of_self_claims_and_pid_map` -- the refusal
+  set unions all three sources and is fail-open per source.
+
+### 7.5 Risks / rollback
+
+- **Blast radius is strictly larger by one process type** (the phase runner), and
+  only on positive proof. Every refusal path reproduces the exact 11683160a7
+  behaviour, so the worst case of the new code is the old code.
+- The `T_LIVE` marker is now checked in **two** places: on the victim
+  terminal64 (unchanged) and on the runner image before widening. A T_Live path
+  can be neither victim nor kill root.
+- A worker can never be the kill root: `os.getpid()`, the claim's
+  `claimed_by_worker_pid`, and `worker_pids.json` are all refusals, checked
+  *before* the ancestry proof runs.
+- Rollback is the same kill switch as section 6, `QM_DISABLE_RAM_EMERGENCY_REAP=1`,
+  which disables the reaper entirely. A narrower rollback (scope only) is a
+  one-line change: pass `victim["pid"]` to `_stop_pid_tree` instead of
+  `kill_plan["kill_root_pid"]`.
+- Unchanged limits carried over from section 6: the reaper still runs only in the
+  **idle** guard loop, so with all ten terminals computing, nobody reaps. A
+  monitor-side backstop remains the follow-up idea.
+
+### 7.6 Open questions
+
+1. The manual requeue at 23:48:39Z released the row while its runner was still
+   alive; the worker nonetheless reported `claim_released: true` at 23:54:11Z.
+   Whether the row was re-claimed in between or the second release was a no-op is
+   not decidable from the journals. The runner-tree scope removes the window
+   either way, but the double-execution hazard of "requeue while the runner
+   lives" deserves its own check on the manual path.
+2. `runner_image_unresolvable` is deliberately fail-closed. If
+   `QueryFullProcessImageNameW` ever fails for a peer worker's runner in
+   production, the reaper silently degrades to the old scope; the refusal reason
+   is in the event, so this is observable -- but it has not yet been exercised
+   live (no automated reap has occurred at all).

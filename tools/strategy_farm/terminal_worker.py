@@ -7971,6 +7971,9 @@ def _defer_ram_emergency_reap(
     Mirrors _defer_runner_death: status='pending', verdict=NULL, claimed_by=NULL
     (re-runnable). The WHERE clause matches only the still-active claim on the
     victim terminal, so an existing verdict is never overwritten (append-only).
+    It is anchored on (item_id, status, claimed_by) and NEVER on ``$.pid``, so it
+    holds unchanged when the kill root is the phase runner rather than the
+    terminal64 pid (the ``pid`` argument below is diagnostic only).
     The ram_emergency_reap facts and infra taxonomy go into the payload; the
     verdict column stays NULL and the row is reclaimable by any terminal.
     """
@@ -8321,6 +8324,173 @@ def _record_ram_emergency_ledger(
         return False
 
 
+def _pid_is_descendant(
+    process_snapshot: Any,
+    ancestor_pid: Any,
+    pid: Any,
+    max_nodes: int = 4096,
+) -> bool:
+    """True iff ``pid`` sits strictly below ``ancestor_pid`` in the process tree.
+
+    Walks the children-by-parent-pid map of ``_process_private_snapshot``; the
+    reaper chain (runner -> pwsh run_smoke.ps1 -> terminal64 -> metatester64) is
+    three hops. ``max_nodes`` bounds a pathological or cyclic ppid map. Fail
+    closed: an unusable snapshot, a non-integer pid, or ancestor == pid returns
+    False so the caller keeps the narrow terminal-only kill rather than widening
+    on a guess.
+    """
+    try:
+        ancestor = int(ancestor_pid)
+        target = int(pid)
+    except (TypeError, ValueError):
+        return False
+    if ancestor <= 0 or target <= 0 or ancestor == target:
+        return False
+    try:
+        children = (process_snapshot or (None, None, None))[0] or {}
+    except Exception:
+        return False
+    if not isinstance(children, dict) or not children:
+        return False
+    seen: set[int] = {ancestor}
+    queue: list[Any] = list(children.get(ancestor, ()) or ())
+    while queue and len(seen) <= max_nodes:
+        try:
+            cur = int(queue.pop())
+        except (TypeError, ValueError):
+            continue
+        if cur in seen:
+            continue
+        seen.add(cur)
+        if cur == target:
+            return True
+        queue.extend(children.get(cur, ()) or ())
+    return False
+
+
+def _terminal_worker_pids(root: Path, active: dict[str, dict[str, Any]]) -> set[int]:
+    """Pids known to be terminal_worker.py processes (this one plus its peers).
+
+    Three subprocess-free sources: ``os.getpid()``; the ``claimed_by_worker_pid``
+    every live claim records in its payload; and the worker pid map maintained by
+    ``start_terminal_workers.py`` (``<root>/state/worker_pids.json``). Used only
+    as a REFUSAL set for the runner-tree widening: a terminal64 is a descendant
+    of its own worker too, so a stale or wrong ``$.pid`` pointing at a worker
+    would otherwise take that worker down. Fail-open per source -- a missing
+    source only fails to add a refusal, and the descendant proof plus the
+    image-path check still bind before anything is widened.
+    """
+    pids: set[int] = set()
+    try:
+        pids.add(int(os.getpid()))
+    except Exception:
+        pass
+    for item in (active or {}).values():
+        try:
+            payload = _json_loads(item.get("payload_json"))
+            worker_pid = int(payload.get("claimed_by_worker_pid") or 0)
+        except (TypeError, ValueError, AttributeError):
+            continue
+        if worker_pid > 0:
+            pids.add(worker_pid)
+    try:
+        doc = json.loads(
+            (Path(root) / "state" / "worker_pids.json").read_text(encoding="utf-8-sig")
+        )
+        for value in (doc or {}).values():
+            try:
+                worker_pid = int(value)
+            except (TypeError, ValueError):
+                continue
+            if worker_pid > 0:
+                pids.add(worker_pid)
+    except Exception:
+        pass
+    return pids
+
+
+def _resolve_ram_reap_kill_root(
+    victim: dict[str, Any],
+    worker_pids: set[int] | None = None,
+    process_snapshot: Any = None,
+) -> dict[str, Any]:
+    """Pick the pid whose tree the reaper kills: the phase runner, or the tester.
+
+    Recurrence 2026-09-04 23:45Z and 23:52Z (Q05 QM5_11165 / EURJPY.DWX, work
+    item a0b332eb): killing only the terminal64 subtree left the PHASE RUNNER
+    alive -- payload ``$.pid``, i.e.
+    ``C:/Python311/python.exe framework/scripts/q05_stress_medium.py
+    --report-root D:/QM/reports/work_items/<item_id> ...`` -- and it re-spawned
+    the tester in place inside five minutes; the balloon re-inflated to 11 GB
+    while the host had 1.6 GB free. The chain is worker -> runner -> pwsh
+    run_smoke.ps1 -> terminal64 -> metatester64, so the runner root takes the
+    whole balloon with it (``farmctl._stop_pid_tree`` snapshots the tree and
+    kills leaves first) and the row stays requeued instead of restarting itself.
+
+    Widening needs POSITIVE proof; every failure keeps the previous
+    terminal-only scope:
+
+    * ``$.pid`` present, > 0, and not the terminal64 pid itself;
+    * not this reaper process and not any known terminal_worker.py pid;
+    * the runner pid is alive in the live process snapshot;
+    * the terminal64 pid is a DESCENDANT of the runner pid -- the single check
+      that proves ownership rather than inferring it from a stale payload;
+    * the runner image path resolves and is NOT under ``C:/QM/mt5/T_Live``.
+    """
+    try:
+        terminal_pid = int(victim.get("pid") or 0)
+    except (TypeError, ValueError, AttributeError):
+        terminal_pid = 0
+    plan: dict[str, Any] = {
+        "kill_root_pid": terminal_pid,
+        "kill_scope": "terminal_tree",
+        "runner_pid": None,
+        "runner_is_ancestor": False,
+        "runner_image_path": None,
+        "refused_reason": None,
+    }
+    try:
+        runner_pid = int((victim.get("payload") or {}).get("pid") or 0)
+    except (TypeError, ValueError, AttributeError):
+        runner_pid = 0
+    if runner_pid <= 0:
+        plan["refused_reason"] = "runner_pid_missing"
+        return plan
+    plan["runner_pid"] = runner_pid
+    if runner_pid == terminal_pid:
+        plan["refused_reason"] = "runner_pid_is_victim_terminal"
+        return plan
+    if runner_pid == os.getpid():
+        plan["refused_reason"] = "runner_pid_is_reaper"
+        return plan
+    if runner_pid in (worker_pids or set()):
+        plan["refused_reason"] = "runner_pid_is_terminal_worker"
+        return plan
+    snapshot = process_snapshot or _process_private_snapshot()
+    try:
+        alive = snapshot[2] or set()
+    except Exception:
+        alive = set()
+    if runner_pid not in alive:
+        plan["refused_reason"] = "runner_not_alive"
+        return plan
+    if not _pid_is_descendant(snapshot, runner_pid, terminal_pid):
+        plan["refused_reason"] = "runner_not_ancestor_of_victim"
+        return plan
+    plan["runner_is_ancestor"] = True
+    runner_image = _query_full_process_image_path(runner_pid)
+    plan["runner_image_path"] = runner_image
+    if not runner_image:
+        plan["refused_reason"] = "runner_image_unresolvable"
+        return plan
+    if _LIVE_TERMINAL_PATH_MARKER in str(runner_image).upper():
+        plan["refused_reason"] = "runner_image_live_terminal"
+        return plan
+    plan["kill_root_pid"] = runner_pid
+    plan["kill_scope"] = "runner_tree"
+    return plan
+
+
 def _run_ram_emergency_reap(
     root: Path, terminal: str, free_samples: list[float]
 ) -> dict[str, Any] | None:
@@ -8434,8 +8604,22 @@ def _run_ram_emergency_reap(
             "working_set_gb": victim["subtree_ws_gb"],
             "candidate_count": len(candidates),
         }
+        # The tester is only the LEAF of the balloon: worker -> phase runner ->
+        # pwsh run_smoke.ps1 -> terminal64 -> metatester64. Killing the terminal
+        # tree alone let the runner re-spawn it within five minutes on
+        # 2026-09-04 23:45Z/23:52Z, so widen to the runner tree whenever the
+        # runner is PROVEN to own this tester; otherwise the old scope stands.
+        kill_plan = _resolve_ram_reap_kill_root(
+            victim, _terminal_worker_pids(root, active)
+        )
+        facts["kill_root_pid"] = kill_plan["kill_root_pid"]
+        facts["kill_scope"] = kill_plan["kill_scope"]
+        facts["runner_pid"] = kill_plan["runner_pid"]
+        facts["runner_is_ancestor"] = kill_plan["runner_is_ancestor"]
+        facts["runner_image_path"] = kill_plan["runner_image_path"]
+        facts["runner_scope_refused_reason"] = kill_plan["refused_reason"]
         try:
-            facts["killed"] = bool(farmctl._stop_pid_tree(victim["pid"]))
+            facts["killed"] = bool(farmctl._stop_pid_tree(kill_plan["kill_root_pid"]))
         except Exception:
             facts["killed"] = False
         facts["ledger_recorded"] = _record_ram_emergency_ledger(root, victim, terminal)
