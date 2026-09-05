@@ -1,0 +1,1199 @@
+{
+  "authority": {
+    "layer_b_numeric_thresholds": "WORKING_DEFAULT_OPEN_OWNER_ITEM_NOT_DECISIVE",
+    "sp_c3_policy_status": "OWNER_RATIFIED",
+    "v2_account_weight_budget": 10.0,
+    "v2_max_abs_correlation_exclusive": 0.5,
+    "v4_method": "OWNER_RATIFIED_OPTION_C"
+  },
+  "bootstrap": {
+    "alpha": 0.05,
+    "method": "STATIONARY_BLOCK_BOOTSTRAP_POLITIS_WHITE_STYLE_AUTO_BLOCK",
+    "replicates": 4000,
+    "seed": 20260905
+  },
+  "candidates": [
+    {
+      "layer_a_pairwise_verdict": "CERTIFIED",
+      "q08_8_3": {
+        "binding": {
+          "path": "D:\\QM\\reports\\work_items\\a2e1aba6-45ea-4dcf-af98-1f679ebeb64f\\QM5_10706\\Q08\\GBPUSD_DWX\\8_3_tail_dependence.json",
+          "sha256": "7dd31e425cda1141b09d57526185517ed2b3f56956b63e1dd7b4ac8612e6b183",
+          "size_bytes": 207
+        },
+        "detail": "no_portfolio_peers_trivial_pass",
+        "status": "PASS"
+      },
+      "reasons": [
+        "MISSING_INTERVAL_MIN_EQUITY",
+        "MISSING_PENDING_OR_ENDPOINT_EQUITY",
+        "Q08_8_3_TRIVIAL_NO_PEERS_NOT_BOOK_TAIL_EVIDENCE"
+      ],
+      "sleeve_id": "10706:GBPUSD",
+      "stream": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10706_GBPUSD_DWX.jsonl",
+        "sha256": "71fb35b8f8539356f511609a4d1dfb06571f85b19b60de6647e907ec891e34f7",
+        "size_bytes": 149557
+      },
+      "symbol": "GBPUSD",
+      "trades": 360,
+      "verdict": "ABSTAIN"
+    },
+    {
+      "layer_a_pairwise_verdict": "CERTIFIED",
+      "q08_8_3": {
+        "binding": {
+          "path": "D:\\QM\\reports\\work_items\\c93263aa-a707-45ea-a915-204ec59df077\\QM5_11421\\Q08\\EURUSD_DWX\\8_3_tail_dependence.json",
+          "sha256": "7dd31e425cda1141b09d57526185517ed2b3f56956b63e1dd7b4ac8612e6b183",
+          "size_bytes": 207
+        },
+        "detail": "no_portfolio_peers_trivial_pass",
+        "status": "PASS"
+      },
+      "reasons": [
+        "MISSING_INTERVAL_MIN_EQUITY",
+        "MISSING_PENDING_OR_ENDPOINT_EQUITY",
+        "Q08_8_3_TRIVIAL_NO_PEERS_NOT_BOOK_TAIL_EVIDENCE"
+      ],
+      "sleeve_id": "11421:EURUSD",
+      "stream": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11421_EURUSD_DWX.jsonl",
+        "sha256": "e9d0a9ef831f156f0f67e5bf1140d7e57702c3923a4ff47b5548847957d7c0c1",
+        "size_bytes": 37522
+      },
+      "symbol": "EURUSD",
+      "trades": 91,
+      "verdict": "ABSTAIN"
+    },
+    {
+      "layer_a_pairwise_verdict": "CERTIFIED",
+      "q08_8_3": {
+        "binding": {
+          "path": "D:\\QM\\reports\\work_items\\2bd0f95c-6c62-4a53-92cf-04f0d39fbb48\\QM5_11422\\Q08\\USDCAD_DWX\\8_3_tail_dependence.json",
+          "sha256": "7dd31e425cda1141b09d57526185517ed2b3f56956b63e1dd7b4ac8612e6b183",
+          "size_bytes": 207
+        },
+        "detail": "no_portfolio_peers_trivial_pass",
+        "status": "PASS"
+      },
+      "reasons": [
+        "MISSING_INTERVAL_MIN_EQUITY",
+        "MISSING_PENDING_OR_ENDPOINT_EQUITY",
+        "Q08_8_3_TRIVIAL_NO_PEERS_NOT_BOOK_TAIL_EVIDENCE"
+      ],
+      "sleeve_id": "11422:USDCAD",
+      "stream": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11422_USDCAD_DWX.jsonl",
+        "sha256": "7ce6cc3ec2f1279c18e8601119e3319375d5d3fa1ce4cf95cf33e05eefc33198",
+        "size_bytes": 80441
+      },
+      "symbol": "USDCAD",
+      "trades": 195,
+      "verdict": "ABSTAIN"
+    },
+    {
+      "layer_a_pairwise_verdict": "CERTIFIED",
+      "q08_8_3": {
+        "binding": {
+          "path": "D:\\QM\\reports\\work_items\\977a478e-1f23-4297-ac76-656bb497e2ec\\QM5_11910\\Q08\\NZDUSD_DWX\\8_3_tail_dependence.json",
+          "sha256": "7dd31e425cda1141b09d57526185517ed2b3f56956b63e1dd7b4ac8612e6b183",
+          "size_bytes": 207
+        },
+        "detail": "no_portfolio_peers_trivial_pass",
+        "status": "PASS"
+      },
+      "reasons": [
+        "MISSING_INTERVAL_MIN_EQUITY",
+        "MISSING_PENDING_OR_ENDPOINT_EQUITY",
+        "Q08_8_3_TRIVIAL_NO_PEERS_NOT_BOOK_TAIL_EVIDENCE"
+      ],
+      "sleeve_id": "11910:NZDUSD",
+      "stream": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11910_NZDUSD_DWX.jsonl",
+        "sha256": "555bbee205432c62f06da96a0a291d14028dc5c88e3fa8b2792ad62bc5d885b0",
+        "size_bytes": 25891
+      },
+      "symbol": "NZDUSD",
+      "trades": 63,
+      "verdict": "ABSTAIN"
+    },
+    {
+      "layer_a_pairwise_verdict": "CERTIFIED",
+      "q08_8_3": {
+        "binding": {
+          "path": "D:\\QM\\reports\\work_items\\21dd6839-4d77-4228-b5ba-5dd86aeb0cdb\\QM5_13054\\Q08\\XTIUSD_DWX\\8_3_tail_dependence.json",
+          "sha256": "7dd31e425cda1141b09d57526185517ed2b3f56956b63e1dd7b4ac8612e6b183",
+          "size_bytes": 207
+        },
+        "detail": "no_portfolio_peers_trivial_pass",
+        "status": "PASS"
+      },
+      "reasons": [
+        "MISSING_INTERVAL_MIN_EQUITY",
+        "MISSING_PENDING_OR_ENDPOINT_EQUITY",
+        "Q08_8_3_TRIVIAL_NO_PEERS_NOT_BOOK_TAIL_EVIDENCE"
+      ],
+      "sleeve_id": "13054:XTIUSD",
+      "stream": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13054_XTIUSD_DWX.jsonl",
+        "sha256": "67d4fe2cef067e041f01d10e5e6c98312a32b43683eee2da3d0bfa9af296955b",
+        "size_bytes": 33657
+      },
+      "symbol": "XTIUSD",
+      "trades": 82,
+      "verdict": "ABSTAIN"
+    },
+    {
+      "layer_a_pairwise_verdict": "CERTIFIED",
+      "q08_8_3": {
+        "binding": {
+          "path": "D:\\QM\\reports\\work_items\\f62fe6b3-f734-466e-95dd-d7ca76294729\\QM5_1537\\Q08\\XAGUSD_DWX\\8_3_tail_dependence.json",
+          "sha256": "7dd31e425cda1141b09d57526185517ed2b3f56956b63e1dd7b4ac8612e6b183",
+          "size_bytes": 207
+        },
+        "detail": "no_portfolio_peers_trivial_pass",
+        "status": "PASS"
+      },
+      "reasons": [
+        "MISSING_INTERVAL_MIN_EQUITY",
+        "MISSING_PENDING_OR_ENDPOINT_EQUITY",
+        "Q08_8_3_TRIVIAL_NO_PEERS_NOT_BOOK_TAIL_EVIDENCE"
+      ],
+      "sleeve_id": "1537:XAGUSD",
+      "stream": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\1537_XAGUSD_DWX.jsonl",
+        "sha256": "1885c21e4c895827c79ff3d55849308ab4ee5c0db96a7d576cd652dc3eff8658",
+        "size_bytes": 39136
+      },
+      "symbol": "XAGUSD",
+      "trades": 96,
+      "verdict": "ABSTAIN"
+    },
+    {
+      "layer_a_pairwise_verdict": "CERTIFIED",
+      "q08_8_3": {
+        "binding": {
+          "path": "D:\\QM\\reports\\work_items\\a43559cd-b084-4c0e-8bc3-2c7b6fc1a5ea\\QM5_20048\\Q08\\XTIUSD_DWX\\8_3_tail_dependence.json",
+          "sha256": "7dd31e425cda1141b09d57526185517ed2b3f56956b63e1dd7b4ac8612e6b183",
+          "size_bytes": 207
+        },
+        "detail": "no_portfolio_peers_trivial_pass",
+        "status": "PASS"
+      },
+      "reasons": [
+        "MISSING_INTERVAL_MIN_EQUITY",
+        "MISSING_PENDING_OR_ENDPOINT_EQUITY",
+        "Q08_8_3_TRIVIAL_NO_PEERS_NOT_BOOK_TAIL_EVIDENCE"
+      ],
+      "sleeve_id": "20048:XTIUSD",
+      "stream": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\20048_XTIUSD_DWX.jsonl",
+        "sha256": "a792e2635250bcd6df5aa4a290359b54e6d5ffe8fbe10e34d143b74dfe0e8d55",
+        "size_bytes": 24488
+      },
+      "symbol": "XTIUSD",
+      "trades": 60,
+      "verdict": "ABSTAIN"
+    },
+    {
+      "layer_a_pairwise_verdict": "CERTIFIED",
+      "q08_8_3": {
+        "binding": {
+          "path": "D:\\QM\\reports\\work_items\\15c1ec7b-5821-4944-81a7-86d23754565d\\QM5_21505\\Q08\\XAGUSD_DWX\\8_3_tail_dependence.json",
+          "sha256": "7dd31e425cda1141b09d57526185517ed2b3f56956b63e1dd7b4ac8612e6b183",
+          "size_bytes": 207
+        },
+        "detail": "no_portfolio_peers_trivial_pass",
+        "status": "PASS"
+      },
+      "reasons": [
+        "MISSING_INTERVAL_MIN_EQUITY",
+        "MISSING_PENDING_OR_ENDPOINT_EQUITY",
+        "Q08_8_3_TRIVIAL_NO_PEERS_NOT_BOOK_TAIL_EVIDENCE"
+      ],
+      "sleeve_id": "21505:XAGUSD",
+      "stream": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\21505_XAGUSD_DWX.jsonl",
+        "sha256": "243804faaf0050f5482b9a4aac8f9eb0dcd552de1c2c139a486f0bcfa46b94c1",
+        "size_bytes": 47456
+      },
+      "symbol": "XAGUSD",
+      "trades": 116,
+      "verdict": "ABSTAIN"
+    }
+  ],
+  "currency": "USD",
+  "inputs": {
+    "interval_export": {
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_interval_equity_export.json",
+      "sha256": "d4e30471248fa03115e7682e525765d2544dd37d9815d02494d1b7d6fb1665a3",
+      "size_bytes": 226567
+    },
+    "spec": {
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_v4_tail_certification_spec.json",
+      "sha256": "ebcda5a224a630af424c9126dabd6e535627df81c113ca2a4e1654a79c9e262b",
+      "size_bytes": 3288
+    },
+    "tail_policy": {
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\concentration_tail_limits.v1.json",
+      "sha256": "77a3b67312d199e06ad39c10a4404ab505b4041de0701ce4312a13c8cdf827da",
+      "size_bytes": 1621
+    },
+    "v2_owner_receipt": {
+      "path": "C:\\QM\\repo\\decisions\\2026-09-04_owner_receipts_briefing_2_4.md",
+      "sha256": "7754c7502bfb2f4de2d6b7f24fe1eb05e71165250381424e6e7230984a6807d0",
+      "size_bytes": 3439
+    },
+    "v4_standard": {
+      "path": "C:\\QM\\repo\\docs\\research\\SPARSE_D1_ORTHOGONALITY_STANDARD_2026-09-03.md",
+      "sha256": "a37e0fdc1b17d33b4386f68b9e3d68ee6833a59a617b9ccc82cddf130587bcb5",
+      "size_bytes": 32727
+    }
+  },
+  "pairs": [
+    {
+      "layer_a": {
+        "abs_ci_upper": 0.05890009,
+        "alpha": 0.05,
+        "block_length": 1,
+        "ci_high": 0.05890009,
+        "ci_low": -0.03058013,
+        "coactive_exit_days": 13,
+        "common_support_first": "2018-05-11",
+        "common_support_last": "2025-12-11",
+        "owner_v2_max_abs_correlation_exclusive": 0.5,
+        "point_correlation": 0.01430164,
+        "replicates_requested": 4000,
+        "replicates_valid": 4000,
+        "sample_business_days": 1980,
+        "verdict": "CERTIFIED"
+      },
+      "layer_b": {
+        "co_occupied_days": 57,
+        "expected_co_occupied_days": 38.961385,
+        "flag_b": "UNRESOLVED_OWNER_NUMERIC_THRESHOLDS_ADVISORY_ONLY",
+        "left_occupancy_days": 560,
+        "lift": 1.462987,
+        "p_upper_exact_all_circular_shifts": 0.18941411,
+        "right_occupancy_days": 209,
+        "ring_days": 3004,
+        "signed_concordance": null,
+        "signed_concordance_days": 0
+      },
+      "left": "10706:GBPUSD",
+      "right": "11421:EURUSD"
+    },
+    {
+      "layer_a": {
+        "abs_ci_upper": 0.04021197,
+        "alpha": 0.05,
+        "block_length": 1,
+        "ci_high": 0.02402259,
+        "ci_low": -0.04021197,
+        "coactive_exit_days": 27,
+        "common_support_first": "2018-03-02",
+        "common_support_last": "2025-12-26",
+        "owner_v2_max_abs_correlation_exclusive": 0.5,
+        "point_correlation": -0.00647004,
+        "replicates_requested": 4000,
+        "replicates_valid": 4000,
+        "sample_business_days": 2041,
+        "verdict": "CERTIFIED"
+      },
+      "layer_b": {
+        "co_occupied_days": 135,
+        "expected_co_occupied_days": 101.038615,
+        "flag_b": "UNRESOLVED_OWNER_NUMERIC_THRESHOLDS_ADVISORY_ONLY",
+        "left_occupancy_days": 560,
+        "lift": 1.336123,
+        "p_upper_exact_all_circular_shifts": 0.30359521,
+        "right_occupancy_days": 542,
+        "ring_days": 3004,
+        "signed_concordance": null,
+        "signed_concordance_days": 0
+      },
+      "left": "10706:GBPUSD",
+      "right": "11422:USDCAD"
+    },
+    {
+      "layer_a": {
+        "abs_ci_upper": 0.02769727,
+        "alpha": 0.05,
+        "block_length": 1,
+        "ci_high": 0.02769727,
+        "ci_low": -0.01585106,
+        "coactive_exit_days": 11,
+        "common_support_first": "2018-03-23",
+        "common_support_last": "2025-06-05",
+        "owner_v2_max_abs_correlation_exclusive": 0.5,
+        "point_correlation": 0.00452304,
+        "replicates_requested": 4000,
+        "replicates_valid": 4000,
+        "sample_business_days": 1880,
+        "verdict": "CERTIFIED"
+      },
+      "layer_b": {
+        "co_occupied_days": 50,
+        "expected_co_occupied_days": 44.181092,
+        "flag_b": "UNRESOLVED_OWNER_NUMERIC_THRESHOLDS_ADVISORY_ONLY",
+        "left_occupancy_days": 560,
+        "lift": 1.131706,
+        "p_upper_exact_all_circular_shifts": 0.41178429,
+        "right_occupancy_days": 237,
+        "ring_days": 3004,
+        "signed_concordance": null,
+        "signed_concordance_days": 0
+      },
+      "left": "10706:GBPUSD",
+      "right": "11910:NZDUSD"
+    },
+    {
+      "layer_a": {
+        "abs_ci_upper": 0.03124053,
+        "alpha": 0.05,
+        "block_length": 1,
+        "ci_high": 0.03124053,
+        "ci_low": -0.01060638,
+        "coactive_exit_days": 7,
+        "common_support_first": "2018-03-02",
+        "common_support_last": "2025-12-30",
+        "owner_v2_max_abs_correlation_exclusive": 0.5,
+        "point_correlation": 0.00694607,
+        "replicates_requested": 4000,
+        "replicates_valid": 4000,
+        "sample_business_days": 2043,
+        "verdict": "CERTIFIED"
+      },
+      "layer_b": {
+        "co_occupied_days": 58,
+        "expected_co_occupied_days": 50.892144,
+        "flag_b": "UNRESOLVED_OWNER_NUMERIC_THRESHOLDS_ADVISORY_ONLY",
+        "left_occupancy_days": 560,
+        "lift": 1.139665,
+        "p_upper_exact_all_circular_shifts": 0.46571238,
+        "right_occupancy_days": 273,
+        "ring_days": 3004,
+        "signed_concordance": null,
+        "signed_concordance_days": 0
+      },
+      "left": "10706:GBPUSD",
+      "right": "13054:XTIUSD"
+    },
+    {
+      "layer_a": {
+        "abs_ci_upper": 0.04685504,
+        "alpha": 0.05,
+        "block_length": 1,
+        "ci_high": 0.00134787,
+        "ci_low": -0.04685504,
+        "coactive_exit_days": 10,
+        "common_support_first": "2018-11-02",
+        "common_support_last": "2024-12-06",
+        "owner_v2_max_abs_correlation_exclusive": 0.5,
+        "point_correlation": -0.01793838,
+        "replicates_requested": 4000,
+        "replicates_valid": 4000,
+        "sample_business_days": 1591,
+        "verdict": "CERTIFIED"
+      },
+      "layer_b": {
+        "co_occupied_days": 69,
+        "expected_co_occupied_days": 51.451398,
+        "flag_b": "UNRESOLVED_OWNER_NUMERIC_THRESHOLDS_ADVISORY_ONLY",
+        "left_occupancy_days": 560,
+        "lift": 1.341071,
+        "p_upper_exact_all_circular_shifts": 0.2786285,
+        "right_occupancy_days": 276,
+        "ring_days": 3004,
+        "signed_concordance": null,
+        "signed_concordance_days": 0
+      },
+      "left": "10706:GBPUSD",
+      "right": "1537:XAGUSD"
+    },
+    {
+      "layer_a": {
+        "abs_ci_upper": 0.0364973,
+        "alpha": 0.05,
+        "block_length": 1,
+        "ci_high": 0.0364973,
+        "ci_low": -0.00126743,
+        "coactive_exit_days": 3,
+        "common_support_first": "2018-04-02",
+        "common_support_last": "2025-12-26",
+        "owner_v2_max_abs_correlation_exclusive": 0.5,
+        "point_correlation": 0.01077719,
+        "replicates_requested": 4000,
+        "replicates_valid": 4000,
+        "sample_business_days": 2020,
+        "verdict": "CERTIFIED"
+      },
+      "layer_b": {
+        "co_occupied_days": 13,
+        "expected_co_occupied_days": 40.825566,
+        "flag_b": "UNRESOLVED_OWNER_NUMERIC_THRESHOLDS_ADVISORY_ONLY",
+        "left_occupancy_days": 560,
+        "lift": 0.318428,
+        "p_upper_exact_all_circular_shifts": 1.0,
+        "right_occupancy_days": 219,
+        "ring_days": 3004,
+        "signed_concordance": null,
+        "signed_concordance_days": 0
+      },
+      "left": "10706:GBPUSD",
+      "right": "20048:XTIUSD"
+    },
+    {
+      "layer_a": {
+        "abs_ci_upper": 0.02071077,
+        "alpha": 0.05,
+        "block_length": 1,
+        "ci_high": 0.00756865,
+        "ci_low": -0.02071077,
+        "coactive_exit_days": 10,
+        "common_support_first": "2018-07-27",
+        "common_support_last": "2025-09-26",
+        "owner_v2_max_abs_correlation_exclusive": 0.5,
+        "point_correlation": -0.00614728,
+        "replicates_requested": 4000,
+        "replicates_valid": 4000,
+        "sample_business_days": 1871,
+        "verdict": "CERTIFIED"
+      },
+      "layer_b": {
+        "co_occupied_days": 165,
+        "expected_co_occupied_days": 109.800266,
+        "flag_b": "UNRESOLVED_OWNER_NUMERIC_THRESHOLDS_ADVISORY_ONLY",
+        "left_occupancy_days": 560,
+        "lift": 1.502729,
+        "p_upper_exact_all_circular_shifts": 0.01830892,
+        "right_occupancy_days": 589,
+        "ring_days": 3004,
+        "signed_concordance": null,
+        "signed_concordance_days": 0
+      },
+      "left": "10706:GBPUSD",
+      "right": "21505:XAGUSD"
+    },
+    {
+      "layer_a": {
+        "abs_ci_upper": 0.06967456,
+        "alpha": 0.05,
+        "block_length": 21,
+        "ci_high": 0.06967456,
+        "ci_low": -0.00849069,
+        "coactive_exit_days": 25,
+        "common_support_first": "2018-05-11",
+        "common_support_last": "2025-12-11",
+        "owner_v2_max_abs_correlation_exclusive": 0.5,
+        "point_correlation": 0.02632029,
+        "replicates_requested": 4000,
+        "replicates_valid": 4000,
+        "sample_business_days": 1980,
+        "verdict": "CERTIFIED"
+      },
+      "layer_b": {
+        "co_occupied_days": 59,
+        "expected_co_occupied_days": 37.709055,
+        "flag_b": "UNRESOLVED_OWNER_NUMERIC_THRESHOLDS_ADVISORY_ONLY",
+        "left_occupancy_days": 209,
+        "lift": 1.564611,
+        "p_upper_exact_all_circular_shifts": 0.05925433,
+        "right_occupancy_days": 542,
+        "ring_days": 3004,
+        "signed_concordance": null,
+        "signed_concordance_days": 0
+      },
+      "left": "11421:EURUSD",
+      "right": "11422:USDCAD"
+    },
+    {
+      "layer_a": {
+        "abs_ci_upper": 0.1905448,
+        "alpha": 0.05,
+        "block_length": 1,
+        "ci_high": 0.00460255,
+        "ci_low": -0.1905448,
+        "coactive_exit_days": 12,
+        "common_support_first": "2018-05-11",
+        "common_support_last": "2025-06-05",
+        "owner_v2_max_abs_correlation_exclusive": 0.5,
+        "point_correlation": -0.07554833,
+        "replicates_requested": 4000,
+        "replicates_valid": 4000,
+        "sample_business_days": 1845,
+        "verdict": "CERTIFIED"
+      },
+      "layer_b": {
+        "co_occupied_days": 22,
+        "expected_co_occupied_days": 16.489015,
+        "flag_b": "UNRESOLVED_OWNER_NUMERIC_THRESHOLDS_ADVISORY_ONLY",
+        "left_occupancy_days": 209,
+        "lift": 1.334222,
+        "p_upper_exact_all_circular_shifts": 0.20372836,
+        "right_occupancy_days": 237,
+        "ring_days": 3004,
+        "signed_concordance": null,
+        "signed_concordance_days": 0
+      },
+      "left": "11421:EURUSD",
+      "right": "11910:NZDUSD"
+    },
+    {
+      "layer_a": {
+        "abs_ci_upper": 0.11517819,
+        "alpha": 0.05,
+        "block_length": 1,
+        "ci_high": 0.03231796,
+        "ci_low": -0.11517819,
+        "coactive_exit_days": 11,
+        "common_support_first": "2018-05-11",
+        "common_support_last": "2025-12-11",
+        "owner_v2_max_abs_correlation_exclusive": 0.5,
+        "point_correlation": -0.03141259,
+        "replicates_requested": 4000,
+        "replicates_valid": 4000,
+        "sample_business_days": 1980,
+        "verdict": "CERTIFIED"
+      },
+      "layer_b": {
+        "co_occupied_days": 32,
+        "expected_co_occupied_days": 18.993675,
+        "flag_b": "UNRESOLVED_OWNER_NUMERIC_THRESHOLDS_ADVISORY_ONLY",
+        "left_occupancy_days": 209,
+        "lift": 1.684771,
+        "p_upper_exact_all_circular_shifts": 0.03195739,
+        "right_occupancy_days": 273,
+        "ring_days": 3004,
+        "signed_concordance": null,
+        "signed_concordance_days": 0
+      },
+      "left": "11421:EURUSD",
+      "right": "13054:XTIUSD"
+    },
+    {
+      "layer_a": {
+        "abs_ci_upper": 0.12057805,
+        "alpha": 0.05,
+        "block_length": 1,
+        "ci_high": 0.12057805,
+        "ci_low": -0.06077403,
+        "coactive_exit_days": 10,
+        "common_support_first": "2018-11-02",
+        "common_support_last": "2024-12-06",
+        "owner_v2_max_abs_correlation_exclusive": 0.5,
+        "point_correlation": 0.02741613,
+        "replicates_requested": 4000,
+        "replicates_valid": 4000,
+        "sample_business_days": 1591,
+        "verdict": "CERTIFIED"
+      },
+      "layer_b": {
+        "co_occupied_days": 25,
+        "expected_co_occupied_days": 19.202397,
+        "flag_b": "UNRESOLVED_OWNER_NUMERIC_THRESHOLDS_ADVISORY_ONLY",
+        "left_occupancy_days": 209,
+        "lift": 1.301921,
+        "p_upper_exact_all_circular_shifts": 0.22603196,
+        "right_occupancy_days": 276,
+        "ring_days": 3004,
+        "signed_concordance": null,
+        "signed_concordance_days": 0
+      },
+      "left": "11421:EURUSD",
+      "right": "1537:XAGUSD"
+    },
+    {
+      "layer_a": {
+        "abs_ci_upper": 0.002306,
+        "alpha": 0.05,
+        "block_length": 1,
+        "ci_high": 0.0010207,
+        "ci_low": -0.002306,
+        "coactive_exit_days": 0,
+        "common_support_first": "2018-05-11",
+        "common_support_last": "2025-12-11",
+        "owner_v2_max_abs_correlation_exclusive": 0.5,
+        "point_correlation": -0.00024212,
+        "replicates_requested": 4000,
+        "replicates_valid": 4000,
+        "sample_business_days": 1980,
+        "verdict": "CERTIFIED"
+      },
+      "layer_b": {
+        "co_occupied_days": 14,
+        "expected_co_occupied_days": 15.236684,
+        "flag_b": "UNRESOLVED_OWNER_NUMERIC_THRESHOLDS_ADVISORY_ONLY",
+        "left_occupancy_days": 209,
+        "lift": 0.918835,
+        "p_upper_exact_all_circular_shifts": 0.5918775,
+        "right_occupancy_days": 219,
+        "ring_days": 3004,
+        "signed_concordance": null,
+        "signed_concordance_days": 0
+      },
+      "left": "11421:EURUSD",
+      "right": "20048:XTIUSD"
+    },
+    {
+      "layer_a": {
+        "abs_ci_upper": 0.08096755,
+        "alpha": 0.05,
+        "block_length": 1,
+        "ci_high": 0.05004421,
+        "ci_low": -0.08096755,
+        "coactive_exit_days": 17,
+        "common_support_first": "2018-07-27",
+        "common_support_last": "2025-09-26",
+        "owner_v2_max_abs_correlation_exclusive": 0.5,
+        "point_correlation": -0.01413333,
+        "replicates_requested": 4000,
+        "replicates_valid": 4000,
+        "sample_business_days": 1871,
+        "verdict": "CERTIFIED"
+      },
+      "layer_b": {
+        "co_occupied_days": 80,
+        "expected_co_occupied_days": 40.979028,
+        "flag_b": "UNRESOLVED_OWNER_NUMERIC_THRESHOLDS_ADVISORY_ONLY",
+        "left_occupancy_days": 209,
+        "lift": 1.952218,
+        "p_upper_exact_all_circular_shifts": 0.00432756,
+        "right_occupancy_days": 589,
+        "ring_days": 3004,
+        "signed_concordance": null,
+        "signed_concordance_days": 0
+      },
+      "left": "11421:EURUSD",
+      "right": "21505:XAGUSD"
+    },
+    {
+      "layer_a": {
+        "abs_ci_upper": 0.20274167,
+        "alpha": 0.05,
+        "block_length": 1,
+        "ci_high": 0.20274167,
+        "ci_low": -0.0579445,
+        "coactive_exit_days": 19,
+        "common_support_first": "2018-03-23",
+        "common_support_last": "2025-06-05",
+        "owner_v2_max_abs_correlation_exclusive": 0.5,
+        "point_correlation": 0.07289287,
+        "replicates_requested": 4000,
+        "replicates_valid": 4000,
+        "sample_business_days": 1880,
+        "verdict": "CERTIFIED"
+      },
+      "layer_b": {
+        "co_occupied_days": 79,
+        "expected_co_occupied_days": 42.760985,
+        "flag_b": "UNRESOLVED_OWNER_NUMERIC_THRESHOLDS_ADVISORY_ONLY",
+        "left_occupancy_days": 542,
+        "lift": 1.847478,
+        "p_upper_exact_all_circular_shifts": 0.00233023,
+        "right_occupancy_days": 237,
+        "ring_days": 3004,
+        "signed_concordance": null,
+        "signed_concordance_days": 0
+      },
+      "left": "11422:USDCAD",
+      "right": "11910:NZDUSD"
+    },
+    {
+      "layer_a": {
+        "abs_ci_upper": 0.068063,
+        "alpha": 0.05,
+        "block_length": 1,
+        "ci_high": 0.04638836,
+        "ci_low": -0.068063,
+        "coactive_exit_days": 22,
+        "common_support_first": "2018-03-02",
+        "common_support_last": "2025-12-26",
+        "owner_v2_max_abs_correlation_exclusive": 0.5,
+        "point_correlation": -0.00780269,
+        "replicates_requested": 4000,
+        "replicates_valid": 4000,
+        "sample_business_days": 2041,
+        "verdict": "CERTIFIED"
+      },
+      "layer_b": {
+        "co_occupied_days": 84,
+        "expected_co_occupied_days": 49.256325,
+        "flag_b": "UNRESOLVED_OWNER_NUMERIC_THRESHOLDS_ADVISORY_ONLY",
+        "left_occupancy_days": 542,
+        "lift": 1.705365,
+        "p_upper_exact_all_circular_shifts": 0.00532623,
+        "right_occupancy_days": 273,
+        "ring_days": 3004,
+        "signed_concordance": null,
+        "signed_concordance_days": 0
+      },
+      "left": "11422:USDCAD",
+      "right": "13054:XTIUSD"
+    },
+    {
+      "layer_a": {
+        "abs_ci_upper": 0.07414083,
+        "alpha": 0.05,
+        "block_length": 1,
+        "ci_high": 0.07414083,
+        "ci_low": -0.00698274,
+        "coactive_exit_days": 21,
+        "common_support_first": "2018-11-02",
+        "common_support_last": "2024-12-06",
+        "owner_v2_max_abs_correlation_exclusive": 0.5,
+        "point_correlation": 0.03012023,
+        "replicates_requested": 4000,
+        "replicates_valid": 4000,
+        "sample_business_days": 1591,
+        "verdict": "CERTIFIED"
+      },
+      "layer_b": {
+        "co_occupied_days": 68,
+        "expected_co_occupied_days": 49.797603,
+        "flag_b": "UNRESOLVED_OWNER_NUMERIC_THRESHOLDS_ADVISORY_ONLY",
+        "left_occupancy_days": 542,
+        "lift": 1.365528,
+        "p_upper_exact_all_circular_shifts": 0.14114514,
+        "right_occupancy_days": 276,
+        "ring_days": 3004,
+        "signed_concordance": null,
+        "signed_concordance_days": 0
+      },
+      "left": "11422:USDCAD",
+      "right": "1537:XAGUSD"
+    },
+    {
+      "layer_a": {
+        "abs_ci_upper": 0.01094252,
+        "alpha": 0.05,
+        "block_length": 1,
+        "ci_high": 0.00016165,
+        "ci_low": -0.01094252,
+        "coactive_exit_days": 2,
+        "common_support_first": "2018-04-02",
+        "common_support_last": "2025-12-26",
+        "owner_v2_max_abs_correlation_exclusive": 0.5,
+        "point_correlation": -0.00401734,
+        "replicates_requested": 4000,
+        "replicates_valid": 4000,
+        "sample_business_days": 2020,
+        "verdict": "CERTIFIED"
+      },
+      "layer_b": {
+        "co_occupied_days": 28,
+        "expected_co_occupied_days": 39.513316,
+        "flag_b": "UNRESOLVED_OWNER_NUMERIC_THRESHOLDS_ADVISORY_ONLY",
+        "left_occupancy_days": 542,
+        "lift": 0.708622,
+        "p_upper_exact_all_circular_shifts": 0.91511318,
+        "right_occupancy_days": 219,
+        "ring_days": 3004,
+        "signed_concordance": null,
+        "signed_concordance_days": 0
+      },
+      "left": "11422:USDCAD",
+      "right": "20048:XTIUSD"
+    },
+    {
+      "layer_a": {
+        "abs_ci_upper": 0.04083217,
+        "alpha": 0.05,
+        "block_length": 21,
+        "ci_high": 0.04083217,
+        "ci_low": -0.03977173,
+        "coactive_exit_days": 38,
+        "common_support_first": "2018-07-27",
+        "common_support_last": "2025-09-26",
+        "owner_v2_max_abs_correlation_exclusive": 0.5,
+        "point_correlation": 0.00182806,
+        "replicates_requested": 4000,
+        "replicates_valid": 4000,
+        "sample_business_days": 1871,
+        "verdict": "CERTIFIED"
+      },
+      "layer_b": {
+        "co_occupied_days": 154,
+        "expected_co_occupied_days": 106.270972,
+        "flag_b": "UNRESOLVED_OWNER_NUMERIC_THRESHOLDS_ADVISORY_ONLY",
+        "left_occupancy_days": 542,
+        "lift": 1.449126,
+        "p_upper_exact_all_circular_shifts": 0.05659121,
+        "right_occupancy_days": 589,
+        "ring_days": 3004,
+        "signed_concordance": null,
+        "signed_concordance_days": 0
+      },
+      "left": "11422:USDCAD",
+      "right": "21505:XAGUSD"
+    },
+    {
+      "layer_a": {
+        "abs_ci_upper": 0.06882344,
+        "alpha": 0.05,
+        "block_length": 1,
+        "ci_high": 0.00089027,
+        "ci_low": -0.06882344,
+        "coactive_exit_days": 10,
+        "common_support_first": "2018-03-23",
+        "common_support_last": "2025-06-05",
+        "owner_v2_max_abs_correlation_exclusive": 0.5,
+        "point_correlation": -0.02630595,
+        "replicates_requested": 4000,
+        "replicates_valid": 4000,
+        "sample_business_days": 1880,
+        "verdict": "CERTIFIED"
+      },
+      "layer_b": {
+        "co_occupied_days": 36,
+        "expected_co_occupied_days": 21.538282,
+        "flag_b": "UNRESOLVED_OWNER_NUMERIC_THRESHOLDS_ADVISORY_ONLY",
+        "left_occupancy_days": 237,
+        "lift": 1.671442,
+        "p_upper_exact_all_circular_shifts": 0.04693742,
+        "right_occupancy_days": 273,
+        "ring_days": 3004,
+        "signed_concordance": null,
+        "signed_concordance_days": 0
+      },
+      "left": "11910:NZDUSD",
+      "right": "13054:XTIUSD"
+    },
+    {
+      "layer_a": {
+        "abs_ci_upper": 0.06915919,
+        "alpha": 0.05,
+        "block_length": 1,
+        "ci_high": 0.06915919,
+        "ci_low": 0.00312905,
+        "coactive_exit_days": 8,
+        "common_support_first": "2018-11-02",
+        "common_support_last": "2024-12-06",
+        "owner_v2_max_abs_correlation_exclusive": 0.5,
+        "point_correlation": 0.02805775,
+        "replicates_requested": 4000,
+        "replicates_valid": 4000,
+        "sample_business_days": 1591,
+        "verdict": "CERTIFIED"
+      },
+      "layer_b": {
+        "co_occupied_days": 33,
+        "expected_co_occupied_days": 21.774967,
+        "flag_b": "UNRESOLVED_OWNER_NUMERIC_THRESHOLDS_ADVISORY_ONLY",
+        "left_occupancy_days": 237,
+        "lift": 1.515502,
+        "p_upper_exact_all_circular_shifts": 0.10086551,
+        "right_occupancy_days": 276,
+        "ring_days": 3004,
+        "signed_concordance": null,
+        "signed_concordance_days": 0
+      },
+      "left": "11910:NZDUSD",
+      "right": "1537:XAGUSD"
+    },
+    {
+      "layer_a": {
+        "abs_ci_upper": 0.00236706,
+        "alpha": 0.05,
+        "block_length": 1,
+        "ci_high": 0.00107018,
+        "ci_low": -0.00236706,
+        "coactive_exit_days": 0,
+        "common_support_first": "2018-04-02",
+        "common_support_last": "2025-06-05",
+        "owner_v2_max_abs_correlation_exclusive": 0.5,
+        "point_correlation": -0.00026246,
+        "replicates_requested": 4000,
+        "replicates_valid": 4000,
+        "sample_business_days": 1874,
+        "verdict": "CERTIFIED"
+      },
+      "layer_b": {
+        "co_occupied_days": 11,
+        "expected_co_occupied_days": 17.277963,
+        "flag_b": "UNRESOLVED_OWNER_NUMERIC_THRESHOLDS_ADVISORY_ONLY",
+        "left_occupancy_days": 237,
+        "lift": 0.636649,
+        "p_upper_exact_all_circular_shifts": 0.86151798,
+        "right_occupancy_days": 219,
+        "ring_days": 3004,
+        "signed_concordance": null,
+        "signed_concordance_days": 0
+      },
+      "left": "11910:NZDUSD",
+      "right": "20048:XTIUSD"
+    },
+    {
+      "layer_a": {
+        "abs_ci_upper": 0.13737835,
+        "alpha": 0.05,
+        "block_length": 1,
+        "ci_high": 0.13737835,
+        "ci_low": -0.10586116,
+        "coactive_exit_days": 8,
+        "common_support_first": "2018-07-27",
+        "common_support_last": "2025-06-05",
+        "owner_v2_max_abs_correlation_exclusive": 0.5,
+        "point_correlation": 0.00555919,
+        "replicates_requested": 4000,
+        "replicates_valid": 4000,
+        "sample_business_days": 1790,
+        "verdict": "CERTIFIED"
+      },
+      "layer_b": {
+        "co_occupied_days": 43,
+        "expected_co_occupied_days": 46.469041,
+        "flag_b": "UNRESOLVED_OWNER_NUMERIC_THRESHOLDS_ADVISORY_ONLY",
+        "left_occupancy_days": 237,
+        "lift": 0.925347,
+        "p_upper_exact_all_circular_shifts": 0.5729028,
+        "right_occupancy_days": 589,
+        "ring_days": 3004,
+        "signed_concordance": null,
+        "signed_concordance_days": 0
+      },
+      "left": "11910:NZDUSD",
+      "right": "21505:XAGUSD"
+    },
+    {
+      "layer_a": {
+        "abs_ci_upper": 0.06766371,
+        "alpha": 0.05,
+        "block_length": 1,
+        "ci_high": 0.00287659,
+        "ci_low": -0.06766371,
+        "coactive_exit_days": 9,
+        "common_support_first": "2018-11-02",
+        "common_support_last": "2024-12-06",
+        "owner_v2_max_abs_correlation_exclusive": 0.5,
+        "point_correlation": -0.02730358,
+        "replicates_requested": 4000,
+        "replicates_valid": 4000,
+        "sample_business_days": 1591,
+        "verdict": "CERTIFIED"
+      },
+      "layer_b": {
+        "co_occupied_days": 28,
+        "expected_co_occupied_days": 25.082557,
+        "flag_b": "UNRESOLVED_OWNER_NUMERIC_THRESHOLDS_ADVISORY_ONLY",
+        "left_occupancy_days": 273,
+        "lift": 1.116314,
+        "p_upper_exact_all_circular_shifts": 0.36351531,
+        "right_occupancy_days": 276,
+        "ring_days": 3004,
+        "signed_concordance": null,
+        "signed_concordance_days": 0
+      },
+      "left": "13054:XTIUSD",
+      "right": "1537:XAGUSD"
+    },
+    {
+      "layer_a": {
+        "abs_ci_upper": 0.03009489,
+        "alpha": 0.05,
+        "block_length": 1,
+        "ci_high": 0.02566808,
+        "ci_low": -0.03009489,
+        "coactive_exit_days": 5,
+        "common_support_first": "2018-04-02",
+        "common_support_last": "2025-12-26",
+        "owner_v2_max_abs_correlation_exclusive": 0.5,
+        "point_correlation": -0.00184115,
+        "replicates_requested": 4000,
+        "replicates_valid": 4000,
+        "sample_business_days": 2020,
+        "verdict": "CERTIFIED"
+      },
+      "layer_b": {
+        "co_occupied_days": 36,
+        "expected_co_occupied_days": 19.902463,
+        "flag_b": "UNRESOLVED_OWNER_NUMERIC_THRESHOLDS_ADVISORY_ONLY",
+        "left_occupancy_days": 273,
+        "lift": 1.808821,
+        "p_upper_exact_all_circular_shifts": 0.07356858,
+        "right_occupancy_days": 219,
+        "ring_days": 3004,
+        "signed_concordance": 0.388889,
+        "signed_concordance_days": 36
+      },
+      "left": "13054:XTIUSD",
+      "right": "20048:XTIUSD"
+    },
+    {
+      "layer_a": {
+        "abs_ci_upper": 0.07052564,
+        "alpha": 0.05,
+        "block_length": 1,
+        "ci_high": 0.07052564,
+        "ci_low": -0.05439988,
+        "coactive_exit_days": 17,
+        "common_support_first": "2018-07-27",
+        "common_support_last": "2025-09-26",
+        "owner_v2_max_abs_correlation_exclusive": 0.5,
+        "point_correlation": 0.00433984,
+        "replicates_requested": 4000,
+        "replicates_valid": 4000,
+        "sample_business_days": 1871,
+        "verdict": "CERTIFIED"
+      },
+      "layer_b": {
+        "co_occupied_days": 72,
+        "expected_co_occupied_days": 53.52763,
+        "flag_b": "UNRESOLVED_OWNER_NUMERIC_THRESHOLDS_ADVISORY_ONLY",
+        "left_occupancy_days": 273,
+        "lift": 1.3451,
+        "p_upper_exact_all_circular_shifts": 0.10486019,
+        "right_occupancy_days": 589,
+        "ring_days": 3004,
+        "signed_concordance": null,
+        "signed_concordance_days": 0
+      },
+      "left": "13054:XTIUSD",
+      "right": "21505:XAGUSD"
+    },
+    {
+      "layer_a": {
+        "abs_ci_upper": 0.01185331,
+        "alpha": 0.05,
+        "block_length": 1,
+        "ci_high": 0.00063943,
+        "ci_low": -0.01185331,
+        "coactive_exit_days": 1,
+        "common_support_first": "2018-11-02",
+        "common_support_last": "2024-12-06",
+        "owner_v2_max_abs_correlation_exclusive": 0.5,
+        "point_correlation": -0.00354461,
+        "replicates_requested": 4000,
+        "replicates_valid": 4000,
+        "sample_business_days": 1591,
+        "verdict": "CERTIFIED"
+      },
+      "layer_b": {
+        "co_occupied_days": 21,
+        "expected_co_occupied_days": 20.121172,
+        "flag_b": "UNRESOLVED_OWNER_NUMERIC_THRESHOLDS_ADVISORY_ONLY",
+        "left_occupancy_days": 276,
+        "lift": 1.043677,
+        "p_upper_exact_all_circular_shifts": 0.43275632,
+        "right_occupancy_days": 219,
+        "ring_days": 3004,
+        "signed_concordance": null,
+        "signed_concordance_days": 0
+      },
+      "left": "1537:XAGUSD",
+      "right": "20048:XTIUSD"
+    },
+    {
+      "layer_a": {
+        "abs_ci_upper": 0.30915003,
+        "alpha": 0.05,
+        "block_length": 1,
+        "ci_high": 0.30915003,
+        "ci_low": -0.01301631,
+        "coactive_exit_days": 21,
+        "common_support_first": "2018-11-02",
+        "common_support_last": "2024-12-06",
+        "owner_v2_max_abs_correlation_exclusive": 0.5,
+        "point_correlation": 0.1470134,
+        "replicates_requested": 4000,
+        "replicates_valid": 4000,
+        "sample_business_days": 1591,
+        "verdict": "CERTIFIED"
+      },
+      "layer_b": {
+        "co_occupied_days": 82,
+        "expected_co_occupied_days": 54.115846,
+        "flag_b": "UNRESOLVED_OWNER_NUMERIC_THRESHOLDS_ADVISORY_ONLY",
+        "left_occupancy_days": 276,
+        "lift": 1.515268,
+        "p_upper_exact_all_circular_shifts": 0.0855526,
+        "right_occupancy_days": 589,
+        "ring_days": 3004,
+        "signed_concordance": 0.121951,
+        "signed_concordance_days": 82
+      },
+      "left": "1537:XAGUSD",
+      "right": "21505:XAGUSD"
+    },
+    {
+      "layer_a": {
+        "abs_ci_upper": 0.00351747,
+        "alpha": 0.05,
+        "block_length": 1,
+        "ci_high": 0.00081058,
+        "ci_low": -0.00351747,
+        "coactive_exit_days": 0,
+        "common_support_first": "2018-07-27",
+        "common_support_last": "2025-09-26",
+        "owner_v2_max_abs_correlation_exclusive": 0.5,
+        "point_correlation": -0.00087423,
+        "replicates_requested": 4000,
+        "replicates_valid": 4000,
+        "sample_business_days": 1871,
+        "verdict": "CERTIFIED"
+      },
+      "layer_b": {
+        "co_occupied_days": 43,
+        "expected_co_occupied_days": 42.939747,
+        "flag_b": "UNRESOLVED_OWNER_NUMERIC_THRESHOLDS_ADVISORY_ONLY",
+        "left_occupancy_days": 219,
+        "lift": 1.001403,
+        "p_upper_exact_all_circular_shifts": 0.4873502,
+        "right_occupancy_days": 589,
+        "ring_days": 3004,
+        "signed_concordance": null,
+        "signed_concordance_days": 0
+      },
+      "left": "20048:XTIUSD",
+      "right": "21505:XAGUSD"
+    }
+  ],
+  "portfolio": {
+    "reasons": [
+      "ONE_OR_MORE_CANDIDATES_ABSTAIN",
+      "NO_SYNCHRONIZED_INTERVAL_MIN_EQUITY",
+      "NO_PENDING_ORDER_CENSUS",
+      "LAYER_B_NUMERIC_FLAG_THRESHOLDS_NOT_OWNER_RATIFIED"
+    ],
+    "verdict": "ABSTAIN"
+  },
+  "ring": {
+    "calendar_days": 3004,
+    "first": "2017-10-10",
+    "last": "2025-12-30"
+  },
+  "schema": "qm.ftmo-v4-tail-certification/v1",
+  "status": "ABSTAIN",
+  "tail": {
+    "basis": "WEIGHTED_CLOSE_DAY_NET_ONLY_NOT_OPEN_EQUITY",
+    "certification": "ABSTAIN_MISSING_OPEN_EQUITY_AND_INTERVAL_MINIMA",
+    "close_only_daily_cap_breached": false,
+    "cluster_rule": {
+      "clustered_days": [],
+      "joint_sleeve_divisor": 3,
+      "per_sleeve_worst_fraction": 0.05,
+      "required_cluster_sleeves": 3
+    },
+    "daily_observations": 811,
+    "ftmo_total_loss_limit_reference": 10000.0,
+    "sp_c3_close_only_daily_loss_cap": 4000.0,
+    "weekly_observations": 414,
+    "worst_day": "2024-11-20",
+    "worst_day_net": -2441.94,
+    "worst_week_net": -3077.75,
+    "worst_week_start": "2023-12-04"
+  },
+  "weights": {
+    "per_sleeve": {
+      "10706:GBPUSD": 1.0,
+      "11421:EURUSD": 1.0,
+      "11422:USDCAD": 1.0,
+      "11910:NZDUSD": 1.0,
+      "13054:XTIUSD": 1.0,
+      "1537:XAGUSD": 1.0,
+      "20048:XTIUSD": 1.0,
+      "21505:XAGUSD": 1.0
+    },
+    "sum": 8.0
+  }
+}

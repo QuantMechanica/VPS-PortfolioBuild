@@ -1,0 +1,72 @@
+{
+  "schema": "qm.ftmo-v4-tail-certification-spec/v1",
+  "account_initial_balance": 100000,
+  "currency": "USD",
+  "bootstrap": {
+    "replicates": 4000,
+    "seed": 20260905,
+    "alpha": 0.05
+  },
+  "sleeves": [
+    {
+      "sleeve_id": "10706:GBPUSD",
+      "symbol": "GBPUSD",
+      "weight": 1,
+      "trade_stream_path": "D:/QM/reports/portfolio/sleeve_streams/QM/q08_trades/10706_GBPUSD_DWX.jsonl",
+      "q08_tail_path": "D:/QM/reports/work_items/a2e1aba6-45ea-4dcf-af98-1f679ebeb64f/QM5_10706/Q08/GBPUSD_DWX/8_3_tail_dependence.json"
+    },
+    {
+      "sleeve_id": "11421:EURUSD",
+      "symbol": "EURUSD",
+      "weight": 1,
+      "trade_stream_path": "D:/QM/reports/portfolio/sleeve_streams/QM/q08_trades/11421_EURUSD_DWX.jsonl",
+      "q08_tail_path": "D:/QM/reports/work_items/c93263aa-a707-45ea-a915-204ec59df077/QM5_11421/Q08/EURUSD_DWX/8_3_tail_dependence.json"
+    },
+    {
+      "sleeve_id": "11422:USDCAD",
+      "symbol": "USDCAD",
+      "weight": 1,
+      "trade_stream_path": "D:/QM/reports/portfolio/sleeve_streams/QM/q08_trades/11422_USDCAD_DWX.jsonl",
+      "q08_tail_path": "D:/QM/reports/work_items/2bd0f95c-6c62-4a53-92cf-04f0d39fbb48/QM5_11422/Q08/USDCAD_DWX/8_3_tail_dependence.json"
+    },
+    {
+      "sleeve_id": "11910:NZDUSD",
+      "symbol": "NZDUSD",
+      "weight": 1,
+      "trade_stream_path": "D:/QM/reports/portfolio/sleeve_streams/QM/q08_trades/11910_NZDUSD_DWX.jsonl",
+      "q08_tail_path": "D:/QM/reports/work_items/977a478e-1f23-4297-ac76-656bb497e2ec/QM5_11910/Q08/NZDUSD_DWX/8_3_tail_dependence.json"
+    },
+    {
+      "sleeve_id": "13054:XTIUSD",
+      "symbol": "XTIUSD",
+      "weight": 1,
+      "trade_stream_path": "D:/QM/reports/portfolio/sleeve_streams/QM/q08_trades/13054_XTIUSD_DWX.jsonl",
+      "q08_tail_path": "D:/QM/reports/work_items/21dd6839-4d77-4228-b5ba-5dd86aeb0cdb/QM5_13054/Q08/XTIUSD_DWX/8_3_tail_dependence.json"
+    },
+    {
+      "sleeve_id": "1537:XAGUSD",
+      "symbol": "XAGUSD",
+      "weight": 1,
+      "trade_stream_path": "D:/QM/reports/portfolio/sleeve_streams/QM/q08_trades/1537_XAGUSD_DWX.jsonl",
+      "q08_tail_path": "D:/QM/reports/work_items/f62fe6b3-f734-466e-95dd-d7ca76294729/QM5_1537/Q08/XAGUSD_DWX/8_3_tail_dependence.json"
+    },
+    {
+      "sleeve_id": "20048:XTIUSD",
+      "symbol": "XTIUSD",
+      "weight": 1,
+      "trade_stream_path": "D:/QM/reports/portfolio/sleeve_streams/QM/q08_trades/20048_XTIUSD_DWX.jsonl",
+      "q08_tail_path": "D:/QM/reports/work_items/a43559cd-b084-4c0e-8bc3-2c7b6fc1a5ea/QM5_20048/Q08/XTIUSD_DWX/8_3_tail_dependence.json"
+    },
+    {
+      "sleeve_id": "21505:XAGUSD",
+      "symbol": "XAGUSD",
+      "weight": 1,
+      "trade_stream_path": "D:/QM/reports/portfolio/sleeve_streams/QM/q08_trades/21505_XAGUSD_DWX.jsonl",
+      "q08_tail_path": "D:/QM/reports/work_items/15c1ec7b-5821-4944-81a7-86d23754565d/QM5_21505/Q08/XAGUSD_DWX/8_3_tail_dependence.json"
+    }
+  ],
+  "v2_owner_receipt_path": "C:/QM/repo/decisions/2026-09-04_owner_receipts_briefing_2_4.md",
+  "v4_standard_path": "C:/QM/repo/docs/research/SPARSE_D1_ORTHOGONALITY_STANDARD_2026-09-03.md",
+  "tail_policy_path": "C:/QM/repo/tools/strategy_farm/config/concentration_tail_limits.v1.json",
+  "interval_export_path": "C:/QM/repo/docs/ops/evidence/2026-09-05_interval_equity_export.json"
+}
