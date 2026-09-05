@@ -80,8 +80,8 @@ news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
 pipeline_phase: Q01
-q01_status: SOURCE_BUILT_COMPILE_PENDING
-q02_status: NOT_ENQUEUED_Q01_PENDING
+q01_status: COMPILE_OK
+q02_status: ENQUEUED_PENDING
 force_build: true
 review_focus: "Falsify direct-WTI monthly ADF/BDS agreement outside the certified XAU/SP500/NDX/XNG book. Verify shared endpoints, ADF arithmetic, strict BDS pair geometry, inclusive gates, disagreement abstention, twelve-month side, consumed month, fixed risk, frozen stop, and next-month lifecycle. Q09 alone may establish decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -261,5 +261,5 @@ AutoTrading, terminal control, or live use.
 |---|---|---|---|
 | G0 Source Approval | 2026-09-05 | APPROVED_SOURCE | `decisions/2026-09-05_wti_monthly_adf_bds_agreement_trend_source_approval.md` |
 | G0 Research Intake | 2026-09-05 | APPROVED | `decisions/2026-09-05_qm5_41351_wti_monthly_adf_bds_agreement_trend_g0.md` |
-| Q01 Build & Spec | 2026-09-05 | SOURCE_BUILT; COMPILE_PENDING | governed compile required |
-| Q02 Baseline | 2026-09-05 | NOT_ENQUEUED_Q01_PENDING | strict compile/EX5 prerequisite |
+| Q01 Build & Spec | 2026-09-05 | COMPILE_OK | `D:/QM/reports/work_items/a19205af-426c-4f9f-adf6-6fa36d6fdab6/QM5_41351/COMPILE_EA/compile_evidence.json` |
+| Q02 Baseline | 2026-09-05 | ENQUEUED_PENDING | work item `8eb2473b-755a-409a-bc3a-2c0fc938e0ee` |

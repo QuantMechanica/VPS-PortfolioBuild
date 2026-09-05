@@ -1,0 +1,68 @@
+{
+  "schema_version": "qm.branch-build-q02-handoff/v1",
+  "recorded_at_utc": "2026-09-05T13:47:15+00:00",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41351",
+  "ea_label": "QM5_41351_wti-adf-bds-agree-tr",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "compile": {
+    "work_item_id": "a19205af-426c-4f9f-adf6-6fa36d6fdab6",
+    "status": "done",
+    "verdict": "COMPILE_OK",
+    "build_check_result": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "mq5_sha256": "bad90edf244a983e40f18b253ace22e233c641f00be73bed076d5f4f64df9078",
+    "ex5_sha256": "71b3075f1c5ed446debf0f8e3c363da89fdafeba20800814569de088c2a29238",
+    "evidence_path": "D:\\QM\\reports\\work_items\\a19205af-426c-4f9f-adf6-6fa36d6fdab6\\QM5_41351\\COMPILE_EA\\compile_evidence.json",
+    "predecessor_lineage": [
+      {
+        "work_item_id": "8ec4faf9-6728-44a2-bc3f-809e6ee88e34",
+        "verdict": "COMPILE_FAIL",
+        "reason": "unsupported preprocessor guard; repaired in committed source"
+      },
+      {
+        "work_item_id": "427f9ace-5677-4fe5-8241-73e8261f990e",
+        "verdict": "COMPILE_FAIL",
+        "reason": "candidate recheck refused unbound predecessor; superseded by build-task-bound source cleanup"
+      }
+    ]
+  },
+  "setfile": {
+    "path": "framework/EAs/QM5_41351_wti-adf-bds-agree-tr/sets/QM5_41351_wti-adf-bds-agree-tr_XTIUSD.DWX_D1_backtest.set",
+    "sha256": "44f74dfa5d0b79c6833539ebb4ff96dc2eded392a2a50cb54d44232b1e0ee6c4",
+    "build_hash": "28129704b559ba323786b0c1bce52c53932dc9dbde031165c4d5ad3443344e56"
+  },
+  "cpu_admission": {
+    "threshold_pct": 97.0,
+    "samples_pct": [86.8704, 83.556, 78.0408, 84.092, 80.2856],
+    "average_pct": 82.56896,
+    "maximum_pct": 86.8704,
+    "admitted": true
+  },
+  "factory_build_handoff": {
+    "task_id": "b0da8b2a-46c7-42d0-a346-062aa978f4bb",
+    "status": "done",
+    "result_sha256": "be10badf84e69f3059243af4f9d48b81842a5157bd3090ec378a8eca2712d3f5"
+  },
+  "q02": {
+    "work_item_id": "8eb2473b-755a-409a-bc3a-2c0fc938e0ee",
+    "status_at_receipt": "pending",
+    "enqueued_count": 1,
+    "skipped_count": 0
+  },
+  "safety": {
+    "manual_backtest_run": false,
+    "terminal_control_used": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
