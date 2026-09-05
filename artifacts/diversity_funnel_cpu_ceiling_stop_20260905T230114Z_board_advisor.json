@@ -1,0 +1,135 @@
+{
+  "schema": "qm.diversity-funnel-cpu-ceiling-stop/v1",
+  "observed_at_utc": "2026-09-05T23:01:14.5379081Z",
+  "observed_at_europe_berlin": "2026-09-06T01:01:14+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base": "ef33ef18eee919aa1af30002d4653e34cc75de33",
+  "status": "STOPPED_CPU_CEILING",
+  "capacity_gate": {
+    "threshold_percent_exclusive": 97.0,
+    "sample_interval_seconds": 2,
+    "sample_count": 5,
+    "samples_percent": [
+      100.0,
+      100.0,
+      100.0,
+      99.952,
+      99.951
+    ],
+    "average_percent": 99.981,
+    "maximum_percent": 100.0,
+    "admitted": false
+  },
+  "farm_snapshot": {
+    "active_work_item_count": 7,
+    "pending_work_item_count": 12915,
+    "active_work_items": [
+      {
+        "id": "40da7f24-ac2e-5112-8894-15ef1f57b30c",
+        "ea_id": "QM5_41305",
+        "phase": "OPT_CENSUS",
+        "symbol": "XTIUSD.DWX",
+        "claimed_by": "T8",
+        "updated_at": "2026-09-05T23:00:49+00:00"
+      },
+      {
+        "id": "7f129326-879e-53ae-a846-4e77efb311ea",
+        "ea_id": "QM5_41333",
+        "phase": "OPT_CENSUS",
+        "symbol": "XAUUSD.DWX",
+        "claimed_by": "T7",
+        "updated_at": "2026-09-05T23:00:24+00:00"
+      },
+      {
+        "id": "cbd33b0b-dd0d-5cf9-b830-48466368eff1",
+        "ea_id": "QM5_41342",
+        "phase": "OPT_CENSUS",
+        "symbol": "EURUSD.DWX",
+        "claimed_by": "T6",
+        "updated_at": "2026-09-05T22:59:41+00:00"
+      },
+      {
+        "id": "4f564e20-34d2-4576-b35c-1112c115daee",
+        "ea_id": "QM5_10375",
+        "phase": "Q04",
+        "symbol": "XAUUSD.DWX",
+        "claimed_by": "T9",
+        "updated_at": "2026-09-05T22:58:27+00:00"
+      },
+      {
+        "id": "f9c858c8-2aba-449b-8e76-18138299e6a1",
+        "ea_id": "QM5_10778",
+        "phase": "Q04",
+        "symbol": "USDJPY.DWX",
+        "claimed_by": "T1",
+        "updated_at": "2026-09-05T22:58:58+00:00"
+      },
+      {
+        "id": "0060d528-098d-48be-a05a-f6ee9f597bf0",
+        "ea_id": "QM5_11015",
+        "phase": "Q07",
+        "symbol": "EURUSD.DWX",
+        "claimed_by": "T2",
+        "updated_at": "2026-09-05T21:46:08+00:00"
+      },
+      {
+        "id": "d7d32fef-0557-41c9-9a0d-965b89c527ee",
+        "ea_id": "QM5_11172",
+        "phase": "Q08",
+        "symbol": "XAUUSD.DWX",
+        "claimed_by": "T4",
+        "updated_at": "2026-09-05T21:44:23+00:00"
+      }
+    ]
+  },
+  "next_candidate": {
+    "ea_id": "QM5_41171",
+    "slug": "wti-mturnpoint-tr",
+    "target_symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "expected_trades_per_year_per_symbol": 6,
+    "selection_reason": "Approved, deterministic monthly WTI structural trend sleeve with peer-reviewed source lineage, active deterministic registry rows, RISK_FIXED=1000, no current EX5, and no open farm task or work-item collision.",
+    "gates": {
+      "g0_status": "APPROVED",
+      "r1_track_record": "PASS",
+      "r2_mechanical": "PASS",
+      "r3_data_available": "PASS",
+      "r4_ml_forbidden": "PASS",
+      "ea_registry_active": true,
+      "magic_registry_active": true,
+      "risk_fixed_backtest": 1000,
+      "open_agent_task_count": 0,
+      "open_work_item_count": 0,
+      "tracked_candidate_tree_clean": true,
+      "ex5_present": false
+    },
+    "hashes_sha256": {
+      "approved_card": "d192903525c42c3d4a537e797b0c5a81940c4bd1b6befe4ad130d7c1912caf04",
+      "mq5": "fbb3d7c70b1e6c16c2e09c1582ab3ab127ad34f35a33f7437d0bf72f23174ae6",
+      "spec": "232b7906af73d58ef4608a6d9695d8a1eccf36826920f182abad37f6695f7c42",
+      "setfile": "49b33e703a08a40f0730bedba08ea2177000e5468a864e9552a356fa86145b98"
+    }
+  },
+  "selection_audit": {
+    "priority_1": "QM5_41171 is the leading collision-free approved uncompiled build because it adds WTI energy beyond XNG at about six trades/year.",
+    "priority_2": "No collision-free low-frequency FX or rates lane remained genuinely blocked at Q02-Q03: apparent candidates had later economic verdicts, active successors, or high-frequency card truth. The only strict current-binary residue was an XAU lane, which does not improve the requested diversity frontier.",
+    "priority_3": "No new source/card was created because the approved QM5_41171 structural WTI card already occupies the higher-priority build path."
+  },
+  "mutation_boundary": {
+    "agent_task_created": false,
+    "work_item_created": false,
+    "compile_started": false,
+    "smoke_started": false,
+    "q02_enqueued": false,
+    "dispatch_tick_run": false,
+    "terminal_control_changed": false,
+    "worker_control_changed": false,
+    "registry_changed": false,
+    "ea_changed": false,
+    "portfolio_gate_changed": false,
+    "deploy_manifest_changed": false,
+    "t_live_touched": false,
+    "autotrading_touched": false
+  },
+  "continuation_condition": "Repeat the exact QM5_41171 collision check and a fresh five-sample CPU window. Only create the build claim and run the standard codex_build_ea compile/smoke/Q02 handoff when both average and maximum CPU are strictly below 97 percent."
+}
