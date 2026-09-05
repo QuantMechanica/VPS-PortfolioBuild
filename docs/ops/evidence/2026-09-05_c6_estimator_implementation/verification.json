@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "checked_at": "2026-09-05T17:47:05.951642+00:00",
+  "code_commit": "74bec63a18341b325a79b2f14716037706f71828",
+  "branch": "agents/codex-c6-estimator-20260905",
+  "tests": {
+    "command": "python -m pytest tools/strategy_farm/tests/test_ftmo_c6_estimator.py tools/strategy_farm/tests/test_ftmo_trial_telemetry.py tools/strategy_farm/tests/test_ftmo_timebox_eval.py tools/strategy_farm/tests/test_ftmo_probability_contract.py -q --disable-warnings",
+    "passed": 52,
+    "elapsed_seconds": 12.95
+  },
+  "direct_script_help": [
+    "ftmo_c6_estimator.py --help PASS",
+    "ftmo_timebox_eval.py evaluate --help PASS"
+  ],
+  "sealed_contract_changed": false,
+  "production_apply": false,
+  "files": {
+    "baseline_comparison.json": "5518a179bcf63a0dcd88484eb3457f9eb35d477de8ee21ab222b7ba5d99a8b61",
+    "fixture_results.json": "6488322c176bba6f58de508d4ed33514c34869a2c93766ca01bea103eb6dc794",
+    "implementation.patch": "4e00d80a62fefe87591b349553ca3c3d4cb3c9cfcccf7c5074946edf83ece219"
+  }
+}

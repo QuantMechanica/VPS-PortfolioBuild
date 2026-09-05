@@ -1,0 +1,224 @@
+{
+  "all_breach_90": {
+    "activation": "INERT_UNTIL_C6_ENGINE_OWNER_APPROVED",
+    "block_days": [
+      60
+    ],
+    "breach_upper_95": 1.0,
+    "compatible_source_blocks": 31,
+    "days": 90,
+    "decision_eligible": false,
+    "empty_p1_replica_count": 100,
+    "exact": {
+      "breach_upper_95": 1.0,
+      "joint_credit": 0.0,
+      "p1_lower_95": 0.0,
+      "p2_conditional": 0.0
+    },
+    "joint_credit": 0.0,
+    "joint_identity_checked_replicates": 100,
+    "limitation": "Minimum of terminal-observed tick/timer samples, not an exchange-tick completeness proof. Exact guard assumes exchangeable independent disjoint gauntlets; remaining material serial dependence refutes that treatment.",
+    "mbb": {
+      "breach_upper_95": 1.0,
+      "joint_credit": 0.0,
+      "p1_lower_95": 0.0,
+      "p2_conditional": 0.0
+    },
+    "method": "C6-A_WORST_MBB_FIXED_ORIGIN_CP",
+    "observed_disjoint": {
+      "breach": 1.0,
+      "breach_count": 1,
+      "joint": 0.0,
+      "joint_count": 0,
+      "n": 1,
+      "p1": 0.0,
+      "p1_count": 0,
+      "p2_conditional": 0.0
+    },
+    "p1_lower_95": 0.0,
+    "p2_conditional": 0.0,
+    "replicates": 100,
+    "sample_size": {
+      "breach": {
+        "floor": 36,
+        "n": 1,
+        "status": "LOW_SAMPLE"
+      },
+      "joint": {
+        "floor": 9,
+        "n": 1,
+        "status": "LOW_SAMPLE"
+      },
+      "p2_conditional": {
+        "floor": 23,
+        "n": 0,
+        "status": "LOW_SAMPLE"
+      }
+    },
+    "schema": "qm.ftmo-c6-estimate/v1",
+    "seed": 20260802,
+    "status": "LOW_SAMPLE",
+    "threshold_checks_diagnostic": {
+      "breach": false,
+      "joint": false,
+      "p2_conditional": false
+    },
+    "would_meet_all_gates": false
+  },
+  "derived_floors": {
+    "breach_upper_n35": 0.10003243557210507,
+    "breach_upper_n36": 0.09739375591449194,
+    "joint_lower_n8": 0.6305833524471808,
+    "joint_lower_n9": 0.6637328831200571,
+    "p2_lower_n22": 0.8456274871844254,
+    "p2_lower_n23": 0.8518148710847756
+  },
+  "known_bernoulli_0p2": {
+    "cp_lower": 0.146894488215759,
+    "cp_upper": 0.2622263645895998,
+    "observed": {
+      "breach": 0.2,
+      "breach_count": 40,
+      "joint": 0.8,
+      "joint_count": 160,
+      "n": 200,
+      "p1": 0.8,
+      "p1_count": 160,
+      "p2_conditional": 1.0
+    },
+    "tolerance": 0.06,
+    "truth": 0.2
+  },
+  "no_p1_90": {
+    "activation": "INERT_UNTIL_C6_ENGINE_OWNER_APPROVED",
+    "block_days": [
+      60
+    ],
+    "breach_upper_95": 0.975,
+    "compatible_source_blocks": 31,
+    "days": 90,
+    "decision_eligible": false,
+    "empty_p1_replica_count": 100,
+    "exact": {
+      "breach_upper_95": 0.975,
+      "joint_credit": 0.0,
+      "p1_lower_95": 0.0,
+      "p2_conditional": 0.0
+    },
+    "joint_credit": 0.0,
+    "joint_identity_checked_replicates": 100,
+    "limitation": "Minimum of terminal-observed tick/timer samples, not an exchange-tick completeness proof. Exact guard assumes exchangeable independent disjoint gauntlets; remaining material serial dependence refutes that treatment.",
+    "mbb": {
+      "breach_upper_95": 0.0,
+      "joint_credit": 0.0,
+      "p1_lower_95": 0.0,
+      "p2_conditional": 0.0
+    },
+    "method": "C6-A_WORST_MBB_FIXED_ORIGIN_CP",
+    "observed_disjoint": {
+      "breach": 0.0,
+      "breach_count": 0,
+      "joint": 0.0,
+      "joint_count": 0,
+      "n": 1,
+      "p1": 0.0,
+      "p1_count": 0,
+      "p2_conditional": 0.0
+    },
+    "p1_lower_95": 0.0,
+    "p2_conditional": 0.0,
+    "replicates": 100,
+    "sample_size": {
+      "breach": {
+        "floor": 36,
+        "n": 1,
+        "status": "LOW_SAMPLE"
+      },
+      "joint": {
+        "floor": 9,
+        "n": 1,
+        "status": "LOW_SAMPLE"
+      },
+      "p2_conditional": {
+        "floor": 23,
+        "n": 0,
+        "status": "LOW_SAMPLE"
+      }
+    },
+    "schema": "qm.ftmo-c6-estimate/v1",
+    "seed": 20260802,
+    "status": "LOW_SAMPLE",
+    "threshold_checks_diagnostic": {
+      "breach": false,
+      "joint": false,
+      "p2_conditional": false
+    },
+    "would_meet_all_gates": false
+  },
+  "null_breach_safe_180": {
+    "activation": "INERT_UNTIL_C6_ENGINE_OWNER_APPROVED",
+    "block_days": [
+      60
+    ],
+    "breach_upper_95": 0.841886116991581,
+    "compatible_source_blocks": 121,
+    "days": 180,
+    "decision_eligible": false,
+    "empty_p1_replica_count": 0,
+    "exact": {
+      "breach_upper_95": 0.841886116991581,
+      "joint_credit": 0.158113883008419,
+      "p1_lower_95": 0.158113883008419,
+      "p2_conditional": 0.158113883008419
+    },
+    "joint_credit": 0.158113883008419,
+    "joint_identity_checked_replicates": 100,
+    "limitation": "Minimum of terminal-observed tick/timer samples, not an exchange-tick completeness proof. Exact guard assumes exchangeable independent disjoint gauntlets; remaining material serial dependence refutes that treatment.",
+    "mbb": {
+      "breach_upper_95": 0.0,
+      "joint_credit": 1.0,
+      "p1_lower_95": 1.0,
+      "p2_conditional": 1.0
+    },
+    "method": "C6-A_WORST_MBB_FIXED_ORIGIN_CP",
+    "observed_disjoint": {
+      "breach": 0.0,
+      "breach_count": 0,
+      "joint": 1.0,
+      "joint_count": 2,
+      "n": 2,
+      "p1": 1.0,
+      "p1_count": 2,
+      "p2_conditional": 1.0
+    },
+    "p1_lower_95": 0.158113883008419,
+    "p2_conditional": 0.158113883008419,
+    "replicates": 100,
+    "sample_size": {
+      "breach": {
+        "floor": 36,
+        "n": 2,
+        "status": "LOW_SAMPLE"
+      },
+      "joint": {
+        "floor": 9,
+        "n": 2,
+        "status": "LOW_SAMPLE"
+      },
+      "p2_conditional": {
+        "floor": 23,
+        "n": 2,
+        "status": "LOW_SAMPLE"
+      }
+    },
+    "schema": "qm.ftmo-c6-estimate/v1",
+    "seed": 20260802,
+    "status": "LOW_SAMPLE",
+    "threshold_checks_diagnostic": {
+      "breach": false,
+      "joint": false,
+      "p2_conditional": false
+    },
+    "would_meet_all_gates": false
+  }
+}

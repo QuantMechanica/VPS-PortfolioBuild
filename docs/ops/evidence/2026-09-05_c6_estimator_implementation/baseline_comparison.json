@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "baseline_commit": "c65450df1f52c75e485037d26e654c127ebf60d4",
+  "baseline_module_sha256": "9e47f00aef362b071f08916c6328cb38647ca8a2358de3251e9ca95c91fd151a",
+  "equal_bytes": true,
+  "length": 5220,
+  "result_sha256": "69631db77eab3c6cb1064b354015ea355da150f77b48a150c90f33632070f391",
+  "case": "valid 140-day FTMO-attested singleton config with invalid C6 input; same in-memory paths and hashes for both revisions",
+  "scope": "inactive full result JSON; no baseline files replaced"
+}
