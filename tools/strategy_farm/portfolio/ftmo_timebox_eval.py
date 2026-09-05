@@ -1247,7 +1247,7 @@ def _inventory_admission_map(inventory: Any) -> dict[str, dict[str, Any]]:
     return decisions
 
 
-def evaluate_config(config: Mapping[str, Any], config_sha256: str) -> dict[str, Any]:
+def evaluate_config(config: Mapping[str, Any], config_sha256: str, *, c6_binding=None) -> dict[str, Any]:
     validate_config(config)
     rulepack_path = verify_binding(
         {"path": config["rulepack"]["path"], "sha256": config["rulepack"]["sha256"]},
@@ -1491,10 +1491,32 @@ def evaluate_config(config: Mapping[str, Any], config_sha256: str) -> dict[str, 
             "note": "breach/P2/joint cannot pass or fail this result until C-6 is OWNER-approved",
         },
     }
+    if any(flag != "INERT_UNTIL_C6_ENGINE_OWNER_APPROVED" for flag in INERT_C6_GATES.values()):
+        try:
+            from tools.strategy_farm.portfolio.ftmo_c6_estimator import evaluate_if_active
+        except ModuleNotFoundError:  # direct script execution
+            from ftmo_c6_estimator import evaluate_if_active
+        c6 = evaluate_if_active(PROBABILITY_CONTRACT.payload, c6_binding)
+        if c6 is not None:
+            expected_sleeves = next((sorted(x["sleeve_id"] for x in comp["sleeves"])
+                for comp in config["compositions"] if comp["id"] == best_id), None)
+            provenance = c6.get("provenance", {})
+            if c6["status"] != "ABSTAIN" and (
+                provenance.get("timebox_config_sha256") != result["config_sha256"]
+                or provenance.get("book_id") != best_id
+                or provenance.get("candidate_ids") != expected_sleeves
+            ):
+                c6 = {**c6, "status": "ABSTAIN", "reason": "C6_COMPOSITION_BINDING_MISMATCH",
+                      "decision_eligible": False, "would_meet_all_gates": False}
+            result["c6"] = c6
+            if c6["status"] in ("ABSTAIN", "LOW_SAMPLE"):
+                result["status"] = "ABSTAIN_C6"
+            elif not c6.get("would_meet_all_gates"):
+                result["status"] = "FAIL_C6"
     return result
 
 
-def evaluate_config_file(config_path: Path, expected_sha256: str) -> dict[str, Any]:
+def evaluate_config_file(config_path: Path, expected_sha256: str, *, c6_binding=None) -> dict[str, Any]:
     expected = _normalized_sha(expected_sha256, "expected_config_sha256")
     actual = sha256_file(config_path)
     if actual != expected:
@@ -1502,7 +1524,7 @@ def evaluate_config_file(config_path: Path, expected_sha256: str) -> dict[str, A
             f"config SHA-256 mismatch before input access expected={expected} actual={actual}"
         )
     config = load_json(config_path, "config")
-    return evaluate_config(config, actual)
+    return evaluate_config(config, actual, c6_binding=c6_binding)
 
 
 def write_json_atomic(path: Path, value: Any) -> str:
@@ -1533,6 +1555,8 @@ def build_parser() -> argparse.ArgumentParser:
     evaluate.add_argument("--config", type=Path, required=True)
     evaluate.add_argument("--expected-config-sha256", required=True)
     evaluate.add_argument("--output", type=Path, required=True)
+    evaluate.add_argument("--c6-seal", help="Future OWNER-active C-6 seal; ignored while contract gates are inert")
+    evaluate.add_argument("--expected-c6-seal-sha256")
     return parser
 
 
@@ -1547,7 +1571,8 @@ def main(argv: list[str] | None = None) -> int:
             digest = write_json_atomic(args.output, config)
             print(json.dumps({"status": "PREPARED", "path": str(args.output.resolve()), "sha256": digest}))
         else:
-            result = evaluate_config_file(args.config, args.expected_config_sha256)
+            result = evaluate_config_file(args.config, args.expected_config_sha256,
+                c6_binding={"path": args.c6_seal, "sha256": args.expected_c6_seal_sha256})
             digest = write_json_atomic(args.output, result)
             print(
                 json.dumps(
