@@ -1,0 +1,29 @@
+{
+  "task_id": "86b7e902-a9a0-4542-bdc0-e22cf11ad74b",
+  "checked_at": "2026-09-05T16:33:14.876785+00:00",
+  "code_commit": "a5c9566053429bed4a089779834b98cf1c3c9e90",
+  "base_commit": "fe50fd1f65731a9e92fdab779265b751e8a7d522",
+  "branch": "agents/codex-news-taint-hold-20260905",
+  "production_apply": false,
+  "activation_enabled": false,
+  "dry_run_rows": 85,
+  "actions": {
+    "PRESERVE_OTHER_HOLD": 85
+  },
+  "regression": {
+    "passed": 120,
+    "deselected": 7,
+    "new_policy_tests": 23,
+    "command": "python -m pytest tools/strategy_farm/tests/test_news_calendar_taint.py tools/strategy_farm/tests/test_news_calendar_claim_gate.py tools/strategy_farm/tests/test_pending_superseded_claim_filter.py tools/strategy_farm/tests/test_terminal_worker_atomic_claim.py -q --disable-warnings -k \"not run_claimed_item and not launch_fault\""
+  },
+  "baseline_failures": [
+    "test_launch_fault_defers_without_incrementing_attempt_count: staged_ex5_preflight_failed",
+    "test_run_claimed_item_stops_child_when_claim_is_externally_released: staged_ex5_preflight_failed"
+  ],
+  "baseline_method": "Loaded git-show HEAD parent farmctl.py and terminal_worker.py into process-local module namespaces; both failures reproduce without modified code. No tracked file was replaced.",
+  "sha256": {
+    "dry_run.json": "4f39c84bff1f84a8049ed716ada87e6d1b6fa0d73883a23edccd4f8346049df9",
+    "regression.txt": "942541e03b3ef8364dae788a0b15edb99bd8eadcadbc80227db9a2a4c246f6f2",
+    "implementation.patch": "dbc1b11f23e5987c4ee1d16a5639388ad2d84af7459893d837e893d087fd2941"
+  }
+}

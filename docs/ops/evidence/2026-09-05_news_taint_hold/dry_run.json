@@ -1,0 +1,772 @@
+{
+  "enabled": false,
+  "applied": false,
+  "preview": true,
+  "rows": [
+    {
+      "id": "004eda49-6ba3-5a9d-8979-cfc7517948e2",
+      "phase": "Q09_NEWS",
+      "ea_id": "QM5_12567",
+      "symbol": "XAUUSD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "OOS_WINDOW_MISMATCH"
+    },
+    {
+      "id": "03279258-a3d1-5137-ae8e-8e937e6c909f",
+      "phase": "Q09_NEWS",
+      "ea_id": "QM5_20048",
+      "symbol": "XTIUSD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "OOS_WINDOW_MISMATCH"
+    },
+    {
+      "id": "033e7bc3-715e-5c71-b368-c00ea2594598",
+      "phase": "Q09_NEWS",
+      "ea_id": "QM5_13128",
+      "symbol": "NDX.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "OOS_WINDOW_MISMATCH"
+    },
+    {
+      "id": "055cdabb-da68-5328-80b8-9012f291d466",
+      "phase": "Q09_NEWS",
+      "ea_id": "QM5_11422",
+      "symbol": "USDCAD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "OOS_WINDOW_MISMATCH"
+    },
+    {
+      "id": "06b9c0f8-f6c1-47f8-a40d-2dc94893db7c",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_11147",
+      "symbol": "SP500.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "NEWS_CALENDAR_TIMESTAMP_DEFECT"
+    },
+    {
+      "id": "08fe4173-07d9-47e1-97e9-a76b1159ad94",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_11476",
+      "symbol": "USDJPY.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "Q09_AWAITING_SEALED_PLAN"
+    },
+    {
+      "id": "0d112806-ee2a-5d0a-9382-33a353cf8efe",
+      "phase": "Q09_NEWS",
+      "ea_id": "QM5_10911",
+      "symbol": "GDAXI.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "OOS_WINDOW_MISMATCH"
+    },
+    {
+      "id": "0f7f63e4-9244-4c60-8610-ea068c5fc64e",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_1567",
+      "symbol": "XAGUSD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "Q09_AWAITING_SEALED_PLAN"
+    },
+    {
+      "id": "10449264-8fa1-47f5-a3d7-adb28cee934d",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_1567",
+      "symbol": "GBPNZD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "Q09_AWAITING_SEALED_PLAN"
+    },
+    {
+      "id": "120d68ff-bf61-4b16-abf8-1867aee53bb3",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_10692",
+      "symbol": "NDX.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "Q09_AWAITING_SEALED_PLAN"
+    },
+    {
+      "id": "15d41b29-d3ac-5774-804f-f3f3981696e9",
+      "phase": "Q09_NEWS",
+      "ea_id": "QM5_11881",
+      "symbol": "GBPUSD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "OOS_WINDOW_MISMATCH"
+    },
+    {
+      "id": "15e7deca-13e8-4760-9e8e-5918040f948d",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_10692",
+      "symbol": "NDX.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "Q09_AWAITING_SEALED_PLAN"
+    },
+    {
+      "id": "1ab6156f-dfc1-5e03-aae7-db461d025b5c",
+      "phase": "Q09_NEWS",
+      "ea_id": "QM5_13301",
+      "symbol": "GDAXI.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "OOS_WINDOW_MISMATCH"
+    },
+    {
+      "id": "1cff016c-d25c-4723-a892-6bc53bfafa0b",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_12989",
+      "symbol": "XAUUSD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "NEWS_CALENDAR_TIMESTAMP_DEFECT"
+    },
+    {
+      "id": "1d9a2d26-4407-4554-acbb-4e4c258f0b04",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_10513",
+      "symbol": "XAUUSD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "Q09_AWAITING_SEALED_PLAN"
+    },
+    {
+      "id": "1ffcb576-bf27-5063-a384-685355910c3a",
+      "phase": "Q09_NEWS",
+      "ea_id": "QM5_10939",
+      "symbol": "GBPUSD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "OOS_WINDOW_MISMATCH"
+    },
+    {
+      "id": "20127f25-36d0-54ac-ad55-567dbbee9b49",
+      "phase": "Q09_NEWS",
+      "ea_id": "QM5_9641",
+      "symbol": "WS30.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "OOS_WINDOW_MISMATCH"
+    },
+    {
+      "id": "24acc5d4-3e34-526e-a7a8-12640a2e759f",
+      "phase": "Q09_NEWS",
+      "ea_id": "QM5_12778",
+      "symbol": "AUDUSD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "NEWS_CALENDAR_TIMESTAMP_DEFECT"
+    },
+    {
+      "id": "2604a1f0-4f58-4597-89ef-432af9093131",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_1567",
+      "symbol": "EURUSD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "NEWS_CALENDAR_TIMESTAMP_DEFECT"
+    },
+    {
+      "id": "2641d5cf-6e1c-43d1-92b2-05c9d6f54d82",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_10569",
+      "symbol": "XAUUSD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "Q09_AWAITING_SEALED_PLAN"
+    },
+    {
+      "id": "33b3bb40-f4e9-5bc4-a873-5e6a04069ca3",
+      "phase": "Q09_NEWS",
+      "ea_id": "QM5_11421",
+      "symbol": "EURUSD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "OOS_WINDOW_MISMATCH"
+    },
+    {
+      "id": "421b36a2-c904-59c5-b747-cabe8da1909b",
+      "phase": "Q09_NEWS",
+      "ea_id": "QM5_13036",
+      "symbol": "GDAXI.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "OOS_WINDOW_MISMATCH"
+    },
+    {
+      "id": "42c8debd-ca2a-4618-8aaf-b9c3ee379f61",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_10692",
+      "symbol": "NDX.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "Q09_AWAITING_SEALED_PLAN"
+    },
+    {
+      "id": "44a48aa1-6dfb-53cc-a97f-dcdb8fd3cd86",
+      "phase": "Q09_NEWS",
+      "ea_id": "QM5_41161",
+      "symbol": "GBPUSD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "OOS_WINDOW_MISMATCH"
+    },
+    {
+      "id": "49a059da-82ab-4835-9c46-f18ba9b94dcf",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_10847",
+      "symbol": "GDAXI.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "NEWS_CALENDAR_TIMESTAMP_DEFECT"
+    },
+    {
+      "id": "57d8bacd-2805-45a6-ac51-156e22bb3a65",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_10815",
+      "symbol": "GDAXI.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "NEWS_CALENDAR_TIMESTAMP_DEFECT"
+    },
+    {
+      "id": "58ae0036-5bc4-4711-8bfa-eb3465af298b",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_10692",
+      "symbol": "NDX.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "Q09_AWAITING_SEALED_PLAN"
+    },
+    {
+      "id": "5e308792-a65e-5b7a-a608-78381c18201e",
+      "phase": "Q09_NEWS",
+      "ea_id": "QM5_11294",
+      "symbol": "GDAXI.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "OOS_WINDOW_MISMATCH"
+    },
+    {
+      "id": "60ce66e6-8c40-493a-aa8f-40c8714a3e85",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_10692",
+      "symbol": "NDX.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "Q09_AWAITING_SEALED_PLAN"
+    },
+    {
+      "id": "6607ae07-b581-586f-9374-ec2673ad42b8",
+      "phase": "Q09_NEWS",
+      "ea_id": "QM5_13013",
+      "symbol": "NDX.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "OOS_WINDOW_MISMATCH"
+    },
+    {
+      "id": "70171429-8d84-49bd-8082-7034c924dbf4",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_10569",
+      "symbol": "XAUUSD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "Q09_AWAITING_SEALED_PLAN"
+    },
+    {
+      "id": "72992810-aaf1-4fa8-9c12-c778bda0ae87",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_1556",
+      "symbol": "XAUUSD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "Q09_AWAITING_SEALED_PLAN"
+    },
+    {
+      "id": "745671a4-02e4-4df5-b5e1-e25f0e41ca0e",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_11129",
+      "symbol": "SP500.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "NEWS_RUNNER_SPAWN_SILENT_ABORT"
+    },
+    {
+      "id": "7459c6d4-d6be-5606-8ed4-aeb72f0be504",
+      "phase": "Q09_NEWS",
+      "ea_id": "QM5_20266",
+      "symbol": "XTIUSD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "OOS_WINDOW_MISMATCH"
+    },
+    {
+      "id": "78d6e7f9-4355-59a8-8d37-9bb317ca86d8",
+      "phase": "Q09_NEWS",
+      "ea_id": "QM5_12623",
+      "symbol": "XAUUSD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "OOS_WINDOW_MISMATCH"
+    },
+    {
+      "id": "7bbeef66-becf-4bd3-aa5c-1d00bde262d8",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_12567",
+      "symbol": "XAUUSD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "NEWS_CALENDAR_TIMESTAMP_DEFECT"
+    },
+    {
+      "id": "7db96266-f85e-55a7-b299-31b94028ae7b",
+      "phase": "Q09_NEWS",
+      "ea_id": "QM5_10183",
+      "symbol": "XAUUSD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "OOS_WINDOW_MISMATCH"
+    },
+    {
+      "id": "83826f05-3d85-4cac-8177-e3f7cd25c7e8",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_12474",
+      "symbol": "GBPUSD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "Q09_AWAITING_SEALED_PLAN"
+    },
+    {
+      "id": "84608819-5253-4df0-871c-6eb4750c3435",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_12831",
+      "symbol": "QM5_12831_XTI_AUDUSD_BRK_D1",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "Q09_AWAITING_SEALED_PLAN"
+    },
+    {
+      "id": "84c6e9e9-76a8-4cd4-87b4-647d7fad3c1a",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_13301",
+      "symbol": "GDAXI.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "NEWS_CALENDAR_TIMESTAMP_DEFECT"
+    },
+    {
+      "id": "86cccb8a-2d49-4539-a4a0-c45f530dc6ba",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_13059",
+      "symbol": "QM5_13059_XTI_AUDJPY_RSPREAD_D1",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "NEWS_CALENDAR_TIMESTAMP_DEFECT"
+    },
+    {
+      "id": "890a117c-e5be-5e03-bcae-027ede31f478",
+      "phase": "Q09_NEWS",
+      "ea_id": "QM5_10513",
+      "symbol": "XAUUSD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "OOS_WINDOW_MISMATCH"
+    },
+    {
+      "id": "896259f9-eb2a-52ba-ad93-5d152eaf990b",
+      "phase": "Q09_NEWS",
+      "ea_id": "QM5_11288",
+      "symbol": "USDJPY.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "OOS_WINDOW_MISMATCH"
+    },
+    {
+      "id": "8b233bbf-4ed6-4c27-a3d2-5e940c9248ab",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_10148",
+      "symbol": "EURNZD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "Q09_AWAITING_SEALED_PLAN"
+    },
+    {
+      "id": "9202acef-e841-5fea-a695-a95437ceb807",
+      "phase": "Q09_NEWS",
+      "ea_id": "QM5_13054",
+      "symbol": "XTIUSD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "OOS_WINDOW_MISMATCH"
+    },
+    {
+      "id": "92efae73-ade2-550b-a8d0-5268718db42c",
+      "phase": "Q09_NEWS",
+      "ea_id": "QM5_13213",
+      "symbol": "USDJPY.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "OOS_WINDOW_MISMATCH"
+    },
+    {
+      "id": "95d49279-e099-5589-a112-750fe5d534b8",
+      "phase": "Q09_NEWS",
+      "ea_id": "QM5_21505",
+      "symbol": "XAGUSD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "OOS_WINDOW_MISMATCH"
+    },
+    {
+      "id": "9639a773-b913-40a2-b12f-128a027aec98",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_10939",
+      "symbol": "GBPUSD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "NEWS_CALENDAR_TIMESTAMP_DEFECT"
+    },
+    {
+      "id": "9a85fb74-4c31-4a74-8e8c-c332cf1b802e",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_10771",
+      "symbol": "USDJPY.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "Q09_AWAITING_SEALED_PLAN"
+    },
+    {
+      "id": "9b69d492-82df-4703-9350-fea30afac98f",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_10692",
+      "symbol": "NDX.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "Q09_AWAITING_SEALED_PLAN"
+    },
+    {
+      "id": "9d3f470e-5071-4398-86c7-7de4be979c3d",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_10513",
+      "symbol": "XAUUSD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "Q09_AWAITING_SEALED_PLAN"
+    },
+    {
+      "id": "9de7b79c-ed84-5ebe-a4dc-4670e86b4976",
+      "phase": "Q09_NEWS",
+      "ea_id": "QM5_11881",
+      "symbol": "SP500.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "OOS_WINDOW_MISMATCH"
+    },
+    {
+      "id": "9f691044-d481-4f69-8823-267d80fff89d",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_10692",
+      "symbol": "NDX.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "Q09_AWAITING_SEALED_PLAN"
+    },
+    {
+      "id": "a61f1a02-f630-5f1f-a9d7-ef1af84627f8",
+      "phase": "Q09_NEWS",
+      "ea_id": "QM5_1556",
+      "symbol": "XAUUSD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "OOS_WINDOW_MISMATCH"
+    },
+    {
+      "id": "a6e2cc8b-7b7b-4e64-9764-4cf39046dd1c",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_11179",
+      "symbol": "USDJPY.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "NEWS_CALENDAR_TIMESTAMP_DEFECT"
+    },
+    {
+      "id": "a800efb5-e0db-5f99-b982-9b2bf49108b5",
+      "phase": "Q09_NEWS",
+      "ea_id": "QM5_11132",
+      "symbol": "SP500.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "OOS_WINDOW_MISMATCH"
+    },
+    {
+      "id": "a8e36fba-36e7-419a-9d2b-5b3116cbdde2",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_10692",
+      "symbol": "NDX.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "Q09_AWAITING_SEALED_PLAN"
+    },
+    {
+      "id": "aa80274f-fb46-4432-b47e-6fb2bf28c9a2",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_13128",
+      "symbol": "NDX.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "NEWS_CALENDAR_TIMESTAMP_DEFECT"
+    },
+    {
+      "id": "aece4bcc-62aa-4f8e-937e-5f81c071a4d0",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_12580",
+      "symbol": "AUDUSD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "NEWS_CALENDAR_TIMESTAMP_DEFECT"
+    },
+    {
+      "id": "af09850e-2c55-59dc-9744-19716b3c4e2d",
+      "phase": "Q09_NEWS",
+      "ea_id": "QM5_1537",
+      "symbol": "XAGUSD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "OOS_WINDOW_MISMATCH"
+    },
+    {
+      "id": "b685a457-d784-55a5-b037-5e76803e63fd",
+      "phase": "Q09_NEWS",
+      "ea_id": "QM5_21501",
+      "symbol": "USDJPY.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "OOS_WINDOW_MISMATCH"
+    },
+    {
+      "id": "b6bdac29-b608-4016-9394-2be6f34cc9a3",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_10476",
+      "symbol": "USDCAD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "Q09_AWAITING_SEALED_PLAN"
+    },
+    {
+      "id": "b8bedf49-a8c7-5373-b2e5-950d5367cb74",
+      "phase": "Q09_NEWS",
+      "ea_id": "QM5_10128",
+      "symbol": "XAUUSD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "OOS_WINDOW_MISMATCH"
+    },
+    {
+      "id": "bb02b701-0d7c-4de7-82b2-87d917f8dd1b",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_1230",
+      "symbol": "XAUUSD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "Q09_AWAITING_SEALED_PLAN"
+    },
+    {
+      "id": "bd840961-23a1-4fea-99ce-2e285c0d1914",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_10145",
+      "symbol": "SP500.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "Q09_AWAITING_SEALED_PLAN"
+    },
+    {
+      "id": "bfd0e872-b4dc-5e2b-8948-8ebe18d14251",
+      "phase": "Q09_NEWS",
+      "ea_id": "QM5_10146",
+      "symbol": "AUDUSD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "OOS_WINDOW_MISMATCH"
+    },
+    {
+      "id": "ca876575-d5ae-56b9-ba3b-5b5e9f6f7320",
+      "phase": "Q09_NEWS",
+      "ea_id": "QM5_20188",
+      "symbol": "USDJPY.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "OOS_WINDOW_MISMATCH"
+    },
+    {
+      "id": "cec67ad5-2ca5-4d84-b347-a0c370415329",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_10513",
+      "symbol": "XAUUSD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "Q09_AWAITING_SEALED_PLAN"
+    },
+    {
+      "id": "d1729472-6047-5906-a8e6-1b51d8845d30",
+      "phase": "Q09_NEWS",
+      "ea_id": "QM5_12849",
+      "symbol": "XTIUSD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "OOS_WINDOW_MISMATCH"
+    },
+    {
+      "id": "d3312a9e-038a-4ab8-b392-0dbdfa2728e0",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_10513",
+      "symbol": "XAUUSD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "Q09_AWAITING_SEALED_PLAN"
+    },
+    {
+      "id": "d6532bee-4c7b-560c-b4b8-add78fe6f364",
+      "phase": "Q09_NEWS",
+      "ea_id": "QM5_10123",
+      "symbol": "XAUUSD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "OOS_WINDOW_MISMATCH"
+    },
+    {
+      "id": "d6601d01-e9fa-5996-b73e-d52da5e9f78a",
+      "phase": "Q09_NEWS",
+      "ea_id": "QM5_12989",
+      "symbol": "XAUUSD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "OOS_WINDOW_MISMATCH"
+    },
+    {
+      "id": "d712832c-b41b-471c-a986-79f7f17f8dfb",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_11422",
+      "symbol": "USDCAD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "NEWS_RUNNER_SPAWN_SILENT_ABORT"
+    },
+    {
+      "id": "d81d9ea8-b802-4c38-8fc9-8bdbab6ef75c",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_1556",
+      "symbol": "XAUUSD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "Q09_AWAITING_SEALED_PLAN"
+    },
+    {
+      "id": "d9541e3a-9afc-594d-881e-dc2b13a5f95d",
+      "phase": "Q09_NEWS",
+      "ea_id": "QM5_12855",
+      "symbol": "XTIUSD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "OOS_WINDOW_MISMATCH"
+    },
+    {
+      "id": "e0cbdd1a-1cfe-4bbe-8ebe-a4b4c26d151f",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_9573",
+      "symbol": "USDCHF.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "Q09_AWAITING_SEALED_PLAN"
+    },
+    {
+      "id": "e8ec3223-886a-400b-ba1b-096a82cebd9f",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_10569",
+      "symbol": "XAUUSD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "Q09_AWAITING_SEALED_PLAN"
+    },
+    {
+      "id": "eaf6fe05-7807-5e13-9031-5b6b01019aaa",
+      "phase": "Q09_NEWS",
+      "ea_id": "QM5_10142",
+      "symbol": "SP500.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "OOS_WINDOW_MISMATCH"
+    },
+    {
+      "id": "ee4ff9b4-41a3-4e74-b5ec-de548ed47113",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_10771",
+      "symbol": "XAUUSD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "NEWS_RUNNER_SPAWN_SILENT_ABORT"
+    },
+    {
+      "id": "f3f1cedc-c0d6-4485-917c-7f3b98957453",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_10692",
+      "symbol": "NDX.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "Q09_AWAITING_SEALED_PLAN"
+    },
+    {
+      "id": "f67de388-706f-5c01-9d51-b2274bbb4dd8",
+      "phase": "Q09_NEWS",
+      "ea_id": "QM5_12708",
+      "symbol": "XAUUSD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "OOS_WINDOW_MISMATCH"
+    },
+    {
+      "id": "f8f75276-2256-5e06-a58b-2756e5c1ebe0",
+      "phase": "Q09_NEWS",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "OOS_WINDOW_MISMATCH"
+    },
+    {
+      "id": "fb127697-b89e-4d52-9bd5-0d92d95e9125",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_1567",
+      "symbol": "GBPJPY.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "Q09_AWAITING_SEALED_PLAN"
+    },
+    {
+      "id": "fe1b3e6b-eaf5-5d3b-9a3c-7f49d07c5360",
+      "phase": "Q09_NEWS",
+      "ea_id": "QM5_13128",
+      "symbol": "NDX.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "OOS_WINDOW_MISMATCH"
+    },
+    {
+      "id": "ffd9ef4d-0946-5671-93c0-d9047ebd3270",
+      "phase": "Q09_NEWS",
+      "ea_id": "QM5_10145",
+      "symbol": "XAUUSD.DWX",
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "action": "PRESERVE_OTHER_HOLD",
+      "other_hold": "OOS_WINDOW_MISMATCH"
+    }
+  ]
+}
