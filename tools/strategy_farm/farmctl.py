@@ -21018,12 +21018,22 @@ def _finalize_pump_stage_timings(
         path_for_factory_flag(factory_off_flag_path(root)),
         owner="pump_stage_timing_event",
     )
-    try:
-        lock.__enter__()
-    except RuntimeError as exc:
+    lock_error: RuntimeError | None = None
+    deadline = time.monotonic() + 2.0
+    while True:
+        try:
+            lock.__enter__()
+            lock_error = None
+            break
+        except RuntimeError as exc:
+            lock_error = exc
+            if time.monotonic() >= deadline:
+                break
+            time.sleep(0.05)
+    if lock_error is not None:
         result["pump_stage_timing_event"] = {
             "recorded": False,
-            "reason": f"factory_mutation_lock_busy:{exc}",
+            "reason": f"factory_mutation_lock_busy:{lock_error}",
         }
         return
     try:
