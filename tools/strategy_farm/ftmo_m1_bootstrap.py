@@ -1348,6 +1348,7 @@ def run_dxz_bootstrap(
     timeout_seconds: int,
     replace_projections: bool,
     reservation_minutes: int,
+    symbols: Sequence[str] | None = None,
     spec_path: Path = SPEC_PATH,
     report_root: Path = REPORT_ROOT,
 ) -> dict[str, Any]:
@@ -1360,9 +1361,14 @@ def run_dxz_bootstrap(
     if reservation_minutes * 60 < timeout_seconds + 600:
         raise BootstrapError("DXZ terminal reservation must outlive the harvest timeout by 10 minutes")
     dxz_login, dxz_server = load_dxz_factory_login()
+    selected_symbols = tuple(DXZ_SYMBOLS if symbols is None else symbols)
+    if not selected_symbols or len(set(selected_symbols)) != len(selected_symbols):
+        raise BootstrapError("DXZ symbol selection must be non-empty and unique")
+    if any(symbol not in DXZ_SYMBOLS for symbol in selected_symbols):
+        raise BootstrapError("DXZ symbol selection escaped the reviewed current pool")
     targets = load_calibration_targets(spec_path)
     target_rows = []
-    for symbol in DXZ_SYMBOLS:
+    for symbol in selected_symbols:
         target = targets.get(("DXZ", symbol))
         if target is None:
             raise BootstrapError(f"reviewed spec has no DXZ target for {symbol}")
@@ -1403,14 +1409,14 @@ def run_dxz_bootstrap(
             startup = prepare_startup_files(
                 terminal_root=terminal_root,
                 run_root=run_root,
-                symbols=DXZ_SYMBOLS,
+                symbols=selected_symbols,
                 output_tag=output_tag,
                 login=dxz_login,
                 server=dxz_server,
                 chart_symbol="EURUSD",
             )
             expected: list[Path] = []
-            for symbol in DXZ_SYMBOLS:
+            for symbol in selected_symbols:
                 expected.extend(local_harvest_paths(terminal_root, output_tag, symbol))
             execution = launch_and_wait(
                 terminal_root=terminal_root,
@@ -1437,7 +1443,7 @@ def run_dxz_bootstrap(
                 "mode": "DXZ",
                 "terminal": terminal,
                 "terminal_root": str(terminal_root.resolve()),
-                "symbols": list(DXZ_SYMBOLS),
+                "symbols": list(selected_symbols),
                 "output_tag": output_tag,
                 "lock": lock,
                 "challenge_identity": snapshot["challenge"][0],
@@ -1483,6 +1489,7 @@ def _parser() -> argparse.ArgumentParser:
     dxz.add_argument("--execute", action="store_true")
     dxz.add_argument("--timeout-seconds", type=int, default=7200)
     dxz.add_argument("--reservation-minutes", type=int, default=150)
+    dxz.add_argument("--symbols", nargs="+", choices=DXZ_SYMBOLS)
     dxz.add_argument("--replace-projections", action="store_true")
     dxz.add_argument("--spec", type=Path, default=SPEC_PATH)
     dxz.add_argument("--report-root", type=Path, default=REPORT_ROOT)
@@ -1508,6 +1515,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 timeout_seconds=args.timeout_seconds,
                 replace_projections=args.replace_projections,
                 reservation_minutes=args.reservation_minutes,
+                symbols=args.symbols,
                 spec_path=args.spec,
                 report_root=args.report_root,
             )

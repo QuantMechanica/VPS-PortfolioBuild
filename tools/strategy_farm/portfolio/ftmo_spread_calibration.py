@@ -43,6 +43,7 @@ except ImportError:  # pragma: no cover - direct script execution
 
 SPEC_SCHEMA = "qm.ftmo-spread-calibration-spec/v1"
 ARTIFACT_SCHEMA = "qm.ftmo-spread-calibration/v1"
+MATRIX_ARTIFACT_SCHEMA = "qm.ftmo-spread-calibration-matrix/v1"
 M1_ROW_SCHEMA = "qm.m1-spread-row/v1"
 EXTRACTION_METHOD = "MQL5_COPYRATES_PERIOD_M1_SPREAD"
 DEFAULT_QUANTILES = (0.50, 0.75, 0.90, 0.95, 0.99)
@@ -355,10 +356,71 @@ def calibrate_spec(spec: Any) -> dict[str, Any]:
     }
 
 
+def calibrate_spec_matrix(spec: Any) -> dict[str, Any]:
+    """Evaluate every declared pair independently while preserving refusals."""
+    required = {
+        "schema", "session_bucket_minutes", "conservative_quantile",
+        "minimum_matched_minutes", "minimum_bucket_minutes", "pairs",
+    }
+    if not isinstance(spec, Mapping) or set(spec) != required:
+        raise SpreadCalibrationError("spec: unexpected fields")
+    if spec["schema"] != SPEC_SCHEMA:
+        raise SpreadCalibrationError("spec.schema: unsupported schema")
+    bucket_minutes = _positive_int(spec["session_bucket_minutes"], "session_bucket_minutes")
+    if 1_440 % bucket_minutes != 0:
+        raise SpreadCalibrationError("session_bucket_minutes must divide 1440")
+    quantile = _finite(spec["conservative_quantile"], "conservative_quantile")
+    if not 0.75 <= quantile < 1.0:
+        raise SpreadCalibrationError("conservative_quantile must be in [0.75, 1.0)")
+    minimum_matched = _positive_int(spec["minimum_matched_minutes"], "minimum_matched_minutes")
+    minimum_bucket = _positive_int(spec["minimum_bucket_minutes"], "minimum_bucket_minutes")
+    pairs = spec["pairs"]
+    if not isinstance(pairs, list) or not pairs:
+        raise SpreadCalibrationError("pairs: expected non-empty list")
+    symbols = [pair.get("evaluator_symbol") if isinstance(pair, Mapping) else None for pair in pairs]
+    if any(not isinstance(symbol, str) or not symbol.strip() for symbol in symbols):
+        raise SpreadCalibrationError("pairs: every pair requires evaluator_symbol")
+    if len(set(symbols)) != len(symbols):
+        raise SpreadCalibrationError("pairs: duplicate evaluator_symbol")
+    results: list[dict[str, Any]] = []
+    for index, pair in enumerate(pairs):
+        try:
+            calibrated = _calibrate_pair(
+                pair,
+                pair_index=index,
+                bucket_minutes=bucket_minutes,
+                conservative_quantile=quantile,
+                minimum_matched_minutes=minimum_matched,
+                minimum_bucket_minutes=minimum_bucket,
+            )
+            results.append({"status": "PASS", **calibrated})
+        except (SpreadCalibrationError, TimeboxEvaluationError) as exc:
+            results.append({
+                "status": "ABSTAIN",
+                "evaluator_symbol": str(symbols[index]),
+                "error": str(exc),
+            })
+    passed = sum(row["status"] == "PASS" for row in results)
+    return {
+        "schema": MATRIX_ARTIFACT_SCHEMA,
+        "status": "PASS" if passed == len(results) else "PARTIAL" if passed else "ABSTAIN",
+        "evidence_class": "DXZ_EXECUTION_FTMO_COST_ADJUSTED_V1",
+        "method": "PAIR_INDEPENDENT_STRICT_MATCHED_M1_CALIBRATION",
+        "conservative_quantile": quantile,
+        "session_bucket_minutes": bucket_minutes,
+        "minimum_matched_minutes": minimum_matched,
+        "minimum_bucket_minutes": minimum_bucket,
+        "pass_count": passed,
+        "abstain_count": len(results) - passed,
+        "pairs": results,
+    }
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--spec", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument("--pair-matrix", action="store_true")
     return parser
 
 
@@ -367,11 +429,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     spec_path = args.spec.expanduser().resolve()
     try:
         spec = load_json(spec_path, "spec")
-        artifact = calibrate_spec(spec)
+        artifact = calibrate_spec_matrix(spec) if args.pair_matrix else calibrate_spec(spec)
         artifact["spec"] = _binding(str(spec_path), "spec")
         digest = write_json_atomic(args.output, artifact)
-        print(json.dumps({"status": "PASS", "path": str(args.output.resolve()), "sha256": digest}))
-        return 0
+        print(json.dumps({"status": artifact["status"], "path": str(args.output.resolve()), "sha256": digest}))
+        return 0 if artifact["status"] == "PASS" else 2
     except (SpreadCalibrationError, TimeboxEvaluationError) as exc:
         refusal: dict[str, Any] = {
             "schema": ARTIFACT_SCHEMA,

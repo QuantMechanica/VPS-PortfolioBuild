@@ -100,6 +100,22 @@ def test_refuses_nonidentical_calendar_coverage(tmp_path: Path) -> None:
         calibration.calibrate_spec(_spec(tmp_path, mismatch=True))
 
 
+def test_pair_matrix_preserves_independent_refusal(tmp_path: Path) -> None:
+    spec = _spec(tmp_path)
+    second = json.loads(json.dumps(spec["pairs"][0]))
+    second["evaluator_symbol"] = "MISSING"
+    second["ftmo"]["symbol"] = "MISSING"
+    second["ftmo"]["m1_spread_path"] = str(tmp_path / "absent.jsonl")
+    spec["pairs"].append(second)
+    artifact = calibration.calibrate_spec_matrix(spec)
+    assert artifact["status"] == "PARTIAL"
+    assert artifact["pass_count"] == 1
+    assert artifact["abstain_count"] == 1
+    assert artifact["pairs"][0]["status"] == "PASS"
+    assert artifact["pairs"][1]["status"] == "ABSTAIN"
+    assert "required file is absent" in artifact["pairs"][1]["error"]
+
+
 def test_refuses_unbound_or_non_hcc_source(tmp_path: Path) -> None:
     spec = _spec(tmp_path)
     spec["pairs"][0]["ftmo"]["source_hcc_paths"] = [str(tmp_path / "missing.hcc")]
