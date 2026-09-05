@@ -1,0 +1,1041 @@
+{
+  "authorization": {
+    "autotrading_toggle": false,
+    "deploy": false,
+    "live_write": false,
+    "purchase": false
+  },
+  "cost_source_matrix": {
+    "current_snapshot": {
+      "source": {
+        "mtime_utc": "2026-09-05T04:30:53.320374+00:00",
+        "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+        "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e",
+        "size_bytes": 15416
+      },
+      "status": "PASS_PROVISIONAL_ROLLOVER",
+      "symbols": [
+        {
+          "ftmo_code": "GBP/USD",
+          "normalized": {
+            "commission_round_trip": {
+              "unit": "USD_PER_TARGET_LOT_ROUND_TRIP",
+              "value": 5
+            },
+            "contract": {
+              "contract_size": 100000,
+              "contract_size_unit": "UNDERLYING_UNITS_PER_TARGET_LOT",
+              "digits": 5,
+              "profit_currency": "USD",
+              "tick_size": 1e-05,
+              "tick_value": 1,
+              "tick_value_unit": "PROFIT_CURRENCY_PER_TARGET_LOT_PER_TICK"
+            },
+            "margin": {
+              "provider_margin_percent_standard": 1,
+              "swing_leverage": 30,
+              "swing_margin_percent": 3.3333333333,
+              "unit": "PERCENT_OF_NOTIONAL"
+            },
+            "swap": {
+              "long": -6.7,
+              "short": -5.2,
+              "triple_day": "WEDNESDAY_PROVISIONAL",
+              "unit": "POINTS_PER_TARGET_LOT_PER_ROLLOVER_UNIT"
+            }
+          },
+          "provider": {
+            "code": "GBP/USD",
+            "commission": 5,
+            "commissionType": "flat_USD",
+            "contractSize": 100000,
+            "digits": 5,
+            "leverageSwing": 30,
+            "marginCalculation": "forex",
+            "marginPercent": 1,
+            "pipConversion": 0.0001,
+            "profitCurrency": "USD",
+            "swapLong": -6.7,
+            "swapShort": -5.2,
+            "swapType": "points",
+            "usdCommission": 5
+          },
+          "symbol": "GBPUSD"
+        },
+        {
+          "ftmo_code": "EUR/USD",
+          "normalized": {
+            "commission_round_trip": {
+              "unit": "USD_PER_TARGET_LOT_ROUND_TRIP",
+              "value": 5
+            },
+            "contract": {
+              "contract_size": 100000,
+              "contract_size_unit": "UNDERLYING_UNITS_PER_TARGET_LOT",
+              "digits": 5,
+              "profit_currency": "USD",
+              "tick_size": 1e-05,
+              "tick_value": 1,
+              "tick_value_unit": "PROFIT_CURRENCY_PER_TARGET_LOT_PER_TICK"
+            },
+            "margin": {
+              "provider_margin_percent_standard": 1,
+              "swing_leverage": 30,
+              "swing_margin_percent": 3.3333333333,
+              "unit": "PERCENT_OF_NOTIONAL"
+            },
+            "swap": {
+              "long": -13.29,
+              "short": 0.17,
+              "triple_day": "WEDNESDAY_PROVISIONAL",
+              "unit": "POINTS_PER_TARGET_LOT_PER_ROLLOVER_UNIT"
+            }
+          },
+          "provider": {
+            "code": "EUR/USD",
+            "commission": 5,
+            "commissionType": "flat_USD",
+            "contractSize": 100000,
+            "digits": 5,
+            "leverageSwing": 30,
+            "marginCalculation": "forex",
+            "marginPercent": 1,
+            "pipConversion": 0.0001,
+            "profitCurrency": "USD",
+            "swapLong": -13.29,
+            "swapShort": 0.17,
+            "swapType": "points",
+            "usdCommission": 5
+          },
+          "symbol": "EURUSD"
+        },
+        {
+          "ftmo_code": "USD/CAD",
+          "normalized": {
+            "commission_round_trip": {
+              "unit": "USD_PER_TARGET_LOT_ROUND_TRIP",
+              "value": 5
+            },
+            "contract": {
+              "contract_size": 100000,
+              "contract_size_unit": "UNDERLYING_UNITS_PER_TARGET_LOT",
+              "digits": 5,
+              "profit_currency": "CAD",
+              "tick_size": 1e-05,
+              "tick_value": 1,
+              "tick_value_unit": "PROFIT_CURRENCY_PER_TARGET_LOT_PER_TICK"
+            },
+            "margin": {
+              "provider_margin_percent_standard": 1,
+              "swing_leverage": 30,
+              "swing_margin_percent": 3.3333333333,
+              "unit": "PERCENT_OF_NOTIONAL"
+            },
+            "swap": {
+              "long": 0.71,
+              "short": -12,
+              "triple_day": "WEDNESDAY_PROVISIONAL",
+              "unit": "POINTS_PER_TARGET_LOT_PER_ROLLOVER_UNIT"
+            }
+          },
+          "provider": {
+            "code": "USD/CAD",
+            "commission": 5,
+            "commissionType": "flat_USD",
+            "contractSize": 100000,
+            "digits": 5,
+            "leverageSwing": 30,
+            "marginCalculation": "forex",
+            "marginPercent": 1,
+            "pipConversion": 0.0001,
+            "profitCurrency": "CAD",
+            "swapLong": 0.71,
+            "swapShort": -12,
+            "swapType": "points",
+            "usdCommission": 5
+          },
+          "symbol": "USDCAD"
+        },
+        {
+          "ftmo_code": "NZD/USD",
+          "normalized": {
+            "commission_round_trip": {
+              "unit": "USD_PER_TARGET_LOT_ROUND_TRIP",
+              "value": 5
+            },
+            "contract": {
+              "contract_size": 100000,
+              "contract_size_unit": "UNDERLYING_UNITS_PER_TARGET_LOT",
+              "digits": 5,
+              "profit_currency": "USD",
+              "tick_size": 1e-05,
+              "tick_value": 1,
+              "tick_value_unit": "PROFIT_CURRENCY_PER_TARGET_LOT_PER_TICK"
+            },
+            "margin": {
+              "provider_margin_percent_standard": 1,
+              "swing_leverage": 30,
+              "swing_margin_percent": 3.3333333333,
+              "unit": "PERCENT_OF_NOTIONAL"
+            },
+            "swap": {
+              "long": -4.82,
+              "short": -1.36,
+              "triple_day": "WEDNESDAY_PROVISIONAL",
+              "unit": "POINTS_PER_TARGET_LOT_PER_ROLLOVER_UNIT"
+            }
+          },
+          "provider": {
+            "code": "NZD/USD",
+            "commission": 5,
+            "commissionType": "flat_USD",
+            "contractSize": 100000,
+            "digits": 5,
+            "leverageSwing": 30,
+            "marginCalculation": "forex",
+            "marginPercent": 1,
+            "pipConversion": 0.0001,
+            "profitCurrency": "USD",
+            "swapLong": -4.82,
+            "swapShort": -1.36,
+            "swapType": "points",
+            "usdCommission": 5
+          },
+          "symbol": "NZDUSD"
+        },
+        {
+          "ftmo_code": "XAG/USD",
+          "normalized": {
+            "commission_round_trip": {
+              "unit": "PERCENT_OF_NOTIONAL_PER_SIDE",
+              "value": 0.0014
+            },
+            "contract": {
+              "contract_size": 5000,
+              "contract_size_unit": "UNDERLYING_UNITS_PER_TARGET_LOT",
+              "digits": 3,
+              "profit_currency": "USD",
+              "tick_size": 0.001,
+              "tick_value": 5,
+              "tick_value_unit": "PROFIT_CURRENCY_PER_TARGET_LOT_PER_TICK"
+            },
+            "margin": {
+              "provider_margin_percent_standard": 2,
+              "swing_leverage": 15,
+              "swing_margin_percent": 6.6666666667,
+              "unit": "PERCENT_OF_NOTIONAL"
+            },
+            "swap": {
+              "long": -23.05,
+              "short": 0.32,
+              "triple_day": "WEDNESDAY_PROVISIONAL",
+              "unit": "POINTS_PER_TARGET_LOT_PER_ROLLOVER_UNIT"
+            }
+          },
+          "provider": {
+            "code": "XAG/USD",
+            "commission": 0.0014,
+            "commissionType": "percent",
+            "contractSize": 5000,
+            "digits": 3,
+            "leverageSwing": 15,
+            "marginCalculation": "cfd_leverage",
+            "marginPercent": 2,
+            "pipConversion": 1,
+            "profitCurrency": "USD",
+            "swapLong": -23.05,
+            "swapShort": 0.32,
+            "swapType": "points",
+            "usdCommission": 9.2608
+          },
+          "symbol": "XAGUSD"
+        },
+        {
+          "ftmo_code": "USOIL.cash",
+          "normalized": {
+            "commission_round_trip": {
+              "unit": "PERCENT_OF_NOTIONAL_PER_SIDE",
+              "value": 0
+            },
+            "contract": {
+              "contract_size": 100,
+              "contract_size_unit": "UNDERLYING_UNITS_PER_TARGET_LOT",
+              "digits": 3,
+              "profit_currency": "USD",
+              "tick_size": 0.001,
+              "tick_value": 0.1,
+              "tick_value_unit": "PROFIT_CURRENCY_PER_TARGET_LOT_PER_TICK"
+            },
+            "margin": {
+              "provider_margin_percent_standard": 2,
+              "swing_leverage": 15,
+              "swing_margin_percent": 6.6666666667,
+              "unit": "PERCENT_OF_NOTIONAL"
+            },
+            "swap": {
+              "long": 5.83,
+              "short": -35.11,
+              "triple_day": "WEDNESDAY_PROVISIONAL",
+              "unit": "POINTS_PER_TARGET_LOT_PER_ROLLOVER_UNIT"
+            }
+          },
+          "provider": {
+            "code": "USOIL.cash",
+            "commission": 0,
+            "commissionType": "percent",
+            "contractSize": 100,
+            "digits": 3,
+            "leverageSwing": 15,
+            "marginCalculation": "cfd_leverage",
+            "marginPercent": 2,
+            "pipConversion": 1,
+            "profitCurrency": "USD",
+            "swapLong": 5.83,
+            "swapShort": -35.11,
+            "swapType": "points",
+            "usdCommission": 0
+          },
+          "symbol": "XTIUSD"
+        }
+      ]
+    },
+    "governed_registry": {
+      "source": {
+        "mtime_utc": "2026-07-19T18:32:17.516561+00:00",
+        "path": "C:\\QM\\repo\\framework\\registry\\venue_cost_model.json",
+        "sha256": "7dfafe53749e5c45be0cb37568b6e3491c109f546fafaf799f6ea82efdb688d7",
+        "size_bytes": 25272
+      },
+      "status": "swap_null; contract/commission context only"
+    },
+    "prior_snapshot": {
+      "source": {
+        "mtime_utc": "2026-07-30T01:02:30.006072+00:00",
+        "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-07-30_ftmo_book3_symbol_cost_snapshot.json",
+        "sha256": "7eab3bf8c97373fcb44e36aca39dd679fbd3e093783cd6eacd9cb171190b3280",
+        "size_bytes": 6144
+      },
+      "status": "dated; only XTIUSD applies to current eight"
+    }
+  },
+  "generated_at_utc": "2026-09-05T05:45:41.242518+00:00",
+  "holding_periods": {
+    "10706:GBPUSD": {
+      "lifecycle_key_unique": true,
+      "mean_calendar_midnights_crossed_per_trade": 0.555556,
+      "median_holding_days": 0.309514,
+      "median_holding_hours": 7.428333,
+      "pairing_contract": "strict_native_IN_OUT_no_overlap; derived_position_key=opening_Order (native report has no DEAL_POSITION_ID)",
+      "report": {
+        "mtime_utc": "2026-09-04T05:22:42.813256+00:00",
+        "path": "D:\\QM\\reports\\pipeline\\QM5_10706\\Q08\\_baseline\\QM5_10706\\20260904_051342\\raw\\run_01\\report.htm",
+        "sha256": "85dd26cd8c56b9098b7c794949f0f6b4a122f57bb1b6c2c4a84aef41e0124b82",
+        "size_bytes": 775680
+      },
+      "reported_swap_total": 0.0,
+      "trade_count": 360,
+      "trades_crossing_at_least_one_midnight": 165,
+      "trades_with_nonzero_reported_swap": 0
+    },
+    "11421:EURUSD": {
+      "lifecycle_key_unique": true,
+      "mean_calendar_midnights_crossed_per_trade": 1.296703,
+      "median_holding_days": 1.035556,
+      "median_holding_hours": 24.853333,
+      "pairing_contract": "strict_native_IN_OUT_no_overlap; derived_position_key=opening_Order (native report has no DEAL_POSITION_ID)",
+      "report": {
+        "mtime_utc": "2026-09-02T19:37:32.695960+00:00",
+        "path": "D:\\QM\\reports\\pipeline\\QM5_11421\\Q08\\_baseline\\QM5_11421\\20260902_193230\\raw\\run_01\\report.htm",
+        "sha256": "7b56e1682561b9aa6ae4ddc311ac83e785f1d033e3b90d80db342fa4a96c8071",
+        "size_bytes": 601766
+      },
+      "reported_swap_total": -785.01,
+      "trade_count": 91,
+      "trades_crossing_at_least_one_midnight": 67,
+      "trades_with_nonzero_reported_swap": 67
+    },
+    "11422:USDCAD": {
+      "lifecycle_key_unique": true,
+      "mean_calendar_midnights_crossed_per_trade": 1.779487,
+      "median_holding_days": 1.707454,
+      "median_holding_hours": 40.978889,
+      "pairing_contract": "strict_native_IN_OUT_no_overlap; derived_position_key=opening_Order (native report has no DEAL_POSITION_ID)",
+      "report": {
+        "mtime_utc": "2026-09-04T06:23:07.758283+00:00",
+        "path": "D:\\QM\\reports\\pipeline\\QM5_11422\\Q08\\_baseline\\QM5_11422\\20260904_061656\\raw\\run_01\\report.htm",
+        "sha256": "9b12636e15e8c0cee89d551eeda98c6f524798a0e3e38fde02e17ce36ede0411",
+        "size_bytes": 617470
+      },
+      "reported_swap_total": 0.0,
+      "trade_count": 195,
+      "trades_crossing_at_least_one_midnight": 154,
+      "trades_with_nonzero_reported_swap": 0
+    },
+    "11910:NZDUSD": {
+      "lifecycle_key_unique": true,
+      "mean_calendar_midnights_crossed_per_trade": 2.761905,
+      "median_holding_days": 4.871516,
+      "median_holding_hours": 116.916389,
+      "pairing_contract": "strict_native_IN_OUT_no_overlap; derived_position_key=opening_Order (native report has no DEAL_POSITION_ID)",
+      "report": {
+        "mtime_utc": "2026-09-04T16:04:55.564886+00:00",
+        "path": "D:\\QM\\reports\\pipeline\\QM5_11910\\Q08\\_baseline\\QM5_11910\\20260904_160009\\raw\\run_01\\report.htm",
+        "sha256": "27a89a85a968c3e55380e3b66e7bab0bc794ca45a135def3a79dc224867d2684",
+        "size_bytes": 164828
+      },
+      "reported_swap_total": -252.27,
+      "trade_count": 63,
+      "trades_crossing_at_least_one_midnight": 53,
+      "trades_with_nonzero_reported_swap": 53
+    },
+    "13054:XTIUSD": {
+      "lifecycle_key_unique": true,
+      "mean_calendar_midnights_crossed_per_trade": 2.329268,
+      "median_holding_days": 2.916638,
+      "median_holding_hours": 69.999306,
+      "pairing_contract": "strict_native_IN_OUT_no_overlap; derived_position_key=opening_Order (native report has no DEAL_POSITION_ID)",
+      "report": {
+        "mtime_utc": "2026-09-04T06:15:47.059053+00:00",
+        "path": "D:\\QM\\reports\\pipeline\\QM5_13054\\Q08\\_baseline\\QM5_13054\\20260904_061139\\raw\\run_01\\report.htm",
+        "sha256": "6c578a7287c6aa6ab0369eed9fe842511a031843dd0176dc0ad372224d2da2ea",
+        "size_bytes": 200632
+      },
+      "reported_swap_total": 0.0,
+      "trade_count": 82,
+      "trades_crossing_at_least_one_midnight": 71,
+      "trades_with_nonzero_reported_swap": 0
+    },
+    "1537:XAGUSD": {
+      "lifecycle_key_unique": true,
+      "mean_calendar_midnights_crossed_per_trade": 1.875,
+      "median_holding_days": 1.999884,
+      "median_holding_hours": 47.997222,
+      "pairing_contract": "strict_native_IN_OUT_no_overlap; derived_position_key=opening_Order (native report has no DEAL_POSITION_ID)",
+      "report": {
+        "mtime_utc": "2026-09-04T05:12:22.830561+00:00",
+        "path": "D:\\QM\\reports\\pipeline\\QM5_1537\\Q08\\_baseline\\QM5_1537\\20260904_050325\\raw\\run_01\\report.htm",
+        "sha256": "38f6c7d981173cfdfbf3806871bfa39545025aa83b890d95f34cd5d2c2494f7d",
+        "size_bytes": 233236
+      },
+      "reported_swap_total": 0.0,
+      "trade_count": 96,
+      "trades_crossing_at_least_one_midnight": 80,
+      "trades_with_nonzero_reported_swap": 0
+    },
+    "20048:XTIUSD": {
+      "lifecycle_key_unique": true,
+      "mean_calendar_midnights_crossed_per_trade": 2.65,
+      "median_holding_days": 2.999977,
+      "median_holding_hours": 71.999444,
+      "pairing_contract": "strict_native_IN_OUT_no_overlap; derived_position_key=opening_Order (native report has no DEAL_POSITION_ID)",
+      "report": {
+        "mtime_utc": "2026-09-04T06:53:46.015495+00:00",
+        "path": "D:\\QM\\reports\\pipeline\\QM5_20048\\Q08\\_baseline\\QM5_20048\\20260904_065008\\raw\\run_01\\report.htm",
+        "sha256": "057d568c055c65922dd7a9e2273004728bc871fbb3dd2000a9756e16c8237977",
+        "size_bytes": 153474
+      },
+      "reported_swap_total": 0.0,
+      "trade_count": 60,
+      "trades_crossing_at_least_one_midnight": 60,
+      "trades_with_nonzero_reported_swap": 0
+    },
+    "21505:XAGUSD": {
+      "lifecycle_key_unique": true,
+      "mean_calendar_midnights_crossed_per_trade": 4.086207,
+      "median_holding_days": 4.833322,
+      "median_holding_hours": 115.999722,
+      "pairing_contract": "strict_native_IN_OUT_no_overlap; derived_position_key=opening_Order (native report has no DEAL_POSITION_ID)",
+      "report": {
+        "mtime_utc": "2026-09-04T06:06:42.346018+00:00",
+        "path": "D:\\QM\\reports\\pipeline\\QM5_21505\\Q08\\_baseline\\QM5_21505\\20260904_060120\\raw\\run_01\\report.htm",
+        "sha256": "911154341b07528d3ea7cecb5e0e4664503a1f64b1c2b3749a4bb233b64a0535",
+        "size_bytes": 274168
+      },
+      "reported_swap_total": 0.0,
+      "trade_count": 116,
+      "trades_crossing_at_least_one_midnight": 116,
+      "trades_with_nonzero_reported_swap": 0
+    }
+  },
+  "inputs": [
+    {
+      "mtime_utc": "2026-09-04T18:00:55.329720+00:00",
+      "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\journal\\live_deals_normalized.csv",
+      "sha256": "9a4cc7ba454767e36714d61dc9cd93e1ef6059ec9afaa3e1377091c6892966c7",
+      "size_bytes": 38405
+    },
+    {
+      "mtime_utc": "2026-08-22T10:15:44.835397+00:00",
+      "path": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+      "sha256": "f5f23f3c597f07217ef4406a34f929a2cb50e580986007eefe758d4e27b1704a",
+      "size_bytes": 18103
+    },
+    {
+      "mtime_utc": "2026-09-05T05:38:49.472986+00:00",
+      "path": "C:\\QM\\repo\\artifacts\\audit_live_book_inventory_20260819.json",
+      "sha256": "7b7c4caebcdfa28a6670b8cfefdcbebbc1d50f001b7098adb7e43d6d9447a8ec",
+      "size_bytes": 18070
+    },
+    {
+      "mtime_utc": "2026-07-19T18:32:17.516561+00:00",
+      "path": "C:\\QM\\repo\\framework\\registry\\venue_cost_model.json",
+      "sha256": "7dfafe53749e5c45be0cb37568b6e3491c109f546fafaf799f6ea82efdb688d7",
+      "size_bytes": 25272
+    },
+    {
+      "mtime_utc": "2026-06-01T08:33:32.261355+00:00",
+      "path": "C:\\QM\\repo\\framework\\registry\\live_commission.json",
+      "sha256": "119f795cefce2f819f0c7aae3bddb87affbffa771f596df48d182cf89989e197",
+      "size_bytes": 1595
+    },
+    {
+      "mtime_utc": "2026-07-30T01:02:30.006072+00:00",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-07-30_ftmo_book3_symbol_cost_snapshot.json",
+      "sha256": "7eab3bf8c97373fcb44e36aca39dd679fbd3e093783cd6eacd9cb171190b3280",
+      "size_bytes": 6144
+    },
+    {
+      "mtime_utc": "2026-09-05T04:30:53.320374+00:00",
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+      "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e",
+      "size_bytes": 15416
+    },
+    {
+      "mtime_utc": "2026-09-04T05:22:42.813256+00:00",
+      "path": "D:\\QM\\reports\\pipeline\\QM5_10706\\Q08\\_baseline\\QM5_10706\\20260904_051342\\raw\\run_01\\report.htm",
+      "sha256": "85dd26cd8c56b9098b7c794949f0f6b4a122f57bb1b6c2c4a84aef41e0124b82",
+      "size_bytes": 775680
+    },
+    {
+      "mtime_utc": "2026-09-02T19:37:32.695960+00:00",
+      "path": "D:\\QM\\reports\\pipeline\\QM5_11421\\Q08\\_baseline\\QM5_11421\\20260902_193230\\raw\\run_01\\report.htm",
+      "sha256": "7b56e1682561b9aa6ae4ddc311ac83e785f1d033e3b90d80db342fa4a96c8071",
+      "size_bytes": 601766
+    },
+    {
+      "mtime_utc": "2026-09-04T06:23:07.758283+00:00",
+      "path": "D:\\QM\\reports\\pipeline\\QM5_11422\\Q08\\_baseline\\QM5_11422\\20260904_061656\\raw\\run_01\\report.htm",
+      "sha256": "9b12636e15e8c0cee89d551eeda98c6f524798a0e3e38fde02e17ce36ede0411",
+      "size_bytes": 617470
+    },
+    {
+      "mtime_utc": "2026-09-04T16:04:55.564886+00:00",
+      "path": "D:\\QM\\reports\\pipeline\\QM5_11910\\Q08\\_baseline\\QM5_11910\\20260904_160009\\raw\\run_01\\report.htm",
+      "sha256": "27a89a85a968c3e55380e3b66e7bab0bc794ca45a135def3a79dc224867d2684",
+      "size_bytes": 164828
+    },
+    {
+      "mtime_utc": "2026-09-04T06:15:47.059053+00:00",
+      "path": "D:\\QM\\reports\\pipeline\\QM5_13054\\Q08\\_baseline\\QM5_13054\\20260904_061139\\raw\\run_01\\report.htm",
+      "sha256": "6c578a7287c6aa6ab0369eed9fe842511a031843dd0176dc0ad372224d2da2ea",
+      "size_bytes": 200632
+    },
+    {
+      "mtime_utc": "2026-09-04T05:12:22.830561+00:00",
+      "path": "D:\\QM\\reports\\pipeline\\QM5_1537\\Q08\\_baseline\\QM5_1537\\20260904_050325\\raw\\run_01\\report.htm",
+      "sha256": "38f6c7d981173cfdfbf3806871bfa39545025aa83b890d95f34cd5d2c2494f7d",
+      "size_bytes": 233236
+    },
+    {
+      "mtime_utc": "2026-09-04T06:53:46.015495+00:00",
+      "path": "D:\\QM\\reports\\pipeline\\QM5_20048\\Q08\\_baseline\\QM5_20048\\20260904_065008\\raw\\run_01\\report.htm",
+      "sha256": "057d568c055c65922dd7a9e2273004728bc871fbb3dd2000a9756e16c8237977",
+      "size_bytes": 153474
+    },
+    {
+      "mtime_utc": "2026-09-04T06:06:42.346018+00:00",
+      "path": "D:\\QM\\reports\\pipeline\\QM5_21505\\Q08\\_baseline\\QM5_21505\\20260904_060120\\raw\\run_01\\report.htm",
+      "sha256": "911154341b07528d3ea7cecb5e0e4664503a1f64b1c2b3749a4bb233b64a0535",
+      "size_bytes": 274168
+    }
+  ],
+  "live_attribution": {
+    "audit_reconciliation_window": {
+      "active_close_days": 24,
+      "audit_reference_net": -469.0,
+      "calendar_days": 35,
+      "closed_trades": 65,
+      "delta_vs_audit_reference": -3.96,
+      "end": "2026-09-04",
+      "net_actual": -472.96,
+      "sharpe": {
+        "bootstrap_valid_replicates": 10000,
+        "ci95": [
+          -7.005406,
+          3.825256
+        ],
+        "estimate": -1.324596
+      },
+      "start": "2026-08-01"
+    },
+    "deal_export": {
+      "mtime_utc": "2026-09-04T18:00:55.329720+00:00",
+      "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\journal\\live_deals_normalized.csv",
+      "sha256": "9a4cc7ba454767e36714d61dc9cd93e1ef6059ec9afaa3e1377091c6892966c7",
+      "size_bytes": 38405
+    },
+    "deal_rows": 225,
+    "excluded": {
+      "drift_magics": {
+        "closed_trades": 3,
+        "last_close_by_magic": {
+          "104760004": null,
+          "106920005": "2026-07-10",
+          "107150004": null,
+          "109400003": "2026-06-30"
+        },
+        "net_actual": -134.65
+      },
+      "magic_0": {
+        "closed_trades": 1,
+        "net_actual": -1539.5
+      }
+    },
+    "governance": {
+      "excluded_magics": [
+        0,
+        104760004,
+        106920005,
+        107150004,
+        109400003
+      ],
+      "pointer_signed": false,
+      "roster_magic_count": 24,
+      "roster_source": {
+        "mtime_utc": "2026-08-22T10:15:44.835397+00:00",
+        "path": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+        "sha256": "f5f23f3c597f07217ef4406a34f929a2cb50e580986007eefe758d4e27b1704a",
+        "size_bytes": 18103
+      }
+    },
+    "last_deal_utc": "2026-09-04T18:00:00Z",
+    "literal_latest_30_active_close_days": {
+      "active_close_days": 30,
+      "closed_trades": 85,
+      "end": "2026-09-04",
+      "net_actual": -1436.59,
+      "start": "2026-07-24"
+    },
+    "per_sleeve": [
+      {
+        "active_days": 2,
+        "annualized_calendar_daily_sharpe": {
+          "bootstrap_valid_replicates": 8726,
+          "ci95": [
+            -4.790616,
+            4.790616
+          ],
+          "estimate": 1.948106
+        },
+        "closed_trades": 2,
+        "ea_id": 1556,
+        "magic": 15560004,
+        "net_actual": 126.42,
+        "swap": -2.47,
+        "symbol": "XAUUSD"
+      },
+      {
+        "active_days": 1,
+        "annualized_calendar_daily_sharpe": {
+          "bootstrap_valid_replicates": 6396,
+          "ci95": [
+            -5.62024,
+            -2.683282
+          ],
+          "estimate": -2.683282
+        },
+        "closed_trades": 1,
+        "ea_id": 1567,
+        "magic": 15670007,
+        "net_actual": -195.56,
+        "swap": 0.0,
+        "symbol": "EURUSD"
+      },
+      {
+        "active_days": 4,
+        "annualized_calendar_daily_sharpe": {
+          "bootstrap_valid_replicates": 9862,
+          "ci95": [
+            -3.825218,
+            5.663372
+          ],
+          "estimate": 1.513452
+        },
+        "closed_trades": 4,
+        "ea_id": 10403,
+        "magic": 104030002,
+        "net_actual": 163.42,
+        "swap": -13.27,
+        "symbol": "XAUUSD"
+      },
+      {
+        "active_days": 5,
+        "annualized_calendar_daily_sharpe": {
+          "bootstrap_valid_replicates": 9959,
+          "ci95": [
+            -4.300411,
+            5.784097
+          ],
+          "estimate": 2.378894
+        },
+        "closed_trades": 5,
+        "ea_id": 10440,
+        "magic": 104400003,
+        "net_actual": 193.83,
+        "swap": -2.39,
+        "symbol": "NDX"
+      },
+      {
+        "active_days": 1,
+        "annualized_calendar_daily_sharpe": {
+          "bootstrap_valid_replicates": 6410,
+          "ci95": [
+            -5.62024,
+            -2.683282
+          ],
+          "estimate": -2.683282
+        },
+        "closed_trades": 1,
+        "ea_id": 10513,
+        "magic": 105130003,
+        "net_actual": -230.84,
+        "swap": 1.65,
+        "symbol": "XAUUSD"
+      },
+      {
+        "active_days": 5,
+        "annualized_calendar_daily_sharpe": {
+          "bootstrap_valid_replicates": 9952,
+          "ci95": [
+            -4.790511,
+            5.842395
+          ],
+          "estimate": 2.433942
+        },
+        "closed_trades": 5,
+        "ea_id": 10706,
+        "magic": 107060001,
+        "net_actual": 226.95,
+        "swap": -8.95,
+        "symbol": "GBPUSD"
+      },
+      {
+        "active_days": 9,
+        "annualized_calendar_daily_sharpe": {
+          "bootstrap_valid_replicates": 10000,
+          "ci95": [
+            -6.052598,
+            5.128524
+          ],
+          "estimate": 1.55894
+        },
+        "closed_trades": 10,
+        "ea_id": 10911,
+        "magic": 109110003,
+        "net_actual": 255.56,
+        "swap": 1.8,
+        "symbol": "GDAXI"
+      },
+      {
+        "active_days": 0,
+        "annualized_calendar_daily_sharpe": {
+          "ci95": [
+            null,
+            null
+          ],
+          "estimate": null,
+          "reason": "fewer_than_2_or_zero_variance"
+        },
+        "closed_trades": 0,
+        "ea_id": 10919,
+        "magic": 109190001,
+        "net_actual": 0,
+        "swap": 0,
+        "symbol": "XTIUSD"
+      },
+      {
+        "active_days": 2,
+        "annualized_calendar_daily_sharpe": {
+          "bootstrap_valid_replicates": 8728,
+          "ci95": [
+            -5.702413,
+            -2.683282
+          ],
+          "estimate": -3.385103
+        },
+        "closed_trades": 2,
+        "ea_id": 10939,
+        "magic": 109390001,
+        "net_actual": -264.7,
+        "swap": -2.6,
+        "symbol": "GBPUSD"
+      },
+      {
+        "active_days": 1,
+        "annualized_calendar_daily_sharpe": {
+          "bootstrap_valid_replicates": 6374,
+          "ci95": [
+            -5.62024,
+            -2.683282
+          ],
+          "estimate": -2.683282
+        },
+        "closed_trades": 1,
+        "ea_id": 11132,
+        "magic": 111320000,
+        "net_actual": -87.21,
+        "swap": -7.03,
+        "symbol": "SP500"
+      },
+      {
+        "active_days": 2,
+        "annualized_calendar_daily_sharpe": {
+          "bootstrap_valid_replicates": 8707,
+          "ci95": [
+            -4.790616,
+            4.790616
+          ],
+          "estimate": -1.375321
+        },
+        "closed_trades": 2,
+        "ea_id": 11165,
+        "magic": 111650000,
+        "net_actual": -29.23,
+        "swap": -3.12,
+        "symbol": "EURUSD"
+      },
+      {
+        "active_days": 2,
+        "annualized_calendar_daily_sharpe": {
+          "bootstrap_valid_replicates": 8735,
+          "ci95": [
+            -4.790616,
+            4.790616
+          ],
+          "estimate": 1.090027
+        },
+        "closed_trades": 3,
+        "ea_id": 11165,
+        "magic": 111650002,
+        "net_actual": 96.85,
+        "swap": 8.0,
+        "symbol": "AUDCAD"
+      },
+      {
+        "active_days": 2,
+        "annualized_calendar_daily_sharpe": {
+          "bootstrap_valid_replicates": 8727,
+          "ci95": [
+            -6.191876,
+            -2.683282
+          ],
+          "estimate": -3.616686
+        },
+        "closed_trades": 2,
+        "ea_id": 11421,
+        "magic": 114210000,
+        "net_actual": -250.5,
+        "swap": 0.66,
+        "symbol": "EURUSD"
+      },
+      {
+        "active_days": 1,
+        "annualized_calendar_daily_sharpe": {
+          "bootstrap_valid_replicates": 6334,
+          "ci95": [
+            2.683282,
+            5.62024
+          ],
+          "estimate": 2.683282
+        },
+        "closed_trades": 1,
+        "ea_id": 11421,
+        "magic": 114210003,
+        "net_actual": 13.38,
+        "swap": 0.0,
+        "symbol": "AUDUSD"
+      },
+      {
+        "active_days": 2,
+        "annualized_calendar_daily_sharpe": {
+          "bootstrap_valid_replicates": 8727,
+          "ci95": [
+            -5.62024,
+            -2.683282
+          ],
+          "estimate": -2.789661
+        },
+        "closed_trades": 2,
+        "ea_id": 11708,
+        "magic": 117080000,
+        "net_actual": -530.67,
+        "swap": 0.91,
+        "symbol": "EURUSD"
+      },
+      {
+        "active_days": 0,
+        "annualized_calendar_daily_sharpe": {
+          "ci95": [
+            null,
+            null
+          ],
+          "estimate": null,
+          "reason": "fewer_than_2_or_zero_variance"
+        },
+        "closed_trades": 0,
+        "ea_id": 12567,
+        "magic": 125670002,
+        "net_actual": 0,
+        "swap": 0,
+        "symbol": "XNGUSD"
+      },
+      {
+        "active_days": 0,
+        "annualized_calendar_daily_sharpe": {
+          "ci95": [
+            null,
+            null
+          ],
+          "estimate": null,
+          "reason": "fewer_than_2_or_zero_variance"
+        },
+        "closed_trades": 0,
+        "ea_id": 12567,
+        "magic": 125670003,
+        "net_actual": 0,
+        "swap": 0,
+        "symbol": "XAUUSD"
+      },
+      {
+        "active_days": 0,
+        "annualized_calendar_daily_sharpe": {
+          "ci95": [
+            null,
+            null
+          ],
+          "estimate": null,
+          "reason": "fewer_than_2_or_zero_variance"
+        },
+        "closed_trades": 0,
+        "ea_id": 12778,
+        "magic": 127780000,
+        "net_actual": 0,
+        "swap": 0,
+        "symbol": "AUDUSD"
+      },
+      {
+        "active_days": 0,
+        "annualized_calendar_daily_sharpe": {
+          "ci95": [
+            null,
+            null
+          ],
+          "estimate": null,
+          "reason": "fewer_than_2_or_zero_variance"
+        },
+        "closed_trades": 0,
+        "ea_id": 12969,
+        "magic": 129690000,
+        "net_actual": 0,
+        "swap": 0,
+        "symbol": "USDJPY"
+      },
+      {
+        "active_days": 0,
+        "annualized_calendar_daily_sharpe": {
+          "ci95": [
+            null,
+            null
+          ],
+          "estimate": null,
+          "reason": "fewer_than_2_or_zero_variance"
+        },
+        "closed_trades": 0,
+        "ea_id": 12989,
+        "magic": 129890003,
+        "net_actual": 0,
+        "swap": 0,
+        "symbol": "XAUUSD"
+      },
+      {
+        "active_days": 0,
+        "annualized_calendar_daily_sharpe": {
+          "ci95": [
+            null,
+            null
+          ],
+          "estimate": null,
+          "reason": "fewer_than_2_or_zero_variance"
+        },
+        "closed_trades": 0,
+        "ea_id": 13117,
+        "magic": 131170000,
+        "net_actual": 0,
+        "swap": 0,
+        "symbol": "EURGBP"
+      },
+      {
+        "active_days": 0,
+        "annualized_calendar_daily_sharpe": {
+          "ci95": [
+            null,
+            null
+          ],
+          "estimate": null,
+          "reason": "fewer_than_2_or_zero_variance"
+        },
+        "closed_trades": 0,
+        "ea_id": 13128,
+        "magic": 131280000,
+        "net_actual": 0,
+        "swap": 0,
+        "symbol": "NDX"
+      },
+      {
+        "active_days": 17,
+        "annualized_calendar_daily_sharpe": {
+          "bootstrap_valid_replicates": 10000,
+          "ci95": [
+            -1.979228,
+            9.118397
+          ],
+          "estimate": 3.317373
+        },
+        "closed_trades": 17,
+        "ea_id": 13213,
+        "magic": 132130000,
+        "net_actual": 146.0,
+        "swap": 0.0,
+        "symbol": "USDJPY"
+      },
+      {
+        "active_days": 7,
+        "annualized_calendar_daily_sharpe": {
+          "bootstrap_valid_replicates": 9996,
+          "ci95": [
+            -6.53268,
+            3.357355
+          ],
+          "estimate": -2.701581
+        },
+        "closed_trades": 7,
+        "ea_id": 13301,
+        "magic": 133010010,
+        "net_actual": -106.66,
+        "swap": 0.0,
+        "symbol": "GDAXI"
+      }
+    ]
+  },
+  "mode": "READ_ONLY_INPUTS_NO_TLIVE_MUTATION",
+  "output_dir": "D:\\QM\\reports\\portfolio\\live_attribution_20260905_054540",
+  "owner_lookup_required": [
+    "Confirm the triple-swap weekday and current specification for all six symbols in the FTMO client platform; the public API does not publish the triple weekday.",
+    "Export or screenshot the exact per-symbol FTMO client specifications before any purchase decision.",
+    "Obtain matched-session FTMO versus Darwinex M1 spread calibration; this snapshot deliberately excludes spread delta.",
+    "Refresh the official symbols API and rerun the projection immediately before an OWNER-authorized purchase."
+  ],
+  "schema": "qm.ftmo-readiness-part1-validation/v1",
+  "task_id": "b5a4e196-4670-44b3-af12-1152b40824ed",
+  "verdict": "PASS_WITH_RECONCILIATION_AND_OWNER_INPUTS_OPEN"
+}
