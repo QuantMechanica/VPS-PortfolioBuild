@@ -1,0 +1,19 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "b5a281843f81f596c8fdafda28095cea538ccd08ca3d3e1402a4dd4a9eed0179",
+      "ea_id": "QM5_41341",
+      "ea_label": "QM5_41341_xauxag-mbisquare-rv",
+      "expected_mq5_sha256": "b5a281843f81f596c8fdafda28095cea538ccd08ca3d3e1402a4dd4a9eed0179",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41341_xauxag-mbisquare-rv\\QM5_41341_xauxag-mbisquare-rv.mq5",
+      "work_item_id": "55c7af5e-37f0-47ee-b00c-a5e9d054ee80"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "55c7af5e-37f0-47ee-b00c-a5e9d054ee80"
+}
