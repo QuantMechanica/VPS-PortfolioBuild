@@ -1,0 +1,541 @@
+{
+  "admission_receipt": false,
+  "cli_destination_refusal": "The provision CLI accepts only D:/QM/reports/state. No receipt was written there; pure inspection was retained as evidence only.",
+  "created_at_utc": "2026-09-05T12:07:28.250966+00:00",
+  "inspection_only": true,
+  "lanes": [
+    {
+      "candidate_binaries_present": {
+        "1537": [],
+        "10706": [],
+        "11421": [],
+        "11422": [],
+        "11910": [],
+        "13054": [],
+        "20048": [],
+        "21505": []
+      },
+      "collector_binaries": [],
+      "inspection": {
+        "autotrading_touched": false,
+        "bindings": {
+          "accounts_dat": {
+            "path": "D:\\QM\\mt5\\FTMO_STREAM1\\Config\\accounts.dat",
+            "sha256": "2b3b677dbe239db96cfe2262652de5853f58a160b482a99e797ac1ee66d89d21",
+            "size_bytes": 12130
+          },
+          "common_ini": {
+            "path": "D:\\QM\\mt5\\FTMO_STREAM1\\Config\\common.ini",
+            "sha256": "f524cf4d8aff087839d74676c37d1a15a8235ab7557e575e1df8fc7b7a42059a",
+            "size_bytes": 1228
+          },
+          "servers_dat": {
+            "path": "D:\\QM\\mt5\\FTMO_STREAM1\\Config\\servers.dat",
+            "sha256": "fa5ee9711e7aaf865d0f26785fcfcbf84ce90e38c8d6f1f5536d55abaa4f85a9",
+            "size_bytes": 48508
+          },
+          "terminal_exe": {
+            "path": "D:\\QM\\mt5\\FTMO_STREAM1\\terminal64.exe",
+            "sha256": "664dba9b35092e7836677fec9e93cc0f90509afaaef65417ec0cef8fab3675f2",
+            "size_bytes": 121022080
+          }
+        },
+        "campaign_ready": false,
+        "capacity": {
+          "max_ftmo_concurrent": 2,
+          "minimum_normal_factory_slots_preserved": 8,
+          "normal_factory_slots": 10,
+          "normal_factory_slots_claimed_by_ftmo": 0,
+          "normal_factory_slots_preserved": 10,
+          "observed_factory_terminal_processes": 7,
+          "observed_ftmo_terminal_processes": 0,
+          "observed_other_terminal_processes": 2,
+          "permit": true,
+          "preemption_allowed": false,
+          "reason": "ADMIT"
+        },
+        "claims": {
+          "live_authority": "NONE",
+          "pipeline_verdict": "NONE",
+          "selection_credit": "NONE"
+        },
+        "created_at": "2026-09-05T12:07:26Z",
+        "dedicated_research_root": {
+          "not_appdata_live_trial": true,
+          "not_t_live": true,
+          "portable_mode_assertion": "RUNNER_ALWAYS_USES_ROOT_TERMINAL_WITH_/portable_AND_ROOT_LOCAL_CONFIG",
+          "proven": true,
+          "registered_root_match": true
+        },
+        "history": {
+          "EURUSD": {
+            "m1_bars": {
+              "cache_file_count": 2,
+              "cache_files_sha256": [
+                "00501e3819fe42733a0e47e14cb6e6d057303f4b0de8105e57b3785b3e782ec5",
+                "6eb59b53cf86f9b12730eaa8ce4cdbe1921bfdbcd1a808893c9568f16a023ed2"
+              ],
+              "coverage_from": null,
+              "coverage_proven": false,
+              "coverage_to": null,
+              "reason": "CACHE_FILES_ALONE_DO_NOT_PROVE_ACTUAL_M1_WINDOW"
+            },
+            "real_ticks": {
+              "cache_file_count": 5,
+              "cache_files_sha256": [
+                "1a70a564346723308bf7dfcf274abd0eee915ff624150e28384200e085ad74a6",
+                "abec56d7fe8cc6a007b7d1fad0a052eed6671fb71a521390aee7851ecb532387",
+                "ab79bffa4b03e5382bfe656e7d6553df463b781223fabf375b0eadc12044f2db",
+                "13da5204f0793f6679b6656ca09635ea9a88db03f56dc0b7087e8d59a31b0905",
+                "ba3e41f1ba77d56ed5d4de750d5de64320ef8c182511fc20efedf83c50b7f6fa"
+              ],
+              "coverage_from": null,
+              "coverage_proven": false,
+              "coverage_to": null,
+              "reason": "CACHE_FILES_ALONE_DO_NOT_PROVE_ACTUAL_TICK_WINDOW"
+            }
+          },
+          "GBPUSD": {
+            "m1_bars": {
+              "cache_file_count": 2,
+              "cache_files_sha256": [
+                "1fd7c1ced3d16e13ba5a71c8916bd9603989fc928c8e644c349d5cc0d9e1b360",
+                "bfa63126e029678f2eb41b2e93bb04009aa6b1cef4c05e604830c397af4369ff"
+              ],
+              "coverage_from": null,
+              "coverage_proven": false,
+              "coverage_to": null,
+              "reason": "CACHE_FILES_ALONE_DO_NOT_PROVE_ACTUAL_M1_WINDOW"
+            },
+            "real_ticks": {
+              "cache_file_count": 5,
+              "cache_files_sha256": [
+                "3397848658d899d16b616cafa7a2fbfaf952857edfb2869f41200da4776d2752",
+                "3b71fadbb251689c96410847275e48ca2ba81aa1823fd20bef049b36e23a6238",
+                "b7c14ea10ba744698a8437b782199c6df7c5d37c8b63968bcfa4a7431a8c0882",
+                "016f3dce3000192250c1309905f50ca1f586450b2d23b49f27a063382d4101b8",
+                "94f575a0a9a22f4574bb3885e0fa55904d14797a2be93a3934791f4aa72337f0"
+              ],
+              "coverage_from": null,
+              "coverage_proven": false,
+              "coverage_to": null,
+              "reason": "CACHE_FILES_ALONE_DO_NOT_PROVE_ACTUAL_TICK_WINDOW"
+            }
+          },
+          "GER40.cash": {
+            "m1_bars": {
+              "cache_file_count": 0,
+              "cache_files_sha256": [],
+              "coverage_from": null,
+              "coverage_proven": false,
+              "coverage_to": null,
+              "reason": "CACHE_FILES_ALONE_DO_NOT_PROVE_ACTUAL_M1_WINDOW"
+            },
+            "real_ticks": {
+              "cache_file_count": 0,
+              "cache_files_sha256": [],
+              "coverage_from": null,
+              "coverage_proven": false,
+              "coverage_to": null,
+              "reason": "CACHE_FILES_ALONE_DO_NOT_PROVE_ACTUAL_TICK_WINDOW"
+            }
+          },
+          "NZDUSD": {
+            "m1_bars": {
+              "cache_file_count": 1,
+              "cache_files_sha256": [
+                "9cd2b8d26ea1ad8fc89a443aa9f0ce7f7d990f520098c2dc21229e8a631a5f89"
+              ],
+              "coverage_from": null,
+              "coverage_proven": false,
+              "coverage_to": null,
+              "reason": "CACHE_FILES_ALONE_DO_NOT_PROVE_ACTUAL_M1_WINDOW"
+            },
+            "real_ticks": {
+              "cache_file_count": 5,
+              "cache_files_sha256": [
+                "90006251d2e296d76a34c93dbe23e9bf645100893c05bc55de453e8c6c9dcb20",
+                "63885309960d9a882367326e55920c11df580f0f89069f331b4d1c03cbe59db0",
+                "7b31f5ed511883f73215ddd198e469d112acc2e06d8a23de9c31a83a707ceea2",
+                "2f1060af4873c4a09e231fbf17ae1d490a907b0fc2d137f740774038068c2e32",
+                "4b1ff7448184b6efeb1bf2efeffc599e4f63c776a4d249bb9001f1ffedb1297a"
+              ],
+              "coverage_from": null,
+              "coverage_proven": false,
+              "coverage_to": null,
+              "reason": "CACHE_FILES_ALONE_DO_NOT_PROVE_ACTUAL_TICK_WINDOW"
+            }
+          },
+          "USDCAD": {
+            "m1_bars": {
+              "cache_file_count": 1,
+              "cache_files_sha256": [
+                "81379be2657a6d1c367763e5863f3cfa4f6f91c32fce96fd41bb013bdac47ab2"
+              ],
+              "coverage_from": null,
+              "coverage_proven": false,
+              "coverage_to": null,
+              "reason": "CACHE_FILES_ALONE_DO_NOT_PROVE_ACTUAL_M1_WINDOW"
+            },
+            "real_ticks": {
+              "cache_file_count": 5,
+              "cache_files_sha256": [
+                "517c17869a042652f2e8f99874f7264581aa68d295022e9bc2e810a5d427c940",
+                "508e3c0aeaa81a8f90fd7cae775e8e8e37086480d6bf9d3c6c8e98200938103b",
+                "ff50272f7758ab2146005891fc268a114f6e6e05e9e98a789a1329a003ce2771",
+                "743c0e49bb09de6d062d94f641827ae92c6f844e44ba3a56d9b038059e05c78c",
+                "a8c72ff155e552b07d1b8c5990a214843aed1f53216b17aa21a35b26c42067d9"
+              ],
+              "coverage_from": null,
+              "coverage_proven": false,
+              "coverage_to": null,
+              "reason": "CACHE_FILES_ALONE_DO_NOT_PROVE_ACTUAL_TICK_WINDOW"
+            }
+          },
+          "USOIL.cash": {
+            "m1_bars": {
+              "cache_file_count": 1,
+              "cache_files_sha256": [
+                "a4cc1223c6548879d6f04db69dc6011c025ad5d1ea875d15246ae361a2898f62"
+              ],
+              "coverage_from": null,
+              "coverage_proven": false,
+              "coverage_to": null,
+              "reason": "CACHE_FILES_ALONE_DO_NOT_PROVE_ACTUAL_M1_WINDOW"
+            },
+            "real_ticks": {
+              "cache_file_count": 5,
+              "cache_files_sha256": [
+                "4873b001232bccb3870c004582d4b1118d567b890bfd01394bc6664e374c613d",
+                "5b278f5ef11ed73a3212eb607d09c7d1debd7fbcc8b104b82abe7def193e0a86",
+                "dfc275d7e26431b5a255aff105560cdf744b9e8d42721a6499e49f223176ad8a",
+                "0d220fc2f6fe69c83c379920a705c62984ce548739405a801f71643168684c43",
+                "e78868e90a950f90b669cefaa4c32543f2e0fc8568beca2e382c2005abc748fb"
+              ],
+              "coverage_from": null,
+              "coverage_proven": false,
+              "coverage_to": null,
+              "reason": "CACHE_FILES_ALONE_DO_NOT_PROVE_ACTUAL_TICK_WINDOW"
+            }
+          },
+          "XAGUSD": {
+            "m1_bars": {
+              "cache_file_count": 1,
+              "cache_files_sha256": [
+                "447998cd0f32a3c42b19fb6f49843fc79c888f4db772b85db68b0ec47c92c4bd"
+              ],
+              "coverage_from": null,
+              "coverage_proven": false,
+              "coverage_to": null,
+              "reason": "CACHE_FILES_ALONE_DO_NOT_PROVE_ACTUAL_M1_WINDOW"
+            },
+            "real_ticks": {
+              "cache_file_count": 5,
+              "cache_files_sha256": [
+                "86e1f74018098025240ba4720bf8ebb9aebc40b6618caaa6a0dcaca0ca0bf12a",
+                "0675e2b87e6352e7aa6dd3c861d46275117d462af324bf0075e58d265a7e3e61",
+                "55e2d07f41a1c66315f02a86346773372bd3c69e469125d468c2f3e9165e9819",
+                "a48f247837a2197576d80c54c6999d7f1882af08d4bf1f11dfa46ebf12584518",
+                "5010bef08f00e8cc7a4cf467a40c662bf943061fe2e3bea480e13a9f6918f007"
+              ],
+              "coverage_from": null,
+              "coverage_proven": false,
+              "coverage_to": null,
+              "reason": "CACHE_FILES_ALONE_DO_NOT_PROVE_ACTUAL_TICK_WINDOW"
+            }
+          },
+          "XAUUSD": {
+            "m1_bars": {
+              "cache_file_count": 1,
+              "cache_files_sha256": [
+                "e862450f427ba2734e7a3cac0bd8b2bf47bcf0bd03eccd00a8e00b3464d8764a"
+              ],
+              "coverage_from": null,
+              "coverage_proven": false,
+              "coverage_to": null,
+              "reason": "CACHE_FILES_ALONE_DO_NOT_PROVE_ACTUAL_M1_WINDOW"
+            },
+            "real_ticks": {
+              "cache_file_count": 5,
+              "cache_files_sha256": [
+                "73f9c2fc594f7a1d4e75327f6692fc3c6c6090244dc54d4b57071a5561afd587",
+                "34f96b452cce58ad2805f725be98b9939be9bc9875f38680ef04f83a2c8837e5",
+                "912379899d4062015967e2d2cad7a51aab75929027797f5dc5e9b7df1b6d0d82",
+                "3425b66235f856bf67b601e2d55617d11e411df5355435afa05584fcb4aa7740",
+                "6483cad3ce7f24e451ba498c17712e653b2658f3cd331164be4f3b23c8805262"
+              ],
+              "coverage_from": null,
+              "coverage_proven": false,
+              "coverage_to": null,
+              "reason": "CACHE_FILES_ALONE_DO_NOT_PROVE_ACTUAL_TICK_WINDOW"
+            }
+          }
+        },
+        "history_observation": null,
+        "hold_reasons": [
+          "NATIVE_HISTORY_WINDOWS_UNPROVEN"
+        ],
+        "lane": "FTMO_STREAM1",
+        "lane_root": "D:\\QM\\mt5\\FTMO_STREAM1",
+        "profile": {
+          "broker_source": "trader.ftmo.com",
+          "company_contains_ftmo": true,
+          "company_evidence": "Config/common.ini [Common] Source (report-level company still unproven)",
+          "demo_login": 1514165262,
+          "experts_enabled": false,
+          "experts_enabled_raw_is_zero": true,
+          "server": "FTMO-Demo"
+        },
+        "schema": "qm.ftmo-lane-provision-receipt/v1",
+        "status": "HOLD"
+      },
+      "lane": "FTMO_STREAM1",
+      "native_telemetry_streams": []
+    },
+    {
+      "candidate_binaries_present": {
+        "1537": [],
+        "10706": [],
+        "11421": [],
+        "11422": [],
+        "11910": [],
+        "13054": [],
+        "20048": [],
+        "21505": []
+      },
+      "collector_binaries": [],
+      "inspection": {
+        "autotrading_touched": false,
+        "bindings": {
+          "accounts_dat": {
+            "path": "D:\\QM\\mt5\\FTMO_STREAM2\\Config\\accounts.dat",
+            "sha256": "731d3b289af679a51f8044e5eafc2541099a9435a863c33ec0c78aecc3d8c983",
+            "size_bytes": 12130
+          },
+          "common_ini": {
+            "path": "D:\\QM\\mt5\\FTMO_STREAM2\\Config\\common.ini",
+            "sha256": "f524cf4d8aff087839d74676c37d1a15a8235ab7557e575e1df8fc7b7a42059a",
+            "size_bytes": 1228
+          },
+          "servers_dat": {
+            "path": "D:\\QM\\mt5\\FTMO_STREAM2\\Config\\servers.dat",
+            "sha256": "0d10a569c13fa2bc8d0abfe553319751482be12f568946fbc78c2ceff62cd9a2",
+            "size_bytes": 47740
+          },
+          "terminal_exe": {
+            "path": "D:\\QM\\mt5\\FTMO_STREAM2\\terminal64.exe",
+            "sha256": "03e4079b0e9e6697f19ad050049e6ae280cafc49692fa08968409e181209a992",
+            "size_bytes": 131749656
+          }
+        },
+        "campaign_ready": false,
+        "capacity": {
+          "max_ftmo_concurrent": 2,
+          "minimum_normal_factory_slots_preserved": 8,
+          "normal_factory_slots": 10,
+          "normal_factory_slots_claimed_by_ftmo": 0,
+          "normal_factory_slots_preserved": 10,
+          "observed_factory_terminal_processes": 7,
+          "observed_ftmo_terminal_processes": 0,
+          "observed_other_terminal_processes": 2,
+          "permit": true,
+          "preemption_allowed": false,
+          "reason": "ADMIT"
+        },
+        "claims": {
+          "live_authority": "NONE",
+          "pipeline_verdict": "NONE",
+          "selection_credit": "NONE"
+        },
+        "created_at": "2026-09-05T12:07:28Z",
+        "dedicated_research_root": {
+          "not_appdata_live_trial": true,
+          "not_t_live": true,
+          "portable_mode_assertion": "RUNNER_ALWAYS_USES_ROOT_TERMINAL_WITH_/portable_AND_ROOT_LOCAL_CONFIG",
+          "proven": true,
+          "registered_root_match": true
+        },
+        "history": {
+          "EURUSD": {
+            "m1_bars": {
+              "cache_file_count": 2,
+              "cache_files_sha256": [
+                "00501e3819fe42733a0e47e14cb6e6d057303f4b0de8105e57b3785b3e782ec5",
+                "c13dfdb773c0a5787ac1d32ac01ad5ad08af78a857fd466dd6ce5918d3097ced"
+              ],
+              "coverage_from": null,
+              "coverage_proven": false,
+              "coverage_to": null,
+              "reason": "CACHE_FILES_ALONE_DO_NOT_PROVE_ACTUAL_M1_WINDOW"
+            },
+            "real_ticks": {
+              "cache_file_count": 0,
+              "cache_files_sha256": [],
+              "coverage_from": null,
+              "coverage_proven": false,
+              "coverage_to": null,
+              "reason": "CACHE_FILES_ALONE_DO_NOT_PROVE_ACTUAL_TICK_WINDOW"
+            }
+          },
+          "GBPUSD": {
+            "m1_bars": {
+              "cache_file_count": 2,
+              "cache_files_sha256": [
+                "1fd7c1ced3d16e13ba5a71c8916bd9603989fc928c8e644c349d5cc0d9e1b360",
+                "63a46c4a0ba35454c2df787b74d0249a23dc85d43e03eb6c8eb3e20ecd469ac8"
+              ],
+              "coverage_from": null,
+              "coverage_proven": false,
+              "coverage_to": null,
+              "reason": "CACHE_FILES_ALONE_DO_NOT_PROVE_ACTUAL_M1_WINDOW"
+            },
+            "real_ticks": {
+              "cache_file_count": 0,
+              "cache_files_sha256": [],
+              "coverage_from": null,
+              "coverage_proven": false,
+              "coverage_to": null,
+              "reason": "CACHE_FILES_ALONE_DO_NOT_PROVE_ACTUAL_TICK_WINDOW"
+            }
+          },
+          "GER40.cash": {
+            "m1_bars": {
+              "cache_file_count": 1,
+              "cache_files_sha256": [
+                "ed38d4dff0168356d0df2da12559b79a9a9c6d5e4898bd1be930eb2758ef6b24"
+              ],
+              "coverage_from": null,
+              "coverage_proven": false,
+              "coverage_to": null,
+              "reason": "CACHE_FILES_ALONE_DO_NOT_PROVE_ACTUAL_M1_WINDOW"
+            },
+            "real_ticks": {
+              "cache_file_count": 5,
+              "cache_files_sha256": [
+                "8e58ecaeb58003c17ff021c9dc094655ea45908a572a6bcfc1f8753526f47bc3",
+                "06709f370c1418f9efbd7c26f9906a05a90deb5a09295c63c365dad860f60d26",
+                "8429a2f8af924bfca811e799045dd7fc94874eca126fe797af45cec1d1c66f34",
+                "f2ad2724c3bb362b5d5f4754fdf76ed890d917b801550f2f6a11f91c2f95062d",
+                "50a9c2c55c57ea97c3435611b3c897fd9976d6e544334fa002df8f2caecca1bb"
+              ],
+              "coverage_from": null,
+              "coverage_proven": false,
+              "coverage_to": null,
+              "reason": "CACHE_FILES_ALONE_DO_NOT_PROVE_ACTUAL_TICK_WINDOW"
+            }
+          },
+          "NZDUSD": {
+            "m1_bars": {
+              "cache_file_count": 0,
+              "cache_files_sha256": [],
+              "coverage_from": null,
+              "coverage_proven": false,
+              "coverage_to": null,
+              "reason": "CACHE_FILES_ALONE_DO_NOT_PROVE_ACTUAL_M1_WINDOW"
+            },
+            "real_ticks": {
+              "cache_file_count": 0,
+              "cache_files_sha256": [],
+              "coverage_from": null,
+              "coverage_proven": false,
+              "coverage_to": null,
+              "reason": "CACHE_FILES_ALONE_DO_NOT_PROVE_ACTUAL_TICK_WINDOW"
+            }
+          },
+          "USDCAD": {
+            "m1_bars": {
+              "cache_file_count": 0,
+              "cache_files_sha256": [],
+              "coverage_from": null,
+              "coverage_proven": false,
+              "coverage_to": null,
+              "reason": "CACHE_FILES_ALONE_DO_NOT_PROVE_ACTUAL_M1_WINDOW"
+            },
+            "real_ticks": {
+              "cache_file_count": 0,
+              "cache_files_sha256": [],
+              "coverage_from": null,
+              "coverage_proven": false,
+              "coverage_to": null,
+              "reason": "CACHE_FILES_ALONE_DO_NOT_PROVE_ACTUAL_TICK_WINDOW"
+            }
+          },
+          "USOIL.cash": {
+            "m1_bars": {
+              "cache_file_count": 0,
+              "cache_files_sha256": [],
+              "coverage_from": null,
+              "coverage_proven": false,
+              "coverage_to": null,
+              "reason": "CACHE_FILES_ALONE_DO_NOT_PROVE_ACTUAL_M1_WINDOW"
+            },
+            "real_ticks": {
+              "cache_file_count": 0,
+              "cache_files_sha256": [],
+              "coverage_from": null,
+              "coverage_proven": false,
+              "coverage_to": null,
+              "reason": "CACHE_FILES_ALONE_DO_NOT_PROVE_ACTUAL_TICK_WINDOW"
+            }
+          },
+          "XAGUSD": {
+            "m1_bars": {
+              "cache_file_count": 0,
+              "cache_files_sha256": [],
+              "coverage_from": null,
+              "coverage_proven": false,
+              "coverage_to": null,
+              "reason": "CACHE_FILES_ALONE_DO_NOT_PROVE_ACTUAL_M1_WINDOW"
+            },
+            "real_ticks": {
+              "cache_file_count": 0,
+              "cache_files_sha256": [],
+              "coverage_from": null,
+              "coverage_proven": false,
+              "coverage_to": null,
+              "reason": "CACHE_FILES_ALONE_DO_NOT_PROVE_ACTUAL_TICK_WINDOW"
+            }
+          },
+          "XAUUSD": {
+            "m1_bars": {
+              "cache_file_count": 0,
+              "cache_files_sha256": [],
+              "coverage_from": null,
+              "coverage_proven": false,
+              "coverage_to": null,
+              "reason": "CACHE_FILES_ALONE_DO_NOT_PROVE_ACTUAL_M1_WINDOW"
+            },
+            "real_ticks": {
+              "cache_file_count": 0,
+              "cache_files_sha256": [],
+              "coverage_from": null,
+              "coverage_proven": false,
+              "coverage_to": null,
+              "reason": "CACHE_FILES_ALONE_DO_NOT_PROVE_ACTUAL_TICK_WINDOW"
+            }
+          }
+        },
+        "history_observation": null,
+        "hold_reasons": [
+          "NATIVE_HISTORY_WINDOWS_UNPROVEN"
+        ],
+        "lane": "FTMO_STREAM2",
+        "lane_root": "D:\\QM\\mt5\\FTMO_STREAM2",
+        "profile": {
+          "broker_source": "trader.ftmo.com",
+          "company_contains_ftmo": true,
+          "company_evidence": "Config/common.ini [Common] Source (report-level company still unproven)",
+          "demo_login": 1514165262,
+          "experts_enabled": false,
+          "experts_enabled_raw_is_zero": true,
+          "server": "FTMO-Demo"
+        },
+        "schema": "qm.ftmo-lane-provision-receipt/v1",
+        "status": "HOLD"
+      },
+      "lane": "FTMO_STREAM2",
+      "native_telemetry_streams": []
+    }
+  ],
+  "schema": "qm.m09-lane-observation/v1"
+}

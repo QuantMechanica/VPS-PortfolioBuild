@@ -1,0 +1,171 @@
+{
+  "authorization": {
+    "autotrading": false,
+    "deployment": false,
+    "tlive": false
+  },
+  "client_symbol_status": "OWNER_CONFIRM_BEFORE_RUN",
+  "generated_at_utc": "2026-09-05T05:57:51.198375+00:00",
+  "mode": "TRIAL_ONLY_NO_DEPLOYMENT",
+  "news": {
+    "provider_temporal_restriction": "OFF_FTMO_SWING",
+    "qm_internal_blackout": "ON_MANDATORY",
+    "stale_max_hours": 336
+  },
+  "output_dir": "D:\\QM\\reports\\ftmo_trial\\sets_20260905_055750",
+  "policy": {
+    "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\concentration_tail_limits.v1.json",
+    "sha256": "77a3b67312d199e06ad39c10a4404ab505b4041de0701ce4312a13c8cdf827da",
+    "status": "OWNER_RATIFIED"
+  },
+  "risk": {
+    "asset_class_cap_percent": 1.5,
+    "asset_class_totals": {
+      "ENERGY": 0.625,
+      "FX": 1.25,
+      "METAL": 0.625
+    },
+    "per_sleeve_percent": 0.3125,
+    "symbol_cap_percent": 1.0,
+    "symbol_totals": {
+      "EURUSD": 0.3125,
+      "GBPUSD": 0.3125,
+      "NZDUSD": 0.3125,
+      "USDCAD": 0.3125,
+      "USOIL.cash": 0.625,
+      "XAGUSD": 0.625
+    },
+    "total_percent": 2.5
+  },
+  "schema": "qm.ftmo-trial-setfiles/v1",
+  "sets": [
+    {
+      "asset_class": "FX",
+      "binary": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\QM5_10706_tv-mon-ls.ex5",
+      "binary_sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb",
+      "ea_id": 10706,
+      "magic": 107060001,
+      "magic_slot": 1,
+      "output": "D:\\QM\\reports\\ftmo_trial\\sets_20260905_055750\\QM5_10706_tv-mon-ls_GBPUSD_H1_trial.set",
+      "output_sha256": "a52b04db02972f5f56c121d739fdbecc72efcd74f0e41c248a1b420a176fbdaa",
+      "risk_percent": 0.3125,
+      "source_set": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\sets\\QM5_10706_tv-mon-ls_GBPUSD.DWX_H1_backtest.set",
+      "source_set_sha256": "e39ea2ffa324177f347bc20ec84acaf1846e61def5c0ac2c6d89a27980270118",
+      "source_symbol": "GBPUSD.DWX",
+      "timeframe": "H1",
+      "trial_symbol": "GBPUSD"
+    },
+    {
+      "asset_class": "FX",
+      "binary": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\QM5_11421_ohlc-daily-squeeze-reversal-d1.ex5",
+      "binary_sha256": "9dd7facd1da7e2c6564929b92a2e4a62e65bc40b99a03edd729030f72d18924b",
+      "ea_id": 11421,
+      "magic": 114210000,
+      "magic_slot": 0,
+      "output": "D:\\QM\\reports\\ftmo_trial\\sets_20260905_055750\\QM5_11421_ohlc-daily-squeeze-reversal-d1_EURUSD_D1_trial.set",
+      "output_sha256": "598be7770ba182040b892745ab32ec7dc118ea676b5c6a9a4cb4773a06c04b51",
+      "risk_percent": 0.3125,
+      "source_set": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\sets\\QM5_11421_ohlc-daily-squeeze-reversal-d1_EURUSD.DWX_D1_backtest.set",
+      "source_set_sha256": "7b87dbf2a4a6b6e6d8cea39e9123ebf9e06f61e53e2215eed24afde7923d74cf",
+      "source_symbol": "EURUSD.DWX",
+      "timeframe": "D1",
+      "trial_symbol": "EURUSD"
+    },
+    {
+      "asset_class": "FX",
+      "binary": "C:\\QM\\repo\\framework\\EAs\\QM5_11422_williams-18ma-outside-bar-entry-d1\\QM5_11422_williams-18ma-outside-bar-entry-d1.ex5",
+      "binary_sha256": "2b98e9e902313148be78d88513fcbda2476150b1a7605eb15a50b2cca6b32d66",
+      "ea_id": 11422,
+      "magic": 114220004,
+      "magic_slot": 4,
+      "output": "D:\\QM\\reports\\ftmo_trial\\sets_20260905_055750\\QM5_11422_williams-18ma-outside-bar-entry-d1_USDCAD_D1_trial.set",
+      "output_sha256": "517ae6803f541d5bc3807a461e3cfc3cc491a2ef3b9ef51948f334858c45c474",
+      "risk_percent": 0.3125,
+      "source_set": "C:\\QM\\repo\\framework\\EAs\\QM5_11422_williams-18ma-outside-bar-entry-d1\\sets\\QM5_11422_williams-18ma-outside-bar-entry-d1_USDCAD.DWX_D1_backtest.set",
+      "source_set_sha256": "715bce2fb8762cef12dcdff86eb6c144069b6d5a487d5e39fcaa1de71248a5ff",
+      "source_symbol": "USDCAD.DWX",
+      "timeframe": "D1",
+      "trial_symbol": "USDCAD"
+    },
+    {
+      "asset_class": "FX",
+      "binary": "C:\\QM\\repo\\framework\\EAs\\QM5_11910_larry-williams-18ma-2outside-bars-d1\\QM5_11910_larry-williams-18ma-2outside-bars-d1.ex5",
+      "binary_sha256": "e18d477e63c40cb1002aa4d93d8efcc3ec6fddf1081fb73ad9df1b0a7a3042de",
+      "ea_id": 11910,
+      "magic": 119100006,
+      "magic_slot": 6,
+      "output": "D:\\QM\\reports\\ftmo_trial\\sets_20260905_055750\\QM5_11910_larry-williams-18ma-2outside-bars-d1_NZDUSD_D1_trial.set",
+      "output_sha256": "bc81b20a42c898f610be4a9c7fb20e8785d214f440c2cf35b5af31e5b4b9001d",
+      "risk_percent": 0.3125,
+      "source_set": "C:\\QM\\repo\\framework\\EAs\\QM5_11910_larry-williams-18ma-2outside-bars-d1\\sets\\QM5_11910_larry-williams-18ma-2outside-bars-d1_NZDUSD.DWX_D1_backtest.set",
+      "source_set_sha256": "84b6dee70e76dea71119675c5e7372fdf3ef9deabfae3520e6c8b2922e2495c6",
+      "source_symbol": "NZDUSD.DWX",
+      "timeframe": "D1",
+      "trial_symbol": "NZDUSD"
+    },
+    {
+      "asset_class": "ENERGY",
+      "binary": "C:\\QM\\repo\\framework\\EAs\\QM5_13054_brent-tom-mom\\QM5_13054_brent-tom-mom.ex5",
+      "binary_sha256": "2e65488fccdbd985f78318861a223a305d820a4fce3d2ebdcafae6ce956fd96d",
+      "ea_id": 13054,
+      "magic": 130540000,
+      "magic_slot": 0,
+      "output": "D:\\QM\\reports\\ftmo_trial\\sets_20260905_055750\\QM5_13054_brent-tom-mom_USOIL.cash_D1_trial.set",
+      "output_sha256": "61be577a444356e81570ad9e5416c3599f227a0eca9bdca59276ed811f64d908",
+      "risk_percent": 0.3125,
+      "source_set": "C:\\QM\\repo\\framework\\EAs\\QM5_13054_brent-tom-mom\\sets\\QM5_13054_brent-tom-mom_XTIUSD.DWX_D1_backtest.set",
+      "source_set_sha256": "d834b193a77b1d102f2108ed0d2d92af4d040e283ac272039f9e16292c87b80c",
+      "source_symbol": "XTIUSD.DWX",
+      "timeframe": "D1",
+      "trial_symbol": "USOIL.cash"
+    },
+    {
+      "asset_class": "METAL",
+      "binary": "C:\\QM\\repo\\framework\\EAs\\QM5_1537_aa-vol-sma10\\QM5_1537_aa-vol-sma10.ex5",
+      "binary_sha256": "142a019e773a493def0640722efb9d591d094650b35a69d5de39f6af3a048106",
+      "ea_id": 1537,
+      "magic": 15370001,
+      "magic_slot": 1,
+      "output": "D:\\QM\\reports\\ftmo_trial\\sets_20260905_055750\\QM5_1537_aa-vol-sma10_XAGUSD_D1_trial.set",
+      "output_sha256": "7c083e70a003b5c86d49332875cf2c45786d058450b7fde2c1039d96cbb241a9",
+      "risk_percent": 0.3125,
+      "source_set": "C:\\QM\\repo\\framework\\EAs\\QM5_1537_aa-vol-sma10\\sets\\QM5_1537_aa-vol-sma10_XAGUSD.DWX_D1_backtest.set",
+      "source_set_sha256": "4e7e56399910999c4ec6b842496efc900dcee16b0547db7625d0808fd25de211",
+      "source_symbol": "XAGUSD.DWX",
+      "timeframe": "D1",
+      "trial_symbol": "XAGUSD"
+    },
+    {
+      "asset_class": "ENERGY",
+      "binary": "C:\\QM\\repo\\framework\\EAs\\QM5_20048_wti-preholiday\\QM5_20048_wti-preholiday.ex5",
+      "binary_sha256": "1312391ad7e654812244e48a6df92d5bd323dba7d32ddae60c54adc464527f00",
+      "ea_id": 20048,
+      "magic": 200480000,
+      "magic_slot": 0,
+      "output": "D:\\QM\\reports\\ftmo_trial\\sets_20260905_055750\\QM5_20048_wti-preholiday_USOIL.cash_D1_trial.set",
+      "output_sha256": "5a6ddcba67eb2bc9540b1b3e47deabdca6e53cefe9cb0e5980a8ed20af61ffa8",
+      "risk_percent": 0.3125,
+      "source_set": "C:\\QM\\repo\\framework\\EAs\\QM5_20048_wti-preholiday\\sets\\QM5_20048_wti-preholiday_XTIUSD.DWX_D1_backtest.set",
+      "source_set_sha256": "198f387d3bfbbf3e26435be9fcba671b0c992a2f1aacacf990b08a58d9a02e96",
+      "source_symbol": "XTIUSD.DWX",
+      "timeframe": "D1",
+      "trial_symbol": "USOIL.cash"
+    },
+    {
+      "asset_class": "METAL",
+      "binary": "C:\\QM\\repo\\framework\\EAs\\QM5_21505_xag-weekly-lowvol-momentum\\QM5_21505_xag-weekly-lowvol-momentum.ex5",
+      "binary_sha256": "395c4747832acbcdf8a68d8598e53abe5786bdc6c538767c400884cd82b2aea1",
+      "ea_id": 21505,
+      "magic": 215050000,
+      "magic_slot": 0,
+      "output": "D:\\QM\\reports\\ftmo_trial\\sets_20260905_055750\\QM5_21505_xag-weekly-lowvol-momentum_XAGUSD_D1_trial.set",
+      "output_sha256": "8e1bcb2235770b3418fc09423fae202a5aac8dc797f5df2bf3eb9a2f0cfc3d6f",
+      "risk_percent": 0.3125,
+      "source_set": "C:\\QM\\repo\\framework\\EAs\\QM5_21505_xag-weekly-lowvol-momentum\\sets\\QM5_21505_xag-weekly-lowvol-momentum_XAGUSD.DWX_D1_backtest.set",
+      "source_set_sha256": "a345970c4c597963597ad768222b8746997cf2ea0119567a9498ea90301a2397",
+      "source_symbol": "XAGUSD.DWX",
+      "timeframe": "D1",
+      "trial_symbol": "XAGUSD"
+    }
+  ]
+}

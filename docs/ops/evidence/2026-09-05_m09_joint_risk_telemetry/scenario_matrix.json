@@ -1,0 +1,141 @@
+{
+  "native_streams_found": 0,
+  "scenarios": [
+    {
+      "acceptance": "Show reservation acquired before order submission, released after reject/fill; bind exact binary and input activation.",
+      "blockers": [
+        "NO_BOUND_SHARED_ACCOUNT_SCENARIO_EXECUTION_RECEIPT",
+        "NO_NATIVE_TARGET_COLLECTOR_STREAM",
+        "BACKTEST_LANE_CANNOT_ADMIT_PERCENT_RISK_TRIAL_SETS"
+      ],
+      "evidence": [
+        "lane_inspection.json",
+        "target_bindings.json"
+      ],
+      "exact_binary_execution_proven": false,
+      "native_execution_performed": false,
+      "scenario": "reservation_activation",
+      "status": "UNTESTABLE"
+    },
+    {
+      "acceptance": "Synchronize at least two candidate entry requests against one account budget; prove atomic refusal above remaining risk.",
+      "blockers": [
+        "NO_BOUND_SHARED_ACCOUNT_SCENARIO_EXECUTION_RECEIPT",
+        "NO_NATIVE_TARGET_COLLECTOR_STREAM",
+        "BACKTEST_LANE_CANNOT_ADMIT_PERCENT_RISK_TRIAL_SETS"
+      ],
+      "evidence": [
+        "lane_inspection.json",
+        "target_bindings.json"
+      ],
+      "exact_binary_execution_proven": false,
+      "native_execution_performed": false,
+      "scenario": "simultaneous_entries",
+      "status": "UNTESTABLE"
+    },
+    {
+      "acceptance": "Include pending-order stop risk and reservation in admission, cancellation, fill and orphan-recovery paths.",
+      "blockers": [
+        "NO_BOUND_SHARED_ACCOUNT_SCENARIO_EXECUTION_RECEIPT",
+        "NO_NATIVE_TARGET_COLLECTOR_STREAM",
+        "BACKTEST_LANE_CANNOT_ADMIT_PERCENT_RISK_TRIAL_SETS"
+      ],
+      "evidence": [
+        "lane_inspection.json",
+        "target_bindings.json"
+      ],
+      "exact_binary_execution_proven": false,
+      "native_execution_performed": false,
+      "scenario": "pending_orders",
+      "status": "UNTESTABLE"
+    },
+    {
+      "acceptance": "Restart only the isolated harness; reconcile existing positions, pending orders and reservations before a new entry.",
+      "blockers": [
+        "NO_BOUND_SHARED_ACCOUNT_SCENARIO_EXECUTION_RECEIPT",
+        "NO_NATIVE_TARGET_COLLECTOR_STREAM",
+        "BACKTEST_LANE_CANNOT_ADMIT_PERCENT_RISK_TRIAL_SETS"
+      ],
+      "evidence": [
+        "lane_inspection.json",
+        "target_bindings.json"
+      ],
+      "exact_binary_execution_proven": false,
+      "native_execution_performed": false,
+      "scenario": "restart",
+      "status": "UNTESTABLE"
+    },
+    {
+      "acceptance": "Disconnect only the isolated harness; block unsafe entries and expose telemetry gaps/reconciliation on reconnect.",
+      "blockers": [
+        "NO_BOUND_SHARED_ACCOUNT_SCENARIO_EXECUTION_RECEIPT",
+        "NO_NATIVE_TARGET_COLLECTOR_STREAM",
+        "BACKTEST_LANE_CANNOT_ADMIT_PERCENT_RISK_TRIAL_SETS"
+      ],
+      "evidence": [
+        "lane_inspection.json",
+        "target_bindings.json"
+      ],
+      "exact_binary_execution_proven": false,
+      "native_execution_performed": false,
+      "scenario": "disconnect",
+      "status": "UNTESTABLE"
+    },
+    {
+      "acceptance": "Introduce an independently identified non-roster position; include its risk in the same account-wide budget.",
+      "blockers": [
+        "NO_BOUND_SHARED_ACCOUNT_SCENARIO_EXECUTION_RECEIPT",
+        "NO_NATIVE_TARGET_COLLECTOR_STREAM",
+        "BACKTEST_LANE_CANNOT_ADMIT_PERCENT_RISK_TRIAL_SETS"
+      ],
+      "evidence": [
+        "lane_inspection.json",
+        "target_bindings.json"
+      ],
+      "exact_binary_execution_proven": false,
+      "native_execution_performed": false,
+      "scenario": "foreign_positions",
+      "status": "UNTESTABLE"
+    },
+    {
+      "acceptance": "Prove exact collector binary, UTC/Prague anchors and observed event cadence on the target account.",
+      "blockers": [
+        "NO_BOUND_SHARED_ACCOUNT_SCENARIO_EXECUTION_RECEIPT",
+        "NO_NATIVE_TARGET_COLLECTOR_STREAM",
+        "BACKTEST_LANE_CANNOT_ADMIT_PERCENT_RISK_TRIAL_SETS"
+      ],
+      "evidence": [
+        "lane_inspection.json",
+        "target_bindings.json"
+      ],
+      "exact_binary_execution_proven": false,
+      "native_execution_performed": false,
+      "scenario": "measurement_resolution",
+      "status": "UNTESTABLE"
+    },
+    {
+      "acceptance": "Capture a native equity trough between M5 endpoints and quantify unobserved loss bounds.",
+      "blockers": [
+        "NO_BOUND_SHARED_ACCOUNT_SCENARIO_EXECUTION_RECEIPT",
+        "NO_NATIVE_TARGET_COLLECTOR_STREAM",
+        "BACKTEST_LANE_CANNOT_ADMIT_PERCENT_RISK_TRIAL_SETS"
+      ],
+      "evidence": [
+        "lane_inspection.json",
+        "target_bindings.json"
+      ],
+      "exact_binary_execution_proven": false,
+      "native_execution_performed": false,
+      "scenario": "intraday_trough",
+      "status": "UNTESTABLE"
+    }
+  ],
+  "schema": "qm.m09-exact-binary-scenarios/v1",
+  "summary": {
+    "FAIL": 0,
+    "PASS": 0,
+    "UNTESTABLE": 8
+  },
+  "target_count": 8,
+  "task_id": "3d2c9e2f-59a0-4bf7-8933-a3f2b2738721"
+}

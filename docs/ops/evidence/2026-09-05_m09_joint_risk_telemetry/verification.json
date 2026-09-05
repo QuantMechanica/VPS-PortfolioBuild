@@ -1,0 +1,25 @@
+{
+  "tests": {
+    "command": "python -m pytest tools/strategy_farm/tests/test_ftmo_trial_telemetry.py tools/strategy_farm/tests/test_ftmo_lane_runner.py -q -p no:cacheprovider",
+    "passed": 26,
+    "failed": 0
+  },
+  "native_execution_proven": false,
+  "scenario_summary": {
+    "FAIL": 0,
+    "PASS": 0,
+    "UNTESTABLE": 8
+  },
+  "hashes": {
+    ".gitattributes": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da",
+    ".gitignore": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+    "code_bindings.json": "bb011cc20551f7c1810f89ff9297792d39824f77d5b2d0490a3cc501e32b3669",
+    "lane_inspection.json": "626c540f1ae9f5247b1685e9be08e97b050c1d3f3a2fcb14178eb3b159ef269e",
+    "run_matrix.py": "50d0ae1cd344b20e72e79ac49bbc9428414973df7d0b6458cd46c8bc660d3ad9",
+    "scenario_matrix.json": "f72335b3ccd0a6ed0cb606174e77ffa1249130f2ded6ff65d710c5961f2029b4",
+    "synthetic_reader_fixture.jsonl": "5cfeb7cb9a3bb9fe27700c1903d56f57e73b4109978c0dd7fc097bb986d6a36d",
+    "synthetic_reader_report.json": "f820a08b295684b1e31330a8da062c4ec2bdefa2290276d9c3916eb8eb8491c3",
+    "target_bindings.json": "4112ceb57db2296df7d14fcf6d3ab6edf8478a8a933f27463236ada2466b0d0b",
+    "target_manifest.json": "db442c0095b7a9bbac7cdcbf898036486a6f2e4d3af90f057660fbca3430b94c"
+  }
+}
