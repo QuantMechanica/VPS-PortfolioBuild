@@ -1,0 +1,353 @@
+commit ba221f9c4fa4d4bd39bf3ef9480255af321617ab
+Author:     r <r@r>
+AuthorDate: Sat Sep 5 13:12:48 2026 +0200
+Commit:     r <r@r>
+CommitDate: Sat Sep 5 13:12:48 2026 +0200
+
+    Add inert current-book identity attestation proposals
+
+diff --git a/tools/strategy_farm/generate_live_deployment_pointer.py b/tools/strategy_farm/generate_live_deployment_pointer.py
+index 7fd1526bc9..adfe2bb541 100644
+--- a/tools/strategy_farm/generate_live_deployment_pointer.py
++++ b/tools/strategy_farm/generate_live_deployment_pointer.py
+@@ -191,6 +191,13 @@ def build_pointer(args: argparse.Namespace) -> dict:
+ 
+ 
+ def main(argv: list[str] | None = None) -> int:
++    arguments = list(sys.argv[1:] if argv is None else argv)
++    if '--attest-current' in arguments:
++        # Explicit INERT proposal mode has its own parser: no legacy --signed
++        # or runtime --out option is accepted, and no live-book writer is called.
++        from tools.strategy_farm import live_identity_attest
++        arguments.remove('--attest-current')
++        return live_identity_attest.main(arguments)
+     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+     ap.add_argument("--manifest", required=True, help="path to the signed portfolio manifest JSON")
+     ap.add_argument("--environment", default="T_Live/DXZ", help="deployment environment label")
+diff --git a/tools/strategy_farm/live_identity_attest.py b/tools/strategy_farm/live_identity_attest.py
+new file mode 100644
+index 0000000000..3933b8b2a1
+--- /dev/null
++++ b/tools/strategy_farm/live_identity_attest.py
+@@ -0,0 +1,189 @@
++"""INERT M06 current-book attestation proposal; no runtime writer or T_Live I/O."""
++from __future__ import annotations
++import argparse
++import datetime as dt
++from decimal import Decimal, InvalidOperation
++import hashlib
++import json
++import ntpath
++from pathlib import Path
++import re
++
++SCHEMA='qm.live-identity-attest-proposal/v1'
++OBSERVATION_SCHEMA='qm.live-identity-observation/v1'
++MAX_AGE_SECONDS=300
++EVIDENCE=Path('C:/QM/repo/docs/ops/evidence')
++STATE=Path('D:/QM/reports/state/live_risk_freeze.json')
++POINTER=Path('D:/QM/reports/state/live_deployment_pointer.json')
++SOURCE_TOOL=Path('C:/QM/repo/tools/strategy_farm/risk_freeze.py')
++HASH=re.compile(r'^[0-9a-f]{64}$')
++
++
++def digest(value):return hashlib.sha256(json.dumps(value,sort_keys=True,separators=(',',':')).encode()).hexdigest()
++def raw_sha(raw):return hashlib.sha256(raw).hexdigest()
++def utc(raw):
++    t=dt.datetime.fromisoformat(raw.replace('Z','+00:00'))
++    if t.tzinfo is None:raise ValueError('explicit timezone required')
++    return t.astimezone(dt.timezone.utc)
++
++
++def safe_path(path):
++    # Inspect lexical ancestors before resolving; resolving first hides aliases.
++    path=Path(path).absolute()
++    if 't_live' in [p.lower() for p in path.parts]:raise ValueError('T_Live filesystem access refused')
++    for candidate in (path,path.resolve()):
++        if 't_live' in [p.lower() for p in candidate.parts]:raise ValueError('T_Live filesystem access refused')
++        for item in [candidate,*candidate.parents]:
++            if item.is_symlink() or (item.exists() and getattr(item.stat(),'st_file_attributes',0)&1024):
++                raise ValueError('reparse/symlink input or output refused')
++    return path.resolve()
++
++
++def load(path):
++    path=safe_path(path);raw=path.read_bytes()
++    def pairs(items):
++        result={}
++        for k,v in items:
++            if k in result:raise ValueError('duplicate JSON key: '+k)
++            result[k]=v
++        return result
++    return json.loads(raw,object_pairs_hook=pairs),{'path':str(path),'sha256':raw_sha(raw)}
++
++
++def fingerprint(measurement):
++    if measurement.get('ok') is not True or measurement.get('problems'):
++        raise ValueError('measurement is incomplete or reports drift')
++    sleeves=measurement.get('sleeves')
++    if not isinstance(sleeves,list) or not sleeves or measurement.get('sleeve_count')!=len(sleeves):
++        raise ValueError('measurement sleeve coverage invalid')
++    if len({s['preset'] for s in sleeves})!=len(sleeves):raise ValueError('duplicate preset in measurement')
++    roster=[];binary=[];sets=[];risks=[]
++    for s in sleeves:
++        for k in ['preset_sha256','binary_sha256']:
++            if not HASH.fullmatch(str(s.get(k) or '')):raise ValueError('missing binary/setfile byte hash')
++        risk={k:str(Decimal(str(s[k])).normalize()) for k in ['RISK_PERCENT','RISK_FIXED','PORTFOLIO_WEIGHT','qm_magic_slot_offset']}
++        if any(not Decimal(v).is_finite() or Decimal(v)<0 for v in risk.values()):raise ValueError('invalid risk vector')
++        if Decimal(risk['qm_magic_slot_offset'])!=Decimal(risk['qm_magic_slot_offset']).to_integral_value():
++            raise ValueError('fractional magic slot')
++        magic=int(s['ea_id'])*10000+int(Decimal(risk['qm_magic_slot_offset']))
++        key=s['preset']
++        roster.append([key,int(s['ea_id']),s['symbol'],s['timeframe'],magic])
++        binary.append([key,s['ea_label'],s['binary_sha256']])
++        sets.append([key,s['preset_sha256']]);risks.append([key,risk])
++    if len({s[-1] for s in roster})!=len(roster):raise ValueError('duplicate magic in roster')
++    return {'count':len(sleeves),'roster_sha256':digest(sorted(roster)),
++            'binary_sha256':digest(sorted(binary)),'setfile_sha256':digest(sorted(sets)),
++            'risk_sha256':digest(sorted(risks))}
++
++
++def evaluate(manifest,pointer,freeze,observation,bindings,at):
++    failures=[];baseline=freeze.get('baseline') or {};frozen=None;current=None
++    if freeze.get('schema')!='qm.live_risk_freeze.v1' or freeze.get('status')!='ACTIVE':failures.append('FREEZE_MUST_REMAIN_ACTIVE')
++    try:frozen=fingerprint(baseline)
++    except (ValueError,KeyError,TypeError,InvalidOperation) as exc:failures.append('FROZEN_BASELINE_INVALID:'+str(exc))
++    account=re.search(r'(\d{6,})',str(manifest.get('book') or ''))
++    if (pointer.get('schema_version')!='qm.live_deployment_pointer.v1' or not account
++            or pointer.get('expected_account')!=account.group(1)
++            or not pointer.get('expected_server') or not pointer.get('expected_phase')):
++        failures.append('POINTER_ACCOUNT_SERVER_PHASE_BINDING_INVALID')
++    if pointer.get('manifest_sha256')!=bindings['manifest']['sha256']:failures.append('POINTER_MANIFEST_HASH_DRIFT')
++    if manifest.get('status')!='LIVE':failures.append('MANIFEST_NOT_CURRENT_LIVE_BOOK')
++    entries=manifest.get('sleeves') or [];by_preset={s['preset']:s for s in baseline.get('sleeves',[])}
++    binaries=(pointer.get('binary_setfile_fingerprint') or {}).get('per_sleeve') or []
++    by_magic={s.get('magic_number'):s for s in binaries}
++    binary_envelope=pointer.get('binary_setfile_fingerprint') or {}
++    if (binary_envelope.get('n_sleeves')!=len(binaries) or binary_envelope.get('n_binary_missing')!=0
++            or binary_envelope.get('fingerprint_sha256')!=digest(sorted(binaries,key=lambda s:s['magic_number']))):
++        failures.append('POINTER_BINARY_ENVELOPE_HASH_DRIFT')
++    if len(entries)!=len(by_preset) or len(binaries)!=len(entries) or len(by_magic)!=len(binaries):
++        failures.append('CURRENT_BOOK_ROSTER_COVERAGE_DRIFT')
++    manifest_roster=[]
++    for s in entries:
++        magic=s.get('magic_number',s.get('magic'))
++        manifest_roster.append({'ea_id':s.get('ea_id'),'symbol':s.get('symbol'),'magic_number':magic})
++        key=ntpath.basename(str(s.get('deployed_preset') or ''));base=by_preset.get(key);p=by_magic.get(magic)
++        if not base or not p:failures.append('CURRENT_BOOK_SLEEVE_BINDING_MISSING:'+key);continue
++        if (int(s['ea_id'])!=int(base['ea_id']) or s['symbol'].removesuffix('.DWX')!=base['symbol']
++                or magic!=int(base['ea_id'])*10000+int(base['qm_magic_slot_offset'])):
++            failures.append('CURRENT_BOOK_ROSTER_DRIFT:'+key)
++        if p.get('ex5_status')!='OK' or p.get('ex5_sha256')!=base.get('binary_sha256'):
++            failures.append('POINTER_BINARY_HASH_DRIFT:'+key)
++        if ntpath.basename(str(p.get('deployed_preset') or ''))!=key:
++            failures.append('POINTER_PRESET_IDENTITY_DRIFT:'+key)
++        expectation=s.get('set_file_expectation') or {}
++        for k in ['RISK_PERCENT','RISK_FIXED','PORTFOLIO_WEIGHT']:
++            try:
++                if Decimal(str(expectation[k]))!=Decimal(str(base[k])) or Decimal(str((p.get('set_file_expectation') or {})[k]))!=Decimal(str(base[k])):
++                    failures.append('CURRENT_BOOK_RISK_DRIFT:'+key+':'+k)
++            except (KeyError,ValueError,TypeError,InvalidOperation):failures.append('CURRENT_BOOK_RISK_MISSING:'+key+':'+k)
++    expected=pointer.get('expected_sleeves') or {}
++    manifest_roster.sort(key=lambda x:x['magic_number'] if x['magic_number'] is not None else -1)
++    if (expected.get('count')!=len(entries) or expected.get('identity_sha256')!=digest(manifest_roster)
++            or expected.get('roster')!=manifest_roster):
++        failures.append('POINTER_ROSTER_HASH_DRIFT')
++    age=None
++    if observation is None:failures.append('FRESH_BOUND_OBSERVATION_MISSING')
++    else:
++        if observation.get('schema')!=OBSERVATION_SCHEMA or observation.get('source_tool')!='risk_freeze.measure':
++            failures.append('OBSERVATION_SCHEMA_OR_SOURCE_INVALID')
++        for role in ['manifest','pointer','freeze']:
++            if observation.get(role+'_sha256')!=bindings[role]['sha256']:failures.append('OBSERVATION_'+role.upper()+'_BINDING_DRIFT')
++        if observation.get('source_tool_sha256')!=bindings['source_tool']['sha256']:failures.append('OBSERVATION_SOURCE_TOOL_DRIFT')
++        try:
++            age=(at-utc(observation['captured_at_utc'])).total_seconds()
++            if not 0<=age<=MAX_AGE_SECONDS:failures.append('OBSERVATION_STALE_OR_FUTURE')
++        except (KeyError,ValueError,TypeError):failures.append('OBSERVATION_TIMESTAMP_INVALID')
++        try:
++            current=fingerprint(observation['measurement'])
++            if frozen:
++                for key in frozen:
++                    if frozen[key]!=current[key]:failures.append('OBSERVED_'+key.upper()+'_DRIFT')
++        except (ValueError,KeyError,TypeError,InvalidOperation) as exc:failures.append('OBSERVATION_INCOMPLETE:'+str(exc))
++    return {'schema':SCHEMA,'mode':'INERT_PROPOSAL_ONLY','status':'REFUSED' if failures else 'ELIGIBLE_FOR_OWNER_REVIEW',
++            'failures':sorted(set(failures)),'signed':False,'runtime_pointer_write':False,'freeze_mutation':False,
++            'activation_authorized':False,'created_at_utc':at.isoformat(),'valid_for_seconds':MAX_AGE_SECONDS,
++            'freeze_status':freeze.get('status'),'existing_pointer_signed':pointer.get('signed'),
++            'frozen_fingerprint':frozen,'observed_fingerprint':current,'observation_age_seconds':age,
++            'bindings':bindings,'transition':'ACTIVE/current_book -> ACTIVE/unsigned_attestation_proposal',
++            'owner_actions_remaining':['accept independent current-state capture','approve and sign identity attestation under Mission-Control card',
++                                       'separately decide consumers and freeze condition 1; no implicit lift','separate new-version activation ceremony']}
++
++
++def main(argv=None):
++    p=argparse.ArgumentParser(description=__doc__)
++    p.add_argument('--manifest',required=True,type=Path)
++    p.add_argument('--current-pointer',type=Path,default=POINTER)
++    p.add_argument('--freeze-state',type=Path,default=STATE)
++    p.add_argument('--observation',type=Path)
++    p.add_argument('--observation-sha256')
++    p.add_argument('--dry-run',action='store_true',help='Default: evaluate/print an unsigned inert proposal only')
++    p.add_argument('--write-proposal',action='store_true',help='Create proposal and receipt in the explicit evidence directory')
++    p.add_argument('--proposal-dir',type=Path)
++    args=p.parse_args(argv)
++    if args.dry_run and args.write_proposal:p.error('dry-run and write-proposal are mutually exclusive')
++    if args.write_proposal!=bool(args.proposal_dir):p.error('write-proposal requires proposal-dir and vice versa')
++    inputs={};bindings={}
++    for role,path in [('manifest',args.manifest),('pointer',args.current_pointer),('freeze',args.freeze_state)]:
++        inputs[role],bindings[role]=load(path)
++    bindings['source_tool']={'path':str(SOURCE_TOOL),'sha256':raw_sha(SOURCE_TOOL.read_bytes())}
++    observation=None
++    if bool(args.observation)!=bool(args.observation_sha256):p.error('observation path and externally reviewed SHA256 required together')
++    if args.observation:
++        observation,bindings['observation']=load(args.observation)
++        if bindings['observation']['sha256']!=args.observation_sha256:raise ValueError('observation file SHA256 mismatch')
++    at=dt.datetime.now(dt.timezone.utc)
++    result=evaluate(inputs['manifest'],inputs['pointer'],inputs['freeze'],observation,bindings,at)
++    if any(raw_sha(Path(b['path']).read_bytes())!=b['sha256'] for b in bindings.values()):
++        result['status']='REFUSED';result['failures'].append('INPUT_CHANGED_DURING_PROPOSAL')
++    if args.write_proposal:
++        target=safe_path(args.proposal_dir)
++        if EVIDENCE.resolve() not in target.parents or target.exists():raise ValueError('proposal requires a NEW canonical evidence child')
++        target.mkdir(parents=True)
++        raw=(json.dumps(result,sort_keys=True,indent=2)+'\n').encode()
++        with (target/'proposal.json').open('xb') as f:f.write(raw)
++        receipt={'schema':'qm.live-identity-attest-proposal-receipt/v1','proposal_sha256':raw_sha(raw),
++                 'proposal_path':str(target/'proposal.json'),'status':result['status'],'signed':False,
++                 'runtime_pointer_write':False,'freeze_mutation':False,'tool_sha256':raw_sha(Path(__file__).read_bytes())}
++        with (target/'receipt.json').open('x',encoding='utf-8') as f:json.dump(receipt,f,indent=2,sort_keys=True);f.write('\n')
++    print(json.dumps(result,indent=2,sort_keys=True))
++    return 0 if result['status']=='ELIGIBLE_FOR_OWNER_REVIEW' else 2
+diff --git a/tools/strategy_farm/tests/test_live_identity_attest.py b/tools/strategy_farm/tests/test_live_identity_attest.py
+new file mode 100644
+index 0000000000..8c3535e6eb
+--- /dev/null
++++ b/tools/strategy_farm/tests/test_live_identity_attest.py
+@@ -0,0 +1,126 @@
++"""Safety-boundary tests use temporary fixture bytes, never the live terminal."""
++from copy import deepcopy
++import datetime as dt
++import json
++from pathlib import Path
++
++import pytest
++
++from tools.strategy_farm import live_identity_attest as attest
++from tools.strategy_farm import generate_live_deployment_pointer as generator
++from tools.strategy_farm.tests.test_risk_freeze_prevention import _preset_tree, _freeze_state
++
++
++@pytest.fixture
++def book(tmp_path):
++    presets = _preset_tree(tmp_path / 'presets')
++    freeze = json.loads(_freeze_state(tmp_path / 'freeze.json', presets).read_text())
++    sleeve = freeze['baseline']['sleeves'][0]
++    manifest = {'status': 'LIVE', 'book': 'DXZ_12345678', 'sleeves': [{
++        'ea_id': 100, 'symbol': 'EURUSD.DWX', 'magic_number': 1000000,
++        'deployed_preset': str(presets / sleeve['preset']), 'ex5_path': sleeve['binary_path'],
++        'set_file_expectation': {'RISK_PERCENT': 0.5, 'RISK_FIXED': 0.0, 'PORTFOLIO_WEIGHT': 1.0},
++    }]}
++    binding = {k: {'sha256': attest.digest(k)} for k in ['manifest', 'pointer', 'freeze', 'source_tool']}
++    pointer = {'schema_version': generator.SCHEMA_VERSION, 'manifest_sha256': binding['manifest']['sha256'],
++               'expected_account': '12345678', 'expected_server': 'fixture', 'expected_phase': 'DXZ_LIVE',
++               'expected_sleeves': generator.compute_expected_sleeves(manifest),
++               'binary_setfile_fingerprint': generator.compute_binary_setfile_fingerprint(manifest, tmp_path)}
++    at = dt.datetime(2026, 9, 5, 11, tzinfo=dt.timezone.utc)
++    observation = {'schema': attest.OBSERVATION_SCHEMA, 'source_tool': 'risk_freeze.measure',
++                   'captured_at_utc': at.isoformat(), 'measurement': deepcopy(freeze['baseline']),
++                   **{k + '_sha256': v['sha256'] for k, v in binding.items()}}
++    return manifest, pointer, freeze, observation, binding, at
++
++
++def test_identical_fixture_is_only_unsigned_proposal_and_does_not_mutate(book):
++    original = deepcopy(book)
++    result = attest.evaluate(*book)
++    assert result['status'] == 'ELIGIBLE_FOR_OWNER_REVIEW'
++    assert result['transition'].startswith('ACTIVE/')
++    assert not any(result[k] for k in ['signed', 'runtime_pointer_write', 'freeze_mutation', 'activation_authorized'])
++    assert book == original
++
++
++@pytest.mark.parametrize('field,value,reason', [
++    ('preset_sha256', 'a' * 64, 'SETFILE'), ('binary_sha256', 'b' * 64, 'BINARY'),
++    ('RISK_PERCENT', 0.6, 'RISK'), ('RISK_FIXED', 1, 'RISK'),
++    ('PORTFOLIO_WEIGHT', 2, 'RISK'), ('qm_magic_slot_offset', 1, 'ROSTER'),
++    ('symbol', 'GBPUSD', 'ROSTER'), ('timeframe', 'M5', 'ROSTER'),
++    ('ea_id', 101, 'ROSTER'), ('preset', 'other.set', 'ROSTER'),
++])
++def test_any_observed_identity_drift_refuses(book, field, value, reason):
++    book[3]['measurement']['sleeves'][0][field] = value
++    result = attest.evaluate(*book)
++    assert result['status'] == 'REFUSED'
++    assert any(reason in failure for failure in result['failures'])
++    assert book[2]['status'] == 'ACTIVE'
++
++
++@pytest.mark.parametrize('role', ['manifest', 'pointer', 'freeze', 'source_tool'])
++def test_each_input_hash_binding_is_mandatory(book, role):
++    book[3][role + '_sha256'] = 'c' * 64
++    assert attest.evaluate(*book)['status'] == 'REFUSED'
++
++
++@pytest.mark.parametrize('seconds', [-1, 301])
++def test_observation_cannot_be_future_or_stale(book, seconds):
++    book[3]['captured_at_utc'] = (book[-1] - dt.timedelta(seconds=seconds)).isoformat()
++    assert 'OBSERVATION_STALE_OR_FUTURE' in attest.evaluate(*book)['failures']
++
++
++@pytest.mark.parametrize('case', ['missing', 'inactive', 'binary_envelope', 'roster_hash', 'account', 'invalid_risk'])
++def test_bad_metadata_fails_closed(book, case):
++    args = list(book)
++    if case == 'missing': args[3] = None
++    if case == 'inactive': args[2]['status'] = 'LIFTED'
++    if case == 'binary_envelope': args[1]['binary_setfile_fingerprint']['fingerprint_sha256'] = 'd' * 64
++    if case == 'roster_hash': args[1]['expected_sleeves']['identity_sha256'] = 'e' * 64
++    if case == 'account': args[1]['expected_account'] = '99999999'
++    if case == 'invalid_risk': args[3]['measurement']['sleeves'][0]['RISK_PERCENT'] = 'NaN'
++    assert attest.evaluate(*args)['status'] == 'REFUSED'
++
++
++def test_dispatch_never_calls_legacy_builder_or_writer(book, tmp_path, monkeypatch, capsys):
++    paths = []
++    for label, data in zip(['manifest', 'pointer', 'freeze'], book[:3]):
++        path = tmp_path / (label + '.json')
++        path.write_text(json.dumps(data))
++        paths.append(path)
++    source = tmp_path / 'source.py'
++    source.write_text('# fixture source')
++    monkeypatch.setattr(attest, 'SOURCE_TOOL', source)
++    monkeypatch.setattr(attest, 'EVIDENCE', tmp_path / 'evidence')
++    def forbidden(*a, **kw): raise AssertionError('legacy live-book path called')
++    monkeypatch.setattr(generator, 'build_pointer', forbidden)
++    monkeypatch.setattr(generator, '_atomic_write_json', forbidden)
++    original = [path.read_bytes() for path in paths]
++    argv = ['--attest-current', '--manifest', str(paths[0]), '--current-pointer', str(paths[1]), '--freeze-state', str(paths[2])]
++    assert generator.main(argv) == 2
++    assert not (tmp_path / 'evidence').exists()
++    target = tmp_path / 'evidence' / 'proposal'
++    assert generator.main(argv + ['--write-proposal', '--proposal-dir', str(target)]) == 2
++    assert set(p.name for p in target.iterdir()) == {'proposal.json', 'receipt.json'}
++    assert json.loads((target / 'receipt.json').read_text())['proposal_sha256'] == attest.raw_sha((target / 'proposal.json').read_bytes())
++    assert [path.read_bytes() for path in paths] == original
++    assert json.loads(paths[2].read_text())['status'] == 'ACTIVE'
++    with pytest.raises(ValueError, match='NEW canonical evidence child'):
++        generator.main(argv + ['--write-proposal', '--proposal-dir', str(target)])
++
++
++@pytest.mark.parametrize('flag', ['--signed', '--out', '--deployment-epoch-utc'])
++def test_legacy_activation_arguments_refused(flag):
++    with pytest.raises(SystemExit):
++        generator.main(['--attest-current', '--manifest', 'fixture.json', flag])
++
++
++def test_t_live_and_alias_paths_refused(tmp_path):
++    with pytest.raises(ValueError, match='T_Live'):
++        attest.safe_path(tmp_path / 'T_Live' / 'anything.json')
++    target = tmp_path / 'target'
++    target.mkdir()
++    alias = tmp_path / 'alias'
++    try: alias.symlink_to(target, target_is_directory=True)
++    except OSError: pytest.skip('symlink privilege unavailable')
++    with pytest.raises(ValueError, match='reparse/symlink'):
++        attest.safe_path(alias / 'proposal.json')
