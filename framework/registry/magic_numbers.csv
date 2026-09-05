@@ -18239,3 +18239,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41340,wti-xng-divtrend,0,XTIUSD.DWX,413400000,2026-09-05,Codex governed allocator,active
 41341,xauxag-mbisquare-rv,0,XAUUSD.DWX,413410000,2026-09-05,Codex governed allocator,active
 41341,xauxag-mbisquare-rv,1,XAGUSD.DWX,413410001,2026-09-05,Codex governed allocator,active
+41342,anon-market-squeeze-d1-opt,0,EURUSD.DWX,413420000,2026-09-05,Codex governed allocator,active
