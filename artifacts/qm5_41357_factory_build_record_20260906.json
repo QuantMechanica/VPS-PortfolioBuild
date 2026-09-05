@@ -1,0 +1,21 @@
+{
+  "task_id": "ca3f73db-dd18-41ed-84e2-b9ac4bac27f6",
+  "ea_id": "QM5_41357",
+  "ea_dir": "framework/EAs/QM5_41357_xtixng-mwinsor2-rv",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_41357_xtixng-mwinsor2-rv/QM5_41357_xtixng-mwinsor2-rv.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_41357_xtixng-mwinsor2-rv/QM5_41357_xtixng-mwinsor2-rv.ex5",
+  "magic_base": 413570000,
+  "symbols_registered": ["XTIUSD.DWX", "XNGUSD.DWX"],
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_41357_xtixng-mwinsor2-rv/sets/QM5_41357_xtixng-mwinsor2-rv_QM5_41357_XTI_XNG_MWINSOR2_RV_D1_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_41357_xtixng-mwinsor2-rv/sets/QM5_41357_xtixng-mwinsor2-rv_XTIUSD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_41357_xtixng-mwinsor2-rv/sets/QM5_41357_xtixng-mwinsor2-rv_XNGUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_41357_xtixng-mwinsor2-rv/SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "blocked_reason": null,
+  "open_questions": []
+}

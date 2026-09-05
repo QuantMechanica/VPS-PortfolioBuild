@@ -1,0 +1,97 @@
+{
+  "schema_version": "qm.branch-build-q02-handoff/v1",
+  "recorded_at_utc": "2026-09-05T23:01:26.1365563Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41357",
+  "ea_label": "QM5_41357_xtixng-mwinsor2-rv",
+  "mechanic": "monthly XTI/XNG fixed-two-per-tail Winsorized log-ratio return reversion with opposed equal-target-notional legs",
+  "logical_symbol": "QM5_41357_XTI_XNG_MWINSOR2_RV_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "companion_symbol": "XNGUSD.DWX",
+  "timeframe": "D1",
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "reference_validation": {
+    "command": "python -m unittest framework/EAs/QM5_41357_xtixng-mwinsor2-rv/docs/test_xtixng_mwinsor2_rv_reference.py",
+    "passed": 8,
+    "failed": 0
+  },
+  "spec_validation": {
+    "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_41357_xtixng-mwinsor2-rv",
+    "passed": 1,
+    "failed": 0
+  },
+  "compile": {
+    "work_item_id": "c67931b2-7fd1-42d0-80b0-4c857739b31f",
+    "terminal": "T3",
+    "status": "done",
+    "verdict": "COMPILE_OK",
+    "build_check_result": "PASS",
+    "build_check_failures": 0,
+    "build_check_warnings": 0,
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "mq5_sha256": "01cad89c0085feeefcc593aad51b7cd45007b5584cfbcc40c5ab0edba592b5d5",
+    "ex5_sha256": "89581146ddb002990b56aaa15371a4d1aceda0a8b9305177aa77bf9556fc1884",
+    "evidence_path": "D:/QM/reports/work_items/c67931b2-7fd1-42d0-80b0-4c857739b31f/QM5_41357/COMPILE_EA/compile_evidence.json"
+  },
+  "compile_lineage": {
+    "failed_predecessors": [
+      "dd09ecee-08ab-4eb1-ab71-b032e9cdf4bf",
+      "f5e74794-7943-464f-8797-a8656c83dc45"
+    ],
+    "failure_class": "CANDIDATE_RECHECK_REFUSED",
+    "strategy_compile_errors_observed": 0,
+    "controller_repair_commit": "f3c274fb23",
+    "notes": "The first predecessor lacked a build-task binding. The second exposed a mismatch between repair-successor enqueue admission and claim-time validation for an unbound predecessor. The controller regression was fixed and tested before the successful governed compile."
+  },
+  "card": {
+    "sha256": "bf2f10a75a3dc3f1fa1fbbd887b08b2a1a424b25b90dc012f1d7932abf0654ee",
+    "mirror_sha256": "bf2f10a75a3dc3f1fa1fbbd887b08b2a1a424b25b90dc012f1d7932abf0654ee",
+    "artifact_mirror_sha256": "bf2f10a75a3dc3f1fa1fbbd887b08b2a1a424b25b90dc012f1d7932abf0654ee",
+    "factory_mirror_sha256": "bf2f10a75a3dc3f1fa1fbbd887b08b2a1a424b25b90dc012f1d7932abf0654ee",
+    "g0_status": "APPROVED"
+  },
+  "setfiles": [
+    {
+      "role": "logical_basket",
+      "sha256": "9edd47bdf116df6e4fdcb082f77ae98f5ae88e1d5588c164ef3c5540d0426c1c",
+      "build_hash": "a1e6baa270e3dfe0b6d5ce5571809b023242565883c5ae2f6707cda75cb6845a"
+    },
+    {
+      "role": "host_leg",
+      "sha256": "a665b1040405b24e916eb6b62e64d9feb05dcfbbd15f86cf6426bb82b3539e5d",
+      "build_hash": "a1e6baa270e3dfe0b6d5ce5571809b023242565883c5ae2f6707cda75cb6845a"
+    },
+    {
+      "role": "companion_leg",
+      "sha256": "b7fbd4d49790555c7ef9844f28ea7e8d72c0c6697456abd8fc2e80d5e4b71f63",
+      "build_hash": "a1e6baa270e3dfe0b6d5ce5571809b023242565883c5ae2f6707cda75cb6845a"
+    }
+  ],
+  "cpu_admission": {
+    "threshold_pct": 97.0,
+    "samples_pct": [85.0, 71.0, 72.0, 75.0, 74.0],
+    "average_pct": 75.4,
+    "maximum_pct": 85.0,
+    "admitted": true
+  },
+  "q02": {
+    "work_item_id": "328cdef5-6458-4079-b898-b4220efbd6bb",
+    "symbol": "QM5_41357_XTI_XNG_MWINSOR2_RV_D1",
+    "status_at_receipt": "pending",
+    "enqueued_count": 1,
+    "skipped_leg_setfiles": 2,
+    "manual_backtest_run": false
+  },
+  "safety": {
+    "terminal_control_used": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}

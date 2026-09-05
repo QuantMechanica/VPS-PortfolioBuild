@@ -1,0 +1,41 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "c67931b2-7fd1-42d0-80b0-4c857739b31f"
+  ],
+  "backup": {
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260905T225530Z_88b5335e.sqlite",
+    "reused": false,
+    "sha256": "7900a967206e2a961fa217707055bf950d01985011140caa9c40d408ced09de6"
+  },
+  "backup_reuse_max_age_minutes": 0.0,
+  "backup_timeout_seconds": 60.0,
+  "backup_write_guard": {
+    "attempts": 1,
+    "transaction": "BEGIN IMMEDIATE / validated / backed up / released / COMMIT",
+    "wait_seconds": 0.0
+  },
+  "deferred": [],
+  "factory_mutation_lock": {
+    "path": "D:\\QM\\strategy_farm\\state\\FACTORY_MUTATION.lock",
+    "release_status": "released"
+  },
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "01cad89c0085feeefcc593aad51b7cd45007b5584cfbcc40c5ab0edba592b5d5",
+      "ea_id": "QM5_41357",
+      "ea_label": "QM5_41357_xtixng-mwinsor2-rv",
+      "expected_mq5_sha256": "01cad89c0085feeefcc593aad51b7cd45007b5584cfbcc40c5ab0edba592b5d5",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41357_xtixng-mwinsor2-rv\\QM5_41357_xtixng-mwinsor2-rv.mq5",
+      "work_item_id": "c67931b2-7fd1-42d0-80b0-4c857739b31f"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-09-05T22:55:49+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "c67931b2-7fd1-42d0-80b0-4c857739b31f"
+}

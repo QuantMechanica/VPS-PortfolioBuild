@@ -96,4 +96,6 @@ alone owns realized book overlap. Portfolio gates, deploy/live manifests,
 
 ## Revision
 
-2026-09-06: initial governed build; strict Q01 and Q02 admission pending.
+2026-09-06: governed Q01 COMPILE_OK / BUILD_CHECK_PASS on work item
+`c67931b2-7fd1-42d0-80b0-4c857739b31f`; one logical basket Q02 work item
+`328cdef5-6458-4079-b898-b4220efbd6bb` is ENQUEUED_PENDING after CPU admission.

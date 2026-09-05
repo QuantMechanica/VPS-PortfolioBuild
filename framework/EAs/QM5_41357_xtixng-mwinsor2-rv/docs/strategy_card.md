@@ -68,8 +68,8 @@ expected_pf: 1.01
 expected_dd_pct: 30.0
 risk_class: high
 ml_required: false
-r1_track_record: PASS_WITH_SYNTHESIS_RISK
-r1_reasoning: "Peer-reviewed state-dependent oil/gas relationship, exchange-defined spread, and governed fixed-tail Winsor arithmetic; no source efficacy transfers to this conjunction or CFDs."
+r1_track_record: TIER_C
+r1_reasoning: "existing card attribution is canonical source lineage; R1 is informational and non-gating (2026-07-23)."
 r2_mechanical: PASS
 r2_reasoning: "Clock, thirteen synchronized endpoints, twelve returns, exact sort, replaced indexes, boundary weights, divisor, epsilon, contrarian side, equal-notional package, aggregate fixed risk, stops, attempt, and lifecycle are deterministic."
 r3_data_available: PASS
@@ -84,9 +84,9 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: Q01
-q01_status: NOT_BUILT
-q02_status: NOT_ENQUEUED_Q01_PENDING
+pipeline_phase: Q02
+q01_status: COMPILE_OK
+q02_status: ENQUEUED_PENDING
 force_build: true
 review_focus: "Falsify a monthly XTI/XNG contrarian return stream whose signal is the exact fixed two-per-tail Winsorized location of synchronized ratio returns. Verify opposed legs, aggregate fixed risk, atomic lifecycle, and no single-leg or outright-energy fallback. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -260,7 +260,7 @@ manifests, `T_Live`, AutoTrading, terminal control, or live use.
 
 | version | date | reason | gate | verdict |
 |---|---|---|---|---|
-| v1 | 2026-09-06 | initial fixed-tail Winsor XTI/XNG reversion card | G0 | APPROVED; build pending |
+| v1 | 2026-09-06 | initial fixed-tail Winsor XTI/XNG reversion card and governed build | Q02 | COMPILE_OK; ENQUEUED_PENDING |
 
 ## Pipeline Phase Status
 
@@ -268,5 +268,5 @@ manifests, `T_Live`, AutoTrading, terminal control, or live use.
 |---|---|---|---|
 | G0 Source Approval | 2026-09-06 | APPROVED_SOURCE | `decisions/2026-09-06_xtixng_monthly_winsor2_reversion_source_approval.md` |
 | G0 Research Intake | 2026-09-06 | APPROVED | `decisions/2026-09-06_qm5_41357_xtixng_monthly_winsor2_reversion_g0.md` |
-| Q01 Build & Spec | - | NOT_BUILT | strict compile and build checks pending |
-| Q02 Baseline | - | NOT_ENQUEUED | Q01 and CPU admission pending |
+| Q01 Build & Spec | 2026-09-06 | COMPILE_OK; BUILD_CHECK_PASS | `D:/QM/reports/work_items/c67931b2-7fd1-42d0-80b0-4c857739b31f/QM5_41357/COMPILE_EA/compile_evidence.json` |
+| Q02 Baseline | 2026-09-06 | ENQUEUED_PENDING | work item `328cdef5-6458-4079-b898-b4220efbd6bb`; CPU admission `artifacts/qm5_41357_q02_cpu_admission_20260906.json` |
