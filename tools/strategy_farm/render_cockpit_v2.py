@@ -896,6 +896,7 @@ _STATE_STYLE = {
     "RESERVED": ("var(--promising)", "RESERVED"),
     "IDLE": ("var(--dead)", "IDLE"),
     "ERROR": ("var(--fail)", "ERROR"),
+    "INSTALLED": ("var(--text-3)", "INSTALLED · nicht governed"),
 }
 
 
@@ -940,11 +941,18 @@ def _render_terminals(contract: dict, ea_page_exists=None) -> str:
       </div>''')
     badge = _stale_badge(tsec.get("meta", {}))
     counts = tsec.get("counts", {})
+    installed = _int(counts.get("installed_not_governed"))
+    fleet_size = _int(counts.get("fleet_size")) or len(terminals)
+    last_name = terminals[-1].get("terminal") if terminals else f"T{fleet_size}"
+    # OWNER 2026-09-05: with more than ten cards the board reads best in rows of
+    # four (12 cards = 3 x 4); ten or fewer keep the five-column layout.
+    cols = 4 if len(cards) > 10 else 5
+    aux_installed = (f" · {installed} installiert/nicht governed" if installed else "")
     return f'''
   <section class="mc-section">
-    <div class="mc-h2"><span>Terminal Board T1–T10</span>
-      <span class="mc-h2-aux">{_int(counts.get('running'))} running · {_int(counts.get('idle'))} idle {badge}</span></div>
-    <div class="mc-t-grid">
+    <div class="mc-h2"><span>Terminal Board T1–{e(last_name)}</span>
+      <span class="mc-h2-aux">{_int(counts.get('running'))} running · {_int(counts.get('idle'))} idle{aux_installed} · governed {fleet_size} {badge}</span></div>
+    <div class="mc-t-grid" data-cols="{cols}">
       {''.join(cards)}
     </div>
   </section>'''
@@ -1247,6 +1255,7 @@ _PAGE_CSS = """
     color:var(--text-3);overflow-wrap:anywhere}
 
   .mc-t-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:var(--space-3)}
+  .mc-t-grid[data-cols="4"]{grid-template-columns:repeat(4,1fr)}
   .mc-t-card{border:1px solid var(--border);background:var(--surface-2);
     padding:var(--space-3);display:flex;flex-direction:column;gap:var(--space-2);min-width:0}
   .mc-t-head{display:flex;justify-content:space-between;align-items:center;gap:var(--space-2)}
@@ -1287,7 +1296,7 @@ _PAGE_CSS = """
   .mc-footer .mc-shadow{color:var(--warn)}
 
   @media(max-width:1200px){
-    .mc-t-grid{grid-template-columns:repeat(2,1fr)}
+    .mc-t-grid,.mc-t-grid[data-cols="4"]{grid-template-columns:repeat(2,1fr)}
     .mc-strip{grid-template-columns:repeat(3,1fr)}
     .mc-cell:nth-child(3n){border-right:none}
     .mc-p25-grid{grid-template-columns:1fr}
@@ -1296,7 +1305,7 @@ _PAGE_CSS = """
   @media(max-width:720px){
     .mc-strip{grid-template-columns:repeat(2,1fr)}
     .mc-cell{border-right:none}
-    .mc-t-grid{grid-template-columns:1fr}
+    .mc-t-grid,.mc-t-grid[data-cols="4"]{grid-template-columns:1fr}
     .mc-dec-effects{grid-template-columns:1fr}
     .mc-plan-grid{grid-template-columns:1fr}
     .mc-dec-tools{grid-template-columns:1fr}

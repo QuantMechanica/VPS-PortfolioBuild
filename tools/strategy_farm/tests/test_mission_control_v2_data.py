@@ -226,6 +226,7 @@ def test_terminals_join_surfaces_assignment(fixture_db):
             {"QM5_11165": "weiss-rsi-ma"},
             now=NOW,
             reservations_override={},
+            installed_override=[],
         )
     finally:
         con.close()
@@ -435,3 +436,23 @@ def test_live_preview_validates_if_present():
         pytest.skip("live preview predates the risk-freeze contract field")
     mc.validate_contract(doc)
     assert doc["schema_version"] == "qm.mission_control.v2"
+
+
+def test_terminals_installed_not_governed_cards_are_appended(fixture_db):
+    con = mc._connect_ro(fixture_db)
+    try:
+        t = mc.build_terminals(
+            con, {}, now=NOW, reservations_override={},
+            installed_override=["T11", "T12"],
+        )
+    finally:
+        con.close()
+    names = [r["terminal"] for r in t["terminals"]]
+    assert names[:10] == [f"T{i}" for i in range(1, 11)]
+    assert names[10:] == ["T11", "T12"]
+    for r in t["terminals"][10:]:
+        assert r["state"] == "INSTALLED"
+        assert r["work_item_id"] is None and r["ea_id"] is None
+        assert "nicht governed" in r["idle_reason"]
+    assert t["counts"]["fleet_size"] == 10
+    assert t["counts"]["installed_not_governed"] == 2

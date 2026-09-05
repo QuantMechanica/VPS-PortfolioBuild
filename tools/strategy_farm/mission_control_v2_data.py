@@ -98,6 +98,25 @@ EA_REGISTRY = REPO / "framework" / "registry" / "ea_id_registry.csv"
 
 # Terminal fleet is fixed at T1..T10 (T_Live is C:\ and never a factory slot).
 FLEET = tuple(f"T{i}" for i in range(1, 11))
+# Terminal directories that exist on disk beyond the governed fleet (canary
+# installs such as T11/T12).  They carry no worker, no slot and no claim; the
+# board shows them as INSTALLED so the OWNER can see what is on the host
+# without the data contract pretending they are factory capacity.
+MT5_FACTORY_ROOT = Path(r"D:\QM\mt5")
+INSTALLED_NOT_GOVERNED_MAX = 16
+
+
+def installed_not_governed_terminals() -> list[str]:
+    """T{n} directories present on disk for n beyond the governed FLEET."""
+    found: list[str] = []
+    for n in range(len(FLEET) + 1, INSTALLED_NOT_GOVERNED_MAX + 1):
+        name = f"T{n}"
+        try:
+            if (MT5_FACTORY_ROOT / name).is_dir():
+                found.append(name)
+        except OSError:
+            continue
+    return found
 
 # MT5-tester evidence phases a T1..T10 worker actually drains. Canonical Qxx
 # plus their legacy P-aliases (storage may still carry P-keys for old rows).
@@ -358,8 +377,9 @@ def _has_contract_column(con: sqlite3.Connection) -> bool:
 
 def build_terminals(con: sqlite3.Connection, ea_slugs: dict[str, str],
                     *, now: dt.datetime | None = None,
-                    reservations_override: dict[str, dict] | None = None) -> dict[str, Any]:
-    """T1..T10 joined with their live farm assignment.
+                    reservations_override: dict[str, dict] | None = None,
+                    installed_override: list[str] | None = None) -> dict[str, Any]:
+    """T1..T10 joined with their live farm assignment (+ INSTALLED canary dirs).
 
     JOIN: ``work_items_clean`` rows with ``status='active'`` on
     ``claimed_by`` == terminal name. This is the exact source render_cockpit's
@@ -468,6 +488,24 @@ def build_terminals(con: sqlite3.Connection, ea_slugs: dict[str, str],
                 "idle_reason": "no active farm claim",
             })
 
+    installed = (list(installed_override) if installed_override is not None
+                 else installed_not_governed_terminals())
+    for term in installed:
+        terminals.append({
+            "terminal": term,
+            "state": "INSTALLED",
+            "work_item_id": None,
+            "ea_id": None,
+            "ea_slug": None,
+            "symbol": None,
+            "phase_qid": None,
+            "phase_name": None,
+            "start_utc": None,
+            "elapsed_seconds": None,
+            "reservation": None,
+            "idle_reason": "installiert, nicht governed (Canary: kein Worker, kein Slot, kein Claim)",
+        })
+
     meta = _section_meta(
         source="farm_state.sqlite:work_items_clean(status='active') + "
                "state/terminal_reservations.json",
@@ -483,6 +521,7 @@ def build_terminals(con: sqlite3.Connection, ea_slugs: dict[str, str],
             "reserved": reserved,
             "idle": idle,
             "fleet_size": len(FLEET),
+            "installed_not_governed": len(installed),
         },
         "terminals": terminals,
         "notes": (
@@ -1489,18 +1528,19 @@ CONTRACT_SCHEMA: dict[str, Any] = {
                         "reserved": {"type": "integer"},
                         "idle": {"type": "integer"},
                         "fleet_size": {"type": "integer"},
+                        "installed_not_governed": {"type": "integer"},
                     },
                 },
                 "terminals": {
                     "type": "array",
                     "minItems": 10,
-                    "maxItems": 10,
+                    "maxItems": 16,
                     "items": {
                         "type": "object",
                         "required": ["terminal", "state"],
                         "properties": {
                             "terminal": {"type": "string"},
-                            "state": {"enum": ["RUNNING", "RESERVED", "IDLE", "ERROR"]},
+                            "state": {"enum": ["RUNNING", "RESERVED", "IDLE", "ERROR", "INSTALLED"]},
                             "ea_id": {"type": ["string", "null"]},
                             "ea_slug": {"type": ["string", "null"]},
                             "symbol": {"type": ["string", "null"]},
