@@ -1,0 +1,23 @@
+{
+  "schema": "qm.source-composition-receipt/v1",
+  "generated_at": "2026-09-05",
+  "new_public_retrieval": false,
+  "complete_bounded_parents": [
+    {
+      "path": "strategy-seeds/sources/AI-CODEX-WTI-MADF-PERSIST-TREND-20260903/source.md",
+      "sha256": "576505363DE9DCA4F8E0CB4047D30DE630FB76CBC754F3F9FE3805CDA33507EC",
+      "role": "lag-one intercept ADF arithmetic and non-rejection boundary"
+    },
+    {
+      "path": "strategy-seeds/sources/BROOCK-STATSMODELS-MOP-WTI-BDS2-20260902/source.md",
+      "sha256": "AF16FC65A4E3AA9DEF87B3DE9BFBB6DDB04D98373A04A6E093C3EF616E6A87E1",
+      "role": "embedding-two BDS arithmetic, strict distance, and state boundary"
+    },
+    {
+      "path": "strategy-seeds/sources/MOP-TSMOM-2012/source.md",
+      "sha256": "C8B07ECD62C1D5EF9E3D7975EEE6A3B6C46C1C566D0B20B42237613D9B3A7042",
+      "role": "monthly own-return continuation and explicit WTI carrier"
+    }
+  ],
+  "claim_boundary": "The parents define separate methods. None tests their conjunction, the locked thresholds on WTI CFD data, activity, economics, or portfolio fit."
+}
