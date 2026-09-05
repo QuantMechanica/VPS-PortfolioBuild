@@ -532,6 +532,8 @@ def _load_jsonl(path: Path, label: str) -> list[dict[str, Any]]:
 
 def _load_ftmo_terms(path: Path) -> dict[str, Mapping[str, Any]]:
     value = load_json(path, "ftmo_cost_snapshot")
+    if isinstance(value, Mapping) and value.get("schema") == "qm.ftmo-current-pool-cost-snapshot/v1":
+        value = value.get("consumer_instrument_rows")
     if not isinstance(value, list) or not value:
         raise TimeboxEvaluationError("ftmo_cost_snapshot: expected non-empty instrument list")
     terms: dict[str, Mapping[str, Any]] = {}

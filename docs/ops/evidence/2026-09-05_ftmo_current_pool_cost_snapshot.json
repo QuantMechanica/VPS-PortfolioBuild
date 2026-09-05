@@ -1,0 +1,117 @@
+{
+  "schema": "qm.ftmo-current-pool-cost-snapshot/v1",
+  "retrieved_at_utc": "2026-09-05T04:24:16Z",
+  "status": "PASS_PROVISIONAL_ROLLOVER",
+  "sources": [
+    {
+      "authority": "FTMO official symbols API",
+      "url": "https://ftmo.com/wp-json/ftmo/symbols",
+      "retrieved_at_utc": "2026-09-05T04:24:16Z",
+      "http_status": 200,
+      "response_bytes": 232485,
+      "response_sha256": "07cad5b22514bda4fc013972f9473997c1e820d134733a1ab7cb58a90e94db66",
+      "verbatim_figures": "Selected rows below preserve commission, commissionType, usdCommission, swapLong, swapShort, swapType, contractSize, digits, leverageSwing, marginPercent, marginCalculation, pipConversion and profitCurrency."
+    },
+    {
+      "authority": "FTMO official account specifications FAQ",
+      "url": "https://ftmo.com/en/faq/what-are-the-account-specifications/",
+      "retrieved_at_utc": "2026-09-05T04:28:00Z",
+      "verbatim_figures": "Swing account leverage: up to 1:30. Exact specification of instruments is available directly in the trading platform."
+    },
+    {
+      "authority": "FTMO official trading update",
+      "url": "https://ftmo.com/en/blog/trading-updates/trading-update-25-sep-2025/",
+      "retrieved_at_utc": "2026-09-05T04:29:00Z",
+      "verbatim_figures": "Historical change effective 29 September 2025: Forex USD 2.50 per lot per side; Metals and CashIII Commodities 0.0007 percent per volume per side. Current API values govern this snapshot."
+    },
+    {
+      "authority": "Darwinex official execution costs help",
+      "url": "https://help.darwinex.com/execution-costs",
+      "retrieved_at_utc": "2026-09-05T04:31:00Z",
+      "verbatim_figures": "FX and commodities gross commission around 0.005 percent of nominal; example EURUSD 1 lot round trip EUR 5. Swap rates are variable and should be checked in the current table. Used for provider-context only, not FTMO normalization."
+    }
+  ],
+  "internal_bindings": {
+    "venue_cost_model_sha256": "7dfafe53749e5c45be0cb37568b6e3491c109f546fafaf799f6ea82efdb688d7",
+    "live_commission_contract_sha256": "119f795cefce2f819f0c7aae3bddb87affbffa771f596df48d182cf89989e197",
+    "current_pool_baseline_sha256": "7ee89656a8a9d058b251f13fbe66386b24f607b876f9e24b05aadc97899f0eac",
+    "prior_snapshot_sha256": "7eab3bf8c97373fc1b246a11fca1e2601fd292d9f36dcb80dfc5474ba55b3280"
+  },
+  "symbols": [
+    {
+      "symbol": "GBPUSD", "ftmo_code": "GBP/USD",
+      "provider": {"code": "GBP/USD", "commission": 5, "commissionType": "flat_USD", "usdCommission": 5, "swapLong": -6.7, "swapShort": -5.2, "swapType": "points", "contractSize": 100000, "digits": 5, "leverageSwing": 30, "marginPercent": 1, "marginCalculation": "forex", "pipConversion": 0.0001, "profitCurrency": "USD"},
+      "normalized": {"commission_round_trip": {"value": 5, "unit": "USD_PER_TARGET_LOT_ROUND_TRIP"}, "swap": {"long": -6.7, "short": -5.2, "unit": "POINTS_PER_TARGET_LOT_PER_ROLLOVER_UNIT", "triple_day": "WEDNESDAY_PROVISIONAL"}, "contract": {"contract_size": 100000, "contract_size_unit": "UNDERLYING_UNITS_PER_TARGET_LOT", "digits": 5, "tick_size": 0.00001, "tick_value": 1, "tick_value_unit": "PROFIT_CURRENCY_PER_TARGET_LOT_PER_TICK", "profit_currency": "USD"}, "margin": {"provider_margin_percent_standard": 1, "swing_leverage": 30, "swing_margin_percent": 3.3333333333, "unit": "PERCENT_OF_NOTIONAL"}}
+    },
+    {
+      "symbol": "EURUSD", "ftmo_code": "EUR/USD",
+      "provider": {"code": "EUR/USD", "commission": 5, "commissionType": "flat_USD", "usdCommission": 5, "swapLong": -13.29, "swapShort": 0.17, "swapType": "points", "contractSize": 100000, "digits": 5, "leverageSwing": 30, "marginPercent": 1, "marginCalculation": "forex", "pipConversion": 0.0001, "profitCurrency": "USD"},
+      "normalized": {"commission_round_trip": {"value": 5, "unit": "USD_PER_TARGET_LOT_ROUND_TRIP"}, "swap": {"long": -13.29, "short": 0.17, "unit": "POINTS_PER_TARGET_LOT_PER_ROLLOVER_UNIT", "triple_day": "WEDNESDAY_PROVISIONAL"}, "contract": {"contract_size": 100000, "contract_size_unit": "UNDERLYING_UNITS_PER_TARGET_LOT", "digits": 5, "tick_size": 0.00001, "tick_value": 1, "tick_value_unit": "PROFIT_CURRENCY_PER_TARGET_LOT_PER_TICK", "profit_currency": "USD"}, "margin": {"provider_margin_percent_standard": 1, "swing_leverage": 30, "swing_margin_percent": 3.3333333333, "unit": "PERCENT_OF_NOTIONAL"}}
+    },
+    {
+      "symbol": "USDCAD", "ftmo_code": "USD/CAD",
+      "provider": {"code": "USD/CAD", "commission": 5, "commissionType": "flat_USD", "usdCommission": 5, "swapLong": 0.71, "swapShort": -12, "swapType": "points", "contractSize": 100000, "digits": 5, "leverageSwing": 30, "marginPercent": 1, "marginCalculation": "forex", "pipConversion": 0.0001, "profitCurrency": "CAD"},
+      "normalized": {"commission_round_trip": {"value": 5, "unit": "USD_PER_TARGET_LOT_ROUND_TRIP"}, "swap": {"long": 0.71, "short": -12, "unit": "POINTS_PER_TARGET_LOT_PER_ROLLOVER_UNIT", "triple_day": "WEDNESDAY_PROVISIONAL"}, "contract": {"contract_size": 100000, "contract_size_unit": "UNDERLYING_UNITS_PER_TARGET_LOT", "digits": 5, "tick_size": 0.00001, "tick_value": 1, "tick_value_unit": "PROFIT_CURRENCY_PER_TARGET_LOT_PER_TICK", "profit_currency": "CAD"}, "margin": {"provider_margin_percent_standard": 1, "swing_leverage": 30, "swing_margin_percent": 3.3333333333, "unit": "PERCENT_OF_NOTIONAL"}}
+    },
+    {
+      "symbol": "NZDUSD", "ftmo_code": "NZD/USD",
+      "provider": {"code": "NZD/USD", "commission": 5, "commissionType": "flat_USD", "usdCommission": 5, "swapLong": -4.82, "swapShort": -1.36, "swapType": "points", "contractSize": 100000, "digits": 5, "leverageSwing": 30, "marginPercent": 1, "marginCalculation": "forex", "pipConversion": 0.0001, "profitCurrency": "USD"},
+      "normalized": {"commission_round_trip": {"value": 5, "unit": "USD_PER_TARGET_LOT_ROUND_TRIP"}, "swap": {"long": -4.82, "short": -1.36, "unit": "POINTS_PER_TARGET_LOT_PER_ROLLOVER_UNIT", "triple_day": "WEDNESDAY_PROVISIONAL"}, "contract": {"contract_size": 100000, "contract_size_unit": "UNDERLYING_UNITS_PER_TARGET_LOT", "digits": 5, "tick_size": 0.00001, "tick_value": 1, "tick_value_unit": "PROFIT_CURRENCY_PER_TARGET_LOT_PER_TICK", "profit_currency": "USD"}, "margin": {"provider_margin_percent_standard": 1, "swing_leverage": 30, "swing_margin_percent": 3.3333333333, "unit": "PERCENT_OF_NOTIONAL"}}
+    },
+    {
+      "symbol": "XAGUSD", "ftmo_code": "XAG/USD",
+      "provider": {"code": "XAG/USD", "commission": 0.0014, "commissionType": "percent", "usdCommission": 9.2608, "swapLong": -23.05, "swapShort": 0.32, "swapType": "points", "contractSize": 5000, "digits": 3, "leverageSwing": 15, "marginPercent": 2, "marginCalculation": "cfd_leverage", "pipConversion": 1, "profitCurrency": "USD"},
+      "normalized": {"commission_round_trip": {"value": 0.0014, "unit": "PERCENT_OF_NOTIONAL_PER_SIDE"}, "swap": {"long": -23.05, "short": 0.32, "unit": "POINTS_PER_TARGET_LOT_PER_ROLLOVER_UNIT", "triple_day": "WEDNESDAY_PROVISIONAL"}, "contract": {"contract_size": 5000, "contract_size_unit": "UNDERLYING_UNITS_PER_TARGET_LOT", "digits": 3, "tick_size": 0.001, "tick_value": 5, "tick_value_unit": "PROFIT_CURRENCY_PER_TARGET_LOT_PER_TICK", "profit_currency": "USD"}, "margin": {"provider_margin_percent_standard": 2, "swing_leverage": 15, "swing_margin_percent": 6.6666666667, "unit": "PERCENT_OF_NOTIONAL"}}
+    },
+    {
+      "symbol": "XTIUSD", "ftmo_code": "USOIL.cash",
+      "provider": {"code": "USOIL.cash", "commission": 0, "commissionType": "percent", "usdCommission": 0, "swapLong": 5.83, "swapShort": -35.11, "swapType": "points", "contractSize": 100, "digits": 3, "leverageSwing": 15, "marginPercent": 2, "marginCalculation": "cfd_leverage", "pipConversion": 1, "profitCurrency": "USD"},
+      "normalized": {"commission_round_trip": {"value": 0, "unit": "PERCENT_OF_NOTIONAL_PER_SIDE"}, "swap": {"long": 5.83, "short": -35.11, "unit": "POINTS_PER_TARGET_LOT_PER_ROLLOVER_UNIT", "triple_day": "WEDNESDAY_PROVISIONAL"}, "contract": {"contract_size": 100, "contract_size_unit": "UNDERLYING_UNITS_PER_TARGET_LOT", "digits": 3, "tick_size": 0.001, "tick_value": 0.1, "tick_value_unit": "PROFIT_CURRENCY_PER_TARGET_LOT_PER_TICK", "profit_currency": "USD"}, "margin": {"provider_margin_percent_standard": 2, "swing_leverage": 15, "swing_margin_percent": 6.6666666667, "unit": "PERCENT_OF_NOTIONAL"}}
+    }
+  ],
+  "sleeves": [
+    {"sleeve_id": "10706:GBPUSD", "source_symbol": "GBPUSD.DWX", "ftmo_code": "GBP/USD", "trade_stream_path": "D:/QM/reports/portfolio/sleeve_streams/QM/q08_trades/10706_GBPUSD_DWX.jsonl"},
+    {"sleeve_id": "11421:EURUSD", "source_symbol": "EURUSD.DWX", "ftmo_code": "EUR/USD", "trade_stream_path": "D:/QM/reports/portfolio/sleeve_streams/QM/q08_trades/11421_EURUSD_DWX.jsonl"},
+    {"sleeve_id": "11422:USDCAD", "source_symbol": "USDCAD.DWX", "ftmo_code": "USD/CAD", "trade_stream_path": "D:/QM/reports/portfolio/sleeve_streams/QM/q08_trades/11422_USDCAD_DWX.jsonl"},
+    {"sleeve_id": "11910:NZDUSD", "source_symbol": "NZDUSD.DWX", "ftmo_code": "NZD/USD", "trade_stream_path": "D:/QM/reports/portfolio/sleeve_streams/QM/q08_trades/11910_NZDUSD_DWX.jsonl"},
+    {"sleeve_id": "13054:XTIUSD", "source_symbol": "XTIUSD.DWX", "ftmo_code": "USOIL.cash", "trade_stream_path": "D:/QM/reports/portfolio/sleeve_streams/QM/q08_trades/13054_XTIUSD_DWX.jsonl"},
+    {"sleeve_id": "1537:XAGUSD", "source_symbol": "XAGUSD.DWX", "ftmo_code": "XAG/USD", "trade_stream_path": "D:/QM/reports/portfolio/sleeve_streams/QM/q08_trades/1537_XAGUSD_DWX.jsonl"},
+    {"sleeve_id": "20048:XTIUSD", "source_symbol": "XTIUSD.DWX", "ftmo_code": "USOIL.cash", "trade_stream_path": "D:/QM/reports/portfolio/sleeve_streams/QM/q08_trades/20048_XTIUSD_DWX.jsonl"},
+    {"sleeve_id": "21505:XAGUSD", "source_symbol": "XAGUSD.DWX", "ftmo_code": "XAG/USD", "trade_stream_path": "D:/QM/reports/portfolio/sleeve_streams/QM/q08_trades/21505_XAGUSD_DWX.jsonl"}
+  ],
+  "consumer_instrument_rows": [
+    {"code": "GBP/USD", "active": true, "commission": 5, "commissionType": "flat_USD", "swapLong": -6.7, "swapShort": -5.2, "swapType": "points", "contractSize": 100000, "digits": 5, "profitCurrency": "USD", "tripleWeekday": 2},
+    {"code": "EUR/USD", "active": true, "commission": 5, "commissionType": "flat_USD", "swapLong": -13.29, "swapShort": 0.17, "swapType": "points", "contractSize": 100000, "digits": 5, "profitCurrency": "USD", "tripleWeekday": 2},
+    {"code": "USD/CAD", "active": true, "commission": 5, "commissionType": "flat_USD", "swapLong": 0.71, "swapShort": -12, "swapType": "points", "contractSize": 100000, "digits": 5, "profitCurrency": "CAD", "tripleWeekday": 2},
+    {"code": "NZD/USD", "active": true, "commission": 5, "commissionType": "flat_USD", "swapLong": -4.82, "swapShort": -1.36, "swapType": "points", "contractSize": 100000, "digits": 5, "profitCurrency": "USD", "tripleWeekday": 2},
+    {"code": "XAG/USD", "active": true, "commission": 0.0014, "commissionType": "percent", "swapLong": -23.05, "swapShort": 0.32, "swapType": "points", "contractSize": 5000, "digits": 3, "profitCurrency": "USD", "tripleWeekday": 2},
+    {"code": "USOIL.cash", "active": true, "commission": 0, "commissionType": "percent", "swapLong": 5.83, "swapShort": -35.11, "swapType": "points", "contractSize": 100, "digits": 3, "profitCurrency": "USD", "tripleWeekday": 2}
+  ],
+  "diff_from_2026_07_30": {
+    "current_pool_coverage": "2_of_8_to_8_of_8_sleeves",
+    "added_symbols": ["EURUSD", "GBPUSD", "USDCAD", "NZDUSD", "XAGUSD"],
+    "removed_non_pool_symbols": ["USDJPY", "XAUUSD"],
+    "changed": [{"symbol": "XTIUSD", "field": "swapLong", "old": 4.22, "new": 5.83}, {"symbol": "XTIUSD", "field": "swapShort", "old": -26.8, "new": -35.11}],
+    "unchanged": [{"symbol": "XTIUSD", "field": "commission", "value": 0}]
+  },
+  "projection": {
+    "basis": "FTMO_COMMISSION_AND_SWAP_ONLY_SPREAD_EXCLUDED",
+    "sleeves": [
+      {"sleeve_id": "10706:GBPUSD", "trade_stream_sha256": "71fb35b8f8539356f511609a4d1dfb06571f85b19b60de6647e907ec891e34f7", "trades": 360, "source_net": 69101.93, "projected_ftmo_net_before_spread": 65196.75, "net_delta": -3905.18, "ftmo_commission": -8128.84, "ftmo_swap": -6317.51, "spread_delta": null, "spread_status": "MISSING_MATCHED_FTMO_DXZ_CALIBRATION"},
+      {"sleeve_id": "11421:EURUSD", "trade_stream_sha256": "e9d0a9ef831f156f0f67e5bf1140d7e57702c3923a4ff47b5548847957d7c0c1", "trades": 91, "source_net": 4162.83, "projected_ftmo_net_before_spread": 3605.91, "net_delta": -556.92, "ftmo_commission": -568.19, "ftmo_swap": -1408.39, "spread_delta": null, "spread_status": "MISSING_MATCHED_FTMO_DXZ_CALIBRATION"},
+      {"sleeve_id": "11422:USDCAD", "trade_stream_sha256": "7ce6cc3ec2f1279c18e8601119e3319375d5d3fa1ce4cf95cf33e05eefc33198", "trades": 195, "source_net": 18310.48, "projected_ftmo_net_before_spread": 15074.15, "net_delta": -3236.33, "ftmo_commission": -1291.94, "ftmo_swap": -3713.89, "spread_delta": null, "spread_status": "MISSING_MATCHED_FTMO_DXZ_CALIBRATION"},
+      {"sleeve_id": "11910:NZDUSD", "trade_stream_sha256": "555bbee205432c62f06da96a0a291d14028dc5c88e3fa8b2792ad62bc5d885b0", "trades": 63, "source_net": 2425.19, "projected_ftmo_net_before_spread": 2014.27, "net_delta": -410.92, "ftmo_commission": -260.94, "ftmo_swap": -570.96, "spread_delta": null, "spread_status": "MISSING_MATCHED_FTMO_DXZ_CALIBRATION"},
+      {"sleeve_id": "13054:XTIUSD", "trade_stream_sha256": "67d4fe2cef067e041f01d10e5e6c98312a32b43683eee2da3d0bfa9af296955b", "trades": 82, "source_net": 4831.28, "projected_ftmo_net_before_spread": 4250.82, "net_delta": -580.46, "ftmo_commission": 0, "ftmo_swap": -581.38, "spread_delta": null, "spread_status": "MISSING_MATCHED_FTMO_DXZ_CALIBRATION"},
+      {"sleeve_id": "1537:XAGUSD", "trade_stream_sha256": "1885c21e4c895827c79ff3d55849308ab4ee5c0db96a7d576cd652dc3eff8658", "trades": 96, "source_net": 3647.61, "projected_ftmo_net_before_spread": -1876.79, "net_delta": -5524.4, "ftmo_commission": -47.13, "ftmo_swap": -5477.4, "spread_delta": null, "spread_status": "MISSING_MATCHED_FTMO_DXZ_CALIBRATION"},
+      {"sleeve_id": "20048:XTIUSD", "trade_stream_sha256": "a792e2635250bcd6df5aa4a290359b54e6d5ffe8fbe10e34d143b74dfe0e8d55", "trades": 60, "source_net": 1164.28, "projected_ftmo_net_before_spread": 1277.85, "net_delta": 113.57, "ftmo_commission": 0, "ftmo_swap": 113.15, "spread_delta": null, "spread_status": "MISSING_MATCHED_FTMO_DXZ_CALIBRATION"},
+      {"sleeve_id": "21505:XAGUSD", "trade_stream_sha256": "243804faaf0050f5482b9a4aac8f9eb0dcd552de1c2c139a486f0bcfa46b94c1", "trades": 116, "source_net": 7223.85, "projected_ftmo_net_before_spread": 911.67, "net_delta": -6312.18, "ftmo_commission": -54.52, "ftmo_swap": -6257.66, "spread_delta": null, "spread_status": "MISSING_MATCHED_FTMO_DXZ_CALIBRATION"}
+    ]
+  },
+  "owner_actions": [
+    "Confirm the triple-swap weekday and current specification for all six symbols in the FTMO client platform; the public API does not publish the triple weekday.",
+    "Export or screenshot the exact per-symbol FTMO client specifications before any purchase decision.",
+    "Obtain matched-session FTMO versus Darwinex M1 spread calibration; this snapshot deliberately excludes spread delta.",
+    "Refresh the official symbols API and rerun the projection immediately before an OWNER-authorized purchase."
+  ],
+  "authorization": {"purchase_authorized": false, "deploy_authorized": false, "live_trading_authorized": false}
+}

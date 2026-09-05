@@ -132,7 +132,13 @@ def _parse_utc(value: Any, label: str) -> dt.datetime:
     return parsed.astimezone(dt.UTC)
 
 
-def _load_q08(path: Path, *, source_symbol: str, sleeve_id: str) -> list[SourceTrade]:
+def _load_q08(
+    path: Path,
+    *,
+    source_symbol: str,
+    sleeve_id: str,
+    allow_zero_lifecycle: bool = False,
+) -> list[SourceTrade]:
     required = {
         "event",
         "money_basis",
@@ -208,7 +214,7 @@ def _load_q08(path: Path, *, source_symbol: str, sleeve_id: str) -> list[SourceT
                     raise CostAdjustedExportError(f"Q08:{line_number}: source commission split mismatch")
                 entry = _parse_utc(row["entry_time"], f"Q08:{line_number}.entry_time")
                 exit_time = _parse_utc(row["time"], f"Q08:{line_number}.time")
-                if exit_time <= entry:
+                if exit_time < entry or (exit_time == entry and not allow_zero_lifecycle):
                     raise CostAdjustedExportError(f"Q08:{line_number}: non-positive lifecycle")
                 trades.append(
                     SourceTrade(
@@ -348,24 +354,30 @@ def _adjust_trade(
         native_entry_commission=trade.entry_commission,
         native_exit_commission=trade.exit_commission,
     )
-    commission_rate = _finite(term["commission"], "FTMO.commission") / 100.0
+    commission_type = str(term["commissionType"])
+    commission_value = _finite(term["commission"], "FTMO.commission")
+    commission_rate = commission_value / 100.0 if commission_type == "percent" else 0.0
+    flat_round_trip = commission_value if commission_type == "flat_USD" else 0.0
     try:
         entry_commission, exit_commission = ftmo_trade_commission_sides(
             round_trip,
             commission_rate_per_side=commission_rate,
             contract_size=target_contract,
+            flat_round_trip_commission_per_lot=flat_round_trip,
             source_contract_size=source_size,
             profit_currency_to_account_rate=account_rate,
         )
         _net, reconciled_commission, swap_cash, _rollovers = ftmo_trade_net(
             round_trip,
             commission_rate_per_side=commission_rate,
+            flat_round_trip_commission_per_lot=flat_round_trip,
             swap_long_points=_finite(term["swapLong"], "FTMO.swapLong"),
             swap_short_points=_finite(term["swapShort"], "FTMO.swapShort"),
             contract_size=target_contract,
             digits=int(_finite(term["digits"], "FTMO.digits")),
             source_contract_size=source_size,
             profit_currency_to_account_rate=account_rate,
+            triple_weekday=int(term.get("tripleWeekday", 2)),
         )
     except ValueError as exc:
         raise CostAdjustedExportError(f"{trade.row_id}: cannot apply FTMO terms: {exc}") from exc

@@ -376,6 +376,8 @@ def _cost_term(
             f"FTMO cost snapshot is not the pinned artifact: {actual_sha}"
         )
     value = _strict_json_file(path, "ftmo_cost_snapshot")
+    if isinstance(value, Mapping) and value.get("schema") == "qm.ftmo-current-pool-cost-snapshot/v1":
+        value = value.get("consumer_instrument_rows")
     if not isinstance(value, list):
         raise FtmoDailyExportError("FTMO cost snapshot must be an instrument list")
     matches = [
@@ -405,7 +407,7 @@ def _cost_term(
         raise FtmoDailyExportError(f"FTMO term is inactive or incomplete: {ftmo_code}")
     for field in ("commission", "swapLong", "swapShort", "contractSize", "digits"):
         _finite(term[field], f"ftmo_cost_snapshot.{field}")
-    if term["commissionType"] != "percent" or term["swapType"] != "points":
+    if term["commissionType"] not in {"percent", "flat_USD"} or term["swapType"] != "points":
         raise FtmoDailyExportError("unsupported FTMO commission/swap type")
     if float(term["contractSize"]) <= 0.0 or int(term["digits"]) < 0:
         raise FtmoDailyExportError("invalid FTMO contract size/digits")
@@ -415,7 +417,8 @@ def _cost_term(
 def _cost_reconciliation(
     trades: Sequence[RoundTrip], term: Mapping[str, Any]
 ) -> dict[str, Any]:
-    commission_rate = float(term["commission"]) / 100.0
+    commission_rate = float(term["commission"]) / 100.0 if term["commissionType"] == "percent" else 0.0
+    flat_round_trip = float(term["commission"]) if term["commissionType"] == "flat_USD" else 0.0
     contract_size = float(term["contractSize"])
     digits = int(term["digits"])
     profit_currency = str(term["profitCurrency"]).upper()
@@ -430,10 +433,11 @@ def _cost_reconciliation(
                 trade,
                 commission_rate_per_side=commission_rate,
                 contract_size=contract_size,
+                flat_round_trip_commission_per_lot=flat_round_trip,
                 derive_profit_currency_rate_from_pnl=derive_rate,
             )
         except ValueError as exc:
-            if commission_rate != 0.0:
+            if commission_rate != 0.0 or flat_round_trip != 0.0:
                 raise FtmoDailyExportError(
                     f"trade {index}: cannot validate FTMO commission: {exc}"
                 ) from exc
@@ -452,11 +456,13 @@ def _cost_reconciliation(
             _net, _commission, expected_swap, units = ftmo_trade_net(
                 trade,
                 commission_rate_per_side=commission_rate,
+                flat_round_trip_commission_per_lot=flat_round_trip,
                 swap_long_points=float(term["swapLong"]),
                 swap_short_points=float(term["swapShort"]),
                 contract_size=contract_size,
                 digits=digits,
                 derive_profit_currency_rate_from_pnl=derive_rate,
+                triple_weekday=int(term.get("tripleWeekday", 2)),
             )
         except ValueError:
             # A zero-move EUR-denominated trade cannot supply a conversion rate.
@@ -482,7 +488,7 @@ def _cost_reconciliation(
     if rollover_units > 0 and swap_checked == 0:
         raise FtmoDailyExportError("rollover trades exist but FTMO swap terms were not checkable")
     return {
-        "commission_contract": "PINNED_PERCENT_PER_SIDE_VS_NATIVE_DEALS",
+        "commission_contract": "PINNED_PROVIDER_COMMISSION_TYPE_VS_NATIVE_DEALS",
         "commission_checked_trades": len(trades),
         "commission_max_abs_delta": max((abs(value) for value in commission_deltas), default=0.0),
         "swap_contract": "PINNED_POINTS_PER_ROLLOVER_VS_NATIVE_DEALS",
