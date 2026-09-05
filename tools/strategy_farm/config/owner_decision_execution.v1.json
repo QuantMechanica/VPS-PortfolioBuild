@@ -579,6 +579,39 @@
           ]
         }
       }
+    },
+    {
+      "id": "OWNER-DEC-DUKASCOPY-BACKFILL-20260829",
+      "todo_id": "QM-TODO-20260829-DUKASCOPY-BACKFILL",
+      "priority": 86,
+      "choices": {
+        "YES": {
+          "mode": "APPLY_AND_VERIFY",
+          "objective": "Continue the Dukascopy tick backfill exactly per docs/ops/DUKASCOPY_BACKFILL_PLAN_2026-08-29.md after the P0 safety stop (task bd73130a, verdict PARTIAL_P0/BLOCKED_BEFORE_SPLICE, evidence docs/ops/evidence/2026-09-02_dukascopy_backfill_p0_block.md): (1) a governed read-only T1 tick-tail probe writes the exact last genuine .DWX tick per symbol (37 symbols) as the splice CSV; (2) Codex builds P1 downloader (bi5, UTC -> Darwinex NY-close GMT+2/+3), P2 converter (append-only from the splice timestamp, source sidecar) and P3 reconciliation harness (M1 OHLC p95 <= 1.5x typical spread, session coverage >= 99 %, DST 0-second criterion) - fail-closed per symbol; (3) P4 imports ONLY reconciliation-PASS symbols through the existing T1 Import_DWX_Queue_Service + verify_import.py, then distributes the mutable 2026 segment to T2-T10 inside one OFF window that is authorised separately as a runtime-activation decision; (4) P5 installs the monthly refresh task and the > 45-day tick-age WARN health check. The signed 2017-2025 archive is never touched; 2026 stays the mutable current year until a separate OWNER receipt seals it.",
+          "allowed_actions": [
+            "Enqueue, review and close the Codex build tasks for P1/P2/P3 and the read-only T1 tick-tail probe (probe runs under a factory claim; no manual terminal start)",
+            "Run the throttled downloader detached at night (5-10 req/s), the reconciliation compute (< 2 h) and the T1 import queue for PASS symbols only",
+            "Prepare the T2-T10 distribution package and request the OFF window as a separate runtime-activation decision (Factory_OFF/ON stays outside this task)",
+            "Report each phase in OPEN_ITEMS_STATUS.md with CSV/report paths and update the plan document"
+          ],
+          "acceptance": [
+            "Splice CSV with 37 exact last-tick timestamps produced by a read-only T1 probe (no history mutation)",
+            "Per-symbol reconciliation CSV plus summary report; symbols failing a criterion are NOT spliced and are listed for the OWNER",
+            "verify_import.py PASS for every imported symbol; signed 2017-2025 archive manifest hash re-verified unchanged",
+            "Monthly refresh task installed with the > 45-day WARN health check; rollback = the per-symbol import sidecars name the splice timestamp so a symbol can be re-imported from its DWX tail"
+          ]
+        },
+        "NO": {
+          "mode": "DOCUMENT_AND_VERIFY",
+          "objective": "Record the rejection: the backtest data window stays at about 2026-04-06; no download, no reconciliation, no import.",
+          "allowed_actions": [
+            "Document in OPEN_ITEMS_STATUS.md and in docs/ops/DUKASCOPY_BACKFILL_PLAN_2026-08-29.md"
+          ],
+          "acceptance": [
+            "No history mutation; no task beyond the documentation"
+          ]
+        }
+      }
     }
   ]
 }
