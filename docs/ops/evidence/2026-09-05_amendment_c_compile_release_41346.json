@@ -1,0 +1,41 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "2a5ffbfc-95d6-4004-ad24-5f1b1eb43cd7"
+  ],
+  "backup": {
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260905T065448Z_46bfd81c.sqlite",
+    "reused": false,
+    "sha256": "2a89c38b0ad22a6e57f93b817661b9c0c9d9e497a79ff7089b3c2b4ff9bc2a60"
+  },
+  "backup_reuse_max_age_minutes": 0.0,
+  "backup_timeout_seconds": 60.0,
+  "backup_write_guard": {
+    "attempts": 1,
+    "transaction": "BEGIN IMMEDIATE / validated / backed up / released / COMMIT",
+    "wait_seconds": 0.0
+  },
+  "deferred": [],
+  "factory_mutation_lock": {
+    "path": "D:\\QM\\strategy_farm\\state\\FACTORY_MUTATION.lock",
+    "release_status": "released"
+  },
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "e237fd733314c983aae69a391622132a3cdb1e41f713470121130ed7b04e6f1a",
+      "ea_id": "QM5_41346",
+      "ea_label": "QM5_41346_cum-rsi2-commodity-requal8-opt",
+      "expected_mq5_sha256": "e237fd733314c983aae69a391622132a3cdb1e41f713470121130ed7b04e6f1a",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41346_cum-rsi2-commodity-requal8-opt\\QM5_41346_cum-rsi2-commodity-requal8-opt.mq5",
+      "work_item_id": "2a5ffbfc-95d6-4004-ad24-5f1b1eb43cd7"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-09-05T06:54:55+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "2a5ffbfc-95d6-4004-ad24-5f1b1eb43cd7"
+}

@@ -1,0 +1,41 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "245ee112-e9b1-4346-a5b0-82ae91cd039c"
+  ],
+  "backup": {
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260905T065500Z_b0341e9b.sqlite",
+    "reused": false,
+    "sha256": "ea38b7e7e794f65edd4d88095c1fdcbd4c6714b1c1e36ba86e74c8fbda100d45"
+  },
+  "backup_reuse_max_age_minutes": 0.0,
+  "backup_timeout_seconds": 60.0,
+  "backup_write_guard": {
+    "attempts": 1,
+    "transaction": "BEGIN IMMEDIATE / validated / backed up / released / COMMIT",
+    "wait_seconds": 0.015
+  },
+  "deferred": [],
+  "factory_mutation_lock": {
+    "path": "D:\\QM\\strategy_farm\\state\\FACTORY_MUTATION.lock",
+    "release_status": "released"
+  },
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "64f3369a67fa212629f3bec4cc6b7a84e81ee6b44a2c80119f2cc6ed97d0ac2f",
+      "ea_id": "QM5_41347",
+      "ea_label": "QM5_41347_cs-ichi-cloud-opt",
+      "expected_mq5_sha256": "64f3369a67fa212629f3bec4cc6b7a84e81ee6b44a2c80119f2cc6ed97d0ac2f",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41347_cs-ichi-cloud-opt\\QM5_41347_cs-ichi-cloud-opt.mq5",
+      "work_item_id": "245ee112-e9b1-4346-a5b0-82ae91cd039c"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-09-05T06:55:09+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "245ee112-e9b1-4346-a5b0-82ae91cd039c"
+}

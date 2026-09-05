@@ -1,0 +1,41 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "f0dc12bc-7da4-47b0-a3f5-7ee69cc0f8bf"
+  ],
+  "backup": {
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260905T065253Z_4e8ce4d5.sqlite",
+    "reused": false,
+    "sha256": "e0246dcfad7666d6eaea8e771e72d9fdce407b0dd8ac9fc774f4577f0c93249f"
+  },
+  "backup_reuse_max_age_minutes": 0.0,
+  "backup_timeout_seconds": 60.0,
+  "backup_write_guard": {
+    "attempts": 1,
+    "transaction": "BEGIN IMMEDIATE / validated / backed up / released / COMMIT",
+    "wait_seconds": 0.0
+  },
+  "deferred": [],
+  "factory_mutation_lock": {
+    "path": "D:\\QM\\strategy_farm\\state\\FACTORY_MUTATION.lock",
+    "release_status": "released"
+  },
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "a9a2ef6ece187cff628ceddde987a535245a3fef97424bdabbe26c9eb6cf8aee",
+      "ea_id": "QM5_41342",
+      "ea_label": "QM5_41342_anon-market-squeeze-d1-opt",
+      "expected_mq5_sha256": "a9a2ef6ece187cff628ceddde987a535245a3fef97424bdabbe26c9eb6cf8aee",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41342_anon-market-squeeze-d1-opt\\QM5_41342_anon-market-squeeze-d1-opt.mq5",
+      "work_item_id": "f0dc12bc-7da4-47b0-a3f5-7ee69cc0f8bf"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-09-05T06:53:18+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "f0dc12bc-7da4-47b0-a3f5-7ee69cc0f8bf"
+}
