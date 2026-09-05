@@ -1,0 +1,465 @@
+{
+  "schema": "qm.e1c-decision-prototype/v1",
+  "observed_at_utc": "2026-09-05T15:14:27.869210+00:00",
+  "candidate_manifest_sha256": "b33d0a3def6b19dfd78b977cfd13593806eb85f4b483143a5ca42980c2f4eb99",
+  "gates": {
+    "6.1_anchor_shares": {
+      "pass": false,
+      "scope_status": "COVERED_BY_DECLARATION"
+    },
+    "6.2_coverage": {
+      "pass": false,
+      "scope_status": "COVERED_BY_DECLARATION"
+    },
+    "6.3_cross_file_identity": {
+      "pass": true,
+      "scope_status": "MEASURED_PASS"
+    },
+    "6.4_nonusd_completeness": {
+      "pass": true,
+      "scope_status": "MEASURED_PASS"
+    },
+    "6.5_tick_footprints": {
+      "pass": false,
+      "scope_status": "COVERED_BY_DECLARATION"
+    },
+    "6.6_no_row_loss": {
+      "pass": true,
+      "scope_status": "MEASURED_PASS"
+    },
+    "6.7_detector_clean": {
+      "pass": false,
+      "scope_status": "COVERED_BY_DECLARATION"
+    },
+    "6.8_schema": {
+      "pass": true,
+      "scope_status": "MEASURED_PASS"
+    }
+  },
+  "declaration_count": 18279,
+  "by_currency": {
+    "ALL": {
+      "month_count": 57,
+      "first": "2015-05",
+      "last": "2026-08"
+    },
+    "AUD": {
+      "month_count": 141,
+      "first": "2015-01",
+      "last": "2026-09"
+    },
+    "CAD": {
+      "month_count": 141,
+      "first": "2015-01",
+      "last": "2026-09"
+    },
+    "CHF": {
+      "month_count": 124,
+      "first": "2015-01",
+      "last": "2025-04"
+    },
+    "CNY": {
+      "month_count": 123,
+      "first": "2015-01",
+      "last": "2025-03"
+    },
+    "EUR": {
+      "month_count": 139,
+      "first": "2015-01",
+      "last": "2026-07"
+    },
+    "GBP": {
+      "month_count": 141,
+      "first": "2015-01",
+      "last": "2026-09"
+    },
+    "JPY": {
+      "month_count": 139,
+      "first": "2015-01",
+      "last": "2026-07"
+    },
+    "NZD": {
+      "month_count": 126,
+      "first": "2015-01",
+      "last": "2026-09"
+    },
+    "USD": {
+      "month_count": 144,
+      "first": "2015-01",
+      "last": "2026-12"
+    }
+  },
+  "by_gate": {
+    "6.1_anchor_shares": 345,
+    "6.2_coverage": 5,
+    "6.5_tick_footprints": 27,
+    "6.7_detector_clean": 17902
+  },
+  "ingress_refusal": "scoped calendar candidate has inadmissible ranges; full-scope publication refused",
+  "prototype_checks_passed": 5,
+  "held_rows": [
+    {
+      "id": "06b9c0f8-f6c1-47f8-a40d-2dc94893db7c",
+      "ea_id": "QM5_11147",
+      "symbol": "SP500.DWX",
+      "phase": "Q10_NEWS",
+      "hold_code": "NEWS_CALENDAR_TIMESTAMP_DEFECT",
+      "symbols": [
+        "SP500.DWX",
+        "NDX.DWX",
+        "WS30.DWX",
+        "GDAXI.DWX",
+        "UK100.DWX",
+        "XAUUSD.DWX",
+        "XTIUSD.DWX",
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "USDJPY.DWX"
+      ],
+      "relevant_currencies": [
+        "EUR",
+        "GBP",
+        "JPY",
+        "USD"
+      ],
+      "proposed_status": "UNCONFIRMED",
+      "current_hold_unchanged": true,
+      "reason": "DECLARED_SCOPE_OVERLAP",
+      "plan_path": "D:\\QM\\reports\\work_items\\06b9c0f8-f6c1-47f8-a40d-2dc94893db7c\\q09_contract_v3\\run_plan.json",
+      "plan_file_sha256": "a11bd980875c98e5a1b85f4fe1a2fb2e9062a59a0d4b9309852cbc458f4f58ff",
+      "input_manifest_path": "D:\\QM\\reports\\work_items\\06b9c0f8-f6c1-47f8-a40d-2dc94893db7c\\q09_contract_v3\\input_manifest.json",
+      "input_file_sha256": "6ec28b346f7faebd725b89bb455cb7b34fcfa5aceef89ac17d80e516a71315c5",
+      "observed_windows": {
+        "complete_months": 60,
+        "full_from_utc": "2019-01-01T00:00:00Z",
+        "full_to_utc": "2025-12-31T23:59:59Z",
+        "holdout_complete_months": 24,
+        "holdout_from_utc": "2024-01-01T00:00:00Z",
+        "holdout_sealed": true,
+        "holdout_to_utc": "2025-12-31T23:59:59Z",
+        "selection_from_utc": "2019-01-01T00:00:00Z",
+        "selection_to_utc": "2023-12-31T23:59:59Z"
+      },
+      "existing_plan_revalidated_for_admission": false,
+      "overlap_count": 7716,
+      "overlap_examples": [
+        "E1B3-0ae5bddfc9153a07",
+        "E1B3-96ea365bddeb4f79",
+        "E1B3-4d73b2be8d1ce0bf"
+      ]
+    },
+    {
+      "id": "1cff016c-d25c-4723-a892-6bc53bfafa0b",
+      "ea_id": "QM5_12989",
+      "symbol": "XAUUSD.DWX",
+      "phase": "Q10_NEWS",
+      "hold_code": "NEWS_CALENDAR_TIMESTAMP_DEFECT",
+      "symbols": [
+        "XAUUSD.DWX"
+      ],
+      "relevant_currencies": [
+        "USD"
+      ],
+      "proposed_status": "UNCONFIRMED",
+      "current_hold_unchanged": true,
+      "reason": "MISSING_SEALED_WINDOW_OR_SCOPE"
+    },
+    {
+      "id": "24acc5d4-3e34-526e-a7a8-12640a2e759f",
+      "ea_id": "QM5_12778",
+      "symbol": "AUDUSD.DWX",
+      "phase": "Q09_NEWS",
+      "hold_code": "NEWS_CALENDAR_TIMESTAMP_DEFECT",
+      "symbols": [
+        "AUDUSD.DWX",
+        "EURJPY.DWX",
+        "EURUSD.DWX",
+        "EURAUD.DWX"
+      ],
+      "relevant_currencies": [
+        "AUD",
+        "EUR",
+        "JPY",
+        "USD"
+      ],
+      "proposed_status": "UNCONFIRMED",
+      "current_hold_unchanged": true,
+      "reason": "DECLARED_SCOPE_OVERLAP",
+      "plan_path": "D:\\QM\\strategy_farm\\artifacts\\oos_2026_confirmation_v1\\06_live_QM5_12778_AUDUSD\\run_plan.json",
+      "plan_file_sha256": "160704d47dd7adc40d36917cef5e459fd21177db6b89b0479467a9731e9ea7bf",
+      "input_manifest_path": "D:\\QM\\strategy_farm\\artifacts\\oos_2026_confirmation_v1\\06_live_QM5_12778_AUDUSD\\input_manifest.json",
+      "input_file_sha256": "bcafcfc8ce06f18da66ba467207c4c50c267de03578e1fa551cda9a98a9dcd1e",
+      "observed_windows": {
+        "complete_months": 3,
+        "full_from_utc": "2026-01-01T00:00:00Z",
+        "full_to_utc": "2026-04-06T23:59:59Z",
+        "holdout_complete_months": 3,
+        "holdout_from_utc": "2026-01-01T00:00:00Z",
+        "holdout_sealed": false,
+        "holdout_to_utc": "2026-04-06T23:59:59Z",
+        "selection_from_utc": "2026-01-01T00:00:00Z",
+        "selection_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "existing_plan_revalidated_for_admission": false,
+      "overlap_count": 243,
+      "overlap_examples": [
+        "E1B3-8169eba1b16532c8",
+        "E1B3-4e693a464478e1a5",
+        "E1B3-e1b2f8fece1f0e21"
+      ]
+    },
+    {
+      "id": "2604a1f0-4f58-4597-89ef-432af9093131",
+      "ea_id": "QM5_1567",
+      "symbol": "EURUSD.DWX",
+      "phase": "Q10_NEWS",
+      "hold_code": "NEWS_CALENDAR_TIMESTAMP_DEFECT",
+      "symbols": [
+        "EURUSD.DWX"
+      ],
+      "relevant_currencies": [
+        "EUR",
+        "USD"
+      ],
+      "proposed_status": "UNCONFIRMED",
+      "current_hold_unchanged": true,
+      "reason": "MISSING_SEALED_WINDOW_OR_SCOPE"
+    },
+    {
+      "id": "49a059da-82ab-4835-9c46-f18ba9b94dcf",
+      "ea_id": "QM5_10847",
+      "symbol": "GDAXI.DWX",
+      "phase": "Q10_NEWS",
+      "hold_code": "NEWS_CALENDAR_TIMESTAMP_DEFECT",
+      "symbols": [
+        "GDAXI.DWX"
+      ],
+      "relevant_currencies": [
+        "EUR"
+      ],
+      "proposed_status": "UNCONFIRMED",
+      "current_hold_unchanged": true,
+      "reason": "MISSING_SEALED_WINDOW_OR_SCOPE"
+    },
+    {
+      "id": "57d8bacd-2805-45a6-ac51-156e22bb3a65",
+      "ea_id": "QM5_10815",
+      "symbol": "GDAXI.DWX",
+      "phase": "Q10_NEWS",
+      "hold_code": "NEWS_CALENDAR_TIMESTAMP_DEFECT",
+      "symbols": [
+        "GDAXI.DWX"
+      ],
+      "relevant_currencies": [
+        "EUR"
+      ],
+      "proposed_status": "UNCONFIRMED",
+      "current_hold_unchanged": true,
+      "reason": "MISSING_SEALED_WINDOW_OR_SCOPE"
+    },
+    {
+      "id": "7bbeef66-becf-4bd3-aa5c-1d00bde262d8",
+      "ea_id": "QM5_12567",
+      "symbol": "XAUUSD.DWX",
+      "phase": "Q10_NEWS",
+      "hold_code": "NEWS_CALENDAR_TIMESTAMP_DEFECT",
+      "symbols": [
+        "XAUUSD.DWX"
+      ],
+      "relevant_currencies": [
+        "USD"
+      ],
+      "proposed_status": "UNCONFIRMED",
+      "current_hold_unchanged": true,
+      "reason": "MISSING_SEALED_WINDOW_OR_SCOPE"
+    },
+    {
+      "id": "84c6e9e9-76a8-4cd4-87b4-647d7fad3c1a",
+      "ea_id": "QM5_13301",
+      "symbol": "GDAXI.DWX",
+      "phase": "Q10_NEWS",
+      "hold_code": "NEWS_CALENDAR_TIMESTAMP_DEFECT",
+      "symbols": [
+        "GDAXI.DWX"
+      ],
+      "relevant_currencies": [
+        "EUR"
+      ],
+      "proposed_status": "UNCONFIRMED",
+      "current_hold_unchanged": true,
+      "reason": "MISSING_SEALED_WINDOW_OR_SCOPE"
+    },
+    {
+      "id": "86cccb8a-2d49-4539-a4a0-c45f530dc6ba",
+      "ea_id": "QM5_13059",
+      "symbol": "QM5_13059_XTI_AUDJPY_RSPREAD_D1",
+      "phase": "Q10_NEWS",
+      "hold_code": "NEWS_CALENDAR_TIMESTAMP_DEFECT",
+      "symbols": [
+        "XTIUSD.DWX",
+        "AUDJPY.DWX"
+      ],
+      "relevant_currencies": [
+        "AUD",
+        "JPY",
+        "USD"
+      ],
+      "proposed_status": "UNCONFIRMED",
+      "current_hold_unchanged": true,
+      "reason": "DECLARED_SCOPE_OVERLAP",
+      "plan_path": "D:\\QM\\reports\\work_items\\86cccb8a-2d49-4539-a4a0-c45f530dc6ba\\q09_contract_v3\\run_plan.json",
+      "plan_file_sha256": "5ac381ddaf8c38f57102a6e2ce2e1ff644272f4ac0f0243314d6bd0d936a2bb7",
+      "input_manifest_path": "D:\\QM\\reports\\work_items\\86cccb8a-2d49-4539-a4a0-c45f530dc6ba\\q09_contract_v3\\input_manifest.json",
+      "input_file_sha256": "14f104080d4710927b1af78d9a9cc54207347ebce8ee787c80eb19158638708d",
+      "observed_windows": {
+        "complete_months": 60,
+        "full_from_utc": "2019-01-01T00:00:00Z",
+        "full_to_utc": "2025-12-31T23:59:59Z",
+        "holdout_complete_months": 24,
+        "holdout_from_utc": "2024-01-01T00:00:00Z",
+        "holdout_sealed": true,
+        "holdout_to_utc": "2025-12-31T23:59:59Z",
+        "selection_from_utc": "2019-01-01T00:00:00Z",
+        "selection_to_utc": "2023-12-31T23:59:59Z"
+      },
+      "existing_plan_revalidated_for_admission": false,
+      "overlap_count": 4418,
+      "overlap_examples": [
+        "E1B3-0ae5bddfc9153a07",
+        "E1B3-96ea365bddeb4f79",
+        "E1B3-4d73b2be8d1ce0bf"
+      ]
+    },
+    {
+      "id": "9639a773-b913-40a2-b12f-128a027aec98",
+      "ea_id": "QM5_10939",
+      "symbol": "GBPUSD.DWX",
+      "phase": "Q10_NEWS",
+      "hold_code": "NEWS_CALENDAR_TIMESTAMP_DEFECT",
+      "symbols": [
+        "GBPUSD.DWX"
+      ],
+      "relevant_currencies": [
+        "GBP",
+        "USD"
+      ],
+      "proposed_status": "UNCONFIRMED",
+      "current_hold_unchanged": true,
+      "reason": "MISSING_SEALED_WINDOW_OR_SCOPE"
+    },
+    {
+      "id": "a6e2cc8b-7b7b-4e64-9764-4cf39046dd1c",
+      "ea_id": "QM5_11179",
+      "symbol": "USDJPY.DWX",
+      "phase": "Q10_NEWS",
+      "hold_code": "NEWS_CALENDAR_TIMESTAMP_DEFECT",
+      "symbols": [
+        "USDJPY.DWX"
+      ],
+      "relevant_currencies": [
+        "JPY",
+        "USD"
+      ],
+      "proposed_status": "UNCONFIRMED",
+      "current_hold_unchanged": true,
+      "reason": "DECLARED_SCOPE_OVERLAP",
+      "plan_path": "D:\\QM\\reports\\work_items\\a6e2cc8b-7b7b-4e64-9764-4cf39046dd1c\\q09_contract_v3\\run_plan.json",
+      "plan_file_sha256": "5b34156285f87259d4c168e4e0800485410c691701085a2b094f95b6c11a519d",
+      "input_manifest_path": "D:\\QM\\reports\\work_items\\a6e2cc8b-7b7b-4e64-9764-4cf39046dd1c\\q09_contract_v3\\input_manifest.json",
+      "input_file_sha256": "3d5fa9e0e05e58c4b9d28caa2f8eeb299f574ca706c9e9515e33d98491e33a27",
+      "observed_windows": {
+        "complete_months": 60,
+        "full_from_utc": "2019-01-01T00:00:00Z",
+        "full_to_utc": "2025-12-31T23:59:59Z",
+        "holdout_complete_months": 24,
+        "holdout_from_utc": "2024-01-01T00:00:00Z",
+        "holdout_sealed": true,
+        "holdout_to_utc": "2025-12-31T23:59:59Z",
+        "selection_from_utc": "2019-01-01T00:00:00Z",
+        "selection_to_utc": "2023-12-31T23:59:59Z"
+      },
+      "existing_plan_revalidated_for_admission": false,
+      "overlap_count": 3309,
+      "overlap_examples": [
+        "E1B3-0ae5bddfc9153a07",
+        "E1B3-96ea365bddeb4f79",
+        "E1B3-4d73b2be8d1ce0bf"
+      ]
+    },
+    {
+      "id": "aa80274f-fb46-4432-b47e-6fb2bf28c9a2",
+      "ea_id": "QM5_13128",
+      "symbol": "NDX.DWX",
+      "phase": "Q10_NEWS",
+      "hold_code": "NEWS_CALENDAR_TIMESTAMP_DEFECT",
+      "symbols": [
+        "NDX.DWX"
+      ],
+      "relevant_currencies": [
+        "USD"
+      ],
+      "proposed_status": "UNCONFIRMED",
+      "current_hold_unchanged": true,
+      "reason": "MISSING_SEALED_WINDOW_OR_SCOPE"
+    },
+    {
+      "id": "aece4bcc-62aa-4f8e-937e-5f81c071a4d0",
+      "ea_id": "QM5_12580",
+      "symbol": "AUDUSD.DWX",
+      "phase": "Q10_NEWS",
+      "hold_code": "NEWS_CALENDAR_TIMESTAMP_DEFECT",
+      "symbols": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "AUDUSD.DWX",
+        "NZDUSD.DWX",
+        "USDJPY.DWX",
+        "USDCHF.DWX",
+        "USDCAD.DWX"
+      ],
+      "relevant_currencies": [
+        "AUD",
+        "CAD",
+        "CHF",
+        "EUR",
+        "GBP",
+        "JPY",
+        "NZD",
+        "USD"
+      ],
+      "proposed_status": "UNCONFIRMED",
+      "current_hold_unchanged": true,
+      "reason": "DECLARED_SCOPE_OVERLAP",
+      "plan_path": "D:\\QM\\reports\\work_items\\aece4bcc-62aa-4f8e-937e-5f81c071a4d0\\run_plan.json",
+      "plan_file_sha256": "326011e1a4350494dc4f05a30bc13407d067aa3602e087e255bad73d78a37b88",
+      "input_manifest_path": "D:\\QM\\reports\\work_items\\aece4bcc-62aa-4f8e-937e-5f81c071a4d0\\input_manifest.json",
+      "input_file_sha256": "623662b36b8e8c50eb616e4bf295bf6d8b675a58658054f6abdd754e727c0b45",
+      "observed_windows": {
+        "complete_months": 60,
+        "full_from_utc": "2019-01-01T00:00:00Z",
+        "full_to_utc": "2025-12-31T23:59:59Z",
+        "holdout_complete_months": 24,
+        "holdout_from_utc": "2024-01-01T00:00:00Z",
+        "holdout_sealed": true,
+        "holdout_to_utc": "2025-12-31T23:59:59Z",
+        "selection_from_utc": "2019-01-01T00:00:00Z",
+        "selection_to_utc": "2023-12-31T23:59:59Z"
+      },
+      "existing_plan_revalidated_for_admission": false,
+      "overlap_count": 11004,
+      "overlap_examples": [
+        "E1B3-0ae5bddfc9153a07",
+        "E1B3-96ea365bddeb4f79",
+        "E1B3-4d73b2be8d1ce0bf"
+      ]
+    }
+  ],
+  "pipeline_verdict_written": false,
+  "counter_changed": false,
+  "source_bindings": {
+    "C:\\QM\\repo\\tools\\strategy_farm\\news_calendar_scope.py": "50f4de8e2a0e6241b38096fe7148614ddf2f55a4dbce1cc262a27db6f551f764",
+    "C:\\QM\\repo\\tools\\strategy_farm\\news_calendar_candidate_ingress.py": "fc526d1bdfcd5dc764759831f57f9d19bbaebee0bfcd8e2b544a916c171f8690",
+    "C:\\QM\\repo\\tools\\strategy_farm\\q09_news_contract.py": "93653eb026cc83c29156a417227849ba86d47993fd93ea110c30874d9cd64611",
+    "C:\\QM\\repo\\framework\\include\\QM\\QM_NewsFilter.mqh": "b5ef379ade56b67a2087d0bf13f0286875b74e47a5905dd25adfaa32ae30d539"
+  }
+}
