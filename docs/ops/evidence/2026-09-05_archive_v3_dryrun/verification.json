@@ -1,0 +1,22 @@
+{
+  "tests": "89 passed in 2.66s",
+  "total": 3399,
+  "name_quality": {
+    "weak": 3368,
+    "strong": 31
+  },
+  "classes": {
+    "failed": 1235,
+    "advancing": 412,
+    "untested": 1743,
+    "passed": 9
+  },
+  "sample_classes": {
+    "passed": 5,
+    "failed": 10,
+    "advancing": 5
+  },
+  "artifact_sha256": "c3897817eee604fa5f6c6082ff3397db67cfa88b1f777d0fda943278ec21f51f",
+  "published": false,
+  "jsonschema_python_package": "not installed; production PowerShell Test-Json used instead"
+}

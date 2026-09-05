@@ -1014,7 +1014,18 @@ def build_publication_bundle(
     return {
         **blocks,
         "strategy_archive_v2": build_strategy_archive_v2(blocks["public_archive"]),
+        "strategy_archive_v3": build_strategy_archive_v3(db_path, farm_root, repo_root),
     }
+
+
+def build_strategy_archive_v3(db_path: Path, farm_root: Path, repo_root: Path) -> dict[str, Any]:
+    from website_archive_v3 import build
+    return build(db_path, farm_root, repo_root)[0]
+
+
+def assert_strategy_archive_v3_safe(archive: dict[str, Any]) -> None:
+    from website_archive_v3 import validate
+    validate(archive)
 
 
 # ---------------------------------------------------------------------------

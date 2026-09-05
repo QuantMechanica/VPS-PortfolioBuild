@@ -234,7 +234,7 @@ try {
     $published = New-Object System.Collections.Generic.List[string]
     foreach ($name in @(
         'public-snapshot.json', 'process-roadmap.json',
-        'strategy-archive.json', 'company-operating-model.json', 'stats.json',
+        'strategy-archive.json', 'strategy-archive-v3.json', 'company-operating-model.json', 'stats.json',
         'hero-equity.json'
     )) {
         $source = Join-Path $snapshotStageDir $name
@@ -284,6 +284,7 @@ try {
             'public-data/public-snapshot.json',
             'public-data/process-roadmap.json',
             'public-data/strategy-archive.json',
+            'public-data/strategy-archive-v3.json',
             'public-data/company-operating-model.json',
             'public-data/stats.json',
             'public-data/hero-equity.json'

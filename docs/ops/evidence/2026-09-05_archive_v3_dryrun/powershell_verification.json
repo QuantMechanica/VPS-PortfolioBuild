@@ -1,0 +1,9 @@
+{
+  "parsed_scripts": [
+    "scripts/export_public_snapshot.ps1",
+    "scripts/run_public_snapshot_task.ps1",
+    "scripts/validate_public_snapshot.ps1"
+  ],
+  "positive": true,
+  "negative_rejected": true
+}

@@ -174,6 +174,16 @@ function Validate-JsonAgainstSchema {
                 }
             }
         }
+        "strategy-archive-v3" {
+            # The Python producer has already run the closed v3 validator.
+            # Keep an independent metadata check for PowerShell 5 hosts.
+            if ($Object.schema_version -ne 3 -or
+                $Object.disclosure -cne 'named_gate_journey_without_metrics' -or
+                $Object.gate_contract_version -cne 'v4') {
+                throw "Invalid v3 archive contract in $Name."
+            }
+            if ($Object.total -ne @($Object.items).Count) { throw "Invalid v3 archive total." }
+        }
         "public-stats" {
             $requiredStats = @(
                 "schema_version", "generated_at", "eas_compiled", "strategy_cards",
@@ -293,6 +303,9 @@ function Get-PublicSnapshotBlocks {
     }
     if (-not (Test-ObjectHasKey -Target $blocks -Key 'strategy_archive_v2')) {
         throw 'Public archive bundle omitted strategy_archive_v2.'
+    }
+    if (-not (Test-ObjectHasKey -Target $blocks -Key 'strategy_archive_v3')) {
+        throw 'Public archive bundle omitted strategy_archive_v3.'
     }
     return $blocks
 }
@@ -482,6 +495,7 @@ $publicBlocks = Get-PublicSnapshotBlocks `
     -RuntimeRoot $FarmRoot `
     -RepositoryRoot $RepoRoot
 $strategyArchive = $publicBlocks.strategy_archive_v2
+$strategyArchiveV3 = $publicBlocks.strategy_archive_v3
 
 # Load pipeline_state.json (single source of truth for the public-snapshot live fields).
 # Built by scripts/build_pipeline_state.py against D:/QM/reports/pipeline + watchdog + aggregator state.
@@ -575,6 +589,7 @@ if (Test-ObjectHasKey -Target $statsFunnel -Key 'research_sources') {
 $publicSchemaPath = Join-Path $PublicDataDir "public-snapshot.schema.v2.json"
 $roadmapSchemaPath = Join-Path $PublicDataDir "process-roadmap.schema.json"
 $archiveSchemaPath = Join-Path $PublicDataDir "strategy-archive.schema.v2.json"
+$archiveV3SchemaPath = Join-Path $PublicDataDir "strategy-archive.schema.v3.json"
 $companyModelSchemaPath = Join-Path $PublicDataDir "company-operating-model.schema.json"
 $statsSchemaPath = Join-Path $PublicDataDir "public-stats.schema.json"
 $heroEquitySchemaPath = Join-Path $PublicDataDir "hero-equity.schema.json"
@@ -593,6 +608,7 @@ if ([int]$companyOperatingModel.schema_version -ne $SchemaVersionV1) {
 Validate-JsonAgainstSchema -Object $publicSnapshot -SchemaPath $publicSchemaPath -Name "public-snapshot"
 Validate-JsonAgainstSchema -Object $processRoadmap -SchemaPath $roadmapSchemaPath -Name "process-roadmap"
 Validate-JsonAgainstSchema -Object $strategyArchive -SchemaPath $archiveSchemaPath -Name "strategy-archive"
+Validate-JsonAgainstSchema -Object $strategyArchiveV3 -SchemaPath $archiveV3SchemaPath -Name "strategy-archive-v3"
 Validate-JsonAgainstSchema -Object $companyOperatingModel -SchemaPath $companyModelSchemaPath -Name "company-operating-model"
 Validate-JsonAgainstSchema -Object $publicStats -SchemaPath $statsSchemaPath -Name "public-stats"
 Validate-JsonAgainstSchema -Object $heroEquity -SchemaPath $heroEquitySchemaPath -Name "hero-equity"
@@ -602,6 +618,7 @@ $changedFiles = New-Object System.Collections.Generic.List[string]
 $publicPath = Join-Path $effectiveOutputDir "public-snapshot.json"
 $roadmapPath = Join-Path $effectiveOutputDir "process-roadmap.json"
 $archivePath = Join-Path $effectiveOutputDir "strategy-archive.json"
+$archiveV3Path = Join-Path $effectiveOutputDir "strategy-archive-v3.json"
 $companyModelOutputPath = Join-Path $effectiveOutputDir "company-operating-model.json"
 $statsPath = Join-Path $effectiveOutputDir "stats.json"
 $heroEquityPath = Join-Path $effectiveOutputDir "hero-equity.json"
@@ -611,6 +628,7 @@ if ($DryRun) {
     $publicSnapshot | ConvertTo-Json -Depth 20 | Write-Host
     Write-Host "[DryRun] Process roadmap items: $($processRoadmap.total)"
     Write-Host "[DryRun] Strategy archive items: $($strategyArchive.total)"
+    Write-Host "[DryRun] Strategy archive v3 items: $($strategyArchiveV3.total)"
     Write-Host "[DryRun] Public stats: eas=$($publicStats.eas_compiled) cards=$($publicStats.strategy_cards) work_items=$($publicStats.backtests_total) gates=$($publicStats.phases)"
     Write-Host "[DryRun] Funnel: q02=$($publicStats.q02_baseline_pass) q04=$($publicStats.q04_walkforward_pass) q08=$($publicStats.q08_davey_stats_pass) portfolio=$($publicStats.portfolio_candidates) symbols=$($publicStats.symbols)"
     Write-Host "[DryRun] Archive KPIs: total=$($publicStats.archive_total) passed_q10=$($publicStats.archive_passed_q10) failed=$($publicStats.archive_failed)"
@@ -622,6 +640,7 @@ if ($DryRun) {
 if (Write-JsonIfChanged -Path $publicPath -Object $publicSnapshot) { $changedFiles.Add($publicPath) }
 if (Write-JsonIfChanged -Path $roadmapPath -Object $processRoadmap) { $changedFiles.Add($roadmapPath) }
 if (Write-JsonIfChanged -Path $archivePath -Object $strategyArchive) { $changedFiles.Add($archivePath) }
+if (Write-JsonIfChanged -Path $archiveV3Path -Object $strategyArchiveV3) { $changedFiles.Add($archiveV3Path) }
 if (Write-JsonIfChanged -Path $companyModelOutputPath -Object $companyOperatingModel) { $changedFiles.Add($companyModelOutputPath) }
 if (Write-JsonIfChanged -Path $statsPath -Object $publicStats) { $changedFiles.Add($statsPath) }
 if (Write-JsonIfChanged -Path $heroEquityPath -Object $heroEquity) { $changedFiles.Add($heroEquityPath) }
@@ -647,7 +666,7 @@ if ($NoGit -or -not $resolvedOutputDir.Equals(
 
 Push-Location $RepoRoot
 try {
-    git add public-data/public-snapshot.json public-data/process-roadmap.json public-data/strategy-archive.json public-data/company-operating-model.json public-data/stats.json public-data/hero-equity.json
+    git add public-data/public-snapshot.json public-data/process-roadmap.json public-data/strategy-archive.json public-data/strategy-archive-v3.json public-data/company-operating-model.json public-data/stats.json public-data/hero-equity.json
     $diff = git diff --cached --name-only
     if (-not $diff) {
         Write-Host "No git-staged snapshot diff."

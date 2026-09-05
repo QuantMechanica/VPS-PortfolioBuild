@@ -1,0 +1,251 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://quantmechanica.com/schemas/strategy-archive/v3.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema_id",
+    "disclosure",
+    "gate_contract_version",
+    "gates",
+    "generated_at",
+    "items",
+    "schema_version",
+    "total"
+  ],
+  "properties": {
+    "schema_version": {
+      "enum": [
+        3
+      ]
+    },
+    "$schema_id": {
+      "const": "https://quantmechanica.com/schemas/strategy-archive/v3.json"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "gate_contract_version": {
+      "const": "v4"
+    },
+    "disclosure": {
+      "const": "named_gate_journey_without_metrics"
+    },
+    "gates": {
+      "const": [
+        "Q00",
+        "Q01",
+        "Q02",
+        "Q03",
+        "Q04",
+        "Q05",
+        "Q06",
+        "Q07",
+        "Q08",
+        "Q09",
+        "Q10",
+        "Q11",
+        "Q12",
+        "Q13",
+        "Q14",
+        "Q15",
+        "Q16",
+        "Q17"
+      ]
+    },
+    "total": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "display_name",
+          "family",
+          "first_tested",
+          "gate_journey",
+          "last_updated",
+          "markets",
+          "name_quality",
+          "public_id",
+          "slug",
+          "summary",
+          "terminal_gate"
+        ],
+        "properties": {
+          "public_id": {
+            "type": "string",
+            "pattern": "^card_[0-9a-f]{16}$"
+          },
+          "slug": {
+            "type": "string",
+            "pattern": "^[a-z]+(?:-[a-z]+)*-[0-9a-f]{6}$"
+          },
+          "display_name": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[^0-9]*$"
+          },
+          "name_quality": {
+            "enum": [
+              "strong",
+              "weak"
+            ]
+          },
+          "family": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[^0-9]*$"
+          },
+          "summary": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[^0-9]*$"
+          },
+          "markets": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "symbol_public",
+                "timeframe"
+              ],
+              "properties": {
+                "symbol_public": {
+                  "type": "string",
+                  "pattern": "^[A-Z][A-Z0-9]{2,9}$"
+                },
+                "timeframe": {
+                  "type": "string",
+                  "pattern": "^(?:M[1-9][0-9]?|H[1-9][0-9]?|D1|W1|MN1|UNKNOWN)$"
+                }
+              }
+            }
+          },
+          "first_tested": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "last_updated": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "terminal_gate": {
+            "enum": [
+              null,
+              "Q00",
+              "Q01",
+              "Q02",
+              "Q03",
+              "Q04",
+              "Q05",
+              "Q06",
+              "Q07",
+              "Q08",
+              "Q09",
+              "Q10",
+              "Q11",
+              "Q12",
+              "Q13",
+              "Q14",
+              "Q15",
+              "Q16",
+              "Q17"
+            ]
+          },
+          "gate_journey": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "gate",
+                "verdict",
+                "public_reason",
+                "backtests"
+              ],
+              "properties": {
+                "gate": {
+                  "enum": [
+                    "Q00",
+                    "Q01",
+                    "Q02",
+                    "Q03",
+                    "Q04",
+                    "Q05",
+                    "Q06",
+                    "Q07",
+                    "Q08",
+                    "Q09",
+                    "Q10",
+                    "Q11",
+                    "Q12",
+                    "Q13",
+                    "Q14",
+                    "Q15",
+                    "Q16",
+                    "Q17"
+                  ]
+                },
+                "verdict": {
+                  "enum": [
+                    "PASS",
+                    "FAIL"
+                  ]
+                },
+                "public_reason": {
+                  "enum": [
+                    "Met the evidence requirements for this gate.",
+                    "Did not meet the gate criteria.",
+                    "Produced no trades in the baseline window.",
+                    "The available sample was insufficient for this test.",
+                    "The result did not remain robust under the test conditions."
+                  ]
+                },
+                "backtests": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "symbol_public",
+                      "timeframe",
+                      "verdict"
+                    ],
+                    "properties": {
+                      "symbol_public": {
+                        "type": "string",
+                        "pattern": "^[A-Z][A-Z0-9]{2,9}$"
+                      },
+                      "timeframe": {
+                        "type": "string",
+                        "pattern": "^(?:M[1-9][0-9]?|H[1-9][0-9]?|D1|W1|MN1|UNKNOWN)$"
+                      },
+                      "verdict": {
+                        "enum": [
+                          "PASS",
+                          "FAIL"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

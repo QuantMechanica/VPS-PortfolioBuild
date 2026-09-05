@@ -1,0 +1,32 @@
+{
+  "schema_version": 3,
+  "$schema_id": "https://quantmechanica.com/schemas/strategy-archive/v3.json",
+  "generated_at": "2026-09-05T00:00:00+00:00",
+  "gate_contract_version": "v4",
+  "disclosure": "named_gate_journey_without_metrics",
+  "gates": [
+    "Q00",
+    "Q01",
+    "Q02",
+    "Q03",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08",
+    "Q09",
+    "Q10",
+    "Q11",
+    "Q12",
+    "Q13",
+    "Q14",
+    "Q15",
+    "Q16",
+    "Q17"
+  ],
+  "total": 0,
+  "items": [],
+  "metrics": {
+    "profit_factor": 2.0
+  }
+}

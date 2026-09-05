@@ -64,6 +64,15 @@ $targets = @(
     }
 )
 
+if (Test-Path -LiteralPath (Join-Path $publicDataDir 'strategy-archive-v3.json')) {
+    $targets += @{
+        Name = 'strategy-archive-v3'
+        Schema = Join-Path $schemaDir 'strategy-archive.schema.v3.json'
+        Data = Join-Path $publicDataDir 'strategy-archive-v3.json'
+        Negative = Join-Path $fixturesDir 'strategy-archive.v3.invalid.metrics.json'
+    }
+}
+
 foreach ($target in $targets) {
     foreach ($path in @($target.Schema, $target.Data, $target.Negative)) {
         if (-not (Test-Path -LiteralPath $path)) {

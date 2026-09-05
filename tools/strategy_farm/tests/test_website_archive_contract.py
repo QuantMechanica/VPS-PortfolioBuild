@@ -9,6 +9,7 @@ carry no absolute paths.
 from __future__ import annotations
 
 import json
+import re
 import sqlite3
 import sys
 from pathlib import Path
@@ -19,6 +20,52 @@ REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO / "tools" / "strategy_farm"))
 
 import website_archive_contract as wac  # noqa: E402
+import website_archive_v3 as v3  # noqa: E402
+
+
+def _v3_fixture(tmp_path):
+    db=tmp_path/'farm.sqlite';_make_farm_db(db)
+    cards=tmp_path/'farm/artifacts/cards_approved';cards.mkdir(parents=True)
+    (cards/'QM5_9001_demo.md').write_text('---\nea_id: QM5_9001\ntitle: Moving Average Pullback\nperiod: H1\ntarget_symbols: [EURUSD.DWX, GBPUSD.DWX]\nconcepts: [trend, pullback]\ng0_status: APPROVED\n---\nPrivate body RISK_FIXED=1000 magic=123456789\n')
+    folder=tmp_path/'repo/framework/EAs/QM5_9001_demo';folder.mkdir(parents=True)
+    (folder/'SPEC.md').write_text('## 1. Strategy Logic\n\nBuys pullbacks above a 23 bar moving average.\n\n## 2. Parameters\n\nNever publish secret_parameter=777, magic=987654321 or C:/QM/secret.set.\n')
+    return v3.build(db,tmp_path/'farm',tmp_path/'repo',generated_at='2026-09-05T00:00:00+00:00')[0]
+
+
+def test_v3_named_journey_scrubs_private_spec_and_keeps_symbol_verdicts(tmp_path):
+    result=_v3_fixture(tmp_path);item=result['items'][0]
+    assert item['display_name']=='Moving Average Pullback'
+    assert item['name_quality']=='strong'
+    assert item['slug']==v3.name_slug(item['display_name'],item['public_id'])
+    gate=next(j for j in item['gate_journey'] if j['gate']=='Q02')
+    assert gate['verdict']=='PASS'
+    assert {(b['symbol_public'],b['verdict']) for b in gate['backtests']}=={('EURUSD','PASS'),('GBPUSD','FAIL')}
+    encoded=json.dumps(result)
+    for token in ('secret_parameter','777','987654321','RISK_','magic','QM5_9001','C:/QM','23 bar','Parameters'):
+        assert token not in encoded
+    assert 'moving average' in item['summary']
+
+
+@pytest.mark.parametrize('payload',[r'C:\QM\secret',r'D:\QM\secret','/QM/private','T_Live','T12','magic','x.set','RISK_PERCENT','qm_parameter','account: 123456789','strategy_period','https://private.example/source'])
+def test_v3_validator_refuses_every_private_prose_class(tmp_path,payload):
+    result=_v3_fixture(tmp_path);result['items'][0]['summary']=payload
+    with pytest.raises(wac.PublicSnapshotContractError):v3.validate(result)
+
+
+@pytest.mark.parametrize('field',['profit_factor','drawdown','return','trade_count','source','parameters','work_item_id'])
+def test_v3_unknown_fields_rejected(tmp_path,field):
+    result=_v3_fixture(tmp_path);result['items'][0][field]='secret'
+    with pytest.raises(wac.PublicSnapshotContractError):v3.validate(result)
+
+
+def test_v3_threshold_words_dates_and_open_verdict_validation(tmp_path):
+    assert not re.search(r'\d|\btwo\b|\beighteen\b',v3.public_text('Uses two bars above the eighteen day mean with 2.5 units.'))
+    result=_v3_fixture(tmp_path);result['items'][0]['gate_journey'][0]['verdict']='IN_PROGRESS'
+    with pytest.raises(wac.PublicSnapshotContractError):v3.validate(result)
+
+
+def test_v3_digit_removal_cannot_create_a_private_token():
+    assert v3.public_text('ff-magic123-ema-pullback') == ''
 
 
 # ---------------------------------------------------------------------------
