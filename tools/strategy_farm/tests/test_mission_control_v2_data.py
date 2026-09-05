@@ -393,6 +393,8 @@ def test_full_contract_is_schema_valid(fixture_db, monkeypatch, tmp_path):
     monkeypatch.setattr(mc, "HEALTH_FILE", tmp_path / "missing_health.json")
     monkeypatch.setattr(mc, "RISK_FREEZE_STATE", tmp_path / "missing_freeze.json")
     monkeypatch.setattr(mc, "RISK_FREEZE_PRESETS", tmp_path / "missing_presets")
+    # host-independent: no canary T11/T12 directories under a temp MT5 root
+    monkeypatch.setattr(mc, "MT5_FACTORY_ROOT", tmp_path / "mt5")
 
     contract = mc.build_contract(fixture_db, now=NOW)
     # must not raise
