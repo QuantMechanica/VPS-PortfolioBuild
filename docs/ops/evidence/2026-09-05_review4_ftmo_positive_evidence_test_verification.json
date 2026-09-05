@@ -1,0 +1,122 @@
+{
+  "task_id": "2b25f7a4-4dc2-48e5-a820-e32de459f4c9",
+  "verified_at": "2026-09-05T07:49:56.811162+00:00",
+  "checkout": "C:\\QM\\repo",
+  "head": "0fc3d85948af65c918016b6869672cf50aaff9b0",
+  "document_raw_sha256": "a220324e7a4697d9799d82938d453c6171b809fdf6217b9522f6930a51e998a4",
+  "document_lf_sha256": "de549514fd75e68adb6f972a39451c89b43d7f7e35961e6e3da197903bfa923d",
+  "static_seal_checks": [
+    {
+      "path": "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_SWING_V2.json",
+      "raw_sha256": "298ef1285eca49ea7f010ebc0a9353b5a821fccb40a025be129f5ca5314fd992",
+      "lf_sha256": "298ef1285eca49ea7f010ebc0a9353b5a821fccb40a025be129f5ca5314fd992",
+      "matches_r5_seal": true
+    },
+    {
+      "path": "tools/strategy_farm/portfolio/ftmo_timebox_eval.py",
+      "raw_sha256": "8de5458042020cdd23fd79dcc5facf2993a154a9eebfae31a14a1b7996ce938b",
+      "lf_sha256": "5a3f522de35d3d21f3c4089fa2e0adec83e9bba4db2cabefd98a0cd37ecd85ca",
+      "matches_r5_seal": true
+    },
+    {
+      "path": "tools/strategy_farm/portfolio/ftmo_p1_mc.py",
+      "raw_sha256": "934409ba0857e02695ed6c3395ff6509b0e318abe56b3884c6552289ba42239b",
+      "lf_sha256": "80e57bce0fcccf9730da5d4a781faccd9ccb8412bea5ff8b096fe5388e8119ba",
+      "matches_r5_seal": true
+    },
+    {
+      "path": "tools/strategy_farm/portfolio/challenge_firstpassage.py",
+      "raw_sha256": "79002fe3d1a0a1150ab9f2bee790f665d60697550a8afde330baa4a679f75e22",
+      "lf_sha256": "fc3b58c91aebed95cf49fdabcda888576c3972c2056a1c3fc7e655dc2fad68bc",
+      "matches_r5_seal": true
+    },
+    {
+      "path": "tools/strategy_farm/portfolio/ftmo_rules_engine.py",
+      "raw_sha256": "dd1bd87ec6489d33f399418b0da3fa828e0bc09384a1ed28695e1ca6f548972a",
+      "lf_sha256": "2c79ccd274d00bc1d1c5299c9700cf3ff51185429b99acb5a32497d90f5e7e51",
+      "matches_r5_seal": true
+    },
+    {
+      "path": "tools/strategy_farm/portfolio/ftmo_rule_contract.py",
+      "raw_sha256": "011ab015ac386c1fde88db95bb779aa2bf1e967eccb572d7405e033977e45e39",
+      "lf_sha256": "02adb2ebe566e142ef7e5cb7e22873c365f76f305ff688f94a27fc9264373aad",
+      "matches_r5_seal": true
+    },
+    {
+      "path": "tools/strategy_farm/portfolio/build_book_ftmo.py",
+      "raw_sha256": "39481dbce09218207e1926038f82f445a430e9d49edea97d2d7e80aac930a517",
+      "lf_sha256": "5cf70d3f9e54ea4f512149d9b90c9d4a1e0431a7f387d1d0586ad57f984987bd",
+      "matches_r5_seal": true
+    },
+    {
+      "path": "tools/strategy_farm/portfolio/fund_score.py",
+      "raw_sha256": "49e281710ab023c9c9e53741971a576bc095ba369ae511ff58c06408fd14d2e0",
+      "lf_sha256": "cb9c3989923f4370bfb30d8f46b18547afa65414db81f354b8eda5026dd23a56",
+      "matches_r5_seal": true
+    },
+    {
+      "path": "tools/strategy_farm/book_build_guard.py",
+      "raw_sha256": "48dd38b70bfd0f5e37227eecb401ec94a11b1dc26974ce06ab8e6c35723df71c",
+      "lf_sha256": "e3ba47378a605848db2694ba662b64e0eb9a31df1fcab7849e4e0fe66d2f6015",
+      "matches_r5_seal": true
+    },
+    {
+      "path": "framework/scripts/q08_davey/sub_8_2_dsr_mc_fdr.py",
+      "raw_sha256": "906bef88c9d903c7dccdc01a60a4a9e65c0fcd70ca99879836dd35ac354e8fe1",
+      "lf_sha256": "906bef88c9d903c7dccdc01a60a4a9e65c0fcd70ca99879836dd35ac354e8fe1",
+      "matches_r5_seal": true
+    },
+    {
+      "path": "framework/scripts/emit_q16_lineage.py",
+      "raw_sha256": "d518dee53016ca26f89f8e775c589603d3460e244dbc878c6fa70fbd4687d3cc",
+      "lf_sha256": "177313cb0fc58b4f8468a6e0c5d981493beec860c07a2ef28f44405edbd2237f",
+      "matches_r5_seal": true
+    },
+    {
+      "path": "tools/strategy_farm/opt_census.py",
+      "raw_sha256": "17f19954bc481755788338cf1b2c5ea3c0d2f425c7daa3ebf73fe7b3fcf2ef18",
+      "lf_sha256": "1c0ffccd63657611c897b880521332f4135bf3ad5b768afe8b45c5f6f485ebce",
+      "matches_r5_seal": true
+    },
+    {
+      "path": "tools/strategy_farm/config/concentration_tail_limits.v1.json",
+      "raw_sha256": "77a3b67312d199e06ad39c10a4404ab505b4041de0701ce4312a13c8cdf827da",
+      "lf_sha256": "ef8b10ec564e21863d8ca3706535d1af21b173c1aff15baa771bb82192890d17",
+      "matches_r5_seal": true
+    },
+    {
+      "path": "tools/strategy_farm/config/ftmo_probability_contract.v1.json",
+      "raw_sha256": "5b4e24eb60cd175f0973ddf7c8ea3f9db0daf2965379f1fedff6a8d816f79362",
+      "lf_sha256": "5b4e24eb60cd175f0973ddf7c8ea3f9db0daf2965379f1fedff6a8d816f79362",
+      "matches_r5_seal": true
+    },
+    {
+      "path": "tools/strategy_farm/portfolio/ftmo_probability_contract.py",
+      "raw_sha256": "c6c8ddf6f525bfac0dbddbbf8a2643a9ec7c725fb5fb4a0ed48d25c158943b0f",
+      "lf_sha256": "c6c8ddf6f525bfac0dbddbbf8a2643a9ec7c725fb5fb4a0ed48d25c158943b0f",
+      "matches_r5_seal": true
+    },
+    {
+      "path": "tools/strategy_farm/portfolio/portfolio_correlation.py",
+      "raw_sha256": "fb7cc3b4074259fff138cf19eb4829489ed4264c81b9963ed2c724ee4716532c",
+      "lf_sha256": "4b3c2888954b6b35170396369c617bffec0d4bddb384c60601a8233499dd26c1",
+      "matches_r5_seal": true
+    },
+    {
+      "path": "docs/ops/FTMO_PROBABILITY_CORRELATION_CONTRACT_V1_2026-09-05.md",
+      "raw_sha256": "72407aae7d20d939af11d998c417aa7b7dd67e9edbcc3f002fd180e3b34a7637",
+      "lf_sha256": "e25eceb81dc24a815ec7944b225b92a67f56b88ca5420cdeaf7bc48ca6f611ee",
+      "matches_r5_seal": true
+    }
+  ],
+  "synthetic_verification": {
+    "rolling_starts": 96,
+    "full_horizon_starts": 37,
+    "horizon_truncated_starts": 59,
+    "four_day_target_trace": "PASS",
+    "one_day_loss_trace": "DAILY_LOSS_BREACH",
+    "two_day_unresolved_trace": "TIMEOUT"
+  },
+  "review_verdict": "RATIFIABLE_AS_PREDECLARED_TEST",
+  "no_buy_lift": false
+}
