@@ -1,0 +1,646 @@
+commit a72d180868d2f29197a45f228cf212d1a47e8a71
+Author:     r <r@r>
+AuthorDate: Sat Sep 5 20:12:57 2026 +0200
+Commit:     r <r@r>
+CommitDate: Sat Sep 5 20:12:57 2026 +0200
+
+    Add inactive DSR V2 with sealed selection evidence and read-only status
+
+diff --git a/framework/scripts/q08_davey/aggregate.py b/framework/scripts/q08_davey/aggregate.py
+index b8bf62face..4e789cdc02 100644
+--- a/framework/scripts/q08_davey/aggregate.py
++++ b/framework/scripts/q08_davey/aggregate.py
+@@ -1556,6 +1556,17 @@ def _aggregate_verdict(sub_results: list[dict], trades: list[dict] | None = None
+         name = str(result.get("name") or "unknown")
+         status = str(result.get("status") or "").upper()
+         detail_lower = _detail_text(result).lower()
++        if (os.environ.get("QM_DSR_V2") == "1" and name.startswith("8.2")
++                and (result.get("evidence") or {}).get("engine") == "QM_DSR_V2"
++                and (result.get("evidence") or {}).get("statistical_status") == "low_sample"):
++            classification[name] = "LOW_SAMPLE"
++            continue
++        if (os.environ.get("QM_DSR_V2") == "1" and name.startswith("8.2")
++                and (result.get("evidence") or {}).get("engine") == "QM_DSR_V2"
++                and (result.get("evidence") or {}).get("statistical_status") == "uncorrected_selection"):
++            classification[name] = "UNCORRECTED_SELECTION"
++            blocking_invalid = True
++            continue
+         if status == "PASS":
+             classification[name] = "PASS"
+             continue
+@@ -1740,7 +1751,7 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
+             baseline_setfile: Path | None = None,
+             neighborhood_max_params: int | None = None,
+             recovery_lineage: dict | None = None,
+-            selection_trial_count: int | None = None) -> dict:
++            selection_trial_count: int | None = None, dsr_context=None) -> dict:
+     log_path = Path(log_path)
+     # EQUITY_SNAPSHOT account values are tagged with the physical chart symbol,
+     # which differs from the logical work-item symbol for basket EAs. Resolve
+@@ -1893,6 +1904,7 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
+                 # every ordinary run; sub-gates that do not consume it absorb it
+                 # through their **_ catch-all, so behaviour is unchanged.
+                 selection_trial_count=selection_trial_count,
++                dsr_context=dsr_context,
+             )
+         except Exception as exc:
+             res = common.make_result(
+@@ -2034,6 +2046,8 @@ def main() -> int:
+                     help="append-only retry artifact bindings written by farmctl")
+     ap.add_argument("--expected-recovery-lineage-sha256",
+                     help="required SHA256 pin for --recovery-lineage-manifest")
++    ap.add_argument("--dsr-context", help="Sealed research/selection evidence for inactive DSR V2")
++    ap.add_argument("--expected-dsr-context-sha256")
+     ap.add_argument("--discover", action="store_true",
+                     help="walk Q07-PASS pairs in farm DB and run Q08 on each (TODO)")
+     args = ap.parse_args()
+@@ -2064,6 +2078,7 @@ def main() -> int:
+         baseline_setfile=args.baseline_setfile,
+         neighborhood_max_params=args.neighborhood_max_params,
+         recovery_lineage=recovery_lineage,
++        dsr_context={"path": args.dsr_context, "sha256": args.expected_dsr_context_sha256},
+     )
+     _print_summary(agg)
+     return 0 if agg["verdict"] == "PASS" else (1 if agg["verdict"] == "FAIL" else 3)
+diff --git a/framework/scripts/q08_davey/dsr_v2.py b/framework/scripts/q08_davey/dsr_v2.py
+new file mode 100644
+index 0000000000..5c8a237c7a
+--- /dev/null
++++ b/framework/scripts/q08_davey/dsr_v2.py
+@@ -0,0 +1,222 @@
++"""Inert DSR correction using a sealed, loser-inclusive selection context.
++
++Formula: Bailey & Lopez de Prado (2014), equation 2,
++https://www.davidhbailey.com/dhbpapers/deflated-sharpe.pdf .
++Daily Sharpe and daily cohort dispersion enter the formula; annual values are
++display-only. This module never reads or writes farm state or historical verdicts.
++"""
++from __future__ import annotations
++
++import datetime as dt
++import hashlib
++import json
++import math
++from pathlib import Path
++import re
++import statistics
++from zoneinfo import ZoneInfo
++
++from .common import make_result, trade_timestamp
++
++SCHEMA = 'qm.dsr-selection-context/v1'
++GATE_NAME = '8.2_dsr_mc_fdr'
++EULER = 0.5772156649015329
++SHA = re.compile(r'^[0-9a-f]{64}$')
++
++
++class DsrEvidenceError(ValueError):
++    pass
++
++
++def require(condition, reason):
++    if not condition:
++        raise DsrEvidenceError(reason)
++
++
++def finite(value):
++    require(not isinstance(value, bool), 'NONFINITE_OR_INVALID_NUMBER')
++    try:
++        number = float(value)
++    except (ValueError, TypeError) as exc:
++        raise DsrEvidenceError('NONFINITE_OR_INVALID_NUMBER') from exc
++    require(math.isfinite(number), 'NONFINITE_OR_INVALID_NUMBER')
++    return number
++
++
++def _pairs(pairs):
++    obj = {}
++    for key, value in pairs:
++        require(key not in obj, 'DUPLICATE_JSON_KEY')
++        obj[key] = value
++    return obj
++
++
++def bound(binding):
++    require(isinstance(binding, dict) and set(binding) == {'path', 'sha256'}, 'UNCORRECTED_SELECTION_MISSING_HASH_BOUND_CONTEXT')
++    path = Path(str(binding['path']))
++    require(path.is_absolute() and path.suffix.lower() not in ('.db', '.sqlite'), 'MUTABLE_OR_RELATIVE_CONTEXT')
++    require(bool(SHA.fullmatch(str(binding['sha256']))), 'INVALID_CONTEXT_SHA256')
++    try:
++        raw = path.read_bytes()
++    except OSError as exc:
++        raise DsrEvidenceError('CONTEXT_FILE_UNAVAILABLE') from exc
++    require(hashlib.sha256(raw).hexdigest() == binding['sha256'], 'CONTEXT_SHA256_MISMATCH')
++    try:
++        value = json.loads(raw.decode('utf-8-sig'), object_pairs_hook=_pairs)
++    except (ValueError, UnicodeError) as exc:
++        raise DsrEvidenceError('INVALID_CONTEXT_JSON') from exc
++    require(isinstance(value, dict), 'CONTEXT_OBJECT_REQUIRED')
++    return value
++
++
++def daily_series(trades, start, end, *, timezone, initial_balance):
++    """Explicit full calendar window; net cash divided by fixed initial balance."""
++    try:
++        first, last = dt.date.fromisoformat(start), dt.date.fromisoformat(end)
++        zone = ZoneInfo(timezone)
++    except (ValueError, TypeError, KeyError) as exc:
++        raise DsrEvidenceError('EXPLICIT_CALENDAR_WINDOW_REQUIRED') from exc
++    require(first <= last, 'REVERSED_CALENDAR_WINDOW')
++    initial = finite(initial_balance)
++    require(initial > 0, 'POSITIVE_INITIAL_BALANCE_REQUIRED')
++    values = [0.0] * ((last - first).days + 1)
++    active = set()
++    for trade in trades:
++        timestamp = trade_timestamp(trade)
++        require(timestamp is not None and timestamp.tzinfo is not None, 'INVALID_OR_NAIVE_TRADE_TIMESTAMP')
++        date = timestamp.astimezone(zone).date()
++        require(first <= date <= last, 'TRADE_OUTSIDE_SEALED_CALENDAR')
++        require('net' in trade, 'NET_AFTER_COSTS_REQUIRED')
++        index = (date - first).days
++        values[index] += finite(trade['net']) / initial
++        active.add(index)
++    return values, len(active)
++
++
++def moments(values):
++    require(len(values) >= 2, 'LOW_SAMPLE_CALENDAR_DAYS')
++    values = [finite(x) for x in values]
++    n = len(values)
++    mean = statistics.fmean(values)
++    sample_sd = statistics.stdev(values)
++    require(sample_sd > 0, 'DEGENERATE_DAILY_VARIANCE')
++    m2 = math.fsum((x - mean)**2 for x in values) / n
++    skew = math.fsum((x - mean)**3 for x in values) / n / m2**1.5
++    kurtosis = math.fsum((x - mean)**4 for x in values) / n / m2**2
++    return {'sharpe_daily': mean / sample_sd, 'skew': skew, 'pearson_kurtosis': kurtosis,
++            'n_calendar_days': n, 'net_return': math.fsum(values)}
++
++
++def expected_max_sharpe(n_trials, cohort_std_daily):
++    require(type(n_trials) is int and n_trials >= 1, 'POSITIVE_INTEGER_TRIAL_COUNT_REQUIRED')
++    sigma = finite(cohort_std_daily)
++    require(sigma >= 0, 'NEGATIVE_COHORT_DISPERSION')
++    if n_trials == 1:
++        return 0.0
++    require(sigma > 0, 'UNCORRECTED_SELECTION_COHORT_DISPERSION_UNAVAILABLE')
++    normal = statistics.NormalDist()
++    return sigma * ((1 - EULER) * normal.inv_cdf(1 - 1 / n_trials)
++                    + EULER * normal.inv_cdf(1 - 1 / (n_trials * math.e)))
++
++
++def calculate(stats, n_trials, cohort_std_daily, *, annual_days=365):
++    sr, skew, kurtosis = (finite(stats[k]) for k in ('sharpe_daily', 'skew', 'pearson_kurtosis'))
++    n = stats['n_calendar_days']
++    require(type(n) is int and n >= 60, 'LOW_SAMPLE_CALENDAR_DAYS')
++    require(annual_days in (250, 252, 365), 'INVALID_DISPLAY_ANNUALIZATION')
++    benchmark = expected_max_sharpe(n_trials, cohort_std_daily)
++    variance_factor = 1 - skew * sr + (kurtosis - 1) * sr**2 / 4
++    require(variance_factor > 0 and math.isfinite(variance_factor), 'INVALID_SHARPE_VARIANCE')
++    z = (sr - benchmark) * math.sqrt(n - 1) / math.sqrt(variance_factor)
++    p = .5 * math.erfc(z / math.sqrt(2))
++    return {**stats, 'effective_trial_count': n_trials, 'cohort_std_daily': cohort_std_daily,
++            'expected_max_sharpe_daily': benchmark, 'z': z, 'dsr_p': p,
++            'dsr_probability': 1 - p, 'sharpe_annual_display': sr * math.sqrt(annual_days),
++            'annual_days_display': annual_days, 'statistical_status': 'sufficient'}
++
++
++def _ids(raw):
++    require(isinstance(raw, list) and all(isinstance(x, str) and x for x in raw), 'TRIAL_ID_LIST_REQUIRED')
++    require(len(raw) == len(set(raw)), 'DUPLICATE_TRIAL_ID')
++    return set(raw)
++
++
++def selection_context(binding, *, ea_id, symbol, values):
++    context = bound(binding)
++    require(context.get('schema') == SCHEMA and context.get('sealed') is True, 'UNCORRECTED_SELECTION_UNSEALED_CONTEXT')
++    require(str(context.get('ea_id')) == str(ea_id) and context.get('symbol') == symbol, 'CONTEXT_CANDIDATE_IDENTITY_MISMATCH')
++    require(context.get('frequency') == 'CALENDAR_DAY' and context.get('costs_attested') is True, 'CONTEXT_FREQUENCY_OR_COST_ATTESTATION_REQUIRED')
++    history = bound(context.get('search_history'))
++    cohort = bound(context.get('research_cohort'))
++    require(history.get('schema') == 'qm.dsr-search-history/v1' and history.get('complete') is True, 'UNCORRECTED_SELECTION_INCOMPLETE_SEARCH_HISTORY')
++    require(cohort.get('schema') == 'qm.dsr-research-cohort/v1' and cohort.get('complete') is True
++            and cohort.get('losers_included') is True, 'UNCORRECTED_SELECTION_NOT_LOSER_INCLUSIVE')
++    require(history.get('unit') == 'candidate_configuration' and history.get('annual_measurements_are_trials') is False, 'TRIAL_COUNT_UNIT_AMBIGUOUS')
++    research, selected = _ids(history.get('research_trial_ids')), _ids(history.get('selection_trial_ids'))
++    require(bool(research), 'UNCORRECTED_SELECTION_EMPTY_RESEARCH_COHORT')
++    mode = context.get('selection_mode')
++    declaration_count = None
++    if mode == 'DL089_V3':
++        declaration = bound(context.get('trial_declaration'))
++        numeric = history.get('numeric_trial_count')
++        require(type(numeric) is int and numeric >= 0, 'NUMERIC_TRIAL_COUNT_REQUIRED')
++        # Import only the adopted constants; no census or routing operation runs.
++        try:
++            from tools.strategy_farm.opt_census import DECLARED_TRIAL_COUNT, SEALED_RULE_SHA256
++        except ModuleNotFoundError:
++            import sys
++            sys.path.insert(0, str(Path(__file__).resolve().parents[3] / 'tools/strategy_farm'))
++            from opt_census import DECLARED_TRIAL_COUNT, SEALED_RULE_SHA256
++        require(declaration.get('authority') == 'DL-089'
++                and declaration.get('sealed_rule_sha256') == SEALED_RULE_SHA256, 'DL089_SEALED_RULE_REQUIRED')
++        declaration_count = declaration.get('declared_trial_count')
++        require(declaration_count == DECLARED_TRIAL_COUNT + numeric
++                and len(selected) == declaration_count, 'DL089_DECLARED_SELECTION_COUNT_MISMATCH')
++    else:
++        require(mode == 'RESEARCH_ONLY' and not selected, 'UNCORRECTED_SELECTION_MODE_REQUIRED')
++    all_ids = research | selected
++    require(context.get('candidate_trial_id') in all_ids, 'CANDIDATE_ABSENT_FROM_SEARCH_HISTORY')
++    require(cohort.get('frequency') == 'CALENDAR_DAY'
++            and cohort.get('window') == context.get('window'), 'COHORT_WINDOW_OR_FREQUENCY_MISMATCH')
++    rows = cohort.get('rows')
++    require(isinstance(rows, list), 'COHORT_ROWS_REQUIRED')
++    require(_ids([row.get('trial_id') for row in rows]) == all_ids, 'UNCORRECTED_SELECTION_COHORT_HISTORY_COVERAGE_MISMATCH')
++    for row in rows:
++        require(row.get('n_calendar_days') == len(values) and bool(SHA.fullmatch(str(row.get('series_sha256')))), 'COHORT_SERIES_PROVENANCE_REQUIRED')
++    canonical = json.dumps(values, separators=(',', ':'), allow_nan=False).encode()
++    winner = next(row for row in rows if row['trial_id'] == context['candidate_trial_id'])
++    require(winner['series_sha256'] == hashlib.sha256(canonical).hexdigest(), 'SELECTED_SERIES_CONTEXT_MISMATCH')
++    srs = [finite(row['sharpe_daily']) for row in rows]
++    require(math.isclose(winner['sharpe_daily'], moments(values)['sharpe_daily'], rel_tol=1e-12, abs_tol=1e-12), 'SELECTED_SHARPE_CONTEXT_MISMATCH')
++    sigma = statistics.stdev(srs) if len(srs) > 1 else 0.0
++    declared_sigma = finite(context.get('cohort_std_daily'))
++    require(math.isclose(sigma, declared_sigma, rel_tol=1e-12, abs_tol=1e-12), 'COHORT_DISPERSION_MISMATCH')
++    return context, {'effective_trial_count': len(all_ids), 'research_trial_count': len(research),
++                     'selection_trial_count': len(selected), 'overlap_trial_count': len(research & selected),
++                     'declared_trial_count': declaration_count, 'selection_mode': mode, 'cohort_std_daily': sigma,
++                     'context_sha256': binding['sha256']}
++
++
++def evaluate(trades, *, binding, ea_id, symbol):
++    # Keep the existing p threshold by reference, including strict p < .05.
++    from .sub_8_2_dsr_mc_fdr import DSR_P_MIN
++    stats = {}
++    try:
++        context = bound(binding)
++        window = context.get('window', {})
++        values, active = daily_series(trades, window.get('from'), window.get('to'),
++                          timezone=context.get('timezone'), initial_balance=context.get('initial_balance'))
++        stats = {**moments(values), 'active_trading_days': active}
++        require(stats['n_calendar_days'] >= 60, 'LOW_SAMPLE_CALENDAR_DAYS')
++        context, selection = selection_context(binding, ea_id=ea_id, symbol=symbol, values=values)
++        result = calculate(stats, selection['effective_trial_count'], selection['cohort_std_daily'])
++        result.update(selection)
++        result['engine'] = 'QM_DSR_V2'
++        return make_result(GATE_NAME, 'PASS' if result['dsr_p'] < DSR_P_MIN else 'FAIL',
++                           result['dsr_p'], DSR_P_MIN, 'DSR_V2_COMPUTED', result)
++    except (DsrEvidenceError, KeyError, TypeError, AttributeError, ValueError) as exc:
++        reason = str(exc)
++        low = reason.startswith('LOW_SAMPLE') or reason == 'DEGENERATE_DAILY_VARIANCE'
++        return make_result(GATE_NAME, 'INVALID', None, DSR_P_MIN, 'DSR_V2_' + reason,
++                           {**stats, 'engine': 'QM_DSR_V2', 'statistical_status': 'low_sample' if low else 'uncorrected_selection',
++                            'dsr_probability': None, 'selection_correction_applied': False})
+diff --git a/framework/scripts/q08_davey/sub_8_2_dsr_mc_fdr.py b/framework/scripts/q08_davey/sub_8_2_dsr_mc_fdr.py
+index c2dc8899aa..0d93d9164d 100644
+--- a/framework/scripts/q08_davey/sub_8_2_dsr_mc_fdr.py
++++ b/framework/scripts/q08_davey/sub_8_2_dsr_mc_fdr.py
+@@ -26,6 +26,7 @@ from __future__ import annotations
+ 
+ import math
+ import statistics
++import os
+ 
+ from .common import make_result, trade_timestamp
+ 
+@@ -177,7 +178,10 @@ def _effective_candidate_count(selection_trial_count) -> tuple[int, str, int | N
+ 
+ 
+ def run(trades: list[dict], *, portfolio: list[dict] | None = None,
+-        selection_trial_count: int | None = None, **_) -> dict:
++        selection_trial_count: int | None = None, dsr_context=None, **_) -> dict:
++    if os.environ.get("QM_DSR_V2") == "1":
++        from .dsr_v2 import evaluate
++        return evaluate(trades, binding=dsr_context, ea_id=_.get("ea_id"), symbol=_.get("symbol"))
+     returns = _trade_returns_per_day(trades)
+     if len(returns) < 60:  # ~3 months of trading days
+         # Genuine infrastructure / data gap — INVALID is correct here (re-runnable).
+diff --git a/tools/strategy_farm/evidence_status.py b/tools/strategy_farm/evidence_status.py
+new file mode 100644
+index 0000000000..f8e52d78fa
+--- /dev/null
++++ b/tools/strategy_farm/evidence_status.py
+@@ -0,0 +1,96 @@
++"""Read-only, conservative Q08 evidence projection. Writes only JSON to stdout."""
++from __future__ import annotations
++import argparse
++import hashlib
++import json
++import math
++from pathlib import Path
++import sys
++
++ROOT = Path(__file__).resolve().parents[2]
++if str(ROOT / 'framework/scripts') not in sys.path:
++    sys.path.insert(0, str(ROOT / 'framework/scripts'))
++from q08_davey import dsr_v2
++
++
++def sha(path):
++    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
++
++
++def check_binding(path, expected, label):
++    if not path or not expected or not dsr_v2.SHA.fullmatch(str(expected)):
++        return {'label': label, 'status': 'missing'}
++    try:
++        actual = sha(path)
++    except OSError:
++        return {'label': label, 'status': 'missing', 'path': str(path)}
++    return {'label': label, 'status': 'current' if actual == expected else 'stale',
++            'path': str(path), 'expected_sha256': expected, 'actual_sha256': actual}
++
++
++def inspect_bindings(aggregate):
++    stream = aggregate.get('portfolio_stream') or {}
++    baseline = aggregate.get('baseline_run') or {}
++    bindings = [check_binding(stream.get('durable_path') or stream.get('path'),
++                             stream.get('durable_sha256') or stream.get('content_sha256'), 'stream')]
++    for key in ('summary', 'report', 'mq5', 'ex5', 'setfile'):
++        bindings.append(check_binding(baseline.get('baseline_' + key + '_path'),
++                                      baseline.get('baseline_' + key + '_sha256'), key))
++    state = 'stale' if any(x['status'] == 'stale' for x in bindings) else (
++        'missing' if any(x['status'] == 'missing' for x in bindings) else 'current')
++    return state, bindings
++
++
++def project(path, *, v2_result=None):
++    path = Path(path)
++    raw = path.read_bytes()
++    aggregate = json.loads(raw.decode('utf-8-sig'))
++    binding, receipts = inspect_bindings(aggregate)
++    valid_shape = aggregate.get('evidence_schema') == 'q08_aggregate/v2' and isinstance(aggregate.get('sub_gates'), list)
++    n = aggregate.get('n_trades')
++    technical = 'invalid' if not valid_shape or type(n) is not int or n <= 0 else (
++        'valid' if binding == 'current' else 'unavailable')
++    economic = 'inconclusive'
++    gross, cost = aggregate.get('gross_total'), aggregate.get('commission_total')
++    if (isinstance(gross, (float, int)) and not isinstance(gross, bool)
++            and isinstance(cost, (float, int)) and not isinstance(cost, bool)
++            and math.isfinite(gross) and math.isfinite(cost)
++            and aggregate.get('cost_cushion_tier') != 'INVALID'):
++        economic = 'positive' if gross > cost else ('negative' if gross < cost else 'inconclusive')
++    dsr = v2_result or next((x for x in aggregate.get('sub_gates', [])
++                             if str(x.get('name', '')).startswith('8.2')), {})
++    evidence = dsr.get('evidence') or {}
++    if evidence.get('engine') == 'QM_DSR_V2':
++        statistical = evidence.get('statistical_status', 'uncorrected_selection')
++    elif 'insufficient_daily_returns' in str(dsr.get('detail', '')):
++        statistical = 'low_sample'
++    else:
++        statistical = 'uncorrected_selection'
++    if statistical not in ('sufficient', 'low_sample', 'uncorrected_selection'):
++        statistical = 'uncorrected_selection'
++    return {'schema': 'qm.evidence-status/v1', 'source_path': str(path.resolve()),
++            'source_sha256': hashlib.sha256(raw).hexdigest(),
++            'ea_id': aggregate.get('ea_id'), 'symbol': aggregate.get('symbol'),
++            'technical_validity': technical, 'economic_result': economic,
++            'statistical_sufficiency': statistical, 'evidence_binding': binding,
++            'usage': 'research', 'bindings': receipts,
++            'usage_reason': 'No governed release/operational receipt is supplied by this Q08 artifact.',
++            'scope': 'Integrity of referenced Q08 evidence; no change to stored verdicts or admission.'}
++
++
++def main(argv=None):
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument('--aggregate', type=Path, required=True)
++    args = parser.parse_args(argv)
++    try:
++        result = project(args.aggregate)
++    except (OSError, ValueError, TypeError, AttributeError) as exc:
++        result = {'schema': 'qm.evidence-status/v1', 'technical_validity': 'unavailable',
++                  'economic_result': 'inconclusive', 'statistical_sufficiency': 'uncorrected_selection',
++                  'evidence_binding': 'missing', 'usage': 'research', 'error': str(exc)}
++    print(json.dumps(result, indent=2, allow_nan=False))
++    return 0
++
++
++if __name__ == '__main__':
++    raise SystemExit(main())
+diff --git a/tools/strategy_farm/farmctl.py b/tools/strategy_farm/farmctl.py
+index d3e012577e..417f7e8de9 100644
+--- a/tools/strategy_farm/farmctl.py
++++ b/tools/strategy_farm/farmctl.py
+@@ -10147,11 +10147,16 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
+             "--baseline-setfile", str(item_row["setfile_path"] or ""),
+             "--neighborhood-max-params", str(Q08_NEIGHBORHOOD_MAX_PARAMS),
+         ]
+-        if lineage_manifest is not None and lineage_manifest_sha is not None:
+-            cmd.extend([
+-                "--recovery-lineage-manifest", str(lineage_manifest),
+-                "--expected-recovery-lineage-sha256", lineage_manifest_sha,
+-            ])
++        if lineage_manifest is not None and lineage_manifest_sha is not None:
++            cmd.extend([
++                "--recovery-lineage-manifest", str(lineage_manifest),
++                "--expected-recovery-lineage-sha256", lineage_manifest_sha,
++            ])
++        if os.environ.get("QM_DSR_V2") == "1":
++            dsr_context = payload.get("dsr_context")
++            if isinstance(dsr_context, dict) and dsr_context.get("path") and dsr_context.get("sha256"):
++                cmd.extend(["--dsr-context", str(dsr_context["path"]),
++                            "--expected-dsr-context-sha256", str(dsr_context["sha256"])])
+     elif phase == _NEWS_PHASE:
+         # Q09 executes its immutable cell plan inside this already-reserved
+         # factory slot. Binding is content-addressed and performed separately;
+diff --git a/tools/strategy_farm/tests/test_dsr_v2.py b/tools/strategy_farm/tests/test_dsr_v2.py
+new file mode 100644
+index 0000000000..74e73784aa
+--- /dev/null
++++ b/tools/strategy_farm/tests/test_dsr_v2.py
+@@ -0,0 +1,196 @@
++from __future__ import annotations
++import datetime as dt
++import hashlib
++import importlib.util
++import json
++import math
++from pathlib import Path
++import random
++import statistics
++import subprocess
++import sys
++import pytest
++
++ROOT = Path(__file__).resolve().parents[3]
++sys.path[:0] = [str(ROOT), str(ROOT / 'framework/scripts'), str(ROOT / 'tools/strategy_farm')]
++from q08_davey import dsr_v2 as v2, sub_8_2_dsr_mc_fdr as legacy, aggregate
++import evidence_status
++
++
++def trades(values):
++    first = dt.datetime(2025, 1, 1, tzinfo=dt.UTC)
++    return [{'time': (first + dt.timedelta(days=i)).timestamp(), 'net': value, 'profit': value}
++            for i, value in enumerate(values)]
++
++
++def save(path, data):
++    path.write_text(json.dumps(data, allow_nan=False), encoding='utf-8')
++    return {'path': str(path.resolve()), 'sha256': hashlib.sha256(path.read_bytes()).hexdigest()}
++
++
++def sealed(tmp_path, values, *, selection=False, numeric=0):
++    window = {'from': '2025-01-01', 'to': (dt.date(2025, 1, 1) + dt.timedelta(days=len(values)-1)).isoformat()}
++    research = ['candidate', 'loser-1', 'loser-2']
++    selected = ['arm-' + str(i) for i in range(154 + numeric)] if selection else []
++    ids = research + selected
++    sr = v2.moments(values)['sharpe_daily']
++    srs = [sr] + [-.01 + i * .0001 for i in range(len(ids)-1)]
++    rows = [{'trial_id': key, 'sharpe_daily': srs[i], 'n_calendar_days': len(values),
++             'series_sha256': hashlib.sha256(json.dumps(values, separators=(',', ':')).encode()).hexdigest()
++                 if i == 0 else hashlib.sha256(key.encode()).hexdigest()} for i, key in enumerate(ids)]
++    history = {'schema': 'qm.dsr-search-history/v1', 'complete': True, 'unit': 'candidate_configuration',
++               'annual_measurements_are_trials': False, 'research_trial_ids': research,
++               'selection_trial_ids': selected, 'numeric_trial_count': numeric}
++    cohort = {'schema': 'qm.dsr-research-cohort/v1', 'complete': True, 'losers_included': True,
++              'frequency': 'CALENDAR_DAY', 'window': window, 'rows': rows}
++    context = {'schema': v2.SCHEMA, 'sealed': True, 'ea_id': 42, 'symbol': 'EURUSD.DWX',
++               'frequency': 'CALENDAR_DAY', 'timezone': 'UTC', 'initial_balance': 1,
++               'window': window, 'costs_attested': True, 'candidate_trial_id': 'candidate',
++               'selection_mode': 'DL089_V3' if selection else 'RESEARCH_ONLY',
++               'cohort_std_daily': statistics.stdev(srs),
++               'search_history': save(tmp_path/'history.json', history),
++               'research_cohort': save(tmp_path/'cohort.json', cohort)}
++    if selection:
++        from opt_census import SEALED_RULE_SHA256
++        context['trial_declaration'] = save(tmp_path/'declaration.json', {
++            'authority': 'DL-089', 'sealed_rule_sha256': SEALED_RULE_SHA256,
++            'declared_trial_count': 154 + numeric})
++    return save(tmp_path/'context.json', context), context, history, cohort
++
++
++def test_known_answer_normal_single_trial():
++    # Analytical PSR special case: skew=0, Pearson kurtosis=3, SR=.1, T=101.
++    result = v2.calculate({'sharpe_daily': .1, 'skew': 0, 'pearson_kurtosis': 3,
++                           'n_calendar_days': 101}, 1, 0)
++    assert result['z'] == pytest.approx(1 / math.sqrt(1.005), abs=1e-14)
++    # 70-decimal independent mpmath erf evaluation, not rounded paper typography.
++    assert result['dsr_probability'] == pytest.approx(.840741327801351825670037533614557, abs=1e-12)
++
++
++def test_known_answer_expected_max_two_trials():
++    # Phi^-1(.5)=0; independently calculated Phi^-1(1-1/(2e))=.9004525966377902.
++    assert v2.expected_max_sharpe(2, .1) == pytest.approx(.051975534428059392454489126406228, abs=1e-12)
++
++
++def test_full_calendar_zero_days_and_timezone():
++    values, active = v2.daily_series([{'ts_utc': '2025-01-01T23:30:00Z', 'net': 10}],
++                                     '2025-01-01', '2025-01-03', timezone='Europe/Prague', initial_balance=100)
++    assert values == [0, .1, 0] and active == 1
++
++
++def test_units_and_pearson_kurtosis():
++    values = [x for _ in range(60) for x in (-1., 0., 1.)]
++    stats = v2.moments(values)
++    assert stats['pearson_kurtosis'] == pytest.approx(1.5)
++    a, b = [v2.calculate(stats, 10, .02, annual_days=n) for n in (252, 365)]
++    assert a['dsr_p'] == b['dsr_p']
++    assert v2.moments([x*100 for x in values]) == pytest.approx(stats, abs=1e-12)
++
++
++def test_legacy_empty_peers_deferred_pass_and_default_unchanged(monkeypatch):
++    monkeypatch.delenv('QM_DSR_V2', raising=False)
++    sample = trades([.01, .02, -.005] * 100)
++    old = legacy.run(sample, portfolio=[])
++    assert old['status'] == 'PASS' and 'deferred' in old['detail'].lower()
++    assert legacy.run(sample, portfolio=[], dsr_context={'invalid': True}) == old
++
++
++def test_enabled_missing_context_cannot_pass(monkeypatch):
++    monkeypatch.setenv('QM_DSR_V2', '1')
++    result = legacy.run(trades([.01, .02, -.005] * 100), portfolio=[])
++    assert result['status'] == 'INVALID'
++    assert result['evidence']['statistical_status'] == 'uncorrected_selection'
++    verdict, labels = aggregate._aggregate_verdict([result], trades=trades([1, 2]))
++    assert verdict == 'INVALID' and labels[result['name']] == 'UNCORRECTED_SELECTION'
++
++
++def test_selected_noise_never_gets_empty_peer_pass(tmp_path):
++    rng = random.Random(20260905)
++    series = [[rng.gauss(0, .01) for _ in range(365)] for _ in range(154)]
++    winner = max(series, key=lambda x: v2.moments(x)['sharpe_daily'])
++    # Use the actual whole simulated search cohort, not only the winner.
++    sigma = statistics.stdev(v2.moments(x)['sharpe_daily'] for x in series)
++    result = v2.calculate(v2.moments(winner), 154, sigma)
++    assert result['dsr_p'] > .05
++    assert v2.calculate(v2.moments([-.01, .01]*100), 154, sigma)['dsr_p'] > .5
++
++
++def test_sealed_dl089_numeric_trials_and_years_not_counted(tmp_path):
++    values = [.01, -.01, .002] * 120
++    binding, *_ = sealed(tmp_path, values, selection=True, numeric=7)
++    result = v2.evaluate(trades(values), binding=binding, ea_id=42, symbol='EURUSD.DWX')
++    assert result['detail'] == 'DSR_V2_COMPUTED'
++    assert result['evidence']['selection_trial_count'] == 161
++    assert result['evidence']['effective_trial_count'] == 164
++
++
++@pytest.mark.parametrize('defect', ['stale_context', 'wrong_identity', 'missing_loser', 'winner_only',
++                                  'wrong_sigma', 'wrong_series', 'missing_history', 'wrong_declaration'])
++def test_inadmissible_context_abstains(tmp_path, defect):
++    values = [.01, -.01, .002] * 120
++    binding, context, history, cohort = sealed(tmp_path, values, selection=True)
++    if defect == 'wrong_identity': context['ea_id'] = 43
++    if defect == 'winner_only': cohort['losers_included'] = False
++    if defect == 'missing_loser': cohort['rows'].pop()
++    if defect == 'wrong_sigma': context['cohort_std_daily'] *= 2
++    if defect == 'wrong_series': cohort['rows'][0]['series_sha256'] = 'f'*64
++    if defect == 'missing_history': history['complete'] = False
++    if defect == 'wrong_declaration': history['numeric_trial_count'] = 7
++    context['research_cohort'] = save(tmp_path/'cohort.json', cohort)
++    context['search_history'] = save(tmp_path/'history.json', history)
++    binding = save(tmp_path/'context.json', context)
++    if defect == 'stale_context': Path(binding['path']).write_text('{}')
++    result = v2.evaluate(trades(values), binding=binding, ea_id=42, symbol='EURUSD.DWX')
++    assert result['status'] == 'INVALID' and result['evidence']['statistical_status'] == 'uncorrected_selection'
++
++
++def test_cli_wires_context_without_running_backtests(tmp_path, monkeypatch):
++    seen = {}
++    def fake(*args, **kwargs):
++        seen.update(kwargs)
++        return {'verdict': 'PASS'}
++    monkeypatch.setattr(aggregate, 'run_all', fake)
++    monkeypatch.setattr(aggregate, '_print_summary', lambda _: None)
++    monkeypatch.setattr(sys, 'argv', ['aggregate.py', '--ea-id', '42', '--symbol', 'EURUSD.DWX',
++        '--log', str(tmp_path/'missing.jsonl'), '--dsr-context', str(tmp_path/'context.json'),
++        '--expected-dsr-context-sha256', 'a'*64])
++    assert aggregate.main() == 0
++    assert seen['dsr_context'] == {'path': str(tmp_path/'context.json'), 'sha256': 'a'*64}
++
++
++def test_projection_never_promotes_usage_and_checks_binding(tmp_path):
++    source = tmp_path/'receipt.txt'
++    source.write_text('receipt')
++    digest = evidence_status.sha(source)
++    baseline = {f'baseline_{k}_{s}': str(source) if s == 'path' else digest
++                for k in ('summary', 'report', 'mq5', 'ex5', 'setfile') for s in ('path', 'sha256')}
++    data = {'evidence_schema': 'q08_aggregate/v2', 'n_trades': 20, 'gross_total': 10, 'commission_total': 2,
++            'baseline_run': baseline, 'portfolio_stream': {'path': str(source), 'content_sha256': digest},
++            'sub_gates': [{'name': '8.2_dsr_mc_fdr', 'status': 'PASS', 'detail': 'deferred'}]}
++    binding = save(tmp_path/'aggregate.json', data)
++    before = Path(binding['path']).read_bytes()
++    result = evidence_status.project(binding['path'])
++    assert (result['technical_validity'], result['economic_result'], result['statistical_sufficiency'],
++            result['evidence_binding'], result['usage']) == ('valid', 'positive', 'uncorrected_selection', 'current', 'research')
++    source.write_text('changed')
++    assert evidence_status.project(binding['path'])['evidence_binding'] == 'stale'
++    assert Path(binding['path']).read_bytes() == before
++
++
++@pytest.mark.parametrize('bad', [float('nan'), float('inf'), True])
++def test_bad_numbers_rejected(bad):
++    with pytest.raises(v2.DsrEvidenceError):
++        v2.moments([1, bad])
++
++
++def test_informative_edge_can_pass_and_short_window_retains_low_sample(tmp_path, monkeypatch):
++    result = v2.calculate({'sharpe_daily': .3, 'skew': 0, 'pearson_kurtosis': 3,
++                           'n_calendar_days': 1000}, 154, .03)
++    assert result['dsr_p'] < .05
++    values = [.01, -.01] * 20
++    binding, *_ = sealed(tmp_path, values)
++    result = v2.evaluate(trades(values), binding=binding, ea_id=42, symbol='EURUSD.DWX')
++    assert result['evidence']['statistical_status'] == 'low_sample'
++    monkeypatch.setenv('QM_DSR_V2', '1')
++    _, labels = aggregate._aggregate_verdict([result], trades=trades([1, 2]))
++    assert labels[result['name']] == 'LOW_SAMPLE'

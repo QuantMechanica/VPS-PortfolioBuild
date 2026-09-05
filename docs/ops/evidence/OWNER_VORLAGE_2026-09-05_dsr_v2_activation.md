@@ -1,0 +1,11 @@
+# OWNER Vorlage — DSR V2 activation (not approved)
+
+State: implementation REVIEW; QM_DSR_V2 remains off. Code `a72d180868d2f29197a45f228cf212d1a47e8a71` on `agents/codex-dsr-v2-20260905`. Evidence: [M04](2026-09-05_m04_dsr_wiring.md). This proposal is stored under canonical evidence because the orchestration instruction requires all ops artifacts there.
+
+Decision requested for a future Mission-Control card: whether to replace the deferred empty-peer PASS with mandatory hash-bound complete selection evidence, adopt the corrected calendar-frequency calculation, and define the research/selection union used for trial deflation. The numerical p < 0.05 threshold is unchanged. Missing or incomplete selection evidence would classify UNCORRECTED_SELECTION and make the active aggregate INVALID. Low-sample allowances remain the current contract behavior.
+
+Measured impact at 2026-09-05T18:10:43.911394+00:00: 31/31 current Q11 PASS pairs and 28/28 latest Q08 PASS artifacts lack admissible selection context; all would report UNCORRECTED_SELECTION under the proposed active input contract. These scopes overlap (48 distinct Q08 artifacts). The original 31 + 28 records remain untouched. Their stored DSR breakdown is 31 deferred, and 26 deferred + 2 low-data respectively.
+
+Before activation, the card must identify and seal the complete loser-inclusive research cohort, actual trial history and dispersion calibration; approve pool union/count semantics including correlated-trial conservatism; require a producer of candidate/window/cost/time normalization and search-history receipts; and reconcile probability-contract wording with adopted DL-089 v3 (154 pattern trials plus predeclared numeric trials, years are measurements). The current consumer validates those receipts but existing farm artifacts do not contain them. Recomputing only passing candidates cannot supply them.
+
+A future authorized activation would integrate the reviewed branch, bind the approved input producer, and set QM_DSR_V2=1 in the governed runner environment for new append-only runs. Rollback removes the flag for subsequent runs and preserves both versions of evidence. No historical verdict rewrite, candidate admission, book change or operational promotion is included in this proposal. The read-only five-axis projection can be reviewed independently.

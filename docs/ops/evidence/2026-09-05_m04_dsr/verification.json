@@ -1,0 +1,45 @@
+{
+  "code_commit": "a72d180868d2f29197a45f228cf212d1a47e8a71",
+  "code_branch": "agents/codex-dsr-v2-20260905",
+  "base_commit": "a32f35560fe1e1f38c966c1bc36645ea521cee9f",
+  "tests_passed": 47,
+  "test_command": "python -m pytest tools/strategy_farm/tests/test_dsr_v2.py framework/scripts/q08_davey/tests/test_sub_8_2_selection_multiplicity.py tools/strategy_farm/tests/test_q08_aggregate_identity_wp57.py tools/strategy_farm/tests/test_mnt016_q08_rescue_invalid_surface.py tools/strategy_farm/tests/test_q08_recovery_lineage.py -q",
+  "legacy_byte_identical_cases": 18,
+  "cli_help_pass": true,
+  "readonly_projection_cli_pass": true,
+  "feature_activated": false,
+  "stored_verdicts_modified": false,
+  "snapshot_counts": {
+    "current_q11_pass_pairs": {
+      "rows": 31,
+      "legacy_statuses": {
+        "PASS": 31
+      },
+      "deferred": 31,
+      "v2": {
+        "UNCORRECTED_SELECTION": 31
+      },
+      "numeric": {
+        "BOUND_STREAM_SUMMARY_OR_REPORT_UNAVAILABLE": 16,
+        "DIAGNOSTIC_CALENDAR_STATS_ONLY": 15
+      }
+    },
+    "latest_28_q08_pass_artifacts": {
+      "rows": 28,
+      "legacy_statuses": {
+        "INVALID": 2,
+        "PASS": 26
+      },
+      "deferred": 26,
+      "v2": {
+        "UNCORRECTED_SELECTION": 28
+      },
+      "numeric": {
+        "DIAGNOSTIC_CALENDAR_STATS_ONLY": 18,
+        "BOUND_STREAM_SUMMARY_OR_REPORT_UNAVAILABLE": 10
+      }
+    }
+  },
+  "distinct_q08_artifacts": 48,
+  "independent_reference": "mpmath 70 decimal digits: erf and inverse-erf; constants frozen in tests"
+}
