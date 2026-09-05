@@ -61,7 +61,8 @@ risk_class: high
 ml_required: false
 r1_track_record: PASS_WITH_WEEKLY_OVERSHOOT_TRANSLATION_RISK
 r2_mechanical: PASS
-r3_data_available: PASS_WITH_SYNCHRONIZATION_AND_CFD_BASIS_RISK
+r3_data_available: PASS
+r3_data_risk: SYNCHRONIZATION_AND_CONTINUOUS_CFD_BASIS_RISK
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: NOT_RUN
@@ -387,4 +388,3 @@ below tester and CPU ceilings. It does not authorize a manual backtest,
 terminal control, live/demo/shadow/stress/optimization preset, AutoTrading,
 `T_Live`, deploy or T_Live manifest, portfolio-gate change, portfolio
 admission, decorrelation claim, neutrality claim, or correlation waiver.
-
