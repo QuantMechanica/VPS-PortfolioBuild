@@ -1,0 +1,29 @@
+{
+  "schema": "qm.source-intake-routing/v1",
+  "retrieved_at": "2026-09-05T18:00:00Z",
+  "router": "qm-read-trading-source",
+  "routes": [
+    {
+      "url": "https://www.itl.nist.gov/div898/software/dataplot/refman2/auxillar/trimmean.htm",
+      "status": "PERMISSION_REQUIRED",
+      "lead_status": "DEFERRED:SOURCE_POLICY",
+      "adapter": "generic",
+      "adapter_state": "ROUTER_ONLY"
+    },
+    {
+      "url": "https://www.sciencedirect.com/science/article/pii/S0378426617302807",
+      "status": "PERMISSION_REQUIRED",
+      "lead_status": "DEFERRED:SOURCE_POLICY",
+      "adapter": "generic",
+      "adapter_state": "ROUTER_ONLY"
+    },
+    {
+      "url": "https://www.cmegroup.com/education/lessons/gold-and-silver-ratio-spread-trade",
+      "status": "PERMISSION_REQUIRED",
+      "lead_status": "DEFERRED:SOURCE_POLICY",
+      "adapter": "generic",
+      "adapter_state": "ROUTER_ONLY"
+    }
+  ],
+  "disposition": "Use immutable previously approved local complete-read packets; no bypass attempted."
+}

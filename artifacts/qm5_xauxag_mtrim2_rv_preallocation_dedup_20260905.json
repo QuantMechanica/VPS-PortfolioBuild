@@ -1,0 +1,79 @@
+{
+  "candidate": {
+    "author": "OpenAI Codex; Karsten Schweikert; CME Group; Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen",
+    "mechanic": "monthly xauxag thirteen synchronized completed-month log-ratio endpoints twelve adjacent returns fixed two-per-tail trimmed middle-eight mean sign contrarian equal-notional basket",
+    "slug": "xauxag-mtrim2-rv",
+    "strategy_id": "AI-CODEX-XAUXAG-MTRIM2-RV-20260905_S01"
+  },
+  "error": null,
+  "exit_code": 3,
+  "generated_at_utc": "2026-09-05T18:02:04+00:00",
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41341_xauxag-mbisquare-rv_card.md",
+      "score": 0.7727272727272727,
+      "slug": "xauxag-mbisquare-rv",
+      "source": "card",
+      "strategy_id": "AI-CODEX-XAUXAG-MBISQUARE-RV-20260905_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41348_xauxag-mhampel-rv_card.md",
+      "score": 0.7272727272727273,
+      "slug": "xauxag-mhampel-rv",
+      "source": "card",
+      "strategy_id": "AI-CODEX-XAUXAG-MHAMPEL-RV-20260905_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41263_xauxag-mkuiper-rv_card.md",
+      "score": 0.6666666666666666,
+      "slug": "xauxag-mkuiper-rv",
+      "source": "card",
+      "strategy_id": "AI-CODEX-XAUXAG-MKUIPER-RV-20260901_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41265_xauxag-mbf-scale-rv_card.md",
+      "score": 0.6666666666666666,
+      "slug": "xauxag-mbf-scale-rv",
+      "source": "card",
+      "strategy_id": "AI-CODEX-XAUXAG-MBF-SCALE-RV-20260901_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41278_xauxag-mcucconi-rv_card.md",
+      "score": 0.6666666666666666,
+      "slug": "xauxag-mcucconi-rv",
+      "source": "card",
+      "strategy_id": "AI-CODEX-XAUXAG-MCUCCONI-RV-20260902_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4835,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1448,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "FUZZY_MATCH"
+}
