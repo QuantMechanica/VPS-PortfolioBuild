@@ -1,7 +1,9 @@
 # QM5_41349 WTI ADF/Sample-Entropy Agreement — Compile Handoff
 
-Date: 2026-09-05  
-Branch: `agents/board-advisor`  
+Date: 2026-09-05
+
+Branch: `agents/board-advisor`
+
 Status: new structural commodity source build committed; governed compile
 released and priority-bound; Q02 remains fail-closed behind Q01.
 
