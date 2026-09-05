@@ -1,0 +1,140 @@
+{
+  "bindings": [
+    {
+      "current_matches_reviewed_lf": true,
+      "current_sha256": "1f3a83fd2a1234bdac6093100b3379fc690f6725de53205ca5d61ccba2af58fe",
+      "path": "docs/ops/evidence/2026-09-05_ftmo_readiness_part1.md",
+      "reviewed_lf_sha256": "3efbf785d0e79de511af05ffb30f8558cc712bf2f6efd24992ff42bc3093b419"
+    },
+    {
+      "current_matches_reviewed_lf": true,
+      "current_sha256": "5db287042293958045554b988dce3c214f59af53b13439093b3c9465b89413eb",
+      "path": "docs/ops/evidence/2026-09-05_ftmo_readiness_part2.md",
+      "reviewed_lf_sha256": "fb7480e659dd36be2306d8bcdc583eceaa6e180c7dfd2c57e308e4b95a46305b"
+    },
+    {
+      "current_matches_reviewed_lf": true,
+      "current_sha256": "d948fd231666a784e64a010fc1873d5b6829f4dcdce241d4cd721274d6e57e8f",
+      "path": "docs/ops/FTMO_STAGE_TRANSITION_RUNBOOK_2026-09.md",
+      "reviewed_lf_sha256": "284c1f7b51ebb1f284c1c5b1d5c619c5d36410718c5d12807e2c8142fe22e565"
+    },
+    {
+      "current_matches_reviewed_lf": true,
+      "current_sha256": "8d82c0612b61e87a49795409056fe959cd5889b41fe530d0733e3f54f973522f",
+      "path": "tools/strategy_farm/ftmo_lane_runner.py",
+      "reviewed_lf_sha256": "8d82c0612b61e87a49795409056fe959cd5889b41fe530d0733e3f54f973522f"
+    },
+    {
+      "current_matches_reviewed_lf": true,
+      "current_sha256": "c2d7da59b2fe581f09b23501e3f204ef8a8ad20ac58e0871fb02a0e6ddec2a24",
+      "path": "framework/monitor/QM_FTMO_TrialTelemetry.mq5",
+      "reviewed_lf_sha256": "c2d7da59b2fe581f09b23501e3f204ef8a8ad20ac58e0871fb02a0e6ddec2a24"
+    },
+    {
+      "current_matches_reviewed_lf": true,
+      "current_sha256": "c0cbf10f0986177ea9b0a0020047607b0e81bb227aa22763d2de782eb8bc2791",
+      "path": "tools/strategy_farm/portfolio/ftmo_trial_telemetry.py",
+      "reviewed_lf_sha256": "c0cbf10f0986177ea9b0a0020047607b0e81bb227aa22763d2de782eb8bc2791"
+    },
+    {
+      "current_matches_reviewed_lf": true,
+      "current_sha256": "5a4f8b44e3d43902a222f8dac4bd890becba0d8a79133f1726b7893f8aa0ae8f",
+      "path": "tools/strategy_farm/generate_live_deployment_pointer.py",
+      "reviewed_lf_sha256": "5a4f8b44e3d43902a222f8dac4bd890becba0d8a79133f1726b7893f8aa0ae8f"
+    },
+    {
+      "current_matches_reviewed_lf": true,
+      "current_sha256": "df6d44e06c6fe5e8aecab82507341f25a36d31710ddb1c442e46bc8413fe7fa5",
+      "path": "tools/strategy_farm/risk_freeze.py",
+      "reviewed_lf_sha256": "df6d44e06c6fe5e8aecab82507341f25a36d31710ddb1c442e46bc8413fe7fa5"
+    }
+  ],
+  "checks": {
+    "B2_absence_claim_remains": true,
+    "B2_symbol_gap_remains": true,
+    "B6_new_tool_commission_remains": true,
+    "B7_absence_claim_remains": true,
+    "F5_atomic_act_removed": true,
+    "F5_blocked_dependency_present": true,
+    "N1_eight_lane_statement_present": true,
+    "N2_B4_delivery_present": true,
+    "N2_implementation_heading_present": true,
+    "caption_closed": true,
+    "freeze_requires_lift_state_proof": true,
+    "generator_signed_write_calls_freeze_guard": true,
+    "runbook_blackout_closed": true,
+    "runbook_freeze_closed": true,
+    "telemetry_append_and_one_second": true,
+    "telemetry_prague_consumer": true
+  },
+  "reviewed_commit": "355d88586ec00b99c9739db349dd4c16b52ff667",
+  "runtime_action": false,
+  "symbol_lanes": {
+    "EURUSD": {
+      "evaluator_symbol": "EURUSD",
+      "ftmo_code": "EUR/USD",
+      "pool_status": "CURRENT_8_SLEEVE_POOL",
+      "source_contract_size": 100000.0,
+      "source_symbol": "EURUSD.DWX",
+      "target_contract_size": 100000.0
+    },
+    "GBPUSD": {
+      "evaluator_symbol": "GBPUSD",
+      "ftmo_code": "GBP/USD",
+      "pool_status": "CURRENT_8_SLEEVE_POOL",
+      "source_contract_size": 100000.0,
+      "source_symbol": "GBPUSD.DWX",
+      "target_contract_size": 100000.0
+    },
+    "GER40.cash": {
+      "evaluator_symbol": "GDAXI",
+      "ftmo_code": "GER40.cash",
+      "pool_status": "LEGACY",
+      "source_contract_size": 1.0,
+      "source_symbol": "GDAXI.DWX",
+      "target_contract_size": 1.0
+    },
+    "NZDUSD": {
+      "evaluator_symbol": "NZDUSD",
+      "ftmo_code": "NZD/USD",
+      "pool_status": "CURRENT_8_SLEEVE_POOL",
+      "source_contract_size": 100000.0,
+      "source_symbol": "NZDUSD.DWX",
+      "target_contract_size": 100000.0
+    },
+    "USDCAD": {
+      "evaluator_symbol": "USDCAD",
+      "ftmo_code": "USD/CAD",
+      "pool_status": "CURRENT_8_SLEEVE_POOL",
+      "source_contract_size": 100000.0,
+      "source_symbol": "USDCAD.DWX",
+      "target_contract_size": 100000.0
+    },
+    "USOIL.cash": {
+      "evaluator_symbol": "XTIUSD",
+      "ftmo_code": "USOIL.cash",
+      "pool_status": "CURRENT_8_SLEEVE_POOL",
+      "source_contract_size": 1000.0,
+      "source_symbol": "XTIUSD.DWX",
+      "target_contract_size": 100.0
+    },
+    "XAGUSD": {
+      "evaluator_symbol": "XAGUSD",
+      "ftmo_code": "XAG/USD",
+      "pool_status": "CURRENT_8_SLEEVE_POOL",
+      "source_contract_size": 5000.0,
+      "source_symbol": "XAGUSD.DWX",
+      "target_contract_size": 5000.0
+    },
+    "XAUUSD": {
+      "evaluator_symbol": "XAUUSD",
+      "ftmo_code": "XAU/USD",
+      "pool_status": "LEGACY",
+      "source_contract_size": 100.0,
+      "source_symbol": "XAUUSD.DWX",
+      "target_contract_size": 100.0
+    }
+  },
+  "task_id": "91ffb9e6-b484-4434-acb2-314898d504fa",
+  "verdict": "REJECT"
+}
