@@ -1,12 +1,17 @@
 """Independent reference fixtures for QM5_41355 fixed-trim pair signal."""
 
 import math
+from pathlib import Path
 import unittest
 
 
 TRIM_EACH_TAIL = 2
 RETAINED_COUNT = 8
 EPSILON = 1e-12
+EA_SOURCE = (
+    Path(__file__).resolve().parents[1]
+    / "QM5_41355_xauxag-mtrim2-rv.mq5"
+)
 
 
 def trimmed_mean(returns):
@@ -74,6 +79,12 @@ def bisquare_location(returns):
 
 
 class XauXagTrim2Reference(unittest.TestCase):
+    def test_runtime_leg_identity_is_fail_closed(self):
+        source = EA_SOURCE.read_text(encoding="utf-8")
+        self.assertIn('g_leg_xau == "XAUUSD.DWX"', source)
+        self.assertIn('g_leg_xag == "XAGUSD.DWX"', source)
+        self.assertIn("g_leg_xau != g_leg_xag", source)
+
     def test_exact_two_per_tail_trim(self):
         returns = [12.0, 1.0, 8.0, 2.0, 11.0, 3.0,
                    10.0, 4.0, 9.0, 5.0, 7.0, 6.0]

@@ -183,7 +183,10 @@ bool Strategy_IsHostChart()
 
 bool Strategy_InputsValid()
   {
-   return (qm_ea_id == 41355 && qm_magic_slot_offset == 0 &&
+   return (g_leg_xau == "XAUUSD.DWX" &&
+            g_leg_xag == "XAGUSD.DWX" &&
+            g_leg_xau != g_leg_xag &&
+            qm_ea_id == 41355 && qm_magic_slot_offset == 0 &&
             qm_rng_seed == 42 &&
             strategy_xag_symbol == "XAGUSD.DWX" &&
             strategy_endpoint_count == 13 &&
