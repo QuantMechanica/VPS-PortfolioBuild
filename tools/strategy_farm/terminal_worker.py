@@ -5354,6 +5354,17 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                     )
                     if current is None:
                         continue
+                    try:
+                        from tools.strategy_farm import news_calendar_taint
+                    except ModuleNotFoundError:
+                        import news_calendar_taint
+                    taint_block = news_calendar_taint.guard_claim(
+                        conn, str(item["id"]), farmctl.Q09_AUTOPILOT_CALENDAR_MANIFEST
+                    )
+                    if taint_block:
+                        conn.commit()
+                        conn.execute("PRAGMA query_only=ON")
+                        continue
                     blocked = conn.execute(
                         """
                         SELECT 1
@@ -5818,6 +5829,16 @@ def claim_specific_atomic(root: Path, terminal: str, item_id: str) -> dict[str, 
                     }
 
                 payload = _json_loads(item["payload_json"])
+                try:
+                    from tools.strategy_farm import news_calendar_taint
+                except ModuleNotFoundError:
+                    import news_calendar_taint
+                taint_block = news_calendar_taint.guard_claim(
+                    conn, item_id, farmctl.Q09_AUTOPILOT_CALENDAR_MANIFEST
+                )
+                if taint_block:
+                    conn.commit()
+                    return {"claimed": False, "reason": taint_block, "item_id": item_id}
                 analytic_block = _governed_analytic_claim_block(item, payload)
                 if analytic_block is not None:
                     conn.commit()

@@ -1,0 +1,12 @@
+{
+  "schema": "qm.news-calendar-taint/v1",
+  "enabled": false,
+  "activation_evidence": null,
+  "tainted": [
+    {
+      "sha256": "86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1",
+      "evidence_path": "docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "declared_at": "2026-09-05T15:12:29+00:00"
+    }
+  ]
+}

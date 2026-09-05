@@ -13504,6 +13504,7 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
             recovery_capped = False
             pruning_result = None
             pruned_current = False
+            taint_block = None
             with connect(root) as conn2:
                 try:
                     conn2.execute("BEGIN IMMEDIATE")
@@ -13519,8 +13520,15 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                         pruned_current = bool(
                             pruning_result.get("skipped_current")
                         )
+                    try:
+                        from tools.strategy_farm import news_calendar_taint
+                    except ModuleNotFoundError:
+                        import news_calendar_taint
+                    taint_block = news_calendar_taint.guard_claim(
+                        conn2, str(item["id"]), Q09_AUTOPILOT_CALENDAR_MANIFEST
+                    )
                     # Recovery idle-cap decision read INSIDE the claim transaction.
-                    if pruned_current:
+                    if pruned_current or taint_block:
                         pass
                     elif item_is_recovery and not recovery_claim_allowed(conn2):
                         recovery_capped = True
@@ -13542,6 +13550,14 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 except Exception:
                     conn2.rollback()
                     raise
+            if taint_block:
+                free_terminals.insert(0, terminal)
+                actions.append({
+                    "action": "news_calendar_taint_deferred",
+                    "reason": taint_block,
+                    "item_id": item["id"],
+                })
+                continue
             if pruned_current:
                 free_terminals.insert(0, terminal)
                 actions.append({
@@ -21106,6 +21122,18 @@ def _pump_unlocked(
     if factory_off_flag.exists():
         return {"pumped_at": utc_now(), "skipped": "FACTORY_OFF.flag set"}
     cycle_budget = PumpCycleBudget(PUMP_TOTAL_BUDGET_SECONDS)
+    try:
+        from tools.strategy_farm import news_calendar_taint
+    except ModuleNotFoundError:
+        import news_calendar_taint
+    try:
+        taint_holds = news_calendar_taint.sweep(
+            root, Q09_AUTOPILOT_CALENDAR_MANIFEST, apply=True
+        )
+    except (OSError, ValueError, RuntimeError, sqlite3.Error) as exc:
+        # All claim paths independently recheck the policy inside their write
+        # transaction. A failed sweep cannot expose a news successor to claim.
+        taint_holds = {"applied": False, "reason": str(exc)}
     dispatch_deadline = cycle_budget.stage_deadline(PUMP_DISPATCH_BUDGET_SECONDS)
     dispatch_result = cycle_budget.run(
         "dispatch_tick",
@@ -21148,6 +21176,7 @@ def _pump_unlocked(
         "magic_resolver": resolver_reconcile,
         "auto_commit": auto_commit_result,
         "dispatch": dispatch_result,
+        "news_calendar_taint_holds": taint_holds,
         "codex_spawn": None,
         "build_records": [],
         "build_retries": [],
