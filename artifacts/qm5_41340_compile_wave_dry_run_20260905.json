@@ -1,0 +1,19 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "344f5d588e9f698b83cdcd69685132f3257acef8d115ef9a3ff3e78812321fbc",
+      "ea_id": "QM5_41340",
+      "ea_label": "QM5_41340_wti-xng-divtrend",
+      "expected_mq5_sha256": "344f5d588e9f698b83cdcd69685132f3257acef8d115ef9a3ff3e78812321fbc",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41340_wti-xng-divtrend\\QM5_41340_wti-xng-divtrend.mq5",
+      "work_item_id": "b07f4a19-163f-467a-be56-7c10ff65a573"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "b07f4a19-163f-467a-be56-7c10ff65a573"
+}

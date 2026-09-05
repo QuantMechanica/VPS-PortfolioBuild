@@ -1,0 +1,41 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "b07f4a19-163f-467a-be56-7c10ff65a573"
+  ],
+  "backup": {
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260905T035433Z_cc9d15d9.sqlite",
+    "reused": false,
+    "sha256": "92c92b0ab5280789339e2d15e4966ed0cd00155c59d356ba8f967dcf8946f54c"
+  },
+  "backup_reuse_max_age_minutes": 0.0,
+  "backup_timeout_seconds": 60.0,
+  "backup_write_guard": {
+    "attempts": 1,
+    "transaction": "BEGIN IMMEDIATE / validated / backed up / released / COMMIT",
+    "wait_seconds": 0.0
+  },
+  "deferred": [],
+  "factory_mutation_lock": {
+    "path": "D:\\QM\\strategy_farm\\state\\FACTORY_MUTATION.lock",
+    "release_status": "released"
+  },
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "344f5d588e9f698b83cdcd69685132f3257acef8d115ef9a3ff3e78812321fbc",
+      "ea_id": "QM5_41340",
+      "ea_label": "QM5_41340_wti-xng-divtrend",
+      "expected_mq5_sha256": "344f5d588e9f698b83cdcd69685132f3257acef8d115ef9a3ff3e78812321fbc",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41340_wti-xng-divtrend\\QM5_41340_wti-xng-divtrend.mq5",
+      "work_item_id": "b07f4a19-163f-467a-be56-7c10ff65a573"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-09-05T03:54:55+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "b07f4a19-163f-467a-be56-7c10ff65a573"
+}
