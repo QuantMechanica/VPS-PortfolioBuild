@@ -1,0 +1,47 @@
+{
+  "EURUSD": {
+    "source": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\EURUSD.DWX_H1.csv",
+    "sha256": "9d77d94b463abea9333b6622e2565107b396527d58959f7363eedabeba7620c4",
+    "years": [
+      2022,
+      2023,
+      2024
+    ],
+    "bars": 18614,
+    "return_sigma": 0.0010669023228478001,
+    "median_range_fraction": 0.0010507714887185238,
+    "median_body_range": 0.45972376714870944,
+    "median_abs_open_gap": 9.257673454274257e-06,
+    "gap_p90": 2.999175227034234e-05
+  },
+  "XAUUSD": {
+    "source": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\XAUUSD.DWX_D1.csv",
+    "sha256": "105aa27a6d0aff0818b9b76b0eb081d917ea8fb90ec077b599a33ea65ab12f13",
+    "years": [
+      2022,
+      2023,
+      2024
+    ],
+    "bars": 771,
+    "return_sigma": 0.009017576836455628,
+    "median_range_fraction": 0.011915515049895867,
+    "median_body_range": 0.4524539877300527,
+    "median_abs_open_gap": 0.00020938574866831297,
+    "gap_p90": 0.0008490844203061592
+  },
+  "US100": {
+    "source": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\NDX.DWX_D1.csv",
+    "sha256": "b0529d748e1351446922e2d14992ee5ef4b1f50d5ef6f237715238119e123536",
+    "years": [
+      2022,
+      2023,
+      2024
+    ],
+    "bars": 772,
+    "return_sigma": 0.014906647288204443,
+    "median_range_fraction": 0.01846395117252353,
+    "median_body_range": 0.48962398956051334,
+    "median_abs_open_gap": 0.00034913041021878636,
+    "gap_p90": 0.0024493961626913417
+  }
+}

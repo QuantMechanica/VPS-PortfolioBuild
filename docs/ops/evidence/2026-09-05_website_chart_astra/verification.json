@@ -1,0 +1,264 @@
+{
+  "checks": [
+    {
+      "overflow": false,
+      "canvas": [
+        {
+          "width": 1058,
+          "cssWidth": 1058,
+          "height": 260,
+          "inkPixels": 4591,
+          "label": "Combined historical backtest index from 2017 to 2025, with drawdown shading. Not live returns."
+        },
+        {
+          "width": 355,
+          "cssWidth": 354.65625,
+          "height": 300,
+          "inkPixels": 6900,
+          "label": "EUR/USD illustrative synthetic H1 candles with indicator overlays and volume."
+        },
+        {
+          "width": 355,
+          "cssWidth": 354.671875,
+          "height": 300,
+          "inkPixels": 8606,
+          "label": "XAU/USD illustrative synthetic D1 candles with indicator overlays and volume."
+        },
+        {
+          "width": 355,
+          "cssWidth": 354.65625,
+          "height": 300,
+          "inkPixels": 8402,
+          "label": "US 100 illustrative synthetic D1 candles with indicator overlays and volume."
+        }
+      ],
+      "bars": [
+        {
+          "count": 60,
+          "ohlcValid": true,
+          "returnSigma": 0.0008320292240023635
+        },
+        {
+          "count": 56,
+          "ohlcValid": true,
+          "returnSigma": 0.005878276029877161
+        },
+        {
+          "count": 64,
+          "ohlcValid": true,
+          "returnSigma": 0.012280631275527233
+        }
+      ],
+      "equityCount": 471,
+      "viewport_width": 1400,
+      "device_scale_factor": 1,
+      "errors": []
+    },
+    {
+      "overflow": false,
+      "canvas": [
+        {
+          "width": 358,
+          "cssWidth": 358,
+          "height": 260,
+          "inkPixels": 2920,
+          "label": "Combined historical backtest index from 2017 to 2025, with drawdown shading. Not live returns."
+        },
+        {
+          "width": 386,
+          "cssWidth": 386,
+          "height": 300,
+          "inkPixels": 7329,
+          "label": "EUR/USD illustrative synthetic H1 candles with indicator overlays and volume."
+        },
+        {
+          "width": 386,
+          "cssWidth": 386,
+          "height": 300,
+          "inkPixels": 9135,
+          "label": "XAU/USD illustrative synthetic D1 candles with indicator overlays and volume."
+        },
+        {
+          "width": 386,
+          "cssWidth": 386,
+          "height": 300,
+          "inkPixels": 8864,
+          "label": "US 100 illustrative synthetic D1 candles with indicator overlays and volume."
+        }
+      ],
+      "bars": [
+        {
+          "count": 60,
+          "ohlcValid": true,
+          "returnSigma": 0.0008320292240023635
+        },
+        {
+          "count": 56,
+          "ohlcValid": true,
+          "returnSigma": 0.005878276029877161
+        },
+        {
+          "count": 64,
+          "ohlcValid": true,
+          "returnSigma": 0.012280631275527233
+        }
+      ],
+      "equityCount": 471,
+      "viewport_width": 420,
+      "device_scale_factor": 1,
+      "errors": []
+    },
+    {
+      "overflow": false,
+      "canvas": [
+        {
+          "width": 716,
+          "cssWidth": 358,
+          "height": 520,
+          "inkPixels": 9126,
+          "label": "Combined historical backtest index from 2017 to 2025, with drawdown shading. Not live returns."
+        },
+        {
+          "width": 772,
+          "cssWidth": 386,
+          "height": 600,
+          "inkPixels": 25845,
+          "label": "EUR/USD illustrative synthetic H1 candles with indicator overlays and volume."
+        },
+        {
+          "width": 772,
+          "cssWidth": 386,
+          "height": 600,
+          "inkPixels": 33420,
+          "label": "XAU/USD illustrative synthetic D1 candles with indicator overlays and volume."
+        },
+        {
+          "width": 772,
+          "cssWidth": 386,
+          "height": 600,
+          "inkPixels": 31543,
+          "label": "US 100 illustrative synthetic D1 candles with indicator overlays and volume."
+        }
+      ],
+      "bars": [
+        {
+          "count": 60,
+          "ohlcValid": true,
+          "returnSigma": 0.0008320292240023635
+        },
+        {
+          "count": 56,
+          "ohlcValid": true,
+          "returnSigma": 0.005878276029877161
+        },
+        {
+          "count": 64,
+          "ohlcValid": true,
+          "returnSigma": 0.012280631275527233
+        }
+      ],
+      "equityCount": 471,
+      "viewport_width": 420,
+      "device_scale_factor": 2,
+      "errors": []
+    }
+  ],
+  "style_copy_sha256": "cedda565a404f8eb42023a47f5058e0273a5b612b658949a3340de354d42f10b",
+  "equity_copy_sha256": "5dfeb456603dadbdef093d845cf8b8267d2935df349fe8208bbbd90e690692ce",
+  "final_checks": [
+    {
+      "overflow": false,
+      "canvases": [
+        {
+          "width": 1058,
+          "height": 260,
+          "inkPixels": 4558
+        },
+        {
+          "width": 355,
+          "height": 300,
+          "inkPixels": 6830
+        },
+        {
+          "width": 355,
+          "height": 300,
+          "inkPixels": 8606
+        },
+        {
+          "width": 355,
+          "height": 300,
+          "inkPixels": 8402
+        }
+      ],
+      "ohlcValid": true,
+      "equityCount": 471,
+      "synthetic_bars_sha256": "e658d17d26338c1502b6811a9e40bb0629a0b341e45891c4d5eebd2161a0a715",
+      "viewport_width": 1400,
+      "device_scale_factor": 1,
+      "errors": []
+    },
+    {
+      "overflow": false,
+      "canvases": [
+        {
+          "width": 358,
+          "height": 260,
+          "inkPixels": 2887
+        },
+        {
+          "width": 386,
+          "height": 300,
+          "inkPixels": 7249
+        },
+        {
+          "width": 386,
+          "height": 300,
+          "inkPixels": 9135
+        },
+        {
+          "width": 386,
+          "height": 300,
+          "inkPixels": 8864
+        }
+      ],
+      "ohlcValid": true,
+      "equityCount": 471,
+      "synthetic_bars_sha256": "e658d17d26338c1502b6811a9e40bb0629a0b341e45891c4d5eebd2161a0a715",
+      "viewport_width": 420,
+      "device_scale_factor": 1,
+      "errors": []
+    },
+    {
+      "overflow": false,
+      "canvases": [
+        {
+          "width": 716,
+          "height": 520,
+          "inkPixels": 9006
+        },
+        {
+          "width": 772,
+          "height": 600,
+          "inkPixels": 25604
+        },
+        {
+          "width": 772,
+          "height": 600,
+          "inkPixels": 33420
+        },
+        {
+          "width": 772,
+          "height": 600,
+          "inkPixels": 31543
+        }
+      ],
+      "ohlcValid": true,
+      "equityCount": 471,
+      "synthetic_bars_sha256": "e658d17d26338c1502b6811a9e40bb0629a0b341e45891c4d5eebd2161a0a715",
+      "viewport_width": 420,
+      "device_scale_factor": 2,
+      "errors": []
+    }
+  ],
+  "script_sha256": "f48dce28bbd21ae6e9a3d1a4e7aa04b5211208a1cac9cbb77d9fafa6432755f1"
+}
