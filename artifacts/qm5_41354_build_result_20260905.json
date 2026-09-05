@@ -1,0 +1,79 @@
+{
+  "schema_version": "qm.branch-build-q02-handoff/v1",
+  "recorded_at_utc": "2026-09-05T16:54:09+00:00",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41354",
+  "ea_label": "QM5_41354_wti-adf-mkendall-agree-tr",
+  "mechanic": "monthly WTI lag-one ADF persistence and newest-thirteen all-pairs Mann-Kendall ordinal-direction agreement",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "reference_validation": {
+    "command": "python -m unittest framework/EAs/QM5_41354_wti-adf-mkendall-agree-tr/docs/test_wti_adf_mkendall_agree_tr_reference.py",
+    "passed": 4,
+    "failed": 0
+  },
+  "spec_validation": {
+    "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_41354_wti-adf-mkendall-agree-tr",
+    "passed": 1,
+    "failed": 0
+  },
+  "compile": {
+    "work_item_id": "3e81b611-54da-4c98-b2a0-b3eab917e591",
+    "terminal": "T7",
+    "status": "done",
+    "verdict": "COMPILE_OK",
+    "build_check_result": "PASS",
+    "build_check_failures": 0,
+    "build_check_warnings": 3,
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "mq5_sha256": "c95bee5a366f647242786ce7f949728f2a3e9b14e67fbd9ca8c39e736dce0590",
+    "ex5_sha256": "44acd31f67a8425cef92db9ca011fd48cc96d2d2d906f4519aaf46d7e7337030",
+    "evidence_path": "D:\\QM\\reports\\work_items\\3e81b611-54da-4c98-b2a0-b3eab917e591\\QM5_41354\\COMPILE_EA\\compile_evidence.json"
+  },
+  "card": {
+    "sha256": "8da9e75a9f5419161768af2bc691f84af0a8bbe3bdaa34afca110f6e3fe5720d",
+    "mirror_sha256": "8da9e75a9f5419161768af2bc691f84af0a8bbe3bdaa34afca110f6e3fe5720d",
+    "artifact_mirror_sha256": "8da9e75a9f5419161768af2bc691f84af0a8bbe3bdaa34afca110f6e3fe5720d",
+    "g0_status": "APPROVED"
+  },
+  "setfile": {
+    "path": "framework/EAs/QM5_41354_wti-adf-mkendall-agree-tr/sets/QM5_41354_wti-adf-mkendall-agree-tr_XTIUSD.DWX_D1_backtest.set",
+    "sha256": "8602f37023c539df38c1b2693515d7e47e08dbf74a14b64e698452831d23a3b4",
+    "build_hash": "6a15c6ebdac0c437836125d291c3671d01df918c83deb052f19ede288922cbaa"
+  },
+  "cpu_admission": {
+    "threshold_pct": 97.0,
+    "samples_pct": [57.935889, 55.855615, 52.372636, 57.041766, 61.261229],
+    "average_pct": 56.893427,
+    "maximum_pct": 61.261229,
+    "admitted": true
+  },
+  "factory_build_handoff": {
+    "task_id": "a7e8126c-37b8-4aa4-a193-4b6637c5d057",
+    "status": "done",
+    "result_path": "artifacts/qm5_41354_factory_build_record_20260905.json",
+    "result_sha256": "fcd75dc9993a0a3f9dabf8035cefbf43f05655b3559c43528c588ac095e55e73",
+    "superseded_blocked_task_id": "88feb3f0-d11e-473f-9863-c5e8a0856cf4",
+    "superseded_blocked_reason": "spec_validation_failed_before_canonical_numbered_SPEC_headings"
+  },
+  "q02": {
+    "work_item_id": "c762c5a5-8d19-4d8b-b54a-4ffc3a47038e",
+    "status_at_receipt": "pending",
+    "enqueued_count": 1,
+    "skipped_count": 0,
+    "manual_backtest_run": false
+  },
+  "safety": {
+    "terminal_control_used": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}

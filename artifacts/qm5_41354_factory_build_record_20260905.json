@@ -1,0 +1,33 @@
+{
+  "task_id": "a7e8126c-37b8-4aa4-a193-4b6637c5d057",
+  "build_generation": 0,
+  "ea_id": "QM5_41354",
+  "slug": "wti-adf-mkendall-agree-tr",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41354_wti-adf-mkendall-agree-tr_card.md",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41354_wti-adf-mkendall-agree-tr",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41354_wti-adf-mkendall-agree-tr\\QM5_41354_wti-adf-mkendall-agree-tr.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41354_wti-adf-mkendall-agree-tr\\QM5_41354_wti-adf-mkendall-agree-tr.ex5",
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260905_164804\\QM5_41354_wti-adf-mkendall-agree-tr.compile.log",
+  "compile_summary": "D:\\QM\\reports\\compile\\20260905_164804\\summary.csv",
+  "compile_evidence_path": "D:\\QM\\reports\\work_items\\3e81b611-54da-4c98-b2a0-b3eab917e591\\QM5_41354\\COMPILE_EA\\compile_evidence.json",
+  "build_check_passed": true,
+  "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260905_164801.json",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41354_wti-adf-mkendall-agree-tr\\sets\\QM5_41354_wti-adf-mkendall-agree-tr_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "build_only_paced_fleet_q02_pump_will_run_backtest_after_fresh_cpu_admission",
+  "cpu_admission": {
+    "threshold_pct": 97.0,
+    "samples_pct": [57.935889, 55.855615, 52.372636, 57.041766, 61.261229],
+    "average_pct": 56.893427,
+    "maximum_pct": 61.261229,
+    "admitted": true
+  },
+  "source_sha256": "c95bee5a366f647242786ce7f949728f2a3e9b14e67fbd9ca8c39e736dce0590",
+  "ex5_sha256": "44acd31f67a8425cef92db9ca011fd48cc96d2d2d906f4519aaf46d7e7337030",
+  "notes": "OWNER-authorized branch-only commodity/energy sleeve build. Exact lag-one ADF and all-pairs Mann-Kendall agreement gate; low-frequency direct WTI; fixed-risk Q02 setfile; no T_Live, AutoTrading, portfolio-gate, or live-manifest action."
+}

@@ -84,9 +84,9 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: G0
-q01_status: PENDING
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q01
+q01_status: COMPILE_OK
+q02_status: ENQUEUED_PENDING
 force_build: true
 review_focus: "Falsify direct-WTI ADF persistence plus ordinal direction outside the XAU/SP500/NDX/XNG book. Verify completed endpoints, ADF arithmetic, all 78 comparisons, inclusive boundaries, score direction, consumed month, fixed risk, frozen stop, and next-month lifecycle. Q09 alone may establish decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -237,7 +237,7 @@ disagreement, direction, mirror, registry, and setfile.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-09-05 | initial build | G0 | PENDING |
+| v1 | 2026-09-05 | initial build | Q02 | ENQUEUED_PENDING |
 
 ## 15. Pipeline Phase Status
 
@@ -245,8 +245,8 @@ disagreement, direction, mirror, registry, and setfile.
 |---|---|---|---|
 | G0 Source Approval | 2026-09-05 | APPROVED_SOURCE | `decisions/2026-09-05_wti_monthly_adf_mann_kendall_agreement_trend_source_approval.md` |
 | G0 Research Intake | 2026-09-05 | APPROVED | `decisions/2026-09-05_qm5_41354_wti_monthly_adf_mann_kendall_agreement_trend_g0.md` |
-| Q01 Build & Spec | TBD | PENDING | TBD |
-| Q02 Baseline | TBD | NOT_ENQUEUED | TBD |
+| Q01 Build & Spec | 2026-09-05 | COMPILE_OK; BUILD_CHECK_PASS | `D:/QM/reports/work_items/3e81b611-54da-4c98-b2a0-b3eab917e591/QM5_41354/COMPILE_EA/compile_evidence.json` |
+| Q02 Baseline | 2026-09-05 | ENQUEUED_PENDING | work item `c762c5a5-8d19-4d8b-b54a-4ffc3a47038e` |
 
 ## 16. Lessons Captured
 
