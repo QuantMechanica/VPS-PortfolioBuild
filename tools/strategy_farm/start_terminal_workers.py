@@ -164,8 +164,20 @@ def _load_existing(pid_file: Path) -> dict[str, int]:
 
 
 
+# 2026-09-05 (CEO): the DL-089 scheduling caps live in machine-scope DL089_* vars
+# (DL089_PROGRAM_SLOTS=8 since 2026-09-02). The merge only carried QM_* keys, so every
+# worker restarted from an interactive session (reload chunks 33-41) silently fell back
+# to the code default of 4 program slots and starved the fifth admitted census program.
+MACHINE_FACTORY_ENV_PREFIXES = ("QM_", "DL089_")
+
+
+def _is_machine_factory_var(name: object) -> bool:
+    upper = str(name).upper()
+    return any(upper.startswith(prefix) for prefix in MACHINE_FACTORY_ENV_PREFIXES)
+
+
 def machine_qm_environment() -> dict[str, str]:
-    """Return the machine-level QM_* environment variables (Windows HKLM), else {}."""
+    """Return the machine-level QM_* and DL089_* environment variables (Windows HKLM), else {}."""
     if sys.platform != "win32":
         return {}
     try:
@@ -188,7 +200,7 @@ def machine_qm_environment() -> dict[str, str]:
             except OSError:
                 break
             index += 1
-            if str(name).upper().startswith("QM_") and value is not None:
+            if _is_machine_factory_var(name) and value is not None:
                 values[str(name)] = str(value)
     finally:
         winreg.CloseKey(key)
@@ -206,7 +218,7 @@ def merge_machine_qm_env(environ: dict[str, str], machine: dict[str, str]) -> di
     """
     merged = dict(environ)
     for name, value in machine.items():
-        if str(name).upper().startswith("QM_"):
+        if _is_machine_factory_var(name):
             merged.setdefault(name, value)
     return merged
 
