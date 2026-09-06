@@ -1,0 +1,100 @@
+{
+  "schema_version": "qm.fx-cointegration-pair-scope-ram-stop/v1",
+  "recorded_at_utc": "2026-09-06T06:35:25Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "3ad5179892",
+  "mission": "grow_certified_v5_portfolio_new_forex_sleeves",
+  "selection": {
+    "mode": "existing_forex_fallback_no_unbuilt_66_pair_candidate",
+    "ea_id": "QM5_12507",
+    "ea_dir": "QM5_12507_pair-coint-z",
+    "pair": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX"
+    ],
+    "logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+    "phase": "Q02",
+    "work_item_id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+    "status": "pending",
+    "claimed_by": null,
+    "attempt_count": 0,
+    "verdict": null,
+    "active_hold_count": 0,
+    "priority_track": true,
+    "canonical_claimable": true,
+    "canonical_claim_rank": 143,
+    "canonical_claimable_count": 8916,
+    "duplicate_work_item_created": false
+  },
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "anchor_state": {
+    "QM5_12532": "Q02_PASS_THEN_Q05_FAIL",
+    "QM5_12533": "Q02_PASS_THEN_Q04_FAIL",
+    "anchor_q02_oninit_or_no_history_blocker": false
+  },
+  "pair_scope_guard": {
+    "manifest_path": "framework/EAs/QM5_12507_pair-coint-z/basket_manifest.json",
+    "manifest_symbol_count": 4,
+    "manifest_symbols": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX",
+      "NDX.DWX",
+      "WS30.DWX"
+    ],
+    "source_path": "framework/EAs/QM5_12507_pair-coint-z/QM5_12507_pair-coint-z.mq5",
+    "source_guard": "Strategy_EnsureBasketScope selects and warms all four manifest symbols",
+    "test_path": "tools/strategy_farm/tests/test_fx_basket_manifests.py",
+    "test_guard": "test_qm5_12507_manifest_declares_all_warmed_pair_symbols",
+    "two_symbol_manifest_only_edit_allowed": false,
+    "reason": "would violate warmed-history declaration and authenticated Q01-to-Q02 artifact lineage"
+  },
+  "cpu_gate": {
+    "ceiling_percent": 97.0,
+    "samples_percent": [
+      80.191,
+      77.691,
+      78.717,
+      78.034,
+      71.588
+    ],
+    "average_percent": 77.244,
+    "maximum_percent": 80.191,
+    "ceiling_hit": false
+  },
+  "ram_gate": {
+    "free_physical_gib": 30.712,
+    "total_physical_gib": 63.120,
+    "drain_window_head_work_item_id": "31f12573-d903-4386-a857-cad2b445d63a",
+    "drain_window_head_ea_id": "QM5_10718",
+    "reservation_gib": 44.0,
+    "post_reservation_floor_gib": 14.0,
+    "required_free_gib": 58.0,
+    "winnable": false
+  },
+  "factory_snapshot": {
+    "scanned_at_utc": "2026-09-06T06:35:31Z",
+    "running_factory_terminals": [
+      "T3",
+      "T9",
+      "T10"
+    ],
+    "t_live_observed_excluded": true,
+    "terminal_control_attempted": false,
+    "tester_started": false
+  },
+  "protected_surfaces_untouched": [
+    "portfolio_admission",
+    "portfolio_kpi",
+    "q08_contribution",
+    "portfolio_gate",
+    "T_Live_manifest",
+    "live_deploy",
+    "AutoTrading"
+  ],
+  "queue_mutation": false,
+  "resume_contract": "Wait for the resident worker canonical claim path after the RAM drain is winnable; do not shrink the manifest without a reviewed pair-selective-warmup build and fresh Q01 lineage; do not append duplicate Q02."
+}
