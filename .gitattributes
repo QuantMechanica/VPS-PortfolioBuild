@@ -128,3 +128,10 @@ tools/strategy_farm/config/ftmo_probability_contract.v1.json -text
 # committed evidence fail its own manifest (it did, for the r2 copies).
 docs/research/edge_lab/**/*.csv -text
 docs/research/edge_lab/**/*.json -text
+framework/EAs/QM5_41171_wti-mturnpoint-tr/QM5_41171_wti-mturnpoint-tr.mq5 -text
+framework/EAs/QM5_41319_wti-madf-persist-tr/QM5_41319_wti-madf-persist-tr.mq5 -text
+framework/EAs/QM5_41358_xtixng-wovershoot-rv/QM5_41358_xtixng-wovershoot-rv.mq5 -text
+framework/EAs/QM5_41359_xtixng-waccel-rv/QM5_41359_xtixng-waccel-rv.mq5 -text
+framework/EAs/QM5_41360_xtixng-wretr-rv/QM5_41360_xtixng-wretr-rv.mq5 -text
+framework/EAs/QM5_41361_xtixng-commonshock-rv/QM5_41361_xtixng-commonshock-rv.mq5 -text
+framework/EAs/QM5_41362_xtixng-wdecel-cont/QM5_41362_xtixng-wdecel-cont.mq5 -text
