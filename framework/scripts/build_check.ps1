@@ -904,6 +904,9 @@ function Invoke-ForbiddenScan {
     # QM-MARK: BEGIN ML_PREDICATE_PATTERNS
     # (1) library / model-artifact intake via the preprocessor
     $mlIncludePattern = '(?im)^\s*#(?:include|import|resource|property\s+\w+)\b[^\r\n]*?(?:tensorflow|pytorch|\btorch\b|sklearn|scikit|keras|onnx|xgboost|lightgbm|catboost|mlpack|\bdlib\b|neural_?net\w*|perceptron|\.onnx|\.tflite|\.pth|\.pkl|\.h5)[^\r\n]*'
+    # (1a) a root-level ML include: <ML.mqh>, "ML.mqh", <ML/...>, <x/ML/...>, <x/ML.mqh> (not XML/HTML/MLxyz).
+    #      Verified 2026-09-06 against all 3,987 #include/#property lines of framework/: zero hits.
+    $mlRootIncludePattern = '(?im)^\s*#include\s*[<"](?:[^>"\r\n]*[/\\])?ML(?:\.mqh|[/\\])'
     # (1b) a serialized model artifact named in a string literal
     $mlModelArtifactPattern = '(?i)"[^"\r\n]*\.(?:onnx|tflite|h5|pb|pt|pth|pkl|joblib|caffemodel)"'
     # (2) model / inference / training API call sites (MQL5 ships a native ONNX API)
@@ -920,6 +923,7 @@ function Invoke-ForbiddenScan {
 
     $mlPatterns = @(
         @{ Pattern = $mlIncludePattern;       Scope = 'comments'; Hint = 'ML library / model artifact include or import' },
+        @{ Pattern = $mlRootIncludePattern;   Scope = 'comments'; Hint = 'ML library include (root-level ML path)' },
         @{ Pattern = $mlModelArtifactPattern; Scope = 'comments'; Hint = 'serialized model artifact reference' },
         @{ Pattern = $mlApiPattern;           Scope = 'code';     Hint = 'model inference / training API call' },
         @{ Pattern = $mlLearningRatePattern;  Scope = 'code';     Hint = 'learning rate (online parameter learning)' },
@@ -941,10 +945,12 @@ function Invoke-ForbiddenScan {
         $codeOnly = [regex]::Replace($commentFree, '"(?:\\.|[^"\\\r\n])*"', {
             param($m) [regex]::Replace($m.Value, '[^\r\n]', ' ')
         })
+        $mlSeen = New-Object 'System.Collections.Generic.HashSet[string]'
         foreach ($mlRule in $mlPatterns) {
             $haystack = if ($mlRule.Scope -eq 'code') { $codeOnly } else { $commentFree }
             foreach ($hit in [regex]::Matches($haystack, $mlRule.Pattern)) {
                 $lineNumber = 1 + ([regex]::Matches($haystack.Substring(0, $hit.Index), "`n")).Count
+                if (-not $mlSeen.Add("${mqlFile}:${lineNumber}")) { continue }
                 $snippet = ($hit.Value -replace '\s+', ' ').Trim()
                 if ($snippet.Length -gt 120) { $snippet = $snippet.Substring(0, 120) + '...' }
                 Add-Failure "EA_ML_FORBIDDEN: ${mqlFile}:${lineNumber} $($mlRule.Hint): '$snippet'."
