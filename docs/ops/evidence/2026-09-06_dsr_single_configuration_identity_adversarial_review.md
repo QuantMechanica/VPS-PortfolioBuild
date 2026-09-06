@@ -97,6 +97,24 @@ Neither row had produced a terminal pipeline verdict at that observation time.
 Their final rows and sub-gate 8.2 details must be appended here before claiming
 runtime acceptance.
 
+At `2026-09-06T23:28:33Z`, a read-only evaluator replay supplied each live
+claim-time seal to `dsr_v2.evaluate()` with the durable, commission-adjusted
+trade stream used by Q08:
+
+| EA | Stream SHA256 | Rows | 8.2 status | Detail | `dsr_p` |
+|---:|---|---:|---|---|---:|
+| 11167 | `c125f885a46f3aa0eeaa36341a8a7b19550a46121509d78512db5c86f9538924` | 311 | PASS | `DSR_V2_COMPUTED` | 0.0008545592805113056 |
+| 11196 | `a840d12fe6c9517e3be79528e880c122f3b3f14a5e3dcb98f93945e4e45c8b4f` | 656 | PASS | `DSR_V2_COMPUTED` | 0.0055112447577358985 |
+
+The 11196 stream was written at `22:51:08Z` by the active rerun after its
+replacement-set baseline completed; the baseline summary binds H4, the
+replacement set SHA `7cc424d2...f6b`, and the expected EX5/MQ5 hashes. The
+11167 stream is the prior deterministic run of the same hash-bound set/source/
+binary and was evaluated against the fourth rerun's fresh claim-time seal.
+These replays confirm that sub-gate 8.2 computes rather than returning INVALID,
+but they are diagnostic evidence only: final pipeline verdicts still come from
+the active pipeline processes.
+
 ## Verification
 
 Command:
