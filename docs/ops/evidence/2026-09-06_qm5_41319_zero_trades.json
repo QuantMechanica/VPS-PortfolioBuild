@@ -1,0 +1,714 @@
+{
+  "schema": "qm.zero-trades-gate-replay/v1",
+  "ea": "QM5_41319",
+  "scope": "Original bound run only; no new tester execution, no price/ADF counterfactual",
+  "test_window": {
+    "from_date": "2018.07.02",
+    "source": "generated_tester_ini",
+    "tester_ini_files": [
+      {
+        "expert": "QM\\QM5_41319_wti-madf-persist-tr",
+        "expert_parameters": "QM5_41319_wti-madf-persist-tr_XTIUSD.DWX_D1_backtest.set",
+        "from_date": "2018.07.02",
+        "model": 4,
+        "path": "D:\\QM\\reports\\work_items\\621d79bb-71c6-47f6-bf78-fe1bf76d0862\\QM5_41319\\20260906_053827\\raw\\run_01\\tester.ini",
+        "period": "D1",
+        "run": "run_01",
+        "sha256": "d47dd75f34b6652cccdf78cf92f641d9a1c63df7cb73d5295c2d11cbea2ffbe4",
+        "size_bytes": 464,
+        "symbol": "XTIUSD.DWX",
+        "to_date": "2022.12.31"
+      }
+    ],
+    "to_date": "2022.12.31"
+  },
+  "total_trades": 0,
+  "identity": [
+    {
+      "path": "D:\\QM\\reports\\work_items\\621d79bb-71c6-47f6-bf78-fe1bf76d0862\\QM5_41319\\20260906_053827\\summary.json",
+      "exists": true,
+      "size_bytes": 12233,
+      "sha256": "9dce3c2a4ee766555b2d7264a504ccc8b1a44f754ab5321d539d5e45d7b5ae99"
+    },
+    {
+      "path": "D:\\QM\\reports\\work_items\\621d79bb-71c6-47f6-bf78-fe1bf76d0862\\QM5_41319\\20260906_053827\\raw\\run_01\\report.htm",
+      "exists": true,
+      "size_bytes": 37368,
+      "sha256": "c5b574ef1daf744afe93dfdd1251cbc6501211cc25bb7e4fc377ddd4a970b67c",
+      "matches_recorded_sha256": true
+    },
+    {
+      "path": "D:\\QM\\reports\\work_items\\621d79bb-71c6-47f6-bf78-fe1bf76d0862\\QM5_41319\\20260906_053827\\raw\\run_01\\tester.ini",
+      "exists": true,
+      "size_bytes": 464,
+      "sha256": "d47dd75f34b6652cccdf78cf92f641d9a1c63df7cb73d5295c2d11cbea2ffbe4",
+      "matches_recorded_sha256": true
+    },
+    {
+      "path": "D:\\QM\\reports\\work_items\\621d79bb-71c6-47f6-bf78-fe1bf76d0862\\QM5_41319\\20260906_053827\\raw\\run_01\\20260906.log",
+      "exists": true,
+      "size_bytes": 1860150,
+      "sha256": "4226384b9e1050c6852de11a2535892e1cce58e13e99ccf7dce96456b8b8a1dd"
+    },
+    {
+      "path": "D:\\QM\\reports\\work_items\\621d79bb-71c6-47f6-bf78-fe1bf76d0862\\QM5_41319\\20260906_053827\\logger_sample.jsonl",
+      "exists": true,
+      "size_bytes": 484639,
+      "sha256": "a3954a2f35eb8aae5cccf2f40fd0559e537a01c9aa97de2b7a74f152be21090e",
+      "matches_recorded_sha256": true
+    },
+    {
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41319_wti-madf-persist-tr_card.md",
+      "exists": true,
+      "size_bytes": 22100,
+      "sha256": "877fb8e066409a07472b50fc9cc1cd875f39decde5f233185b07d8e10773a4d3"
+    },
+    {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41319_wti-madf-persist-tr\\SPEC.md",
+      "exists": true,
+      "size_bytes": 5877,
+      "sha256": "28b4849bb752eea0f3307e0a9d968b6f0e8935e1edcb518a2387878b8b1c165e"
+    },
+    {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41319_wti-madf-persist-tr\\QM5_41319_wti-madf-persist-tr.mq5",
+      "exists": true,
+      "size_bytes": 51949,
+      "sha256": "d18cd0b5f7e5f935b43c95cfc20df5e669b3d24c35587c4dd326ca41c365bcbc",
+      "matches_recorded_sha256": true
+    },
+    {
+      "path": "C:\\QM\\repo\\framework\\scripts\\run_smoke.ps1",
+      "exists": true,
+      "size_bytes": 164681,
+      "sha256": "f7bc53215f7042b018f324307f120c90ef505c929fb27fee8f8740244b53e97d",
+      "matches_recorded_sha256": true
+    },
+    {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41319_wti-madf-persist-tr\\QM5_41319_wti-madf-persist-tr.ex5",
+      "exists": true,
+      "size_bytes": 450844,
+      "sha256": "cfc816a7e3f82c9a882451ec38638af7bda46678ade63d542c45f3a44829cec1",
+      "matches_recorded_sha256": true
+    },
+    {
+      "path": "D:\\QM\\mt5\\T8\\MQL5\\Experts\\QM\\QM5_41319_wti-madf-persist-tr.ex5",
+      "exists": true,
+      "size_bytes": 450844,
+      "sha256": "cfc816a7e3f82c9a882451ec38638af7bda46678ade63d542c45f3a44829cec1",
+      "matches_recorded_sha256": true
+    },
+    {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41319_wti-madf-persist-tr\\sets\\QM5_41319_wti-madf-persist-tr_XTIUSD.DWX_D1_backtest.set",
+      "exists": true,
+      "size_bytes": 1235,
+      "sha256": "14fa066f5cddc7e86d438837d41e62b6c179a17a912d5976b3111272a3fbe8ca",
+      "matches_recorded_sha256": true
+    },
+    {
+      "path": "D:\\QM\\mt5\\T8\\MQL5\\Profiles\\Tester\\QM5_41319_wti-madf-persist-tr_XTIUSD.DWX_D1_backtest.set",
+      "exists": true,
+      "size_bytes": 1235,
+      "sha256": "14fa066f5cddc7e86d438837d41e62b6c179a17a912d5976b3111272a3fbe8ca",
+      "matches_recorded_sha256": true
+    }
+  ],
+  "history_header": "XTIUSD.DWX,Daily: history cache allocated for 1368 bars and contains 193 bars from 2017.10.02 00:00 to 2018.06.29",
+  "event_counts": {
+    "SYMBOL_GUARD_INIT": 2,
+    "NEWS_CALENDAR_SKIPPED": 1,
+    "KILL_SWITCH_INIT": 1,
+    "INIT": 1,
+    "EXECUTION_CONTRACT": 1,
+    "BASKET_WARMUP": 1,
+    "INIT_OK": 1,
+    "STRATEGY_STATE": 54,
+    "EQUITY_SNAPSHOT": 1163,
+    "DEINIT": 2,
+    "CHART_UI_SHUTDOWN": 1
+  },
+  "first_failure_counts": {
+    "INSUFFICIENT_NATIVE_HISTORY": 51,
+    "LOCKED_BUFFER_CANNOT_REACH_ENDPOINT": 3
+  },
+  "condition_counts": {
+    "monthly_attempts": 54,
+    "locked_input_filter_pass": 54,
+    "attempt_persistence_pass": 54,
+    "entry_grace_pass": 54,
+    "valid_endpoint_sets": 0,
+    "adf_evaluations": 0,
+    "momentum_evaluations": 0,
+    "qualified_signals": 0,
+    "orders": 0
+  },
+  "adf_distribution": {
+    "n": 0,
+    "min": null,
+    "median": null,
+    "max": null
+  },
+  "momentum_distribution": {
+    "n": 0,
+    "positive": null,
+    "negative": null,
+    "neutral": null
+  },
+  "monthly_rows": [
+    {
+      "month": 201807,
+      "decision_time": "2018-07-02T01:00:07",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 9,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 201808,
+      "decision_time": "2018-08-01T01:00:05",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 10,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 201809,
+      "decision_time": "2018-09-01T00:00:00",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 11,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 201810,
+      "decision_time": "2018-10-01T01:00:07",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 12,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 201811,
+      "decision_time": "2018-11-01T01:00:06",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 13,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 201812,
+      "decision_time": "2018-12-03T01:01:01",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 14,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 201901,
+      "decision_time": "2019-01-02T01:01:01",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 15,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 201902,
+      "decision_time": "2019-02-01T01:01:01",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 16,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 201903,
+      "decision_time": "2019-03-01T01:01:01",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 17,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 201904,
+      "decision_time": "2019-04-01T01:01:01",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 18,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 201905,
+      "decision_time": "2019-05-01T01:01:01",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 19,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 201906,
+      "decision_time": "2019-06-03T01:01:01",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 20,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 201907,
+      "decision_time": "2019-07-01T01:00:02",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 21,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 201908,
+      "decision_time": "2019-08-01T01:00:05",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 22,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 201909,
+      "decision_time": "2019-09-02T01:00:01",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 23,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 201910,
+      "decision_time": "2019-10-01T01:00:05",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 24,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 201911,
+      "decision_time": "2019-11-01T01:00:06",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 25,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 201912,
+      "decision_time": "2019-12-02T01:00:02",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 26,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 202001,
+      "decision_time": "2020-01-02T01:00:06",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 27,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 202002,
+      "decision_time": "2020-02-03T01:01:33",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 28,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 202003,
+      "decision_time": "2020-03-02T01:01:36",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 29,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 202004,
+      "decision_time": "2020-04-01T01:00:06",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 30,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 202005,
+      "decision_time": "2020-05-01T01:00:05",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 31,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 202006,
+      "decision_time": "2020-06-01T01:00:03",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 32,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 202007,
+      "decision_time": "2020-07-01T01:00:06",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 33,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 202008,
+      "decision_time": "2020-08-03T01:00:39",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 34,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 202009,
+      "decision_time": "2020-09-01T01:00:06",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 35,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 202010,
+      "decision_time": "2020-10-01T01:00:05",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 36,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 202011,
+      "decision_time": "2020-11-02T01:00:02",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 37,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 202012,
+      "decision_time": "2020-12-01T01:00:04",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 38,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 202101,
+      "decision_time": "2021-01-04T01:00:01",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 39,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 202102,
+      "decision_time": "2021-02-01T01:00:01",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 40,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 202103,
+      "decision_time": "2021-03-01T01:00:02",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 41,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 202104,
+      "decision_time": "2021-04-01T01:00:05",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 42,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 202105,
+      "decision_time": "2021-05-03T01:00:02",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 43,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 202106,
+      "decision_time": "2021-06-01T01:00:06",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 44,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 202107,
+      "decision_time": "2021-07-01T01:00:07",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 45,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 202108,
+      "decision_time": "2021-08-02T01:00:02",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 46,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 202109,
+      "decision_time": "2021-09-01T01:00:06",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 47,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 202110,
+      "decision_time": "2021-10-01T01:00:10",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 48,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 202111,
+      "decision_time": "2021-11-01T01:00:10",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 49,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 202112,
+      "decision_time": "2021-12-01T01:00:10",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 50,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 202201,
+      "decision_time": "2022-01-03T01:00:10",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 51,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 202202,
+      "decision_time": "2022-02-01T01:00:10",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 52,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 202203,
+      "decision_time": "2022-03-01T01:00:12",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 53,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 202204,
+      "decision_time": "2022-04-01T01:00:10",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 54,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 202205,
+      "decision_time": "2022-05-02T01:00:10",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 55,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 202206,
+      "decision_time": "2022-06-01T01:00:10",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 56,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 202207,
+      "decision_time": "2022-07-01T01:00:10",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 57,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 202208,
+      "decision_time": "2022-08-01T01:00:10",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 58,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 202209,
+      "decision_time": "2022-09-01T01:00:16",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 59,
+      "first_failure": "INSUFFICIENT_NATIVE_HISTORY"
+    },
+    {
+      "month": 202210,
+      "decision_time": "2022-10-03T01:00:10",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 60,
+      "oldest_required_month": "2017-10",
+      "pre_run_newer_bars_lower_bound": 163,
+      "observed_newer_daily_bars": 1099,
+      "bars_newer_than_oldest_endpoint_lower_bound": 1262,
+      "oldest_endpoint_shift_lower_bound": 1263,
+      "first_failure": "LOCKED_BUFFER_CANNOT_REACH_ENDPOINT"
+    },
+    {
+      "month": 202211,
+      "decision_time": "2022-11-01T01:00:10",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 61,
+      "oldest_required_month": "2017-11",
+      "pre_run_newer_bars_lower_bound": 133,
+      "observed_newer_daily_bars": 1120,
+      "bars_newer_than_oldest_endpoint_lower_bound": 1253,
+      "oldest_endpoint_shift_lower_bound": 1254,
+      "first_failure": "LOCKED_BUFFER_CANNOT_REACH_ENDPOINT"
+    },
+    {
+      "month": 202212,
+      "decision_time": "2022-12-01T01:00:10",
+      "state": "adf_validation_failed",
+      "adf_t": null,
+      "momentum_12": null,
+      "explanation": "Not evaluated: monthly endpoints failed before ADF call",
+      "available_completed_months_upper_bound": 62,
+      "oldest_required_month": "2017-12",
+      "pre_run_newer_bars_lower_bound": 102,
+      "observed_newer_daily_bars": 1142,
+      "bars_newer_than_oldest_endpoint_lower_bound": 1244,
+      "oldest_endpoint_shift_lower_bound": 1245,
+      "first_failure": "LOCKED_BUFFER_CANNOT_REACH_ENDPOINT"
+    }
+  ],
+  "recommendation": "REVIEW: retire unchanged locked baseline for Q02 zero positions; no economics verdict"
+}
