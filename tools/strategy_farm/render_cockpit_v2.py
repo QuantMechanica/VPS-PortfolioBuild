@@ -548,7 +548,12 @@ def _render_owner_decisions(contract: dict) -> str:
     execution_rows = []
     # OWNER 2026-09-06: decided decisions live in the Vault archive; Mission Control
     # keeps only the in-flight execution of a decision (until independent acceptance).
-    open_executions = [row for row in executions if not row.get("complete")]
+    open_executions = [
+        row for row in executions
+        if not row.get("complete")
+        and str(row.get("status") or "").upper() not in {"ACCEPTED", "COMPLETE", "PASSED"}
+        and str(row.get("task_state") or "").upper() not in {"APPROVED", "PASSED"}
+    ]
     for execution in open_executions:
         ex_status = str(execution.get("status") or "UNKNOWN")
         sla = execution.get("sla") or {}
