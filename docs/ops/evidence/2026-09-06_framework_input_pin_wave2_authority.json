@@ -1,0 +1,1920 @@
+{
+  "schema": "qm.compile-ea-source-repair-authority-evidence/v1",
+  "task_id": "ce03756f-7fad-4bd4-aa57-561551851604",
+  "mode": "review_only_no_enqueue",
+  "cohort": "APPEND_ONLY_IDENTITY_RESTART",
+  "cohort_source": "docs/ops/evidence/2026-09-06_framework_input_pin_census.json",
+  "repair": "remove framework-owned input pins while retaining EA identity, magic-slot, strategy/risk pins and only the finite inclusive 0..1 stress range check",
+  "validation": {
+    "census_wave2_rows": 130,
+    "census_unique_numeric_identities": 129,
+    "repaired_count": 119,
+    "approved_cards": 119,
+    "registry_magic_consistent": 119,
+    "predicate_hits_after_repair": 0,
+    "excluded_count": 11,
+    "exclusions": [
+      {
+        "ea_id": "20186",
+        "ea_label": "QM5_20186_xauxag-samecal",
+        "reasons": [
+          "EA_Q08_MAE_HOOK_MISSING"
+        ]
+      },
+      {
+        "ea_id": "20189",
+        "ea_label": "QM5_20189_xauxag-calmom1",
+        "reasons": [
+          "EA_Q08_MAE_HOOK_MISSING"
+        ]
+      },
+      {
+        "ea_id": "20190",
+        "ea_label": "QM5_20190_oilbench-cal",
+        "reasons": [
+          "ACTIVE_MAGIC_OR_DWX_MATRIX_INCONSISTENT",
+          "EA_Q08_MAE_HOOK_MISSING"
+        ],
+        "bad_magic_rows": [
+          {
+            "symbol_slot": "1",
+            "symbol": "XBRUSD.DWX",
+            "magic": "201900001"
+          }
+        ]
+      },
+      {
+        "ea_id": "20192",
+        "ea_label": "QM5_20192_xauxag-ivol",
+        "reasons": [
+          "EA_Q08_MAE_HOOK_MISSING"
+        ]
+      },
+      {
+        "ea_id": "20194",
+        "ea_label": "QM5_20194_xauxag-momrev",
+        "reasons": [
+          "EA_Q08_MAE_HOOK_MISSING"
+        ]
+      },
+      {
+        "ea_id": "20206",
+        "ea_label": "QM5_20206_xauxag-momivol",
+        "reasons": [
+          "EA_Q08_MAE_HOOK_MISSING"
+        ]
+      },
+      {
+        "ea_id": "20260",
+        "ea_label": "QM5_20260_xauxag-mom-vote",
+        "reasons": [
+          "EA_Q08_MAE_HOOK_MISSING"
+        ]
+      },
+      {
+        "ea_id": "20292",
+        "ea_label": "QM5_20292_fx-carry-unwind_card",
+        "reasons": [
+          "APPROVED_CARD_IDENTITY_MISMATCH",
+          "DUPLICATE_NUMERIC_IDENTITY_IN_CENSUS",
+          "REGISTRY_IDENTITY_MISMATCH"
+        ]
+      },
+      {
+        "ea_id": "21517",
+        "ea_label": "QM5_21517_xauxag-seas-rv",
+        "reasons": [
+          "EA_Q08_MAE_HOOK_MISSING"
+        ]
+      },
+      {
+        "ea_id": "41171",
+        "ea_label": "QM5_41171_wti-mturnpoint-tr",
+        "reasons": [
+          "ALREADY_REPAIRED_BY_PRECEDENT"
+        ]
+      },
+      {
+        "ea_id": "41319",
+        "ea_label": "QM5_41319_wti-madf-persist-tr",
+        "reasons": [
+          "ALREADY_REPAIRED_BY_PRECEDENT"
+        ]
+      }
+    ]
+  },
+  "compile_enqueue_applied": false,
+  "q_phase_enqueue_applied": false,
+  "worker_reload_applied": false,
+  "registrations": [
+    {
+      "ea_id": "20202",
+      "ea_label": "QM5_20202_xauxag-rev18",
+      "source_path": "framework/EAs/QM5_20202_xauxag-rev18/QM5_20202_xauxag-rev18.mq5",
+      "pre_repair_git_blob_sha256": "30c90265641d4e4c2585e0977826b26b9ba28f59f9c9e3e8cc835c21d6e20b9d",
+      "source_sha256": "62e321cd35d115dcdfe6ce3ec2dbe09e7f73cf6e23399586aa774d8c70a39346",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20202_xauxag-rev18_card.md",
+      "approved_card_sha256": "5b6eabc7f77357330f72fa3cbf89618e2a94d69d59179a87be13a842e7401cf9",
+      "registry_status": "active",
+      "active_magic_rows": 2,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20226",
+      "ea_label": "QM5_20226_wti-seas-dow",
+      "source_path": "framework/EAs/QM5_20226_wti-seas-dow/QM5_20226_wti-seas-dow.mq5",
+      "pre_repair_git_blob_sha256": "60bd25bb3b12364683a56e0d0f256e75e4ee05fc4fa386a2fd9053d7ad1e979c",
+      "source_sha256": "05878b6089ebcac28ed085bc3922213e98f2664d9ddbc596a73d5cb85f5e0222",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20226_wti-seas-dow_card.md",
+      "approved_card_sha256": "2ba9f7284146404dc6b1dab43bff436e1be50d63a2c59e4df2105a0d480ecc98",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20233",
+      "ea_label": "QM5_20233_xauxag-skew-rank",
+      "source_path": "framework/EAs/QM5_20233_xauxag-skew-rank/QM5_20233_xauxag-skew-rank.mq5",
+      "pre_repair_git_blob_sha256": "733a0ab8640735cd9b5833e51d47721097383747e5a908a777e1826316aa6c46",
+      "source_sha256": "2d89c8a361a2ef5d54265913f4e7d96337c82d8d17b7e5b57f796600efc41406",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20233_xauxag-skew-rank_card.md",
+      "approved_card_sha256": "a995d4ff15890fedaf340bef97daa5b567fcf8d7ec5a3b5b75cf0b510b70123a",
+      "registry_status": "active",
+      "active_magic_rows": 2,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20234",
+      "ea_label": "QM5_20234_xauxag-rsj",
+      "source_path": "framework/EAs/QM5_20234_xauxag-rsj/QM5_20234_xauxag-rsj.mq5",
+      "pre_repair_git_blob_sha256": "8fbd109b8e96f7657f120c64bb41daddaa1eb969ff5e3a1f397017dc1a1e1055",
+      "source_sha256": "801313fea30bbb840b454a8ca4829a9020e72b8ee7b8daf914c75b9b06e55ce0",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20234_xauxag-rsj_card.md",
+      "approved_card_sha256": "2962ed925ca70c2b6620d767da81fd124832b0e91a0d6de7d2b765a1ee50696d",
+      "registry_status": "active",
+      "active_magic_rows": 2,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20241",
+      "ea_label": "QM5_20241_wti-seas-anchor",
+      "source_path": "framework/EAs/QM5_20241_wti-seas-anchor/QM5_20241_wti-seas-anchor.mq5",
+      "pre_repair_git_blob_sha256": "eb8701ecaf1015753d7ab37e148bd0528fb0fab178be68b5b7d76ba444ac6420",
+      "source_sha256": "9ee6311b1cb96f8b984773c677e9d2161deec4842cd34dd53fdebafea5119bb3",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20241_wti-seas-anchor_card.md",
+      "approved_card_sha256": "c5bd2f5bc81bd8e9345f87f1239bde84f4bce53f53a823c7baae7c3920b6bc0a",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20242",
+      "ea_label": "QM5_20242_xng-rsm-window",
+      "source_path": "framework/EAs/QM5_20242_xng-rsm-window/QM5_20242_xng-rsm-window.mq5",
+      "pre_repair_git_blob_sha256": "e8b19292913016c007d18452103d208472b60dd543e6381ef42a78c52dc939b0",
+      "source_sha256": "f018b01da1ea547de2ff42acb41611545835be0d0838f6542ba82ce63377a4ec",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20242_xng-rsm-window_card.md",
+      "approved_card_sha256": "a884b3c8fce6693c52329637dfa32092fa4d02d678716e68a5ef14efee2f5a0c",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20248",
+      "ea_label": "QM5_20248_xng-vr-window",
+      "source_path": "framework/EAs/QM5_20248_xng-vr-window/QM5_20248_xng-vr-window.mq5",
+      "pre_repair_git_blob_sha256": "077ed17c6ee8f79d9e1fc9e14a1a701b6b24d6e93bbc5a0bde8aa1605083b64c",
+      "source_sha256": "b05e0dd9a026c541e0615c02fe27e40c0fb00bea36f72357da8ec68132fa738a",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20248_xng-vr-window_card.md",
+      "approved_card_sha256": "aaa6052a9c489d42aebaeeaae507451e5d453cad1a800d938fd000c78dbc27c0",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20249",
+      "ea_label": "QM5_20249_xauxag-vr-spread",
+      "source_path": "framework/EAs/QM5_20249_xauxag-vr-spread/QM5_20249_xauxag-vr-spread.mq5",
+      "pre_repair_git_blob_sha256": "5868e2a4c5148d50fc587d3bffc1d9f53335f51ee298d2f72a84673e72cdfdd2",
+      "source_sha256": "7917c3814326d456f223226084b2a29482b4476067e15afe61f3a06952a316ef",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20249_xauxag-vr-spread_card.md",
+      "approved_card_sha256": "b00f495f7866738d6b0f163f3ad6bd142be0c75e537ed555b406851a2a168685",
+      "registry_status": "active",
+      "active_magic_rows": 2,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20254",
+      "ea_label": "QM5_20254_xauxag-vr-fade",
+      "source_path": "framework/EAs/QM5_20254_xauxag-vr-fade/QM5_20254_xauxag-vr-fade.mq5",
+      "pre_repair_git_blob_sha256": "5c4182a1a7877ecfc2bec192c828797ee088f96640bd06130de17c08202595c7",
+      "source_sha256": "b352cac38d3d0e2e25dfb395eaae65b794a6b6aa856527db7b945d8a5ae96c36",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20254_xauxag-vr-fade_card.md",
+      "approved_card_sha256": "4bdf7aa2bc7729552c5b1af2f858a51c4d2960304dfce5edf7d88c2b73334e8f",
+      "registry_status": "active",
+      "active_magic_rows": 2,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20256",
+      "ea_label": "QM5_20256_wti-vr6-mom",
+      "source_path": "framework/EAs/QM5_20256_wti-vr6-mom/QM5_20256_wti-vr6-mom.mq5",
+      "pre_repair_git_blob_sha256": "1f285262c6e49356b8455dd1c4eabe341b9119a89f427573b1838f36f2c03643",
+      "source_sha256": "f91e25f4d2c0d9b900080947959d32d76159c97009425242d2cfe80f0b1dae16",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20256_wti-vr6-mom_card.md",
+      "approved_card_sha256": "cdaa60d6fd6f99a9d8a13dc7cc49e6549f1eb65e43f7e9883730ac92d37b3a45",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20257",
+      "ea_label": "QM5_20257_wti-vr12-mom",
+      "source_path": "framework/EAs/QM5_20257_wti-vr12-mom/QM5_20257_wti-vr12-mom.mq5",
+      "pre_repair_git_blob_sha256": "980cda8e6e2baa7fadd97b95b0fda2188e449558a04d7288abcec49ed3347330",
+      "source_sha256": "b82870ef7084dada7a00189cb69a0bc9349b21df5b25389cb4e64f6bc67fe00d",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20257_wti-vr12-mom_card.md",
+      "approved_card_sha256": "2cf81290f4d7002d077d4aadab5cda3b23a9b847e58ce0822fd6ea3dd2bd0827",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20258",
+      "ea_label": "QM5_20258_wti-mom-vote",
+      "source_path": "framework/EAs/QM5_20258_wti-mom-vote/QM5_20258_wti-mom-vote.mq5",
+      "pre_repair_git_blob_sha256": "cd97c2e6b8edb16a4b804a22c3091de9034fba4d3034ef0283eec92aa395962f",
+      "source_sha256": "a69e3a0b1ed993264b4ea885bdb5eb5f7eff7056b5ecb768a039678c50da98df",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20258_wti-mom-vote_card.md",
+      "approved_card_sha256": "89c35a03d6ff0565812fb8ad81a569115f3a4ecd7d1960dae78222d67d65c550",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20259",
+      "ea_label": "QM5_20259_xng-mom-vote",
+      "source_path": "framework/EAs/QM5_20259_xng-mom-vote/QM5_20259_xng-mom-vote.mq5",
+      "pre_repair_git_blob_sha256": "b20a14f9e37456559cda7401eefed8d0ee9f825e7f1d476c8029bbd704026d9f",
+      "source_sha256": "043176a40a770e87f38f97de007f17d537009adb6fb8eaec6fd0f66ef2d0e484",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20259_xng-mom-vote_card.md",
+      "approved_card_sha256": "fc97725d9d955e310edb243814e98a1a11a5caaf6dee5f4c3ba2e123a15fe4ac",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20261",
+      "ea_label": "QM5_20261_wti-lr-trend",
+      "source_path": "framework/EAs/QM5_20261_wti-lr-trend/QM5_20261_wti-lr-trend.mq5",
+      "pre_repair_git_blob_sha256": "4f871939c17a110f5f6207ecee1c7a8008cb4f9913e7d4afe12e5bce5428eb2d",
+      "source_sha256": "3a06ac4f9b623f549023d6ec7dfa728c5b9ebb3594018a2a8b83e954ca349769",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20261_wti-lr-trend_card.md",
+      "approved_card_sha256": "53afb7b79a9c201cb372b3afb3018bd3f52b40280d2058a7b6b406db8fe175d8",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20262",
+      "ea_label": "QM5_20262_xng-lr-trend",
+      "source_path": "framework/EAs/QM5_20262_xng-lr-trend/QM5_20262_xng-lr-trend.mq5",
+      "pre_repair_git_blob_sha256": "2eb03e54b248477804914b69c0289427a5effbdbc9bb4aba674f706d9df6221e",
+      "source_sha256": "60013fa7e0ca979767636e4416cc1b9a6c667b079b26930c53e99b985db2346b",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20262_xng-lr-trend_card.md",
+      "approved_card_sha256": "29d097dd7e3d4ef82791e98934c024b74be8fb3fa18faa4d949de9e9761f0c3e",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20263",
+      "ea_label": "QM5_20263_xauxag-mad-rv",
+      "source_path": "framework/EAs/QM5_20263_xauxag-mad-rv/QM5_20263_xauxag-mad-rv.mq5",
+      "pre_repair_git_blob_sha256": "70c5ac744c19699a91c8031a723e9b28b3776feeac3abc949849e140c315d685",
+      "source_sha256": "36f660e508eeb18b35ce323ee9e1b758d0df0a705c6d6ffe1701b4ba03ecdbe2",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20263_xauxag-mad-rv_card.md",
+      "approved_card_sha256": "a05afabc5f0a508981f0c24ae784f14f953b1740254ecb33aa2cea8a9f8b07d2",
+      "registry_status": "active",
+      "active_magic_rows": 2,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20264",
+      "ea_label": "QM5_20264_wti-rank-trend",
+      "source_path": "framework/EAs/QM5_20264_wti-rank-trend/QM5_20264_wti-rank-trend.mq5",
+      "pre_repair_git_blob_sha256": "d9818ff297e01688d1f0098b6350a9bc202941e5d423bbd4a0da8071db5815e8",
+      "source_sha256": "cb9651874b770096f8eae0914c3f4f1c4da01c86465c77b82b6a8b5b182aac65",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20264_wti-rank-trend_card.md",
+      "approved_card_sha256": "b8720f03aeceb18dc0b36486ca5f54bf9521fe4d32e438cf5e3b7d2b078e626c",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20265",
+      "ea_label": "QM5_20265_xauxag-fail-rv",
+      "source_path": "framework/EAs/QM5_20265_xauxag-fail-rv/QM5_20265_xauxag-fail-rv.mq5",
+      "pre_repair_git_blob_sha256": "6a0bf82074795dcc1654921060a0449dfe223e2e24c1dbe69064c002cef86ccf",
+      "source_sha256": "24ed81bd40135f0da42fd4e1518bfeb98ff1c3aa61c81a8458abeafd4525a023",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20265_xauxag-fail-rv_card.md",
+      "approved_card_sha256": "10e06bac2c255820c890315693835bc3410fc4dec678227c0ff0569f2f374ae9",
+      "registry_status": "active",
+      "active_magic_rows": 2,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20267",
+      "ea_label": "QM5_20267_xng-rank-trend",
+      "source_path": "framework/EAs/QM5_20267_xng-rank-trend/QM5_20267_xng-rank-trend.mq5",
+      "pre_repair_git_blob_sha256": "3841aa025f86fa141f3a00c6465f32f178f1fdb3b9efc3de3da35e8a676d6e87",
+      "source_sha256": "f40008c3f26827252c8cee11dee697bab94ff9db0d972690e9719678778daac6",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20267_xng-rank-trend_card.md",
+      "approved_card_sha256": "645d25a68c0dc61630324f01ab7f14eaad6708f7fb355397044249a22ccac945",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20268",
+      "ea_label": "QM5_20268_xauxag-qtail-rv",
+      "source_path": "framework/EAs/QM5_20268_xauxag-qtail-rv/QM5_20268_xauxag-qtail-rv.mq5",
+      "pre_repair_git_blob_sha256": "86b6feff7491d979ab9cd642cc3e5ccba8035b2b8bd503408a4289dda4de5faa",
+      "source_sha256": "ee528c2960a899a83a8aa6edd8264ca32f332d72881799d28cfd7926e0621ef3",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20268_xauxag-qtail-rv_card.md",
+      "approved_card_sha256": "5e57865e53895a7f554f1f8cf1e6bd87804d35993734b5fd0760f8fa87fde01b",
+      "registry_status": "active",
+      "active_magic_rows": 2,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20269",
+      "ea_label": "QM5_20269_wti-medret-mom",
+      "source_path": "framework/EAs/QM5_20269_wti-medret-mom/QM5_20269_wti-medret-mom.mq5",
+      "pre_repair_git_blob_sha256": "0c0ed591991060a16bcf366f5f994e9fe7005f55193b166151fd64e6fe216438",
+      "source_sha256": "11084bb686c6bec8c7e8785af297aa1906f7b2a940485c9c57d9a5d227a62767",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20269_wti-medret-mom_card.md",
+      "approved_card_sha256": "c39465c83cfd0f91174de8eec6ea0c1f71d575f01676e5d90b09ab48f8d78a04",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20270",
+      "ea_label": "QM5_20270_wti-trimmean-mom",
+      "source_path": "framework/EAs/QM5_20270_wti-trimmean-mom/QM5_20270_wti-trimmean-mom.mq5",
+      "pre_repair_git_blob_sha256": "4f590df17b3bc76625a463f01834eb6bbbee46afce77bb428ea0076b6bfbf8c6",
+      "source_sha256": "a6e9004fa62d42cb6b0e92dee4732f3f75e5c0fea99e59b6a8a96eb3a337ac24",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20270_wti-trimmean-mom_card.md",
+      "approved_card_sha256": "fd7b0bed3ad72770ecd5312c493c0726b42d87af19e68b03bcab3cb3aaff022f",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20271",
+      "ea_label": "QM5_20271_wti-theilsen-tr",
+      "source_path": "framework/EAs/QM5_20271_wti-theilsen-tr/QM5_20271_wti-theilsen-tr.mq5",
+      "pre_repair_git_blob_sha256": "cc585d137f60d7f872fc7d424cac6afb458526e769314771553e1f988977085b",
+      "source_sha256": "4e386c36c49b98f8ca64b67983c81782b0c585b267c0eed338a9c4bf2c65c40c",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20271_wti-theilsen-tr_card.md",
+      "approved_card_sha256": "20c7c6b6ef85a55b26e1a47ba3953c214c11de4a73db772535db7543cd4035f8",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20272",
+      "ea_label": "QM5_20272_wti-qtrvote-tr",
+      "source_path": "framework/EAs/QM5_20272_wti-qtrvote-tr/QM5_20272_wti-qtrvote-tr.mq5",
+      "pre_repair_git_blob_sha256": "0bb3cf55c513b8cd67d3c34cf9e49c0e02fd74ebd73bfae634b1ee05af281e70",
+      "source_sha256": "566f582c4e2b2fc18b9d84692c395020fcc4315e79f95b4fcc6ce3aa29893b28",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20272_wti-qtrvote-tr_card.md",
+      "approved_card_sha256": "34da76b5a3278a39cbbd22a4eec75c114d99c817f2487beed99696080268a2ee",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20273",
+      "ea_label": "QM5_20273_wti-signrun-tr",
+      "source_path": "framework/EAs/QM5_20273_wti-signrun-tr/QM5_20273_wti-signrun-tr.mq5",
+      "pre_repair_git_blob_sha256": "77ad83bcad0a64a98d3a0c80c58929b992c8a5d974a77862ed72b574045eabcb",
+      "source_sha256": "83bfdbde6e9bf47df8b09a55d77626f880e28b415b6c4be9e7c2ad54f1dbc9a3",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20273_wti-signrun-tr_card.md",
+      "approved_card_sha256": "fd556dcac9cdbde3f817c6bbadf8cb596f8783645e397b34d34795f8164fa17d",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20274",
+      "ea_label": "QM5_20274_wti-path-eff",
+      "source_path": "framework/EAs/QM5_20274_wti-path-eff/QM5_20274_wti-path-eff.mq5",
+      "pre_repair_git_blob_sha256": "b02fd9701fce46724d80e8ab23f04377c4d51f7e402d8963d285e99f854489ca",
+      "source_sha256": "31393e222a48190187d5ac6852778b4914bb3cd8de7471aef4b740dfeb28c85e",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20274_wti-path-eff_card.md",
+      "approved_card_sha256": "50e570d9b1dfa54f1c79b5db216c6797a2da2dbb9701c332d6c796f44e46fa02",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20275",
+      "ea_label": "QM5_20275_gsr-runfade",
+      "source_path": "framework/EAs/QM5_20275_gsr-runfade/QM5_20275_gsr-runfade.mq5",
+      "pre_repair_git_blob_sha256": "c895b2f70a9610f24f8fa9b0a07f085965fb81b71412a701a860856f967b9bc7",
+      "source_sha256": "d079a78ce03718a34779711286a88ca82a9bb7a7a58efa1eedad8d82266b28b7",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20275_gsr-runfade_card.md",
+      "approved_card_sha256": "f892ed242f9715186e22a5130ad423f805c81a51244418ea76bd0673427b1b6b",
+      "registry_status": "active",
+      "active_magic_rows": 2,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20276",
+      "ea_label": "QM5_20276_wti-hl-mom",
+      "source_path": "framework/EAs/QM5_20276_wti-hl-mom/QM5_20276_wti-hl-mom.mq5",
+      "pre_repair_git_blob_sha256": "af00251ee72a85624301ad568ec1bdb570464e03b80e3feb689db3b30ab9073c",
+      "source_sha256": "f608529f379e3695226b1b76b0321106d0a56402f6a79cd8381bd9e293a75b6d",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20276_wti-hl-mom_card.md",
+      "approved_card_sha256": "42554a38449565cec5045622f00a4e6eb3adf6dfaa466709491d6b28c6632626",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20277",
+      "ea_label": "QM5_20277_wti-winsor-mom",
+      "source_path": "framework/EAs/QM5_20277_wti-winsor-mom/QM5_20277_wti-winsor-mom.mq5",
+      "pre_repair_git_blob_sha256": "6e5af6ad0f01a9b26bf2ce4593c3c042aace1676d9f18666d377c53314d883a7",
+      "source_sha256": "9b58a6cb73eb9e690875b4e5db330d7cab8a750ccb41cc38866c1d49028fa0f6",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20277_wti-winsor-mom_card.md",
+      "approved_card_sha256": "1bbccd6a058e54294e2998ddad6c8a56f040873f17b150bc068d2a90deea2c9d",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20278",
+      "ea_label": "QM5_20278_wti-linw-mom",
+      "source_path": "framework/EAs/QM5_20278_wti-linw-mom/QM5_20278_wti-linw-mom.mq5",
+      "pre_repair_git_blob_sha256": "96bb31d46279a222d0650370db5eb3aee06672a4202be513ab94c0b9dd8c52fc",
+      "source_sha256": "bdd9eb1188a9e850dcb00150236b8f3714e36b1ef183f7bf472a784bd4d60240",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20278_wti-linw-mom_card.md",
+      "approved_card_sha256": "d3c267121116ee252fa16850961bc3f5ae483e59dfd809a4818f29745b94d83b",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20279",
+      "ea_label": "QM5_20279_wti-expw-mom",
+      "source_path": "framework/EAs/QM5_20279_wti-expw-mom/QM5_20279_wti-expw-mom.mq5",
+      "pre_repair_git_blob_sha256": "e748acd7a3fd9378acc2be701e00173d791e59165b8935453c68584b5dd2a2e4",
+      "source_sha256": "34fea511a563989fe07d6b34088c059b13d8959098d5970340be2ad50f6a9882",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20279_wti-expw-mom_card.md",
+      "approved_card_sha256": "b97a5edd8532dd8489e4d913e4c7f29e7390b3d2cb2cb372a5536274bfd6fcb9",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20280",
+      "ea_label": "QM5_20280_wti-tsmom4m",
+      "source_path": "framework/EAs/QM5_20280_wti-tsmom4m/QM5_20280_wti-tsmom4m.mq5",
+      "pre_repair_git_blob_sha256": "40995d4378f15c61515e76f637253212a03c59da61479b0c9026ed4434d6dc73",
+      "source_sha256": "46a5faf65bfd481c846691e2456673e4f8305505bbdc3bfbcb3e1035a5e9cfd5",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20280_wti-tsmom4m_card.md",
+      "approved_card_sha256": "272bea2b2320259d1713255b37e362facdb1ffb262c64ed3e1978537ecd15f21",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20281",
+      "ea_label": "QM5_20281_wti-tsmom-h2",
+      "source_path": "framework/EAs/QM5_20281_wti-tsmom-h2/QM5_20281_wti-tsmom-h2.mq5",
+      "pre_repair_git_blob_sha256": "366260ffb6e645842a776e6225fad789618c68043f9ce43bac9550f25c9c8669",
+      "source_sha256": "c681eb7823cb5b29e375e53d41af07aa59670d854c6565c4dd5821dfc123802b",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20281_wti-tsmom-h2_card.md",
+      "approved_card_sha256": "b771cb9046b9655688f2ea3bf9c4d34358fee9ad64cff19915028b504eab3853",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20282",
+      "ea_label": "QM5_20282_wti-madcap-mom",
+      "source_path": "framework/EAs/QM5_20282_wti-madcap-mom/QM5_20282_wti-madcap-mom.mq5",
+      "pre_repair_git_blob_sha256": "525f6e8d4af74de2d7d4b60eb9c16a91f90eac234e93b148e75324225f8684d8",
+      "source_sha256": "c9e8493975780eb26cb732cb2182af6f7f8f20fd612312fbcb26432165571ead",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20282_wti-madcap-mom_card.md",
+      "approved_card_sha256": "2433b0562cb553e09f4aa50ef845928eae4e7311dbb4136af6b1ef50656e1c66",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20283",
+      "ea_label": "QM5_20283_wti-trimean-mom",
+      "source_path": "framework/EAs/QM5_20283_wti-trimean-mom/QM5_20283_wti-trimean-mom.mq5",
+      "pre_repair_git_blob_sha256": "178ad85b40ae0f760233782712688fc740d71765f37fae78668fa334afe4e8a5",
+      "source_sha256": "06b80297cd3200c02208b8eea459c3813e87e8403da5064f88673f392cb697c3",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20283_wti-trimean-mom_card.md",
+      "approved_card_sha256": "0f3de5c1f7708fc9d31c6c4db7ae5bc8c1a5f529e517f7fe1f8ab85881398718",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20284",
+      "ea_label": "QM5_20284_wti-skip1-trend",
+      "source_path": "framework/EAs/QM5_20284_wti-skip1-trend/QM5_20284_wti-skip1-trend.mq5",
+      "pre_repair_git_blob_sha256": "1b3d943b85a0ad036cca5b6af989e4317c953a105592d0823634d8bf5e6565dc",
+      "source_sha256": "49bd97606b77faf183b1f33e3cfebd7b1fc296331a249bfce466f38b7d9f200a",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20284_wti-skip1-trend_card.md",
+      "approved_card_sha256": "7bb1406b156e5eded8d5d3bf4c10cfbcdd1ea76e95e7bc3789ece16622edca0c",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20285",
+      "ea_label": "QM5_20285_wti-huber-mom",
+      "source_path": "framework/EAs/QM5_20285_wti-huber-mom/QM5_20285_wti-huber-mom.mq5",
+      "pre_repair_git_blob_sha256": "c2de291a58fe754afea630ce7ad1ee259f537556f935ab7e60672b384daec95c",
+      "source_sha256": "09b28aae00e92324fe87b932163b8693c793c6c265d0fa69ee1742d58da27ecf",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20285_wti-huber-mom_card.md",
+      "approved_card_sha256": "6904ffc4864bb9bf5ec5388e9e66d0c0dbaeefa656d2cd1e0e225024cb85e531",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20286",
+      "ea_label": "QM5_20286_wti-bisquare-mom",
+      "source_path": "framework/EAs/QM5_20286_wti-bisquare-mom/QM5_20286_wti-bisquare-mom.mq5",
+      "pre_repair_git_blob_sha256": "6c416683a58eff10ff18a17a4182e7ef40f530beec6cfd30b8d785c889555976",
+      "source_sha256": "4c8ab27893aa677810e47228caf1f843b3ef107b450d6ef6c2a0a39255f50c33",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20286_wti-bisquare-mom_card.md",
+      "approved_card_sha256": "767f2e253318b2974a5d084af69e7678c062cd87e88d1f3dfa7100084d6e6394",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20287",
+      "ea_label": "QM5_20287_wti-blockmed-mom",
+      "source_path": "framework/EAs/QM5_20287_wti-blockmed-mom/QM5_20287_wti-blockmed-mom.mq5",
+      "pre_repair_git_blob_sha256": "37ca0e831aef5948e304a02c03c3f37ce29952193afe3ed91f7d4bce3d5c1dbb",
+      "source_sha256": "7550b282f12dd691b7f7f7ec4e97ef256cf68326dffa6c31fd70badd2c48db9b",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20287_wti-blockmed-mom_card.md",
+      "approved_card_sha256": "e3f365a88b67ec3e444d902233e8b4a0a764fb53ad0ee5894debd8c3bae0d4e6",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20288",
+      "ea_label": "QM5_20288_wti-volnorm-mom",
+      "source_path": "framework/EAs/QM5_20288_wti-volnorm-mom/QM5_20288_wti-volnorm-mom.mq5",
+      "pre_repair_git_blob_sha256": "b2406732bc3c80026984fdd2bcba8f6345fd80a0a197a0a7f27d2bf85ad9b640",
+      "source_sha256": "5848d305ab09c40aaecdda30b32cba476ae5936debf3cd71beb86c7187facc46",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20288_wti-volnorm-mom_card.md",
+      "approved_card_sha256": "1764dd88272f42b2968c6f14865c8fa552bd166a4ad7a9e7d54d37e0bdc76d8f",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20289",
+      "ea_label": "QM5_20289_wti-rsj-rev",
+      "source_path": "framework/EAs/QM5_20289_wti-rsj-rev/QM5_20289_wti-rsj-rev.mq5",
+      "pre_repair_git_blob_sha256": "487b85a0146fb2c87dc11e62120160f5cf462d7c9aeef90d99e79e96c4e9ee98",
+      "source_sha256": "3f73a3605d72145127e56d84f88ee82d59a7f79caebcda3eb21379d65e0f77c0",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20289_wti-rsj-rev_card.md",
+      "approved_card_sha256": "ec058f7ddd280f58210d5b955f0c408324754b21a449bc676f46c5c2f26a92b0",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20290",
+      "ea_label": "QM5_20290_wti-skew-prem",
+      "source_path": "framework/EAs/QM5_20290_wti-skew-prem/QM5_20290_wti-skew-prem.mq5",
+      "pre_repair_git_blob_sha256": "629c0968ade859cdbbb1443d08718635f0f425760c0f451b712747a78b5a4b11",
+      "source_sha256": "0692f41a307e32e460d533913087ee9212693bef19dfc5ab72832643b36b38ed",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20290_wti-skew-prem_card.md",
+      "approved_card_sha256": "5ec0c5bd2f07c83fd0c0d0aeababd0cd0b4035f9a22a0d49a4b4f8adc91c9b9a",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20291",
+      "ea_label": "QM5_20291_xauxag-kurt-rk",
+      "source_path": "framework/EAs/QM5_20291_xauxag-kurt-rk/QM5_20291_xauxag-kurt-rk.mq5",
+      "pre_repair_git_blob_sha256": "b63a95ca46b287848f65717b6d70479f65abcecc458e85b75ff8b19db156ffcc",
+      "source_sha256": "0ef5e10c3c3ec7b19395690ae71780368038ec7229d063ebdecc953959572c24",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20291_xauxag-kurt-rk_card.md",
+      "approved_card_sha256": "ff5e60d3a1997daa40d98ffde4470acb654f42ee1c3a52cd997a6f3a2cf54dfe",
+      "registry_status": "active",
+      "active_magic_rows": 2,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20292",
+      "ea_label": "QM5_20292_fx-carry-unwind",
+      "source_path": "framework/EAs/QM5_20292_fx-carry-unwind/QM5_20292_fx-carry-unwind.mq5",
+      "pre_repair_git_blob_sha256": "845f638d46b66968705f6ee4226d28fd078f699f96425551b0536f4c39481199",
+      "source_sha256": "f9523a932199c66ec2b1c24120fb730ce879a33ea56bd8df9968431aa943de1c",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20292_fx-carry-unwind_card.md",
+      "approved_card_sha256": "3e004d64182dac8325e5032bb8e33beb804842d4fd908f3cfae5620692c09c39",
+      "registry_status": "active",
+      "active_magic_rows": 6,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20293",
+      "ea_label": "QM5_20293_wti-tsmom9m",
+      "source_path": "framework/EAs/QM5_20293_wti-tsmom9m/QM5_20293_wti-tsmom9m.mq5",
+      "pre_repair_git_blob_sha256": "acf0dd6a3a3008521dce2770bdc94a3342c5d2079c179774a63864bae036d68b",
+      "source_sha256": "8934a3e29cef7bd259ec6c797908503c9d5826f18442d72ee761e3d9f8c15d08",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20293_wti-tsmom9m_card.md",
+      "approved_card_sha256": "1f8e08bcff7871f16649b0a051e717baa494c42eeee0428089ccbdfb279cecd7",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20294",
+      "ea_label": "QM5_20294_xauxag-max-rk",
+      "source_path": "framework/EAs/QM5_20294_xauxag-max-rk/QM5_20294_xauxag-max-rk.mq5",
+      "pre_repair_git_blob_sha256": "89e93d4583f174e33f4d78c5c154b9adc30405fd4753c703a9aa8e57111e34a1",
+      "source_sha256": "f73917819a3e6894b17a63bbee776157cb06d1d6f21c5983c6796212ec9a4a31",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20294_xauxag-max-rk_card.md",
+      "approved_card_sha256": "798bc15063cad8bd758ebff3ec30859a73e6811d77ef173981b7b936d1681f0c",
+      "registry_status": "active",
+      "active_magic_rows": 2,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20295",
+      "ea_label": "QM5_20295_wti-kurt-prem",
+      "source_path": "framework/EAs/QM5_20295_wti-kurt-prem/QM5_20295_wti-kurt-prem.mq5",
+      "pre_repair_git_blob_sha256": "24ca1c0486ac9f3e0434ecf04fd5eae60a849117c967f33b727c82744faec2a6",
+      "source_sha256": "a49a4240c338621f6d590e133457e154d935d057683afc7d73b33fe5227da586",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20295_wti-kurt-prem_card.md",
+      "approved_card_sha256": "e9ce401434869622f58cd2250d50aa7e820d6e72323ae20cc526279a0dab5bbf",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20296",
+      "ea_label": "QM5_20296_xng-skew-prem",
+      "source_path": "framework/EAs/QM5_20296_xng-skew-prem/QM5_20296_xng-skew-prem.mq5",
+      "pre_repair_git_blob_sha256": "4aabc2edb9438427d02209c38eeaa5121098d012b56a1f8032fc091d961cd239",
+      "source_sha256": "54f6a01c6a65efd06ad90b2b58e64d6605b435afd50cffd2618461c636d4d02a",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20296_xng-skew-prem_card.md",
+      "approved_card_sha256": "457f804a8cf075870a0b0c729913c49e8c1052eeea07e6ee12e1c8ad3506fb4c",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20297",
+      "ea_label": "QM5_20297_xng-kurt-prem",
+      "source_path": "framework/EAs/QM5_20297_xng-kurt-prem/QM5_20297_xng-kurt-prem.mq5",
+      "pre_repair_git_blob_sha256": "75bb9777a1e39dc8a3bb1bd7ee5d4afca3e0657029ffaf592335500e2304c75f",
+      "source_sha256": "5a526d5b1829daa0fcfad3165524b193e97e37383a63721e010f09cfa82ad7fc",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20297_xng-kurt-prem_card.md",
+      "approved_card_sha256": "ab73222210120167fd426c80e9ee52bcdd5075c769c9348fc67ed6cbd1e58b90",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20298",
+      "ea_label": "QM5_20298_wti-vov-regime",
+      "source_path": "framework/EAs/QM5_20298_wti-vov-regime/QM5_20298_wti-vov-regime.mq5",
+      "pre_repair_git_blob_sha256": "98171d3e555ffe3a0fd7f8f2936c79557a4a8c902d9d441555c7f3d30f003e6e",
+      "source_sha256": "fc7c60a61dca01399b9840f6ccf8c6a8e139370ff0d0581d3e93c2817e52aa06",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20298_wti-vov-regime_card.md",
+      "approved_card_sha256": "764f1c62ba529e8b00836375734284f85ff5cb93e424a07ac07ffc010c8c1b46",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20299",
+      "ea_label": "QM5_20299_xng-vov-regime",
+      "source_path": "framework/EAs/QM5_20299_xng-vov-regime/QM5_20299_xng-vov-regime.mq5",
+      "pre_repair_git_blob_sha256": "cf4d93fedc87af8af783d898e666bb642e419a166598d85ae8871fbf697e19c9",
+      "source_sha256": "c3b0d11285aa6a940637b21e0e16b6c0a8cdad646f3c41e0062d68c4911fd22e",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20299_xng-vov-regime_card.md",
+      "approved_card_sha256": "91b9ac3aebbcf79de16fcf7803854453da796a8cd834aed5f8f1246da93a5bbb",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20300",
+      "ea_label": "QM5_20300_wti-max-regime",
+      "source_path": "framework/EAs/QM5_20300_wti-max-regime/QM5_20300_wti-max-regime.mq5",
+      "pre_repair_git_blob_sha256": "27ef6b33528b514f7543b06d833d4607206f11d76cad59622ab3e65e49209160",
+      "source_sha256": "f94538986ca35c336d65ada88acd16d5e9eb8d301b4472a6f01164c1a617e08e",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20300_wti-max-regime_card.md",
+      "approved_card_sha256": "6b1a4bd6efb1d1f6671a47acdb45aaf656f38fda123144182daaa015ace57cea",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20301",
+      "ea_label": "QM5_20301_wti-es-regime",
+      "source_path": "framework/EAs/QM5_20301_wti-es-regime/QM5_20301_wti-es-regime.mq5",
+      "pre_repair_git_blob_sha256": "85bee96aa1f6f458d9a70e309f81ac1fff764749c074ba6c2aae18132fc96db1",
+      "source_sha256": "84771a71924d3809ee635d1b083bfb4280dae2d2e11d762f42ceac4925fd13d0",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20301_wti-es-regime_card.md",
+      "approved_card_sha256": "f977a248befab2d8006895e82c5be5051ead43f720944245c8b219c34b1f50e7",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20302",
+      "ea_label": "QM5_20302_wti-aliq-regime",
+      "source_path": "framework/EAs/QM5_20302_wti-aliq-regime/QM5_20302_wti-aliq-regime.mq5",
+      "pre_repair_git_blob_sha256": "bbbaf0e04659e68a94640eed206fde49b78c1539bca1a709f25cbf95de1037f1",
+      "source_sha256": "f3cc00e4b66e9acef2442979c5f05bb2423166d089d4b3c399d45cb5b7c4679c",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20302_wti-aliq-regime_card.md",
+      "approved_card_sha256": "e4cedef62a4fa69d24b8b0c636b8d5a61d26233a0b243714cedc851c41bfc0cc",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20303",
+      "ea_label": "QM5_20303_wti-volbeta-reg",
+      "source_path": "framework/EAs/QM5_20303_wti-volbeta-reg/QM5_20303_wti-volbeta-reg.mq5",
+      "pre_repair_git_blob_sha256": "dce1a65098e5e6a81eb3c9568c42a07c5f31a9284747419bcca2ba053f3a4145",
+      "source_sha256": "79e8fe7d85afa1036ab053348782ef564fb8c5bd4cd16736a74ac434cdf69015",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20303_wti-volbeta-reg_card.md",
+      "approved_card_sha256": "7e39ae805fe45e3d1bf19095502d78afd941cffc4833f949853470a487908159",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20304",
+      "ea_label": "QM5_20304_wti-jumpbeta-reg",
+      "source_path": "framework/EAs/QM5_20304_wti-jumpbeta-reg/QM5_20304_wti-jumpbeta-reg.mq5",
+      "pre_repair_git_blob_sha256": "45d6f2f03b1dcb156f83d43c0e37416cbc0aa57a66b2ae4a4914ef14f9ca8fca",
+      "source_sha256": "957248656080f7c8c6338e426a3a85aa63e987b108aa5a058c107fcd154487c1",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20304_wti-jumpbeta-reg_card.md",
+      "approved_card_sha256": "8f093b9681fb6fd0993f8483f4f65c29f6ad403bb8f20814d28c0505c43dae2e",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20305",
+      "ea_label": "QM5_20305_xng-aliq-regime",
+      "source_path": "framework/EAs/QM5_20305_xng-aliq-regime/QM5_20305_xng-aliq-regime.mq5",
+      "pre_repair_git_blob_sha256": "031defa6ac33862716b1a6cd395420af37f0773c1b84d57cd8fc17d4ed773d2b",
+      "source_sha256": "76e7d702746a974d47f6cb74861dce51f097c206dc7dc8bc0dae06efef578fb8",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20305_xng-aliq-regime_card.md",
+      "approved_card_sha256": "ea8538e48cdd6e2c4f49f511f6e9e9096950bdfa4870714563236040d860b97c",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "20306",
+      "ea_label": "QM5_20306_xng-jumpbeta-reg",
+      "source_path": "framework/EAs/QM5_20306_xng-jumpbeta-reg/QM5_20306_xng-jumpbeta-reg.mq5",
+      "pre_repair_git_blob_sha256": "b58bb5bd8c0d4301191b5d229783b1b3a10c0198ca55359f8bfad4b46d826a5a",
+      "source_sha256": "62120537524de8f1b34d180f3cdadf1f3dbbcda47e48802840ce4935265fba28",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_20306_xng-jumpbeta-reg_card.md",
+      "approved_card_sha256": "94db17443f93ec56cf1286ccd91d3da24f744fa77be6e036f563919d9310febe",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "21516",
+      "ea_label": "QM5_21516_wti-decoup-trend",
+      "source_path": "framework/EAs/QM5_21516_wti-decoup-trend/QM5_21516_wti-decoup-trend.mq5",
+      "pre_repair_git_blob_sha256": "b5086d00663d7460c7b103d057d6957e4925d301fec5b29a4f1423fc1283858b",
+      "source_sha256": "016d6fe52c163cd490c4d9589b531373e271bfb499a89db1424caf34aaa8c9ca",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_21516_wti-decoup-trend_card.md",
+      "approved_card_sha256": "24a8e594e7529d294a2ec59f2c99a43ec5f5a230201a891b6eca59e9b87dd88a",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "21518",
+      "ea_label": "QM5_21518_wti-brent-cfm",
+      "source_path": "framework/EAs/QM5_21518_wti-brent-cfm/QM5_21518_wti-brent-cfm.mq5",
+      "pre_repair_git_blob_sha256": "d53de404af5459d550a637fa287d8adac6ca00af8e1f681b51dfd2d8fc7b5401",
+      "source_sha256": "9913b76150eba7bca39fd5a58ad2297586838e1515e6190ca6b0aad4673b4f13",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_21518_wti-brent-cfm_card.md",
+      "approved_card_sha256": "e181a26faaf87369816a7d4b59c6af04af8be26a45ef892dd4dd3042c17e6a0d",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "21522",
+      "ea_label": "QM5_21522_wti-lowdb-trend",
+      "source_path": "framework/EAs/QM5_21522_wti-lowdb-trend/QM5_21522_wti-lowdb-trend.mq5",
+      "pre_repair_git_blob_sha256": "aa6020d9beba7c4c0e274423a68acb4b4f7d82854d20d52270290b087da77db1",
+      "source_sha256": "f82d29c528b008bb60eac82c896df27f4bbd10f76229c318260784ece2b54b12",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_21522_wti-lowdb-trend_card.md",
+      "approved_card_sha256": "f04beea13059a2930073dc5c2ce33bd263cabc6ccfbf77fd0fc77adff511fb58",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "21523",
+      "ea_label": "QM5_21523_wti-xau-div-tr",
+      "source_path": "framework/EAs/QM5_21523_wti-xau-div-tr/QM5_21523_wti-xau-div-tr.mq5",
+      "pre_repair_git_blob_sha256": "c121c3499fb8668a97cc7f5ac063f0dc4036c6d519f241980ce23f8422ee5617",
+      "source_sha256": "b7f1fe7c0a5bbeaaaa285d44490343bce2d7f586204b3ef2b7b5f96904b8091b",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_21523_wti-xau-div-tr_card.md",
+      "approved_card_sha256": "31446c6c0490556cbc0695d3229ee25c2df23dd9725099cfc6d78bf882d33e05",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "21527",
+      "ea_label": "QM5_21527_wti-fallcorr-tr",
+      "source_path": "framework/EAs/QM5_21527_wti-fallcorr-tr/QM5_21527_wti-fallcorr-tr.mq5",
+      "pre_repair_git_blob_sha256": "310a76fcc2f24793367395b019b52e96d2d70649a511d804d011dbfa204e30d3",
+      "source_sha256": "a00fe72d1bdf222f7d2bb84b28cb877f2438ed92b83db9d4d148115ea57b6840",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_21527_wti-fallcorr-tr_card.md",
+      "approved_card_sha256": "af1b13e888ed56923e327086769b8637a7d724fa98752ad3b65db1d97442a8da",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41016",
+      "ea_label": "QM5_41016_wti-mclose-mom",
+      "source_path": "framework/EAs/QM5_41016_wti-mclose-mom/QM5_41016_wti-mclose-mom.mq5",
+      "pre_repair_git_blob_sha256": "e26603c18fb876cb9196d9427b7460ae6a6cb3ed8c0afaa53adbfa23581841c9",
+      "source_sha256": "0910d510f593615744d4271828173c5423357c43614701335b27705d8c181589",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41016_wti-mclose-mom_card.md",
+      "approved_card_sha256": "6d96d87fe9054ac6b72ec5a64a9c6ace72cc0f5897bc582a1503b3d8dd161a16",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41021",
+      "ea_label": "QM5_41021_wti-mdual-mom",
+      "source_path": "framework/EAs/QM5_41021_wti-mdual-mom/QM5_41021_wti-mdual-mom.mq5",
+      "pre_repair_git_blob_sha256": "be87538c04026ee20098a0f84e09b2851a6161fcd3f796b3d7be536130785024",
+      "source_sha256": "c21a697b4c722a5eebff3d287321d2c38a236d90c941a4cc8bd8594c8f1e60c5",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41021_wti-mdual-mom_card.md",
+      "approved_card_sha256": "dd78b76f626f9d32334f94c28c8f3df8a39160a4230c22b163f19d26d399b62e",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41023",
+      "ea_label": "QM5_41023_wti-mends-mom",
+      "source_path": "framework/EAs/QM5_41023_wti-mends-mom/QM5_41023_wti-mends-mom.mq5",
+      "pre_repair_git_blob_sha256": "bcf2b0671d56f55e286d10e625d3d6551df2ff3df1b72a8ade4a8d80c26ed000",
+      "source_sha256": "52a988d7ebc9beaed4335b41f5fb18ac0d9565ce2ebb59ef6f637d72f065bc46",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41023_wti-mends-mom_card.md",
+      "approved_card_sha256": "a4ba09bd8fa37906d48da87c3a7e20b8b7a245d057c961de7119adda4561adb4",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41024",
+      "ea_label": "QM5_41024_wti-1wed-mom1",
+      "source_path": "framework/EAs/QM5_41024_wti-1wed-mom1/QM5_41024_wti-1wed-mom1.mq5",
+      "pre_repair_git_blob_sha256": "047d5e60314c5ce5bd6c72ba33d0440ce476784a3bac782ff5b8b50683d39882",
+      "source_sha256": "b796de5c371c418512a00b5f654c95c4516275b3479bb1a8788c2499d208297b",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41024_wti-1wed-mom1_card.md",
+      "approved_card_sha256": "b49492dcfd57d21ba3b1d0b803d994930cd4f43548372a6e24db07315107d06e",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41025",
+      "ea_label": "QM5_41025_wti-dom-mom1",
+      "source_path": "framework/EAs/QM5_41025_wti-dom-mom1/QM5_41025_wti-dom-mom1.mq5",
+      "pre_repair_git_blob_sha256": "8edfbeb1061bec19fd9ce4e86bc08ac8b23d80a2c40b2510e53b841c4f06d3d7",
+      "source_sha256": "b58590dafdaab215f549caf581af21459d4a0cc7b4654898c6cb8238506f268c",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41025_wti-dom-mom1_card.md",
+      "approved_card_sha256": "01ade49a1e5502a328f7983366e892633faf1c385b2e206541fade30fd0de524",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41026",
+      "ea_label": "QM5_41026_wti-1fri-rev1",
+      "source_path": "framework/EAs/QM5_41026_wti-1fri-rev1/QM5_41026_wti-1fri-rev1.mq5",
+      "pre_repair_git_blob_sha256": "8609bcade115fe10f883325a21859b2818c4fe1a1cc308d64535b7c4fc9e8902",
+      "source_sha256": "e14a57e481b4fbfd88f08b0afbb632a92a88d5f2db48a85728f2ebdac946b292",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41026_wti-1fri-rev1_card.md",
+      "approved_card_sha256": "7f4edf32d8aa8db07520f335e75c2d026c78222e19329ecf135782b22a5eca23",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41027",
+      "ea_label": "QM5_41027_wti-mopen-rev1",
+      "source_path": "framework/EAs/QM5_41027_wti-mopen-rev1/QM5_41027_wti-mopen-rev1.mq5",
+      "pre_repair_git_blob_sha256": "db44ddbc6799212620278bc5e9ef541530e1734b782c45df54c5d0d0995a586e",
+      "source_sha256": "d6c45698582931e1b345a17a4ba3591d4bec8f0f0de3775cc760c4433eebc64d",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41027_wti-mopen-rev1_card.md",
+      "approved_card_sha256": "0f2793973f72aafe382d3f7a238eb86c441c6a2b7099a2950b292f352728708c",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41028",
+      "ea_label": "QM5_41028_wti-mgap-fade",
+      "source_path": "framework/EAs/QM5_41028_wti-mgap-fade/QM5_41028_wti-mgap-fade.mq5",
+      "pre_repair_git_blob_sha256": "c379b14dfb6d9922078a0e998feee34fb87ba8051e4a29d1cb9a45cc314f49b3",
+      "source_sha256": "5fea36333dbf7caefc72b95cba1aa2d683d12482585d222b50352c71ceb83f0e",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41028_wti-mgap-fade_card.md",
+      "approved_card_sha256": "130fa3d23848a33fcbb5470d1ab3abd61ed50b86ac23f372d38c2c66011cd49b",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41034",
+      "ea_label": "QM5_41034_wti-mflow-agree",
+      "source_path": "framework/EAs/QM5_41034_wti-mflow-agree/QM5_41034_wti-mflow-agree.mq5",
+      "pre_repair_git_blob_sha256": "bef76798b44ff0d098745277d05f39ed79f01e234a5aab0fdf3a9bc9355e719d",
+      "source_sha256": "14bd5981aedfeba42baa44ef0151d9ce25072ce2efc21ea229244f93a8a9acc3",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41034_wti-mflow-agree_card.md",
+      "approved_card_sha256": "f01b2fa5f362ebd63f642ee18e46b2d738a262d470fcecd3bf6e573288983c85",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41035",
+      "ea_label": "QM5_41035_wti-mflow-div",
+      "source_path": "framework/EAs/QM5_41035_wti-mflow-div/QM5_41035_wti-mflow-div.mq5",
+      "pre_repair_git_blob_sha256": "b404251b8d5d1401fabbec5c066a9dab125d6735a423c3ba8c827cae50e9a2d1",
+      "source_sha256": "84eec98ecfc00c8a2ece987e1019924f4383bf7c976a28948121f4a4081250a7",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41035_wti-mflow-div_card.md",
+      "approved_card_sha256": "b3f8af4f8b6d57ceb959122c99efd85661a8368858a7144aa376bd46d4c7a8cb",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41036",
+      "ea_label": "QM5_41036_wti-mflow-dom",
+      "source_path": "framework/EAs/QM5_41036_wti-mflow-dom/QM5_41036_wti-mflow-dom.mq5",
+      "pre_repair_git_blob_sha256": "baf3cece07b9eed8256753b3918479ad6ba0867094f85fe449019ab9006c803c",
+      "source_sha256": "ed2b653d39736e5a4a892f002414ecc4527f3d3eb4bedf31b7dfbd9c81a08d94",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41036_wti-mflow-dom_card.md",
+      "approved_card_sha256": "0253441fa79b644a5ee54b37c226b92be175e6d057eb32ad57f3120675405769",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41037",
+      "ea_label": "QM5_41037_xng-mflow-div",
+      "source_path": "framework/EAs/QM5_41037_xng-mflow-div/QM5_41037_xng-mflow-div.mq5",
+      "pre_repair_git_blob_sha256": "ec05a5b924c26f9a7c68eda0a0c9cabfb8ef9dd84f287592d262bae7ee176fd7",
+      "source_sha256": "7a7b5a33630cad2f3aa9a37b7ec38a2355c5c661fd1e354f46ff9a9927966ef5",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41037_xng-mflow-div_card.md",
+      "approved_card_sha256": "3f2e2c6313b75b9baeeecd7889d1a40ff2a3b160b60c00b1b9ad2d404bdab7f2",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41056",
+      "ea_label": "QM5_41056_energy-rev18",
+      "source_path": "framework/EAs/QM5_41056_energy-rev18/QM5_41056_energy-rev18.mq5",
+      "pre_repair_git_blob_sha256": "060dd37f4c1771f2cffbb88528df069e00214fc02bb8fb8c69f11849ef5c3e84",
+      "source_sha256": "63b120939d6b1af76da6323fb487d4c9d5ac8e6a6a02a91136af7fbf53bd4cec",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41056_energy-rev18_card.md",
+      "approved_card_sha256": "16170473b64bc63746c8bb4d7f5d6447fa5445eb89c625f4bb1cab482ea4bbe3",
+      "registry_status": "active",
+      "active_magic_rows": 2,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41064",
+      "ea_label": "QM5_41064_wti-mflip-mom",
+      "source_path": "framework/EAs/QM5_41064_wti-mflip-mom/QM5_41064_wti-mflip-mom.mq5",
+      "pre_repair_git_blob_sha256": "ef4862b17333bf5362abc5e03d9e574fc41621b292e90398f211f032ac297dbb",
+      "source_sha256": "883ce4274b0c173715a5a4437f9acafd5553816495c30b3ada7c340fa00a702f",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41064_wti-mflip-mom_card.md",
+      "approved_card_sha256": "a13afc104bbb31088336db99279e08df2f332de3bbf0d3bf29731eb6863f3bd0",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41065",
+      "ea_label": "QM5_41065_wti-wflip-mom",
+      "source_path": "framework/EAs/QM5_41065_wti-wflip-mom/QM5_41065_wti-wflip-mom.mq5",
+      "pre_repair_git_blob_sha256": "af268dd3dfdf42596174d4ae3580e240707a0186b77cc8a8f03710af12be2e64",
+      "source_sha256": "ffc77691ba9c953f72d4a0768dac044cff889cf9c5fb472f56d7cfe89520aa51",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41065_wti-wflip-mom_card.md",
+      "approved_card_sha256": "821de8f947442509c4c44ca6ac5b03b7ed9a1d0c98f4ceff399bd9ee320f94aa",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41067",
+      "ea_label": "QM5_41067_xng-wflip-mom",
+      "source_path": "framework/EAs/QM5_41067_xng-wflip-mom/QM5_41067_xng-wflip-mom.mq5",
+      "pre_repair_git_blob_sha256": "5093cdf3bcb73575a201643ebd8c7b10e3cf6bc2ab79c5df14e9ae77d1b79417",
+      "source_sha256": "81b407199e451646300411424cf34c4c20ce695bdd4137a7d1520d0086327658",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41067_xng-wflip-mom_card.md",
+      "approved_card_sha256": "8e8638989e6f38d14b308a662c10abfd5549eb770c6c02bb58ae2dda1ea7ccff",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41068",
+      "ea_label": "QM5_41068_wti-waccel-mom",
+      "source_path": "framework/EAs/QM5_41068_wti-waccel-mom/QM5_41068_wti-waccel-mom.mq5",
+      "pre_repair_git_blob_sha256": "eea79a135dfe9eb6e8aa02e90965534ebd6fd7a500661153734782149f33aec1",
+      "source_sha256": "9a8fa8199ec23070d098bcdd1b676ce51a10437dbab2bd446971b5f268f233d6",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41068_wti-waccel-mom_card.md",
+      "approved_card_sha256": "d1d9537a60e30ca70d209f9ab014f4851526b0db59b48712e6938d84aa4e95d6",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41069",
+      "ea_label": "QM5_41069_wti-wpull-trend",
+      "source_path": "framework/EAs/QM5_41069_wti-wpull-trend/QM5_41069_wti-wpull-trend.mq5",
+      "pre_repair_git_blob_sha256": "564a88b8514d8da499e5f2fb44371ec0855d73d2d8981a3f3b7eb5111818eade",
+      "source_sha256": "aa447e0708a0f75b38c59ffdaae05e1619d4637fa19562b7b2b54af9faec074c",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41069_wti-wpull-trend_card.md",
+      "approved_card_sha256": "626bec951c2758a36109c073ec418b2edfa0dde5f7b5d75fdb557b0ae0133fac",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41070",
+      "ea_label": "QM5_41070_wti-wdecel-mom",
+      "source_path": "framework/EAs/QM5_41070_wti-wdecel-mom/QM5_41070_wti-wdecel-mom.mq5",
+      "pre_repair_git_blob_sha256": "facf2a5afd7a09479424340247929ba68e108a4681d3d1be69ade47606e02883",
+      "source_sha256": "1f426af38d94150d09f22859ab3ff9a7fcbf84072cddc0b8ff04f81bc1b2cb31",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41070_wti-wdecel-mom_card.md",
+      "approved_card_sha256": "cc74525bc8817861a57ce35d9318aa5cd6bb3d0d81de65e77a541c06cdb70736",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41071",
+      "ea_label": "QM5_41071_wti-wresume-dom",
+      "source_path": "framework/EAs/QM5_41071_wti-wresume-dom/QM5_41071_wti-wresume-dom.mq5",
+      "pre_repair_git_blob_sha256": "61a22ccec2b69f0fb663a1cd6779e7424b07e6f6c8b438d686cf6fb3bd6edb39",
+      "source_sha256": "4120d996dc2a33efff4c43ac8c63f0adb1cf888d55296aa6842d423e60f34d2c",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41071_wti-wresume-dom_card.md",
+      "approved_card_sha256": "079174a5c8344e5ce3946d6d4e1f501be39d162bdc4a9ac8a3645c1745e2469f",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41072",
+      "ea_label": "QM5_41072_wti-wcounter-dom",
+      "source_path": "framework/EAs/QM5_41072_wti-wcounter-dom/QM5_41072_wti-wcounter-dom.mq5",
+      "pre_repair_git_blob_sha256": "eb7a64ff056a56be6823e9bdb10ea0c18df9f0c46f18dc132ff5f864fa363e51",
+      "source_sha256": "39eedb179d9e7de314b32893ceb9096634fdef3ccd6bad294f0b57b8023220e6",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41072_wti-wcounter-dom_card.md",
+      "approved_card_sha256": "d5091fc5c1b4ce2220f0be3326a21d6d7886d1f89cfa2ce376769ba89cb7571b",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41073",
+      "ea_label": "QM5_41073_wti-woutside-settle",
+      "source_path": "framework/EAs/QM5_41073_wti-woutside-settle/QM5_41073_wti-woutside-settle.mq5",
+      "pre_repair_git_blob_sha256": "56f35f4f357118569fc22710bc8cdfe4081fec29a604f01dae33eabfe55bcd24",
+      "source_sha256": "c665f9443fb9782c0a9da8f21f487358dcffd788a26b7fcaf236bc472e9daf82",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41073_wti-woutside-settle_card.md",
+      "approved_card_sha256": "48fcd5a95e6b4bdba7c938961d52888b6427519e5bd03d6e7b7724b839e2be4f",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41074",
+      "ea_label": "QM5_41074_wti-wstreak3-mom",
+      "source_path": "framework/EAs/QM5_41074_wti-wstreak3-mom/QM5_41074_wti-wstreak3-mom.mq5",
+      "pre_repair_git_blob_sha256": "0e33399911c597ffed0d577d1260551330ad06175041a3fdce1ac74fc9f10469",
+      "source_sha256": "2604cc10c4ec743f4233863b408aa1f197d6c33aa01551a36ac364e9500ebcb8",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41074_wti-wstreak3-mom_card.md",
+      "approved_card_sha256": "a09fe2eeda8c4826cff658770e38e855a625a9ee5cd3aff3f59a5f44726ba831",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41080",
+      "ea_label": "QM5_41080_wti-wclose-location-mom",
+      "source_path": "framework/EAs/QM5_41080_wti-wclose-location-mom/QM5_41080_wti-wclose-location-mom.mq5",
+      "pre_repair_git_blob_sha256": "ac1be954772ddb712cbe1d0c5c26a5cd360800a07763d0db7f6d0f6dad5533cd",
+      "source_sha256": "e6c4960dfac860c1ac60819a8a64fefa561009110237d4dfa04a6a4295cbcf03",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41080_wti-wclose-location-mom_card.md",
+      "approved_card_sha256": "28be0f30fd2011ef0ac97b740a4eac78fedfae8908359341edddd9c7ef291fe9",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41081",
+      "ea_label": "QM5_41081_xng-wclose-location-mom",
+      "source_path": "framework/EAs/QM5_41081_xng-wclose-location-mom/QM5_41081_xng-wclose-location-mom.mq5",
+      "pre_repair_git_blob_sha256": "29ebca369972f352d67c3642271a912b79721f38e1e9a99b4bc561a73c1ec1e5",
+      "source_sha256": "57178da1a4b0820ec99405c51a5a494f8450d37f5c222fe57faf285691ce4181",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41081_xng-wclose-location-mom_card.md",
+      "approved_card_sha256": "4cce5238b033e1a45506fc730c88ea5e4f1bb4df6e01dc6b2c103fb18787b956",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41082",
+      "ea_label": "QM5_41082_wti-wrunbreak-dom",
+      "source_path": "framework/EAs/QM5_41082_wti-wrunbreak-dom/QM5_41082_wti-wrunbreak-dom.mq5",
+      "pre_repair_git_blob_sha256": "b0300a10983446c9d9ea7022ffa1d778661685df1f43ca9ce37ed48e8d2f57eb",
+      "source_sha256": "0a52530821782598768a1d69c36fe87daf7e955b99c23932d1981b15e1465862",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41082_wti-wrunbreak-dom_card.md",
+      "approved_card_sha256": "c07d248b6972f0a8f6008ebf930b66dd48ecfac538a5fdcd5f011b411567db6a",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41084",
+      "ea_label": "QM5_41084_wti-wdaybreadth-mom",
+      "source_path": "framework/EAs/QM5_41084_wti-wdaybreadth-mom/QM5_41084_wti-wdaybreadth-mom.mq5",
+      "pre_repair_git_blob_sha256": "48ef17f2346ca841dc7248d4a9091253add8fd226c4937804eed76bdb47fab3f",
+      "source_sha256": "191b2eba940eef1dfc3975c875a8b12397211d26e795a929360e2b993bb54134",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41084_wti-wdaybreadth-mom_card.md",
+      "approved_card_sha256": "e90c783ebf33420c6c999883da9cd2511882557ea4811b51e7b734112dc0a859",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41087",
+      "ea_label": "QM5_41087_wti-wr4-close-mom",
+      "source_path": "framework/EAs/QM5_41087_wti-wr4-close-mom/QM5_41087_wti-wr4-close-mom.mq5",
+      "pre_repair_git_blob_sha256": "90c5989f424fab3e644f8c37b6494d048f00f3c38e94543c20f1aaf8ba8ecd0b",
+      "source_sha256": "acbd5ac0af183b462095bd26ddf2570e760df5ec23aec283bcadd3d7ff9fa32d",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41087_wti-wr4-close-mom_card.md",
+      "approved_card_sha256": "198f037b6aac0a67df1a18ca84a39243f5de52c95fd8715f157d0a6293bae0ab",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41089",
+      "ea_label": "QM5_41089_wti-wrange-migrate-mom",
+      "source_path": "framework/EAs/QM5_41089_wti-wrange-migrate-mom/QM5_41089_wti-wrange-migrate-mom.mq5",
+      "pre_repair_git_blob_sha256": "c2a05ce1981ce566fce9dcffe52c280cb0b7813bf82736b0a152c0692b0f2e0d",
+      "source_sha256": "c0b7a78d2d655248766983f62b90c8f989e413a87bc1a2aad69bd458b81c24cd",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41089_wti-wrange-migrate-mom_card.md",
+      "approved_card_sha256": "007e47ae63102ceb0e4cbcd298943607356311f42d18f4ddd3b3561de025b1bd",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41090",
+      "ea_label": "QM5_41090_wti-wmid-overlap-mom",
+      "source_path": "framework/EAs/QM5_41090_wti-wmid-overlap-mom/QM5_41090_wti-wmid-overlap-mom.mq5",
+      "pre_repair_git_blob_sha256": "3ce14a194acaf47c536ce3a81a7d41eac398da0bfb561d294199c211ab2d8452",
+      "source_sha256": "34ee4b0077a7638665b068a8ed610ef52586d5482bb3bf8c2611c1a730ebf254",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41090_wti-wmid-overlap-mom_card.md",
+      "approved_card_sha256": "302a9e590f9c44c609f834ad05a8587f86765c8804d146a3de7a56751c9fb0f1",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41091",
+      "ea_label": "QM5_41091_wti-winside-body-mom",
+      "source_path": "framework/EAs/QM5_41091_wti-winside-body-mom/QM5_41091_wti-winside-body-mom.mq5",
+      "pre_repair_git_blob_sha256": "238b3edba58601e5660077da47fae940fb805cc8bf431eb9f44f655f1c32a965",
+      "source_sha256": "6379758f7e34f83adc6a7e56a03f0b28c4e8c1e2a6b23f718545eb67b8181acb",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41091_wti-winside-body-mom_card.md",
+      "approved_card_sha256": "3f5746d27868829214a2239d59edd6ffa3e4bf6c477763b7f92f9b0a7369ae4c",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41092",
+      "ea_label": "QM5_41092_wti-wbody-dominance-mom",
+      "source_path": "framework/EAs/QM5_41092_wti-wbody-dominance-mom/QM5_41092_wti-wbody-dominance-mom.mq5",
+      "pre_repair_git_blob_sha256": "8ab57c0fede965dcdf4435dd3e153725f1a8525b340bcf31ba78859dee55f14f",
+      "source_sha256": "fcf4f98977d2d83a228ac94434a48caae6d3eebeae3aa0ca41a2b3edff474f57",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41092_wti-wbody-dominance-mom_card.md",
+      "approved_card_sha256": "927b296dd8aa605081b34a268c715433f3e69e0088212498b7308da8ffe49606",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41093",
+      "ea_label": "QM5_41093_wti-wclose-breakout-mom",
+      "source_path": "framework/EAs/QM5_41093_wti-wclose-breakout-mom/QM5_41093_wti-wclose-breakout-mom.mq5",
+      "pre_repair_git_blob_sha256": "a08d389fc6c6d59acdf2bd8334ef122ff74227a3cb3eae7bb21f39366cfbf63d",
+      "source_sha256": "61fabef374fa60cf6e25bd2c87140dac9b2349412f98e98010876d1c5d20dd99",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41093_wti-wclose-breakout-mom_card.md",
+      "approved_card_sha256": "7dceeebea7dfbb267acfce05facbedf93cf352235304a41812162dfbcfcdc396",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41094",
+      "ea_label": "QM5_41094_xng-wbody-dominance-mom",
+      "source_path": "framework/EAs/QM5_41094_xng-wbody-dominance-mom/QM5_41094_xng-wbody-dominance-mom.mq5",
+      "pre_repair_git_blob_sha256": "a2af78367f02ebc234f12a2599a41be0a72efbd7ef1d4aa938dba28037906dfc",
+      "source_sha256": "95d78a1a66aa4a6aaf01d6034826b93772a4b4ab5e12e3b82d76a96fb736ba3e",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41094_xng-wbody-dominance-mom_card.md",
+      "approved_card_sha256": "5d74fe7eddf14683efa68d3830a0a99f4eefc045805e616744289ac310f88594",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41249",
+      "ea_label": "QM5_41249_wti-mwelch-shift-tr",
+      "source_path": "framework/EAs/QM5_41249_wti-mwelch-shift-tr/QM5_41249_wti-mwelch-shift-tr.mq5",
+      "pre_repair_git_blob_sha256": "906a3db918ed7e1e04f8381ef7b1b943557c7458412fa9b803cfe54091d21f9e",
+      "source_sha256": "00e8684dc0adef42be1058e6bef66e19b1b9cc58e3fca11663b39ed35e5d48a3",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41249_wti-mwelch-shift-tr_card.md",
+      "approved_card_sha256": "080cb5b6a4ba466895d336625a88fa39269db213c00861cc719f73d45e5e79db",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "98599793-6a0c-4cd8-b7fd-49e66ed619d0",
+          "source_sha256": "906a3db918ed7e1e04f8381ef7b1b943557c7458412fa9b803cfe54091d21f9e",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-08-31T15:15:56+00:00",
+          "updated_at": "2026-08-31T15:17:59+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41250",
+      "ea_label": "QM5_41250_wti-mperm-scale-tr",
+      "source_path": "framework/EAs/QM5_41250_wti-mperm-scale-tr/QM5_41250_wti-mperm-scale-tr.mq5",
+      "pre_repair_git_blob_sha256": "709d92ce816b88cfc57c42f013bc9dc02b8f2ff592eadb4cbe76dfa75cf04313",
+      "source_sha256": "c5fc9af06ab32b847e18369b6a42a5069543f7b7dccfb7ed29ee3f194cbe16f0",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41250_wti-mperm-scale-tr_card.md",
+      "approved_card_sha256": "00370b6320ecad2fa4f86ae356a04a23c1847f27892aeb1e5399ecbc1c4e2f03",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "ee53e419-4162-4149-bf2a-d571d258652f",
+          "source_sha256": "709d92ce816b88cfc57c42f013bc9dc02b8f2ff592eadb4cbe76dfa75cf04313",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-08-31T16:19:18+00:00",
+          "updated_at": "2026-08-31T16:21:52+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41251",
+      "ea_label": "QM5_41251_wti-mbrunner-shift-tr",
+      "source_path": "framework/EAs/QM5_41251_wti-mbrunner-shift-tr/QM5_41251_wti-mbrunner-shift-tr.mq5",
+      "pre_repair_git_blob_sha256": "8d6f05a4eec46c178a4c48dd1c85d48fa3293088601f542dc62c3d2e25b6f888",
+      "source_sha256": "4805bf67318ecdf367f7122d52bf4093fb6228c24eaa6d18476365eaf54ec1a7",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41251_wti-mbrunner-shift-tr_card.md",
+      "approved_card_sha256": "4ef795e17a7478d46ff34fbd336adc380a23bc5d9a626657c081842e8bf622f3",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "0c0de557-39a6-4460-9b8d-a185af0a21a7",
+          "source_sha256": "0a35575ec1e02a1c6542a5cddc32262bbbeac00d8d9ab73bb5ff8ca7eee79d00",
+          "status": "failed",
+          "verdict": "COMPILE_FAIL",
+          "created_at": "2026-08-31T17:33:06+00:00",
+          "updated_at": "2026-08-31T17:35:17+00:00"
+        },
+        {
+          "work_item_id": "e969a128-8791-485b-91c6-f2b1f900e2b2",
+          "source_sha256": "8d6f05a4eec46c178a4c48dd1c85d48fa3293088601f542dc62c3d2e25b6f888",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-08-31T17:43:06+00:00",
+          "updated_at": "2026-08-31T17:44:14+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41253",
+      "ea_label": "QM5_41253_gbpusd-weekend-tail-fade",
+      "source_path": "framework/EAs/QM5_41253_gbpusd-weekend-tail-fade/QM5_41253_gbpusd-weekend-tail-fade.mq5",
+      "pre_repair_git_blob_sha256": "b25cef9ce1a45c9f130f059cf9f657f6f1193ab97215809ce6f4924a22034f93",
+      "source_sha256": "075e406bd2fa730927adcc70af5acdd71dca0115a0544fb204cef27fbea7eb1f",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41253_gbpusd-weekend-tail-fade_card.md",
+      "approved_card_sha256": "04e3427d0f826ae1c5d6afc5b4bd80e19e42f21a386a69b0642fa34ab69c8de6",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "96bc9e68-3359-40d3-b52c-fd1ae1663ac2",
+          "source_sha256": "8be932f2b351e506247acbd2610701889d2a778b04e773845fd40836725d81a8",
+          "status": "failed",
+          "verdict": "COMPILE_FAIL",
+          "created_at": "2026-08-31T20:55:28+00:00",
+          "updated_at": "2026-08-31T21:00:10+00:00"
+        },
+        {
+          "work_item_id": "e0a98323-dfb0-43c4-aece-2d94f669901f",
+          "source_sha256": "b25cef9ce1a45c9f130f059cf9f657f6f1193ab97215809ce6f4924a22034f93",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-09-01T00:05:14+00:00",
+          "updated_at": "2026-09-01T00:06:59+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41255",
+      "ea_label": "QM5_41255_wti-mcvm-shift-tr",
+      "source_path": "framework/EAs/QM5_41255_wti-mcvm-shift-tr/QM5_41255_wti-mcvm-shift-tr.mq5",
+      "pre_repair_git_blob_sha256": "ebf393c3300139728a132aed238661ebc5dc047e9e87325478b4ad06305f0c3a",
+      "source_sha256": "58b7c85686a10ffdb7e115837e050ab47c77d6dd00e274e9272735c1c38f53b0",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41255_wti-mcvm-shift-tr_card.md",
+      "approved_card_sha256": "7605307d8a2e55601e6b6993fe5c2e02ce9ab3ca3092e9a2604d9f3e65d51f76",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "73f89090-0ace-45e1-b050-69735eb77eb0",
+          "source_sha256": "ebf393c3300139728a132aed238661ebc5dc047e9e87325478b4ad06305f0c3a",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-08-31T20:30:28+00:00",
+          "updated_at": "2026-08-31T20:39:39+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41257",
+      "ea_label": "QM5_41257_wti-mmedscore524-tr",
+      "source_path": "framework/EAs/QM5_41257_wti-mmedscore524-tr/QM5_41257_wti-mmedscore524-tr.mq5",
+      "pre_repair_git_blob_sha256": "8b7e5d8e58f795b6807ed0c0e050326eefe0cb9127d8c47d4c255079330caaaf",
+      "source_sha256": "20ec4d8773860ca04c06e78ee33eaee707b763ae36c984584df57ce75e4e8155",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41257_wti-mmedscore524-tr_card.md",
+      "approved_card_sha256": "62db9efdbf185d22ab7b6f18c1bef7ade23a3d31ad2c8a3521d13b8fe8714c5f",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "84b13521-e942-4415-86cc-794763748b44",
+          "source_sha256": "8b7e5d8e58f795b6807ed0c0e050326eefe0cb9127d8c47d4c255079330caaaf",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-08-31T21:47:25+00:00",
+          "updated_at": "2026-08-31T21:48:32+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41258",
+      "ea_label": "QM5_41258_wti-menergy-shift-tr",
+      "source_path": "framework/EAs/QM5_41258_wti-menergy-shift-tr/QM5_41258_wti-menergy-shift-tr.mq5",
+      "pre_repair_git_blob_sha256": "966ea99dfec6cc407eb3ccd825a9428af4321fb8dea399d97b172fc528854213",
+      "source_sha256": "508f3af018a02d39e42a4f655f8a912f0685ba8346c05a3553ad7a6642b53151",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41258_wti-menergy-shift-tr_card.md",
+      "approved_card_sha256": "ec5073a342d75d231a93cf9f8a16bd632f14e26f8c9a7f26e109c77819f962b7",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "99cc3cce-1e99-4d47-8a60-a90618cdae7f",
+          "source_sha256": "966ea99dfec6cc407eb3ccd825a9428af4321fb8dea399d97b172fc528854213",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-08-31T22:42:48+00:00",
+          "updated_at": "2026-08-31T22:44:10+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41261",
+      "ea_label": "QM5_41261_wti-mab-scale-tr",
+      "source_path": "framework/EAs/QM5_41261_wti-mab-scale-tr/QM5_41261_wti-mab-scale-tr.mq5",
+      "pre_repair_git_blob_sha256": "0d8b2d4985f2a48c1350d7d3c57cb04583809376753e36350c31f62c3b8ebad0",
+      "source_sha256": "5e12ff8db007bf15c73f67a428524ccf5a38260a2e11f7be8b181d00b0fd5886",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41261_wti-mab-scale-tr_card.md",
+      "approved_card_sha256": "304b1a9defa5c0bd8491b554b5e22dd80193e8b18e8e2858373a37ce8e37378e",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "3edc94c3-969a-4f25-ba31-7b8a8735b95d",
+          "source_sha256": "0d8b2d4985f2a48c1350d7d3c57cb04583809376753e36350c31f62c3b8ebad0",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-09-01T02:44:38+00:00",
+          "updated_at": "2026-09-01T02:47:05+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41262",
+      "ea_label": "QM5_41262_wti-mdaily-meanloc-tr",
+      "source_path": "framework/EAs/QM5_41262_wti-mdaily-meanloc-tr/QM5_41262_wti-mdaily-meanloc-tr.mq5",
+      "pre_repair_git_blob_sha256": "9e8f90ddf6a1cae2c534ec2ad9fbff345eb5f3820c74718e483db3e5d454a811",
+      "source_sha256": "2b7f0505291a00a91142e38e15282e904131fbb49bed291237f10e21fc5a826b",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41262_wti-mdaily-meanloc-tr_card.md",
+      "approved_card_sha256": "3b88fee2a7d0d5bcb9b429e573431f086c1c048396b4246cad8df0848541d87f",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "29926b20-fce8-4e5b-9f17-164305193fdb",
+          "source_sha256": "d99c2e37ed18985aa38e4dabb415a419038b26915cd3385bef4e12a1cf4cfefb",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-09-01T04:35:50+00:00",
+          "updated_at": "2026-09-01T04:36:56+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41264",
+      "ea_label": "QM5_41264_wti-myuen20-shift-tr",
+      "source_path": "framework/EAs/QM5_41264_wti-myuen20-shift-tr/QM5_41264_wti-myuen20-shift-tr.mq5",
+      "pre_repair_git_blob_sha256": "8977bed13f550482cf7be8c14b05605623a3c796ab16399908f9c85dc2b31e07",
+      "source_sha256": "55ab88b0609413452904dc27871cbcc32653acf350145dcd2f80a90922c2d6a1",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41264_wti-myuen20-shift-tr_card.md",
+      "approved_card_sha256": "231ef22c2b96034e13aa00e4f425b890b874a409c597f96b30485245e51013fb",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "cb8bbc1b-770a-46fb-a9d7-a1e28c7d2bc7",
+          "source_sha256": "3f211d8b4fd63c833c61fdbbca4417d14272d5c27d5df99e13b93fcfd1fb5fd2",
+          "status": "failed",
+          "verdict": "COMPILE_FAIL",
+          "created_at": "2026-09-01T06:57:14+00:00",
+          "updated_at": "2026-09-01T07:08:07+00:00"
+        },
+        {
+          "work_item_id": "7d9e3da3-78b4-4a59-b5bc-a52a7fc2bdb7",
+          "source_sha256": "e6df55738c6e4639738e46f2c4a21a9c9014133f81f00ea958b1fd519553e35b",
+          "status": "failed",
+          "verdict": "COMPILE_FAIL",
+          "created_at": "2026-09-01T07:15:52+00:00",
+          "updated_at": "2026-09-01T07:18:44+00:00"
+        },
+        {
+          "work_item_id": "b2cc9ae7-b95f-4823-bb46-1df2ab35b854",
+          "source_sha256": "8977bed13f550482cf7be8c14b05605623a3c796ab16399908f9c85dc2b31e07",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-09-01T07:24:41+00:00",
+          "updated_at": "2026-09-01T07:26:01+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41266",
+      "ea_label": "QM5_41266_wti-mfk-scale-tr",
+      "source_path": "framework/EAs/QM5_41266_wti-mfk-scale-tr/QM5_41266_wti-mfk-scale-tr.mq5",
+      "pre_repair_git_blob_sha256": "c38d5c79ec359bdb478fb5d2e779ebb293c3c25e33090893aec1d64f8016e881",
+      "source_sha256": "e8cd82011eef448628d50e564e81bd3879801e2319dfcdb35cdb4cd589bc39b5",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41266_wti-mfk-scale-tr_card.md",
+      "approved_card_sha256": "3115a7fd867892c6b4881a80317a88b76fd229aa46876f1a5ee2b38428c9e7f9",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "c50936b8-60ff-44cb-abef-1cea732b8099",
+          "source_sha256": "c38d5c79ec359bdb478fb5d2e779ebb293c3c25e33090893aec1d64f8016e881",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-09-01T10:27:28+00:00",
+          "updated_at": "2026-09-01T10:29:32+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41267",
+      "ea_label": "QM5_41267_wti-mmood-scale-tr",
+      "source_path": "framework/EAs/QM5_41267_wti-mmood-scale-tr/QM5_41267_wti-mmood-scale-tr.mq5",
+      "pre_repair_git_blob_sha256": "48718109bd9035a1941f16e9961d84a67d8dc85ea0324d23b0df963fcefaec77",
+      "source_sha256": "c41a51c1ae9b8812dd321fc30d9e74e482c06be770068fbb4fd1a99d4ef9b05d",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41267_wti-mmood-scale-tr_card.md",
+      "approved_card_sha256": "96b235aed405bb300d815300706f0e816ebffc34623a3b1fa8129997750749bd",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "a5f4b9a8-5478-4d01-97f0-c61e8d5914f1",
+          "source_sha256": "48718109bd9035a1941f16e9961d84a67d8dc85ea0324d23b0df963fcefaec77",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-09-01T11:40:20+00:00",
+          "updated_at": "2026-09-01T11:42:33+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41270",
+      "ea_label": "QM5_41270_wti-mlepage-shift-tr",
+      "source_path": "framework/EAs/QM5_41270_wti-mlepage-shift-tr/QM5_41270_wti-mlepage-shift-tr.mq5",
+      "pre_repair_git_blob_sha256": "0682a3b650896d2125c968d699d8a25689758b5a80b254e16bd6b980c909588c",
+      "source_sha256": "214e320edfed36a9d8f52693b70db5ea47dbc73b8a1e7753a0b2e3ae0cdc8be0",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41270_wti-mlepage-shift-tr_card.md",
+      "approved_card_sha256": "cb3c9d80eb0f0866dc094668ce3de7352d9dc45bab1eb36214a4d8f0ef9353b5",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "7d12d770-154b-4637-9a92-91af17a4d6b4",
+          "source_sha256": "0682a3b650896d2125c968d699d8a25689758b5a80b254e16bd6b980c909588c",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-09-01T14:47:21+00:00",
+          "updated_at": "2026-09-01T14:51:55+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41271",
+      "ea_label": "QM5_41271_wti-msiegel-tukey-scale-tr",
+      "source_path": "framework/EAs/QM5_41271_wti-msiegel-tukey-scale-tr/QM5_41271_wti-msiegel-tukey-scale-tr.mq5",
+      "pre_repair_git_blob_sha256": "ed9eb6f964de56b0b696c71e6cc40594bfe9f42fcbf578d14a217c46d23d126c",
+      "source_sha256": "10cdd21f0ee8c78a2b03395fda92148eb20e0ba7afd39554afa9ab7de8365570",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41271_wti-msiegel-tukey-scale-tr_card.md",
+      "approved_card_sha256": "a92e1de985a6240801963cb2f9b6bf5950f4b02397a98184d58f88241b9d98d1",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "ed7dd8f9-cecf-4987-aebd-fae31abfe902",
+          "source_sha256": "ed9eb6f964de56b0b696c71e6cc40594bfe9f42fcbf578d14a217c46d23d126c",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-09-01T15:56:46+00:00",
+          "updated_at": "2026-09-01T15:57:52+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41274",
+      "ea_label": "QM5_41274_wti-m3block-rank-tr",
+      "source_path": "framework/EAs/QM5_41274_wti-m3block-rank-tr/QM5_41274_wti-m3block-rank-tr.mq5",
+      "pre_repair_git_blob_sha256": "01357e78417024d0719350511a8549c42d42a0fde315571158777e5291f1efd4",
+      "source_sha256": "3277684556c46c0069408e3d2f5e4cfd8c9fc7d9e09b350cabc5859e2e4a3e64",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41274_wti-m3block-rank-tr_card.md",
+      "approved_card_sha256": "8248e9c66897920b8468021883a4f43d8a28cc067c9028f8ac17873114ee667a",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "8fa48f19-98dc-47f5-adba-9c712998b7ce",
+          "source_sha256": "1d7541951d1c3ad7223f3d1b42e5fec53d77fa5bf21d20e721285dad4cfb031f",
+          "status": "failed",
+          "verdict": "COMPILE_FAIL",
+          "created_at": "2026-09-01T18:15:43+00:00",
+          "updated_at": "2026-09-01T18:20:11+00:00"
+        },
+        {
+          "work_item_id": "d0139a7c-cf33-4145-b9fc-1ca436365606",
+          "source_sha256": "01357e78417024d0719350511a8549c42d42a0fde315571158777e5291f1efd4",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-09-01T18:25:40+00:00",
+          "updated_at": "2026-09-01T18:28:19+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41275",
+      "ea_label": "QM5_41275_wti-mqndisp-tr",
+      "source_path": "framework/EAs/QM5_41275_wti-mqndisp-tr/QM5_41275_wti-mqndisp-tr.mq5",
+      "pre_repair_git_blob_sha256": "09583b34d73b50496da1b1c4c8effc07859c86ca3a19f47107def83da971a817",
+      "source_sha256": "41da63a423d8850cccf5ab586b2aa2b1a068c8a833b5bc560bebb232cb0dfdc9",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41275_wti-mqndisp-tr_card.md",
+      "approved_card_sha256": "ca84c9f08467fc6ce65ba186a7d36e428e7dcccb7515704046802f602ecdbc71",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "e6972329-b550-4a3b-ac69-0b6d7ced6bbc",
+          "source_sha256": "09583b34d73b50496da1b1c4c8effc07859c86ca3a19f47107def83da971a817",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-09-01T19:42:03+00:00",
+          "updated_at": "2026-09-01T19:46:28+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41277",
+      "ea_label": "QM5_41277_wti-msndisp-tr",
+      "source_path": "framework/EAs/QM5_41277_wti-msndisp-tr/QM5_41277_wti-msndisp-tr.mq5",
+      "pre_repair_git_blob_sha256": "ec0e087f1a4bf9621762790e0e0422fb0e9af5325514a7ed8daffab7d339c946",
+      "source_sha256": "4927db354448d384738f1a101dba04a117c8c985c20bcb00bc9d1801804bac0e",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41277_wti-msndisp-tr_card.md",
+      "approved_card_sha256": "835b4754dd5f433b4ba837d2f362666e0fc7d70ca72b2b97b481bf8504c951e9",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "2a681436-4a48-4fb5-a494-cdd87490ce59",
+          "source_sha256": "ec0e087f1a4bf9621762790e0e0422fb0e9af5325514a7ed8daffab7d339c946",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-09-01T22:04:36+00:00",
+          "updated_at": "2026-09-01T22:17:46+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41284",
+      "ea_label": "QM5_41284_wti-mfp-shift-tr",
+      "source_path": "framework/EAs/QM5_41284_wti-mfp-shift-tr/QM5_41284_wti-mfp-shift-tr.mq5",
+      "pre_repair_git_blob_sha256": "a68d06ca3a91682e11b4106153a049c9b9457ad24eecd27505731ddea118b844",
+      "source_sha256": "8dbe87135384ad46cacb8e0121eff17b0ae921f215d42efc1b3c1a2fc85aa368",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41284_wti-mfp-shift-tr_card.md",
+      "approved_card_sha256": "dc92edc333c010da5401f6eedca30f93662ce6f95bb121f437b027f754333443",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "6b5f3ed1-994d-4a72-8ad8-1d8b66ae2bc6",
+          "source_sha256": "a68d06ca3a91682e11b4106153a049c9b9457ad24eecd27505731ddea118b844",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-09-02T04:33:11+00:00",
+          "updated_at": "2026-09-02T04:41:56+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41350",
+      "ea_label": "QM5_41350_wti-adf-ljungbox-agree-tr",
+      "source_path": "framework/EAs/QM5_41350_wti-adf-ljungbox-agree-tr/QM5_41350_wti-adf-ljungbox-agree-tr.mq5",
+      "pre_repair_git_blob_sha256": "dd76b2426211d10b58dcccfbb26d6c7ae5d94bdaf50c5748ea0d10b78623c345",
+      "source_sha256": "e572cc5d6fae666d11a6555ae4b79b4541a8a5d588d3382946562387fb5258aa",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41350_wti-adf-ljungbox-agree-tr_card.md",
+      "approved_card_sha256": "c7e0ca4243166a1d7cfcc72bb7a6622d44e901285e2211ca5822433a7c78f4f0",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "fd5f531d-7d06-4bfc-b91f-e763bb68cf5f",
+          "source_sha256": "dd76b2426211d10b58dcccfbb26d6c7ae5d94bdaf50c5748ea0d10b78623c345",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-09-05T09:44:00+00:00",
+          "updated_at": "2026-09-05T09:48:30+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41351",
+      "ea_label": "QM5_41351_wti-adf-bds-agree-tr",
+      "source_path": "framework/EAs/QM5_41351_wti-adf-bds-agree-tr/QM5_41351_wti-adf-bds-agree-tr.mq5",
+      "pre_repair_git_blob_sha256": "bad90edf244a983e40f18b253ace22e233c641f00be73bed076d5f4f64df9078",
+      "source_sha256": "8db76f4c50d32e0f003ba8d681af6b6155792ad4157e619fd2ef4a4279eed594",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41351_wti-adf-bds-agree-tr_card.md",
+      "approved_card_sha256": "4c94899b2ab7b158fbeb9dfd8a234a20013f2a098f1c4976b7bca3115a41d694",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "8ec4faf9-6728-44a2-bc3f-809e6ee88e34",
+          "source_sha256": "b5cd681ea330845af1613984f2933652194cb2a6a0e4522b2a4636721affaf9e",
+          "status": "failed",
+          "verdict": "COMPILE_FAIL",
+          "created_at": "2026-09-05T13:24:02+00:00",
+          "updated_at": "2026-09-05T13:28:51+00:00"
+        },
+        {
+          "work_item_id": "427f9ace-5677-4fe5-8241-73e8261f990e",
+          "source_sha256": "0456910232ece6387f19b18fe6dd8a5263aff7d159f67ebb772d43cdfd46c0ca",
+          "status": "failed",
+          "verdict": "COMPILE_FAIL",
+          "created_at": "2026-09-05T13:33:59+00:00",
+          "updated_at": "2026-09-05T13:37:12+00:00"
+        },
+        {
+          "work_item_id": "a19205af-426c-4f9f-adf6-6fa36d6fdab6",
+          "source_sha256": "bad90edf244a983e40f18b253ace22e233c641f00be73bed076d5f4f64df9078",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-09-05T13:40:30+00:00",
+          "updated_at": "2026-09-05T13:41:38+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41352",
+      "ea_label": "QM5_41352_wti-adf-vr-agree-tr",
+      "source_path": "framework/EAs/QM5_41352_wti-adf-vr-agree-tr/QM5_41352_wti-adf-vr-agree-tr.mq5",
+      "pre_repair_git_blob_sha256": "85042318f9b0efe123bf63288c59f08dc473d8a2e7b6fe1c52aaa1ea96a0884b",
+      "source_sha256": "0a5cdfd0f1a207c569d5032e5afb31848f7df519d1d176058a285b4b0f92838f",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41352_wti-adf-vr-agree-tr_card.md",
+      "approved_card_sha256": "ef1733324f30fa63db91bc6f2cf8eeed52a699d16064ccdb08ef79c1713319cf",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "494b3cf3-1f24-4e33-bccf-673c7b3b5f64",
+          "source_sha256": "8f30b07b7f29445e6264d14be4b54e8aad516cbc2cf68c1e741d300b7c68b99a",
+          "status": "pending",
+          "verdict": null,
+          "created_at": "2026-09-05T14:18:40+00:00",
+          "updated_at": "2026-09-05T14:18:40+00:00"
+        },
+        {
+          "work_item_id": "d3b585c0-f23b-4b02-9f72-413e91b74964",
+          "source_sha256": "85042318f9b0efe123bf63288c59f08dc473d8a2e7b6fe1c52aaa1ea96a0884b",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-09-05T14:21:26+00:00",
+          "updated_at": "2026-09-05T14:23:11+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41354",
+      "ea_label": "QM5_41354_wti-adf-mkendall-agree-tr",
+      "source_path": "framework/EAs/QM5_41354_wti-adf-mkendall-agree-tr/QM5_41354_wti-adf-mkendall-agree-tr.mq5",
+      "pre_repair_git_blob_sha256": "c95bee5a366f647242786ce7f949728f2a3e9b14e67fbd9ca8c39e736dce0590",
+      "source_sha256": "7e6ac22223493c38a3ca6b86575cb448711e59b0e5de67129f0f629ac8dd8db2",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41354_wti-adf-mkendall-agree-tr_card.md",
+      "approved_card_sha256": "8da9e75a9f5419161768af2bc691f84af0a8bbe3bdaa34afca110f6e3fe5720d",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "3e81b611-54da-4c98-b2a0-b3eab917e591",
+          "source_sha256": "c95bee5a366f647242786ce7f949728f2a3e9b14e67fbd9ca8c39e736dce0590",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-09-05T16:41:23+00:00",
+          "updated_at": "2026-09-05T16:48:27+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    }
+  ]
+}

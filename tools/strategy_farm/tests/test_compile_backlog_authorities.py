@@ -172,6 +172,9 @@ FRAMEWORK_INPUT_PIN_AUTHORITIES = tuple(
 FRAMEWORK_INPUT_PIN_WAVE1_AUTHORITIES = tuple(
     sorted(cwi.FRAMEWORK_INPUT_PIN_WAVE1_SOURCE_REPAIR_REGISTRATIONS)
 )
+FRAMEWORK_INPUT_PIN_WAVE2_AUTHORITIES = tuple(
+    sorted(cwi.FRAMEWORK_INPUT_PIN_WAVE2_SOURCE_REPAIR_REGISTRATIONS)
+)
 
 
 @pytest.mark.parametrize("authority", FRAMEWORK_INPUT_PIN_AUTHORITIES)
@@ -212,6 +215,35 @@ def test_framework_input_pin_wave1_registration_is_exact_and_hash_bound():
     )
     for authority in FRAMEWORK_INPUT_PIN_WAVE1_AUTHORITIES:
         binding = cwi.FRAMEWORK_INPUT_PIN_WAVE1_SOURCE_REPAIR_REGISTRATIONS[authority]
+        source = repo_root / "framework" / "EAs" / binding["ea_label"] / (
+            binding["ea_label"] + ".mq5"
+        )
+        assert source.read_bytes().count(b"\r") == 0
+        assert hashlib.sha256(source.read_bytes()).hexdigest() == binding["source_sha256"]
+
+
+def test_framework_input_pin_wave2_registration_is_exact_and_hash_bound():
+    assert len(FRAMEWORK_INPUT_PIN_WAVE2_AUTHORITIES) == 119
+    assert all(authority.startswith(
+        "router_ops_issue:ce03756f-7fad-4bd4-aa57-561551851604:QM5_"
+    ) for authority in FRAMEWORK_INPUT_PIN_WAVE2_AUTHORITIES)
+    assert not ({binding["ea_id"] for binding in
+                 cwi.FRAMEWORK_INPUT_PIN_WAVE1_SOURCE_REPAIR_REGISTRATIONS.values()} &
+                {binding["ea_id"] for binding in
+                 cwi.FRAMEWORK_INPUT_PIN_WAVE2_SOURCE_REPAIR_REGISTRATIONS.values()})
+    repo_root = Path(__file__).resolve().parents[3]
+    evidence = repo_root / cwi.FRAMEWORK_INPUT_PIN_WAVE2_EVIDENCE
+    assert hashlib.sha256(evidence.read_bytes()).hexdigest() == (
+        cwi.FRAMEWORK_INPUT_PIN_WAVE2_EVIDENCE_SHA256
+    )
+    document = json.loads(evidence.read_text(encoding="utf-8"))
+    assert document["cohort"] == "APPEND_ONLY_IDENTITY_RESTART"
+    assert document["validation"]["excluded_count"] == 11
+    assert document["compile_enqueue_applied"] is False
+    assert document["q_phase_enqueue_applied"] is False
+    assert document["worker_reload_applied"] is False
+    for authority in FRAMEWORK_INPUT_PIN_WAVE2_AUTHORITIES:
+        binding = cwi.FRAMEWORK_INPUT_PIN_WAVE2_SOURCE_REPAIR_REGISTRATIONS[authority]
         source = repo_root / "framework" / "EAs" / binding["ea_label"] / (
             binding["ea_label"] + ".mq5"
         )

@@ -2183,6 +2183,90 @@ BACKLOG_SOURCE_REPAIR_REGISTRATIONS.update(
 )
 
 
+# OWNER task ce03756f (2026-09-06), Wave 2: the immutable evidence file
+# contains the exact predicate-clean APPEND_ONLY_IDENTITY_RESTART registrations.
+# Its SHA and cohort cardinality are pinned before any row is admitted.
+FRAMEWORK_INPUT_PIN_WAVE2_EVIDENCE = (
+    "docs/ops/evidence/2026-09-06_framework_input_pin_wave2_authority.json"
+)
+FRAMEWORK_INPUT_PIN_WAVE2_EVIDENCE_SHA256 = (
+    "632245c688372465ddd29d374f828df210663d4d02fed2ca72822b72b53b0fca"
+)
+FRAMEWORK_INPUT_PIN_WAVE2_TASK_ID = "ce03756f-7fad-4bd4-aa57-561551851604"
+
+
+def _load_framework_input_pin_wave2_registrations() -> dict[str, dict[str, Any]]:
+    evidence = Path(__file__).resolve().parents[2] / FRAMEWORK_INPUT_PIN_WAVE2_EVIDENCE
+    try:
+        raw = evidence.read_bytes()
+        if hashlib.sha256(raw).hexdigest() != FRAMEWORK_INPUT_PIN_WAVE2_EVIDENCE_SHA256:
+            return {}
+        document = json.loads(raw)
+    except (OSError, json.JSONDecodeError):
+        return {}
+    validation = document.get("validation") or {}
+    if (document.get("schema") != "qm.compile-ea-source-repair-authority-evidence/v1"
+            or document.get("task_id") != FRAMEWORK_INPUT_PIN_WAVE2_TASK_ID
+            or document.get("cohort") != "APPEND_ONLY_IDENTITY_RESTART"
+            or document.get("mode") != "review_only_no_enqueue"
+            or document.get("compile_enqueue_applied") is not False
+            or document.get("q_phase_enqueue_applied") is not False
+            or document.get("worker_reload_applied") is not False
+            or validation.get("census_wave2_rows") != 130
+            or validation.get("repaired_count") != 119
+            or validation.get("excluded_count") != 11
+            or validation.get("predicate_hits_after_repair") != 0):
+        return {}
+    registrations: dict[str, dict[str, Any]] = {}
+    for row in document.get("registrations", []):
+        ea_id = str(row.get("ea_id") or "")
+        ea_label = str(row.get("ea_label") or "")
+        source_sha = str(row.get("source_sha256") or "").lower()
+        if (not ea_id.isdigit() or not re.fullmatch(r"QM5_\d+_[a-z0-9-]+", ea_label)
+                or not re.fullmatch(r"[0-9a-f]{64}", source_sha)
+                or ea_label.split("_", 2)[1] != ea_id
+                or row.get("registry_status") != "active"
+                or int(row.get("active_magic_rows") or 0) < 1
+                or row.get("superseded_predecessors") != []):
+            return {}
+        predecessors: dict[str, dict[str, Any]] = {}
+        for predecessor in row.get("predecessors", []):
+            work_item_id = str(predecessor.get("work_item_id") or "")
+            predecessor_sha = str(predecessor.get("source_sha256") or "").lower()
+            if (not re.fullmatch(r"[0-9a-f-]{36}", work_item_id)
+                    or not re.fullmatch(r"[0-9a-f]{64}", predecessor_sha)
+                    or predecessor.get("status") not in {"pending", "done", "failed"}):
+                return {}
+            predecessors[work_item_id] = {
+                "source_sha256": predecessor_sha,
+                "status": predecessor["status"],
+                "verdict": predecessor.get("verdict"),
+            }
+        authority = f"router_ops_issue:{FRAMEWORK_INPUT_PIN_WAVE2_TASK_ID}:QM5_{ea_id}"
+        if authority in registrations:
+            return {}
+        registrations[authority] = {
+            "ea_id": ea_id,
+            "ea_label": ea_label,
+            "source_sha256": source_sha,
+            "predecessors": predecessors,
+            "superseded_predecessors": [],
+            "evidence_path": FRAMEWORK_INPUT_PIN_WAVE2_EVIDENCE,
+            "evidence_sha256": FRAMEWORK_INPUT_PIN_WAVE2_EVIDENCE_SHA256,
+        }
+    if len(registrations) != 119:
+        return {}
+    return registrations
+
+
+FRAMEWORK_INPUT_PIN_WAVE2_SOURCE_REPAIR_REGISTRATIONS = (
+    _load_framework_input_pin_wave2_registrations()
+)
+BACKLOG_SOURCE_REPAIR_REGISTRATIONS.update(
+    FRAMEWORK_INPUT_PIN_WAVE2_SOURCE_REPAIR_REGISTRATIONS
+)
+
+
 # OWNER task ce69613c (2026-09-06): the pacer generated two additional guards
 # with framework-owned input pins. These exact source-only repairs bind the
 # repaired LF source, their completed COMPILE_OK predecessor, and immutable

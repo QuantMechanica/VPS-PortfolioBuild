@@ -292,19 +292,17 @@ bool Strategy_NoTradeFilter()
   {
    if(!Strategy_IsWtiD1())
       return true;
-   if(qm_ea_id != 20226 || qm_magic_slot_offset != 0 || qm_rng_seed != 42)
+   if(qm_ea_id != 20226 ||
+      qm_magic_slot_offset != 0)
       return true;
    if(MathAbs(RISK_PERCENT) > 1.0e-12 ||
       MathAbs(RISK_FIXED - 1000.0) > 1.0e-12 ||
       MathAbs(PORTFOLIO_WEIGHT - 1.0) > 1.0e-12)
       return true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF ||
-      qm_news_compliance != QM_NEWS_COMPLIANCE_NONE ||
-      qm_news_mode_legacy != QM_NEWS_OFF)
-      return true;
-   if(!qm_friday_close_enabled || qm_friday_close_hour_broker != 21)
-      return true;
-   if(MathAbs(qm_stress_reject_probability) > 1.0e-12)
+
+   if(!MathIsValidNumber(qm_stress_reject_probability) ||
+      qm_stress_reject_probability < 0.0 ||
+      qm_stress_reject_probability > 1.0)
       return true;
    if(strategy_winter_first_month != 11 ||
       strategy_winter_last_month != 5 ||

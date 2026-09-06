@@ -128,6 +128,15 @@ def test_wave1_plain_rebuild_cohort_is_predicate_clean(tmp_path: Path) -> None:
     assert run_predicate(tmp_path, sources) == []
 
 
+def test_wave2_append_only_restart_cohort_is_predicate_clean(tmp_path: Path) -> None:
+    evidence = json.loads((
+        REPO_ROOT / "docs/ops/evidence/2026-09-06_framework_input_pin_wave2_authority.json"
+    ).read_text(encoding="utf-8"))
+    sources = [REPO_ROOT / row["source_path"] for row in evidence["registrations"]]
+    assert len(sources) == 119
+    assert run_predicate(tmp_path, sources) == []
+
+
 def test_q07_passing_10268_guard_is_negative(tmp_path: Path) -> None:
     assert run_predicate(tmp_path, [_ea_source(REPO_ROOT, 10268)]) == []
 
@@ -149,10 +158,9 @@ def test_canonical_4000_source_census_flags_exact_200_only(tmp_path: Path) -> No
         if re.search(r"\bqm_rng_seed\s*!=", path.read_text(encoding="utf-8", errors="replace"))
     }
     # Census 2026-09-06 (evidence docs/ops/evidence/2026-09-06_framework_input_pin_census.md):
-    # 200 sources carried the ``qm_rng_seed !=`` form before the seven pacer
-    # repairs (193 after); the broader fail-closed predicate exposes 378 sources
-    # because pre-existing ==/!= pins on the other named framework inputs are
-    # real findings too. The corpus grows daily, so assert structure, not counts.
+    # The 200-source census was repaired in governed waves. The broader
+    # fail-closed predicate still exposes any remaining pre-existing ==/!= pins
+    # on the named inputs. The corpus grows daily, so assert structure, not counts.
     repaired = {
         path.resolve()
         for path in sources
@@ -161,7 +169,16 @@ def test_canonical_4000_source_census_flags_exact_200_only(tmp_path: Path) -> No
     assert len(repaired) == 7
     assert not (repaired & expected_seed_neq)  # the seven repaired guards no longer pin the seed
     assert not (repaired & flagged)  # ...and the broad predicate is clean on them
-    assert len(expected_seed_neq) >= 100  # Wave 2 remains separately governed after Wave 1
+    wave2_evidence = json.loads((
+        REPO_ROOT / "docs/ops/evidence/2026-09-06_framework_input_pin_wave2_authority.json"
+    ).read_text(encoding="utf-8"))
+    wave2_repaired = {
+        (REPO_ROOT / row["source_path"]).resolve()
+        for row in wave2_evidence["registrations"]
+    }
+    assert len(wave2_repaired) == 119
+    assert not (wave2_repaired & expected_seed_neq)
+    assert not (wave2_repaired & flagged)
     assert expected_seed_neq <= flagged
     assert flagged - expected_seed_neq  # broader named-input pins are real findings
 
