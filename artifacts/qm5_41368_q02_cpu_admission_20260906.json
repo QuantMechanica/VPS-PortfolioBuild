@@ -1,0 +1,25 @@
+{
+  "admission": "STOP_CPU_CEILING",
+  "average_cpu_percent": 94.516408,
+  "compile_activation_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+  "compile_work_item_id": "8b988156-b64e-4b12-aa5c-d5dc2a7d7438",
+  "ea_id": "QM5_41368",
+  "maximum_cpu_percent": 97.170291,
+  "method": "Windows Get-Counter \\Processor(_Total)\\% Processor Time, one-second interval",
+  "phase": "Q02",
+  "q02_dry_run_eligible": false,
+  "q02_dry_run_reason": "compile_work_item_not_done_compile_ok",
+  "sample_count": 5,
+  "sampled_at_utc": "2026-09-06T12:52:27.9643399Z",
+  "samples_cpu_percent": [
+    97.170291,
+    95.621858,
+    96.777863,
+    90.236504,
+    92.775522
+  ],
+  "source_sha256": "b11bdc719cead280afd8b7d70ec931f4764bb7b345545a29e3694acd4c292f8f",
+  "superseded_compile_work_item_id": "f5b3ca81-59cc-4b06-ae1a-963971f59933",
+  "threshold_cpu_percent": 97.0,
+  "note": "Q02 was not enqueued. The current-source governed compile remains activation-held during the reviewed worker rollout, and the fresh five-sample window independently failed the binding rule because its maximum was not strictly below 97 percent."
+}
