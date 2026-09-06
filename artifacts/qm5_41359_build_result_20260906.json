@@ -1,0 +1,85 @@
+{
+  "schema_version": "qm.branch-build-q02-handoff/v1",
+  "recorded_at_utc": "2026-09-06T00:54:00Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41359",
+  "ea_label": "QM5_41359_xtixng-waccel-rv",
+  "mechanic": "synchronized adjacent completed-week XTI-minus-XNG relative returns with strict same-sign agreement and strict newest absolute acceleration, fading the shared direction through opposed equal-target-notional legs",
+  "logical_symbol": "QM5_41359_XTI_XNG_WACCEL_RV_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "companion_symbol": "XNGUSD.DWX",
+  "timeframe": "D1",
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "reference_validation": {
+    "command": "python -m unittest framework/EAs/QM5_41359_xtixng-waccel-rv/docs/test_weekly_acceleration_reference.py",
+    "passed": 9,
+    "failed": 0
+  },
+  "spec_validation": {
+    "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_41359_xtixng-waccel-rv",
+    "passed": 1,
+    "failed": 0
+  },
+  "compile": {
+    "work_item_id": "72fb26b3-2612-40a0-86a7-cdc3e7b38a63",
+    "terminal": "T3",
+    "status": "done",
+    "verdict": "COMPILE_OK",
+    "build_check_result": "PASS",
+    "build_check_failures": 0,
+    "build_check_warnings": 3,
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "mq5_sha256": "d3538877ce2d1432ee10c19ef9b85b3616582cd8fc3deeaefabf6f12ea65ed1c",
+    "ex5_sha256": "d6b2720bdfdd6c5bcb02c98105bc1658b8b1ee3f163de666dd6aa34509962c10",
+    "evidence_path": "D:/QM/reports/work_items/72fb26b3-2612-40a0-86a7-cdc3e7b38a63/QM5_41359/COMPILE_EA/compile_evidence.json"
+  },
+  "card": {
+    "sha256": "87f3dddd963fc3eaa0c1025e4160f59fe15a58fe14be6423762680fb2a4360dc",
+    "artifact_mirror_sha256": "87f3dddd963fc3eaa0c1025e4160f59fe15a58fe14be6423762680fb2a4360dc",
+    "g0_status": "APPROVED"
+  },
+  "setfiles": [
+    {
+      "role": "logical_basket",
+      "sha256": "389359663ae529f3e884122e9d2c583f6ae968ef68b5e1a988eb61830693bedc",
+      "build_hash": "0dcb1f590c26eded468cc400de94b7417754f45f477e998b2ab4d664183143d7"
+    },
+    {
+      "role": "host_leg",
+      "sha256": "89af6ca52f6165de3fa1ed8967f9511a80d3c1d8f6f4fe50980647a2b711ae3c",
+      "build_hash": "944ae99899ba1930cf6a90f94919442065f82f9b8ea5d38e9bdcac40959885a7"
+    },
+    {
+      "role": "companion_leg",
+      "sha256": "159e7cb03fcfed8e59d83bb7ff482588d2cc5198197bf07c1c20a26f9a70e2d8",
+      "build_hash": "78756230fad80413065d1e92195cf58075c3ae1e49d65f575f0af66ed94a4816"
+    }
+  ],
+  "cpu_admission": {
+    "threshold_pct": 97.0,
+    "samples_pct": [78.4, 77.5, 77.2, 82.1, 80.2],
+    "average_pct": 79.1,
+    "maximum_pct": 82.1,
+    "admitted": true
+  },
+  "q02": {
+    "work_item_id": "00cf2ac1-4083-4c6b-9de5-d14e841b411e",
+    "symbol": "QM5_41359_XTI_XNG_WACCEL_RV_D1",
+    "status_at_receipt": "pending",
+    "enqueued_count": 1,
+    "skipped_leg_setfiles": 2,
+    "manual_backtest_run": false
+  },
+  "safety": {
+    "terminal_control_used": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}

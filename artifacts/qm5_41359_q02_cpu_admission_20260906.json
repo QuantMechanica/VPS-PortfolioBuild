@@ -1,0 +1,19 @@
+{
+  "admission": "PASS",
+  "average_cpu_percent": 79.1,
+  "compile_work_item_id": "72fb26b3-2612-40a0-86a7-cdc3e7b38a63",
+  "ea_id": "QM5_41359",
+  "maximum_cpu_percent": 82.1,
+  "method": "Windows Get-Counter \\Processor(_Total)\\% Processor Time, one-second interval",
+  "phase": "Q02",
+  "sample_count": 5,
+  "sampled_at_utc": "2026-09-06T00:52:44.7919134Z",
+  "samples_cpu_percent": [
+    78.4,
+    77.5,
+    77.2,
+    82.1,
+    80.2
+  ],
+  "threshold_cpu_percent": 97.0
+}

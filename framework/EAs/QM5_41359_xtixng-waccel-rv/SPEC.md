@@ -100,3 +100,4 @@ scale-in, grid, pyramid, target, trail, break-even move, or partial exit.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-09-06 | approved build identity | source approval `b23ca8c8e2`; card approval `68bfc770e5`; active basket magics `c24c3d1cb7` |
+| v2 | 2026-09-06 | governed build and queue handoff | `COMPILE_OK` / `BUILD_CHECK_PASS` on `72fb26b3-2612-40a0-86a7-cdc3e7b38a63`; logical-basket Q02 `00cf2ac1-4083-4c6b-9de5-d14e841b411e` enqueued below the 97% CPU ceiling |
