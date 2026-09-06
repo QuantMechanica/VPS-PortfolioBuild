@@ -2030,6 +2030,23 @@ STRESS_GUARD_SOURCE_REPAIR_REGISTRATIONS = {'router_ops_issue:04f011a6-6b6a-4562
 BACKLOG_SOURCE_REPAIR_REGISTRATIONS.update(STRESS_GUARD_SOURCE_REPAIR_REGISTRATIONS)
 
 
+# Router ticket 690fc42a (2026-09-06, APPROVED): build_check's EA_ML_FORBIDDEN
+# predicate matched the identifier token `weights[` and failed an otherwise clean
+# compile. The predicate was scoped to real ML shapes in 77d4ec1634; the EA source
+# is UNCHANGED, so the successor binds the same source sha as its failed
+# predecessor (same shape as the 41164/41165/41166/41172 wave).
+ML_PREDICATE_SOURCE_REPAIR_REGISTRATIONS = {'router_ops_issue:690fc42a-ab37-4c25-82e4-afbc51b23d7b:QM5_41193': {'ea_id': '41193',
+                                                                     'ea_label': 'QM5_41193_xtixng-fracd-rv',
+                                                                     'source_sha256': '8e3fb9d1a459712026bf9afe91ed8ae0a9da32f4a360a6b9dece20c4af40b7eb',
+                                                                     'predecessors': {'37e3b310-7384-48df-8d3a-92eb4f80c0da': {'source_sha256': '8e3fb9d1a459712026bf9afe91ed8ae0a9da32f4a360a6b9dece20c4af40b7eb',
+                                                                                                                               'status': 'failed',
+                                                                                                                               'verdict': 'COMPILE_FAIL'}},
+                                                                     'superseded_predecessors': [],
+                                                                     'evidence_path': 'docs/ops/evidence/2026-09-06_ml_predicate_sweep_690fc42a.md',
+                                                                     'evidence_sha256': '4a1672d50c7b688d6e9492046c6747512d9555b857a1b29bc097c20aae4629b4'}}
+BACKLOG_SOURCE_REPAIR_REGISTRATIONS.update(ML_PREDICATE_SOURCE_REPAIR_REGISTRATIONS)
+
+
 def _backlog_source_repair_artifact_bindings(authority: str | None = None) -> list[dict[str, str]]:
     binding = BACKLOG_SOURCE_REPAIR_REGISTRATIONS.get(authority or "", {})
     return [{"path": binding.get("evidence_path", BACKLOG_SOURCE_REPAIR_EVIDENCE),

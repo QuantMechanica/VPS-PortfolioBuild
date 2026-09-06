@@ -1,5 +1,6 @@
 """Exact CEO-selected backlog bindings and append-only successor behaviour."""
 import copy
+import hashlib
 import json
 from pathlib import Path
 
@@ -69,7 +70,7 @@ def test_worker_rechecks_exact_successor_lineage_and_evidence(tmp_path, monkeypa
         assert not cwi._source_repair_authorized(binding["ea_label"], authority, **args, current_work_item_id="successor")
 
 
-@pytest.mark.parametrize("ea", ["1538", "41164", "41165", "41166", "41172"])
+@pytest.mark.parametrize("ea", ["1538", "41164", "41165", "41166", "41172", "41193"])
 def test_candidate_waives_only_governed_blockers_and_keeps_exact_predecessors(tmp_path, monkeypatch, ea):
     authority = next(a for a in AUTHORITIES if cwi.BACKLOG_SOURCE_REPAIR_REGISTRATIONS[a]["ea_id"] == ea)
     binding, _, rows, args = context(tmp_path, monkeypatch, authority)
@@ -102,3 +103,63 @@ def test_candidate_waives_only_governed_blockers_and_keeps_exact_predecessors(tm
     assert again["reason"] == "OPEN_COMPILE_EA_EXISTS"
     new["payload_json"] = json.dumps({"mq5_sha256": "a" * 64})
     assert not cwi._source_repair_authorized(label, authority, **{**args, "source_sha": binding["source_sha256"]})
+
+
+# Router ticket 690fc42a: EA_ML_FORBIDDEN predicate defect, EA source UNCHANGED.
+ML_PREDICATE_AUTHORITY = "router_ops_issue:690fc42a-ab37-4c25-82e4-afbc51b23d7b:QM5_41193"
+
+
+def _canonical_sha256(path: Path) -> str:
+    """Hash the canonical LF bytes; a CRLF checkout must not move the binding."""
+    return hashlib.sha256(path.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+
+
+def test_ml_predicate_registration_binds_the_unchanged_committed_source():
+    binding = cwi.BACKLOG_SOURCE_REPAIR_REGISTRATIONS[ML_PREDICATE_AUTHORITY]
+    assert binding["ea_id"] == "41193"
+    assert binding["ea_label"] == "QM5_41193_xtixng-fracd-rv"
+    assert binding["superseded_predecessors"] == []
+    assert binding["evidence_path"] == "docs/ops/evidence/2026-09-06_ml_predicate_sweep_690fc42a.md"
+    assert list(binding["predecessors"]) == ["37e3b310-7384-48df-8d3a-92eb4f80c0da"]
+    predecessor = binding["predecessors"]["37e3b310-7384-48df-8d3a-92eb4f80c0da"]
+    assert predecessor["status"] == "failed"
+    assert predecessor["verdict"] == "COMPILE_FAIL"
+    # The predicate was fixed, not the EA: successor and predecessor share one source.
+    assert predecessor["source_sha256"] == binding["source_sha256"]
+    assert cwi._backlog_source_repair_artifact_bindings(ML_PREDICATE_AUTHORITY) == [
+        {"path": binding["evidence_path"], "sha256": binding["evidence_sha256"]}
+    ]
+
+
+def test_ml_predicate_registration_matches_the_committed_repo_bytes():
+    repo_root = Path(__file__).resolve().parents[3]
+    binding = cwi.BACKLOG_SOURCE_REPAIR_REGISTRATIONS[ML_PREDICATE_AUTHORITY]
+    label = binding["ea_label"]
+    source = repo_root / "framework" / "EAs" / label / (label + ".mq5")
+    evidence = repo_root / binding["evidence_path"]
+    if not source.exists() or not evidence.exists():  # pragma: no cover - partial checkout
+        pytest.skip("checkout does not carry the bound artifacts")
+    assert _canonical_sha256(source) == binding["source_sha256"]
+    assert _canonical_sha256(evidence) == binding["evidence_sha256"]
+
+
+def test_ml_predicate_authority_refuses_a_different_source_or_a_missing_predecessor(tmp_path, monkeypatch):
+    binding, _, rows, args = context(tmp_path, monkeypatch, ML_PREDICATE_AUTHORITY)
+    label = binding["ea_label"]
+    assert cwi._source_repair_authorized(label, ML_PREDICATE_AUTHORITY, **args)
+    # A recompiled/edited source is not covered by this authority.
+    assert not cwi._source_repair_authorized(
+        label, ML_PREDICATE_AUTHORITY, **{**args, "source_sha": "b" * 64})
+    # The failed predecessor must still be present, unclaimed and COMPILE_FAIL.
+    for mutation in ({"id": "other"}, {"status": "done"}, {"verdict": "COMPILE_OK"},
+                     {"claimed_by": "T4"}, {"phase": "Q02"}):
+        changed = copy.deepcopy(args)
+        changed["inventory"]["work_rows"]["41193"][0].update(mutation)
+        assert not cwi._source_repair_authorized(label, ML_PREDICATE_AUTHORITY, **changed)
+    empty = copy.deepcopy(args)
+    empty["inventory"]["work_rows"]["41193"] = []
+    assert not cwi._source_repair_authorized(label, ML_PREDICATE_AUTHORITY, **empty)
+    # An unrelated in-flight compile on a different source is not waived.
+    rows.append({"id": "in-flight", "phase": cwi.COMPILE_EA_PHASE, "status": "pending",
+                 "payload_json": json.dumps({"mq5_sha256": "c" * 64})})
+    assert not cwi._source_repair_authorized(label, ML_PREDICATE_AUTHORITY, **args)
