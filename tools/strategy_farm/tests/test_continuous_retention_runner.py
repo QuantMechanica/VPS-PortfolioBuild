@@ -71,6 +71,43 @@ def test_delete_batch_is_dry_run_by_default(tmp_path: Path) -> None:
     assert result["requested_bytes"] == 3
 
 
+def test_log_delete_skips_sharing_violation_and_continues(tmp_path: Path, monkeypatch) -> None:
+    root = tmp_path / "logs"
+    receipts = tmp_path / "receipts"
+    root.mkdir()
+    locked = root / "worker.log.err"
+    deletable = root / "old.log"
+    locked.write_bytes(b"locked")
+    deletable.write_bytes(b"delete")
+
+    class FakeKernel32:
+        def CloseHandle(self, _handle) -> None:
+            pass
+
+    monkeypatch.setattr(
+        runner, "open_exclusive_windows_handle",
+        lambda path: ((FakeKernel32(), runner.ctypes.c_void_p(-1).value)
+                      if path == locked else (FakeKernel32(), 123)),
+    )
+    monkeypatch.setattr(
+        runner.ctypes, "get_last_error", lambda: 32,
+    )
+    result = runner.safe_delete_batch(
+        [locked, deletable], root, receipts, "run", "LOG_DELETE", True,
+        skip_locked=True,
+    )
+
+    assert locked.exists()
+    assert not deletable.exists()
+    assert result["deleted_files"] == 1
+    assert result["skipped_files"] == 1
+    assert result["skip_reasons"] == {"SKIPPED_LOCKED": 1}
+    assert result["skipped"] == [{
+        "path": str(locked.resolve()), "bytes": 6,
+        "status": "SKIPPED_LOCKED", "winerror": 32,
+    }]
+
+
 def test_evidence_candidates_skip_already_compressed_and_reparse(tmp_path: Path, monkeypatch) -> None:
     plain = tmp_path / "plain.json"
     compressed = tmp_path / "compressed.json"

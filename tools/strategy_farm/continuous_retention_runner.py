@@ -292,7 +292,8 @@ def iter_evidence_candidates(root: Path, cutoff_epoch: float,
 
 
 def safe_delete_batch(paths: list[Path], root: Path, receipt_dir: Path,
-                      run_id: str, action: str, apply: bool) -> dict[str, Any]:
+                      run_id: str, action: str, apply: bool,
+                      skip_locked: bool = False) -> dict[str, Any]:
     entries = []
     for path in paths:
         resolved = path.resolve()
@@ -306,7 +307,9 @@ def safe_delete_batch(paths: list[Path], root: Path, receipt_dir: Path,
                "action": action, "mode": "APPLY" if apply else "DRY_RUN",
                "requested_files": len(entries),
                "requested_bytes": sum(row["bytes"] for row in entries),
-               "deleted_files": 0, "deleted_bytes": 0, "entries": entries}
+               "deleted_files": 0, "deleted_bytes": 0,
+               "skipped_files": 0, "skipped_bytes": 0,
+               "skip_reasons": {}, "skipped": [], "entries": entries}
     receipt_path = receipt_dir / f"{run_id}_{action.lower()}.json"
     atomic_json(receipt_path, receipt)
     if apply and entries:
@@ -315,7 +318,36 @@ def safe_delete_batch(paths: list[Path], root: Path, receipt_dir: Path,
         for index, row in enumerate(entries):
             source = Path(row["path"])
             target = quarantine / f"{index:05d}_{source.name}"
-            os.replace(source, target)
+            if skip_locked and os.name == "nt":
+                kernel32, handle = open_exclusive_windows_handle(source)
+                if handle == ctypes.c_void_p(-1).value:
+                    error = ctypes.get_last_error()
+                    if error == 32:
+                        skipped = {"path": str(source), "bytes": row["bytes"],
+                                   "status": "SKIPPED_LOCKED", "winerror": error}
+                        receipt["skipped"].append(skipped)
+                        receipt["skipped_files"] += 1
+                        receipt["skipped_bytes"] += row["bytes"]
+                        receipt["skip_reasons"]["SKIPPED_LOCKED"] = (
+                            receipt["skip_reasons"].get("SKIPPED_LOCKED", 0) + 1
+                        )
+                        continue
+                    raise OSError(error, f"exclusive-open failed for delete candidate: {source}")
+                kernel32.CloseHandle(ctypes.c_void_p(handle))
+            try:
+                os.replace(source, target)
+            except PermissionError as exc:
+                if not skip_locked or getattr(exc, "winerror", None) != 32:
+                    raise
+                skipped = {"path": str(source), "bytes": row["bytes"],
+                           "status": "SKIPPED_LOCKED", "winerror": 32}
+                receipt["skipped"].append(skipped)
+                receipt["skipped_files"] += 1
+                receipt["skipped_bytes"] += row["bytes"]
+                receipt["skip_reasons"]["SKIPPED_LOCKED"] = (
+                    receipt["skip_reasons"].get("SKIPPED_LOCKED", 0) + 1
+                )
+                continue
             if target.stat().st_size != row["bytes"]:
                 raise RuntimeError(f"quarantine size mismatch: {source}")
             target.unlink()
@@ -390,7 +422,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     backup_delete = safe_delete_batch(old_backups, args.backups_root, receipt_dir, run_id,
                                       "BACKUP_DELETE", args.apply)
     log_delete = safe_delete_batch(old_logs, args.logs_root, receipt_dir, run_id,
-                                   "LOG_DELETE", args.apply)
+                                   "LOG_DELETE", args.apply, skip_locked=True)
     summary.update({"status": "PASS", "db_quick_check": qc,
         "open_work_item_count": len(open_ids), "retained_backup_count": len(keep_backups),
         "backup_compression": compressed, "evidence_compression": evidence,

@@ -1297,7 +1297,9 @@ def chk_db_backup_fresh() -> dict:
     `farmctl pump-maintenance` command (latency rebaseline 2026-08-23). If that
     task is never scheduled — or its scheduled run stalls — backups silently
     stop and the durability outage is otherwise invisible (there is no other
-    producer of state/backups/farm_state_*.sqlite). This check makes the gap
+    producer of scheduled state/backups/farm_state_YYYYMMDD_HHMM.sqlite files).
+    Governed farm_state_before_* mutation snapshots are intentionally excluded
+    from this cadence check. This check makes the gap
     observable. Backups run hourly behind a 50-min guard, so a newest snapshot
     older than STALE_MIN means the maintenance task is not running.
 
@@ -1310,10 +1312,10 @@ def chk_db_backup_fresh() -> dict:
                       "FACTORY_OFF.flag set — hourly DB backup intentionally paused",
                       "")
     backup_dir = ROOT / "state" / "backups"
-    backups = list(backup_dir.glob("farm_state_*.sqlite")) if backup_dir.is_dir() else []
+    backups = farmctl._hourly_db_backup_paths(backup_dir)
     if not backups:
         return _check("db_backup_fresh", "FAIL", 0, STALE_MIN,
-                      "no state/backups/farm_state_*.sqlite present — hourly DB "
+                      "no scheduled farm_state_YYYYMMDD_HHMM.sqlite snapshots present — hourly DB "
                       "backup has never run; schedule QM_StrategyFarm_PumpMaintenance_Hourly",
                       "python C:\\QM\\repo\\tools\\strategy_farm\\farmctl.py pump-maintenance; "
                       "then install tools/strategy_farm/install_pump_maintenance_scheduled_task.ps1")
@@ -1322,12 +1324,12 @@ def chk_db_backup_fresh() -> dict:
     if age_min > STALE_MIN:
         return _check("db_backup_fresh", "FAIL", age_min, STALE_MIN,
                       f"newest DB backup {age_min}m old (>{STALE_MIN}m); "
-                      f"pump-maintenance backup stage stalled ({len(backups)} snapshots)",
+                      f"pump-maintenance backup stage stalled ({len(backups)} hourly snapshots)",
                       "Verify QM_StrategyFarm_PumpMaintenance_Hourly is registered and "
                       "enabled; run python C:\\QM\\repo\\tools\\strategy_farm\\farmctl.py "
                       "pump-maintenance and check its log")
     return _check("db_backup_fresh", "OK", age_min, STALE_MIN,
-                  f"{len(backups)} snapshots, newest {age_min}m ago", "")
+                  f"{len(backups)} hourly snapshots, newest {age_min}m ago", "")
 
 
 def chk_ablation_grandchildren(con) -> dict:

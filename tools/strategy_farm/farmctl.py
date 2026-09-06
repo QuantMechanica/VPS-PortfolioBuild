@@ -17894,6 +17894,19 @@ def _wal_checkpoint(root: Path) -> dict[str, Any]:
     }
 
 
+_HOURLY_DB_BACKUP_RE = re.compile(r"farm_state_\d{8}_\d{4}\.sqlite")
+
+
+def _hourly_db_backup_paths(backup_dir: Path) -> list[Path]:
+    """Return snapshots produced by ``_hourly_db_backup``, not before-* copies."""
+    if not backup_dir.is_dir():
+        return []
+    return [
+        path for path in backup_dir.glob("farm_state_*.sqlite")
+        if path.is_file() and _HOURLY_DB_BACKUP_RE.fullmatch(path.name)
+    ]
+
+
 def _hourly_db_backup(root: Path) -> str | None:
     """Snapshot farm_state.sqlite to state/backups once per hour; keep 24h."""
     src = root / DB_REL
@@ -17902,9 +17915,11 @@ def _hourly_db_backup(root: Path) -> str | None:
     backup_dir = root / "state" / "backups"
     backup_dir.mkdir(parents=True, exist_ok=True)
     now = dt.datetime.now(dt.timezone.utc)
-    existing = sorted(backup_dir.glob("farm_state_*.sqlite"))
-    if existing:
-        latest = max(existing, key=lambda p: p.stat().st_mtime)
+    # The broad family also contains governed farm_state_before_* snapshots.
+    # Mutation activity must never satisfy the scheduled hourly cadence guard.
+    hourly_existing = _hourly_db_backup_paths(backup_dir)
+    if hourly_existing:
+        latest = max(hourly_existing, key=lambda p: p.stat().st_mtime)
         if now.timestamp() - latest.stat().st_mtime < 50 * 60:
             return None
     target = backup_dir / f"farm_state_{now.strftime('%Y%m%d_%H%M')}.sqlite"
@@ -17918,7 +17933,9 @@ def _hourly_db_backup(root: Path) -> str | None:
     finally:
         src_conn.close()
     cutoff = now.timestamp() - 24 * 3600
-    for old in existing:
+    # Preserve the established 24-hour retention sweep for the whole on-box
+    # snapshot family; only cadence detection is intentionally narrowed.
+    for old in backup_dir.glob("farm_state_*.sqlite"):
         try:
             if old.stat().st_mtime < cutoff:
                 old.unlink()
