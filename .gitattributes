@@ -332,3 +332,5 @@ framework/EAs/QM5_41351_wti-adf-bds-agree-tr/QM5_41351_wti-adf-bds-agree-tr.mq5 
 framework/EAs/QM5_41352_wti-adf-vr-agree-tr/QM5_41352_wti-adf-vr-agree-tr.mq5 -text
 framework/EAs/QM5_41354_wti-adf-mkendall-agree-tr/QM5_41354_wti-adf-mkendall-agree-tr.mq5 -text
 framework/EAs/QM5_11196_ft-heracles/sets/QM5_11196_ft-heracles_XAUUSD.DWX_H4_backtest_s20260906-001.set -text
+tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_STANDARD_V2.json text eol=lf
+tools/strategy_farm/config/ftmo_m13_standard_demo.v1.json text eol=lf
