@@ -129,6 +129,17 @@ string QM_MagicRegistryHash()
    return QM_MAGIC_REGISTRY_SHA256;
   }
 
+// Canonical broker/custom-symbol identity. Registry rows retain DarwinexZero
+// names; broker suffixes are ignored and FTMO's oil alias maps to XTIUSD.
+string QM_MagicSymbolCanonical(const string symbol)
+  {
+   const int dot = StringFind(symbol, ".");
+   const string base = (dot > 0 ? StringSubstr(symbol, 0, dot) : symbol);
+   if(base == "USOIL")
+      return "XTIUSD";
+   return base;
+  }
+
 bool QM_MagicCollisionWithForeignOpenPositions(const int magic, const string expected_symbol = "")
   {
    if(magic <= 0)
@@ -154,7 +165,8 @@ bool QM_MagicCollisionWithForeignOpenPositions(const int magic, const string exp
         }
 
       const string position_symbol = PositionGetString(POSITION_SYMBOL);
-      if(expected_symbol != "" && position_symbol == expected_symbol)
+      if(expected_symbol != "" &&
+         QM_MagicSymbolCanonical(position_symbol) == QM_MagicSymbolCanonical(expected_symbol))
         {
          continue;
         }
@@ -173,19 +185,6 @@ bool QM_MagicCollisionWithForeignOpenPositions(const int magic, const string exp
    if(restore_ticket > 0)
       PositionSelectByTicket(restore_ticket);
    return false;
-  }
-
-// Broker/custom-symbol suffix tolerance (OWNER instruction 2026-09-06): the registry
-// carries the factory custom-symbol names (EURUSD.DWX); Darwinex-live and FTMO charts
-// use the broker's plain names (EURUSD, USOIL.cash). Compare the base names (text
-// before the first '.'), so a foreign symbol still fails closed (GBPUSD.DWX vs EURUSD)
-// while the same instrument under another suffix resolves.
-string QM_MagicSymbolBase(const string symbol)
-  {
-   const int dot = StringFind(symbol, ".");
-   if(dot <= 0)
-      return symbol;
-   return StringSubstr(symbol, 0, dot);
   }
 
 int QM_MagicChecked(const int ea_id, const int symbol_slot, const string expected_symbol = "")
@@ -219,7 +218,7 @@ int QM_MagicChecked(const int ea_id, const int symbol_slot, const string expecte
      {
       const string registered_symbol = QM_MAGIC_REG_SYMBOL[registry_index];
       if(registered_symbol != "" && registered_symbol != expected_symbol &&
-         QM_MagicSymbolBase(registered_symbol) != QM_MagicSymbolBase(expected_symbol))
+         QM_MagicSymbolCanonical(registered_symbol) != QM_MagicSymbolCanonical(expected_symbol))
         {
          if(ea_id != chk_warn_ea || symbol_slot != chk_warn_slot)
            {

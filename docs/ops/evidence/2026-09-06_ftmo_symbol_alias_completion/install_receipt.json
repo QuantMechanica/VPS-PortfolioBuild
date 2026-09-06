@@ -1,0 +1,53 @@
+{
+  "schema": "qm.ftmo-demo-sleeve-alias-completion/v1",
+  "at_utc": "2026-09-06T20:47:00Z",
+  "task_id": "4778daa7-8eda-43bd-bd45-d393d7068223",
+  "terminal_data_hash": "81A933A9AFC5DE3C23B15CAB19C63850",
+  "compiler": "C:/Program Files/FTMO Global Markets MT5 Terminal/MetaEditor64.exe",
+  "probe_dir": "D:/QM/ftmo/compile_probe_sleeves_20260906_codex",
+  "resolver_source_sha256": "30536d5ec4143198fe7562a9131b4f2d820be2fafe5252e4995df36fe698066e",
+  "generator_source_sha256": "78d412bb959fc1ec5ed4c8467180e99b89973f788b02316716f79e968aa6ebf8",
+  "registry_sha256": "3835cd76fa81fa369d343ec46b6da9d622bf6acb0289e3430c1b690bd4ffb1d1",
+  "factory_inventory_touched": false,
+  "runtime_terminal_state_changed": false,
+  "backup_dir": "MQL5/Experts/QM_FTMO/_pre_codex_alias_20260906_2047Z",
+  "installed": [
+    {
+      "ea": "QM5_10706_tv-mon-ls",
+      "compile_result": "0 errors, 0 warnings",
+      "compile_log_sha256": "6a0d361d8a48c27af02328725c79a79656dc0fe71eb2a17807dc3e253d536806",
+      "backup_sha256": "e922fda854f7f097537d2706b465802bd36ae6641f558ad44df0cc6cdbe70c20",
+      "compiled_sha256": "6f290d49defdfe1ec2d4dad93e419a577c703a53ac91de68e7bbfb22984c6bed",
+      "installed_sha256": "6f290d49defdfe1ec2d4dad93e419a577c703a53ac91de68e7bbfb22984c6bed",
+      "preset_sha256": "31c37ec30421a51d7938ebfe911ef13e6615c678d0727ded9def09cb5cd1d140"
+    },
+    {
+      "ea": "QM5_11910_larry-williams-18ma-2outside-bars-d1",
+      "compile_result": "0 errors, 0 warnings",
+      "compile_log_sha256": "0f359ce385930d5d248f431a6c71474919032758c0120c8577670355b896ec95",
+      "backup_sha256": "4bf4d1e186f95ecd66480ef29ff55d9e9b30de5e2becaf60cba123df0fc966f5",
+      "compiled_sha256": "ae53f3bcca175e8cddabeee7ebfbe2ecd28cdeab83b5d57dbcc202612c31394d",
+      "installed_sha256": "ae53f3bcca175e8cddabeee7ebfbe2ecd28cdeab83b5d57dbcc202612c31394d",
+      "preset_sha256": "1223b912585405273b1865fa72cb923957e15c73d9edd501a9e089e6f90ceeef"
+    },
+    {
+      "ea": "QM5_1537_aa-vol-sma10",
+      "compile_result": "0 errors, 0 warnings",
+      "compile_log_sha256": "31d671dc2f77ed78b15018def6a50bd51d6767c930c6cccc052fd0a5d490a9ea",
+      "backup_sha256": "e34e0194bfb4a804526ecb45572b05148ea083ac3d0f01536a9f7b9216e3ea40",
+      "compiled_sha256": "5c1d3a60e78c01162be4a2ca2f86d060e33f773418de4061c306fb5b632d92ce",
+      "installed_sha256": "5c1d3a60e78c01162be4a2ca2f86d060e33f773418de4061c306fb5b632d92ce",
+      "preset_sha256": "ddcfbdb3852492fa8238761b17d6b67562b5dbca4ea3ce9c0ec7b11d4f07e369"
+    },
+    {
+      "ea": "QM5_21505_xag-weekly-lowvol-momentum",
+      "compile_result": "0 errors, 0 warnings",
+      "compile_log_sha256": "0d92ff9c15dd953c586cfa5a79f4a05d1641cd01c1f20b65d3224d0bae2b8756",
+      "backup_sha256": "63d4d667bf7c9ba94fd966d5f5001bc014a86dea8c144e92d8bdd48f1ab23cb6",
+      "compiled_sha256": "81386c2dcd80e58d2840fc6941ca066eb276a4650c2bde07da2cb971cad0b24d",
+      "installed_sha256": "81386c2dcd80e58d2840fc6941ca066eb276a4650c2bde07da2cb971cad0b24d",
+      "preset_sha256": "a3121a740daed23646ce3982d36409726e853a76709d6d22e09feb20ae78e9a7"
+    }
+  ],
+  "ok": true
+}
