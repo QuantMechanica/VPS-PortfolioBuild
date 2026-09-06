@@ -104,6 +104,7 @@ Build-check enforces presence of `QuantMechanica V5 Framework`, `Risk`, `News`, 
 4. **V5 namespace is clean.** EA prefix `QM5_`, ea_id range 1000-9999. No collision with V4 SM_XXX (which used 1-~770).
 5. **Inherit V4 only where V4 was right.** Magic formula, dual risk-mode contract, markdown receipts. Everything else is rebuilt.
 6. **MT5-native, no external runtime deps in the EA itself.** Helpers (compile harness, smoke runner) may use PowerShell + Python, but the EA is pure MQL5.
+7. **Symbols are inputs, never code literals (OWNER Hard Rule 2026-09-06).** The traded symbol is the chart (`_Symbol`) or an `input`; a multi-symbol EA (universe, basket, calendar host symbols) declares **one input per symbol slot** (`strategy_symbol_1..N`) and never embeds broker names. `.DWX` is only the factory custom-symbol name; Darwinex Zero live and FTMO charts use plain broker names (`EURUSD`, `USOIL.cash`). Enforcement: build_check predicate `EA_SYMBOL_HARDCODED` (ticket 4d3b27f6), review_ea checklist, resolver base-name matching (see QM_MagicResolver.mqh). Trigger: FTMO M13 demo 2026-09-06 — four sleeves refused to attach, QM5_1537 inert (calendar host symbols as `.DWX` literals).
 
 ## Repo Layout
 
@@ -353,6 +354,7 @@ Spec above. Plus:
 
 - never returns 0 (0 is reserved by MT5 for "no magic")
 - collision check against runtime open positions: if a foreign magic ever conflicts, log `EA_MAGIC_COLLISION_DETECTED` and refuse to trade
+- symbol check is **suffix-tolerant** since 2026-09-06 (`QM_MagicSymbolBase`): registry `EURUSD.DWX` matches chart `EURUSD`; a foreign base name (`GBPUSD.DWX` vs `EURUSD`) still fails closed (`EA_MAGIC_RESOLUTION_FAILED`, R-069 host-slot conflation guard kept). Instruments whose broker base name differs (`XTIUSD` vs `USOIL`, `GDAXI` vs `GER40`) need the registry-side alias table (ticket 4778daa7).
 
 ### QM_RiskSizer.mqh
 

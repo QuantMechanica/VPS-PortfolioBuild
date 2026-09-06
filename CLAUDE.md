@@ -165,6 +165,10 @@ that breaches them. The ones that operationally hit you:
 - No credentials in the repo, no public VPS detail exposure, no ML libraries in V5 EAs,
   `RISK_FIXED` for backtest / `RISK_PERCENT` for live, no invented commission/swap/DST
   values.
+- **Symbols are inputs, never code literals (OWNER 2026-09-06).** Chart symbol or `input`;
+  multi-symbol EAs carry one input per symbol slot. `.DWX` is the factory custom-symbol name
+  only; live (Darwinex Zero) and FTMO charts use plain broker names. Vault: `01 Identity/Hard
+  Rules` annex 2026-09-06; framework: `V5_FRAMEWORK_DESIGN.md` principle 7.
 
 ## T_Live Live Trading — OWNER authority, AI verification
 
