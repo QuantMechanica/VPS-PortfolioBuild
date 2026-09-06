@@ -16,7 +16,11 @@ DATABASE = Path('D:/QM/strategy_farm/state/farm_state.sqlite')
 RULEPACK = Path('C:/QM/repo/tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_SWING_V2.json')
 CANDIDATES = ((10706, 'GBPUSD'), (11421, 'EURUSD'), (11422, 'USDCAD'), (11910, 'NZDUSD'), (13054, 'XTIUSD'), (1537, 'XAGUSD'), (20048, 'XTIUSD'), (21505, 'XAGUSD'))
 LANES = {'XAUUSD':'XAUUSD', 'GER40':'GER40.cash', 'GBPUSD':'GBPUSD', 'EURUSD':'EURUSD', 'USDCAD':'USDCAD', 'NZDUSD':'NZDUSD', 'XTIUSD':'USOIL.cash', 'XAGUSD':'XAGUSD'}
-ALLOWED = frozenset(('RISK_FIXED', 'RISK_PERCENT', 'qm_news_temporal', 'qm_news_compliance', 'qm_news_stale_max_hours'))
+ALLOWED = frozenset((
+    'RISK_FIXED', 'RISK_PERCENT',
+    'qm_news_temporal', 'qm_news_compliance', 'qm_news_stale_max_hours',
+    'qm_friday_close_enabled', 'qm_friday_close_hour_broker',
+))
 
 class Refusal(ValueError):
     pass
@@ -68,7 +72,18 @@ def derive(source: bytes, risk_percent: float) -> tuple[bytes, dict]:
     stale = float(before.get('qm_news_stale_max_hours', '336'))
     if not math.isfinite(stale) or not 0 < stale <= 336:
         raise Refusal('stale_news_guard_invalid')
-    updates = {'RISK_FIXED':'0', 'RISK_PERCENT':format(risk_percent, '.10g'), 'qm_news_temporal':'3', 'qm_news_compliance':'2', 'qm_news_stale_max_hours':format(stale, '.10g')}
+    updates = {
+        'RISK_FIXED':'0',
+        'RISK_PERCENT':format(risk_percent, '.10g'),
+        'qm_news_temporal':'3',
+        'qm_news_compliance':'2',
+        'qm_news_stale_max_hours':format(stale, '.10g'),
+        # The OWNER's 2026-09-06 account is Standard, not Swing.  Weekend
+        # holding is therefore forbidden and every installed sleeve must use
+        # the framework's Friday flattening control.
+        'qm_friday_close_enabled':'true',
+        'qm_friday_close_hour_broker':'21',
+    }
     lines = []
     seen = set()
     for line in text.splitlines():
@@ -104,7 +119,10 @@ def sealed_source(conn: sqlite3.Connection, ea: int, symbol: str) -> tuple[bytes
     raw = source_path.read_bytes()
     if not expected or sha(raw) != expected or (db_hash and db_hash != expected):
         raise Refusal('sealed_source_hash_drift')
-    return raw, {'ea_id':ea, 'symbol':symbol, 'native_symbol':LANES[symbol], 'seal_work_item_id':task, 'source_path':str(source_path), 'source_sha256':expected, 'seal_path':str(seal_path), 'seal_sha256':sha(seal_bytes), 'source_role':'SEALED_BASELINE_STRATEGY_PARAMETERS', 'original_selected_news_config':seal.get('chosen_config'), 'ex5_sha256':seal.get('identities', {}).get('ex5_sha256')}
+    timeframe_match = re.search(r'_((?:M|H)\d+|D1|W1|MN1)(?:_|\.)', source_path.name)
+    if not timeframe_match:
+        raise Refusal('source_timeframe_unresolved')
+    return raw, {'ea_id':ea, 'symbol':symbol, 'native_symbol':LANES[symbol], 'timeframe':timeframe_match.group(1), 'seal_work_item_id':task, 'source_path':str(source_path), 'source_sha256':expected, 'seal_path':str(seal_path), 'seal_sha256':sha(seal_bytes), 'source_role':'SEALED_BASELINE_STRATEGY_PARAMETERS', 'original_selected_news_config':seal.get('chosen_config'), 'ex5_sha256':seal.get('identities', {}).get('ex5_sha256')}
 
 
 def output_path(run_name: str) -> Path:
@@ -136,9 +154,9 @@ def generate(run_name: str, risk_percent: float, *, database: Path = DATABASE, r
         for ea,symbol in CANDIDATES:
             raw, binding = sealed_source(conn, ea, symbol)
             data, proof = derive(raw, risk_percent)
-            filename = f'QM5_{ea}_{symbol}_live_trial.set'
+            filename = f'QM5_{ea}_{binding["native_symbol"]}_{binding["timeframe"]}_live_trial.set'
             planned.append((filename,data,dict(binding, **proof, output_path=filename, output_sha256=sha(data))))
-    manifest = {'schema':'qm.ftmo-trial-setpath/v1', 'status':'INERT_REVIEW_ONLY', 'installed':False, 'installable':False, 'mode':'DRY_RUN', 'ENV':'live', 'risk_percent':risk_percent, 'risk_authority':'DRY_RUN_EXAMPLE_ONLY', 'rulepack':{'path':str(rulepack.resolve()),'sha256':sha(rule_bytes),'id':rule['rulepack_id']}, 'constraints':{'max_daily_loss_percent':daily,'max_total_loss_percent':total,'timezone':'Europe/Prague','news_blackout':'PRE30_POST30_PLUS_FTMO_COMPLIANCE','calendar_binding':'NATIVE_MT5_CALENDAR_LIVE; seed health and execution must be verified before installation','governor_enforcement':'REQUIRES_SEPARATE_ACCEPTED_TRIAL_GOVERNOR; NOT_PROVEN_BY_SET'}, 'candidates':[p[2] for p in planned]}
+    manifest = {'schema':'qm.ftmo-trial-setpath/v2', 'status':'INERT_REVIEW_ONLY', 'installed':False, 'installable':False, 'mode':'DRY_RUN', 'ENV':'live', 'risk_percent':risk_percent, 'risk_authority':'OWNER_RATIFIED_EQUAL_EIGHT_SLEEVE_ALLOCATION', 'account_variant':'STANDARD_2STEP_100K_FREE_TRIAL', 'duration_cap_calendar_days':14, 'rulepack':{'path':str(rulepack.resolve()),'sha256':sha(rule_bytes),'id':rule['rulepack_id'],'scope_note':'daily/total loss limits only; Standard-account news/weekend restrictions below supersede Swing exemptions'}, 'constraints':{'max_daily_loss_percent':daily,'max_total_loss_percent':total,'timezone':'Europe/Prague','news_blackout':'PRE30_POST30_PLUS_FTMO_COMPLIANCE','provider_news_restriction':'STANDARD_ACCOUNT_BINDS','weekend_flat':'FRIDAY_CLOSE_21_BROKER','calendar_binding':'NATIVE_MT5_CALENDAR_LIVE; seed health and execution must be verified before attachment','governor_enforcement':'REQUIRES_SEPARATE_ACCEPTED_TRIAL_GOVERNOR; NOT_PROVEN_BY_SET'}, 'candidates':[p[2] for p in planned]}
     # Validate the whole batch before writing any set; no active-set destination option.
     target.mkdir(parents=True)
     for filename,data,_ in planned:

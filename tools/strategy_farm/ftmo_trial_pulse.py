@@ -1,15 +1,15 @@
 """FTMO trial/challenge pulse — read-only health monitor for the FTMO terminal book.
 
-Mirrors the intent of live_book_pulse.py (T_Live) for the FTMO Round25 deployment
-(decisions/2026-07-05_ftmo_round25_phase1_deploy.md). Read-only: terminal journal +
-QM EA logs only; never touches the terminal.
+Mirrors the intent of live_book_pulse.py (T_Live) for the OWNER-authorized M13
+Free-Trial terminal. Read-only: process/journal/QM logs plus read-only MT5 Python
+IPC against an already-running process; never starts, stops, attaches, or trades.
 
 Checks:
-  1. FTMO terminal64 process and broker-confirmed QM activity match the baked
-     RUNNING/PARKED/MAINTENANCE state. PARKED permits the one OWNER-bound
-     legacy position and rejects any position-count or identity change.
+  1. FTMO terminal64 process, account identity, AutoTrading state and
+     broker-confirmed activity match the baked RUNNING/PARKED/MAINTENANCE state.
+     PARKED requires the new account to remain flat.
   2. Today's journal: disconnects / errors.
-  3. QM EA logs: all 12 expected magics seen, ERROR-level events.
+  3. QM EA logs: all 8 expected magics seen, ERROR-level events.
   4. Latest EQUITY_SNAPSHOT: equity + day_pnl vs FTMO limits
      (daily 5% / total 10% of 100k) with early-warning margins.
 
@@ -33,6 +33,7 @@ except ModuleNotFoundError:
     from tools.strategy_farm import health_contract, path_to_25
 
 DATA_DIR = Path(r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\81A933A9AFC5DE3C23B15CAB19C63850")
+TERMINAL_EXE = Path(r"C:\Program Files\FTMO Global Markets MT5 Terminal\terminal64.exe")
 QM_DIR = DATA_DIR / "MQL5" / "Files" / "QM"
 STATE_JSON = Path(r"D:\QM\reports\state\ftmo_trial_pulse.json")
 STATE_LOG = Path(r"D:\QM\reports\state\ftmo_trial_pulse.log")
@@ -42,28 +43,24 @@ FARM_DB = Path(r"D:\QM\strategy_farm\state\farm_state.sqlite")
 # OWNER state contract. Deliberately baked into the existing pulse rather than
 # hidden in a second, potentially stale flag file.
 #
-# 2026-08-25 OWNER receipt: do not open another FTMO account until the canonical
-# path-to-25 census reaches 25 terminally qualified (EA, symbol) pairs. This
-# supersedes the 2026-08-13 RUNNING contract. The monitor remains observation-
-# only: PARKED never stops the terminal or closes a position, and a warm profile
-# with broker-confirmed QM activity continues to alarm rather than being
-# silently relabelled healthy.
+# 2026-09-06 OWNER receipt: Option B Free-Trial account exists and is provisioned
+# but remains PARKED until the OWNER completes chart attachment, enables
+# AutoTrading, and authorizes the PARKED -> RUNNING source edit.  The observer
+# never performs any of those actions.
 EXPECTED_STATE = "PARKED"
 EXPECTED_STATE_REVIEW_EXPIRES_UTC = None
-EXPECTED_STATE_DECISION_ID = "OWNER-DEC-FTMO-PARK-UNTIL-25-20260825"
-EXPECTED_STATE_DECISION_PATH = (
-    "decisions/2026-08-25_owner_hma_requal_ftmo_park_q02_dead16.md"
-)
+EXPECTED_STATE_DECISION_ID = "OWNER-DEC-M13-ECONOMIC-TRIAL-20260906"
+EXPECTED_STATE_DECISION_PATH = "docs/ops/FTMO_M13_CAPTURE_RUNBOOK_2026-09-06.md"
 EXPECTED_STATE_REVIEW_TRIGGER_QUALIFIED_PAIRS = 25
+EXPECTED_ACCOUNT_LOGIN = 1514536732
+EXPECTED_ACCOUNT_SERVER = "FTMO-Demo"
 
-# 2026-08-26 OWNER receipt: the already-open position is intentionally retained
-# while the trial is PARKED. This is an exact observation contract, not trading
-# authority: a replacement, second position, or different magic fails closed.
-EXPECTED_PARKED_POSITION_COUNT = 1
-EXPECTED_PARKED_POSITION_IDS = {527674048}
-EXPECTED_PARKED_POSITION_MAGICS = {107060001}
+# The new account was synchronized flat.  Any position while PARKED is a defect.
+EXPECTED_PARKED_POSITION_COUNT = 0
+EXPECTED_PARKED_POSITION_IDS: set[int] = set()
+EXPECTED_PARKED_POSITION_MAGICS: set[int] = set()
 EXPECTED_PARKED_POSITION_DECISION_REFERENCE = (
-    "decisions/2026-08-26_owner_q12_disposition_ftmo_position.md#2"
+    "docs/ops/FTMO_M13_CAPTURE_RUNBOOK_2026-09-06.md#2--preconditions-owner--ai-split"
 )
 
 BASE_EQUITY = 100_000.0
@@ -94,13 +91,17 @@ EQUITY_SNAPSHOT_STALE_MINUTES = 180
 # inert: if present it is reported as an ignored no-op (see main()).
 LEGACY_ARM_FLAG = Path(r"D:\QM\reports\state\FTMO_DD_FLOOR_ARMED.flag")
 
-# 2026-08-13: replaced the stale r25-book set (12 magics, never deployed to
-# this terminal) with the demo state OWNER ratified today. 107060001 =
-# QM5_10706 / GBPUSD slot 1, the position observed open when OWNER confirmed
-# the demo keeps running. A magic outside this set is still reported missing/
-# unexpected -- the guard against silent scope growth stays armed.
+# M13 sealed eight-sleeve roster.  These are RUNNING-only expectations; PARKED
+# requires a flat account and does not require any EA log activity.
 EXPECTED_MAGICS = {
     107060001,
+    114210000,
+    114220004,
+    119100006,
+    130540000,
+    15370001,
+    200480000,
+    215050000,
 }
 SERVER_REQUEST_EVENTS = {"TM_OPEN", "TM_CLOSE", "TM_MODIFY", "TM_REMOVE_PENDING"}
 
@@ -175,7 +176,7 @@ def assess_expected_state(
         condition, alarm = "probe_unknown", "ftmo_terminal_process_probe_unknown"
     elif expected == "PARKED":
         if not terminal_up:
-            condition, alarm = "parked_position_missing", "ftmo_parked_position_count_changed:0!=1"
+            condition, alarm = "parked_terminal_missing", "ftmo_terminal_not_running"
         elif magics_seen is None or positions_seen is None:
             condition, alarm = "parked_magic_probe_unknown", "ftmo_parked_magic_probe_unknown"
         elif positions_seen != EXPECTED_PARKED_POSITION_COUNT:
@@ -191,7 +192,8 @@ def assess_expected_state(
                 f"!={len(EXPECTED_PARKED_POSITION_MAGICS)}"
             )
         else:
-            condition, alarm = "PARKED_WITH_POSITION", None
+            condition = "PARKED_FLAT" if EXPECTED_PARKED_POSITION_COUNT == 0 else "PARKED_WITH_POSITION"
+            alarm = None
     elif not terminal_up:
         condition, alarm = "missing", "ftmo_terminal_not_running"
     else:
@@ -355,6 +357,59 @@ def terminal_running() -> bool | None:
         return None
 
 
+def read_terminal_snapshot() -> dict:
+    """Read the already-running FTMO terminal through its read-only Python IPC.
+
+    The process check is deliberately repeated here: ``mt5.initialize`` may
+    start a terminal when none exists, which this observer is never authorized
+    to do.  No trading function is imported or called.
+    """
+    if terminal_running() is not True:
+        return {"ok": False, "reason": "terminal_not_proven_running"}
+    try:
+        import MetaTrader5 as mt5
+    except (ImportError, OSError) as exc:
+        return {"ok": False, "reason": f"mt5_module_unavailable:{type(exc).__name__}"}
+    initialized = False
+    try:
+        initialized = bool(mt5.initialize(path=str(TERMINAL_EXE), timeout=10_000))
+        if not initialized:
+            return {"ok": False, "reason": f"mt5_initialize_failed:{mt5.last_error()}"}
+        terminal = mt5.terminal_info()
+        account = mt5.account_info()
+        positions = mt5.positions_get()
+        orders = mt5.orders_get()
+        if terminal is None or account is None or positions is None or orders is None:
+            return {"ok": False, "reason": f"mt5_snapshot_incomplete:{mt5.last_error()}"}
+        data_path = Path(str(terminal.data_path)).resolve()
+        if data_path != DATA_DIR.resolve():
+            return {"ok": False, "reason": f"terminal_data_path_mismatch:{data_path}"}
+        position_rows = [
+            {"position_id": int(row.identifier), "magic": int(row.magic), "symbol": str(row.symbol)}
+            for row in positions
+        ]
+        return {
+            "ok": True,
+            "reason": "read_only_mt5_ipc",
+            "login": int(account.login),
+            "server": str(account.server),
+            "leverage": int(account.leverage),
+            "equity": float(account.equity),
+            "balance": float(account.balance),
+            "positions": position_rows,
+            "orders": len(orders),
+            "terminal_build": int(terminal.build),
+            "terminal_trade_allowed": bool(terminal.trade_allowed),
+            "account_trade_allowed": bool(account.trade_allowed),
+            "account_trade_expert": bool(account.trade_expert),
+        }
+    except Exception as exc:
+        return {"ok": False, "reason": f"mt5_snapshot_error:{type(exc).__name__}:{exc}"}
+    finally:
+        if initialized:
+            mt5.shutdown()
+
+
 def journal_issues() -> list[str]:
     issues: list[str] = []
     day = utc_now().astimezone().strftime("%Y%m%d")
@@ -362,7 +417,15 @@ def journal_issues() -> list[str]:
     if not jp.exists():
         return [f"journal_missing:{jp.name}"]
     txt = jp.read_bytes().decode("utf-16-le", errors="ignore")
-    for line in txt.splitlines()[-400:]:
+    lines = txt.splitlines()[-400:]
+    authorization = f"'{EXPECTED_ACCOUNT_LOGIN}': authorized on {EXPECTED_ACCOUNT_SERVER}"
+    last_authorized = max(
+        (index for index, line in enumerate(lines) if authorization in line),
+        default=-1,
+    )
+    # Old-account disconnects before the current login are historical, not a
+    # condition of the newly provisioned account.
+    for line in lines[last_authorized + 1:]:
         low = line.lower()
         if "disconnect" in low or "connection lost" in low:
             issues.append("journal:" + line.strip()[-140:])
@@ -565,16 +628,34 @@ def main() -> int:
         "magics": [],
     }
     parked_monitor: dict | None = None
+    parked_terminal: dict | None = None
     parked_magics_seen: int | None = None
     parked_positions_seen: int | None = None
     if EXPECTED_STATE == "PARKED" and up:
-        parked_activity = read_open_qm_positions()
-        parked_monitor = read_monitor_snapshot(now)
-        reconciliation = reconcile_parked_activity(parked_activity, parked_monitor)
-        parked_activity["ok"] = reconciliation["ok"]
-        parked_activity["reason"] = reconciliation["reason"]
-        parked_magics_seen = reconciliation["magics_seen"]
-        parked_positions_seen = reconciliation["positions_seen"]
+        parked_terminal = read_terminal_snapshot()
+        if parked_terminal.get("ok"):
+            parked_activity = {
+                "ok": True,
+                "reason": parked_terminal["reason"],
+                "positions": parked_terminal["positions"],
+                "magics": sorted({int(row["magic"]) for row in parked_terminal["positions"]}),
+            }
+            parked_magics_seen = len(parked_activity["magics"])
+            parked_positions_seen = len(parked_activity["positions"])
+            parked_monitor = {
+                "equity": parked_terminal["equity"],
+                "daily_pnl": 0.0,
+                "open_positions": parked_positions_seen,
+                "age_minutes": 0.0,
+                "fresh": True,
+            }
+        else:
+            parked_activity = {
+                "ok": False,
+                "reason": parked_terminal.get("reason", "terminal_snapshot_failed"),
+                "positions": [],
+                "magics": [],
+            }
     elif EXPECTED_STATE == "PARKED" and up is False:
         parked_magics_seen = 0
         parked_positions_seen = 0
@@ -584,13 +665,26 @@ def main() -> int:
         magics_seen=parked_magics_seen,
         positions_seen=parked_positions_seen,
         maintenance=MAINTENANCE_FLAG.exists(),
-        review_trigger_reached=bool(owner_review["reached"]),
+        # The prior >=25 re-review trigger is informational after the explicit
+        # M13 Option-B receipt; it no longer invalidates this PARKED contract.
+        review_trigger_reached=False,
     )
     # PARKED retains the exact OWNER-bound position plus account/equity delta
     # monitoring. It does not require RUNNING-only EA presence/kill-switch SLAs.
     if contract["effective_state"] != "RUNNING" or contract["alarm"]:
         if contract["alarm"]:
             alarms.append(contract["alarm"])
+        if parked_terminal and parked_terminal.get("ok"):
+            if parked_terminal.get("login") != EXPECTED_ACCOUNT_LOGIN:
+                alarms.append(
+                    f"ftmo_account_login_mismatch:{parked_terminal.get('login')}!={EXPECTED_ACCOUNT_LOGIN}"
+                )
+            if parked_terminal.get("server") != EXPECTED_ACCOUNT_SERVER:
+                alarms.append(
+                    f"ftmo_account_server_mismatch:{parked_terminal.get('server')}!={EXPECTED_ACCOUNT_SERVER}"
+                )
+            if parked_terminal.get("terminal_trade_allowed"):
+                alarms.append("ftmo_autotrading_enabled_while_parked")
         active_ids = {int(row["position_id"]) for row in parked_activity["positions"]}
         active_magics = {int(value) for value in parked_activity["magics"]}
         if parked_activity["ok"] and active_ids != EXPECTED_PARKED_POSITION_IDS:
@@ -647,9 +741,14 @@ def main() -> int:
             "parked_activity_evidence_reason": parked_activity["reason"],
             "equity": parked_equity,
             "day_pnl": parked_day_pnl,
-            "equity_source": "account_monitor" if parked_equity else None,
+            "equity_source": "read_only_mt5_ipc" if parked_equity else None,
             "monitor_age_minutes": (parked_monitor or {}).get("age_minutes"),
             "open_positions": (parked_monitor or {}).get("open_positions"),
+            "account_login": (parked_terminal or {}).get("login"),
+            "account_server": (parked_terminal or {}).get("server"),
+            "account_leverage": (parked_terminal or {}).get("leverage"),
+            "terminal_build": (parked_terminal or {}).get("terminal_build"),
+            "terminal_trade_allowed": (parked_terminal or {}).get("terminal_trade_allowed"),
             "total_dd_pct": total_dd_pct,
             "day_loss_pct": day_loss_pct,
             "equity_snapshot_ts": None,

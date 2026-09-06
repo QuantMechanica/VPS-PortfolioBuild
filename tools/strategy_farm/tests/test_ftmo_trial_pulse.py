@@ -1,5 +1,6 @@
 """Contract tests for the read-only FTMO trial pulse."""
 import sys
+from types import SimpleNamespace
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -41,7 +42,48 @@ def test_snapshot_age_rejects_invalid_timestamp() -> None:
     assert ftmo_trial_pulse.snapshot_age_minutes("not-a-time") is None
 
 
-def test_expected_state_parked_off_fails_when_authorized_position_disappears() -> None:
+def test_terminal_snapshot_never_initializes_without_existing_process(monkeypatch) -> None:
+    called = []
+    fake = SimpleNamespace(initialize=lambda **_kwargs: called.append(True))
+    monkeypatch.setitem(sys.modules, "MetaTrader5", fake)
+    monkeypatch.setattr(ftmo_trial_pulse, "terminal_running", lambda: False)
+
+    result = ftmo_trial_pulse.read_terminal_snapshot()
+
+    assert result == {"ok": False, "reason": "terminal_not_proven_running"}
+    assert called == []
+
+
+def test_terminal_snapshot_is_identity_and_autotrading_bound(monkeypatch) -> None:
+    fake = SimpleNamespace(
+        initialize=lambda **_kwargs: True,
+        terminal_info=lambda: SimpleNamespace(
+            data_path=str(ftmo_trial_pulse.DATA_DIR), build=6182, trade_allowed=False
+        ),
+        account_info=lambda: SimpleNamespace(
+            login=1514536732, server="FTMO-Demo", leverage=100,
+            equity=100000.0, balance=100000.0, trade_allowed=True,
+            trade_expert=True,
+        ),
+        positions_get=lambda: (),
+        orders_get=lambda: (),
+        shutdown=lambda: None,
+        last_error=lambda: (1, "Success"),
+    )
+    monkeypatch.setitem(sys.modules, "MetaTrader5", fake)
+    monkeypatch.setattr(ftmo_trial_pulse, "terminal_running", lambda: True)
+
+    result = ftmo_trial_pulse.read_terminal_snapshot()
+
+    assert result["ok"] is True
+    assert result["login"] == 1514536732
+    assert result["server"] == "FTMO-Demo"
+    assert result["leverage"] == 100
+    assert result["terminal_trade_allowed"] is False
+    assert result["positions"] == []
+
+
+def test_expected_state_parked_off_fails_when_terminal_disappears() -> None:
     now = datetime(2026, 7, 28, tzinfo=timezone.utc)
 
     state = ftmo_trial_pulse.assess_expected_state(
@@ -49,11 +91,11 @@ def test_expected_state_parked_off_fails_when_authorized_position_disappears() -
     )
 
     assert state["expected_state"] == "PARKED"
-    assert state["condition"] == "parked_position_missing"
-    assert state["alarm"] == "ftmo_parked_position_count_changed:0!=1"
+    assert state["condition"] == "parked_terminal_missing"
+    assert state["alarm"] == "ftmo_terminal_not_running"
 
 
-def test_expected_state_parked_running_without_qm_position_fails() -> None:
+def test_expected_state_parked_running_flat_is_ok() -> None:
     now = datetime(2026, 7, 28, tzinfo=timezone.utc)
 
     state = ftmo_trial_pulse.assess_expected_state(
@@ -64,11 +106,11 @@ def test_expected_state_parked_running_without_qm_position_fails() -> None:
         expected_state="PARKED",
     )
 
-    assert state["condition"] == "parked_position_count_changed"
-    assert state["alarm"] == "ftmo_parked_position_count_changed:0!=1"
+    assert state["condition"] == "PARKED_FLAT"
+    assert state["alarm"] is None
 
 
-def test_expected_state_parked_running_with_owner_position_is_ok() -> None:
+def test_expected_state_parked_running_with_position_fails() -> None:
     now = datetime(2026, 7, 28, tzinfo=timezone.utc)
 
     state = ftmo_trial_pulse.assess_expected_state(
@@ -79,8 +121,8 @@ def test_expected_state_parked_running_with_owner_position_is_ok() -> None:
         expected_state="PARKED",
     )
 
-    assert state["condition"] == "PARKED_WITH_POSITION"
-    assert state["alarm"] is None
+    assert state["condition"] == "parked_position_count_changed"
+    assert state["alarm"] == "ftmo_parked_position_count_changed:1!=0"
 
 
 def test_expected_state_second_parked_position_fails_closed() -> None:
@@ -93,7 +135,7 @@ def test_expected_state_second_parked_position_fails_closed() -> None:
     )
 
     assert state["condition"] == "parked_position_count_changed"
-    assert state["alarm"] == "ftmo_parked_position_count_changed:2!=1"
+    assert state["alarm"] == "ftmo_parked_position_count_changed:2!=0"
 
 
 def test_expected_state_parked_running_fails_closed_on_unknown_magic_probe() -> None:
@@ -249,16 +291,18 @@ def test_contract_expiry_wins_over_unknown_process_probe() -> None:
     assert state["alarm"] == "expected_state_review_expired"
 
 
-def test_owner_park_contract_has_threshold_review_not_date_expiry() -> None:
+def test_owner_m13_park_contract_is_flat_and_identity_bound() -> None:
     assert ftmo_trial_pulse.EXPECTED_STATE == "PARKED"
     assert ftmo_trial_pulse.EXPECTED_STATE_REVIEW_EXPIRES_UTC is None
     assert ftmo_trial_pulse.EXPECTED_STATE_REVIEW_TRIGGER_QUALIFIED_PAIRS == 25
-    assert ftmo_trial_pulse.EXPECTED_PARKED_POSITION_COUNT == 1
+    assert ftmo_trial_pulse.EXPECTED_PARKED_POSITION_COUNT == 0
+    assert ftmo_trial_pulse.EXPECTED_ACCOUNT_LOGIN == 1514536732
+    assert ftmo_trial_pulse.EXPECTED_ACCOUNT_SERVER == "FTMO-Demo"
     assert ftmo_trial_pulse.EXPECTED_PARKED_POSITION_DECISION_REFERENCE.endswith(
-        "2026-08-26_owner_q12_disposition_ftmo_position.md#2"
+        "FTMO_M13_CAPTURE_RUNBOOK_2026-09-06.md#2--preconditions-owner--ai-split"
     )
     assert ftmo_trial_pulse.EXPECTED_STATE_DECISION_PATH.endswith(
-        "2026-08-25_owner_hma_requal_ftmo_park_q02_dead16.md"
+        "FTMO_M13_CAPTURE_RUNBOOK_2026-09-06.md"
     )
 
 

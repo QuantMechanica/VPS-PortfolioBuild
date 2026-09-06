@@ -137,6 +137,7 @@ void Capture(const string source)
       "\"session_id\":\"%s\",\"sequence\":%I64u,\"ts_utc\":\"%s\","
       "\"ts_epoch\":%I64d,\"prague_day_key\":%d,\"source\":\"%s\","
       "\"account_login\":%I64d,\"account_server\":\"%s\",\"currency\":\"%s\","
+      "\"account_leverage\":%I64d,"
       "\"balance\":%.2f,\"equity\":%.2f,\"open_positions\":%d,"
       "\"pending_orders\":%d,\"reconciliation_complete\":%s,"
       "\"positions\":%s,\"orders\":%s}",
@@ -145,6 +146,7 @@ void Capture(const string source)
       AccountInfoInteger(ACCOUNT_LOGIN),
       JsonEscape(AccountInfoString(ACCOUNT_SERVER)),
       JsonEscape(AccountInfoString(ACCOUNT_CURRENCY)),
+      AccountInfoInteger(ACCOUNT_LEVERAGE),
       AccountInfoDouble(ACCOUNT_BALANCE),AccountInfoDouble(ACCOUNT_EQUITY),
       position_count,pending_count,(reconciled ? "true" : "false"),
       positions,pending);

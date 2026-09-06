@@ -31,6 +31,10 @@ param(
     [string]$DispatchPhase = "P1",
     [string]$DispatchVersion = "smoke",
     [string]$DispatchSubGateHash,
+    # Bounded non-pipeline route for the read-only FTMO collector fixture.  It
+    # is accepted only on idle T11/T12, a native symbol, and a live Codex router
+    # assignment; it never bypasses Custom-history admission for normal EAs.
+    [string]$MonitorAcceptanceAgentTaskId,
     [switch]$SkipExpertDeploy,
     [ValidatePattern('^[0-9A-Fa-f]{64}$')]
     [string]$ExpectedExpertSha256 = $env:QM_EXPECTED_EX5_SHA256,
@@ -2611,7 +2615,38 @@ $smokeReservation = $null
 try {
 $effectiveTerminal = Resolve-DispatchTerminal -TargetTerminal $Terminal -EAIdValue $EAId -SymbolName $Symbol -PeriodName $Period -YearValue $Year -SetFilePath $SetFile -DispatchPhaseValue $DispatchPhase -DispatchVersionValue $DispatchVersion -DispatchSubGateHashValue $DispatchSubGateHash
 Write-Host ("run_smoke.stage=resolved_terminal terminal={0}" -f $effectiveTerminal)
-$smokeReservation = Invoke-CustomHistorySmokeAdmission -TerminalName $effectiveTerminal -TimeoutSecondsValue $TimeoutSeconds -RunsValue $Runs
+$monitorAcceptanceAuthorized = $false
+if (-not [string]::IsNullOrWhiteSpace($MonitorAcceptanceAgentTaskId)) {
+    $expectedAcceptanceTask = '35eac0e9-8568-4114-b68f-45258ad7189b'
+    $expectedEvidenceRoot = [IO.Path]::GetFullPath('C:\QM\repo\docs\ops\evidence\2026-09-06_ftmo_demo_install\native_tester')
+    $actualReportRoot = [IO.Path]::GetFullPath($ReportRoot)
+    if ($MonitorAcceptanceAgentTaskId -cne $expectedAcceptanceTask -or
+        $effectiveTerminal -notin @('T11', 'T12') -or
+        $Symbol -cne 'EURUSD' -or
+        $Expert -cne 'QM_FTMO\QM_FTMO_TrialTelemetryAcceptance' -or
+        $DispatchPhase -cne 'Q00' -or
+        -not $SkipExpertDeploy.IsPresent -or
+        [string]::IsNullOrWhiteSpace($ExpectedExpertSha256) -or
+        [string]::IsNullOrWhiteSpace($SetFile) -or
+        (($actualReportRoot -ine $expectedEvidenceRoot) -and
+         -not $actualReportRoot.StartsWith($expectedEvidenceRoot.TrimEnd('\') + '\', [StringComparison]::OrdinalIgnoreCase))) {
+        throw 'Monitor acceptance route does not match its exact native, idle-terminal, evidence-only contract.'
+    }
+    $routerJson = @(& python.exe 'C:\QM\repo\tools\strategy_farm\agent_router.py' list-tasks --agent codex --state IN_PROGRESS 2>&1)
+    if ($LASTEXITCODE -ne 0) {
+        throw "Monitor acceptance could not verify the live router assignment: $([string]::Join(' ', $routerJson))"
+    }
+    $routerTasks = [string]::Join([Environment]::NewLine, $routerJson) | ConvertFrom-Json
+    $matchedTask = @($routerTasks | Where-Object { $_.id -ceq $MonitorAcceptanceAgentTaskId })
+    if ($matchedTask.Count -ne 1) {
+        throw 'Monitor acceptance requires its live Codex IN_PROGRESS router assignment.'
+    }
+    $monitorAcceptanceAuthorized = $true
+    Write-Host ("run_smoke.monitor_acceptance=AUTHORIZED task={0} terminal={1}" -f $MonitorAcceptanceAgentTaskId, $effectiveTerminal)
+}
+if (-not $monitorAcceptanceAuthorized) {
+    $smokeReservation = Invoke-CustomHistorySmokeAdmission -TerminalName $effectiveTerminal -TimeoutSecondsValue $TimeoutSeconds -RunsValue $Runs
+}
 $terminalRoot = Resolve-TerminalRoot -TerminalName $effectiveTerminal
 $terminalExe = Resolve-TerminalExecutable -TerminalRoot $terminalRoot
 Write-Host ("run_smoke.stage=resolved_terminal_exe terminal={0} exe='{1}'" -f $effectiveTerminal, $terminalExe)

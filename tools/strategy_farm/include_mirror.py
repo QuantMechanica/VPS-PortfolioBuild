@@ -30,6 +30,14 @@ PIPELINE_HINT = (
     "python tools/strategy_farm/farmctl.py enqueue-compile <EA label>"
 )
 REQUIRED_STDLIB_RELATIVE_PATHS = ("Object.mqh", "Trade/Trade.mqh")
+MONITOR_PROBE_ROOTS = {
+    'f4e95c80-c121-42cb-8e42-78e1334046f4': Path(
+        'C:/QM/repo/docs/ops/evidence/2026-09-06_ftmo_collector_native_acceptance/compile_probe'
+    ).absolute(),
+    '35eac0e9-8568-4114-b68f-45258ad7189b': Path(
+        'C:/QM/repo/docs/ops/evidence/2026-09-06_ftmo_demo_install/compile_probe'
+    ).absolute(),
+}
 
 
 class IncludeMirrorRefusal(RuntimeError):
@@ -41,13 +49,15 @@ class IncludeMirrorRefusal(RuntimeError):
 
 def validate_monitor_probe_contract(manifest: dict, task: dict, root: Path) -> None:
     """Bounded artifact-only authority; never grants terminal include mirroring."""
-    expected = Path('C:/QM/repo/docs/ops/evidence/2026-09-06_ftmo_collector_native_acceptance/compile_probe').absolute()
     def refuse(detail):
         raise IncludeMirrorRefusal('MONITOR_PROBE_REFUSED', detail)
+    task_id = manifest.get('task_id')
+    expected = MONITOR_PROBE_ROOTS.get(task_id)
+    if expected is None:
+        refuse('Task has no task-specific monitor-probe authority')
     if root.resolve() != expected or root.is_symlink():
         refuse('Probe root is outside the task-specific evidence sandbox')
-    if (manifest.get('task_id') != 'f4e95c80-c121-42cb-8e42-78e1334046f4'
-            or task.get('id') != manifest['task_id']
+    if (task.get('id') != task_id
             or task.get('assigned_agent') != 'codex' or task.get('state') != 'IN_PROGRESS'):
         refuse('Live router assignment is required')
     expected_files = {'editor/MetaEditor64.exe', 'MQL5/QM_FTMO_TrialTelemetry.mq5',
