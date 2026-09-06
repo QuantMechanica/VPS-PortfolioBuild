@@ -1,0 +1,21 @@
+{
+  "schema": "qm.chart-panel-review/v1",
+  "task_id": "e0db4991-21ac-466a-b9f6-0cf950c57914",
+  "verdict": "REVIEW_READY",
+  "static": {
+    "status": "PASS",
+    "header_sha256": "1c6fb2b617c5a510c22ccb5fdb4d21e55f1a46d3f09e794f69a97a3b2a011f4a",
+    "probe_sha256": "eb1be314f43047866719aabd5b9920a0f269be679061f6cf1220b5a92a80d291"
+  },
+  "native_compile": {
+    "status": "PASS",
+    "artifact_only": true,
+    "terminal_started": false,
+    "artifact_root": "D:/QM/ftmo/compile_probe_qm_chart_panel_20260906T2010Z",
+    "metaeditor": "D:/QM/mt5/FTMO_STREAM1/MetaEditor64.exe",
+    "summary": "Result: 0 errors, 0 warnings",
+    "ex5_sha256": "d5d697b996db2acb16b7960e0a3ad411d7b9b2b2545e3abc90386213c4691adb"
+  },
+  "deployment_authorized": false,
+  "inventory_binary_changed": false
+}
