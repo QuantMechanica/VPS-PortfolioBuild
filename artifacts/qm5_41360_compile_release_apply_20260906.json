@@ -1,0 +1,41 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "be3fdc9a-6ba3-48ae-8b23-68db2fece85f"
+  ],
+  "backup": {
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260906T013911Z_0bfe6ac6.sqlite",
+    "reused": false,
+    "sha256": "370ad2896795d2a3e28e168313aa0d1507e7a4603c69fb988c8029f549d630e8"
+  },
+  "backup_reuse_max_age_minutes": 0.0,
+  "backup_timeout_seconds": 60.0,
+  "backup_write_guard": {
+    "attempts": 1,
+    "transaction": "BEGIN IMMEDIATE / validated / backed up / released / COMMIT",
+    "wait_seconds": 0.0
+  },
+  "deferred": [],
+  "factory_mutation_lock": {
+    "path": "D:\\QM\\strategy_farm\\state\\FACTORY_MUTATION.lock",
+    "release_status": "released"
+  },
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "06439f8e8704564010135fe9c07c28ffeea703e9a871627035d6b0f6e56d9573",
+      "ea_id": "QM5_41360",
+      "ea_label": "QM5_41360_xtixng-wretr-rv",
+      "expected_mq5_sha256": "06439f8e8704564010135fe9c07c28ffeea703e9a871627035d6b0f6e56d9573",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41360_xtixng-wretr-rv\\QM5_41360_xtixng-wretr-rv.mq5",
+      "work_item_id": "be3fdc9a-6ba3-48ae-8b23-68db2fece85f"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-09-06T01:39:22+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "be3fdc9a-6ba3-48ae-8b23-68db2fece85f"
+}

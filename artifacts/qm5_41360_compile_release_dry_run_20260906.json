@@ -1,0 +1,19 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "06439f8e8704564010135fe9c07c28ffeea703e9a871627035d6b0f6e56d9573",
+      "ea_id": "QM5_41360",
+      "ea_label": "QM5_41360_xtixng-wretr-rv",
+      "expected_mq5_sha256": "06439f8e8704564010135fe9c07c28ffeea703e9a871627035d6b0f6e56d9573",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41360_xtixng-wretr-rv\\QM5_41360_xtixng-wretr-rv.mq5",
+      "work_item_id": "be3fdc9a-6ba3-48ae-8b23-68db2fece85f"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "be3fdc9a-6ba3-48ae-8b23-68db2fece85f"
+}
