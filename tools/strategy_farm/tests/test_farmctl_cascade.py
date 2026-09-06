@@ -880,6 +880,27 @@ Universe: EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, XAUUSD, XTIUSD, NDX.DWX, GDAXI
             self.assertEqual(cmd[cmd.index("--logical-symbol") + 1], "QM5_9998_EURGBP_EURAUD_COINTEGRATION_D1")
             self.assertNotIn("--setfile", cmd)
 
+    def test_q08_runner_cmd_rejects_malformed_ea_identity(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp)
+            conn = sqlite3.connect(":memory:")
+            conn.row_factory = sqlite3.Row
+            conn.execute(
+                """
+                CREATE TABLE work_items(
+                    phase TEXT, ea_id TEXT, symbol TEXT, setfile_path TEXT, payload_json TEXT
+                )
+                """
+            )
+            conn.execute(
+                "INSERT INTO work_items VALUES(?,?,?,?,?)",
+                ("Q08", "QM5_13117__OTHER", "EURGBP.DWX", "baseline.set", "{}"),
+            )
+            row = conn.execute("SELECT * FROM work_items").fetchone()
+
+            with self.assertRaisesRegex(ValueError, "INVALID_EA_IDENTITY"):
+                farmctl._phase_runner_cmd_for_work_item(root, row, root / "reports", "T8")
+
     def test_q06_runner_cmd_keeps_basket_logical_symbol(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)

@@ -7,7 +7,7 @@ import sys
 import pytest
 from tools.strategy_farm import dsr_cohort as producer, dsr_single_configuration as single
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]/'framework/scripts'))
-from q08_davey import dsr_v2 as v2
+from q08_davey import aggregate, dsr_v2 as v2
 
 
 def bind(path, raw):
@@ -193,4 +193,56 @@ def test_canonical_ea_id_matches_aggregator_int_and_work_item_label():
     from tools.strategy_farm.dsr_single_configuration import canonical_ea_id
     assert canonical_ea_id(11167) == canonical_ea_id('QM5_11167') == canonical_ea_id('11167') == canonical_ea_id('qm5_11167') == '11167'
     assert canonical_ea_id('QM5_11168') != canonical_ea_id(11167)
+    assert canonical_ea_id('QM5_111670') != canonical_ea_id(11167)
     assert canonical_ea_id('QM5_41372_XTI_XNG') == '41372'
+
+
+@pytest.mark.parametrize('value', [None, True, '', 'QM5_', 'QM5_011167',
+                                   'QM5_11167__OTHER', 'QM5_11167/OTHER',
+                                   'prefix-QM5_11167'])
+def test_canonical_ea_id_rejects_malformed_aliases(value):
+    with pytest.raises(ValueError, match='INVALID_EA_IDENTITY'):
+        single.canonical_ea_id(value)
+
+
+def test_aggregate_cli_numeric_id_accepts_sealed_qm5_candidate(tmp_path, monkeypatch):
+    """Exercise the argparse int boundary used by farmctl, not only the evaluator API."""
+    context, _ = fixture(tmp_path)
+    binding = producer.seal(context, tmp_path/'sealed')
+    seen = {}
+
+    def evaluate_at_boundary(ea_id, symbol, log_path, **kwargs):
+        seen['ea_id'] = ea_id
+        seen['result'] = v2.evaluate(
+            trades([200, -100] * 182), binding=kwargs['dsr_context'],
+            ea_id=ea_id, symbol=symbol)
+        return {'verdict': seen['result']['status']}
+
+    monkeypatch.setattr(aggregate, 'run_all', evaluate_at_boundary)
+    monkeypatch.setattr(aggregate, '_print_summary', lambda _: None)
+    monkeypatch.setattr(sys, 'argv', [
+        'aggregate.py', '--ea-id', '42', '--symbol', 'EURUSD.DWX',
+        '--log', str(tmp_path/'unused.jsonl'), '--dsr-context', binding['path'],
+        '--expected-dsr-context-sha256', binding['sha256'],
+    ])
+
+    assert aggregate.main() == 0
+    assert seen['ea_id'] == 42
+    assert seen['result']['status'] == 'PASS'
+
+
+def test_symbol_and_timeframe_format_drift_remain_fail_closed(tmp_path):
+    context, _ = fixture(tmp_path)
+    result = v2.evaluate(
+        trades([200, -100] * 182), binding=producer.seal(context, tmp_path/'symbol'),
+        ea_id=42, symbol='EURUSD_DWX')
+    assert result['status'] == 'INVALID'
+    assert result['detail'] == 'DSR_V2_SINGLE_CONFIG_CANDIDATE_MISMATCH'
+
+    context, _ = fixture(tmp_path/'tf')
+    context['candidate']['timeframe'] = '16408'
+    result = v2.evaluate(
+        trades([200, -100] * 182), binding=producer.seal(context, tmp_path/'timeframe'),
+        ea_id=42, symbol='EURUSD.DWX')
+    assert result['status'] == 'INVALID'
+    assert result['detail'] == 'DSR_V2_SINGLE_CONFIG_CANDIDATE_MISMATCH'

@@ -110,13 +110,18 @@ def validate(provenance, candidate, expected):
 
 
 def canonical_ea_id(value):
-    """Identity-format normalization (2026-09-06): the Q08 aggregator receives ``--ea-id 11167`` (int, farmctl
-    strips the ``QM5_`` prefix) while the sealed candidate carries the work-item label ``QM5_11167``. Both name the
-    same EA; compare the numeric core so equivalent spellings match and different EAs still fail closed."""
+    """Return the numeric core of one well-formed EA identity.
+
+    The Q08 aggregator receives ``--ea-id 11167`` while the sealed candidate
+    carries ``QM5_11167``.  Directory/sibling labels such as
+    ``QM5_41372_XTI_XNG`` are also the same numeric EA identity.  Reject all
+    other spellings instead of truncating arbitrary text at an underscore.
+    """
+    require(not isinstance(value, bool), 'INVALID_EA_IDENTITY')
     text = str(value).strip().upper()
-    if text.startswith('QM5_'):
-        text = text[4:]
-    return text.split('_', 1)[0]
+    match = re.fullmatch(r'(?:QM5_)?([1-9][0-9]*)(?:_[A-Z0-9][A-Z0-9_-]*)?', text)
+    require(match is not None, 'INVALID_EA_IDENTITY')
+    return match.group(1)
 
 
 def validate_context(context, *, ea_id, symbol):

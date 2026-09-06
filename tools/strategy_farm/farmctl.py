@@ -35,6 +35,13 @@ except ModuleNotFoundError:
     )
 
 try:
+    from dsr_single_configuration import canonical_ea_id as canonical_dsr_ea_id
+except ModuleNotFoundError:
+    from tools.strategy_farm.dsr_single_configuration import (
+        canonical_ea_id as canonical_dsr_ea_id,
+    )
+
+try:
     import opt_census_pruning
 except ModuleNotFoundError:
     from tools.strategy_farm import opt_census_pruning
@@ -10184,8 +10191,7 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
         cmd = [
             _console_python_executable(),
             str(runner_repo_root / "framework" / "scripts" / "q08_davey" / "aggregate.py"),
-            "--ea-id", str(int(ea_id.replace("QM5_", "").split("_")[0]))
-                          if ea_id.startswith("QM5_") else ea_id,
+            "--ea-id", canonical_dsr_ea_id(ea_id),
             "--symbol", symbol,
             "--log", str(log_path),
             "--out-dir", str(report_root / ea_id / "Q08" / symbol.replace(".", "_")),
