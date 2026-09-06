@@ -885,13 +885,73 @@ function Invoke-ForbiddenScan {
         return
     }
 
-    $mlPattern = '(?i)\b(tensorflow|torch|pytorch|sklearn|keras|onnx|xgboost|lightgbm|catboost|mlpack|dlib)\b|\.onnx\b|\.pb\b|\.pt\b|\.pth\b|\bweights\s*\['
+    # ---- EA_ML_FORBIDDEN (scoped 2026-09-06, ticket 690fc42a) ----
+    # The Hard Rule forbids ML LIBRARIES and LEARNING in V5 EAs. It does not forbid
+    # deterministic coefficient arrays. The previous predicate contained a bare
+    # `\bweights\s*\[` token, which flagged any array literally named "weights" --
+    # including the closed-form fractional-differencing coefficients of QM5_41193
+    # (weights[lag] = weights[lag-1] * (lag-1-d)/lag), a pure recurrence with no
+    # data, no error term and no state carried across bars. Identifier NAMES are not
+    # evidence of ML; what makes code ML is (1) pulling in an ML library or model
+    # artifact, (2) calling a model/inference/training API, or (3) updating stored
+    # parameters from a learning signal (learning rate / gradient / error / reward).
+    # Those three shapes are what the predicate now matches.
+    #
+    # Detection is done on comment-blanked text (prose describing ML is not ML) and,
+    # for the code-shape patterns, on string-blanked text as well. Blanking replaces
+    # characters with spaces so line numbers stay exact.
+
+    # QM-MARK: BEGIN ML_PREDICATE_PATTERNS
+    # (1) library / model-artifact intake via the preprocessor
+    $mlIncludePattern = '(?im)^\s*#(?:include|import|resource|property\s+\w+)\b[^\r\n]*?(?:tensorflow|pytorch|\btorch\b|sklearn|scikit|keras|onnx|xgboost|lightgbm|catboost|mlpack|\bdlib\b|neural_?net\w*|perceptron|\.onnx|\.tflite|\.pth|\.pkl|\.h5)[^\r\n]*'
+    # (1b) a serialized model artifact named in a string literal
+    $mlModelArtifactPattern = '(?i)"[^"\r\n]*\.(?:onnx|tflite|h5|pb|pt|pth|pkl|joblib|caffemodel)"'
+    # (2) model / inference / training API call sites (MQL5 ships a native ONNX API)
+    $mlApiPattern = '(?i)\bOnnx[A-Za-z_]*\s*\(|\b(?:BackProp|BackPropagate|Backpropagation|GradientDescent|GradientStep|TrainModel|TrainNetwork|TrainEpoch|FitModel|FitParameters|UpdateWeights|LearnOnline|OnlineLearn|NeuralNetwork|Perceptron|QLearning|SGDUpdate|AdamUpdate)\s*\('
+    # (3a) an explicit learning rate anywhere in code is an online-learning tell
+    $mlLearningRatePattern = '(?i)\b(?:learning_?rate|learn_?rate|lrate)\b'
+    # (3b) a stored parameter (array element or member) updated from a learning signal.
+    #      Deliberately NOT a bare `loss`/`error`: a deterministic estimator may minimise
+    #      an in-sample loss (LAD / Theil-Sen grid search in the QM5_411xx family) or read
+    #      GetLastError without doing any learning. Only signals that are specific to
+    #      parameter LEARNING count -- a gradient, a backprop term, an RL reward, or an
+    #      explicitly named training/prediction error.
+    $mlOnlineUpdatePattern = '(?i)\b[A-Za-z_]\w*(?:\.\w+)?\s*\[[^\]\r\n]{0,120}\]\s*(?:\+=|-=|\*=|/=|=(?!=))[^;{}]{0,400}?\b(?:gradients?|backprop\w*|loss_?grad\w*|training_?loss|reward\w*|td_error|prediction_error|error_term|error_signal|delta_error|training_signal)\b'
+
+    $mlPatterns = @(
+        @{ Pattern = $mlIncludePattern;       Scope = 'comments'; Hint = 'ML library / model artifact include or import' },
+        @{ Pattern = $mlModelArtifactPattern; Scope = 'comments'; Hint = 'serialized model artifact reference' },
+        @{ Pattern = $mlApiPattern;           Scope = 'code';     Hint = 'model inference / training API call' },
+        @{ Pattern = $mlLearningRatePattern;  Scope = 'code';     Hint = 'learning rate (online parameter learning)' },
+        @{ Pattern = $mlOnlineUpdatePattern;  Scope = 'code';     Hint = 'stored parameter updated from a learning signal' }
+    )
+
+    # QM-MARK: END ML_PREDICATE_PATTERNS
+
     $externalPattern = '(?i)\bWebRequest\s*\(|https?://'
 
-    $mlHits = Select-String -Path $mqlFiles.ToArray() -Pattern $mlPattern
-    foreach ($hit in $mlHits) {
-        Add-Failure "EA_ML_FORBIDDEN: $($hit.Path):$($hit.LineNumber) contains '$($hit.Matches[0].Value)'."
+    # QM-MARK: BEGIN ML_PREDICATE_SCAN
+    foreach ($mqlFile in $mqlFiles) {
+        $rawMl = Get-Content -LiteralPath $mqlFile -Raw
+        if ([string]::IsNullOrEmpty($rawMl)) { continue }
+        # Blank comments, then string literals; keep newlines so line numbers hold.
+        $commentFree = [regex]::Replace($rawMl, '(?s)/\*.*?\*/|(?m)//[^\r\n]*', {
+            param($m) [regex]::Replace($m.Value, '[^\r\n]', ' ')
+        })
+        $codeOnly = [regex]::Replace($commentFree, '"(?:\\.|[^"\\\r\n])*"', {
+            param($m) [regex]::Replace($m.Value, '[^\r\n]', ' ')
+        })
+        foreach ($mlRule in $mlPatterns) {
+            $haystack = if ($mlRule.Scope -eq 'code') { $codeOnly } else { $commentFree }
+            foreach ($hit in [regex]::Matches($haystack, $mlRule.Pattern)) {
+                $lineNumber = 1 + ([regex]::Matches($haystack.Substring(0, $hit.Index), "`n")).Count
+                $snippet = ($hit.Value -replace '\s+', ' ').Trim()
+                if ($snippet.Length -gt 120) { $snippet = $snippet.Substring(0, 120) + '...' }
+                Add-Failure "EA_ML_FORBIDDEN: ${mqlFile}:${lineNumber} $($mlRule.Hint): '$snippet'."
+            }
+        }
     }
+    # QM-MARK: END ML_PREDICATE_SCAN
 
     $externalHits = Select-String -Path $mqlFiles.ToArray() -Pattern $externalPattern
     foreach ($hit in $externalHits) {
