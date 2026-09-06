@@ -1,0 +1,48 @@
+{
+  "candidate": {
+    "author": "Villar; Joutz; Ramberg; Parsons",
+    "mechanic": "normalized-week-boundary-xti-xng-synchronized-completed-week-individual-log-returns-strict-same-sign-common-shock-relative-outperformer-fade-equal-notional-one-week-hold",
+    "slug": "xtixng-commonshock-rv",
+    "strategy_id": "AI-CODEX-XTIXNG-COMMONSHOCK-RV-20260906_S01"
+  },
+  "error": "MISSING_ROOT:strategy_wiki:G:\\My Drive\\09 Strategy Wiki\\strategies",
+  "exit_code": 3,
+  "generated_at_utc": "2026-09-06T02:33:26+00:00",
+  "manual_resolution": "FUZZY_CARRIER_PORT_RESOLVED_DISTINCT_XTIXNG_SAME_DIRECTION_WEEKLY_COMMON_SHOCK_RELATIVE_OUTPERFORMER_FADE_BASKET",
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41086_xauxag-commonshock-rv_card.md",
+      "score": 1.0,
+      "slug": "xauxag-commonshock-rv",
+      "source": "card",
+      "strategy_id": "SCHWEIKERT-CME-XAUXAG-COMMONSHOCK-RV-2026_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4841,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1454,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\09 Strategy Wiki\\strategies",
+      "count": null,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "MISSING_ROOT"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "FUZZY_MATCH_MANUALLY_RESOLVED_DISTINCT"
+}
