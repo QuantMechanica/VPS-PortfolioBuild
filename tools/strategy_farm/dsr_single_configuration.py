@@ -109,12 +109,22 @@ def validate(provenance, candidate, expected):
     return decl
 
 
+def canonical_ea_id(value):
+    """Identity-format normalization (2026-09-06): the Q08 aggregator receives ``--ea-id 11167`` (int, farmctl
+    strips the ``QM5_`` prefix) while the sealed candidate carries the work-item label ``QM5_11167``. Both name the
+    same EA; compare the numeric core so equivalent spellings match and different EAs still fail closed."""
+    text = str(value).strip().upper()
+    if text.startswith('QM5_'):
+        text = text[4:]
+    return text.split('_', 1)[0]
+
+
 def validate_context(context, *, ea_id, symbol):
     require(context.get('schema') == SCHEMA and context.get('sealed') is True
             and context.get('complete') is True and context.get('losers_included') is True,
             'UNSEALED_SINGLE_CONFIG_CONTEXT')
     candidate = context.get('candidate')
-    require(isinstance(candidate, dict) and str(candidate.get('ea_id')) == str(ea_id)
+    require(isinstance(candidate, dict) and canonical_ea_id(candidate.get('ea_id')) == canonical_ea_id(ea_id)
             and candidate.get('symbol') == symbol, 'SINGLE_CONFIG_CANDIDATE_MISMATCH')
     require(all(type(context.get(k)) is int for k in ('declared_trial_count','effective_trial_count','research_trial_count','selection_trial_count'))
             and context.get('selection_mode') == 'DECLARED_SINGLE_CONFIGURATION' and context.get('cohort_std_daily') == 0

@@ -186,3 +186,11 @@ def test_factory_search_marker_refuses_but_post_claim_row_does_not():
     proof = producer._factory_search_before_q08_claim(con, row, payload)
     assert proof['optimization_rows'] == []
     assert proof['work_items_examined'] == 0
+
+def test_canonical_ea_id_matches_aggregator_int_and_work_item_label():
+    # 2026-09-06: farmctl passes --ea-id 11167 to q08_davey/aggregate.py while the sealed candidate says QM5_11167;
+    # the literal string compare produced DSR_V2_SINGLE_CONFIG_CANDIDATE_MISMATCH on every single-config rerun (19c9df13).
+    from tools.strategy_farm.dsr_single_configuration import canonical_ea_id
+    assert canonical_ea_id(11167) == canonical_ea_id('QM5_11167') == canonical_ea_id('11167') == canonical_ea_id('qm5_11167') == '11167'
+    assert canonical_ea_id('QM5_11168') != canonical_ea_id(11167)
+    assert canonical_ea_id('QM5_41372_XTI_XNG') == '41372'
