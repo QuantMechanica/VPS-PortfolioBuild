@@ -169,6 +169,11 @@ that breaches them. The ones that operationally hit you:
   multi-symbol EAs carry one input per symbol slot. `.DWX` is the factory custom-symbol name
   only; live (Darwinex Zero) and FTMO charts use plain broker names. Vault: `01 Identity/Hard
   Rules` annex 2026-09-06; framework: `V5_FRAMEWORK_DESIGN.md` principle 7.
+- **Live EAs never read the backtest news archive (OWNER original decision, reaffirmed
+  2026-09-06).** ENV=live builds use their own live news filter (native MT5 calendar or
+  equivalent), fail-closed; `D:\QM\data
+ews_calendar` is factory evidence only. Vault annex
+  2026-09-06; framework principle 8.
 
 ## T_Live Live Trading — OWNER authority, AI verification
 

@@ -106,6 +106,32 @@ Build-check enforces presence of `QuantMechanica V5 Framework`, `Risk`, `News`, 
 6. **MT5-native, no external runtime deps in the EA itself.** Helpers (compile harness, smoke runner) may use PowerShell + Python, but the EA is pure MQL5.
 7. **Symbols are inputs, never code literals (OWNER Hard Rule 2026-09-06).** The traded symbol is the chart (`_Symbol`) or an `input`; a multi-symbol EA (universe, basket, calendar host symbols) declares **one input per symbol slot** (`strategy_symbol_1..N`) and never embeds broker names. `.DWX` is only the factory custom-symbol name; Darwinex Zero live and FTMO charts use plain broker names (`EURUSD`, `USOIL.cash`). Enforcement: build_check predicate `EA_SYMBOL_HARDCODED` (ticket 4d3b27f6), review_ea checklist, resolver base-name matching (see QM_MagicResolver.mqh). Trigger: FTMO M13 demo 2026-09-06 — four sleeves refused to attach, QM5_1537 inert (calendar host symbols as `.DWX` literals).
 
+### Symbol-slot input pattern
+
+Single-symbol EAs trade `_Symbol`. Multi-symbol EAs declare one user-visible input per
+slot (`input string strategy_symbol_1 = "";` through `strategy_symbol_N`), resolve an
+empty slot to `_Symbol` only where the card explicitly defines the chart as that slot,
+and call `SymbolSelect`/`CopyRates` only with the resolved value. `OnInit` rejects empty,
+duplicate or unavailable required slots. Broker suffix or alias handling happens during
+that resolution; `QM_MagicSymbolBase` may compare a factory `.DWX` registry name with a
+plain broker name, but must not turn one instrument into another.
+
+The magic registry remains the sole `(ea_id, symbol_slot) -> magic` authority. Input
+order must equal registry slot order, and a resolved input must match the registry row
+for its slot before trading is armed. Code-generated registry tables and SHA-bound data
+contracts may contain canonical symbol literals only inside an explicitly marked
+`QM_SYMBOL_LITERAL_ALLOW: GENERATED_SLOT_TABLE_BEGIN/END` block; they are identity data,
+not trading/universe configuration. Ordinary trading logic never receives that waiver.
+
+`EA_SYMBOL_HARDCODED` inventories exact broker-symbol string literals. Findings in MQL
+files present at the 2026-09-06 cutover are warnings for migration; violations in a new
+MQL file fail the build. Symbol input defaults, registry includes and marked generated
+slot tables are reported as allowed classifications. The corpus inventory and build
+predicate share `tools/strategy_farm/ea_symbol_literal_inventory.py` so their regex and
+classification cannot drift.
+8. **Live EAs carry their own live news filter (OWNER original decision, reaffirmed 2026-09-06).** ENV=live builds (Darwinex Zero, FTMO) never read the backtest news archive `D:\QM\data
+ews_calendar`; they use a real-time source (native MT5 economic calendar `CalendarValueHistory`/`CalendarValueLast` or an equivalent live feed) with the same taxonomy (impact, currencies, pre/post windows) as the Q-gate archive filter, **fail-closed** (source unavailable = blackout). The archive remains factory evidence for Q02–Q10 only. Implemented since FW-LIVE 2026-06-28 in `QM_NewsFilter.mqh` (`QM_NewsLiveInWindow`, `QM_NewsLiveCalendarHealthy`); the `NEWS_CALENDAR_LOADED` / `NEWS_CALENDAR_COVERAGE_GAP` log lines on a live terminal are CSV seed diagnostics, not the live decision source. Enforcement: build_check predicate for ENV=live include closures + native-calendar attach evidence (Codex ticket 2026-09-06). Vault: `01 Identity/Hard Rules` annex.
+
 ## Repo Layout
 
 ```
