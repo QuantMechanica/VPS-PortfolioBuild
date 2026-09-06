@@ -54,6 +54,12 @@ input string strategy_sleeve_calendar_file = "QM5_1537_monthly_sleeves_v1.csv";
 input string strategy_sleeve_calendar_sha256 = "401E0D91E2428DAB4ABFF17C1DF651F1C7BC716B7160B71A06D1A3ECA9B5288B";
 input string strategy_sleeve_contract_sha256 = "314634871498688C3784984B8EA3DF35716996ACBEDC63623396FBC31D188007";
 input string strategy_sleeve_input_bundle_sha256 = "B177F13D49B91B2235D9B2C1013AE46F9F2BD9798D2CBA00922AACD760E41862";
+// OWNER Hard Rule 2026-09-06 (symbols are inputs, never code literals): the
+// calendar/registry name of the host symbol. Empty = chart symbol (factory: the
+// custom symbol XAGUSD.DWX). On a broker account whose chart is the plain name
+// (FTMO/Darwinex live: XAGUSD) set it to the registry name (XAGUSD.DWX) so the
+// sha-bound sleeve calendar keeps matching without a calendar rebuild.
+input string strategy_calendar_symbol   = "";
 
 // Registry slot order. Every entry is present in dwx_symbol_matrix.csv and in
 // magic_numbers.csv for QM5_1537. The exact order is bound into the monthly
@@ -69,6 +75,11 @@ string g_strategy_basket[37] =
    "GBPUSD.DWX", "NZDCAD.DWX", "NZDCHF.DWX", "NZDJPY.DWX", "NZDUSD.DWX",
    "USDCAD.DWX", "USDCHF.DWX", "USDJPY.DWX"
   };
+
+string QM1537_HostSymbol()
+  {
+   return (strategy_calendar_symbol == "") ? _Symbol : strategy_calendar_symbol;
+  }
 
 #include "QM5_1537_MonthlySleeveCalendar.mqh"
 
@@ -156,7 +167,7 @@ bool Strategy_HostRegistrationMatches()
    const int n = ArraySize(g_strategy_basket);
    if(qm_magic_slot_offset < 0 || qm_magic_slot_offset >= n)
       return false;
-   return (g_strategy_basket[qm_magic_slot_offset] == _Symbol);
+   return (g_strategy_basket[qm_magic_slot_offset] == QM1537_HostSymbol());
   }
 
 int Strategy_CurrentPositionDirection()

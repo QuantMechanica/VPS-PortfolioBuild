@@ -1,0 +1,18 @@
+{
+ "schema": "qm.ftmo-demo-sleeve-rebuild-receipt/v1",
+ "at_utc": "2026-09-06T20:02:52+00:00",
+ "actor": "claude-session-018mXkPPkaHQ2fPuduPCBcWc",
+ "authority": "OWNER chat 2026-09-06 ~20:03Z: den 1537 EA wollen wir auch auf FTMO noch aktiv schalten, priorisiere das und mach es selbst!",
+ "change": "QM5_1537: new input strategy_calendar_symbol (calendar/registry host-symbol name; empty = _Symbol) routed through QM1537_HostSymbol() in Strategy_HostRegistrationMatches and the calendar host/selected matching; calendar CSV + contract sha unchanged; preset sets strategy_calendar_symbol=XAGUSD.DWX",
+ "source_sha256": {
+  "QM5_1537_aa-vol-sma10.mq5": "01aeae9e51837151d60bae26dc8c31b336f247a08e4e41367285439020dafb04",
+  "QM5_1537_MonthlySleeveCalendar.mqh": "ab52e1c874be131947e47161796eb941cb794d597de0a845674466b1b2726b9f"
+ },
+ "compile_log_result": "Result: 0 errors, 0 warnings, 6342 ms elapsed, cpu='X64 Regular'",
+ "old_sha256": "a2e9e82892886afc990ee84d0f8926bfd0593717b30e900e656a165e0e110e6c",
+ "new_sha256": "e34e0194bfb4a804526ecb45572b05148ea083ac3d0f01536a9f7b9216e3ea40",
+ "installed_sha256": "e34e0194bfb4a804526ecb45572b05148ea083ac3d0f01536a9f7b9216e3ea40",
+ "preset_sha256": "ddcfbdb3852492fa8238761b17d6b67562b5dbca4ea3ce9c0ec7b11d4f07e369",
+ "factory_inventory_touched": false,
+ "ok": true
+}

@@ -284,7 +284,7 @@ bool Strategy_LoadBoundMonthlySleeveCalendar()
          FileClose(handle);
          return QM1537_CalendarFail("runtime_calendar_row_binding_mismatch");
         }
-      if(host_symbol != _Symbol)
+      if(host_symbol != QM1537_HostSymbol())
          continue;
 
       const bool rank_is_minus_one = (rank_text == "-1");
@@ -303,9 +303,10 @@ bool Strategy_LoadBoundMonthlySleeveCalendar()
       const bool selected = (selected_text == "1");
       const double host_vol_pct = StringToDouble(host_vol_text);
       const long asof_epoch = StringToInteger(asof_text);
-      const bool host_listed = (selected_1 == _Symbol ||
-                                selected_2 == _Symbol ||
-                                selected_3 == _Symbol);
+      const string host_name = QM1537_HostSymbol();
+      const bool host_listed = (selected_1 == host_name ||
+                                selected_2 == host_name ||
+                                selected_3 == host_name);
       if(!QM1537_ValidMonthKey(month_key) || month_key <= previous_host_month ||
          valid_count < 0 || valid_count > ArraySize(g_strategy_basket) ||
          host_rank < -1 || host_rank >= valid_count ||
