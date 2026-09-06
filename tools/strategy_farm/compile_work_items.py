@@ -411,6 +411,9 @@ REVIEW_REWORK_SOURCE_REPAIR_AUTHORITIES = {
     "QM5_41229_wti-samecal-trimean5": (
         "router_review_ea:0c39bc3c-df80-41fd-9ec1-5b7be49129dd"
     ),
+    "QM5_9579_bandy-atr-channel-breakout-trend": (
+        "router_review_ea:ad98fd21-0459-4b0b-a673-69d41d2b1a0d"
+    ),
 }
 REVIEW_REWORK_SOURCE_REPAIR_EA_LABELS = frozenset(
     REVIEW_REWORK_SOURCE_REPAIR_AUTHORITIES

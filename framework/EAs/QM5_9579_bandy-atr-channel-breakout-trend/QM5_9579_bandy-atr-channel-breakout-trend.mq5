@@ -44,13 +44,67 @@ input int    strategy_time_stop_days    = 30;
 input double strategy_spread_max_atr    = 0.25;
 input int    strategy_warmup_bars       = 50;
 
+// Closed-D1 state is refreshed once per D1 bar.  Management reads this cache
+// on every tick so failed protective modifications can be retried without
+// repeating indicator work on every modelled tick.
+double g_signal_close = 0.0;
+double g_signal_sma   = 0.0;
+double g_signal_atr   = 0.0;
+bool   g_daily_state_ready = false;
+
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
+void Strategy_AdvanceDailyState()
+{
+   g_daily_state_ready = false;
+
+   // perf-allowed: one bounded D1 history check behind the sole new-bar gate.
+   if(iBars(_Symbol, PERIOD_D1) < strategy_warmup_bars)
+      return;
+
+   MqlRates signal_bar;
+   if(!QM_ReadBar(_Symbol, PERIOD_D1, 1, signal_bar))
+      return;
+
+   const double sma = QM_SMA(_Symbol, PERIOD_D1, strategy_sma_period, 1, PRICE_CLOSE);
+   const double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+   if(signal_bar.close <= 0.0 || sma <= 0.0 || atr <= 0.0)
+      return;
+
+   g_signal_close = signal_bar.close;
+   g_signal_sma = sma;
+   g_signal_atr = atr;
+   g_daily_state_ready = true;
+}
+
+double Strategy_InitialProtectiveStop(const QM_OrderType side, const double entry_price)
+{
+   const double trail_stop = QM_StopATRFromValue(_Symbol,
+                                                  side,
+                                                  entry_price,
+                                                  g_signal_atr,
+                                                  strategy_trail_atr_mult);
+   const double catastrophic_stop = QM_StopATRFromValue(_Symbol,
+                                                         side,
+                                                         entry_price,
+                                                         g_signal_atr,
+                                                         strategy_sl_atr_mult);
+   if(trail_stop <= 0.0 || catastrophic_stop <= 0.0)
+      return 0.0;
+
+   // The server-side SL must satisfy both card controls.  At the approved
+   // defaults the 2xATR initial Chandelier is tighter; the 5xATR backstop is
+   // an absolute loss ceiling if a wider trail is ever selected in a sweep.
+   if(side == QM_BUY)
+      return MathMax(trail_stop, catastrophic_stop);
+   return MathMin(trail_stop, catastrophic_stop);
+}
+
 bool Strategy_NoTradeFilter()
 {
-   if(iBars(_Symbol, PERIOD_D1) < strategy_warmup_bars)
+   if(!g_daily_state_ready)
       return true;
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -58,8 +112,7 @@ bool Strategy_NoTradeFilter()
    if(ask <= 0.0 || bid <= 0.0)
       return true;
 
-   const double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
-   if(atr > 0.0 && ask > bid && (ask - bid) > (strategy_spread_max_atr * atr))
+   if(ask > bid && (ask - bid) > (strategy_spread_max_atr * g_signal_atr))
       return true;
 
    return false;
@@ -67,24 +120,17 @@ bool Strategy_NoTradeFilter()
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
 {
-   if(iBars(_Symbol, PERIOD_D1) < strategy_warmup_bars)
+   if(!g_daily_state_ready)
       return false;
 
    const int magic = QM_FrameworkMagic();
    if(magic > 0 && QM_TM_OpenPositionCount(magic) > 0)
       return false;
 
-   const double close1 = iClose(_Symbol, PERIOD_D1, 1);
-   const double sma20  = QM_SMA(_Symbol, PERIOD_D1, strategy_sma_period, 1, PRICE_CLOSE);
-   const double atr14  = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+   const double upper_channel = g_signal_sma + (strategy_channel_mult * g_signal_atr);
+   const double lower_channel = g_signal_sma - (strategy_channel_mult * g_signal_atr);
 
-   if(close1 <= 0.0 || sma20 <= 0.0 || atr14 <= 0.0)
-      return false;
-
-   const double upper_channel = sma20 + (strategy_channel_mult * atr14);
-   const double lower_channel = sma20 - (strategy_channel_mult * atr14);
-
-   if(close1 > upper_channel)
+   if(g_signal_close > upper_channel)
    {
       const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       if(ask <= 0.0)
@@ -92,14 +138,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
       req.type = QM_BUY;
       req.price = 0.0;
-      req.sl = QM_StopATR(_Symbol, QM_BUY, ask, strategy_atr_period, strategy_trail_atr_mult);
+      req.sl = Strategy_InitialProtectiveStop(QM_BUY, ask);
+      if(req.sl <= 0.0)
+         return false;
       req.tp = 0.0;
       req.reason = "BANDY_ATR_CHANNEL_BUY";
       req.symbol_slot = qm_magic_slot_offset;
       req.expiration_seconds = 0;
       return true;
    }
-   else if(close1 < lower_channel)
+   else if(g_signal_close < lower_channel)
    {
       const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       if(bid <= 0.0)
@@ -107,7 +155,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
       req.type = QM_SELL;
       req.price = 0.0;
-      req.sl = QM_StopATR(_Symbol, QM_SELL, bid, strategy_atr_period, strategy_trail_atr_mult);
+      req.sl = Strategy_InitialProtectiveStop(QM_SELL, bid);
+      if(req.sl <= 0.0)
+         return false;
       req.tp = 0.0;
       req.reason = "BANDY_ATR_CHANNEL_SELL";
       req.symbol_slot = qm_magic_slot_offset;
@@ -124,9 +174,6 @@ void Strategy_ManageOpenPosition()
    if(magic <= 0)
       return;
 
-   const double close1 = iClose(_Symbol, PERIOD_D1, 1);
-   const double atr14  = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
-
    for(int i = PositionsTotal() - 1; i >= 0; --i)
    {
       const ulong ticket = PositionGetTicket(i);
@@ -138,21 +185,21 @@ void Strategy_ManageOpenPosition()
          continue;
 
       const datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
-      const int bars_held = iBarShift(_Symbol, PERIOD_D1, open_time, false);
+      const int bars_held = iBarShift(_Symbol, PERIOD_D1, open_time, false); // perf-allowed: O(1) trading-day hold count
       if(bars_held >= strategy_time_stop_days)
       {
          QM_TM_ClosePosition(ticket, QM_EXIT_TIME_STOP);
          continue;
       }
 
-      if(atr14 > 0.0 && close1 > 0.0)
+      if(g_daily_state_ready)
       {
          const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
          const double current_sl = PositionGetDouble(POSITION_SL);
 
          if(pos_type == POSITION_TYPE_BUY)
          {
-            const double desired_sl = close1 - (strategy_trail_atr_mult * atr14);
+            const double desired_sl = g_signal_close - (strategy_trail_atr_mult * g_signal_atr);
             if(current_sl <= 0.0 || desired_sl > current_sl)
             {
                QM_TM_MoveSL(ticket, desired_sl, "BANDY_CHANDELIER_TRAIL");
@@ -160,7 +207,7 @@ void Strategy_ManageOpenPosition()
          }
          else if(pos_type == POSITION_TYPE_SELL)
          {
-            const double desired_sl = close1 + (strategy_trail_atr_mult * atr14);
+            const double desired_sl = g_signal_close + (strategy_trail_atr_mult * g_signal_atr);
             if(current_sl <= 0.0 || desired_sl < current_sl)
             {
                QM_TM_MoveSL(ticket, desired_sl, "BANDY_CHANDELIER_TRAIL");
@@ -191,6 +238,14 @@ int OnInit()
                         30, 30, qm_news_stale_max_hours, qm_news_min_impact, qm_rng_seed,
                         qm_stress_reject_probability, qm_news_temporal, qm_news_compliance))
       return INIT_FAILED;
+
+   if(!QM_FrameworkDeclareExecutionContract(PERIOD_D1,
+                                             QM_FRIDAY_CLOSE_FRAMEWORK_OVERRIDE,
+                                             "QM_V5_FRIDAY_CLOSE_POLICY"))
+   {
+      QM_FrameworkShutdown();
+      return INIT_FAILED;
+   }
    return INIT_SUCCEEDED;
 }
 
@@ -204,15 +259,15 @@ void OnTick()
       return;
 
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-
    if(QM_FrameworkHandleFridayClose())
       return;
 
-   if(Strategy_NoTradeFilter())
-      return;
+   const bool new_bar = QM_IsNewBar(_Symbol, PERIOD_D1);
+   if(new_bar)
+      Strategy_AdvanceDailyState();
 
+   // Risk-reducing work remains reachable on every tick, including when
+   // quotes/spread/news make a new entry ineligible.
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -231,6 +286,14 @@ void OnTick()
       }
    }
 
+   if(!new_bar)
+      return;
+
+   QM_EquityStreamOnNewBar();
+
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
@@ -239,10 +302,8 @@ void OnTick()
    if(!news_allows)
       return;
 
-   if(!QM_IsNewBar())
+   if(Strategy_NoTradeFilter())
       return;
-
-   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    ZeroMemory(req);

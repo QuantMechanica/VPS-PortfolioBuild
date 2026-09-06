@@ -2537,6 +2537,9 @@ def test_review_rework_source_repair_authority_is_exact_label_bound() -> None:
         "QM5_41229_wti-samecal-trimean5": (
             "router_review_ea:0c39bc3c-df80-41fd-9ec1-5b7be49129dd"
         ),
+        "QM5_9579_bandy-atr-channel-breakout-trend": (
+            "router_review_ea:ad98fd21-0459-4b0b-a673-69d41d2b1a0d"
+        ),
     }
     for label, authority in authorities.items():
         assert compile_work_items._source_repair_authorized(label, authority)

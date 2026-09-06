@@ -3,21 +3,23 @@
 **EA ID:** QM5_9579
 **Slug:** `bandy-atr-channel-breakout-trend`
 **Source:** `9ef19e06-5ca6-5b35-aa06-b8187aa0e016` (see `strategy-seeds/sources/9ef19e06-5ca6-5b35-aa06-b8187aa0e016/`)
-**Author of this spec:** auto-generated ex-post by gen_spec_md.py
-**Last revised:** 2026-08-23
+**Author of this spec:** Codex
+**Last revised:** 2026-09-06
 
 ---
 
 ## 1. Strategy Logic
 
-Mechanical strategy implemented per the approved card
-`artifacts/cards_approved/QM5_9579_bandy-atr-channel-breakout-trend.md`. See that card's body for
-the full entry/exit/stop/sizing rules; this SPEC summarises the
-implementation surface.
+On each completed D1 bar, the EA buys when the close is above SMA(20) plus
+1.5 × ATR(14), and sells when the close is below SMA(20) minus 1.5 × ATR(14).
+The initial server-side stop is the tighter of the 2 × ATR Chandelier stop and
+the 5 × ATR catastrophic loss ceiling. While a position is open, the
+Chandelier stop ratchets from completed D1 closes and a 30-trading-day time
+stop closes any trade that remains open.
 
-Entry/exit logic is encoded in the five `Strategy_*` hooks in
-`QM5_9579_bandy-atr-channel-breakout-trend.mq5`. Framework wiring (risk, magic, news, Friday close)
-is inherited from `QM_Common.mqh` and is not redocumented here.
+Spread and news checks gate entries only. Friday close, the daily ATR trail,
+the time stop, and failed-close/modify retries remain reachable when a new
+entry is ineligible.
 
 ---
 
@@ -25,7 +27,14 @@ is inherited from `QM_Common.mqh` and is not redocumented here.
 
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
-| (no strategy-specific inputs) | — | — | uses framework defaults only |
+| `strategy_atr_period` | 14 | 10 / 14 / 20 | ATR period for the channel, initial protection, and trailing stop. |
+| `strategy_sma_period` | 20 | 10 / 20 / 50 | D1 close reference average at the centre of the channel. |
+| `strategy_channel_mult` | 1.5 | 1.0 / 1.5 / 2.0 | ATR distance from the SMA required for entry. |
+| `strategy_trail_atr_mult` | 2.0 | 1.5 / 2.0 / 3.0 | Initial and ratcheting Chandelier-stop distance. |
+| `strategy_sl_atr_mult` | 5.0 | fixed card baseline | Catastrophic ATR loss ceiling; the effective initial SL is never looser than this distance. |
+| `strategy_time_stop_days` | 30 | fixed card baseline | Maximum holding period in D1 trading bars. |
+| `strategy_spread_max_atr` | 0.25 | fixed build guard | Entry-only maximum spread as a fraction of ATR; zero modeled DWX spread remains valid. |
+| `strategy_warmup_bars` | 50 | ≥50 | Minimum D1 history required before an entry can be evaluated. |
 
 > Framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
 > qm_news_mode, qm_rng_seed, qm_stress_reject_probability,
@@ -51,9 +60,12 @@ is inherited from `QM_Common.mqh` and is not redocumented here.
 - `USDCAD.DWX` — registered in magic_numbers.csv for this EA
 - `NZDUSD.DWX` — registered in magic_numbers.csv for this EA
 
-**Explicitly NOT for:** any symbol not in the list above (no implicit
-universe expansion at runtime; the `QM_SymbolGuard` framework helper
-rejects foreign symbols).
+This is the already allocated portability subset from the approved card: seven
+FX majors, five major equity indices, and gold. No symbol was added during the
+rework.
+
+**Explicitly NOT for:** any symbol not in the list above. There is no implicit
+runtime universe expansion.
 
 ---
 
@@ -61,9 +73,9 @@ rejects foreign symbols).
 
 | Aspect | Value |
 |---|---|
-| Base timeframe | `H1` |
-| Multi-timeframe refs | see `Strategy_*` hooks in the .mq5 |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
+| Base timeframe | `D1` |
+| Multi-timeframe refs | none |
+| Bar gating | explicit `QM_IsNewBar(_Symbol, PERIOD_D1)` plus fail-closed D1 execution contract |
 
 ---
 
@@ -72,11 +84,11 @@ rejects foreign symbols).
 | Metric | Expected |
 |---|---|
 | Trades / year / symbol | 14 |
-| Cadence note | see card body |
-| Typical hold time | see card body |
-| Expected drawdown profile | bounded by RISK_FIXED + FTMO 10% total DD ceiling |
-| Regime preference | per card thesis |
-| Win rate target (qualitative) | medium |
+| Cadence note | low-frequency; evaluated once per completed D1 bar |
+| Typical hold time | several days to at most 30 trading days |
+| Expected drawdown profile | fixed-risk trend whipsaws, bounded per trade by the effective ATR stop |
+| Regime preference | directional, volatility-expanding trends |
+| Win rate target (qualitative) | low-to-medium, offset by trend-following payoff asymmetry |
 
 ---
 
@@ -85,9 +97,12 @@ rejects foreign symbols).
 This card was mechanised from:
 
 **Source ID:** `9ef19e06-5ca6-5b35-aa06-b8187aa0e016`
-**Pointer:** `strategy-seeds/sources/9ef19e06-5ca6-5b35-aa06-b8187aa0e016/`
-**R1–R4 verdict (Q00):** all PASS — see
-`artifacts/cards_approved/QM5_9579_bandy-atr-channel-breakout-trend.md`
+**Pointer:** Howard B. Bandy, *Quantitative Technical Analysis: An Integrated
+Approach to Trading System Development and Trade Management*, Blue Owl Press,
+2015, ISBN 9780979183850; source record
+`strategy-seeds/sources/9ef19e06-5ca6-5b35-aa06-b8187aa0e016/`.
+**R1 lineage and R2–R4 verdicts (Q00):** PASS per
+`D:/QM/strategy_farm/artifacts/cards_approved/QM5_9579_bandy-atr-channel-breakout-trend.md`.
 
 ---
 
@@ -108,3 +123,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-23 | Initial spec (ex-post, generated by gen_spec_md.py) | post-PT15 remediation |
+| v2 | 2026-09-06 | Review rework | D1 contract, reachable risk management, catastrophic-stop invariant, and truthful parameter surface |
