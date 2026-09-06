@@ -976,3 +976,7 @@ Beide OWNER-Freigaben (MNT020-RECOMPILE, MNT006-CANARY) sind ausgeführt und im 
 # 2026-09-02 QM5_41142 build handoff
 
 - Task `f3fba72c-a3be-453e-9e15-830e46135c53`: source, identity, set, spec, basket manifest, and five-test reference model are complete with static guardrails PASS. Governed compile work item `07a09214-86ba-4946-9e0b-c9e7baa8b6fc` remains pending behind `COMPILE_EA_WORKER_ROLLOUT_PENDING`, but its pre-commit source binding is stale against committed SHA `CB33049F...`. It must fail closed and be replaced after the reviewed worker rollout. Router REVIEW was correctly refused with `D6_BUILD_IDENTITY_MISSING`, and the task is BLOCKED pending that governed repair; no compile or pipeline verdict and no Q02 enqueue are claimed. Evidence: `docs/ops/evidence/2026-09-02_qm5_41142_build_handoff.md` and `docs/ops/evidence/f3fba72c_qm5_41142_build_result_2026-09-02.json`.
+
+# 2026-09-06 QM5_12507 logical FX basket Q02 capacity handoff
+
+- The 66-pair scan remains fully mechanized and the 12532/12533 anchors are already beyond Q02. Existing fallback `QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1` retains exactly one pending, unheld, priority-tracked Q02 row (`547c4fd3-f3fd-4c59-b9dc-654e96521251`), but the current five-sample CPU maximum reached 99% against the 97% hard ceiling. No duplicate enqueue, claim or launch was performed. Evidence: `docs/ops/evidence/2026-09-06_qm5_12507_q02_hard_cpu_stop_021703Z.md`.
