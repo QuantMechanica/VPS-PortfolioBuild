@@ -21554,6 +21554,8 @@ def _pump_unlocked(
                     _apply_phase_timeout_min(payload, successor_phase)
                 if successor_phase in {"Q05", "Q06", "Q07", _INCUMBENT_PHASE}:
                     _apply_q_phase_full_history_from(payload, successor_phase)
+                if successor_phase == "Q08":
+                    _attach_q08_dsr_context(conn, wi, payload)
                 contract_phase = successor_phase in {_NEWS_PHASE, _INCUMBENT_PHASE}
                 insert_sql = """
                     INSERT INTO work_items
@@ -25667,6 +25669,24 @@ def _setfile_path_exists(setfile_path: str) -> bool:
     return False
 
 
+def _attach_q08_dsr_context(
+    conn: sqlite3.Connection,
+    predecessor: Mapping[str, Any],
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """Stamp a not-yet-inserted Q08 payload from governed search evidence.
+
+    The producer owns no queue mutation.  It either returns a sealed immutable
+    binding or records a machine-readable refusal; callers then insert the new
+    row once.  Existing Q08 rows never pass through this helper.
+    """
+    try:
+        from tools.strategy_farm import dsr_cohort
+    except ModuleNotFoundError:
+        import dsr_cohort
+    return dsr_cohort.attach(conn, dict(predecessor), payload)
+
+
 def enqueue_backtest(root: Path, review_task_id: str, phase: str) -> dict[str, Any]:
     """Create a backtest_<phase> task.
 
@@ -29337,6 +29357,8 @@ def enqueue_cascade_backtest_for_ea(
                     # ORIGINAL 8-cell source. rerun_reason is recorded by the
                     # append-only update above (guarded non-empty upstream).
                     payload.update(forced_news_expansion_identity)
+                if phase == "Q08":
+                    _attach_q08_dsr_context(conn, prev, payload)
                 wid = str(uuid.uuid4())
                 insert_sql = """
                     INSERT INTO work_items
@@ -29446,6 +29468,8 @@ def enqueue_cascade_backtest_for_ea(
                     )
                 requeued.append({"id": existing["id"], "symbol": existing["symbol"]})
                 continue
+            if phase == "Q08":
+                _attach_q08_dsr_context(conn, prev, payload)
             wid = str(uuid.uuid4())
             contract_phase = phase in {
                 _NEWS_PHASE, _NEWS_PORTFOLIO_PHASE, _INCUMBENT_PHASE

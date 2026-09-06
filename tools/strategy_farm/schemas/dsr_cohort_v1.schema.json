@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "qm.dsr-cohort/v1",
+  "title": "QuantMechanica sealed DSR cohort",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "sealed", "complete", "losers_included", "candidate", "window",
+    "timezone", "initial_balance", "frequency", "costs_attested", "selection_mode",
+    "declared_trial_count", "selection_trial_count", "research_trial_count",
+    "effective_trial_count", "cohort_std_daily", "trial_ids", "peers", "search_history"
+  ],
+  "properties": {
+    "schema": {"const": "qm.dsr-cohort/v1"},
+    "sealed": {"const": true},
+    "complete": {"const": true},
+    "losers_included": {"const": true},
+    "created_at_utc": {"type": "string"},
+    "candidate": {
+      "type": "object",
+      "required": ["ea_id", "symbol", "timeframe"],
+      "properties": {
+        "ea_id": {"type": "string", "minLength": 1},
+        "symbol": {"type": "string", "minLength": 1},
+        "timeframe": {"type": "string", "minLength": 1}
+      }
+    },
+    "window": {
+      "type": "object",
+      "required": ["from", "to"],
+      "properties": {
+        "from": {"type": "string", "format": "date"},
+        "to": {"type": "string", "format": "date"}
+      }
+    },
+    "timezone": {"type": "string", "minLength": 1},
+    "initial_balance": {"type": "number", "exclusiveMinimum": 0},
+    "frequency": {"const": "CALENDAR_DAY"},
+    "costs_attested": {"const": true},
+    "selection_mode": {"const": "DL089_V3"},
+    "declared_trial_count": {"const": 154},
+    "selection_trial_count": {"type": "integer", "minimum": 154},
+    "research_trial_count": {"type": "integer", "minimum": 0},
+    "effective_trial_count": {"type": "integer", "minimum": 154},
+    "cohort_std_daily": {"type": "number", "exclusiveMinimum": 0},
+    "trial_ids": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "peers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "trial_index", "trial_id", "role", "frequency", "return_unit",
+          "n_calendar_days", "net_return_input", "sharpe_daily", "series_sha256",
+          "provenance"
+        ],
+        "properties": {
+          "trial_index": {"type": "integer", "minimum": 0},
+          "trial_id": {"type": "string", "minLength": 1},
+          "role": {"enum": ["selection", "research"]},
+          "frequency": {"const": "CALENDAR_DAY"},
+          "return_unit": {"const": "NET_CASH"},
+          "n_calendar_days": {"type": "integer", "minimum": 2},
+          "net_return_input": {"type": "number"},
+          "sharpe_daily": {"type": "number"},
+          "series_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "provenance": {"type": "array", "minItems": 1}
+        }
+      }
+    },
+    "search_history": {
+      "type": "object",
+      "required": ["complete", "unit", "annual_measurements_are_trials", "sources"],
+      "properties": {
+        "complete": {"const": true},
+        "unit": {"const": "candidate_configuration"},
+        "annual_measurements_are_trials": {"const": false},
+        "sources": {"type": "array", "minItems": 4}
+      }
+    }
+  }
+}

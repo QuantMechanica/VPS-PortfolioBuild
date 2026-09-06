@@ -19,6 +19,7 @@ from zoneinfo import ZoneInfo
 from .common import make_result, trade_timestamp
 
 SCHEMA = 'qm.dsr-selection-context/v1'
+COHORT_SCHEMA = 'qm.dsr-cohort/v1'
 GATE_NAME = '8.2_dsr_mc_fdr'
 EULER = 0.5772156649015329
 SHA = re.compile(r'^[0-9a-f]{64}$')
@@ -67,6 +68,21 @@ def bound(binding):
         raise DsrEvidenceError('INVALID_CONTEXT_JSON') from exc
     require(isinstance(value, dict), 'CONTEXT_OBJECT_REQUIRED')
     return value
+
+
+def file_bound(binding):
+    """Verify an arbitrary provenance file without interpreting its format."""
+    require(isinstance(binding, dict) and set(binding) == {'path', 'sha256'},
+            'INVALID_PROVENANCE_BINDING')
+    path = Path(str(binding['path']))
+    require(path.is_absolute() and bool(SHA.fullmatch(str(binding['sha256']))),
+            'INVALID_PROVENANCE_BINDING')
+    try:
+        raw = path.read_bytes()
+    except OSError as exc:
+        raise DsrEvidenceError('PROVENANCE_FILE_UNAVAILABLE') from exc
+    require(hashlib.sha256(raw).hexdigest() == binding['sha256'],
+            'PROVENANCE_SHA256_MISMATCH')
 
 
 def daily_series(trades, start, end, *, timezone, initial_balance):
@@ -141,8 +157,94 @@ def _ids(raw):
     return set(raw)
 
 
+def _producer_cohort_context(context, binding, *, ea_id, symbol):
+    """Validate the enqueue-time cohort producer's self-contained v1 file."""
+    require(context.get('sealed') is True and context.get('complete') is True,
+            'UNCORRECTED_SELECTION_UNSEALED_CONTEXT')
+    candidate = context.get('candidate')
+    require(isinstance(candidate, dict)
+            and str(candidate.get('ea_id')) == str(ea_id)
+            and candidate.get('symbol') == symbol
+            and isinstance(candidate.get('timeframe'), str)
+            and candidate.get('timeframe'), 'CONTEXT_CANDIDATE_IDENTITY_MISMATCH')
+    require(context.get('frequency') == 'CALENDAR_DAY'
+            and context.get('costs_attested') is True,
+            'CONTEXT_FREQUENCY_OR_COST_ATTESTATION_REQUIRED')
+    require(context.get('selection_mode') == 'DL089_V3'
+            and context.get('losers_included') is True,
+            'UNCORRECTED_SELECTION_NOT_LOSER_INCLUSIVE')
+    history = context.get('search_history')
+    require(isinstance(history, dict) and history.get('complete') is True
+            and history.get('unit') == 'candidate_configuration'
+            and history.get('annual_measurements_are_trials') is False,
+            'UNCORRECTED_SELECTION_INCOMPLETE_SEARCH_HISTORY')
+    sources = history.get('sources')
+    require(isinstance(sources, list), 'SEARCH_PROVENANCE_REQUIRED')
+    roles = set()
+    for source in sources:
+        require(isinstance(source, dict), 'SEARCH_PROVENANCE_REQUIRED')
+        role = source.get('role')
+        roles.add(role)
+        # Reuse the strict hash-bound reader without allowing metadata fields to
+        # weaken its exact {path,sha256} boundary.
+        file_bound({'path': source.get('path'), 'sha256': source.get('sha256')})
+    require({'sealed_census_ledger', 'matrix_service_receipt', 'q02', 'q03'} <= roles,
+            'SEARCH_PROVENANCE_REQUIRED')
+    peers = context.get('peers')
+    trial_ids = context.get('trial_ids')
+    selection_count = context.get('selection_trial_count')
+    research_count = context.get('research_trial_count')
+    count = context.get('effective_trial_count')
+    require(type(selection_count) is int and type(research_count) is int
+            and type(count) is int and selection_count >= 1 and research_count >= 0
+            and count == selection_count + research_count
+            and isinstance(peers, list) and len(peers) == count,
+            'TRIAL_COUNT_COHORT_MISMATCH')
+    require(_ids(trial_ids) == _ids([peer.get('trial_id') for peer in peers]),
+            'UNCORRECTED_SELECTION_COHORT_HISTORY_COVERAGE_MISMATCH')
+    require([peer.get('trial_index') for peer in peers] == list(range(count)),
+            'NONCONTIGUOUS_TRIAL_INDEX')
+    sharpes = []
+    for peer in peers:
+        require(peer.get('role') in {'selection', 'research'}
+                and peer.get('frequency') == 'CALENDAR_DAY'
+                and peer.get('return_unit') == 'NET_CASH'
+                and type(peer.get('n_calendar_days')) is int
+                and peer['n_calendar_days'] >= 2
+                and bool(SHA.fullmatch(str(peer.get('series_sha256')))),
+                'COHORT_SERIES_PROVENANCE_REQUIRED')
+        provenance = peer.get('provenance')
+        require(isinstance(provenance, list) and provenance,
+                'COHORT_SERIES_PROVENANCE_REQUIRED')
+        for source in provenance:
+            require(isinstance(source, dict), 'COHORT_SERIES_PROVENANCE_REQUIRED')
+            file_bound({'path': source.get('path'), 'sha256': source.get('sha256')})
+        sharpes.append(finite(peer.get('sharpe_daily')))
+    require(sum(peer.get('role') == 'selection' for peer in peers) == selection_count
+            and sum(peer.get('role') == 'research' for peer in peers) == research_count,
+            'TRIAL_ROLE_COUNT_MISMATCH')
+    sigma = statistics.stdev(sharpes) if len(sharpes) > 1 else 0.0
+    declared_sigma = finite(context.get('cohort_std_daily'))
+    require(math.isclose(sigma, declared_sigma, rel_tol=1e-12, abs_tol=1e-12),
+            'COHORT_DISPERSION_MISMATCH')
+    require(context.get('declared_trial_count') == 154 and selection_count >= 154,
+            'DL089_DECLARED_SELECTION_COUNT_MISMATCH')
+    return context, {
+        'effective_trial_count': count,
+        'research_trial_count': research_count,
+        'selection_trial_count': selection_count,
+        'overlap_trial_count': 0,
+        'declared_trial_count': context.get('declared_trial_count'),
+        'selection_mode': context.get('selection_mode'),
+        'cohort_std_daily': sigma,
+        'context_sha256': binding['sha256'],
+    }
+
+
 def selection_context(binding, *, ea_id, symbol, values):
     context = bound(binding)
+    if context.get('schema') == COHORT_SCHEMA:
+        return _producer_cohort_context(context, binding, ea_id=ea_id, symbol=symbol)
     require(context.get('schema') == SCHEMA and context.get('sealed') is True, 'UNCORRECTED_SELECTION_UNSEALED_CONTEXT')
     require(str(context.get('ea_id')) == str(ea_id) and context.get('symbol') == symbol, 'CONTEXT_CANDIDATE_IDENTITY_MISMATCH')
     require(context.get('frequency') == 'CALENDAR_DAY' and context.get('costs_attested') is True, 'CONTEXT_FREQUENCY_OR_COST_ATTESTATION_REQUIRED')

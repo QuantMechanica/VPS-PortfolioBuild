@@ -194,3 +194,40 @@ def test_informative_edge_can_pass_and_short_window_retains_low_sample(tmp_path,
     monkeypatch.setenv('QM_DSR_V2', '1')
     _, labels = aggregate._aggregate_verdict([result], trades=trades([1, 2]))
     assert labels[result['name']] == 'LOW_SAMPLE'
+
+
+def test_producer_cohort_schema_is_computable(tmp_path):
+    provenance = tmp_path / 'source.json'
+    provenance.write_text('{}')
+    digest = hashlib.sha256(provenance.read_bytes()).hexdigest()
+    source = {'role': 'q02', 'path': str(provenance), 'sha256': digest}
+    roles = ['sealed_census_ledger', 'matrix_service_receipt', 'q02', 'q03']
+    peers = []
+    for index in range(154):
+        peers.append({
+            'trial_index': index, 'trial_id': f'trial-{index}', 'role': 'selection',
+            'frequency': 'CALENDAR_DAY', 'return_unit': 'NET_CASH',
+            'n_calendar_days': 365, 'net_return_input': index - 80,
+            'sharpe_daily': (index - 77) / 1000,
+            'series_sha256': hashlib.sha256(str(index).encode()).hexdigest(),
+            'provenance': [{'role': 'native_report', 'path': str(provenance), 'sha256': digest}],
+        })
+    context = {
+        'schema': 'qm.dsr-cohort/v1', 'sealed': True, 'complete': True,
+        'losers_included': True, 'candidate': {'ea_id': '42', 'symbol': 'EURUSD.DWX', 'timeframe': 'D1'},
+        'window': {'from': '2025-01-01', 'to': '2025-12-31'}, 'timezone': 'UTC',
+        'initial_balance': 100000, 'frequency': 'CALENDAR_DAY', 'costs_attested': True,
+        'selection_mode': 'DL089_V3', 'declared_trial_count': 154,
+        'selection_trial_count': 154, 'research_trial_count': 0,
+        'effective_trial_count': 154,
+        'cohort_std_daily': statistics.stdev(p['sharpe_daily'] for p in peers),
+        'trial_ids': [p['trial_id'] for p in peers], 'peers': peers,
+        'search_history': {'complete': True, 'unit': 'candidate_configuration',
+                           'annual_measurements_are_trials': False,
+                           'sources': [{**source, 'role': role} for role in roles]},
+    }
+    binding = save(tmp_path / 'producer.json', context)
+    values = [.03, -.01, .02] * 121 + [.01, -.005]
+    result = v2.evaluate(trades(values), binding=binding, ea_id=42, symbol='EURUSD.DWX')
+    assert result['detail'] == 'DSR_V2_COMPUTED'
+    assert result['evidence']['selection_trial_count'] == 154
