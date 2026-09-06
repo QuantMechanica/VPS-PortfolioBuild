@@ -1,0 +1,524 @@
+{
+ "schema": "qm.backup-cleanup-receipt/v1",
+ "at_utc": "2026-09-06T15:45:10.824813+00:00",
+ "actor": "claude-session-018mXkPPkaHQ2fPuduPCBcWc",
+ "reason": "per-row release_compile_wave / intake-first-q02 pre-mutation backups (701 MB each, seconds apart) drove D: from 82 GB to 43.8 GB on 2026-09-06 and triggered tester_cache_purge worker teardown at 12:40Z and 15:40Z; kept newest 3 per tool class, all scheduled hourly snapshots, the 50fbbdbf restore backup and build-claim backups",
+ "classes": [
+  "farm_state_before_compile_wave_",
+  "farm_state_before_first_q02_intake_",
+  "farm_state_before_canonical_setfile_paths_",
+  "farm_state_before_hold_release_"
+ ],
+ "kept": [
+  {
+   "file": "farm_state_before_compile_wave_20260906T153938Z_fe462411.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T15:39:42.568380Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260906T153929Z_2b894c3b.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T15:39:32.700196Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260906T153920Z_2d886ae0.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T15:39:23.154302Z"
+  },
+  {
+   "file": "farm_state_before_first_q02_intake_20260906T153249_832123Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T15:32:53.092102Z"
+  },
+  {
+   "file": "farm_state_before_first_q02_intake_20260906T153231_849789Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T15:32:34.228646Z"
+  },
+  {
+   "file": "farm_state_before_first_q02_intake_20260906T153216_452745Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T15:32:18.828941Z"
+  },
+  {
+   "file": "farm_state_before_canonical_setfile_paths_20260905T220147_809649Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-05T22:01:50.517799Z"
+  },
+  {
+   "file": "farm_state_before_canonical_setfile_paths_20260905T220136_693746Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-05T22:01:40.628297Z"
+  },
+  {
+   "file": "farm_state_before_canonical_setfile_paths_20260905T220123_852444Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-05T22:01:29.793437Z"
+  },
+  {
+   "file": "farm_state_before_hold_release_20260906T055527_082201Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T05:55:43.834192Z"
+  },
+  {
+   "file": "farm_state_before_hold_release_20260906T045707_719622Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T04:57:26.971718Z"
+  },
+  {
+   "file": "farm_state_before_hold_release_20260906T045651_196727Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T04:57:05.360366Z"
+  }
+ ],
+ "deleted": [
+  {
+   "file": "farm_state_before_compile_wave_20260906T153912Z_0e275d13.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T15:39:14.106818Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260906T153859Z_7075eb45.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T15:39:02.862507Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260906T153850Z_ac578b8e.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T15:38:52.647039Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260906T153500Z_0fd7e6fd.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T15:35:04.312831Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260906T153450Z_4c4eeed2.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T15:34:54.894476Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260906T153440Z_f5a41b12.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T15:34:44.038617Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260906T153431Z_3d73e47d.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T15:34:34.078045Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260906T153421Z_5e156d77.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T15:34:25.102052Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260906T153413Z_baf7df69.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T15:34:15.374124Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260906T153403Z_0d7ed159.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T15:34:07.082545Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260906T153353Z_fe1c7071.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T15:33:55.593308Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260906T152833Z_7887f261.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T15:28:36.096069Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260906T135144Z_bdd287d5.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T13:51:46.265605Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260906T134700Z_0526f1d6.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T13:47:04.119853Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260906T125228Z_8c82a678.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T12:52:34.151538Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260906T125216Z_b70b7a5e.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T12:52:22.120088Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260906T123644Z_8d839be8.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T12:36:48.201321Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260906T114235Z_087124a9.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T11:43:05.295199Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260906T102844Z_b76dea30.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T10:28:46.875621Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260906T102145Z_c9c5ec22.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T10:21:49.733458Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260906T095426Z_c01d2acf.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T09:54:45.683116Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260906T084536Z_a26c2e01.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T08:45:49.672853Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260906T083545Z_87d9a1cb.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T08:35:48.195393Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260906T074453Z_994389fc.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T07:44:56.359894Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260906T074157Z_c64a3711.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T07:42:04.120204Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260906T044014Z_5e163a89.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T04:40:21.945854Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260906T035630Z_f94d6ccb.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T03:56:40.782944Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260906T034007Z_983c159e.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T03:40:36.468973Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260906T024131Z_389214df.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T02:41:36.106255Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260906T023156Z_4f71b5ed.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T02:31:59.741224Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260906T013911Z_0bfe6ac6.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T01:39:16.834786Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260906T004114Z_613a48ad.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T00:41:18.233205Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260906T000059Z_f1ac7074.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T00:01:14.385228Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260905T235554Z_72601868.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-05T23:56:07.414858Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260905T234238Z_0fcabf0e.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-05T23:42:52.657372Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260905T225530Z_88b5335e.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-05T22:55:43.140553Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260905T225124Z_11d2fce4.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-05T22:51:41.043895Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260905T224039Z_b0136e4e.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-05T22:40:55.179788Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260905T212938Z_c0bdeb4e.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-05T21:29:41.032870Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260905T210306Z_1682a060.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-05T21:03:11.307529Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260905T210236Z_4b876c59.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-05T21:02:39.328117Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260905T184050Z_8d5c5d7b.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-05T18:41:00.648122Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260905T183736Z_41ce7eca.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-05T18:37:45.996630Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260905T181329Z_49d76211.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-05T18:13:42.971931Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260905T164143Z_aad3f000.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-05T16:42:04.309078Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260905T152918Z_7feb5edd.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-05T15:29:22.174800Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260905T150107Z_618c3576.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-05T15:01:16.259029Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260905T150053Z_981b686d.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-05T15:01:01.169164Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260905T145935Z_5e47b3f0.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-05T14:59:39.445954Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260905T142159Z_b256a1ca.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-05T14:22:02.253601Z"
+  },
+  {
+   "file": "farm_state_before_compile_wave_20260905T142022Z_d6784684.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-05T14:20:26.117282Z"
+  },
+  {
+   "file": "farm_state_before_first_q02_intake_20260906T153157_958653Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T15:32:02.448099Z"
+  },
+  {
+   "file": "farm_state_before_first_q02_intake_20260906T145904_186682Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T14:59:07.953201Z"
+  },
+  {
+   "file": "farm_state_before_first_q02_intake_20260906T145844_915732Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T14:58:49.207031Z"
+  },
+  {
+   "file": "farm_state_before_first_q02_intake_20260906T145825_506787Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T14:58:30.667501Z"
+  },
+  {
+   "file": "farm_state_before_first_q02_intake_20260906T145806_213752Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T14:58:10.527109Z"
+  },
+  {
+   "file": "farm_state_before_first_q02_intake_20260906T145749_092961Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T14:57:51.321350Z"
+  },
+  {
+   "file": "farm_state_before_first_q02_intake_20260906T145731_163762Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T14:57:34.943382Z"
+  },
+  {
+   "file": "farm_state_before_first_q02_intake_20260906T143249_474422Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T14:32:53.567281Z"
+  },
+  {
+   "file": "farm_state_before_first_q02_intake_20260906T143230_637173Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T14:32:34.370832Z"
+  },
+  {
+   "file": "farm_state_before_first_q02_intake_20260906T143212_536952Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T14:32:16.703043Z"
+  },
+  {
+   "file": "farm_state_before_first_q02_intake_20260906T143126_595302Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T14:31:31.428073Z"
+  },
+  {
+   "file": "farm_state_before_first_q02_intake_20260906T142958_053613Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T14:30:00.853798Z"
+  },
+  {
+   "file": "farm_state_before_first_q02_intake_20260906T103644_134238Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T10:36:48.847516Z"
+  },
+  {
+   "file": "farm_state_before_first_q02_intake_20260906T090028_070290Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T09:01:15.581718Z"
+  },
+  {
+   "file": "farm_state_before_first_q02_intake_20260906T083647_826624Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T08:36:52.616907Z"
+  },
+  {
+   "file": "farm_state_before_first_q02_intake_20260906T044616_646023Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T04:46:26.575250Z"
+  },
+  {
+   "file": "farm_state_before_first_q02_intake_20260906T024954_852465Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T02:49:59.183781Z"
+  },
+  {
+   "file": "farm_state_before_first_q02_intake_20260906T015827_013231Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T01:58:30.044207Z"
+  },
+  {
+   "file": "farm_state_before_first_q02_intake_20260906T015450_410903Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T01:54:52.602984Z"
+  },
+  {
+   "file": "farm_state_before_first_q02_intake_20260906T015425_838920Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T01:54:31.053209Z"
+  },
+  {
+   "file": "farm_state_before_first_q02_intake_20260906T013141_305148Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T01:31:45.675022Z"
+  },
+  {
+   "file": "farm_state_before_first_q02_intake_20260906T013128_877160Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T01:31:32.130726Z"
+  },
+  {
+   "file": "farm_state_before_first_q02_intake_20260906T010343_822646Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T01:03:49.345041Z"
+  },
+  {
+   "file": "farm_state_before_first_q02_intake_20260906T010330_381013Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T01:03:33.488625Z"
+  },
+  {
+   "file": "farm_state_before_first_q02_intake_20260906T005304_117479Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T00:53:30.892068Z"
+  },
+  {
+   "file": "farm_state_before_first_q02_intake_20260906T003641_613797Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T00:36:47.291041Z"
+  },
+  {
+   "file": "farm_state_before_first_q02_intake_20260906T003629_473865Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T00:36:33.468340Z"
+  },
+  {
+   "file": "farm_state_before_first_q02_intake_20260906T001219_339305Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T00:12:24.832124Z"
+  },
+  {
+   "file": "farm_state_before_first_q02_intake_20260906T001204_750316Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-06T00:12:10.943434Z"
+  },
+  {
+   "file": "farm_state_before_canonical_setfile_paths_20260905T220111_680739Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-05T22:01:16.252483Z"
+  },
+  {
+   "file": "farm_state_before_canonical_setfile_paths_20260905T220059_918435Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-05T22:01:03.885853Z"
+  },
+  {
+   "file": "farm_state_before_canonical_setfile_paths_20260905T220049_189077Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-05T22:00:52.879520Z"
+  },
+  {
+   "file": "farm_state_before_canonical_setfile_paths_20260905T220034_989941Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-05T22:00:40.692753Z"
+  },
+  {
+   "file": "farm_state_before_canonical_setfile_paths_20260905T220007_719748Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-05T22:00:20.494505Z"
+  },
+  {
+   "file": "farm_state_before_canonical_setfile_paths_20260905T215951_003994Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-05T21:59:53.246668Z"
+  },
+  {
+   "file": "farm_state_before_canonical_setfile_paths_20260905T215845_016814Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-05T21:58:48.797163Z"
+  },
+  {
+   "file": "farm_state_before_canonical_setfile_paths_20260905T215812_481687Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-05T21:58:16.007504Z"
+  },
+  {
+   "file": "farm_state_before_hold_release_20260905T232204_823047Z.sqlite",
+   "bytes": 734773248,
+   "mtime_utc": "2026-09-05T23:22:21.635774Z"
+  }
+ ],
+ "deleted_bytes": 65394819072,
+ "d_free_gb_before": 63.1,
+ "d_free_gb_after": 96.3
+}
