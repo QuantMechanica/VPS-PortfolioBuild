@@ -1,5 +1,5 @@
 #property strict
-#property version   "5.0"
+#property version   "5.1"
 #property description "QM5_41319 WTI Monthly ADF Persistence Trend"
 
 #include <QM/QM_Common.mqh>

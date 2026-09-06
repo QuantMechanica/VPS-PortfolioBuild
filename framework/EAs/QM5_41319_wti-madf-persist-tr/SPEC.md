@@ -1,155 +1,121 @@
-+# QM5_41319 — WTI Monthly Lag-One ADF Persistence Trend
-+
-+**EA ID:** QM5_41319
-+
-+**Slug:** `wti-madf-persist-tr`
-+
-+**Strategy ID:** `AI-CODEX-WTI-MADF-PERSIST-TREND-20260903_S01`
-+
-+**Author:** Development
-+
-+**Last revised:** 2026-09-03
-+
-+## 1. Strategy Logic
-+
-+This EA implements the G0-approved card
-+`strategy-seeds/cards/approved/QM5_41319_wti-madf-persist-tr_card.md` as a
-+direct, low-frequency `XTIUSD.DWX` D1 commodity sleeve. Sixty completed
-+monthly WTI log-price levels feed a constant/no-time-trend augmented
-+Dickey–Fuller regression with one lagged first difference. An inclusive
-+lagged-level t-statistic state of at least `-2.594` gates the sign of the
-+newest twelve-month log return.
-+
-+The threshold is a frozen persistence-state classifier, not a translated
-+p-value or proof of a unit root. The conjunction is a QuantMechanica
-+synthesis; Q09 alone can establish portfolio diversification.
-+
-+## 2. Locked Parameters
-+
-+| input | value | purpose |
-+|---|---:|---|
-+| `strategy_level_count` | 60 | completed chronological month-end closes/log levels |
-+| `strategy_regression_observations` | 58 | rows after first difference and one lag |
-+| `strategy_residual_dof` | 55 | observations less three coefficients |
-+| `strategy_energy_floor` | `1e-18` | reject degenerate variance/residual paths |
-+| `strategy_determinant_relative_floor` | `1e-12` | reject ill-conditioned two-regressor systems |
-+| `strategy_adf_t_min` | `-2.594` | inclusive persistence-state boundary |
-+| `strategy_momentum_months` | 12 | continuation direction horizon |
-+| `strategy_direction_epsilon` | `1e-12` | symmetric neutral band |
-+| `strategy_history_bars` | 1200 | bounded D1 endpoint scan |
-+| `strategy_entry_grace_minutes` | 180 | first-month-bar entry window |
-+| `strategy_endpoint_stale_days` | 10 | newest endpoint age ceiling |
-+| `strategy_atr_period` | 20 | completed-D1 stop estimator |
-+| `strategy_atr_sl_mult` | 3.5 | frozen hard-stop distance |
-+| `strategy_stale_days` | 40 | survivor repair ceiling |
-+| `strategy_max_spread_points` | 1500 | inclusive entry-cost ceiling |
-+
-+Q02 has one set only: `RISK_FIXED=1000`, `RISK_PERCENT=0`, and
-+`PORTFOLIO_WEIGHT=1`.
-+
-+## 3. Exact Signal
-+
-+The host, traded carrier, and slot are `XTIUSD.DWX`, D1, slot zero, magic
-+`413190000`. On the first executable tick after a genuine broker-month
-+change, reconstruct exactly 60 immediately prior consecutive month-end
-+closes, oldest to newest. The current month never enters the sample.
-+
-+For `C[0..59]`, let `x[t]=ln(C[t])`. For `t=2..59`, form:
-+
-+```text
-+y[t] = x[t] - x[t-1]
-+z[t] = x[t-1]
-+w[t] = x[t-1] - x[t-2]
-+y[t] = alpha + gamma*z[t] + phi*w[t] + error[t]
-+```
-+
-+Compute the three sample means and centered cross-products
-+`Szz,Sww,Szw,Szy,Swy`. Then:
-+
-+```text
-+det   = Szz*Sww - Szw^2
-+gamma = (Szy*Sww - Swy*Szw) / det
-+phi   = (Swy*Szz - Szy*Szw) / det
-+alpha = mean(y) - gamma*mean(z) - phi*mean(w)
-+SSE   = sum(error[t]^2)
-+s2    = SSE / 55
-+se_g  = sqrt(s2*Sww/det)
-+ADF_t = gamma/se_g
-+mom12 = x[59]-x[47]
-+
-+BUY  iff ADF_t >= -2.594 and mom12 > +1e-12
-+SELL iff ADF_t >= -2.594 and mom12 < -1e-12
-+FLAT otherwise
-+```
-+
-+All closes and arithmetic must be finite; closes must be positive.
-+`Szz`, `Sww`, and `SSE` must exceed `1e-18`. The determinant must
-+exceed `1e-12*Szz*Sww`, and `se_g` must exceed `1e-18`. Statistic
-+magnitude never changes side or risk.
-+
-+## 4. Clock, Attempt, And Lifecycle
-+
-+Persist the normalized broker-month attempt before history reconstruction,
-+signal, news, spread, quote, ATR, sizing, margin, or order gates. A consumed
-+month is never retried. Reject late decisions, previous entry deals, owned
-+exposure, or foreign `XTIUSD.DWX` exposure. Entry spread must be finite and
-+within `[0,1500]` points.
-+
-+A qualified decision opens at most one market position through the V5
-+fixed-dollar risk path with a frozen completed-bar `3.5*ATR(20,D1)` hard
-+stop and no target. Close on the first processed tick in a later normalized
-+broker month or after forty elapsed calendar days. Duplicate, wrong-symbol,
-+invalid-type, wrong-side, missing-stop, malformed entry time, or inconsistent
-+entry-month state triggers a defensive close. Restart recovery may use only
-+matching owned deal history.
-+
-+There is no statistic exit, intramonth flip, Friday flatten, trail,
-+break-even move, partial close, resize, scale-in, grid, martingale, pyramid,
-+or retry. Both news axes, legacy news, Friday close, and stress rejection are
-+locked off. Framework kill switch and broker hard stop remain authoritative.
-+
-+## 5. Source And Validation Boundary
-+
-+Chan supplies the lag-one ADF mechanics and displayed `-2.594` example
-+boundary. Moskowitz, Ooi, and Pedersen supply monthly own-return continuation
-+and WTI membership. Neither source validates this conjunction, sixty-month
-+continuous-CFD sample, threshold transport, activity, economics, or
-+correlation. Non-rejection-like state language must not be upgraded into a
-+statistical or causal claim.
-+
-+Initialization runs deterministic qualifying-up, qualifying-down,
-+mean-reverting-rejection, and degenerate fixtures. The independent Python
-+suite checks the regression arithmetic, fixture receipt, additive-level
-+invariance, boundary, direction, endpoints, attempt order, set/card/registry
-+binding, and source guards.
-+
-+Q02 must retire the unchanged variant on zero positions, fewer than five
-+completed positions in any full post-warm-up year, nonpositive governed
-+economics, nondeterminism, or any formula, fixed-risk, stop, attempt, or
-+lifecycle defect. No result-based parameter repair is authorized.
-+
-+## 6. Risk And Safety
-+
-+The baseline is exactly `RISK_FIXED=1000`, `RISK_PERCENT=0`, and
-+`PORTFOLIO_WEIGHT=1`; gaps can exceed modeled stop risk. Principal risks are
-+continuous-CFD roll/basis/financing, single-carrier concentration,
-+broker-month labeling, small-sample regression instability, overlapping
-+windows, and persistence unrelated to tradable continuation.
-+
-+This build and Q02 queue item do not authorize live use, portfolio admission,
-+correlation waiver, terminal control, `T_Live`, or AutoTrading.
-+
-+## Framework Alignment
-+
-+- `Strategy_NoTradeFilter`: identity, magic, fixed-risk and framework locks.
-+- bounded helpers: month clock, attempt state, endpoints, ADF, side, restart.
-+- `Strategy_EntrySignal`: exposure, spread, quote, ATR, frozen stop, order.
-+- `Strategy_ManageOpenPosition`: malformed-state repair and time exits.
-+- `Strategy_ExitSignal`: no discretionary exit.
-+
-+## Revision History
-+
-+| Version | Date | Reason | Notes |
-+|---|---|---|---|
-+| v1 | 2026-09-03 | approved-source build | G0-approved card; magic `413190000`; Q01 pending |
-+
+# QM5_41319 — WTI Monthly Lag-One ADF Persistence Trend
+
+**EA ID:** QM5_41319
+**Slug:** `wti-madf-persist-tr`
+**Source:** `AI-CODEX-WTI-MADF-PERSIST-TREND-20260903`
+**Author of this spec:** Codex
+**Last revised:** 2026-09-06
+
+## 1. Strategy Logic
+
+This EA is a direct, low-frequency `XTIUSD.DWX` sleeve. On the first eligible
+tick of each broker month it reconstructs 60 completed monthly WTI closes and
+fits the approved constant/no-time-trend ADF regression with one lagged first
+difference. It trades in the direction of the newest 12-month log return only
+when the lagged-level t-statistic is at least `-2.594`; otherwise the month is
+consumed flat.
+
+An entry receives a frozen `3.5 * ATR(20,D1)` broker stop and no target. The EA
+closes at the next broker-month transition or after 40 calendar days as stale
+repair. Statistic magnitude never changes position size, and no intramonth
+flip, retry, scale-in, grid, martingale, trailing stop, or partial close exists.
+
+## 2. Parameters
+
+All strategy parameters are locked for Q02; changing any value creates a new
+strategy identity.
+
+| Parameter | Default | Range | Meaning |
+|---|---:|---|---|
+| `strategy_level_count` | 60 | locked: 60 | Completed chronological month-end log-price levels |
+| `strategy_regression_observations` | 58 | locked: 58 | ADF regression rows |
+| `strategy_residual_dof` | 55 | locked: 55 | Residual degrees of freedom |
+| `strategy_energy_floor` | `1e-18` | locked: `1e-18` | Degenerate-variance and residual-energy floor |
+| `strategy_determinant_relative_floor` | `1e-12` | locked: `1e-12` | Ill-conditioned-regression rejection floor |
+| `strategy_adf_t_min` | `-2.594` | locked: `-2.594` | Inclusive persistence-state boundary |
+| `strategy_momentum_months` | 12 | locked: 12 | Completed-month continuation horizon |
+| `strategy_direction_epsilon` | `1e-12` | locked: `1e-12` | Symmetric neutral-return band |
+| `strategy_history_bars` | 1200 | locked: 1200 | Bounded D1 endpoint scan |
+| `strategy_entry_grace_minutes` | 180 | locked: 180 | First-month-bar entry window |
+| `strategy_endpoint_stale_days` | 10 | locked: 10 | Newest completed endpoint age ceiling |
+| `strategy_atr_period` | 20 | locked: 20 | Completed-D1 ATR stop estimator |
+| `strategy_atr_sl_mult` | 3.5 | locked: 3.5 | Frozen hard-stop multiplier |
+| `strategy_stale_days` | 40 | locked: 40 | Survivor repair ceiling |
+| `strategy_max_spread_points` | 1500 | locked: 1500 | Inclusive entry spread ceiling |
+
+## 3. Symbol Universe
+
+**Designed for:**
+
+- `XTIUSD.DWX` — the approved continuous WTI CFD carrier, registered at slot 0
+  with magic `413190000`.
+
+**Explicitly not for:**
+
+- `XNGUSD.DWX` — natural gas has distinct weather and storage drivers and is
+  outside this direct-WTI card.
+- FX, indices, and metals — the fixed ADF threshold and source translation were
+  not approved for those carriers.
+
+## 4. Timeframe
+
+| Aspect | Value |
+|---|---|
+| Base timeframe | `D1` |
+| Multi-timeframe refs | Completed broker-month endpoints reconstructed from D1 history |
+| Decision gate | First executable tick after a genuine broker-month transition |
+| Current-bar policy | Current-month prices are excluded; only completed endpoints are used |
+
+## 5. Expected Behaviour
+
+| Metric | Expected |
+|---|---|
+| Trades / year / symbol | Approximately 7–11; planning center 8; Q02 requires at least 5 in every full scored year |
+| Typical hold time | Until the next broker month, with a 40-day stale-repair ceiling |
+| Expected drawdown profile | High-risk single-energy sleeve; card prior 30%, with gap and CFD roll risk |
+| Regime preference | Persistent directional WTI regimes with weak negative error correction |
+| Win rate target | Unspecified; governed economics are established only by Q02 and later gates |
+
+## 6. Source Citation
+
+**Source ID:** `AI-CODEX-WTI-MADF-PERSIST-TREND-20260903`
+**Source type:** Governed synthesis supported by a complete Wiley book
+extraction and peer-reviewed trading paper
+**Pointer:** `strategy-seeds/sources/AI-CODEX-WTI-MADF-PERSIST-TREND-20260903/source.md`
+**R1–R4 verdict:** G0 `APPROVED`; see
+`strategy-seeds/cards/approved/QM5_41319_wti-madf-persist-tr_card.md`.
+
+Chan (2013) supplies the lag-one ADF mechanics and displayed `-2.594`
+boundary. Moskowitz, Ooi, and Pedersen (2012) supply monthly own-return
+continuation and explicit WTI membership. Neither source validates this exact
+conjunction, continuous-CFD implementation, activity, economics, or portfolio
+correlation.
+
+## 7. Risk Model
+
+| Phase | Risk mode | Value |
+|---|---|---|
+| Backtest (Q02–Q10) | `RISK_FIXED` | $1,000 per trade; `RISK_PERCENT=0`; `PORTFOLIO_WEIGHT=1` |
+| Live burn-in (Q13) | Not authorized by this build | Requires OWNER-signed manifest and the Q13 convention |
+| Full live | Not authorized by this build | Requires completed gates and OWNER allocation |
+
+The framework enforces the risk-mode contract. This build does not authorize
+portfolio admission, `T_Live`, AutoTrading, or any deploy/live manifest change.
+
+## Framework Alignment
+
+- `Strategy_NoTradeFilter`: identity, magic, fixed-risk, news, Friday, stress,
+  period, and locked-input checks.
+- Bounded helpers: month clock, durable attempt state, completed endpoints,
+  centered OLS, direction, and restart checks.
+- `Strategy_EntrySignal`: exposure, spread, quote, ATR, stop, sizing, and margin.
+- `Strategy_ManageOpenPosition`: malformed-state repair and time exits.
+- `Strategy_ExitSignal`: no discretionary exit; lifecycle exits are handled by
+  the management hook and framework kill switch.
+
+## Revision History
+
+| Version | Date | Reason | Notes |
+|---|---|---|---|
+| v1 | 2026-09-03 | Initial build from approved card | Source and EA implementation committed |
+| v1.1 | 2026-09-06 | Q01 spec repair and compile recovery | Restored the seven canonical Q01 headings; build task `cd3a3f60-895d-49cc-850c-c2c42f09cc9d` |
