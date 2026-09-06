@@ -1,0 +1,68 @@
+{
+  "schema_version": "qm.q02_admission_handoff/v1",
+  "recorded_date": "2026-09-06",
+  "ea_id": "QM5_41372",
+  "ea_label": "QM5_41372_xtixng-wrelvote-flip-cont",
+  "source_sha256": "17389f139e130d985a7a44459effc528f89fbd1e224e5301b99c8f14f452f637",
+  "pacer_build_guard": {
+    "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_41372_xtixng-wrelvote-flip-cont/QM5_41372_xtixng-wrelvote-flip-cont.mq5",
+    "exit_code": 0,
+    "ok": true,
+    "hit_count": 0,
+    "hits": [],
+    "ran_immediately_before_enqueue": true
+  },
+  "compile": {
+    "work_item_id": "e0781e04-0d31-48de-a5ba-227e47965c2d",
+    "status_at_handoff": "done",
+    "verdict_at_handoff": "COMPILE_OK",
+    "activation_hold": null,
+    "build_check_result": "PASS",
+    "compile_result": "PASS",
+    "failure_classes": [],
+    "setfile_count": 3,
+    "ex5_sha256": "d6bed0ca4bb1a646cfb713110b32a53bd632ef88bfae727cc63713a15a5821ec",
+    "completed_at_utc": "2026-09-06T19:29:18+00:00",
+    "evidence_path": "D:/QM/reports/work_items/e0781e04-0d31-48de-a5ba-227e47965c2d/QM5_41372/COMPILE_EA/compile_evidence.json",
+    "released_at_utc": "2026-09-06T19:17:58+00:00",
+    "release_scope_count": 1,
+    "release_receipt": "artifacts/qm5_41372_compile_release_apply_20260906.json"
+  },
+  "cpu_ceiling": {
+    "threshold_percent": 97.0,
+    "stop_condition_met": true,
+    "observations": [
+      {
+        "terminal": "T9",
+        "at_utc": "2026-09-06T19:25:07.236379+00:00",
+        "cpu_load_percent": 98.2
+      },
+      {
+        "terminal": "T9",
+        "at_utc": "2026-09-06T19:25:27.718671+00:00",
+        "cpu_load_percent": 98.7
+      },
+      {
+        "terminal": "T2",
+        "at_utc": "2026-09-06T19:25:10.642941+00:00",
+        "cpu_load_percent": 98.5
+      },
+      {
+        "terminal": "T9",
+        "at_utc": "2026-09-06T19:26:24.258062+00:00",
+        "cpu_load_percent": 97.9
+      }
+    ],
+    "evidence_logs": [
+      "D:/QM/strategy_farm/logs/terminal_worker_T9.log",
+      "D:/QM/strategy_farm/logs/terminal_worker_T2.log"
+    ]
+  },
+  "q02": {
+    "enqueued": false,
+    "work_item_id": null,
+    "reason": "CPU_CEILING_STOP_AND_SUMMARIZE_AFTER_COMPILE_OK"
+  },
+  "prohibited_scope_touched": false,
+  "notes": "No ad-hoc compile, manual tester, T_Live action, AutoTrading action, portfolio-gate change, or live-manifest change was performed."
+}

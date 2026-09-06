@@ -1,0 +1,22 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "17389f139e130d985a7a44459effc528f89fbd1e224e5301b99c8f14f452f637",
+      "ea_id": "QM5_41372",
+      "ea_label": "QM5_41372_xtixng-wrelvote-flip-cont",
+      "expected_mq5_sha256": "17389f139e130d985a7a44459effc528f89fbd1e224e5301b99c8f14f452f637",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41372_xtixng-wrelvote-flip-cont\\QM5_41372_xtixng-wrelvote-flip-cont.mq5",
+      "work_item_id": "e0781e04-0d31-48de-a5ba-227e47965c2d"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "e0781e04-0d31-48de-a5ba-227e47965c2d",
+  "work_item_id_selectors": [
+    "e0781e04-0d31-48de-a5ba-227e47965c2d"
+  ]
+}

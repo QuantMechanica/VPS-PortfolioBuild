@@ -64,8 +64,8 @@ r2_mechanical: PASS
 r3_data_available: PASS_WITH_SYNCHRONIZATION_AND_CONTINUOUS_CFD_BASIS_RISK
 r4_ml_forbidden: PASS
 pipeline_phase: Q01
-q01_status: NOT_RUN
-q02_status: NOT_ENQUEUED
+q01_status: PASS
+q02_status: NOT_ENQUEUED_CPU_CEILING
 review_focus: "Falsify a fresh XTI/XNG overlapping three-week relative-majority flip continuation outside the certified XAU/SP500/NDX/XNG book. Verify five consecutive synchronized endpoints, four strict relative-return signs, exact vote overlap, strict majority reversal, new-winner continuation, durable attempt, aggregate fixed risk, atomic repair, and next-week lifecycle. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -82,6 +82,22 @@ weekly relative returns may identify a new short-lived energy leader. The EA
 follows that new relative majority for one week with opposed XTI/XNG legs. The
 carrier is market-neutral by construction intent only; Q09 alone may establish
 realized correlation and the sources do not establish this exact edge.
+
+## Source-defined rules
+
+Fuertes, Miffre, and Rallis support commodity-relative momentum as a research
+lineage, but do not define this weekly XTI/XNG rule. Villar and Joutz establish
+an economic oil/gas relationship; Ramberg and Parsons document that the link is
+weak and time varying. No cited source transfers a result, endpoint rule, vote,
+threshold, holding period, risk rule, or CFD implementation to this card.
+
+## QM interpretations
+
+The synchronized five-week reconstruction, four relative-return signs,
+overlapping three-week majority flip, continuation direction, one-week hold,
+and equal-notional CFD basket are explicit QM translations. Their only
+authorization is the approved G0 decision; Q02 must falsify the translation
+without parameter rescue.
 
 ## Rules
 
@@ -119,13 +135,31 @@ independent frozen `3.5*ATR(20,D1)` hard stops, XTI/XNG spread ceilings of
 - No signal exit, retry, target, trail, break-even, partial, scale-in, grid,
   martingale, or pyramid.
 
-## Parameters to test
+## Framework execution overrides
 
-Q02 uses only the locked defaults. No optimization or rescue range is
-authorized: `history_bars_d1=50`, weekly sessions `3..5`, epsilon `1e-10`,
-entry grace 180 minutes, ATR `20` at `3.5x`, equal-notional target `1.0`,
-maximum notional mismatch `20%`, stale hold 10 days, spread caps 1500/3000,
-and order deviation 20 points.
+There is no Parameters to Test list or sweep. Q02 uses only the locked defaults;
+no optimization or rescue range is authorized: `history_bars_d1=50`, weekly
+sessions `3..5`, epsilon `1e-10`, entry grace 180 minutes, ATR `20` at `3.5x`,
+equal-notional target `1.0`, maximum notional mismatch `20%`, stale hold 10
+days, spread caps 1500/3000, and order deviation 20 points. Framework inputs
+use `RISK_FIXED=1000`, `RISK_PERCENT=0`, `PORTFOLIO_WEIGHT=1`; news and Friday
+close remain disabled and are not configuration-pinned.
+
+## Exit precedence
+
+The framework kill switch is absolute. Next, any orphan, malformed direction,
+missing stop, or excessive notional mismatch closes the full package. The
+ten-day stale repair precedes the ordinary first-tick-of-next-week exit. No
+signal exit, target, trailing rule, Friday override, or discretionary close is
+part of the strategy contract.
+
+## Runtime data dependencies
+
+Runtime requires native DarwinexZero `XTIUSD.DWX` and `XNGUSD.DWX` D1 bars,
+positive synchronized completed-week closes, valid quotes and symbol metadata,
+and enough XTI ATR history for both hard-stop distances. Missing, nonfinite,
+asynchronous, duplicate, or nonconsecutive data consumes the weekly attempt
+flat. No external calendar, model, alternative dataset, or future data is used.
 
 ## Reputable-source criteria
 
@@ -143,13 +177,16 @@ four relative-return signs, and a reversal between overlapping three-week
 majorities. Outright trend, robust-statistic, calendar, event, ratio, OLS, and
 RSI families do not implement this state transition.
 
-## Risk and kill criteria
+## Falsification and requalification
 
 Q02 uses exactly `RISK_FIXED=1000`, `RISK_PERCENT=0`, and
 `PORTFOLIO_WEIGHT=1`. Retire on zero packages, fewer than five completed
 packages in any full post-warm-up year, or nonpositive economics. Do not alter
 carrier, endpoints, overlap, vote, direction, risk, stop, or lifecycle to
-rescue a failed result. Equal notional is not proof of factor neutrality.
+rescue a failed result. Equal notional is not proof of factor neutrality. Any
+future source, parameter, carrier, timeframe, lifecycle, or risk change needs a
+new variant, renewed deterministic deduplication, OWNER G0 approval, rebuild,
+and full requalification from Q01.
 
 ## Framework alignment
 
@@ -176,4 +213,4 @@ gate, portfolio admission, or correlation waiver is authorized.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-09-06 | initial overlapping relative-vote flip card | G0 | APPROVED; build pending |
-
+| v1-build | 2026-09-06 | OWNER commodity-sleeve branch build | Q01 | PACER input-pin audit PASS; governed compile `e0781e04-0d31-48de-a5ba-227e47965c2d` returned `COMPILE_OK`; Q02 not enqueued because the 97% CPU stop ceiling was observed |
