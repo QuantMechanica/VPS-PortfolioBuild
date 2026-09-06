@@ -1,0 +1,41 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "634beb3b-c4ec-4810-9020-20c39c45e637"
+  ],
+  "backup": {
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260906T084536Z_a26c2e01.sqlite",
+    "reused": false,
+    "sha256": "aba7e90177d6d86a9ec47850b5a941d7a5549fd082184e8546831948298a8519"
+  },
+  "backup_reuse_max_age_minutes": 0.0,
+  "backup_timeout_seconds": 60.0,
+  "backup_write_guard": {
+    "attempts": 1,
+    "transaction": "BEGIN IMMEDIATE / validated / backed up / released / COMMIT",
+    "wait_seconds": 0.0
+  },
+  "deferred": [],
+  "factory_mutation_lock": {
+    "path": "D:\\QM\\strategy_farm\\state\\FACTORY_MUTATION.lock",
+    "release_status": "released"
+  },
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "e63ab004f5f83aff136d640c7c24f9e4aa7519df33e878a4def624a1f2d27fa8",
+      "ea_id": "QM5_41365",
+      "ea_label": "QM5_41365_xtixng-decouple-rv",
+      "expected_mq5_sha256": "e63ab004f5f83aff136d640c7c24f9e4aa7519df33e878a4def624a1f2d27fa8",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41365_xtixng-decouple-rv\\QM5_41365_xtixng-decouple-rv.mq5",
+      "work_item_id": "634beb3b-c4ec-4810-9020-20c39c45e637"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-09-06T08:45:54+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "634beb3b-c4ec-4810-9020-20c39c45e637"
+}
