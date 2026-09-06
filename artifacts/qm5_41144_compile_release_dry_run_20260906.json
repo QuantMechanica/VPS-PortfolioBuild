@@ -1,0 +1,19 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "936edad7222d5b5e762e5d5eecf39ec1671d900f927b8ff46eb3f136eae13323",
+      "ea_id": "QM5_41144",
+      "ea_label": "QM5_41144_eurusd-quarter-end-benchmark-fix-hedge-flow",
+      "expected_mq5_sha256": "936edad7222d5b5e762e5d5eecf39ec1671d900f927b8ff46eb3f136eae13323",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41144_eurusd-quarter-end-benchmark-fix-hedge-flow\\QM5_41144_eurusd-quarter-end-benchmark-fix-hedge-flow.mq5",
+      "work_item_id": "4ae532e0-6b3c-4e4e-bc56-013aff653f28"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "4ae532e0-6b3c-4e4e-bc56-013aff653f28"
+}
