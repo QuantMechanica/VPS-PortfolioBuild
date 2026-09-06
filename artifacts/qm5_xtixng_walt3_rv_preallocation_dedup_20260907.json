@@ -1,0 +1,79 @@
+{
+  "candidate": {
+    "author": "Jose A. Villar; Frederick L. Joutz; David J. Ramberg; John E. Parsons",
+    "mechanic": "four synchronized completed-week endpoints; three adjacent XTI-minus-XNG relative log returns; strict sign alternation plus-minus-plus or minus-plus-minus; fade newest relative winner; equal-notional XTI/XNG pair; one-week hold",
+    "slug": "xtixng-walt3-rv",
+    "strategy_id": "AI-CODEX-XTIXNG-WALT3-RV-20260907_S01"
+  },
+  "error": "MISSING_ROOT:strategy_wiki:G:\\My Drive\\09 Strategy Wiki\\strategies",
+  "exit_code": 3,
+  "generated_at_utc": "2026-09-06T22:03:05+00:00",
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41358_xtixng-wovershoot-rv_card.md",
+      "score": 0.6666666666666666,
+      "slug": "xtixng-wovershoot-rv",
+      "source": "card",
+      "strategy_id": "AI-CODEX-XTIXNG-WOVERSHOOT-RV-20260906_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41359_xtixng-waccel-rv_card.md",
+      "score": 0.6666666666666666,
+      "slug": "xtixng-waccel-rv",
+      "source": "card",
+      "strategy_id": "AI-CODEX-XTIXNG-WACCEL-RV-20260906_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41360_xtixng-wretr-rv_card.md",
+      "score": 0.6666666666666666,
+      "slug": "xtixng-wretr-rv",
+      "source": "card",
+      "strategy_id": "AI-CODEX-XTIXNG-WRETR-RV-20260906_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41361_xtixng-commonshock-rv_card.md",
+      "score": 0.6666666666666666,
+      "slug": "xtixng-commonshock-rv",
+      "source": "card",
+      "strategy_id": "AI-CODEX-XTIXNG-COMMONSHOCK-RV-20260906_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41368_xtixng-cs-leadswitch-rv_card.md",
+      "score": 0.6666666666666666,
+      "slug": "xtixng-cs-leadswitch-rv",
+      "source": "card",
+      "strategy_id": "AI-CODEX-XTIXNG-CS-LEADSWITCH-RV-20260906_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4853,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1466,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\09 Strategy Wiki\\strategies",
+      "count": null,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "MISSING_ROOT"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "FUZZY_MATCH"
+}
