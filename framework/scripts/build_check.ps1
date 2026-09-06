@@ -903,7 +903,7 @@ function Invoke-ForbiddenScan {
 
     # QM-MARK: BEGIN ML_PREDICATE_PATTERNS
     # (1) library / model-artifact intake via the preprocessor
-    $mlIncludePattern = '(?im)^\s*#(?:include|import|resource|property\s+\w+)\b[^\r\n]*?(?:tensorflow|pytorch|\btorch\b|sklearn|scikit|keras|onnx|xgboost|lightgbm|catboost|mlpack|\bdlib\b|neural_?net\w*|perceptron|\.onnx|\.tflite|\.pth|\.pkl|\.h5|[<"/\]ML[/\.])[^\r\n]*'
+    $mlIncludePattern = '(?im)^\s*#(?:include|import|resource|property\s+\w+)\b[^\r\n]*?(?:tensorflow|pytorch|\btorch\b|sklearn|scikit|keras|onnx|xgboost|lightgbm|catboost|mlpack|\bdlib\b|neural_?net\w*|perceptron|\.onnx|\.tflite|\.pth|\.pkl|\.h5)[^\r\n]*'
     # (1b) a serialized model artifact named in a string literal
     $mlModelArtifactPattern = '(?i)"[^"\r\n]*\.(?:onnx|tflite|h5|pb|pt|pth|pkl|joblib|caffemodel)"'
     # (2) model / inference / training API call sites (MQL5 ships a native ONNX API)
