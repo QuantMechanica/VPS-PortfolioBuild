@@ -1055,3 +1055,12 @@ Beide OWNER-Freigaben (MNT020-RECOMPILE, MNT006-CANARY) sind ausgeführt und im 
 # 2026-09-06 QM5_12507 logical FX basket Q02 capacity refresh 08:16Z
 
 - The same unique, unheld, priority-tracked Q02 row remains pending and unclaimed. Five current CPU samples were 96/99/94/99/97% (97.0% average, 99% maximum) with seven factory terminals running, so the explicit hard ceiling stopped all queue/claim/launch work. No duplicate was created. Evidence: `docs/ops/evidence/2026-09-06_qm5_12507_q02_hard_cpu_stop_081651Z.md`.
+
+## Addendum 2026-09-06 20:08Z — FTMO M13 demo activation evening (OWNER-signed), resolver symbol-alias fix, Codex returns
+
+- **OWNER signed the governor manifest** (chat receipt ~19:38Z, commit 9ff45c0a3e). Demo terminal cleaned on OWNER instruction (14 legacy files, receipt `2026-09-06_ftmo_demo_cleanup_receipt.json`); the 11 M13 presets copied flat into `MQL5\Presets` (the MT5 Load dialog folder).
+- **Governor bootstrap done 21:38:52 Prague** (marker printed, EA self-removed, state in global variables); active instance running since 21:39:23 (lease refreshed). Collector attached 21:45:56. 0 halt files.
+- **Four sleeves refused to attach** (`EA_MAGIC_RESOLUTION_FAILED`, registry `<SYM>.DWX` vs broker chart `<SYM>`): OWNER instruction "korrigier ihn" → `QM_MagicResolver.mqh` base-name comparison (commit 4fb47bd3b5), 10706/11910/1537/21505 rebuilt artifact-only with the FTMO MetaEditor in `D:\QMtmo\compile_probe_sleeves_20260906` and installed with receipt (`docs/ops/evidence/2026-09-06_ftmo_sleeve_alias_rebuild/`). Factory EX5s untouched. Codex ticket 4778daa7 rescoped to adversarial review + alias table (XTIUSD/USOIL, GDAXI/GER40 …) + T_Live implication.
+- **Astra ticket e0db4991**: QuantMechanica Signature Design for EA chart panels (OWNER 19:55Z), starting from QM_AccountMonitor.
+- **Codex returns closed:** acf3637b APPROVED (b2b3d35d65, DSR window recovery; 90 tests + 13 subtests), e638e0de APPROVED (11196 replacement set s20260906-001), 6b291f21 APPROVED (f6e957410b integrated as 6f1d6fb732 via patch apply; terms-hash re-pin 4011d16afa; eol=lf 5cc1ea19ec; 89 tests). Worker reload chunk 56 (dsr_cohort) running, 4/10 at 20:05Z → third Q08 reruns 11167/11196 follow.
+- Pending: AutoTrading ON (OWNER) → PARKED→RUNNING flip + pulse; must complete before 22:00Z (Prague midnight).
