@@ -1064,3 +1064,11 @@ Beide OWNER-Freigaben (MNT020-RECOMPILE, MNT006-CANARY) sind ausgeführt und im 
 - **Astra ticket e0db4991**: QuantMechanica Signature Design for EA chart panels (OWNER 19:55Z), starting from QM_AccountMonitor.
 - **Codex returns closed:** acf3637b APPROVED (b2b3d35d65, DSR window recovery; 90 tests + 13 subtests), e638e0de APPROVED (11196 replacement set s20260906-001), 6b291f21 APPROVED (f6e957410b integrated as 6f1d6fb732 via patch apply; terms-hash re-pin 4011d16afa; eol=lf 5cc1ea19ec; 89 tests). Worker reload chunk 56 (dsr_cohort) running, 4/10 at 20:05Z → third Q08 reruns 11167/11196 follow.
 - Pending: AutoTrading ON (OWNER) → PARKED→RUNNING flip + pulse; must complete before 22:00Z (Prague midnight).
+
+## Addendum 2026-09-06 20:20Z — FTMO M13 demo ACTIVATED (OWNER), two new Hard Rules, tickets
+
+- **FTMO M13 RUNNING since 20:08Z:** governor active, collector 1 s telemetry, 8/8 sleeves (1537 after the `strategy_calendar_symbol` input, dcaeca68f5), OWNER enabled AutoTrading, `EXPECTED_STATE` RUNNING (2b258f48f4), activation record in the manifest (883cbd8364), OWNER to-do FTMO-DEMO-RUNNING closed. Pulse artefacts (stale equity source from the old account, pre-fix ea_errors) → Codex 93c1d29c.
+- **Hard Rule "symbols are inputs, never code literals" (OWNER 20:10Z):** Vault annex, framework principle 7, CLAUDE.md, memory; Codex 4d3b27f6 (build_check predicate, slot-input pattern, inventory scan, 1537 full refactor). Resolver base-name fix 4fb47bd3b5; alias table + review Codex 4778daa7.
+- **Hard Rule "live EAs carry their own live news filter" (OWNER original decision, reaffirmed 20:08Z):** already implemented since FW-LIVE 2026-06-28 (native MT5 calendar, fail-closed); recorded in Vault annex, framework principle 8, CLAUDE.md, memory; enforcement predicate + attach evidence → Codex 93c1d29c.
+- **Astra e0db4991:** QuantMechanica Signature Design for EA chart panels (from QM_AccountMonitor).
+- Worker reload chunk 56: 9/10 at 20:18Z (T9 pending) → Q08 reruns 11167/11196 next.
