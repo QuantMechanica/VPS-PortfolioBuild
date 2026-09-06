@@ -1,0 +1,20 @@
+{
+  "admission": "ELIGIBLE",
+  "average_cpu_percent": 81.3,
+  "compile_work_item_id": "2355425c-748e-45af-a16d-4a617822139a",
+  "ea_id": "QM5_41107",
+  "maximum_cpu_percent": 86.9,
+  "method": "Windows Get-Counter \\Processor(_Total)\\% Processor Time, one-second interval",
+  "phase": "Q02",
+  "sample_count": 5,
+  "sampled_at_utc": "2026-09-06T14:59:02.895271Z",
+  "samples_cpu_percent": [
+    70.9,
+    81.6,
+    86.9,
+    81.0,
+    85.9
+  ],
+  "threshold_cpu_percent": 97.0,
+  "note": "CEO 2026-09-06 wave-1 framework-input-pin repair (ticket 0b971b15): first Q02 intake after the authority-bound compile"
+}
