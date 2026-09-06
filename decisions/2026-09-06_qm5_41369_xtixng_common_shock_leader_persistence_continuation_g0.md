@@ -12,14 +12,14 @@
 
 ## Gate Findings
 
-- R1 `PASS_WITH_TWO_WEEK_LEADER_PERSISTENCE_TRANSLATION_RISK`: complete
-  peer-reviewed commodity relative-return evidence plus complete government
-  and peer-reviewed oil/gas evidence; the two-week common-shock same-leader
+- R1 `PASS_WITH_TWO_WEEK_LEADER_PERSISTENCE_TRANSLATION_RISK`: complete peer-
+  reviewed commodity relative-return evidence plus complete government and
+  peer-reviewed oil/gas evidence; the two-week common-shock same-leader
   continuation is an explicitly untested QM synthesis.
 - R2 `PASS`: three synchronized completed-week endpoints, three-to-five-
   session bounds, two strict same-sign states, strict relative-leader
-  persistence, newest-winner follow, weekly attempt, aggregate risk, hard
-  stops, and lifecycle are locked.
+  persistence, newest-winner continuation, weekly attempt, aggregate risk,
+  hard stops, and lifecycle are locked.
 - R3 `PASS_WITH_SYNCHRONIZATION_AND_CONTINUOUS_CFD_BASIS_RISK`: registered
   native XTI/XNG D1 data supplies every required runtime input.
 - R4 `PASS`: deterministic native arithmetic and execution state only; no ML,
@@ -32,12 +32,13 @@ found no exact identity and returned five expected fuzzy family matches; the
 external Strategy Wiki root was unavailable and remains an explicit coverage
 limit.
 
-Manual review finds a distinct identity. `QM5_41367` follows one common-sign
-week, while this rule requires two and the same strict leader in both.
-`QM5_41368` requires a leader switch and fades the newest winner. `QM5_41361`
-fades a one-week winner. `QM5_41365` and `QM5_41366` use disjoint opposite-sign
-states. `QM5_41362` classifies relative-return deceleration, while this rule
-ignores magnitude and requires shared individual-leg direction in both weeks.
+Manual review finds a distinct identity. `QM5_41367` follows a winner after
+only one common-sign week. `QM5_41368` requires a leader switch and fades the
+newest winner. `QM5_41361` is a one-week winner fade. `QM5_41365` and
+`QM5_41366` admit the disjoint opposite-sign state. `QM5_41362` compares two
+ratio-return magnitudes, while this rule ignores magnitude and requires
+same-sign individual returns in both weeks plus the same strict leader.
+`QM5_12567` is a single-symbol two-day XNG oscillator pullback.
 
 Verdict:
 `DISTINCT_TWO_WEEK_COMMON_SHOCK_STRICT_SAME_LEADER_PERSISTENCE_CONTINUATION`.
