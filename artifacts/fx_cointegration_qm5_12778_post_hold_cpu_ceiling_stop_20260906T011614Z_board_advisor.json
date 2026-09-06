@@ -1,0 +1,147 @@
+{
+  "artifact_type": "fx_cointegration_post_hold_cpu_ceiling_stop",
+  "schema_version": "qm.fx-cointegration-post-hold-cpu-ceiling-stop/v1",
+  "generated_at_utc": "2026-09-06T01:16:14.3486366Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "42430a7b33e0fe7a9f7dc41e35651abef7ab1e51",
+  "mission": "grow_certified_v5_portfolio_new_forex_sleeves",
+  "outcome": "QM5_12778_RUNNABLE_AFTER_HOLD_RELEASE_BUT_HARD_CPU_CEILING_BOUND",
+  "frontier": {
+    "research_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "unordered_relationship_count": 66,
+    "unbuilt_scan_relationship_found": false,
+    "decision": "Use the existing-card fallback; a new scan-derived identity would duplicate governed work."
+  },
+  "preferred_anchor_state": [
+    {
+      "ea_id": "QM5_12532",
+      "relationship": [
+        "AUDUSD.DWX",
+        "NZDUSD.DWX"
+      ],
+      "logical_q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "logical_q02_verdict": "PASS",
+      "downstream_terminal": "Q05 FAIL",
+      "current_q02_oninit_or_no_history_blocker": false
+    },
+    {
+      "ea_id": "QM5_12533",
+      "relationship": [
+        "EURJPY.DWX",
+        "GBPJPY.DWX"
+      ],
+      "logical_q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "logical_q02_verdict": "PASS",
+      "downstream_terminal": "Q04 FAIL",
+      "current_q02_oninit_or_no_history_blocker": false
+    }
+  ],
+  "selected_existing_forex_continuation": {
+    "ea_id": "QM5_12778",
+    "relationship": [
+      "AUDUSD.DWX",
+      "EURJPY.DWX"
+    ],
+    "logical_symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+    "timeframe": "D1",
+    "expected_logical_packages_per_year": "4-8",
+    "work_item_id": "24acc5d4-3e34-526e-a7a8-12640a2e759f",
+    "phase": "Q09_NEWS",
+    "status": "pending",
+    "verdict": null,
+    "claimed_by": null,
+    "attempt_count": 0,
+    "same_identity_open_count": 1,
+    "active_hold_count": 0,
+    "supersession_count": 0,
+    "priority_track": true,
+    "released_hold": {
+      "hold_code": "NEWS_CALENDAR_TIMESTAMP_DEFECT",
+      "active": false,
+      "released_at": "2026-09-05T23:22:04+00:00"
+    },
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "basket_manifest": "framework/EAs/QM5_12778_edgelab-audusd-eurjpy-cointegration/basket_manifest.json",
+    "traded_symbols": [
+      "AUDUSD.DWX",
+      "EURJPY.DWX"
+    ],
+    "conversion_symbols": [
+      "EURUSD.DWX",
+      "EURAUD.DWX"
+    ]
+  },
+  "static_qualification": {
+    "card_schema_lint": "PASS",
+    "card_ml_hits": [],
+    "card_missing_sections": [],
+    "fx_basket_manifest_tests": {
+      "verdict": "PASS",
+      "passed": 47,
+      "elapsed_seconds": 1.25
+    },
+    "source_criteria": "Ernest P. Chan cointegration method plus OWNER-requested reproducible Darwinex .DWX 66-pair scan",
+    "structural_low_frequency_no_ml": true,
+    "sha256": {
+      "approved_card": "5878c99d9cef732642f99961556dd8bd049e14b42292b61aa72a047b4558134a",
+      "mq5": "132a501d94685f013cc62a8b3c2de111d0a8b1e616a8656d2c61b061a754c146",
+      "ex5": "2a105cfbb364142c96c552136bb450162c142845665ce3366d0c045248c17a01",
+      "basket_manifest": "0ce25d17ebe7c3664e4acdb6c1d302b28b1f40710301189cc633e44f25854d57",
+      "logical_backtest_setfile": "0e7949276927c8c5355c413c631e7b67f684e757892de59fa2cff5521836c8e9"
+    }
+  },
+  "capacity": {
+    "sampling_method": "Win32_PerfFormattedData_PerfOS_Processor Name=_Total, five one-second samples",
+    "samples_percent": [
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "average_percent": 100.0,
+    "maximum_percent": 100.0,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_binding": true,
+    "active_work_item_count": 5,
+    "pending_work_item_count": 12650,
+    "free_physical_memory_gib": 30.369,
+    "total_physical_memory_gib": 63.12,
+    "running_factory_terminal_count": 5,
+    "running_factory_terminals": [
+      "T1",
+      "T2",
+      "T7",
+      "T8",
+      "T9"
+    ]
+  },
+  "actions": {
+    "new_card_or_ea_created": false,
+    "work_item_created": false,
+    "duplicate_work_item_created": false,
+    "queue_payload_changed": false,
+    "priority_changed": false,
+    "hold_changed": false,
+    "work_item_claimed": false,
+    "compile_started": false,
+    "backtest_or_terminal_started": false,
+    "post_hold_static_qualification_recorded": true,
+    "stop_receipt_recorded": true
+  },
+  "protected_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_files": false,
+    "autotrading": false
+  },
+  "non_duplicate_value": "This is the first post-release qualification receipt to bind the inactive hold state, exact unique open Q09_NEWS identity, current sealed package hashes, and focused basket regression result in one durable record. It does not repeat the hold mutation or create another queue row.",
+  "resume_contract": "After CPU clears 97 percent, re-read the same work item and leave it to the ordinary paced worker if it remains unique, pending, unheld, and unclaimed; never append a duplicate or rewrite its sealed Q09_NEWS order."
+}
