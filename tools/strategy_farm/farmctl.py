@@ -24322,33 +24322,28 @@ def _normpath_key(value: Any) -> str:
 
 
 def _governed_state_backup(root: Path, label: str) -> tuple[Path, str]:
-    """Fresh pre-mutation SQLite snapshot, matching the governed-hold convention.
-
-    Mirrors ``governed_work_item_hold.sqlite_backup`` / ``_hourly_db_backup``:
-    a distinct, timestamped ``state/backups/farm_state_before_<label>_<stamp>``
-    copy taken with the online ``sqlite3.Connection.backup`` API, returned with
-    its SHA-256 so callers can record a durable rollback anchor.
-    """
+    """Resolve one rolling-window rollback anchor for governed tool mutations."""
+    try:
+        from . import release_compile_wave as backup_policy
+    except ImportError:
+        import release_compile_wave as backup_policy
     src = db_path(root)
     backup_dir = root / "state" / "backups"
-    backup_dir.mkdir(parents=True, exist_ok=True)
-    # Microsecond precision keeps two governed mutations in the same wall-clock
-    # second from colliding on one snapshot name (the governed-hold tool never
-    # runs twice per second, so it uses second resolution).
-    stamp = dt.datetime.now(dt.UTC).strftime("%Y%m%dT%H%M%S_%fZ")
-    dest = backup_dir / f"farm_state_before_{label}_{stamp}.sqlite"
-    if dest.exists():
-        raise RuntimeError(f"backup_exists:{dest}")
-    src_conn = sqlite3.connect(str(src))
+    raw_age = os.environ.get("QM_TOOL_BACKUP_REUSE_MAX_AGE_MINUTES", "60")
     try:
-        tgt_conn = sqlite3.connect(str(dest))
-        try:
-            src_conn.backup(tgt_conn)
-        finally:
-            tgt_conn.close()
-    finally:
-        src_conn.close()
-    return dest, _sha256_file(dest)
+        max_age = float(raw_age)
+    except ValueError:
+        max_age = 60.0
+    with sqlite3.connect(str(src)) as conn:
+        resolved = backup_policy._resolve_backup(
+            conn,
+            src,
+            backup_dir,
+            timeout_seconds=60.0,
+            reuse_max_age_minutes=max_age,
+            backup_label=label,
+        )
+    return Path(resolved["path"]), str(resolved["sha256"])
 
 
 def _authenticate_q01_smoke_successor(
@@ -26495,6 +26490,7 @@ def enqueue_fresh_q02_seed(
         }
 
     init_db(root)
+    backup_path, backup_sha = _governed_state_backup(root, "fresh_q02_seed")
     now = utc_now()
     with connect(root) as conn:
         conn.execute("BEGIN IMMEDIATE")
@@ -26928,6 +26924,7 @@ def enqueue_fresh_q02_seed(
         "skipped": [],
         "skipped_count": 0,
         "next_action_hint": "Pump/dispatch-tick will claim the pending work_item.",
+        "backup": {"path": str(backup_path), "sha256": backup_sha},
     }
 
 

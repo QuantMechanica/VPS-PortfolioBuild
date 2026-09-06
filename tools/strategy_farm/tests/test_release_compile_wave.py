@@ -127,7 +127,8 @@ def test_apply_wave_backup_records_identity_and_writes_sidecar(tmp_path):
     assert sidecar.is_file()
     identity = json.loads(sidecar.read_text(encoding="utf-8"))
     assert identity["backup_sha256"] == result["backup"]["sha256"]
-    assert identity["row_counts"] == {"work_items": 1, "agent_tasks": 0, "work_item_holds": 1}
+    assert identity["source_path"] == str(db.resolve())
+    assert isinstance(identity["schema_version"], int)
 
 
 def test_resolve_backup_reuses_fresh_identity_matched_backup(tmp_path):
@@ -151,8 +152,8 @@ def test_resolve_backup_reuses_fresh_identity_matched_backup(tmp_path):
     assert len(list(backup_dir.glob("*.sqlite"))) == 1
 
 
-def test_resolve_backup_does_not_reuse_after_real_db_mutation(tmp_path):
-    """Fail-closed: a genuine DB change between calls forces a fresh backup, never a stale reuse."""
+def test_resolve_backup_reuses_after_dml_within_rolling_window(tmp_path):
+    """Governed DML in the same window keeps one pre-window rollback anchor."""
     db, _, _ = _fixture(tmp_path)
     backup_dir = tmp_path / "backups"
     conn = sqlite3.connect(db)
@@ -165,9 +166,9 @@ def test_resolve_backup_does_not_reuse_after_real_db_mutation(tmp_path):
     finally:
         conn.close()
 
-    assert second["reused"] is False
-    assert second["path"] != first["path"]
-    assert len(list(backup_dir.glob("*.sqlite"))) == 2
+    assert second["reused"] is True
+    assert second["path"] == first["path"]
+    assert len(list(backup_dir.glob("*.sqlite"))) == 1
 
 
 def test_resolve_backup_ignores_sidecar_older_than_reuse_window(tmp_path):
@@ -189,8 +190,8 @@ def test_resolve_backup_ignores_sidecar_older_than_reuse_window(tmp_path):
     assert len(list(backup_dir.glob("*.sqlite"))) == 2
 
 
-def test_resolve_backup_fails_closed_when_identity_table_missing(tmp_path):
-    """Fail-closed: identity cannot be established (missing table) -> always a fresh backup, no sidecar."""
+def test_resolve_backup_schema_change_forces_fresh_anchor(tmp_path):
+    """A schema-generation change is outside DML reuse and forces a fresh backup."""
     db = tmp_path / "partial_schema.sqlite"
     conn = sqlite3.connect(db)
     conn.executescript(
@@ -202,16 +203,77 @@ def test_resolve_backup_fails_closed_when_identity_table_missing(tmp_path):
     backup_dir = tmp_path / "backups"
     try:
         first = rollout._resolve_backup(conn, db, backup_dir, timeout_seconds=5.0, reuse_max_age_minutes=60.0)
+        conn.execute("CREATE TABLE agent_tasks(id TEXT PRIMARY KEY)")
+        conn.commit()
         second = rollout._resolve_backup(conn, db, backup_dir, timeout_seconds=5.0, reuse_max_age_minutes=60.0)
     finally:
         conn.close()
 
     assert first["reused"] is False
-    assert first["identity_established"] is False
-    assert not rollout._identity_sidecar_path(Path(first["path"])).is_file()
+    assert first["identity_established"] is True
+    assert rollout._identity_sidecar_path(Path(first["path"])).is_file()
     assert second["reused"] is False
     assert second["path"] != first["path"]
     assert len(list(backup_dir.glob("*.sqlite"))) == 2
+
+
+def test_plural_selector_releases_twelve_rows_with_one_backup(tmp_path, monkeypatch):
+    db, repo, _ = _fixture(tmp_path)
+    ids = ["one"] + [f"row-{index:02d}" for index in range(2, 13)]
+    with sqlite3.connect(db) as conn:
+        payload = conn.execute("SELECT payload_json FROM work_items WHERE id='one'").fetchone()[0]
+        for index, work_item_id in enumerate(ids[1:], start=2):
+            conn.execute(
+                "INSERT INTO work_items VALUES(?,?,?,?,?,?,?,?)",
+                (work_item_id, "QM5_1001", "COMPILE_EA", "pending", None, None, payload, f"2026-01-{index:02d}"),
+            )
+            conn.execute(
+                "INSERT INTO work_item_holds VALUES(?,?,?,?,?,?,?,?)",
+                (work_item_id, rollout.HOLD_CODE, 1, 1, "2026-01-01", "2026-01-01", None, None),
+            )
+        conn.execute(
+            "INSERT INTO work_items VALUES(?,?,?,?,?,?,?,?)",
+            ("foreign", "QM5_1001", "COMPILE_EA", "pending", None, None, payload, "2025-01-01"),
+        )
+        conn.execute(
+            "INSERT INTO work_item_holds VALUES(?,?,?,?,?,?,?,?)",
+            ("foreign", rollout.HOLD_CODE, 1, 1, "2025-01-01", "2025-01-01", None, None),
+        )
+
+    backup_calls = 0
+    original = rollout._backup
+
+    def counted_backup(*args, **kwargs):
+        nonlocal backup_calls
+        backup_calls += 1
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(rollout, "_backup", counted_backup)
+    result = rollout.apply_wave(
+        db, repo, tmp_path / "backups", 12, "tranche", work_item_ids=ids
+    )
+    assert result["applied_work_item_ids"] == ids
+    assert backup_calls == 1
+    with sqlite3.connect(db) as conn:
+        assert conn.execute(
+            "SELECT active FROM work_item_holds WHERE work_item_id='foreign'"
+        ).fetchone()[0] == 1
+
+
+def test_tool_backup_class_cap_keeps_newest_three_and_receipts(tmp_path):
+    backup_dir = tmp_path / "backups"
+    backup_dir.mkdir()
+    for index in range(5):
+        path = backup_dir / f"farm_state_before_hold_release_20260101T00000{index}Z_deadbeef.sqlite"
+        path.write_bytes(bytes([index]))
+        rollout._identity_sidecar_path(path).write_text("{}", encoding="utf-8")
+        os.utime(path, (index + 1, index + 1))
+    receipt_path = rollout._cap_tool_backup_class(backup_dir, "hold_release")
+    assert receipt_path is not None
+    assert len(list(backup_dir.glob("farm_state_before_hold_release_*.sqlite"))) == 3
+    receipt = json.loads(Path(receipt_path).read_text(encoding="utf-8"))
+    assert len(receipt["deleted"]) == 2
+    assert receipt["deleted_bytes"] == 2
 
 
 def test_resolve_backup_disabled_via_zero_max_age(tmp_path):

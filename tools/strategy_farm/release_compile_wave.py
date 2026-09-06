@@ -13,11 +13,12 @@ import datetime as dt
 import hashlib
 import json
 import os
+import re
 import sqlite3
 import time
 import uuid
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterable
 
 try:
     from factory_mutation_lock import FactoryMutationLock
@@ -34,15 +35,10 @@ DEFAULT_BACKUP_DIR = Path(r"D:\QM\strategy_farm\state\backups")
 DEFAULT_MUTATION_LOCK = Path(r"D:\QM\strategy_farm\state\FACTORY_MUTATION.lock")
 HOLD_CODE = "COMPILE_EA_WORKER_ROLLOUT_PENDING"
 
-# Tables whose row counts participate in the cheap DB-identity fingerprint
-# used for backup reuse. Deliberately narrow: enough to detect any mutation
-# relevant to this wave (work items, agent tasks, and the holds this wave
-# releases) without scanning the whole database.
-IDENTITY_TABLES = ("work_items", "agent_tasks", "work_item_holds")
-
 # Default freshness window for backup reuse (minutes). CLI: --backup-reuse-max-age-minutes.
 # Env override: QM_COMPILE_WAVE_BACKUP_REUSE_MAX_AGE_MINUTES.
 DEFAULT_BACKUP_REUSE_MAX_AGE_MINUTES = 60.0
+DEFAULT_TOOL_BACKUP_KEEP = 3
 
 
 def _env_default_backup_reuse_max_age_minutes() -> float:
@@ -79,21 +75,31 @@ def inspect(
     repo: Path,
     max_items: int,
     work_item_id: str | None = None,
+    work_item_ids: Iterable[str] | None = None,
 ) -> dict[str, Any]:
-    if max_items < 1 or max_items > 10:
+    selectors = tuple(dict.fromkeys(
+        [str(value) for value in (work_item_ids or ()) if str(value)]
+        or ([str(work_item_id)] if work_item_id else [])
+    ))
+    if not selectors and (max_items < 1 or max_items > 10):
         raise ValueError("--max-items must be between 1 and 10")
+    selector_sql = ""
+    parameters: list[Any] = [HOLD_CODE]
+    if selectors:
+        selector_sql = " AND w.id IN (" + ",".join("?" for _ in selectors) + ")"
+        parameters.extend(selectors)
     with _connect(db) as conn:
         rows = conn.execute(
-            """
+            f"""
             SELECT w.id,w.ea_id,w.status,w.claimed_by,w.verdict,w.payload_json,
                    h.hold_code,h.active,h.release_on_restart,h.created_at
             FROM work_items w JOIN work_item_holds h ON h.work_item_id=w.id
             WHERE w.phase='COMPILE_EA' AND w.status='pending'
               AND w.claimed_by IS NULL AND h.active=1 AND h.hold_code=?
-              AND (? IS NULL OR w.id=?)
+              {selector_sql}
             ORDER BY w.created_at,w.id
             """,
-            (HOLD_CODE, work_item_id, work_item_id),
+            parameters,
         ).fetchall()
 
     eligible: list[dict[str, Any]] = []
@@ -115,7 +121,7 @@ def inspect(
         if not label or not expected_sha or actual_sha != expected_sha:
             item["reason"] = "SOURCE_SHA_STALE_OR_MISSING"
             deferred.append(item)
-        elif len(eligible) < max_items:
+        elif selectors or len(eligible) < max_items:
             eligible.append(item)
         else:
             item["reason"] = "LATER_WAVE"
@@ -125,6 +131,7 @@ def inspect(
         "mode": "dry_run",
         "max_items": max_items,
         "work_item_id_selector": work_item_id,
+        "work_item_id_selectors": list(selectors),
         "held_pending_count": len(rows),
         "release_count": len(eligible),
         "release": eligible,
@@ -137,12 +144,15 @@ def _backup(
     backup_dir: Path,
     *,
     timeout_seconds: float = 60.0,
+    backup_label: str = "compile_wave",
 ) -> tuple[Path, str]:
     if timeout_seconds <= 0:
         raise ValueError("backup timeout must be positive")
     backup_dir.mkdir(parents=True, exist_ok=True)
     stamp = dt.datetime.now(dt.UTC).strftime("%Y%m%dT%H%M%SZ")
-    target = backup_dir / f"farm_state_before_compile_wave_{stamp}_{uuid.uuid4().hex[:8]}.sqlite"
+    if not re.fullmatch(r"[a-z0-9_]+", backup_label):
+        raise ValueError(f"unsupported tool backup label: {backup_label}")
+    target = backup_dir / f"farm_state_before_{backup_label}_{stamp}_{uuid.uuid4().hex[:8]}.sqlite"
     partial = target.with_suffix(target.suffix + ".partial")
     source_conn = sqlite3.connect(db, timeout=30)
     target_conn = sqlite3.connect(partial)
@@ -182,63 +192,82 @@ def _identity_sidecar_path(backup_path: Path) -> Path:
     return backup_path.with_name(backup_path.name + ".identity.json")
 
 
-def _row_counts(conn: sqlite3.Connection) -> dict[str, int] | None:
-    """Cheap per-table row counts used as part of the DB-identity fingerprint.
-
-    Returns None (identity cannot be established) if any expected table is
-    missing or the count query otherwise fails -- callers must fail closed
-    to a fresh backup in that case.
-    """
-
-    counts: dict[str, int] = {}
-    for table in IDENTITY_TABLES:
-        try:
-            row = conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()
-        except sqlite3.Error:
-            return None
-        if row is None:
-            return None
-        counts[table] = int(row[0])
-    return counts
-
-
 def _db_identity(conn: sqlite3.Connection, db: Path) -> dict[str, Any] | None:
-    """Cheap, robust identity fingerprint of the live DB image.
+    """Identity for one rolling tool-backup window.
 
-    Combines the main file's mtime/size (updated on checkpoint), the WAL
-    file's size (grows with uncommitted-to-main writes visible to readers),
-    and row counts of the tables this wave reads/mutates. Returns None when
-    any component cannot be read -- callers must fail closed (fresh backup)
-    rather than ever reuse an unverifiable identity.
+    DML row counts and WAL growth are intentionally informational, not match
+    keys: each governed call changes those values. The stable database path
+    and SQLite schema generation identify the rollback domain while the age
+    window limits reuse.
     """
 
     try:
         stat = db.stat()
     except OSError:
         return None
-    wal_path = db.with_name(db.name + "-wal")
     try:
-        wal_size = wal_path.stat().st_size if wal_path.exists() else 0
-    except OSError:
-        return None
-    row_counts = _row_counts(conn)
-    if row_counts is None:
+        schema_version = int(conn.execute("PRAGMA schema_version").fetchone()[0])
+    except (sqlite3.Error, TypeError, IndexError):
         return None
     return {
+        "source_path": str(db.resolve()),
+        "schema_version": schema_version,
         "source_mtime_ns": stat.st_mtime_ns,
         "source_size": stat.st_size,
-        "wal_size": wal_size,
-        "row_counts": row_counts,
     }
 
 
 def _identities_match(a: dict[str, Any], b: dict[str, Any]) -> bool:
     return (
-        a.get("source_mtime_ns") == b.get("source_mtime_ns")
-        and a.get("source_size") == b.get("source_size")
-        and a.get("wal_size") == b.get("wal_size")
-        and a.get("row_counts") == b.get("row_counts")
+        a.get("source_path") == b.get("source_path")
+        and a.get("schema_version") == b.get("schema_version")
     )
+
+
+def _cap_tool_backup_class(
+    backup_dir: Path,
+    backup_label: str,
+    *,
+    keep: int = DEFAULT_TOOL_BACKUP_KEEP,
+) -> str | None:
+    """Keep newest N backups for one tool class and write a deletion receipt."""
+    if keep < 1:
+        raise ValueError("tool backup keep count must be positive")
+    root = backup_dir.resolve()
+    candidates = sorted(
+        backup_dir.glob(f"farm_state_before_{backup_label}_*.sqlite"),
+        key=lambda path: (path.stat().st_mtime_ns, path.name),
+        reverse=True,
+    )
+    deleted = []
+    for path in candidates[keep:]:
+        resolved = path.resolve()
+        if resolved.parent != root:
+            raise RuntimeError(f"tool backup cap target escaped backup dir: {resolved}")
+        size = path.stat().st_size
+        sidecar = _identity_sidecar_path(path)
+        path.unlink()
+        sidecar_deleted = False
+        if sidecar.is_file() and sidecar.resolve().parent == root:
+            sidecar.unlink()
+            sidecar_deleted = True
+        deleted.append({"path": str(path), "bytes": size, "sidecar_deleted": sidecar_deleted})
+    if not deleted:
+        return None
+    receipt_dir = backup_dir / "receipts"
+    receipt_dir.mkdir(parents=True, exist_ok=True)
+    stamp = dt.datetime.now(dt.UTC).strftime("%Y%m%dT%H%M%S_%fZ")
+    receipt = receipt_dir / f"tool_backup_cap_{backup_label}_{stamp}.json"
+    payload = {
+        "schema": "qm.tool-backup-cap/v1",
+        "backup_label": backup_label,
+        "keep": keep,
+        "deleted": deleted,
+        "deleted_bytes": sum(item["bytes"] for item in deleted),
+        "created_at": utc_now(),
+    }
+    receipt.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return str(receipt)
 
 
 def _write_identity_sidecar(
@@ -309,6 +338,7 @@ def _resolve_backup(
     *,
     timeout_seconds: float = 60.0,
     reuse_max_age_minutes: float = DEFAULT_BACKUP_REUSE_MAX_AGE_MINUTES,
+    backup_label: str = "compile_wave",
 ) -> dict[str, Any]:
     """Reuse a fresh, identity-matched backup when one exists; else write one.
 
@@ -324,6 +354,7 @@ def _resolve_backup(
         reusable = _find_reusable_backup(backup_dir, live_identity, reuse_max_age_minutes)
         if reusable is not None:
             backup_path, backup_sha, sidecar_path = reusable
+            cap_receipt = _cap_tool_backup_class(backup_dir, backup_label)
             return {
                 "path": backup_path,
                 "sha256": backup_sha,
@@ -331,9 +362,12 @@ def _resolve_backup(
                 "reused_from_sidecar": str(sidecar_path),
                 "identity": live_identity,
                 "identity_established": True,
+                "cap_receipt": cap_receipt,
             }
 
-    backup_path, backup_sha = _backup(db, backup_dir, timeout_seconds=timeout_seconds)
+    backup_path, backup_sha = _backup(
+        db, backup_dir, timeout_seconds=timeout_seconds, backup_label=backup_label
+    )
     # Re-derive identity post-backup if the pre-backup read failed (e.g. a
     # table was briefly unreadable); a sidecar is written on a best-effort
     # basis only -- its absence never blocks the backup that already
@@ -344,6 +378,7 @@ def _resolve_backup(
             _write_identity_sidecar(backup_path, identity_for_sidecar, backup_sha)
         except OSError:
             pass
+    cap_receipt = _cap_tool_backup_class(backup_dir, backup_label)
     return {
         "path": backup_path,
         "sha256": backup_sha,
@@ -351,6 +386,7 @@ def _resolve_backup(
         "reused_from_sidecar": None,
         "identity": identity_for_sidecar,
         "identity_established": identity_for_sidecar is not None,
+        "cap_receipt": cap_receipt,
     }
 
 
@@ -397,8 +433,9 @@ def apply_wave(
     mutation_lock: Path | None = None,
     backup_timeout_seconds: float = 60.0,
     backup_reuse_max_age_minutes: float = DEFAULT_BACKUP_REUSE_MAX_AGE_MINUTES,
+    work_item_ids: Iterable[str] | None = None,
 ) -> dict[str, Any]:
-    plan = inspect(db, repo, max_items, work_item_id)
+    plan = inspect(db, repo, max_items, work_item_id, work_item_ids)
     if not plan["release"]:
         return {**plan, "mode": "apply", "applied": 0, "backup": None}
     lock_path = mutation_lock or db.parent / "FACTORY_MUTATION.lock"
@@ -446,6 +483,7 @@ def apply_wave(
             backup_sha = backup_resolution["sha256"]
             backup_reused = backup_resolution["reused"]
             backup_identity_established = backup_resolution["identity_established"]
+            backup_cap_receipt = backup_resolution["cap_receipt"]
             now = utc_now()
             for item in plan["release"]:
                 row = conn.execute(
@@ -471,7 +509,11 @@ def apply_wave(
                         item["work_item_id"],
                         note,
                         json.dumps(
-                            {"max_items": max_items, "work_item_id_selector": work_item_id},
+                            {
+                                "max_items": max_items,
+                                "work_item_id_selector": work_item_id,
+                                "work_item_id_selectors": plan["work_item_id_selectors"],
+                            },
                             sort_keys=True,
                         ),
                     ),
@@ -483,7 +525,11 @@ def apply_wave(
                         now,
                         item["work_item_id"],
                         json.dumps(
-                            {"release_note": note, "work_item_id_selector": work_item_id},
+                            {
+                                "release_note": note,
+                                "work_item_id_selector": work_item_id,
+                                "work_item_id_selectors": plan["work_item_id_selectors"],
+                            },
                             sort_keys=True,
                         ),
                     ),
@@ -510,6 +556,7 @@ def apply_wave(
             "sha256": backup_sha,
             "reused": backup_reused,
             "identity_established": backup_identity_established,
+            "cap_receipt": backup_cap_receipt,
         },
         "backup_timeout_seconds": backup_timeout_seconds,
         "backup_reuse_max_age_minutes": backup_reuse_max_age_minutes,
@@ -544,24 +591,32 @@ def main() -> int:
         "--work-item-id",
         help="release only this exact held pending work item (still via the normal worker path)",
     )
+    parser.add_argument(
+        "--work-item-ids", nargs="+",
+        help="release exactly this tranche of held pending work items; never selects foreign rows",
+    )
     parser.add_argument("--apply", action="store_true")
     parser.add_argument("--release-note", default="bounded COMPILE_EA worker rollout wave")
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
+    if args.work_item_id and args.work_item_ids:
+        parser.error("--work-item-id and --work-item-ids are mutually exclusive")
+    effective_max_items = len(dict.fromkeys(args.work_item_ids)) if args.work_item_ids else args.max_items
     result = (
         apply_wave(
             args.db,
             args.repo,
             args.backup_dir,
-            args.max_items,
+            effective_max_items,
             args.release_note,
             args.work_item_id,
             args.mutation_lock,
             args.backup_timeout_seconds,
             args.backup_reuse_max_age_minutes,
+            args.work_item_ids,
         )
         if args.apply
-        else inspect(args.db, args.repo, args.max_items, args.work_item_id)
+        else inspect(args.db, args.repo, effective_max_items, args.work_item_id, args.work_item_ids)
     )
     encoded = json.dumps(result, indent=2, sort_keys=True)
     if args.output:

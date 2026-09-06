@@ -202,6 +202,22 @@ def test_apply_appends_one_unboosted_canary_deferral_and_receipt(tmp_path: Path)
     assert second["reason"] == "existing_q02_row"
 
 
+def test_governed_backup_reuses_across_tool_classes_after_dml(tmp_path: Path) -> None:
+    fixture = _fixture(tmp_path)
+    root = fixture["root"]
+    first_path, first_sha = farmctl._governed_state_backup(root, "hold_release")
+    with sqlite3.connect(root / farmctl.DB_REL) as conn:  # type: ignore[operator]
+        conn.execute(
+            "INSERT INTO events(ts,entity_type,entity_id,event,detail_json) "
+            "VALUES('2026-09-06','fixture','one','mutation','{}')"
+        )
+        conn.commit()
+    second_path, second_sha = farmctl._governed_state_backup(root, "first_q02_intake")
+    assert second_path == first_path
+    assert second_sha == first_sha
+    assert len(list((root / "state" / "backups").glob("*.sqlite"))) == 1  # type: ignore[operator]
+
+
 def _bad_row_contract(fixture: dict[str, object]) -> None:
     _db_execute(fixture, "UPDATE work_items SET status='failed' WHERE id=?", (COMPILE_ID,))
 
