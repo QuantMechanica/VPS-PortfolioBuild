@@ -1,0 +1,157 @@
+{
+  "artifact_type": "fx_cointegration_runnable_stale_successor_guard",
+  "schema_version": "qm.fx-cointegration-runnable-stale-successor-guard/v1",
+  "generated_at_utc": "2026-09-06T04:21:58.9367218Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "78c96e3413c47b803370d77ed0a9e78c963ce50f",
+  "mission": "grow_certified_v5_portfolio_new_forex_sleeves",
+  "outcome": "EXISTING_QM5_12778_RUNNABLE_NO_NON_DUPLICATE_QUEUE_MUTATION",
+  "frontier": {
+    "research_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "unordered_relationship_count": 66,
+    "durable_approved_identity_count": 123,
+    "durable_matching_ea_directory_count": 123,
+    "current_d1_two_traded_leg_pure_fx_manifest_count": 56,
+    "current_d1_manifest_identities_without_q02_count": 0,
+    "current_d1_manifest_identities_with_open_q02_count": 0,
+    "unbuilt_scan_relationship_found": false,
+    "decision": "Use the existing-card fallback; a new scan-derived identity would duplicate governed work."
+  },
+  "preferred_anchor_state": [
+    {
+      "ea_id": "QM5_12532",
+      "relationship": ["AUDUSD.DWX", "NZDUSD.DWX"],
+      "logical_q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "logical_q02_verdict": "PASS",
+      "downstream_terminal": "Q05 FAIL",
+      "current_q02_oninit_or_no_history_blocker": false
+    },
+    {
+      "ea_id": "QM5_12533",
+      "relationship": ["EURJPY.DWX", "GBPJPY.DWX"],
+      "logical_q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "logical_q02_verdict": "PASS",
+      "downstream_terminal": "Q04 FAIL",
+      "current_q02_oninit_or_no_history_blocker": false
+    }
+  ],
+  "selected_existing_forex_continuation": {
+    "ea_id": "QM5_12778",
+    "relationship": ["AUDUSD.DWX", "EURJPY.DWX"],
+    "logical_symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+    "timeframe": "D1",
+    "expected_logical_packages_per_year": "4-8",
+    "work_item_id": "24acc5d4-3e34-526e-a7a8-12640a2e759f",
+    "phase": "Q09_NEWS",
+    "status": "pending",
+    "verdict": null,
+    "claimed_by": null,
+    "attempt_count": 0,
+    "same_identity_open_count": 1,
+    "active_hold_count": 0,
+    "priority_track": true,
+    "activation_state": "RUNNABLE_BOUND",
+    "canonical_claim_rank_one_based": 161,
+    "canonical_eligible_row_count": 9145,
+    "risk_contract": {
+      "RISK_FIXED": 1000.0,
+      "RISK_PERCENT": 0.0
+    },
+    "sha256": {
+      "approved_card": "5878c99d9cef732642f99961556dd8bd049e14b42292b61aa72a047b4558134a",
+      "mq5": "132a501d94685f013cc62a8b3c2de111d0a8b1e616a8656d2c61b061a754c146",
+      "ex5": "2a105cfbb364142c96c552136bb450162c142845665ce3366d0c045248c17a01",
+      "basket_manifest": "0ce25d17ebe7c3664e4acdb6c1d302b28b1f40710301189cc633e44f25854d57",
+      "logical_backtest_setfile": "0e7949276927c8c5355c413c631e7b67f684e757892de59fa2cff5521836c8e9"
+    }
+  },
+  "stale_successor_guard": [
+    {
+      "ea_id": "QM5_1017",
+      "pending_work_item_id": "22ab06f7-4cd4-46fb-a431-0a8739c1230a",
+      "pending_phase": "Q04",
+      "terminal_phase": "Q02",
+      "terminal_verdict": "FAIL",
+      "priority_applied": false
+    },
+    {
+      "ea_id": "QM5_20197",
+      "pending_work_item_id": "9d57b8a2-decf-429a-9603-cc81965133f7",
+      "pending_phase": "Q03",
+      "terminal_phase": "Q04",
+      "terminal_verdict": "FAIL",
+      "priority_applied": false
+    },
+    {
+      "ea_id": "QM5_20201",
+      "pending_work_item_id": "81be8111-e4d3-42ff-913d-3838dbb63eec",
+      "pending_phase": "Q03",
+      "terminal_phase": "Q04",
+      "terminal_verdict": "FAIL",
+      "priority_applied": false
+    },
+    {
+      "ea_id": "QM5_20207",
+      "pending_work_item_id": "34badffc-8842-4749-855f-8036de172014",
+      "pending_phase": "Q03",
+      "terminal_phase": "Q04",
+      "terminal_verdict": "FAIL",
+      "priority_applied": false
+    },
+    {
+      "ea_id": "QM5_20211",
+      "pending_work_item_id": "9f694582-3238-4bac-b515-995977671e7f",
+      "pending_phase": "Q03",
+      "terminal_phase": "Q05",
+      "terminal_verdict": "FAIL",
+      "priority_applied": false
+    },
+    {
+      "ea_id": "QM5_20250",
+      "pending_work_item_id": "37e59cbb-9c6f-4a94-bc0d-60563f0554f5",
+      "pending_phase": "Q04",
+      "terminal_phase": "Q03",
+      "terminal_verdict": "FAIL",
+      "priority_applied": false
+    }
+  ],
+  "capacity": {
+    "sampling_method": "Processor(_Total) percent processor time, five one-second samples",
+    "samples_percent": [90.056, 92.890, 94.437, 84.389, 85.361],
+    "average_percent": 89.426,
+    "maximum_percent": 94.437,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_binding": false,
+    "active_work_item_count": 8,
+    "pending_work_item_count": 12287,
+    "running_factory_terminals": ["T1", "T4", "T6", "T7", "T8", "T10"],
+    "terminal_worker_count": 10,
+    "duplicate_terminal_worker_count": 0,
+    "orphaned_factory_terminal_count": 0,
+    "farm_database_quick_check": "ok"
+  },
+  "actions": {
+    "new_card_or_ea_created": false,
+    "work_item_created": false,
+    "duplicate_work_item_created": false,
+    "queue_payload_changed": false,
+    "priority_changed": false,
+    "hold_changed": false,
+    "work_item_claimed": false,
+    "compile_started": false,
+    "backtest_or_terminal_started": false,
+    "stale_successor_guard_recorded": true,
+    "readiness_receipt_recorded": true
+  },
+  "protected_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_files": false,
+    "autotrading": false
+  },
+  "non_duplicate_value": "This receipt adds a current manifest-to-ledger proof that every low-frequency D1 two-leg pure-FX basket already has Q02 identity and prevents six stale pending successors from being mistaken for valid fallback work. It preserves the sole runnable continuation without duplicating its queue row.",
+  "resume_contract": "Let the ordinary paced worker consume the unique QM5_12778 Q09_NEWS row. Never append or manually dispatch a duplicate, and do not prioritize a stale successor behind a later terminal failure."
+}
