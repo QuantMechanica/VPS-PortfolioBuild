@@ -285,3 +285,4 @@ remain material risks.
 | version | date | reason | notes |
 |---|---|---|---|
 | v0 | 2026-09-01 | approved source build | G0 card; governed magic `412680000` |
+| v1 | 2026-09-06 | compile-safety repair | Rename the MQL5-reserved inverter parameter and add explicit dynamic-buffer bounds; governed compile successor `814aab56-5f04-42ad-a4c2-4bb2c9cfa061` |

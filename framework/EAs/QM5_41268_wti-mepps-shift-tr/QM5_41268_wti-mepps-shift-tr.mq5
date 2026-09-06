@@ -544,12 +544,12 @@ bool Strategy_BlockFeatureMoments(const double &returns[],
    return true;
   }
 
-bool Strategy_Invert4x4(const double &matrix[],
+bool Strategy_Invert4x4(const double &input_matrix[],
                         double &inverse[],
                         double &max_identity_residual)
   {
    max_identity_residual = 0.0;
-   if(ArraySize(matrix) != 16 || ArraySize(inverse) != 16)
+   if(ArraySize(input_matrix) != 16 || ArraySize(inverse) != 16)
       return false;
 
    double augmented[4][8];
@@ -561,7 +561,7 @@ bool Strategy_Invert4x4(const double &matrix[],
      {
       for(int column = 0; column < 4; ++column)
         {
-         const double value = matrix[row * 4 + column];
+         const double value = input_matrix[row * 4 + column];
          if(!MathIsValidNumber(value))
             return false;
          augmented[row][column] = value;
@@ -651,7 +651,7 @@ bool Strategy_Invert4x4(const double &matrix[],
         {
          double product = 0.0;
          for(int inner = 0; inner < 4; ++inner)
-            product += matrix[row * 4 + inner] *
+            product += input_matrix[row * 4 + inner] *
                        inverse[inner * 4 + column];
          const double expected = (row == column) ? 1.0 : 0.0;
          const double residual = MathAbs(product - expected);
@@ -726,6 +726,12 @@ bool Strategy_LoadPreMonthCloses(const int current_month_key,
       if(selected == 0 &&
          Strategy_NextMonthKey(month_key) != current_month_key)
          return false;
+      if(selected < 0)
+         return false;
+      if(selected >= ArraySize(reverse_closes))
+         return false;
+      if(selected >= ArraySize(reverse_times))
+         return false;
       reverse_closes[selected] = bars[index].close;
       reverse_times[selected] = normalized;
       ++selected;
@@ -750,6 +756,18 @@ bool Strategy_LoadPreMonthCloses(const int current_month_key,
    for(int index = 0; index < strategy_close_count; ++index)
      {
       const int reverse_index = strategy_close_count - 1 - index;
+      if(index < 0)
+         return false;
+      if(index >= ArraySize(closes))
+         return false;
+      if(index >= ArraySize(close_times))
+         return false;
+      if(reverse_index < 0)
+         return false;
+      if(reverse_index >= ArraySize(reverse_closes))
+         return false;
+      if(reverse_index >= ArraySize(reverse_times))
+         return false;
       closes[index] = reverse_closes[reverse_index];
       close_times[index] = reverse_times[reverse_index];
       if(closes[index] <= 0.0 || !MathIsValidNumber(closes[index]) ||
