@@ -39,6 +39,30 @@ class IncludeMirrorRefusal(RuntimeError):
         self.retry_attempted = False
 
 
+def validate_monitor_probe_contract(manifest: dict, task: dict, root: Path) -> None:
+    """Bounded artifact-only authority; never grants terminal include mirroring."""
+    expected = Path('C:/QM/repo/docs/ops/evidence/2026-09-06_ftmo_collector_native_acceptance/compile_probe').absolute()
+    def refuse(detail):
+        raise IncludeMirrorRefusal('MONITOR_PROBE_REFUSED', detail)
+    if root.resolve() != expected or root.is_symlink():
+        refuse('Probe root is outside the task-specific evidence sandbox')
+    if (manifest.get('task_id') != 'f4e95c80-c121-42cb-8e42-78e1334046f4'
+            or task.get('id') != manifest['task_id']
+            or task.get('assigned_agent') != 'codex' or task.get('state') != 'IN_PROGRESS'):
+        refuse('Live router assignment is required')
+    expected_files = {'editor/MetaEditor64.exe', 'MQL5/QM_FTMO_TrialTelemetry.mq5',
+                      'MQL5/QM_FTMO_TrialTelemetryAcceptance.mq5',
+                      'MQL5/Include/QM/QM_FTMOGovernorPolicy.mqh'}
+    if manifest.get('schema') != 'qm.monitor-compile-probe/v1' or set(manifest.get('files', {})) != expected_files:
+        refuse('Exact compiler and source allowlist required')
+    for relative, digest in manifest['files'].items():
+        path = root / relative
+        if not path.resolve().is_relative_to(expected) or not path.is_file():
+            refuse('Missing or escaped input: ' + relative)
+        if hashlib.sha256(path.read_bytes()).hexdigest() != digest:
+            refuse('Input hash changed: ' + relative)
+
+
 def _pid_exists(pid: Any) -> bool:
     """PID liveness probe that never signals the target.
 

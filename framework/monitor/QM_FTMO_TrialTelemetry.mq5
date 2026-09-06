@@ -10,14 +10,19 @@
 
 #include <QM/QM_FTMOGovernorPolicy.mqh>
 
+#ifndef QM_TRIAL_DEFAULT_ID
+#define QM_TRIAL_DEFAULT_ID "UNSET"
+#endif
+
 input int    InpTimerSeconds  = 1;
 input string InpOutputDir     = "QM\\ftmo_trial";
 input long   InpExpectedLogin = 0;
 input string InpExpectedServer = "";
-input string InpTrialId       = "UNSET";
+input string InpTrialId       = QM_TRIAL_DEFAULT_ID;
 
 #define QM_TRIAL_SCHEMA "qm.ftmo-trial-telemetry.raw/v1"
 
+int      g_output_handle = INVALID_HANDLE;
 bool     g_busy = false;
 bool     g_armed = false;
 ulong    g_sequence = 0;
@@ -47,17 +52,26 @@ string IsoUtc(const datetime value)
                        p.year,p.mon,p.day,p.hour,p.min,p.sec);
   }
 
+bool OpenWriter(const string directory)
+  {
+   if(g_output_handle!=INVALID_HANDLE) return false;
+   g_output_handle=FileOpen(directory+"\\trial_telemetry_raw.jsonl",
+                           FILE_READ|FILE_WRITE|FILE_TXT|FILE_ANSI|FILE_SHARE_READ);
+   return g_output_handle!=INVALID_HANDLE;
+  }
+
+void CloseWriter()
+  {
+   if(g_output_handle!=INVALID_HANDLE) FileClose(g_output_handle);
+   g_output_handle=INVALID_HANDLE;
+  }
+
 bool AppendLine(const string line)
   {
-   const string path=InpOutputDir+"\\trial_telemetry_raw.jsonl";
-   int handle=FileOpen(path,FILE_READ|FILE_WRITE|FILE_TXT|FILE_ANSI|
-                       FILE_SHARE_READ);
-   if(handle==INVALID_HANDLE)
-      return false;
-   if(!FileSeek(handle,0,SEEK_END)) { FileClose(handle); return false; }
-   const uint written=FileWriteString(handle,line+"\r\n");
-   FileFlush(handle);
-   FileClose(handle);
+   if(g_output_handle==INVALID_HANDLE) return false;
+   if(!FileSeek(g_output_handle,0,SEEK_END)) return false;
+   const uint written=FileWriteString(g_output_handle,line+"\r\n");
+   FileFlush(g_output_handle);
    return written==StringLen(line)+2;
   }
 
@@ -159,14 +173,14 @@ int OnInit()
       return INIT_FAILED;
    if(InpExpectedServer!="" && server!=InpExpectedServer)
       return INIT_FAILED;
+   if(!OpenWriter(InpOutputDir)) return INIT_FAILED;
    g_session_started_utc=TimeGMT();
    g_session_id=StringFormat("%I64d-%I64d-%I64u-%I64d",login,(long)g_session_started_utc,GetMicrosecondCount(),ChartID());
    int seconds=MathMax(1,MathMin(5,InpTimerSeconds));
-   if(!EventSetTimer(seconds))
-      return INIT_FAILED;
+   if(!EventSetTimer(seconds)) { CloseWriter(); return INIT_FAILED; }
    g_armed=true;
    Capture("INIT");
-   if(g_sequence==0) { g_armed=false; EventKillTimer(); return INIT_FAILED; }
+   if(g_sequence==0) { g_armed=false; EventKillTimer(); CloseWriter(); return INIT_FAILED; }
    return INIT_SUCCEEDED;
   }
 
@@ -179,5 +193,6 @@ void OnDeinit(const int reason)
       Capture("DEINIT");
    EventKillTimer();
    g_armed=false;
+   CloseWriter();
   }
 
