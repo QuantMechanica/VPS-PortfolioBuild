@@ -1,0 +1,35 @@
+{
+  "task_id": "0461501e-952c-49e9-909d-b1c1ca507f3a",
+  "ea_id": "QM5_41143",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41143_gbpusd-month-end-benchmark-fix-hedge-flow",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41143_gbpusd-month-end-benchmark-fix-hedge-flow\\QM5_41143_gbpusd-month-end-benchmark-fix-hedge-flow.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41143_gbpusd-month-end-benchmark-fix-hedge-flow\\QM5_41143_gbpusd-month-end-benchmark-fix-hedge-flow.ex5",
+  "magic_base": 411430000,
+  "symbols_registered": [
+    "GBPUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41143_gbpusd-month-end-benchmark-fix-hedge-flow\\sets\\QM5_41143_gbpusd-month-end-benchmark-fix-hedge-flow_GBPUSD.DWX_M15_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41143_gbpusd-month-end-benchmark-fix-hedge-flow\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "compile_work_item_id": "ea884470-c638-4d3c-9eaf-438561b4778e",
+  "compile_evidence_path": "D:\\QM\\reports\\work_items\\ea884470-c638-4d3c-9eaf-438561b4778e\\QM5_41143\\COMPILE_EA\\compile_evidence.json",
+  "mq5_sha256": "f41b6b5b78d593d0ab40101630e40b3e92e825637d5183d5433f9e6969acf99b",
+  "ex5_sha256": "9b0828b164e4b3270602eef692ce56ac190b9d3959f69940de4364899f098e31",
+  "setfile_sha256": "6a7925efe62507f70f3e93135cef14eb0fa87059bb592f163fb6a69fb78b09c9",
+  "build_generation": 0,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "not_attempted_orchestrator_handoff",
+  "smoke_admission_error": null,
+  "blocked_reason": "",
+  "open_questions": [
+    "The approved card frontmatter estimates 100 trades/year, while its literal last-London-business-day mechanic implies approximately 12 opportunities/year; Q02 measures the literal mechanics (SPEC.md section 4)."
+  ],
+  "recorded_by": "claude_orchestrator_handoff",
+  "recorded_at_utc": "2026-09-06T03:36:18Z",
+  "notes": "Build committed by the Codex fleet pacer (da9ba7ccb3, magic 4a9457617b); governed compile ea884470 COMPILE_OK 02:33Z (build_check PASS, 0 errors/0 warnings). Result recorded by the Orchestrator because the pacer agents did not hand off; intake-first-q02 refuses the row (basket manifest lists the signal-only proxy UK100.DWX) so the sibling-identical record-build/auto_q02 path is used.",
+  "agent_task_id": "b0f920f1-0904-4b93-a494-0961b10202f8"
+}
