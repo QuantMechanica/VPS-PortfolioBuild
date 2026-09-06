@@ -13,7 +13,7 @@ r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: BUILD_TEST
-last_updated: 2026-07-17
+last_updated: 2026-09-06
 g0_approval_reasoning: "OWNER-authorized safety-controller build and delegated technical release. V2 adds exact signed Phase-1, Verification, and Funded policies for the 100k FTMO 2-Step book. Compile and T1-T5 fault testing only; deployment remains fail-closed behind client wiring, parity, bootstrap reconciliation, and an OWNER-signed manifest."
 ---
 
@@ -47,6 +47,12 @@ Each has its own embedded fingerprint. The signed deploy manifest must provide t
 - Dry-run, invalid-account, empty-policy, and missing-state defaults fail closed.
 - Persistent state is namespaced under the V2 state prefix; V1 state cannot be reused.
 - Lock is durable before order deletion or position-close operations.
+- A hard account stop also atomically publishes the established
+  `MQL5/Files/QM/halt/<ea_id>.halt` file for every governed M13 sleeve. Those
+  files are never removed by the governor; recovery requires OWNER-reviewed
+  intervention.
+- The M13 demo profile enforces the mode-3/FTMO news blackout and a Friday
+  20:55 broker-time entry lock plus flattening for the 21:00 close boundary.
 - Foreign magics are never modified and make every wired client fail closed.
 - Seqlock client heartbeat, singleton lease, and policy-fingerprint mismatch fail closed.
 - Phase 1 and Verification capture the target only when equity reaches it and complete only when balance is at target, the governed account is flat, and four opening days are recorded.
@@ -55,4 +61,8 @@ Each has its own embedded fingerprint. The signed deploy manifest must provide t
 
 ## Release boundary
 
-Build and T1-T5 integration testing are approved. Paid-Challenge or FTMO-Account deployment is not approved until every launched sleeve consumes the V2 client snapshot, the four-day completion edge case is signed off, MQL/Python golden parity and T1-T5 fault tests pass, the bootstrap is independently reconciled, and an OWNER-signed deploy manifest exists. Agents do not toggle AutoTrading.
+Build/test and an **unattached install on FTMO-Demo login 1514536732** are the
+only additional M13 authority. This demo acceptance does not authorize chart
+attachment, AutoTrading, a paid evaluation, or any live/funded deployment.
+Those remain blocked behind independent bootstrap reconciliation and an
+OWNER-signed deployment manifest. Agents do not toggle AutoTrading.

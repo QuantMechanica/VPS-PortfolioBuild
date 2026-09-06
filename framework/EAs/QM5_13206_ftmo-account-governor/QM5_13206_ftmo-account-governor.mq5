@@ -4,6 +4,8 @@
 
 #include <Trade/Trade.mqh>
 #include <QM/QM_FTMOGovernorPolicy.mqh>
+#include <QM/QM_FTMOAccountControl.mqh>
+#include <QM/QM_NewsFilter.mqh>
 
 input group "QuantMechanica V5 Framework"
 input int      qm_ea_id                            = 13206;
@@ -12,19 +14,27 @@ input group "Risk"
 input string   signed_policy_id                    = "";
 
 input group "News"
-input bool     qm_news_filters_not_applicable      = true;
+input QM_NewsTemporalMode qm_news_temporal         = QM_NEWS_TEMPORAL_PRE30_POST30;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_FTMO;
+input int      qm_news_stale_max_hours             = 336;
+input string   qm_news_min_impact                  = "high";
+input string   governed_symbols_csv                = "";
 
 input group "Friday Close"
-input bool     qm_friday_close_owned_by_sleeves    = true;
+input bool     qm_friday_close_enabled             = true;
+input int      qm_friday_close_hour_broker         = 21;
+input int      qm_friday_flat_lead_minutes         = 5;
 
 input group "Strategy"
 input bool     strategy_no_trade_controller        = true;
 
 input group "Deployment Identity"
 input long     expected_account_login              = 0;
+input string   expected_account_server             = "";
 input string   challenge_id                        = "";
 input datetime challenge_start_utc                 = 0;
 input string   allowed_magics_csv                  = "";
+input string   governed_ea_ids_csv                 = "";
 input bool     governor_dry_run                    = true;
 
 input group "One-shot Explicit State Bootstrap"
@@ -46,6 +56,8 @@ CTrade g_trade;
 QM_FTMO_GovernorPolicy g_policy;
 long g_login=0;
 long g_allowed_magics[];
+int g_governed_ea_ids[];
+string g_governed_symbols[];
 double g_instance_token=0.0;
 bool g_has_lease=false;
 bool g_state_loaded=false;
@@ -59,6 +71,7 @@ bool g_total_lock=true;
 bool g_target_lock=true;
 bool g_target_complete=false;
 bool g_flatten_pending=false;
+bool g_halt_latched=false;
 int g_last_logged_reason=-1;
 
 string StateKey(const string suffix)
@@ -146,6 +159,118 @@ bool ParseAllowedMagics()
    return (ArraySize(g_allowed_magics) > 0);
   }
 
+bool GovernedEAIdKnown(const int ea_id)
+  {
+   for(int i=0;i<ArraySize(g_governed_ea_ids);++i)
+      if(g_governed_ea_ids[i] == ea_id)
+         return true;
+   return false;
+  }
+
+bool ParseGovernedEAIds()
+  {
+   ArrayResize(g_governed_ea_ids,0);
+   string values[];
+   const ushort comma=(ushort)StringGetCharacter(",",0);
+   const int count=StringSplit(governed_ea_ids_csv,comma,values);
+   for(int i=0;i<count;++i)
+     {
+      string value=values[i];
+      StringTrimLeft(value);
+      StringTrimRight(value);
+      if(!DecimalDigitsOnly(value))
+         return false;
+      const int ea_id=(int)StringToInteger(value);
+      if(ea_id <= 0 || GovernedEAIdKnown(ea_id))
+         return false;
+      const int size=ArraySize(g_governed_ea_ids);
+      if(ArrayResize(g_governed_ea_ids,size+1) != size+1)
+         return false;
+      g_governed_ea_ids[size]=ea_id;
+     }
+   return (ArraySize(g_governed_ea_ids) > 0);
+  }
+
+bool SymbolTokenValid(const string symbol)
+  {
+   if(StringLen(symbol) <= 0 || StringLen(symbol) > 32)
+      return false;
+   for(int i=0;i<StringLen(symbol);++i)
+     {
+      const ushort code=(ushort)StringGetCharacter(symbol,i);
+      const bool valid=((code >= 'a' && code <= 'z') ||
+                        (code >= 'A' && code <= 'Z') ||
+                        (code >= '0' && code <= '9') || code == '.' ||
+                        code == '_' || code == '-');
+      if(!valid)
+         return false;
+     }
+   return true;
+  }
+
+bool ParseGovernedSymbols()
+  {
+   ArrayResize(g_governed_symbols,0);
+   string values[];
+   const ushort comma=(ushort)StringGetCharacter(",",0);
+   const int count=StringSplit(governed_symbols_csv,comma,values);
+   for(int i=0;i<count;++i)
+     {
+      string value=values[i];
+      StringTrimLeft(value);
+      StringTrimRight(value);
+      if(!SymbolTokenValid(value))
+         return false;
+      for(int j=0;j<ArraySize(g_governed_symbols);++j)
+         if(g_governed_symbols[j] == value)
+            return false;
+      const int size=ArraySize(g_governed_symbols);
+      if(ArrayResize(g_governed_symbols,size+1) != size+1)
+         return false;
+      g_governed_symbols[size]=value;
+     }
+   return (ArraySize(g_governed_symbols) > 0);
+  }
+
+bool NewsAllowsAccount(const datetime broker_time)
+  {
+   for(int i=0;i<ArraySize(g_governed_symbols);++i)
+      if(!QM_NewsAllowsTrade2(g_governed_symbols[i],broker_time,
+                              qm_news_temporal,qm_news_compliance))
+         return false;
+   return true;
+  }
+
+bool WriteHaltFile(const int ea_id,const int reason,const datetime now_utc)
+  {
+   const string target=StringFormat("QM\\halt\\%d.halt",ea_id);
+   if(FileIsExist(target))
+      return true;
+   FolderCreate("QM");
+   FolderCreate("QM\\halt");
+   const string temporary=target+".13206.tmp";
+   int handle=FileOpen(temporary,FILE_WRITE|FILE_TXT|FILE_ANSI);
+   if(handle == INVALID_HANDLE)
+      return false;
+   FileWriteString(handle,StringFormat(
+      "source=QM5_13206\r\nchallenge_id=%s\r\nreason=%d\r\ntimestamp_utc=%I64d\r\n",
+      challenge_id,reason,(long)now_utc));
+   FileFlush(handle);
+   FileClose(handle);
+   if(FileMove(temporary,0,target,FILE_REWRITE))
+      return true;
+   FileDelete(temporary);
+   return FileIsExist(target);
+  }
+
+bool PublishHaltFiles(const int reason,const datetime now_utc)
+  {
+   bool ok=true;
+   for(int i=0;i<ArraySize(g_governed_ea_ids);++i)
+      ok=WriteHaltFile(g_governed_ea_ids[i],reason,now_utc) && ok;
+   return ok;
+  }
+
 double MakeInstanceToken()
   {
    const string identity=StringFormat("%I64d_%I64d",(long)TimeLocal(),ChartID());
@@ -221,6 +346,7 @@ bool WritePersistentState()
    ok=StateWrite("target_lock",g_target_lock ? 1.0 : 0.0) && ok;
    ok=StateWrite("target_complete",g_target_complete ? 1.0 : 0.0) && ok;
    ok=StateWrite("flatten_pending",g_flatten_pending ? 1.0 : 0.0) && ok;
+   ok=StateWrite("halt_latched",g_halt_latched ? 1.0 : 0.0) && ok;
    return ok;
   }
 
@@ -330,6 +456,7 @@ bool SeedBootstrapState(const datetime now_utc)
    g_target_lock=false;
    g_target_complete=false;
    g_flatten_pending=false;
+   g_halt_latched=false;
    const bool seeded=PublishSnapshot(now_utc,0.0,QM_FTMO_GOVERNOR_STATE_INVALID,
                                      true,false,true);
    g_state_loaded=seeded;
@@ -342,7 +469,7 @@ bool LoadPersistentState(const datetime now_utc)
    double trading_days=0.0,last_trade_day=0.0,generation=0.0;
    double version=0.0,fingerprint=0.0;
    bool day_lock=false,total_lock=false,target_lock=false,target_complete=false;
-   bool flatten_pending=false;
+   bool flatten_pending=false,halt_latched=false;
    if(!StateReadRequired("initialized",initialized) || initialized != 1.0 ||
       !StateReadRequired("challenge_start",start_utc) ||
       !StateReadRequired("day_key",day_key) ||
@@ -356,7 +483,8 @@ bool LoadPersistentState(const datetime now_utc)
       !StateReadBool("total_lock",total_lock) ||
       !StateReadBool("target_lock",target_lock) ||
       !StateReadBool("target_complete",target_complete) ||
-      !StateReadBool("flatten_pending",flatten_pending))
+      !StateReadBool("flatten_pending",flatten_pending) ||
+      !StateReadBool("halt_latched",halt_latched))
       return false;
    const int current_day=QM_FTMO_PragueDayKey(now_utc);
    if((datetime)start_utc != challenge_start_utc || challenge_start_utc <= 0 ||
@@ -388,6 +516,7 @@ bool LoadPersistentState(const datetime now_utc)
    g_target_lock=target_lock;
    g_target_complete=target_complete;
    g_flatten_pending=flatten_pending;
+   g_halt_latched=halt_latched;
    g_state_loaded=true;
    g_last_evaluation_utc=now_utc;
    return true;
@@ -397,17 +526,20 @@ bool RefreshMonotonicLocks()
   {
    double persisted_day_key=0.0;
    bool day_lock=false,total_lock=false,target_lock=false,target_complete=false;
+   bool halt_latched=false;
    if(!StateReadRequired("day_key",persisted_day_key) ||
       !StateReadBool("day_lock",day_lock) ||
       !StateReadBool("total_lock",total_lock) ||
       !StateReadBool("target_lock",target_lock) ||
       !StateReadBool("target_complete",target_complete) ||
+      !StateReadBool("halt_latched",halt_latched) ||
       (int)persisted_day_key != g_day_key)
       return false;
    g_day_lock=(g_day_lock || day_lock);
    g_total_lock=(g_total_lock || total_lock);
    g_target_lock=(g_target_lock || target_lock);
    g_target_complete=(g_target_complete || target_complete);
+   g_halt_latched=(g_halt_latched || halt_latched);
    if(g_target_complete)
       g_target_lock=true;
    return true;
@@ -555,14 +687,25 @@ void EvaluateAndPublish()
       PrintFormat("FTMO_GOVERNOR_UNKNOWN_EXPOSURE kind=%s ticket=%I64u magic=%I64d",
                   unknown_kind,unknown_ticket,unknown_magic);
 
-   QM_FTMO_GovernorDecision decision;
-   if(!QM_FTMO_EvaluateSnapshot(now_utc,balance,equity,g_midnight_balance,
-                                g_trading_days,PositionsTotal(),OrdersTotal(),
-                                g_day_lock,g_total_lock,g_policy,decision))
+   const datetime broker_time=TimeTradeServer();
+   if(broker_time <= 0)
      {
       PublishFailClosed(now_utc,QM_FTMO_GOVERNOR_STATE_INVALID);
       return;
      }
+
+   const bool news_allowed=NewsAllowsAccount(broker_time);
+   QM_FTMO_AccountControlDecision control;
+   if(!QM_FTMO_EvaluateAccountControl(
+         now_utc,broker_time,balance,equity,g_midnight_balance,
+         g_trading_days,PositionsTotal(),OrdersTotal(),g_day_lock,g_total_lock,
+         g_halt_latched,news_allowed,qm_friday_close_hour_broker,
+         qm_friday_flat_lead_minutes,g_policy,control))
+     {
+      PublishFailClosed(now_utc,QM_FTMO_GOVERNOR_STATE_INVALID);
+      return;
+     }
+   QM_FTMO_GovernorDecision decision=control.risk;
 
    if(decision.reason == QM_FTMO_GOVERNOR_TOTAL_FLOOR)
       g_total_lock=true;
@@ -583,18 +726,26 @@ void EvaluateAndPublish()
     if(g_policy.target_enabled && g_target_complete)
        g_target_lock=true;
 
-   int publish_reason=(int)decision.reason;
-   if(g_target_complete && !g_day_lock && !g_total_lock)
+   const bool overlay_reason=(control.reason == QM_FTMO_GOVERNOR_WEEKEND_FLAT ||
+                              control.reason == QM_FTMO_GOVERNOR_NEWS_BLACKOUT ||
+                              control.reason == QM_FTMO_GOVERNOR_HALT_LATCHED);
+   int publish_reason=(int)control.reason;
+   if(!overlay_reason && g_target_complete && !g_day_lock && !g_total_lock)
       publish_reason=QM_FTMO_GOVERNOR_TARGET_COMPLETE;
-   else if(g_target_lock && !g_target_complete && !g_day_lock && !g_total_lock &&
+   else if(!overlay_reason && g_target_lock && !g_target_complete &&
+           !g_day_lock && !g_total_lock &&
            g_trading_days < g_policy.minimum_trading_days)
       // Target captured before the four minimum opening days: stay latched flat
       // and entry-locked (gains protected), but do NOT declare completion.
       publish_reason=QM_FTMO_GOVERNOR_TARGET_MIN_DAYS_PENDING;
-   else if(g_target_lock && !g_day_lock && !g_total_lock)
+   else if(!overlay_reason && g_target_lock && !g_day_lock && !g_total_lock)
       publish_reason=QM_FTMO_GOVERNOR_TARGET_CAPTURE;
-   else if(unknown_exposure && !g_day_lock && !g_total_lock && !g_target_lock)
+   else if(!overlay_reason && unknown_exposure && !g_day_lock &&
+           !g_total_lock && !g_target_lock)
       publish_reason=QM_FTMO_GOVERNOR_UNKNOWN_EXPOSURE;
+
+   if(control.persist_halt)
+      g_halt_latched=true;
 
    if(publish_reason != g_last_logged_reason &&
       publish_reason == QM_FTMO_GOVERNOR_TARGET_MIN_DAYS_PENDING)
@@ -604,10 +755,15 @@ void EvaluateAndPublish()
    g_last_logged_reason=publish_reason;
 
    const bool must_lock=(g_day_lock || g_total_lock || g_target_lock ||
-                         unknown_exposure || !decision.entry_allowed ||
+                         g_halt_latched || unknown_exposure ||
+                         !control.entry_allowed ||
                          governor_dry_run);
+   const bool flatten_required=(g_halt_latched || g_day_lock || g_total_lock ||
+                                g_target_lock || control.flatten_required);
    g_flatten_pending=((g_day_lock || g_total_lock || g_target_lock) &&
                       !GovernedExposureFlat());
+   if(!g_flatten_pending && (g_halt_latched || control.flatten_required))
+      g_flatten_pending=!GovernedExposureFlat();
    const bool published=PublishSnapshot(now_utc,decision.risk_scale,publish_reason,
                                         must_lock,
                                         (!governor_dry_run && !must_lock),true);
@@ -615,7 +771,21 @@ void EvaluateAndPublish()
    if(!published)
       return;
 
+   if(g_halt_latched && !PublishHaltFiles(publish_reason,now_utc))
+     {
+      Print("FTMO_GOVERNOR_HALT_FILE_PUBLISH_FAILED");
+      PublishFailClosed(now_utc,QM_FTMO_GOVERNOR_STATE_INVALID);
+      return;
+     }
+
    if((g_day_lock || g_total_lock || g_target_lock) && !governor_dry_run)
+     {
+      const bool orders_ok=DeleteGovernedPendingOrders();
+      const bool positions_ok=CloseGovernedPositions();
+      g_flatten_pending=!(orders_ok && positions_ok && GovernedExposureFlat());
+      PublishSnapshot(now_utc,decision.risk_scale,publish_reason,true,false,true);
+     }
+   else if((g_halt_latched || control.flatten_required) && !governor_dry_run)
      {
       const bool orders_ok=DeleteGovernedPendingOrders();
       const bool positions_ok=CloseGovernedPositions();
@@ -650,13 +820,26 @@ int OnInit()
    g_login=AccountInfoInteger(ACCOUNT_LOGIN);
    if(!QM_FTMO_SelectPolicy(signed_policy_id,g_policy))
       return INIT_PARAMETERS_INCORRECT;
-   if(qm_ea_id != 13206 || !qm_news_filters_not_applicable ||
-      !qm_friday_close_owned_by_sleeves || !strategy_no_trade_controller ||
-      expected_account_login <= 0 || g_login != expected_account_login ||
-       !QM_FTMO_IdentifierValid(challenge_id) || challenge_start_utc <= 0 ||
-       !QM_FTMO_IsExactPolicy(g_policy) || governor_timer_ms < 100 ||
-      governor_timer_ms > 1000 || !ParseAllowedMagics())
+   if(qm_ea_id != 13206 || signed_policy_id != "FTMO_2S_P1_100K_V2" ||
+      qm_news_temporal != QM_NEWS_TEMPORAL_PRE30_POST30 ||
+      qm_news_compliance != QM_NEWS_COMPLIANCE_FTMO ||
+      qm_news_stale_max_hours <= 0 || qm_news_stale_max_hours > 336 ||
+      qm_news_min_impact != "high" || !qm_friday_close_enabled ||
+      qm_friday_close_hour_broker != 21 ||
+      qm_friday_flat_lead_minutes != 5 ||
+      !strategy_no_trade_controller || expected_account_login != 1514536732 ||
+      g_login != expected_account_login || expected_account_server != "FTMO-Demo" ||
+      AccountInfoString(ACCOUNT_SERVER) != expected_account_server ||
+      !QM_FTMO_IdentifierValid(challenge_id) || challenge_start_utc <= 0 ||
+      !QM_FTMO_IsExactPolicy(g_policy) || governor_timer_ms < 100 ||
+      governor_timer_ms > 1000 || !ParseAllowedMagics() ||
+      !ParseGovernedEAIds() || !ParseGovernedSymbols() ||
+      ArraySize(g_allowed_magics) != 8 || ArraySize(g_governed_ea_ids) != 8)
       return INIT_PARAMETERS_INCORRECT;
+
+   if(!QM_NewsInit("D:\\QM\\data\\news_calendar",qm_news_stale_max_hours,
+                   30,30,qm_news_min_impact))
+      return INIT_FAILED;
 
    g_instance_token=MakeInstanceToken();
    const datetime now_utc=TimeGMT();

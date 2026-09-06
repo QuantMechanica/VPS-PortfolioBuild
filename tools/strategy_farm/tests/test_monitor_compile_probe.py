@@ -19,6 +19,23 @@ def test_exact_contract(monkeypatch):
     task, manifest = fixture(monkeypatch)
     validate_monitor_probe_contract(manifest, task, ROOT)
 
+def test_governor_contract_has_exact_bounded_profile(monkeypatch):
+    monkeypatch.setattr(Path, 'is_file', lambda p: True)
+    monkeypatch.setattr(Path, 'is_symlink', lambda p: False)
+    monkeypatch.setattr(Path, 'resolve', lambda p: p.absolute())
+    monkeypatch.setattr(Path, 'read_bytes', lambda p: b'fixture')
+    task_id = '9cf0712b-6ee4-4469-aed2-f920c3e0cc03'
+    from tools.strategy_farm.include_mirror import MONITOR_PROBE_GOVERNOR_FILES
+    manifest = dict(
+        schema='qm.monitor-compile-probe/v1', task_id=task_id,
+        compile_targets=['QM5_13206_ftmo-account-governor',
+                         'QM_FTMO_AccountControlAcceptance'],
+        files={p: hashlib.sha256(b'fixture').hexdigest()
+               for p in MONITOR_PROBE_GOVERNOR_FILES})
+    root = Path('C:/QM/repo/docs/ops/evidence/2026-09-06_ftmo_demo_governor/compile_probe')
+    validate_monitor_probe_contract(
+        manifest, dict(id=task_id, assigned_agent='codex', state='IN_PROGRESS'), root)
+
 @pytest.mark.parametrize('change', ['state', 'agent', 'task', 'root', 'hash', 'extra', 'missing', 'escape'])
 def test_refusals(monkeypatch, change):
     task, manifest = fixture(monkeypatch)

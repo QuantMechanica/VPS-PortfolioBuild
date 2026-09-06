@@ -37,6 +37,30 @@ MONITOR_PROBE_ROOTS = {
     '35eac0e9-8568-4114-b68f-45258ad7189b': Path(
         'C:/QM/repo/docs/ops/evidence/2026-09-06_ftmo_demo_install/compile_probe'
     ).absolute(),
+    '9cf0712b-6ee4-4469-aed2-f920c3e0cc03': Path(
+        'C:/QM/repo/docs/ops/evidence/2026-09-06_ftmo_demo_governor/compile_probe'
+    ).absolute(),
+}
+
+MONITOR_PROBE_GOVERNOR_FILES = {
+    'editor/MetaEditor64.exe',
+    'MQL5/QM5_13206_ftmo-account-governor.mq5',
+    'MQL5/QM_FTMO_AccountControlAcceptance.mq5',
+    'MQL5/Include/Object.mqh',
+    'MQL5/Include/StdLibErr.mqh',
+    'MQL5/Include/Trade/Trade.mqh',
+    'MQL5/Include/Trade/OrderInfo.mqh',
+    'MQL5/Include/Trade/HistoryOrderInfo.mqh',
+    'MQL5/Include/Trade/PositionInfo.mqh',
+    'MQL5/Include/Trade/DealInfo.mqh',
+    'MQL5/Include/QM/QM_FTMOGovernorPolicy.mqh',
+    'MQL5/Include/QM/QM_FTMOAccountControl.mqh',
+    'MQL5/Include/QM/QM_NewsFilter.mqh',
+    'MQL5/Include/QM/QM_Errors.mqh',
+    'MQL5/Include/QM/QM_Logger.mqh',
+    'MQL5/Include/QM/QM_DSTAware.mqh',
+    'MQL5/Include/news_rules/ftmo.mqh',
+    'MQL5/Include/news_rules/5ers.mqh',
 }
 
 
@@ -63,8 +87,15 @@ def validate_monitor_probe_contract(manifest: dict, task: dict, root: Path) -> N
     expected_files = {'editor/MetaEditor64.exe', 'MQL5/QM_FTMO_TrialTelemetry.mq5',
                       'MQL5/QM_FTMO_TrialTelemetryAcceptance.mq5',
                       'MQL5/Include/QM/QM_FTMOGovernorPolicy.mqh'}
+    expected_targets = ['QM_FTMO_TrialTelemetry', 'QM_FTMO_TrialTelemetryAcceptance']
+    if task_id == '9cf0712b-6ee4-4469-aed2-f920c3e0cc03':
+        expected_files = MONITOR_PROBE_GOVERNOR_FILES
+        expected_targets = ['QM5_13206_ftmo-account-governor',
+                            'QM_FTMO_AccountControlAcceptance']
     if manifest.get('schema') != 'qm.monitor-compile-probe/v1' or set(manifest.get('files', {})) != expected_files:
         refuse('Exact compiler and source allowlist required')
+    if manifest.get('compile_targets', expected_targets) != expected_targets:
+        refuse('Exact compile target allowlist required')
     for relative, digest in manifest['files'].items():
         path = root / relative
         if not path.resolve().is_relative_to(expected) or not path.is_file():

@@ -4,7 +4,7 @@
 **Slug:** ftmo-account-governor  
 **Type:** no-trade account risk controller  
 **Policies:** signed 100k FTMO 2-Step Phase 1, Verification, and Funded
-**Last revised:** 2026-07-17
+**Last revised:** 2026-09-06
 
 ## 1. Strategy logic
 
@@ -58,10 +58,13 @@ Canonical fingerprints:
 | Parameter | Default | Meaning |
 |---|---:|---|
 | `expected_account_login` | 0 | Must equal the signed target login. |
+| `expected_account_server` | empty | Must equal the signed target server. |
 | `challenge_id` | empty | Signed lifecycle instance; empty is invalid. |
 | `challenge_start_utc` | 0 | Signed start and state-lineage anchor. |
 | `signed_policy_id` | empty | Exact allowlisted policy ID; empty or unknown fails. |
 | `allowed_magics_csv` | empty | Exact signed whitelist; empty is invalid. |
+| `governed_ea_ids_csv` | empty | Exact halt-file recipients; empty is invalid. |
+| `governed_symbols_csv` | empty | Native-calendar symbol census for account-wide news blocking. |
 | `governor_dry_run` | true | Publishes a lock and performs no trade operation. |
 | `challenge_state_bootstrap` | false | One-shot explicit state seed; never runs trading mode. |
 | `bootstrap_no_prior_breach_confirmed` | false | Required external history attestation. |
@@ -85,9 +88,20 @@ Canonical fingerprints:
 
 ## 6. Release boundary
 
-Status: **BUILD/TEST ONLY; DEPLOYMENT_ALLOWED=false**.
+Status: **BUILD/TEST plus UNATTACHED FTMO-DEMO INSTALL ONLY;
+PAID/LIVE DEPLOYMENT_ALLOWED=false**.
 
-Strict compilation currently passes for the policy include test, client include test, and governor EA. Deployment remains blocked until:
+The M13 install is account-bound to login `1514536732` / `FTMO-Demo`, signed
+P1 policy `FTMO_2S_P1_100K_V2`, eight exact sleeve magics and eight exact EA
+IDs. It adds native-calendar mode-3/FTMO entry blocking, Friday 20:55
+broker-time flattening, and irreversible halt-file publication for durable
+account stops. News and weekend windows do not create permanent halt files.
+No chart attachment or AutoTrading change is authorized by build/test evidence
+or by the unattached demo install.
+
+Strict compilation currently passes for the policy include test, client include
+test, and governor EA. Any chart attachment, paid evaluation, or live/funded
+deployment remains blocked until:
 
 1. every book EA is wired to `QM_FTMOGovernorClient.mqh` and multiplies planned risk by the published scale;
 2. MQL/Python golden parity and T1-T5 stale heartbeat, torn snapshot, restart, midnight, foreign-magic, liquidation-retry, and policy-mismatch tests pass;

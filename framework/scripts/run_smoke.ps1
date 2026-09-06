@@ -2617,13 +2617,25 @@ $effectiveTerminal = Resolve-DispatchTerminal -TargetTerminal $Terminal -EAIdVal
 Write-Host ("run_smoke.stage=resolved_terminal terminal={0}" -f $effectiveTerminal)
 $monitorAcceptanceAuthorized = $false
 if (-not [string]::IsNullOrWhiteSpace($MonitorAcceptanceAgentTaskId)) {
-    $expectedAcceptanceTask = '35eac0e9-8568-4114-b68f-45258ad7189b'
-    $expectedEvidenceRoot = [IO.Path]::GetFullPath('C:\QM\repo\docs\ops\evidence\2026-09-06_ftmo_demo_install\native_tester')
+    $monitorProfiles = @{
+        '35eac0e9-8568-4114-b68f-45258ad7189b' = @{
+            EvidenceRoot = 'C:\QM\repo\docs\ops\evidence\2026-09-06_ftmo_demo_install\native_tester'
+            Expert = 'QM_FTMO\QM_FTMO_TrialTelemetryAcceptance'
+        }
+        '9cf0712b-6ee4-4469-aed2-f920c3e0cc03' = @{
+            EvidenceRoot = 'C:\QM\repo\docs\ops\evidence\2026-09-06_ftmo_demo_governor\native_tester'
+            Expert = 'QM_FTMO\QM_FTMO_AccountControlAcceptance'
+        }
+    }
+    $monitorProfile = $monitorProfiles[$MonitorAcceptanceAgentTaskId]
+    $expectedEvidenceRoot = if ($null -ne $monitorProfile) {
+        [IO.Path]::GetFullPath([string]$monitorProfile.EvidenceRoot)
+    } else { '' }
     $actualReportRoot = [IO.Path]::GetFullPath($ReportRoot)
-    if ($MonitorAcceptanceAgentTaskId -cne $expectedAcceptanceTask -or
+    if ($null -eq $monitorProfile -or
         $effectiveTerminal -notin @('T11', 'T12') -or
         $Symbol -cne 'EURUSD' -or
-        $Expert -cne 'QM_FTMO\QM_FTMO_TrialTelemetryAcceptance' -or
+        $Expert -cne [string]$monitorProfile.Expert -or
         $DispatchPhase -cne 'Q00' -or
         -not $SkipExpertDeploy.IsPresent -or
         [string]::IsNullOrWhiteSpace($ExpectedExpertSha256) -or

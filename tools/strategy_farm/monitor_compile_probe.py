@@ -33,7 +33,10 @@ def main():
     with (root / 'probe.lock').open('x', encoding='utf-8') as lock:
         lock.write(manifest['task_id'])
     try:
-        for name in ('QM_FTMO_TrialTelemetry', 'QM_FTMO_TrialTelemetryAcceptance'):
+        names = manifest.get('compile_targets',
+                             ['QM_FTMO_TrialTelemetry',
+                              'QM_FTMO_TrialTelemetryAcceptance'])
+        for name in names:
             validate_monitor_probe_contract(manifest, dict(row), root)
             source = root / 'MQL5' / (name + '.mq5')
             binary = source.with_suffix('.ex5')

@@ -30,7 +30,10 @@ enum QM_FTMO_GovernorReason
    // account stays latched flat/entry-locked; completion is deliberately
    // withheld until the opening-day count is met. Distinct code so LiveOps can
    // see "captured, awaiting minimum days" instead of a generic target capture.
-   QM_FTMO_GOVERNOR_TARGET_MIN_DAYS_PENDING = 11
+   QM_FTMO_GOVERNOR_TARGET_MIN_DAYS_PENDING = 11,
+   QM_FTMO_GOVERNOR_WEEKEND_FLAT = 12,
+   QM_FTMO_GOVERNOR_NEWS_BLACKOUT = 13,
+   QM_FTMO_GOVERNOR_HALT_LATCHED = 14
   };
 
 struct QM_FTMO_GovernorPolicy
