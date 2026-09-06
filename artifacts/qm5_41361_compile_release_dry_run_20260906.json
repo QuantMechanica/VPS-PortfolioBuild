@@ -1,0 +1,19 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "86b52bb43f6ec7f1625d53b2ca58ac606485dbec92ffac37da39a9b51051836b",
+      "ea_id": "QM5_41361",
+      "ea_label": "QM5_41361_xtixng-commonshock-rv",
+      "expected_mq5_sha256": "86b52bb43f6ec7f1625d53b2ca58ac606485dbec92ffac37da39a9b51051836b",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41361_xtixng-commonshock-rv\\QM5_41361_xtixng-commonshock-rv.mq5",
+      "work_item_id": "c5bf5069-ecfb-40a2-a0d7-2e282d8a7df1"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "c5bf5069-ecfb-40a2-a0d7-2e282d8a7df1"
+}
