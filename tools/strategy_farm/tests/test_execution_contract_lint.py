@@ -1391,6 +1391,34 @@ def test_card_v2_missing_override_section_is_rejected(tmp_path: Path) -> None:
     assert "card_v2_section_missing" in {issue.code for issue in lint.lint_card_v2(card)}
 
 
+def test_card_sweep_must_be_labelled_q14_proposal(tmp_path: Path) -> None:
+    card = tmp_path / "card.md"
+    text = (ROOT / "framework" / "templates" / "strategy_card_v2.md").read_text(encoding="utf-8")
+    card.write_text(text + "\n## Parameters To Test\n- period sweep_range: [8, 9]\n", encoding="utf-8")
+    assert "card_sweep_q14_proposal_label_missing" in {
+        issue.code for issue in lint.lint_card_v2(card)
+    }
+    card.write_text(
+        text + "\n## Q14 proposal\n- period sweep_range: [8, 9]\n",
+        encoding="utf-8",
+    )
+    assert "card_sweep_q14_proposal_label_missing" not in {
+        issue.code for issue in lint.lint_card_v2(card)
+    }
+
+
+def test_card_sweep_research_count_requires_loser_inclusive_ledger(tmp_path: Path) -> None:
+    card = tmp_path / "card.md"
+    text = (ROOT / "framework" / "templates" / "strategy_card_v2.md").read_text(encoding="utf-8")
+    card.write_text(
+        text + "\n## Q14 proposal\n- period sweep_range: [8, 9]\nresearch_trial_count: 2\n",
+        encoding="utf-8",
+    )
+    assert "card_sweep_research_ledger_missing" in {
+        issue.code for issue in lint.lint_card_v2(card)
+    }
+
+
 def test_13128_calendar_and_12778_canonical_harness_guards_are_literal() -> None:
     fomc = (
         ROOT

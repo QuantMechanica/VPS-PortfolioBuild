@@ -30588,6 +30588,7 @@ def approve_card(root: Path, card_path_str: str, reasoning: str,
         return {"approved": False, "reason": f"Card not found: {card_path}"}
     if not reasoning:
         return {"approved": False, "reason": "reasoning is required"}
+    prior_card_sha256 = _sha256_file(card_path)
 
     fm = parse_card_frontmatter(card_path)
     ea_id = fm.get("ea_id")
@@ -30674,6 +30675,19 @@ def approve_card(root: Path, card_path_str: str, reasoning: str,
             "card_path": str(card_path),
         }
 
+    target_dir = root / "artifacts" / "cards_approved"
+    target_dir.mkdir(parents=True, exist_ok=True)
+    target = target_dir / card_path.name
+    in_place_amendment = bool(
+        card_path == target.resolve()
+        and str(fm.get("g0_status") or "").strip().upper() == "APPROVED"
+    )
+    if target.exists() and card_path != target.resolve():
+        return {
+            "approved": False,
+            "reason": f"Approved card already at {target} — manual reconciliation needed",
+        }
+
     today = dt.datetime.now(dt.UTC).strftime("%Y-%m-%d")
     quoted = '"' + reasoning.replace('"', "'").replace("\n", " ").strip()[:300] + '"'
     updates = {
@@ -30688,15 +30702,6 @@ def approve_card(root: Path, card_path_str: str, reasoning: str,
         updates["expected_dd_pct"] = str(expected_dd_pct)
     update_card_frontmatter(card_path, updates)
 
-    target_dir = root / "artifacts" / "cards_approved"
-    target_dir.mkdir(parents=True, exist_ok=True)
-    target = target_dir / card_path.name
-    if target.exists():
-        return {
-            "approved": False,
-            "reason": f"Approved card already at {target} — manual reconciliation needed",
-        }
-
     # Move only if the source is in cards_draft/. Otherwise leave in place (already-approved card).
     src_in_draft = "cards_draft" in card_path.parts
     if src_in_draft:
@@ -30707,17 +30712,22 @@ def approve_card(root: Path, card_path_str: str, reasoning: str,
         final_path = card_path
 
     with connect(root) as conn:
-        event(conn, "card", ea_id, "approved", {
+        event(conn, "card", ea_id, "amended" if in_place_amendment else "approved", {
             "card_path": str(final_path),
             "reasoning": reasoning[:300],
+            "prior_card_sha256": prior_card_sha256,
+            "card_sha256": _sha256_file(final_path),
         })
 
     registry_precondition = _approved_card_registry_precondition(root, final_path)
     registry_ready = bool(registry_precondition["precheck"].get("ready"))
     return {
         "approved": True,
+        "amended": in_place_amendment,
         "ea_id": ea_id,
         "card_path": str(final_path),
+        "prior_card_sha256": prior_card_sha256,
+        "card_sha256": _sha256_file(final_path),
         "reasoning": reasoning,
         "registry_precondition": registry_precondition,
         "next_action_hint": (

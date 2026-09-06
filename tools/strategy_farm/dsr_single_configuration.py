@@ -61,6 +61,37 @@ def parameters(raw):
     return result
 
 
+def source_parameters(raw):
+    """Return literal defaults for every directly declared EA input.
+
+    MT5 set files commonly omit inputs that retain their compiled defaults.  A
+    complete configuration lock therefore consists of these source defaults
+    overlaid by every explicit set-file assignment.  The source bytes are also
+    hash-bound, so an omitted default cannot change without invalidating the
+    cohort.
+    """
+    text = raw.decode('utf-8-sig')
+    result = {}
+    pattern = re.compile(
+        r'^\s*input\s+(?!group\b)\w+\s+(\w+)\s*=\s*(.*?)\s*;\s*(?://.*)?$',
+        re.M,
+    )
+    for key, value in pattern.findall(text):
+        require(key not in result, 'DUPLICATE_SOURCE_INPUT')
+        value = value.strip()
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in {'"', "'"}:
+            value = value[1:-1]
+        result[key] = value
+    require(bool(result), 'SOURCE_INPUTS_UNAVAILABLE')
+    return result
+
+
+def effective_parameters(source_raw, setfile_raw):
+    result = source_parameters(source_raw)
+    result.update(parameters(setfile_raw))
+    return result
+
+
 def validate(provenance, candidate, expected):
     require(isinstance(provenance, dict) and set(provenance) == {'card', 'spec', 'mq5', 'ex5', 'setfile'}, 'SINGLE_CONFIG_PROVENANCE_REQUIRED')
     raw = {role: read_binding(binding) for role, binding in provenance.items()}
@@ -70,9 +101,8 @@ def validate(provenance, candidate, expected):
     require(decl.get('spec_sha256') == provenance['spec']['sha256'], 'SINGLE_CONFIG_SPEC_MISMATCH')
     require(isinstance(decl.get('locked_parameters'), dict)
             and all(isinstance(v, str) for v in decl['locked_parameters'].values())
-            and decl['locked_parameters'] == parameters(raw['setfile']), 'LOCKED_PARAMETER_DRIFT')
-    source_inputs = re.findall(r'^\s*input\s+\w+\s+(\w+)\s*=', raw['mq5'].decode('utf-8-sig'), re.M)
-    require(set(source_inputs) <= set(decl['locked_parameters']), 'SOURCE_INPUT_MISSING_FROM_LOCK')
+            and decl['locked_parameters'] == effective_parameters(raw['mq5'], raw['setfile']),
+            'LOCKED_PARAMETER_DRIFT')
     require(isinstance(expected, dict) and set(expected) == {'mq5_sha256', 'ex5_sha256', 'setfile_sha256'}, 'COMPLETE_BUILD_IDENTITY_REQUIRED')
     for role in ('mq5', 'ex5', 'setfile'):
         require(expected[role+'_sha256'] == provenance[role]['sha256'], 'BUILD_IDENTITY_MISMATCH:'+role)
@@ -90,6 +120,20 @@ def validate_context(context, *, ea_id, symbol):
             and context.get('selection_mode') == 'DECLARED_SINGLE_CONFIGURATION' and context.get('cohort_std_daily') == 0
             and context.get('selection_trial_count') == 1 and context.get('declared_trial_count') == 1 and context.get('effective_trial_count') == 1
             and context.get('research_trial_count') == 0 and context.get('losers') == [], 'SINGLE_CONFIG_TRIAL_COUNT_MISMATCH')
-    require(context.get('search_history') == {'complete': True, 'unit': 'candidate_configuration', 'annual_measurements_are_trials': False}, 'SINGLE_CONFIG_SEARCH_HISTORY_REQUIRED')
+    history = context.get('search_history')
+    require(isinstance(history, dict)
+            and set(history) == {'complete', 'unit', 'annual_measurements_are_trials', 'factory_search_ledger'}
+            and history.get('complete') is True
+            and history.get('unit') == 'candidate_configuration'
+            and history.get('annual_measurements_are_trials') is False,
+            'SINGLE_CONFIG_SEARCH_HISTORY_REQUIRED')
+    search = history.get('factory_search_ledger')
+    require(isinstance(search, dict)
+            and search.get('schema') == 'qm.factory-search-before-q08-claim/v1'
+            and search.get('complete') is True
+            and search.get('optimization_rows') == []
+            and search.get('q08_work_item_id')
+            and search.get('q08_claimed_at_utc'),
+            'FACTORY_SEARCH_LEDGER_REQUIRED')
     require(context.get('frequency') == 'CALENDAR_DAY' and context.get('costs_attested') is True, 'SINGLE_CONFIG_COSTS_REQUIRED')
     validate(context.get('provenance'), candidate, context.get('build_identity'))

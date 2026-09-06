@@ -106,6 +106,68 @@ def _date_text(value: Any) -> str:
     raise CohortUnavailable("CANDIDATE_WINDOW_UNAVAILABLE")
 
 
+def _utc_timestamp(value: Any, reason: str) -> dt.datetime:
+    raw = str(value or "").strip()
+    try:
+        parsed = dt.datetime.fromisoformat(raw.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise CohortUnavailable(reason) from exc
+    _require(parsed.tzinfo is not None, reason)
+    return parsed.astimezone(dt.UTC)
+
+
+def _factory_search_before_q08_claim(
+    conn: sqlite3.Connection,
+    candidate: Mapping[str, Any],
+    payload: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Prove that no governed optimization row predates this Q08 claim."""
+    _require(str(candidate.get("phase") or "").upper() == "Q08", "Q08_CLAIM_ROW_REQUIRED")
+    q08_id = str(candidate.get("id") or "").strip()
+    _require(bool(q08_id), "Q08_WORK_ITEM_ID_REQUIRED")
+    claimed_at = _utc_timestamp(payload.get("claimed_at_iso"), "Q08_CLAIM_TIMESTAMP_REQUIRED")
+    rows = conn.execute(
+        "SELECT id,kind,phase,created_at,payload_json FROM work_items "
+        "WHERE ea_id=? AND id<>? ORDER BY created_at,id",
+        (str(candidate.get("ea_id") or ""), q08_id),
+    ).fetchall()
+    prior = []
+    optimization = []
+    for raw in rows:
+        row = _row_dict(raw)
+        created_at = _utc_timestamp(
+            row.get("created_at"), f"FACTORY_SEARCH_LEDGER_TIMESTAMP_INVALID:{row.get('id')}"
+        )
+        if created_at >= claimed_at:
+            continue
+        prior.append(row)
+        phase = str(row.get("phase") or "").upper()
+        searchable = " ".join(
+            str(row.get(key) or "") for key in ("kind", "phase", "payload_json")
+        ).lower().replace("-", "_").replace(" ", "_")
+        if (
+            phase.startswith("OPT_")
+            or phase in {"Q12", "Q13", "Q14", "Q15", "Q16"}
+            or any(marker in searchable for marker in (
+                "optimization_fork", "optimisation_fork", "opt_fork"
+            ))
+        ):
+            optimization.append({
+                "id": str(row.get("id") or ""),
+                "phase": str(row.get("phase") or ""),
+                "created_at": created_at.isoformat(),
+            })
+    _require(not optimization, "FACTORY_SEARCH_LEDGER_PRECEDES_Q08")
+    return {
+        "schema": "qm.factory-search-before-q08-claim/v1",
+        "complete": True,
+        "q08_work_item_id": q08_id,
+        "q08_claimed_at_utc": claimed_at.isoformat(),
+        "work_items_examined": len(prior),
+        "optimization_rows": [],
+    }
+
+
 def _binding(path: Path, *, role: str, row_id: str | None = None) -> dict[str, Any]:
     _require(path.is_file(), f"{role.upper()}_MISSING:{path}")
     result = {"role": role, "path": str(path.resolve()), "sha256": sha256_file(path)}
@@ -424,7 +486,9 @@ def assemble(
     except CohortUnavailable as exc:
         if str(exc) != 'SEALED_SEARCH_LEDGER_UNAVAILABLE':
             raise
-        return assemble_single_configuration(candidate, candidate_payload, timeframe, window)
+        return assemble_single_configuration(
+            conn, candidate, candidate_payload, timeframe, window
+        )
     _require(ledger.get("schema") == DL089_LEDGER_SCHEMA, "UNSUPPORTED_SEARCH_LEDGER_SCHEMA")
     _require(ledger.get("authority") == "DL-089", "SEARCH_LEDGER_AUTHORITY_MISMATCH")
     _require(str((ledger.get("driver") or {}).get("state") or "") in DL089_TERMINAL_STATES,
@@ -507,7 +571,7 @@ def assemble(
     }
 
 
-def assemble_single_configuration(candidate, payload, timeframe, window):
+def assemble_single_configuration(conn, candidate, payload, timeframe, window):
     try:
         from . import dsr_single_configuration as single
     except ImportError:
@@ -528,6 +592,7 @@ def assemble_single_configuration(candidate, payload, timeframe, window):
             _require(all(value == identity[role+'_sha256'] for value in claims if value), 'CONFLICTING_BUILD_IDENTITY:'+role)
         candidate_id = {'ea_id': str(candidate['ea_id']), 'symbol': str(candidate['symbol']), 'timeframe': timeframe}
         single.validate(provenance, candidate_id, identity)
+        factory_search_ledger = _factory_search_before_q08_claim(conn, candidate, payload)
     except (OSError, ValueError, KeyError, TypeError) as exc:
         raise CohortUnavailable('SINGLE_CONFIGURATION_UNAVAILABLE:'+str(exc)) from exc
     return {'schema': single.SCHEMA, 'sealed': True, 'complete': True,
@@ -537,7 +602,9 @@ def assemble_single_configuration(candidate, payload, timeframe, window):
             'selection_mode': 'DECLARED_SINGLE_CONFIGURATION', 'declared_trial_count': 1,
             'selection_trial_count': 1, 'research_trial_count': 0, 'effective_trial_count': 1,
             'cohort_std_daily': 0.0, 'build_identity': identity, 'provenance': provenance,
-            'search_history': {'complete': True, 'unit': 'candidate_configuration', 'annual_measurements_are_trials': False}}
+            'search_history': {'complete': True, 'unit': 'candidate_configuration',
+                               'annual_measurements_are_trials': False,
+                               'factory_search_ledger': factory_search_ledger}}
 
 
 def seal(document: Mapping[str, Any], artifact_root: Path = DEFAULT_ARTIFACT_ROOT) -> dict[str, str]:

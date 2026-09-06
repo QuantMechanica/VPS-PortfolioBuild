@@ -163,6 +163,32 @@ def lint_card_v2(card: Path, contract: dict[str, Any] | None = None) -> list[Iss
                 )
             )
 
+    sweep_declared = bool(re.search(
+        r"(?im)(^#{1,6}\s+parameters\s+to\s+test\b|\bp3\s+sweep\b|\bsweep_range\s*:)",
+        text,
+    ))
+    if sweep_declared and not re.search(r"(?i)\bQ14(?:\s+optimization)?\s+proposal\b", text):
+        issues.append(_issue(
+            "card_sweep_q14_proposal_label_missing",
+            "A sweep/Parameters To Test list must be labelled as a Q14 proposal; "
+            "a proposal is not a completed research trial.",
+            path=card,
+        ))
+    positive_research_count = bool(re.search(
+        r"(?im)[\"']?research_trial_count[\"']?\s*:\s*[1-9]\d*\b", text
+    ))
+    loser_inclusive_ledger = bool(
+        re.search(r"(?im)[\"']?losers_included[\"']?\s*:\s*true\b", text)
+        and re.search(r"(?i)loser-inclusive\s+(?:search\s+)?ledger", text)
+    )
+    if sweep_declared and positive_research_count and not loser_inclusive_ledger:
+        issues.append(_issue(
+            "card_sweep_research_ledger_missing",
+            "A sweep may count as completed research only with a declared "
+            "loser-inclusive ledger.",
+            path=card,
+        ))
+
     if contract is not None:
         ea_id = int(contract["ea_id"])
         if str(ea_id) not in fm.get("execution_contract_ref", ""):

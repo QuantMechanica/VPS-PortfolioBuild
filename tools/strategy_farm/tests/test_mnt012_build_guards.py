@@ -198,6 +198,24 @@ def test_approve_rejects_new_non_english_heading_without_mutating_card(
     assert not (root / "artifacts" / "cards_approved" / card.name).exists()
 
 
+def test_approve_card_supports_governed_in_place_amendment(tmp_path: Path) -> None:
+    root = tmp_path / "farm"
+    card = _write_approved_card(root)
+    card.write_text(
+        card.read_text(encoding="utf-8") + "\nTarget symbols: EURUSD.DWX.\n",
+        encoding="utf-8",
+    )
+    prior_sha = farmctl._sha256_file(card)
+
+    result = farmctl.approve_card(root, str(card), "OWNER-approved append-only amendment")
+
+    assert result["approved"] is True
+    assert result["amended"] is True
+    assert result["prior_card_sha256"] == prior_sha
+    assert result["card_sha256"] == farmctl._sha256_file(card)
+    assert result["card_sha256"] != prior_sha
+
+
 def test_claude_selector_excludes_active_block_marker(tmp_path: Path) -> None:
     root = tmp_path / "farm"
     card = _write_approved_card(root)

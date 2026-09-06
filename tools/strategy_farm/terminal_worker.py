@@ -4327,6 +4327,21 @@ def _governed_analytic_claim_block(
     }
 
 
+def _seal_q08_dsr_at_claim(
+    conn: sqlite3.Connection,
+    item: Mapping[str, Any],
+    payload: dict[str, Any],
+) -> None:
+    """Refresh a Q08 DSR binding after its immutable claim time is known."""
+    if str(_work_item_value(item, "phase", "") or "").upper() != "Q08":
+        return
+    try:
+        from tools.strategy_farm import dsr_cohort
+    except ModuleNotFoundError:
+        import dsr_cohort
+    dsr_cohort.attach(conn, dict(item), payload)
+
+
 def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
     """Atomically claim one pending work_item for a terminal.
 
@@ -5341,6 +5356,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                         "claimed_by_worker_pid": os.getpid(),
                         "terminal": terminal,
                     })
+                    _seal_q08_dsr_at_claim(conn, item, payload)
                     if compile_only_due_to_commit_headroom:
                         payload.update({
                             "claim_admission_mode": "compile_only_under_reservation_pressure",
@@ -6086,6 +6102,7 @@ def claim_specific_atomic(root: Path, terminal: str, item_id: str) -> dict[str, 
                     "targeted_factory_off_run": True,
                     "terminal": terminal,
                 })
+                _seal_q08_dsr_at_claim(conn, item, payload)
                 _set_commit_reservation(
                     payload,
                     claimed_at_iso=now,
