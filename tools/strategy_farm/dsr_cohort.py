@@ -417,9 +417,14 @@ def assemble(
             or candidate.get("data_window_end")
         ),
     }
-    ledger_path, ledger = _find_ledger(
-        ea_id=ea_id, symbol=symbol, timeframe=timeframe, ledger_root=Path(ledger_root)
-    )
+    try:
+        ledger_path, ledger = _find_ledger(
+            ea_id=ea_id, symbol=symbol, timeframe=timeframe, ledger_root=Path(ledger_root)
+        )
+    except CohortUnavailable as exc:
+        if str(exc) != 'SEALED_SEARCH_LEDGER_UNAVAILABLE':
+            raise
+        return assemble_single_configuration(candidate, candidate_payload, timeframe, window)
     _require(ledger.get("schema") == DL089_LEDGER_SCHEMA, "UNSUPPORTED_SEARCH_LEDGER_SCHEMA")
     _require(ledger.get("authority") == "DL-089", "SEARCH_LEDGER_AUTHORITY_MISMATCH")
     _require(str((ledger.get("driver") or {}).get("state") or "") in DL089_TERMINAL_STATES,
@@ -500,6 +505,39 @@ def assemble(
             ],
         },
     }
+
+
+def assemble_single_configuration(candidate, payload, timeframe, window):
+    try:
+        from . import dsr_single_configuration as single
+    except ImportError:
+        import dsr_single_configuration as single
+    setfile = Path(str(candidate.get('setfile_path') or ''))
+    ea_directory = setfile.parent.parent
+    label = ea_directory.name
+    paths = {'card': Path('D:/QM/strategy_farm/artifacts/cards_approved') / (label+'.md'),
+             'spec': ea_directory/'SPEC.md', 'mq5': ea_directory/(label+'.mq5'),
+             'ex5': ea_directory/(label+'.ex5'), 'setfile': setfile}
+    try:
+        # Check explicit search authority first; defaults and absent ledgers never imply n=1.
+        single.declaration(paths['card'].read_bytes())
+        provenance = {role: {'path': str(path.resolve()), 'sha256': sha256_file(path)} for role, path in paths.items()}
+        identity = {role+'_sha256': candidate.get(role+'_sha256') or (payload.get('artifact_identity') or {}).get(role+'_sha256') or payload.get('expected_'+role+'_sha256') for role in ('mq5','ex5','setfile')}
+        for role in ('mq5', 'ex5', 'setfile'):
+            claims = [candidate.get(role+'_sha256'), (payload.get('artifact_identity') or {}).get(role+'_sha256'), payload.get('expected_'+role+'_sha256')]
+            _require(all(value == identity[role+'_sha256'] for value in claims if value), 'CONFLICTING_BUILD_IDENTITY:'+role)
+        candidate_id = {'ea_id': str(candidate['ea_id']), 'symbol': str(candidate['symbol']), 'timeframe': timeframe}
+        single.validate(provenance, candidate_id, identity)
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        raise CohortUnavailable('SINGLE_CONFIGURATION_UNAVAILABLE:'+str(exc)) from exc
+    return {'schema': single.SCHEMA, 'sealed': True, 'complete': True,
+            'losers_included': True, 'losers': [], 'candidate': candidate_id,
+            'window': window, 'timezone': 'UTC', 'initial_balance': float(payload.get('tester_deposit') or 100000),
+            'frequency': 'CALENDAR_DAY', 'costs_attested': True,
+            'selection_mode': 'DECLARED_SINGLE_CONFIGURATION', 'declared_trial_count': 1,
+            'selection_trial_count': 1, 'research_trial_count': 0, 'effective_trial_count': 1,
+            'cohort_std_daily': 0.0, 'build_identity': identity, 'provenance': provenance,
+            'search_history': {'complete': True, 'unit': 'candidate_configuration', 'annual_measurements_are_trials': False}}
 
 
 def seal(document: Mapping[str, Any], artifact_root: Path = DEFAULT_ARTIFACT_ROOT) -> dict[str, str]:

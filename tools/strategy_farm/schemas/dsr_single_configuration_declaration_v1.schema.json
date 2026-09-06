@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Explicit n=1 DSR search declaration embedded in an approved card",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "ea_id",
+    "symbol",
+    "timeframe",
+    "complete",
+    "no_optimization_search",
+    "research_trial_count",
+    "spec_sha256",
+    "locked_parameters"
+  ],
+  "properties": {
+    "schema": {
+      "const": "qm.dsr-single-configuration-declaration/v1"
+    },
+    "ea_id": {
+      "type": "string"
+    },
+    "symbol": {
+      "type": "string"
+    },
+    "timeframe": {
+      "type": "string"
+    },
+    "complete": {
+      "const": true
+    },
+    "no_optimization_search": {
+      "const": true
+    },
+    "research_trial_count": {
+      "const": 0
+    },
+    "spec_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "locked_parameters": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "string"
+      }
+    }
+  }
+}

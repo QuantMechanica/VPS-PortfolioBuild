@@ -243,6 +243,18 @@ def _producer_cohort_context(context, binding, *, ea_id, symbol):
 
 def selection_context(binding, *, ea_id, symbol, values):
     context = bound(binding)
+    if context.get('schema') == 'qm.dsr-single-configuration-cohort/v1':
+        try:
+            from tools.strategy_farm.dsr_single_configuration import validate_context
+        except ModuleNotFoundError:
+            import sys
+            sys.path.insert(0, str(Path(__file__).resolve().parents[3] / 'tools/strategy_farm'))
+            from dsr_single_configuration import validate_context
+        validate_context(context, ea_id=ea_id, symbol=symbol)
+        return context, {'effective_trial_count': 1, 'research_trial_count': 0,
+                         'selection_trial_count': 1, 'declared_trial_count': 1,
+                         'selection_mode': 'DECLARED_SINGLE_CONFIGURATION', 'cohort_std_daily': 0.0,
+                         'selection_correction_applied': False, 'context_sha256': binding['sha256']}
     if context.get('schema') == COHORT_SCHEMA:
         return _producer_cohort_context(context, binding, ea_id=ea_id, symbol=symbol)
     require(context.get('schema') == SCHEMA and context.get('sealed') is True, 'UNCORRECTED_SELECTION_UNSEALED_CONTEXT')
@@ -303,11 +315,15 @@ def evaluate(trades, *, binding, ea_id, symbol):
     # Keep the existing p threshold by reference, including strict p < .05.
     from .sub_8_2_dsr_mc_fdr import DSR_P_MIN
     stats = {}
+    verified_single = False
     try:
         context = bound(binding)
         window = context.get('window', {})
         values, active = daily_series(trades, window.get('from'), window.get('to'),
                           timezone=context.get('timezone'), initial_balance=context.get('initial_balance'))
+        if context.get('schema') == 'qm.dsr-single-configuration-cohort/v1':
+            context, selection = selection_context(binding, ea_id=ea_id, symbol=symbol, values=values)
+            verified_single = True
         stats = {**moments(values), 'active_trading_days': active}
         require(stats['n_calendar_days'] >= 60, 'LOW_SAMPLE_CALENDAR_DAYS')
         context, selection = selection_context(binding, ea_id=ea_id, symbol=symbol, values=values)
@@ -319,6 +335,6 @@ def evaluate(trades, *, binding, ea_id, symbol):
     except (DsrEvidenceError, KeyError, TypeError, AttributeError, ValueError) as exc:
         reason = str(exc)
         low = reason.startswith('LOW_SAMPLE') or reason == 'DEGENERATE_DAILY_VARIANCE'
-        return make_result(GATE_NAME, 'INVALID', None, DSR_P_MIN, 'DSR_V2_' + reason,
+        return make_result(GATE_NAME, 'INSUFFICIENT' if low and verified_single else 'INVALID', None, DSR_P_MIN, 'DSR_V2_' + reason,
                            {**stats, 'engine': 'QM_DSR_V2', 'statistical_status': 'low_sample' if low else 'uncorrected_selection',
                             'dsr_probability': None, 'selection_correction_applied': False})
