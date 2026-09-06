@@ -20,6 +20,7 @@ from typing import Iterable
 
 
 SCHEMA = "qm.build-gate-hardening/v1"
+BOUNDED_ARRAY_V2_MARKER = "qm-build-generation: bounded-arrays-v2"
 PIP_HELPER_ARGUMENTS = {
     "QM_StopRulesPipsToPriceDistance": (1,),
     "QM_TM_MoveToBreakEven": (1, 2),
@@ -403,6 +404,9 @@ class LoopRange:
     variable: str
     operator: str
     bound: str
+    initial: str
+    step: str
+    start: int
     body_start: int
     body_end: int
 
@@ -411,8 +415,8 @@ def loop_ranges(body: str) -> list[LoopRange]:
     loops: list[LoopRange] = []
     header = re.compile(
         r"\bfor\s*\(\s*(?:int\s+)?(?P<variable>[A-Za-z_][A-Za-z0-9_]*)\s*="
-        r"[^;]+;\s*(?P=variable)\s*(?P<operator><=|<)\s*(?P<bound>[^;]+);"
-        r"[^)]*\)\s*(?P<brace>\{)?"
+        r"(?P<initial>[^;]+);\s*(?P=variable)\s*(?P<operator><=|<)\s*(?P<bound>[^;]+);"
+        r"(?P<step>[^)]*)\)\s*(?P<brace>\{)?"
     )
     for match in header.finditer(body):
         if match.group("brace"):
@@ -432,6 +436,9 @@ def loop_ranges(body: str) -> list[LoopRange]:
                 variable=match.group("variable"),
                 operator=match.group("operator"),
                 bound=match.group("bound"),
+                initial=match.group("initial"),
+                step=match.group("step"),
+                start=match.start(),
                 body_start=loop_body_start,
                 body_end=loop_body_end,
             )
@@ -446,7 +453,22 @@ def _prior_bound_guard(
     index: str,
     size_expression: str | None,
 ) -> bool:
-    """Recognize explicit fail-fast bounds, without attempting symbolic algebra."""
+    """Only a dominating, balanced fail-fast bound is evidence."""
+    try:
+        from .bounded_arrays import proof_for
+    except ImportError:
+        from bounded_arrays import proof_for
+    return proof_for(body).explicit_guard(array_name, index, access_offset, size_expression)
+
+
+def _legacy_prior_bound_guard(
+    body: str,
+    access_offset: int,
+    array_name: str,
+    index: str,
+    size_expression: str | None,
+) -> bool:
+    """The pre-rollout predicate, retained as the default finding ceiling."""
     before = body[:access_offset]
     array_size = rf"ArraySize\s*\(\s*{re.escape(array_name)}\s*\)"
     index_pattern = re.escape(index)
@@ -460,11 +482,11 @@ def _prior_bound_guard(
         return True
     if size_expression:
         size = re.escape(normalize_expression(size_expression))
-        compact = normalize_expression(before)
+        compact_before = normalize_expression(before)
         if re.search(
             rf"if\([^)]*(?:{index_pattern}(?:>=|>){size}|{size}(?:<=|<){index_pattern})"
             r"[^)]*\)(?:\{)?(?:return|break|continue)",
-            compact,
+            compact_before,
         ):
             return True
     return False
@@ -478,6 +500,59 @@ def _loop_proves_bound(
     size_expression: str | None,
     loops: list[LoopRange],
 ) -> bool:
+    normalized_index = normalize_expression(index)
+    if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", normalized_index):
+        return False
+    candidates = [
+        loop
+        for loop in loops
+        if loop.body_start <= access_offset < loop.body_end
+        and loop.variable == normalized_index
+    ]
+    if not candidates:
+        return False
+    loop = max(candidates, key=lambda item: item.body_start)
+    try:
+        from .bounded_arrays import proof_for
+    except ImportError:
+        from bounded_arrays import proof_for
+    proof = proof_for(body)
+    initial = proof.interval(loop.initial, loop.start)
+    if initial is None or initial[0] < 0:
+        return False
+    if normalize_expression(loop.step) not in {"++" + loop.variable, loop.variable + "++"}:
+        return False
+    if proof.changed(loop.variable, loop.body_start, loop.body_end):
+        return False
+    if proof.changed(array_name, loop.body_start, access_offset):
+        return False
+    bound = normalize_expression(loop.bound)
+    array_size = normalize_expression(f"ArraySize({array_name})")
+    if loop.operator == "<" and bound == array_size:
+        return True
+    if size_expression:
+        size = normalize_expression(size_expression)
+        if loop.operator == "<" and bound == size:
+            return True
+        if loop.operator == "<" and (
+            re.fullmatch(rf"{re.escape(bound)}\+[1-9][0-9]*", size)
+            or re.fullmatch(rf"[1-9][0-9]*\+{re.escape(bound)}", size)
+        ):
+            return True
+        if loop.operator == "<=" and bound in {f"{size}-1", f"({size})-1"}:
+            return True
+    return _prior_bound_guard(body, access_offset, array_name, normalized_index, size_expression)
+
+
+def _legacy_loop_proves_bound(
+    body: str,
+    access_offset: int,
+    array_name: str,
+    index: str,
+    size_expression: str | None,
+    loops: list[LoopRange],
+) -> bool:
+    """Reproduce the pre-rollout loop proof without newer strictness."""
     normalized_index = normalize_expression(index)
     if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", normalized_index):
         return False
@@ -505,7 +580,9 @@ def _loop_proves_bound(
             return True
         if loop.operator == "<=" and bound in {f"{size}-1", f"({size})-1"}:
             return True
-    return _prior_bound_guard(body, access_offset, array_name, normalized_index, size_expression)
+    return _legacy_prior_bound_guard(
+        body, access_offset, array_name, normalized_index, size_expression
+    )
 
 
 def _literal_access_is_bounded(index: str, size_expression: str | None) -> bool:
@@ -522,8 +599,31 @@ def _literal_access_is_bounded(index: str, size_expression: str | None) -> bool:
     return int(normalized_index) < int(normalized_size)
 
 
-def check_indicator_buffer_bounds(source: SourceFile) -> list[str]:
-    """Require a local mechanical bound proof for dynamic numeric buffers."""
+@dataclass(frozen=True)
+class ArrayAccess:
+    offset: int
+    index: str
+
+    def start(self) -> int:
+        return self.offset
+
+    def group(self, name: str) -> str:
+        assert name == "index"
+        return self.index
+
+
+def array_accesses(body: str, name: str) -> list[ArrayAccess]:
+    accesses = []
+    for match in re.finditer(rf"\b{re.escape(name)}\s*\[", body):
+        opening = body.find("[", match.start(), match.end())
+        closing = matching_delimiter(body, opening, "[", "]")
+        if closing is not None and body[opening + 1:closing].strip():
+            accesses.append(ArrayAccess(match.start(), body[opening + 1:closing]))
+    return accesses
+
+
+def _check_indicator_buffer_bounds_legacy(source: SourceFile) -> list[str]:
+    """Return exactly the findings produced before bounded-arrays-v2."""
     code = strip_literals_preserve_lines(source.code)
     failures: list[str] = []
     for _, (body_start, _, body) in function_bodies(code).items():
@@ -572,6 +672,152 @@ def check_indicator_buffer_bounds(source: SourceFile) -> list[str]:
                 if resolved_size and normalize_expression(resolved_size) != normalized_size:
                     size_proofs.append(resolved_size)
                 if any(
+                    _legacy_loop_proves_bound(
+                        body,
+                        access.start(),
+                        name,
+                        index,
+                        size_proof,
+                        loops,
+                    )
+                    for size_proof in size_proofs
+                ):
+                    continue
+                if any(
+                    _legacy_prior_bound_guard(
+                        body,
+                        access.start(),
+                        name,
+                        normalize_expression(index),
+                        size_proof,
+                    )
+                    for size_proof in size_proofs
+                ):
+                    continue
+                failures.append(
+                    "EA_INDICATOR_BUFFER_UNBOUNDED: "
+                    f"{source.path.name}:{line_number(code, body_start + access.start())} "
+                    f"accesses dynamic numeric buffer {name}[{normalize_expression(index)}] "
+                    f"without a loop bound tied to {normalize_expression(size_expression)} "
+                    "or an explicit ArraySize guard."
+                )
+                break
+
+        for _, call_offset, arguments in iter_calls(body, ("CopyBuffer",)):
+            if not arguments:
+                continue
+            target = normalize_expression(arguments[-1])
+            if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", target):
+                continue
+            statement_start = max(
+                body.rfind(";", 0, call_offset), body.rfind("{", 0, call_offset)
+            ) + 1
+            prefix = body[statement_start:call_offset]
+            assigned = re.search(
+                r"(?:const\s+)?int\s+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*$", prefix
+            )
+            copied_name = assigned.group(1) if assigned else None
+            access_pattern = re.compile(
+                rf"\b{re.escape(target)}\s*\[\s*(?P<index>[^\]]+)\s*\]"
+            )
+            access = next(
+                (
+                    match
+                    for match in access_pattern.finditer(body)
+                    if match.start() > call_offset
+                ),
+                None,
+            )
+            if access is None:
+                continue
+            index = normalize_expression(access.group("index"))
+            if _legacy_loop_proves_bound(
+                body,
+                access.start(),
+                target,
+                index,
+                copied_name,
+                loops,
+            ):
+                continue
+            if _legacy_prior_bound_guard(
+                body, access.start(), target, index, copied_name
+            ):
+                continue
+            if copied_name and index.isdigit():
+                needed = int(index) + 1
+                before_access = body[call_offset:access.start()]
+                if re.search(
+                    rf"if\s*\(\s*{re.escape(copied_name)}\s*<\s*{needed}\s*\)"
+                    r"\s*(?:\{\s*)?return\b",
+                    before_access,
+                ):
+                    continue
+            failures.append(
+                "EA_INDICATOR_BUFFER_UNBOUNDED: "
+                f"{source.path.name}:{line_number(code, body_start + access.start())} "
+                f"accesses CopyBuffer target {target}[{index}] without checking the "
+                "CopyBuffer result or ArraySize first."
+            )
+    return failures
+
+
+def _check_indicator_buffer_bounds_candidate(source: SourceFile) -> list[str]:
+    """Require a local mechanical bound proof for dynamic numeric buffers."""
+    try:
+        from .bounded_arrays import proof_for
+    except ImportError:
+        from bounded_arrays import proof_for
+    code = strip_literals_preserve_lines(source.code)
+    failures: list[str] = []
+    for _, (body_start, _, body) in function_bodies(code).items():
+        proof = proof_for(body)
+        loops = loop_ranges(body)
+        const_ints = {
+            name: expression
+            for name, expression in re.findall(
+                r"\bconst\s+int\s+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*([^;]+);",
+                body,
+            )
+        }
+        declarations = re.findall(
+            r"\b(?:double|float|int|long)\s+([A-Za-z_][A-Za-z0-9_]*)\s*\[\s*\]\s*;",
+            body,
+        )
+        resize_sizes: dict[str, str] = {}
+        for name in declarations:
+            resize = re.search(
+                rf"\bArrayResize\s*\(\s*{re.escape(name)}\s*,\s*([^,;)]+)\s*\)",
+                body,
+            )
+            if resize:
+                resize_sizes[name] = resize.group(1)
+
+        for name, size_expression in resize_sizes.items():
+            resize_call = re.search(
+                rf"\bArrayResize\s*\(\s*{re.escape(name)}\s*,", body
+            )
+            resize_offset = resize_call.start() if resize_call else -1
+            for access in array_accesses(body, name):
+                if access.start() <= resize_offset:
+                    continue
+                index = access.group("index")
+                if proof.bounded(name, index, access.start()):
+                    continue
+                if _literal_access_is_bounded(index, size_expression):
+                    continue
+                normalized_size = normalize_expression(size_expression)
+                resolved_size = const_ints.get(normalized_size)
+                size_proofs = [size_expression]
+                if resolved_size and normalize_expression(resolved_size) != normalized_size:
+                    size_proofs.append(resolved_size)
+                active_size = proof.capacity_expression(name, access.start())
+                if active_size and all(
+                    normalize_expression(active_size) != normalize_expression(item)
+                    for item in size_proofs
+                ):
+                    size_proofs.append(active_size)
+                if any(
                     _loop_proves_bound(
                         body,
                         access.start(),
@@ -615,11 +861,8 @@ def check_indicator_buffer_bounds(source: SourceFile) -> list[str]:
                 r"(?:const\s+)?int\s+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*$", prefix
             )
             copied_name = assigned.group(1) if assigned else None
-            access_pattern = re.compile(
-                rf"\b{re.escape(target)}\s*\[\s*(?P<index>[^\]]+)\s*\]"
-            )
             access = next(
-                (match for match in access_pattern.finditer(body) if match.start() > call_offset),
+                (match for match in array_accesses(body, target) if match.start() > call_offset),
                 None,
             )
             if access is None:
@@ -652,6 +895,21 @@ def check_indicator_buffer_bounds(source: SourceFile) -> list[str]:
                 "CopyBuffer result or ArraySize first."
             )
     return failures
+
+
+def check_indicator_buffer_bounds(source: SourceFile) -> list[str]:
+    """Clear legacy findings without creating new ones before the v2 rollout.
+
+    Existing EAs remain on the pre-rollout finding surface.  The stronger
+    parser/proof can remove a legacy finding, but cannot introduce one.  A new
+    build may explicitly opt into the full predicate with a durable source
+    marker; that path is intentionally off by default.
+    """
+    candidate = _check_indicator_buffer_bounds_candidate(source)
+    if BOUNDED_ARRAY_V2_MARKER in source.raw:
+        return candidate
+    legacy = set(_check_indicator_buffer_bounds_legacy(source))
+    return [finding for finding in candidate if finding in legacy]
 
 
 def check_pip_double_conversion(source: SourceFile) -> list[str]:
