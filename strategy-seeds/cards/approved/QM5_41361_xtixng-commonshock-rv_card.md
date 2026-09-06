@@ -63,9 +63,9 @@ r1_track_record: PASS_WITH_COMMON_SHOCK_TRANSLATION_RISK
 r2_mechanical: PASS
 r3_data_available: PASS_WITH_SYNCHRONIZATION_AND_CONTINUOUS_CFD_BASIS_RISK
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
-q01_status: NOT_BUILT
-q02_status: NOT_ENQUEUED_Q01_PENDING
+pipeline_phase: Q02
+q01_status: COMPILE_OK
+q02_status: ENQUEUED_PENDING
 review_focus: "Falsify a completed-week WTI/natural gas same-direction dispersion fade outside the certified XAU/SP500/NDX/XNG book. Verify exact prior-two-week membership, synchronized three-to-five-session close pairs, week-end endpoint selection, strict same-sign individual returns, symmetric relative-outperformer fade, durable weekly attempt, aggregate fixed risk, atomic basket repair, and next-week lifecycle. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -365,14 +365,15 @@ may establish realized correlation with the certified book.
 | Version | Date | Change | Gate | Status |
 |---|---|---|---|---|
 | v1 | 2026-09-06 | initial XTI/XNG weekly common-shock dispersion reversion card | G0 | APPROVED; build pending |
+| v2 | 2026-09-06 | governed compile-PASS build and one logical fixed-risk baseline enqueue | Q01/Q02 | COMPILE_OK; ENQUEUED_PENDING |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Status | Evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-09-06 | APPROVED | `decisions/2026-09-06_qm5_41361_xtixng_weekly_common_shock_dispersion_reversion_g0.md` |
-| Q01 Build Validation | 2026-09-06 | NOT_BUILT | deterministic allocation and build pending |
-| Q02 Baseline Screening | 2026-09-06 | NOT_ENQUEUED_Q01_PENDING | no work item before compile/review PASS |
+| Q01 Build Validation | 2026-09-06 | COMPILE_OK; BUILD_CHECK_PASS | `D:/QM/reports/work_items/c5bf5069-ecfb-40a2-a0d7-2e282d8a7df1/QM5_41361/COMPILE_EA/compile_evidence.json` |
+| Q02 Baseline Screening | 2026-09-06 | ENQUEUED_PENDING | work item `ecc8e269-5a19-4cda-8c4e-0906d4f93791`; CPU admission `artifacts/qm5_41361_q02_cpu_admission_20260906.json` |
 
 ## Safety Boundary
 
@@ -382,4 +383,3 @@ enqueue only below tester and whole-host CPU ceilings. It does not authorize a
 manual backtest, terminal control, live/demo/shadow/stress/optimization preset,
 AutoTrading, `T_Live`, deploy or T_Live manifest, portfolio-gate change,
 portfolio admission, decorrelation claim, or correlation waiver.
-

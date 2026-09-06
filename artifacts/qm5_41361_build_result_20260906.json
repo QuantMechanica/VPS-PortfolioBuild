@@ -1,0 +1,108 @@
+{
+  "schema_version": "qm.branch-build-q02-handoff/v1",
+  "recorded_at_utc": "2026-09-06T02:50:08Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41361",
+  "ea_label": "QM5_41361_xtixng-commonshock-rv",
+  "mechanic": "synchronized completed-week XTI and XNG individual returns with a strict shared sign; sell the relative outperformer and buy the relative underperformer as an equal-target-notional one-week package",
+  "logical_symbol": "QM5_41361_XTI_XNG_COMMONSHOCK_RV_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "companion_symbol": "XNGUSD.DWX",
+  "timeframe": "D1",
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "research": {
+    "source_approval": "decisions/2026-09-06_xtixng_weekly_common_shock_dispersion_reversion_source_approval.md",
+    "g0_decision": "decisions/2026-09-06_qm5_41361_xtixng_weekly_common_shock_dispersion_reversion_g0.md",
+    "dedup_artifact": "artifacts/qm5_xtixng_commonshock_rv_preallocation_dedup_20260906.json",
+    "registry_rows_scanned": 4841,
+    "cards_scanned": 1454,
+    "exact_duplicate_found": false,
+    "nearest_family_member": "QM5_41086_xauxag-commonshock-rv",
+    "manual_verdict": "FUZZY_CARRIER_PORT_RESOLVED_DISTINCT_XTIXNG_SAME_DIRECTION_WEEKLY_COMMON_SHOCK_RELATIVE_OUTPERFORMER_FADE_BASKET"
+  },
+  "reference_validation": {
+    "command": "python framework/EAs/QM5_41361_xtixng-commonshock-rv/docs/test_weekly_common_shock_reference.py",
+    "passed": 10,
+    "failed": 0
+  },
+  "spec_validation": {
+    "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_41361_xtixng-commonshock-rv",
+    "passed": 1,
+    "failed": 0
+  },
+  "compile": {
+    "work_item_id": "c5bf5069-ecfb-40a2-a0d7-2e282d8a7df1",
+    "terminal": "T5",
+    "status": "done",
+    "verdict": "COMPILE_OK",
+    "build_check_result": "PASS",
+    "build_check_failures": 0,
+    "build_check_warnings": 3,
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "mq5_sha256": "86b52bb43f6ec7f1625d53b2ca58ac606485dbec92ffac37da39a9b51051836b",
+    "ex5_sha256": "8f770e63c532e13991818b1b6f2f0924f5c8725b98b2ff53da0a9b0d22e3d3ea",
+    "evidence_path": "D:/QM/reports/work_items/c5bf5069-ecfb-40a2-a0d7-2e282d8a7df1/QM5_41361/COMPILE_EA/compile_evidence.json",
+    "evidence_sha256": "4ea6775144e0a5f7aa856f072fd4d64d1cf5264c6f46faa15aadffff8cb3d240"
+  },
+  "card": {
+    "sha256": "efc9f2b98ef929e86c5f40f08f66950c3295f3552c34119256e9e7097c1dea20",
+    "artifact_mirror_sha256": "efc9f2b98ef929e86c5f40f08f66950c3295f3552c34119256e9e7097c1dea20",
+    "g0_status": "APPROVED"
+  },
+  "basket_manifest": {
+    "sha256": "935c43416583f214580e813e41833d9057b8aeb0d7d08c783a44080296400be8"
+  },
+  "setfiles": [
+    {
+      "role": "logical_basket",
+      "sha256": "21ccfa90d993c32b28421795438713f0047c2ee7f3efa0bc5119e700dec9e36a",
+      "build_hash": "429ff42c4f196d1fd6862e84da1228aa1bcb6aaef9a5c1ba7af49a296aa70589"
+    },
+    {
+      "role": "host_leg",
+      "sha256": "dd4e1b8c50915998617e8e0803f1f35bfe044cdb41638c9a335a8d306f2714c8",
+      "build_hash": "efee129e0d13aadec5d9bffe31da99ef60dfe91466a2d3d47318d67e4d49a1e6"
+    },
+    {
+      "role": "companion_leg",
+      "sha256": "0525a87ff5569927ce214da92c5c295c1843c5960a65376cfad366e44cf2d286",
+      "build_hash": "22d97ad180aa2d9c573cd2829d4920102b86cf26fd7ce324981491309ac625ed"
+    }
+  ],
+  "cpu_admission": {
+    "threshold_pct_exclusive": 97.0,
+    "samples_pct": [70.946, 72.241, 87.325, 67.795, 62.895],
+    "average_pct": 72.240,
+    "maximum_pct": 87.325,
+    "admitted": true
+  },
+  "q02": {
+    "work_item_id": "ecc8e269-5a19-4cda-8c4e-0906d4f93791",
+    "symbol": "QM5_41361_XTI_XNG_COMMONSHOCK_RV_D1",
+    "status_at_receipt": "pending",
+    "attempt_count": 0,
+    "enqueued_count": 1,
+    "skipped_leg_setfiles": 2,
+    "priority_boost": false,
+    "receipt_path": "D:/QM/strategy_farm/artifacts/receipts/first_q02_intake/c5bf5069-ecfb-40a2-a0d7-2e282d8a7df1_ecc8e269-5a19-4cda-8c4e-0906d4f93791.json",
+    "receipt_sha256": "532514406e17cdd2553a30498b16806c939ecd6c1873402e074fd5be74e17502",
+    "state_backup_path": "D:/QM/strategy_farm/state/backups/farm_state_before_first_q02_intake_20260906T024954_852465Z.sqlite",
+    "state_backup_sha256": "7127a5583cc4ae61d8bf4246a1764383511db529bb788687a0d34d34afb7f743",
+    "manual_backtest_run": false,
+    "dispatch_tick_run": false
+  },
+  "safety": {
+    "terminal_control_used": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "certification_claimed": false,
+    "decorrelation_claimed": false
+  }
+}
