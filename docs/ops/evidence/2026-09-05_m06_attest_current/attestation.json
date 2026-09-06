@@ -1,0 +1,15 @@
+{
+  "schema": "qm.live-identity-attestation/v1",
+  "decision_id": "OWNER-DEC-LIVE-IDENTITY-SIGN-20260905",
+  "decision": "YES",
+  "decided_at_utc": "2026-09-06T06:16:12.348027+00:00",
+  "receipt_id": "510a2922-3519-4cd9-bcf1-32b812e16cb7",
+  "receipt_sha256": "974daa54204d56ca33f9d563e634bac717ce2e4ecfaa478f847d4975bae3623f",
+  "proposal_path": "docs/ops/evidence/2026-09-05_m06_attest_current/proposal/proposal.json",
+  "proposal_sha256": "20de8acd31157cad84c5df8b54855af7a77ea7d32bcfdc108b3b32215af4d7c3",
+  "observation_sha256": "c411e0f38885a9ae47c9cbde153461c4bc31a32c976a49718fcbfd90403ee640",
+  "attests": "The OWNER attests the unsigned attest-current proposal as the identity of the UNCHANGED running live book (24 sleeves, 21 binaries, total risk 9.7499 %, fingerprints identical to the frozen baseline).",
+  "effects": "Documentation only: no code activation, no pointer write, risk freeze stays ACTIVE; the consumer exception stays flag-gated off until its own activation receipt.",
+  "recorded_by": "Claude Orchestrator",
+  "recorded_at_utc": "2026-09-06T06:32:19Z"
+}
