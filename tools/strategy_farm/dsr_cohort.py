@@ -106,6 +106,110 @@ def _date_text(value: Any) -> str:
     raise CohortUnavailable("CANDIDATE_WINDOW_UNAVAILABLE")
 
 
+def _window_pair(start: Any, end: Any) -> dict[str, str] | None:
+    """Parse one complete candidate window without accepting partial dates."""
+    if start in (None, "") or end in (None, ""):
+        return None
+    try:
+        resolved = {"from": _date_text(start), "to": _date_text(end)}
+    except CohortUnavailable:
+        return None
+    if resolved["from"] > resolved["to"]:
+        return None
+    return resolved
+
+
+def _candidate_window(
+    conn: sqlite3.Connection,
+    candidate: Mapping[str, Any],
+    payload: Mapping[str, Any],
+) -> tuple[dict[str, str], str]:
+    """Resolve a Q08 window from explicit fields, then its governed Q07 lineage."""
+    direct = (
+        ("payload.from_date/to_date", payload.get("from_date"), payload.get("to_date")),
+        (
+            "payload.expected_from_date/expected_to_date",
+            payload.get("expected_from_date"),
+            payload.get("expected_to_date"),
+        ),
+        (
+            "work_items.data_window_start/data_window_end",
+            candidate.get("data_window_start"),
+            candidate.get("data_window_end"),
+        ),
+    )
+    for source, start, end in direct:
+        window = _window_pair(start, end)
+        if window is not None:
+            return window, source
+
+    queue: list[tuple[str, str]] = []
+    for key in ("promoted_from_work_item", "from_work_item_id"):
+        value = str(payload.get(key) or "").strip()
+        if value:
+            queue.append((value, f"payload.{key}"))
+    lineage = payload.get("append_only_rerun_lineage_work_items")
+    if isinstance(lineage, list):
+        queue.extend(
+            (str(value).strip(), "payload.append_only_rerun_lineage_work_items")
+            for value in lineage if str(value).strip()
+        )
+    rerun_of = str(payload.get("append_only_rerun_of_work_item") or "").strip()
+    if rerun_of:
+        queue.append((rerun_of, "payload.append_only_rerun_of_work_item"))
+
+    expected_ea = str(candidate.get("ea_id") or "")
+    expected_symbol = str(candidate.get("symbol") or "")
+    seen: set[str] = set()
+    while queue and len(seen) < 32:
+        row_id, edge = queue.pop(0)
+        if row_id in seen:
+            continue
+        seen.add(row_id)
+        raw = conn.execute("SELECT * FROM work_items WHERE id=?", (row_id,)).fetchone()
+        if raw is None:
+            continue
+        row = _row_dict(raw)
+        if (str(row.get("ea_id") or "") != expected_ea
+                or str(row.get("symbol") or "") != expected_symbol):
+            continue
+        row_payload = _payload(row)
+        if str(row.get("phase") or "").upper() == "Q07":
+            candidates = (
+                (
+                    "work_items.data_window_start/data_window_end",
+                    row.get("data_window_start"), row.get("data_window_end"),
+                ),
+                (
+                    "payload.from_date/to_date",
+                    row_payload.get("from_date"), row_payload.get("to_date"),
+                ),
+                (
+                    "payload.expected_from_date/expected_to_date",
+                    row_payload.get("expected_from_date"),
+                    row_payload.get("expected_to_date"),
+                ),
+            )
+            for location, start, end in candidates:
+                window = _window_pair(start, end)
+                if window is not None:
+                    return window, f"lineage:{edge}:{row_id}:{location}"
+        for key in (
+            "promoted_from_work_item", "from_work_item_id",
+            "append_only_rerun_of_work_item",
+        ):
+            value = str(row_payload.get(key) or "").strip()
+            if value and value not in seen:
+                queue.append((value, f"lineage.{key}"))
+        nested = row_payload.get("append_only_rerun_lineage_work_items")
+        if isinstance(nested, list):
+            queue.extend(
+                (str(value).strip(), "lineage.append_only_rerun_lineage_work_items")
+                for value in nested if str(value).strip() and str(value).strip() not in seen
+            )
+    raise CohortUnavailable("CANDIDATE_WINDOW_UNAVAILABLE")
+
+
 def _utc_timestamp(value: Any, reason: str) -> dt.datetime:
     raw = str(value or "").strip()
     try:
@@ -467,18 +571,7 @@ def assemble(
     symbol = str(candidate.get("symbol") or "")
     _require(bool(ea_id and symbol), "CANDIDATE_IDENTITY_UNAVAILABLE")
     timeframe = _timeframe(candidate, candidate_payload)
-    window = {
-        "from": _date_text(
-            candidate_payload.get("from_date")
-            or candidate_payload.get("expected_from_date")
-            or candidate.get("data_window_start")
-        ),
-        "to": _date_text(
-            candidate_payload.get("to_date")
-            or candidate_payload.get("expected_to_date")
-            or candidate.get("data_window_end")
-        ),
-    }
+    window, window_source = _candidate_window(conn, candidate, candidate_payload)
     try:
         ledger_path, ledger = _find_ledger(
             ea_id=ea_id, symbol=symbol, timeframe=timeframe, ledger_root=Path(ledger_root)
@@ -487,7 +580,7 @@ def assemble(
         if str(exc) != 'SEALED_SEARCH_LEDGER_UNAVAILABLE':
             raise
         return assemble_single_configuration(
-            conn, candidate, candidate_payload, timeframe, window
+            conn, candidate, candidate_payload, timeframe, window, window_source
         )
     _require(ledger.get("schema") == DL089_LEDGER_SCHEMA, "UNSUPPORTED_SEARCH_LEDGER_SCHEMA")
     _require(ledger.get("authority") == "DL-089", "SEARCH_LEDGER_AUTHORITY_MISMATCH")
@@ -545,6 +638,7 @@ def assemble(
         "created_at_utc": str(q12_row.get("updated_at") or ledger.get("created_at_utc") or ""),
         "candidate": {"ea_id": ea_id, "symbol": symbol, "timeframe": timeframe},
         "window": window,
+        "window_source": window_source,
         "timezone": "UTC",
         "initial_balance": float(candidate_payload.get("tester_deposit") or 100000.0),
         "frequency": "CALENDAR_DAY",
@@ -571,7 +665,7 @@ def assemble(
     }
 
 
-def assemble_single_configuration(conn, candidate, payload, timeframe, window):
+def assemble_single_configuration(conn, candidate, payload, timeframe, window, window_source=None):
     try:
         from . import dsr_single_configuration as single
     except ImportError:
@@ -597,7 +691,7 @@ def assemble_single_configuration(conn, candidate, payload, timeframe, window):
         raise CohortUnavailable('SINGLE_CONFIGURATION_UNAVAILABLE:'+str(exc)) from exc
     return {'schema': single.SCHEMA, 'sealed': True, 'complete': True,
             'losers_included': True, 'losers': [], 'candidate': candidate_id,
-            'window': window, 'timezone': 'UTC', 'initial_balance': float(payload.get('tester_deposit') or 100000),
+            'window': window, 'window_source': window_source, 'timezone': 'UTC', 'initial_balance': float(payload.get('tester_deposit') or 100000),
             'frequency': 'CALENDAR_DAY', 'costs_attested': True,
             'selection_mode': 'DECLARED_SINGLE_CONFIGURATION', 'declared_trial_count': 1,
             'selection_trial_count': 1, 'research_trial_count': 0, 'effective_trial_count': 1,
@@ -666,7 +760,11 @@ def attach(
         }
         return payload["dsr_context_status"]
     payload["dsr_context"] = binding
-    payload["dsr_context_status"] = {"status": "SEALED", "producer_schema": SCHEMA}
+    _, window_source = _candidate_window(conn, _row_dict(candidate_row), payload)
+    payload["dsr_context_status"] = {
+        "status": "SEALED", "producer_schema": SCHEMA,
+        "candidate_window_source": window_source,
+    }
     return payload["dsr_context_status"]
 
 

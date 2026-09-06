@@ -1,0 +1,42 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        11196
+; ea_slug:      ft-heracles
+; ea_version:   v5.0
+; set_version:  s20260906-001
+; symbol:       XAUUSD.DWX
+; timeframe:    H4
+; environment:  backtest
+; magic_slot:   2
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-09-06
+;==========================================================
+qm_ea_id=11196
+qm_magic_slot_offset=2
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\artifacts\cards_approved\QM5_11196_ft-heracles.md
+strategy_timeframe=16388
+strategy_buy_div_min=0.16
+strategy_buy_div_max=0.75
+strategy_donchian_window=10
+strategy_keltner_window=20
+strategy_keltner_atr_period=10
+strategy_donchian_shift=15
+strategy_keltner_shift=9
+strategy_min_warmup_bars=40
+strategy_atr_stop_period=14
+strategy_atr_stop_mult=2.5
+strategy_max_spread_stop_frac=0.08
+strategy_roi_0_min=0.598
+strategy_roi_1_after_min=644
+strategy_roi_1_min=0.166
+strategy_roi_2_after_min=3269
+strategy_roi_2_min=0.115
+strategy_roi_3_after_min=7289
+strategy_roi_3_min=0.0

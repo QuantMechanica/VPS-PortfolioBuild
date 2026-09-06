@@ -25681,6 +25681,33 @@ def _setfile_path_exists(setfile_path: str) -> bool:
     return False
 
 
+def _carry_q08_candidate_window(
+    predecessor: Mapping[str, Any], payload: dict[str, Any]
+) -> None:
+    """Make a new Q08 row self-contained from its authoritative predecessor."""
+    try:
+        predecessor_payload = json.loads(
+            _work_item_value(predecessor, "payload_json", "{}") or "{}"
+        )
+    except (TypeError, json.JSONDecodeError):
+        predecessor_payload = {}
+    if not isinstance(predecessor_payload, dict):
+        predecessor_payload = {}
+    start = (
+        _work_item_value(predecessor, "data_window_start")
+        or predecessor_payload.get("expected_from_date")
+        or predecessor_payload.get("from_date")
+    )
+    end = (
+        _work_item_value(predecessor, "data_window_end")
+        or predecessor_payload.get("expected_to_date")
+        or predecessor_payload.get("to_date")
+    )
+    if start not in (None, "") and end not in (None, ""):
+        payload.setdefault("expected_from_date", start)
+        payload.setdefault("expected_to_date", end)
+
+
 def _attach_q08_dsr_context(
     conn: sqlite3.Connection,
     predecessor: Mapping[str, Any],
@@ -25692,6 +25719,7 @@ def _attach_q08_dsr_context(
     binding or records a machine-readable refusal; callers then insert the new
     row once.  Existing Q08 rows never pass through this helper.
     """
+    _carry_q08_candidate_window(predecessor, payload)
     try:
         from tools.strategy_farm import dsr_cohort
     except ModuleNotFoundError:
