@@ -1,0 +1,219 @@
+﻿{
+    "evidence_schema":  "run_smoke/v2",
+    "timestamp_utc":  "2026-09-06T18:44:25.3862216Z",
+    "run_tag":  "20260906_184411",
+    "result":  "PASS",
+    "reason_classes":  [
+                           "OK"
+                       ],
+    "ea_id":  900002,
+    "ea_label":  "QM5_900002",
+    "expert":  "QM_FTMO\\QM_FTMO_AccountControlAcceptance",
+    "symbol":  "EURUSD",
+    "year":  2026,
+    "requested_year":  2026,
+    "from_date":  "2026.09.01",
+    "to_date":  "2026.09.02",
+    "test_window":  {
+                        "from_date":  "2026.09.01",
+                        "to_date":  "2026.09.02",
+                        "source":  "generated_tester_ini",
+                        "tester_ini_files":  [
+                                                 {
+                                                     "path":  "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-06_ftmo_demo_governor\\native_tester\\run_smoke\\QM5_900002\\20260906_184411\\raw\\run_01\\tester.ini",
+                                                     "size_bytes":  423,
+                                                     "sha256":  "f1b8e24a8dc2ad9590ee347b41c222b614b470763a96262f5449b07420f37627",
+                                                     "expert":  "QM_FTMO\\QM_FTMO_AccountControlAcceptance",
+                                                     "expert_parameters":  "acceptance.set",
+                                                     "symbol":  "EURUSD",
+                                                     "period":  "M1",
+                                                     "model":  4,
+                                                     "from_date":  "2026.09.01",
+                                                     "to_date":  "2026.09.02",
+                                                     "run":  "run_01"
+                                                 }
+                                             ]
+                    },
+    "execution_identity":  {
+                               "expert_binary":  {
+                                                     "source":  null,
+                                                     "deployed":  {
+                                                                      "path":  "D:\\QM\\mt5\\T11\\MQL5\\Experts\\QM_FTMO\\QM_FTMO_AccountControlAcceptance.ex5",
+                                                                      "size_bytes":  16316,
+                                                                      "sha256":  "cf4e593669ac2a20051de11e59517ff61e9b8ee126e401e6dfd5316258dafdb8",
+                                                                      "last_write_utc":  "2026-09-06T18:43:15.9734799Z"
+                                                                  },
+                                                     "source_matches_deployed":  null,
+                                                     "required_sha256":  "cf4e593669ac2a20051de11e59517ff61e9b8ee126e401e6dfd5316258dafdb8",
+                                                     "pre_dispatch_verified":  true,
+                                                     "observed_after":  {
+                                                                            "path":  "D:\\QM\\mt5\\T11\\MQL5\\Experts\\QM_FTMO\\QM_FTMO_AccountControlAcceptance.ex5",
+                                                                            "size_bytes":  16316,
+                                                                            "sha256":  "cf4e593669ac2a20051de11e59517ff61e9b8ee126e401e6dfd5316258dafdb8",
+                                                                            "last_write_utc":  "2026-09-06T18:43:15.9734799Z"
+                                                                        },
+                                                     "stable_during_run":  true
+                                                 },
+                               "mq5_source":  null,
+                               "setfile":  {
+                                               "source":  {
+                                                              "path":  "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-06_ftmo_demo_governor\\native_tester\\acceptance.set",
+                                                              "size_bytes":  120,
+                                                              "sha256":  "906f3bc4d54cb53bb871f3aa1cba3a1a4566641ad51654a31dde92c15dd75202",
+                                                              "last_write_utc":  "2026-09-06T18:37:40.1079661Z"
+                                                          },
+                                               "deployed":  {
+                                                                "path":  "D:\\QM\\mt5\\T11\\MQL5\\Profiles\\Tester\\acceptance.set",
+                                                                "size_bytes":  120,
+                                                                "sha256":  "906f3bc4d54cb53bb871f3aa1cba3a1a4566641ad51654a31dde92c15dd75202",
+                                                                "last_write_utc":  "2026-09-06T18:37:40.1079661Z"
+                                                            },
+                                               "source_matches_deployed":  true,
+                                               "observed_after":  {
+                                                                      "path":  "D:\\QM\\mt5\\T11\\MQL5\\Profiles\\Tester\\acceptance.set",
+                                                                      "size_bytes":  120,
+                                                                      "sha256":  "906f3bc4d54cb53bb871f3aa1cba3a1a4566641ad51654a31dde92c15dd75202",
+                                                                      "last_write_utc":  "2026-09-06T18:37:40.1079661Z"
+                                                                  },
+                                               "stable_during_run":  true
+                                           },
+                               "run_smoke":  {
+                                                 "path":  "C:\\QM\\worktrees\\codex-ftmo-governor-20260906\\framework\\scripts\\run_smoke.ps1",
+                                                 "size_bytes":  167378,
+                                                 "sha256":  "78feccf5c52fbbfeae6e0a8bcc358d2126a3ce3429110c92297df2dca0b94367",
+                                                 "last_write_utc":  "2026-09-06T18:37:30.7953389Z"
+                                             },
+                               "stable_during_run":  true
+                           },
+    "terminal":  "T11",
+    "model":  4,
+    "period":  "M1",
+    "requested_runs":  1,
+    "max_run_attempts":  3,
+    "attempted_runs":  1,
+    "non_ok_attempts":  0,
+    "min_trades_required":  0,
+    "frequency_floor":  {
+                            "schema":  "qm.q02-frequency-coverage/v2",
+                            "rate_per_year":  5,
+                            "coverage_start":  "2026.09.01",
+                            "coverage_end":  "2026.09.02",
+                            "coverage_start_source":  "test_window_start_fallback_marker_absent",
+                            "marker_status":  "absent",
+                            "marker_count":  0,
+                            "valid_marker_count":  0,
+                            "effective_run_marker_count":  0,
+                            "attribution_enforced":  true,
+                            "run_window_enforced":  true,
+                            "attributed_marker_count":  0,
+                            "attributed_profile_key_count":  0,
+                            "attributed_profile_keys":  [
+
+                                                        ],
+                            "rejected_marker_count":  0,
+                            "rejected_marker_reasons":  {
+
+                                                        },
+                            "rejected_marker_samples":  [
+
+                                                        ],
+                            "attribution":  {
+                                                "expected_expert":  "QM_FTMO_AccountControlAcceptance",
+                                                "expected_ea_id":  900002,
+                                                "expected_symbol":  "EURUSD",
+                                                "identity_anchor_available":  true,
+                                                "symbol_anchor_available":  true
+                                            },
+                            "run_scope":  {
+                                              "enforced":  true,
+                                              "logger_sample_scope":  "per_run_delta_capture",
+                                              "tester_log_file_count":  1,
+                                              "tester_log_window_resolved_count":  1,
+                                              "tester_log_window_unresolved_count":  0,
+                                              "tester_log_windows":  [
+                                                                         {
+                                                                             "source_path":  "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-06_ftmo_demo_governor\\native_tester\\run_smoke\\QM5_900002\\20260906_184411\\raw\\run_01\\20260906.log",
+                                                                             "resolved":  true,
+                                                                             "window_source":  "tester_log_run_start_exact",
+                                                                             "window_start":  "20:44:16.876",
+                                                                             "window_end":  "end_of_log",
+                                                                             "exact_run_start_count":  1,
+                                                                             "own_ea_symbol_run_start_count":  1,
+                                                                             "run_start_count":  1,
+                                                                             "marker_count":  0,
+                                                                             "attributed_marker_count":  0
+                                                                         }
+                                                                     ]
+                                          },
+                            "first_tradable_bar":  null,
+                            "year_count":  1,
+                            "min_trades_required":  0,
+                            "fallback_visible":  true,
+                            "calculated_min_trades_required":  5,
+                            "applied":  false,
+                            "application_reason":  "smoke_mode_explicit_min_trades"
+                        },
+    "deterministic":  true,
+    "oninit_failure_detected":  false,
+    "log_bomb_detected":  false,
+    "model4_log_marker_detected":  true,
+    "report_dir":  "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-06_ftmo_demo_governor\\native_tester\\run_smoke\\QM5_900002\\20260906_184411",
+    "report_export_mode":  "relative_with_absolute_fallback",
+    "logger_sample_path":  null,
+    "logger_sample":  null,
+    "commission_group":  {
+                             "commission_per_lot":  0,
+                             "commission_per_side_native":  0,
+                             "commission_matcher":  null,
+                             "commission_mode":  null,
+                             "injected_sha256":  "25314333af81faf48e2afe2db5d52beea640cc74ec33a85a46b7c43aadb921dd",
+                             "canonical_sha256":  "25314333af81faf48e2afe2db5d52beea640cc74ec33a85a46b7c43aadb921dd",
+                             "restored_sha256":  "25314333af81faf48e2afe2db5d52beea640cc74ec33a85a46b7c43aadb921dd",
+                             "restored_to_canonical":  true
+                         },
+    "news_calendar":  {
+                          "status":  "OK",
+                          "source_dir":  "D:\\QM\\data\\news_calendar",
+                          "common_dir":  "C:\\Windows\\system32\\config\\systemprofile\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files",
+                          "primary_path":  "C:\\Windows\\system32\\config\\systemprofile\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\news_calendar_2015_2025.csv",
+                          "secondary_path":  "C:\\Windows\\system32\\config\\systemprofile\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\forex_factory_calendar_clean.csv",
+                          "missing_source_paths":  [
+
+                                                   ],
+                          "missing_common_paths":  [
+
+                                                   ],
+                          "mismatches":  [
+
+                                         ],
+                          "latest_modified_utc":  "2026-09-05T02:47:21.1343275Z",
+                          "age_hours":  39,
+                          "max_age_hours":  336
+                      },
+    "runs":  [
+                 {
+                     "run":  "run_01",
+                     "status":  "OK",
+                     "exit_code":  null,
+                     "report_source_path":  "D:\\QM\\mt5\\T11\\QM5_900002_EURUSD_20260906_184411_run_01.htm",
+                     "report_canonical_path":  "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-06_ftmo_demo_governor\\native_tester\\run_smoke\\QM5_900002\\20260906_184411\\raw\\run_01\\report.htm",
+                     "report_size_bytes":  23780,
+                     "tester_log_path":  "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-06_ftmo_demo_governor\\native_tester\\run_smoke\\QM5_900002\\20260906_184411\\raw\\run_01\\20260906.log",
+                     "oninit_failure":  false,
+                     "real_ticks_marker":  true,
+                     "total_trades":  0,
+                     "total_trades_raw":  "0",
+                     "profit_factor":  0,
+                     "profit_factor_raw":  "0.00",
+                     "drawdown":  0,
+                     "drawdown_raw":  "0.00 (0.00%)",
+                     "net_profit":  0,
+                     "net_profit_raw":  "0.00",
+                     "tester_ini_path":  "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-06_ftmo_demo_governor\\native_tester\\run_smoke\\QM5_900002\\20260906_184411\\raw\\run_01\\tester.ini",
+                     "tester_ini_sha256":  "f1b8e24a8dc2ad9590ee347b41c222b614b470763a96262f5449b07420f37627",
+                     "from_date":  "2026.09.01",
+                     "to_date":  "2026.09.02",
+                     "report_sha256":  "c0e923e77b959e78b3e16ba7cc9dd04aa47366faef70aee2ced386c89ebe8811"
+                 }
+             ]
+}

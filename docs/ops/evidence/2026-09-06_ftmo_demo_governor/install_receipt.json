@@ -1,0 +1,75 @@
+{
+  "schema": "qm.ftmo-demo-governor-install/v1",
+  "task_id": "9cf0712b-6ee4-4469-aed2-f920c3e0cc03",
+  "installed_at_utc": "2026-09-06T18:45:00Z",
+  "status": "INSTALLED_UNATTACHED_PARKED",
+  "code_branch": "agents/codex-ftmo-governor-20260906",
+  "code_commit": "bcb589a0656f0ea83580bbd7972de2093ccac35d",
+  "target_data_dir": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850",
+  "identity": {
+    "login": 1514536732,
+    "server": "FTMO-Demo",
+    "account_variant": "STANDARD_2STEP_100K_FREE_TRIAL",
+    "leverage": 100,
+    "balance": 100000.0,
+    "equity": 100000.0,
+    "positions": 0,
+    "terminal_trade_allowed": false,
+    "autotrading": false
+  },
+  "install_method": "same-directory temporary copy, SHA-256 comparison, atomic Move-Item, installed SHA-256 comparison",
+  "preexisting_targets": [],
+  "installed": [
+    {
+      "kind": "governor_ex5",
+      "destination": "MQL5/Experts/QM_FTMO/QM5_13206_ftmo-account-governor.ex5",
+      "sha256": "e5e827cd05163de0d0c7919e9e072759efbd91a6b1e464cf9e962e850f4878f6",
+      "bytes": 113812
+    },
+    {
+      "kind": "bootstrap_preset",
+      "destination": "MQL5/Profiles/Presets/QM_FTMO_M13/QM5_13206_ftmo-account-governor_ACCOUNT_TIMER_M13_demo_bootstrap.set",
+      "sha256": "15c18dc439679b3482b321ac11a3711686fa73e78f50ba1379ad26a6ad7b8eeb",
+      "bytes": 1237
+    },
+    {
+      "kind": "active_preset",
+      "destination": "MQL5/Profiles/Presets/QM_FTMO_M13/QM5_13206_ftmo-account-governor_ACCOUNT_TIMER_M13_demo_active.set",
+      "sha256": "f73453412b51c25f4e6a84600f46f6602dc827aff9709b10ea7aca634cbe1361",
+      "bytes": 1203
+    }
+  ],
+  "immutability_checks": {
+    "common_ini_sha256_before": "019624e1a9473ea14984a47d3fc13d760b6245d7fcf2bc21324da0384464f63f",
+    "common_ini_sha256_after": "019624e1a9473ea14984a47d3fc13d760b6245d7fcf2bc21324da0384464f63f",
+    "common_ini_unchanged": true,
+    "chart_profile_unchanged": true,
+    "chart01_chr_sha256_before_after": "9564a2c9e5579234c16664016cc8e10e9bc9a7f7d48484394572bc56a95ab0d9",
+    "autotrading_changed": false,
+    "charts_changed": false,
+    "tlive_written": false
+  },
+  "halt_directory_observation": {
+    "path": "MQL5/Files/QM/halt",
+    "governed_halt_files_present": 0,
+    "note": "Existing ks_state_*.state files are sleeve state, not .halt commands."
+  },
+  "verification": {
+    "compile_result": "compile_probe/result.json",
+    "compile_result_sha256": "daeed6f289c62af84034e0ca3503fafca9e5649a9f975139a2e48a20a2d8e08b",
+    "native_run_smoke_summary": "native_tester/run_smoke/QM5_900002/20260906_184411/summary.json",
+    "native_run_smoke_summary_sha256": "8a4bdd2d4614f420517f08db9554f282f10f0dd54c1e98013354a7927147a8f5",
+    "native_acceptance": "native_tester/acceptance.json",
+    "native_acceptance_sha256": "640d1864413a23628feed36e3fcdb0c9a32b2de3b5f3f7a720492f3a398ecd0b",
+    "native_cases": 5,
+    "native_status": "PASS"
+  },
+  "post_install_pulse": {
+    "path": "pulse_after_install.json",
+    "sha256": "63c73cc444c9a98d2bb4a94d0c0883c46f4a5ac614a6b150127b6244cf37cdac",
+    "identity_and_flatness": "PASS",
+    "control_plane_verdict": "ALARM_UNRELATED_TO_INSTALL",
+    "control_plane_detail": "sealed count decision SHA mismatch in qualified-pair review probe; account remained PARKED_FLAT with terminal_trade_allowed=false"
+  }
+}
+

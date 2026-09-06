@@ -1,0 +1,29 @@
+{
+  "schema": "qm.monitor-compile-probe/v1",
+  "task_id": "9cf0712b-6ee4-4469-aed2-f920c3e0cc03",
+  "purpose": "artifact-only FTMO M13 governor and native acceptance compile; never starts a terminal",
+  "compile_targets": [
+    "QM5_13206_ftmo-account-governor",
+    "QM_FTMO_AccountControlAcceptance"
+  ],
+  "files": {
+    "editor/MetaEditor64.exe": "197ca3dd8d1971831366f54cb57bf3f120b420700e573135509d406e4e23709e",
+    "MQL5/QM_FTMO_AccountControlAcceptance.mq5": "0c5e51e961b6a18cacc1c6ce7f40e661330f9e7e7aacf105b6193ae349542280",
+    "MQL5/QM5_13206_ftmo-account-governor.mq5": "a736d378205c40cbd7fd50e2d8e1ec7e4ce73ec4b3e020fbd47dc7f2bc84e3e6",
+    "MQL5/Include/Object.mqh": "dfad4fdb6d1bf47cf43fcbc2882e52979459f17a776f75f250a7c32d0623ab35",
+    "MQL5/Include/StdLibErr.mqh": "04bb2c47b1b04dceb052e6dba1f85e0330c53abc602f341e2ea95ea1498ab28b",
+    "MQL5/Include/news_rules/5ers.mqh": "3c3f2c4411ea139040a774897819ae731dd54ce4e553905b143aca6386e1c525",
+    "MQL5/Include/news_rules/ftmo.mqh": "131e6d6f3a703debd5cf2e313d2a8786231f54ab3e1d8cc5389c68ddb14fc7f8",
+    "MQL5/Include/QM/QM_DSTAware.mqh": "f17792e2cbe448267470e0e7a7b01ac3d36778a7fd0ea8f58cdbf446f20d7e38",
+    "MQL5/Include/QM/QM_Errors.mqh": "b8e15a79512fd9bc36c5e08326559cff2aeb633487f344ca60f3a847791381b4",
+    "MQL5/Include/QM/QM_FTMOAccountControl.mqh": "ca51503a6abb8adc1b8ce0c50601e26a4390a832629d8cdf3185a349e97bfdce",
+    "MQL5/Include/QM/QM_FTMOGovernorPolicy.mqh": "5c66be5b65a9e7d6a7b34af3ec765079a866a3946de17acb3851fe5ec25963cc",
+    "MQL5/Include/QM/QM_Logger.mqh": "dc2d2bcc3100967aee629a9da2e62672cb4c373a800133dea4627b2cb1366dac",
+    "MQL5/Include/QM/QM_NewsFilter.mqh": "b5ef379ade56b67a2087d0bf13f0286875b74e47a5905dd25adfaa32ae30d539",
+    "MQL5/Include/Trade/DealInfo.mqh": "9d6fb4e7d8754eaee761e43943dc49cdc3a32793ee8438119d939ea7bad71880",
+    "MQL5/Include/Trade/HistoryOrderInfo.mqh": "e88f6be450462a045470315887ef751a4510da65a5115325dc88542743fc52f8",
+    "MQL5/Include/Trade/OrderInfo.mqh": "d0e479578ef91d2ef1b07ae63d28ae54e15cebb914dd10e5d4510c269a9ca999",
+    "MQL5/Include/Trade/PositionInfo.mqh": "dd720b755c7f23dcc109fc81bcf0772b907411d545e4a1117421737bb9ff6897",
+    "MQL5/Include/Trade/Trade.mqh": "96e6781624534377fe7971cba52cca3d62d1b030bc10d5e4ebf3ed8c541399ed"
+  }
+}
