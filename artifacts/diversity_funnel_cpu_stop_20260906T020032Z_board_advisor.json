@@ -1,0 +1,89 @@
+{
+  "schema_version": "qm.cpu-admission-window/v1",
+  "mission": "paced-fleet diversity build or diverse Q02-Q03 infrastructure recovery",
+  "branch": "agents/board-advisor",
+  "observed_head": "d3b9ac18b4b3fc57bde052cb436a252769805c4b",
+  "threshold_percent": 97,
+  "rule": "stop this paced unit when a five-sample window reaches the backtest CPU ceiling; no build, compile, smoke, or enqueue after a failed window",
+  "binding_window": {
+    "captured_before_utc": "2026-09-06T02:00:32.5119759Z",
+    "per_sample_timestamps_available": false,
+    "samples_percent": [
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "average_percent": 100.0,
+    "maximum_percent": 100.0,
+    "admitted": false
+  },
+  "read_only_confirmation_window": {
+    "samples": [
+      {
+        "sampled_at_utc": "2026-09-06T02:00:44.4302749Z",
+        "cpu_percent": 89.5676
+      },
+      {
+        "sampled_at_utc": "2026-09-06T02:00:46.4529746Z",
+        "cpu_percent": 94.3381
+      },
+      {
+        "sampled_at_utc": "2026-09-06T02:00:48.4553927Z",
+        "cpu_percent": 95.6056
+      },
+      {
+        "sampled_at_utc": "2026-09-06T02:00:50.4575920Z",
+        "cpu_percent": 91.0166
+      },
+      {
+        "sampled_at_utc": "2026-09-06T02:00:52.4610773Z",
+        "cpu_percent": 83.5064
+      }
+    ],
+    "average_percent": 90.8069,
+    "maximum_percent": 95.6056,
+    "note": "The later read-only window shows the saturation was transient. It does not undo the binding stop after this paced unit had already hit the ceiling. A later fleet wake must take a new admission window."
+  },
+  "factory_process_snapshot": {
+    "captured_at_utc": "2026-09-06T02:00:32.5119759Z",
+    "factory_terminals": ["T2", "T6", "T7", "T8", "T9"],
+    "factory_metatesters": ["T2", "T6", "T7", "T8", "T9"],
+    "factory_terminal_count": 5,
+    "factory_metatester_count": 5,
+    "t_live_observation_only": true,
+    "unrelated_ftmo_terminal_observation_only": true
+  },
+  "farm_queue_snapshot": {
+    "pending_compile_ea": 28,
+    "pending_q02": 772,
+    "pending_q03": 142,
+    "pending_q04": 1120,
+    "active_opt_census": 5,
+    "active_q07": 2
+  },
+  "collision_check": {
+    "active_diversity_build_task_id": "b0f920f1-0904-4b93-a494-0961b10202f8",
+    "active_diversity_ea_id": "QM5_41143",
+    "active_diversity_slug": "gbpusd-month-end-benchmark-fix-hedge-flow",
+    "claim_created_at_utc": "2026-09-06T01:03:45+00:00",
+    "compile_work_item_id": "ea884470-c638-4d3c-9eaf-438561b4778e",
+    "compile_work_item_status": "pending",
+    "selection_result": "excluded_as_already_claimed"
+  },
+  "decision": "HARD_STOP_AFTER_CPU_CEILING_HIT",
+  "mutations_excluded": [
+    "farm claim or task state",
+    "source approval or Strategy Card",
+    "EA or magic allocation",
+    "EA source or binary build",
+    "setfile or basket manifest",
+    "compile, smoke, or pipeline execution",
+    "Q02 enqueue or dispatch",
+    "queue priority or verdict",
+    "portfolio gate or admission",
+    "deploy or T_Live manifest",
+    "T_Live or AutoTrading"
+  ]
+}
