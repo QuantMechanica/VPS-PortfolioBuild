@@ -92,6 +92,10 @@ def test_power_shell_ml_scoping_with_real_frozen_and_negative_inputs(tmp_path):
     run=subprocess.run(['powershell','-NoProfile','-NonInteractive','-File',str(harness)],capture_output=True,text=True)
     assert run.returncode==0,run.stderr
     result=json.loads(run.stdout.splitlines()[-1])
+    # Invoke-ForbiddenScan now also hosts the EA_SYMBOL_HARDCODED and EA_LIVE_NEWS_ARCHIVE_DEPENDENCY
+    # scanners (OWNER 2026-09-06); the fixture repo carries neither tool, so those report
+    # *_SCANNER_MISSING. This test is about ML scoping: count only the ML findings.
+    result=[x for x in result if 'EA_ML_FORBIDDEN' in x]
     assert len(result)==4,result
     assert all('EA_ML_FORBIDDEN' in x for x in result)
     assert not any('coefficients.mq5' in x or 'comment.mq5' in x for x in result)
