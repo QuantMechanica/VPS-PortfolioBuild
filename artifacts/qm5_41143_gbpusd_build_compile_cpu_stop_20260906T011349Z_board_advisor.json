@@ -1,0 +1,122 @@
+{
+  "schema": "qm.source-build-compile-handoff/v1",
+  "recorded_at_utc": "2026-09-06T01:13:49.7564968Z",
+  "branch": "agents/board-advisor",
+  "mission": "diversity_funnel_throughput",
+  "outcome": "SOURCE_BUILD_READY_COMPILE_QUEUED_ACTIVATION_HELD_Q02_STOPPED_CPU_CEILING",
+  "selection": {
+    "ea_id": "QM5_41143",
+    "ea_label": "QM5_41143_gbpusd-month-end-benchmark-fix-hedge-flow",
+    "family": "calendar_seasonality",
+    "mechanism": "fx_benchmark_fix_rebalancing",
+    "host_symbol": "GBPUSD.DWX",
+    "signal_symbol": "UK100.DWX",
+    "logical_symbol": "QM5_41143_GBPUSD_MONTHEND_FIX_M15",
+    "timeframe": "M15",
+    "source_id": "MELVIN-PRINS-LONDON-FIX-2015",
+    "source_tier": "TIER_A",
+    "runtime_card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_41143_gbpusd-month-end-benchmark-fix-hedge-flow.md",
+    "runtime_card_sha256": "0e5e22dde333e680597df869c1ed98244294c8c4b5ec1c2f1a6bcce0bc2fd98e",
+    "g0_status": "APPROVED",
+    "reason": "highest-diversity unclaimed approved card: a Tier-A structural GBPUSD benchmark-flow sleeve outside the index, metal, and energy Q08 survivor concentration"
+  },
+  "farm_coordination": {
+    "agent_claim_id": "b0f920f1-0904-4b93-a494-0961b10202f8",
+    "claimed_by": "codex:agents/board-advisor",
+    "canonical_build_task_id": "0461501e-952c-49e9-909d-b1c1ca507f3a",
+    "build_task_status_at_stop": "pending",
+    "collision_check": "no QM5_41143 build task, EA directory, or exact EA work item existed at claim time",
+    "compile_work_item_id": "ea884470-c638-4d3c-9eaf-438561b4778e"
+  },
+  "governed_allocation": {
+    "magic": 411430000,
+    "slot": 0,
+    "symbol": "GBPUSD.DWX",
+    "registry_row_status": "active",
+    "dry_run_artifact": "artifacts/qm5_41143_magic_allocation_dry_run_20260906.json",
+    "dry_run_artifact_sha256": "8e86cbd2902168099f8244821a3b86eafad28d3b3438ee4f986e2bae60508666",
+    "allocation_artifact": "artifacts/qm5_41143_magic_allocation_apply_20260906.json",
+    "allocation_artifact_sha256": "db64b1174df63efc07beb1f79676bce515092f346fb6321297c9ce8d2d96245c"
+  },
+  "implementation": {
+    "mq5_path": "framework/EAs/QM5_41143_gbpusd-month-end-benchmark-fix-hedge-flow/QM5_41143_gbpusd-month-end-benchmark-fix-hedge-flow.mq5",
+    "mq5_sha256": "f41b6b5b78d593d0ab40101630e40b3e92e825637d5183d5433f9e6969acf99b",
+    "spec_path": "framework/EAs/QM5_41143_gbpusd-month-end-benchmark-fix-hedge-flow/SPEC.md",
+    "spec_sha256": "97806b2e816d9a163b0d64da08f002816acee16c122d55613c32088e61d50f8b",
+    "spec_validation": "PASS",
+    "basket_manifest_path": "framework/EAs/QM5_41143_gbpusd-month-end-benchmark-fix-hedge-flow/basket_manifest.json",
+    "basket_manifest_sha256": "99eadd3d674457f4e7635d600f22349342954cd3ce20d8af6d1674aabed2451e",
+    "reference_tests": "5/5 PASS",
+    "traded_symbols": ["GBPUSD.DWX"],
+    "signal_only_symbols": ["UK100.DWX"],
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "structural_rules": {
+      "entry": "last London business day at 14:00 Europe/London using the sign of completed UK100.DWX month-to-date return",
+      "side": "positive UK100 MTD return sells GBPUSD; negative return buys GBPUSD",
+      "stop": "frozen 2.0 ATR(14,H1)",
+      "exit": "flat by the 16:00 Europe/London fix"
+    },
+    "ml_or_banned_indicators": false,
+    "setfiles": [
+      {
+        "path": "framework/EAs/QM5_41143_gbpusd-month-end-benchmark-fix-hedge-flow/sets/QM5_41143_gbpusd-month-end-benchmark-fix-hedge-flow_GBPUSD.DWX_M15_backtest.set",
+        "sha256_before_compile_seal": "70feb7db7df0e70a3f4902d831e68eb68e2300060d855e4620e28962aee7b185"
+      },
+      {
+        "path": "framework/EAs/QM5_41143_gbpusd-month-end-benchmark-fix-hedge-flow/sets/QM5_41143_gbpusd-month-end-benchmark-fix-hedge-flow_QM5_41143_GBPUSD_MONTHEND_FIX_M15_M15_backtest.set",
+        "sha256_before_compile_seal": "7bd933e1da45935cef42399ed3f94220ee91af206c411b4adb3aef8f53415da1"
+      }
+    ],
+    "commits": [
+      "4a9457617b86dba240aa487f4a8880f19fbed7c1",
+      "da9ba7ccb3263b7b2a67cad1c2bec5a177240db6"
+    ]
+  },
+  "compile": {
+    "governed_work_item_id": "ea884470-c638-4d3c-9eaf-438561b4778e",
+    "source_bound_mq5_sha256": "f41b6b5b78d593d0ab40101630e40b3e92e825637d5183d5433f9e6969acf99b",
+    "status_at_stop": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "activation_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "activation_hold_active": true,
+    "release_dry_run_invoked": false,
+    "release_apply_invoked": false,
+    "build_check_result": null,
+    "compiled": false,
+    "q01_pass": false,
+    "ex5_present": false
+  },
+  "capacity": {
+    "sampling_method": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "ceiling_percent": 97.0,
+    "sampled_at_utc": "2026-09-06T01:13:22Z",
+    "samples_percent": [97.17, 95.91, 97.76, 84.28, 80.87],
+    "average_cpu_percent": 91.20,
+    "maximum_cpu_percent": 97.76,
+    "active_work_item_count": 7,
+    "running_factory_terminals": ["T4", "T5", "T6", "T7", "T8"],
+    "ceiling_hit": true
+  },
+  "q02": {
+    "enqueued": false,
+    "backtest_launched": false,
+    "blocking_reasons": [
+      "Q01_NOT_PASS_COMPILE_ACTIVATION_HELD",
+      "CPU_CEILING_MAX_GE_97_PERCENT"
+    ]
+  },
+  "safety": {
+    "mt5_compile_started": false,
+    "smoke_attempted": false,
+    "terminal_processes_started_or_stopped": false,
+    "autotrading_toggled": false,
+    "t_live_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
