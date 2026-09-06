@@ -1,0 +1,87 @@
+{
+  "schema_version": "qm.branch-build-q02-handoff/v1",
+  "recorded_at_utc": "2026-09-06T01:56:00Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41360",
+  "ea_label": "QM5_41360_xtixng-wretr-rv",
+  "mechanic": "synchronized adjacent completed-week XTI-minus-XNG relative returns with strict sign opposition and a strictly smaller newest move, following the partial retracement through opposed equal-target-notional legs",
+  "logical_symbol": "QM5_41360_XTI_XNG_WRETR_RV_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "companion_symbol": "XNGUSD.DWX",
+  "timeframe": "D1",
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "reference_validation": {
+    "command": "python -m unittest framework/EAs/QM5_41360_xtixng-wretr-rv/docs/test_weekly_retracement_reference.py",
+    "passed": 9,
+    "failed": 0
+  },
+  "spec_validation": {
+    "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_41360_xtixng-wretr-rv",
+    "passed": 1,
+    "failed": 0
+  },
+  "compile": {
+    "work_item_id": "be3fdc9a-6ba3-48ae-8b23-68db2fece85f",
+    "terminal": "T1",
+    "status": "done",
+    "verdict": "COMPILE_OK",
+    "build_check_result": "PASS",
+    "build_check_failures": 0,
+    "build_check_warnings": 3,
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "mq5_sha256": "06439f8e8704564010135fe9c07c28ffeea703e9a871627035d6b0f6e56d9573",
+    "ex5_sha256": "a866080dbbfca28287ee0e16571844a096542adda9709e173fce911bef1c6c94",
+    "evidence_path": "D:/QM/reports/work_items/be3fdc9a-6ba3-48ae-8b23-68db2fece85f/QM5_41360/COMPILE_EA/compile_evidence.json"
+  },
+  "card": {
+    "sha256": "bae53279fcb50c3c95bc9373384381516cd18086045cd501f30f8349c1c7398b",
+    "artifact_mirror_sha256": "bae53279fcb50c3c95bc9373384381516cd18086045cd501f30f8349c1c7398b",
+    "g0_status": "APPROVED"
+  },
+  "setfiles": [
+    {
+      "role": "logical_basket",
+      "sha256": "a5a16ae6db32d33c258ae7042653240c2c4334cba983306aa962ac30ea8af987",
+      "build_hash": "605d1b898f7f5d87d53214638afdd204d6d99134b46b64f17e9f7f6dd487d5f9"
+    },
+    {
+      "role": "host_leg",
+      "sha256": "d5afdf7a944bf44c1e966a394adcfcc7bf4db79a8227bb28e07b5f56414cc458",
+      "build_hash": "9b883e615067bce6f30fcdfa779da382af8d0ec8a6c9dc34cf06a877038000c1"
+    },
+    {
+      "role": "companion_leg",
+      "sha256": "bebb7c1cafecb0258d1a2fbddd53bbf546123135f04f019b8574fcffb734ee69",
+      "build_hash": "39e2146b72c51d19f139f5af708e95dba6e3bdea7291b7dc6f5e1fec73068c5c"
+    }
+  ],
+  "cpu_admission": {
+    "threshold_pct": 97.0,
+    "samples_pct": [92.1, 90.1, 89.8, 87.6, 80.4],
+    "average_pct": 88.0,
+    "maximum_pct": 92.1,
+    "admitted": true
+  },
+  "q02": {
+    "work_item_id": "8f4c4610-bbe8-4de3-aa83-c433e9b6145e",
+    "symbol": "QM5_41360_XTI_XNG_WRETR_RV_D1",
+    "status_at_receipt": "pending",
+    "enqueued_count": 1,
+    "skipped_leg_setfiles": 2,
+    "receipt_path": "D:/QM/strategy_farm/artifacts/receipts/first_q02_intake/be3fdc9a-6ba3-48ae-8b23-68db2fece85f_8f4c4610-bbe8-4de3-aa83-c433e9b6145e.json",
+    "receipt_sha256": "d1930106be41d26a8e6cb6da288e55c67cdc71e2838e5c30eaf8a1a7be74847d",
+    "manual_backtest_run": false
+  },
+  "safety": {
+    "terminal_control_used": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
