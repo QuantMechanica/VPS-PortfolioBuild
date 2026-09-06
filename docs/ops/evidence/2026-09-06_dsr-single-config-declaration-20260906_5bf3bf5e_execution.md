@@ -24,3 +24,10 @@ Q08 reruns end PASS or FAIL (not INVALID); old INVALID rows preserved; no thresh
 
 - Codex 9ecdd2f9 delivered `--replacement-setfile` (e73af54859) and enqueued the **third Q08 rerun 11196/XAUUSD = `9ec3b856`** (replacement set sha 7cc424d2…, pre-status `Q08_CLAIM_ROW_REQUIRED` = claim-time seal expected; evidence `2026-09-06_qm5_11196_replacement_rerun_enqueue/`).
 - Both reruns (`19c9df13` 11167, `9ec3b856` 11196) pending behind the XAUUSD.DWX symbol serialization (census cells + T9 Q07); T9 still runs the pre-fix module (reload idle-only pending) — a T9 claim would reseal with the old producer.
+
+## Progress 2026-09-06 23:30Z (Claude) — third rerun INVALID with a known cause, identity fix, fourth rerun
+
+- Both reruns were starved by the XAUUSD.DWX symbol serialization (census cells re-claiming the symbol); at 22:42Z both got `payload.priority_track=true` (`farmctl mark-priority-track`, GRÜN, reversible).
+- **19c9df13 (11167) → INVALID at 23:00:58Z, but the DSR context was SEALED at claim** (window from payload, claim-time reseal worked). Sub-gate 8.2 = `DSR_V2_SINGLE_CONFIG_CANDIDATE_MISMATCH`: farmctl launches `q08_davey/aggregate.py --ea-id 11167` (int, prefix stripped) while the sealed candidate carries `QM5_11167`; `validate_context` compared the strings literally. Economic picture on the same run: 8.4 seasonal FAIL (losing months 6/8/11), 8.7 PBO FAIL (40.00 % at max 40 %) → expected final verdict **FAIL**; 8.5/8.6/8.8–8.11 PASS.
+- **Fix 866e3f2d78:** `canonical_ea_id()` (strip `QM5_`, numeric core) in `validate_context`; different EAs still fail closed; 57 DSR tests pass. The evaluator runs as a subprocess per aggregation, so the running 11196 rerun 9ec3b856 (T1, claimed 22:41Z) evaluates with the fix.
+- **Fourth 11167 rerun `89ea5894`** (append-only rerun of 19c9df13, from 42ca0f18, EX5 4b349d21…, priority_track) — justified by the known cause, not blind. Codex adversarial review of the identity contract enqueued (P90).
