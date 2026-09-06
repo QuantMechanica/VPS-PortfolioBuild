@@ -1,0 +1,20 @@
+{
+  "admission": "STOP_CPU_CEILING",
+  "average_cpu_percent": 97.8,
+  "compile_work_item_id": "a4d9fc3a-401a-4a78-892d-2a1f36e8bf47",
+  "ea_id": "QM5_41362",
+  "maximum_cpu_percent": 99.2,
+  "method": "Windows Get-Counter \\Processor(_Total)\\% Processor Time, one-second interval",
+  "phase": "Q02",
+  "sample_count": 5,
+  "sampled_at_utc": "2026-09-06T08:11:24.448792Z",
+  "samples_cpu_percent": [
+    99.2,
+    99.0,
+    98.5,
+    95.5,
+    96.7
+  ],
+  "threshold_cpu_percent": 97.0,
+  "note": "CEO 2026-09-06: successor compile a4d9fc3a COMPILE_OK (stress-guard fix bb62d69619); prior admission 04:08Z stopped at 98.7%/100%"
+}
