@@ -35,6 +35,43 @@ def unwrap(text):
     return text
 
 
+def statement_end(text, start):
+    """Return the end of one MQL statement, including nested controls."""
+    while start < len(text) and text[start].isspace(): start += 1
+    if start >= len(text): return None
+    if text[start] == '{':
+        close = end_delimiter(text, start, '{', '}')
+        return None if close is None else close + 1
+    control = re.match(r'(if|for|while)\s*\(', text[start:])
+    if control:
+        opening = text.find('(', start, start + control.end())
+        close = end_delimiter(text, opening)
+        if close is None: return None
+        finish = statement_end(text, close + 1)
+        if finish is None: return None
+        if control[1] == 'if':
+            cursor = finish
+            while cursor < len(text) and text[cursor].isspace(): cursor += 1
+            if text.startswith('else', cursor) and not re.match(r'else\w', text[cursor:]):
+                alternate = statement_end(text, cursor + 4)
+                if alternate is None: return None
+                finish = alternate
+        return finish
+    finish = text.find(';', start)
+    return None if finish < 0 else finish + 1
+
+
+def terminal_return_arm(text):
+    """Accept a flat statement sequence whose final statement is return."""
+    if '{' in text or '}' in text:return False
+    statements=[item.strip() for item in text.split(';') if item.strip()]
+    if not statements or not re.match(r'return\b',statements[-1]):return False
+    return not any(
+        re.search(r'\b(?:if|for|while|switch|return|break|continue)\b',item)
+        for item in statements[:-1]
+    )
+
+
 def split_boolean(text, token):
     text = unwrap(text)
     depth = 0; start = 0; parts = []; i = 0
@@ -61,8 +98,9 @@ class Control:
 
 
 class Proof:
-    def __init__(self, body):
+    def __init__(self, body, round3_enabled=True):
         self.body = body
+        self.round3_enabled = round3_enabled
         self.controls = []
         for match in re.finditer(r'\b(if|for|while)\s*\(', body):
             opening = body.find('(', match.start())
@@ -132,7 +170,8 @@ class Proof:
                 # A true failure arm must exit the function. An unrelated
                 # nested guard or conditional break is not a dominating fact.
                 arm = self.body[c.body_start:c.body_end].strip()
-                if re.fullmatch(r'return\b[^;]*;\s*',arm,re.S):
+                if (terminal_return_arm(arm) if self.round3_enabled else
+                    re.fullmatch(r'return\b[^;]*;\s*',arm,re.S)):
                     for part in split_boolean(c.condition,'||'):
                         if len(split_boolean(part,'&&')) == 1:
                             yield unwrap(part), False, c.end
@@ -273,13 +312,138 @@ class Proof:
         call=list(re.finditer(rf'\bArrayResize\s*\(\s*{re.escape(name)}\s*,',self.body[:pos]))[-1]
         return self.interval(expression,call.start(),seen)
 
+    def assignment_expression(self,name,pos):
+        assignments=list(re.finditer(
+            rf'(?<![\w.]){re.escape(name)}\s*=(?!=)\s*([^;]+);',
+            self.body[:pos],
+        ))
+        assignment=next(
+            (item for item in reversed(assignments)
+             if self.dominates(item.start(),item.end(),pos)),
+            None,
+        )
+        if assignment is None or self.changed(name,assignment.end(),pos):return None
+        return assignment[1],assignment.start()
+
+    def affine(self,expression,pos,seen=()):
+        """Expand a small integer affine expression into coefficients + constant."""
+        expression=compact(re.sub(r'\((?:int|long|uint|short)\)', '', unwrap(expression)))
+        try:node=ast.parse(expression,mode='eval').body
+        except (ValueError,SyntaxError):return None
+        def merge(left,right,sign=1):
+            coefficients=dict(left[0])
+            for key,value in right[0].items():
+                coefficients[key]=coefficients.get(key,0)+sign*value
+                if coefficients[key]==0:del coefficients[key]
+            return coefficients,left[1]+sign*right[1]
+        def walk(item,trail):
+            if isinstance(item,ast.Constant) and type(item.value) is int:return {},item.value
+            if isinstance(item,(ast.Name,ast.Attribute)):
+                name=ast.unparse(item)
+                if name not in trail:
+                    assigned=self.assignment_expression(name,pos)
+                    if assigned:
+                        expanded=self.affine(assigned[0],assigned[1],(*trail,name))
+                        if expanded is not None:return expanded
+                return {name:1},0
+            if isinstance(item,ast.UnaryOp) and isinstance(item.op,(ast.USub,ast.UAdd)):
+                value=walk(item.operand,trail)
+                if value is None:return None
+                return ({key:-coefficient for key,coefficient in value[0].items()},-value[1]) if isinstance(item.op,ast.USub) else value
+            if isinstance(item,ast.BinOp) and isinstance(item.op,(ast.Add,ast.Sub)):
+                left,right=walk(item.left,trail),walk(item.right,trail)
+                if left is None or right is None:return None
+                return merge(left,right,-1 if isinstance(item.op,ast.Sub) else 1)
+            if isinstance(item,ast.BinOp) and isinstance(item.op,ast.Mult):
+                left,right=walk(item.left,trail),walk(item.right,trail)
+                if left is None or right is None:return None
+                if not left[0]:return ({key:left[1]*value for key,value in right[0].items()},left[1]*right[1])
+                if not right[0]:return ({key:right[1]*value for key,value in left[0].items()},right[1]*left[1])
+            return None
+        return walk(node,seen)
+
+    def scalar_lower_bound(self,name,pos):
+        lower=None
+        initial=self.zero_initialization(name,pos)
+        if initial is not None and not self.changed(name,initial.end(),pos,ignore_steps=True):lower=0
+        for condition,truth,origin in self.guards(pos):
+            match=re.fullmatch(rf'\s*{re.escape(name)}\s*(==|!=|<=|>=|<|>)\s*(-?\d+)\s*',condition)
+            if not match or self.changed(name,origin,pos):continue
+            op,value=match[1],int(match[2])
+            if not truth:op={'!=':'==','==':'!=','<':'>=','>':'<=','<=':'>','>=':'<'}[op]
+            if op in ('==','>=','>'):
+                candidate=value+(op=='>')
+                lower=candidate if lower is None else max(lower,candidate)
+        return lower
+
+    def affine_leq(self,left,right,pos):
+        """Prove ``left <= right`` from affine expansion and fail-fast lower guards."""
+        lhs,rhs=self.affine(left,pos),self.affine(right,pos)
+        if lhs is None or rhs is None:return False
+        coefficients=dict(rhs[0])
+        for name,value in lhs[0].items():coefficients[name]=coefficients.get(name,0)-value
+        constant=rhs[1]-lhs[1]
+        for name,coefficient in coefficients.items():
+            if coefficient<0:return False
+            lower=self.scalar_lower_bound(name,pos)
+            if lower is None:return False
+            constant+=coefficient*lower
+        return constant>=0
+
+    def guarded_strict_upper(self,name,targets,pos,seen=()):
+        if name in seen:return False
+        for condition,truth,origin in self.guards(pos):
+            match=re.fullmatch(rf'\s*{re.escape(name)}\s*(==|!=|<=|>=|<|>)\s*(.+)',condition,re.S)
+            if not match or self.changed(name,origin,pos):continue
+            op,rhs=match[1],unwrap(match[2])
+            if not truth:op={'!=':'==','==':'!=','<':'>=','>':'<=','<=':'>','>=':'<'}[op]
+            if op not in ('<','<='):continue
+            if compact(rhs) in targets and op=='<':return True
+            if re.fullmatch(VAR,rhs) and self.guarded_strict_upper(rhs,targets,pos,(*seen,name)):
+                return True
+        return False
+
+    def bounded_search_result(self,name,index,pos):
+        """Prove a post-loop index copied from a same-buffer bounded cursor."""
+        result=compact(index)
+        if not re.fullmatch(VAR,result):return False
+        lower=self.scalar_lower_bound(result,pos)
+        if lower is None or lower<0:return False
+        for loop in self.controls:
+            if loop.kind!='for' or loop.end>pos or loop.condition.count(';')!=2:continue
+            init,condition,step=loop.condition.split(';')
+            cursor_match=re.fullmatch(rf'\s*(?:int\s+)?({VAR})\s*=\s*0\s*',init,re.S)
+            if not cursor_match:continue
+            cursor=cursor_match[1]
+            if compact(condition)!=cursor+'<ArraySize('+name+')':continue
+            if compact(step) not in ('++'+cursor,cursor+'++'):continue
+            if self.directly_changed(cursor,loop.body_start,loop.body_end):continue
+            assignments=list(re.finditer(
+                rf'(?<![\w.]){re.escape(result)}\s*=\s*{re.escape(cursor)}\s*;',
+                self.body[loop.body_start:loop.body_end],
+            ))
+            if len(assignments)!=1:continue
+            before=self.body[:loop.start]
+            sentinel=list(re.finditer(rf'(?<![\w.]){re.escape(result)}\s*=\s*-1\s*;',before))
+            if not sentinel:continue
+            start=sentinel[-1]
+            if self.changed(result,start.end(),loop.start):continue
+            if self.changed(result,loop.end,pos):continue
+            if self.changed(name,loop.start,pos):continue
+            return True
+        return False
+
     def bounded(self,name,index,pos,size_expression=None):
         size=self.capacity(name,pos)
         interval=self.interval(index,pos)
         if size and interval and 0<=interval[0]<=interval[1]<size[0]:return True
+        if self.round3_enabled and self.explicit_guard(name,compact(index),pos,size_expression):return True
+        if self.round3_enabled and self.bounded_search_result(name,index,pos):return True
         return bool(
             size_expression and
-            self.counter_append_bounded(name,index,pos,size_expression)
+            (self.counter_append_bounded(name,index,pos,size_expression) or
+             (self.round3_enabled and
+              self.paired_cursor_append_bounded(name,index,pos,size_expression)))
         )
 
     def explicit_guard(self,name,index,pos,size_expression=None):
@@ -298,7 +462,61 @@ class Proof:
                 if any(text==index+'<'+target for target in targets):upper=True
         interval=self.interval(index,pos)
         lower=lower or bool(interval and interval[0]>=0)
+        if self.round3_enabled:
+            lower=lower or self.monotone_from_zero(index,pos)
+            upper=upper or self.guarded_strict_upper(index,targets,pos)
         return lower and upper
+
+    def paired_cursor_append_bounded(self,name,index,pos,size_expression):
+        """Prove a paired-buffer append counter is dominated by two merge cursors."""
+        counter,size=compact(index),compact(size_expression)
+        if not re.fullmatch(VAR,counter) or not re.fullmatch(VAR,size):return False
+        if not self.monotone_from_zero(counter,pos):return False
+        assigned=self.assignment_expression(size,pos)
+        if assigned is None:return False
+        minimum=re.fullmatch(rf'\s*MathMin\s*\(\s*({VAR})\s*,\s*({VAR})\s*\)\s*',assigned[0])
+        if not minimum:return False
+        bounds={minimum[1],minimum[2]}
+        for loop in self.controls:
+            if loop.kind!='while' or not self.contains(loop,pos):continue
+            parts={compact(part) for part in split_boolean(loop.condition,'&&')}
+            cursor_bounds={}
+            for part in parts:
+                match=re.fullmatch(rf'({VAR})<({VAR})',part)
+                if match:cursor_bounds[match[1]]=match[2]
+            cursors={cursor for cursor,bound in cursor_bounds.items() if bound in bounds}
+            if len(cursors)!=2 or {cursor_bounds[item] for item in cursors}!=bounds:continue
+            if any(self.zero_initialization(cursor,loop.start) is None for cursor in cursors):continue
+            counter_steps=list(re.finditer(
+                rf'(?:\+\+\s*{re.escape(counter)}\b|\b{re.escape(counter)}\s*\+\+)',
+                self.body[loop.body_start:loop.body_end],
+            ))
+            if len(counter_steps)!=1 or self.changed(counter,loop.body_start,loop.body_end,ignore_steps=True):continue
+            counter_step=loop.body_start+counter_steps[0].start()
+            branch=next((control for control in sorted(self.controls,key=lambda item:item.start,reverse=True)
+                         if control.kind=='if' and self.contains(control,pos) and self.contains(control,counter_step)),None)
+            if branch is None:continue
+            coupled=True
+            for cursor in cursors:
+                if self.changed(cursor,loop.body_start,loop.body_end,ignore_steps=True):coupled=False;break
+                steps=re.findall(
+                    rf'(?:\+\+\s*{re.escape(cursor)}\b|\b{re.escape(cursor)}\s*\+\+)',
+                    self.body[branch.body_start:branch.body_end],
+                )
+                if len(steps)!=1:coupled=False;break
+            if not coupled:continue
+            siblings=[]
+            for resize in re.finditer(r'\bArrayResize\s*\(\s*([A-Za-z_]\w*)\s*,',self.body[:pos]):
+                sibling=resize[1]
+                if sibling==name:continue
+                access=re.search(
+                    rf'\b{re.escape(sibling)}\s*\[\s*{re.escape(counter)}\s*\]',
+                    self.body[branch.body_start:pos],
+                )
+                if access and self.capacity_expression(sibling,pos) and compact(self.capacity_expression(sibling,pos))==size:
+                    siblings.append(sibling)
+            if siblings:return True
+        return False
 
     def zero_initialization(self,name,pos):
         assignments=list(re.finditer(
@@ -370,19 +588,33 @@ class Proof:
             if loop.kind not in ('for','while') or not self.contains(loop,pos):continue
             if initial.end()>loop.start:continue
             if self.changed(counter,initial.end(),loop.start):continue
+            loop_body_end=loop.body_end
+            old_steps=re.findall(
+                rf'(?:\+\+\s*{re.escape(counter)}\b|\b{re.escape(counter)}\s*\+\+)',
+                self.body[loop.body_start:loop.body_end],
+            )
+            # Preserve every established proof. Only widen an unbraced loop's
+            # parsed statement when the old body stopped before the sole
+            # counter increment and therefore could not prove anything.
+            if self.round3_enabled and len(old_steps)!=1:
+                statement_start=loop.condition_end+1
+                while statement_start<len(self.body) and self.body[statement_start].isspace():statement_start+=1
+                if statement_start<len(self.body) and self.body[statement_start]!='{':
+                    full_end=statement_end(self.body,statement_start)
+                    if full_end is not None:loop_body_end=full_end
             nested=any(
                 inner.kind in ('for','while') and inner.start>loop.start and self.contains(inner,pos)
                 for inner in self.controls
             )
             if nested:continue
-            if self.changed(counter,loop.body_start,loop.body_end,ignore_steps=True):continue
+            if self.changed(counter,loop.body_start,loop_body_end,ignore_steps=True):continue
             increments=list(re.finditer(
                 rf'(?:\+\+\s*{re.escape(counter)}\b|\b{re.escape(counter)}\s*\+\+)',
-                self.body[loop.body_start:loop.body_end],
+                self.body[loop.body_start:loop_body_end],
             ))
             decrements=list(re.finditer(
                 rf'(?:--\s*{re.escape(counter)}\b|\b{re.escape(counter)}\s*--)',
-                self.body[loop.body_start:loop.body_end],
+                self.body[loop.body_start:loop_body_end],
             ))
             if len(increments)!=1 or decrements:continue
             increment_pos=loop.body_start+increments[0].start()
@@ -405,21 +637,25 @@ class Proof:
                 cursor=ascending[1]
                 if (compact(condition)==cursor+'<'+size and
                     compact(step) in ('++'+cursor,cursor+'++') and
-                    not self.directly_changed(cursor,loop.body_start,loop.body_end)):
+                    not self.directly_changed(cursor,loop.body_start,loop_body_end)):
                     return True
             descending=re.fullmatch(rf'\s*(?:int\s+)?({VAR})\s*=\s*(.+)\s*',init,re.S)
             if descending:
                 cursor,start=descending[1],compact(descending[2])
-                if (start==size+'-1' and compact(condition)==cursor+'>=0' and
+                canonical_descending=(start==size+'-1' and compact(condition)==cursor+'>=0')
+                if self.round3_enabled:
+                    canonical_descending=(canonical_descending or
+                                          (start==size and compact(condition)==cursor+'>=1'))
+                if (canonical_descending and
                     compact(step) in ('--'+cursor,cursor+'--') and
-                    not self.directly_changed(cursor,loop.body_start,loop.body_end)):
+                    not self.directly_changed(cursor,loop.body_start,loop_body_end)):
                     return True
         return False
 
 
-@lru_cache(maxsize=128)
-def proof_for(body):
-    return Proof(body)
+@lru_cache(maxsize=256)
+def proof_for(body, round3_enabled=True):
+    return Proof(body, round3_enabled)
 
 
 def proves(body,array,index,pos):

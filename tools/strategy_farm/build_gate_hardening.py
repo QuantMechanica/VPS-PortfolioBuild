@@ -452,13 +452,15 @@ def _prior_bound_guard(
     array_name: str,
     index: str,
     size_expression: str | None,
+    proof=None,
 ) -> bool:
     """Only a dominating, balanced fail-fast bound is evidence."""
     try:
         from .bounded_arrays import proof_for
     except ImportError:
         from bounded_arrays import proof_for
-    return proof_for(body).explicit_guard(array_name, index, access_offset, size_expression)
+    active_proof = proof if proof is not None else proof_for(body)
+    return active_proof.explicit_guard(array_name, index, access_offset, size_expression)
 
 
 def _legacy_prior_bound_guard(
@@ -499,6 +501,7 @@ def _loop_proves_bound(
     index: str,
     size_expression: str | None,
     loops: list[LoopRange],
+    proof=None,
 ) -> bool:
     normalized_index = normalize_expression(index)
     if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", normalized_index):
@@ -516,7 +519,7 @@ def _loop_proves_bound(
         from .bounded_arrays import proof_for
     except ImportError:
         from bounded_arrays import proof_for
-    proof = proof_for(body)
+    proof = proof if proof is not None else proof_for(body)
     initial = proof.interval(loop.initial, loop.start)
     if initial is None or initial[0] < 0:
         return False
@@ -534,6 +537,9 @@ def _loop_proves_bound(
         size = normalize_expression(size_expression)
         if loop.operator == "<" and bound == size:
             return True
+        if (proof.round3_enabled and loop.operator == "<" and
+                proof.affine_leq(loop.bound, size_expression, loop.start)):
+            return True
         if loop.operator == "<" and (
             re.fullmatch(rf"{re.escape(bound)}\+[1-9][0-9]*", size)
             or re.fullmatch(rf"[1-9][0-9]*\+{re.escape(bound)}", size)
@@ -541,7 +547,9 @@ def _loop_proves_bound(
             return True
         if loop.operator == "<=" and bound in {f"{size}-1", f"({size})-1"}:
             return True
-    return _prior_bound_guard(body, access_offset, array_name, normalized_index, size_expression)
+    return _prior_bound_guard(
+        body, access_offset, array_name, normalized_index, size_expression, proof
+    )
 
 
 def _legacy_loop_proves_bound(
@@ -762,7 +770,9 @@ def _check_indicator_buffer_bounds_legacy(source: SourceFile) -> list[str]:
     return failures
 
 
-def _check_indicator_buffer_bounds_candidate(source: SourceFile) -> list[str]:
+def _check_indicator_buffer_bounds_candidate(
+    source: SourceFile, *, round3_enabled: bool = True
+) -> list[str]:
     """Require a local mechanical bound proof for dynamic numeric buffers."""
     try:
         from .bounded_arrays import proof_for
@@ -771,7 +781,7 @@ def _check_indicator_buffer_bounds_candidate(source: SourceFile) -> list[str]:
     code = strip_literals_preserve_lines(source.code)
     failures: list[str] = []
     for _, (body_start, _, body) in function_bodies(code).items():
-        proof = proof_for(body)
+        proof = proof_for(body, round3_enabled)
         loops = loop_ranges(body)
         const_ints = {
             name: expression
@@ -825,6 +835,7 @@ def _check_indicator_buffer_bounds_candidate(source: SourceFile) -> list[str]:
                         index,
                         size_proof,
                         loops,
+                        proof,
                     )
                     for size_proof in size_proofs
                 ):
@@ -836,6 +847,7 @@ def _check_indicator_buffer_bounds_candidate(source: SourceFile) -> list[str]:
                         name,
                         normalize_expression(index),
                         size_proof,
+                        proof,
                     )
                     for size_proof in size_proofs
                 ):
@@ -875,9 +887,12 @@ def _check_indicator_buffer_bounds_candidate(source: SourceFile) -> list[str]:
                 index,
                 copied_name,
                 loops,
+                proof,
             ):
                 continue
-            if _prior_bound_guard(body, access.start(), target, index, copied_name):
+            if _prior_bound_guard(
+                body, access.start(), target, index, copied_name, proof
+            ):
                 continue
             if copied_name and index.isdigit():
                 needed = int(index) + 1
@@ -909,7 +924,13 @@ def check_indicator_buffer_bounds(source: SourceFile) -> list[str]:
     if BOUNDED_ARRAY_V2_MARKER in source.raw:
         return candidate
     legacy = set(_check_indicator_buffer_bounds_legacy(source))
-    return [finding for finding in candidate if finding in legacy]
+    pre_round3 = set(
+        _check_indicator_buffer_bounds_candidate(source, round3_enabled=False)
+    )
+    return [
+        finding for finding in candidate
+        if finding in legacy and finding in pre_round3
+    ]
 
 
 def check_pip_double_conversion(source: SourceFile) -> list[str]:
