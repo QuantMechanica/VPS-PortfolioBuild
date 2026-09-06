@@ -18264,3 +18264,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41359,xtixng-waccel-rv,0,XTIUSD.DWX,413590000,2026-09-06,Codex governed allocator,active
 41359,xtixng-waccel-rv,1,XNGUSD.DWX,413590001,2026-09-06,Codex governed allocator,active
 41143,gbpusd-month-end-benchmark-fix-hedge-flow,0,GBPUSD.DWX,411430000,2026-09-06,Codex governed allocator,active
+41360,xtixng-wretr-rv,0,XTIUSD.DWX,413600000,2026-09-06,Codex governed allocator,active
+41360,xtixng-wretr-rv,1,XNGUSD.DWX,413600001,2026-09-06,Codex governed allocator,active
