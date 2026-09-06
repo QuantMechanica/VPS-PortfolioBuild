@@ -308,6 +308,8 @@ bool Strategy_HistoricalKurtosis(const string symbol,
       const double value = newer_close / older_close - 1.0;
       if(!MathIsValidNumber(value))
          return false;
+      if(observation_count < 0 || observation_count >= ArraySize(returns))
+         return false;
       returns[observation_count] = value;
       return_sum += value;
       ++observation_count;
@@ -324,6 +326,8 @@ bool Strategy_HistoricalKurtosis(const string symbol,
    double fourth_sum = 0.0;
    for(int i = 0; i < observation_count; ++i)
      {
+      if(i < 0 || i >= ArraySize(returns))
+         return false;
       const double centered = returns[i] - mean_return;
       const double centered_sq = centered * centered;
       squared_sum += centered_sq;
