@@ -83,9 +83,40 @@ def test_41171_pre_fix_guard_is_positive(tmp_path: Path) -> None:
     assert any("qm_rng_seed !=" in hit for hit in hits)
 
 
-@pytest.mark.parametrize("ea_id", [41171, 41319, 41358, 41359, 41360, 41361, 41362])
+@pytest.mark.parametrize("ea_id", [41171, 41319, 41358, 41359, 41360, 41361, 41362, 41366, 41367])
 def test_repaired_pacer_guard_is_negative(tmp_path: Path, ea_id: int) -> None:
     assert run_predicate(tmp_path, [_ea_source(REPO_ROOT, ea_id)]) == []
+
+
+def test_template_generated_fixture_is_predicate_clean(tmp_path: Path) -> None:
+    template = REPO_ROOT / "framework" / "templates" / "EA_Skeleton.mq5"
+    generated = tmp_path / "QM5_49999_generated-fixture.mq5"
+    generated.write_text(
+        template.read_text(encoding="utf-8").replace("qm_ea_id                   = 9999", "qm_ea_id                   = 49999"),
+        encoding="utf-8",
+    )
+    assert run_predicate(tmp_path, [generated]) == []
+
+
+def test_check_source_cli_refuses_a_pinned_generated_source(tmp_path: Path) -> None:
+    pinned = tmp_path / "pinned.mq5"
+    pinned.write_text(
+        "bool Strategy_InputsValid()\n"
+        "  {\n"
+        "   return qm_rng_seed == 42;\n"
+        "  }\n",
+        encoding="utf-8",
+    )
+    tool = REPO_ROOT / "tools" / "strategy_farm" / "audit_framework_input_pins.py"
+    result = subprocess.run(
+        ["python", str(tool), "--check-source", str(pinned)],
+        capture_output=True, text=True, encoding="utf-8",
+    )
+    assert result.returncode == 1
+    receipt = json.loads(result.stdout)
+    assert receipt["ok"] is False
+    assert receipt["hit_count"] == 1
+    assert "EA_FRAMEWORK_INPUT_PINNED" in receipt["hits"][0]
 
 
 def test_wave1_plain_rebuild_cohort_is_predicate_clean(tmp_path: Path) -> None:

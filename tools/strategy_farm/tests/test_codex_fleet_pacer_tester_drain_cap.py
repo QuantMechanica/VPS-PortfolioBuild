@@ -13,6 +13,18 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import codex_fleet_pacer as pacer  # noqa: E402
 
 
+def test_pacer_prompt_prepends_fail_closed_framework_input_check(tmp_path):
+    prompt = tmp_path / "mission.md"
+    prompt.write_text("MISSION BODY\n", encoding="utf-8")
+    rendered = pacer._render_guarded_prompt(prompt).decode("utf-8")
+    assert rendered.rstrip().endswith("MISSION BODY")
+    assert rendered.index("PACER BUILD GUARD") < rendered.index("MISSION BODY")
+    assert "audit_framework_input_pins.py --check-source" in rendered
+    assert "BEFORE any enqueue-compile" in rendered
+    assert "nonzero exit" in rendered
+    assert "do not enqueue compile work" in rendered
+
+
 def test_tester_drain_saturated_below_threshold():
     assert pacer.tester_drain_saturated(6, threshold=7) is False
 

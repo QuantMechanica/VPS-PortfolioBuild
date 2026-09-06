@@ -285,9 +285,30 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, default=Path(r"C:\QM\repo"))
     parser.add_argument("--build-check", type=Path, default=Path(__file__).resolve().parents[2] / "framework" / "scripts" / "build_check.ps1")
     parser.add_argument("--db", type=Path, default=Path(r"D:\QM\strategy_farm\state\farm_state.sqlite"))
-    parser.add_argument("--json-output", type=Path, required=True)
-    parser.add_argument("--markdown-output", type=Path, required=True)
+    parser.add_argument("--json-output", type=Path)
+    parser.add_argument("--markdown-output", type=Path)
+    parser.add_argument(
+        "--check-source", type=Path, action="append", default=[],
+        help="Fail-closed pre-build check for one or more generated .mq5 sources",
+    )
     args = parser.parse_args()
+    if args.check_source:
+        sources = [path.resolve() for path in args.check_source]
+        invalid = [str(path) for path in sources if not path.is_file() or path.suffix.lower() != ".mq5"]
+        if invalid:
+            print(json.dumps({"ok": False, "reason": "INVALID_SOURCE", "sources": invalid}, indent=2))
+            return 2
+        hits = _predicate_hits(args.build_check.resolve(), sources)
+        print(json.dumps({
+            "ok": not hits,
+            "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+            "source_count": len(sources),
+            "hit_count": len(hits),
+            "hits": hits,
+        }, indent=2))
+        return 0 if not hits else 1
+    if args.json_output is None or args.markdown_output is None:
+        parser.error("--json-output and --markdown-output are required unless --check-source is used")
     report = build_report(args.repo_root.resolve(), args.build_check.resolve(), args.db.resolve())
     args.json_output.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     args.markdown_output.write_text(render_markdown(report), encoding="utf-8")

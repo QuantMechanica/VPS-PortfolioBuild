@@ -86,6 +86,10 @@ input int    strategy_placeholder       = 0;
 
 // Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
 // regime filter). Cheap O(1) checks only — runs on every tick.
+// Locked-configuration guards may pin strategy inputs, qm_ea_id,
+// qm_magic_slot_offset and risk mode only. Never pin qm_rng_seed, qm_news_*,
+// qm_friday_close_*, or a default qm_stress_reject_probability. Stress may be
+// validated only as finite and within the inclusive 0.0..1.0 range.
 bool Strategy_NoTradeFilter()
   {
    // TODO: e.g. "only trade London session" or "skip if ADX<20"

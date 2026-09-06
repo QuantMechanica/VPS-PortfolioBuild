@@ -1,0 +1,33 @@
+{
+  "schema": "qm.pacer-framework-input-pin-dry-run/v1",
+  "task_id": "ce69613c-bd4a-4c50-a24f-ee8947295ac7",
+  "generated_at_utc": "2026-09-06T13:07:45.592386+00:00",
+  "command": "farmctl enqueue-compile exact authority, no --apply",
+  "all_eligible": true,
+  "results": [
+    {
+      "ea_label": "QM5_41366_xtixng-decouple-cont",
+      "authority": "router_ops_issue:ce69613c-bd4a-4c50-a24f-ee8947295ac7:QM5_41366",
+      "returncode": 0,
+      "mode": "dry_run",
+      "ok": true,
+      "eligible": true,
+      "reason": "ELIGIBLE",
+      "source_repair_authorized": true,
+      "mq5_sha256": "4ea7cfdc92535ee3c417935816ea0a2d2b5dab48fde7614f6969cb77f44d4506",
+      "enqueued_count": 0
+    },
+    {
+      "ea_label": "QM5_41367_xtixng-commonshock-cont",
+      "authority": "router_ops_issue:ce69613c-bd4a-4c50-a24f-ee8947295ac7:QM5_41367",
+      "returncode": 0,
+      "mode": "dry_run",
+      "ok": true,
+      "eligible": true,
+      "reason": "ELIGIBLE",
+      "source_repair_authorized": true,
+      "mq5_sha256": "3aa3e2bb53d59e05f7197100b852393fe05b47f9ecfd21672d1acd2e0bd43526",
+      "enqueued_count": 0
+    }
+  ]
+}

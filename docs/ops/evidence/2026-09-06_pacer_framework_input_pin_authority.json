@@ -1,0 +1,49 @@
+{
+  "schema": "qm.compile-ea-source-repair-authority-evidence/v1",
+  "task_id": "ce69613c-bd4a-4c50-a24f-ee8947295ac7",
+  "mode": "review_only_no_enqueue",
+  "cohort": "PACER_GENERATED_41366_41367",
+  "repair": "remove framework-owned input pins while retaining identity, strategy/risk pins and the finite inclusive 0..1 stress range check",
+  "registrations": [
+    {
+      "ea_id": "41366",
+      "ea_label": "QM5_41366_xtixng-decouple-cont",
+      "source_path": "framework/EAs/QM5_41366_xtixng-decouple-cont/QM5_41366_xtixng-decouple-cont.mq5",
+      "source_sha256": "4ea7cfdc92535ee3c417935816ea0a2d2b5dab48fde7614f6969cb77f44d4506",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41366_xtixng-decouple-cont_card.md",
+      "approved_card_sha256": "f88aaf14e0ccf4e19c3c780180c47c11ca2cd0dc437318805a3a54c97328c08b",
+      "predecessors": [
+        {
+          "work_item_id": "469c6d49-4bd3-4c4f-af33-a68739e7877c",
+          "source_sha256": "41620da346c972ddfb1b90016e5308aaf8bbe7e7bd0af1054eac9cde67b44e45",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-09-06T09:54:13+00:00",
+          "updated_at": "2026-09-06T10:00:47+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41367",
+      "ea_label": "QM5_41367_xtixng-commonshock-cont",
+      "source_path": "framework/EAs/QM5_41367_xtixng-commonshock-cont/QM5_41367_xtixng-commonshock-cont.mq5",
+      "source_sha256": "3aa3e2bb53d59e05f7197100b852393fe05b47f9ecfd21672d1acd2e0bd43526",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41367_xtixng-commonshock-cont_card.md",
+      "approved_card_sha256": "bb6b9aeaf3116ae814231bf7ea2a62cf78f0a0103048891a2badaf027ad3a10c",
+      "predecessors": [
+        {
+          "work_item_id": "a4714bf1-8238-4645-92ae-e2e763d06cca",
+          "source_sha256": "7edc29f98193d70193e8f0559f0a9708f17e9af8b5a371f7b60d6d8091f3a167",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-09-06T11:42:00+00:00",
+          "updated_at": "2026-09-06T11:48:59+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    }
+  ],
+  "compile_enqueue_applied": false,
+  "worker_reload_applied": false
+}

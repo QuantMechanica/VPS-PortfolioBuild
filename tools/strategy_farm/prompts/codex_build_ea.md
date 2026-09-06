@@ -172,6 +172,14 @@ Touch only:
 - Body of `Strategy_NoTradeFilter`, `Strategy_EntrySignal`,
   `Strategy_ManageOpenPosition`, `Strategy_ExitSignal`, `Strategy_NewsFilterHook`
 
+If you add a locked-configuration guard, it may pin only strategy inputs,
+`qm_ea_id`, `qm_magic_slot_offset`, and risk mode. Never compare `qm_rng_seed`,
+any `qm_news_*`, or any `qm_friday_close_*` input in `Strategy_InputsValid` or
+`Strategy_NoTradeFilter`: Q07, Q09, and live governance own those values.
+`qm_stress_reject_probability` may only be checked with
+`MathIsValidNumber(...)` and the inclusive `0.0..1.0` range, never against a
+default value.
+
 Use these framework helpers — DO NOT reimplement them:
 
 | Need                              | Use                                                                |
@@ -526,7 +534,16 @@ build_result JSON is more valuable than masking it with a hopeful rewrite.
    HARD ABORT if any symbol in a generated setfile name/content or any
    active/reserved magic row for this build is absent from the exact `symbol`
    namespace in `dwx_symbol_matrix.csv`. `build_check.ps1` enforces this as
-   fail-closed D11; it is never a warning.
+    fail-closed D11; it is never a warning.
+
+Before any `enqueue-compile`, run the exact generated source through:
+
+```powershell
+python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source "<absolute-mq5-path>"
+```
+
+Any nonzero exit or `EA_FRAMEWORK_INPUT_PINNED` finding refuses the build. Do
+not enqueue; report the finding in `blocked_reason` and exit.
 
 3a. **Regenerate `framework\include\QM\QM_MagicResolver.mqh`** by running the
     idempotent regenerator:

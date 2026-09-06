@@ -2183,6 +2183,35 @@ BACKLOG_SOURCE_REPAIR_REGISTRATIONS.update(
 )
 
 
+# OWNER task ce69613c (2026-09-06): the pacer generated two additional guards
+# with framework-owned input pins. These exact source-only repairs bind the
+# repaired LF source, their completed COMPILE_OK predecessor, and immutable
+# review evidence; they do not enqueue work by themselves.
+PACER_FRAMEWORK_INPUT_PIN_SOURCE_REPAIR_REGISTRATIONS = {
+    'router_ops_issue:ce69613c-bd4a-4c50-a24f-ee8947295ac7:QM5_41366': {
+        'ea_id': '41366', 'ea_label': 'QM5_41366_xtixng-decouple-cont',
+        'source_sha256': '4ea7cfdc92535ee3c417935816ea0a2d2b5dab48fde7614f6969cb77f44d4506',
+        'predecessors': {'469c6d49-4bd3-4c4f-af33-a68739e7877c': {
+            'source_sha256': '41620da346c972ddfb1b90016e5308aaf8bbe7e7bd0af1054eac9cde67b44e45',
+            'status': 'done', 'verdict': 'COMPILE_OK'}},
+        'superseded_predecessors': [],
+        'evidence_path': 'docs/ops/evidence/2026-09-06_pacer_framework_input_pin_authority.json',
+        'evidence_sha256': 'be2e3d2e075de22428efe96775ed9580c198ea193bae2a3a0e8e2acc9d69d9cf'},
+    'router_ops_issue:ce69613c-bd4a-4c50-a24f-ee8947295ac7:QM5_41367': {
+        'ea_id': '41367', 'ea_label': 'QM5_41367_xtixng-commonshock-cont',
+        'source_sha256': '3aa3e2bb53d59e05f7197100b852393fe05b47f9ecfd21672d1acd2e0bd43526',
+        'predecessors': {'a4714bf1-8238-4645-92ae-e2e763d06cca': {
+            'source_sha256': '7edc29f98193d70193e8f0559f0a9708f17e9af8b5a371f7b60d6d8091f3a167',
+            'status': 'done', 'verdict': 'COMPILE_OK'}},
+        'superseded_predecessors': [],
+        'evidence_path': 'docs/ops/evidence/2026-09-06_pacer_framework_input_pin_authority.json',
+        'evidence_sha256': 'be2e3d2e075de22428efe96775ed9580c198ea193bae2a3a0e8e2acc9d69d9cf'},
+}
+BACKLOG_SOURCE_REPAIR_REGISTRATIONS.update(
+    PACER_FRAMEWORK_INPUT_PIN_SOURCE_REPAIR_REGISTRATIONS
+)
+
+
 # Router ticket 690fc42a (2026-09-06, APPROVED): build_check's EA_ML_FORBIDDEN
 # predicate matched the identifier token `weights[` and failed an otherwise clean
 # compile. The predicate was scoped to real ML shapes in 77d4ec1634; the EA source

@@ -11,7 +11,7 @@ Run every ~15 min via QM_StrategyFarm_CodexFleetPacer. Idempotent. Spawns paced 
 work (more certified portfolio sleeves), not idle burn.
 """
 from __future__ import annotations
-import argparse, json, os, shutil, sqlite3, subprocess, sys
+import argparse, json, os, shutil, sqlite3, subprocess, sys, tempfile
 import datetime as dt
 from pathlib import Path
 
@@ -55,6 +55,20 @@ HARD_CEIL_PCT = 94.0     # kill our agents at/above this (guarantee no 100% cap-
 DEFAULT_MAX_AGENTS = 4   # concurrency cap (CPU/backtest + safety)
 MIN_HOURS_TO_RESET = 0.25
 PROMPT_ROTATION = ["focus_fx.md", "focus_commodity.md", "focus_backlog.md"]
+
+PACER_BUILD_GUARD = """\
+PACER BUILD GUARD (binding):
+- A locked-configuration guard may pin only strategy_* parameters, qm_ea_id,
+  qm_magic_slot_offset, and the backtest risk mode (RISK_FIXED > 0 and
+  RISK_PERCENT == 0). It must not compare qm_rng_seed, any qm_news_* input, or
+  any qm_friday_close_* input. qm_stress_reject_probability may only be checked
+  for finiteness and the inclusive 0..1 range, never equality to a default.
+- After writing the generated .mq5 and BEFORE any enqueue-compile command, run:
+  python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source "<absolute-mq5-path>"
+  A nonzero exit or any EA_FRAMEWORK_INPUT_PINNED finding REFUSES the build:
+  do not enqueue compile work; record the exact finding and exit.
+
+"""
 
 # Tester-drain coupling (router task 32c7b01f, following
 # docs/ops/evidence/2026-08-24_throughput_forensics.md recommendation 4:
@@ -182,6 +196,11 @@ def _read_quota() -> tuple[float, dt.datetime]:
 
 def _resolve_codex() -> str:
     return shutil.which("codex.cmd") or shutil.which("codex") or "codex"
+
+
+def _render_guarded_prompt(prompt: Path) -> bytes:
+    """Prepend the fail-closed generated-source contract to every pacer mission."""
+    return PACER_BUILD_GUARD.encode("utf-8") + prompt.read_bytes()
 
 
 def _alive(pid: int) -> bool:
@@ -329,7 +348,9 @@ def _spawn_agent(prompt_name: str) -> int | None:
             "--cd",
             str(REPO_ROOT),
         ]
-        with prompt.open("rb") as stdin_f, live_log.open("wb") as stdout_f:
+        with tempfile.TemporaryFile() as stdin_f, live_log.open("wb") as stdout_f:
+            stdin_f.write(_render_guarded_prompt(prompt))
+            stdin_f.seek(0)
             proc, lease = spawn_managed_codex(
                 FARM_ROOT,
                 command,
