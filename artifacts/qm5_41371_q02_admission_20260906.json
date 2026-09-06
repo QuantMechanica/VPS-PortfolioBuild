@@ -1,0 +1,54 @@
+{
+  "schema": "qm.paced-first-q02-admission/v1",
+  "ea_id": "QM5_41371",
+  "ea_label": "QM5_41371_xtixng-cs-leadswitch-cont",
+  "logical_symbol": "QM5_41371_XTI_XNG_CS_LEADSWITCH_CONT_D1",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_41371_xtixng-cs-leadswitch-cont/QM5_41371_xtixng-cs-leadswitch-cont.mq5",
+  "mq5_sha256": "4017050adb5aee7028eb69c84d6d01cb880f6cbcba81fe4af19ec4e53c4ffe5a",
+  "framework_input_pin_audit": {
+    "ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0,
+    "hits": [],
+    "timing": "rerun immediately before compile enqueue"
+  },
+  "compile": {
+    "work_item_id": "b1ae3e09-0ccc-4356-b6b6-6d79a183c358",
+    "status": "pending",
+    "verdict": null,
+    "activation_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "activation_hold_released": false
+  },
+  "first_q02_intake_dry_run": {
+    "eligible": false,
+    "would_enqueue": false,
+    "reason": "compile_work_item_not_done_compile_ok"
+  },
+  "cpu_admission": {
+    "sampled_at_utc": "2026-09-06T16:26:17.4210126Z",
+    "samples_pct": [
+      99.12215859634067,
+      99.7082437280269,
+      100.0,
+      92.19449061420592,
+      90.13673761713467
+    ],
+    "average_pct": 96.23232611114163,
+    "maximum_pct": 100.0,
+    "ceiling_pct": 97.0,
+    "requires_average_and_maximum_strictly_below_ceiling": true,
+    "clears_ceiling": false,
+    "stop_reason": "maximum_cpu_at_or_above_hard_ceiling"
+  },
+  "q02": {
+    "enqueued": false,
+    "tester_launched": false,
+    "priority_boost": false
+  },
+  "safety": {
+    "portfolio_gate_touched": false,
+    "t_live_touched": false,
+    "live_manifest_touched": false,
+    "autotrading_toggled": false
+  }
+}
