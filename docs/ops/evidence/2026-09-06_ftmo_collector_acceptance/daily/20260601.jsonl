@@ -1,0 +1,1 @@
+{"balance": 100000.0, "equity": 100000.0, "interval_end_utc": "2026-06-01T22:00:00Z", "interval_min_equity": 100000.0, "interval_start_utc": "2026-06-01T21:55:00Z", "open_positions": 0, "pending_orders": 0, "pending_orders_by_magic": {}, "positions_by_magic": {}, "prague_day_key": 20260601, "sample_count": 300}

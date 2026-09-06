@@ -1,0 +1,294 @@
+diff --git a/framework/monitor/QM_FTMO_TrialTelemetry.mq5 b/framework/monitor/QM_FTMO_TrialTelemetry.mq5
+index 9ab942893c..b5df4b35ca 100644
+--- a/framework/monitor/QM_FTMO_TrialTelemetry.mq5
++++ b/framework/monitor/QM_FTMO_TrialTelemetry.mq5
+@@ -51,14 +51,14 @@ bool AppendLine(const string line)
+   {
+    const string path=InpOutputDir+"\\trial_telemetry_raw.jsonl";
+    int handle=FileOpen(path,FILE_READ|FILE_WRITE|FILE_TXT|FILE_ANSI|
+-                       FILE_SHARE_READ|FILE_SHARE_WRITE);
++                       FILE_SHARE_READ);
+    if(handle==INVALID_HANDLE)
+       return false;
+-   FileSeek(handle,0,SEEK_END);
+-   FileWriteString(handle,line+"\r\n");
++   if(!FileSeek(handle,0,SEEK_END)) { FileClose(handle); return false; }
++   const uint written=FileWriteString(handle,line+"\r\n");
+    FileFlush(handle);
+    FileClose(handle);
+-   return true;
++   return written==StringLen(line)+2;
+   }
+ 
+ string PositionInventory(int &selected)
+@@ -150,17 +150,23 @@ int OnInit()
+       Print("QM_FTMO_TrialTelemetry requires an explicit InpTrialId");
+       return INIT_PARAMETERS_INCORRECT;
+      }
+-   if(InpExpectedLogin>0 && login!=InpExpectedLogin)
++   if(!MQLInfoInteger(MQL_TESTER) && AccountInfoInteger(ACCOUNT_TRADE_MODE)!=ACCOUNT_TRADE_MODE_DEMO)
++      return INIT_FAILED;
++   if(InpExpectedLogin<=0 || InpExpectedServer=="" || InpOutputDir=="" ||
++      StringFind(InpOutputDir,"..")>=0 || StringFind(InpOutputDir,":")>=0)
++      return INIT_PARAMETERS_INCORRECT;
++   if(login!=InpExpectedLogin)
+       return INIT_FAILED;
+    if(InpExpectedServer!="" && server!=InpExpectedServer)
+       return INIT_FAILED;
+    g_session_started_utc=TimeGMT();
+-   g_session_id=StringFormat("%I64d-%I64d",login,(long)g_session_started_utc);
++   g_session_id=StringFormat("%I64d-%I64d-%I64u-%I64d",login,(long)g_session_started_utc,GetMicrosecondCount(),ChartID());
+    int seconds=MathMax(1,MathMin(5,InpTimerSeconds));
+    if(!EventSetTimer(seconds))
+       return INIT_FAILED;
+    g_armed=true;
+    Capture("INIT");
++   if(g_sequence==0) { g_armed=false; EventKillTimer(); return INIT_FAILED; }
+    return INIT_SUCCEEDED;
+   }
+ 
+diff --git a/tools/strategy_farm/portfolio/ftmo_trial_telemetry.py b/tools/strategy_farm/portfolio/ftmo_trial_telemetry.py
+index 5a415fc3fc..4f1bcabd4c 100644
+--- a/tools/strategy_farm/portfolio/ftmo_trial_telemetry.py
++++ b/tools/strategy_farm/portfolio/ftmo_trial_telemetry.py
+@@ -58,6 +58,8 @@ def load_rows(path: Path) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+     identities: dict[tuple[str, int], bytes] = {}
+     sessions: list[str] = []
+     prior_sequence: dict[str, int] = {}
++    stream_identity = None
++    last_timestamp = None
+     with path.open(encoding="utf-8-sig") as handle:
+         for line_number, raw in enumerate(handle, 1):
+             if not raw.strip():
+@@ -66,13 +68,23 @@ def load_rows(path: Path) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+                 row = json.loads(raw, object_pairs_hook=_pairs)
+             except json.JSONDecodeError as exc:
+                 raise TelemetryError(f"json_invalid:{line_number}") from exc
++            if not isinstance(row, dict):
++                raise TelemetryError(f"row_not_object:{line_number}")
+             if row.get("schema") != RAW_SCHEMA or row.get("event") != "SAMPLE":
+                 raise TelemetryError(f"schema_or_event_invalid:{line_number}")
+             session = row.get("session_id")
+             sequence = row.get("sequence")
+-            if not isinstance(session, str) or not session or not isinstance(sequence, int) or sequence < 0:
++            if not isinstance(session, str) or not session or type(sequence) is not int or sequence < 0:
+                 raise TelemetryError(f"identity_invalid:{line_number}")
+             timestamp = _timestamp(row.get("ts_utc"))
++            identity = tuple(row.get(key) for key in ("trial_id", "account_login", "account_server", "currency"))
++            if any(value is None or value == "" for value in identity) or type(identity[1]) is not int or identity[1] <= 0:
++                raise TelemetryError(f"account_identity_invalid:{line_number}")
++            if stream_identity is not None and identity != stream_identity:
++                raise TelemetryError(f"mixed_account_or_trial:{line_number}")
++            stream_identity = identity
++            if type(row.get("ts_epoch")) is not int or row["ts_epoch"] != int(timestamp.timestamp()):
++                raise TelemetryError(f"epoch_mismatch:{line_number}")
+             if row.get("prague_day_key") != prague_day_key(timestamp):
+                 raise TelemetryError(f"prague_day_key_mismatch:{line_number}")
+             for key in ("balance", "equity"):
+@@ -83,6 +95,9 @@ def load_rows(path: Path) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+                     raise TelemetryError(f"{key}_invalid:{line_number}")
+             if row.get("reconciliation_complete") is not True:
+                 raise TelemetryError(f"inventory_not_reconciled:{line_number}")
++            for inventory in ("positions", "orders"):
++                if not isinstance(row.get(inventory), list) or any(not isinstance(item, dict) or type(item.get("magic")) is not int for item in row[inventory]):
++                    raise TelemetryError(f"inventory_invalid:{line_number}")
+             if len(row.get("positions") or []) != row["open_positions"] or len(row.get("orders") or []) != row["pending_orders"]:
+                 raise TelemetryError(f"inventory_count_mismatch:{line_number}")
+             encoded = json.dumps(row, sort_keys=True, separators=(",", ":")).encode()
+@@ -93,6 +108,13 @@ def load_rows(path: Path) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+                 continue
+             if session in prior_sequence and sequence <= prior_sequence[session]:
+                 raise TelemetryError(f"sequence_regression:{line_number}")
++            if session in prior_sequence and sequence != prior_sequence[session] + 1:
++                raise TelemetryError(f"sequence_gap:{line_number}")
++            if last_timestamp is not None and timestamp < last_timestamp:
++                raise TelemetryError(f"timestamp_regression:{line_number}")
++            if sessions and session != sessions[-1] and session in sessions:
++                raise TelemetryError(f"interleaved_sessions:{line_number}")
++            last_timestamp = timestamp
+             identities[key] = encoded
+             prior_sequence[session] = sequence
+             if session not in sessions:
+@@ -101,7 +123,7 @@ def load_rows(path: Path) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+             rows.append(row)
+     if not rows:
+         raise TelemetryError("no_samples")
+-    ordered = sorted(rows, key=lambda row: (row["_timestamp"], row["session_id"], row["sequence"]))
++    ordered = rows  # Preserve capture order for same-second endpoint samples.
+     return ordered, {"sessions": sessions, "restart_count": max(0, len(sessions) - 1), "deduplicated_samples": len(rows)}
+ 
+ 
+@@ -136,6 +158,14 @@ def build_report(
+     for row in rows:
+         groups[_bucket_start(row["_timestamp"], grid_seconds)].append(row)
+     m5 = []
++    first_bucket = min(groups)
++    last_bucket = max(groups)
++    missing_intervals = []
++    cursor = first_bucket
++    while cursor <= last_bucket:
++        if cursor not in groups:
++            missing_intervals.append(cursor.isoformat().replace("+00:00", "Z"))
++        cursor += dt.timedelta(seconds=grid_seconds)
+     for start in sorted(groups):
+         samples = groups[start]
+         endpoint = samples[-1]
+@@ -164,10 +194,14 @@ def build_report(
+         anchor = local_first.replace(hour=0, minute=0, second=0, microsecond=0)
+         anchor_lag = (local_first - anchor).total_seconds()
+         complete_start = anchor_lag <= maximum_sample_gap_seconds
+-        complete_end = index < len(keys) - 1
++        next_anchor = (anchor + dt.timedelta(days=1)).astimezone(dt.timezone.utc)
++        complete_end = rows[-1]["_timestamp"] >= next_anchor and (next_anchor - last["_timestamp"]).total_seconds() <= maximum_sample_gap_seconds
++        day_has_gap = any(_timestamp(gap["after"]) < next_anchor and _timestamp(gap["before"]) > anchor.astimezone(dt.timezone.utc) for gap in gaps)
+         day_min = min(float(row["equity"]) for row in samples)
+         floor = float(first["balance"]) - initial_balance * daily_loss_fraction
+         status = "EVALUABLE" if complete_start and complete_end else "ABSTAIN_PARTIAL_DAY"
++        if day_has_gap:
++            status = "ABSTAIN_GAPS"
+         days.append({
+             "prague_day_key": key,
+             "anchor_ts_utc": first["ts_utc"],
+@@ -195,7 +229,7 @@ def build_report(
+             "profit_target_operator": "balance > initial_balance*1.10 AND flat",
+         },
+         "ingestion": ingestion,
+-        "continuity": {"status": "PASS" if not gaps else "FAIL_GAPS", "gaps": gaps},
++        "continuity": {"status": "PASS" if not gaps and not missing_intervals else "FAIL_GAPS", "gaps": gaps, "missing_intervals": missing_intervals},
+         "m5_rows": m5,
+         "days": days,
+         "flat_at_target": {
+@@ -217,16 +251,69 @@ def _counts_by_magic(items: list[dict[str, Any]]) -> dict[str, int]:
+     return dict(sorted(result.items(), key=lambda pair: int(pair[0])))
+ 
+ 
++def compact_daily(source: Path, destination: Path, *, maximum_sample_gap_seconds: int = 10) -> dict[str, Any]:
++    """Compact an immutable snapshot; publish a hash manifest last, never fill holes."""
++    source_hash = _sha256(source)
++    report = build_report(source, maximum_sample_gap_seconds=maximum_sample_gap_seconds)
++    if _sha256(source) != source_hash or report["source"]["sha256"] != source_hash:
++        raise TelemetryError("source_changed_during_compaction")
++    if report["continuity"]["status"] != "PASS":
++        raise TelemetryError("compaction_refused_gaps")
++    if destination.exists():
++        raise TelemetryError("destination_already_exists")
++    by_day: dict[int, list[dict[str, Any]]] = defaultdict(list)
++    for row in report["m5_rows"]:
++        by_day[row["prague_day_key"]].append(row)
++    destination.mkdir(parents=True)
++    outputs = []
++    for day, rows in sorted(by_day.items()):
++        target = destination / f"{day}.jsonl"
++        target.write_text("".join(json.dumps(row, sort_keys=True) + "\n" for row in rows), encoding="utf-8")
++        outputs.append({"path": target.name, "sha256": _sha256(target), "rows": len(rows), "prague_day_key": day})
++    manifest = {"schema": "qm.ftmo-trial-telemetry.compaction/v1", "source": report["source"],
++                "outputs": outputs, "continuity": report["continuity"], "days": report["days"],
++                "ingestion": report["ingestion"], "challenge_proof": False}
++    (destination / "manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
++    verify_compaction(destination)
++    return manifest
++
++
++def verify_compaction(destination: Path) -> dict[str, Any]:
++    manifest = json.loads((destination / "manifest.json").read_text(encoding="utf-8"), object_pairs_hook=_pairs)
++    if manifest.get("schema") != "qm.ftmo-trial-telemetry.compaction/v1":
++        raise TelemetryError("manifest_schema_invalid")
++    if _sha256(Path(manifest["source"]["path"])) != manifest["source"]["sha256"]:
++        raise TelemetryError("manifest_source_hash_mismatch")
++    expected = {"manifest.json"}
++    for output in manifest["outputs"]:
++        name = output["path"]
++        if name != f"{output['prague_day_key']}.jsonl" or name in expected:
++            raise TelemetryError("manifest_output_path_invalid")
++        expected.add(name)
++        target = destination / name
++        if _sha256(target) != output["sha256"]:
++            raise TelemetryError("manifest_output_hash_mismatch")
++        rows = [json.loads(line) for line in target.read_text(encoding="utf-8").splitlines()]
++        if len(rows) != output["rows"] or any(row["prague_day_key"] != output["prague_day_key"] for row in rows):
++            raise TelemetryError("manifest_output_rows_mismatch")
++    if {path.name for path in destination.iterdir()} != expected:
++        raise TelemetryError("manifest_unexpected_files")
++    return manifest
++
++
+ def main() -> int:
+     parser = argparse.ArgumentParser()
+     parser.add_argument("--input", type=Path, required=True)
+     parser.add_argument("--output", type=Path, required=True)
+     parser.add_argument("--grid-seconds", type=int, default=300)
+     parser.add_argument("--maximum-sample-gap-seconds", type=int, default=10)
++    parser.add_argument("--compact-directory", type=Path)
+     args = parser.parse_args()
+     result = build_report(args.input, grid_seconds=args.grid_seconds, maximum_sample_gap_seconds=args.maximum_sample_gap_seconds)
+     args.output.parent.mkdir(parents=True, exist_ok=True)
+     args.output.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
++    if args.compact_directory:
++        compact_daily(args.input, args.compact_directory, maximum_sample_gap_seconds=args.maximum_sample_gap_seconds)
+     print(json.dumps({"status": result["continuity"]["status"], "rows": len(result["m5_rows"]), "output": str(args.output)}))
+     return 0 if result["continuity"]["status"] == "PASS" else 2
+ 
+diff --git a/tools/strategy_farm/tests/test_ftmo_trial_telemetry.py b/tools/strategy_farm/tests/test_ftmo_trial_telemetry.py
+index 761b1173b1..3e54f751f2 100644
+--- a/tools/strategy_farm/tests/test_ftmo_trial_telemetry.py
++++ b/tools/strategy_farm/tests/test_ftmo_trial_telemetry.py
+@@ -123,3 +123,59 @@ def test_mql_collector_is_read_only_and_emits_required_fields() -> None:
+         "reconciliation_complete",
+     ):
+         assert required in source
++
++
++@pytest.mark.parametrize("change,reason", [
++    ({"account_login": 456}, "mixed_account_or_trial"),
++    ({"trial_id": "different"}, "mixed_account_or_trial"),
++    ({"ts_epoch": 0}, "epoch_mismatch"),
++    ({"sequence": 3}, "sequence_gap"),
++    ({"sequence": True}, "identity_invalid"),
++    ({"positions": {}}, "inventory_invalid"),
++])
++def test_stream_refusals(tmp_path, change, reason):
++    source = tmp_path / "raw.jsonl"
++    write(source, [row("2026-01-01T22:59:59Z"), dict(row("2026-01-01T23:00:00Z", sequence=1), **change)])
++    with pytest.raises(subject.TelemetryError, match=reason):
++        subject.load_rows(source)
++
++
++def test_missing_day_and_bucket_abstain(tmp_path):
++    source = tmp_path / "raw.jsonl"
++    write(source, [row("2026-01-01T23:00:00Z"), row("2026-01-02T23:00:00Z", sequence=1)])
++    report = subject.build_report(source)
++    assert report["days"][0]["status"] == "ABSTAIN_GAPS"
++    assert report["days"][0]["daily_loss_breached"] is None
++    assert len(report["continuity"]["missing_intervals"]) == 287
++    with pytest.raises(subject.TelemetryError, match="compaction_refused_gaps"):
++        subject.compact_daily(source, tmp_path / "compact")
++
++
++def test_compaction_restart_midnight_manifest_and_tamper(tmp_path):
++    source = tmp_path / "raw.jsonl"
++    start = dt.datetime(2026, 6, 1, 21, 55, tzinfo=dt.timezone.utc)
++    rows = []
++    for index in range(901):
++        stamp = (start + dt.timedelta(seconds=index)).isoformat().replace("+00:00", "Z")
++        rows.append(row(stamp, session="first" if index < 450 else "second", sequence=index if index < 450 else index - 450, equity=94000 if index == 460 else 100000))
++    write(source, rows)
++    dest = tmp_path / "compact"
++    manifest = subject.compact_daily(source, dest)
++    assert manifest["ingestion"]["restart_count"] == 1
++    assert [item["prague_day_key"] for item in manifest["outputs"]] == [20260601, 20260602]
++    assert sum(item["rows"] for item in manifest["outputs"]) == 4
++    assert subject.verify_compaction(dest) == manifest
++    with pytest.raises(subject.TelemetryError, match="destination_already_exists"):
++        subject.compact_daily(source, dest)
++    target = dest / manifest["outputs"][0]["path"]
++    target.write_text(target.read_text() + "\n")
++    with pytest.raises(subject.TelemetryError, match="manifest_output_hash_mismatch"):
++        subject.verify_compaction(dest)
++
++
++def test_same_second_endpoint_preserves_capture_order(tmp_path):
++    source = tmp_path / "raw.jsonl"
++    write(source, [row("2026-01-01T23:00:00Z", session="z", equity=90000), row("2026-01-01T23:00:00Z", session="a", equity=99000)])
++    report = subject.build_report(source)
++    assert report["m5_rows"][0]["equity"] == 99000
++    assert report["m5_rows"][0]["interval_min_equity"] == 90000

@@ -1,0 +1,60 @@
+{
+  "challenge_proof": false,
+  "continuity": {
+    "gaps": [],
+    "missing_intervals": [],
+    "status": "PASS"
+  },
+  "days": [
+    {
+      "anchor_balance": 100000.0,
+      "anchor_lag_seconds": 86100.0,
+      "anchor_ts_utc": "2026-06-01T21:55:00Z",
+      "daily_floor": 95000.0,
+      "daily_loss_breached": null,
+      "last_ts_utc": "2026-06-01T21:59:59Z",
+      "minimum_equity": 100000.0,
+      "prague_day_key": 20260601,
+      "status": "ABSTAIN_PARTIAL_DAY"
+    },
+    {
+      "anchor_balance": 100000.0,
+      "anchor_lag_seconds": 0.0,
+      "anchor_ts_utc": "2026-06-01T22:00:00Z",
+      "daily_floor": 95000.0,
+      "daily_loss_breached": null,
+      "last_ts_utc": "2026-06-01T22:10:00Z",
+      "minimum_equity": 94000.0,
+      "prague_day_key": 20260602,
+      "status": "ABSTAIN_PARTIAL_DAY"
+    }
+  ],
+  "ingestion": {
+    "deduplicated_samples": 901,
+    "restart_count": 1,
+    "sessions": [
+      "pre-restart",
+      "post-restart"
+    ]
+  },
+  "outputs": [
+    {
+      "path": "20260601.jsonl",
+      "prague_day_key": 20260601,
+      "rows": 1,
+      "sha256": "89b7d337a9e9bad871c9914158b2175d92822b4128c7a1f266db7d03d0a004ad"
+    },
+    {
+      "path": "20260602.jsonl",
+      "prague_day_key": 20260602,
+      "rows": 3,
+      "sha256": "032276ec8aa22a58021ebc5fdbc03a88504c6d4837b8cae8ca2424bf6cb8a910"
+    }
+  ],
+  "schema": "qm.ftmo-trial-telemetry.compaction/v1",
+  "source": {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-06_ftmo_collector_acceptance\\synthetic_raw.jsonl",
+    "rows": 901,
+    "sha256": "ca227d145c1257fd83402ea60d2246c8e7eb0231d19b9b31ca61c80b6b3f4e79"
+  }
+}
