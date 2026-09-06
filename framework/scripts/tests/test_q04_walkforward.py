@@ -233,6 +233,72 @@ class Q04WalkForwardTests(unittest.TestCase):
 
         self.assertIsNone(reason)
 
+    def test_min_trades_with_latched_report_is_economic_fallback(self) -> None:
+        mod = _load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            report = Path(tmp) / "report.htm"
+            report.write_text("valid report", encoding="utf-8")
+            summary = Path(tmp) / "summary.json"
+            summary.write_text(
+                json.dumps({
+                    "result": "FAIL",
+                    "reason_classes": ["MIN_TRADES_NOT_MET"],
+                    "runs": [{
+                        "status": "OK",
+                        "total_trades": 3,
+                        "profit_factor": 0.72,
+                        "report_canonical_path": str(report),
+                        "report_sha256": "latched-by-run-smoke",
+                    }],
+                }),
+                encoding="utf-8",
+            )
+
+            pf, trades, reason = mod.completed_report_economic_fallback(summary)
+
+        self.assertEqual((pf, trades), (0.72, 3))
+        self.assertEqual(reason, "STRATEGY_MIN_TRADES_NOT_MET")
+
+    def test_unlatched_report_stays_fail_closed(self) -> None:
+        mod = _load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            summary = Path(tmp) / "summary.json"
+            summary.write_text(
+                json.dumps({
+                    "result": "FAIL",
+                    "reason_classes": ["MIN_TRADES_NOT_MET"],
+                    "runs": [{
+                        "status": "OK",
+                        "total_trades": 3,
+                        "profit_factor": 0.72,
+                        "report_canonical_path": str(Path(tmp) / "missing.htm"),
+                    }],
+                }),
+                encoding="utf-8",
+            )
+
+            pf, trades, reason = mod.completed_report_economic_fallback(summary)
+
+        self.assertEqual((pf, trades, reason), (None, 0, None))
+
+    def test_native_report_only_cannot_earn_q04_pass(self) -> None:
+        mod = _load_module()
+        folds = [
+            {
+                "id": f"F{index}",
+                "summary_path": "summary.json",
+                "pf_net": 1.5,
+                "trades": 50,
+                "report_guard_reason": "STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+            }
+            for index in range(1, 4)
+        ]
+
+        verdict, reason = mod.aggregate_verdict(folds)
+
+        self.assertEqual(verdict, "FAIL")
+        self.assertIn("STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM", reason)
+
     def test_completed_report_keeps_top_level_oninit_failure_invalid(self) -> None:
         mod = _load_module()
         with tempfile.TemporaryDirectory() as tmp:

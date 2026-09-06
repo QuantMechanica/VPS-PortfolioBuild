@@ -435,6 +435,49 @@ def summary_invalid_reason(summary_path: Path) -> str | None:
     return None
 
 
+def completed_report_economic_fallback(
+    summary_path: Path,
+) -> tuple[float | None, int, str | None]:
+    """Return economic metrics from a latched valid MT5 report.
+
+    Q04 prefers the attributed deal stream and then the EA-side commission
+    self-report. Some older EAs emit neither even though ``run_smoke`` has
+    parsed, hashed, and latched a valid native report. Treating that completed
+    report as missing infrastructure strands deterministic economic outcomes
+    in the retry lane. Invalid or unlatched reports remain fail-closed.
+    """
+    sj = _load_summary(summary_path)
+    if not isinstance(sj, dict) or summary_invalid_reason(summary_path):
+        return None, 0, None
+    runs = [run for run in (sj.get("runs") or []) if isinstance(run, dict)]
+    selected = next(
+        (run for run in reversed(runs) if str(run.get("status") or "").upper() == "OK"),
+        None,
+    )
+    if selected is None:
+        return None, 0, None
+    report_raw = selected.get("report_canonical_path") or selected.get("report_source_path")
+    if not report_raw or not Path(str(report_raw)).is_file():
+        return None, 0, None
+    try:
+        trades = int(selected.get("total_trades") or 0)
+        pf_raw = selected.get("profit_factor")
+        pf = float(pf_raw) if pf_raw not in (None, "") else None
+    except (TypeError, ValueError):
+        return None, 0, None
+    if trades < 0 or (pf is not None and not math.isfinite(pf)):
+        return None, 0, None
+    reasons = {str(value).upper() for value in (sj.get("reason_classes") or [])}
+    economic_reason = (
+        "STRATEGY_MIN_TRADES_NOT_MET"
+        if "MIN_TRADES_NOT_MET" in reasons
+        else "STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM"
+    )
+    # A valid zero-trade report has no PF denominator. Zero is Q04's existing
+    # economic-fail representation and cannot accidentally pass a PF gate.
+    return (pf if pf is not None else 0.0), trades, economic_reason
+
+
 def estimate_pf_gross(pf_net: float | None, trades: int, lots: float, commission_total: float | None) -> float | None:
     """Estimate PF-gross from PF-net by adding back per-trade commission.
 
@@ -697,6 +740,21 @@ def aggregate_verdict(fold_results: list[dict]) -> tuple[str, str]:
         return "INVALID", ";".join(
             f"{f['id']}:{f.get('invalid_reason') or 'incomplete_fold'}"
             for f in incomplete
+        )
+    native_only = [
+        f for f in fold_results
+        if f.get("report_guard_reason") in {
+            "STRATEGY_MIN_TRADES_NOT_MET",
+            "STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+        }
+    ]
+    if native_only:
+        # A native report proves that the tester run completed, so this is not
+        # retryable infrastructure. It cannot earn PASS, however, because the
+        # attributed deal stream required for Q04's venue-cost model is absent.
+        return "FAIL", ";".join(
+            f"{f['id']}:{f['report_guard_reason']}"
+            for f in native_only
         )
     unusable = [
         (f, issue)
@@ -1070,8 +1128,18 @@ def run_fold_via_smoke(*, ea_id: int, ea_expert: str, symbol: str,
             comm_total = None
             gross_total = None
             oos_nets = []
-        if not invalid_reason and pf_net is None and (report_trades or 0) > 0:
-            invalid_reason = "stream_and_selfreport_missing"
+        economic_fallback_reason = None
+        if not invalid_reason and pf_net is None:
+            fallback_pf, fallback_trades, economic_fallback_reason = (
+                completed_report_economic_fallback(source_summary)
+            )
+            if economic_fallback_reason:
+                pf_net = fallback_pf
+                trades = fallback_trades
+                commission_basis = "native_report_economic_fallback"
+                report_guard_reason = economic_fallback_reason
+            elif (report_trades or 0) > 0:
+                invalid_reason = "stream_and_selfreport_missing"
 
         status = (
             "INVALID"
@@ -1081,6 +1149,8 @@ def run_fold_via_smoke(*, ea_id: int, ea_expert: str, symbol: str,
         pf_issue = pf_measurement_issue(pf_net, trades)
         if invalid_reason:
             verdict_reason = invalid_reason
+        elif economic_fallback_reason == "STRATEGY_MIN_TRADES_NOT_MET":
+            verdict_reason = economic_fallback_reason
         elif pf_net is None or trades <= 0:
             verdict_reason = "STRATEGY_ZERO_TRADES"
         elif proc.returncode != 0:
