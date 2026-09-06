@@ -110,17 +110,17 @@ class Client:
             cursor = new
 
 
-def upsert(client, parent, date, content):
+def upsert(client, parent, date, content, date_property='Date'):
     parent = str(uuid.UUID(parent)); dt.date.fromisoformat(date)
     databases = [b for b in client.pages('GET', 'blocks/'+parent+'/children')
                  if b.get('type') == 'child_database' and b['child_database'].get('title') == 'Morgenbriefing']
     if len(databases) > 1: raise ValueError('Multiple Morgenbriefing databases; configure a unique parent')
     database = databases[0]['id'] if databases else client.call('POST', 'databases', {
         'parent': {'type': 'page_id', 'page_id': parent}, 'title': rich('Morgenbriefing'),
-        'properties': {'Name': {'title': {}}, 'Date': {'date': {}}}})['id']
-    found = client.pages('POST', 'databases/'+database+'/query', {'filter': {'property': 'Date', 'date': {'equals': date}}})
+        'properties': {'Name': {'title': {}}, date_property: {'date': {}}}})['id']
+    found = client.pages('POST', 'databases/'+database+'/query', {'filter': {'property': date_property, 'date': {'equals': date}}})
     if len(found) > 1: raise ValueError('Duplicate date pages; manual review required')
-    properties = {'Name': {'title': rich('Morgenbriefing '+date)}, 'Date': {'date': {'start': date}}}
+    properties = {'Name': {'title': rich('Morgenbriefing '+date)}, date_property: {'date': {'start': date}}}
     if not found:
         page = client.call('POST', 'pages', {'parent': {'database_id': database}, 'properties': properties, 'children': content})
         return {'status': 'CREATED', 'page_id': page['id']}
@@ -142,7 +142,7 @@ def publish(summary, date, config_path=CONFIG, env_path=ENV, dry_run=False):
     token = token_from_file(env_path)
     LOCK.parent.mkdir(parents=True, exist_ok=True)
     with LOCK.open('x', encoding='utf-8') as handle: handle.write(date)
-    try: return upsert(Client(token), parent, date, content)
+    try: return upsert(Client(token), parent, date, content, date_property=str(config.get('date_property') or 'Date'))
     finally: LOCK.unlink()
 
 

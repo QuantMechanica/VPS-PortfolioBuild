@@ -1,8 +1,10 @@
 {
   "schema": "qm.notion-publisher/v1",
-  "enabled": false,
+  "enabled": true,
   "parent_page_id": "3d347da5-8f4a-810a-9e13-d8a06a6c5bd8",
   "database_title": "Morgenbriefing",
   "api_version": "2022-06-28",
-  "data_source_id": "9db97cf3-56bd-413d-bbc4-e9435ffcc824"
+  "data_source_id": "9db97cf3-56bd-413d-bbc4-e9435ffcc824",
+  "database_id": "3fddb5a8-06c6-4cf1-96d4-c4ce59b2a9da",
+  "date_property": "Datum"
 }
