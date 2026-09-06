@@ -992,6 +992,47 @@ function Invoke-ForbiddenScan {
     }
     # QM-MARK: END FRAMEWORK_INPUT_PIN_SCAN
 
+    # ---- EA_SYMBOL_HARDCODED (OWNER 2026-09-06) ----
+    # One file-based scanner owns both the build predicate and corpus inventory.
+    # Existing-at-cutover trading-logic literals WARN for ordered migration; a
+    # violation in a new MQL file FAILS. Registry includes, symbol input defaults,
+    # and explicitly marked generated slot tables are reported but allowed.
+    $symbolInventoryTool = Join-Path $ResolvedRepoRoot "tools\strategy_farm\ea_symbol_literal_inventory.py"
+    if (-not (Test-Path -LiteralPath $symbolInventoryTool)) {
+        Add-Failure "EA_SYMBOL_HARDCODED_SCANNER_MISSING: $symbolInventoryTool."
+    } else {
+        $symbolArguments = @(
+            $symbolInventoryTool,
+            "--repo-root", $ResolvedRepoRoot,
+            "--baseline-commit", "bb584c73239c5bd9f7ba98d2bf5863bafa8cfe48"
+        )
+        if ($EALabel) {
+            $symbolArguments += @("--ea-label", $EALabel)
+        }
+        $symbolRaw = @(& python @symbolArguments 2>&1)
+        $symbolExit = $LASTEXITCODE
+        if ($symbolExit -ne 0) {
+            Add-Failure "EA_SYMBOL_HARDCODED_SCANNER_FAILED: exit=$symbolExit output=$($symbolRaw -join ' ')."
+        } else {
+            try {
+                $symbolReport = ($symbolRaw | Out-String) | ConvertFrom-Json -ErrorAction Stop
+                Write-Output "build_check.symbol_literal_sources=$($symbolReport.summary.symbol_literal_sources)"
+                Write-Output "build_check.symbol_literal_occurrences=$($symbolReport.summary.symbol_literal_occurrences)"
+                Write-Output "build_check.non_chart_market_data_sources=$($symbolReport.summary.non_chart_market_data_sources)"
+                foreach ($finding in @($symbolReport.findings)) {
+                    if ([string]$finding.severity -eq "FAIL") {
+                        Add-Failure "EA_SYMBOL_HARDCODED: $($finding.path):$($finding.line) '$($finding.symbol)' class=$($finding.classification) new_at_cutover=true."
+                    } elseif ([string]$finding.severity -eq "WARN") {
+                        Add-Warning "EA_SYMBOL_HARDCODED: $($finding.path):$($finding.line) '$($finding.symbol)' class=$($finding.classification) existing_at_cutover=true; migrate to _Symbol/input."
+                    }
+                }
+            }
+            catch {
+                Add-Failure "EA_SYMBOL_HARDCODED_SCANNER_INVALID_JSON: $($_.Exception.Message)"
+            }
+        }
+    }
+
     $externalHits = Select-String -Path $mqlFiles.ToArray() -Pattern $externalPattern
     foreach ($hit in $externalHits) {
         Add-Failure "BUILD_CHECK_EXTERNAL_DATA_API_FORBIDDEN: $($hit.Path):$($hit.LineNumber) contains '$($hit.Matches[0].Value)'. Darwinex MT5 native data only."

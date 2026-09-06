@@ -72,6 +72,10 @@ def test_nested_index_keeps_balanced_expression():
 def test_power_shell_ml_scoping_with_real_frozen_and_negative_inputs(tmp_path):
     ea_root=tmp_path/'framework/EAs';ea_root.mkdir(parents=True)
     include_root=tmp_path/'framework/include';include_root.mkdir(parents=True)
+    symbol_tool=tmp_path/'tools/strategy_farm/ea_symbol_literal_inventory.py';symbol_tool.parent.mkdir(parents=True)
+    symbol_tool.write_text(
+      'import json\nprint(json.dumps({"summary":{"symbol_literal_sources":0,"symbol_literal_occurrences":0,"non_chart_market_data_sources":0},"findings":[]}))\n',
+      encoding='utf-8')
     sources={
       'coefficients.mq5':'void F(){double weights[4];weights[0]=1;for(int k=1;k<4;++k)weights[k]=-weights[k-1]*(.3-k+1)/k;}',
       'comment.mq5':'// tensorflow weights[i]+=learning_rate*error;\nvoid F(){Print("weights[i]+=learning_rate*error;");}',
@@ -87,7 +91,7 @@ def test_power_shell_ml_scoping_with_real_frozen_and_negative_inputs(tmp_path):
     harness.write_text("$ErrorActionPreference='Stop'\n$EALabel=$null\n$script:found=New-Object 'System.Collections.Generic.List[string]'\nfunction Add-Failure {param([string]$Message) $script:found.Add($Message)}\nfunction Add-Warning {param([string]$Message)}\n"+function+"\nInvoke-ForbiddenScan -ResolvedRepoRoot '"+str(tmp_path).replace("'","''")+"'\nConvertTo-Json -InputObject @($script:found) -Compress\n",encoding='utf-8')
     run=subprocess.run(['powershell','-NoProfile','-NonInteractive','-File',str(harness)],capture_output=True,text=True)
     assert run.returncode==0,run.stderr
-    result=json.loads(run.stdout)
+    result=json.loads(run.stdout.splitlines()[-1])
     assert len(result)==4,result
     assert all('EA_ML_FORBIDDEN' in x for x in result)
     assert not any('coefficients.mq5' in x or 'comment.mq5' in x for x in result)
