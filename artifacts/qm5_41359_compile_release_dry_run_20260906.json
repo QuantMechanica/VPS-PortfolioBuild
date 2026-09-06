@@ -1,0 +1,19 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "d3538877ce2d1432ee10c19ef9b85b3616582cd8fc3deeaefabf6f12ea65ed1c",
+      "ea_id": "QM5_41359",
+      "ea_label": "QM5_41359_xtixng-waccel-rv",
+      "expected_mq5_sha256": "d3538877ce2d1432ee10c19ef9b85b3616582cd8fc3deeaefabf6f12ea65ed1c",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41359_xtixng-waccel-rv\\QM5_41359_xtixng-waccel-rv.mq5",
+      "work_item_id": "72fb26b3-2612-40a0-86a7-cdc3e7b38a63"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "72fb26b3-2612-40a0-86a7-cdc3e7b38a63"
+}
