@@ -1,0 +1,153 @@
+{
+  "schema": "qm.diversity-funnel-cpu-ceiling-stop/v1",
+  "observed_at_utc": "2026-09-06T06:00:35.4836697Z",
+  "observed_at_europe_berlin": "2026-09-06T08:00:35.4836697+02:00",
+  "branch": "agents/board-advisor",
+  "cpu_observed_head": "0ecc2dd174f0328577437a8e281e85c6aff146cf",
+  "db_snapshot_head": "f1f40c85d0d8f0246734c5b7c9911fc6327174c7",
+  "status": "STOPPED_CPU_CEILING",
+  "capacity_gate": {
+    "command": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 2 -MaxSamples 5",
+    "threshold_percent_exclusive": 97.0,
+    "sample_interval_seconds": 2,
+    "sample_count": 5,
+    "samples_percent": [
+      95.2171,
+      93.521,
+      95.9503,
+      95.7067,
+      100.0
+    ],
+    "average_percent": 96.079,
+    "maximum_percent": 100.0,
+    "average_admitted": true,
+    "maximum_admitted": false,
+    "admitted": false,
+    "decision": "The paced rule requires both the average and maximum to be strictly below 97 percent. The 100 percent maximum binds, so the unit stopped before any claim or execution."
+  },
+  "farm_snapshot": {
+    "db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "access": "read-only SQLite URI plus farmctl work-items/status views",
+    "captured_at_utc": "2026-09-06T06:03:29.581791+00:00",
+    "active_work_item_count": 8,
+    "active_by_phase": {
+      "OPT_CENSUS": 6,
+      "Q07": 1,
+      "Q08": 1
+    },
+    "active_terminals": [
+      "T1",
+      "T3",
+      "T5",
+      "T6",
+      "T7",
+      "T8",
+      "T9",
+      "T10"
+    ],
+    "pending_counts_captured_at_utc": "2026-09-06T06:02:57.589757+00:00",
+    "pending_by_phase": {
+      "COMPILE_EA": 28,
+      "OPT_CENSUS": 9850,
+      "Q02": 775,
+      "Q03": 142,
+      "Q04": 1116,
+      "Q05": 26,
+      "Q06": 5,
+      "Q07": 25,
+      "Q08": 13,
+      "Q09": 12,
+      "Q09_NEWS": 40,
+      "Q10_NEWS": 45,
+      "Q11": 1,
+      "Q12": 26,
+      "Q14": 2
+    }
+  },
+  "collision_reconciliation": {
+    "prior_next_candidate": {
+      "ea_id": "QM5_41171",
+      "slug": "wti-mturnpoint-tr",
+      "result": "EXCLUDED_ALREADY_ADVANCED",
+      "current_rows": [
+        {
+          "phase": "COMPILE_EA",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "id": "6a6bad94-24a9-4af6-810a-678471024f72"
+        },
+        {
+          "phase": "Q02",
+          "status": "done",
+          "verdict": "PASS",
+          "id": "a8a8f95b-c1ff-4af8-bd33-dc77ad92a4ce"
+        },
+        {
+          "phase": "Q04",
+          "status": "done",
+          "verdict": "PASS_LOWFREQ",
+          "id": "50fbbdbf-1872-4085-b7c0-00879f4ec3f3"
+        },
+        {
+          "phase": "Q05",
+          "status": "done",
+          "verdict": "PASS",
+          "id": "ccd43483-4d04-417e-bffd-fedecd0ffc3d"
+        },
+        {
+          "phase": "Q06",
+          "status": "done",
+          "verdict": "INFRA_FAIL",
+          "id": "a25e2178-d74c-46a8-91e8-487cc4ff3d77"
+        }
+      ],
+      "note": "Another paced agent compiled and advanced this identity after the prior stop receipt. It is no longer an unbuilt backlog candidate, and its Q06 issue is outside this mission's Q02-Q03 infrastructure-repair fallback."
+    },
+    "fresh_diverse_build": {
+      "ea_id": "QM5_41364",
+      "slug": "xtixng-wclv-div-rv",
+      "result": "EXCLUDED_COMPILE_ALREADY_PENDING",
+      "branch_commit": "0ecc2dd174f0328577437a8e281e85c6aff146cf",
+      "compile_work_item_id": "c406f0c2-a24e-4fde-a7e8-4b686bf6b271",
+      "compile_work_item_status": "pending",
+      "created_at_utc": "2026-09-06T05:54:43+00:00"
+    },
+    "forex_lane": {
+      "ea_id": "QM5_41143",
+      "slug": "gbpusd-month-end-benchmark-fix-hedge-flow",
+      "result": "EXCLUDED_Q02_ALREADY_PENDING",
+      "q02_work_item_id": "2ed1bb9e-cec7-4929-b23f-8fe1ab7dbf75",
+      "q02_work_item_status": "pending",
+      "created_at_utc": "2026-09-06T03:36:39+00:00"
+    },
+    "active_build_task_count": 4,
+    "active_build_task_ea_ids": [
+      "QM5_38005",
+      "QM5_41197",
+      "QM5_38006",
+      "QM5_41185"
+    ]
+  },
+  "selection_result": {
+    "claimed_ea_id": null,
+    "reason": "CPU admission failed before claim. Read-only DB reconciliation also proves that the prior WTI candidate has advanced and the newest diverse build and forex lane already have distinct pending work."
+  },
+  "mutation_boundary": {
+    "farm_task_created": false,
+    "work_item_created": false,
+    "work_item_claimed": false,
+    "compile_started": false,
+    "smoke_started": false,
+    "q02_enqueued": false,
+    "dispatch_tick_run": false,
+    "terminal_control_changed": false,
+    "worker_control_changed": false,
+    "registry_changed": false,
+    "ea_changed": false,
+    "portfolio_gate_changed": false,
+    "deploy_manifest_changed": false,
+    "t_live_touched": false,
+    "autotrading_touched": false
+  },
+  "continuation_condition": "On a later paced wake, take a new five-sample whole-host CPU window and re-query the canonical farm DB. Only claim one collision-free diverse EA when both average and maximum CPU are strictly below 97 percent."
+}
