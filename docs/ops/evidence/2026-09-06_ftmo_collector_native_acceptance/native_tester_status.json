@@ -1,0 +1,8 @@
+{
+  "status": "NOT_RUN",
+  "acceptance": "INCOMPLETE",
+  "reason": "Task prohibits installation into ANY terminal; headless cycle prohibits manual terminal64 startup. No compatible pre-existing harness route found.",
+  "scripted_observations": true,
+  "terminal_installed": false,
+  "required_next_step": "Review compiled harness and authorize a governed tester staging/run in a future task."
+}

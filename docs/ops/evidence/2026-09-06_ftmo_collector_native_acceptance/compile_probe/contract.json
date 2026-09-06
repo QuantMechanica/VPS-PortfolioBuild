@@ -1,0 +1,10 @@
+{
+  "schema": "qm.monitor-compile-probe/v1",
+  "task_id": "f4e95c80-c121-42cb-8e42-78e1334046f4",
+  "files": {
+    "editor/MetaEditor64.exe": "197ca3dd8d1971831366f54cb57bf3f120b420700e573135509d406e4e23709e",
+    "MQL5/QM_FTMO_TrialTelemetry.mq5": "394894ffa96aae2d04000054b9f307df3b360e7a9b51f67230ad068ac75e1094",
+    "MQL5/QM_FTMO_TrialTelemetryAcceptance.mq5": "180a1c7317ed197f8878a457cd13d8f1555bafceea19dcd6b07930f6c608ce26",
+    "MQL5/Include/QM/QM_FTMOGovernorPolicy.mqh": "7c7fd56095f9a37b60ba446b3e437fe257a9a0d98f743b0a1845a3b4dc8e0856"
+  }
+}

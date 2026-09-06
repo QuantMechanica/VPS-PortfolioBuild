@@ -1,0 +1,3 @@
+compile_probe/editor/
+compile_probe/**/*.ex5
+compile_probe/probe.lock
