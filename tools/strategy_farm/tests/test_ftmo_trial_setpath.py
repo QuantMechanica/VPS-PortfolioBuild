@@ -51,3 +51,66 @@ def test_existing_destination_refused(tmp_path,monkeypatch):
     monkeypatch.setattr(s,'TRIAL_ROOT',tmp_path)
     (tmp_path/'existing').mkdir()
     with pytest.raises(s.Refusal):s.output_path('existing')
+
+
+def test_m13_binding_is_standard_hash_bound_and_governor_coherent():
+    binding, rule, rulepack, raw = s.load_binding()
+    assert binding['binding_id'] == 'FTMO_M13_STANDARD_DEMO_V1'
+    assert binding['account']['observed_leverage'] == '1:100'
+    assert rule['rulepack_id'] == 'FTMO_2S_100K_STANDARD_V2'
+    assert binding['rulepack']['file_sha256'] == s.sha(raw)
+    assert rulepack == s.RULEPACK
+    assert binding['qm_demo_overlay']['news_stale_max_hours'] == 336
+    assert binding['authority_boundary']['attachment_authorized'] is False
+    assert binding['authority_boundary']['autotrading_authorized'] is False
+
+
+def test_m13_binding_refuses_account_or_hash_drift(tmp_path):
+    binding = json.loads(s.BINDING.read_text(encoding='utf-8'))
+    binding['account']['observed_leverage'] = '1:30'
+    path = tmp_path / 'binding.json'
+    path.write_text(json.dumps(binding), encoding='utf-8')
+    with pytest.raises(s.Refusal, match='wrong_standard_demo_account'):
+        s.load_binding(path)
+
+    binding['account']['observed_leverage'] = '1:100'
+    binding['rulepack']['file_sha256'] = '0' * 64
+    path.write_text(json.dumps(binding), encoding='utf-8')
+    with pytest.raises(s.Refusal, match='rulepack_file_hash_drift'):
+        s.load_binding(path)
+
+
+def test_generated_manifest_names_standard_profile_and_internal_overlay(tmp_path, monkeypatch):
+    monkeypatch.setattr(s, 'TRIAL_ROOT', tmp_path / 'review')
+    s.TRIAL_ROOT.mkdir()
+    database = tmp_path / 'farm.sqlite'
+    sqlite3.connect(database).close()
+    source = tmp_path / 'source_EURUSD.DWX_H1_backtest.set'
+    source.write_bytes(BASE)
+
+    def fake_sealed_source(_conn, ea, symbol):
+        return BASE, {
+            'ea_id': ea,
+            'symbol': symbol,
+            'native_symbol': s.LANES[symbol],
+            'timeframe': 'H1',
+            'seal_work_item_id': f'seal-{ea}',
+            'source_path': str(source),
+            'source_sha256': s.sha(BASE),
+            'seal_path': str(tmp_path / 'seal.json'),
+            'seal_sha256': '1' * 64,
+            'source_role': 'SEALED_BASELINE_STRATEGY_PARAMETERS',
+            'original_selected_news_config': {},
+            'ex5_sha256': '2' * 64,
+        }
+
+    monkeypatch.setattr(s, 'sealed_source', fake_sealed_source)
+    manifest = s.generate('standard-binding-test', 0.1, database=database)
+    assert manifest['schema'] == 'qm.ftmo-trial-setpath/v3'
+    assert manifest['rulepack']['id'] == 'FTMO_2S_100K_STANDARD_V2'
+    assert manifest['constraints']['observed_account_leverage'] == '1:100'
+    assert manifest['constraints']['provider_evaluation_news_restricted'] is False
+    assert manifest['constraints']['qm_news_blackout'] == 'PRE30_POST30_PLUS_FTMO_COMPLIANCE'
+    assert manifest['constraints']['qm_weekend_flat'].startswith('FRIDAY_CLOSE')
+    assert manifest['installed'] is False
+    assert manifest['installable'] is False

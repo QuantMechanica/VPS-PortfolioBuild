@@ -1,0 +1,62 @@
+{
+  "schema": "qm.ftmo-m13-standard-demo-binding/v1",
+  "binding_id": "FTMO_M13_STANDARD_DEMO_V1",
+  "status": "REVIEW_ONLY",
+  "account": {
+    "variant": "STANDARD_2STEP_100K_FREE_TRIAL",
+    "login": 1514536732,
+    "server": "FTMO-Demo",
+    "initial_simulated_capital_usd": "100000",
+    "observed_leverage": "1:100",
+    "terms_evidence_path": "docs/ops/evidence/2026-09-06_ftmo_demo_account_terms.md",
+    "terms_evidence_sha256": "3b1d605ab0a45f0c2115ca14c17701788f47610ce936bd4b59b8b27b4bc39964"
+  },
+  "rulepack": {
+    "id": "FTMO_2S_100K_STANDARD_V2",
+    "profile_version": 2,
+    "as_of": "2026-09-04",
+    "path": "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_STANDARD_V2.json",
+    "file_sha256": "dbec549474680a2e04b7677f249d180d7dbd65af1a8a6a0e72c654682707faa3",
+    "canonical_sha256": "d24b19d7080bae2302846072cf7b6ed74bc0082ebede684979e292ea8269f276"
+  },
+  "official_limits": {
+    "maximum_daily_loss_percent": "5",
+    "maximum_loss_percent": "10",
+    "daily_reset_timezone": "Europe/Prague"
+  },
+  "qm_demo_overlay": {
+    "classification": "INTERNAL_QM_POLICY_NOT_PROVIDER_RULE",
+    "news_temporal_mode": 3,
+    "news_compliance_profile": 2,
+    "news_pause_before_minutes": 30,
+    "news_pause_after_minutes": 30,
+    "news_stale_max_hours": 336,
+    "weekend_flat": true,
+    "friday_close_hour_broker": 21,
+    "friday_flat_lead_minutes": 5,
+    "provider_evaluation_news_restricted": false,
+    "provider_evaluation_weekend_restricted": false
+  },
+  "evaluator": {
+    "module": "tools/strategy_farm/portfolio/ftmo_book3_standalone_evaluator.py",
+    "selection_mode": "EXPLICIT_M13_DEMO_BINDING",
+    "rulepack_path": "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_STANDARD_V2.json",
+    "rulepack_file_sha256": "dbec549474680a2e04b7677f249d180d7dbd65af1a8a6a0e72c654682707faa3",
+    "rulepack_canonical_sha256": "d24b19d7080bae2302846072cf7b6ed74bc0082ebede684979e292ea8269f276"
+  },
+  "governor": {
+    "ea_id": 13206,
+    "policy_id": "FTMO_2S_P1_100K_V2",
+    "bootstrap_preset_path": "framework/EAs/QM5_13206_ftmo-account-governor/sets/QM5_13206_ftmo-account-governor_ACCOUNT_TIMER_M13_demo_bootstrap.set",
+    "bootstrap_preset_sha256": "c189004f19e89fd83dd563cfd9334bc5b60c67cb9302b65217ad3ebbb7fb40f2",
+    "active_preset_path": "framework/EAs/QM5_13206_ftmo-account-governor/sets/QM5_13206_ftmo-account-governor_ACCOUNT_TIMER_M13_demo_active.set",
+    "active_preset_sha256": "8537309436144497e42ccdee94426eeb5d7bad95f3568f92ba01bf532dedb061"
+  },
+  "authority_boundary": {
+    "install_authorized": false,
+    "attachment_authorized": false,
+    "autotrading_authorized": false,
+    "purchase_authorized": false,
+    "owner_signature_required": true
+  }
+}

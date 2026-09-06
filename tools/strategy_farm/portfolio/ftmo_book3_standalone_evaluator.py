@@ -150,6 +150,9 @@ DEFAULT_RULEPACK_PATH = (
 DEFAULT_RULEPACK_SHA256 = (
     "298ef1285eca49ea7f010ebc0a9353b5a821fccb40a025be129f5ca5314fd992"
 )
+M13_STANDARD_BINDING_PATH = (
+    REPO_ROOT / "tools/strategy_farm/config/ftmo_m13_standard_demo.v1.json"
+)
 
 STARTING_BALANCE = 100_000.0
 PHASE1_TARGET = 110_000.0
@@ -399,6 +402,52 @@ EXPECTED_OFFICIAL_RULE_SEMANTICS: dict[str, dict[str, Any]] = {
     },
 }
 
+EXPECTED_STANDARD_OFFICIAL_RULE_SEMANTICS: dict[str, dict[str, Any]] = {
+    rule_id: semantics
+    for rule_id, semantics in EXPECTED_OFFICIAL_RULE_SEMANTICS.items()
+    if rule_id not in {"ftmo_swing_news", "ftmo_swing_weekend", "ftmo_swing_leverage"}
+}
+EXPECTED_STANDARD_OFFICIAL_RULE_SEMANTICS.update(
+    {
+        "ftmo_standard_news": {
+            "category": "TRADING_CONDITION",
+            "scope": [
+                "FTMO_2_STEP_PHASE1",
+                "FTMO_2_STEP_VERIFICATION",
+                "FTMO_ACCOUNT_STANDARD",
+            ],
+            "parameters": {
+                "evaluation_restricted": False,
+                "ftmo_account_standard_restricted": True,
+                "window_minutes_before": 2,
+                "window_minutes_after": 2,
+                "opening_positions_allowed": False,
+                "closing_positions_allowed": False,
+                "pending_order_execution_allowed": False,
+                "preexisting_position_holding_allowed": True,
+                "stop_loss_or_take_profit_execution_allowed": False,
+                "targeted_instruments_only": True,
+            },
+            "source_ids": ["ftmo_news_official"],
+        },
+        "ftmo_standard_weekend": {
+            "category": "TRADING_CONDITION",
+            "scope": [
+                "FTMO_2_STEP_PHASE1",
+                "FTMO_2_STEP_VERIFICATION",
+                "FTMO_ACCOUNT_STANDARD",
+            ],
+            "parameters": {
+                "evaluation_restricted": False,
+                "ftmo_account_standard_restricted": True,
+                "maximum_market_break_hours": 2,
+                "close_before_weekend": True,
+            },
+            "source_ids": ["ftmo_weekend_official"],
+        },
+    }
+)
+
 EXPECTED_INTERNAL_GUARDRAIL_SEMANTICS: dict[str, dict[str, Any]] = {
     "qm_ftmo_initial_balance_risk_anchor": {
         "scope": ["FTMO_2_STEP_PHASE1", "FTMO_2_STEP_VERIFICATION", "SIZING"],
@@ -588,6 +637,10 @@ EXPECTED_EVALUATION_OBJECTIVE = (
     "preserving enough risk margin to complete Verification and operate the later "
     "Swing FTMO Account."
 )
+EXPECTED_STANDARD_EVALUATION_OBJECTIVE = (
+    "Evaluate a rule-faithful FTMO 2-Step Standard book while preserving enough "
+    "risk margin to complete Verification and operate a later Standard FTMO Account."
+)
 EXPECTED_METRIC_SEMANTICS: dict[str, dict[str, Any]] = {
     "phase1_first_passage_probability": {
         "direction": "MAXIMIZE",
@@ -679,6 +732,38 @@ EXPECTED_DEPLOYMENT_BOUNDARY = {
         "A future runtime integration requires a new reviewed version and explicit OWNER authorization.",
     ],
 }
+EXPECTED_STANDARD_M13_OVERLAY_SEMANTICS = {
+    "scope": [
+        "M13",
+        "FTMO_STANDARD_FREE_TRIAL",
+        "ACCOUNT_GOVERNOR",
+        "TRIAL_SET_DERIVATION",
+    ],
+    "parameters": {
+        "observed_account_leverage": "1:100",
+        "leverage_evidence_path": "docs/ops/evidence/2026-09-06_ftmo_demo_account_terms.md",
+        "news_temporal_mode": 3,
+        "news_compliance_profile": 2,
+        "news_pause_before_minutes": 30,
+        "news_pause_after_minutes": 30,
+        "news_stale_max_hours": 336,
+        "weekend_flat": True,
+        "friday_close_hour_broker": 21,
+        "friday_flat_lead_minutes": 5,
+    },
+}
+EXPECTED_STANDARD_DEPLOYMENT_BOUNDARY = {
+    "runtime_integration": "NOT_IMPLEMENTED",
+    "deploy_authorization": "OWNER_ONLY",
+    "factory_action_authorized": False,
+    "mt5_action_authorized": False,
+    "notes": [
+        "This rulepack does not modify or configure QM_PropFirm, QM_FTMOGovernorPolicy, an EA, a terminal, or AutoTrading.",
+        "Standard funded-account news and weekend facts are provider rules; FTMO exempts Evaluation accounts, while M13's broader news blackout and Friday flat are explicit QuantMechanica policy.",
+        "The observed M13 1:100 leverage is account-bound evidence, not a claim derived from the 2026-09-04 public provider snapshot.",
+        "A future runtime integration requires a new reviewed version and explicit OWNER authorization.",
+    ],
+}
 
 
 class StandaloneEvaluationError(ValueError):
@@ -705,6 +790,78 @@ def sha256_file(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def resolve_m13_standard_rulepack(
+    binding_path: Path = M13_STANDARD_BINDING_PATH,
+) -> Path:
+    """Resolve the M13 evaluator rulepack from its review-only binding."""
+
+    binding = _load_json(binding_path, "m13_demo_binding")
+    if not isinstance(binding, Mapping):
+        raise StandaloneEvaluationError("m13_demo_binding:not_object")
+    evaluator = binding.get("evaluator")
+    contract = binding.get("rulepack")
+    authority = binding.get("authority_boundary")
+    if (
+        binding.get("schema") != "qm.ftmo-m13-standard-demo-binding/v1"
+        or binding.get("status") != "REVIEW_ONLY"
+        or not isinstance(evaluator, Mapping)
+        or not isinstance(contract, Mapping)
+        or not isinstance(authority, Mapping)
+    ):
+        raise StandaloneEvaluationError("m13_demo_binding:contract_invalid")
+    if (
+        evaluator.get("module")
+        != "tools/strategy_farm/portfolio/ftmo_book3_standalone_evaluator.py"
+        or evaluator.get("selection_mode") != "EXPLICIT_M13_DEMO_BINDING"
+        or evaluator.get("rulepack_path") != contract.get("path")
+        or evaluator.get("rulepack_file_sha256") != contract.get("file_sha256")
+        or evaluator.get("rulepack_canonical_sha256")
+        != contract.get("canonical_sha256")
+        or contract.get("id") != "FTMO_2S_100K_STANDARD_V2"
+        or contract.get("profile_version") != 2
+        or contract.get("as_of") != "2026-09-04"
+    ):
+        raise StandaloneEvaluationError("m13_demo_binding:evaluator_rulepack_invalid")
+    if (
+        any(
+            authority.get(key) is not False
+            for key in (
+                "install_authorized",
+                "attachment_authorized",
+                "autotrading_authorized",
+                "purchase_authorized",
+            )
+        )
+        or authority.get("owner_signature_required") is not True
+    ):
+        raise StandaloneEvaluationError("m13_demo_binding:authority_invalid")
+    relative = contract.get("path")
+    if not isinstance(relative, str) or not relative or "\\" in relative:
+        raise StandaloneEvaluationError("m13_demo_binding:rulepack_path_invalid")
+    rulepack_path = (REPO_ROOT / relative).resolve()
+    try:
+        rulepack_path.relative_to(REPO_ROOT)
+    except ValueError as exc:
+        raise StandaloneEvaluationError(
+            "m13_demo_binding:rulepack_path_escape"
+        ) from exc
+    if not rulepack_path.is_file():
+        raise StandaloneEvaluationError("m13_demo_binding:rulepack_missing")
+    raw = rulepack_path.read_bytes()
+    if hashlib.sha256(raw).hexdigest() != contract.get("file_sha256"):
+        raise StandaloneEvaluationError("m13_demo_binding:rulepack_file_hash_drift")
+    document = _load_json(rulepack_path, "m13_standard_rulepack")
+    if (
+        not isinstance(document, Mapping)
+        or canonical_sha256(document) != contract.get("canonical_sha256")
+    ):
+        raise StandaloneEvaluationError("m13_demo_binding:rulepack_canonical_hash_drift")
+    _official_rules(document)
+    _internal_policy(document)
+    _evaluation_and_deployment_contract(document)
+    return rulepack_path
 
 
 def canonical_sha256(value: Any) -> str:
@@ -1322,13 +1479,21 @@ def _validate_official_rule_sources(
 
 def _official_rules(rulepack: Mapping[str, Any]) -> dict[str, Any]:
     """Validate every model-relevant official rule field as an exact contract."""
+    rulepack_id = rulepack.get("rulepack_id")
+    is_standard = rulepack_id == "FTMO_2S_100K_STANDARD_V2"
     expected_header = {
         "schema_version": "target-rulepack/v1",
         "schema_ref": "tools/strategy_farm/schemas/target_rulepack_v1.schema.json",
-        "rulepack_id": "FTMO_2S_100K_SWING_V2",
+        "rulepack_id": (
+            "FTMO_2S_100K_STANDARD_V2" if is_standard else "FTMO_2S_100K_SWING_V2"
+        ),
         "profile_version": 2,
         "target": "FTMO",
-        "account_or_program": "FTMO Challenge 2-Step / USD 100000 / Swing",
+        "account_or_program": (
+            "FTMO Challenge 2-Step / USD 100000 / Standard"
+            if is_standard
+            else "FTMO Challenge 2-Step / USD 100000 / Swing"
+        ),
         "as_of": "2026-09-04",
         "lifecycle_status": "RESEARCH_CONTRACT_ONLY",
         "canonicalization": {
@@ -1351,9 +1516,14 @@ def _official_rules(rulepack: Mapping[str, Any]) -> dict[str, Any]:
         if rule_id in by_id:
             raise StandaloneEvaluationError(f"rulepack:duplicate_rule_id:{rule_id}")
         by_id[rule_id] = row
-    if set(by_id) != set(EXPECTED_OFFICIAL_RULE_SEMANTICS):
+    expected_semantics = (
+        EXPECTED_STANDARD_OFFICIAL_RULE_SEMANTICS
+        if is_standard
+        else EXPECTED_OFFICIAL_RULE_SEMANTICS
+    )
+    if set(by_id) != set(expected_semantics):
         raise StandaloneEvaluationError("rulepack:official_rule_id_set_invalid")
-    for rule_id, required in EXPECTED_OFFICIAL_RULE_SEMANTICS.items():
+    for rule_id, required in expected_semantics.items():
         row = by_id[rule_id]
         observed = {
             "category": row.get("category"),
@@ -1391,9 +1561,11 @@ def _official_rules(rulepack: Mapping[str, Any]) -> dict[str, Any]:
         "validated_not_simulated_rule_ids": [
             "ftmo_ea_server_limits",
             "ftmo_replicable_trading_requirement",
-            "ftmo_swing_news",
-            "ftmo_swing_weekend",
+            "ftmo_standard_news" if is_standard else "ftmo_swing_news",
+            "ftmo_standard_weekend" if is_standard else "ftmo_swing_weekend",
         ],
+        "rulepack_id": rulepack_id,
+        "account_profile": "STANDARD" if is_standard else "SWING",
     }
 
 
@@ -1411,9 +1583,15 @@ def _internal_policy(rulepack: Mapping[str, Any]) -> dict[str, Any]:
                 f"rulepack:duplicate_guardrail_id:{guardrail_id}"
             )
         by_id[guardrail_id] = value
-    if set(by_id) != set(EXPECTED_INTERNAL_GUARDRAIL_SEMANTICS):
+    is_standard = rulepack.get("rulepack_id") == "FTMO_2S_100K_STANDARD_V2"
+    expected_semantics = dict(EXPECTED_INTERNAL_GUARDRAIL_SEMANTICS)
+    if is_standard:
+        expected_semantics["qm_ftmo_m13_standard_demo_operating_overlay"] = (
+            EXPECTED_STANDARD_M13_OVERLAY_SEMANTICS
+        )
+    if set(by_id) != set(expected_semantics):
         raise StandaloneEvaluationError("rulepack:guardrail_id_set_invalid")
-    for guardrail_id, required_semantics in EXPECTED_INTERNAL_GUARDRAIL_SEMANTICS.items():
+    for guardrail_id, required_semantics in expected_semantics.items():
         value = by_id[guardrail_id]
         observed_semantics = {
             "scope": value.get("scope"),
@@ -1421,7 +1599,12 @@ def _internal_policy(rulepack: Mapping[str, Any]) -> dict[str, Any]:
         }
         if (
             value.get("classification") != "INTERNAL_QM_POLICY_NOT_PROVIDER_RULE"
-            or value.get("status") != "PROPOSED_FOR_CALIBRATION"
+            or value.get("status")
+            != (
+                "OWNER_RATIFIED"
+                if guardrail_id == "qm_ftmo_m13_standard_demo_operating_overlay"
+                else "PROPOSED_FOR_CALIBRATION"
+            )
             or canonical_sha256(observed_semantics)
             != canonical_sha256(required_semantics)
         ):
@@ -1508,7 +1691,13 @@ def _evaluation_and_deployment_contract(rulepack: Mapping[str, Any]) -> dict[str
         "go_criteria",
     }:
         raise StandaloneEvaluationError("rulepack:evaluation_profile_field_set_invalid")
-    if profile.get("objective") != EXPECTED_EVALUATION_OBJECTIVE:
+    is_standard = rulepack.get("rulepack_id") == "FTMO_2S_100K_STANDARD_V2"
+    expected_objective = (
+        EXPECTED_STANDARD_EVALUATION_OBJECTIVE
+        if is_standard
+        else EXPECTED_EVALUATION_OBJECTIVE
+    )
+    if profile.get("objective") != expected_objective:
         raise StandaloneEvaluationError("rulepack:evaluation_objective_invalid")
 
     def exact_rows(
@@ -1556,11 +1745,16 @@ def _evaluation_and_deployment_contract(rulepack: Mapping[str, Any]) -> dict[str
         raise StandaloneEvaluationError("rulepack:metric_criterion_ids_not_disjoint")
 
     deployment = rulepack.get("deployment_boundary")
+    expected_deployment = (
+        EXPECTED_STANDARD_DEPLOYMENT_BOUNDARY
+        if is_standard
+        else EXPECTED_DEPLOYMENT_BOUNDARY
+    )
     if (
         not isinstance(deployment, Mapping)
-        or set(deployment) != set(EXPECTED_DEPLOYMENT_BOUNDARY)
+        or set(deployment) != set(expected_deployment)
         or canonical_sha256(deployment)
-        != canonical_sha256(EXPECTED_DEPLOYMENT_BOUNDARY)
+        != canonical_sha256(expected_deployment)
         or any(
             value is not False
             for key, value in deployment.items()
@@ -3890,6 +4084,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--evidence-vintage")
     parser.add_argument("--cost-snapshot", type=Path)
     parser.add_argument("--rulepack", type=Path)
+    parser.add_argument(
+        "--m13-demo-binding",
+        type=Path,
+        help="Select the hash-bound Standard rulepack from the M13 review-only config",
+    )
     parser.add_argument("--qualification", type=Path)
     parser.add_argument("--staging-root", type=Path)
     parser.add_argument("--timestamp-basis")
@@ -3909,6 +4108,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         parser.add_argument(f"--{rung}-report", type=Path)
     args = parser.parse_args(argv)
     try:
+        if args.m13_demo_binding is not None:
+            if args.prepare_manifest is None or args.rulepack is not None:
+                raise StandaloneEvaluationError(
+                    "m13_demo_binding:requires_prepare_manifest_and_no_rulepack_override"
+                )
+            args.rulepack = resolve_m13_standard_rulepack(args.m13_demo_binding)
         if args.prepare_manifest is not None:
             required = (
                 "source_commit",

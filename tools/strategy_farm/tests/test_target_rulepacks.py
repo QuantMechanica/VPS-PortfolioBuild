@@ -15,6 +15,7 @@ from tools.strategy_farm import target_rulepacks as rulepacks  # noqa: E402
 
 DXZ_ID = "DXZ_BETTER_BOOK_V1"
 FTMO_ID = "FTMO_2S_100K_SWING_V2"
+FTMO_STANDARD_ID = "FTMO_2S_100K_STANDARD_V2"
 
 
 def _by_id(rows: list[dict], key: str) -> dict[str, dict]:
@@ -25,12 +26,13 @@ def test_loads_both_versioned_rulepacks_with_canonical_hashes() -> None:
     ids = rulepacks.list_rulepack_ids()
     assert DXZ_ID in ids
     assert FTMO_ID in ids
+    assert FTMO_STANDARD_ID in ids
 
     loaded = {pack.rulepack_id: pack for pack in rulepacks.validate_all()}
-    assert {DXZ_ID, FTMO_ID} <= set(loaded)
+    assert {DXZ_ID, FTMO_ID, FTMO_STANDARD_ID} <= set(loaded)
     for pack in loaded.values():
         assert pack.rulepack_id.endswith(f"_V{pack.profile_version}")
-        assert pack.as_of == ("2026-09-04" if pack.rulepack_id == FTMO_ID else "2026-07-29")
+        assert pack.as_of == ("2026-09-04" if pack.target == "FTMO" else "2026-07-29")
         assert len(pack.canonical_sha256) == 64
         assert pack.canonical_sha256 == hashlib.sha256(pack.canonical_payload).hexdigest()
         assert pack.canonical_sha256 == rulepacks.canonical_sha256(pack.as_dict())
@@ -119,8 +121,41 @@ def test_ftmo_swing_rulepack_pins_current_two_step_rules() -> None:
     ] is False
 
 
+def test_ftmo_standard_rulepack_separates_provider_facts_from_m13_overlay() -> None:
+    payload = rulepacks.load_rulepack(FTMO_STANDARD_ID).as_dict()
+    official = _by_id(payload["official_rules"], "rule_id")
+    internal = _by_id(payload["internal_guardrails"], "guardrail_id")
+
+    assert payload["account_or_program"].endswith("/ Standard")
+    assert not {"ftmo_swing_news", "ftmo_swing_weekend", "ftmo_swing_leverage"} & set(official)
+    assert official["ftmo_standard_news"]["parameters"] == {
+        "evaluation_restricted": False,
+        "ftmo_account_standard_restricted": True,
+        "window_minutes_before": 2,
+        "window_minutes_after": 2,
+        "opening_positions_allowed": False,
+        "closing_positions_allowed": False,
+        "pending_order_execution_allowed": False,
+        "preexisting_position_holding_allowed": True,
+        "stop_loss_or_take_profit_execution_allowed": False,
+        "targeted_instruments_only": True,
+    }
+    assert official["ftmo_standard_weekend"]["parameters"] == {
+        "evaluation_restricted": False,
+        "ftmo_account_standard_restricted": True,
+        "maximum_market_break_hours": 2,
+        "close_before_weekend": True,
+    }
+    overlay = internal["qm_ftmo_m13_standard_demo_operating_overlay"]
+    assert overlay["classification"] == rulepacks.INTERNAL_CLASSIFICATION
+    assert overlay["status"] == "OWNER_RATIFIED"
+    assert overlay["parameters"]["observed_account_leverage"] == "1:100"
+    assert overlay["parameters"]["news_stale_max_hours"] == 336
+    assert overlay["parameters"]["weekend_flat"] is True
+
+
 def test_q08_soft_is_evidence_debt_not_clean_pass() -> None:
-    for rulepack_id in (DXZ_ID, FTMO_ID):
+    for rulepack_id in (DXZ_ID, FTMO_ID, FTMO_STANDARD_ID):
         policy = rulepacks.load_rulepack(rulepack_id).as_dict()["q08_evidence_policy"]
         assert policy["soft_admission_status"] == "TARGET_ELIGIBLE_WITH_EVIDENCE_DEBT"
         assert policy["not_applicable_requires_declared_archetype"] is True
@@ -135,7 +170,7 @@ def test_q08_soft_is_evidence_debt_not_clean_pass() -> None:
 
 
 def test_rulepacks_are_explicitly_non_runtime_and_non_mutating() -> None:
-    for rulepack_id in (DXZ_ID, FTMO_ID):
+    for rulepack_id in (DXZ_ID, FTMO_ID, FTMO_STANDARD_ID):
         boundary = rulepacks.load_rulepack(rulepack_id).as_dict()["deployment_boundary"]
         assert boundary["runtime_integration"] == "NOT_IMPLEMENTED"
         assert boundary["deploy_authorization"] == "OWNER_ONLY"

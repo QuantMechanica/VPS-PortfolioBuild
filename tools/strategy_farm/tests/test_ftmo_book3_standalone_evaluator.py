@@ -101,6 +101,16 @@ def _rulepack() -> dict[str, object]:
     return value
 
 
+def _standard_rulepack() -> dict[str, object]:
+    path = (
+        evaluator.REPO_ROOT
+        / "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_STANDARD_V2.json"
+    )
+    value = json.loads(path.read_text(encoding="utf-8"))
+    assert isinstance(value, dict)
+    return value
+
+
 def _cost_snapshot(now: dt.datetime) -> dict[str, object]:
     rows = []
     values = {
@@ -1393,6 +1403,37 @@ def test_rulepack_semantics_reject_legacy_inclusive_operator() -> None:
 
     with pytest.raises(evaluator.StandaloneEvaluationError, match="unsupported_rule_semantics"):
         evaluator._official_rules(rulepack)
+
+
+def test_m13_standard_binding_selects_exact_profile_without_changing_swing_default(
+    tmp_path: Path,
+) -> None:
+    assert evaluator.DEFAULT_RULEPACK_PATH.name == "FTMO_2S_100K_SWING_V2.json"
+    selected = evaluator.resolve_m13_standard_rulepack()
+    assert selected.name == "FTMO_2S_100K_STANDARD_V2.json"
+
+    rulepack = _standard_rulepack()
+    rules = evaluator._official_rules(rulepack)
+    internal = evaluator._internal_policy(rulepack)
+    deployment = evaluator._evaluation_and_deployment_contract(rulepack)
+    assert rules["account_profile"] == "STANDARD"
+    assert rules["daily_loss_amount"] == 5000
+    assert rules["maximum_loss_floor"] == 90000
+    assert "ftmo_standard_news" in rules["validated_not_simulated_rule_ids"]
+    assert "qm_ftmo_m13_standard_demo_operating_overlay" in internal[
+        "validated_guardrail_ids"
+    ]
+    assert deployment["deployment_boundary"]["mt5_action_authorized"] is False
+
+    binding = json.loads(evaluator.M13_STANDARD_BINDING_PATH.read_text(encoding="utf-8"))
+    binding["evaluator"]["rulepack_file_sha256"] = "0" * 64
+    tampered = tmp_path / "binding.json"
+    tampered.write_text(json.dumps(binding), encoding="utf-8")
+    with pytest.raises(
+        evaluator.StandaloneEvaluationError,
+        match="evaluator_rulepack_invalid",
+    ):
+        evaluator.resolve_m13_standard_rulepack(tampered)
 
 
 def test_rulepack_rejects_duplicate_ids_and_semantic_substitution() -> None:

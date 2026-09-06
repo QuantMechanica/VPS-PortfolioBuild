@@ -13,6 +13,13 @@
       "last_reviewed_on": "2026-08-23",
       "next_review_due_on": "2026-11-21",
       "note": "WebFetch https://ftmo.com/en/trading-objectives/ 2026-08-23: Phase1 profit target 10%, Verification profit target 5%, Max Daily Loss 5%, Max Loss 10%, Min Trading Days 4 -- all match ftmo_2s_phase1_profit_target/ftmo_2s_verification_profit_target/ftmo_2s_max_daily_loss/ftmo_2s_maximum_loss/ftmo_2s_minimum_trading_days in FTMO_2S_100K_SWING_V2. News/weekend/EA/forbidden-practices sources not re-fetched this pass; only the objectives page was checked."
+    },
+    "FTMO_2S_100K_STANDARD_V2": {
+      "interval_days": 90,
+      "last_check_result": "CONFIRMED_UNCHANGED",
+      "last_reviewed_on": "2026-09-06",
+      "next_review_due_on": "2026-12-05",
+      "note": "Compared FTMO_2S_100K_STANDARD_V2 against the hash-bound 2026-09-04 official-rules snapshot and its retained official FTMO news/weekend raw responses. The common 2-Step 10%/5% objectives and 5% daily/10% total limits match; the provider pages say Standard funded accounts are restricted for selected news and weekend/long breaks while Evaluation is exempt. M13's stricter demo blackout/Friday-flat and observed 1:100 leverage remain separately classified and evidence-bound internal/account facts. No live web re-fetch was performed in this review."
     }
   },
   "schema_version": "target-rulepack-review-sla/v1"

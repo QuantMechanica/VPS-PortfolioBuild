@@ -545,8 +545,16 @@ def _validate_ftmo(
     rules: Mapping[str, Mapping[str, Any]],
     guardrails: Mapping[str, Mapping[str, Any]],
 ) -> None:
-    if payload["account_or_program"] != "FTMO Challenge 2-Step / USD 100000 / Swing":
-        _fail("$.account_or_program", "unexpected FTMO product identity")
+    rulepack_id = str(payload["rulepack_id"])
+    profiles = {
+        "FTMO_2S_100K_SWING_V2": "FTMO Challenge 2-Step / USD 100000 / Swing",
+        "FTMO_2S_100K_STANDARD_V2": "FTMO Challenge 2-Step / USD 100000 / Standard",
+    }
+    expected_product = profiles.get(rulepack_id)
+    if expected_product is None:
+        _fail("$.rulepack_id", "unsupported FTMO profile identity")
+    if payload["account_or_program"] != expected_product:
+        _fail("$.account_or_program", f"must equal {expected_product!r}")
     for source_id, source in sources.items():
         hostname = urlparse(source["url"]).hostname or ""
         if hostname != "ftmo.com" and not hostname.endswith(".ftmo.com"):
@@ -627,16 +635,68 @@ def _validate_ftmo(
         "ftmo_2s_pass_condition",
         {"balance_operator": "STRICTLY_GREATER_THAN_TARGET", "positions_open": 0},
     )
-    _expect_parameters(
-        rules,
-        "ftmo_swing_news",
-        {"evaluation_restricted": False, "ftmo_account_swing_restricted": False},
-    )
-    _expect_parameters(
-        rules,
-        "ftmo_swing_weekend",
-        {"evaluation_restricted": False, "ftmo_account_swing_restricted": False},
-    )
+    if rulepack_id == "FTMO_2S_100K_SWING_V2":
+        _expect_parameters(
+            rules,
+            "ftmo_swing_news",
+            {"evaluation_restricted": False, "ftmo_account_swing_restricted": False},
+        )
+        _expect_parameters(
+            rules,
+            "ftmo_swing_weekend",
+            {"evaluation_restricted": False, "ftmo_account_swing_restricted": False},
+        )
+        if {"ftmo_standard_news", "ftmo_standard_weekend"} & set(rules):
+            _fail("$.official_rules", "Swing profile must not contain Standard conditions")
+    else:
+        _expect_parameters(
+            rules,
+            "ftmo_standard_news",
+            {
+                "evaluation_restricted": False,
+                "ftmo_account_standard_restricted": True,
+                "window_minutes_before": 2,
+                "window_minutes_after": 2,
+                "opening_positions_allowed": False,
+                "closing_positions_allowed": False,
+                "pending_order_execution_allowed": False,
+                "preexisting_position_holding_allowed": True,
+                "stop_loss_or_take_profit_execution_allowed": False,
+                "targeted_instruments_only": True,
+            },
+        )
+        _expect_parameters(
+            rules,
+            "ftmo_standard_weekend",
+            {
+                "evaluation_restricted": False,
+                "ftmo_account_standard_restricted": True,
+                "maximum_market_break_hours": 2,
+                "close_before_weekend": True,
+            },
+        )
+        if {"ftmo_swing_news", "ftmo_swing_weekend", "ftmo_swing_leverage"} & set(rules):
+            _fail("$.official_rules", "Standard profile must not contain Swing conditions")
+        overlay = _require_guardrail(
+            guardrails, "qm_ftmo_m13_standard_demo_operating_overlay"
+        )
+        expected_overlay = {
+            "observed_account_leverage": "1:100",
+            "news_temporal_mode": 3,
+            "news_compliance_profile": 2,
+            "news_pause_before_minutes": 30,
+            "news_pause_after_minutes": 30,
+            "news_stale_max_hours": 336,
+            "weekend_flat": True,
+            "friday_close_hour_broker": 21,
+            "friday_flat_lead_minutes": 5,
+        }
+        for key, value in expected_overlay.items():
+            if overlay["parameters"].get(key) != value:
+                _fail(
+                    f"$.internal_guardrails.qm_ftmo_m13_standard_demo_operating_overlay.parameters.{key}",
+                    f"must equal {value!r}",
+                )
     _expect_parameters(
         rules,
         "ftmo_ea_server_limits",
