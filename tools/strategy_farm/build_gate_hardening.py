@@ -802,7 +802,7 @@ def _check_indicator_buffer_bounds_candidate(source: SourceFile) -> list[str]:
                 if access.start() <= resize_offset:
                     continue
                 index = access.group("index")
-                if proof.bounded(name, index, access.start()):
+                if proof.bounded(name, index, access.start(), size_expression):
                     continue
                 if _literal_access_is_bounded(index, size_expression):
                     continue

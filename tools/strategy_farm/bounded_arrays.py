@@ -10,7 +10,7 @@ from dataclasses import dataclass
 import re
 
 VAR = r'[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*'
-PURE = {'ArraySize','ArrayResize','ArraySort','ArraySetAsSeries','MathIsValidNumber',
+PURE = {'ArraySize','ArrayResize','ArraySort','ArraySetAsSeries','ArrayInitialize','MathIsValidNumber',
         'MathAbs','MathMin','MathMax','StringFormat','Print','PrintFormat'}
 
 
@@ -103,6 +103,16 @@ class Proof:
             if close is not None and re.search(rf'(?<![\w.]){escaped}(?![\w.])',text[opening+1:close]):
                 return True
         return False
+
+    def directly_changed(self,name,start,end):
+        """Detect scalar writes without treating indexed call arguments as escapes."""
+        text=self.body[start:end]
+        escaped=re.escape(name)
+        return bool(re.search(
+            rf'(?<![\w.]){escaped}\s*(?:=(?!=)|[+*/%-]=)|'
+            rf'(?:\+\+|--)\s*{escaped}\b|\b{escaped}\s*(?:\+\+|--)',
+            text,
+        ))
 
     def guards(self, pos):
         for c in self.controls:
@@ -263,10 +273,14 @@ class Proof:
         call=list(re.finditer(rf'\bArrayResize\s*\(\s*{re.escape(name)}\s*,',self.body[:pos]))[-1]
         return self.interval(expression,call.start(),seen)
 
-    def bounded(self,name,index,pos):
+    def bounded(self,name,index,pos,size_expression=None):
         size=self.capacity(name,pos)
         interval=self.interval(index,pos)
-        return bool(size and interval and 0<=interval[0]<=interval[1]<size[0])
+        if size and interval and 0<=interval[0]<=interval[1]<size[0]:return True
+        return bool(
+            size_expression and
+            self.counter_append_bounded(name,index,pos,size_expression)
+        )
 
     def explicit_guard(self,name,index,pos,size_expression=None):
         lower = bool(re.fullmatch(r'\d+',compact(index)))
@@ -285,6 +299,122 @@ class Proof:
         interval=self.interval(index,pos)
         lower=lower or bool(interval and interval[0]>=0)
         return lower and upper
+
+    def zero_initialization(self,name,pos):
+        assignments=list(re.finditer(
+            rf'(?<![\w.]){re.escape(name)}\s*=(?!=)\s*0\s*;',
+            self.body[:pos],
+        ))
+        return next(
+            (item for item in reversed(assignments)
+             if self.dominates(item.start(),item.end(),pos)),
+            None,
+        )
+
+    def monotone_from_zero(self,name,pos):
+        """Prove a simple counter is non-negative at ``pos``.
+
+        The proof deliberately accepts only a dominating zero reset followed by
+        unit increments. Assignments, decrements, compound updates, and escapes
+        to unknown functions invalidate it.
+        """
+        if not re.fullmatch(VAR,name):return False
+        initial=self.zero_initialization(name,pos)
+        if initial is None:return False
+        tail=self.body[initial.end():pos]
+        if self.changed(name,initial.end(),pos,ignore_steps=True):return False
+        decrement=rf'(?:--\s*{re.escape(name)}\b|\b{re.escape(name)}\s*--)'
+        return re.search(decrement,tail) is None
+
+    def dominating_resize(self,name,pos,size_expression):
+        calls=[]
+        for call in re.finditer(rf'\bArrayResize\s*\(\s*{re.escape(name)}\s*,',self.body[:pos]):
+            opening=self.body.find('(',call.start())
+            close=end_delimiter(self.body,opening)
+            if close is None or close>=pos:continue
+            expression=self.body[call.end():close].split(',')[0].strip()
+            calls.append((call,close,expression))
+        if not calls:return None
+        call,close,expression=calls[-1]
+        if compact(expression)!=compact(size_expression):return None
+        if not self.dominates(call.start(),close+1,pos):return None
+        if self.changed(name,close+1,pos):return None
+        return call,close,expression
+
+    def counter_append_bounded(self,name,index,pos,size_expression):
+        """Prove a counter-indexed append stays below its resized capacity.
+
+        Accepted shapes are intentionally narrow: a checked resize to
+        ``counter + 1``; a direct counter/cap loop guard; or at most one
+        post-access counter increment per iteration of a canonical loop whose
+        iteration cap is the resize cap. These are local structural proofs, not
+        data-flow guesses.
+        """
+        counter=compact(index)
+        if not re.fullmatch(VAR,counter) or not self.monotone_from_zero(counter,pos):
+            return False
+        # A resize to counter+1 is safe only when its return value is checked.
+        approved_size=self.capacity_expression(name,pos)
+        if approved_size and compact(approved_size) in {
+            counter+'+1','1+'+counter,
+        }:
+            return True
+
+        resize=self.dominating_resize(name,pos,size_expression)
+        if resize is None:return False
+        size=compact(size_expression)
+        initial=self.zero_initialization(counter,pos)
+        if initial is None:return False
+
+        for loop in self.controls:
+            if loop.kind not in ('for','while') or not self.contains(loop,pos):continue
+            if initial.end()>loop.start:continue
+            if self.changed(counter,initial.end(),loop.start):continue
+            nested=any(
+                inner.kind in ('for','while') and inner.start>loop.start and self.contains(inner,pos)
+                for inner in self.controls
+            )
+            if nested:continue
+            if self.changed(counter,loop.body_start,loop.body_end,ignore_steps=True):continue
+            increments=list(re.finditer(
+                rf'(?:\+\+\s*{re.escape(counter)}\b|\b{re.escape(counter)}\s*\+\+)',
+                self.body[loop.body_start:loop.body_end],
+            ))
+            decrements=list(re.finditer(
+                rf'(?:--\s*{re.escape(counter)}\b|\b{re.escape(counter)}\s*--)',
+                self.body[loop.body_start:loop.body_end],
+            ))
+            if len(increments)!=1 or decrements:continue
+            increment_pos=loop.body_start+increments[0].start()
+            if increment_pos<pos:continue
+
+            condition=loop.condition
+            if loop.kind=='for' and condition.count(';')==2:
+                init,condition,step=condition.split(';')
+            else:
+                init=step=''
+            direct=any(
+                compact(part)==counter+'<'+size
+                for part in split_boolean(condition,'&&')
+            )
+            if direct:return True
+            if loop.kind!='for':continue
+
+            ascending=re.fullmatch(rf'\s*(?:int\s+)?({VAR})\s*=\s*0\s*',init,re.S)
+            if ascending:
+                cursor=ascending[1]
+                if (compact(condition)==cursor+'<'+size and
+                    compact(step) in ('++'+cursor,cursor+'++') and
+                    not self.directly_changed(cursor,loop.body_start,loop.body_end)):
+                    return True
+            descending=re.fullmatch(rf'\s*(?:int\s+)?({VAR})\s*=\s*(.+)\s*',init,re.S)
+            if descending:
+                cursor,start=descending[1],compact(descending[2])
+                if (start==size+'-1' and compact(condition)==cursor+'>=0' and
+                    compact(step) in ('--'+cursor,cursor+'--') and
+                    not self.directly_changed(cursor,loop.body_start,loop.body_end)):
+                    return True
+        return False
 
 
 @lru_cache(maxsize=128)
