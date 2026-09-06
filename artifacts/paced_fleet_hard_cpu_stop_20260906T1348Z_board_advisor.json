@@ -1,0 +1,105 @@
+{
+  "schema_version": "qm.paced-fleet-cpu-stop/v1",
+  "observed_at_utc": "2026-09-06T13:48:29Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "224390d6ac24704337c4fb6ac04cc51a023d65b3",
+  "mission_lane": "focus_backlog",
+  "cpu_admission": {
+    "counter": "\\Processor(_Total)\\% Processor Time",
+    "sample_interval_seconds": 1,
+    "samples": [
+      69.091546,
+      73.689669,
+      82.362186,
+      98.090192,
+      99.235333
+    ],
+    "average_percent": 84.493785,
+    "maximum_percent": 99.235333,
+    "ceiling_percent": 97.0,
+    "admission_rule": "average < 97 and maximum < 97",
+    "admitted": false,
+    "binding_measure": "maximum_percent"
+  },
+  "farm_snapshot": {
+    "db": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "active_work_item_count": 6,
+    "pending_work_item_count": 11292,
+    "active_work_items": [
+      {
+        "id": "8bc2062b-fc1c-4b89-9bb6-f6130f5e7377",
+        "ea_id": "QM5_12935",
+        "symbol": "XAUUSD.DWX",
+        "phase": "Q08",
+        "claimed_by": "T9"
+      },
+      {
+        "id": "d8e83fa0-0d65-4aaa-b720-bee486f97ecd",
+        "ea_id": "QM5_1800",
+        "symbol": "AUDCAD.DWX",
+        "phase": "Q04",
+        "claimed_by": "T3"
+      },
+      {
+        "id": "83f4416c-c7cd-4dd5-add7-57ac69c534d3",
+        "ea_id": "QM5_11875",
+        "symbol": "GBPJPY.DWX",
+        "phase": "Q04",
+        "claimed_by": "T2"
+      },
+      {
+        "id": "39dcb570-3791-4d6a-91e4-8eb54071b0c0",
+        "ea_id": "QM5_41099",
+        "symbol": "",
+        "phase": "COMPILE_EA",
+        "claimed_by": "T8"
+      },
+      {
+        "id": "8aeae640-10dd-45ad-b856-06a2b7e11d76",
+        "ea_id": "QM5_41100",
+        "symbol": "",
+        "phase": "COMPILE_EA",
+        "claimed_by": "T7"
+      },
+      {
+        "id": "47f3cac9-e8ad-49c7-9693-8e970d92d758",
+        "ea_id": "QM5_41101",
+        "symbol": "",
+        "phase": "COMPILE_EA",
+        "claimed_by": "T1"
+      }
+    ]
+  },
+  "collision_checks": [
+    {
+      "ea_id": "QM5_41171",
+      "classification": "already_advanced",
+      "detail": "Build done; current lineage has Q02 PASS, Q04 PASS_LOWFREQ, and a pending Q05 row 6cc07c90-e235-4d24-8db9-71b51d71fd80. Existing working-tree changes were not touched."
+    },
+    {
+      "ea_id": "QM5_41259",
+      "classification": "open_compile_successor",
+      "detail": "Pending COMPILE_EA row f25a49cf-a237-46f6-92ff-15344fca2844 was created at 2026-09-06T13:16:03Z; no duplicate claim or enqueue permitted."
+    },
+    {
+      "ea_id": "QM5_41168",
+      "classification": "not_a_fresh_build_candidate",
+      "detail": "One blocked and one stale pending build task already exist, with two failed COMPILE_EA rows; the pending task payload records the duplicate-session race."
+    }
+  ],
+  "mutations_refused": [
+    "farm DB claim",
+    "EA source or setfile write",
+    "framework input pin audit",
+    "compile enqueue",
+    "compile release",
+    "smoke",
+    "Q02 enqueue",
+    "backtest dispatch",
+    "terminal control",
+    "portfolio gate",
+    "T_Live or deploy manifest",
+    "AutoTrading"
+  ],
+  "result": "STOP_CPU_CEILING"
+}
