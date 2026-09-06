@@ -1,0 +1,588 @@
+{
+  "method": "canonical farmctl CLI with isolated candidate compile_work_items module loaded in memory",
+  "candidate_module_path": "C:\\QM\\worktrees\\codex-stress-guard-successors-20260906\\tools\\strategy_farm\\compile_work_items.py",
+  "candidate_module_sha256": "5d2c9bf6c30028a4069bce04394a4753bd9ef09e76df32d8c3d6982cf6cc0434",
+  "compile_rows_unchanged": true,
+  "before_compile_rows": 8,
+  "after_compile_rows": 8,
+  "apply": false,
+  "runs": [
+    {
+      "ea_id": "41171",
+      "mode": "dry_run",
+      "eligible_count": 1,
+      "enqueued_count": 0,
+      "candidate_classification": [
+        {
+          "active_magic_row_count": 1,
+          "bound_setfile_hashes": [
+            {
+              "build_hash": "66148035c359b3098fbe18f711e23c31566053ce6ba772e976208b0361e0e877",
+              "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41171_wti-mturnpoint-tr\\sets\\QM5_41171_wti-mturnpoint-tr_XTIUSD.DWX_D1_backtest.set"
+            },
+            {
+              "build_hash": "66148035c359b3098fbe18f711e23c31566053ce6ba772e976208b0361e0e877",
+              "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41171_wti-mturnpoint-tr\\sets\\QM5_41171_wti-mturnpoint-tr_XTIUSD.DWX_D1_q05_stress_medium.set"
+            },
+            {
+              "build_hash": "66148035c359b3098fbe18f711e23c31566053ce6ba772e976208b0361e0e877",
+              "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41171_wti-mturnpoint-tr\\sets\\QM5_41171_wti-mturnpoint-tr_XTIUSD.DWX_D1_q06_stress_harsh.set"
+            }
+          ],
+          "build_task_binding": {
+            "authorized": false,
+            "build_task_id": null,
+            "contract_version": "qm.compile-ea-build-task-binding/v1",
+            "reason": "BUILD_TASK_BINDING_NOT_REQUESTED",
+            "requested": false
+          },
+          "build_task_binding_authorized": false,
+          "current_compile_ok_work_item_ids": [],
+          "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41171_wti-mturnpoint-tr",
+          "ea_id": "QM5_41171",
+          "ea_label": "QM5_41171_wti-mturnpoint-tr",
+          "eligible": true,
+          "force_rebuild_authorized": false,
+          "force_rebuild_waived_reasons": [],
+          "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41171_wti-mturnpoint-tr\\QM5_41171_wti-mturnpoint-tr.mq5",
+          "mq5_sha256": "8e255a1d5771ba55728038a6f1b030b3216c5645301e9517cd20ff6fbd1938dc",
+          "numeric_ea_id": "41171",
+          "reason": "ELIGIBLE",
+          "reasons": [],
+          "sanctioned_predecessor_ids": [],
+          "sibling_rebind_authorized": false,
+          "sibling_rebind_contract_version": null,
+          "sibling_rebind_current_setfile_path": null,
+          "sibling_rebind_current_setfile_sha256": null,
+          "sibling_rebind_findings": [],
+          "sibling_rebind_historical_setfiles": [
+            {
+              "build_hash": "66148035c359b3098fbe18f711e23c31566053ce6ba772e976208b0361e0e877",
+              "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41171_wti-mturnpoint-tr\\sets\\QM5_41171_wti-mturnpoint-tr_XTIUSD.DWX_D1_backtest.set"
+            },
+            {
+              "build_hash": "66148035c359b3098fbe18f711e23c31566053ce6ba772e976208b0361e0e877",
+              "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41171_wti-mturnpoint-tr\\sets\\QM5_41171_wti-mturnpoint-tr_XTIUSD.DWX_D1_q05_stress_medium.set"
+            },
+            {
+              "build_hash": "66148035c359b3098fbe18f711e23c31566053ce6ba772e976208b0361e0e877",
+              "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41171_wti-mturnpoint-tr\\sets\\QM5_41171_wti-mturnpoint-tr_XTIUSD.DWX_D1_q06_stress_harsh.set"
+            }
+          ],
+          "source_repair_artifact_bindings": [
+            {
+              "path": "docs/ops/evidence/2026-09-06_stress_guard_source_repair_successors.md",
+              "sha256": "d7ca2e0cb76a21c000a36d161ce9d1703f817a5fa5489873d4b210c2a4392f11"
+            }
+          ],
+          "source_repair_authority": "router_ops_issue:04f011a6-6b6a-4562-b2ee-f2cb6f641e5a:QM5_41171",
+          "source_repair_authorized": true,
+          "source_repair_contract_version": "qm.compile-ea-source-repair/v1",
+          "source_repair_predecessor_work_item_ids": [
+            "6a6bad94-24a9-4af6-810a-678471024f72"
+          ],
+          "source_repair_stale_open_work_item_ids": [],
+          "source_repair_superseded_predecessor_work_item_ids": [],
+          "source_repair_waived_reasons": [
+            "BOUND_SETFILE_HASH_EXISTS",
+            "BUILD_TASK_EXISTS",
+            "EX5_ALREADY_PRESENT",
+            "WORK_ITEMS_EXIST"
+          ],
+          "symbols": [
+            "XTIUSD.DWX"
+          ],
+          "timeframe": {
+            "candidates": [
+              "D1"
+            ],
+            "source": "existing_setfiles",
+            "timeframe": "D1"
+          },
+          "unsupported_symbols": []
+        }
+      ]
+    },
+    {
+      "ea_id": "41358",
+      "mode": "dry_run",
+      "eligible_count": 1,
+      "enqueued_count": 0,
+      "candidate_classification": [
+        {
+          "active_magic_row_count": 2,
+          "bound_setfile_hashes": [
+            {
+              "build_hash": "faba68f6ab5e9691b0ea22b17fd9260c1b466b02e33a98fa77de0853b3a7a66a",
+              "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41358_xtixng-wovershoot-rv\\sets\\QM5_41358_xtixng-wovershoot-rv_QM5_41358_XTI_XNG_WOVERSHOOT_RV_D1_D1_backtest.set"
+            },
+            {
+              "build_hash": "3a788fad2e9256452f99846104408af15ec66c63aeb344f128c14cfea1600cff",
+              "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41358_xtixng-wovershoot-rv\\sets\\QM5_41358_xtixng-wovershoot-rv_XNGUSD.DWX_D1_backtest.set"
+            },
+            {
+              "build_hash": "9311c568646435b1180597814269d526225e9e97186320e71c677f5fd0570127",
+              "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41358_xtixng-wovershoot-rv\\sets\\QM5_41358_xtixng-wovershoot-rv_XTIUSD.DWX_D1_backtest.set"
+            }
+          ],
+          "build_task_binding": {
+            "authorized": false,
+            "build_task_id": null,
+            "contract_version": "qm.compile-ea-build-task-binding/v1",
+            "reason": "BUILD_TASK_BINDING_NOT_REQUESTED",
+            "requested": false
+          },
+          "build_task_binding_authorized": false,
+          "current_compile_ok_work_item_ids": [],
+          "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41358_xtixng-wovershoot-rv",
+          "ea_id": "QM5_41358",
+          "ea_label": "QM5_41358_xtixng-wovershoot-rv",
+          "eligible": true,
+          "force_rebuild_authorized": false,
+          "force_rebuild_waived_reasons": [],
+          "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41358_xtixng-wovershoot-rv\\QM5_41358_xtixng-wovershoot-rv.mq5",
+          "mq5_sha256": "e17af3932822b85963edca0f0aeeed507f31e995e164ce2396dcabfb41cb5ee2",
+          "numeric_ea_id": "41358",
+          "reason": "ELIGIBLE",
+          "reasons": [],
+          "sanctioned_predecessor_ids": [],
+          "sibling_rebind_authorized": false,
+          "sibling_rebind_contract_version": null,
+          "sibling_rebind_current_setfile_path": null,
+          "sibling_rebind_current_setfile_sha256": null,
+          "sibling_rebind_findings": [],
+          "sibling_rebind_historical_setfiles": [
+            {
+              "build_hash": "faba68f6ab5e9691b0ea22b17fd9260c1b466b02e33a98fa77de0853b3a7a66a",
+              "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41358_xtixng-wovershoot-rv\\sets\\QM5_41358_xtixng-wovershoot-rv_QM5_41358_XTI_XNG_WOVERSHOOT_RV_D1_D1_backtest.set"
+            },
+            {
+              "build_hash": "3a788fad2e9256452f99846104408af15ec66c63aeb344f128c14cfea1600cff",
+              "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41358_xtixng-wovershoot-rv\\sets\\QM5_41358_xtixng-wovershoot-rv_XNGUSD.DWX_D1_backtest.set"
+            },
+            {
+              "build_hash": "9311c568646435b1180597814269d526225e9e97186320e71c677f5fd0570127",
+              "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41358_xtixng-wovershoot-rv\\sets\\QM5_41358_xtixng-wovershoot-rv_XTIUSD.DWX_D1_backtest.set"
+            }
+          ],
+          "source_repair_artifact_bindings": [
+            {
+              "path": "docs/ops/evidence/2026-09-06_stress_guard_source_repair_successors.md",
+              "sha256": "d7ca2e0cb76a21c000a36d161ce9d1703f817a5fa5489873d4b210c2a4392f11"
+            }
+          ],
+          "source_repair_authority": "router_ops_issue:04f011a6-6b6a-4562-b2ee-f2cb6f641e5a:QM5_41358",
+          "source_repair_authorized": true,
+          "source_repair_contract_version": "qm.compile-ea-source-repair/v1",
+          "source_repair_predecessor_work_item_ids": [
+            "a3f0b993-f76a-41ff-80d3-79abc126f011"
+          ],
+          "source_repair_stale_open_work_item_ids": [],
+          "source_repair_superseded_predecessor_work_item_ids": [],
+          "source_repair_waived_reasons": [
+            "BOUND_SETFILE_HASH_EXISTS",
+            "BUILD_TASK_EXISTS",
+            "EX5_ALREADY_PRESENT",
+            "WORK_ITEMS_EXIST"
+          ],
+          "symbols": [
+            "XNGUSD.DWX",
+            "XTIUSD.DWX"
+          ],
+          "timeframe": {
+            "candidates": [
+              "D1"
+            ],
+            "source": "existing_setfiles",
+            "timeframe": "D1"
+          },
+          "unsupported_symbols": []
+        }
+      ]
+    },
+    {
+      "ea_id": "41359",
+      "mode": "dry_run",
+      "eligible_count": 1,
+      "enqueued_count": 0,
+      "candidate_classification": [
+        {
+          "active_magic_row_count": 2,
+          "bound_setfile_hashes": [
+            {
+              "build_hash": "0dcb1f590c26eded468cc400de94b7417754f45f477e998b2ab4d664183143d7",
+              "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41359_xtixng-waccel-rv\\sets\\QM5_41359_xtixng-waccel-rv_QM5_41359_XTI_XNG_WACCEL_RV_D1_D1_backtest.set"
+            },
+            {
+              "build_hash": "78756230fad80413065d1e92195cf58075c3ae1e49d65f575f0af66ed94a4816",
+              "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41359_xtixng-waccel-rv\\sets\\QM5_41359_xtixng-waccel-rv_XNGUSD.DWX_D1_backtest.set"
+            },
+            {
+              "build_hash": "944ae99899ba1930cf6a90f94919442065f82f9b8ea5d38e9bdcac40959885a7",
+              "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41359_xtixng-waccel-rv\\sets\\QM5_41359_xtixng-waccel-rv_XTIUSD.DWX_D1_backtest.set"
+            }
+          ],
+          "build_task_binding": {
+            "authorized": false,
+            "build_task_id": null,
+            "contract_version": "qm.compile-ea-build-task-binding/v1",
+            "reason": "BUILD_TASK_BINDING_NOT_REQUESTED",
+            "requested": false
+          },
+          "build_task_binding_authorized": false,
+          "current_compile_ok_work_item_ids": [],
+          "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41359_xtixng-waccel-rv",
+          "ea_id": "QM5_41359",
+          "ea_label": "QM5_41359_xtixng-waccel-rv",
+          "eligible": true,
+          "force_rebuild_authorized": false,
+          "force_rebuild_waived_reasons": [],
+          "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41359_xtixng-waccel-rv\\QM5_41359_xtixng-waccel-rv.mq5",
+          "mq5_sha256": "c1d77d11242cdf6c327705b1c91dfde0b41ad56c37af597a6ade0cdf6a5f337a",
+          "numeric_ea_id": "41359",
+          "reason": "ELIGIBLE",
+          "reasons": [],
+          "sanctioned_predecessor_ids": [],
+          "sibling_rebind_authorized": false,
+          "sibling_rebind_contract_version": null,
+          "sibling_rebind_current_setfile_path": null,
+          "sibling_rebind_current_setfile_sha256": null,
+          "sibling_rebind_findings": [],
+          "sibling_rebind_historical_setfiles": [
+            {
+              "build_hash": "0dcb1f590c26eded468cc400de94b7417754f45f477e998b2ab4d664183143d7",
+              "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41359_xtixng-waccel-rv\\sets\\QM5_41359_xtixng-waccel-rv_QM5_41359_XTI_XNG_WACCEL_RV_D1_D1_backtest.set"
+            },
+            {
+              "build_hash": "78756230fad80413065d1e92195cf58075c3ae1e49d65f575f0af66ed94a4816",
+              "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41359_xtixng-waccel-rv\\sets\\QM5_41359_xtixng-waccel-rv_XNGUSD.DWX_D1_backtest.set"
+            },
+            {
+              "build_hash": "944ae99899ba1930cf6a90f94919442065f82f9b8ea5d38e9bdcac40959885a7",
+              "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41359_xtixng-waccel-rv\\sets\\QM5_41359_xtixng-waccel-rv_XTIUSD.DWX_D1_backtest.set"
+            }
+          ],
+          "source_repair_artifact_bindings": [
+            {
+              "path": "docs/ops/evidence/2026-09-06_stress_guard_source_repair_successors.md",
+              "sha256": "d7ca2e0cb76a21c000a36d161ce9d1703f817a5fa5489873d4b210c2a4392f11"
+            }
+          ],
+          "source_repair_authority": "router_ops_issue:04f011a6-6b6a-4562-b2ee-f2cb6f641e5a:QM5_41359",
+          "source_repair_authorized": true,
+          "source_repair_contract_version": "qm.compile-ea-source-repair/v1",
+          "source_repair_predecessor_work_item_ids": [
+            "72fb26b3-2612-40a0-86a7-cdc3e7b38a63"
+          ],
+          "source_repair_stale_open_work_item_ids": [],
+          "source_repair_superseded_predecessor_work_item_ids": [],
+          "source_repair_waived_reasons": [
+            "BOUND_SETFILE_HASH_EXISTS",
+            "EX5_ALREADY_PRESENT",
+            "WORK_ITEMS_EXIST"
+          ],
+          "symbols": [
+            "XNGUSD.DWX",
+            "XTIUSD.DWX"
+          ],
+          "timeframe": {
+            "candidates": [
+              "D1"
+            ],
+            "source": "existing_setfiles",
+            "timeframe": "D1"
+          },
+          "unsupported_symbols": []
+        }
+      ]
+    },
+    {
+      "ea_id": "41360",
+      "mode": "dry_run",
+      "eligible_count": 1,
+      "enqueued_count": 0,
+      "candidate_classification": [
+        {
+          "active_magic_row_count": 2,
+          "bound_setfile_hashes": [
+            {
+              "build_hash": "605d1b898f7f5d87d53214638afdd204d6d99134b46b64f17e9f7f6dd487d5f9",
+              "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41360_xtixng-wretr-rv\\sets\\QM5_41360_xtixng-wretr-rv_QM5_41360_XTI_XNG_WRETR_RV_D1_D1_backtest.set"
+            },
+            {
+              "build_hash": "39e2146b72c51d19f139f5af708e95dba6e3bdea7291b7dc6f5e1fec73068c5c",
+              "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41360_xtixng-wretr-rv\\sets\\QM5_41360_xtixng-wretr-rv_XNGUSD.DWX_D1_backtest.set"
+            },
+            {
+              "build_hash": "9b883e615067bce6f30fcdfa779da382af8d0ec8a6c9dc34cf06a877038000c1",
+              "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41360_xtixng-wretr-rv\\sets\\QM5_41360_xtixng-wretr-rv_XTIUSD.DWX_D1_backtest.set"
+            }
+          ],
+          "build_task_binding": {
+            "authorized": false,
+            "build_task_id": null,
+            "contract_version": "qm.compile-ea-build-task-binding/v1",
+            "reason": "BUILD_TASK_BINDING_NOT_REQUESTED",
+            "requested": false
+          },
+          "build_task_binding_authorized": false,
+          "current_compile_ok_work_item_ids": [],
+          "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41360_xtixng-wretr-rv",
+          "ea_id": "QM5_41360",
+          "ea_label": "QM5_41360_xtixng-wretr-rv",
+          "eligible": true,
+          "force_rebuild_authorized": false,
+          "force_rebuild_waived_reasons": [],
+          "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41360_xtixng-wretr-rv\\QM5_41360_xtixng-wretr-rv.mq5",
+          "mq5_sha256": "ca56d8fa78cf927e79696edbe510d372d7f503e95797edb7e8afefd177b3777e",
+          "numeric_ea_id": "41360",
+          "reason": "ELIGIBLE",
+          "reasons": [],
+          "sanctioned_predecessor_ids": [],
+          "sibling_rebind_authorized": false,
+          "sibling_rebind_contract_version": null,
+          "sibling_rebind_current_setfile_path": null,
+          "sibling_rebind_current_setfile_sha256": null,
+          "sibling_rebind_findings": [],
+          "sibling_rebind_historical_setfiles": [
+            {
+              "build_hash": "605d1b898f7f5d87d53214638afdd204d6d99134b46b64f17e9f7f6dd487d5f9",
+              "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41360_xtixng-wretr-rv\\sets\\QM5_41360_xtixng-wretr-rv_QM5_41360_XTI_XNG_WRETR_RV_D1_D1_backtest.set"
+            },
+            {
+              "build_hash": "39e2146b72c51d19f139f5af708e95dba6e3bdea7291b7dc6f5e1fec73068c5c",
+              "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41360_xtixng-wretr-rv\\sets\\QM5_41360_xtixng-wretr-rv_XNGUSD.DWX_D1_backtest.set"
+            },
+            {
+              "build_hash": "9b883e615067bce6f30fcdfa779da382af8d0ec8a6c9dc34cf06a877038000c1",
+              "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41360_xtixng-wretr-rv\\sets\\QM5_41360_xtixng-wretr-rv_XTIUSD.DWX_D1_backtest.set"
+            }
+          ],
+          "source_repair_artifact_bindings": [
+            {
+              "path": "docs/ops/evidence/2026-09-06_stress_guard_source_repair_successors.md",
+              "sha256": "d7ca2e0cb76a21c000a36d161ce9d1703f817a5fa5489873d4b210c2a4392f11"
+            }
+          ],
+          "source_repair_authority": "router_ops_issue:04f011a6-6b6a-4562-b2ee-f2cb6f641e5a:QM5_41360",
+          "source_repair_authorized": true,
+          "source_repair_contract_version": "qm.compile-ea-source-repair/v1",
+          "source_repair_predecessor_work_item_ids": [
+            "be3fdc9a-6ba3-48ae-8b23-68db2fece85f"
+          ],
+          "source_repair_stale_open_work_item_ids": [],
+          "source_repair_superseded_predecessor_work_item_ids": [],
+          "source_repair_waived_reasons": [
+            "BOUND_SETFILE_HASH_EXISTS",
+            "EX5_ALREADY_PRESENT",
+            "WORK_ITEMS_EXIST"
+          ],
+          "symbols": [
+            "XNGUSD.DWX",
+            "XTIUSD.DWX"
+          ],
+          "timeframe": {
+            "candidates": [
+              "D1"
+            ],
+            "source": "existing_setfiles",
+            "timeframe": "D1"
+          },
+          "unsupported_symbols": []
+        }
+      ]
+    },
+    {
+      "ea_id": "41361",
+      "mode": "dry_run",
+      "eligible_count": 1,
+      "enqueued_count": 0,
+      "candidate_classification": [
+        {
+          "active_magic_row_count": 2,
+          "bound_setfile_hashes": [
+            {
+              "build_hash": "429ff42c4f196d1fd6862e84da1228aa1bcb6aaef9a5c1ba7af49a296aa70589",
+              "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41361_xtixng-commonshock-rv\\sets\\QM5_41361_xtixng-commonshock-rv_QM5_41361_XTI_XNG_COMMONSHOCK_RV_D1_D1_backtest.set"
+            },
+            {
+              "build_hash": "22d97ad180aa2d9c573cd2829d4920102b86cf26fd7ce324981491309ac625ed",
+              "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41361_xtixng-commonshock-rv\\sets\\QM5_41361_xtixng-commonshock-rv_XNGUSD.DWX_D1_backtest.set"
+            },
+            {
+              "build_hash": "efee129e0d13aadec5d9bffe31da99ef60dfe91466a2d3d47318d67e4d49a1e6",
+              "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41361_xtixng-commonshock-rv\\sets\\QM5_41361_xtixng-commonshock-rv_XTIUSD.DWX_D1_backtest.set"
+            }
+          ],
+          "build_task_binding": {
+            "authorized": false,
+            "build_task_id": null,
+            "contract_version": "qm.compile-ea-build-task-binding/v1",
+            "reason": "BUILD_TASK_BINDING_NOT_REQUESTED",
+            "requested": false
+          },
+          "build_task_binding_authorized": false,
+          "current_compile_ok_work_item_ids": [],
+          "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41361_xtixng-commonshock-rv",
+          "ea_id": "QM5_41361",
+          "ea_label": "QM5_41361_xtixng-commonshock-rv",
+          "eligible": true,
+          "force_rebuild_authorized": false,
+          "force_rebuild_waived_reasons": [],
+          "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41361_xtixng-commonshock-rv\\QM5_41361_xtixng-commonshock-rv.mq5",
+          "mq5_sha256": "e5e870501d852aca64fe2e6e30d7bc27b9a1c8d8874a3da11bdc945e0c25f99a",
+          "numeric_ea_id": "41361",
+          "reason": "ELIGIBLE",
+          "reasons": [],
+          "sanctioned_predecessor_ids": [],
+          "sibling_rebind_authorized": false,
+          "sibling_rebind_contract_version": null,
+          "sibling_rebind_current_setfile_path": null,
+          "sibling_rebind_current_setfile_sha256": null,
+          "sibling_rebind_findings": [],
+          "sibling_rebind_historical_setfiles": [
+            {
+              "build_hash": "429ff42c4f196d1fd6862e84da1228aa1bcb6aaef9a5c1ba7af49a296aa70589",
+              "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41361_xtixng-commonshock-rv\\sets\\QM5_41361_xtixng-commonshock-rv_QM5_41361_XTI_XNG_COMMONSHOCK_RV_D1_D1_backtest.set"
+            },
+            {
+              "build_hash": "22d97ad180aa2d9c573cd2829d4920102b86cf26fd7ce324981491309ac625ed",
+              "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41361_xtixng-commonshock-rv\\sets\\QM5_41361_xtixng-commonshock-rv_XNGUSD.DWX_D1_backtest.set"
+            },
+            {
+              "build_hash": "efee129e0d13aadec5d9bffe31da99ef60dfe91466a2d3d47318d67e4d49a1e6",
+              "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41361_xtixng-commonshock-rv\\sets\\QM5_41361_xtixng-commonshock-rv_XTIUSD.DWX_D1_backtest.set"
+            }
+          ],
+          "source_repair_artifact_bindings": [
+            {
+              "path": "docs/ops/evidence/2026-09-06_stress_guard_source_repair_successors.md",
+              "sha256": "d7ca2e0cb76a21c000a36d161ce9d1703f817a5fa5489873d4b210c2a4392f11"
+            }
+          ],
+          "source_repair_authority": "router_ops_issue:04f011a6-6b6a-4562-b2ee-f2cb6f641e5a:QM5_41361",
+          "source_repair_authorized": true,
+          "source_repair_contract_version": "qm.compile-ea-source-repair/v1",
+          "source_repair_predecessor_work_item_ids": [
+            "c5bf5069-ecfb-40a2-a0d7-2e282d8a7df1"
+          ],
+          "source_repair_stale_open_work_item_ids": [],
+          "source_repair_superseded_predecessor_work_item_ids": [],
+          "source_repair_waived_reasons": [
+            "BOUND_SETFILE_HASH_EXISTS",
+            "EX5_ALREADY_PRESENT",
+            "WORK_ITEMS_EXIST"
+          ],
+          "symbols": [
+            "XNGUSD.DWX",
+            "XTIUSD.DWX"
+          ],
+          "timeframe": {
+            "candidates": [
+              "D1"
+            ],
+            "source": "existing_setfiles",
+            "timeframe": "D1"
+          },
+          "unsupported_symbols": []
+        }
+      ]
+    },
+    {
+      "ea_id": "41362",
+      "mode": "dry_run",
+      "eligible_count": 1,
+      "enqueued_count": 0,
+      "candidate_classification": [
+        {
+          "active_magic_row_count": 2,
+          "bound_setfile_hashes": [
+            {
+              "build_hash": "268563fd9774208cfba2044bb9bce6990e80550e3b406c9ae472bec7ed42d2b0",
+              "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41362_xtixng-wdecel-cont\\sets\\QM5_41362_xtixng-wdecel-cont_QM5_41362_XTI_XNG_WDECEL_CONT_D1_D1_backtest.set"
+            },
+            {
+              "build_hash": "9872f997e72f491070bad71522cc2976c7d71455aea7145d816b7c9529a4c0f0",
+              "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41362_xtixng-wdecel-cont\\sets\\QM5_41362_xtixng-wdecel-cont_XNGUSD.DWX_D1_backtest.set"
+            },
+            {
+              "build_hash": "550c479e1d044bfb1a418e5e136bca8e1d501edd4fdd76580397fcad5fe8947e",
+              "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41362_xtixng-wdecel-cont\\sets\\QM5_41362_xtixng-wdecel-cont_XTIUSD.DWX_D1_backtest.set"
+            }
+          ],
+          "build_task_binding": {
+            "authorized": false,
+            "build_task_id": null,
+            "contract_version": "qm.compile-ea-build-task-binding/v1",
+            "reason": "BUILD_TASK_BINDING_NOT_REQUESTED",
+            "requested": false
+          },
+          "build_task_binding_authorized": false,
+          "current_compile_ok_work_item_ids": [],
+          "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41362_xtixng-wdecel-cont",
+          "ea_id": "QM5_41362",
+          "ea_label": "QM5_41362_xtixng-wdecel-cont",
+          "eligible": true,
+          "force_rebuild_authorized": false,
+          "force_rebuild_waived_reasons": [],
+          "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41362_xtixng-wdecel-cont\\QM5_41362_xtixng-wdecel-cont.mq5",
+          "mq5_sha256": "300debf2886b6dddbd5d8ec4aab5c45ef28d6ffcebd394b3985c5cc405c1de95",
+          "numeric_ea_id": "41362",
+          "reason": "ELIGIBLE",
+          "reasons": [],
+          "sanctioned_predecessor_ids": [],
+          "sibling_rebind_authorized": false,
+          "sibling_rebind_contract_version": null,
+          "sibling_rebind_current_setfile_path": null,
+          "sibling_rebind_current_setfile_sha256": null,
+          "sibling_rebind_findings": [],
+          "sibling_rebind_historical_setfiles": [
+            {
+              "build_hash": "268563fd9774208cfba2044bb9bce6990e80550e3b406c9ae472bec7ed42d2b0",
+              "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41362_xtixng-wdecel-cont\\sets\\QM5_41362_xtixng-wdecel-cont_QM5_41362_XTI_XNG_WDECEL_CONT_D1_D1_backtest.set"
+            },
+            {
+              "build_hash": "9872f997e72f491070bad71522cc2976c7d71455aea7145d816b7c9529a4c0f0",
+              "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41362_xtixng-wdecel-cont\\sets\\QM5_41362_xtixng-wdecel-cont_XNGUSD.DWX_D1_backtest.set"
+            },
+            {
+              "build_hash": "550c479e1d044bfb1a418e5e136bca8e1d501edd4fdd76580397fcad5fe8947e",
+              "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41362_xtixng-wdecel-cont\\sets\\QM5_41362_xtixng-wdecel-cont_XTIUSD.DWX_D1_backtest.set"
+            }
+          ],
+          "source_repair_artifact_bindings": [
+            {
+              "path": "docs/ops/evidence/2026-09-06_stress_guard_source_repair_successors.md",
+              "sha256": "d7ca2e0cb76a21c000a36d161ce9d1703f817a5fa5489873d4b210c2a4392f11"
+            }
+          ],
+          "source_repair_authority": "router_ops_issue:04f011a6-6b6a-4562-b2ee-f2cb6f641e5a:QM5_41362",
+          "source_repair_authorized": true,
+          "source_repair_contract_version": "qm.compile-ea-source-repair/v1",
+          "source_repair_predecessor_work_item_ids": [
+            "acfa4f4e-8e78-474d-a9da-fbb2b5dd128c"
+          ],
+          "source_repair_stale_open_work_item_ids": [],
+          "source_repair_superseded_predecessor_work_item_ids": [],
+          "source_repair_waived_reasons": [
+            "BOUND_SETFILE_HASH_EXISTS",
+            "EX5_ALREADY_PRESENT",
+            "WORK_ITEMS_EXIST"
+          ],
+          "symbols": [
+            "XNGUSD.DWX",
+            "XTIUSD.DWX"
+          ],
+          "timeframe": {
+            "candidates": [
+              "D1"
+            ],
+            "source": "existing_setfiles",
+            "timeframe": "D1"
+          },
+          "unsupported_symbols": []
+        }
+      ]
+    }
+  ]
+}
