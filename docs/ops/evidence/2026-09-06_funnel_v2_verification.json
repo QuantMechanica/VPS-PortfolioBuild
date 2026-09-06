@@ -1,0 +1,88 @@
+{
+  "gates": 18,
+  "phases": 3,
+  "counts": [
+    "0",
+    "3",
+    "2,018",
+    "1,002",
+    "501",
+    "277",
+    "251",
+    "190",
+    "50",
+    "101",
+    "32",
+    "51",
+    "2",
+    "0",
+    "11",
+    "0",
+    "0",
+    "0"
+  ],
+  "expected": [
+    "0",
+    "3",
+    "2,018",
+    "1,002",
+    "501",
+    "277",
+    "251",
+    "190",
+    "50",
+    "101",
+    "32",
+    "51",
+    "2",
+    "0",
+    "11",
+    "0",
+    "0",
+    "0"
+  ],
+  "accent": "#059669",
+  "siteAccent": "#059669",
+  "halfAtMidpoint": 43.25,
+  "linearMidpoint": 70.5,
+  "restVisiblePixels": 116070,
+  "restTime": 0,
+  "pausedButton": "Play funnel",
+  "pausedRaf": 0,
+  "animationTime": 1.2498999999999996,
+  "reduced": {
+    "time": 1.4331999999999991,
+    "raf": 0,
+    "button": "Motion reduced"
+  },
+  "mobile": {
+    "pageWidth": 375,
+    "viewport": 390,
+    "canvasWidth": 700,
+    "gateRows": 18
+  },
+  "runtimeErrors": [],
+  "artifacts": [
+    {
+      "path": "C:\\QM\\deploy\\qm-ops-refresh\\tools\\site-build\\homepage-v4\\scripts\\qm-funnel.js",
+      "sha256": "f17c5e75fe752b0f0a2fbbcb72f7e23868f660a0c030328820b2aa56cf48022a",
+      "size_bytes": 21378
+    },
+    {
+      "path": "C:\\QM\\deploy\\qm-ops-refresh\\tools\\site-build\\homepage-v4\\public-data\\funnel-stats.json",
+      "sha256": "13d0f7d8f2406af59c9d3a1ec5da6041cfc9363864ce1e44f4d2a61b55307cb0",
+      "size_bytes": 4179
+    },
+    {
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-06_funnel_v2_rest.png",
+      "sha256": "034c669b5c370df1ec097ff03787d4811b05651b93dbb9db6942f6ee21d86003",
+      "size_bytes": 147792
+    },
+    {
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-06_funnel_v2_animation.png",
+      "sha256": "332d6c5abd80e3bf5bcd905b2216712828b2e6f989e0089b3ebb809a565d60da",
+      "size_bytes": 147728
+    }
+  ],
+  "deployment": "local only; no push or Netlify"
+}
