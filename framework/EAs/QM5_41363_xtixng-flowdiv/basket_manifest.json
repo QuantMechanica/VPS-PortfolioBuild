@@ -1,0 +1,19 @@
+{
+  "logical_symbol": "QM5_41363_XTI_XNG_FLOWDIV_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "notes": [
+    "One logical two-leg weekly oil/gas relative-flow-divergence package. Q02 evaluates combined package PnL, costs, and density; neither leg is a standalone strategy.",
+    "The EA subtracts XNG from XTI separately for the exact prior week's five close-to-open and five open-to-close log returns, trades only strict component disagreement, follows the session-relative sign, targets equal absolute notionals, and caps aggregate frozen-stop risk at one RISK_FIXED budget."
+  ]
+}

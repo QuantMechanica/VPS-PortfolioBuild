@@ -1,0 +1,14 @@
+{
+  "admission": "PASS_BELOW_CPU_CEILING",
+  "average_cpu_percent": 73.6,
+  "compile_work_item_id": "7647b8cd-c5d2-4f51-9872-3db6dda57da3",
+  "ea_id": "QM5_41363",
+  "maximum_cpu_percent": 79.4,
+  "method": "Windows Get-Counter \\Processor(_Total)\\% Processor Time, one-second interval",
+  "phase": "Q02",
+  "q02_work_item_id": "551274fc-dab0-4e92-a092-2cd13bd98790",
+  "sample_count": 5,
+  "sampled_at_utc": "2026-09-06T04:46:01.4221237Z",
+  "samples_cpu_percent": [76.3, 79.4, 73.4, 73.7, 65.3],
+  "threshold_cpu_percent": 97.0
+}

@@ -1,0 +1,41 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "7647b8cd-c5d2-4f51-9872-3db6dda57da3"
+  ],
+  "backup": {
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260906T044014Z_5e163a89.sqlite",
+    "reused": false,
+    "sha256": "be8280855ccad2b34545747f18b976ab8964a7dd59c3a02151378e8b7a6d7b61"
+  },
+  "backup_reuse_max_age_minutes": 0.0,
+  "backup_timeout_seconds": 60.0,
+  "backup_write_guard": {
+    "attempts": 2,
+    "transaction": "BEGIN IMMEDIATE / validated / backed up / released / COMMIT",
+    "wait_seconds": 5.532
+  },
+  "deferred": [],
+  "factory_mutation_lock": {
+    "path": "D:\\QM\\strategy_farm\\state\\FACTORY_MUTATION.lock",
+    "release_status": "released"
+  },
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "c81431ef87a07df3aceb6afb0e002aadc2cc35caaa7c19dac133e7f61e8c17dc",
+      "ea_id": "QM5_41363",
+      "ea_label": "QM5_41363_xtixng-flowdiv",
+      "expected_mq5_sha256": "c81431ef87a07df3aceb6afb0e002aadc2cc35caaa7c19dac133e7f61e8c17dc",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41363_xtixng-flowdiv\\QM5_41363_xtixng-flowdiv.mq5",
+      "work_item_id": "7647b8cd-c5d2-4f51-9872-3db6dda57da3"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-09-06T04:40:26+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "7647b8cd-c5d2-4f51-9872-3db6dda57da3"
+}
