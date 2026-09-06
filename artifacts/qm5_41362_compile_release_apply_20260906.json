@@ -1,0 +1,41 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "acfa4f4e-8e78-474d-a9da-fbb2b5dd128c"
+  ],
+  "backup": {
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260906T034007Z_983c159e.sqlite",
+    "reused": false,
+    "sha256": "6a7dcb5e43bf63c857b68ab1e53c92aff92c32a91c300db585d5e1ad0033a5be"
+  },
+  "backup_reuse_max_age_minutes": 0.0,
+  "backup_timeout_seconds": 60.0,
+  "backup_write_guard": {
+    "attempts": 1,
+    "transaction": "BEGIN IMMEDIATE / validated / backed up / released / COMMIT",
+    "wait_seconds": 0.0
+  },
+  "deferred": [],
+  "factory_mutation_lock": {
+    "path": "D:\\QM\\strategy_farm\\state\\FACTORY_MUTATION.lock",
+    "release_status": "released"
+  },
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "19d28486b56ffe748a1aefe65665b9b601ee2ce22961e06860b5048ed5ec6f23",
+      "ea_id": "QM5_41362",
+      "ea_label": "QM5_41362_xtixng-wdecel-cont",
+      "expected_mq5_sha256": "19d28486b56ffe748a1aefe65665b9b601ee2ce22961e06860b5048ed5ec6f23",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41362_xtixng-wdecel-cont\\QM5_41362_xtixng-wdecel-cont.mq5",
+      "work_item_id": "acfa4f4e-8e78-474d-a9da-fbb2b5dd128c"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-09-06T03:40:42+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "acfa4f4e-8e78-474d-a9da-fbb2b5dd128c"
+}

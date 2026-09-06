@@ -1,0 +1,84 @@
+{
+  "schema_version": "qm.branch-build-q02-handoff/v1",
+  "recorded_at_utc": "2026-09-06T04:09:31Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41362",
+  "ea_label": "QM5_41362_xtixng-wdecel-cont",
+  "mechanic": "synchronized adjacent completed-week XTI-minus-XNG relative returns with strict same signs and a strictly smaller newest move, following the shared direction through opposed equal-target-notional legs",
+  "logical_symbol": "QM5_41362_XTI_XNG_WDECEL_CONT_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "companion_symbol": "XNGUSD.DWX",
+  "timeframe": "D1",
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "reference_validation": {
+    "command": "python -m unittest framework/EAs/QM5_41362_xtixng-wdecel-cont/docs/test_weekly_deceleration_reference.py",
+    "passed": 9,
+    "failed": 0
+  },
+  "spec_validation": {
+    "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_41362_xtixng-wdecel-cont",
+    "passed": 1,
+    "failed": 0
+  },
+  "compile": {
+    "work_item_id": "acfa4f4e-8e78-474d-a9da-fbb2b5dd128c",
+    "terminal": "T4",
+    "status": "done",
+    "verdict": "COMPILE_OK",
+    "build_check_result": "PASS",
+    "build_check_failures": 0,
+    "build_check_warnings": 3,
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "mq5_sha256": "19d28486b56ffe748a1aefe65665b9b601ee2ce22961e06860b5048ed5ec6f23",
+    "ex5_sha256": "228eef073a12f626a986983f29d258c270a866d28f77115c78e024078c79a6c9",
+    "evidence_path": "D:/QM/reports/work_items/acfa4f4e-8e78-474d-a9da-fbb2b5dd128c/QM5_41362/COMPILE_EA/compile_evidence.json"
+  },
+  "card": {
+    "sha256": "f9477c3d806a1949bdffa9dfe059f864aad3785ae29f3c240e6d8c86ee39daf3",
+    "artifact_mirror_sha256": "f9477c3d806a1949bdffa9dfe059f864aad3785ae29f3c240e6d8c86ee39daf3",
+    "g0_status": "APPROVED"
+  },
+  "setfiles": [
+    {
+      "role": "logical_basket",
+      "sha256": "d1b03ee3dc91a6a6fffcda680e151f9e8d5e531199b0d0e6ced85261b031fe87",
+      "build_hash": "268563fd9774208cfba2044bb9bce6990e80550e3b406c9ae472bec7ed42d2b0"
+    },
+    {
+      "role": "host_leg",
+      "sha256": "648b32088caff2e5788cff8b986c183c5be71ca6e442315da4dfb2353f11275f",
+      "build_hash": "550c479e1d044bfb1a418e5e136bca8e1d501edd4fdd76580397fcad5fe8947e"
+    },
+    {
+      "role": "companion_leg",
+      "sha256": "20c2bb58eb246ea96b866864431d29bb070d1db1255ac06bee33ba251cf5dbc4",
+      "build_hash": "9872f997e72f491070bad71522cc2976c7d71455aea7145d816b7c9529a4c0f0"
+    }
+  ],
+  "cpu_admission": {
+    "threshold_pct": 97.0,
+    "samples_pct": [97.9, 95.5, 100.0, 100.0, 100.0],
+    "average_pct": 98.7,
+    "maximum_pct": 100.0,
+    "admitted": false,
+    "stop_reason": "CPU_CEILING"
+  },
+  "q02": {
+    "work_item_id": null,
+    "status_at_receipt": "NOT_ENQUEUED_CPU_CEILING",
+    "enqueued_count": 0,
+    "manual_backtest_run": false
+  },
+  "safety": {
+    "terminal_control_used": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}

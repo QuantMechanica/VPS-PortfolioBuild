@@ -1,10 +1,15 @@
 # QM5_41362_xtixng-wdecel-cont - Strategy Spec
 
-**EA ID:** QM5_41362  
-**Slug:** `xtixng-wdecel-cont`  
-**Strategy ID:** `AI-CODEX-XTIXNG-WDECEL-CONT-20260906_S01`  
-**Source:** `AI-CODEX-XTIXNG-WDECEL-CONT-20260906`  
-**Author:** Codex  
+**EA ID:** QM5_41362
+
+**Slug:** `xtixng-wdecel-cont`
+
+**Strategy ID:** `AI-CODEX-XTIXNG-WDECEL-CONT-20260906_S01`
+
+**Source:** `AI-CODEX-XTIXNG-WDECEL-CONT-20260906`
+
+**Author:** Codex
+
 **Last revised:** 2026-09-06
 
 ## 1. Strategy Logic
@@ -36,22 +41,26 @@ and carries frozen per-leg ATR hard stops.
 
 All parameters are locked for Q02.
 
-## 3. Symbol Universe And Timeframe
+## 3. Symbol Universe
 
 - Host: exact `XTIUSD.DWX`, D1, slot 0.
 - Companion: exact `XNGUSD.DWX`, D1, slot 1.
 - Logical symbol: `QM5_41362_XTI_XNG_WDECEL_CONT_D1`.
+
+## 4. Timeframe
+
+- Host chart and companion history: D1.
 - Formation: two adjacent completed weekly relative returns.
 - Trigger: strict same signs and strictly smaller newest magnitude.
 - Hold: first tick of the next broker week, with ten-day stale repair.
 
-## 4. Expected Behaviour
+## 5. Expected Behaviour
 
 Expected density is eight to twenty paired packages per full post-warm-up year;
 Q02 retires below five. This is a market-neutral-style construction, not a
 claim of exact neutrality or decorrelation. Q09 alone owns realized overlap.
 
-## 5. Source Citation
+## 6. Source Citation
 
 Villar and Joutz (2006), U.S. EIA; Ramberg and Parsons (2012), *The Energy
 Journal* 33(2), DOI `10.5547/01956574.33.2.2`; and Moskowitz, Ooi, and Pedersen
@@ -63,7 +72,7 @@ Canonical packet:
 The exact weekly relative-spread rule is a disclosed QM hypothesis; no source
 performance or CFD result transfers.
 
-## 6. Risk Model And Scope
+## 7. Risk Model
 
 Q02 uses aggregate `RISK_FIXED=1000`, `RISK_PERCENT=0`, and
 `PORTFOLIO_WEIGHT=1`. Both news axes and Friday close are OFF. There is no
@@ -76,3 +85,4 @@ retry, scale-in, grid, pyramid, target, trail, break-even, or partial exit.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-09-06 | approved build identity | source/G0 approval and governed magics |
+| v2 | 2026-09-06 | governed Q01 build | COMPILE_OK on T4; Q02 stopped at the 97% CPU ceiling |
