@@ -766,7 +766,9 @@ bool Strategy_NoTradeFilter()
       return true;
    if(qm_friday_close_enabled ||
       qm_friday_close_hour_broker != 21 ||
-      MathAbs(qm_stress_reject_probability) > 0.000000000001)
+      !MathIsValidNumber(qm_stress_reject_probability) ||
+      qm_stress_reject_probability < 0.0 ||
+      qm_stress_reject_probability > 1.0)
       return true;
    if(strategy_endpoint_count != 13 ||
       strategy_max_turning_points != 7 ||

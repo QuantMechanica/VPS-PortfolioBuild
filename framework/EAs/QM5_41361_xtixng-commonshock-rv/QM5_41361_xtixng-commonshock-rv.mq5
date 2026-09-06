@@ -188,7 +188,9 @@ bool Strategy_InputsValid()
             qm_news_stale_max_hours == 336 &&
             qm_news_min_impact == "high" &&
             !qm_friday_close_enabled && qm_friday_close_hour_broker == 21 &&
-            MathAbs(qm_stress_reject_probability) <= 1.0e-12);
+            MathIsValidNumber(qm_stress_reject_probability) &&
+            qm_stress_reject_probability >= 0.0 &&
+            qm_stress_reject_probability <= 1.0);
   }
 
 bool Strategy_SpreadAllowed(const string symbol)
