@@ -69,8 +69,8 @@ r2_mechanical: PASS
 r3_data_available: PASS_WITH_SYNCHRONIZATION_AND_CONTINUOUS_CFD_BASIS_RISK
 r4_ml_forbidden: PASS
 pipeline_phase: Q01
-q01_status: BUILD_PENDING
-q02_status: NOT_ENQUEUED
+q01_status: COMPILE_OK
+q02_status: NOT_ENQUEUED_CPU_CEILING
 review_focus: "Falsify a completed-week WTI/natural gas same-direction relative continuation outside the certified XAU/SP500/NDX/XNG book. Verify exact prior-two-week membership, synchronized three-to-five-session close pairs, week-end endpoint selection, strict same-sign individual returns, symmetric relative-winner continuation, durable weekly attempt, aggregate fixed risk, atomic basket repair, and next-week lifecycle. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -380,14 +380,16 @@ may establish realized correlation with the certified book.
 | Version | Date | Change | Gate | Status |
 |---|---|---|---|---|
 | v1 | 2026-09-06 | initial XTI/XNG weekly common-shock relative continuation card | G0 | APPROVED; build pending |
+| v2 | 2026-09-06 | governed source-fresh compile and strict build validation | Q01 | COMPILE_OK; 10/10 reference tests PASS |
+| v3 | 2026-09-06 | paced first-Q02 admission check | Q02 | NOT_ENQUEUED_CPU_CEILING; average 99.493927%, maximum 100.0% |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Status | Evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-09-06 | APPROVED | `decisions/2026-09-06_qm5_41367_xtixng_weekly_common_shock_continuation_g0.md` |
-| Q01 Build Validation | 2026-09-06 | BUILD_PENDING | branch-only build authorized |
-| Q02 Baseline Screening | 2026-09-06 | NOT_ENQUEUED | requires compile PASS and fresh CPU admission |
+| Q01 Build Validation | 2026-09-06 | COMPILE_OK | work item `a4714bf1-8238-4645-92ae-e2e763d06cca`; EX5 `5f752a75aa79dab671f481d0a446824690a86c7138cc296efd3d5cd554ca63ef`; `artifacts/qm5_41367_q01_compile_20260906.json` |
+| Q02 Baseline Screening | 2026-09-06 | NOT_ENQUEUED_CPU_CEILING | `artifacts/qm5_41367_q02_cpu_admission_20260906.json` |
 
 ## Safety Boundary
 
@@ -397,4 +399,3 @@ enqueue only below tester and whole-host CPU ceilings. It does not authorize a
 manual backtest, terminal control, live/demo/shadow/stress/optimization preset,
 AutoTrading, `T_Live`, deploy or T_Live manifest, portfolio-gate change,
 portfolio admission, decorrelation claim, or correlation waiver.
-

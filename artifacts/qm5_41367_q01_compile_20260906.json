@@ -1,0 +1,19 @@
+{
+  "build_check_result": "PASS",
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "completed_at_utc": "2026-09-06T11:48:59Z",
+  "ea_id": "QM5_41367",
+  "ea_label": "QM5_41367_xtixng-commonshock-cont",
+  "evidence_path": "D:\\QM\\reports\\work_items\\a4714bf1-8238-4645-92ae-e2e763d06cca\\QM5_41367\\COMPILE_EA\\compile_evidence.json",
+  "ex5_sha256": "5f752a75aa79dab671f481d0a446824690a86c7138cc296efd3d5cd554ca63ef",
+  "failure_classes": [],
+  "mq5_sha256": "7edc29f98193d70193e8f0559f0a9708f17e9af8b5a371f7b60d6d8091f3a167",
+  "phase": "COMPILE_EA",
+  "schema_version": "qm.compile-ea-status-receipt/v1",
+  "setfile_count": 3,
+  "source_release_receipt": "artifacts/qm5_41367_compile_wave_apply_20260906.json",
+  "terminal_claim": "T3",
+  "verdict": "COMPILE_OK",
+  "work_item_id": "a4714bf1-8238-4645-92ae-e2e763d06cca"
+}
