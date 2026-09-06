@@ -1,0 +1,22 @@
+{
+  "task_id": "55b0112f-df3a-4602-ba1d-81b05c88125e",
+  "ea_id": "QM5_41171",
+  "ea_dir": "framework/EAs/QM5_41171_wti-mturnpoint-tr",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41171_wti-mturnpoint-tr\\QM5_41171_wti-mturnpoint-tr.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41171_wti-mturnpoint-tr\\QM5_41171_wti-mturnpoint-tr.ex5",
+  "magic_base": 411710000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41171_wti-mturnpoint-tr\\sets\\QM5_41171_wti-mturnpoint-tr_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41171_wti-mturnpoint-tr\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "blocked_reason": "tester-fleet saturation evidence: the single permitted run_smoke.ps1 invocation for XTIUSD.DWX/D1/2024 returned before tester launch with Terminal resolution returned no terminal; status=no_capacity; error_code=none; message=No message. Fresh pre-dispatch CPU samples were 60.891, 66.427, 52.093, 60.278, and 76.589 percent (average 63.256, maximum 76.589), so the 97 percent CPU ceiling did not fire. A read-only farm snapshot at 2026-09-06T03:59:39Z observed running factory terminals T1,T2,T7,T9,T10 and terminal64_running_count=7. No smoke retry was attempted.",
+  "open_questions": []
+}
+

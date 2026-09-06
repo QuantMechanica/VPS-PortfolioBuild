@@ -146,4 +146,4 @@ later-month, or stale owned exposure.
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v0 | 2026-08-26 | approved source build | G0-approved card and governed magic `411710000` |
+| v1 | 2026-09-06 | Initial build from card | `55b0112f-df3a-4602-ba1d-81b05c88125e` |
