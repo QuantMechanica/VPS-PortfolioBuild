@@ -1,6 +1,6 @@
 {
   "schema_version": "qm.owner-decisions/v2",
-  "revision": 6,
+  "revision": 7,
   "maintainer": "Mission Control decision store; OWNER answers are receipts, not execution authority.",
   "updated_at_utc": "2026-09-02T17:47:14Z",
   "items": [
@@ -256,6 +256,25 @@
       "severity": "action",
       "status": "OPEN",
       "yes_effect": "Dokumentation: der Receipt wird als Beglaubigung an den Vorschlag gebunden (Evidenzdokument + OPEN_ITEMS); keine Code-Aktivierung, kein Pointer-Write, Freeze bleibt ACTIVE. Die Consumer-Ausnahme wird erst nach Review und einer eigenen Aktivierungs-Freigabe eingeschaltet."
+    },
+    {
+      "category": "Zaehler/Optimierungszweig",
+      "cost_of_wait": "Fuer den Zaehler keine: Option A ist der laufende Zustand (Zensus laeuft in der beschlossenen Reihenfolge weiter, ~3-4 Fabriktage bis 24/25). Ohne Deinen Receipt bleibt nur der Audit-Punkt M11 offen; die Widerlegungsregel wird erst mit JA verbindlich registriert.",
+      "created_at_utc": "2026-09-06T03:17:49Z",
+      "depends_on": [],
+      "due": null,
+      "evidence": [
+        "docs/ops/OWNER_VORLAGE_2026-09-06_m11_optimisation_branch_utility.md",
+        "docs/ops/CEO_AUDIT_INTEGRATION_2026-09-05.md",
+        "docs/research/PATTERN_FILTER_WF_OPT_PLAN_V3_2026-08-21.md"
+      ],
+      "id": "OWNER-DEC-M11-CENSUS-BRANCH-20260906",
+      "no_effect": "NEIN = Du willst den Zensus NICHT unveraendert weiterlaufen lassen (Option B gebundene Kohorte mit Stichtag 2026-09-09 oder Option C Pause zugunsten Q02-Q10). Folge: Ich lege die Kohorten-Vertragskarte (Einschluss/Ausschluss, unveraenderlicher Incumbent, versiegelte Varianten, COHORT_DEFERRED-Holds append-only) als eigene Karte vor; der Zaehler bleibt bis dahin bei 11 (C) bzw. ~15 (B). Nichts wird geloescht.",
+      "question": "M11 (Audit-Befund C): Alle 12 Q14-Closures sind KEEP_INCUMBENT, 0 Challenger befoerdert, der Zensus belegt die ganze Fabrik (0 Q02-Abschluesse seit >3 h). Zaehler LIVE 11/25 (nicht 8: 21507/XAUUSD, 20266+12710/XTIUSD zaehlen seit heute; public funnel-stats.json ist stale). Unter Deiner Zaehlregel (A1: terminale Q14-Paare, KEEP zaehlt wie Promotion) ist der Zensus der Zaehlerpfad: 10.178 offene Zellen = ~3-4 Fabriktage = +13 Paare -> 24/25; das 25. Paar braucht einen neuen Q11-Ueberlebenden aus Q02-Q10. Soll der Zensus UNVERAENDERT in der beschlossenen Reihenfolge (Amendment C) weiterlaufen (Option A) und die Audit-Frage als vor-registrierte WIDERLEGUNGSREGEL festgehalten werden: wenn auch die naechsten 5 Q14-Closures keinen Challenger befoerdern (0/16), gilt der PFLICHT-Optimierungszweig fuer Paare jenseits von 25 als widerlegt und wird zur On-Demand-Kohorte (Option B) - dann eigene Karte inkl. Zaehlregel?",
+      "recommendation": "JA. Option A ist der kuerzeste Weg zu 24/25 und aendert nichts; B/C tauschen den Zaehler (15 bzw. 11) gegen 3-4 Fabriktage fuer Q02-Q10, die erst nach eigenem Q14 zaehlen wuerden. Die Widerlegungsregel macht den Audit-Befund verbindlich, ohne jetzt etwas zu stoppen.",
+      "severity": "action",
+      "status": "OPEN",
+      "yes_effect": "Genau EIN Claude-Auftrag (dokumentarisch): Widerlegungsregel (5 weitere Closures, 0/16 -> Pflichtzweig widerlegt) als Addendum im DL-089-Plan-Dokument + OPEN_ITEMS registrieren; public funnel-stats.json aus dem Guard regenerieren (11/25) vor dem Website-Deploy. Kein Zensus-, Schwellen-, Verdikt- oder Pool-Eingriff; Zensus laeuft unveraendert."
     }
   ]
 }

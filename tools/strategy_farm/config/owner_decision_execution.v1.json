@@ -830,6 +830,38 @@
           ]
         }
       }
+    },
+    {
+      "id": "OWNER-DEC-M11-CENSUS-BRANCH-20260906",
+      "todo_id": "QM-TODO-20260906-M11-CENSUS-BRANCH",
+      "priority": 84,
+      "choices": {
+        "YES": {
+          "mode": "DOCUMENT_AND_VERIFY",
+          "objective": "Register the pre-registered refutation rule (next 5 Q14 closures without a promoted challenger, 0/16 overall -> mandatory optimisation branch refuted beyond 25 -> on-demand cohort card) as an addendum to docs/research/PATTERN_FILTER_WF_OPT_PLAN_V3_2026-08-21.md and OPEN_ITEMS; regenerate public-data/funnel-stats.json from book_build_guard (11/25); no census, threshold, verdict or pool change.",
+          "allowed_actions": [
+            "Append the refutation-rule addendum (dated, receipt id) to the DL-089 plan doc and OPEN_ITEMS",
+            "Regenerate public-data/funnel-stats.json from the guard/roster (read-only DB access)",
+            "Commit with explicit pathspecs"
+          ],
+          "acceptance": [
+            "Addendum present with receipt id and the exact rule (5 closures, 0/16)",
+            "funnel-stats.json qualified_pairs_current == book_build_guard qualified_pairs at generation time",
+            "No work_items/holds mutation"
+          ]
+        },
+        "NO": {
+          "mode": "DOCUMENT_AND_VERIFY",
+          "objective": "Record the rejection and prepare the cohort-contract card (Option B: cutoff 2026-09-09, inclusion/exclusion, immutable incumbent, sealed variant set, COHORT_DEFERRED holds append-only) or the pause card (Option C) as a separate OWNER Vorlage; nothing executes before that card's receipt.",
+          "allowed_actions": [
+            "Write the follow-up Vorlage + Mission-Control card",
+            "Document in OPEN_ITEMS_STATUS.md"
+          ],
+          "acceptance": [
+            "No census/holds mutation before the follow-up receipt"
+          ]
+        }
+      }
     }
   ]
 }
