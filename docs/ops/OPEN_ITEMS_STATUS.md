@@ -1006,3 +1006,7 @@ Beide OWNER-Freigaben (MNT020-RECOMPILE, MNT006-CANARY) sind ausgeführt und im 
 # 2026-09-06 QM5_12507 logical FX basket Q02 capacity handoff
 
 - The 66-pair scan remains fully mechanized and the 12532/12533 anchors are already beyond Q02. Existing fallback `QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1` retains exactly one pending, unheld, priority-tracked Q02 row (`547c4fd3-f3fd-4c59-b9dc-654e96521251`), but the current five-sample CPU maximum reached 99% against the 97% hard ceiling. No duplicate enqueue, claim or launch was performed. Evidence: `docs/ops/evidence/2026-09-06_qm5_12507_q02_hard_cpu_stop_021703Z.md`.
+
+# 2026-09-06 QM5_12507 logical FX basket Q02 capacity refresh 08:16Z
+
+- The same unique, unheld, priority-tracked Q02 row remains pending and unclaimed. Five current CPU samples were 96/99/94/99/97% (97.0% average, 99% maximum) with seven factory terminals running, so the explicit hard ceiling stopped all queue/claim/launch work. No duplicate was created. Evidence: `docs/ops/evidence/2026-09-06_qm5_12507_q02_hard_cpu_stop_081651Z.md`.
