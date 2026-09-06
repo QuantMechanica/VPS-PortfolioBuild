@@ -58,6 +58,7 @@ EXPECTED_STATE_DECISION_PATH = "docs/ops/evidence/2026-09-06_ftmo_demo_governor_
 EXPECTED_STATE_REVIEW_TRIGGER_QUALIFIED_PAIRS = 25
 EXPECTED_ACCOUNT_LOGIN = 1514536732
 EXPECTED_ACCOUNT_SERVER = "FTMO-Demo"
+ACTIVATION_UTC = datetime(2026, 9, 6, 20, 8, tzinfo=timezone.utc)
 
 # The new account was synchronized flat.  Any position while PARKED is a defect.
 EXPECTED_PARKED_POSITION_COUNT = 0
@@ -75,6 +76,7 @@ TOTAL_WARN_PCT = 5.0
 SERVER_REQUEST_WARN = 1_500
 SERVER_REQUEST_LIMIT = 2_000
 EQUITY_SNAPSHOT_STALE_MINUTES = 180
+COLLECTOR_SNAPSHOT_STALE_MINUTES = 5
 
 # --- ONE-AUTHORITY TOMBSTONE (permanent; WS-G' round 2, 2026-07-26) ----------
 # This pulse is a CODE-LEVEL OBSERVER ONLY. It never writes a halt, kill, or
@@ -438,7 +440,20 @@ def journal_issues() -> list[str]:
     return issues[-10:]
 
 
-def scan_ea_logs() -> dict:
+def parse_utc_timestamp(value: object) -> datetime | None:
+    """Parse a JSONL UTC timestamp without silently accepting local time."""
+    if not value:
+        return None
+    try:
+        parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+
+def scan_ea_logs(activation_utc: datetime = ACTIVATION_UTC) -> dict:
     seen_magics: set[int] = set()
     errors: list[str] = []
     latest_snap: dict | None = None
@@ -472,7 +487,12 @@ def scan_ea_logs() -> dict:
                         by_event = request_event_counts.setdefault(broker_day, {})
                         by_event[event] = by_event.get(event, 0) + 1
             if r.get("level") in ("ERROR", "FATAL"):
-                errors.append(f"{lf.name}:{r.get('event')}")
+                event_utc = parse_utc_timestamp(r.get("ts_utc"))
+                # The M13 account was cleanly activated at ACTIVATION_UTC.  The
+                # same append-only EA files contain failed pre-activation attach
+                # attempts; those are durable history, not current alarms.
+                if event_utc is not None and event_utc >= activation_utc:
+                    errors.append(f"{lf.name}:{r.get('event')}")
             if r.get("event") == "EQUITY_SNAPSHOT":
                 ts = str(r.get("ts_utc") or "")
                 if ts > latest_ts:
@@ -514,6 +534,77 @@ def snapshot_age_minutes(timestamp: str | None, now: datetime | None = None) -> 
 
 MONITOR_SNAPSHOT = QM_DIR / "journal" / "account_snapshot.json"
 MONITOR_FRESH_MINUTES = 10
+
+
+def _last_json_object(path: Path) -> dict | None:
+    """Read the last valid JSONL object without loading a multi-MB day file."""
+    try:
+        with path.open("rb") as handle:
+            handle.seek(0, 2)
+            end = handle.tell()
+            if end <= 0:
+                return None
+            block = 64 * 1024
+            data = b""
+            cursor = end
+            while cursor > 0 and len(data) < 4 * block:
+                take = min(block, cursor)
+                cursor -= take
+                handle.seek(cursor)
+                data = handle.read(take) + data
+                for raw in reversed(data.splitlines()):
+                    if not raw.strip():
+                        continue
+                    try:
+                        row = json.loads(raw.decode("utf-8"))
+                    except (UnicodeDecodeError, json.JSONDecodeError):
+                        continue
+                    return row if isinstance(row, dict) else None
+    except OSError:
+        return None
+    return None
+
+
+def read_collector_snapshot(
+    now: datetime,
+    qm_dir: Path = QM_DIR,
+    activation_utc: datetime = ACTIVATION_UTC,
+) -> dict | None:
+    """Return the latest account-truth SAMPLE from the M13 collector JSONL."""
+    candidates = sorted(
+        (qm_dir / "ftmo_trial").glob("*/trial_telemetry_raw.jsonl"),
+        key=lambda path: path.stat().st_mtime if path.exists() else 0,
+        reverse=True,
+    )
+    for path in candidates:
+        row = _last_json_object(path)
+        if not row or row.get("schema") != "qm.ftmo-trial-telemetry.raw/v1":
+            continue
+        if row.get("event") != "SAMPLE":
+            continue
+        timestamp = parse_utc_timestamp(row.get("ts_utc"))
+        if timestamp is None or timestamp < activation_utc:
+            continue
+        if int(row.get("account_login") or 0) != EXPECTED_ACCOUNT_LOGIN:
+            continue
+        if str(row.get("account_server") or "") != EXPECTED_ACCOUNT_SERVER:
+            continue
+        equity = row.get("equity")
+        if not isinstance(equity, (int, float)) or equity <= 0:
+            continue
+        age = (now - timestamp).total_seconds() / 60.0
+        return {
+            "equity": float(equity),
+            "balance": float(row.get("balance") or 0.0),
+            "open_positions": int(row.get("open_positions") or 0),
+            "pending_orders": int(row.get("pending_orders") or 0),
+            "positions": row.get("positions") if isinstance(row.get("positions"), list) else [],
+            "timestamp_utc": timestamp.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "age_minutes": age,
+            "fresh": 0 <= age <= COLLECTOR_SNAPSHOT_STALE_MINUTES,
+            "path": str(path),
+        }
+    return None
 
 
 def read_monitor_snapshot(now: datetime) -> dict | None:
@@ -791,15 +882,30 @@ def main() -> int:
             f"ks_book_tag_missing:{eas['kill_switch_book_tag_magics']}/{len(EXPECTED_MAGICS)}"
         )
 
+    collector = read_collector_snapshot(now)
     snap = eas.get("equity_snapshot") or {}
-    equity = float(snap.get("equity") or 0.0)
-    day_pnl = float(snap.get("day_pnl") or 0.0)
-    equity_source = "ea_day_close_snapshot" if equity else None
-    mon = read_monitor_snapshot(now)
-    if mon and mon.get("fresh"):
+    equity = 0.0
+    day_pnl = 0.0
+    equity_source = None
+    mon = None
+    if collector and collector.get("fresh"):
+        equity = collector["equity"]
+        day_pnl = equity - collector["balance"]
+        equity_source = "ftmo_trial_collector_raw"
+    else:
+        if collector:
+            warns.append(f"collector_snapshot_stale:{collector['age_minutes']:.1f}m")
+        else:
+            warns.append("collector_snapshot_missing_or_invalid")
+        mon = read_monitor_snapshot(now)
+    if not equity and mon and mon.get("fresh"):
         equity = mon["equity"]
         day_pnl = mon["daily_pnl"]
         equity_source = "account_monitor"
+    if not equity:
+        equity = float(snap.get("equity") or 0.0)
+        day_pnl = float(snap.get("day_pnl") or 0.0)
+        equity_source = "ea_day_close_snapshot" if equity else None
     if equity:
         total_dd_pct, day_loss_pct, risk_alarms, risk_warns = assess_loss_limits(equity, day_pnl)
         alarms.extend(risk_alarms)
@@ -808,10 +914,11 @@ def main() -> int:
         total_dd_pct = day_loss_pct = None
 
     equity_snapshot_age = snapshot_age_minutes(eas.get("equity_snapshot_ts"), now)
-    if equity_snapshot_age is None:
-        warns.append("equity_snapshot_timestamp_missing_or_invalid")
-    elif equity_snapshot_age > EQUITY_SNAPSHOT_STALE_MINUTES:
-        warns.append(f"equity_snapshot_stale:{equity_snapshot_age:.1f}m")
+    if equity_source == "ea_day_close_snapshot":
+        if equity_snapshot_age is None:
+            warns.append("equity_snapshot_timestamp_missing_or_invalid")
+        elif equity_snapshot_age > EQUITY_SNAPSHOT_STALE_MINUTES:
+            warns.append(f"equity_snapshot_stale:{equity_snapshot_age:.1f}m")
 
     request_count = int(eas.get("server_requests_lower_bound") or 0)
     if request_count > SERVER_REQUEST_LIMIT:
@@ -857,8 +964,15 @@ def main() -> int:
         "equity": equity or None,
         "day_pnl": day_pnl if equity_source else None,
         "equity_source": equity_source,
+        "collector_snapshot_ts": (collector or {}).get("timestamp_utc"),
+        "collector_snapshot_age_minutes": (collector or {}).get("age_minutes"),
+        "collector_snapshot_path": (collector or {}).get("path"),
         "monitor_age_minutes": (mon or {}).get("age_minutes"),
-        "open_positions": (mon or {}).get("open_positions"),
+        "open_positions": ((collector or {}).get("open_positions")
+                           if equity_source == "ftmo_trial_collector_raw"
+                           else (mon or {}).get("open_positions")),
+        "pending_orders": ((collector or {}).get("pending_orders")
+                           if equity_source == "ftmo_trial_collector_raw" else None),
         "total_dd_pct": total_dd_pct,
         "day_loss_pct": day_loss_pct,
         "equity_snapshot_ts": eas["equity_snapshot_ts"],

@@ -992,6 +992,37 @@ function Invoke-ForbiddenScan {
     }
     # QM-MARK: END FRAMEWORK_INPUT_PIN_SCAN
 
+    # ---- EA_LIVE_NEWS_ARCHIVE_DEPENDENCY (OWNER 2026-09-06) ----
+    # ENV=live decisions must use the native MT5 calendar.  The archive passed
+    # to QM_NewsInit remains tester/diagnostic data only and must never become a
+    # live allow source.  Resolve the actual include closure so wrappers cannot
+    # bypass this rule.
+    $liveNewsTool = Join-Path $ResolvedRepoRoot "tools\strategy_farm\live_news_dependency_check.py"
+    if (-not (Test-Path -LiteralPath $liveNewsTool)) {
+        Add-Failure "EA_LIVE_NEWS_ARCHIVE_DEPENDENCY_SCANNER_MISSING: $liveNewsTool."
+    } else {
+        $liveNewsArguments = @($liveNewsTool, "--repo-root", $ResolvedRepoRoot)
+        if ($EALabel) {
+            $liveNewsArguments += @("--ea-label", $EALabel)
+        }
+        $liveNewsRaw = @(& python @liveNewsArguments 2>&1)
+        $liveNewsExit = $LASTEXITCODE
+        try {
+            $liveNewsReport = ($liveNewsRaw | Out-String) | ConvertFrom-Json -ErrorAction Stop
+            Write-Output "build_check.live_news_ea_sources=$($liveNewsReport.ea_sources_checked)"
+            Write-Output "build_check.live_news_contracts=$($liveNewsReport.news_filter_contracts_checked)"
+            foreach ($finding in @($liveNewsReport.findings)) {
+                Add-Failure "EA_LIVE_NEWS_ARCHIVE_DEPENDENCY: $($finding.ea) $($finding.defect)."
+            }
+            if ($liveNewsExit -ne 0 -and @($liveNewsReport.findings).Count -eq 0) {
+                Add-Failure "EA_LIVE_NEWS_ARCHIVE_DEPENDENCY_SCANNER_FAILED: exit=$liveNewsExit."
+            }
+        }
+        catch {
+            Add-Failure "EA_LIVE_NEWS_ARCHIVE_DEPENDENCY_SCANNER_INVALID_JSON: exit=$liveNewsExit output=$($liveNewsRaw -join ' ')."
+        }
+    }
+
     # ---- EA_SYMBOL_HARDCODED (OWNER 2026-09-06) ----
     # One file-based scanner owns both the build predicate and corpus inventory.
     # Existing-at-cutover trading-logic literals WARN for ordered migration; a

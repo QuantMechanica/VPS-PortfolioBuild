@@ -2,6 +2,7 @@
 import sys
 from types import SimpleNamespace
 from datetime import datetime, timezone
+import json
 from pathlib import Path
 
 
@@ -291,8 +292,8 @@ def test_contract_expiry_wins_over_unknown_process_probe() -> None:
     assert state["alarm"] == "expected_state_review_expired"
 
 
-def test_owner_m13_park_contract_is_flat_and_identity_bound() -> None:
-    assert ftmo_trial_pulse.EXPECTED_STATE == "PARKED"
+def test_owner_m13_running_contract_is_identity_bound() -> None:
+    assert ftmo_trial_pulse.EXPECTED_STATE == "RUNNING"
     assert ftmo_trial_pulse.EXPECTED_STATE_REVIEW_EXPIRES_UTC is None
     assert ftmo_trial_pulse.EXPECTED_STATE_REVIEW_TRIGGER_QUALIFIED_PAIRS == 25
     assert ftmo_trial_pulse.EXPECTED_PARKED_POSITION_COUNT == 0
@@ -302,8 +303,54 @@ def test_owner_m13_park_contract_is_flat_and_identity_bound() -> None:
         "FTMO_M13_CAPTURE_RUNBOOK_2026-09-06.md#2--preconditions-owner--ai-split"
     )
     assert ftmo_trial_pulse.EXPECTED_STATE_DECISION_PATH.endswith(
-        "FTMO_M13_CAPTURE_RUNBOOK_2026-09-06.md"
+        "2026-09-06_ftmo_demo_governor_manifest.md"
     )
+
+
+def test_collector_snapshot_is_primary_account_truth(tmp_path: Path) -> None:
+    qm_dir = tmp_path / "QM"
+    raw = qm_dir / "ftmo_trial" / "2026-09-06" / "trial_telemetry_raw.jsonl"
+    raw.parent.mkdir(parents=True)
+    raw.write_text(
+        json.dumps({
+            "schema": "qm.ftmo-trial-telemetry.raw/v1",
+            "event": "SAMPLE",
+            "ts_utc": "2026-09-06T20:10:00Z",
+            "account_login": 1514536732,
+            "account_server": "FTMO-Demo",
+            "balance": 100000.0,
+            "equity": 99950.0,
+            "open_positions": 2,
+            "pending_orders": 1,
+            "positions": [{"ticket": 7}],
+        }) + "\n",
+        encoding="utf-8",
+    )
+    snap = ftmo_trial_pulse.read_collector_snapshot(
+        datetime(2026, 9, 6, 20, 11, tzinfo=timezone.utc), qm_dir=qm_dir
+    )
+    assert snap is not None
+    assert snap["fresh"] is True
+    assert snap["equity"] == 99950.0
+    assert snap["open_positions"] == 2
+    assert snap["pending_orders"] == 1
+
+
+def test_scan_ea_logs_ignores_pre_activation_errors(monkeypatch, tmp_path: Path) -> None:
+    old = {
+        "ts_utc": "2026-09-06T19:58:00Z", "magic": 15370001,
+        "level": "ERROR", "event": "SLEEVE_CALENDAR_INIT_FAILED",
+    }
+    current = {
+        "ts_utc": "2026-09-06T20:09:00Z", "magic": 15370001,
+        "level": "ERROR", "event": "CURRENT_ERROR",
+    }
+    monkeypatch.setattr(ftmo_trial_pulse, "QM_DIR", tmp_path)
+    (tmp_path / "QM5_1537.log").write_text(
+        json.dumps(old) + "\n" + json.dumps(current) + "\n", encoding="utf-8"
+    )
+    result = ftmo_trial_pulse.scan_ea_logs()
+    assert result["ea_errors"] == ["QM5_1537.log:CURRENT_ERROR"]
 
 
 def test_owner_review_trigger_reopens_contract_at_25(monkeypatch) -> None:

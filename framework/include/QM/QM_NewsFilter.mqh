@@ -864,6 +864,12 @@ bool QM_NewsInit(const string base_dir = "D:\\QM\\data\\news_calendar",
    g_qm_news_available = false;
    g_qm_news_events_sorted = false; // FW8: re-sort after fresh load
 
+   // Live attach evidence must not wait for the first market tick.  Probe the
+   // native MT5 calendar during OnInit and emit NEWS_LIVE_CALENDAR_SELFTEST;
+   // archive loading below remains tester data / live diagnostics only.
+   if(MQLInfoInteger(MQL_TESTER) == 0)
+      QM_NewsLiveSelfTest(_Symbol);
+
    // Q09 bundles are tester-only.  Any partial declaration is a setup defect;
    // live initialization never enters this branch and retains the established
    // native-calendar decision path plus legacy CSV diagnostics unchanged.
