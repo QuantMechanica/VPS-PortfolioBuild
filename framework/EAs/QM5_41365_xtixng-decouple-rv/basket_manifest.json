@@ -1,0 +1,21 @@
+{
+  "logical_symbol": "QM5_41365_XTI_XNG_DECOUPLE_RV_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "notes": [
+    "One logical two-leg completed-week WTI/natural-gas opposite-sign decoupling reversion package. Q02 evaluates combined package PnL, paired costs, density, and later Q09 correlation; neither leg is standalone.",
+    "The EA requires strict opposite-sign individual completed-week returns, buys the loser and sells the winner, targets equal absolute USD notionals, and caps aggregate frozen-stop risk at one RISK_FIXED budget."
+  ]
+}
+
+
