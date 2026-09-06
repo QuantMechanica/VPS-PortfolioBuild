@@ -31606,6 +31606,13 @@ def record_build_result(
 Q02_DEFERRED_SYMBOLS_FILE = DEFAULT_ROOT / "state" / "q02_deferred_symbols.json"
 Q02_CANARY_FANOUT_POLICY = "qm-q02-canary-fanout/v1"
 Q02_STAGE1_MAX_SYMBOLS = 1
+FIRST_Q02_INTAKE_SCHEMA = "qm.first-q02-intake/v1"
+FIRST_Q02_INTAKE_RECEIPT_SCHEMA = "qm.first-q02-intake-receipt/v1"
+Q02_READ_PHASES = tuple(
+    row.phase
+    for row in advancement_table().values()
+    if row.canonical_phase == "Q02" and (row.phase == "Q02" or row.legacy_alias)
+)
 # MNT-038 hardening: a transient-infra canary (NO_HISTORY / INCOMPLETE_RUNS is a
 # documented first-attempt cold-cache failure that self-heals) must not write a
 # terminal STOP on first sight. It is stopped only once its infra class has
@@ -31988,11 +31995,13 @@ def _record_q02_deferral(
     build_task_id: str | None = None,
     cohort_size: int | None = None,
     canary_symbols: list[str] | tuple[str, ...] | None = None,
+    state_file: Path | None = None,
 ) -> None:
     """Append deferred (setfile, symbol, tf) tuples to the sidecar state file."""
+    deferred_file = state_file or Q02_DEFERRED_SYMBOLS_FILE
     try:
-        state = (json.loads(Q02_DEFERRED_SYMBOLS_FILE.read_text(encoding="utf-8"))
-                 if Q02_DEFERRED_SYMBOLS_FILE.exists() else {})
+        state = (json.loads(deferred_file.read_text(encoding="utf-8"))
+                 if deferred_file.exists() else {})
     except (json.JSONDecodeError, OSError):
         state = {}
     entry = state.setdefault(ea_id, {"setfiles": [], "source": source,
@@ -32016,9 +32025,573 @@ def _record_q02_deferral(
         if str(setfile) not in known:
             entry["setfiles"].append({"setfile": str(setfile), "symbol": symbol,
                                       "tf": tf})
-    Q02_DEFERRED_SYMBOLS_FILE.parent.mkdir(parents=True, exist_ok=True)
-    Q02_DEFERRED_SYMBOLS_FILE.write_text(json.dumps(state, indent=1),
-                                         encoding="utf-8")
+    deferred_file.parent.mkdir(parents=True, exist_ok=True)
+    _write_json_atomic(deferred_file, state)
+
+
+def _first_q02_refusal(
+    reason: str,
+    compile_work_item_id: str,
+    **detail: Any,
+) -> dict[str, Any]:
+    return {
+        "schema": FIRST_Q02_INTAKE_SCHEMA,
+        "eligible": False,
+        "would_enqueue": False,
+        "reason": reason,
+        "compile_work_item_id": str(compile_work_item_id),
+        **detail,
+    }
+
+
+def _first_q02_ea_identity(
+    repo_root: Path,
+    ea_id: str,
+) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
+    numeric = str(ea_id).upper().removeprefix("QM5_")
+    registry_path = repo_root / "framework" / "registry" / "ea_id_registry.csv"
+    rows = _csv_rows_by_ea_id(registry_path).get(numeric, [])
+    active = [
+        row for row in rows
+        if str(row.get("status") or "").strip().lower() == "active"
+    ]
+    if len(active) != 1:
+        return None, {
+            "reason": "ea_registry_identity_not_exactly_one_active",
+            "registry_path": str(registry_path),
+            "active_rows": len(active),
+            "total_rows": len(rows),
+        }
+    slug = str(active[0].get("slug") or active[0].get("ea_slug") or "").strip()
+    if not slug:
+        return None, {
+            "reason": "ea_registry_slug_missing",
+            "registry_path": str(registry_path),
+        }
+    ea_dir = repo_root / "framework" / "EAs" / f"{ea_id}_{slug}"
+    if not ea_dir.is_dir():
+        return None, {
+            "reason": "canonical_ea_directory_missing",
+            "ea_dir": str(ea_dir),
+        }
+    return {"numeric_ea_id": numeric, "slug": slug, "ea_dir": ea_dir}, None
+
+
+def _first_q02_magic_check(
+    repo_root: Path,
+    *,
+    numeric_ea_id: str,
+    slug: str,
+    symbols: list[str],
+) -> dict[str, Any]:
+    registry_path = repo_root / "framework" / "registry" / "magic_numbers.csv"
+    rows = _csv_rows_by_ea_id(registry_path).get(numeric_ea_id, [])
+    active = [
+        row for row in rows
+        if str(row.get("status") or "").strip().lower() == "active"
+    ]
+    issues: list[str] = []
+    by_symbol: dict[str, list[dict[str, str]]] = {}
+    slots: set[int] = set()
+    for row in active:
+        symbol = str(row.get("symbol") or "").strip().upper()
+        by_symbol.setdefault(symbol, []).append(row)
+        try:
+            slot = int(str(row.get("symbol_slot") or row.get("slot") or ""))
+            magic = int(str(row.get("magic") or ""))
+        except ValueError:
+            issues.append("active_row_numeric_field_invalid")
+            continue
+        if slot in slots:
+            issues.append(f"duplicate_slot:{slot}")
+        slots.add(slot)
+        if magic != int(numeric_ea_id) * 10_000 + slot:
+            issues.append(f"magic_formula_mismatch:{symbol}:slot={slot}")
+        if str(row.get("ea_slug") or "").strip() != slug:
+            issues.append(f"slug_mismatch:{symbol}")
+    target_symbols = sorted(dict.fromkeys(str(value).strip().upper() for value in symbols))
+    for symbol in target_symbols:
+        count = len(by_symbol.get(symbol, []))
+        if count != 1:
+            issues.append(f"active_symbol_row_count:{symbol}:expected=1:actual={count}")
+    extra = sorted(set(by_symbol) - set(target_symbols))
+    if extra:
+        issues.append("active_symbols_not_in_compile_evidence:" + ",".join(extra))
+    if slots != set(range(len(active))):
+        issues.append("active_slots_not_contiguous_from_zero")
+    return {
+        "ok": not issues and len(active) == len(target_symbols),
+        "registry_path": str(registry_path),
+        "active_row_count": len(active),
+        "target_symbols": target_symbols,
+        "issues": issues,
+    }
+
+
+def _first_q02_setfile_plan(
+    repo_root: Path,
+    ea_dir: Path,
+    ea_id: str,
+    target_symbols: list[str],
+) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
+    sets_dir = ea_dir / "sets"
+    setfiles = sorted(sets_dir.glob("*_backtest.set")) if sets_dir.is_dir() else []
+    if not setfiles:
+        return None, {"reason": "canonical_backtest_setfiles_missing", "sets_dir": str(sets_dir)}
+    risk_checks: list[dict[str, Any]] = []
+    for path in setfiles:
+        ok, check = _q02_fixed_risk_contract(str(path))
+        check["sha256"] = _sha256_file(path) if path.is_file() else None
+        risk_checks.append(check)
+        if not ok:
+            return None, {
+                "reason": "canonical_setfile_risk_contract_invalid",
+                "failed_check": check,
+                "setfile_count": len(setfiles),
+            }
+
+    matrix_path = repo_root / "framework" / "registry" / "dwx_symbol_matrix.csv"
+    matrix_symbols: set[str] = set()
+    if matrix_path.is_file():
+        with matrix_path.open(encoding="utf-8-sig", newline="") as handle:
+            for row in csv.DictReader(handle):
+                symbol = str(row.get("symbol") or "").strip().upper()
+                verified = str(row.get("canonical_name_verified") or "true").strip().lower()
+                if symbol.endswith(".DWX") and verified not in {"false", "0", "no"}:
+                    matrix_symbols.add(symbol)
+    missing_matrix = sorted(set(target_symbols) - matrix_symbols)
+    if missing_matrix:
+        return None, {
+            "reason": "compile_symbols_not_in_dwx_matrix",
+            "symbols": missing_matrix,
+            "matrix_path": str(matrix_path),
+        }
+
+    manifest_path = ea_dir / "basket_manifest.json"
+    basket_manifest: dict[str, Any] | None = None
+    parsed: list[tuple[Path, str, str, dict[str, Any]]] = []
+    if manifest_path.is_file():
+        try:
+            basket_manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
+        except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+            return None, {"reason": "basket_manifest_invalid", "detail": str(exc)}
+        required = ("logical_symbol", "host_symbol", "host_timeframe")
+        if not isinstance(basket_manifest, dict) or any(
+            not str(basket_manifest.get(key) or "").strip() for key in required
+        ):
+            return None, {"reason": "basket_manifest_invalid", "manifest_path": str(manifest_path)}
+        manifest_symbols = {
+            str(value).strip().upper()
+            for value in (basket_manifest.get("basket_symbols") or [])
+            if str(value).strip()
+        }
+        if manifest_symbols != set(target_symbols):
+            return None, {
+                "reason": "basket_manifest_compile_symbol_mismatch",
+                "manifest_symbols": sorted(manifest_symbols),
+                "compile_symbols": sorted(target_symbols),
+            }
+        basket_manifest["manifest_path"] = str(manifest_path.resolve())
+        logical_symbol = str(basket_manifest["logical_symbol"])
+        timeframe = str(basket_manifest["host_timeframe"])
+        expected = sets_dir / f"{ea_dir.name}_{logical_symbol}_{timeframe}_backtest.set"
+        if not expected.is_file():
+            return None, {
+                "reason": "basket_manifest_logical_setfile_missing",
+                "setfile_path": str(expected),
+            }
+        parsed.append((expected.resolve(), logical_symbol, timeframe, _basket_q02_payload(basket_manifest)))
+    else:
+        by_symbol: dict[str, list[tuple[Path, str]]] = {}
+        for path in setfiles:
+            match = re.search(r"_([A-Z][A-Z0-9.]{2,})_([A-Z0-9]+)_backtest\.set$", path.name)
+            if match:
+                by_symbol.setdefault(match.group(1).upper(), []).append((path.resolve(), match.group(2)))
+        for symbol in target_symbols:
+            matches = by_symbol.get(symbol, [])
+            if len(matches) != 1:
+                return None, {
+                    "reason": "canonical_target_setfile_not_exactly_one",
+                    "symbol": symbol,
+                    "match_count": len(matches),
+                }
+            path, timeframe = matches[0]
+            parsed.append((path, symbol, timeframe, {}))
+
+    stage1, deferred = _stage_q02_setfiles(parsed)
+    if len(stage1) != 1:
+        return None, {"reason": "q02_canary_selection_empty", "eligible_setfiles": len(parsed)}
+    return {
+        "all_setfile_checks": risk_checks,
+        "basket_manifest": basket_manifest,
+        "stage1": stage1,
+        "deferred": deferred,
+    }, None
+
+
+def _plan_first_q02_intake(
+    conn: sqlite3.Connection,
+    root: Path,
+    compile_work_item_id: str,
+    *,
+    repo_root: Path,
+) -> dict[str, Any]:
+    row = conn.execute("SELECT * FROM work_items WHERE id=?", (compile_work_item_id,)).fetchone()
+    if row is None:
+        return _first_q02_refusal("compile_work_item_not_found", compile_work_item_id)
+    compile_row = dict(row)
+    observed = {
+        "kind": str(compile_row.get("kind") or ""),
+        "phase": str(compile_row.get("phase") or ""),
+        "status": str(compile_row.get("status") or ""),
+        "verdict": str(compile_row.get("verdict") or ""),
+    }
+    if (
+        observed["kind"].lower() != "compile"
+        or observed["phase"].upper() != "COMPILE_EA"
+        or observed["status"].lower() != "done"
+        or observed["verdict"].upper() != "COMPILE_OK"
+    ):
+        return _first_q02_refusal(
+            "compile_work_item_not_done_compile_ok", compile_work_item_id, observed=observed
+        )
+    ea_id = str(compile_row.get("ea_id") or "").strip().upper()
+    if not re.fullmatch(r"QM5_\d+", ea_id):
+        return _first_q02_refusal("compile_ea_id_invalid", compile_work_item_id, ea_id=ea_id)
+    try:
+        payload = json.loads(compile_row.get("payload_json") or "{}")
+    except (TypeError, json.JSONDecodeError) as exc:
+        return _first_q02_refusal(
+            "compile_payload_invalid", compile_work_item_id, ea_id=ea_id, detail=str(exc)
+        )
+    evidence_path = Path(str(compile_row.get("evidence_path") or ""))
+    if not evidence_path.is_file():
+        return _first_q02_refusal(
+            "compile_evidence_missing", compile_work_item_id, ea_id=ea_id,
+            evidence_path=str(evidence_path),
+        )
+    try:
+        evidence = json.loads(evidence_path.read_text(encoding="utf-8-sig"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        return _first_q02_refusal(
+            "compile_evidence_invalid", compile_work_item_id, ea_id=ea_id, detail=str(exc)
+        )
+    compile_result = payload.get("compile_result") or {}
+    pass_bindings = {
+        "evidence_schema": evidence.get("schema_version") == "qm.compile-ea-evidence/v1",
+        "evidence_work_item_id": str(evidence.get("work_item_id") or "") == str(compile_work_item_id),
+        "evidence_ea_id": str(evidence.get("ea_id") or "").upper() == ea_id,
+        "evidence_phase": str(evidence.get("phase") or "").upper() == "COMPILE_EA",
+        "evidence_success": evidence.get("success") is True,
+        "evidence_compile_result": str(evidence.get("compile_result") or "").upper() == "PASS",
+        "evidence_build_check_result": str(evidence.get("build_check_result") or "").upper() == "PASS",
+        "payload_compile_result": str(compile_result.get("compile_result") or "").upper() == "PASS",
+        "payload_build_check_result": str(compile_result.get("build_check_result") or "").upper() == "PASS",
+    }
+    if not all(pass_bindings.values()):
+        return _first_q02_refusal(
+            "compile_evidence_not_pass_bound", compile_work_item_id, ea_id=ea_id,
+            checks=pass_bindings,
+        )
+    candidate_recheck = evidence.get("candidate_recheck")
+    if not isinstance(candidate_recheck, dict) or candidate_recheck.get("eligible") is not True:
+        return _first_q02_refusal(
+            "compile_candidate_recheck_not_eligible", compile_work_item_id, ea_id=ea_id,
+            candidate_recheck=candidate_recheck,
+        )
+    target_symbols = sorted(dict.fromkeys(
+        str(value).strip().upper()
+        for value in (candidate_recheck.get("symbols") or payload.get("symbols") or [])
+        if str(value).strip()
+    ))
+    if not target_symbols or any(not symbol.endswith(".DWX") for symbol in target_symbols):
+        return _first_q02_refusal(
+            "compile_candidate_symbols_invalid", compile_work_item_id, ea_id=ea_id,
+            symbols=target_symbols,
+        )
+
+    identity, identity_error = _first_q02_ea_identity(repo_root, ea_id)
+    if identity_error:
+        reason = str(identity_error.pop("reason"))
+        return _first_q02_refusal(reason, compile_work_item_id, ea_id=ea_id, **identity_error)
+    assert identity is not None
+    ea_dir = Path(identity["ea_dir"])
+    ex5_path = ea_dir / f"{ea_dir.name}.ex5"
+    ex5_files = sorted(ea_dir.glob("*.ex5"))
+    if not ex5_path.is_file() or len(ex5_files) != 1 or ex5_files[0].resolve() != ex5_path.resolve():
+        return _first_q02_refusal(
+            "canonical_ex5_not_exactly_one", compile_work_item_id, ea_id=ea_id,
+            expected_ex5_path=str(ex5_path), ex5_files=[str(path) for path in ex5_files],
+        )
+    hashes = {
+        "work_item": str(compile_row.get("ex5_sha256") or "").lower(),
+        "payload": str(compile_result.get("ex5_sha256") or "").lower(),
+        "evidence": str(evidence.get("ex5_sha256") or "").lower(),
+        "current": _sha256_file(ex5_path).lower(),
+    }
+    if any(not re.fullmatch(r"[0-9a-f]{64}", value) for value in hashes.values()) or len(set(hashes.values())) != 1:
+        return _first_q02_refusal(
+            "compile_ex5_sha256_mismatch", compile_work_item_id, ea_id=ea_id,
+            ex5_path=str(ex5_path), sha256=hashes,
+        )
+
+    setfile_plan, setfile_error = _first_q02_setfile_plan(
+        repo_root, ea_dir, ea_id, target_symbols
+    )
+    if setfile_error:
+        reason = str(setfile_error.pop("reason"))
+        return _first_q02_refusal(reason, compile_work_item_id, ea_id=ea_id, **setfile_error)
+    assert setfile_plan is not None
+    magic = _first_q02_magic_check(
+        repo_root,
+        numeric_ea_id=str(identity["numeric_ea_id"]),
+        slug=str(identity["slug"]),
+        symbols=target_symbols,
+    )
+    if not magic["ok"]:
+        return _first_q02_refusal(
+            "active_magic_registry_contract_invalid", compile_work_item_id, ea_id=ea_id,
+            magic=magic,
+        )
+    try:
+        try:
+            from review_entry_gate import build_index as _build_review_index, blocked as _review_blocked
+        except ModuleNotFoundError:
+            from tools.strategy_farm.review_entry_gate import (
+                build_index as _build_review_index,
+                blocked as _review_blocked,
+            )
+        review_block = _review_blocked(_build_review_index(conn), ea_id)
+    except sqlite3.OperationalError as exc:
+        return _first_q02_refusal(
+            "review_entry_gate_unavailable", compile_work_item_id, ea_id=ea_id, detail=str(exc)
+        )
+    if review_block:
+        return _first_q02_refusal(
+            "review_entry_gate_blocked", compile_work_item_id, ea_id=ea_id,
+            review_entry_gate=review_block,
+        )
+    q02_placeholders = ",".join("?" for _ in Q02_READ_PHASES)
+    existing = conn.execute(
+        f"SELECT id,phase,status,verdict FROM work_items WHERE ea_id=? "
+        f"AND phase IN ({q02_placeholders}) ORDER BY created_at,id",
+        (ea_id, *Q02_READ_PHASES),
+    ).fetchall()
+    if existing:
+        return _first_q02_refusal(
+            "existing_q02_row", compile_work_item_id, ea_id=ea_id,
+            existing_q02_rows=[dict(value) for value in existing],
+        )
+    basket_manifest = setfile_plan["basket_manifest"]
+    archive = custom_history_archive_admission(
+        root,
+        ea_id=ea_id,
+        symbols=target_symbols,
+        basket_manifest=basket_manifest,
+    )
+    if not archive.get("ok"):
+        return _first_q02_refusal(
+            "custom_history_archive_admission_failed", compile_work_item_id,
+            ea_id=ea_id, custom_history_archive_admission=archive,
+        )
+
+    stage1 = setfile_plan["stage1"]
+    deferred = setfile_plan["deferred"]
+    setfile_path, symbol, timeframe, payload_extra = stage1[0]
+    return {
+        "schema": FIRST_Q02_INTAKE_SCHEMA,
+        "eligible": True,
+        "would_enqueue": True,
+        "reason": "ELIGIBLE",
+        "compile_work_item_id": str(compile_work_item_id),
+        "ea_id": ea_id,
+        "ea_dir": str(ea_dir),
+        "ex5_path": str(ex5_path),
+        "ex5_sha256": hashes["current"],
+        "compile_evidence_path": str(evidence_path),
+        "target_symbols": target_symbols,
+        "magic": magic,
+        "setfile_checks": setfile_plan["all_setfile_checks"],
+        "canary": {
+            "symbol": symbol,
+            "timeframe": timeframe,
+            "setfile_path": str(setfile_path),
+            "setfile_sha256": _sha256_file(setfile_path),
+        },
+        "deferred": [
+            {"symbol": item[1], "timeframe": item[2], "setfile_path": str(item[0])}
+            for item in deferred
+        ],
+        "_stage1": stage1,
+        "_deferred": deferred,
+        "_payload_extra": payload_extra,
+        "_archive": archive,
+        "_candidate_recheck": candidate_recheck,
+    }
+
+
+def intake_first_q02(
+    root: Path,
+    compile_work_item_id: str,
+    *,
+    apply: bool = False,
+    repo_root: Path | None = None,
+) -> dict[str, Any]:
+    """Plan or append exactly one first-Q02 canary from a bound COMPILE_OK row."""
+    code_root = Path(repo_root or CANONICAL_REPO_ROOT).resolve()
+    if not db_path(root).is_file():
+        return _first_q02_refusal(
+            "farm_database_missing", compile_work_item_id, database=str(db_path(root))
+        )
+    with connect(root) as conn:
+        plan = _plan_first_q02_intake(conn, root, compile_work_item_id, repo_root=code_root)
+    public_plan = {key: value for key, value in plan.items() if not key.startswith("_")}
+    public_plan.update({"dry_run": not apply, "applied": False, "priority_boost": False})
+    if not plan.get("eligible") or not apply:
+        return public_plan
+    if factory_is_off(root):
+        return {
+            **public_plan, "eligible": False, "would_enqueue": False,
+            "reason": "factory_off", "factory_off_flag": str(factory_off_flag_path(root)),
+        }
+
+    backup_path, backup_sha = _governed_state_backup(root, "first_q02_intake")
+    lock = FactoryMutationLock(
+        path_for_factory_flag(factory_off_flag_path(root)),
+        owner=f"intake_first_q02:{compile_work_item_id}",
+    )
+    try:
+        lock.__enter__()
+    except RuntimeError as exc:
+        return {
+            **public_plan, "eligible": False, "would_enqueue": False,
+            "reason": "factory_mutation_lock_busy", "detail": str(exc),
+            "backup": {"path": str(backup_path), "sha256": backup_sha},
+        }
+
+    work_item_id = str(uuid.uuid4())
+    now = utc_now()
+    try:
+        if factory_is_off(root):
+            return {
+                **public_plan, "eligible": False, "would_enqueue": False,
+                "reason": "factory_off_after_lock",
+                "backup": {"path": str(backup_path), "sha256": backup_sha},
+            }
+        conn = connect_short_under_mutation_lock(root)
+        try:
+            conn.execute("BEGIN IMMEDIATE")
+            locked_plan = _plan_first_q02_intake(
+                conn, root, compile_work_item_id, repo_root=code_root
+            )
+            if not locked_plan.get("eligible"):
+                conn.rollback()
+                result = {
+                    key: value for key, value in locked_plan.items()
+                    if not key.startswith("_")
+                }
+                return {
+                    **result, "dry_run": False, "applied": False,
+                    "priority_boost": False, "rechecked_under_lock": True,
+                    "backup": {"path": str(backup_path), "sha256": backup_sha},
+                }
+            setfile_path, symbol, timeframe, payload_extra = locked_plan["_stage1"][0]
+            payload = {
+                "host_symbol": symbol,
+                "host_timeframe": timeframe,
+                "enqueued_by": "farmctl.intake-first-q02",
+                "enqueued_at_utc": now,
+                "first_q02_intake": True,
+                "first_q02_intake_schema": FIRST_Q02_INTAKE_SCHEMA,
+                "compile_work_item_id": str(compile_work_item_id),
+                "compile_evidence_path": locked_plan["compile_evidence_path"],
+                "expected_ex5_sha256": locked_plan["ex5_sha256"],
+                "expected_setfile_sha256": locked_plan["canary"]["setfile_sha256"],
+                "risk_fixed": next(
+                    check["risk_fixed"] for check in locked_plan["setfile_checks"]
+                    if check["setfile_path"] == str(setfile_path)
+                ),
+                "risk_percent": 0.0,
+                "q02_cohort_size": len(locked_plan["_stage1"]) + len(locked_plan["_deferred"]),
+                "q02_fanout_policy": Q02_CANARY_FANOUT_POLICY,
+                "q02_fanout_canary": bool(locked_plan["_deferred"]),
+                "q02_fanout_canary_index": 1 if locked_plan["_deferred"] else None,
+                "compile_candidate_recheck": {
+                    "eligible": True,
+                    "reason": locked_plan["_candidate_recheck"].get("reason"),
+                    "symbols": locked_plan["target_symbols"],
+                },
+            }
+            payload.update(payload_extra)
+            _stamp_custom_history_archive_admission(payload, locked_plan["_archive"])
+            _apply_q02_multisymbol_timeout_min(
+                payload, phase="Q02", ea_id=locked_plan["ea_id"], symbol=symbol
+            )
+            conn.execute(
+                "INSERT INTO work_items (id,kind,phase,ea_id,symbol,setfile_path,status,"
+                "attempt_count,payload_json,created_at,updated_at,gate_contract_version,"
+                "ex5_sha256,setfile_sha256) VALUES "
+                "(?,'backtest','Q02',?,?,?,'pending',0,?,?,?,?,?,?)",
+                (
+                    work_item_id, locked_plan["ea_id"], symbol, str(setfile_path),
+                    json.dumps(payload, sort_keys=True), now, now,
+                    ACTIVE_GATE_CONTRACT_VERSION, locked_plan["ex5_sha256"],
+                    locked_plan["canary"]["setfile_sha256"],
+                ),
+            )
+            event(conn, "work_item", work_item_id, "first_q02_intake_appended", {
+                "compile_work_item_id": str(compile_work_item_id),
+                "ea_id": locked_plan["ea_id"], "symbol": symbol,
+                "priority_boost": False, "backup_path": str(backup_path),
+                "backup_sha256": backup_sha,
+            })
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+
+        if locked_plan["_deferred"]:
+            _record_q02_deferral(
+                locked_plan["ea_id"], locked_plan["_deferred"],
+                "farmctl.intake-first-q02",
+                cohort_size=len(locked_plan["_stage1"]) + len(locked_plan["_deferred"]),
+                canary_symbols=[symbol],
+                state_file=root / "state" / "q02_deferred_symbols.json",
+            )
+        receipt = {
+            "schema": FIRST_Q02_INTAKE_RECEIPT_SCHEMA,
+            "recorded_at": now,
+            "compile_work_item_id": str(compile_work_item_id),
+            "work_item_id": work_item_id,
+            "ea_id": locked_plan["ea_id"], "phase": "Q02",
+            "symbol": symbol, "timeframe": timeframe,
+            "setfile_path": str(setfile_path),
+            "setfile_sha256": locked_plan["canary"]["setfile_sha256"],
+            "ex5_sha256": locked_plan["ex5_sha256"],
+            "compile_evidence_path": locked_plan["compile_evidence_path"],
+            "priority_boost": False,
+            "deferred_symbols": [item[1] for item in locked_plan["_deferred"]],
+            "backup": {"path": str(backup_path), "sha256": backup_sha},
+        }
+        receipt_path = (
+            root / "artifacts" / "receipts" / "first_q02_intake"
+            / f"{compile_work_item_id}_{work_item_id}.json"
+        )
+        if receipt_path.exists():
+            raise RuntimeError(f"first_q02_intake_receipt_exists:{receipt_path}")
+        _write_json_atomic(receipt_path, receipt)
+        return {
+            **{key: value for key, value in locked_plan.items() if not key.startswith("_")},
+            "dry_run": False, "applied": True, "would_enqueue": False,
+            "priority_boost": False, "work_item_id": work_item_id,
+            "receipt_path": str(receipt_path),
+            "receipt_sha256": _sha256_file(receipt_path),
+            "backup": {"path": str(backup_path), "sha256": backup_sha},
+        }
+    finally:
+        lock.__exit__(None, None, None)
 
 
 def _q02_build_setfile_basket_match(
@@ -34224,6 +34797,19 @@ def build_parser() -> argparse.ArgumentParser:
             "executable key/value parameters must be identical"
         ),
     )
+    first_q02 = sub.add_parser(
+        "intake-first-q02",
+        help=(
+            "Dry-run or append one first Q02 canary from an exact done/COMPILE_OK "
+            "COMPILE_EA work item"
+        ),
+    )
+    first_q02.add_argument("--compile-work-item-id", required=True)
+    first_q02.add_argument(
+        "--apply",
+        action="store_true",
+        help="Append exactly one Q02 canary and its receipt; default is read-only",
+    )
     bind_q09 = sub.add_parser(
         "bind-q09-plan",
         help="Hash-bind a sealed Q09_NEWS plan to one exact pending work item",
@@ -34897,6 +35483,12 @@ def main(argv: list[str] | None = None) -> int:
             requal_reason=args.requal_reason,
             expected_current_ex5_sha256=args.expected_current_ex5_sha256,
             reconcile_noncanonical_setfile=args.reconcile_noncanonical_setfile,
+        ))
+    elif args.command == "intake-first-q02":
+        print_json(intake_first_q02(
+            root,
+            args.compile_work_item_id,
+            apply=args.apply,
         ))
     elif args.command == "requeue-false-invalid-setfile":
         print_json(enqueue_false_invalid_setfile_requeue(

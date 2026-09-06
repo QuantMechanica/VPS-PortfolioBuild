@@ -224,6 +224,18 @@ con.row_factory = sqlite3.Row
 cur = con.cursor()
 
 wi_eas = {r[0] for r in cur.execute("SELECT DISTINCT ea_id FROM work_items")}
+compile_eas = {
+    r[0] for r in cur.execute(
+        "SELECT DISTINCT ea_id FROM work_items WHERE phase='COMPILE_EA'"
+    )
+}
+q02_eas = {
+    r[0] for r in cur.execute(
+        "SELECT DISTINCT ea_id FROM work_items WHERE phase IN (%s)"
+        % ",".join("?" for _ in Q02_READ_PHASES),
+        Q02_READ_PHASES,
+    )
+}
 
 pending_now = cur.execute(
     "SELECT COUNT(*) FROM work_items WHERE status='pending'").fetchone()[0]
@@ -373,11 +385,33 @@ if APPLY:
     # Refresh the DB-derived guards under the lock: another writer may have
     # enqueued for an EA between the unlocked scan and this point.
     wi_eas = {r[0] for r in cur.execute("SELECT DISTINCT ea_id FROM work_items")}
+    compile_eas = {
+        r[0] for r in cur.execute(
+            "SELECT DISTINCT ea_id FROM work_items WHERE phase='COMPILE_EA'"
+        )
+    }
+    q02_eas = {
+        r[0] for r in cur.execute(
+            "SELECT DISTINCT ea_id FROM work_items WHERE phase IN (%s)"
+            % ",".join("?" for _ in Q02_READ_PHASES),
+            Q02_READ_PHASES,
+        )
+    }
     pending_now = cur.execute(
         "SELECT COUNT(*) FROM work_items WHERE status='pending'").fetchone()[0]
     budget = max(0, QUEUE_CEILING - pending_now)
     report["wave_budget"] = budget
 budget_left = budget
+# Keep the phase-blind filter as a behaviour guard: the sweep is not the
+# compile-evidence-authenticated intake path.  It must not make a COMPILE_EA-only
+# target disappear from observability, though.
+for ea_id in sorted((set(ea_dirs) & compile_eas) - q02_eas, key=_prio):
+    if TARGET_EAS and ea_id not in TARGET_EAS:
+        continue
+    report["part1_never_tested"]["skipped"].append({
+        "ea_id": ea_id,
+        "reason": "COMPILE_ROW_PRESENT_NO_Q02",
+    })
 for ea_id in sorted((e for e in ea_dirs if e not in wi_eas), key=_prio):
     if TARGET_EAS and ea_id not in TARGET_EAS:
         continue

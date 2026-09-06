@@ -24,6 +24,53 @@ def _init_test_db(farm_root: Path) -> None:
         agent_router.init_schema(conn)
 
 
+def test_compile_only_ea_is_visible_in_part1_skip_list(tmp_path: Path) -> None:
+    farm_root = tmp_path / "farm"
+    repo_root = tmp_path / "repo"
+    report_root = tmp_path / "reports"
+    ea_id = "QM5_9099"
+    ea_dir = repo_root / "framework" / "EAs" / f"{ea_id}_compiled"
+    ea_dir.mkdir(parents=True)
+    registry = repo_root / "framework" / "registry" / "ea_id_registry.csv"
+    registry.parent.mkdir(parents=True)
+    registry.write_text("ea_id,slug,status\n9099,compiled,active\n", encoding="utf-8")
+    report_root.joinpath("state").mkdir(parents=True)
+    _init_test_db(farm_root)
+    with sqlite3.connect(farm_root / farmctl.DB_REL) as conn:
+        conn.execute(
+            "INSERT INTO work_items "
+            "(id,kind,phase,ea_id,symbol,setfile_path,status,verdict,attempt_count,payload_json,"
+            "created_at,updated_at) VALUES "
+            "('compile-only','compile','COMPILE_EA',?,'','','done','COMPILE_OK',1,'{}','fixture','fixture')",
+            (ea_id,),
+        )
+        conn.commit()
+    env = os.environ.copy()
+    env.update({
+        "QM_STRATEGY_FARM_ROOT": str(farm_root),
+        "QM_CANONICAL_REPO_ROOT": str(repo_root),
+        "QM_REPORT_ROOT": str(report_root),
+    })
+    result = subprocess.run(
+        [sys.executable, str(SWEEP), "--ea", ea_id],
+        cwd=REPO,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=SWEEP_SUBPROCESS_TIMEOUT_SEC,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    report = json.loads(
+        (report_root / "state" / "claude_sweep_enqueue_2026-06-10.json")
+        .read_text(encoding="utf-8")
+    )
+    assert report["part1_never_tested"]["skipped"] == [{
+        "ea_id": ea_id,
+        "reason": "COMPILE_ROW_PRESENT_NO_Q02",
+    }]
+
+
 def test_never_tested_sweep_enqueues_one_logical_basket_item(
     tmp_path: Path,
 ) -> None:
