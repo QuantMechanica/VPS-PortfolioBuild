@@ -1,0 +1,19 @@
+{
+  "build_check_result": "PASS",
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "completed_at_utc": "2026-09-06T10:00:47Z",
+  "ea_id": "QM5_41366",
+  "ea_label": "QM5_41366_xtixng-decouple-cont",
+  "evidence_path": "D:\\QM\\reports\\work_items\\469c6d49-4bd3-4c4f-af33-a68739e7877c\\QM5_41366\\COMPILE_EA\\compile_evidence.json",
+  "ex5_sha256": "1b10812d1df947a00365aba98fd5988756e255d1c77b90ac61cbe0944e5c0563",
+  "failure_classes": [],
+  "mq5_sha256": "41620da346c972ddfb1b90016e5308aaf8bbe7e7bd0af1054eac9cde67b44e45",
+  "phase": "COMPILE_EA",
+  "schema_version": "qm.compile-ea-status-receipt/v1",
+  "setfile_count": 3,
+  "source_release_receipt": "artifacts/qm5_41366_compile_wave_apply_20260906.json",
+  "terminal_claim": "T4",
+  "verdict": "COMPILE_OK",
+  "work_item_id": "469c6d49-4bd3-4c4f-af33-a68739e7877c"
+}

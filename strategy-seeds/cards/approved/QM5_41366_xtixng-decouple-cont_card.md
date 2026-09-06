@@ -68,9 +68,9 @@ r1_track_record: PASS_WITH_WEEKLY_CROSS_SECTIONAL_TRANSLATION_RISK
 r2_mechanical: PASS
 r3_data_available: PASS_WITH_SYNCHRONIZATION_AND_CONTINUOUS_CFD_BASIS_RISK
 r4_ml_forbidden: PASS
-pipeline_phase: G0
-q01_status: NOT_RUN
-q02_status: NOT_RUN
+pipeline_phase: Q01
+q01_status: COMPILE_OK
+q02_status: NOT_ENQUEUED_CPU_CEILING
 force_build: true
 review_focus: "Falsify a completed-week WTI/natural-gas opposite-direction decoupling continuation outside the certified XAU/SP500/NDX/XNG book. Verify exact prior-two-week membership, synchronized three-to-five-session close pairs, week-end endpoint selection, strict opposite individual-return signs, winner-long/loser-short sides, durable weekly attempt, aggregate fixed risk, atomic basket repair, and next-week lifecycle. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -378,14 +378,16 @@ may establish realized correlation with the certified book.
 | Version | Date | Change | Gate | Status |
 |---|---|---|---|---|
 | v1 | 2026-09-06 | initial XTI/XNG weekly decoupling-shock continuation card | G0 | APPROVED; build pending |
+| v2 | 2026-09-06 | governed source-fresh compile and strict build validation | Q01 | COMPILE_OK; 9/9 reference tests PASS |
+| v3 | 2026-09-06 | paced first-Q02 admission check | Q02 | NOT_ENQUEUED_CPU_CEILING; average 97.695676%, maximum 99.034667% |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Status | Evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-09-06 | APPROVED | `decisions/2026-09-06_qm5_41366_xtixng_weekly_decoupling_continuation_g0.md` |
-| Q01 Build Validation | - | NOT_RUN | - |
-| Q02 Baseline Screening | - | NOT_RUN | - |
+| Q01 Build Validation | 2026-09-06 | COMPILE_OK | work item `469c6d49-4bd3-4c4f-af33-a68739e7877c`; EX5 `1b10812d1df947a00365aba98fd5988756e255d1c77b90ac61cbe0944e5c0563`; `artifacts/qm5_41366_q01_compile_20260906.json` |
+| Q02 Baseline Screening | 2026-09-06 | NOT_ENQUEUED_CPU_CEILING | `artifacts/qm5_41366_q02_cpu_admission_20260906.json` |
 
 ## Safety Boundary
 
@@ -395,4 +397,3 @@ enqueue only below tester and whole-host CPU ceilings. It does not authorize a
 manual backtest, terminal control, live/demo/shadow/stress/optimization preset,
 AutoTrading, `T_Live`, deploy or T_Live manifest, portfolio-gate change,
 portfolio admission, decorrelation claim, or correlation waiver.
-

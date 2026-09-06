@@ -1,0 +1,20 @@
+{
+  "admission": "STOP_CPU_CEILING",
+  "average_cpu_percent": 97.695676,
+  "compile_work_item_id": "469c6d49-4bd3-4c4f-af33-a68739e7877c",
+  "ea_id": "QM5_41366",
+  "maximum_cpu_percent": 99.034667,
+  "method": "Windows Get-Counter \\Processor(_Total)\\% Processor Time, one-second interval",
+  "phase": "Q02",
+  "sample_count": 5,
+  "sampled_at_utc": "2026-09-06T10:01:36.4754558Z",
+  "samples_cpu_percent": [
+    99.024541,
+    99.034667,
+    97.562535,
+    95.947612,
+    96.909027
+  ],
+  "threshold_cpu_percent": 97.0,
+  "note": "Q02 was not enqueued because both the five-sample average and maximum exceeded the binding 97 percent CPU ceiling."
+}
