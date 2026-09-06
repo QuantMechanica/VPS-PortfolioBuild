@@ -1072,3 +1072,11 @@ Beide OWNER-Freigaben (MNT020-RECOMPILE, MNT006-CANARY) sind ausgeführt und im 
 - **Hard Rule "live EAs carry their own live news filter" (OWNER original decision, reaffirmed 20:08Z):** already implemented since FW-LIVE 2026-06-28 (native MT5 calendar, fail-closed); recorded in Vault annex, framework principle 8, CLAUDE.md, memory; enforcement predicate + attach evidence → Codex 93c1d29c.
 - **Astra e0db4991:** QuantMechanica Signature Design for EA chart panels (from QM_AccountMonitor).
 - Worker reload chunk 56: 9/10 at 20:18Z (T9 pending) → Q08 reruns 11167/11196 next.
+
+## Addendum 2026-09-06 20:55Z — Tick 20:41Z: three Codex returns closed, Q08 rerun waits on XAUUSD, intakes resumed
+
+- **Codex APPROVED:** 93c1d29c (09ad0c91c4: native calendar proven populated on the FTMO terminal — governor `NEWS_LIVE_CALENDAR_SELFTEST healthy`, 216 events/7d; decision path fail-closed; `EA_LIVE_NEWS_ARCHIVE_DEPENDENCY` predicate; pulse equity source + ea_errors window repaired), 4d3b27f6 (68e189a26d: `EA_SYMBOL_HARDCODED` scanner, corpus 4,078 sources / 1,365 literal-bearing / 0 new FAIL, cutover-existing WARN), e0db4991 (QM_ChartPanel.mqh Signature Design, compiled 0/0, source-only). Harness test scoped to ML findings after the two scanners joined Invoke-ForbiddenScan (036e2b2fdb; 51 tests).
+- **11167 Q08 rerun 19c9df13** pending since 20:17Z: XAUUSD.DWX is active on census cells (T1/T6) and the T9 Q07 cell → symbol serialization; claims when XAUUSD frees. Enqueue-time `CONFLICTING_BUILD_IDENTITY:setfile` = Q07 candidate vs Q08 set (claim-time reseal expected).
+- **T9 reload** still pending (Q07 f654273d since 19:59Z; reload script idle-only).
+- **Q02 intakes:** `session_tools/intake_wave.py` (CPU 5×1s <97 %, D ≥60 GB); wave 1 54 open → 41117 intaken (f9a6e445); batches continue per tick. Note: Q02 done 3h = 0 while 792 Q02 rows pending — the queue is census-first by design; intakes add inventory, not throughput.
+- FTMO M13: journal clean (two harmless "mq5 not found" MetaEditor lines 22:18 Prague), governor no INVALID/LEASE, collector 1 s fresh, 0 halt.
