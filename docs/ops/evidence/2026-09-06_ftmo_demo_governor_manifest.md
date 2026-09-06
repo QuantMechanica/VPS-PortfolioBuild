@@ -1,6 +1,6 @@
 # FTMO M13 demo governor deployment manifest — 2026-09-06
 
-Status: **SIGNED 2026-09-06 ~19:38Z (chat receipt) · INSTALLED UNATTACHED · PARKED · activation checklist in progress**  
+Status: **ACTIVATED 2026-09-06 20:08Z · RUNNING (AutoTrading ON by OWNER) · 8/8 sleeves + governor + collector attached**  
 Router authority: `9cf0712b-6ee4-4469-aed2-f920c3e0cc03`  
 Code: `agents/codex-ftmo-governor-20260906` at
 `bcb589a0656f0ea83580bbd7972de2093ccac35d`  
@@ -132,4 +132,33 @@ OWNER name: OWNER (Fabian)
 Signed at UTC: 2026-09-06 ~19:38Z (chat)
 
 Post-signature housekeeping (OWNER instruction 2026-09-06 ~19:40Z, receipt `2026-09-06_ftmo_demo_cleanup_receipt.json`): 14 legacy files deleted from the demo terminal (5 legacy EAs, DEPLOY_SHEET.md, QM_AccountMonitor .ex5/.mq5, 6 legacy `FTMO_*` presets); the 11 M13 presets copied flat into `MQL5\Presets\` because the MT5 input Load dialog opens that folder, not `MQL5\Profiles\Presets\`. First governor attach at 21:31:06 Prague failed silently with `incorrect parameters` (identity guard, preset not loaded) — expected behaviour, no state written (0 halt files).
+
+## Activation record (2026-09-06, Claude)
+
+| Step | Time (Prague) | Evidence |
+|---|---|---|
+| Manifest signed (chat receipt) | ~21:38 | this file, commit 9ff45c0a3e |
+| Governor bootstrap complete (marker printed, EA self-removed) | 21:38:52 | terminal journal + Experts log 20260906.log |
+| Governor active preset running (lease refreshed) | 21:39:23 | journal; `bases/gvariables.dat` updates |
+| Collector `QM_FTMO_TrialTelemetry` attached (1 s timer, `QM/ftmo_trial/2026-09-06/trial_telemetry_raw.jsonl`) | 21:45:56 | journal |
+| Sleeves 11421 / 11422 / 13054 / 20048 attached | 21:43–21:44 | journal |
+| Sleeves 10706 / 11910 / 1537 / 21505 refused (`EA_MAGIC_RESOLUTION_FAILED`, registry `.DWX` vs broker symbol) | 21:42–21:46 | Experts log |
+| Resolver base-name fix (4fb47bd3b5) + artifact-only rebuild of the four, installed with receipt | 21:57–22:00 | `2026-09-06_ftmo_sleeve_alias_rebuild/` |
+| 10706 / 11910 / 21505 attached | 21:57–21:58 | journal |
+| 1537 refused again (calendar host symbols are `.DWX` literals) → `strategy_calendar_symbol` input (dcaeca68f5), rebuild + install | 21:58 → 22:05 | `2026-09-06_ftmo_1537_calendar_symbol_input/` |
+| 1537 attached, `INIT_OK`, calendar 87 rows, magic 15370001 | 22:07:18 / 22:08:05 | journal + `QM5_1537_ea-1537.log` |
+| OWNER enabled AutoTrading (chat: "Autotrading ist an") | ~22:08 | chat receipt |
+| `EXPECTED_STATE` PARKED → RUNNING (2b258f48f4), pulse run | 22:09 | `D:\QMeports\statetmo_trial_pulse.json` |
+
+Pulse 20:09:08Z: `expected_state=RUNNING`, `effective_state=RUNNING`, `magics_seen=8/8`, `open_positions=0`, halt files 0.
+Two known pulse artefacts (Codex ticket 2026-09-06, live-news/pulse): `equity_source=ea_day_close_snapshot` picked a
+stale 2026-09-03 snapshot from the previous account (99,838.36) although the collector snapshot shows 100,000.00 /
+0 positions; `ea_errors` lists the two pre-fix `SLEEVE_CALENDAR_INIT_FAILED` entries (19:46Z, 19:58Z) that predate the
+clean `INIT_OK` at 20:08Z. Neither reflects account state.
+
+Deviations from the sealed install: four sleeve binaries + 1537 source differ from the factory EX5s (rebuilt for the
+broker symbol names; factory inventory untouched; receipts above). News: all EAs log `NEWS_CALENDAR_LOADED` /
+`NEWS_CALENDAR_COVERAGE_GAP` — these are CSV seed diagnostics; live decisions use the native MT5 calendar
+(FW-LIVE 2026-06-28, fail-closed). Weekend flat; first possible trade Monday 2026-09-08 session open; the 14-day trial
+clock starts with the first trade.
 
