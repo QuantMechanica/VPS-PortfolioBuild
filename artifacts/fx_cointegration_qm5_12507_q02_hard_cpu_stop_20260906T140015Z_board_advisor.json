@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-09-06T14:00:15.8836353Z",
+  "timezone": "Europe/Berlin",
+  "branch": "agents/board-advisor",
+  "observation_head": "36d34d17bd0ca5a17ac261cd8b89e3fbebe14541",
+  "mission": "fx_cointegration_existing_card_q02_continuation",
+  "selection": {
+    "ea_id": 12507,
+    "ea_name": "QM5_12507_pair-coint-z",
+    "pair": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX"
+    ],
+    "logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+    "phase": "Q02",
+    "last_durable_work_item_id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+    "last_durable_state_recorded_at_utc": "2026-09-06T13:02:15.2195052Z",
+    "runtime_state_reread": false,
+    "runtime_state_reread_reason": "cpu_ceiling_bound_before_successful_queue_query"
+  },
+  "cpu_ceiling": {
+    "threshold_percent": 97.0,
+    "sample_interval_seconds": 1,
+    "samples_percent": [
+      100.0,
+      99.611164,
+      99.123911,
+      99.60976,
+      97.851569
+    ],
+    "average_percent": 99.239281,
+    "maximum_percent": 100.0,
+    "bound": true
+  },
+  "terminal_snapshot": {
+    "factory": [
+      {
+        "slot": "T9",
+        "pid": 15892,
+        "path": "D:/QM/mt5/T9/terminal64.exe"
+      }
+    ],
+    "excluded": [
+      {
+        "kind": "T_Live",
+        "pid": 12996,
+        "path": "C:/QM/mt5/T_Live/MT5_Base/terminal64.exe"
+      },
+      {
+        "kind": "external_ftmo",
+        "pid": 18492,
+        "path": "C:/Program Files/FTMO Global Markets MT5 Terminal/terminal64.exe"
+      }
+    ]
+  },
+  "actions": {
+    "card_created": false,
+    "ea_created_or_modified": false,
+    "framework_input_pin_audit_run": false,
+    "compile_enqueued": false,
+    "q02_enqueued": false,
+    "queue_mutated": false,
+    "tester_launched": false,
+    "terminal_controlled": false,
+    "autotrading_changed": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  },
+  "stop_reason": "BACKTEST_CPU_CEILING"
+}
