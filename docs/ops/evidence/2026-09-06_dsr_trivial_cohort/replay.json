@@ -1,0 +1,186 @@
+{
+  "read_only": true,
+  "stored_verdicts_unchanged": true,
+  "successor_11015": {
+    "id": "34d0e1ba-8c74-4b84-94ef-5f0681d4a60c",
+    "status": "pending",
+    "verdict": null
+  },
+  "rows": [
+    {
+      "id": "d7ab61ae-c7eb-400c-81d3-94b30a1a74e2",
+      "ea_id": "QM5_11167",
+      "symbol": "XAUUSD.DWX",
+      "stored_verdict": "INVALID",
+      "provenance": {
+        "aggregate": {
+          "path": "D:\\QM\\reports\\work_items\\d7ab61ae-c7eb-400c-81d3-94b30a1a74e2\\QM5_11167\\Q08\\XAUUSD_DWX\\aggregate.json",
+          "sha256": "ce7b68f7a2eba2c695a01e19e91efe655e992d0585dc22e556e0ec6dd6f99b0f"
+        },
+        "summary": {
+          "path": "D:\\QM\\reports\\pipeline\\QM5_11167\\Q08\\_baseline\\QM5_11167\\20260906_033253\\summary.json",
+          "sha256": "7f0600f0b6d8e0936e717deb9ebfa9667a1886b9c1cf63a3081fddb8a9639cef"
+        },
+        "report": {
+          "path": "D:\\QM\\reports\\pipeline\\QM5_11167\\Q08\\_baseline\\QM5_11167\\20260906_033253\\raw\\run_01\\report.htm",
+          "sha256": "a3626fff19377f207e17dd1ec512d4a4b45aad70cfb4dfcc178cce18a5a745f0"
+        }
+      },
+      "governed_context_status": "UNAVAILABLE",
+      "governed_v2_outcome": "INVALID",
+      "refusal": "SINGLE_CONFIGURATION_UNAVAILABLE:EXPLICIT_SINGLE_CONFIGURATION_DECLARATION_REQUIRED",
+      "current_build_matches_historical": {
+        "mq5": true,
+        "ex5": true,
+        "setfile": true
+      },
+      "card": {
+        "path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11167_weiss-ichi2-ma.md",
+        "sha256": "f84bb2a9f6a86253b81aaf2898c99be0b0d5b8af0b07defae1ee783048964b73",
+        "search_related_lines": [
+          "- Optional P3 sweep: fast SMA 8-12, slow SMA 24-30."
+        ]
+      },
+      "hypothetical_unsealed_n1": {
+        "basis": "DIAGNOSTIC_ONLY_NO_CARD_AUTHORITY_NO_PIPELINE_VERDICT",
+        "threshold": 0.05,
+        "would_return": "PASS",
+        "trade_count": 311,
+        "active_days": 303,
+        "sharpe_daily": 0.05161281246060263,
+        "skew": 3.300888506902017,
+        "pearson_kurtosis": 45.61399959307885,
+        "n_calendar_days": 3287,
+        "net_return": 0.2963569,
+        "effective_trial_count": 1,
+        "cohort_std_daily": 0,
+        "expected_max_sharpe_daily": 0.0,
+        "z": 3.19159600912657,
+        "dsr_p": 0.0007074453939691516,
+        "dsr_probability": 0.9992925546060308,
+        "sharpe_annual_display": 0.9860613975225216,
+        "annual_days_display": 365,
+        "statistical_status": "sufficient"
+      }
+    },
+    {
+      "id": "60f98a58-5f06-4862-8908-16a8efe8332e",
+      "ea_id": "QM5_11015",
+      "symbol": "EURUSD.DWX",
+      "stored_verdict": "INVALID",
+      "provenance": {
+        "aggregate": {
+          "path": "D:\\QM\\reports\\work_items\\60f98a58-5f06-4862-8908-16a8efe8332e\\QM5_11015\\Q08\\EURUSD_DWX\\aggregate.json",
+          "sha256": "d4022ef37e4aad2990db05290a016772433363f0ee93c614ae11f596da01a6fc"
+        },
+        "summary": {
+          "path": "D:\\QM\\reports\\pipeline\\QM5_11015\\Q08\\_baseline\\QM5_11015\\20260906_041606\\summary.json",
+          "sha256": "e453a566cc8d6809a25c4756a59beb89bb77468222b2eb05db402f1047203196"
+        },
+        "report": {
+          "path": "D:\\QM\\reports\\pipeline\\QM5_11015\\Q08\\_baseline\\QM5_11015\\20260906_041606\\raw\\run_01\\report.htm",
+          "sha256": "fa04185497cb70ad3d8772005da2d54040cd59ff58d4ed0a8e72b39d68643a76"
+        }
+      },
+      "governed_context_status": "UNAVAILABLE",
+      "governed_v2_outcome": "INVALID",
+      "refusal": "SINGLE_CONFIGURATION_UNAVAILABLE:EXPLICIT_SINGLE_CONFIGURATION_DECLARATION_REQUIRED",
+      "current_build_matches_historical": {
+        "mq5": true,
+        "ex5": true,
+        "setfile": false
+      },
+      "card": {
+        "path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11015_the5ers-weekly-ny.md",
+        "sha256": "0f990b73b968dcf58c809a0dd22f5ff8e2b21cbae4eb7690ac85533b7ca92abf",
+        "search_related_lines": [
+          "- Article: \"Never Stop Searching for the Best Trading Strategy to Reach Your Goal\"",
+          "- P3 sweep candidates: D1 SMA `{20, 50}`, breakout buffer `{0, 0.1, 0.25} * ATR(H1, 14)`, TP `{1.5R, 2.0R, 2.5R}`.",
+          "| R2 Mechanical | UNKNOWN | Source gives weekday, session, bias, range, news, and Friday-close rules; exact SMA bias and breakout thresholds are deterministic research fills. |"
+        ]
+      },
+      "hypothetical_unsealed_n1": {
+        "basis": "DIAGNOSTIC_ONLY_NO_CARD_AUTHORITY_NO_PIPELINE_VERDICT",
+        "threshold": 0.05,
+        "would_return": "FAIL",
+        "trade_count": 122,
+        "active_days": 122,
+        "sharpe_daily": 0.024973808909131565,
+        "skew": 5.528491022444511,
+        "pearson_kurtosis": 56.63621718389909,
+        "n_calendar_days": 3287,
+        "net_return": 0.1935175,
+        "effective_trial_count": 1,
+        "cohort_std_daily": 0,
+        "expected_max_sharpe_daily": 0.0,
+        "z": 1.5342896942769841,
+        "dsr_p": 0.06247919997387215,
+        "dsr_probability": 0.9375208000261278,
+        "sharpe_annual_display": 0.47712394927511653,
+        "annual_days_display": 365,
+        "statistical_status": "sufficient"
+      }
+    },
+    {
+      "id": "b280892a-18ec-4375-841e-eb360aba5ee1",
+      "ea_id": "QM5_11196",
+      "symbol": "XAUUSD.DWX",
+      "stored_verdict": "INVALID",
+      "provenance": {
+        "aggregate": {
+          "path": "D:\\QM\\reports\\work_items\\b280892a-18ec-4375-841e-eb360aba5ee1\\QM5_11196\\Q08\\XAUUSD_DWX\\aggregate.json",
+          "sha256": "71b7d3b9d2a346fa252a8be41e2439b8e002f8d76dd64352486a2fd550ad9113"
+        },
+        "summary": {
+          "path": "D:\\QM\\reports\\pipeline\\QM5_11196\\Q08\\_baseline\\QM5_11196\\20260905_183351\\summary.json",
+          "sha256": "608f9013293c487ac1d02cfe4d88c8fccfcac3ca96bb11b4b170311a698ff4b8"
+        },
+        "report": {
+          "path": "D:\\QM\\reports\\pipeline\\QM5_11196\\Q08\\_baseline\\QM5_11196\\20260905_183351\\raw\\run_01\\report.htm",
+          "sha256": "aac4a2c2d5dc2f6c03b628eba2b74e720ba57c65fb4d8d064c1992b4d6e7ee4b"
+        }
+      },
+      "governed_context_status": "UNAVAILABLE",
+      "governed_v2_outcome": "INVALID",
+      "refusal": "SINGLE_CONFIGURATION_UNAVAILABLE:EXPLICIT_SINGLE_CONFIGURATION_DECLARATION_REQUIRED",
+      "current_build_matches_historical": {
+        "mq5": true,
+        "ex5": true,
+        "setfile": true
+      },
+      "card": {
+        "path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11196_ft-heracles.md",
+        "sha256": "3ce77648999d745b934f6f9a84bb73978354d0cf205014c4b057cdfed4e77f04",
+        "search_related_lines": [
+          "- MT5 baseline: `QM_StopATR(14, 2.5)` with P3 sweep.",
+          "  sweep_range: [0.10, 0.16, 0.25]",
+          "  sweep_range: [0.50, 0.75, 0.90]",
+          "  sweep_range: [9, 15, 20]",
+          "  sweep_range: [5, 9, 15]",
+          "  sweep_range: [2.0, 2.5, 3.0]"
+        ]
+      },
+      "hypothetical_unsealed_n1": {
+        "basis": "DIAGNOSTIC_ONLY_NO_CARD_AUTHORITY_NO_PIPELINE_VERDICT",
+        "threshold": 0.05,
+        "would_return": "PASS",
+        "trade_count": 656,
+        "active_days": 617,
+        "sharpe_daily": 0.04331295845603782,
+        "skew": 3.029756264991614,
+        "pearson_kurtosis": 29.681405087350683,
+        "n_calendar_days": 3287,
+        "net_return": 0.7722836999999999,
+        "effective_trial_count": 1,
+        "cohort_std_daily": 0,
+        "expected_max_sharpe_daily": 0.0,
+        "z": 2.643395851483066,
+        "dsr_p": 0.004103950626400629,
+        "dsr_probability": 0.9958960493735993,
+        "sharpe_annual_display": 0.8274929094126892,
+        "annual_days_display": 365,
+        "statistical_status": "sufficient"
+      }
+    }
+  ]
+}
