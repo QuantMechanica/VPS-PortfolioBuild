@@ -1,0 +1,97 @@
+{
+  "schema": "qm.diversity-funnel-build-repair-handoff/v1",
+  "observed_at_utc": "2026-09-06T20:09:52.7236146+00:00",
+  "branch": "agents/board-advisor",
+  "observation_base": "dcaeca68f58324c1d083c99c031aa1992469c5dc",
+  "status": "SOURCE_REPAIRED_COMPILE_ENQUEUED_CPU_CEILING_STOP",
+  "selection": {
+    "ea_id": "QM5_41168",
+    "ea_label": "QM5_41168_xauxag-mcoxstuart-rv",
+    "card_path": "strategy-seeds/cards/approved/QM5_41168_xauxag-mcoxstuart-rv_card.md",
+    "g0_status": "APPROVED",
+    "execution_contract_status": "APPROVED",
+    "instrument_class": "XAU/XAG market-neutral-style relative-value basket",
+    "timeframe": "D1",
+    "expected_completed_packages_per_year": "5-8",
+    "selection_reason": "Highest-diversity collision-free approved uncompiled backlog unit after the current forex recoveries were excluded by an active dirty-path collision, an explicit requeue exclusion, or existing downstream work."
+  },
+  "farm_coordination": {
+    "database": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "agent_task_id": "d9819bfa-43b0-4086-b175-d7cb329f7e37",
+    "agent_task_state_at_handoff": "IN_PROGRESS",
+    "parent_build_task_id": "b7ec404b-4681-4d64-a5d9-3a7aeafb13b3",
+    "failed_compile_predecessor_id": "830c8cb9-d45e-450b-a90e-a750e8886dd5",
+    "compile_successor_work_item_id": "4f1d3565-a525-4fc0-b01b-0e767095228a",
+    "compile_successor_status": "pending",
+    "compile_activation_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "compile_activation_state": "AWAITING_REVIEWED_WORKER_ROLLOUT",
+    "pre_claim_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_41168_pacer_claim_20260906T200446Z.sqlite"
+  },
+  "source_repair": {
+    "mq5_path": "framework/EAs/QM5_41168_xauxag-mcoxstuart-rv/QM5_41168_xauxag-mcoxstuart-rv.mq5",
+    "mq5_sha256": "313778decd03062038b30b8987626c925c8f26ef2bde7d81bfdf42dafe5b106c",
+    "initial_pacer_audit_exit": 1,
+    "initial_pacer_finding_count": 8,
+    "initial_pacer_findings": [
+      "EA_FRAMEWORK_INPUT_PINNED: qm_rng_seed ==",
+      "EA_FRAMEWORK_INPUT_PINNED: qm_news_temporal ==",
+      "EA_FRAMEWORK_INPUT_PINNED: qm_news_compliance ==",
+      "EA_FRAMEWORK_INPUT_PINNED: qm_news_mode_legacy ==",
+      "EA_FRAMEWORK_INPUT_PINNED: qm_news_stale_max_hours ==",
+      "EA_FRAMEWORK_INPUT_PINNED: qm_news_min_impact ==",
+      "EA_FRAMEWORK_INPUT_PINNED: !qm_friday_close_enabled",
+      "EA_FRAMEWORK_INPUT_PINNED: qm_friday_close_hour_broker =="
+    ],
+    "repair_summary": [
+      "Removed equality pins for qm_rng_seed, every qm_news_* input, every qm_friday_close_* input, and PORTFOLIO_WEIGHT.",
+      "Changed the fixed-risk guard from equality to the authorized RISK_FIXED > 0 and RISK_PERCENT == 0 mode.",
+      "Changed qm_stress_reject_probability from default equality to finite inclusive 0..1 validation.",
+      "Resolved the host trading symbol from _Symbol and the companion from strategy_xag_symbol; no signal, threshold, sizing, or lifecycle rule changed."
+    ],
+    "post_write_pacer_audit_command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source \"C:/QM/repo/framework/EAs/QM5_41168_xauxag-mcoxstuart-rv/QM5_41168_xauxag-mcoxstuart-rv.mq5\"",
+    "post_write_pacer_audit_exit": 0,
+    "post_write_pacer_finding_count": 0
+  },
+  "verification": {
+    "reference_fixture_tests": "PASS: 9 tests",
+    "spec_validation": "PASS",
+    "git_diff_check": "PASS",
+    "ad_hoc_build_check": "REFUSED_AS_DESIGNED: LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+    "governed_compile_enqueue": "PASS",
+    "compile_completed": false,
+    "q02_enqueued": false
+  },
+  "capacity_gate": {
+    "threshold_percent_exclusive": 97.0,
+    "sample_interval_seconds": 2,
+    "sample_count": 5,
+    "samples_percent": [
+      95.75215910875482,
+      91.22418516403009,
+      95.11753421383793,
+      95.11966713729397,
+      98.9746305586573
+    ],
+    "average_percent": 95.23763523651482,
+    "maximum_percent": 98.9746305586573,
+    "admitted": false,
+    "binding_dimension": "maximum_percent"
+  },
+  "mutation_boundary": {
+    "source_changed": true,
+    "agent_task_created": true,
+    "compile_work_item_created": true,
+    "compile_started": false,
+    "activation_hold_released": false,
+    "smoke_started": false,
+    "q02_enqueued": false,
+    "registry_changed": false,
+    "portfolio_gate_changed": false,
+    "deploy_manifest_changed": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "terminal_control_changed": false,
+    "worker_control_changed": false
+  },
+  "continuation_condition": "After the reviewed compile-worker rollout releases the existing hold and a fresh five-sample CPU window remains strictly below 97 percent, allow the governed compile successor to finish; enqueue one logical-basket D1 Q02 only after COMPILE_OK and current artifact identity verification."
+}
