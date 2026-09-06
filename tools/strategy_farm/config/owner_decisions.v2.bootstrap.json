@@ -1,6 +1,6 @@
 {
   "schema_version": "qm.owner-decisions/v2",
-  "revision": 8,
+  "revision": 9,
   "maintainer": "Mission Control decision store; OWNER answers are receipts, not execution authority.",
   "updated_at_utc": "2026-09-02T17:47:14Z",
   "items": [
@@ -294,6 +294,25 @@
       "severity": "action",
       "status": "OPEN",
       "yes_effect": "Genau EIN Claude-Auftrag: (1) Codex-Tickets fuer Live-Modus-Set-Pfad-Generator und Kollektor-Abnahme/Installation (inert bis Deine Konto-Anlage); (2) Capture-Runbook + Evidenzverzeichnis docs/ops/evidence/<datum>_ftmo_m13_trial_capture_only.md; (3) OPEN_ITEMS/Vault-Mirror. Konto-Anlage, Login, Bedingungen und PARKED->RUNNING bleiben Deine Handlungen; kein Kauf."
+    },
+    {
+      "category": "Pipeline/DSR V2",
+      "cost_of_wait": "Hoch fuer den Zaehler: Seit DSR V2 (05.09.) endet JEDES Q08 eines Single-Configuration-EAs ohne versiegeltes Such-Ledger INVALID (11167/XAUUSD, 11196/XAUUSD, 11015/EURUSD). Der Zensus-Pfad bringt den Zaehler in ~3-4 Fabriktagen auf hoechstens 24; das 25. Paar ist strukturell unerreichbar, solange diese Frage offen ist. Jeder Tag ohne Entscheid = 0 Beitrag des Q02-Q10-Trichters zum Zaehler.",
+      "created_at_utc": "2026-09-06T08:06:43Z",
+      "depends_on": [],
+      "due": null,
+      "evidence": [
+        "docs/ops/OWNER_VORLAGE_2026-09-06_dsr_single_configuration_declaration.md",
+        "docs/ops/evidence/2026-09-06_dsr_trivial_cohort.md",
+        "tools/strategy_farm/schemas/dsr_single_configuration_declaration_v1.schema.json"
+      ],
+      "id": "OWNER-DEC-DSR-SINGLE-CONFIG-DECLARATION-20260906",
+      "no_effect": "Option B: Sweep-Listen gelten als Forschung, die ledgert werden muss -> Ledger existieren nicht und koennen ehrlich nicht nachproduziert werden -> die drei EAs und jedes kuenftige Single-Config-EA bleiben INVALID; Zaehler hart bei 24; Buch-Zeremonie ohne Datum. Keine Loeschung; Vorlage bleibt Vertrag.",
+      "question": "DSR V2 (Q08 Sub-Gate 8.2): Zaehlt die in einer Card gelistete 'P3-Sweep'/'Parameters To Test'-Liste als DURCHGEFUEHRTE Suche (=> vollstaendiges Verlierer-Ledger noetig) oder als VORSCHLAG fuer den Optimierungszweig (=> research_trial_count = 0, N = 1)? Fakten: Fuer 11167, 11196, 11015 gibt es im Fabrik-Ledger KEINE Optimierungszeile vor dem Q08-Claim; die getestete Konfiguration ist der Card-Default, fixiert vor dem ersten Q02; DSR korrigiert fuer SELEKTION, und es wurde nichts selektiert. Codex hat den Deklarationspfad fail-closed gebaut (7a89b5b701; 42 Tests; Schwellen unveraendert; echte Cards werden verweigert, bis DU diese Regel setzt). Option A (Empfehlung): Sweep-Liste = Q14-Vorschlag, wenn (i) keine Optimierungszeile vor Q08 im work_items-Ledger (maschinell geprueft) und (ii) gebauter Set = Card-Lock; Deklarationsblock als append-only Card-Amendment; Q08 append-only neu. Option C (Sweeps jetzt fahren, ~300 Zellen) ist statistisch falsch fuer den Incumbent und skaliert nicht. Symbol-Multiplizitaet und Upstream-Hyperopt (11196) bleiben ausdruecklich ausserhalb dieser Frage (siehe Vorlage §2.4). Keine Schwelle, kein Verdikt, kein T_Live wird beruehrt.",
+      "recommendation": "JA (Option A) mit beiden Bedingungen maschinell geprueft. Das ist die Lesart, unter der DSR V2 misst, wofuer es ratifiziert wurde (Selektion INNERHALB unserer Fabrik), und die einzige, die das 25-Paar-Ziel ohne Schwellenaenderung erreichbar haelt. Widerlegung: Findet ein spaeteres Audit eine Optimierungszeile vor dem Q08 eines so deklarierten EAs, wird die Q08-Zeile append-only superseded.",
+      "severity": "action",
+      "status": "OPEN",
+      "yes_effect": "Genau EIN Claude-Auftrag: (1) Codex-Ticket (Sol, high): Deklarations-Amendments fuer die Cards 11167 und 11196 (append-only ueber den approve-card-Pfad, SPEC-SHA-Rebind), Producer-Maschinencheck fuer Bedingung (i) aus work_items, Card-Linter-Regel 'Sweep-Liste = Q14-Vorschlag', Tests, Evidenz; (2) nach Integration: append-only Q08-Reruns 11167/XAUUSD und 11196/XAUUSD (11015 erst nach Klaerung des Set-Locks, eigene OPEN_ITEMS-Zeile); (3) OPEN_ITEMS + Vault-Spiegel (03 Pipeline/Q08-Nachtrag). Keine Schwelle, kein bestehendes Verdikt, kein T_Live."
     }
   ]
 }

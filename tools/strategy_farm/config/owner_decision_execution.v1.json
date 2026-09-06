@@ -893,6 +893,40 @@
           ]
         }
       }
+    },
+    {
+      "id": "OWNER-DEC-DSR-SINGLE-CONFIG-DECLARATION-20260906",
+      "todo_id": "QM-TODO-20260906-DSR-SINGLE-CONFIG-DECLARATION",
+      "priority": 92,
+      "choices": {
+        "YES": {
+          "mode": "APPLY_AND_VERIFY",
+          "objective": "Adopt Option A: a card sweep/parameters-to-test list counts as zero research trials when (i) the factory ledger has no optimisation row for the EA before its Q08 claim (machine-checked from work_items at seal time) and (ii) the built set equals the card lock. Commission the Codex ticket (card declaration amendments for QM5_11167 and QM5_11196 via the approve-card path, producer condition-(i) check, card-linter rule, tests, evidence), integrate it, then enqueue append-only Q08 reruns for 11167/XAUUSD and 11196/XAUUSD. No threshold, stored verdict, T_Live or AutoTrading change.",
+          "allowed_actions": [
+            "Enqueue one Codex ops ticket with exact acceptance criteria",
+            "Integrate the Codex branch (cherry-pick, tests, Codex co-author trailer)",
+            "farmctl enqueue-backtest --phase Q08 --append-only-rerun-of <INVALID row> for 11167/XAUUSD and 11196/XAUUSD",
+            "Update OPEN_ITEMS and the Vault Q08 page"
+          ],
+          "acceptance": [
+            "Declaration blocks exist in the two approved cards and the producer seals a cohort with declared_trial_count=1 bound to card/SPEC/source/binary/set SHA",
+            "The producer refuses when an optimisation row precedes the Q08 claim",
+            "Q08 reruns end PASS or FAIL (not INVALID); old INVALID rows preserved append-only",
+            "No threshold or stored verdict changed"
+          ]
+        },
+        "NO": {
+          "mode": "DOCUMENT_AND_VERIFY",
+          "objective": "Record Option B; restate the counter ceiling as 24 (structural) in Mission Control, OPEN_ITEMS and the Vault; no code change.",
+          "allowed_actions": [
+            "Document in OPEN_ITEMS_STATUS.md, the receipts file and the Vault"
+          ],
+          "acceptance": [
+            "No declaration added to any card",
+            "Ceiling 24 stated in the OWNER surfaces"
+          ]
+        }
+      }
     }
   ]
 }
