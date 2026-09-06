@@ -1,6 +1,6 @@
 # FTMO M13 demo governor deployment manifest — 2026-09-06
 
-Status: **READY FOR OWNER SIGNATURE · INSTALLED UNATTACHED · PARKED**  
+Status: **SIGNED 2026-09-06 ~19:38Z (chat receipt) · INSTALLED UNATTACHED · PARKED · activation checklist in progress**  
 Router authority: `9cf0712b-6ee4-4469-aed2-f920c3e0cc03`  
 Code: `agents/codex-ftmo-governor-20260906` at
 `bcb589a0656f0ea83580bbd7972de2093ccac35d`  
@@ -127,7 +127,9 @@ reinterpret that control-plane issue.
 
 ## OWNER signature
 
-OWNER decision / receipt: **UNSIGNED — OWNER ACTION REQUIRED**  
-OWNER name: ____________________  
-Signed at UTC: ____________________
+OWNER decision / receipt: **SIGNED** — chat receipt 2026-09-06 ~19:38Z, verbatim: "Manifest 2026-09-06 FTMO-Governor signiert!" (OWNER chat, claude.ai session 018mXkPPkaHQ2fPuduPCBcWc). Recorded by Claude; scope unchanged (demo account 1514536732 / FTMO-Demo only, AutoTrading toggle stays OWNER-only).  
+OWNER name: OWNER (Fabian)  
+Signed at UTC: 2026-09-06 ~19:38Z (chat)
+
+Post-signature housekeeping (OWNER instruction 2026-09-06 ~19:40Z, receipt `2026-09-06_ftmo_demo_cleanup_receipt.json`): 14 legacy files deleted from the demo terminal (5 legacy EAs, DEPLOY_SHEET.md, QM_AccountMonitor .ex5/.mq5, 6 legacy `FTMO_*` presets); the 11 M13 presets copied flat into `MQL5\Presets\` because the MT5 input Load dialog opens that folder, not `MQL5\Profiles\Presets\`. First governor attach at 21:31:06 Prague failed silently with `incorrect parameters` (identity guard, preset not loaded) — expected behaviour, no state written (0 halt files).
 

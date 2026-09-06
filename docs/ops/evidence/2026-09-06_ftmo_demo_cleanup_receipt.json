@@ -1,0 +1,91 @@
+{
+ "schema": "qm.ftmo-demo-cleanup-receipt/v1",
+ "at_utc": "2026-09-06T19:33:46.253021+00:00",
+ "actor": "claude-session-018mXkPPkaHQ2fPuduPCBcWc",
+ "authority": "OWNER chat 2026-09-06 ~19:40Z: Raeum bitte den FTMO Expert Ordner zusammen, loesch alles, was wir nicht brauchen",
+ "data_dir": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850",
+ "kept": [
+  "QM5_10706",
+  "QM5_11421",
+  "QM5_11422",
+  "QM5_11910",
+  "QM5_13054",
+  "QM5_13206",
+  "QM5_1537",
+  "QM5_20048",
+  "QM5_21505",
+  "QM_FTMO_TrialTelemetry"
+ ],
+ "deleted": [
+  {
+   "path": "MQL5\\Experts\\QM_FTMO\\DEPLOY_SHEET.md",
+   "bytes": 3523,
+   "sha256": "bea982ef9f4fe9766cadb92a73e14e162b99e761e1395b73485a28f7eb7f6dae"
+  },
+  {
+   "path": "MQL5\\Experts\\QM_FTMO\\QM5_10911_grimes-complex-pb.ex5",
+   "bytes": 365564,
+   "sha256": "a815c73da991736d25a02c027bbcfb23f68615adb66b7325cc2efcdc52344158"
+  },
+  {
+   "path": "MQL5\\Experts\\QM_FTMO\\QM5_11165_weiss-rsi-ma.ex5",
+   "bytes": 323322,
+   "sha256": "8f6d33a3dfb05f7f9167c96d7a7069cb11d8c05f7137be008530d9e12df941e4"
+  },
+  {
+   "path": "MQL5\\Experts\\QM_FTMO\\QM5_12969_usdjpy-gotobi-nakane-fix.ex5",
+   "bytes": 318680,
+   "sha256": "933d63c036a154725df1376e22ca74cb419860588f0313fc986fc3ead7673be4"
+  },
+  {
+   "path": "MQL5\\Experts\\QM_FTMO\\QM5_12989_grimes-nested-pb-v2.ex5",
+   "bytes": 373406,
+   "sha256": "7f2c298f4a8b4395480e47f20f9cefb8d5c53083bd63f7ea9ef1db067f52c4d2"
+  },
+  {
+   "path": "MQL5\\Experts\\QM_FTMO\\QM5_13301_balke-minute-range-breakout.ex5",
+   "bytes": 331026,
+   "sha256": "d7f10a684bdb007d9cb5b55e894a8e3b26192e38d3015e80550b9fa317e26483"
+  },
+  {
+   "path": "MQL5\\Experts\\QM_AccountMonitor.ex5",
+   "bytes": 102196,
+   "sha256": "39b8300595953a3e7ae4e08bf1d2a836067ef431156eb4077f21acdace3e4133"
+  },
+  {
+   "path": "MQL5\\Experts\\QM_AccountMonitor.mq5",
+   "bytes": 24890,
+   "sha256": "8a3d92ebaa84a0f2c4c9efa582b8bfd82f595771d4d1d94d627b2a78d798a37c"
+  },
+  {
+   "path": "MQL5\\Presets\\FTMO_EURUSD_H1_QM5_11165.set",
+   "bytes": 1398,
+   "sha256": "f71b9ee5c0381aba31fc028d3d07952c6e41385b41ab9fe33148b918dd80ae37"
+  },
+  {
+   "path": "MQL5\\Presets\\FTMO_GBPUSD_H1_QM5_10706.set",
+   "bytes": 1614,
+   "sha256": "f78f75a7573f17656c82207d1a48fd766571836bd6c346a67e4bbc03faa44fd4"
+  },
+  {
+   "path": "MQL5\\Presets\\FTMO_GER40_cash_H1_QM5_10911.set",
+   "bytes": 1802,
+   "sha256": "04019e928630cfeaaf8936552d193598def7d3912f4162a483f416113d9eeee6"
+  },
+  {
+   "path": "MQL5\\Presets\\FTMO_GER40_cash_M5_QM5_13301.set",
+   "bytes": 1387,
+   "sha256": "44b39d2bc63b6f1b68c130f47c7aad22770790ce5a3d8284dfa943dbcc39dc4b"
+  },
+  {
+   "path": "MQL5\\Presets\\FTMO_USDJPY_M30_QM5_12969.set",
+   "bytes": 1229,
+   "sha256": "59ad0081613205ec8f163de9ba976e0832abbb4f40a52bf444e9ca1266695809"
+  },
+  {
+   "path": "MQL5\\Presets\\FTMO_XAUUSD_H4_QM5_12989.set",
+   "bytes": 1707,
+   "sha256": "45748019178e3d355892b4dfba23bf78fa1b1647489cae9287a274c440a78d31"
+  }
+ ]
+}
