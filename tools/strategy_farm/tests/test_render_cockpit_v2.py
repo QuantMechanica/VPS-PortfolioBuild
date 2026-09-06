@@ -261,22 +261,86 @@ def test_no_p_gate_token_in_html():
     assert "Q04" in html and "Q07" in html
 
 
-def test_linear_gate_frontier_is_the_last_dashboard_section(monkeypatch):
-    """Keep the dense diagnostic frontier below the operational overview."""
-    monkeypatch.setattr(
-        r,
-        "render_operator_surface_html",
-        lambda _snapshot: (
-            '<section class="operator-gates" id="operator-gates">'
-            '<h2>Linear gate frontier</h2></section>'
-        ),
-    )
-
+def test_exceptions_and_linear_frontier_are_removed_from_the_operator_surface():
+    """OWNER 2026-09-06: both blocks are gone from Mission Control entirely."""
     html = r.render(make_contract())
+    assert "Ausnahmen" not in html
+    assert "Datenqualität" not in html
+    assert "Linear gate frontier" not in html
+    assert "operator-gates" not in html
 
-    frontier = html.index("Linear gate frontier")
-    assert frontier > html.index("Ausnahmen &amp; Datenqualität")
-    assert html.find("<section", frontier) == -1
+
+def test_decided_decisions_never_reach_the_operator_surface():
+    """DECIDED items are archived in the Vault, not shown in Mission Control."""
+    contract = make_contract(n_decisions=3)
+    # Inject a terminal decision as if the data layer had leaked one through.
+    contract["owner_decisions"]["items"].append({
+        "source": "curated_feed", "id": "OWNER-DEC-DECIDED-99",
+        "status": "DECIDED", "category": "CATX", "title": "Decided one",
+        "question": "Already decided?", "recommendation": "JA",
+        "yes_effect": "done", "no_effect": "n/a", "cost_of_wait": "none",
+        "evidence": [], "detail": "", "due": None, "depends_on": [],
+        "decision_card_sha256": f"{999:064x}", "severity": "info", "alert": False,
+        "last_decision": "YES",
+    })
+    html = r.render(contract)
+    assert "OWNER-DEC-DECIDED-99" not in html
+    assert "Already decided?" not in html
+
+
+def test_deferred_decisions_are_demoted_inside_a_details_block():
+    html = r.render(make_contract(n_decisions=3))
+    # fixture makes item 1 DEFERRED, items 0 and 2 OPEN
+    assert '<details class="mc-dec-deferred">' in html
+    assert "Vertagt (1)" in html
+    # the deferred decision row sits after the <details summary>
+    summary = html.index("Vertagt (1)")
+    assert html.index("OWNER-DEC-TEST-01") > summary
+    # both OPEN decisions are rendered before the deferred details block
+    assert html.index("OWNER-DEC-TEST-00") < summary
+    assert html.index("OWNER-DEC-TEST-02") < summary
+
+
+def test_owner_todo_block_is_rendered_with_steps():
+    contract = make_contract(n_decisions=1)
+    contract["owner_todos"] = {
+        "count": 1,
+        "items": [{
+            "id": "OWNER-TODO-20260906-FTMO-DEMO",
+            "title": "FTMO Free-Trial-Demokonto anlegen",
+            "why": "Liefert die fehlende Evidenzklasse ohne Geld.",
+            "steps": ["Free Trial anlegen.", "Zugangsdaten privat ablegen.",
+                      "Bedingungen nennen."],
+            "due": "2026-09-06", "status": "OPEN",
+            "source_decision_id": "OWNER-DEC-M13-ECONOMIC-TRIAL-20260906",
+            "created_at_utc": "2026-09-06T00:00:00Z", "done_at_utc": None, "notes": "",
+        }],
+    }
+    html = r.render(contract)
+    assert "OWNER To-Dos" in html
+    assert "OWNER-TODO-20260906-FTMO-DEMO" in html
+    assert "Free Trial anlegen." in html
+    assert html.count("<li>") >= 3
+    assert "OWNER-DEC-M13-ECONOMIC-TRIAL-20260906" in html
+    assert "Erledigt: dem Orchestrator melden" in html
+    # the To-Do block sits between the control strip and the risk-freeze section
+    assert html.index("OWNER To-Dos") < html.index("Live Risk Freeze")
+
+
+def test_owner_todo_block_absent_when_no_open_todos():
+    contract = make_contract(n_decisions=1)
+    contract["owner_todos"] = {"count": 0, "items": []}
+    html = r.render(contract)
+    assert "OWNER To-Dos" not in html
+    assert 'id="owner-todos"' not in html
+
+
+def test_control_strip_owner_counter_counts_only_open():
+    # fixture: 3 decisions, item 1 DEFERRED -> 2 OPEN
+    html = r.render(make_contract(n_decisions=3))
+    start = html.index('class="mc-cell-label">OWNER')
+    owner_cell = html[start:start + 200]
+    assert 'mc-cell-main mc-num">2<' in owner_cell
 
 
 # ---------------------------------------------------------------------------

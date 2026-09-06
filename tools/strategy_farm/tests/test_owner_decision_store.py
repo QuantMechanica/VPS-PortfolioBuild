@@ -253,6 +253,57 @@ def test_record_decision_is_receipted_idempotent_and_router_scoped(tmp_path: Pat
     assert "OWNER-DEC-TEST-TWO" in vault.read_text(encoding="utf-8")
 
 
+def test_decided_archive_is_written_below_the_open_queue(tmp_path: Path) -> None:
+    feed = tmp_path / "state" / "owner_decisions.json"
+    receipts = tmp_path / "state" / "receipts.jsonl"
+    vault = tmp_path / "OWNER.md"
+    feed.parent.mkdir(parents=True)
+    _seed(feed)
+    vault.write_text(
+        "# OWNER\n\n" + store.render_vault_queue(store.load_feed(feed)) + "\n",
+        encoding="utf-8",
+    )
+    card_hash = _card_hash(feed, "OWNER-DEC-TEST-ONE")
+    store.record_decision(
+        decision_id="OWNER-DEC-TEST-ONE",
+        decision="YES",
+        notes="",
+        request_id="request-9001",
+        feed_path=feed,
+        receipts_path=receipts,
+        vault_owner_path=vault,
+        expected_decision_card_sha256=card_hash,
+        execution_plan_sha256=PLAN_HASH,
+        decided_at_utc="2026-08-24T08:00:00+00:00",
+    )
+    text = vault.read_text(encoding="utf-8")
+    assert store.VAULT_DECIDED_START in text and store.VAULT_DECIDED_END in text
+    assert "## Getroffene Entscheidungen (Archiv)" in text
+    # the decided archive sits below the open queue
+    assert text.index(store.VAULT_QUEUE_END) < text.index(store.VAULT_DECIDED_START)
+    # the terminal decision appears in the archive, not in the open queue
+    archive = text[text.index(store.VAULT_DECIDED_START):]
+    assert "OWNER-DEC-TEST-ONE" in archive
+    assert "YES" in archive
+
+    # idempotent: rendering the decided archive twice keeps one marker pair
+    store.sync_vault_queue(store.load_feed(feed), vault)
+    text2 = vault.read_text(encoding="utf-8")
+    assert text2.count(store.VAULT_DECIDED_START) == 1
+
+
+def test_render_vault_decided_reports_empty_archive() -> None:
+    feed = {
+        "schema_version": store.FEED_SCHEMA,
+        "revision": 0,
+        "updated_at_utc": "2026-08-24T00:00:00Z",
+        "items": [],
+    }
+    block = store.render_vault_decided(feed)
+    assert store.VAULT_DECIDED_START in block and store.VAULT_DECIDED_END in block
+    assert "Noch keine getroffene Entscheidung" in block
+
+
 def test_terminal_decision_cannot_be_overwritten(tmp_path: Path) -> None:
     feed = tmp_path / "owner_decisions.json"
     receipts = tmp_path / "receipts.jsonl"

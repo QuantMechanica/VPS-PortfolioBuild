@@ -50,6 +50,7 @@ try:  # package import (tests, module consumers)
         render_frontier_explorer_html,
         render_operator_surface_html,
     )
+    from tools.strategy_farm import owner_todos as owner_todos_store
 except ModuleNotFoundError:  # direct ``python tools/strategy_farm/render_cockpit_v2.py``
     from mission_control_v2_data import build_contract
     from operator_surfaces import (
@@ -57,6 +58,22 @@ except ModuleNotFoundError:  # direct ``python tools/strategy_farm/render_cockpi
         render_frontier_explorer_html,
         render_operator_surface_html,
     )
+    import owner_todos as owner_todos_store
+
+
+def load_owner_todos_contract() -> dict:
+    """Fail-soft load of the OWNER To-Do feed for the cockpit contract.
+
+    A missing / unreadable feed yields an empty block so the cockpit still
+    renders. Only OPEN To-Dos are surfaced.
+    """
+
+    try:
+        feed = owner_todos_store.load_feed()
+        items = owner_todos_store.open_items(feed)
+        return {"items": items, "count": len(items)}
+    except Exception:
+        return {"items": [], "count": 0}
 
 
 # Primary cockpit since OWNER approval 2026-08-21; cockpit_v2.html stays as an
@@ -296,9 +313,12 @@ def _render_control_strip(contract: dict) -> str:
         <div class="mc-cell-sub">{e(eta_sub)}</div>
       </div>'''
 
-    # OWNER cell
+    # OWNER cell — count only OPEN decisions (DEFERRED are demoted, DECIDED gone)
     od = contract.get("owner_decisions", {}) or {}
-    open_n = cs.get("owner_decisions_open")
+    open_n = sum(
+        1 for it in (od.get("items") or [])
+        if str(it.get("status") or "OPEN").upper() == "OPEN"
+    )
     alert_n = cs.get("owner_decisions_alert") or 0
     # oldest wait
     owner_cell = f'''
@@ -342,11 +362,62 @@ def _render_execution_plan_choice(label: str, plan: dict) -> str:
           </div>'''
 
 
+def _render_owner_todos(contract: dict) -> str:
+    """Prominent OWNER To-Do cards: concrete actions only the OWNER can take."""
+
+    todos = contract.get("owner_todos", {}) or {}
+    items = [it for it in (todos.get("items") or [])
+             if str(it.get("status") or "OPEN").upper() == "OPEN"]
+    if not items:
+        return ""
+    cards = []
+    for it in items:
+        title = it.get("title") or "?"
+        why = it.get("why") or ""
+        due = it.get("due")
+        source = str(it.get("source_decision_id") or "")
+        steps = it.get("steps") or []
+        steps_html = "".join(f"<li>{e(step)}</li>" for step in steps)
+        source_html = (
+            f'<div class="mc-todo-src"><b>Entscheidung:</b> <code>{e(source)}</code></div>'
+            if source else ""
+        )
+        cards.append(f'''
+      <article class="mc-todo-card">
+        <div class="mc-todo-head">
+          <code>{e(it.get('id'))}</code>
+          <span class="mc-todo-due">{e(due) if due else "ohne Frist"}</span>
+        </div>
+        <div class="mc-todo-title">{e(title)}</div>
+        <div class="mc-todo-why">{e(why)}</div>
+        <ol class="mc-todo-steps">{steps_html}</ol>
+        {source_html}
+        <div class="mc-todo-note">Erledigt: dem Orchestrator melden.</div>
+      </article>''')
+    return f'''
+  <section class="mc-section mc-todos" id="owner-todos">
+    <div class="mc-h2"><span>OWNER To-Dos</span>
+      <span class="mc-h2-aux">{_int(len(items))} offen · nur der OWNER kann sie ausfuehren</span></div>
+    <div class="mc-todo-list">
+      {''.join(cards)}
+    </div>
+  </section>'''
+
+
 def _render_owner_decisions(contract: dict) -> str:
     od = contract.get("owner_decisions", {}) or {}
-    items = od.get("items") or []
+    # Only OPEN and DEFERRED reach Mission Control. Terminal (DECIDED) decisions
+    # are removed from the operator surface and archived in the Vault.
+    items = [
+        it for it in (od.get("items") or [])
+        if str(it.get("status") or "OPEN").upper() in {"OPEN", "DEFERRED"}
+    ]
     executions = od.get("executions") or []
-    count = int(od.get("count") or len(items))
+    open_count = sum(
+        1 for it in items if str(it.get("status") or "OPEN").upper() == "OPEN"
+    )
+    deferred_count = len(items) - open_count
+    count = len(items)
     if count == 0 and not executions:
         return ""
     intake = od.get("intake", {}) or {}
@@ -357,7 +428,8 @@ def _render_owner_decisions(contract: dict) -> str:
         f'<option value="{e(category.lower())}">{e(category)}</option>'
         for category in categories
     )
-    rows = []
+    open_rows: list[str] = []
+    deferred_rows: list[str] = []
     for index, it in enumerate(items):
         sev = str(it.get("severity") or "info").lower()
         col = _SEV_COLOR.get(sev, "var(--text-3)")
@@ -414,7 +486,7 @@ def _render_owner_decisions(contract: dict) -> str:
                 decision_id, it.get("category"), status, question, recommendation, detail
             )
         ).lower()
-        rows.append(f'''
+        row_html = f'''
       <article class="mc-dec-row" data-decision-id="{e(decision_id)}"
         data-decision-category="{e(str(it.get('category') or '').lower())}"
         data-decision-status="{e(status.lower())}"
@@ -461,9 +533,23 @@ def _render_owner_decisions(contract: dict) -> str:
           </div>
           <div class="mc-dec-result" role="status" aria-live="polite"></div>
         </div>
-      </article>''')
+      </article>'''
+        if status == "DEFERRED":
+            deferred_rows.append(row_html)
+        else:
+            open_rows.append(row_html)
+    deferred_html = ""
+    if deferred_rows:
+        deferred_html = f'''
+      <details class="mc-dec-deferred">
+        <summary>Vertagt ({_int(deferred_count)})</summary>
+        {''.join(deferred_rows)}
+      </details>'''
     execution_rows = []
-    for execution in executions:
+    # OWNER 2026-09-06: decided decisions live in the Vault archive; Mission Control
+    # keeps only the in-flight execution of a decision (until independent acceptance).
+    open_executions = [row for row in executions if not row.get("complete")]
+    for execution in open_executions:
         ex_status = str(execution.get("status") or "UNKNOWN")
         sla = execution.get("sla") or {}
         sla_state = str(sla.get("state") or "UNKNOWN")
@@ -502,7 +588,7 @@ def _render_owner_decisions(contract: dict) -> str:
         execution_html = f'''
     <div class="mc-exec-block">
       <div class="mc-h3">Entscheidung → Umsetzung
-        <span>{_int(od.get('execution_open_count'))} offen · {_int(len(executions))} gesamt</span></div>
+        <span>{_int(len(open_executions))} offen · abgeschlossene Umsetzungen im Vault-Archiv</span></div>
       <div class="mc-exec-list">{''.join(execution_rows)}</div>
     </div>'''
     meta_badge = _stale_badge(od.get("meta", {}))
@@ -563,7 +649,7 @@ def _render_owner_decisions(contract: dict) -> str:
       <span data-decision-filter-count>{_int(count)} sichtbar</span>
     </div>
     <div class="mc-dec-list">
-      {''.join(rows)}
+      {''.join(open_rows)}{deferred_html}
     </div>
     {execution_html}
   </section>'''
@@ -1313,6 +1399,34 @@ _PAGE_CSS = """
     .mc-dec-buttons{flex-wrap:wrap}
     .mc-exec-list{grid-template-columns:1fr}
   }
+
+  /* prominent owner action cards (only the OWNER can execute) */
+  .mc-todos{border-left:4px solid var(--signal)}
+  .mc-todos .mc-h2>span:first-child{color:var(--signal)}
+  .mc-todo-list{display:flex;flex-direction:column;gap:var(--space-4)}
+  .mc-todo-card{border:1px solid var(--signal);background:var(--surface-2);
+    padding:var(--space-4) var(--space-5)}
+  .mc-todo-head{display:flex;justify-content:space-between;align-items:baseline;
+    gap:var(--space-3);font-family:var(--font-mono);font-size:var(--fs-xs);
+    color:var(--text-3);flex-wrap:wrap}
+  .mc-todo-due{color:var(--warn)}
+  .mc-todo-title{font-family:var(--font-mono);font-size:var(--fs-md);font-weight:700;
+    color:var(--text);margin:var(--space-2) 0}
+  .mc-todo-why{font-size:var(--fs-sm);color:var(--text-2);line-height:var(--lh-normal);
+    margin-bottom:var(--space-3)}
+  .mc-todo-steps{margin:0 0 var(--space-3);padding-left:var(--space-6);
+    font-size:var(--fs-sm);color:var(--text);line-height:var(--lh-normal)}
+  .mc-todo-steps li{margin:var(--space-1) 0}
+  .mc-todo-src{font-family:var(--font-mono);font-size:var(--fs-xs);color:var(--text-3);
+    margin-bottom:var(--space-2)}
+  .mc-todo-note{font-family:var(--font-mono);font-size:var(--fs-xs);color:var(--text-3);
+    border-top:1px solid var(--border);padding-top:var(--space-2)}
+  .mc-dec-deferred{margin-top:var(--space-4);border:1px solid var(--border);
+    background:var(--surface-2);padding:var(--space-2) var(--space-4)}
+  .mc-dec-deferred>summary{cursor:pointer;font-family:var(--font-mono);
+    font-size:var(--fs-xs);font-weight:700;color:var(--text-3);
+    letter-spacing:0.08em;text-transform:uppercase}
+  .mc-dec-deferred[open]>summary{margin-bottom:var(--space-3)}
 """
 
 
@@ -1489,6 +1603,7 @@ def render(contract: dict, *, from_json: bool = False, source_path: str | None =
 
     body = "".join([
         _render_control_strip(contract),
+        _render_owner_todos(contract),
         _render_risk_freeze(contract),
         _render_path_to_25(contract),
         _render_q09_ftmo_recommendation(contract),
@@ -1496,8 +1611,6 @@ def render(contract: dict, *, from_json: bool = False, source_path: str | None =
         _render_progress(contract),
         _render_terminals(contract, ea_page_exists=ea_page_exists),
         _render_queue(contract),
-        _render_exceptions(contract),
-        render_operator_surface_html(contract.get("operator_surface") or {}),
     ])
 
     dur = f"{duration_ms:.0f} ms" if duration_ms is not None else "—"
@@ -1601,6 +1714,9 @@ def main(argv: list[str] | None = None) -> int:
         contract["operator_surface"] = compact_operator_snapshot(
             full_operator, limit=30
         )
+    # OWNER To-Dos live in their own feed (not the v2 contract); load fail-soft.
+    contract = dict(contract)
+    contract.setdefault("owner_todos", load_owner_todos_contract())
     dur_ms = (time.perf_counter() - t0) * 1000.0
 
     output = Path(args.output)

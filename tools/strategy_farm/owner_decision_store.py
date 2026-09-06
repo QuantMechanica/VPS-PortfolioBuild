@@ -41,6 +41,8 @@ DEFAULT_VAULT_INDEX = Path(
 )
 VAULT_QUEUE_START = "<!-- QM:MISSION_CONTROL_DECISIONS:START -->"
 VAULT_QUEUE_END = "<!-- QM:MISSION_CONTROL_DECISIONS:END -->"
+VAULT_DECIDED_START = "<!-- QM:MISSION_CONTROL_DECIDED:START -->"
+VAULT_DECIDED_END = "<!-- QM:MISSION_CONTROL_DECIDED:END -->"
 REQUEST_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.:-]{7,127}$")
 _PROCESS_LOCK = threading.RLock()
 
@@ -270,6 +272,92 @@ def render_vault_queue(feed: Mapping[str, Any]) -> str:
     return "\n".join(rows)
 
 
+def _terminal_items(feed: Mapping[str, Any]) -> list[dict[str, Any]]:
+    """Items that reached a terminal decision (anything but OPEN / DEFERRED)."""
+
+    rows = [
+        dict(item)
+        for item in feed.get("items") or []
+        if str(item.get("status") or "").upper() not in {"OPEN", "DEFERRED"}
+    ]
+    rows.sort(key=lambda row: str(row.get("last_decision_at_utc") or ""), reverse=True)
+    return rows
+
+
+def _executed_reference(item: Mapping[str, Any]) -> str:
+    """A router-task / plan reference for a decided item, if one can be derived."""
+
+    for key in ("execution_task_id", "executed_task_id", "task_id"):
+        value = str(item.get(key) or "").strip()
+        if value:
+            return value
+    receipt_id = str(item.get("last_receipt_id") or "").strip()
+    if receipt_id:
+        try:
+            return execution_task_id(receipt_id)
+        except DecisionStoreError:
+            return receipt_id
+    return "—"
+
+
+def render_vault_decided(feed: Mapping[str, Any]) -> str:
+    """Render the archive of terminal (DECIDED) OWNER decisions as a table."""
+
+    rows = [
+        VAULT_DECIDED_START,
+        "## Getroffene Entscheidungen (Archiv)",
+        "",
+        "> Terminal beantwortete OWNER-Entscheidungen (JA/NEIN-Receipt vorhanden).",
+        "> Aus Mission Control entfernt und hier revisionssicher archiviert.",
+        "",
+    ]
+    items = _terminal_items(feed)
+    if not items:
+        rows.append("_Noch keine getroffene Entscheidung archiviert._")
+        rows.append("")
+        rows.append(VAULT_DECIDED_END)
+        return "\n".join(rows)
+    rows.extend(
+        [
+            "| ID | Entscheid | Zeitpunkt | Receipt | Frage | Umsetzung |",
+            "| --- | --- | --- | --- | --- | --- |",
+        ]
+    )
+    for item in items:
+        decision = _markdown_text(item.get("last_decision")) or "—"
+        decided_at = _markdown_text(item.get("last_decision_at_utc")) or "—"
+        receipt_id = _markdown_text(item.get("last_receipt_id")) or "—"
+        question = _markdown_text(item.get("question"))
+        if len(question) > 120:
+            question = question[:120].rstrip() + "…"
+        question = question.replace("|", "\\|")
+        reference = _markdown_text(_executed_reference(item)).replace("|", "\\|")
+        rows.append(
+            f"| `{_markdown_text(item.get('id'))}` | **{decision}** | `{decided_at}` | "
+            f"`{receipt_id}` | {question} | `{reference}` |"
+        )
+    rows.append("")
+    rows.append(VAULT_DECIDED_END)
+    return "\n".join(rows)
+
+
+def _replace_vault_decided(text: str, block: str) -> str:
+    if VAULT_DECIDED_START in text and VAULT_DECIDED_END in text:
+        pattern = re.compile(
+            re.escape(VAULT_DECIDED_START) + r".*?" + re.escape(VAULT_DECIDED_END),
+            re.DOTALL,
+        )
+        if len(pattern.findall(text)) != 1:
+            raise DecisionStoreError("Vault decided-archive markers are ambiguous")
+        return pattern.sub(lambda _m: block, text, count=1)
+    # Create the archive markers directly below the open decision queue if
+    # present, else append at the end of the page.
+    if VAULT_QUEUE_END in text:
+        return text.replace(VAULT_QUEUE_END, VAULT_QUEUE_END + "\n\n" + block, 1)
+    trimmed = text.rstrip("\n")
+    return (trimmed + "\n\n" + block + "\n") if trimmed else (block + "\n")
+
+
 def _replace_vault_queue(text: str, queue: str, *, bootstrap: bool = False) -> str:
     if VAULT_QUEUE_START in text and VAULT_QUEUE_END in text:
         pattern = re.compile(
@@ -321,6 +409,7 @@ def sync_vault_queue(
     except OSError as exc:
         raise DecisionStoreError(f"Vault OWNER page unreadable: {exc}") from exc
     after = _replace_vault_queue(before, render_vault_queue(feed), bootstrap=bootstrap)
+    after = _replace_vault_decided(after, render_vault_decided(feed))
     if after != before:
         _atomic_write(vault_owner_path, after.encode("utf-8"))
 

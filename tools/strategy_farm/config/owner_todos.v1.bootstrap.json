@@ -1,0 +1,25 @@
+{
+  "schema": "qm.owner-todos/v1",
+  "revision": 1,
+  "updated_at_utc": "2026-09-06T00:00:00Z",
+  "items": [
+    {
+      "id": "OWNER-TODO-20260906-FTMO-DEMO",
+      "title": "FTMO Free-Trial-Demokonto anlegen (Option B des M13-Lernversuchs, kostenlos, kein Kauf)",
+      "why": "Der ratifizierte R5-Test braucht ~5,75 Jahre versiegelte OOS-Tage; der Capture-only-Demo-Trial liefert die einzige Evidenzklasse, die kein Backtest liefert (echte M5-Equity inkl. offener PnL am Prag-Mitternachtsanker) und schliesst die Kollektor-Abnahme - ohne Geld, ohne R5/C-6 zu beruehren. Die Karte OWNER-DEC-M13-ECONOMIC-TRIAL-20260906 ist bereits mit JA/Option B entschieden (Receipt c575c17a, 2026-09-06 06:17Z); dieses To-Do ist die vom JA autorisierte OWNER-Handlung (Konto-Anlage), nicht die Entscheidung.",
+      "steps": [
+        "Im FTMO-Kundenbereich ein Free Trial anlegen: Konto-Typ FTMO Challenge Free Trial, Groesse 100.000 USD, Variante Swing, Plattform MetaTrader 5, Kontowaehrung USD.",
+        "Zugangsdaten (Login, Server, Passwort) NUR in den privaten Server-Record (.private/VPS_SERVER_RECORD) eintragen - nie im Chat oder in Mission Control.",
+        "Im Kundenbereich die Bedingungen ablesen und mir nennen: Hebel (Swing), Symbolliste, Margin-Saetze fuer FX/XAGUSD/USOIL, Swap-Werte und Triple-Swap-Wochentag, Trial-Laufzeit.",
+        "Eine Dauer-Obergrenze fuer den Capture-Trial festlegen (Vorschlag: 10 Prag-Handelstage) und mir bestaetigen.",
+        "Danach: ich bereite den Capture-Runbook, Set-Pfad und Kollektor-Abnahme vor; der Terminal-Login und das Umlegen von EXPECTED_STATE PARKED->RUNNING bleiben Deine Handlungen (separate Meldung)."
+      ],
+      "due": "2026-09-06",
+      "status": "OPEN",
+      "source_decision_id": "OWNER-DEC-M13-ECONOMIC-TRIAL-20260906",
+      "created_at_utc": "2026-09-06T00:00:00Z",
+      "done_at_utc": null,
+      "notes": ""
+    }
+  ]
+}
