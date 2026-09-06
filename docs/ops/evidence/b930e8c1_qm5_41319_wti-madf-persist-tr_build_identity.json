@@ -1,0 +1,59 @@
+{
+  "schema": "qm.build-identity/v1",
+  "task_id": "b930e8c1-9022-48a8-9dfc-405613e4189a",
+  "canonical_build_task_id": "cd3a3f60-895d-49cc-850c-c2c42f09cc9d",
+  "ea_id": "QM5_41319",
+  "ea_label": "QM5_41319_wti-madf-persist-tr",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_41319_wti-madf-persist-tr",
+  "card_path": "C:/QM/repo/strategy-seeds/cards/approved/QM5_41319_wti-madf-persist-tr_card.md",
+  "artifact_commit": "cfe4e602eb3931fd081bd211effb5570d99e3f11",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_work_item_id": "495314e5-bffc-4cbd-a11b-68dbede08c4e",
+  "compile_evidence_path": "D:/QM/reports/work_items/495314e5-bffc-4cbd-a11b-68dbede08c4e/QM5_41319/COMPILE_EA/compile_evidence.json",
+  "compile_evidence_sha256": "e56136e5a49ca08cdca6525821e12f31140a23edf012da7933de863c291cc0ed",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_41319_wti-madf-persist-tr/QM5_41319_wti-madf-persist-tr.mq5",
+  "mq5_sha256": "d18cd0b5f7e5f935b43c95cfc20df5e669b3d24c35587c4dd326ca41c365bcbc",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_41319_wti-madf-persist-tr/QM5_41319_wti-madf-persist-tr.ex5",
+  "ex5_sha256": "cfc816a7e3f82c9a882451ec38638af7bda46678ade63d542c45f3a44829cec1",
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_41319_wti-madf-persist-tr/sets/QM5_41319_wti-madf-persist-tr_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_sha256": {
+    "QM5_41319_wti-madf-persist-tr_XTIUSD.DWX_D1_backtest.set": "14fa066f5cddc7e86d438837d41e62b6c179a17a912d5976b3111272a3fbe8ca"
+  },
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_41319_wti-madf-persist-tr/SPEC.md",
+  "review_handoff_path": "C:/QM/repo/docs/ops/evidence/2026-09-06_qm5_41319_q01_compile_recovery.md",
+  "review_handoff_sha256": "7115cec1908659d798be9a4f6c43932d8c53d97750f1dc4a940ac7fe80c52acd",
+  "magic_base": 413190000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "build_check": {
+    "result": "PASS",
+    "exit_code": 0,
+    "failures": 0,
+    "warnings": 0,
+    "report_path": "D:/QM/reports/framework/21/build_check_20260906_045731.json",
+    "report_sha256": "e52e378b4a74092d478262fd68b49d1d6f7f7f9cfbe8cb06435e4b2ebbcf6827"
+  },
+  "reference_tests": {
+    "command": "python -m pytest framework/EAs/QM5_41319_wti-madf-persist-tr/docs/test_wti_madf_persist_tr_reference.py -q",
+    "passed": 9,
+    "failed": 0
+  },
+  "guardrails": {
+    "result": "PASS",
+    "findings": 0,
+    "max_news_stale_hours": 336,
+    "risk_fixed": 1000,
+    "risk_percent": 0
+  },
+  "scope": "build_and_non_live_review_only",
+  "pipeline_phase_run": false,
+  "q02_enqueued": false,
+  "live_authorized": false,
+  "generated_at_utc": "2026-09-06T05:10:36.9997168Z"
+}
