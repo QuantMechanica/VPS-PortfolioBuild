@@ -96,4 +96,4 @@ trail, break-even move, or partial exit is authorized.
 | Version | Date | Reason |
 |---|---|---|
 | v1 | 2026-09-06 | approved build identity |
-
+| v2 | 2026-09-06 | governed compile PASS and paced fixed-risk Q02 enqueue |

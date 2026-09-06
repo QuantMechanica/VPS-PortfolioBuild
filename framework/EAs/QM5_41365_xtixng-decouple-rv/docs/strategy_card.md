@@ -63,9 +63,9 @@ r1_track_record: PASS_WITH_DECOUPLING_TRANSLATION_RISK
 r2_mechanical: PASS
 r3_data_available: PASS_WITH_SYNCHRONIZATION_AND_CONTINUOUS_CFD_BASIS_RISK
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
-q01_status: PENDING_BUILD
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q02
+q01_status: COMPILE_OK
+q02_status: ENQUEUED_PENDING
 force_build: true
 review_focus: "Falsify a completed-week WTI/natural-gas opposite-direction decoupling fade outside the certified XAU/SP500/NDX/XNG book. Verify exact prior-two-week membership, synchronized three-to-five-session close pairs, week-end endpoint selection, strict opposite individual-return signs, loser-long/winner-short sides, durable weekly attempt, aggregate fixed risk, atomic basket repair, and next-week lifecycle. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -367,14 +367,15 @@ may establish realized correlation with the certified book.
 | Version | Date | Change | Gate | Status |
 |---|---|---|---|---|
 | v1 | 2026-09-06 | initial XTI/XNG weekly decoupling-shock reversion card | G0 | APPROVED; build pending |
+| v2 | 2026-09-06 | governed compile-PASS build and one logical fixed-risk baseline enqueue | Q01/Q02 | COMPILE_OK; ENQUEUED_PENDING |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Status | Evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-09-06 | APPROVED | `decisions/2026-09-06_qm5_41365_xtixng_weekly_decoupling_shock_reversion_g0.md` |
-| Q01 Build Validation | TBD | PENDING | TBD |
-| Q02 Baseline Screening | TBD | NOT_ENQUEUED | TBD |
+| Q01 Build Validation | 2026-09-06 | COMPILE_OK; BUILD_CHECK_PASS | `D:/QM/reports/work_items/634beb3b-c4ec-4810-9020-20c39c45e637/QM5_41365/COMPILE_EA/compile_evidence.json` |
+| Q02 Baseline Screening | 2026-09-06 | ENQUEUED_PENDING | work item `4106f3f8-1bdd-4a02-b2e9-0ef260d8cf0a`; CPU admission `artifacts/qm5_41365_q02_cpu_admission_20260906.json` |
 
 ## Safety Boundary
 

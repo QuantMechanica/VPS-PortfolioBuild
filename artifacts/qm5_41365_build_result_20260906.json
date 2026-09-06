@@ -1,0 +1,108 @@
+{
+  "schema_version": "qm.branch-build-q02-handoff/v1",
+  "recorded_at_utc": "2026-09-06T09:02:39Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41365",
+  "ea_label": "QM5_41365_xtixng-decouple-rv",
+  "mechanic": "synchronized completed-week XTI and XNG individual log returns with strict opposite signs; buy the loser and sell the winner as an equal-target-notional one-week package",
+  "logical_symbol": "QM5_41365_XTI_XNG_DECOUPLE_RV_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "companion_symbol": "XNGUSD.DWX",
+  "timeframe": "D1",
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "research": {
+    "source_approval": "decisions/2026-09-06_xtixng_weekly_decoupling_shock_reversion_source_approval.md",
+    "g0_decision": "decisions/2026-09-06_qm5_41365_xtixng_weekly_decoupling_shock_reversion_g0.md",
+    "dedup_artifact": "artifacts/qm5_xtixng_decouple_rv_preallocation_dedup_20260906.json",
+    "registry_rows_scanned": 4845,
+    "cards_scanned": 1458,
+    "exact_duplicate_found": false,
+    "nearest_family_member": "QM5_41361_xtixng-commonshock-rv",
+    "manual_verdict": "REPOSITORY_SCOPES_CLEAN_DISTINCT_XTIXNG_OPPOSITE_DIRECTION_WEEKLY_DECOUPLING_LOSER_LONG_WINNER_SHORT_BASKET"
+  },
+  "reference_validation": {
+    "command": "python framework/EAs/QM5_41365_xtixng-decouple-rv/docs/test_weekly_decoupling_reference.py",
+    "passed": 9,
+    "failed": 0
+  },
+  "spec_validation": {
+    "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_41365_xtixng-decouple-rv",
+    "passed": 1,
+    "failed": 0
+  },
+  "compile": {
+    "work_item_id": "634beb3b-c4ec-4810-9020-20c39c45e637",
+    "terminal": "T1",
+    "status": "done",
+    "verdict": "COMPILE_OK",
+    "build_check_result": "PASS",
+    "build_check_failures": 0,
+    "build_check_warnings": 3,
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "mq5_sha256": "e63ab004f5f83aff136d640c7c24f9e4aa7519df33e878a4def624a1f2d27fa8",
+    "ex5_sha256": "7ad6e9cab620ef26e445aee44aaddb1bae7e664b18cadf10b8bc56f30bf106f3",
+    "evidence_path": "D:/QM/reports/work_items/634beb3b-c4ec-4810-9020-20c39c45e637/QM5_41365/COMPILE_EA/compile_evidence.json",
+    "evidence_sha256": "34c21661de14b99923f8a11c7ba3e548943488fb26d4556b8d095344aeadb498"
+  },
+  "card": {
+    "sha256": "18a55a47330ff57953af25cf721fbb93593bfd144a460d73130df59c241871c4",
+    "artifact_mirror_sha256": "18a55a47330ff57953af25cf721fbb93593bfd144a460d73130df59c241871c4",
+    "g0_status": "APPROVED"
+  },
+  "basket_manifest": {
+    "sha256": "776b472e976522e2d6c1f46f3f5ecebe4d9f8c90120d8da4ac64a96af3027125"
+  },
+  "setfiles": [
+    {
+      "role": "logical_basket",
+      "sha256": "0374e6d62cc4ae99a48ca4ac038b3e11b4e748b209a0361d355b0a5525351649",
+      "build_hash": "b931208b3806621c315ebf137bcf32487609fbf566664dc9f5dc46230b9cdfc5"
+    },
+    {
+      "role": "host_leg",
+      "sha256": "a393cc968545b6fd4435a37bd3d2a653ed558adfab95eb35f75ba4936b1a5fb5",
+      "build_hash": "800ff257e73acb45525143cb83f95699adf16c475c0c7b20e4d844b4f10f59e3"
+    },
+    {
+      "role": "companion_leg",
+      "sha256": "c6eb205c27d4d8d349f98ebc28740e792db5e1ebc8e5e8300e28444626dd3fa1",
+      "build_hash": "935042b860d93bc84133d4b533f9050a7f11394fca7635b105f21da7befdbe1f"
+    }
+  ],
+  "cpu_admission": {
+    "threshold_pct_exclusive": 97.0,
+    "samples_pct": [65.6373, 69.6931, 82.1309, 85.4581, 81.4461],
+    "average_pct": 76.8731,
+    "maximum_pct": 85.4581,
+    "admitted": true
+  },
+  "q02": {
+    "work_item_id": "4106f3f8-1bdd-4a02-b2e9-0ef260d8cf0a",
+    "symbol": "QM5_41365_XTI_XNG_DECOUPLE_RV_D1",
+    "status_at_receipt": "pending",
+    "attempt_count": 0,
+    "enqueued_count": 1,
+    "skipped_leg_setfiles": 2,
+    "priority_boost": false,
+    "receipt_path": "D:/QM/strategy_farm/artifacts/receipts/first_q02_intake/634beb3b-c4ec-4810-9020-20c39c45e637_4106f3f8-1bdd-4a02-b2e9-0ef260d8cf0a.json",
+    "receipt_sha256": "648283fa34e17d40819439c39f69f0f641452cbb8b830922834f136606458f01",
+    "state_backup_path": "D:/QM/strategy_farm/state/backups/farm_state_before_first_q02_intake_20260906T090028_070290Z.sqlite",
+    "state_backup_sha256": "264fb3ce9d2aa2048bac21854825dc2a8831226b442c95019ff70800a32fd8d3",
+    "manual_backtest_run": false,
+    "dispatch_tick_run": false
+  },
+  "safety": {
+    "terminal_control_used": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "certification_claimed": false,
+    "decorrelation_claimed": false
+  }
+}
