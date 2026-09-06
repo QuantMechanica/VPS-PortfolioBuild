@@ -1,0 +1,121 @@
+{
+  "schema": "qm.stress-pin-repair/v1",
+  "family": [
+    {
+      "ea": 41143,
+      "path": "C:\\QM\\worktrees\\codex-41171-q06-oninit-20260906\\framework\\EAs\\QM5_41143_gbpusd-month-end-benchmark-fix-hedge-flow\\QM5_41143_gbpusd-month-end-benchmark-fix-hedge-flow.mq5",
+      "sha256": "d4662b2c7acb89fb057d003beebe47623a2374b513a6eb613a95516b48accae3",
+      "stress_pin_fixed": false,
+      "seed_42_pin_remains": false
+    },
+    {
+      "ea": 41171,
+      "path": "C:\\QM\\worktrees\\codex-41171-q06-oninit-20260906\\framework\\EAs\\QM5_41171_wti-mturnpoint-tr\\QM5_41171_wti-mturnpoint-tr.mq5",
+      "sha256": "30a2c5fdc8ee87e10b411e0c3cad964f574f4b61c006da8e41a7bd3ebf512162",
+      "stress_pin_fixed": true,
+      "seed_42_pin_remains": true
+    },
+    {
+      "ea": 41319,
+      "path": "C:\\QM\\worktrees\\codex-41171-q06-oninit-20260906\\framework\\EAs\\QM5_41319_wti-madf-persist-tr\\QM5_41319_wti-madf-persist-tr.mq5",
+      "sha256": "b7ce72685a6108d11aa39bba32de3da4c19e58358b9f115177f28323cbcf67aa",
+      "stress_pin_fixed": true,
+      "seed_42_pin_remains": true
+    },
+    {
+      "ea": 41358,
+      "path": "C:\\QM\\worktrees\\codex-41171-q06-oninit-20260906\\framework\\EAs\\QM5_41358_xtixng-wovershoot-rv\\QM5_41358_xtixng-wovershoot-rv.mq5",
+      "sha256": "f9b3d6ec4cf1937e72670ca71e0a2e9c5376ac2d747680b823bb91f3b99c38fc",
+      "stress_pin_fixed": true,
+      "seed_42_pin_remains": true
+    },
+    {
+      "ea": 41359,
+      "path": "C:\\QM\\worktrees\\codex-41171-q06-oninit-20260906\\framework\\EAs\\QM5_41359_xtixng-waccel-rv\\QM5_41359_xtixng-waccel-rv.mq5",
+      "sha256": "78ce9c1ef61ec10583417e1594e7b9040dafb9c467595f173b15831b962bba8a",
+      "stress_pin_fixed": true,
+      "seed_42_pin_remains": true
+    },
+    {
+      "ea": 41360,
+      "path": "C:\\QM\\worktrees\\codex-41171-q06-oninit-20260906\\framework\\EAs\\QM5_41360_xtixng-wretr-rv\\QM5_41360_xtixng-wretr-rv.mq5",
+      "sha256": "8c39329f7f98f5f3a596271c6fed52fcd1b7ce0ad2a36093a0f641540075b6b1",
+      "stress_pin_fixed": true,
+      "seed_42_pin_remains": true
+    },
+    {
+      "ea": 41361,
+      "path": "C:\\QM\\worktrees\\codex-41171-q06-oninit-20260906\\framework\\EAs\\QM5_41361_xtixng-commonshock-rv\\QM5_41361_xtixng-commonshock-rv.mq5",
+      "sha256": "ba0c289aedc600e4232da7dde6bb5be382b3ab398c0f0c88316faf8ef6004080",
+      "stress_pin_fixed": true,
+      "seed_42_pin_remains": true
+    },
+    {
+      "ea": 41362,
+      "path": "C:\\QM\\worktrees\\codex-41171-q06-oninit-20260906\\framework\\EAs\\QM5_41362_xtixng-wdecel-cont\\QM5_41362_xtixng-wdecel-cont.mq5",
+      "sha256": "741ece94fe2fdab2fcf2b3fd99651186bee9abb617418468e7a4199573ece8a7",
+      "stress_pin_fixed": true,
+      "seed_42_pin_remains": true
+    },
+    {
+      "ea": 41363,
+      "path": "C:\\QM\\worktrees\\codex-41171-q06-oninit-20260906\\framework\\EAs\\QM5_41363_xtixng-flowdiv\\QM5_41363_xtixng-flowdiv.mq5",
+      "sha256": "f3e7de73827dbe7a800a67590c9646fb5f88e0eb6a5b03d104243684ddebd058",
+      "stress_pin_fixed": false,
+      "seed_42_pin_remains": false
+    }
+  ],
+  "original_bindings": [
+    {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41171_wti-mturnpoint-tr\\QM5_41171_wti-mturnpoint-tr.mq5",
+      "sha256": "fbb3d7c70b1e6c16c2e09c1582ab3ab127ad34f35a33f7437d0bf72f23174ae6",
+      "matches": true
+    },
+    {
+      "path": "C:\\QM\\repo\\framework\\scripts\\run_smoke.ps1",
+      "sha256": "f7bc53215f7042b018f324307f120c90ef505c929fb27fee8f8740244b53e97d",
+      "matches": true
+    },
+    {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41171_wti-mturnpoint-tr\\QM5_41171_wti-mturnpoint-tr.ex5",
+      "sha256": "828efc296e0368bd416872493348961772d23defa11faebe6b69a755c725933a",
+      "matches": true
+    },
+    {
+      "path": "D:\\QM\\mt5\\T3\\MQL5\\Experts\\QM\\QM5_41171_wti-mturnpoint-tr.ex5",
+      "sha256": "828efc296e0368bd416872493348961772d23defa11faebe6b69a755c725933a",
+      "matches": true
+    },
+    {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41171_wti-mturnpoint-tr\\sets\\QM5_41171_wti-mturnpoint-tr_XTIUSD.DWX_D1_q06_stress_harsh.set",
+      "sha256": "333e502b097e13c7b9f4cea8c2f7ce5eb2893577acdf4150cbf275209f1013dc",
+      "matches": true
+    },
+    {
+      "path": "D:\\QM\\mt5\\T3\\MQL5\\Profiles\\Tester\\QM5_41171_wti-mturnpoint-tr_XTIUSD.DWX_D1_q06_stress_harsh.set",
+      "sha256": "333e502b097e13c7b9f4cea8c2f7ce5eb2893577acdf4150cbf275209f1013dc",
+      "matches": true
+    },
+    {
+      "path": "D:\\QM\\reports\\work_items\\a25e2178-d74c-46a8-91e8-487cc4ff3d77\\QM5_41171\\20260906_053210\\summary.json",
+      "sha256": "0978c02b5a860a8894909121202fd310ab754f98f848b522e39e29cf5bc41b5a"
+    },
+    {
+      "path": "D:\\QM\\reports\\work_items\\a25e2178-d74c-46a8-91e8-487cc4ff3d77\\QM5_41171\\20260906_053210\\logger_sample.jsonl",
+      "sha256": "f754aff31cf4c2d34bd0966f5dbae57274d57bd46fb910f4874b502a4ccdba7d"
+    },
+    {
+      "path": "D:\\QM\\reports\\work_items\\a25e2178-d74c-46a8-91e8-487cc4ff3d77\\QM5_41171\\20260906_053210\\raw\\run_01\\20260906.log",
+      "sha256": "22958b58d211c6d72076e5377d1900fdf6a5b5ae9f67753aaae50931764ec62c"
+    }
+  ],
+  "preset_diff": {
+    "qm_stress_reject_probability": [
+      "0.0000",
+      "0.1000"
+    ]
+  },
+  "test_result": "80 passed",
+  "compile": "not run; source-only review; fresh governed compile required before rerun",
+  "rerun_executed": false
+}
