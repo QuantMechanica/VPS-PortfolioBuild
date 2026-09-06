@@ -11,3 +11,11 @@
 
 ## Acceptance (independent, after step 2)
 Q08 reruns end PASS or FAIL (not INVALID); old INVALID rows preserved; no threshold/verdict change.
+
+## Progress 2026-09-06 20:30Z (Claude)
+
+- Step 1 done: f9ce2102 integrated (declarations in both card locations); second reruns 045bed75 (11167) and a79887e3 (11196) ended INVALID with `CANDIDATE_WINDOW_UNAVAILABLE` (producer read only Q08 payload/row dates) → Codex acf3637b **APPROVED** (b2b3d35d65: window recovered from the Q07 lineage; 90 tests + 13 subtests), 11196 set defect → Codex e638e0de **APPROVED** (replacement set `_s20260906-001.set`, sha 7cc424d2…).
+- Workers reloaded staggered (chunk 56) so the claim-time `dsr_cohort.attach` runs the fixed module: 9/10 at 20:20Z, T9 still on a Q07 cell (f654273d).
+- **Third Q08 rerun 11167/XAUUSD enqueued: `19c9df13-f81e-473e-9ebc-dc045b03dd1b`** (from 42ca0f18, append-only rerun of 045bed75, expected EX5 4b349d21…dd99 verified; first attempt refused on a mis-typed hash — fail-closed worked).
+- 11196/XAUUSD: no production path binds a versioned replacement set to an append-only rerun (only `--target-setfile` for universe expansion) → Codex **9ecdd2f9** (P90, IN_PROGRESS): governed `--replacement-setfile`, DSR binding against the replacement set, then enqueue (from 42154e17, rerun-of a79887e3, EX5 d3b1aef0…).
+- Acceptance unchanged: PASS or FAIL (not INVALID) on both reruns; old rows preserved.
