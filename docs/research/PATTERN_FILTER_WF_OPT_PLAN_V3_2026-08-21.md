@@ -140,3 +140,12 @@ Kein Lauf vor grünem Fixture-Harness-Verdikt · Q16-Kriterien/Verdikt-Logik una
 Entry-Tage (Goodhart-Schutz) · keine T_Live-Berührung · OPT_CENSUS-Pool getrennt von
 Q02-Durchsatzmetriken · Auswahlregel dieses Dokuments ist vor der Messung versiegelt —
 eine nachträgliche Regeländerung wäre ROT (neuer OWNER-Entscheid nötig).
+
+## Addendum 2026-09-06 - pre-registered refutation rule for the mandatory optimisation branch (OWNER receipt 237f58cb-0cbc-4b0e-b9a7-9e563e38d4ba, YES, 2026-09-06T06:16:31Z)
+
+Decision OWNER-DEC-M11-CENSUS-BRANCH-20260906 (Option A): the DL-089 census continues unchanged in the Amendment C queue order; it is the counter path under OWNER-DEC-A1 (a KEEP_INCUMBENT closure counts like a promotion). The audit finding (12 Q14 closures, all KEEP_INCUMBENT, 0 CHALLENGER_PROMOTED as of 2026-09-06) is registered as a refutation rule, not a stop:
+
+- **Rule:** if the next **5** Q14 closures after 2026-09-06 06:17Z again promote no challenger (0 of 16 overall; rule-of-three upper bound on the promotion rate about 19 %), the *mandatory* optimisation branch is refuted for pairs beyond the 25-pair book.
+- **Consequence when refuted:** the branch becomes an on-demand cohort (Option B contract in docs/ops/OWNER_VORLAGE_2026-09-06_m11_optimisation_branch_utility.md, section 3) for pairs beyond 25, and the Q14-terminal requirement in the counting rule is put to the OWNER again as its own card. Nothing changes for the pairs inside the current census.
+- **Evaluation:** the Orchestrator counts Q14 closures (work_items phase Q14, status done) and reports the tally in OPEN_ITEMS at each closure; the rule fires on the fifth closure.
+- **Not changed by this addendum:** the selection rule (DL-089 #1/#2), K/L/G thresholds, declared_trial_count, the candidate pool, any verdict.
