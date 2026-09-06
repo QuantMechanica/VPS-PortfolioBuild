@@ -1,0 +1,63 @@
+{
+  "sets": 8,
+  "tests": "17 passed",
+  "independent_identity_check": [
+    {
+      "ea_id": 10706,
+      "symbol": "GBPUSD",
+      "unchanged_parameters": 26,
+      "source_and_output_hashes": "PASS",
+      "parameter_identity": "PASS"
+    },
+    {
+      "ea_id": 11421,
+      "symbol": "EURUSD",
+      "unchanged_parameters": 11,
+      "source_and_output_hashes": "PASS",
+      "parameter_identity": "PASS"
+    },
+    {
+      "ea_id": 11422,
+      "symbol": "USDCAD",
+      "unchanged_parameters": 10,
+      "source_and_output_hashes": "PASS",
+      "parameter_identity": "PASS"
+    },
+    {
+      "ea_id": 11910,
+      "symbol": "NZDUSD",
+      "unchanged_parameters": 9,
+      "source_and_output_hashes": "PASS",
+      "parameter_identity": "PASS"
+    },
+    {
+      "ea_id": 13054,
+      "symbol": "XTIUSD",
+      "unchanged_parameters": 12,
+      "source_and_output_hashes": "PASS",
+      "parameter_identity": "PASS"
+    },
+    {
+      "ea_id": 1537,
+      "symbol": "XAGUSD",
+      "unchanged_parameters": 17,
+      "source_and_output_hashes": "PASS",
+      "parameter_identity": "PASS"
+    },
+    {
+      "ea_id": 20048,
+      "symbol": "XTIUSD",
+      "unchanged_parameters": 7,
+      "source_and_output_hashes": "PASS",
+      "parameter_identity": "PASS"
+    },
+    {
+      "ea_id": 21505,
+      "symbol": "XAGUSD",
+      "unchanged_parameters": 9,
+      "source_and_output_hashes": "PASS",
+      "parameter_identity": "PASS"
+    }
+  ],
+  "nothing_installed": true
+}

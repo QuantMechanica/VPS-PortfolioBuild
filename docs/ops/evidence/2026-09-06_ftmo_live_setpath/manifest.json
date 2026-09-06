@@ -1,0 +1,397 @@
+{
+  "ENV": "live",
+  "candidates": [
+    {
+      "changes": {
+        "RISK_FIXED": {
+          "after": "0",
+          "before": "1000"
+        },
+        "RISK_PERCENT": {
+          "after": "0.1",
+          "before": "0"
+        },
+        "qm_news_compliance": {
+          "after": "2",
+          "before": null
+        },
+        "qm_news_stale_max_hours": {
+          "after": "336",
+          "before": null
+        },
+        "qm_news_temporal": {
+          "after": "3",
+          "before": null
+        }
+      },
+      "ea_id": 10706,
+      "ex5_sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb",
+      "native_symbol": "GBPUSD",
+      "original_selected_news_config": {
+        "compliance_mode": "DXZ",
+        "setfile_sha256s": [
+          "f5a11e2d1830db46258586ea2828b1bda9bd985661afa975fcb1c954d9aae6c6"
+        ],
+        "temporal_mode": "OFF",
+        "temporal_mode_id": 0
+      },
+      "output_path": "QM5_10706_GBPUSD_live_trial.set",
+      "output_sha256": "f7d37dc61bf9c863881cf1931850e1febd23bfde9985091e888d86477cd32129",
+      "seal_path": "D:\\QM\\reports\\work_items\\9c7db9b2-c594-4b50-8006-f891f7b5c44b\\QM5_10706\\Q10_NEWS\\GBPUSD_DWX\\aggregate.json",
+      "seal_sha256": "a619968d0608c1ed9bda70f263f95c12db5671c1cf96bd9939409559bcdf2bac",
+      "seal_work_item_id": "9c7db9b2-c594-4b50-8006-f891f7b5c44b",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\sets\\QM5_10706_tv-mon-ls_GBPUSD.DWX_H1_backtest_ablation_02.set",
+      "source_role": "SEALED_BASELINE_STRATEGY_PARAMETERS",
+      "source_sha256": "056f2c12c1be81119e6ff86e7d2e3521905cacf938cffea19ff910e79752fb49",
+      "strategy_identity_sha256": "8182d0ff0af37cc27bcc26b4750d2cfd294dc76d8641ad42a9b15e62d6e71dc5",
+      "strategy_parameter_count": 26,
+      "symbol": "GBPUSD"
+    },
+    {
+      "changes": {
+        "RISK_FIXED": {
+          "after": "0",
+          "before": "1000"
+        },
+        "RISK_PERCENT": {
+          "after": "0.1",
+          "before": "0"
+        },
+        "qm_news_compliance": {
+          "after": "2",
+          "before": null
+        },
+        "qm_news_stale_max_hours": {
+          "after": "336",
+          "before": null
+        },
+        "qm_news_temporal": {
+          "after": "3",
+          "before": null
+        }
+      },
+      "ea_id": 11421,
+      "ex5_sha256": "9dd7facd1da7e2c6564929b92a2e4a62e65bc40b99a03edd729030f72d18924b",
+      "native_symbol": "EURUSD",
+      "original_selected_news_config": {
+        "compliance_mode": "DXZ",
+        "setfile_sha256s": [
+          "ba340f76c3504434c451c6da86773eb7b36d8226fe5f79f7d24971d803f010cc"
+        ],
+        "temporal_mode": "OFF",
+        "temporal_mode_id": 0
+      },
+      "output_path": "QM5_11421_EURUSD_live_trial.set",
+      "output_sha256": "1c530d6d0ecf261dcff20660a71308a6fdab89d4315189cf06fc7a299584d769",
+      "seal_path": "D:\\QM\\reports\\work_items\\23282266-7853-411f-936f-4c84675682a1\\QM5_11421\\Q10_NEWS\\485a00f2-1cf6-4546-8e5d-8110095489d8\\aggregate.json",
+      "seal_sha256": "0bfb84f447385ac95785a113b43dcff00b1d04e199afe9194a2949a910d3cf01",
+      "seal_work_item_id": "485a00f2-1cf6-4546-8e5d-8110095489d8",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\sets\\QM5_11421_ohlc-daily-squeeze-reversal-d1_EURUSD.DWX_D1_backtest.set",
+      "source_role": "SEALED_BASELINE_STRATEGY_PARAMETERS",
+      "source_sha256": "7b87dbf2a4a6b6e6d8cea39e9123ebf9e06f61e53e2215eed24afde7923d74cf",
+      "strategy_identity_sha256": "17ebdffe8553014292f6702f8e580788a49527b64503a5b97b3ec311c56b1da4",
+      "strategy_parameter_count": 11,
+      "symbol": "EURUSD"
+    },
+    {
+      "changes": {
+        "RISK_FIXED": {
+          "after": "0",
+          "before": "1000"
+        },
+        "RISK_PERCENT": {
+          "after": "0.1",
+          "before": "0"
+        },
+        "qm_news_compliance": {
+          "after": "2",
+          "before": null
+        },
+        "qm_news_stale_max_hours": {
+          "after": "336",
+          "before": null
+        },
+        "qm_news_temporal": {
+          "after": "3",
+          "before": null
+        }
+      },
+      "ea_id": 11422,
+      "ex5_sha256": "2b98e9e902313148be78d88513fcbda2476150b1a7605eb15a50b2cca6b32d66",
+      "native_symbol": "USDCAD",
+      "original_selected_news_config": {
+        "compliance_mode": "DXZ",
+        "setfile_sha256s": [
+          "13fb226e11e10f81279ce9e70a02dedfaba0f6dc35fef1a5efa14677385f47ea"
+        ],
+        "temporal_mode": "OFF",
+        "temporal_mode_id": 0
+      },
+      "output_path": "QM5_11422_USDCAD_live_trial.set",
+      "output_sha256": "ed0b7c6639e32322882c087a7f314ecdd598396841946a1991cc548093394ac4",
+      "seal_path": "D:\\QM\\reports\\work_items\\21eb42e1-5107-4033-b9f6-a97c1edc15d1\\QM5_11422\\Q10_NEWS\\74fec478-4823-4d84-a9a1-41319407197d\\aggregate.json",
+      "seal_sha256": "0ea766456a304004b92fa3da40524138db2765b4fec13c62128cb49b0aefee09",
+      "seal_work_item_id": "74fec478-4823-4d84-a9a1-41319407197d",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11422_williams-18ma-outside-bar-entry-d1\\sets\\QM5_11422_williams-18ma-outside-bar-entry-d1_USDCAD.DWX_D1_backtest.set",
+      "source_role": "SEALED_BASELINE_STRATEGY_PARAMETERS",
+      "source_sha256": "715bce2fb8762cef12dcdff86eb6c144069b6d5a487d5e39fcaa1de71248a5ff",
+      "strategy_identity_sha256": "b797cd6f63fe9e6e43524a5a26f076fb5c4f755a1b41abda57daa96c80d6594e",
+      "strategy_parameter_count": 10,
+      "symbol": "USDCAD"
+    },
+    {
+      "changes": {
+        "RISK_FIXED": {
+          "after": "0",
+          "before": "1000"
+        },
+        "RISK_PERCENT": {
+          "after": "0.1",
+          "before": "0"
+        },
+        "qm_news_compliance": {
+          "after": "2",
+          "before": null
+        },
+        "qm_news_stale_max_hours": {
+          "after": "336",
+          "before": null
+        },
+        "qm_news_temporal": {
+          "after": "3",
+          "before": null
+        }
+      },
+      "ea_id": 11910,
+      "ex5_sha256": "e18d477e63c40cb1002aa4d93d8efcc3ec6fddf1081fb73ad9df1b0a7a3042de",
+      "native_symbol": "NZDUSD",
+      "original_selected_news_config": {
+        "compliance_mode": "DXZ",
+        "setfile_sha256s": [
+          "87eae96d97f5ee2c0267805347e284a508f9645c1eab0f1846c2d097d093af20"
+        ],
+        "temporal_mode": "OFF",
+        "temporal_mode_id": 0
+      },
+      "output_path": "QM5_11910_NZDUSD_live_trial.set",
+      "output_sha256": "aee3df1324f1804c5d532ff75c9cf1fee592cdfe6abbd12bac4c9161032e88f2",
+      "seal_path": "D:\\QM\\reports\\work_items\\bdae4b44-1cf8-43ff-91de-abf6735242b2\\QM5_11910\\Q10_NEWS\\a5660f05-ba8d-41c2-acdb-41192f9a8006\\aggregate.json",
+      "seal_sha256": "cfdc38cc63f5c3ef1379f2479322d6371c0857e2a455af7304f965e6563c2ad0",
+      "seal_work_item_id": "a5660f05-ba8d-41c2-acdb-41192f9a8006",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11910_larry-williams-18ma-2outside-bars-d1\\sets\\QM5_11910_larry-williams-18ma-2outside-bars-d1_NZDUSD.DWX_D1_backtest.set",
+      "source_role": "SEALED_BASELINE_STRATEGY_PARAMETERS",
+      "source_sha256": "84b6dee70e76dea71119675c5e7372fdf3ef9deabfae3520e6c8b2922e2495c6",
+      "strategy_identity_sha256": "2cf99ba6231360ef1ef08b311db220aba07dad804a8a139ef60525c09021a150",
+      "strategy_parameter_count": 9,
+      "symbol": "NZDUSD"
+    },
+    {
+      "changes": {
+        "RISK_FIXED": {
+          "after": "0",
+          "before": "1000"
+        },
+        "RISK_PERCENT": {
+          "after": "0.1",
+          "before": "0"
+        },
+        "qm_news_compliance": {
+          "after": "2",
+          "before": null
+        },
+        "qm_news_stale_max_hours": {
+          "after": "336",
+          "before": null
+        },
+        "qm_news_temporal": {
+          "after": "3",
+          "before": null
+        }
+      },
+      "ea_id": 13054,
+      "ex5_sha256": "2e65488fccdbd985f78318861a223a305d820a4fce3d2ebdcafae6ce956fd96d",
+      "native_symbol": "USOIL.cash",
+      "original_selected_news_config": {
+        "compliance_mode": "DXZ",
+        "setfile_sha256s": [
+          "0a145f2521d730df7fc777a0480034b7917df8e4a79820a14519e6eb3c89b5df",
+          "1241123fa31ff77ebb191cdc6310be4a63f8b1df64bb5dd4418a6c34b0eef62b",
+          "91be7c88b963e45d537d269efffa78148e9d9eae5648b0fbe8897cfec068e2dc",
+          "b7d61b9892c8d0fd997a7457e795ed8b86fca038b836279c960b375cee543d05",
+          "f3cf2b689f2276b2c593e683b64283eca8dd8e1c0c7ac7cdbd0c62cdd37716cc"
+        ],
+        "temporal_mode": "OFF",
+        "temporal_mode_id": 0
+      },
+      "output_path": "QM5_13054_XTIUSD_live_trial.set",
+      "output_sha256": "7953651d4b655ca30049fceff9180daa0b978426632b64f342326f2239bf6ddd",
+      "seal_path": "D:\\QM\\reports\\work_items\\8f760c32-a6d2-4088-9106-d406de466fbb\\QM5_13054\\Q10_NEWS\\332b52a7-cdc7-443b-ac6c-c358a3717fbe\\aggregate.json",
+      "seal_sha256": "a3350c86457958812a474cd3859fc9404dd253591ec63390101c54dc74eb3c1c",
+      "seal_work_item_id": "332b52a7-cdc7-443b-ac6c-c358a3717fbe",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13054_brent-tom-mom\\sets\\QM5_13054_brent-tom-mom_XTIUSD.DWX_D1_backtest.set",
+      "source_role": "SEALED_BASELINE_STRATEGY_PARAMETERS",
+      "source_sha256": "d834b193a77b1d102f2108ed0d2d92af4d040e283ac272039f9e16292c87b80c",
+      "strategy_identity_sha256": "bbfba242ff3a7368cf2f68a75a5009901f37b15072553669a1eb94493884316f",
+      "strategy_parameter_count": 12,
+      "symbol": "XTIUSD"
+    },
+    {
+      "changes": {
+        "RISK_FIXED": {
+          "after": "0",
+          "before": "1000"
+        },
+        "RISK_PERCENT": {
+          "after": "0.1",
+          "before": "0"
+        },
+        "qm_news_compliance": {
+          "after": "2",
+          "before": null
+        },
+        "qm_news_stale_max_hours": {
+          "after": "336",
+          "before": null
+        },
+        "qm_news_temporal": {
+          "after": "3",
+          "before": null
+        }
+      },
+      "ea_id": 1537,
+      "ex5_sha256": "142a019e773a493def0640722efb9d591d094650b35a69d5de39f6af3a048106",
+      "native_symbol": "XAGUSD",
+      "original_selected_news_config": {
+        "compliance_mode": "DXZ",
+        "setfile_sha256s": [
+          "c0832d3da973cc433fbecc0f66744cb62ebfad2f2103b3209b5ba9cbba55cd3b"
+        ],
+        "temporal_mode": "OFF",
+        "temporal_mode_id": 0
+      },
+      "output_path": "QM5_1537_XAGUSD_live_trial.set",
+      "output_sha256": "8692ededdce85b99e2064d8127447c3ea212254ecd26a1e4b4ee1750d9d58d6d",
+      "seal_path": "D:\\QM\\reports\\work_items\\42b0c995-7fac-415d-a08e-80581da2db33\\QM5_1537\\Q10_NEWS\\463a29c4-2ef0-40d2-baef-fa5a4727f073\\aggregate.json",
+      "seal_sha256": "18172c30a3e1c9a56b9586e9672e796c946c9bbb4a0979c0a85d5694cec760c7",
+      "seal_work_item_id": "463a29c4-2ef0-40d2-baef-fa5a4727f073",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1537_aa-vol-sma10\\sets\\QM5_1537_aa-vol-sma10_XAGUSD.DWX_D1_backtest.set",
+      "source_role": "SEALED_BASELINE_STRATEGY_PARAMETERS",
+      "source_sha256": "4e7e56399910999c4ec6b842496efc900dcee16b0547db7625d0808fd25de211",
+      "strategy_identity_sha256": "1dd303c8004eedf86cb1d92598938e9ab7e53b56eae6b52c39bf0c0624fcacb2",
+      "strategy_parameter_count": 17,
+      "symbol": "XAGUSD"
+    },
+    {
+      "changes": {
+        "RISK_FIXED": {
+          "after": "0",
+          "before": "1000"
+        },
+        "RISK_PERCENT": {
+          "after": "0.1",
+          "before": "0"
+        },
+        "qm_news_compliance": {
+          "after": "2",
+          "before": null
+        },
+        "qm_news_stale_max_hours": {
+          "after": "336",
+          "before": null
+        },
+        "qm_news_temporal": {
+          "after": "3",
+          "before": null
+        }
+      },
+      "ea_id": 20048,
+      "ex5_sha256": "1312391ad7e654812244e48a6df92d5bd323dba7d32ddae60c54adc464527f00",
+      "native_symbol": "USOIL.cash",
+      "original_selected_news_config": {
+        "compliance_mode": "DXZ",
+        "setfile_sha256s": [
+          "9638bc7f2507f4789dd9971c7bba2b407341edcdd2a1f8b67ca22591398c7fbc"
+        ],
+        "temporal_mode": "OFF",
+        "temporal_mode_id": 0
+      },
+      "output_path": "QM5_20048_XTIUSD_live_trial.set",
+      "output_sha256": "877cae4990af1b37741034e8d2d79a97f428cba2f634f580491b6d694fd2f90c",
+      "seal_path": "D:\\QM\\reports\\work_items\\79e825cc-a806-49ac-9bc4-96d4c83c915d\\QM5_20048\\Q10_NEWS\\XTIUSD_DWX\\aggregate.json",
+      "seal_sha256": "750c862687afa1fb4756babb710294274d7c8fbdfa0b969e743a1de89c0b2fbd",
+      "seal_work_item_id": "79e825cc-a806-49ac-9bc4-96d4c83c915d",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_20048_wti-preholiday\\sets\\QM5_20048_wti-preholiday_XTIUSD.DWX_D1_backtest.set",
+      "source_role": "SEALED_BASELINE_STRATEGY_PARAMETERS",
+      "source_sha256": "198f387d3bfbbf3e26435be9fcba671b0c992a2f1aacacf990b08a58d9a02e96",
+      "strategy_identity_sha256": "2e64c3f61cd703c56741c0c31c8601e30b90308e5b159da9f79ee9e0054c34de",
+      "strategy_parameter_count": 7,
+      "symbol": "XTIUSD"
+    },
+    {
+      "changes": {
+        "RISK_FIXED": {
+          "after": "0",
+          "before": "1000"
+        },
+        "RISK_PERCENT": {
+          "after": "0.1",
+          "before": "0"
+        },
+        "qm_news_compliance": {
+          "after": "2",
+          "before": null
+        },
+        "qm_news_stale_max_hours": {
+          "after": "336",
+          "before": null
+        },
+        "qm_news_temporal": {
+          "after": "3",
+          "before": null
+        }
+      },
+      "ea_id": 21505,
+      "ex5_sha256": "395c4747832acbcdf8a68d8598e53abe5786bdc6c538767c400884cd82b2aea1",
+      "native_symbol": "XAGUSD",
+      "original_selected_news_config": {
+        "compliance_mode": "DXZ",
+        "setfile_sha256s": [
+          "a23357a78769f55ce6207c621abd1ab4ec15eeb618de8d25469349031936cde4"
+        ],
+        "temporal_mode": "OFF",
+        "temporal_mode_id": 0
+      },
+      "output_path": "QM5_21505_XAGUSD_live_trial.set",
+      "output_sha256": "d5aaa2088032977da4b988fd938f17354e125673af711ee778b135e0c84cfe59",
+      "seal_path": "D:\\QM\\reports\\work_items\\f9a94c2d-98a3-4edc-ade5-f9ce5940da41\\QM5_21505\\Q10_NEWS\\21859cc5-0c13-481a-a769-b38be9e4fd91\\aggregate.json",
+      "seal_sha256": "d8d52792cacb62f87b6df8157709012de35cd19d8070e0cd4ff23108a2ffe3ad",
+      "seal_work_item_id": "21859cc5-0c13-481a-a769-b38be9e4fd91",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_21505_xag-weekly-lowvol-momentum\\sets\\QM5_21505_xag-weekly-lowvol-momentum_XAGUSD.DWX_D1_backtest.set",
+      "source_role": "SEALED_BASELINE_STRATEGY_PARAMETERS",
+      "source_sha256": "a345970c4c597963597ad768222b8746997cf2ea0119567a9498ea90301a2397",
+      "strategy_identity_sha256": "92ea0f83bb66f28e510cb69575b85063bf3454c5b511029237cc9e6afbb2f461",
+      "strategy_parameter_count": 9,
+      "symbol": "XAGUSD"
+    }
+  ],
+  "constraints": {
+    "calendar_binding": "NATIVE_MT5_CALENDAR_LIVE; seed health and execution must be verified before installation",
+    "governor_enforcement": "REQUIRES_SEPARATE_ACCEPTED_TRIAL_GOVERNOR; NOT_PROVEN_BY_SET",
+    "max_daily_loss_percent": 5.0,
+    "max_total_loss_percent": 10.0,
+    "news_blackout": "PRE30_POST30_PLUS_FTMO_COMPLIANCE",
+    "timezone": "Europe/Prague"
+  },
+  "installable": false,
+  "installed": false,
+  "mode": "DRY_RUN",
+  "risk_authority": "DRY_RUN_EXAMPLE_ONLY",
+  "risk_percent": 0.1,
+  "rulepack": {
+    "id": "FTMO_2S_100K_SWING_V2",
+    "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_SWING_V2.json",
+    "sha256": "298ef1285eca49ea7f010ebc0a9353b5a821fccb40a025be129f5ca5314fd992"
+  },
+  "schema": "qm.ftmo-trial-setpath/v1",
+  "status": "INERT_REVIEW_ONLY"
+}
