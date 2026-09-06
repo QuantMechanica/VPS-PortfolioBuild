@@ -1361,6 +1361,103 @@ class AppendOnlyCascadeRerunTests(unittest.TestCase):
             )
             self.assertEqual(payload["promoted_from_work_item"], "q05-source")
 
+    def test_append_only_rerun_binds_governed_replacement_setfile(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp) / "farm"
+            repo_root = Path(tmp) / "repo"
+            ea_id = "QM5_9991"
+            ea_dir = repo_root / "framework" / "EAs" / f"{ea_id}_demo"
+            sets_dir = ea_dir / "sets"
+            sets_dir.mkdir(parents=True)
+            (ea_dir / f"{ea_dir.name}.mq5").write_text("// source\n", encoding="utf-8")
+            ex5 = ea_dir / f"{ea_dir.name}.ex5"
+            ex5.write_bytes(b"compiled")
+            old_set = sets_dir / f"{ea_dir.name}_EURUSD.DWX_H1_backtest.set"
+            old_set.write_text("RISK_FIXED=1000\n", encoding="utf-8")
+            replacement = (
+                sets_dir
+                / f"{ea_dir.name}_EURUSD.DWX_H1_backtest_s20260906-001.set"
+            )
+            replacement.write_text(
+                "; ea_id: 9991\n"
+                "; set_version: s20260906-001\n"
+                "; symbol: EURUSD.DWX\n"
+                "; timeframe: H1\n"
+                "; environment: backtest\n"
+                "RISK_FIXED=1000\nstrategy_period=9\n",
+                encoding="utf-8",
+            )
+            replacement_repo_path = replacement.relative_to(repo_root).as_posix()
+            replacement_sha = farmctl._sha256_file(replacement)
+
+            farmctl.init_db(root)
+            now = farmctl.utc_now()
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                conn.execute(
+                    """
+                    INSERT INTO work_items
+                      (id, kind, phase, ea_id, symbol, setfile_path, status,
+                       verdict, attempt_count, payload_json, created_at, updated_at)
+                    VALUES
+                      ('q05-source', 'backtest', 'Q05', ?, 'EURUSD.DWX', ?,
+                       'done', 'PASS', 0, '{}', ?, ?),
+                      ('q06-historical', 'backtest', 'Q06', ?, 'EURUSD.DWX', ?,
+                       'done', 'INVALID', 0, '{}', ?, ?)
+                    """,
+                    (ea_id, str(old_set), now, now, ea_id, str(old_set), now, now),
+                )
+                conn.commit()
+
+            old_repo_root = farmctl.REPO_ROOT
+            try:
+                farmctl.REPO_ROOT = repo_root
+                refused = farmctl.enqueue_cascade_backtest_for_ea(
+                    root,
+                    ea_id,
+                    "Q06",
+                    predecessor_work_item_id="q05-source",
+                    replacement_setfile=replacement_repo_path,
+                )
+                result = farmctl.enqueue_cascade_backtest_for_ea(
+                    root,
+                    ea_id,
+                    "Q06",
+                    predecessor_work_item_id="q05-source",
+                    append_only_rerun_of="q06-historical",
+                    replacement_setfile=replacement_repo_path,
+                    rerun_reason="bind repaired configuration",
+                    expected_current_ex5_sha256=farmctl._sha256_file(ex5),
+                )
+            finally:
+                farmctl.REPO_ROOT = old_repo_root
+
+            self.assertEqual(
+                refused["reason"],
+                "replacement_setfile_requires_append_only_rerun_of",
+            )
+            self.assertEqual(len(result["created"]), 1)
+            work_item_id = result["created"][0]["id"]
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute(
+                    "SELECT setfile_path,payload_json FROM work_items WHERE id=?",
+                    (work_item_id,),
+                ).fetchone()
+                ledger = conn.execute(
+                    "SELECT action,detail_json FROM work_item_transition_ledger "
+                    "WHERE work_item_id=?",
+                    (work_item_id,),
+                ).fetchone()
+            payload = json.loads(row[1])
+            detail = json.loads(ledger[1])
+            self.assertEqual(Path(row[0]).resolve(), replacement.resolve())
+            self.assertEqual(payload["replacement_setfile_sha256"], replacement_sha)
+            self.assertEqual(payload["expected_setfile_sha256"], replacement_sha)
+            self.assertEqual(
+                payload["artifact_identity"]["setfile_sha256"], replacement_sha
+            )
+            self.assertEqual(ledger[0], "append_only_replacement_setfile_bound")
+            self.assertEqual(detail["replacement_setfile_sha256"], replacement_sha)
+
 
 class Q06SoftStackingTests(unittest.TestCase):
     """OWNER Option A 2026-08-21: Q06 PASS_SOFT probation + anti-stacking at Q08."""

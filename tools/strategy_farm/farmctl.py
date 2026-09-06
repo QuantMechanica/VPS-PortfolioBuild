@@ -29035,6 +29035,72 @@ def _forced_news_expansion_identity(
     return identity, ""
 
 
+def _replacement_setfile_binding(
+    ea_id: str,
+    symbol: str,
+    timeframe: str,
+    requested_path: str | os.PathLike[str],
+) -> tuple[dict[str, str] | None, str]:
+    """Validate one append-only replacement set against its queue identity."""
+    raw = str(requested_path or "").strip()
+    if not raw:
+        return None, "replacement_setfile_required"
+    supplied = Path(raw)
+    if supplied.is_absolute():
+        return None, "replacement_setfile_must_be_repo_relative"
+    try:
+        repo = REPO_ROOT.resolve()
+        resolved = (repo / supplied).resolve()
+        resolved.relative_to(repo)
+    except (OSError, ValueError):
+        return None, "replacement_setfile_outside_repo"
+    if not resolved.is_file():
+        return None, "replacement_setfile_missing"
+
+    ea_dir = _ea_dir_from_setfile_path(resolved, ea_id)
+    canonical_ea_dir = _preferred_ea_dir(ea_id)
+    if (
+        ea_dir is None
+        or canonical_ea_dir is None
+        or os.path.normcase(str(ea_dir.resolve()))
+        != os.path.normcase(str(canonical_ea_dir.resolve()))
+    ):
+        return None, "replacement_setfile_not_in_canonical_ea_sets_directory"
+
+    version_match = re.search(r"_(s\d{8}-\d{3})\.set$", resolved.name)
+    if not version_match:
+        return None, "replacement_setfile_governed_name_required"
+    version = version_match.group(1)
+    expected_name = f"{ea_dir.name}_{symbol}_{timeframe}_backtest_{version}.set"
+    if resolved.name != expected_name:
+        return None, "replacement_setfile_filename_identity_mismatch"
+
+    headers: dict[str, str] = {}
+    try:
+        for line in resolved.read_text(encoding="utf-8-sig").splitlines():
+            match = re.match(r"^;\s*([a-z_]+)\s*:\s*(.*?)\s*$", line, re.I)
+            if match:
+                headers[match.group(1).lower()] = match.group(2).strip()
+    except (OSError, UnicodeError):
+        return None, "replacement_setfile_unreadable"
+    ea_number = re.sub(r"^QM5_", "", str(ea_id), flags=re.I)
+    expected_headers = {
+        "ea_id": ea_number,
+        "symbol": str(symbol),
+        "timeframe": str(timeframe).upper(),
+        "set_version": version,
+        "environment": "backtest",
+    }
+    if any(headers.get(key) != value for key, value in expected_headers.items()):
+        return None, "replacement_setfile_header_identity_mismatch"
+    return {
+        "path": str(resolved),
+        "repo_path": resolved.relative_to(repo).as_posix(),
+        "sha256": _sha256_file(resolved),
+        "set_version": version,
+    }, ""
+
+
 def enqueue_cascade_backtest_for_ea(
     root: Path,
     ea_id: str,
@@ -29042,6 +29108,7 @@ def enqueue_cascade_backtest_for_ea(
     *,
     predecessor_work_item_id: str | None = None,
     append_only_rerun_of: str | None = None,
+    replacement_setfile: str | None = None,
     rerun_reason: str | None = None,
     expected_current_ex5_sha256: str | None = None,
     q09_anchor_binding: dict[str, Any] | None = None,
@@ -29061,6 +29128,21 @@ def enqueue_cascade_backtest_for_ea(
     reviewed adjudication overlay supersedes them.
     """
     phase_token = str(phase or "").strip().upper()
+    replacement_setfile = str(replacement_setfile or "").strip() or None
+    if replacement_setfile and not append_only_rerun_of:
+        return {
+            "enqueued": False,
+            "reason": "replacement_setfile_requires_append_only_rerun_of",
+            "ea_id": ea_id,
+            "phase": phase,
+        }
+    if replacement_setfile and phase_token in {"Q02", "Q03"}:
+        return {
+            "enqueued": False,
+            "reason": "replacement_setfile_requires_cascade_phase",
+            "ea_id": ea_id,
+            "phase": phase,
+        }
     force_expanded_news_matrix = bool(force_expanded_news_matrix)
     forced_news_expansion_identity: dict[str, Any] | None = None
     if force_expanded_news_matrix:
@@ -29340,12 +29422,24 @@ def enqueue_cascade_backtest_for_ea(
                     "SELECT * FROM work_items WHERE id=?",
                     (str(append_only_rerun_of),),
                 ).fetchone()
+                predecessor_timeframe = _detect_ea_period(
+                    ea_id, prev["setfile_path"]
+                ).upper()
+                target_timeframe = (
+                    _detect_ea_period(ea_id, rerun_target["setfile_path"]).upper()
+                    if rerun_target
+                    else ""
+                )
                 target_matches = bool(
                     rerun_target
                     and rerun_target["ea_id"] == ea_id
                     and rerun_target["phase"] == phase
                     and rerun_target["symbol"] == prev["symbol"]
-                    and rerun_target["setfile_path"] == prev["setfile_path"]
+                    and target_timeframe == predecessor_timeframe
+                    and (
+                        replacement_setfile
+                        or rerun_target["setfile_path"] == prev["setfile_path"]
+                    )
                     and rerun_target["status"] in {"done", "failed"}
                     and rerun_target["verdict"] is not None
                     and not rerun_target["claimed_by"]
@@ -29357,13 +29451,37 @@ def enqueue_cascade_backtest_for_ea(
                         "reason": "append_only_rerun_target_mismatch_or_not_terminal",
                     })
                     continue
+                replacement_binding: dict[str, str] | None = None
+                effective_setfile_path = str(prev["setfile_path"])
+                execution_candidate: Mapping[str, Any] = prev
+                if replacement_setfile:
+                    replacement_binding, replacement_reason = (
+                        _replacement_setfile_binding(
+                            ea_id,
+                            str(prev["symbol"]),
+                            predecessor_timeframe,
+                            replacement_setfile,
+                        )
+                    )
+                    if replacement_binding is None:
+                        skipped.append({
+                            "id": str(append_only_rerun_of),
+                            "symbol": prev["symbol"],
+                            "reason": replacement_reason,
+                            "replacement_setfile": replacement_setfile,
+                        })
+                        continue
+                    effective_setfile_path = replacement_binding["path"]
+                    execution_candidate_dict = dict(prev)
+                    execution_candidate_dict["setfile_path"] = effective_setfile_path
+                    execution_candidate = execution_candidate_dict
                 current_bindings: dict[str, Any] | None = None
                 if (
                     str(rerun_target["verdict"] or "").upper() != "INFRA_FAIL"
                     or expected_current_ex5_sha256
                 ):
                     bindings_ok, binding_detail = _expected_current_execution_bindings(
-                        prev, expected_current_ex5_sha256
+                        execution_candidate, expected_current_ex5_sha256
                     )
                     if not bindings_ok:
                         skipped.append({
@@ -29388,7 +29506,7 @@ def enqueue_cascade_backtest_for_ea(
                         ea_id,
                         phase,
                         prev["symbol"],
-                        prev["setfile_path"],
+                        effective_setfile_path,
                         str(append_only_rerun_of),
                     ),
                 ).fetchone()
@@ -29412,7 +29530,7 @@ def enqueue_cascade_backtest_for_ea(
                       )
                     ORDER BY created_at ASC LIMIT 1
                     """,
-                    (ea_id, phase, prev["symbol"], prev["setfile_path"]),
+                    (ea_id, phase, prev["symbol"], effective_setfile_path),
                 ).fetchone()
                 if open_row:
                     skipped.append({
@@ -29444,6 +29562,18 @@ def enqueue_cascade_backtest_for_ea(
                         "expected_period": current_bindings["expected_period"],
                         "expected_expert": current_bindings["expected_expert"],
                     })
+                    artifact_identity = dict(payload.get("artifact_identity") or {})
+                    artifact_identity.update({
+                        key.removeprefix("expected_"): value
+                        for key, value in current_bindings["artifact_sha256"].items()
+                    })
+                    payload["artifact_identity"] = artifact_identity
+                if replacement_binding:
+                    payload.update({
+                        "replacement_setfile_path": replacement_binding["repo_path"],
+                        "replacement_setfile_sha256": replacement_binding["sha256"],
+                        "replacement_set_version": replacement_binding["set_version"],
+                    })
                 if forced_news_expansion_identity is not None:
                     # Carry the parent's expansion identity so the autoseal
                     # re-authors the full 7x4 matrix and the pump's continuation
@@ -29452,7 +29582,13 @@ def enqueue_cascade_backtest_for_ea(
                     # append-only update above (guarded non-empty upstream).
                     payload.update(forced_news_expansion_identity)
                 if phase == "Q08":
-                    _attach_q08_dsr_context(conn, prev, payload)
+                    dsr_candidate = dict(execution_candidate)
+                    if current_bindings:
+                        dsr_candidate.update({
+                            key.removeprefix("expected_"): value
+                            for key, value in current_bindings["artifact_sha256"].items()
+                        })
+                    _attach_q08_dsr_context(conn, dsr_candidate, payload)
                 wid = str(uuid.uuid4())
                 insert_sql = """
                     INSERT INTO work_items
@@ -29466,7 +29602,7 @@ def enqueue_cascade_backtest_for_ea(
                     phase,
                     ea_id,
                     prev["symbol"],
-                    prev["setfile_path"],
+                    effective_setfile_path,
                     json.dumps(payload, sort_keys=True),
                     now,
                     now,
@@ -29513,10 +29649,49 @@ def enqueue_cascade_backtest_for_ea(
                         continue
                     else:
                         conn.execute("RELEASE q09_contract_append_only_enqueue")
+                if replacement_binding:
+                    conn.execute(
+                        """
+                        INSERT INTO work_item_transition_ledger(
+                          idempotency_key, ts, work_item_id, action,
+                          from_status, to_status, from_verdict, to_verdict,
+                          reason, run_id, detail_json
+                        ) VALUES(?,?,?,?,?,?,?,?,?,?,?)
+                        """,
+                        (
+                            f"append-only-replacement-setfile:{wid}:"
+                            f"{replacement_binding['sha256']}",
+                            now,
+                            wid,
+                            "append_only_replacement_setfile_bound",
+                            None,
+                            "pending",
+                            None,
+                            None,
+                            str(rerun_reason).strip(),
+                            None,
+                            json.dumps({
+                                "append_only_rerun_of_work_item": str(
+                                    append_only_rerun_of
+                                ),
+                                "predecessor_work_item_id": str(prev["id"]),
+                                "source_setfile_path": str(prev["setfile_path"]),
+                                "replacement_setfile_path": replacement_binding[
+                                    "repo_path"
+                                ],
+                                "replacement_setfile_sha256": replacement_binding[
+                                    "sha256"
+                                ],
+                                "replacement_set_version": replacement_binding[
+                                    "set_version"
+                                ],
+                            }, sort_keys=True),
+                        ),
+                    )
                 created.append({
                     "id": wid,
                     "symbol": prev["symbol"],
-                    "setfile_path": prev["setfile_path"],
+                    "setfile_path": effective_setfile_path,
                     "rerun_of_work_item_id": str(append_only_rerun_of),
                 })
                 continue
@@ -34816,6 +34991,13 @@ def build_parser() -> argparse.ArgumentParser:
         help="preserve this terminal phase row and create a new pending rerun row",
     )
     enqueue_bt.add_argument(
+        "--replacement-setfile",
+        help=(
+            "repo-relative governed setfile for an append-only cascade rerun; "
+            "valid only with --append-only-rerun-of"
+        ),
+    )
+    enqueue_bt.add_argument(
         "--rerun-reason",
         help="required audit reason for --append-only-rerun-of",
     )
@@ -35592,6 +35774,7 @@ def main(argv: list[str] | None = None) -> int:
                 args.phase,
                 predecessor_work_item_id=args.from_work_item_id,
                 append_only_rerun_of=args.append_only_rerun_of,
+                replacement_setfile=args.replacement_setfile,
                 rerun_reason=args.rerun_reason,
                 expected_current_ex5_sha256=args.expected_current_ex5_sha256,
                 q09_anchor_binding=q09_anchor_binding,

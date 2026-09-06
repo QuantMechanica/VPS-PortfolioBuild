@@ -107,6 +107,41 @@ def test_producer_and_deterministic_seal(tmp_path, monkeypatch):
     assert producer.seal(doc,tmp_path/'out')==producer.seal(doc,tmp_path/'out')
 
 
+def test_single_configuration_candidate_uses_replacement_set_binding(tmp_path, monkeypatch):
+    context, _ = fixture(tmp_path)
+    original = producer.Path
+    card_root = tmp_path/'cards'; card_root.mkdir()
+    ea = tmp_path/'QM5_42_fixture'; (ea/'sets').mkdir(parents=True)
+    for role, name in [('mq5','QM5_42_fixture.mq5'),
+                       ('ex5','QM5_42_fixture.ex5'), ('spec','SPEC.md')]:
+        (ea/name).write_bytes(Path(context['provenance'][role]['path']).read_bytes())
+    replacement = ea/'sets/QM5_42_fixture_EURUSD.DWX_D1_backtest_s20260906-001.set'
+    replacement.write_bytes(Path(context['provenance']['setfile']['path']).read_bytes())
+    replacement_sha = producer.sha256_file(replacement)
+    (card_root/'QM5_42_fixture.md').write_bytes(
+        Path(context['provenance']['card']['path']).read_bytes())
+    monkeypatch.setattr(
+        producer, 'Path',
+        lambda p: card_root if str(p)=='D:/QM/strategy_farm/artifacts/cards_approved'
+        else original(p))
+    con = work_items_db()
+    row = {'id':'q08', 'kind':'backtest', 'phase':'Q08', 'ea_id':'QM5_42',
+           'symbol':'EURUSD.DWX', 'setfile_path':str(replacement),
+           'mq5_sha256':context['build_identity']['mq5_sha256'],
+           'ex5_sha256':context['build_identity']['ex5_sha256'],
+           'setfile_sha256':replacement_sha}
+    payload = {
+        'claimed_at_iso':'2026-01-02T00:00:00+00:00',
+        'replacement_setfile_sha256':replacement_sha,
+        'expected_setfile_sha256':replacement_sha,
+        'artifact_identity':{'setfile_sha256':replacement_sha},
+    }
+    doc = producer.assemble_single_configuration(
+        con, row, payload, 'D1', context['window'])
+    assert doc['build_identity']['setfile_sha256'] == replacement_sha
+    assert doc['provenance']['setfile']['sha256'] == replacement_sha
+
+
 @pytest.mark.parametrize('phase', ['OPT_CENSUS', 'OPT_OTHER', 'Q12', 'Q13', 'Q14', 'Q15', 'Q16'])
 def test_producer_refuses_factory_search_before_q08_claim(tmp_path, monkeypatch, phase):
     context, _ = fixture(tmp_path)
