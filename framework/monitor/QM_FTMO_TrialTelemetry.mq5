@@ -51,14 +51,14 @@ bool AppendLine(const string line)
   {
    const string path=InpOutputDir+"\\trial_telemetry_raw.jsonl";
    int handle=FileOpen(path,FILE_READ|FILE_WRITE|FILE_TXT|FILE_ANSI|
-                       FILE_SHARE_READ|FILE_SHARE_WRITE);
+                       FILE_SHARE_READ);
    if(handle==INVALID_HANDLE)
       return false;
-   FileSeek(handle,0,SEEK_END);
-   FileWriteString(handle,line+"\r\n");
+   if(!FileSeek(handle,0,SEEK_END)) { FileClose(handle); return false; }
+   const uint written=FileWriteString(handle,line+"\r\n");
    FileFlush(handle);
    FileClose(handle);
-   return true;
+   return written==StringLen(line)+2;
   }
 
 string PositionInventory(int &selected)
@@ -150,17 +150,23 @@ int OnInit()
       Print("QM_FTMO_TrialTelemetry requires an explicit InpTrialId");
       return INIT_PARAMETERS_INCORRECT;
      }
-   if(InpExpectedLogin>0 && login!=InpExpectedLogin)
+   if(!MQLInfoInteger(MQL_TESTER) && AccountInfoInteger(ACCOUNT_TRADE_MODE)!=ACCOUNT_TRADE_MODE_DEMO)
+      return INIT_FAILED;
+   if(InpExpectedLogin<=0 || InpExpectedServer=="" || InpOutputDir=="" ||
+      StringFind(InpOutputDir,"..")>=0 || StringFind(InpOutputDir,":")>=0)
+      return INIT_PARAMETERS_INCORRECT;
+   if(login!=InpExpectedLogin)
       return INIT_FAILED;
    if(InpExpectedServer!="" && server!=InpExpectedServer)
       return INIT_FAILED;
    g_session_started_utc=TimeGMT();
-   g_session_id=StringFormat("%I64d-%I64d",login,(long)g_session_started_utc);
+   g_session_id=StringFormat("%I64d-%I64d-%I64u-%I64d",login,(long)g_session_started_utc,GetMicrosecondCount(),ChartID());
    int seconds=MathMax(1,MathMin(5,InpTimerSeconds));
    if(!EventSetTimer(seconds))
       return INIT_FAILED;
    g_armed=true;
    Capture("INIT");
+   if(g_sequence==0) { g_armed=false; EventKillTimer(); return INIT_FAILED; }
    return INIT_SUCCEEDED;
   }
 

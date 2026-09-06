@@ -123,3 +123,59 @@ def test_mql_collector_is_read_only_and_emits_required_fields() -> None:
         "reconciliation_complete",
     ):
         assert required in source
+
+
+@pytest.mark.parametrize("change,reason", [
+    ({"account_login": 456}, "mixed_account_or_trial"),
+    ({"trial_id": "different"}, "mixed_account_or_trial"),
+    ({"ts_epoch": 0}, "epoch_mismatch"),
+    ({"sequence": 3}, "sequence_gap"),
+    ({"sequence": True}, "identity_invalid"),
+    ({"positions": {}}, "inventory_invalid"),
+])
+def test_stream_refusals(tmp_path, change, reason):
+    source = tmp_path / "raw.jsonl"
+    write(source, [row("2026-01-01T22:59:59Z"), dict(row("2026-01-01T23:00:00Z", sequence=1), **change)])
+    with pytest.raises(subject.TelemetryError, match=reason):
+        subject.load_rows(source)
+
+
+def test_missing_day_and_bucket_abstain(tmp_path):
+    source = tmp_path / "raw.jsonl"
+    write(source, [row("2026-01-01T23:00:00Z"), row("2026-01-02T23:00:00Z", sequence=1)])
+    report = subject.build_report(source)
+    assert report["days"][0]["status"] == "ABSTAIN_GAPS"
+    assert report["days"][0]["daily_loss_breached"] is None
+    assert len(report["continuity"]["missing_intervals"]) == 287
+    with pytest.raises(subject.TelemetryError, match="compaction_refused_gaps"):
+        subject.compact_daily(source, tmp_path / "compact")
+
+
+def test_compaction_restart_midnight_manifest_and_tamper(tmp_path):
+    source = tmp_path / "raw.jsonl"
+    start = dt.datetime(2026, 6, 1, 21, 55, tzinfo=dt.timezone.utc)
+    rows = []
+    for index in range(901):
+        stamp = (start + dt.timedelta(seconds=index)).isoformat().replace("+00:00", "Z")
+        rows.append(row(stamp, session="first" if index < 450 else "second", sequence=index if index < 450 else index - 450, equity=94000 if index == 460 else 100000))
+    write(source, rows)
+    dest = tmp_path / "compact"
+    manifest = subject.compact_daily(source, dest)
+    assert manifest["ingestion"]["restart_count"] == 1
+    assert [item["prague_day_key"] for item in manifest["outputs"]] == [20260601, 20260602]
+    assert sum(item["rows"] for item in manifest["outputs"]) == 4
+    assert subject.verify_compaction(dest) == manifest
+    with pytest.raises(subject.TelemetryError, match="destination_already_exists"):
+        subject.compact_daily(source, dest)
+    target = dest / manifest["outputs"][0]["path"]
+    target.write_text(target.read_text() + "\n")
+    with pytest.raises(subject.TelemetryError, match="manifest_output_hash_mismatch"):
+        subject.verify_compaction(dest)
+
+
+def test_same_second_endpoint_preserves_capture_order(tmp_path):
+    source = tmp_path / "raw.jsonl"
+    write(source, [row("2026-01-01T23:00:00Z", session="z", equity=90000), row("2026-01-01T23:00:00Z", session="a", equity=99000)])
+    report = subject.build_report(source)
+    assert report["m5_rows"][0]["equity"] == 99000
+    assert report["m5_rows"][0]["interval_min_equity"] == 90000
