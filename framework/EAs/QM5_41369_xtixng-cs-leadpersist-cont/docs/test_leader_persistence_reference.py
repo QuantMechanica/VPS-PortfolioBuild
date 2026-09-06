@@ -136,9 +136,9 @@ def leader_persistence_signal(
     d0, d1 = o0 - g0, o1 - g1
     direction = 0
     if older_same and newer_same and d0 > epsilon and d1 > epsilon:
-        direction = 1  # WTI stayed the winner: buy XTI, sell XNG.
+        direction = 1  # WTI led both weeks: buy XTI, sell XNG.
     elif older_same and newer_same and d0 < -epsilon and d1 < -epsilon:
-        direction = -1  # XNG stayed the winner: sell XTI, buy XNG.
+        direction = -1  # Natural gas led both weeks: sell XTI, buy XNG.
     return True, direction, (o0, g0, o1, g1), counts
 
 
@@ -202,13 +202,15 @@ class LeaderPersistenceReferenceTest(unittest.TestCase):
         self.assertLess(returns[2] - returns[3], 0.0)
 
     def test_negative_common_shocks_are_symmetric(self) -> None:
-        valid, direction, _, _ = leader_persistence_signal(
-            20260824, completed_bars((100.0, 50.0), (90.0, 48.0), (80.0, 46.0))
+        valid, direction, returns, _ = leader_persistence_signal(
+            20260824, completed_bars((100.0, 50.0), (90.0, 48.0), (80.0, 45.0))
         )
         self.assertTrue(valid)
         self.assertEqual(direction, -1)
+        self.assertLess(returns[0] - returns[1], 0.0)
+        self.assertLess(returns[2] - returns[3], 0.0)
 
-    def test_leader_switch_zero_and_mixed_sign_weeks_are_flat(self) -> None:
+    def test_switch_zero_and_mixed_sign_weeks_are_flat(self) -> None:
         cases = (
             ((100.0, 50.0), (110.0, 52.0), (114.0, 60.0)),
             ((100.0, 50.0), (110.0, 52.0), (110.0, 60.0)),
@@ -228,11 +230,11 @@ class LeaderPersistenceReferenceTest(unittest.TestCase):
             leader_persistence_signal(
                 20260824,
                 completed_bars(
-                    (100.0, 50.0), (110.0, 52.0), (121.0, 54.0), (2, 5, 5)
+                    (100.0, 50.0), (110.0, 52.0), (114.0, 60.0), (2, 5, 5)
                 ),
             )[0]
         )
-        bars = completed_bars((100.0, 50.0), (110.0, 52.0), (121.0, 54.0))
+        bars = completed_bars((100.0, 50.0), (110.0, 52.0), (114.0, 60.0))
         first = bars[0]
         bars[0] = PairBar(
             first.xti_time,
@@ -241,7 +243,7 @@ class LeaderPersistenceReferenceTest(unittest.TestCase):
             first.xng_close,
         )
         self.assertFalse(leader_persistence_signal(20260824, bars)[0])
-        missing = make_week(datetime(2026, 8, 17, tzinfo=UTC), (121.0, 54.0))
+        missing = make_week(datetime(2026, 8, 17, tzinfo=UTC), (114.0, 60.0))
         missing += make_week(datetime(2026, 8, 3, tzinfo=UTC), (100.0, 50.0))
         self.assertFalse(leader_persistence_signal(20260824, missing)[0])
 
@@ -268,6 +270,8 @@ class LeaderPersistenceReferenceTest(unittest.TestCase):
         self.assertIn("Strategy_LoadLeaderPersistence", source)
         self.assertIn("g_older_relative_return > strategy_signal_epsilon", source)
         self.assertIn("g_newer_relative_return > strategy_signal_epsilon", source)
+        self.assertIn("g_older_relative_return < -strategy_signal_epsilon", source)
+        self.assertIn("g_newer_relative_return < -strategy_signal_epsilon", source)
         self.assertIn("direction = 1; // WTI remained the winner", source)
         self.assertIn("direction = -1; // natural gas remained the winner", source)
         self.assertIn("RISK_PERCENT == 0.0", source)
@@ -278,10 +282,11 @@ class LeaderPersistenceReferenceTest(unittest.TestCase):
         self.assertNotRegex(source, r"qm_news_[A-Za-z0-9_]*\s*(?:==|!=|<=|>=|<|>)")
         self.assertNotRegex(source, r"qm_friday_close_[A-Za-z0-9_]*\s*(?:==|!=|<=|>=|<|>)")
         self.assertIn("strategy_history_bars_d1 == 40", source)
-        self.assertNotIn("41367", source)
+        self.assertNotIn("QM5_41368", source)
         self.assertRegex(preset, r"(?m)^RISK_FIXED=1000$")
         self.assertRegex(preset, r"(?m)^RISK_PERCENT=0$")
         self.assertRegex(preset, r"(?m)^qm_friday_close_enabled=false$")
+        self.assertEqual(manifest["logical_symbol"], "QM5_41369_XTI_XNG_CS_LEADPERSIST_CONT_D1")
         self.assertEqual(manifest["host_symbol"], "XTIUSD.DWX")
         self.assertEqual(manifest["basket_symbols"], ["XTIUSD.DWX", "XNGUSD.DWX"])
         resolver = (EA_DIR.parents[1] / "include" / "QM" / "QM_MagicResolver.mqh").read_text(
@@ -292,5 +297,3 @@ class LeaderPersistenceReferenceTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
-
