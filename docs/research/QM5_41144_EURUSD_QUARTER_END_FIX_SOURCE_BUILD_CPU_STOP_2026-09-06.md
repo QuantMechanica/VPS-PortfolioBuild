@@ -3,9 +3,9 @@
 **Date:** 2026-09-06  
 **Branch:** `agents/board-advisor`  
 **Outcome:** one non-duplicate structural FX candidate was claimed, allocated,
-implemented, and committed. Its governed compile was enqueued, but the
-canonical rollout hold was not released and Q02 was not enqueued because the
-binding host-CPU ceiling was hit.
+implemented, compiled, and committed. The resident governed worker consumed
+the already-queued compile while the stop record was being sealed. Q02 was not
+enqueued because the binding host-CPU ceiling was hit.
 
 ## Unit delivered
 
@@ -29,26 +29,33 @@ Source build commit: `8d5c1616a9`.
 - spec validation: PASS;
 - independent reference suite: 6/6 PASS;
 - build-gate hardening: PASS, zero failures and zero warnings;
+- governed strict compile: PASS, zero compiler errors and zero compiler
+  warnings;
+- scoped build check: PASS, with two non-blocking static advisories;
 - resolver regeneration: 18,138 rows retained, zero dropped;
 - MQ5 SHA-256:
   `936EDAD7222D5B5E762E5D5EECF39EC1671D900F927B8FF46EB3F136EAE13323`;
 - approved-card SHA-256:
   `9321533CE1A9194B3BC7B7A79FE602E6012E348DECCE9BB4483609BFF3DC700D`;
-- physical set SHA-256:
-  `C650B083FC23255C4C0DA0224F5F5F4D2E8FBE04EEF461844AD7174F6A59EFEF`;
-- logical set SHA-256:
-  `340B6BFC5E653C7AA1E51810A92ED3DB18C887F1962E7FAC5061A6081D25960F`.
+- EX5 SHA-256:
+  `935CA090A546F3C317387500A62DF3BF1EC1A651DD1E14AAEEC4781C9A5923F5`;
+- sealed physical set SHA-256:
+  `23FD01CFF00E76509513C59FEC1ABE6787E073018E941E3329D341A1E09D881D`;
+- sealed logical set SHA-256:
+  `E4C7A583D2F6F8BCD88055BDBF2121830D74D64581AB845F64D0AF7E3D2C7E4A`.
 
 ## Farm coordination and compile state
 
 Paced-fleet claim `4b622f5c-2c7a-4822-a2f4-ec98ae73d86b` and bound build task
 `56e0de46-1828-4bff-bfff-7b304e8c5d69` prevent a duplicate build. Governed
-compile work item `4ae532e0-6b3c-4e4e-bc56-013aff653f28` is pending, unclaimed,
-attempt zero, and verdict-free under `COMPILE_EA_WORKER_ROLLOUT_PENDING`.
+compile work item `4ae532e0-6b3c-4e4e-bc56-013aff653f28` completed
+`COMPILE_OK` on T7 at `2026-09-06T07:42:58Z`. Its build check passed and the
+evidence records the exact source and EX5 hashes above.
 
-The exact-item rollout dry-run accepted it: current and enqueued source hashes
-both equal `936edad7...eae13323`. The hold was not released. No EX5, compile
-PASS, smoke result, or Q02 row is claimed.
+The exact-item rollout dry-run had accepted the row with matching current and
+enqueued source hashes. No manual release was applied; the resident worker
+claimed the queued row during evidence preparation. No smoke result or Q02 row
+is claimed.
 
 ## Binding CPU stop
 
@@ -61,8 +68,9 @@ maximum = 97.76 percent
 binding ceiling = 97 percent
 ```
 
-Because the maximum exceeded 97%, the mission stopped before compile release,
-smoke, or tester dispatch. Existing T4, T9, and T10 factory activity was left
+Because the maximum exceeded 97%, the mission stopped before smoke or tester
+dispatch. The resident compile completion was observed after the sample; it
+was not manually triggered or released. Existing factory activity was left
 untouched.
 
 ## Funnel caveat and safe continuation
@@ -75,10 +83,10 @@ Research/OWNER should reconcile the approved frequency claim and mechanics
 before scarce Q02 capacity is spent; no strategy mechanics were invented to
 manufacture frequency.
 
-Do not enqueue another compile row. If the approved mechanics remain unchanged,
-reuse work item `4ae532e0-6b3c-4e4e-bc56-013aff653f28` only for build
-verification, and treat Q02 retirement on frequency as deterministic rather
-than a candidate for parameter repair.
+Do not enqueue another compile row. Work item
+`4ae532e0-6b3c-4e4e-bc56-013aff653f28` is the authoritative build evidence. If
+the approved mechanics remain unchanged, treat Q02 retirement on frequency as
+deterministic rather than a candidate for parameter repair.
 
 No portfolio gate, T_Live manifest, deploy manifest, live setfile, T_Live,
 AutoTrading, terminal control, or live state was touched.

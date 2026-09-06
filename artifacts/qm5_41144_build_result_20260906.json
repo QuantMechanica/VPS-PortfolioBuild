@@ -1,0 +1,41 @@
+{
+  "task_id": "56e0de46-1828-4bff-bfff-7b304e8c5d69",
+  "agent_task_id": "4b622f5c-2c7a-4822-a2f4-ec98ae73d86b",
+  "ea_id": "QM5_41144",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41144_eurusd-quarter-end-benchmark-fix-hedge-flow",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41144_eurusd-quarter-end-benchmark-fix-hedge-flow\\QM5_41144_eurusd-quarter-end-benchmark-fix-hedge-flow.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41144_eurusd-quarter-end-benchmark-fix-hedge-flow\\QM5_41144_eurusd-quarter-end-benchmark-fix-hedge-flow.ex5",
+  "magic_base": 411440000,
+  "symbols_registered": [
+    "EURUSD.DWX"
+  ],
+  "signal_only_symbols": [
+    "GDAXI.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41144_eurusd-quarter-end-benchmark-fix-hedge-flow\\sets\\QM5_41144_eurusd-quarter-end-benchmark-fix-hedge-flow_EURUSD.DWX_M15_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41144_eurusd-quarter-end-benchmark-fix-hedge-flow\\sets\\QM5_41144_eurusd-quarter-end-benchmark-fix-hedge-flow_QM5_41144_EURUSD_QUARTEREND_FIX_M15_M15_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41144_eurusd-quarter-end-benchmark-fix-hedge-flow\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "compile_work_item_id": "4ae532e0-6b3c-4e4e-bc56-013aff653f28",
+  "compile_evidence_path": "D:\\QM\\reports\\work_items\\4ae532e0-6b3c-4e4e-bc56-013aff653f28\\QM5_41144\\COMPILE_EA\\compile_evidence.json",
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "mq5_sha256": "936edad7222d5b5e762e5d5eecf39ec1671d900f927b8ff46eb3f136eae13323",
+  "ex5_sha256": "935ca090a546f3c317387500a62df3bf1ec1a651dd1e14aaeec4781c9a5923f5",
+  "physical_setfile_sha256": "23fd01cff00e76509513c59fec1abe6787e073018e941e3329d341a1e09d881d",
+  "logical_setfile_sha256": "e4c7a583d2f6f8bcd88055bdbf2121830d74d64581ab845f64d0af7e3d2c7e4a",
+  "build_generation": 0,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "binding_host_cpu_ceiling_hit_max_97.76_percent",
+  "blocked_reason": "Q02 not enqueued: fresh CPU maximum exceeded the mission's 97 percent ceiling; approved quarterly mechanics also cap entries at four per year, below the Q02 five-trades-per-year floor.",
+  "open_questions": [
+    "Research/OWNER should reconcile expected_trades_per_year_per_symbol=100 with the approved quarter-end-only, one-entry-per-date mechanics before scarce Q02 capacity is spent."
+  ],
+  "recorded_by": "codex:agents/board-advisor",
+  "recorded_at_utc": "2026-09-06T07:42:58Z",
+  "notes": "Source build commit 8d5c1616a9; governed worker compiled on T7 with 0 errors/0 warnings. This result is intentionally not passed to farmctl record-build because that transition auto-enqueues Q02."
+}
