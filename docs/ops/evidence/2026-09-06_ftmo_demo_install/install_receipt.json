@@ -1,0 +1,242 @@
+{
+  "schema": "qm.ftmo-demo-install/v1",
+  "task_id": "35eac0e9-8568-4114-b68f-45258ad7189b",
+  "status": "INSTALLED_UNATTACHED_PARKED",
+  "target": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850",
+  "identity": {
+    "origin": "C:\\Program Files\\FTMO Global Markets MT5 Terminal",
+    "login": "1514536732",
+    "server": "FTMO-Demo",
+    "autotrading": false
+  },
+  "autotrading_changed": false,
+  "charts_changed": false,
+  "tlive_written": false,
+  "sets_manifest_sha256": "d9e88358b52a1587e6a8d24b868a62ff49fb46db9f7793fe81323a01809d3de0",
+  "sets_manifest_schema": "qm.ftmo-trial-setpath/v2",
+  "inventory_before": [
+    {
+      "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_AccountMonitor.ex5",
+      "sha256": "39b8300595953a3e7ae4e08bf1d2a836067ef431156eb4077f21acdace3e4133",
+      "bytes": 102196
+    },
+    {
+      "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_AccountMonitor.mq5",
+      "sha256": "8a3d92ebaa84a0f2c4c9efa582b8bfd82f595771d4d1d94d627b2a78d798a37c",
+      "bytes": 24890
+    },
+    {
+      "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_10706_tv-mon-ls.ex5",
+      "sha256": "01e34b2059de6ed505d445ce9fcbac7da0eb10d51e5cbcbbd18d38a968916078",
+      "bytes": 323650
+    },
+    {
+      "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_10911_grimes-complex-pb.ex5",
+      "sha256": "a815c73da991736d25a02c027bbcfb23f68615adb66b7325cc2efcdc52344158",
+      "bytes": 365564
+    },
+    {
+      "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_11165_weiss-rsi-ma.ex5",
+      "sha256": "8f6d33a3dfb05f7f9167c96d7a7069cb11d8c05f7137be008530d9e12df941e4",
+      "bytes": 323322
+    },
+    {
+      "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_12969_usdjpy-gotobi-nakane-fix.ex5",
+      "sha256": "933d63c036a154725df1376e22ca74cb419860588f0313fc986fc3ead7673be4",
+      "bytes": 318680
+    },
+    {
+      "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_12989_grimes-nested-pb-v2.ex5",
+      "sha256": "7f2c298f4a8b4395480e47f20f9cefb8d5c53083bd63f7ea9ef1db067f52c4d2",
+      "bytes": 373406
+    },
+    {
+      "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_13301_balke-minute-range-breakout.ex5",
+      "sha256": "d7f10a684bdb007d9cb5b55e894a8e3b26192e38d3015e80550b9fa317e26483",
+      "bytes": 331026
+    }
+  ],
+  "backups": [
+    {
+      "source": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_10706_tv-mon-ls.ex5",
+      "destination": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\_pre_m13_20260906\\QM5_10706_tv-mon-ls.ex5",
+      "sha256": "01e34b2059de6ed505d445ce9fcbac7da0eb10d51e5cbcbbd18d38a968916078"
+    }
+  ],
+  "installed": [
+    {
+      "source": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\QM5_10706_tv-mon-ls.ex5",
+      "destination": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_10706_tv-mon-ls.ex5",
+      "sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb"
+    },
+    {
+      "source": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-06_ftmo_demo_install\\sets\\QM5_10706_GBPUSD_H1_live_trial.set",
+      "destination": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Profiles\\Presets\\QM_FTMO_M13\\QM5_10706_GBPUSD_H1_live_trial.set",
+      "sha256": "31c37ec30421a51d7938ebfe911ef13e6615c678d0727ded9def09cb5cd1d140"
+    },
+    {
+      "source": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\QM5_11421_ohlc-daily-squeeze-reversal-d1.ex5",
+      "destination": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_11421_ohlc-daily-squeeze-reversal-d1.ex5",
+      "sha256": "9dd7facd1da7e2c6564929b92a2e4a62e65bc40b99a03edd729030f72d18924b"
+    },
+    {
+      "source": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-06_ftmo_demo_install\\sets\\QM5_11421_EURUSD_D1_live_trial.set",
+      "destination": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Profiles\\Presets\\QM_FTMO_M13\\QM5_11421_EURUSD_D1_live_trial.set",
+      "sha256": "9aa97843bc1b7ac164a1a72fadd8ef69316a87e94051a427fbbc166286529fef"
+    },
+    {
+      "source": "C:\\QM\\repo\\framework\\EAs\\QM5_11422_williams-18ma-outside-bar-entry-d1\\QM5_11422_williams-18ma-outside-bar-entry-d1.ex5",
+      "destination": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_11422_williams-18ma-outside-bar-entry-d1.ex5",
+      "sha256": "2b98e9e902313148be78d88513fcbda2476150b1a7605eb15a50b2cca6b32d66"
+    },
+    {
+      "source": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-06_ftmo_demo_install\\sets\\QM5_11422_USDCAD_D1_live_trial.set",
+      "destination": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Profiles\\Presets\\QM_FTMO_M13\\QM5_11422_USDCAD_D1_live_trial.set",
+      "sha256": "215615b5da7ae2f49dd3d9dae7e85cbdff522940f69892d04cdf3c0f61378ea5"
+    },
+    {
+      "source": "C:\\QM\\repo\\framework\\EAs\\QM5_11910_larry-williams-18ma-2outside-bars-d1\\QM5_11910_larry-williams-18ma-2outside-bars-d1.ex5",
+      "destination": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_11910_larry-williams-18ma-2outside-bars-d1.ex5",
+      "sha256": "e18d477e63c40cb1002aa4d93d8efcc3ec6fddf1081fb73ad9df1b0a7a3042de"
+    },
+    {
+      "source": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-06_ftmo_demo_install\\sets\\QM5_11910_NZDUSD_D1_live_trial.set",
+      "destination": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Profiles\\Presets\\QM_FTMO_M13\\QM5_11910_NZDUSD_D1_live_trial.set",
+      "sha256": "1223b912585405273b1865fa72cb923957e15c73d9edd501a9e089e6f90ceeef"
+    },
+    {
+      "source": "C:\\QM\\repo\\framework\\EAs\\QM5_13054_brent-tom-mom\\QM5_13054_brent-tom-mom.ex5",
+      "destination": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_13054_brent-tom-mom.ex5",
+      "sha256": "2e65488fccdbd985f78318861a223a305d820a4fce3d2ebdcafae6ce956fd96d"
+    },
+    {
+      "source": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-06_ftmo_demo_install\\sets\\QM5_13054_USOIL.cash_D1_live_trial.set",
+      "destination": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Profiles\\Presets\\QM_FTMO_M13\\QM5_13054_USOIL.cash_D1_live_trial.set",
+      "sha256": "c50084a4729eb117528380972909b18d7775ff300488eeaf1ec81eb83e4b1659"
+    },
+    {
+      "source": "C:\\QM\\repo\\framework\\EAs\\QM5_1537_aa-vol-sma10\\QM5_1537_aa-vol-sma10.ex5",
+      "destination": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_1537_aa-vol-sma10.ex5",
+      "sha256": "142a019e773a493def0640722efb9d591d094650b35a69d5de39f6af3a048106"
+    },
+    {
+      "source": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-06_ftmo_demo_install\\sets\\QM5_1537_XAGUSD_D1_live_trial.set",
+      "destination": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Profiles\\Presets\\QM_FTMO_M13\\QM5_1537_XAGUSD_D1_live_trial.set",
+      "sha256": "7cac68f0956ab496ff70586a4f075b1a96943323faad17b7265a8b6c53f947ba"
+    },
+    {
+      "source": "C:\\QM\\repo\\framework\\EAs\\QM5_20048_wti-preholiday\\QM5_20048_wti-preholiday.ex5",
+      "destination": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_20048_wti-preholiday.ex5",
+      "sha256": "1312391ad7e654812244e48a6df92d5bd323dba7d32ddae60c54adc464527f00"
+    },
+    {
+      "source": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-06_ftmo_demo_install\\sets\\QM5_20048_USOIL.cash_D1_live_trial.set",
+      "destination": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Profiles\\Presets\\QM_FTMO_M13\\QM5_20048_USOIL.cash_D1_live_trial.set",
+      "sha256": "27527cfe486fbcea95bd843f8db67eb761594fdc6c7933d5f3f5cb3458fc27d8"
+    },
+    {
+      "source": "C:\\QM\\repo\\framework\\EAs\\QM5_21505_xag-weekly-lowvol-momentum\\QM5_21505_xag-weekly-lowvol-momentum.ex5",
+      "destination": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_21505_xag-weekly-lowvol-momentum.ex5",
+      "sha256": "395c4747832acbcdf8a68d8598e53abe5786bdc6c538767c400884cd82b2aea1"
+    },
+    {
+      "source": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-06_ftmo_demo_install\\sets\\QM5_21505_XAGUSD_D1_live_trial.set",
+      "destination": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Profiles\\Presets\\QM_FTMO_M13\\QM5_21505_XAGUSD_D1_live_trial.set",
+      "sha256": "a3121a740daed23646ce3982d36409726e853a76709d6d22e09feb20ae78e9a7"
+    },
+    {
+      "source": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-06_ftmo_demo_install\\compile_probe\\MQL5\\QM_FTMO_TrialTelemetry.ex5",
+      "destination": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM_FTMO_TrialTelemetry.ex5",
+      "sha256": "411638a1ae177326070c19b28c849fda36594592279303ce7d96f36bfa458258"
+    },
+    {
+      "source": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-06_ftmo_demo_install\\collector\\QM_FTMO_TrialTelemetry_1514536732.set",
+      "destination": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Profiles\\Presets\\QM_FTMO_M13\\QM_FTMO_TrialTelemetry_1514536732.set",
+      "sha256": "f4da1592b9e8d5ea468512f9f4581b834bc1508f33bd424eab94c43dd309bdd6"
+    }
+  ],
+  "inventory_after": [
+    {
+      "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_AccountMonitor.ex5",
+      "sha256": "39b8300595953a3e7ae4e08bf1d2a836067ef431156eb4077f21acdace3e4133",
+      "bytes": 102196
+    },
+    {
+      "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_AccountMonitor.mq5",
+      "sha256": "8a3d92ebaa84a0f2c4c9efa582b8bfd82f595771d4d1d94d627b2a78d798a37c",
+      "bytes": 24890
+    },
+    {
+      "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_10706_tv-mon-ls.ex5",
+      "sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb",
+      "bytes": 397282
+    },
+    {
+      "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_10911_grimes-complex-pb.ex5",
+      "sha256": "a815c73da991736d25a02c027bbcfb23f68615adb66b7325cc2efcdc52344158",
+      "bytes": 365564
+    },
+    {
+      "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_11165_weiss-rsi-ma.ex5",
+      "sha256": "8f6d33a3dfb05f7f9167c96d7a7069cb11d8c05f7137be008530d9e12df941e4",
+      "bytes": 323322
+    },
+    {
+      "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_11421_ohlc-daily-squeeze-reversal-d1.ex5",
+      "sha256": "9dd7facd1da7e2c6564929b92a2e4a62e65bc40b99a03edd729030f72d18924b",
+      "bytes": 367114
+    },
+    {
+      "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_11422_williams-18ma-outside-bar-entry-d1.ex5",
+      "sha256": "2b98e9e902313148be78d88513fcbda2476150b1a7605eb15a50b2cca6b32d66",
+      "bytes": 367794
+    },
+    {
+      "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_11910_larry-williams-18ma-2outside-bars-d1.ex5",
+      "sha256": "e18d477e63c40cb1002aa4d93d8efcc3ec6fddf1081fb73ad9df1b0a7a3042de",
+      "bytes": 426824
+    },
+    {
+      "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_12969_usdjpy-gotobi-nakane-fix.ex5",
+      "sha256": "933d63c036a154725df1376e22ca74cb419860588f0313fc986fc3ead7673be4",
+      "bytes": 318680
+    },
+    {
+      "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_12989_grimes-nested-pb-v2.ex5",
+      "sha256": "7f2c298f4a8b4395480e47f20f9cefb8d5c53083bd63f7ea9ef1db067f52c4d2",
+      "bytes": 373406
+    },
+    {
+      "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_13054_brent-tom-mom.ex5",
+      "sha256": "2e65488fccdbd985f78318861a223a305d820a4fce3d2ebdcafae6ce956fd96d",
+      "bytes": 375514
+    },
+    {
+      "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_13301_balke-minute-range-breakout.ex5",
+      "sha256": "d7f10a684bdb007d9cb5b55e894a8e3b26192e38d3015e80550b9fa317e26483",
+      "bytes": 331026
+    },
+    {
+      "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_1537_aa-vol-sma10.ex5",
+      "sha256": "142a019e773a493def0640722efb9d591d094650b35a69d5de39f6af3a048106",
+      "bytes": 394004
+    },
+    {
+      "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_20048_wti-preholiday.ex5",
+      "sha256": "1312391ad7e654812244e48a6df92d5bd323dba7d32ddae60c54adc464527f00",
+      "bytes": 363902
+    },
+    {
+      "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_21505_xag-weekly-lowvol-momentum.ex5",
+      "sha256": "395c4747832acbcdf8a68d8598e53abe5786bdc6c538767c400884cd82b2aea1",
+      "bytes": 391300
+    },
+    {
+      "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM_FTMO_TrialTelemetry.ex5",
+      "sha256": "411638a1ae177326070c19b28c849fda36594592279303ce7d96f36bfa458258",
+      "bytes": 16444
+    }
+  ],
+  "legacy_account_monitor_decision": "KEEP_DORMANT_DISTINCT_OUTPUT_PATH_NO_HANDLE_CONFLICT",
+  "legacy_attach_map_decision": "KEEP_BUT_OBSOLETE_DO_NOT_USE_FOR_M13"
+}
