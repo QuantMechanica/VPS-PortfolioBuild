@@ -18268,3 +18268,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41360,xtixng-wretr-rv,1,XNGUSD.DWX,413600001,2026-09-06,Codex governed allocator,active
 41361,xtixng-commonshock-rv,0,XTIUSD.DWX,413610000,2026-09-06,Codex governed allocator,active
 41361,xtixng-commonshock-rv,1,XNGUSD.DWX,413610001,2026-09-06,Codex governed allocator,active
+41362,xtixng-wdecel-cont,0,XTIUSD.DWX,413620000,2026-09-06,Codex governed allocator,active
+41362,xtixng-wdecel-cont,1,XNGUSD.DWX,413620001,2026-09-06,Codex governed allocator,active

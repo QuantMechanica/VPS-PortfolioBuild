@@ -1,0 +1,21 @@
+{
+  "logical_symbol": "QM5_41362_XTI_XNG_WDECEL_CONT_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "q02_from_date": "2018.07.02",
+  "q02_to_date": "2024.12.31",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "notes": [
+    "One logical two-leg completed-week oil/gas deceleration-continuation package. Q02 must evaluate combined package PnL, paired costs, density, and later Q09 correlation; neither leg is a standalone strategy.",
+    "The EA uses three synchronized completed week-end close pairs, follows only strict same-sign relative moves whose newest absolute magnitude is strictly smaller than the older move, targets equal absolute USD notionals, and caps aggregate frozen-stop risk at one RISK_FIXED budget."
+  ]
+}
