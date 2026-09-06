@@ -1,0 +1,20 @@
+{
+  "admission": "ELIGIBLE",
+  "average_cpu_percent": 90.0,
+  "compile_work_item_id": "d030cf94-ba66-40d2-bbf8-9820e6bdb9f0",
+  "ea_id": "QM5_41193",
+  "maximum_cpu_percent": 92.1,
+  "method": "Windows Get-Counter \\Processor(_Total)\\% Processor Time, one-second interval",
+  "phase": "Q02",
+  "sample_count": 5,
+  "sampled_at_utc": "2026-09-06T10:36:41.524259Z",
+  "samples_cpu_percent": [
+    92.1,
+    90.9,
+    87.5,
+    88.7,
+    90.7
+  ],
+  "threshold_cpu_percent": 97.0,
+  "note": "CEO 2026-09-06: first Q02 after the ML predicate fix (690fc42a) and the authority-bound compile successor d030cf94 COMPILE_OK"
+}
