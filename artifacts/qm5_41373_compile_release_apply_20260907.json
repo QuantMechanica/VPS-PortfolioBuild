@@ -1,0 +1,45 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "0939a694-6cc8-4d5c-8c02-1739aea6f033"
+  ],
+  "backup": {
+    "cap_receipt": "D:\\QM\\strategy_farm\\state\\backups\\receipts\\tool_backup_cap_compile_wave_20260906T221330_224401Z.json",
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260906T221318Z_2abf2342.sqlite",
+    "reused": false,
+    "sha256": "2b0f5e80ad55b1aa6f48ed5d4c02f3c6582fecd5d333a45f96513f6b02064384"
+  },
+  "backup_reuse_max_age_minutes": 0.0,
+  "backup_timeout_seconds": 60.0,
+  "backup_write_guard": {
+    "attempts": 1,
+    "transaction": "BEGIN IMMEDIATE / validated / backed up / released / COMMIT",
+    "wait_seconds": 0.0
+  },
+  "deferred": [],
+  "factory_mutation_lock": {
+    "path": "D:\\QM\\strategy_farm\\state\\FACTORY_MUTATION.lock",
+    "release_status": "released"
+  },
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "efdc3b40d558d676bc8a66ad3b00c36c4f4d192982050ebb131d7b5069bf5d23",
+      "ea_id": "QM5_41373",
+      "ea_label": "QM5_41373_xtixng-walt3-rv",
+      "expected_mq5_sha256": "efdc3b40d558d676bc8a66ad3b00c36c4f4d192982050ebb131d7b5069bf5d23",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41373_xtixng-walt3-rv\\QM5_41373_xtixng-walt3-rv.mq5",
+      "work_item_id": "0939a694-6cc8-4d5c-8c02-1739aea6f033"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-09-06T22:13:30+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "0939a694-6cc8-4d5c-8c02-1739aea6f033",
+  "work_item_id_selectors": [
+    "0939a694-6cc8-4d5c-8c02-1739aea6f033"
+  ]
+}

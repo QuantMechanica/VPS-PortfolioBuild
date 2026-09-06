@@ -64,8 +64,8 @@ r2_mechanical: PASS
 r3_data_available: PASS_WITH_SYNCHRONIZATION_AND_CONTINUOUS_CFD_BASIS_RISK
 r4_ml_forbidden: PASS
 pipeline_phase: Q01
-q01_status: NOT_BUILT
-q02_status: NOT_ENQUEUED
+q01_status: COMPILE_PENDING_CPU_CEILING
+q02_status: NOT_ENQUEUED_CPU_CEILING
 review_focus: "Falsify a strict three-completed-week XTI/XNG relative-sign alternation fade outside the certified XAU/SP500/NDX/XNG book. Verify four consecutive synchronized completed-week endpoints, three strict relative-return signs, exact alternation, newest-winner fade, durable weekly attempt, aggregate fixed risk, atomic package repair, and next-week lifecycle. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -220,3 +220,4 @@ gate, portfolio admission, or correlation waiver is authorized.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-09-07 | initial strict three-week alternation card | G0 | APPROVED; build pending |
+| v1 | 2026-09-07 | governed source build and compile release | Q01 | PACER audit PASS (0 findings); compile `0939a694-6cc8-4d5c-8c02-1739aea6f033` pending; Q02 not enqueued because fleet CPU exceeded 97% |

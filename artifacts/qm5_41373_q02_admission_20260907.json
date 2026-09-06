@@ -1,0 +1,88 @@
+{
+  "schema": "qm.q02_admission_handoff/v1",
+  "recorded_date": "2026-09-07",
+  "ea": {
+    "ea_id": "QM5_41373",
+    "ea_label": "QM5_41373_xtixng-walt3-rv",
+    "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41373_xtixng-walt3-rv\\QM5_41373_xtixng-walt3-rv.mq5",
+    "source_sha256": "efdc3b40d558d676bc8a66ad3b00c36c4f4d192982050ebb131d7b5069bf5d23",
+    "backtest_setfile_count": 3,
+    "backtest_risk_mode": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0
+    }
+  },
+  "pacer_build_guard": {
+    "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source \"C:\\QM\\repo\\framework\\EAs\\QM5_41373_xtixng-walt3-rv\\QM5_41373_xtixng-walt3-rv.mq5\"",
+    "exit_code": 0,
+    "ok": true,
+    "hit_count": 0,
+    "hits": [],
+    "ran_immediately_before_enqueue_compile": true
+  },
+  "compile": {
+    "work_item_id": "0939a694-6cc8-4d5c-8c02-1739aea6f033",
+    "status_at_handoff": "pending",
+    "verdict": null,
+    "compiled": false,
+    "failed": false,
+    "ex5_present": false,
+    "compile_evidence_present": false,
+    "release_receipt": "artifacts/qm5_41373_compile_release_apply_20260907.json",
+    "release_dry_run_receipt": "artifacts/qm5_41373_compile_release_dry_run_20260907.json",
+    "released_at_utc": "2026-09-06T22:13:30+00:00"
+  },
+  "cpu_ceiling": {
+    "threshold_percent": 97.0,
+    "stop_triggered": true,
+    "observations": [
+      {
+        "terminal": "T6",
+        "at_utc": "2026-09-06T22:10:46.928297+00:00",
+        "cpu_load_percent": 98.2,
+        "log_path": "D:\\QM\\strategy_farm\\logs\\terminal_worker_T6.log"
+      },
+      {
+        "terminal": "T8",
+        "at_utc": "2026-09-06T22:10:46.961384+00:00",
+        "cpu_load_percent": 98.1,
+        "log_path": "D:\\QM\\strategy_farm\\logs\\terminal_worker_T8.log"
+      },
+      {
+        "terminal": "T2",
+        "at_utc": "2026-09-06T22:10:49.704984+00:00",
+        "cpu_load_percent": 97.6,
+        "log_path": "D:\\QM\\strategy_farm\\logs\\terminal_worker_T2.log"
+      },
+      {
+        "terminal": "T5",
+        "at_utc": "2026-09-06T22:10:49.880454+00:00",
+        "cpu_load_percent": 97.5,
+        "log_path": "D:\\QM\\strategy_farm\\logs\\terminal_worker_T5.log"
+      },
+      {
+        "terminal": "T1",
+        "at_utc": "2026-09-06T22:08:26.410538+00:00",
+        "cpu_load_percent": 97.9,
+        "log_path": "D:\\QM\\strategy_farm\\logs\\terminal_worker_T1.log"
+      },
+      {
+        "terminal": "T10",
+        "at_utc": "2026-09-06T22:07:32.582911+00:00",
+        "cpu_load_percent": 97.6,
+        "log_path": "D:\\QM\\strategy_farm\\logs\\terminal_worker_T10.log"
+      }
+    ]
+  },
+  "q02": {
+    "enqueued": false,
+    "work_item_id": null,
+    "reason": "CPU_CEILING_STOP_AND_SUMMARIZE_COMPILE_PENDING"
+  },
+  "prohibited_scope": {
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "live_manifest_touched": false
+  }
+}
