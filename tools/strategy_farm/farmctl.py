@@ -26006,6 +26006,58 @@ def _setfile_semantic_parameters(path: Path) -> dict[str, str]:
     return values
 
 
+def _q02_strategy_params_contract(setfile_path: str) -> tuple[bool, dict[str, Any]]:
+    """Fail closed when a baseline setfile has no usable strategy parameters.
+
+    Q08 neighborhood and seed generation perturb the normalized ``strategy_*``
+    assignments carried by the Q02 baseline.  Admitting a baseline without
+    those assignments can therefore look executable through Q02-Q07 while
+    making the downstream lineage impossible to reproduce.
+    """
+    path = Path(setfile_path)
+    if not path.is_file():
+        return False, {
+            "reason": "missing_setfile",
+            "setfile_path": str(path),
+            "contract": "q02_strategy_params",
+        }
+    try:
+        values = _setfile_semantic_parameters(path)
+    except (OSError, UnicodeError, ValueError) as exc:
+        return False, {
+            "reason": "strategy_params_contract_invalid",
+            "setfile_path": str(path),
+            "contract": "q02_strategy_params",
+            "detail": str(exc),
+        }
+    strategy_values = {
+        key: value for key, value in values.items() if key.startswith("strategy_")
+    }
+    if not strategy_values:
+        return False, {
+            "reason": "empty_strategy_params",
+            "setfile_path": str(path),
+            "contract": "q02_strategy_params",
+            "strategy_parameter_count": 0,
+        }
+    empty_names = sorted(key for key, value in strategy_values.items() if not value)
+    if empty_names:
+        return False, {
+            "reason": "empty_strategy_values",
+            "setfile_path": str(path),
+            "contract": "q02_strategy_params",
+            "strategy_parameter_count": len(strategy_values),
+            "empty_strategy_parameter_names": empty_names,
+        }
+    return True, {
+        "reason": "strategy_params_present",
+        "setfile_path": str(path),
+        "contract": "q02_strategy_params",
+        "strategy_parameter_count": len(strategy_values),
+        "strategy_parameter_names": sorted(strategy_values),
+    }
+
+
 def _noncanonical_setfile_reconciliation(
     source_path: Path,
     canonical_path: Path,
@@ -32180,6 +32232,7 @@ def _first_q02_setfile_plan(
     if not setfiles:
         return None, {"reason": "canonical_backtest_setfiles_missing", "sets_dir": str(sets_dir)}
     risk_checks: list[dict[str, Any]] = []
+    strategy_checks: list[dict[str, Any]] = []
     for path in setfiles:
         ok, check = _q02_fixed_risk_contract(str(path))
         check["sha256"] = _sha256_file(path) if path.is_file() else None
@@ -32188,6 +32241,15 @@ def _first_q02_setfile_plan(
             return None, {
                 "reason": "canonical_setfile_risk_contract_invalid",
                 "failed_check": check,
+                "setfile_count": len(setfiles),
+            }
+        strategy_ok, strategy_check = _q02_strategy_params_contract(str(path))
+        strategy_check["sha256"] = check["sha256"]
+        strategy_checks.append(strategy_check)
+        if not strategy_ok:
+            return None, {
+                **strategy_check,
+                "intake_gate": "q02_strategy_params",
                 "setfile_count": len(setfiles),
             }
 
@@ -32264,6 +32326,7 @@ def _first_q02_setfile_plan(
         return None, {"reason": "q02_canary_selection_empty", "eligible_setfiles": len(parsed)}
     return {
         "all_setfile_checks": risk_checks,
+        "strategy_parameter_checks": strategy_checks,
         "basket_manifest": basket_manifest,
         "stage1": stage1,
         "deferred": deferred,

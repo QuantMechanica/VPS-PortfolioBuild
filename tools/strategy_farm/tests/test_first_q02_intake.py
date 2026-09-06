@@ -42,7 +42,10 @@ def _fixture(tmp_path: Path) -> dict[str, object]:
     setfiles: dict[str, Path] = {}
     for symbol in ("EURUSD.DWX", "GBPUSD.DWX"):
         path = sets_dir / f"{ea_dir.name}_{symbol}_H1_backtest.set"
-        path.write_text("RISK_FIXED=1000\nRISK_PERCENT=0\n", encoding="utf-8")
+        path.write_text(
+            "RISK_FIXED=1000\nRISK_PERCENT=0\nstrategy_fixture_period=20\n",
+            encoding="utf-8",
+        )
         setfiles[symbol] = path
 
     registry_dir = repo / "framework" / "registry"
@@ -250,6 +253,15 @@ def _bad_risk(fixture: dict[str, object]) -> None:
     )
 
 
+def _empty_strategy_params(fixture: dict[str, object]) -> None:
+    Path(fixture["setfiles"]["EURUSD.DWX"]).write_text(  # type: ignore[index]
+        "RISK_FIXED=1000\nRISK_PERCENT=0\n"
+        "; strategy-specific params from card must be appended below this line\n"
+        "; card_defaults_source=not_found\n",
+        encoding="utf-8",
+    )
+
+
 def _missing_matrix_symbol(fixture: dict[str, object]) -> None:
     repo = Path(fixture["repo"])
     _write_csv(
@@ -300,6 +312,7 @@ def _existing_q02(fixture: dict[str, object]) -> None:
         (_missing_ex5, "canonical_ex5_not_exactly_one"),
         (_changed_ex5, "compile_ex5_sha256_mismatch"),
         (_bad_risk, "canonical_setfile_risk_contract_invalid"),
+        (_empty_strategy_params, "empty_strategy_params"),
         (_missing_matrix_symbol, "compile_symbols_not_in_dwx_matrix"),
         (_bad_magic, "active_magic_registry_contract_invalid"),
         (_review_blocked, "review_entry_gate_blocked"),
