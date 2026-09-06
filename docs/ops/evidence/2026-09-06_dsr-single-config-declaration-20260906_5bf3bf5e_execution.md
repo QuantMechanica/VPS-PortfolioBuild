@@ -19,3 +19,8 @@ Q08 reruns end PASS or FAIL (not INVALID); old INVALID rows preserved; no thresh
 - **Third Q08 rerun 11167/XAUUSD enqueued: `19c9df13-f81e-473e-9ebc-dc045b03dd1b`** (from 42ca0f18, append-only rerun of 045bed75, expected EX5 4b349d21…dd99 verified; first attempt refused on a mis-typed hash — fail-closed worked).
 - 11196/XAUUSD: no production path binds a versioned replacement set to an append-only rerun (only `--target-setfile` for universe expansion) → Codex **9ecdd2f9** (P90, IN_PROGRESS): governed `--replacement-setfile`, DSR binding against the replacement set, then enqueue (from 42154e17, rerun-of a79887e3, EX5 d3b1aef0…).
 - Acceptance unchanged: PASS or FAIL (not INVALID) on both reruns; old rows preserved.
+
+## Progress 2026-09-06 21:20Z (Claude)
+
+- Codex 9ecdd2f9 delivered `--replacement-setfile` (e73af54859) and enqueued the **third Q08 rerun 11196/XAUUSD = `9ec3b856`** (replacement set sha 7cc424d2…, pre-status `Q08_CLAIM_ROW_REQUIRED` = claim-time seal expected; evidence `2026-09-06_qm5_11196_replacement_rerun_enqueue/`).
+- Both reruns (`19c9df13` 11167, `9ec3b856` 11196) pending behind the XAUUSD.DWX symbol serialization (census cells + T9 Q07); T9 still runs the pre-fix module (reload idle-only pending) — a T9 claim would reseal with the old producer.
