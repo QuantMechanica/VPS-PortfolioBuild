@@ -1,6 +1,6 @@
 {
   "schema_version": "qm.owner-decisions/v2",
-  "revision": 7,
+  "revision": 8,
   "maintainer": "Mission Control decision store; OWNER answers are receipts, not execution authority.",
   "updated_at_utc": "2026-09-02T17:47:14Z",
   "items": [
@@ -275,6 +275,25 @@
       "severity": "action",
       "status": "OPEN",
       "yes_effect": "Genau EIN Claude-Auftrag (dokumentarisch): Widerlegungsregel (5 weitere Closures, 0/16 -> Pflichtzweig widerlegt) als Addendum im DL-089-Plan-Dokument + OPEN_ITEMS registrieren; public funnel-stats.json aus dem Guard regenerieren (11/25) vor dem Website-Deploy. Kein Zensus-, Schwellen-, Verdikt- oder Pool-Eingriff; Zensus laeuft unveraendert."
+    },
+    {
+      "category": "FTMO/Wirtschaftlichkeit",
+      "cost_of_wait": "Gering fuer den Zaehler; fuer den FTMO-Pfad hoch: Der ratifizierte R5-Abnahmetest braucht ~2.100 versiegelte OOS-Tage (~5,75 Jahre), bis dahin bleibt der FTMO-Cashflow-Pfad undatiert. Ohne Option B fehlt weiter die einzige Evidenzklasse, die kein Backtest liefert (echte M5-Equity inkl. offener PnL am Prag-Mitternachtsanker), und die Kollektor-Abnahme bleibt offen.",
+      "created_at_utc": "2026-09-06T03:43:31Z",
+      "depends_on": [],
+      "due": null,
+      "evidence": [
+        "docs/ops/OWNER_VORLAGE_2026-09-06_m13_economic_test_contract.md",
+        "docs/ops/OWNER_VORLAGE_2026-09-05_ftmo_positive_evidence_test.md",
+        "docs/ops/evidence/2026-09-05_ftmo_readiness_part2.md"
+      ],
+      "id": "OWNER-DEC-M13-ECONOMIC-TRIAL-20260906",
+      "no_effect": "Option A: kein Trial, R5-Langzeitpfad allein; Ausfuehrungstreue bleibt unbelegt, Kollektor-Abnahme offen, NO-BUY bleibt. Nichts wird geloescht; die Vorlage bleibt als Vertrag fuer spaeter.",
+      "question": "M13 (Audit-Befund F): Freigabe von Option B - ein KOSTENLOSER, gedeckelter Capture-only-Demo-Trial bei FTMO (Free Trial/Demo, USD 0, kein Kauf): nur echte M5-Telemetrie aufzeichnen (Equity inkl. offener PnL, Positionen, Pending am Prag-Anker), Scoring verschoben und als Bestaetigung UNZULAESSIG; getrennt vom R5-Test (Population unveraendert) und vom C-6-Schaetzer (bleibt INERT). Deine Handlungen bei JA: Free-Trial/Demo-Konto + Terminal-Login selbst anlegen, Client-Area-Bedingungen bestaetigen (Swing-Hebel, Symbole, Margin/Swap), Dauer-Cap als Zahl nennen, spaeter EXPECTED_STATE PARKED->RUNNING selbst umlegen. Meine Seite: Live-Modus-Set-Pfad-Generator + Kollektor-Abnahme kommissionieren, Capture-Runbook, Evidenzpfad. Kein Kauf, kein AutoTrading, kein Gate-Kriterium.",
+      "recommendation": "JA (Option B). Kleinster Schritt, der die fehlende Evidenzklasse erzeugt, ohne Geld, ohne R5/C-6 zu beruehren, und der nicht in eine Bestaetigung umgedeutet werden kann. Option C (for-record) erst nach ratifizierten Prediction-Bands - eigene Karte.",
+      "severity": "action",
+      "status": "OPEN",
+      "yes_effect": "Genau EIN Claude-Auftrag: (1) Codex-Tickets fuer Live-Modus-Set-Pfad-Generator und Kollektor-Abnahme/Installation (inert bis Deine Konto-Anlage); (2) Capture-Runbook + Evidenzverzeichnis docs/ops/evidence/<datum>_ftmo_m13_trial_capture_only.md; (3) OPEN_ITEMS/Vault-Mirror. Konto-Anlage, Login, Bedingungen und PARKED->RUNNING bleiben Deine Handlungen; kein Kauf."
     }
   ]
 }

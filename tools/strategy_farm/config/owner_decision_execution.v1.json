@@ -862,6 +862,37 @@
           ]
         }
       }
+    },
+    {
+      "id": "OWNER-DEC-M13-ECONOMIC-TRIAL-20260906",
+      "todo_id": "QM-TODO-20260906-M13-ECONOMIC-TRIAL",
+      "priority": 70,
+      "choices": {
+        "YES": {
+          "mode": "APPLY_AND_VERIFY",
+          "objective": "Prepare the capture-only free demo trial (Option B) without any purchase or account creation: commission the live-mode set-path generator and the telemetry collector acceptance/installation as Codex tickets (inert until the OWNER creates the demo account), write the capture runbook and the evidence directory skeleton, mirror to OPEN_ITEMS and the Vault. OWNER-only steps (account, login, client-area terms, duration cap, PARKED->RUNNING) remain OWNER receipts.",
+          "allowed_actions": [
+            "Enqueue Codex ops tickets for set-path generator and collector acceptance",
+            "Write docs/ops/FTMO_M13_CAPTURE_RUNBOOK_<date>.md and the evidence skeleton",
+            "Commit with explicit pathspecs; update OPEN_ITEMS"
+          ],
+          "acceptance": [
+            "Tickets exist with exact acceptance criteria",
+            "Runbook names the OWNER steps and the firewall (capture-only, ineligible as confirmation)",
+            "No purchase, no account creation, no EXPECTED_STATE change, no T_Live write"
+          ]
+        },
+        "NO": {
+          "mode": "DOCUMENT_AND_VERIFY",
+          "objective": "Record the rejection (Option A); the contract stays on file; nothing executes.",
+          "allowed_actions": [
+            "Document in OPEN_ITEMS_STATUS.md and the receipts file"
+          ],
+          "acceptance": [
+            "No trial preparation"
+          ]
+        }
+      }
     }
   ]
 }
