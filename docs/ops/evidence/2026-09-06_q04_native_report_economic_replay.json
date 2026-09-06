@@ -1,0 +1,2844 @@
+{
+  "cutoff_utc": "2026-08-07T11:26:22+00:00",
+  "database": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+  "generated_at_utc": "2026-09-06T11:26:22+00:00",
+  "mode": "dry_run_read_only",
+  "q04_infra_rows_scanned": 198,
+  "rows": [
+    {
+      "ea_id": "QM5_12479",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_12479\\Q04\\EURUSD.DWX__b040b9c8-972a-4735-a6de-5b6d97536960\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "EURUSD.DWX",
+      "updated_at": "2026-08-07T18:01:31+00:00",
+      "work_item_id": "b040b9c8-972a-4735-a6de-5b6d97536960",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_12508",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_12508\\Q04\\EURUSD.DWX__08aeea08-f6b3-43bd-a5c3-93c07d175cd8\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "EURUSD.DWX",
+      "updated_at": "2026-08-07T18:09:35+00:00",
+      "work_item_id": "08aeea08-f6b3-43bd-a5c3-93c07d175cd8",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_12479",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_12479\\Q04\\GBPUSD.DWX__b2876a06-48c8-4b95-8479-a6aaa51407e5\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_MIN_TRADES_NOT_MET;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "GBPUSD.DWX",
+      "updated_at": "2026-08-07T18:15:47+00:00",
+      "work_item_id": "b2876a06-48c8-4b95-8479-a6aaa51407e5",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_11635",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_11635\\Q04\\GBPUSD.DWX__c7690b94-eaa9-460d-9962-a14c6bcc933a\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "GBPUSD.DWX",
+      "updated_at": "2026-08-07T20:36:57+00:00",
+      "work_item_id": "c7690b94-eaa9-460d-9962-a14c6bcc933a",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_12611",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_12611\\Q04\\EURUSD.DWX__00b9b83d-09d0-44b1-9c16-c95a39e8a7d4\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "EURUSD.DWX",
+      "updated_at": "2026-08-08T01:09:43+00:00",
+      "work_item_id": "00b9b83d-09d0-44b1-9c16-c95a39e8a7d4",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_11622",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_11622\\Q04\\EURUSD.DWX__3f3c5a1b-0952-411b-afdd-53d724861904\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "EURUSD.DWX",
+      "updated_at": "2026-08-08T04:29:09+00:00",
+      "work_item_id": "3f3c5a1b-0952-411b-afdd-53d724861904",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_11264",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_11264\\Q04\\GBPUSD.DWX__0f613275-52df-4b8f-b1a6-3d71ccbf847c\\aggregate.json",
+      "fallback_folds": [
+        "F1"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_MIN_TRADES_NOT_MET || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "GBPUSD.DWX",
+      "updated_at": "2026-08-08T08:54:31+00:00",
+      "work_item_id": "0f613275-52df-4b8f-b1a6-3d71ccbf847c",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1518",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1518\\Q04\\EURUSD.DWX__ad3f2c20-8ec6-4a7d-ab4a-6a94425ba195\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "EURUSD.DWX",
+      "updated_at": "2026-08-08T12:14:50+00:00",
+      "work_item_id": "ad3f2c20-8ec6-4a7d-ab4a-6a94425ba195",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1800",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1800\\Q04\\EURUSD.DWX__20f7535f-f6a7-4205-9c5a-21a71bcd0933\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "EURUSD.DWX",
+      "updated_at": "2026-08-08T12:48:57+00:00",
+      "work_item_id": "20f7535f-f6a7-4205-9c5a-21a71bcd0933",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_11477",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_11477\\Q04\\USDJPY.DWX__d743cafa-0003-4f23-b9e8-16df5076c55b\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "USDJPY.DWX",
+      "updated_at": "2026-08-08T18:56:50+00:00",
+      "work_item_id": "d743cafa-0003-4f23-b9e8-16df5076c55b",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_11313",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_11313\\Q04\\USDJPY.DWX__d8094d80-92f2-452c-9a79-46b9373980b8\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "USDJPY.DWX",
+      "updated_at": "2026-08-08T19:02:37+00:00",
+      "work_item_id": "d8094d80-92f2-452c-9a79-46b9373980b8",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_11477",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_11477\\Q04\\AUDUSD.DWX__6f023653-c4ec-44c8-a2b9-e7da690700f6\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "AUDUSD.DWX",
+      "updated_at": "2026-08-08T19:03:22+00:00",
+      "work_item_id": "6f023653-c4ec-44c8-a2b9-e7da690700f6",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_11313",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_11313\\Q04\\GBPUSD.DWX__304752c5-55fb-498e-98f6-25c9f1816b52\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "GBPUSD.DWX",
+      "updated_at": "2026-08-08T19:32:42+00:00",
+      "work_item_id": "304752c5-55fb-498e-98f6-25c9f1816b52",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1227",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1227\\Q04\\EURUSD.DWX__3a6dd45d-b9f5-45af-be51-f3024dc6363d\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_MIN_TRADES_NOT_MET;F2:STRATEGY_MIN_TRADES_NOT_MET;F3:STRATEGY_MIN_TRADES_NOT_MET || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "EURUSD.DWX",
+      "updated_at": "2026-08-09T00:43:03+00:00",
+      "work_item_id": "3a6dd45d-b9f5-45af-be51-f3024dc6363d",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_11244",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_11244\\Q04\\XAUUSD.DWX__c3100f0e-d967-4427-96ea-b9fae2d1ea9f\\aggregate.json",
+      "fallback_folds": [
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F3:STRATEGY_MIN_TRADES_NOT_MET || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAUUSD.DWX",
+      "updated_at": "2026-08-09T04:10:12+00:00",
+      "work_item_id": "c3100f0e-d967-4427-96ea-b9fae2d1ea9f",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_11477",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_11477\\Q04\\EURUSD.DWX__491e33c8-204a-46f2-bfd8-5c50e114274b\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "EURUSD.DWX",
+      "updated_at": "2026-08-10T06:16:21+00:00",
+      "work_item_id": "491e33c8-204a-46f2-bfd8-5c50e114274b",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_10648",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_10648\\Q04\\GDAXI.DWX__f4205722-127d-4565-b2ea-5698fae99e0d\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "GDAXI.DWX",
+      "updated_at": "2026-08-10T17:14:06+00:00",
+      "work_item_id": "f4205722-127d-4565-b2ea-5698fae99e0d",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_10973",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_10973\\Q04\\WS30.DWX__9d329d72-e97d-4917-b284-080ead873a78\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "WS30.DWX",
+      "updated_at": "2026-08-10T17:15:36+00:00",
+      "work_item_id": "9d329d72-e97d-4917-b284-080ead873a78",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_10648",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_10648\\Q04\\NDX.DWX__5712bfb6-1987-4ea8-849c-4f621af2486a\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "NDX.DWX",
+      "updated_at": "2026-08-10T19:37:27+00:00",
+      "work_item_id": "5712bfb6-1987-4ea8-849c-4f621af2486a",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_10648",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_10648\\Q04\\GBPJPY.DWX__ea443500-629e-49f8-a527-3c974d56a73f\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "GBPJPY.DWX",
+      "updated_at": "2026-08-10T20:02:49+00:00",
+      "work_item_id": "ea443500-629e-49f8-a527-3c974d56a73f",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_10648",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_10648\\Q04\\GBPJPY.DWX__e644e6c4-121b-4f32-9775-6d0b4aa41626\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "GBPJPY.DWX",
+      "updated_at": "2026-08-10T20:57:05+00:00",
+      "work_item_id": "e644e6c4-121b-4f32-9775-6d0b4aa41626",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_11542",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_11542\\Q04\\GBPUSD.DWX__e53edc3c-8e08-4bd6-94fd-0b7dd3e1a71e\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "GBPUSD.DWX",
+      "updated_at": "2026-08-11T00:04:41+00:00",
+      "work_item_id": "e53edc3c-8e08-4bd6-94fd-0b7dd3e1a71e",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_10973",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_10973\\Q04\\GBPUSD.DWX__e2d6c648-443e-40ae-9447-4f9c3a1f7e17\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "GBPUSD.DWX",
+      "updated_at": "2026-08-11T02:05:37+00:00",
+      "work_item_id": "e2d6c648-443e-40ae-9447-4f9c3a1f7e17",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_10649",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_10649\\Q04\\GBPUSD.DWX__5a64b24b-da46-44e7-b74e-294ccb22bc0e\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_MIN_TRADES_NOT_MET;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "GBPUSD.DWX",
+      "updated_at": "2026-08-11T03:06:57+00:00",
+      "work_item_id": "5a64b24b-da46-44e7-b74e-294ccb22bc0e",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_10645",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_10645\\Q04\\GBPUSD.DWX__07ff7a64-e292-49f1-8d05-320e053aaa7e\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "GBPUSD.DWX",
+      "updated_at": "2026-08-11T06:25:29+00:00",
+      "work_item_id": "07ff7a64-e292-49f1-8d05-320e053aaa7e",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_11504",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_11504\\Q04\\GBPUSD.DWX__9d6db846-8406-4dd6-81ac-abaae2b1d0e9\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "GBPUSD.DWX",
+      "updated_at": "2026-08-11T06:51:28+00:00",
+      "work_item_id": "9d6db846-8406-4dd6-81ac-abaae2b1d0e9",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1312",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1312\\Q04\\GBPUSD.DWX__2144ea03-dfef-4284-ad50-b10d9cfb0de3\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "GBPUSD.DWX",
+      "updated_at": "2026-08-11T07:41:06+00:00",
+      "work_item_id": "2144ea03-dfef-4284-ad50-b10d9cfb0de3",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_11504",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_11504\\Q04\\EURUSD.DWX__fc079560-4c1a-40bf-b0a3-43ca5df756f9\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "EURUSD.DWX",
+      "updated_at": "2026-08-11T08:03:50+00:00",
+      "work_item_id": "fc079560-4c1a-40bf-b0a3-43ca5df756f9",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_11504",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_11504\\Q04\\EURUSD.DWX__c39255da-1cab-460a-8cbb-7a59162346f0\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "EURUSD.DWX",
+      "updated_at": "2026-08-11T12:38:49+00:00",
+      "work_item_id": "c39255da-1cab-460a-8cbb-7a59162346f0",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_10649",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_10649\\Q04\\XAUUSD.DWX__c1a9e0f6-4a60-4197-9259-4c2344a04868\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAUUSD.DWX",
+      "updated_at": "2026-08-11T13:25:38+00:00",
+      "work_item_id": "c1a9e0f6-4a60-4197-9259-4c2344a04868",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_11287",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_11287\\Q04\\USDJPY.DWX__ff3b200c-dbaf-4144-9f66-5b7ffed063e7\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "USDJPY.DWX",
+      "updated_at": "2026-08-12T02:24:43+00:00",
+      "work_item_id": "ff3b200c-dbaf-4144-9f66-5b7ffed063e7",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_11287",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_11287\\Q04\\GBPUSD.DWX__23394350-1c32-4016-9162-e0eea7fedb15\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "GBPUSD.DWX",
+      "updated_at": "2026-08-12T02:35:09+00:00",
+      "work_item_id": "23394350-1c32-4016-9162-e0eea7fedb15",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_10973",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_10973\\Q04\\XAUUSD.DWX__2db6b894-756d-4855-bebd-328093c1f6a7\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAUUSD.DWX",
+      "updated_at": "2026-08-12T07:01:37+00:00",
+      "work_item_id": "2db6b894-756d-4855-bebd-328093c1f6a7",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_10645",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_10645\\Q04\\XAUUSD.DWX__28ffc102-0494-41e4-9c2b-b8ae35149697\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAUUSD.DWX",
+      "updated_at": "2026-08-12T07:14:44+00:00",
+      "work_item_id": "28ffc102-0494-41e4-9c2b-b8ae35149697",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1312",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1312\\Q04\\XAUUSD.DWX__82bd1517-2a62-4062-9741-101a7dcb3960\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAUUSD.DWX",
+      "updated_at": "2026-08-12T08:18:41+00:00",
+      "work_item_id": "82bd1517-2a62-4062-9741-101a7dcb3960",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_10973",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_10973\\Q04\\XAUUSD.DWX__4d7d2c9d-0190-4369-a691-cc9e5e97c2ce\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAUUSD.DWX",
+      "updated_at": "2026-08-12T18:14:15+00:00",
+      "work_item_id": "4d7d2c9d-0190-4369-a691-cc9e5e97c2ce",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_10973",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_10973\\Q04\\WS30.DWX__6f05f300-bf47-400c-b80f-ed11c0791116\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "WS30.DWX",
+      "updated_at": "2026-08-12T18:32:32+00:00",
+      "work_item_id": "6f05f300-bf47-400c-b80f-ed11c0791116",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_10973",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_10973\\Q04\\GBPUSD.DWX__94e17c05-98d8-4ee8-851f-a09da9ea9903\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "GBPUSD.DWX",
+      "updated_at": "2026-08-12T18:52:00+00:00",
+      "work_item_id": "94e17c05-98d8-4ee8-851f-a09da9ea9903",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_11162",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_11162\\Q04\\XAUUSD.DWX__1e81c12f-09ca-4fb4-bdf8-4e82f42729b7\\aggregate.json",
+      "fallback_folds": [
+        "F2"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAUUSD.DWX",
+      "updated_at": "2026-08-15T23:15:46+00:00",
+      "work_item_id": "1e81c12f-09ca-4fb4-bdf8-4e82f42729b7",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_11424",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_11424\\Q04\\AUDUSD.DWX__5291fdd1-f27e-4189-a9e7-1cea240f80b3\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "AUDUSD.DWX",
+      "updated_at": "2026-08-16T06:14:19+00:00",
+      "work_item_id": "5291fdd1-f27e-4189-a9e7-1cea240f80b3",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_11424",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_11424\\Q04\\GBPUSD.DWX__536bb9c7-4c86-4676-a762-83573513012a\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "GBPUSD.DWX",
+      "updated_at": "2026-08-16T06:28:03+00:00",
+      "work_item_id": "536bb9c7-4c86-4676-a762-83573513012a",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_11424",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_11424\\Q04\\USDJPY.DWX__e4c9cc9e-4c4c-45c5-a33f-a6be5f51cf50\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "USDJPY.DWX",
+      "updated_at": "2026-08-16T06:46:26+00:00",
+      "work_item_id": "e4c9cc9e-4c4c-45c5-a33f-a6be5f51cf50",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1119",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1119\\Q04\\XAGUSD.DWX__61ea8ed9-0846-44c6-9706-82c06be2a7af\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAGUSD.DWX",
+      "updated_at": "2026-08-17T17:05:24+00:00",
+      "work_item_id": "61ea8ed9-0846-44c6-9706-82c06be2a7af",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1169",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1169\\Q04\\XAGUSD.DWX__b797a5ba-8b14-4f97-97bf-50585c9ec5b6\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_MIN_TRADES_NOT_MET;F2:STRATEGY_MIN_TRADES_NOT_MET;F3:STRATEGY_MIN_TRADES_NOT_MET || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAGUSD.DWX",
+      "updated_at": "2026-08-17T17:21:17+00:00",
+      "work_item_id": "b797a5ba-8b14-4f97-97bf-50585c9ec5b6",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1588",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1588\\Q04\\WS30.DWX__8f2ed305-11c3-4c15-b2d7-46e9a70fc708\\aggregate.json",
+      "fallback_folds": [
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "WS30.DWX",
+      "updated_at": "2026-08-17T17:49:31+00:00",
+      "work_item_id": "8f2ed305-11c3-4c15-b2d7-46e9a70fc708",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1100",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1100\\Q04\\XAGUSD.DWX__ad7bb6f8-b35c-4f93-a2e6-e67c7f8ab4cd\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAGUSD.DWX",
+      "updated_at": "2026-08-17T18:06:41+00:00",
+      "work_item_id": "ad7bb6f8-b35c-4f93-a2e6-e67c7f8ab4cd",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_10681",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_10681\\Q04\\GDAXI.DWX__9bda6cf8-8493-488c-84ad-18f103044267\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "GDAXI.DWX",
+      "updated_at": "2026-08-17T18:56:35+00:00",
+      "work_item_id": "9bda6cf8-8493-488c-84ad-18f103044267",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1102",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1102\\Q04\\XAUUSD.DWX__5a9dc543-e9e9-4799-9e4d-9a8519288f1f\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAUUSD.DWX",
+      "updated_at": "2026-08-17T20:05:25+00:00",
+      "work_item_id": "5a9dc543-e9e9-4799-9e4d-9a8519288f1f",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_10297",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_10297\\Q04\\XAGUSD.DWX__61517d5f-2d58-4224-853c-f84eedab4376\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_MIN_TRADES_NOT_MET || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAGUSD.DWX",
+      "updated_at": "2026-08-17T20:44:36+00:00",
+      "work_item_id": "61517d5f-2d58-4224-853c-f84eedab4376",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1371",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1371\\Q04\\XAGUSD.DWX__762dcc8b-625a-40a9-a3e4-65d49d0f490c\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAGUSD.DWX",
+      "updated_at": "2026-08-17T20:47:01+00:00",
+      "work_item_id": "762dcc8b-625a-40a9-a3e4-65d49d0f490c",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1240",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1240\\Q04\\XAUUSD.DWX__ac8f0a65-c876-4bae-b3cf-bc83a777dba0\\aggregate.json",
+      "fallback_folds": [
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F3:STRATEGY_MIN_TRADES_NOT_MET || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAUUSD.DWX",
+      "updated_at": "2026-08-17T20:57:07+00:00",
+      "work_item_id": "ac8f0a65-c876-4bae-b3cf-bc83a777dba0",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_12707",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_12707\\Q04\\XAGUSD.DWX__1a9ed123-4954-4c03-bf6c-689d9f071b87\\aggregate.json",
+      "fallback_folds": [
+        "F2"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAGUSD.DWX",
+      "updated_at": "2026-08-17T20:57:21+00:00",
+      "work_item_id": "1a9ed123-4954-4c03-bf6c-689d9f071b87",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_11287",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_11287\\Q04\\USDJPY.DWX__b4515a45-cc0d-4296-805c-90e763ccf940\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "USDJPY.DWX",
+      "updated_at": "2026-08-17T23:09:33+00:00",
+      "work_item_id": "b4515a45-cc0d-4296-805c-90e763ccf940",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_11287",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_11287\\Q04\\GBPUSD.DWX__8b72d8e6-bd09-4d44-8b25-0f3f85839085\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "GBPUSD.DWX",
+      "updated_at": "2026-08-17T23:22:56+00:00",
+      "work_item_id": "8b72d8e6-bd09-4d44-8b25-0f3f85839085",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_11287",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_11287\\Q04\\USDJPY.DWX__53f9054c-a1a7-403b-8faa-67120906a836\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "USDJPY.DWX",
+      "updated_at": "2026-08-18T00:42:54+00:00",
+      "work_item_id": "53f9054c-a1a7-403b-8faa-67120906a836",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_11287",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_11287\\Q04\\GBPUSD.DWX__216e08bd-0094-4ea1-b609-14c7f58ef7ba\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "GBPUSD.DWX",
+      "updated_at": "2026-08-18T00:54:48+00:00",
+      "work_item_id": "216e08bd-0094-4ea1-b609-14c7f58ef7ba",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_11287",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_11287\\Q04\\USDJPY.DWX__17c7a320-7d0e-4664-834a-bb61372226c7\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "USDJPY.DWX",
+      "updated_at": "2026-08-18T01:08:14+00:00",
+      "work_item_id": "17c7a320-7d0e-4664-834a-bb61372226c7",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_11287",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_11287\\Q04\\GBPUSD.DWX__a4f41c7e-a34c-4c95-98bf-69a45ba70250\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "GBPUSD.DWX",
+      "updated_at": "2026-08-18T02:26:51+00:00",
+      "work_item_id": "a4f41c7e-a34c-4c95-98bf-69a45ba70250",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_11287",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_11287\\Q04\\USDJPY.DWX__a6b01400-9e4d-4440-b83e-37b777dfe7b5\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "USDJPY.DWX",
+      "updated_at": "2026-08-18T02:47:43+00:00",
+      "work_item_id": "a6b01400-9e4d-4440-b83e-37b777dfe7b5",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_11287",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_11287\\Q04\\GBPUSD.DWX__7141a9f7-509a-4d77-b6ea-cd56613337c2\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "GBPUSD.DWX",
+      "updated_at": "2026-08-18T05:19:54+00:00",
+      "work_item_id": "7141a9f7-509a-4d77-b6ea-cd56613337c2",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_11287",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_11287\\Q04\\USDJPY.DWX__70fad8c7-dac2-4946-9945-8135a65fe4ae\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "USDJPY.DWX",
+      "updated_at": "2026-08-18T05:38:15+00:00",
+      "work_item_id": "70fad8c7-dac2-4946-9945-8135a65fe4ae",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_11287",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_11287\\Q04\\GBPUSD.DWX__be562860-dcd6-44cc-ad8a-9bc91287ef6c\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "GBPUSD.DWX",
+      "updated_at": "2026-08-18T06:25:53+00:00",
+      "work_item_id": "be562860-dcd6-44cc-ad8a-9bc91287ef6c",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_11287",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_11287\\Q04\\USDJPY.DWX__23dbe6b9-d428-4e38-b31f-b91270319733\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "USDJPY.DWX",
+      "updated_at": "2026-08-18T06:55:21+00:00",
+      "work_item_id": "23dbe6b9-d428-4e38-b31f-b91270319733",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_11287",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_11287\\Q04\\GBPUSD.DWX__25dd71b5-3df6-4ffe-811c-9512b098fb71\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "GBPUSD.DWX",
+      "updated_at": "2026-08-18T07:23:47+00:00",
+      "work_item_id": "25dd71b5-3df6-4ffe-811c-9512b098fb71",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1119",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1119\\Q04\\XAGUSD.DWX__945a73bb-dc3f-4836-bea0-1de6a10cc95c\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAGUSD.DWX",
+      "updated_at": "2026-08-21T02:54:57+00:00",
+      "work_item_id": "945a73bb-dc3f-4836-bea0-1de6a10cc95c",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1169",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1169\\Q04\\XAGUSD.DWX__dc8761a1-2c71-4576-9e9b-8ad4a5ebb961\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_MIN_TRADES_NOT_MET;F2:STRATEGY_MIN_TRADES_NOT_MET;F3:STRATEGY_MIN_TRADES_NOT_MET || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAGUSD.DWX",
+      "updated_at": "2026-08-21T05:04:49+00:00",
+      "work_item_id": "dc8761a1-2c71-4576-9e9b-8ad4a5ebb961",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1100",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1100\\Q04\\XAGUSD.DWX__84f1c469-d3bd-4175-b312-6a63d92d2b4d\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAGUSD.DWX",
+      "updated_at": "2026-08-21T05:14:54+00:00",
+      "work_item_id": "84f1c469-d3bd-4175-b312-6a63d92d2b4d",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_10297",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_10297\\Q04\\XAGUSD.DWX__b8dcd26f-bf7d-442a-a396-a4e08942201e\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_MIN_TRADES_NOT_MET || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAGUSD.DWX",
+      "updated_at": "2026-08-21T05:28:48+00:00",
+      "work_item_id": "b8dcd26f-bf7d-442a-a396-a4e08942201e",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1371",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1371\\Q04\\XAGUSD.DWX__f86f52f8-76f3-4ea0-aa30-373bdf19abfb\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAGUSD.DWX",
+      "updated_at": "2026-08-21T06:01:36+00:00",
+      "work_item_id": "f86f52f8-76f3-4ea0-aa30-373bdf19abfb",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_12707",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_12707\\Q04\\XAGUSD.DWX__56835796-7303-4760-9b21-e79f048bdfc0\\aggregate.json",
+      "fallback_folds": [
+        "F2"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAGUSD.DWX",
+      "updated_at": "2026-08-21T06:01:50+00:00",
+      "work_item_id": "56835796-7303-4760-9b21-e79f048bdfc0",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1119",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1119\\Q04\\XAGUSD.DWX__afaccd74-db43-4f91-bffc-6fc6ab940b63\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAGUSD.DWX",
+      "updated_at": "2026-08-22T03:11:22+00:00",
+      "work_item_id": "afaccd74-db43-4f91-bffc-6fc6ab940b63",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1169",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1169\\Q04\\XAGUSD.DWX__483bdbde-5f54-4482-921e-a6d22549d660\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_MIN_TRADES_NOT_MET;F2:STRATEGY_MIN_TRADES_NOT_MET;F3:STRATEGY_MIN_TRADES_NOT_MET || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAGUSD.DWX",
+      "updated_at": "2026-08-22T03:13:39+00:00",
+      "work_item_id": "483bdbde-5f54-4482-921e-a6d22549d660",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1100",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1100\\Q04\\XAGUSD.DWX__27be18ac-e8aa-4758-998d-985668d88909\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAGUSD.DWX",
+      "updated_at": "2026-08-22T03:22:11+00:00",
+      "work_item_id": "27be18ac-e8aa-4758-998d-985668d88909",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_10297",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_10297\\Q04\\XAGUSD.DWX__bf30f934-5078-431b-b3f3-7d82f98452ab\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_MIN_TRADES_NOT_MET || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAGUSD.DWX",
+      "updated_at": "2026-08-22T03:25:51+00:00",
+      "work_item_id": "bf30f934-5078-431b-b3f3-7d82f98452ab",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1371",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1371\\Q04\\XAGUSD.DWX__14bac32f-6223-40e4-9721-4b88cfd9bce4\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAGUSD.DWX",
+      "updated_at": "2026-08-22T03:29:56+00:00",
+      "work_item_id": "14bac32f-6223-40e4-9721-4b88cfd9bce4",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_12707",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_12707\\Q04\\XAGUSD.DWX__1fcd2a35-c98c-49c2-8026-c8f90b007385\\aggregate.json",
+      "fallback_folds": [
+        "F2"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAGUSD.DWX",
+      "updated_at": "2026-08-22T03:35:34+00:00",
+      "work_item_id": "1fcd2a35-c98c-49c2-8026-c8f90b007385",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1119",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1119\\Q04\\SP500.DWX__71b65662-15d0-4a4c-bb62-a6fef6531511\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "SP500.DWX",
+      "updated_at": "2026-08-22T03:45:41+00:00",
+      "work_item_id": "71b65662-15d0-4a4c-bb62-a6fef6531511",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1119",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1119\\Q04\\UK100.DWX__eff0a8dd-a9f5-49b6-b42f-14f2ef1d0570\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "UK100.DWX",
+      "updated_at": "2026-08-22T03:57:56+00:00",
+      "work_item_id": "eff0a8dd-a9f5-49b6-b42f-14f2ef1d0570",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1169",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1169\\Q04\\XAGUSD.DWX__41621446-3fbf-4bec-92a3-574d2581edb1\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_MIN_TRADES_NOT_MET;F2:STRATEGY_MIN_TRADES_NOT_MET;F3:STRATEGY_MIN_TRADES_NOT_MET || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAGUSD.DWX",
+      "updated_at": "2026-08-22T04:05:07+00:00",
+      "work_item_id": "41621446-3fbf-4bec-92a3-574d2581edb1",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1119",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1119\\Q04\\XAGUSD.DWX__23401452-16ac-4bcc-a04d-303b68f85705\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAGUSD.DWX",
+      "updated_at": "2026-08-22T04:13:57+00:00",
+      "work_item_id": "23401452-16ac-4bcc-a04d-303b68f85705",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_10297",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_10297\\Q04\\XAGUSD.DWX__22cdb607-1de7-4c53-948d-938219e6b0aa\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_MIN_TRADES_NOT_MET || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAGUSD.DWX",
+      "updated_at": "2026-08-22T04:20:36+00:00",
+      "work_item_id": "22cdb607-1de7-4c53-948d-938219e6b0aa",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_12707",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_12707\\Q04\\XAGUSD.DWX__785da0e5-4e94-4a30-ab18-8e421e6baebd\\aggregate.json",
+      "fallback_folds": [
+        "F2"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAGUSD.DWX",
+      "updated_at": "2026-08-22T06:00:42+00:00",
+      "work_item_id": "785da0e5-4e94-4a30-ab18-8e421e6baebd",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1100",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1100\\Q04\\XAGUSD.DWX__249392c3-a676-461c-975d-7e99a692a66b\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAGUSD.DWX",
+      "updated_at": "2026-08-22T06:12:24+00:00",
+      "work_item_id": "249392c3-a676-461c-975d-7e99a692a66b",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1371",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1371\\Q04\\XAGUSD.DWX__b2988e0a-1645-4f3b-9cb4-f2ae95549232\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAGUSD.DWX",
+      "updated_at": "2026-08-22T06:30:36+00:00",
+      "work_item_id": "b2988e0a-1645-4f3b-9cb4-f2ae95549232",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1119",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1119\\Q04\\XAGUSD.DWX__1af02b56-4bd9-4fc6-8c90-f1bec08a804c\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAGUSD.DWX",
+      "updated_at": "2026-08-22T06:33:17+00:00",
+      "work_item_id": "1af02b56-4bd9-4fc6-8c90-f1bec08a804c",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1169",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1169\\Q04\\XAGUSD.DWX__5b29b7be-8ae2-447e-b115-e26e7f4d2bda\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_MIN_TRADES_NOT_MET;F2:STRATEGY_MIN_TRADES_NOT_MET;F3:STRATEGY_MIN_TRADES_NOT_MET || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAGUSD.DWX",
+      "updated_at": "2026-08-22T06:34:09+00:00",
+      "work_item_id": "5b29b7be-8ae2-447e-b115-e26e7f4d2bda",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_10297",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_10297\\Q04\\XAGUSD.DWX__cb80bd38-71a0-4360-963c-c92147a61ea8\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_MIN_TRADES_NOT_MET || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAGUSD.DWX",
+      "updated_at": "2026-08-22T06:45:55+00:00",
+      "work_item_id": "cb80bd38-71a0-4360-963c-c92147a61ea8",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1100",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1100\\Q04\\XAGUSD.DWX__0dfa5cc5-4b48-4bcb-b755-c4fcb023d3a6\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAGUSD.DWX",
+      "updated_at": "2026-08-22T08:27:50+00:00",
+      "work_item_id": "0dfa5cc5-4b48-4bcb-b755-c4fcb023d3a6",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_12707",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_12707\\Q04\\XAGUSD.DWX__8754c461-fbf2-40d4-969d-097446418bc2\\aggregate.json",
+      "fallback_folds": [
+        "F2"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAGUSD.DWX",
+      "updated_at": "2026-08-22T08:28:30+00:00",
+      "work_item_id": "8754c461-fbf2-40d4-969d-097446418bc2",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1312",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1312\\Q04\\XAUUSD.DWX__2f8b578e-dc0f-45a4-85e5-5255a5ea6c03\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAUUSD.DWX",
+      "updated_at": "2026-09-02T11:01:50+00:00",
+      "work_item_id": "2f8b578e-dc0f-45a4-85e5-5255a5ea6c03",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1312",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1312\\Q04\\GBPUSD.DWX__b7ef10a4-1d98-44fd-b07f-6241c7d38aac\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "GBPUSD.DWX",
+      "updated_at": "2026-09-02T13:22:50+00:00",
+      "work_item_id": "b7ef10a4-1d98-44fd-b07f-6241c7d38aac",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1089",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1089\\Q04\\XTIUSD.DWX__d571a321-434c-4778-b469-961259d50db6\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_MIN_TRADES_NOT_MET;F2:STRATEGY_MIN_TRADES_NOT_MET;F3:STRATEGY_MIN_TRADES_NOT_MET || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XTIUSD.DWX",
+      "updated_at": "2026-09-03T13:33:44+00:00",
+      "work_item_id": "d571a321-434c-4778-b469-961259d50db6",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1119",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1119\\Q04\\XNGUSD.DWX__fc288570-d2ed-44c4-8a36-dbc06d4ad3a5\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XNGUSD.DWX",
+      "updated_at": "2026-09-03T13:39:47+00:00",
+      "work_item_id": "fc288570-d2ed-44c4-8a36-dbc06d4ad3a5",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1103",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1103\\Q04\\XTIUSD.DWX__4e871296-147f-4c34-97d3-23800b0eceba\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XTIUSD.DWX",
+      "updated_at": "2026-09-03T13:40:56+00:00",
+      "work_item_id": "4e871296-147f-4c34-97d3-23800b0eceba",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1102",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1102\\Q04\\XNGUSD.DWX__3eccc397-f168-405c-bd23-8eb4a37ca6a2\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XNGUSD.DWX",
+      "updated_at": "2026-09-03T14:19:47+00:00",
+      "work_item_id": "3eccc397-f168-405c-bd23-8eb4a37ca6a2",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1119",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1119\\Q04\\XTIUSD.DWX__adf46847-e510-4305-b738-e0e47cb91c22\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XTIUSD.DWX",
+      "updated_at": "2026-09-03T14:36:53+00:00",
+      "work_item_id": "adf46847-e510-4305-b738-e0e47cb91c22",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_10297",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_10297\\Q04\\XNGUSD.DWX__ab084ed1-0a48-47f2-a0ae-3f68428f741c\\aggregate.json",
+      "fallback_folds": [
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F3:STRATEGY_MIN_TRADES_NOT_MET || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XNGUSD.DWX",
+      "updated_at": "2026-09-03T14:46:26+00:00",
+      "work_item_id": "ab084ed1-0a48-47f2-a0ae-3f68428f741c",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_10923",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_10923\\Q04\\XTIUSD.DWX__62032a89-f012-456f-bd7c-e84e7a9b7adb\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_MIN_TRADES_NOT_MET;F2:STRATEGY_MIN_TRADES_NOT_MET;F3:STRATEGY_MIN_TRADES_NOT_MET || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XTIUSD.DWX",
+      "updated_at": "2026-09-03T15:03:37+00:00",
+      "work_item_id": "62032a89-f012-456f-bd7c-e84e7a9b7adb",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1110",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1110\\Q04\\XTIUSD.DWX__a81a40cc-578d-4e9e-866f-95a403b4e177\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XTIUSD.DWX",
+      "updated_at": "2026-09-03T16:22:28+00:00",
+      "work_item_id": "a81a40cc-578d-4e9e-866f-95a403b4e177",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1371",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1371\\Q04\\XNGUSD.DWX__27a73b1f-10c5-48ff-9c64-75a6e3d7971d\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XNGUSD.DWX",
+      "updated_at": "2026-09-03T16:42:19+00:00",
+      "work_item_id": "27a73b1f-10c5-48ff-9c64-75a6e3d7971d",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_12707",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_12707\\Q04\\XNGUSD.DWX__a33d4a30-6635-4e6e-bbfd-b22c9b0cf4f0\\aggregate.json",
+      "fallback_folds": [
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XNGUSD.DWX",
+      "updated_at": "2026-09-03T16:42:44+00:00",
+      "work_item_id": "a33d4a30-6635-4e6e-bbfd-b22c9b0cf4f0",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1100",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1100\\Q04\\XTIUSD.DWX__7096e26f-56ce-43a2-873b-18c499528524\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XTIUSD.DWX",
+      "updated_at": "2026-09-03T16:50:11+00:00",
+      "work_item_id": "7096e26f-56ce-43a2-873b-18c499528524",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_12806",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_12806\\Q04\\XNGUSD.DWX__c056a403-feaf-4f4c-88f7-9a5d3b0fc1ae\\aggregate.json",
+      "fallback_folds": [
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F2:STRATEGY_MIN_TRADES_NOT_MET;F3:STRATEGY_MIN_TRADES_NOT_MET || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XNGUSD.DWX",
+      "updated_at": "2026-09-03T16:52:26+00:00",
+      "work_item_id": "c056a403-feaf-4f4c-88f7-9a5d3b0fc1ae",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1121",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1121\\Q04\\XTIUSD.DWX__b8ff08f3-5607-45ae-bf44-f2f4254a0cf3\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XTIUSD.DWX",
+      "updated_at": "2026-09-03T16:57:46+00:00",
+      "work_item_id": "b8ff08f3-5607-45ae-bf44-f2f4254a0cf3",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_12810",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_12810\\Q04\\XTIUSD.DWX__9c997c2a-18c3-4cac-b212-28a784aa81b3\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_MIN_TRADES_NOT_MET;F3:STRATEGY_MIN_TRADES_NOT_MET || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XTIUSD.DWX",
+      "updated_at": "2026-09-03T17:06:27+00:00",
+      "work_item_id": "9c997c2a-18c3-4cac-b212-28a784aa81b3",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_11170",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_11170\\Q04\\XTIUSD.DWX__808926e5-e68f-44eb-9d53-58a2142ca195\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XTIUSD.DWX",
+      "updated_at": "2026-09-03T17:13:17+00:00",
+      "work_item_id": "808926e5-e68f-44eb-9d53-58a2142ca195",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_11172",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_11172\\Q04\\XTIUSD.DWX__f0f501b4-0ae3-4a2b-9b40-083ad983f188\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XTIUSD.DWX",
+      "updated_at": "2026-09-03T17:23:16+00:00",
+      "work_item_id": "f0f501b4-0ae3-4a2b-9b40-083ad983f188",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_9161",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_9161\\Q04\\XTIUSD.DWX__d23742cc-d70c-49da-b948-daff2d9ef918\\aggregate.json",
+      "fallback_folds": [
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XTIUSD.DWX",
+      "updated_at": "2026-09-03T17:31:40+00:00",
+      "work_item_id": "d23742cc-d70c-49da-b948-daff2d9ef918",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1371",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1371\\Q04\\XTIUSD.DWX__068554a6-52a8-4575-8541-76a7c69d5996\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XTIUSD.DWX",
+      "updated_at": "2026-09-03T17:38:12+00:00",
+      "work_item_id": "068554a6-52a8-4575-8541-76a7c69d5996",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_12707",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_12707\\Q04\\XTIUSD.DWX__86303abe-77b6-4447-ae03-15058e1e6fd3\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XTIUSD.DWX",
+      "updated_at": "2026-09-03T17:44:38+00:00",
+      "work_item_id": "86303abe-77b6-4447-ae03-15058e1e6fd3",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1443",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1443\\Q04\\XTIUSD.DWX__4285227f-82f5-4b8e-8716-f7723d330736\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XTIUSD.DWX",
+      "updated_at": "2026-09-03T17:46:14+00:00",
+      "work_item_id": "4285227f-82f5-4b8e-8716-f7723d330736",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_12851",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_12851\\Q04\\XTIUSD.DWX__116e2f32-3257-438f-b789-2b4c798edc7b\\aggregate.json",
+      "fallback_folds": [
+        "F2"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XTIUSD.DWX",
+      "updated_at": "2026-09-03T17:55:15+00:00",
+      "work_item_id": "116e2f32-3257-438f-b789-2b4c798edc7b",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1440",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1440\\Q04\\XTIUSD.DWX__f6458419-7e49-4151-9a3a-9a6e050e45b1\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XTIUSD.DWX",
+      "updated_at": "2026-09-03T18:33:31+00:00",
+      "work_item_id": "f6458419-7e49-4151-9a3a-9a6e050e45b1",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_9124",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_9124\\Q04\\EURUSD.DWX__682b5a61-9c51-4072-9a39-d15233374eee\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "EURUSD.DWX",
+      "updated_at": "2026-09-03T18:33:44+00:00",
+      "work_item_id": "682b5a61-9c51-4072-9a39-d15233374eee",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_10681",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_10681\\Q04\\GBPUSD.DWX__e61f0a76-94e9-4670-b98d-a12e4fa818f1\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "GBPUSD.DWX",
+      "updated_at": "2026-09-03T18:34:28+00:00",
+      "work_item_id": "e61f0a76-94e9-4670-b98d-a12e4fa818f1",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1102",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1102\\Q04\\XTIUSD.DWX__cc8ab7d6-f670-48ad-88cc-2fec3169e784\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XTIUSD.DWX",
+      "updated_at": "2026-09-03T19:22:31+00:00",
+      "work_item_id": "cc8ab7d6-f670-48ad-88cc-2fec3169e784",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1119",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1119\\Q04\\AUDCAD.DWX__d28eb87f-f39a-418a-a2bd-f0ccdcc0c795\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "AUDCAD.DWX",
+      "updated_at": "2026-09-03T22:42:28+00:00",
+      "work_item_id": "d28eb87f-f39a-418a-a2bd-f0ccdcc0c795",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1119",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1119\\Q04\\AUDCHF.DWX__865f0894-4637-4e62-bf6a-90c81bb468e5\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "AUDCHF.DWX",
+      "updated_at": "2026-09-03T22:51:44+00:00",
+      "work_item_id": "865f0894-4637-4e62-bf6a-90c81bb468e5",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1119",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1119\\Q04\\AUDJPY.DWX__2955d7e9-598f-49e0-b37c-aafda403a72c\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "AUDJPY.DWX",
+      "updated_at": "2026-09-03T23:03:42+00:00",
+      "work_item_id": "2955d7e9-598f-49e0-b37c-aafda403a72c",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1119",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1119\\Q04\\AUDUSD.DWX__3e59c88f-3b3e-45b6-9267-5511348d7f51\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "AUDUSD.DWX",
+      "updated_at": "2026-09-03T23:17:29+00:00",
+      "work_item_id": "3e59c88f-3b3e-45b6-9267-5511348d7f51",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1119",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1119\\Q04\\CHFJPY.DWX__18857d65-5274-445d-8907-d27d03e8dbd5\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "CHFJPY.DWX",
+      "updated_at": "2026-09-03T23:24:19+00:00",
+      "work_item_id": "18857d65-5274-445d-8907-d27d03e8dbd5",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1119",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1119\\Q04\\EURAUD.DWX__d5d8e6ae-5cfc-4011-8fce-6efa5f761bbc\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "EURAUD.DWX",
+      "updated_at": "2026-09-03T23:34:04+00:00",
+      "work_item_id": "d5d8e6ae-5cfc-4011-8fce-6efa5f761bbc",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1119",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1119\\Q04\\EURCAD.DWX__5c1f2be3-1c8f-473f-a0ee-3521b53d05f9\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "EURCAD.DWX",
+      "updated_at": "2026-09-03T23:43:09+00:00",
+      "work_item_id": "5c1f2be3-1c8f-473f-a0ee-3521b53d05f9",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1119",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1119\\Q04\\EURGBP.DWX__0f6ade2c-a75b-43eb-846a-8c549293ab09\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "EURGBP.DWX",
+      "updated_at": "2026-09-03T23:56:54+00:00",
+      "work_item_id": "0f6ade2c-a75b-43eb-846a-8c549293ab09",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_10490",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_10490\\Q04\\USDJPY.DWX__5e17d59f-8e2b-41ce-b4e4-f0ffd671ad98\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "USDJPY.DWX",
+      "updated_at": "2026-09-03T23:59:50+00:00",
+      "work_item_id": "5e17d59f-8e2b-41ce-b4e4-f0ffd671ad98",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1119",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1119\\Q04\\EURNZD.DWX__f8cae8e4-09ad-4ab0-bffd-6c04a852a9e3\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "EURNZD.DWX",
+      "updated_at": "2026-09-04T00:05:34+00:00",
+      "work_item_id": "f8cae8e4-09ad-4ab0-bffd-6c04a852a9e3",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_10490",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_10490\\Q04\\GBPUSD.DWX__2cc3770e-e13b-4f88-b632-032d04b51881\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "GBPUSD.DWX",
+      "updated_at": "2026-09-04T00:09:31+00:00",
+      "work_item_id": "2cc3770e-e13b-4f88-b632-032d04b51881",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1119",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1119\\Q04\\GBPJPY.DWX__08a52d65-232e-4bfb-bdcd-80a8d29dbd82\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "GBPJPY.DWX",
+      "updated_at": "2026-09-04T00:15:52+00:00",
+      "work_item_id": "08a52d65-232e-4bfb-bdcd-80a8d29dbd82",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1119",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1119\\Q04\\NZDJPY.DWX__39436c4a-bbf3-4ebb-9cd5-fe4db555beb8\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "NZDJPY.DWX",
+      "updated_at": "2026-09-04T00:35:20+00:00",
+      "work_item_id": "39436c4a-bbf3-4ebb-9cd5-fe4db555beb8",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1119",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1119\\Q04\\NZDUSD.DWX__e38dab7a-af87-4384-ba94-6f60ed1a669d\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "NZDUSD.DWX",
+      "updated_at": "2026-09-04T00:44:45+00:00",
+      "work_item_id": "e38dab7a-af87-4384-ba94-6f60ed1a669d",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1119",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1119\\Q04\\NZDCAD.DWX__3dbb4d80-c93f-4ca2-86d5-a601e38ac544\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "NZDCAD.DWX",
+      "updated_at": "2026-09-04T00:52:09+00:00",
+      "work_item_id": "3dbb4d80-c93f-4ca2-86d5-a601e38ac544",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1119",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1119\\Q04\\USDCAD.DWX__f6b0edb5-40eb-4d02-a59f-92cdd08a5f99\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "USDCAD.DWX",
+      "updated_at": "2026-09-04T01:33:27+00:00",
+      "work_item_id": "f6b0edb5-40eb-4d02-a59f-92cdd08a5f99",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_10048",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_10048\\Q04\\NZDUSD.DWX__0048555c-366e-4715-b7c0-47a479215d7a\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "NZDUSD.DWX",
+      "updated_at": "2026-09-04T08:56:04+00:00",
+      "work_item_id": "0048555c-366e-4715-b7c0-47a479215d7a",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1095",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1095\\Q04\\USDCAD.DWX__1e2b45ac-a8b2-44e8-b546-2ed1e45fa088\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "USDCAD.DWX",
+      "updated_at": "2026-09-04T09:09:22+00:00",
+      "work_item_id": "1e2b45ac-a8b2-44e8-b546-2ed1e45fa088",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_10579",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_10579\\Q04\\GBPJPY.DWX__8167893e-27a6-4540-bdf3-ffb49a876fb7\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "GBPJPY.DWX",
+      "updated_at": "2026-09-04T09:13:36+00:00",
+      "work_item_id": "8167893e-27a6-4540-bdf3-ffb49a876fb7",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_2014",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_2014\\Q04\\USDJPY.DWX__7e29a74d-9089-44e6-8e99-ea3a6f0a3fd6\\aggregate.json",
+      "fallback_folds": [
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F3:STRATEGY_MIN_TRADES_NOT_MET || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "USDJPY.DWX",
+      "updated_at": "2026-09-04T09:15:45+00:00",
+      "work_item_id": "7e29a74d-9089-44e6-8e99-ea3a6f0a3fd6",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_2013",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_2013\\Q04\\AUDUSD.DWX__bc6e8fa3-7a13-4f12-8367-74dc4d96b3a9\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "AUDUSD.DWX",
+      "updated_at": "2026-09-04T12:08:44+00:00",
+      "work_item_id": "bc6e8fa3-7a13-4f12-8367-74dc4d96b3a9",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_10490",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_10490\\Q04\\EURUSD.DWX__e429fa43-18ae-4ff7-aae7-9569473e6f52\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "EURUSD.DWX",
+      "updated_at": "2026-09-04T12:52:32+00:00",
+      "work_item_id": "e429fa43-18ae-4ff7-aae7-9569473e6f52",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1100",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1100\\Q04\\AUDCAD.DWX__2c099a38-1ee6-4c4f-a098-fab65c804adb\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "AUDCAD.DWX",
+      "updated_at": "2026-09-04T15:03:40+00:00",
+      "work_item_id": "2c099a38-1ee6-4c4f-a098-fab65c804adb",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1100",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1100\\Q04\\EURCAD.DWX__cfbd36a1-8d7d-4bbd-a647-5c6f4ba4e6c0\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "EURCAD.DWX",
+      "updated_at": "2026-09-04T15:13:49+00:00",
+      "work_item_id": "cfbd36a1-8d7d-4bbd-a647-5c6f4ba4e6c0",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_11841",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_11841\\Q04\\USDJPY.DWX__579bb9f4-43fd-480d-9fe9-56ad1c6625ab\\aggregate.json",
+      "fallback_folds": [
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F3:STRATEGY_MIN_TRADES_NOT_MET || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "USDJPY.DWX",
+      "updated_at": "2026-09-04T15:14:59+00:00",
+      "work_item_id": "579bb9f4-43fd-480d-9fe9-56ad1c6625ab",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1100",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1100\\Q04\\EURNZD.DWX__f7444de2-d8ae-4658-8eeb-6ae94362757d\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "EURNZD.DWX",
+      "updated_at": "2026-09-04T15:21:19+00:00",
+      "work_item_id": "f7444de2-d8ae-4658-8eeb-6ae94362757d",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_11840",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_11840\\Q04\\USDJPY.DWX__3c32697a-532d-4a37-9bee-bfba873bdb96\\aggregate.json",
+      "fallback_folds": [
+        "F1"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_MIN_TRADES_NOT_MET || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "USDJPY.DWX",
+      "updated_at": "2026-09-04T15:25:22+00:00",
+      "work_item_id": "3c32697a-532d-4a37-9bee-bfba873bdb96",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1100",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1100\\Q04\\GBPCAD.DWX__49f75f2d-294b-4656-9bba-6daee9c378ed\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "GBPCAD.DWX",
+      "updated_at": "2026-09-04T15:30:30+00:00",
+      "work_item_id": "49f75f2d-294b-4656-9bba-6daee9c378ed",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1100",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1100\\Q04\\USDCHF.DWX__9b543877-d3f9-4c18-afe3-ea9986bd2c3d\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "USDCHF.DWX",
+      "updated_at": "2026-09-04T15:37:52+00:00",
+      "work_item_id": "9b543877-d3f9-4c18-afe3-ea9986bd2c3d",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_10232",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_10232\\Q04\\XAUUSD.DWX__dce8a53b-5d80-49c2-933e-c6efa3e435e8\\aggregate.json",
+      "fallback_folds": [
+        "F2"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAUUSD.DWX",
+      "updated_at": "2026-09-04T20:42:40+00:00",
+      "work_item_id": "dce8a53b-5d80-49c2-933e-c6efa3e435e8",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_11841",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_11841\\Q04\\XAUUSD.DWX__2e4171a3-4317-4f7d-87e9-2756ad316d46\\aggregate.json",
+      "fallback_folds": [
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAUUSD.DWX",
+      "updated_at": "2026-09-05T01:03:15+00:00",
+      "work_item_id": "2e4171a3-4317-4f7d-87e9-2756ad316d46",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_9236",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_9236\\Q04\\GBPJPY.DWX__dd1b9003-f720-4e15-a411-c77ed250f341\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_MIN_TRADES_NOT_MET;F2:STRATEGY_MIN_TRADES_NOT_MET;F3:STRATEGY_MIN_TRADES_NOT_MET || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "GBPJPY.DWX",
+      "updated_at": "2026-09-05T01:05:50+00:00",
+      "work_item_id": "dd1b9003-f720-4e15-a411-c77ed250f341",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_10496",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_10496\\Q04\\EURUSD.DWX__0ffbc557-2239-45d7-b90b-c093e22a2d6f\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "EURUSD.DWX",
+      "updated_at": "2026-09-05T11:29:41+00:00",
+      "work_item_id": "0ffbc557-2239-45d7-b90b-c093e22a2d6f",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_10490",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_10490\\Q04\\XAUUSD.DWX__9836932a-9871-433b-ba52-2c5d444c80ac\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAUUSD.DWX",
+      "updated_at": "2026-09-05T12:49:32+00:00",
+      "work_item_id": "9836932a-9871-433b-ba52-2c5d444c80ac",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_11092",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_11092\\Q04\\XAUUSD.DWX__5ee14364-2857-460f-8021-1a7f2b02c842\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_MIN_TRADES_NOT_MET;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAUUSD.DWX",
+      "updated_at": "2026-09-05T16:14:49+00:00",
+      "work_item_id": "5ee14364-2857-460f-8021-1a7f2b02c842",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1103",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1103\\Q04\\XAUUSD.DWX__5f858a53-2f68-4a6d-966d-d0b4bb3d1fa3\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "XAUUSD.DWX",
+      "updated_at": "2026-09-05T16:34:29+00:00",
+      "work_item_id": "5f858a53-2f68-4a6d-966d-d0b4bb3d1fa3",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_10537",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_10537\\Q04\\GBPUSD.DWX__d4a3ab4d-b3d0-41a3-bf8c-b7249f71daa1\\aggregate.json",
+      "fallback_folds": [
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F3:STRATEGY_MIN_TRADES_NOT_MET || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "GBPUSD.DWX",
+      "updated_at": "2026-09-05T23:40:53+00:00",
+      "work_item_id": "d4a3ab4d-b3d0-41a3-bf8c-b7249f71daa1",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_10525",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_10525\\Q04\\EURUSD.DWX__f3284cec-f6ff-480a-8453-788e965250c4\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_MIN_TRADES_NOT_MET;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "EURUSD.DWX",
+      "updated_at": "2026-09-06T00:11:23+00:00",
+      "work_item_id": "f3284cec-f6ff-480a-8453-788e965250c4",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_10898",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_10898\\Q04\\GBPUSD.DWX__687d71e0-348a-4f43-be8d-8d7be1c714ec\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_MIN_TRADES_NOT_MET;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "GBPUSD.DWX",
+      "updated_at": "2026-09-06T01:26:19+00:00",
+      "work_item_id": "687d71e0-348a-4f43-be8d-8d7be1c714ec",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1371",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1371\\Q04\\GBPAUD.DWX__ba02b041-f84f-4b6b-a628-35df931b8dab\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": "lowfreq_no_pooled_stream",
+      "lowfreq_verdict": "INVALID",
+      "replay_reason": "F1:STRATEGY_MIN_TRADES_NOT_MET;F2:STRATEGY_MIN_TRADES_NOT_MET;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM || lowfreq:INVALID:lowfreq_no_pooled_stream",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "GBPAUD.DWX",
+      "updated_at": "2026-09-06T10:31:54+00:00",
+      "work_item_id": "ba02b041-f84f-4b6b-a628-35df931b8dab",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1371",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1371\\Q04\\GBPJPY.DWX__3ca734af-38a3-4b1f-a547-ac679d7f687d\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "GBPJPY.DWX",
+      "updated_at": "2026-09-06T10:41:17+00:00",
+      "work_item_id": "3ca734af-38a3-4b1f-a547-ac679d7f687d",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1371",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1371\\Q04\\GBPCAD.DWX__159388a8-ccd3-44d7-944d-9bed35398a55\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "GBPCAD.DWX",
+      "updated_at": "2026-09-06T10:49:23+00:00",
+      "work_item_id": "159388a8-ccd3-44d7-944d-9bed35398a55",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1371",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1371\\Q04\\NZDCHF.DWX__bc2fbbad-b554-479e-9091-7d2ba2801141\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "NZDCHF.DWX",
+      "updated_at": "2026-09-06T11:02:43+00:00",
+      "work_item_id": "bc2fbbad-b554-479e-9091-7d2ba2801141",
+      "would_leave_stranded_infra_lane": true
+    },
+    {
+      "ea_id": "QM5_1371",
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_1371\\Q04\\GBPCHF.DWX__d33aa736-a37e-47ff-b9ea-403e6e9981bb\\aggregate.json",
+      "fallback_folds": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "lowfreq_reason": null,
+      "lowfreq_verdict": null,
+      "replay_reason": "F1:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F2:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM;F3:STRATEGY_NATIVE_REPORT_ONLY_NO_ATTRIBUTED_STREAM",
+      "replay_verdict": "FAIL",
+      "stored_verdict": "INFRA_FAIL",
+      "symbol": "GBPCHF.DWX",
+      "updated_at": "2026-09-06T11:26:16+00:00",
+      "work_item_id": "d33aa736-a37e-47ff-b9ea-403e6e9981bb",
+      "would_leave_stranded_infra_lane": true
+    }
+  ],
+  "rows_that_would_reclassify": 160,
+  "schema": "qm.q04-economic-replay/v1",
+  "stored_verdict_changes_applied": 0,
+  "window_days": 30
+}
