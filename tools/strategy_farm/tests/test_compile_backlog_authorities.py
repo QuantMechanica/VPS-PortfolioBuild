@@ -13,10 +13,13 @@ AUTHORITIES = tuple(cwi.BACKLOG_SOURCE_REPAIR_REGISTRATIONS)
 
 def context(tmp_path, monkeypatch, authority):
     binding = cwi.BACKLOG_SOURCE_REPAIR_REGISTRATIONS[authority]
-    evidence = tmp_path / cwi.BACKLOG_SOURCE_REPAIR_EVIDENCE
+    evidence = tmp_path / binding.get("evidence_path", cwi.BACKLOG_SOURCE_REPAIR_EVIDENCE)
     evidence.parent.mkdir(parents=True)
     evidence.write_bytes(b"CEO selected current committed source; predecessors remain evidence\n")
-    monkeypatch.setattr(cwi, "BACKLOG_SOURCE_REPAIR_EVIDENCE_SHA256", cwi.sha256_file(evidence))
+    if "evidence_sha256" in binding:
+        monkeypatch.setitem(binding, "evidence_sha256", cwi.sha256_file(evidence))
+    else:
+        monkeypatch.setattr(cwi, "BACKLOG_SOURCE_REPAIR_EVIDENCE_SHA256", cwi.sha256_file(evidence))
     rows = [{"id": ident, "phase": cwi.COMPILE_EA_PHASE, "status": item["status"],
              "verdict": item["verdict"], "claimed_by": None,
              "payload_json": json.dumps({"ea_label": binding["ea_label"], "mq5_sha256": item["source_sha256"]})}
@@ -36,10 +39,13 @@ def test_each_registered_authority_is_exact_and_self_expiring(tmp_path, monkeypa
     for field, value in [("source_sha", "0" * 64), ("ea_id", "999999"), ("repo_root", None), ("inventory", None)]:
         assert not cwi._source_repair_authorized(label, authority, **{**args, field: value})
     for field, value in [("id", "unknown"), ("phase", "Q02"), ("status", "active"),
-                         ("verdict", "COMPILE_OK"), ("claimed_by", "T1"), ("payload_json", "{}")]:
+                         ("verdict", "UNEXPECTED_VERDICT"), ("claimed_by", "T1"), ("payload_json", "{}")]:
         changed = copy.deepcopy(args)
         changed["inventory"]["work_rows"][binding["ea_id"]][0][field] = value
         assert not cwi._source_repair_authorized(label, authority, **changed)
+    missing = copy.deepcopy(args)
+    missing["inventory"]["work_rows"][binding["ea_id"]] = rows[1:]
+    assert not cwi._source_repair_authorized(label, authority, **missing)
     evidence.write_bytes(b"changed evidence")
     assert not cwi._source_repair_authorized(label, authority, **args)
     evidence.unlink()
@@ -53,7 +59,7 @@ def test_worker_rechecks_exact_successor_lineage_and_evidence(tmp_path, monkeypa
                "mq5_sha256": binding["source_sha256"],
                "source_repair_predecessor_work_item_ids": sorted(binding["predecessors"]),
                "source_repair_superseded_predecessor_work_item_ids": binding["superseded_predecessors"],
-               "source_repair_artifact_bindings": cwi._backlog_source_repair_artifact_bindings()}
+               "source_repair_artifact_bindings": cwi._backlog_source_repair_artifact_bindings(authority)}
     rows.append({"id": "successor", "phase": cwi.COMPILE_EA_PHASE, "status": "active", "payload_json": json.dumps(payload)})
     assert cwi._source_repair_authorized(binding["ea_label"], authority, **args, current_work_item_id="successor")
     assert not cwi._source_repair_authorized(binding["ea_label"], authority, **args, current_work_item_id="absent")
@@ -86,7 +92,7 @@ def test_candidate_waives_only_governed_blockers_and_keeps_exact_predecessors(tm
     assert set(candidate["source_repair_waived_reasons"]) == {"WORK_ITEMS_EXIST", "BOUND_SETFILE_HASH_EXISTS"}
     assert candidate["source_repair_predecessor_work_item_ids"] == sorted(binding["predecessors"])
     assert candidate["source_repair_superseded_predecessor_work_item_ids"] == binding["superseded_predecessors"]
-    assert candidate["source_repair_artifact_bindings"] == cwi._backlog_source_repair_artifact_bindings()
+    assert candidate["source_repair_artifact_bindings"] == cwi._backlog_source_repair_artifact_bindings(authority)
     # An already-open successor remains idempotent, and an unrelated source is refused.
     new = {"id": "already-open", "phase": cwi.COMPILE_EA_PHASE, "status": "pending",
            "payload_json": json.dumps({"mq5_sha256": binding["source_sha256"]})}

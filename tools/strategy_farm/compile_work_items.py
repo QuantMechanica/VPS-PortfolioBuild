@@ -1972,9 +1972,68 @@ BACKLOG_SOURCE_REPAIR_REGISTRATIONS = {'router_ops_issue:74b400f5-6b98-45f1-8f3a
                                                                      'superseded_predecessors': []}}
 
 
-def _backlog_source_repair_artifact_bindings() -> list[dict[str, str]]:
-    return [{"path": BACKLOG_SOURCE_REPAIR_EVIDENCE,
-             "sha256": BACKLOG_SOURCE_REPAIR_EVIDENCE_SHA256}]
+# Exact completed-compile successors for the reviewed zero-only stress guard repair.
+STRESS_GUARD_SOURCE_REPAIR_REGISTRATIONS = {'router_ops_issue:04f011a6-6b6a-4562-b2ee-f2cb6f641e5a:QM5_41171': {'ea_id': '41171',
+                                                                     'ea_label': 'QM5_41171_wti-mturnpoint-tr',
+                                                                     'source_sha256': '8e255a1d5771ba55728038a6f1b030b3216c5645301e9517cd20ff6fbd1938dc',
+                                                                     'predecessors': {'6a6bad94-24a9-4af6-810a-678471024f72': {'source_sha256': 'fbb3d7c70b1e6c16c2e09c1582ab3ab127ad34f35a33f7437d0bf72f23174ae6',
+                                                                                                                               'status': 'done',
+                                                                                                                               'verdict': 'COMPILE_OK'}},
+                                                                     'superseded_predecessors': [],
+                                                                     'evidence_path': 'docs/ops/evidence/2026-09-06_stress_guard_source_repair_successors.md',
+                                                                     'evidence_sha256': 'd7ca2e0cb76a21c000a36d161ce9d1703f817a5fa5489873d4b210c2a4392f11'},
+ 'router_ops_issue:04f011a6-6b6a-4562-b2ee-f2cb6f641e5a:QM5_41358': {'ea_id': '41358',
+                                                                     'ea_label': 'QM5_41358_xtixng-wovershoot-rv',
+                                                                     'source_sha256': 'e17af3932822b85963edca0f0aeeed507f31e995e164ce2396dcabfb41cb5ee2',
+                                                                     'predecessors': {'a3f0b993-f76a-41ff-80d3-79abc126f011': {'source_sha256': '3eb6bf7480baa24ae6525062ed2ed8e5cfcfe2daf645983e33cb2e9a5d875463',
+                                                                                                                               'status': 'done',
+                                                                                                                               'verdict': 'COMPILE_OK'}},
+                                                                     'superseded_predecessors': [],
+                                                                     'evidence_path': 'docs/ops/evidence/2026-09-06_stress_guard_source_repair_successors.md',
+                                                                     'evidence_sha256': 'd7ca2e0cb76a21c000a36d161ce9d1703f817a5fa5489873d4b210c2a4392f11'},
+ 'router_ops_issue:04f011a6-6b6a-4562-b2ee-f2cb6f641e5a:QM5_41359': {'ea_id': '41359',
+                                                                     'ea_label': 'QM5_41359_xtixng-waccel-rv',
+                                                                     'source_sha256': 'c1d77d11242cdf6c327705b1c91dfde0b41ad56c37af597a6ade0cdf6a5f337a',
+                                                                     'predecessors': {'72fb26b3-2612-40a0-86a7-cdc3e7b38a63': {'source_sha256': 'd3538877ce2d1432ee10c19ef9b85b3616582cd8fc3deeaefabf6f12ea65ed1c',
+                                                                                                                               'status': 'done',
+                                                                                                                               'verdict': 'COMPILE_OK'}},
+                                                                     'superseded_predecessors': [],
+                                                                     'evidence_path': 'docs/ops/evidence/2026-09-06_stress_guard_source_repair_successors.md',
+                                                                     'evidence_sha256': 'd7ca2e0cb76a21c000a36d161ce9d1703f817a5fa5489873d4b210c2a4392f11'},
+ 'router_ops_issue:04f011a6-6b6a-4562-b2ee-f2cb6f641e5a:QM5_41360': {'ea_id': '41360',
+                                                                     'ea_label': 'QM5_41360_xtixng-wretr-rv',
+                                                                     'source_sha256': 'ca56d8fa78cf927e79696edbe510d372d7f503e95797edb7e8afefd177b3777e',
+                                                                     'predecessors': {'be3fdc9a-6ba3-48ae-8b23-68db2fece85f': {'source_sha256': '06439f8e8704564010135fe9c07c28ffeea703e9a871627035d6b0f6e56d9573',
+                                                                                                                               'status': 'done',
+                                                                                                                               'verdict': 'COMPILE_OK'}},
+                                                                     'superseded_predecessors': [],
+                                                                     'evidence_path': 'docs/ops/evidence/2026-09-06_stress_guard_source_repair_successors.md',
+                                                                     'evidence_sha256': 'd7ca2e0cb76a21c000a36d161ce9d1703f817a5fa5489873d4b210c2a4392f11'},
+ 'router_ops_issue:04f011a6-6b6a-4562-b2ee-f2cb6f641e5a:QM5_41361': {'ea_id': '41361',
+                                                                     'ea_label': 'QM5_41361_xtixng-commonshock-rv',
+                                                                     'source_sha256': 'e5e870501d852aca64fe2e6e30d7bc27b9a1c8d8874a3da11bdc945e0c25f99a',
+                                                                     'predecessors': {'c5bf5069-ecfb-40a2-a0d7-2e282d8a7df1': {'source_sha256': '86b52bb43f6ec7f1625d53b2ca58ac606485dbec92ffac37da39a9b51051836b',
+                                                                                                                               'status': 'done',
+                                                                                                                               'verdict': 'COMPILE_OK'}},
+                                                                     'superseded_predecessors': [],
+                                                                     'evidence_path': 'docs/ops/evidence/2026-09-06_stress_guard_source_repair_successors.md',
+                                                                     'evidence_sha256': 'd7ca2e0cb76a21c000a36d161ce9d1703f817a5fa5489873d4b210c2a4392f11'},
+ 'router_ops_issue:04f011a6-6b6a-4562-b2ee-f2cb6f641e5a:QM5_41362': {'ea_id': '41362',
+                                                                     'ea_label': 'QM5_41362_xtixng-wdecel-cont',
+                                                                     'source_sha256': '300debf2886b6dddbd5d8ec4aab5c45ef28d6ffcebd394b3985c5cc405c1de95',
+                                                                     'predecessors': {'acfa4f4e-8e78-474d-a9da-fbb2b5dd128c': {'source_sha256': '19d28486b56ffe748a1aefe65665b9b601ee2ce22961e06860b5048ed5ec6f23',
+                                                                                                                               'status': 'done',
+                                                                                                                               'verdict': 'COMPILE_OK'}},
+                                                                     'superseded_predecessors': [],
+                                                                     'evidence_path': 'docs/ops/evidence/2026-09-06_stress_guard_source_repair_successors.md',
+                                                                     'evidence_sha256': 'd7ca2e0cb76a21c000a36d161ce9d1703f817a5fa5489873d4b210c2a4392f11'}}
+BACKLOG_SOURCE_REPAIR_REGISTRATIONS.update(STRESS_GUARD_SOURCE_REPAIR_REGISTRATIONS)
+
+
+def _backlog_source_repair_artifact_bindings(authority: str | None = None) -> list[dict[str, str]]:
+    binding = BACKLOG_SOURCE_REPAIR_REGISTRATIONS.get(authority or "", {})
+    return [{"path": binding.get("evidence_path", BACKLOG_SOURCE_REPAIR_EVIDENCE),
+             "sha256": binding.get("evidence_sha256", BACKLOG_SOURCE_REPAIR_EVIDENCE_SHA256)}]
 
 
 def _backlog_source_repair_authorized(
@@ -1988,8 +2047,9 @@ def _backlog_source_repair_authorized(
             or str(source_sha or "").lower() != binding["source_sha256"]):
         return False
     try:
-        if sha256_file(repo_root / BACKLOG_SOURCE_REPAIR_EVIDENCE).lower() != BACKLOG_SOURCE_REPAIR_EVIDENCE_SHA256:
-            return False
+        for artifact in _backlog_source_repair_artifact_bindings(authority):
+            if sha256_file(repo_root / artifact["path"]).lower() != artifact["sha256"]:
+                return False
     except OSError:
         return False
     rows = inventory.get("work_rows", {}).get(ea_id, [])
@@ -2026,7 +2086,7 @@ def _backlog_source_repair_authorized(
         and str(payload.get("mq5_sha256") or "").lower() == binding["source_sha256"]
         and payload.get("source_repair_predecessor_work_item_ids") == sorted(binding["predecessors"])
         and payload.get("source_repair_superseded_predecessor_work_item_ids") == binding["superseded_predecessors"]
-        and payload.get("source_repair_artifact_bindings") == _backlog_source_repair_artifact_bindings()
+        and payload.get("source_repair_artifact_bindings") == _backlog_source_repair_artifact_bindings(authority)
     )
 
 
@@ -3429,7 +3489,7 @@ def classify_candidate(
         "sibling_rebind_historical_setfiles": bound_hashes,
         "sibling_rebind_findings": sibling_rebind_findings,
         "source_repair_artifact_bindings": (
-            _backlog_source_repair_artifact_bindings() if backlog_binding else
+            _backlog_source_repair_artifact_bindings(source_repair_authority) if backlog_binding else
             _hma_cata_requal_artifact_bindings()
             if repair_authorized
             and source_repair_authority == HMA_CATA_REQUAL_SOURCE_REPAIR_AUTHORITY
