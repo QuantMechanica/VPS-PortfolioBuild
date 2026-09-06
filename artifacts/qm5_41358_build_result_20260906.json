@@ -1,0 +1,99 @@
+{
+  "schema_version": "qm.branch-build-q02-handoff/v1",
+  "recorded_at_utc": "2026-09-06T00:05:00Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41358",
+  "ea_label": "QM5_41358_xtixng-wovershoot-rv",
+  "mechanic": "synchronized adjacent completed-week XTI-minus-XNG relative returns with strict opposite signs and strict newest absolute dominance, fading the newest move through opposed equal-target-notional legs",
+  "logical_symbol": "QM5_41358_XTI_XNG_WOVERSHOOT_RV_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "companion_symbol": "XNGUSD.DWX",
+  "timeframe": "D1",
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "reference_validation": {
+    "command": "python -m unittest framework/EAs/QM5_41358_xtixng-wovershoot-rv/docs/test_weekly_overshoot_reference.py",
+    "passed": 9,
+    "failed": 0
+  },
+  "spec_validation": {
+    "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_41358_xtixng-wovershoot-rv",
+    "passed": 1,
+    "failed": 0
+  },
+  "compile": {
+    "work_item_id": "a3f0b993-f76a-41ff-80d3-79abc126f011",
+    "terminal": "T1",
+    "status": "done",
+    "verdict": "COMPILE_OK",
+    "build_check_result": "PASS",
+    "build_check_failures": 0,
+    "build_check_warnings": 0,
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "mq5_sha256": "3eb6bf7480baa24ae6525062ed2ed8e5cfcfe2daf645983e33cb2e9a5d875463",
+    "ex5_sha256": "6c4dec9c1ed9197ece93071da6e28dbd4305137bd4edcc771327b6e29f833b21",
+    "evidence_path": "D:/QM/reports/work_items/a3f0b993-f76a-41ff-80d3-79abc126f011/QM5_41358/COMPILE_EA/compile_evidence.json"
+  },
+  "compile_lineage": {
+    "failed_predecessors": [
+      "86592904-59bb-46a3-8c7c-247523574758",
+      "5cae6593-72f3-470d-bf8a-29923c6e7ec4"
+    ],
+    "failure_classes": [
+      "CANDIDATE_RECHECK_REFUSED:BUILD_TASK_EXISTS",
+      "BUILD_CHECK_SETFILE_HEADER_INCOMPLETE"
+    ],
+    "strategy_compile_errors_observed": 0,
+    "source_repair_commit": "b95ea069c2",
+    "notes": "The final governed successor compiled with zero errors and zero warnings after completing the logical basket preset header and adding fail-closed executable-quote/stop revalidation immediately before each leg request."
+  },
+  "card": {
+    "sha256": "a8a75c12afc8a94799b15334a585e7428c35f6d9439276650955792f8f2eb9b6",
+    "artifact_mirror_sha256": "a8a75c12afc8a94799b15334a585e7428c35f6d9439276650955792f8f2eb9b6",
+    "factory_mirror_sha256": "a8a75c12afc8a94799b15334a585e7428c35f6d9439276650955792f8f2eb9b6",
+    "g0_status": "APPROVED"
+  },
+  "setfiles": [
+    {
+      "role": "logical_basket",
+      "sha256": "22da066cbde1e3dba92d70ae276a040de767528bd7874cd169ca52f99ccc659c",
+      "build_hash": "faba68f6ab5e9691b0ea22b17fd9260c1b466b02e33a98fa77de0853b3a7a66a"
+    },
+    {
+      "role": "host_leg",
+      "sha256": "84a854d5892b1372e73ae875a91e729f98eb518f9c0362657242d4c6aef776da",
+      "build_hash": "9311c568646435b1180597814269d526225e9e97186320e71c677f5fd0570127"
+    },
+    {
+      "role": "companion_leg",
+      "sha256": "87925876c51d1c038b923108aeed4ffce0aafbc2df190caa9853cf6668c7e373",
+      "build_hash": "3a788fad2e9256452f99846104408af15ec66c63aeb344f128c14cfea1600cff"
+    }
+  ],
+  "cpu_admission": {
+    "threshold_pct": 97.0,
+    "samples_pct": [89.5, 79.9, 87.9, 88.8, 91.0],
+    "average_pct": 87.4,
+    "maximum_pct": 91.0,
+    "admitted": true
+  },
+  "q02": {
+    "work_item_id": "f92931eb-e595-428e-a1f6-73cff428a0b6",
+    "symbol": "QM5_41358_XTI_XNG_WOVERSHOOT_RV_D1",
+    "status_at_receipt": "pending",
+    "enqueued_count": 1,
+    "skipped_leg_setfiles": 2,
+    "manual_backtest_run": false
+  },
+  "safety": {
+    "terminal_control_used": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}

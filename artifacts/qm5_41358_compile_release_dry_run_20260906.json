@@ -1,0 +1,19 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "5429ec09a19691252ff3ea2cfbb3b90074fbdb0693a82840432d0419b160a3ef",
+      "ea_id": "QM5_41358",
+      "ea_label": "QM5_41358_xtixng-wovershoot-rv",
+      "expected_mq5_sha256": "5429ec09a19691252ff3ea2cfbb3b90074fbdb0693a82840432d0419b160a3ef",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41358_xtixng-wovershoot-rv\\QM5_41358_xtixng-wovershoot-rv.mq5",
+      "work_item_id": "86592904-59bb-46a3-8c7c-247523574758"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "86592904-59bb-46a3-8c7c-247523574758"
+}

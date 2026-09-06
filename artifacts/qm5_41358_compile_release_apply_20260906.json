@@ -1,0 +1,41 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "86592904-59bb-46a3-8c7c-247523574758"
+  ],
+  "backup": {
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260905T234238Z_0fcabf0e.sqlite",
+    "reused": false,
+    "sha256": "77868bc3bbababf479398badd433abcb6b8e334185c3a36547c24750935d071e"
+  },
+  "backup_reuse_max_age_minutes": 0.0,
+  "backup_timeout_seconds": 60.0,
+  "backup_write_guard": {
+    "attempts": 1,
+    "transaction": "BEGIN IMMEDIATE / validated / backed up / released / COMMIT",
+    "wait_seconds": 0.0
+  },
+  "deferred": [],
+  "factory_mutation_lock": {
+    "path": "D:\\QM\\strategy_farm\\state\\FACTORY_MUTATION.lock",
+    "release_status": "released"
+  },
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "5429ec09a19691252ff3ea2cfbb3b90074fbdb0693a82840432d0419b160a3ef",
+      "ea_id": "QM5_41358",
+      "ea_label": "QM5_41358_xtixng-wovershoot-rv",
+      "expected_mq5_sha256": "5429ec09a19691252ff3ea2cfbb3b90074fbdb0693a82840432d0419b160a3ef",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41358_xtixng-wovershoot-rv\\QM5_41358_xtixng-wovershoot-rv.mq5",
+      "work_item_id": "86592904-59bb-46a3-8c7c-247523574758"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-09-05T23:42:56+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "86592904-59bb-46a3-8c7c-247523574758"
+}

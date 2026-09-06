@@ -106,4 +106,4 @@ partial exit.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-09-06 | approved build-directory identity | source approval `5f191d7cd4`; EA ID/card `1c7de04746`; active basket magics `512d126638` |
-
+| v2 | 2026-09-06 | governed build and queue handoff | `COMPILE_OK` / `BUILD_CHECK_PASS` on `a3f0b993-f76a-41ff-80d3-79abc126f011`; logical-basket Q02 `f92931eb-e595-428e-a1f6-73cff428a0b6` enqueued below the 97% CPU ceiling |

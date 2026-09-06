@@ -65,8 +65,8 @@ r3_data_available: PASS
 r3_data_risk: SYNCHRONIZATION_AND_CONTINUOUS_CFD_BASIS_RISK
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
-q01_status: NOT_RUN
-q02_status: NOT_ENQUEUED
+q01_status: COMPILE_OK
+q02_status: ENQUEUED_PENDING
 review_focus: "Falsify a completed-week oil/gas relative reversal-overshoot fade outside the certified XAU/SP500/NDX/XNG book. Verify exact synchronized week ends, chronological non-overlapping returns, strict sign opposition, strict newest absolute dominance, inverse-newest-return sides, durable weekly attempt, aggregate fixed risk, atomic basket repair, and next-week lifecycle. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -371,14 +371,15 @@ establish realized correlation with the certified book.
 | Version | Date | Change | Gate | Status |
 |---|---|---|---|---|
 | v1 | 2026-09-06 | initial completed-week XTI/XNG reversal-overshoot reversion card | G0 | APPROVED |
+| v2 | 2026-09-06 | governed compile-PASS build and one logical fixed-risk baseline enqueue | Q01/Q02 | COMPILE_OK; ENQUEUED_PENDING |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Status | Evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-09-06 | APPROVED | `decisions/2026-09-06_qm5_41358_xtixng_weekly_reversal_overshoot_g0.md` |
-| Q01 Build Validation | — | NOT_RUN | — |
-| Q02 Baseline Screening | — | NOT_ENQUEUED | — |
+| Q01 Build Validation | 2026-09-06 | COMPILE_OK; BUILD_CHECK_PASS | `D:/QM/reports/work_items/a3f0b993-f76a-41ff-80d3-79abc126f011/QM5_41358/COMPILE_EA/compile_evidence.json` |
+| Q02 Baseline Screening | 2026-09-06 | ENQUEUED_PENDING | work item `f92931eb-e595-428e-a1f6-73cff428a0b6`; CPU admission `artifacts/qm5_41358_q02_cpu_admission_20260906.json` |
 
 ## Safety Boundary
 

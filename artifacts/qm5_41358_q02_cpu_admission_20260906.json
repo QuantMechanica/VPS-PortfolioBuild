@@ -1,0 +1,15 @@
+{
+  "schema_version": "qm.q02-cpu-admission/v1",
+  "recorded_at_utc": "2026-09-06T00:04:00Z",
+  "ea_id": "QM5_41358",
+  "ea_label": "QM5_41358_xtixng-wovershoot-rv",
+  "work_item_id": "f92931eb-e595-428e-a1f6-73cff428a0b6",
+  "phase": "Q02",
+  "threshold_pct": 97.0,
+  "samples_pct": [89.5, 79.9, 87.9, 88.8, 91.0],
+  "average_pct": 87.4,
+  "maximum_pct": 91.0,
+  "admitted": true,
+  "status_at_receipt": "pending",
+  "manual_backtest_run": false
+}
