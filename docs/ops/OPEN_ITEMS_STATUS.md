@@ -1080,3 +1080,10 @@ Beide OWNER-Freigaben (MNT020-RECOMPILE, MNT006-CANARY) sind ausgeführt und im 
 - **T9 reload** still pending (Q07 f654273d since 19:59Z; reload script idle-only).
 - **Q02 intakes:** `session_tools/intake_wave.py` (CPU 5×1s <97 %, D ≥60 GB); wave 1 54 open → 41117 intaken (f9a6e445); batches continue per tick. Note: Q02 done 3h = 0 while 792 Q02 rows pending — the queue is census-first by design; intakes add inventory, not throughput.
 - FTMO M13: journal clean (two harmless "mq5 not found" MetaEditor lines 22:18 Prague), governor no INVALID/LEASE, collector 1 s fresh, 0 halt.
+
+## Addendum 2026-09-06 21:25Z — Tick 21:13Z: 11196 rerun enqueued by Codex, alias completion closed, pulse follow-up
+
+- **Codex 9ecdd2f9 delivered** `farmctl enqueue-backtest --replacement-setfile` (e73af54859, +197) and enqueued the third 11196/XAUUSD Q08 rerun **9ec3b856** (replacement set 7cc424d2…); both DSR reruns (19c9df13, 9ec3b856) pending behind the XAUUSD symbol serialization; review closes after the cascade/DSR test run.
+- **Codex 4778daa7 APPROVED** (87344e9c77: `QM_MagicSymbolCanonical`, USOIL→XTIUSD, generator-owned; registry SHA unchanged). Codex replaced the four demo sleeve binaries on disk at 20:47Z while the charts kept running the 21:57Z builds → **OWNER re-attach of 10706/11910/1537/21505 Monday before session** so running = installed (receipt `2026-09-06_ftmo_symbol_alias_completion/install_receipt.json`).
+- **Pulse (09ad0c91c4) at 21:13Z:** RUNNING/RUNNING, 8 magics, 0 positions, equity 100,000; WARN from `collector_snapshot_stale:-2.0m` (negative age = clock-field defect) and weekend `ks_*_missing 0/8`; equity_source still ea_day_close_snapshot → Codex follow-up P60 enqueued. Journal 23:01 Prague: reconnect ("trading has been enabled, demo account"), no governor INVALID/LEASE, collector fresh, 0 halt.
+- T9 reload still pending (Q07 f654273d since 19:59Z). Q02 intakes wave 1: 41117, 41122, 41124 today; next batch CPU-gated.
