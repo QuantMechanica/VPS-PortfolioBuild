@@ -175,6 +175,19 @@ bool QM_MagicCollisionWithForeignOpenPositions(const int magic, const string exp
    return false;
   }
 
+// Broker/custom-symbol suffix tolerance (OWNER instruction 2026-09-06): the registry
+// carries the factory custom-symbol names (EURUSD.DWX); Darwinex-live and FTMO charts
+// use the broker's plain names (EURUSD, USOIL.cash). Compare the base names (text
+// before the first '.'), so a foreign symbol still fails closed (GBPUSD.DWX vs EURUSD)
+// while the same instrument under another suffix resolves.
+string QM_MagicSymbolBase(const string symbol)
+  {
+   const int dot = StringFind(symbol, ".");
+   if(dot <= 0)
+      return symbol;
+   return StringSubstr(symbol, 0, dot);
+  }
+
 int QM_MagicChecked(const int ea_id, const int symbol_slot, const string expected_symbol = "")
   {
    // Log-bomb guard: dedupe the per-tick "not registered"/"resolution failed" warnings (see QM_Magic).
@@ -205,7 +218,8 @@ int QM_MagicChecked(const int ea_id, const int symbol_slot, const string expecte
    if(expected_symbol != "")
      {
       const string registered_symbol = QM_MAGIC_REG_SYMBOL[registry_index];
-      if(registered_symbol != "" && registered_symbol != expected_symbol)
+      if(registered_symbol != "" && registered_symbol != expected_symbol &&
+         QM_MagicSymbolBase(registered_symbol) != QM_MagicSymbolBase(expected_symbol))
         {
          if(ea_id != chk_warn_ea || symbol_slot != chk_warn_slot)
            {

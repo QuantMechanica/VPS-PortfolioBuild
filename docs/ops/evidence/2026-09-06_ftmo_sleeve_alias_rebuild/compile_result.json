@@ -1,0 +1,41 @@
+{
+ "resolver_source_sha256": "16f331c29858f7895ad56a57da930e34670a5038d5b49d306cbb47199b58e0ac",
+ "results": {
+  "QM5_10706_tv-mon-ls": {
+   "rc": 1,
+   "secs": 9.1,
+   "ex5": true,
+   "sha256": "e922fda854f7f097537d2706b465802bd36ae6641f558ad44df0cc6cdbe70c20",
+   "log_tail": [
+    "D:\\QM\\ftmo\\compile_probe_sleeves_20260906\\MQL5\\Include\\QM\\QM_Common.mqh : information: including D:\\QM\\ftmo\\compile_probe_sleeves_20260906\\M",
+    "Result: 0 errors, 0 warnings, 6975 ms elapsed, cpu='X64 Regular'"
+   ]
+  },
+  "QM5_11910_larry-williams-18ma-2outside-bars-d1": {
+   "rc": 1,
+   "secs": 8.7,
+   "ex5": true,
+   "sha256": "4bf4d1e186f95ecd66480ef29ff55d9e9b30de5e2becaf60cba123df0fc966f5",
+   "log_tail": [
+    "D:\\QM\\ftmo\\compile_probe_sleeves_20260906\\MQL5\\Include\\QM\\QM_Common.mqh : information: including D:\\QM\\ftmo\\compile_probe_sleeves_20260906\\M",
+    "Result: 0 errors, 0 warnings, 6750 ms elapsed, cpu='X64 Regular'"
+   ]
+  },
+  "QM5_1537_aa-vol-sma10": {
+   "rc": 0,
+   "ex5": true,
+   "sha256": "a2e9e82892886afc990ee84d0f8926bfd0593717b30e900e656a165e0e110e6c",
+   "note": "second pass after copying the EA-local include QM5_1537_MonthlySleeveCalendar.mqh"
+  },
+  "QM5_21505_xag-weekly-lowvol-momentum": {
+   "rc": 1,
+   "secs": 9.0,
+   "ex5": true,
+   "sha256": "63d4d667bf7c9ba94fd966d5f5001bc014a86dea8c144e92d8bdd48f1ab23cb6",
+   "log_tail": [
+    "D:\\QM\\ftmo\\compile_probe_sleeves_20260906\\MQL5\\Include\\QM\\QM_Common.mqh : information: including D:\\QM\\ftmo\\compile_probe_sleeves_20260906\\M",
+    "Result: 0 errors, 0 warnings, 7271 ms elapsed, cpu='X64 Regular'"
+   ]
+  }
+ }
+}

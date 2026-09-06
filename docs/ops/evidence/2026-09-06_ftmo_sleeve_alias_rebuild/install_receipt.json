@@ -1,0 +1,51 @@
+{
+ "schema": "qm.ftmo-demo-sleeve-rebuild-receipt/v1",
+ "at_utc": "2026-09-06T19:55:42+00:00",
+ "actor": "claude-session-018mXkPPkaHQ2fPuduPCBcWc",
+ "authority": "OWNER chat 2026-09-06 ~19:57Z: Auf FTMO oder dem Live Account von Darwinexzero haben die Symbole keine .DWX Endung, falls das der Fehler ist, korrigier ihn!",
+ "cause": "EA_MAGIC_RESOLUTION_FAILED: registry symbol <SYM>.DWX (factory custom symbol) vs broker chart symbol <SYM>",
+ "fix": "framework/include/QM/QM_MagicResolver.mqh: QM_MagicSymbolBase() base-name comparison (suffix-tolerant, foreign symbols still fail closed)",
+ "resolver_source_sha256": "16f331c29858f7895ad56a57da930e34670a5038d5b49d306cbb47199b58e0ac",
+ "repo_head_before_commit": "5cc1ea19ec",
+ "compiler": "C:\\Program Files\\FTMO Global Markets MT5 Terminal\\MetaEditor64.exe",
+ "probe_dir": "D:\\QM\\ftmo\\compile_probe_sleeves_20260906",
+ "factory_inventory_touched": false,
+ "installed": [
+  {
+   "ea": "QM5_10706_tv-mon-ls",
+   "source_mq5_sha256": "909327914d7fd65301751c38421c5dec3cddf8e96864d45c26f4db7a1f8fe27c",
+   "old_sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb",
+   "new_sha256": "e922fda854f7f097537d2706b465802bd36ae6641f558ad44df0cc6cdbe70c20",
+   "bytes": 435216,
+   "installed_sha256": "e922fda854f7f097537d2706b465802bd36ae6641f558ad44df0cc6cdbe70c20",
+   "ok": true
+  },
+  {
+   "ea": "QM5_11910_larry-williams-18ma-2outside-bars-d1",
+   "source_mq5_sha256": "47ccfa2c699ee25ecb55261227521ebb5f14c1996fea0b63213d8acfd8d5245d",
+   "old_sha256": "e18d477e63c40cb1002aa4d93d8efcc3ec6fddf1081fb73ad9df1b0a7a3042de",
+   "new_sha256": "4bf4d1e186f95ecd66480ef29ff55d9e9b30de5e2becaf60cba123df0fc966f5",
+   "bytes": 428354,
+   "installed_sha256": "4bf4d1e186f95ecd66480ef29ff55d9e9b30de5e2becaf60cba123df0fc966f5",
+   "ok": true
+  },
+  {
+   "ea": "QM5_1537_aa-vol-sma10",
+   "source_mq5_sha256": "7edf9ade3dec02496e739c3cf1c653eb33bcc4339a223907877f2c78a393fc32",
+   "old_sha256": "142a019e773a493def0640722efb9d591d094650b35a69d5de39f6af3a048106",
+   "new_sha256": "a2e9e82892886afc990ee84d0f8926bfd0593717b30e900e656a165e0e110e6c",
+   "bytes": 450028,
+   "installed_sha256": "a2e9e82892886afc990ee84d0f8926bfd0593717b30e900e656a165e0e110e6c",
+   "ok": true
+  },
+  {
+   "ea": "QM5_21505_xag-weekly-lowvol-momentum",
+   "source_mq5_sha256": "311deb260e57129d1fb35e5bc2875fc76f755711b2caeb95501e9bfe1bb63887",
+   "old_sha256": "395c4747832acbcdf8a68d8598e53abe5786bdc6c538767c400884cd82b2aea1",
+   "new_sha256": "63d4d667bf7c9ba94fd966d5f5001bc014a86dea8c144e92d8bdd48f1ab23cb6",
+   "bytes": 431564,
+   "installed_sha256": "63d4d667bf7c9ba94fd966d5f5001bc014a86dea8c144e92d8bdd48f1ab23cb6",
+   "ok": true
+  }
+ ]
+}
