@@ -1725,6 +1725,15 @@ def main() -> int:
     result = send_mail(subject, text_body, html_body)
     print(json.dumps({"subject": subject, **result}, indent=2))
 
+    if result.get("sent"):
+        try:
+            from notion_morning_brief import publish
+            notion_result = publish(text_body, data["date_iso"])
+            print(json.dumps({"notion": notion_result}))
+        except Exception as exc:
+            # Keep mail delivery independent; never print token/HTTP exception bodies.
+            print(json.dumps({"notion": "FAILED", "error_type": type(exc).__name__}))
+
     # Vault archive (timestamped — scrollable off-VPS history). The per-user
     # GoogleDriveFS mount can lag or drop in the non-interactive session
     # (2026-07-20: the 04:45 backup and this 06:00 write hit the same outage
