@@ -1,0 +1,55 @@
+{
+  "candidate": {
+    "author": "Moskowitz Ooi Pedersen Villar Joutz Ramberg Parsons",
+    "mechanic": "XTI XNG synchronized completed-week strict opposite individual returns buy winner sell loser continuation equal-notional one-week basket",
+    "slug": "xtixng-decouple-cont",
+    "strategy_id": "AI-CODEX-XTIXNG-DECOUPLE-CONT-20260906_S01"
+  },
+  "error": "MISSING_ROOT:strategy_wiki:G:\\My Drive\\09 Strategy Wiki\\strategies",
+  "exit_code": 3,
+  "generated_at_utc": "2026-09-06T09:46:59+00:00",
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41362_xtixng-wdecel-cont_card.md",
+      "score": 0.75,
+      "slug": "xtixng-wdecel-cont",
+      "source": "card",
+      "strategy_id": "AI-CODEX-XTIXNG-WDECEL-CONT-20260906_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41365_xtixng-decouple-rv_card.md",
+      "score": 0.75,
+      "slug": "xtixng-decouple-rv",
+      "source": "card",
+      "strategy_id": "AI-CODEX-XTIXNG-DECOUPLE-RV-20260906_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4846,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1459,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\09 Strategy Wiki\\strategies",
+      "count": null,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "MISSING_ROOT"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "FUZZY_MATCH"
+}
