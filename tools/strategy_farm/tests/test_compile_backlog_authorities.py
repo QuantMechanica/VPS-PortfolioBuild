@@ -39,14 +39,15 @@ def test_each_registered_authority_is_exact_and_self_expiring(tmp_path, monkeypa
     assert not cwi._source_repair_authorized(label + "-other", authority, **args)
     for field, value in [("source_sha", "0" * 64), ("ea_id", "999999"), ("repo_root", None), ("inventory", None)]:
         assert not cwi._source_repair_authorized(label, authority, **{**args, field: value})
-    for field, value in [("id", "unknown"), ("phase", "Q02"), ("status", "active"),
-                         ("verdict", "UNEXPECTED_VERDICT"), ("claimed_by", "T1"), ("payload_json", "{}")]:
-        changed = copy.deepcopy(args)
-        changed["inventory"]["work_rows"][binding["ea_id"]][0][field] = value
-        assert not cwi._source_repair_authorized(label, authority, **changed)
-    missing = copy.deepcopy(args)
-    missing["inventory"]["work_rows"][binding["ea_id"]] = rows[1:]
-    assert not cwi._source_repair_authorized(label, authority, **missing)
+    if rows:
+        for field, value in [("id", "unknown"), ("phase", "Q02"), ("status", "active"),
+                             ("verdict", "UNEXPECTED_VERDICT"), ("claimed_by", "T1"), ("payload_json", "{}")]:
+            changed = copy.deepcopy(args)
+            changed["inventory"]["work_rows"][binding["ea_id"]][0][field] = value
+            assert not cwi._source_repair_authorized(label, authority, **changed)
+        missing = copy.deepcopy(args)
+        missing["inventory"]["work_rows"][binding["ea_id"]] = rows[1:]
+        assert not cwi._source_repair_authorized(label, authority, **missing)
     evidence.write_bytes(b"changed evidence")
     assert not cwi._source_repair_authorized(label, authority, **args)
     evidence.unlink()
@@ -168,6 +169,9 @@ def test_ml_predicate_authority_refuses_a_different_source_or_a_missing_predeces
 FRAMEWORK_INPUT_PIN_AUTHORITIES = tuple(
     sorted(cwi.FRAMEWORK_INPUT_PIN_SOURCE_REPAIR_REGISTRATIONS)
 )
+FRAMEWORK_INPUT_PIN_WAVE1_AUTHORITIES = tuple(
+    sorted(cwi.FRAMEWORK_INPUT_PIN_WAVE1_SOURCE_REPAIR_REGISTRATIONS)
+)
 
 
 @pytest.mark.parametrize("authority", FRAMEWORK_INPUT_PIN_AUTHORITIES)
@@ -194,3 +198,22 @@ def test_framework_input_pin_authority_matches_repaired_source_and_evidence(auth
 def test_framework_input_pin_authority_dry_run_is_eligible(tmp_path, monkeypatch, authority):
     binding, _evidence, _rows, args = context(tmp_path, monkeypatch, authority)
     assert cwi._source_repair_authorized(binding["ea_label"], authority, **args)
+
+
+def test_framework_input_pin_wave1_registration_is_exact_and_hash_bound():
+    assert len(FRAMEWORK_INPUT_PIN_WAVE1_AUTHORITIES) == 70
+    assert all(authority.startswith(
+        "router_ops_issue:0b971b15-c37f-4ea6-8304-f61d76433862:QM5_"
+    ) for authority in FRAMEWORK_INPUT_PIN_WAVE1_AUTHORITIES)
+    repo_root = Path(__file__).resolve().parents[3]
+    evidence = repo_root / cwi.FRAMEWORK_INPUT_PIN_WAVE1_EVIDENCE
+    assert hashlib.sha256(evidence.read_bytes()).hexdigest() == (
+        cwi.FRAMEWORK_INPUT_PIN_WAVE1_EVIDENCE_SHA256
+    )
+    for authority in FRAMEWORK_INPUT_PIN_WAVE1_AUTHORITIES:
+        binding = cwi.FRAMEWORK_INPUT_PIN_WAVE1_SOURCE_REPAIR_REGISTRATIONS[authority]
+        source = repo_root / "framework" / "EAs" / binding["ea_label"] / (
+            binding["ea_label"] + ".mq5"
+        )
+        assert source.read_bytes().count(b"\r") == 0
+        assert hashlib.sha256(source.read_bytes()).hexdigest() == binding["source_sha256"]

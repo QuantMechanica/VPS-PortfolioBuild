@@ -88,6 +88,15 @@ def test_repaired_pacer_guard_is_negative(tmp_path: Path, ea_id: int) -> None:
     assert run_predicate(tmp_path, [_ea_source(REPO_ROOT, ea_id)]) == []
 
 
+def test_wave1_plain_rebuild_cohort_is_predicate_clean(tmp_path: Path) -> None:
+    evidence = json.loads((
+        REPO_ROOT / "docs/ops/evidence/2026-09-06_framework_input_pin_wave1_authority.json"
+    ).read_text(encoding="utf-8"))
+    sources = [REPO_ROOT / row["source_path"] for row in evidence["registrations"]]
+    assert len(sources) == 70
+    assert run_predicate(tmp_path, sources) == []
+
+
 def test_q07_passing_10268_guard_is_negative(tmp_path: Path) -> None:
     assert run_predicate(tmp_path, [_ea_source(REPO_ROOT, 10268)]) == []
 
@@ -121,7 +130,7 @@ def test_canonical_4000_source_census_flags_exact_200_only(tmp_path: Path) -> No
     assert len(repaired) == 7
     assert not (repaired & expected_seed_neq)  # the seven repaired guards no longer pin the seed
     assert not (repaired & flagged)  # ...and the broad predicate is clean on them
-    assert len(expected_seed_neq) >= 150  # the QM5_20xxx cohort is still pinned until its batch ticket
+    assert len(expected_seed_neq) >= 100  # Wave 2 remains separately governed after Wave 1
     assert expected_seed_neq <= flagged
     assert flagged - expected_seed_neq  # broader named-input pins are real findings
 

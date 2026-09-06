@@ -752,21 +752,17 @@ void Strategy_PrepareDecisionSignal()
 
 bool Strategy_NoTradeFilter()
   {
-   if(!Strategy_IsHostChart() || qm_ea_id != 41169 ||
-      qm_magic_slot_offset != 0 || qm_rng_seed != 42)
+   if(!Strategy_IsHostChart() ||
+      qm_ea_id != 41169 ||
+      qm_magic_slot_offset != 0)
       return true;
    if(RISK_PERCENT != 0.0 || RISK_FIXED != 1000.0 ||
       PORTFOLIO_WEIGHT != 1.0)
       return true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF ||
-      qm_news_compliance != QM_NEWS_COMPLIANCE_NONE ||
-      qm_news_mode_legacy != QM_NEWS_OFF ||
-      qm_news_stale_max_hours != 336 ||
-      qm_news_min_impact != "high")
-      return true;
-   if(qm_friday_close_enabled ||
-      qm_friday_close_hour_broker != 21 ||
-      MathAbs(qm_stress_reject_probability) > 0.000000000001)
+
+   if(!MathIsValidNumber(qm_stress_reject_probability) ||
+      qm_stress_reject_probability < 0.0 ||
+      qm_stress_reject_probability > 1.0)
       return true;
    if(strategy_endpoint_count != 13 ||
       strategy_record_threshold != 2 ||

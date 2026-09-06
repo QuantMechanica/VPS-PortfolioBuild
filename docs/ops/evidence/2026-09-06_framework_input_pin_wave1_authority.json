@@ -1,0 +1,1637 @@
+{
+  "schema": "qm.compile-ea-source-repair-authority-evidence/v1",
+  "task_id": "0b971b15-c37f-4ea6-8304-f61d76433862",
+  "mode": "review_only_no_enqueue",
+  "cohort": "PLAIN_REBUILD",
+  "cohort_source": "docs/ops/evidence/2026-09-06_framework_input_pin_census.json",
+  "repair": "remove framework-owned input pins while retaining EA identity, magic-slot, strategy/risk pins and only the finite 0..1 stress range check",
+  "validation": {
+    "cohort_count": 70,
+    "approved_cards": 70,
+    "registry_magic_consistent": 70,
+    "predicate_hits_after_repair": 0,
+    "excluded_count": 0,
+    "exclusions": []
+  },
+  "registrations": [
+    {
+      "ea_id": "21524",
+      "ea_label": "QM5_21524_wti-xcu-relmom",
+      "source_path": "framework/EAs/QM5_21524_wti-xcu-relmom/QM5_21524_wti-xcu-relmom.mq5",
+      "pre_repair_git_blob_sha256": "c44b50cfee3ce0748a13a890d6362036d5ae608037eae07e54bbee088f940ba0",
+      "source_sha256": "7361428be51cc68d669300d710e1f4197ecac8b4675ab25b7dc59afe4854e365",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_21524_wti-xcu-relmom_card.md",
+      "approved_card_sha256": "89052cd562729738758c5cb40bbcb8bf0c032b3979a08c90b8d84ec8f766d81b",
+      "registry_status": "active",
+      "active_magic_rows": 2,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41095",
+      "ea_label": "QM5_41095_wti-wexcursion-imbalance-mom",
+      "source_path": "framework/EAs/QM5_41095_wti-wexcursion-imbalance-mom/QM5_41095_wti-wexcursion-imbalance-mom.mq5",
+      "pre_repair_git_blob_sha256": "04bfef934775a963c3ce3a9b45717b36a9f2352488086f8bbf90e51404f80305",
+      "source_sha256": "b0ea09f497fa6d87922c2666e54b55600f4dcfdd1634a81afc7f1ec0fc1bbeed",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41095_wti-wexcursion-imbalance-mom_card.md",
+      "approved_card_sha256": "2a9bfb8dae1b316b581271e04d5c1a01758a8bb44534de1a8ba0ab33bc4b1aca",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "c88b39a4-1220-4894-a2c3-9818651c763e",
+          "source_sha256": "04bfef934775a963c3ce3a9b45717b36a9f2352488086f8bbf90e51404f80305",
+          "status": "failed",
+          "verdict": "INVALID",
+          "created_at": "2026-08-21T19:50:36+00:00",
+          "updated_at": "2026-08-22T04:28:44.706956Z"
+        },
+        {
+          "work_item_id": "fb42e3cb-b49b-4db3-83a8-6be766d27144",
+          "source_sha256": "04bfef934775a963c3ce3a9b45717b36a9f2352488086f8bbf90e51404f80305",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-08-22T05:23:59.195009+00:00",
+          "updated_at": "2026-08-22T14:49:09+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41096",
+      "ea_label": "QM5_41096_wti-wexcursion-reject-rv",
+      "source_path": "framework/EAs/QM5_41096_wti-wexcursion-reject-rv/QM5_41096_wti-wexcursion-reject-rv.mq5",
+      "pre_repair_git_blob_sha256": "84ca1d4783b928cf548d488832403fe38a864b8e9d8919542159044e6f526240",
+      "source_sha256": "6b261c50469bcac12b0695c1848d59624bbb5d0ecd613bdb8c32aa905c1f39f2",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41096_wti-wexcursion-reject-rv_card.md",
+      "approved_card_sha256": "8ffa84a429e9a3cc7b9a1a105d1b8a3880769f48e3e208a93e391f51f1c1d1ee",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "678881b9-d266-4cb4-9b92-1bf1b85b7030",
+          "source_sha256": "84ca1d4783b928cf548d488832403fe38a864b8e9d8919542159044e6f526240",
+          "status": "failed",
+          "verdict": "INVALID",
+          "created_at": "2026-08-21T20:46:28+00:00",
+          "updated_at": "2026-08-22T04:28:44.706956Z"
+        },
+        {
+          "work_item_id": "ddbe7857-0339-481e-aa6e-d57aaec9e83a",
+          "source_sha256": "84ca1d4783b928cf548d488832403fe38a864b8e9d8919542159044e6f526240",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-08-22T05:23:59.195009+00:00",
+          "updated_at": "2026-08-22T14:50:53+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41098",
+      "ea_label": "QM5_41098_wti-wextreme-sequence-mom",
+      "source_path": "framework/EAs/QM5_41098_wti-wextreme-sequence-mom/QM5_41098_wti-wextreme-sequence-mom.mq5",
+      "pre_repair_git_blob_sha256": "8cff83546ad0f5ffa60d4f8b144e3b6e204a6c01a1b519e60f0d9f1df1058866",
+      "source_sha256": "a2e8a4f18abde07f1af397b659aea6060c8049557e51497f0899a4331015be39",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41098_wti-wextreme-sequence-mom_card.md",
+      "approved_card_sha256": "20383e66101c13a394f2e69a442561f6e2ec2fdbf9733b209d04ec99f406fc3a",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "089fc9d1-dff7-4204-9a8c-70c915ec7943",
+          "source_sha256": "8cff83546ad0f5ffa60d4f8b144e3b6e204a6c01a1b519e60f0d9f1df1058866",
+          "status": "failed",
+          "verdict": "INVALID",
+          "created_at": "2026-08-21T21:54:44+00:00",
+          "updated_at": "2026-08-22T04:28:44.706956Z"
+        },
+        {
+          "work_item_id": "9f1385ac-5e1f-4780-a604-52562e6e1256",
+          "source_sha256": "8cff83546ad0f5ffa60d4f8b144e3b6e204a6c01a1b519e60f0d9f1df1058866",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-08-22T05:23:59.195009+00:00",
+          "updated_at": "2026-08-22T15:02:53+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41099",
+      "ea_label": "QM5_41099_wti-wclose-turn-mom",
+      "source_path": "framework/EAs/QM5_41099_wti-wclose-turn-mom/QM5_41099_wti-wclose-turn-mom.mq5",
+      "pre_repair_git_blob_sha256": "ceba37a2444dd6e1a56115ff995c34412a211e3bcc7057d8911cd999ff26743b",
+      "source_sha256": "52de40ae95d049a58ca8b409cf309a5b483e0e487ab5c9af4ec8c71fe4f31088",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41099_wti-wclose-turn-mom_card.md",
+      "approved_card_sha256": "041858958e5aa78a46057f3fbf1d80ab5076b4916640c9646b0afc849637659b",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "b23ec578-eba6-41cf-854d-91737c4c4373",
+          "source_sha256": "ceba37a2444dd6e1a56115ff995c34412a211e3bcc7057d8911cd999ff26743b",
+          "status": "failed",
+          "verdict": "INVALID",
+          "created_at": "2026-08-21T22:55:26+00:00",
+          "updated_at": "2026-08-22T04:28:44.706956Z"
+        },
+        {
+          "work_item_id": "094f4389-d759-4e41-8d5d-8ce558a2bef1",
+          "source_sha256": "ceba37a2444dd6e1a56115ff995c34412a211e3bcc7057d8911cd999ff26743b",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-08-22T05:23:59.195009+00:00",
+          "updated_at": "2026-08-22T15:04:07+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41100",
+      "ea_label": "QM5_41100_xng-wclose-turn-mom",
+      "source_path": "framework/EAs/QM5_41100_xng-wclose-turn-mom/QM5_41100_xng-wclose-turn-mom.mq5",
+      "pre_repair_git_blob_sha256": "a21062be279588efb46f0a0b5f18cb83227e61f511996f4edda55ead4055298c",
+      "source_sha256": "e0364ab43dab4eb58066ec88395733f848b98955d3e2df15eca31d4a62b3270c",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41100_xng-wclose-turn-mom_card.md",
+      "approved_card_sha256": "fec53137a996df36a4ba78d46bc55825d4a34709d6655e79b22a3018c295803c",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "e6a55d77-24e2-47a4-ba70-4bf55972f35c",
+          "source_sha256": "a21062be279588efb46f0a0b5f18cb83227e61f511996f4edda55ead4055298c",
+          "status": "failed",
+          "verdict": "INVALID",
+          "created_at": "2026-08-21T23:47:36+00:00",
+          "updated_at": "2026-08-22T04:28:44.706956Z"
+        },
+        {
+          "work_item_id": "5541a62d-1d66-4de3-9a7e-5c2839e057f9",
+          "source_sha256": "a21062be279588efb46f0a0b5f18cb83227e61f511996f4edda55ead4055298c",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-08-22T05:23:59.196013+00:00",
+          "updated_at": "2026-08-22T15:05:26+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41101",
+      "ea_label": "QM5_41101_xng-wrange-migrate-mom",
+      "source_path": "framework/EAs/QM5_41101_xng-wrange-migrate-mom/QM5_41101_xng-wrange-migrate-mom.mq5",
+      "pre_repair_git_blob_sha256": "e6e83e3084db7fc99df6c3b7a6fc2ac236bbfb92550b7fd7b7b29ea8b11dbd08",
+      "source_sha256": "7d5d7226c4dfb41d6df9d409932c8efcc1a0184cb52a4d3184b5fd95af58ecae",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41101_xng-wrange-migrate-mom_card.md",
+      "approved_card_sha256": "f5b1edcbb5a6a4fbfaac8c75dd023a22ab0eb48ee2a3f01fcb23614731774746",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "97095c29-b534-4e4c-baf8-aa8d382225eb",
+          "source_sha256": "e6e83e3084db7fc99df6c3b7a6fc2ac236bbfb92550b7fd7b7b29ea8b11dbd08",
+          "status": "failed",
+          "verdict": "INVALID",
+          "created_at": "2026-08-22T00:46:07+00:00",
+          "updated_at": "2026-08-22T04:28:44.706956Z"
+        },
+        {
+          "work_item_id": "16027752-6ae2-42b5-8182-89d49b5de4c4",
+          "source_sha256": "e6e83e3084db7fc99df6c3b7a6fc2ac236bbfb92550b7fd7b7b29ea8b11dbd08",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-08-22T05:23:59.196013+00:00",
+          "updated_at": "2026-08-22T15:06:42+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41102",
+      "ea_label": "QM5_41102_wti-mrange-migrate-mom",
+      "source_path": "framework/EAs/QM5_41102_wti-mrange-migrate-mom/QM5_41102_wti-mrange-migrate-mom.mq5",
+      "pre_repair_git_blob_sha256": "5098639d34f9fa01557a4d270710bd91023e0cba05f545eac1d0537b1bd9c6bd",
+      "source_sha256": "5f18fb34f90ff9aa2c87257b4bc0e0ed1cd2e1ecb182c3725dd992358ca691ed",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41102_wti-mrange-migrate-mom_card.md",
+      "approved_card_sha256": "4547bc1313556e51a4ab2caed64143f79a83979750c1350a1ce4ba91e1729202",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "200baa1f-8f4b-4438-807a-835734be24e9",
+          "source_sha256": "5098639d34f9fa01557a4d270710bd91023e0cba05f545eac1d0537b1bd9c6bd",
+          "status": "failed",
+          "verdict": "INVALID",
+          "created_at": "2026-08-22T01:53:17+00:00",
+          "updated_at": "2026-08-22T04:28:44.706956Z"
+        },
+        {
+          "work_item_id": "ec323614-4d44-4d8e-b8c0-1553fb7801f7",
+          "source_sha256": "5098639d34f9fa01557a4d270710bd91023e0cba05f545eac1d0537b1bd9c6bd",
+          "status": "failed",
+          "verdict": "COMPILE_FAIL",
+          "created_at": "2026-08-22T05:23:59.196013+00:00",
+          "updated_at": "2026-08-22T15:07:47+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41105",
+      "ea_label": "QM5_41105_wti-mclose-location-mom",
+      "source_path": "framework/EAs/QM5_41105_wti-mclose-location-mom/QM5_41105_wti-mclose-location-mom.mq5",
+      "pre_repair_git_blob_sha256": "9fa2683395d762fe3a1260f957003d419167e8717a42ee9e3ad1247e5778b007",
+      "source_sha256": "f4b7389c030c18097fc07df3e475478a520607242bc78fb869198373daf49c9d",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41105_wti-mclose-location-mom_card.md",
+      "approved_card_sha256": "0eae98ebd889ed99bf642d9569bf4c82bbd84d981bed7d9b2003efd01fb1d078",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "72e08081-b13c-4168-8988-8b790fa0340c",
+          "source_sha256": "9fa2683395d762fe3a1260f957003d419167e8717a42ee9e3ad1247e5778b007",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-08-29T09:44:31+00:00",
+          "updated_at": "2026-09-05T21:34:28+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41106",
+      "ea_label": "QM5_41106_wti-mbody-dominance-mom",
+      "source_path": "framework/EAs/QM5_41106_wti-mbody-dominance-mom/QM5_41106_wti-mbody-dominance-mom.mq5",
+      "pre_repair_git_blob_sha256": "5aa7d4f6d1e4829ce39eb2e84d94c6e79484f2ade644cf86080b6bcfd5425695",
+      "source_sha256": "33ec591ddb10c6ebf3ec523a7d0764ccd511da2e5c03ec6ebe12ca637f007b9b",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41106_wti-mbody-dominance-mom_card.md",
+      "approved_card_sha256": "fc512212deb734b2e0e61a7fafd9efc1c159372b53e31c83db4dd6f5ebca0c33",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "1c5bbf58-399e-4f37-bb35-4f56118fbd76",
+          "source_sha256": "5aa7d4f6d1e4829ce39eb2e84d94c6e79484f2ade644cf86080b6bcfd5425695",
+          "status": "failed",
+          "verdict": "COMPILE_FAIL",
+          "created_at": "2026-08-22T05:34:41+00:00",
+          "updated_at": "2026-08-23T10:34:58+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41107",
+      "ea_label": "QM5_41107_wti-minside-body-mom",
+      "source_path": "framework/EAs/QM5_41107_wti-minside-body-mom/QM5_41107_wti-minside-body-mom.mq5",
+      "pre_repair_git_blob_sha256": "1125ffc0a52e53b9ab0197fff04ce80307bc6e19a9e184e7736710aa917c382e",
+      "source_sha256": "24fa152fabfb3efadb9dbc00ef4b842ce1054511cdd960924faaf7dc9d69a8a9",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41107_wti-minside-body-mom_card.md",
+      "approved_card_sha256": "b2f0c1a6a2b23c482c7f643fa740857a470a44a2f3f13dca126f02fe78bacf16",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "44e72083-6aa3-4618-a3d4-9ec4d04c02db",
+          "source_sha256": "1125ffc0a52e53b9ab0197fff04ce80307bc6e19a9e184e7736710aa917c382e",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-08-22T06:52:09+00:00",
+          "updated_at": "2026-08-23T11:05:13+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41108",
+      "ea_label": "QM5_41108_wti-mrange-expansion-mom",
+      "source_path": "framework/EAs/QM5_41108_wti-mrange-expansion-mom/QM5_41108_wti-mrange-expansion-mom.mq5",
+      "pre_repair_git_blob_sha256": "315fbe4290c58fefaebbc50a90d498fca1e61a015bcc00a3eac9414c314cf7db",
+      "source_sha256": "cb2230c395c5dbc23ab4c1296e9702ee2aa216bc1fac4c7bf094b43d5d9fb1f0",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41108_wti-mrange-expansion-mom_card.md",
+      "approved_card_sha256": "8b6eea055f1143e52c0b01442637e62839f0062daa4b29f0052197d887850d25",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "34ec16fa-4c6a-4eea-9b8e-0e42c504d038",
+          "source_sha256": "315fbe4290c58fefaebbc50a90d498fca1e61a015bcc00a3eac9414c314cf7db",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-08-22T07:50:05+00:00",
+          "updated_at": "2026-08-23T11:50:37+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41111",
+      "ea_label": "QM5_41111_wti-mdaybreadth-mom",
+      "source_path": "framework/EAs/QM5_41111_wti-mdaybreadth-mom/QM5_41111_wti-mdaybreadth-mom.mq5",
+      "pre_repair_git_blob_sha256": "3e3ef1b5d123971d97ad7bf5541cff278aa982a8fb61574ed65dc42eb3ec7bd3",
+      "source_sha256": "43878cda752b0dd074d667cd7dbe51220db9cd9069e8980deb552bc1cd00620f",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41111_wti-mdaybreadth-mom_card.md",
+      "approved_card_sha256": "1f630027a6d3b85d159ab59ff1105109780c3cd9fd677d1005080db4ec79dcde",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "4f496575-3813-43d1-9df4-5c3a81d0e4ff",
+          "source_sha256": "9facd1ead3ade302180b06304bcaf7c51c4f3f083e23055acc56eb309374d096",
+          "status": "failed",
+          "verdict": "COMPILE_FAIL",
+          "created_at": "2026-08-22T11:55:30+00:00",
+          "updated_at": "2026-08-23T13:30:14+00:00"
+        },
+        {
+          "work_item_id": "cee2423d-d224-4581-a127-5fdfb548a5fa",
+          "source_sha256": "3796c45b652204de37f594bcb58a2690fa2f15f274b2edc0b2a9abd30a856ae8",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-08-23T17:14:00+00:00",
+          "updated_at": "2026-08-25T16:43:51+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41114",
+      "ea_label": "QM5_41114_wti-mhalfagree-mom",
+      "source_path": "framework/EAs/QM5_41114_wti-mhalfagree-mom/QM5_41114_wti-mhalfagree-mom.mq5",
+      "pre_repair_git_blob_sha256": "5f0f321d36e883569e535e6390953d2f588666fe942bfcb2eb592f2402c1f5a9",
+      "source_sha256": "65f215753f32a47eee558b754a4bdffccce56adcec88cf2dd1c13de7ccff8e66",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41114_wti-mhalfagree-mom_card.md",
+      "approved_card_sha256": "29d4e16b1b14da0c34cb209d853d75e6df225d39799a1fa7fdebcb50358ae86a",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "3e958389-60d9-4709-afb2-efdd2efe3965",
+          "source_sha256": "5f0f321d36e883569e535e6390953d2f588666fe942bfcb2eb592f2402c1f5a9",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-08-22T15:09:36+00:00",
+          "updated_at": "2026-08-25T15:36:00+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41115",
+      "ea_label": "QM5_41115_wti-mthirdvote-mom",
+      "source_path": "framework/EAs/QM5_41115_wti-mthirdvote-mom/QM5_41115_wti-mthirdvote-mom.mq5",
+      "pre_repair_git_blob_sha256": "8041496ce654f47e70e4c7a69386ccccb601a1e5b549f75d6984f5922dd96152",
+      "source_sha256": "f167549361d7890abee2b620086188958fa93587734e2ba96f9f95145fc8a4b0",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41115_wti-mthirdvote-mom_card.md",
+      "approved_card_sha256": "55f51a934bd5f386bd511d0b45615e107ac466c488461c9bbc4da2f259cce3a9",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "87cd0c24-273d-4e11-b7ef-408c8dbccc3f",
+          "source_sha256": "8041496ce654f47e70e4c7a69386ccccb601a1e5b549f75d6984f5922dd96152",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-08-22T16:27:36+00:00",
+          "updated_at": "2026-08-25T15:43:58+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41117",
+      "ea_label": "QM5_41117_wti-mlatehalf-dom-mom",
+      "source_path": "framework/EAs/QM5_41117_wti-mlatehalf-dom-mom/QM5_41117_wti-mlatehalf-dom-mom.mq5",
+      "pre_repair_git_blob_sha256": "7bfde4a828de18d47c4af2bb9c7882f239f8a0b0e51910f9b46e0cba9ce12ad9",
+      "source_sha256": "da9bca4263317a0d14e2e16c1e96e359eac2248c179980b21745610ed0d2da17",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41117_wti-mlatehalf-dom-mom_card.md",
+      "approved_card_sha256": "6495c127d98940191c1a8926c48e3705bf15818347494b4f3de5ca1902bbbc90",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41122",
+      "ea_label": "QM5_41122_wti-mextreme-sequence-mom",
+      "source_path": "framework/EAs/QM5_41122_wti-mextreme-sequence-mom/QM5_41122_wti-mextreme-sequence-mom.mq5",
+      "pre_repair_git_blob_sha256": "198e82d3021cc5c8313db7e6c54fd630f410c15701607952029ea346958e9a9a",
+      "source_sha256": "28abc7a0a92bccb046d8c3a4594164d0761478867a424a684695ec7e226647ae",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41122_wti-mextreme-sequence-mom_card.md",
+      "approved_card_sha256": "d390506fbc1dab6f569a2fa0b14821a0e3fa875f01f6a041578466c40a7a6a7a",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41124",
+      "ea_label": "QM5_41124_wti-mrms-coherence-mom",
+      "source_path": "framework/EAs/QM5_41124_wti-mrms-coherence-mom/QM5_41124_wti-mrms-coherence-mom.mq5",
+      "pre_repair_git_blob_sha256": "cfed7fb3e5ad546e2da9be4396a8177de551e68ed7d0bf2ff3737b53822d556e",
+      "source_sha256": "e64516f3933a2244c2e9b1c407a261ef4992b7fcd53c1f9fcb61747d757c080f",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41124_wti-mrms-coherence-mom_card.md",
+      "approved_card_sha256": "690896573d2274153c691bf439df02a6d4d3ac00b889476d1086fa60e18615ba",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "2de9682b-480f-42b5-a43c-bb3f387ab3c4",
+          "source_sha256": "04eb4e35f59afb24748e4858b28c7e7c81b9033462f443409e47ce793e9eaba8",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-08-23T17:14:00+00:00",
+          "updated_at": "2026-08-25T17:20:58+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41126",
+      "ea_label": "QM5_41126_wti-mpath-eff-mom",
+      "source_path": "framework/EAs/QM5_41126_wti-mpath-eff-mom/QM5_41126_wti-mpath-eff-mom.mq5",
+      "pre_repair_git_blob_sha256": "b54876e18f5daf68f5e64472316cf8e1a2c894330510337a4fa58b96461f5fe9",
+      "source_sha256": "ddef1ed81bb404f312578eec0fb787d9fbcaff2bcebf58109331496be0acbcca",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41126_wti-mpath-eff-mom_card.md",
+      "approved_card_sha256": "6afe8fe6cf4287d0cf914ddf641c6782812ce3d73dcd585feaa88aee2e01ddfb",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "cc714ac2-ff1f-4604-ae08-7631ddf3b971",
+          "source_sha256": "31c50233d9aaf64ccbdc596ffbc7667557131d4a74924bdde233cbe04faab9ee",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-08-23T17:14:00+00:00",
+          "updated_at": "2026-08-25T17:29:39+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41127",
+      "ea_label": "QM5_41127_wti-mdaily-persist-mom",
+      "source_path": "framework/EAs/QM5_41127_wti-mdaily-persist-mom/QM5_41127_wti-mdaily-persist-mom.mq5",
+      "pre_repair_git_blob_sha256": "6be946939cd5b209150ec4ae5edc3a2e39c35b2211f5ea84795bf61f7393dfdf",
+      "source_sha256": "865690f327794a9f8e18a09d37dcf0e231132f3045b0c85b37cbffc87bf53f95",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41127_wti-mdaily-persist-mom_card.md",
+      "approved_card_sha256": "4ff13548996449a6a875200768fde69bcbbb4f5be531f3223019e88d60cead96",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "76b9e5e3-d257-4957-88fa-a33d90a846c0",
+          "source_sha256": "d82e3e8780aee14f6e5c6ed21919181e4518cbbea5e4cfc2ad1399fcf53b9bdd",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-08-23T17:14:00+00:00",
+          "updated_at": "2026-08-25T17:48:28+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41130",
+      "ea_label": "QM5_41130_wti-mopen-residence-mom",
+      "source_path": "framework/EAs/QM5_41130_wti-mopen-residence-mom/QM5_41130_wti-mopen-residence-mom.mq5",
+      "pre_repair_git_blob_sha256": "368d9de1ef1645a27cc24064b3b8ba62a6bc95c38cefeb10051798f6a6ecab94",
+      "source_sha256": "8e00f1bc05be47aa659a3d8dd48334da820fd10bb1fe046a956708bef6c8fe41",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41130_wti-mopen-residence-mom_card.md",
+      "approved_card_sha256": "d57adf3189311af5d883453fc43e3b1fe0126e34d70d1f6d6d401625de94df7f",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "73dc8eaf-76b2-4587-9e7b-63ff24c75f54",
+          "source_sha256": "fa619ffccc16656a27b95d1ebc55134a4e3d0416b4e4f5c6ad0c935a040f3f6c",
+          "status": "pending",
+          "verdict": null,
+          "created_at": "2026-08-23T11:01:35+00:00",
+          "updated_at": "2026-08-23T11:01:35+00:00"
+        },
+        {
+          "work_item_id": "0edf3c6a-c29d-4b90-9787-f099bb23d4e2",
+          "source_sha256": "9ae358c6cf1f07e12073252ea982f61b20fdff72711fae68014556e1292ee399",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-08-23T17:14:00+00:00",
+          "updated_at": "2026-08-25T17:53:44+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41131",
+      "ea_label": "QM5_41131_wti-mdaily-tailtrim-mom",
+      "source_path": "framework/EAs/QM5_41131_wti-mdaily-tailtrim-mom/QM5_41131_wti-mdaily-tailtrim-mom.mq5",
+      "pre_repair_git_blob_sha256": "35f733fadb5d884dbc22ea39101989882f547c01b0606216cd113718fb6cf893",
+      "source_sha256": "41222311f9253e53dac547f3761aab5ed234ef44bd9b0b88aa72335df071b76f",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41131_wti-mdaily-tailtrim-mom_card.md",
+      "approved_card_sha256": "12c6470e001f13c6106b9f0c7ddaad74c8f5f9235fa9b1ab5d21749c5ac74ae2",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "19504c2f-750c-4c40-af3e-a337651a9a3e",
+          "source_sha256": "e15173ac581ea222ac3f89e13b9966c6e4649947bbd307aea5c46423fd86ef08",
+          "status": "pending",
+          "verdict": null,
+          "created_at": "2026-08-23T12:28:26+00:00",
+          "updated_at": "2026-08-23T12:28:26+00:00"
+        },
+        {
+          "work_item_id": "34785097-be1a-448e-9a8e-28ee665e9ea6",
+          "source_sha256": "caf55ea3aa1b7319d601b98239f8e282482194da2063dbcb2b6bb9dddc6dace5",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-08-23T17:14:00+00:00",
+          "updated_at": "2026-08-25T18:02:12+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41132",
+      "ea_label": "QM5_41132_wti-mweekday-med-mom",
+      "source_path": "framework/EAs/QM5_41132_wti-mweekday-med-mom/QM5_41132_wti-mweekday-med-mom.mq5",
+      "pre_repair_git_blob_sha256": "0655f4fad5f185cb525915bfbd5f46d122528777ce826019e0956d123950c1cb",
+      "source_sha256": "9ce83614c522a51c557cd07941c6fbe68680a422ba7c20ac90b968b6a862e5ab",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41132_wti-mweekday-med-mom_card.md",
+      "approved_card_sha256": "e1df3c33f1a97b10a7399c0649ce117a1bb78595b06fec73cf19331f7c01a0f1",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "690cf433-d157-49d0-aaa8-57b58431a845",
+          "source_sha256": "b53b6392d13fd0c08af726712a99cf77b5370a7f2e47ea4fe2c215617de3c78b",
+          "status": "pending",
+          "verdict": null,
+          "created_at": "2026-08-23T15:16:49+00:00",
+          "updated_at": "2026-08-23T15:16:49+00:00"
+        },
+        {
+          "work_item_id": "bdae4d54-e686-48e8-bde7-e3b5fdc95dd3",
+          "source_sha256": "9837fab69d58abbcdce3c47389d73423b3bcbd9d9ca13d5f3b43acf9ef3b7cbe",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-08-23T17:14:00+00:00",
+          "updated_at": "2026-08-25T18:04:17+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41133",
+      "ea_label": "QM5_41133_wti-mdaily-median-mom",
+      "source_path": "framework/EAs/QM5_41133_wti-mdaily-median-mom/QM5_41133_wti-mdaily-median-mom.mq5",
+      "pre_repair_git_blob_sha256": "1420201e5c0f58e23db663d866b3f92d3f683ba733dd94c203754e17b78e644a",
+      "source_sha256": "af3acabd59ccbe411dfa8593abf5658f69a505a9afdf252f46f91d7d750e9479",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41133_wti-mdaily-median-mom_card.md",
+      "approved_card_sha256": "1f8dde4672a129760dddf7a20c6c582a038ad8601911238c759322aa93a2dc21",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "1fb58c79-e46f-4d72-9af1-26eb4656e0d5",
+          "source_sha256": "7c8aeb3382bf3d8b84325661dfb699458bd115c84455e04c9a0c5a34f08ded04",
+          "status": "pending",
+          "verdict": null,
+          "created_at": "2026-08-23T18:13:33+00:00",
+          "updated_at": "2026-08-23T18:13:33+00:00"
+        },
+        {
+          "work_item_id": "56b413ef-7007-437a-9383-45d0fe9bfee8",
+          "source_sha256": "9d7f41c8db3991e626c9577512be267699574ce6df08fd95f327c3013e761ff5",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-08-25T20:53:44+00:00",
+          "updated_at": "2026-08-26T11:19:06+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41134",
+      "ea_label": "QM5_41134_wti-mdaily-iqrmean-mom",
+      "source_path": "framework/EAs/QM5_41134_wti-mdaily-iqrmean-mom/QM5_41134_wti-mdaily-iqrmean-mom.mq5",
+      "pre_repair_git_blob_sha256": "cea2ad903ac4800c644771cfea48846e342acbf9bce7c683312c46bbc8aef9da",
+      "source_sha256": "c01bff6fd646382c717f496234be997ec5da23b2e873cf6b6bf3361888046967",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41134_wti-mdaily-iqrmean-mom_card.md",
+      "approved_card_sha256": "bbe58229c95de92ff4a7a3a7db5998fd650a89dad1eaf485d748bf279f07d5c0",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41136",
+      "ea_label": "QM5_41136_xng-mdaily-iqrmean-mom",
+      "source_path": "framework/EAs/QM5_41136_xng-mdaily-iqrmean-mom/QM5_41136_xng-mdaily-iqrmean-mom.mq5",
+      "pre_repair_git_blob_sha256": "abf101be7c0b8a874c7c976f016affaedfd76f72ad1edeef05f7dc8dfb5e1e4e",
+      "source_sha256": "1c6f1929691de0da717bf77910f73b03b5cec388ed654d6b395f234d90b0d323",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41136_xng-mdaily-iqrmean-mom_card.md",
+      "approved_card_sha256": "811dce404e98adbaceff17f20427ec6f6b498e4b3a5c8c3d30fd28e33898a2a7",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "77d52009-3434-4c70-a93b-29471832c3cd",
+          "source_sha256": "45dde0ab39d8e9c1b7d6ee1f69bcbb96fa0eed7a2816ddc38844e38ee0792db5",
+          "status": "failed",
+          "verdict": "COMPILE_FAIL",
+          "created_at": "2026-08-23T23:13:39+00:00",
+          "updated_at": "2026-08-24T01:34:34+00:00"
+        },
+        {
+          "work_item_id": "979e7903-d28b-46fc-89cb-5b8a721f2e27",
+          "source_sha256": "9f5ed2fc702632ad01fd1b9bac8a078175fd66ec3f15e0b9b40c10215e4aa5b3",
+          "status": "pending",
+          "verdict": null,
+          "created_at": "2026-08-24T07:16:25+00:00",
+          "updated_at": "2026-08-24T07:16:25+00:00"
+        },
+        {
+          "work_item_id": "bc05a582-5d48-4df4-823c-495515b388cc",
+          "source_sha256": "676a4276d484b451a96ea1bc298140178d2c3bc71c722ea6f24544aa2bf4c78e",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-08-25T20:53:44+00:00",
+          "updated_at": "2026-08-26T11:24:01+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41137",
+      "ea_label": "QM5_41137_wti-mmedian-shift-mom",
+      "source_path": "framework/EAs/QM5_41137_wti-mmedian-shift-mom/QM5_41137_wti-mmedian-shift-mom.mq5",
+      "pre_repair_git_blob_sha256": "d465e76f0b0578c6983245442d279c87843a74f003fbc6b93e71b51784c343cc",
+      "source_sha256": "981471af1fb20079df8ce3340ea9a9abbcced60dd880e8a39c1768f597378ed5",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41137_wti-mmedian-shift-mom_card.md",
+      "approved_card_sha256": "dd467168e065758f18392c8b2f9641ceb71887d51f82a802272b2d06b8357dc1",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "83eb3349-3931-40e9-b79a-70bf0700a7b5",
+          "source_sha256": "d465e76f0b0578c6983245442d279c87843a74f003fbc6b93e71b51784c343cc",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-08-24T01:48:38+00:00",
+          "updated_at": "2026-08-24T02:04:26+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41139",
+      "ea_label": "QM5_41139_wti-mdaily-hl-mom",
+      "source_path": "framework/EAs/QM5_41139_wti-mdaily-hl-mom/QM5_41139_wti-mdaily-hl-mom.mq5",
+      "pre_repair_git_blob_sha256": "9b8a2532614c38c1e4513086c0ec79a0ed24b0dd628b11b894dbfc5caf42f98c",
+      "source_sha256": "0e81b931b650c6285ec3664f576665d8c367d11ea6a1bd6e41e44dcbcf0f63bc",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41139_wti-mdaily-hl-mom_card.md",
+      "approved_card_sha256": "941fa9e4df396207d19f631f24f63fad73d76f60a51c9f5967e9c96ff652793b",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41158",
+      "ea_label": "QM5_41158_wti-repmedian-tr",
+      "source_path": "framework/EAs/QM5_41158_wti-repmedian-tr/QM5_41158_wti-repmedian-tr.mq5",
+      "pre_repair_git_blob_sha256": "4685ae045106dce1973ff66afc681de04bb0b96ed09dbe0a20187bc038f53769",
+      "source_sha256": "2ef3d86f429ced50bd45db34d75d31b807218a60afb67bf88ef95b3175daacce",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41158_wti-repmedian-tr_card.md",
+      "approved_card_sha256": "ee70a8e3b61252507b608e1d3865660ea8044ce93867a76c9c726aa08397e499",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41159",
+      "ea_label": "QM5_41159_wti-lad-tr",
+      "source_path": "framework/EAs/QM5_41159_wti-lad-tr/QM5_41159_wti-lad-tr.mq5",
+      "pre_repair_git_blob_sha256": "bb516e5603b4965a6fe08302f7e983074f741160038596c88958c0e2d1c21732",
+      "source_sha256": "1d08eded3895cdc640ca952497a629962f6e7082bfbdeeff06343893a525eafa",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41159_wti-lad-tr_card.md",
+      "approved_card_sha256": "f396276c9ca565681703f8681ef04f48069716cec05f20a5ada91ee3f122b3b3",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41165",
+      "ea_label": "QM5_41165_wti-mrobust3-agree-tr",
+      "source_path": "framework/EAs/QM5_41165_wti-mrobust3-agree-tr/QM5_41165_wti-mrobust3-agree-tr.mq5",
+      "pre_repair_git_blob_sha256": "cf2a09f42cd62af22c8bc52da71042852ca6c3689dfa82794156e78c12aade80",
+      "source_sha256": "97464612555cd6beeff2bfc593357eecfcb524a1200489d028de90c609665e31",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41165_wti-mrobust3-agree-tr_card.md",
+      "approved_card_sha256": "db1da75e92323a5661f3a2b980a7bd7ecb0e5b30e25c0b0ab8b30633769286c0",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "373eb9be-7366-4902-aa05-ec703892849f",
+          "source_sha256": "d44be224e18b5c068ddfae44d7b79261dbe5956fd3f6ee7baf2cb5dacfc863ba",
+          "status": "failed",
+          "verdict": "COMPILE_FAIL",
+          "created_at": "2026-08-26T09:52:23+00:00",
+          "updated_at": "2026-08-27T18:45:00+00:00"
+        },
+        {
+          "work_item_id": "c71f00bd-1f15-4db5-b4e8-20d73936a092",
+          "source_sha256": "cf2a09f42cd62af22c8bc52da71042852ca6c3689dfa82794156e78c12aade80",
+          "status": "failed",
+          "verdict": "COMPILE_FAIL",
+          "created_at": "2026-08-29T06:30:20+00:00",
+          "updated_at": "2026-09-05T15:01:55+00:00"
+        },
+        {
+          "work_item_id": "ce864ce1-3957-49c8-97a8-048cb4dc9569",
+          "source_sha256": "cf2a09f42cd62af22c8bc52da71042852ca6c3689dfa82794156e78c12aade80",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-09-05T21:01:05+00:00",
+          "updated_at": "2026-09-05T21:08:37+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41167",
+      "ea_label": "QM5_41167_wti-coxstuart-tr",
+      "source_path": "framework/EAs/QM5_41167_wti-coxstuart-tr/QM5_41167_wti-coxstuart-tr.mq5",
+      "pre_repair_git_blob_sha256": "62d713c34bce212d8f38b7d4fb242c05016d74fe2c1a2b3d240b943fdb98d4f8",
+      "source_sha256": "0cf957eec258eb879113e3b789dabb9ca5c45671315e6ac8eaeb0360f8379cfe",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41167_wti-coxstuart-tr_card.md",
+      "approved_card_sha256": "5324e3da9d6ee0390f09613a6cc0376dc36cf010e53a57247292182122552a50",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "9ca5c172-5eca-4d5b-8ebf-4c2a9abc1b4b",
+          "source_sha256": "09bc5f49bc171f5d2db3262d8581b1bb92a93b8f292850925de0c255229604bf",
+          "status": "failed",
+          "verdict": "COMPILE_FAIL",
+          "created_at": "2026-08-26T11:53:35+00:00",
+          "updated_at": "2026-08-26T12:01:01+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41169",
+      "ea_label": "QM5_41169_wti-foster-record-tr",
+      "source_path": "framework/EAs/QM5_41169_wti-foster-record-tr/QM5_41169_wti-foster-record-tr.mq5",
+      "pre_repair_git_blob_sha256": "824de3b7364fd65fa44649e6d5dc276ad571a0aebb53d5c1598c5fab4bcc75df",
+      "source_sha256": "e9eac8fd878b8cfd746a5e37f25c6039a24ae06ce0fdc947caaf6c70209b7262",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41169_wti-foster-record-tr_card.md",
+      "approved_card_sha256": "754b82a0e72fecdc5ee3dee11a704ca11a5e540b8c9efad8858b23e54080813a",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "4a6e89aa-9405-4e9b-b292-bae442b52015",
+          "source_sha256": "824de3b7364fd65fa44649e6d5dc276ad571a0aebb53d5c1598c5fab4bcc75df",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-08-26T15:42:01+00:00",
+          "updated_at": "2026-08-27T21:45:31+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41170",
+      "ea_label": "QM5_41170_wti-bartels-rank-tr",
+      "source_path": "framework/EAs/QM5_41170_wti-bartels-rank-tr/QM5_41170_wti-bartels-rank-tr.mq5",
+      "pre_repair_git_blob_sha256": "0a435823f3c2c3d5f9c205d9d3702dadffd1c18c85af2ab3460cce5f2b4d6e5f",
+      "source_sha256": "affe0a953d364b4d6cebd374b67ced9ed36cf223bfe6b8e4d71e9bed0fbe301b",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41170_wti-bartels-rank-tr_card.md",
+      "approved_card_sha256": "693c2956cfa02c7b1c04650482b8f3ee8cbb386a910abc8fe67603abf2fdcf8c",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41172",
+      "ea_label": "QM5_41172_wti-mpettitt-shift-tr",
+      "source_path": "framework/EAs/QM5_41172_wti-mpettitt-shift-tr/QM5_41172_wti-mpettitt-shift-tr.mq5",
+      "pre_repair_git_blob_sha256": "9318ee56cadbd0a2c2449b9239e0ce77f068a5860c645763efff3522ed88ba09",
+      "source_sha256": "382092bcf969987e05ef767b463a6221f037ee7b7bf05d444fec73d4e134b1de",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41172_wti-mpettitt-shift-tr_card.md",
+      "approved_card_sha256": "e31e558ee2cb8d22ad02553248b470e1d9aba78b383ae417c5bdd0990ca182f6",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "de8fa2b9-f2d5-42cd-bf75-e5782c9f492b",
+          "source_sha256": "118ca6ff5a0668a2dbf85c735ffed8a5460baf935038b0e075f687c883f1b738",
+          "status": "failed",
+          "verdict": "COMPILE_FAIL",
+          "created_at": "2026-08-26T20:43:04+00:00",
+          "updated_at": "2026-08-27T22:35:46+00:00"
+        },
+        {
+          "work_item_id": "8fd59f9d-96d1-4a13-b820-f2960886822d",
+          "source_sha256": "9318ee56cadbd0a2c2449b9239e0ce77f068a5860c645763efff3522ed88ba09",
+          "status": "failed",
+          "verdict": "COMPILE_FAIL",
+          "created_at": "2026-08-29T06:32:58+00:00",
+          "updated_at": "2026-09-05T15:02:30+00:00"
+        },
+        {
+          "work_item_id": "d9949538-e279-402b-bc05-8f8199f2b8d1",
+          "source_sha256": "9318ee56cadbd0a2c2449b9239e0ce77f068a5860c645763efff3522ed88ba09",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-09-05T21:01:17+00:00",
+          "updated_at": "2026-09-05T21:09:29+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41173",
+      "ea_label": "QM5_41173_wti-mspearman-tr",
+      "source_path": "framework/EAs/QM5_41173_wti-mspearman-tr/QM5_41173_wti-mspearman-tr.mq5",
+      "pre_repair_git_blob_sha256": "6b6c746dbb51374fb77a0e838f5c537f7200894a64c74e4979e2d5e832199ed3",
+      "source_sha256": "f5c1bc21f7c9bdb7186875a99971fc7f8f5f2089e514d075f1386608121b5121",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41173_wti-mspearman-tr_card.md",
+      "approved_card_sha256": "40a433746360469ea1292e49dd30b817857c89f6f24fd9a15d69093b455886ae",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "71ef9990-199b-4381-b43b-e3c36045b4f5",
+          "source_sha256": "6b6c746dbb51374fb77a0e838f5c537f7200894a64c74e4979e2d5e832199ed3",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-08-26T21:43:07+00:00",
+          "updated_at": "2026-08-27T22:44:25+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41176",
+      "ea_label": "QM5_41176_wti-mwilcoxon-shift-tr",
+      "source_path": "framework/EAs/QM5_41176_wti-mwilcoxon-shift-tr/QM5_41176_wti-mwilcoxon-shift-tr.mq5",
+      "pre_repair_git_blob_sha256": "f2d1a3023857657feb208553e0f6e8c5e23ecd0eaf643ad5e04fbc79db07bad6",
+      "source_sha256": "95d2a4ae8b4621fe7290164f650c766885a6964c137363d0427622762ca7e7a3",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41176_wti-mwilcoxon-shift-tr_card.md",
+      "approved_card_sha256": "26ac38102519c77a0dc104070482e34c07fbe825cf0f9ab30adadad562e58c66",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "f89d82e9-f4e2-4567-b8f2-464d4997ce09",
+          "source_sha256": "23ca6f5cef5bbbb0dc1151cdfc4dfc857e752f8b1707697490d8105e5b2244c2",
+          "status": "pending",
+          "verdict": null,
+          "created_at": "2026-08-27T02:03:01+00:00",
+          "updated_at": "2026-08-27T02:03:01+00:00"
+        },
+        {
+          "work_item_id": "4fd60078-4862-45ca-ab65-558b29fcb9ac",
+          "source_sha256": "f2d1a3023857657feb208553e0f6e8c5e23ecd0eaf643ad5e04fbc79db07bad6",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-09-05T21:00:52+00:00",
+          "updated_at": "2026-09-05T21:07:10+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41182",
+      "ea_label": "QM5_41182_wti-median-runs-tr",
+      "source_path": "framework/EAs/QM5_41182_wti-median-runs-tr/QM5_41182_wti-median-runs-tr.mq5",
+      "pre_repair_git_blob_sha256": "2ffc31b19715baed817751245428c59fab3cccbdc0c6f09dc9e1be17cc74ad04",
+      "source_sha256": "f4b66eb74b2754cac1db0c3c5aa78ae6c3522ce402147e5a938d2dcdf0e4e0bd",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41182_wti-median-runs-tr_card.md",
+      "approved_card_sha256": "2014ee9c158a358b65e963dfc84ebdb27e3a298fd9f129060aad0bae6c85db79",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "a994435a-61b0-46a3-8b46-0a07e24a9e4b",
+          "source_sha256": "2ffc31b19715baed817751245428c59fab3cccbdc0c6f09dc9e1be17cc74ad04",
+          "status": "failed",
+          "verdict": "COMPILE_FAIL",
+          "created_at": "2026-08-27T12:27:23+00:00",
+          "updated_at": "2026-09-03T12:48:25+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41183",
+      "ea_label": "QM5_41183_wti-mks-shift-tr",
+      "source_path": "framework/EAs/QM5_41183_wti-mks-shift-tr/QM5_41183_wti-mks-shift-tr.mq5",
+      "pre_repair_git_blob_sha256": "ba05913b551512adecb608e5305bc9a5f120671288d810ac5fccc7f96f972f9b",
+      "source_sha256": "dd88d33905c61fa078e1e6dc329d3d00e6ab071b913819b2689655660e0e8e7c",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41183_wti-mks-shift-tr_card.md",
+      "approved_card_sha256": "e4f2e24c34816e2bde7f6732a2bbfba89cad6f9615caea4ba59c34eced5d3f27",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41184",
+      "ea_label": "QM5_41184_wti-mww-runs-shift-tr",
+      "source_path": "framework/EAs/QM5_41184_wti-mww-runs-shift-tr/QM5_41184_wti-mww-runs-shift-tr.mq5",
+      "pre_repair_git_blob_sha256": "f9a736609681906cc76245c4b36eb2ce52a3b55dbc11129991dddc95d6411bef",
+      "source_sha256": "80e8704d5944edee83d108f0ababfd45a4b200109bcb899b04cdd4379f2df941",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41184_wti-mww-runs-shift-tr_card.md",
+      "approved_card_sha256": "790cc6d6773e26e400b8b137395d7f1b7436ff61f4f7dfce07a7fe64d28bb9d5",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41203",
+      "ea_label": "QM5_41203_xauxag-samecal-srank",
+      "source_path": "framework/EAs/QM5_41203_xauxag-samecal-srank/QM5_41203_xauxag-samecal-srank.mq5",
+      "pre_repair_git_blob_sha256": "aabcac8d22ceebfa75960c877e8078bfd85e657e4c5b37bdca4dbaff540f75ea",
+      "source_sha256": "fe49011e4d484437f0537844540d8487df4aa487faf329393464278837ea13fc",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41203_xauxag-samecal-srank_card.md",
+      "approved_card_sha256": "6bd56e050e20d952e62101c07ab50e177803c3a6fd7b76be2ebd673f79defc96",
+      "registry_status": "active",
+      "active_magic_rows": 2,
+      "predecessors": [
+        {
+          "work_item_id": "eb70f232-b874-4816-8243-dd12f4dc145f",
+          "source_sha256": "345ef611140ddce556cf85ed5a5dc911f996b92b17442510e4844fbb9e22f1ed",
+          "status": "failed",
+          "verdict": "COMPILE_FAIL",
+          "created_at": "2026-08-29T18:18:18+00:00",
+          "updated_at": "2026-08-29T18:27:10+00:00"
+        },
+        {
+          "work_item_id": "f2ed8f35-2dd4-423b-8feb-da31c70eefe9",
+          "source_sha256": "aabcac8d22ceebfa75960c877e8078bfd85e657e4c5b37bdca4dbaff540f75ea",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-08-29T18:32:46+00:00",
+          "updated_at": "2026-08-29T18:35:31+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41206",
+      "ea_label": "QM5_41206_xauxag-samecal-huber10",
+      "source_path": "framework/EAs/QM5_41206_xauxag-samecal-huber10/QM5_41206_xauxag-samecal-huber10.mq5",
+      "pre_repair_git_blob_sha256": "df3150c19e72716c78a0f9fd4f0952350f676b32baecdd4b8bc5f3b3184094fd",
+      "source_sha256": "4e16d19132af41f0dec104a50c0d64fa7e448bce9e8be75b1349be6a92daea6c",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41206_xauxag-samecal-huber10_card.md",
+      "approved_card_sha256": "749c90321924c82c1fae91582912de1c686ebf2c2371c19547009c982f5627ba",
+      "registry_status": "active",
+      "active_magic_rows": 2,
+      "predecessors": [
+        {
+          "work_item_id": "25c25747-2490-442f-9ed4-455ddacd10e2",
+          "source_sha256": "df3150c19e72716c78a0f9fd4f0952350f676b32baecdd4b8bc5f3b3184094fd",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-08-29T21:40:23+00:00",
+          "updated_at": "2026-08-29T21:44:20+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41210",
+      "ea_label": "QM5_41210_xauxag-samecal-tstat",
+      "source_path": "framework/EAs/QM5_41210_xauxag-samecal-tstat/QM5_41210_xauxag-samecal-tstat.mq5",
+      "pre_repair_git_blob_sha256": "7ebb0fffd26b1af482d839acab936752ff3ad6965cdbe2766f8c7ad4c0b39d42",
+      "source_sha256": "ca99506b5969ae3efe7ef3c6a09a738a4ca3be87933d45105b794b2318524576",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41210_xauxag-samecal-tstat_card.md",
+      "approved_card_sha256": "79ae4556b12625539edc7618806a8cb88fcd5a6e84b43fe536e93225301f98a2",
+      "registry_status": "active",
+      "active_magic_rows": 2,
+      "predecessors": [
+        {
+          "work_item_id": "2818aa9d-830f-4db2-964c-4cd479edca3d",
+          "source_sha256": "7ebb0fffd26b1af482d839acab936752ff3ad6965cdbe2766f8c7ad4c0b39d42",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-08-30T01:54:44+00:00",
+          "updated_at": "2026-08-30T01:58:01+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41213",
+      "ea_label": "QM5_41213_xauxag-samecal-signscore",
+      "source_path": "framework/EAs/QM5_41213_xauxag-samecal-signscore/QM5_41213_xauxag-samecal-signscore.mq5",
+      "pre_repair_git_blob_sha256": "14a4a7068a771f1c047edfe59a156c2ae739648d4f820e3747ced74644059dc1",
+      "source_sha256": "1381ee4d99853b319b9c6eac05a1f8a3599d5c97a2359370fef96b75912fb7d3",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41213_xauxag-samecal-signscore_card.md",
+      "approved_card_sha256": "43271012d2b56cc1409bf488a4957d7fdfd9807cac765c2e44b023f1f7e9cdf4",
+      "registry_status": "active",
+      "active_magic_rows": 2,
+      "predecessors": [
+        {
+          "work_item_id": "3926b8df-f21d-4cdf-8992-7d5d557a94fe",
+          "source_sha256": "14a4a7068a771f1c047edfe59a156c2ae739648d4f820e3747ced74644059dc1",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-08-30T05:09:23+00:00",
+          "updated_at": "2026-08-30T05:26:18+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41226",
+      "ea_label": "QM5_41226_xauxag-medcal",
+      "source_path": "framework/EAs/QM5_41226_xauxag-medcal/QM5_41226_xauxag-medcal.mq5",
+      "pre_repair_git_blob_sha256": "b521d8569b42c3607dab63af8991c783d9de80cd4bbfbeaa7ec0329995cd16bb",
+      "source_sha256": "1cbff0dfaf29816d3749a34d02744a6c0e8d42a5ac9a2337e9f653ab332ed09b",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41226_xauxag-medcal_card.md",
+      "approved_card_sha256": "3e9a0949f5284f96aa3efc2c285c6000b595d48da1576da4cac1f5d0997178cc",
+      "registry_status": "active",
+      "active_magic_rows": 2,
+      "predecessors": [
+        {
+          "work_item_id": "d795d22d-1289-4f40-9fcf-585bbedc282d",
+          "source_sha256": "b521d8569b42c3607dab63af8991c783d9de80cd4bbfbeaa7ec0329995cd16bb",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-08-30T11:00:56+00:00",
+          "updated_at": "2026-08-30T11:05:34+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41245",
+      "ea_label": "QM5_41245_wti-mcusum-shift-tr",
+      "source_path": "framework/EAs/QM5_41245_wti-mcusum-shift-tr/QM5_41245_wti-mcusum-shift-tr.mq5",
+      "pre_repair_git_blob_sha256": "e5fc833b3782f03af153ed9737a0f82c94ea508cf094af7c54b42b240c616258",
+      "source_sha256": "f1d4ecf4ff9a1c8563a42da7a99f801703bc562573e3b4f964ef3ac16081b2e4",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41245_wti-mcusum-shift-tr_card.md",
+      "approved_card_sha256": "5e7299136109f021ca4e121d865e7a59015e3a7925ca2f60a9a6b1ae7a205f4e",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "072ded8e-84b9-4ada-b714-b333701e3d71",
+          "source_sha256": "e5fc833b3782f03af153ed9737a0f82c94ea508cf094af7c54b42b240c616258",
+          "status": "failed",
+          "verdict": "COMPILE_FAIL",
+          "created_at": "2026-08-31T09:59:58+00:00",
+          "updated_at": "2026-08-31T10:04:14+00:00"
+        },
+        {
+          "work_item_id": "5d3c283f-8527-4836-a6e3-c0995a92ead0",
+          "source_sha256": "e5fc833b3782f03af153ed9737a0f82c94ea508cf094af7c54b42b240c616258",
+          "status": "failed",
+          "verdict": "COMPILE_FAIL",
+          "created_at": "2026-08-31T10:16:49.772719+00:00",
+          "updated_at": "2026-08-31T11:37:35+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41252",
+      "ea_label": "QM5_41252_wti-css-volshift-tr",
+      "source_path": "framework/EAs/QM5_41252_wti-css-volshift-tr/QM5_41252_wti-css-volshift-tr.mq5",
+      "pre_repair_git_blob_sha256": "b950a49c9ab3eaf7d7b3d4b1c4eafc6e125a54d9aa41d4550452b1ad603dd31e",
+      "source_sha256": "c09a630bb2a5b060eb9658d4a501e95e0597badddeaa82f3676c601ab34c5668",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41252_wti-css-volshift-tr_card.md",
+      "approved_card_sha256": "5dc491c8adfd297348d79f39ae74b9e6674a29efec1c652f442f663a4fd9c8ce",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "a4489367-937b-4c80-a765-6819763aea94",
+          "source_sha256": "b950a49c9ab3eaf7d7b3d4b1c4eafc6e125a54d9aa41d4550452b1ad603dd31e",
+          "status": "failed",
+          "verdict": "COMPILE_FAIL",
+          "created_at": "2026-08-31T18:39:44+00:00",
+          "updated_at": "2026-08-31T19:58:43+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41254",
+      "ea_label": "QM5_41254_wti-chow-break-tr",
+      "source_path": "framework/EAs/QM5_41254_wti-chow-break-tr/QM5_41254_wti-chow-break-tr.mq5",
+      "pre_repair_git_blob_sha256": "d1b70c0f9e53b1385b538f12ecda1de4f7c2750c6d02107f2a81f335cdd1f376",
+      "source_sha256": "3f5d10e5b982b71a5f6b9fdf9d05dbd5dca76181f974590c9cb7b3e90abd96eb",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41254_wti-chow-break-tr_card.md",
+      "approved_card_sha256": "7cdf949e2833571f6fc63dde381e83ad3c0ebcd536c102d6c00ee4160615e7a2",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "bebecbbd-d69a-4c5d-97b9-d7aea07ce4d3",
+          "source_sha256": "d1b70c0f9e53b1385b538f12ecda1de4f7c2750c6d02107f2a81f335cdd1f376",
+          "status": "failed",
+          "verdict": "COMPILE_FAIL",
+          "created_at": "2026-08-31T19:47:07+00:00",
+          "updated_at": "2026-08-31T20:28:21+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41259",
+      "ea_label": "QM5_41259_wti-mwasser-shift-tr",
+      "source_path": "framework/EAs/QM5_41259_wti-mwasser-shift-tr/QM5_41259_wti-mwasser-shift-tr.mq5",
+      "pre_repair_git_blob_sha256": "2bf4132fa5bfa6e33f979c49435fd88e36a8e97fac88ab28a70e7bd1bb29f550",
+      "source_sha256": "340e768d208a6135d98056adb129566d0c060eca3eb09e23f7786beab661fb20",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41259_wti-mwasser-shift-tr_card.md",
+      "approved_card_sha256": "bc926d6602696814c29d5d56c9551a357e4690acaf6976dcfaa71fb42055571a",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "2659b5a1-9645-40bb-91aa-4ce3511c7f0c",
+          "source_sha256": "2bf4132fa5bfa6e33f979c49435fd88e36a8e97fac88ab28a70e7bd1bb29f550",
+          "status": "failed",
+          "verdict": "COMPILE_FAIL",
+          "created_at": "2026-08-31T23:24:02+00:00",
+          "updated_at": "2026-08-31T23:45:40+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41268",
+      "ea_label": "QM5_41268_wti-mepps-shift-tr",
+      "source_path": "framework/EAs/QM5_41268_wti-mepps-shift-tr/QM5_41268_wti-mepps-shift-tr.mq5",
+      "pre_repair_git_blob_sha256": "fcfa8a6b84cb45114b89f119400ce9912488e7994ae0677a6dfeff8ad3a8ed49",
+      "source_sha256": "05dcaa1e5eb7511c0c8255b6dcbce9f33786566301a56f1470a317f2c9079e29",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41268_wti-mepps-shift-tr_card.md",
+      "approved_card_sha256": "d98a8352e0b515e41e8ca0ae1373ca1ee9ede35205a709eb4acb2048d120f6b2",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "7f224c84-9ae2-446e-a905-cb386e9695cc",
+          "source_sha256": "1be16d1d56e2d03a18d5654ef35484df6ebe44650ac9250d8c48800905433c13",
+          "status": "failed",
+          "verdict": "COMPILE_FAIL",
+          "created_at": "2026-09-01T13:22:41+00:00",
+          "updated_at": "2026-09-05T21:04:35+00:00"
+        },
+        {
+          "work_item_id": "814aab56-5f04-42ad-a4c2-4bb2c9cfa061",
+          "source_sha256": "fcfa8a6b84cb45114b89f119400ce9912488e7994ae0677a6dfeff8ad3a8ed49",
+          "status": "failed",
+          "verdict": "COMPILE_FAIL",
+          "created_at": "2026-09-06T09:08:44+00:00",
+          "updated_at": "2026-09-06T12:38:32+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41273",
+      "ea_label": "QM5_41273_wti-msigned-rank-tr",
+      "source_path": "framework/EAs/QM5_41273_wti-msigned-rank-tr/QM5_41273_wti-msigned-rank-tr.mq5",
+      "pre_repair_git_blob_sha256": "3e7a96619608968f77ff70972f5aad5a58bfd6dfea66a4dc3f23148f32e3918c",
+      "source_sha256": "28b5d36d7a5e8707797c1a4c1bb24c61bd4d523549ab6c4e7a21a6e9f22533df",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41273_wti-msigned-rank-tr_card.md",
+      "approved_card_sha256": "3553cd74608c65a6ccff2d7ebf26ab64382b863cfae52f41f5e37dbb3adfe6ea",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "7e9ce99c-075e-463f-8ee3-40c7c48dfe14",
+          "source_sha256": "3e7a96619608968f77ff70972f5aad5a58bfd6dfea66a4dc3f23148f32e3918c",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-09-01T17:09:59+00:00",
+          "updated_at": "2026-09-01T17:14:38+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41280",
+      "ea_label": "QM5_41280_usdchf-ww-shift-tr",
+      "source_path": "framework/EAs/QM5_41280_usdchf-ww-shift-tr/QM5_41280_usdchf-ww-shift-tr.mq5",
+      "pre_repair_git_blob_sha256": "df9ca3e09733a4f9195f8fe57e8f0b83955987a8b99f04842d8b9f42fd6d8e00",
+      "source_sha256": "75fd627e5961fe144429bfc61162bbd2f724bbbd3fb23d21d894abcdfca7523c",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41280_usdchf-ww-shift-tr_card.md",
+      "approved_card_sha256": "0973cffba70bf2b6abc25d425a103c868156e690420c1945aa29157d3a46555f",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "7952c185-f0d0-4d38-8d66-e08b1f49f477",
+          "source_sha256": "df9ca3e09733a4f9195f8fe57e8f0b83955987a8b99f04842d8b9f42fd6d8e00",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-09-02T05:23:35+00:00",
+          "updated_at": "2026-09-02T08:37:32+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41308",
+      "ea_label": "QM5_41308_wti-mordinal-entropy-tr",
+      "source_path": "framework/EAs/QM5_41308_wti-mordinal-entropy-tr/QM5_41308_wti-mordinal-entropy-tr.mq5",
+      "pre_repair_git_blob_sha256": "96c6fd5a23bcc77af501d55c0402a6096df19a00bc3be40d6bc513f2c20d63fd",
+      "source_sha256": "101569563979ccdcff2290560ede296b63f65bd9c13c48a29d5df1bece3caa7e",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41308_wti-mordinal-entropy-tr_card.md",
+      "approved_card_sha256": "412fecb80d7db9829b31bb49c7b156c2a3d2840bf2e27beece2ca6d5af862c49",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "bfc98851-3477-4f05-bf48-9636ed10da47",
+          "source_sha256": "96c6fd5a23bcc77af501d55c0402a6096df19a00bc3be40d6bc513f2c20d63fd",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-09-02T09:27:16+00:00",
+          "updated_at": "2026-09-05T21:34:39+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41309",
+      "ea_label": "QM5_41309_wti-mlz76-tr",
+      "source_path": "framework/EAs/QM5_41309_wti-mlz76-tr/QM5_41309_wti-mlz76-tr.mq5",
+      "pre_repair_git_blob_sha256": "3e57addbd07c40bd338c9ca2703a2cd97da9bf27ca42152d5d78cbecb5940fd9",
+      "source_sha256": "fee12c884c01f9a89eb24987c24f5a1987cad8827dde4007c234b568b867708a",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41309_wti-mlz76-tr_card.md",
+      "approved_card_sha256": "555a6efb6ff1ed0387a44a4ddebad15da7f72c539b1def1323ec2978afd98f3e",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "60885f37-3f78-421a-80d1-0e4e19fd8ebb",
+          "source_sha256": "3e57addbd07c40bd338c9ca2703a2cd97da9bf27ca42152d5d78cbecb5940fd9",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-09-02T10:27:34+00:00",
+          "updated_at": "2026-09-02T10:45:35+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41310",
+      "ea_label": "QM5_41310_wti-mvnratio-tr",
+      "source_path": "framework/EAs/QM5_41310_wti-mvnratio-tr/QM5_41310_wti-mvnratio-tr.mq5",
+      "pre_repair_git_blob_sha256": "51f26c5e3668bb6b0d942801d7041936cd0baa56196ab0f64f3eb86b01e35d4d",
+      "source_sha256": "871c638d01de7f2556f7518a34702f880b716bee0c27045209b1c48b7470b821",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41310_wti-mvnratio-tr_card.md",
+      "approved_card_sha256": "c0881d8c68a0292ce01472a19172b3405a5feb3e38ca106945229a8e8770c470",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "d9bbb5ae-03b7-4021-bd0a-3955ee7abd4d",
+          "source_sha256": "51f26c5e3668bb6b0d942801d7041936cd0baa56196ab0f64f3eb86b01e35d4d",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-09-05T14:19:42+00:00",
+          "updated_at": "2026-09-05T14:21:20+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41311",
+      "ea_label": "QM5_41311_wti-msampen-tr",
+      "source_path": "framework/EAs/QM5_41311_wti-msampen-tr/QM5_41311_wti-msampen-tr.mq5",
+      "pre_repair_git_blob_sha256": "3531bd1dfd835a325096814768067af57db51d37fcc21f3908a6b9f9177a00b8",
+      "source_sha256": "afe3c1fde17d180f2dfe7f88043aa6d13828616ef676b25c5ae57f725c350afc",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41311_wti-msampen-tr_card.md",
+      "approved_card_sha256": "fbf690160757a95a6aa395b10060e372d50d78549bc7ce27ba593ea3e83ce20b",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "f7c61c47-0f25-47f5-bb0e-73ab2f83b4b1",
+          "source_sha256": "3531bd1dfd835a325096814768067af57db51d37fcc21f3908a6b9f9177a00b8",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-09-02T12:49:41+00:00",
+          "updated_at": "2026-09-02T13:00:20+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41312",
+      "ea_label": "QM5_41312_wti-mspectral-entropy-tr",
+      "source_path": "framework/EAs/QM5_41312_wti-mspectral-entropy-tr/QM5_41312_wti-mspectral-entropy-tr.mq5",
+      "pre_repair_git_blob_sha256": "354ce0c1a52d1615b0db4ef4c4aa0e00bcf24bd70c6b7dc5e93ca5a84a65614d",
+      "source_sha256": "49098fefc5f4f8b59d0df55e3706fc782679363a6e303e1ad6b99a219d6423fb",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41312_wti-mspectral-entropy-tr_card.md",
+      "approved_card_sha256": "95bb7b6a4a5070c1649ff0666a04cf0efee785884934b39c29d907ba32d70ca4",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "f57662e7-6e12-4d96-b109-f0c437d6ce7f",
+          "source_sha256": "354ce0c1a52d1615b0db4ef4c4aa0e00bcf24bd70c6b7dc5e93ca5a84a65614d",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-09-02T14:05:47+00:00",
+          "updated_at": "2026-09-05T21:06:12+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41313",
+      "ea_label": "QM5_41313_wti-ljungbox-tr",
+      "source_path": "framework/EAs/QM5_41313_wti-ljungbox-tr/QM5_41313_wti-ljungbox-tr.mq5",
+      "pre_repair_git_blob_sha256": "06fa89d735ac3d923edcc73a4eda3cdb726b8402e60532f631e44c04ad035335",
+      "source_sha256": "105c43496b4c34e3e0697ee9b579f96299a248cb92a2eb6477f46fe4f66f257b",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41313_wti-ljungbox-tr_card.md",
+      "approved_card_sha256": "a3b34c08a93b4dcbac799fb0b0a417eccefae79168237cabf3e4003f431c2648",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "41b8f8b1-67cc-4298-bd43-1fc54cc99b0d",
+          "source_sha256": "06fa89d735ac3d923edcc73a4eda3cdb726b8402e60532f631e44c04ad035335",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-09-02T15:06:22+00:00",
+          "updated_at": "2026-09-02T15:25:27+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41314",
+      "ea_label": "QM5_41314_wti-mjb-tr",
+      "source_path": "framework/EAs/QM5_41314_wti-mjb-tr/QM5_41314_wti-mjb-tr.mq5",
+      "pre_repair_git_blob_sha256": "23b2b6c1989a19a74c13c9f12b4990da02c1dceb3be5c2b5b9ea46faaa54288d",
+      "source_sha256": "c3a34065b0ea03cba108070ae2f9767ff999e7e01da0509429cb94864ee3a832",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41314_wti-mjb-tr_card.md",
+      "approved_card_sha256": "22de2dd76dd37d67ea052af83de2c955f87e7596249d86f0a7025e5320f39dd3",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "487b1007-cfb6-40e1-8933-09679602d8a5",
+          "source_sha256": "23b2b6c1989a19a74c13c9f12b4990da02c1dceb3be5c2b5b9ea46faaa54288d",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-09-02T16:21:53+00:00",
+          "updated_at": "2026-09-02T17:24:21+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41315",
+      "ea_label": "QM5_41315_wti-archlm-tr",
+      "source_path": "framework/EAs/QM5_41315_wti-archlm-tr/QM5_41315_wti-archlm-tr.mq5",
+      "pre_repair_git_blob_sha256": "f5e1f805d8adc07e31a2bad2db33c28b2fededd1c54de609871466a06f205e8e",
+      "source_sha256": "6de071fcd8a6a6fe1531d3ef98bdf798f34240d50f112e4a7fe79d582cc51038",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41315_wti-archlm-tr_card.md",
+      "approved_card_sha256": "6a8f653195822eda7697ca5de5a420137b5d323d6555552e76fa0668395015a5",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "55010be0-b2d1-415f-b10b-3cae1896f7da",
+          "source_sha256": "f5e1f805d8adc07e31a2bad2db33c28b2fededd1c54de609871466a06f205e8e",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-09-02T17:27:24+00:00",
+          "updated_at": "2026-09-02T22:43:33+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41316",
+      "ea_label": "QM5_41316_wti-bds2-tr",
+      "source_path": "framework/EAs/QM5_41316_wti-bds2-tr/QM5_41316_wti-bds2-tr.mq5",
+      "pre_repair_git_blob_sha256": "4ee0919dfdd6ca6514a96f3595783764d245a03a0ddb63158c796f30e8922137",
+      "source_sha256": "cd1cb6e718320c7b487cba0a5861f9f3bd17657a9ec953db8452fb804becc165",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41316_wti-bds2-tr_card.md",
+      "approved_card_sha256": "b238cb151c31ea16c9a9e26dc2d68e1379f0369d72589c4f798377bbb9feab38",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "a838f3c9-5949-4b95-b3f6-d13e9b600d07",
+          "source_sha256": "4ee0919dfdd6ca6514a96f3595783764d245a03a0ddb63158c796f30e8922137",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-09-02T20:35:20+00:00",
+          "updated_at": "2026-09-02T20:54:57+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41317",
+      "ea_label": "QM5_41317_wti-mkpss-tr",
+      "source_path": "framework/EAs/QM5_41317_wti-mkpss-tr/QM5_41317_wti-mkpss-tr.mq5",
+      "pre_repair_git_blob_sha256": "1aa2cf5739a944408101a928d0e48c1d7a363e2b9835790cd749a60595142897",
+      "source_sha256": "812520097dc3d668e473b7766f74cb3aa68d3b863d08da1c1229a206519d9bf3",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41317_wti-mkpss-tr_card.md",
+      "approved_card_sha256": "ecdd58309c7655391c500fbca72e8b2ca905aec77cfa578137e58b2154a2c039",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41320",
+      "ea_label": "QM5_41320_wti-mpp-persist-tr",
+      "source_path": "framework/EAs/QM5_41320_wti-mpp-persist-tr/QM5_41320_wti-mpp-persist-tr.mq5",
+      "pre_repair_git_blob_sha256": "bb1bc9e7d88332bb43637e137a4128fe3f457da43044e73890eb68c49e6e65c7",
+      "source_sha256": "44ac847f2a87d2c7e89a5eead20077c82814915f8bbc78a8cdc3e31fe15667fb",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41320_wti-mpp-persist-tr_card.md",
+      "approved_card_sha256": "999fd781d80ee28a4675374822856c4ed91329e946dc313c48766d8594a1118b",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "82cdf671-c9ef-428e-86f1-02d343787ad5",
+          "source_sha256": "bb1bc9e7d88332bb43637e137a4128fe3f457da43044e73890eb68c49e6e65c7",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-09-03T01:02:27+00:00",
+          "updated_at": "2026-09-03T01:13:06+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41336",
+      "ea_label": "QM5_41336_wti-adf-kpss-agree-tr",
+      "source_path": "framework/EAs/QM5_41336_wti-adf-kpss-agree-tr/QM5_41336_wti-adf-kpss-agree-tr.mq5",
+      "pre_repair_git_blob_sha256": "838ccd555fe1b97af64fd54f31707c3975d720b2fcfc3e059d90241a2ad87a81",
+      "source_sha256": "e02e8e741188d542062cf462dc70349ece712f119b056808b89c6277be24b662",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41336_wti-adf-kpss-agree-tr_card.md",
+      "approved_card_sha256": "eb9170a593d715a1c128bada12970ac568991d001951e7f5b4ad4332e56ab219",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "0a80a328-3b81-4125-aa48-ed5686b7a962",
+          "source_sha256": "a44763ce85b4f471f4e2f5c96e782780406c78e7ecb883d2e61898a235b6f7a2",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-09-04T20:06:30+00:00",
+          "updated_at": "2026-09-05T21:06:50+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41337",
+      "ea_label": "QM5_41337_wti-adf-specent-agree-tr",
+      "source_path": "framework/EAs/QM5_41337_wti-adf-specent-agree-tr/QM5_41337_wti-adf-specent-agree-tr.mq5",
+      "pre_repair_git_blob_sha256": "1f786321afd244837f13aeb194fac86bda7edd45d8215424e65b35b072695626",
+      "source_sha256": "3bac1d5d34929af98e776b426947cb8cf8c334d7a1e5c90ec37010e782deb389",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41337_wti-adf-specent-agree-tr_card.md",
+      "approved_card_sha256": "f3dfae90b115eb016c102987446ce162e69edd6e6e75af6b826289d9a4bb0be9",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "dc2db235-f889-411a-8775-db523fcf00c6",
+          "source_sha256": "1f786321afd244837f13aeb194fac86bda7edd45d8215424e65b35b072695626",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-09-04T22:33:45+00:00",
+          "updated_at": "2026-09-04T22:38:05+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41338",
+      "ea_label": "QM5_41338_wti-adf-vn-agree-tr",
+      "source_path": "framework/EAs/QM5_41338_wti-adf-vn-agree-tr/QM5_41338_wti-adf-vn-agree-tr.mq5",
+      "pre_repair_git_blob_sha256": "405202f5fa354429f767ed54c5d2a51d020a31a2e1be876a1d2dfa0826a98ad5",
+      "source_sha256": "a2b36e15fb42b182dc80911b163f18902467e8594bff81ff9113b68e62a7e374",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41338_wti-adf-vn-agree-tr_card.md",
+      "approved_card_sha256": "f02ec8cb3fc01f850ee29ff395a4fe53a9bf48fc9922b6a57fdf6587ff17db4a",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "779b4e98-8ef6-4918-8903-07d074a8c523",
+          "source_sha256": "405202f5fa354429f767ed54c5d2a51d020a31a2e1be876a1d2dfa0826a98ad5",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-09-05T01:19:47+00:00",
+          "updated_at": "2026-09-05T21:34:54+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41339",
+      "ea_label": "QM5_41339_wti-adf-lz-agree-tr",
+      "source_path": "framework/EAs/QM5_41339_wti-adf-lz-agree-tr/QM5_41339_wti-adf-lz-agree-tr.mq5",
+      "pre_repair_git_blob_sha256": "95a9c04867100145d7d937ef5d99269c56079877db58ee783fa097f3711e59ab",
+      "source_sha256": "74b5de4230e19b04af127333feeb5dc428f534d1fe373453b38d760e7d22b82e",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41339_wti-adf-lz-agree-tr_card.md",
+      "approved_card_sha256": "7890f87327a2c81207c18017069ad15702aebc959dc8ba81ff0034a20d280516",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "d79fa1aa-f91e-4d47-ac34-58633ce5eddf",
+          "source_sha256": "95a9c04867100145d7d937ef5d99269c56079877db58ee783fa097f3711e59ab",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-09-05T02:55:14+00:00",
+          "updated_at": "2026-09-05T21:43:47+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41340",
+      "ea_label": "QM5_41340_wti-xng-divtrend",
+      "source_path": "framework/EAs/QM5_41340_wti-xng-divtrend/QM5_41340_wti-xng-divtrend.mq5",
+      "pre_repair_git_blob_sha256": "344f5d588e9f698b83cdcd69685132f3257acef8d115ef9a3ff3e78812321fbc",
+      "source_sha256": "96d347b1ccce2194b4ea0bb4f441145670502e2504aa1cd82bf24dd5ae1512d2",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41340_wti-xng-divtrend_card.md",
+      "approved_card_sha256": "a44adc0cd9553e98bfc0dec2cad64c486598d7c87959ab1e29a0b96be774bffc",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "b07f4a19-163f-467a-be56-7c10ff65a573",
+          "source_sha256": "344f5d588e9f698b83cdcd69685132f3257acef8d115ef9a3ff3e78812321fbc",
+          "status": "failed",
+          "verdict": "COMPILE_FAIL",
+          "created_at": "2026-09-05T03:53:54+00:00",
+          "updated_at": "2026-09-05T05:36:32+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41349",
+      "ea_label": "QM5_41349_wti-adf-sampen-agree-tr",
+      "source_path": "framework/EAs/QM5_41349_wti-adf-sampen-agree-tr/QM5_41349_wti-adf-sampen-agree-tr.mq5",
+      "pre_repair_git_blob_sha256": "ec99ef12b459ba1d67d41286550e459ca44d361df0b2c6a89c7a3999aba6499a",
+      "source_sha256": "0718170c0a126fe93a86c757e8e3bac8707fc882c7e59d04e9b124876a936aeb",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41349_wti-adf-sampen-agree-tr_card.md",
+      "approved_card_sha256": "b1041362d6d0e525ce39b96eb1c20d8b184c069f618f64ae64540e3ce6bd3228",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "58f2abcf-00c1-4d8e-a928-9a25dde9e1c9",
+          "source_sha256": "ec99ef12b459ba1d67d41286550e459ca44d361df0b2c6a89c7a3999aba6499a",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-09-05T08:16:35+00:00",
+          "updated_at": "2026-09-05T08:27:50+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "41353",
+      "ea_label": "QM5_41353_wti-adf-pp-agree-tr",
+      "source_path": "framework/EAs/QM5_41353_wti-adf-pp-agree-tr/QM5_41353_wti-adf-pp-agree-tr.mq5",
+      "pre_repair_git_blob_sha256": "c5c8bbb70280067007b625ce22f388a6dc791d391596cbc4c305489f3209adc2",
+      "source_sha256": "7ca63d446ae376121025053220dbb82e9dbca3cc2ec462993736100b453a9f3c",
+      "approved_card_path": "strategy-seeds/cards/approved/QM5_41353_wti-adf-pp-agree-tr_card.md",
+      "approved_card_sha256": "a66a7c20afb3bdea5c93d30505f661d4f4b07888f370c8b3c134f016c918cdd9",
+      "registry_status": "active",
+      "active_magic_rows": 1,
+      "predecessors": [
+        {
+          "work_item_id": "6b38739d-6a70-4014-bf15-af5c0e586984",
+          "source_sha256": "695e99604bfb690f2f23e3a250d5ca4cb2822f83638a86eabee0b0f486d6c9d5",
+          "status": "done",
+          "verdict": "COMPILE_OK",
+          "created_at": "2026-09-05T15:28:58+00:00",
+          "updated_at": "2026-09-05T15:30:41+00:00"
+        }
+      ],
+      "superseded_predecessors": []
+    }
+  ],
+  "compile_enqueue_applied": false,
+  "worker_reload_applied": false
+}

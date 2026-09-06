@@ -2105,6 +2105,84 @@ FRAMEWORK_INPUT_PIN_SOURCE_REPAIR_REGISTRATIONS = {
 BACKLOG_SOURCE_REPAIR_REGISTRATIONS.update(FRAMEWORK_INPUT_PIN_SOURCE_REPAIR_REGISTRATIONS)
 
 
+# OWNER task 0b971b15 (2026-09-06), Wave 1: the immutable evidence file
+# contains the exact 70-EA PLAIN_REBUILD registrations.  Its SHA is pinned here
+# before any row is admitted, so editing or broadening the JSON fails closed.
+FRAMEWORK_INPUT_PIN_WAVE1_EVIDENCE = (
+    "docs/ops/evidence/2026-09-06_framework_input_pin_wave1_authority.json"
+)
+FRAMEWORK_INPUT_PIN_WAVE1_EVIDENCE_SHA256 = (
+    "962910ee790946efe0133f0cd876ab2d4fe7dbd5a1675cdcaa1c7215b327f03f"
+)
+FRAMEWORK_INPUT_PIN_WAVE1_TASK_ID = "0b971b15-c37f-4ea6-8304-f61d76433862"
+
+
+def _load_framework_input_pin_wave1_registrations() -> dict[str, dict[str, Any]]:
+    evidence = Path(__file__).resolve().parents[2] / FRAMEWORK_INPUT_PIN_WAVE1_EVIDENCE
+    try:
+        raw = evidence.read_bytes()
+        if hashlib.sha256(raw).hexdigest() != FRAMEWORK_INPUT_PIN_WAVE1_EVIDENCE_SHA256:
+            return {}
+        document = json.loads(raw)
+    except (OSError, json.JSONDecodeError):
+        return {}
+    if (document.get("schema") != "qm.compile-ea-source-repair-authority-evidence/v1"
+            or document.get("task_id") != FRAMEWORK_INPUT_PIN_WAVE1_TASK_ID
+            or document.get("cohort") != "PLAIN_REBUILD"
+            or document.get("mode") != "review_only_no_enqueue"
+            or document.get("compile_enqueue_applied") is not False
+            or document.get("worker_reload_applied") is not False):
+        return {}
+    registrations: dict[str, dict[str, Any]] = {}
+    for row in document.get("registrations", []):
+        ea_id = str(row.get("ea_id") or "")
+        ea_label = str(row.get("ea_label") or "")
+        source_sha = str(row.get("source_sha256") or "").lower()
+        if (not ea_id.isdigit() or not re.fullmatch(r"QM5_\d+_[a-z0-9-]+", ea_label)
+                or not re.fullmatch(r"[0-9a-f]{64}", source_sha)
+                or ea_label.split("_", 2)[1] != ea_id
+                or row.get("registry_status") != "active"
+                or int(row.get("active_magic_rows") or 0) < 1
+                or row.get("superseded_predecessors") != []):
+            return {}
+        predecessors: dict[str, dict[str, Any]] = {}
+        for predecessor in row.get("predecessors", []):
+            work_item_id = str(predecessor.get("work_item_id") or "")
+            predecessor_sha = str(predecessor.get("source_sha256") or "").lower()
+            if (not re.fullmatch(r"[0-9a-f-]{36}", work_item_id)
+                    or not re.fullmatch(r"[0-9a-f]{64}", predecessor_sha)
+                    or predecessor.get("status") not in {"pending", "done", "failed"}):
+                return {}
+            predecessors[work_item_id] = {
+                "source_sha256": predecessor_sha,
+                "status": predecessor["status"],
+                "verdict": predecessor.get("verdict"),
+            }
+        authority = f"router_ops_issue:{FRAMEWORK_INPUT_PIN_WAVE1_TASK_ID}:QM5_{ea_id}"
+        if authority in registrations:
+            return {}
+        registrations[authority] = {
+            "ea_id": ea_id,
+            "ea_label": ea_label,
+            "source_sha256": source_sha,
+            "predecessors": predecessors,
+            "superseded_predecessors": [],
+            "evidence_path": FRAMEWORK_INPUT_PIN_WAVE1_EVIDENCE,
+            "evidence_sha256": FRAMEWORK_INPUT_PIN_WAVE1_EVIDENCE_SHA256,
+        }
+    if len(registrations) != 70:
+        return {}
+    return registrations
+
+
+FRAMEWORK_INPUT_PIN_WAVE1_SOURCE_REPAIR_REGISTRATIONS = (
+    _load_framework_input_pin_wave1_registrations()
+)
+BACKLOG_SOURCE_REPAIR_REGISTRATIONS.update(
+    FRAMEWORK_INPUT_PIN_WAVE1_SOURCE_REPAIR_REGISTRATIONS
+)
+
+
 # Router ticket 690fc42a (2026-09-06, APPROVED): build_check's EA_ML_FORBIDDEN
 # predicate matched the identifier token `weights[` and failed an otherwise clean
 # compile. The predicate was scoped to real ML shapes in 77d4ec1634; the EA source
