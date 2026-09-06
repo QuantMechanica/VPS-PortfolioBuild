@@ -1,0 +1,94 @@
+--- a/archive.css
++++ b/archive.css
+@@ -33,6 +33,7 @@
+   --a-pass:var(--pass,#0a7d4f);
+   --a-fail:var(--fail,#c8412d);
+   --a-warn:var(--warn,#f97316);
++  --a-warn-ink:#b54708; /* orange text: AA on paper and white; bright semantic token preserved */
+   --a-line:var(--line,rgba(15,23,32,.12));
+   --a-line-2:var(--line-2,rgba(15,23,32,.22));
+   --a-paper-alt:var(--paper-alt,#e9edf1);
+@@ -432,7 +433,7 @@
+   background:var(--a-paper-2);color:var(--a-ink-2);
+ }
+ .st--frontier{color:var(--a-ink-2);border-color:var(--a-line-2)}
+-.st--opt{color:var(--a-warn);border-color:var(--a-warn)}
++.st--opt{color:var(--a-warn-ink);border-color:var(--a-warn)}
+ .st--book{color:var(--a-pass);border-color:var(--a-pass)}
+ .st--retired{color:var(--a-ink-3);border-color:var(--a-line)}
+ .st--live{color:var(--a-accent);border-color:var(--a-accent)}
+@@ -526,8 +527,8 @@
+   border-right:1px solid var(--a-line-2);text-align:left;font-weight:400;
+   max-width:230px;min-width:180px;
+ }
+-.mx-head-row .mx-h-name{z-index:6}
+-.mx-table tbody tr:hover .mx-name{background:var(--a-accent-soft)}
++.mx-head-row .mx-h-name{left:0;z-index:6}
++.mx-table tbody tr:hover .mx-name{background:color-mix(in srgb,var(--accent-bright) 12%,var(--a-paper-2))}
+ .mx-name a{
+   color:var(--a-ink);font-family:var(--a-body);font-size:13.5px;
+   white-space:normal;display:inline-block;line-height:1.25;border-bottom:1px solid transparent;
+@@ -548,10 +549,10 @@
+ .mx-g{text-align:center;font-size:13px;padding-inline:0;color:var(--a-ink-3)}
+ .s-p{color:var(--a-pass)}
+ .s-r{color:var(--a-pass);font-weight:700}
+-.s-m{color:var(--a-warn)}
++.s-m{color:var(--a-warn-ink)}
+ .s-f{color:var(--a-fail)}
+ .s-q{color:var(--a-ink-3)}
+-.s-n{color:var(--a-line-2)}
++.s-n{color:var(--a-ink-3)}
+ 
+ /* show-more, count */
+ .mx-more-wrap{margin-top:20px;text-align:center}
+@@ -610,7 +611,7 @@
+   color:var(--a-ink-3);font-variant-numeric:tabular-nums;
+ }
+ .gate-outcome--none{color:var(--a-ink-3);border-color:var(--a-line)}
+-.gate-step--none{opacity:.72}
++.gate-step--none{opacity:1}
+ .gate-step--none .gate__purpose{color:var(--a-ink-3)}
+ 
+ /* detail: what we do not publish */
+@@ -628,6 +629,8 @@
+   .record-summary__item{padding:0 20px}
+ }
+ @media(max-width:640px){
++  .mx-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 24px;align-items:start}
++  .mx-stat{padding:2px 0;border-left:0}
+   .mx-toolbar{grid-template-columns:1fr}
+   .mx-chip--toggle{margin-left:0}
+   .mx-legend-hint{margin-left:0;flex-basis:100%}
+--- a/strategies/index.html
++++ b/strategies/index.html
+@@ -3,7 +3,7 @@
+ <title>Strategy archive | QuantMechanica</title><meta name="description" content="Every mechanical strategy family in the QuantMechanica research archive as one dense table: markets, status, the outcome of each Q gate, and how many backtests each one carried. A research record is not a live-trading approval.">
+ <meta property="og:title" content="Strategy archive | QuantMechanica"><meta property="og:description" content="Every mechanical strategy family in the QuantMechanica research archive as one dense table: markets, status, the outcome of each Q gate, and how many backtests each one carried. A research record is not a live-trading approval."><meta property="og:type" content="website"><meta property="og:url" content="https://quantmechanica.com/strategies/"><meta property="og:image" content="https://quantmechanica.com/assets/og-image.png">
+ <link rel="canonical" href="https://quantmechanica.com/strategies/"><link rel="icon" href="/favicon.svg">
+-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
++<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+ <link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/review-style.css"><link rel="stylesheet" href="/archive.css">
+ <script defer src="/scripts/review-site.js"></script>
+ </head><body><a class="skip-link" href="#main">Skip to content</a><nav aria-label="Primary" class="nav">
+--- a/strategies/avoid-monday-index-long-1e38ac.html
++++ b/strategies/avoid-monday-index-long-1e38ac.html
+@@ -3,7 +3,7 @@
+ <title>Avoid Monday Index Long | QuantMechanica</title><meta name="description" content="Holds equity indices from Tuesday open to Friday close, flat over Mondays.">
+ <meta property="og:title" content="Avoid Monday Index Long | QuantMechanica"><meta property="og:description" content="Holds equity indices from Tuesday open to Friday close, flat over Mondays."><meta property="og:type" content="website"><meta property="og:url" content="https://quantmechanica.com/strategies/avoid-monday-index-long-1e38ac"><meta property="og:image" content="https://quantmechanica.com/assets/og-image.png">
+ <link rel="canonical" href="https://quantmechanica.com/strategies/avoid-monday-index-long-1e38ac"><link rel="icon" href="/favicon.svg">
+-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
++<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+ <link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/review-style.css"><link rel="stylesheet" href="/archive.css">
+ <script defer src="/scripts/review-site.js"></script>
+ </head><body><a class="skip-link" href="#main">Skip to content</a><nav aria-label="Primary" class="nav">
+--- a/scripts/review-site.js
++++ b/scripts/review-site.js
+@@ -12,7 +12,7 @@
+   const toggle = document.querySelector('.nav__burger');
+   if (menu && toggle) {
+     menu.inert = true;
+-    const close = () => { nav.classList.remove('is-open'); menu.inert = true; toggle.setAttribute('aria-expanded','false'); };
++    const close = () => { nav.classList.remove('is-open'); menu.inert = true; toggle.setAttribute('aria-expanded','false'); toggle.setAttribute('aria-label','Open navigation'); };
+     toggle.addEventListener('click', () => {
+       const open = toggle.getAttribute('aria-expanded') !== 'true';
+       nav.classList.toggle('is-open', open); menu.inert = !open;

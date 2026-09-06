@@ -1,0 +1,22 @@
+[
+  {
+    "file": "archive.css",
+    "before_sha256": "1290fafa7e2e8577465c897c8232ad86b317454ebba420f151e7bb890d8e333c",
+    "after_sha256": "d4f780939d06b1a9c5d1b29d8705a63cda7a921d2648b38c206ada253b8a80b2"
+  },
+  {
+    "file": "strategies/index.html",
+    "before_sha256": "b0e960e2d5fdbbe1805327e586faa7e5de30cbdabf43d08f7197a187618071aa",
+    "after_sha256": "1e7fd71c1748455c79a29982b08ca7698c0740c7c6304cb19160b8e5fd4eeff7"
+  },
+  {
+    "file": "strategies/avoid-monday-index-long-1e38ac.html",
+    "before_sha256": "9049f40dd3f564346814206ff74aa620a72251e05a651be59093091fce3ea20f",
+    "after_sha256": "052093b6e7fef93ffebbac7486c8b2262b35f69e6699663c54a528f9d16da13f"
+  },
+  {
+    "file": "scripts/review-site.js",
+    "before_sha256": "7f768f385bbc3fbd6700050fa3933f00e5a5c746deb77312603b12b158f7cf99",
+    "after_sha256": "6be0f3b247f500bdbbf49c6f6c7fa25a2947c19dea8ed8a927378d1c18dd224c"
+  }
+]

@@ -1,0 +1,11 @@
+{
+  "html_files_scanned": 3369,
+  "patterns": {
+    "ea_ids": "QM5_",
+    "set_files": "\\.set\\b",
+    "parameters": "\\b(?:RISK_FIXED|RISK_PERCENT|PORTFOLIO_WEIGHT|qm_[a-z_]+|Inp[A-Z]\\w*|MondayBoxShiftHours|SlPct|RrTarget|FastPeriod|SlowPeriod|ATRPeriod)\\b",
+    "paths_hosts": "(?:[CDG]:[/\\\\]|T_Live|terminal64|\\.internal\\b|\\b(?:localhost|127\\.0\\.0\\.1)\\b)",
+    "magic": "\\bmagic[_ -]?(?:number|slot|id)\\b"
+  },
+  "findings": []
+}

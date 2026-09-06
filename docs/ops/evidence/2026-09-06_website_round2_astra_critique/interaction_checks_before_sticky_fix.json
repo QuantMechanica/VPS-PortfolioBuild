@@ -1,0 +1,51 @@
+[
+  {
+    "width": 1440,
+    "initial_rows": 200,
+    "after_more_rows": 500,
+    "empty_visible": true,
+    "empty_rows": 0,
+    "sort": "ascending",
+    "focus": {
+      "outline": "solid",
+      "width": "2px"
+    },
+    "sticky": {
+      "scrollLeft": 636,
+      "boxLeft": 60,
+      "firstLeft": 61,
+      "headerLeft": -575,
+      "pageOverflow": 0
+    }
+  },
+  {
+    "width": 375,
+    "initial_rows": 200,
+    "after_more_rows": 500,
+    "empty_visible": true,
+    "empty_rows": 0,
+    "sort": "ascending",
+    "focus": {
+      "outline": "solid",
+      "width": "2px"
+    },
+    "sticky": {
+      "scrollLeft": 700,
+      "boxLeft": 25.375,
+      "firstLeft": 26.375,
+      "headerLeft": -673.625,
+      "pageOverflow": 0
+    },
+    "menu_open": "true",
+    "menu_closed_label": "Open navigation",
+    "menu_inert": true
+  },
+  {
+    "reduced_motion": true,
+    "funnel_paused": true,
+    "hero_visible": true
+  },
+  {
+    "network_error_message": "The observed series is temporarily unavailable. The external DARWIN record is linked above."
+  }
+]
