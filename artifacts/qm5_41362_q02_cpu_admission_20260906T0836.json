@@ -1,0 +1,20 @@
+{
+  "admission": "ELIGIBLE",
+  "average_cpu_percent": 82.1,
+  "compile_work_item_id": "a4d9fc3a-401a-4a78-892d-2a1f36e8bf47",
+  "ea_id": "QM5_41362",
+  "maximum_cpu_percent": 83.8,
+  "method": "Windows Get-Counter \\Processor(_Total)\\% Processor Time, one-second interval",
+  "phase": "Q02",
+  "sample_count": 5,
+  "sampled_at_utc": "2026-09-06T08:36:46.634603Z",
+  "samples_cpu_percent": [
+    82.4,
+    83.8,
+    81.7,
+    81.3,
+    81.1
+  ],
+  "threshold_cpu_percent": 97.0,
+  "note": "CEO 2026-09-06 retry; successor compile a4d9fc3a COMPILE_OK (stress-guard fix bb62d69619)"
+}
