@@ -23,7 +23,7 @@ source_citations:
     citation: "Fuertes, A.-M., Miffre, J., and Rallis, G. (2010). Tactical Allocation in Commodity Futures Markets: Combining Momentum and Term Structure Signals. Journal of Banking & Finance 34(10), 2530-2548."
     location: "DOI 10.1016/j.jbankfin.2010.04.009; complete-read governed packet strategy-seeds/sources/FMR-MOMTS-2010/source.md"
     quality_tier: A
-    role: commodity_relative_return_momentum_lineage
+    role: commodity_relative_return_ranking_lineage
   - type: government_research
     citation: "Villar, J. A. and Joutz, F. L. (2006). The Relationship Between Crude Oil and Natural Gas Prices. U.S. Energy Information Administration."
     location: "Complete-read governed packet strategy-seeds/sources/VILLAR-RAMBERG-OILGAS-2026/source.md"
@@ -34,7 +34,7 @@ source_citations:
     location: "DOI 10.5547/01956574.33.2.2; complete-read governed packet strategy-seeds/sources/VILLAR-RAMBERG-OILGAS-2026/source.md"
     quality_tier: A
     role: weak_time_varying_oil_gas_relationship_and_adverse_evidence
-strategy_mechanic: normalized-week-boundary-xti-xng-three-synchronized-completed-week-endpoints-two-consecutive-individual-weekly-return-pairs-strict-same-sign-each-week-strict-same-relative-leader-newest-winner-follow-equal-notional-one-week-hold
+strategy_mechanic: normalized-week-boundary-xti-xng-three-synchronized-completed-week-endpoints-two-consecutive-individual-weekly-return-pairs-strict-same-sign-each-week-strict-relative-leader-persistence-newest-winner-continuation-equal-notional-one-week-hold
 sources:
   - "[[sources/AI-CODEX-XTIXNG-CS-LEADPERSIST-CONT-20260906]]"
 concepts:
@@ -44,7 +44,7 @@ concepts:
 indicators:
   - "[[indicators/completed-week-individual-log-return]]"
   - "[[indicators/atr-risk-stop]]"
-strategy_type_flags: [commodity, energy, oil-gas-relative-value, market-neutral-basket, common-direction-leader-persistence, symmetric-long-short, atr-hard-stop, time-stop, low-frequency]
+strategy_type_flags: [commodity, energy, oil-gas-relative-value, market-neutral-basket, common-direction-leader-persistence, relative-winner-continuation, symmetric-long-short, atr-hard-stop, time-stop, low-frequency]
 markets: [commodities, energy]
 timeframes: [D1]
 target_symbols: [XTIUSD.DWX, XNGUSD.DWX]
@@ -58,7 +58,7 @@ symbol_slots: [0, 1]
 magic_numbers: [413690000, 413690001]
 period: D1
 timeframe: D1
-expected_trade_frequency: "Approximately five to twelve completed paired packages per full post-warm-up year after two strict common-sign weeks, same-leader persistence, synchronization, and execution gates; Q02 must prove at least five/year or retire."
+expected_trade_frequency: "Approximately five to twelve completed paired packages per full post-warm-up year after two strict common-sign weeks, relative-leader persistence, synchronization, and execution gates; Q02 must prove at least five/year or retire."
 expected_trades_per_year_per_symbol: 7
 expected_pf: 1.01
 expected_dd_pct: 35.0
@@ -71,11 +71,11 @@ r4_ml_forbidden: PASS
 pipeline_phase: Q01
 q01_status: NOT_RUN
 q02_status: NOT_ENQUEUED
-review_focus: "Falsify a two-week XTI/XNG common-shock leader-persistence continuation outside the certified XAU/SP500/NDX/XNG book. Verify three consecutive synchronized completed-week endpoints, two same-sign individual-return states, strict same leader, newest-winner follow, durable weekly attempt, aggregate fixed risk, atomic basket repair, and next-week lifecycle. Q09 alone may establish realized decorrelation."
+review_focus: "Falsify a two-week XTI/XNG common-shock relative-leader persistence continuation outside the certified XAU/SP500/NDX/XNG book. Verify three consecutive synchronized completed-week endpoints, two same-sign individual-return states, strict same-leader persistence, newest-winner continuation, durable weekly attempt, aggregate fixed risk, atomic basket repair, and next-week lifecycle. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
-hard_rules_at_risk: [exact_xti_xng_carrier, immediately_preceding_three_monday_anchors, synchronized_completed_d1_closes, three_to_five_week_sessions, exact_week_end_endpoints, strict_individual_leg_same_sign_each_week, strict_relative_leader_persistence, newest_winner_follow_direction, persistent_week_attempt, equal_notional_basket, aggregate_fixed_risk, hard_stops_present, atomic_package_repair, next_week_exit, risk_mode_dual, q02_frequency_floor, portfolio_correlation]
-g0_approval_reasoning: "R1 uses complete peer-reviewed commodity relative-return evidence plus complete U.S. government and peer-reviewed oil/gas evidence, retains adverse instability, and discloses the two-week common-shock same-leader continuation as an untested QM translation; R2 locks synchronized consecutive weeks, endpoint selection, strict within-week shared signs, strict same relative leader, newest-winner follow, durable attempt, aggregate fixed risk, hard stops, spreads, and next-week lifecycle; R3 uses registered native XTI/XNG D1 histories with synchronization and CFD-basis risks explicit; R4 is deterministic native arithmetic without a banned signal, trained output, or external feed; canonical dedup and manual carrier-family review resolve expected fuzzy siblings while the unavailable external Wiki remains explicit."
+hard_rules_at_risk: [exact_xti_xng_carrier, immediately_preceding_three_monday_anchors, synchronized_completed_d1_closes, three_to_five_week_sessions, exact_week_end_endpoints, strict_individual_leg_same_sign_each_week, strict_relative_leader_persistence, newest_winner_continuation_direction, persistent_week_attempt, equal_notional_basket, aggregate_fixed_risk, hard_stops_present, atomic_package_repair, next_week_exit, risk_mode_dual, q02_frequency_floor, portfolio_correlation]
+g0_approval_reasoning: "R1 uses complete peer-reviewed commodity relative-return evidence plus complete U.S. government and peer-reviewed oil/gas evidence, retains adverse instability, and discloses the two-week common-shock leader-persistence continuation as an untested QM translation; R2 locks synchronized consecutive weeks, endpoint selection, strict within-week shared signs, strict cross-week relative-leader persistence, newest-winner continuation, durable attempt, aggregate fixed risk, hard stops, spreads, and next-week lifecycle; R3 uses registered native XTI/XNG D1 histories with synchronization and CFD-basis risks explicit; R4 is deterministic native arithmetic without a banned signal, trained output, or external feed; canonical dedup and manual carrier-family review resolve the expected fuzzy siblings while the unavailable external Wiki remains explicit."
 ---
 
 # QM5_41369 XTI/XNG Common-Shock Leader-Persistence Continuation
@@ -86,11 +86,12 @@ WTI crude oil and natural gas share broad energy-demand, production,
 financing, drilling, and substitution channels, while gas also carries large
 regional, weather, storage, and transport shocks. When both contracts move in
 the same direction for two consecutive completed weeks and the same contract
-leads both moves, follow the persistent relative leader for the next week as
-one equal-notional opposed-leg package.
+remains the relative winner, treat that persistence as a low-frequency
+relative continuation state. Buy the newest relative winner and sell the loser
+as one equal-notional package for the following week.
 
-The reputable sources support commodity relative-return momentum research and
-the weak, unstable oil/gas link. They do not establish this two-week state,
+The reputable sources support commodity relative-return research and the
+weak, unstable oil/gas link. They do not establish this two-week state,
 continuation direction, efficacy, neutrality, or decorrelation.
 
 ## Source Traceability And Claim Boundary
@@ -108,13 +109,17 @@ The canonical checker scanned 4,849 registry rows and 1,462 cards, found no
 exact identity, and surfaced five expected fuzzy siblings. The external
 Strategy Wiki root was unavailable and remains an explicit coverage limit.
 
-- `QM5_41367` follows one common-sign week; this card requires two consecutive
-  common-sign weeks and the same strict leader in both.
-- `QM5_41368` requires a strict leader switch and fades the newest winner.
-- `QM5_41361` fades a one-week common-shock winner.
-- `QM5_41365` and `QM5_41366` require opposite signs within a week.
-- `QM5_41362` classifies relative-spread deceleration; this card ignores
-  magnitude and requires shared individual-leg direction in both weeks.
+- `QM5_41367` follows a winner after one common-sign completed week; this rule
+  requires two consecutive common-sign weeks and the same strict leader.
+- `QM5_41368` requires a strict leader switch and fades the newest winner;
+  this rule requires leader persistence and follows the newest winner.
+- `QM5_41361` fades a winner after one common-sign completed week.
+- `QM5_41365` and `QM5_41366` require opposite individual-leg signs inside
+  one completed week, disjoint from this rule's two same-sign states.
+- `QM5_41362` compares the sign and magnitude of adjacent ratio returns; this
+  rule ignores magnitude and requires same-sign individual returns inside
+  both weeks plus an unchanged strict leader.
+- `QM5_12567` is a single-symbol long-only cumulative-RSI pullback.
 
 Verdict:
 `DISTINCT_TWO_WEEK_COMMON_SHOCK_STRICT_SAME_LEADER_PERSISTENCE_CONTINUATION`.
@@ -151,7 +156,7 @@ otherwise => FLAT
 
 `eps=1e-10`. Zero, equality, invalid arithmetic, mixed signs within either
 week, missing/nonconsecutive weeks, asynchronous bars, or a leader switch
-consume the attempt flat. No current-week price is a signal input.
+consumes the attempt flat. No current-week price is a signal input.
 
 ## Rules
 
@@ -174,8 +179,8 @@ surface or fallback mechanic exists.
    three to five synchronized sessions, selected only by its newest final
    close pair.
 6. Compute the two consecutive individual weekly log-return pairs. Require a
-   strict shared sign within both weeks and `abs(d0)>eps`, `abs(d1)>eps`, with
-   the same strict sign for `d0` and `d1`.
+   strict shared sign within both weeks, `abs(d0)>eps`, `abs(d1)>eps`, and the
+   same strict sign for `d0` and `d1`.
 7. Follow the newest leader: `d1>eps` buys XTI/sells XNG; `d1<-eps` sells
    XTI/buys XNG.
 8. Require both quotes, ATRs, symbol trade state, news clearance, and spread
@@ -199,21 +204,21 @@ surface or fallback mechanic exists.
 
 ## 6. Filters (No-Trade Module)
 
-- Fail closed unless attached to exact `XTIUSD.DWX` D1 with exact companion
-  `XNGUSD.DWX`.
+- Fail closed unless the EA is attached to exact `XTIUSD.DWX` D1 and the
+  companion is exact `XNGUSD.DWX`.
 - Use framework kill switch, broker disconnect, symbol trade state, history,
   spread, and two-axis news clearance.
-- Friday force-close is disabled by approved execution-contract override; the
-  explicit next-week package exit owns the lifecycle.
-- Missing or inconsistent inputs, synchronization, prices, ATR, contract
-  metadata, stops, or lots consume the week flat.
+- Friday force-close is disabled by approved execution-contract override;
+  the explicit next-week package exit owns the lifecycle.
+- Missing or inconsistent inputs, state, synchronization, prices, ATR,
+  contract metadata, stops, or lots consume the week flat.
 
 ## 7. Trade Management Rules
 
 - At most one logical two-leg package exists.
 - Every tick repairs malformed exposure before any entry-only gate.
-- A valid package has one XTI leg and one XNG leg, opposite sides, exact
-  registered magics, and notional mismatch at or below 20%.
+- The package is valid only with one XTI leg and one XNG leg, opposite sides,
+  exact registered magics, and notional mismatch at or below 20%.
 - The durable attempt ledger prevents restart backfill or intraday retry.
 
 ## Parameters To Test
@@ -243,7 +248,8 @@ strategy_deviation_points=20
 
 ## QM Interpretations
 
-- Exact two-week common-sign leader persistence and follow direction.
+- Exact two-week common-sign strict-leader persistence and newest-winner
+  continuation direction.
 - Weekly broker-calendar clock, synchronization, session bounds, stop,
   notional target, aggregate risk cap, and lifecycle.
 
@@ -271,7 +277,7 @@ strategy_deviation_points=20
 
 - Backtest only: `RISK_FIXED=1000`, `RISK_PERCENT=0`,
   `PORTFOLIO_WEIGHT=1`.
-- `RISK_FIXED` is one aggregate package budget, not a per-leg budget.
+- `RISK_FIXED` is one aggregate logical-package budget, not a per-leg budget.
 - Each leg has a frozen `3.5*ATR(20,D1)` hard stop.
 - Lot rounding may reduce risk but may never increase aggregate stop risk.
 - Equal notional is only a target; it does not prove beta, volatility,
@@ -281,9 +287,9 @@ strategy_deviation_points=20
 
 - Retire on zero completed packages, fewer than five packages in any full
   post-warm-up year, or nonpositive governed economics.
-- No rescue may alter carrier, two-week formation, same-sign states,
-  same-leader condition, follow direction, attempt semantics, risk, stop, or
-  lifecycle.
+- No rescue may alter carrier, two-week formation, common-sign states,
+  leader-persistence condition, continuation direction, attempt semantics,
+  risk, stop, or lifecycle.
 - Q09 alone may test realized overlap with the certified book.
 
 ## Framework Alignment
@@ -299,8 +305,9 @@ strategy_deviation_points=20
 ## Validation Plan
 
 1. Deterministic reference fixtures for week keys, session bounds, strict
-   signs, leader persistence, equality, mixed-sign rejection, direction,
-   sizing, attempt persistence, atomic repair, and lifecycle.
+   signs, leader persistence, equality, mixed-sign rejection, leader-switch
+   rejection, direction, sizing, attempt persistence, atomic repair, and
+   lifecycle.
 2. Card schema lint and approved-card preflight.
 3. Deterministic EA/magic allocation and resolver regeneration.
 4. Strict governed Q01 compile with an `.ex5` receipt.
