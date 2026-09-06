@@ -1,0 +1,35 @@
+{
+  "schema": "qm.paced-q02-admission/v1",
+  "ea_id": "QM5_41369",
+  "ea_label": "QM5_41369_xtixng-cs-leadpersist-cont",
+  "phase": "Q02",
+  "admission": "STOP_CPU_CEILING",
+  "sampled_at_utc": "2026-09-06T14:26:33.7632720Z",
+  "method": "Windows Get-Counter \\Processor(_Total)\\% Processor Time, one-second interval",
+  "sample_count": 5,
+  "samples_cpu_percent": [
+    95.02257867056429,
+    91.15644539005116,
+    89.76265913618808,
+    94.10462517416371,
+    99.41936520208506
+  ],
+  "average_cpu_percent": 93.89313471461045,
+  "maximum_cpu_percent": 99.41936520208506,
+  "threshold_cpu_percent": 97.0,
+  "compile_work_item_id": "c283f5a0-9b7d-4c51-bb9d-9f4bd93dd4d7",
+  "compile_status": "pending",
+  "compile_activation_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+  "q02_dry_run_eligible": false,
+  "q02_dry_run_reason": "compile_work_item_not_done_compile_ok",
+  "q02_enqueued": false,
+  "source_sha256": "732702883032eca55718f1046cd2a8428a570b2c93264001a0ecc00c5378a94c",
+  "framework_input_pin_audit": {
+    "ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "source_count": 1,
+    "hit_count": 0,
+    "hits": []
+  },
+  "note": "Q02 was not enqueued. The governed compile is pending and activation-held, and the fresh five-sample window independently failed the binding rule because its maximum was not strictly below 97 percent."
+}
