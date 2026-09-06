@@ -47,10 +47,14 @@ FARM_DB = Path(r"D:\QM\strategy_farm\state\farm_state.sqlite")
 # but remains PARKED until the OWNER completes chart attachment, enables
 # AutoTrading, and authorizes the PARKED -> RUNNING source edit.  The observer
 # never performs any of those actions.
-EXPECTED_STATE = "PARKED"
+# 2026-09-06 20:08Z OWNER activation: manifest signed (chat receipt ~19:38Z), governor
+# bootstrap 21:38 Prague, active governor + collector + 8/8 sleeves attached, OWNER
+# enabled AutoTrading ("Autotrading ist an", ~20:08Z).  PARKED -> RUNNING source edit
+# performed by Claude on that receipt; evidence docs/ops/evidence/2026-09-06_ftmo_demo_governor_manifest.md.
+EXPECTED_STATE = "RUNNING"
 EXPECTED_STATE_REVIEW_EXPIRES_UTC = None
 EXPECTED_STATE_DECISION_ID = "OWNER-DEC-M13-ECONOMIC-TRIAL-20260906"
-EXPECTED_STATE_DECISION_PATH = "docs/ops/FTMO_M13_CAPTURE_RUNBOOK_2026-09-06.md"
+EXPECTED_STATE_DECISION_PATH = "docs/ops/evidence/2026-09-06_ftmo_demo_governor_manifest.md"
 EXPECTED_STATE_REVIEW_TRIGGER_QUALIFIED_PAIRS = 25
 EXPECTED_ACCOUNT_LOGIN = 1514536732
 EXPECTED_ACCOUNT_SERVER = "FTMO-Demo"
