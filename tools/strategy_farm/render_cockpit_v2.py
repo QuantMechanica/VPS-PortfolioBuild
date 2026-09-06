@@ -33,6 +33,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import hashlib
 import html
 import json
 import re
@@ -320,13 +321,19 @@ def _render_control_strip(contract: dict) -> str:
         if str(it.get("status") or "OPEN").upper() == "OPEN"
     )
     alert_n = cs.get("owner_decisions_alert") or 0
+    todos = contract.get("owner_todos", {}) or {}
+    todos_open = sum(
+        1 for it in (todos.get("items") or [])
+        if str(it.get("status") or "OPEN").upper() == "OPEN"
+    )
     # oldest wait
     owner_cell = f'''
       <div class="mc-cell">
         <div class="mc-cell-label">OWNER</div>
         <div class="mc-cell-main mc-num">{_int(open_n)}</div>
         <div class="mc-cell-sub"><span style="color:var(--fail)">{_int(alert_n)} alert</span>
-          · {_int(cs.get('owner_executions_open'))} Umsetzung · {_int(od.get('q12_review_ready'))} Q12-ready</div>
+          · {_int(cs.get('owner_executions_open'))} Umsetzung · {_int(od.get('q12_review_ready'))} Q12-ready
+          · <span data-owner-todos-open>{_int(todos_open)} To-Do</span></div>
       </div>'''
 
     return f'''
@@ -362,30 +369,44 @@ def _render_execution_plan_choice(label: str, plan: dict) -> str:
           </div>'''
 
 
-def _render_owner_todos(contract: dict) -> str:
-    """Prominent OWNER To-Do cards: concrete actions only the OWNER can take."""
+_TODO_KIND_ORDER = (
+    ("handlung", "Handlungen"),
+    ("vorlage", "Vorlagen (Entscheidung in Mission Control)"),
+    ("info", "Info"),
+    ("video", "Videoanalysen"),
+)
 
-    todos = contract.get("owner_todos", {}) or {}
-    items = [it for it in (todos.get("items") or [])
-             if str(it.get("status") or "OPEN").upper() == "OPEN"]
-    if not items:
+
+def _todo_source_ref(it: dict) -> str:
+    src = it.get("source")
+    if not isinstance(src, dict):
         return ""
-    cards = []
-    for it in items:
-        title = it.get("title") or "?"
-        why = it.get("why") or ""
-        due = it.get("due")
-        source = str(it.get("source_decision_id") or "")
-        steps = it.get("steps") or []
-        steps_html = "".join(f"<li>{e(step)}</li>" for step in steps)
-        source_html = (
-            f'<div class="mc-todo-src"><b>Entscheidung:</b> <code>{e(source)}</code></div>'
-            if source else ""
-        )
-        cards.append(f'''
+    raw = str(src.get("file") or "")
+    # basename only — never surface the full vault path in the operator surface.
+    name = raw.replace("\\", "/").rsplit("/", 1)[-1] or raw
+    line = src.get("line")
+    return f"{name}:{line}" if line is not None else name
+
+
+def _render_owner_todo_card(it: dict) -> str:
+    """Prominent Handlung card: the concrete action, its steps and provenance."""
+    title = it.get("title") or "?"
+    why = it.get("why") or ""
+    due = it.get("due")
+    source = str(it.get("source_decision_id") or "")
+    ref = _todo_source_ref(it)
+    steps = it.get("steps") or []
+    steps_html = "".join(f"<li>{e(step)}</li>" for step in steps)
+    source_html = (
+        f'<div class="mc-todo-src"><b>Entscheidung:</b> <code>{e(source)}</code></div>'
+        if source else ""
+    )
+    ref_html = f'<span class="mc-todo-ref">{e(ref)}</span>' if ref else ""
+    return f'''
       <article class="mc-todo-card">
         <div class="mc-todo-head">
           <code>{e(it.get('id'))}</code>
+          {ref_html}
           <span class="mc-todo-due">{e(due) if due else "ohne Frist"}</span>
         </div>
         <div class="mc-todo-title">{e(title)}</div>
@@ -393,14 +414,57 @@ def _render_owner_todos(contract: dict) -> str:
         <ol class="mc-todo-steps">{steps_html}</ol>
         {source_html}
         <div class="mc-todo-note">Erledigt: dem Orchestrator melden.</div>
-      </article>''')
+      </article>'''
+
+
+def _render_owner_todo_row(it: dict) -> str:
+    """Compact row (Vorlage / Info / Video): title, age and source only."""
+    title = it.get("title") or "?"
+    ref = _todo_source_ref(it)
+    age = _reltime_span(it.get("created_at_utc"), prefix="")
+    ref_html = f'<span class="mc-todo-ref">{e(ref)}</span>' if ref else ""
+    return f'''
+        <div class="mc-todo-row">
+          <span class="mc-todo-row-title">{e(title)}</span>
+          <span class="mc-todo-row-meta">{age} · <code>{e(it.get('id'))}</code> {ref_html}</span>
+        </div>'''
+
+
+def _render_owner_todos(contract: dict) -> str:
+    """All open OWNER To-Dos, grouped by kind: Handlungen as prominent cards,
+    then Vorlagen, Info and Videoanalysen as compact rows."""
+
+    todos = contract.get("owner_todos", {}) or {}
+    items = [it for it in (todos.get("items") or [])
+             if str(it.get("status") or "OPEN").upper() == "OPEN"]
+    if not items:
+        return ""
+    grouped: dict[str, list[dict]] = {}
+    for it in items:
+        grouped.setdefault(str(it.get("kind") or "handlung"), []).append(it)
+
+    blocks: list[str] = []
+    for kind, heading in _TODO_KIND_ORDER:
+        bucket = grouped.get(kind) or []
+        if not bucket:
+            continue
+        if kind == "handlung":
+            body = '<div class="mc-todo-list">' + "".join(
+                _render_owner_todo_card(it) for it in bucket) + "</div>"
+        else:
+            body = '<div class="mc-todo-rows">' + "".join(
+                _render_owner_todo_row(it) for it in bucket) + "</div>"
+        blocks.append(f'''
+    <div class="mc-todo-group" data-todo-kind="{e(kind)}">
+      <div class="mc-h3">{e(heading)} <span>{_int(len(bucket))}</span></div>
+      {body}
+    </div>''')
+
     return f'''
   <section class="mc-section mc-todos" id="owner-todos">
     <div class="mc-h2"><span>OWNER To-Dos</span>
       <span class="mc-h2-aux">{_int(len(items))} offen · nur der OWNER kann sie ausfuehren</span></div>
-    <div class="mc-todo-list">
-      {''.join(cards)}
-    </div>
+    {''.join(blocks)}
   </section>'''
 
 
@@ -1426,6 +1490,21 @@ _PAGE_CSS = """
     margin-bottom:var(--space-2)}
   .mc-todo-note{font-family:var(--font-mono);font-size:var(--fs-xs);color:var(--text-3);
     border-top:1px solid var(--border);padding-top:var(--space-2)}
+  .mc-todo-group{margin-top:var(--space-4)}
+  .mc-todo-group .mc-h3{display:flex;gap:var(--space-2);align-items:baseline;
+    font-size:var(--fs-sm);color:var(--text-2);margin-bottom:var(--space-2)}
+  .mc-todo-group .mc-h3>span{font-family:var(--font-mono);color:var(--text-3)}
+  .mc-todo-ref{font-family:var(--font-mono);font-size:var(--fs-xs);color:var(--text-3)}
+  .mc-todo-rows{display:flex;flex-direction:column;border:1px solid var(--border);
+    background:var(--surface-2)}
+  .mc-todo-row{display:flex;justify-content:space-between;align-items:baseline;
+    gap:var(--space-4);padding:var(--space-2) var(--space-4);
+    border-bottom:1px solid var(--border)}
+  .mc-todo-row:last-child{border-bottom:0}
+  .mc-todo-row-title{font-size:var(--fs-sm);color:var(--text-1)}
+  .mc-todo-row-meta{font-family:var(--font-mono);font-size:var(--fs-xs);
+    color:var(--text-3);white-space:nowrap}
+  #mc-render-status{font-family:var(--font-mono);font-size:var(--fs-xs);color:var(--text-3)}
   .mc-dec-deferred{margin-top:var(--space-4);border:1px solid var(--border);
     background:var(--surface-2);padding:var(--space-2) var(--space-4)}
   .mc-dec-deferred>summary{cursor:pointer;font-family:var(--font-mono);
@@ -1579,6 +1658,78 @@ _DECISION_SCRIPT = r"""
 """
 
 
+# 5-second self-refresh. The renderer stamps the page (a body sha256 + render
+# time) into <meta name="qm-render-stamp"> and into a sibling cockpit_stamp.json.
+# On http(s) the page polls that stamp and reloads only when the sha changes; on
+# file:// (how the OWNER opens it) the browser blocks a sibling fetch, so it
+# degrades to a guarded 5 s timer reload. Either path is SUPPRESSED while the
+# OWNER is typing in the decision form (focused, or any non-empty field).
+_REFRESH_SCRIPT = r"""
+(function(){
+  var meta=document.querySelector('meta[name="qm-render-stamp"]');
+  if(!meta)return;
+  var stamp={};
+  try{stamp=JSON.parse(meta.getAttribute('content')||'{}');}catch(e){return;}
+  var currentSha=stamp.sha256||'';
+  var renderedMs=Date.parse(stamp.rendered_at_utc||'');
+  if(isNaN(renderedMs))renderedMs=Date.now();
+  var statusEl=document.getElementById('mc-render-status');
+  var pausedEl=document.getElementById('mc-refresh-paused');
+  var isFile=(location.protocol==='file:');
+  document.documentElement.setAttribute('data-refresh-mode',isFile?'timer':'fetch-stamp');
+  function inputBusy(){
+    var scope=document.getElementById('owner-decisions');
+    if(!scope)return false;
+    var fields=scope.querySelectorAll('input,textarea,select');
+    for(var i=0;i<fields.length;i++){
+      var f=fields[i];
+      if(f.matches('[data-decision-filter-search],[data-decision-filter-category],[data-decision-filter-status],[data-decision-filter-severity]'))continue;
+      if(document.activeElement===f)return true;
+      if((f.value||'').trim()!=='')return true;
+    }
+    return false;
+  }
+  function setPaused(on){if(pausedEl)pausedEl.hidden=!on;}
+  function ageTick(){
+    if(!statusEl)return;
+    var s=Math.max(0,Math.floor((Date.now()-renderedMs)/1000));
+    statusEl.textContent='zuletzt gerendert vor '+s+' s';
+  }
+  ageTick();setInterval(ageTick,1000);
+  function reloadGuarded(){
+    if(inputBusy()){setPaused(true);return;}
+    setPaused(false);location.reload();
+  }
+  if(isFile){
+    setInterval(reloadGuarded,5000);
+    return;
+  }
+  setInterval(function(){
+    fetch('./cockpit_stamp.json',{cache:'no-store'}).then(function(r){
+      if(!r.ok)throw new Error('HTTP '+r.status);return r.json();
+    }).then(function(j){
+      if(j&&j.sha256&&j.sha256!==currentSha)reloadGuarded();
+    }).catch(function(){/* stamp unreachable — keep the current render */});
+  },5000);
+})();
+"""
+
+
+_STAMP_META_RE = re.compile(r"<meta name=\"qm-render-stamp\" content='([^']*)'")
+
+
+def stamp_from_doc(doc: str) -> dict | None:
+    """Recover the render stamp embedded in a rendered document (so the sibling
+    cockpit_stamp.json is written from the exact same values as the meta)."""
+    match = _STAMP_META_RE.search(doc)
+    if not match:
+        return None
+    try:
+        return json.loads(match.group(1))
+    except (ValueError, TypeError):
+        return None
+
+
 # ---------------------------------------------------------------------------
 # top-level render
 # ---------------------------------------------------------------------------
@@ -1621,10 +1772,19 @@ def render(contract: dict, *, from_json: bool = False, source_path: str | None =
     dur = f"{duration_ms:.0f} ms" if duration_ms is not None else "—"
     gen_span = _reltime_span(generated_at, prefix="")
 
+    # Render stamp: a sha256 over the page BODY (stable across re-renders that
+    # produce identical content) plus the render time. Embedded in a meta tag and
+    # written verbatim to cockpit_stamp.json so the poller can detect new renders.
+    body_sha = hashlib.sha256(body.encode("utf-8")).hexdigest()
+    stamp = {"rendered_at_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
+             "sha256": body_sha}
+    stamp_json = json.dumps(stamp, ensure_ascii=False, sort_keys=True)
+
     return (
         "<!doctype html>\n<html lang=\"en\">\n<head>\n"
         "<meta charset=\"utf-8\">\n"
         "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n"
+        f"<meta name=\"qm-render-stamp\" content='{stamp_json}'>\n"
         "<title>QuantMechanica // MISSION CONTROL</title>\n"
         "<link rel=\"stylesheet\" href=\"style.css\">\n"
         "<style>\n" + _PAGE_CSS + "\n</style>\n"
@@ -1634,6 +1794,9 @@ def render(contract: dict, *, from_json: bool = False, source_path: str | None =
         "    <div class=\"mc-title\">Mission <span class=\"mc-accent\">Control</span> v2 "
         "<span style=\"color:var(--warn)\">· SHADOW</span></div>\n"
         f"    <div class=\"mc-topaux\">{badges_html}"
+        "<span id=\"mc-refresh-paused\" class=\"mc-badge mc-badge-warn\" hidden>"
+        "Aktualisierung pausiert - Eingabe offen</span>"
+        "<span id=\"mc-render-status\">zuletzt gerendert vor 0 s</span>"
         f"<span>generated {e(str(generated_at)[:19])} · {gen_span}</span></div>\n"
         "  </div>\n"
         + body +
@@ -1644,7 +1807,7 @@ def render(contract: dict, *, from_json: bool = False, source_path: str | None =
         " · MC-v2 primär seit OWNER-Abnahme 2026-08-21</span>\n"
         "  </div>\n"
         "</div>\n"
-        "<script>\n" + _REL_SCRIPT + "\n" + _DECISION_SCRIPT + "\n</script>\n"
+        "<script>\n" + _REL_SCRIPT + "\n" + _DECISION_SCRIPT + "\n" + _REFRESH_SCRIPT + "\n</script>\n"
         "</body>\n</html>\n"
     )
 
@@ -1730,6 +1893,13 @@ def main(argv: list[str] | None = None) -> int:
                  ea_page_exists=_ea_page_exists_factory(output.parent))
 
     _atomic_write_text(output, doc)
+    # Sibling stamp for the 5 s self-refresh poller (same values as the meta tag).
+    stamp = stamp_from_doc(doc)
+    if stamp is not None:
+        _atomic_write_text(
+            output.parent / "cockpit_stamp.json",
+            json.dumps(stamp, ensure_ascii=False, sort_keys=True) + "\n",
+        )
     if explorer_doc is not None:
         _atomic_write_text(output.parent / "linear_frontier.html", explorer_doc)
     if output == OUTPUT_PATH:

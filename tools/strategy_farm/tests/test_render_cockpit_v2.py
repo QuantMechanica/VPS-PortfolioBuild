@@ -515,3 +515,94 @@ def test_queue_sums_consistent():
     assert r._int(br["pending_executable"]) in html
     assert r._int(br["pending_parked"]) in html
     assert r._int(br["queue_total"]) in html
+
+
+# ---------------------------------------------------------------------------
+# grouped OWNER To-Dos + 5-second self-refresh
+# ---------------------------------------------------------------------------
+def _grouped_todos():
+    return {
+        "count": 4,
+        "items": [
+            {"id": "OWNER-TODO-VAULT-aaaaaaaaaa", "title": "Konto anlegen",
+             "why": "Warum eins.", "kind": "handlung",
+             "steps": ["Schritt eins.", "Schritt zwei."],
+             "status": "OPEN", "created_at_utc": "2026-09-06T00:00:00Z",
+             "source_decision_id": "OWNER-DEC-M13", "due": "2026-09-06",
+             "source": {"file": r"G:\x\OWNER.md", "line": 3}},
+            {"id": "OWNER-TODO-VAULT-bbbbbbbbbb", "title": "Rulepack-Pin pruefen",
+             "why": "Warum zwei.", "kind": "vorlage", "steps": [], "status": "OPEN",
+             "created_at_utc": "2026-09-05T00:00:00Z",
+             "source": {"file": r"G:\x\OWNER.md", "line": 7}},
+            {"id": "OWNER-TODO-VAULT-cccccccccc", "title": "Info-Zeile",
+             "why": "Warum drei.", "kind": "info", "steps": [], "status": "OPEN",
+             "created_at_utc": "2026-09-05T00:00:00Z",
+             "source": {"file": r"G:\x\OWNER.md", "line": 4}},
+            {"id": "OWNER-TODO-VAULT-dddddddddd", "title": "Silber-Video sichten",
+             "why": "Warum vier.", "kind": "video", "steps": [], "status": "OPEN",
+             "created_at_utc": "2026-09-06T07:00:00Z",
+             "source": {"file": r"G:\x\OWNER Videoanalysen.md", "line": 49}},
+        ],
+    }
+
+
+def test_owner_todos_grouped_by_kind():
+    contract = make_contract(n_decisions=1)
+    contract["owner_todos"] = _grouped_todos()
+    html = r.render(contract)
+    # all four German group headings present
+    for heading in ("Handlungen", "Vorlagen (Entscheidung in Mission Control)",
+                    "Info", "Videoanalysen"):
+        assert heading in html
+    # Handlung is a prominent card WITH steps + the orchestrator note
+    assert "Konto anlegen" in html
+    assert "Schritt eins." in html
+    assert "Erledigt: dem Orchestrator melden" in html
+    # compact rows for the other kinds carry the source basename (never full path)
+    assert "OWNER.md:7" in html
+    assert "OWNER Videoanalysen.md:49" in html
+    assert r"x\OWNER.md" not in html  # no full vault path leaks
+    # Handlungen render before Vorlagen before Info before Videoanalysen
+    order = [html.index(f'data-todo-kind="{k}"')
+             for k in ("handlung", "vorlage", "info", "video")]
+    assert order == sorted(order)
+    # section counter shows the open total
+    assert "4 offen" in html
+
+
+def test_control_strip_shows_open_todo_counter():
+    contract = make_contract(n_decisions=1)
+    contract["owner_todos"] = _grouped_todos()
+    html = r.render(contract)
+    assert "data-owner-todos-open" in html
+    start = html.index("data-owner-todos-open")
+    assert "4 To-Do" in html[start:start + 60]
+
+
+def test_render_stamp_meta_and_refresh_script_present():
+    contract = make_contract(n_decisions=1)
+    html = r.render(contract)
+    # stamp meta present with a sha256 + rendered_at_utc
+    assert '<meta name="qm-render-stamp"' in html
+    stamp = r.stamp_from_doc(html)
+    assert stamp is not None
+    assert re.fullmatch(r"[0-9a-f]{64}", stamp["sha256"])
+    assert stamp["rendered_at_utc"]
+    # the refresh script is present (poll stamp, guarded reload, age readout)
+    assert "cockpit_stamp.json" in html
+    assert "location.reload()" in html
+    assert "zuletzt gerendert vor" in html
+    assert "Aktualisierung pausiert" in html
+    assert "id=\"mc-render-status\"" in html
+    assert "id=\"mc-refresh-paused\"" in html
+
+
+def test_render_stamp_sha_tracks_body_changes():
+    base = make_contract(n_decisions=1)
+    changed = make_contract(n_decisions=3)
+    a = r.stamp_from_doc(r.render(base))["sha256"]
+    b = r.stamp_from_doc(r.render(changed))["sha256"]
+    assert a != b  # different body -> different stamp sha
+    # identical content renders to the same body sha (time-independent)
+    a2 = r.stamp_from_doc(r.render(base))["sha256"]
+    assert a == a2
