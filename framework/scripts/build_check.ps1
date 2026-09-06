@@ -959,6 +959,39 @@ function Invoke-ForbiddenScan {
     }
     # QM-MARK: END ML_PREDICATE_SCAN
 
+    # ---- EA_FRAMEWORK_INPUT_PINNED (OWNER 2026-09-06) ----
+    # Framework-owned knobs must remain phase inputs. EA guards may validate the
+    # finite 0..1 range of qm_stress_reject_probability, but must not lock a seed,
+    # stress value, news mode/staleness/impact setting, or Friday-close setting.
+    # Scope this to the EA input/no-trade guard so legitimate runtime use of the
+    # same inputs is not flagged.
+    # QM-MARK: BEGIN FRAMEWORK_INPUT_PIN_PATTERNS
+    $frameworkInputGuardPattern = '(?ms)^\s*bool\s+Strategy_(?:InputsValid|NoTradeFilter)\s*\([^)]*\)\s*\{.*?^\s*\}'
+    $frameworkOwnedInputName = '(?:qm_rng_seed|qm_stress_reject_probability|qm_news_[A-Za-z0-9_]+|qm_friday_close_[A-Za-z0-9_]+)'
+    $frameworkPinnedComparisonPattern = "(?i)(?:\b$frameworkOwnedInputName\b\s*(?:==|!=)|(?:==|!=)\s*\b$frameworkOwnedInputName\b|!\s*\bqm_friday_close_enabled\b)"
+    # QM-MARK: END FRAMEWORK_INPUT_PIN_PATTERNS
+
+    # QM-MARK: BEGIN FRAMEWORK_INPUT_PIN_SCAN
+    foreach ($mqlFile in $mqlFiles) {
+        $rawFrameworkInput = Get-Content -LiteralPath $mqlFile -Raw
+        if ([string]::IsNullOrEmpty($rawFrameworkInput)) { continue }
+        $frameworkCommentFree = [regex]::Replace($rawFrameworkInput, '(?s)/\*.*?\*/|(?m)//[^\r\n]*', {
+            param($m) [regex]::Replace($m.Value, '[^\r\n]', ' ')
+        })
+        $frameworkCodeOnly = [regex]::Replace($frameworkCommentFree, '"(?:\\.|[^"\\\r\n])*"', {
+            param($m) [regex]::Replace($m.Value, '[^\r\n]', ' ')
+        })
+        foreach ($guard in [regex]::Matches($frameworkCodeOnly, $frameworkInputGuardPattern)) {
+            foreach ($hit in [regex]::Matches($guard.Value, $frameworkPinnedComparisonPattern)) {
+                $absoluteIndex = $guard.Index + $hit.Index
+                $lineNumber = 1 + ([regex]::Matches($frameworkCodeOnly.Substring(0, $absoluteIndex), "`n")).Count
+                $snippet = ($hit.Value -replace '\s+', ' ').Trim()
+                Add-Failure "EA_FRAMEWORK_INPUT_PINNED: ${mqlFile}:${lineNumber} framework-owned input guard comparison '$snippet'."
+            }
+        }
+    }
+    # QM-MARK: END FRAMEWORK_INPUT_PIN_SCAN
+
     $externalHits = Select-String -Path $mqlFiles.ToArray() -Pattern $externalPattern
     foreach ($hit in $externalHits) {
         Add-Failure "BUILD_CHECK_EXTERNAL_DATA_API_FORBIDDEN: $($hit.Path):$($hit.LineNumber) contains '$($hit.Matches[0].Value)'. Darwinex MT5 native data only."

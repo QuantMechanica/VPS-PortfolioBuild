@@ -2,13 +2,19 @@
 import math
 from pathlib import Path
 import re
-import subprocess
 
 import pytest
 
 ROOT = Path(__file__).resolve().parents[4]
-BASE = "5c14b24bd5"
 FAMILY = [41171, 41319, 41358, 41359, 41360, 41361, 41362]
+SEEDS = [7, 17, 42, 99, 2026]
+PROBABILITIES = [0.0, 0.1, 0.5, 1.0]
+FRAMEWORK_PIN = re.compile(
+    r"\b(?:qm_rng_seed|qm_news_(?:temporal|compliance|stale_max_hours|min_impact|mode(?:_legacy)?)|qm_friday_close_\w+)\b\s*(?:==|!=)"
+    r"|(?:==|!=)\s*\b(?:qm_rng_seed|qm_news_(?:temporal|compliance|stale_max_hours|min_impact|mode(?:_legacy)?)|qm_friday_close_\w+)\b"
+    r"|!\s*qm_friday_close_enabled\b",
+    re.I,
+)
 
 
 def source_path(ea):
@@ -16,8 +22,21 @@ def source_path(ea):
     return directory / (directory.name + ".mq5")
 
 
-def predicate(source, probability):
+def input_guard(source):
+    match = re.search(
+        r"bool\s+Strategy_(?:InputsValid|NoTradeFilter)\s*\([^)]*\)\s*\{.*?^\s*\}",
+        source,
+        re.M | re.S,
+    )
+    assert match
+    return match.group(0)
+
+
+def predicate(source, seed, probability):
     # Translate only the actual finite/range expression, not a parallel model.
+    guard = input_guard(source)
+    assert not FRAMEWORK_PIN.search(guard)
+    assert not re.search(r"\bqm_stress_reject_probability\b\s*(?:==|!=)|(?:==|!=)\s*\bqm_stress_reject_probability\b", guard)
     reject = re.search(r"!MathIsValidNumber\(qm_stress_reject_probability\)\s*\|\|\s*qm_stress_reject_probability < 0\.0\s*\|\|\s*qm_stress_reject_probability > 1\.0", source)
     accept = re.search(r"MathIsValidNumber\(qm_stress_reject_probability\)\s*&&\s*qm_stress_reject_probability >= 0\.0\s*&&\s*qm_stress_reject_probability <= 1\.0", source)
     assert bool(reject) != bool(accept)
@@ -29,28 +48,31 @@ def predicate(source, probability):
 
 
 @pytest.mark.parametrize("ea", FAMILY)
-@pytest.mark.parametrize("probability,allowed", [(0, True), (.1, True), (.5, True),
-    (1, True), (-.01, False), (1.01, False), (math.nan, False), (math.inf, False), (-math.inf, False)])
-def test_actual_family_predicate(ea, probability, allowed):
-    assert predicate(source_path(ea).read_text(), probability) is allowed
+@pytest.mark.parametrize("seed", SEEDS)
+@pytest.mark.parametrize("probability", PROBABILITIES)
+def test_actual_family_guard_accepts_q07_inputs(ea, seed, probability):
+    assert predicate(source_path(ea).read_text(), seed, probability)
 
 
 @pytest.mark.parametrize("ea", FAMILY)
-def test_only_stress_pin_changed_and_original_rejects_harsh(ea):
+@pytest.mark.parametrize("probability,allowed", [(-.01, False), (1.01, False),
+    (math.nan, False), (math.inf, False), (-math.inf, False)])
+def test_actual_family_guard_rejects_invalid_probability(ea, probability, allowed):
+    assert predicate(source_path(ea).read_text(), 42, probability) is allowed
+
+
+@pytest.mark.parametrize("ea", FAMILY)
+def test_framework_owned_pins_removed_and_strategy_pins_retained(ea):
     path = source_path(ea)
-    old = subprocess.check_output(["git", "-C", str(ROOT), "show", f"{BASE}:{path.relative_to(ROOT).as_posix()}"], text=True)
     new = path.read_text()
-    if ea in (41171, 41319):
-        before = "MathAbs(qm_stress_reject_probability) > 0.000000000001)"
-        after = "!MathIsValidNumber(qm_stress_reject_probability) ||\n      qm_stress_reject_probability < 0.0 ||\n      qm_stress_reject_probability > 1.0)"
-        assert abs(.1) > 0.000000000001
-    else:
-        before = "MathAbs(qm_stress_reject_probability) <= 1.0e-12)"
-        after = "MathIsValidNumber(qm_stress_reject_probability) &&\n            qm_stress_reject_probability >= 0.0 &&\n            qm_stress_reject_probability <= 1.0)"
-        assert not abs(.1) <= 1e-12
-    assert old.count(before) == 1
-    assert new == old.replace(before, after)
-    assert predicate(new, .1)
+    assert not FRAMEWORK_PIN.search(input_guard(new))
+    assert "qm_rng_seed" not in input_guard(new)
+    # EA identity, magic allocation, strategy parameters and risk remain pinned.
+    assert f"qm_ea_id {'!=' if ea in (41171, 41319) else '=='} {ea}" in input_guard(new)
+    assert "qm_magic_slot_offset" in input_guard(new)
+    assert "strategy_" in input_guard(new)
+    assert "RISK_FIXED" in input_guard(new)
+    assert "MathIsValidNumber(qm_stress_reject_probability)" in input_guard(new)
 
 
 def test_framework_already_accepts_harsh_probability():

@@ -163,3 +163,34 @@ def test_ml_predicate_authority_refuses_a_different_source_or_a_missing_predeces
     rows.append({"id": "in-flight", "phase": cwi.COMPILE_EA_PHASE, "status": "pending",
                  "payload_json": json.dumps({"mq5_sha256": "c" * 64})})
     assert not cwi._source_repair_authorized(label, ML_PREDICATE_AUTHORITY, **args)
+
+
+FRAMEWORK_INPUT_PIN_AUTHORITIES = tuple(
+    sorted(cwi.FRAMEWORK_INPUT_PIN_SOURCE_REPAIR_REGISTRATIONS)
+)
+
+
+@pytest.mark.parametrize("authority", FRAMEWORK_INPUT_PIN_AUTHORITIES)
+def test_framework_input_pin_authority_matches_repaired_source_and_evidence(authority):
+    binding = cwi.FRAMEWORK_INPUT_PIN_SOURCE_REPAIR_REGISTRATIONS[authority]
+    repo_root = Path(__file__).resolve().parents[3]
+    source = (
+        repo_root / "framework" / "EAs" / binding["ea_label"]
+        / f'{binding["ea_label"]}.mq5'
+    )
+    assert _canonical_sha256(source) == binding["source_sha256"]
+    evidence = repo_root / binding["evidence_path"]
+    if not evidence.exists():
+        evidence = Path(r"C:\QM\repo") / binding["evidence_path"]
+    assert hashlib.sha256(evidence.read_bytes()).hexdigest() == binding["evidence_sha256"]
+    assert len(binding["predecessors"]) == 1
+    predecessor = next(iter(binding["predecessors"].values()))
+    assert predecessor["status"] == "done"
+    assert predecessor["verdict"] == "COMPILE_OK"
+    assert predecessor["source_sha256"] != binding["source_sha256"]
+
+
+@pytest.mark.parametrize("authority", FRAMEWORK_INPUT_PIN_AUTHORITIES)
+def test_framework_input_pin_authority_dry_run_is_eligible(tmp_path, monkeypatch, authority):
+    binding, _evidence, _rows, args = context(tmp_path, monkeypatch, authority)
+    assert cwi._source_repair_authorized(binding["ea_label"], authority, **args)

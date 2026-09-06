@@ -2033,6 +2033,78 @@ STRESS_GUARD_SOURCE_REPAIR_REGISTRATIONS = {'router_ops_issue:04f011a6-6b6a-4562
 BACKLOG_SOURCE_REPAIR_REGISTRATIONS.update(STRESS_GUARD_SOURCE_REPAIR_REGISTRATIONS)
 
 
+# OWNER task 65c5d9a1 (2026-09-06): framework-owned input pins prevented Q07's
+# governed seed matrix from initializing. Each successor is bound to the exact
+# repaired source and the latest completed COMPILE_OK predecessor; no family or
+# cross-EA fallback is permitted.
+FRAMEWORK_INPUT_PIN_SOURCE_REPAIR_REGISTRATIONS = {
+    'router_ops_issue:65c5d9a1-ffbe-40d1-bd58-9f98c062f39d:QM5_41171': {
+        'ea_id': '41171', 'ea_label': 'QM5_41171_wti-mturnpoint-tr',
+        'source_sha256': 'a79cbf3d61ad272b833e710fb041066b8c296827e34259511c966c845a0dcef6',
+        'predecessors': {'411cfb83-3c53-40de-918b-3b3eee5e23b6': {
+            'source_sha256': '8e255a1d5771ba55728038a6f1b030b3216c5645301e9517cd20ff6fbd1938dc',
+            'status': 'done', 'verdict': 'COMPILE_OK'}},
+        'superseded_predecessors': [],
+        'evidence_path': 'docs/ops/evidence/2026-09-06_framework_input_pin_source_repair_authority.json',
+        'evidence_sha256': '84cb38022ed6db5f8f0f0d639276de472bf87cf9198bb77a23d27bf55739c6f6'},
+    'router_ops_issue:65c5d9a1-ffbe-40d1-bd58-9f98c062f39d:QM5_41319': {
+        'ea_id': '41319', 'ea_label': 'QM5_41319_wti-madf-persist-tr',
+        'source_sha256': '3a937bf87ef25175d8f4dfa381f6d7bdc81f2753bbeb4e05bff119598ccee4b0',
+        'predecessors': {'495314e5-bffc-4cbd-a11b-68dbede08c4e': {
+            'source_sha256': 'd18cd0b5f7e5f935b43c95cfc20df5e669b3d24c35587c4dd326ca41c365bcbc',
+            'status': 'done', 'verdict': 'COMPILE_OK'}},
+        'superseded_predecessors': [],
+        'evidence_path': 'docs/ops/evidence/2026-09-06_framework_input_pin_source_repair_authority.json',
+        'evidence_sha256': '84cb38022ed6db5f8f0f0d639276de472bf87cf9198bb77a23d27bf55739c6f6'},
+    'router_ops_issue:65c5d9a1-ffbe-40d1-bd58-9f98c062f39d:QM5_41358': {
+        'ea_id': '41358', 'ea_label': 'QM5_41358_xtixng-wovershoot-rv',
+        'source_sha256': 'e759b39d355ad5e3ec48f8c8e56ad18e9319b27e91dfe29fa58eacbe26e9eb90',
+        'predecessors': {'a77ea58f-29e0-409e-b03c-b06756e933af': {
+            'source_sha256': 'e17af3932822b85963edca0f0aeeed507f31e995e164ce2396dcabfb41cb5ee2',
+            'status': 'done', 'verdict': 'COMPILE_OK'}},
+        'superseded_predecessors': [],
+        'evidence_path': 'docs/ops/evidence/2026-09-06_framework_input_pin_source_repair_authority.json',
+        'evidence_sha256': '84cb38022ed6db5f8f0f0d639276de472bf87cf9198bb77a23d27bf55739c6f6'},
+    'router_ops_issue:65c5d9a1-ffbe-40d1-bd58-9f98c062f39d:QM5_41359': {
+        'ea_id': '41359', 'ea_label': 'QM5_41359_xtixng-waccel-rv',
+        'source_sha256': 'fb47435573defa9779aa3adf40779b802ed52125f765af1e341ccfb71da6611b',
+        'predecessors': {'c16734de-3c50-42fb-b223-4ffe0af65089': {
+            'source_sha256': 'c1d77d11242cdf6c327705b1c91dfde0b41ad56c37af597a6ade0cdf6a5f337a',
+            'status': 'done', 'verdict': 'COMPILE_OK'}},
+        'superseded_predecessors': [],
+        'evidence_path': 'docs/ops/evidence/2026-09-06_framework_input_pin_source_repair_authority.json',
+        'evidence_sha256': '84cb38022ed6db5f8f0f0d639276de472bf87cf9198bb77a23d27bf55739c6f6'},
+    'router_ops_issue:65c5d9a1-ffbe-40d1-bd58-9f98c062f39d:QM5_41360': {
+        'ea_id': '41360', 'ea_label': 'QM5_41360_xtixng-wretr-rv',
+        'source_sha256': '6d28a3590246ce4c3114c11e8b22e81b7b0259f0b06a3a190d7cdab914d31fc7',
+        'predecessors': {'e1d9cafc-0846-49dd-aeb9-7f81cfbfa211': {
+            'source_sha256': 'ca56d8fa78cf927e79696edbe510d372d7f503e95797edb7e8afefd177b3777e',
+            'status': 'done', 'verdict': 'COMPILE_OK'}},
+        'superseded_predecessors': [],
+        'evidence_path': 'docs/ops/evidence/2026-09-06_framework_input_pin_source_repair_authority.json',
+        'evidence_sha256': '84cb38022ed6db5f8f0f0d639276de472bf87cf9198bb77a23d27bf55739c6f6'},
+    'router_ops_issue:65c5d9a1-ffbe-40d1-bd58-9f98c062f39d:QM5_41361': {
+        'ea_id': '41361', 'ea_label': 'QM5_41361_xtixng-commonshock-rv',
+        'source_sha256': '41da15fce020c45a57880f6272d88c75999a3450a0e0b9dfb16109bc7a77c37c',
+        'predecessors': {'1cb0f94c-439b-42dd-a20c-64e65a1f6882': {
+            'source_sha256': 'e5e870501d852aca64fe2e6e30d7bc27b9a1c8d8874a3da11bdc945e0c25f99a',
+            'status': 'done', 'verdict': 'COMPILE_OK'}},
+        'superseded_predecessors': [],
+        'evidence_path': 'docs/ops/evidence/2026-09-06_framework_input_pin_source_repair_authority.json',
+        'evidence_sha256': '84cb38022ed6db5f8f0f0d639276de472bf87cf9198bb77a23d27bf55739c6f6'},
+    'router_ops_issue:65c5d9a1-ffbe-40d1-bd58-9f98c062f39d:QM5_41362': {
+        'ea_id': '41362', 'ea_label': 'QM5_41362_xtixng-wdecel-cont',
+        'source_sha256': 'dfc94f1200a5382b65819812f9c13cbcea03d1ef7113df298ff083b1b2ea56d4',
+        'predecessors': {'a4d9fc3a-401a-4a78-892d-2a1f36e8bf47': {
+            'source_sha256': '300debf2886b6dddbd5d8ec4aab5c45ef28d6ffcebd394b3985c5cc405c1de95',
+            'status': 'done', 'verdict': 'COMPILE_OK'}},
+        'superseded_predecessors': [],
+        'evidence_path': 'docs/ops/evidence/2026-09-06_framework_input_pin_source_repair_authority.json',
+        'evidence_sha256': '84cb38022ed6db5f8f0f0d639276de472bf87cf9198bb77a23d27bf55739c6f6'},
+}
+BACKLOG_SOURCE_REPAIR_REGISTRATIONS.update(FRAMEWORK_INPUT_PIN_SOURCE_REPAIR_REGISTRATIONS)
+
+
 # Router ticket 690fc42a (2026-09-06, APPROVED): build_check's EA_ML_FORBIDDEN
 # predicate matched the identifier token `weights[` and failed an otherwise clean
 # compile. The predicate was scoped to real ML shapes in 77d4ec1634; the EA source
