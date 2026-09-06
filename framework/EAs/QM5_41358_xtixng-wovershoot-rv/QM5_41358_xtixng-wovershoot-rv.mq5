@@ -585,6 +585,18 @@ bool Strategy_OpenLeg(const string symbol,
    if(slot < 0 || (type != QM_BUY && type != QM_SELL) ||
       lots <= 0.0 || stop <= 0.0)
       return false;
+   // Revalidate the executable quote immediately before each basket request.
+   // The second leg can otherwise inherit a stop that became invalid while
+   // the first leg was being filled; fail closed and let the package rollback.
+   if(!Strategy_SymbolReady(symbol, type))
+      return false;
+   const double executable_price =
+      SymbolInfoDouble(symbol, type == QM_BUY ? SYMBOL_ASK : SYMBOL_BID);
+   if(executable_price <= 0.0 || !MathIsValidNumber(executable_price) ||
+      !MathIsValidNumber(stop) ||
+      (type == QM_BUY && stop >= executable_price) ||
+      (type == QM_SELL && stop <= executable_price))
+      return false;
    QM_BasketOrderRequest request;
    ZeroMemory(request);
    request.symbol = symbol;
