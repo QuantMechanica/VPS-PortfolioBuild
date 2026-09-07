@@ -1099,3 +1099,9 @@ Beide OWNER-Freigaben (MNT020-RECOMPILE, MNT006-CANARY) sind ausgeführt und im 
 - **9ec3b856 (11196) PASS 00:03Z** — 8.2 `DSR_V2_COMPUTED` PASS (first production single-configuration DSR evaluation), 8.4 + 8.6 FAIL as soft gates; chain continues (Q09 cascade to verify). **89ea5894 (11167) FAIL_SOFT 23:49Z** — 8.2 PASS, 8.4 + 8.7 FAIL → 11167/XAUUSD leaves the 25-pair race.
 - Acceptance of OWNER-DEC-DSR-SINGLE-CONFIG-DECLARATION-20260906 execution met (PASS/FAIL instead of INVALID, old rows preserved, no threshold change) → 8fe2bac0 to REVIEW, independent (Sonnet) acceptance next, then APPROVED. Codex 4bf2eb39 (identity boundary hardening) APPROVED at 23:45Z; all 10 workers fresh since 23:29Z (chunk 56 complete).
 - 00:04Z dip to 2 active cells = claim spacing after a batch of cells finished + 10 `factory_mutation_lock_busy` refusals (midnight maintenance); T8/T9 claimed at 00:04Z, recovery expected on the next monitor line.
+
+## Addendum 2026-09-07 01:05Z — 11196/XAUUSD Q09 PASS, chain now in Q10_NEWS
+
+- **6b6a3913 Q09 PASS 00:55Z** (priority_track claimed it ahead of the XAUUSD census cells); pump cascaded to **Q10_NEWS a909ee18** (pending, priority_track inherited). Chain Q02–Q09 all PASS; Q10_NEWS = next refutation point toward the 25th pair (counter 12/25 unchanged until the terminal v4 pair).
+- 8fe2bac0 APPROVED after independent acceptance (a67a4adb2f). Codex autonomously approved/built research sources 41373 and 41374 (XTI/XNG weekly alternation / efficiency divergence baskets, compile pending under the CPU stop).
+- Fleet 99 census/h, 10 workers, CPU 100 % at 01:00Z (no intakes this tick; wave 1 39 open), RAM 27 GB free, D: 63 GB. FTMO demo quiet: no 07.09 journal lines, governor heartbeat live, collector 11.8 MB (fixed folder 2026-09-06), 0 halt.
