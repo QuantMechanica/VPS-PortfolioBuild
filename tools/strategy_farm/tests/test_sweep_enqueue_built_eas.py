@@ -568,6 +568,171 @@ def test_part2_requeues_terminal_failed_logical_basket_with_auditable_source(
     }]
 
 
+def test_part2_triages_deterministic_failures_and_keeps_transients_retryable(
+    tmp_path: Path,
+) -> None:
+    farm_root = tmp_path / "farm"
+    repo_root = tmp_path / "repo"
+    report_root = tmp_path / "reports"
+    registry = repo_root / "framework" / "registry" / "ea_id_registry.csv"
+    registry.parent.mkdir(parents=True)
+    report_root.joinpath("state").mkdir(parents=True)
+
+    cases = [
+        (
+            "QM5_9110", "run_smoke_fail:ONINIT_FAILED;INCOMPLETE_RUNS",
+            True, "run_smoke_oninit_failed",
+        ),
+        (
+            "QM5_9111", "compile_gate:COMPILE_FAILED",
+            True, "compile_gate_failed",
+        ),
+        (
+            "QM5_9112", "run_smoke_fail:INPUTS_INVALID_RANGE",
+            True, "run_smoke_inputs_invalid",
+        ),
+        (
+            "QM5_9113", "summary_missing:launch_fault",
+            False, "setfile_fixed_risk_contract",
+        ),
+        (
+            "QM5_9114", "run_smoke_fail:NO_HISTORY;INCOMPLETE_RUNS",
+            False, None,
+        ),
+        (
+            "QM5_9115", "worker_crashed_handling_item",
+            False, None,
+        ),
+        (
+            "QM5_9116", "summary_missing:launch_fault",
+            False, None,
+        ),
+        (
+            "QM5_9117", "run_smoke_fail:INCOMPLETE_RUNS",
+            False, None,
+        ),
+    ]
+    setfiles: dict[str, Path] = {}
+    with registry.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=["ea_id", "slug", "status"])
+        writer.writeheader()
+        for ea_id, _reason, _invalid_risk, _classification in cases:
+            writer.writerow({
+                "ea_id": ea_id.removeprefix("QM5_"),
+                "slug": "fixture",
+                "status": "active",
+            })
+            sets_dir = (
+                repo_root / "framework" / "EAs" / f"{ea_id}_fixture" / "sets"
+            )
+            sets_dir.mkdir(parents=True)
+            setfile = sets_dir / f"{ea_id}_fixture_EURUSD.DWX_D1_backtest.set"
+            risk_fixed = "0" if ea_id == "QM5_9113" else "1000"
+            setfile.write_text(
+                f"RISK_FIXED={risk_fixed}\nRISK_PERCENT=0\n",
+                encoding="utf-8",
+            )
+            setfiles[ea_id] = setfile.resolve()
+
+    _init_test_db(farm_root)
+    with sqlite3.connect(farm_root / farmctl.DB_REL) as conn:
+        for index, (ea_id, reason, _invalid_risk, _classification) in enumerate(cases):
+            conn.execute(
+                """
+                INSERT INTO work_items(
+                    id,kind,phase,ea_id,symbol,setfile_path,status,verdict,
+                    attempt_count,evidence_path,payload_json,created_at,updated_at
+                ) VALUES(?, 'backtest', 'Q02', ?, 'EURUSD.DWX', ?, 'done',
+                         'INFRA_FAIL', 0, ?, ?, ?, ?)
+                """,
+                (
+                    f"source-{ea_id}",
+                    ea_id,
+                    str(setfiles[ea_id]),
+                    farmctl._evidence_unavailable_sentinel("test_fixture"),
+                    json.dumps({"verdict_reason": reason}),
+                    f"2026-09-07T00:{index:02d}:00+00:00",
+                    f"2026-09-07T00:{index:02d}:00+00:00",
+                ),
+            )
+        conn.commit()
+
+    env = os.environ.copy()
+    env.update({
+        "QM_STRATEGY_FARM_ROOT": str(farm_root),
+        "QM_CANONICAL_REPO_ROOT": str(repo_root),
+        "QM_REPORT_ROOT": str(report_root),
+    })
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(SWEEP),
+            "--apply",
+            "--ea",
+            ",".join(row[0] for row in cases),
+            "--max-part2-per-run",
+            "20",
+        ],
+        cwd=REPO,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=SWEEP_SUBPROCESS_TIMEOUT_SEC,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+    with sqlite3.connect(farm_root / farmctl.DB_REL) as conn:
+        pending = {
+            row[0]
+            for row in conn.execute(
+                "SELECT ea_id FROM work_items WHERE status='pending'"
+            )
+        }
+        original_verdicts = {
+            row[0]
+            for row in conn.execute(
+                "SELECT DISTINCT verdict FROM work_items WHERE id LIKE 'source-%'"
+            )
+        }
+    assert pending == {"QM5_9114", "QM5_9115", "QM5_9116", "QM5_9117"}
+    assert original_verdicts == {"INFRA_FAIL"}
+
+    report = json.loads(
+        (report_root / "state" / "claude_sweep_enqueue_2026-06-10.json")
+        .read_text(encoding="utf-8")
+    )
+    triage = report["part2_stranded"]["triage"]
+    assert {row["ea_id"] for row in triage} == {
+        "QM5_9110", "QM5_9111", "QM5_9112", "QM5_9113"
+    }
+    assert {row["deterministic_class"] for row in triage} == {
+        "run_smoke_oninit_failed",
+        "compile_gate_failed",
+        "run_smoke_inputs_invalid",
+        "setfile_fixed_risk_contract",
+    }
+    triage_paths = list(
+        (repo_root / "docs" / "ops" / "evidence").glob(
+            "*_stranded_infra_sweep_triage*.json"
+        )
+    )
+    assert len(triage_paths) == 1
+    triage_artifact = json.loads(triage_paths[0].read_text(encoding="utf-8"))
+    assert triage_artifact["schema"] == "qm.stranded-infra-sweep-triage/v1"
+    assert triage_artifact["count"] == 4
+    assert triage_artifact["scope"] == {
+        "complete_fleet": False,
+        "target_eas": sorted(row[0] for row in cases),
+        "target_symbols": [],
+    }
+    assert triage_artifact["retry_policy"] == {
+        "deterministic_rows_enqueued": 0,
+        "infra_attempt_cap_unchanged": 12,
+        "unlisted_and_transient_classes_unchanged": True,
+    }
+
+
 def test_part2_refuses_terminal_disposition_and_historical_phase(
     tmp_path: Path,
 ) -> None:

@@ -1,0 +1,171 @@
+{
+  "apply": false,
+  "count": 11,
+  "factory_off_flag": "D:/QM/strategy_farm/state/FACTORY_OFF.flag",
+  "generated_at": "2026-09-07T17:16:50Z",
+  "preview_scope": {
+    "ea_ids": [
+      "QM5_10038",
+      "QM5_10069",
+      "QM5_12582",
+      "QM5_20143",
+      "QM5_36007"
+    ],
+    "eligibility_filters_executed": false,
+    "source": "read-only SQLite observation of newest Q02 INFRA_FAIL per symbol/setfile",
+    "updated_at_floor": "2026-09-07T00:00:00Z"
+  },
+  "retry_policy": {
+    "deterministic_rows_enqueued": 0,
+    "infra_attempt_cap_unchanged": 12,
+    "unlisted_and_transient_classes_unchanged": true
+  },
+  "rows": [
+    {
+      "deterministic_class": "run_smoke_oninit_failed",
+      "ea_id": "QM5_10038",
+      "phase": "Q02",
+      "reason": "deterministic_failure_requires_triage",
+      "recommended_action": "commission_fix_or_retire_then_use_governed_requalification",
+      "setfile": "QM5_10038_ff-4x25ema-mtf-h4_USDCHF.DWX_H4_backtest.set",
+      "source_status": "done",
+      "source_updated_at": "2026-09-07T15:35:01+00:00",
+      "source_verdict_reason": "run_smoke_fail:ONINIT_FAILED;INCOMPLETE_RUNS",
+      "source_work_item_id": "50ffaa26-5159-4804-accf-cdd1f92a997a",
+      "symbol": "USDCHF.DWX"
+    },
+    {
+      "deterministic_class": "run_smoke_oninit_failed",
+      "ea_id": "QM5_10038",
+      "phase": "Q02",
+      "reason": "deterministic_failure_requires_triage",
+      "recommended_action": "commission_fix_or_retire_then_use_governed_requalification",
+      "setfile": "QM5_10038_ff-4x25ema-mtf-h4_USDCAD.DWX_H4_backtest.set",
+      "source_status": "done",
+      "source_updated_at": "2026-09-07T15:28:59+00:00",
+      "source_verdict_reason": "run_smoke_fail:ONINIT_FAILED;INCOMPLETE_RUNS",
+      "source_work_item_id": "d49c771b-bc51-474b-a968-7b4633f56b10",
+      "symbol": "USDCAD.DWX"
+    },
+    {
+      "deterministic_class": "run_smoke_oninit_failed",
+      "ea_id": "QM5_10038",
+      "phase": "Q02",
+      "reason": "deterministic_failure_requires_triage",
+      "recommended_action": "commission_fix_or_retire_then_use_governed_requalification",
+      "setfile": "QM5_10038_ff-4x25ema-mtf-h4_NZDUSD.DWX_H4_backtest.set",
+      "source_status": "done",
+      "source_updated_at": "2026-09-07T15:16:04+00:00",
+      "source_verdict_reason": "run_smoke_fail:ONINIT_FAILED;INCOMPLETE_RUNS",
+      "source_work_item_id": "447bd7e4-7176-483a-8df6-1ed6c4ea68c2",
+      "symbol": "NZDUSD.DWX"
+    },
+    {
+      "deterministic_class": "run_smoke_oninit_failed",
+      "ea_id": "QM5_10038",
+      "phase": "Q02",
+      "reason": "deterministic_failure_requires_triage",
+      "recommended_action": "commission_fix_or_retire_then_use_governed_requalification",
+      "setfile": "QM5_10038_ff-4x25ema-mtf-h4_AUDUSD.DWX_H4_backtest.set",
+      "source_status": "done",
+      "source_updated_at": "2026-09-07T15:15:48+00:00",
+      "source_verdict_reason": "run_smoke_fail:ONINIT_FAILED;INCOMPLETE_RUNS",
+      "source_work_item_id": "dbf90687-9584-4794-b935-beeef6f4bdeb",
+      "symbol": "AUDUSD.DWX"
+    },
+    {
+      "deterministic_class": "compile_gate_failed",
+      "ea_id": "QM5_36007",
+      "phase": "Q02",
+      "reason": "deterministic_failure_requires_triage",
+      "recommended_action": "commission_fix_or_retire_then_use_governed_requalification",
+      "setfile": "QM5_36007_nnfx-vidya-trix-fisher-momentum_GBPJPY.DWX_D1_backtest.set",
+      "source_status": "failed",
+      "source_updated_at": "2026-09-07T15:49:39+00:00",
+      "source_verdict_reason": "compile_gate:COMPILE_FAILED",
+      "source_work_item_id": "aaf5b6cf-0f38-438a-b22f-bf7231948ffc",
+      "symbol": "GBPJPY.DWX"
+    },
+    {
+      "deterministic_class": "run_smoke_oninit_failed",
+      "ea_id": "QM5_10069",
+      "phase": "Q02",
+      "reason": "deterministic_failure_requires_triage",
+      "recommended_action": "commission_fix_or_retire_then_use_governed_requalification",
+      "setfile": "QM5_10069_mql5-hs-rev_USDCHF.DWX_H1_backtest.set",
+      "source_status": "done",
+      "source_updated_at": "2026-09-07T16:33:52+00:00",
+      "source_verdict_reason": "run_smoke_fail:ONINIT_FAILED;INCOMPLETE_RUNS",
+      "source_work_item_id": "2c7d0845-adfb-4f5c-bc24-59bcb73bd2fc",
+      "symbol": "USDCHF.DWX"
+    },
+    {
+      "deterministic_class": "run_smoke_oninit_failed",
+      "ea_id": "QM5_10069",
+      "phase": "Q02",
+      "reason": "deterministic_failure_requires_triage",
+      "recommended_action": "commission_fix_or_retire_then_use_governed_requalification",
+      "setfile": "QM5_10069_mql5-hs-rev_USDCAD.DWX_H1_backtest.set",
+      "source_status": "done",
+      "source_updated_at": "2026-09-07T15:56:14+00:00",
+      "source_verdict_reason": "run_smoke_fail:ONINIT_FAILED;INCOMPLETE_RUNS",
+      "source_work_item_id": "75b113ab-b366-4030-a611-fba87b099032",
+      "symbol": "USDCAD.DWX"
+    },
+    {
+      "deterministic_class": "run_smoke_oninit_failed",
+      "ea_id": "QM5_10069",
+      "phase": "Q02",
+      "reason": "deterministic_failure_requires_triage",
+      "recommended_action": "commission_fix_or_retire_then_use_governed_requalification",
+      "setfile": "QM5_10069_mql5-hs-rev_AUDUSD.DWX_H1_backtest.set",
+      "source_status": "done",
+      "source_updated_at": "2026-09-07T15:55:55+00:00",
+      "source_verdict_reason": "run_smoke_fail:ONINIT_FAILED;INCOMPLETE_RUNS",
+      "source_work_item_id": "995f4c1c-531d-4a46-a4d8-8e6723318058",
+      "symbol": "AUDUSD.DWX"
+    },
+    {
+      "deterministic_class": "run_smoke_oninit_failed",
+      "ea_id": "QM5_10069",
+      "phase": "Q02",
+      "reason": "deterministic_failure_requires_triage",
+      "recommended_action": "commission_fix_or_retire_then_use_governed_requalification",
+      "setfile": "QM5_10069_mql5-hs-rev_NZDUSD.DWX_H1_backtest.set",
+      "source_status": "done",
+      "source_updated_at": "2026-09-07T15:53:52+00:00",
+      "source_verdict_reason": "run_smoke_fail:ONINIT_FAILED;INCOMPLETE_RUNS",
+      "source_work_item_id": "727fd995-bf25-4943-bf14-422f59adab65",
+      "symbol": "NZDUSD.DWX"
+    },
+    {
+      "deterministic_class": "run_smoke_oninit_failed",
+      "ea_id": "QM5_12582",
+      "phase": "Q02",
+      "reason": "deterministic_failure_requires_triage",
+      "recommended_action": "commission_fix_or_retire_then_use_governed_requalification",
+      "setfile": "QM5_12582_chan-ng-spring_XNGUSD.DWX_D1_backtest.set",
+      "source_status": "done",
+      "source_updated_at": "2026-09-07T12:16:00+00:00",
+      "source_verdict_reason": "run_smoke_fail:ONINIT_FAILED;INCOMPLETE_RUNS",
+      "source_work_item_id": "ae468d0f-2d3c-4595-9d49-6b5b00a25f75",
+      "symbol": "XNGUSD.DWX"
+    },
+    {
+      "deterministic_class": "compile_gate_failed",
+      "ea_id": "QM5_20143",
+      "phase": "Q02",
+      "reason": "deterministic_failure_requires_triage",
+      "recommended_action": "commission_fix_or_retire_then_use_governed_requalification",
+      "setfile": "QM5_20143_macd-bb-campaign-m5_EURUSD.DWX_M5_backtest.set",
+      "source_status": "failed",
+      "source_updated_at": "2026-09-07T12:20:40+00:00",
+      "source_verdict_reason": "compile_gate:COMPILE_FAILED",
+      "source_work_item_id": "6f32d1f9-680f-4e35-a684-fe4c1ddd80b5",
+      "symbol": "EURUSD.DWX"
+    }
+  ],
+  "schema": "qm.stranded-infra-sweep-triage/v1",
+  "source_sweep_report": null,
+  "status": "PREVIEW_ONLY_FACTORY_OFF"
+}

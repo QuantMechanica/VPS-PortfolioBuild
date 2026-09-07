@@ -142,6 +142,19 @@ if "--symbols" in sys.argv:
         if symbol:
             TARGET_SYMBOLS.add(symbol)
 NOW = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S+00:00")
+_TRIAGE_EVIDENCE_OVERRIDE = os.environ.get("QM_STRANDED_INFRA_TRIAGE_EVIDENCE")
+TRIAGE_EVIDENCE = Path(
+    _TRIAGE_EVIDENCE_OVERRIDE
+    or REPO_ROOT
+    / "docs"
+    / "ops"
+    / "evidence"
+    / f"{NOW[:10]}_stranded_infra_sweep_triage.json"
+)
+if not _TRIAGE_EVIDENCE_OVERRIDE and (TARGET_EAS or TARGET_SYMBOLS):
+    TRIAGE_EVIDENCE = TRIAGE_EVIDENCE.with_name(
+        f"{TRIAGE_EVIDENCE.stem}.targeted.json"
+    )
 
 sys.path.insert(0, str(REPO_ROOT / "tools" / "strategy_farm"))
 import farmctl  # staging helpers (_stage_q02_setfiles, _record_q02_deferral)
@@ -188,6 +201,46 @@ def _q08_setfile_deterministic_defect(setfile_path):
     except OSError:
         return None
     return "empty_strategy_params" if not assignments else None
+
+
+def _deterministic_infra_reason(verdict_reason):
+    """Return the narrow deterministic class that must not be blind-retried.
+
+    This intentionally does not classify generic ``INCOMPLETE_RUNS``, cold
+    history, timeouts, launch faults, or worker crashes. Those remain on the
+    existing transient/fail-open path. The prefix checks keep unrelated later
+    Q-stage summaries that merely quote one of these tokens out of scope.
+    """
+
+    normalized = str(verdict_reason or "").strip().upper()
+    if normalized.startswith("RUN_SMOKE_FAIL:"):
+        if "ONINIT_FAILED" in normalized:
+            return "run_smoke_oninit_failed"
+        if "INPUTS_INVALID" in normalized:
+            return "run_smoke_inputs_invalid"
+    if normalized.startswith("COMPILE_GATE:COMPILE_FAILED"):
+        return "compile_gate_failed"
+    return None
+
+
+def _write_json_atomic(path, payload):
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    temporary = target.with_name(
+        f".{target.name}.{os.getpid()}.{uuid.uuid4().hex}.tmp"
+    )
+    try:
+        with temporary.open("x", encoding="utf-8", newline="\n") as handle:
+            json.dump(payload, handle, indent=1, sort_keys=True)
+            handle.write("\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary, target)
+    finally:
+        try:
+            temporary.unlink()
+        except FileNotFoundError:
+            pass
 
 
 try:
@@ -248,7 +301,9 @@ report = {"generated_at": NOW, "apply": APPLY,
           "pending_at_start": pending_now, "queue_ceiling": QUEUE_CEILING,
           "wave_budget": budget,
           "part1_never_tested": {"enqueued": [], "skipped": []},
-          "part2_stranded": {"enqueued": [], "skipped": [], "parked": []}}
+          "part2_stranded": {
+              "enqueued": [], "skipped": [], "parked": [], "triage": []
+          }}
 deferred_records = []
 
 def pending_active_exists(ea_id, symbol, phase):
@@ -700,6 +755,35 @@ for phase in STRANDED_INFRA_PHASES:
                  "reason": "terminal_infra_source_payload_invalid",
                  "source_work_item_id": source["id"]})
             continue
+        if not isinstance(source_payload, dict):
+            report["part2_stranded"]["skipped"].append(
+                {"ea_id": ea_id, "phase": phase, "symbol": symbol,
+                 "reason": "terminal_infra_source_payload_not_object",
+                 "source_work_item_id": source["id"]})
+            continue
+
+        deterministic_class = _deterministic_infra_reason(
+            source_payload.get("verdict_reason")
+        )
+        if deterministic_class:
+            triage_row = {
+                "ea_id": ea_id,
+                "phase": phase,
+                "symbol": symbol,
+                "setfile": Path(setfile).name if setfile else None,
+                "reason": "deterministic_failure_requires_triage",
+                "deterministic_class": deterministic_class,
+                "source_work_item_id": source["id"],
+                "source_status": source["status"],
+                "source_updated_at": source["updated_at"],
+                "source_verdict_reason": str(
+                    source_payload.get("verdict_reason") or ""
+                ),
+                "recommended_action": "commission_fix_or_retire_then_use_governed_requalification",
+            }
+            report["part2_stranded"]["skipped"].append(triage_row)
+            report["part2_stranded"]["triage"].append(triage_row)
+            continue
 
         terminal_disposition = cur.execute(
             """
@@ -881,6 +965,34 @@ for phase in STRANDED_INFRA_PHASES:
                 {"ea_id": ea_id, "phase": phase, "symbol": symbol,
                  "reason": "setfile_missing"})
             continue
+        # Q02/Q03 share a cheap, phase-valid setfile invariant. A currently
+        # invalid fixed-risk contract cannot become valid by consuming another
+        # terminal slot. The Q08 parser below remains Q08-only because its
+        # strategy-parameter grammar is not an admission rule for Q02/Q03.
+        if phase in {"Q02", "Q03"}:
+            fixed_risk_ok, fixed_risk_detail = farmctl._q02_fixed_risk_contract(
+                str(setfile)
+            )
+            if not fixed_risk_ok:
+                triage_row = {
+                    "ea_id": ea_id,
+                    "phase": phase,
+                    "symbol": symbol,
+                    "setfile": Path(setfile).name,
+                    "reason": "deterministic_failure_requires_triage",
+                    "deterministic_class": "setfile_fixed_risk_contract",
+                    "source_work_item_id": source["id"],
+                    "source_status": source["status"],
+                    "source_updated_at": source["updated_at"],
+                    "source_verdict_reason": str(
+                        source_payload.get("verdict_reason") or ""
+                    ),
+                    "setfile_check": fixed_risk_detail,
+                    "recommended_action": "repair_setfile_then_use_governed_requalification",
+                }
+                report["part2_stranded"]["skipped"].append(triage_row)
+                report["part2_stranded"]["triage"].append(triage_row)
+                continue
         # Q08.5 neighborhood is the only Q08 sub-gate that hard-fails on setfile
         # structure; scope the deterministic-defect skip to Q08 so Q02/Q03 keep
         # their own retry semantics.
@@ -1249,6 +1361,28 @@ if APPLY:
     # console output must not extend the fleet-wide claim exclusion window.
     _release_mutation_lock()
 EVIDENCE.write_text(json.dumps(report, indent=1), encoding="utf-8")
+triage_rows = report["part2_stranded"]["triage"]
+_write_json_atomic(
+    TRIAGE_EVIDENCE,
+    {
+        "schema": "qm.stranded-infra-sweep-triage/v1",
+        "generated_at": NOW,
+        "apply": APPLY,
+        "source_sweep_report": str(EVIDENCE),
+        "scope": {
+            "target_eas": sorted(TARGET_EAS),
+            "target_symbols": sorted(TARGET_SYMBOLS),
+            "complete_fleet": not TARGET_EAS and not TARGET_SYMBOLS,
+        },
+        "retry_policy": {
+            "deterministic_rows_enqueued": 0,
+            "unlisted_and_transient_classes_unchanged": True,
+            "infra_attempt_cap_unchanged": MAX_INFRA_ATTEMPTS,
+        },
+        "count": len(triage_rows),
+        "rows": triage_rows,
+    },
+)
 
 p1, p2 = report["part1_never_tested"], report["part2_stranded"]
 print(f"APPLY={APPLY}")
@@ -1261,3 +1395,4 @@ p3 = report["part3_deferred_promotion"]
 print(f"part3 deferred: promoted={len(p3['promoted'])} kept={p3['kept_deferred']}")
 print("priority_track items:", sum(1 for e in p1['enqueued'] if e['priority_track']))
 print("evidence:", EVIDENCE)
+print("triage evidence:", TRIAGE_EVIDENCE)
