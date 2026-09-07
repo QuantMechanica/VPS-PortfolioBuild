@@ -1,0 +1,65 @@
+{
+  "schema": "qm.paced-first-q02-admission/v1",
+  "ea_id": "QM5_34008",
+  "ea_label": "QM5_34008_multicurrency-basket-dispersion-hedger",
+  "asset_class": "fx",
+  "mechanism": "market_neutral_cross_sectional_dispersion",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_34008_multicurrency-basket-dispersion-hedger/QM5_34008_multicurrency-basket-dispersion-hedger.mq5",
+  "mq5_sha256": "7203979e4a508dee2a5e041c57538e29b8bb107dbdf0cf0d53b0d76c977266ae",
+  "framework_input_pin_audit": {
+    "ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "source_count": 1,
+    "hit_count": 0,
+    "hits": [],
+    "timing": "rerun immediately before compile enqueue"
+  },
+  "symbol_literal_inventory": {
+    "symbol_literal_occurrences": 7,
+    "allowed_symbol_input_defaults": 7,
+    "non_allowed_occurrences": 0
+  },
+  "compile": {
+    "build_task_id": "c97b5cdc-8d55-404e-9ec0-47496d1a75f6",
+    "work_item_id": "1c77fcf2-39ef-47f6-a448-5dd1457bce03",
+    "status": "pending",
+    "verdict": null,
+    "activation_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "activation_hold_released": false,
+    "stale_ex5_removed_before_enqueue": true
+  },
+  "first_q02_intake_dry_run": {
+    "eligible": false,
+    "would_enqueue": false,
+    "reason": "compile_work_item_not_done_compile_ok"
+  },
+  "cpu_admission": {
+    "sampled_at_utc": "2026-09-07T01:36:20.9498359Z",
+    "method": "Windows Get-Counter \\Processor(_Total)\\% Processor Time, one-second interval",
+    "samples_pct": [
+      88.18775499758786,
+      91.13957180212056,
+      89.85286821262413,
+      94.4355264368,
+      91.70182396763894
+    ],
+    "average_pct": 91.0635090833543,
+    "maximum_pct": 94.4355264368,
+    "ceiling_pct": 97.0,
+    "requires_average_and_maximum_strictly_below_ceiling": true,
+    "clears_ceiling": true
+  },
+  "q02": {
+    "enqueued": false,
+    "tester_launched": false,
+    "priority_boost": false
+  },
+  "safety": {
+    "portfolio_gate_touched": false,
+    "t_live_touched": false,
+    "live_manifest_touched": false,
+    "autotrading_toggled": false,
+    "compile_hold_bypassed": false
+  },
+  "note": "Q02 was not enqueued. CPU admission passed, but the governed compile is pending under the reviewed-worker rollout hold and canonical first-Q02 intake requires COMPILE_OK."
+}

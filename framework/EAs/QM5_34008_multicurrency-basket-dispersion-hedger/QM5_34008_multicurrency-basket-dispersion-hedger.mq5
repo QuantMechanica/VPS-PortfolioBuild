@@ -40,6 +40,13 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
+input string strategy_symbol_1            = "EURUSD.DWX"; // Slot 0 / package-owner host
+input string strategy_symbol_2            = "GBPUSD.DWX"; // Slot 1
+input string strategy_symbol_3            = "AUDUSD.DWX"; // Slot 2
+input string strategy_symbol_4            = "NZDUSD.DWX"; // Slot 3
+input string strategy_symbol_5            = "USDCAD.DWX"; // Slot 4
+input string strategy_symbol_6            = "USDCHF.DWX"; // Slot 5
+input string strategy_symbol_7            = "USDJPY.DWX"; // Slot 6
 input int    strategy_lookback_hours      = 24;     // Basket mean rate-of-change lookback in hours
 input double strategy_dispersion_dev      = 1.20;   // Standard deviation threshold for extreme pairs
 input double strategy_target_profit_pct   = 1.5;    // Basket take-profit target in % of account balance
@@ -54,15 +61,7 @@ input double strategy_max_slippage_ticks  = 3.0;    // Card maximum market-order
 
 #define BASKET_SIZE 7
 #define STRATEGY_PRIMARY_SLOT 0
-string g_basket_symbols[BASKET_SIZE] = {
-   "EURUSD.DWX",
-   "GBPUSD.DWX",
-   "AUDUSD.DWX",
-   "NZDUSD.DWX",
-   "USDCAD.DWX",
-   "USDCHF.DWX",
-   "USDJPY.DWX"
-};
+string g_basket_symbols[BASKET_SIZE];
 double g_strategy_initial_balance = 0.0;
 
 // -----------------------------------------------------------------------------
@@ -75,6 +74,34 @@ int GetBarHhmm(const datetime t)
    MqlDateTime dt;
    TimeToStruct((utc > 0) ? utc : t, dt);
    return (dt.hour * 100 + dt.min);
+}
+
+void Strategy_LoadSymbols()
+{
+   g_basket_symbols[0] = strategy_symbol_1;
+   g_basket_symbols[1] = strategy_symbol_2;
+   g_basket_symbols[2] = strategy_symbol_3;
+   g_basket_symbols[3] = strategy_symbol_4;
+   g_basket_symbols[4] = strategy_symbol_5;
+   g_basket_symbols[5] = strategy_symbol_6;
+   g_basket_symbols[6] = strategy_symbol_7;
+}
+
+bool Strategy_SymbolInputsValid()
+{
+   for(int slot = 0; slot < BASKET_SIZE; ++slot)
+   {
+      if(StringLen(g_basket_symbols[slot]) == 0 ||
+         !SymbolSelect(g_basket_symbols[slot], true))
+         return false;
+
+      for(int prior = 0; prior < slot; ++prior)
+      {
+         if(g_basket_symbols[slot] == g_basket_symbols[prior])
+            return false;
+      }
+   }
+   return true;
 }
 
 bool IsDirectUSDPair(const string sym)
@@ -138,6 +165,8 @@ void CloseAllPackagePositions(const QM_ExitReason reason)
 
 bool Strategy_ValidateInputs()
 {
+   if(!Strategy_SymbolInputsValid())
+      return false;
    if(MathAbs(strategy_daily_loss_halt_pct - 2.0) > 1e-9 ||
       MathAbs(strategy_daily_hard_stop_pct - 2.5) > 1e-9 ||
       MathAbs(strategy_total_dd_stop_pct - 5.0) > 1e-9)
@@ -180,7 +209,7 @@ bool Strategy_TotalDrawdownStopHit()
 
 bool Strategy_NoTradeFilter()
 {
-   // One EURUSD/slot-0 chart owns the fixed seven-symbol basket. The other
+   // One slot-0 chart owns the fixed seven-symbol basket. The other
    // registered Q02 hosts are evidence lanes only and must remain no-signal.
    if(_Period != PERIOD_H1 ||
       _Symbol != g_basket_symbols[STRATEGY_PRIMARY_SLOT] ||
@@ -385,6 +414,7 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
 {
+   Strategy_LoadSymbols();
    if(!Strategy_ValidateInputs())
       return INIT_PARAMETERS_INCORRECT;
 
