@@ -1178,3 +1178,9 @@ Beide OWNER-Freigaben (MNT020-RECOMPILE, MNT006-CANARY) sind ausgeführt und im 
 
 - pipeline_state 08:12:48Z: `qualified_pairs 13`, `distinct_eas 13`; 10700/XAUUSD `frontier_class COMPLETE`, contiguous valid gate Q14 (chain: Q10_NEWS CONFIG_LOCKED 04.09 → Q11 PASS → Q12 NO_FILTER_CHANGE 07:05Z → Q13 NO_PARAMETER_CHANGE 07:16Z → Q14 KEEP_INCUMBENT 07:26Z). public funnel-stats may lag until the hourly snapshot.
 - Refutation rule stays 1/5 (no refutation today). Baseline for the loop moves 12 → 13.
+
+## Addendum 2026-09-07 09:15Z — 12849/XTIUSD closed Q14 (candidate 14/25), 1537 inert on FTMO (calendar_stale), pulse on collector source
+
+- **QM5_12849/XTIUSD.DWX** closed Q12 NO_FILTER_CHANGE 08:26Z → Q13 08:36Z → **Q14 KEEP_INCUMBENT 08:46Z**; if the census marks it COMPLETE at the 09:23Z generation the counter moves to **14/25**.
+- **QM5_1537 on the FTMO demo is inert:** `MONTHLY_SLEEVE_STATE` ERROR `calendar_stale` for 202609 (sha-pinned monthly sleeve calendar ends before 2026) → no sleeve selection, no trades; Codex ticket (P80): extend the calendar through the current month via the governed builder, re-pin, demo install, monthly refresh rule; also check 21505 for the same class. The pulse now reads the collector (`ftmo_trial_collector_raw`) and alarms on these ERROR lines — correct signal.
+- 11129/SP500 lineage (632a00c9 APPROVED as deferral): Q07 successor exists, held by the CEO RAM_WINDOW_44GB hold (48 GB needed) → runs in a RAM window. 11167/XAUUSD Q10_NEWS still adjudicating on T2 (since 07:18Z). Pulse/lint implementations integrated onto board-advisor (a4893ce4e2, e05410fdf0).
