@@ -31,3 +31,15 @@ Q08 reruns end PASS or FAIL (not INVALID); old INVALID rows preserved; no thresh
 - **19c9df13 (11167) → INVALID at 23:00:58Z, but the DSR context was SEALED at claim** (window from payload, claim-time reseal worked). Sub-gate 8.2 = `DSR_V2_SINGLE_CONFIG_CANDIDATE_MISMATCH`: farmctl launches `q08_davey/aggregate.py --ea-id 11167` (int, prefix stripped) while the sealed candidate carries `QM5_11167`; `validate_context` compared the strings literally. Economic picture on the same run: 8.4 seasonal FAIL (losing months 6/8/11), 8.7 PBO FAIL (40.00 % at max 40 %) → expected final verdict **FAIL**; 8.5/8.6/8.8–8.11 PASS.
 - **Fix 866e3f2d78:** `canonical_ea_id()` (strip `QM5_`, numeric core) in `validate_context`; different EAs still fail closed; 57 DSR tests pass. The evaluator runs as a subprocess per aggregation, so the running 11196 rerun 9ec3b856 (T1, claimed 22:41Z) evaluates with the fix.
 - **Fourth 11167 rerun `89ea5894`** (append-only rerun of 19c9df13, from 42ca0f18, EX5 4b349d21…, priority_track) — justified by the known cause, not blind. Codex adversarial review of the identity contract enqueued (P90).
+
+## RESULT 2026-09-07 00:10Z (Claude) — acceptance criterion met
+
+| Row | EA / symbol | Claimed | Terminal | Verdict | 8.2 DSR | Other sub-gates |
+|---|---|---|---|---|---|---|
+| `9ec3b856` | QM5_11196 / XAUUSD.DWX (replacement set 7cc424d2…) | T1 22:41Z | 00:03:42Z | **PASS** | PASS `DSR_V2_COMPUTED` (n_days 3287, net_return 0.745, sharpe_daily 0.042) | 8.4 seasonal FAIL (losing months 2/6/8/9/11), 8.6 chopping block FAIL (pf 0.890 < 1.0); 8.5/8.7/8.8–8.11 PASS |
+| `89ea5894` | QM5_11167 / XAUUSD.DWX (ablation_01 set) | T4 23:20Z | 23:49:50Z | **FAIL_SOFT** | PASS `DSR_V2_COMPUTED` (net_return 0.292) | 8.4 seasonal FAIL (6/8/11), 8.7 PBO FAIL (40.00 % at max 40 %) |
+
+- Both reruns end with a real verdict (PASS / FAIL_SOFT), **not INVALID**; sub-gate 8.2 evaluated the declared single configuration under DSR V2 for the first time in production. All predecessor rows (d7ab61ae, 045bed75, 19c9df13, b280892a, a79887e3) preserved; no threshold or contract criterion changed; T_Live/AutoTrading untouched.
+- Defects surfaced and fixed on the way (all APPROVED): producer window on append-only reruns (acf3637b / b2b3d35d65), 11196 replacement set (e638e0de), governed `--replacement-setfile` (9ecdd2f9 / e73af54859), producer/aggregator EA-identity format (Claude 866e3f2d78 + Codex adversarial hardening a430c1aeda, 4bf2eb39). Queue lever used: `mark-priority-track` on both rows (XAUUSD symbol serialization).
+- Consequence for the counter: 11167/XAUUSD is out (FAIL_SOFT); 11196/XAUUSD continues (Q08 PASS → pump cascade to Q09; see OPEN_ITEMS for the follow-up). Counter stays 12/25 until the chain reaches its terminal Q14 pair.
+- Sweep list of the remaining DSR-V2-INVALID rows (11015 etc.) = Q14 proposal per the OWNER card; not part of this execution.
