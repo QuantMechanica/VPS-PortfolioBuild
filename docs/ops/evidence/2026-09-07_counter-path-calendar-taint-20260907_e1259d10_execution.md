@@ -22,3 +22,5 @@ Consumer B active only for declared-admissible rows; excluded rows remain held; 
 
 - 8 of the 9 D1/USD rows received append-only, review-only Q10 successors with a `qm.scoped-q10-window-seal/v1` sealed from the exact Q09 PASS evidence (window 2017-01-01 → 2026-01-01 exclusive); 1 row (72992810, QM5_1556) has no exact Q09 PASS descendant and was superseded without a successor. New governed path: `farmctl enqueue-cascade-backtest --scoped-q10-window-seal`.
 - Consumer B dry run after the seal: 31 non-superseded pending rows, **0 admissible** — the eight successors are excluded solely by `DECLARED_EXCLUSION_OVERLAP`. Under the D1-only rule nothing is releasable; the B′ criteria implementation (934e6104, OWNER YES 617abd80) decides whether declared residuals make them admissible. No hold released.
+
+## Progress 2026-09-07 07:20Z — continued under B′ (task bb814520): 2 rows released (11196, 11167), 10 pending wave 2 — see the B′ record.

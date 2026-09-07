@@ -1160,3 +1160,9 @@ Beide OWNER-Freigaben (MNT020-RECOMPILE, MNT006-CANARY) sind ausgeführt und im 
 - OWNER feedback on the canary (double overlay, wrong chart scheme, missing information) → **Panel v2**: step 1 Codex spec 203f9d3c (information architecture + legacy-overlay retirement), step 2 Astra b020c337 (+ amendment c4ae19ed: **light scheme, MT5 "Color on White" base**), canary rebuild artifact-only for the demo.
 - **OWNER-DEC-CALENDAR-CRITERIA-B-PRIME-20260907 = YES** (receipt 617abd80, task bb814520, Codex 934e6104 P93); window-seal ticket 3ba316bc for the nine D1/USD rows in progress.
 - Wave-1 intakes: 23 open; batch stopped on my 60 GB disk floor (D: 56.8 GB, purge LowWater 150 handles caches) — floor lowered to 50 GB for the next batches.
+
+## Addendum 2026-09-07 07:20Z — B′ live: 11196/XAUUSD and 11167/XAUUSD Q10_NEWS released; panel v2 re-attached; v3 ordered
+
+- **B′ (934e6104 APPROVED, 4d8fd0820a):** criterion sealed, 12 admissible; **wave-1 release 07:16Z: a909ee18 (11196 H4) + f625d9aa (11167 D1)** stamped with the B marker and footnote, taint hold inactive, claim when XAUUSD frees (priority_track). 10 rows need wave 2 (review-only successors without sealed run plan; runner-abort holds) → Codex P92. Reload chunk 58 9/10 (T3 on a Q07 cell).
+- **Panel:** OWNER re-attached the v2 light canary at 08:50 Prague (clean init); feedback "Einheitsbrei" → **v3 Astra 4bdcbb91** (design research with references, tabular grid, de-DE numbers, PERFORMANCE section from deal history, fail-inert). Panel standard recorded in memory.
+- FTMO demo: flat, 0 halt, governor live. Fleet 100 census/h, 10 workers, D: 58 GB.

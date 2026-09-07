@@ -11,3 +11,9 @@
 
 ## Acceptance (independent, after step 2)
 Criterion recorded with exact residual classes; B admits USD-only rows of any timeframe and still refuses non-USD-exposed rows; released rows carry marker + footnote; first adjudications terminal; no repin/publish/threshold/verdict change.
+
+## Progress 2026-09-07 07:20Z — B′ implemented (934e6104 APPROVED), release wave 1
+
+- B′ contract sealed (measured PASS + three declared residual kinds; publication/hold-release authority false); consumer B-prime admits USD-only rows of any timeframe with a sealed Q10 window → production dry run **12 ADMISSIBLE / 19 EXCLUDED**, a909ee18 (11196/XAUUSD H4) admissible.
+- Worker reload chunk 58 (claim-guard semantics): 9/10 done, T3 finishing a Q07 cell.
+- **Wave 1 release 07:16Z** (`release_scoped_b_rows.py`, receipt `2026-09-07_scoped_b_release_bprime_wave1_0716Z.json`): **a909ee18 (11196/XAUUSD) and f625d9aa (11167/XAUUSD) released** with marker + footnote; taint hold inactive; priority_track kept; awaiting a free XAUUSD slot. 10 rows refused by design: 8 scoped window successors are review-only/non-claimable with `Q09_AWAITING_SEALED_PLAN` holds, 10771/11129 carry `NEWS_RUNNER_SPAWN_SILENT_ABORT` holds → Codex wave-2 ticket (P92).
