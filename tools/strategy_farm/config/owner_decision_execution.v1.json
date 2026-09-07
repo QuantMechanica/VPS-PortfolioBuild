@@ -996,6 +996,41 @@
           ]
         }
       }
+    },
+    {
+      "id": "OWNER-DEC-1537-TRIAL-CALENDAR-SOURCE-20260907",
+      "todo_id": "QM-TODO-20260907-1537-TRIAL-CALENDAR-SOURCE",
+      "priority": 82,
+      "choices": {
+        "YES": {
+          "mode": "APPLY_AND_VERIFY",
+          "objective": "Adopt option A: continue the QM5_1537 monthly sleeve calendar from 2025-01 with native Darwinex D1 (all 37 universe symbols via the governed T_Export lane) under the identical ranking contract as a declared source change: calendar v2 (v1 rows untouched), new sha, preset re-pin as a new set version, FTMO demo install with receipt, OWNER re-attach, monthly refresh rule, M13 manifest addendum. No T_Live, no AutoTrading, no Q-gate change.",
+          "allowed_actions": [
+            "Enqueue one Codex ops ticket with exact acceptance criteria",
+            "Integrate the Codex branch (tests, LF/byte checks, co-author trailer)",
+            "Verify the demo install receipt and the calendar v2 sha; hand the OWNER the 3-line re-attach instruction",
+            "Update OPEN_ITEMS, the M13 manifest and the Vault"
+          ],
+          "acceptance": [
+            "Calendar v2 rows 2025-01..2026-09 exist for the XAG host with declared source per row; v1 rows byte-identical",
+            "EA reports MONTHLY_SLEEVE_STATE ready=true for 202609 on the demo after re-attach",
+            "Presets/manifest re-pinned append-only; factory EX5 untouched",
+            "No T_Live/AutoTrading/threshold change"
+          ]
+        },
+        "NO": {
+          "mode": "DOCUMENT_AND_VERIFY",
+          "objective": "Option B: remove QM5_1537 from the FTMO trial (OWNER detaches the XAGUSD chart), keep calendar v1, document the live-readiness gap for the factory-history backfill.",
+          "allowed_actions": [
+            "Document in OPEN_ITEMS_STATUS.md, the M13 manifest and the Vault",
+            "owner_todos.py add for the chart removal"
+          ],
+          "acceptance": [
+            "1537 documented as removed from the trial",
+            "No calendar change"
+          ]
+        }
+      }
     }
   ]
 }
