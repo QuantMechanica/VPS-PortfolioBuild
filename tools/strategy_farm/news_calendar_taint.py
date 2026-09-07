@@ -32,6 +32,18 @@ def _strict(path):
     return json.loads(Path(path).read_text(encoding='utf-8-sig'), object_pairs_hook=pairs)
 
 
+def _activation_evidence_ok(value):
+    if isinstance(value, str):
+        return bool(value.strip())
+    if isinstance(value, dict):
+        declared_by = value.get('declared_by')
+        evidence = value.get('evidence')
+        return (isinstance(declared_by, str) and bool(declared_by.strip())
+                and isinstance(evidence, list) and len(evidence) > 0
+                and all(isinstance(e, str) and e.strip() for e in evidence))
+    return False
+
+
 def load_policy(path=CONFIG):
     try:
         data = _strict(path)
@@ -44,7 +56,10 @@ def load_policy(path=CONFIG):
                 raise ValueError('unbound taint declaration')
             if dt.datetime.fromisoformat(entry['declared_at'].replace('Z','+00:00')).tzinfo is None:
                 raise ValueError('declaration requires timezone')
-        if data['enabled'] and (not isinstance(data.get('activation_evidence'), str) or not data['activation_evidence'].strip()):
+        # CEO activation evidence: a non-empty receipt string, or the structured form the shipped config uses
+        # (dict with declared_by + evidence list). 2026-09-07: the dict form was refused as 'unavailable', so every
+        # news-gate row fell into the fallback hold (TAINT_POLICY_UNAVAILABLE) instead of the declared taint hold.
+        if data['enabled'] and not _activation_evidence_ok(data.get('activation_evidence')):
             raise ValueError('CEO activation evidence required')
         return data
     except (OSError, ValueError, KeyError, TypeError, AttributeError) as exc:

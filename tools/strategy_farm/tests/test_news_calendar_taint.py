@@ -248,3 +248,11 @@ def test_real_claim_boundaries_block_before_claim_and_ledger(tmp_path, inputs, m
         assert conn.execute('SELECT count(*) FROM claim_class_ledger').fetchone()[0] == 0
         holds = hold_rows(conn)
         assert len(holds) == 1 and holds[0]['hold_code'] == taint.HOLD, json.dumps(result, default=str)
+
+def test_activation_evidence_accepts_structured_ceo_receipt():
+    from tools.strategy_farm.news_calendar_taint import _activation_evidence_ok
+    assert _activation_evidence_ok('fixture-only CEO receipt')
+    assert _activation_evidence_ok({'declared_by': 'CEO (Claude)', 'evidence': ['docs/ops/evidence/x.md']})
+    assert not _activation_evidence_ok({'declared_by': '', 'evidence': ['x']})
+    assert not _activation_evidence_ok({'declared_by': 'CEO', 'evidence': []})
+    assert not _activation_evidence_ok('   ') and not _activation_evidence_ok(None) and not _activation_evidence_ok(7)
