@@ -1,0 +1,52 @@
+{
+  "schema": "qm.news-calendar-e1d2-m5-evidence/v1",
+  "task_id": "fdb34c9c-9e7a-4b71-9f80-31aa5f0cbb4c",
+  "state": "REVIEW",
+  "production_write": false,
+  "autotrading_changed": false,
+  "interrupted_factory_terminals": [],
+  "export_receipt": {
+    "path": "D:/QM/reports/news_calendar/repair_e1a/20260907T024200Z_e1d2_m5_export/export_receipt.json",
+    "sha256": "2169be1baa3070fbffc9591cabb3468746db3b769b480d7598cafa0f4f8d092c",
+    "status": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "completion": "successes=2 failures=0",
+    "terminated_owned_pid": 20280
+  },
+  "exports": [
+    {
+      "path": "D:/QM/mt5/T_Export/MQL5/Files/AUDUSD.DWX_M5.csv",
+      "rows": 521205,
+      "bytes": 27077012,
+      "first_broker_epoch": 1514836800,
+      "last_broker_epoch": 1735689300,
+      "sha256": "b8e9840e8dc168eb466fbfbca63f570ef6f119720a569f3bc2c78114c7aab113"
+    },
+    {
+      "path": "D:/QM/mt5/T_Export/MQL5/Files/USDCAD.DWX_M5.csv",
+      "rows": 520850,
+      "bytes": 27080115,
+      "first_broker_epoch": 1514836800,
+      "last_broker_epoch": 1735689300,
+      "sha256": "fea4f2164ae3edcdb1487d40649c34f79869c8e64cf658b97519762c6e34632a"
+    }
+  ],
+  "aud_cad_gate_6_5": {
+    "checks": 7,
+    "status_counts": {"FAIL_FOOTPRINT": 7},
+    "former_missing_m5": 7,
+    "missing_m5_after": 0,
+    "history_boundary_excluded_checks": 6,
+    "in_range_insufficient_footprint_checks": 1,
+    "pass": false
+  },
+  "full_gate_6_5": {
+    "checks": 51,
+    "status_counts": {"FAIL_FOOTPRINT": 24, "PASS": 27},
+    "missing_m5": 0,
+    "missing_official_instant": 0,
+    "pass": false
+  },
+  "tests": {"passed": 11, "failed": 0}
+}

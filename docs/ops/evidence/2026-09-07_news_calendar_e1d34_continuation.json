@@ -1,0 +1,63 @@
+{
+  "schema": "qm.news-calendar-e1d34-evidence/v1",
+  "task_id": "d74fa978-4672-4bcc-838b-5948cf5c9c47",
+  "state": "REVIEW",
+  "status": "NOT_READY_FAIL_CLOSED",
+  "production_write": false,
+  "repin_recorded": false,
+  "holds_changed": false,
+  "candidate": {
+    "path": "D:/QM/reports/news_calendar/repair_e1a/20260907T024800Z_e1d34_continuation/candidate",
+    "manifest_sha256": "5f28c2f3bba94c0c7b78dbff93aba0e2dc22bb8cfbe0b1ec484b5a24ed69366a",
+    "verification_sha256": "3e05345277db907a24dd0b7952da43ab813ab34879766389a12b4cc29d5f4ce6",
+    "input_files": 32,
+    "input_changes": 0,
+    "primary_rows": 49235,
+    "secondary_rows": 49226,
+    "publishable": false
+  },
+  "official_anchors": {
+    "count": 58,
+    "new_requested_instants": 9,
+    "missing_official_instant_after": 0,
+    "path": "D:/QM/reports/news_calendar/repair_e1a/20260907T024800Z_e1d34_continuation/official_anchors.json",
+    "sha256": "7aef792e637bb7f486811a8ce519796b81553264d1e65825283f306f0fdd6b04"
+  },
+  "taxonomy": {
+    "failing_event_classes": 79,
+    "failed_groups": 345,
+    "failed_group_rows": 2711,
+    "failed_or_unverified_high_rows": 2591,
+    "class_disposition_counts": {
+      "OFFICIAL_SCHEDULE_ANCHOR_REQUIRED": 39,
+      "DECLARED_EVENT_BY_EVENT_UNANCHORED": 40
+    },
+    "row_disposition_counts": {
+      "OFFICIAL_SCHEDULE_ANCHOR_REQUIRED": 726,
+      "DECLARED_EVENT_BY_EVENT_UNANCHORED": 1865
+    },
+    "path": "D:/QM/reports/news_calendar/repair_e1a/20260907T024800Z_e1d34_continuation/anchor_taxonomy.json",
+    "sha256": "1efec608099481053d84597cc6130bf0a8876583dd007ca7abfc67410fc00f03",
+    "row_adjudication_sha256": "a0347846da3f1b63eb370959c62e393cefa6dd04bb53e309d9e4858718e803cc"
+  },
+  "gates": {
+    "6.1_anchor_shares": {"pass": false, "failed_groups": 345, "failed_group_rows": 2711, "failed_classes": 79},
+    "6.2_coverage": {"pass": false, "fresh_currencies_with_confirmed_official_anchor": ["USD"]},
+    "6.3_cross_file_identity": {"pass": true},
+    "6.4_nonusd_completeness": {"pass": true},
+    "6.5_tick_footprints": {"pass": false, "checks": 51, "status_counts": {"FAIL_FOOTPRINT": 24, "PASS": 27}},
+    "6.6_no_row_loss": {"pass": true},
+    "6.7_detector_clean": {"pass": false, "failed_or_unverified_high_rows": 2591, "unverified_native_exports": 2, "input_changes": 0},
+    "6.8_schema": {"pass": true}
+  },
+  "ingress": {
+    "status": "REFUSED",
+    "error": "scoped calendar candidate has inadmissible ranges; full-scope publication refused"
+  },
+  "multi_plan": {"status": "WITHHELD_FAILED_FULL_SCOPE_ADMISSION"},
+  "seal": {
+    "path": "D:/QM/reports/news_calendar/repair_e1a/20260907T024800Z_e1d34_continuation/full_scope_seal.json",
+    "sha256": "1fd956ffca746eb989dd832a3419094035eb9b585b0c41409d8af7017ca59976"
+  },
+  "tests": {"passed": 75, "failed": 0}
+}
