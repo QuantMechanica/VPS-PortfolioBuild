@@ -2,9 +2,9 @@
   "schema": "qm.news-calendar-scoped-consumer-b-activation/v1",
   "enabled": true,
   "decision": {
-    "id": "OWNER-DEC-COUNTER-PATH-CALENDAR-TAINT-20260907",
-    "receipt_id": "e1259d10-5bf7-48d4-8059-594159e98445",
-    "evidence": "docs/ops/evidence/2026-09-07_counter-path-calendar-taint-20260907_e1259d10_execution.md"
+    "id": "OWNER-DEC-CALENDAR-CRITERIA-B-PRIME-20260907",
+    "receipt_id": "617abd80-f0d9-49b4-b817-e82abf0ad381",
+    "evidence": "docs/ops/evidence/2026-09-07_calendar-criteria-b-prime-20260907_617abd80_execution.md"
   },
   "candidate": {
     "manifest_path": "D:/QM/reports/news_calendar/repair_e1a/20260907T024800Z_e1d34_continuation/candidate/manifest.json",
@@ -16,9 +16,14 @@
       "forex_factory_calendar_clean.csv": "505fc45a73144071b96ff4440cbb9fb3b1ba374c3adaa7285f70849a59975beb"
     }
   },
+  "criteria_seal": {
+    "report_path": "C:/QM/repo/docs/ops/evidence/2026-09-07_calendar_b_prime_full_scope_contract.json",
+    "report_sha256": "f2d359a81224cd9fdcea2f72d6a200a7b1c533447f462466410c7c38416c6cef",
+    "seal_sha256": "cfd6f63a59a615ddb90a7b5de6d4f360b9d0a8d45009e06adf55fdd9e9522d6d"
+  },
   "admissibility": {
     "phase": "Q10_NEWS",
-    "timeframes": ["D1"],
+    "timeframe_scope": "ALL_RECOGNIZED",
     "impact": "HIGH",
     "permitted_currencies": ["USD"],
     "symbol_currency_overrides": {
@@ -42,8 +47,8 @@
     "footnote": "Kalender scope-begrenzt"
   },
   "readjudication": {
-    "ticket_id": "NEWS-CALENDAR-B-READJUDICATE-AFTER-FULL-SEAL-20260907",
-    "trigger": "OWNER criteria decision B-prime or a measured full-scope calendar seal",
+    "ticket_id": "235e5119-061d-406a-a58c-4d7d6cd3535a",
+    "trigger": "a later improved calendar pin or a measured full-scope calendar seal",
     "mode": "APPEND_ONLY_RERUN",
     "overwrite_existing_verdicts": false,
     "full_scope_seal_evidence": "docs/ops/evidence/2026-09-07_news_calendar_e1d34_continuation.json",

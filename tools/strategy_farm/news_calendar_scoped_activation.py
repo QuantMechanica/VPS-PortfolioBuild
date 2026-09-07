@@ -1,9 +1,10 @@
-"""OWNER-approved activation boundary for scoped news-calendar consumer B.
+"""OWNER-approved activation boundary for scoped news-calendar consumer B-prime.
 
 This module does not publish or repin a calendar and does not release a hold.
-It authenticates the exact E1-D3/D4 candidate, projects each pending Q10_NEWS
-row through the already-adopted E1-C exclusion semantics, and produces the
-binding marker consumed by the explicit row-by-row release path.
+It authenticates the exact E1-D3/D4 candidate and the B-prime residual seal,
+projects each pending Q10_NEWS row through the OWNER-approved all-timeframe,
+USD-only boundary, and produces the binding marker consumed by the explicit
+row-by-row release path.
 """
 from __future__ import annotations
 
@@ -19,8 +20,10 @@ from typing import Any, Mapping
 
 try:
     from tools.strategy_farm import news_calendar_scoped_consumer as e1c
+    from tools.strategy_farm import news_calendar_gate as calendar_gate
 except ModuleNotFoundError:
     import news_calendar_scoped_consumer as e1c
+    import news_calendar_gate as calendar_gate
 
 
 CONFIG = Path(__file__).resolve().parent / "config/news_calendar_scoped_consumer_b.v1.json"
@@ -29,7 +32,14 @@ MARKER_SCHEMA = "qm.news-calendar-scoped-counter-marker/v1"
 MARKER_KEY = "news_calendar_scoped_consumer_b"
 FOOTNOTE = "Kalender scope-begrenzt"
 HEX = re.compile(r"^[0-9a-f]{64}$")
-TIMEFRAME = re.compile(r"_(M1|M5|M15|M30|H1|H2|H4|H6|H8|H12|D1|W1)(?:_|\.)", re.I)
+RECOGNIZED_TIMEFRAMES = frozenset({
+    "M1", "M2", "M3", "M4", "M5", "M6", "M10", "M12", "M15", "M20", "M30",
+    "H1", "H2", "H3", "H4", "H6", "H8", "H12", "D1", "W1", "MN1",
+})
+TIMEFRAME = re.compile(
+    r"_(M1|M2|M3|M4|M5|M6|M10|M12|M15|M20|M30|H1|H2|H3|H4|H6|H8|H12|D1|W1|MN1)(?:_|\.)",
+    re.I,
+)
 
 
 class ActivationError(ValueError):
@@ -90,6 +100,7 @@ class Activation:
     declarations: tuple[Mapping[str, Any], ...]
     declarations_by_currency_month: Mapping[tuple[str, str], tuple[Mapping[str, Any], ...]]
     high_classes: Mapping[tuple[str, str], frozenset[str]]
+    criteria_seal: Mapping[str, Any]
 
 
 def load_activation(path: Path = CONFIG) -> Activation:
@@ -130,6 +141,30 @@ def load_activation(path: Path = CONFIG) -> Activation:
         raise ActivationError("candidate declarations differ from external manifest")
     if not isinstance(declarations, list) or not declarations:
         raise ActivationError("empty declarations cannot authorize B")
+
+    criteria_binding = config.get("criteria_seal")
+    if not isinstance(criteria_binding, dict):
+        raise ActivationError("B-prime criteria seal binding missing")
+    criteria_path, criteria_raw = _read_bound(
+        criteria_binding.get("report_path"), criteria_binding.get("report_sha256"),
+        "B-prime full-scope report",
+    )
+    del criteria_path
+    criteria_report = _strict_bytes(criteria_raw)
+    criteria_seal = criteria_report.get("b_prime_criteria") \
+        if isinstance(criteria_report, dict) else None
+    if not isinstance(criteria_seal, dict):
+        raise ActivationError("B-prime criteria seal missing from report")
+    try:
+        calendar_gate.validate_b_prime_criteria_seal(criteria_seal)
+    except calendar_gate.NewsCalendarError as exc:
+        raise ActivationError(str(exc)) from exc
+    for label, source in criteria_seal["source_bindings"].items():
+        _read_bound(source.get("path"), source.get("sha256"), f"B-prime {label} source")
+    if criteria_seal.get("seal_sha256") != criteria_binding.get("seal_sha256"):
+        raise ActivationError("B-prime embedded criteria seal binding mismatch")
+    if criteria_seal.get("candidate", {}).get("manifest_sha256") != candidate.get("manifest_sha256"):
+        raise ActivationError("B-prime criteria/candidate binding mismatch")
 
     file_hashes = candidate.get("calendar_files")
     if not isinstance(file_hashes, dict) or set(file_hashes) != set(e1c.FILES):
@@ -175,8 +210,10 @@ def load_activation(path: Path = CONFIG) -> Activation:
     admissibility = config.get("admissibility")
     if not isinstance(admissibility, dict):
         raise ActivationError("admissibility policy missing")
-    if admissibility.get("phase") != "Q10_NEWS" or admissibility.get("timeframes") != ["D1"]:
-        raise ActivationError("activation must remain Q10_NEWS D1-only")
+    if admissibility.get("phase") != "Q10_NEWS" \
+            or admissibility.get("timeframe_scope") != "ALL_RECOGNIZED" \
+            or "timeframes" in admissibility:
+        raise ActivationError("activation must be Q10_NEWS for all recognized timeframes")
     if admissibility.get("impact") != "HIGH" or admissibility.get("permitted_currencies") != ["USD"]:
         raise ActivationError("activation must remain HIGH-impact USD-only")
     if admissibility.get("require_sealed_q10_window") is not True:
@@ -194,6 +231,7 @@ def load_activation(path: Path = CONFIG) -> Activation:
     _digest(readjudication.get("full_scope_seal_sha256"), "future full-scope seal")
     binding = {
         "schema": config["schema"], "decision": decision, "candidate": candidate,
+        "criteria_seal": criteria_binding,
         "admissibility": admissibility, "counter_marker": marker,
         "readjudication": readjudication,
     }
@@ -212,7 +250,8 @@ def load_activation(path: Path = CONFIG) -> Activation:
                       declarations_by_currency_month={
                           key: tuple(value) for key, value in declaration_index.items()
                       },
-                      high_classes={k: frozenset(v) for k, v in high_classes.items()})
+                      high_classes={k: frozenset(v) for k, v in high_classes.items()},
+                      criteria_seal=criteria_seal)
 
 
 def _payload(value: Any) -> dict[str, Any]:
@@ -359,7 +398,7 @@ def _months(start: dt.datetime, end: dt.datetime) -> list[str]:
 
 
 def assess_work_item(item: Mapping[str, Any], activation: Activation) -> dict[str, Any]:
-    """Return ADMISSIBLE only when every E1-C proof is present and exclusion-free."""
+    """Return ADMISSIBLE only for a sealed-window, recognized-TF, USD-only row."""
     base = {
         "schema": "qm.news-calendar-scoped-row-assessment/v1",
         "work_item_id": str(item.get("id") or ""),
@@ -376,8 +415,8 @@ def assess_work_item(item: Mapping[str, Any], activation: Activation) -> dict[st
     if phase != "Q10_NEWS" or status != "pending":
         reasons.append("NOT_PENDING_Q10_NEWS")
     timeframe = _timeframe(item, payload)
-    if timeframe not in activation.config["admissibility"]["timeframes"]:
-        reasons.append("INTRADAY_OR_UNKNOWN_TIMEFRAME")
+    if timeframe not in RECOGNIZED_TIMEFRAMES:
+        reasons.append("UNKNOWN_TIMEFRAME")
     symbols: list[str] = []
     currencies: list[str] = []
     start = end = None
@@ -417,8 +456,9 @@ def assess_work_item(item: Mapping[str, Any], activation: Activation) -> dict[st
                 if d_class == event_class or d_class in wildcards:
                     matched_by_id[str(declaration.get("id"))] = declaration
         matched = list(matched_by_id.values())
-        if matched:
-            reasons.append("DECLARED_EXCLUSION_OVERLAP")
+        # B-prime makes these OWNER-sealed residual overlaps informational for
+        # USD-only rows.  Any non-USD exposure remains held above; declarations
+        # never turn a non-USD row into an admissible one.
     verdict = "ADMISSIBLE" if not reasons else "EXCLUDED"
     exclusion_ids = sorted({str(row.get("id")) for row in matched})
     result = {
@@ -431,6 +471,11 @@ def assess_work_item(item: Mapping[str, Any], activation: Activation) -> dict[st
         "declared_exclusion_count": len(exclusion_ids),
         "declared_exclusion_ids_sha256": _sha(_canonical(exclusion_ids)),
         "declared_exclusion_ids_sample": exclusion_ids[:12],
+        "declared_overlap_effect": (
+            "INFORMATIONAL_FOR_USD_ONLY" if matched and currencies == ["USD"]
+            else "HELD_WITH_NON_USD_EXPOSURE" if matched and currencies
+            else "NONE"
+        ),
     }
     result["assessment_sha256"] = _sha(_canonical(result))
     return result

@@ -53,6 +53,20 @@ MANIFEST_SCHEMA = "qm-news-calendar-pair/v1"
 PLAN_SCHEMA = "qm-news-calendar-publication-plan/v1"
 MULTI_PLAN_SCHEMA = "qm-news-calendar-multi-principal-publication-plan/v1"
 JOURNAL_SCHEMA = "qm-news-calendar-publication-journal/v1"
+B_PRIME_SCHEMA = "qm.news-calendar-b-prime-criteria-seal/v1"
+B_PRIME_DECISION = "OWNER-DEC-CALENDAR-CRITERIA-B-PRIME-20260907"
+B_PRIME_RECEIPT = "617abd80-f0d9-49b4-b817-e82abf0ad381"
+B_PRIME_HISTORY_BOUNDARY = "2024-12-31T23:59:59Z"
+B_PRIME_RESIDUAL_KINDS = (
+    "EVENT_BY_EVENT_HIGH_WITHOUT_OFFICIAL_SCHEDULE",
+    "TICK_FOOTPRINT_BEYOND_FACTORY_HISTORY",
+    "NON_USD_WITHOUT_CONFIRMED_FRESH_ANCHOR",
+)
+B_PRIME_MEASURED_GATES = (
+    "6.1_anchor_shares", "6.2_coverage", "6.3_cross_file_identity",
+    "6.4_nonusd_completeness", "6.5_tick_footprints", "6.6_no_row_loss",
+    "6.7_detector_clean", "6.8_schema",
+)
 DEFAULT_SOURCE_DIR = Path(r"D:\QM\data\news_calendar")
 PRODUCTION_COMMON_DIRS = (
     Path(r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\Common\Files"),
@@ -240,6 +254,149 @@ def _sha256_file(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def b_prime_seal(material: Mapping[str, Any]) -> dict[str, Any]:
+    """Return a content-addressed B-prime criteria seal.
+
+    This is an adjudication contract only.  It is deliberately unavailable to
+    the publication functions below and grants neither a repin nor a hold
+    release.
+    """
+
+    sealed = dict(material)
+    sealed["seal_sha256"] = _sha256_bytes(_canonical_json_bytes(material))
+    return sealed
+
+
+def validate_b_prime_criteria_seal(value: Mapping[str, Any]) -> dict[str, Any]:
+    """Validate the exact measured-plus-declared B-prime residual boundary.
+
+    Every residual entry is enumerated.  Counts are recomputed from those
+    entries; unknown kinds, duplicate identities, unexplained footprint
+    failures, and any content drift fail closed.
+    """
+
+    if not isinstance(value, Mapping) or value.get("schema") != B_PRIME_SCHEMA:
+        raise NewsCalendarError("unknown B-prime criteria seal schema")
+    if set(value) != {
+        "schema", "decision_id", "receipt_id", "candidate", "source_bindings",
+        "criterion", "measured_gate_observations", "residuals",
+        "unclassified_residuals", "seal_sha256",
+    }:
+        raise NewsCalendarError("B-prime criteria seal fields must be exact")
+    if value.get("decision_id") != B_PRIME_DECISION or value.get("receipt_id") != B_PRIME_RECEIPT:
+        raise NewsCalendarError("B-prime OWNER decision binding mismatch")
+    seal_sha = value.get("seal_sha256")
+    if not isinstance(seal_sha, str) or not re.fullmatch(r"[0-9a-f]{64}", seal_sha):
+        raise NewsCalendarError("B-prime criteria seal SHA-256 missing")
+    material = dict(value)
+    material.pop("seal_sha256", None)
+    if _sha256_bytes(_canonical_json_bytes(material)) != seal_sha:
+        raise NewsCalendarError("B-prime criteria seal content hash mismatch")
+
+    criterion = value.get("criterion")
+    expected_criterion = {
+        "measurable_gate_requirement": "MEASURED_PASS",
+        "allowed_residual_kinds": list(B_PRIME_RESIDUAL_KINDS),
+        "anything_else": "FAIL_CLOSED",
+        "publication_authority": False,
+        "hold_release_authority": False,
+    }
+    if criterion != expected_criterion:
+        raise NewsCalendarError("B-prime criterion differs from OWNER-approved boundary")
+    candidate = value.get("candidate")
+    if not isinstance(candidate, Mapping) or not re.fullmatch(
+        r"[0-9a-f]{64}", str(candidate.get("manifest_sha256") or "")
+    ):
+        raise NewsCalendarError("B-prime candidate manifest binding missing")
+    sources = value.get("source_bindings")
+    required_sources = {"verification", "taxonomy", "footprints", "declarations"}
+    if not isinstance(sources, Mapping) or set(sources) != required_sources:
+        raise NewsCalendarError("B-prime source bindings must be exact")
+    for label, source in sources.items():
+        if not isinstance(source, Mapping) or not isinstance(source.get("path"), str) \
+                or not re.fullmatch(r"[0-9a-f]{64}", str(source.get("sha256") or "")):
+            raise NewsCalendarError(f"B-prime {label} source binding invalid")
+
+    observations = value.get("measured_gate_observations")
+    if not isinstance(observations, list) or len(observations) != len(B_PRIME_MEASURED_GATES):
+        raise NewsCalendarError("B-prime must retain exactly eight measured gate observations")
+    observed_names = []
+    for observation in observations:
+        if not isinstance(observation, Mapping) or set(observation) != {
+            "gate", "measured_pass", "scope_status",
+        } or type(observation.get("measured_pass")) is not bool \
+                or not isinstance(observation.get("scope_status"), str):
+            raise NewsCalendarError("B-prime measured gate observation invalid")
+        observed_names.append(observation["gate"])
+    if tuple(observed_names) != B_PRIME_MEASURED_GATES:
+        raise NewsCalendarError("B-prime measured gate order/set mismatch")
+
+    residuals = value.get("residuals")
+    if not isinstance(residuals, Mapping) or set(residuals) != set(B_PRIME_RESIDUAL_KINDS):
+        raise NewsCalendarError("B-prime residual kinds must be exact")
+    identities: set[tuple[str, str]] = set()
+    summaries: dict[str, dict[str, int]] = {}
+    for kind in B_PRIME_RESIDUAL_KINDS:
+        section = residuals[kind]
+        if not isinstance(section, Mapping) or not isinstance(section.get("entries"), list):
+            raise NewsCalendarError(f"B-prime residual section invalid: {kind}")
+        entries = section["entries"]
+        unit = section.get("count_unit")
+        declared_count = section.get("count")
+        if not isinstance(unit, str) or type(declared_count) is not int or declared_count < 0:
+            raise NewsCalendarError(f"B-prime residual count invalid: {kind}")
+        total = 0
+        for entry in entries:
+            if not isinstance(entry, Mapping) or not isinstance(entry.get("id"), str) \
+                    or not entry["id"] or not isinstance(entry.get("reason"), str) \
+                    or not entry["reason"] or type(entry.get("count")) is not int \
+                    or entry["count"] <= 0:
+                raise NewsCalendarError(f"B-prime residual entry invalid: {kind}")
+            identity = (kind, entry["id"])
+            if identity in identities:
+                raise NewsCalendarError(f"duplicate B-prime residual entry: {kind}/{entry['id']}")
+            identities.add(identity)
+            total += entry["count"]
+        if total != declared_count:
+            raise NewsCalendarError(f"B-prime residual count mismatch: {kind}")
+        if section.get("entry_count") != len(entries):
+            raise NewsCalendarError(f"B-prime residual entry count mismatch: {kind}")
+        summaries[kind] = {"entries": len(entries), "count": total}
+
+    event_section = residuals[B_PRIME_RESIDUAL_KINDS[0]]
+    if event_section.get("count_unit") != "HIGH_ROWS":
+        raise NewsCalendarError("B-prime event residual unit mismatch")
+    footprint_section = residuals[B_PRIME_RESIDUAL_KINDS[1]]
+    if footprint_section.get("count_unit") != "INSTANTS" \
+            or footprint_section.get("history_boundary_utc") != B_PRIME_HISTORY_BOUNDARY:
+        raise NewsCalendarError("B-prime footprint boundary mismatch")
+    boundary = _as_utc(B_PRIME_HISTORY_BOUNDARY)
+    for entry in footprint_section["entries"]:
+        try:
+            instant = _as_utc(entry.get("instant_utc"))
+        except (TypeError, ValueError) as exc:
+            raise NewsCalendarError("B-prime footprint instant invalid") from exc
+        if instant <= boundary:
+            raise NewsCalendarError("B-prime footprint residual is not beyond factory history")
+    nonusd_section = residuals[B_PRIME_RESIDUAL_KINDS[2]]
+    if nonusd_section.get("count_unit") != "FRESH_EXPORT_ROWS":
+        raise NewsCalendarError("B-prime non-USD residual unit mismatch")
+    for entry in nonusd_section["entries"]:
+        if not re.fullmatch(r"[A-Z]{3}", str(entry.get("currency") or "")) \
+                or entry.get("currency") == "USD" or entry.get("confirmed_fresh_anchor") is not False:
+            raise NewsCalendarError("B-prime non-USD residual entry invalid")
+    if value.get("unclassified_residuals") != []:
+        raise NewsCalendarError("B-prime seal contains an unclassified residual")
+    return {
+        "status": "VALIDATED",
+        "seal_sha256": seal_sha,
+        "candidate_manifest_sha256": candidate["manifest_sha256"],
+        "residual_summaries": summaries,
+        "publication_authority": False,
+        "hold_release_authority": False,
+    }
 
 
 def _utc_now() -> dt.datetime:

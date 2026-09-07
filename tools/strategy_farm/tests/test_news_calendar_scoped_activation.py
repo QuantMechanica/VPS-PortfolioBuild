@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 from tools.strategy_farm import news_calendar_scoped_activation as scoped
+from tools.strategy_farm import news_calendar_gate as gate
 
 
 def _sha(path: Path) -> str:
@@ -50,6 +51,43 @@ def _fixture(tmp_path: Path, *, overlap: bool = False):
         ],
     }
     manifest_path = _json(candidate / "manifest.json", manifest)
+    criteria_sources = {}
+    for name in ("verification", "taxonomy", "footprints", "declarations"):
+        source = _json(tmp_path / f"criteria-{name}.json", {"source": name})
+        criteria_sources[name] = {"path": str(source), "sha256": _sha(source)}
+    criteria_material = {
+        "schema": gate.B_PRIME_SCHEMA,
+        "decision_id": gate.B_PRIME_DECISION,
+        "receipt_id": gate.B_PRIME_RECEIPT,
+        "candidate": {"manifest_sha256": _sha(manifest_path)},
+        "source_bindings": criteria_sources,
+        "criterion": {
+            "measurable_gate_requirement": "MEASURED_PASS",
+            "allowed_residual_kinds": list(gate.B_PRIME_RESIDUAL_KINDS),
+            "anything_else": "FAIL_CLOSED",
+            "publication_authority": False,
+            "hold_release_authority": False,
+        },
+        "measured_gate_observations": [
+            {"gate": name, "measured_pass": True, "scope_status": "MEASURED_PASS"}
+            for name in gate.B_PRIME_MEASURED_GATES
+        ],
+        "residuals": {
+            gate.B_PRIME_RESIDUAL_KINDS[0]: {
+                "count_unit": "HIGH_ROWS", "entry_count": 0, "count": 0, "entries": [],
+            },
+            gate.B_PRIME_RESIDUAL_KINDS[1]: {
+                "count_unit": "INSTANTS", "entry_count": 0, "count": 0,
+                "history_boundary_utc": gate.B_PRIME_HISTORY_BOUNDARY, "entries": [],
+            },
+            gate.B_PRIME_RESIDUAL_KINDS[2]: {
+                "count_unit": "FRESH_EXPORT_ROWS", "entry_count": 0, "count": 0, "entries": [],
+            },
+        },
+        "unclassified_residuals": [],
+    }
+    criteria = gate.b_prime_seal(criteria_material)
+    criteria_report = _json(tmp_path / "criteria.json", {"b_prime_criteria": criteria})
     config = {
         "schema": scoped.SCHEMA,
         "enabled": True,
@@ -60,8 +98,12 @@ def _fixture(tmp_path: Path, *, overlap: bool = False):
             "declarations_sha256": _sha(declaration_path),
             "calendar_files": {primary.name: _sha(primary), secondary.name: _sha(secondary)},
         },
+        "criteria_seal": {
+            "report_path": str(criteria_report), "report_sha256": _sha(criteria_report),
+            "seal_sha256": criteria["seal_sha256"],
+        },
         "admissibility": {
-            "phase": "Q10_NEWS", "timeframes": ["D1"], "impact": "HIGH",
+            "phase": "Q10_NEWS", "timeframe_scope": "ALL_RECOGNIZED", "impact": "HIGH",
             "permitted_currencies": ["USD"],
             "symbol_currency_overrides": {"NDX.DWX": ["USD"], "GDAXI.DWX": ["EUR"]},
             "declaration_wildcards_for_high": ["ALL", "ALL_HIGH"],
@@ -111,15 +153,34 @@ def test_admissible_row_gets_bound_marker_and_tampering_fails(tmp_path: Path):
     assert not scoped.marker_valid(dict(marked, payload_json=json.dumps(tampered)), activation)
 
 
-def test_declared_overlap_intraday_nonusd_and_missing_seal_fail_closed(tmp_path: Path):
+def test_h4_usd_is_admissible_while_h4_nonusd_and_missing_seal_fail_closed(tmp_path: Path):
     config, item, _ = _fixture(tmp_path, overlap=True)
     activation = scoped.load_activation(config)
-    assert scoped.assess_work_item(item, activation)["reasons"] == ["DECLARED_EXCLUSION_OVERLAP"]
+    usd_h4 = dict(item, setfile_path="QM5_9999_NDX_H4.set")
+    assessment = scoped.assess_work_item(usd_h4, activation)
+    assert assessment["verdict"] == "ADMISSIBLE"
+    assert assessment["declared_exclusion_count"] == 1
     bad = dict(item, symbol="GDAXI.DWX", setfile_path="QM5_9999_GDAXI_H4.set", payload_json="{}")
     reasons = scoped.assess_work_item(bad, activation)["reasons"]
-    assert "INTRADAY_OR_UNKNOWN_TIMEFRAME" in reasons
     assert "NON_USD_EXPOSURE" in reasons
     assert "SEALED_Q10_WINDOW_UNAVAILABLE" in reasons
+
+
+def test_unknown_timeframe_and_criteria_seal_tamper_fail_closed(tmp_path: Path):
+    config, item, _ = _fixture(tmp_path)
+    activation = scoped.load_activation(config)
+    unknown = dict(item, setfile_path="QM5_9999_NDX_T7.set")
+    assert "UNKNOWN_TIMEFRAME" in scoped.assess_work_item(unknown, activation)["reasons"]
+
+    config_value = json.loads(config.read_text(encoding="utf-8"))
+    report = Path(config_value["criteria_seal"]["report_path"])
+    value = json.loads(report.read_text(encoding="utf-8"))
+    value["b_prime_criteria"]["criterion"]["anything_else"] = "ALLOW"
+    report.write_text(json.dumps(value), encoding="utf-8")
+    config_value["criteria_seal"]["report_sha256"] = _sha(report)
+    config.write_text(json.dumps(config_value), encoding="utf-8")
+    with pytest.raises(scoped.ActivationError, match="content hash mismatch"):
+        scoped.load_activation(config)
 
 
 def test_candidate_hash_drift_refuses_activation(tmp_path: Path):
@@ -127,6 +188,16 @@ def test_candidate_hash_drift_refuses_activation(tmp_path: Path):
     primary.write_text(primary.read_text(encoding="utf-8") + "2024-01-16 13:30:00,USD,CPI,HIGH\n",
                        encoding="utf-8")
     with pytest.raises(scoped.ActivationError, match="SHA-256 mismatch"):
+        scoped.load_activation(config)
+
+
+def test_criteria_source_drift_refuses_activation(tmp_path: Path):
+    config, _, _ = _fixture(tmp_path)
+    config_value = json.loads(config.read_text(encoding="utf-8"))
+    report = json.loads(Path(config_value["criteria_seal"]["report_path"]).read_text(encoding="utf-8"))
+    source = Path(report["b_prime_criteria"]["source_bindings"]["taxonomy"]["path"])
+    source.write_text('{"source":"tampered"}', encoding="utf-8")
+    with pytest.raises(scoped.ActivationError, match="B-prime taxonomy source SHA-256 mismatch"):
         scoped.load_activation(config)
 
 
