@@ -1,0 +1,198 @@
+{
+  "allowlist": [
+    "c18cf1fa-60c0-498e-82db-637fc8320f58",
+    "ca96d7bf-51e0-4417-a5c6-94546e9d9946",
+    "f15ac955-9dbb-4f39-9a9e-8eb142f11138",
+    "136b0e0f-7896-4e0c-b34b-47991cc49342",
+    "450fb9f6-9797-496d-937e-9bddc5f292a8",
+    "abea4df5-c03b-494a-a025-37747d0a1e32",
+    "6d528b09-59d8-4c2f-bfb2-a1102e8ae12c",
+    "b6e02932-d34d-4fea-8f3c-f977c8efe7eb",
+    "ee4ff9b4-41a3-4e74-b5ec-de548ed47113",
+    "745671a4-02e4-4df5-b5e1-e25f0e41ca0e"
+  ],
+  "applied_count": 0,
+  "authority": [
+    "OWNER-DEC-COUNTER-PATH-CALENDAR-TAINT-20260907",
+    "OWNER-DEC-CALENDAR-CRITERIA-B-PRIME-20260907"
+  ],
+  "deferred_count": 1,
+  "eligible_count": 9,
+  "generated_at_utc": "2026-09-07T07:45:20+00:00",
+  "mode": "DRY_RUN",
+  "router_task_id": "253814f1-f01a-4ea5-899f-b4ea3fc2dbcb",
+  "rows": [
+    {
+      "assessment_sha256": "54c84e64b246c7da6f9e5727b6fc648cd9410d18b6f1724732ca6627f5922ce1",
+      "baseline_run": {
+        "baseline_ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12567_cum-rsi2-commodity\\QM5_12567_cum-rsi2-commodity.ex5",
+        "baseline_ex5_sha256": "8d901924fe7dd2cd00c61dac6db78871fdfe34f73e0f003393196992d5143e04",
+        "baseline_mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12567_cum-rsi2-commodity\\QM5_12567_cum-rsi2-commodity.mq5",
+        "baseline_mq5_sha256": "8a5dc80942f867936ab18f6b98243437761aba55330024b18e5a050757ad60fc",
+        "baseline_setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12567_cum-rsi2-commodity\\sets\\QM5_12567_cum-rsi2-commodity_XAUUSD.DWX_D1_backtest.set",
+        "baseline_setfile_sha256": "12c1dfe5d4e743cda2fd102a5b3baa9e5691781ea2f65e433a4273e9d8fef943",
+        "period": "D1"
+      },
+      "eligible": true,
+      "kind": "SCOPED_WINDOW_SUCCESSOR",
+      "source_evidence_sha256": "b08dd4e4cecb1f3cb66b3f1011dc946dc3430989d2ba012471b0aa308d7d1318",
+      "source_work_item_id": "8f43a2f8-d0be-472f-87ca-c2fd628136e4",
+      "work_item_id": "c18cf1fa-60c0-498e-82db-637fc8320f58",
+      "would": "seal contract-v3 plan, atomically replace Q09 hold with taint hold, stamp B marker"
+    },
+    {
+      "assessment_sha256": "39881cc08af3739a38ccf3a3b697bfc10de3c9643edb69f5ae948f437bc1a7c8",
+      "baseline_run": {
+        "baseline_ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10513_mql5-ichimoku\\QM5_10513_mql5-ichimoku.ex5",
+        "baseline_ex5_sha256": "3c7f46a1da2dd8f931eef7d0e96fa1214fdbbd5e06d467ed9e840307d9545087",
+        "baseline_mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10513_mql5-ichimoku\\QM5_10513_mql5-ichimoku.mq5",
+        "baseline_mq5_sha256": "dfccacd6fe901831eed363d296201e64a853bc5d5e3fc6dc30b9f235d8e8ee14",
+        "baseline_setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10513_mql5-ichimoku\\sets\\QM5_10513_mql5-ichimoku_XAUUSD.DWX_requal_D1_backtest.set",
+        "baseline_setfile_sha256": "6f2e93d832b6563e495c94ab35b29eb2ea22ad179a0af0fd8fcae46e8cf065b8",
+        "period": "D1"
+      },
+      "eligible": true,
+      "kind": "SCOPED_WINDOW_SUCCESSOR",
+      "source_evidence_sha256": "6b2624687bdbdb20be461722dbc7f0b19e41d30aa5c483f09a3b7b05b7d2b619",
+      "source_work_item_id": "6074a203-df0c-401a-aa07-bcd6319aef61",
+      "work_item_id": "ca96d7bf-51e0-4417-a5c6-94546e9d9946",
+      "would": "seal contract-v3 plan, atomically replace Q09 hold with taint hold, stamp B marker"
+    },
+    {
+      "assessment_sha256": "42352f9ef2cd97e8f9b504b88d7b87668bbec91e3f32ac856718f818c1e073e5",
+      "baseline_run": {
+        "baseline_ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10145_tsm-meanret\\QM5_10145_tsm-meanret.ex5",
+        "baseline_ex5_sha256": "c3f5476eff34ce65b25acf8bd967b5d0b349ce8e05bd492f82316f899a38db86",
+        "baseline_mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10145_tsm-meanret\\QM5_10145_tsm-meanret.mq5",
+        "baseline_mq5_sha256": "fa6b13d47e4c3a34a9456c6ec57899c483e06dca0a593d6a44dfa59860f72d19",
+        "baseline_setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10145_tsm-meanret\\sets\\QM5_10145_tsm-meanret_SP500.DWX_D1_backtest_ablation_00.set",
+        "baseline_setfile_sha256": "49e64a7d1359ed115fc4e3773b83085be22e95d4d481afa9fd4a975823c04042",
+        "period": "D1"
+      },
+      "eligible": true,
+      "kind": "SCOPED_WINDOW_SUCCESSOR",
+      "source_evidence_sha256": "2f6cb0bbc6e4db689c4c199a9e3fbd8fe08161da457697d00a30519bad3b18f0",
+      "source_work_item_id": "8a4a5afb-3767-4687-a247-2e24d0f1ca78",
+      "work_item_id": "f15ac955-9dbb-4f39-9a9e-8eb142f11138",
+      "would": "seal contract-v3 plan, atomically replace Q09 hold with taint hold, stamp B marker"
+    },
+    {
+      "assessment_sha256": "c3e5b246f5d109b7bb07d4c2e1469943850616b12202c45cc8f6813797ea9562",
+      "baseline_run": {
+        "baseline_ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10513_mql5-ichimoku\\QM5_10513_mql5-ichimoku.ex5",
+        "baseline_ex5_sha256": "3c7f46a1da2dd8f931eef7d0e96fa1214fdbbd5e06d467ed9e840307d9545087",
+        "baseline_mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10513_mql5-ichimoku\\QM5_10513_mql5-ichimoku.mq5",
+        "baseline_mq5_sha256": "dfccacd6fe901831eed363d296201e64a853bc5d5e3fc6dc30b9f235d8e8ee14",
+        "baseline_setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10513_mql5-ichimoku\\sets\\QM5_10513_mql5-ichimoku_XAUUSD.DWX_D1_backtest_grid_006.set",
+        "baseline_setfile_sha256": "34b99247931457dd856f44a73c5e5c20082e671bb3b2d57386ea1371055ed835",
+        "period": "D1"
+      },
+      "eligible": true,
+      "kind": "SCOPED_WINDOW_SUCCESSOR",
+      "source_evidence_sha256": "f8b35ee4e232a558db3e598ebbd2fb06e76da9662f75ff3b8263142fa7a81a3e",
+      "source_work_item_id": "a99d51cd-ea47-4137-8e44-d8dd8319c5ed",
+      "work_item_id": "136b0e0f-7896-4e0c-b34b-47991cc49342",
+      "would": "seal contract-v3 plan, atomically replace Q09 hold with taint hold, stamp B marker"
+    },
+    {
+      "assessment_sha256": "b8964cb6d0eb5ac50c55c00480b8594879f231a42c4177b94d70c04111bff772",
+      "baseline_run": {
+        "baseline_ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10513_mql5-ichimoku\\QM5_10513_mql5-ichimoku.ex5",
+        "baseline_ex5_sha256": "3c7f46a1da2dd8f931eef7d0e96fa1214fdbbd5e06d467ed9e840307d9545087",
+        "baseline_mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10513_mql5-ichimoku\\QM5_10513_mql5-ichimoku.mq5",
+        "baseline_mq5_sha256": "dfccacd6fe901831eed363d296201e64a853bc5d5e3fc6dc30b9f235d8e8ee14",
+        "baseline_setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10513_mql5-ichimoku\\sets\\QM5_10513_mql5-ichimoku_XAUUSD.DWX_D1_backtest_grid_007.set",
+        "baseline_setfile_sha256": "bac808aa2e9e02e6fa1d6e0e2fa62d5616b6497bf72dc245812b57fa84c69447",
+        "period": "D1"
+      },
+      "eligible": true,
+      "kind": "SCOPED_WINDOW_SUCCESSOR",
+      "source_evidence_sha256": "1be20a254e9052258cd127bae9ed5e3fa6520617abb19860b5240958bc87689d",
+      "source_work_item_id": "e32ff9d8-e3d3-4f92-93e1-4a3f36312f04",
+      "work_item_id": "450fb9f6-9797-496d-937e-9bddc5f292a8",
+      "would": "seal contract-v3 plan, atomically replace Q09 hold with taint hold, stamp B marker"
+    },
+    {
+      "assessment_sha256": "d8d5ff3354443025278b1e937dc333c77862678a1e94a5e3b9ed15d58e786759",
+      "baseline_run": {
+        "baseline_ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10513_mql5-ichimoku\\QM5_10513_mql5-ichimoku.ex5",
+        "baseline_ex5_sha256": "3c7f46a1da2dd8f931eef7d0e96fa1214fdbbd5e06d467ed9e840307d9545087",
+        "baseline_mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10513_mql5-ichimoku\\QM5_10513_mql5-ichimoku.mq5",
+        "baseline_mq5_sha256": "dfccacd6fe901831eed363d296201e64a853bc5d5e3fc6dc30b9f235d8e8ee14",
+        "baseline_setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10513_mql5-ichimoku\\sets\\QM5_10513_mql5-ichimoku_XAUUSD.DWX_D1_backtest_grid_008.set",
+        "baseline_setfile_sha256": "6cb30bbf235bc4a9c97a392fd476cd182c2449634dbe1c884d7d16d4c8e28207",
+        "period": "D1"
+      },
+      "eligible": true,
+      "kind": "SCOPED_WINDOW_SUCCESSOR",
+      "source_evidence_sha256": "a27975beefedcfc2e1edc7ecefe774d89d25f662743da6c18bf80c37d29a7faf",
+      "source_work_item_id": "1a32886e-34dd-422b-b115-e934625ff99e",
+      "work_item_id": "abea4df5-c03b-494a-a025-37747d0a1e32",
+      "would": "seal contract-v3 plan, atomically replace Q09 hold with taint hold, stamp B marker"
+    },
+    {
+      "assessment_sha256": "6ed2b095bf9547eb03d337339134fbe9f10245ad839691c5ea308bf14eb80dd1",
+      "baseline_run": {
+        "baseline_ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1230_carver-dynvol-mav\\QM5_1230_carver-dynvol-mav.ex5",
+        "baseline_ex5_sha256": "52e05c77f94ae8cb2b2c8f84ad60992a01728eb6493874caae89a92bd64fdf60",
+        "baseline_mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1230_carver-dynvol-mav\\QM5_1230_carver-dynvol-mav.mq5",
+        "baseline_mq5_sha256": "4c50e902ab722f86c281541280df598c5a27886b2ac82074bc5edd9e6c45d629",
+        "baseline_setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1230_carver-dynvol-mav\\sets\\QM5_1230_carver-dynvol-mav_XAUUSD.DWX_D1_backtest.set",
+        "baseline_setfile_sha256": "9f62953bcf9676e1a025badcae9cdf461fa9771a1daa48997b991b6da14197c0",
+        "period": "D1"
+      },
+      "eligible": true,
+      "kind": "SCOPED_WINDOW_SUCCESSOR",
+      "source_evidence_sha256": "e59a894de6efd3cedead0d65cc93b09c4316ccd5564b4b389f0dbb5cd17b960b",
+      "source_work_item_id": "5ae91cae-4481-4a89-8151-cbcc04169794",
+      "work_item_id": "6d528b09-59d8-4c2f-bfb2-a1102e8ae12c",
+      "would": "seal contract-v3 plan, atomically replace Q09 hold with taint hold, stamp B marker"
+    },
+    {
+      "assessment_sha256": "b84979a6725fb0b315817ee1ee3ac0f07fedd6391deb66db9683e066b1cc74cd",
+      "baseline_run": {
+        "baseline_ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1556_aa-zak-mom12\\QM5_1556_aa-zak-mom12.ex5",
+        "baseline_ex5_sha256": "0962ca65776fd05e76f7ab5f27e838a72cb79a7359a029e2f47ef61a9ae7c88e",
+        "baseline_mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1556_aa-zak-mom12\\QM5_1556_aa-zak-mom12.mq5",
+        "baseline_mq5_sha256": "3b44aa66f7ff4665d15b3e580dc42ea73add6548448b83258d2b510f151769ac",
+        "baseline_setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1556_aa-zak-mom12\\sets\\QM5_1556_aa-zak-mom12_XAUUSD.DWX_D1_backtest.set",
+        "baseline_setfile_sha256": "01163a9b4bf3e98ae9fb2c6b8172ab46e3aa2e2084605d1bb8bda7b32a4879d2",
+        "period": "D1"
+      },
+      "eligible": true,
+      "kind": "SCOPED_WINDOW_SUCCESSOR",
+      "source_evidence_sha256": "0a0cfd6db8549cf92eeab8ef321cf47628c5989dacb473c4662daf6707289d20",
+      "source_work_item_id": "b9ae4345-e6d5-4062-9e05-e54dd40ee767",
+      "work_item_id": "b6e02932-d34d-4fea-8f3c-f977c8efe7eb",
+      "would": "seal contract-v3 plan, atomically replace Q09 hold with taint hold, stamp B marker"
+    },
+    {
+      "cell_count": 8,
+      "eligible": true,
+      "hold_reason": "bound news runner disappeared before durable completion; exact process identity review required before retry",
+      "kind": "SILENT_ABORT",
+      "plan_file_sha256": "12d412156082f4d8b580c25c505676787b0a42acadbfd0b1b91fec442f15993f",
+      "plan_path": "D:\\QM\\reports\\work_items\\ee4ff9b4-41a3-4e74-b5ec-de548ed47113\\q09_contract_v3\\run_plan.json",
+      "q07_evidence_intact": true,
+      "q07_evidence_path": "D:\\QM\\reports\\work_items\\710e48b8-7830-4590-9d60-0105b5f41fdf\\QM5_10771\\Q07\\XAUUSD_DWX\\aggregate.json",
+      "releasable": true,
+      "root_cause": "runner/worker process exited before durable completion; creation-key/PID-reuse handling is fixed",
+      "work_item_id": "ee4ff9b4-41a3-4e74-b5ec-de548ed47113"
+    },
+    {
+      "cell_count": 40,
+      "eligible": false,
+      "error": "bound Q07 evidence is missing; release remains fail-closed",
+      "hold_reason": "bound news runner disappeared before durable completion; exact process identity review required before retry",
+      "kind": "SILENT_ABORT",
+      "plan_file_sha256": "8189aaba33eb00e847dbd62fc60e70d26a4916dacbd960c2821bc010571e878a",
+      "plan_path": "D:\\QM\\reports\\work_items\\745671a4-02e4-4df5-b5e1-e25f0e41ca0e\\run_plan.json",
+      "q07_evidence_intact": false,
+      "q07_evidence_path": "D:\\QM\\reports\\work_items\\e3187d46-42c3-4dc7-beac-25cc8a0d947b\\QM5_11129\\Q07\\SP500_DWX\\aggregate.json",
+      "releasable": false,
+      "root_cause": "launch precondition fails closed because bound Q07 seed-stability evidence is missing",
+      "work_item_id": "745671a4-02e4-4df5-b5e1-e25f0e41ca0e"
+    }
+  ],
+  "schema": "qm.scoped-b-release-wave2-receipt/v1"
+}

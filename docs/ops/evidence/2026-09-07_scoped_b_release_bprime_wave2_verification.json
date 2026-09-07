@@ -1,0 +1,186 @@
+{
+  "failed_count": 0,
+  "generated_at_utc": "2026-09-07T08:02:51+00:00",
+  "passed": true,
+  "passed_count": 10,
+  "router_task_id": "253814f1-f01a-4ea5-899f-b4ea3fc2dbcb",
+  "rows": [
+    {
+      "active_hold": null,
+      "checks": {
+        "b_marker_valid": true,
+        "execution_anchor_valid": true,
+        "no_active_policy_hold": true,
+        "pending_or_claimed_normally": true,
+        "phase_q10_news": true,
+        "review_only_disabled": true,
+        "review_origin_preserved": true,
+        "terminal_claimable": true,
+        "verdict_unchanged_null": true
+      },
+      "claimed_by": null,
+      "passed": true,
+      "status": "pending",
+      "work_item_id": "c18cf1fa-60c0-498e-82db-637fc8320f58"
+    },
+    {
+      "active_hold": null,
+      "checks": {
+        "b_marker_valid": true,
+        "execution_anchor_valid": true,
+        "no_active_policy_hold": true,
+        "pending_or_claimed_normally": true,
+        "phase_q10_news": true,
+        "review_only_disabled": true,
+        "review_origin_preserved": true,
+        "terminal_claimable": true,
+        "verdict_unchanged_null": true
+      },
+      "claimed_by": null,
+      "passed": true,
+      "status": "pending",
+      "work_item_id": "ca96d7bf-51e0-4417-a5c6-94546e9d9946"
+    },
+    {
+      "active_hold": null,
+      "checks": {
+        "b_marker_valid": true,
+        "execution_anchor_valid": true,
+        "no_active_policy_hold": true,
+        "pending_or_claimed_normally": true,
+        "phase_q10_news": true,
+        "review_only_disabled": true,
+        "review_origin_preserved": true,
+        "terminal_claimable": true,
+        "verdict_unchanged_null": true
+      },
+      "claimed_by": null,
+      "passed": true,
+      "status": "pending",
+      "work_item_id": "f15ac955-9dbb-4f39-9a9e-8eb142f11138"
+    },
+    {
+      "active_hold": null,
+      "checks": {
+        "b_marker_valid": true,
+        "execution_anchor_valid": true,
+        "no_active_policy_hold": true,
+        "pending_or_claimed_normally": true,
+        "phase_q10_news": true,
+        "review_only_disabled": true,
+        "review_origin_preserved": true,
+        "terminal_claimable": true,
+        "verdict_unchanged_null": true
+      },
+      "claimed_by": null,
+      "passed": true,
+      "status": "pending",
+      "work_item_id": "136b0e0f-7896-4e0c-b34b-47991cc49342"
+    },
+    {
+      "active_hold": null,
+      "checks": {
+        "b_marker_valid": true,
+        "execution_anchor_valid": true,
+        "no_active_policy_hold": true,
+        "pending_or_claimed_normally": true,
+        "phase_q10_news": true,
+        "review_only_disabled": true,
+        "review_origin_preserved": true,
+        "terminal_claimable": true,
+        "verdict_unchanged_null": true
+      },
+      "claimed_by": null,
+      "passed": true,
+      "status": "pending",
+      "work_item_id": "450fb9f6-9797-496d-937e-9bddc5f292a8"
+    },
+    {
+      "active_hold": null,
+      "checks": {
+        "b_marker_valid": true,
+        "execution_anchor_valid": true,
+        "no_active_policy_hold": true,
+        "pending_or_claimed_normally": true,
+        "phase_q10_news": true,
+        "review_only_disabled": true,
+        "review_origin_preserved": true,
+        "terminal_claimable": true,
+        "verdict_unchanged_null": true
+      },
+      "claimed_by": null,
+      "passed": true,
+      "status": "pending",
+      "work_item_id": "abea4df5-c03b-494a-a025-37747d0a1e32"
+    },
+    {
+      "active_hold": null,
+      "checks": {
+        "b_marker_valid": true,
+        "execution_anchor_valid": true,
+        "no_active_policy_hold": true,
+        "pending_or_claimed_normally": true,
+        "phase_q10_news": true,
+        "review_only_disabled": true,
+        "review_origin_preserved": true,
+        "terminal_claimable": true,
+        "verdict_unchanged_null": true
+      },
+      "claimed_by": null,
+      "passed": true,
+      "status": "pending",
+      "work_item_id": "6d528b09-59d8-4c2f-bfb2-a1102e8ae12c"
+    },
+    {
+      "active_hold": null,
+      "checks": {
+        "b_marker_valid": true,
+        "execution_anchor_valid": true,
+        "no_active_policy_hold": true,
+        "pending_or_claimed_normally": true,
+        "phase_q10_news": true,
+        "review_only_disabled": true,
+        "review_origin_preserved": true,
+        "terminal_claimable": true,
+        "verdict_unchanged_null": true
+      },
+      "claimed_by": null,
+      "passed": true,
+      "status": "pending",
+      "work_item_id": "b6e02932-d34d-4fea-8f3c-f977c8efe7eb"
+    },
+    {
+      "active_hold": null,
+      "checks": {
+        "b_marker_valid": true,
+        "bound_q07_intact": true,
+        "no_active_policy_hold": true,
+        "pending_or_claimed_normally": true,
+        "phase_q10_news": true,
+        "review_only_disabled": true,
+        "terminal_claimable": true,
+        "verdict_unchanged_null": true
+      },
+      "claimed_by": null,
+      "passed": true,
+      "status": "pending",
+      "work_item_id": "ee4ff9b4-41a3-4e74-b5ec-de548ed47113"
+    },
+    {
+      "active_hold": "NEWS_RUNNER_SPAWN_SILENT_ABORT",
+      "checks": {
+        "b_marker_absent": true,
+        "missing_q07_still_fail_closed": true,
+        "phase_q10_news": true,
+        "silent_abort_hold_preserved": true,
+        "still_pending_unclaimed": true,
+        "verdict_unchanged_null": true
+      },
+      "claimed_by": null,
+      "passed": true,
+      "status": "pending",
+      "work_item_id": "745671a4-02e4-4df5-b5e1-e25f0e41ca0e"
+    }
+  ],
+  "schema": "qm.scoped-b-release-wave2-verification/v1"
+}

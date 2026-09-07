@@ -963,6 +963,112 @@ def _dispatch_binding_sha256(payload: Mapping[str, Any]) -> str:
     return contract.sha256_bytes(contract.canonical_json_bytes(_dispatch_binding_material(payload)))
 
 
+def validate_scoped_q09_pass_execution_anchor(
+    payload: Mapping[str, Any],
+    input_manifest: Mapping[str, Any] | None = None,
+    *,
+    farm_root: Path | None = None,
+) -> dict[str, Any]:
+    """Authenticate the narrow Consumer-B Q09-PASS execution anchor.
+
+    Legacy Q09 PASS rows can prove the exact news window and current build even
+    when their retained Q07/Q08 aggregate files have since aged out.  The
+    B-prime conversion path writes an explicit, self-hashed anchor into the
+    historical ``q08_evidence`` plan slot.  This validator keeps that exception
+    visible and refuses to treat it as manufactured Q07/Q08 pipeline evidence.
+    """
+
+    if input_manifest is None:
+        _, input_manifest = load_authenticated_plan(
+            Path(str(payload.get("q09_run_plan_path") or "")),
+            expected_file_sha256=str(payload.get("q09_run_plan_file_sha256") or ""),
+        )
+    marker = payload.get("scoped_q09_pass_execution_anchor")
+    if not isinstance(marker, Mapping):
+        raise CapacityError("scoped Q09 PASS execution anchor marker is missing")
+    anchor_path = Path(str(marker.get("path") or "")).resolve()
+    anchor_sha = _hex64(marker.get("sha256"))
+    if not anchor_sha:
+        raise CapacityError("scoped Q09 PASS execution anchor hash is invalid")
+    _verify_hash(anchor_path, anchor_sha, "scoped Q09 PASS execution anchor")
+    anchor = _load_json(anchor_path, "scoped Q09 PASS execution anchor")
+    unsigned = dict(anchor)
+    declared_self_hash = _hex64(unsigned.pop("anchor_sha256", None))
+    actual_self_hash = contract.sha256_bytes(contract.canonical_json_bytes(unsigned))
+    if (
+        anchor.get("schema_version") != "qm.scoped-q10-q09-pass-execution-anchor/v1"
+        or declared_self_hash != actual_self_hash
+        or marker.get("source_work_item_id") != anchor.get("source_work_item_id")
+    ):
+        raise CapacityError("scoped Q09 PASS execution anchor envelope is invalid")
+    source_path = Path(str(anchor.get("source_evidence_path") or "")).resolve()
+    source_sha = _hex64(anchor.get("source_evidence_sha256"))
+    summary_path = Path(str(anchor.get("source_summary_path") or "")).resolve()
+    summary_sha = _hex64(anchor.get("source_summary_sha256"))
+    if not source_sha or not summary_sha:
+        raise CapacityError("scoped Q09 PASS source evidence binding is incomplete")
+    _verify_hash(source_path, source_sha, "scoped source Q09 PASS aggregate")
+    _verify_hash(summary_path, summary_sha, "scoped source Q09 PASS summary")
+    source = _load_json(source_path, "scoped source Q09 PASS aggregate")
+    summary = _load_json(summary_path, "scoped source Q09 PASS summary")
+    identities = input_manifest.get("identities") or {}
+    source_paths = input_manifest.get("source_paths") or {}
+    baseline = anchor.get("baseline_run") or {}
+    if (
+        anchor.get("scope") != "OWNER_B_PRIME_EXACT_ALLOWLIST"
+        or anchor.get("pipeline_verdict_created") is not False
+        or source.get("phase") != "Q09"
+        or source.get("verdict") != "PASS"
+        or summary.get("result") != "PASS"
+        or str(source.get("symbol") or "") != str(anchor.get("symbol") or "")
+        or str(summary.get("symbol") or "") != str(anchor.get("symbol") or "")
+        or str(summary.get("period") or "").upper()
+        != str(baseline.get("period") or "").upper()
+        or str(source.get("history_from") or "")
+        != str(summary.get("from_date") or "")
+        or str(source.get("history_to") or "") != str(summary.get("to_date") or "")
+    ):
+        raise CapacityError("scoped Q09 PASS source evidence is contradictory")
+    summary_ex5 = (
+        ((_mapping(summary.get("execution_identity")).get("expert_binary") or {}).get("source") or {})
+    ).get("sha256")
+    if _hex64(summary_ex5) != _hex64(baseline.get("baseline_ex5_sha256")):
+        raise CapacityError("scoped Q09 PASS source/current EX5 identity mismatch")
+    checks = (
+        ("q08_work_item_id", identities.get("q08_work_item_id"), anchor.get("source_work_item_id")),
+        ("q08_evidence_sha256", identities.get("q08_evidence_sha256"), anchor_sha),
+        ("baseline_setfile_sha256", identities.get("baseline_setfile_sha256"), baseline.get("baseline_setfile_sha256")),
+        ("ex5_sha256", identities.get("ex5_sha256"), baseline.get("baseline_ex5_sha256")),
+        ("baseline_setfile_path", str(Path(str(source_paths.get("baseline_setfile") or "")).resolve()), str(Path(str(baseline.get("baseline_setfile_path") or "")).resolve())),
+    )
+    for label, actual, expected in checks:
+        if str(actual or "").lower() != str(expected or "").lower():
+            raise CapacityError(f"scoped Q09 PASS anchor {label} mismatch")
+    if farm_root is not None:
+        database = _farm_db_path(farm_root)
+        with sqlite3.connect(
+            f"file:{database.as_posix()}?mode=ro", uri=True
+        ) as connection:
+            connection.row_factory = sqlite3.Row
+            source_row = connection.execute(
+                "SELECT * FROM work_items WHERE id=?",
+                (str(anchor.get("source_work_item_id") or ""),),
+            ).fetchone()
+        if (
+            source_row is None
+            or source_row["phase"] != "Q09"
+            or source_row["status"] != "done"
+            or source_row["verdict"] != "PASS"
+            or Path(str(source_row["evidence_path"] or "")).resolve() != source_path
+            or str(source_row["ea_id"] or "") != str(anchor.get("ea_id") or "")
+            or str(source_row["symbol"] or "") != str(anchor.get("symbol") or "")
+            or Path(str(source_row["setfile_path"] or "")).resolve()
+            != Path(str(baseline.get("baseline_setfile_path") or "")).resolve()
+        ):
+            raise CapacityError("scoped source Q09 PASS database identity mismatch")
+    return anchor
+
+
 def _farm_db_path(farm_root: Path) -> Path:
     return farm_root.resolve() / FACTORY_DB_RELATIVE_PATH
 
@@ -2507,12 +2613,15 @@ def assert_factory_capacity(
         actual_binding = _dispatch_binding_sha256(stable_payload)
     if payload.get("q09_dispatch_binding_sha256") != actual_binding:
         raise CapacityError("Q09 factory capacity refused: dispatch binding hash mismatch")
-    q07_path = Path(str(payload.get("q09_q07_evidence_path") or ""))
-    _verify_hash(
-        q07_path,
-        str(payload.get("q09_q07_evidence_sha256") or ""),
-        "bound Q07 seed-stability evidence",
-    )
+    if payload.get("scoped_q09_pass_execution_anchor") is not None:
+        validate_scoped_q09_pass_execution_anchor(payload, farm_root=farm_root)
+    else:
+        q07_path = Path(str(payload.get("q09_q07_evidence_path") or ""))
+        _verify_hash(
+            q07_path,
+            str(payload.get("q09_q07_evidence_sha256") or ""),
+            "bound Q07 seed-stability evidence",
+        )
     return {"row": dict(row), "payload": payload}
 
 

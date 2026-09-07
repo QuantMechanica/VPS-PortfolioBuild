@@ -309,6 +309,32 @@ def _sealed_window(
     payload: Mapping[str, Any], item: Mapping[str, Any]
 ) -> tuple[dt.datetime, dt.datetime, str]:
     scoped = payload.get("scoped_q10_window_seal")
+    conversion = payload.get("scoped_q10_plan_activation")
+    if isinstance(scoped, dict) and conversion is not None:
+        if not isinstance(conversion, dict):
+            raise ActivationError("scoped Q10 plan activation invalid")
+        conversion_sha = str(conversion.get("activation_sha256") or "")
+        material = dict(conversion)
+        material.pop("activation_sha256", None)
+        if (
+            conversion.get("schema") != "qm.scoped-q10-plan-activation/v1"
+            or conversion.get("source_window_seal_sha256") != scoped.get("seal_sha256")
+            or conversion.get("run_plan_path") != payload.get("q09_run_plan_path")
+            or conversion.get("run_plan_file_sha256")
+            != payload.get("q09_run_plan_file_sha256")
+            or conversion.get("input_manifest_sha256")
+            != payload.get("q09_input_manifest_sha256")
+            or payload.get("q09_activation_state") != "RUNNABLE_BOUND"
+            or payload.get("terminal_claimable") is not True
+            or payload.get("scoped_review_only") is not False
+            or not HEX.fullmatch(conversion_sha)
+            or _sha(_canonical(material)) != conversion_sha
+        ):
+            raise ActivationError("scoped Q10 plan activation invalid")
+        # Preserve the original review-only window seal as provenance, while
+        # making the ordinary hash-bound run plan authoritative after the
+        # explicit B-prime conversion.
+        scoped = None
     if isinstance(scoped, dict):
         seal_sha = str(scoped.get("seal_sha256") or "")
         material = dict(scoped)
