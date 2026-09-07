@@ -37,7 +37,7 @@
   "compile_intake": {
     "first_attempt": "REFUSED",
     "first_attempt_reason": "BOUND_SETFILE_HASH_EXISTS",
-    "repair": "reset uncompiled setfile build_hash to the canonical all-zero placeholder before re-enqueue"
+    "repair": "use the non-bound PENDING_GOVERNED_COMPILE marker; the all-zero 64-hex value was correctly still classified as a bound hash"
   },
   "prohibited_scope": {
     "t_live_touched": false,
