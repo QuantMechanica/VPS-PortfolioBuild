@@ -1,0 +1,67 @@
+{
+  "schema_version": "qm.paced-fleet-cpu-stop/v1",
+  "observed_at_utc": "2026-09-07T10:30:41.6551759Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "8fcc4bf1867aa8c0bb0d12c66f6183f3dd60020d",
+  "mission_lane": "diversity_funnel",
+  "cpu_admission": {
+    "counter": "\\Processor(_Total)\\% Processor Time",
+    "sample_interval_seconds": 1,
+    "samples": [
+      97.758693,
+      95.256887,
+      98.539742,
+      93.467687,
+      90.050188
+    ],
+    "average_percent": 95.014639,
+    "maximum_percent": 98.539742,
+    "ceiling_percent": 97.0,
+    "admission_rule": "average < 97 and maximum < 97",
+    "admitted": false,
+    "binding_measure": "maximum_percent"
+  },
+  "farm_snapshot": {
+    "db": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "active_work_item_count": 9,
+    "active_phase_counts": {
+      "Q02": 1,
+      "Q04": 1,
+      "Q08": 1,
+      "Q10_NEWS": 1,
+      "OPT_CENSUS": 5
+    },
+    "active_build_task_count": 6,
+    "pending_build_task_count": 74,
+    "running_factory_terminals": [
+      "T2",
+      "T3",
+      "T4",
+      "T7",
+      "T8",
+      "T9",
+      "T10"
+    ],
+    "running_factory_terminal_count": 7,
+    "factory_terminal_ceiling": 7,
+    "slot_scan_observed_at_utc": "2026-09-07T10:29:50+00:00"
+  },
+  "selection": {
+    "candidate_selected": null,
+    "reason": "CPU admission bound before backlog ranking or claim; live farm state must be reranked on a later wake."
+  },
+  "mutations_refused": [
+    "farm DB claim or task mutation",
+    "Strategy Card or EA source write",
+    "framework input pin audit",
+    "compile enqueue",
+    "smoke",
+    "Q02 enqueue",
+    "backtest dispatch",
+    "terminal or worker control",
+    "portfolio gate",
+    "T_Live or deploy manifest",
+    "AutoTrading"
+  ],
+  "result": "STOP_CPU_CEILING"
+}
