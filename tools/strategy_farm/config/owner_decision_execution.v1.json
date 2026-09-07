@@ -1031,6 +1031,40 @@
           ]
         }
       }
+    },
+    {
+      "id": "OWNER-DEC-Q09-LEGACY-LOGGER-SAMPLE-20260907",
+      "todo_id": "QM-TODO-20260907-Q09-LEGACY-LOGGER-SAMPLE",
+      "priority": 90,
+      "choices": {
+        "YES": {
+          "mode": "APPLY_AND_VERIFY",
+          "objective": "Option A: accept a fresh structured logger sample without the sv field as a declared residual in the Q09 v3 selection run for EX5 builds older than the P1 evidence-integrity control (6e92c80626, 2026-07-20); all other required fields, ea_id/magic binding and freshness against the pre-run archive stay mandatory; receipt field logger_sample_authentication=legacy_no_sv + footnote. Then append-only reruns for 11167 and the pre-sv candidates. No threshold/verdict/T_Live change.",
+          "allowed_actions": [
+            "Enqueue one Codex ops ticket with exact acceptance criteria (run_smoke.ps1 guard branch, tests, receipt field)",
+            "Integrate the Codex branch (tests, LF/byte checks, co-author trailer)",
+            "farmctl enqueue-backtest --append-only-rerun-of f625d9aa… for 11167; mark-priority-track for 11196; releases in the B-prime order",
+            "Update OPEN_ITEMS, the B-prime execution record and the Vault"
+          ],
+          "acceptance": [
+            "Guard accepts legacy samples only for pre-6e92c80626 builds and only under -RequireFreshLoggerSample; post-sv builds unchanged (tests)",
+            "Receipt/footnote carry logger_sample_authentication=legacy_no_sv",
+            "11167 rerun ends PASS/FAIL (not REVIEW_REQUIRED cell_execution_failed)",
+            "No threshold/verdict/T_Live change"
+          ]
+        },
+        "NO": {
+          "mode": "DOCUMENT_AND_VERIFY",
+          "objective": "Option C: park the pre-sv Q10_NEWS candidates (documented, no priority track); the 7 post-sv B-prime rows continue; option B only via a separate build order.",
+          "allowed_actions": [
+            "Document in OPEN_ITEMS_STATUS.md, the B-prime execution record and the Vault"
+          ],
+          "acceptance": [
+            "Pre-sv rows documented as parked",
+            "No guard change"
+          ]
+        }
+      }
     }
   ]
 }

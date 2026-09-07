@@ -1,6 +1,6 @@
 {
   "schema_version": "qm.owner-decisions/v2",
-  "revision": 13,
+  "revision": 14,
   "maintainer": "Mission Control decision store; OWNER answers are receipts, not execution authority.",
   "updated_at_utc": "2026-09-02T17:47:14Z",
   "items": [
@@ -377,6 +377,26 @@
       "severity": "action",
       "status": "OPEN",
       "yes_effect": "Genau EIN Claude-Auftrag: Codex-Ticket (T_Export-D1-Download + Export der 37 Symbole mit Receipt, Builder-Erweiterung mit Quellen-Deklaration je Zeile, Kalender v2 + Manifest, Preset-Re-Pin als neue Set-Version, Demo-Install mit Receipt + OWNER-3-Zeilen, Refresh-Regel am 1. Handelstag, M13-Manifest-Nachtrag). Kein T_Live, kein AutoTrading, keine Q-Gate-Aenderung."
+    },
+    {
+      "category": "Pipeline/Evidenz-Integritaet",
+      "cost_of_wait": "Die erste B-prime-Adjudikation (11167/XAUUSD) hat 9 h T2 ohne ein authentifiziertes Zellergebnis verbraucht. 10 von 54 Q10_NEWS-Kandidaten (3 der 11 freigegebenen B-prime-Zeilen) sind Builds vor dem 20.07. und scheitern am selben Guard; jeder weitere Claim einer solchen Zeile verbrennt einen 9-h-Slot. 11196 ist bis zum Entscheid von der Prioritaetsspur genommen.",
+      "created_at_utc": "2026-09-07T16:23:27Z",
+      "depends_on": [
+        "OWNER-DEC-CALENDAR-CRITERIA-B-PRIME-20260907"
+      ],
+      "due": "2026-09-08",
+      "evidence": [
+        "docs/ops/OWNER_VORLAGE_2026-09-07_q09_legacy_logger_sample.md",
+        "docs/ops/evidence/2026-09-07_calendar-criteria-b-prime-20260907_617abd80_execution.md"
+      ],
+      "id": "OWNER-DEC-Q09-LEGACY-LOGGER-SAMPLE-20260907",
+      "no_effect": "Option C: Pre-sv-Zeilen (10148, 10476, 10771x2, 11179, 11196, 1230x2, 12474, 9573; 11167 REVIEW_REQUIRED) werden dokumentiert geparkt und bleiben ohne Prioritaetsspur; die 7 Post-sv-B-prime-Zeilen laufen weiter. Option B (Neubau, neue Identitaet ab Q02) nur per separatem Bauauftrag.",
+      "question": "Q09-v3-Selektionslauf: Darf run_smoke fuer EX5-Builds vor dem 20.07.2026 (vor der P1-Evidenzintegritaetskontrolle 6e92c80626) ein frisches Logger-Sample OHNE das Pflichtfeld sv als deklariertes Residuum akzeptieren (alle uebrigen Pflichtfelder, ea_id/magic-Bindung und Frische gegen das Pre-Run-Archiv bleiben Pflicht; Receipt-Feld logger_sample_authentication=legacy_no_sv), damit die 10 Pre-sv-Kandidaten des Zaehlerpfads adjudizierbar werden - statt Neubau (B) oder Parken (C)?",
+      "recommendation": "JA (Option A). Die Kontrolle bleibt fuer alle Builds nach dem 20.07. unveraendert; fuer Altbestaende wird das Residuum deklariert statt die Adjudikation verweigert. Danach 11167 als Append-only-Rerun und 11196 zurueck auf die Prioritaetsspur.",
+      "severity": "action",
+      "status": "OPEN",
+      "yes_effect": "Genau EIN Claude-Auftrag: Codex-Ticket (Guard-Zweig in run_smoke.ps1 nur unter -RequireFreshLoggerSample und nur fuer Builds vor 6e92c80626, Tests mit Pre-/Post-sv-Fixtures, Receipt-Feld + Fussnote), Integration, dann Reruns: 11167 append-only (--append-only-rerun-of f625d9aa), 11196 Prioritaetsspur zurueck, uebrige Pre-sv-Zeilen in Freigabe-Reihenfolge. Kein Repin, kein Publish, kein T_Live, keine Schwelle, kein Verdict-Overwrite."
     }
   ]
 }
