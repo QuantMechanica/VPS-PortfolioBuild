@@ -1,0 +1,66 @@
+{
+  "archive_postcheck": {
+    "file_count": 3946,
+    "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+    "status": "PASS",
+    "years": [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025]
+  },
+  "archive_precheck": {
+    "file_count": 3946,
+    "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+    "status": "PASS",
+    "years": [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025]
+  },
+  "bulk_download": false,
+  "conversion": {
+    "first_source_utc": "2024-01-15T00:00:00.287Z",
+    "import_m1_rows": 1412,
+    "import_m1_sha256": "dcdefb3b2f358c1b164a449d1dc6d53d5540238f7f05220048d0ad0821f3752a",
+    "last_source_utc": "2024-01-15T23:59:59.214Z",
+    "reconciliation_m1_import_authorized": false,
+    "reconciliation_m1_rows": 1412,
+    "reconciliation_m1_sha256": "dcdefb3b2f358c1b164a449d1dc6d53d5540238f7f05220048d0ad0821f3752a",
+    "sidecar_sha256": "05d6da832654805842479d3429f75d397421fba0d17c1d6bbe3375383d72a04d",
+    "splice_timestamp_utc": "2024-01-14T23:59:59.999Z",
+    "status": "PASS",
+    "tick_rows": 61939,
+    "tick_sha256": "e6d89ca1f86894d03c96fa9e30778d85724236004612f698f9f21bafca53a960"
+  },
+  "download": {
+    "compressed_bytes": 284318,
+    "decoded_records": 61939,
+    "latest_downloaded": 24,
+    "latest_errors": 0,
+    "manifest_rows": 26,
+    "manifest_sha256": "a047cd8a5de081cd99f055e04045d50ce91f53f337507c23faaf70e2dcb813ca",
+    "rate_requests_per_second": 5,
+    "status": "PASS",
+    "unique_hour_urls": 24
+  },
+  "dry_run_root": "D:/QM/reports/dukascopy/build_dry_run/20260907T1634Z_eurusd_20240115_pass",
+  "end_utc_exclusive": "2024-01-16T00:00:00Z",
+  "production_import": false,
+  "public_endpoint": "https://datafeed.dukascopy.com/datafeed",
+  "reconciliation_schema_smoke": {
+    "checks": {
+      "close_delta_p95": true,
+      "compute_budget": true,
+      "dst_zero_second_offset": false,
+      "required_overlap_window": false,
+      "session_coverage": true
+    },
+    "expected_fail_reason": "one public day cannot satisfy the mandatory 2025-10-01 through 2026-04-01 interval or both DST windows",
+    "production_splice_authorized": false,
+    "status": "FAIL"
+  },
+  "schema": "qm.dukascopy-build-dry-run-evidence/v1",
+  "start_utc": "2024-01-15T00:00:00Z",
+  "symbol": "EURUSD.DWX",
+  "task_id": "e9dea1e3-2a1e-4b38-88e6-097bf15ffd8e",
+  "terminal_started": false,
+  "tests": {
+    "command": "python -m pytest -q tools/dukascopy/tests/test_dukascopy_backfill.py",
+    "passed": 18,
+    "status": "PASS"
+  }
+}
