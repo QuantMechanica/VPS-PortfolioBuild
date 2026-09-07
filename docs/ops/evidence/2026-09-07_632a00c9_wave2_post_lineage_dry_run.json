@@ -1,0 +1,95 @@
+{
+  "allowlist": [
+    "c18cf1fa-60c0-498e-82db-637fc8320f58",
+    "ca96d7bf-51e0-4417-a5c6-94546e9d9946",
+    "f15ac955-9dbb-4f39-9a9e-8eb142f11138",
+    "136b0e0f-7896-4e0c-b34b-47991cc49342",
+    "450fb9f6-9797-496d-937e-9bddc5f292a8",
+    "abea4df5-c03b-494a-a025-37747d0a1e32",
+    "6d528b09-59d8-4c2f-bfb2-a1102e8ae12c",
+    "b6e02932-d34d-4fea-8f3c-f977c8efe7eb",
+    "ee4ff9b4-41a3-4e74-b5ec-de548ed47113",
+    "745671a4-02e4-4df5-b5e1-e25f0e41ca0e"
+  ],
+  "applied_count": 0,
+  "authority": [
+    "OWNER-DEC-COUNTER-PATH-CALENDAR-TAINT-20260907",
+    "OWNER-DEC-CALENDAR-CRITERIA-B-PRIME-20260907"
+  ],
+  "deferred_count": 10,
+  "eligible_count": 0,
+  "generated_at_utc": "2026-09-07T08:34:18+00:00",
+  "mode": "DRY_RUN",
+  "router_task_id": "253814f1-f01a-4ea5-899f-b4ea3fc2dbcb",
+  "rows": [
+    {
+      "eligible": false,
+      "error": "Wave2Error: c18cf1fa-60c0-498e-82db-637fc8320f58: review-only scoped window seal missing",
+      "kind": "SCOPED_WINDOW_SUCCESSOR",
+      "work_item_id": "c18cf1fa-60c0-498e-82db-637fc8320f58"
+    },
+    {
+      "eligible": false,
+      "error": "Wave2Error: ca96d7bf-51e0-4417-a5c6-94546e9d9946: review-only scoped window seal missing",
+      "kind": "SCOPED_WINDOW_SUCCESSOR",
+      "work_item_id": "ca96d7bf-51e0-4417-a5c6-94546e9d9946"
+    },
+    {
+      "eligible": false,
+      "error": "Wave2Error: f15ac955-9dbb-4f39-9a9e-8eb142f11138: review-only scoped window seal missing",
+      "kind": "SCOPED_WINDOW_SUCCESSOR",
+      "work_item_id": "f15ac955-9dbb-4f39-9a9e-8eb142f11138"
+    },
+    {
+      "eligible": false,
+      "error": "Wave2Error: 136b0e0f-7896-4e0c-b34b-47991cc49342: review-only scoped window seal missing",
+      "kind": "SCOPED_WINDOW_SUCCESSOR",
+      "work_item_id": "136b0e0f-7896-4e0c-b34b-47991cc49342"
+    },
+    {
+      "eligible": false,
+      "error": "Wave2Error: 450fb9f6-9797-496d-937e-9bddc5f292a8: review-only scoped window seal missing",
+      "kind": "SCOPED_WINDOW_SUCCESSOR",
+      "work_item_id": "450fb9f6-9797-496d-937e-9bddc5f292a8"
+    },
+    {
+      "eligible": false,
+      "error": "Wave2Error: abea4df5-c03b-494a-a025-37747d0a1e32: review-only scoped window seal missing",
+      "kind": "SCOPED_WINDOW_SUCCESSOR",
+      "work_item_id": "abea4df5-c03b-494a-a025-37747d0a1e32"
+    },
+    {
+      "eligible": false,
+      "error": "Wave2Error: 6d528b09-59d8-4c2f-bfb2-a1102e8ae12c: review-only scoped window seal missing",
+      "kind": "SCOPED_WINDOW_SUCCESSOR",
+      "work_item_id": "6d528b09-59d8-4c2f-bfb2-a1102e8ae12c"
+    },
+    {
+      "eligible": false,
+      "error": "Wave2Error: b6e02932-d34d-4fea-8f3c-f977c8efe7eb: review-only scoped window seal missing",
+      "kind": "SCOPED_WINDOW_SUCCESSOR",
+      "work_item_id": "b6e02932-d34d-4fea-8f3c-f977c8efe7eb"
+    },
+    {
+      "eligible": false,
+      "error": "Wave2Error: ee4ff9b4-41a3-4e74-b5ec-de548ed47113: expected silent-abort hold missing",
+      "kind": "SILENT_ABORT",
+      "work_item_id": "ee4ff9b4-41a3-4e74-b5ec-de548ed47113"
+    },
+    {
+      "cell_count": 40,
+      "eligible": false,
+      "error": "bound Q07 evidence is missing; release remains fail-closed",
+      "hold_reason": "bound news runner disappeared before durable completion; exact process identity review required before retry",
+      "kind": "SILENT_ABORT",
+      "plan_file_sha256": "8189aaba33eb00e847dbd62fc60e70d26a4916dacbd960c2821bc010571e878a",
+      "plan_path": "D:\\QM\\reports\\work_items\\745671a4-02e4-4df5-b5e1-e25f0e41ca0e\\run_plan.json",
+      "q07_evidence_intact": false,
+      "q07_evidence_path": "D:\\QM\\reports\\work_items\\e3187d46-42c3-4dc7-beac-25cc8a0d947b\\QM5_11129\\Q07\\SP500_DWX\\aggregate.json",
+      "releasable": false,
+      "root_cause": "launch precondition fails closed because bound Q07 seed-stability evidence is missing",
+      "work_item_id": "745671a4-02e4-4df5-b5e1-e25f0e41ca0e"
+    }
+  ],
+  "schema": "qm.scoped-b-release-wave2-receipt/v1"
+}
