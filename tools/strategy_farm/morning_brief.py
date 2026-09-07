@@ -1725,13 +1725,16 @@ def main() -> int:
     result = send_mail(subject, text_body, html_body)
     print(json.dumps({"subject": subject, **result}, indent=2))
 
+    notion_status = "SKIPPED_MAIL_NOT_SENT"
     if result.get("sent"):
         try:
             from notion_morning_brief import publish
             notion_result = publish(text_body, data["date_iso"])
+            notion_status = str(notion_result.get("status") if isinstance(notion_result, dict) else notion_result)
             print(json.dumps({"notion": notion_result}))
         except Exception as exc:
             # Keep mail delivery independent; never print token/HTTP exception bodies.
+            notion_status = f"FAILED:{type(exc).__name__}"
             print(json.dumps({"notion": "FAILED", "error_type": type(exc).__name__}))
 
     # Vault archive (timestamped — scrollable off-VPS history). The per-user
@@ -1749,6 +1752,8 @@ def main() -> int:
         except Exception:
             pass
 
+    # 2026-09-07: the scheduled task discards stdout, so leave the delivery facts on disk too (status only, no bodies).
+    _trace(f"mail sent={bool(result.get('sent'))} notion={notion_status}")
     deadline = time.monotonic() + 360.0
     while not VAULT_DIR.parent.exists() and time.monotonic() < deadline:
         time.sleep(20.0)
