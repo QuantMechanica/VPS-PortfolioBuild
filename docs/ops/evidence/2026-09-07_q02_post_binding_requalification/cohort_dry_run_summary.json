@@ -1,0 +1,164 @@
+{
+  "schema": "qm.q02-post-binding-requalification-cohort-dry-run-summary/v1",
+  "recorded_at_utc": "2026-09-07T15:51:53Z",
+  "router_task_id": "9d8ad690-6af0-4f77-94d7-9ac2f913494e",
+  "apply": false,
+  "command": "python C:/QM/repo/tools/strategy_farm/farmctl.py requalify-q02 --old-work-item-id <id> --expected-current-ex5-sha256 <canonical-sha256> --reason <reason> --dry-run",
+  "input_count": 13,
+  "eligible_count": 3,
+  "refused_count": 10,
+  "reason_counts": {
+    "eligible_zero_parameter_diff": 3,
+    "source_setfile_sha256_missing": 1,
+    "current_ex5_has_no_pass_bound_compile_record": 1,
+    "source_already_superseded": 2,
+    "source_setfile_bytes_unrecoverable": 6
+  },
+  "production_rows_created": 0,
+  "results": [
+    {
+      "work_item_id": "7ff04187-385e-4b3d-9064-7348b50b3733",
+      "ea_id": "QM5_21524",
+      "eligible": false,
+      "reason": "source_setfile_sha256_missing",
+      "parameter_diff": null,
+      "provenance_result": "refused_before_diff; predecessor has no authenticated setfile digest"
+    },
+    {
+      "work_item_id": "8322d8c7-5c40-49d7-b8c9-84cbf100d102",
+      "ea_id": "QM5_33007",
+      "eligible": false,
+      "reason": "current_ex5_has_no_pass_bound_compile_record",
+      "source_setfile_sha256": "fbcde36d51ce42a6121661d6718123e47d530a2dc17c7e229811b20f691c5d71",
+      "current_setfile_sha256": "38f532600d6ec5c0577742aaa25a2cd9ad4ba4e0223d84c3f822de48ac666e77",
+      "setfile_recovery_git_commit": "8269f225ee32b272986025ac9f8377ca5c3744b2",
+      "parameter_diff": [
+        {"key": "strategy_daily_drawdown_hard_stop_pct", "change": "added", "before": null, "after": "2.5"},
+        {"key": "strategy_daily_realized_loss_halt_pct", "change": "added", "before": null, "after": "2.0"},
+        {"key": "strategy_max_slippage_ticks", "change": "added", "before": null, "after": "3.0"},
+        {"key": "strategy_total_drawdown_stop_pct", "change": "added", "before": null, "after": "5.0"}
+      ],
+      "provenance_result": "refused; canonical EX5/MQ5 has no done COMPILE_OK record bound to both current digests"
+    },
+    {
+      "work_item_id": "256846e2-edce-4354-a346-0a428dafcc1b",
+      "ea_id": "QM5_20096",
+      "eligible": false,
+      "reason": "source_already_superseded",
+      "existing_successor_work_item_id": "41a774ad-2429-42de-8714-52822c225513",
+      "parameter_diff": null,
+      "provenance_result": "not evaluated; immutable supersession already records disposition"
+    },
+    {
+      "work_item_id": "7dd70134-a2a0-4ecf-a706-5f4609a094be",
+      "ea_id": "QM5_10717",
+      "eligible": false,
+      "reason": "source_already_superseded",
+      "existing_successor_work_item_id": null,
+      "parameter_diff": null,
+      "provenance_result": "not evaluated; immutable supersession already records disposition"
+    },
+    {
+      "work_item_id": "00cf2ac1-4083-4c6b-9de5-d14e841b411e",
+      "ea_id": "QM5_41359",
+      "eligible": true,
+      "reason": "eligible_zero_parameter_diff",
+      "source_setfile_sha256": "389359663ae529f3e884122e9d2c583f6ae968ef68b5e1a988eb61830693bedc",
+      "current_setfile_sha256": "e7848c86c8682a4208455f6de975a99e89cc85d8964f271ad5fd1d5b53dc7488",
+      "setfile_recovery_git_commit": "4124bcc5e4c996c45330810ecfc0a92e8418ceff",
+      "compile_work_item_id": "2c44aab1-dcdd-479d-ad7f-2e9957d56616",
+      "parameter_diff": [],
+      "provenance_result": "authenticated exact preset bytes and current done COMPILE_OK/build-check PASS; no parameter-change authority required"
+    },
+    {
+      "work_item_id": "8f4c4610-bbe8-4de3-aa83-c433e9b6145e",
+      "ea_id": "QM5_41360",
+      "eligible": true,
+      "reason": "eligible_zero_parameter_diff",
+      "source_setfile_sha256": "a5a16ae6db32d33c258ae7042653240c2c4334cba983306aa962ac30ea8af987",
+      "current_setfile_sha256": "22b6e0eaa504c0279531f60c678ef34c068a575843c019e8b4f15fae07a935ff",
+      "setfile_recovery_git_commit": "e2a0dd8f1aea6d1af83640f040a80f8106e1036f",
+      "compile_work_item_id": "07f93bf5-3511-41ae-b131-baec414f3154",
+      "parameter_diff": [],
+      "provenance_result": "authenticated exact preset bytes and current done COMPILE_OK/build-check PASS; no parameter-change authority required"
+    },
+    {
+      "work_item_id": "ecc8e269-5a19-4cda-8c4e-0906d4f93791",
+      "ea_id": "QM5_41361",
+      "eligible": true,
+      "reason": "eligible_zero_parameter_diff",
+      "source_setfile_sha256": "21ccfa90d993c32b28421795438713f0047c2ee7f3efa0bc5119e700dec9e36a",
+      "current_setfile_sha256": "d06919ec5d8be3d8eb207a6ed588bd72274b1935e241c0426731070f83cdb326",
+      "setfile_recovery_git_commit": "57d12641434c1cefc95a99ee868fc76404a0fcde",
+      "compile_work_item_id": "747a1b3d-8b68-437b-b507-77d994f9b615",
+      "parameter_diff": [],
+      "provenance_result": "authenticated exact preset bytes and current done COMPILE_OK/build-check PASS; no parameter-change authority required"
+    },
+    {
+      "work_item_id": "a126c45e-3153-4c9f-a35b-67f153d8d709",
+      "ea_id": "QM5_41362",
+      "eligible": false,
+      "reason": "source_setfile_bytes_unrecoverable",
+      "source_setfile_sha256": "608a6822c137c8cabef9a5f08720c5270452ca362083d7af187a91d87721c759",
+      "current_setfile_sha256": "76bf2ee1cd347d554cd7e7853aa215a371bfc452711d687a1b41ece346e8cdce",
+      "recovery_candidates_checked": 7,
+      "parameter_diff": null,
+      "provenance_result": "refused; exact predecessor bytes were not recoverable, so no semantic diff is asserted"
+    },
+    {
+      "work_item_id": "de8e719f-4075-41a4-b4e6-8f0f1077dbe2",
+      "ea_id": "QM5_41165",
+      "eligible": false,
+      "reason": "source_setfile_bytes_unrecoverable",
+      "source_setfile_sha256": "f73bc2d3f8500b9c0b4b68db215e13f05d13f0d4d1d0e1b7279e285a4b41d0c1",
+      "current_setfile_sha256": "d68e3e95fd823fe95e0c8c5cac3b7872247d1482fb02d61a2d321d5f3563c085",
+      "recovery_candidates_checked": 10,
+      "parameter_diff": null,
+      "provenance_result": "refused; exact predecessor bytes were not recoverable, so no semantic diff is asserted"
+    },
+    {
+      "work_item_id": "fc8770b5-12fc-4ef4-a8e6-90b645fd9b46",
+      "ea_id": "QM5_41172",
+      "eligible": false,
+      "reason": "source_setfile_bytes_unrecoverable",
+      "source_setfile_sha256": "8b8908146652286e972381c2d9db4b7ab53f877a2cbbddf6bd0618e88a1fb883",
+      "current_setfile_sha256": "81fbbcc56748badbfb5ed5289ee8aea3a2d19669784bfa4ad6b047eaac466333",
+      "recovery_candidates_checked": 13,
+      "parameter_diff": null,
+      "provenance_result": "refused; exact predecessor bytes were not recoverable, so no semantic diff is asserted"
+    },
+    {
+      "work_item_id": "92ee9327-54e9-48b5-a82e-11fa86528a9b",
+      "ea_id": "QM5_41176",
+      "eligible": false,
+      "reason": "source_setfile_bytes_unrecoverable",
+      "source_setfile_sha256": "417228e22dae4477441d05f4be46396ee76196d167fa4cd86b358cdc17e0207f",
+      "current_setfile_sha256": "150bcd908773930fb8a8f6185240b06adcdb630b6a19a5618e65e7486888b62a",
+      "recovery_candidates_checked": 7,
+      "parameter_diff": null,
+      "provenance_result": "refused; exact predecessor bytes were not recoverable, so no semantic diff is asserted"
+    },
+    {
+      "work_item_id": "aa2484aa-c937-4f3a-add8-792b700917e3",
+      "ea_id": "QM5_41312",
+      "eligible": false,
+      "reason": "source_setfile_bytes_unrecoverable",
+      "source_setfile_sha256": "81d88201759dc0b6f87fcc870e822465f2035b092106983ac267cd461f84418e",
+      "current_setfile_sha256": "7e0f04a88dd5fd91db10f29038699825941b241f6bfebf330e3d7fbf539adb13",
+      "recovery_candidates_checked": 7,
+      "parameter_diff": null,
+      "provenance_result": "refused; exact predecessor bytes were not recoverable, so no semantic diff is asserted"
+    },
+    {
+      "work_item_id": "4b6ed242-5045-42ff-acf2-3df2ee4f7d56",
+      "ea_id": "QM5_41336",
+      "eligible": false,
+      "reason": "source_setfile_bytes_unrecoverable",
+      "source_setfile_sha256": "9f5c156865742068db9c40b98d918615d9b2499b65ec6cc8f1176adc82ca41b0",
+      "current_setfile_sha256": "7e403c4461079976a38925b0457ee1d65a1f9397c9cdc06977b74e6a987174e7",
+      "recovery_candidates_checked": 7,
+      "parameter_diff": null,
+      "provenance_result": "refused; exact predecessor bytes were not recoverable, so no semantic diff is asserted"
+    }
+  ]
+}

@@ -4,9 +4,15 @@ Date: 2026-09-06
 Router task: `ce03756f-7fad-4bd4-aa57-561551851604`  
 Mode: REVIEW list only; no compile enqueue, Q-phase enqueue, or worker reload was performed.
 
+## 2026-09-07 post-binding correction
+
+The original `seed-fresh-q02` label is not sufficient after a wave-2 source repair because Q02 execution identity includes both the EX5 and the canonical setfile digest. For an identity-preserving preset, use the dry-run-default `rebind-q02` append-only path. If the current canonical setfile digest differs, use the stricter dry-run-default `requalify-q02` path, which recovers the exact predecessor preset bytes, compares every executable key/value, and requires current compile/input-pin provenance for any parameter change. Neither path authorizes an automatic production apply.
+
+The wave-2 authority has 119 registrations. `QM5_20292` remains excluded below for duplicate/registry/card identity mismatch, so 118 registrations are governed and nonexcluded. A read-only audit of `farm_state.sqlite` on 2026-09-07 found Q02/P2 rows for all 118 (`missing=0`). Thus every nonexcluded identity represented by a Q02 row in the table below has a post-binding restart row; the gap is cohort-wide, not limited to stale EX5-only rows. Per-row dry-run evidence for the 13-row discovered cohort is in `2026-09-07_q02_post_binding_requalification/`.
+
 ## Restart contract
 
-After each repaired EA receives `COMPILE_OK`, recreate every distinct terminal `(EA, symbol, phase)` identity below without mutating its predecessor. Q02 uses the governed `seed-fresh-q02` / append-only rerun path; Q03 and later phases use their governed append-only rerun paths. Preserve every historical verdict and receipt.
+After each repaired EA receives `COMPILE_OK`, recreate every distinct terminal `(EA, symbol, phase)` identity below without mutating its predecessor. Q02 uses the governed append-only `rebind-q02` or `requalify-q02` path selected by setfile identity; Q03 and later phases use their governed append-only rerun paths. Preserve every historical verdict and receipt.
 
 Rows are the read-only terminal Q02+ snapshot from `D:/QM/strategy_farm/state/farm_state.sqlite` at preparation time, grouped by active EA identity. Repeated attempts for the same tuple are collapsed but their terminal work-item IDs and verdicts remain listed.
 
