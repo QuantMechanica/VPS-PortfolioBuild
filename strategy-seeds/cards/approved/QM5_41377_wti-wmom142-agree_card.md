@@ -51,9 +51,9 @@ r1_track_record: PASS_WITH_COMPOSITE_AND_TIME_SERIES_PORT_RISK
 r2_mechanical: PASS
 r3_data_available: PASS_WITH_CONTINUOUS_CFD_BASIS_RISK
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
-q01_status: PENDING
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: CPU_CEILING_STOP_NOT_ENQUEUED
 parameters_to_test: "Locked Q02 baseline only: exact D1; 40-bar history buffer; four consecutive completed 3-5-session weeks; strict agreement of ln(final close t-1 / first open t-1) and ln(final close t-2 / first open t-4); 180-minute entry grace; 3.5*ATR(20,D1) frozen stop; 10-day stale repair; 1500-point spread ceiling."
 review_focus: "Falsify a direct-WTI disjoint weekly-horizon agreement stream outside the certified XAU/SP500/NDX/XNG book. Verify exact t-1 and t-4..t-2 endpoints, no overlap or current-week leakage, strict same-sign admission, fixed risk, frozen stop, durable attempt, and next-week exit. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -319,8 +319,8 @@ correlation with the certified book.
 | Phase | Date | Status | Evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-09-07 | APPROVED | `decisions/2026-09-07_qm5_41377_wti_disjoint_weekly_momentum_agreement_g0.md` |
-| Q01 Build Validation | 2026-09-07 | PENDING | branch build pending |
-| Q02 Baseline Screening | 2026-09-07 | NOT_ENQUEUED | requires Q01 PASS and fresh CPU check |
+| Q01 Build Validation | 2026-09-07 | PASS | governed compile `0a670cc3-b225-4089-95a4-8a89a7515af6`; 0 errors/0 warnings; build check PASS |
+| Q02 Baseline Screening | 2026-09-07 | CPU_CEILING_STOP_NOT_ENQUEUED | fresh sample reached 98.829518% against 97% ceiling |
 
 ## Safety Boundary
 
