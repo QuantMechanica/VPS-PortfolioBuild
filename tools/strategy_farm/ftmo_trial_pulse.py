@@ -25,6 +25,7 @@ import sqlite3
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 try:
     import health_contract
@@ -77,6 +78,7 @@ SERVER_REQUEST_WARN = 1_500
 SERVER_REQUEST_LIMIT = 2_000
 EQUITY_SNAPSHOT_STALE_MINUTES = 180
 COLLECTOR_SNAPSHOT_STALE_MINUTES = 5
+PRAGUE_TZ = ZoneInfo("Europe/Prague")
 
 # --- ONE-AUTHORITY TOMBSTONE (permanent; WS-G' round 2, 2026-07-26) ----------
 # This pulse is a CODE-LEVEL OBSERVER ONLY. It never writes a halt, kill, or
@@ -532,6 +534,30 @@ def snapshot_age_minutes(timestamp: str | None, now: datetime | None = None) -> 
     return max(0.0, (reference - parsed.astimezone(timezone.utc)).total_seconds() / 60.0)
 
 
+def kill_switch_runtime_proof_warns(eas: dict, now: datetime) -> list[str]:
+    """Return attach-time kill-switch proof gaps only during a Prague trading day.
+
+    KS_DAY_ANCHOR_SET and KS_BOOK_TAG_SET are emitted by the explicit setter
+    calls, normally during EA initialization; they are not emitted by a trade
+    or by the next day rollover. A weekend attach can nevertheless have no
+    actionable market session, so its absence remains informational until the
+    first Monday Prague day, when the normal warning becomes actionable.
+    """
+
+    if now.astimezone(PRAGUE_TZ).weekday() >= 5:
+        return []
+    warns: list[str] = []
+    if eas["kill_switch_day_anchor_magics"] < len(EXPECTED_MAGICS):
+        warns.append(
+            f"ks_day_anchor_missing:{eas['kill_switch_day_anchor_magics']}/{len(EXPECTED_MAGICS)}"
+        )
+    if eas["kill_switch_book_tag_magics"] < len(EXPECTED_MAGICS):
+        warns.append(
+            f"ks_book_tag_missing:{eas['kill_switch_book_tag_magics']}/{len(EXPECTED_MAGICS)}"
+        )
+    return warns
+
+
 MONITOR_SNAPSHOT = QM_DIR / "journal" / "account_snapshot.json"
 MONITOR_FRESH_MINUTES = 10
 
@@ -592,7 +618,13 @@ def read_collector_snapshot(
         equity = row.get("equity")
         if not isinstance(equity, (int, float)) or equity <= 0:
             continue
-        age = (now - timestamp).total_seconds() / 60.0
+        # The pulse captures its top-level timestamp before scanning journals
+        # and EA logs. The concurrently appended collector row can therefore
+        # be newer than that reference even though both clocks are valid UTC.
+        # Treat a future sample as age zero; it must never be classified stale.
+        age = snapshot_age_minutes(row.get("ts_utc"), now)
+        if age is None:
+            continue
         return {
             "equity": float(equity),
             "balance": float(row.get("balance") or 0.0),
@@ -601,7 +633,7 @@ def read_collector_snapshot(
             "positions": row.get("positions") if isinstance(row.get("positions"), list) else [],
             "timestamp_utc": timestamp.strftime("%Y-%m-%dT%H:%M:%SZ"),
             "age_minutes": age,
-            "fresh": 0 <= age <= COLLECTOR_SNAPSHOT_STALE_MINUTES,
+            "fresh": age <= COLLECTOR_SNAPSHOT_STALE_MINUTES,
             "path": str(path),
         }
     return None
@@ -873,16 +905,11 @@ def main() -> int:
     if eas["ea_errors"]:
         alarms.append(f"ea_errors:{eas['ea_errors']}")
 
-    if eas["kill_switch_day_anchor_magics"] < len(EXPECTED_MAGICS):
-        warns.append(
-            f"ks_day_anchor_missing:{eas['kill_switch_day_anchor_magics']}/{len(EXPECTED_MAGICS)}"
-        )
-    if eas["kill_switch_book_tag_magics"] < len(EXPECTED_MAGICS):
-        warns.append(
-            f"ks_book_tag_missing:{eas['kill_switch_book_tag_magics']}/{len(EXPECTED_MAGICS)}"
-        )
+    warns.extend(kill_switch_runtime_proof_warns(eas, now))
 
-    collector = read_collector_snapshot(now)
+    # Journal/log scans can take minutes on long-lived append-only files. Use
+    # a current reference for collector freshness, not main()'s start time.
+    collector = read_collector_snapshot(utc_now())
     snap = eas.get("equity_snapshot") or {}
     equity = 0.0
     day_pnl = 0.0

@@ -336,6 +336,56 @@ def test_collector_snapshot_is_primary_account_truth(tmp_path: Path) -> None:
     assert snap["pending_orders"] == 1
 
 
+def test_collector_snapshot_newer_than_reference_is_fresh_and_age_zero(tmp_path: Path) -> None:
+    qm_dir = tmp_path / "QM"
+    raw = qm_dir / "ftmo_trial" / "2026-09-06" / "trial_telemetry_raw.jsonl"
+    raw.parent.mkdir(parents=True)
+    raw.write_text(
+        json.dumps({
+            "schema": "qm.ftmo-trial-telemetry.raw/v1",
+            "event": "SAMPLE",
+            "ts_utc": "2026-09-06T21:15:23Z",
+            "ts_epoch": 1788729323,
+            "account_login": 1514536732,
+            "account_server": "FTMO-Demo",
+            "balance": 100000.0,
+            "equity": 100000.0,
+            "open_positions": 0,
+            "pending_orders": 0,
+        }) + "\n",
+        encoding="utf-8",
+    )
+
+    snap = ftmo_trial_pulse.read_collector_snapshot(
+        datetime(2026, 9, 6, 21, 13, 20, tzinfo=timezone.utc), qm_dir=qm_dir
+    )
+
+    assert snap is not None
+    assert snap["timestamp_utc"] == "2026-09-06T21:15:23Z"
+    assert snap["age_minutes"] == 0.0
+    assert snap["fresh"] is True
+
+
+def test_kill_switch_runtime_proof_gaps_are_quiet_on_prague_weekend() -> None:
+    eas = {"kill_switch_day_anchor_magics": 0, "kill_switch_book_tag_magics": 0}
+
+    warns = ftmo_trial_pulse.kill_switch_runtime_proof_warns(
+        eas, datetime(2026, 9, 6, 21, 13, 20, tzinfo=timezone.utc)
+    )
+
+    assert warns == []
+
+
+def test_kill_switch_runtime_proof_gaps_warn_on_prague_trading_day() -> None:
+    eas = {"kill_switch_day_anchor_magics": 0, "kill_switch_book_tag_magics": 0}
+
+    warns = ftmo_trial_pulse.kill_switch_runtime_proof_warns(
+        eas, datetime(2026, 9, 7, 8, 0, tzinfo=timezone.utc)
+    )
+
+    assert warns == ["ks_day_anchor_missing:0/8", "ks_book_tag_missing:0/8"]
+
+
 def test_scan_ea_logs_ignores_pre_activation_errors(monkeypatch, tmp_path: Path) -> None:
     old = {
         "ts_utc": "2026-09-06T19:58:00Z", "magic": 15370001,

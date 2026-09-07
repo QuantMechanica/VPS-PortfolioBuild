@@ -16,10 +16,62 @@ from tools.strategy_farm import execution_contract_lint as lint
 ROOT = Path(__file__).resolve().parents[3]
 REGISTRY = ROOT / "framework" / "registry" / "dxz23_execution_contracts.json"
 SCHEMA = ROOT / "framework" / "schemas" / "strategy_card_v2_execution_contract.schema.json"
+NEWS_FIXTURE_ROOT = Path("tools/strategy_farm/tests/fixtures/execution_contract_news_calendar")
+NEWS_FIXTURE_FILES = {
+    "PRIMARY": NEWS_FIXTURE_ROOT / "primary.csv",
+    "SECONDARY": NEWS_FIXTURE_ROOT / "secondary.csv",
+}
+NEWS_FIXTURE_HASHES = {
+    "PRIMARY": "964db0b1389e55f9ea264413b0bdaa99b88732895f26579da3c78ab243bad965",
+    "SECONDARY": "58ccf075cadc74a568d77171878cb704257cc7fc1c9f713b083e3dd96163cda7",
+}
 
 
 def _contracts() -> list[dict]:
     return json.loads(REGISTRY.read_text(encoding="utf-8"))["contracts"]
+
+
+@pytest.fixture(autouse=True)
+def _freeze_news_bundle_for_tests(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Keep contract tests deterministic while the deployed calendar rolls daily."""
+
+    payload = json.loads(REGISTRY.read_text(encoding="utf-8"))
+    for contract in payload["contracts"]:
+        calendar = contract.get("calendar")
+        if isinstance(calendar, dict):
+            for source in calendar.get("sources", []):
+                fixture_kind = (
+                    "PRIMARY" if str(source.get("role", "")).endswith("PRIMARY") else "SECONDARY"
+                )
+                source["path"] = NEWS_FIXTURE_FILES[fixture_kind].as_posix()
+                source["sha256"] = NEWS_FIXTURE_HASHES[fixture_kind]
+                source["coverage_start"] = "2015-01-01"
+                source["coverage_end"] = "2026-08-29"
+        for dependency in contract.get("data_dependencies", []):
+            if dependency.get("dependency_id") != "deployed_framework_news_calendar":
+                continue
+            dependency["path"] = NEWS_FIXTURE_FILES["PRIMARY"].as_posix()
+            dependency["sha256"] = NEWS_FIXTURE_HASHES["PRIMARY"]
+            dependency["coverage_start"] = "2015-01-01"
+            dependency["coverage_end"] = "2026-08-29"
+
+    frozen_registry = tmp_path / "dxz23_execution_contracts.json"
+    frozen_registry.write_text(json.dumps(payload), encoding="utf-8")
+    monkeypatch.setitem(globals(), "REGISTRY", frozen_registry)
+
+
+def _ftmo_news_fixture_contracts() -> list[dict]:
+    """Bind FTMO calendar lint tests to immutable repository fixtures."""
+
+    contracts = copy.deepcopy([item for item in _contracts() if item["ea_id"] == 20009])
+    for contract in contracts:
+        for source in contract["calendar"]["sources"]:
+            fixture_kind = "PRIMARY" if source["role"].endswith("PRIMARY") else "SECONDARY"
+            source["path"] = NEWS_FIXTURE_FILES[fixture_kind].as_posix()
+            source["sha256"] = NEWS_FIXTURE_HASHES[fixture_kind]
+            source["coverage_start"] = "2015-01-01"
+            source["coverage_end"] = "2026-08-29"
+    return contracts
 
 
 def _by_sleeve() -> dict[tuple[int, str, str], dict]:
@@ -783,8 +835,8 @@ def test_20030_20032_bindings_follow_deployed_calendar_but_remain_blocked() -> N
             "source_ref": "QM_NEWS_CALENDAR_PAIR_V1_ACTIVE_PRIMARY",
             "calendar_policy": "DEPLOYED_FRAMEWORK_EVENT_ROWS_FAIL_CLOSED",
             "stale_behavior": "ENTRY_FAIL_CLOSED",
-            "path": "D:/QM/data/news_calendar/news_calendar_2015_2025.csv",
-            "sha256": "66f7b74616fd975beb4ce1921d1c24c33e4e8a8629df68b3a82deef50dba9e7f",
+            "path": NEWS_FIXTURE_FILES["PRIMARY"].as_posix(),
+            "sha256": NEWS_FIXTURE_HASHES["PRIMARY"],
             "coverage_start": "2015-01-01",
             "coverage_end": "2026-08-29",
         }
@@ -1239,18 +1291,18 @@ def test_20009_multimode_runtime_declarations_are_exactly_registered() -> None:
 
 
 def test_20009_ftmo_news_calendar_is_exact_and_evidence_bound() -> None:
-    contracts = [item for item in _contracts() if item["ea_id"] == 20009]
+    contracts = _ftmo_news_fixture_contracts()
     expected_hashes = {
-        "SHARED_PRIMARY": "66f7b74616fd975beb4ce1921d1c24c33e4e8a8629df68b3a82deef50dba9e7f",
-        "SHARED_SECONDARY": "853440667555a0f5344ce7d722ea5d1d0d82c31683d3bc195e0d41830be71096",
-        "QMDEV1_COMMON_PRIMARY": "66f7b74616fd975beb4ce1921d1c24c33e4e8a8629df68b3a82deef50dba9e7f",
-        "QMDEV1_COMMON_SECONDARY": "853440667555a0f5344ce7d722ea5d1d0d82c31683d3bc195e0d41830be71096",
+        "SHARED_PRIMARY": NEWS_FIXTURE_HASHES["PRIMARY"],
+        "SHARED_SECONDARY": NEWS_FIXTURE_HASHES["SECONDARY"],
+        "QMDEV1_COMMON_PRIMARY": NEWS_FIXTURE_HASHES["PRIMARY"],
+        "QMDEV1_COMMON_SECONDARY": NEWS_FIXTURE_HASHES["SECONDARY"],
     }
     expected_paths = {
-        "SHARED_PRIMARY": "D:/QM/data/news_calendar/news_calendar_2015_2025.csv",
-        "SHARED_SECONDARY": "D:/QM/data/news_calendar/forex_factory_calendar_clean.csv",
-        "QMDEV1_COMMON_PRIMARY": "C:/Users/QMDev1/AppData/Roaming/MetaQuotes/Terminal/Common/Files/news_calendar_2015_2025.csv",
-        "QMDEV1_COMMON_SECONDARY": "C:/Users/QMDev1/AppData/Roaming/MetaQuotes/Terminal/Common/Files/forex_factory_calendar_clean.csv",
+        "SHARED_PRIMARY": NEWS_FIXTURE_FILES["PRIMARY"].as_posix(),
+        "SHARED_SECONDARY": NEWS_FIXTURE_FILES["SECONDARY"].as_posix(),
+        "QMDEV1_COMMON_PRIMARY": NEWS_FIXTURE_FILES["PRIMARY"].as_posix(),
+        "QMDEV1_COMMON_SECONDARY": NEWS_FIXTURE_FILES["SECONDARY"].as_posix(),
     }
     expected_coverage = {
         "SHARED_PRIMARY": ("2015-01-01", "2026-08-29"),
@@ -1295,7 +1347,7 @@ def test_20009_ftmo_news_calendar_is_exact_and_evidence_bound() -> None:
 
 
 def test_20009_ftmo_news_calendar_rejects_hash_drift() -> None:
-    contract = copy.deepcopy(next(item for item in _contracts() if item["ea_id"] == 20009))
+    contract = _ftmo_news_fixture_contracts()[0]
     contract["calendar"]["sources"][0]["sha256"] = "0" * 64
 
     codes = {
@@ -1307,7 +1359,7 @@ def test_20009_ftmo_news_calendar_rejects_hash_drift() -> None:
 
 
 def test_20009_ftmo_news_calendar_rejects_declared_coverage_drift() -> None:
-    contract = copy.deepcopy(next(item for item in _contracts() if item["ea_id"] == 20009))
+    contract = _ftmo_news_fixture_contracts()[0]
     contract["calendar"]["sources"][0]["coverage_end"] = "2026-07-23"
 
     codes = {
@@ -1318,7 +1370,7 @@ def test_20009_ftmo_news_calendar_rejects_declared_coverage_drift() -> None:
 
 
 def test_20009_ftmo_news_calendar_expires_fail_closed() -> None:
-    contract = copy.deepcopy(next(item for item in _contracts() if item["ea_id"] == 20009))
+    contract = _ftmo_news_fixture_contracts()[0]
 
     codes = {
         issue.code
@@ -1328,7 +1380,7 @@ def test_20009_ftmo_news_calendar_expires_fail_closed() -> None:
 
 
 def test_20009_ftmo_news_calendar_rejects_missing_source(tmp_path: Path) -> None:
-    contract = copy.deepcopy(next(item for item in _contracts() if item["ea_id"] == 20009))
+    contract = _ftmo_news_fixture_contracts()[0]
     contract["calendar"]["sources"][0]["path"] = str(tmp_path / "missing-news.csv")
 
     codes = {
@@ -1339,7 +1391,7 @@ def test_20009_ftmo_news_calendar_rejects_missing_source(tmp_path: Path) -> None
 
 
 def test_20009_ftmo_news_calendar_rejects_non_fail_closed_stale_policy() -> None:
-    contract = copy.deepcopy(next(item for item in _contracts() if item["ea_id"] == 20009))
+    contract = _ftmo_news_fixture_contracts()[0]
     contract["calendar"]["stale_behavior"] = "NOT_APPLICABLE"
 
     codes = {

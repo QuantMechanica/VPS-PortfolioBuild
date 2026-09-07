@@ -1,0 +1,3 @@
+datetime,currency,event_name,impact
+2015-01-01 00:00:00,USD,Fixture coverage start,high
+2026-08-29 00:00:00,USD,Fixture coverage end,high
